@@ -131,6 +131,7 @@ build_lis_nuopc: $(LISNUOPC_FILES)
 $(LISNUOPC_LIB): $(LIS_LIB) lis_nuopc_gluecode.o \
 	NUOPC_FileReadUtility.o NUOPC_FileWriteUtility.o \
 	NUOPC_FillUtility.o NUOPC_CopyUtility.o \
+	NUOPC_MultiNestConnector.o \
 	NUOPC_LogUtility.o lis_nuopc_cap.o 
 	@echo $(HR)
 	@echo "Copying static library $@..."
@@ -146,10 +147,12 @@ nuopc_filewriteutility.mod: NUOPC_FileWriteUtility.o
 nuopc_fillutility.mod: NUOPC_FillUtility.o
 nuopc_copyutility.mod: NUOPC_CopyUtility.o
 nuopc_logutility.mod: NUOPC_LogUtility.o
+nuopc_multinestconnector.mod: NUOPC_MultiNestConnector.F90
 
 lis_nuopc_cap.o: lis_nuopc_gluecode.mod \
 	nuopc_filereadutility.mod nuopc_filewriteutility.mod \
-	nuopc_fillutility.mod nuopc_copyutility.mod nuopc_logutility.mod
+	nuopc_fillutility.mod nuopc_copyutility.mod nuopc_logutility.mod \
+	nuopc_multinestconnector.mod
 lis_nuopc_gluecode.o: nuopc_filereadutility.mod nuopc_filewriteutility.mod \
 	nuopc_fillutility.mod  nuopc_copyutility.mod \
 	nuopc_logutility.mod $(LIS_FILES)

@@ -1245,12 +1245,14 @@ contains
 !    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     distGrid = ESMF_DistGridCreate( &
-      minIndex=(/1,1/), maxIndex=(/LIS_rc%gnc,LIS_rc%gnr/), &
+      minIndex=(/1,1/), maxIndex=(/LIS_rc%gnc(nest),LIS_rc%gnr(nest)/), &
       indexflag = ESMF_INDEX_DELOCAL, &
       deBlockList=deBlockList, &
       delayout=deLayout, &
 !     connectionList=LIS_ConnectionList, &
       rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
     call LIS_DecompGet(distgrid,istart=istart,jstart=jstart,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
