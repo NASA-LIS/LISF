@@ -5,6 +5,17 @@
 #define FILENAME "LIS_NUOPC_Gluecode"
 #define MODNAME "LIS_NUOPC_Gluecode"
 
+!-------------------------------------------------------------------------------
+! Define ESMF real kind to match Appplications single/double precision
+!-------------------------------------------------------------------------------
+#if defined(REAL4)
+#define ESMF_KIND_RX ESMF_KIND_R4
+#define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R4
+#else
+#define ESMF_KIND_RX ESMF_KIND_R8
+#define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R8
+#endif
+
 #define VERBOSITY_MIN 0
 #define VERBOSITY_MAX 255
 #define VERBOSITY_DBG 1023
@@ -1230,10 +1241,10 @@ contains
     real                :: lat_cor, lon_cor
     real                :: lat_cen, lon_cen
     integer             :: lbnd(2),ubnd(2)
-    real(ESMF_KIND_R8), pointer    :: coordXcenter(:,:)
-    real(ESMF_KIND_R8), pointer    :: coordYcenter(:,:)
-    real(ESMF_KIND_R8), pointer    :: coordXcorner(:,:)
-    real(ESMF_KIND_R8), pointer    :: coordYcorner(:,:)
+    real(ESMF_KIND_RX), pointer    :: coordXcenter(:,:)
+    real(ESMF_KIND_RX), pointer    :: coordYcenter(:,:)
+    real(ESMF_KIND_RX), pointer    :: coordXcorner(:,:)
+    real(ESMF_KIND_RX), pointer    :: coordYcorner(:,:)
     integer(ESMF_KIND_I4), pointer :: gridmask(:,:)
     real(ESMF_KIND_R8), pointer    :: gridarea(:,:)
     integer,dimension(2)           :: halowidth_x(2), halowidth_y(2)
@@ -1291,6 +1302,7 @@ contains
     write(did,"(I0)") nest
     LIS_GridCreate = ESMF_GridCreate(name='LIS_Grid_'//trim(did), distgrid=distgrid, &
       coordSys = ESMF_COORDSYS_SPH_DEG, &
+      coordTypeKind = ESMF_TYPEKIND_RX, &
       gridEdgeLWidth=(/0,0/), gridEdgeUWidth=(/0,1/), &
       rc = rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out

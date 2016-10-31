@@ -13,6 +13,13 @@ $(error Environment variable ESMFMKFILE was not set.)
 endif
 include $(ESMFMKFILE)
 
+# single/double precision
+ifeq ($(BUILD_PREC),r4)
+override ESMF_F90COMPILECPPFLAGS += -DREAL4
+else
+override ESMF_F90COMPILECPPFLAGS += -DREAL8
+endif
+
 # ##############
 # Local Variable
 # ##############
