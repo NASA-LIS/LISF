@@ -45,13 +45,14 @@ module LIS_NUOPC
   CHARACTER(LEN=*), PARAMETER :: label_InternalState = 'InternalState'
 
   type type_InternalStateStruct
-    integer               :: verbosity = VERBOSITY_MAX
-    logical               :: gridwrite_flag = .FALSE.
-    logical               :: statewrite_flag = .FALSE.
-    logical               :: profile_memory = .FALSE.
-    integer               :: nnests = -1
+    integer               :: verbosity   = VERBOSITY_MAX
+    logical               :: lwrite_grid = .FALSE.
+    logical               :: lwrite_imp  = .FALSE.
+    logical               :: lwrite_exp  = .FALSE.
+    logical               :: llog_memory = .FALSE.
+    integer               :: nnests  = -1
     integer               :: nfields = size(LIS_FieldList)
-    integer               :: slice = -1
+    integer               :: slice   = -1
     type(ESMF_Grid),allocatable         :: grids(:)
     type(ESMF_Clock),allocatable        :: clocks(:)
     type(ESMF_TimeInterval),allocatable :: elapsedtimes(:)
@@ -169,31 +170,40 @@ module LIS_NUOPC
        label=TRIM(cname)//"_verbosity:", default=is%wrap%verbosity, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
-    call ESMF_AttributeGet(lisGridComp, name="WriteGrids", value=value, defaultValue="false", &
+    call ESMF_AttributeGet(lisGridComp, name="WriteGrid", value=value, defaultValue="false", &
       convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-    is%wrap%gridwrite_flag = (trim(value)=="true")
+    is%wrap%lwrite_grid = (trim(value)=="true")
 
-    call ESMF_ConfigGetAttribute(config, is%wrap%gridwrite_flag, &
-       label=TRIM(cname)//"_grid_write:", default=is%wrap%gridwrite_flag, rc=rc)
+    call ESMF_ConfigGetAttribute(config, is%wrap%lwrite_grid, &
+       label=TRIM(cname)//"_write_grid:", default=is%wrap%lwrite_grid, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
-    call ESMF_AttributeGet(lisGridComp, name="WriteData", value=value, defaultValue="false", &
+    call ESMF_AttributeGet(lisGridComp, name="WriteImport", value=value, defaultValue="false", &
       convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-    is%wrap%statewrite_flag = (trim(value)=="true")
+    is%wrap%lwrite_imp = (trim(value)=="true")
 
-    call ESMF_ConfigGetAttribute(config, is%wrap%statewrite_flag, &
-       label=TRIM(cname)//"_write_data:", default=is%wrap%statewrite_flag, rc=rc)
+    call ESMF_ConfigGetAttribute(config, is%wrap%lwrite_imp, &
+       label=TRIM(cname)//"_write_imp:", default=is%wrap%lwrite_imp, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
-    call ESMF_AttributeGet(lisGridComp, name="ProfileMemory", value=value, defaultValue="false", &
+    call ESMF_AttributeGet(lisGridComp, name="WriteExport", value=value, defaultValue="false", &
       convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-    is%wrap%profile_memory = (trim(value)=="true")
+    is%wrap%lwrite_exp = (trim(value)=="true")
 
-    call ESMF_ConfigGetAttribute(config, is%wrap%profile_memory, &
-       label=TRIM(cname)//"_profile_memory:", default=is%wrap%profile_memory, rc=rc)
+    call ESMF_ConfigGetAttribute(config, is%wrap%lwrite_exp, &
+       label=TRIM(cname)//"_write_exp:", default=is%wrap%lwrite_exp, rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
+    call ESMF_AttributeGet(lisGridComp, name="LogMemory", value=value, defaultValue="false", &
+      convention="NUOPC", purpose="Instance", rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    is%wrap%llog_memory = (trim(value)=="true")
+
+    call ESMF_ConfigGetAttribute(config, is%wrap%llog_memory, &
+       label=TRIM(cname)//"_log_memory:", default=is%wrap%llog_memory, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! Switch to IPDv01 by filtering all other phaseMap entries
@@ -400,7 +410,7 @@ module LIS_NUOPC
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       
       ! Write grid to NetCDF file.
-      if (is%wrap%gridwrite_flag) then
+      if (is%wrap%lwrite_grid) then
         call NUOPC_FileWriteGrid(is%wrap%grids(nIndex), &
           'LIS_grid_nest_'//trim(nStr)//".nc", &
           nclMap=NUOPC_MAPPRESET_GLOBAL,rc=rc)
@@ -475,8 +485,6 @@ module LIS_NUOPC
 
     enddo
 
-    is%wrap%slice = 0
-
     if (is%wrap%verbosity >= VERBOSITY_DBG) then
       call LIS_FieldListLog(trim(cname)//': '//METHOD//' Complete',rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
@@ -518,6 +526,8 @@ module LIS_NUOPC
     call NUOPC_ModelGet(lisGridComp, exportState=exportState, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
+    is%wrap%slice = 0
+
     do nIndex=1,is%wrap%nnests
       ! Nest integer to string
       if (nIndex > 999999999) then
@@ -529,7 +539,7 @@ module LIS_NUOPC
       call LIS_NUOPC_DataInit(nest=nIndex,exportState=is%wrap%NStateExp(nIndex),rc=rc) 
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
-      if (is%wrap%statewrite_flag) then
+      if (is%wrap%lwrite_exp) then
         if ( nIndex > 999999999) then
           call ESMF_LogSetError(ESMF_FAILURE, &
             msg="Maximum nest size for writing is 999,999,999.", &
@@ -687,7 +697,7 @@ module LIS_NUOPC
       else
         write (nStr,"(I0)") nIndex
       endif
-      if (is%wrap%statewrite_flag) then
+      if (is%wrap%lwrite_imp) then
         if ( nIndex > 999999999) then
           call ESMF_LogSetError(ESMF_FAILURE, &
             msg="Maximum nest size for writing is 999,999,999.", &
@@ -720,7 +730,7 @@ module LIS_NUOPC
         is%wrap%elapsedtimes(nIndex) = &
           is%wrap%elapsedtimes(nIndex) - nestTimestep
       enddo
-      if (is%wrap%statewrite_flag) then
+      if (is%wrap%lwrite_exp) then
         if ( nIndex > 999999999) then
           call ESMF_LogSetError(ESMF_FAILURE, &
             msg="Maximum nest size for writing is 999,999,999.", &
@@ -838,13 +848,16 @@ module LIS_NUOPC
       ' Verbosity=',is%wrap%verbosity
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
     write (logMsg, "(A,(A,L1))") trim(llabel), &
-      ' Grid Write=',is%wrap%gridwrite_flag
+      ' Write Grid=',is%wrap%lwrite_grid
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
     write (logMsg, "(A,(A,L1))") trim(llabel), &
-      ' State Write=',is%wrap%statewrite_flag
+      ' Write Import=',is%wrap%lwrite_imp
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
     write (logMsg, "(A,(A,L1))") trim(llabel), &
-      ' Profile Memory=',is%wrap%profile_memory
+      ' Write Export=',is%wrap%lwrite_exp
+    call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
+    write (logMsg, "(A,(A,L1))") trim(llabel), &
+      ' Log Memory=',is%wrap%llog_memory
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
     write (logMsg, "(A,(A,I0))") trim(llabel), &
       ' Nest Count=',is%wrap%nnests
