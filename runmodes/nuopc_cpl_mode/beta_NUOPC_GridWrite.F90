@@ -1,8 +1,8 @@
 #define ESMF_STDERRORCHECK(rc) ESMF_LogFoundError(rcToCheck=rc,msg=ESMF_LOGERR_PASSTHRU,line=__LINE__,file=__FILE__)
-#define FILENAME "NUOPC_FileWriteUtility.F90"
-#define MODNAME "NUOPC_FileWriteUtility"
+#define FILENAME "beta_NUOPC_GridWrite.F90"
+#define MODNAME "beta_NUOPC_GridWrite"
 
-module NUOPC_FileWriteUtility
+module beta_NUOPC_GridWrite
   use ESMF
   use NUOPC
 

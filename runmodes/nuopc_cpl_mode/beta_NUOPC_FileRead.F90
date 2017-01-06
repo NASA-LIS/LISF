@@ -1,12 +1,12 @@
 #define ESMF_STDERRORCHECK(rc) ESMF_LogFoundError(rcToCheck=rc,msg=ESMF_LOGERR_PASSTHRU,line=__LINE__,file=__FILE__)
-#define FILENAME "NUOPC_FileReadUtility.F90"
-#define MODNAME "NUOPC_FileReadUtility"
+#define FILENAME "beta_NUOPC_FileRead.F90"
+#define MODNAME "beta_NUOPC_FileRead"
 
 #define VERBOSITY_MIN 0
 #define VERBOSITY_MAX 255
 #define VERBOSITY_DBG 1023
 
-module NUOPC_FileReadUtility
+module beta_NUOPC_FileRead
   use ESMF
   use NUOPC
   use NETCDF

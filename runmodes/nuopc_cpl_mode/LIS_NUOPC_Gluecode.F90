@@ -1,26 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center Land Information System (LIS) v7.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-#define ESMF_STDERRORCHECK(rc) ESMF_LogFoundError(rcToCheck=rc,msg=ESMF_LOGERR_PASSTHRU,line=__LINE__,file=__FILE__)
-#define FILENAME "LIS_NUOPC_Gluecode"
+#define FILENAME "LIS_NUOPC_Gluecode.F90"
 #define MODNAME "LIS_NUOPC_Gluecode"
-
-!-------------------------------------------------------------------------------
-! Define ESMF real kind to match Appplications single/double precision
-!-------------------------------------------------------------------------------
-#if defined(REAL4)
-#define ESMF_KIND_RX ESMF_KIND_R4
-#define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R4
-#else
-#define ESMF_KIND_RX ESMF_KIND_R8
-#define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R8
-#endif
-
-#define VERBOSITY_MIN 0
-#define VERBOSITY_MAX 255
-#define VERBOSITY_DBG 1023
-#define UNMASKED 0
-#define UNINITIALIZED -999
+#include "LIS_NUOPC_Macros.h"
 
 module LIS_NUOPC_Gluecode
 !BOP
@@ -141,9 +124,10 @@ module LIS_NUOPC_Gluecode
     LIS_FORC_Z0, &
     LIS_FORC_GVF, &
     LIS_FORC_CO2
-  use NUOPC_LogUtility
-  use NUOPC_FileReadUtility
-  use NUOPC_FileWriteUtility
+  use beta_NUOPC_Log
+  use beta_NUOPC_FileRead
+  use beta_NUOPC_Fill
+  use LIS_NUOPC_DataCopy
 
   IMPLICIT NONE
 
@@ -167,34 +151,8 @@ module LIS_NUOPC_Gluecode
   public :: LIS_Log
   public :: LIS_FieldList
   public :: LIS_FieldListLog
-
-!-----------------------------------------------------------------------------
-! Interface definitions for copy from LIS 1D tiled data to 2D
-!-----------------------------------------------------------------------------
-
-  interface LIS_CopyToLIS
-    module procedure LIS_FieldCopyToLisField
-    module procedure LIS_FieldCopyToLisFarray
-    module procedure LIS_ArrayCopyToLisArray
-    module procedure LIS_ArrayCopyToLisFarray
-    module procedure LIS_FarrayI4CopyToLisFarrayI4
-    module procedure LIS_FarrayI8CopyToLisFarrayI8
-    module procedure LIS_FarrayR8CopyToLisFarrayR4
-    module procedure LIS_FarrayR4CopyToLisFarrayR4
-    module procedure LIS_FarrayR8CopyToLisFarrayR8
-  end interface
-
-  interface LIS_CopyFromLIS
-    module procedure LIS_FieldCopyFromLisField
-    module procedure LIS_FieldCopyFromLisFarray
-    module procedure LIS_ArrayCopyFromLisArray
-    module procedure LIS_ArrayCopyFromLisFarray
-    module procedure LIS_FarrayI4CopyFromLisFarrayI4
-    module procedure LIS_FarrayI8CopyFromLisFarrayI8
-    module procedure LIS_FarrayR8CopyFromLisFarrayR4
-    module procedure LIS_FarrayR4CopyFromLisFarrayR4
-    module procedure LIS_FarrayR8CopyFromLisFarrayR8
-  end interface
+  public :: LIS_TestFillImport
+  public :: LIS_TestFillExport
 
 !-----------------------------------------------------------------------------
 ! !LOCAL VARIABLES:
@@ -206,242 +164,317 @@ module LIS_NUOPC_Gluecode
   INTEGER, PARAMETER :: LIS_Hybrid  =  2
 
   type LIS_FieldHookup
-    real,pointer,dimension(:,:)     :: exportArray => null()
-    real,pointer,dimension(:)       :: exportArray_t => null()
+    real,pointer,dimension(:,:) :: exportArray   => null()
+    real,pointer,dimension(:)   :: exportArray_t => null()
   end type
 
   type LIS_Field
-    character(len=64)                  :: stdname = " "
-    character(len=16)                  :: stateName = " "
-    character(len=10)                  :: units = " "
-    character(len=20)                  :: transferOffer = " "
-    logical                            :: lisForc = .FALSE.
-    logical                            :: lisForcSelect = .FALSE.
-    logical                            :: lisExport = .FALSE.
-    logical                            :: lisExportSelect = .FALSE.
-    character(len=100)                 :: lisForcVarname = " "
-    type(LIS_FieldHookup), allocatable :: hookup(:) ! Individual hookup for each nest
+    character(len=64)                  :: stdName        = ""
+    character(len=16)                  :: stateName      = ""
+    real                               :: ampValue       = 1.d0
+    real                               :: meanValue      = 0.d0
+    character(len=10)                  :: units          = ""
+    character(len=20)                  :: transferOffer  = ""
+    logical                            :: adImport       = .FALSE.
+    logical                            :: realizedImport = .FALSE.
+    logical                            :: adExport       = .FALSE.
+    logical                            :: realizedExport = .FALSE.
+    character(len=100)                 :: lisForcVarname = ""
+    type(LIS_FieldHookup), allocatable :: hookup(:)
   end type
 
   type(LIS_Field),dimension(73)  :: LIS_FieldList = (/ &
-    LIS_Field(stdname='2m_air_temperature', &
+    LIS_Field(stdName='2m_air_temperature', &
       stateName='t2_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='K',transferOffer='will provide'), &
-    LIS_Field(stdname='2m_heat_exchange_coefficient', &
+    LIS_Field(stdName='2m_heat_exchange_coefficient', &
       stateName='chs2_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='m/s',transferOffer='will provide'), &
-    LIS_Field(stdname='2m_moisture_exchange_coefficient', &
+    LIS_Field(stdName='2m_moisture_exchange_coefficient', &
       stateName='cqs2_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='m/s',transferOffer='will provide'), &
-    LIS_Field(stdname='2m_potential_temperature', &
+    LIS_Field(stdName='2m_potential_temperature', &
       stateName='th2_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='K',transferOffer='will provide'), &
-    LIS_Field(stdname='2m_specific_humidity', &
+    LIS_Field(stdName='2m_specific_humidity', &
       stateName='q2_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/kg',transferOffer='will provide'), &
-    LIS_Field(stdname='air_temperature', &
+    LIS_Field(stdName='air_temperature', &
       stateName='tair_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='K',transferOffer='will provide'), &
-    LIS_Field(stdname='albedo', &
+    LIS_Field(stdName='albedo', &
       stateName='albedo_f', &
+      ampValue=0.02d0, meanValue=0.14d0, &
       units='-',transferOffer='will provide'), &
-    LIS_Field(stdname='albedo_w_snow_effect', &
+    LIS_Field(stdName='albedo_w_snow_effect', &
       stateName='albedo_snwff', &
+      ampValue=0.02d0, meanValue=0.14d0, &
       units='-',transferOffer='will provide'), &
-    LIS_Field(stdname='atmospheric_density', &
+    LIS_Field(stdName='atmospheric_density', &
       stateName='density_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/m3',transferOffer='will provide'), &
-    LIS_Field(stdname='canopy_moisture', &
+    LIS_Field(stdName='canopy_moisture', &
       stateName='canopmoist', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='m',transferOffer='will provide'), &
-    LIS_Field(stdname='convective_available_potential_energy', &
+    LIS_Field(stdName='convective_available_potential_energy', &
       stateName='cape_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='J/kg',transferOffer='will provide'), &
-    LIS_Field(stdname='convective_rainfall_flux', &
+    LIS_Field(stdName='convective_rainfall_flux', &
       stateName='crainf_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/m2s',transferOffer='will provide'), &
-    LIS_Field(stdname='cosine_solar_zenith_angle', &
+    LIS_Field(stdName='cosine_solar_zenith_angle', &
       stateName='coszenith_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='-',transferOffer='will provide'), &
-    LIS_Field(stdname='downward_heat_flux_in_soil', &
+    LIS_Field(stdName='downward_heat_flux_in_soil', &
       stateName='qg', &
+      ampValue=90.d0, meanValue=-100.d0, & 
       units='W/m2',transferOffer='will provide'), &
-    LIS_Field(stdname='eastward_wind', &
+    LIS_Field(stdName='eastward_wind', &
       stateName='ewind_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='m/s',transferOffer='will provide'), &
-    LIS_Field(stdname='effective_mixing_ratio', &
+    LIS_Field(stdName='effective_mixing_ratio', &
       stateName='effmixratio', &
+      ampValue=0.2d0, meanValue=-0.35d0, &
       units='kg/kg',transferOffer='will provide'), &
-    LIS_Field(stdname='emissivity', &
+    LIS_Field(stdName='emissivity', &
       stateName='emiss_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='-',transferOffer='will provide'), &
-    LIS_Field(stdname='forcing_height', &
+    LIS_Field(stdName='forcing_height', &
       stateName='fheight_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='m',transferOffer='will provide'), &
-    LIS_Field(stdname='green_vegetation_fraction', &
+    LIS_Field(stdName='green_vegetation_fraction', &
       stateName='greenness_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='-',transferOffer='will provide'), &
-    LIS_Field(stdname='heat_exchange_coefficient_in_air', &
+    LIS_Field(stdName='heat_exchange_coefficient_in_air', &
       stateName='ch_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='-',transferOffer='will provide'), &
-    LIS_Field(stdname='latent_heat_flux_kinematic', &
+    LIS_Field(stdName='latent_heat_flux_kinematic', &
       stateName='qlekinematic', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/m2s',transferOffer='will provide'), &
-    LIS_Field(stdname='level_pressure', &
+    LIS_Field(stdName='level_pressure', &
       stateName='lpressure_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='Pa',transferOffer='will provide'), &
-    LIS_Field(stdname='liquid_fraction_of_soil_moisture_layer_1', &
+    LIS_Field(stdName='liquid_fraction_of_soil_moisture_layer_1', &
       stateName='smliqfracl1', &
+      ampValue=0.02d0, meanValue=0.48d0, &
       units='m3/m3',transferOffer='will provide'), &
-    LIS_Field(stdname='liquid_fraction_of_soil_moisture_layer_2', &
+    LIS_Field(stdName='liquid_fraction_of_soil_moisture_layer_2', &
       stateName='smliqfracl2', &
+      ampValue=0.02d0, meanValue=0.19d0, &
       units='m3/m3',transferOffer='will provide'), &
-    LIS_Field(stdname='liquid_fraction_of_soil_moisture_layer_3', &
+    LIS_Field(stdName='liquid_fraction_of_soil_moisture_layer_3', &
       stateName='smliqfracl3', &
+      ampValue=1.d0, meanValue=0.17d0, &
       units='m3/m3',transferOffer='will provide'), &
-    LIS_Field(stdname='liquid_fraction_of_soil_moisture_layer_4', &
+    LIS_Field(stdName='liquid_fraction_of_soil_moisture_layer_4', &
       stateName='smliqfracl4', &
+      ampValue=0.02d0, meanValue=0.22d0, &
       units='m3/m3',transferOffer='will provide'), &
-    LIS_Field(stdname='liquid_water_content_of_surface_snow', &
+    LIS_Field(stdName='liquid_water_content_of_surface_snow', &
       stateName='swe', &
+      ampValue=0.02d0, meanValue=0.d0, & 
       units='kg/m2',transferOffer='will provide'), &
-    LIS_Field(stdname='mixing_ratio', &
+    LIS_Field(stdName='mixing_ratio', &
       stateName='mixratio_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/kg',transferOffer='will provide'), &
-    LIS_Field(stdname='momentum_exchange_coefficient_in_air', &
+    LIS_Field(stdName='momentum_exchange_coefficient_in_air', &
       stateName='cm_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='-',transferOffer='will provide'), &
-    LIS_Field(stdname='northward_wind', &
+    LIS_Field(stdName='northward_wind', &
       stateName='nwind_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='m/s',transferOffer='will provide'), &
-    LIS_Field(stdname='ozone_concentration', &
+    LIS_Field(stdName='ozone_concentration', &
       stateName='o3_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/kg',transferOffer='will provide'), &
-    LIS_Field(stdname='porosity', &
+    LIS_Field(stdName='porosity', &
       stateName='porosity', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='-',transferOffer='will provide'), &
-    LIS_Field(stdname='potential_evaporation', &
+    LIS_Field(stdName='potential_evaporation', &
       stateName='pet_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/m2s',transferOffer='will provide'), &
-    LIS_Field(stdname='rainfall_flux', &
+    LIS_Field(stdName='rainfall_flux', &
       stateName='rainf_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/m2s',transferOffer='will provide'), &
-    LIS_Field(stdname='reference_et', &
+    LIS_Field(stdName='reference_et', &
       stateName='refet_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/m2',transferOffer='will provide'), &
-    LIS_Field(stdname='relative_soil_moisture', &
+    LIS_Field(stdName='relative_soil_moisture', &
       stateName='relsmc', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='m3/m3',transferOffer='will provide'), &
-    LIS_Field(stdname='root_zone_soil_moisture', &
+    LIS_Field(stdName='root_zone_soil_moisture', &
       stateName='rootmoist', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='m3/m3',transferOffer='will provide'), &
-    LIS_Field(stdname='seaicemask', &
+    LIS_Field(stdName='seaicemask', &
       stateName='xice_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='-',transferOffer='will provide'), &
-    LIS_Field(stdname='snow_depth', &
+    LIS_Field(stdName='snow_depth', &
       stateName='snowdepth', &
+      ampValue=0.d0, meanValue=0.d0, & 
       units='m ',transferOffer='will provide'), &
-    LIS_Field(stdname='snowfall_flux', &
+    LIS_Field(stdName='snowfall_flux', &
       stateName='snowf_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/m2s',transferOffer='will provide'), &
-    LIS_Field(stdname='snowflag', &
+    LIS_Field(stdName='snowflag', &
       stateName='snowflag_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='-',transferOffer='will provide'), &
-    LIS_Field(stdname='snowmelt', &
+    LIS_Field(stdName='snowmelt', &
       stateName='qsm', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/m2s',transferOffer='will provide'), &
-    LIS_Field(stdname='soil_moisture_content', &
+    LIS_Field(stdName='soil_moisture_content', &
       stateName='soilmoist', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/m2',transferOffer='will provide'), &
-    LIS_Field(stdname='soil_moisture_fraction_layer_1', &
+    LIS_Field(stdName='soil_moisture_fraction_layer_1', &
       stateName='smfracl1', &
+      ampValue=0.1d0, meanValue=0.20d0, &
       units='m3/m3',transferOffer='will provide'), &
-    LIS_Field(stdname='soil_moisture_fraction_layer_2', &
+    LIS_Field(stdName='soil_moisture_fraction_layer_2', &
       stateName='smfracl2', &
+      ampValue=0.1d0, meanValue=0.19d0, &
       units='m3/m3',transferOffer='will provide'), &
-    LIS_Field(stdname='soil_moisture_fraction_layer_3', &
+    LIS_Field(stdName='soil_moisture_fraction_layer_3', &
       stateName='smfracl3', &
+      ampValue=0.1d0, meanValue=0.17d0, &
       units='m3/m3',transferOffer='will provide'), &
-    LIS_Field(stdname='soil_moisture_fraction_layer_4', &
+    LIS_Field(stdName='soil_moisture_fraction_layer_4', &
       stateName='smfracl4', &
+      ampValue=0.1d0, meanValue=0.22d0, &
       units='m3/m3',transferOffer='will provide'), &
-    LIS_Field(stdname='soil_temperature_layer_1', &
+    LIS_Field(stdName='soil_temperature_layer_1', &
       stateName='soiltempl1', &
+      ampValue=5.d0, meanValue=300.d0, & 
       units='K',transferOffer='will provide'), &
-    LIS_Field(stdname='soil_temperature_layer_2', &
+    LIS_Field(stdName='soil_temperature_layer_2', &
       stateName='soiltempl2', &
+      ampValue=5.d0, meanValue=295.d0, & 
       units='K',transferOffer='will provide'), &
-    LIS_Field(stdname='soil_temperature_layer_3', &
+    LIS_Field(stdName='soil_temperature_layer_3', &
       stateName='soiltempl3', &
+      ampValue=5.d0, meanValue=293.d0, & 
       units='K',transferOffer='will provide'), &
-    LIS_Field(stdname='soil_temperature_layer_4', &
+    LIS_Field(stdName='soil_temperature_layer_4', &
       stateName='soiltempl4', &
+      ampValue=5.d0, meanValue=290.d0, & 
       units='K',transferOffer='will provide'), &
-    LIS_Field(stdname='soil_temperature_lower_boundary', &
+    LIS_Field(stdName='soil_temperature_lower_boundary', &
       stateName='tmn_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='K',transferOffer='will provide'), &
-    LIS_Field(stdname='specific_humidity', &
+    LIS_Field(stdName='specific_humidity', &
       stateName='qair_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/kg',transferOffer='will provide'), &
-    LIS_Field(stdname='subsurface_runoff_amount', &
+    LIS_Field(stdName='subsurface_runoff_amount', &
       stateName='qsb', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/m2s',transferOffer='will provide'), &
-    LIS_Field(stdname='surface_air_pressure', &
+    LIS_Field(stdName='surface_air_pressure', &
       stateName='psurf_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='Pa',transferOffer='will provide'), &
-    LIS_Field(stdname='surface_diffuse_downwelling_shortwave_flux_in_air', &
+    LIS_Field(stdName='surface_diffuse_downwelling_shortwave_flux_in_air', &
       stateName='diffusesw_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='W/m2',transferOffer='will provide'), &
-    LIS_Field(stdname='surface_direct_downwelling_shortwave_flux_in_air', &
+    LIS_Field(stdName='surface_direct_downwelling_shortwave_flux_in_air', &
       stateName='directsw_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='W/m2',transferOffer='will provide'), &
-    LIS_Field(stdname='surface_downward_par_diffuse', &
+    LIS_Field(stdName='surface_downward_par_diffuse', &
       stateName='pardf_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='W/m2',transferOffer='will provide'), &
-    LIS_Field(stdname='surface_downward_par_direct', &
+    LIS_Field(stdName='surface_downward_par_direct', &
       stateName='pardr_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='W/m2',transferOffer='will provide'), &
-    LIS_Field(stdname='surface_downwelling_longwave_flux_in_air', &
+    LIS_Field(stdName='surface_downwelling_longwave_flux_in_air', &
       stateName='lwdown_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='W/m2',transferOffer='will provide'), &
-    LIS_Field(stdname='surface_downwelling_shortwave_flux_in_air', &
+    LIS_Field(stdName='surface_downwelling_shortwave_flux_in_air', &
       stateName='swdown_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='W/m2',transferOffer='will provide'), &
-    LIS_Field(stdname='surface_net_downward_shortwave_flux', &
+    LIS_Field(stdName='surface_net_downward_shortwave_flux', &
       stateName='swnet_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='W/m2',transferOffer='will provide'), &
-    LIS_Field(stdname='surface_roughness_length', &
+    LIS_Field(stdName='surface_roughness_length', &
       stateName='roughness_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='m',transferOffer='will provide'), &
-    LIS_Field(stdname='surface_runoff_amount', &
+    LIS_Field(stdName='surface_runoff_amount', &
       stateName='qs', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/m2s',transferOffer='will provide'), &
-    LIS_Field(stdname='surface_snow_area_fraction', &
+    LIS_Field(stdName='surface_snow_area_fraction', &
       stateName='snowcover', &
+      ampValue=0.d0, meanValue=0.d0, & 
       units='-',transferOffer='will provide'), &
-    LIS_Field(stdname='surface_specific_humidity', &
+    LIS_Field(stdName='surface_specific_humidity', &
       stateName='qsfc_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='kg/kg',transferOffer='will provide'), &
-    LIS_Field(stdname='surface_temperature', &
+    LIS_Field(stdName='surface_temperature', &
       stateName='avgsurft', &
+      ampValue=10.d0, meanValue=295.d0, & 
       units='K',transferOffer='will provide'), &
-    LIS_Field(stdname='surface_upward_latent_heat_flux', &
+    LIS_Field(stdName='surface_upward_latent_heat_flux', &
       stateName='qle', &
+      ampValue=500.d0, meanValue=-100.d0, & 
       units='W/m2',transferOffer='will provide'), &
-    LIS_Field(stdname='surface_upward_sensible_heat_flux', &
+    LIS_Field(stdName='surface_upward_sensible_heat_flux', &
       stateName='qh', &
+      ampValue=500.d0, meanValue=450.d0, & 
       units='W/m2',transferOffer='will provide'), &
-    LIS_Field(stdname='vapor_pressure', &
+    LIS_Field(stdName='vapor_pressure', &
       stateName='vaporpress_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='-',transferOffer='will provide'), &
-    LIS_Field(stdname='vapor_pressure_deficit', &
+    LIS_Field(stdName='vapor_pressure_deficit', &
       stateName='vaporpressdef_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='-',transferOffer='will provide'), &
-    LIS_Field(stdname='vegetationtype', &
+    LIS_Field(stdName='vegetationtype', &
       stateName='vegtype', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='-',transferOffer='will provide'), &
-    LIS_Field(stdname='wind_speed', &
+    LIS_Field(stdName='wind_speed', &
       stateName='wind_f', &
+      ampValue=1.d0, meanValue=0.d0, & 
       units='m/s ',transferOffer='will provide')/)
   
 !EOP
@@ -451,6 +484,9 @@ contains
   !-----------------------------------------------------------------------------
   ! LIS_NUOPC_Init: Allocate memory and initialize domain and start values
   !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_NUOPC_Init"
 
 !BOP
 ! !ROUTINE: LIS_NUOPC_Init
@@ -504,7 +540,7 @@ contains
     rc = ESMF_SUCCESS
 
     if(.not.LIS_initialized) then
-       call LIS_config_init(vm) ! LIS runtime configuration for offline (uncoupled simulation)
+       call LIS_config_init(vm) ! "retrospective"
        call LIS_domain_init
        call LIS_createTmnUpdate
        call LIS_param_init
@@ -513,8 +549,8 @@ contains
 
        LIS_rc%met_nf(:) = 9 ! WRFout sets to 17
 
-       ! call LIS_metforcing_init(coupled) ! Initialize coupling metforcing subroutines runmode: <coupled>
-       call LIS_metforcing_init ! Initialize offline metforcing subroutines runmode: retrospective
+       ! call LIS_metforcing_init(coupled) ! "WRF coupling", "NUOPC coupling"
+       call LIS_metforcing_init            ! "retrospective"
        call LIS_initDAObservations
        call LIS_dataassim_init
        call LIS_surfaceModel_setup
@@ -536,20 +572,28 @@ contains
   ! LIS_NUOPC_DataInit: Copy Data from internal state to nuopc state
   !-----------------------------------------------------------------------------
 
+#undef METHOD
+#define METHOD "LIS_NUOPC_DataInit"
+
 !BOP
 ! !ROUTINE: LIS_NUOPC_DataInit
 !
 ! !INTERFACE:
-  subroutine LIS_NUOPC_DataInit(nest,exportState,rc)
+  subroutine LIS_NUOPC_DataInit(nest,importState,exportState,rc)
 ! !ARGUMENTS:
     integer,intent(in)                     :: nest
+    type(ESMF_State),intent(inout)         :: importState
     type(ESMF_State),intent(inout)         :: exportState
     integer,intent(out)                    :: rc
 
-    ! See LIS_lsmcpl_pluginMod for subroutines registered to: "retrospective", "WRF coupling", "NUOPC coupling"
+    call LIS_ImportFieldsCopy(nest,importState,rc=rc)
+    if(ESMF_STDERRORCHECK(rc)) return ! bail out
+
+    ! See LIS_lsmcpl_pluginMod for subroutines registered to: 
+    ! "retrospective", "WRF coupling", "NUOPC coupling"
     call LIS_surfaceModel_setexport(nest)
 
-    call LIS_ExportFieldsCopy(nest,exportState,rc)
+    call LIS_ExportFieldsCopy(nest,exportState,rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
 
   end subroutine
@@ -557,6 +601,9 @@ contains
   !-----------------------------------------------------------------------------
   ! LIS_NUOPC_Run: Advance nest calculation based on clock
   !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_NUOPC_Run"
 
 !BOP
 ! !ROUTINE: LIS_NUOPC_Run
@@ -610,17 +657,17 @@ contains
 
     select case (mode)
       case (LIS_Offline)
-        ! Read in met forcing data from Met forcing sources listed in lis.config
+        ! Read in data from Met forcing sources listed in lis.config
         call LIS_get_met_forcing(nest)
       case (LIS_Coupled)
         ! Copy data from import state
-        call LIS_ImportFieldsCopy(nest,importState,rc)
+        call LIS_ImportFieldsCopy(nest,importState,rc=rc)
         if(ESMF_STDERRORCHECK(rc)) return ! bail out
       case (LIS_Hybrid)
-        ! Read in met forcing data from Met forcing sources listed in lis.config
+        ! Read in data from Met forcing sources listed in lis.config
         call LIS_get_met_forcing(nest)
         ! Copy data from import state
-        call LIS_ImportFieldsCopy(nest,importState,rc)
+        call LIS_ImportFieldsCopy(nest,importState,rc=rc)
         if(ESMF_STDERRORCHECK(rc)) return ! bail out        
       case default
         call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
@@ -646,10 +693,11 @@ contains
     ! Write LIS output data to export state
     ! =========================================================
 
-    ! See LIS_lsmcpl_pluginMod for subroutines registered to: "retrospective", "WRF coupling", "NUOPC coupling"
+    ! See LIS_lsmcpl_pluginMod for subroutines registered to: 
+    ! "retrospective", "WRF coupling", "NUOPC coupling"
     call LIS_surfaceModel_setexport(nest)
 
-    call LIS_ExportFieldsCopy(nest,exportState,rc)
+    call LIS_ExportFieldsCopy(nest,exportState,rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
 
   end subroutine
@@ -657,6 +705,9 @@ contains
   !-----------------------------------------------------------------------------
   ! LIS_NUOPC_Final: Cleanup allocated memory and set endtime.
   !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_NUOPC_Final"
 
 !BOP
 ! !ROUTINE: LIS_NUOPC_Final
@@ -699,6 +750,9 @@ contains
   ! LIS_HookupInit: Initialize the field list hookups
   !-----------------------------------------------------------------------------
 
+#undef METHOD
+#define METHOD "LIS_HookupInit"
+
   subroutine LIS_HookupInit(rc)
     ! ARGUMENTS
     integer,intent(out) :: rc
@@ -740,662 +794,516 @@ contains
 
     do nIndex=1, LIS_rc%nnest
     do fIndex=1, size(LIS_FieldList)
-      select case (trim(LIS_FieldList(fIndex)%stdname))
+      select case (trim(LIS_FieldList(fIndex)%stdName))
         case ('2m_air_temperature')              ! (01)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_T2%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_T2%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_T2%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_T2%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('2m_heat_exchange_coefficient')              ! (02)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_CHS2%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_CHS2%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_CHS2%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_CHS2%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%chs2
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%chs2_t
         case ('2m_moisture_exchange_coefficient')              ! (03)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_CQS2%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_CQS2%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_CQS2%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_CQS2%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%cqs2
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%cqs2_t
         case ('2m_potential_temperature')              ! (04)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_TH2%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_TH2%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_TH2%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_TH2%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('2m_specific_humidity')              ! (05)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Q2%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Q2%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Q2%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Q2%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('air_temperature')              ! (06)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Tair%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Tair%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Tair%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Tair%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('albedo')              ! (07)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Alb%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Alb%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Alb%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Alb%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%albedo
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%albedo_t
         case ('albedo_w_snow_effect')              ! (08)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%albedo
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%albedo_t
         case ('atmospheric_density')              ! (09)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_DENSITY%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_DENSITY%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_DENSITY%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_DENSITY%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('canopy_moisture')              ! (10)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%cmc
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%cmc_t
         case ('convective_available_potential_energy')              ! (11)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_CAPE%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_CAPE%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_CAPE%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_CAPE%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('convective_rainfall_flux')              ! (12)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_CRainf%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_CRainf%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_CRainf%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_CRainf%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('cosine_solar_zenith_angle')              ! (13)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Cosz%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Cosz%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Cosz%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Cosz%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('downward_heat_flux_in_soil')              ! (14)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%qg
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%qg_t
         case ('eastward_wind')              ! (15)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Wind_E%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Wind_E%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Wind_E%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Wind_E%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('effective_mixing_ratio')              ! (16)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%q1
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%q1_t
         case ('emissivity')              ! (17)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Emiss%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Emiss%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Emiss%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Emiss%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%emiss
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%emiss_t
         case ('forcing_height')              ! (18)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Forc_Hgt%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Forc_Hgt%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Forc_Hgt%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Forc_Hgt%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('green_vegetation_fraction')              ! (19)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_GVF%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_GVF%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_GVF%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_GVF%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('heat_exchange_coefficient_in_air')              ! (20)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Ch%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Ch%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Ch%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Ch%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('latent_heat_flux_kinematic')              ! (21)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%eta_kinematic
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%eta_kinematic_t
         case ('level_pressure')              ! (22)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_lpressure%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_lpressure%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_lpressure%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_lpressure%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('liquid_fraction_of_soil_moisture_layer_1')              ! (23)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%sh2o1
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%sh2o1_t
         case ('liquid_fraction_of_soil_moisture_layer_2')              ! (24)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%sh2o2
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%sh2o2_t
         case ('liquid_fraction_of_soil_moisture_layer_3')              ! (25)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%sh2o3
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%sh2o3_t
         case ('liquid_fraction_of_soil_moisture_layer_4')              ! (26)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%sh2o4
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%sh2o4_t
         case ('liquid_water_content_of_surface_snow')              ! (27)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%snow
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%snow_t
         case ('mixing_ratio')              ! (28)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Q2sat%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Q2sat%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Q2sat%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Q2sat%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('momentum_exchange_coefficient_in_air')              ! (29)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Cm%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Cm%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Cm%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Cm%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('northward_wind')              ! (30)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Wind_N%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Wind_N%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Wind_N%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Wind_N%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('ozone_concentration')              ! (31)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_o3%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_o3%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_o3%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_o3%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('porosity')              ! (32)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%lispor
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%lispor_t
         case ('potential_evaporation')              ! (33)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_PET%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_PET%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_PET%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_PET%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('rainfall_flux')              ! (34)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Rainf%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Rainf%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Rainf%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Rainf%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('reference_et')              ! (35)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_RefET%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_RefET%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_RefET%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_RefET%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('relative_soil_moisture')              ! (36)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%relsmc1
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%relsmc1_t
         case ('root_zone_soil_moisture')              ! (37)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%rootmoist
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%rootmoist_t
         case ('seaicemask')              ! (38)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_XICE%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_XICE%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_XICE%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_XICE%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%xice
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%xice_t
         case ('snow_depth')              ! (39)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%snowh
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%snowh_t
         case ('snowfall_flux')              ! (40)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Snowf%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Snowf%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Snowf%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Snowf%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('snowflag')              ! (41)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_SNOWFLAG%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_SNOWFLAG%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_SNOWFLAG%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_SNOWFLAG%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('snowmelt')              ! (42)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%qsm
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%qsm_t
         case ('soil_moisture_content')              ! (43)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%soilm
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%soilm_t
         case ('soil_moisture_fraction_layer_1')              ! (44)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%smc1
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%smc1_t
         case ('soil_moisture_fraction_layer_2')              ! (45)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%smc2
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%smc2_t
         case ('soil_moisture_fraction_layer_3')              ! (46)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%smc3
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%smc3_t
         case ('soil_moisture_fraction_layer_4')              ! (47)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%smc4
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%smc4_t
         case ('soil_temperature_layer_1')              ! (48)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%stc1
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%stc1_t
         case ('soil_temperature_layer_2')              ! (49)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%stc2
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%stc2_t
         case ('soil_temperature_layer_3')              ! (50)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%stc3
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%stc3_t
         case ('soil_temperature_layer_4')              ! (51)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%stc4
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%stc4_t
         case ('soil_temperature_lower_boundary')              ! (52)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_TMN%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_TMN%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_TMN%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_TMN%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('specific_humidity')              ! (53)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Qair%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Qair%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Qair%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Qair%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('subsurface_runoff_amount')              ! (54)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%qsb
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%qsb_t
         case ('surface_air_pressure')              ! (55)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Psurf%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Psurf%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Psurf%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Psurf%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('surface_diffuse_downwelling_shortwave_flux_in_air')              ! (56)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_SWdiffuse%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_SWdiffuse%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_SWdiffuse%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_SWdiffuse%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('surface_direct_downwelling_shortwave_flux_in_air')              ! (57)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_SWdirect%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_SWdirect%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_SWdirect%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_SWdirect%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('surface_downward_par_diffuse')              ! (58)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Pardf%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Pardf%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Pardf%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Pardf%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('surface_downward_par_direct')              ! (59)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Pardr%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Pardr%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Pardr%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Pardr%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('surface_downwelling_longwave_flux_in_air')              ! (60)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_LWdown%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_LWdown%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_LWdown%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_LWdown%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('surface_downwelling_shortwave_flux_in_air')              ! (61)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_SWdown%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_SWdown%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_SWdown%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_SWdown%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('surface_net_downward_shortwave_flux')              ! (62)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_SWnet%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_SWnet%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_SWnet%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_SWnet%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('surface_roughness_length')              ! (63)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_Z0%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Z0%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_Z0%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_Z0%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%znt
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%znt_t
         case ('surface_runoff_amount')              ! (64)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%qs
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%qs_t
         case ('surface_snow_area_fraction')              ! (65)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%snocvr
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%snocvr_t
         case ('surface_specific_humidity')              ! (66)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_QSFC%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_QSFC%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_QSFC%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_QSFC%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('surface_temperature')              ! (67)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%avgsurft
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%avgsurft_t
         case ('surface_upward_latent_heat_flux')              ! (68)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%qle
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%qle_t
         case ('surface_upward_sensible_heat_flux')              ! (69)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%qh
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%qh_t
         case ('vapor_pressure')              ! (70)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_VAPORPRESS%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_VAPORPRESS%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_VAPORPRESS%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_VAPORPRESS%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('vapor_pressure_deficit')              ! (71)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_VAPORPRESSDEFICIT%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_VAPORPRESSDEFICIT%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_VAPORPRESSDEFICIT%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_VAPORPRESSDEFICIT%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case ('vegetationtype')              ! (72)
-          LIS_FieldList(fIndex)%lisForc=.FALSE.
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%lisForcSelect=(#NOTAVAILABLE#%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.TRUE.
-          LIS_FieldList(fIndex)%lisExportSelect=.TRUE.
+!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%xland
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%xland_t
         case ('wind_speed')              ! (73)
-          LIS_FieldList(fIndex)%lisForc=.TRUE.
           if (allocated(LIS_FORC_WIND%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_WIND%varname(1)
-          LIS_FieldList(fIndex)%lisForcSelect=(LIS_FORC_WIND%selectOpt == 1)
-          LIS_FieldList(fIndex)%lisExport=.FALSE.
-          LIS_FieldList(fIndex)%lisExportSelect=.FALSE.
+          LIS_FieldList(fIndex)%adImport=(LIS_FORC_WIND%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
         case default
@@ -1412,12 +1320,17 @@ contains
   ! Copy NUOPC Import Fields to LIS Forcing State
   !-----------------------------------------------------------------------------
 
-  subroutine LIS_ImportFieldsCopy(nest,importState,rc)
+#undef METHOD
+#define METHOD "LIS_ImportFieldsCopy"
+
+  subroutine LIS_ImportFieldsCopy(nest,importState,label,rc)
     ! ARGUMENTS
-    integer,intent(in)                      :: nest
-    type(ESMF_State),intent(inout)          :: importState
-    integer,intent(out)                     :: rc
+    integer,intent(in)                :: nest
+    type(ESMF_State),intent(inout)    :: importState
+    character(*),intent(in),optional  :: label
+    integer,intent(out)               :: rc
     ! LOCAL VARIABLES
+    character(len=64)          :: l_label
     type(ESMF_StateItem_Flag)  :: itemType
     type(ESMF_StateItem_Flag)  :: lisItemType
     type(ESMF_Field)           :: importField
@@ -1426,8 +1339,14 @@ contains
     
     rc = ESMF_SUCCESS
 
+    if(present(label)) then
+      l_label = trim(label)
+    else
+      l_label = 'LIS_ImportFieldsCopy:'
+    endif
+
     do fIndex = 1,size(LIS_FieldList)
-      if (LIS_FieldList(fIndex)%lisForc) then
+      if (LIS_FieldList(fIndex)%realizedImport) then
         ! Check itemType to see if field exists in import state
         call ESMF_StateGet(importState, &
           itemName=trim(LIS_FieldList(fIndex)%stateName), &
@@ -1439,8 +1358,6 @@ contains
 
         if (itemType == ESMF_STATEITEM_FIELD) then
           if (lisItemType == ESMF_STATEITEM_FIELD ) then
-!            call ESMF_LogWrite( "LIS: Copying from import state: "// &
-!              trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_INFO)
             call ESMF_StateGet(importState, &
               itemName=trim(LIS_FieldList(fIndex)%stateName), &
               field=importField,rc=rc)
@@ -1453,13 +1370,13 @@ contains
               nest=nest,rc=rc)
             if(ESMF_STDERRORCHECK(rc)) return ! bail out
           else
-            call ESMF_LogWrite( &
-              "LIS: Field is not present in LIS_Forc state. Skipping copy: "// &
+            call ESMF_LogWrite( trim(l_label)// &
+              " field is not present in LIS_Forc state="// &
               trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING)
           endif
         else
-          call ESMF_LogWrite( &
-            "LIS: Field is not present in import state. Skipping copy: "// &
+          call ESMF_LogWrite( trim(l_label)// &
+            " field is not present in NUOPC import state="// &
             trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING) 
           cycle 
        endif
@@ -1472,21 +1389,32 @@ contains
   ! Copy LIS Export Fields to NUOPC Export State
   !-----------------------------------------------------------------------------
 
-  subroutine LIS_ExportFieldsCopy(nest,exportState,rc)
+#undef METHOD
+#define METHOD "LIS_ExportFieldsCopy"
+
+  subroutine LIS_ExportFieldsCopy(nest,exportState,label,rc)
 ! !ARGUMENTS:
-    integer,intent(in)                     :: nest
-    type(ESMF_State),intent(inout)         :: exportState
-    integer,intent(out)                    :: rc
+    integer,intent(in)                :: nest
+    type(ESMF_State),intent(inout)    :: exportState
+    character(*),intent(in),optional  :: label
+    integer,intent(out)               :: rc
 !EOP
 ! !LOCAL VARIABLES:
+    character(len=64)          :: l_label
     type(ESMF_Field)           :: exportField
     integer                    :: fIndex
     type(ESMF_StateItem_Flag)  :: itemType
 
     rc = ESMF_SUCCESS
 
+    if(present(label)) then
+      l_label = trim(label)
+    else
+      l_label = 'LIS_ExportFieldsCopy:'
+    endif
+
     do fIndex = 1,size(LIS_FieldList)
-      if (LIS_FieldList(fIndex)%lisExport) then
+      if (LIS_FieldList(fIndex)%realizedExport) then
         ! Check itemType to see if field exists in import state
         call ESMF_StateGet(exportState, &
           itemName=trim(LIS_FieldList(fIndex)%stateName), &
@@ -1494,17 +1422,17 @@ contains
         if (ESMF_STDERRORCHECK(rc)) return
         if (itemType == ESMF_STATEITEM_FIELD) then
           if (.NOT. allocated(LIS_FieldList(fIndex)%hookup)) then
-            call ESMF_LogWrite( "LIS: Export field hookups have not been allocated. Skipping copy: "// &
+            call ESMF_LogWrite( trim(l_label)// &
+              " export field hookups have not been allocated="// &
               trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING)
             cycle
           endif
-          if (.NOT. associated(LIS_FieldList(fIndex)%hookup(nest)%exportArray_t)) then
-            call ESMF_LogWrite( "LIS: Export array is missing. Skipping copy: "// &
+          if (.NOT.associated(LIS_FieldList(fIndex)%hookup(nest)%exportArray_t)) then
+            call ESMF_LogWrite( trim(l_label)// &
+              " export array_t is missing="// &
               trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING)
             cycle
           endif
-!          call ESMF_LogWrite( "LIS: Copying to export state: "// &
-!            trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_INFO)
           call ESMF_StateGet(exportState, &
             itemName=trim(LIS_FieldList(fIndex)%stateName), &
             field=exportField,rc=rc)
@@ -1514,7 +1442,8 @@ contains
             field=exportField,nest=nest,rc=rc)
           if(ESMF_STDERRORCHECK(rc)) return ! bail out
         else
-          call ESMF_LogWrite( "LIS: Field is not present in export state. Skipping copy: "// &
+          call ESMF_LogWrite( trim(l_label)// &
+            " field is not present in NUOPC export state="// &
             trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING)
           cycle
         endif
@@ -1523,6 +1452,117 @@ contains
   end subroutine
 
   !-----------------------------------------------------------------------------
+  ! Fill LIS Import Fields
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_TestFillImport"
+
+  subroutine LIS_TestFillImport(nest,importState,step,label,rc)
+! !ARGUMENTS:
+    integer,intent(in)                :: nest
+    type(ESMF_State),intent(inout)    :: importState
+    integer,intent(in)                :: step
+    character(*),intent(in),optional  :: label
+    integer,intent(out)               :: rc
+!EOP
+! !LOCAL VARIABLES:
+    character(len=64)          :: l_label
+    type(ESMF_Field)           :: importField
+    integer                    :: fIndex
+    type(ESMF_StateItem_Flag)  :: itemType
+
+    rc = ESMF_SUCCESS
+
+    if(present(label)) then
+      l_label = trim(label)
+    else
+      l_label = 'LIS_TestFillImport:'
+    endif
+
+    do fIndex = 1,size(LIS_FieldList)
+      if (LIS_FieldList(fIndex)%realizedImport) then
+        ! Check itemType to see if field exists in import state
+        call ESMF_StateGet(importState, &
+          itemName=trim(LIS_FieldList(fIndex)%stateName), &
+          itemType=itemType, rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return
+        if (itemType == ESMF_STATEITEM_FIELD) then
+          call ESMF_StateGet(importState, &
+            itemName=trim(LIS_FieldList(fIndex)%stateName), &
+            field=importField,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          call beta_ESMF_FieldFill(importField, dataFillScheme="sincos", &
+            step=step, amplitude=LIS_FieldList(fIndex)%ampValue, &
+            meanValue=LIS_FieldList(fIndex)%meanValue, rc=rc)
+        else
+          call ESMF_LogWrite( trim(l_label)// &
+            " field is not present in NUOPC import state="// &
+            trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING)
+          cycle
+        endif
+      endif
+    enddo
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+  ! Fill LIS Export Fields
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_TestFillExport"
+
+  subroutine LIS_TestFillExport(nest,exportState,step,label,rc)
+! !ARGUMENTS:
+    integer,intent(in)                :: nest
+    type(ESMF_State),intent(inout)    :: exportState
+    integer,intent(in)                :: step
+    character(*),intent(in),optional  :: label
+    integer,intent(out)               :: rc
+!EOP
+! !LOCAL VARIABLES:
+    character(len=64)          :: l_label
+    type(ESMF_Field)           :: exportField
+    integer                    :: fIndex
+    type(ESMF_StateItem_Flag)  :: itemType
+
+    rc = ESMF_SUCCESS
+
+    if(present(label)) then
+      l_label = trim(label)
+    else
+      l_label = 'LIS_TestFillExport:'
+    endif
+
+    do fIndex = 1,size(LIS_FieldList)
+      if (LIS_FieldList(fIndex)%realizedExport) then
+        ! Check itemType to see if field exists in export state
+        call ESMF_StateGet(exportState, &
+          itemName=trim(LIS_FieldList(fIndex)%stateName), &
+          itemType=itemType, rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return
+        if (itemType == ESMF_STATEITEM_FIELD) then
+          call ESMF_StateGet(exportState, &
+            itemName=trim(LIS_FieldList(fIndex)%stateName), &
+            field=exportField,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          call beta_ESMF_FieldFill(exportField, dataFillScheme="sincos", &
+            step=step, amplitude=LIS_FieldList(fIndex)%ampValue, &
+            meanValue=LIS_FieldList(fIndex)%meanValue, rc=rc)
+        else
+          call ESMF_LogWrite( trim(l_label)// &
+            " field is not present in NUOPC export state="// &
+            trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING)
+          cycle
+        endif
+      endif
+    enddo
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_GridCreate"
 
   function LIS_GridCreate(nest,rc)
     !RETURN VALUE
@@ -1605,15 +1645,17 @@ contains
       line=__LINE__,file=FILENAME,rcToReturn=rc)) return ! bail out
 
     write(did,"(I0)") nest
-    LIS_GridCreate = ESMF_GridCreate(name='LIS_Grid_'//trim(did), distgrid=distgrid, &
-      coordSys = ESMF_COORDSYS_SPH_DEG, &
-      coordTypeKind = ESMF_TYPEKIND_RX, &
+    LIS_GridCreate = ESMF_GridCreate(name='LIS_Grid_'//trim(did), &
+      distgrid=distgrid, &
+      coordSys=ESMF_COORDSYS_SPH_DEG, &
+      coordTypeKind=ESMF_TYPEKIND_RX, &
       gridEdgeLWidth=(/0,0/), gridEdgeUWidth=(/0,1/), &
       rc = rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! Add Center Latitude & Longitude Coordinates
-    call ESMF_GridAddCoord(LIS_GridCreate, staggerLoc=ESMF_STAGGERLOC_CENTER, rc=rc)
+    call ESMF_GridAddCoord(LIS_GridCreate, &
+      staggerLoc=ESMF_STAGGERLOC_CENTER, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! Get pointer to Center Latitude array
@@ -1638,9 +1680,11 @@ contains
       return  ! bail out
     endif
 
-    call NUOPC_NetcdfReadIXJX("lon",trim(LIS_rc%paramfile(nest)),(/istart,jstart/),coordXcenter,rc)
+    call NUOPC_NetcdfReadIXJX("lon",trim(LIS_rc%paramfile(nest)), &
+      (/istart,jstart/),coordXcenter,rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-    call NUOPC_NetcdfReadIXJX("lat",trim(LIS_rc%paramfile(nest)),(/istart,jstart/),coordYcenter,rc)
+    call NUOPC_NetcdfReadIXJX("lat",trim(LIS_rc%paramfile(nest)), &
+      (/istart,jstart/),coordYcenter,rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
 !    ! determine halo widths
@@ -1663,15 +1707,18 @@ contains
 !    enddo
 
     ! Add Grid Mask
-    call ESMF_GridAddItem(LIS_GridCreate, itemFlag=ESMF_GRIDITEM_MASK, itemTypeKind=ESMF_TYPEKIND_I4, &
-       staggerLoc=ESMF_STAGGERLOC_CENTER, rc=rc)
+    call ESMF_GridAddItem(LIS_GridCreate, itemFlag=ESMF_GRIDITEM_MASK, &
+      itemTypeKind=ESMF_TYPEKIND_I4, &
+      staggerLoc=ESMF_STAGGERLOC_CENTER, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     ! Get pointer to Grid Mask array
-    call ESMF_GridGetItem(LIS_GridCreate, itemflag=ESMF_GRIDITEM_MASK, localDE=0, &
+    call ESMF_GridGetItem(LIS_GridCreate, itemflag=ESMF_GRIDITEM_MASK, &
+      localDE=0, &
       staggerloc=ESMF_STAGGERLOC_CENTER, &
       farrayPtr=gridmask, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-    call NUOPC_NetcdfReadIXJX("LANDMASK",trim(LIS_rc%paramfile(nest)),(/istart,jstart/),gridmask,rc)
+    call NUOPC_NetcdfReadIXJX("LANDMASK",trim(LIS_rc%paramfile(nest)), &
+      (/istart,jstart/),gridmask,rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
 !    ! Add Grid Area
@@ -1687,6 +1734,9 @@ contains
   end function
 
   !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_DecompGet"
 
   subroutine LIS_DecompGet(distgrid,istart,iend,jstart,jend,rc)
     type(ESMF_DistGrid),intent(in)          :: distGrid
@@ -1741,639 +1791,11 @@ contains
   end subroutine
 
   !-----------------------------------------------------------------------------
-  ! Copy Data To/From LIS 1D Array and 2D Array
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_FieldCopyToLisField(field,fieldLIS,nest,rc)
-! !ARGUMENTS:
-    type(ESMF_Field),intent(in)            :: field
-    type(ESMF_Field),intent(inout)         :: fieldLIS
-    integer,intent(in)                     :: nest
-    integer,intent(out)                    :: rc
-! !ARGUMENTS:
-    type(ESMF_Array)                        :: array
-    type(ESMF_Array)                        :: arrayLIS
-
-    rc = ESMF_SUCCESS
-
-    call ESMF_FieldGet(field=field,array=array,rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    call ESMF_FieldGet(field=fieldLIS,array=arrayLIS,rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    call LIS_CopyToLIS(array=array,arrayLIS=arrayLIS,nest=nest,rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_FieldCopyToLisFarray(field,farrayLIS,nest,rc)
-! !ARGUMENTS:
-    type(ESMF_Field),intent(in)            :: field
-    real,intent(inout),pointer             :: farrayLIS(:)
-    integer,intent(in)                     :: nest
-    integer,intent(out)                    :: rc
-! !ARGUMENTS:
-    type(ESMF_Array)                        :: array
-
-    rc = ESMF_SUCCESS
-
-    call ESMF_FieldGet(field=field,array=array,rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    call LIS_CopyToLIS(array=array,farrayLIS=farrayLIS,nest=nest,rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_FieldCopyFromLisField(fieldLIS,field,nest,rc)
-! !ARGUMENTS:
-    type(ESMF_Field),intent(in)            :: fieldLIS
-    type(ESMF_Field),intent(inout)         :: field
-    integer,intent(in)                     :: nest
-    integer,intent(out)                    :: rc
-! !ARGUMENTS:
-    type(ESMF_Array)                       :: arrayLIS
-    type(ESMF_Array)                       :: array
-
-    rc = ESMF_SUCCESS
-
-    call ESMF_FieldGet(field=fieldLIS,array=arrayLIS,rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    call ESMF_FieldGet(field=field,array=array,rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    call LIS_CopyFromLIS(arrayLIS=arrayLIS,array=array,nest=nest,rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_FieldCopyFromLisFarray(farrayLIS,field,nest,rc)
-! !ARGUMENTS:
-    real,intent(in),pointer                :: farrayLIS(:)
-    type(ESMF_Field),intent(inout)         :: field
-    integer,intent(in)                     :: nest
-    integer,intent(out)                    :: rc
-! !ARGUMENTS:
-    type(ESMF_Array)                       :: array
-
-    rc = ESMF_SUCCESS
-
-    call ESMF_FieldGet(field=field,array=array,rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    call LIS_CopyFromLIS(farrayLIS=farrayLIS,array=array,nest=nest,rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_ArrayCopyToLisArray(array,arrayLIS,nest,rc)
-! !ARGUMENTS:
-    type(ESMF_Array),intent(in)             :: array
-    type(ESMF_Array),intent(inout)          :: arrayLIS
-    integer,intent(in)                      :: nest
-    integer,intent(out)                     :: rc
-! !LOCAL VARIABLES:
-    integer                         :: localDeCount, localDeCountLIS
-    type(ESMF_TypeKind_Flag)        :: typekind, typekindLIS
-    integer                         :: rank,rankLIS
-    integer                         :: deIndex
-    integer(ESMF_KIND_I4),pointer   :: farrayLIS_I4(:)
-    integer(ESMF_KIND_I8),pointer   :: farrayLIS_I8(:)
-    real(ESMF_KIND_R4),pointer      :: farrayLIS_R4(:)
-    real(ESMF_KIND_R8),pointer      :: farrayLIS_R8(:)
-    integer(ESMF_KIND_I4),pointer   :: farray_I4(:,:)
-    integer(ESMF_KIND_I8),pointer   :: farray_I8(:,:)
-    real(ESMF_KIND_R4),pointer      :: farray_R4(:,:)
-    real(ESMF_KIND_R8),pointer      :: farray_R8(:,:)
-!
-! !DESCRIPTION:
-!  This routine copies from the cap to LIS or from LIS to the cap
-!
-!EOP
-    rc = ESMF_SUCCESS
-
-    call ESMF_ArrayGet(arrayLIS,typekind=typekindLIS,rank=rankLIS, &
-      localDeCount=localDeCountLIS,rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return
-    call ESMF_ArrayGet(array,typekind=typekind,rank=rank, &
-      localDeCount=localDeCount,rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return
-
-    if (rank /= 2) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D array.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
-    endif
-    if (rankLIS /= 1) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. LIS array is not a 1D tile array.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
-    endif
-    if (localDeCount /= localDeCountLIS) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. LIS array does not match array decomposition.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
-    endif
-    if (typekind /= typekindLIS) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. LIS array typekind does not match array typekind.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
-    endif
-
-    if(typekind==ESMF_TYPEKIND_I4) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_I4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToLIS(farray=farray_I4,farrayLIS=farrayLIS_I4,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    elseif(typekind==ESMF_TYPEKIND_I8) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_I8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToLIS(farray=farray_I8,farrayLIS=farrayLIS_I8,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    elseif(typekind==ESMF_TYPEKIND_R4) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToLIS(farray=farray_R4,farrayLIS=farrayLIS_R4,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    elseif(typekind==ESMF_TYPEKIND_R8) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToLIS(farray=farray_R8,farrayLIS=farrayLIS_R8,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    else
-      call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-        msg="Typekind copy not implemented.",rcToReturn=rc)
-      return
-    endif
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_ArrayCopyToLisFarray(array,farrayLIS,nest,rc)
-! !ARGUMENTS:
-    type(ESMF_Array),intent(in)             :: array
-    real,intent(inout),pointer              :: farrayLIS(:)
-    integer,intent(in)                      :: nest
-    integer,intent(out)                     :: rc
-! !LOCAL VARIABLES:
-    integer                         :: localDeCount
-    type(ESMF_TypeKind_Flag)        :: typekind
-    integer                         :: rank
-    real(ESMF_KIND_R4),pointer      :: farray_R4(:,:)
-    real(ESMF_KIND_R8),pointer      :: farray_R8(:,:)
-!
-! !DESCRIPTION:
-!  This routine copies from the cap to LIS or from LIS to the cap
-!
-!EOP
-    rc = ESMF_SUCCESS
-
-    call ESMF_ArrayGet(array,typekind=typekind,rank=rank, &
-      localDeCount=localDeCount,rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return
-
-    if (rank /= 2) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D array.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
-    endif
-    if (localDeCount /= 1) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array local decomposition count must be 1.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
-    endif
-    if (typekind /= ESMF_TYPEKIND_R4 .AND. typekind /= ESMF_TYPEKIND_R8) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. LIS array typekind does not match array typekind.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
-    endif
-
-    if(typekind==ESMF_TYPEKIND_R4) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToLIS(farray=farray_R4,farrayLIS=farrayLIS,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    elseif(typekind==ESMF_TYPEKIND_R8) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToLIS(farray=farray_R8,farrayLIS=farrayLIS,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    else
-      call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-        msg="Typekind copy not implemented.",rcToReturn=rc)
-      return
-    endif
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_ArrayCopyFromLisArray(arrayLIS,array,nest,rc)
-! !ARGUMENTS:
-    type(ESMF_Array),intent(inout)          :: arrayLIS
-    type(ESMF_Array),intent(in)             :: array
-    integer,intent(in)                      :: nest
-    integer,intent(out)                     :: rc
-! !LOCAL VARIABLES:
-    integer                         :: localDeCount, localDeCountLIS
-    type(ESMF_TypeKind_Flag)        :: typekind, typekindLIS
-    integer                         :: rank,rankLIS
-    integer                         :: deIndex
-    integer(ESMF_KIND_I4),pointer   :: farrayLIS_I4(:)
-    integer(ESMF_KIND_I8),pointer   :: farrayLIS_I8(:)
-    real(ESMF_KIND_R4),pointer      :: farrayLIS_R4(:)
-    real(ESMF_KIND_R8),pointer      :: farrayLIS_R8(:)
-    integer(ESMF_KIND_I4),pointer   :: farray_I4(:,:)
-    integer(ESMF_KIND_I8),pointer   :: farray_I8(:,:)
-    real(ESMF_KIND_R4),pointer      :: farray_R4(:,:)
-    real(ESMF_KIND_R8),pointer      :: farray_R8(:,:)
-!
-! !DESCRIPTION:
-!  This routine copies from the cap to LIS or from LIS to the cap
-!
-!EOP
-    rc = ESMF_SUCCESS
-
-    call ESMF_ArrayGet(arrayLIS,typekind=typekindLIS,rank=rankLIS, &
-      localDeCount=localDeCountLIS,rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return
-    call ESMF_ArrayGet(array,typekind=typekind,rank=rank, &
-      localDeCount=localDeCount,rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return
-
-    if (rank /= 2) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D array.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
-    endif
-    if (rankLIS /= 1) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. LIS array is not a 1D tile array.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
-    endif
-    if (localDeCount /= localDeCountLIS) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. LIS array does not match array decomposition.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
-    endif
-    if (typekind /= typekindLIS) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. LIS array typekind does not match array typekind.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
-    endif
-
-    if(typekind==ESMF_TYPEKIND_I4) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_I4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS_I4,farray=farray_I4,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    elseif(typekind==ESMF_TYPEKIND_I8) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_I8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS_I8,farray=farray_I8,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    elseif(typekind==ESMF_TYPEKIND_R4) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS_R4,farray=farray_R4,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    elseif(typekind==ESMF_TYPEKIND_R8) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS_R8,farray=farray_R8,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    else
-      call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-        msg="Typekind copy not implemented.",rcToReturn=rc)
-      return
-    endif
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_ArrayCopyFromLisFarray(farrayLIS,array,nest,rc)
-! !ARGUMENTS:
-    real,intent(in),pointer                 :: farrayLIS(:)
-    type(ESMF_Array),intent(inout)          :: array
-    integer,intent(in)                      :: nest
-    integer,intent(out)                     :: rc
-! !LOCAL VARIABLES:
-    integer                         :: localDeCount
-    type(ESMF_TypeKind_Flag)        :: typekind
-    integer                         :: rank
-    real(ESMF_KIND_R4),pointer      :: farray_R4(:,:)
-    real(ESMF_KIND_R8),pointer      :: farray_R8(:,:)
-!
-! !DESCRIPTION:
-!  This routine copies from the cap to LIS or from LIS to the cap
-!
-!EOP
-    rc = ESMF_SUCCESS
-
-    call ESMF_ArrayGet(array,typekind=typekind,rank=rank, &
-      localDeCount=localDeCount,rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return
-
-    if (rank /= 2) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D array.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
-    endif
-    if (localDeCount /= 1) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Local array decomposition count must be 1.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
-    endif
-    if (typekind /= ESMF_TYPEKIND_R4 .AND. typekind /= ESMF_TYPEKIND_R8) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array typekind does not match array typekind.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
-    endif
-
-    if(typekind==ESMF_TYPEKIND_R4) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray_R4,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    elseif(typekind==ESMF_TYPEKIND_R8) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray_R8,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    else
-      call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-        msg="Typekind copy not implemented.",rcToReturn=rc)
-      return
-    endif
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_FarrayI4CopyToLisFarrayI4(farray,farrayLIS,nest,rc)
-! !ARGUMENTS:
-    integer(ESMF_KIND_I4),intent(in),pointer    :: farray(:,:)
-    integer(ESMF_KIND_I4),intent(inout),pointer :: farrayLIS(:)
-    integer,intent(in)                          :: nest
-    integer,intent(out)                         :: rc
-! !LOCAL VARIABLES:
-    integer                         :: tile, col, row
-! !DESCRIPTION:
-!  This routine copies from a 2D array to an LIS 1D array
-!EOP
-    rc = ESMF_SUCCESS
-    do tile=1,LIS_rc%ntiles(nest)
-      col = LIS_domain(nest)%tile(tile)%col
-      row = LIS_domain(nest)%tile(tile)%row
-      farrayLIS(tile) = farray(col,row)
-    enddo
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_FarrayI8CopyToLisFarrayI8(farray,farrayLIS,nest,rc)
-! !ARGUMENTS:
-    integer(ESMF_KIND_I8),intent(in),pointer    :: farray(:,:)
-    integer(ESMF_KIND_I8),intent(inout),pointer :: farrayLIS(:)
-    integer,intent(in)                          :: nest
-    integer,intent(out)                         :: rc
-! !LOCAL VARIABLES:
-    integer                         :: tile, col, row
-! !DESCRIPTION:
-!  This routine copies from a 2D array to an LIS 1D array
-!EOP
-    rc = ESMF_SUCCESS
-    do tile=1,LIS_rc%ntiles(nest)
-      col = LIS_domain(nest)%tile(tile)%col
-      row = LIS_domain(nest)%tile(tile)%row
-      farrayLIS(tile) = farray(col,row)
-    enddo
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_FarrayR8CopyToLisFarrayR4(farray,farrayLIS,nest,rc)
-! !ARGUMENTS:
-    real(ESMF_KIND_R8),intent(in),pointer    :: farray(:,:)
-    real(ESMF_KIND_R4),intent(inout),pointer :: farrayLIS(:)
-    integer,intent(in)                       :: nest
-    integer,intent(out)                      :: rc
-! !LOCAL VARIABLES:
-    integer                         :: tile, col, row
-! !DESCRIPTION:
-!  This routine copies from a 2D array to an LIS 1D array
-!EOP
-    rc = ESMF_SUCCESS
-    do tile=1,LIS_rc%ntiles(nest)
-      col = LIS_domain(nest)%tile(tile)%col
-      row = LIS_domain(nest)%tile(tile)%row
-      farrayLIS(tile) = farray(col,row)
-    enddo
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_FarrayR4CopyToLisFarrayR4(farray,farrayLIS,nest,rc)
-! !ARGUMENTS:
-    real(ESMF_KIND_R4),intent(in),pointer    :: farray(:,:)
-    real(ESMF_KIND_R4),intent(inout),pointer :: farrayLIS(:)
-    integer,intent(in)                       :: nest
-    integer,intent(out)                      :: rc
-! !LOCAL VARIABLES:
-    integer                         :: tile, col, row
-! !DESCRIPTION:
-!  This routine copies from a 2D array to an LIS 1D array
-!EOP
-    rc = ESMF_SUCCESS
-    do tile=1,LIS_rc%ntiles(nest)
-      col = LIS_domain(nest)%tile(tile)%col
-      row = LIS_domain(nest)%tile(tile)%row
-      farrayLIS(tile) = farray(col,row)
-    enddo
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_FarrayR8CopyToLisFarrayR8(farray,farrayLIS,nest,rc)
-! !ARGUMENTS:
-    real(ESMF_KIND_R8),intent(in),pointer    :: farray(:,:)
-    real(ESMF_KIND_R8),intent(inout),pointer :: farrayLIS(:)
-    integer,intent(in)                       :: nest
-    integer,intent(out)                      :: rc
-! !LOCAL VARIABLES:
-    integer                         :: tile, col, row
-! !DESCRIPTION:
-!  This routine copies from a 2D array to an LIS 1D array
-!EOP
-    rc = ESMF_SUCCESS
-    do tile=1,LIS_rc%ntiles(nest)
-      col = LIS_domain(nest)%tile(tile)%col
-      row = LIS_domain(nest)%tile(tile)%row
-      farrayLIS(tile) = farray(col,row)
-    enddo
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_FarrayI4CopyFromLisFarrayI4(farrayLIS,farray,nest,rc)
-! !ARGUMENTS:
-    integer(ESMF_KIND_I4),intent(in),pointer    :: farrayLIS(:)
-    integer(ESMF_KIND_I4),intent(inout),pointer :: farray(:,:)
-    integer,intent(in)                          :: nest
-    integer,intent(out)                         :: rc
-! !LOCAL VARIABLES:
-    integer                         :: tile, col, row
-! !DESCRIPTION:
-!  This routine copies from an LIS 1D array to a 2D array
-!EOP
-    rc = ESMF_SUCCESS
-    do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      tile = LIS_domain(nest)%gindex(col,row)
-      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-        farray(col,row) = farrayLIS(tile)
-      else
-        farray(col,row) = UNMASKED
-      endif
-    enddo
-    enddo
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_FarrayI8CopyFromLisFarrayI8(farrayLIS,farray,nest,rc)
-! !ARGUMENTS:
-    integer(ESMF_KIND_I8),intent(in),pointer    :: farrayLIS(:)
-    integer(ESMF_KIND_I8),intent(inout),pointer :: farray(:,:)
-    integer,intent(in)                          :: nest
-    integer,intent(out)                         :: rc
-! !LOCAL VARIABLES:
-    integer                         :: tile, col, row
-! !DESCRIPTION:
-!  This routine copies from an LIS 1D array to a 2D array
-!EOP
-    rc = ESMF_SUCCESS
-    do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      tile = LIS_domain(nest)%gindex(col,row)
-      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-        farray(col,row) = farrayLIS(tile)
-      else
-        farray(col,row) = UNMASKED
-      endif
-    enddo
-    enddo
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_FarrayR8CopyFromLisFarrayR4(farrayLIS,farray,nest,rc)
-! !ARGUMENTS:
-    real(ESMF_KIND_R4),intent(in),pointer       :: farrayLIS(:)
-    real(ESMF_KIND_R8),intent(inout),pointer    :: farray(:,:)
-    integer,intent(in)                          :: nest
-    integer,intent(out)                         :: rc
-! !LOCAL VARIABLES:
-    integer                         :: tile, col, row
-! !DESCRIPTION:
-!  This routine copies from an LIS 1D array to a 2D array
-!EOP
-    rc = ESMF_SUCCESS
-    do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      tile = LIS_domain(nest)%gindex(col,row)
-      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-        farray(col,row) = farrayLIS(tile)
-      else
-        farray(col,row) = UNMASKED
-      endif
-    enddo
-    enddo
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_FarrayR4CopyFromLisFarrayR4(farrayLIS,farray,nest,rc)
-! !ARGUMENTS:
-    real(ESMF_KIND_R4),intent(in),pointer       :: farrayLIS(:)
-    real(ESMF_KIND_R4),intent(inout),pointer    :: farray(:,:)
-    integer,intent(in)                          :: nest
-    integer,intent(out)                         :: rc
-! !LOCAL VARIABLES:
-    integer                         :: tile, col, row
-! !DESCRIPTION:
-!  This routine copies from an LIS 1D array to a 2D array
-!EOP
-    rc = ESMF_SUCCESS
-    do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      tile = LIS_domain(nest)%gindex(col,row)
-      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-        farray(col,row) = farrayLIS(tile)
-      else
-        farray(col,row) = UNMASKED
-      endif
-    enddo
-    enddo
-  end subroutine
-
-  !-----------------------------------------------------------------------------
-
-  subroutine LIS_FarrayR8CopyFromLisFarrayR8(farrayLIS,farray,nest,rc)
-! !ARGUMENTS:
-    real(ESMF_KIND_R8),intent(in),pointer       :: farrayLIS(:)
-    real(ESMF_KIND_R8),intent(inout),pointer    :: farray(:,:)
-    integer,intent(in)                          :: nest
-    integer,intent(out)                         :: rc
-! !LOCAL VARIABLES:
-    integer                         :: tile, col, row
-! !DESCRIPTION:
-!  This routine copies from an LIS 1D array to a 2D array
-!EOP
-    rc = ESMF_SUCCESS
-    do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      tile = LIS_domain(nest)%gindex(col,row)
-      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-        farray(col,row) = farrayLIS(tile)
-      else
-        farray(col,row) = UNMASKED
-      endif
-    enddo
-    enddo
-  end subroutine
-
-  !-----------------------------------------------------------------------------
   ! Retrieve ESMF Field from LIS_FORC_State
   !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_ForcFieldGet"
 
   !BOP
 ! !ROUTINE: LIS_ForcFieldGet(varname,nest,field,itemType,rc)
@@ -2421,6 +1843,9 @@ contains
   ! Retrieve timestep of nest from LIS_rc
   !-----------------------------------------------------------------------------
 
+#undef METHOD
+#define METHOD "LIS_TimestepGet"
+
 !BOP
 ! !FUNCTION: LIS_TimestepGet(nest, rc)
 ! !INTERFACE:
@@ -2446,6 +1871,9 @@ contains
   ! Retrieve nest count from LIS_rc
   !-----------------------------------------------------------------------------
 
+#undef METHOD
+#define METHOD "LIS_NestCntGet"
+
 !BOP
 ! !FUNCTION: LIS_NestCntGet(rc)
 ! !INTERFACE:
@@ -2470,6 +1898,9 @@ contains
   ! Retrieve NUOPC coupling mode
   !-----------------------------------------------------------------------------
 
+#undef METHOD
+#define METHOD "LIS_RunModeGet"
+
 !BOP
 ! !FUNCTION: LIS_RunModeGet(fieldList,rc)
 ! !INTERFACE:
@@ -2487,19 +1918,19 @@ contains
 !
 ! !LOCAL VARIABLES:
     integer                   :: fIndex
-    integer                   :: selectCount
+    integer                   :: adCount
     integer                   :: connectedCount
     type(ESMF_StateItem_Flag) :: itemType
 
     rc = ESMF_SUCCESS
 
     LIS_RunModeGet = LIS_Unknown
-    selectCount = 0
+    adCount = 0
     connectedCount = 0
 
     do fIndex=1, size(fieldList)
-      if(fieldList(fIndex)%lisForcSelect) then
-        selectCount = selectCount + 1
+      if(fieldList(fIndex)%adImport) then
+        adCount = adCount + 1
         ! Check itemType to see if field exists in state
         call ESMF_StateGet(state, &
           itemName=trim(fieldList(fIndex)%stateName), &
@@ -2516,7 +1947,7 @@ contains
 
     if( connectedCount == 0 ) then
       LIS_RunModeGet = LIS_Offline
-    elseif ( connectedCount == selectCount ) then
+    elseif ( connectedCount == adCount ) then
       LIS_RunModeGet = LIS_Coupled
     else
       LIS_RunModeGet = LIS_Hybrid
@@ -2527,6 +1958,9 @@ contains
   !-----------------------------------------------------------------------------
   ! Dictionary Utility
   !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_FieldDictionaryAdd"
 
   subroutine LIS_FieldDictionaryAdd(rc)
     ! ARGUMENTS
@@ -2539,12 +1973,12 @@ contains
 
     do fIndex=1,size(LIS_FieldList)
       isPresent = NUOPC_FieldDictionaryHasEntry( &
-        trim(LIS_FieldList(fIndex)%stdname), &
+        trim(LIS_FieldList(fIndex)%stdName), &
         rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
       if (.not.isPresent) then
         call NUOPC_FieldDictionaryAddEntry( &
-          trim(LIS_FieldList(fIndex)%stdname), &
+          trim(LIS_FieldList(fIndex)%stdName), &
           trim(LIS_FieldList(fIndex)%units), &
           rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return
@@ -2556,6 +1990,9 @@ contains
   !-----------------------------------------------------------------------------
   ! Log Utilities
   !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_Log"
 
   subroutine LIS_Log(label,rc)
 ! !INTERFACE:
@@ -2652,6 +2089,9 @@ contains
 
   !-----------------------------------------------------------------------------
 
+#undef METHOD
+#define METHOD "LIS_LogNest"
+
   subroutine LIS_LogNest(nest,label,rc)
 ! !INTERFACE:
     integer,intent(in)                    :: nest
@@ -2690,6 +2130,9 @@ contains
   end subroutine
 
   !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_LogDomainForNest"
 
   subroutine LIS_LogDomainForNest(nest,label,rc)
 ! !INTERFACE:
@@ -2756,6 +2199,9 @@ contains
   end subroutine
 
   !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_LogGridDescForNest"
 
   subroutine LIS_LogGridDescForNest(nest,label,rc)
 ! !INTERFACE:
@@ -2852,79 +2298,60 @@ contains
 
   !-----------------------------------------------------------------------------
 
-  subroutine LIS_FieldListLog(label,values,rc)
+#undef METHOD
+#define METHOD "LIS_FieldListLog"
+
+  subroutine LIS_FieldListLog(label)
     ! ARGUMENTS
-    character(len=*),intent(in),optional    :: label
-    logical,intent(in),optional             :: values
-    integer,intent(out)                     :: rc
+    character(len=*),intent(in) :: label
     ! LOCAL VARIABLES
-    character(len=64)          :: l_label
-    integer                    :: fIndex
-
-    rc = ESMF_SUCCESS
-
-    if(present(label)) then
-      l_label = trim(label)
-    else
-      l_label = 'LIS_FieldListLog'
-    endif
+    integer                     :: fIndex
 
     do fIndex=1, size(LIS_FieldList)
-      call LIS_FieldLog(LIS_FieldList(fIndex), &
-        label=trim(l_label)//" "//trim(LIS_FieldList(fIndex)%stateName), &
-        values=values,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      call LIS_FieldLog(LIS_FieldList(fIndex),label=label)
     enddo
 
   end subroutine
 
   !-----------------------------------------------------------------------------
 
-  subroutine LIS_FieldLog(field,label,values,rc)
+#undef METHOD
+#define METHOD "LIS_FieldLog"
+
+  subroutine LIS_FieldLog(field,label)
     ! ARGUMENTS
-    type(LIS_Field),intent(in)              :: field
-    character(len=*),intent(in),optional    :: label
-    logical,intent(in),optional             :: values
-    integer,intent(out)                     :: rc
+    type(LIS_Field),intent(in)  :: field
+    character(len=*),intent(in) :: label
     ! LOCAL VARIABLES
-    character(len=64)          :: l_label
-    logical                    :: l_values
-    integer                    :: nIndex
-    character(len=10)          :: nStr
-    character(ESMF_MAXSTR)     :: logMsg
-    logical                    :: iAssoc
-    logical                    :: eAssoc
-    logical                    :: tAssoc
-    type(ESMF_StateItem_Flag)  :: itemType
-    type(ESMF_Field)           :: importField
+    integer                     :: nIndex
+    character(len=10)           :: nStr
+    character(ESMF_MAXSTR)      :: logMsg
+    logical                     :: iAssoc
+    logical                     :: eAssoc
+    logical                     :: tAssoc
+    type(ESMF_StateItem_Flag)   :: itemType
+    type(ESMF_Field)            :: importField
+    integer                     :: rc
 
-    rc = ESMF_SUCCESS
-
-    if(present(label)) then
-      l_label = trim(label)
-    else
-      l_label = 'LIS_FieldLog '//trim(field%stateName)
-    endif
-    if(present(values)) then
-      l_values = values
-    else
-      l_values = .FALSE.
-    endif
-
-    write (logMsg, "(A,(A,A))") trim(l_label), &
+    write (logMsg, "(A,A,(A,A))") trim(label)//': ', &
+      trim(field%stateName), &
       ' Transfer offer: ',trim(field%transferOffer)
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
-    write (logMsg, "(A,(A,L1))") trim(l_label), &
-      ' Forcing available: ',field%lisForc
+    write (logMsg, "(A,A,(A,L1))") trim(label)//': ', &
+      trim(field%stateName), &
+      ' Import advertised: ',field%adImport
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
-    write (logMsg, "(A,(A,L1))") trim(l_label), &
-      ' Forcing selected: ',field%lisForcSelect
+    write (logMsg, "(A,A,(A,L1))") trim(label)//': ', &
+      trim(field%stateName), &
+      ' Import realized: ',field%realizedImport
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
-    write (logMsg, "(A,(A,L1))") trim(l_label), &
-      ' Export available: ',field%lisExport
+    write (logMsg, "(A,A,(A,L1))") trim(label)//': ', &
+      trim(field%stateName), &
+      ' Export advertised: ',field%adExport
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
-    write (logMsg, "(A,(A,L1))") trim(l_label), &
-      ' Export selected: ',field%lisExportSelect
+    write (logMsg, "(A,A,(A,L1))") trim(label)//': ', &
+      trim(field%stateName), &
+      ' Export realized: ',field%realizedExport
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
 
     if (allocated(field%hookup)) then
@@ -2944,41 +2371,45 @@ contains
         endif
         eAssoc = associated(field%hookup(nIndex)%exportArray)
         tAssoc = associated(field%hookup(nIndex)%exportArray_t)
-        write (logMsg,"(A,(A,A),(A,L1))") trim(l_label), &
-          " Nest: ",trim(nStr), &
-          " Import hookup: ",iAssoc
+        write (logMsg,"(A,A,(A,A),(A,L1))") trim(label)//': ', &
+          trim(field%stateName), &
+          " Nest=",trim(nStr), &
+          " Import hookup=",iAssoc
         call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
-        write (logMsg,"(A,(A,A),(A,L1))") trim(l_label), &
-          " Nest: ",trim(nStr), &
-          " Export hookup_2D: ",eAssoc
+        write (logMsg,"(A,A,(A,A),(A,L1))") trim(label)//': ', &
+          trim(field%stateName), &
+          " Nest=",trim(nStr), &
+          " Export hookup_2D=",eAssoc
         call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
-        write (logMsg,"(A,(A,A),(A,L1))") trim(l_label), &
-          " Nest: ",trim(nStr), &
-          " Export hookup_1D: ",tAssoc
+        write (logMsg,"(A,A,(A,A),(A,L1))") trim(label)//': ', &
+          trim(field%stateName), &
+          " Nest=",trim(nStr), &
+          " Export hookup_1D=",tAssoc
         call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
-        if (l_values) then
-          if (iAssoc) then
-            call LIS_ForcFieldGet(field%lisForcVarname, &
-              nest=nIndex,field=importField,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
-            call NUOPC_LogFieldValue(importField, &
-              label=trim(l_label)//" Nest: "//trim(nStr)//" import",rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+
+        if (iAssoc) then
+          call LIS_ForcFieldGet(field%lisForcVarname, &
+            nest=nIndex,field=importField,rc=rc)
+          if (.NOT.(rc.eq.ESMF_SUCCESS)) then
+            call ESMF_LogWrite(trim(label)// &
+            ': LIS_ForcFieldGet failed for '//trim(field%lisForcVarname), &
+            ESMF_LOGMSG_ERROR)
+          else
+            call NUOPC_LogFieldLclVal(importField, &
+              label=trim(label)//": Nest="//trim(nStr)//" import")
           endif
-          if (eAssoc) then
-            call NUOPC_LogFarrayValue(field%hookup(nIndex)%exportArray, &
-              label=trim(l_label)//" Nest: "//trim(nStr)//" export2D",rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
-          endif
-          if (tAssoc) then
-            call NUOPC_LogFarrayValue(field%hookup(nIndex)%exportArray_t, &
-              label=trim(l_label)//" Nest: "//trim(nStr)//" export1D",rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
-          endif
+        endif
+        if (eAssoc) then
+          call NUOPC_LogFarrayLclVal(field%hookup(nIndex)%exportArray, &
+            label=trim(label)//": Nest="//trim(nStr)//" export2D")
+        endif
+        if (tAssoc) then
+          call NUOPC_LogFarrayLclVal(field%hookup(nIndex)%exportArray_t, &
+            label=trim(label)//": Nest="//trim(nStr)//" export1D")
         endif
       enddo
     else
-      write (logMsg,"(A,A)") trim(l_label)//" ", &
+      write (logMsg,"(A,A)") trim(label)//": ", &
         field%stateName//" does not have field hookups."
       call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO, &
           line=__LINE__, file=FILENAME)
