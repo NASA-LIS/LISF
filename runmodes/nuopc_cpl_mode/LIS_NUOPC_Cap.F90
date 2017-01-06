@@ -5,7 +5,7 @@
 #define MODNAME "LIS_NUOPC_Cap"
 #include "LIS_NUOPC_Macros.h"
 
-module LIS_NUOPC_Cap
+module LIS_NUOPC
 !BOP
 !
 ! !MODULE: LIS_NUOPC
