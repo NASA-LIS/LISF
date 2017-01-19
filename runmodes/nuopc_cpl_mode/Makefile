@@ -137,7 +137,7 @@ build_lis_nuopc: $(LISNUOPC_FILES)
 
 $(LISNUOPC_LIB): $(LIS_LIB) LIS_NUOPC_Cap.o \
         LIS_NUOPC_Gluecode.o LIS_NUOPC_DataCopy.o \
-	beta_NUOPC_FileRead.o beta_NUOPC_GridWrite.o \
+	beta_NUOPC_FileRead.o beta_NUOPC_Auxiliary.o \
 	beta_NUOPC_Fill.o beta_NUOPC_Log.o \
 	beta_NUOPC_Base.o
 	@echo $(HR)
@@ -151,17 +151,17 @@ lis_nuopc.mod: LIS_NUOPC_Cap.o
 lis_nuopc_gluecode.mod: LIS_NUOPC_Gluecode.o
 lis_nuopc_datacopy.mod: LIS_NUOPC_DataCopy.o
 beta_nuopc_fileread.mod: beta_NUOPC_FileRead.o
-beta_nuopc_gridwrite.mod: beta_NUOPC_GridWrite.o
+beta_nuopc_auxiliary.mod: beta_NUOPC_Auxiliary.o
 beta_nuopc_fill.mod: beta_NUOPC_Fill.o
 beta_nuopc_log.mod: beta_NUOPC_Log.o
 beta_nuopc_base.mod: beta_NUOPC_Base.o
 
 LIS_NUOPC_Cap.o: LIS_NUOPC_Macros.h lis_nuopc_gluecode.mod \
-	beta_nuopc_fileread.mod beta_nuopc_gridwrite.mod \
+	beta_nuopc_fileread.mod beta_nuopc_auxiliary.mod \
 	beta_nuopc_fill.mod beta_nuopc_log.mod \
 	beta_nuopc_base.mod
 LIS_NUOPC_Gluecode.o: LIS_NUOPC_Macros.h lis_nuopc_datacopy.mod \
-        beta_nuopc_fileread.mod beta_nuopc_gridwrite.mod \
+        beta_nuopc_fileread.mod beta_nuopc_auxiliary.mod \
 	beta_nuopc_fill.mod  beta_nuopc_log.mod \
         $(LIS_FILES)
 LIS_NUOPC_DataCopy.o: LIS_NUOPC_Macros.h 

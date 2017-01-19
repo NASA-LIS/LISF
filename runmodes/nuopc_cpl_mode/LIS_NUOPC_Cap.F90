@@ -28,7 +28,7 @@ module LIS_NUOPC
     model_label_Finalize    => label_Finalize
   use LIS_NUOPC_Gluecode
   use beta_NUOPC_Fill
-  use beta_NUOPC_GridWrite
+  use beta_NUOPC_Auxiliary
   use beta_NUOPC_Log
   use beta_NUOPC_Base, only: &
    beta_NUOPC_AddNamespace
@@ -51,7 +51,7 @@ module LIS_NUOPC
     logical               :: ltestfill_exp = .FALSE.
     integer               :: nnests  = -1
     integer               :: nfields = size(LIS_FieldList)
-    integer               :: timeSlice   = 1
+    integer               :: timeSlice   = 0
     type(ESMF_Grid),allocatable         :: grids(:)
     type(ESMF_Clock),allocatable        :: clocks(:)
     type(ESMF_TimeInterval),allocatable :: elapsedtimes(:)
@@ -431,9 +431,8 @@ module LIS_NUOPC
       
       ! Write grid to NetCDF file.
       if (is%wrap%lwrite_grid) then
-        call NUOPC_FileWriteGrid(is%wrap%grids(nIndex), &
-          trim(cname)//'_grid_nest_'//trim(nStr)//".nc", &
-          nclMap=NUOPC_MAPPRESET_GLOBAL,rc=rc)
+        call beta_NUOPC_GridWrite(is%wrap%grids(nIndex), &
+          trim(cname)//'_grid_nest_'//trim(nStr)//".nc", rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       endif
 
@@ -540,6 +539,8 @@ module LIS_NUOPC
     if (is%wrap%verbosity >= VERBOSITY_LV1) &
       call ESMF_LogWrite(trim(cname)//': entered '//METHOD, ESMF_LOGMSG_INFO)
 
+    is%wrap%timeSlice = is%wrap%timeSlice + 1
+
     ! query the Component for its clock
     call NUOPC_ModelGet(gcomp, modelClock=modelClock, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
@@ -584,9 +585,10 @@ module LIS_NUOPC
             line=__LINE__,file=__FILE__,rcToReturn=rc)
          return  ! bail out
         endif
-        call NUOPC_Write(is%wrap%NStateImp(nIndex), &
+        call beta_NUOPC_Write(is%wrap%NStateImp(nIndex), &
           fileNamePrefix="field_"//trim(cname)//"_import_nest_"//trim(nStr)//"_", &
-          timeslice=is%wrap%timeSlice, relaxedFlag=.true., rc=rc)
+          singleFile=.false., timeslice=is%wrap%timeSlice, &
+          relaxedFlag=.true., rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       endif
 
@@ -598,9 +600,10 @@ module LIS_NUOPC
             line=__LINE__,file=__FILE__,rcToReturn=rc)
          return  ! bail out
         endif
-        call NUOPC_Write(is%wrap%NStateExp(nIndex), &
+        call beta_NUOPC_Write(is%wrap%NStateExp(nIndex), &
           fileNamePrefix="field_"//trim(cname)//"_export_nest_"//trim(nStr)//"_", &
-          timeslice=is%wrap%timeSlice, relaxedFlag=.true., rc=rc)
+          singleFile=.false., timeslice=is%wrap%timeSlice, &
+          relaxedFlag=.true., rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       endif
 
@@ -649,7 +652,6 @@ module LIS_NUOPC
         file=__FILE__)) &
         return  ! bail out
     enddo
-    is%wrap%timeSlice = is%wrap%timeSlice + 1
 
     ! set InitializeDataComplete Attribute to "true", indicating to the
     ! generic code that all inter-model data dependencies are satisfied
@@ -836,6 +838,8 @@ subroutine CheckImport(gcomp, rc)
     if (is%wrap%verbosity >= VERBOSITY_LV1) &
       call ESMF_LogWrite(trim(cname)//': entered '//METHOD, ESMF_LOGMSG_INFO)
 
+    is%wrap%timeSlice = is%wrap%timeSlice + 1
+
     ! query the Component for its clock, importState and exportState
     call NUOPC_ModelGet(gcomp, modelClock=modelClock, importState=importState, &
       exportState=exportState, rc=rc)
@@ -877,6 +881,7 @@ subroutine CheckImport(gcomp, rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       endif
 
+      ! Write import fields to file
       if (is%wrap%lwrite_imp) then
         if ( nIndex > 999999999) then
           call ESMF_LogSetError(ESMF_FAILURE, &
@@ -884,12 +889,13 @@ subroutine CheckImport(gcomp, rc)
             line=__LINE__,file=__FILE__,rcToReturn=rc)
          return  ! bail out
         endif
-        call NUOPC_Write(is%wrap%NStateImp(nIndex), &
-          fileNamePrefix="field_"//trim(cname)// &
-          "_import_nest_"//trim(nStr)//"_", &
-          timeslice=is%wrap%timeSlice, relaxedFlag=.true., rc=rc)
+        call beta_NUOPC_Write(is%wrap%NStateImp(nIndex), &
+          fileNamePrefix="field_"//trim(cname)//"_import_nest_"//trim(nStr)//"_", &
+          singleFile=.false., timeslice=is%wrap%timeSlice, &
+          relaxedFlag=.true., rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       endif
+
       if (is%wrap%verbosity >= VERBOSITY_LV2) then
         call NUOPC_LogState(is%wrap%NStateImp(nIndex), &
           label=trim(cname)//": ImportState Slice="//trim(sStr)//" Nest="//trim(nStr), &
@@ -926,6 +932,7 @@ subroutine CheckImport(gcomp, rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       endif
 
+      ! Write export fields to file
       if (is%wrap%lwrite_exp) then
         if ( nIndex > 999999999) then
           call ESMF_LogSetError(ESMF_FAILURE, &
@@ -933,11 +940,13 @@ subroutine CheckImport(gcomp, rc)
             line=__LINE__,file=__FILE__,rcToReturn=rc)
          return  ! bail out
         endif
-        call NUOPC_Write(is%wrap%NStateExp(nIndex), &
+        call beta_NUOPC_Write(is%wrap%NStateExp(nIndex), &
           fileNamePrefix="field_"//trim(cname)//"_export_nest_"//trim(nStr)//"_", &
-          timeslice=is%wrap%timeSlice, relaxedFlag=.true., rc=rc)
+          singleFile=.false., timeslice=is%wrap%timeSlice, &
+          relaxedFlag=.true., rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       endif
+
       if (is%wrap%verbosity >= VERBOSITY_LV2) then
         call NUOPC_LogState(is%wrap%NStateExp(nIndex), &
           label=trim(cname)//": ExportState Slice="//trim(sStr)//" Nest="//trim(nStr), &
@@ -945,7 +954,6 @@ subroutine CheckImport(gcomp, rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       endif
     enddo
-    is%wrap%timeSlice = is%wrap%timeSlice + 1
 
     if (is%wrap%verbosity >= VERBOSITY_LV3) call LIS_FieldListLog(trim(cname))
     if (is%wrap%verbosity >= VERBOSITY_LV2) &
