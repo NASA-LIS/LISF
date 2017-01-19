@@ -42,16 +42,17 @@ module LIS_NUOPC
   CHARACTER(LEN=*), PARAMETER :: label_InternalState = 'InternalState'
 
   type type_InternalStateStruct
-    integer               :: verbosity   = VERBOSITY_LV2
-    logical               :: lwrite_grid = .FALSE.
-    logical               :: lwrite_imp  = .FALSE.
-    logical               :: lwrite_exp  = .FALSE.
-    logical               :: llog_memory = .FALSE.
+    integer               :: verbosity     = VERBOSITY_LV2
+    character(len=100)    :: configFile    = 'lis.config'
+    logical               :: lwrite_grid   = .FALSE.
+    logical               :: lwrite_imp    = .FALSE.
+    logical               :: lwrite_exp    = .FALSE.
+    logical               :: llog_memory   = .FALSE.
     logical               :: ltestfill_imp = .FALSE.
     logical               :: ltestfill_exp = .FALSE.
-    integer               :: nnests  = -1
-    integer               :: nfields = size(LIS_FieldList)
-    integer               :: timeSlice   = 1
+    integer               :: nnests        = 0
+    integer               :: nfields       = size(LIS_FieldList)
+    integer               :: timeSlice     = 1
     type(ESMF_Grid),allocatable         :: grids(:)
     type(ESMF_Clock),allocatable        :: clocks(:)
     type(ESMF_TimeInterval),allocatable :: elapsedtimes(:)
@@ -143,6 +144,7 @@ module LIS_NUOPC
     ! local variables
     character(ESMF_MAXSTR)     :: cname
     integer                    :: stat
+    logical                    :: configIsPresent
     type(ESMF_Config)          :: config
     type(type_InternalState)   :: is
     character(len=10)          :: value
@@ -158,10 +160,6 @@ module LIS_NUOPC
     call ESMF_UserCompGetInternalState(gcomp, label_InternalState, is, rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
-    ! Get configuration parameters from attributes or file
-    call ESMF_GridCompGet(gcomp, config=config, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
     ! Determine Verbosity
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, defaultValue="default", &
       convention="NUOPC", purpose="Instance", rc=rc)
@@ -171,8 +169,10 @@ module LIS_NUOPC
       specialValueList=(/VERBOSITY_LV0,VERBOSITY_LV2,VERBOSITY_LV3,VERBOSITY_LV2/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
-    call ESMF_ConfigGetAttribute(config, is%wrap%verbosity, &
-       label=TRIM(cname)//"_verbosity:", default=is%wrap%verbosity, rc=rc)
+    ! Write coupled grid files
+    call ESMF_AttributeGet(gcomp, name="ConfigFile", value=is%wrap%configFile, &
+      defaultValue="lis.config", &
+      convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! Write coupled grid files
@@ -181,19 +181,11 @@ module LIS_NUOPC
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     is%wrap%lwrite_grid = (trim(value)=="true")
 
-    call ESMF_ConfigGetAttribute(config, is%wrap%lwrite_grid, &
-       label=TRIM(cname)//"_write_grid:", default=is%wrap%lwrite_grid, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
     ! Write coupled import data files  
     call ESMF_AttributeGet(gcomp, name="WriteImport", value=value, defaultValue="false", &
       convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     is%wrap%lwrite_imp = (trim(value)=="true")
-
-    call ESMF_ConfigGetAttribute(config, is%wrap%lwrite_imp, &
-       label=TRIM(cname)//"_write_imp:", default=is%wrap%lwrite_imp, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! Write coupled export data files
     call ESMF_AttributeGet(gcomp, name="WriteExport", value=value, defaultValue="false", &
@@ -201,19 +193,11 @@ module LIS_NUOPC
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     is%wrap%lwrite_exp = (trim(value)=="true")
 
-    call ESMF_ConfigGetAttribute(config, is%wrap%lwrite_exp, &
-       label=TRIM(cname)//"_write_exp:", default=is%wrap%lwrite_exp, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
     ! Log Memory
     call ESMF_AttributeGet(gcomp, name="LogMemory", value=value, defaultValue="false", &
       convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     is%wrap%llog_memory = (trim(value)=="true")
-
-    call ESMF_ConfigGetAttribute(config, is%wrap%llog_memory, &
-       label=TRIM(cname)//"_log_memory:", default=is%wrap%llog_memory, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! Test fill import fields
     call ESMF_AttributeGet(gcomp, name="TestFillImport", value=value, defaultValue="false", &
@@ -221,20 +205,49 @@ module LIS_NUOPC
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     is%wrap%ltestfill_imp = (trim(value)=="true")
 
-    call ESMF_ConfigGetAttribute(config, is%wrap%ltestfill_imp, &
-       label=TRIM(cname)//"_testfill_imp:", default=is%wrap%ltestfill_imp, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
     ! Test fill export fields
     call ESMF_AttributeGet(gcomp, name="TestFillExport", value=value, defaultValue="false", &
       convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     is%wrap%ltestfill_exp = (trim(value)=="true")
 
-    call ESMF_ConfigGetAttribute(config, is%wrap%ltestfill_exp, &
-       label=TRIM(cname)//"_testfill_exp:", default=is%wrap%ltestfill_exp, rc=rc)
+    ! Get configuration parameters from attributes or file
+    call ESMF_GridCompGet(gcomp, configIsPresent=configIsPresent, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
+    if (configIsPresent) then
+      call ESMF_GridCompGet(gcomp, config=config, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
+      call ESMF_ConfigGetAttribute(config, is%wrap%verbosity, &
+        label=TRIM(cname)//"_verbosity:", default=is%wrap%verbosity, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
+      call ESMF_ConfigGetAttribute(config, is%wrap%lwrite_grid, &
+        label=TRIM(cname)//"_write_grid:", default=is%wrap%lwrite_grid, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
+      call ESMF_ConfigGetAttribute(config, is%wrap%lwrite_imp, &
+        label=TRIM(cname)//"_write_imp:", default=is%wrap%lwrite_imp, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
+      call ESMF_ConfigGetAttribute(config, is%wrap%lwrite_exp, &
+        label=TRIM(cname)//"_write_exp:", default=is%wrap%lwrite_exp, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
+      call ESMF_ConfigGetAttribute(config, is%wrap%llog_memory, &
+        label=TRIM(cname)//"_log_memory:", default=is%wrap%llog_memory, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
+      call ESMF_ConfigGetAttribute(config, is%wrap%ltestfill_imp, &
+        label=TRIM(cname)//"_testfill_imp:", default=is%wrap%ltestfill_imp, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
+      call ESMF_ConfigGetAttribute(config, is%wrap%ltestfill_exp, &
+        label=TRIM(cname)//"_testfill_exp:", default=is%wrap%ltestfill_exp, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    endif
+    
     ! Switch to IPDv03 by filtering all other phaseMap entries
     call NUOPC_CompFilterPhaseMap(gcomp, ESMF_METHOD_INITIALIZE, &
       acceptStringList=(/"IPDv03p"/), rc=rc)
@@ -285,7 +298,7 @@ module LIS_NUOPC
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! initialize lis model for this PET
-    call LIS_NUOPC_Init(vm, rc=rc)
+    call LIS_NUOPC_Init(vm, configFile=is%wrap%configFile, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     if (is%wrap%verbosity >= VERBOSITY_LV1) then
@@ -293,9 +306,8 @@ module LIS_NUOPC
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     endif
 
-
-    call LIS_FieldDictionaryAdd(rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+!    call LIS_FieldDictionaryAdd(rc=rc)
+!    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     is%wrap%nnests = LIS_NestCntGet(rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
@@ -315,7 +327,7 @@ module LIS_NUOPC
 
     is%wrap%modes=LIS_Unknown
 
-    if (is%wrap%nnests == 1) then
+    if (is%wrap%nnests.le.1) then
       is%wrap%NStateImp(1) = importState
       is%wrap%NStateExp(1) = exportState
     else
@@ -1145,6 +1157,9 @@ subroutine CheckImport(gcomp, rc)
 
     write (logMsg, "(A,(A,I0))") trim(label), &
       ': Verbosity=',is%wrap%verbosity
+    call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
+    write (logMsg, "(A,(A,A))") trim(label), &
+      ': Config File=',is%wrap%configFile
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
     write (logMsg, "(A,(A,L1))") trim(label), &
       ': Write Grid=',is%wrap%lwrite_grid

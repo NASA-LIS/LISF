@@ -492,10 +492,11 @@ contains
 ! !ROUTINE: LIS_NUOPC_Init
 !
 ! !INTERFACE:
-  subroutine LIS_NUOPC_Init(vm,rc)
+  subroutine LIS_NUOPC_Init(vm,configFile,rc)
 ! !ARGUMENTS:
     type(ESMF_VM),intent(in)                :: vm
     integer,intent(out)                     :: rc
+    character(len=*),intent(in),optional    :: configFile
 !
 ! !DESCRIPTION:
 !  This routine defines the set of steps required from LIS during the
@@ -540,6 +541,7 @@ contains
     rc = ESMF_SUCCESS
 
     if(.not.LIS_initialized) then
+       if (present(configFile)) LIS_rc%lis_config_file = trim(configFile)
        call LIS_config_init(vm) ! "retrospective"
        call LIS_domain_init
        call LIS_createTmnUpdate
