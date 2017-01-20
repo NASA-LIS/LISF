@@ -306,8 +306,8 @@ module LIS_NUOPC
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     endif
 
-!    call LIS_FieldDictionaryAdd(rc=rc)
-!    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    call LIS_FieldDictionaryAdd(rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     is%wrap%nnests = LIS_NestCntGet(rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
