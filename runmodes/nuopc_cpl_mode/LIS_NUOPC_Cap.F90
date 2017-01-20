@@ -52,7 +52,7 @@ module LIS_NUOPC
     logical               :: ltestfill_exp = .FALSE.
     integer               :: nnests        = 0
     integer               :: nfields       = size(LIS_FieldList)
-    integer               :: timeSlice     = 1
+    integer               :: timeSlice     = 0
     type(ESMF_Grid),allocatable         :: grids(:)
     type(ESMF_Clock),allocatable        :: clocks(:)
     type(ESMF_TimeInterval),allocatable :: elapsedtimes(:)
