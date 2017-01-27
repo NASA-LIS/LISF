@@ -1,12 +1,14 @@
 #!/bin/bash
 
+function combine_noah33_plots {
+
 if [ "$#" -lt 3 ]
 then
   echo "ERROR USAGE: $0 <Prefix> <Label 1> <Label 2> ... [Label N]"
   exit 1
 fi
 
-echo "*** Combining plots using ImageMagick ***"
+echo "*** Combining Noah.3.3 plots using ImageMagick ***"
 
 PREFIX="$1"
 typeset LABELLIST=${@:2}
@@ -69,4 +71,29 @@ done
 
 echo ""
 
+}
+
+if [ "$#" -ne 2 ]
+then
+  echo "ERROR USAGE: $0 <Domain List> <Time List>"
+  exit 1
+fi
+
+dlist=$1
+tlist=$2
+
+for domain in $dlist; do
+flist=""
+plist=""
+for time in $tlist; do
+ flist+=" LIS_HIST_$time.$domain.nc"
+ plist+=" plot_$time.$domain"
+done
+ferret -gif -script ferret_Noah.3.3.jnl $flist
+combine_noah33_plots seq_plot.$domain $plist
+done
+
+tar -czf seq_plots.tar.gz seq_plot*.gif
+
 exit
+

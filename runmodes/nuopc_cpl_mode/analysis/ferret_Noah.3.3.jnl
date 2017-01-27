@@ -7,6 +7,9 @@
 
 CANCEL MODE LOGO
 
+SAY *** Generating Noah.3.3 SHADE plots ***
+SAY 
+
 ! Load dataset 1 and compute output file label
 USE $1
 SET VARIABLE/TITLE="Longitude" lon[d=1]
@@ -83,6 +86,8 @@ LET fmaxoutlr = { 200000, 350, 60, 600, 60, 0.1000, 999, 0.025 }
 SAY
 SAY *** Plotting single level forcing variables ***
 REPEAT/RANGE=1:($argc)/NAME=dctr ( \
+DEFINE SYMBOL dindex `dctr`; \
+SAY Dataset = ($dindex); \
 REPEAT/RANGE=1:`fnames,return=isize`/NAME=vctr ( \
 DEFINE SYMBOL vindex `vctr`; \
 DEFINE SYMBOL dindex `dctr`; \
@@ -136,6 +141,8 @@ LET omaxoutlr = { 0.99, 999, 1.00,999.00, 350, 500, 500 }
 SAY
 SAY *** Plotting single level output variables ***
 REPEAT/RANGE=1:($argc)/NAME=dctr ( \
+DEFINE SYMBOL dindex `dctr`; \
+SAY Dataset = ($dindex); \
 REPEAT/RANGE=1:`onames,return=isize`/NAME=vctr ( \
 DEFINE SYMBOL vindex `vctr`; \
 DEFINE SYMBOL dindex `dctr`; \
@@ -181,6 +188,8 @@ LET omaxoutlrml = { 1.000, 1.00, 350 }
 SAY
 SAY *** Plotting multi level output variables ***
 REPEAT/RANGE=1:($argc)/NAME=dctr ( \
+DEFINE SYMBOL dindex `dctr`; \
+SAY Dataset = ($dindex); \
 REPEAT/RANGE=1:`onamesml,return=isize`/NAME=vctr ( \
 DEFINE SYMBOL vindex `vctr`; \
 DEFINE SYMBOL vtitle `otitlesml[i=($vindex)]`; \
