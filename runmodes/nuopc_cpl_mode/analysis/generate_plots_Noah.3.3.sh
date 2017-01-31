@@ -1,5 +1,21 @@
 #!/bin/bash
 
+# usage function
+function usage {
+  echo "" 2>&1
+  echo "------------------------------------------------------------------" 2>&1
+  echo "Usage: $myname [options]" 2>&1
+  echo "" 2>&1
+  echo "Options:" 2>&1
+  echo "  -h   : help - print usage and exit" 2>&1
+  echo "  -d   : domain list - \"d01,...,dnn\"" 2>&1
+  echo "  -t   : datetime list - \"YYYYMMDDHRMN,...,YYYYMMDDHRMN\"" 2>&1
+  echo "" 2>&1
+  echo "------------------------------------------------------------------" 2>&1
+  echo "" 2>&1
+}
+
+# convert to single image function
 function combine_noah33_plots {
 
 if [ "$#" -lt 3 ]
@@ -15,73 +31,101 @@ typeset LABELLIST=${@:2}
 echo "PREFIX: $PREFIX"
 echo "LABELS: $LABELLIST"
 
-# Combine forcing variable plots
-typeset FNAMELIST=""
-FNAMELIST+="Psurf_f_inst "
-FNAMELIST+="Tair_f_inst "
-FNAMELIST+="EWind_f_inst "
-FNAMELIST+="LWdown_f_inst "
-FNAMELIST+="NWind_f_inst "
-FNAMELIST+="Rainf_f_tavg "
-FNAMELIST+="SWdown_f_inst "
-FNAMELIST+="Qair_f_inst"
+# Combine variable plots
+typeset VARLIST=""
+VARLIST+="forcing_Psurf_f_inst "
+VARLIST+="forcing_Tair_f_inst "
+VARLIST+="forcing_EWind_f_inst "
+VARLIST+="forcing_LWdown_f_inst "
+VARLIST+="forcing_NWind_f_inst "
+VARLIST+="forcing_Rainf_f_tavg "
+VARLIST+="forcing_SWdown_f_inst "
+VARLIST+="forcing_Qair_f_inst "
+VARLIST+="output_Albedo_inst "
+VARLIST+="output_Qg_tavg "
+VARLIST+="output_SnowCover_inst "
+VARLIST+="output_SnowDepth_inst "
+VARLIST+="output_AvgSurfT_tavg "
+VARLIST+="output_Qle_tavg "
+VARLIST+="output_Qh_tavg "
+#VARLIST+="output_effective_mixing_ratio "
+VARLIST+="output_SmLiqFrac_inst_Lv1 "
+VARLIST+="output_SmLiqFrac_inst_Lv2 "
+VARLIST+="output_SmLiqFrac_inst_Lv3 "
+VARLIST+="output_SmLiqFrac_inst_Lv4 "
+VARLIST+="output_SoilMoist_inst_Lv1 "
+VARLIST+="output_SoilMoist_inst_Lv2 "
+VARLIST+="output_SoilMoist_inst_Lv3 "
+VARLIST+="output_SoilMoist_inst_Lv4 "
+VARLIST+="output_SoilTemp_inst_Lv1 "
+VARLIST+="output_SoilTemp_inst_Lv2 "
+VARLIST+="output_SoilTemp_inst_Lv3 "
+VARLIST+="output_SoilTemp_inst_Lv4"
 
-echo "FORCING VARIABLE NAMES: $FNAMELIST"
+echo "FORCING and OUTPUT variable file list:"
+echo "$VARLIST"
 
-for VARNAME in $FNAMELIST; do
-typeset FILELIST=""
-for LABEL in $LABELLIST; do
-  FILELIST+=$LABEL"_forcing_"$VARNAME".gif "
-done
-convert $FILELIST +append $PREFIX"_forcing_"$VARNAME.gif
-done
-
-# Combine output variable plots
-typeset ONAMELIST=""
-ONAMELIST+="Albedo_inst "
-ONAMELIST+="Qg_tavg "
-ONAMELIST+="SnowCover_inst "
-ONAMELIST+="SnowDepth_inst "
-ONAMELIST+="AvgSurfT_tavg "
-ONAMELIST+="Qle_tavg "
-ONAMELIST+="Qh_tavg "
-#ONAMELIST+="effective_mixing_ratio "
-ONAMELIST+="SmLiqFrac_inst_Lv1 "
-ONAMELIST+="SmLiqFrac_inst_Lv2 "
-ONAMELIST+="SmLiqFrac_inst_Lv3 "
-ONAMELIST+="SmLiqFrac_inst_Lv4 "
-ONAMELIST+="SoilMoist_inst_Lv1 "
-ONAMELIST+="SoilMoist_inst_Lv2 "
-ONAMELIST+="SoilMoist_inst_Lv3 "
-ONAMELIST+="SoilMoist_inst_Lv4 "
-ONAMELIST+="SoilTemp_inst_Lv1 "
-ONAMELIST+="SoilTemp_inst_Lv2 "
-ONAMELIST+="SoilTemp_inst_Lv3 "
-ONAMELIST+="SoilTemp_inst_Lv4"
-
-echo "OUTPUT VARIABLE NAMES: $ONAMELIST"
-
-for VARNAME in $ONAMELIST; do
-typeset FILELIST=""
-for LABEL in $LABELLIST; do
-  FILELIST+=$LABEL"_output_"$VARNAME".gif "
-done
-convert $FILELIST +append $PREFIX"_output_"$VARNAME.gif
+for VARNAME in $VARLIST; do
+  typeset FILELIST=""
+  for LABEL in $LABELLIST; do
+    FILELIST+=$LABEL"_"$VARNAME".gif "
+  done
+  convert $FILELIST +append $PREFIX"_"$VARNAME.gif
 done
 
 echo ""
 
 }
 
-if [ "$#" -ne 2 ]
-then
-  echo "ERROR USAGE: $0 <Domain List> <Time List>"
+myname=$(basename $0) #name of this script
+fscript=ferret_Noah.3.3.jnl
+
+ferret -version >/dev/null 2>&1 || \
+  { echo "ERROR: Please load module ferret"; exit 1; }
+
+if [ ! -e $fscript ]; then
+  echo "ERROR: Ferret script file not found. [$fscript]"
   exit 1
 fi
 
-dlist=$1
-tlist=$2
+# Generate default domain and datetime lists
+flist=`find . -name "LIS_HIST_*\.d*\.nc"`
+if [ "$flist" == "" ]; then
+  echo "ERROR: No LIS_HIST files found."
+  exit 1
+fi
+flist=${flist//.\/LIS_HIST_/}
+flist=${flist//.nc/}
+dlist=""
+maxtime="000000000000"
+mintime="999912312359"
+for item in $flist; do
+ dlist+=${item/*./}" "
+ if [ ${item/.*/} -gt $maxtime ]; then 
+   maxtime=${item/.*/}; fi
+ if [ ${item/.*/} -lt $mintime ]; then 
+   mintime=${item/.*/}; fi
+done
+dlist=$(echo $dlist | tr ' ' '\n' | sort -u)
+tlist=$mintime" "$maxtime
 
+# Parse options
+while getopts "hd:t:" opt
+do
+  case $opt in
+    h ) usage ; exit 0 ;;
+    d ) dlist=$OPTARG ;;
+    t ) tlist=$OPTARG ;;
+    \?) usage ; exit 1 ;;
+  esac
+done
+shift $(($OPTIND - 1))
+
+# Replace commas with spaces
+dlist=${dlist//,/ }
+tlist=${tlist//,/ }
+
+# Generate plots then combine plots from same domains
 for domain in $dlist; do
 flist=""
 plist=""
@@ -89,10 +133,11 @@ for time in $tlist; do
  flist+=" LIS_HIST_$time.$domain.nc"
  plist+=" plot_$time.$domain"
 done
-ferret -gif -script ferret_Noah.3.3.jnl $flist
+ferret -gif -script $fscript $flist
 combine_noah33_plots seq_plot.$domain $plist
 done
 
+# Create archive
 tar -czf seq_plots.tar.gz seq_plot*.gif
 
 exit
