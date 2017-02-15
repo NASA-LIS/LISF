@@ -40,6 +40,7 @@ module LIS_NUOPC
   public SetServices
 
   CHARACTER(LEN=*), PARAMETER :: label_InternalState = 'InternalState'
+  INTEGER, PARAMETER :: MAXNEST = 999999999
 
   type type_InternalStateStruct
     integer               :: verbosity     = VERBOSITY_LV2
@@ -53,9 +54,11 @@ module LIS_NUOPC
     integer               :: nnests        = 0
     integer               :: nfields       = size(LIS_FieldList)
     integer               :: timeSlice     = 0
+    type(ESMF_TimeInterval)             :: rstrtIntvl
+    type(ESMF_TimeInterval)             :: rstrtAccum
     type(ESMF_Grid),allocatable         :: grids(:)
     type(ESMF_Clock),allocatable        :: clocks(:)
-    type(ESMF_TimeInterval),allocatable :: elapsedtimes(:)
+    type(ESMF_TimeInterval),allocatable :: stepAccum(:)
     type(ESMF_State),allocatable        :: NStateImp(:)
     type(ESMF_State),allocatable        :: NStateExp(:)
     integer,allocatable                 :: modes(:)
@@ -148,6 +151,7 @@ module LIS_NUOPC
     type(ESMF_Config)          :: config
     type(type_InternalState)   :: is
     character(len=10)          :: value
+    integer                    :: rstrtIntvl
 
     rc = ESMF_SUCCESS
 
@@ -160,7 +164,16 @@ module LIS_NUOPC
     call ESMF_UserCompGetInternalState(gcomp, label_InternalState, is, rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
-    ! Determine Verbosity
+    ! Restart Interval
+    call ESMF_AttributeGet(gcomp, name="RestartInterval", value=value, defaultValue="none", &
+      convention="NUOPC", purpose="Instance", rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    rstrtIntvl = ESMF_UtilString2Int(value, &
+      specialStringList=(/"none","hourly","daily"/), &
+      specialValueList=(/HUGE(rstrtIntvl),3600,86400/), rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
+    ! Verbosity
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, defaultValue="default", &
       convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
@@ -219,8 +232,16 @@ module LIS_NUOPC
       call ESMF_GridCompGet(gcomp, config=config, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
+      call ESMF_ConfigGetAttribute(config, rstrtIntvl, &
+        label=TRIM(cname)//"_restart_interval:", default=rstrtIntvl, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
       call ESMF_ConfigGetAttribute(config, is%wrap%verbosity, &
         label=TRIM(cname)//"_verbosity:", default=is%wrap%verbosity, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
+      call ESMF_ConfigGetAttribute(config, is%wrap%configFile, &
+        label=TRIM(cname)//"_config_file:", default=is%wrap%configFile, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
       call ESMF_ConfigGetAttribute(config, is%wrap%lwrite_grid, &
@@ -248,6 +269,11 @@ module LIS_NUOPC
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     endif
     
+    ! Convert restart inteval to ESMF_TimeInterval
+    call ESMF_TimeIntervalSet(is%wrap%rstrtIntvl, &
+      s=rstrtIntvl, rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
     ! Switch to IPDv03 by filtering all other phaseMap entries
     call NUOPC_CompFilterPhaseMap(gcomp, ESMF_METHOD_INITIALIZE, &
       acceptStringList=(/"IPDv03p"/), rc=rc)
@@ -278,7 +304,7 @@ module LIS_NUOPC
     integer                    :: stat
     integer                    :: fIndex
     integer                    :: nIndex
-    character(len=10)          :: nStr
+    character(len=9)           :: nStr
 
     rc = ESMF_SUCCESS
 
@@ -312,10 +338,18 @@ module LIS_NUOPC
     is%wrap%nnests = LIS_NestCntGet(rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
+    ! Max nest check
+    if ( nIndex > MAXNEST ) then
+      call ESMF_LogSetError(ESMF_FAILURE, &
+        msg="Maximum nest size is 999,999,999.", &
+        line=__LINE__,file=__FILE__,rcToReturn=rc)
+      return  ! bail out
+    endif
+
     allocate( &
       is%wrap%grids(is%wrap%nnests), &
       is%wrap%clocks(is%wrap%nnests), &
-      is%wrap%elapsedtimes(is%wrap%nnests), &
+      is%wrap%stepAccum(is%wrap%nnests), &
       is%wrap%NStateImp(is%wrap%nnests), &
       is%wrap%NStateExp(is%wrap%nnests), &
       is%wrap%modes(is%wrap%nnests), &
@@ -345,12 +379,6 @@ module LIS_NUOPC
     endif
 
     do nIndex = 2, is%wrap%nnests
-      if (nIndex > 999999999) then
-        call ESMF_LogSetError(ESMF_FAILURE, &
-          msg="Maximum nest size is 999,999,999.", &
-          line=__LINE__,file=__FILE__,rcToReturn=rc)
-        return  ! bail out
-      endif
       write (nStr,"(I0)") nIndex
       call beta_NUOPC_AddNamespace(importState, &
         domain=trim(nStr), &
@@ -428,13 +456,6 @@ module LIS_NUOPC
       call ESMF_LogWrite(trim(cname)//': entered '//METHOD, ESMF_LOGMSG_INFO)
 
     do nIndex = 1, is%wrap%nnests
-      ! Nest integer to string
-      if ( nIndex > 999999999) then
-        call ESMF_LogSetError(ESMF_FAILURE, &
-          msg="Maximum nest size is 999,999,999.", &
-          line=__LINE__,file=__FILE__,rcToReturn=rc)
-        return  ! bail out
-      endif
       write (nStr,"(I0)") nIndex
 
       ! Call gluecode to create grid.
@@ -458,7 +479,7 @@ module LIS_NUOPC
 !              field = LIS_FieldList(fIndex)%hookup(nIndex)%importField
 !            else
               field = ESMF_FieldCreate(name=LIS_FieldList(fIndex)%stateName, &
-                grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_R4, rc=rc)
+                grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_RX, rc=rc)
               if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 !            endif
             call NUOPC_Realize(is%wrap%NStateImp(nIndex), field=field, rc=rc)
@@ -484,7 +505,7 @@ module LIS_NUOPC
 !              if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 !            else
               field = ESMF_FieldCreate(name=LIS_FieldList(fIndex)%stateName, &
-                grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_R4, rc=rc)
+                grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_RX, rc=rc)
               if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 !            endif
             call NUOPC_Realize(is%wrap%NStateExp(nIndex), field=field,rc=rc)
@@ -529,7 +550,7 @@ module LIS_NUOPC
     type(type_InternalState)               :: is
     type(ESMF_Clock)                       :: modelClock
     integer                                :: nIndex
-    character(len=10)                      :: nStr
+    character(len=9)                       :: nStr
     integer                                :: iIndex
     integer                                :: itemCount
     character(len=64),allocatable          :: itemNameList(:)
@@ -558,12 +579,7 @@ module LIS_NUOPC
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     do nIndex=1,is%wrap%nnests
-      ! Nest integer to string
-      if (nIndex > 999999999) then
-        nStr = '999999999+'
-      else
-        write (nStr,"(I0)") nIndex
-      endif
+      write (nStr,"(I0)") nIndex
 
       ! Initialize import and export fields
       call LIS_NUOPC_DataInit(nest=nIndex, &
@@ -591,12 +607,6 @@ module LIS_NUOPC
 
       ! Write initial import fields to file
       if (is%wrap%lwrite_imp) then
-        if ( nIndex > 999999999) then
-          call ESMF_LogSetError(ESMF_FAILURE, &
-            msg="Maximum nest size for writing is 999,999,999.", &
-            line=__LINE__,file=__FILE__,rcToReturn=rc)
-         return  ! bail out
-        endif
         call beta_NUOPC_Write(is%wrap%NStateImp(nIndex), &
           fileNamePrefix="field_"//trim(cname)//"_import_nest_"//trim(nStr)//"_", &
           singleFile=.false., timeslice=is%wrap%timeSlice, &
@@ -606,12 +616,6 @@ module LIS_NUOPC
 
       ! Write initial export fields to file
       if (is%wrap%lwrite_exp) then
-        if ( nIndex > 999999999) then
-          call ESMF_LogSetError(ESMF_FAILURE, &
-            msg="Maximum nest size for writing is 999,999,999.", &
-            line=__LINE__,file=__FILE__,rcToReturn=rc)
-         return  ! bail out
-        endif
         call beta_NUOPC_Write(is%wrap%NStateExp(nIndex), &
           fileNamePrefix="field_"//trim(cname)//"_export_nest_"//trim(nStr)//"_", &
           singleFile=.false., timeslice=is%wrap%timeSlice, &
@@ -729,10 +733,14 @@ module LIS_NUOPC
 
       if (ndt < mindt) mindt = ndt
 
-      call ESMF_TimeIntervalSet(is%wrap%elapsedtimes(nIndex), &
+      call ESMF_TimeIntervalSet(is%wrap%stepAccum(nIndex), &
         s_r8=0._ESMF_KIND_R8, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     enddo
+
+    call ESMF_TimeIntervalSet(is%wrap%rstrtAccum, &
+      s_r8=0._ESMF_KIND_R8, rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     call ESMF_TimeIntervalSet(modelTimestep, &
       s_r8=mindt, rc=rc)
@@ -760,7 +768,7 @@ subroutine CheckImport(gcomp, rc)
     character(ESMF_MAXSTR)      :: cname
     type(type_InternalState)    :: is
     integer                     :: nIndex
-    character(len=10)           :: nStr
+    character(len=9)            :: nStr
     character(len=10)           :: sStr
     type(ESMF_Clock)            :: modelClock
     type(ESMF_Time)             :: modelCurrTime
@@ -792,12 +800,8 @@ subroutine CheckImport(gcomp, rc)
 
     ! check that Fields in the importState show correct timestamp
     do nIndex=1,is%wrap%nnests
-      ! Nest integer to string
-      if (nIndex > 999999999) then
-        nStr = '999999999+'
-      else
-        write (nStr,"(I0)") nIndex
-      endif
+      write (nStr,"(I0)") nIndex
+
       allCurrTime = NUOPC_IsAtTime(is%wrap%NStateImp(nIndex), modelCurrTime, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       allStopTime = NUOPC_IsAtTime(is%wrap%NStateImp(nIndex), modelStopTime, rc=rc)
@@ -828,13 +832,15 @@ subroutine CheckImport(gcomp, rc)
     character(ESMF_MAXSTR)      :: cname
     type(type_InternalState)    :: is
     integer                     :: nIndex
-    character(len=10)           :: nStr
+    character(len=9)            :: nStr
     character(len=10)           :: sStr
     type(ESMF_Clock)            :: modelClock
     type(ESMF_State)            :: importState, exportState
     type(ESMF_Time)             :: modelCurrTime
+    type(ESMF_Time)             :: modelStopTime
     type(ESMF_TimeInterval)     :: modelTimeStep
     type(ESMF_TimeInterval)     :: nestTimeStep
+    character(len=64)           :: modelStopTimeStr
 
     rc = ESMF_SUCCESS
 
@@ -851,14 +857,30 @@ subroutine CheckImport(gcomp, rc)
       call ESMF_LogWrite(trim(cname)//': entered '//METHOD, ESMF_LOGMSG_INFO)
 
     is%wrap%timeSlice = is%wrap%timeSlice + 1
+    if (is%wrap%timeSlice > 999999999) then
+      sStr = '999999999+'
+    else
+      write (sStr,"(I0)") is%wrap%timeSlice
+    endif
 
     ! query the Component for its clock, importState and exportState
-    call NUOPC_ModelGet(gcomp, modelClock=modelClock, importState=importState, &
-      exportState=exportState, rc=rc)
+    call NUOPC_ModelGet(gcomp, &
+      modelClock=modelClock, &
+      importState=importState, &
+      exportState=exportState, &
+      rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
-    call ESMF_ClockGet(modelClock, currTime=modelCurrTime, &
-      timeStep=modelTimeStep, rc=rc)
+    call ESMF_ClockGet(modelClock, &
+      currTime=modelCurrTime, &
+      stopTime=modelStopTime, &
+      timeStep=modelTimeStep, &
+      rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
+    call ESMF_TimeGet(modelStopTime, &
+      timeString=modelStopTimeStr, &
+      rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! HERE THE MODEL ADVANCES: currTime -> currTime + timeStep
@@ -870,19 +892,8 @@ subroutine CheckImport(gcomp, rc)
     ! will come in by one internal timeStep advanced. This goes until the
     ! stopTime of the internal Clock has been reached.
     
-    if (is%wrap%timeSlice > 999999999) then
-      sStr = '999999999+'
-    else
-      write (sStr,"(I0)") is%wrap%timeSlice
-    endif
-
     do nIndex=1,is%wrap%nnests
-      ! Nest integer to string
-      if (nIndex > 999999999) then
-        nStr = '999999999+'
-      else
-        write (nStr,"(I0)") nIndex
-      endif
+      write (nStr,"(I0)") nIndex
 
       ! Fill import fields with test data
       if (is%wrap%ltestfill_imp) then
@@ -895,12 +906,6 @@ subroutine CheckImport(gcomp, rc)
 
       ! Write import fields to file
       if (is%wrap%lwrite_imp) then
-        if ( nIndex > 999999999) then
-          call ESMF_LogSetError(ESMF_FAILURE, &
-            msg="Maximum nest size for writing is 999,999,999.", &
-            line=__LINE__,file=__FILE__,rcToReturn=rc)
-         return  ! bail out
-        endif
         call beta_NUOPC_Write(is%wrap%NStateImp(nIndex), &
           fileNamePrefix="field_"//trim(cname)//"_import_nest_"//trim(nStr)//"_", &
           singleFile=.false., timeslice=is%wrap%timeSlice, &
@@ -915,12 +920,12 @@ subroutine CheckImport(gcomp, rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       endif
 
-      is%wrap%elapsedtimes(nIndex) = is%wrap%elapsedtimes(nIndex) + modelTimeStep
+      is%wrap%stepAccum(nIndex) = is%wrap%stepAccum(nIndex) + modelTimeStep
 
       call ESMF_ClockGet(is%wrap%clocks(nIndex),timeStep=nestTimestep,rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       
-      do while (is%wrap%elapsedtimes(nIndex) >= nestTimestep)
+      do while (is%wrap%stepAccum(nIndex) >= nestTimestep)
         ! Gluecode NestAdvance
         call ESMF_LogWrite( &
           trim(cname)//': '//METHOD//' Advancing Slice='//trim(sStr)//' Nest='//trim(nStr), &
@@ -931,8 +936,8 @@ subroutine CheckImport(gcomp, rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
         call ESMF_ClockAdvance(is%wrap%clocks(nIndex),rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-        is%wrap%elapsedtimes(nIndex) = &
-          is%wrap%elapsedtimes(nIndex) - nestTimestep
+        is%wrap%stepAccum(nIndex) = &
+          is%wrap%stepAccum(nIndex) - nestTimestep
       enddo
 
       ! Fill export fields with test data
@@ -946,26 +951,39 @@ subroutine CheckImport(gcomp, rc)
 
       ! Write export fields to file
       if (is%wrap%lwrite_exp) then
-        if ( nIndex > 999999999) then
-          call ESMF_LogSetError(ESMF_FAILURE, &
-            msg="Maximum nest size for writing is 999,999,999.", &
-            line=__LINE__,file=__FILE__,rcToReturn=rc)
-         return  ! bail out
-        endif
         call beta_NUOPC_Write(is%wrap%NStateExp(nIndex), &
           fileNamePrefix="field_"//trim(cname)//"_export_nest_"//trim(nStr)//"_", &
           singleFile=.false., timeslice=is%wrap%timeSlice, &
           relaxedFlag=.true., rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       endif
-
-      if (is%wrap%verbosity >= VERBOSITY_LV2) then
-        call NUOPC_LogState(is%wrap%NStateExp(nIndex), &
-          label=trim(cname)//": ExportState Slice="//trim(sStr)//" Nest="//trim(nStr), &
-          fvalues=.TRUE.,rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-      endif
     enddo
+
+    ! Write restart files
+    is%wrap%rstrtAccum = is%wrap%rstrtAccum + modelTimeStep
+    if (is%wrap%rstrtAccum >= is%wrap%rstrtIntvl) then
+      do nIndex=1,is%wrap%nnests
+        write (nStr,"(I0)") nIndex
+        call beta_NUOPC_Write(is%wrap%NStateImp(nIndex), &
+          fileNamePrefix=trim(cname)//"_RSTRT_"//trim(modelStopTimeStr)//"_D"//trim(nStr), &
+          singleFile=.true., &
+          overwrite=.true., &
+          relaxedFlag=.true., &
+          rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        call beta_NUOPC_Write(is%wrap%NStateExp(nIndex), &
+          fileNamePrefix=trim(cname)//"_RSTRT_"//trim(modelStopTimeStr)//"_D"//trim(nStr), &
+          singleFile=.true., &
+          overwrite=.true., &
+          relaxedFlag=.true., &
+          rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      enddo
+
+      call ESMF_TimeIntervalSet(is%wrap%rstrtAccum, &
+        s_r8=0._ESMF_KIND_R8, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    endif
 
     if (is%wrap%verbosity >= VERBOSITY_LV3) call LIS_FieldListLog(trim(cname))
     if (is%wrap%verbosity >= VERBOSITY_LV2) &
@@ -1151,6 +1169,7 @@ subroutine CheckImport(gcomp, rc)
     type(type_InternalState)   :: is
     integer                    :: nIndex
     character(ESMF_MAXSTR)     :: logMsg
+    character(len=64)          :: rstrtIntvlStr
     character(len=64)          :: nModeStr
     integer                    :: rc
 
@@ -1163,6 +1182,13 @@ subroutine CheckImport(gcomp, rc)
       return  ! bail out
     endif
 
+    call ESMF_TimeIntervalGet(is%wrap%rstrtIntvl, &
+      timeString=rstrtIntvlStr,rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
+    write (logMsg, "(A,(A,A))") trim(label), &
+      ": Restart Interval=",trim(rstrtIntvlStr)
+    call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
     write (logMsg, "(A,(A,I0))") trim(label), &
       ': Verbosity=',is%wrap%verbosity
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
