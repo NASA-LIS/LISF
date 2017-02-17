@@ -479,7 +479,7 @@ module LIS_NUOPC
 !              field = LIS_FieldList(fIndex)%hookup(nIndex)%importField
 !            else
               field = ESMF_FieldCreate(name=LIS_FieldList(fIndex)%stateName, &
-                grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_RX, rc=rc)
+                grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_R4, rc=rc)
               if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 !            endif
             call NUOPC_Realize(is%wrap%NStateImp(nIndex), field=field, rc=rc)
@@ -505,7 +505,7 @@ module LIS_NUOPC
 !              if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 !            else
               field = ESMF_FieldCreate(name=LIS_FieldList(fIndex)%stateName, &
-                grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_RX, rc=rc)
+                grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_R4, rc=rc)
               if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 !            endif
             call NUOPC_Realize(is%wrap%NStateExp(nIndex), field=field,rc=rc)

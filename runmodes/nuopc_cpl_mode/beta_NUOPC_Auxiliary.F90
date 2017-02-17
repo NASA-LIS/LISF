@@ -259,6 +259,7 @@ contains
     ! local variables
     integer                         :: i, itemCount
     logical                         :: lsinglefile
+    logical                         :: writeflag
     type(ESMF_Field)                :: field
     type(ESMF_Array)                :: array
     type(ESMF_ArrayBundle)          :: arraybundle
@@ -266,7 +267,6 @@ contains
     character(len=80)               :: fileName
     character(len=80)               :: stateName
     character(len=80), allocatable  :: fieldNameList_loc(:)
-    character(ESMF_MAXSTR)          :: msg
 
     if (present(rc)) rc = ESMF_SUCCESS
 
@@ -305,6 +305,8 @@ contains
         file=FILENAME)) &
         return  ! bail out
 
+      ! Reset writeflag so that empty state is not written to file.
+      writeflag = .FALSE.
       do i=1, size(fieldNameList_loc)
         call ESMF_StateGet(state, itemName=fieldNameList_loc(i), &
           itemType=itemType, rc=rc)
@@ -314,6 +316,7 @@ contains
           return  ! bail out
         if (itemType == ESMF_STATEITEM_FIELD) then
           ! field is available in the state
+          writeflag = .TRUE.
           call ESMF_StateGet(state, itemName=fieldNameList_loc(i), field=field, &
             rc=rc)
           if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
@@ -330,25 +333,26 @@ contains
         endif
       enddo
 
-      ! -> output to file
-      if (present(fileNamePrefix)) then
-        write (fileName,"(A)") trim(fileNamePrefix)//".nc"
-      else
-        write (fileName,"(A)") trim(stateName)//".nc"
+      if (writeflag) then
+        ! -> output to file
+        if (present(fileNamePrefix)) then
+          write (fileName,"(A)") trim(fileNamePrefix)//".nc"
+        else
+          write (fileName,"(A)") trim(stateName)//".nc"
+        endif
+
+        call ESMF_ArrayBundleWrite(arraybundle, fileName=trim(fileName), &
+          singleFile=lsingleFile, overwrite=overwrite, status=status, &
+          timeslice=timeslice, iofmt=iofmt, rc=rc)
+        if (ESMF_LogFoundError(rcToCheck=rc, msg="Failed writing file: "// &
+          trim(fileName), &
+          line=__LINE__, &
+          file=FILENAME)) &
+          return  ! bail out
+        call ESMF_ArrayBundleDestroy(arraybundle,rc=rc)
+        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=FILENAME)) return  ! bail out
       endif
-      write (msg,"(A,A,A,I0)") "Writing ",trim(fileName)," Timeslice=",timeslice
-      call ESMF_LogWrite(trim(msg),ESMF_LOGMSG_INFO)
-      call ESMF_ArrayBundleWrite(arraybundle, fileName=trim(fileName), &
-        singleFile=lsingleFile, overwrite=overwrite, status=status, &
-        timeslice=timeslice, iofmt=iofmt, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, msg="Failed writing file: "// &
-        trim(fileName), &
-        line=__LINE__, &
-        file=FILENAME)) &
-        return  ! bail out
-      call ESMF_ArrayBundleDestroy(arraybundle,rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-        line=__LINE__, file=FILENAME)) return  ! bail out
     else
       do i=1, size(fieldNameList_loc)
         call ESMF_StateGet(state, itemName=fieldNameList_loc(i), &
