@@ -45,6 +45,7 @@ module LIS_NUOPC
   type type_InternalStateStruct
     integer               :: verbosity     = VERBOSITY_LV2
     character(len=100)    :: configFile    = 'lis.config'
+    logical               :: realizeAllExport = .FALSE.
     logical               :: lwrite_grid   = .FALSE.
     logical               :: lwrite_imp    = .FALSE.
     logical               :: lwrite_exp    = .FALSE.
@@ -164,6 +165,12 @@ module LIS_NUOPC
     call ESMF_UserCompGetInternalState(gcomp, label_InternalState, is, rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
+    ! Realize all export fields
+    call ESMF_AttributeGet(gcomp, name="RealizeAllExport", value=value, defaultValue="false", &
+      convention="NUOPC", purpose="Instance", rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    is%wrap%realizeAllExport = (trim(value)=="true")
+
     ! Restart Interval
     call ESMF_AttributeGet(gcomp, name="RestartInterval", value=value, defaultValue="none", &
       convention="NUOPC", purpose="Instance", rc=rc)
@@ -182,7 +189,7 @@ module LIS_NUOPC
       specialValueList=(/VERBOSITY_LV0,VERBOSITY_LV2,VERBOSITY_LV3,VERBOSITY_LV2/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
-    ! Write coupled grid files
+    ! Set configuration file name
     call ESMF_AttributeGet(gcomp, name="ConfigFile", value=is%wrap%configFile, &
       defaultValue="lis.config", &
       convention="NUOPC", purpose="Instance", rc=rc)
@@ -232,40 +239,45 @@ module LIS_NUOPC
       call ESMF_GridCompGet(gcomp, config=config, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
+      call ESMF_ConfigGetAttribute(config, is%wrap%realizeAllExport, &
+        label=TRIM(cname)//"_realize_all_export:", &
+        default=is%wrap%realizeAllExport, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       call ESMF_ConfigGetAttribute(config, rstrtIntvl, &
-        label=TRIM(cname)//"_restart_interval:", default=rstrtIntvl, rc=rc)
+        label=TRIM(cname)//"_restart_interval:", &
+        default=rstrtIntvl, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
       call ESMF_ConfigGetAttribute(config, is%wrap%verbosity, &
-        label=TRIM(cname)//"_verbosity:", default=is%wrap%verbosity, rc=rc)
+        label=TRIM(cname)//"_verbosity:", &
+        default=is%wrap%verbosity, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
       call ESMF_ConfigGetAttribute(config, is%wrap%configFile, &
-        label=TRIM(cname)//"_config_file:", default=is%wrap%configFile, rc=rc)
+        label=TRIM(cname)//"_config_file:", &
+        default=is%wrap%configFile, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
       call ESMF_ConfigGetAttribute(config, is%wrap%lwrite_grid, &
-        label=TRIM(cname)//"_write_grid:", default=is%wrap%lwrite_grid, rc=rc)
+        label=TRIM(cname)//"_write_grid:", &
+        default=is%wrap%lwrite_grid, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
       call ESMF_ConfigGetAttribute(config, is%wrap%lwrite_imp, &
-        label=TRIM(cname)//"_write_imp:", default=is%wrap%lwrite_imp, rc=rc)
+        label=TRIM(cname)//"_write_imp:", &
+        default=is%wrap%lwrite_imp, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
       call ESMF_ConfigGetAttribute(config, is%wrap%lwrite_exp, &
-        label=TRIM(cname)//"_write_exp:", default=is%wrap%lwrite_exp, rc=rc)
+        label=TRIM(cname)//"_write_exp:", &
+        default=is%wrap%lwrite_exp, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
       call ESMF_ConfigGetAttribute(config, is%wrap%llog_memory, &
-        label=TRIM(cname)//"_log_memory:", default=is%wrap%llog_memory, rc=rc)
+        label=TRIM(cname)//"_log_memory:", &
+        default=is%wrap%llog_memory, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
       call ESMF_ConfigGetAttribute(config, is%wrap%ltestfill_imp, &
-        label=TRIM(cname)//"_testfill_imp:", default=is%wrap%ltestfill_imp, rc=rc)
+        label=TRIM(cname)//"_testfill_imp:", &
+        default=is%wrap%ltestfill_imp, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
       call ESMF_ConfigGetAttribute(config, is%wrap%ltestfill_exp, &
-        label=TRIM(cname)//"_testfill_exp:", default=is%wrap%ltestfill_exp, rc=rc)
+        label=TRIM(cname)//"_testfill_exp:", &
+        default=is%wrap%ltestfill_exp, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     endif
     
@@ -497,7 +509,7 @@ module LIS_NUOPC
           exConn = NUOPC_IsConnected(is%wrap%NStateExp(nIndex), &
             fieldName=trim(LIS_FieldList(fIndex)%stateName),rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-          if (exConn) then
+          if (exConn .OR. is%wrap%realizeAllExport) then
 !            if (associated(LIS_FieldList(fIndex)%hookup(nIndex)%exportArray)) then
 !              field = ESMF_FieldCreate(name=LIS_FieldList(fIndex)%stateName, &
 !                grid=is%wrap%grids(nIndex), farray=LIS_FieldList(fIndex)%hookup(nIndex)%exportArray, &
@@ -519,9 +531,9 @@ module LIS_NUOPC
         endif
       enddo
   
-      call NUOPC_FillState(is%wrap%NStateImp(nIndex),value=0,rc=rc)
+      call NUOPC_FillState(is%wrap%NStateImp(nIndex),value=MISSINGVALUE,rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
-      call NUOPC_FillState(is%wrap%NStateExp(nIndex),value=0,rc=rc)
+      call NUOPC_FillState(is%wrap%NStateExp(nIndex),value=MISSINGVALUE,rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
 
       is%wrap%modes(nIndex) = LIS_RunModeGet(LIS_FieldList,is%wrap%NStateImp(nIndex),rc=rc)
@@ -1186,6 +1198,9 @@ subroutine CheckImport(gcomp, rc)
       timeString=rstrtIntvlStr,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
+    write (logMsg, "(A,(A,L1))") trim(label), &
+      ': Realze All Exports=',is%wrap%realizeAllExport
+    call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
     write (logMsg, "(A,(A,A))") trim(label), &
       ": Restart Interval=",trim(rstrtIntvlStr)
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)

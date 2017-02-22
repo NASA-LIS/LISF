@@ -1,0 +1,91 @@
+ ! FERRET v6.96 Script
+ ! >ferret -gif -script ferret_LIS_HIST_Noah.3.3_output.jnl [Grid File] [Restart File]
+ ! Author: Daniel Rosen
+ ! Organization: NESII/CIRES/NOAA
+ ! Email: daniel.rosen@noaa.gov
+ ! Date: 2017-02-27
+
+CANCEL MODE LOGO
+
+SAY *** Generating NUOPC restart SHADE plots ***
+SAY 
+
+! Load grid file and compute output file label
+USE $1
+SET VARIABLE/TITLE="Longitude" lon_center[d=1]; \
+SET VARIABLE/TITLE="Latitude" lat_center[d=1]; \
+
+! Load restart file and compute output file label
+USE $2
+DEFINE SYMBOL dname `"$2"`
+DEFINE SYMBOL fnlen `STRLEN("($dname)")`
+DEFINE SYMBOL ext `STRRINDEX("($dname)",".nc")`
+DEFINE SYMBOL rlabel `STRRINDEX("($dname)","_RSTRT_")`
+DEFINE SYMBOL clabel `SUBSTRING("($dname)",1,($rlabel)-1)`
+DEFINE SYMBOL dlabel `SUBSTRING("($dname)",($rlabel)+7,($fnlen)-($rlabel)-9)`
+SAY ($clabel)
+SAY ($dlabel)
+
+! Print datasets
+SHOW DATA/BRIEF
+
+! Define single level variables
+LET fnames = { \
+"psurf_f",     \
+"tair_f",      \
+"ewind_f",     \
+"lwdown_f",    \
+"nwind_f",     \
+"rainf_f",     \
+"swdown_f",    \
+"qair_f"       \
+}
+
+! Define single level variable titles
+LET ftitles = {        \
+"Surface Pressure",    \
+"Surface Temperature", \
+"Eastward Wind",       \
+"Longwave Flux",       \
+"Northward Wind",      \
+"Precipitation Flux",  \
+"Shortwave Flux",      \
+"Specific Humidity"    \
+}
+
+! Define single level forcing variable scales
+LET fminvals  = {  65000, 250,-30, 100,-30, 0.0000,   0, 0.000 }
+LET fmaxvals  = { 105000, 310, 30, 450, 30, 0.0100, 500, 0.025 }
+LET fstepvals = {   1000,   2,  2,  10,  2, 0.0002,  10, 0.001 }
+LET fminoutlr = {  10000, 200,-60,  50,-60, 0.0000,   0, 0.000 }
+LET fmaxoutlr = { 200000, 350, 60, 600, 60, 0.1000, 999, 0.030 }
+
+! Create SHADE plots for single level forcing variables
+SAY
+SAY *** Plotting single level forcing variables ***
+REPEAT/RANGE=1:`fnames,return=isize`/NAME=vctr ( \
+DEFINE SYMBOL vindex `vctr`; \
+DEFINE SYMBOL vtitle `ftitles[i=($vindex)]`  ; \
+DEFINE SYMBOL vname  `fnames[i=($vindex)]`   ; \
+DEFINE SYMBOL vmin   `fminvals[i=($vindex)]` ; \
+DEFINE SYMBOL vmax   `fmaxvals[i=($vindex)]` ; \
+DEFINE SYMBOL vstep  `fstepvals[i=($vindex)]`; \
+DEFINE SYMBOL vmnol  `fminoutlr[i=($vindex)]`; \
+DEFINE SYMBOL vmxol  `fmaxoutlr[i=($vindex)]`; \
+SET VARIABLE/BAD=-9999/TITLE="($vtitle)" ($vname)[d=2]; \
+SAY ($vtitle) (outliers,min,max,outliers)=\
+(($vmnol),($vmin),($vmax),($vmxol)); \
+SHADE/LEVELS="(($vmnol))(($vmin),($vmax),($vstep))(($vmxol))"/\
+KEY=CONTINUOUS/TITLE="NUOPC State Variable ($vtitle)" \
+($vname)[d=2], lon_center[d=1], lat_center[d=1]; \
+FRAME/FILE=plot_($clabel)_($dlabel)_($vname).gif \
+)
+
+! Create compressed tar archive of all .gif files
+SAY
+SAY *** Creating plots.tar.gz archive ***
+SPAWN tar -czf plots.tar.gz *.gif
+
+SAY
+
+exit

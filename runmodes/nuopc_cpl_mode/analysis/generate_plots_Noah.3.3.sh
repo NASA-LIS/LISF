@@ -78,7 +78,7 @@ echo ""
 }
 
 myname=$(basename $0) #name of this script
-fscript=ferret_Noah.3.3.jnl
+fscript=ferret_LIS_HIST.jnl
 
 ferret -version >/dev/null 2>&1 || \
   { echo "ERROR: Please load module ferret"; exit 1; }
