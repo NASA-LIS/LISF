@@ -172,12 +172,12 @@ module LIS_NUOPC
     is%wrap%realizeAllExport = (trim(value)=="true")
 
     ! Restart Interval
-    call ESMF_AttributeGet(gcomp, name="RestartInterval", value=value, defaultValue="none", &
+    call ESMF_AttributeGet(gcomp, name="RestartInterval", value=value, defaultValue="default", &
       convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     rstrtIntvl = ESMF_UtilString2Int(value, &
-      specialStringList=(/"none","hourly","daily"/), &
-      specialValueList=(/HUGE(rstrtIntvl),3600,86400/), rc=rc)
+      specialStringList=(/"default","yearly","hourly","daily"/), &
+      specialValueList=(/31536000,31536000,3600,86400/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! Verbosity
@@ -1181,7 +1181,7 @@ subroutine CheckImport(gcomp, rc)
     type(type_InternalState)   :: is
     integer                    :: nIndex
     character(ESMF_MAXSTR)     :: logMsg
-    character(len=64)          :: rstrtIntvlStr
+    integer                    :: rstrtIntvl
     character(len=64)          :: nModeStr
     integer                    :: rc
 
@@ -1195,14 +1195,14 @@ subroutine CheckImport(gcomp, rc)
     endif
 
     call ESMF_TimeIntervalGet(is%wrap%rstrtIntvl, &
-      timeString=rstrtIntvlStr,rc=rc)
+      s=rstrtIntvl, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     write (logMsg, "(A,(A,L1))") trim(label), &
       ': Realze All Exports=',is%wrap%realizeAllExport
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
-    write (logMsg, "(A,(A,A))") trim(label), &
-      ": Restart Interval=",trim(rstrtIntvlStr)
+    write (logMsg, "(A,(A,I0))") trim(label), &
+      ": Restart Interval=",rstrtIntvl
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
     write (logMsg, "(A,(A,I0))") trim(label), &
       ': Verbosity=',is%wrap%verbosity

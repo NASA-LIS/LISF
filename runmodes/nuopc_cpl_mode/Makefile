@@ -37,6 +37,19 @@ LIS_OBJDIR=make
 LIS_MKDIR=make
 
 include $(LIS_DIR)/$(LIS_MKDIR)/configure.lis
+ifndef GRIB_API_LIB
+$(error Variable GRIB_API_LIB was not set.)
+endif
+ifndef GRIB_API_LIBF90
+$(error Variable GRIB_API_LIBF90 was not set.)
+endif
+ifndef JASPER_LIB
+$(error Variable JASPER_LIB was not set.)
+endif
+
+EXT_DEP_LINK_OBJS=$(GRIB_API_LIB) \
+	$(GRIB_API_LIBF90) \
+	$(JASPER_LIB)
 
 LIS_LIB=libLIS.a
 LIS_MODS=lis_coremod.mod \
@@ -123,9 +136,9 @@ LIS_F90COMPILEPATHS=-I$(LIS_DIR)/$(LIS_MODDIR)
 	@echo "ESMF_DEP_FRONT     = $(LISNUOPC_DEP_FRONT)"                  >> $@
 	@echo "ESMF_DEP_INCPATH   = $(LISNUOPC_DIR)"                  >> $@
 	@echo "ESMF_DEP_CMPL_OBJS = $(LISNUOPC_DIR)/$(LISNUOPC_LIB)" >> $@
-	@echo "ESMF_DEP_LINK_OBJS = $(LISNUOPC_DIR)/$(LISNUOPC_LIB)" >> $@
-	@echo "ESMF_DEP_SHRD_PATH = $(LIB_GRIBAPI) $(LIB_JASPER)" >> $@
-	@echo "ESMF_DEP_SHRD_LIBS = grib_api_f90 grib_api jasper" >> $@
+	@echo "ESMF_DEP_LINK_OBJS = $(LISNUOPC_DIR)/$(LISNUOPC_LIB) $(EXT_DEP_LINK_OBJS)" >> $@
+	@echo "ESMF_DEP_SHRD_PATH = " >> $@
+	@echo "ESMF_DEP_SHRD_LIBS = " >> $@
 
 # #####################
 # Build NUOPC Component
@@ -252,9 +265,9 @@ install:
 	@echo "ESMF_DEP_FRONT     = $(LISNUOPC_DEP_FRONT)" >> $(DESTDIR)/$(INSTDIR)/$(LISNUOPC_MK)
 	@echo "ESMF_DEP_INCPATH   = $(DESTDIR)/$(INSTDIR)" >> $(DESTDIR)/$(INSTDIR)/$(LISNUOPC_MK)
 	@echo "ESMF_DEP_CMPL_OBJS = $(DESTDIR)/$(INSTDIR)/$(LISNUOPC_LIB)" >> $(DESTDIR)/$(INSTDIR)/$(LISNUOPC_MK)
-	@echo "ESMF_DEP_LINK_OBJS = $(DESTDIR)/$(INSTDIR)/$(LISNUOPC_LIB)" >> $(DESTDIR)/$(INSTDIR)/$(LISNUOPC_MK)
-	@echo "ESMF_DEP_SHRD_PATH = $(LIB_GRIBAPI) $(LIB_JASPER)" >> $(DESTDIR)/$(INSTDIR)/$(LISNUOPC_MK)
-	@echo "ESMF_DEP_SHRD_LIBS = grib_api_f90 grib_api jasper" >> $(DESTDIR)/$(INSTDIR)/$(LISNUOPC_MK)
+	@echo "ESMF_DEP_LINK_OBJS = $(DESTDIR)/$(INSTDIR)/$(LISNUOPC_LIB) $(EXT_DEP_LINK_OBJS)" >> $(DESTDIR)/$(INSTDIR)/$(LISNUOPC_MK)
+	@echo "ESMF_DEP_SHRD_PATH = " >> $(DESTDIR)/$(INSTDIR)/$(LISNUOPC_MK)
+	@echo "ESMF_DEP_SHRD_LIBS = " >> $(DESTDIR)/$(INSTDIR)/$(LISNUOPC_MK)
 
 	@touch VERSION
 	@if [ -d .svn ]; then \
