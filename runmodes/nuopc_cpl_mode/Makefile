@@ -105,20 +105,20 @@ CAP_MODS      += beta_nuopc_fill.mod
 CAP_MODS      += beta_nuopc_log.mod
 CAP_MODS      += beta_nuopc_base.mod
 
-CAP_FILES     := $(CAP_LIB) $(CAP_OBJS) $(CAP_MODS) $(CAP_MK) $(CAP_VERS)
+CAP_FILES     := $(CAP_OBJS) $(CAP_MODS) $(CAP_LIB) $(CAP_MK) $(CAP_VERS)
 
 # ###############################
 # Include Model Makefile Fragment
 # ###############################
 
 include $(MODEL_MKINC)
-ESMF_F90COMPILEPATHS    += -I$(MODEL_MODDIR)
+override ESMF_F90COMPILEPATHS    += -I$(MODEL_MODDIR)
 
 ifeq ($(DEBUG),on)
-ESMF_F90COMPILEOPTS     += -g -traceback
-ESMF_CXXCOMPILEOPTS     += -g -traceback
-ESMF_F90COMPILECPPFLAGS += -DDEBUG
-ESMF_CXXCOMPILECPPFLAGS += -DDEBUG
+override ESMF_F90COMPILEOPTS     += -g -traceback
+override ESMF_CXXCOMPILEOPTS     += -g -traceback
+override ESMF_F90COMPILECPPFLAGS += -DDEBUG
+override ESMF_CXXCOMPILECPPFLAGS += -DDEBUG
 endif
 
 # #######################
@@ -126,37 +126,55 @@ endif
 # #######################
 .PHONY: nuopc nuopcinstall nuopcclean clean_cap clean_model
 
-nuopc: $(CAP_FILES) nuopcinstall
+nuopc: $(CAP_FILES)
+
+nuopcinstall: $(CAP_LIB) $(CAP_MODS) $(CAP_VERS) \
+ $(addprefix $(INSTPATH)/,$(CAP_MODS)) \
+ $(addprefix $(INSTPATH)/,$(CAP_LIB)) \
+ $(addprefix $(INSTPATH)/,$(CAP_VERS)) \
+ $(addprefix $(INSTPATH)/,$(CAP_MK))
 
 # ############
 # Dependencies
 # ############
 
-LIS_NUOPC_Cap.o: LIS_NUOPC_Macros.h LIS_NUOPC_Gluecode.o \
-        beta_NUOPC_FileRead.o beta_NUOPC_Auxiliary.o \
-        beta_NUOPC_Fill.o beta_NUOPC_Log.o \
-        beta_NUOPC_Base.o
-LIS_NUOPC_Gluecode.o: LIS_NUOPC_Macros.h LIS_NUOPC_DataCopy.o \
-        beta_NUOPC_FileRead.o beta_NUOPC_Auxiliary.o \
-        beta_NUOPC_Fill.o beta_NUOPC_Log.o \
+LIS_NUOPC_Cap.o: LIS_NUOPC_Macros.h lis_nuopc_gluecode.mod \
+        beta_nuopc_fileread.mod beta_nuopc_auxiliary.mod \
+        beta_nuopc_fill.mod beta_nuopc_log.mod \
+        beta_nuopc_base.mod
+LIS_NUOPC_Gluecode.o: LIS_NUOPC_Macros.h lis_nuopc_datacopy.mod \
+        beta_nuopc_fileread.mod beta_nuopc_auxiliary.mod \
+        beta_nuopc_fill.mod beta_nuopc_log.mod \
         $(MODEL_FILES)
 LIS_NUOPC_DataCopy.o: LIS_NUOPC_Macros.h
 
+lis_nuopc.mod: LIS_NUOPC_Cap.o
+lis_nuopc_gluecode.mod: LIS_NUOPC_Gluecode.o
+lis_nuopc_datacopy.mod: LIS_NUOPC_DataCopy.o
+beta_nuopc_fileread.mod: beta_NUOPC_FileRead.o
+beta_nuopc_auxiliary.mod: beta_NUOPC_Auxiliary.o
+beta_nuopc_fill.mod: beta_NUOPC_Fill.o
+beta_nuopc_log.mod: beta_NUOPC_Log.o
+beta_nuopc_base.mod: beta_NUOPC_Base.o
+
 # ###########
-# LIS Library
+# Build model
 # ###########
 
-$(MODEL_LIB): $(MODEL_MODS)
+build_model:
+	@echo $(HR)
+	@echo "Building Model..."
+	@echo ""
+	$(call checkdir, $(MODEL_DIR))
+	(cd $(MODEL_MKDIR); make -f $(MODEL_MK))	
+
+$(MODEL_MODS): build_model
+
+$(MODEL_LIB): build_model
 	@echo $(HR)
 	@echo "Building Model Library..."
 	@echo
-	ar rc $@ $(MODEL_OBJDIR)/*.o
-
-$(MODEL_MODS):
-	@echo "Building Model..."
-	@echo
-	(cd $(MODEL_MKDIR); make -f $(MODEL_DEPMK))
-	(cd $(MODEL_MKDIR); make -f $(MODEL_MK))
+	ar cruT $@ $(MODEL_OBJDIR)/*.o
 
 # ##############
 # Build Settings
@@ -229,12 +247,6 @@ $(CAP_MK):
 # -----------------------------------------------------------------------------
 # Install Library, Modules, and Makefile Fragment
 # -----------------------------------------------------------------------------
-
-nuopcinstall: $(CAP_LIB) $(CAP_MODS) $(CAP_VERS) \
- $(addprefix $(INSTPATH)/,$(CAP_MODS)) \
- $(addprefix $(INSTPATH)/,$(CAP_LIB)) \
- $(addprefix $(INSTPATH)/,$(CAP_VERS)) \
- $(addprefix $(INSTPATH)/,$(CAP_MK))
 
 $(INSTPATH)/%:
 	@echo $(HR)
