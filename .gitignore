@@ -1,4 +1,5 @@
-
+LIS
+liblis.a
 make/*.d
 make/*.o
 make/*.mod
@@ -8,7 +9,3 @@ make/LIS_NetCDF_inc.h
 make/LIS_misc.h
 make/MAKDEP/makdep
 make/MAKDEP/*.o
-runmodes/nuopc_cpl_mode/*.o
-runmodes/nuopc_cpl_mode/*.mod
-runmodes/nuopc_cpl_mode/*.a
-runmodes/nuopc_cpl_mode/*.mk
