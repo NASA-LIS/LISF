@@ -50,7 +50,11 @@ INSTPATH := $(abspath $(DESTDIR)/$(INSTDIR))
 # Model Variables
 # ###############
 
+ifndef LIS_DIR
 MODEL_DIR    := $(abspath $(DIR)/../..)
+else
+MODEL_DIR    := $(abspath $(LIS_DIR))
+endif
 MODEL_OBJDIR := $(abspath $(MODEL_DIR)/make)
 MODEL_MODDIR := $(abspath $(MODEL_DIR)/make)
 MODEL_LIBDIR := $(abspath $(MODEL_DIR))
@@ -149,7 +153,7 @@ LIS_NUOPC_Gluecode.o: LIS_NUOPC_Macros.h lis_nuopc_datacopy.mod \
         beta_nuopc_fileread.mod beta_nuopc_auxiliary.mod \
         beta_nuopc_fill.mod beta_nuopc_log.mod \
         $(MODEL_MODS)
-LIS_NUOPC_DataCopy.o: LIS_NUOPC_Macros.h
+LIS_NUOPC_DataCopy.o: LIS_NUOPC_Macros.h $(MODEL_MODS)
 
 lis_nuopc.mod: LIS_NUOPC_Cap.o
 lis_nuopc_gluecode.mod: LIS_NUOPC_Gluecode.o
@@ -358,7 +362,7 @@ clean_cap:
 	@echo $(HR)
 	@echo "Cleaning Cap build..."
 	@echo
-	rm -f $(CAP_FILES)
+	rm -f $(CAP_FILES) $(CAP_MK) $(CAP_VERS)
 
 # ###########
 # Clean Model
