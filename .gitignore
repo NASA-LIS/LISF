@@ -1,11 +1,5 @@
-LIS
-liblis.a
-make/*.d
-make/*.o
-make/*.mod
-make/configure.lis
-make/LIS
-make/LIS_NetCDF_inc.h
-make/LIS_misc.h
-make/MAKDEP/makdep
-make/MAKDEP/*.o
+*.o
+*.mod
+*.a
+version
+*.mk
