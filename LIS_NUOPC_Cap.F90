@@ -1,6 +1,280 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!>
+!! @mainpage NASA's Land Information System (LIS) NUOPC Cap
+!! @author Daniel Rosen (daniel.rosen@noaa.gov)
+!! @author ESMF Support (esmf_support@list.woc.noaa.gov)
+!! @date 03/14/2017 LIS NUOPC Cap Added to GitHub
+!! @date 03/15/2017 Documentation Added
+!!
+!! @tableofcontents
+!!
+!! @section Overview Overview
+!!
+!! The Land Information System (LIS) is a surface model wrapper developed 
+!! and maintained by the National Aeronautics and Space Administration (NASA). 
+!! LIS abstracts several land and ocean surface models with standard 
+!! interfaces.  The LIS cap wraps LIS with NUOPC compliant interfaces. The 
+!! result is configurable surface model capable of coupling with other models 
+!! in the National Unified Operational Prediction Capability (NUOPC).  As of 
+!! LIS version 7.1 only Noah v2.7.1 and v.3.3 have NUOPC coupling capabilities.
+!!
+!! This page documents the technical design of the specialized NUOPC model and 
+!! the LIS gluecode.  For generic NUOPC model documentation please see the
+!! [NUOPC Reference Manual] (https://www.earthsystemcog.org/projects/nuopc/refmans).
+!!
+!!
+!! @section NuopcSpecialization NUOPC Model Specialized Entry Points
+!!
+!! This cap specializes the cap configuration, initialization, advertised 
+!! fields, realized fields, data initialization, clock, run, and finalize.
+!! 
+!! @subsection SetServices Set Services (Register Subroutines)
+!!
+!! Table summarizing the NUOPC specialized subroutines registered during 
+!! [SetServices] (@ref LIS_NUOPC::SetServices).  The "Phase" column says 
+!! whether the subroutine is called during the initialization, run, or 
+!! finalize part of the coupled system run. 
+!!
+!! Phase  |     Cap Subroutine                                | Description
+!! -------|---------------------------------------------------|-------------------------------------------------------------
+!! Init   | [InitializeP0] (@ref LIS_NUOPC::InitializeP0)     | Set the Initialize Phase Definition (IPD). Configure model
+!! Init   | [InitializeP1] (@ref LIS_NUOPC::InitializeP1)     | Initialize model.  Advertize import and export fields
+!! Init   | [InitializeP3] (@ref LIS_NUOPC::InitializeP3)     | Realize import and export fields
+!! Init   | [DataInitialize] (@ref LIS_NUOPC::DataInitialize) | Initialize import and export data
+!! Init   | [SetClock] (@ref LIS_NUOPC::SetClock)             | Set model clock during initialization
+!! Run    | [CheckImport] (@ref LIS_NUOPC::CheckImport)       | Check timestamp on import data.
+!! Run    | [ModelAdvance] (@ref LIS_NUOPC::ModelAdvance)     | Advances the model by a timestep
+!! Final  | [ModelFinalize] (@ref LIS_NUOPC::ModelFinalize)   | Releases memory
+!!
+!!
+!! @section Initialize Initialize
+!!
+!! Description of the initialization phases and internal model calls.
+!! - [InitializeP0] (@ref LIS_NUOPC::InitializeP0)
+!! - [InitializeP1] (@ref LIS_NUOPC::InitializeP1)
+!! - [InitializeP3] (@ref LIS_NUOPC::InitializeP3)
+!! - [DataInitialize] (@ref LIS_NUOPC::DataInitialize)
+!! - [SetClock] (@ref LIS_NUOPC::SetClock)
+!!
+!! @subsection InitializeP0 InitializeP0
+!!
+!! During initialize phase 0 the runtime configuration is read in from model
+!! attributes and the initialization phase definition version is set to 
+!! IPDv03.
+!! 
+!! @subsection InitializeP1 InitializeP1
+!!
+!! During initialize phase 1 the model is initialized and the import and 
+!! export fields are advertised in nested import and export states. Import 
+!! fields are configured in the forcing variables list file. 
+!!
+!! @subsection InitializeP3 InitializeP3
+!!
+!! During initialize phase 3 import and export fields are realized in each 
+!! nested import and export state if they are connected through NUOPC. 
+!! Realized fields are created on the LIS grid. All export fields are realized 
+!! if realize all export fields is turned on.
+!!
+!! @subsection DataInitialize DataInitialize
+!!
+!! During data initialize this cap checks the timestamp of all import fields
+!! dependent on a coupled model.  Once all dependent import fields have been
+!! initialized this cap is marked initalized.
+!!
+!! @subsection SetClock SetClock
+!! 
+!! During set clock the cap creates a new clock for each nest. The time step
+!! for each nest is set in LIS configuration file and initialized during LIS 
+!! initialization. The time accumulation tracker for each timestep is reset to 
+!! zero.  The cap's time step is updated to the shortest time step
+!! of all nests. The restart write time step is also created and the restart 
+!! write time accumulation tracker is reset to zero.
+!!
+!!
+!! @section Run Run
+!!
+!! Description of the run phase(s) and internal model calls.
+!! - [CheckImport] (@ref LIS_NUOPC::CheckImport)
+!! - [ModelAdvance] (@ref LIS_NUOPC::ModelAdvance)
+!!
+!! @subsection CheckImport CheckImport
+!!
+!! During check import the import data is checked to verify that it is at 
+!! the beginning or end of the timestep.
+!!
+!! @subsection ModelAdvance ModelAdvance
+!!
+!! During model advance each nest time accumulation tracker is increased by 
+!! the timestep of the cap.  If the time accumlation tracker is greater than
+!! the time step of the nest then the nest is advanced.
+!!
+!!
+!! @section Finalize Finalize
+!!
+!! Description of the finalize phase and internal model calls.
+!! - [ModelFinalize] (@ref LIS_NUOPC::ModelFinalize)
+!!
+!! @subsection ModelFinalize ModelFinalize
+!!
+!! During model finalize LIS finalize subroutines are called and memory 
+!! allocated during cap initialization is released.
+!!
+!!
+!! @subsection ModelConfiguration Model Configuration
+!!
+!! Custom model attributes are used to configure the model.
+!!
+!! Attribute         | Default        | Description
+!! ------------------|----------------|-------------------------------------------------------------------------------------
+!! Verbosity         | VERBOSITY_LV2  | Verbosity levels are defined in LIS_NUOPC_Macros.h
+!! RealizeAllExport  | FALSE          | Realize all export fields including non connected fields
+!! RestartInterval   | NEVER          | Determine when to write NUOPC state restart files in seconds
+!! ConfigFile        | lis.config     | Set the LIS configuraion file
+!! WriteGrid         | FALSE          | Write a NetCDF file for the LIS domain
+!! WriteImport       | FALSE          | Write a NetCDF file for the import state before model advance
+!! WriteExport       | FALSE          | Write a NetCDF file for the export state after model advance
+!! LogMemory         | FALSE          | Write memory statistics. (Not Implemented)
+!! TestFillImport    | FALSE          | Fill the import state with ESMF_FieldFill(sincos) for testing
+!! TestFillExport    | FALSE          | Fill the export state with ESMF_FieldFill(sincos) for testing
+!!
+!!
+!! @section ModelFields Model Fields
+!!
+!! The following tables list the import and export fields.
+!!
+!! @subsection ImportFields Import Fields 
+!!
+!! Import fields arelisted in the import_list parameter.
+!!
+!! Standard Name  | Units  | Model Variable  | Description                                | Notes
+!! ---------------|--------|-----------------|--------------------------------------------|--------------------------------------
+!! dummy_field_1  | Pa     | forcing_1       | field description for first import field   | |
+!! dummy_field_2  | kg     | forcing_2       | field description for second import field  | |
+!! dummy_field_3  | W m-2  | forcing_3       | field description for third import field   | field notes
+!!
+!! @subsection ExportField Export Fields
+!!
+!! Export fields are listed in the export_list parameter.
+!!
+!! Standard Name  | Units   | Model Variable  | Description                               | Notes
+!! ---------------|---------|-----------------|-------------------------------------------|---------------------------
+!! dummy_field_1  | m       | output_1        | field description for first export field  | field notes
+!! dummy_field_2  | kg      | output_2        | field description for second export field | |
+!! dummy_field_3  | m s-1   | output_3        | field description for third export field  | field notes
+!!
+!!
+!! @section MemoryManagement Memory Management
+!!
+!! Model configuration is stored in a custom internal state data type. A
+!! pointer to the custom internal state data type is stored in the component.
+!!
+!! The cap allocates new memory for each field so that 2-D coordinate points
+!! can be translated into the LIS tiled field points. 
+!!
+!! @section IO Input and Output
+!!
+!! Cap diagnostic output is written to the ESMF PET Logs. Cap diagnostic 
+!! output can be increased or decreased by setting the Verbosity attribute.
+!!
+!! NUOPC state restart write files are written depending on the 
+!! RestartInterval attribute. If set to 0 then NUOPC state restart write files 
+!! will never be written.
+!!
+!! LIS diagnostics output is written to the LIS logs configured in the LIS 
+!! configuration file.
+!!
+!! LIS output files are written to the output directory configured in the LIS 
+!! configuration file.  LIS output includes LIS history files and LIS restart 
+!! files.
+!!
+!! @section Dependencies Dependencies
+!!
+!! Dependencies
+!! - [HDF5 v1.8.11+] (https://support.hdfgroup.org/HDF5/)
+!! - [NetCDF v4.3.0+] (http://www.unidata.ucar.edu/software/netcdf/docs/)
+!! - [NetCDF FORTRAN] (http://www.unidata.ucar.edu/software/netcdf/docs/building_netcdf_fortran.html)
+!! - [JasPer v1.900.1] (https://www.ece.uvic.ca/~frodo/jasper) 
+!! - [Grib API v1.12.3+] (https://software.ecmwf.int/wiki/display/GRIB/Home)
+!!
+!! @subsection HDF5 HDF5
+!!
+!! Configure, Build, and Install
+!! $ ./configure --enable-fortran --prefix=HDF5_DIR
+!! $ make
+!! $ make install
+!!
+!! @subsection NetCDF NetCDF
+!!
+!! Add the following environment variables.
+!! - CPPFLAGS '-IHDF5_DIR/include'
+!! - LDFLAGS '-LHDF5_DIR/lib'
+!!
+!! Configure, Build, and Install
+!! $ ./configure --prefix=NETCDF_DIR --enable-netcdf-4 --disable-dap-remote-tests
+!! $ make
+!! $ make install
+!!
+!! @subsection NetCDFFortran NetCDF Fortran
+!!
+!! Add the following environment variables.
+!! - LD_LIBRARY_PATH 'NETCDF_DIR/lib:$LD_LIBRARY_PATH'
+!! - CPPFLAGS '-INETCDF_DIR/include'
+!! - LDFLAGS '-LNETCDF_DIR/lib'
+!!
+!! Configure, Build, and Install
+!! $ ./configure --prefix=NETCDF_DIR
+!! $ make
+!! $ make install
+!!
+!! @subsection JasPer JasPer
+!!
+!! Configure, Build, and Install
+!! $ ./configure --enable-shared --prefix=JASPER_DIR
+!! $ make
+!! $ make install
+!!
+!! @subsection GribAPI Grib API
+!!
+!! Configure, Build, and Install
+!! $ ./configure --with-jasper=JASPER_DIR --with-netcdf=NETCDF_DIR --prefix=GRIB_API_DIR
+!! $ make
+!! $ make install
+!!
+!! @section BuildingAndInstalling Building and Installing
+!!
+!! Environment Variables
+!! - ESMFMKFILE
+!! - JASPER
+!! - GRIB_API
+!!
+!! NUOPC Makefile Targets
+!! - nuopc
+!! - nuopcinstall
+!! - nuopcclean
+!!
+!! The build system in [Makefile] (@ref Makefile) wraps the LIS build system
+!! and adds the nuopc, nuopcinstall, and nuopcclean targets. Before building
+!! make sure to configure the internal model.
+!!
+!! To build and install into the current directory run:
+!!    $ make nuopc
+!!
+!! To install into an alternative directory run:
+!!    $ make nuopcinstall DESTDIR=<INSTALL_DIR> INSTDIR=<SUBDIR>
+!!
+!! To build with debugging information run:
+!!    $ make nuopc DEBUG=on
+!!
+!! @section Repository
+!! The LIS NUOPC cap is maintained in a GitHub repository:
+!! https://github.com/NESII/lis_cap
+!!
+!! @section References 
+!! 
+!! - [LIS] (https://modelingguru.nasa.gov/community/atmospheric/lis)
+!! - [ESPS] (https://www.earthsystemcog.org/projects/esps)
+!! - [ESMF] (https://www.earthsystemcog.org/projects/esmf)
+!! - [NUOPC] (https://www.earthsystemcog.org/projects/nuopc/)
+
 #define FILENAME "LIS_NUOPC_Cap.F90"
 #define MODNAME "LIS_NUOPC_Cap"
 #include "LIS_NUOPC_Macros.h"
