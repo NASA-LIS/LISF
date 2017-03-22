@@ -32,6 +32,15 @@ else
 override ESMF_F90COMPILECPPFLAGS += -DREAL8
 endif
 
+# #################################
+# Compile with Debugging Directives
+# #################################
+
+ifeq ($(DEBUG),on)
+override ESMF_F90COMPILECPPFLAGS += -DDEBUG
+override ESMF_CXXCOMPILECPPFLAGS += -DDEBUG
+endif
+
 # ###########################
 # Determine Installation Path
 # ###########################
@@ -120,13 +129,6 @@ override ESMF_F90COMPILEPATHS += -I$(MODEL_MODDIR)
 override DEP_LINK_OBJS        += $(abspath $(GRIB_API_LIB))
 override DEP_LINK_OBJS        += $(abspath $(GRIB_API_LIBF90))
 override DEP_LINK_OBJS        += $(abspath $(JASPER_LIB))
-
-ifeq ($(DEBUG),on)
-override ESMF_F90COMPILEOPTS     += -g -traceback
-override ESMF_CXXCOMPILEOPTS     += -g -traceback
-override ESMF_F90COMPILECPPFLAGS += -DDEBUG
-override ESMF_CXXCOMPILECPPFLAGS += -DDEBUG
-endif
 
 # #######################
 # Primary Makefile Target

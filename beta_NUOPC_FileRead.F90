@@ -15,6 +15,7 @@ module beta_NUOPC_FileRead
 
   private
   public :: NUOPC_NetcdfReadIXJX
+  public :: NUOPC_NetcdfIsPresent
 
   interface NUOPC_NetcdfReadIXJX
     module procedure NUOPC_NetcdfReadIXJX_Field
@@ -30,6 +31,56 @@ contains
   !-----------------------------------------------------------------------------
   ! Utilities
   !-----------------------------------------------------------------------------
+
+  function NUOPC_NetcdfIsPresent(varname,filename,rc)
+    ! RETURN VALUE
+    logical :: NUOPC_NetcdfIsPresent
+
+    ! ARGUMENTS
+    character(len=*), intent(in)          :: varname
+    character(len=*), intent(in)          :: filename
+    integer, intent(out),optional         :: rc
+
+    ! LOCAL VARIABLES
+    integer                               :: stat
+    integer                               :: varid
+    integer                               :: ncid
+
+    if (present(rc)) rc = ESMF_SUCCESS
+
+    stat = nf90_open(filename,nf90_NoWrite,ncid)
+    if (stat /= nf90_NoErr) then
+      call ESMF_LogSetError(rcToCheck=ESMF_RC_FILE_OPEN,   &
+        msg="Error opening NetCDF file "//trim(filename)//".", &
+        line=__LINE__, file=FILENAME, rcToReturn=rc)
+      return
+    endif
+
+    stat = nf90_inq_varid(ncid,varname,varid)
+    if(stat == nf90_NoErr) then
+      NUOPC_NetcdfIsPresent = .TRUE.
+    elseif(stat == nf90_eNotVar) then
+      NUOPC_NetcdfIsPresent = .FALSE.
+    else
+      NUOPC_NetcdfIsPresent = .FALSE.
+      call ESMF_LogSetError(rcToCheck=ESMF_RC_FILE_READ,   &
+        msg="Error reading variable "//trim(varname)// &
+          " in "//trim(filename)//".", &
+        line=__LINE__, file=FILENAME, rcToReturn=rc)
+      return
+    endif
+
+    stat = nf90_close(ncid)
+    if (stat /= nf90_NoErr) then
+      call ESMF_LogSetError(rcToCheck=ESMF_RC_FILE_CLOSE,   &
+        msg="Error closing NetCDF file "//trim(filename)//".", &
+        line=__LINE__, file=FILENAME, rcToReturn=rc)
+      return
+    endif
+
+  end function
+
+  ! -----------------------------------------------------------------------------
 
   subroutine NUOPC_NetcdfReadIXJX_Field(varname,filename,start,field,rc)
     ! ARGUMENTS
@@ -162,7 +213,7 @@ contains
     stat = nf90_inquire_variable(ncid, varid, dimids = dimIDs)
     if(stat /= nf90_NoErr) then
       call ESMF_LogSetError(rcToCheck=ESMF_RC_FILE_READ,   &
-        msg="Error loacating variable "//trim(varname)// &
+        msg="Error locating variable "//trim(varname)// &
           " in "//trim(filename)//".", &
         line=__LINE__, file=FILENAME, rcToReturn=rc)
       return
