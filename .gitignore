@@ -1,5 +1,5 @@
 *.o
 *.mod
 *.a
-version
+VERSION
 *.mk
