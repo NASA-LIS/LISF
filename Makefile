@@ -137,7 +137,7 @@ override DEP_LINK_OBJS        += $(abspath $(JASPER_LIB))
 
 nuopc: $(CAP_FILES)
 
-nuopcinstall: $(CAP_LIB) $(CAP_MODS) \
+nuopcinstall: $(CAP_LIB) $(CAP_MODS) $(CAP_VERS) \
  $(addprefix $(INSTPATH)/,$(CAP_MODS)) \
  $(addprefix $(INSTPATH)/,$(CAP_LIB)) \
  $(addprefix $(INSTPATH)/,$(CAP_VERS)) \
