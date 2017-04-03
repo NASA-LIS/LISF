@@ -1281,14 +1281,14 @@ subroutine CheckImport(gcomp, rc)
       do nIndex=1,is%wrap%nnests
         write (nStr,"(I0)") nIndex
         call beta_NUOPC_Write(is%wrap%NStateImp(nIndex), &
-          fileNamePrefix=trim(cname)//"_RSTRT_"//trim(modelStopTimeStr)//"_D"//trim(nStr), &
+          fileNamePrefix=trim(cname)//"_RSTRT_IMP_"//trim(modelStopTimeStr)//"_D"//trim(nStr), &
           singleFile=.true., &
           overwrite=.true., &
           relaxedFlag=.true., &
           rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
         call beta_NUOPC_Write(is%wrap%NStateExp(nIndex), &
-          fileNamePrefix=trim(cname)//"_RSTRT_"//trim(modelStopTimeStr)//"_D"//trim(nStr), &
+          fileNamePrefix=trim(cname)//"_RSTRT_EXP_"//trim(modelStopTimeStr)//"_D"//trim(nStr), &
           singleFile=.true., &
           overwrite=.true., &
           relaxedFlag=.true., &

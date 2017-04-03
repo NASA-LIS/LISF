@@ -268,6 +268,10 @@ contains
     character(len=80)               :: stateName
     character(len=80), allocatable  :: fieldNameList_loc(:)
 
+#ifdef DEBUG
+    call ESMF_LogWrite("entered",ESMF_LOGMSG_INFO,line=__LINE__,file=__FILE__)
+#endif
+
     if (present(rc)) rc = ESMF_SUCCESS
 
     if (present(singlefile)) then
@@ -388,6 +392,10 @@ contains
     endif
 
     deallocate(fieldNameList_loc)
+
+#ifdef DEBUG
+    call ESMF_LogWrite("leaving",ESMF_LOGMSG_INFO,line=__LINE__,file=__FILE__)
+#endif
 
   end subroutine
   !-----------------------------------------------------------------------------
