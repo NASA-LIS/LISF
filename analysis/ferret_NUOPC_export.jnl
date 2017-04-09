@@ -1,5 +1,5 @@
  ! FERRET v6.96 Script
- ! >ferret -gif -script ferret_LIS_HIST_Noah.3.3_output.jnl [Grid File] [Restart File]
+ ! >ferret -gif -script ferret_NUOPC_export.jnl [Grid File] [Restart File]
  ! Author: Daniel Rosen
  ! Organization: NESII/CIRES/NOAA
  ! Email: daniel.rosen@noaa.gov
@@ -31,34 +31,46 @@ SHOW DATA/BRIEF
 
 ! Define single level variables
 LET fnames = { \
-"psurf_f",     \
-"tair_f",      \
-"ewind_f",     \
-"lwdown_f",    \
-"nwind_f",     \
-"rainf_f",     \
-"swdown_f",    \
-"qair_f"       \
+"qs",          \
+"qsb",         \
+"smfracl1",    \
+"smfracl2",    \
+"smfracl3",    \
+"smfracl4",    \
+"smliqfracl1", \
+"smliqfracl2", \
+"smliqfracl3", \
+"smliqfracl4", \
+"soiltempl1",  \
+"soiltempl2",  \
+"soiltempl3",  \
+"soiltempl4"   \
 }
 
 ! Define single level variable titles
-LET ftitles = {        \
-"Surface Pressure",    \
-"Surface Temperature", \
-"Eastward Wind",       \
-"Longwave Flux",       \
-"Northward Wind",      \
-"Precipitation Flux",  \
-"Shortwave Flux",      \
-"Specific Humidity"    \
+LET ftitles = {                    \
+"Surface Runoff",                  \
+"Subsurface Runoff",               \
+"Soil Moisture Content LV1",       \
+"Soil Moisture Content LV2",       \
+"Soil Moisture Content LV3",       \
+"Soil Moisture Content LV4",       \
+"Fraction of Liquid Moisture LV1", \
+"Fraction of Liquid Moisture LV2", \
+"Fraction of Liquid Moisture LV3", \
+"Fraction of Liquid Moisture LV4", \
+"Soil Temperature LV1",            \
+"Soil Temperature LV2",            \
+"Soil Temperature LV3",            \
+"Soil Temperature LV4"             \
 }
 
 ! Define single level forcing variable scales
-LET fminvals  = {  65000, 250,-30, 100,-30, 0.0000,   0, 0.000 }
-LET fmaxvals  = { 105000, 310, 30, 450, 30, 0.0100, 500, 0.025 }
-LET fstepvals = {   1000,   2,  2,  10,  2, 0.0002,  10, 0.001 }
-LET fminoutlr = {  10000, 200,-60,  50,-60, 0.0000,   0, 0.000 }
-LET fmaxoutlr = { 200000, 350, 60, 600, 60, 0.1000, 999, 0.030 }
+LET fminvals  = { 0,        0,        0.2,  0.2,  0.2,  0.2,  0.2,  0.2,  0.2,  0.2,  260, 260, 260, 260 }
+LET fmaxvals  = { 0.001,    0.00025,  0.5,  0.5,  0.5,  0.5,  0.5,  0.5,  0.5,  0.5,  320, 320, 320, 320 }
+LET fstepvals = { 0.000025, 0.000005, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 1,   1,   1,   1   }
+LET fminoutlr = { 0,        0,        0,    0,    0,    0,    0,    0,    0,    0,    250, 250, 250, 250 } 
+LET fmaxoutlr = { 0.01,     0.001,    1,    1,    1,    1,    1,    1,    1,    1,    350, 350, 350, 350 }
 
 ! Create SHADE plots for single level forcing variables
 SAY
