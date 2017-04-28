@@ -12,7 +12,7 @@ begin
 ;---Read netCDF file
   file_suffix = get_file_suffix(grid,0)
   print ("Grid File="+grid)
-  print ("Output File="+file_suffix@fBase+"_CONUS.png")
+  print ("Output File="+file_suffix@fBase+".png")
 
   in   = addfile(grid,"r")
 

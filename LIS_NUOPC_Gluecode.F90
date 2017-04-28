@@ -540,6 +540,10 @@ contains
 
     rc = ESMF_SUCCESS
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
     if(.not.LIS_initialized) then
        if (present(configFile)) LIS_rc%lis_config_file = trim(configFile)
        call LIS_config_init(vm) ! "retrospective"
@@ -568,6 +572,10 @@ contains
        LIS_initialized = .true.
     endif
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -588,6 +596,12 @@ contains
     type(ESMF_State),intent(inout)         :: exportState
     integer,intent(out)                    :: rc
 
+    rc = ESMF_SUCCESS
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
     call LIS_ImportFieldsCopy(nest,importState,rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
 
@@ -597,6 +611,10 @@ contains
 
     call LIS_ExportFieldsCopy(nest,exportState,rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
   end subroutine
 
@@ -637,6 +655,10 @@ contains
     integer                     :: yy, mm, dd, h, m, s
 
     rc = ESMF_SUCCESS
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
     if (slice > 999999999) then
       sliceStr = '999999999+'
@@ -702,6 +724,10 @@ contains
     call LIS_ExportFieldsCopy(nest,exportState,rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -732,7 +758,12 @@ contains
     integer                    :: stat
     type(ESMF_Time)            :: currTime
     integer                    :: yy, mm, dd, h, m, s
+
     rc = ESMF_SUCCESS
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
     ! use incoming clock
     call ESMF_ClockGet(clock, currTime=currTime, rc=rc)
@@ -745,6 +776,10 @@ contains
     call LIS_timemgr_set(LIS_rc, yy, mm, dd, h, m, s, 0, 0.0)
 
     LIS_rc%endtime = 1
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
   end subroutine
 
@@ -765,6 +800,10 @@ contains
     character(len=10)  :: nStr
 
     rc = ESMF_SUCCESS
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
     if (LIS_rc%nnest > 999999999) then
       nStr = '999999999+'
@@ -1316,6 +1355,10 @@ contains
     enddo
     enddo
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -1340,6 +1383,10 @@ contains
     integer                    :: fIndex
     
     rc = ESMF_SUCCESS
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
     if(present(label)) then
       l_label = trim(label)
@@ -1385,6 +1432,10 @@ contains
       endif
     enddo
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -1408,6 +1459,10 @@ contains
     type(ESMF_StateItem_Flag)  :: itemType
 
     rc = ESMF_SUCCESS
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
     if(present(label)) then
       l_label = trim(label)
@@ -1451,6 +1506,11 @@ contains
         endif
       endif
     enddo
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -1475,6 +1535,10 @@ contains
     type(ESMF_StateItem_Flag)  :: itemType
 
     rc = ESMF_SUCCESS
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
     if(present(label)) then
       l_label = trim(label)
@@ -1505,6 +1569,11 @@ contains
         endif
       endif
     enddo
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -1529,6 +1598,10 @@ contains
     type(ESMF_StateItem_Flag)  :: itemType
 
     rc = ESMF_SUCCESS
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
     if(present(label)) then
       l_label = trim(label)
@@ -1559,6 +1632,11 @@ contains
         endif
       endif
     enddo
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -1597,6 +1675,10 @@ contains
     integer,dimension(2)           :: halowidth_x(2), halowidth_y(2)
 
     rc = ESMF_SUCCESS
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
     ! Setup list of 2-D decompositions
     ! One block per PET
@@ -1733,6 +1815,10 @@ contains
 !      farrayPtr=gridarea, rc=rc)
 !    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
   end function
 
   !-----------------------------------------------------------------------------
@@ -1751,6 +1837,10 @@ contains
     integer,allocatable    :: iIndexList(:), jIndexList(:)
 
     rc = ESMF_SUCCESS
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
     !! Get the grid distribution for this pet
     allocate(indexCountPDe(2, 0:(LIS_npes - 1)),stat=stat) ! (dimCount, deCount)
@@ -1790,6 +1880,10 @@ contains
       msg='Deallocation of iIndexList and jIndexList memory failed.', &
       line=__LINE__,file=FILENAME,rcToReturn=rc)) return ! bail out
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -1819,6 +1913,10 @@ contains
 
     rc = ESMF_SUCCESS
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
     if (nest > size(LIS_FORC_State)) then
       if (present(itemType)) itemType = ESMF_STATEITEM_NOTFOUND
       return
@@ -1838,6 +1936,10 @@ contains
         if(ESMF_STDERRORCHECK(rc)) return ! bail out
       endif 
     endif
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
   end subroutine
 
@@ -1865,7 +1967,16 @@ contains
 ! !LOCAL VARIABLES:
 
     rc = ESMF_SUCCESS
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
     LIS_TimestepGet = LIS_rc%nts(nest)
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
   end function
 
@@ -1892,7 +2003,16 @@ contains
 ! !LOCAL VARIABLES:
 
     rc = ESMF_SUCCESS
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
     LIS_NestCntGet = LIS_rc%nnest
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
   end function
 
@@ -1926,6 +2046,10 @@ contains
 
     rc = ESMF_SUCCESS
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
     LIS_RunModeGet = LIS_Unknown
     adCount = 0
     connectedCount = 0
@@ -1955,6 +2079,10 @@ contains
       LIS_RunModeGet = LIS_Hybrid
     endif
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
   end function
 
   !-----------------------------------------------------------------------------
@@ -1973,6 +2101,10 @@ contains
 
     rc = ESMF_SUCCESS
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
     do fIndex=1,size(LIS_FieldList)
       isPresent = NUOPC_FieldDictionaryHasEntry( &
         trim(LIS_FieldList(fIndex)%stdName), &
@@ -1986,6 +2118,10 @@ contains
         if (ESMF_STDERRORCHECK(rc)) return
       endif
     enddo
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
   end subroutine
 
@@ -2009,13 +2145,15 @@ contains
 
     rc = ESMF_SUCCESS
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
     if(present(label)) then
       l_label = trim(label)
     else
       l_label = 'LIS_Log'
     endif
-
-    rc = ESMF_SUCCESS
 
     ! LIS State
     write (logMsg,"(A,A,L1)") trim(l_label), &
@@ -2087,6 +2225,10 @@ contains
       if (ESMF_STDERRORCHECK(rc)) return
     enddo
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -2106,6 +2248,10 @@ contains
     character(ESMF_MAXSTR)     :: logMsg
 
     rc = ESMF_SUCCESS
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
     if(present(label)) then
       l_label = trim(label)
@@ -2129,6 +2275,10 @@ contains
       " Timestep for nest: ",LIS_rc%nts(nest)
     call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -2148,6 +2298,10 @@ contains
     character(ESMF_MAXSTR)     :: logMsg
 
     rc = ESMF_SUCCESS
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
     if(present(label)) then
       l_label = trim(label)
@@ -2198,6 +2352,10 @@ contains
       " Lon increment for lat/lon: ",LIS_domain(nest)%lisproj%dlon
     call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -2216,6 +2374,10 @@ contains
     character(ESMF_MAXSTR)     :: logMsg
 
     rc = ESMF_SUCCESS
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
     if(present(label)) then
       l_label = trim(label)
@@ -2296,6 +2458,10 @@ contains
         call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
     end select
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -2309,9 +2475,17 @@ contains
     ! LOCAL VARIABLES
     integer                     :: fIndex
 
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
+
     do fIndex=1, size(LIS_FieldList)
       call LIS_FieldLog(LIS_FieldList(fIndex),label=label)
     enddo
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
   end subroutine
 
@@ -2334,6 +2508,10 @@ contains
     type(ESMF_StateItem_Flag)   :: itemType
     type(ESMF_Field)            :: importField
     integer                     :: rc
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
     write (logMsg, "(A,A,(A,A))") trim(label)//': ', &
       trim(field%stateName), &
@@ -2416,6 +2594,10 @@ contains
       call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO, &
           line=__LINE__, file=FILENAME)
     endif
+
+#ifdef DEBUG
+    call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
+#endif
 
   end subroutine
 

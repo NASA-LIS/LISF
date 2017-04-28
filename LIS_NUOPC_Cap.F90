@@ -310,6 +310,7 @@ module LIS_NUOPC
     integer               :: verbosity     = VERBOSITY_LV1
     character(len=64)     :: configFile    = 'lis.config'
     logical               :: realizeAllExport = .FALSE.
+    logical               :: nestToNest    = .FALSE.
     logical               :: lwrite_grid   = .TRUE.
     logical               :: llog_memory   = .FALSE.
     logical               :: ltestfill_imp = .FALSE.
@@ -431,7 +432,7 @@ module LIS_NUOPC
     type(ESMF_Config)          :: config
     type(NUOPC_FreeFormat)     :: attrFF
     type(type_InternalState)   :: is
-    character(len=10)          :: value
+    character(len=64)          :: value
 
     rc = ESMF_SUCCESS
 
@@ -506,6 +507,12 @@ module LIS_NUOPC
       defaultValue="lis.config", &
       convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
+    ! Write coupled grid files
+    call ESMF_AttributeGet(gcomp, name="nest_to_nest", value=value, defaultValue="false", &
+      convention="NUOPC", purpose="Instance", rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    is%wrap%nestToNest = (trim(value)=="true")
 
     ! Write coupled grid files
     call ESMF_AttributeGet(gcomp, name="write_grid", value=value, defaultValue="true", &
@@ -638,9 +645,16 @@ module LIS_NUOPC
 
     is%wrap%modes=LIS_Unknown
 
-    if (is%wrap%nnests.le.1) then
-      is%wrap%NStateImp(1) = importState
-      is%wrap%NStateExp(1) = exportState
+    if (.NOT.is%wrap%nestToNest) then
+      if (is%wrap%nnests.le.1) then
+        is%wrap%NStateImp(1) = importState
+        is%wrap%NStateExp(1) = exportState
+      else
+        call ESMF_LogSetError(ESMF_FAILURE, &
+          msg="Nest to nest must be turned on when multiple domains exist.", &
+          line=__LINE__,file=__FILE__,rcToReturn=rc)
+        return  ! bail out
+      endif
     else
       ! add namespace
       call beta_NUOPC_AddNamespace(importState, &
@@ -1527,6 +1541,9 @@ subroutine CheckImport(gcomp, rc)
       return  ! bail out
     endif
 
+    write (logMsg, "(A,(A,L1))") trim(label)//': ', &
+      'Nest To Nest           = ',is%wrap%nestToNest
+    call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
     write (logMsg, "(A,(A,L1))") trim(label)//': ', &
       'Realze All Exports     = ',is%wrap%realizeAllExport
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
