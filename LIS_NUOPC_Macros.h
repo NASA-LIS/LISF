@@ -16,14 +16,20 @@
 ! Define ESMF real kind to match Appplications single/double precision
 !-------------------------------------------------------------------------------
 #if defined(REAL4)
-#define ESMF_KIND_RX ESMF_KIND_R4
-#define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R4
-#elif defined(REAL4)
-#define ESMF_KIND_RX ESMF_KIND_R8
-#define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R8
+#define ESMF_KIND_FIELD ESMF_KIND_R4
+#define ESMF_KIND_COORD ESMF_KIND_R4
+#define ESMF_TYPEKIND_FIELD ESMF_TYPEKIND_R4
+#define ESMF_TYPEKIND_COORD ESMF_TYPEKIND_R4
+#elif defined(REAL8)
+#define ESMF_KIND_FIELD ESMF_KIND_R8
+#define ESMF_KIND_COORD ESMF_KIND_R8
+#define ESMF_TYPEKIND_FIELD ESMF_TYPEKIND_R8
+#define ESMF_TYPEKIND_COORD ESMF_TYPEKIND_R8
 #else
-#define ESMF_KIND_RX ESMF_KIND_R8
-#define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R8
+#define ESMF_KIND_FIELD ESMF_KIND_R4
+#define ESMF_KIND_COORD ESMF_KIND_R8
+#define ESMF_TYPEKIND_FIELD ESMF_TYPEKIND_R4
+#define ESMF_TYPEKIND_COORD ESMF_TYPEKIND_R8
 #endif
 
 !-------------------------------------------------------------------------------

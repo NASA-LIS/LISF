@@ -1666,10 +1666,10 @@ contains
     real                :: lat_cor, lon_cor
     real                :: lat_cen, lon_cen
     integer             :: lbnd(2),ubnd(2)
-    real(ESMF_KIND_RX), pointer    :: coordXcenter(:,:)
-    real(ESMF_KIND_RX), pointer    :: coordYcenter(:,:)
-    real(ESMF_KIND_RX), pointer    :: coordXcorner(:,:)
-    real(ESMF_KIND_RX), pointer    :: coordYcorner(:,:)
+    real(ESMF_KIND_COORD), pointer    :: coordXcenter(:,:)
+    real(ESMF_KIND_COORD), pointer    :: coordYcenter(:,:)
+    real(ESMF_KIND_COORD), pointer    :: coordXcorner(:,:)
+    real(ESMF_KIND_COORD), pointer    :: coordYcorner(:,:)
     integer(ESMF_KIND_I4), pointer :: gridmask(:,:)
     real(ESMF_KIND_R8), pointer    :: gridarea(:,:)
     integer,dimension(2)           :: halowidth_x(2), halowidth_y(2)
@@ -1732,7 +1732,7 @@ contains
     LIS_GridCreate = ESMF_GridCreate(name='LIS_Grid_'//trim(did), &
       distgrid=distgrid, &
       coordSys=ESMF_COORDSYS_SPH_DEG, &
-      coordTypeKind=ESMF_TYPEKIND_RX, &
+      coordTypeKind=ESMF_TYPEKIND_COORD, &
       gridEdgeLWidth=(/0,0/), gridEdgeUWidth=(/0,1/), &
       rc = rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
