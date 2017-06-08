@@ -399,7 +399,7 @@ module LIS_NUOPC_Gluecode
     LIS_Field(stdName='subsurface_runoff_amount', &
       stateName='qsb', &
       ampValue=1.d0, meanValue=0.d0, & 
-      units='kg/m2s',transferOffer='will provide'), &
+      units='kg/m2',transferOffer='will provide'), &
     LIS_Field(stdName='surface_air_pressure', &
       stateName='psurf_f', &
       ampValue=1.d0, meanValue=0.d0, & 
@@ -439,7 +439,7 @@ module LIS_NUOPC_Gluecode
     LIS_Field(stdName='surface_runoff_amount', &
       stateName='qs', &
       ampValue=1.d0, meanValue=0.d0, & 
-      units='kg/m2s',transferOffer='will provide'), &
+      units='kg/m2',transferOffer='will provide'), &
     LIS_Field(stdName='surface_snow_area_fraction', &
       stateName='snowcover', &
       ampValue=0.d0, meanValue=0.d0, & 
@@ -654,6 +654,15 @@ contains
     type(ESMF_TimeInterval)     :: timeStep
     integer                     :: yy, mm, dd, h, m, s
 
+    ! used for field conversions
+    type(ESMF_Grid)                :: grid
+    integer(ESMF_KIND_I4), pointer :: mask(:,:)
+    type(ESMF_Field)               :: exportField
+    real(ESMF_KIND_R4),pointer     :: exportFarray(:,:)
+    integer                        :: elb(2), eub(2)
+    integer                        :: i, j
+    integer                        :: timeStepSecs
+
     rc = ESMF_SUCCESS
 
 #ifdef DEBUG
@@ -724,6 +733,78 @@ contains
     call LIS_ExportFieldsCopy(nest,exportState,rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
 
+    ! convert runoff fields from (kg m-2 s-1) to (kg m-2)
+    
+    call ESMF_TimeIntervalGet(timeStep, s=timeStepSecs, rc=rc)
+    if(ESMF_STDERRORCHECK(rc)) return ! bail out
+
+    !print *, "LIS timestep = ", timeStepSecs
+        
+    ! qs field
+    call ESMF_StateGet(exportState, &
+         itemName="qs", &
+         field=exportField, rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return
+    
+    !call ESMF_FieldGet(exportField, grid=grid, rc=rc)
+    !if (ESMF_STDERRORCHECK(rc)) return
+
+    !call ESMF_GridGetItem(grid, itemflag=ESMF_GRIDITEM_MASK, &
+    !  localDE=0, &
+    !  staggerloc=ESMF_STAGGERLOC_CENTER, &
+    !  farrayPtr=mask, rc=rc)
+    !if (ESMF_STDERRORCHECK(rc)) return
+ 
+    call ESMF_FieldGet(exportField, farrayPtr=exportFarray, &
+         exclusiveLBound=elb, exclusiveUBound=eub, rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return
+
+    !call NUOPC_Write(exportField, "LIS_QS_BEFORE.nc", &
+    !     timeslice=slice, rc=rc)
+    !if (ESMF_STDERRORCHECK(rc)) return
+
+    do j=elb(2), eub(2)
+       do i=elb(1), eub(1)
+          !if (mask(i,j) /= 1) then
+          if (exportFarray(i,j) /= MISSINGVALUE) then
+             exportFarray(i,j) = exportFarray(i,j) * timeStepSecs
+          endif
+       enddo
+    enddo
+
+    !call NUOPC_Write(exportField, "LIS_QS_AFTER.nc", &
+    !     timeslice=slice, rc=rc)
+    !if (ESMF_STDERRORCHECK(rc)) return
+
+
+    ! qsb
+    call ESMF_StateGet(exportState, &
+         itemName="qsb", &
+         field=exportField, rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return
+     
+    call ESMF_FieldGet(exportField, farrayPtr=exportFarray, &
+         exclusiveLBound=elb, exclusiveUBound=eub, rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return
+
+    !call NUOPC_Write(exportField, "LIS_QSB_BEFORE.nc", &
+    !     timeslice=slice, rc=rc)
+    !if (ESMF_STDERRORCHECK(rc)) return
+
+    do j=elb(2), eub(2)
+       do i=elb(1), eub(1)
+          if (exportFarray(i,j) /= MISSINGVALUE) then
+             exportFarray(i,j) = exportFarray(i,j) * timeStepSecs
+          endif
+       enddo
+    enddo
+
+    !call NUOPC_Write(exportField, "LIS_QSB_AFTER.nc", &
+    !     timeslice=slice, rc=rc)
+    !if (ESMF_STDERRORCHECK(rc)) return
+
+    ! end conversions
+    
 #ifdef DEBUG
     call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
 #endif
