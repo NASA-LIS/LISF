@@ -655,6 +655,7 @@ contains
     integer                     :: yy, mm, dd, h, m, s
 
     ! used for field conversions
+    type(ESMF_StateItem_Flag)      :: itemType
     type(ESMF_Grid)                :: grid
     integer(ESMF_KIND_I4), pointer :: mask(:,:)
     type(ESMF_Field)               :: exportField
@@ -739,69 +740,81 @@ contains
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
 
     !print *, "LIS timestep = ", timeStepSecs
-        
-    ! qs field
+
+    ! convert qs field if present
     call ESMF_StateGet(exportState, &
-         itemName="qs", &
-         field=exportField, rc=rc)
+      itemName="qs", itemType=itemType, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
+
+    if (itemType == ESMF_STATEITEM_FIELD) then
+
+      call ESMF_StateGet(exportState, &
+        itemName="qs", field=exportField, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return
     
-    !call ESMF_FieldGet(exportField, grid=grid, rc=rc)
-    !if (ESMF_STDERRORCHECK(rc)) return
+      !call ESMF_FieldGet(exportField, grid=grid, rc=rc)
+      !if (ESMF_STDERRORCHECK(rc)) return
 
-    !call ESMF_GridGetItem(grid, itemflag=ESMF_GRIDITEM_MASK, &
-    !  localDE=0, &
-    !  staggerloc=ESMF_STAGGERLOC_CENTER, &
-    !  farrayPtr=mask, rc=rc)
-    !if (ESMF_STDERRORCHECK(rc)) return
+      !call ESMF_GridGetItem(grid, itemflag=ESMF_GRIDITEM_MASK, &
+      !  localDE=0, &
+      !  staggerloc=ESMF_STAGGERLOC_CENTER, &
+      !  farrayPtr=mask, rc=rc)
+      !if (ESMF_STDERRORCHECK(rc)) return
  
-    call ESMF_FieldGet(exportField, farrayPtr=exportFarray, &
-         exclusiveLBound=elb, exclusiveUBound=eub, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return
+      call ESMF_FieldGet(exportField, farrayPtr=exportFarray, &
+        exclusiveLBound=elb, exclusiveUBound=eub, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return
 
-    !call NUOPC_Write(exportField, "LIS_QS_BEFORE.nc", &
-    !     timeslice=slice, rc=rc)
-    !if (ESMF_STDERRORCHECK(rc)) return
+      !call NUOPC_Write(exportField, "LIS_QS_BEFORE.nc", &
+      !  timeslice=slice, rc=rc)
+      !if (ESMF_STDERRORCHECK(rc)) return
 
-    do j=elb(2), eub(2)
-       do i=elb(1), eub(1)
-          !if (mask(i,j) /= 1) then
-          if (exportFarray(i,j) /= MISSINGVALUE) then
-             exportFarray(i,j) = exportFarray(i,j) * timeStepSecs
-          endif
-       enddo
-    enddo
+      do j=elb(2), eub(2)
+      do i=elb(1), eub(1)
+        !if (mask(i,j) /= 1) then
+        if (exportFarray(i,j) /= MISSINGVALUE) then
+          exportFarray(i,j) = exportFarray(i,j) * timeStepSecs
+        endif
+      enddo
+      enddo
 
-    !call NUOPC_Write(exportField, "LIS_QS_AFTER.nc", &
-    !     timeslice=slice, rc=rc)
-    !if (ESMF_STDERRORCHECK(rc)) return
+      !call NUOPC_Write(exportField, "LIS_QS_AFTER.nc", &
+      !  timeslice=slice, rc=rc)
+      !if (ESMF_STDERRORCHECK(rc)) return
 
+    endif
 
-    ! qsb
+    ! convert qsb field if present
     call ESMF_StateGet(exportState, &
-         itemName="qsb", &
-         field=exportField, rc=rc)
+      itemName="qsb", itemType=itemType, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
+
+    if (itemType == ESMF_STATEITEM_FIELD) then
+      call ESMF_StateGet(exportState, &
+        itemName="qsb", field=exportField, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return
      
-    call ESMF_FieldGet(exportField, farrayPtr=exportFarray, &
-         exclusiveLBound=elb, exclusiveUBound=eub, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return
+      call ESMF_FieldGet(exportField, farrayPtr=exportFarray, &
+        exclusiveLBound=elb, exclusiveUBound=eub, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return
 
-    !call NUOPC_Write(exportField, "LIS_QSB_BEFORE.nc", &
-    !     timeslice=slice, rc=rc)
-    !if (ESMF_STDERRORCHECK(rc)) return
+      !call NUOPC_Write(exportField, "LIS_QSB_BEFORE.nc", &
+      !  timeslice=slice, rc=rc)
+      !if (ESMF_STDERRORCHECK(rc)) return
 
-    do j=elb(2), eub(2)
-       do i=elb(1), eub(1)
-          if (exportFarray(i,j) /= MISSINGVALUE) then
-             exportFarray(i,j) = exportFarray(i,j) * timeStepSecs
-          endif
-       enddo
-    enddo
+      do j=elb(2), eub(2)
+      do i=elb(1), eub(1)
+        if (exportFarray(i,j) /= MISSINGVALUE) then
+          exportFarray(i,j) = exportFarray(i,j) * timeStepSecs
+        endif
+      enddo
+      enddo
 
-    !call NUOPC_Write(exportField, "LIS_QSB_AFTER.nc", &
-    !     timeslice=slice, rc=rc)
-    !if (ESMF_STDERRORCHECK(rc)) return
+      !call NUOPC_Write(exportField, "LIS_QSB_AFTER.nc", &
+      !     timeslice=slice, rc=rc)
+      !if (ESMF_STDERRORCHECK(rc)) return
+
+    endif
 
     ! end conversions
     

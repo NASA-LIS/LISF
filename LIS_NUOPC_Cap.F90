@@ -773,7 +773,7 @@ module LIS_NUOPC
 !            if (associated(LIS_FieldList(fIndex)%hookup(nIndex)%importField)) then
 !              field = LIS_FieldList(fIndex)%hookup(nIndex)%importField
 !            else
-              field = ESMF_FieldCreate(name=LIS_FieldList(fIndex)%stateName, &
+              field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
                 grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
               if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 !            endif
@@ -794,12 +794,12 @@ module LIS_NUOPC
           if (ESMF_STDERRORCHECK(rc)) return  ! bail out
           if (exConn .OR. is%wrap%realizeAllExport) then
 !            if (associated(LIS_FieldList(fIndex)%hookup(nIndex)%exportArray)) then
-!              field = ESMF_FieldCreate(name=LIS_FieldList(fIndex)%stateName, &
+!              field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
 !                grid=is%wrap%grids(nIndex), farray=LIS_FieldList(fIndex)%hookup(nIndex)%exportArray, &
 !                indexflag=ESMF_INDEX_DELOCAL, rc=rc)
 !              if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 !            else
-              field = ESMF_FieldCreate(name=LIS_FieldList(fIndex)%stateName, &
+              field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
                 grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
               if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 !            endif
