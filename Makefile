@@ -30,8 +30,8 @@ ifeq ($(BUILD_PREC),r4)
 override ESMF_F90COMPILECPPFLAGS += -DREAL4
 else ifeq ($(BUILD_PREC),r8)
 override ESMF_F90COMPILECPPFLAGS += -DREAL8
-else
-override ESMF_F90COMPILECPPFLAGS += -DREAL8
+#else
+#override ESMF_F90COMPILECPPFLAGS += -DREAL8
 endif
 
 # #################################
