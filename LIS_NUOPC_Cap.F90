@@ -916,6 +916,24 @@ module LIS_NUOPC
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       endif
 
+      ! Write init files if debugWrite is on
+      if (is%wrap%debugWrite) then
+        call beta_NUOPC_Write(is%wrap%NStateImp(nIndex), &
+          fileNamePrefix=trim(cname)//"_INIT_IMP"//"_D"//trim(nStr), &
+          singleFile=.true., &
+          overwrite=.true., &
+          relaxedFlag=.true., &
+          rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        call beta_NUOPC_Write(is%wrap%NStateExp(nIndex), &
+          fileNamePrefix=trim(cname)//"_INIT_EXP"//"_D"//trim(nStr), &
+          singleFile=.true., &
+          overwrite=.true., &
+          relaxedFlag=.true., &
+          rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      endif
+
       call ESMF_StateGet(is%wrap%NStateExp(nIndex),itemCount=itemCount, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return ! bail out
 

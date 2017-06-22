@@ -109,60 +109,53 @@ module beta_NUOPC_Log
     if(ESMF_STDERRORCHECK(rc)) return ! bail out  
    
     if (itemCount > 0 ) then
+
       allocate(itemNameList(itemCount),itemTypeList(itemCount),stat=stat)
       if (ESMF_LogFoundAllocError(statusToCheck=stat, &
         msg="Allocation of item list memory failed.", &
         line=__LINE__, file=FILENAME)) &
         return  ! bail out
-      call ESMF_StateGet(state, nestedFlag=.TRUE., &
+
+      call ESMF_StateGet(state, nestedFlag=nestedFlag, &
         itemNameList=itemNameList,itemTypeList=itemTypeList, rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    else
-      write (logMsg,"(A,A)") trim(llabel)//": ", &
-        trim(stateName)//" is empty."
-      call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
-    endif
 
-    do iIndex=1, itemCount
-      if (itemTypeList(iIndex) == ESMF_STATEITEM_ARRAY) then
-        itemTypeStr = 'ARRAY'
-      elseif (itemTypeList(iIndex) == ESMF_STATEITEM_ARRAYBUNDLE) then
-        itemTypeStr = 'ARRAYBUNDLE'
-      elseif (itemTypeList(iIndex) == ESMF_STATEITEM_FIELD) then
-        itemTypeStr = 'FIELD'
-      elseif (itemTypeList(iIndex) == ESMF_STATEITEM_FIELDBUNDLE) then
-        itemTypeStr = 'FIELDBUNDLE'
-      elseif (itemTypeList(iIndex) == ESMF_STATEITEM_ROUTEHANDLE) then
-        itemTypeStr = 'ROUTEHANDLE'
-      elseif (itemTypeList(iIndex) == ESMF_STATEITEM_STATE) then
-        itemTypeStr = 'STATE'
-      else
-        itemTypeStr = 'UNKNOWN'
-      endif
+      do iIndex=1, itemCount
 
-      write (logMsg,"(A,A,(A,I0,A,I0,A),A)") trim(llabel)//": ", &
-        trim(stateName), &
-        " StateItem(",iIndex," of ",itemCount,") ", &
-        trim(itemNameList(iIndex))//"["//trim(itemTypeStr)//"]"
-      call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
-      if (lfvalues) then
-        if (itemTypeList(iIndex) == ESMF_STATEITEM_FIELD) then
-          call ESMF_StateGet(state,itemName=itemNameList(iIndex), &
-            field=field,rc=rc)
-          if(ESMF_STDERRORCHECK(rc)) return ! bail out
-          call NUOPC_LogFieldLclVal(field, &
-            label=trim(llabel)//": "//trim(stateName), rc=rc)
-          if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        if (itemTypeList(iIndex) == ESMF_STATEITEM_ARRAY) then
+          itemTypeStr = 'ARRAY'
+        elseif (itemTypeList(iIndex) == ESMF_STATEITEM_ARRAYBUNDLE) then
+          itemTypeStr = 'ARRAYBUNDLE'
+        elseif (itemTypeList(iIndex) == ESMF_STATEITEM_FIELD) then
+          itemTypeStr = 'FIELD'
+        elseif (itemTypeList(iIndex) == ESMF_STATEITEM_FIELDBUNDLE) then
+          itemTypeStr = 'FIELDBUNDLE'
+        elseif (itemTypeList(iIndex) == ESMF_STATEITEM_ROUTEHANDLE) then
+          itemTypeStr = 'ROUTEHANDLE'
+        elseif (itemTypeList(iIndex) == ESMF_STATEITEM_STATE) then
+          itemTypeStr = 'STATE'
+        else
+          itemTypeStr = 'UNKNOWN'
         endif
-      endif
-    enddo
 
-    if (itemCount > 0) then
+        write (logMsg,"(A,A,(A,I0,A,I0,A),A)") trim(llabel)//": ", &
+          trim(stateName), &
+          " StateItem(",iIndex," of ",itemCount,") ", &
+          trim(itemNameList(iIndex))//"["//trim(itemTypeStr)//"]"
+        call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
+
+      enddo
+
       deallocate(itemNameList,itemTypeList,stat=stat)
       if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
         msg="Deallocation of item list memory failed.", &
         line=__LINE__, file=FILENAME)) &
         return  ! bail out
+
+    else
+      write (logMsg,"(A,A)") trim(llabel)//": ", &
+        trim(stateName)//" is empty."
+      call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
     endif
 
   end subroutine
