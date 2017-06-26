@@ -177,6 +177,8 @@ module LIS_NUOPC_Gluecode
     character(len=20)                  :: transferOffer  = ""
     logical                            :: adImport       = .FALSE.
     logical                            :: realizedImport = .FALSE.
+    logical                            :: directConn     = .FALSE.
+    logical                            :: sharedMem      = .FALSE.
     logical                            :: adExport       = .FALSE.
     logical                            :: realizedExport = .FALSE.
     character(len=100)                 :: lisForcVarname = ""
@@ -1087,28 +1089,36 @@ contains
         case ('liquid_fraction_of_soil_moisture_layer_1')              ! (23)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adImport = .TRUE.
+          LIS_FieldList(fIndex)%directConn = .TRUE.
+          LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%sh2o1
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%sh2o1_t
         case ('liquid_fraction_of_soil_moisture_layer_2')              ! (24)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adImport = .TRUE.
+          LIS_FieldList(fIndex)%directConn = .TRUE.
+          LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%sh2o2
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%sh2o2_t
         case ('liquid_fraction_of_soil_moisture_layer_3')              ! (25)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adImport = .TRUE.
+          LIS_FieldList(fIndex)%directConn = .TRUE.
+          LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%sh2o3
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%sh2o3_t
         case ('liquid_fraction_of_soil_moisture_layer_4')              ! (26)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adImport = .TRUE.
+          LIS_FieldList(fIndex)%directConn = .TRUE.
+          LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%sh2o4
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%sh2o4_t
@@ -1234,56 +1244,72 @@ contains
         case ('soil_moisture_fraction_layer_1')              ! (44)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adImport = .TRUE.
+          LIS_FieldList(fIndex)%directConn = .TRUE.
+          LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%smc1
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%smc1_t
         case ('soil_moisture_fraction_layer_2')              ! (45)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adImport = .TRUE.
+          LIS_FieldList(fIndex)%directConn = .TRUE.
+          LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%smc2
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%smc2_t
         case ('soil_moisture_fraction_layer_3')              ! (46)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adImport = .TRUE.
+          LIS_FieldList(fIndex)%directConn = .TRUE.
+          LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%smc3
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%smc3_t
         case ('soil_moisture_fraction_layer_4')              ! (47)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+          LIS_FieldList(fIndex)%adImport = .TRUE.
+          LIS_FieldList(fIndex)%directConn = .TRUE.
+          LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%smc4
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%smc4_t
         case ('soil_temperature_layer_1')              ! (48)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adImport = .TRUE.
+          LIS_FieldList(fIndex)%directConn = .TRUE.
+          LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%stc1
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%stc1_t
         case ('soil_temperature_layer_2')              ! (49)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adImport = .TRUE.
+          LIS_FieldList(fIndex)%directConn = .TRUE.
+          LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%stc2
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%stc2_t
         case ('soil_temperature_layer_3')              ! (50)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adImport = .TRUE.
+          LIS_FieldList(fIndex)%directConn = .TRUE.
+          LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%stc3
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%stc3_t
         case ('soil_temperature_layer_4')              ! (51)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%directConn = .TRUE.
+          LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%stc4
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%stc4_t
@@ -1495,35 +1521,44 @@ contains
           itemName=trim(LIS_FieldList(fIndex)%stateName), &
           itemType=itemType, rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return
-        call LIS_ForcFieldGet(LIS_FieldList(fIndex)%lisForcVarname, &
-          nest=nest,itemType=lisItemType,rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return
 
-        if (itemType == ESMF_STATEITEM_FIELD) then
-          if (lisItemType == ESMF_STATEITEM_FIELD ) then
-            call ESMF_StateGet(importState, &
-              itemName=trim(LIS_FieldList(fIndex)%stateName), &
-              field=importField,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
-            call LIS_ForcFieldGet(LIS_FieldList(fIndex)%lisForcVarname, &
-              nest=nest,field=lisImportField,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
-            call LIS_CopyToLIS(field=importField, &
-              fieldLIS=lisImportField, &
-              nest=nest,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
-          else
-            call ESMF_LogWrite( trim(l_label)// &
-              " field is not present in LIS_Forc state="// &
-              trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING)
-          endif
+        if (LIS_FieldList(fIndex)%directConn) then
+          call LIS_CopyToNoah_3_3(field=importField, &
+            stdName=LIS_FieldList(fIndex)%stdName, &
+            nest=nest,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return ! bail out 
         else
-          call ESMF_LogWrite( trim(l_label)// &
-            " field is not present in NUOPC import state="// &
-            trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING) 
-          cycle 
-       endif
-      endif
+          if (itemType == ESMF_STATEITEM_FIELD) then
+
+            call LIS_ForcFieldGet(LIS_FieldList(fIndex)%lisForcVarname, & 
+              nest=nest,itemType=lisItemType,rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return
+
+            if (lisItemType == ESMF_STATEITEM_FIELD ) then
+              call ESMF_StateGet(importState, &
+                itemName=trim(LIS_FieldList(fIndex)%stateName), &
+                field=importField,rc=rc)
+              if(ESMF_STDERRORCHECK(rc)) return ! bail out
+              call LIS_ForcFieldGet(LIS_FieldList(fIndex)%lisForcVarname, &
+                nest=nest,field=lisImportField,rc=rc)
+              if(ESMF_STDERRORCHECK(rc)) return ! bail out
+              call LIS_CopyToLIS(field=importField, &
+                fieldLIS=lisImportField, &
+                nest=nest,rc=rc)
+              if(ESMF_STDERRORCHECK(rc)) return ! bail out
+            else ! not present in LIS_Forc
+              call ESMF_LogWrite( trim(l_label)// &
+                " field is not present in LIS_Forc state="// &
+                trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING)
+            endif ! check LIS_Forc
+          else ! not present in NOUPC import
+            call ESMF_LogWrite( trim(l_label)// &
+             " field is not present in NUOPC import state="// &
+              trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING) 
+            cycle
+          endif ! check NUOPC import stated
+        endif ! direct connection
+      endif ! realizedImport
     enddo
 
 #ifdef DEBUG
