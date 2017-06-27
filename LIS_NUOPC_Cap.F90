@@ -821,18 +821,23 @@ module LIS_NUOPC
           call ESMF_StateRemove(is%wrap%NStateImp(nIndex),(/trim(LIS_FieldList(fIndex)%stateName)/), &
             relaxedflag=.true.,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
-          LIS_FieldList(fIndex)%realizedImport = .FALSE.
         elseif (realizeImp) then
           call ESMF_StateRemove(is%wrap%NStateExp(nIndex),(/trim(LIS_FieldList(fIndex)%stateName)/), &
             relaxedflag=.true.,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
-          LIS_FieldList(fIndex)%realizedExport = .FALSE.
           field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
             grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return  ! bail out
           call NUOPC_Realize(is%wrap%NStateImp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedImport = .TRUE.
+        else
+          call ESMF_StateRemove(is%wrap%NStateExp(nIndex),(/trim(LIS_FieldList(fIndex)%stateName)/), &
+            relaxedflag=.true.,rc=rc)
+          if (ESMF_STDERRORCHECK(rc)) return
+          call ESMF_StateRemove(is%wrap%NStateImp(nIndex),(/trim(LIS_FieldList(fIndex)%stateName)/), &
+            relaxedflag=.true.,rc=rc)
+          if (ESMF_STDERRORCHECK(rc)) return
         endif
       enddo
  
