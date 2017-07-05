@@ -605,9 +605,6 @@ contains
     call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
 #endif
 
-    call LIS_ImportFieldsCopy(nest,importState,rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
-
     ! See LIS_lsmcpl_pluginMod for subroutines registered to: 
     ! "retrospective", "WRF coupling", "NUOPC coupling"
     call LIS_surfaceModel_setexport(nest)
