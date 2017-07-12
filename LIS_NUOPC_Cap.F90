@@ -1105,12 +1105,14 @@ subroutine CheckImport(gcomp, rc)
     type(type_InternalState)    :: is
     integer                     :: nIndex
     character(len=9)            :: nStr
-    character(len=10)           :: sStr
     type(ESMF_Clock)            :: modelClock
     type(ESMF_Time)             :: modelCurrTime
-    type(ESMF_Time)             :: modelStopTime
+    type(ESMF_Time)             :: modelStartTime
+    type(ESMF_Field)            :: field
+    type(ESMF_StateItem_Flag)   :: itemType
     logical                     :: allCurrTime
-    logical                     :: allStopTime
+    logical                     :: fieldCurrTime
+    integer                     :: fIndex
 
     rc = ESMF_SUCCESS
 
@@ -1132,25 +1134,72 @@ subroutine CheckImport(gcomp, rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! get the stop time out of the clock
-    call ESMF_ClockGet(modelClock, currTime=modelCurrTime, stopTime=modelStopTime, rc=rc)
+    call ESMF_ClockGet(modelClock, startTime=modelStartTime, &
+      currTime=modelCurrTime, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
-    ! check that Fields in the importState show correct timestamp
     do nIndex=1,is%wrap%nnests
-      write (nStr,"(I0)") nIndex
-
-      allCurrTime = NUOPC_IsAtTime(is%wrap%NStateImp(nIndex), modelCurrTime, rc=rc)
+    write (nStr,"(I0)") nIndex
+      allCurrTime = NUOPC_IsAtTime(is%wrap%NStateImp(nIndex), modelCurrTime,rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-      allStopTime = NUOPC_IsAtTime(is%wrap%NStateImp(nIndex), modelStopTime, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-      if (.not.(allCurrTime.or.allStopTime)) then
-        call ESMF_LogSetError(ESMF_FAILURE, &
-          msg=METHOD//": NUOPC INCOMPATIBILITY DETECTED: Import Fields "// &
-          "Nest="//trim(nStr)//" not at correct time", &
-          line=__LINE__,file=__FILE__,rcToReturn=rc)
-        return  ! bail out
+      if (.NOT.allCurrTime) then
+        call ESMF_LogWrite(METHOD//": NUOPC INCOMPATIBILITY DETECTED: Import Fields "// &
+          "Nest="//trim(nStr)//" not at correct time", ESMF_LOGMSG_WARNING)
       endif
     enddo
+
+#if 0
+    if ( modelCurrTime /= modelStartTime) then
+
+      ! check that Fields in the importState show correct timestamp
+      do nIndex=1,is%wrap%nnests
+      write (nStr,"(I0)") nIndex
+
+        allCurrTime = NUOPC_IsAtTime(is%wrap%NStateImp(nIndex), modelCurrTime, rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        if (.NOT.allCurrTime) then
+          call ESMF_LogSetError(ESMF_FAILURE, &
+            msg=METHOD//": NUOPC INCOMPATIBILITY DETECTED: Import Fields "// &
+            "Nest="//trim(nStr)//" not at correct time", &
+            line=__LINE__,file=__FILE__,rcToReturn=rc)
+          return  ! bail out
+        endif
+      enddo
+
+    else
+
+      ! check that Fields in the importState show correct timestamp
+      do nIndex=1,is%wrap%nnests
+        write (nStr,"(I0)") nIndex
+
+        do fIndex = 1, size(LIS_FieldList) 
+          if (.NOT.LIS_FieldList(fIndex)%sharedMem) then
+            call ESMF_StateGet(is%wrap%NStateImp(nIndex), &
+              itemName=LIS_FieldList(fIndex)%stateName,itemType=itemType,rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return
+            if ( itemType /= ESMF_STATEITEM_FIELD) cycle
+            call ESMF_StateGet(is%wrap%NStateImp(nIndex), &
+              itemName=LIS_FieldList(fIndex)%stateName,field=field,rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return 
+            fieldCurrTime = NUOPC_IsAtTime(field, modelCurrTime, rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+            if (fieldCurrTime) then
+              call ESMF_LogSetError(ESMF_FAILURE, &
+                msg=METHOD//": NUOPC INCOMPATIBILITY DETECTED: Import Fields"// &
+                " Nest="//trim(nStr)//&
+                " Field="//trim(LIS_FieldList(fIndex)%stateName)//&
+                " not at correct time", &
+                line=__LINE__,file=__FILE__,rcToReturn=rc)
+              return  ! bail out
+            endif
+          endif
+        enddo
+
+      enddo
+
+    endif
+#endif
+
 
 #ifdef DEBUG
     call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)

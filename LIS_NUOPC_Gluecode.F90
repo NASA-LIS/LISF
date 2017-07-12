@@ -1574,6 +1574,7 @@ contains
     endif
 
     do fIndex = 1,size(LIS_FieldList)
+      ! Skip over field if it is not realized in any import state
       if (LIS_FieldList(fIndex)%realizedImport) then
         ! Check itemType to see if field exists in import state
         call ESMF_StateGet(importState, &
@@ -1581,23 +1582,23 @@ contains
           itemType=itemType, rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return
 
-        if (LIS_FieldList(fIndex)%directConn) then
-          call LIS_CopyToNoah_3_3(field=importField, &
-            stdName=LIS_FieldList(fIndex)%stdName, &
-            nest=nest,rc=rc)
-          if(ESMF_STDERRORCHECK(rc)) return ! bail out 
-        else
-          if (itemType == ESMF_STATEITEM_FIELD) then
+        if (itemType == ESMF_STATEITEM_FIELD) then
 
+          call ESMF_StateGet(importState, &
+            itemName=trim(LIS_FieldList(fIndex)%stateName), &
+            field=importField,rc=rc)
+
+          if (LIS_FieldList(fIndex)%directConn) then
+            call LIS_CopyToNoah_3_3(field=importField, &
+              stdName=LIS_FieldList(fIndex)%stdName, &
+              nest=nest,rc=rc)
+            if(ESMF_STDERRORCHECK(rc)) return ! bail out 
+          else
             call LIS_ForcFieldGet(LIS_FieldList(fIndex)%lisForcVarname, & 
               nest=nest,itemType=lisItemType,rc=rc)
             if (ESMF_STDERRORCHECK(rc)) return
 
             if (lisItemType == ESMF_STATEITEM_FIELD ) then
-              call ESMF_StateGet(importState, &
-                itemName=trim(LIS_FieldList(fIndex)%stateName), &
-                field=importField,rc=rc)
-              if(ESMF_STDERRORCHECK(rc)) return ! bail out
               call LIS_ForcFieldGet(LIS_FieldList(fIndex)%lisForcVarname, &
                 nest=nest,field=lisImportField,rc=rc)
               if(ESMF_STDERRORCHECK(rc)) return ! bail out
@@ -1610,13 +1611,13 @@ contains
                 " field is not present in LIS_Forc state="// &
                 trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING)
             endif ! check LIS_Forc
-          else ! not present in NOUPC import
-            call ESMF_LogWrite( trim(l_label)// &
-             " field is not present in NUOPC import state="// &
-              trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING) 
-            cycle
-          endif ! check NUOPC import stated
-        endif ! direct connection
+          endif ! direct connection vs LIS_FORC
+        else ! not present in NOUPC import
+          call ESMF_LogWrite( trim(l_label)// &
+           " field is not present in NUOPC import state="// &
+            trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING) 
+          cycle
+        endif ! Not present in import state
       endif ! realizedImport
     enddo
 
