@@ -1143,8 +1143,9 @@ subroutine CheckImport(gcomp, rc)
       allCurrTime = NUOPC_IsAtTime(is%wrap%NStateImp(nIndex), modelCurrTime,rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       if (.NOT.allCurrTime) then
-        call ESMF_LogWrite(METHOD//": NUOPC INCOMPATIBILITY DETECTED: Import Fields "// &
-          "Nest="//trim(nStr)//" not at correct time", ESMF_LOGMSG_WARNING)
+        call ESMF_LogWrite(trim(cname)//": NUOPC INCOMPATIBILITY DETECTED: "// &
+          "Import Fields Nest="//trim(nStr)//" not at correct time", &
+          ESMF_LOGMSG_WARNING)
       endif
     enddo
 
@@ -1183,7 +1184,7 @@ subroutine CheckImport(gcomp, rc)
             if (ESMF_STDERRORCHECK(rc)) return 
             fieldCurrTime = NUOPC_IsAtTime(field, modelCurrTime, rc=rc)
             if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-            if (fieldCurrTime) then
+            if (.NOT.fieldCurrTime) then
               call ESMF_LogSetError(ESMF_FAILURE, &
                 msg=METHOD//": NUOPC INCOMPATIBILITY DETECTED: Import Fields"// &
                 " Nest="//trim(nStr)//&
