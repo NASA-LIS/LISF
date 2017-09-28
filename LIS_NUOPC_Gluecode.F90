@@ -186,7 +186,7 @@ module LIS_NUOPC_Gluecode
     type(LIS_FieldHookup), allocatable :: hookup(:)
   end type
 
-  type(LIS_Field),dimension(73)  :: LIS_FieldList = (/ &
+  type(LIS_Field),dimension(76)  :: LIS_FieldList = (/ &
     LIS_Field(stdName='2m_air_temperature', &
       stateName='t2_f', &
       ampValue=1.d0, meanValue=0.d0, & 
@@ -477,8 +477,20 @@ module LIS_NUOPC_Gluecode
       units='-',transferOffer='will provide'), &
     LIS_Field(stdName='wind_speed', &
       stateName='wind_f', &
+      ampValue=1.d0, meanValue=0.d0, &
+      units='m/s ',transferOffer='will provide'), &
+    LIS_Field(stdName='surface_water_depth', &
+      stateName='sfcheadrt_f', &
       ampValue=1.d0, meanValue=0.d0, & 
-      units='m/s ',transferOffer='will provide')/)
+      units='mm',transferOffer='will provide'), &
+   LIS_Field(stdName='time_step_infiltration_excess', &
+      stateName='infxsrt', &
+      ampValue=1.d0, meanValue=0.d0, &
+      units='mm',transferOffer='will provide'), & 
+   LIS_Field(stdName='soil_column_drainage', &
+      stateName='soldrain', &
+      ampValue=1.d0, meanValue=0.d0, &
+      units='mm',transferOffer='will provide')/)
   
 !EOP
 
@@ -1526,6 +1538,31 @@ contains
 !          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
+        case ('surface_water_depth')              ! (74)
+!          if (allocated(#NOTAVAILABLE#%varname)) &
+!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+          LIS_FieldList(fIndex)%adImport = .TRUE.
+          LIS_FieldList(fIndex)%directConn = .TRUE.
+          LIS_FieldList(fIndex)%sharedMem = .TRUE.
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
+!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
+!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
+        case ('time_step_infiltration_excess')              ! (75)
+!          if (allocated(#NOTAVAILABLE#%varname)) &
+!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adImport=.FALSE.
+          LIS_FieldList(fIndex)%adExport=.TRUE.
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%infxsrt
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%infxsrt_t
+        case ('soil_column_drainage')              ! (76)
+!          if (allocated(#NOTAVAILABLE#%varname)) &
+!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adImport=.FALSE.
+          LIS_FieldList(fIndex)%adExport=.TRUE.
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%soldrain
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%soldrain_t
         case default
           call ESMF_LogWrite("LIS: Field hookup information missing. " //&
             "Skipping hookup: "//trim(LIS_FieldList(fIndex)%stdName), &

@@ -785,6 +785,12 @@ contains
             row = LIS_domain(nest)%tile(tile)%row
             noah33_struc(nest)%noah(tile)%stc(4) = farray(col,row)
           enddo
+        case ('surface_water_depth')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            noah33_struc(nest)%noah(tile)%sfhead1rt = farray(col,row)
+          enddo
         case default
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
             msg="Cannot directly hookup to noah33 "//trim(stdName), &
