@@ -132,6 +132,17 @@ override DEP_LINK_OBJS        += $(abspath $(GRIB_API_LIB))
 override DEP_LINK_OBJS        += $(abspath $(GRIB_API_LIBF90))
 override DEP_LINK_OBJS        += $(abspath $(JASPER_LIB))
 
+# ################################
+# Compile with WRF_HYDRO directives
+# #################################
+
+ifneq ($(WRF_HYDRO),)
+ifneq ($(WRF_HYDRO),0)
+override ESMF_F90COMPILECPPFLAGS += -DWRF_HYDRO
+override ESMF_CXXCOMPILECPPFLAGS += -DWRF_HYDRO
+endif
+endif
+
 # #######################
 # Primary Makefile Target
 # #######################
