@@ -55,7 +55,9 @@ ifndef INSTDIR
 INSTDIR  := LIS_$(shell date '+%Y-%m-%d-%H-%M-%S')
 endif
 
+ifndef INSTPATH
 INSTPATH := $(abspath $(DESTDIR)/$(INSTDIR))
+endif
 
 # ###############
 # Model Variables
@@ -128,9 +130,8 @@ CAP_FILES     := $(CAP_OBJS) $(CAP_MODS) $(CAP_LIB) $(CAP_VERS) $(CAP_MK)
 
 include $(MODEL_MKINC)
 override ESMF_F90COMPILEPATHS += -I$(MODEL_MODDIR)
-override DEP_LINK_OBJS        += $(abspath $(GRIB_API_LIB))
-override DEP_LINK_OBJS        += $(abspath $(GRIB_API_LIBF90))
-override DEP_LINK_OBJS        += $(abspath $(JASPER_LIB))
+override DEP_SHRD_PATH          = $(patsubst -L%,%,$(LIS_LIB_PATHS))
+override DEP_SHRD_LIBS          = $(patsubst -l%,%,$(LIS_LIB_FLAGS))
 
 # ################################
 # Compile with WRF_HYDRO directives
@@ -265,9 +266,9 @@ $(CAP_MK): $(CAP_LIB) $(CAP_MODS)
 	@echo "ESMF_DEP_FRONT     = $(CAP_DEP_FRONT)" >> $(CAP_MK)
 	@echo "ESMF_DEP_INCPATH   = $(CAP_DIR)" >> $(CAP_MK)
 	@echo "ESMF_DEP_CMPL_OBJS = " >> $(CAP_MK)
-	@echo "ESMF_DEP_LINK_OBJS = $(CAP_DIR)/$(CAP_LIB) $(DEP_LINK_OBJS)" >> $(CAP_MK)
-	@echo "ESMF_DEP_SHRD_PATH = " >> $(CAP_MK)
-	@echo "ESMF_DEP_SHRD_LIBS = " >> $(CAP_MK)
+	@echo "ESMF_DEP_LINK_OBJS = $(CAP_DIR)/$(CAP_LIB)" >> $(CAP_MK)
+	@echo "ESMF_DEP_SHRD_PATH = $(DEP_SHRD_PATH)" >> $(CAP_MK)
+	@echo "ESMF_DEP_SHRD_LIBS = $(DEP_SHRD_LIBS)" >> $(CAP_MK)
 
 # -----------------------------------------------------------------------------
 # Install Library, Modules, and Makefile Fragment
@@ -291,8 +292,8 @@ install_mk:
 	@echo "ESMF_DEP_INCPATH   = $(INSTPATH)" >> $(INSTPATH)/$(CAP_MK)
 	@echo "ESMF_DEP_CMPL_OBJS = " >> $(INSTPATH)/$(CAP_MK)
 	@echo "ESMF_DEP_LINK_OBJS = $(INSTPATH)/$(CAP_LIB) $(DEP_LINK_OBJS)" >> $(INSTPATH)/$(CAP_MK)
-	@echo "ESMF_DEP_SHRD_PATH = " >> $(INSTPATH)/$(CAP_MK)
-	@echo "ESMF_DEP_SHRD_LIBS = " >> $(INSTPATH)/$(CAP_MK)
+	@echo "ESMF_DEP_SHRD_PATH = $(DEP_SHRD_PATH)" >> $(INSTPATH)/$(CAP_MK)
+	@echo "ESMF_DEP_SHRD_LIBS = $(DEP_SHRD_LIBS)" >> $(INSTPATH)/$(CAP_MK)
 
 # ###########
 # Check Build
