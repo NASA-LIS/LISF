@@ -294,8 +294,6 @@ module LIS_NUOPC
   use beta_NUOPC_Fill
   use beta_NUOPC_Auxiliary
   use beta_NUOPC_Log
-  use beta_NUOPC_Base, only: &
-   beta_NUOPC_AddNamespace
 
   implicit none
   
@@ -657,12 +655,12 @@ module LIS_NUOPC
       endif
     else
       ! add namespace
-      call beta_NUOPC_AddNamespace(importState, &
+      call NUOPC_AddNamespace(importState, &
         domain="1", &
         nestedStateName="NestedStateImp_N1", &
         nestedState=is%wrap%NStateImp(1), rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-      call beta_NUOPC_AddNamespace(exportState, &
+      call NUOPC_AddNamespace(exportState, &
         domain="1", &
         nestedStateName="NestedStateExp_N1", &
         nestedState=is%wrap%NStateExp(1), rc=rc)
@@ -671,12 +669,12 @@ module LIS_NUOPC
 
     do nIndex = 2, is%wrap%nnests
       write (nStr,"(I0)") nIndex
-      call beta_NUOPC_AddNamespace(importState, &
+      call NUOPC_AddNamespace(importState, &
         domain=trim(nStr), &
         nestedStateName="NestedStateImp_N"//trim(nStr), &
         nestedState=is%wrap%NStateImp(nIndex), rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-      call beta_NUOPC_AddNamespace(exportState, &
+      call NUOPC_AddNamespace(exportState, &
         domain=trim(nStr), &
         nestedStateName="NestedStateExp_N"//trim(nStr), &
         nestedState=is%wrap%NStateExp(nIndex), rc=rc)
