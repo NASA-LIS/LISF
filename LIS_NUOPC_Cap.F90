@@ -655,13 +655,13 @@ module LIS_NUOPC
       endif
     else
       ! add namespace
-      call NUOPC_AddNamespace(importState, &
-        domain="1", &
+      call NUOPC_AddNestedState(importState, &
+        CplSet="1", &
         nestedStateName="NestedStateImp_N1", &
         nestedState=is%wrap%NStateImp(1), rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-      call NUOPC_AddNamespace(exportState, &
-        domain="1", &
+      call NUOPC_AddNestedState(exportState, &
+        CplSet="1", &
         nestedStateName="NestedStateExp_N1", &
         nestedState=is%wrap%NStateExp(1), rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
@@ -669,13 +669,13 @@ module LIS_NUOPC
 
     do nIndex = 2, is%wrap%nnests
       write (nStr,"(I0)") nIndex
-      call NUOPC_AddNamespace(importState, &
-        domain=trim(nStr), &
+      call NUOPC_AddNestedState(importState, &
+        CplSet=trim(nStr), &
         nestedStateName="NestedStateImp_N"//trim(nStr), &
         nestedState=is%wrap%NStateImp(nIndex), rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-      call NUOPC_AddNamespace(exportState, &
-        domain=trim(nStr), &
+      call NUOPC_AddNestedState(exportState, &
+        CplSet=trim(nStr), &
         nestedStateName="NestedStateExp_N"//trim(nStr), &
         nestedState=is%wrap%NStateExp(nIndex), rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
