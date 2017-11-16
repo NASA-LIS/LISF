@@ -712,16 +712,24 @@ contains
     select case (mode)
       case (LIS_Offline)
         ! Read in data from Met forcing sources listed in lis.config
+        T_ENTER("getmetforc")
         call LIS_get_met_forcing(nest)
+        T_EXIT("getmetforc")
       case (LIS_Coupled)
         ! Copy data from import state
+        T_ENTER("datacopy")
         call LIS_ImportFieldsCopy(nest,importState,rc=rc)
+        T_EXIT("datacopy")
         if(ESMF_STDERRORCHECK(rc)) return ! bail out
       case (LIS_Hybrid)
         ! Read in data from Met forcing sources listed in lis.config
+        T_ENTER("getmetforc")
         call LIS_get_met_forcing(nest)
+        T_EXIT("getmetforc")
         ! Copy data from import state
+        T_ENTER("datacopy")
         call LIS_ImportFieldsCopy(nest,importState,rc=rc)
+        T_EXIT("datacopy")
         if(ESMF_STDERRORCHECK(rc)) return ! bail out        
       case default
         call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
