@@ -5,6 +5,9 @@
 #define MODNAME "LIS_NUOPC_Gluecode"
 #include "LIS_NUOPC_Macros.h"
 
+#define T_ENTER(region) call ESMF_TraceRegionEnter(region)
+#define T_EXIT(region) call ESMF_TraceRegionExit(region)
+
 module LIS_NUOPC_Gluecode
 !BOP
 !
@@ -676,6 +679,11 @@ contains
     integer                        :: i, j
     integer                        :: timeStepSecs
 
+    character(len=10)              :: nestStr
+
+    write (nestStr, "(I0)") nest
+    T_ENTER("nest:"//nestStr)
+
     rc = ESMF_SUCCESS
 
 #ifdef DEBUG
@@ -722,18 +730,49 @@ contains
         return  ! bail out
     end select
 
+    T_ENTER("dynparms")
     call LIS_setDynparams(nest)
-    call LIS_perturb_forcing(nest)
-    call LIS_surfaceModel_f2t(nest)
-    call LIS_surfaceModel_run(nest)
-    call LIS_surfaceModel_perturb_states(nest)
-    call LIS_readDAobservations(nest)
-    call LIS_perturb_DAobservations(nest)
-    call LIS_dataassim_run(nest)
-    call LIS_dataassim_output(nest)
+    T_EXIT("dynparms")
 
+    T_ENTER("pertforc")
+    call LIS_perturb_forcing(nest)
+    T_EXIT("pertforc")
+
+    T_ENTER("f2t")	
+    call LIS_surfaceModel_f2t(nest)
+    T_EXIT("f2t")		
+
+    T_ENTER("smrun")	
+    call LIS_surfaceModel_run(nest)
+    T_EXIT("smrun")
+
+    T_ENTER("pertstat")	
+    call LIS_surfaceModel_perturb_states(nest)
+    T_EXIT("pertstat") 
+
+    T_ENTER("readda")		
+    call LIS_readDAobservations(nest)
+    T_EXIT("readda")
+
+    T_ENTER("pertda")		
+    call LIS_perturb_DAobservations(nest)
+    T_EXIT("pertda")		
+
+    T_ENTER("darun")	
+    call LIS_dataassim_run(nest)
+    T_EXIT("darun")
+
+    T_ENTER("daout")		
+    call LIS_dataassim_output(nest)
+    T_EXIT("daout")
+
+    T_ENTER("smout")	
     call LIS_surfaceModel_output(nest)
+    T_EXIT("smout")		
+
+    T_ENTER("smrest")	
     call LIS_surfaceModel_writerestart(nest)
+    T_EXIT("smrest")
 
     ! =========================================================
     ! Write LIS output data to export state
@@ -833,6 +872,8 @@ contains
 #ifdef DEBUG
     call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
 #endif
+
+    T_EXIT("nest:"//nestStr)	
 
   end subroutine
 
