@@ -564,7 +564,7 @@ contains
 
     if(.not.LIS_initialized) then
        if (present(configFile)) LIS_rc%lis_config_file = trim(configFile)
-       call LIS_config_init(vm) ! "retrospective"
+       call LIS_config_init(vm=vm) ! "retrospective"
        call LIS_domain_init
        call LIS_createTmnUpdate
        call LIS_param_init
