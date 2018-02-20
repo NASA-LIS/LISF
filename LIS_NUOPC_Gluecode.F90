@@ -127,9 +127,7 @@ module LIS_NUOPC_Gluecode
     LIS_FORC_Z0, &
     LIS_FORC_GVF, &
     LIS_FORC_CO2
-  use beta_NUOPC_Log
-  use beta_NUOPC_FileRead
-  use beta_NUOPC_Fill
+  use LIS_ESMF_Extensions
   use LIS_NUOPC_DataCopy
 
   IMPLICIT NONE
@@ -1835,7 +1833,7 @@ contains
             itemName=trim(LIS_FieldList(fIndex)%stateName), &
             field=importField,rc=rc)
           if(ESMF_STDERRORCHECK(rc)) return ! bail out
-          call beta_ESMF_FieldFill(importField, dataFillScheme="sincos", &
+          call LIS_ESMF_FieldFill(importField, dataFillScheme="sincos", &
             step=step, amplitude=LIS_FieldList(fIndex)%ampValue, &
             meanValue=LIS_FieldList(fIndex)%meanValue, rc=rc)
         else
@@ -1898,7 +1896,7 @@ contains
             itemName=trim(LIS_FieldList(fIndex)%stateName), &
             field=exportField,rc=rc)
           if(ESMF_STDERRORCHECK(rc)) return ! bail out
-          call beta_ESMF_FieldFill(exportField, dataFillScheme="sincos", &
+          call LIS_ESMF_FieldFill(exportField, dataFillScheme="sincos", &
             step=step, amplitude=LIS_FieldList(fIndex)%ampValue, &
             meanValue=LIS_FieldList(fIndex)%meanValue, rc=rc)
         else
@@ -2041,10 +2039,10 @@ contains
       return  ! bail out
     endif
 
-    call NUOPC_NetcdfReadIXJX("lon",trim(LIS_rc%paramfile(nest)), &
+    call LIS_ESMF_NetcdfReadIXJX("lon",trim(LIS_rc%paramfile(nest)), &
       (/istart,jstart/),coordXcenter,rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-    call NUOPC_NetcdfReadIXJX("lat",trim(LIS_rc%paramfile(nest)), &
+    call LIS_ESMF_NetcdfReadIXJX("lat",trim(LIS_rc%paramfile(nest)), &
       (/istart,jstart/),coordYcenter,rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
@@ -2078,7 +2076,7 @@ contains
       staggerloc=ESMF_STAGGERLOC_CENTER, &
       farrayPtr=gridmask, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-    call NUOPC_NetcdfReadIXJX("LANDMASK",trim(LIS_rc%paramfile(nest)), &
+    call LIS_ESMF_NetcdfReadIXJX("LANDMASK",trim(LIS_rc%paramfile(nest)), &
       (/istart,jstart/),gridmask,rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
@@ -2852,16 +2850,16 @@ contains
             ': LIS_ForcFieldGet failed for '//trim(field%lisForcVarname), &
             ESMF_LOGMSG_ERROR)
           else
-            call NUOPC_LogFieldLclVal(importField, &
+            call LIS_ESMF_LogFieldLclVal(importField, &
               label=trim(label)//": Nest="//trim(nStr)//" import")
           endif
         endif
         if (eAssoc) then
-          call NUOPC_LogFarrayLclVal(field%hookup(nIndex)%exportArray, &
+          call LIS_ESMF_LogFarrayLclVal(field%hookup(nIndex)%exportArray, &
             label=trim(label)//": Nest="//trim(nStr)//" export2D")
         endif
         if (tAssoc) then
-          call NUOPC_LogFarrayLclVal(field%hookup(nIndex)%exportArray_t, &
+          call LIS_ESMF_LogFarrayLclVal(field%hookup(nIndex)%exportArray_t, &
             label=trim(label)//": Nest="//trim(nStr)//" export1D")
         endif
       enddo

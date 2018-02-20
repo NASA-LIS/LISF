@@ -291,9 +291,7 @@ module LIS_NUOPC
     model_label_Advance     => label_Advance, &
     model_label_Finalize    => label_Finalize
   use LIS_NUOPC_Gluecode
-  use beta_NUOPC_Fill
-  use beta_NUOPC_Auxiliary
-  use beta_NUOPC_Log
+  use LIS_ESMF_Extensions
 
   implicit none
   
@@ -309,6 +307,7 @@ module LIS_NUOPC
     character(len=64)     :: configFile    = 'lis.config'
     logical               :: realizeAllExport = .FALSE.
     logical               :: nestToNest    = .FALSE.
+    logical               :: lwrite_debug  = .FALSE.
     logical               :: lwrite_grid   = .TRUE.
     logical               :: llog_memory   = .FALSE.
     logical               :: ltestfill_imp = .FALSE.
@@ -316,14 +315,12 @@ module LIS_NUOPC
     integer               :: nnests        = 0
     integer               :: nfields       = size(LIS_FieldList)
     integer               :: timeSlice     = 0
-    logical                             :: rstrtWrite = .FALSE.
-    integer                             :: rstrtIntvlInt = 0
-    type(ESMF_TimeInterval)             :: rstrtIntvl
-    type(ESMF_TimeInterval)             :: rstrtTimer
-    logical                             :: debugWrite = .FALSE.
+    integer               :: debugImpSlice = 1
+    integer               :: debugExpSlice = 1
     integer                             :: debugIntvlInt = 0
     type(ESMF_TimeInterval)             :: debugIntvl
-    type(ESMF_TimeInterval)             :: debugTimer
+    type(ESMF_TimeInterval)             :: debugImpAccum
+    type(ESMF_TimeInterval)             :: debugExpAccum
     type(ESMF_Grid),allocatable         :: grids(:)
     type(ESMF_Clock),allocatable        :: clocks(:)
     type(ESMF_TimeInterval),allocatable :: stepAccum(:)
@@ -472,15 +469,6 @@ module LIS_NUOPC
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     is%wrap%realizeAllExport = (trim(value)=="true")
 
-    ! Restart Write Interval
-    call ESMF_AttributeGet(gcomp, name="restart_interval", value=value, defaultValue="default", &
-      convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-    is%wrap%rstrtIntvlInt = ESMF_UtilString2Int(value, &
-      specialStringList=(/"default","yearly","hourly","daily"/), &
-      specialValueList=(/0,31536000,3600,86400/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
     ! Debug Write Interval
     call ESMF_AttributeGet(gcomp, name="debug_interval", value=value, defaultValue="default", &
       convention="NUOPC", purpose="Instance", rc=rc)
@@ -489,6 +477,16 @@ module LIS_NUOPC
       specialStringList=(/"default","yearly","hourly","daily"/), &
       specialValueList=(/0,31536000,3600,86400/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (is%wrap%debugIntvlInt /= 0) then
+      is%wrap%lwrite_debug=.TRUE.
+      call ESMF_TimeIntervalSet(is%wrap%debugIntvl, &
+        s=is%wrap%debugIntvlInt, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      call ESMF_TimeIntervalSet(is%wrap%debugImpAccum, s_r8=0._ESMF_KIND_R8, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      call ESMF_TimeIntervalSet(is%wrap%debugExpAccum, s_r8=0._ESMF_KIND_R8, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    endif
 
     ! Verbosity
     call ESMF_AttributeGet(gcomp, name="verbosity", value=value, defaultValue="default", &
@@ -535,23 +533,7 @@ module LIS_NUOPC
       convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     is%wrap%ltestfill_exp = (trim(value)=="true")
-   
-    ! Convert restart interval to ESMF_TimeInterval
-    call ESMF_TimeIntervalSet(is%wrap%rstrtIntvl, &
-      s=is%wrap%rstrtIntvlInt, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-    if (is%wrap%rstrtIntvlInt /= 0) then
-      is%wrap%rstrtWrite = .TRUE.
-    endif
-
-    ! Convert debug interval to ESMF_TimeInterval
-    call ESMF_TimeIntervalSet(is%wrap%debugIntvl, &
-      s=is%wrap%debugIntvlInt, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-    if (is%wrap%debugIntvlInt /= 0) then
-      is%wrap%debugWrite = .TRUE.
-    endif
-
+ 
     ! Switch to IPDv03 by filtering all other phaseMap entries
     call NUOPC_CompFilterPhaseMap(gcomp, ESMF_METHOD_INITIALIZE, &
       acceptStringList=(/"IPDv03p"/), rc=rc)
@@ -758,7 +740,7 @@ module LIS_NUOPC
       
       ! Write grid to NetCDF file.
       if (is%wrap%lwrite_grid) then
-        call beta_NUOPC_GridWrite(is%wrap%grids(nIndex), &
+        call LIS_ESMF_GridWrite(is%wrap%grids(nIndex), &
           trim(cname)//'_grid_nest_'//trim(nStr)//".nc", rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       endif
@@ -839,9 +821,9 @@ module LIS_NUOPC
         endif
       enddo
  
-      call NUOPC_FillState(is%wrap%NStateImp(nIndex),value=MISSINGVALUE,rc=rc)
+      call LIS_ESMF_FillState(is%wrap%NStateImp(nIndex),value=MISSINGVALUE,rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
-      call NUOPC_FillState(is%wrap%NStateExp(nIndex),value=MISSINGVALUE,rc=rc)
+      call LIS_ESMF_FillState(is%wrap%NStateExp(nIndex),value=MISSINGVALUE,rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
 
       is%wrap%modes(nIndex) = LIS_RunModeGet(LIS_FieldList,is%wrap%NStateImp(nIndex),rc=rc)
@@ -931,31 +913,13 @@ module LIS_NUOPC
       endif
 
       if (is%wrap%verbosity >= VERBOSITY_LV2) then
-        call NUOPC_LogState(is%wrap%NStateImp(nIndex), &
+        call LIS_ESMF_LogState(is%wrap%NStateImp(nIndex), &
           label=trim(cname)//": ImportState Init Nest="//trim(nStr), &
           fvalues=.TRUE.,rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-        call NUOPC_LogState(is%wrap%NStateExp(nIndex), &
+        call LIS_ESMF_LogState(is%wrap%NStateExp(nIndex), &
           label=trim(cname)//": ExportState Init Nest="//trim(nStr), &
           fvalues=.TRUE.,rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-      endif
-
-      ! Write init files if debugWrite is on
-      if (is%wrap%debugWrite) then
-        call beta_NUOPC_Write(is%wrap%NStateImp(nIndex), &
-          fileNamePrefix=trim(cname)//"_INIT_IMP"//"_D"//trim(nStr), &
-          singleFile=.true., &
-          overwrite=.true., &
-          relaxedFlag=.true., &
-          rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-        call beta_NUOPC_Write(is%wrap%NStateExp(nIndex), &
-          fileNamePrefix=trim(cname)//"_INIT_EXP"//"_D"//trim(nStr), &
-          singleFile=.true., &
-          overwrite=.true., &
-          relaxedFlag=.true., &
-          rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       endif
 
@@ -993,6 +957,23 @@ module LIS_NUOPC
         file=__FILE__)) &
         return  ! bail out
     enddo
+
+    ! Write init files if lwrite_debug is on
+    if (is%wrap%lwrite_debug) then
+      do nIndex=1,is%wrap%nnests
+        write (nStr,"(I0)") nIndex
+        call NUOPC_Write(is%wrap%NStateImp(nIndex), &
+          fileNamePrefix="field_"//trim(cname)//"_imp_D"//trim(nStr)//'_', &
+          overwrite=.false., timeslice=is%wrap%debugImpSlice, rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        call NUOPC_Write(is%wrap%NStateExp(nIndex), &
+          fileNamePrefix="field_"//trim(cname)//"_exp_D"//trim(nStr)//'_', &
+          overwrite=.false., timeslice=is%wrap%debugExpSlice, rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      enddo
+      is%wrap%debugImpSlice = is%wrap%debugImpSlice + 1
+      is%wrap%debugExpSlice = is%wrap%debugExpSlice + 1
+    endif
 
     ! set InitializeDataComplete Attribute to "true", indicating to the
     ! generic code that all inter-model data dependencies are satisfied
@@ -1065,13 +1046,14 @@ module LIS_NUOPC
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     enddo
 
-    call ESMF_TimeIntervalSet(is%wrap%rstrtTimer, &
-      s_r8=0._ESMF_KIND_R8, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
-    call ESMF_TimeIntervalSet(is%wrap%debugTimer, &
-      s_r8=0._ESMF_KIND_R8, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (is%wrap%lwrite_debug) then
+      call ESMF_TimeIntervalSet(is%wrap%debugImpAccum, &
+        s_r8=0._ESMF_KIND_R8, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      call ESMF_TimeIntervalSet(is%wrap%debugExpAccum, &
+        s_r8=0._ESMF_KIND_R8, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    endif
 
     call ESMF_TimeIntervalSet(modelTimestep, &
       s_r8=mindt, rc=rc)
@@ -1277,30 +1259,21 @@ subroutine CheckImport(gcomp, rc)
     ! will come in by one internal timeStep advanced. This goes until the
     ! stopTime of the internal Clock has been reached.
 
-    ! Write debug files
-    if (is%wrap%debugWrite) then    
-      is%wrap%debugTimer = is%wrap%debugTimer + timeStep
-      if (is%wrap%debugTimer >= is%wrap%debugIntvl) then
+    ! Write import files
+    if (is%wrap%lwrite_debug) then    
+      is%wrap%debugImpAccum = is%wrap%debugImpAccum + timeStep
+      if (is%wrap%debugImpAccum >= is%wrap%debugIntvl) then
         do nIndex=1,is%wrap%nnests
           write (nStr,"(I0)") nIndex
-          call beta_NUOPC_Write(is%wrap%NStateImp(nIndex), &
-            fileNamePrefix=trim(cname)//"_DEBUG_IMP_"//trim(currTimeStr)//"_D"//trim(nStr), &
-            singleFile=.true., &
-            overwrite=.true., &
-            relaxedFlag=.true., &
-            rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-          call beta_NUOPC_Write(is%wrap%NStateExp(nIndex), &
-            fileNamePrefix=trim(cname)//"_DEBUG_EXP_"//trim(currTimeStr)//"_D"//trim(nStr), &
-            singleFile=.true., &
-            overwrite=.true., &
-            relaxedFlag=.true., &
-            rc=rc)
+          CALL NUOPC_Write(is%wrap%NStateImp(nIndex), &
+            fileNamePrefix="field_"//TRIM(cname)//"_imp_D"//TRIM(nStr)//'_', &
+            overwrite=.false., timeslice=is%wrap%debugImpSlice, rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return  ! bail out
         enddo
-        call ESMF_TimeIntervalSet(is%wrap%debugTimer, &
+        call ESMF_TimeIntervalSet(is%wrap%debugImpAccum, &
           s_r8=0._ESMF_KIND_R8, rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        is%wrap%debugImpSlice = is%wrap%debugImpSlice + 1
       endif
     endif
 
@@ -1317,7 +1290,7 @@ subroutine CheckImport(gcomp, rc)
       endif
 
       if (is%wrap%verbosity >= VERBOSITY_LV2) then
-        call NUOPC_LogState(is%wrap%NStateImp(nIndex), &
+        call LIS_ESMF_LogState(is%wrap%NStateImp(nIndex), &
           label=trim(cname)//": ImportState Slice="//trim(sStr)//" Nest="//trim(nStr), &
           fvalues=.TRUE.,rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
@@ -1354,30 +1327,21 @@ subroutine CheckImport(gcomp, rc)
 
     enddo
 
-    ! Write restart files
-    if (is%wrap%rstrtWrite) then
-      is%wrap%rstrtTimer = is%wrap%rstrtTimer + timeStep
-      if (is%wrap%rstrtTimer >= is%wrap%rstrtIntvl) then
+    ! Write export files
+    if (is%wrap%lwrite_debug) then
+      is%wrap%debugExpAccum = is%wrap%debugExpAccum + timeStep
+      if (is%wrap%debugExpAccum >= is%wrap%debugIntvl) then
         do nIndex=1,is%wrap%nnests
           write (nStr,"(I0)") nIndex
-          call beta_NUOPC_Write(is%wrap%NStateImp(nIndex), &
-            fileNamePrefix=trim(cname)//"_RSTRT_IMP_"//trim(advEndTimeStr)//"_D"//trim(nStr), &
-            singleFile=.true., &
-            overwrite=.true., &
-            relaxedFlag=.true., &
-            rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-          call beta_NUOPC_Write(is%wrap%NStateExp(nIndex), &
-            fileNamePrefix=trim(cname)//"_RSTRT_EXP_"//trim(advEndTimeStr)//"_D"//trim(nStr), &
-            singleFile=.true., &
-            overwrite=.true., &
-            relaxedFlag=.true., &
-            rc=rc)
+          CALL NUOPC_Write(is%wrap%NStateExp(nIndex), &
+            fileNamePrefix="field_"//TRIM(cname)//"_exp_D"//TRIM(nStr)//'_', &
+            overwrite=.false., timeslice=is%wrap%debugExpSlice, rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return  ! bail out
         enddo
-        call ESMF_TimeIntervalSet(is%wrap%rstrtTimer, &
+        call ESMF_TimeIntervalSet(is%wrap%debugExpAccum, &
           s_r8=0._ESMF_KIND_R8, rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        is%wrap%debugExpSlice = is%wrap%debugExpSlice + 1
       endif
     endif
 
@@ -1435,27 +1399,6 @@ subroutine CheckImport(gcomp, rc)
 
     call ESMF_TimeGet(currTime, timeString=currTimeStr, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
-    ! write final state
-    if (is%wrap%debugWrite) then
-      do nIndex=1,is%wrap%nnests
-        write (nStr,"(I0)") nIndex
-        call beta_NUOPC_Write(is%wrap%NStateImp(nIndex), &
-          fileNamePrefix=trim(cname)//"_FINAL_IMP_"//trim(currTimeStr)//"_D"//trim(nStr), &
-          singleFile=.true., &
-          overwrite=.true., &
-          relaxedFlag=.true., &
-          rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-        call beta_NUOPC_Write(is%wrap%NStateExp(nIndex), &
-          fileNamePrefix=trim(cname)//"_FINAL_EXP_"//trim(currTimeStr)//"_D"//trim(nStr), &
-          singleFile=.true., &
-          overwrite=.true., &
-          relaxedFlag=.true., &
-          rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-      enddo
-    endif
 
     ! finalize the LIS model
     do nIndex=1,is%wrap%nnests
@@ -1641,13 +1584,7 @@ subroutine CheckImport(gcomp, rc)
       'Realze All Exports     = ',is%wrap%realizeAllExport
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
     write (logMsg, "(A,(A,L1))") trim(label)//': ', &
-      'Write Restart Files    = ',is%wrap%rstrtWrite
-    call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
-    write (logMsg, "(A,(A,I0))") trim(label)//': ', &
-      'Restart Write Interval = ',is%wrap%rstrtIntvlInt
-    call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
-    write (logMsg, "(A,(A,L1))") trim(label)//': ', &
-      'Write Debug Files      = ',is%wrap%debugWrite
+      'Write Debug Files      = ',is%wrap%lwrite_debug
     call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
     write (logMsg, "(A,(A,I0))") trim(label)//': ', &
       'Debug Write Interval   = ',is%wrap%debugIntvlInt
