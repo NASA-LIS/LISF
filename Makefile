@@ -125,7 +125,7 @@ override ESMF_F90COMPILEPATHS += -I$(MODEL_MODDIR)
 override DEP_SHRD_PATH          = $(patsubst -L%,%,$(LIS_LIB_PATHS))
 override DEP_SHRD_LIBS          = $(patsubst -l%,%,$(LIS_LIB_FLAGS))
 
-# ################################
+# #################################
 # Compile with WRF_HYDRO directives
 # #################################
 
@@ -133,6 +133,16 @@ ifneq ($(WRF_HYDRO),)
 ifneq ($(WRF_HYDRO),0)
 override ESMF_F90COMPILECPPFLAGS += -DWRF_HYDRO
 override ESMF_CXXCOMPILECPPFLAGS += -DWRF_HYDRO
+endif
+endif
+
+# ##################################
+# Compile with GSM_EXTLND directives
+# ##################################
+ifneq ($(GSM_EXTLND),)
+ifneq ($(GSM_EXTLND),0)
+override ESMF_F90COMPILECPPFLAGS += -DGSM_EXTLND
+override ESMF_CXXCOMPILECPPFLAGS += -DGSM_EXTLND
 endif
 endif
 

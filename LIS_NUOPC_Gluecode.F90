@@ -452,10 +452,17 @@ module LIS_NUOPC_Gluecode
       stateName='qsfc_f', &
       ampValue=1.d0, meanValue=0.d0, & 
       units='kg/kg',transferOffer='will provide'), &
+#ifdef GSM_EXTLND
     LIS_Field(stdName='surface_temperature_land', &
       stateName='avgsurft', &
       ampValue=10.d0, meanValue=295.d0, & 
       units='K',transferOffer='will provide'), &
+#else
+    LIS_Field(stdName='surface_temperature', &
+      stateName='avgsurft', &
+      ampValue=10.d0, meanValue=295.d0, &
+      units='K',transferOffer='will provide'), &
+#endif
     LIS_Field(stdName='surface_upward_latent_heat_flux', &
       stateName='qle', &
       ampValue=500.d0, meanValue=-100.d0, & 
@@ -1537,6 +1544,7 @@ contains
 !          LIS_FieldList(fIndex)%adExport=.FALSE.
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
 !          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
+#ifdef GSM_EXTLND
         case ('surface_temperature_land')              ! (67)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
@@ -1545,6 +1553,16 @@ contains
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%avgsurft
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%avgsurft_t
+#else
+        case ('surface_temperature')              ! (67)
+!          if (allocated(#NOTAVAILABLE#%varname)) &
+!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adImport=.FALSE.
+          LIS_FieldList(fIndex)%adExport=.TRUE.
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%avgsurft
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%avgsurft_t
+#endif
         case ('surface_upward_latent_heat_flux')              ! (68)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
@@ -1620,7 +1638,7 @@ contains
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%soldrain
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%soldrain_t
 #endif
-#ifdef GSM
+#ifdef GSM_EXTLND
         case ('accum_plant_transpiration')              ! (77)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
 !            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
