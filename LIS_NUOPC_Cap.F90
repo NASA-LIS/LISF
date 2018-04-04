@@ -625,6 +625,10 @@ module LIS_NUOPC
 
     is%wrap%modes=LIS_Unknown
 
+#ifdef GSM_EXTLND
+    is%wrap%NStateImp(1) = importState
+    is%wrap%NStateExp(1) = exportState
+#else
     if (.NOT.is%wrap%nestToNest) then
       if (is%wrap%nnests.le.1) then
         is%wrap%NStateImp(1) = importState
@@ -662,6 +666,7 @@ module LIS_NUOPC
         nestedState=is%wrap%NStateExp(nIndex), rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     enddo
+#endif
 
     !!
     !! advertise import and export fields in each nest
