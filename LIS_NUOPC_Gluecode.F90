@@ -5,8 +5,13 @@
 #define MODNAME "LIS_NUOPC_Gluecode"
 #include "LIS_NUOPC_Macros.h"
 
+#ifndef GSM_EXTLND
 #define T_ENTER(region) call ESMF_TraceRegionEnter(region)
 #define T_EXIT(region) call ESMF_TraceRegionExit(region)
+#else
+#define T_ENTER(region) 
+#define T_EXIT(region)
+#endif
 
 module LIS_NUOPC_Gluecode
 !BOP
