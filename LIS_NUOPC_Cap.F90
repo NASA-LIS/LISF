@@ -742,6 +742,10 @@ module LIS_NUOPC
       ! Call gluecode to create grid.
       is%wrap%grids(nIndex) = LIS_GridCreate(nIndex, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
+      call LIS_ESMF_LogGrid(is%wrap%grids(nIndex), &
+        trim(cname)//"_D"//trim(nStr),rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       
       ! Write grid to NetCDF file.
       if (is%wrap%lwrite_grid) then

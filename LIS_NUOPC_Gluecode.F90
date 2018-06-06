@@ -6,10 +6,15 @@
 #include "LIS_NUOPC_Macros.h"
 
 #ifndef GSM_EXTLND
+#ifdef ESMF_TRACE
 #define T_ENTER(region) call ESMF_TraceRegionEnter(region)
 #define T_EXIT(region) call ESMF_TraceRegionExit(region)
 #else
 #define T_ENTER(region) 
+#define T_EXIT(region)
+#endif
+#else
+#define T_ENTER(region)
 #define T_EXIT(region)
 #endif
 

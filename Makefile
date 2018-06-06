@@ -146,6 +146,16 @@ override ESMF_CXXCOMPILECPPFLAGS += -DGSM_EXTLND
 endif
 endif
 
+# ##################################
+# Compile with ESMF_TRACE directives
+# ##################################
+ifneq ($(ESMF_TRACE),)
+ifneq ($(ESMF_TRACE),0)
+override ESMF_F90COMPILECPPFLAGS += -DESMF_TRACE
+override ESMF_CXXCOMPILECPPFLAGS += -DESMF_TRACE
+endif
+endif
+
 # #######################
 # Primary Makefile Target
 # #######################

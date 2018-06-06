@@ -37,6 +37,7 @@ module LIS_ESMF_Extensions
   private
 
   public :: LIS_ESMF_GridWrite
+  public :: LIS_ESMF_DecompWrite
   public :: LIS_ESMF_MAPPRESET_GLOBAL
   public :: LIS_ESMF_MAPPRESET_CONUS
   public :: LIS_ESMF_MAPPRESET_IRENE
@@ -1226,6 +1227,149 @@ contains
         msg="Cound not close "//trim(ljnlFile)//".", &
         CONTEXT, rcToReturn=rc)
       return
+    endif
+
+  end subroutine
+#undef METHOD
+
+  !-----------------------------------------------------------------------------
+
+#define METHOD "LIS_ESMF_DecompWrite"
+!BOP
+! !IROUTINE: LIS_ESMF_DecompWrite - Write Grid decomp data to file
+! !INTERFACE:
+  ! call using generic interface: LIS_ESMF_DecompWrite
+  subroutine LIS_ESMF_DecompWrite(grid, fileName, overwrite, status, &
+    iofmt, relaxedflag, rc)
+! ! ARGUMENTS
+    type(ESMF_Grid),            intent(in)            :: grid
+    character(len=*),           intent(in),  optional :: fileName
+    logical,                    intent(in),  optional :: overwrite
+    type(ESMF_FileStatus_Flag), intent(in),  optional :: status
+    type(ESMF_IOFmt_Flag),      intent(in),  optional :: iofmt
+    logical,                    intent(in),  optional :: relaxedflag
+    integer,                    intent(out), optional :: rc
+! !DESCRIPTION:
+!   Write the decomp for {\tt grid} to {\tt file} if supported by the
+!   {\tt iofmt}.
+!
+!   The arguments are:
+!   \begin{description}
+!   \item[field]
+!     The {\tt ESMF\_Field} object whose data is to be written.
+!   \item[fileName]
+!     The name of the file to write to. If not present then the file will
+!     be written to the grid's name.
+!   \item[{[overwrite]}]
+!      A logical flag, the default is .false., i.e., existing Field data may
+!      {\em not} be overwritten. If .true., the
+!      data corresponding to each field's name will be
+!      be overwritten. If the {\tt timeslice} option is given, only data for
+!      the given timeslice may be overwritten.
+!      Note that it is always an error to attempt to overwrite a NetCDF
+!      variable with data which has a different shape.
+!   \item[{[status]}]
+!      The file status. Valid options are {\tt ESMF\_FILESTATUS\_NEW},
+!      {\tt ESMF\_FILESTATUS\_OLD}, {\tt ESMF\_FILESTATUS\_REPLACE}, and
+!      {\tt ESMF\_FILESTATUS\_UNKNOWN} (default).
+!   \item[{[timeslice]}]
+!     Time slice counter. Must be positive. The behavior of this
+!     option may depend on the setting of the {\tt overwrite} flag:
+!     \begin{description}
+!     \item[{\tt overwrite = .false.}:]\ If the timeslice value is
+!     less than the maximum time already in the file, the write will fail.
+!     \item[{\tt overwrite = .true.}:]\ Any positive timeslice value is valid.
+!     \end{description}
+!     By default, i.e. by omitting the {\tt timeslice} argument, no
+!     provisions for time slicing are made in the output file,
+!     however, if the file already contains a time axis for the variable,
+!     a timeslice one greater than the maximum will be written.
+!   \item[{[iofmt]}]
+!    The IO format.  Valid options are  {\tt ESMF\_IOFMT\_BIN} and
+!    {\tt ESMF\_IOFMT\_NETCDF}. If not present, file names with a {\tt .bin}
+!    extension will use {\tt ESMF\_IOFMT\_BIN}, and file names with a {\tt .nc}
+!    extension will use {\tt ESMF\_IOFMT\_NETCDF}.  Other files default to
+!    {\tt ESMF\_IOFMT\_NETCDF}.
+!   \item[{[relaxedflag]}]
+!     If {\tt .true.}, then no error is returned even if the call cannot write
+!     the file due to library limitations. Default is {\tt .false.}.
+!   \item[{[rc]}]
+!     Return code; equals {\tt ESMF\_SUCCESS} if there are no errors.
+!   \end{description}
+!
+!EOP
+  !-----------------------------------------------------------------------------
+    ! local variables
+    logical                        :: ioCapable
+    logical                        :: doItFlag
+    character(len=64)              :: lfileName
+    character(len=64)              :: gridName
+    integer                        :: rank
+    type(ESMF_VM)                  :: vm
+    integer                        :: localPet
+    type(ESMF_Field)               :: field
+    integer                        :: localDeCount
+    integer                        :: deIndex
+    integer(ESMF_KIND_I4), pointer :: farrayPtr(:,:)
+
+    if (present(rc)) rc = ESMF_SUCCESS
+
+    ioCapable = (ESMF_IO_PIO_PRESENT .and. &
+      (ESMF_IO_NETCDF_PRESENT .or. ESMF_IO_PNETCDF_PRESENT))
+
+    doItFlag = .true. ! default
+    if (present(relaxedFlag)) then
+      doItFlag = .not.relaxedflag .or. (relaxedflag.and.ioCapable)
+    endif
+
+    if (doItFlag) then
+
+      if (present(fileName)) then
+        lfileName = trim(fileName)
+      else
+        call ESMF_GridGet(grid, name=gridName, rc=rc)
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        lfileName = trim(gridName)//"_decomp.nc"
+      endif
+
+      call ESMF_GridGet(grid, rank=rank, rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+
+      if ( rank .ne. 2) then
+        call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+          msg="Unsupported grid rank.", &
+          CONTEXT, rcToReturn=rc)
+        return ! bail out
+      endif
+
+      call ESMF_VMGetGlobal(vm, rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+
+      call ESMF_VMGet(vm, localPet=localPet, rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+
+      field = ESMF_FieldCreate(grid, typekind=ESMF_TYPEKIND_I4, rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+
+      call ESMF_FieldGet(field, localDeCount=localDeCount, rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+
+      nullify(farrayPtr)
+      do deIndex=1, localDeCount
+        call ESMF_FieldGet(field, localDe=deIndex, farrayPtr=farrayPtr, rc=rc)
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+
+        farrayPtr(:,:) = localPet
+        nullify(farrayPtr)
+      enddo
+
+      call ESMF_FieldWrite(field, fileName=lfileName, variableName="decomp", &
+        overwrite=overwrite, status=status, iofmt=iofmt, rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+
+      call ESMF_FieldDestroy(field, rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+
     endif
 
   end subroutine
@@ -3866,11 +4010,12 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     type(ESMF_DistGrid)         :: distgrid
     character(len=64)           :: transferAction
     integer                     :: localDeCount
-    integer                     :: dimCount, tileCount
-    integer                     :: dimIndex, tileIndex
+    integer                     :: dimCount, tileCount, deCount
+    integer                     :: dimIndex, tileIndex, deIndex
     integer,allocatable         :: coordDimCount(:)
     integer                     :: coordDimMax
     integer,allocatable         :: minIndexPTile(:,:), maxIndexPTile(:,:)
+    integer,allocatable         :: minIndexPDe(:,:), maxIndexPDe(:,:)
     integer                     :: stat
     character(len=ESMF_MAXSTR)  :: logMsg
 
@@ -3923,7 +4068,8 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
 
     ! get dimCount and tileCount
-    call ESMF_DistGridGet(distgrid, dimCount=dimCount, tileCount=tileCount, rc=rc)
+    call ESMF_DistGridGet(distgrid, dimCount=dimCount, tileCount=tileCount, &
+      deCount=deCount, rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
 
     write (logMsg,"(A,A,(A,I0))") trim(llabel)//": ", &
@@ -3933,6 +4079,10 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     write (logMsg,"(A,A,(A,I0))") trim(llabel)//": ", &
       trim(gridName), &
       " tile count=",tileCount
+    call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
+    write (logMsg,"(A,A,(A,I0))") trim(llabel)//": ", &
+      trim(gridName), &
+      " decomp count=",deCount
     call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
 
     ! allocate minIndexPTile and maxIndexPTile accord. to dimCount and tileCount
@@ -3960,6 +4110,35 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     enddo
 
     deallocate(minIndexPTile, maxIndexPTile,stat=stat)
+    if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
+      msg="Deallocation of index array memory failed.", &
+      CONTEXT, rcToReturn=rc)) return  ! bail out
+
+    ! allocate minIndexPDe and maxIndexPDe accord. to dimCount and deCount
+    allocate(minIndexPDe(dimCount, deCount), &
+      maxIndexPDe(dimCount, deCount),stat=stat)
+    if (ESMF_LogFoundAllocError(statusToCheck=stat, &
+      msg="Allocation of index array memory failed.", &
+      CONTEXT, rcToReturn=rc)) return  ! bail out
+
+    ! get minIndex and maxIndex arrays
+    call ESMF_DistGridGet(distgrid, minIndexPDe=minIndexPDe, &
+       maxIndexPDe=maxIndexPDe, rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+
+    do deIndex=1,deCount
+    do dimIndex=1,dimCount
+      write (logMsg,"(A,A,A,4(I0,A))") trim(llabel)//": ", &
+        trim(gridName), &
+        " (decomp,dim,minIndexPDe,maxIndexPDe)=(", &
+        deIndex,",",dimIndex,",", &
+        minIndexPDe(dimIndex,deIndex),",", &
+        maxIndexPDe(dimIndex,deIndex),")"
+      call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
+    enddo
+    enddo
+
+    deallocate(minIndexPDe, maxIndexPDe,stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg="Deallocation of index array memory failed.", &
       CONTEXT, rcToReturn=rc)) return  ! bail out
