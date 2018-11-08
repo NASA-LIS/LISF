@@ -1,0 +1,2036 @@
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Land surface Data Toolkit (LDT) Release Notes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. admonition:: **Current release:**
+
+          Land surface Data Toolkit (LDT) Public Release 7.2r
+
+          5 May 2017
+
+
+===========
+CHANGE LOG:
+===========
+
+
+==================================================================
+Land surface Data Toolkit (LDT) Public Release 7.2r (r6983:7558)
+==================================================================
+
+This is the public release of LDT 7.2.
+
+- Changed a large static array to a dynamic
+  allocatable one, as memory issues were 
+  being found when adding other large parameter
+  datasets.
+
+- Added minor updates to LDT log errors and comments.
+
+- Added check for when a 'CONSTANT' landcover
+  is selected but also for when the fill option
+  is set to 'none'.  The fill option is used
+  to specify the landcover type.
+
+- Updated the LDT PRISM precipitation monthly
+  climatology reader and testcase.
+
+- Future updates will be needed to accommodate
+  the newer PRISM data format (\*.bil), which 
+  will make future releases.
+  
+- Updated the LDT-based SRTM test case.
+
+- Updated the Noah v3.3 LSM parameter test case for LDT.
+
+- Updated the LDT-based USGS landcover reader.
+
+- Updated the LDT-based HYMAP test case
+
+- Updated the LDT-based GeoWRSI test case.
+
+- Updated log comment in ensemble restart routine
+
+- Updated the "Constant" parameter test case.
+
+- Updated the MOD44W mask file test case for LDT.
+
+- Updated the LDT-based CLSM F2.5 test case.
+
+- Added the Metforce NLDAS-2 processing test case
+ 
+- Removed the testcase for RDHM, v3.5.6, since a 
+  version of that testcase exists in the LIS
+  public testcases.
+
+- Removed a couple of additional LDT
+  test cases and added an updated NLDAS2
+  elevation parameter test case.
+
+- Updated the LDT ensemble restart upscaling test case.
+
+- Updated the LDT ensemble restart downscaling test case.
+
+- Updating and removing some of the built-in
+  (stand-alone) LDT testcase directories.
+ 
+  New testcase updates to be committed soon.
+
+- Commented out lines in each supplemental
+  observed precip reader (e.g., CMAP) that
+  calculate the ratio between a convective
+  rainfall field and companion rainfall or
+  total precip field.  
+  
+  An error was found in each reader that the
+  convective precip field was not getting
+  passed from the 'baseforcing' type
+  dataset readers and resulting in full
+  0-valued fields, which were overwriting
+  the convective precip of the baseforcing
+  in the output fields.
+
+  So for the upcoming LIS Spring 2017 release,
+  this feature was turned off for now and will
+  be fully implemented in the next release.
+
+- Fixed subroutine calls related to the "average"
+  upscaling option for the RFE2gdas forcing
+  reader.  
+
+  Former lines of code no longer matched the
+  input/output types related requirements.
+
+- updates to the SMAP data plugin to fix an interpolation issue 
+  when using a regional domain
+
+- Added the updated ECMWF reset routine,
+  as now also found in the LIS dev branch.
+
+- Added minor updates to the CHIRPS daily reader;
+  and implemented the "corrected" convective precip
+  and snowfall fields to the MERRA2 reader.
+
+- Fixed an uninitialized variable in the LIS LSM data reader for DAobs
+
+- Fixed the requirement for the missing_data global flag in the NUWRF mode
+
+- Made additional corrections / updates to 
+  read_gdas routine.
+
+- Made minor updates to the CHIRPS2 forcing module.
+
+- Added Eric Kemp's correction to the pds5 array.
+  (from LIS-7 public)
+
+- Update Param_SRTMtile testcase
+
+- Made a temporary update to the CHIRPS v2 daily
+  reader, where the user can specify the starting
+  name of the CHIRPS daily "annual" netcdf-formatted
+  files.
+
+  This update has been implemented for now to support
+  reading in either CHIRPS ("S" - station-corrected)
+  or the original "CHIRP" global precipitation forcing
+  dataset.
+
+  Options in the LDT config file can be specified as:
+
+  a) CHIRPS station-corrected dataset: 
+     (filenames starting with: "chirps-v2.0" 
+     CHIRPS2.0 forcing directory:    ../CHIRPSv2/daily_p05/chirps-v2.0
+
+  b) Original CHIRP precipitation:
+     (filenames starting with: "chirp" 
+     CHIRPS2.0 forcing directory:    ../CHIRP/chirp
+
+- Added new minor features to the MERRA2 reader
+  in LDT to support 'none' spatial and temporal
+  interpolation options, which allow the user to
+  read in the "native" MERRA-2 files without
+  alteration by LDT.
+
+  Such options are supported within each of the 
+  metforcing run mode methods.
+
+- Updated the GEOS5 forecast reader in the LDT 
+  development branch to match what Sujay updated
+  in LIS dev branch.
+
+  This updated GEOS5 code has not been tested yet
+  as forcing ensemble support needs to be fully 
+  added into LDT.  To be done in near future.
+
+- Implemented the zterp correction recently implemented
+  by Jim Geiger and Hiroko Beaudoing in the LIS dev
+  code. It incorporates Hiroko's zterp correction used
+  at run-time.
+
+  Please see Trac ticket #113.
+
+  To enable this correction, add this to your LIS run-time configuration
+  file (lis.config)::
+
+    Enable new zterp correction (met forcing): .true.
+
+  This option has the default setting of .false.
+
+- Added minor updates to the MERRA-2 forcing 
+  reader.  Allowing native fields be read in
+  and be processed through by run-modes, like
+  temporal downscaling and climatology generation.
+
+- Removed the obsolete "geos" forcing dataset option,
+  as this will no longer be supported in future
+  LDT versions.  This forcing option supported older
+  GEOS versions (3 and 4).
+
+- Added options to use NCEP-LIS slopetype and tbot datasets to RUC LSM.
+
+
+==================================================================
+Land surface Data Toolkit (LDT) Public Release 7.1rp3 (r6607:6982)
+==================================================================
+
+This patch release includes updates r6607:6982.
+
+- Remove print statement
+
+- Replaced missing lines of code to the core/LDT_albedoMod.F90
+  routine, due to recent r6956 commit.  Please update your LDT
+  branch.
+
+- Added support in several metforcing datasets 
+  (the "supplemental" precipitation forcings mostly)
+  to assign the LDT "universal" undefined value
+  to when a precipitation value it missing.
+
+  So if the user selects several overlapping precipitation
+  products (in addition to a "base forcing" dataset), 
+  this additional code defaults to the baseforcing field
+  or another supplemental forcing value that is present
+  when a forcing dataset has "missing" values.
+ 
+- Minor modifications to the logging diagnostic
+  statements.  Mainly, updating messages with
+  the following convention:
+
+  | [ERR] -- When an error message is needed.
+  | [WARN] -- Warning statement, but LDT may
+  |           continue to run
+  | [INFO] -- Normal routine statements to inform
+  |           user of what is happening during runtime
+
+- Completed reimplementing and testing of the 'CONSTANT'
+  parameter options in the latest LDT version (was
+  originally in earlier versions of LDT).
+
+  The use of the 'CONSTANT' parameter option allows
+  users to set a contant value for most parameter
+  types and for any domain, given a desired mask.
+
+  For an example of different 'constant' parameter values
+  set for a CONUS mask (on discover), please see the 
+  ldt.config file and output files here:
+  
+  /discover/nobackup/projects/lis/Projects/LDT/LDT_testnew/Param_CONSTANTS
+
+-  Added documentation and updated the log diagnostic
+   statements in relation to several of the LDT
+   temporal downscaling code and met forcing core
+   routines.
+
+   Also, the updated code contains a new option
+   (commented out at this time) that allows the user
+   to specify the starting and ending time window
+   hours, used in the temporal downscaling approaches.
+   Not included at this time but may appear in
+   future releases.
+
+- Minor updates to the LDT_paramProcMod routines 
+  (e.g., added some documentation) and just some
+  slight improvement to readability in the 
+  domains/latlon/readinput_latlon.F90 routine
+
+- Made minor updates to the log diagnostic
+  statements and minor print statement clean up
+
+- Updates to the CHIRPS v2 forcing reader.
+
+  * A bug fix was implemented to account for 
+    a file read error associated with timesteps
+    less than a day.  
+
+  * Additional clean up to the log diagnostic
+    statements and added more documentation.
+
+  * Replaced the LDT "rstflag" parameter with
+    a local CHIRPS struc reset_flag (logical). 
+
+  The fix added in this commit corrects a problem
+  found with the temporal downscaling issue.
+
+- Minor clean up to the HYMAP parameter and restart
+  processing code.
+
+- Made fix to the LDT ensemble generation for HYMAP.
+
+- Updates to support GRACE obs processing in the observations space
+
+- Removed debugging print statements.
+
+- Removed a section of code that is repeated.
+
+- Adding a HYMAP router version 2 option to support
+  future HYMAP model version (by A. Getirana)
+  and features (e.g., 8 state variables for restart 
+  files).
+
+  Option is:  'HYMAP2'
+
+- Cleaned up and added more documentation to the
+  LDT_domainMod.F90 subroutine.
+
+- Adding documentation for the MERRA2 terrain height
+  field option.
+
+- Added the capability to process the NASA SMAP retrievals for DA
+  preprocessing. The CDFs will be computed on the EASE V2 grid. LDT has
+  been modified to add the support for EASE V2 grid as one of the target grids
+
+- Added the ability to do spatial sampling within a specified radius while
+  doing CDF computations. The config file has two new options related
+  to this capability. ::
+
+   Enable spatial sampling for CDF calculations: 
+   Spatial sampling window radius for CDF calculations: 
+
+ If the "Enable spatial sampling for CDF calculations:" is not specified
+ in the config file, the code assumes a sampling radius of 0. i.e.,
+ CDF calculations will only use the values at the respective grid cells.  
+
+- Adding new MERRA-2 terrain height reader in
+  LDT to support lapse-rate adjustment to the
+  MERRA-2 forcing fields (Tair, Qair, SurfPres,
+  and LWdown) in LIS.
+
+  LDT config file entries to turn on the MERRA-2
+  terrain height (i.e., geopotential height)
+  reader and read in the file include::
+
+    Number of met forcing sources:        1                 # Enter number of forcing types
+    Met forcing sources:                "MERRA2"            # Enter 'none' if no forcing selected
+    Topographic correction method (met forcing):  "lapse-rate"    # none | lapse-rate
+
+    MERRA2 geopotential terrain height file: ./MERRA2_100/MERRA2_101.const_2d_asm_Nx.00000000.nc4/ 
+
+  Some simple testcases reside here on discover:
+  /discover/nobackup/projects/lis/Projects/LDT/LDT_testnew/Metparm_MERRA2
+
+- Adding the missing MOD10A1 plugin for ANN support    
+
+- Adding the new plugin for SMOS NESDIS datastream
+
+- updates to LDT related to the support for DA in observation space
+
+- Made simple correction and update to the 
+  albedo parameter module for when quarterly
+  files are being read in for the former 
+  "NCEP_LIS" option.  Number of levels was
+  not being set to "4" for the four seasons.
+
+- Remove time checking in readRTSMOPSsmObs routine
+
+  This is Sujay Kumar's patch to the readRTSMOPSsmObs routine that fixes
+  a problem processing RT SMOPS observations.
+
+- Updated the climatological restart generation
+  capability in LDT by expanding support for 
+  different LSMs, including Noah-MP, different
+  Noah versions and VIC LSMs.
+
+- Revert back to real*4
+
+- Declare real variables as real*8
+
+- Compute eps based on number of latitude circles
+
+- Clean up gausslat routine
+
+- Update Gaussian support to use gausslat routine
+
+- Remove gaussian_mod.F90 file
+
+  I am saving a copy of this file as gaussian_mod.F90.keep for reference.
+
+  I need a few routines from this module.  They will be modifyied and
+  re-added.
+
+- Updated the MERRA2 grid description array parameters
+  and added some additional information lines.
+
+- Update Ensrst_Downscale ldt.config file
+
+- Added back the "CONSTANT" option for the soil
+  texture parameter field.
+
+  This is the first of many commits to add
+  back the "CONSTANT" parameter options
+  and some parameter option updates.
+
+- Corrected bug related to the number of ensemble members
+  selected for generating ensemble HYMAP restart
+  file.
+
+- Fixed the config HYMAP router name option inside
+  ensemble restart inflation/deflation core code.
+
+  Also, added and updated checks and ldt log statements
+  for Ensemble restart options during runtime, like
+  error messages when options are not supported.
+
+- Correct reset_merra2 
+
+  Resetting the MERRA2 reader now reads both the left and right bookends.
+  Before this fix the reader would only read the right bookend after a reset.
+
+- Adding logging message to help catch for a user 
+  when a parameter or dataset is being spatially 
+  transformed to the polar or hrap grid to indicate
+  that this feature is not supported at this time.
+
+- Restored the HRAP ("hrap") grid domain, but
+  it will only work with certain LSM options::
+
+    LDT_rc%lsm == "RDHM.3.5.6",  
+                  "SACHTET.3.5.6"
+                  "SNOW17" 
+
+  since the HRAP grid was mainly used with the 
+  Sacramento model (e.g., SAC-HTET), Snow-17,
+  and the combined RDHM version.  
+
+  HRAP grid works in both serial and parallel 
+  modes, when selecting one of these model options.
+
+  If any other options are selected, LDT will
+  exit the runtime, until additional features
+  are implemented and supported. 
+
+- Minor bug fix for warning about function w/o explicit type declaration.
+
+  This bug and bug fix was submitted by Hamada Badr.
+
+- Force stop if Polar Stereographic or HRAP projection code is called.
+
+  These map projections are broken due to recent multi-parallelization changes.
+  Plus, polar stereographic support is missing from LDT_gridmappingMod.F90.
+
+  This is a band-aid for Trac tickets #235 and #236.  Work on true fixes is 
+  postponed until we have an actual use case and customer that needs these
+  to work.
+
+- Call map_set for ldtglbproj in readinput_gaussian routine
+
+- MERCATOR BUG FIX:  Copy ldtproj struc to new ldtglbproj struct in LDT_domain.
+
+  Recent changes to LDT to add support for parallel processing makes this
+  update necessary.  Otherwise LDT fails when writing Mercator map projection 
+  data to file.
+
+  This addresses Trac ticket #226.
+
+- BUG FIX:  Copy ldtproj structure to new ldtglbproj structure in LDT_domain.
+
+  Recent changes to LDT to add support for parallel processing makes this
+  update necessary.  Otherwise LDT fails when writing lambert data to file.
+
+  NOTE:  Similar bugs may be present with the Gaussian, HRAP, Mercator, and
+  Polar Stereographic projections.
+
+- Fixed error statements in subroutine setVarAttributes.
+
+  Error statements (in calls to LDT_verify) erroneously referred to a different
+  subroutine.  Also, the statements were not sufficiently descriptive in 
+  explaining which call to nf90_put_att failed.
+
+  This addresses LIS Trac Ticket #73.
+
+- Updates made to the RFE2 Daily reader
+
+- Made update to CHIRPS reader to allow reading
+  in CHIRPS files when missing and a "baseforcing"
+  is present.
+
+- Minor updates to the CHIRPS2 and MERRA-2 forcing modules
+
+- Updated the CHIRPS Daily reader to fix an issue
+  whenever an CHIRPS precipitation file is missing
+  and a baseforcing precipitation (like GDAS or MERRA2)
+  are not defaulted to.  (Issue:  Previous day
+  CHIRPS precipitation was filling in instead).
+
+  * Issue mainly found within time_interp routine
+  * Now corrected.
+
+- Updated the RFE2 Daily reader to fix an issue
+  whenever an RFE2 precipitation file is missing
+  and a baseforcing precipitation (like GDAS or MERRA2)
+  are not defaulted to.  (Issue:  Previous day
+  RFE2 precipitation was filling in instead).
+
+  * Issue mainly found within time_interp routine
+  * Now corrected.
+
+- Added two new lines to the HYMAP testcase config
+  file, for:
+
+  | HYMAP drainage area map:   
+  | HYMAP basin map:            
+
+- Minor update to the README_discover file as for the
+  make module is only:
+
+  lib/mkl-10.1.2.024
+
+- Updated the entries in the README_discover
+  file to match more closely to the notes on 
+  the Modeling Guru forum:
+
+  https://modelingguru.nasa.gov/community/atmospheric/lis/blog/2015/03/09/compiling-lis-7-on-sles11-sp3
+
+- Reconcile differences between LIS_gridmappingMod and LDT_gridmappingMod
+
+
+==================================================================
+Land surface Data Toolkit (LDT) Public Release 7.1rp2 (r6323:6606)
+==================================================================
+
+This patch release includes updates r6323:6606.
+
+- Merge NU-WRF into LDT public 7.1
+
+  I merged updates through 3774 from NU-WRF's
+  ^/code/branches/features/v8_wrf371merge into
+  LDT's ^/tools/ldt/7/public7.1 branch.
+
+  These updates consist of:
+
+  * Added gfortran support for LDT.
+
+- Write pblh only when running Noah-MP.3.6
+
+- Add Jossy Jacob's mercator updates
+
+  This adds support to reproject latlon parameter data
+  onto a Mercator LIS running domain.
+
+
+==================================================================
+Land surface Data Toolkit (LDT) Public Release 7.1rp1 (r5953:6322)
+==================================================================
+
+This patch release includes updates r5953:6322.
+
+These updates consist of:
+
+- Correct the subsetting of a Lambert conformal LIS run domain
+  for a latlon based-parameter
+
+  Use param_grid(10) for dlat
+
+- Correct use of  param_gridDesc(9) and  param_gridDesc(10)
+
+  param_gridDesc(9)  is dlon
+
+  param_gridDesc(10) is dlat
+
+- Update ldt.config documentation
+
+- updates to GRACETws reader - the current call to createLSM routine
+  fails after adding the optional arguments
+
+- Correct spelling of simulated GRACE config options
+
+  I corrected the spelling of the baseline starting year and baseline
+  ending year configuration options to ::
+
+    Simulated GRACE baseline starting year:
+    Simulated GRACE baseline ending year:
+
+  to be consistent with the other configuration options for the simulated
+  GRACE support. 
+
+- Replace nf90_hdf5 with nf90_netcdf4
+
+  I replaced cmode=nf90_hdf5 with cmode=nf90_netcdf4 in the calls
+  to nf90_create.
+
+  According to the NetCDF documentation, NF90_HDF5 is deprecated,
+  use NF90_NETCDF4 instead.
+
+- Cleaned up CHIRPS v2 code (removed print statements)
+  and added CHIRPS option information to the master
+  ldt.config file.
+
+- Move deallocate statement
+
+- Made update to the handling of the met forcing
+  plugin options - Keep naming convention in-line
+  with LIS-7, but added new character variable array that 
+  modifies the orignal option name to one that can
+  be appended to metforcing elevation parameter fields,
+  climatological forcing fields (e.g., WorldClim), and
+  grid domains.
+
+  This is considered a correction and should be checked out.
+
+- Make the various grid description arrays the same size
+
+  The various grid description arrays are inconsistently sized to either
+  20 elements or 50 elements.  This commit makes them all 20 elements.
+
+  This includes arrays named:
+
+  |  gridDesc
+  |  gridDesci
+  |  gridDesco
+  |  lis_gds
+  |  ldt_gds
+  |  gridDesciPrecip
+  |  gridDesciTemper
+
+- Fix memory error in upscale_ensembleRst routine
+
+- Removed trailing slashes from lines in Filepath
+
+- Added ability to use UMD vegetation with Noah-MP-3.6 LSM
+
+- Update to the Metforcing parameters, like elevation 
+  and monthly clim. precipitation fields (in LDT_readConfig file):
+
+  added new metforcing indexed names for when
+  a forcing dataset name contains "()" or spaces.
+  They are now replaced with underscores ("_")
+  and some names were shortened a bit. 
+
+  This modification to the forcing parameter names
+  helps with reading the netcdf names by LIS.
+
+- Added the GEOS-5 seasonal forecast reader into
+  LDT.  Inputs are similar to that of the lis.config file.
+
+  Along with this addition, added the capability
+  to read forcing ensembles and features (though
+  perturbation features are not fully turned on yet);
+  added total precipitation; and "finalize" routines
+  for the run mode in "cleaning up" after running.
+
+- Use \\newline instead of a double backslash
+
+  GNU's cpp treats a backslash character at the end of a line as indicating
+  line continuation; i.e., the backslash at the end of a line escapes the
+  end-of-line marker.
+
+  LaTeX uses a double backslash, \\\\, to indicate a new line.  Double
+  backslashes were used throughout the code in the ProTeX (LaTeX) in-line
+  documentation.  I replaced the double backslashes with the new line
+  command, \\newline.
+
+  A misplaced backslash character could cause the line following the
+  backslash to be eaten.  In the following test program (saved as t.F90),
+  GNU's cpp would see line 4 as ::
+
+     !print*,"hello "
+
+  ::
+
+    program test
+    ! I want to see 'hello world'
+    ! but this program prints only 'world'
+    !\
+    print*,"hello "
+    print*,"world"
+    end program test
+
+- Remove "warning: implicit declaration of function" messages
+
+  When using functions from the C standard library, you must include
+  the appropriate standard header in the source code.
+
+  Example:
+
+  For strcpy, you must include::
+
+     #include <string.h>
+
+- Compile with gfortran
+
+  gfortran raised several warnings.  Please read the rest of this commit
+  message for examples of the warnings and corrective actions.
+
+  Example 1.
+
+  Message::
+
+    ../core/LDT_gridmappingMod.F90:184.13:
+
+    do plon_search = param_grid(5), param_grid(8), param_grid(9)
+       1
+    Warning: Deleted feature: Loop variable at (1) must be integer
+
+  Correction:
+
+  All components that make up a do loop must be integer expressions.
+
+  Example 2.
+
+  Message::
+
+    ../params/SACHTET/create_SACsoilparms_Korenv1.F90:364.47:
+
+    DZUP=MIN(SX/(SWMAX(IVALX)-SWFLD(IVALX)),DZ)
+                                  1
+    Warning: Legacy Extension: REAL array index at (1)
+
+  Correction:
+
+  Array indicies must be integer expressions.
+
+- Compile with gfortran
+
+  gfortran raised several errors.  Please read the rest of this commit
+  message for examples of the errors and corrective actions.
+
+  Example 1.:
+
+  Message::
+
+    ../core/LDT_metforcingMod.F90:2668.14:
+
+    if( LDT_rc%met_zterp(m) == .false. ) then
+        1
+
+    Error: Logicals at (1) must be compared with .eqv. instead of ==
+
+  Correction:
+
+  Compare logicals with .eqv. not with .eq. nor with ==
+
+  Bad::
+
+    if( LDT_rc%met_zterp(m) == .false. ) then
+
+  Good::
+
+    if( LDT_rc%met_zterp(m) .eqv. .false. ) then
+
+  Example 2.:
+
+  Message::
+
+    ../DAobs/LISlsmSMobs/readLISlsmSMObs.F90:36.33:
+
+    call create_lsm_output_filename(lsmsmobs%nest,               &
+                                 1
+    Error: Explicit interface required for 'create_lsm_output_filename' at (1):
+    optional argument
+
+  Correction:
+
+  To use functions and subroutines that (1) are not contained within a module
+  and (2) have optional arguments, you must define an interface block within
+  the calling subroutine. ::
+
+    interface
+      subroutine create_lsm_output_filename(n, form, fname, odir, wstyle, wopt,&
+                                            run_dd, map_proj, security_class,  &
+                                            distribution_class, data_category, &
+                                            area_of_data, write_interval)
+         integer,   intent(IN)        :: n
+         character(len=*)             :: fname
+         character(len=*)             :: form
+         character(len=*)             :: odir
+         character(len=*)             :: wstyle
+         character(len=*)             :: wopt
+         real, dimension(8), optional :: run_dd
+         character(len=*),   optional :: map_proj
+         character(len=*),   optional :: security_class
+         character(len=*),   optional :: distribution_class
+         character(len=*),   optional :: data_category
+         character(len=*),   optional :: area_of_data
+         character(len=*),   optional :: write_interval
+      end subroutine create_lsm_output_filename
+    end interface
+
+- Update flags for compiling with gfortran
+
+- Add additional error checking to LISlsmSM_obsMod
+
+  Add checks to ensure that the following entries are defined in the
+  ldt.config file when "WMO convention" style output is selected for
+  LIS LSM soil moisture DA preprocessing.
+
+  ::
+
+    LIS soil moisture security class:
+    LIS soil moisture distribution class:
+    LIS soil moisture data category:
+    LIS soil moisture area of data:
+    LIS soil moisture write interval:
+
+- Correct filename for WMO convention LIS output files
+
+  The create_lsm_output_filename routine was embedding
+  'yyyymmdd' sub-directories into the path for the LIS LSM
+  output files.  The WMO convention style does not use a
+  date-based hierarchy.
+
+- Update create_lsm_output_filename routine to be more flexible
+  with respect to resolution for WMO convention LIS output files
+
+- Adding new CHIRPS 2.0 precipitation reader.
+  Currently works with annual-based input files,
+  but may change to reading in the monthly-based
+  files when they become available.
+
+  Inputs to the ldt.config file include::
+
+    Met forcing sources:        "CHIRPS2"
+    CHIRPS2.0 forcing directory:   ../fame/MET_FORCING/CHIRPSv2/daily_p05/
+    CHIRPS2.0 forcing resolution:     0.05
+
+  Note:  User can either read in the 0.05 deg or the
+  0.25 deg forcing files.
+
+- Added the new set "Special" texture attributes file
+  in the soils parameter directory.
+
+  (Forgot to add during the commit for New Revision: 6050)
+
+- Added fixes to the ECMWF forcing reader, made by
+  Bailing Li and Hiroko Beaudoing.  
+
+  A memory leak bug was fixed in read_ecmwf.F90 routine.
+  Furthermore, the read routine did not have right handling
+  of missing data, which was causing NaN in precipitation
+  and other fields.  A fix for checking NaN's was originally
+  submitted, but actually the root of the problem turned out
+  to be the missing file handling issue.
+
+  The code has been checked and tested.
+
+- Added the 'Special' soil texture number of texture 
+  classes and set attributes call.
+ 
+- Added RUC LSM parameter interface and basic
+  readers to LDT.
+
+  Just enter for the land model option:
+  Land surface model:        "RUC.3.7"
+
+  And for those on discover, go to the test case directory:
+
+  /discover/nobackup/projects/lis/Projects/LDT/LDT7x_Testcases/Param_RUC3.7
+
+  for example input and output LDT files for RUC.
+
+- Added new netcdf global attributes to support the
+  Noah-MP.3.6 LSM.  These new attributes are only
+  activated when "Noah-MP.3.6" is selected and they
+  include::
+
+    :NUMBER_LANDCATS = 20 ;
+    :NUMBER_SOILTYPES = 19 ;
+    :NUMBER_SLOPETYPES = 9 ;
+
+- Added the capability to perform basin averaged processing for GRACE
+
+- GDAS terrain correction
+
+  I implemented Hiroko Kato Beaudoing's GDAS elevation correction.  The 
+  longitudinal resolutions for the various T grids were rounded.  Hiroko
+  corrected them with more precise values.
+
+  This resolves in issue regarding a slight discontinuity in the GDAS
+  elevation fields occurring near the prime meridian.
+
+  See Trac Ticket #126.
+
+- Gaussian updates to support T126 domain
+
+  Note that the number of lat circles represents the number of latitudes
+  from pole to equator --- NOT from pole to pole.
+
+- Replace nf90_hdf5 with nf90_netcdf4
+
+  I replaced cmode=nf90_hdf5 with cmode=nf90_netcdf4 in the calls
+  to nf90_create.
+
+  According to the NetCDF documentation, NF90_HDF5 is deprecated,
+  use NF90_NETCDF4 instead.
+
+- Merge NU-WRF into LDT
+
+  I manually merged NU-WRF commits through r3232 from NU-WRF's trunk,
+  svn+ssh://progressdirect/svn/nu-wrf/code/trunk, into LDT's 
+  tools/ldt/7/public7.1 branch.
+
+  These update consists of:
+
+  * reintegrated v7_ldt_netcdf4 feature branch to trunk.
+
+    this captures a change to ldt to create netcdf4 output for real if
+    selected at compile time (which is always the case in nuwrf). previously
+    the output file for real was always classic netcdf3 regardless of the
+    compile-time selections.
+
+    this change is necessary for ldt to process a large grid (e.g.,
+    5000x5000x50).  tests show that real will accept this alternative format
+    w/o any code changes and without any change in it's own output.
+
+- Update routines in LDT_paramMaskCheckMod.F90
+
+  I encountered a case where the nearest neighbour fill option did not
+  fill in a poorly defined grid-cell.  The correction consists of:
+
+  * Compare mask_value directly against 0 or 1
+  * Compare isum values against LDT_rc%gridcell_water_frac
+  * Optimize nearest neighbour option to exit outer do-loop upon finding
+    a neighbour
+
+
+================================================================
+Land surface Data Toolkit (LDT) Public Release 7.1r (r5761:5952)
+================================================================
+
+This is the public release of LDT 7.1.
+
+These updates consist of:
+
+- Changed .OR. to "||" in the LDT openwater routine
+  for the preprocessor #if statements.
+
+- Fixed a segmentation fault error where two 2-D
+  array dimensions did not match.
+
+- Made correction to the inclusion Snow17 ADC number 
+  within a LDT/LIS nest loop.
+
+- Incorporate Eric Kemp's Makefile update
+
+- Made fixes to several metforcing readers that
+  process the forcing terrain-height or elevation
+  fields when processing model parameters.
+
+- Update documentation
+
+- Made updated fix to how MERRA-Land forcing files
+  are read in to LDT, to match the update in LIS-7.
+
+  Now, users no longer need to generate symbolic links
+  to read in MERRA-Land files.
+
+- Initialized SOS and SOS_anomaly parameter fields
+  if a file is not given.
+
+- Minor updates to the LDT soils module file.
+  Some config file options were entered incorrectly.
+
+- Updated and merged missing descriptions and options
+  for several config file entries in the master config
+  file.
+
+  More updates pending before next release.
+
+- Add documentation for the SACHTET and SNOW17 options
+
+- Updated elevation file headers for config file.
+
+- Updated SAC parameter options in the master
+  config file.
+
+- Updated the SAC soil parameter derivation code
+  (option: "Koren_v1") to reflect latest version
+  of Victor Koren's code.
+
+  Made sure soil parameters and summing terms 
+  were appropriately initialized.
+ 
+- Merge tools/ldt/7/development into tools/ldt/7/public7.1
+
+  I merged r5792:5798 from tools/ldt/7/development into tools/ldt/7/public7.1.
+
+  These updates consist of:
+
+  * Resolve segmentation fault when reading Zobler GFS texture data
+
+- Merge tools/ldt/7/development into tools/ldt/7/public7.1
+
+  I ported some missed merges r5791 from tools/ldt/7/development into
+  tools/ldt/7/public7.1.
+
+- Merge tools/ldt/7/development into tools/ldt/7/public7.1
+
+  I ported DAobs/GCOMW_AMSR2L3sm, DAobs/Aquarius_L2sm, DAobs/SMOS_L2sm, and
+  domains/UTM r5791 from tools/ldt/7/development into tools/ldt/7/public7.1.
+
+  Also remove the unneed configs/param_attribs.txt_master file.
+
+- Merge tools/ldt/7/development into tools/ldt/7/public7.1
+
+  I merged r5445:5791 from tools/ldt/7/development into tools/ldt/7/public7.1.
+
+  These updates consist of:
+
+  * Remove unneeded param_attribs.txt_master file
+
+  * Merge tools/ldt/7/development_reorg into tools/ldt/7/development 
+
+    I merged r5310:5789 from tools/ldt/7/development_reorg into
+    tools/ldt/7/development.
+
+    This merge reintegrates the tools/ldt/7/development_reorg branch back into
+    the tools/ldt/7/development branch.
+
+    These updates consist of:
+
+    * Updated the newly SAC-HTET soil parameter derivation
+      method feature.  Now, the main soil parameters can
+      be estimated from the original 1KM STATSGOv1 soil 
+      texture and soil hydrologic group native input files.
+
+      New ldt.config options include:
+
+        Create or readin soil parameters:     "create"    # create | readin
+        SACHTET soil parameter method:        "Koren_v1"  # none | Koren_v1
+
+      Future updates include reading other SAC-HTET parameters
+      in at different resolutions other than HRAP projection;
+      aggregating the parameters to different resolutions and
+      projections; and implementing additional methods in
+      deriving SAC-HTET soil and other required parameters.
+
+    * For the SAC-HTET model, adding new routines to support
+      the derivation of SAC soil parameters within LDT.
+      Currently, a version of Victor Koren's code and 
+      equations are being added to support this.
+
+    * Major updates to reading in the native "STATSGOv1"
+      \*bsq formatted files.  The texture and hydrologic
+      soil groups (HSG) file readers now can read in 
+      the fields at the native grid resolution.
+
+      More updates coming to support SAC LSM soil parameters
+      derivation within LDT, using these STATSGO v1 files.
+
+      Also, new texture parameter added that accounts for
+      soil textures at multiple depths (required for 
+      SAC-model soil parameter derivation). 
+
+    * added support for simulated GRACE data from JPL
+
+    * Updated the core C-based FTable routines to no
+      longer refer to the older param_attribs.txt file
+      for user-options, which are now documented in the
+      ldt.config_master file.
+
+    * Modified the core Albedo reader so the user
+      no longer needs to specify albedo source nor
+      "Albedo map:" entries in the ldt.config file
+      when selecting the Catchment LSM F2.5 version.
+
+    * Fixed the LIS-based GTOPO30 readers for 
+      aspect and slope. 
+
+    * Added Mosaic LSM parameter routine and options.
+      ldt.config file entries include:
+
+        Land surface model:         "Mosaic"
+     
+      An example of ldt.config options can be found on discover:
+
+      /discover/nobackup/projects/lis/Projects/LDT/Reorg_Testcases/Param_Mosaic
+
+    * Minor updates to some forcing readers involving
+      reading in the forcing elevation fields for
+      parameter processing.
+
+    * Added Noah MP PBL height entry for config file
+
+    * Added Noah MP-3.6 LSM and parameter 
+      entry for the PBL height value.  This
+      static value currently gets assigned
+      to a 2-D field, which can be replaced later
+      with an actual 2-D map.
+
+      New entries in the ldt.config file are:
+
+        Land surface model:         "Noah-MP.3.6"
+
+        Noah-MP PBL Height Value:   900. 
+
+      For additional test case, please visit:
+
+      /discover/nobackup/projects/lis/Projects/LDT/Reorg_Testcases/Param_NoahMP
+
+      on discover.
+
+    * Updated the LDT master config file to list the
+      latest GDAS T1534 resolution elevation map entry.
+
+    * Added ECMWF forcing reader into LDT from LIS-7.
+      Inputs are same as that of the LIS-7 lis.config file.
+
+      Needed to separate the ECMWF "terrain height" file reader
+      into two separate routines: 1) processing the ECMWF elevation
+      parameter (step 1); 2) read in the processed ECMWF elevation
+      parameter when reading in the full met forcing.
+
+    * Added new VIC 4.1.2 LSM entries and landcover
+      reader.
+
+      For ldt.config file example for VIC 4.1.2, please
+      see the test case directory:
+
+      /discover/nobackup/projects/lis/Projects/LDT/Reorg_Testcases/Param_VIC412
+
+      and other output files for user benchmark.
+
+    * Updated GDAS reader to handle reading in
+      GDAS elevation files from a LDT-parameter 
+      processed netcdf file.  
+
+     (Note: This is still being tested)
+
+    *  Step 2 of 2: Updates of the LDT Meteorological 
+       forcing readers and core code.
+
+       * Updated and benchmarked code to allow for 
+         meteorological forcing readers to read 
+         and process forcing files again.
+
+       * More features and testing to come, but users
+         can resume using meteorological forcing 
+         processing options again.
+
+    * PART 1 of 2 Step Commit:
+
+      * Minor reorganizational changes to the handling 
+        and code flow for the meteorological parameters 
+        (e.g., elevation, precip climatology) and 
+        meteorological forcing readers.
+
+      * Reordered some of the internal metforcing reader 
+        code to better differentiate between the parameter
+        side and the actual forcing side.
+
+      * Committing the code in 2 steps to save the 
+        work done in this first stage.
+
+      Users are recommended to checkout the code after
+      the second stage of code is committed for their use.
+
+    * Made the LDT_XMRG_READER module use entry lower-case
+      to agree with the LDT local xmrg reader library.
+
+    * Updated Princeton elevation reader and
+      added the reset routine.
+
+    * Added RDHM v3.5.6 metforcing reader into LDT,
+      using the same inputs as that for the LIS 
+      config file.
+     
+    * Updated master ldt.config file documentation to reflect
+      latest met forcing changes.
+
+    * Added the ECMWF Reanalysis forcing reader and 
+      elevation reader file.
+
+      Currently, only the ECMWF Reanalysis elevation
+      file reader works.  Inputs in the LDT config file are:
+
+        Number of met forcing sources:        1                  
+        Met forcing sources:              "ECMWF reanalysis"     
+        Met spatial transform methods:     bilinear              
+        Topographic correction method (met forcing): "lapse-rate"  
+
+        ECMWF Reanalysis elevation map:  ./metforcing_parms/ECMWFRean/elev_ECMWF-reanalysis.1gd4r
+        ECMWF Reanalysis elevation spatial transform:   "average"
+
+      If the reader is needed by users in LDT, final implementation
+      will be completed.
+
+    * Added NLDAS-1 Forcing Reader to LDT.  Inputs are
+      almost the same as for LIS-7 config file, except
+      user does not need to specify grid coordinates for
+      the EDAS elevation file.
+
+      Current available entries for NLDAS-1 are:
+
+        NLDAS1 forcing directory:           ../MET_FORCING/NLDAS1.FORCING
+        NLDAS1 data center source:           NCEP
+        NLDAS1 precipitation field:          NLDAS1
+        NLDAS1 shortwave radiation field:    NLDAS1
+
+        NLDAS1 elevation difference map:  ../LS_PARAMETERS/NLDAS_0.125/EDAS_elev-diff.1gd4r
+        EDAS terrain height map:          ../LS_PARAMETERS/NLDAS_0.125/EDAS_elevation.1gd4r
+
+      The elevation correction is not yet activated for 
+      when reading in the NLDAS-1 forcing files, but will
+      be added soon in a future commit.
+
+      Also, updates will be made to both the LDT and LIS-7 NLDAS-1
+      forcing readers in handling the applied landmask option.
+      More soon.
+
+    * Added the NLDAS-2 forcing reader into LDT.
+      Inputs are the same as those for LIS-7.
+
+      Elevation correction and fields have not been
+      fully implemented yet, and will be added in
+      a future commit.
+
+    * Updated and added the NAM242 forcing reader to 
+      the LDT.  Same forcing inputs as that for LIS config. 
+
+    * NAM242 Elevation file and elevation correction have not
+      been fully tested yet.  Will be done in a future
+      round of commits.
+
+    * Implemented the Princeton Forcing reader into
+      LDT.  Config file inputs are same as LIS-7 inputs.
+
+      Princeton Elevation file and elevation correction have not
+      been fully tested yet.  Will be done in second
+      round of commits.
+
+    * Made correction to STAGEIV forcing reader's time
+      update and file retrieve settings so that the
+      correct file times are read in.
+
+    * Minor clean-up to the TRMM 3B42-V6 routine.
+
+    * Made correction to STAGEII forcing reader's time
+      update and file retrieve settings so that the
+      correct file times are read in.
+
+    * Cleaned up some places in the TRMM 3B42RT V7 reader.
+
+    * Added the latest Stage IV forcing reader to
+      LDT.  Config file inputs are same as those for LIS.
+
+    * Added STAGE II Forcing reader into LDT.  Inputs
+      for this reader match those of LIS-7.
+
+    * Adding the CMORPH metforcing reader to LDT.
+      Input options for this reader are the same
+      as that for LIS-7 lis.config file.
+
+    *  Added the TRMM 3B42 V7 metforcing reader
+       to LDT.  Inputs for this reader are same 
+       as those for the LIS-7 config file.
+
+    * Removing the TRMM 3B42RT(V6) forcing reader directory
+      from LDT, since it has now been replaced with
+      the updated V7 reader.
+
+    * Added in the TRMM 3B42-V6 metforcing reader in
+      to LDT.  Inputs are same as that for LIS-7 config file.
+
+
+    * Implemented the latest TRMM 3B42RTV7 metforcing
+      reader from LIS-7 into LDT.
+
+      Also, updated the related ldt.config documentation.
+
+      Updated the met forcing option names in LDT plugin
+      index file to match those of LIS-7.
+
+    * Minor typo corrections.
+
+    * LDT master config input file documentation
+      updated.
+
+    * Added MERRA-Land Forcing Reader to LDT.
+
+      Example test case can be found in on discover:
+
+      ../lis/Projects/LDT/Forcing_Testcases/Metforc_MERRALand
+
+    * Some minor updates and one new minor feature:
+
+      Added new capability for user to specify the
+      path/filename of the output Mask-Parameter Fill
+      diagnostic log file.
+
+      Default setting will automatically write diagnostic
+      statements to:  "MaskParamFill.log"
+
+      Unless, user includes the ldt.config entry::
+
+        Mask-parameter fill diagnostic file:  LDTOUTPUT_temp/MPFilltest.log
+
+      Note: Directory path/filename are shown here as an example.
+
+      Other minor updates: 
+      * Updated some log print statements
+      * Closed a conditional "if-block" with "endif"
+      * Added some internal code comments
+
+    * Error correction to the discrete-parameter file
+      fill routine for tiled parameters.  Ensured that
+      correct nearest neighbors are accounted for.
+
+      (Thanks to Hiroko Beaudoing for catching this)
+
+    * Correction to the ECMWF "elevation" readers:
+
+      Native ECMWF terrain height fields are actually 
+      geopotential (in m2/s2), which needs to be converted 
+      to height in m by dividing by 9.8 m/s2.  This conversion
+      factor is now implemented.
+
+    * Checks implemented for soil fraction data source
+      and number of bands and for all models.
+
+    * Updated the Community Land Model, version 2 (CLM.2),
+      parameters, like soil color, and added plugin
+      interface and LSM parameter subroutines for CLM.2.
+
+      Also, added a set LAI attributes routine for the 
+      AVHRR climatology files and expanded SAI files
+      to account for monthly climatologies as well.
+
+      For a test-case example of CLM2 ldt.config file
+      and output, please see the directory on discover:
+
+      /discover/nobackup/projects/lis/Projects/LDT/Reorg_Testcases/Param_CLM2
+
+    * Register Noah 3.2 and Noah 3.6 support for NoahParms_init
+
+    * Register Noah 2.7.1 support for NoahParms_init
+
+    * Added back the ability to read in soil fraction
+      maps (sand/silt/clay) and removed the registered
+      plugin needing attribute of number of bins for 
+      soil fractions. 
+
+      New entries in LDT config file for soil fractions are:
+
+        Soil fraction data source:     FAO    # FAO option
+        Soil fraction number of bands:  1
+
+    * Added new zenith interp flag for the metforcing
+      readers in LDT, which will get passed to the
+      LIS side to make sure not to apply zinterp twice
+      to solar radiation field.
+
+    * Added met forcing dataset sources selected in the
+      LDT config file to the "source" global attribute,
+      included in each derived forcing output netcdf file.
+
+    * Added plugin entry for STATSGO-FAO LIS soil texture
+      and new routine to specify number of texture types (bins).
+
+    * Minor updates to the GDAS and GFS readers;
+      update to starting hour of the new T1534
+      grid; and updated Metforcing headers that
+      are written to the diagnostic log file.
+     
+    * Modified the dx and dy resolutions of the T1534 grid 
+      to 0.1171875, which removed a strip of missing values
+      (or zero values) along the Prime Meridian.
+
+    * Added back in openwater surface type init routine
+      to account for open water points.
+
+    * Updated the hour timestamp for when the new
+      T1534 grid goes into effect.
+
+    * Implemented the latest GDAS/GFS T1534 terrain  
+      height file for the GFS metforcing reader.
+
+      Also, added the new T1534 domain and gridchange
+      date/time stamp update parameters for GFS.
+
+    * Implemented the latest GDAS/GFS T1534 terrain
+      height file for the GDAS metforcing reader.
+
+      Also, added the new T1534 domain and gridchange
+      date/time stamp update parameters for GDAS. 
+
+      How to include the new T1534 terrain map with
+      GDAS forcing can be found in the GDAS parameter
+      test case directory:
+
+      /{lisdata}/Projects/LDT/Reorg_Testcases/Metparm_GDAS/
+
+    * Regrouped plugin interface routines for the
+      precipitation-only forcing readers, for easier
+      layout and organization of the metforcing plugin
+      module.
+
+    * Initialized number of ADC points parameter entry.
+
+    * Added new ldt.config entry to support the 
+      specifying the number of ADC points for the
+      Snow-17 model (updated correction).
+
+      New Entry when LSM  "RDHM.3.5.6" or "SNOW17" are 
+      specified in the ldt.config file::
+
+        SNOW17 ADC number of points:   11  # default
+
+    * Added Netcdf attributes for the new buffer latitude and longitude fields
+      written to the output parameter-based netcdf file.
+
+      Also updated the verify statements to correctly reflect the xlat or xlon
+      fields where logged errors are printed.
+
+    * Added capability of generating directory paths
+      for where to write out the diagnostic log file.
+
+    * Added a default value of 1 for the Number
+      of processors along x and y when ldt.config
+      file looks for the below entries::
+
+        # Processor layout (currently not available)
+        #Number of processors along x:       1 
+        #Number of processors along y:       1 
+
+      The user will not have to specify these in
+      the ldt.config file, since LDT currently 
+      only runs in single-processor or serial mode.
+     
+      When parallel run capability is activated/implemented
+      in LDT, these will become required inputs 
+      again.
+
+    * Major new updates to the LDT Reorg branch:
+
+      1) Corrected conserve (budget-bilinear) interp
+         routines;
+
+      2) Modified the interp routines' (neighbor, bilinear,
+         and budget-bilinear) interfaces, as found in LIS;
+
+      3) Updated all meteorological forcing readers, model
+         parameters, and DA observations (for CDF matching)
+         subroutines that interface with these updated interp 
+         modules and subroutines;
+
+      4) Added new interp routines correponding to these
+         three interp types, but appending "withgrid" routines.
+       
+      The only difference users should notice when updating
+      to this revision number is that when selecting the 
+      "budget-bilinear" interp option, slight differences are
+      noticed in comparison to previous runs with this option.
+
+    * added the datastructures to support the updated interpolation implementations
+
+    * Additional print statement cleanup and increased
+      character-length for forcing output unit descriptions.
+
+    * New updates to the LDT Met forcing temporal
+      downscaling capability.
+
+      Building in plug-in interfaces for downscaling options
+      (starting with the "Simple weighting" method).
+
+      Made the Simple weighting routine into a module 
+
+      Cleaned up print statements (mainly for testing)
+
+    * Toward more final updates and corrections for
+      temporal downscaling of meteorological fields, 
+      following simple weighting methods like by
+      Alo Clement, Jesse Meng, etc.
+
+    * Intermediate update to the meteorological forcing
+      temporal downscaling setup.  Following now algorithms
+      used by Alo Clement, Jesse Meng, and NLDAS forcing.
+      (More final updates coming soon ...)
+
+    * Updated the Discover module and library paths
+      in the README file for LDT.
+
+    * First pass through a *working* implementation of the met downscaling
+      (with the simple weighting approach)
+
+    * Made latest updates to the new Metforcing
+      temporal downscaling run mode (still in progress).
+
+    * Add support for STATSGOFAO_LIS soil texture
+
+    * Added new LDT Run mode for simply processing
+      meteorological forcing (e.g., blending), as is
+      currently done in LIS-7.  This new runmode option::
+
+        "Metforce processing"
+
+      acts similarly to the LIS-7 "TEMPLATE" LSM option.
+
+      Also, incorporated the Oct. 1, 2012 grid change
+      to T574 (1760x880) update in CMAP/GDAS (though original 
+      grid change in GDAS occurred on 7/28/2010). 
+      Note: New updates to CMAP reader may occur in the future
+      to account for finer timestep and when the T574 grid
+      change should have been incorporated. 
+
+      Finally, minor updates to the diagnostic log output
+      statements (e.g., mentioning when writing to
+      created output directory).
+
+      And updated ldt.config_master file with latest metforcing
+      options (adopted from LIS-7 master lis.config file).
+
+    * Use standard method of subtracting longitudes for cylindrical latlon
+      projections in the LDT_RunDomainPts routine
+
+      This addresses an issue in the diff_lon function.
+
+    * Allocate local alb and local mxsnoalb arrays based on the
+      alb_select and mxsnoalb_select flags
+
+    * Correct reading of GFS max snow albedo
+
+      * Set LDT_albedo_struc(n)%mxsnoalb_gridDesc
+      * Use mxsnoalb_gridtransform
+
+    * Reformat a print statement
+
+    * Fix bug regarding computing the difference between the same longitudes
+
+    * Remove hardcoded "-g" flag from Makefile
+
+    * Bug fix to diff_lon
+
+      This function returns the difference of two longitudes,
+      where the difference is a positive value representing the number
+      of degrees eastward from slon to elon.
+
+    * adding a few missing plugins for gaussian/NCEP support
+
+
+    * Merge branches/untested/ldt-p7-gauss into tools/ldt/7/development_reorg
+
+      I merged r5520 from branches/untested/ldt-p7-gauss into
+      tools/ldt/7/development_reorg
+
+      These updates consist of:
+
+      * Corrections for Gaussian running domain support
+
+    * A final correction and code update have been
+      made to the CMAP PPT reader.  The reader skipped 
+      reading in the 6Z and 18Z CMAP files when LIS
+      timesteps were at or greater than 6 hours.   
+     
+    * added the definition of a 'buffered grid' to support budget bilinear
+      interpolation in LIS
+
+    * added the following capabilities to the DA preprocessing mode
+
+      1. Generate CDFs stratified and grouped by an external dataset
+         (e.g. landcover/soils)
+
+      2. Generate seasonally stratified CDFs (monthly in addition to yearly)
+
+    * Made minor corrections to:
+
+     1) get_cmap:  Files were being
+        skipped when certain output time 
+        interval selected (e.g., at or greater
+        than cmap timestep of 6hr);
+
+     2) LDT_metforcingMod: Metforcing
+        output time interval was not being
+        included in list of timestep update
+        so it would register when selected;
+        Also no longer dependent on 
+        "LIS output timestep:" when running
+        meteorological forcings only in LDT.
+
+      Cleaned up some print statements and added
+      new comments.
+
+    * New updates to LDT:
+
+      (1) Initial interface (new routine: LDT_MetforcDsaleMod) 
+          for meteorological forcing temporal downscaling (will 
+          be updated with plugin routines in coming updates);
+
+      (2) Added new top-level metforcing timestep storage
+          array, to keep track of forcing timesteps within 
+          core and other related directories;
+
+      (3) Added new update to CMAP and RFE2Daily metforcing
+          readers that Convective rain rate (Crainf) is now 
+          an user-specifed option via the forcing input table;
+
+      (4) Made correction to the CMAP time interp routine 
+          of replacing the undefined flag of -1 to the universal
+          undefined value (e.g., -9999);
+
+      (5) CMAP and RFE2-daily precipitation forcing readers
+          now run just like in LIS-7, except ensemble forcing
+          capability is not currently available. 
+
+    * basic functionality to write time series forcing file outputs from LDT
+
+    * New updates to facilitate new temporal 
+      downscaling feature (which is still in the works).
+
+      Minor modifications to how LIS output intervals
+      from the ldt.config file are verified and
+      written to the diagnostic output file.
+
+    * Major new updates to the LDT Reorg development
+      branch, including:
+
+      * Merging of some latest LIS-7 core routines
+        into LDT to support widened meteorological 
+        forcing applications;
+
+      * Initial code setup for new run mode, MetTimeDScale,
+        for temporal downscaling support.
+
+    * changed a global attribute related to GAUSSIAN domain
+
+    * changed the 'Metrics output directory:' option to 'LDT output directory:' 
+
+    * cleanups, changed the names of modules that are specific for DA 
+
+    * updated the Albedo field writing - The field name in the LDT output was
+      inadvertently changed to 'Albedo' instead of 'ALBEDO' 
+
+    * Reverted a couple of pointers back to be allocatable variables.
+
+    * Updated the LDT metforcing module to better
+      match the current one in LIS-7.
+
+    * Added the CMAP reader capability with the latest
+      version from LIS-7.
+
+    * Added new run mode option for temporal downscaling
+      for meteorological forcing data.  Methods and 
+      internal connections to the met forcing readers
+      need to be added still.
+
+    * Reorganized and added all RFE2 Daily met forcing reader
+      plugin options.
+
+    * Added metforcing RFE2 Daily reader files to
+      be able to read in actual RFE2 data files in LDT.
+
+    * Updated the LDT metforcing plugin routine
+      and the AGRMET forcing module file name to
+      better match the LIS-7 files.
+
+    * Made updates to some core routines involving
+      allocatable arrays and minor corrections.
+
+    * changes to config script to enable gfortran options
+
+    * changed most pointer definitions to allocatables
+
+    * gfortran related cleanups
+
+    * Updated the LDT time manager by adding in the
+      latest LIS-7 development version of the time 
+      manager to better synce the two routines.
+
+    * In addition, several metforcing and core routines
+      needed minor updates to accommodate the updated
+      time manager file in LDT.
+
+    * Updated the ldt.config master file entries
+      with fixing some bugs for Latex and adding
+      some additional descriptions specific to the
+      new LDT Reorg branch.
+
+    * Minor modification to the soils module (more updates
+      coming for soil fractions).
+
+    * Made correction to the irrigation type attribute, 
+      number of bins, by adding a new routine to set the 
+      number of irrigation types. The number of types is
+      determined by irrigation type data source.
+
+      Added new update to the crop modifier where MODIS
+      and USGS landcover types with more than one crop class
+      are used to identify where valid crop map points, 
+      for example from the Ozdogan et al. (2010) CROPMAP gridcells,
+      are constrained by the landcover.  This updated
+      feature allows for more crop map types to be captured
+      by the additional landcover crop/irrigation types.
+      
+    * Made minor updates to the ldt.config master
+      file.
+
+    * Added new testcases for the LDT Reorg development
+      branch. The new ldt.config files contain the updated
+      entries and there are longer any param_attribs.txt files.
+
+      README files have been included along with GRADS 
+      control files for netcdf output files.
+
+    * Removed two more obsolete test cases in the 
+      LDT development reorganization branch.
+
+    * Removed older testcases for LDT and moving
+      to updated ones that reflect the newer
+      "Reorganized" development branch, which
+      no longer requires the param_attribs.txt
+      file.
+
+    * Updated the documentation and new option descriptions
+      in the ldt.config_master file.
+
+      Removed the now obsolete param_attribs.txt_master
+      file.  The latest LDT development branch ("Reorg")
+      no longer relies on the parameter attributes table
+      and those data source options have now been documented
+      in the ldt.config master file.  
+
+      Please refer to the updated ldt.config master file
+      for the latest options and required entries.
+
+    * Added in several routines the units and full
+      names for a variety of different parameters
+      and added new routines that allow users to such
+      information within the parameter directories.
+
+      Also, additional clean-up of the code.
+
+    * Updated the monthly climatological PPT modules
+      and how the options are entered from the ldt.config
+      file.
+
+      Corrected the order of when metforcing parameters are
+      called vs. the climateparms module in LDT_paramProcMod.
+
+    * Minor updates to Reorg branch and added
+      a params directory and module for VIC model
+      parameters.
+
+    * Updated and added SACHTET and Snow17 model
+      parameter modules and readers.
+
+    * Additional cleanups to the "Reorg" LDT branch
+      and removal of setting individual albedo or
+      greenness fraction sources number of time dimensions,
+      replacing with one comprehensive subroutine where
+      all are set in same location.
+
+    * Updated handling of the parameter "source"
+      diagnostic statements, to be triggered and paired
+      with the LSM and other options selected in
+      the ldt.config file.
+
+    * Updating FLake / lake model parameter routines
+      to be able to accept updated versions of FLake
+      model and datasets.
+     
+      Removed redundant lakeparams "Ftable" c-routine,
+      since an exact same one existed ("FTable").
+     
+      Modified the log writing module for "warnings".
+      
+    * Updated the topography data fields, especially
+      for 'native' forms, and log statements.
+
+    * Additional cleanups to the Noah parameters, 
+      slopetype and tbot, and simultaneously for 
+      SAC-HTET parameter, tbot.
+
+      Some minor bug fixes as well. 
+
+    * Updated the handling of the landcover source options with:
+
+      * Removing the "set landcover attributes" plugin registered routines;
+
+      * Reducing requirement of user specifying the landcover classification
+        in the ldt.config file;
+
+      * Only the "CONSTANT" landcover source type will need the user to
+        specify the Landcover classification in the ldt.config file;
+
+      * Working toward streamlining landcover options.
+
+    * Moved the Noah slope type file readers into the Noah
+      parameter directory and removed the slopetype directory.
+
+    * Added number of floodplain height levels for HYMAP
+      parameter processing, e.g.,:
+
+        HYMAP floodplain height levels:     10
+
+     Updated matching documentation for HYMAP in the ldt.config file.
+
+    * Fixed LDT structure LAI filename variable for 
+      LDT diagnostic write statement. 
+
+    * Intermediate, minor updates and additional comments included.
+
+    * Made correction to Noah parameters module
+      to properly select slope type source and
+      data file.
+
+    * cleanups to move implementation specific variables to the respective
+      containers
+
+    * cleanups related to lake, irrigation variables
+
+    * cleanups related to albedo variables
+
+    * completed round of reorganization - tested Noah, CLSM, and HYMAP support
+      so far
+
+    * commits after testing Noah, CLSM and HYMAP
+
+
+==================================================================
+Land surface Data Toolkit (LDT) Public Release 7.0rp2 (r5445:5760)
+==================================================================
+
+This patch release includes updates r5445:5760.
+
+These updates consist of:
+
+- Update RELEASE_NOTES.txt for LDT Public Release 7.0rp2
+
+- Update RELEASE_NOTES.txt for LDT Public Release 7.0rp1
+
+- Add RELEASE_NOTES.txt
+
+- Made the following corrections to:
+
+  1) LDT_RunDomainPts subroutine to enable proper
+     mapping between finer-scale Lambert LIS run domains 
+     and coarser Latlon-paramter grid extents;
+
+  2) needed updates to the NLDAS-1 and NLDAS-2
+     domain checks, for when a selected domain exceeds
+     the NLDAS boundary but is not a latlon output grid. 
+
+- Added screen for the NLDAS1 and NLDAS2 domain checks
+  that the check is only done for latlon LIS projections
+  and not other projections.
+
+- LaTeX updates for LDT users' guide
+
+
+==================================================================
+Land surface Data Toolkit (LDT) Public Release 7.0rp1 (r5174:5444)
+==================================================================
+
+This patch release includes updates r5174:5444.
+
+These updates consist of:
+
+- Merge tools/ldt/7/development into tools/ldt/7/public7.0
+
+  I merged r5117:5366 from tools/ldt/7/development into tools/ldt/7/public7.0.
+  (Skipping r5201, r5210, r5274, r5289, r5291, r5297, r5304, and r5366.)
+
+  These updates consist of:
+
+  * bug fix to the NUWRF processing mode
+
+  * Added checks that only allow crop classification type
+    and number of classes to only get written as global attributes
+    if the "Incorporate crop information" entry is specified as
+    .true.
+
+  * Made ldt.config user-specified entry of::
+
+      Assimilate crop information:   .false.
+
+    TO::
+
+      Incorporate crop information:   .false.
+
+    All files in LDT source code with this entry have been
+    updated.  Please update your ldt.config files, if you
+    had to include this option.  Apologize for the inconvenience. 
+
+  * Updated the Noah LSM "native" parameters with fill
+    options test case - ldt.config file with latest
+    crop type updates.
+
+
+  *  Updated ldt.config files in the test cases to 
+     reflect the latest option additions/changes added
+     to ldt.
+
+     Removed just the LIS-produced NCEP-MODIS landcover
+     test case.
+
+  * Added new feature for LAI climatology field to
+    calculate the min and max LAI files at each pixel
+    from a climatology.
+
+    New option in the ldt.config file is::
+
+      Calculate min-max LAI:           .true.   
+
+    The .true. entry specifies to 'calculate' min/max 
+    LAI values, and .false. specifies to read them
+    in from spatial maps of min and max LAI values.
+
+    This update is also reflected in the master ldt.config 
+    file.
+
+    Also, relocated all SAI routines to be with the LAI
+    file readers in a new directory in params, named::
+
+      LAISAI
+
+    Finally, made minor updates to print statements.
+
+  * Added a new LDT feature to allow user to calculate 
+    min/max greenness fraction (gfrac) values from the 
+    monthly climatology values, instead of having to
+    read in separate maps for min and max greenness.
+
+    The ldt.config master file has been also updated
+    to reflect these changes.  For quick reference, here
+    is what the new option looks like in the ldt.config file::
+
+      Calculate min-max greenness fraction:  .true.
+
+  * Updated the master parameter attributes table 
+    and ldt.config file in the configs directory
+    to specify entries for minimum and maximum LAI
+    maps and fields.
+
+  * Updated ldt.config master file with new entries and expounded
+    several of the descriptions for many LSM parameter entries,
+    including which LSMs the parameters are usually used with.
+
+    One new ldt.config file entry is for turning on the ability to
+    modify other paramters for crop and irrigation presence::
+
+      Assimilate crop information:   .false.
+
+    Please include this new entry in your ldt.config files.
+
+    Also, commented out a write statement in the GRIPC irrigation 
+    fraction file reader.
+
+  * Major updates to the irrigation routine
+    names and options.
+
+    1) Added a new irrigation fraction reader for the 
+       the GRIPC land-use/crop-water map, which generates
+       an irrigation intensity map for anywhere in the globe.
+       To activate, turn the following option in param_attribs.txt to::
+
+         Irrig area fraction:    1    GRIPC  ...
+
+    2) Renamed the "MODIS" irrigation fraction reader to be::
+
+         read_OzdoganGutman_irrigfrac.F90
+
+       and the corresponding option in the param_attribs.txt is::
+
+         Irrig area fraction:    1    MODIS_OG  ...
+  
+    3) Updated LDT documentation in the configs directory.
+
+    4) Added a new LSM parameter-landcover map modifier for
+       including crop information.  New features associated
+       with this option coming soon. 
+
+  * Updated the LDT_gridOptChecks routine and reduced
+    the inputs being required. Future updates to be
+    made to this routine to improve LIS and parameter
+    grid option cross-checks.
+
+    This routine could also be called from the parameter
+    reader subroutines to check spatial transformation
+    option logic for users.
+
+  * Added a simple test case to produce a suite
+    of constant-value parameters that can be
+    used in a LIS-7 run.
+
+  * Added new LDT feature to be able to right out
+    "CONSTANT" values for several parameter types,
+    currently for Noah parameters, landcover, soils
+    and elevation.
+
+    Documentation has been updated to reflect this
+    new feature.
+
+- Correct the order in which LDT processes the old preprocessed quarterly
+  albedo data files.
+
+- Made correction to the Elevation fill option
+  entries -- correctly include "average" option
+  for elevation, slope and aspect.
+
+-  Installed new checks on the "fill" options for
+   several parameters to help users know which
+   options are available and/or if they entered
+   an option incorrectly.
+ 
+- Bug fix to the STATSGO+FAO "native" soil texture
+  reader in that the calculation for input points
+  for the aggregation routines was incorrect.
+
+- Increased the character length from 50 to 100 spaces for 
+  reading LIS history directory/filename paths.
+
+- Added new diagnostic log error message to inform
+  users if they have selected possibly incorrect 
+  upper-right gridcell lat/lon extents, if the resolution
+  chosen does not *neatly* divide into 1.0 deg gridcell.
+  
+- Added Noah 'native' parmeters test case with "fill" options
+  to ensure parameter-mask consistencies.
+
+- Screen for parameter grid resolution checks only
+  for lat-lon grids. 
+  
+  Also, made minor modifications to the warning statements
+  printed to the diagnostic log file.
+
+- Added some input LDT files for a simple test case for 
+  generating CDF stats for LIS-7 LSM soil moisture output   
+
+  Made update to the Noah Native Parmeters test case README file
+
+- Needed to move the grid mapping option checks 
+  to where the parameter grid array is read in
+  and verified, for support of the LIS-produced
+  binary parameter files.
+
+- Updated the library source path lines for what
+  is typically set to compile LDT on the NCCS machine,
+  Discover.
+
+- Add more descriptive NetCDF prompts (thanks Shugong)
+
+
+==========================================================
+Land surface Data Toolkit (LDT) Public Release 7.0 (r5173)
+==========================================================
+
+- First main public release.
+
+- This version contains several options:
+
+  1. Surface model parameter processing, used as preprocessor to LIS-7
+
+  2. Data assimilation preprocessing options, like CDF-matching stats
+
+  3. Restart file generation, either from single member or from multiple members
+
+- More to come in subsequent releases ...
+

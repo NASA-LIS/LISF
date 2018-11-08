@@ -1,0 +1,9 @@
+!BOP
+!\section{NLDAS2}
+!The atmospheric forcing used in the North American Land Data
+!Assimilation System Phase 2 (NLDAS-2) features products at an
+!hourly 0.125$^\circ$ spatial resolution, from 25 to 53 North
+!and from -125 to -67 West, from January 1979 to present.
+!For details, see Xia et al. (2012, JGR) and visit:
+!   http://ldas.gsfc.nasa.gov/nldas/NLDAS2forcing.php
+!EOP

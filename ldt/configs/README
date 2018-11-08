@@ -1,0 +1,7 @@
+Example ldt.config configuration files can be found the the testcases
+directory.
+
+The ldt.config file in this directory contains all the user-configurable
+options plus documentation.  Please see LDT User's Guide for an easier to
+read format.
+

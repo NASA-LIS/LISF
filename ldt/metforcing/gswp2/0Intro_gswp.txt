@@ -1,0 +1,5 @@
+!BOP
+!\section{GSWP}
+!This section describes the implementation of the forcing data used in the 
+!Global Soil Wetness Project Phase II. 
+!EOP

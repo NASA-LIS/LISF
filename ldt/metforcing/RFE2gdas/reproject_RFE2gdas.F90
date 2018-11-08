@@ -1,0 +1,178 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v7.1
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+!
+! !ROUTINE: reproject_RFE2gdas
+! \label{reproject_RFE2gdas}
+!
+! !INTERFACE:
+subroutine reproject_RFE2gdas(n,findex,month,nRFE2gdas,f1d,f2d,lb1d,lb2d, &
+     lis_gds, nc,nr, varfield)
+! !USES:
+  use LDT_coreMod
+  use LDT_spatialDownscalingMod
+  use LDT_logMod
+  use RFE2gdas_forcingMod
+
+  implicit none
+
+! !ARGUMENTS:
+  integer, intent(in)    :: n
+  integer, intent(in)    :: findex
+  integer, intent(in)    :: month
+  integer, intent(in)    :: nRFE2gdas
+  real, intent(in)       :: f1d(nRFE2gdas)
+  real, intent(in)       :: f2d(NINT(RFE2gdas_struc(n)%gridDesci(2)),&
+                                NINT(RFE2gdas_struc(n)%gridDesci(3)))
+  logical*1, intent(in)  :: lb1d(nRFE2gdas)
+  logical*1, intent(in)  :: lb2d(NINT(RFE2gdas_struc(n)%gridDesci(2)),&
+                                 NINT(RFE2gdas_struc(n)%gridDesci(3)))
+  real,  intent(in)      :: lis_gds(50)
+  integer, intent(in)    :: nc
+  integer, intent(in)    :: nr
+  real, intent(inout)    :: varfield(nc,nr)
+!
+! !DESCRIPTION:
+!   This subroutine interpolates a given RFE2gdas field
+!   to the LDT grid.
+!  The arguments are:
+!  \begin{description}
+! \item[n]
+!  index of the nest
+!  \item[findex]
+!    index of the supplemental forcing source
+! \item[nRFE2gdas]
+!  number of elements in the input grid
+! \item[f1d]
+!  1-d input data array to be interpolated
+! \item[f2d]
+!  2-d input data array to be interpolated
+! \item[lb1d]
+!  input 1-d bitmap
+! \item[lb2d]
+!  input 2-d bitmap
+! \item[lis\_gds]
+!  array description of the LDT grid
+! \item[nc]
+!  number of columns (in the east-west dimension) in the LDT grid
+! \item[nr]
+!  number of rows (in the north-south dimension) in the LDT grid
+! \item[varfield]
+!  output interpolated field
+!  \end{description}
+!  
+!  The routines invoked are:
+!  \begin{description}
+!  \item[upscaleByAveraging](\ref{upscaleByAveraging}) \newline
+!    upscales scalar data from a finer grid to a coarser grid 
+!  \item[bilinear\_interp](\ref{bilinear_interp}) \newline
+!    spatially interpolate the forcing data using bilinear interpolation
+!  \item[conserv\_interp](\ref{conserv_interp}) \newline
+!    spatially interpolate the forcing data using conservative interpolation
+!  \item[neighbor\_interp](\ref{neighbor_interp}) \newline
+!    spatially interpolate the forcing data using nearest neighbor interpolation
+! \end{description}
+!EOP
+
+!==== Local Variables=======================
+  integer   :: iret,mo
+  integer   :: count1,i,j
+  real, dimension(nc*nr) :: lis1d
+  real, dimension(nc,nr) :: lis2d
+  logical*1 :: lo(nc*nr)
+  logical*1 :: lo2(nc,nr)
+  integer   :: c,r,t
+!=== End Variable Definition =======================
+
+   lo = .true.
+   mo = nc*nr
+
+#if 0
+  if(LDT_rc%pcp_downscale(findex).ne.0) then 
+!input_data becomes the ratio field. 
+     call LDT_generatePcpClimoRatioField(n,findex,"RFE2gdas",&
+          month, & 
+          RFE2gdas_struc(n)%mi, &
+          f1d, &
+          lb1d)     
+  endif
+#endif
+
+!- Upscale finer scale forcing field to coarser scale run domain:
+  select case( LDT_rc%met_gridtransform(findex) )
+
+    case( "average" )   ! Upscaling 
+#if 0
+! Soni's former way:
+      call upscaleByAveraging(LDT_rc%lnc(n), LDT_rc%lnr(n), &
+         NINT(RFE2gdas_struc(n)%gridDesci(2)), &
+         NINT(RFE2gdas_struc(n)%gridDesci(3)),&
+         RFE2gdas_struc(n)%stc, RFE2gdas_struc(n)%str, &
+         RFE2gdas_struc(n)%enc, RFE2gdas_struc(n)%enr, LDT_rc%udef,&
+         lb2d, f2d, lo2,lis2d)
+      do r=1,LDT_rc%lnr(n)
+         do c=1,LDT_rc%lnc(n)
+            t = c+(r-1)*LDT_rc%lnc(n)
+            lis1d(t) = lis2d(c,r)
+         enddo
+      enddo
+#endif
+      call upscaleByAveraging( RFE2gdas_struc(n)%mi, &
+           mo, LDT_rc%udef, &
+           RFE2gdas_struc(n)%n111, &
+           lb1d, f1d, lo, lis1d)
+
+!- Downscale (or interpolate) or at same resolution as run domain:
+    case( "bilinear" )
+      call bilinear_interp(lis_gds,lb1d,f1d,lo,lis1d,&
+          RFE2gdas_struc(n)%mi,mo,&
+          LDT_domain(n)%lat, LDT_domain(n)%lon,&
+          RFE2gdas_struc(n)%w111, RFE2gdas_struc(n)%w121,&
+          RFE2gdas_struc(n)%w211,RFE2gdas_struc(n)%w221,&
+          RFE2gdas_struc(n)%n111,RFE2gdas_struc(n)%n121,&
+          RFE2gdas_struc(n)%n211,RFE2gdas_struc(n)%n221,&
+          LDT_rc%udef,iret)
+
+    case( "budget-bilinear" )
+      call conserv_interp(lis_gds,lb1d,f1d,lo,lis1d,&
+          RFE2gdas_struc(n)%mi,mo,&
+          LDT_domain(n)%lat, LDT_domain(n)%lon,&
+          RFE2gdas_struc(n)%w112,RFE2gdas_struc(n)%w122,&
+          RFE2gdas_struc(n)%w212,RFE2gdas_struc(n)%w222,&
+          RFE2gdas_struc(n)%n112,RFE2gdas_struc(n)%n122,&
+          RFE2gdas_struc(n)%n212,RFE2gdas_struc(n)%n222,&
+          LDT_rc%udef,iret)
+
+    case( "neighbor" )
+      call neighbor_interp(lis_gds,lb1d,f1d,lo,lis1d,&
+          RFE2gdas_struc(n)%mi,mo,&
+          LDT_domain(n)%lat, LDT_domain(n)%lon,&
+          RFE2gdas_struc(n)%n113,LDT_rc%udef,iret)
+  end select
+
+#if 0
+! Downscale precipitation using climatology based data:
+  if(LDT_rc%pcp_downscale(findex).ne.0) then 
+
+     call LDT_pcpClimoDownscaling(n,findex,month,&
+          nc*nr, lis1d, lo)     
+  endif
+#endif
+
+!-----------------------------------------------------------------------
+! Create 2D array for main program. 
+!-----------------------------------------------------------------------
+  count1 = 0
+  do j = 1, nr
+     do i = 1, nc
+        varfield(i,j) = lis1d(i+count1)
+     enddo
+     count1 = count1 + nc
+  enddo
+
+end subroutine reproject_RFE2gdas

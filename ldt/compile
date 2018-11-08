@@ -1,0 +1,88 @@
+#!/bin/sh 
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+#
+# Copyright (c) 2015 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+while getopts ":hdj:" opt
+do
+   case $opt in
+      h)
+         echo "Usage: ./compile.sh [-h] [-d] [-j jobs]"
+         echo ""
+         echo "   -h"
+         echo "     Prints this help and exits."
+         echo ""
+         echo "   -j jobs"
+         echo "     Specifies the number of make jobs to run."
+         echo "     See man make(1)".
+         echo ""
+         echo "   -d"
+         echo "     Generate all dependencies up front."
+         echo "     (Recommended for Cray systems.)"
+         exit 0
+         ;;
+      j)
+         njobs="-j $OPTARG"
+         ;;
+      d)
+         all_deps_first="YES"
+         ;;
+     \?)
+        echo "Invalid option: -$OPTARG" >&2
+        echo "Run './compile -h' for more help."
+        exit 1
+        ;;
+     :)
+        echo "Option -$OPTARG requires an argument." >&2
+        echo "Run './compile -h' for more help."
+        exit 1
+        ;;
+   esac
+done
+
+dashes="-------------------------------------------------------------------"
+
+echo $dashes
+echo "Compiling LDT version 7.2r..."
+echo ""
+
+if cd ./make
+then
+   echo "[INFO] Compiling LDT source code"
+   echo ""
+   if [ "$all_deps_first" = "YES" ]; then
+      echo "[INFO] Generating all dependencies up front"
+      make realclean && make depend
+   fi
+   make -f Makefile $njobs
+   if [ $? -eq 0 ]; then
+      if ! cp LDT ..
+      then
+         echo ""
+         echo "[ERR] Cannot copy LDT executable"
+         echo $dashes
+         exit 1
+      else
+         echo ""
+         echo "[INFO] Compile finished"
+         echo $dashes
+      fi
+   else
+      echo ""
+      echo "[ERR] Compile failed"
+      echo $dashes
+      exit 1
+   fi
+else
+   echo ""
+   echo "[ERR] Cannot enter make directory"
+   echo $dashes
+   exit 1
+fi
+
+exit 0

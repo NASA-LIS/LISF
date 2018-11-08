@@ -1,0 +1,54 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA GSFC Land Data Toolkit (LDT) V1.0
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+module LDT_PRIV_gridMod 
+!BOP
+!
+! !MODULE: LDT_PRIV_gridMod
+!
+! !DESCRIPTION:
+!  The code in this file provides a description of the grid data structure in LIS
+!
+!  \subsubsection{Overview}
+!  This module contains the grid data structure used in LIS. The data structure 
+!  contains the variables specified for a single grid cell. It includes:
+!  \begin{description}
+!   \item[lat] 
+!    latitude of the grid cell
+!   \item[lon] 
+!    longitude of the grid cell
+!   \item[col] 
+!     index of the grid point along the East-West grid dimension
+!   \item[row] 
+!    index of the grid point along the North-South grid dimension
+!   \item[ntiles] 
+!    Number of sub-grid tiles contained within this grid cell
+!   \item[subgrid\_tiles] 
+!    Array of tile indices corresponding to the sub-grid tiles
+!   \item[elev] 
+!    Topological elevation of the grid cell
+!   \item[slope] 
+!    Topological slope of the grid cell
+!   \item[aspect] 
+!    Topological aspect of the grid cell
+!   \item[curv] 
+!    Topological curvature of the grid cell
+!   \end{description}
+!
+! !REVISION HISTORY:
+!  14 Nov 2008: Sujay Kumar; Optimized version of grid representation
+!
+!EOP
+  implicit none
+  public griddec
+  type griddec
+     real            :: lat    
+     real            :: lon    
+     integer         :: col   
+     integer         :: row  
+     integer         :: ntiles
+     integer,allocatable,dimension(:) :: subgrid_tiles
+  end type griddec
+end module LDT_PRIV_gridMod
+
+

@@ -1,0 +1,162 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v7.0
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+!
+! !ROUTINE: read_TRMM3B42V7.F90
+! \label{read_TRMM3B42V7}
+!
+! !REVISION HISTORY: 
+!  19 Apr 2013: Jonathan Case; Corrected some initializations and comparison
+!               against undefined value, incorporated here by Soni Yatheendradas
+!  21 Jun 2013: Soni Yatheendradas; Based on new TRMM3B42V6 code, changes from
+!               earlier code to avoid (a) alternate file skip, (b) jump to
+!               previous day TRMM, and (c) absence of rain rate weighting
+!
+! !INTERFACE:
+subroutine read_TRMM3B42V7 (n, fname, findex, order, ferror_TRMM3B42V7)
+! !USES:
+  use LDT_coreMod,           only : LDT_rc, LDT_domain
+  use LDT_logMod,            only : LDT_logunit, LDT_getNextUnitNumber, &
+                                    LDT_releaseUnitNumber
+  use LDT_metforcingMod,     only : LDT_forc
+  use TRMM3B42V7_forcingMod, only : TRMM3B42V7_struc
+
+  implicit none
+! !ARGUMENTS:
+  integer, intent(in) :: n
+  character(len=80)   :: fname
+  integer, intent(in) :: findex
+  integer, intent(in) :: order
+  integer             :: ferror_TRMM3B42V7
+!
+! !DESCRIPTION:
+!  For the given time, reads parameters from
+!  TRMM 3B42V7 data and interpolates to the LDT domain.
+!
+!  The arguments are:
+!  \begin{description}
+!  \item[n]
+!    index of the nest
+!  \item[fname]
+!    name of the 6 hour TRMM 3B42V7 file
+!  \item[ferror\_TRMM3B42V7]
+!    flag to indicate success of the call (=0 indicates success)
+!  \end{description}
+!
+!  The routines invoked are:
+!  \begin{description}
+!  \item[interp\_TRMM3B42V7](\ref{interp_TRMM3B42V7}) \newline
+!    spatially interpolates the TRMM 3B42V7 data
+!  \end{description}
+!EOP
+
+  !==== Local Variables=======================
+  integer :: index1, nTRMM3B42V7
+
+  integer :: ios
+  integer :: i,j,xd,yd
+  parameter(xd=1440,yd=400)                     ! Dimension of original 3B42V7 data
+
+  real    :: precip(xd,yd)                      ! Original real precipitation array
+  logical*1,allocatable :: lb(:)
+  real, allocatable :: precip_regrid(:,:)       ! Interpolated precipitation array
+  integer :: ftn
+
+  !=== End Variable Definition =======================
+
+  !------------------------------------------------------------------------
+  ! Fill necessary arrays to assure not using old 3B42V7 data
+  !------------------------------------------------------------------------
+  ! J.Case (4/22/2013) -- Make consistent with Stg4/NMQ routines
+  if(order.eq.1) then
+     LDT_forc(n,findex)%metdata1 = LDT_rc%udef ! J.Case
+  elseif(order.eq.2) then 
+     LDT_forc(n,findex)%metdata2 = LDT_rc%udef ! J.Case
+  endif
+  allocate (precip_regrid(LDT_rc%lnc(n),LDT_rc%lnr(n)))
+
+!  precip = -1.0
+!  if(order.eq.1) then
+!     LDT_forc(n,findex)%metdata1 = -1.0
+!  elseif(order.eq.2) then 
+!     LDT_forc(n,findex)%metdata2 = -1.0
+!  endif
+  precip_regrid = -1.0 ! J.Case
+
+  !------------------------------------------------------------------------
+  ! Find 3B42V7 precip data, read it in and assign to forcing precip array.
+  ! Must reverse grid in latitude dimension to be consistent with LDAS grid
+  !------------------------------------------------------------------------
+  ftn = LDT_getNextUnitNumber()
+  open(unit=ftn,file=fname, status='old', &
+       &          access='direct',recl=xd*yd*4, &
+       &          form='unformatted',iostat=ios)
+
+  if (ios .eq. 0) then
+     read (ftn,rec=1) precip
+     Do j=1, xd
+        Do i=1, yd
+           if (precip(j, i) .LT. 0.0 ) precip(j, i) = 0.0    ! reset to 0 for weird values
+        End Do
+     End Do
+
+! J.Case (4/19/2013) -- Test print out of raw precip array
+! write (99,*) precip
+
+     !------------------------------------------------------------------------
+     ! Interpolating to desired LDT_domain and resolution
+     ! Global precip datasets not used currently to force NLDAS
+     !------------------------------------------------------------------------
+     !print*, "Writing un-interpolated 3B42V7 precipitation out "
+     !open(71, file="TRMM3B42V7-ungrid.1gd4r", access="direct", &
+     !    recl=xd*yd*4, form="unformatted")
+     ! write(71, rec=1) precip
+     !close(71)
+
+     nTRMM3B42V7 = TRMM3B42V7_struc(n)%nc*TRMM3B42V7_struc(n)%nr
+     allocate(lb(nTRMM3B42V7))
+     lb = .true.
+     call interp_TRMM3B42V7(n, nTRMM3B42V7, precip, lb, LDT_rc%gridDesc, &
+          LDT_rc%lnc(n),LDT_rc%lnr(n),precip_regrid, findex) ! SY
+     deallocate (lb) 
+
+     !print*, "Writing interpolated 3B42V7 precipitation out "
+     !open(73, file="TRMM3B42V7-regrid.1gd4r", access="direct", &
+     !    recl=LDT_rc%d%lnr*LDT_rc%d%lnc*4, form="unformatted")
+     ! write(73, rec=1) precip_regrid
+     !close(73)
+     !print*, "Writing interpolated 3B42V7 precipitation out finished"
+
+! J.Case (4/19/2013) -- Test print out of the regridded precip (on LDT grid).
+! write (98,*) precip_regrid
+
+     do j = 1,LDT_rc%lnr(n)
+        do i = 1,LDT_rc%lnc(n)
+           if (precip_regrid(i,j) .ne. -1.0) then
+              index1 = LDT_domain(n)%gindex(i,j)
+              if(index1 .ne. -1) then
+                 if(order.eq.1) then 
+                    LDT_forc(n,findex)%metdata1(1,index1) = precip_regrid(i,j)   !here is mm/h
+                 elseif(order.eq.2) then 
+                    LDT_forc(n,findex)%metdata2(1,index1) = precip_regrid(i,j)   !here is mm/h
+                 endif
+              endif
+           endif
+        enddo
+     enddo
+
+! J.Case (4/19/2013) -- Test print out of the suppdata precip (on LDT grid).
+! write (97,*) LDT_forc(n,findex)%metdata1(1,:)
+
+     ferror_TRMM3B42V7 = 1
+     write(LDT_logunit,*) "Obtained 3B42 V7 precipitation data ", fname
+  else
+     write(LDT_logunit,*) "Missing 3B42 V7 precipitation data ", fname
+     ferror_TRMM3B42V7 = 0
+  endif
+  call LDT_releaseUnitNumber(ftn)
+
+  deallocate (precip_regrid)
+
+end subroutine read_TRMM3B42V7

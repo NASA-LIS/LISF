@@ -1,0 +1,7 @@
+!BOP
+!\section{GLDAS}
+!This section describes the implementation of the forcing data
+!available from the Global Land Data Assimilation System (GLDAS)
+!produced by merging GEOS, AGRMET radiation and CMAP precipitaion
+!by the NASA GSFC's Global Modeling and Assimilation office (GMAO). 
+!EOP

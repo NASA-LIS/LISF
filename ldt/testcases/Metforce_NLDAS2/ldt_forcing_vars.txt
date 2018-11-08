@@ -1,0 +1,28 @@
+#ALMA Name read_select vlevels  units out_stat write_select 
+Tair:        1  1  K       0 1 # Near Surface Air Temperature 
+Qair:        1  1  kg/kg   0 1 # Near Surface Specific Humidity
+SWdown:      1  1  W/m2    0 1 # Incident Shortwave Radiation            
+SWdirect:    0  1  W/m2    1 0 # Incident Shortwave Radiation            
+SWdiffuse:   0  1  W/m2    1 0 # Incident Shortwave Radiation            
+LWdown:      1  1  W/m2    0 1 # Incident Longwave Radiation              
+Wind_E:      1  1  m/s     0 1 # Eastward Wind                            
+Wind_N:      1  1  m/s     0 1 # Northward Wind                           
+Psurf:       1  1  Pa      0 1 # Surface Pressure                         
+Rainf:       1  1  kg/m2s  0 1 # Rainfall Rate - Average                            
+Snowf:       0  1  kg/m2s  0 0 # Snowfall Rate                            
+CRainf:      1  1  kg/m2s  0 1 # Convective Rainfall Rate                 
+Forc_Hgt:    0  1  m       0 0 # Height of Forcing Variables              
+Ch:          0  1  -       1 0 # Surface Exchange Coefficient for Heat    
+Cm:          0  1  -       1 0 # Surface Exchange Coefficient for Momentum
+Q2sat:       0  1  -       1 0 # Saturated Mixing Ratio                   
+Emiss:       0  1  -       1 0 # Surface Emissivity                       
+Cosz:        0  1  -       1 0 # Cosine of Zenith Angle                   
+Albedo:      0  1  -       1 0 # Surface Albedo  
+LPressure:   0  1  Pa      1 0 # Level pressure
+O3:          0  1  -       1 0 # Ozone concentration   
+PET:         0  1  kg/m2s  1 0 # Potential ET                            
+RefET:       0  1  kg/m2   1 0 # Reference ET                            
+TotalPrecip: 0  1  kg/m2   1 0 # Total precipitation
+#
+#out_stat:  0=inst, 1=ave, 2=inst/ave, 3=sum
+#

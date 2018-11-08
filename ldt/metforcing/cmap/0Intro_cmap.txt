@@ -1,0 +1,6 @@
+!BOP
+!\section{CMAP}
+!This section describes the implementation of the precipitation
+!forcing from the Climate Prediction Center's (CPC) Merged
+!Analysis of Precipitation (CMAP)
+!EOP

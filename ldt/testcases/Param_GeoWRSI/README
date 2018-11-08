@@ -1,0 +1,45 @@
+
+Focus:  GeoWRSI LSM Native Parameters
+
+Description:  This test case involves the processing
+      of 'Native' 2-D GeoWRSI LSM parameters to
+      be used in an actual LIS run. 
+
+This test case uses the following files:
+  (a) this README file
+  (b) the wget data download scripts: 
+     wget_geowrsi_output.sh
+     wget_geowrsiparms_portal.sh
+     wget_lisumdlc_portal.sh
+  (c) the ldt.config input file to LDT used for this testcase;
+  (d) test_output.xdf GrADS control file to view the LDT-generated output;
+  (e) and to compare with output data, download the original output
+       tar-zipped file, unpack and compare with those given files.
+
+To run this test case: 
+ 
+  (a) Run the download scripts in a working directory where you want 
+       to place the GeoWRSI 2-D input data:
+
+       sh wget_geowrsiparms_portal.sh
+       sh wget_lisumdlc_portal.sh
+
+  (b) Generate the LDT executable and copy to your working directory. 
+
+  (c) Run the LDT executable using the ldt.config file,  
+       and the GeoWRSI 2-D input parameters.  To run type:
+      ./LDT ldt.config
+
+  (d) View the NetCDF (*.nc) output using the sample grads file, test_output.xdf, 
+       or the ncview executable (if you have it installed).
+
+  (e) Download and unpack the LDT test case output:
+
+       sh wget_geowrsi_output.sh
+       tar -xzvf Public-LDT_GeoWRSI_output_v71.tar.gz
+
+      to compare with what you produced with these test case files. 
+
+Caveats: 
+  (a) Please note that this is a more basic functional test for purpose
+      of learning major LDT features.

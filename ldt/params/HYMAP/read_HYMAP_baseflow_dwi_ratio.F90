@@ -1,0 +1,75 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+!
+! !ROUTINE: read_HYMAP_baseflow_dwi_ratio
+! \label{read_HYMAP_baseflow_dwi_ratio}
+!
+! !REVISION HISTORY:
+!  25 Jul 2005: Sujay Kumar; Initial Specification
+!  08 Dec 2016: Sujay Kumar; Adapt to baseflow deep water infiltration (DWI) ratio
+!
+! !INTERFACE:
+subroutine read_HYMAP_baseflow_dwi_ratio(n, array)
+
+! !USES:
+  use ESMF
+  use LDT_coreMod,       only : LDT_rc, LDT_domain
+  use LDT_logMod,        only : LDT_logunit, LDT_getNextUnitNumber, &
+       LDT_releaseUnitNumber, LDT_endrun
+  use LDT_fileIOMod,     only : readLISdata 
+  use HYMAP_parmsMod
+
+  implicit none
+! !ARGUMENTS: 
+  integer,      intent(in) :: n
+  real,      intent(inout) :: array(LDT_rc%lnc(n),LDT_rc%lnr(n),1)
+
+! !DESCRIPTION:
+!  This subroutine retrieves the bottom temperature climatology for the 
+!  specified month and returns the values in the latlon projection
+!  
+!  The arguments are:
+!  \begin{description}
+!  \item[n]
+!   index of the nest
+!  \item[mo]
+!   time index (month or quarter)
+!  \item[array]
+!   output field with the retrieved greenness fraction
+!  \end{description}
+!
+!EOP      
+  integer :: ftn
+  integer :: c,r
+  logical :: file_exists
+
+  ftn = LDT_getNextUnitNumber()
+
+  inquire(file=trim(HYMAP_struc(n)%baseflowdwiratioFile), exist=file_exists)
+  if(.not.file_exists) then 
+     write(LDT_logunit,*) 'baseflow DWI ratio map ',trim(HYMAP_struc(n)%baseflowdwiratioFile),' not found'
+     write(LDT_logunit,*) 'Program stopping ...'
+     call LDT_endrun
+  endif
+
+  open(ftn, file=trim(HYMAP_struc(n)%baseflowdwiratioFile), access='direct',&
+       status='old', form="unformatted", recl=4)
+  
+  call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
+       HYMAP_struc(n)%hymap_gridtransform, &
+       HYMAP_struc(n)%hymapparms_gridDesc(:), 1, array)  ! 1 indicates 2D layer
+  
+  do r=1,LDT_rc%lnr(n)
+     do c=1,LDT_rc%lnc(n)
+        if(array(c,r,1).lt.0) then
+           array(c,r,1) = LDT_rc%udef
+        else 
+           array(c,r,1) = 0.5
+        endif
+     enddo
+  enddo
+  call LDT_releaseUnitNumber(ftn)
+
+end subroutine read_HYMAP_baseflow_dwi_ratio

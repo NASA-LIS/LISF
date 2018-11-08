@@ -1,0 +1,5 @@
+!BOP
+!\section{Mercator domain}
+!This section contains the interface implementations for a LIS
+!instance using a mercator projection with SW to NE data ordering
+!EOP
