@@ -1,0 +1,80 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
+! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
+!
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!BOP
+! 
+! !ROUTINE: compute_grid_coord_merc
+!  \label{compute_grid_coord_merc}
+!
+! !INTERFACE:
+! 
+! !USES:   
+!
+! !INPUT PARAMETERS: 
+! 
+! !OUTPUT PARAMETERS:
+!
+! !DESCRIPTION: 
+! 
+! !FILES USED:
+!
+! !REVISION HISTORY: 
+!   04-10-96 Mark Iredell;  Initial Specification
+!   07-15-05 Sujay Kumar; Modified verision with floating point arithmetic. 
+! 
+!EOP
+!BOP
+!
+! !INTERFACE:
+subroutine compute_grid_coord_merc(gridDesc,npts,fill,xpts,ypts,& 
+     rlon,rlat,nret)
+! !USES:   
+  use LVT_logMod, only : LVT_logunit, LVT_endrun
+
+  implicit none
+
+! !ARGUMENTS: 
+  real            :: gridDesc(50)
+  integer         :: npts
+  real            :: fill
+  real            :: xpts(npts),ypts(npts)
+  real            :: rlat(npts)
+  real            :: rlon(npts)
+  integer         :: nret
+
+! !DESCRIPTION:
+!  This subroutine computes the grid coordinates of 
+!  the specified domain for a mercator projection.
+!  This routine is based on the grid
+!  decoding routines in the NCEP interoplation package. 
+!  
+!  \begin{description}
+!    \item[gridDesc]
+!     grid description parameters 
+!    \item[npts]
+!     integer maximum number of coordinates
+!    \item[fill]
+!     fill value to set invalid output data
+!    \item[xpts]
+!     output grid x point coordinates
+!    \item[ypts]
+!     output grid y point coordinates
+!    \item[rlat]    
+!     input latitudes in degrees
+!    \item[rlon]    
+!     input longitudes in degrees
+!    \end{description}
+!
+! !NOTE:
+!  This routine is currently unsupported. 
+!EOP
+
+  real, parameter:: RERTH=6.3712E3
+  real, parameter:: PI=3.14159265358979,DPR=180./PI
+  
+  write(LVT_logunit,*) &
+       'Transformation from mercator projection is not supported'
+  call LVT_endrun
+
+end subroutine compute_grid_coord_merc

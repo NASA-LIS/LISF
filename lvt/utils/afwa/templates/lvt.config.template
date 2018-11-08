@@ -1,0 +1,124 @@
+
+LVT running mode:                   "557 post"
+Map projection of the LVT analysis: "latlon"
+LVT output format:                 "netcdf" # or "grib2"
+LVT output methodology:            "2d ensemble gridspace"
+Analysis data sources:            "LIS output" "none"
+Number of ensembles in the LVT analysis: 12
+
+Process HYCOM data:          1
+HYCOM data directory:        HYCOM
+Apply noise reduction filter: 1  
+Smoothing filter type:        "gaussian filter"
+
+Start mode:                                "coldstart"
+LVT restart output interval:               "1mo"
+LVT restart filename:                      "none"
+Starting year: 2007
+Starting month: 11
+Starting day: 04
+Starting hour: 00
+Starting minute: 00
+Starting second: 00
+Ending year: 2007
+Ending month: 11
+Ending day: 04
+Ending hour: 03
+Ending minute: 00
+Ending second: 00
+LVT clock timestep: "3hr"
+Undefined value:                          -9999
+LVT diagnostic file:                      lvtlog
+
+
+#LIS domain
+Run domain lower left lat:            -89.9531250
+Run domain lower left lon:           -179.9296875
+Run domain upper right lat:            89.9531250
+Run domain upper right lon:           179.9296875
+Run domain resolution (dx):             0.140625
+Run domain resolution (dy):             0.093750
+
+Input domain and mask data file:   lis_input.10km_noah_juleslandmask.cap.nc
+Spatial transform method for generating the LVT analysis domain: "neighbor"
+
+#model soil moisture vs obs soil moisture
+#model root zone soil moisture vs obs root zone soil moisture
+LVT datastream attributes table::
+::
+
+LVT surface soil layer thickness:  0.10
+LVT root zone soil layer thickness:  1.0
+
+#stats specifications (only applicable to retrospective mode)
+Apply external mask:                            0
+External mask directory:                        none
+Compute information theory metrics:             0
+Compute ensemble metrics:                       0
+Metrics attributes file:                        METRICS.TBL
+Observation count threshold:                    0
+Metrics computation frequency: "3hr"
+Spatial averaging mode:                          "pixel-by-pixel"
+Metrics output directory:                         STATS.e_balance
+Metrics output frequency: "3hr"
+Time series location file:                      TS_LOCATIONS.TXT
+Variable-based stratification:                   0
+Compute LSM diagnostics:                         0
+Confidence interval (%):                         95
+External data-based stratification:              0
+Stratification attributes file:                  none
+Seasonal cycle minimum count threshold:          0
+Seasonal cycle interval type:                    "monthly"
+Average diurnal cycle minimum count threshold:   0
+Apply temporal smoothing to obs:                 0
+
+# Use GRIB2 settings
+Output GRIB Table Version:                 14
+Output GRIB Center Id:                     57
+Output GRIB Subcenter Id:                  2
+Output GRIB Grid Id:                       0
+Output GRIB Process Id:                    88
+Output GRIB Packing Type:                  grid_simple
+
+LIS output interval: "3hr"
+LIS output analysis data class:               "LSM"
+LIS output number of surface model types:      2
+LIS output surface model types:               "LSM" "Openwater"
+LIS output model name:              "Noah.3.6"
+LIS output domain and parameter file:    lis_input.10km_noah_juleslandmask.cap.nc
+
+#LIS output directory:                ./OUTPUT_1dtile_netcdf
+#LIS output directory:                ./OUTPUT_ascat
+LIS output directory:                ./OUTPUT_jossy
+#LIS output naming style:            "3 level hierarchy"
+LIS output naming style:            "WMO convention"
+
+LIS output methodology:            "1d tilespace"
+LIS output format:                  netcdf
+LIS output attributes file:       ./MODEL_OUTPUT_LIST.TBL.afwa.e_balance
+LIS output maximum number of surface type tiles per grid:     1
+LIS output minimum cutoff percentage (surface type tiles):    0.05
+LIS output maximum number of soil texture tiles per grid:     1
+LIS output minimum cutoff percentage (soil texture tiles):    0.05
+LIS output maximum number of soil fraction tiles per grid:    1
+LIS output minimum cutoff percentage (soil fraction tiles):   0.05
+LIS output maximum number of elevation bands per grid:        1
+LIS output minimum cutoff percentage (elevation bands):       0.05
+LIS output maximum number of slope bands per grid:            1
+LIS output minimum cutoff percentage (slope bands):           0.05
+LIS output maximum number of aspect bands per grid:           1
+LIS output minimum cutoff percentage (aspect bands):          0.05
+LIS output number of ensembles per tile:  12
+LIS output nest index:     1
+LIS output elevation data source: none
+LIS output slope data source:     none
+LIS output aspect data source:     none
+LIS output soil texture data source: none
+LIS output soil fraction data source: none
+LIS output number of soil moisture layers:  4
+LIS output number of soil temperature layers:  4
+LIS output soil moisture layer thickness: 0.1 0.3 0.6 1.0
+LIS output soil temperature layer thickness:  0.1 0.3 0.6 1.0
+
+# EMK
+LIS model timestep: "15mn"

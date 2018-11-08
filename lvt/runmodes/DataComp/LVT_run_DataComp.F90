@@ -1,0 +1,58 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
+! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!BOP
+! 
+! !ROUTINE: LVT_run_DataComp
+! \label{LVT_run_DataComp}
+!
+! !INTERFACE: 
+subroutine LVT_run_DataComp
+
+! 
+! !USES: 
+  use LVT_coreMod
+  use LVT_timeMgrMod
+  use LVT_DataStreamsMod
+  use LVT_statsMod
+  use LVT_histDataMod
+  use LVT_domainMod
+  use LVT_logMod
+!
+! !INPUT PARAMETERS: 
+! 
+! !OUTPUT PARAMETERS:
+!
+! !DESCRIPTION: 
+!  This routine defines the call structure for performing LVT 
+!  analysis using model output from LIS. 
+! 
+! !FILES USED:
+!
+! !REVISION HISTORY: 
+! 
+!EOP
+
+  implicit none
+  integer :: i 
+
+!  do i=LVT_rc%curr_pass,LVT_rc%pass
+  do i= 1, LVT_rc%pass
+     LVT_rc%curr_pass = i
+     call LVT_resetClock(LVT_rc)
+     do while (.NOT. LVT_endofrun())
+        call LVT_ticktime   
+        call LVT_readDataMask
+        call LVT_readDataStreams
+        call LVT_tavgDataStreams
+        call LVT_diagnoseStats(i)
+        call LVT_computeStats(i)
+        call LVT_resetDataStreams
+        call LVT_flush(LVT_logunit)
+     enddo
+  enddo
+  write(LVT_logunit,*) '[INFO] Finished LVT analysis'
+  write(LVT_logunit,*) '[INFO] --------------------------------------'
+
+end subroutine LVT_run_DataComp
+  

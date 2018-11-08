@@ -1,0 +1,42 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+! 
+! !ROUTINE: LVT_mapSurfaceModelType
+! \label{LVT_mapSurfaceModelType}
+!
+! !REVISION HISTORY: 
+!
+! 1 July 2012: Sujay Kumar, initial specification
+!
+! !INTERFACE: 
+subroutine LVT_mapSurfaceModelType(surface_model, sf_index)
+
+  implicit none
+! !ARGUMENTS: 
+  character(len=*)        :: surface_model
+  integer                 :: sf_index
+! 
+! !DESCRIPTION: 
+!  This subroutine maps the surface model type name to the index
+!  used in LVT. The following convention is adopted: 
+!  
+!  Land Surface Model (LSM) - 1
+!  Lake Model               - 2
+!  Glacier Model            - 3
+!
+!EOP
+  if(surface_model.eq."LSM") then 
+     sf_index = 1
+  elseif(surface_model.eq."Lake") then 
+     sf_index = 2
+  elseif(surface_model.eq."Glacier") then 
+     sf_index = 3
+  elseif(surface_model.eq."Wetland") then 
+     sf_index = 4
+  elseif(surface_model.eq."Openwater") then 
+     sf_index = 5
+  endif
+
+end subroutine LVT_mapSurfaceModelType
