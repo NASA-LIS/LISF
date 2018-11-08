@@ -1,0 +1,62 @@
+GEOS5 Forecast Reader Test Case
+
+This test-case performs a 1/4 degree simulation over the Horn of Africa
+(lat -11.125 to 24.375, lon 21.125 to 51.625) with the
+Catchment Fortuna 2.5 lsm from 2011-01-01T01:00:00 to 2011-01-31T00:00:00
+to test the processing of the GEOS5 forecast forcing data.
+
+This directory contains: 
+
+* this README file.
+* the ldt.config and param_attribs.txt files used to generate the
+  LIS input parameter file (lis_input.d01.nc).
+* the lis.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.) 
+* the MODEL_OUTPUT_LIST.TBL file used to specify the output variables.
+
+
+To run this test case: 
+
+* Generate the LIS executable. 
+* Download the sample input data from: 
+  http://lis.gsfc.nasa.gov/Source/testcases  
+  the testcase corresponding to GEOS5 FORECAST FORCING TEST
+* Run the LIS executable using the lis.config file and the sample 
+  input data. 
+* Compare output against the provided sample output.
+
+Notes:
+
+The spatial and temporal resolutions of the GEOS5 forecast meteorological
+forcings are 1.25X1-deg and 1-hour. Any bias correction required on the
+meteorological forcing data must be done out-side of LIS7.  GEOS5 forecasts are
+produced by initializing GEOS5 model each month from 1981 to 2013 and run for 9
+months into the future.
+
+There is a bit if pre-processing work required in arranging the meteorological
+forcings.  See an example below about how this arrangement must be done:
+
+Let's say you need hydrological forecasts for 9 months starting January of 2011
+(lets write it as 201101, the last two digits represent the month).
+
+Step 1) LIS7 reader looks for directories 201101,201102,201103, ....., 201109.
+
+Step 2) In each of the directores, there must be sub-directories for each
+        eneseble member, lets say you have 7 ensemble members, then the
+        sub-direcrtories should have names ens1, ens2, ...., ens7.
+
+Step3) Each ensemble member (sub-)directory should contain the forcing files
+       bearing names indicating (i) when was it initialized, and (ii)
+       year-month-day-hourly time stamp. An example of acceptable file name is:
+       "jan01.geosgcm_surfh.20110131_2330z.nc4", where 'jan01' indicates
+       initialized month, '20110131_2330z' indicates year-month-day-hourly
+       time stamp.
+
+Post-processing:
+
+The output is created as a vector (1-d tile space), but not as a spatial map
+(2-d grid).  This 1-d vector output is required if we want to analyze the
+outputs produced by different ensembles.  Note that if you choose
+"Output methodology" to be '2-d grid' then you will get output of
+ensemble-mean, not for individual ensembles.

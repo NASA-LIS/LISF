@@ -1,0 +1,16 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!\section{Data Assimilation Algorithms in LIS} 
+!This section contains the description of the implementations
+!of data assimilation algorithms in LIS. These algorithms are
+!used in conjunction with the specific interface implementations of 
+!the land surface model and the observations, which are described 
+!in sections \ref{lsms} and \ref{observations}, respectively.  
+!EOP

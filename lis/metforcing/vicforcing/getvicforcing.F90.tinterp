@@ -1,0 +1,186 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+#include "atmos_forcing.h"
+!BOP
+!
+! !ROUTINE: getvicforcing
+!  \label{getvicforcing}
+!
+! !INTERFACE:
+subroutine getvicforcing(n, findex, suppdata1, suppdata2)
+! !USES:
+  use LIS_coreMod,        only : LIS_rc, LIS_domain
+  use LIS_baseforcingMod, only : LIS_forc, LIS_FORC_State
+  use LIS_timeMgrMod,     only : LIS_tick
+  use vic_forcingMod,     only : vicforcing_struc
+
+  implicit none
+! !ARGUMENTS: 
+  integer, intent(in) :: n
+  integer, intent(in) :: findex
+  real                :: suppdata1(LIS_rc%nsf(findex), LIS_rc%ngrid(n))
+  real                :: suppdata2(LIS_rc%nsf(findex), LIS_rc%ngrid(n))
+!  
+! !DESCRIPTION:
+!  The arguments are: 
+!  \begin{description}
+!  \item[n]
+!    index of the nest
+!  \end{description}
+!
+! This is the entry point for the routines that read VIC-processed forcing
+! data.
+!
+! Note that VIC-processed forcing data are in lock-step with either VIC's model
+! time-step (for energy-balance runs) or VIC's snow time-step (for
+! water-balance runs).
+!
+! Note that VIC-processed forcing data are considered valid at
+! the given time-stamp of the corresponding forcing data files.
+!EOP
+
+   integer :: movetime ! 1=move time 2 data into time 1  
+   integer :: yr1, mo1, da1, hr1, mn1, ss1, ts1, doy1
+   integer :: yr2, mo2, da2, hr2, mn2, ss2, ts2, doy2
+   real    :: gmt1, gmt2
+   real*8  :: time1, time2, timenow
+   integer :: fstep
+   integer :: ferror
+   character(len=140) :: fname
+
+   LIS_rc%findtime1(n) = 0
+   LIS_rc%findtime2(n) = 0
+   movetime = 0
+
+   ! Current time
+   yr1 = LIS_rc%yr
+   mo1 = LIS_rc%mo
+   da1 = LIS_rc%da
+   hr1 = LIS_rc%hr
+   mn1 = LIS_rc%mn
+   ss1 = 0
+   ts1 = 0
+   call LIS_tick(timenow,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
+
+   fstep = vicforcing_struc(n)%forcingInterval*3600
+
+   ! Previous forcing interval time
+   yr1 = LIS_rc%yr
+   mo1 = LIS_rc%mo
+   da1 = LIS_rc%da
+   hr1 = LIS_rc%hr
+   mn1 = 0
+   ss1 = 0
+   ts1 = 0
+   !ts1 = -fstep
+   
+   call LIS_tick(time1,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
+   
+   ! Next forcing interval time
+   yr2 = LIS_rc%yr
+   mo2 = LIS_rc%mo
+   da2 = LIS_rc%da
+   hr2 = LIS_rc%hr
+   mn2 = 0
+   ss2 = 0
+   ts2 = fstep
+   call LIS_tick(time2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
+
+   if ( LIS_rc%tscount(n) == 1 .or. LIS_rc%rstflag(n) == 1  ) then
+      ! at beginning of the run
+      LIS_rc%findtime1(n) = 1
+      LIS_rc%findtime2(n) = 1
+      movetime = 0
+      LIS_rc%rstflag(n) = 0
+      vicforcing_struc(n)%time1 = time1
+      vicforcing_struc(n)%time2 = time2
+   endif
+
+   if ( timenow >= vicforcing_struc(n)%time2 ) then
+      movetime = 1
+      LIS_rc%findtime2(n) = 1
+   endif
+
+   if ( LIS_rc%findtime1(n) == 1 ) then 
+      vicforcing_struc(n)%time1 = time1
+      call get_vicforcing_filename(fname, vicforcing_struc(n)%vicdir, &
+                                   yr1, mo1, da1, hr1)
+      call vic411_read_gridded_forcing_data(n, findex, fname, ferror, suppdata1)
+   endif
+
+   if ( movetime == 1 ) then
+      vicforcing_struc(n)%time1 = vicforcing_struc(n)%time2
+      suppdata1 = suppdata2
+   endif
+
+   if ( LIS_rc%findtime2(n) == 1 ) then 
+      vicforcing_struc(n)%time2 = time2
+      call get_vicforcing_filename(fname, vicforcing_struc(n)%vicdir, &
+                                   yr2, mo2, da2, hr2)
+      call vic411_read_gridded_forcing_data(n, findex, fname, ferror, suppdata2)
+      if ( ferror > 0 ) then
+         ! assume that the next bookend does not exist because
+         ! we are the end of the run
+         suppdata2 = suppdata1
+      endif
+   endif
+
+end subroutine getvicforcing
+
+!BOP
+!
+! !ROUTINE: get_vicforcing_filename
+!  \label{get_vicforcing_filename}
+!
+! !INTERFACE:
+subroutine get_vicforcing_filename(filename, dir, year, month, day, hour)
+! !USES:
+  implicit none
+! !ARGUMENTS: 
+   character(len=140), intent(out) :: filename
+   character(len=100), intent(in) :: dir
+   integer, intent(in) :: year
+   integer, intent(in) :: month
+   integer, intent(in) :: day
+   integer, intent(in) :: hour
+!  
+! !DESCRIPTION:
+!  The arguments are: 
+!  \begin{description}
+!  \item[filename] the name of the forcing file to be read
+!  \item[dir] directory containing the VIC-processed forcing data
+!  \item[year] year
+!  \item[month] month
+!  \item[day] day
+!  \item[hour] hour
+!  \end{description}
+!
+!  This routine generates the filename of the VIC-processed forcing file
+!  to be read.
+!EOP
+
+   character(len=4) :: cyear
+   character(len=2) :: cmonth
+   character(len=2) :: cday
+   character(len=2) :: chour
+   character(len=2) :: cmin
+   character(len=2) :: csec
+
+
+   write(cyear,'(i4.4)')  year
+   write(cmonth,'(i2.2)') month
+   write(cday,'(i2.2)')   day
+   write(chour,'(i2.2)')  hour
+   write(cmin,'(i2.2)')   0 !LIS_rc%mn
+   write(csec,'(i2.2)')   0 !LIS_rc%ss
+
+   filename = trim(dir)//"/"//cyear//"/"//                        &
+              cyear//cmonth//cday//"/"//                          &
+              cyear//cmonth//cday//chour//cmin//".gd4r"
+
+end subroutine get_vicforcing_filename

@@ -1,0 +1,5 @@
+This directory contains a useful program to create a restart file for an ensemble run (when the number of ensembles per tile is greater than 1), from a non-ensemble/single ensemble run (such as a long spinup). The programs will initialize all ensemble members within a tile with the same values as that of the tile. 
+  The restartForEnsemble.F90 program works for all LSMS that has the following restart file convention: 
+  (1) has a metadata header with the information of 
+      <total number of columns>, <total number of rows>, <total number of tiles>
+

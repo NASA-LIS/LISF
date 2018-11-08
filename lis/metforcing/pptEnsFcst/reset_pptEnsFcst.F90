@@ -1,0 +1,28 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.1
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+#include "LIS_misc.h"
+!BOP
+! !MODULE: reset_pptEnsFcst
+! \label{reset_pptEnsFcst}
+! 
+! 
+! !INTERFACE:
+subroutine reset_pptEnsFcst
+! !USES:
+  use LIS_coreMod,       only : LIS_rc
+  use pptEnsFcst_forcingMod, only : pptensfcst_struc
+!
+!EOP  
+  implicit none
+
+  integer   :: findex
+
+  pptensfcst_struc%metforc_time1 = 3000.0
+  pptensfcst_struc%metforc_time2 = 0.0
+
+end subroutine reset_pptEnsFcst

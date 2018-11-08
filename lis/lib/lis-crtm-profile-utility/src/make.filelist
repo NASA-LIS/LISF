@@ -1,0 +1,15 @@
+# Source and object file list for the Profile_Utility package
+# -----------------------------------------------------------
+SRC_FILES = Type_Kinds.f90 \
+            File_Utility.f90 \
+            Message_Handler.f90 \
+            Fundamental_Constants.f90 \
+            Compare_Float_Numbers.f90 \
+            Atmospheric_Properties.f90 \
+            Geopotential.f90 \
+            Level_Layer_Conversion.f90 \
+            Profile_Utility_Parameters.f90 \
+            Units_Conversion.f90 \
+            Profile_Utility.f90
+
+OBJ_FILES = ${SRC_FILES:.f90=.o}

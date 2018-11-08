@@ -1,0 +1,49 @@
+MERRA2 Forcing Testcase
+
+This is a test case that uses: 
+  (a) the MERRA2 forcing 
+  (b) using the bilinear Interpolation
+  (c) the template LSM
+  (d) global domain
+  (e) a time period from 0Z 1 Nov 2005 to 0Z 2 Nov 2005
+
+This directory contains: 
+  (a) This README file
+  (b) The "ldt.config" file to generate the parameters using LDT
+      (note that LDT r5798 was used for this testcase)
+  (c) The LDT file, read_CONSTANT_lc.F90, used processing the parameters
+  (d) The "lis.config" file used for this testcase
+  (e) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+      to select the output variables
+  (f) An "output.ctl" file used to display the output in GrADS from
+      the LIS run
+  (g) A "testcase.ctl" file used to display the packaged output in
+      GrADS from the OUTPUT tar file provided by the testcase
+  (h) Additional GrADS descriptor files, flx.ctl, slv.ctl, and lfo.ctl,
+      used to visualize the input MERRA2 forcing files
+  (i) Additional GrADS descriptor files, forc_lml_corr.ctl,
+      forc_no-lml_no-corr.ctl, and forc_interp.ctl, used to visualize
+      the forcing fields at intermediate stages of LIS processing.
+
+Note that the "ldt.config" and "lis.config" files should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+To run this test case: 
+  (a) Generate the LDT and the LIS executables
+  (b) Download the sample input data from: 
+	http://lis.gsfc.nasa.gov/Source/testcases  
+      the testcase corresponding to MERRA2 FORCING TEST
+  (c) Run the LDT executable using the "ldt.config" file
+      with the testcase input data
+  (d) Run the LIS executable using the "lis.config" file with the
+      testcase input data
+  (e) View the binary output using the sample grads file. 
+
+Caveats:
+  (a) Please note that this is a simple functional test and the output
+      from the testcase is not expected to be used for any scientific
+      evaluation.
+
+       
+

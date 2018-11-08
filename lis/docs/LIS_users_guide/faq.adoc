@@ -1,0 +1,42 @@
+
+== Frequently Asked Questions
+anchor:sec_faq[Frequently Asked Questions]
+
+This section provides a description of common error messages and a possible few options on how to address them.
+
+[qanda]
+Routine to diagnose error (variable)::
++
+....
+Error:<var> field is not defined
+for diagnostic output ..
+Please exclude it from the model output attributes table
+Program stopping..
+....
++
+This error occurs because the variable specified in the model output attributes file is not among the ones supported for output from the particular model. Either exclude the variable (turn it off) from the model output attributes file or implement the routine within the model to support it.
+
+
+Routine to diagnose error (units)::
++
+....
+Error:<units> for field <var> is not defined
+for diagnostic output ..
+supported unit types: <list>
+Program stopping..
+....
++
+This error occurs because the units of the variable specified in the model output attributes file is not among the supported types. Either change the incorrect unit specification or run the model simulation with a unit type that is supported by LIS.
+
+
+Routine to diagnose error (direction)::
++
+....
+Error:<direction> for field <var> is not defined
+for diagnostic output ..
+supported direction types: <list>
+Program stopping..
+....
++
+This error occurs because the direction of the variable specified in the model output attributes file is not among the supported types. Either change the incorrect direction specification or run the model simulation with a direction type that is supported by LIS.
+

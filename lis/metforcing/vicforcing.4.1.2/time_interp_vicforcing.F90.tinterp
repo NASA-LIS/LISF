@@ -1,0 +1,236 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+#include "atmos_forcing.h"
+!BOP
+! !ROUTINE: time_interp_vicforcing
+! \label{time_interp_vicforcing}
+!
+! !INTERFACE:
+subroutine time_interp_vicforcing(n, findex, suppdata1, suppdata2)
+! !USES:
+  use ESMF_Mod
+  use LIS_coreMod,        only : LIS_rc, LIS_domain
+  use LIS_FORC_AttributesMod 
+  use LIS_baseforcingMod, only : LIS_forc, LIS_FORC_State
+  use LIS_logMod,         only : LIS_logunit, LIS_verify, LIS_endrun
+  use vic_forcingMod,     only : vicforcing_struc
+  use LIS_constantsMod,   only : LIS_CONST_SOLAR
+  use LIS_timeMgrMod,     only : LIS_time2date, LIS_tick
+
+  implicit none
+! !ARGUMENTS: 
+!
+!  The arguments are: 
+!  \begin{description}
+!  \item[n]
+!   index of the nest
+!  \item[findex]
+!   index of the supplemental forcing scheme
+!  \item[suppdata1]
+!   array containing the left bookend of the supplemental forcing data
+!  \item[suppdata2]
+!   array containing the right bookend of the supplemental forcing data
+!  \end{description}
+! 
+! This routine performs the temporal interpolation of the VIC-processed
+! forcing data to the LIS model time-step.
+!EOP
+
+   integer, intent(in) :: n
+   integer, intent(in) :: findex
+   real                :: suppdata1(LIS_rc%nsf(findex), LIS_rc%ngrid(n))
+   real                :: suppdata2(LIS_rc%nsf(findex), LIS_rc%ngrid(n))
+
+   integer :: t, k
+   integer :: tindex, vindex
+
+   type(ESMF_Field) :: tempField
+   real,pointer     :: tempPtr(:)
+   integer          :: status
+
+   real    :: wt1,wt2,czb,cze,czm,gmt1,gmt2,zw1,zw2
+   real*8  :: btime
+   integer :: bdoy,byr,bmo,bda,bhr,bmn,zdoy
+
+! As mentioned previously, VIC-processed forcing data are in lock-step with
+! the model or snow time-step.  Thus, when using these forcing data with VIC,
+! temporal interpolation is currently not needed.
+
+! Note that the variable indices like ATMOS_SNOWFLAG count from 0 (like in C),
+! so I add 1 to them when using them within Fortran subroutines.
+
+   btime = vicforcing_struc(n)%time1
+   call LIS_time2date(btime,bdoy,gmt1,byr,bmo,bda,bhr,bmn)
+
+   btime = vicforcing_struc(n)%time2
+   call LIS_time2date(btime,bdoy,gmt2,byr,bmo,bda,bhr,bmn)
+  
+   wt1 = (vicforcing_struc(n)%time2-LIS_rc%time) / & 
+         (vicforcing_struc(n)%time2-vicforcing_struc(n)%time1)
+   wt2 = 1.0 - wt1
+
+!TODO: Cannot temporally interpolate the Snowflag field.  It is a 
+!      categorical variable ( 0 = no snow; 1 = snow )
+!      To support additional sources of forcing for VIC, the vic411_f2t
+!      routine calculates snowflow when this field is missing from the
+!      forcing data.
+!
+!      To support temporal interpolation of VIC-processed forcing data
+!      the snowflag field should be skipped, and it should always be
+!      calculated by vic411_f2t.
+   vindex = ATMOS_SNOWFLAG + 1
+
+   call ESMF_StateGet(LIS_FORC_State(n),trim(LIS_FORC_SNOWFLAG%varname(1)),&
+                      tempField,rc=status)
+   call LIS_verify(status, 'Error: Enable Snowflag in the forcing variables list')
+   call ESMF_FieldGet(tempField,localDE=0, farray=tempPtr,rc=status)
+   call LIS_verify(status)
+
+   do t = 1, LIS_rc%nch(n)     
+      tindex = LIS_domain(n)%tile(t)%index
+      tempPtr(t) = suppdata1(vindex,tindex)     
+   end do
+
+   vindex = ATMOS_PREC + 1
+
+   call ESMF_StateGet(LIS_FORC_State(n),trim(LIS_FORC_Rainf%varname(1)),&
+                      tempField,rc=status)
+   call LIS_verify(status, 'Error: Enable Rainf in the forcing variables list')
+   call ESMF_FieldGet(tempField,localDE=0, farray=tempPtr,rc=status)
+   call LIS_verify(status)
+
+   do t = 1, LIS_rc%nch(n)     
+      tindex = LIS_domain(n)%tile(t)%index
+      tempPtr(t) = suppdata1(vindex,tindex)     
+   end do
+
+   vindex = ATMOS_AIR_TEMP + 1
+
+   call ESMF_StateGet(LIS_FORC_State(n),trim(LIS_FORC_Tair%varname(1)),&
+                      tempField,rc=status)
+   call LIS_verify(status, 'Error: Enable Tair in the forcing variables list')
+   call ESMF_FieldGet(tempField,localDE=0, farray=tempPtr,rc=status)
+   call LIS_verify(status)
+
+   do t = 1, LIS_rc%nch(n)     
+      tindex = LIS_domain(n)%tile(t)%index
+      tempPtr(t) = wt1*suppdata1(vindex,tindex) + wt2*suppdata2(vindex,tindex)
+   end do
+
+   vindex = ATMOS_WIND + 1
+
+   call ESMF_StateGet(LIS_FORC_State(n),trim(LIS_FORC_WIND%varname(1)),&
+                      tempField,rc=status)
+   call LIS_verify(status, 'Error: Enable Atmos Wind Speed in the forcing variables list')
+   call ESMF_FieldGet(tempField,localDE=0, farray=tempPtr,rc=status)
+   call LIS_verify(status)
+
+   do t = 1, LIS_rc%nch(n)     
+      tindex = LIS_domain(n)%tile(t)%index
+      tempPtr(t) = wt1*suppdata1(vindex,tindex) + wt2*suppdata2(vindex,tindex)
+   end do
+
+   vindex = ATMOS_VPD + 1
+
+   call ESMF_StateGet(LIS_FORC_State(n),trim(LIS_FORC_VAPORPRESSDEFICIT%varname(1)),&
+                      tempField,rc=status)
+   call LIS_verify(status, 'Error: Enable Atmos Vapor Pressure Deficit in the forcing variables list')
+   call ESMF_FieldGet(tempField,localDE=0, farray=tempPtr,rc=status)
+   call LIS_verify(status)
+
+   do t = 1, LIS_rc%nch(n)     
+      tindex = LIS_domain(n)%tile(t)%index
+      tempPtr(t) = wt1*suppdata1(vindex,tindex) + wt2*suppdata2(vindex,tindex)
+   end do
+
+   vindex = ATMOS_VP + 1
+
+   call ESMF_StateGet(LIS_FORC_State(n),trim(LIS_FORC_VAPORPRESS%varname(1)),&
+                      tempField,rc=status)
+   call LIS_verify(status, 'Error: Enable Atmos Vapor Pressure in the forcing variables list')
+   call ESMF_FieldGet(tempField,localDE=0, farray=tempPtr,rc=status)
+   call LIS_verify(status)
+
+   do t = 1, LIS_rc%nch(n)     
+      tindex = LIS_domain(n)%tile(t)%index
+      tempPtr(t) = wt1*suppdata1(vindex,tindex) + wt2*suppdata2(vindex,tindex)
+   end do
+
+   vindex = ATMOS_PRESSURE + 1
+
+   call ESMF_StateGet(LIS_FORC_State(n),trim(LIS_FORC_Psurf%varname(1)),&
+                      tempField,rc=status)
+   call LIS_verify(status, 'Error: Enable Psurf in the forcing variables list')
+   call ESMF_FieldGet(tempField,localDE=0, farray=tempPtr,rc=status)
+   call LIS_verify(status)
+
+   do t = 1, LIS_rc%nch(n)     
+      tindex = LIS_domain(n)%tile(t)%index
+      tempPtr(t) = wt1*suppdata1(vindex,tindex) + wt2*suppdata2(vindex,tindex)
+   end do
+
+   vindex = ATMOS_DENSITY + 1
+
+   call ESMF_StateGet(LIS_FORC_State(n),trim(LIS_FORC_DENSITY%varname(1)),&
+                      tempField,rc=status)
+   call LIS_verify(status, 'Error: Enable Atmos Density in the forcing variables list')
+   call ESMF_FieldGet(tempField,localDE=0, farray=tempPtr,rc=status)
+   call LIS_verify(status)
+
+   do t = 1, LIS_rc%nch(n)     
+      tindex = LIS_domain(n)%tile(t)%index
+      tempPtr(t) = wt1*suppdata1(vindex,tindex) + wt2*suppdata2(vindex,tindex)
+   end do
+
+! Note that typically the VIC-processed forcing data are in lock-step with
+! either VIC's model time-step or VIC's snow time-step.  In general, no
+! temporal interpolation is required ( wt1 = 1; wt2 = 0).  In LIS, we
+! use zterp weighting to temporally interpolate the shorwave radiation.
+! Here zw1 /= wt1.  So even in the case where no temporal interpolation is
+! required, you get differnt shortwave radiation values.
+   vindex = ATMOS_SHORTWAVE + 1
+
+   call ESMF_StateGet(LIS_FORC_State(n),trim(LIS_FORC_SWdown%varname(1)),&
+                      tempField,rc=status)
+   call LIS_verify(status, 'Error: Enable SWdown in the forcing variables list')
+   call ESMF_FieldGet(tempField,localDE=0, farray=tempPtr,rc=status)
+   call LIS_verify(status)
+
+   do t = 1, LIS_rc%nch(n)     
+      tindex = LIS_domain(n)%tile(t)%index
+      zdoy = LIS_rc%doy
+      call zterp(0, LIS_domain(n)%grid(tindex)%lat,          &
+                 LIS_domain(n)%grid(tindex)%lon, gmt1, gmt2, & 
+                 LIS_rc%gmt,zdoy,zw1,zw2,czb,cze,czm,LIS_rc)
+
+      tempPtr(t) = zw1*suppdata1(vindex,tindex)     
+
+      if ( tempPtr(t) < 0 ) then
+         write(LIS_logunit,*) 'ERR: SW radiation is negative'
+         call LIS_endrun
+      endif
+
+      if ( tempPtr(t) .gt. LIS_CONST_SOLAR ) then
+         tempPtr(t) = suppdata1(vindex,tindex)     
+      endif
+   end do
+
+   vindex = ATMOS_LONGWAVE + 1
+
+   call ESMF_StateGet(LIS_FORC_State(n),trim(LIS_FORC_LWdown%varname(1)),&
+                      tempField,rc=status)
+   call LIS_verify(status, 'Error: Enable LWdown in the forcing variables list')
+   call ESMF_FieldGet(tempField,localDE=0, farray=tempPtr,rc=status)
+   call LIS_verify(status)
+
+   do t = 1, LIS_rc%nch(n)     
+      tindex = LIS_domain(n)%tile(t)%index
+      tempPtr(t) = wt1*suppdata1(vindex,tindex) + wt2*suppdata2(vindex,tindex)
+   end do
+
+end subroutine time_interp_vicforcing

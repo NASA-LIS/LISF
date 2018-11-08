@@ -1,0 +1,22 @@
+These are some common issues reported with LIS. 
+------------------------------------------------
+1. When I run LIS, it produces a number of PET*ESMF_LogFile files. 
+   This is most probably due to an error in the lis.config file being used in the run. Please check    for consistency with the sample lis.config files provided in the src/configs directory
+
+2. My restart file from a previous LIS simulation does not work
+   Make sure the domain and tiling options are setup exactly the same way 
+   as the run that originally produced the restart file. Restarts generated
+   using LIS version older than 4.3 is not recommended for use in LIS 5.0. 
+
+3. My Run is crashing while running a spinup for the WRF initialization 
+   My restart file from the LIS spinup does not work with the coupled LIS-WRF
+  
+ When running a spinup for coupled LIS-WRF, make sure that the INC_WATER_PTS 
+ is defined in the src/make/misc.h file. Further, the number of vegetation
+ classes defined in the lis.config file should include the definition of water
+ points as a pseudo landcover class. For example, if the UMD landcover 
+ classification is used, the number of vegetation classes should be 14 (as
+ opposed to 13 for an offline case). Finally, the lookup tables used by 
+ the land surface models should also reflect the addition of the 'water'
+ landcover class.
+

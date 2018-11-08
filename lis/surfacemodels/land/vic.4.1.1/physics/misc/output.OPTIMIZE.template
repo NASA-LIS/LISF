@@ -1,0 +1,9 @@
+# Output List for VIC OPTIMIZE Configuration
+# RCS ID: $Id: output.OPTIMIZE.template,v 5.1 2006/09/27 18:53:49 vicadmin Exp $
+################################################################################
+BINARY_OUTPUT	FALSE
+COMPRESS	FALSE
+N_OUTFILES	1
+OUTFILE		fluxes	2
+OUTVAR		OUT_RUNOFF	%.4f	*	*
+OUTVAR		OUT_BASEFLOW	%.4f	*	*

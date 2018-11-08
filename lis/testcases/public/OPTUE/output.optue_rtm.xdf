@@ -1,0 +1,7 @@
+DSET ^OUTPUT_portal/RTM/LIS_HIST_%y4%m2%d2%h200.d01.nc
+DTYPE   netcdf
+OPTIONS template
+XDEF east_west    20 LINEAR     -99.875   0.25
+YDEF north_south  20 LINEAR      34.125   0.25
+ZDEF RTM_emissivity_profiles  12 LEVELS  1 2 3 4 5 6 7 8 9 10 11 12
+TDEF time       2184 LINEAR  01Z01APR2008  1hr

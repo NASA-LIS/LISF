@@ -1,0 +1,42 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+! !ROUTINE: noah32_getswepred
+! \label{noah32_getswepred}
+!
+! !REVISION HISTORY:
+! 27Feb2005: Sujay Kumar; Initial Specification
+! 25Jun2006: Sujay Kumar: Updated for the ESMF design
+!  02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
+!
+! !INTERFACE:
+subroutine noah32_getswepred(n, obs_pred)
+
+! !USES:
+  use ESMF
+  use LIS_coreMod, only : LIS_rc,LIS_domain
+  use noah32_lsmMod
+
+  implicit none
+! !ARGUMENTS: 
+  integer, intent(in)    :: n
+  real                   :: obs_pred(LIS_rc%ngrid(n),LIS_rc%nensem(n))
+!EOP
+
+  integer                :: i,t,m,gid
+
+  do i=1,LIS_rc%ntiles(n),LIS_rc%nensem(n)
+     do m=1,LIS_rc%nensem(n)
+        t = i+m-1
+        gid = LIS_domain(n)%tile(t)%index
+        obs_pred(gid,m)= noah32_struc(n)%noah(t)%sneqv*1000.0
+     enddo
+  enddo
+  
+end subroutine noah32_getswepred
+

@@ -1,0 +1,30 @@
+This is a test case that uses: 
+  (a) the PRINCETON forcing 
+  (b) using the bilinear Interpolation
+  (c) uses lapse rate based elevation correction using the GTOPO30 elevation
+      data. 
+  (d) the "template" LSM option (which is a dummy LSM placeholder that simply
+      outputs the interpolated forcing data. 
+  (e) Global domain at 1 degree spatial resolution.
+  (f) a time period from Feb 1, 1948 hr 1 to Feb 2, hr 1. 
+
+This directory contains: 
+  (a) This README file, 
+  (b) the lis.config file used for this test case. (This file should be 
+      edited to make sure that the locations of the parameter and 
+      forcing files are specified correctly.) 
+  (c) A sample grads control file that can be used to visualize the 
+      output. (output.ctl)
+
+To run this test case: 
+  (a) Generate the LIS executable, with the NETCEF option turned on. 
+      (edit the misc.h file in the make directory, and make sure 
+      that USE_NETCDF is specified as 'defined', before you compile
+      the LIS code)
+  (b) Download the sample input data from: 
+	http://lis.gsfc.nasa.gov/Source/testcases 
+      the testcase corresponding to PRINCETON FORCING TEST
+  (c) Run the LIS executable using the lis.config file and the sample 
+      input data. 
+  (d) View the binary output using the sample grads file. 
+       

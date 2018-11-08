@@ -1,0 +1,4 @@
+!BOP
+!\section{GCE Coupled Running Mode}
+!This section describes the GCE coupled running mode.
+!EOP

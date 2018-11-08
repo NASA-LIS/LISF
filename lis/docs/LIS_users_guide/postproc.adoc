@@ -1,0 +1,41 @@
+
+== Output Data Processing
+anchor:sec_postproc[Output Data Processing]
+
+This section describes how to process the generated output in various formats.  The generated output can be written in a Fortran binary, GRIB, or NetCDF format.  See Section <<ssec_runtimeopts>> for more details.
+
+The output data-sets created by running the LIS executable are written into sub-directories of the _$RUNNING/OUTPUT/SURFACEMODEL/_ directory.  Please note that _$RUNNING/OUTPUT/SURFACEMODEL/_ is created at run-time, and that _OUTPUT_ is a user-configurable name.  See Section <<ssec_runtimeopts>>.  The output data consists of ASCII text files and model output in some binary format.
+
+include::output_ls.adoc[]
+
+
+=== Fortran binary output format
+
+For the Fortran binary format, LIS writes the output data as 4-byte REALs in sequential access mode.
+
+The order in which the variables are written is the same order as in the statistical summary file; e.g., _SURFACEMODEL.d01.stats_.
+
+//The LIS team uses GrADS to visualize the output data.  GrADS has the
+//capability to handle binary, GRIB, and NetCDF data.  See the
+//documention for GrADS at http://www.iges.org/grads/grads.html for more
+//information.  The _$WORKING/utils/grads/_ directory contains a utility
+//for creating a GrADS descriptor file.  See the
+//_$WORKING/utils/grads/README_ for more information.
+
+The generated output can be written in a 2-D grid format or as a 1-d vector.  See Section <<ssec_runtimeopts>> for more details.  If written as a 1-d vector, the output must be converted into a 2-d grid before it can be visualized.  This is left as an exercise for the reader.
+
+
+=== GRIB1 output format
+
+GRIB1 is a self-describing data format.  The output files produced in GRIB1 can be inspected by using either the utility `wgrib` (http://www.cpc.ncep.noaa.gov/products/wesley/wgrib.html) or the utility `grib_dump` (provided with GRIB-API; see Section <<ssec_requiredlibs>>).
+
+
+=== NetCDF output format
+
+NetCDF is a self-describing format. The output files produced in NetCDF can be inspected by using the utility `ncdump` (provided with NetCDF; see Section <<ssec_requiredlibs>>).
+
+
+//=== ALMA Mandatory Output
+//
+//include::alma_out.adoc[]
+

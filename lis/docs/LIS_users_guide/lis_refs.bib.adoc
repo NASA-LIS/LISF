@@ -1,0 +1,129 @@
+[appendix]
+== References
+
+- [[[sheffield_etal_2006]]] J. Sheffield, G. Goteti, and E. F. Wood.  Development of a 50-yr high-resolution global dataset of meteorological forcings for land surface modeling.  _Journal of Climate_, 13:3088{endash}3111, 2006.
+
+- [[[berg_etal_jgr_2003]]] A. A. Berg, J. S. Famiglietti, J. P.  Walker, and P. R. Houser.  Impact of bias correction to reanalysis products on simulations of North American soil moisture and hydrological fluxes.  _Journal of Geophysical Research_, 4490, 2003.
+
+- [[[protex]]] W. Sawyer and A. da Silva.  ProTeX: A sample Fortran 90 source code documentation system.  Technical report, NASA GMAO, 1997.  DAO Office Note 97-11.
+
+//
+//@Article{sheffield_etal_2006,
+//  author = 	 {Sheffield, J. and Goteti, G. and Wood, E.F.},
+//  title = 	 {Development of a 50-yr high-resolution global dataset of meteorological forcings for land surface modeling},
+//  journal = 	 {Journal of Climate},
+//  year = 	 {2006},
+//  key = 	 {19},
+//  volume = 	 {13},
+//  pages = 	 {3088--3111},
+//}
+//
+//@Article{berg_etal_jgr_2003,
+//  author = 	 {Berg, A.A. and Famiglietti, J.S. and Walker, J.P. and Houser, P.R.},
+//  title = 	 {Impact of bias correction to reanalysis products on simulations of North American soil moisture and hydrological fluxes},
+//  journal = 	 {Journal of Geophysical Research},
+//  year = 	 {2003},
+//  key = 	 {108},
+//  volume = 	 {4490},
+//  doi    = {10.1029/2002JD003334},
+//}
+//
+//@Article{rogers,
+//  author = 	 {Rogers, ~E. and Black, T.~L. and Deaven, D.~G. and DiMego, G.~J. and Zhao, ~Q. and Baldwin, ~M. and Junker, N.~W. and Lin, ~Y.},
+//  title = 	 {Changes to the operational ``early'' eta analysis/forecast system at the national centers of environmental prediction.},
+//  journal = 	 {Wea. Forecasting},
+//  year = 	 {1996},
+//  volume = 	 {11},
+//  pages = 	 {391--413},
+//},
+//
+//
+//@Article{richards,
+//  author = 	 {Richards, L.~A.},
+//  title = 	 {Capillary conduction of liquids in porous media},
+//  journal = 	 {Physics},
+//  year = 	 {1931},
+//  volume = 	 {1},
+//  pages = 	 {318--333},
+//},
+//
+//@Article{jarvis,
+//  author = 	 {Jarvis, P.~G.},
+//  title = 	 {The interpretation of leaf water potential and stomatal conductance  found in canopies of the field.},
+//  journal = 	 {Phil. Trans. R. Soc.},
+//  year = 	 {1976},
+//  volume = 	 {273},
+//  pages = 	 {593--610},
+//
+//},
+//
+//@Article{collatz,
+//  author = 	 {Collatz, G.~J. and Grivet, ~C and Ball, J.~T. and Berry, J.~A.},
+//  title = 	 {Physiological and environmental regulation of stomatal conducatance:  Photosynthesis and transpiration: A model that includes a laminar boundary  layer.},
+//  journal = 	 {Agric. For. Meteorol.},
+//  year = 	 {1991},
+//  volume = 	 {5},
+//  pages = 	 {107--136},
+//},
+//
+//@Article{chen,
+//  author = 	 {Chen.~F. and Mitchell.~K. and Schaake.~J and Xue.~J and Pan.~H and ~Koren.~V. and ~Duan, Ek.~M and Betts, ~A.},
+//  title = 	 {Modeling of land-surface evaporation by four schemes and comparison  with fife observations.},
+//  journal = 	 {J. Geophys. Res.},
+//  year = 	 {1996},
+//  volume = 	 {101},
+//  number = 	 {D3},
+//  pages = 	 {7251--7268},
+//}
+//
+//@Misc{grads,
+//  title = 	 {Gr\textsc{ADS}},
+//  note = 	 {http://grads.iges.org/grads/grads.html}
+//},
+//@Misc{dods,
+//  title = 	 {\textsc{DODS}},
+//  note = 	 {http://www.unidata.ucar.edu/packages/dods/}
+//},
+//
+//
+//@TechReport{protex,
+//  author = 	 {Sawyer, W. and da Silva, A.},
+//  title = 	 {ProTeX: A sample Fortran 90 source code documentation system},
+//  institution =  {NASA GMAO},
+//  year = 	 {1997},
+//  note = 	 {DAO Office Note 97-11},
+//},
+//
+//@Misc{alma,
+//  title = 	 {\textsc{ALMA}},
+//  note = 	 {http://www.lmd.jussieu.fr/ALMA/}
+//}
+//,
+//@Misc{w3fi63,
+//  title = 	 {\textsc{W3FI63 program}},
+//  note = 	 {http://dss.ucar.edu/datasets/ds609.1/software/mords/w3fi63.f}
+//}
+//,
+//@Misc{ldas,
+//  title = 	 {\textsc{LDAS}},
+//  note = 	 {http://ldas.gsfc.nasa.gov}
+//},
+//@Misc{esmf,
+//  title = 	 {\textsc{ESMF}},
+//  note = 	 {http://esmf.ucar.edu}
+//},
+//
+//@Misc{clm,
+//  title = 	 {\textsc{CLM}},
+//  note = 	 {http://www.cgd.ucar.edu/tss/clm}
+//},
+//@Misc{noah,
+//  title = 	 {\textsc{Noah}},
+//  note = 	 {ftp://ftp.ncep.noaa.gov/pub/gcp/ldas/noahlsm/}
+//},
+//@Misc{vic,
+//  title = 	 {\textsc{VIC}},
+//  note = 	 {http://hydrology.princeton.edu/research/lis/index.html}
+//}
+//
+

@@ -1,0 +1,24 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!\section{RFE2Daily}
+!This section describes the implementation of the 
+!Climate Prediction Center's (CPC) Rainfall Estimates version 2 (RFE2)
+!daily precipition data, available from
+!ftp://ftp.cpc.ncep.noaa.gov/fews/newalgo\_est/ and \\
+!ftp://ftp.cpc.ncep.noaa.gov/fews/fewsdata/africa/rfe2/.
+!
+!This precip is a daily precipitation analysis at 0.1 deg lat x 0.1 deg lon
+!produced by merging GTS gauge observations and  3 kinds of satellite 
+!estimates (GPI,SSM/I and AMSU). Units are in millimeters (mm).
+!Data is in big endian binary with coverage -40.00S to 40.00N Northward
+!(801 grid points in south - north direction)  and 20.00W to 55.00E 
+!Eastward  (751 grid points in east - west direction)  
+!EOP
+

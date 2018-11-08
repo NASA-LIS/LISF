@@ -1,0 +1,4 @@
+DSET ^ldt_input.template.lsm.nc
+XDEF east_west   229 LINEAR     -124.875      0.25
+YDEF north_south 109 LINEAR       25.875      0.25
+ZDEF sfctypes     14 LINEAR          1.0      1.0

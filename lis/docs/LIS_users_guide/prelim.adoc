@@ -1,0 +1,38 @@
+
+== Preliminary Information
+anchor:sec_prelim[Preliminary Information]
+
+This section provides some preliminary information to make reading this guide easier.
+
+
+=== Commands
+
+Commands are written with a fixed-width font.  E.g.:
+
+....
+% cd /path/to/LISv7.0
+....
+
+....
+% ls
+....
+
+"`... compiler flags, then run `gmake`.`"
+
+NOTE: The `%` symbol represents the command-line prompt.  You do *not* type that when entering any of the commands.
+
+=== File names
+
+File names are written in italics.  E.g.:
+
+_/path/to/LISv7.0/src_
+
+//You must create a directory on your system to install LIS into.  Let's
+//call this directory, _/path/to/LISv6.0/src_.  Throughout the rest of
+//this document, this directory shall be referred to as _$WORKING_.  You
+//must also create directory to run LIS in.  This directory can be
+//created anywhere on your system, but it is suggested that you keep it
+//separated from your source code.  Let's call the directory to run LIS
+//in, _/path/to/LISv6.0/run_.  We shall refer to this running directory
+//as _$RUNNING_.
+

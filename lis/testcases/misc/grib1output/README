@@ -1,0 +1,43 @@
+GRIB1 output LSM Testcase (based on Noah-3.3 LSM Testcase)
+
+This is a testcase that uses:
+  (a) The GDAS forcing
+  (b) Bilinear Interpolation
+  (c) Lapse-rate based elevation correction using GTOPO30 elevation data
+  (d) The Noah version 3.3 land surface model
+  (e) North American domain at 1/4 degree spatial resolution
+  (f) A time period from 00:00Z 29 Oct 2002 to 01:00Z 31 Oct 2002
+
+This directory contains:
+  (a) This README file
+  (b) The "ldt.config" file to generate the parameters using LDT
+  (c) The "param_attribs.txt" file to select the parameters for LDT
+  (d) An "input.xdf" file used to open the LDT parameters in GrADS
+  (e) The "lis.config" file used for this testcase
+  (f) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+      to select the output variables
+  (g) An "output.ctl" file used to display the output in GrADS from
+      the LIS run
+  (h) A "testcase.ctl" file used to display the packaged output in
+      GrADS from the OUTPUT tar file provided by the testcase
+
+Note that the "ldt.config" and "lis.config" files should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+To run this testcase:
+  (a) Generate the LDT and the LIS executables
+  (b) Download the testcase input data from:
+         http://lis.gsfc.nasa.gov/Source/testcases
+      the testcase corresponding to GRIB1 output TEST
+  (c) Run the LDT executable using the "ldt.config" file and the
+      "param_attribs.txt" file with the testcase input data
+  (d) Run the LIS executable using the "lis.config" file with the
+      testcase input data
+  (e) View the binary output using the testcase GrADS files
+
+Caveats:
+  (a) Please note that this is a simple functional test and the output
+      from the testcase is not expected to be used for any scientific
+      evaluation.
+

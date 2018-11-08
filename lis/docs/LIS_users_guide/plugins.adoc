@@ -1,0 +1,45 @@
+
+==== Customizing the build via LIS plugins
+
+Various components within LIS are considered plugins, meaning that they are optional and may be enabled/disabled at compile-time.  By default, most plugins are enabled, only 1) the restricted components, which are not available in the public releases of LIS, 2) components still under development, 3) and old/unsupported components are disabled by default.  If you wish to compile LIS with its default plugin configuration, then simply follow the above six steps.  You may skip the rest of this section.  If you wish to toggle whether a plugin is enabled/disabled, then you must create a _user.cfg_ file.
+
+
+===== Enabling/disabling a component
+
+To toggle an optional plugin from its default enabled/disabled state, you must create a _user.cfg_ file in the _make_ sub-directory of the LIS source code.
+
+The format of this file is:
+
+component name: On/Off
+
+where the value On indicates to compile the component into the LIS executable, and where Off indicates to exclude the component.  And where possible the component name matches the string found in the plugins/LIS_pluginIndices.F90 file.
+
+Note that comments may be added to the user.cfg file.  The "`#`" character marks the beginning of the comment.
+
+For example, if you want to compile all components of LIS except for Noah 2.7.1, then create a _user.cfg_ file containing the follow line:
+
+.Example _user.cfg_ file
+Noah.2.7.1: Off
+
+Below is a list of all optional components that may be enabled/disabled along with their default settings.
+
+NOTE: Not all the optional components listed below are available in public release of LIS.
+
+
+Please do not copy this whole list into a _user.cfg_ file.  Create a _user.cfg_ file containing only the components that you want to toggle.
+
+include::user_cfg_table.adoc[]
+
+
+===== Rebuild LIS
+
+After creating a _user.cfg_ file you must recompile the LIS source code.  First go into the _make_ directory and clean up.
+
+....
+% cd make
+% gmake realclean
+% cd ..
+....
+
+Then re-run the _configure_ script.  This will process the _user.cfg_ file.  Then run the _compile_ script to compile the LIS source code.
+

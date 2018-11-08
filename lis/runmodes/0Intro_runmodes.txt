@@ -1,0 +1,17 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!This section contains the implementations of various
+!running modes in LIS. The current implementation includes
+!a retrospective mode and the cycling mode used in the AGRMET
+!system. The interfaces are expected
+!to be extended for other running modes such as coupled,
+!parameter estimation and forecast. 
+!EOP
+

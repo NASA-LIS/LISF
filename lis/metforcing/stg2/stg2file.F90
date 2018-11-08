@@ -1,0 +1,64 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+! !ROUTINE: stg2file
+! \label{stg2file}
+!
+! !INTERFACE:
+subroutine stg2file( name, stg2dir, yr, mo, da, hr)
+
+  implicit none
+
+! !DESCRIPTION:
+!   This subroutine puts together a STAGE2 filename for 
+!   one hour file intervals
+! 
+!  The arguments are:
+!  \begin{description}
+!  \item[stg2dir]
+!    Name of the STAGE II directory
+!  \item[yr]
+!    year 
+!  \item[mo]
+!   month
+!  \item[da]
+!   day of month
+!  \item[hr]
+!   hour of day
+!   \item[name]
+!   name of the time-stamped STAGE II file
+!  \end{description}
+!
+!EOP
+
+! !ARGUMENTS: 
+  integer :: yr, mo, da, hr
+
+  character(80) :: name
+  character(40) :: stg2dir
+  character(4) :: cyear
+  character(2) :: cmon, cday, chour
+
+!- Build the filename to be opened
+!   input filename (e.g.): 200501/ST2ml2005011912.Grb
+
+   write ( cyear, '(i4)' ) yr
+   if ( mo < 10 ) write ( cmon, '(a1,i1)' ) "0", mo
+   if ( mo >= 10) write ( cmon, '(i2)' ) mo
+   if ( da < 10 ) write ( cday, '(a1,i1)' ) "0", da
+   if ( da >= 10) write ( cday, '(i2)' ) da
+   if ( hr < 10 ) write ( chour, '(a1,i1)' ) "0", hr
+   if ( hr >= 10) write ( chour, '(i2)' ) hr
+
+   name = trim(stg2dir)//'/'//cyear//cmon//'/ST2ml'//cyear//cmon//cday//chour//'.Grb'
+
+  return
+
+end subroutine stg2file
+

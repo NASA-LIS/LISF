@@ -1,0 +1,67 @@
+This is a test case that uses: 
+  (a) the GDAS forcing 
+  (b) with bilinear interpolation
+  (c) with elevation correction
+  (d) template land surface model
+  (e) a time period from Oct 29 2002, hr 0 to Oct 29, 2002, hr 2.
+
+This directory contains: 
+  (a) This README file, 
+  (b) four lis.config files used for this test case. (These files should be 
+      edited to make sure that the locations of the parameter and 
+      forcing files are specified correctly.) 
+  (c) Sample grads control files that can be used to visualize the 
+      output.
+  (d) template_main.F90 file.  This file replaces the template_main.F90
+      file located in lsms/template/.
+
+To run this test case: 
+  (a) Generate the LIS executable. 
+  (b) Download the sample input data from: 
+	http://lis.gsfc.nasa.gov/Source/testcases  
+      the testcase corresponding to History Support TEST
+  (c) Run the LIS executable using the lis.config file and the sample 
+      input data. 
+  (d) Compare the results against the testcase results contained the OUTPUT
+      directory or compare the results against the values documented in the
+      template_main.F90 file.
+
+Notes:
+   (a) This testcase is designed to test the various history support features
+       provided by LIS.  In particular, it tests writing output as
+       instantaneous, time averaged, or accumulated results.  It tests
+       changing the direction of the output data.  It tests generating minimum
+       and maximum values.  It tests computing the standard deviation of the
+       output data.
+   (b) To fully test the history support, four domains have been created.
+       (i)   3x3 domain, 1 tile per grid, 1 ensemble per tile.
+       (ii)  3x3 domain, 1 tile per grid, 2 ensembles per tile.
+       (iii) 3x3 domain, 2 tiles per grid, 1 ensemble per tile.
+       (iv)  3x3 domain, 2 tiles per grid, 2 ensembles per tile.
+   (c) This testcase must be run four times, once per domain.
+       You must copy the template_main.F90 file contained in
+       testcases/misc/history/ into lsms/template/.  Select a domain by 
+       setting "#if 1" for the desired domain, and setting "#if 0" for the 
+       other domains.  Compile, run, and repeat.
+   (d) There are four lis.config files corresponding to the four domains.
+       (i)   lis.config_3x3_1_1 <--> 3x3 domain, 1 tile per grid, 1 ensemble
+                                     per tile.
+       (ii)  lis.config_3x3_1_2 <--> 3x3 domain, 1 tile per grid, 2 ensembles
+                                     per tile.
+       (iii) lis.config_3x3_2_1 <--> 3x3 domain, 2 tiles per grid, 1 ensemble
+                                     per tile.
+       (iv)  lis.config_3x3_2_2 <--> 3x3 domain, 2 tiles per grid, 2 ensembles
+                                     per tile.
+   (e) This testcase only runs as a serial process.  To test history support,
+       first run this testcase and verify that the output is correct.  Then
+       run another testcase, say Noah 2.7.1, both as a serial and a parallel
+       process.  Verify that these two runs produced the same results.
+
+       
+Caveats: 
+  (a) Please note that this is a simple functional test and the output
+      from the testcase is not expected to be used for any scientific 
+      evaluation. 
+
+
+

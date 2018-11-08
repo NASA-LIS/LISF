@@ -1,0 +1,302 @@
+
+== Introduction
+anchor:sec_intro[Introduction]
+
+This is the Land Information System (LIS) User's Guide.  This document describes how to download and install the code and data needed to run the LIS executable for LIS revision {lisrevision}.  It describes how to build and run the code, and finally this document also describes how to download output data-sets to use for validation.
+
+This document consists of 12 sections, described as follows:
+
+. *<<sec_intro>>*:
+   the section you are currently reading
+
+. *<<sec_backgrd>>*:
+   general information about the LIS project
+
+. *<<sec_prelim>>*:
+   general information, steps, instructions, and definitions used throughout
+   the rest of this document
+
+. *<<sec_obtain-src>>*:
+   the steps needed to download the source code
+
+. *<<sec_build>>*:
+   the steps needed to build the LIS executable
+
+. *<<sec_run>>*:
+   the steps needed to prepare and submit a run, also describes the various
+   run-time configurations
+
+. *<<sec_testcases>>*:
+   describes the LIS test cases.
+
+. *<<sec_postproc>>*:
+   the steps needed to post-process generated output for visualization
+
+. *<<sec_lisconfigfile>>*:
+   describes the user-configurable options.
+
+. *<<sec_forcingvars>>*:
+   describes the user-configurable input forcing variable options.
+
+. *<<sec_modeloutputlisttable>>*:
+   describes the user-configurable output variable options.
+
+. *<<sec_usersupport>>*:
+   describes how to request help from and provide feedback
+   to the LIS development team.
+
+
+=== What's New
+//\attention{See _RELEASE_NOTES_ found in the _source.tar.gz_ file for more details.  (See Section <<sec_obtain-src>>.)}
+
+
+==== LIS 7.2
+
+. Includes the NOAA Rapid Update Cycle (RUC) 3.7.1 land surface model
+. Includes the ensemble streamflow prediction (ESP) conventional
+  forecasting runmode
+. Includes additional parameter and uncertainty estimation support
+  * Differential evolution Markov chain (DEMC)
+  * Levenberg-Marquardt
+  * Random walk Markov chain monte carlo
+. Includes additional radiative transfer model support
+  * Tau Omega
+. Data assimilation is performed on the observation grid
+. Supports HYMAP runoff data
+. Supports ANSA snow depth observations
+. Supports GCOMW AMSR2 L3 soil moisture observations
+. Supports GCOMW AMSR2 L3 snow depth observations
+. Supports NASA SMAP soil moisture observations
+. Supports PILDAS soil moisture observations
+. Supports SMMR snow depth observations
+. Supports SMOS L2 soil moisture observations
+. Supports SMOS NESDIS soil moisture observations
+. Supports SSMI snow depth observations
+. Supports AWAP precipitation data
+. Supports LDT generated met forcing climatology data
+. Supports generic ensemble forecast met forcing data
+. Supports GRIB 2 formatted output
+
+
+==== LIS 7.1
+
+. Includes Noah 3.6
+. Includes NoahMP 3.6
+. Includes CABLE 1.4b
+ifdef::devonly[]
+. Includes Flake 1.0 {emdash} #internal use only!#
+endif::devonly[]
+. Includes flood irrigation
+. Includes drip irrigation
+ifdef::devonly[]
+. Supports SMOS L2 soil moisture observations
+. Supports simulated GRACE products
+. Supports GCOMW AMSR2 L3 soil moisture observations
+endif::devonly[]
+. Supports VIIRS Daily GVF data
+. Supports TRMM 3B42 V7 real time precipitation
+. Supports Gaussian T1534 GFS met forcing data
+. Supports MERRA-2 met forcing data {emdash} these data are not currently
+  available to external users; they should become available in July 2015
+ifdef::devonly[]
+. Supports LDT-generated met forcing data
+endif::devonly[]
+. Supports downscaling precipitation (PRISM) (NLDAS-2 only)
+
+
+==== LIS 7.0
+
+. Requires companion Land Data Toolkit (LDT) input data and parameter
+  preprocessor
+. Includes VIC 4.1.2.l
+. Includes RDHM 3.5.6 (SacHTET and Snow17)
+. Includes demand sprinkler irrigation
+. Includes HYMAP routing
+. Includes NLDAS routing
+. Includes radiative transfer model support
+  * LIS-CRTM2EM {emdash} LIS' implementation of JCSDA's CRTM2 with
+         emissivity support
++
+See http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/
++
+  * LIS-CMEM3 {emdash} LIS' implementation of ECMWF's CMEM 3.0
++
+See http://old.ecmwf.int/research/data_assimilation/land_surface/cmem/cmem_source.html for the original code.
++
+. Includes parameter and uncertainty estimation support
+  * Genetic algorithm (GA)
+  * Monte Carlo sampling (MCSIM)
+  * Differential evolution Markov chain z (DEMCz)
+. Supports ensemble of met forcing sources
+. Supports GEOS 5 forecast met forcing data
+. Supports PALS met forcing data
+. Supports PILDAS met forcing data
+. Supports ECV soil moisture data assimilation
+. Supports GRACE data assimilation
+. Supports PMW snow data assimilation
+. Supports SMOPS soil moisture data assimilation
+
+Note that the notion of a base forcing and a supplemental forcing have been replaced with the notion of a meteorological forcing.  Thus the support in _baseforcing_ and in _suppforcing_ have been combined into _metforcing_.
+
+Note that LIS is developing support for surface types other than land.  Thus all the land surface models contained in _lsms_ have been moved into _surfacemodels/land_.
+
+Note that the companion program LDT is now required to process input parameters.  Thus the support for static and climatological parameters have been removed from _params_ and placed into LDT.
+
+
+==== LIS 6.2
+
+. Includes VIC 4.1.1.
+. Includes CABLE 1.4b {emdash} restricted distribution.
+. Includes Catchment F2.5.
+. Includes Noah 3.3.
+. Includes SiB2.
+. Includes WRSI.
+. Support for North American Mesoscale Forecast System (NAM)
+  "`242 AWIPS Grid \-- Over Alaska`" product.
+. Support for USGS potential evapotranspiration (PET) data (for use
+  in WRSI).
+. Support for Climate Prediction Center's (CPC) Rainfall Estimates
+  version 2 (RFE2) daily precipition (for use in WRSI).
+. Support to apply lapse-rate correction to bottom temperature field
+  (for use in Noah).
+
+
+==== LIS 6.1
+
+. Includes Noah 3.1.
+. Includes Noah 3.2.
+. Support for SPoRT Daily GVF data.
+. Support for North American Regional Reanalysis (3d) (NARR) data.
+. Support for NCEP's modified IGBP MODIS landcover data.
+. Support to specify direction for output variables.
+. Support for assimilation of ANSA snow depth products, MODIS
+  snowcover, and LPRM retrievals of AMSRE soil moisture.
+//ifdef::devonly[]
+//. DA support for AMSRE SWE, MODIS snowcover (MOD10C1, MOD10A1), ANSA
+//  snow products, GRACE, LPRM retrievals of AMSRE soil moisture
+//. Optimization and uncertainty estimation tools
+//. CLM4 Sacramento/Snow17, FASST, PLACE, SHEELS, TESSEL, JULES, VIC
+//. landslide modelling
+//. flexible tiling
+//. advanced downscaling methods
+//. support for radiative transfer modelling
+//. ESMF 5
+//endif::devonly[]
+
+
+==== LIS 6.0
+
+. Modules have been restructured to streamline public and private interfaces
+. Restructured AGRMET processing {emdash} parallel support, lat/lon support.
+. This version now uses ESMF 3.1.0rp3.
+. Support for computational halos.
+. Allows mosaicing  of different forcings concurrently
+  (e.g. GDAS global + NLDAS over CONUS+SALDAS over south america, etc.)
+. Allows multiple overlays of different supplemental forcings
+  (e.g. GDAS overlaid with NLDAS, AGRMET, STAGEIV)
+. Allows concurrent instances of data assimilation
+. Includes a highly configurable I/O interface (Allows unit conversions,
+  temporal averaging, model-independent support for binary, Grib1 and NETCDF)
+. Includes support for 3d forcing (that includes the atmospheric profile) and
+  a configurable specification of the forcing inputs
+. A dynamic bias estimation component (from NASA GMAO) has been added to the
+  data assimilation subsystem.
+. Generic support for parameter estimation/optimization with the implmentation
+  of a heuristic approach using Genetic Algorithms.
+. New sources for data assimilation (using NASA and NESDIS retrievals of AMSRE
+  soil moisture)
+. Support for real time GVF data from NESDIS and MODIS
+. A suite of upscaling algorithms to complement the existing spatial
+  downscaling algorithms.
+. Support for new map projections {emdash} UTM
+. Support for forward modeling using radiative transfer models, and support
+  for radiance based assimilation
+
+
+==== LIS 5.0
+
+. This version includes the infrastructure for performing data assimilation
+  using a number of different algorithms from simple approaches such as
+  direct insertion to the more sophisticated ensemble kalman filtering.
+. More streamlined support for different architectures: A configuration
+  based specification for the LIS makefile.
+. The data assimilation infrastructure utilizes the Earth System Modeling
+  Framework (ESMF) structures. The LIS configuration utility has been
+  replaced with the corresponding ESMF utility.
+
+
+==== LIS 4.2
+
+. Completed implementation of AGRMET processing algorithms
+. Ability to run on polar stereographic, mercator, lambert
+  conformal, and lat/lon projections
+. Updated spatial interpolation tools to support the transformations
+  to/from the above grid projections
+. Switched to a highly interactive configurations management from
+  the fortran namelist-based lis.crd style.
+. Streamlined error and diagnostic logging, in both sequential and
+  parallel processing environments.
+. extended grib support; included the UCAR-based read-grib library
+. Support for new supplemental forcing analyses {emdash} Huffman, CMORPH
+
+
+==== LIS 4.1
+
+. Preliminary AFWA support
+. Ability to run on a defined layout of processors.
+. Updates to plugins, preliminary implementation of alarms.
+. Definition of LIS specfic environment variables.
+
+
+==== LIS 4.0.2
+
+. GSWP-2 support {emdash} LIS can now run GSWP-2 experiments.  Currently
+  only CLM and Noah models have full support.
+. Updates to the 1km running mode.
+. Updates to the GDS running mode.
+
+
+==== LIS 4.0
+
+. VIC 4.0.5 {emdash} LIS' implementation of VIC has been reinstated.
+
+
+==== LIS 3.1
+
+. New domain-plugin support {emdash} facilitates creating new domains.
+. New domain definition support {emdash} facilitates defining running domains.
+                                Sub-domain selection now works for
+                                both MPI-based and non MPI-based
+                                runs.
+. New parameter-plugin support {emdash} facilitates adding new input
+                               parameter data-sets.
+. New LIS version of ipolates {emdash} facilitates creating new domains and
+                              base forcing data-sets.
+. Compile-time MPI support {emdash} MPI libraries are no longer required
+                           to compile LIS.
+. Compile-time netCDF support {emdash} netCDF libraries are no longer required
+                              to compile LIS.
+. New LIS time manager support {emdash} ESMF time manager was removed.
+                               ESMF libraries are not required in
+                               this version of LIS.
+
+==== LIS 3.0
+
+. Running Modes {emdash} Now there is more than one way to run LIS.
+                In addition to the standard MPI running mode,
+                there are the GDS running mode and the 1 km running
+                mode.
+. Sub-domain Selection {emdash} Now you are no longer limited to global
+                       simulations.  You may choose any sub-set
+                       of the global domain to run over.
+//                     See Section~\ref{sssec_run_domain_list}
+//                     and Section~\ref{sssec_param_domain_list}
+                       See Section <<sec_lisconfigfile>>
+                       for more details.
+                       (This is currently only available for the
+                       MPI-based running mode.)
+
+. Plug-ins {emdash} Now it is easy to add new LSM and forcing data-sets into
+           the LIS driver.
+           See LIS' Developer's Guide for more details.
+

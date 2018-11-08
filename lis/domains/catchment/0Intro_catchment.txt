@@ -1,0 +1,5 @@
+!BOP
+!\section{Catchment domain}
+!This section contains the interface implementations for a LIS
+!instance using a Catchment-based domain.
+!EOP

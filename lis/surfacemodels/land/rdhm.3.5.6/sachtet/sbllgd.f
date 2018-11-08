@@ -1,0 +1,83 @@
+      SUBROUTINE SBLLGD (FLON,FLAT,NPAIR,X,Y,ILLGD,ISTAT)
+C
+C     THIS SUBROUTINE CONVERTS THE LONGITUDE AND LATITUDE COORDINATE
+C     LOCATION ON EARTH TO THE HRAP GRID SYSTEM LOCATION (AND VICE-
+C     VERSA).  IF ILLGD=1, GRID POINTS ARE DETERMINED FROM LONGITUDE
+C     AND LATITUDE.  IF ILLGD=0, LONGITUDE AND LATITUDE ARE COMPUTED
+C     FROM THE GRID POINTS. (ASSUMES NORTH POLE = 401,1601)
+C     LONGITUDE IS ASSUMED TO BE GREATER THAN 0
+C     COPIED FROM CALB>MAP>SFGRID.F77 ON 10/24/88
+C
+      IMPLICIT REAL*8 (A-H,O-Z)
+      REAL*4 FLAT,FLON,X,Y,YFLAT,XFLON,XX,YY
+C
+      DIMENSION X(1),Y(1),FLON(1),FLAT(1)
+C
+      DATA DEGRAD/.01745329/
+      DATA EARTHR/6371.2/
+      DATA STLAT/60./
+      DATA STLON/105./
+      DATA RADDEG/57.2957795/
+C
+      ISTAT=0
+      XMESH=4.7625
+      TLAT=STLAT*DEGRAD
+      RE=(EARTHR*(1.0+DSIN(TLAT)))/XMESH
+C
+      IF (ILLGD.EQ.1) THEN
+C
+C       COMPUTE GRID POINTS FROM LONGITUDE AND LATITUDE.
+C
+        DO I=1,NPAIR
+          XFLON = FLON(I)
+          YFLAT = FLAT(I)
+          X(I) = 0.
+          Y(I) = 0.
+          IF (YFLAT.GE.10..AND.YFLAT.LE.80.AND.
+     X        XFLON.GE.40.AND.XFLON.LE.180.) THEN
+            XLAT=DBLE(YFLAT)*DEGRAD
+            WLONG=(DBLE(XFLON)+180.0-STLON)*DEGRAD
+            R=(RE*DCOS(XLAT))/(1.0+DSIN(XLAT))
+            X(I)=R*DSIN(WLONG)
+            Y(I)=R*DCOS(WLONG)
+          ELSE
+            ISTAT = -1
+          ENDIF
+        ENDDO
+        DO I=1,NPAIR
+          X(I)=X(I)+401
+          Y(I)=Y(I)+1601
+        ENDDO
+      ELSE
+C
+C       COMPUTE LONG/LAT FROM THE GRID POINTS.
+C
+        GI2 = RE**2
+        DO I=1,NPAIR
+          XX = X(I)
+          YY = Y(I)
+          IF (XX.GE.1..AND.XX.LE.1161.AND.
+     X       YY.GE.1..AND.YY.LE.1601.) THEN
+            XX=XX-401
+            YY=YY-1601
+            RR=XX*XX+YY*YY
+            IF (RR.NE.0.0) THEN
+              FLAT(I)=DASIN((GI2-RR)/(GI2+RR))*RADDEG
+              ANG=ATAN2(YY,XX)*RADDEG
+              IF(ANG.LT.0.0) ANG=ANG+360.
+              FLON(I)=270.+STLON-ANG
+              IF (FLON(I).LT.0.0) FLON(I)=FLON(I)+360.
+              IF (FLON(I).GE.360.) FLON(I)=FLON(I)-360.
+            ELSE
+              FLON(I)=0.0
+              FLAT(I)=90.0
+            ENDIF
+          ELSE
+            ISTAT = -1
+            FLON(I) = 0.
+            FLAT(I) = 0.
+          ENDIF
+        ENDDO
+      ENDIF
+      RETURN
+      END

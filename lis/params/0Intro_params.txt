@@ -1,0 +1,15 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!This section contains the implementations of various
+!land surface parameter maps. The interfaces are primarily
+!geared towards including satellite and observed maps of
+!parameters such as albedo, landcover, greenness, LAI, and soil 
+!parameters. 
+!EOP

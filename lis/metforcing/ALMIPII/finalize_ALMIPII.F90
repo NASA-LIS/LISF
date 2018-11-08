@@ -1,0 +1,32 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+! !MODULE: finalize_ALMIPII
+!  \label{finalize_ALMIPII}
+!
+! !REVISION HISTORY: 
+! 14 Oct 2019; Sujay Kumar, Initial Code
+! 
+! !INTERFACE:
+subroutine finalize_ALMIPII(findex)
+! !USES:
+  use LIS_coreMod,      only : LIS_rc
+  use ALMIPII_forcingMod, only : ALMIPII_struc
+!
+! !DESCRIPTION:
+!  Routine to cleanup ALMIPII forcing related memory allocations.   
+! 
+!EOP
+  implicit none
+  integer, intent(IN) :: findex
+  
+  integer   :: n
+  
+  deallocate(ALMIPII_struc)
+
+end subroutine finalize_ALMIPII

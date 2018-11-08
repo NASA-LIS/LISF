@@ -1,0 +1,363 @@
+//-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+// NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+//
+// Copyright (c) 2015 United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration.
+// All Rights Reserved.
+//-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <vicNl.h>
+#include <string.h>
+
+#define BARETYPE ( 12 ) // UMD -- HARDCODED!
+/* commented by Shugong Wang
+typedef struct
+{
+   float * zone_depth;
+   float * zone_fraction;
+} veg_lookup_dec;
+
+veg_lookup_dec *veg_lookup_table;
+ 
+
+//BOP
+//
+// !ROUTINE: initialize_veg_lookup_table
+// \label{initialize_veg_lookup_table}
+// 
+// !REVISION HISTORY: 
+//  22 Feb 2012  James Geiger; Initial adaptation from VIC 4.1.1 (read_vegparam.c).
+// 
+// !INTERFACE:
+void initialize_veg_lookup_table(int NT, FILE * vfile)
+// !USES:
+//
+// !ARGUMENTS:
+//  \begin{itemize}
+//  \item[NT] total number of vegetation types for VIC lookup table,
+//            considered intent(in)
+//  \item[vfile] filename of the VIC lookup table, considered intent(in)
+//  \end{itemize}
+//
+// !DESCRIPTION: 
+//  This routine reads the vegetation parameters (veg_lib) and stores
+//  them in a lookup table for use by the set\_vegparam routine.
+//
+//EOP
+{
+   extern option_struct   options;
+   int t, i;
+   char str[500];
+
+   veg_lookup_table = (veg_lookup_dec *)calloc(NT, sizeof(veg_lookup_dec));
+
+   for ( t = 0; t < NT; ++t )
+   {
+      veg_lookup_table[t].zone_depth = 
+         (float *)calloc(options.ROOT_ZONES, sizeof(float));
+
+      veg_lookup_table[t].zone_fraction = 
+         (float *)calloc(options.ROOT_ZONES, sizeof(float));
+   }
+
+   // vfile was opened by VIC in setup_vic411.
+
+   while ( !feof(vfile) )
+   {
+      fscanf(vfile, "%d", &t);
+
+      if ( t > NT )
+      {
+         sprintf(str,"Error reading veg lookup table.  Type %d is greater than total %d.", t, NT);
+         nrerror(str);
+      }
+
+      for ( i = 0; i < options.ROOT_ZONES; ++i )
+      {
+         fscanf(vfile, "%f %f", &veg_lookup_table[t].zone_depth[i], &veg_lookup_table[t].zone_fraction[i]);
+      }
+   }
+}
+*/  // above lines are commented by Shugong Wang
+//BOP
+//
+// !ROUTINE: set_vegparam
+// \label{set_vegparam}
+// 
+// !REVISION HISTORY: 
+//  22 Feb 2012  James Geiger; Initial adaptation from VIC 4.1.1 (read_vegparam.c).
+// 
+// !INTERFACE:
+veg_con_struct *set_vegparam(int tile_idx, int vegclass, int Nveg_type, int gridcel, 
+                             FILE *fp_vegparam, float *veg_fracs, int Nlc_type)
+// !USES:
+//
+// !ARGUMENTS:
+//  \begin{itemize}
+//  \item[tile_idx] index of current tile
+//  \item[vegclass] vegetation classification, as determined by LIS, of the current tile,
+//                  considered intent(in)
+//  \item[Nveg\_type] number of vegetation types in the veg\_lib parameter file, considered intent(in)
+//  \item[grid_cel] Index of current gri
+//  \item[fp_vegparam] file pointer of vegetation parameter file
+//  \item[veg_fracs] fractions of all land coer determined by LIS
+//  \item[Nlc_type]  number of types in LIS land cover data
+//  \end{itemize}
+//
+// !DESCRIPTION: 
+//  This routine initializes the vegetation parameters veg\_con data structure based on the given
+//  vegclass value.
+//
+//EOP
+{
+
+   extern veg_lib_struct *veg_lib;
+   extern option_struct   options;
+#if LINK_DEBUG
+   extern debug_struct    debug;
+#endif
+
+   veg_con_struct *temp;
+
+   int vegetat_type_num;
+   int MaxVeg;
+   int tempclass;
+   float depth_sum;
+   float sum;
+//   int gridcel; commented by Shugong Wang
+   int i, j;
+   char str[500];
+   char ErrStr[MAXSTRING];
+   int NoOverstory;
+
+   vegetat_type_num = 1;  // I am forcing 1 tile per veg_con element.
+//   gridcel = -9999; commented by Shugong Wang. 
+
+   // Make sure to allocate extra memory for bare soil tile
+   // and optionally an above-treeline veg tile
+   MaxVeg = vegetat_type_num+1;
+   if ( options.AboveTreelineVeg >= 0 )
+   {
+      MaxVeg++;
+   }
+
+   /** Allocate memory for vegetation grid cell parameters **/
+   temp = (veg_con_struct*) calloc( MaxVeg, sizeof(veg_con_struct));
+   temp[0].Cv_sum = 0.0;
+
+   if ( vegclass != BARETYPE )
+   {
+      for ( i = 0; i < vegetat_type_num; i++ )
+      {
+         temp[i].zone_depth = calloc(options.ROOT_ZONES,sizeof(float));
+         temp[i].zone_fract = calloc(options.ROOT_ZONES,sizeof(float));
+         temp[i].vegetat_type_num = vegetat_type_num;
+    
+         temp[i].LAKE = 0;
+         temp[i].veg_class = vegclass;
+         temp[i].Cv = 1.0;
+
+         depth_sum = 0;
+
+         // added by Shugong Wang to read in root zone information and update lis_veg_lib
+         vic411_read_vegparam(fp_vegparam, gridcel , Nveg_type, vegclass, &(temp[i]));
+
+         for ( j = 0; j < options.ROOT_ZONES; ++j)
+         {
+           //   temp[i].zone_depth[j] = veg_lookup_table[vegclass].zone_depth[j];
+            depth_sum += temp[i].zone_depth[j];
+         }
+
+         sum = 0.;
+         for ( j = 0; j < options.ROOT_ZONES; ++j)
+         {
+           // temp[i].zone_fract[j] = veg_lookup_table[vegclass].zone_fraction[j];
+            sum += temp[i].zone_fract[j];
+         }
+
+         if ( depth_sum <= 0)
+         {
+            sprintf(str,"Root zone depths must sum to a value greater than 0.");
+            nrerror(str);
+         }
+
+         if ( sum != 1.)
+         {
+            fprintf(stderr,"WARNING: Root zone fractions sum to more than 1 ( = %f), normalizing fractions.  If the sum is large, check that your vegetation parameter file is in the form - <zone 1 depth> <zone 1 fract> <zone 2 depth> <zone 2 fract> ...\n", sum);
+            for ( j = 0;j < options.ROOT_ZONES; j++)
+            {
+               temp[i].zone_fract[j] /= sum;
+            }
+         }
+
+
+         tempclass = MISSING;
+         for ( j = 0; j < Nveg_type; j++ )
+         {
+            if(temp[i].veg_class == veg_lib[j].veg_class)
+            {
+               tempclass = j;
+            }
+         }
+
+         if ( tempclass == MISSING )
+         {
+            sprintf(ErrStr,"The vegetation class id %i in vegetation tile %i from cell %i is not defined in the vegetation library file.", temp[i].veg_class, i, gridcel);
+            nrerror(ErrStr);
+         }
+         else
+         {
+            temp[i].veg_class = tempclass;
+         }
+
+         temp[0].Cv_sum += temp[i].Cv;
+
+#if 0
+         if ( options.GLOBAL_LAI )
+         {
+            for ( j = 0; j < 12; j++ )
+            {
+               fscanf(vegparam, "%lf", &veg_lib[temp[i].veg_class].LAI[j]);
+               if ( veg_lib[temp[i].veg_class].overstory && 
+                    veg_lib[temp[i].veg_class].LAI[j] == 0 )
+               {
+                  sprintf(ErrStr,"ERROR: cell %d, veg tile %d: the specified veg class (%d) is listed as an overstory class in the veg LIBRARY, but the LAI given in the veg PARAM FILE for this tile for month %d is 0.\n",gridcel, i+1, temp[i].veg_class+1, j+1);
+                  nrerror(ErrStr);
+               }
+               veg_lib[temp[i].veg_class].Wdmax[j] = LAI_WATER_FACTOR * 
+                                                veg_lib[temp[i].veg_class].LAI[j];
+            }
+         }
+#endif
+
+         // Determine if cell contains non-overstory vegetation
+         if ( options.COMPUTE_TREELINE && !veg_lib[temp[i].veg_class].overstory )
+         {
+            NoOverstory++;
+         }
+
+      }
+   }
+   else
+   {
+      // For baresoil set the 0th index to some sane values.
+      temp[0].zone_depth = calloc(options.ROOT_ZONES,sizeof(float));
+      temp[0].zone_fract = calloc(options.ROOT_ZONES,sizeof(float));
+      temp[0].vegetat_type_num = vegetat_type_num;
+      temp[0].LAKE = 0;
+      temp[0].veg_class = 1;
+      temp[0].Cv = 0.0;
+      for ( j = 0; j < options.ROOT_ZONES; ++j)
+      {
+         temp[0].zone_depth[j] = 1.0 / options.ROOT_ZONES;
+         temp[0].zone_fract[j] = 1.0 / options.ROOT_ZONES;
+      }
+   }
+
+
+   // Handle veg above the treeline
+   if ( options.SNOW_BAND > 1 && options.COMPUTE_TREELINE
+        && ( !NoOverstory && temp[0].Cv_sum == 1. ) )
+   {
+      // All vegetation in the current cell is defined with overstory.
+      // Add default non-overstory vegetation so that snow bands above treeline
+      // can be sucessfully simulated.
+      if ( options.AboveTreelineVeg < 0 )
+      {
+         // Above treeline snowband should be treated as bare soil
+         for ( j = 0; j < vegetat_type_num; j++ )
+         {
+            temp[j].Cv -= ( 0.001 / (float)vegetat_type_num );
+         }
+         temp[0].Cv_sum -= 0.001;
+
+      }
+      else
+      {
+         // Above treeline snowband should use the defined vegetation
+         // add vegetation to typenum
+         // check that veg type exists in library and does not have overstory
+         if ( vegetat_type_num > 0)
+         {
+            for ( j = 0; j < vegetat_type_num; j++ )
+            {
+               temp[j].Cv -= ( 0.001 / (float)vegetat_type_num );
+               temp[j].vegetat_type_num++;
+            }
+
+            temp[vegetat_type_num].Cv         = 0.001;
+            temp[vegetat_type_num].veg_class  = options.AboveTreelineVeg;
+            temp[vegetat_type_num].Cv_sum     = temp[vegetat_type_num-1].Cv_sum;
+            temp[vegetat_type_num].zone_depth = calloc( options.ROOT_ZONES,
+                                                        sizeof(float));
+            temp[vegetat_type_num].zone_fract = calloc( options.ROOT_ZONES,
+                                                        sizeof(float));
+            temp[vegetat_type_num].vegetat_type_num = vegetat_type_num+1;
+
+            // Since root zones are not defined they are copied from the last
+            // vegetation type.
+            for ( j = 0; j < options.ROOT_ZONES; j++ )
+            {
+               temp[vegetat_type_num].zone_depth[j] = 
+                  temp[vegetat_type_num-1].zone_depth[j];
+               temp[vegetat_type_num].zone_fract[j] =
+                  temp[vegetat_type_num-1].zone_fract[j];
+            }
+         }
+
+         // Identify current vegetation class
+         tempclass = MISSING;
+         for ( j = 0; j < Nveg_type; j++ )
+         {
+            if(temp[vegetat_type_num].veg_class == veg_lib[j].veg_class)
+            {
+               tempclass = j;
+               break;
+            }
+         }
+         if ( tempclass == MISSING )
+         {
+            sprintf(ErrStr,"The vegetation class id %i defined for above-treeline from cell %i is not defined in the vegetation library file.", temp[vegetat_type_num].veg_class, gridcel);
+            nrerror(ErrStr);
+         }
+         else
+         {
+            temp[vegetat_type_num].veg_class = tempclass;
+         }
+
+         if ( veg_lib[tempclass].overstory )
+         {
+            sprintf(ErrStr,"Vegetation class %i is defined to have overstory, so it cannot be used as the default vegetation type for above canopy snow bands.", veg_lib[tempclass].veg_class );
+            nrerror(ErrStr);
+         }
+      }
+   }
+
+   // Bare soil tile
+   if ( vegclass == BARETYPE )
+   {
+      j = vegetat_type_num;
+      temp[j].veg_class = Nveg_type; // Create a veg_class ID for bare soil, which is not mentioned in the veg library
+      temp[j].Cv = 1.0 - temp[0].Cv_sum;
+      // Don't allocate any root-zone-related arrays
+      if(options.BLOWING)
+      {
+         if (vegetat_type_num > 0) 
+         {
+            temp[j].sigma_slope = temp[0].sigma_slope;
+            temp[j].lag_one = temp[0].lag_one;
+            temp[j].fetch = temp[0].fetch;
+         }
+         else
+         {
+            temp[j].sigma_slope = 0.005;
+            temp[j].lag_one = 0.95;
+            temp[j].fetch = 2000;
+         }
+      }
+   }
+
+  return temp;
+} 

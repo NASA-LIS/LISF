@@ -1,0 +1,68 @@
+! File %M% from Library %Q%
+! Version %I% from %G% extracted: %H%
+!------------------------------------------------------------------------------
+
+REAL (KIND = ireals) FUNCTION SfcFlx_lwradwsfc (T)
+
+!------------------------------------------------------------------------------
+!
+! Description:
+!
+!  Computes the surface long-wave radiation flux
+!  as function of temperature. 
+!  
+!
+! Current Code Owner: DWD, Dmitrii Mironov
+!  Phone:  +49-69-8062 2705
+!  Fax:    +49-69-8062 3721
+!  E-mail: dmitrii.mironov@dwd.de
+!
+! History:
+! Version    Date       Name
+! ---------- ---------- ----
+! 1.00       2005/11/17 Dmitrii Mironov 
+!  Initial release
+! !VERSION!  !DATE!     <Your name>
+!  <Modification comments>
+!
+! Code Description:
+! Language: Fortran 90.
+! Software Standards: "European Standards for Writing and
+! Documenting Exchangeable Fortran 90 Code".
+!==============================================================================
+!
+! Declarations:
+!
+! Modules used:
+
+!_dm Parameters are USEd in module "SfcFlx".
+!_nu USE data_parameters , ONLY : &
+!_nu     ireals,                  & ! KIND-type parameter for real variables
+!_nu     iintegers                  ! KIND-type parameter for "normal" integer variables
+
+!==============================================================================
+
+IMPLICIT NONE
+
+!==============================================================================
+!
+! Declarations
+ 
+!  Input (function argument) 
+REAL (KIND = ireals), INTENT(IN) ::   &
+  T                                     ! Temperature [K]
+
+!==============================================================================
+!  Start calculations
+!------------------------------------------------------------------------------
+
+! Long-wave radiation flux [W m^{-2}]
+
+SfcFlx_lwradwsfc = c_lwrad_emis*tpsf_C_StefBoltz*T**4_iintegers
+
+!------------------------------------------------------------------------------
+!  End calculations
+!==============================================================================
+
+END FUNCTION SfcFlx_lwradwsfc
+

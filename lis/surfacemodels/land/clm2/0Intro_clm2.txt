@@ -1,0 +1,36 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!\section{Community Land Model version 2.0}
+!This section describes the interface implementations for the CLM
+!land surface model.  CLM (Community Land Model) is a 1-D land surface
+!model, written in Fortran 90, developed by a grass-roots collaboration
+!of scientists who have an interest in making a general land model
+!available for public use. LIS currently uses CLM version 2.0. CLM
+!version 2.0 was released in May 2002.  The source code for CLM 2.0
+!is freely available from the National Center for Atmospheric Research
+!(NCAR)~\cite{clm}.  The CLM is used as the land model for the
+!Community Climate System Model (CCSM) (http://www.ccsm.ucar.edu/),
+!which includes the Community Atmosphere Model (CAM)
+!(http://www.cgd.ucar.edu/cms/). CLM is executed with all forcing,
+!parameters, dimensioning, output routines, and coupling performed
+!by an external driver of the user's design (in this case done by
+!LIS).  CLM requires pre-processed data such as the land surface
+!type, soil and vegetation parameters, model initialization, and
+!atmospheric boundary conditions as input. The model applies
+!finite-difference spatial discretization methods and a fully implicit
+!time-integration scheme to numerically integrate the governing
+!equations. The model subroutines apply the governing equations of
+!the physical processes of the soil-vegetation-snowpack medium,
+!including the surface energy balance equation, Richards'~\cite{richards}
+!equation for soil hydraulics, the diffusion equation for soil heat
+!transfer, the energy-mass balance equation for the snowpack, and
+!the Collatz et al.~\cite{collatz} formulation for the conductance
+!of canopy transpiration.
+!EOP

@@ -1,0 +1,30 @@
+FC              = gfortran
+FC77            = gfortran
+LD              = gfortran
+CC              = gcc
+AR              = ar
+MOD_ESMF        = /discover/nobackup/projects/lis/libs/esmf/6_3_0rp1_gfortran_mpiuni/mod/modO/Linux.gfortran.64.mpiuni.default/
+LIB_ESMF        = /discover/nobackup/projects/lis/libs/esmf/6_3_0rp1_gfortran_mpiuni/lib/libO/Linux.gfortran.64.mpiuni.default/
+INC_JASPER      = /discover/nobackup/projects/lis/libs/jasper/1.900.1_intel_14_0_3_174/include/
+LIB_JASPER      = /discover/nobackup/projects/lis/libs/jasper/1.900.1_intel_14_0_3_174/lib/
+INC_GRIBAPI     = /discover/nobackup/projects/lis/libs/grib_api/1.12.3_gfortran/include/
+LIB_GRIBAPI     = /discover/nobackup/projects/lis/libs/grib_api/1.12.3_gfortran/lib/
+INC_NETCDF      = /discover/nobackup/projects/lis/libs/netcdf/4.1.3_gfortran/include/
+LIB_NETCDF      = /discover/nobackup/projects/lis/libs/netcdf/4.1.3_gfortran/lib/
+INC_HDF4        = 
+LIB_HDF4        = 
+INC_HDF5        = /discover/nobackup/projects/lis/libs/hdf5/1.8.8_gfortran/include/
+LIB_HDF5        = /discover/nobackup/projects/lis/libs/hdf5/1.8.8_gfortran/lib/
+INC_HDFEOS      = 
+LIB_HDFEOS      = 
+LIB_MINPACK     = 
+INC_CRTM        = 
+LIB_CRTM        = 
+INC_PROF_UTIL   = 
+LIB_PROF_UTIL   = 
+INC_CMEM        = 
+LIB_CMEM        = 
+CFLAGS          = -c -DIFC -DLINUX
+FFLAGS77        = -c -O2 -Wall -fbacktrace -fconvert=big-endian -fbounds-check -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -DLINUX -I$(MOD_ESMF) -DUSE_INCLUDE_MPI -I$(INC_GRIBAPI) -I$(INC_NETCDF) -I$(INC_HDF5)
+FFLAGS          = -c -O2 -Wall -fbacktrace -fconvert=big-endian -fbounds-check -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -DLINUX -I$(MOD_ESMF) -DUSE_INCLUDE_MPI -I$(INC_GRIBAPI) -I$(INC_NETCDF) -I$(INC_HDF5)
+LDFLAGS         = -L$(LIB_ESMF) -lesmf -lstdc++ -limf -lrt -L$(LIB_GRIBAPI) -lgrib_api_f90 -lgrib_api -L$(LIB_JASPER) -ljasper -L$(LIB_NETCDF) -lnetcdff -lnetcdf -L$(LIB_HDF5) -lhdf5_fortran -lhdf5_hl -lhdf5

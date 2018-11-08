@@ -1,0 +1,55 @@
+This testcase is used for providing supplemental forcing data, 
+precipitation in this case, obtainable from the Soil Conservation
+and Agriculture Network (SCAN: http://www.wcc.nrcs.usda.gov/scan/).  
+The code, by design, is able to read the original data files downloaded
+from the SCAN websites.  However, the format of the ASCII data files
+in the SCAN network occasionally changes and so care should be given to
+insure appropriate data reading.  This module has been extensively 
+tested with data files from these five SCAN sites located in the state 
+of Mississippi from the period of March 1, 2004 to February 28, 2006: 
+Silver City, Perthshire, Beasley Lake, Scott, North Issaquena.  
+Users may use a data file from any of these sites as a standard 
+to see if there are any format changes in their data files.  
+Note that the module reads the PCPHR column of the files for the 
+hourly precipitation.  If needed, changes may be made in the 
+subroutine, src/suppforcing/scan/readscan.F90, for appropriately
+ reading the data. The inverse distance weighting scheme is used
+ for spatial interpolation of precipitation data.  
+By default whenever a supplemental forcing record is missing, 
+the base forcing is used. 
+
+This test case uses: 
+  (a) the GDAS forcing and SCAN station data at SILVER CITY
+      as the supplemental precip forcing
+  (b) using the bilinear Interpolation
+  (c) uses the lapse-rate based elevation correction using GTOPO30 
+      elevation data
+  (d) the "template" LSM option (which is a dummy LSM placeholder that simply
+      outputs the interpolated forcing data. 
+  (e) Domain near SILVER CITY, MS at 1/4 degree spatial resolution.
+  (f) a time period from Aug 1 2004, hr 1 to Aug 2, 2004, hr 1 
+
+This directory contains: 
+  (a) This README file, 
+  (b) the lis.config file used for this test case. (This file should be 
+      edited to make sure that the locations of the parameter and 
+      forcing files are specified correctly.) 
+  (c) A sample grads control file that can be used to visualize the 
+      output. (output.ctl)
+
+To run this test case: 
+  (a) Generate the LIS executable. 
+  (b) Download the sample input data from: 
+	http://lis.gsfc.nasa.gov/Source/testcases  
+      the testcase corresponding to SCAN station data FORCING TEST
+  (c) Run the LIS executable using the lis.config file and the sample 
+      input data. 
+  (d) View the binary output using the sample grads file. 
+  (e) The output can be contrasted with the output from using only 
+      GDAS forcing for impacts of using the CEOP station data. 
+
+Caveats: 
+  (a) Please note that the station data spatial interpolators currently 
+      are designed to work only on a single processor. Please contact 
+      the LIS team if you are interested in extending this to work in 
+      a multiprocessor setup. 

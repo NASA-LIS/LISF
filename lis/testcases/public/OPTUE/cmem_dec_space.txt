@@ -1,0 +1,8 @@
+#CMEM3
+1    SRMAX            0.0002      0.02 
+1    D_LEAF           0.035       0.28          
+1    VWC2LAI          0.05        0.70        
+1    M_D              0.10        0.50         
+1    BGF_FIXED        0.00        0.40
+1    K_LAI2VGF        0.20        2.00
+0    SRMAX2SRMIN      0.50        0.999

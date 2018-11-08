@@ -1,0 +1,120 @@
+ &time_control
+ RUN_DAYS = 0,
+ RUN_HOURS = 0,
+ RUN_MINUTES = 0,
+ RUN_SECONDS = 0,
+ START_YEAR = 2002, 2002, 2002,
+ START_MONTH = 06,   06,   06,
+ START_DAY = 12,   06,   06,
+ START_HOUR = 00,   12,   12,
+ START_MINUTE = 00,   00,   00,
+ START_SECOND = 00,   00,   00,
+ END_YEAR = 2002, 2002, 2002,
+ END_MONTH = 06,   06,   06,
+ END_DAY = 13,   13,   13,
+ END_HOUR = 00,   00,   00,
+ END_MINUTE = 00,   00,   00,
+ END_SECOND = 00,   00,   00,
+ INTERVAL_SECONDS = 10800
+ INPUT_FROM_FILE = .true.,.true.,.true.,
+ HISTORY_INTERVAL = 60, 60, 60,
+ FRAMES_PER_OUTFILE = 1, 1, 1,
+ RESTART = .false.,
+ RESTART_INTERVAL = 360,
+ IO_FORM_HISTORY = 2
+ IO_FORM_RESTART = 102
+ IO_FORM_INPUT = 2
+ IO_FORM_BOUNDARY = 2
+ DEBUG_LEVEL = 0
+ auxinput5_inname                    = 'lisin_d01_000000',
+ auxinput5_begin_s                   = 10,
+ auxinput5_end_h                     = 25,
+ auxinput5_interval_s                = 10,
+ io_form_auxinput5                   = 7,
+ auxhist5_outname                    = 'lisout_d01_000000',
+ frames_per_auxhist5                 = 10000,
+ auxhist5_interval_s                 = 10,
+ auxhist5_end_h                      = 25,
+ io_form_auxhist5                    = 7,
+/
+
+ &domains
+ TIME_STEP = 5,
+ TIME_STEP_FRACT_NUM = 0,
+ TIME_STEP_FRACT_DEN = 1,
+ max_dom = 1
+ s_we           =   1,  1,  1, 
+ e_we           =  50,  487,  709, 
+ s_sn           =   1,  1,  1, 
+ e_sn           =  50,  295,  664, 
+ s_vert         =   1,  1,  1, 
+ e_vert         = 30,  43,  43, 
+ num_metgrid_levels = 30
+ dx             = 1000,  3000,  1000, 
+ dy             = 1000,  3000,  1000, 
+ grid_id        = 1,  2,  3, 
+ parent_id      = 1,  1,  2, 
+ i_parent_start = 0,  27,  129, 
+ j_parent_start = 0,  17,  30, 
+ parent_grid_ratio = 1,  3,  3, 
+ parent_time_step_ratio = 1,  3,  3, 
+ FEEDBACK = 1,
+ SMOOTH_OPTION = 2
+ /
+
+ &physics
+ MP_PHYSICS = 5,     5,     5,
+ RA_LW_PHYSICS = 1,     1,     1,
+ RA_SW_PHYSICS = 2,     2,     2,
+ RADT = 5,    5,    5,
+ SF_SFCLAY_PHYSICS = 1,     1,     1,
+ SF_SURFACE_PHYSICS = 0,     3,     3,
+ BL_PBL_PHYSICS = 1,    1,     1,
+ BLDT = 0,     0,     0,
+ CU_PHYSICS = 0,     0,     0,
+ CUDT = 0,     0,     0,
+ ISFFLX = 1,
+ IFSNOW = 0,
+ ICLOUD = 1,
+ SURFACE_INPUT_SOURCE = 1,
+ NUM_SOIL_LAYERS = 4,
+ MAXIENS = 1,
+ MAXENS = 3,
+ MAXENS2 = 3,
+ MAXENS3 = 16,
+ ENSDIM = 144,
+ /
+
+ &fdda
+ /
+
+ &dynamics
+ W_DAMPING = 1,
+ DIFF_OPT = 2,
+ KM_OPT = 2,
+ diff_6th_opt = 0,
+ diff_6th_factor = 0.12,
+ base_temp = 290.
+ DAMP_OPT = 0,
+ ZDAMP = 5000.,  5000.,  5000.,
+ DAMPCOEF = 0.1,    0.1,    0.1
+ KHDIF = 0,      0,      0,
+ KVDIF = 0,      0,      0,
+ NON_HYDROSTATIC = .true., .true., .true.,
+ /
+
+ &bdy_control
+ SPEC_BDY_WIDTH = 5,
+ SPEC_ZONE = 1,
+ RELAX_ZONE = 4,
+ SPECIFIED = .true., .false.,.false.,
+ NESTED = .false., .true., .true.,
+ /
+
+ &grib2
+ /
+
+ &namelist_quilt
+ NIO_TASKS_PER_GROUP = 0,
+ NIO_GROUPS = 1,
+ /

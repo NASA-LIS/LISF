@@ -1,0 +1,21 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!\section{ECMWF}
+!The operational, global analysis products from the European Center
+!for Medium-Range Weather Forecasts (ECMWF) is available on a $T_L$511
+!triangular truncation, linear reduced gaussian grid for four synoptic
+!hours: 00, 06, 12, and 18 UTC, which are used in LIS.  The radiation
+!products from the data assimilation system at the ECMWF is based
+!on the scheme simulated after Morcrette's work~\cite{morcrette}.
+!The estimation of shortwave and longwave radiation includes schemes
+!to include effects of adsorption by water vapor and other gases and
+!aerosol scattering based on different
+!parameterizations~\cite{rothman,morcrette2}.
+!EOP

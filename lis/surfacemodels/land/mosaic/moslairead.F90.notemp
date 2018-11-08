@@ -1,0 +1,638 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+!=========================================================================
+!
+!  LDASLDASLDASLDASLDASLDASLDASLDASLDASLDAS  A U.S. Continental-Scale
+!  D                                      L  Land Modeling and Data
+!  A  --LAND DATA ASSIMILATION SCHEMES--  D  Assimilation Project.
+!  S                                      A  This is the GSFC-LDAS Code.
+!  LDASLDASLDASLDASLDASLDASLDASLDASLDASLDAS  http://ldas.gsfc.nasa.gov
+!
+!   GSFC - NCEP - OH - Princeton - Washington - Rutgers
+!
+!=========================================================================
+! moslairead.f90:
+!
+! DESCRIPTION:
+!  This program reads in AVHRR LAI and DSAI data for MOSAIC
+!
+! REVISION HISTORY:
+!  10 Dec 2001: Jon Gottschalck; Initial code
+!  20 Feb 2002: Jon Gottschalck; Modified to use for 1/4 and 2x2.5 using 1/8 degree monthly data
+!  01 Oct 2002: Jon Gottschalck; Modified to allow MODIS LAI
+!=========================================================================
+ 
+  SUBROUTINE MOSLAIREAD (LD,LP,MOS,YR1,MO1,YR2,MO2,TIME1,TIME2, &
+                         WT1,WT2)
+
+  use ldas_module         ! LDAS parameters
+  use mos_module          ! MOSAIC parameters
+  use tile_module         ! Tile parameters
+  use ldasdrv_module, only : tile, grid,gindex
+  IMPLICIT NONE
+
+!=== Arguments ===========================================================
+
+!  TYPE (LDASDEC)     :: LDAS
+  type (ldasparameters) LP
+  type (ldasdomain) LD  
+  TYPE (MOSDEC)      :: MOS(LD%NCH)
+
+!=== Local variables
+  integer            :: index
+  INTEGER            :: LINE,T,V,MLAT,MLON,L
+  CHARACTER*1        :: LAI_1(14),LAI_2(14),DSAI1(14),DSAI2(14)  ! LAI/DSAI for all vegetation types
+  REAL               :: LAT1,LON1,LAT2,LON2                      ! Lat/Lon to determine specific data for each tile in direct access files
+  REAL*8             :: TIME1,TIME2                              ! Temporary Time variables
+  INTEGER            :: YR1,MO1,YR2,MO2                          ! Temporary Time variables
+  REAL               :: WT1,WT2                                  ! Interpolation weights
+  INTEGER            :: LAIFLAG,IOS1,IOS2                        ! Flag to read in new LAI data, file error variables 
+  CHARACTER (LEN=4)  :: CYR1,CYR2                                ! Filename variables
+  CHARACTER (LEN=2)  :: CMO1,CMO2                                ! Filename variables
+  INTEGER            :: FLAG1, FLAG2
+  INTEGER            :: CNT1,CNT2,CNT3,CNT4,I8,J8
+  REAL               :: SUM1,SUM2,SUM3,SUM4
+  INTEGER            :: D_START_NR,D_START_NC,START_8TH_NR,START_8TH_NC
+  INTEGER            :: END_8TH_NR,END_8TH_NC,K,MM
+  character(len=80)  :: name9,  name10, name11, name12
+  character(len=80)  :: name13, name14, name15, name16
+
+!=== End Local variable list
+
+!=== Initialize LAI flag variable
+   LAIFLAG = 0
+ 
+!=== Check to see if need new LAI data
+  IF (TIME2 .GT. LP%LAITIME) THEN 
+    LAIFLAG = 1
+  ELSE
+    LAIFLAG = 0
+  ENDIF
+
+!=== Get new LAI data if required
+  IF (LAIFLAG .EQ. 1) THEN
+  
+     open(unit=90, file='temp', form='formatted', access='direct', &
+     recl=80)
+     write(90, 96, rec=1) yr1, mo1
+     read (90, 92, rec=1) cyr1, cmo1
+     close(90)
+     open(unit=90, file='temp', form='formatted', access='direct', recl=80)
+     write(90, 96, rec=1) yr2,  mo2  
+     read (90, 92, rec=1) cyr2, cmo2
+     close(90)
+ 96  format(i4,i2.2)
+ 92  format(a4,a2)
+ 
+  LP%LAITIME = TIME2
+ 
+  SELECT CASE (LP%LAI)
+  CASE(2)
+   CALL AVHRR_G_FILE(NAME9,NAME10,NAME11,NAME12,NAME13,NAME14, &
+                     NAME15,NAME16,LP%AVHRR,CYR1,CYR2,CMO1,CMO2)
+  CASE(3)  
+   CALL MODIS_G_FILE(NAME9,NAME10,NAME11,NAME12,NAME13,NAME14, &
+                     NAME15,NAME16,LP%MODISDIR,CYR1,CYR2,CMO1,CMO2)
+  CASE DEFAULT
+   PRINT*, "NOT A VALID LAI OPTION"
+   STOP
+  END SELECT
+  
+!=== Open AVHRR LAI files (assumes realtime monthly files are present first
+!=== then uses climatology files)
+
+!=== Assume realtime monthly files are present as default
+  
+  FLAG1 = 0
+  FLAG2 = 0
+  OPEN(10,FILE=NAME9,STATUS='OLD',FORM='UNFORMATTED',&
+&  ACCESS='DIRECT',RECL=24,IOSTAT=IOS1)
+  OPEN(11,FILE=NAME10,STATUS='OLD',FORM='UNFORMATTED',&
+&  ACCESS='DIRECT',RECL=24,IOSTAT=IOS2)
+  OPEN(12,FILE=NAME13,STATUS='OLD',FORM='UNFORMATTED',&
+&  ACCESS='DIRECT',RECL=24,IOSTAT=IOS1)
+  OPEN(13,FILE=NAME14,STATUS='OLD',FORM='UNFORMATTED',&
+&  ACCESS='DIRECT',RECL=24,IOSTAT=IOS2)
+
+  print*, "Using 1/8 LAI/DSAI data for month 1 ", &
+  NAME9
+  print*, "Using 1/8 LAI/DSAI data for month 2 ", &
+  NAME10
+
+  IF (IOS1 .NE. 0) THEN
+   CLOSE(10)
+   OPEN(10,FILE=NAME11,STATUS='OLD',FORM='UNFORMATTED',&
+&   ACCESS='DIRECT',RECL=24)
+   CLOSE(12)
+   OPEN(12,FILE=NAME15,STATUS='OLD',FORM='UNFORMATTED',&
+&   ACCESS='DIRECT',RECL=24)
+
+   print*, "No realtime monthly data for month 1"
+   print*, "Using 1/8 LAI/DSAI data for month 1 ", &
+   NAME11
+
+   FLAG1 = 1
+
+  ENDIF
+  IF (IOS2 .NE. 0) THEN
+   CLOSE(11)
+   OPEN(11,FILE=NAME12,STATUS='OLD',FORM='UNFORMATTED',&
+&   ACCESS='DIRECT',RECL=24)
+    CLOSE(13)
+   OPEN(13,FILE=NAME16,STATUS='OLD',FORM='UNFORMATTED',&
+&   ACCESS='DIRECT',RECL=24)
+
+   print*, "No realtime monthly data for month 2"
+   print*, "Using 1/8 LAI/DSAI data for month 2 ", &
+      NAME12
+   FLAG2 = 1
+  ENDIF
+
+!=== Loop through tiles to assign AVHRR LAI values for each tile
+
+  DO T=1,LD%NCH
+  
+!=== If using NLDAS domain then skip aggregation section
+!=== If GLDAS enter to aggregate 1/8 LAI into lower resolution data
+
+    IF (LD%DOMAIN .NE. 1) THEN
+
+!=== Aggregation of 1/8 data
+!=== Locates latitude and longitude of tile and determines the rows and columns in
+!=== 1/8 grid space in which to read records and compute sums
+       index = gindex(tile(t)%col,tile(t)%row)
+       
+     SELECT CASE (LD%DOMAIN)
+     CASE (2)
+      D_START_NR  = ((GRID(INDEX)%LAT - (-59.875)) / 0.25) + 1
+      START_8TH_NR = ((D_START_NR - 1) * 2) + 1
+      END_8TH_NR   =   START_8TH_NR + 1
+      D_START_NC  = ((GRID(INDEX)%LON - (-179.875)) / 0.25) + 1
+      START_8TH_NC = ((D_START_NC - 1) * 2) + 1
+      END_8TH_NC   =   START_8TH_NC + 1
+     CASE (3)
+      D_START_NR  = ((GRID(INDEX)%LAT - (-60)) / 2.0) + 1
+      START_8TH_NR = ((D_START_NR - 1) * 16) + 1
+      END_8TH_NR   =   START_8TH_NR + 15
+      D_START_NC  = ((GRID(INDEX)%LON - (-180)) / 2.5) + 1
+      START_8TH_NC = ((D_START_NC - 1) * 20) + 1
+      END_8TH_NC   =   START_8TH_NC + 19
+     CASE (4)
+      D_START_NR  = ((GRID(INDEX)%LAT - (-59.500)) / 1.00) + 1
+      START_8TH_NR = ((D_START_NR - 1) * 8) + 1
+      END_8TH_NR   =   START_8TH_NR + 7
+      D_START_NC  = ((GRID(INDEX)%LON - (-179.500)) / 1.00) + 1
+      START_8TH_NC = ((D_START_NC - 1) * 8) + 1
+      END_8TH_NC   =   START_8TH_NC + 7
+     CASE (5)
+      D_START_NR  = ((GRID(INDEX)%LAT - (-59.750)) / 0.50) + 1
+      START_8TH_NR = ((D_START_NR - 1) * 4) + 1
+      END_8TH_NR   =   START_8TH_NR + 3
+      D_START_NC  = ((GRID(INDEX)%LON - (-179.750)) / 0.50) + 1
+      START_8TH_NC = ((D_START_NC - 1) * 4) + 1
+      END_8TH_NC   =   START_8TH_NC + 3
+     CASE DEFAULT
+      PRINT*, "IMPROPER DOMAIN SELECTION"
+      STOP
+     END SELECT
+           
+!=== Initilaize sums for LAI month 1, LAI month 2, DSAI month 1, DSAI month 2
+
+     SUM1 = 0.0
+     SUM2 = 0.0
+     SUM3 = 0.0
+     SUM4 = 0.0
+     CNT1 = 0
+     CNT2 = 0
+     CNT3 = 0
+     CNT4 = 0      
+     
+!=== Looping over 1/8 grid space that corresponds to other domains
+
+     DO I8 = START_8TH_NR,END_8TH_NR
+      DO J8 = START_8TH_NC,END_8TH_NC
+        LINE = (I8 - 1)*2880 + J8
+
+!=== Reading in record depending on type of data month 1
+
+	 READ(10,REC=LINE) LAT1, LON1, LAI_1
+	 READ(12,REC=LINE) LAT1, LON1, DSAI1
+	
+!=== Reading in record depending on type of data month2
+
+	 READ(11,REC=LINE) LAT2, LON2, LAI_2
+	 READ(13,REC=LINE) LAT2, LON2, DSAI2
+
+!=== Convert 4 byte integers or 1 byte characters to real values for use in LDAS
+!=== Summing over the 1/8 domain points, month 1 and month 2
+
+         SELECT CASE (LP%LAI)
+	  
+	  CASE(2)     ! AVHRR LAI
+          IF (ICHAR(LAI_1(TILE(T)%VEGT+1)) .NE. 0) THEN
+           SUM1 = SUM1 + (ICHAR(LAI_1(TILE(T)%VEGT+1))-100) * 0.05
+           CNT1 = CNT1 + 1
+          ENDIF
+          IF (ICHAR(DSAI1(TILE(T)%VEGT+1)) .NE. 0) THEN
+           SUM3 = SUM3 + (ICHAR(DSAI1(TILE(T)%VEGT+1))-100) * 0.05
+           CNT3 = CNT3 + 1
+          ENDIF
+          IF (ICHAR(LAI_2(TILE(T)%VEGT+1)) .NE. 0) THEN
+           SUM2 = SUM2 + (ICHAR(LAI_2(TILE(T)%VEGT+1))-100) * 0.05
+           CNT2 = CNT2 + 1
+          ENDIF
+          IF (ICHAR(DSAI2(TILE(T)%VEGT+1)) .NE. 0) THEN
+           SUM4 = SUM4 + (ICHAR(DSAI2(TILE(T)%VEGT+1))-100) * 0.05
+           CNT4 = CNT4 + 1
+          ENDIF
+
+!	   IF (ICHAR(LAI_1(TILE(T)%VEGT+1)) .NE. 251 .AND. ICHAR(LAI_1(TILE(T)%VEGT+1)) .NE. 0) THEN	 
+!            SUM1 = SUM1 + (ICHAR(LAI_1(TILE(T)%VEGT+1))) * 0.04
+!	    CNT1 = CNT1 + 1	  
+!	   ENDIF
+!	   IF (ICHAR(DSAI1(TILE(T)%VEGT+1)) .NE. 251 .AND. ICHAR(DSAI1(TILE(T)%VEGT+1)) .NE. 0) THEN
+!            SUM3 = SUM3 + (ICHAR(DSAI1(TILE(T)%VEGT+1))) * 0.04
+!	    CNT3 = CNT3 + 1
+!	   ENDIF 
+!	   IF (ICHAR(LAI_2(TILE(T)%VEGT+1)) .NE. 251 .AND. ICHAR(LAI_2(TILE(T)%VEGT+1)) .NE. 0) THEN
+!            SUM2 = SUM2 + (ICHAR(LAI_2(TILE(T)%VEGT+1))) * 0.04
+!	    CNT2 = CNT2 + 1
+!	   ENDIF
+!	   IF (ICHAR(DSAI2(TILE(T)%VEGT+1)) .NE. 251 .AND. ICHAR(DSAI2(TILE(T)%VEGT+1)) .NE. 0) THEN
+!            SUM4 = SUM4 + (ICHAR(DSAI2(TILE(T)%VEGT+1))) * 0.04
+!	    CNT4 = CNT4 + 1
+!	   ENDIF
+			     
+	  CASE(3)     ! MODIS LAI
+	   IF (ICHAR(LAI_1(TILE(T)%VEGT+1)) .LT. 200) THEN
+            SUM1 = SUM1 + (ICHAR(LAI_1(TILE(T)%VEGT+1))) * 0.10
+	    CNT1 = CNT1 + 1
+	   ENDIF
+	   IF (ICHAR(DSAI1(TILE(T)%VEGT+1)) .LT. 200) THEN
+            SUM3 = SUM3 + (ICHAR(DSAI1(TILE(T)%VEGT+1))) * 0.10
+	    CNT3 = CNT3 + 1
+	   ENDIF
+	   IF (ICHAR(LAI_2(TILE(T)%VEGT+1)) .LT. 200) THEN
+	    SUM2 = SUM2 + (ICHAR(LAI_2(TILE(T)%VEGT+1))) * 0.10
+	    CNT2 = CNT2 + 1
+	   ENDIF
+	   IF (ICHAR(DSAI2(TILE(T)%VEGT+1)) .LT. 200) THEN
+            SUM4 = SUM4 + (ICHAR(DSAI2(TILE(T)%VEGT+1))) * 0.10
+	    CNT4 = CNT4 + 1
+	   ENDIF
+				   
+	  CASE DEFAULT
+	  print*, "Not a valid LAI Domain"
+	  STOP
+	 END SELECT
+
+      ENDDO
+     ENDDO
+
+!=== Compute averages for the vegetation type represented by tile
+
+      IF (CNT1 .NE. 0) THEN
+       MOS(T)%LAI_T1_F = SUM1 / CNT1
+      ELSE
+       MOS(T)%LAI_T1_F = 0
+      ENDIF
+      IF (CNT2 .NE. 0) THEN
+       MOS(T)%LAI_T2_F = SUM2 / CNT2
+      ELSE
+       MOS(T)%LAI_T2_F = 0
+      ENDIF
+      IF (CNT3 .NE. 0) THEN
+       MOS(T)%DSAI_T1 = SUM3 / CNT3
+      ELSE
+       MOS(T)%DSAI_T1 = 0
+      ENDIF
+      IF (CNT4 .NE. 0) THEN
+       MOS(T)%DSAI_T2 = SUM4 / CNT4
+      ELSE
+       MOS(T)%DSAI_T2 = 0
+      ENDIF     
+      
+!=== Do NLDAS section (no aggregation)
+
+   ELSE
+
+!=== Set parameters to read 1/8 LAI/DSAI data
+      index = gindex(tile(t)%col,tile(t)%row)
+     MLAT = (grid(index)%LAT - (-59.9375)) / 0.125 + 1
+     MLON = (grid(index)%LON - (-179.9375)) / 0.125 + 1
+     LINE = (MLAT - 1)*2880 + MLON  
+
+!=== Read in data for both LAI and DSAI
+!=== IF/ENDIF due to the fact climatology has different format then the actual monthly files
+
+      READ (10,REC=LINE) LAT1, LON1, LAI_1
+      READ (12,REC=LINE) LAT1, LON1, DSAI1
+      READ (11,REC=LINE) LAT2, LON2, LAI_2
+      READ (13,REC=LINE) LAT2, LON2, DSAI2
+	  
+!=== Scale to real physical values
+
+     SELECT CASE(LP%LAI)
+      CASE(2)   ! AVHRR LAI
+       MOS(T)%LAI_T1_F = (ICHAR(LAI_1(TILE(T)%VEGT+1))-100) * 0.05
+       MOS(T)%DSAI_T1  = (ICHAR(DSAI1(TILE(T)%VEGT+1))-100) * 0.05
+       MOS(T)%LAI_T2_F = (ICHAR(LAI_2(TILE(T)%VEGT+1))-100) * 0.05
+       MOS(T)%DSAI_T2  = (ICHAR(DSAI2(TILE(T)%VEGT+1))-100) * 0.05
+!       MOS(T)%LAI_T1_F = ICHAR(LAI_1(TILE(T)%VEGT+1)) * 0.04
+!       MOS(T)%DSAI_T1  = ICHAR(DSAI1(TILE(T)%VEGT+1)) * 0.04
+!       MOS(T)%LAI_T2_F = ICHAR(LAI_2(TILE(T)%VEGT+1)) * 0.04
+!       MOS(T)%DSAI_T2  = ICHAR(DSAI2(TILE(T)%VEGT+1)) * 0.04
+      CASE(3)   ! MODIS LAI
+       MOS(T)%LAI_T1_F = ICHAR(LAI_1(TILE(T)%VEGT+1)) * 0.10
+       MOS(T)%DSAI_T1  = ICHAR(DSAI1(TILE(T)%VEGT+1)) * 0.10
+       MOS(T)%LAI_T2_F = ICHAR(LAI_2(TILE(T)%VEGT+1)) * 0.10
+       MOS(T)%DSAI_T2  = ICHAR(DSAI2(TILE(T)%VEGT+1)) * 0.10
+      CASE DEFAULT
+       print*, "Invalid domain for LAI data"
+       STOP
+     END SELECT
+     
+   ENDIF  ! Close of Domain if/endif for aggregating LAI if necessary
+
+!=== Bare soil type check
+
+     IF (TILE(T)%VEGT .EQ. 12) THEN
+       MOS(T)%LAI_T1_F = 0.001
+       MOS(T)%DSAI_T1  = 0.001
+       MOS(T)%LAI_T2_F = 0.001
+       MOS(T)%DSAI_T2  = 0.001
+       MOS(T)%GREEN1   = 0.001
+       MOS(T)%GREEN2   = 0.001
+     ELSE
+       IF ((MOS(T)%LAI_T1_F + MOS(T)%DSAI_T1) .NE. 0.0) THEN 
+        MOS(T)%GREEN1 = MOS(T)%LAI_T1_F / (MOS(T)%LAI_T1_F + MOS(T)%DSAI_T1)
+       ELSE
+        MOS(T)%GREEN1 = 0.001
+       ENDIF
+       IF ((MOS(T)%LAI_T2_F + MOS(T)%DSAI_T2) .NE. 0.0) THEN
+        MOS(T)%GREEN2 = MOS(T)%LAI_T2_F / (MOS(T)%LAI_T2_F + MOS(T)%DSAI_T2)
+       ELSE
+        MOS(T)%GREEN2 = 0.001
+       ENDIF
+     ENDIF
+     
+  ENDDO
+
+  CLOSE(10)
+  CLOSE(11)
+  CLOSE(12)
+  CLOSE(13)
+  
+  ENDIF
+
+!=== Assign interpolated LAI and DSAI values to the MOS variable names used in MOS main
+     DO T=1,LD%NCH
+     
+       MOS(T)%LAI   = WT1 * (MOS(T)%LAI_T1_F + MOS(T)%DSAI_T1) &
+                    + WT2 * (MOS(T)%LAI_T2_F + MOS(T)%DSAI_T2)
+       MOS(T)%DSAI  = WT1 * MOS(T)%DSAI_T1 + WT2 * MOS(T)%DSAI_T2
+       MOS(T)%GREEN = WT1 * MOS(T)%GREEN1  + WT2 * MOS(T)%GREEN2
+       
+     ENDDO
+     
+END SUBROUTINE
+
+!==============================================================
+!
+!  DESCRIPTION: This subroutine puts together AVHRR LAI file name
+!==============================================================
+
+subroutine avhrr_g_file (NAME9,NAME10,NAME11,NAME12,NAME13,NAME14, &
+                         NAME15,NAME16,avhrrdir,cyr1,cyr2,cmo1,cmo2 )
+
+  implicit none
+
+!==== Local Variables=======================
+
+  character(len=80) :: name9,  name10, name11, name12, avhrrdir
+  character(len=80) :: name13, name14, name15, name16
+  character(len=4)  :: cyr1, cyr2
+  character(len=2)  :: cmo1, cmo2
+  integer :: i, c, flag
+  character*1 :: fbase(80), fbase_2(80), fbase_3(80), fbase_4(80)
+  character*1 :: fdir(7), fdir_2(7), fdir_3(7), fdir_4(7)
+  character*1 :: fsubsn(15), fsubsn_2(15), fsubsn_3(15), fsubsn_4(15)
+  character*1 :: fsubsn_5(15),fsubsn_6(15),fsubsn_7(15),fsubsn_8(15)
+  character(len=100) :: temp1
+  character(len=100) :: temp2
+  character(len=100) :: temp3
+  character(len=100) :: temp4
+!=== End Variable Definition ===============
+!=== formats for filename segments
+			      
+  write(unit=temp1,fmt='(a40)') avhrrdir
+  write(unit=temp2,fmt='(a40)') avhrrdir
+  write(unit=temp3,fmt='(a40)') avhrrdir
+  write(unit=temp4,fmt='(a40)') avhrrdir
+  read(unit=temp1,fmt='(80a1)') (fbase(i), i=1,80)
+  read(unit=temp2,fmt='(80a1)') (fbase_2(i), i=1,80)
+  read(unit=temp3,fmt='(80a1)') (fbase_3(i), i=1,80)
+  read(unit=temp4,fmt='(80a1)') (fbase_4(i), i=1,80)
+
+  write(unit=temp1,fmt='(a1,a4,a2)') '/', cyr1, cmo1
+  read(unit=temp1, fmt='(7a1)') fdir
+  write(unit=temp2, fmt='(a1,a4,a2)') '/', cyr2, cmo2
+  read(unit=temp2, fmt='(7a1)') fdir_2
+  write(unit=temp3, fmt='(a5,a2)') '/CLIM', cmo1
+  read(unit=temp3, fmt='(7a1)') fdir_3
+  write(unit=temp4, fmt='(7a1)') '/CLIM', cmo2
+  read(unit=temp4, fmt='(7a1)') fdir_4
+ 
+  do i = 1, 7
+   if ( fdir(i) == ' ' ) fdir(i) = '0'
+   if ( fdir_2(i) == ' ' ) fdir_2(i) = '0'
+   if ( fdir_3(i) == ' ' ) fdir_3(i) = '0'
+   if ( fdir_4(i) == ' ' ) fdir_4(i) = '0'
+  enddo	
+
+  write(unit=temp1, fmt='(a15)') '_GIMMSLAI_0.125'
+  write(unit=temp2, fmt='(a15)') '_GIMMSLAI_0.125'
+  write(unit=temp3, fmt='(a15)') '_GIMMSLAI_0.125'
+  write(unit=temp4, fmt='(a15)') '_GIMMSLAI_0.125'
+  read (unit=temp1, fmt='(80a1)') (fsubsn(i), i=1,15)
+  read (unit=temp2, fmt='(80a1)') (fsubsn_2(i), i=1,15)
+  read (unit=temp3, fmt='(80a1)') (fsubsn_3(i), i=1,15)
+  read (unit=temp4, fmt='(80a1)') (fsubsn_4(i), i=1,15)
+  write(unit=temp1, fmt='(a15)') '_GIMMSSAI_0.125'
+  write(unit=temp2, fmt='(a15)') '_GIMMSSAI_0.125'
+  write(unit=temp3, fmt='(a15)') '_GIMMSSAI_0.125'
+  write(unit=temp4, fmt='(a15)') '_GIMMSSAI_0.125'
+  read (unit=temp1, fmt='(80a1)') (fsubsn_5(i), i=1,15)
+  read (unit=temp2, fmt='(80a1)') (fsubsn_6(i), i=1,15)
+  read (unit=temp3, fmt='(80a1)') (fsubsn_7(i), i=1,15)
+  read (unit=temp4, fmt='(80a1)') (fsubsn_8(i), i=1,15)
+
+!sets c as the last character position of fbase
+  c = 0
+  do i = 1, 80
+    if ( (fbase(i) == ' ') .and. (c == 0) ) c = i-1
+    if ( (fbase_2(i) == ' ') .and. (c == 0) ) c = i-1
+    if ( (fbase_3(i) == ' ') .and. (c == 0) ) c = i-1
+    if ( (fbase_4(i) == ' ') .and. (c == 0) ) c = i-1
+  end do
+  
+  write(unit=temp1, fmt='(80a1)') (fbase(i), i=1,c), (fdir(i), i=1,7),  &
+                       (fsubsn(i), i=1,15)
+  write(unit=temp2, fmt='(80a1)') (fbase_2(i), i=1,c), (fdir_2(i), i=1,7),  &
+                       (fsubsn_2(i), i=1,15)
+  write(unit=temp3, fmt='(80a1)') (fbase_3(i), i=1,c), (fdir_3(i), i=1,7),  &
+                       (fsubsn_3(i), i=1,15)
+  write(unit=temp4, fmt='(80a1)') (fbase_4(i), i=1,c), (fdir_4(i), i=1,7),  &
+                       (fsubsn_4(i), i=1,15)
+  read(unit=temp1, fmt='(a80)') name9
+  read(unit=temp2, fmt='(a80)') name10
+  read(unit=temp3, fmt='(a80)') name11
+  read(unit=temp4, fmt='(a80)') name12
+  write(unit=temp1, fmt='(80a1)') (fbase(i), i=1,c), (fdir(i), i=1,7),  &
+                       (fsubsn_5(i), i=1,15)
+  write(unit=temp2, fmt='(80a1)') (fbase_2(i), i=1,c), (fdir_2(i), i=1,7),  &
+                       (fsubsn_6(i), i=1,15)
+  write(unit=temp3, fmt='(80a1)') (fbase_3(i), i=1,c), (fdir_3(i), i=1,7),  &
+                       (fsubsn_7(i), i=1,15)
+  write(unit=temp4, fmt='(80a1)') (fbase_4(i), i=1,c), (fdir_4(i), i=1,7),  &
+                       (fsubsn_8(i), i=1,15)
+  read(unit=temp1, fmt='(a80)') name13
+  read(unit=temp2, fmt='(a80)') name14
+  read(unit=temp3, fmt='(a80)') name15
+  read(unit=temp4, fmt='(a80)') name16
+
+  return
+			       
+ end subroutine avhrr_g_file
+
+!==============================================================
+!
+!  DESCRIPTION: This subroutine puts together MODIS LAI file name
+!==============================================================
+
+subroutine modis_g_file (NAME9,NAME10,NAME11,NAME12,NAME13,NAME14, &
+                         NAME15,NAME16,modisdir,cyr1,cyr2,cmo1,cmo2 )
+
+  implicit none
+
+!==== Local Variables=======================
+
+  character(len=80) :: name9,  name10, name11, name12, modisdir
+  character(len=80) :: name13, name14, name15, name16
+  character(len=4)  :: cyr1, cyr2
+  character(len=2)  :: cmo1, cmo2
+  integer :: i, c, flag
+  character*1 :: fbase(80), fbase_2(80), fbase_3(80), fbase_4(80)
+  character*1 :: fdir(7), fdir_2(7), fdir_3(7), fdir_4(7)
+  character*1 :: fsubsn(15), fsubsn_2(15), fsubsn_3(15), fsubsn_4(15)
+  character*1 :: fsubsn_5(15), fsubsn_6(15), fsubsn_7(15), fsubsn_8(15)
+
+!=== End Variable Definition ===============
+!=== formats for filename segments
+92 format (80a1)
+93 format (a80)
+94 format (i4, i2, i2, i2)
+95 format (10a1)
+96 format (a40)
+97 format (a9)
+58 format (a9)
+67 format (a15)
+68 format (a15)
+98 format (a1, a4, a2)
+66 format (a5,a2)
+99 format (7a1)
+
+  open(unit=90, file='temp', form='formatted', access='direct', recl=80)
+  open(unit=91, file='temp_2', form='formatted', access='direct', recl=80)
+  open(unit=92, file='temp_3', form='formatted', access='direct', recl=80)
+  open(unit=93, file='temp_4', form='formatted', access='direct', recl=80)
+  write(90, 96, rec=1) modisdir
+  write(91, 96, rec=1) modisdir
+  write(92, 96, rec=1) modisdir
+  write(93, 96, rec=1) modisdir
+  read(90, 92, rec=1) (fbase(i), i=1,80)
+  read(91, 92, rec=1) (fbase_2(i), i=1,80)
+  read(92, 92, rec=1) (fbase_3(i), i=1,80)
+  read(93, 92, rec=1) (fbase_4(i), i=1,80)
+  
+  write(90, 98, rec=1) '/', cyr1, cmo1
+  read(90, 99, rec=1) fdir
+  write(91, 98, rec=1) '/', cyr2, cmo2
+  read(91, 99, rec=1) fdir_2
+  write(92, 66, rec=1) '/CLIM', cmo1
+  read(92, 99, rec=1) fdir_3
+  write(93, 66, rec=1) '/CLIM', cmo2
+  read(93, 99, rec=1) fdir_4
+
+  do i = 1, 7
+   if ( fdir(i) == ' ' ) fdir(i) = '0'
+   if ( fdir_2(i) == ' ' ) fdir_2(i) = '0'
+   if ( fdir_3(i) == ' ' ) fdir_3(i) = '0'
+   if ( fdir_4(i) == ' ' ) fdir_4(i) = '0'
+  enddo
+
+  write(90, 67, rec=1) '_MODISLAI_0.125'
+  write(91, 67, rec=1) '_MODISLAI_0.125'
+  write(92, 67, rec=1) '_MODISLAI_0.125'
+  write(93, 67, rec=1) '_MODISLAI_0.125'
+  read (90, 92, rec=1) (fsubsn(i), i=1,15)
+  read (91, 92, rec=1) (fsubsn_2(i), i=1,15)
+  read (92, 92, rec=1) (fsubsn_3(i), i=1,15)
+  read (93, 92, rec=1) (fsubsn_4(i), i=1,15)
+  write(90, 68, rec=1) '_MODISSAI_0.125'
+  write(91, 68, rec=1) '_MODISSAI_0.125'
+  write(92, 68, rec=1) '_MODISSAI_0.125'
+  write(93, 68, rec=1) '_MODISSAI_0.125'
+  read (90, 92, rec=1) (fsubsn_5(i), i=1,15)
+  read (91, 92, rec=1) (fsubsn_6(i), i=1,15)
+  read (92, 92, rec=1) (fsubsn_7(i), i=1,15)
+  read (93, 92, rec=1) (fsubsn_8(i), i=1,15)
+
+  !sets c as the last character position of fbase
+  c = 0
+  do i = 1, 80
+    if ( (fbase(i) == ' ') .and. (c == 0) ) c = i-1
+    if ( (fbase_2(i) == ' ') .and. (c == 0) ) c = i-1
+    if ( (fbase_3(i) == ' ') .and. (c == 0) ) c = i-1
+    if ( (fbase_4(i) == ' ') .and. (c == 0) ) c = i-1
+  end do
+
+  write(90, 92, rec=1) (fbase(i), i=1,c), (fdir(i), i=1,7),  &
+                       (fsubsn(i), i=1,15)
+  write(91, 92, rec=1) (fbase_2(i), i=1,c), (fdir_2(i), i=1,7),  &
+                       (fsubsn_2(i), i=1,15)
+  write(92, 92, rec=1) (fbase_3(i), i=1,c), (fdir_3(i), i=1,7),  &
+                       (fsubsn_3(i), i=1,15)
+  write(93, 92, rec=1) (fbase_4(i), i=1,c), (fdir_4(i), i=1,7),  &
+                       (fsubsn_4(i), i=1,15)
+  read(90, 93, rec=1) name9
+  read(91, 93, rec=1) name10
+  read(92, 93, rec=1) name11
+  read(93, 93, rec=1) name12
+  write(90, 92, rec=1) (fbase(i), i=1,c), (fdir(i), i=1,7),  &
+                       (fsubsn_5(i), i=1,15)
+  write(91, 92, rec=1) (fbase_2(i), i=1,c), (fdir_2(i), i=1,7),  &
+                       (fsubsn_6(i), i=1,15)
+  write(92, 92, rec=1) (fbase_3(i), i=1,c), (fdir_3(i), i=1,7),  &
+                       (fsubsn_7(i), i=1,15)
+  write(93, 92, rec=1) (fbase_4(i), i=1,c), (fdir_4(i), i=1,7),  &
+                       (fsubsn_8(i), i=1,15)
+  read(90, 93, rec=1) name13
+  read(91, 93, rec=1) name14
+  read(92, 93, rec=1) name15
+  read(93, 93, rec=1) name16
+  
+  close(90)
+  close(91)
+  close(92)
+  close(93)
+
+  return
+
+ end subroutine modis_g_file

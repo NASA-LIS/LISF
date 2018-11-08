@@ -1,0 +1,161 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+!!!! Insert banner here !!!!
+
+! subroutine ATMLIEBE
+! 
+! Compute atmospheric contribution of Tb and zenith optical depth
+!
+! Input Variables 
+!------------------- sensors -----------------------------
+!   fghz         frequency (GHz)
+!   theta        zenith angle (degree)
+!   Z            elevation (m) 
+!   n_levels     number of atmosphere profile levels
+!   p_atm        level pressure (hPa) 
+!   t_atm        level temperature (K) 
+!   rh_atm       level relative humidity (0-100) 
+
+! Output Variables (all are real scalars):
+!   tau_atm      atmospheric zenith optical depth
+!   tb_ad        atmospheric downwelling Tb
+!   tb_au        atmospheric upwelling Tb
+!---------------------------------------------------------
+
+subroutine ATMLIEBE(fghz, theta, Z0, n_levels, p_atm, t_atm, rh_atm,   &
+                    tau_atm, tb_ad, tb_au)
+
+! Module usage
+USE Profile_Utility
+
+implicit none 
+  
+integer :: n_levels 
+integer :: n_layers
+real :: fghz, theta, Z0, tau_atm, tb_ad, tb_au
+real :: p_atm(n_levels), t_atm(n_levels), rh_atm(n_levels)
+
+real, parameter :: t_sky = 2.7, min_p = 5.0  ! minimum pressure, hPa
+integer :: j, error_status, top_lay
+real :: costheta, lpi, c, awv, ao2
+
+! temperature (k), relative humidity (0-100), and pressure(hPa) profiles 
+
+real(fp) :: temperature(n_levels), relative_humidity(n_levels), pressure(n_levels)
+
+real(fp) :: water_vapor(n_levels)    ! water vaper in ppm
+real(fp) :: height(n_levels)    ! geopotential height (m) 
+real(fp) :: h2o_pressure(n_levels)   
+real(fp) :: H2O_Mixing_Ratio (n_levels) 
+real(fp) :: H2O_Density (n_levels)
+
+real(fp), allocatable :: layer_pressure (:) 
+real(fp), allocatable :: layer_temperature (:) 
+real(fp), allocatable :: layer_thickness (:) 
+real(fp), allocatable :: layer_h2o_density (:) 
+real, allocatable :: cabsf (:) 
+
+n_layers = n_levels - 1 
+
+allocate( layer_pressure (n_layers) )
+allocate( layer_temperature (n_layers) )
+allocate( layer_thickness (n_layers) )
+allocate( layer_h2o_density (n_layers) )
+allocate( cabsf (n_layers) )
+
+lpi = acos (-1.0) 
+costheta = cos(theta*lpi/180.0) 
+     
+pressure = p_atm  
+temperature = t_atm 
+relative_humidity = rh_atm
+
+  H2O_Mixing_Ratio    = RH_to_MR( pressure, temperature, relative_humidity) 
+  water_vapor         = MR_to_PPMV( H2O_Mixing_Ratio )  
+  H2O_Pressure        = PPMV_to_PP( pressure, water_vapor )    ! hPa
+  H2O_Density        =  PP_to_MD( h2o_pressure, temperature)   ! g/m^3
+
+  ! Compute the geopotential heights
+  Error_Status = Geopotential_Height( pressure, &          
+                                      temperature, &
+                                      H2O_Pressure, &
+                                      Height, Surface_Height= real(Z0,fp) )
+
+  layer_Thickness = Height( 2:N_LEVELS ) - Height( 1:N_LEVELS-1 )
+
+  ! Compute the effective layer pressure and temperature
+  Error_Status = Effective_layer_TP( Height, &
+                                     PRESSURE, &
+                                     TEMPERATURE, &
+                                     H2O_Pressure, &
+                                     layer_Pressure, &
+                                     layer_Temperature )
+
+  layer_h2o_density = 0.5_fp * ( H2O_density(1:N_LEVELS-1) +  &
+                            H2O_density(2:N_LEVELS) )    ! g/m^3
+
+  !write(*, *) "level      density(g/m^3)  temperature     pressure (hPa)"
+  Do j = 1, n_levels 
+  !   write(*, '(I4, 3F16.3)')j, h2o_density(j), temperature(j), pressure(j)
+  End Do
+
+  !write(*, *) "layer  frequency    density(g/m^3)  temperature     pressure (hPa)"
+  Do j = n_layers, 1, -1 
+  ! write(*, '(I4, F10.1, 3F16.5)')j, fghz, layer_h2o_density(j), layer_temperature(j), layer_pressure(j)
+   if ( layer_pressure(j) < min_p ) then
+     top_lay = j
+     cabsf(j) = 0.0 
+   else
+     call abwvl (real(layer_h2o_density(j)*0.001), &          ! kg/m^3
+                 real(layer_temperature(j)),       &          ! K 
+                 real(layer_pressure(j)*100.0),    &          ! Pa 
+                 fghz, awv)
+     call abo2l (real(layer_h2o_density(j)*0.001), &          ! kg/m^3
+                 real(layer_temperature(j)),       &          ! K
+                 real(layer_pressure(j)*100.0),    &          ! Pa
+                 fghz, ao2)
+     cabsf(j) = awv + ao2
+   endif
+  End Do 
+
+! Calculate zenith opacity of atmosphere
+
+tau_atm = 0.
+DO j = 1, top_lay 
+  tau_atm = tau_atm + cabsf(j) * layer_thickness(j) 
+ENDDO
+
+! Calculate upward atmospheric radiation
+
+tb_au = 0.
+DO j = 1, top_lay 
+  c = exp( -cabsf(j) * layer_thickness(j) / costheta)
+  tb_au = c * tb_au + ( 1.0 - c ) * layer_temperature(j) 
+  !write(*, *)"j=", j, "c=", c, "tb_au=", tb_au, "cabsf=", cabsf(j)
+ENDDO
+
+ 
+! Calculate downward atmospheric radiation
+
+tb_ad = t_sky
+DO j = top_lay, 1, -1 
+  c = exp( -cabsf(j) * layer_thickness(j) / costheta)
+  tb_ad = c * tb_ad + ( 1.0 - c ) * layer_temperature(j) 
+  !write(*, *)"j=", j, "c=", c, "tb_ad=", tb_ad, "cabsf=", cabsf(j)
+ENDDO
+
+deallocate( layer_pressure ) 
+deallocate( layer_temperature ) 
+deallocate( layer_thickness ) 
+deallocate( layer_h2o_density ) 
+deallocate( cabsf )
+
+return 
+end 
+

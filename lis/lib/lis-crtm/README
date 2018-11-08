@@ -1,0 +1,51 @@
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+#
+# Copyright (c) 2015 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+================
+LIS-CRTM library
+================
+
+
+To use LIS' implementation of CRTM, you must first download the CRTM library
+from the Joint Centers for Satellite Data Assimilation (JCSDA).
+
+Go to http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/Repository/
+and fill out the CRTM.Subversion Account Request.pdf form.
+
+Create a directory outside of the LIS source code to checkout the CRTM
+library into.  Let's call this directory CRTM_LIB_DIR.
+
+Once you have access to the CRTM Subversion repository, checkout
+revision 9604 of the trunk into CRTM_LIB_DIR::
+
+   cd CRTM_LIB_DIR
+
+   svn checkout -r 9604 https://svnemc.ncep.noaa.gov/projects/crtm/trunk
+
+Then copy files Set_CRTM_Environment.sh, make.filelist,
+CRTM_MW_Land_SfcOptics.f90, CRTM_MW_Snow_SfcOptics.f90,
+NESDIS_LandEM_Module.f90, and CRTM_Surface_Define.f90 into the
+appropriate sub-directories in CRTM_LIB_DIR/trunk::
+
+   cp Set_CRTM_Environment.sh CRTM_LIB_DIR/trunk/
+
+   cp make.filelist CRTM_LIB_DIR/trunk/src/Build/libsrc/
+
+   cp CRTM_MW_Land_SfcOptics.f90 CRTM_LIB_DIR/trunk/src/SfcOptics/
+
+   cp CRTM_MW_Snow_SfcOptics.f90 CRTM_LIB_DIR/trunk/src/SfcOptics/
+
+   cp NESDIS_LandEM_Module.f90 CRTM_LIB_DIR/trunk/src/SfcOptics/NESDIS_Emissivity/
+   cp CRTM_Surface_Define.f90 CRTM_LIB_DIR/trunk/src/Surface/
+
+
+Then compile the CRTM library as per its included instructions in
+CRTM_LIB_DIR/trunk/doc/library/CRTM_User_Guide.pdf.
+
+Be sure to set the LIS_CRTM environment variable to point to the top
+directory of the installed CRTM lib and include files.

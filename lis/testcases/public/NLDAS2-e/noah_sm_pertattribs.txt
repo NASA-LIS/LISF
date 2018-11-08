@@ -1,0 +1,9 @@
+#perttype   std   std_max   zeromean   tcorr   xcorr   ycorr   ccorr
+Soil Moisture Layer 1
+    0     0.010       2.5          1   43200       0       0   1.0   0.6   0.4   0.2
+Soil Moisture Layer 2
+    0     0.006       2.5          1   43200       0       0   0.6   1.0   0.6   0.4
+Soil Moisture Layer 3
+    0     0.003       2.5          1   43200       0       0   0.4   0.6   1.0   0.6
+Soil Moisture Layer 4
+    0    0.0015       2.5          1   43200       0       0   0.2   0.4   0.6   1.0

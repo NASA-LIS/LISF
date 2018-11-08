@@ -1,0 +1,619 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+#include "LIS_misc.h"
+!BOP
+!
+! !ROUTINE: read_merra2
+! \label{read_merra2}
+! 
+! !REVISION HISTORY:
+! 18 Mar 2015: James Geiger, initial code (based on merra-land)
+!
+! !INTERFACE:
+subroutine read_merra2(n, order, findex,          &
+                       slvname, flxname, lfoname, &
+                       merraforc, ferror)
+! !USES:
+  use LIS_coreMod,       only : LIS_rc, LIS_domain, LIS_masterproc
+  use LIS_logMod
+  use LIS_FORC_AttributesMod
+  use LIS_metforcingMod, only: LIS_forc
+  use merra2_forcingMod, only : merra2_struc
+#if (defined USE_NETCDF3 || defined USE_NETCDF4) 
+  use netcdf
+#endif
+
+  implicit none
+! !ARGUMENTS: 
+  integer, intent(in)          :: n
+  integer, intent(in)          :: order
+  integer, intent(in)          :: findex
+  character(len=*), intent(in) :: slvname
+  character(len=*), intent(in) :: flxname
+  character(len=*), intent(in) :: lfoname
+  real, intent(inout)          :: merraforc(merra2_struc(n)%nvars, 24, &
+                                            LIS_rc%lnc(n)*LIS_rc%lnr(n))
+  integer, intent(out)         :: ferror          
+
+!
+! !DESCRIPTION:
+!  For the given time, reads parameters from
+!  MERRA2 data, transforms into 9 LIS forcing 
+!  parameters and interpolates to the LIS domain. \newline
+!
+! merra2 FORCING VARIABLES (unless noted, fields are 1-hr upstream averaged): \newline
+!  1. T 2m    Temperature interpolated to 2 metres [$K$] \newline
+!  2. q 2m    Instantaneous specific humidity interpolated to 2 metres[$kg/kg$] \newline
+!  3. radswg  Downward shortwave flux at the ground [$W/m^2$] \newline
+!  4. lwgdwn  Downward longwave radiation at the ground [$W/m^2$] \newline
+!  5. u 10m   Instantaneous zonal wind interpolated to 10 metres [$m/s$] \newline
+!  6. v 10m   Instantaneous meridional wind interpolated to 10 metres[$m/s$] \newline
+!  7. ps      Instantaneous Surface Pressure [$Pa$] \newline
+!  8. preacc  Total precipitation [$mm/s$] \newline
+!  9. precon  Convective precipatation [$mm/s$] \newline
+! 10. albedo  Surface albedo (0-1) \newline
+!
+!  The arguments are: 
+!  \begin{description}
+!  \item[order]
+!    flag indicating which data to be read (order=1, read the previous 
+!    1 hourly instance, order=2, read the next 1 hourly instance)
+!  \item[n]
+!    index of the nest
+!  \item[name]
+!    name of the 1 hour MERRA2 analysis file
+!  \item[tscount]
+!    time step count
+!  \item[ferror]
+!    return error code (0 indicates success)
+!  \end{description}
+! 
+!  The routines invoked are: 
+!  \begin{description}
+!  \item[bilinear\_interp](\ref{bilinear_interp}) \newline
+!    spatially interpolate the forcing data using bilinear interpolation
+!  \item[conserv\_interp](\ref{conserv_interp}) \newline
+!    spatially interpolate the forcing data using conservative interpolation
+!  \end{description}
+!EOP
+  
+  integer   :: ftn_slv, ftn_flx, ftn_lfo
+  integer   :: tmpId, qId, uId, vId, psId
+  integer   :: prectotId, precconId, swgdnId, lwgabId, emisId
+  integer   :: precsnoId, hlmlID
+  integer   :: swlandId, pardrId, pardfId
+  integer   :: nr_index, nc_index
+  logical   :: file_exists, file_exists1
+  integer   :: c,r,t,k,iret
+  integer   :: mo
+  logical   :: read_lnd
+
+  real      :: tair(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+  real      :: qair(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+  real      :: uwind(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+  real      :: vwind(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+  real      :: ps(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+  real      :: prectot(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+  real      :: precsno(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+  real      :: preccon(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+  real      :: prectot_flx(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+  real      :: preccon_flx(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+  real      :: swgdn(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+  real      :: lwgab(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+  real      :: swland(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+  real      :: pardr(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+  real      :: pardf(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+  real      :: hlml(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+!  real      :: emis(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
+!<debug -- jim testing>
+integer :: jimftn, jimtimeid, jimlonid, jimlatid
+integer :: jimpsId, jimtmpId, jimqId, jimuId, jimvId, jimprectotId, jimprecconId, jimprecsnoId, jimhlmlId, jimswgdnId, jimlwgabId, jimswlandId, jimpardrId, jimpardfId
+real, allocatable, dimension(:,:,:) :: jimforc
+allocate(jimforc(LIS_rc%lnc(n), LIS_rc%lnr(n), 24))
+!</debug -- jim testing>
+
+
+#if (defined USE_NETCDF3 || defined USE_NETCDF4) 
+  ferror = 0 
+  nr_index = merra2_struc(n)%nrold
+  nc_index = merra2_struc(n)%ncold
+  mo = LIS_rc%lnc(n)*LIS_rc%lnr(n)
+
+!<debug -- jim testing>
+iret = nf90_create(path="forcing.nc", cmode=NF90_NETCDF4, ncid=jimftn)
+iret = nf90_def_dim(jimftn, "time", 24, jimtimeid)
+!iret = nf90_def_dim(jimftn, "lon", 576, jimlonid)
+!iret = nf90_def_dim(jimftn, "lat", 361, jimlatid)
+iret = nf90_def_dim(jimftn, "lon", 575, jimlonid)
+iret = nf90_def_dim(jimftn, "lat", 360, jimlatid)
+iret = nf90_def_var(jimftn, "PS", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimpsId)
+if(merra2_struc(n)%uselml.eq.1) then 
+iret = nf90_def_var(jimftn, "TLML", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimtmpId)
+iret = nf90_def_var(jimftn, "QLML", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimqId)
+iret = nf90_def_var(jimftn, "ULML", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimuId)
+iret = nf90_def_var(jimftn, "VLML", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimvId)
+else
+iret = nf90_def_var(jimftn, "T2M", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimtmpId)
+iret = nf90_def_var(jimftn, "QV2M", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimqId)
+iret = nf90_def_var(jimftn, "U10M", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimuId)
+iret = nf90_def_var(jimftn, "V10M", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimvId)
+endif
+if(merra2_struc(n)%usecorr.eq.1) then 
+iret = nf90_def_var(jimftn, "PRECTOTCORR", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimprectotId)
+else
+iret = nf90_def_var(jimftn, "PRECTOT", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimprectotId)
+endif
+if (LIS_FORC_CRainf%selectOpt.eq.1) then
+iret = nf90_def_var(jimftn, "PRECCON", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimprecconId)
+endif
+if (LIS_FORC_Snowf%selectOpt.eq.1) then
+iret = nf90_def_var(jimftn, "PRECSNO", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimprecsnoId)
+endif
+if (LIS_FORC_Forc_Hgt%selectOpt.eq.1) then
+iret = nf90_def_var(jimftn, "HLML", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimhlmlId)
+endif
+iret = nf90_def_var(jimftn, "SWGDN", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimswgdnId)
+iret = nf90_def_var(jimftn, "LWGAB", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimlwgabId)
+if(LIS_FORC_SWnet%selectOpt.eq.1) then 
+iret = nf90_def_var(jimftn, "SWLAND", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimswlandId)
+endif
+if(LIS_FORC_Pardr%selectOpt.eq.1) then 
+iret = nf90_def_var(jimftn, "PARDR", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimpardrId)
+endif
+if(LIS_FORC_Pardf%selectOpt.eq.1) then 
+iret = nf90_def_var(jimftn, "PARDF", nf90_float, dimids=(/jimlonid,jimlatid,jimtimeid/), varid=jimpardfId)
+endif
+iret = nf90_enddef(jimftn)
+!</debug -- jim testing>
+  inquire(file=slvname,exist=file_exists) 
+  if(file_exists) then 
+     write(LIS_logunit,*) 'Reading .. ', trim(slvname)
+     call LIS_verify(nf90_open(path=trim(slvname), mode=NF90_NOWRITE, &
+          ncid=ftn_slv), 'nf90_open failed for slvfile in read_merra2')
+     call LIS_verify(nf90_inq_varid(ftn_slv,'PS',psId), &
+          'nf90_inq_varid failed for ps in read_merra2')
+
+     call LIS_verify(nf90_get_var(ftn_slv,psId, ps), &
+          'nf90_get_var failed for ps in read_merra2') 
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimpsid, ps)
+!</debug -- jim testing>
+     
+     if(merra2_struc(n)%uselml.eq.1) then 
+        inquire(file=flxname,exist=file_exists1)
+        if(.not.file_exists1) then 
+           write(LIS_logunit,*) trim(flxname)//' does not exist'
+           call LIS_endrun()
+        endif
+        write(LIS_logunit,*) 'Reading .. ', trim(flxname)
+        call LIS_verify(nf90_open(path=trim(flxname), mode=NF90_NOWRITE, &
+             ncid=ftn_flx), 'nf90_open failed for flxfile in read_merra2')
+
+        call LIS_verify(nf90_inq_varid(ftn_flx,'TLML',tmpId), &
+             'nf90_inq_varid failed for tlml in read_merra2')
+        call LIS_verify(nf90_inq_varid(ftn_flx,'QLML',qId), &
+             'nf90_inq_varid failed for qlml in read_merra2')
+        call LIS_verify(nf90_inq_varid(ftn_flx,'ULML',uId), &
+             'nf90_inq_varid failed for ulml in read_merra2')
+        call LIS_verify(nf90_inq_varid(ftn_flx,'VLML',vId), &
+             'nf90_inq_varid failed for vlml in read_merra2')
+
+        call LIS_verify(nf90_get_var(ftn_flx,tmpId, tair), &
+             'nf90_get_var failed for tlml in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimtmpid, tair)
+!</debug -- jim testing>
+        call LIS_verify(nf90_get_var(ftn_flx,qId, qair), &
+             'nf90_get_var failed for qlml in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimqid, qair)
+!</debug -- jim testing>
+        call LIS_verify(nf90_get_var(ftn_flx,uId, uwind), &
+             'nf90_get_var failed for ulml in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimuid, uwind)
+!</debug -- jim testing>
+        call LIS_verify(nf90_get_var(ftn_flx,vId, vwind), &
+             'nf90_get_var failed for vlml in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimvid, vwind)
+!</debug -- jim testing>
+        call LIS_verify(nf90_close(ftn_flx), &
+             'failed to close flxfile in read_merra2')
+
+     else
+        call LIS_verify(nf90_inq_varid(ftn_slv,'T2M',tmpId), &
+             'nf90_inq_varid failed for t2m in read_merra2')
+        call LIS_verify(nf90_inq_varid(ftn_slv,'QV2M',qId), &
+             'nf90_inq_varid failed for qv2m in read_merra2')
+        call LIS_verify(nf90_inq_varid(ftn_slv,'U10M',uId), &
+             'nf90_inq_varid failed for u10m in read_merra2')
+        call LIS_verify(nf90_inq_varid(ftn_slv,'V10M',vId), &
+             'nf90_inq_varid failed for v10m in read_merra2')
+
+        call LIS_verify(nf90_get_var(ftn_slv,tmpId, tair), &
+             'nf90_get_var failed for t2ml in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimtmpid, tair)
+!</debug -- jim testing>
+        call LIS_verify(nf90_get_var(ftn_slv,qId, qair), &
+             'nf90_get_var failed for qv2m in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimqid, qair)
+!</debug -- jim testing>
+        call LIS_verify(nf90_get_var(ftn_slv,uId, uwind), &
+             'nf90_get_var failed for u10m in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimuid, uwind)
+!</debug -- jim testing>
+        call LIS_verify(nf90_get_var(ftn_slv,vId, vwind), &
+             'nf90_get_var failed for v10m in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimvid, vwind)
+!</debug -- jim testing>
+     endif
+
+     call LIS_verify(nf90_close(ftn_slv), &
+          'failed to close slvfile in read_merra2')
+
+     call interp_merra2_var(n,findex,tair,  1, .false., merraforc)
+!<debug -- jim testing>
+call jim_grid(n,merraforc(1,:,:),jimforc)
+iret = nf90_put_var(jimftn, jimtmpid, jimforc)
+!</debug -- jim testing>
+     call interp_merra2_var(n,findex,qair,  2, .false., merraforc)
+!<debug -- jim testing>
+call jim_grid(n,merraforc(2,:,:),jimforc)
+iret = nf90_put_var(jimftn, jimqid, jimforc)
+!</debug -- jim testing>
+     call interp_merra2_var(n,findex,uwind, 5, .false., merraforc)
+!<debug -- jim testing>
+call jim_grid(n,merraforc(5,:,:),jimforc)
+iret = nf90_put_var(jimftn, jimuid, jimforc)
+!</debug -- jim testing>
+     call interp_merra2_var(n,findex,vwind, 6, .false., merraforc)
+!<debug -- jim testing>
+call jim_grid(n,merraforc(6,:,:),jimforc)
+iret = nf90_put_var(jimftn, jimvid, jimforc)
+!</debug -- jim testing>
+     call interp_merra2_var(n,findex,ps,    7, .false., merraforc)
+!<debug -- jim testing>
+call jim_grid(n,merraforc(7,:,:),jimforc)
+iret = nf90_put_var(jimftn, jimpsid, jimforc)
+!</debug -- jim testing>
+  else
+     write(LIS_logunit,*) trim(slvname)//' does not exist'
+     call LIS_endrun()
+  endif
+
+  inquire(file=flxname,exist=file_exists) 
+  if(file_exists) then 
+
+     write(LIS_logunit,*) 'Reading .. ', trim(flxname)
+     call LIS_verify(nf90_open(path=trim(flxname), mode=NF90_NOWRITE, &
+          ncid=ftn_flx),'nf90_open failed for flxfile in read_merra2')
+     
+     if(merra2_struc(n)%usecorr.eq.1) then 
+        call LIS_verify(nf90_inq_varid(ftn_flx,'PRECTOTCORR',prectotId), &
+             'nf90_inq_varid failed for prectotcorr (flx) in read_merra2')
+
+        call LIS_verify(nf90_get_var(ftn_flx,prectotId, prectot), &
+             'nf90_get_var failed for prectotcorr (flx) in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimprectotid, prectot)
+!</debug -- jim testing>
+     else
+        call LIS_verify(nf90_inq_varid(ftn_flx,'PRECTOT',prectotId), &
+             'nf90_inq_varid failed for prectot (flx) in read_merra2')
+
+        call LIS_verify(nf90_get_var(ftn_flx,prectotId, prectot), &
+             'nf90_get_var failed for prectot (flx) in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimprectotid, prectot)
+!</debug -- jim testing>
+     endif
+
+     call interp_merra2_var(n,findex,prectot,  8, .true.,merraforc)
+!<debug -- jim testing>
+call jim_grid(n,merraforc(8,:,:),jimforc)
+iret = nf90_put_var(jimftn, jimprectotid, jimforc)
+!</debug -- jim testing>
+
+     if (LIS_FORC_CRainf%selectOpt.eq.1) then
+        call LIS_verify(nf90_inq_varid(ftn_flx,'PRECCON',precconId), &
+             'nf90_inq_varid failed for preccon (flx) in read_merra2')
+
+        call LIS_verify(nf90_get_var(ftn_flx,precconId, preccon), &
+             'nf90_inq_varid failed for preccon (flx) in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimprecconid, preccon)
+!</debug -- jim testing>
+
+        call interp_merra2_var(n,findex,preccon,  9, .true.,merraforc)
+!<debug -- jim testing>
+call jim_grid(n,merraforc(9,:,:),jimforc)
+iret = nf90_put_var(jimftn, jimprecconid, jimforc)
+!</debug -- jim testing>
+     endif
+
+     if (LIS_FORC_Snowf%selectOpt.eq.1) then
+        call LIS_verify(nf90_inq_varid(ftn_flx,'PRECSNO',precsnoId), &
+             'nf90_inq_varid failed for precsno (flx) in read_merra2')  
+
+        call LIS_verify(nf90_get_var(ftn_flx,precsnoId, precsno), &
+          'nf90_get_var failed for precsno (flx) in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimprecsnoid, precsno)
+!</debug -- jim testing>
+
+        call interp_merra2_var(n,findex,precsno,  10, .true.,merraforc)
+!<debug -- jim testing>
+call jim_grid(n,merraforc(10,:,:),jimforc)
+iret = nf90_put_var(jimftn, jimprecsnoid, jimforc)
+!</debug -- jim testing>
+     endif
+
+     if (LIS_FORC_Forc_Hgt%selectOpt.eq.1) then
+        call LIS_verify(nf90_inq_varid(ftn_flx,'HLML',hlmlId), &
+             'nf90_inq_varid failed for hlml (flx) in read_merra2')
+
+        call LIS_verify(nf90_get_var(ftn_flx,hlmlId, hlml), &
+             'nf90_get_var failed for hlml (flx) in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimhlmlid, hlml)
+!</debug -- jim testing>
+
+        call interp_merra2_var(n,findex,hlml,  14, .false.,merraforc)
+!<debug -- jim testing>
+call jim_grid(n,merraforc(14,:,:),jimforc)
+iret = nf90_put_var(jimftn, jimhlmlid, jimforc)
+!</debug -- jim testing>
+     endif
+
+     call LIS_verify(nf90_close(ftn_flx), &
+          'failed to close flxfile in read_merra2')
+     
+  else
+     write(LIS_logunit,*) trim(flxname)//' does not exist'
+     call LIS_endrun()
+  endif
+  
+  inquire(file=lfoname,exist=file_exists) 
+  if(file_exists) then 
+     write(LIS_logunit,*) 'Reading .. ', trim(lfoname)
+     call LIS_verify(nf90_open(path=trim(lfoname), mode=NF90_NOWRITE, &
+          ncid=ftn_lfo), 'nf90_open failed in read_merra2')
+     call LIS_verify(nf90_inq_varid(ftn_lfo,'SWGDN',swgdnId), &
+          'nf90_inq_varid failed for swgdn in read_merra2')
+     call LIS_verify(nf90_inq_varid(ftn_lfo,'LWGAB',lwgabId), &
+          'nf90_inq_varid failed for lwgab in read_merra2')
+!     call LIS_verify(nf90_inq_varid(ftn_lfo,'emis',emisId), &
+!          'nf90_inq_varid failed for emis in read_merra2')
+    
+     call LIS_verify(nf90_get_var(ftn_lfo,swgdnId,swgdn), &
+          'nf90_get_var failed for swgdn in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimswgdnid, swgdn)
+!</debug -- jim testing>
+     call LIS_verify(nf90_get_var(ftn_lfo,lwgabId,lwgab), &
+          'nf90_get_var failed for lwgab in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimlwgabid, lwgab)
+!</debug -- jim testing>
+!     call LIS_verify(nf90_get_var(ftn_lfo,emisId,emis), &
+!          'nf90_get_var failed for emis in read_merra2')
+
+     call interp_merra2_var(n,findex,swgdn, 3, .false.,merraforc)
+!<debug -- jim testing>
+call jim_grid(n,merraforc(3,:,:),jimforc)
+iret = nf90_put_var(jimftn, jimswgdnid, jimforc)
+!</debug -- jim testing>
+     call interp_merra2_var(n,findex,lwgab, 4, .false.,merraforc)
+!<debug -- jim testing>
+call jim_grid(n,merraforc(4,:,:),jimforc)
+iret = nf90_put_var(jimftn, jimlwgabid, jimforc)
+!</debug -- jim testing>
+
+     call LIS_verify(nf90_close(ftn_lfo), &
+          'failed to close lfofile in read_merra2')
+  else
+     write(LIS_logunit,*) trim(lfoname)//' does not exist'
+     call LIS_endrun()
+  endif
+
+  read_lnd = .false. 
+  if ( LIS_FORC_Pardr%selectOpt.eq.1.or.&
+       LIS_FORC_Pardf%selectOpt.eq.1.or.&
+       LIS_FORC_SWnet%selectOpt.eq.1 ) then
+     read_lnd = .true.
+  endif
+
+  if(read_lnd) then 
+     inquire(file=lfoname,exist=file_exists) 
+     if(file_exists) then 
+        write(LIS_logunit,*) 'Reading .. ', trim(lfoname)
+        call LIS_verify(nf90_open(path=trim(lfoname), mode=NF90_NOWRITE, &
+             ncid=ftn_lfo), 'nf90_open failed in read_merra2')
+        if(LIS_FORC_SWnet%selectOpt.eq.1) then 
+           call LIS_verify(nf90_inq_varid(ftn_lfo,'SWLAND',swlandId), &
+                'nf90_inq_varid failed for swland in read_merra2')
+
+           call LIS_verify(nf90_get_var(ftn_lfo,swlandId,swland), &
+                'nf90_get_var failed for swland in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimswlandid, swland)
+!</debug -- jim testing>
+           
+           call interp_merra2_var(n,findex,swland,11,.false.,merraforc)
+!<debug -- jim testing>
+call jim_grid(n,merraforc(11,:,:),jimforc)
+iret = nf90_put_var(jimftn, jimswlandid, jimforc)
+!</debug -- jim testing>
+        endif
+        
+        if(LIS_FORC_Pardr%selectOpt.eq.1) then 
+           call LIS_verify(nf90_inq_varid(ftn_lfo,'PARDR',pardrId), &
+                'nf90_inq_varid failed for pardr in read_merra2')
+
+           call LIS_verify(nf90_get_var(ftn_lfo,pardrId,pardr), &
+                'nf90_get_var failed for pardr in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimpardrid, pardr)
+!</debug -- jim testing>
+           
+           call interp_merra2_var(n,findex,pardr,12,.false.,merraforc)
+!<debug -- jim testing>
+call jim_grid(n,merraforc(12,:,:),jimforc)
+iret = nf90_put_var(jimftn, jimpardrid, jimforc)
+!</debug -- jim testing>
+        endif
+
+        if(LIS_FORC_Pardf%selectOpt.eq.1) then 
+           call LIS_verify(nf90_inq_varid(ftn_lfo,'PARDF',pardfId), &
+                'nf90_inq_varid failed for pardf in read_merra2')
+
+           call LIS_verify(nf90_get_var(ftn_lfo,pardfId,pardf), &
+                'nf90_get_var failed for pardf in read_merra2')
+!<debug -- jim testing>
+!iret = nf90_put_var(jimftn, jimpardfid, pardf)
+!</debug -- jim testing>
+           call interp_merra2_var(n,findex,pardf,13,.false.,merraforc)
+!<debug -- jim testing>
+call jim_grid(n,merraforc(13,:,:),jimforc)
+iret = nf90_put_var(jimftn, jimpardfid, jimforc)
+!</debug -- jim testing>
+           
+        endif
+
+        call LIS_verify(nf90_close(ftn_lfo),&
+             'nf90_close failed for lfofile in read_merra2')
+     else
+        write(LIS_logunit,*) trim(lfoname)//' does not exist'
+        call LIS_endrun()
+     endif
+
+  endif
+!<debug -- jim testing>
+deallocate(jimforc)
+stop 666
+!</debug -- jim testing>
+  
+#endif
+end subroutine read_merra2
+
+!BOP
+! 
+! !ROUTINE: interp_merra2_var
+! \label{interp_merra2_var}
+! 
+! !INTERFACE: 
+subroutine interp_merra2_var(n,findex, input_var,  var_index, &
+     pcp_flag, merraforc)
+! !USES: 
+  use LIS_coreMod
+  use LIS_logMod
+  use merra2_forcingMod, only : merra2_struc
+
+  implicit none
+
+! !ARGUMENTS:
+  integer, intent(in)    :: n
+  integer, intent(in)    :: findex
+  real,    intent(in)    :: input_var(merra2_struc(n)%ncold, &
+       merra2_struc(n)%nrold, 24)
+  integer, intent(in)    :: var_index
+  logical, intent(in)    :: pcp_flag
+  real,    intent(inout) :: merraforc(merra2_struc(n)%nvars, &
+       24, LIS_rc%lnc(n)*LIS_rc%lnr(n))
+!
+! !DESCRIPTION: 
+!  This subroutine spatially interpolates a MERRA2 field
+!  to the LIS running domain
+! 
+!EOP
+
+  integer   :: t,c,r,k,iret
+  real      :: f (merra2_struc(n)%ncold*merra2_struc(n)%nrold)
+  logical*1 :: lb(merra2_struc(n)%ncold*merra2_struc(n)%nrold)
+  logical*1 :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
+
+  do t=1,24
+     lb = .true.
+     do r=1,merra2_struc(n)%nrold
+        do c=1,merra2_struc(n)%ncold
+           k= c+(r-1)*merra2_struc(n)%ncold
+           f(k) = input_var(c,r,t)
+           if ( f(k) == 1.e+15 ) then 
+              f(k)  = LIS_rc%udef
+              lb(k) = .false. 
+           endif
+        enddo
+     enddo
+          
+     if(pcp_flag.and.&
+          trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then 
+        call conserv_interp(LIS_rc%gridDesc(n,:),lb,f,lo,&
+             merraforc(var_index,t,:), &
+             merra2_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n),& 
+             merra2_struc(n)%rlat2,merra2_struc(n)%rlon2,&
+             merra2_struc(n)%w112,merra2_struc(n)%w122,&
+             merra2_struc(n)%w212,merra2_struc(n)%w222,&
+             merra2_struc(n)%n112,merra2_struc(n)%n122,&
+             merra2_struc(n)%n212,merra2_struc(n)%n222,&
+             LIS_rc%udef, iret)
+     elseif(trim(LIS_rc%met_interp(findex)).eq."bilinear".or.&
+          trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then 
+        call bilinear_interp(LIS_rc%gridDesc(n,:),lb,f,lo,&
+             merraforc(var_index,t,:), &
+             merra2_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n), & 
+             merra2_struc(n)%rlat1,merra2_struc(n)%rlon1,&
+             merra2_struc(n)%w111,merra2_struc(n)%w121,&
+             merra2_struc(n)%w211,merra2_struc(n)%w221,&
+             merra2_struc(n)%n111,merra2_struc(n)%n121,&
+             merra2_struc(n)%n211,merra2_struc(n)%n221,&
+             LIS_rc%udef, iret)
+     elseif(trim(LIS_rc%met_interp(findex)).eq."neighbor") then 
+        call neighbor_interp(LIS_rc%gridDesc(n,:),lb,f,lo,&
+             merraforc(var_index,t,:),merra2_struc(n)%mi,&
+             LIS_rc%lnc(n)*LIS_rc%lnr(n),&
+             merra2_struc(n)%rlat3,merra2_struc(n)%rlon3,&
+             merra2_struc(n)%n113,LIS_rc%udef,iret)
+     else
+        write(LIS_logunit,*) 'Spatial interpolation option '//&
+                             trim(LIS_rc%met_interp(findex))//&
+                             ' not supported for MERRA2'
+        call LIS_endrun()
+     endif
+  enddo
+  
+end subroutine interp_merra2_var
+
+!<debug -- jim testing>
+subroutine jim_grid(n, merraforc, jimforc)
+
+use LIS_coreMod, only : LIS_rc
+
+implicit none
+
+integer, intent(in) :: n
+real, intent(in) :: merraforc(24, LIS_rc%lnc(n)*LIS_rc%lnr(n))
+real, intent(out):: jimforc(LIS_rc%lnc(n), LIS_rc%lnr(n), 24)
+
+integer :: count1, i, j, k
+
+do k = 1, 24
+   count1 = 0
+   do j = 1, LIS_rc%lnr(n)
+      do i = 1, LIS_rc%lnc(n)
+         jimforc(i,j,k) = merraforc(k,i+count1)
+      enddo
+      count1 = count1 + LIS_rc%lnc(n)
+   enddo
+enddo
+end subroutine jim_grid
+!</debug -- jim testing>

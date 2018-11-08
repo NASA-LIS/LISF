@@ -1,0 +1,208 @@
+#Overall driver options
+Running mode:                           retrospective
+Number of nests:                        1
+Number of surface model types:          1
+Surface model types:                    LSM
+Surface model output interval:          1da
+Land surface model:                     "Noah.3.6"
+Number of met forcing sources:          1
+Blending method for forcings:           overlay
+Met forcing sources:                    "NLDAS2"
+Met forcing chosen ensemble member:     1
+Topographic correction method (met forcing):  "none"
+Enable spatial downscaling of precipitation:  0
+Spatial interpolation method (met forcing):   neighbor
+Spatial upscaling method (met forcing):       "average"
+Temporal interpolation method (met forcing):  linear
+
+#Runtime options
+Forcing variables list file:            ./forcing_variables.txt
+Output methodology:                     "2d gridspace"
+Output model restart files:             1
+Output data format:                     netcdf
+Output naming style:                    "3 level hierarchy"
+Start mode:                             coldstart
+Starting year:                          2010
+Starting month:                            6
+Starting day:                              1
+Starting hour:                             0
+Starting minute:                           0
+Starting second:                           0
+Ending year:                            2010
+Ending month:                              9
+Ending day:                                1
+Ending hour:                               0
+Ending minute:                             0
+Ending second:                             0
+Undefined value:                       -9999
+Output directory:                       "output/EXP113/NOAH36"
+Diagnostic output file:                 "output/EXP113/NOAH36/lislog"
+Number of ensembles per tile:           20
+
+#The following options are used for subgrid tiling based on vegetation
+Maximum number of surface type tiles per grid:    1
+Minimum cutoff percentage (surface type tiles):   0.05
+Maximum number of soil texture tiles per grid:    1
+Minimum cutoff percentage (soil texture tiles):   0.05
+Maximum number of soil fraction tiles per grid:   1
+Minimum cutoff percentage (soil fraction tiles):  0.05
+Maximum number of elevation bands per grid:       1
+Minimum cutoff percentage (elevation bands):      0.05
+Maximum number of slope bands per grid:           1
+Minimum cutoff percentage (slope bands):          0.05
+Maximum number of aspect bands per grid:          1
+Minimum cutoff percentage (aspect bands):         0.05
+
+#Processor layout
+#Should match the total number of processors used
+Number of processors along x:           18
+Number of processors along y:           12
+Halo size along x:                      0
+Halo size along y:                      0
+
+#Sub-models
+Routing model:                          "HYMAP router"
+Radiative transfer model:               none
+Number of application models:           0
+
+#HYMAP router
+HYMAP routing model time step:                 15mn
+HYMAP routing model output interval:           1da
+HYMAP routing model restart interval:          1mo
+HYMAP run in ensemble mode:                    1
+# method:                enter 1 - kinematic; 2 - diffusive
+# linear reservoir flag: enter 1 - use; or 2 - do not use linear reservoirs
+# evaporation option:    enter 1 - compute; or 2 - do not compute evapotation in floodplains
+HYMAP routing method:                          kinematic
+HYMAP routing model linear reservoir flag:     1
+HYMAP routing model evaporation option:        2
+HYMAP routing model restart file:              none
+HYMAP routing model start mode:                coldstart
+HYMAP routing LIS output directory:            HYMAPTEST
+
+#---------------------DATA ASSIMILATION ----------------------------------
+#Data assimilation options
+Number of data assimilation instances:  1
+Data assimilation algorithm:            "EnKF"
+Data assimilation set:                  "RT SMOPS soil moisture"
+Data assimilation exclude analysis increments:      0
+Data assimilation number of observation types:      1
+Data assimilation output interval for diagnostics:  1da
+Data assimilation output ensemble members:          0
+Data assimilation output processed observations:    1
+Data assimilation output innovations:               1
+
+#Bias estimation options
+Bias estimation algorithm:                 none
+Bias estimation attributes file:           none
+Bias estimation restart output frequency:  1da
+Bias estimation start mode:                none
+Bias estimation restart file:              none
+
+#Perturbation options
+Perturbations start mode:                  coldstart
+Perturbations restart output interval:     1mo
+Perturbations restart filename:            none
+Forcing perturbation algorithm:            "GMAO scheme"
+Forcing perturbation frequency:            1hr
+Forcing attributes file:                   ./forcing_attribs.txt
+Forcing perturbation attributes file:      ./forcing_pert_attribs.txt
+State perturbation algorithm:              "GMAO scheme"
+State perturbation frequency:              3hr
+State attributes file:                     ./noah_sm_attribs.txt
+State perturbation attributes file:        ./noah_sm_pertattribs.txt
+Observation perturbation algorithm:        "GMAO scheme"
+Observation perturbation frequency:        6hr
+Observation attributes file:               ./RTSMOPS_attribs.txt
+Observation perturbation attributes file:  ./RTSMOPS_pertattribs.txt
+
+Apply perturbation bias correction:        1
+
+#Observations
+RT SMOPS soil moisture data directory:   ./input/RT_SMOPS
+RT SMOPS use realtime data:              0
+RT SMOPS soil moisture use ASCAT data:   1
+RT SMOPS soil moisture use scaled standard deviation model: 1
+RT SMOPS model CDF file:                ./input/NLDAS2-e/lsm_cdf_range2.nc
+RT SMOPS observation CDF file:          ./input/NLDAS2-e/ascat_cdf.nc
+RT SMOPS soil moisture number of bins in the CDF: 100
+
+#------------------------------PARAMETERS----------------------------------
+#The following options list the choice of parameter maps to be used
+LIS domain and parameter data file:     ./lis_input.hymap.noah36.d01.nc
+Landmask data source:                   LDT
+Landcover data source:                  LDT
+Soil texture data source:               LDT
+Soil fraction data source:              none
+Soil color data source:                 none
+Elevation data source:                  none
+Slope data source:                      none
+Aspect data source:                     none
+Curvature data source:                  none
+LAI data source:                        none
+SAI data source:                        none
+Albedo data source:                     LDT
+Max snow albedo data source:            LDT
+Greenness data source:                  LDT
+Roughness data source:                  none
+Porosity data source:                   none
+Ksat data source:                       none
+B parameter data source:                none
+Quartz data source:                     none
+Emissivity data source:                 none
+
+#--------------------------------FORCINGS----------------------------------
+#NLDAS2 (suppforcing option =5)
+NLDAS2 forcing directory:               ./input/NLDAS2.FORCING
+NLDAS2 data center source:              "GES-DISC"
+NLDAS2 domain x-dimension size:         464
+NLDAS2 domain y-dimension size:         224
+NLDAS2 use model level data:            0
+NLDAS2 use model based swdown:          0
+NLDAS2 use model based precip:          0
+NLDAS2 use model based pressure:        0
+
+#-----------------------LAND SURFACE MODELS--------------------------
+Noah.3.6 model timestep:                  15mn
+Noah.3.6 restart output interval:         1mo
+Noah.3.6 restart file:                    none
+Noah.3.6 vegetation parameter table:      ./input/PARAMETERS/noah36_parms/VEGPARM.TBL
+Noah.3.6 soil parameter table:            ./input/PARAMETERS/noah36_parms/SOILPARM.TBL
+Noah.3.6 general parameter table:         ./input/PARAMETERS/noah36_parms/GENPARM.TBL
+Noah.3.6 use PTF for mapping soil properties: 0
+Noah.3.6 soils scheme:                    2
+Noah.3.6 number of soil layers:           4
+Noah.3.6 layer thicknesses:               0.1  0.3  0.6  1.0
+Noah.3.6 initial skin temperature:        288.0
+Noah.3.6 initial soil temperatures:       288.0  288.0  288.0  288.0
+Noah.3.6 initial total soil moistures:    0.20  0.20  0.20  0.20
+Noah.3.6 initial liquid soil moistures:   0.20  0.20  0.20  0.20
+Noah.3.6 initial canopy water:            0.0
+Noah.3.6 initial snow depth:              0.0
+Noah.3.6 initial snow equivalent:         0.0
+Noah.3.6 fixed max snow albedo:           0.0
+Noah.3.6 fixed deep soil temperature:     0.0
+Noah.3.6 fixed vegetation type:           0
+Noah.3.6 fixed soil type:                 0
+Noah.3.6 fixed slope type:                0
+Noah.3.6 sfcdif option:                   1
+Noah.3.6 z0 veg-type dependence option:   0
+Noah.3.6 Run UA snow-physics option:      .true.
+Noah.3.6 greenness fraction:  0.01  0.02  0.07  0.17  0.27  0.58  0.93  0.96  0.65  0.24  0.11  0.02
+Noah.3.6 background albedo:   0.18  0.17  0.16  0.15  0.15  0.15  0.15  0.16  0.16  0.17  0.17  0.18
+Noah.3.6 background roughness length: 0.020 0.020 0.025 0.030 0.035 0.036 0.035 0.030 0.027 0.025 0.020 0.020
+Noah.3.6 reference height for forcing T and q:    2.0
+Noah.3.6 reference height for forcing u and v:   10.0
+
+#---------------------------MODEL OUTPUT CONFIGURATION-----------------------
+#Specify the list of ALMA variables that need to be featured in the
+#LSM model output
+Output start year:
+Output start month:
+Output start day:
+Output start hour:
+Output start minutes:
+Output start seconds:
+
+Model output attributes file:           './NOAH36_OUTPUT_LIST.TBL'
+

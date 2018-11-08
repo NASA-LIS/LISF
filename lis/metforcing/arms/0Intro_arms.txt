@@ -1,0 +1,4 @@
+!BOP
+!\section{ARMS forcing}
+!This section describes the implementation of the ARMS data. 
+!EOP

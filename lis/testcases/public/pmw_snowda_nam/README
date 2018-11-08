@@ -1,0 +1,141 @@
+=======================================================
+PMW Snow Depth Assimilation Over Alaska Public Testcase
+=======================================================
+
+
+Introduction
+============
+
+This test-case performs assimilation of bias-corrected (against SNOTEL and 
+GHCN station data with optimal interpolation) ANSA snow depth
+at 0.05 degree over Alaska with Noah.3.3 and NAM 242 forcing from 
+2011-03-01 to 2011-05-31 to test the data assimilation plug-in "PMW snow",
+which is implemented as a general reader for assimilating PWM snow depth
+or SWE data (AMSR-E, ANSA, SMMR, SSMI). 
+
+PMW-based SWE or snow depth retrievals can contain larger errors.
+Hence it only makes sense to assimilate the products that are pre-processed 
+to correct or account for the bias via methods like station data-based 
+bias correction, model-based CDF matching or anomaly assimilation. 
+
+This test case illustrates the assimilation of bias corrected ANSA
+snow depth data. Capabilities for model-based CDF matching and anomaly 
+assimilation will be implemented and illustrated with new test cases later.
+
+
+This directory contains: 
+
+* this README file.
+* the ldt.config file used for LDT in this test case. 
+  (This file should be edited to make sure that the locations of the 
+  parameter and forcing files are specified correctly.) 
+* a sample grads control file used to specify the LDT output/LIS input
+  parameters (input.ctl)
+* the lis.config.ol and lis.config.da files used for LIS openloop and DA runs
+* the MODEL_OUTPUT_LIST.TBL file used to specify the LIS output variables.
+* sample grads control files that can be used to visualize the 
+  output. (output.ol.ctl and output.da.ctl)
+* a sample grads control file that can be used to visualize the 
+  test case output. (testcase.ol.ctl and testcase.da.ctl)
+
+
+Preparation
+===========
+
+  #. Generate the LDT and the LIS executables.
+
+  #. Create a directory to run LDT and LIS within (a directory outside
+     of the LIS source code).  Copy the contents of this testcase
+     sub-directory into this new running directory.  And then change
+     directories into this new running directory.
+
+  #. Go into the "input" sub-directory and make the "wget" .sh
+     scripts be executable.
+
+
+Running the testcase
+====================
+
+LDT
+---
+
+  #. Go into the "input" sub-directory and do the following:
+
+     * download input parameters ::
+
+       ./wget_lisnoahparms_portal.sh
+       ./wget_nam242parms_portal.sh
+
+  #. Change directory back to the running directory (i.e.; ``cd ..``)
+     and run the LDT executable using the ldt.config file.
+
+LIS
+---
+
+  #. Go into the "input" sub-directory and do the following:
+
+     * download Noah 3.3 specific parameter tables ::
+
+       ./wget_noah33parms_portal.sh
+       
+     * download Noah 3.3 restart file ::
+        
+       ./wget_lisrestart_portal.sh
+
+     * download NAM242 meteorological forcing data ::
+
+       ./wget_nam242_portal.sh
+
+     * download ANSA snow depth data for assimilation ::
+
+       ./wget_ansa_oi_portal.sh
+
+  #. Change directory back to the running directory (i.e.; ``cd ..``)
+
+  #. First run the open loop scenario by running the LIS executable
+     using the lis.config.ol file.
+
+  #. Then run the data assimilation scenario by running the LIS executable
+     using the lis.config.da file.
+
+  #. View the netCDF output using the testcase GrADS ctl files
+
+
+Sample Output
+=============
+
+To download sample output for comparison, make sure that you are in the
+running directory.  Then execute ::
+
+   ./wget_output_portal.sh
+
+This will download and unpack the sample output into the "OUTPUT"
+directory along side the output that you generated.
+
+
+Notes
+=====
+
+For information on NAM frocing, see http://www.nco.ncep.noaa.gov/pmb/products/nam/
+
+NAM 242 AWIPS Grid - Over Alaska
+(11.25 KM Resolution; full complement of surface-based fields)
+
+For questions, please contact Yuqiong.Liu@nasa.gov
+
+From Logan Karsten:
+
+| The naming convention of the FTP directory is as follows - 
+| ftp://tgftp.nws.noaa.gov/SL.us008001/ST.opnl/MT.nam_AR.ak_CY.00/RD.20120924/PT.grid_DF.gr2/fh.0024_tl.press_gr.awp242 
+| where "MT.nam_AR.ak_CY.00" represents the NAM 242 00Z Cycle, "RD.20120924" 
+| represents the date of the model run, and "fh.0024_tl.press_gr.awp242" is the 
+| actual GRIB2 file for forecast hour 24 of NAM 242.
+
+
+Caveats
+=======
+
+Please note that this is a simple functional test and the output
+from the testcase is not expected to be used for any scientific 
+evaluation.
+

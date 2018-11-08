@@ -1,0 +1,15 @@
+#nfields
+6
+#name   varmin   varmax
+Catchment Deficit
+           0.0   2000.0
+Root Zone Excess
+           0.0    200.0
+Surface Excess
+           0.0     20.0
+Water Equivalent Snow 1
+           0.0   2000.0
+Water Equivalent Snow 2
+           0.0   2000.0
+Water Equivalent Snow 3
+           0.0   2000.0

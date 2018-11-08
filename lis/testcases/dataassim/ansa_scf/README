@@ -1,0 +1,42 @@
+ANSA SCF Data Assimilation Test Case
+
+This test-case performs EnKF+DI based assimilation of ANSA SCF data 
+at 0.05 degree over the Upper Colorado basin with Noah.3.3 and NLDAS2 
+forcing from 2011-06-01 to 2011-06-30 to test the data assimilation 
+plug-in "ANSA SCF", which is implemented as a reader for assimilating 
+ANSA SCF data using either EnKF or DI or both algorithms.
+
+This test case illustrates the assimilation of ANSA SCF using EnKF,
+supplemented with DI when model predicts either zero or full snow
+cover that prevents updating with EnKF due to lack of uncertainty
+in model predictions.
+
+
+This directory contains: 
+
+* this README file.
+* the ldt.config file used for LDT in this test case. 
+  (This file should be edited to make sure that the locations of the 
+  parameter and forcing files are specified correctly.) 
+* the param_attibs.txt used to specify the parameter files for LDT processing
+* a sample grads control file used to specify the LDT output/LIS input
+  parameters (input.ctl)
+* the lis.config file used for LIS DA run
+* the MODEL_OUTPUT_LIST.TBL file used to specify the LIS output variables.
+* sample grads control file that can be used to visualize the 
+  output. (output.ctl)
+* a sample grads control file that can be used to visualize the 
+  test case output. (testcase.ctl)
+
+To run this test case: 
+
+* Generate the LDT & LIS executables. 
+* Download the sample input data from: 
+  http://lis.gsfc.nasa.gov/Source/testcases  
+  the testcase corresponding to ANSA SCF Data Assimilation
+* Run the LDT executable to generate the input parameter file for LIS,
+  using the ldt.config file and sample input data
+* Run the LIS executable using the lis.config file
+* View the netcdf output using the sample grads file. 
+
+Questions: please contact Yuqiong.Liu@nasa.gov

@@ -1,0 +1,66 @@
+This is BibTeX, Version 0.99c (Web2C 7.5.4)
+The top-level auxiliary file: usersguide.aux
+A level-1 auxiliary file: intro.aux
+A level-1 auxiliary file: backgrd.aux
+A level-1 auxiliary file: prelim.aux
+A level-1 auxiliary file: obtain-source.aux
+A level-1 auxiliary file: build.aux
+A level-1 auxiliary file: run.aux
+A level-1 auxiliary file: testcases.aux
+A level-1 auxiliary file: postproc.aux
+A level-1 auxiliary file: lis.config.aux
+A level-1 auxiliary file: forcing_variables.tex.aux
+A level-1 auxiliary file: MODEL_OUTPUT_LIST.TBL.aux
+A level-1 auxiliary file: d_latlon_example.aux
+A level-1 auxiliary file: d_ps_example.aux
+A level-1 auxiliary file: d_gaussian_example.aux
+A level-1 auxiliary file: d_lambert_example.aux
+A level-1 auxiliary file: d_mercator_example.aux
+A level-1 auxiliary file: d_utm_example.aux
+A level-1 auxiliary file: lis_preproc.aux
+A level-1 auxiliary file: configure.lis.aux
+A level-1 auxiliary file: readgrib.aux
+A level-1 auxiliary file: gribout.aux
+The style file: ametsoc.bst
+Database file #1: lis_refs.bib
+You've used 3 entries,
+            2751 wiz_defined-function locations,
+            1038 strings with 9593 characters,
+and the built_in function-call counts, 1507 in all, are:
+= -- 137
+> -- 93
+< -- 1
++ -- 30
+- -- 27
+* -- 145
+:= -- 270
+add.period$ -- 6
+call.type$ -- 3
+change.case$ -- 26
+chr.to.int$ -- 3
+cite$ -- 3
+duplicate$ -- 64
+empty$ -- 95
+format.name$ -- 38
+if$ -- 290
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 2
+newline$ -- 17
+num.names$ -- 12
+pop$ -- 22
+preamble$ -- 1
+purify$ -- 21
+quote$ -- 0
+skip$ -- 42
+stack$ -- 0
+substring$ -- 66
+swap$ -- 11
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 27
+warning$ -- 0
+while$ -- 11
+width$ -- 0
+write$ -- 42

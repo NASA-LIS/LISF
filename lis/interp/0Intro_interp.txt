@@ -1,0 +1,17 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!The spatial interpolation tools in LIS are used for the geospatial
+!transformation of an input data to the LIS grid. The tools in LIS
+!are based on the ipolates package developed at NCEP. Currently LIS
+!supports the transformation and interpolation of polar stereographic,
+!lambert conformal, and mercator grid projection data on to an
+!equidistant cylindrical (lat/lon) grid projection. Bilinear,
+!conservative and neighbor search interpolations are supported.
+!EOP

@@ -1,0 +1,14 @@
+DSET   ^OUTPUT/SURFACEMODEL/%y4/%y4%m2%d2/LIS_HIST_%y4%m2%d20000.d01.gs4r
+TITLE   USGS PET (0.1deg NN) -- LIS
+OPTIONS big_endian
+OPTIONS sequential
+OPTIONS template
+UNDEF   -9999.
+XDEF    3600 LINEAR -179.95   0.10
+YDEF    1500 LINEAR  -59.95   0.10
+ZDEF    1 LINEAR      1.0     1.0
+TDEF   61 LINEAR   00Z01feb2004  1dy
+VARS    1
+pet     1  99  **  Daily PET (mm)
+ENDVARS
+

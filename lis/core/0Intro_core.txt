@@ -1,0 +1,29 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!LIS core, the central part of the software, is the infrastructure
+!that integrates the use of different components in LIS.  The functions
+!performed by LIS core include operations related to the overall
+!control, runtime statistics, inter-language support, error logging
+!and dynamic memory management functions. Routines to manage domain
+!decomposition, load balancing, fault tolerance, etc. are also
+!encapsulated as generic routines in the high performance computing
+!and communications (HPCC) component.  The time management tools in
+!LIS provides useful functions for time and data calculations and
+!higher level functions to control model timestepping and alarms.
+!Another tool implemented in the LIS core structure is the generic
+!I/O tool, which provides capabilities to read the input data locally,
+!handling different data formats.  also provide support for distributed
+!data output and multiple formats. Other miscellaneous tools
+!incorporated in the LIS core include methods to perform spatial and
+!temporal interpolation, reprojection, domain subsetting etc.  The
+!abstractions providing representations for the behavior of LSMs,
+!domains, and data, runmodes, and data assimilation are also
+!incorporated in the LIS core.
+!EOP

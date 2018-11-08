@@ -1,0 +1,94 @@
+=================================
+GLDAS VIC 4.1.2.l Public Testcase
+=================================
+
+Introduction
+============
+
+This is a test case that uses: 
+
+  * the Princeton forcing 
+  * using the bilinear Interpolation
+  * uses the lapse-rate based elevation correction using GTOPO30 
+    elevation data
+  * VIC version 4.1.2.1 land surface model
+  * Global domain (180W-180E; 56S-85N) at 1 degree spatial resolution.
+  * a time period from Feb 1 1948, hr 1 to Feb 3, 1948, hr 1 
+  * using vegetation tiling
+
+This directory contains: 
+
+  * This README file, 
+  * the lis.config file used for this test case. (This file should be 
+    edited to make sure that the locations of the parameter and 
+    forcing files are specified correctly.) 
+  * A sample grads control file that can be used to visualize the 
+    output. (output.ctl)
+
+Preparation
+===========
+
+  #. Generate the LDT and the LIS executables
+
+  #. Create a directory to run LDT and LIS within (a directory outside
+     of the LIS source code).  Copy the contents of this testcase
+     sub-directory into this new running directory.  And then change
+     directories into this new running directory.
+
+  #. Go into the "input" sub-directory and make the "wget" .sh
+     scripts be executable.
+
+
+Running the GLDAS VIC 4.1.2.l testcase
+======================================
+
+LDT
+---
+
+  #. Go into the "input" sub-directory and do the following:
+
+     * download input parameters ::
+
+       ./wget_lisvicparms_portal.sh
+
+  #. Change directory back to the running directory (i.e.; ``cd ..``)
+     and run the LDT executable using the ldt.config file.
+
+LIS
+---
+
+  #. Go into the "input" sub-directory and do the following:
+
+     * download Princeton meteorological forcing data ::
+
+       ./wget_princeton_portal.sh
+
+  #. Change directory back to the running directory (i.e.; ``cd ..``)
+     and run the LIS executable using the lis.config file
+
+  #. View the binary output using the testcase GrADS ctl files
+
+
+       
+Sample Output
+=============
+
+To download sample output for comparison, make sure that you are in the
+running directory.  Then execute ::
+
+   ./wget_output_portal.sh
+
+This will download and unpack the sample output into the "OUTPUT"
+directory along side the output that you generated.
+
+
+Caveats 
+========
+
+  * Please note that this is a simple functional test and the output
+    from the testcase is not expected to be used for any scientific 
+    evaluation. 
+  * Due to large matrix size created with the vegetation and elevation bands, 
+    writing and reading a restart file takes considerably long time (e.g. 60
+    min).  It is recommended to set the restart output interval to the least
+    frequent, "1mo".

@@ -1,0 +1,36 @@
+GDAS T126 Test Case
+
+This test-case performs a global simulation over the global T126 domain
+for the time period from 2000-01-02T00:00:00 to 2000-01-06T00:00:00 with
+GDAS forcing data running the template land surface model.
+
+
+This directory contains: 
+
+* this README file.
+* the lis.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.) 
+* the MODEL_OUTPUT_LIST.TBL file used to specify the output variables.
+* a sample grads control file that can be used to visualize the 
+  output. (output.ctl)
+* a sample grads control file that can be used to visualize the 
+  test case output. (testcase.ctl)
+
+To run this test case: 
+
+* Generate the LIS executable. 
+* Download the sample input data from: 
+  http://lis.gsfc.nasa.gov/Source/testcases  
+  the testcase corresponding to Gaussian T126 domain TEST
+* Run the LIS executable using the lis.config file
+  and the sample input data. 
+* View the NetCDF output using the sample grads file. 
+
+
+Note:
+
+The fix fields, in input/LS_PARAMETERS/GFS/T126/ contained in the
+gaussiant126test_ldt_v71.tar.gz file, are generated from the CFS/GFS land
+surface restart file "sfcanl".  A program is run to extract the fix fields
+from the gdas1.t00z.sfcanl file and create the various .bfsa files.

@@ -1,0 +1,2968 @@
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Land Information System (LIS) Release Notes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. admonition:: **Current release:**
+
+          Land Information System (LIS) Public Release 7.2r
+
+          5 May 2016
+
+
+===========
+CHANGE LOG:
+===========
+
+
+========================================================================
+Land Information System (LIS) Public Release 7.2r (r6996:7551)
+========================================================================
+
+This is the initial release of the public version of LIS 7.2.
+
+- Includes the NOAA Rapid Update Cycle (RUC) 3.7.1 land surface model
+
+- Includes the ensemble streamflow prediction (ESP) conventional
+  forecasting runmode
+
+- Includes additional parameter and uncertainty estimation support
+
+  * Differential evolution Markov chain (DEMC)
+  * Levenberg-Marquardt
+  * Random walk Markov chain monte carlo
+
+- Includes additional radiative transfer model support
+
+  * Tau Omega
+
+- Data assimilation is performed on the observation grid
+
+- Supports HYMAP runoff data
+
+- Supports ANSA snow depth observations
+
+- Supports GCOMW AMSR2 L3 soil moisture observations
+
+- Supports GCOMW AMSR2 L3 snow depth observations
+
+- Supports NASA SMAP soil moisture observations
+
+- Supports PILDAS soil moisture observations
+
+- Supports SMMR snow depth observations
+
+- Supports SMOS L2 soil moisture observations
+
+- Supports SMOS NESDIS soil moisture observations
+
+- Supports SSMI snow depth observations
+
+- Supports AWAP precipitation data
+
+- Supports LDT generated met forcing climatology data
+
+- Supports generic ensemble forecast met forcing data
+
+- Supports GRIB 2 formatted output
+
+
+========================================================================
+Land Information System (LIS) Public Release 7.1rp8 (r6602:6995)
+========================================================================
+
+This patch release includes updates r6602:6995.
+
+- Update gaussian_t1534 testcase
+
+- Correct pcp_flag
+
+  The pcp_flag was incorrectly set for var_index 1 (pds5=11), which is
+  temperature.  It is now set for var_index 8 (pds5=59), which is
+  precipitaion rate.
+
+- Revert back to real*4
+
+- Port updated Gaussian support from LDT into LIS
+
+- Port updated Gaussian support from LDT into LIS
+
+- Rename gaussian_mod.F90 to gaussian_mod.F90.keep
+
+  I am no longer using this module.  But I want to keep for reference.
+
+- Update gaussian_t126 testcase
+
+- Rename several gaussian_t126 testcase ctl files
+
+- Significant bug fixes to GDAS reader.
+
+  (1) Shortened pds5, pds7, and pds16 arrays to remove entries for albedo.  This
+      variable is not read in from GDAS, and the extra entries were cause
+      buffer overflows (10th entry to arrays declared with 9 elements).
+  (2) Fixed logic for loading GDAS terrain for lapse rate correction.  Code
+      now recognises the combined "lapse-rate and slope-aspect" option.
+
+- Updates for compiling with GCC compilers
+
+- Merging Noah-MP revisions from development to public7.1.
+
+  1) Fixed the behavior of snowfall forcing.  Noah-MP just
+     uses total precipitation as forcing, and depending on
+     the config option chosen, will determine how much of
+     the total precip is rainfall or snowfall.
+
+  2) Checked in fixes to prevent divide-by-zero crashes in
+     the code.  These crashes are very rare, and for the
+     most part, are already in later versions of Noah-MP
+     as released by NCAR.
+
+- Removed "stop" statement in file, which was
+  accidentally left in the code and used for testing
+  purposes.
+
+- Updated the log error statement if a LIS config 
+  file wanting to be read in is missing or typed
+  in correctly at the command line.  The error 
+  statement no longer tries to print to the log 
+  diagnostic file (since that call to read in that
+  line is actually in the LIS config file).
+
+- Fix bug regarding reading MERRA2 elevation
+
+  The init_merra2 routine now reads elevation whenever LIS_rc%met_ecor
+  is not "none".
+
+- Add support to read MERRA2 elevation data for lapse rate correction
+
+- Fixed minor bugs triggering warnings from Intel compiler.
+
+  This fixes:
+
+  * Warnings from surfacemodels/land/clm2/csm_share/clm2_shr_sys_mod.F90 about
+    unused argument, which were related to missing preprocessor flag.
+  * Warning from surfacemodels/land/mosaic/umd_sibalb.F90 about function with
+    undeclared return type.
+
+  These patches were submitted by Hamada Badr (JHU).
+
+- BUG FIX:  Added irrigation support to WRF-LIS coupling.
+
+  This code is already in the NU-WRF trunk and has been confirmed to work.
+
+- Update gaussian_t1534 testcase
+
+- Update MERRA-Land and MERRA2 testcases
+
+- Changed default output directory permissions to a+rwx.  Fixed code
+  indentation.
+
+  The calls to the POSIX C function 'mkdir' are changed to set the mode to
+  0777, which grants all permissions to user, group, and other as a first-guess.
+  The shell 'umask' command can be used to revoke permissions at run-time. 
+  This gives the user more flexibility in setting the permissions of the 
+  output directories created by LIS.  Before this change, no permissions were 
+  granted to group or other by the 'mkdir' call, and the umask setting could
+  not reverse this.
+
+- ProTeX updates for LIS Reference Manual
+
+- Minor update to the README_discover file as for the
+  make module is only:
+
+  lib/mkl-10.1.2.024
+
+- Updated the entries in the README_discover
+  file to match more closely to the notes on
+  the Modeling Guru forum:
+
+  https://modelingguru.nasa.gov/community/atmospheric/lis/blog/2015/03/09/compiling-lis-7-on-sles11-sp3
+
+
+========================================================================
+Land Information System (LIS) Public Release 7.1rp7 (r6563:6601)
+========================================================================
+
+This patch release includes updates r6563:6601.
+
+- Update internal testcases
+
+  I added and/or updated GrADS descriptor files for the
+  LIS domain and parameter data files.
+
+- Merge NU-WRF into LIS public 7.1 
+
+  I merged updates through 3774 from NU-WRF's
+  ^/code/branches/features/v8_wrf371merge into LIS' ^/7/public7.1 branch.
+
+  These updates consist of:
+
+  * Bug fix:  Set value for noah271_struc(n)%forcing_ch.
+
+    This was used in WRF-LIS coupling without initialization.
+
+  * Bug fix:  Set value for noah32_struc(n)%forcing_ch.
+
+    This variable was used in WRF-LIS coupling without being initialized.
+
+  * Bug fix: Set value for noah33_struc(n)%forcing_ch.
+
+    This was used in WRF-LIS coupling without being initialized.
+
+  * Bug fix:  noah36_struc(n)%forcing_ch now set to 1.
+
+    This variable was used in WRF-LIS coupling without being set.
+
+  * Copied GFORTRAN configure template from older lis directory.
+
+- Merge tools/ldt/7/public7.1 into 7/public7.1
+
+  I manually merge r6594 from tools/ldt/7/public7.1 into 7/public7.1.
+
+  Add Jossy Jacob's mercator updates
+
+  This adds support to reproject latlon parameter data
+  onto a Mercator LIS running domain.
+
+
+========================================================================
+Land Information System (LIS) Public Release 7.1rp6 (r6541:6562)
+========================================================================
+
+This patch release includes updates r6541:6562.
+
+These updates consist of:
+
+- Correct output units for exchange coefficients
+
+  The units for the exchange coefficients specified in the calls to
+  register_dataEntry and LIS_diagnoseSurfaceOutputVar should be m/s.
+
+  The following variables were corrected.
+
+  | LIS_MOC_CH
+  | LIS_MOC_CM
+  | LIS_MOC_CHFORC
+  | LIS_MOC_CMFORC
+  | LIS_MOC_CHV
+  | LIS_MOC_CHB
+  | LIS_MOC_CHLEAF
+  | LIS_MOC_CHUC
+  | LIS_MOC_CHV2
+  | LIS_MOC_CHB2
+
+- Return after setting soiltyp = -9999
+
+- Register the reset_RFE2gdas routine
+
+
+========================================================================
+Land Information System (LIS) Public Release 7.1rp5 (r6519:6540)
+========================================================================
+
+This patch release includes updates r6519:6540.
+
+These updates consist of:
+
+- Fix ringtime in MERRA2 reader
+
+  The ringtime variable (which indicates when to read the next forcing file)
+  in the MERRA2 reader was a scalar value.  This resulted in only the
+  outermost nest of a nested run updating its forcing data.
+
+  ringtime was moved into the merra2_struc to provide support for nesting.
+
+- Fix ringtime in MERRA-Land reader
+
+  The ringtime variable (which indicates when to read the next forcing file)
+  in the MERRA-Land reader was a scalar value.  This resulted in only the
+  outermost nest of a nested run updating its forcing data.
+
+  ringtime was moved into the merraland_struc to provide support for nesting.
+
+- Fix registration of VIC PET output variables
+
+  I fixed the register_dataEntry calls for these variables
+
+  |  LIS_MOC_VIC_PET_SATSOIL
+  |  LIS_MOC_VIC_PET_H2OSURF
+  |  LIS_MOC_VIC_PET_SHORT
+  |  LIS_MOC_VIC_PET_TALL
+  |  LIS_MOC_VIC_PET_NATVEG
+  |  LIS_MOC_VIC_PET_VEGNOCR
+
+
+  When calling the register_dataEntry routine for a LSM variable, such as
+  LIS_MOC_VIC_PET_SATSOIL, add ``model_patch=.true.`` to the arguments. ::
+
+    call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_VIC_PET_SATSOIL,&
+                            LIS_histData(n)%head_lsm_list,&
+                            n,2,ntiles,(/"kg/m2 ","kg/m2s"/),1,(/"-"/),&
+                            2,1,1,model_patch=.true.)
+
+
+========================================================================
+Land Information System (LIS) Public Release 7.1rp4 (r6486:6518)
+========================================================================
+
+This patch release includes updates r6486:6518.
+
+These updates consist of:
+
+- Correct the upboundLognormal routine in PobjFunc_Mod.F90
+
+  This routine did not correctly set the mean and stddev variables.
+
+
+========================================================================
+Land Information System (LIS) Public Release 7.1rp3 (r6457:6485)
+========================================================================
+
+This patch release includes updates r6457:6485.
+
+These updates consist of:
+
+- Moved the LIS grid-mapping routine for being able
+  to subset select datasets (depending on data format)
+  to the core directory.
+
+- Correct the way ESMF and MPI is initialized
+
+  LIS was calling ESMF_VMGet to determine whether it had a valid
+  virtual machine.  However, calling ESMF_VMGet before calling ESMF_Initialize
+  leads to a crash on some systems.
+
+  I corrected the logic used to initialize ESMF and MPI.
+
+- Remove the "if LIS_masterproc" checks from several of the write statements
+
+- Remove check for USGS PET directory
+
+  Fortran does not specify how the inquire statement should work with
+  directories.
+
+- Correct noah%rainf in noah271_f2t
+
+  When forcing snowfall is selected (LIS_FORC_Snowf%selectOpt == 1) snowfall
+  (snowf) should be added to noah%rainf.  However, pcp+snowf was added to
+  noah%rainf.
+
+- Implemented LIS endrun call when a USGS PET
+  directory or file are missing or are incorrect.
+
+- Correct description strings for Rainf and TotalPrecip
+
+- Fix the pcp metforcing field
+
+  The diagnoseForcingOutput routine was adding snow to the pcp field
+  (pcp = pcp + snow) whenever LIS_FORC_Snowf%selectOpt was 1.  This is not
+  correct.  The intention was to create total precip for output; however,
+  this updated the actual precip forcing field.
+
+  I have created a local variable, totpcp, for creating a total precip
+  field for output.
+
+- Update RELEASE_NOTES for LIS 7.1rp2 public release
+
+
+========================================================================
+Land Information System (LIS) Public Release 7.1rp2 (r6396:6456)
+========================================================================
+
+This patch release includes updates r6396:6456.
+
+These updates consist of:
+
+- Open the "Diagnostic output file:" at the top of LIS_readConfig
+
+- Add Hiroko Beaudoing's GDAS reader fix
+
+  Grid size for GDAS T170 resolution is currently at 0.7025 degree in
+  get_gdas.F90.  They should be::
+
+    gridDesci(8) = -0.703125
+    gridDesci(9) = 0.703125
+
+- Add Hiroko Beaudoing's Princeton reader fix
+
+  There was a mix up in the forcing index in Princeton data reader.  It was
+  interpolating pressure field with the conserve routine instead of precip. 
+
+- Made first set of corrections to the LDT-generated 
+  metforcing reader ("metForcGenerated"), which includes:
+
+  1) A fix for now to include forcing timesteps at a day or greater;
+
+  2) corrected the naming of "sum" to "acc" statistic for the time
+     interpolation routine.
+
+  More updates coming but this fixes some current issues with
+  this reader for now.
+
+- Manually copy GPM/IMERG precipitation reader from 7/development
+  into 7/public7.1
+
+- Manually copy UCSB CHIRPS v2.0 metforcing reader from 7/development
+  into 7/public7.1
+
+- Correction for running LIS serially (without MPI)
+
+- Update RELEASE_NOTES for LIS 7.1rp1 public release
+
+
+========================================================================
+Land Information System (LIS) Public Release 7.1rp1 (r5987:6395)
+========================================================================
+
+This patch release includes updates r5987:6395.
+
+These updates consist of:
+
+- Add the NOSA for LIS
+
+- Add licenses for various components within LIS code
+
+- Updates for compiling
+
+- Add copyright notice
+
+- Update existing copyright notice
+
+- Correct an error regarding compiling with NetCDF3
+
+- Merge NU-WRF into LIS public 7.1 
+
+  I merged updates through 3418 from NU-WRF's
+  ^/code/trunk branch into LIS' ^/7/public7.1 branch.
+
+  I forgot to include the cpl_wrf_noesmf support for Noah 3.6.
+
+- Clean up noah271_setwrfexport.F90
+
+  I removed an unused variable.
+
+- Merge NU-WRF into LIS public 7.1 
+
+  I merged updates through 3418 from NU-WRF's
+  ^/code/trunk branch into LIS' ^/7/public7.1 branch.
+
+  These updates consist of:
+
+  * Reintegrates v7_wrflis_fixes branch to trunk.
+
+    Captures WRF-LIS coupling fixes:
+
+    * Enables coupling to Noah 2.7.1, Noah 3.2, and Noah 3.6.  Includes fixes
+      to Noah 2.7.1 and Noah 3.2 export code to handle patches, adds export
+      for Noah 3.6, and adds output support for all three LSMs.
+    * Now passing pure LWDOWN (w/o multiplying by surface emissivity) from WRF
+      to LIS.
+    * Changed Noah 2.7.1 to multiply LWDOWN by emissivity internally (already
+      done with newer Noah versions).
+    * Now copying LIS exported emissivity back to WRF array for input to 
+      radiation.
+
+- Correct ProTeX and LaTeX in the in-line documentation
+
+- Clean up lis.config file
+
+- Clean up LaTeX in lis.config file
+
+- Update MERRA-Land testcase
+
+- Update MERRA-Land documentation
+
+- Update timing logic in MERRA-Land reader
+
+  I ported the updated timing logic from the MERRA2 reader to the
+  MERRA-Land reader.
+
+- Update MERRA2 documentation
+
+- Correct timing in MERRA2 reader when running at 15mn timestep
+
+- Clean up logic MERRA2 reader regarding when to read tomorrow's file
+
+- Update documentation to MERRA2 reader
+
+- Lift the time logic out of the copying do-loop
+
+  I lifted the logic that determines which hour indices to use and which
+  bookends to use out of the do-loop that copies the local merraforc data
+  into the global LIS_forc%metdata arrays.
+
+- Correct the merra2time1 and merra2time2 values
+
+  When running at an hourly time-step, where the LIS cycle time is on the hour,
+  (00:00z, 01:00z, ...) the MERRA2 reader was incorrectly using
+  weights of 1 and 0, when it should be using weights of 0.5 and 0.5.
+
+- Correct the bookends for MERRA2 reader
+
+  The MERRA2 reader, when running at a 1-hour time-step, was choosing
+  the wrong hours to temporally interpolate between.
+
+- Add a "timenow" check to prevent copying forcing data at every timestep
+
+- Fix to MERRA2 reader
+
+  One statement was assigning forcing to LIS_forc(n,findex)%metdata1
+  when it should have used LIS_forc(n,findex)%metdata2.
+
+- Corrected the definition of ROOTMOIST for CLSM-F2.5.
+
+  Previously, the output included the surface soil
+  moisture twice, as the second layer soil moisture
+  already includes the entire root zone (from the
+  top of soil down to the bottom of the root layer).
+
+- Fixed the VIC-4.1.2.l LSM routing routines.
+
+  The previous version incorrectly used the output
+  interval in the conversion of the runoff units.
+  This fix now uses the model timestep.
+
+  The other commits included in this revision are
+  only very minor code clean-ups, and there are no
+  changes in the routing output for the other LSMs.
+
+- Added direct output of Ground Water Storage (GWS)
+  in LIS for the CLSM-F2.5 and Noah-MP-3.6 LSMs.
+
+  Note that the output of TWS in Noah-MP.3.6 is also
+  changed in this version.  Previously, this value
+  was only the ground water, but now is correctly
+  defined as the ground water, plus soil moisture,
+  plus SWE, plus canopy interception - to equal the
+  total Terrestrial Water Storage.
+
+  Also removed/refined a couple Noah-MP-3.6-specific
+  output variables.
+
+- Updated the MERRA-Land metforcing reader in LIS
+  to correct a problem with it in running a model with
+  an hourly timestep. 
+
+  Changes were made to the reader to accommodate this
+  correction, not affecting it when running with a 
+  sub-hourly timestep.
+
+- Updated the LIS 7.1 public test cases by removing
+  the obsolete parameter attribute tables (e.g.,
+  param_attribs.txt) where no longer needed and
+  updated the text in the README files to reflect
+  that removal, for each test case.
+
+- Corrected the hourly timestep issue with the 
+  MERRA-2 reader in LIS.  Before, when running
+  with an hourly model timestep, a problem in the
+  code would cause a whole shift in a MERRA-2 
+  daily file being read in.
+
+  This issue is now fixed, and the get_merra2
+  routine has been reorganized to support the 
+  fix.  Extensive testing has been performed
+  to make sure that any subhourly model timestep
+  (e.g., 15-min, 30-minute) were not impacted
+  much or not at all by the new code updates.
+
+- Renamed "routing_nldas" directories to "routing",
+  as they will work with any router, not just the
+  NLDAS router.
+
+- Update download scripts for the public testcases
+
+- Update internal testcases
+
+- A temporary update to the MERRA-Land reader, 
+  get_merraland routine, has been incorporated
+  to check for when a LIS model timestep has been
+  selected to be at an hour or greater.
+
+  Currently there is an error running at an hourly
+  timestep and correction will be forthcoming
+  in future releases of LIS and LDT.
+
+- Made update and a fix to the MERRA-2 metforcing
+  reader routines:
+
+  * The "merra2files" routine in get_merra2.F90
+    has been updated to reflect the latest production
+    stream of files (e.g., on discover and GES DISC),
+    and 
+  * reflects updated/corrected MERRA-2 production
+    files, which changed the range of years for 300
+    and 400 year collections.
+
+- Update lis.config documentation
+
+- Update public testcases
+
+- Update Gaussian T126 testcase
+
+- bug fix to the pert readrestar routine
+
+- fixed the perturbation restart reading routine in smoother DA mode
+
+  snow update scheme in CLSMDA
+
+  fixes to irrigation in ensemble mode
+
+- Merge branches/jim/d7-mcw into 7/development
+
+  I reintegrated branches/jim/d7-mcw into 7/development.
+
+  This contains the preliminary MPI_COMM_WORLD related updates that
+  Rocky Dunlap and Dan Rosen made for their NUOPC work.
+
+- Minor clean-up to the GMAO/GEOS5 seasonal forecast
+  forcing reader.
+
+- 1. bug fixes related to the changes in the interpolation library
+  2. changed the local buffers to be different than the global ones in the MPI_ALLGATHER statements
+
+- Correct length of ansa_filename
+
+  I also cleaned up some diagnostic log messages by adding trim around
+  references to ansa_filename.
+
+- cleanups, renaming, fixes to HYMAP in GRACE-DA and offline modes
+
+- Made several improvements and fixes to the Noah-MP-3.6 LSM:
+
+  1) Commented out unsupported Noah-MP-3.6 code to prevent crashes
+     caused by "floating invalid" and "floating divide by zero"
+  2) Added ability to use UMD vegetation with Noah-MP-3.6 LSM
+  3) Added routing to Noah-MP-3.6 LSM
+  4) Corrected output of LWnet - net longwave radiation at the surface
+  5) Added Rainf, Snowf, CanopInt, and SubSnow to output variables
+  6) Moved some Noah-3.6 log messages into the LIS logfile
+  7) Ensured all allocated variables are properly deallocated
+  8) Corrected typos and made small improvements to comments
+
+- Added routing to the Noah-3.2 LSM.
+
+- 1) Correct the output of units of Greenness in percentage.
+
+  2) For the below list of LSMs, the Greenness should be an
+     output of the LSM, rather than a simple output from the
+     input LDT file:
+     | CLSM F2.5
+     | HySSIB
+     | Noah.2.7.1
+     | Noah.3.2
+     | Noah.3.3
+     | Noah.3.6
+     | NoahMP.3.6
+
+- Move the output of the LeafMass variable earlier,
+  so it's with the other Mass variables for dynamic
+  vegetation.
+
+- Placed checks in for elevation, slope-aspect and
+  both corrections to see if all correct options
+  are selected by the user.
+
+- Minor updates to the NLDAS-2 metforcing 
+  reader, including replacing trim() in
+  if/then/else blocks, replaced some if/then
+  blocks with case select, and assigned LIS
+  universal undefined values to initialize
+  forcing read variables.
+
+  Improved NLDAS-2 rainfall and convective rainfall
+  fields around island/coastal areas, when
+  the dataset is downscaled to higher resolutions.
+
+- Made additional fix to LIS_metforcing module to
+  make sure undefined values are not factored in 
+  to wind-magnitude calculation for units:  KM/DAY
+
+- Minor fix to the Wind magnitude calculated
+  in the LIS_metforcingMod file:  whenever 
+  the u- or v-wind component is undefined,
+  the wind magnitude is set to undefined, 
+  otherwise calculate it.
+
+- added spatial downscaling capability (using precip climatology) for RFE2gdas
+
+- bug fix to allow gridded fields to be output when min/max option is turned on
+  in the output attributes table and when the outputs are written in NetCDF
+  format.
+
+- Minor updates/clean-up to the GDAS forcing files 
+
+- Added fixes to the ECMWF forcing reader, made by
+  Bailing Li and Hiroko Beaudoing.  
+
+  A memory leak bug was fixed in read_ecmwf.F90 routine. 
+  Furthermore, the read routine did not have right handling 
+  of missing data, which was causing NaN in precipitation 
+  and other fields.  A fix for checking NaN's was originally
+  submitted, but actually the root of the problem turned out 
+  to be the missing file handling issue.
+
+  The code has been checked and tested.
+
+- Minor update to the LIS LSM irrigation plugin routine
+
+- 1. bug fixes to the SMOS reader for CDF matching support and for running in parallel
+  2. bug fixes to the PILDAS forcing reader
+  3. cleanups to the Noah-MP config reading options
+
+- LIS configuration file has been changed for LIS-Noah-MP interface. 
+
+- Some kludge fixes have been added to Noah-MP code. 
+
+  Also, LIS-Noah-MP interface has been changed as the following: 
+
+  (1) In NoahMP36_readcrd.F90
+
+      | "NOAHMP36 dveg_opt" has been replaced with "NOAHMP36 option of vegetation model"
+      | "NOAHMP36 crs_opt" has been replaced with "NOAHMP36 option of canopy stomatal resistance"
+      | "NOAHMP36 btr_opt" has been replaced with "NOAHMP36 option of soil moisture factor for stomatal resistance"
+      | "NOAHMP36 run_opt" has been replaced with "NOAHMP36 option of runoff and groundwater"
+      | "NOAHMP36 sfc_opt" has been replaced with "NOAHMP36 option of surface layer drag coefficient"
+      | "NOAHMP36 frz_opt" has been replaced with "NOAHMP36 option of supercooled liquid water"
+      | "NOAHMP36 inf_opt" has been replaced with "NOAHMP36 option of frozen soil permeability"
+      | "NOAHMP36 rad_opt" has been replaced with "NOAHMP36 option of radiation transfer"
+      | "NOAHMP36 alb_opt" has been replaced with "NOAHMP36 option of snow surface albedo"
+      | "NOAHMP36 snf_opt" has been replaced with "NOAHMP36 option of rainfall and snowfall"
+      | "NOAHMP36 tbot_opt" has been replaced with "NOAHMP36 option of lower boundary of soil temperature"
+      | "NOAHMP36 stc_opt" has been replaced with "NOAHMP36 option of snow and soil temperature time scheme"
+
+  Please modify your LIS Noah-MP configuration file accordingly. 
+
+  (2) Configuration entry "NOAHMP36 st_flag" has been removed, set to 1 by default (1=soil, 2=lake)
+
+  (3) Configuration entry "NOAHMP36 sc_idx" has been replaced with "NOAHMP36 soil color index" 
+
+  (4) Configuration entry "NOAHMP36 ice_flag" has been removed, set to 0 by default (no ice)
+
+  (5) Configuration entry "NOAHMP36 iz0tlnd" has been replaced with "NOAHMP36 CZIL option (iz0tlnd)"
+
+  (6) Configuration entry "NOAHMP36 sldpth" has been replaced with "NOAHMP36 soil layer thickness"
+
+  (7) Configuration entry "NOAHMP36 soil_tbl_name" has been replaced with "NOAHMP36 soil parameter table" 
+
+  (8) Configuration entry "NOAHMP36 gen_tbl_name" has been replaced with "NOAHMP36 general parameter table"
+
+  (9) Configuration entry "NOAHMP36 noahmp_tbl_name" has been replaced with "NOAHMP36 MP parameter table"
+
+  (10) Configuration entry "NOAHMP36 landuse_tbl_name" has been replaced with "NOAHMP36 landuse parameter table"
+
+  (11) Configuration entry "NOAHMP36 nsoil" has been replaced with "NOAHMP36 number of soil layers"
+
+  (12) Configuration entry "NOAHMP36 nsnow" has been replaced with "NOAHMP36 number of snow layers"
+
+  (13) Configuration entry "NOAHMP36 landuse_scheme_name" has been removed. LIS reads it from LDT parameter file. 
+
+  (14) Configuration entry "NOAHMP36 soil_scheme_name" has been removed. LIS reads it from LDT parameter file. 
+
+  (15) Configuration entry "NOAHMP36 nslcats" has been removed. LIS reads it from LDT parameter file. 
+
+  (16) Configuration entry "NOAHMP36 nlucats" has been removed. LIS reads it from LDT parameter file. 
+
+  (17) Configuration entry "NOAHMP36 nslpcats" has been removed. LIS reads it from LDT parameter file. 
+
+  (18) Configuration entry "NOAHMP36 urban_vegetype" has been removed. LIS reads it from LDT parameter file. 
+
+- Update ldt.config files for NLDAS2-e public testcase
+
+- GDAS terrain correction
+
+  I implemented Hiroko Kato Beaudoing's GDAS elevation correction.  The
+  longitudinal resolutions for the various T grids were rounded.  Hiroko
+  corrected them with more precise values.
+
+  This resolves in issue regarding a slight discontinuity in the GDAS
+  elevation fields occurring near the prime meridian.
+
+  See Trac Ticket #126.
+
+- Merge NU-WRF into LIS public 7.1 
+
+  I merged updates through 3271 from NU-WRF's
+  ^/code/branches/features/v7_wrflis_quilting branch into
+  LIS' ^/7/public7.1 branch.
+
+  These updates consist of:
+
+  * Accept MPI communicator from WRF
+
+- Document the lisconfig_generic routine
+
+- Remove LIS_DElayout
+
+  I removed LIS_DElayout.  It was not used.
+
+- Remove old lisconfig_* routines
+
+- Combine the lisconfig_* routines into one
+
+  I combined the lisconfig_offline, lisconfig_coupled1, and
+  lisconfig_coupled2 routines into lisconfig_generic.
+
+- Apply the diff file from Rocky Dunlap
+
+- Remove the diff file from Rocky Dunlap
+
+- Add the diff file from Rocky Dunlap
+
+  This contains the preliminary MPI_COMM_WORLD related updates that
+  Rocky Dunlap and Dan Rosen made for their NUOPC work.
+
+- Add VIIRS GVF testcase
+
+- Add sport.ctl file to SPoRT GVF testcase
+
+- Add SPoRT GVF testcase
+
+- Add support to diagnose greenness in units of percentage
+
+- Update ldt.config files for the wrfout testcase
+
+- Reformat text
+
+- Add a nest loop to the metForcGen_interp_finalize routine
+
+- Correct call to read_gfs
+
+  The argument findex was missing from the call.
+
+  Thanks to Jon Case.
+
+- Add additional GrADS descriptor files to the Public GeoWRSI2 testcase
+
+- Update the merra2 testcase
+
+- Use \\newline instead of a double backslash
+
+  GNU's cpp treats a backslash character at the end of a line as indicating
+  line continuation; i.e., the backslash at the end of a line escapes the
+  end-of-line marker.
+
+  LaTeX uses a double backslash, \\\\, to indicate a new line.  Double
+  backslashes were used throughout the code in the ProTeX (LaTeX) in-line
+  documentation.  I replaced the double backslashes with the new line
+  command, \newline.
+
+  A misplaced backslash character could cause the line following the
+  backslash to be eaten.  In the following test program (saved as t.F90),
+  GNU's cpp would see line 4 as ::
+
+     !print*,"hello "
+
+  ::
+
+    program test
+    ! I want to see 'hello world'
+    ! but this program prints only 'world'
+    !\
+    print*,"hello "
+    print*,"world"
+    end program test
+
+- Correct the assignment of the veg_fracs array (in VIC 4.1.1 and 4.1.2.l)
+
+  The veg_fracs array is assigned from the LIS_LMLC%landcover array,
+  which is longer than the veg_fracs array.  I replaced the implicit extents
+  indicator, :, with an explicit do-loop to filter out water points.
+
+- Add check for LIS_ARCH=linux_gfortran
+
+- Remove "warning: implicit declaration of function" messages
+
+  When using functions from the C standard library, you must include
+  the appropriate standard header in the source code.
+
+  Examples:
+
+  For strcpy, strcmp, and strlen, you must include::
+
+     #include <string.h>
+
+  For puts, perror, and printf, you must include::
+
+     #include <stdio.h>
+
+  For exit, abs, malloc, free, you must include::
+
+     #include <stdlib.h>
+
+- Adjust logic in geowrsi2_readInputSettings.F90 to prevent gCoords from 
+  being deallocated twice
+
+- Use the "L" edit descriptor for logical variables
+
+- Use .false./.true. to set a logical variable
+
+  Logical variables should be set using .false. or .true. values.
+  Do not use 0 or 1.
+
+  Bad::
+
+     gCalcSOSmode = 0
+
+  Good::
+
+     gCalcSOSmode = .false.
+
+- Bug fix: correct call to reshape function
+
+- Update big/little endian flags for compiling with gfortran
+
+- Compile with gfortran
+
+  gfortran raised several errors.  Please read the rest of this commit
+  message for examples of the errors and corrective actions.
+
+  Example 1.:
+
+  Message:
+
+  ::
+
+    ../core/LIS_histDataMod.F90:1523.33:
+
+
+              n,2,ntiles,(/"kg/m2","mm"/),1,(/"-"/),1,1,1,&
+                                   1
+
+    Error: Different CHARACTER lengths (5/2) in array constructor at (1)
+
+  Correction:
+
+  Strings within an array constructor must have the same length.  Use spaces
+  to pad the shorter strings.
+
+  Bad::
+
+          call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWICE,&
+               LIS_histData(n)%head_lsm_list,&
+               n,2,ntiles,(/"kg/m2","mm"/),1,(/"-"/),1,1,1,&
+               model_patch=.true.)
+
+  Good::
+
+          call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWICE,&
+               LIS_histData(n)%head_lsm_list,&
+               n,2,ntiles,(/"kg/m2","mm   "/),1,(/"-"/),1,1,1,&
+               model_patch=.true.)
+
+  Example 2.:
+
+  Message:
+
+  ::
+
+    ../rtms/LIS-CMEM3/pe/CMEM3_set_pedecvars.F90:88.39:
+
+      real          :: vdata(LIS_rc%npatch(n,LIS_rc%lsm_index))
+                                           1
+
+    Error: Symbol 'n' is used before it is typed at (1)
+
+  Correction:
+
+  Variables must be declared before they are used.  Here n must be declared
+  before vdata because vdata references n.
+
+  Bad::
+
+    implicit none
+    type(ESMF_State)       :: DEC_State
+    character*100          :: vname
+    real          :: vdata(LIS_rc%npatch(n,LIS_rc%lsm_index))
+    integer                :: n
+
+  Good::
+
+    implicit none
+    integer                :: n
+    type(ESMF_State)       :: DEC_State
+    character*100          :: vname
+    real          :: vdata(LIS_rc%npatch(n,LIS_rc%lsm_index))
+
+  Example 3.:
+
+  Message:
+
+  ::
+
+    ../surfacemodels/land/noahmp.3.6/NoahMP36_readrst.F90:27:0: error: token "." is not valid in preprocessor expressions
+
+      #if (defined USE_NETCDF3 .OR. defined USE_NETCDF4)
+      ^
+
+  Correction:
+
+  Do not Fortran syntax for logical operators in preprocessor statements.
+
+  Use && for .and.
+
+  Use || for .or.
+
+  Bad::
+
+    #if (defined USE_NETCDF3 .OR. defined USE_NETCDF4)
+
+  Good::
+
+    #if (defined USE_NETCDF3 || defined USE_NETCDF4)
+
+  Example 4.:
+
+  Message:
+
+  ::
+
+    ../metforcing/ecmwf/read_ecmwf.F90:546.16:
+
+               if ( result1 .eq. .true. ) glbdata1(iv,c) = 0.0
+                    1
+
+    Error: Logicals at (1) must be compared with .eqv. instead of .eq.
+
+  Correction:
+
+  Compare logicals with .eqv. not with .eq.
+
+  Bad::
+
+    if ( result1 .eq. .true. ) glbdata1(iv,c) = 0.0
+
+  Good::
+
+    if ( result1 .eqv. .true. ) glbdata1(iv,c) = 0.0
+
+- Light refactoring
+
+- Update flags for compiling with gfortran
+
+- Merge 7/development into 7/public7.0
+
+  I merged/cherry-picked r6042 from 7/development to 7/public7.1.
+
+  bug fixes to merra2
+
+- Merge NU-WRF updates into 7/public7.1
+
+  I manually merged commits r3033:3127 from the v7_lis71merge branch
+  of the NU-WRF repository on progress,
+  svn/nu-wrf/code/branches/features/v7_lis71merge, into
+  LIS' 7/public7.1 branch.
+
+  These updates consist of:
+
+  * Correct nesting issues within LIS
+
+- Merge NU-WRF updates into 7/public7.1
+
+  I manually merged commits r3026:3032 from the v7_lis71merge branch
+  of the NU-WRF repository on progress,
+  svn/nu-wrf/code/branches/features/v7_lis71merge, into
+  LIS' 7/public7.1 branch.
+
+  These updates consist of:
+
+  * Disable the embedded (in LIS) wrf_error_fatal, wrf_message,
+    and wrf_error_fatal3 routines when compiling coupled to NU-WRF.
+
+    The source for NoahMP 3.6 within LIS contains wrf_error_fatal, wrf_message,
+    and wrf_error_fatal3 routines.  These conflict with the routines contained
+    within the WRF source.
+
+    I added a compile-time check to disable these routines within LIS when
+    LIS is compiled with the COUPLED macro defined.
+
+- Remove duplicate rule from Makefile
+
+- Correct smootherDA running mode output
+
+  Due to a check to improve output efficiency, the smootherDA running mode
+  was producing incorrect output for the first daily output (day 2) of each
+  month.
+
+  This commit removes the ::
+
+     if(LIS_rc%DAincrMode(n).eq.1) then
+
+  statement from around the call to the LIS_surfaceModel_output(n) routine.
+
+  See Trac ticket #117.
+
+
+========================================================================
+Land Information System (LIS) Public Release 7.1r (r5986)
+========================================================================
+
+This is the initial release of the public version of LIS 7.1.
+
+- Includes Noah 3.6
+- Includes NoahMP 3.6
+- Includes CABLE 1.4b
+- Includes flood irrigation
+- Includes drip irrigation
+- Supports VIIRS Daily GVF data
+- Supports TRMM 3B42 V7 real time precipitation
+- Supports Gaussian T1534 GFS met forcing data
+- Supports MERRA-2 met forcing data
+- Supports downscaling precipitation (PRISM) (NLDAS-2 only)
+
+
+========================================================================
+Land Information System (LIS) Public Release 7.0rp3 (r5747:5936)
+========================================================================
+
+This patch release includes updates r5747:5936.
+
+These updates consist of:
+
+- Merge branches/untested/p70-r5412-merra2 into 7/public7.0
+
+  I merged r5807:5813 from branches/untested/p70-r5412-merra2 to 7/public7.0.
+
+  These updates consist of:
+
+  * Update MERRA2 reader
+
+    Add Yuqiong Liu's and Eric Kemp's MERRA2 updates.  These updates:
+
+    * Read the swgdn and lwgab fields from the rad files.
+    * Adjust the times when LIS switches streams.
+
+  * Update the MERRA2 testcase
+
+  * Document the MERRA2 run-time options
+
+- Merge 7/development into 7/public7.0
+
+  I merged/cherry-picked r5484 from 7/development to 7/public7.0.
+
+  These updates consist of:
+
+  * relaxed the error checking on corrupted files so that the code wouldn't
+    abort, rather revert to a previous day's file
+
+- Merge branches/untested/p70-r5412-merra2 into 7/public7.0
+
+  I merged r5804:5806 from branches/untested/p70-r5412-merra2 to 7/public7.0.
+
+  These updates consist of:
+
+  * Add support to read MERRA2 metforcing data
+
+  * Correct index to shortwave down (merra-land reader)
+
+    The check to determine whether swd has valid data used the index
+    to lwd.  The code to temporally interpolate swd did use the correct
+    index.
+
+- VIC bug fix for running VIC in subdomain without land grids. 
+
+- Correct an error message for reading restart file. 
+
+- Update RELEASE_NOTES.txt for LIS public release 7.0rp2
+
+
+========================================================================
+Land Information System (LIS) Public Release 7.0rp2 (r5459:5746)
+========================================================================
+
+This patch release includes updates r5459:5746.
+
+These updates consist of:
+
+- Merge 7/development into 7/public7.0
+
+  I merged/cherry-picked r5740 from 7/development to 7/public7.0.
+
+  These updates consist of:
+
+  * Do not reset %zm and %zh for processes with 0 tiles.
+
+- Do not reset noah33_struc%zm and noah33_struc%zh for processes with 0 tiles.
+
+- Function added to count VIC state variables, including ones for VIC lake
+  model. 
+
+- Please update LIS-7 public version for the latest updates for VIC 4.1.2.l.
+
+  Binary restart writing/reading now is supported by LIS-VIC (4.1.2.l).
+  Please add ::
+
+    VIC412 restart file format: "binary" #or "netcdf" 
+
+  to your lis.config file. With binary data format, LIS-VIC is much faster
+  when writing/reading restart file.
+
+- Add Kristi Arsenault's CMAP updates
+
+  These update include adding a new grid change update (~2012) and
+  correcting the timing of when to change grids.
+
+- Update ldt.config file for internal testcases
+
+- Minor correction to get_cmap.F90 - 
+  Files were being skipped when certain output time
+  interval selected (e.g., at or greater
+  than cmap timestep of 6hr). Now every
+  6-hr file is read in when a model run time 
+  step is 6-hr or greater (e.g., daily). 
+
+- Update RELEASE_NOTES.txt for LIS 7 public release patch rp1
+
+
+========================================================================
+Land Information System (LIS) Public Release 7.0rp1 (r5257:5458)
+========================================================================
+
+This patch release includes updates r5257:5458.
+
+These updates consist of:
+
+- Update public testcases
+
+- LaTeX fixes for in-line documentation
+
+- Correct when LIS writes output when coupled with WRF
+
+- Merge 7/development into 7/public7.0
+
+  I merged r5193:5400 from 7/development to 7/public7.0.
+
+  These updates consist of:
+
+  * cleanups in the RTM implementations
+    changed the sprinkler irrigation to use Noah's soil layers
+    (removed the hardcoded layers)
+  
+  * Update domain definition in GrADS descriptor files for GLDAS testcase
+  
+  * changing assumed arrays to allocatables
+  
+  * Convert a locally declared array to allocatable
+  
+  * Merge 7/development_svk into 7/development
+  
+    I merged r5362:5389 from 7/development_svk to 7/development.
+  
+    These updates consist of:
+  
+    * gfortran fixes, changed array definitions to allocatables instead of
+      pointer, changed assumed arrays to allocatables 
+ 
+    * removed the commented sections put in for debugging
+ 
+    * configure template for gfortran
+ 
+    * changed assumed shape arrays to allocatable, compiling fixes for gfortran
+ 
+    * A few models turned off for debugging, compiler warning for irrigation
+      modules fixed 
+ 
+    * Aliasing fixes related to MPI_calls 
+  
+  * Revert commit r5378
+  
+    This was a bad merge.
+  
+  * Correct calls to LIS_writeHeader_restart and LIS_closeHeader_restart
+  
+  * cleanups related to 
+
+    1. gfortran support
+    2. changing assumed shape arrays to allocatables 
+  
+  * One small fix and several cleanups.
+  
+    In core/LIS_historyMod.F90, added "trim" to the unit
+    strings in the call to write binary output.  This fix
+    makes the ASCII stats file look better and consistent
+    with the other output formats (netCDF, etc.).
+  
+    In core/LIS_histDataMod.F90, removed some comments
+    only related to the AFWA GRIB file outputs, as they
+    no longer describe the current code.
+  
+    In arch/Config.pl, added an trailing space to the
+    print statements querying the netCDF shuffle and
+    deflate filters, and the deflate level.
+  
+    In make/Makefile, corrected a typo for SAC-HTET in
+    a comment line.
+  
+  * inadvertently took out some trim statements
+  
+  * Add reset_princeton routine from Bailing Li
+  
+  * Minor fix to logunit statement (will print
+    for any forcing chosen, not just NLDAS-2).
+  
+  * small tweaks towards performance improvements
+  
+  * Correct computation of accumulative soil moisture
+  
+  * Made minor updates to the sprinkler irrigation 
+    scheme code, which include a check for whether
+    the write irrigation output switch is turned on;
+    increased flexibility of allowing for other
+    crop maps and crop classification schemes;
+    and updated diagnostic log information depending
+    on land cover classification chosen.
+  
+  * bug fixes related to AFWA test case and bug fixes to the history writer
+  
+  * Added new LIS diagnostic log statements with
+    which to catch when certain spatial downscaling
+    options are accidentally selected when trying to
+    run on the NLDAS domain with NLDAS forcing.
+  
+  * Updated landcover type check in the irrigation
+    sprinkler version.  
+
+- Updates have been made to OHD SAC-HTET for reading daily maximun and minimum
+  temperature (TMXMN) data.  Before the updates, all TMXMN data were organized
+  as many datasets in one NetCDF file. For a long term simulation, the NetCDF
+  Fortran reader is slow because the number of datasets is large. Now the TMXMN
+  data are organized day by day. One NetCDF file corresponds to one day,
+  including a dataset of daily maximum temperature and a dataset of daily
+  miminum temperature. After the updates, LIS is significantly faster than
+  before when using the OHD RDHM forcing dataset.
+
+- Updates have been made to improve LIS performance on reading daily maximum
+  and minimum temperature for SAC-HTET when using OHD RDHM forcing data. 
+
+- Correct quarterly albedo
+
+  This fix corrects when the quarters transition, and it adjusts the
+  temporal weights applied to the quarterly albedo data.
+
+- Merge NU-WRF updates into 7/public7.0
+
+  I manually merged commits r2329:2341 from the v7_lis7merge branch
+  of the NU-WRF repository on progress,
+  svn/nu-wrf/code/branches/features/v7_lis7merge, into
+  LIS' 7/public7.0 branch.
+
+  These updates consist of:
+
+  * Clean up LIS code to remove debugging statements
+
+  * updates related to NUWRF testing and debugging - includes the MPI aliasing
+    fixes
+
+  * put the trims back - inadvertently taken out
+
+  * turning off the inc_water_pts use 
+
+  * part of the fixes to the crash 
+
+  * potential fix for the WRF-LIS crashes
+
+  * bug fix to the history writer and minor cleanups
+
+- Remove old options from Princeton readcrd routine
+
+- Add Lambert projection parameters into GRIB1 output files
+
+- Update GRIB parameter id values in Noah 3.3 MODEL_OUTPUT_LIST.TBL for testing
+
+- Honor the default setting for
+  "Enable AFWA-specific grib configuration settings? (1-yes, 0-no, default=0): "
+  in the Config.pl script
+
+- Remove debugging print statement
+
+- Update LIS-WRF coupling mode
+
+  LIS now accepts WRF's time as is, and the order in which LIS writes
+  output and restarts now matches WRF's order.
+
+  A new routine was added to ensure that LIS writes the final output
+  and restart files when WRF ends the simulation.
+
+- Add relsmc to LIS to WRF export list for Noah 2.7.1
+
+- Add relsmc to LIS to WRF export list for Noah 3.2
+
+- Add relsmc to LIS to WRF export list for Noah 3.3
+
+- Set several undefined variables used in noah33_setwrfexport
+
+  These variables are used by the noah33_setwrfexport to set the
+  LIS-to-WRF export state.  They were not properly defined in noah33_main.
+
+  | noah%soilm
+  | noah%qs
+  | noah%qsb
+  | noah%qsm
+  | noah%rootmoist
+
+- Set several undefined variables used in noah32_setwrfexport
+
+  These variables are used by the noah32_setwrfexport to set the
+  LIS-to-WRF export state.  They were not properly defined in noah32_main.
+
+  | noah%soilm
+  | noah%qs
+  | noah%qsb
+  | noah%qsm
+  | noah%rootmoist
+
+- Update internal testcases
+
+  Specify GTOPO30_LIS in the param_attribs.txt file.
+
+- Update VIC 4.1.1 testcase
+
+- Update VIC 4.1.1 so it compiles alongside VIC 4.1.2
+
+- Modifications have been made to VIC 4.1.2.l to enhance nesting support. 
+
+
+========================================================================
+Land Information System (LIS) Public Release 7.0r (r5256)
+========================================================================
+
+This is the initial release of the public version of LIS 7.0.
+
+- Requires companion Land Data Toolkit (LDT) input data and parameter
+  preprocessor
+- Includes VIC 4.1.2.l
+- Includes RDHM 3.5.6 (SacHTET and Snow17)
+- Includes demand sprinkler irrigation
+- Includes HYMAP routing
+- Includes NLDAS routing
+- Includes radiative transfer model support
+
+  - LIS-CRTM2EM --- LIS' implementation of JCSDA's CRTM2 with
+    emissivity support
+
+    See http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/
+
+  - LIS-CMEM3 --- LIS' implementation of ECMWF's CMEM 3.0
+
+    See http://old.ecmwf.int/research/data_assimilation/land_surface/cmem/cmem_source.html for the original code.
+
+- Includes parameter and uncertainty estimation support
+
+  - Genetic algorithm (GA)
+  - Monte Carlo sampling (MCSIM)
+  - Differential evolution Markov chain z (DEMCz)
+
+- Supports ensemble of met forcing sources
+- Supports GEOS 5 forecast met forcing data
+- Supports PALS met forcing data
+- Supports PILDAS met forcing data
+- Supports ECV soil moisture data assimilation
+- Supports GRACE data assimilation
+- Supports PMW snow data assimilation
+- Supports SMOPS soil moisture data assimilation
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.2rp1 (r4421:4606)
+========================================================================
+
+This patch release includes updates r4421:4606.
+
+These updates consist of:
+
+- Merge 6/development into 6/public6.2
+
+  I merged r4604:4605 from 6/development to 6/public6.2
+
+  These updates consist of:
+
+  * Update arch/configure.lis.linux_ifc because JasPer library was moved
+
+- Merge 6/development into 6/public6.2
+
+  I merged r4581:4603 from 6/development to 6/public6.2
+
+  These updates consist of:
+
+  * Update RELEASE_NOTES.txt for LIS 6.1rp7
+   
+- Merge 6/development into 6/public6.2
+
+  I merged r4566:4580 from 6/development to 6/public6.2
+
+  These updates consist of:
+
+  * Merge 6/public6.1 into 6/development
+
+    I merged r4431:4579 from 6/public6.1 to 6/development.
+
+    These updates consist of:
+
+    * ProTeX updates
+
+    * Merge NU-WRF updates into 6/public6.1
+      
+      I manually merged commits r1412:1720 from the trunk of the NU-WRF
+      repository on progress, svn/nu-wrf/code/trunk, into LIS' 6/public6.1
+      branch.
+      
+      Please note that even though some of these updates are for gfortran
+      support,
+      gfortran is not yet supported in the public release of LIS 6.  These
+      particular updates are included for completeness.
+      
+      These updates consist of:
+
+      * Merged in updates from v6_macosx branch through r1716.
+
+        * Replaced several pause statements in LIS code. Pause will cause
+          LIS or
+          WRF/LIS to hang indefinitely if executed in batch mode.
+        * Changed several C files and a yacc file to #include stdlib.h
+          instead of
+          malloc.h. (malloc.h is non-standard and doesn't exist on OS X.)
+        * Changed LIS and LVT Makefiles to greatly trim number of include
+          paths.
+          OpenMPI mpif90 barfed with the original list, but it turns out
+          most paths are unnecessary.
+        * Changed LIS C function mangling for gfortran so only single
+          underscore is appended.
+        * Changed LIS lib Makefiles to pass optimization flags for gfortran.
+          Also, changed LIS_ARCH from Darwin_intel to Darwin_gfortran.
+        * Tweaked ProTex comments to trim end spaces to appease gfortran.
+       
+      * Modified Fortran code to avoid use of system function to create
+        directories.
+
+      * Calls to 'system' fail when LIS is run with SGI MPT. Now uses customized
+        C function that uses the POSIX mkdir function under the hood. C code
+        includes
+        macro to appropriately mangle the name for linking with Fortran.
+
+      * Added new create_subdirs function to create directories.
+
+        This is a replacement for invoking the operating system 'mkdir'
+        command via function system. The system call fails when LIS or
+        WRF/LIS are compiled with SGI MPT. This new C function calls the
+        POSIX mkdir function instead. 
+
+        TODO: Handle name suffix conventions across different operating
+        systems.
+
+- Merge 6/development into 6/public6.2
+
+  I merged r4432:4563 from 6/development to 6/public6.2
+
+  These updates consist of:
+
+  * Add Yuqiong Liu's ANSA SCF DI updates
+
+    The following modifications are made to LIS6.2 to enable assimilation
+    of snow cover fraction data using direct insertion:
+
+    * added the observation plugin for assimilating ANSA SCF
+
+      dataassim/obs/ANSA_SCF
+
+    * modified the following file to allow assimilating SCF uisng either the
+      standard (Rodell & House 2004 JHM) or customized (Liu et al 2013 AWR)
+      direct insertion approaches:
+
+      lsms/noah.3.2/da_snow/noah32_map_snow.F90
+
+    * modified the following file in Noah3.2 to save snow density value for
+      use in assimilation
+
+      | lsms/noah.3.2/noah32_module.F90
+      | lsms/noah.3.2/module_sf_noah32lsm.F90
+      | lsms/noah.3.2/noah32_main.F90
+
+    * modified the following files in the plugins directory to allow
+      ANSA SCF assimilation for Noah.3.2
+
+      | plugins/LIS_pluginIndices.F90
+      | plugins/LIS_DAobs_pluginMod.F90
+      | plugins/LIS_lsmda_pluginMod.F90
+
+    * modified the follwoing files to allow reading in parameters for
+      assimilating SCF using direction insertion
+
+      | core/LIS_PRIV_rcMod.F90
+      | core/LIS_readConfig.F90
+
+    * modified Filepath to reflect new ANSA SCF observation plugin
+
+    * remove the observation plugin for assimilating ANSA SCA.  The new
+      ANSA SCF is more accurate.
+
+  * Add "#NETCDF, no HDF, GRIBAPI" flags to arch/configure.lis.linux_ifc
+
+  * Correcting the latitude of origin value for NARR forcing.
+
+    The correct values for the NARR grid can be found here:
+    http://www.esrl.noaa.gov/psd/data/narr/format.html
+
+  * Remove debugging code from Noah 3.3 read/write restart routines
+
+  * Update length of file name
+
+  * Add Eric Kemp's deep soil temperature TMN updates to Noah 3.3.
+
+  * Bug fix: correct logic regarding evaluating certain conditional statements
+
+    Fortran (nor C) does not guarantee the order in which expressions in a
+    conditional statement will be executed.  In a statement like::
+  
+         if ( X .and. Y ) then ...
+  
+    One does not know whether X will be evaluated first or Y.  This will be a
+    problem when Y depends on X. For example,::
+   
+         if ( present(X) .and. (X .eqv. .true.) ) then ...
+     
+    (X .eqv. .true.) may be evaluated first, but if X is not present, then X
+    has no value, resulting in either a crash or undefined behavior.
+     
+    This example should be written as::
+    
+         if ( present(X) ) then
+            if ( X .eqv. .true. ) then ...
+   
+- Merge 6/development into 6/public6.2
+
+  I merged r4419:4431 from 6/development to 6/public6.2
+
+  These updates consist of:
+
+  * Bug fix: WRFout reader should read RAINNC+RAINC when RAINC is present,
+    otherwise just RAINNC
+  
+  * Add Eric Kemp's deep soil temperature TMN updates to Noah 2.7.1 and Noah 3.1
+
+  * Add check to determine whether LIS_rc%tbot_update_lag was enabled
+ 
+  * Merge NU-WRF updates into 6/public6.1
+ 
+    I manually merged commit r1411 from the trunk of the NU-WRF
+    repository on progress, svn/nu-wrf/code/trunk, into LIS' 6/public6.1
+    branch.
+  
+    These updates consist of:
+   
+    *   Merged in v6_lisplugins branch
+     
+    *   Bug fix: Moved call to LIS_createTmnUpdate after LIS_domain_init.
+       
+        This fixes a bug in coupled WRF-LIS where the TmnUpdate pointer is
+        allocated before the number of tiles is set by LIS. It does not
+        affect uncoupled LIS.
+      
+    *   Bug fixes to reading dynamic deep soil temperature data from LIS
+        restart file.
+     
+    *   Added bug fixes to output tempbot for earlier Noah LSM versions when
+        requested.
+      
+    *   Bug fix.  Now allows LIS to write tempbot to history file when
+        requested.
+
+    *   Bug fixes to dynamic deep soil temperature option.
+
+    *   Added soil temperature adjustment module. Fixes to restart code.
+
+    *   Initial implementation of WRF deep soil temperature adjustments in WRF.
+       
+        Option #1 adjusts climatological deep soil temperature to model
+        terrain height
+        using standard atmospheric lapse rate (6.5 K / km). Always used in
+        REAL.
+
+        Option #2 parameterizes the deep soil temperature as the weighted
+        average of
+        (a) the annual mean skin temperature from the previous calendar year,
+        and (b) the mean daily skin temperature from the most recent N days
+        of the simulation,
+        where N is set by the user (140 days is recommended).  The equation
+        is from Salathe et al, J. Climate, 2008::
+
+            Tbot = alpha*mean_annual_skinT_prev_year +
+                   (1-alpha)*mean_daily_skinT_prev_N_days
+
+        where alpha is 0.6. These values of alpha and N are tuned to published
+        observed values of 30% amplitude damping and 70-day lag from skin
+        temperature (per Salathe paper).
+
+        Time series and sums are saved to update these terms at the end of
+        each day
+        (right term) or at the end of the year (left term). I added code to
+        write and
+        read these fields to/from LIS restart files. Note that if LIS is
+        cold started,
+        the climatological deep soil temperature is initially used for both
+        terms and for the N-sized daily time series.
+
+        NOTES:
+
+        * This code compiles but is not test run yet.
+        * Only supports Noah 3.2 LSM.
+        * Should support either LIS retrospective or WRF/LIS mode.
+
+    *   Cherry-pick r4123 from LIS 6/development branch
+
+    *   Bug fix regarding interpolating precip for WRFout forcing reader
+       
+        WRF writes precipitation accumlated from the beginning of the
+        simulation.  Therefore compute the difference between the bookends
+        to find the accumulated precipitation for the hour.
+
+    *   Changed code for setting wrfout file names.
+       
+        First version of this code was hardwired for original IFLOODS
+        configuration,
+        where some wrfout files were created 9 or 18 seconds past the hours.
+        This is now changed to remove "special rules" and instead just look
+        for files at the expected standard times (e.g., 60 minutes at top
+        of the hour for WRF).
+
+        Users with time steps that prevent wrfout writes at those exact
+        time should create symbolic links to match the date/time filenames
+        expected by LIS.
+       
+    *   Modified time steps in LIS LSM options to pick correct domain value.
+
+        Note that time step logic for writing history or restart files is
+        undisturbed.
+
+    *   Several bug fixes to address WRF/LIS coupling with nests.
+
+        1) *CRITICAL* Changed LIS Noah.3.2 LSM to use proper domain timestep
+           rather
+           than the smallest of the timesteps for all domains.
+        2) TMN (Deep soil temperature) is now passed from WRF to LIS.
+           Requires following entry to forcing_variables.txt::
+
+             TMN:        1  1  K       # Soil Temperature at Lower Boundary
+ 
+           Further work is needed on this, as the TMN used in a LIS spin-up
+           is not necessarily the same as that provided by REAL.
+ 
+        3) Minor bug fix to cosz (cosine of zenith angle) calculation input
+           to LIS. Currently cosz is not used, but it is passed to the LIS
+           Noah LSM and presumably will be used in the future.
+    
+    *   Merge LIS 6.1 updates (r4067:4090) into NU-WRF
+       
+        * This brings the version of LIS within NU-WRF up to 6/public6.1 r4090.
+
+        * Change build system to include LIS water points again.
+
+        * Now use landusef and the LIS tiling algorithm to pick dominant land
+          cover.
+
+        * Tweak WPS LANDMASK to reconcile with dominant soil type and land
+          cover.
+
+        * Restored bug fix for writing netCDF output header.
+
+        * Bug fix to read shdmin and shdmax from WPS file.
+
+        * Added routine to fetch MMINLU attribute from WPS file.
+   
+        * Restored implementation of WRFout suppforcing plugin.
+    
+        * Added WPS shdmax and shdmin plugins.  Compiles.
+
+        * Merge LIS 6.1 updates (r3885:4066) into NU-WRF
+
+          This brings the version of LIS within NU-WRF up to 6/public6.1
+          r4066.
+
+        * Second round of fixes.  LIS now runs with WRFout plugin.
+       
+        * Added LIS as a separate compile target.
+
+          This code is a bit unsettled -- LIS is built, but I don't know
+          what will happen if both WRF and LIS are requested as targets.
+
+        * Added WRFout plugin to LIS.
+       
+- Update RELEASE_NOTES.txt for LIS 6.2r public release
+
+  Highlight that Cable 1.4b is restricted distribution.
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.2r (r3524:4420)
+========================================================================
+
+This is the initial release of the public version of LIS 6.2.
+
+This release includes updates r3524:4420.
+
+- Includes VIC 4.1.1.
+- Includes CABLE 1.4b --- restricted distribution.
+- Includes Catchment F2.5.
+- Includes Noah 3.3.
+- Includes SiB2.
+- Includes WRSI.
+- Support for North American Mesoscale Forecast System (NAM)
+  "242 AWIPS Grid -- Over Alaska" product.
+- Support for USGS potential evapotranspiration (PET) data (for use
+  in WRSI).
+- Support for Climate Prediction Center's (CPC) Rainfall Estimates
+  version 2 (RFE2) daily precipition (for use in WRSI).
+- Support to apply lapse-rate correction to bottom temperature field
+  (for use in Noah).
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.1rp7 (r3884:4599)
+========================================================================
+
+- Disable LIS_FORC_CO2
+
+  Support for this forcing variable is not available in LIS public 6.1.
+
+- Revert r4578 update to Makefile
+
+- Add "#NETCDF, no HDF, GRIBAPI" flags to arch/configure.lis.linux_ifc
+
+- Correcting the latitude of origin value for NARR forcing.
+
+  The correct values for the NARR grid can be found here:
+  http://www.esrl.noaa.gov/psd/data/narr/format.html
+
+- ProTeX updates
+
+- Merge NU-WRF updates into 6/public6.1
+
+  I manually merged commits r1412:1720 from the trunk of the NU-WRF
+  repository on progress, svn/nu-wrf/code/trunk, into LIS' 6/public6.1
+  branch.
+
+  Please note that even though some of these updates are for gfortran support,
+  gfortran is not yet supported in the public release of LIS 6.  These
+  particular updates are included for completeness.
+
+  These updates consist of:
+
+  * Merged in updates from v6_macosx branch through r1716.
+
+    * Replaced several pause statements in LIS code. Pause will cause LIS or
+      WRF/LIS to hang indefinitely if executed in batch mode.
+
+    * Changed several C files and a yacc file to #include stdlib.h instead of
+      malloc.h. (malloc.h is non-standard and doesn't exist on OS X.)
+
+    * Changed LIS and LVT Makefiles to greatly trim number of include paths.
+      OpenMPI mpif90 barfed with the original list, but it turns out most paths
+      are unnecessary.
+
+    * Changed LIS C function mangling for gfortran so only single underscore is
+      appended.
+
+    * Changed LIS lib Makefiles to pass optimization flags for gfortran. Also,
+      changed LIS_ARCH from Darwin_intel to Darwin_gfortran.
+
+    * Tweaked ProTex comments to trim end spaces to appease gfortran.
+
+    * Modified Fortran code to avoid use of system function to create directories.
+
+      Calls to 'system' fail when LIS is run with SGI MPT. Now uses customized
+      C function that uses the POSIX mkdir function under the hood. C code includes
+      macro to appropriately mangle the name for linking with Fortran.
+
+    * Added new create_subdirs function to create directories.
+
+      This is a replacement for invoking the operating system 'mkdir' command via
+      function system. The system call fails when LIS or WRF/LIS are compiled with
+      SGI MPT. This new C function calls the POSIX mkdir function instead. 
+      TODO: Handle name suffix conventions across different operating systems.
+
+- Wrap long lines to appease Portland Fortran compiler
+
+- Update testcases for new "TBOT terrain adjustment option:"
+ 
+- Add Eric Kemp's bottom temperature lapse-rate correction
+ 
+- Add Soni Yatheendradas' TRMM 3B42V6 updates to TRMM 3B42RT
+ 
+- Add Soni Yatheendradas' TRMM 3B42V6 updates
+
+  From Soni Yatheendradas:
+
+  Thanks to Yudong and Jonathan Case for helping out with debugging.
+
+  Per my e-mail 06/20/13:
+
+  TRMM data file time stamp is every 3Z, e.g., 6Z, 12Z etc, so for any file,
+  it’s time validity is from 1.5 hrs before to 1.5 hrs after.
+
+  Different tests on the earlier TRMM reader revealed the following:
+
+  1. For runs where (a) time steps had their edges touching the breakpoints,
+  e.g., 30 min and 15 min, and (b) the LIS clock at the end of the 1st time step
+  was not 0Z and was not within the time starting at the breakpoint before 0Z
+  (e.g. not 23.5Z, meaning the lis.config did not start @23Z for a 30-min time
+  step): your run is fine.
+
+  2. For runs where (a) time steps had the breakpoints inside them at their
+  mid-point, e.g., 1 hr and 20 min, and (b) the LIS clock at the end of the 1st
+  time step was not 0Z and was not within the time starting at the breakpoint
+  before 0Z (e.g. not 23Z, meaning the lis.config did not start @22Z for a 1-hr
+  time step): your run was incorrect, since only alternate TRMM files were read,
+  e.g, 0Z, 6Z, 12Z etc. instead of correctly reading 0Z, 3Z, 6Z, 9Z, 12Z etc.
+
+  3. In 1.(b) above, if now the LIS clock at the end of the 1st time step was not
+  0Z but was within the time starting at the breakpoint before 0Z (e.g. 23.5Z,
+  meaning the lis.config started @23Z for a 30-min time step): that and only that
+  1st time step actually read a TRMM data file that was exactly one day behind
+  than what it should have read.
+
+  4. In 2.(b) above, if now the LIS clock at the end of the 1st time step was not
+  0Z but was within the time starting at the breakpoint before 0Z (e.g. 23Z,
+  meaning the lis.config started @22Z for a 1-hr time step): In addition to the
+  error mentioned above in 2 where every alternate file was read, the 1st time
+  step would also have read a TRMM data file one day back as in 3. above.
+   
+  Now, as mentioned in 2. above, there were time steps that had the breakpoints
+  inside them at their mid-point: these should logically have taken the averaged
+  value of the TRMM data files before and after. The current code always read in
+  and implemented only one TRMM file data, never an average. 
+   
+  The entire complex decision structure in get* is now replaced with a much
+  simpler one: for every time step, get the time instants of the beginning and
+  end of that time-step, or time-marks. These time-marks combined with the TRMM
+  data time stamps at or beyond either end of these time-marks now give the
+  weights to average as necessary.  
+  
+  Per Jon Case & my respective e-mails 04/22/13 & 06/24/13:
+  Inside the corrected glbprecip_TRMM3B42RT.F90 file that John Case sent,  the
+  precip_regrid was initialized to -1.0, and towards the end of the
+  glbprecip_TRMM3B42RT subroutine, the suppdata was set to precip_regrid
+  conditional on "(precip_regrid(i,j) .ne. -1.0)". Yudong thinks that it's
+  probably better to have both the initialization and the condition have LIS
+  undef value instead of 1.0. This difference has not been tested, and John Case
+  may have done these to make the min/max values came out right in the GRIB1
+  files.
+  
+  Finally, the averaging of rain that changes in the midst of a time step
+  implemented here might need to be implemented later for other similar precip
+  readers where only value of rain @ the beginning or end of such time step is
+  applied over whole time step.
+
+- Adjust SNODEP reader alarm
+  Set the SNODEP reader alarm to read the hour 12 SNODEP observations
+  at hour 12 not at 11:45.
+
+- Update the legalese at the top of each file
+
+- Bug fix: correct type of local variable
+
+- Update Noah 3.1 Bondville test-case to emphasize that it is a point comparison
+
+- Usersguide updates
+
+- Bug fix regarding interpolating precip for WRFout forcing reader
+
+  WRF writes precipitation accumlated from the beginning of the
+  simulation.  Therefore compute the difference between the bookends
+  to find the accumulated precipitation for the hour.
+
+- Update testcases to reflect updates to LIS_histDataMod
+
+- Bug fix: referencing an array out of bounds
+
+- Bug fix: WRFout reader should read RAINNC+RAINC when RAINC is present,
+  otherwise just RAINNC
+
+- Clean up comments
+
+- Add Eric Kemp's deep soil temperature TMN updates to Noah 2.7.1 and Noah 3.1
+
+- Add check to determine whether LIS_rc%tbot_update_lag was enabled
+
+- Merge NU-WRF updates into 6/public6.1
+
+  I manually merged commit r1411 from the trunk of the NU-WRF
+  repository on progress, svn/nu-wrf/code/trunk, into LIS' 6/public6.1
+  branch.
+
+  These updates consist of:
+
+  * Merged in v6_lisplugins branch
+
+    * Bug fix: Moved call to LIS_createTmnUpdate after LIS_domain_init.
+      This fixes a bug in coupled WRF-LIS where the TmnUpdate pointer is allocated
+      before the number of tiles is set by LIS. It does not affect uncoupled LIS.
+
+    * Bug fixes to reading dynamic deep soil temperature data from LIS restart file.
+
+    * Added bug fixes to output tempbot for earlier Noah LSM versions when requested.
+
+    * Bug fix.  Now allows LIS to write tempbot to history file when requested.g
+
+    * Bug fixes to dynamic deep soil temperature option.
+
+    * Added soil temperature adjustment module. Fixes to restart code.
+
+  * Initial implementation of WRF deep soil temperature adjustments in WRF.
+
+    * Option #1 adjusts climatological deep soil temperature to model terrain height
+      using standard atmospheric lapse rate (6.5 K / km). Always used in REAL.
+
+    * Option #2 parameterizes the deep soil temperature as the weighted average of
+      (a) the annual mean skin temperature from the previous calendar year, and (b)
+      the mean daily skin temperature from the most recent N days of the simulation,
+      where N is set by the user (140 days is recommended).  The equation is from
+      Salathe et al, J. Climate, 2008:
+
+      ::
+      
+        Tbot = alpha*mean_annual_skinT_prev_year +
+               (1-alpha)*mean_daily_skinT_prev_N_days
+      
+      where alpha is 0.6. These values of alpha and N are tuned to published
+      observed values of 30% amplitude damping and 70-day lag from skin temperature
+      (per Salathe paper).
+      
+      Time series and sums are saved to update these terms at the end of each day
+      (right term) or at the end of the year (left term). I added code to write and
+      read these fields to/from LIS restart files. Note that if LIS is cold started,
+      the climatological deep soil temperature is initially used for both terms and
+      for the N-sized daily time series.
+      
+      NOTES:
+
+      * This code compiles but is not test run yet.
+      * Only supports Noah 3.2 LSM.
+      * Should support either LIS retrospective or WRF/LIS mode.
+      
+  * Cherry-pick r4123 from LIS 6/development branch
+
+  * Bug fix regarding interpolating precip for WRFout forcing reader
+
+  * WRF writes precipitation accumlated from the beginning of the
+    simulation.  Therefore compute the difference between the bookends
+    to find the accumulated precipitation for the hour.
+        
+  * Changed code for setting wrfout file names.
+
+    * First version of this code was hardwired for original IFLOODS configuration,
+      where some wrfout files were created 9 or 18 seconds past the hours. This is
+      now changed to remove "special rules" and instead just look for files at
+      the expected standard times (e.g., 60 minutes at top of the hour for WRF).
+      Users with time steps that prevent wrfout writes at those exact time should
+      create symbolic links to match the date/time filenames expected by LIS.
+
+  * Modified time steps in LIS LSM options to pick correct domain value.
+
+    * Note that time step logic for writing history or restart files is undisturbed.
+
+  * Several bug fixes to address WRF/LIS coupling with nests.
+
+    1) *CRITICAL* Changed LIS Noah.3.2 LSM to use proper domain timestep rather
+         than the smallest of the timesteps for all domains.
+
+    2) TMN (Deep soil temperature) is now passed from WRF to LIS.  Requires
+         following entry to forcing_variables.txt::
+
+           TMN:        1  1  K       # Soil Temperature at Lower Boundary
+
+       Further work is needed on this, as the TMN used in a LIS spin-up is not
+       necessarily the same as that provided by REAL.
+
+    3) Minor bug fix to cosz (cosine of zenith angle) calculation input to
+       LIS. Currently cosz is not used, but it is passed to the LIS Noah LSM and
+       presumably will be used in the future.
+
+  * Merge LIS 6.1 updates (r4067:4090) into NU-WRF
+
+    * This brings the version of LIS within NU-WRF up to 6/public6.1 r4090.
+
+  * Change build system to include LIS water points again.
+
+  * Now use landusef and the LIS tiling algorithm to pick dominant land cover.
+
+  * Tweak WPS LANDMASK to reconcile with dominant soil type and land cover.
+
+  * Restored bug fix for writing netCDF output header.
+
+  * Bug fix to read shdmin and shdmax from WPS file.
+
+  * Added routine to fetch MMINLU attribute from WPS file.
+
+  * Restored implementation of WRFout suppforcing plugin.
+
+  * Added WPS shdmax and shdmin plugins.  Compiles.
+
+  * Merge LIS 6.1 updates (r3885:4066) into NU-WRF
+
+    * This brings the version of LIS within NU-WRF up to 6/public6.1 r4066.
+
+  * Second round of fixes.  LIS now runs with WRFout plugin.
+
+  * Added LIS as a separate compile target.
+
+    This code is a bit unsettled -- LIS is built, but I don't know what will
+    happen if both WRF and LIS are requested as targets.
+
+  * Added WRFout plugin to LIS.
+
+- Update SiB2 testcase
+
+  Write snowt as an instantaneous value.
+
+- Bug fix for writing netCDF output header
+
+- Changes to formatting of the testcases for consistency.
+
+  No output changes to the testcases will occur.
+
+- Enable WRFout supplemental forcing reader
+
+- Increase FT_NUM_SUPPFORCE to 40 to support new supplemental forcing readers
+
+- Add WRFout supplemental forcing reader
+
+  Add the WRFout supplemental forcing reader from 6/development r4021.
+
+  This adds the support for using WRF output as the LIS forcing
+  (in support of iFloods project).
+
+- Merge NU-WRF updates into 6/public6.1
+
+  I manually merged commits r1266 and r1349 from the trunk of the NU-WRF
+  repository on progress, svn/nu-wrf/code/trunk, into LIS' 6/public6.1
+  branch.
+
+  These updates consist of:
+
+  * Modified WRF and LIS code to pass snow depth, snow liquid water equivalent,
+    and snow coverage from LIS back to WRF.  Currently only the LIS Noah LSMs
+    are supported.
+
+  * Changed a number of variables from scalars to 1-D arrays.
+
+  * Subroutine sib2_routines expects a number of arguments to be arrays.  Compiling
+    with '-gen-interfaces -warn interfaces' triggered errors.  Note that the 
+    answers should not change -- when sib2_routines is called, the arrays are
+    assumed to be of size 1, equivalent to scalars.  This is only technically 
+    a bug, not a major problem.
+
+- Modified the setting of the data in the "mndy" array
+  in SiB-2's astro routine.  No change to the output.
+  The change was made to satisfy very strict compile
+  settings.
+
+- Update testcases to reflect new lis.config option: "TBOT data source:"
+
+- Add support to write TBOT to output file when running TEMPLATE lsm
+
+  This requires defining the TBOT_TESTING macro found in the
+  template_main.F90 file.
+
+- Add WPS testcase
+
+- Update LIS history writer
+
+  Add support to write albedo and max snow albedo parameters into
+  LIS history files.
+
+- Add support to read WPS-based parameter data
+
+  These updates were manually copied from
+  branches/untested/p61_NDHMS r3763.
+
+- Bug fix: set q for both monthly and quarterly albedo
+
+- Bug fix: correct read_WPStexture routine
+
+  This routine was incorrectly using SOILCTOP to determine soil texture.
+
+  SOILCTOP is 16-category top-layer soil type *fractions*.  This routine
+  was treating it as a 0-1 map of each category.
+
+- Added updated SiB-2 LSM testcase.
+
+- Small fix to the CLSM-F2.5 testcase README file
+  and MODEL_OUTPUT_LIST.TBL file for consistency.
+
+- Update testcases to reflect updates to LIS_histDataMod
+
+- Final code modifications for correcting
+  the SiB-2 implementation within LIS-6.
+
+- Continued to update the SiB-2 LSM code for
+  the latest version of LIS-6/development.
+
+- Moved SiB2 directory to be consistent with other LSMs,
+  and started to make the code more consistent with other
+  LSMs as well.  Starting to update code for latest LIS.
+
+- Added sample lines to the MODEL TBL for the new
+  ALMA variables.
+
+- Reorganized LIS_histDataMod.F90 so the variables
+  are closer to the ALMA output order and grouping.
+
+  Added the following output variables to LIS_histDataMod.F90:
+
+  WaterTableD, LWup, SAlbedo, SnowTProf, TotSoilCarb, TotLivBiom
+
+  Added the follwing outputs to CLSM-F2.5:
+
+  WaterTableD, LWup, Salbedo, SnowTprof, TWS (Terrestrial Water Storage)
+
+- Fixed several lines of code to ensure that latitude
+  and longitude are consistently used in the setting
+  of the domains and tiles in many of the projections.
+  Bugs were found and fixed that inconsistenly used
+  array values that mixed between latitude and longitude.
+
+  Many thanks to Kristi Arsenault for finding the issue
+  and identifying a solution.
+
+- Set some undefined variables in noah33_lsmMod.F90,
+  and made some other small changes so all Noah-3.+
+  versions have consistent code.
+
+- Change VIC forcing index
+
+  I changed the VIC forcing index, LIS_vicforcingId, from 16 to 31. ::
+
+    LIS_vicforcingId = 31 
+
+  The old value of 16 conflicted with the index for Stage IV
+  precipitation, LIS_stg4Id.
+
+- Change standard name of output variable snow cover from Snowcover to SnowCover
+
+  This is used when creating the NetCDF header.
+
+- Bug fixes for MERRA baseforcing.
+
+- Adjust NLDAS2 forcing domain definition
+
+- Fixed a bug which used undef data out of their respective domains
+  (e.g., higher than 50 for 3B42V6). 
+
+- Correct output of SMLiqFrac
+
+  Small fix to Noah 2.7.1 to correct the output of SMLiqFrac
+  to make it consistent with Noah 3.2 and Noah 3.3.
+
+- Update lis.config documentation
+
+  Add documentation for the following NLDAS2 supplemental forcing options::
+
+    NLDAS2 data center source:
+    NLDAS2 use model based pressure:
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.1rp6 (r3850:3883)
+========================================================================
+
+- Resolve DA plugin omissions
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.1rp5 (r3735:3849)
+========================================================================
+
+- Correct LIS_MOC_ROOTMOIST output units
+
+- Correct running domain specification for Noah 3.1 Bondville testcase
+
+- Update catchment testcase
+
+  The lis.config options "tile coord file" and "tile veg file" were
+  renamed to "Catchment tile coord file" and "Catchment tile veg file",
+  respectively.
+
+- updates and cleanups to the perturbation schemes
+
+- small updates to the DA subsystem (in preparation for the tutorial)
+
+- manually add the lsms/noah.3.2/da_soilm files
+
+- Add VU_AMSREsm, MODISsca, and ANSA_SNWD support
+
+  Manually add VU_AMSREsm, MODISsca, and ANSA_SNWD support
+  from r3816 6/development to 6/public6.1.
+
+- Remove syntheticlst from 6/public6.1
+
+- Update lis.config
+
+  Changes to lis.config file for inclusion in Users Guide.
+
+- Remove old data assimilation test cases from 6/public6.1
+
+- Add synthetic soil moisture ensemble kalman filter test case
+
+- Set gmaoenkf_struc%forecast_var = LIS_rc%udef
+
+  The EnKF diagnostic variable gmaoenkf_struc%forecast_var was not set
+  when Observations%assim was false.  When Observations%assim is false
+  set gmaoenkf_struc%forecast_var = LIS_rc%udef.
+
+- Comment out syntheticlst.
+
+  This was removed from 6/public6.1.
+
+- Add additional GrADS descriptor file
+
+- Add SWE DA support to Noah 3.2
+
+- Add synthetic snow water equivalent (swe) ensemble kalman filter test case
+
+- Apply dynamic observation error 
+
+  These are Yuqiong Liu's updates to apply dynamic observation error 
+  to GMAO ENKF.
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.1rp4 (r3515:3734)
+========================================================================
+
+- Bug fix: upscaling code did not properly check mask and neighbours
+
+- Bug fix: remove extraneous ssdev argument from call to LIS_readObsAttributes
+
+- Bug fix: reset negative GDAS precip rates to 0.
+
+  The hrf06 file is a 6 hour forecast from hr.  So it contains the events
+  that also occurred during the 3 hour forecast from hr, namely, hrf03.
+  Thus hrf06 contains the precip from hrf03 plus any additional precip that
+  occurred in the following 3 hours.
+
+  Should (2*hrf06 - hrf03) yield negative values for precip, then we
+  assume that there was no additional precip for the last 3 hours of
+  that 6-hour forecast and that the run of the 6-hour forecast produced
+  slightly different results for the first 3 hours (as compared against
+  the hrf03 forecast).
+
+  When LIS is using values from an hrf06 file, then LIS has already
+  run over the period that corresponds to the first 3 hours of that
+  6-hour forecast.  LIS needs data corresponding to the last 3 hours.
+  Thus always reset negative precip rates to 0.
+
+- Add Joe Santanello's porosity updates from NU-WRF r1177.
+
+  Log message from NU-WRF:
+
+  Porosity is now saved in LIS for NOAH 2.7.1, NOAH 3.1, NOAH 3.2, and CLM2
+  LSMs, exported back to WRF, and passed to GOCART dust emission module.
+  Original porosity values from NOAH or RUC LSMS are used if LIS is not selected
+  as the LSM.
+
+- Bug fix: TRMM 3B42RT routines were not correctly interpolating and
+  checking precip rates
+
+  Set the logical bit mask, lb, used by the spatial interpolation routines.
+  Check precip_regrid against the undefined value -9999.
+
+- Bug fix: GDAS was producing negative precip rates
+
+  pcp comes from the averaged GDAS forcing data.
+  In some cases, it is derived from the hrf06 and hrf03 values
+  ( 2*hrf06 - hrf03 ).
+
+  One would expect the 2*hrf06 precip to be greater than or equal to
+  the hrf03 precip, but in some cases it is slightly smaller.
+  When the 2*hrf06 precip is slightly smaller than the hrf03, one gets
+  a small negative precip rate.  Trap this small rate and reset it to 0.
+
+- Fixed a bug in the call to "SIBALB".  The call incorrectly
+  sent the snow depth variable "SNDZ" before the snow water
+  equivalent variable "WESN" in the list of arguments.  They
+  have now been switched to the correct order as expected in
+  the subroutine SIBALB.
+
+  Further research revealed that this bug existed in the
+  Catchment driver as well (outside of LIS).  This bug was
+  discovered/fixed in the Catchment driver in October 2010.
+
+  This bug is an issue only when running on the Catchment
+  domain, and does not affect simulations run in other
+  domains (lat/lon, etc.).
+
+- Changed code to require adding "Catchment" to the
+  two following lines in the "lis.config" file::
+
+    tile coord file:
+    tile veg file:
+
+  Now the lines in the "lis.config" file must be::
+
+    Catchment tile coord file:
+    Catchment tile veg file:
+
+- Fixed the following three items in Catchment's code
+  to transfer forcing to the tile:
+
+  1) Catchment now correctly sets precipitation as snowfall
+     when the forcing air temperature is less than freezing.
+     Previously, precipitation would be set as snowfall when
+     the air temperature was less than or equal to freezing.
+     The change was made to be consistent with the Catchment
+     offline driver.
+
+  2) When the precipitation is snowfall, the code now sets
+     the convective rainfall to zero.  Previously, the code
+     was not setting this value to zero, leading Catchment
+     to calculate a negative value for large-scale rainfall.
+
+  3) The code now checks that the convective rainfall is
+     not more than the total rainfall.
+
+- Add Jiarui Dong's core polar stereographic and hrap projections updates
+
+- Bug fix: fix allocation for array param_dd
+
+  I increased the size of param_dd from 6 to 8.
+
+- Bug fix to cat_main.F90 by Hiroko Kato
+
+  The LIS_gfrac(nid)%greenness(:) array is a 1-d array in tile-space.
+  It was being looked up as if it were in 1-d grid-space.
+
+  The catchment routine expects an array of catchment tile id's (cat_id)
+  to be passed in.  This cat_id array is not used, but it was not
+  initialized.  This has been corrected.
+
+  Index into cat_struc(nid)%cat_param(:) for LIS_MOC_SOILMOIST and
+  LIS_MOC_ROOTMOIST output was fixed.
+
+- Small fixes to Noah3.1, Noah3.2, and Noah3.3 to correct the
+  output of SMLiqFrac, and to fix the output warning message
+  to the lisdiag file for the default minimum greenness value.
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.1rp3 (r3124:3514)
+========================================================================
+
+This patch release includes updates r3124:3514.
+
+These updates consist of:
+
+- Bug fix: WRF-LIS coupling; only advance LIS' clock when running the
+  innermost nest.
+
+  The previous revision of this file advanced LIS' clock on every call.
+  This caused time within LIS to run ahead of the time within WRF.
+  This is a workaround that keeps the innermost nest in sync with WRF;
+  however, outer nests in LIS will be one outermost timestep behind WRF.
+
+  In WRF each domain/nest has its own clock.  WRF first solves its
+  outermost nest, advancing the outer clock time from t1 to t2.
+  Then WRF solves its inner nest, advancing that clock from t1 to t2.
+  When passing time from WRF into LIS, LIS sees time advancing forward
+  and then receding backward.
+
+  Attempts to correct this issue within LIS by resetting LIS' clock have
+  failed.  I am not able to get the ESMF alarms to ring at the proper times
+  after I have reset LIS' clock.  The alarms either do not ring, ring too
+  soon, or ring too often.
+
+- Add zlib to the LDFLAGS for Linux IFC systems
+
+- Updates for compiling on IBM/AIX systems.
+
+- Update NLDAS1 and NLDAS2 testcases
+
+  I reset the "NLDAS1 data center source:" and the "NLDAS2 data center source:"
+  options to be consistent with the nldas and nldas2 testcases currently
+  available on the LIS website.
+
+- Update Noah output
+
+  I added Chris Franks' minimum rh and relative soil moisture output updates
+  to Noah 3.1.
+
+  They were already in Noah 2.7.1 and Noah 3.2.
+
+- Update Noah output
+
+  I have added the CH, CM, and mixing ratio output updates from Noah 2.7.1 into
+  Noah 3.1 and Noah 3.2.
+
+- Bug fix: noah31%q1 was used without being set.
+
+- Bug fix: correct the label for Noah's q1.
+
+  I incorrectly labelled Noah's q1 as relative humidity instead of mixing ratio.
+
+- Bug fix: AIX does not like the function style system call.
+
+- Broke several long lines into shorter lines to appease the PGI compiler.
+
+- Enhancement to make reading 3B42RT compressed files (.gz) more reliable.
+
+- Enhancement to make reading CMORPH compressed files (.Z) more reliable.
+  Tested with parallel runs, with compressed and uncompressed data files
+  producing identical results. 
+
+- Checking in Kristi's changes for the NLDAS-1 and NLDAS-2 supplemental
+  forcing code to be able to read in forcing data from the GES DISC.
+  The GES DISC version of NLDAS forcing datasets have a different naming
+  convention, directory structure, and (one different) GRIB ID value;
+  however, the values of the fields are the same as that currently on
+  the LIS project disk and/or from the NCEP/EMC ftp site.
+
+  Note that the lis.config also changes for running with NLDAS-1
+  forcing: "NLDAS" has been renamed as "NLDAS1" for the lines in
+  the card file.
+
+- Added support to read .Z file, and dealt with CMORPH file name change in
+  Jun. 2008. 
+
+- Corrected the moving of bookends.
+
+- Bug fix (Joe Santanello).  Converted units of input precipitation.
+  Precipitation from WRF is in mm.  LIS, in particular Noah, expects
+  precipitation to be a rate (mm/s).
+
+  I convert the units from mm to mm/s during the import of WRF input data.
+
+- Added modifications to output carbon related variables
+  using the ALMA standard.  Variables include: GPP, NPP,
+  NEE, AutoResp, HeteroResp, and LeafResp.
+
+  Also added the output of Rnet (net surface radiation).
+
+- I've implemented LAI->GVF for real-time MODIS LAI data, 
+  using a scheme given by Niu et al. (2011). Comparing 
+  MODIS_LAI/AVHRR_GVF: 
+
+  http://lis.gsfc.nasa.gov/PMM/OUTPUT-CMEM3-1KM/lnsr-noah32-nldas2/E314-lsm-stats-sm.gif
+
+  with MODIS_LAI/MODIS_GVF: 
+
+  http://lis.gsfc.nasa.gov/PMM/OUTPUT-CMEM3-1KM/lnsr-noah32-nldas2/E514-lsm-stats-sm.gif
+
+  one can see the new scheme is more self-consistent, and the GVF range
+  between the two is very similar. 
+
+  Note: A correction has to be made to urban LAI values, to make sure LAI
+  over urban can not be less than 0.1. This is because Noah hard-coded a GVF
+  of 0.05 to urban-class. This change will only be made when Noah3.2 is
+  being used. 
+
+  Ref: 
+
+  Niu, G.-Y., et al. (2011), The community Noah land surface model with
+  multiparameterization options (Noah-MP): 1. Model description and
+  evaluation with local-scale measurements, J. Geophys. Res., 116, D12109,
+  doi:10.1029/2010JD015139.
+
+- Changes made: 
+
+  1. Replaced macro "#if (defined CRTM)" to "#if (defined RTMS)", to
+     control compilation of all RTM codes. Updated make/LIS_misc.h
+     accordingly. 
+
+  2. In "core/LIS_laiMod.F90", added consistency check between greenness
+     fraction and LAI values: if gfrac > 0, LAI can not be < 0.1. This
+     prevents crash in Noah's CANRES() function. Also since the check is
+     done here, Noah lsm code does not need to be modified. 
+
+- Reverted to revision 3135. Moved the LAI fix to noah32_main.F90 as David
+  suggested. 
+
+- The following changes were made, to support reading real-time MODIS
+  8-day LAI data:
+
+  1. Added a minimal LAI value check in
+     lsms/noah.3.2/module_sf_noah32lsm.F90
+     right before the call to "CANRES", to make sure LAI value is not 0.
+     Otherwise,  CANRES() will crash. 
+
+  2. Refactored LAI readers under params/lai/, so now each lai reader has
+     its own directory, and a "setup" interface. 
+
+  3. Added and implemented real-time MODIS LAI reader: params/lai/MODIS_RT.
+
+  4. Added support for intervalType < 0  in core/LIS_timeMgrMod.F90. If
+     intevalType < 0, the interval will be set as -intervalType days. This
+     is to support MODIS's 8-day interval, and maintain backward
+     compatibility. 
+
+  5. Cleaned up those "#if (defined CRTM)" macros in rtms/CMEM3/ and
+     rtms/CRTM2EM/. 
+
+  6. "Filepath" file updated to reflect changes made in 2 above. 
+
+- Added option to output SMFrozFrac in volumetric.
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.1rp2 (r3056:3124)
+========================================================================
+
+This patch release includes updates r3056:3124.
+
+These updates consist of
+
+- Corrected bareclass and waterclass definitions in the
+  routine to read in MODIS_IGBP landcover type dataset,
+  and made consistent with UMD and USGS landcover type
+  routines.
+
+  Corrected the index number to determine the longitude
+  used to calculate change of day and interpolation of
+  the Noah 3.1/3.2 greenness fraction; this change only
+  applies to simulations where the greenness values are
+  specified in "lis.config".  Simulations of LIS-Noah
+  that use greenness maps from LIS are not affected by
+  this change.
+
+  Added code to set the greenness fraction to zero in
+  the "dynsetup" routines for bare, snow, and water
+  classes in the Noah 3.1/3.2 LSMs.  This code already
+  was contained in the "setvegparms" routines, and is
+  now extended to every timestep (as also indicated in
+  the NCAR Noah driver).  Made the "dynsetup" and the
+  "setvegparms" routines consistent where possible
+  between the Noah 3.1 & 3.2 LSMs.
+
+- Saving the background and the actual roughness length from
+  previous timestep to use in the call to the SFCDIF routine.
+  This change will only affect offline non-coupled runs when
+  also not using exchange coefficients from the forcing data.
+  Only a very minor change is found in the simulated output.
+
+- Fixed a bug to check for using forcing height data
+  from the forcing file for uncoupled offline runs.
+  Does not affect runs where the forcing height is
+  specified in the "lis.config" file.
+
+- Corrected LIS_MOC_COUNT.
+
+- adding two new variables to the LIS output (diagnostic T2 and diagnostic Q2)
+
+- Updated configure.lis.linux_ifc file to use ESMF 3.1.0rp3 library compiled
+  against Intel MPI 4.0.1.007-beta.  This is the version that was recommended
+  for the NU-WRF project.
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.1rp1 (r2883:3055)
+========================================================================
+
+This patch release includes updates r2883:3055.
+
+These updates consist of
+
+- Fixed dlon/dlat issue.  This only affects non-square lat/lon domains.
+
+  For the lat/lon projection:
+
+  | griddesc(9) is dlon
+  | griddesc(10) is dlat
+
+- Extended the LIS I/O to work beyond just the LSM output
+
+- Updates to the gribwriter testcase.
+
+- Bug fix.  Min/max values were not correctly computed in diagnoseDataEntry.
+  This is a recent bug.  Min/max diagnosing was correct in Increment 2.
+
+- Mainly cosmetic changes to the code, but also including
+  changes to make more consistent between all Noah versions.
+
+- Renaming Noah 3.1 ESMF coupling routines to avoid a naming conflict with the
+  non-ESMF coupling routines.
+
+- Bug fix.  LIS was not writing NetCDF output when running in parallel.
+
+- Bug fix.  In coupled mode with WRF, Noah3.2 was overwritting the ch (and cm)
+  exchange coefficient.  This was fixed.  In coupled mode, Noah 3.2 is using
+  the ch (and cm) values from WRF.
+
+- I am committing Hiroko Kato's ECMWF updates.
+
+- Updated Noah 2.7.1 to be consistent with Noah 3.2 in its treatment of CH and CM.
+
+  This only affects running Noah 2.7.1 in an offline/uncoupled running mode.
+
+  CH and CM are initialized in either the coldstart or restart routine.  They are
+  not reset to 1e-4 before every call to sfcdif.
+
+  CH is not reset to undef in every call to noah271_f2t.
+
+- Bug fix.
+
+  Increased the maximum size of the grid%subgrid_tiles array to
+  LIS_rc%maxt*LIS_rc%nensem.
+
+- Bug fix.
+
+  Ryan Ruhge found an error regarding computing the weights for the conservative
+  interpolation scheme.
+
+  This bug fix corrects the computation of the weights for the conservative
+  interpolation scheme.
+
+- Noah 2.7.1, Noah 3.1, and Noah 3.2 must always call sfcdif, either to
+  compute exchange coefficients or to compute ustar.
+
+  This update corrects the issue where the there versions of Noah were not
+  always calling sfcdif.
+
+- Corrected slopetype check.
+
+  The Noah 3.1 and 3.2 setsoils routines were checking the value of slopetype
+  against -9999 to determine whether the point was land or water.  This is
+  incorrect.  The correct check is to compare slopetype against 0 (0 == water).
+
+- History support updates.
+
+  Corrected standard deviation computation.
+  Corrected minimum/maximum computation.
+
+  Removed unused feature to specify minvalue and maxvalue.
+
+  Added subgrid_tiles to the grid data structure.  This allows a given
+  grid-cell to know which tiles are contained within it.
+
+- Added extra information (iv number) to an error message.
+
+- Reverted an update to noah271_coldstart.  The coldstart routine should
+  initialize ch and cm to 1e-4.
+
+- turned off the hardcoded soil moisture wilting point in Noah 2.7.1
+
+- Catchment bug fixes.  Thanks to Hiroko Kato.
+
+  I replaced "LIS_rc%domain == 8" with "LIS_rc%domain == LIS_catdomainId"
+
+  I corrected the setting of cat_struc(n)%cat_param%gnu.  It should be 2.17
+  not 2.71.
+
+- Cosmetic changes to the code to improve readability,
+  in-line documentation, and consistency between the
+  2.7.1, 3.1, and 3.2 versions of the Noah LSM.
+  Changes will have no affect on model results.
+
+- Bug fix for running nests in non-esmf coupled mode.
+
+  This bug fix frees several allocated arrays and sets the LIS_initialized flag.
+
+- small updates to Noah 3.2 for parameter estimation 
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.1r (r2702:2882)
+========================================================================
+
+This is the initial release of the public version of LIS 6.1.
+
+This release includes updates r2702:2882.
+
+- Includes Noah 3.1.
+- Includes Noah 3.2.
+- Support for SPoRT Daily GVF data.
+- Support for North American Regional Reanalysis (3d) (NARR) data.
+- Support for NCEP's modified IGBP MODIS landcover data.
+- Support to specify direction for output variables.
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.0rp8 (r2899:2966)
+========================================================================
+
+- Bug fix: retnldas2a was deallocating some variables twice.
+
+- Also, this commit contains some ProTeX updates.
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.0rp7 (r2702:2898)
+========================================================================
+
+- This is a back port of bug fixes from 6/public6.1 to 6/public6.0.
+  It incorporates updates up to r2895.
+
+  These updates consist of:
+
+  * Fixes for compiling on IBM AIX.
+
+  * Fixes for compiling with gfortran.
+
+  * Fixes for compiling with Lahey.
+
+  * Fix for dlon/dlat issue.  This only affects non-square lat/lon grid-cells.
+    For the lat/lon projection:
+
+    | griddesc(9) is dlon
+    | griddesc(10) is dlat
+
+  * Fix for diagnosing Catchment snowdepth.
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.0rp6 (r2593:2701)
+========================================================================
+
+- I manually merged NLDAS2 updates from 6/development into 6/public.
+
+- I corrected the use of griddesc(9) and griddesc(10) for lat/lon projections.
+
+  | griddesc(9) specifies dlon.
+  | griddesc(10) specifies dlat.
+
+  These array elements were incorrectly set in getgeos.
+  I also reset the value of mi after the GEOS4 and GEOS5 grid changes in getgeos.
+
+  These array elements were incorrecly used in gdasLSWG_forcingMod.F90.
+
+  These array elements were incorrecly used in compute_grid_coord_latlon.F90.
+
+- In-line documentation corrections.
+
+- I added Clay Blankenship's bug-fix regarding setting dlon in get_fieldpos.
+
+- I replaced the use of a hard-coded unit number with the use of
+  LIS_getNextUnitNumber and LIS_releaseUnitNumber.
+
+- The transition to the T574 grid occurred on 12z28jul2010.
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.0rp5 (r2554:2592)
+========================================================================
+
+- I corrected a bug regarding writing GRIB output on a Mercator project.
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.0rp4 (r2491:2553)
+========================================================================
+
+- Bug fix.
+
+  The transition to the T574 grid occurred on 12z28jul2010.
+
+- I corrected in-line documentation.
+
+- Bug fix.
+
+  LIS incorrectly specified the T574 grid change to be on 12z27July2010.
+  The T574 grid change occurs on 12z28July2010.
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.0rp3 (r2408:2489)
+========================================================================
+
+- Added a check to trap when czenith (cosine of zenith angle) becomes larger
+  than 1.
+
+- Redeclared several indices to be integer*8 to prevent overflows when running
+  at high resolution.
+
+- Updates and bug fixes to NASA AMSRE soil moisture reader for data assimilation
+  Consolidated HDF and binary versions of NASA AMSRE
+
+- Switched to using V06 of NASA L3 retrievals
+
+- Updates to several testcases.
+
+- Jon Case's T574 GDAS and GFS forcing updates.
+
+- Tools for generating ensemble restarts (upscale and downscale)
+
+- Bug Fix:  The GRIB module was not correctly setting the time-stamp for 
+  years before 2000.  This update fixes this problem.
+
+- Some changes to CLM2 to remove some hardcodes
+
+- Bug fix: I am adding Hiroko Kato Beaudoing's Princeton forcing update.
+  This fixes a bug regarding interpolating the Princeton forcing data.
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.0rp2 (r2397:2406)
+========================================================================
+
+- Bug fix.  I corrected an error regarding writing output with nested domains.
+
+
+========================================================================
+Land Information System (LIS) Public Release 6.0rp1 (r2255:2396)
+========================================================================
+
+- Corrected the indexing into varname when LIS_FORC_Forc_Hgt has been selected.
+
+  Commented out an "if (.false.)" block to facilitate compiling with Absoft.
+
+- Eric Kemp's bug fix regarding an overflow error when reading
+  landcover data at 2km resolution.
+
+- Bug fix.  Corrected the intent of a variable
+  in suppforcing/nldas2/retnldas2a.F90.
+
+- Added support to run makdep on .f90 files.
+
+- I merged the Noah forcing height updates from 6/development to 6/public.
+
+- I merge some NASA_AMSRE updates from 6/development.
+
+- Added a new rule to the Makefile.
+
+- changes to the code to support the use of bottom soil temperature as the
+  WRF input in the ESMF coupled version 
+
+- updated GFS baseforcing implementation
+
+- Protex updates.
+
+  I have added files named 0Intro_*.txt.  This are Protex files that serve
+  as introductions to various sections of the Reference Manual.
+
+- LIS6-WRF3.1.1 tight coupling updates.
+
+- Bug fix for GRIB testcase.
+
+- Bug fix.  lwd was not properly set in time_interp_gdas.
+
+  Fix to ensure LIS output contains forcing variables when run coupled to WRF 
+
+- changed the I/O interfaces to be more flexible.
+
+  The forcing_variables.txt file and the MODEL_OUTPUT_LIST.TBL files need
+  to contain only variables of interest (they do not need to contain the
+  exhaustive list of variables)
+
+- Bug fixes to GDAS for properly treating instantaneous and time averaged fields
+
+- I have added Hiroko Kato Beaudoing's catchment update.
+
+  Her update is "a minor bug fix for LIS6/catchment output variables.
+  Units fixes from W/m2 to kg/m2/s for canopy evaporation and transpiration.
+  Also, "runoff" which is a total of surface and subsurface runoff was
+  output as surface runoff, so it's changed to "runsrf"."
+
+- This is the first pass at cleaning up the output support.
+
+  It creates an array of pointers to the output variables.  This
+  replaces much of the code, needed to explicitly list the output
+  variables, with do loops.  This makes it easier to add new output 
+  variables to LIS.
+
+  TODO: NetCDF support still needs some more clean up.
+
+- added a bug fix so that open unit numbers are properly closed even when 
+  errors are encountered in the file I/O
+
+- added a bug fix for the monthly alarm settings (when day 15 is selected as 
+  the starting time of the LIS simulations, the monthly alarms do not ring)
+
+- added Xice to the forcing_variables.txt file.
+
+- added lat/lon fields to the netcdf output

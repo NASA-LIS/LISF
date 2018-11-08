@@ -1,0 +1,8 @@
+DSET ^./OUTPUT/SURFACEMODEL/%y4%m2/LIS_HIST_%y4%m2%d2%h200.d01.nc
+options template
+UNDEF -9999
+XDEF east_west 464 LINEAR -124.9375 0.125
+YDEF north_south 224 LINEAR   25.0625 0.125
+ZDEF SoilTemp_profiles 5 LINEAR 0.05 0.25 0.60 0.75 1.00
+TDEF time 364 LINEAR 00z02jan1995 24hr
+

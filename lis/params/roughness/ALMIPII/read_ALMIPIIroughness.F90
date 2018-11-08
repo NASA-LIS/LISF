@@ -1,0 +1,194 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+#include "LIS_misc.h"
+!BOP
+!
+! !ROUTINE: read_ALMIPIIroughness
+! \label{read_ALMIPIIroughness}
+!
+! !REVISION HISTORY:
+!  25 Jul 2005: Sujay Kumar; Initial Specification
+!  20 Feb 2006: Sujay Kumar; Modified to support nesting
+!
+! !INTERFACE:
+subroutine read_ALMIPIIroughness(n, wt1,wt2,array1,array2)
+! !USES:
+  use ESMF
+  use LIS_coreMod
+  use LIS_logMod,         only : LIS_logunit, LIS_verify, LIS_endrun
+  use LIS_vegDataMod,     only : LIS_roughness
+  use LIS_timeMgrMod
+
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+  use netcdf
+#endif
+
+  implicit none
+! !ARGUMENTS: 
+
+  integer, intent(in) :: n
+  real                :: wt1
+  real                :: wt2
+  real, intent(inout) :: array1(LIS_rc%ntiles(n))
+  real, intent(inout) :: array2(LIS_rc%ntiles(n))
+
+! !DESCRIPTION:
+!  This subroutine retrieves the roughness fraction climatology for the 
+!  specified month and returns the values in the latlon projection
+!  
+!  The arguments are:
+!  \begin{description}
+!  \item[n]
+!   index of the nest
+!  \item[mo]
+!   time index (month or quarter)
+!  \item[array]
+!   output field with the retrieved roughness fraction
+!  \end{description}
+!
+!EOP      
+  character*100               :: filename
+  character*100               :: temp
+  logical                     :: file_exists
+  integer                     :: yr
+  integer                     :: rc
+  character*1                 :: fyr(4)
+  integer                     :: ftn
+  integer                     :: t1,t2
+  logical                     :: roughnessAlarmCheck
+  integer                     :: roughnessId
+  real, allocatable           :: roughness(:,:)
+  real, allocatable           :: roughness_t(:,:)
+  real, allocatable           :: localz0(:,:)
+  integer                     :: i,c,r,t
+
+  allocate(roughness(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+  allocate(roughness_t(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+  allocate(localz0(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+
+  if(LIS_roughness(n)%firstInstance) then 
+     roughnessAlarmCheck = .true. 
+  else
+     roughnessAlarmCheck = LIS_isAlarmRinging(LIS_rc,&
+          "LIS roughness read alarm",&
+          LIS_roughness(n)%roughnessIntervalType)
+  endif
+
+  call LIS_computeTemporalWeights(LIS_rc,LIS_roughness(n)%roughnessIntervalType, &
+       t1,t2,wt1,wt2)
+
+  if(roughnessAlarmCheck) then 
+     if(LIS_roughness(n)%firstInstance) &
+          LIS_roughness(n)%firstInstance = .false. 
+     
+     array1 = LIS_rc%udef
+     array2 = LIS_rc%udef
+
+#if (defined USE_NETCDF3 ||  defined USE_NETCDF4) 
+     write(unit=temp,fmt='(I4)') LIS_rc%yr
+     read(unit=temp,fmt='(4a1)') (fyr(i),i=1,4)
+     
+     filename = trim(LIS_roughness(n)%roughnessfile)//&
+          "/ALMIP2_ECOCLIMAP2_"//trim(fyr(3))//trim(fyr(4))&
+          //'.nc'
+     
+     inquire(file=trim(filename), exist=file_exists)
+     if(.not.file_exists) then 
+        write(LIS_logunit,*) 'Roughness map ',trim(filename),' not found'
+        write(LIS_logunit,*) 'Program stopping ...'
+        call LIS_endrun
+     endif
+     
+     write(LIS_logunit,*) 'opening Z0 file ',trim(filename)
+
+     call LIS_verify(nf90_open(path=trim(filename),mode=NF90_NOWRITE,&
+          ncid=ftn), 'nf90_open failed in read_ALMIPIIroughness')
+     
+     call LIS_verify(nf90_inq_varid(ftn,'z0v',roughnessId),&
+          'nf90_inq_varid failed in read_ALMIPIIroughness')
+     call LIS_verify(nf90_get_var(ftn,roughnessId,roughness,&
+          start=(/1,1,t1/),&
+          count=(/LIS_rc%gnc(n),LIS_rc%gnr(n),1/)),&
+          'nf90_get_var failed in read_ALMIPIIroughness')
+     
+     do r=1,LIS_rc%gnr(n)
+        do c=1,LIS_rc%gnc(n)
+!           roughness_t(c,r) = roughness(c,LIS_rc%gnr(n)-r+1)
+           roughness_t(c,r) = roughness(c,r)
+        enddo
+     enddo
+     
+     localz0(:,:) = &
+          roughness_t(LIS_ews_halo_ind(n,LIS_localPet+1):&         
+          LIS_ewe_halo_ind(n,LIS_localPet+1), &
+          LIS_nss_halo_ind(n,LIS_localPet+1): &
+          LIS_nse_halo_ind(n,LIS_localPet+1))
+     
+     do t=1,LIS_rc%ntiles(n)
+        c = LIS_domain(n)%tile(t)%col
+        r = LIS_domain(n)%tile(t)%row
+        array1(t) = localz0(c,r)
+     enddo
+     
+     call LIS_verify(nf90_close(ftn),'nf90_close failed in read_ALMIPIIroughness')
+
+     write(unit=temp,fmt='(I4)') LIS_rc%yr
+     read(unit=temp,fmt='(4a1)') (fyr(i),i=1,4)
+     
+     filename = trim(LIS_roughness(n)%roughnessfile)//&
+          "/ALMIP2_ECOCLIMAP2_"//trim(fyr(3))//trim(fyr(4))&
+          //'.nc'
+     
+     inquire(file=trim(filename), exist=file_exists)
+     if(.not.file_exists) then 
+        write(LIS_logunit,*) 'Roughness map ',trim(filename),' not found'
+        write(LIS_logunit,*) 'Program stopping ...'
+        call LIS_endrun
+     endif
+     
+     write(LIS_logunit,*) 'opening Z0 file ',trim(filename)
+
+     call LIS_verify(nf90_open(path=trim(filename),mode=NF90_NOWRITE,&
+          ncid=ftn), 'nf90_open failed in read_ALMIPIIroughness')
+     
+     call LIS_verify(nf90_inq_varid(ftn,'z0v',roughnessId),&
+          'nf90_inq_varid failed in read_ALMIPIIroughness')
+     call LIS_verify(nf90_get_var(ftn,roughnessId,roughness,&
+          start=(/1,1,t2/),&
+          count=(/LIS_rc%gnc(n),LIS_rc%gnr(n),1/)),&
+          'nf90_get_var failed in read_ALMIPIIroughness')
+     
+     do r=1,LIS_rc%gnr(n)
+        do c=1,LIS_rc%gnc(n)
+!           roughness_t(c,r) = roughness(c,LIS_rc%gnr(n)-r+1)
+           roughness_t(c,r) = roughness(c,r)
+        enddo
+     enddo
+     
+     localz0(:,:) = &
+          roughness_t(LIS_ews_halo_ind(n,LIS_localPet+1):&         
+          LIS_ewe_halo_ind(n,LIS_localPet+1), &
+          LIS_nss_halo_ind(n,LIS_localPet+1): &
+          LIS_nse_halo_ind(n,LIS_localPet+1))
+     
+     do t=1,LIS_rc%ntiles(n)
+        c = LIS_domain(n)%tile(t)%col
+        r = LIS_domain(n)%tile(t)%row
+        array2(t) = localz0(c,r)
+     enddo
+     
+     call LIS_verify(nf90_close(ftn),'nf90_close failed in read_ALMIPIIroughness')
+  
+#endif
+  endif
+  deallocate(roughness)
+  deallocate(roughness_t)
+  deallocate(localz0)
+
+end subroutine read_ALMIPIIroughness
+

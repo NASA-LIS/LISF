@@ -1,0 +1,41 @@
+Noah-3.6 SNODEP EnKF Assimilation Testcase
+
+This case demonstrate the EnKF-based assimilation of SNODEP data into the Noah.3.6 LSM.
+It uses:
+  (a) The AGRMET foring
+  (b) "AGRMET Ops" running mode
+  (c) 16-mesh SNODEP data
+  (d) The Noah version 3.6 land surface model
+  (e) Global domain at 1/4 degree spatial resolution
+  (f) A time period from 06:00Z 1 Oct 2010 to 23:00Z 2 Oct 2010
+
+This directory contains:
+  (a) This README file
+  (b) The "ldt.config" file to generate the parameters using LDT
+  (c) The "param_attribs.txt" file to select the parameters for LDT
+  (d) An "input.xdf" file used to open the LDT parameters in GrADS
+  (e) The "lis.config" file used for this testcase
+  (f) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+      to select the output variables
+  (g) An "output.ctl" file used to display the output in GrADS from
+      the LIS run
+  (h) A "testcase.ctl" file used to display the packaged output in
+      GrADS from the OUTPUT tar file provided by the testcase
+
+Note that the "ldt.config" and "lis.config" files should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+To run this testcase:
+  (a) Generate the LDT and the LIS executables
+  (b) Download the testcase input data from:
+         http://lis.gsfc.nasa.gov/Source/testcases
+      the testcase corresponding to Noah 3.6 SNODEP EnKF TEST
+  (c) Run the LDT executable using the "ldt.config" file and the
+      "param_attribs.txt" file with the testcase input data
+  (d) Run the LIS executable using the "lis.config" file with the
+      testcase input data
+  (e) View the binary output using the testcase GrADS files
+
+
+

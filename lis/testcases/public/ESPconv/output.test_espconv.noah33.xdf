@@ -1,0 +1,12 @@
+DSET ^OUTPUT_TEST/SURFACEMODEL/%y4%m2/LIS_HIST_%y4%m2%d2%h200.d01.nc
+DTYPE netcdf
+OPTIONS template
+XDEF east_west   464 LINEAR    -124.9375    0.125
+YDEF north_south 224 LINEAR      25.0625    0.125
+ZDEF ensemble      4 LEVELS   1 2 3 4
+TDEF time          8 LINEAR   06Z01jun2014  6hr
+*ZDEF SoilMoist_profiles 4 LEVELS  0.1 0.4 1.0 2.0
+* Note: SoilTemp_profiles will not be loaded in GrADS.
+* If you want to play SoilTemp, change the "ZDEF" line
+* above the following instead:
+* ZDEF SoilTemp_profiles 4 LEVELS  0.1 0.4 1.0 2.0

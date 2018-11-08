@@ -1,0 +1,34 @@
+This is a test case that uses: 
+  (a) the GDAS forcing and CEOP station data at SGP as the supplemental forcing
+  (b) using the bilinear Interpolation
+  (c) uses the lapse-rate based elevation correction using GTOPO30 
+      elevation data
+  (d) the "template" LSM option (which is a dummy LSM placeholder that simply
+      outputs the interpolated forcing data. 
+  (e) Domain near the Southern Great Plains (SGP) at 1/4 degree spatial resolution.
+  (f) a time period from Jul 1 2001, hr 1 to Jul 2, 2001, hr 1 
+
+This directory contains: 
+  (a) This README file, 
+  (b) the lis.config file used for this test case. (This file should be 
+      edited to make sure that the locations of the parameter and 
+      forcing files are specified correctly.) 
+  (c) A sample grads control file that can be used to visualize the 
+      output. (output.ctl)
+
+To run this test case: 
+  (a) Generate the LIS executable. 
+  (b) Download the sample input data from: 
+	http://lis.gsfc.nasa.gov/Source/testcases  
+      the testcase corresponding to CEOP station data FORCING TEST
+  (c) Run the LIS executable using the lis.config file and the sample 
+      input data. 
+  (d) View the binary output using the sample grads file. 
+  (e) The output can be contrasted with the output from using only 
+      GDAS forcing for impacts of using the CEOP station data. 
+
+Caveats: 
+  (a) Please note that the station data spatial interpolators currently 
+      are designed to work only on a single processor. Please contact 
+      the LIS team if you are interested in extending this to work in 
+      a multiprocessor setup. 

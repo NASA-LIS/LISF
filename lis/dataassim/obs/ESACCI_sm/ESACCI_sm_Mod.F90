@@ -1,0 +1,560 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+!
+! !MODULE: ESACCI_sm_Mod
+! 
+! 
+! !DESCRIPTION: 
+! This module handles the observation plugin for the 
+! soil moisture Essential Climate Variable (ESACCI) product. 
+!
+! Soil moisture is recognized as an Essential Climate Variable (ESACCI) by NASA, 
+! European Space Agency (ESA), and other agencies and institutions.  
+
+! The Water Cycle Multi-mission Observation Strategy (WACMOS) and Climate Change 
+! Initiative (CCI) Soil Moisture projects have released a 32-year harmonized
+! product, from 1978-2010, and referred to as the ESACCI soil moisture dataset. 
+! The product includes both active and passive microwave sensor retrievals.  The 
+! active dataset provided by the University of Vienna (TU Wien) uses ERS-1, ERS-2 and
+! METOP-A C-band scatterometers.  The passive microwave dataset is developed by
+! VU University of Amsterdam and NASA, and includes NASA-based measurements from 
+! Nimbus 7 SSMR, DMSP SSM/I, TRMM TMI and Aqua AMSR-E sensors.
+!
+! The merged dataset uses a fixed ranking system based on error derivations
+! from triple collocation.  So if AMSR has an higher error than ASCAT, then ASCAT is used
+! (and visa versa, see for example Liu et al.,RSE 2012 and Liu et al., HESS 2011).
+! In the near future, a dynamic weighting function is planned to be used within the
+! merging routine (considered research in progress).
+!
+! Further information about the product can be obtained at:
+! http://www.esa-soilmoisture-cci.org/
+!
+! REFERENCES: 
+! Liu, Y. Y., W. A. Dorigo, et al. (2012). "Trend-preserving blending of passive and 
+! active microwave soil moisture retrievals." Remote Sensing of Environment 123: 280-297.
+!
+! Wagner, W., Dorigo, W., de Jeu, R., Fernandez, D., Benveniste, J., Haas, E., 
+! and Ertl, M.: Fusion of active and passive microwave observations to create 
+! an Essential Climate Variable data record on soil moisture. ISPRS Ann. 
+! Photogramm. Remote Sens. Spatial Inf. Sci., I-7, 315-321, 
+! doi:10.5194/isprsannals-I-7-315-2012, 2012.
+!
+!   
+! !REVISION HISTORY: 
+!  01 Oct 2012: Sujay Kumar, Initial Specification
+! 
+module ESACCI_sm_Mod
+! !USES: 
+  use ESMF
+  use map_utils
+
+  implicit none
+
+  PRIVATE
+
+!-----------------------------------------------------------------------------
+! !PUBLIC MEMBER FUNCTIONS:
+!-----------------------------------------------------------------------------
+  public :: ESACCI_sm_setup
+!-----------------------------------------------------------------------------
+! !PUBLIC TYPES:
+!-----------------------------------------------------------------------------
+  public :: ESACCI_sm_struc
+!EOP
+  type, public:: ESACCI_sm_dec
+     
+     logical                :: startMode
+     real                   :: version
+     integer                :: useSsdevScal
+     integer                :: nc
+     integer                :: nr
+     real,     allocatable      :: smobs(:,:)
+     real,     allocatable      :: smtime(:,:)
+     
+     real                   :: ssdev_inp
+     integer                :: ecvnc, ecvnr
+     type(proj_info)        :: ecvproj
+     integer, allocatable       :: n11(:)
+     real,    allocatable       :: rlat(:)
+     real,    allocatable       :: rlon(:)
+
+     real,    allocatable       :: model_xrange(:,:,:)
+     real,    allocatable       :: obs_xrange(:,:,:)
+     real,    allocatable       :: model_cdf(:,:,:)
+     real,    allocatable       :: obs_cdf(:,:,:)
+     real,    allocatable       :: model_mu(:,:)
+     real,    allocatable       :: obs_mu(:,:)
+     real,    allocatable       :: model_sigma(:,:)
+     real,    allocatable       :: obs_sigma(:,:)
+
+     integer                :: nbins
+     integer                :: ntimes
+
+  end type ESACCI_sm_dec
+  
+  type(ESACCI_sm_dec),allocatable :: ESACCI_sm_struc(:)
+  
+contains
+
+!BOP
+! 
+! !ROUTINE: ESACCI_sm_setup
+! \label{ESACCI_sm_setup}
+! 
+! !INTERFACE: 
+  subroutine ESACCI_sm_setup(k, OBS_State, OBS_Pert_State)
+! !USES: 
+    use ESMF
+    use LIS_coreMod
+    use LIS_timeMgrMod
+    use LIS_historyMod
+    use LIS_dataAssimMod
+    use LIS_perturbMod
+    use LIS_DAobservationsMod
+    use LIS_logmod
+
+    implicit none 
+
+! !ARGUMENTS: 
+    integer                ::  k
+    type(ESMF_State)       ::  OBS_State(LIS_rc%nnest)
+    type(ESMF_State)       ::  OBS_Pert_State(LIS_rc%nnest)
+! 
+! !DESCRIPTION: 
+!   
+!   This routine completes the runtime initializations and 
+!   creation of data strctures required for handling ESACCI soil moisture
+!   data
+!  
+!   The arguments are: 
+!   \begin{description}
+!    \item[OBS\_State]   observation state 
+!    \item[OBS\_Pert\_State] observation perturbations state
+!   \end{description}
+!EOP
+    real, parameter        ::  minssdev = 0.001
+    integer                ::  n,i,t,kk,jj
+    integer                ::  ftn
+    integer                ::  status
+    type(ESMF_Field)       ::  obsField(LIS_rc%nnest)
+    type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
+    type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
+    type(ESMF_ArraySpec)   ::  pertArrSpec
+    character*100          ::  esaccismobsdir
+    character*100          ::  temp
+    real,  allocatable         ::  obsstd(:)
+    character*1            ::  vid(2)
+    character*40, allocatable  ::  vname(:)
+    real        , allocatable  ::  varmin(:)
+    real        , allocatable  ::  varmax(:)
+    type(pert_dec_type)    ::  obs_pert
+    integer                ::  ngrid
+    real, pointer          ::  obs_temp(:,:)
+    real, allocatable          :: xrange(:), cdf(:)
+    real                   :: gridDesci(50)
+    character*100          :: modelcdffile(LIS_rc%nnest)
+    character*100          :: obscdffile(LIS_rc%nnest)
+    real,      allocatable     :: ssdev(:)
+
+    real, allocatable          ::  obserr(:,:)
+    integer                    :: c,r
+
+    allocate(ESACCI_sm_struc(LIS_rc%nnest))
+
+    call ESMF_ArraySpecSet(intarrspec,rank=1,typekind=ESMF_TYPEKIND_I4,&
+         rc=status)
+    call LIS_verify(status)
+
+    call ESMF_ArraySpecSet(realarrspec,rank=1,typekind=ESMF_TYPEKIND_R4,&
+         rc=status)
+    call LIS_verify(status)
+
+    call ESMF_ArraySpecSet(pertArrSpec,rank=2,typekind=ESMF_TYPEKIND_R4,&
+         rc=status)
+    call LIS_verify(status)
+
+    call ESMF_ConfigFindLabel(LIS_config,"ESA CCI soil moisture data directory:",&
+         rc=status)
+    do n=1,LIS_rc%nnest
+       call ESMF_ConfigGetAttribute(LIS_config,esaccismobsdir,&
+            rc=status)
+       call LIS_verify(status, 'ESA CCI soil moisture data directory: is missing')
+
+       call ESMF_AttributeSet(OBS_State(n),"Data Directory",&
+            esaccismobsdir, rc=status)
+       call LIS_verify(status)
+    enddo
+
+    call ESMF_ConfigFindLabel(LIS_config,"ESA CCI soil moisture data version:",&
+         rc=status)
+    do n=1,LIS_rc%nnest
+       call ESMF_ConfigGetAttribute(LIS_config,ESACCI_sm_struc(n)%version,&
+            rc=status)
+       call LIS_verify(status, 'ESA CCI soil moisture data version: is missing')
+
+    enddo
+
+    call ESMF_ConfigFindLabel(LIS_config,"ESA CCI use scaled standard deviation model:",&
+         rc=status)
+    do n=1,LIS_rc%nnest
+       call ESMF_ConfigGetAttribute(LIS_config,ESACCI_sm_struc(n)%useSsdevScal, &
+            rc=status)
+       call LIS_verify(status, "ESA CCI use scaled standard deviation model: not defined")
+    enddo
+
+    call ESMF_ConfigFindLabel(LIS_config,"ESA CCI model CDF file:",&
+         rc=status)
+    do n=1,LIS_rc%nnest
+       if(LIS_rc%dascaloption(k).ne."none") then 
+          call ESMF_ConfigGetAttribute(LIS_config,modelcdffile(n),rc=status)
+          call LIS_verify(status, 'ESA CCI model CDF file: not defined')
+       endif
+    enddo
+
+    call ESMF_ConfigFindLabel(LIS_config,"ESA CCI observation CDF file:",&
+         rc=status)
+    do n=1,LIS_rc%nnest
+       if(LIS_rc%dascaloption(k).ne."none") then 
+          call ESMF_ConfigGetAttribute(LIS_config,obscdffile(n),rc=status)
+          call LIS_verify(status, 'ESA CCI observation CDF file: not defined')
+       endif
+    enddo
+    
+    call ESMF_ConfigFindLabel(LIS_config, "ESA CCI soil moisture number of bins in the CDF:", rc=status)
+    do n=1, LIS_rc%nnest
+       if(LIS_rc%dascaloption(k).ne."none") then 
+          call ESMF_ConfigGetAttribute(LIS_config,ESACCI_sm_struc(n)%nbins, rc=status)
+          call LIS_verify(status, "ESA CCI soil moisture number of bins in the CDF: not defined")
+       endif
+    enddo
+
+   do n=1,LIS_rc%nnest
+       call ESMF_AttributeSet(OBS_State(n),"Data Update Status",&
+            .false., rc=status)
+       call LIS_verify(status)
+
+       call ESMF_AttributeSet(OBS_State(n),"Data Update Time",&
+            -99.0, rc=status)
+       call LIS_verify(status)
+
+       call ESMF_AttributeSet(OBS_State(n),"Data Assimilate Status",&
+            .false., rc=status)
+       call LIS_verify(status)
+       
+       call ESMF_AttributeSet(OBS_State(n),"Number Of Observations",&
+            LIS_rc%obs_ngrid(k),rc=status)
+       call LIS_verify(status)
+       
+    enddo
+
+    write(LIS_logunit,*)'[INFO] read ESA CCI soil moisture data specifications'       
+
+!----------------------------------------------------------------------------
+!   Create the array containers that will contain the observations and
+!   the perturbations. amsr-e 
+!   observations are in the grid space. Since there is only one layer
+!   being assimilated, the array size is LIS_rc%obs_ngrid(k). 
+!   
+!----------------------------------------------------------------------------
+
+    do n=1,LIS_rc%nnest
+       
+       write(unit=temp,fmt='(i2.2)') 1
+       read(unit=temp,fmt='(2a1)') vid
+
+       obsField(n) = ESMF_FieldCreate(arrayspec=realarrspec,&
+            grid=LIS_obsvecGrid(n,k),&
+            name="Observation"//vid(1)//vid(2),rc=status)
+       call LIS_verify(status)
+
+!Perturbations State
+       write(LIS_logunit,*) '[INFO] Opening attributes for observations ',&
+            trim(LIS_rc%obsattribfile(k))
+       ftn = LIS_getNextUnitNumber()
+       open(ftn,file=trim(LIS_rc%obsattribfile(k)),status='old')
+       read(ftn,*)
+       read(ftn,*) LIS_rc%nobtypes(k)
+       read(ftn,*)
+    
+       allocate(vname(LIS_rc%nobtypes(k)))
+       allocate(varmax(LIS_rc%nobtypes(k)))
+       allocate(varmin(LIS_rc%nobtypes(k)))
+       
+       do i=1,LIS_rc%nobtypes(k)
+          read(ftn,fmt='(a40)') vname(i)
+          read(ftn,*) varmin(i),varmax(i)
+          write(LIS_logunit,*) '[INFO] ',vname(i),varmin(i),varmax(i)
+       enddo
+       call LIS_releaseUnitNumber(ftn)  
+       
+       allocate(ssdev(LIS_rc%obs_ngrid(k)))
+
+       if(trim(LIS_rc%perturb_obs(k)).ne."none") then 
+          allocate(obs_pert%vname(1))
+          allocate(obs_pert%perttype(1))
+          allocate(obs_pert%ssdev(1))
+          allocate(obs_pert%stdmax(1))
+          allocate(obs_pert%zeromean(1))
+          allocate(obs_pert%tcorr(1))
+          allocate(obs_pert%xcorr(1))
+          allocate(obs_pert%ycorr(1))
+          allocate(obs_pert%ccorr(1,1))
+
+          call LIS_readPertAttributes(1,LIS_rc%obspertAttribfile(k),&
+               obs_pert)
+
+! Set obs err to be uniform (will be rescaled later for each grid point). 
+          ssdev = obs_pert%ssdev(1)
+          ESACCI_sm_struc(n)%ssdev_inp = obs_pert%ssdev(1)
+
+          pertField(n) = ESMF_FieldCreate(arrayspec=pertArrSpec,&
+               grid=LIS_obsEnsOnGrid(n,k),name="Observation"//vid(1)//vid(2),&
+               rc=status)
+          call LIS_verify(status)
+
+! initializing the perturbations to be zero 
+          call ESMF_FieldGet(pertField(n),localDE=0,farrayPtr=obs_temp,rc=status)
+          call LIS_verify(status)
+          obs_temp(:,:) = 0 
+
+          call ESMF_AttributeSet(pertField(n),"Perturbation Type",&
+               obs_pert%perttype(1), rc=status)
+          call LIS_verify(status)
+          
+          if(LIS_rc%obs_ngrid(k).gt.0) then 
+             call ESMF_AttributeSet(pertField(n),"Standard Deviation",&
+                  ssdev,itemCount=LIS_rc%obs_ngrid(k),rc=status)
+             call LIS_verify(status)
+          endif
+
+          call ESMF_AttributeSet(pertField(n),"Std Normal Max",&
+               obs_pert%stdmax(1), rc=status)
+          call LIS_verify(status)
+          
+          call ESMF_AttributeSet(pertField(n),"Ensure Zero Mean",&
+               obs_pert%zeromean(1),rc=status)
+          call LIS_verify(status)
+          
+          call ESMF_AttributeSet(pertField(n),"Temporal Correlation Scale",&
+               obs_pert%tcorr(1),rc=status)
+          call LIS_verify(status)
+          
+          call ESMF_AttributeSet(pertField(n),"X Correlation Scale",&
+               obs_pert%xcorr(1),rc=status)
+          
+          call ESMF_AttributeSet(pertField(n),"Y Correlation Scale",&
+               obs_pert%ycorr(1),rc=status)
+
+          call ESMF_AttributeSet(pertField(n),"Cross Correlation Strength",&
+               obs_pert%ccorr(1,:),itemCount=1,rc=status)
+
+       endif
+          
+       deallocate(vname)
+       deallocate(varmax)
+       deallocate(varmin)
+       deallocate(ssdev)
+
+    enddo
+    write(LIS_logunit,*) &
+         '[INFO] Created the States to hold the ESA CCI observations data'
+    do n=1,LIS_rc%nnest
+       ESACCI_sm_struc(n)%nc = 1440
+       ESACCI_sm_struc(n)%nr = 720
+       allocate(ESACCI_sm_struc(n)%smobs(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)))
+       allocate(ESACCI_sm_struc(n)%smtime(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)))
+       ESACCI_sm_struc(n)%smtime = -1
+
+    enddo
+    
+    do n=1,LIS_rc%nnest
+       if(LIS_rc%dascaloption(k).ne."none") then 
+
+          call LIS_getCDFattributes(k,modelcdffile(n),&
+               ESACCI_sm_struc(n)%ntimes, ngrid)
+
+          allocate(ssdev(LIS_rc%obs_ngrid(k)))
+          ssdev = obs_pert%ssdev(1)
+
+          allocate(ESACCI_sm_struc(n)%model_mu(LIS_rc%obs_ngrid(k),&
+               ESACCI_sm_struc(n)%ntimes))
+          allocate(ESACCI_sm_struc(n)%model_sigma(LIS_rc%obs_ngrid(k),&
+               ESACCI_sm_struc(n)%ntimes))
+          allocate(ESACCI_sm_struc(n)%obs_mu(LIS_rc%obs_ngrid(k),&
+               ESACCI_sm_struc(n)%ntimes))
+          allocate(ESACCI_sm_struc(n)%obs_sigma(LIS_rc%obs_ngrid(k),&
+               ESACCI_sm_struc(n)%ntimes))
+          allocate(ESACCI_sm_struc(n)%model_xrange(&
+               LIS_rc%obs_ngrid(k), ESACCI_sm_struc(n)%ntimes, &
+               ESACCI_sm_struc(n)%nbins))
+          allocate(ESACCI_sm_struc(n)%obs_xrange(&
+               LIS_rc%obs_ngrid(k), ESACCI_sm_struc(n)%ntimes, &
+               ESACCI_sm_struc(n)%nbins))
+          allocate(ESACCI_sm_struc(n)%model_cdf(&
+               LIS_rc%obs_ngrid(k), ESACCI_sm_struc(n)%ntimes, &
+               ESACCI_sm_struc(n)%nbins))
+          allocate(ESACCI_sm_struc(n)%obs_cdf(&
+               LIS_rc%obs_ngrid(k), ESACCI_sm_struc(n)%ntimes, & 
+               ESACCI_sm_struc(n)%nbins))
+
+!----------------------------------------------------------------------------
+! Read the model and observation CDF data
+!----------------------------------------------------------------------------
+          call LIS_readMeanSigmaData(n,k,&
+               ESACCI_sm_struc(n)%ntimes, & 
+               LIS_rc%obs_ngrid(k), &
+               modelcdffile(n), &
+               "SoilMoist",&
+               ESACCI_sm_struc(n)%model_mu,&
+               ESACCI_sm_struc(n)%model_sigma)
+
+          call LIS_readMeanSigmaData(n,k,&
+               ESACCI_sm_struc(n)%ntimes, & 
+               LIS_rc%obs_ngrid(k), &
+               obscdffile(n), &
+               "SoilMoist",&
+               ESACCI_sm_struc(n)%obs_mu,&
+               ESACCI_sm_struc(n)%obs_sigma)
+
+          call LIS_readCDFdata(n,k,&
+               ESACCI_sm_struc(n)%nbins,&
+               ESACCI_sm_struc(n)%ntimes, & 
+               LIS_rc%obs_ngrid(k), &
+               modelcdffile(n), &
+               "SoilMoist",&
+               ESACCI_sm_struc(n)%model_xrange,&
+               ESACCI_sm_struc(n)%model_cdf)
+
+          call LIS_readCDFdata(n,k,&
+               ESACCI_sm_struc(n)%nbins,&
+               ESACCI_sm_struc(n)%ntimes, & 
+               LIS_rc%obs_ngrid(k), &
+               obscdffile(n), &
+               "SoilMoist",&
+               ESACCI_sm_struc(n)%obs_xrange,&
+               ESACCI_sm_struc(n)%obs_cdf)
+
+          if(ESACCI_sm_struc(n)%useSsdevScal.eq.1) then 
+             if(ESACCI_sm_struc(n)%ntimes.eq.1) then 
+                jj = 1
+             else
+                jj = LIS_rc%mo
+             endif
+             do t=1,LIS_rc%obs_ngrid(k)
+                if(ESACCI_sm_struc(n)%obs_sigma(t,jj).ne.LIS_rc%udef) then 
+                   print*, ssdev(t),ESACCI_sm_struc(n)%model_sigma(t,jj),&
+                        ESACCI_sm_struc(n)%obs_sigma(t,jj)
+                   if(ESACCI_sm_struc(n)%obs_sigma(t,jj).ne.0) then 
+                   ssdev(t) = ssdev(t)*ESACCI_sm_struc(n)%model_sigma(t,jj)/&
+                        ESACCI_sm_struc(n)%obs_sigma(t,jj)
+                   endif
+                      
+                   if(ssdev(t).lt.minssdev) then 
+                      ssdev(t) = minssdev
+                   endif
+                endif
+             enddo
+          endif
+
+#if 0           
+          allocate(obserr(LIS_rc%obs_gnc(k),LIS_rc%obs_gnr(k)))
+          obserr = -9999.0
+
+!          lobserr(:,:) = obserr(&
+!               LIS_ews_halo_ind(n,LIS_localPet+1):&         
+!               LIS_ewe_halo_ind(n,LIS_localPet+1), &
+!               LIS_nss_halo_ind(n,LIS_localPet+1): &
+!               LIS_nse_halo_ind(n,LIS_localPet+1))
+
+          do r=1,LIS_rc%obs_lnr(k)
+             do c=1,LIS_rc%obs_lnc(k)
+                if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
+                   obserr(c,r)  =  ssdev(LIS_obs_domain(n,k)%gindex(c,r)) 
+                   
+                endif
+             enddo
+          enddo
+
+!          do r=1,LIS_rc%obs_lnr(k)
+!             do c=1,LIS_rc%obs_lnc(k)
+!                if(LIS_domain(n)%gindex(c,r).ne.-1) then 
+!                   lobserr(c,r) = ssdev(LIS_domain(n)%gindex(c,r)) 
+!                   
+!                endif
+!             enddo
+!          enddo
+          print*, 'ESACCI ',LIS_rc%obs_gnc(k),LIS_rc%obs_gnr(k)
+          open(100,file='esacci_obs_err.bin',form='unformatted')
+          write(100) obserr
+          close(100)
+          stop
+          deallocate(obserr)
+#endif
+
+          if(LIS_rc%obs_ngrid(k).gt.0) then 
+             call ESMF_AttributeSet(pertField(n),"Standard Deviation",&
+                  ssdev,itemCount=LIS_rc%obs_ngrid(k),rc=status)
+             call LIS_verify(status)
+          endif
+
+          deallocate(ssdev)
+
+       endif
+    enddo
+
+    do n=1,LIS_rc%nnest
+       ESACCI_sm_struc(n)%ecvnc = 1440
+       ESACCI_sm_struc(n)%ecvnr = 720
+
+       call map_set(PROJ_LATLON, -89.875,-179.875,&
+            0.0, 0.25,0.25, 0.0,&
+            ESACCI_sm_struc(n)%ecvnc,ESACCI_sm_struc(n)%ecvnr,&
+            ESACCI_sm_struc(n)%ecvproj)
+       
+       gridDesci = 0 
+       gridDesci(1) = 0 
+       gridDesci(2) = 1440
+       gridDesci(3) = 720
+       gridDesci(4) = -89.875
+       gridDesci(5) = -179.875
+       gridDesci(6) = 128
+       gridDesci(7) = 89.875
+       gridDesci(8) = 179.875
+       gridDesci(9) = 0.25
+       gridDesci(10) = 0.25
+       gridDesci(20) = 64
+       
+       allocate(ESACCI_sm_struc(n)%n11(ESACCI_sm_struc(n)%ecvnc*&
+            ESACCI_sm_struc(n)%ecvnr))
+       allocate(ESACCI_sm_struc(n)%rlat(ESACCI_sm_struc(n)%ecvnc*&
+            ESACCI_sm_struc(n)%ecvnr))
+       allocate(ESACCI_sm_struc(n)%rlon(ESACCI_sm_struc(n)%ecvnc*&
+            ESACCI_sm_struc(n)%ecvnr))
+       
+       call neighbor_interp_input_withgrid(&
+            gridDesci,&
+            LIS_rc%obs_gridDesc(k,:),&
+            ESACCI_sm_struc(n)%ecvnc*ESACCI_sm_struc(n)%ecvnr,&
+            ESACCI_sm_struc(n)%rlat, &
+            ESACCI_sm_struc(n)%rlon, &
+            ESACCI_sm_struc(n)%n11)       
+
+       call LIS_registerAlarm("ESACCI read alarm",&
+            86400.0, 86400.0)
+       ESACCI_sm_struc(n)%startMode = .true. 
+
+       call ESMF_StateAdd(OBS_State(n),(/obsField(n)/),rc=status)
+       call LIS_verify(status)
+
+       call ESMF_StateAdd(OBS_Pert_State(n),(/pertField(n)/),rc=status)
+       call LIS_verify(status)       
+
+    enddo
+  end subroutine ESACCI_sm_setup
+end module ESACCI_sm_Mod

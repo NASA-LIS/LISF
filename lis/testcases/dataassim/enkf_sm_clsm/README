@@ -1,0 +1,45 @@
+This testcase demonstrates the use of Ensemble Kalman Filter (EnKF)
+to assimilate soil moisture observations
+using Catchment land surface model. The soil moisture 
+observations in this case is generated using a separate
+model integration of Catchment
+
+The testcase uses 
+  (a) a domain that spans the continental United States
+  (b) a time period from Jan 1 2004, hr 1 to Jan 31, 2004, hr 1. 
+
+This directory contains: 
+  (a) This README file, 
+  (b) two lis.config files: (lis.config.openloop - that can be used
+      to conduct the openloop simulations, and lis.config.assim that 
+      can be used for the assimilation run of soil moisture 
+      observations using EnKF. (These file should be 
+      edited to make sure that the locations of the parameter and 
+      forcing files are specified correctly.) 
+  (c) Sample grads control files that can be used to visualize the 
+      output. (openloop.ctl and assim.ctl for model output, 
+      catdef_spread.ctl, surf_spread.ctl, and rzexc_spread.ctl for 
+      the spread of these variables in the ensemble and innov.ctl for
+      the normalized innovations)
+
+To run this test case: 
+  (a) Generate the LIS executable. 
+  (b) Download the sample input data from: 
+	http://lis.gsfc.nasa.gov/Source/testcases  
+      the testcase corresponding to Soil Moisture assimilation 
+      (Catchment, Synethetic Obs, EnKF) TEST
+  (c) Conduct the openloop simulation : copy lis.config.openloop to 
+      lis.cong and run the LIS executable
+  (d) Coduct the assimilation simulation: copy the lis.config.assim to 
+      lis.config and run the LIS executable
+  (d) View the binary output using the sample grads files. 
+
+The inupt data includes the required parameter and forcing files. 
+In addition, the input data also includes the Soil moisture observations, as
+well as the Control/Truth data (which is basically the output of 
+a separate simulation using the Catchment LSM). Sample grads files
+are provided along with these data that describes the spatial/temporal
+extent and the order of variables. The data download page also 
+provides some sample time series plots that demonstrates the impact of 
+assimilation on the soil moisture fields.
+       

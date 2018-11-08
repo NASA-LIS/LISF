@@ -1,0 +1,15 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!\section{Perturbation Algorithms in LIS} 
+!This section contains the description of the implementations of 
+!perturbation algorithms in LIS. The algorithms are used to 
+!perturb forcing, observation and prognostic varibles for 
+!data assimilation.
+!EOP

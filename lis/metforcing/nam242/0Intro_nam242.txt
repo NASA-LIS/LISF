@@ -1,0 +1,20 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!\section{NAM242}
+!The North American Mesoscale Forecast System (NAM) is the North American
+!operational weather forecast model developed at the Environmental Modeling
+!Center (EMC) of NOAA/NCEP.
+!
+!See http://www.emc.ncep.noaa.gov/index.php?branch=NAM
+!
+!This reader supports the ``NAM 242 AWIPS Grid -- Over Alaska'' product
+!in GRIB2 format with filenames of the form fh.xxxx\_tl.press\_gr.awp242.
+!See http://www.nco.ncep.noaa.gov/pmb/products/nam/
+!EOP

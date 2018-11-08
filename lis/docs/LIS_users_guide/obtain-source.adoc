@@ -1,0 +1,1108 @@
+
+== Obtaining the Source Code
+anchor:sec_obtain-src[Obtaining the Source Code]
+
+This section describes how to obtain the source code needed to build the LIS executable.
+
+Beginning with LIS public release 7.1rp1, the LIS source code is available as open source under the NASA Open Source Agreement (NOSA).  Please see {lisurl}[LIS`' web-site] for a copy of the NOSA.
+
+Due to the history of LIS`' development,  prior versions of the LIS source code may not be freely distributed.  That older source code is available only to U.S. government agencies or entities with a U.S.  government grant/contract.  {lisurl}[LIS`' web-site] explains how qualified persons may request a copy of the older source code.
+
+
+=== Important Note Regarding File Systems
+anchor:sec_important_note_fs[Important Note Regarding File Systems]
+
+LIS is developed on Linux/Unix platforms.  Its build process expects a case sensitive file system.  Please make sure that you unpack and/or `svn checkout` the LIS code into a directory within a case sensitive file system.  In particular, if you are using LIS within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LIS from within a shared folder.  Move the LIS source code into a directory within the virtual machine.
+
+
+=== Public Release Code Access
+anchor:sec_publicaccess[Public Release Code Access]
+
+The LIS {lisrevision} source code is available for download as a tar-file from {lisurl}[LIS`' web-site].  All users are encouraged to fill in the Registration Form and join the mailing list, both also accessible from {lisurl}[LIS`' web-site].  After downloading the LIS tar-file:
+
+:sectnums!: // disable section numbers
+
+==== Step 1
+
+Create a directory to unpack the tar-file into.  Let`'s call it _TOPLEVELDIR_.
+
+
+==== Step 2
+
+Place the tar-file in this directory.
+
+[subs="attributes"]
+....
+% mv {listarball} TOPLEVELDIR
+....
+
+
+==== Step3
+
+Go into this directory.
+
+....
+% cd TOPLEVELDIR
+....
+
+
+==== Step 4
+
+Unzip and untar the tar-file.
+
+[subs="attributes"]
+....
+% gzip -dc {listarball} | tar xf -
+....
+
+
+==== Note
+
+Note that the directory containing the LIS source code will be referred to as _$WORKING_ throughout the rest of this document.
+
+:sectnums: // re-enable section numbers
+
+=== Restricted Code Access (NASA only)
+anchor:sec_checkoutsrc[Restricted Code Access (NASA only)]
+
+NOTE: These instructions are for those granted access to the LIS source code repository.  If you are not a NASA LIS developer or select collaborator, then please refer to the previous instructions in Section <<sec_publicaccess>> above.
+
+The LIS source code is maintained in a Subversion repository.  Due to several U.S. government restrictions, only the LIS development team and select collaborators may have access to the repository.  Those developers must use the Subversion client (`svn`) to obtain the LIS source code.  If you need any help regarding Subversion, please go to {svnurl}.
+
+//To obtain the source code needed for LIS`' {lismilestonedesc} revision
+//{lisrevision}:
+//To obtain the source code needed for LIS revision {lisrevision} you must
+//Developers must
+//first obtain access to the LIS source code respository.  To obtain access
+//you must contact the LIS team.  Once you have access to the repository, you
+//will be given the correct Subversion command to run to checkout the source
+//code.
+
+For those granted access to the LIS source code repository:
+
+:sectnums!: // disable section numbers
+
+
+==== Step 1
+
+Create a directory to checkout the code into.  Let`'s call it _TOPLEVELDIR_.
+
+
+==== Step 2
+
+Go into this directory.
+
+....
+  % cd TOPLEVELDIR
+....
+
+
+==== Step 3
+
+Check out the source code into a directory called _src_.
+
+For the public version, run the following command:
+
+....
+% svn checkout https://progress.nccs.nasa.gov/svn/lis/7/public7.2 src
+....
+
+ifdef::devonly[]
+For the development version, run the following command:
+
+....
+% svn checkout https://progress.nccs.nasa.gov/svn/lis/7/new_development src
+....
+endif::devonly[]
+
+
+==== Note
+
+Note that the directory containing the LIS source code will be referred to as _$WORKING_ throughout the rest of this document.
+
+:sectnums: // re-enable section numbers
+
+
+=== Source files
+anchor:sec_src_desc[Source files]
+
+Checking out the LIS source code (according the instructions in Section <<sec_obtain-src>>) will create a directory named _src_.  The structure of _src_ is as follows:
+
+* _LICENSES_
++
+Directory the NASA Open Source license for LIS along with the licenses of other
+included components
+
+ifdef::devonly[]
+* _RESTRICTED_ footnoteref:[disclaimer,{lispublicna}]
+endif::devonly[]
+
+ifdef::devonly[]
+* _apps_ footnoteref:[disclaimer]
+endif::devonly[]
+
+* _arch_
++
+Directory containing the configurable options for building the LIS executable
+
+* _configs_
++
+some sample LIS configuration files
+
+* _core_
++
+core routines in LIS
+
+* _dataassim_
++
+Top level directory for data assimilation support, which includes the following subcomponents
+
+** _algorithm_
++
+Directory containing the following data assimilation algorithm implementations:
+
+*** _di_
++
+direct insertion algorithm for data assimilation
+
+*** _enkf_
++
+NASA GMAO`'s Ensemble Kalman Filter algorithm for data assimilation
+
+*** _enkfgrace_
++
+GRACE Ensemble Kalman Filter algorithm for data assimilation
+
+** _biasEstimation_
++
+Directory containing the following dynamic bias estimation algorithms:
+
+*** _gmaoBE_
++
+NASA GMAO`'s dynamic bias estimation algorithm
+
+** _obs_
++
+Directory containing the following observation handlers for data assimilation:
+
+ifdef::devonly[]
+*** _AMREswe_ footnoteref:[disclaimer]
++
+AMSRE snow water equivalent retrievals in HDF4/HDFEOS format
+endif::devonly[]
+
+*** _ANSA_SCF_
++
+Blended snow cover fraction from the AFWA NASA snow algorithm
+
+*** _ANSA_SNWD_
++
+Snow depth retrievals from the AFWA NASA snow algorithm
+
+ifdef::devonly[]
+*** _ANSA_SWE_ footnoteref:[disclaimer]
++
+Snow water equivalent retrievals from the AFWA NASA snow algorithm
+
+*** _ASCAT_TUW_ footnoteref:[disclaimer]
++
+ASCAT (TU Wein) soil moisture
+endif::devonly[]
+
+*** _ESACCI_sm_
++
+ESACCI Essential Climate Variable product
+
+*** _GCOMW_AMSR2L3SND_
++
+AMSR2 snow depth retrievals
+
+*** _GCOMW_AMSR2L3sm_
++
+AMSR2 soil moisture retrievals
+
+*** _GRACE_
++
+GRACE soil moisture
+
+ifdef::devonly[]
+*** _IMS_sca_ footnoteref:[disclaimer]
++
+IMS snow cover area
+
+*** _ISCCP_Tskin_ footnoteref:[disclaimer]
++
+ISCCP skin temperature product in binary format
+endif::devonly[]
+
+*** _LPRM_AMSREsm_
++
+Soil moisture retrievals from AMSRE derived using the land parameter retrieval model (LPRM) from University of Amsterdam
+
+*** _MODISsca_
++
+MODIS snow cover area product in HDF4/HDFEOS format
+
+*** _NASA_AMSREsm_
++
+NASA AMSRE soil moisture data in binary format
+
+*** _NASA_SMAPsm_
++
+NASA SMAP soil moisture retrievals
+
+*** _PMW_snow_
++
+PMW snow
+
+*** _SMMR_SNWD_
++
+SMMR snow depth
+
+*** _SMOPS_ASCATsm_
++
+SMOPS ASCAT A and B real time soil moisture
+
+*** _SMOPS_AMSR2sm_
++
+SMOPS AMSR2 real time soil moisture
+
+*** _SMOPS_SMAPsm_
++
+SMOPS SMAP real time soil moisture
+
+*** _SMOPS_SMOSsm_
++
+SMOPS SMOS real time soil moisture
+
+*** _SMOS_L2sm_
++
+SMOS L2 soil moisture
+
+*** _SMOS_NESDIS_
++
+SMOS NESDIS soil moisture retrievals
+
+ifdef::devonly[]
+*** _SNODEP_ footnoteref:[disclaimer]
++
+AFWA snowdepth data in Grib1 format
+endif::devonly[]
+
+*** _SSMI_SNWD_
++
+SSMI snow depth
+
+ifdef::devonly[]
+*** _SYN_LBAND_TB_ footnoteref:[disclaimer]
++
+Synthetic L-band brightness temperature
+
+*** _WindSat_Cband_sm_ footnoteref:[disclaimer]
++
+C-band soil moisture retrievals from WindSat
+endif::devonly[]
+
+*** _WindSat_sm_
++
+X-band soil moisture retrievals from WindSat
+
+*** _pildas_
++
+PILDAS soil moisture observations (such as one generated from a previous LIS LSM run)
+
+ifdef::devonly[]
+*** _simGRACE_JPL_ footnoteref:[disclaimer]
++
+Synthetic soil moisture retrievals from GRACE
+endif::devonly[]
+
+ifdef::devonly[]
+
+*** This directory also includes the following synthetic data handler examples:
+
+*** _multisynsmobs_ footnoteref:[disclaimer]
++
+synthetic soil moisture data with multiple observation types
+
+*** _syntheticlst_ footnoteref:[disclaimer]
++
+synthetic land surface temperature data handler
+
+*** _syntheticsf_ footnoteref:[disclaimer]
++
+synthetic streamflow data handler
+
+*** _syntheticsm_ footnoteref:[disclaimer]
++
+synthetic soil moisture data handler (produced from a LIS LSM run)
+
+*** _syntheticsnd_ footnoteref:[disclaimer]
++
+synthetic snow depth data handler
+
+*** _syntheticswe_ footnoteref:[disclaimer]
++
+synthetic snow water equivalent data handler
+endif::devonly[]
+
+** _perturb_
++
+Directory containing the following perturbation algorithm implementations
+
+*** _gmaopert_
++
+NASA GMAO`'s perturbation algorithm
+
+* _docs_
++
+Directory containing documentation
+
+* _forecast_
++
+Supports forecast capabilities
+
+** algorithm
++
+Directory containing the following forecasting algorithm implementations
+
+ifdef::devonly[]
+*** ESPboot footnoteref:[disclaimer]
++
+Boot ensemble streamflow prediction
+endif::devonly[]
+
+*** ESPconv
++
+Conventional ensemble streamflow prediction
+
+* _interp_
++
+Generic spatial and temporal interpolation routines
+
+* _irrigation_
++
+Directory containing the following irrigation schemes
+
+** _drip_
++
+Drip irrigation scheme
+
+** _flood_
++
+Flood irrigation scheme
+
+** _sprinkler_
++
+Demand sprinkler irrigation scheme
+
+* _lib_
++
+Directory contains the following RTM-related libraries
+
+** lis-cmem3
+** lis-crtm
+** lis-crtm-profile-utility
+
+* _make_
++
+Makefile and needed header files for building LIS executable
+
+* _metforcing_
++
+Top level directory for base meteorological forcing methods, which includes the following implementations
+
+** _3B42RT_
++
+Routines for handling the TRMM 3B42RT precipitation product
+
+** _3B42RTV7_
++
+Routines for handling the TRMM 3B42RTV7 precipitation product
+
+** _3B42V6_
++
+Routines for handling the TRMM 3B42V6 precipitation product
+
+** _3B42V7_
++
+Routines for handling the TRMM 3B42V7 precipitation product
+
+ifdef::devonly[]
+** _ALMIPII_ footnoteref:[disclaimer]
++
+Routines for handling the AMMA land surface model intercomparision project phase 2
+endif::devonly[]
+
+** _AWAP_
++
+Routines for handling the AWAP precipitation product
+
+** _Bondville_
++
+Routines for handling the Bondville forcing products
+
+ifdef::devonly[]
+** _CaPA_ footnoteref:[disclaimer]
++
+Canadian Precipitation analysis
+endif::devonly[]
+
+ifdef::devonly[]
+** _FASSTsingle_ footnoteref:[disclaimer]
++
+Routines for handling the single-point FASST product
+endif::devonly[]
+
+** _PALSmetdata_
++
+Routines for handling the PALS station data
+
+** _PILDAS_
++
+Routines for handling the PILDAS metforcing data
+
+** _RFE2Daily_
++
+Routines for handling the RFE2 precipitation product from FEWSNET (diurnally non-disaggregated)
+
+** _RFE2gdas_
++
+Routines for handling the RFE2 precipitation product from FEWSNET bias corrected against GDAS data
+
+** _WRFout_
++
+Routines for handling WRF output as forcing input
+
+** _agrrad_
++
+Routines for handling the AGRMET radiation product
+
+** _agrradps_
++
+Routines for handling the AGRMET radiation product (polar stereographic prjection)
+
+ifdef::devonly[]
+** _arms_ footnoteref:[disclaimer]
++
+Routines for handling the Walnut Gulch meteorological station data
+endif::devonly[]
+
+** _ceop_
++
+Routines for handling the CEOP meteorological station data
+
+** _chirps2_
++
+Routines for handling the UCSB CHIRPS v2.0 satellite-gage merged precipitation product
+
+** _climatology_
++
+Routines for handling LDT-generated forcing climatologies
+
+** _cmap_
++
+Routines for handling the CMAP precipitation product
+
+** _cmorph_
++
+Routines for handling the CMORPH precipitation product
+
+** _coop_
++
+Routines for handling the COOP precipitation product
+
+** _ecmwf_
++
+ECMWF meteorological forcing data
+
+** _ecmwfreanal_
++
+ECMWF reanalysis meteorological forcing data based on <<berg_etal_jgr_2003>>.
+
+** _gdas_
++
+NCEP GDAS meteorological forcing data
+
+ifdef::devonly[]
+** _gdas3d_ footnoteref:[disclaimer]
++
+Routines for handling the GDAS 3d (including the atmospheric profile) data
+endif::devonly[]
+
+** _gdasLSWG_
++
+GDAS profile data from the PMM land surface working group
+
+** _gdasT1534_
++
+NCEP GDAS GFS T1534 meteorological forcing data
+
+** _genEnsFcst_
++
+Routines for handling user-derived ensemble forecast data
+
+** _genMetForc_
++
+LDT-generated meteorological forcing data
+
+** _geos_
++
+NASA GEOS meteorological forcing data
+
+** _geos5fcst_
++
+NASA GEOS 5 meteorological forecast forcing data
+
+** _gfs_
++
+NCEP GFS meteorological forcing data
+
+** _gldas_
++
+NASA GMAO GLDAS meteorological forcing data
+
+** _gswp1_
++
+Global Soil Wetness Project-1 meteorological forcing data
+
+** _gswp2_
++
+Global Soil Wetness Project-2 meteorological forcing data
+
+** _imerg_
++
+Routines for handling the GPM L3 precipitation product
+
+** _merra-land_
++
+GMAO Modern Era Retrospective-Analysis for Research and Applications data
+
+** _merra2_
++
+GMAO Modern Era Retrospective-Analysis for Research and Applications data
+
+** _nam242_
++
+Routines for handling the North American Mesoscale Forecast System (NAM) 242 AWIPS Grid \-- Over Alaska product
+
+** _narr_
++
+Routines for handling the North American Regional Reanalysis (3d) data
+
+** _nldas1_
++
+Routines for handling the North American Land Data Assimilation System forcing product
+
+** _nldas2_
++
+Routines for handling the North American Land Data Assimilation System 2 forcing product
+
+** _pet_usgs_
++
+Routines for handling daily potential evapotranspiration data from the USGS FAO-PET method, using GDAS forcing fields as inputs
+
+** _princeton_
++
+Renalaysis product from Princeton University (<<sheffield_etal_2006>>)
+
+** _rdhm356_
++
+Routines for handling NOAA OHD RDHM 3.5.6 forcing data
+
+** _rhoneAGG_
++
+Rhone-AGG meteorological forcing data
+
+** _scan_
++
+Routines for handling the Soil Climate Analysis Network precipitation
+product
+
+** _snotel_
++
+SNOTEL meteorological forcing data
+
+** _stg2_
++
+Routines for handling the NCEP Stage IV QPE precipitation product
+
+** _stg4_
++
+Routines for handling the NCEP Stage II precipitation product
+
+** _templateMetForc_
++
+An empty template for meteorological forcing data implementations
+
+** _vicforcing_
++
+Routines for handling VIC 4.1.1 pre-processed meteorological forcing data
+
+** _vicforcing.4.1.2_
++
+Routines for handling VIC 4.1.2 pre-processed meteorological forcing data
+
+* _offline_
++
+Contains the main program for the offline mode of operation
+
+* _optUE_
++
+Top level directory for optimization support, which includes the following subcomponents
+
+** _algorithm_
++
+Directory containing the following optimization algorithm implementations
+
+*** _DEMC_
++
+differential evolution monte carlo algorithm
+
+*** _DEMCz_
++
+differential evolution monte carlo Z algorithm
+
+ifdef::devonly[]
+*** _ES_ footnoteref:[disclaimer]
++
+enumerated search
+endif::devonly[]
+
+*** _GA_
++
+Single objective Genetic Algorithm
+
+*** _LM_
++
+Levenberg-Marquardt gradient search algorithm
+
+*** _MCSIM_
++
+monte carlo simple propagation scheme
+
+*** _RWMCMC_
++
+Random walk Markov chain monte carlo algorithm
+
+ifdef::devonly[]
+*** _SCE-UA_ footnoteref:[disclaimer]
++
+Shuffled Complex Evolutionary Algorithm
+endif::devonly[]
+
+** _type_
+
+*** _paramestim_
++
+Directory for parameter estimation support
++
+The directory for parameter estimation support _paramestim_ includes the following subcomponents
+
+**** _objfunc_
++
+Directory containing the following objective function evaluation methods
+
+***** _LL_
++
+maximum likelihood
+
+ifdef::devonly[]
+***** _LM_ footnoteref:[disclaimer]
++
+objective function definition for LM algorithm
+endif::devonly[]
+
+***** _LS_
++
+Least squares based objective function
+
+***** _P_
++
+prior function definition
+
+**** _obs_
++
+Directory containing the following observation handlers for parameter estimation
+
+***** _AMSRE_SR_
+
+ifdef::devonly[]
+***** _ARM_ footnoteref:[disclaimer]
+
+***** _Ameriflux_ footnoteref:[disclaimer]
++
+In-situ observations from Ameriflux
+
+***** _CNRS_ footnoteref:[disclaimer]
++
+[red]##specifies what?##
+endif::devonly[]
+
+***** _EmptyObs_
+
+ifdef::devonly[]
+***** _FLUXNET_ footnoteref:[disclaimer]
++
+[red]##specifies what?##
+
+***** _Global_LS_data_ footnoteref:[disclaimer]
++
+Global landslide observational data
+
+***** _ISCCP_Tskin_ footnoteref:[disclaimer]
++
+ISCCP land surface temperature observations
+endif::devonly[]
+
+***** _LPRM_AMSREsm_
++
+Soil moisture retrievals from AMSRE derived using the land parameter retrieval model (LPRM) from University of Amsterdam
+
+ifdef::devonly[]
+***** _Macon_LS_data_ footnoteref:[disclaimer]
++
+Macon County North Carolina landslide observational data
+
+***** _USDA_ARSsm_ footnoteref:[disclaimer]
++
+USDA Agricultural Research Service soil mositure retrievals
+
+***** _pesynsm1_ footnoteref:[disclaimer]
++
+synthetic soil moisture observations
+endif::devonly[]
+
+***** _template_
+
+ifdef::devonly[]
+***** _wgPBMRsm_ footnoteref:[disclaimer]
++
+PBMR soil moisture data for the Walnut Gulch watershed
+endif::devonly[]
+
+* _params_
++
+Directory containing implementations of the following land surface model parameters
+
+ifdef::devonly[]
+** _albedo_ footnoteref:[disclaimer]
++
+Routines for handling albedo data products
+
+** _emissivity_ footnoteref:[disclaimer]
++
+Routines for handling emissivity data products
+endif::devonly[]
+
+** _gfrac_
++
+Routines for handling green vegetation fraction data products
+
+** _lai_
++
+Routines for handling Leaf/Stem area index data products
+
+ifdef::devonly[]
+** _roughness_ footnoteref:[disclaimer]
++
+Routines for handling roughness data products
+endif::devonly[]
+
+* _plugins_
++
+Modules defining the function table registry of extensible functionalities
+
+* _routing_
++
+Directory containing routing models
+
+** _HYMAP_router_
+** _NLDAS_router_
+
+* _rtms_
++
+Directory containing coupling routines to the following radiative transfer models
+
+ifdef::devonly[]
+** _CRTM_ footnoteref:[disclaimer]
++
+Routines to handle coupling to the JCSDA Community Radiative Transfer Model
+
+** _CRTM2_ footnoteref:[disclaimer]
++
+Routines to handle coupling to the JCSDA Community Radiative Transfer Model, version 2
+endif::devonly[]
+
+** _CRTM2EM_
++
+Routines to handle coupling to the JCSDA Community Radiative Transfer Model Emissions model
+
+** _LIS_CMEM3_
++
+Community Microwave Emission Model from ECMWF
+
+** _TauOmegaRTM_
++
+Routines to handle coupling to the Tau Omega Radiative Transfer Model
+
+* _runmodes_
++
+Directory containing the following running modes in LIS
+
+ifdef::devonly[]
+** _RTMforward_ footnoteref:[disclaimer]
++
+Routines to manage the program flow when a forward model integration using a radiative transfer model is employed
+
+** _agrmetmode_ footnoteref:[disclaimer]
++
+Routines to manage the program flow in the AFWA operational mode
+endif::devonly[]
+
+** _forecast_
++
+Routines to manage the forecast simulation mode
+
+ifdef::devonly[]
+** _gce_cpl_mode_ footnoteref:[disclaimer]
++
+Routines to manage the program flow in the coupled LIS-GCE mode
+
+** _landslide_optUE_ footnoteref:[disclaimer]
++
+Routines to manage the program flow in combined use of landslide modelling simulations and optimization
+endif::devonly[]
+
+** _paramEstimation_
++
+Routines to manage the program flow in the parameter estimation mode
+
+** _retrospective_
++
+Routines to manage the program flow in the retrospective analysis mode
+
+** _smootherDA_
++
+Routines to manage the program flow in the smoother da analysis mode
+
+** _wrf_cpl_mode_
++
+Routines to manage the program flow in the coupled LIS-WRF mode not using ESMF
+
+* _surfacemodels_
++
+Top level directory for surface model support, which includes the following subcomponents
+
+ifdef::devonly[]
+** _lake_ footnoteref:[disclaimer]
++
+Directory containing implementations of the following lake surface models
+
+*** _FLake.1.0_
++
+FLake, version 1.0
++
+#internal use only!#
+endif::devonly[]
+
+** _land_
++
+Directory containing implementations of the following land surface models
+
+*** _cable_
++
+CSIRO Atmosphere Biosphere Land Exchange model, version 1.4b
+
+*** _clm2_
++
+NCAR community land model, version 2.0
+
+*** _clsm.f2.5_
++
+NASA GMAO Catchment land surface model version Fortuna 2.5
+
+*** _geowrsi.2_
++
+GeoWRSI version 2
+
+*** _hyssib_
++
+NASA HySSIB land surface model
+
+ifdef::devonly[]
+*** _jules.4.3_ footnoteref:[disclaimer]
++
+UK Met Office`'s JULES land surface model
+endif::devonly[]
+
+*** _mosaic_
++
+NASA Mosaic land surface model
+
+*** _noah.2.7.1_
++
+NCEP Noah land surface model version 2.7.1
+
+*** _noah.3.2_
++
+NCAR Noah land surface model version 3.2
+
+*** _noah.3.3_
++
+NCAR Noah land surface model version 3.3
+
+*** _noah.3.6_
++
+NCAR Noah land surface model version 3.6
+
+*** _noahmp.3.6_
++
+NCAR Noah multiphysics land surface model version 3.6
+
+*** _rdhm.3.5.6_
++
+NOAA OHD Research Distributed Hydrologic Model version 3.5.6
+
+*** _ruc.3.7_
++
+NOAA Rapid Update Cycle model version 3.7.1
+
+ifdef::devonly[]
+*** _summa.1.0_ footnoteref:[disclaimer]
++
+[red]##specifies what?##
+endif::devonly[]
+
+*** _template_
++
+An empty template for land surface model implementations
+
+*** _vic.4.1.1_
++
+Variable Infiltration Capacity model from University of Washington, version 4.1.1
+
+*** _vic.4.1.2.l_
++
+Variable Infiltration Capacity model from University of Washington, version 4.1.2.l
+
+*** Each of these LSM directories contain specific plugin interfaces related to
++
+(1) coupling to WRF and GCE models, +
+(2) Data assimilation instances, +
+(3) Irrigation instances, +
+(4) Parameter estimation instances, +
+(5) Routing instances, and +
+(6) Radiative transfer instances.
++
+These routines defined for Noah land surface model version 3.3 are shown below. Note that similar routines are implemented in other LSMs.
+
+*** (1) Coupling interfaces:
+//**** _cpl_gce_
+//+
+//Routines for coupling Noah with GCE
+
+**** _cpl_wrf_noesmf_
++
+Routines for coupling Noah with WRF without ESMF
+
+
+*** (2) Data assimilation interfaces:
+//**** _da_multism_
+//+
+//Noah routines related to the assimilation of data with
+//multiple soil moisture observation types
+//**** _da_scf_
+//+
+//Noah routines related to the assimilation of snow cover
+//fraction observations
+
+ifdef::devonly[]
+**** _da_snodep_ footnoteref:[disclaimer]
++
+Noah routines related to the assimilation of AFWA SNODEP observations
+endif::devonly[]
+
+**** _da_snow_
++
+Noah routines related to the assimilation of snow water equivalent observations
++
+//**** _da_snwd_
+//+
+//Noah routines related to the assimilation of snow depth
+//observations
++
+**** _da_soilm_
++
+Noah routines related to the assimilation of soil moisture observations
+//**** _da_swe_
+//+
+//Noah routines related to the assimilation of snow water
+//equivalent observations
+//ifdef::devonly[]
+//**** _da_tskin_ footnoteref:[disclaimer]
+//+
+//Noah routines related to the assimilation of land surface
+//temperature observations
+//endif::devonly[]
+
+*** (3) Irrigation interfaces:
+
+**** _irrigation_
++
+Noah routines related to interacting with the irrigation scheme
+
+*** (4) Parameter estimation interfaces:
+**** _pe_
++
+Noah routines related to the estimation of soil properties through parameter estimation
+//**** _pe_soilf_ footnoteref:[disclaimer]
+//+
+//Noah routines related to the estimation of soil properties
+//through parameter estimation
+//**** _pe_soilp30_ footnoteref:[disclaimer]
+//+
+//Noah routines related to the estimation of soil properties
+//through parameter estimation
+//**** _pe_soilp5_ footnoteref:[disclaimer]
+//+
+//Noah routines related to the estimation of soil properties
+//through parameter estimation
+//**** _pe_soilp5ln_ footnoteref:[disclaimer]
+//+
+//Noah routines related to the estimation of soil properties
+//through parameter estimation
+//**** _pe_z0_ footnoteref:[disclaimer]
+//+
+//Noah routines related to the estimation of roughness length
+//through parameter estimation
+
+*** (5) Routing interfaces:
+**** _routing_
++
+Noah routines related to interacting with the routing schemes
+
+*** (6) Radiative transfer model interfaces:
+
+**** _sfc_cmem3_
+**** _sfc_crtm_
+**** _sfc_tauomega_
+
+** _openwater_
++
+Directory containing implementations of the following open water surface models
+
+*** _template_
++
+An empty template for open water surface model implementations
+
+* _testcases_
++
+testcases for verifying various functionalities
+
+* _utils_
++
+Miscellaneous helpful utilities
+
+Source code documentation may be found on {lisurl}[LIS`' web-site].  Follow the "`Documentation`" link.
+

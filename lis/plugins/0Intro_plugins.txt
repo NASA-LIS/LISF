@@ -1,0 +1,18 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!The plugin interfaces in LIS are the functional abstractions to
+!represent various user-defined components in LIS. The plugins contain
+!the hot spots or extensible interfaces for incorporating new domains,
+!running modes, LSMS, meteorological analyses, data assimilation
+!tools, and parameters.  These adaptable interfaces in LIS enable
+!the reuse of the broad set of data, high performance computing,
+!data management, visualization tools, and the land modeling
+!infrastructure in LIS.
+!EOP

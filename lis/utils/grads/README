@@ -1,0 +1,1 @@
+This directory contains a postprocessor utility that generates a sample grads control file for the domain, resolution and the LSM used in the run. 

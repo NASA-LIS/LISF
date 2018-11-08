@@ -1,0 +1,237 @@
+
+.Running modes
+|====
+| Component name    | Default state
+
+| retrospective     | On
+| AGRMET ops        | Off
+| WRF coupling      | On
+| GCE coupling      | Off
+| param estimation  | On
+| RTM forward       | Off
+| ensemble smoother | On
+| forecast          | On
+|====
+
+.Metforcings
+|====
+| Component name                         | Default state
+
+| Metforcing template                    | On
+| LDT-generated                          | On
+| CLIM-Standard                          | On
+| GenEnsFcst                             | On
+| GDAS                                   | On
+| GDAS T1534                             | On
+| GEOS                                   | On
+| GEOS5 forecast                         | On
+| ECMWF                                  | On
+| GSWP1                                  | On
+| GSWP2                                  | On
+| ECMWF reanalysis                       | On
+| AGRMET                                 | Off
+| PRINCETON                              | On
+| NLDAS1                                 | On
+| NLDAS2                                 | On
+| GLDAS                                  | On
+| GFS                                    | On
+| MERRA-Land                             | On
+| MERRA2                                 | On
+| CMAP                                   | On
+| CHIRPS2                                | On
+| TRMM 3B42RT                            | On
+| TRMM 3B42RTV7                          | On
+| TRMM 3B42V6                            | On
+| TRMM 3B42V7                            | On
+| CPC CMORPH                             | On
+| GPM IMERG                              | On
+| CPC STAGEII                            | On
+| CPC STAGEIV                            | On
+| NARR                                   | On
+| ALMIPII forcing                        | Off
+| RFE2(daily)                            | On
+| CEOP                                   | On
+| SCAN                                   | On
+| ARMS                                   | Off
+| GDAS(LSWG)                             | On
+| MET RDHM.3.5.6                         | On
+| GDAS(3d)                               | Off
+| AGRMET radiation (polar stereographic) | On
+| AGRMET radiation (latlon)              | On
+| Bondville                              | On
+| FASST test                             | Off
+| TRIGRS test                            | Off
+| SNOTEL                                 | On
+| COOP                                   | On
+| Rhone AGG                              | On
+| RFE2(GDAS bias-corrected)              | On
+| VIC processed forcing                  | Off
+| PALS station forcing                   | On
+| PILDAS                                 | On
+| PET USGS                               | On
+| CaPA                                   | Off
+| NAM242                                 | On
+| WRFout                                 | On
+| AWAP                                   | On
+|====
+
+.Parameters
+|====
+| Component name     | Default state
+
+| MODIS real-time    | On
+| ALMIPII LAI        | On
+| NESDIS weekly      | On
+| SPORT              | On
+| VIIRS              | On
+| ALMIPII GFRAC      | On
+| ALMIPII roughness  | Off
+| ALMIPII albedo     | Off
+| ALMIPII emissivity | Off
+|====
+
+.RTMS
+|====
+| Component name | Default state
+
+| CRTM           | Off
+| CRTM2          | On
+| CRTM2EM        | On
+| CMEM           | On
+| Tau Omega      | On
+|====
+
+.Applications
+|====
+| Component name | Default state
+
+| GLS            | Off
+| TRIGRS         | Off
+|====
+
+.Routing
+|====
+| Component name | Default state
+
+| NLDAS router   | On
+| HYMAP router   | On
+|====
+
+.Irrigation
+|====
+| Component name | Default state
+
+| Sprinkler      | On
+| Flood          | On
+| Drip           | On
+|====
+
+.DA
+|====
+| Component name          | Default state
+
+| Direct insertion        | On
+| EnKF                    | On
+| EnKS                    | On
+| DA OBS syntheticsm      | Off
+| DA OBS syntheticsnd     | Off
+| DA OBS SNODEP           | Off
+| DA OBS PMW_snow         | On
+| DA OBS ANSA_SCF         | On
+| DA OBS ESACCI_sm        | On
+| DA OBS LPRM_AMSREsm     | On
+| DA OBS SMMR_SNWD        | On
+| DA OBS SSMI_SNWD        | On
+| DA OBS ANSA_SNWD        | On
+| DA OBS GCOMW_AMSR2L3SND | On
+| DA OBS SMOPS_ASCATsm    | On
+| DA OBS SMOPS_AMSR2sm    | Off
+| DA OBS SMOPS_SMAPsm     | Off
+| DA OBS SMOPS_SMOSsm     | Off
+| DA OBS SMOS_NESDIS      | On
+| DA OBS NASA_SMAPsm      | On
+| DA OBS pildas           | On
+| DA OBS GRACE            | On
+|====
+
+.Bias estimation
+|====
+| Component name  | Default state
+
+| bias estimation | On
+|====
+
+.Perturbations
+|====
+| Component name | Default state
+
+| perturbations  | On
+|====
+
+.Optimization / Parameter estimation
+|====
+| Component name        | Default state
+
+| OPTUE ES              | Off
+| OPTUE LM              | On
+| OPTUE GA              | On
+| OPTUE SCEUA           | Off
+| OPTUE MCSIM           | On
+| OPTUE RWMCMC          | On
+| OPTUE DEMC            | On
+| OPTUE DEMCz           | On
+| PE OBS template       | On
+| PE OBS pesynsm1       | Off
+| PE OBS ISCCP_Tskin    | Off
+| PE OBS wgPBMRsm       | Off
+| PE OBS CNRS           | Off
+| PE OBS AMSRE_SR       | On
+| PE OBS LPRM_AMSREsm   | On
+| PE OBS EmptyObs       | On
+| PE OBS ARM            | Off
+| PE OBS Macon_LS_data  | Off
+| PE OBS Global_LS_data | Off
+| PE OBS Ameriflux      | Off
+| PE OBS FLUXNET        | Off
+| PE OBS USDA_ARSsm     | Off
+| PE OBJFUNC LS         | On
+| PE OBJFUNC LM         | Off
+| PE OBJFUNC LL         | On
+| PE OBJFUNC P          | On
+|====
+
+.Surface models
+|====
+| Component name      | Default state
+
+| LSM template        | On
+| Noah.2.7.1          | On
+| Noah.3.2            | On
+| Noah.3.3            | On
+| Noah.3.6            | On
+| NoahMP.3.6          | On
+| RUC.3.7             | On
+| CLM.2               | On
+| VIC.4.1.1           | On
+| VIC.4.1.2           | On
+| Mosaic              | On
+| HySSIB              | On
+| JULES.4.3           | Off
+| CABLE               | On
+| FASST               | Off
+| CLSM F2.5           | On
+| GeoWRSI.2           | On
+| LSM RDHM.3.5.6      | On
+| SUMMA.1.0           | Off
+| Flake.1.0           | Off
+| template open water | On
+|====
+
+.Forecast algorithms
+|====
+| Component name   | Default state
+
+| ESP boot         | Off
+| ESP conventional | On
+|====
+

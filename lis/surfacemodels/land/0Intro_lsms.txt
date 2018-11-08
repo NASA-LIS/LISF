@@ -1,0 +1,18 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!This section contains the description of interface implementations
+!specific to different land surface models. The implementations
+!include Noah LSM from NCEP, the community land model (CLM), 
+!Mosaic, HySSIB and catchment from NASA GSFC, etc.
+!It is to be noted that the LIS reference manual 
+!documents only the interface hooks into LIS and it 
+!does not document the land surface physics routines. Please contact
+!the developers of the individual model for same. 
+!EOP

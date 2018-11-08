@@ -1,0 +1,588 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <vic411_vicNl.h>
+
+static char vcid[] = "$Id: vic411_initialize_lake.c,v 5.10.2.11 2009/10/08 21:30:59 vicadmin Exp $";
+
+int vic411_initialize_lake (vic411_lake_var_struct   *lake, 
+		      vic411_lake_con_struct   lake_con,
+		      vic411_soil_con_struct  *soil_con,
+		      double            airtemp)
+
+/**********************************************************************
+	vic411_initialize_lake		Laura Bowling		March 8, 2000
+
+  This routine initializes the lake variables for each new
+  grid cell.
+
+  VARIABLES INITIALIZED:
+  lake.temp[MAXNOD]        Water temperature at each node.
+  lake.tempi[MAXNOD]       Water temperature under ice at each node.
+  lake.hice                Depth of lake ice.
+  lake.areai               Area of lake ice. 
+  lake.volume
+  lake.sarea
+  
+  modifications:
+  04-Oct-04 Merged with Laura Bowling's updated lake model code.	TJB
+  23-Feb-05 Merged with Laura Bowling's second update to lake model code.	TJB
+  2005-03-24 Added check for negative lake volumes.			TJB
+  2006-Oct-16 Added RCS ID string.					TJB
+  2006-Nov-07 Initialized aero_resist, aero_resist_used, and MELTING.	TJB
+  2006-Nov-07 Removed LAKE_MODEL option.				TJB
+  2007-Apr-23 Added initialization of lake->surface, lake->swe, and
+	      lake->sdepth.						TJB
+  2007-Oct-24 Changed vic411_get_sarea, vic411_get_volume, and vic411_get_depth to return exit
+	      status so that errors can be trapped and communicated up the
+	      chain of function calls.					KAC via TJB
+  2007-Oct-24 Changed the error conditions so that vic411_get_depth does not
+	      exit when depth == 0.0 (as long as volume == 0.0 when
+	      depth == 0.0).						KAC via TJB
+  2007-Nov-06 Replaced lake.fraci with lake.areai.  Added vic411_ice_depth()
+	      function.							LCB via TJB
+  2008-Jan-23 Added initialization of lake_snow->surf_temp, pack_water,
+	      and pack_temp in conjunction with 2-layer snow pack over
+	      lake ice.							LCB via TJB
+  2008-Sep-09 Deleted initial volume print statement.			LCB via TJB
+  2009-Jun-09 Lake_var data structure now only stores final (corrected)
+	      values of aero_resist.					TJB
+  2009-Jul-31 Removed references to lake_snow structure, which doesn't
+	      exist outside of vic411_full_energy().				TJB
+  2009-Sep-28 Added initialization of the new lake->snow, lake->soil,
+	      and lake->energy structures.				TJB
+  2009-Sep-30 Miscellaneous fixes for lake model.			TJB
+  2009-Oct-08 Extended T fallback scheme to snow and ice T.		TJB
+**********************************************************************/
+{
+  extern vic411_option_struct vic411_options;
+#if LINK_DEBUG
+  extern vic411_debug_struct debug;
+#endif
+
+  int i, k;
+  int status;
+  double depth;
+  double remain;
+  double in;
+  double tmp_volume;
+
+  /*  Assume no ice present, lake completely equilibrated with atmosphere. */
+
+  for ( i = 0 ; i < MAX_LAKE_NODES; i++ ) {      
+    lake->temp[i] = max(airtemp,0.0);
+    lake->surface[i] = 0.0;
+  }
+
+  lake->tempi = 0.0;
+  lake->hice = 0.0;
+  lake->areai = .0;
+  lake->new_ice_area = 0.0;
+  lake->ice_water_eq = 0.0;
+  lake->aero_resist = 0;
+  lake->swe = 0.0;
+  lake->sdepth = 0.0;
+
+  /********************************************************************/
+  /* Initialize lake physical parameters.                             */
+  /********************************************************************/
+
+  lake->ldepth = lake_con.depth_in;
+
+  if(lake->ldepth > MAX_SURFACE_LAKE && lake->ldepth < 2*MAX_SURFACE_LAKE) {
+    /* Not quite enough for two full layers. */
+    lake->surfdz = lake->ldepth/2.;
+    lake->dz = lake->ldepth/2.;
+    lake->activenod = 2;
+  }
+  else if(lake->ldepth >= 2* MAX_SURFACE_LAKE) {
+    /* More than two layers. */	
+    lake->surfdz = MAX_SURFACE_LAKE;
+    lake->activenod = (int) (lake->ldepth/MAX_SURFACE_LAKE);
+    if(lake->activenod > MAX_LAKE_NODES)
+      lake->activenod = MAX_LAKE_NODES;
+    lake->dz = (lake->ldepth-lake->surfdz)/((float)(lake->activenod-1));
+  }
+  else if(lake->ldepth > 0.0) {
+    lake->surfdz = lake->ldepth;
+    lake->dz = 0.0;
+    lake->activenod = 1;
+  }
+  else {
+    lake->surfdz = 0.0;
+    lake->dz = 0.0;
+    lake->activenod = 0;
+    lake->ldepth = 0.0;
+  }
+
+  // lake_con.basin equals the surface area at specific depths as input by
+  // the user in the lake parameter file or calculated in vic411_read_lakeparam(), 
+  // lake->surface equals the area at the top of each dynamic solution layer 
+ 
+  for(k=0; k<= lake->activenod; k++) {
+    if(k==0)
+      depth = lake->ldepth;
+    else
+      depth = lake->dz*(lake->activenod - k);
+    status = vic411_get_sarea(lake_con, depth, &(lake->surface[k]));
+    if (status < 0) {
+      fprintf(stderr, "vic411_Error in vic411_get_sarea: record = %d, depth = %f, sarea = %e\n",0,depth,lake->surface[k]);
+      return(status);
+    }
+  }
+
+  lake->sarea = lake->surface[0];
+  status = vic411_get_volume(lake_con, lake->ldepth, &tmp_volume);
+  if (status < 0) {
+    fprintf(stderr, "vic411_Error in vic411_get_volume: record = %d, depth = %f, volume = %e\n",0,depth,tmp_volume);
+    return(status);
+  }
+  else if (status > 0) {
+    fprintf(stderr, "Warning in vic411_get_volume: lake depth exceeds maximum; setting to maximum; record = %d\n",0);
+  }
+  lake->volume = tmp_volume+lake->ice_water_eq;
+ 
+  // Initialize lake moisture fluxes to 0
+  lake->baseflow_in=0.0;
+  lake->baseflow_out=0.0;
+  lake->evapw=0.0;
+  lake->recharge=0.0;
+  lake->runoff_in=0.0;
+  lake->runoff_out=0.0;
+  lake->snowmlt=0.0;
+
+  // Initialize the snow, energy, and soil components of lake structure
+  // If we implement heat flux between lake and underlying soil, we will need to initialize these more correctly
+  // Snow state vars
+  lake->snow.albedo            = 0.0;
+  lake->snow.canopy_albedo     = 0.0;
+  lake->snow.coldcontent       = 0.0;
+  lake->snow.coverage          = 0.0;
+  lake->snow.density           = 0.0;
+  lake->snow.depth             = 0.0;
+  lake->snow.last_snow         = MISSING;
+  lake->snow.max_swq           = 0.0;
+  lake->snow.MELTING           = FALSE;
+  lake->snow.pack_temp         = 0.0;
+  lake->snow.pack_water        = 0.0;
+  lake->snow.snow              = FALSE;
+  lake->snow.snow_canopy       = 0.0;
+  lake->snow.store_coverage    = 0.0;
+  lake->snow.store_snow        = FALSE;
+  lake->snow.store_swq         = 0.0;
+  lake->snow.surf_temp         = 0.0;
+  lake->snow.surf_temp_fbflag  = 0;
+  lake->snow.surf_temp_fbcount = 0;
+  lake->snow.surf_water        = 0.0;
+  lake->snow.swq               = 0.0;
+  lake->snow.swq_slope         = 0.0;
+  lake->snow.tmp_int_storage   = 0.0;
+  // Snow fluxes
+  lake->snow.blowing_flux      = 0.0;
+  lake->snow.canopy_vapor_flux = 0.0;
+  lake->snow.mass_error        = 0.0;
+  lake->snow.melt              = 0.0;
+  lake->snow.Qnet              = 0.0;
+  lake->snow.surface_flux      = 0.0;
+  lake->snow.transport         = 0.0;
+  lake->snow.vapor_flux        = 0.0;
+  // Energy state vars
+  lake->energy.AlbedoLake       = 0.0;
+  lake->energy.AlbedoOver       = 0.0;
+  lake->energy.AlbedoUnder      = 0.0;
+  lake->energy.frozen           = 0.0;
+  lake->energy.Nfrost           = 0;
+  lake->energy.Nthaw            = 0;
+  lake->energy.T1_index         = 0;
+  lake->energy.Tcanopy          = 0.0;
+  lake->energy.Tcanopy_fbflag   = 0;
+  lake->energy.Tcanopy_fbcount  = 0;
+  lake->energy.Tfoliage         = 0.0;
+  lake->energy.Tfoliage_fbflag  = 0;
+  lake->energy.Tfoliage_fbcount = 0;
+  lake->energy.Tsurf            = lake->temp[0];
+  lake->energy.Tsurf_fbflag     = 0;
+  lake->energy.Tsurf_fbcount    = 0;
+  lake->energy.unfrozen         = 0.0;
+  for (i=0; i<MAX_FRONTS; i++) {
+    lake->energy.fdepth[i]      = 0.0;
+    lake->energy.tdepth[i]      = 0.0;
+  }
+  for (i=0; i<2; i++) {
+    lake->energy.Cs[i]          = 0.0;
+    lake->energy.kappa[i]       = 0.0;
+  }
+  for (i=0; i<MAX_NODES; i++) {
+    lake->energy.Cs_node[i]     = 0.0;
+    lake->energy.ice[i]         = 0.0;
+    lake->energy.kappa_node[i]  = 0.0;
+    lake->energy.moist[i]       = 0.0;
+    lake->energy.T[i]           = lake->temp[0];
+    lake->energy.T_fbflag[i]    = 0;
+    lake->energy.T_fbcount[i]   = 0;
+  }
+  // Energy fluxes
+  lake->energy.advected_sensible = 0.0;
+  lake->energy.advection         = 0.0;
+  lake->energy.AtmosError        = 0.0;
+  lake->energy.AtmosLatent       = 0.0;
+  lake->energy.AtmosLatentSub    = 0.0;
+  lake->energy.AtmosSensible     = 0.0;
+  lake->energy.canopy_advection  = 0.0;
+  lake->energy.canopy_latent     = 0.0;
+  lake->energy.canopy_latent_sub = 0.0;
+  lake->energy.canopy_refreeze   = 0.0;
+  lake->energy.canopy_sensible   = 0.0;
+  lake->energy.deltaCC           = 0.0;
+  lake->energy.deltaH            = 0.0;
+  lake->energy.error             = 0.0;
+  lake->energy.fusion            = 0.0;
+  lake->energy.grnd_flux         = 0.0;
+  lake->energy.latent            = 0.0;
+  lake->energy.latent_sub        = 0.0;
+  lake->energy.longwave          = 0.0;
+  lake->energy.LongOverIn        = 0.0;
+  lake->energy.LongUnderIn       = 0.0;
+  lake->energy.LongUnderOut      = 0.0;
+  lake->energy.melt_energy       = 0.0;
+  lake->energy.NetLongAtmos      = 0.0;
+  lake->energy.NetLongOver       = 0.0;
+  lake->energy.NetLongUnder      = 0.0;
+  lake->energy.NetShortAtmos     = 0.0;
+  lake->energy.NetShortGrnd      = 0.0;
+  lake->energy.NetShortOver      = 0.0;
+  lake->energy.NetShortUnder     = 0.0;
+  lake->energy.out_long_canopy   = 0.0;
+  lake->energy.out_long_surface  = 0.0;
+  lake->energy.refreeze_energy   = 0.0;
+  lake->energy.sensible          = 0.0;
+  lake->energy.shortwave         = 0.0;
+  lake->energy.ShortOverIn       = 0.0;
+  lake->energy.ShortUnderIn      = 0.0;
+  lake->energy.snow_flux         = 0.0;
+  // Soil states and fluxes
+  lake->soil.asat                = 1.0;
+  lake->soil.baseflow            = 0.0;
+  lake->soil.inflow              = 0.0;
+  lake->soil.vic411_runoff              = 0.0;
+  lake->soil.rootmoist           = 0.0;
+  lake->soil.wetness             = 1.0;
+  for (i=0; i<2; i++) {
+    lake->soil.aero_resist[i]    = 0.0;
+  }
+  for (i=0; i<MAX_LAYERS; i++) {
+    lake->soil.layer[i].Cs       = 0.0;
+    lake->soil.layer[i].T        = lake->temp[0];
+    lake->soil.layer[i].evap     = 0.0;
+    lake->soil.layer[i].kappa    = 0.0;
+    lake->soil.layer[i].moist    = soil_con->porosity[i]*soil_con->depth[i]*1000.;
+    lake->soil.layer[i].phi      = 0.0;
+#if SPATIAL_FROST
+    for (k=0; k<FROST_SUBAREAS; k++) {
+      lake->soil.layer[i].ice[k]     = 0.0;
+      lake->soil.layer[i].min_liq[k] = soil_con->resid_moist[i];
+    }
+#else
+    lake->soil.layer[i].ice      = 0.0;
+    lake->soil.layer[i].min_liq  = soil_con->resid_moist[i];
+#endif
+  }
+  for (i=0; i<N_PET_TYPES; i++) {
+    lake->soil.pot_evap[i]       = 0.0;
+  }
+
+  return(0);
+
+}
+
+
+int vic411_get_sarea(vic411_lake_con_struct lake_con, double depth, double *sarea)
+/******************************************************************************
+  Function to compute surface area of liquid water in the lake, given the
+  current depth of liquid water.
+
+  Modifications:
+  2007-Oct-24 Added exit status.						TJB
+    Exit status values:
+          0: No errors
+      ERROR: vic411_Error: area cannot be reconciled with given lake depth and nodes
+******************************************************************************/
+{
+  int i;
+  int status;
+
+  status = 0;
+  *sarea = 0.0;
+
+  if (depth > lake_con.z[0]) {
+    *sarea = lake_con.basin[0];
+  }
+  else {	
+    for (i=0; i< lake_con.numnod; i++) {
+      if (depth <= lake_con.z[i] && depth > lake_con.z[i+1]) 
+	*sarea = lake_con.basin[i+1] + (depth-lake_con.z[i+1])*(lake_con.basin[i] - lake_con.basin[i+1])/(lake_con.z[i] - lake_con.z[i+1]);
+    }
+    if (*sarea == 0.0 && depth != 0.0) {
+      status = ERROR;
+    }
+  }
+
+  return status;
+
+}
+
+int vic411_get_volume(vic411_lake_con_struct lake_con, double depth, double *volume)
+/******************************************************************************
+  Function to compute liquid water volume stored within the lake basin, given
+  the current depth of liquid water.
+
+  Modifications:
+  2007-Oct-24 Added exit status.						TJB
+    Exit status values:
+          0: No errors
+          1: Warning: lake depth exceeds maximum; setting to maximum
+      ERROR: vic411_Error: volume cannot be reconciled with given lake depth and nodes
+******************************************************************************/
+{
+  int i;
+  int status;
+  double m, b;
+
+  status = 0;
+  *volume = 0.0;
+
+  if (depth > lake_con.z[0]) {
+    status = 1;
+    *volume = lake_con.maxvolume;
+  }
+
+  for (i=lake_con.numnod-1; i>= 0; i--) {
+    if (depth >= lake_con.z[i]) 
+      *volume += (lake_con.basin[i] + lake_con.basin[i+1]) * (lake_con.z[i] - lake_con.z[i+1])/2.;
+    else if (depth < lake_con.z[i] && depth >= lake_con.z[i+1]) {
+      m = (lake_con.basin[i]-lake_con.basin[i+1])/(lake_con.z[i]-lake_con.z[i+1]);
+      *volume += (depth - lake_con.z[i+1])*(m*(depth - lake_con.z[i+1])/2. + lake_con.basin[i+1]);
+    }
+  }
+
+  if (*volume == 0.0  && depth != 0.0) {
+    status = ERROR;
+  }
+
+  return status;
+
+}
+
+int vic411_get_depth(vic411_lake_con_struct lake_con, double volume, double *depth)
+/******************************************************************************
+  Function to compute the depth of liquid water in the lake (distance between
+  surface and deepest point), given volume of liquid water currently stored in
+  lake.
+
+  Modifications:
+  2007-Oct-24 Added exit status.						TJB
+    Exit status values:
+          0: No errors
+          1: Warning: lake volume negative; setting to 0
+      ERROR: vic411_Error: depth cannot be reconciled with given lake volume and nodes
+  2007-Oct-30 Initialized surface area for lake bottom.				LCB via TJB
+******************************************************************************/
+{
+  int k;
+  int status;
+  double m;
+  double tempvolume;	
+
+  status = 0;
+
+  if (volume < -1*SMALL) {
+    volume = 0.0;
+    status = 1;
+  }
+
+  if (volume >= lake_con.maxvolume) {
+    *depth = lake_con.maxdepth;
+    *depth += (volume - lake_con.maxvolume)/lake_con.basin[0];	
+  }
+  else if ( volume < SMALL ) {
+    *depth = 0.0;
+  }
+  else { 	
+    // Update lake depth
+    *depth = 0.0;
+    tempvolume = volume;
+    for ( k = lake_con.numnod - 1 ; k >= 0; k-- ) {
+      if ( tempvolume > ((lake_con.z[k]-lake_con.z[k+1])
+			 *(lake_con.basin[k]+lake_con.basin[k+1])/2.)) {
+	// current layer completely filled
+	tempvolume -= (lake_con.z[k]-lake_con.z[k+1])*(lake_con.basin[k]+lake_con.basin[k+1])/2.;
+	*depth += lake_con.z[k] - lake_con.z[k+1];
+      }
+      else if (tempvolume > 0.0 ) {
+        if (lake_con.basin[k]==lake_con.basin[k+1]) {
+          *depth += tempvolume/lake_con.basin[k+1];
+          tempvolume = 0.0;
+	}
+	else {
+	  m = (lake_con.basin[k]-lake_con.basin[k+1])/(lake_con.z[k] - lake_con.z[k+1]);
+	  *depth += ((-1*lake_con.basin[k+1]) + sqrt(lake_con.basin[k+1]*lake_con.basin[k+1] + 2.*m*tempvolume))/m;
+	  tempvolume = 0.0;
+	}
+      }
+    } 
+    if (tempvolume/lake_con.basin[0] > SMALL )   {                  
+      status = ERROR;
+    }
+  }
+
+  if (*depth < 0.0 || (*depth == 0.0 && volume >= SMALL) ) {
+    status = ERROR;
+  }
+  	
+  return status;
+
+}
+
+int vic411_get_depth_from_sarea(vic411_lake_con_struct lake_con, double sarea, double *depth)
+/******************************************************************************
+  Function to compute depth of liquid water in the lake, given the
+  current surface area of liquid water.
+
+  Modifications:
+******************************************************************************/
+{
+  int i;
+  int status;
+
+  status = 0;
+  *depth = 0.0;
+
+  if (sarea > lake_con.basin[0]) {
+    *depth = lake_con.z[0];
+  }
+  else {
+    for (i=0; i< lake_con.numnod; i++) {
+      if (sarea <= lake_con.basin[i] && sarea > lake_con.basin[i+1])
+        *depth = lake_con.z[i+1] + (sarea-lake_con.basin[i+1])*(lake_con.z[i] - lake_con.z[i+1])/(lake_con.basin[i] - lake_con.basin[i+1]);
+    }
+    if (*depth == 0.0 && sarea != 0.0) {
+      status = ERROR;
+    }
+  }
+
+  return status;
+
+}
+
+int vic411_ice_depth(vic411_lake_con_struct lake_con, double volume, double ice_water_eq, double *hice)
+/******************************************************************************
+  Function to compute liquid water equivalent of lake ice (expressed in mm over
+  the ice area), given the volume of liquid water currently stored in the lake
+  and the current equivalent liquid water volume of lake ice.
+
+  Modifications:
+  2007-Oct-30 Created function so ice volume is state variable, not depth.	LCB via TJB
+  2007-Oct-30 Added exit status.						TJB
+    Exit status values:
+          0: No errors
+          1: Warning: ice volume negative; setting to 0
+      ERROR: vic411_Error: ice depth cannot be reconciled with given ice volume
+             and water equivalent
+******************************************************************************/
+{
+  int k;
+  double ldepth;
+  double m;
+  double tempvolume;
+  double surfacearea;
+  int status;
+
+  status = 0;
+  ldepth = 0.0;
+  *hice = 0.0;
+
+  if (ice_water_eq < 0.0) {
+    ice_water_eq = 0.0;
+    status = 1;
+  }
+
+  if(ice_water_eq > (volume - ice_water_eq)) /* Ice is not buoyant. */
+    status = vic411_get_depth(lake_con, volume-ice_water_eq, &ldepth);
+  else
+    status = vic411_get_depth(lake_con, volume, &ldepth);
+  if (status == ERROR) return(ERROR);
+  status = vic411_get_sarea(lake_con, ldepth, &surfacearea);
+  if (status == ERROR) return(ERROR);
+  tempvolume = ice_water_eq* RHOICE/RHO_W;
+
+  if(tempvolume >= lake_con.maxvolume) {
+    *hice = lake_con.maxdepth;
+    *hice += ((tempvolume - lake_con.maxvolume)/lake_con.basin[0]);
+  }
+  else {
+  // Update ice depth
+
+    for ( k = lake_con.numnod - 1 ; k >= 0; k-- ) {
+
+      /* Start calculation at top of water layer */
+      if(lake_con.z[k] > ldepth) {
+
+        /* First layer on top  of water. */
+        if(ldepth > lake_con.z[k+1]) {
+
+          /* Ice volume fills up this layer. */
+          if ( tempvolume >= ((lake_con.z[k]-ldepth) *(lake_con.basin[k]+surfacearea)/2.)) {
+            tempvolume -= (lake_con.z[k]-ldepth)*(lake_con.basin[k]+surfacearea)/2.;
+            *hice += lake_con.z[k] - ldepth;
+          }
+          /* Ice volume falls within this layer. */
+          else {
+            if(lake_con.basin[k] != lake_con.basin[k+1] ) {
+              m = (lake_con.basin[k]-lake_con.basin[k+1])/(lake_con.z[k] - lake_con.z[k+1]);
+              *hice += ((-1*surfacearea) + sqrt(surfacearea*surfacearea + 2.*m*tempvolume))/m;
+            }
+            else
+              *hice += tempvolume/surfacearea;
+
+            tempvolume = 0.0;
+          }
+        }
+        /* Next layers, until all volume accounted for. */
+        else if(tempvolume > 0.0) {
+
+          /* Ice volume fills up this layer. */
+          if ( tempvolume > ((lake_con.z[k]-lake_con.z[k+1]) *(lake_con.basin[k]+lake_con.basin[k+1])/2.)) {
+            // current layer completely filled
+            tempvolume -= (lake_con.z[k]-lake_con.z[k+1])*(lake_con.basin[k]+lake_con.basin[k+1])/2.;
+            *hice += lake_con.z[k] - lake_con.z[k+1];
+          }
+          /* Ice volume falls within this layer. */
+          else {
+             if(lake_con.basin[k] != lake_con.basin[k+1] ) {
+               m = (lake_con.basin[k]-lake_con.basin[k+1])/(lake_con.z[k] - lake_con.z[k+1]);
+               *hice += ((-1*lake_con.basin[k+1]) + sqrt(lake_con.basin[k+1]*lake_con.basin[k+1] + 2.*m*tempvolume))/m;
+             }
+             else
+               *hice += tempvolume/lake_con.basin[k];
+            tempvolume = 0.0;
+          }
+
+        } // end if (ldepth > lake_con.z[k+1])
+
+      } // end if (lake_con.z[k] > ldepth)
+
+    } // end loop over nodes
+
+  } // end if (tempvolume >= lake_con.maxvolume)
+
+  if(tempvolume/lake_con.basin[0] > SMALL )   {
+    status = ERROR;
+  }
+  else if(*hice <= 0.0  && ice_water_eq != 0.0) {
+    status = ERROR;
+  }
+  else if(*hice < 0.0) *hice = 0.0;
+
+  return(status);
+
+}
+

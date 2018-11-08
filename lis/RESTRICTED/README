@@ -1,0 +1,59 @@
+== Restricted codes
+
+This directory is for use by the LIS development team.  Code contained in this directory *MAY NOT* be distributed to others.
+
+For a typical checkout or release of LIS, this directory will be empty, except of course for this README file.
+
+
+== For LIS developers
+
+=== How to use this directory
+
+.Initial steps:
+. Checkout the LIS source code
++
+`svn checkout /path/to/development`
+
+. `cd RESTRICTED`
+
+. Checkout the restricted code
++
+`svn checkout /path/to/restricted/lsm`
+
+
+After some development, running `svn status` will show which files you have been working on.
+
+....
+% svn status
+?       RESTRICTED/lsm
+M       core/LIS_histDataMod.F90
+....
+
+Note that the restricted lsm that you checked out in Step 2 is marked with a '?'.  Please do not attempt to `svn add` or `svn import` this into the development branch.
+
+.Steps for committing
+. Run `svn update` both in the top directory of your LIS source code and in the RESTRICTED/lsm directory.  Resolve any conflicts.
+
+. Write and save a commit message into a text file, say commit.msg.
+
+. Commit the updates in the development branch first.
++
+....
+% svn commit --file commit.msg core/LIS_histDataMod.F90
+Sending        core/LIS_histDataMod.F90
+Transmitting file data .done
+Committing transaction...
+Committed revision 13.
+....
++
+Make note of the committed revision number.
+
+. If the updates in RESTRICTED/lsm are related to the updates just committed, then amend the commit.msg file to reference that commit.  For example, append this to the end of the commit.msg file:
++
+"This commit must be used with /path/to/development r13."
++
+Else write a new relevant message.
+
+. `cd RESTRICTED/lsm` and `svn commit --file ../../commit.msg file1`
+
+. Run `svn update` both in the top directory of your LIS source code and in the RESTRICTED/lsm directory.

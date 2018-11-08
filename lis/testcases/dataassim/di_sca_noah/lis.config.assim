@@ -1,0 +1,289 @@
+#Overall driver options
+Running mode: 		  	 1  # 1-retrospective
+Domain type:			 1  # 1-latlon
+Number of nests:                 1  # 1-one nest
+Land surface model:		 1  # 1-noah
+Base forcing source: 		 1  # 1-GDAS
+Supplemental forcing source: 	 0  # 0-none
+
+#The following options list the choice of parameter maps to be 
+#used
+Landcover data source:           1 # 1-UMD
+Use soil texture:                0 # 1-use
+Soil data source:                1 # 1-FAO
+Soil color data source:          0 # 0-do not use
+Elevation data source:           0 # 0-do not use
+Slope data source:               0 # 0-do not use
+Aspect data source:              0 # 0-do not use
+Curvature data source:           0 # 0-do not use
+LAI data source:                 0 # 0-do not use
+SAI data source:                 0 # 0-do not use
+Albedo data source:              1 # 1-NCEP
+Greenness data source:           1 # 1-NCEP
+Porosity data source:            0 # 0-do not use
+Ksat data source:                0 # 0-do not use
+B parameter data source:         0 # 0-do not use
+Quartz data source:              0 # 0-do not use
+Snow data source:                0 # 0-do not use
+
+#Runtime options
+Experiment code:                           'ASM' 
+Number of veg types:                       13
+Number of forcing variables:               10
+Forcing variables list file:               ./input/forcing_variables.txt
+Number of supplemental forcing variables:  0
+Use elevation correction:                  0   #0- do not usen
+Spatial interpolation method:              1   #1-bilinear
+Temporal interpolation method:             1   #1-linear
+Output forcing:                            1   #1-yes
+Output methodology:                        2   #2-gridded
+Output data format:                        1   #1-binary
+Logging level:                             1   #1-basic
+Start mode:                                2   #1-restart
+Starting year:                             2004
+Starting month:                            1
+Starting day:                              1
+Starting hour:                             1
+Starting minute:                           0
+Starting second:                           0
+Ending year:                               2004
+Ending month:                              1
+Ending day:                                31
+Ending hour:                               1
+Ending minute:                             0
+Ending second:                             0
+Model timestep:                            1800
+Undefined value:                          -9999
+Output directory:                         'OUTPUT' 
+Diagnostic output file:                   'lisdiag'
+Number of ensembles per tile:              1
+
+#The following options are used for subgrid tiling based on vegetation
+Maximum number of tiles per grid: 1
+Cutoff percentage:                0.05 
+
+#Processor Layout	
+#Should match the total number of processors used
+
+Number of processors along x:    2
+Number of processors along y:    2
+
+#---------------------DATA ASSIMILATION ----------------------------------
+#Data Assimilation Options
+
+Assimilation algorithm:          1  #1-Direct Insertion
+Assimilation set:                4  #4-synthetic SCA obs  
+Number of state variables:       2  
+Number of observation types:     1
+Output interval for diagnostics: 21600 # set as negative to turn off diagn.
+Write ensemble members:          0
+Write observations:              0
+Write innovations:               0
+
+#Perturbation options
+Forcing perturbation algorithm:           0 # 0-none
+Observation perturbation algorithm:       0 # 0-none
+State perturbation algorithm:             0 # 0-none
+Forcing perturbation frequency:           1800
+Observation perturbation frequency:       1800
+State perturbation frequency:             1800
+Number of forcing fields to be perturbed: 3
+Forcing attributes file:                    
+Forcing perturbation attributes file:       
+State attributes file:                   ./input/noah_snow_attribs.txt
+State perturbation attributes file:         
+Observation attributes file:             ./input/synSNC_attribs.txt
+Observation perturbation attributes file:   
+
+# Synthetic SCA data directory:
+Synthetic SCA data directory:        ./input/dainput/SynSNC/
+
+#------------------------DOMAIN SPECIFICATION--------------------------
+#Definition of Running Domain
+#Specify the domain extremes in latitude and longitude
+
+run domain lower left lat:                  25.5
+run domain lower left lon:                 -140.5 
+run domain upper right lat:                 70.5
+run domain upper right lon:                -60.5
+run domain resolution dx:                   1.0
+run domain resolution dy:                   1.0
+
+#Definition of Parameter Domain
+
+param domain lower left lat:         -59.5
+param domain lower left lon:        -179.5
+param domain upper right lat:         89.5
+param domain upper right lon:        179.5
+param domain resolution dx:            1.0
+param domain resolution dy:            1.0
+
+
+
+#--------------------------------PARAMETERS----------------------------------
+#Metadata for Parameter maps
+#Landcover and Landmask
+
+landmask file:                 ./input/UMD-100KM/UMD_mask_100KM.1gd4r 
+landcover file:                ./input/UMD-100KM/UMD_veg_100KM.1gd4r 
+landcover lower left lat:      -59.5
+landcover lower left lon:      -179.5
+landcover upper right lat:      89.5
+landcover upper right lon:     179.5
+landcover resolution (dx):       1.0
+landcover resolution (dy):       1.0
+
+#Topography maps
+elevation map:                  
+slope map:                      
+aspect map:                     
+curvature map:                  
+topography lower left lat:       -59.5   
+topography lower left lon:       -179.5  
+topography upper right lat:      89.5    
+topography upper right lon:      179.5   
+topography resolution (dx):      1.0      
+topography resolution (dy):      1.0      
+     
+
+#Soils maps
+#saturated matric potential - psisat
+#saturated hydraulic conductivity - ksat
+soil texture map:             
+sand fraction map:            ./input/UMD-100KM/sandfao.1gd4r
+clay fraction map:            ./input/UMD-100KM/clayfao.1gd4r 
+silt fraction map:            ./input/UMD-100KM/siltfao.1gd4r 
+soil color map:               
+porosity map:                  
+saturated matric potential map:       
+saturated hydraulic conductivity map: 
+b parameter map:                      
+quartz map:                           
+soils lower left lat:          -59.5
+soils lower left lon:         -179.5
+soils upper right lat:          89.5
+soils upper right lon:         179.5
+soils resolution (dx):           1.0
+soils resolution (dy):           1.0
+
+
+#Albedo maps
+albedo map:                   ./input/UMD-100KM/alb
+albedo climatology interval: 3   #in months
+max snow free albedo map:   ./input/UMD-100KM/global_mxsnoalb.1gd4r
+bottom temperature map:     ./input/UMD-100KM/tbot_100KM.1gd4r
+
+#Greenness fraction maps
+greenness fraction map:      ./input/UMD-100KM/green
+greenness climatology interval:       1   #in months
+
+#LAI maps
+LAI map:                  
+SAI map:                  
+
+#--------------------------------FORCINGS----------------------------------
+
+#GDAS (forcing option =1)
+GDAS forcing directory:               ./input/FORCING/GDAS
+GDAS T126 elevation map:           
+GDAS T170 elevation map:       
+GDAS T254 elevation map:       
+GDAS T382 elevation map:       
+GDAS domain x-dimension size:         512 
+GDAS domain y-dimension size:         256 
+GDAS number of forcing variables:     10  
+
+#-----------------------LAND SURFACE MODELS--------------------------
+#NCEP's NOAH (lsm option =1)
+NOAH model output interval:           10800 
+NOAH restart output interval:         86400 
+NOAH restart file:                    
+NOAH slope file:                     
+NOAH vegetation parameter table:       ./input/noah_parms/noah.vegparms.txt
+NOAH soil parameter table:             ./input/noah_parms/noah.soilparms.txt
+NOAH general parameter table:          ./input/noah_parms/GENPARM.UNIF.TBL 
+NOAH bottom temperature climatology interval: 0 
+NOAH number of vegetation parameters: 7
+NOAH soils scheme:                    1      #1-zobler
+NOAH number of soil classes:          9      #9 for zobler
+NOAH number of soil layers:           4
+NOAH observation height:              20     #meters
+NOAH initial soil moisture:           0.30   #volumetric soil moisture (m3 m-3)
+NOAH initial soil temperature:        290.0  # Kelvin 
+
+#---------------------------MODEL OUTPUT CONFIGURATION-----------------------
+#Specify the list of ALMA variables that need to be featured in the 
+#LSM model output
+Output start year:
+Output start month:
+Output start day:
+Output start hour:
+Output start minutes:
+Output start seconds:
+
+#Energy balance components
+Swnet:        1    # Net Shortwave Radiation (W/m2)
+Lwnet:        1    # Net Longwave Radiation (W/m2)
+Qle:          1    # Latent Heat Flux (W/m2)
+Qh:           1    # Sensible Heat Flux (W/m2)
+Qg:           1    # Ground Heat Flux (W/m2)
+Qf:           0    # Energy of fusion (W/m2)
+Qv:           0    # Energy of sublimation (W/m2)
+Qtau:         0    # Momentum flux (N/m2)
+Qa:           0    # Advective Energy(W/m2)
+DelSurfHeat:  0    # Change in surface heat storage (J/m2)
+DelColdCont:  0    # Change in snow cold content (J/m2)
+
+#Water balance components
+Snowf:        1    # Snowfall rate (kg/m2s)
+Rainf:        1    # Rainfall rate (kg/m2s)
+Evap:         0    # Total Evapotranspiration (kg/m2s)
+Qs:           1    # Surface runoff (kg/m2s)
+Qrec:         0    # Recharge (kg/m2s)
+Qsb:          1    # Subsurface runoff (kg/m2s)
+Qsm:          0    # Snowmelt (kg/m2s)
+Qfz:          0    # Re-freezing of water in the snow (kg/m2s)
+Qst:          0    # Snow throughfall (kg/m2s)
+DelSoilMoist: 0    # Change in soil moisture (kg/m2)
+DelSWE:       0    # Change in snow water equivalent (kg/m2)
+DelSurfStor:  0    # Change in surface water storage (kg/m2)
+DelIntercept: 0    # Change in interception storage (kg/m2)
+
+#Surface State Variables 
+SnowT:        0    # Snow surface temperature (K)
+VegT:         0    # Vegetation canopy temperature (K)
+BareSoilT:    0    # Temperature of bare soil (K)
+AvgSurfT:     1    # Average surface temperature (K)
+RadT:         0    # Surface Radiative Temperature (K)
+Albedo:       1    # Surface Albedo (-)
+SWE:          1    # Snow Water Equivalent (kg/m2)
+SWEVeg:       0    # SWE intercepted by vegetation (kg/m2)
+SnowDepth:    1    # Snow depth (m)
+SurfStor:     0    # Surface water storage (kg/m2)
+
+#Subsurface State Variables
+SoilMoist:    1    # Average layer soil moisture (kg/m2)
+SoilTemp:     1    # Average layer soil temperature (K)
+SmLiqFrac:    0    # Average layer fraction of liquid moisture (-)
+SmFrozFrac:   0    # Average layer fraction of frozen moisture (-)
+SoilWet:      0    # Total soil wetness (-)
+
+#Evaporation components
+PotEvap:      0    # Potential Evapotranspiration (kg/m2s)
+ECanop:       0    # Interception evaporation (kg/m2s)
+TVeg:         0    # Vegetation transpiration (kg/m2s)
+ESoil:        0    # Bare soil evaporation (kg/m2s)
+EWater:       0    # Open water evaporation (kg/m2s)
+RootMoist:    0    # Root zone soil moisture (kg/m2)
+CanopInt:     1    # Total canopy water storage (kg/m2)
+EvapSnow:     0    # Snow evaporation (kg/m2s)
+SubSnow:      0    # Snow sublimation (kg/m2s)
+SubSurf:      0    # Sublimation of the snow free area (kg/m2s)
+ACond:        0    # Aerodynamic conductance
+
+
+
+
+
+
+

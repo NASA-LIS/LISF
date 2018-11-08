@@ -1,0 +1,968 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+module gmaoenkf_module
+!BOP
+!
+! !MODULE: gmaoenkf_module
+!
+! !DESCRIPTION:
+!   This module contains interfaces and subroutines that control
+!   the incorporation of a data set using the ensemble kalman filter
+!   (EnKF) method, into a land surface model. 
+!
+!  The EnKF algorithm is based on the work of Rolf Reichle at the NASA
+!  Global Modeling and Assimilation Office (GMAO) at the NASA GSFC.
+!  
+! !REVISION HISTORY:
+!   27 Feb 2005: Sujay Kumar; Initial Specification
+! 
+! !USES: 
+  use ESMF_Mod
+  use enkf_types
+  use lisdrv_module, only : lis
+
+  implicit none
+
+!-----------------------------------------------------------------------------
+! !PUBLIC MEMBER FUNCTIONS:
+!-----------------------------------------------------------------------------
+  public :: gmaoenkf_init  ! Initialization for EnKF 
+  public :: gmaoenkf_assim ! Assimilation step using EnKF
+  public :: gmaoenkf_diagnostics ! write EnKF related diagnostics
+  public :: gmaoenkf_final ! Finalization for EnKF
+!-----------------------------------------------------------------------------
+! !PUBLIC TYPES:
+!-----------------------------------------------------------------------------
+  public :: gmaoenkf_struc ! data structure containing EnKF diagnostics
+!EOP
+
+  type gmaoenkf_dec
+     logical     :: fileOpen
+     real, pointer :: norm_innov(:)
+  end type gmaoenkf_dec
+!EOP  
+
+  type(gmaoenkf_dec), pointer :: gmaoenkf_struc(:)
+
+contains
+
+!BOP
+! 
+! !ROUTINE: gmaoenkf_init
+! \label{gmaoenkf_init}
+!  
+! !INTERFACE: 
+  subroutine gmaoenkf_init
+! !USES: 
+    use ESMF_Mod
+    use lisdrv_module, only       : lis,config_lis
+    use observations_module, only : OBS_State
+    use lis_logmod,    only       : logunit
+!
+! !DESCRIPTION: 
+!  This method performs the required initializations for the 
+!  GMAO EnKF method. The method reads the runtime settings from 
+!  the LIS configuration file. 
+! 
+!EOP
+    integer                      :: n
+    integer                      :: status
+    integer                      :: N_obs_size
+
+    allocate(gmaoenkf_struc(lis%nnest))
+    
+    do n=1,lis%nnest
+       if(lis%nensem(n).le.1) then
+          write(logunit,*) 'Please set number of ensembles '
+          write(logunit,*) 'to greater than 1 for ENKF',lis%nensem(n)
+          call endrun
+       endif
+       gmaoenkf_struc(n)%fileOpen = .false.
+    enddo
+    
+    do n=1,lis%nnest
+       call ESMF_StateGetAttribute(OBS_State(n),name="Number Of Observations",&
+            value=N_obs_size,rc=status)
+       allocate(gmaoenkf_struc(n)%norm_innov(N_obs_size))
+    enddo
+  end subroutine gmaoenkf_init
+
+!BOP
+! 
+! !ROUTINE: gmaoenkf_assim
+! \label{gmaoenkf_assim}
+!  
+! !INTERFACE: 
+  subroutine gmaoenkf_assim(n)
+! !ARGUMENTS:     
+    integer, intent(IN)  :: n 
+! 
+! !DESCRIPTION: 
+!  This routine performs the data assimilation of the specified
+!  observation state into the specified LSM using the EnKF. 
+! 
+!  The methods invoked are: 
+!  \begin{description}
+!   \item[gmaoenkf\_update](\ref{gmaoenkf_update}) \newline
+!    perform the EnKF update step \newline
+!  \end{description}
+!EOP
+    call gmaoenkf_update(n)
+
+  end subroutine gmaoenkf_assim
+
+
+!BOP
+! 
+! !ROUTINE: gmaoenkf_update
+! \label{gmaoenkf_update}
+!  
+! !INTERFACE: 
+  subroutine gmaoenkf_update(n)
+! !USES: 
+    use lisdrv_module,       only : lis, lisdom
+    use lsm_module,          only : LSM_State, LSM_Pert_State
+    use observations_module, only : OBS_State, OBS_Pert_State
+    use enkf_general,        only : enkf_increments
+    use lis_logmod,          only : logunit
+    use my_matrix_functions, only : row_variance    
+    use spmdMod,             only : masterproc
+    use lis_fileIOMod, only   : &
+         create_output_directory, create_gain_filename
+! !ARGUMENTS: 
+    integer, intent(IN)    :: n 
+! 
+! !DESCRIPTION: 
+!  This routine performs the EnKF update step. The state variable
+!  increments are computed and applied to the model prognostic 
+!  variables. 
+! 
+!  The arguments and variables are: 
+!  \begin{description}
+!   \item[n]         index of the nest 
+!   \item[data\_status]  flag indicating if the observations are new    
+!   \item[N\_state]       Number of state prognostic variables
+!   \item[N\_ens]         Number of ensembles
+!   \item[N\_obs\_size]   total number of observations   
+!   \item[N\_selected\_obs] number of selected observations   
+!   \item[st\_id,en\_id]  indices of the selected observations  
+!   \item[stvar]          state prognostic variables
+!   \item[Obs\_pert]      observation perturbations     
+!   \item[Obs\_cov]       observations error covariances   
+!   \item[Observations]    observations object used in the GMAO routines
+!  \end{description}
+! 
+!
+!  The methods invoked are: 
+!  \begin{description}
+!   \item[generateObservations] \ref{generateObservations} \newline
+!    obtain the observations
+!   \item[getObsPred](\ref{getobspred}) \newline
+!    obtain model's estimate of the observations
+!   \item[getObsPert](\ref{getObsPert}) \newline
+!    obtain the observation perturbations
+!   \item[generateObsparam](\ref{generateObsparam}) \newline
+!    generate the 'obsparam' (metadata for observations) \newline
+!   \item[getLSMstateVar]\ref{getLSMstateVar}
+!    obtain the specified LSM prognostic variables. 
+!   \item[assemble\_obs\_cov](\ref{assemble_obs_cov})
+!    assembles the observation error covariance
+!   \item{getSelectedObsNumber}(\ref{getselectedobsnumber}) \newline
+!    obtain the number of selected observations for each 
+!    modeling point.
+!   \item[enkf\_increments](\ref{enkf_increments}) \newline
+!    apply the EnKF filter to obtain the prognostic variable
+!    increments. 
+!   \item[row\_variance](\ref{row_variance}) \newline
+!    computes the row variance HPH' 
+!   \item[setLSMstateVar](\ref{setlsmstatevar}) \newline
+!    assigns the specified LSM state prognostic variables
+!   \item[scaleLSMstatVar](\ref{scalelsmstatevar}) \newline
+!    scales the state variables for computational stability \newline
+!   \item[descaleLSMstatVar](\ref{descalelsmstatevar}) \newline
+!    descales the state variables to the original state \newline
+!   \item[qcLSMState]\ref{qcLSMState}
+!    QC the updated LSM state
+!  \end{description}
+! 
+!EOP
+    type(ESMF_Logical)            :: data_status
+    integer                       :: status
+    integer                       :: Nobjs
+    integer                       :: N_obs_size
+    integer                       :: N_selected_obs
+    integer                       :: N_ens
+    integer                       :: N_state
+    type(obs_type), pointer       :: Observations(:)
+    type(obs_param_type), pointer :: obs_param(:)
+    real,         pointer         :: Obs_pred(:,:)
+    real,         pointer         :: Obs_pert(:,:)
+    real,         pointer         :: Obs_cov(:,:)
+    integer                       :: i,m,v,tileid
+    integer                       :: st_id, en_id
+    real                          :: innov,std_innov(1)
+    character*100,    pointer     :: lsm_state_objs(:)
+    type(ESMF_Array)              :: lsm_array(lis%nstvars(n))
+    real,         pointer         :: stvar(:,:)
+    real,         pointer         :: stdata(:)
+    real,         pointer         :: State_incr(:,:)
+    integer                       :: kk 
+    logical                       :: assim
+    integer                       :: tid,gid
+    character*100                 :: gainfile
+
+!----------------------------------------------------------------------------
+!  Check if the observation state is updated or not. If it is updated,
+!  the data is then assimilated. 
+!----------------------------------------------------------------------------
+
+    call ESMF_StateGetAttribute(OBS_State(n),name="Data Update Status",&
+         value=data_status,rc=status)
+    call verify(status)
+    
+    if(data_status.eq.ESMF_TRUE) then  
+       write(logunit,*) 'Assimilating Observations using GMAO EnKF'
+
+       N_state = lis%nstvars(n)
+       N_ens = lis%nensem(n)
+!----------------------------------------------------------------------------
+! It is assumed that the obs_state in this subroutine is a superset of
+! the required observations for each point in the processor's modeling
+! domain. 
+!----------------------------------------------------------------------------
+       call ESMF_StateGet(OBS_State(n),itemCount=Nobjs,rc=status)
+       call verify(status)
+       
+       call ESMF_StateGetAttribute(OBS_State(n),name="Number Of Observations",&
+            value=N_obs_size,rc=status)
+       call verify(status)
+       
+       allocate(Observations(N_obs_size))
+       call generateObservations(n, Nobjs, N_obs_size, OBS_State(n), &
+            Observations)
+       
+!----------------------------------------------------------------------------
+!  Retrieve Obs_pred : model's estimate of the observations
+!----------------------------------------------------------------------------
+       allocate(Obs_pred(N_obs_size,N_ens))      
+       call getObsPred(lis%lsm,lis%davarobs,n, Obs_pred)
+       
+!----------------------------------------------------------------------------
+!  Retrieve Obs_pert : observation perturbations
+!---------------------------------------------------------------------------- 
+       allocate(Obs_pert(N_obs_size,N_ens))
+       call getObsPert(OBS_Pert_State(n),N_obs_size, N_ens, Obs_pert)
+!----------------------------------------------------------------------------
+!  Assemble observation covariances. 
+!----------------------------------------------------------------------------
+       allocate(obs_param(lis%nobtypes(n)))
+       call generateObsparam(Nobjs, OBS_Pert_State(n),obs_param)
+          
+       allocate(Obs_cov(N_obs_size, N_obs_size))
+       call assemble_obs_cov(lis%nobtypes(n), N_obs_size, &
+            obs_param,Observations,Obs_cov)
+
+!----------------------------------------------------------------------------
+! retrieve the state variables
+!----------------------------------------------------------------------------
+       allocate(stvar(lis%nstvars(n),lis%nch(n)))
+       allocate(State_incr(N_state,N_ens))
+
+       call getLSMstateVar(lis%lsm, lis%davarobs, n, LSM_State(n))
+       call scaleLSMstateVar(lis%lsm, lis%davarobs, n, LSM_State(n))
+
+       allocate(lsm_state_objs(lis%nstvars(n)))
+
+       call ESMF_StateGet(LSM_State(n),itemNameList=lsm_state_objs,&
+            rc=status)
+       call verify(status)
+
+       do v=1,lis%nstvars(n)
+          call ESMF_StateGetArray(LSM_State(n),trim(lsm_state_objs(v)),&
+               lsm_array(v),rc=status)
+          call verify(status)
+
+          call ESMF_ArrayGetData(lsm_array(v),stdata,ESMF_DATA_REF,rc=status)
+          call verify(status)
+          stvar(v,:) = stdata(:) 
+       enddo
+
+       do i=1,lis%nch(n)/lis%nensem(n)
+          do m=1,lis%nensem(n)
+             State_incr(:,m) = stvar(:,(i-1)*N_ens+m)
+          enddo
+
+          tileid = (i-1)*lis%nensem(n)+1
+          call getSelectedObsNumber(lis%davarobs,n,&
+               lisdom(n)%tile(tileid)%index,st_id,en_id)
+
+          N_selected_obs = en_id-st_id+1
+          gid = lisdom(n)%gindex(lisdom(n)%tile(tileid)%col,&
+               lisdom(n)%tile(tileid)%row)
+          assim = .true.
+          do kk=st_id,en_id
+             assim = assim .and.Observations(kk)%assim
+          enddo
+          if(assim) then 
+             call enkf_increments(gid,N_state,N_selected_obs, N_ens, &
+                  Observations(st_id:en_id),                     &
+                  Obs_pred(st_id:en_id,:),                       &
+                  Obs_pert(st_id:en_id,:),                       &
+                  Obs_cov(st_id:en_id,st_id:en_id),              &
+                  State_incr )
+          else
+            State_incr = 0.0
+          endif
+!----------------------------------------------------------------------
+!  Apply increments
+!----------------------------------------------------------------------          
+          do m=1,lis%nensem(n)             
+             tid = (i-1)*N_ens+m
+             gid = lisdom(n)%gindex(lisdom(n)%tile(tid)%col,&
+                  lisdom(n)%tile(tid)%row)
+             stvar(:,(i-1)*N_ens+m) = stvar(:,(i-1)*N_ens+m)+State_incr(:,m)
+          enddo
+       enddo
+
+       do i=1,N_obs_size
+          if(Observations(i)%assim) then
+             innov = Observations(i)%value - &
+                  sum(Obs_pred(i,:))/real(lis%nensem(n))
+          ! compute diag(HPHt), put it into std_innov
+             call row_variance(1,lis%nensem(n),Obs_pred(i,:),std_innov(1))
+          !  add diag (R)
+             std_innov = std_innov+(Observations(i)%std)**2          
+             std_innov = sqrt(std_innov)
+             gmaoenkf_struc(n)%norm_innov(i) = innov/std_innov(1)
+          else
+             gmaoenkf_struc(n)%norm_innov(i) = lis%udef
+          endif
+       enddo
+!----------------------------------------------------------------------
+!  Update the LSM's state variables
+!----------------------------------------------------------------------
+       
+       do v=1,lis%nstvars(n)
+          call ESMF_ArrayGetData(lsm_array(v),stdata,ESMF_DATA_REF,rc=status)
+          call verify(status)
+          stdata(:) = stvar(v,:)
+       enddo
+       call descaleLSMstateVar(lis%lsm, lis%davarobs, n, LSM_State(n))
+       call qclsmstate(lis%lsm,lis%davarobs,n,LSM_State(n))
+       call setLSMstateVar(lis%lsm,lis%davarobs,n, LSM_State(n))
+!----------------------------------------------------------------------
+!  Cleanup
+!---------------------------------------------------------------------
+       deallocate(Obs_cov)
+       deallocate(obs_param)
+       deallocate(stvar)
+       deallocate(State_incr)
+       deallocate(Observations)
+       deallocate(Obs_pred)
+       deallocate(Obs_pert)
+
+       call ESMF_StateSetAttribute(OBS_State(n),"Data Assimilate Status",&
+            ESMF_TRUE, rc=status)
+       call verify(status)
+
+    else
+       call ESMF_StateSetAttribute(OBS_State(n),"Data Assimilate Status",&
+            ESMF_FALSE, rc=status)
+       call verify(status)
+    endif
+  end subroutine gmaoenkf_update
+
+!BOP
+! 
+! !ROUTINE: gmaoenkf_diagnostics
+!  \label{gmaoenkf_diagnostics}
+! 
+! !INTERFACE:
+  subroutine gmaoenkf_diagnostics(n)
+! !USES:
+    use spmdMod,         only : masterproc
+    use lisdrv_module,   only : lis, lisdom
+    use lsm_module,      only : LSM_State
+    use observations_module, only : OBS_State
+    use lis_fileIOMod, only   : &
+         create_output_directory, create_daspread_filename,&
+         create_innov_filename
+    use drv_output_mod,  only : drv_write_dastats, drv_write_innov
+    use lis_logmod, only          : logunit
+! !ARGUMENTS:
+    integer, intent(IN)    :: n 
+!  
+! !DESCRIPTION:  
+!  This subroutine generates the EnKF related diagnostics and outputs
+!  it to a file. This includes a text output of selected ensemble
+!  members, their mean, standard deviation, observations, and normalized
+!  innovations. The frequency of diagnostic outputs can be specified
+!  in the LIS configuration file.
+!
+!  The routines invoked are: 
+!  \begin{description}
+!   \item[create\_output\_directory](\ref{create_output_directory}) \newline
+!    call to create output directory for DA statistics
+!   \item[getLSMvarnames](\ref{getLSMvarnames}) \newline
+!    retrieve the names of the LSM prognostic variables
+!   \item[pruneVarname](\ref{pruneVarname}) \newline
+!    trims the variable name, eliminating white spaces
+!   \item[create\_stats\_filename](\ref{create_stats_filename}) \newline
+!    creates the filename for statistics 
+!   \item[create\_innov\_filename](\ref{create_innov_filename}) \newline
+!    creates the name of the innovations file
+!   \item[getLSMstateVar](\ref{getlsmstatevar}) \newline
+!    retrieve the lsm state variables
+!   \item[getLSMdata](\ref{getLSMdata}) \newline
+!    unpack the LSM state and retrive the data
+!   \item[drv\_writevar\_txt](\ref{drv_writevar_txt}) \newline
+!    call to write a variable in a text file
+!   \item[writeDAObsStats](\ref{writedaobsstats}) \newline
+!    writes a formatted observation output
+!  \end{description}
+!EOP
+
+    
+    real, pointer          :: stvar(:,:)
+    integer                :: v
+    character*100          :: diagfile(lis%nstvars(n))
+    character*100          :: spreadfile(lis%nstvars(n))
+    character*100          :: varnames(lis%nstvars(n))
+    real                   :: curr_time
+    integer                :: range(2)
+    character*100          :: obsfile
+    character*100          :: innovfile
+    integer                       :: N_obs_size
+    integer                       :: status
+    type(ESMF_Logical)            :: assim_status
+
+
+    if(.not.gmaoenkf_struc(n)%fileopen.and.masterproc) then
+ 
+       call create_output_directory("GMAOEnKF",style=2)
+       gmaoenkf_struc(n)%fileopen = .true.
+
+    endif
+    call ESMF_StateGetAttribute(OBS_State(n),name="Data Assimilate Status",&
+         value=assim_status,rc=status)
+    
+    if(assim_status.eq.ESMF_TRUE) then 
+       if(lis%winnov(n).eq.1) then 
+          if(masterproc) then 
+             call create_innov_filename(n,innovfile,&
+                  'GMAOEnKF')
+             open(455,file=trim(innovfile),form='unformatted')            
+          endif
+          call ESMF_StateGetAttribute(OBS_State(n),&
+               name="Number Of Observations",&
+               value=N_obs_size,rc=status)
+          
+          call drv_write_innov(455,n, gmaoenkf_struc(n)%norm_innov)
+          if(masterproc) then 
+             close(455)
+          endif
+       endif
+       if(masterproc) then 
+          call getLSMvarnames(LSM_State(n),lis%nstvars(n),varnames)
+          do v=1,lis%nstvars(n)
+             call pruneVarname(varnames(v))
+             if(lis%wensems(n).eq.1) then 
+                call create_daspread_filename(n,spreadfile(v),&
+                     trim(varnames(v)))
+                open(255+v,file=trim(spreadfile(v)),form='unformatted')
+                
+             endif
+          enddo
+       endif
+       if(lis%wensems(n).eq.1) then 
+          call getLSMstateVar(lis%lsm, lis%davarobs, n, LSM_State(n))
+          allocate(stvar(lis%nstvars(n),lis%nch(n)))
+          call getLSMdata(LSM_State(n), lis%nstvars(n), lis%nch(n), stvar)
+          
+          do v=1,lis%nstvars(n)
+             call drv_write_dastats(255+v,n,stvar(v,:))
+          enddo
+       endif
+    endif
+  end subroutine gmaoenkf_diagnostics
+
+!BOP
+! 
+! !ROUTINE: pruneVarname
+! \label{pruneVarname}
+!
+! !INTERFACE:
+  subroutine pruneVarname(varname)
+! !ARGUMENTS: 
+    character(len=*), intent(INOUT) :: varname
+! 
+! !DESCRIPTION:
+! 
+!  This routine generates a filename based on the names of the state
+!  prognostic variables
+! 
+!  \begin{description}
+!  \item[varname]  name of the variable filename
+!  \end{description}
+!EOP
+    character*100                   :: temp
+    character*1                     :: ftemp(100)
+    character*1                     :: fdir(9)
+    integer                         :: i,c
+    
+    
+    write(unit=temp,fmt='(A100)') varname
+    read(unit=temp,fmt='(100a1)') (ftemp(i),i=1,100)
+
+    write(unit=temp,fmt='(A9)') 'GMAOEnKF/'
+    read(unit=temp,fmt='(9a1)') (fdir(i),i=1,9)
+    
+    do i=100,1,-1
+       if(ftemp(i).ne.(' ')) then 
+          c = i
+          exit
+       endif
+    enddo
+
+    do i=1,c
+       if(ftemp(i).eq.(' ')) ftemp(i) = '_'
+    enddo
+    write(unit=temp,fmt='(100a1)')(fdir(i),i=1,9),(ftemp(i),i=1,c)
+    read(unit=temp,fmt='(a100)') varname
+
+  end subroutine pruneVarname
+
+!BOP
+! 
+! !ROUTINE: assemble_obs_cov
+! \label{assemble_obs_cov}
+!
+! !INTERFACE:
+  subroutine assemble_obs_cov(nob, N_obs, obs_param, &
+       Observations, Obs_cov)
+
+    implicit none
+! !ARGUMENTS:    
+    integer, intent(in)                              :: nob, N_obs
+    type(obs_param_type), dimension(nob), intent(in) :: obs_param
+    type(obs_type), dimension(N_obs), intent(in)     :: Observations  
+    real, intent(out), dimension(N_obs,N_obs)        :: Obs_cov
+! 
+! !DESCRIPTION:
+!
+! assemble measurements error covariance (reichle, 27 Jul 2005)
+! 
+! \begin{description}
+!  \item[nob] number of observation types
+!  \item[N\_obs] number of observations
+!  \item[obs\_param] observation settings
+!  \item[Observations] Observations data type
+!  \item[Obs\_cov]     observation error covariance
+! \end{description}
+!EOP
+    
+    integer :: i, j, i_species, j_species   !! inum, jnum
+    
+    real :: fac, xcorr_tmp, ycorr_tmp
+    
+    ! -------------------------------------------------------------
+    
+    ! assemble measurement error covariance 
+    
+    ! initialize
+
+    Obs_cov = 0.
+
+    ! diagonal elements
+
+    do i=1,N_obs
+
+       Obs_cov(i,i) = Observations(i)%std**2
+       
+    end do
+    
+    ! off-diagonal elements
+    
+    do i=1,N_obs
+       do j=(i+1),N_obs
+          
+          i_species = Observations(i)%species
+          j_species = Observations(j)%species
+          
+          ! have non-zero correlation only between observations of same type
+          
+          if (i_species == j_species) then
+             
+             xcorr_tmp = obs_param(i_species)%xcorr
+             ycorr_tmp = obs_param(i_species)%ycorr
+             
+             ! check for zero correlation distance 
+             
+             if (xcorr_tmp>0. .and. ycorr_tmp>0.) then
+                
+                ! compute correlation between observation locations
+                
+                !!inum = Observations(i)%catnum
+                !!jnum = Observations(j)%catnum 
+                
+                ! compute Gaussian correlation
+                
+                !!fac =  & 
+                !!  ((tile_coord(inum)%com_lon-tile_coord(jnum)%com_lon)**2 &
+                !!  /xcorr_tmp**2 )                                         &
+                !!  +                                                       &
+                !!  ((tile_coord(inum)%com_lat-tile_coord(jnum)%com_lat)**2 & 
+                !!  /ycorr_tmp**2 )               
+                
+                fac =  & 
+                     ((Observations(i)%lon-Observations(j)%lon)**2 &
+                     /xcorr_tmp**2 )                                         &
+                     +                                                       &
+                     ((Observations(i)%lat-Observations(j)%lat)**2 & 
+                     /ycorr_tmp**2 )               
+
+                fac = exp(-.5*fac)
+                
+                Obs_cov(i,j) = Observations(i)%std * Observations(j)%std * fac
+                
+                Obs_cov(j,i) = Obs_cov(i,j)
+                
+             end if
+          end if
+          
+       end do
+    end do
+        
+  end subroutine assemble_obs_cov
+
+!BOP
+! 
+! !ROUTINE: gmaoenkf_final
+! \label{gmaoenkf_final}
+! 
+! !INTERFACE: 
+  subroutine gmaoenkf_final
+! 
+! !DESCRIPTION: 
+!  This method performs the finalization for all EnKF
+!  related structures and subroutines. 
+!
+!EOP
+    deallocate(gmaoenkf_struc)
+  end subroutine gmaoenkf_final
+
+!BOP
+! 
+! !ROUTINE: getLSMvarnames
+! \label{getLSMvarnames}
+! 
+! !INTERFACE: 
+  subroutine getLSMvarnames(LSM_State, dim1, varname)
+! !ARGUMENTS:         
+    type(ESMF_State)      :: LSM_State
+    integer               :: dim1
+    character(len=*)      :: varname(dim1)
+!
+! !DESCRIPTION:
+! 
+!  This routine retrieves the names of the state prognostic variables
+!  from the LSM state. 
+!EOP    
+    integer               :: status
+
+    call ESMF_StateGet(LSM_State,itemNameList=varname,rc=status)
+    call verify(status)        
+
+  end subroutine getLSMvarnames
+
+!BOP
+! 
+! !ROUTINE: getObsPert
+! \label{getObsPert}
+!
+! !INTERFACE: 
+  subroutine getObsPert(OBS_Pert_State, dim1, dim2, pert)
+! !ARGUMENTS: 
+    type(ESMF_State)      :: OBS_Pert_State
+    integer               :: dim1, dim2
+    real                  :: pert(dim1,dim2)
+! 
+! !DESCRIPTION: 
+! 
+!  This routine retrieves the perturbations to be applied to the
+!  observations from the Observation perturbation state
+! 
+! The arguments are: 
+! \begin{description}
+!  \item[OBS\_Pert\_State]  Observation perturbation state 
+!  \item[dim1,dim2]         dimensions of the perturbations array
+!  \item[pert]              perturbation array
+! \end{description}
+!EOP
+    real, pointer         :: obs_temp(:,:)
+    integer               :: i 
+    integer               :: obs_state_count
+    integer               :: status
+    character*100,pointer     :: obs_state_objs(:)
+    type(ESMF_Array), pointer :: obs_array(:)
+
+    
+    call ESMF_StateGet(OBS_Pert_State,itemCount=obs_state_count,rc=status)
+    call verify(status)
+    
+    allocate(obs_state_objs(obs_state_count))
+    allocate(obs_array(obs_state_count))
+    
+    call ESMF_StateGet(OBS_Pert_State,itemNameList=obs_state_objs,rc=status)
+    call verify(status)        
+    
+    do i=1,obs_state_count
+       call ESMF_StateGetArray(OBS_Pert_State,obs_state_objs(i),&
+            obs_array(i),rc=status)
+       call verify(status)
+       call ESMF_ArrayGetData(obs_array(i),obs_temp,ESMF_DATA_REF,rc=status)
+       call verify(status)
+       pert(:,:) = obs_temp(:,:)
+    enddo
+    deallocate(obs_state_objs)
+    deallocate(obs_array)
+
+  end subroutine getObsPert
+
+!BOP
+! 
+! !ROUTINE: generateObservations
+! \label{generateObservations}
+! 
+! !INTERFACE: 
+  subroutine generateObservations(n, Nobjs, N_obs_size, OBS_State, Observations )
+
+    use lisdrv_module, only        : lisdom
+! !ARGUMENTS: 
+    integer,     intent(IN)        :: n 
+    integer,     intent(IN)        :: Nobjs
+    integer,     intent(IN)        :: N_obs_size
+    type(ESMF_State)               :: OBS_State
+    type(obs_type)                 :: Observations(N_obs_size)
+! 
+! !DESCRIPTION: 
+!   This subroutine unpacks the Observation state and packages them into the
+!   'obs\_type' datastructure. 
+!  
+!   \begin{description}
+!   \item[n]  index of the nest
+!   \item[Nobjs] Number of observation types
+!   \item[OBS\_State] ESMF State containing observations
+!   \item[Observations] Observations datastructure being returned. 
+!   \end{description}
+!EOP
+
+    integer                        :: typ
+    integer                        :: count1
+    character*100                  :: temp
+    integer                        :: i, t
+    character*1                    :: vid(2)
+    integer                        :: status
+    type(ESMF_Array)               :: valarray
+    real, pointer                  :: value1(:)
+    integer, pointer               :: gid1(:)
+    real, pointer                  :: obsstd(:)
+    integer, pointer               :: obsassimflag(:)
+    integer                        :: counts(2)
+    real                           :: value(N_obs_size)
+    integer                        :: gid(N_obs_size)
+    real                           :: std(N_obs_size)
+    integer                        :: species(N_obs_size)
+    integer                        :: assimflag(N_obs_size)
+
+    count1 = 1
+    typ    = 1
+    do i=1,Nobjs
+       write(unit=temp,fmt='(i2.2)') i
+       read(unit=temp,fmt='(2a1)') vid
+       
+       call ESMF_StateGetArray(OBS_State,"Observation Value"//vid(1)//vid(2),&
+            valarray,rc=status)
+       call verify(status)
+       
+       call ESMF_ArrayGet(valarray,counts=counts,rc=status)
+       call verify(status)
+       
+       call ESMF_ArrayGetData(valarray,value1,ESMF_DATA_REF,rc=status)
+       call verify(status)
+       
+       allocate(gid1(counts(1)))
+       allocate(obsstd(counts(1)))
+       allocate(obsassimflag(counts(1)))
+
+       call ESMF_ArrayGetAttribute(valarray,"Grid Number",counts(1),gid1,&
+            rc=status)
+       call verify(status)
+       
+       call ESMF_ArrayGetAttribute(valarray,"Standard Deviation",counts(1),obsstd,&
+            rc=status)
+       call verify(status)
+
+       call ESMF_ArrayGetAttribute(valarray,"Assimilation Flag",counts(1),&
+            obsassimflag,rc=status)
+
+       call verify(status)
+       
+       value(count1: count1+(counts(i)-1))  = value1(:)          
+       gid(count1:count1+(counts(i)-1))     = gid1(:)
+       std(count1:count1+(counts(i)-1))     = obsstd(:)
+       species(count1:count1+(counts(i)-1)) = typ
+       assimflag(count1:count1+(counts(i)-1)) = obsassimflag(:)
+       count1 = count1 + counts(i)
+       typ    = typ+1
+       
+       deallocate(gid1)
+       deallocate(obsstd)
+       deallocate(obsassimflag)
+    enddo
+
+!----------------------------------------------------------------------------
+! Map obs_state to Observations object
+!----------------------------------------------------------------------------
+
+    do t=1,N_obs_size
+       Observations(t)%species = species(t)
+       Observations(t)%catnum = gid(t)
+       Observations(t)%lon = lisdom(n)%grid(t)%lon
+       Observations(t)%lat = lisdom(n)%grid(t)%lat
+       Observations(t)%value = value(t)
+       Observations(t)%std = std(t)
+       if(assimflag(t).eq.1) then 
+          Observations(t)%assim = .true.
+       else
+          Observations(t)%assim = .false.
+       endif
+    enddo
+    
+  end subroutine generateObservations
+
+!BOP
+! 
+! !ROUTINE: generateObsparam
+! \label{generateObsparam}
+!
+! !INTERFACE: 
+  subroutine generateObsparam(Nobjs, OBS_Pert_State, obs_param)
+
+    implicit none
+! !ARGUMENTS: 
+    integer                       :: Nobjs
+    type(ESMF_State)              :: OBS_Pert_State
+    type(obs_param_type)          :: obs_param(Nobjs)
+!
+! !DESCRIPTION: 
+!   This routine obtains the metadata information associated with 
+!   the observations and puts them into the obs\_param datastructure
+!  
+!   The arguments are: 
+!   \begin{description}
+!    \item[Nobjs]            Number of observation types \newline
+!    \item[OBS\_Pert\_State] ESMF state containing observation 
+!                            perturbations
+!    \item[obs\_param]       obs\_param datastructure being 
+!                            returned
+!   \end{description}
+!
+!EOP    
+    integer                       :: i 
+    character*100                 :: temp
+    character*1                   :: vid(2)
+    type(ESMF_Array)              :: pertarray
+    integer                       :: status
+    real                          :: std_normal_max(Nobjs)
+    real                          :: xcorr(Nobjs)
+    real                          :: ycorr(Nobjs)
+
+    do i=1,Nobjs
+       write(unit=temp,fmt='(i2.2)') i
+       read(unit=temp,fmt='(2a1)') vid
+       
+       call ESMF_StateGetArray(OBS_Pert_State,"Observation Perturbations"//vid(1)//vid(2),&
+            pertarray,rc=status)
+       call verify(status)
+       
+       call ESMF_ArrayGetAttribute(pertarray,"Std Normal Max",std_normal_max(i),&
+            rc=status)
+       call verify(status)
+       
+       call ESMF_ArrayGetAttribute(pertarray,"X Correlation Scale",xcorr(i),&
+            rc=status)
+       call verify(status)
+       
+       call ESMF_ArrayGetAttribute(pertarray,"Y Correlation Scale",ycorr(i),&
+            rc=status)
+       call verify(status)          
+       
+       obs_param(i)%species = i
+       obs_param(i)%assim = .TRUE.
+       obs_param(i)%std_normal_max = std_normal_max(i)
+       obs_param(i)%xcorr = xcorr(i)
+       obs_param(i)%ycorr = ycorr(i)
+    enddo
+  end subroutine generateObsparam
+!BOP
+! 
+! !ROUTINE: getLSMData
+! \label{getLSMData}
+!
+! !INTERFACE:
+  subroutine getLSMData(LSM_State, dim1, dim2, lsmdata)
+! !ARGUMENTS:         
+    type(ESMF_State)      :: LSM_State
+    integer               :: dim1, dim2
+    real                  :: lsmdata(dim1, dim2)
+! 
+! !DESCRIPTION:
+! 
+! This routine retrives the LSM state prognostic variables from the 
+! LSM state. 
+!
+! The arguments are:
+! 
+! \begin{description} 
+!  \item[LSM\_State]  LSM State containing prognostic variables
+!  \item[dim1,dim2]   dimensions of the prognostic variable array
+!  \item[lsmdata]     prognostic variable array
+! \end{description}
+!EOP
+    real, pointer         :: lsm_temp(:)
+    integer               :: i 
+    integer               :: lsm_state_count
+    integer               :: status
+    character*100,pointer     :: lsm_state_objs(:)
+    type(ESMF_Array), pointer :: lsm_array(:)
+
+    
+    call ESMF_StateGet(LSM_State,itemCount=lsm_state_count,rc=status)
+    call verify(status)
+    
+    allocate(lsm_state_objs(lsm_state_count))
+    allocate(lsm_array(lsm_state_count))
+    
+    call ESMF_StateGet(LSM_State,itemNameList=lsm_state_objs,rc=status)
+    call verify(status)        
+    
+    do i=1,lsm_state_count
+       call ESMF_StateGetArray(LSM_State,lsm_state_objs(i),lsm_array(i),&
+            rc=status)
+       call verify(status)
+       call ESMF_ArrayGetData(lsm_array(i),lsm_temp,ESMF_DATA_REF,rc=status)
+       call verify(status)
+       lsmdata(i,:) = lsm_temp(:)
+    enddo
+    deallocate(lsm_state_objs)
+    deallocate(lsm_array)
+
+  end subroutine getLSMData
+end module gmaoenkf_module

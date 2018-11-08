@@ -1,0 +1,572 @@
+
+== Building the Executable
+anchor:sec_build[Building the Executable]
+
+This section describes how to build the source code and create LIS' executable: named LIS.
+
+Please see Section <<sec_important_note_fs>> for information regarding using a case sensitve file system for compiling/running LIS.
+
+
+=== Development Tools
+
+This code has been compiled and run on
+Linux PC (Intel/AMD based) systems
+//IBM AIX systems,
+//and SGI Altix systems.
+and Cray systems.
+These instructions expect that you are using such a system.  In particular you need:
+
+
+==== Linux
+
+===== Compilers
+
+* Either Intel Fortran Compiler versions 14, 15, or 16 with corresponding Intel C Compiler
+* or GNU's Compiler Collection 4.9.2, both gfortran and gcc.
+
+
+===== Tools
+
+* GNU's make, gmake, version 3.77 or 3.81
+* perl, version 5.10
+* python, version 2.6 or 2.7
+
+//
+//      *** or Absoft's Pro Fortran Software Developement Kit, version 10.0
+//            with GNU's C and C++ compilers, gcc and g++, version 3.3.3
+//
+//      *** or Lahey/Fujitsu's Fortran 95 Compiler, release L6.00c
+//            with GNU's C and C++ compilers, gcc and g++, version 3.3.3
+//
+
+
+==== Cray/Linux
+
+===== Compilers
+
+* Intel Fortran Compiler versions 15 or 16 with corresponding Intel C Compiler
+
+
+===== Tools
+
+* GNU's make, gmake, version 3.77 or 3.81
+* perl, version 5.10
+* python, version 2.6 or 2.7
+
+//
+//   * IBM
+//      ** XL Fortran version 10.1.0.6
+//      ** GNU's make, gmake, version 3.77
+//
+//   * SGI Altix
+//      ** Intel Fortran Compiler version 12
+//      ** GNU's make, gmake, version 3.77
+
+
+=== Required Software Libraries
+anchor:ssec_requiredlibs[Required Software Libraries]
+
+In order to build the LIS executable, the following libraries must be installed on your system:
+
+
+==== Earth System Modeling Framework (ESMF) version 5.2.0rp3 (or higher)
+
+(http://www.earthsystemmodeling.org/download/releases.shtml)
+
+Please read the ESMF User's Guide for details on installing ESMF with MPI support and without MPI support ("`mpiuni`").
+
+Note that starting with ESMF version 5, the ESMF development team is trying to maintain backwards compatibility with its subsequent releases.
+
+
+==== JasPer version 1.900.1 (or higher)
+
+(http://www.ece.uvic.ca/~frodo/jasper/)
+
+Note that when running the `configure` command you must include the `--enable-shared` option.
+
+
+==== GRIB-API version 1.12.3 (or higher)
+
+(https://software.ecmwf.int/wiki/display/GRIB/Home)
+
+
+==== NetCDF either version 3.6.3 or version 4.3.0 (or higher)
+
+(http://www.unidata.ucar.edu/software/netcdf)
+
+Please read the on-line documentation for details on installing NetCDF.
+
+
+===== Additional notes for NetCDF 4:
+
+You must also choose whether to compile with compression enabled.  Compiling with compression enabled requires HDF 5 and zlib libraries.  To enable compression, add `--enable-netcdf-4` to the `configure` options.  To disable compression, add `--disable-netcdf-4` to the `configure` options.
+
+An example of installing NetCDF 4 without compression:
+
+....
+% ./configure --prefix=$HOME/local/netcdf-4.3.0 --disable-netcdf-4
+% gmake
+% gmake install
+....
+
+An example of installing NetCDF 4 with compression:
+
+....
+% CPPFLAGS=-I$HOME/local/hdf5/1.8.11/include \
+> LDFLAGS=-L$HOME/local/hdf5/1.8.11/lib \
+> ./configure --prefix=$HOME/local/netcdf/4.3.0 --enable-netcdf-4
+% gmake
+% gmake install
+....
+
+You must also download the _netcdf-fortran-4.2.tar.gz_ file.  First install the NetCDF C library, then install the NetCDF Fortran library.  Again, please read the on-line documentation for more details.
+
+An example of installing the NetCDF 4 Fortran library:
+
+....
+% LD_LIBRARY_PATH=$HOME/local/netcdf/4.3.0/lib:$LD_LIBRARY_PATH \
+> CPPFLAGS=-I$HOME/local/netcdf/4.3.0/include \
+> LDFLAGS=-L$HOME/local/netcdf/4.3.0/lib \
+> ./configure --prefix=$HOME/local/netcdf/4.3.0
+% gmake
+% gmake install
+....
+
+
+=== Optional Software Libraries
+
+The following libraries are not required to compile LIS.  They are used to extend the functionality of LIS.
+
+
+==== Message Passing Interface (MPI)
+
+If you wish to run LIS with multiple processes (i.e., in parallel), then you must install an MPI library package.
+
+* vendor supplied (e.g., Intel MPI)
+* MPICH version 1.2.7p1
+  (http://www-unix.mcs.anl.gov/mpi/mpich1/)
+* Open MPI
+  (http://www.open-mpi.org/)
+
+Note that LIS does not support OpenMP style parallelization.  There is some experimental support within LIS, but you should not enable it.
+
+
+==== HDF
+
+You may choose either HDF version 4, HDF version 5, or both.
+
+HDF is used to support a number of remote sensing datasets.
+
+If you wish to use MODIS snow cover area observations or NASA AMSR-E soil moisture observations, then you need HDF 4 support.
+
+If you wish to use ANSA snow cover fraction observations, then you need HDF 5 support.
+
+If you wish to use PMW snow observations, then you need both HDF 4 and HDF 5 support.
+
+===== HDF 4
+
+If you choose to have HDF version 4 support, please download the HDF source for version 4.2r4 (or later) from http://www.hdfgroup.org/products/hdf4 and compile the source to generate the HDF library.  Make sure that you configure the build process to include the Fortran interfaces by adding the `--enable-fortran` option to the `configure` command.
+
+Note that HDF4 contains its own embedded version of NetCDF.  You must disable this support by adding the `--disable-netcdf` option to the `configure` command.
+
+Note that when compiling LIS with HDF 4 support, you must also download and compile HDF-EOS2 http://hdfeos.org/.
+
+
+===== HDF 5
+
+If you choose to have HDF version 5 support, please download the HDF source for version 1.8.11 (or later) from http://www.hdfgroup.org/HDF5/ and compile the source to generate the HDF library.  Make sure that you configure the build process to include the Fortran interfaces by adding the `--enable-fortran` option to the `configure` command.
+
+//Note that when compiling LIS with HDF 5 support, you must also
+//download and compile HDF-EOS5 http://hdfeos.org/.
+
+
+==== JCSDA CRTM version 2.0.2
+
+If you wish to enable LIS' RTM support, then you must install the CRTM library from the Joint Centers for Satellite Data Assimilation (JCSDA).  First go to http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/Repository/ and fill out the CRTM.Subversion_Account_Request.pdf form.  Once you have access to their Subversion repository, checkout revision 9604 of the trunk.
+
+Please create a directory outside of the LIS source code to checkout the CRTM library into.  Then, within that new directory, run:
+
+....
+% svn checkout -r 9604 https://svnemc.ncep.noaa.gov/projects/crtm/trunk
+....
+
+Then you must copy the LIS specific updates into this checked out CRTM code.  See _$WORKING/lib/lis-crtm/README_.
+
+Next compile and install the CRTM library:
+
+....
+% source Set_CRTM_Environment.sh
+% cd src
+% source configure/ifort.setup
+# Of course, choose the setup script that is appropriate
+# for your environment.
+% gmake
+% gmake install
+....
+
+
+==== LIS-CMEM library
+
+If you wish to enable LIS' RTM support, then you must manually compile an included library.
+
+....
+% cd $WORKING/lib/lis-cmem3
+% gmake
+....
+
+
+==== LIS-CRTM-PROFILE-UTILITY library
+
+If you wish to enable LIS' RTM support, then you must manually compile an included library.
+
+....
+% cd $WORKING/lib/lis-crtm-profile-utility
+% gmake
+% gmake install
+....
+
+
+==== Notes
+
+To install these libraries, follow the instructions provided at the various URL listed above.  These optional libraries have their own dependencies, which should be documented in their respective documentation.
+
+Please note that your system may have several different compilers installed.  You must verify that you are building these libraries with the correct compiler.  You should review the output from the `configure`, `make`, etc. commands.  If the wrong compiler is being used, you may have to correct your `$PATH` environment variable, or set the `$CC` and `$FC` environment variables, or pass additional settings to the `configure` scripts.  Please consult the installation instructions provided at the various URL listed above for each library.
+
+If you wish to install all the libraries (required and optional, excluding JCSDA CRTM, LIS-CMEM, and LIS-CRTM-PROFILE-UTILITY), here is the recommended order:
+
+. HDF 5 (optional) +
+  NetCDF has an optional dependency on HDF 5.
+. NetCDF (required) +
+  ESMF has an optional dependency on NetCDF. +
+  GRIB-API has an optional dependency on NetCDF.
+. JasPer (required) +
+  GRIB-API depends on JasPer.
+. GRIB-API (required)
+. MPI (optional) +
+  ESMF has an optional dependency on MPI.
+. ESMF (required)
+. HDF 4 (optional) +
+  HDF-EOS2 depends on HDF 4.
+. HDF-EOS2 (optional)
+
+//If not, review the appropriate _$WORKING/arch/configure.lis.*_ file
+//for some hints regarding additional low level libraries needed for
+//linking.
+
+//Note that due to an issue involving multiple definitions within the
+//NetCDF 3 and HDF 4 libraries, you cannot compile LIS with support for
+//both NetCDF 3 and HDF 4 together.
+
+Note that due to the mix of programing languages (Fortran and C) used by LIS, you may run into linking errors when building the LIS executable.  This is often due to (1) the Fortran compiler and the C compiler using different cases (upper case vs. lower case) for external names, and (2) the Fortran compiler and C compiler using a different number of underscores for external names.
+
+When compiling code using Absoft's Pro Fortran SDK, set the following compiler options:
+
+`-YEXT_NAMES=LCS -s -YEXT_SFX=_ -YCFRL=1`
+
+These must be set for each of the above libraries.
+
+
+==== Specific examples
+
+The following tables provide some specific examples of the compiler and library versions that LIS has been tested with.
+
+// discover
+.SUSE Linux Enterprise Server 11.3
+|====
+| Library        | Version
+
+| Intel compiler | 14.0.3.174
+| HDF 5          | 1.8.14
+| NetCDF         | 4.3.3.1
+| NetCDF-Fortran | 4.2
+| JasPer         | 1.900.1
+| GRIB-API       | 1.12.3
+| Intel MPI      | 5.0.3.048
+| ESMF           | 5.2.0rp3
+| HDF 4          | 4.2.11
+| HDF-EOS2       | 2.19v.1.00
+|====
+
+// discover
+.SUSE Linux Enterprise Server 11.3
+|====
+| Library        | Version
+
+| GCC compiler   | 4.9.2
+| HDF 5          | 1.8.14
+| NetCDF         | 4.3.3.1
+| NetCDF-Fortran | 4.2
+| JasPer         | 1.900.1
+| GRIB-API       | 1.12.3
+| Open MPI       | 1.8.4
+| ESMF           | 5.2.0rp3
+| HDF 4          | 4.2.11
+| HDF-EOS2       | 2.19v.1.00
+|====
+
+// haise
+.Red Hat Enterprise Linux Server 6.7
+|====
+| Library        | Version
+
+| Intel compiler | 14.0.2
+| HDF 5          | 1.8.14
+| NetCDF         | 4.3.1.1
+| NetCDF-Fortran | 4.2
+| JasPer         | 1.900.1
+| GRIB-API       | 1.12.3
+| Intel MPI      | 4.1.3
+| ESMF           | 5.2.0rp3
+| HDF 4          | 4.2.11
+| HDF-EOS2       | 2.19v.1.00
+|====
+
+// haise
+.Red Hat Enterprise Linux Server 6.7
+|====
+| Library        | Version
+
+| Intel compiler | 14.0.2
+| HDF 5          | 1.8.14
+| NetCDF         | 4.3.1.1
+| NetCDF-Fortran | 4.2
+| JasPer         | 1.900.1
+| GRIB-API       | 1.12.3
+| Open MPI       | 1.8.4
+| ESMF           | 5.2.0rp3
+| HDF 4          | 4.2.11
+| HDF-EOS2       | 2.19v.1.00
+|====
+
+// theia
+.Red Hat Enterprise Linux Server 6.8
+|====
+| Library        | Version
+
+| Intel compiler | 15.1.133
+| HDF 5          | 1.8.15
+| NetCDF         | 4.3.3.1
+| NetCDF-Fortran | 4.4.2
+| JasPer         | 1.900.1
+| GRIB-API       | 1.12.3
+| Intel MPI      | 5.0.3.048
+| ESMF           | 5.2.0rp3
+| HDF 4          | 4.2.11
+| HDF-EOS2       | 2.19v.1.00
+|====
+
+// gaea
+.Cray XC40
+|====
+| Library        | Version
+
+| Intel compiler | 15.0.2.164
+| Cray-HDF 5     | 1.8.14
+| Cray-NetCDF    | 4.3.3.1
+| JasPer         | 1.900.1
+| GRIB-API       | 1.14.0
+| Cray-MPICH     | 7.2.5
+| ESMF           | 6.2.0
+| HDF 4          | 4.2.11
+| HDF-EOS2       | 2.19v.1.00
+|====
+
+// conrad
+.Cray XC40
+|====
+| Library        | Version
+
+| Intel compiler | 16.0.2.181
+| HDF 5          | 1.8.18
+| NetCDF         | 4.4.1.1
+| NetCDF-Fortran | 4.4.4
+| JasPer         | 1.900.19
+| GRIB-API       | 1.19.0
+| Cray-MPICH     | 7.2.4
+| ESMF           | 6.3.0rp1
+| HDF 4          | 4.2.12
+| HDF-EOS2       | 2.19v.1.00
+|====
+
+
+=== Build Instructions
+
+:sectnums!: // disable section numbers
+
+
+==== Step 1
+
+Perform the steps described in Section <<sec_obtain-src>> to obtain the source code.
+
+
+==== Step 2
+
+Goto the _$WORKING_ directory.  This directory contains two scripts for building the LIS executable: _configure_ and _compile_.
+
+
+==== Step 3
+
+Set the LIS_ARCH environment variable based on the system you are using.  The following commands are written using Bash shell syntax.
+
+//         * For an AIX system
+//         % export LIS_ARCH=AIX
+
+.For a Linux system with the Intel Fortran compiler
+....
+% export LIS_ARCH=linux_ifc
+....
+
+.For a Linux system with the GNU Fortran compiler
+....
+% export LIS_ARCH=linux_gfortran
+....
+
+//         * For a Linux system with the Absoft Fortran compiler
+//+
+//....
+//         % export LIS_ARCH=linux_absoft
+//....
+//         * For a Linux system with the Lahey Fortran compiler
+//+
+//....
+//         % export LIS_ARCH=linux_lf95
+//....
+
+It is suggested that you place this command in your _.profile_ (or equivalent) startup file.
+
+
+==== Step 4
+
+Run the _configure_ script first by typing:
+
+....
+% ./configure
+....
+
+This script will prompt the user with a series of questions regarding support to compile into LIS, requiring the user to specify the locations of the required and optional libraries via several LIS specific environment variables.  The following environment variables are used by LIS.
+
+|====
+|      Variable         | Description                  | Usage
+
+|      `LIS_FC`         | Fortran 90 compiler          | required
+|      `LIS_CC`         | C compiler                   | required
+|      `LIS_MODESMF`    | path to ESMF module files    | required
+|      `LIS_LIBESMF`    | path to ESMF library files   | required
+|      `LIS_JASPER`     | path to JasPer library       | required
+|      `LIS_GRIBAPI`    | path to GRIB-API library     | required
+|      `LIS_NETCDF`     | path to NetCDF library       | required
+|      `LIS_HDF4`       | path to HDF4 library         | optional
+|      `LIS_HDF5`       | path to HDF5 library         | optional
+|      `LIS_HDFEOS`     | path to HDFEOS library       | optional
+|      `LIS_MINPACK`    | path to MINPACK library      | optional
+|      `LIS_CRTM`       | path to CRTM library         | optional
+|      `LIS_CRTM_PROF` | path to LIS-CRTM Profile library | optional
+|      `LIS_CMEM`       | path to LIS-CMEM library     | optional
+|====
+
+//{cpp} is C++
+Note that the `CC` variable must be set to a C compiler, not a {cpp} compiler.  A {cpp} compiler may mangle internal names in a manner that is not consistent with the Fortran compiler.  This will cause errors during linking.
+
+It is suggested that you add these definitions to your _.profile_ (or equivalent) startup file.
+
+You may encounter errors either when trying to compile LIS or when trying to run LIS because the compiler or operating system cannot find these libraries.  To fix this, you must add these libraries to your `$LD_LIBRARY_PATH` environment variable.  For example, say that you are using ESMF, GRIB-API, NetCDF, and HDF5.  Then you must execute the following command (written using Bash shell syntax):
+
+....
+% export LD_LIBRARY_PATH=$LIS_HDF5/lib:$LIS_LIBESMF:$LIS_NETCDF/lib:${LIS_GRIBAPI}/lib:$LD_LIBRARY_PATH
+....
+
+It is also suggested that you add this command to your _.profile_ (or equivalent) startup file.
+
+
+===== Example
+
+An example execution of the configure script is shown below:
+
+....
+% ./configure
+------------------------------------------------------------------------
+Setting up configuration for LIS version 7.2r...
+Parallelism (0-serial, 1-dmpar, default=1):
+Optimization level (-2=strict checks, -1=debug, 0,1,2,3, default=2):
+Assume little/big_endian data format (1-little, 2-big, default=2):
+Use GRIBAPI? (1-yes, 0-no, default=1):
+Enable AFWA-specific grib configuration settings? (1-yes, 0-no, default=0):
+Use NETCDF? (1-yes, 0-no, default=1):
+NETCDF version (3 or 4, default=4):
+NETCDF use shuffle filter? (1-yes, 0-no, default = 1):
+NETCDF use deflate filter? (1-yes, 0-no, default = 1):
+NETCDF use deflate level? (1 to 9-yes, 0-no, default = 9):
+Use HDF4? (1-yes, 0-no, default=1):
+Use HDF5? (1-yes, 0-no, default=1):
+Use HDFEOS? (1-yes, 0-no, default=1):
+Use MINPACK? (1-yes, 0-no, default=0):
+Use LIS-CRTM? (1-yes, 0-no, default=0):
+Use LIS-CMEM? (1-yes, 0-no, default=0):
+Use LIS-LAPACK? (1-yes, 0-no, default=0):
+-----------------------------------------------------
+ configure.lis file generated successfully
+-----------------------------------------------------
+Settings are written to configure.lis in the make directory.
+If you wish to change settings, please edit that file.
+
+Processing plugins...
+Settings are written to Filepath and LIS_plugins.h in the make directory.
+If you wish to change settings, please create/modify your make/user.cfg file.
+Please see the LIS Users' Guide for more information.
+
+To compile, run the compile script.
+------------------------------------------------------------------------
+....
+
+At each prompt, select the desired value.  If you desire the default value, then you may simply press the Enter key.
+
+Most of the configure options are be self-explanatory.  Here are a few specific notes:
+
+* for `Parallelism (0-serial, 1-dmpar, default=1):`,
+dmpar refers to enabling MPI
+
+//* for `Use openMP parallelism (1-yes, 0-no, default=0):`,
+//select the default value of 0.  OpenMP support is
+//experimental.  Please do not use.
+
+* for `Assume little/big_endian data format (1-little, 2-big, default=2):`,
+select the default value of 2.  By default, LIS reads and writes binary data in the big endian format.  Only select the value of 1, if you have reformatted all required binary data into the little endian format.
+
+* for `Use GRIBAPI? (1-yes, 0-no, default=1):`,
+select the default value of 1.  Technically, GRIB support is not required by LIS; however, most of the commonly used met forcing data are in GRIB, making GRIB support a practical requirement.
+
+* for `Use LIS-CRTM? (1-yes, 0-no, default=0):`,
+if you wish to enable LIS-CRTM2EM support, then you must also enable LIS-CMEM support.  So for `Use LIS-CMEM? (1-yes, 0-no, default=0):`, you must also select 1.
+
+* for `Use LIS-CMEM? (1-yes, 0-no, default=0):`,
+if you wish to enable LIS-CMEM support, then you must also enable LIS-CRTM.  So for `Use LIS-CRTM? (1-yes, 0-no, default=0):`, you must also select 1.
+
+Note that due to an issue involving multiple definitions within the NetCDF 3 and HDF 4 libraries, you cannot compile LIS with support for both NetCDF 3 and HDF 4 together.
+
+Note that if you compiled NetCDF 4 without compression, then when specifying `NETCDF version (3 or 4, default=4):`, select `3`.  Then you must manually append `-lnetcdff` to the `LDFLAGS` variable in the _make/configure.lis_ file.
+
+
+==== Step 5
+
+Compile the LIS source code by running the _compile_ script.
+
+....
+% ./compile
+....
+
+This script will compile the libraries provided with LIS, the dependency generator and then the LIS source code. The executable _LIS_ will be placed in the _$WORKING_ directory upon successful completion of the _compile_ script.
+
+
+==== Step 6
+
+Finally, copy the _LIS_ executable into your running directory, _$RUNNING_.
+
+:sectnums: // re-enable section numbers
+
+include::plugins.adoc[]
+
+
+=== Generating documentation
+
+The documention in the LIS code uses the ProTex http://gmao.gsfc.nasa.gov/software/protex/ documenting system <<protex>>.  The documentation in LaTeX format can be produced by using the `doc.sh` in the _$WORKING/utils_ directory. This command produces documentation, generating a number of LaTeX files.  These files can be easily converted to pdf using utilites such as `pdflatex`.
+

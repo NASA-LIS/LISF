@@ -1,0 +1,4 @@
+#perttype  std    std_max   zeromean  tcorr  xcorr ycorr ccorr
+SNODEP obs
+  0    20   2.5        1        10800       0    0    1 
+

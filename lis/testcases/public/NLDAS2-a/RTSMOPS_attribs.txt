@@ -1,0 +1,5 @@
+#nfields
+1
+#name         varmin   varmax
+Synthetic soil moisture obs
+                0.01     0.05

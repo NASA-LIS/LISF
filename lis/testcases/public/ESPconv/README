@@ -1,0 +1,118 @@
+==================================
+Forecast (ESPconv) Public Testcase
+==================================
+
+
+Introduction
+============
+
+This is a testcase that uses:
+
+  * the NLDAS domain at 1/8th-degree and NLDAS-2 forcing
+  * the Noah version 3.3 land surface model
+  * the forecast runmode: Ensemble streamflow prediction (ESP)
+    conventional method 
+  * a time period from 00:00Z 01 Jun 2010 to 00:00Z 03 Jun 2010
+
+
+This directory contains:
+
+  * This README file
+
+  * "ldt.config" file and input parameters to generate input file to LIS
+
+  * Some "input.xdf" files used to open the LDT parameters in GrADS
+
+    * input.noah33_params.xdf = GrADS XDF file for Noah.3.3
+
+  * The "lis.config" file used for this testcase
+
+    * lis.config.fcst_espconv.noah33 = ESP conventional forecast case
+
+  * The "NOAH33_OUTPUT_LIST.TBL" file used by the lis.config files
+    to select the output variables
+
+  * Other support ".txt" files needed for the simulations
+
+    * forcing_variables.txt
+
+  * Some "output.xdf" files used to display the output in GrADS
+
+    * output.test_espconv.noah33.xdf = Noah.3.3 ESP forecast test output
+    * output.orig_espconv.noah33.xdf = Noah.3.3 ESP forecast original output
+
+Note that the "ldt.config" and "lis.config" files should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+
+Preparation
+===========
+
+  #. Generate the LDT and the LIS executables.
+
+  #. Create a directory to run LDT and LIS within (a directory outside
+     of the LIS source code).  Copy the contents of this testcase
+     sub-directory into this new running directory.  And then change
+     directories into this new running directory.
+
+  #. Go into the "input" sub-directory and make the "wget" .sh
+     scripts be executable.
+
+
+Running the ESP conventional testcase
+=====================================
+
+Step 1. LDT
+-----------
+
+  #. Go into the "input" sub-directory and do the following:
+
+     * download input parameters for forecast scenario ::
+
+       ./wget_noah2dparms_native.sh
+
+  #. Change directory back to the running directory (i.e.; ``cd ..``)
+     and run the LDT executable using the ldt.config file.
+
+
+Step 2. LIS
+-----------
+
+  #. Go into the "input" sub-directory and do the following:
+
+     * download Noah 3.3 specific parameter tables ::
+
+       ./wget_noah33parms_portal.sh
+       
+     * download NLDAS-2 meteorological forcing data ::
+
+       ./wget_gesdisc_nldas2_espconv.sh
+
+  #. Change directory back to the running directory (i.e.; ``cd ..``)
+
+  #. Run the forecast scenario by running the LIS executable
+     using the lis.config.fcst_espconv.noah33 file.
+
+  #. View the netCDF output using the testcase GrADS XDF files
+
+
+Sample Output
+=============
+
+To download sample output for comparison, make sure that you are in the
+running directory.  Then execute ::
+
+   ./wget_output_portal.sh
+
+This will download and unpack the sample output into the "output"
+directory along side the output that you generated.
+
+
+Caveats
+=======
+
+  * Please note that this is a simple functional test and the output
+    from the testcase is not expected to be used for any scientific 
+    evaluation.
+

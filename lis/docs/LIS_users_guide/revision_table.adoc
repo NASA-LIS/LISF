@@ -1,0 +1,17 @@
+
+|====
+|Revision | Summary of Changes                         | Date
+
+|1.10     | LIS 7.2 557WW release                      | Feb 2, 2017
+|1.9      | LIS 7.2 AFWA Beta release                  | Nov 24, 2017
+|1.8      | Updates regarding public release vs repository | Aug 7, 2017
+|1.7      | Updates for LIS 7.2r Public Release        | May 5, 2017
+|1.6      | Updates for LIS 7.1 AFWA Release           | August 29, 2016
+|1.5      | Updates for LIS 7.1rp7 Public Release      | August 4, 2016
+|1.4      | LIS 7.1 AFWA FY15 Deliverable              | July 28, 2016
+|1.3      | LIS 7.1rp1 Public Release                  | December 15, 2015
+|1.2      | Note unavailability of MERRA2 forcing data | May 29, 2015
+|1.1      | LIS 7.1 Public Release                     | May 27, 2015
+|1.0      | LIS 7.1 Initial AFWA Release               | April 13, 2015
+|====
+

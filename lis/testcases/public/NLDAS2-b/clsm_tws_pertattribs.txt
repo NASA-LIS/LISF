@@ -1,0 +1,13 @@
+#perttype   std   std_max   zeromean   tcorr   xcorr   ycorr   ccorr
+Catchment Deficit
+    0      0.05     2.5        1       86400    2.0     2.0    1.0   0.0   0.0   0.0   0.0   0.0
+Root Zone Excess
+    0       0.0     2.5        1       86400    2.0     2.0    0.0   1.0   0.0   0.0   0.0   0.0
+Surface Excess
+    0      0.02     2.5        1       86400    2.0     2.0    0.0   0.0   1.0   0.0   0.0   0.0
+Water Equivalent Snow 1
+    1    0.0004     2.5        1       86400    2.0     2.0    0.0   0.0   0.0   1.0   0.9   0.8
+Water Equivalent Snow 2
+    1    0.0004     2.5        1       86400    2.0     2.0    0.0   0.0   0.0   0.9   1.0   0.9
+Water Equivalent Snow 3
+    1    0.0004     2.5        1       86400    2.0     2.0    0.0   0.0   0.0   0.8   0.9   1.0

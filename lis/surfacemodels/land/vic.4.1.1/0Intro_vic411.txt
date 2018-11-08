@@ -1,0 +1,49 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!\section{VIC land surface model version 4.1.1}
+!This section describes the interface implementations for the 
+!Variable Infiltration Capacity (VIC) Macroscale Hydrologic Model,
+!version 4.1.1, available from 
+!
+!http://www.hydro.washington.edu/Lettenmaier/Models/VIC/index.shtml
+!
+!\subsection{Notes regarding incorporating VIC 4.1.1 into LIS}
+!VIC's control loop behaves oppositely from that of LIS (and the other
+!land surface models that it contains).  LIS' control loop has time as
+!the outer loop and space as the inner loop; whereas, VIC's control loop
+!has space as the outer loop and time as the inner loop.
+!
+!Viewing this in terms of data, LIS processes the desired running domain
+!as a 2d gridded field that is one time-level deep; whereas, VIC
+!processes the same running domain one grid cell at a time as a one grid
+!cell structure that is many time-levels deep.  In other words, for LIS,
+!at time $t_1$, LIS processes forcing for the whole domain, then it advances
+!the model state for the whole domain.  Then LIS advances time to $t_2$ and
+!repeats.  For VIC, VIC selects grid cell $x_1$, then it processes forcing
+!for that grid cell from the beginning to the end of the simulation, then
+!it advances the model state from the beginning to the end of the
+!simulation.  Then VIC selects grid cell $x_2$ and repeats.
+!
+!This difference in approach complicated incorporating VIC into LIS.  To
+!overcome this without modifying the VIC source code, two steps were
+!taken.  Step 1 was to create an intermediate layer of data structures
+!and supporting routines.  Step 2 was to tell VIC that the simulation was
+!only one time step long.  These two steps allow LIS to pass data into
+!VIC, have VIC advance its model state forward one time step, and to
+!store the new state for use in the next call to VIC at the next LIS time
+!step.
+!
+!\subsection{Limitations of VIC 4.1.1 within LIS}
+!VIC has many compile time and run time options that modify the behavior
+!of its underlying physics.  VIC within LIS (LIS-VIC) has been tested
+!only for VIC's basic water balance configuration and for VIC's basic
+!energy balance configuration.  Other configuration options are not
+!guaranteed to work.
+!EOP

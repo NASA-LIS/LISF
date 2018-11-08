@@ -1,0 +1,7 @@
+DSET ^lis_input.hymap.noah36.d01.nc
+DTYPE netcdf
+XDEF east_west   464 LINEAR    -124.9375    0.125
+YDEF north_south 224 LINEAR      25.0625    0.125
+ZDEF sfctypes     14 LINEAR          1.0      1.0
+TDEF month        12 LINEAR 00Z01jan2000      1mo
+* Note that the monthly values are a climatology

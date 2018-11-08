@@ -1,0 +1,76 @@
+
+== LIS Binary File Convention
+anchor:sec_fconv_appendix[LIS Binary File Convention]
+
+(Draft, 4/23/2003)
+
+
+=== Introduction
+
+The majority of LIS data is saved in Fortran binary files, with various formats. This note defines the official LIS file scheme, to facilitate unified and consistent access to LIS data by LIS code, user programs and GDS client-server system.
+
+
+=== Byte order
+
+LIS data, by default, are saved in binary files as big endian numbers.
+
+
+=== Storage organization
+
+For a specific spatial resolution, the spatial grid space has NC columns and NR rows. In addition, a vectorized land space will often be used, with NL land points.
+
+The minimum storage unit is a 2-D array of NC X NR, or a 1-D array of NL elements. Two dimensional grid space data and 1-D land space data are always saved in separate files.
+
+
+=== Missing/undefined values
+
+|====
+|   Data type     |     Missing/Undefined value
+
+|   character*1   |     CHAR(255)
+|   integer*1     |     -128
+|   integer*4     |     -9999 (?)
+|   real*4        |     (?)
+|====
+
+
+=== File name extension convention and access code samples
+
+A LIS binary file name extention has 4 fields. The first field is one or more numeric characters, indicating the total number of storage units the file has. The second field is the lower-case character "`g`" or "`l`", indicating grid space or land space, respectively. The third field is the lower-case character "`s`" or "`d`", indicating sequential or direct access. The last field, has 2 character width, with the first character indicating the number of bytes each number in the file takes, and the second character, as "`c`", "`i`", or "`r`", indicating the type of data as character, integer or real, respectively.
+
+Example1: _datafile1.2gs4r_
+
+Sample Fortran code segment to read this file:
+
+----
+     Real*4 v1(NC, NR), v2(NC, NR)
+     Open(12, file="datafile1.2gs4r", form="unformatted")
+     read(12)v1
+     read(12)v2
+     Close(12)
+----
+
+Example2: _datafile2.15gd4i_
+
+Sample Fortran code segment to read this file:
+
+----
+     Integer*4 v1(NC, NR), v10(NC, NR)
+     Open(12, file="datafile2.15gd4i", form="unformatted", &
+     access="direct", recl=NC*NR*4)
+     read(12, rec=1)v1
+     read(12, rec=10)v10
+     Close(12)
+----
+
+Example3: _soilcolor.1ls1c_
+
+Sample Fortran code segment to read this file:
+
+----
+     Character*1 color(NL)
+     Open(12, file="soilcolor.1ls1c", form="unformatted")
+     read(12)color
+     Close(12)
+----
+

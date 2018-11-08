@@ -1,0 +1,112 @@
+
+\subsection{Domain Example} \label{sec:dd_example}
+This section describes how to compute the values for the \var{run\_dd}
+and \var{param\_dd} arrays.
+
+First, we shall generate the values for the parameter data domain.  These
+are the values for the \var{param\_dd} array.  LIS' parameter data is defined 
+on a Latitude/Longitude grid, from $-180$ to $180$ degrees longitude and 
+from $-60$ to $90$ degrees latitude.
+
+For this example, consider running at 1/4 deg resolution.  The coordinates
+of the south-west and the north-east points are specified at the grid-cells' 
+centers.
+Here the south-west grid-cell is given by the box
+$(-180,-60), (-179.750,-59.750)$.
+The center of this box is $(-179.875,-59.875)$.
+\footnote{Note, these coordinates are ordered (longitude, latitude).}
+\begin{verbatim}
+param_dd(1)   = -59.875
+param_dd(2)   = -179.875
+\end{verbatim}
+
+The north-east grid-cell is given by the box $(179.750,89.750), (180,90)$.
+Its center is $(179.875,89.875)$.
+\begin{verbatim}
+param_dd(3)   = 89.875
+param_dd(4)   = 179.875
+\end{verbatim}
+
+Setting the resolution (0.25 deg) gives
+\begin{verbatim}
+param_dd(5)   = 0.25
+param_dd(6)   = 0.25
+\end{verbatim}
+
+And this completely defines the parameter data domain.
+
+
+Next, we shall generate the values for the running domain.  These
+are the values for the \var{run\_dd} array.
+
+Since the parameter data is on a Latitude/Longitude grid, we set
+\begin{verbatim}
+run_dd(1)   = 0
+\end{verbatim}
+
+If you wish to run over the whole domain defined by the parameter data
+domain then you simply set the values of dd(2) -- dd(7) equal to
+the values given by dd(8) -- dd(13).  This gives
+\begin{verbatim}
+run_dd(2)    = -59.875
+run_dd(3)    = -179.875
+run_dd(4)    = 89.875
+run_dd(5)    = 179.875
+run_dd(6)    = 0.25
+run_dd(7)   = 0.25
+\end{verbatim}
+
+Now say you wish to run only over the region given by 
+$(-97.6,27.9), (-92.9,31.9)$.  Since the running domain is a sub-set of the
+parameter domain, it is also a Latitude/Longitude domain at 1/4 deg.
+resolution.  Thus,
+\begin{verbatim}
+run_dd(6)    = 0.25
+run_dd(7)   = 0.25
+\end{verbatim}
+
+Now, since the running domain must fit onto the parameter domain, the desired
+running region must be expanded from $(-97.6,27.9), (-92.9,31.9)$
+to $(-97.75,27.75), (-92.75,32.0)$.  The south-west grid-cell for the running
+domain is the box $(-97.75,27.75), (-97.5,28.0)$.  
+Its center is $(-97.625,27.875)$; giving
+\begin{verbatim}
+run_dd(2)    = 27.875
+run_dd(3)    = -97.625
+\end{verbatim}
+
+The north-east grid-cell for the running domain is the box
+$(-93,31.75), (-92.75,32.0)$.  Its center is $(-92.875,31.875)$; giving
+\begin{verbatim}
+run_dd(4)    = 31.875
+run_dd(5)    = -92.875
+\end{verbatim}
+
+This completely defines the running domain.
+
+Note, the LIS project has defined 5 km resolution to be 0.05 deg. and
+1 km resolution to be 0.01 deg.  If you wish to run at 5 km or 1 km
+resolution, redo the above example to compute the appropriate grid-cell 
+values.
+
+See Figure~\ref{fig:snap_to_grid} for an illustration of adjusting the running 
+grid.  See Figures~\ref{fig:south-west} and \ref{fig:north-east} for an
+illustration of the south-west and north-east grid-cells.
+
+\begin{figure}
+\figureimage[.75]{c}{figs/snap_to_grid.png}
+\caption{Illustration showing how to fit the desired running grid onto the actual grid} \label{fig:snap_to_grid}
+\end{figure}
+
+\begin{figure}
+\figureimage[.75]{c}{figs/sw.png}
+\caption{Illustration showing the south-west grid-cell corresponding to 
+the example in Section~\ref{sec:dd_example}} \label{fig:south-west}
+\end{figure}
+
+\begin{figure}
+\figureimage[.75]{c}{figs/ne.png}
+\caption{Illustration showing the north-east grid-cell corresponding to 
+the example in Section~\ref{sec:dd_example}} \label{fig:north-east}
+\end{figure}
+

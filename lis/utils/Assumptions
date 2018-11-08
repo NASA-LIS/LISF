@@ -1,0 +1,9 @@
+Data Assimilation Observations
+-------------------------------
+It is assumed that the observations used in the assimilation have a 1-1 correspondence with the
+modeling grid. Any interpolation/reprojection required should be performed in the reading routines. 
+Sparse observation data can be packaged as a gridded dataset with the "assimilation flag" turned on for grid points with valid data.
+
+Multiple observation types : are packaged one after the other. The N_obs_size will be equal to 
+   N_obs_size = nobstypes * lis%ngrid (n)
+

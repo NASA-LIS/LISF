@@ -1,0 +1,44 @@
+NAM 242 AWIPS Grid - Over Alaska Reader Test Case
+
+This test-case performs a 1/4 degree simulation over Alaska with the
+TEMPLATE lsm option from 2012-09-01 to 2012-09-03 to test the processing
+of the NAM 242 forcing data.
+
+This directory contains: 
+
+* this README file.
+* the lis.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.) 
+* the MODEL_OUTPUT_LIST.TBL file used to specify the output variables.
+* a sample grads control file that can be used to visualize the 
+  output. (output.ctl)
+* a sample grads control file that can be used to visualize the 
+  test case output. (testcase.ctl)
+
+To run this test case: 
+
+* Generate the LIS executable. 
+* Download the sample input data from: 
+  http://lis.gsfc.nasa.gov/Source/testcases  
+  the testcase corresponding to NAM 242 FORCING TEST
+* Run the LIS executable using the lis.config file and the sample 
+  input data. 
+* View the binary output using the sample grads file. 
+
+Notes:
+
+See http://www.nco.ncep.noaa.gov/pmb/products/nam/
+
+NAM 242 AWIPS Grid - Over Alaska
+(11.25 KM Resolution; full complement of surface-based fields)
+
+
+From Logan Karsten:
+
+| The naming convention of the FTP directory is as follows - 
+| ftp://tgftp.nws.noaa.gov/SL.us008001/ST.opnl/MT.nam_AR.ak_CY.00/RD.20120924/PT.grid_DF.gr2/fh.0024_tl.press_gr.awp242 
+| where "MT.nam_AR.ak_CY.00" represents the NAM 242 00Z Cycle, "RD.20120924" 
+| represents the date of the model run, and "fh.0024_tl.press_gr.awp242" is the 
+| actual GRIB2 file for forecast hour 24 of NAM 242.
+

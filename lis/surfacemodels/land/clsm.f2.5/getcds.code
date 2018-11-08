@@ -1,0 +1,127 @@
+#undef DIM_
+#undef SIZ_
+#undef SUB_
+
+#if   (DIMS == 1)
+
+#define DIM_ (:)
+#define SIZ_ (size(TVA,1))
+#define SUB_ GETCDS_1D
+
+#elif (DIMS == 2)
+
+#define DIM_ (:,:)
+#define SIZ_ (size(TVA,1),size(TVA,2))
+#define SUB_ GETCDS_2D
+
+#endif                      
+
+
+! !INTERFACE:
+
+  subroutine SUB_ (TVA,UA,DZ,TVS,Z0,ZH,ZQ,  CT,CM,CQ,CN,RI,DCT,DCQ)
+
+
+! !INPUT PARAMETERS: 
+
+    real,    intent(IN )           :: TVA  DIM_ ! SURFACE AIR TEMPERATURE  (K)
+    real,    intent(IN )           :: UA   DIM_ ! SURFACE WIND SPEED       (M/SEC)
+    real,    intent(IN )           :: DZ   DIM_ ! HEIGHT OF AIR VALUES     (M)
+    real,    intent(IN )           :: TVS  DIM_ ! CANOPY TEMPERATURE       (K)
+    real,    intent(IN )           :: Z0   DIM_ ! THE SURFACE ROUGHNESS    (M)
+    real,    intent(IN )           :: ZH   DIM_ ! THE ROUGHNESS FOR HEAT   (M)
+    real,    intent(IN )           :: ZQ   DIM_ ! THE ROUGHNESS FOR WATER  (M)
+                                                                       
+! !OUTPUT PARAMETERS:                                                  
+                                                                             
+    real,    intent(OUT)           :: CT   DIM_ ! HEAT DRAG COEFF.         (N.D.)
+    real,    intent(OUT)           :: CQ   DIM_ ! MOISTURE DRAG COEFF.     (N.D.)
+    real,    intent(OUT)           :: CM   DIM_ ! MOMENTUM DRAG COEFF.     (N.D.)
+    real,    intent(OUT)           :: CN   DIM_ ! NEUTRAL DRAG COEFF       (N.D.)
+    real,    intent(OUT)           :: RI   DIM_ ! RICHARDSON NUMBER        (N.D.)
+    real,    intent(OUT), optional :: DCT  DIM_ ! PARTIAL CT / PARTIAL TVA (N.D.)
+    real,    intent(OUT), optional :: DCQ  DIM_ ! PARTIAL CQ / PARTIAL TVA (N.D.)
+
+
+!  Locals
+
+    real    :: DFH    SIZ_
+    real    :: FH     SIZ_
+    real    :: FM     SIZ_
+    real    :: PSI    SIZ_
+    real    :: R      SIZ_
+    real    :: RM     SIZ_
+    real    :: RT     SIZ_
+    real    :: RQ     SIZ_
+    real    :: DRIDTV SIZ_
+
+    real    :: LOUIS_B
+    real    :: LOUIS_C
+    real    :: LOUIS_D
+
+    LOUIS_B = LOUIS
+    LOUIS_C = LOUIS
+    LOUIS_D = LOUIS
+
+!  NEUTRAL COEFFICIENTS
+
+    RT = DZ/ZH + 1.0
+    CT = (MAPL_KARMAN/ALOG(RT))
+    RQ = DZ/ZQ + 1.0
+    CQ = (MAPL_KARMAN/ALOG(RQ))
+    RM = DZ/Z0 + 1.0
+    CN = (MAPL_KARMAN/ALOG(RM))
+
+    CT = CN*CT
+    CQ = CN*CQ
+    CN = CN*CN
+
+!   RICHARDSON NUMBER
+
+    DRIDTV = (MAPL_GRAV*DZ)/(TVA*(UA*UA))
+    RI = min(DRIDTV * ( TVA - TVS ),MAXRI)
+
+!   FH AND FM FACTORS - - FUNCTIONS OF RI AND DZ/ZO.
+
+    where ( RI < 0.0 ) !   UNSTABLE CASE
+       R    = (3.0*LOUIS_B*LOUIS_C)*(CN*sqrt(-RI*RM))
+       PSI  = RI / (1.0 + R)
+       FM   = (1.0 - (2.0*LOUIS_B)*PSI)
+       R    = (3.0*LOUIS_B*LOUIS_C)*(CT*sqrt(-RI*RT))
+       PSI  = RI / (1.0 + R)
+       FH   = (1.0 - (3.0*LOUIS_B)*PSI)
+    end where
+
+    where ( RI >= 0.0 )  !   STABLE CASE
+       PSI  = sqrt(1.0+LOUIS_D*RI)
+       R    = RI/PSI
+       FH   = 1.0 /(1.0 + (3.0*LOUIS_B)*RI*PSI)
+       FM   = 1.0 /(1.0 + (2.0*LOUIS_B)*R     )
+    end where
+
+    if(present(DCT).or.present(DCQ)) then ! Compute d(C[TQ])/d(Tva)
+
+       where ( RI < 0.0 )
+          DFH  = PSI/RI
+          DFH  = -(3.0*LOUIS_B)*DFH*(1.0 - 0.5*R*DFH)
+       end where
+
+       where ( RI >= 0.0 ) !   STABLE CASE
+          DFH  = -(3.0*LOUIS_B)*(FH*FH)*(PSI + (0.5*LOUIS_D)*R)
+       endwhere
+
+       DFH = DFH*DRIDTV
+
+       if(present(DCT)) DCT = CT*DFH
+       if(present(DCQ)) DCQ = CQ*DFH
+
+    end if
+
+    CQ   = CQ*FH
+    CT   = CT*FH
+    CM   = CN*FM
+
+    return
+
+    end subroutine SUB_
+

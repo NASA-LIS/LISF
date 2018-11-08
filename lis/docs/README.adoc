@@ -1,0 +1,129 @@
+= LIS Documentation README
+
+This document provides a brief overview of the LIS documentation; in particular, the format used to write it and how to read it.
+
+// The paragraphs in this document are written as a single line.  This is an experiment in reducing the amount of reformatting that is often done to text documents to make them nice looking.  A tool like `wdiff` can produce a diff where just the changed words are highlighted.  Each paragraph being a single line should be noticeable only when viewing this document with a text editor like vim.  See the Tips below.
+
+// As documents are added to the docs directory, add a link and brief description here.  This README will also serve as a launching point for the LIS documentation.
+
+
+== Overview
+
+The LIS documentation is written using LaTeX.  TeX along with the LaTeX macros is a powerful typesetting system for writing documents.  The LIS documentation, however, does not need the full power that TeX/LaTeX provides.  The LIS documentation is being rewritten using AsciiDoc.  Like LaTeX, AsciiDoc is text-based markup, thus it plays nicely with version control systems.  Like LaTeX, AsciiDoc may be processed into other formats like HTML or PDF.  Unlike LaTeX, the AsciiDoc syntax is simple, making the source files both easier to write and easier to read.
+
+
+== How to write
+
+The LIS documentation uses the http://asciidoctor.org/[Asciidoctor] implementation of the http://asciidoc.org/[AsciiDoc] light weight markup language.  Please consult their online documentation for more information.
+
+
+== How to read
+
+I will describe three ways to read the LIS documentation.
+
+
+=== Pager/Editor
+
+Since AsciiDoc is plain text, you may read the LIS documentation using a pager like `more` or `less` or using an editor like `vim` or `emacs`.  Since the signal to noise ratio is high for AsciiDoc, this method of reading works very well, especially when working on an HPC system where you may not have many fancy tools installed.
+
+
+=== Web Browser
+
+AsciiDoc easily converts to HTML; there are even Firefox and Chrome plugins that can process AsciiDoc on the fly.  To use this method, first install either the Firefox or Chrome browser and then install the '`Asciidoctor.js Live Preview`' extension.  (Please consult your sysadmin for help.)  Then open the desired document in Firefox/Chrome and click on the '`A`' in the toolbar; et voilà, pretty documentation.  This method works well when you have the LIS source code on your laptop.
+
+Please note that development for the Chrome extension is more active.
+
+
+=== asciidoctor toolset
+
+You can process the AsciiDoc source yourself, using the asciidoctor toolset.  With this toolset, you can generate an HTML or PDF version of the documentation.  If you are masochistic, then you can even generate a DocBook version.  And, then using various DocBook tools, you can render whatever you want.  It is beyond the scope of this README to describe how to install asciidoctor and its dependencies.  Please see the asciidoctor website and consult your sysadmin.  This method is *not* recommended for the general LIS user.  The <<Pager/Editor>> and <<Web Browser>> methods are better choices.  Also note that a PDF version of the documentation will be available on the https://lis.gsfc.nasa.gov/[LIS web-site].  This method is recommended only for documentation writers (LIS developers).
+
+
+== Tips
+
+Here are some tips for reading the LIS documentation using `vim` or `emacs`.  It is beyond the scope of this README to teach how to use either `vim` or `emacs`.  Please consult your local guru for additional help.
+
+
+=== vi?
+
+What about us `vi` users?
+
+Please run
+
+....
+% vi
+....
+
+Did you get something like
+
+....
+~
+~
+~                              VIM - Vi IMproved
+~
+~                                version 8.0.94
+~                           by Bram Moolenaar et al.
+~                 Vim is open source and freely distributable
+~
+~                        Help poor children in Uganda!
+~                type  :help iccf<Enter>       for information
+~
+~                type  :q<Enter>               to exit
+~                type  :help<Enter>  or  <F1>  for on-line help
+~                type  :help version8<Enter>   for version info
+~
+~
+....
+
+Surprise! you are actually a `vim` user.
+
+
+=== vim
+
+==== Tip 1
+
+Open the documentation in read-only mode, unless of course you actually need to edit it.
+
+....
+% vim -R README
+....
+
+
+==== Tip 2
+
+`vim` understands the AsciiDoc syntax.  After opening the documentation, execute these `vim` command-line mode commands:
+
+....
+:set syntax on
+:autocmd BufRead,BufNewFile *.adoc setfiletype asciidoc
+....
+
+ 
+==== Tip 3
+
+Each paragraph is written as a single line.  This may look bad in `vim`.  Execute these `vim` command-line mode commands:
+
+....
+:set textwidth=0
+:set wrap
+:set linebreak
+....
+
+The `vim` normal mode commands `j` and `k` move down one line and up one line, respectively.  For this document that is the same as down one paragraph and up one paragraph.  The `vim` normal mode commands `gj` and `gk` respectively move up and down one virtual line.  You should need these movement commands only when editing this document.  When simply reading it, use the `vim` normal mode commands `<C-f>` and `<C-b>` (`vim`-speak for control-f and control-b) to move forward and backwards, respectively, one page at a time.
+
+
+==== Tip 4
+
+Let `vim` help you navigate the documentation.  Whenever you encounter a line like
+
+----
+\include::filename[]
+----
+
+place the cursor on '`filename`' and execute the `vim` normal mode command `gf`.  `vim` will '`goto file`' under the cursor.  Executing `<C-t>` (`vim`-speak for control-t) will take you back.
+
+
+=== emacs
+
+You guys don't need my help. :-)
+

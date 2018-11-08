@@ -1,0 +1,96 @@
+
+// This is the forcing_variables.txt file.  It contains the
+// user-configurable options plus documentation for the input forcing
+//
+// Please add any updates to the LIS code regarding configuration options
+// to this file -- including documentation.
+//
+// Actual lines of the forcing_variables.txt file should not be marked up.
+//
+//
+// To include this file in the User's Guide:
+// 1) Checkout the latest copy of this file from the repository.
+// 2) Place it with the source for the User's Guide.
+// 3) Rename it forcing_variables.adoc
+
+
+== Specification of Input Forcing Variables
+anchor:sec_forcingvars[Specification of Input Forcing Variables]
+
+This section defines the specification of the input forcing variables
+for LIS.
+This file is specified in a space delimited column format.
+Each row consists of the following entries:
+
+`Short Name` short name of the forcing variable.
+
+`Use option` determines whether to include this the variable
+for use within LIS
+Acceptable values are:
+
+|====
+|Value | Description
+
+| 0    | do not include the variable
+| 1    | include the variable
+|====
+
+`Number of vertical levels` The number of vertical levels
+corresponding to the variable.
+
+`Units` specified unit of the variable.
+
+Note that this is a full list of input forcing variables.
+Not all models use all these variables.
+
+Note that being listed in the _forcing_variables.txt_ file
+does not guarantee that the field will be available within LIS.
+Availablity depends on the support provided by the base forcing
+and supplemental forcing schemes selected in the _lis.config_
+run-time configuration file.
+
+
+....
+#short name  select  vlevels  units
+Tair:       1  1  K       # Near surface air temperature
+Qair:       1  1  kg/kg   # Near surface specific humidity
+SWdown:     1  1  W/m2    # Incident shortwave radiation (total)
+SWdirect:   0  1  W/m2    # Incident shortwave radiation (direct)
+SWdiffuse:  0  1  W/m2    # Incident shortwave radiation (diffuse)
+LWdown:     1  1  W/m2    # Incident longwave radiation
+Wind_E:     1  1  W/m2    # Eastward wind
+Wind_N:     1  1  m/s     # Northward wind
+Psurf:      1  1  Pa      # Surface pressure
+Rainf:      1  1  kg/m2s  # Rainfall rate
+Snowf:      0  1  kg/m2s  # Snowfall rate
+CRainf:     1  1  kg/m2s  # Convective rainfall rate
+Forc_Hgt:   0  1  m       # Height of forcing variables
+Ch:         0  1  -       # Surface exchange coefficient for heat
+Cm:         0  1  -       # Surface exchange coefficient for momentum
+Q2sat:      0  1  -       # Saturated mixing ratio
+Emiss:      0  1  -       # Surface emissivity
+Cosz:       0  1  -       # Cosine of zenith angle
+Albedo:     0  1  -       # Surface albedo
+PARDR:      0  1  -       # Photosynthetically Active Direct Radiation
+PARDF:      0  1  -       # Photosynthetically Active Diffuse Radiation
+SWnet:      0  1  -       # Net Shortwave Radiation at the Surface
+PET:        0  1  kg/m2s  # Potential ET
+RefET:      0  1  kg/m2s  # Reference ET
+CAPE:       0  1  J/kg    # Convective Available Potential Energy
+LPressure:  0  1  Pa      # Level pressure
+O3:         0  1  -       # Ozone concentration
+Xice:       0  1  -       # Sea ice mask
+QSFC:       0  1  kg/kg   # Surface specific humidity
+CHS2:       0  1  -       # 2m Surface Exchange Coefficient for Heat
+CQS2:       0  1  -       # 2m Surface Exchange Coefficient for Moisture
+T2:         0  1  K       # 2m Air Temperature
+Q2:         0  1  kg/kg   # 2m Specific Humidity
+TH2:        0  1  K       # 2m Potential Temperature
+TMN:        0  1  K       # Soil Temperature at Lower Boundary
+Snowflag:   0  1  -       # Snowflag
+Density:    0  1  kg/m3   # Atmospheric Density
+VaporPress: 0  1  Pa      # Vapor Pressure
+VaporPressDeficit: 0 1 Pa # Vapor Pressure Deficit
+Wind:       0  1  m/s     # Wind Speed
+....
+

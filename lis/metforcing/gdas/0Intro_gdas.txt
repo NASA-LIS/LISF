@@ -1,0 +1,23 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!\section{GDAS}
+!The Global Data Assimilation System (GDAS) is the global, operational
+!weather forecast model developed at the Environmental Modeling
+!Center (EMC) of NOAA/NCEP~\cite{derber}.  The radiation algorithms
+!in GDAS include parameterizations for SW$\downarrow$ and LW$\downarrow$
+!radiation interactions between clouds and radiation. The shortwave
+!radiation parameterization follows the the scheme developed by
+!\cite{chou} and the longwave radiation scheme is based on the work
+!of \cite{schwarzkopf}. GDAS forcing variables are produced on a
+!quadratic T170 gaussian grid. LIS uses the 00, 03, and as needed,
+!the 06 (hours after current) forecasts, which are produced at 6
+!hour intervals. From October 2002 onwards, the GDAS outputs are
+!generated at a higher resolution T254 gaussian grid.
+!EOP

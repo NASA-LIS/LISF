@@ -1,0 +1,319 @@
+\section{GRIB Output Information } \label{sec:writegrib_appendix}
+
+\textbf{Introduction}: \\
+This is a package of subroutines to write GRIB data in LIS.  As land surface
+models become more sophisticated, more variable metadata will need to be
+added. The package currently supports all of the mandatory ALMA output variables for
+LSMs.  However, the GRIB output module can easily be extended to support additional
+variables.  This new LIS grib interface was adapted
+from a module similair to one used in the AFWA AGRMET model.  Supported
+LIS projections include Lat/Lon, Lambert Conformal, Polar Stereographic, and
+Mercator.  The setup of the GRIB grid description section (GDS section) is handled
+automatically by LIS within the domain initialization module. \\
+\\
+Charles J. Alonge \\
+SAIC/NASA GSFC        \\
+Winter 2006/2007, and continuing \\
+\\
+The user interfaces are:  \\
+\textbf{SUBROUTINE GRIB1\_SETUP }
+ - Initializes variable independent information in the GRIB product definition
+ section (PDS). \\
+\textbf{SUBROUTINE GRIB1\_FINALIZE }
+ - Finalizes the product definition section of the GRIB record by encoding
+ variable specific metadata into the output grib record.\\
+\textbf{SUBROUTINE DRV\_WRTIEVAR\_GRIB }
+ - Writes the grib record (and stats) by gathering the variable from the
+  indiviudual MPI tasks (if applicable) and calls the lower level grib
+  output routines
+
+\subsection{ SUBROUTINE GRIB1\_SETUP }
+- Call: GRIB1\_SETUP(SECT1, INFO, BITMAP, DATE)   \\
+- Initialize variable indpendent information in the GRIB product definition
+  record (e.g. center, subcenter, time valid, and bitmap flag)  \\
+- NOTE!: BITMAP MUST ALWAYS BE TRUE as the code will handle output over all
+  gridpoints (including water) or just LIS output over land.\\
+\begin{itemize}
+ \item[Input: ]
+  SECT1 (integer(36)): GRIB PDS array.  Contains variable specific GRIB metadata. \\
+  INFO (integer(5)): GRIB packing descriptor, describes the length of each
+     section of grib header for low-level grib encoding. \\
+  BITMAP (logical) : Determines if a bitmap is used in the grib encoding
+     (ALWAYS leave defined as true!!) \\
+  DATE (character(10)): Character string containing the date of the grib
+     record ( format: YYYYMMDDHH )  \\
+ \item[Side Effects:]
+  NONE - Do not set Bitmap to false or grib packing will fail.
+\end{itemize}
+
+\subsection{ SUBROUTINE GRIB1\_FINALIZE }
+- Call: SUBROUTINE GRIB1\_FINALIZE(GRIB\_INDEX, SECT1, TIME\_UNIT, TIME\_1,
+  TIME\_2, TIME\_RANGE) \\
+- Finalizes the PDS section of a grib record by endcoding variable specific
+  metadata into the output grib record. \\
+\begin{itemize}
+ \item[ Input:]
+    GRIB\_INDEX (integer): Index into the GRIB pds values array corresponding
+    to the variable being processed for output (See tables below for
+    enumerated types of this value for the different output variables)  \\
+    SECT1 (integer (36)): Parameters for Section 1 (PDS) of the GRIB record \\
+    TIME\_UNIT (integer): Units in time for output contained in GRIB record.
+    These are encoded as follows:
+    \begin{description}
+      \item[0] - Minute
+      \item[1] - Hour
+      \item[2] - Day
+      \item[3] - Month
+      \item[4] - Year
+      \item[254] - Second
+    \end{description}
+    TIME\_1(integer): Time1 for GRIB Record Descriptor.  Used only when
+    averaging or accumulating variables over a period of time (See TIME\_RANGE
+    description). \\
+    TIME\_2(integer): Time2 for GRIB Record Descriptor.  For general LIS usage
+    this should always be set to zero. \\
+    TIME\_RANGE: Time Range Indicator.  Describes relationship between TIME\_1
+    and TIME\_2.  These are encoded as follows (for a more detailed description
+    please refer to the WMO Grib 1 Manual - Table 5):
+    \begin{description}
+      \item[0] - Forecast product value for reference TIME\_1 (TIME\_2 ignored)
+      \item[1] - Analysis product for reference TIME\_1 (TIME\_2 ignored)
+      \item[2] - Product wth a valid time ranging between +TIME\_1 and +TIME\_2
+      \item[3] - Average (reference time +TIME\_1 to reference time +TIME\_2)
+      \item[4] - Accumulation (reference time +TIME\_1 to reference time
+        +TIME\_2) product considered valid at TIME\_2
+      \item[5] - Difference (reference time +TIME\_2 minus reference time
+        +TIME\_1) product considered valid at TIME\_2
+      \item[6] - Average (reference time -TIME\_1 to reference time -TIME\_2)
+      \item[7] - Average (reference time -TIME\_1 to reference time +TIME\_2)
+    \end{description}
+  \item[Side Effects: ]
+    Do not use negative values when defining the three time descriptor
+    variables as this will cause an error in the low-level grib packing
+    routines.  Instead use a different time range indicator.
+\end{itemize}
+
+\subsection{ SUBROUTINE DRV\_WRITEVAR\_GRIB }
+- Call: DRV\_WRITEVAR\_GRIB(FTN, FTN\_STATS, N, FLAG, VAR, MVAR,
+  FORM, TOPLEV, BOTLEV, KDIM)   \\
+- Writes the grib record by gathering the variable from the indiviudual MPI
+  tasks and calling the lower level grib output routines
+\begin{itemize}
+ \item[Input: ]
+  FTN (integer): Unit number of grib output file. \\
+  FTN\_STATS (integer): Unit number of grib output file. \\
+  N (integer): Index of the of LIS domain or nest. \\
+  FLAG (integer): Unit number of grib output file. \\
+  VAR (real(lis\%nch(n)): Variable output data. \\
+  MVAR (character(len=*)): Name of variable being written. \\
+  FORM (integer): Format to be used in stats file (1-decimal,2-scientific) \\
+  TOPLEV (real(KDIM)): Format to be used in stats file (1-decimal,2-scientific) \\
+  BOTLEV (real(KDIM)): Format to be used in stats file (1-decimal,2-scientific) \\
+  KDIM (integer): Grid dimension Format to be used in stats file (1-decimal,2-scientific) \\
+  INFO (integer(5)): GRIB packing descriptor, describes the length of each
+     section of grib header for low-level grib encoding. \\
+  BITMAP (logical) : Determines if a bitmap is used in the grib encoding
+     (ALWAYS leave defined as true!!) \\
+  DATE (character(10)): Character string containing the date of the grib
+     record ( format: YYYYMMDDHH )  \\
+ \item[Side Effects:]
+  NONE - Do not set Bitmap to false or grib packing will fail.
+\end{itemize}
+
+\subsection{ Output GRIB Variables }
+ \setlongtables
+ \begin{longtable}{|l|c|c|}
+  \hline
+  GRIB ID & Table Number & Description \\
+  \hline
+  \multicolumn{3}{|c|}{ALMA ENERGY BALANCE COMPONENTS} \\
+  \hline
+  GRIB\_SWNET      & 1 & Net Shortwave Radiation Flux \\ 
+  GRIB\_LWNET      & 2 & Net Longwave Radiation Flux \\ 
+  GRIB\_QLE        & 3 & Latent Heat Flux \\
+  GRIB\_QH         & 4 & Sensible Heat Flux\\
+  GRIB\_QG         & 5 & Ground Heat Flux \\
+  GRIB\_QF         & 6 & Energy of Fusion \\ 
+  GRIB\_QV         & 7 & Energy of Sublimation \\
+  GRIB\_QTAU       & 8 & Momentum Flux \\
+  GRIB\_QA         & 9 & Advective Energy\\
+  GRIB\_DELSRFHEAT & 10 & Change in Surface Heat Storage \\
+  GRIB\_DELCLDCNT  & 11 & Change in Snow Cold Content \\
+  \hline
+  \multicolumn{3}{|c|}{ALMA WATER BALANCE COMPONENTS} \\
+  \hline
+  GRIB\_SNOWF      & 12 & Snowfall Rate \\
+  GRIB\_RAINF      & 13 & Rainfall Rate \\
+  GRIB\_EVAP       & 14 & Total Evaporation \\
+  GRIB\_QS         & 15 & Surface Runoff \\
+  GRIB\_QREC       & 16 & Recharge \\ 
+  GRIB\_QSB        & 17 & Subsurface Runoff \\
+  GRIB\_QSM        & 18 & Snowmelt \\
+  GRIB\_QFZ        & 19 & Refreezing of Water in the Snow \\
+  GRIB\_QST        & 20 & Snow Throughfall \\
+  GRIB\_DELSM      & 21 & Change in Soil Moisture \\
+  GRIB\_DELSWE     & 22 & Change in Snow Water Equivalent \\
+  GRIB\_DELSRFSTR  & 23 & Change in Surface Water Storage \\
+  GRIB\_DELINTCPT  & 24 & Change in Interception Storage \\
+  \hline
+  \multicolumn{3}{|c|}{ALMA SURFACE STATE VARIABLES} \\
+  \hline
+  GRIB\_SNOWT      & 25 & Snow Surface Temperature \\
+  GRIB\_VEGT       & 26 & Vegetation Canopy Temperature \\
+  GRIB\_BARESOILT  & 27 & Temperature of Bare Soil \\
+  GRIB\_AVGSURFT   & 28 & Average Surface Temperature \\
+  GRIB\_RADT       & 29 & Surface Radiative Temperature \\
+  GRIB\_ALBEDO     & 30 & Surface Albedo \\
+  GRIB\_SWE        & 31 & Snow Water Equivalent (SWE) \\
+  GRIB\_SWEVEG     & 32 & SWE intercepted by Vegetation \\ 
+  GRIB\_SURFSTOR   & 33 & Surface Water Storage \\
+  \hline  
+  \multicolumn{3}{|c|}{ALMA SUBSURFACE STATE VARIABLES} \\
+  \hline
+  GRIB\_SOILMOIST  & 34 & Soil Moisture \\
+  GRIB\_SOILTEMP   & 35 & Soil Temperature \\ 
+  GRIB\_LSOILMOIST & 36 & Avg. layer fraction of Liquid Moisture\\
+  GRIB\_FSOILMOIST & 37 & Avg. layer fraction of Frozen Moisture\\
+  GRIB\_SOILWET    & 38 & Total Soil Wetness \\
+  \hline
+  \multicolumn{3}{|c|}{ALMA EVAPORATION COMPONENTS} \\
+  \hline
+  GRIB\_POTEVAP    & 39 & Potential Evaporation \\
+  GRIB\_ECANOP     & 40 & Interception Evaporation \\
+  GRIB\_TVEG       & 41 & Vegetation Transpiration \\
+  GRIB\_ESOIL      & 42 & Bare Soil Evaporation \\
+  GRIB\_EWATER     & 43 & Open Water Evaporation \\ 
+  GRIB\_ROOTMOIST  & 44 & Root Zone Soil Moisture \\
+  GRIB\_CANOPINT   & 45 & Total Canopy Water Storage \\
+  GRIB\_ESNOW      & 46 & Snow Evaporation \\
+  GRIB\_SUBSNOW    & 47 & Snow Sublimation \\
+  GRIB\_SUBSURF    & 48 & Sublimation of Snow Free Area\\
+  GRIB\_ACOND      & 49 & Aerodynamic Conductance \\
+  \hline
+  \multicolumn{3}{|c|}{FORCING VARIABLES} \\
+  \hline
+  GRIB\_WINDFORC   & 50 & Wind Speed \\
+  GRIB\_RAINFFORC  & 51 & Rainfall Forcing \\
+  GRIB\_SNOWFFORC  & 52 & Snowfall Forcing \\
+  GRIB\_TAIRFORC   & 53 & Air Temperature \\
+  GRIB\_QAIRFORC   & 54 & Specific Humidity \\
+  GRIB\_PSURFFORC  & 55 & Surface Pressure \\
+  GRIB\_SWDOWNFORC & 56 & Downwelling Shortwave Radiation Flux \\
+  GRIB\_LWDOWNFORC & 57 & Downwelling Longwave Radiation Flux \\
+  \hline
+  \multicolumn{3}{|c|}{PARAMETER OUTPUT - EXPERIMENTAL} \\
+  \hline
+  GRIB\_LANDMASK   & 58 & Land Mask \\
+  GRIB\_LANDCOVER  & 59 & Vegetation Type - Landcover\\
+  GRIB\_SOILTYPE   & 60 & Soil Type \\
+  GRIB\_SOILCOLOR  & 61 & Soil Color \\
+  GRIB\_TOPOGRAPHY & 62 & Topography of Land Surface \\
+  GRIB\_LAI        & 63 & Leaf Area Index \\
+  GRIB\_SAI        & 64 & Stem Area Index \\
+  GRIB\_SNFRALBEDO & 65 & Snow-free Albedo \\
+  GRIB\_MXSNALBEDO & 66 & Maximum Snow Albedo \\
+  GRIB\_GREENNESS  & 67 & Greenness Fraction \\
+  GRIB\_TEMP\_BOT   & 68 & Bottom Temperature \\
+  \hline
+ \end{longtable}
+
+\subsection{ Example of Fortran code that calls GRIB output routines }
+
+\begin{verbatim}
+
+! Setup of GRIB Metadata Section
+
+! toplev is the depth of the top of each soil layer
+! botlev is the depth of the bottom of each soil layer
+toplev(1) = 0.0
+botlev(1) = noah_struc(n)%lyrthk(1)
+
+! determine bounding levels for each soil moisture layer
+do i = 2, noah_struc(n)%nslay
+   toplev(i) = toplev(i-1) + noah_struc(n)%lyrthk(i-1)
+   botlev(i) = botlev(i-1) + noah_struc(n)%lyrthk(i)
+enddo
+
+! Convert to centimeters -- the depths for layers below the land
+! surface (surface = 112) are expected in centimeters,
+! per GRIB specifications.
+toplev = toplev * 100.0
+botlev = botlev * 100.0
+
+! Set values for non layered fields (Fluxes, Sfc Fields, etc.)
+toplev0 = 0
+botlev0 = 0
+
+! Set Date String to Pass to GRiB Module
+hr1=lis%hr
+da1=lis%da
+mo1=lis%mo
+yr1=lis%yr
+write(unit=date,fmt='(i4.4,i2.2,i2.2,i2.2)') yr1,mo1,da1,hr1
+
+! Setup common information to go into the PDS section
+! of the GRIB file (Variable Independent Metadata)
+
+call grib1_setup(gribobj(n)%sect1, gribobj(n)%info, &
+     gribobj(n)%bitmap, date)
+
+! Set time units of output for GRIB file
+! Is output interval in days,hours,minutes,seconds?)
+! Also, determine output time range in that unit (time_past)
+
+if(noah_struc(n)%outInterval .GT. 0) then
+   time_unit = 254     ! seconds
+   time_past = (noah_struc(n)%outInterval / 1)
+endif
+if(noah_struc(n)%outInterval .GE. 60) then
+   time_unit = 0      ! minutes
+   time_past = (noah_struc(n)%outInterval / 60)
+endif
+if(noah_struc(n)%outInterval .GE. 3600) then
+   time_unit = 1    ! hours
+   time_past = (noah_struc(n)%outInterval / 3600)
+endif
+if(noah_struc(n)%outInterval .GE. 86400) then
+   time_unit = 2   ! days
+   time_past = (noah_struc(n)%outInterval / 86400)
+endif
+
+! End of GRIB metadata section
+
+! Sample Outputs.....
+
+! Output Net Shortwave Radiation
+
+! Finalize PDS section of this variable, in this case SWNET is a time
+! averaged variable => time range indicator equals 7
+call grib1_finalize(GRIB\_SWNET,gribobj(n)%sect1,time_unit,time_past,0,7)
+
+noah_struc(n)%noah%swnet = noah_struc(n)%noah%swnet/float(noah_struc(n)%count)
+
+! Call low level grib routines (single level data, hence 1 as final arg)
+call drv_writevar_grib(ftn,ftn_stats,n,metadata_output%swnet,    &
+                       noah_struc(n)%noah%swnet,"Swnet(W/m2)",1, &
+                       toplev0, botlev0, 1)
+
+
+! Output Soil Moisture
+
+! Store soil moisture in a 2D array (LSM points x Num. Layers)
+temp_nslay = 0.0
+do i=1,noah_struc(n)%nslay
+   do t=1,lis%nch(n)
+      temp_nslay(t,i) = noah_struc(n)%noah(t)%soilmoist(i)
+   enddo
+enddo
+
+! Finalize PDS section of this variable, in this case SOILMOIST is an
+! instantaneous variable => time range indicator equals 1 - analysis
+call grib1_finalize(GRIB\_SOILMOIST,gribobj(n)%sect1,time_unit,0,0,1)
+
+! Call low level grib routines (output all levels, number of layers
+! is used as the last argument)
+call drv_writevar_grib(ftn,ftn_stats,n,metadata_output%soilmoist,&
+                          temp_nslay,"SoilMoist(kg/m2)",2,          &
+                          toplev, botlev,  noah_struc(n)%nslay)
+
+\end{verbatim}

@@ -1,0 +1,87 @@
+! File %M% from Library %Q%
+! Version %I% from %G% extracted: %H%
+!------------------------------------------------------------------------------
+
+REAL (KIND = ireals) FUNCTION SfcFlx_satwvpres (T, h_ice)
+
+!------------------------------------------------------------------------------
+!
+! Description:
+!
+!  Computes saturation water vapour pressure 
+!  over the water surface or over the ice surface
+!  as function of temperature. 
+!  
+!
+! Current Code Owner: DWD, Dmitrii Mironov
+!  Phone:  +49-69-8062 2705
+!  Fax:    +49-69-8062 3721
+!  E-mail: dmitrii.mironov@dwd.de
+!
+! History:
+! Version    Date       Name
+! ---------- ---------- ----
+! 1.00       2005/11/17 Dmitrii Mironov 
+!  Initial release
+! !VERSION!  !DATE!     <Your name>
+!  <Modification comments>
+!
+! Code Description:
+! Language: Fortran 90.
+! Software Standards: "European Standards for Writing and
+! Documenting Exchangeable Fortran 90 Code".
+!==============================================================================
+!
+! Declarations:
+!
+! Modules used:
+
+!_dm Parameters are USEd in module "SfcFlx".
+!_nu USE data_parameters  , ONLY : &
+!_nu     ireals,                   & ! KIND-type parameter for real variables
+!_nu     iintegers                   ! KIND-type parameter for "normal" integer variables
+
+!_dm The variable is USEd in module "SfcFlx".
+!_nu USE flake_parameters , ONLY : &
+!_nu   h_Ice_min_flk                 ! Minimum ice thickness [m]
+
+!==============================================================================
+
+IMPLICIT NONE
+
+!==============================================================================
+!
+! Declarations
+ 
+!  Input (function argument) 
+REAL (KIND = ireals), INTENT(IN) ::   &
+  T                                 , & ! Temperature [K]
+  h_ice                                 ! Ice thickness [m]
+
+!  Local parameters
+REAL (KIND = ireals), PARAMETER ::   &
+   b1_vap   = 610.78_ireals        , & ! Coefficient [N m^{-2} = kg m^{-1} s^{-2}]
+   b3_vap   = 273.16_ireals        , & ! Triple point [K]
+   b2w_vap  = 17.2693882_ireals    , & ! Coefficient (water)
+   b2i_vap  = 21.8745584_ireals    , & ! Coefficient (ice) 
+   b4w_vap  = 35.86_ireals         , & ! Coefficient (temperature) [K]
+   b4i_vap  = 7.66_ireals              ! Coefficient (temperature) [K]
+
+!==============================================================================
+!  Start calculations
+!------------------------------------------------------------------------------
+
+! Saturation water vapour pressure [N m^{-2} = kg m^{-1} s^{-2}]
+
+IF(h_ice.LT.h_Ice_min_flk) THEN  ! Water surface
+  SfcFlx_satwvpres = b1_vap*EXP(b2w_vap*(T-b3_vap)/(T-b4w_vap))
+ELSE                             ! Ice surface
+  SfcFlx_satwvpres = b1_vap*EXP(b2i_vap*(T-b3_vap)/(T-b4i_vap))
+END IF 
+
+!------------------------------------------------------------------------------
+!  End calculations
+!==============================================================================
+
+END FUNCTION SfcFlx_satwvpres
+

@@ -1,0 +1,38 @@
+Options in LIS configuration file
+
+
+
+#--------------------------------------------------------------------
+# the following options should be specified in LIS configuration file
+FLAKE1 output interval:
+FLAKE1 height where wind speed is measured:
+FLAKE1 height where temperature and humidity are measured:
+FLAKE1 model time step:
+Variable name of LDT_ncvar_lon in LIS parameter data file:
+Variable name of LDT_ncvar_lat in LIS parameter data file:
+Variable name of LDT_ncvar_depth_w in LIS parameter data file:
+Variable name of LDT_ncvar_fetch in LIS parameter data file:
+Variable name of LDT_ncvar_depth_bs in LIS parameter data file:
+Variable name of LDT_ncvar_T_bs in LIS parameter data file:
+
+# the following two options should be specified for restart run 
+FLAKE1 restart file:
+FLAKE1 restart file format:         # netcdf or binary 
+
+#the following options should be specified for a cold start run 
+FLAKE1 initial temperature at the air-snow interface:
+FLAKE1 initial temperature at the snow-ice interface:
+FLAKE1 initial mean temperature of the water column:
+FLAKE1 initial temperature of mixed layer:
+FLAKE1 initial temperature at the water-bottom sediment interface:
+FLAKE1 initial temperature at the bottom of the upper layer of the sediments:
+FLAKE1 initial thermocline shape factor:
+FLAKE1 initial snow thicknees:
+FLAKE1 initial ice thickness:
+FLAKE1 initial thickness of mixed layer:
+FLAKE1 initial thickness of the upper layer of bottom sediments:
+FLAKE1 initial surface temperature:
+FLAKE1 initial water surface albedo with resect to solar radiation:
+FLAKE1 initial ice surface albedo with respect to the solar radiation:
+FLAKE1 initial snow surface albedo with respect to the solar radiation:
+#--------------------------------------------------------------------

@@ -1,0 +1,32 @@
+This is a test case that uses: 
+  (a) the GDAS forcing 
+  (b) using the bilinear Interpolation
+  (c) uses no elevation correction
+  (d) the "template" LSM option (which is a dummy LSM placeholder that simply
+      outputs the interpolated forcing data. 
+  (e) Domain near the Southern Great Plains (SGP) at 1/4 degree 
+      spatial resolution in polar stereographic projection
+  (f) a time period from Oct 29 2002, hr 1 to Oct 31, 2002, hr 1 (This 
+      period is chosen since GDAS switches resolution on Oct 29, hr 12) 
+
+This directory contains: 
+  (a) This README file, 
+  (b) the lis.config file used for this test case. (This file should be 
+      edited to make sure that the locations of the parameter and 
+      forcing files are specified correctly.) 
+  (c) A sample grads control file that can be used to visualize the 
+      output. (output.ctl)
+
+To run this test case: 
+  (a) Generate the LIS executable. 
+  (b) Download the sample input data from: 
+	http://lis.gsfc.nasa.gov/Source/testcases  
+      the testcase corresponding to Polar Stereographic domain TEST
+  (c) Run the LIS executable using the lis.config file and the sample 
+      input data. 
+  (d) View the binary output using the sample grads file. 
+       
+Caveats: 
+  (a) Please note that the sample grads control file does not plot the 
+      output data in the polar stereographic map projection. 
+      It is intended to be a description of the spatial and temporal extents. 

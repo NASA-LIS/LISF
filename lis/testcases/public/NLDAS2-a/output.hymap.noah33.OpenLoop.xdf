@@ -1,0 +1,11 @@
+DSET ^OUTPUT_ol/NOAH33/SURFACEMODEL/%y4%m2/LIS_HIST_%y4%m2%d2%h200.d01.nc
+DTYPE netcdf
+OPTIONS template
+XDEF east_west   464 LINEAR    -124.9375    0.125
+YDEF north_south 224 LINEAR      25.0625    0.125
+ZDEF SoilMoist_profiles 4 LEVELS  0.1 0.4 1.0 2.0
+TDEF time         92 LINEAR 00Z02jun2010      1dy
+* Note: SoilTemp_profiles will not be loaded in GrADS.
+* If you want to play SoilTemp, change the "ZDEF" line
+* above the following instead:
+* ZDEF SoilTemp_profiles 4 LEVELS  0.1 0.4 1.0 2.0

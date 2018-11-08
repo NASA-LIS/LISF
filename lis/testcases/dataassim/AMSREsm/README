@@ -1,0 +1,40 @@
+To run AMSR-E soil moisture data assimilation with Noah:
+
+1) Set the following entries in lis.config (a sample of lis.config can
+be found from /discover/nobackup/bli/lis5.0/run/lis.config.amsre):
+
+Number of ensembles per tile:
+
+Assimilation algorithm: 2         
+Assimilation set: 9  
+Number of state variables:  4
+Number of observation types: 1
+
+Forcing perturbation algorithm:            
+Observation perturbation algorithm:        
+State perturbation algorithm:             2   
+Forcing perturbation frequency:            3600
+Observation perturbation frequency:       3600
+State perturbation frequency:             3600
+Number of forcing fields to be perturbed: 3
+
+Forcing attributes file:                      
+Forcing perturbation attributes file:         
+State attributes file:                        
+State perturbation attributes file:           
+Observation attributes file:                  
+Observation perturbation attributes file:
+
+AMSR-E Soil Moisture data directory: 
+AMSR-E and Noah CDF file directory: 
+CDF levels: 
+
+2) Store CDF and CDF levels files in the directory specified in
+lis.config.  These files need to be named noah_cdf.sqr4, amsr_cdf.sqr4,
+cdf_levs.txt respectively.  Samples of these files can be found from
+/discover/nobackup/bli/lis5.0/run/. Note these sample files are for the
+specified domain in lis.config.amsre and the number of CDF levels given
+in lis.config.amsre only.
+
+3) Run LIS.
+

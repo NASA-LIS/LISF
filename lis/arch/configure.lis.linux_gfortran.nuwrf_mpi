@@ -1,0 +1,66 @@
+# Template configure.lis for NU-WRF using Intel compilers and Intel MPI
+FC              = mpif90 -mt_mpi -f90=gfortran
+FC77            = mpif90 -mt_mpi -f77=gfortran
+LD              = mpif90 -mt_mpi
+CC              = mpicc -cc=gcc
+AR              = ar
+
+# SGI MPT doesn't recognize the -f90, -f77, or -cc flags
+ifeq ($(MPI_IMPLEMENTATION),SGI_MPT)
+FC = mpif90
+FC77 = mpif90
+CC = mpicc
+endif
+
+# Neither does OpenMPI
+ifeq ($(MPI_IMPLEMENTATION),OPENMPI)
+FC = mpif90
+FC77 = mpif90
+CC = mpicc
+endif
+
+# Build.sh will overwrite paths via sed
+MOD_ESMF        = ./
+LIB_ESMF        = ./
+INC_GRIBAPI     = ./
+LIB_GRIBAPI     = ./
+INC_NETCDF      = ./
+LIB_NETCDF      = ./
+INC_HDF4        = ./
+LIB_HDF4        = ./
+INC_HDF5        = ./
+LIB_HDF5        = ./
+INC_HDFEOS      = ./
+LIB_HDFEOS      = ./
+LIB_MINPACK     = ./
+INC_CRTM        = ./
+LIB_CRTM        = ./
+INC_PROF_UTIL   = ./
+LIB_PROF_UTIL   = ./
+LIB_ZLIB        = ./
+
+
+#EMK NUWRF...Can be overwritten by sed for debugging
+CFLAGS_OPT = -O2 -funroll-loops -ftree-vectorize -w
+CFLAGS          = -c  $(CFLAGS_OPT) -DGFORTRAN -DLINUX
+
+#FFLAGS77_OPT =  -O2 -funroll-loops -ftree-vectorize  -w
+FFLAGS77_OPT =  -O0 -w
+FFLAGS77 = -c $(FFLAGS77_OPT)  -pass-exit-codes -fconvert=big-endian \
+           -ffixed-form \
+           -DSPMD -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DLINUX -I$(MOD_ESMF) \
+	   -DUSE_INCLUDE_MPI -I$(INC_GRIBAPI)  -I$(INC_NETCDF)  \
+           -I$(INC_HDFEOS)  -I$(INC_HDF4)  -I$(INC_HDF5) 
+
+#FFLAGS_OPT =  -O2 -funroll-loops -ftree-vectorize -w
+FFLAGS_OPT =  -O0 -w
+FFLAGS = -c $(FFLAGS_OPT) -pass-exit-codes -fconvert=big-endian \
+         -ffree-form -ffree-line-length-none \
+	 -DSPMD  -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DLINUX -I$(MOD_ESMF) \
+	 -DUSE_INCLUDE_MPI -I$(INC_GRIBAPI)  -I$(INC_NETCDF) \
+	 -I$(INC_HDFEOS)  -I$(INC_HDF4)  -I$(INC_HDF5)
+
+
+#LDFLAGS         =  -L$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lmpi -L$(LIB_GRIBAPI) -lgrib_api_f90 -lgrib_api -L$(LIB_NETCDF) -lnetcdf -lnetcdff -L$(LIB_HDFEOS) -lhdfeos -lGctp -L$(LIB_HDF4) -lmfhdf -ldf -ljpeg  -L$(LIB_HDF5) -lhdf5_fortran -lhdf5
+# NUWRF build.sh will add LDFLAGS back in when compiling LIS by itself
+# Leave blank line below this line!

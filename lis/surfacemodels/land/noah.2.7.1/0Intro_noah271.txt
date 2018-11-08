@@ -1,0 +1,39 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!\section{Noah land surface model version 2.7.1}
+!This section describes the interface implementations for the Noah
+!land surface model.  The community Noah Land Surface Model is a
+!stand-alone, uncoupled, 1-D column model freely available at the
+!National Centers for Environmental Prediction (NCEP;~\cite{noah}).
+!The name is an acronym representing the various developers of the
+!model (N: NCEP; O: Oregon State University, Dept. of Atmospheric
+!Sciences; A: Air Force (both AFWA and AFRL - formerly AFGL, PL);
+!and H: Hydrologic Research Lab - NWS (now Office of Hydrologic
+!Development -- OHD)).  Noah can be executed in either coupled or
+!uncoupled mode.  It has been coupled with the operational NCEP
+!mesoscale Eta model~\cite{chen} and its companion Eta Data Assimilation
+!System (EDAS)~\cite{rogers}, and the NCEP Global Forecast System
+!(GFS) and its companion Global Data Assimilation System (GDAS).
+!When Noah is executed in uncoupled mode, near-surface atmospheric
+!forcing data (e.g., precipitation, radiation, wind speed, temperature,
+!humidity) is required as input. Noah simulates soil moisture (both
+!liquid and frozen), soil temperature, skin temperature, snowpack
+!depth, snowpack water equivalent, canopy water content, and the
+!energy flux and water flux terms of the surface energy balance and
+!surface water balance. The model applies finite-difference spatial
+!discretization methods and a Crank-Nicholson time-integration scheme
+!to numerically integrate the governing equations of the physical
+!processes of the soil vegetation-snowpack medium, including the
+!surface energy balance equation, Richards'~\cite{richards} equation
+!for soil hydraulics, the diffusion equation for soil heat transfer,
+!the energy-mass balance equation for the snowpack, and the
+!Jarvis~\cite{jarvis} equation for the conductance of canopy
+!transpiration.
+!EOP

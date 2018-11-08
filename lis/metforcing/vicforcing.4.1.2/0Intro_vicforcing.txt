@@ -1,0 +1,58 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!\section{VIC-processed Forcing}
+!This section describes the implementation of the reader for VIC-processed
+!forcing data.
+!
+!The purpose of this reader is to read forcing data that has been processed
+!by a stand-alone run of VIC.
+!
+!The VIC land surface model's forcing data processing routines are aware of
+!22 input forcing variables.  These routines process the provided 
+!input forcing variables to generate the 10 final atmospheric forcing
+!variables that drive the land surface physics.
+!
+!The logic for processing the input forcing variables is complex, and
+!depending on which input forcing variables are supplied, these routines
+!\begin{itemize}
+!\item compute final atmospheric forcing variables from the supplied
+!      input forcing variables,
+!\item derive final atmospheric forcing variables from the supplied
+!      input forcing variables and computed atmospheric forcing variables,
+!\item estimate final atmospheric forcing variables.
+!\end{itemize}
+!
+!For example the Stehekin test-case supplies four input forcing variables,
+!and the Pilps test-case supplies seven.  From these, the 10 final
+!atmospheric forcing variables are generated.  These two test-cases are
+!found at
+!http://www.hydro.washington.edu/Lettenmaier/Models/VIC/index.shtml
+!
+!Due to several technical difficulties, logic was written to read in the
+!VIC-processed final atmospheric forcing data rather than to try to process
+!the input forcing data within LIS.
+!
+!To produce the VIC-processed final atmospheric forcing data,
+!one must first run a stand-alone VIC simulation.
+!
+!\begin{enumerate}
+!\item Add the write\_bin\_atmosdata.c file to the stand-alone VIC
+!      source code.
+!\item Call the write\_bin\_atmosdata routine in vicNl after
+!      the call to initialize\_atmos.
+!\item Run stand-alone VIC.  Stand-alone VIC will then process all the
+!      raw forcing input data and produce the entries for the atmos
+!      data structure.  The write\_bin\_atmosdata routine will
+!      write these entries to disk as 4-byte values (to be consistent
+!      with LIS).
+!\item Run the forcing regridding utility.  This reads the output from the
+!      write\_bin\_atmosdata routine and grids it.
+!\end{enumerate}
+!EOP

@@ -1,0 +1,6 @@
+!BOP
+!\section{UCSB CHIRPS v2.0}
+!This section describes the implementation of the precipitation
+!product derived from the UCSB CHIRPS v2.0 satellite-gage merged
+!precipitation analysis generated at USCB. 
+!EOP

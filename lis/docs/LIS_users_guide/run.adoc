@@ -1,0 +1,51 @@
+
+== Running the Executable
+anchor:sec_run[Running the Executable]
+
+This section describes how to run the LIS executable.
+
+First you should create a directory to run LIS in.  It is suggested that you run LIS in a directory that is separate from your source code.  This running directory shall be referred to as _$RUNNING_.  Next, copy the LIS executable into your running directory.
+
+....
+% cp $WORKING/LIS $RUNNING
+....
+
+The single-process version of `LIS` is executed by the following command issued in the _$RUNNING_ directory.
+
+....
+% ./LIS
+....
+
+Note that when using the Lahey Fortran compiler, you must issue this command to run the single-process version of LIS:
+
+....
+% ./LIS -Wl,T
+....
+
+The parallel version of `LIS` must be run through an `mpirun` script or similar mechanism.  Assuming that MPI is installed correctly, the LIS simulation is carried out by the following command issued from in the _$RUNNING_ directory.
+
+....
+% mpirun -np N ./LIS
+....
+
+The `-np N` flag indicates the number of processes to use in the run, where you replace `N` with the number of processes to use.  On a multiprocessor machine, the parallel processing capbabilities of LIS can be exploited using this flag.
+
+Some systems require that you submit your job into a batch queue.  Please consult with your system adminstrator for instructions on how to do this.
+
+Note that before running LIS, you must set your environment to have an unlimited stack size.  For the Bash shell, run
+
+....
+% ulimit -s unlimited
+....
+
+To customize your run, you must modify the _lis.config_ configuration file.  See Section <<sec_lisconfigfile>> for more information.
+
+
+=== Command line arguments
+
+`LIS [-f <file> | --file <file>]`
+
+`-f <file>`, `--file <file>`:: specifies the name of the lis run-time configuration file.
++
+By default, LIS expects the run-time configuration options to be defined in a file named _lis.config_.  Use this command line argument to specify an alternate run-time configuration file.
+

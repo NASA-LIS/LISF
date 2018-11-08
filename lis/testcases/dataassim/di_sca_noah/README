@@ -1,0 +1,41 @@
+This testcase demonstrates the use of rule-based Direct Insertion (DI) 
+(Rodell and Houser, 2004) to assimilate snow cover area (SCA) observations
+using Noah land surface model. The SCA observations in this case is 
+generated using the Catchment LSM, from a separate simulation. 
+
+The testcase uses 
+  (a) a domain that spans North America 
+  (b) a time period from Jan 1 2004, hr 1 to Jan 31, 2004, hr 1. 
+
+This directory contains: 
+  (a) This README file, 
+  (b) two lis.config files: (lis.config.openloop - that can be used
+      to conduct the openloop simulations, and lis.config.assim that 
+      can be used for the assimilation run of SCA observations using 
+      rule-based DI. (These file should be 
+      edited to make sure that the locations of the parameter and 
+      forcing files are specified correctly.) 
+  (c) Sample grads control files that can be used to visualize the 
+      output. (openloop.ctl and assim.ctl)
+
+To run this test case: 
+  (a) Generate the LIS executable. 
+  (b) Download the sample input data from: 
+	http://lis.gsfc.nasa.gov/Source/testcases  
+      the testcase corresponding to SCA assimilation 
+      (Noah, Synethetic Obs, Rule-based DI) TEST
+  (c) Conduct the openloop simulation : copy lis.config.openloop to 
+      lis.config and run the LIS executable
+  (d) Coduct the assimilation simulation: copy the lis.config.assim to 
+      lis.config and run the LIS executable
+  (d) View the binary output using the sample grads files. 
+
+The inupt data includes the required parameter and forcing files. 
+In addition, the input data also includes the SCA observations, as
+well as the Control/Truth data (which is basically the output of 
+a separate simulation using the Catchment LSM). Sample grads files
+are provided along with these data that describes the spatial/temporal
+extent and the order of variables. The data download page also 
+provides some sample time series plots that demonstrates the impact of 
+assimilation on the snow fields. 
+       

@@ -1,0 +1,88 @@
+=================================
+NLDAS2-c Sac-HTET Public Testcase
+=================================
+
+Introduction
+============
+
+This is a test case that uses: 
+
+  * the NLDAS2 forcing 
+  * using the nearest neighbor interpolation
+  * RDHM 3.5.6 land surface model
+  * the NLDAS domain at 1/8th-degree and NLDAS-2 forcing
+  * a time period from Jan 1, 1995, 0z through Dec 31, 1995, 23z.
+
+This directory contains: 
+
+  * This README file, 
+  * the lis.config file used for this test case. (This file should be 
+    edited to make sure that the locations of the parameter and 
+    forcing files are specified correctly.) 
+  * A sample grads control file that can be used to visualize the 
+    output. (output.ctl)
+
+Preparation
+===========
+
+  #. Generate the LIS executable.
+
+  #. Create a directory to run LDT and LIS within (a directory outside
+     of the LIS source code).  Copy the contents of this testcase
+     sub-directory into this new running directory.  And then change
+     directories into this new running directory.
+
+  #. Go into the "input" sub-directory and make the "wget" .sh
+     scripts be executable.
+
+
+Running the NLDAS2-c testcase
+=============================
+
+
+LIS
+---
+
+  #. Go into the "input" sub-directory and do the following:
+
+     * download input parameters ::
+
+       ./wget_input_portal.sh
+
+     * download NLDAS2 meteorological forcing data ::
+
+       ./wget_gesdisc_nldas2.sh
+
+  #. Change directory back to the running directory (i.e.; ``cd ..``)
+     and run the LIS executable using the lis.config file
+
+  #. View the binary output using the testcase GrADS ctl files
+
+
+       
+Sample Output
+=============
+
+To download sample output for comparison, make sure that you are in the
+running directory.  Then execute ::
+
+   ./wget_output_portal.sh
+
+This will download and unpack the sample output into the "OUTPUT"
+directory along side the output that you generated.
+
+
+Caveats 
+========
+
+  * Please note that this is a simple functional test and the output
+    from the testcase is not expected to be used for any scientific 
+    evaluation. 
+  * Please note that you may notice that soil temperature at some grid
+    boxes (along coast lines or rivers) have abnormally high soil
+    temperature. This is due to parameter resampling. When Sac-HTET
+    parameters were resampled for use by LIS, water pixels were
+    included, which Sac-HTET cannot deal with. When an NLDAS grid
+    includes a water area, the resampled parameters are not right. This
+    causes abnormally high soil temperature output at those water pixels.
+

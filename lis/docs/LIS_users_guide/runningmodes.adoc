@@ -1,0 +1,54 @@
+
+== Computational Modes
+anchor:sec_modes[Computational Modes]
+
+The computational and resource requirements increase significantly for global modeling at high resolutions such as 5 km and 1 km. The land surface modeling component in LIS is designed to handle these requirements and perform high-performance, parallel simulation of global, regional, and local land surface processes with a number of land surface models.
+
+LIS is designed to operate in a number of high performance computational modes to meet the diverse requirements of distributed memory and shared memory platforms. In the message passing interface (MPI)-based paradigm, a master processor handles the data for the entire domain, computes the domain decomposition, and subsequently distributes the data onto the compute nodes. This paradigm is limited by the amount of memory available to the master processor. On a shared memory platform, a pool of processors can be used to make a large amount of memory available.  To handle increased memory requirements and the limited resources available on a distributed memory environment, a GrADS-DODS Server (GDS)-based running mode can be used in LIS. In this mode of operation, the compute nodes retrieve data from a GDS. This mode of operation is no longer constrained by the lack of a large pool of memory on the master processor.
+
+The LIS driver also includes the capabillity to perform regional modeling in addition to global scales. The domain information is specified by the user, and the LIS driver handles the subsetting tasks.  In the MPI-mode, the subsetting information is derived from a larger domain, whereas in the GDS-mode, the subsetting is carried out by requesting appropriate data from the GDS-server. The details of using these different options are described in the following sections.
+
+Note, _both_ parallel running modes require the Message Passing Interface libraries.  If a single-process, i.e. non-parallel, version of LIS is desired, LIS may be compiled without the MPI libraries.
+
+
+=== Single-Process-Based Running Mode
+anchor:sec_singlemode[Single-Process-Based Running Mode]
+
+LIS`' default running mode is a non-parallel running mode.  Simply follow the directions in this document to run LIS in this mode.
+
+
+=== MPI-Based Running Mode
+anchor:sec_mpimode[MPI-Based Running Mode]
+
+In order to run LIS using MPI, you must first install the MPI libraries onto your system.  Then follow the extra instructions in Section <<sec_build>> to compile in MPI support.
+
+
+=== GDS-Based Running Mode
+anchor:sec_gdsmode[GDS-Based Running Mode]
+
+In order to run LIS using the GDS-based running mode, you must first install a GDS and a DODS enabled version of GrADS.  Then you must compile the GDS-based running mode support into LIS' executable.
+
+To install a GrADS-DODS Server simply go to http://grads.iges.org/grads/gds/ and follow the on-line instructions.
+
+Once you have installed the GDS, you must install a DODS enabled version of GrADS.  Go to http://grads.iges.org/grads/grads.html and follow the downloading instructions.
+
+After you have installed both the GDS and the GrADS packages, you must edit the GDS data retrieving script, _$WORKING/LIS/opendap_scripts/getdata.pl_.  You must modify the definitions of the `$server` and `$GrADS` variables to reflect your installation.
+
+See Section <<sec_obtain-src>> for instructions on downloading the source code, and see Section <<sec_gdsbuild>> for instructions on compiling the GDS-based running mode support into LIS`' executable.
+
+Note, currently, the GDS-based running mode only supports global simulations.
+
+
+//=== Non-parallel Running Mode
+//
+//To run LIS in the non-parallel running mode, you simply remove the
+//references to the Message Passing Interface libraries and recompile
+//the source code.  See Section <<sec_build>> for details.
+
+
+=== 1 km Global Runs
+
+The 1 km global run is a special case of the GDS-based running mode.  You must first follow the steps in Section <<sec_gdsmode>> to properly configure your system.  Once configured, you must run the special 1 km scripts.
+
+The main 1 km script drives a pool-of-tasks scheme for parallelizing the computations over the global 1 km domain.  This global domain has already been divided into 1183 sub-domain patches, each containing $720 \times 300$ grid-points.  The driver script monitors the availability of each compute node of LIS`' Linux cluster, and it pushes a sub-domain patch onto each free node.  Should, for any reason, the computations on a compute node crash, the corresponding sub-domain patch is returned to the list of patches-to-complete (the "`pool`"), where it will wait until it is reassigned.
+

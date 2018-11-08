@@ -1,0 +1,62 @@
+
+//:%s/\(.*\)&\(.*\)\((.*)\)\(.*\)& (.*\) &\$/\1\& \3 \&\2\4\&\5/
+//\setlength{\extrarowheight}{4pt}
+
+ALMA Mandatory Output
+
+//\begin{tabular}{|l|l|l|l|} \hline \label{table:clm2_alma_out}
+|====
+|Number | Variable | Description                     | Units
+
+|1  | SWnet        | Net Shortwave Radiation         | W/m$^2^$
+|2  | LWnet        | Net Longwave Radiation          | W/m$^2^$
+|3  | Qle          | Latent Heat Flux                | W/m$^2^$
+|4  | Qh           | Sensible Heat Flux              | W/m$^2^$
+|5  | Qg           | Ground Heat Flux                | W/m$^2^$
+|6  | Snowf        | Snowfall rate                   | kg/m$^2^$/s
+|7  | Rainf        | Rainfall rate                   | kg/m$^2^$/s
+|8  | Evap         | Total Evapotranspiration        | kg/m$^2^$/s
+|9  | Qs           | Surface Runoff                  | kg/m$^2^$/s
+|10 | Qsb          | Subsurface Runoff               | kg/m$^2^$/s
+|11 | Qsm          | Snowmelt                        | kg/m$^2^$/s
+|12 | Qfz          | Re-freezing of water in the snow| kg/m$^2^$/s
+|13 | DelSoilMoist | Change in soil moisture         | kg/m$^2^$
+|14 | DelSWE       | Change in snow water equivalent | kg/m$^2^$
+|15 | SnowT        | Snow Temperature                | K
+|16 | VegT         | Vegetation Canopy Temperature   | K
+|17 | BaresoilT    | Temperature of bare soil        | K
+|18 | AvgSurfT     | Average Surface Temperature     | K
+|19 | RadT         | Surface Radiative Temperature   | K
+|20 | Albedo       | Surface Albedo, All Wavelengths | -
+|21 | SWE          | Snow Water Equivalent           | kg/m$^2^$
+|22 | SurfStor     | Surface Water Storage           | kg/m$^2^$
+|23 | SoilMoist    | Average layer soil moisture     | kg/m$^2^$
+|====
+
+|====
+|24 | SoilWet      | Total Soil Wetness              | -
+|25 | TVeg         | Vegetation transpiration        | kg/m$^2^$/s
+|26 | ESoil        | Bare soil evaporation           | kg/m$^2^$/s
+|27 | RootMoist    | Root zone soil moisture         | kg/m$^2^$
+|28 | ACond        | Aerodynamic conductance         | m/s
+|====
+
+
+ALMA Optional Forcing Output
+
+|====
+|Number | Variable | Description                     | Units
+
+|29 | Wind_N | Northward wind component              | m/s
+|30 | Wind_E | Eastward wind component               | m/s
+|31 | Rainf   | Rainfall rate                        | kg/m$^2^$/s
+|32 | Snowf   | Snowfall rate                        | kg/m$^2^$/s
+|33 | Tair    | Near surface air temperature         | K
+|34 | Qair    | Near surface specific humidity       | kg/kg
+|35 | PSurf   | Surface pressure                     | Pa
+|36 | SWdown  | Surface incident shortwave radiation | W/m$^2^$
+|37 | LWdown  | Surface incident longwave radiation  | W/m$^2^$
+|====
+
+//\setlength{\extrarowheight}{0pt}
+
