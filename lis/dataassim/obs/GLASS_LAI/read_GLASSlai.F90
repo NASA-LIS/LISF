@@ -187,17 +187,22 @@ subroutine read_GLASSlai(n, k, OBS_State, OBS_Pert_State)
      endif
   endif
 
-  dataCheck = .false. 
-  if(GLASSlai_struc(n)%tsmooth.eq.1) then 
-     if(GLASSlai_struc(n)%fnd.ne.0) then 
-        dataCheck = .true. 
+  dataCheck = .false.
+  if(alarmCheck) then 
+     if(GLASSlai_struc(n)%tsmooth.eq.1) then 
+        if(GLASSlai_struc(n)%fnd.ne.0) then 
+           dataCheck = .true. 
+           fnd = 1
+        endif
+     else
+        if(fnd.eq.1) then 
+           dataCheck = .true. 
+        endif
      endif
   else
-     if(fnd.eq.1) then 
-        dataCheck = .true. 
-     endif
+     fnd = 0 
+     dataCheck = .false.
   endif
-
   if(dataCheck) then 
         
         !        open(100,file='test_out.bin',form='unformatted')
