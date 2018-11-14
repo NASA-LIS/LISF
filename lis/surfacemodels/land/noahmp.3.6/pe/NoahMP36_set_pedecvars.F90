@@ -290,6 +290,8 @@ subroutine NoahMP36_setVars(n,DEC_State,mod_flag_NoahMP36)
                    NoahMP36_struc(n)%noahmp36(t)%rsmin = vardata(t) 
               if(vname.eq."HS") & 
                    NoahMP36_struc(n)%noahmp36(t)%hs = vardata(t) 
+              if(vname.eq."NROOT") &
+                   NoahMP36_struc(n)%noahmp36(t)%nroot = vardata(t) 
               if(vname.eq."CSOIL") &
                    NoahMP36_struc(n)%noahmp36(t)%csoil = vardata(t) 
               if(vname.eq."BEXP") & 
