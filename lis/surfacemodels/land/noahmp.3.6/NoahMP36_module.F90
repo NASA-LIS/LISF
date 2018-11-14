@@ -596,6 +596,7 @@ module NoahMP36_module
      real               :: rsmax
      real               :: rsmin
      real               :: hs
+     real               :: nroot
      !SY: end vegetation parameters
      !SY: begin soil parameters
      real               :: csoil

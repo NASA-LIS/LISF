@@ -107,7 +107,7 @@ contains
 
     allocate(NoahMP36_pe_struc(LIS_rc%nnest))
     n = 1
-    NoahMP36_pe_struc(n)%nparams = 61
+    NoahMP36_pe_struc(n)%nparams = 62
 
     allocate(NoahMP36_pe_struc(n)%param_name(NoahMP36_pe_struc(n)%nparams))
     allocate(NoahMP36_pe_struc(n)%param_select(NoahMP36_pe_struc(n)%nparams))
@@ -165,6 +165,7 @@ contains
           if(vname.eq."RSMAX")      then ; do t=1,NT; vardata(t) = NoahMP36_struc(n)%noahmp36(t)%rsmax          ;enddo ;endif
           if(vname.eq."RSMIN")      then ; do t=1,NT; vardata(t) = NoahMP36_struc(n)%noahmp36(t)%rsmin          ;enddo ;endif
           if(vname.eq."HS")         then ; do t=1,NT; vardata(t) = NoahMP36_struc(n)%noahmp36(t)%hs             ;enddo ;endif
+          if(vname.eq."NROOT")      then ; do t=1,NT; vardata(t) = NoahMP36_struc(n)%noahmp36(t)%nroot          ;enddo ;endif
           if(vname.eq."CSOIL")      then ; do t=1,NT; vardata(t) = NoahMP36_struc(n)%noahmp36(t)%csoil          ;enddo ;endif
           if(vname.eq."BEXP")       then ; do t=1,NT; vardata(t) = NoahMP36_struc(n)%noahmp36(t)%bexp           ;enddo ;endif
           if(vname.eq."DKSAT")      then ; do t=1,NT; vardata(t) = NoahMP36_struc(n)%noahmp36(t)%dksat          ;enddo ;endif
@@ -283,6 +284,16 @@ contains
                    endif
                 enddo
              enddo
+             if(vname.eq."NROOT") then !integer value
+
+                do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)/LIS_rc%nensem(n)
+                   do m=1,LIS_rc%nensem(n)
+                      vardata((t-1)*LIS_rc%nensem(n)+m) = &
+                           nint(vardata((t-1)*LIS_rc%nensem(n)+m))
+                   enddo
+                enddo
+                
+             endif
           endif
        enddo
     endif

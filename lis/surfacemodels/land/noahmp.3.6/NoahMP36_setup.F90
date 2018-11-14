@@ -239,6 +239,9 @@ subroutine NoahMP36_setup()
             NOAHMP36_struc(n)%noahmp36(t)%rsmax = RSMAX_DATA
             NOAHMP36_struc(n)%noahmp36(t)%rsmin = RSTBL(NOAHMP36_struc(n)%noahmp36(t)%vegetype)
             NOAHMP36_struc(n)%noahmp36(t)%hs = HSTBL(NOAHMP36_struc(n)%noahmp36(t)%vegetype)
+            NOAHMP36_struc(n)%noahmp36(t)%nroot = & 
+                 NROTBL(NOAHMP36_struc(n)%noahmp36(t)%vegetype)
+
             IF (NROTBL(NOAHMP36_struc(n)%noahmp36(t)%vegetype) .gt. &
                 NOAHMP36_struc(n)%nsoil) THEN
                WRITE (LIS_logunit,*) 'Warning: too many root layers'

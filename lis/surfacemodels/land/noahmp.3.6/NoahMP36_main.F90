@@ -237,6 +237,7 @@ subroutine NoahMP36_main(n)
     real                 :: tmp_rsmax          ! maximum stomatal resistance
     real                 :: tmp_rsmin          ! minimum Canopy Resistance [s/m]
     real                 :: tmp_hs             ! parameter used in vapor pressure deficit function 
+    real                 :: tmp_nroot
     ! SY: End PARAMETERS for prescribed VEGETATION evolution in time 
     ! SY: End corresponding to REDPRM
     ! SY: Begin corresponding to read_mp_veg_parameters
@@ -505,6 +506,7 @@ subroutine NoahMP36_main(n)
             tmp_rsmax       = NOAHMP36_struc(n)%noahmp36(t)%rsmax
             tmp_rsmin       = NOAHMP36_struc(n)%noahmp36(t)%rsmin
             tmp_hs          = NOAHMP36_struc(n)%noahmp36(t)%hs
+            tmp_nroot       = NOAHMP36_struc(n)%noahmp36(t)%nroot
             ! SY: End corresponding to REDPRM
             ! SY: Begin corresponding to read_mp_veg_parameters
             tmp_CH2OP       = NOAHMP36_struc(n)%noahmp36(t)%CH2OP
@@ -626,6 +628,7 @@ subroutine NoahMP36_main(n)
                                   tmp_rsmax             , & ! in    - maximum stomatal resistance
                                   tmp_rsmin             , & ! in    - minimum Canopy Resistance [s/m]
                                   tmp_hs                , & ! in    - parameter used in vapor pressure deficit function 
+                                  tmp_nroot             , & ! in    - 
                                   tmp_CH2OP             , & ! in    - maximum intercepted h2o per unit lai+sai [mm]
                                   tmp_DLEAF             , & ! in    - characteristic leaf dimension [m]
                                   tmp_Z0MVT             , & ! in    - momentum roughness length [m]

@@ -26,7 +26,7 @@ subroutine noahmp_driver_36(iloc, jloc, &
                             p_csoil , p_bexp  , p_dksat , p_dwsat , p_psisat,           & ! SY: in : calibratable parameters for enabling OPTUE
                             p_quartz, p_smcmax, p_smcref, p_smcwlt,                     & ! SY: in : calibratable parameters for enabling OPTUE
                             p_czil  , p_frzk  , p_refdk , p_refkdt, p_slope ,          & ! SY: in : calibratable parameters for enabling OPTUE
-                            p_topt  , p_rgl   , p_rsmax , p_rsmin , p_hs    ,          & ! SY: in : calibratable parameters for enabling OPTUE
+                            p_topt  , p_rgl   , p_rsmax , p_rsmin , p_hs, p_nroot,     & ! SY: in : calibratable parameters for enabling OPTUE
                             p_CH2OP , p_DLEAF , p_Z0MVT , p_HVT   , p_HVB   ,          & ! SY: in : calibratable parameters for enabling OPTUE
                             p_RC    , p_RHOL1 , p_RHOL2 , p_RHOS1 , p_RHOS2 ,          & ! SY: in : calibratable parameters for enabling OPTUE
                             p_TAUL1 , p_TAUL2 , p_TAUS1 , p_TAUS2 , p_XL    ,          & ! SY: in : calibratable parameters for enabling OPTUE
@@ -150,6 +150,7 @@ subroutine noahmp_driver_36(iloc, jloc, &
   real,    intent(in) :: p_rsmax                ! maximum stomatal resistance
   real,    intent(in) :: p_rsmin                ! minimum Canopy Resistance [s/m]
   real,    intent(in) :: p_hs                   ! parameter used in vapor pressure deficit function
+  real,    intent(in) :: p_nroot
   real,    intent(in) :: p_CH2OP                ! maximum intercepted h2o per unit lai+sai [mm]
   real,    intent(in) :: p_DLEAF                ! characteristic leaf dimension [m]
   real,    intent(in) :: p_Z0MVT                ! momentum roughness length [m]
@@ -467,6 +468,7 @@ subroutine noahmp_driver_36(iloc, jloc, &
   RSMAX_DATA = p_rsmax
   RSTBL(vegetype) = p_rsmin   
   HSTBL(vegetype) = p_hs  
+  NROTBL(vegetype) = p_nroot  
   ! SY: End VEGETATION PARAMETERS  
   ! SY: End lines following those in REDPRM and NoahMP36_setup
   ! SY: Begin lines following those in read_mp_veg_parameters and NoahMP36_setup
