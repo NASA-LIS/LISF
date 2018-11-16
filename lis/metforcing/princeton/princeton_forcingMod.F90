@@ -159,16 +159,16 @@ contains
 
     LIS_rc%met_nf(findex) = 9 
 
-    if (princeton_struc(1)%version == "2" .OR. princeton_struc(1)%version == "2.2") then
-       princeton_struc(:)%ncold = 360
-       princeton_struc(:)%nrold = 180
-    elseif (princeton_struc(1)%version == "3") then 
-       !Dimensions of driver data changed from versions 2.x to version 3
-       princeton_struc(:)%ncold = 1440
-       princeton_struc(:)%nrold = 600
-    endif
-
     do n=1,LIS_rc%nnest
+       !Set dataset dimensions
+       if (princeton_struc(n)%version == "2" .OR. princeton_struc(n)%version == "2.2") then
+          princeton_struc(:)%ncold = 360
+          princeton_struc(:)%nrold = 180
+       elseif (princeton_struc(n)%version == "3") then 
+          !Dimensions of driver data changed from versions 2.x to version 3
+          princeton_struc(:)%ncold = 1440
+          princeton_struc(:)%nrold = 600
+       endif
 
        ! Forecast mode:
        if(LIS_rc%forecastMode.eq.1) then
