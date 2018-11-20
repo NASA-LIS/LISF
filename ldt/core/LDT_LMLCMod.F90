@@ -23,7 +23,6 @@ module LDT_LMLCMod
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
-  use mpi
   use LDT_historyMod
   use LDT_paramDataMod
   use LDT_logMod

@@ -22,7 +22,6 @@ module CLM45_parmsMod
   use netcdf
 #endif
 
-  use mpi
   use ESMF
   use LDT_coreMod
   use LDT_historyMod

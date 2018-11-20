@@ -1127,7 +1127,6 @@ contains
   subroutine writeParamData(n, ftn)
 
 ! !USES:
-    use mpi
     use LDT_coreMod
 
     integer  :: n 
