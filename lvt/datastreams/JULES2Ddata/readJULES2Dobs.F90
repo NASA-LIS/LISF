@@ -581,7 +581,7 @@ subroutine readJULES2DObs(source)
            end where	
 	else if(c.gt.1)then
 	   ilo=ilo+1
-	   if((ANY(lonJ.gt.MAXVAL(msklo(1:ilo-1))).eq..true.))then
+	   if((ANY(lonJ.gt.MAXVAL(msklo(1:ilo-1))).eqv..true.))then
 	      JULES2Dobs(source)%lonc(ilo) = MINVAL(lonJ,mask=lonJ.gt.MAXVAL(msklo(1:ilo-1)))
 	      msklo(ilo) = JULES2Dobs(source)%lonc(ilo)
 	      where(lonJ .eq. JULES2Dobs(source)%lonc(ilo))
@@ -607,7 +607,7 @@ subroutine readJULES2DObs(source)
            end where	 
 	else if(r.gt.1)then
 	   ila=ila+1
-	   if(ANY(latJ.gt.MAXVAL(mskla(1:ila-1))).eq..true.)then
+	   if(ANY(latJ.gt.MAXVAL(mskla(1:ila-1))).eqv..true.)then
 	      JULES2Dobs(source)%latc(ila) = MINVAL(latJ,mask=latJ.gt.MAXVAL(mskla(1:ila-1)))
 	      mskla(ila) = JULES2Dobs(source)%latc(ila)
 	      where(latJ .eq. JULES2Dobs(source)%latc(ila))

@@ -1604,7 +1604,7 @@ contains
          allocate(dataEntry%unittypes(dataEntry%nunits))
          allocate(dataEntry%valid_min(dataEntry%nunits))
          allocate(dataEntry%valid_max(dataEntry%nunits))
-         dataEntry%unittypes = (/"W/m2","m/s","kg/m/s2"/)
+         dataEntry%unittypes = (/"W/m2   ","m/s    ","kg/m/s2"/)
          dataEntry%valid_min = (/-100.0,-100.0,-100.0/)
          dataEntry%valid_max = (/100.0,100.0,100.0/)
          dataEntry%ndirs = 2
