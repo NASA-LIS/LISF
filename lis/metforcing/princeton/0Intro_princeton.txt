@@ -9,7 +9,7 @@
 !BOP
 !\section{Princeton}
 !This is the 50 year forcing data (Sheffield et al., 2006) produced at Princeton 
-!University. 
+!University.
 !Versions 2 and 2.2 of the data are global at 1 degree spatial resolution, at 3 hourly 
 !intervals. 
 !Version 3 is at 0.25 degrees and is psedo-global (southern boundary at 59.875 deg S), at 

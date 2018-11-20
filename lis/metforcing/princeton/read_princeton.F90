@@ -399,16 +399,17 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
            do i = 1, LIS_rc%lnc(n)
               if(LIS_domain(n)%gindex(i,j).ne.-1) then 
                 if ((tg(i,j) .lt. 0) .and. (tg(i,j) .ne. LIS_rc%udef)) then
-                !The following error is leftover from the old version of the reader
-                !It would trigger for numerous days  in the version 3 Princeton data from ~Oct. 2014 to present.
-                !Instead of calling an endrun, I replaced the value with an undefined value. After some tests,
-                !   it seems that there was no harm to the output, other than the small areas of missing data.
-                !Revert the change if you do not want to have the missing data changed to undefined.
-                   write(LIS_logunit,*)'[WARN] No nearest neighbors, v, i, j',v,i,j,tg(i,j)
-                   write(LIS_logunit,*)'[WARN] Check output to make sure the missing neighbor'
-                   write(LIS_logunit,*)'is isolated and does not distort the output.'      
-                   !call LIS_endrun()  ! Old code to call a fatal error
-                   tg(i,j) = LIS_rc%udef ! New code to change data to undefined
+                   !For version 3, replace the value with an undefined value instead of ending the run.
+                   !For all other versions, keep old call to end the program.
+                   if(princeton_struc(n)%version == "3") then
+                      write(LIS_logunit,*)'[WARN] No nearest neighbors, v, i, j',v,i,j,tg(i,j)
+                      write(LIS_logunit,*)'[WARN] Check output to make sure the missing neighbor'
+                      write(LIS_logunit,*)'is isolated and does not distort the output.'      
+                      tg(i,j) = LIS_rc%udef ! New code to change data to undefined
+                   else
+                      write(LIS_logunit,*)'[WARN] No nearest neighbors, v, i, j',v,i,j,tg(i,j)
+                      call LIS_endrun()  ! Old code to call a fatal error
+                   endif
                 endif
                 templdas(i,j,v) = tg(i,j)
               endif
