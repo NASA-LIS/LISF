@@ -5784,7 +5784,7 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                      LVT_LIS_MOC_CANOPINT(source))%dataEntryPtr
              else
                 write(LVT_logunit,*) &
-                     '[ERR] Please enable TWS, SWE, SoilMoist, and '&
+                     '[ERR] Please enable TWS, SWE, SoilMoist, and ' // &
                      '  CanopInt in the LIS output to compute GWS'
                 call LVT_endrun()
              endif
