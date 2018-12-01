@@ -315,6 +315,7 @@ contains
        call registerMetricEntry(LVT_RELId,LVT_metrics%rel) 
        call registerMetricEntry(LVT_RESId,LVT_metrics%res) 
        call registerMetricEntry(LVT_VULId,LVT_metrics%vul) 
+       call registerMetricEntry(LVT_KMEANSId,LVT_metrics%kmeans)
 
        LVT_rc%metric_sindex = LVT_METRIC_SINDEX
        LVT_rc%metric_eindex = LVT_METRIC_EINDEX
@@ -708,14 +709,14 @@ contains
 ! metric (Assuming that we don't need more than 2 fields within a metric.
 ! each field will need to save space for 'model' and 'obs'
 !
-       allocate(stats%vid_total(LVT_NMETRICS,4))
-       allocate(stats%vid_count_total(LVT_NMETRICS,4))
-       allocate(stats%vid_stdev_total(LVT_NMETRICS,4))
-       allocate(stats%vid_count_stdev_total(LVT_NMETRICS,4))
-       allocate(stats%vid_ts(LVT_NMETRICS,4))
-       allocate(stats%vid_count_ts(LVT_NMETRICS,4))
-       allocate(stats%vid_sc_total(LVT_rc%nasc,LVT_NMETRICS,4))
-       allocate(stats%vid_adc_total(LVT_rc%nadc,LVT_NMETRICS,4))
+       allocate(stats%vid_total(LVT_NMETRICS,20))
+       allocate(stats%vid_count_total(LVT_NMETRICS,20))
+       allocate(stats%vid_stdev_total(LVT_NMETRICS,20))
+       allocate(stats%vid_count_stdev_total(LVT_NMETRICS,20))
+       allocate(stats%vid_ts(LVT_NMETRICS,20))
+       allocate(stats%vid_count_ts(LVT_NMETRICS,20))
+       allocate(stats%vid_sc_total(LVT_rc%nasc,LVT_NMETRICS,20))
+       allocate(stats%vid_adc_total(LVT_rc%nadc,LVT_NMETRICS,20))
 
        do m=LVT_rc%metric_sindex,LVT_rc%metric_eindex
           if(LVT_metricsPtr(m)%metricEntryPtr%selectOpt.gt.0) then
@@ -1806,7 +1807,7 @@ contains
 
     do while(associated(model))
        call writeSingleHeaderEntry(pass, count,&
-            model, obs, stats, model%selectNlevs)
+            model, obs, stats)
        model  => model%next
        stats => stats%next
        obs => obs%next
@@ -1820,7 +1821,7 @@ contains
 
     do while(associated(model))
        call writeSingleEntry(pass,&
-            stats,obs,model%selectNlevs)
+            model, obs, stats)
 
        model    => model%next
        obs      => obs%next
@@ -1855,7 +1856,7 @@ contains
 ! \label{writeSingleHeaderEntry}
 ! 
 ! !INTERFACE:   
-  subroutine writeSingleHeaderEntry(pass, count, model, obs, stats, vlevels)
+  subroutine writeSingleHeaderEntry(pass, count, model, obs, stats)
 ! !USES: 
     use LVT_historyMod, only  : LVT_writevar_data_header, LVT_writevar_gridded
     implicit none
@@ -1866,7 +1867,7 @@ contains
     type(LVT_metadataEntry) :: model
     type(LVT_metadataEntry) :: obs
     type(LVT_statsEntry)    :: stats
-    integer                 :: vlevels
+
 ! 
 ! !DESCRIPTION:
 !  This routine writes the header information into each statistics file. 
@@ -1899,16 +1900,17 @@ contains
                 standard_name = stats%standard_name
                 units         = stats%units
              endif
-
+             
              call LVT_writevar_data_header(&
                   LVT_metricsPtr(m)%metricEntryPtr%ftn_ts, &
                   LVT_metricsPtr(m)%metricEntryPtr%ftn_meta_out,&
-                  trim(short_name_ds1),&
-                  (standard_name),&
-                  (long_name),&
-                  (units),&
-                  stats%vid_ts(m,1), vlevels,&
+                  short_name_ds1,&
+                  standard_name,&
+                  long_name,&
+                  units,&
+                  stats%vid_ts(m,1), model%selectNlevs,&
                   LVT_metricsPtr(m)%metricEntryPtr%nLevs,count)
+             
              call LVT_writevar_data_header(&
                   LVT_metricsPtr(m)%metricEntryPtr%ftn_ts, &
                   LVT_metricsPtr(m)%metricEntryPtr%ftn_meta_out,&
@@ -1916,7 +1918,7 @@ contains
                   "COUNT_"//trim(standard_name),&
                   "Number of points of "//trim(long_name),&
                   "-", stats%vid_count_ts(m,1),&
-                  vlevels, LVT_metricsPtr(m)%metricEntryPtr%nLevs,count+1)  
+                  model%selectNlevs, LVT_metricsPtr(m)%metricEntryPtr%nLevs,count+1)  
 
              if(LVT_metricsPtr(m)%metricEntryPtr%obsdata) then 
                 call LVT_writevar_data_header(&
@@ -1926,7 +1928,7 @@ contains
                      trim(obs%standard_name),&
                      "Observations of "//trim(obs%long_name), & 
                      trim(stats%units),&
-                     stats%vid_ts(m,2), vlevels,&
+                     stats%vid_ts(m,2), model%selectNlevs,&
                      LVT_metricsPtr(m)%metricEntryPtr%nLevs,count+1)
                 call LVT_writevar_data_header(&
                      LVT_metricsPtr(m)%metricEntryPtr%ftn_ts, &
@@ -1935,7 +1937,7 @@ contains
                      "COUNT_"//trim(obs%standard_name), &
                      "Number of observation points of "//trim(obs%long_name), &
                      "-",stats%vid_count_ts(m,2),&
-                     vlevels, LVT_metricsPtr(m)%metricEntryPtr%nLevs,&
+                     model%selectNlevs, LVT_metricsPtr(m)%metricEntryPtr%nLevs,&
                      count+1)         
              endif             
           endif
@@ -2011,7 +2013,7 @@ contains
 ! \label{writeSingleEntry}
 ! 
 ! !INTERFACE:   
-  subroutine writeSingleEntry(pass, stats, obs, vlevels)
+  subroutine writeSingleEntry(pass, model,obs,stats)
 ! !USES: 
     use LVT_historyMod, only  : LVT_writevar_gridded
 
@@ -2019,8 +2021,9 @@ contains
 
 ! !ARGUMENTS: 
     integer                 :: pass
-    type(LVT_statsEntry)    :: stats
+    type(LVT_metaDataEntry) :: model
     type(LVT_metaDataEntry) :: obs
+    type(LVT_statsEntry)    :: stats
     integer                 :: vlevels
 ! 
 ! !DESCRIPTION:
@@ -2037,7 +2040,7 @@ contains
        if(LVT_metricsPtr(m)%metricEntryPtr%timeOpt.eq.1.and.&
             LVT_metricsPtr(m)%metricEntryPtr%writeTS.eq.1.and.&
             pass.eq.LVT_metricsPtr(m)%metricEntryPtr%npass) then 
-          call writemetricentry(m,pass,0,vlevels,stats,obs)
+          call writemetricentry(m,pass,0,model%selectNlevs,stats,obs)
        endif
     enddo
 
@@ -2090,7 +2093,7 @@ contains
 
     do while(associated(model))
        call writeFinalSingleHeaderEntry(pass,count,&
-            model, obs, stats, model%selectNlevs)
+            model, obs, stats)
        model  => model%next
        obs => obs%next
        stats => stats%next
@@ -2104,7 +2107,7 @@ contains
 
     do while(associated(model))
 
-       call writeFinalSingleEntry(pass,stats, obs, model%selectNlevs)
+       call writeFinalSingleEntry(pass,model, obs, stats)
 
        model  => model%next
        obs    => obs%next
@@ -2138,7 +2141,7 @@ contains
 ! \label{writeFinalSingleHeaderEntry}
 ! 
 ! !INTERFACE:   
-  subroutine writeFinalSingleHeaderEntry(pass,count, model, obs, stats, vlevels)
+  subroutine writeFinalSingleHeaderEntry(pass,count, model, obs, stats)
 ! !USES: 
 
     use LVT_historyMod, only  : LVT_writevar_data_header, LVT_writevar_gridded
@@ -2150,7 +2153,7 @@ contains
     type(LVT_metadataEntry) :: model
     type(LVT_metadataEntry) :: obs
     type(LVT_statsEntry)    :: stats
-    integer                 :: vlevels
+
 !
 ! !DESCRIPTION: 
 !  This routine writes the specified set of statistics for a 
@@ -2178,20 +2181,46 @@ contains
                            (stats%standard_name),&
                            (stats%long_name),&
                            (stats%units),&
-                           stats%vid_total(m,(i-1)*2+1), vlevels, &
+                           stats%vid_total(m,(i-1)*2+1), model%selectNlevs, &
                            LVT_metricsPtr(m)%metricEntryPtr%nLevs, &
                            count+(i-1))
                       call LVT_writevar_data_header(&
                            LVT_metricsPtr(m)%metricEntryPtr%ftn_total, &
                            LVT_metricsPtr(m)%metricEntryPtr%ftn_meta_out,&
-                           'count_'//trim(stats%short_name)//'_'//&
+                           'COUNT_'//trim(stats%short_name)//'_'//&
                            trim(LVT_metricsPtr(m)%metricEntryPtr%mName(i)), &
                            trim(stats%standard_name),&
                            trim(stats%long_name),&
                            stats%units, stats%vid_count_total(m,(i-1)*2+1),&
-                           vlevels, &
+                           model%selectNlevs, &
                            LVT_metricsPtr(m)%metricEntryPtr%nLevs,&
                            count+1+(i-1))        
+                      if(LVT_metricsPtr(m)%metricEntryPtr%obsData) then 
+                         call LVT_writevar_data_header(&
+                              LVT_metricsPtr(m)%metricEntryPtr%ftn_total, &
+                              LVT_metricsPtr(m)%metricEntryPtr%ftn_meta_out,&
+                              "OBS_"//trim(stats%short_name)//'_'//&
+                              trim(LVT_metricsPtr(m)%metricEntryPtr%mName(i)),&
+                              trim(obs%standard_name), &
+                              "Observations of "//trim(obs%long_name), &
+                              trim(stats%units),&
+                              stats%vid_total(m,(i-1)*2+2), model%selectNlevs,&
+                              LVT_metricsPtr(m)%metricEntryPtr%nLevs,&
+                              count+2+(i-1))
+                         call LVT_writevar_data_header(&
+                              LVT_metricsPtr(m)%metricEntryPtr%ftn_total, &
+                              LVT_metricsPtr(m)%metricEntryPtr%ftn_meta_out,&
+                              "COUNT_OBS_"//trim(stats%short_name)//'_'//&
+                              trim(LVT_metricsPtr(m)%metricEntryPtr%mName(i)), &
+                              "COUNT_OBS_"//trim(stats%standard_name),&
+                              "Number of observation points of "//&
+                              trim(stats%long_name),&
+                              stats%units, stats%vid_count_total(m,(i-1)*2+2),&
+                              model%selectNlevs, &
+                              LVT_metricsPtr(m)%metricEntryPtr%nLevs,&
+                              count+3+(i-1))        
+                         
+                      endif
                    enddo
                 else
                    if(LVT_metricsPtr(m)%metricEntryPtr%obsData) then 
@@ -2216,7 +2245,7 @@ contains
                         trim(standard_name), &
                         long_name, &
                         units,&
-                        stats%vid_total(m,1), vlevels, &
+                        stats%vid_total(m,1), model%selectNlevs, &
                         LVT_metricsPtr(m)%metricEntryPtr%nLevs,&
                         count)
                    kk= kk+1
@@ -2226,7 +2255,7 @@ contains
                         "COUNT_"//trim(short_name_ds1),&
                         "COUNT_"//trim(standard_name),&
                         "Number of points in "//trim(long_name),&
-                        "-",stats%vid_count_total(m,1), vlevels,&
+                        "-",stats%vid_count_total(m,1), model%selectNlevs,&
                         LVT_metricsPtr(m)%metricEntryPtr%nLevs,kk)
                    kk= kk+1
                    if(LVT_metricsPtr(m)%metricEntryPtr%stdevFlag) then 
@@ -2237,7 +2266,7 @@ contains
                            "SD_"//(standard_name),&
                            "standard deviation "//(long_name),&
                            (units),&
-                           stats%vid_stdev_total(m,1), vlevels,&
+                           stats%vid_stdev_total(m,1), model%selectNlevs,&
                            LVT_metricsPtr(m)%metricEntryPtr%nLevs,kk)
                       kk= kk+1
                       call LVT_writevar_data_header(&
@@ -2247,7 +2276,7 @@ contains
                            "COUNT_SD_"//trim(standard_name),&
                            "Number of points (SD) "//trim(long_name),&
                            "-", stats%vid_count_stdev_total(m,1),&
-                           vlevels, &
+                           model%selectNlevs, &
                            LVT_metricsPtr(m)%metricEntryPtr%nLevs,kk)         
                    endif
                    if(LVT_metricsPtr(m)%metricEntryPtr%obsdata) then 
@@ -2258,7 +2287,7 @@ contains
                            trim(short_name_ds2), &
                            trim(obs%standard_name), &
                            "Observations of "//trim(obs%long_name), &
-                           trim(stats%units),stats%vid_total(m,2), vlevels,&
+                           trim(stats%units),stats%vid_total(m,2), model%selectNlevs,&
                            LVT_metricsPtr(m)%metricEntryPtr%nLevs,kk)
                       kk= kk+1
                       call LVT_writevar_data_header(&
@@ -2267,7 +2296,7 @@ contains
                            "COUNT_"//trim(short_name_ds2),&
                            "COUNT_"//trim(obs%standard_name),&
                            "Number of observation points of "//trim(obs%long_name),&
-                           "-",stats%vid_count_total(m,2), vlevels,&
+                           "-",stats%vid_count_total(m,2), model%selectNlevs,&
                            LVT_metricsPtr(m)%metricEntryPtr%nLevs,kk)        
                    endif
                    
@@ -2284,7 +2313,7 @@ contains
                               'Seasonal cycle '//trim(long_name)//'_'//&
                               trim(LVT_rc%scname(k)),&
                               trim(stats%units),stats%vid_sc_total(k,m,1), &
-                              vlevels,&
+                              model%selectNlevs,&
                               LVT_metricsPtr(m)%metricEntryPtr%nLevs,kk)
                       enddo
                       if(LVT_metricsPtr(m)%metricEntryPtr%obsdata) then 
@@ -2300,7 +2329,7 @@ contains
                                  "DS2_"//trim(long_name)//'_'//&
                                  trim(LVT_rc%scname(k)),&
                                  "-",stats%vid_sc_total(k,m,2),&
-                                 vlevels,&
+                                 model%selectNlevs,&
                                  LVT_metricsPtr(m)%metricEntryPtr%nLevs,kk)
                          enddo
                       endif
@@ -2370,7 +2399,7 @@ contains
 ! \label{writeFinalSingleEntry}
 ! 
 ! !INTERFACE:   
-  subroutine writeFinalSingleEntry(pass,stats,obs, vlevels)
+  subroutine writeFinalSingleEntry(pass,model,obs,stats)
 ! !USES: 
     use LVT_historyMod, only  : LVT_writevar_gridded
 
@@ -2379,7 +2408,7 @@ contains
     integer             :: pass
     type(LVT_statsEntry)    :: stats
     type(LVT_metadataEntry) :: obs
-    integer             :: vlevels
+    type(LVT_metadataEntry) :: model
 !
 ! !DESCRIPTION: 
 !  This routine writes the specified set of statistics for a 
@@ -2392,7 +2421,7 @@ contains
     
     if(stats%selectOpt.eq.1) then 
        do m=LVT_rc%metric_sindex,LVT_rc%metric_eindex
-          call writemetricentry(m,pass,1,vlevels,stats,obs)
+          call writemetricentry(m,pass,1,model%selectNlevs,stats,obs)
        enddo
     endif
     

@@ -248,6 +248,9 @@ subroutine LVT_readMetricsAttributes(attribFile)
   call ESMF_ConfigFindLabel(attribConfig,"Vulnerability:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%vul,"VUL",rc)
 
+  call ESMF_ConfigFindLabel(attribConfig,"Kmeans:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%kmeans,"KMEANS",rc)
+
 end subroutine LVT_readMetricsAttributes
 
 !BOP
