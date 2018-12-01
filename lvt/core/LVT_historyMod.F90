@@ -279,6 +279,7 @@ contains
 
     if(trim(LVT_rc%lvt_out_format).eq."netcdf") then 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
+
        if(entryno.eq.1) then 
           if(allocated(LVT_histData%xlat%value)) then 
              deallocate(LVT_histData%xlat%value)

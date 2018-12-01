@@ -292,65 +292,9 @@ contains
          LVT_writeMetric_VUL, LVT_resetMetric_VUL, LVT_writerestart_VUL, &
          LVT_readrestart_VUL
 
-#if 0 
-    use LVT_ensMEANMod, only : LVT_initensMEAN, LVT_diagnoseensMEAN, &
-         LVT_computeensMEAN, LVT_writeMetric_ensMEAN, &
-         LVT_resetMetric_ensMEAN, LVT_writerestart_ensMEAN,&
-         LVT_readrestart_ensMEAN
-
-    use LVT_ensStdevMod, only : LVT_initensStdev, LVT_diagnoseensStdev, &
-         LVT_computeensStdev, LVT_writeMetric_ensStdev, &
-         LVT_resetMetric_ensStdev, LVT_writerestart_ensStdev,&
-         LVT_readrestart_ensStdev
-
-    use LVT_ensSpreadMod, only : LVT_initensSpread, LVT_diagnoseensSpread, &
-         LVT_computeensSpread, LVT_writeMetric_ensSpread, &
-         LVT_resetMetric_ensSpread, LVT_writerestart_ensSpread,&
-         LVT_readrestart_ensSpread
-
-    use LVT_ensLLMod, only : LVT_initensLL, LVT_diagnoseensLL, &
-         LVT_computeensLL, LVT_writeMetric_ensLL, &
-         LVT_resetMetric_ensLL, LVT_writerestart_ensLL, &
-         LVT_readrestart_ensLL
-
-    use LVT_ensXcorrMod, only : LVT_initensXcorr, LVT_diagnoseensXcorr, &
-         LVT_computeensXcorr, LVT_writeMetric_ensXcorr, &
-         LVT_resetMetric_ensXcorr, LVT_writerestart_ensXcorr, &
-         LVT_readrestart_ensXcorr
-
-    use LVT_ensSkillMod, only : LVT_initensSkill, LVT_diagnoseensSkill, &
-         LVT_computeensSkill, LVT_writeMetric_ensSkill, &
-         LVT_resetMetric_ensSkill, LVT_writerestart_ensSkill,&
-         LVT_readrestart_ensSkill
-
-    use LVT_ensMEMod, only : LVT_initensME, LVT_diagnoseensME, &
-         LVT_computeensME, LVT_writeMetric_ensME, &
-         LVT_resetMetric_ensME, LVT_writerestart_ensME,&
-         LVT_readrestart_ensME
-
-    use LVT_ensMeanBiasMod, only : LVT_initensMeanBias, LVT_diagnoseensMeanBias, &
-         LVT_computeensMeanBias, LVT_writeMetric_ensMeanBias, &
-         LVT_resetMetric_ensMeanBias, LVT_writerestart_ensMeanBias,&
-         LVT_readrestart_ensMeanBias
-
-    use LVT_ensPercentileMod, only : LVT_initensPercentile, LVT_diagnoseensPercentile, &
-         LVT_computeensPercentile, LVT_writeMetric_ensPercentile, &
-         LVT_resetMetric_ensPercentile, LVT_writerestart_ensPercentile,&
-         LVT_readrestart_ensPercentile
-
-    use LVT_PSDMod, only : LVT_initPSD, &
-         LVT_diagnosePSD, LVT_computePSD, &
-         LVT_writeMetric_PSD, LVT_resetMetric_PSD,&
-         LVT_writerestart_PSD, LVT_readrestart_PSD
-
-
-
-    use LVT_KStestMod, only : LVT_initKStest, &
-         LVT_diagnoseKStest, LVT_computeKStest,&
-         LVT_writeMetric_KStest, LVT_resetMetric_KStest,&
-         LVT_writerestart_KStest, LVT_readrestart_KStest
-
-#endif
+    use LVT_KMEANSMod, only : LVT_initKMEANS, LVT_diagnoseKMEANS, LVT_computeKMEANS,&
+         LVT_writeMetric_KMEANS, LVT_resetMetric_KMEANS, LVT_writerestart_KMEANS, &
+         LVT_readrestart_KMEANS
 !EOP
 
     ! EMK Start of regular metrics
@@ -806,6 +750,15 @@ contains
     call registermetricwriterestart(LVT_VULid,LVT_writerestart_VUL)
     call registermetricreadrestart(LVT_VULid,LVT_readrestart_VUL)
 
+    call registermetricinit(LVT_KMEANSid,LVT_initKMEANS)
+    call registermetricdiagnose(LVT_KMEANSid, LVT_diagnoseKMEANS)
+    call registermetriccompute(LVT_KMEANSid, LVT_computeKMEANS)
+    call registermetricwriteentry(LVT_KMEANSid,&
+         LVT_writeMetric_KMEANS)
+    call registermetricreset(LVT_KMEANSid,LVT_resetMetric_KMEANS)
+    call registermetricwriterestart(LVT_KMEANSid,LVT_writerestart_KMEANS)
+    call registermetricreadrestart(LVT_KMEANSid,LVT_readrestart_KMEANS)
+
     ! EMK End of regular metrics
 
     ! EMK Start of information content metrics
@@ -855,111 +808,6 @@ contains
 
     ! EMK End of information content metrics
 
-#if 0 
-    
-    call registermetricinit(LVT_ensMEANid,LVT_initensMEAN)
-    call registermetricdiagnose(LVT_ensMEANid, LVT_diagnoseensMEAN)
-    call registermetriccompute(LVT_ensMEANid, LVT_computeensMEAN)
-    call registermetricwriteentry(LVT_ensMEANid,&
-         LVT_writeMetric_ensMEAN)
-    call registermetricreset(LVT_ensMEANid,LVT_resetMetric_ensMEAN)
-    call registermetricwriterestart(LVT_ensMEANid,LVT_writerestart_ensMEAN)
-    call registermetricreadrestart(LVT_ensMEANid,LVT_readrestart_ensMEAN)
-
-    call registermetricinit(LVT_ensStdevid,LVT_initensStdev)
-    call registermetricdiagnose(LVT_ensStdevid, LVT_diagnoseensStdev)
-    call registermetriccompute(LVT_ensStdevid, LVT_computeensStdev)
-    call registermetricwriteentry(LVT_ensStdevid,&
-         LVT_writeMetric_ensStdev)
-    call registermetricreset(LVT_ensStdevid,LVT_resetMetric_ensStdev)
-    call registermetricwriterestart(LVT_ensStdevid,LVT_writerestart_ensStdev)
-    call registermetricreadrestart(LVT_ensStdevid,LVT_readrestart_ensStdev)
-
-    call registermetricinit(LVT_ensSpreadid,LVT_initensSpread)
-    call registermetricdiagnose(LVT_ensSpreadid, LVT_diagnoseensSpread)
-    call registermetriccompute(LVT_ensSpreadid, LVT_computeensSpread)
-    call registermetricwriteentry(LVT_ensSpreadid,&
-         LVT_writeMetric_ensSpread)
-    call registermetricreset(LVT_ensSpreadid,LVT_resetMetric_ensSpread)
-    call registermetricwriterestart(LVT_ensSpreadid,LVT_writerestart_ensSpread)
-    call registermetricreadrestart(LVT_ensSpreadid,LVT_readrestart_ensSpread)
-
-    call registermetricinit(LVT_ensLLid,LVT_initensLL)
-    call registermetricdiagnose(LVT_ensLLid, LVT_diagnoseensLL)
-    call registermetriccompute(LVT_ensLLid, LVT_computeensLL)
-    call registermetricwriteentry(LVT_ensLLid,&
-         LVT_writeMetric_ensLL)
-    call registermetricreset(LVT_ensLLid,LVT_resetMetric_ensLL)
-    call registermetricwriterestart(LVT_ensLLid,LVT_writerestart_ensLL)
-    call registermetricreadrestart(LVT_ensLLid,LVT_readrestart_ensLL)
-
-    call registermetricinit(LVT_ensXcorrid,LVT_initensXcorr)
-    call registermetricdiagnose(LVT_ensXcorrid, LVT_diagnoseensXcorr)
-    call registermetriccompute(LVT_ensXcorrid, LVT_computeensXcorr)
-    call registermetricwriteentry(LVT_ensXcorrid,&
-         LVT_writeMetric_ensXcorr)
-    call registermetricreset(LVT_ensXcorrid,LVT_resetMetric_ensXcorr)
-    call registermetricwriterestart(LVT_ensXcorrid,LVT_writerestart_ensXcorr)
-    call registermetricreadrestart(LVT_ensXcorrid,LVT_readrestart_ensXcorr)
-
-    call registermetricinit(LVT_ensSkillid,LVT_initensSkill)
-    call registermetricdiagnose(LVT_ensSkillid, LVT_diagnoseensSkill)
-    call registermetriccompute(LVT_ensSkillid, LVT_computeensSkill)
-    call registermetricwriteentry(LVT_ensSkillid,&
-         LVT_writeMetric_ensSkill)
-    call registermetricreset(LVT_ensSkillid,LVT_resetMetric_ensSkill)
-    call registermetricwriterestart(LVT_ensSkillid,LVT_writerestart_ensSkill)
-    call registermetricreadrestart(LVT_ensSkillid,LVT_readrestart_ensSkill)
-
-    call registermetricinit(LVT_ensMEid,LVT_initensME)
-    call registermetricdiagnose(LVT_ensMEid, LVT_diagnoseensME)
-    call registermetriccompute(LVT_ensMEid, LVT_computeensME)
-    call registermetricwriteentry(LVT_ensMEid,&
-         LVT_writeMetric_ensME)
-    call registermetricreset(LVT_ensMEid,LVT_resetMetric_ensME)
-    call registermetricwriterestart(LVT_ensMEid,LVT_writerestart_ensME)
-    call registermetricreadrestart(LVT_ensMEid,LVT_readrestart_ensME)
-
-    call registermetricinit(LVT_ensMeanBiasid,LVT_initensMeanBias)
-    call registermetricdiagnose(LVT_ensMeanBiasid, LVT_diagnoseensMeanBias)
-    call registermetriccompute(LVT_ensMeanBiasid, LVT_computeensMeanBias)
-    call registermetricwriteentry(LVT_ensMeanBiasid,&
-         LVT_writeMetric_ensMeanBias)
-    call registermetricreset(LVT_ensMeanBiasid,LVT_resetMetric_ensMeanBias)
-    call registermetricwriterestart(LVT_ensMeanBiasid,LVT_writerestart_ensMeanBias)
-    call registermetricreadrestart(LVT_ensMeanBiasid,LVT_readrestart_ensMeanBias)
-
-    call registermetricinit(LVT_ensPercentileid,LVT_initensPercentile)
-    call registermetricdiagnose(LVT_ensPercentileid, LVT_diagnoseensPercentile)
-    call registermetriccompute(LVT_ensPercentileid, LVT_computeensPercentile)
-    call registermetricwriteentry(LVT_ensPercentileid,&
-         LVT_writeMetric_ensPercentile)
-    call registermetricreset(LVT_ensPercentileid,LVT_resetMetric_ensPercentile)
-    call registermetricwriterestart(LVT_ensPercentileid,LVT_writerestart_ensPercentile)
-    call registermetricreadrestart(LVT_ensPercentileid,LVT_readrestart_ensPercentile)
-
-
-    call registermetricinit(LVT_psdid,LVT_initPSD)
-    call registermetricdiagnose(LVT_psdid, LVT_diagnosePSD)
-    call registermetriccompute(LVT_psdid, LVT_computePSD)
-    call registermetricwriteentry(LVT_psdid,&
-         LVT_writeMetric_PSD)
-    call registermetricreset(LVT_psdid,LVT_resetMetric_PSD)
-    call registermetricwriterestart(LVT_psdid,LVT_writerestart_PSD)
-    call registermetricreadrestart(LVT_psdid,LVT_readrestart_PSD)
-
-
-    call registermetricinit(LVT_KStestid,LVT_initKStest)
-    call registermetricdiagnose(LVT_KStestid, LVT_diagnoseKStest)
-    call registermetriccompute(LVT_KStestid, LVT_computeKStest)
-    call registermetricwriteentry(LVT_KStestid,&
-         LVT_writeMetric_KStest)
-    call registermetricreset(LVT_KStestid,LVT_resetMetric_KStest)
-    call registermetricwriterestart(LVT_KStestid,LVT_writerestart_KStest)
-    call registermetricreadrestart(LVT_KStestid,LVT_readrestart_KStest)
-
-
-#endif
 
   end subroutine LVT_metric_plugin
 end module LVT_metric_pluginMod

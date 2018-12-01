@@ -93,7 +93,8 @@ module LVT_pluginIndices
   integer, public,  parameter :: LVT_RELid          = 48
   integer, public,  parameter :: LVT_RESid          = 49
   integer, public,  parameter :: LVT_VULid          = 50
-  integer, public,  parameter :: LVT_METRIC_EINDEX   = 50
+  integer, public,  parameter :: LVT_KMEANSid          = 51
+  integer, public,  parameter :: LVT_METRIC_EINDEX   = 51
 
 
 !  integer, public,  parameter :: LVT_KStestid      = 34
@@ -101,16 +102,16 @@ module LVT_pluginIndices
 
 !Information content metrics
 !EMK...These are always registered, so they must have unique values
-  integer, public,  parameter :: LVT_ICMETRIC_SINDEX = 51
-  integer, public,  parameter :: LVT_mentropyid      = 51
-  integer, public,  parameter :: LVT_igainid         = 52
-  integer, public,  parameter :: LVT_fcomplexityid   = 53
-  integer, public,  parameter :: LVT_ecomplexityid   = 54
-  integer, public,  parameter :: LVT_ICMETRIC_EINDEX = 54
+  integer, public,  parameter :: LVT_ICMETRIC_SINDEX = 52
+  integer, public,  parameter :: LVT_mentropyid      = 52
+  integer, public,  parameter :: LVT_igainid         = 53
+  integer, public,  parameter :: LVT_fcomplexityid   = 54
+  integer, public,  parameter :: LVT_ecomplexityid   = 55
+  integer, public,  parameter :: LVT_ICMETRIC_EINDEX = 55
 
 !ensemble metrics
 !EMK...These are currently disabled
-  integer, public,  parameter :: LVT_ENSMETRIC_SINDEX = 55
+  integer, public,  parameter :: LVT_ENSMETRIC_SINDEX = 56
 !  integer, public,  parameter :: LVT_EnsMEANid        = 41
 !  integer, public,  parameter :: LVT_EnsStdevid       = 42
 !  integer, public,  parameter :: LVT_EnsSpreadid      = 43
@@ -120,9 +121,9 @@ module LVT_pluginIndices
 !  integer, public,  parameter :: LVT_EnsMEid          = 47
 !  integer, public,  parameter :: LVT_EnsMeanBiasid    = 48
 !  integer, public,  parameter :: LVT_EnsPercentileid  = 49
-  integer, public,  parameter :: LVT_ENSMETRIC_EINDEX = 55
+  integer, public,  parameter :: LVT_ENSMETRIC_EINDEX = 56
 
-  integer, public,  parameter :: LVT_NMETRICS        = 55
+  integer, public,  parameter :: LVT_NMETRICS        = 56
 
 !-------------------------------------------------------------------------
 ! Run modes

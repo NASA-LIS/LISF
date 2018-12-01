@@ -197,6 +197,48 @@ module LVT_statsDataMod
      integer, allocatable :: count_obs_value_adc(:,:,:)     
   end type mean_metric_spec
 
+  type kmeans_metric_spec
+     real,    allocatable :: model_value_total(:,:,:)     
+     integer, allocatable :: count_model_value_total(:,:,:)
+     
+     real,    allocatable :: obs_value_total(:,:,:)     
+     integer, allocatable :: count_obs_value_total(:,:,:)
+
+     real,    allocatable :: model_value_total_sxsx(:,:,:)
+     real,    allocatable :: obs_value_total_sxsx(:,:,:)
+
+     real,    allocatable  :: model_stdev_total(:,:,:)
+     real,    allocatable  :: obs_stdev_total(:,:,:)
+
+!     real,    allocatable :: model_value_ts(:,:,:)        
+!     integer, allocatable :: count_model_value_ts(:,:,:)
+!     real,    allocatable :: tavg_model_value_ts(:,:,:)        
+!     integer, allocatable :: tavg_count_model_value_ts(:,:,:)   
+
+!     real,    allocatable :: obs_value_ts(:,:,:)        
+!     integer, allocatable :: count_obs_value_ts(:,:,:)
+!     real,    allocatable :: tavg_obs_value_ts(:,:,:)        
+!     integer, allocatable :: tavg_count_obs_value_ts(:,:,:)
+     
+!     real,    allocatable :: model_bincounts(:,:,:)
+!     real,    allocatable :: obs_bincounts(:,:,:)
+
+     integer, allocatable :: model_mean_cluster(:,:,:)
+     integer, allocatable :: obs_mean_cluster(:,:,:)
+
+     integer, allocatable :: model_stdev_cluster(:,:,:)
+     integer, allocatable :: obs_stdev_cluster(:,:,:)
+
+     real,    allocatable  :: model_mean_cluster_se(:,:,:)
+     real,    allocatable  :: model_stdev_cluster_se(:,:,:)
+     real,    allocatable  :: obs_mean_cluster_se(:,:,:)
+     real,    allocatable  :: obs_stdev_cluster_se(:,:,:)
+
+!     real,    allocatable :: model_value_ci(:,:)
+!     real,    allocatable :: obs_value_ci(:,:)     
+
+  end type kmeans_metric_spec
+
   type tendency_metric_spec
      real,    allocatable :: model_value_total(:,:,:)     
      integer, allocatable :: count_model_value_total(:,:,:)
@@ -1027,6 +1069,7 @@ module LVT_statsDataMod
      type(rel_metric_spec)        , allocatable    :: rel(:)
      type(res_metric_spec)        , allocatable    :: res(:)
      type(vul_metric_spec)        , allocatable    :: vul(:)
+     type(kmeans_metric_spec)     , allocatable :: kmeans(:)
 
      integer          :: selectOpt    
      integer          :: computeVar
@@ -1359,7 +1402,8 @@ module LVT_statsDataMod
      type(LVT_metricEntry)   :: rel
      type(LVT_metricEntry)   :: res
      type(LVT_metricEntry)   :: vul
-
+     
+     type(LVT_metricEntry)   :: kmeans
   end type metrics_struc
 
   type(metrics_struc) , save :: LVT_metrics
