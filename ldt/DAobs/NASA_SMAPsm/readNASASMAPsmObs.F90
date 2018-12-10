@@ -160,7 +160,7 @@ subroutine read_NASASMAP_data(n, fname, smobs_ip)
 
   dims(1) = NASASMAPsmobs(n)%nc
   dims(2) = NASASMAPsmobs(n)%nr
- 
+
 !  if(NASASMAPsmobs(n)%data_designation.eq."SPL3SMP_E") then 
 
 ! MN: The structure of the data in the SPL3SMP R14  onward 
@@ -222,7 +222,7 @@ subroutine read_NASASMAP_data(n, fname, smobs_ip)
      
      call h5dread_f(sm_field_id_A, H5T_NATIVE_REAL,sm_field_A,dims,status, &
           memspace, dataspace)
-     call LDT_verify(status, 'Error extracting SM (AM) field from NASASMAPfile')
+     call LDT_verify(status, 'Error extracting SM (PM) field from NASASMAPfile')
 
 
      call h5dclose_f(sm_field_id_D,status)
