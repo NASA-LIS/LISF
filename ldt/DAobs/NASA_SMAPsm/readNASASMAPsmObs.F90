@@ -134,7 +134,7 @@ subroutine read_NASASMAP_data(n, fname, smobs_ip)
   integer(hid_t)                 :: dataspace
   integer                        :: memrank = 2
   integer(hsize_t), dimension(2) :: offset_mem = (/0,0/)
-  integer(hsize_t), dimension(2) :: offset_file
+  integer(hsize_t), dimension(2) :: offset_file = (/0,0/)
   integer(hid_t)                 :: file_id, sm_gr_id,sm_field_id
   integer(hid_t)                 :: sm_gr_id_D,sm_field_id_D
   integer(hid_t)                 :: sm_gr_id_A,sm_field_id_A
