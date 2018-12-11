@@ -50,7 +50,7 @@ This is the INPUT tar file. It contains all the data needed to run LIS.
 +
 This is the OUTPUT tar file. It contains all the output from the LIS run.
 
-Files 1. though 8. are kept with the LIS source code. See testcases/metforcing/nam242. Files 9., 10., and 11. are stored on our web server.
+Files 1. though 8. are kept with the LIS source code. See testcases/metforcing/nam242. Files 9., 10., and 11. are stored on our data portal server.
 
 Creating a testcase is done in four steps.
 
