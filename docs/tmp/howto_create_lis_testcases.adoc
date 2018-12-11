@@ -13,33 +13,43 @@ I will use the testcase for the NAM 242 forcing reader as an example. The goal o
 . README
 +
 The README file provides a description of the testcase including a high-level description of the configuration and instructions on how to run the testcase.
+
 . ldt.config
 +
 The ldt.config file is the configuration file used to run LDT to produce the input parameter file for LIS (e.g.: lis_input.d01.nc).
+
 . param_attribs.txt
 +
 The param_attribs.txt file used by the ldt.config configuration file is also used to run LDT to produce the input parameter file for LIS (e.g.: lis_input.d01.nc).
+
 . input.ctl
 +
 The input.ctl file is a GrADS descriptor file used to display the input paramter file (e.g.: lis_input.d01.nc).
+
 . lis.config
 +
 The lis.config file is the configuration file used to run LIS.
+
 . MODEL_OUTPUT_LIST.TBL
 +
 The MODEL_OUTPUT_LIST.TBL file used by the lis.config file is also used to run LIS.
+
 . output.ctl
 +
 The output.ctl file is a GrADS descriptor file used to display the output from the LIS run.
+
 . testcase.ctl
 +
 The testcase.ctl file is a GrADS descriptor file used to display the packaged output from the OUTPUT tar file (e.g.: nam242forcingtest_output_v7.tar.gz).
+
 . nam242forcingtest_ldt_v7.tar.gz
 +
 This is the LDT tar file. It contains all the data needed to run LDT to produce the input parameter file for LIS (e.g.: lis_input.d01.nc).
+
 . nam242forcingtest_input_v7.tar.gz
 +
 This is the INPUT tar file. It contains all the data needed to run LIS.
+
 . nam242forcingtest_output_v7.tar.gz
 +
 This is the OUTPUT tar file. It contains all the output from the LIS run.
