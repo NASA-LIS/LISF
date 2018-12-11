@@ -50,7 +50,7 @@ This is the INPUT tar file. It contains all the data needed to run LIS.
 +
 This is the OUTPUT tar file. It contains all the output from the LIS run.
 
-Files 1. though 8. are kept with the LIS source code. See testcases/suppforcing/nam242. Files 9., 10., and 11. are stored on our web server.
+Files 1. though 8. are kept with the LIS source code. See testcases/metforcing/nam242. Files 9., 10., and 11. are stored on our web server.
 
 Creating a testcase is done in four steps.
 
@@ -63,7 +63,7 @@ Step 3) focuses on the INPUT tar file (e.g.: nam242forcingtest_input_v72.tar.gz)
 Step 4) focuses on the lis.config file, MODEL_OUTPUT_LIST.TBL file, output.ctl file, testcase.ctl file, and the OUTPUT tar file (e.g.: nam242forcingtest_output_v72.tar.gz).
 
 == Step 1
-. Write the README file. Please see the README file in testcases/suppforcing/nam242 for an example. This file should be saved in the LIS source code in the appropriate testcases sub-directory.
+. Write the README file. Please see the README file in testcases/metforcing/nam242 for an example. This file should be saved in the LIS source code in the appropriate testcases sub-directory.
 
 == Step 2
 . Create a clean working directory.
