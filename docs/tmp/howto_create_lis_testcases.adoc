@@ -6,7 +6,7 @@
 
 == Introduction
 
-This document describes how to create a testcase for LIS 7. Note that these instructions will produce a testcase that is similar to its LIS 6 counterpart.
+This document describes how to create a functional or acceptance testcase for LIS 7.
 
 I will use the testcase for the NAM 242 forcing reader as an example. The goal of this document is to guide the reader into creating the following files:
 
