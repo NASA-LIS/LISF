@@ -18,10 +18,6 @@ The README file provides a description of the testcase including a high-level de
 +
 The ldt.config file is the configuration file used to run LDT to produce the input parameter file for LIS (e.g.: lis_input.d01.nc).
 
-. param_attribs.txt
-+
-The param_attribs.txt file used by the ldt.config configuration file is also used to run LDT to produce the input parameter file for LIS (e.g.: lis_input.d01.nc).
-
 . input.ctl
 +
 The input.ctl file is a GrADS descriptor file used to display the input paramter file (e.g.: lis_input.d01.nc).
@@ -60,7 +56,7 @@ Creating a testcase is done in four steps.
 
 Step 1) focuses on the README file.
 
-Step 2) focuses on the ldt.config file, param_attribs.txt file, input.ctl file, and the LDT tar file (e.g.: nam242forcingtest_ldt_v7.tar.gz).
+Step 2) focuses on the ldt.config file, input.ctl file, and the LDT tar file (e.g.: nam242forcingtest_ldt_v7.tar.gz).
 
 Step 3) focuses on the INPUT tar file (e.g.: nam242forcingtest_input_v7.tar.gz).
 
@@ -72,7 +68,7 @@ Step 4) focuses on the lis.config file, MODEL_OUTPUT_LIST.TBL file, output.ctl f
 == Step 2
 . Create a clean working directory.
 
-. Create the ldt.config file and param_attribs.txt file as appropriate for your testcase. Copies should be saved in the LIS source code in the appropriate testcases sub-directory.
+. Create the ldt.config file as appropriate for your testcase. Copies should be saved in the LIS source code in the appropriate testcases sub-directory.
 +
 Create an input directory and place all necessary input files into it.
 +
