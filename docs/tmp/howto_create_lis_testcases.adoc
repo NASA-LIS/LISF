@@ -146,38 +146,21 @@ This provides the user with all the files and data needed to run LIS.
 
 . Create an output.ctl GrADS descriptor file for viewing the output data. A copy should be saved in the LIS source code in the appropriate testcases sub-directory.
 
-. Copy the lislog.00* files into the OUTPUT directory.
+. Rename the OUTPUT directory to TARGET_OUTPUT.
+
+. Move the lislog.00* files into the TARGET_OUTPUT directory.
 +
 ....
-% ls OUTPUT
+% ls TARGET_OUTPUT
 lislog.0000  SURFACEMODEL  SURFACEMODEL.d01.stats
 ....
 
-. Create a testcase sub-directory within the OUTPUT directory.
-+
-....
-% ls OUTPUT
-lislog.0000  SURFACEMODEL  SURFACEMODEL.d01.stats testcase
-....
-
-. Move the lislog.00* files, SURFACEMODEL.d01.stats file, and SURFACEMODEL sub-directory into the testcase sub-directory.
-+
-....
-% ls OUTPUT
-testcase
-....
-+
-....
-% ls OUTPUT/testcase
-lislog.0000  SURFACEMODEL  SURFACEMODEL.d01.stats
-....
-
-. Create a testcase.ctl GrADS descriptor file for viewing the output data in the OUTPUT/testcase sub-directory. A copy should be saved in the LIS source code in the appropriate testcases sub-directory.
+. Create a testcase.ctl GrADS descriptor file for viewing the output data in the TARGET_OUTPUT directory. A copy should be saved in the LIS source code in the appropriate testcases sub-directory.
 
 . Create the OUTPUT tar file.
 +
 ....
-% tar cf nam242forcingtest_output_v72.tar OUTPUT
+% tar cf nam242forcingtest_output_v72.tar TARGET_OUTPUT
 % gzip nam242forcingtest_output_v72.tar
 ....
 +
