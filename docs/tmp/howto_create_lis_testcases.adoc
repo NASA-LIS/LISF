@@ -16,7 +16,7 @@ The README file provides a description of the testcase including a high-level de
 
 . ldt.config
 +
-The ldt.config file is the configuration file used to run LDT to produce the input parameter file for LIS (e.g.: lis_input.d01.nc).
+The ldt.config file is the configuration file used to run LDT to produce the input domain and parameter file for LIS (e.g.: lis_input.d01.nc).
 
 . input.ctl
 +
@@ -40,7 +40,7 @@ The testcase.ctl file is a GrADS descriptor file used to display the packaged ou
 
 . nam242forcingtest_ldt_v72.tar.gz
 +
-This is the LDT tar file. It contains all the data needed to run LDT to produce the input parameter file for LIS (e.g.: lis_input.d01.nc).
+This is the LDT tar file. It contains all the data needed to run LDT to produce the input domain and parameter file for LIS (e.g.: lis_input.d01.nc).
 
 . nam242forcingtest_input_v72.tar.gz
 +
@@ -80,11 +80,11 @@ input/LS_PARAMETERS/UMD/25KM/elev_GTOPO30.1gd4r
 input/LS_PARAMETERS/metforcing_parms/NAM/terrain.242.grb
 ....
 
-. Run LDT to produce the input parameter file for LIS (e.g.: lis_input.d01.nc).
+. Run LDT to produce the input domain and parameter file for LIS (e.g.: lis_input.d01.nc).
 
 . Create an input.ctl GrADS descriptor file for viewing the input paramter file. A copy should be saved in the LIS source code in the appropriate testcases sub-directory.
 
-. Rename the log file from the LDT run to ldtlog_testcase.0000. Copy the input parameter file to lis_input_testcase.d01.nc.
+. Rename the log file from the LDT run to ldtlog_testcase.0000. Copy the input domain and parameter file to lis_input_testcase.d01.nc.
 
 . Create the LDT tar file.
 +
@@ -100,7 +100,7 @@ This provides the user with all the files and data needed to rerun the LDT prepr
 == Step 3
 . Create a clean working directory.
 
-. Copy the input parameter file (e.g.: lis_input.d01.nc) from Step 2.
+. Copy the input domain and parameter file (e.g.: lis_input.d01.nc) from Step 2.
 
 . Create an input directory and place all necessary input files into it, including any parameter files that are _not_ processed by LDT. Note that you must create an input/forcing_variables.txt file that specifies which forcing variables are needed by LIS for this testcase.
 +
