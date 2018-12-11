@@ -36,17 +36,17 @@ The output.ctl file is a GrADS descriptor file used to display the output from t
 
 . testcase.ctl
 +
-The testcase.ctl file is a GrADS descriptor file used to display the packaged output from the OUTPUT tar file (e.g.: nam242forcingtest_output_v7.tar.gz).
+The testcase.ctl file is a GrADS descriptor file used to display the packaged output from the OUTPUT tar file (e.g.: nam242forcingtest_output_v72.tar.gz).
 
-. nam242forcingtest_ldt_v7.tar.gz
+. nam242forcingtest_ldt_v72.tar.gz
 +
 This is the LDT tar file. It contains all the data needed to run LDT to produce the input parameter file for LIS (e.g.: lis_input.d01.nc).
 
-. nam242forcingtest_input_v7.tar.gz
+. nam242forcingtest_input_v72.tar.gz
 +
 This is the INPUT tar file. It contains all the data needed to run LIS.
 
-. nam242forcingtest_output_v7.tar.gz
+. nam242forcingtest_output_v72.tar.gz
 +
 This is the OUTPUT tar file. It contains all the output from the LIS run.
 
@@ -56,11 +56,11 @@ Creating a testcase is done in four steps.
 
 Step 1) focuses on the README file.
 
-Step 2) focuses on the ldt.config file, input.ctl file, and the LDT tar file (e.g.: nam242forcingtest_ldt_v7.tar.gz).
+Step 2) focuses on the ldt.config file, input.ctl file, and the LDT tar file (e.g.: nam242forcingtest_ldt_v72.tar.gz).
 
-Step 3) focuses on the INPUT tar file (e.g.: nam242forcingtest_input_v7.tar.gz).
+Step 3) focuses on the INPUT tar file (e.g.: nam242forcingtest_input_v72.tar.gz).
 
-Step 4) focuses on the lis.config file, MODEL_OUTPUT_LIST.TBL file, output.ctl file, testcase.ctl file, and the OUTPUT tar file (e.g.: nam242forcingtest_output_v7.tar.gz).
+Step 4) focuses on the lis.config file, MODEL_OUTPUT_LIST.TBL file, output.ctl file, testcase.ctl file, and the OUTPUT tar file (e.g.: nam242forcingtest_output_v72.tar.gz).
 
 == Step 1
 . Write the README file. Please see the README file in testcases/suppforcing/nam242 for an example. This file should be saved in the LIS source code in the appropriate testcases sub-directory.
@@ -89,10 +89,10 @@ input/LS_PARAMETERS/metforcing_parms/NAM/terrain.242.grb
 . Create the LDT tar file.
 +
 ....
-% tar cf nam242forcingtest_ldt_v7.tar ldtlog_testcase.0000 \
-                                      lis_input_testcase.d01.nc \
-                                      input
-% gzip nam242forcingtest_ldt_v7.tar
+% tar cf nam242forcingtest_ldt_v72.tar ldtlog_testcase.0000 \
+                                       lis_input_testcase.d01.nc \
+                                       input
+% gzip nam242forcingtest_ldt_v72.tar
 ....
 +
 This provides the user with all the files and data needed to rerun the LDT preprocessing step.
@@ -123,9 +123,9 @@ input/MET_FORCING/NAM242/20120903/18/fh.0012_tl.press_gr.awp242
 . Create the INPUT tar file.
 +
 ....
-% tar cf nam242forcingtest_input_v7.tar lis_input.d01.nc \
-                                        input
-% gzip nam242forcingtest_input_v7.tar
+% tar cf nam242forcingtest_input_v72.tar lis_input.d01.nc \
+                                         input
+% gzip nam242forcingtest_input_v72.tar
 ....
 +
 This provides the user with all the files and data needed to run LIS.
@@ -136,10 +136,10 @@ This provides the user with all the files and data needed to run LIS.
 
 . Create the lis.config file and MODEL_OUTPUT_LIST.TBL file as appropriate for your testcase. Copies should be saved in the LIS source code in the appropriate testcases sub-directory.
 
-. Copy and unpack the nam242forcingtest_input_v7.tar.gz file from Step 3.
+. Copy and unpack the nam242forcingtest_input_v72.tar.gz file from Step 3.
 +
 ....
-% gzip -dc nam242forcingtest_input_v7.tar.gz | tar xf -
+% gzip -dc nam242forcingtest_input_v72.tar.gz | tar xf -
 ....
 
 . Run LIS to produce the output data.
@@ -177,8 +177,8 @@ lislog.0000  SURFACEMODEL  SURFACEMODEL.d01.stats
 . Create the OUTPUT tar file.
 +
 ....
-% tar cf nam242forcingtest_output_v7.tar OUTPUT
-% gzip nam242forcingtest_output_v7.tar
+% tar cf nam242forcingtest_output_v72.tar OUTPUT
+% gzip nam242forcingtest_output_v72.tar
 ....
 +
 This provides the user with all the files and data needed to compare the LIS testcase.
