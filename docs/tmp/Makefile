@@ -1,16 +1,16 @@
 .DEFAULT_GOAL := html
 
 RM := rm -f
-make-clean := $(RM) howto-create-testcases.pptx howto-create-testcases.pdf howto-create-testcases.html
+make-clean := $(RM) howto_create_lis_testcases.pptx howto_create_lis_testcases.pdf howto_create_lis_testcases.html
 
 .PHONY: slides
-slides: howto-create-testcases.pptx
+slides: howto_create_lis_testcases.pptx
 
 .PHONY: pdf
-pdf: howto-create-testcases.pdf
+pdf: howto_create_lis_testcases.pdf
 
 .PHONY: html
-html: howto-create-testcases.html
+html: howto_create_lis_testcases.html
 
 .PHONY: all
 all: html pdf slides
@@ -43,12 +43,12 @@ help:
 	@echo "   $(make-clean)"
 	@echo ""
 	@echo "html"
-	@echo "   generate html version of howto-create-testcases.adoc"
+	@echo "   generate html version of howto_create_lis_testcases.adoc"
 	@echo "   DEFAULT target"
 	@echo ""
 	@echo "pdf"
-	@echo "   generate pdf version of howto-create-testcases.adoc"
+	@echo "   generate pdf version of howto_create_lis_testcases.adoc"
 	@echo ""
 	@echo "slides"
-	@echo "   generate pptx version of howto-create-testcases.adoc"
+	@echo "   generate pptx version of howto_create_lis_testcases.adoc"
 	@echo ""
