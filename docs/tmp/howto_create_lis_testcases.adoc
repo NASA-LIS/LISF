@@ -62,13 +62,19 @@ Step 3) focuses on the INPUT tar file (e.g.: nam242forcingtest_input_v72.tar.gz)
 
 Step 4) focuses on the lis.config file, MODEL_OUTPUT_LIST.TBL file, output.ctl file, testcase.ctl file, and the OUTPUT tar file (e.g.: nam242forcingtest_output_v72.tar.gz).
 
+[NOTE]
+====
+These tests are run on systems other than discover, so the files that you create must be self-contained.  For example, the config files should *not* refer to /discover/nobackup/... .  Please use files and results generated in previous steps (see, for example, Step 4.3), to verify that your testcase is both complete and self-contained.
+====
+
+
 == Step 1
 . Write the README file. Please see the README file in testcases/metforcing/nam242 for an example. This file should be saved in the LIS source code in the appropriate testcases sub-directory.
 
 == Step 2
 . Create a clean working directory.
 
-. Create the ldt.config file as appropriate for your testcase. Copies should be saved in the LIS source code in the appropriate testcases sub-directory.
+. Create the ldt.config file as appropriate for your testcase. A copy should be saved in the LIS source code in the appropriate testcases sub-directory.
 +
 Create an input directory and place all necessary input files into it.
 +
@@ -102,7 +108,7 @@ This provides the user with all the files and data needed to rerun the LDT prepr
 
 . Copy the input domain and parameter file (e.g.: lis_input.d01.nc) from Step 2.
 
-. Create an input directory and place all necessary input files into it, including any parameter files that are _not_ processed by LDT. Note that you must create an input/forcing_variables.txt file that specifies which forcing variables are needed by LIS for this testcase.
+. Create an input directory and place all necessary input files (and only necessary files) into it, including any parameter files that are *not* processed by LDT. Note that you must create an input/forcing_variables.txt file that specifies which forcing variables are needed by LIS for this testcase.
 +
 ....
 % ls input
