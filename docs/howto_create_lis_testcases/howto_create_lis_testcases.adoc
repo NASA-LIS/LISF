@@ -67,6 +67,11 @@ Step 4) focuses on the lis.config file, MODEL_OUTPUT_LIST.TBL file, output.ctl f
 These tests are run on systems other than discover, so the files that you create must be self-contained.  For example, the config files should *not* refer to /discover/nobackup/... .  Please use files and results generated in previous steps (see, for example, Step 4.3), to verify that your testcase is both complete and self-contained.
 ====
 
+[IMPORTANT]
+====
+This should go without saying: please do *not* commit the ldt, input, and output tar.gz files into the repository.  Those files will be transferred to our data portal.
+====
+
 
 == Step 1
 . Write the README file. Please see the README file in testcases/metforcing/nam242 for an example. This file should be saved in the LIS source code in the appropriate testcases sub-directory.
