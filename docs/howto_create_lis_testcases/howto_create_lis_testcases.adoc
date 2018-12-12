@@ -1,7 +1,7 @@
 = How to create LIS 7 testcases
 :author: James Geiger
-:revnumber: 2
-:revdate: 11 Dec 2018
+:revnumber: 3
+:revdate: 12 Dec 2018
 //:sectnums:
 
 == Introduction
