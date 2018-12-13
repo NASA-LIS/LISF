@@ -5,6 +5,7 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
+#include "LIS_misc.h"
 !BOP
 ! !ROUTINE: read_imerg
 ! \label{read_imerg}
@@ -90,7 +91,7 @@ subroutine read_imerg (n, kk, name_imerg, findex, order, ferror_imerg )
         "[INFO] Reading HDF5 IMERG precipitation data from ", fname
    call read_imerghdf(fname, xd, yd, realprecip, ireaderr)
    if (ireaderr .ne. 0) then
-     if(LIS_masterproc) write(*,*) &
+     if(LIS_masterproc) write(LIS_logunit,*) &
         "[WARN] Error reading IMERG file ",fname
      ferror_imerg = 0
    endif
