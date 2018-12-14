@@ -21,7 +21,7 @@ subroutine get_imerg(n, findex)
   use LIS_coreMod, only : LIS_rc, LIS_masterproc
   use LIS_timeMgrMod, only : LIS_tick, LIS_get_nstep
   use imerg_forcingMod, only :imerg_struc
-  use LIS_logMod, only : LIS_logunit
+  use LIS_logMod, only : LIS_logunit, LIS_endrun
 
   implicit none
 ! !ARGUMENTS: 
@@ -124,7 +124,8 @@ subroutine imergfile(n, kk, findex, imergdir, &
 
   use LIS_coreMod
   use LIS_forecastMod
-
+  use LIS_logMod, only : LIS_logunit, LIS_endrun
+  use imerg_forcingMod, only : imerg_struc
   implicit none
 
 ! !ARGUMENTS: 
@@ -192,9 +193,20 @@ subroutine imergfile(n, kk, findex, imergdir, &
     write(cmnadd, '(I2.2)') umnadd 
     write(cmnday, '(I4.4)') umnday
 
-    fstem = '/3B-HHR.MS.MRG.3IMERG.'
+    if(imerg_struc(n)%imergver == 'early') then
+       fstem = '/3B-HHR-E.MS.MRG.3IMERG.'
+    elseif(imerg_struc(n)%imergver == 'late') then
+       fstem = '/3B-HHR-L.MS.MRG.3IMERG.'
+    elseif(imerg_struc(n)%imergver == 'final') then
+       fstem = '/3B-HHR.MS.MRG.3IMERG.'
+    else
+       write(LIS_logunit,*) "[ERR] Invalid IMERG version option was chosen."
+       write(LIS_logunit,*) "[ERR] Please choose either 'early', 'late', or 'final'."
+       call LIS_endrun()
+    endif
+
     filename = trim(imergdir)//"/"//cyr//cmo//trim(fstem)// &
-          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//".V03D.HDF5" 
+          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//".V05B.HDF5" 
 
 ! Forecast mode (e.g., ESP):
   else
@@ -220,9 +232,20 @@ subroutine imergfile(n, kk, findex, imergdir, &
     write(cmnadd, '(I2.2)') umnadd
     write(cmnday, '(I4.4)') umnday
 
-    fstem = '/3B-HHR.MS.MRG.3IMERG.'
+    if(imerg_struc(n)%imergver == 'early') then
+       fstem = '/3B-HHR-E.MS.MRG.3IMERG.'
+    elseif(imerg_struc(n)%imergver == 'late') then
+       fstem = '/3B-HHR-L.MS.MRG.3IMERG.'
+    elseif(imerg_struc(n)%imergver == 'final') then
+       fstem = '/3B-HHR.MS.MRG.3IMERG.'
+    else
+       write(LIS_logunit,*) "[ERR] Invalid IMERG version option was chosen."
+       write(LIS_logunit,*) "[ERR] Please choose either 'early', 'late', or 'final'."
+       call LIS_endrun()
+    endif
+
     filename = trim(imergdir)//"/"//cyr//cmo//trim(fstem)// &
-          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//".V03D.HDF5"
+          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//".V05B.HDF5"
   endif
 
 end subroutine imergfile
