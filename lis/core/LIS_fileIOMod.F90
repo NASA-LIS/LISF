@@ -19,6 +19,7 @@ module LIS_fileIOMod
 !   
 ! !REVISION HISTORY: 
 !  08 Apr 2004    James Geiger Initial Specification
+!  11 Oct 2018    Nargess Memarsadeghi, cleaned up and corrected LIS_create_output_directory
 ! 
 ! !USES: 
   use ESMF
@@ -231,7 +232,10 @@ subroutine LIS_create_output_directory(mname,dir_name)
    integer, external :: LIS_create_subdirs 
    character(len=201) :: c_string  
 
-   if(LIS_rc%wstyle.eq."4 level hierarchy") then 
+   if ( present(dir_name) ) then
+      out_dname = dir_name
+  
+   elseif(LIS_rc%wstyle.eq."4 level hierarchy") then 
 
       out_dname = trim(LIS_rc%odir)//'/'
       
@@ -243,24 +247,6 @@ subroutine LIS_create_output_directory(mname,dir_name)
       write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') LIS_rc%yr, LIS_rc%mo, LIS_rc%da
       out_dname = trim(out_dname)//trim(cdate1)
 
-      if ( present(dir_name) ) then
-         dir_name = out_dname
-      else
-#if ( defined AIX )
-         call system('mkdir -p '//trim(out_dname),ios)
-#else
-! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
-! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
-! standard POSIX function. 
-!            ios = system('mkdir -p '//trim(out_dname))
-            c_string = trim(out_dname)
-            ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
-#endif
-            if (ios .ne. 0) then
-               write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
-               flush(LIS_logunit)
-            end if
-      endif
    elseif(LIS_rc%wstyle.eq."3 level hierarchy") then 
       out_dname = trim(LIS_rc%odir)//'/'
       
@@ -269,53 +255,16 @@ subroutine LIS_create_output_directory(mname,dir_name)
       write(unit=cdate1, fmt='(i4.4, i2.2)') LIS_rc%yr, LIS_rc%mo
       out_dname = trim(out_dname)//trim(cdate1)
 
-      if ( present(dir_name) ) then
-         dir_name = out_dname
-      else
-#if ( defined AIX )
-         call system('mkdir -p '//trim(out_dname),ios)
-#else
-! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
-! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
-! standard POSIX function. 
-!         ios = system('mkdir -p '//trim(out_dname))
-         c_string = trim(out_dname)
-         ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
-#endif
-         if (ios .ne. 0) then
-            write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
-            flush(LIS_logunit)
-         end if
-      endif      
    elseif(LIS_rc%wstyle.eq."2 level hierarchy") then 
       out_dname = trim(LIS_rc%odir)//'/'
       
       out_dname = trim(out_dname)//trim(mname)//'/'
 
-      if ( present(dir_name) ) then
-         dir_name = out_dname
-      else
-#if ( defined AIX )
-         call system('mkdir -p '//trim(out_dname),ios)
-#else
-! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
-! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
-! standard POSIX function. 
-!         ios = system('mkdir -p '//trim(out_dname))
-         c_string = trim(out_dname)
-         ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
-#endif
-         if (ios .ne. 0) then
-            write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
-            flush(LIS_logunit)
-         end if
-      endif      
    elseif(LIS_rc%wstyle.eq."WMO convention") then 
       out_dname = trim(LIS_rc%odir)
+   endif
 
-      if ( present(dir_name) ) then
-         dir_name = out_dname
-      else
+
 #if ( defined AIX )
          call system('mkdir -p '//trim(out_dname))
 #else
@@ -327,13 +276,10 @@ subroutine LIS_create_output_directory(mname,dir_name)
          ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
 #endif
 
-         if (ios .ne. 0) then
-            write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
-            flush(LIS_logunit)
-         end if
-
-      endif      
-   endif
+if (ios .ne. 0) then
+  write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
+  flush(LIS_logunit)
+end if
 
  end subroutine LIS_create_output_directory
 
