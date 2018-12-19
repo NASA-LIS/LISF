@@ -40,7 +40,7 @@
 !  \end{description}
 !
 !EOP
-    integer          :: c, index1
+    integer          :: c, v, index1
     integer          :: status
     type(ESMF_Field) :: pcpField
     real, pointer    :: pcp(:)
@@ -53,16 +53,17 @@
     
     call ESMF_FieldGet(pcpField,localDE=0,farrayPtr=pcp,rc=status)
     call LIS_verify(status)
-
-    do c = 1,LIS_rc%ntiles(n)
-       index1 = LIS_domain(n)%tile(c)%index
-       if( AWRAL_struc(n)%metdata2(1,index1) .ne.LIS_rc%udef.and. &
-            AWRAL_struc(n)%metdata2(1,index1) >= 0.0 ) then
-          pcp(c) = AWRAL_struc(n)%metdata2(1,index1) / 86400.0  ! mm/s
-       else
-          pcp(c) = LIS_rc%udef
-       endif
-    enddo
+    do v = 1,AWRAL_struc(n)%N_AF
+      do c = 1,LIS_rc%ntiles(n)
+         index1 = LIS_domain(n)%tile(c)%index
+         if( AWRAL_struc(n)%metdata2(1,v,index1) .ne.LIS_rc%udef.and. &
+              AWRAL_struc(n)%metdata2(1,v,index1) >= 0.0 ) then
+            pcp(c) = AWRAL_struc(n)%metdata2(1,v,index1) / 86400.0  ! mm/s
+         else
+            pcp(c) = LIS_rc%udef
+         endif
+      enddo
+   enddo
 
 end subroutine timeinterp_AWRAL
   

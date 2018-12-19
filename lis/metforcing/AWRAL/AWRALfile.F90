@@ -46,10 +46,6 @@ subroutine AWRALfile( name, AWRALdir, yr, doy)
 
    name = trim(AWRALdir)//'/AWRAL_'//trim(cyear)//'/'//&
         trim(cdoy)
-!   name = trim(AWRALdir)//'/AWRAL_'//trim(cyear)//'/'//&
-!        trim(cdoy)//'
-
-
 
 end subroutine AWRALfile
 

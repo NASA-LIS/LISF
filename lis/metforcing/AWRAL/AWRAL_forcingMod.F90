@@ -68,6 +68,7 @@ module AWRAL_forcingMod
      real               :: ts
      integer            :: ncol                 ! Number of cols
      integer            :: nrow                 ! Number of rows
+     integer            :: N_AF                 ! Number of met forcing vars
      character*40       :: AWRALdir              ! STAGE IV Directory
      real*8             :: AWRALtime             ! Nearest hourly instance of incoming file
      integer            :: mi                   ! Number of points in the input grid
@@ -83,8 +84,8 @@ module AWRAL_forcingMod
      real,    allocatable   :: w112(:,:), w122(:,:) ! " "
      real,    allocatable   :: w212(:,:), w222(:,:) ! " "
 
-     real, allocatable :: metdata1(:,:) 
-     real, allocatable :: metdata2(:,:) 
+     real, allocatable :: metdata1(:,:,:) 
+     real, allocatable :: metdata2(:,:,:) 
 
   end type AWRAL_type_dec
 
@@ -152,6 +153,7 @@ contains
 
     do n=1, LIS_rc%nnest
        AWRAL_struc(n)%ts = 86400
+       AWRAL_struc(n)%N_AF = 6
        call LIS_update_timestep(LIS_rc, n, AWRAL_struc(n)%ts)
     enddo
 
@@ -161,9 +163,9 @@ contains
 
     do n=1,LIS_rc%nnest
 
-       allocate(AWRAL_struc(n)%metdata1(LIS_rc%met_nf(findex),&
+       allocate(AWRAL_struc(n)%metdata1(LIS_rc%met_nf(findex),AWRAL_struc(n)%N_AF,&
             LIS_rc%ngrid(n)))
-       allocate(AWRAL_struc(n)%metdata2(LIS_rc%met_nf(findex),&
+       allocate(AWRAL_struc(n)%metdata2(LIS_rc%met_nf(findex),AWRAL_struc(n)%N_AF,&
             LIS_rc%ngrid(n)))
 
        AWRAL_struc(n)%ncol = 841

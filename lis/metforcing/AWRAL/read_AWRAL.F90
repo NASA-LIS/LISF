@@ -60,11 +60,11 @@ subroutine read_AWRAL( n, fname,findex,order, ferror_AWRAL )
 
   integer            :: i, j, t, iret ! Loop indicies and error flags
   integer            :: ftn, ndata, index1,v
-  integer, parameter :: N_PF = 6 ! # of AWRAL forcing variables
+  integer, parameter :: N_AF = 6 ! # of AWRAL forcing variables
 
   character(10) :: var_fname
   real               :: regrid(LIS_rc%lnc(n),LIS_rc%lnr(n))
-    character(10), dimension(N_PF), parameter :: awral_fv = (/  &
+  character(10), dimension(N_AF), parameter :: awral_fv = (/  &
        'tat       ',    &
        'rgt      ',    &
        'pt     ',    &
@@ -100,8 +100,8 @@ subroutine read_AWRAL( n, fname,findex,order, ferror_AWRAL )
   !radcskyt_regrid = LIS_rc%udef
 
 !-- Check initially if file exists:
-  do v = 1, N_PF  ! N_AF
-    var_fname =awral_fv(v) 
+  do v = 1, N_AF  ! N_AF
+    var_fname = fname//'/'//awral_fv(v)//'.grb'
     inquire (file=trim(var_fname), exist=file_exists ) ! Check if file exists
      if (.not. file_exists)  then 
        write(LIS_logunit,*)"[ERR] Missing AWRAL file: ", fname
@@ -111,11 +111,12 @@ subroutine read_AWRAL( n, fname,findex,order, ferror_AWRAL )
   enddo
 
 #if(defined USE_GRIBAPI) 
-  do v = 1, N_PF ! N_AF
+  do v = 1, N_AF ! N_AF
     regrid = LIS_rc%udef
     ndata = AWRAL_struc(n)%ncol * AWRAL_struc(n)%nrow
     AWRALin = 0.0
-    var_fname  =awral_fv(v)  
+    var_fname = fname//'/'//awral_fv(v)//'.grb'
+
     call grib_open_file(v,trim(var_fname),'r',iret)
     call LIS_verify(iret,'error grib_open_file in read_AWRAL')
   
@@ -162,9 +163,9 @@ subroutine read_AWRAL( n, fname,findex,order, ferror_AWRAL )
               index1 = LIS_domain(n)%gindex(i,j)
               if(index1 .ne. -1) then
                  if(order.eq.1) then 
-                    AWRAL_struc(n)%metdata1(1,index1) = regrid(i,j) 
+                    AWRAL_struc(n)%metdata1(1,v,index1) = regrid(i,j) 
                  elseif(order.eq.2) then 
-                    AWRAL_struc(n)%metdata2(1,index1) = regrid(i,j) 
+                    AWRAL_struc(n)%metdata2(1,v,index1) = regrid(i,j) 
                  endif
               endif
            endif
