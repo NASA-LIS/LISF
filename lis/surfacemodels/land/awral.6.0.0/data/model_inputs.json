@@ -1,0 +1,63 @@
+{
+    "STATES_CELL": {
+        "sg": "Groundwater storage (mm)",
+        "sr": "Surface storage (mm)"
+    },
+    "STATES_HRU": {
+        "mleaf": "Vegetation index",
+        "s0": "Top soil moisture (mm)",
+        "sd": "Deep soil moisture (mm)",
+        "ss": "Shallow soil moisture (mm)"
+    },
+    "INPUTS_CELL": {
+        "avpt": "Vapour pressure",
+        "k0sat": "Hydraulic saturation (top)",
+        "k_gw": "Groundwater drainage coefficient",
+        "k_rout": "k_rout",
+        "kdsat": "Hydraulic saturation (deep)",
+        "kr_0s": "Interlayer saturation (top/shallow)",
+        "kr_coeff": "kr_coeff",
+        "kr_sd": "Interlayer saturation (shallow/deep)",
+        "kssat": "Hydraulic saturation (shallow)",
+        "pair": "Air pressure (pA)",
+        "prefr": "prefr",
+        "pt": "Precipitation (mm/day)",
+        "radcskyt": "radcskyt",
+        "rgt": "Solar radiation (MJ m^-2)",
+        "s0max": "Maximum soil moisture (top)",
+        "sdmax": "Maximum soil moisture (deep)",
+        "slope": "slope",
+        "slope_coeff": "slope_coeff",
+        "ssmax": "Maximum soil moisture (shallow)",
+        "tat": "Temperature average (degC)",
+        "u2t": "Windspeed (m/s)"
+    },
+    "INPUTS_HRU": {
+        "alb_dry": "Dry Soil Albedo",
+        "alb_wet": "Wet Soil Albedo",
+        "cgsmax": "Conversion Coefficient From Vegetation Photosynthetic Capacity Index to Maximum Stomatal Conductance",
+        "er_frac_ref": "Ratio of Average Evaporation Rate Over Average Rainfall Intensity During Storms Per Unit Canopy Cover",
+        "fhru": "Fraction of Simulation Cell with <HRU-type> Vegetation",
+        "fsoilemax": "Soil Evaporation Scaling Factor When Soil Water Supply is Not Limiting Evaporation",
+        "hveg": "Height of Vegetation Canopy",
+        "laimax": "Maximum Leaf Area Index",
+        "lairef": "Reference Leaf Area Index (at which fveg = 0.63)",
+        "rd": "Root depth",
+        "s_sls": "Specific Canopy Rainfall Storage Capacity Per Unit Leaf Area",
+        "sla": "Specific Leaf Area",
+        "tgrow": "Characteristic Time Scale for Vegetation Growth Towards Equilibrium",
+        "tsenc": "Characteristic Time Scale for Vegetation Senescence Towards Equilibrium",
+        "ud0": "Maximum Root Water Uptake Rates From Deep Soil",
+        "us0": "Maximum Root Water Uptake Rates From Shallow Soil",
+        "vc": "Vegetation Photosynthetic Capacity Index Per Unit Canopy Cover",
+        "w0lime": "Relative Top Soil Water Content at Which Evaporation is Reduced",
+        "w0ref_alb": "Reference Value of w0 Determining the Rate of Albedo Decrease With Wetness",
+        "wdlimu": "Deep Water-Limiting Relative Water Content",
+        "wslimu": "Shallow Water-Limiting Relative Water Content"
+    },
+    "INPUTS_HYPSO": {
+        "height": "height",
+        "hypsperc": "hypsperc",
+        "ne": "ne"
+    }
+}

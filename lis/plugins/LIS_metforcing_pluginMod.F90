@@ -318,6 +318,10 @@ subroutine LIS_metforcing_plugin
    use AWAP_forcingMod
 #endif
 
+#if ( defined MF_AWRAL)
+   use AWRAL_forcingMod
+#endif
+
 #if ( defined MF_HIMAT_GMU)
    use HiMATGMU_forcingMod
 #endif
@@ -686,6 +690,13 @@ subroutine LIS_metforcing_plugin
    external timeinterp_AWAP
    external reset_AWAP
    external finalize_AWAP
+#endif
+
+#if ( defined MF_AWRAL )
+   external get_AWRAL
+   external timeinterp_AWRAL
+   external reset_AWRAL
+   external finalize_AWRAL
 #endif
 
 #if ( defined MF_HIMAT_GMU )
@@ -1252,6 +1263,15 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_AWAP)
    call registerresetmetforc(trim(LIS_AWAPforcId)//char(0),reset_AWAP)
    call registerfinalmetforc(trim(LIS_AWAPforcId)//char(0),finalize_AWAP)
+#endif
+
+#if ( defined MF_AWRAL)
+   call registerinitmetforc(trim(LIS_AWRALforcId)//char(0),init_AWRAL)
+   call registerretrievemetforc(trim(LIS_AWRALforcId)//char(0),get_AWRAL)
+   call registertimeinterpmetforc(trim(LIS_AWRALforcId)//char(0), &
+                                  timeinterp_AWRAL)
+   call registerresetmetforc(trim(LIS_AWRALforcId)//char(0),reset_AWRAL)
+   call registerfinalmetforc(trim(LIS_AWRALforcId)//char(0),finalize_AWRAL)
 #endif
 
 #if ( defined MF_HIMAT_GMU)
