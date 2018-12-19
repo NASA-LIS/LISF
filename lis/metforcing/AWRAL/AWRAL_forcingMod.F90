@@ -150,6 +150,7 @@ contains
 	
     do n=1, LIS_rc%nnest
        AWRAL_struc(n)%ts = 86400
+       AWRAL_struc(n)%N_AF = 6
        call LIS_update_timestep(LIS_rc, n, AWRAL_struc(n)%ts)
     enddo
 
