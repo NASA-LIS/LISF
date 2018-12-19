@@ -40,6 +40,7 @@
 !  \end{description}
 !
 !EOP
+<<<<<<< HEAD
     integer          :: c, v, index1
     integer          :: status
     type(ESMF_Field) :: tmpField,q2Field,uField,swdownField,swdirField,pcpField
@@ -116,6 +117,31 @@
          endif
          ! DEBUG print *,"forcing vars in timeinterp: ", tmp(c), q2(c), swdown(c), swdir(c), uwind(c), pcp(c)
    enddo
+=======
+    integer          :: c, index1
+    integer          :: status
+    type(ESMF_Field) :: pcpField
+    real, pointer    :: pcp(:)
+! ___________________________________________________
+
+    call ESMF_StateGet(LIS_FORC_Base_State(n,findex),&
+         trim(LIS_FORC_Rainf%varname(1)),pcpField,&
+         rc=status)
+    call LIS_verify(status, 'Error: enable Rainf in forcing variables list')
+    
+    call ESMF_FieldGet(pcpField,localDE=0,farrayPtr=pcp,rc=status)
+    call LIS_verify(status)
+
+    do c = 1,LIS_rc%ntiles(n)
+       index1 = LIS_domain(n)%tile(c)%index
+       if( AWRAL_struc(n)%metdata2(1,index1) .ne.LIS_rc%udef.and. &
+            AWRAL_struc(n)%metdata2(1,index1) >= 0.0 ) then
+          pcp(c) = AWRAL_struc(n)%metdata2(1,index1) / 86400.0  ! mm/s
+       else
+          pcp(c) = LIS_rc%udef
+       endif
+    enddo
+>>>>>>> f1964a9... Started to commit code for the awral model: an AWRAL forcing reader and the awral model c code with static field file generation in python
 
 end subroutine timeinterp_AWRAL
   

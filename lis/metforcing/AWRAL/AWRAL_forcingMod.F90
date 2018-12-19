@@ -68,8 +68,13 @@ module AWRAL_forcingMod
      real               :: ts
      integer            :: ncol                 ! Number of cols
      integer            :: nrow                 ! Number of rows
+<<<<<<< HEAD
      character*100       :: AWRALdir              ! STAGE IV Directory
      real*8             :: AWRALtime             ! Nearest daily instance of incoming file
+=======
+     character*40       :: AWRALdir              ! STAGE IV Directory
+     real*8             :: AWRALtime             ! Nearest hourly instance of incoming file
+>>>>>>> f1964a9... Started to commit code for the awral model: an AWRAL forcing reader and the awral model c code with static field file generation in python
      integer            :: mi                   ! Number of points in the input grid
      logical            :: interp_flag
 ! == Arrays for Bilinear Interpolation option (=1)
@@ -83,8 +88,13 @@ module AWRAL_forcingMod
      real,    allocatable   :: w112(:,:), w122(:,:) ! " "
      real,    allocatable   :: w212(:,:), w222(:,:) ! " "
 
+<<<<<<< HEAD
      real, allocatable :: metdata1(:,:,:) 
      real, allocatable :: metdata2(:,:,:) 
+=======
+     real, allocatable :: metdata1(:,:) 
+     real, allocatable :: metdata2(:,:) 
+>>>>>>> f1964a9... Started to commit code for the awral model: an AWRAL forcing reader and the awral model c code with static field file generation in python
 
   end type AWRAL_type_dec
 
@@ -148,17 +158,27 @@ contains
 
     call readcrd_AWRAL()
 	
+<<<<<<< HEAD
+=======
+	!LIS_rc%met_nf(findex) = NUM_ATMOS_FORCING
+
+>>>>>>> f1964a9... Started to commit code for the awral model: an AWRAL forcing reader and the awral model c code with static field file generation in python
     do n=1, LIS_rc%nnest
        AWRAL_struc(n)%ts = 86400
        call LIS_update_timestep(LIS_rc, n, AWRAL_struc(n)%ts)
     enddo
 
+<<<<<<< HEAD
     LIS_rc%met_nf(findex) = 6
+=======
+    LIS_rc%met_nf(findex) = 1
+>>>>>>> f1964a9... Started to commit code for the awral model: an AWRAL forcing reader and the awral model c code with static field file generation in python
 
     gridDesci = 0
 
     do n=1,LIS_rc%nnest
 
+<<<<<<< HEAD
        allocate(AWRAL_struc(n)%metdata1(1,LIS_rc%met_nf(findex),&
             LIS_rc%ngrid(n)))
        allocate(AWRAL_struc(n)%metdata2(1,LIS_rc%met_nf(findex),&
@@ -167,23 +187,44 @@ contains
 
        AWRAL_struc(n)%ncol = 2
        AWRAL_struc(n)%nrow = 2
+=======
+       allocate(AWRAL_struc(n)%metdata1(LIS_rc%met_nf(findex),&
+            LIS_rc%ngrid(n)))
+       allocate(AWRAL_struc(n)%metdata2(LIS_rc%met_nf(findex),&
+            LIS_rc%ngrid(n)))
+
+       AWRAL_struc(n)%ncol = 841
+       AWRAL_struc(n)%nrow = 681
+>>>>>>> f1964a9... Started to commit code for the awral model: an AWRAL forcing reader and the awral model c code with static field file generation in python
 
        gridDesci(n,1) = 0.0                 ! Projection type (UPS)
        gridDesci(n,2) = AWRAL_struc(n)%ncol  ! X-dir amount of points
        gridDesci(n,3) = AWRAL_struc(n)%nrow  ! y-dir amount of points
+<<<<<<< HEAD
        gridDesci(n,4) = -33.0
        gridDesci(n,5) = 145.00
        gridDesci(n,6) = 145.05
        gridDesci(n,7) = -32.95
+=======
+       gridDesci(n,4) = -44.00
+       gridDesci(n,5) = 112.00
+       gridDesci(n,6) = 128
+       gridDesci(n,7) = -10.00
+>>>>>>> f1964a9... Started to commit code for the awral model: an AWRAL forcing reader and the awral model c code with static field file generation in python
        gridDesci(n,8) = 154.00
        gridDesci(n,9) = 0.05
        gridDesci(n,10) = 0.05
        gridDesci(n,20) = 64.0
 
+<<<<<<< HEAD
 
        AWRAL_struc(n)%mi = AWRAL_struc(n)%ncol * AWRAL_struc(n)%nrow
 
 
+=======
+       AWRAL_struc(n)%mi = AWRAL_struc(n)%ncol * AWRAL_struc(n)%nrow
+
+>>>>>>> f1964a9... Started to commit code for the awral model: an AWRAL forcing reader and the awral model c code with static field file generation in python
        if ( LIS_isatAfinerResolution(n,gridDesci(n,9)) ) then
           AWRAL_struc(n)%interp_flag = .true. 
 ! === BILINEAR INTERPOLATION ==== 
