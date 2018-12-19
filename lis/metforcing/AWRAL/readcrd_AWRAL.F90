@@ -42,11 +42,7 @@ subroutine readcrd_AWRAL()
        write(LIS_logunit,*) '[INFO] Using AWRAL forcing'
        write(LIS_logunit,*) '[INFO] AWRAL forcing directory :', AWRAL_struc(n)%AWRALDIR
 
-<<<<<<< HEAD
     !- Setting observed forcing times to zero to ensure data is read in
-=======
-    !- Setting observed precip times to zero to ensure data is read in
->>>>>>> f1964a9... Started to commit code for the awral model: an AWRAL forcing reader and the awral model c code with static field file generation in python
     !   at first time step
        AWRAL_struc(n)%AWRALtime = 0.0
 
