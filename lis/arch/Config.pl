@@ -770,7 +770,9 @@ if($use_minpack == 1){
 }
 
 if($use_lapack == 1){
-   $ldflags = $ldflags." -L\$(LIB_LAPACK) -llapack -lblas";
+   #Changed to use mkl Wendy Sharples
+   #$ldflags = $ldflags." -L\$(LIB_LAPACK) -llapack -lblas";
+   $ldflags = $ldflags." -L\$(LIB_LAPACK) -lmkl_rt";
 }
 
 if($use_esmf_trace == 1){
