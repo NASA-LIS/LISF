@@ -64,6 +64,10 @@ module AWRAL600_lsmMod
 !   air pressure
 ! \item[kr\_coeff]
 !   scaling factor for ratio of saturated hydraulic conductivity
+! \item[nhru]
+!   number of hydrologic response units
+! \item[nhypsbins]
+!   number of hypsometric curve distribution percentile bins
 ! \item[hypsperc]
 !   hypsometric curve distribution percentile bins
 ! \item[alb\_dry]
@@ -173,6 +177,13 @@ module AWRAL600_lsmMod
         real               :: slope_coeff
         real               :: pair
         real               :: kr_coeff
+<<<<<<< HEAD
+        integer            :: nhru
+        integer            :: nhypsbins
+=======
+        real               :: nhru
+        real               :: nhypsbins
+>>>>>>> 640c971... Finished putting in all vars for AWRAL model. Now let the fun begin
         real, pointer      :: hypsperc(:)
         real, pointer      :: alb_dry(:)
         real, pointer      :: alb_wet(:)
@@ -245,6 +256,7 @@ contains
             !------------------------------------------------------------------------
             ! allocate memory for multilevel spatial parameter
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                allocate(AWRAL600_struc(n)%awral600(t)%height(AWRAL600_struc(n)%nhypsbins))
                 allocate(AWRAL600_struc(n)%awral600(t)%fhru(AWRAL600_struc(n)%nhru))
                 allocate(AWRAL600_struc(n)%awral600(t)%hveg(AWRAL600_struc(n)%nhru))
                 allocate(AWRAL600_struc(n)%awral600(t)%laimax(AWRAL600_struc(n)%nhru))

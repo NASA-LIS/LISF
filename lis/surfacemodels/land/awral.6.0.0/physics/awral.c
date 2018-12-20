@@ -3,18 +3,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Overall comment: looks like the fc compiler does not like the type being declared inside a loop so hence the ugly loops */
 const int HYPS_LEN = 20; // +++ Should be supplied as input value; 20 hardcoded in other places
 const int NUM_CELLS = 1; // +++ LIS can only take one tile at a time
 
-void copycells(const double *restrict in, double *restrict out, int len) {
-    for (int i =0; i<len; i++){
+void copycells(const double *in, double *out, int len) {
+    int i;
+    for (i = 0; i < len; i ++){
         out[i] = in[i];
     }
 }
 
 void build_hypso(double *sgtemp, const double *height, const double ne, int cells) {
-    for (int c = 0; c < cells; c ++ ) {
-        for (int l = 0; l < 20; l++) {
+    int c, l
+    for (c = 0; c < cells; c ++) {
+        for (l = 0; l < 20; l++) {
             int idx = c*HYPS_LEN + l;
             sgtemp[idx] = height[idx] * ne * 1000.0;
         }
@@ -31,6 +34,7 @@ __inline__ double hyps_fsat(double *sgtemp, const double *hypsfsat, double sg, d
         return(1.0);
     } else {
         int id0 = -1;
+        int i;
         for (int i=0;i<HYPS_LEN;i++) {
             if (sg_eff >= sgtemp[i]) {
                 id0++;
@@ -54,7 +58,7 @@ __inline__ double hru_sum(double *hru_data,double fhru[2],int hidx[2]) {
     return (fhru[0]*hru_data[hidx[0]]+fhru[1]*hru_data[hidx[1]]);
 }
 
-__inline__ void calc_soil_flows(double *restrict s, double *restrict i, double *restrict e, double *restrict drain, double *restrict iflow, const double smax, const double ksat, const double rh, const double km) {
+__inline__ void calc_soil_flows(double *s, double *i, double *e, double *drain, double *iflow, const double smax, const double ksat, const double rh, const double km) {
     if ((*s + *i) <= *e) {
         *e = *s + *i;
         *s = 0.0;
@@ -84,7 +88,7 @@ __inline__ void calc_soil_flows(double *restrict s, double *restrict i, double *
 }
 
 /* New declaration for LIS - NOTE that LIS passes in one cell at at time- need cell number for building hypsometric curves */
-void awral(double tat, double rgt, double pt, double avpt, double u2t, double radcskyt, double e0, double etot, double dd, double s0_avg, double ss_avg, double sd_avg, double qtot, double sr, double sg, double *s0, double * ss, double * sd, double * mleaf, double slope_coeff, double pair, double kr_coeff, double k_rout, double kssat, double prefr, double s0max, double slope, double ssmax, double k_gw, double kr_sd, double kr_0s, double k0sat, double sdmax, double kdsat, double ne, double *height, double *hypsperc, double alb_dry[2], double alb_wet[2], double cgsmax[2], double er_frac_ref[2], double fsoilemax[2], double lairef[2], double rd[2], double s_sls[2], double sla[2], double tgrow[2], double tsenc[2], double ud0[2], double us0[2], double vc[2], double w0lime[2], double w0ref_alb[2], double wdlimu[2], double wslimu[2], double * fhru, double * hveg, double * laimax, int timesteps) {
+void awral_driver_600_(double tat, double rgt, double pt, double avpt, double u2t, double radcskyt, double e0, double etot, double dd, double s0_avg, double ss_avg, double sd_avg, double qtot, double sr, double sg, double *s0, double * ss, double * sd, double * mleaf, double slope_coeff, double pair, double kr_coeff, double k_rout, double kssat, double prefr, double s0max, double slope, double ssmax, double k_gw, double kr_sd, double kr_0s, double k0sat, double sdmax, double kdsat, double ne, double *height, double *hypsperc, double alb_dry[2], double alb_wet[2], double cgsmax[2], double er_frac_ref[2], double fsoilemax[2], double lairef[2], double rd[2], double s_sls[2], double sla[2], double tgrow[2], double tsenc[2], double ud0[2], double us0[2], double vc[2], double w0lime[2], double w0ref_alb[2], double wdlimu[2], double wslimu[2], double * fhru, double * hveg, double * laimax, int timesteps) {
     
     // +++ These could use the final_states arrays and avoid the extra mallocs...
     // More generally, could have user supplied arrays for all mallocs...
@@ -106,6 +110,7 @@ void awral(double tat, double rgt, double pt, double avpt, double u2t, double ra
     double *qif_ = malloc(2*sizeof(double));
     double *qr_ = malloc(2*sizeof(double));
 
+    int hru, c, ts;
     #pragma ivdep
     for (int hru=0; hru<2; hru++){
         s0_[hru] = s0[hru];
@@ -122,7 +127,7 @@ void awral(double tat, double rgt, double pt, double avpt, double u2t, double ra
 
     double *eff_rd = malloc(2*sizeof(double));//[2][cells];
 
-    for (int hru=0; hru<2; hru++){
+    for (hru=0; hru<2; hru++){
         eff_rd[hru] = rd[hru] * 1000.0 * ne;
     }
 
@@ -135,11 +140,11 @@ void awral(double tat, double rgt, double pt, double avpt, double u2t, double ra
     // double kr_coeff = params.kr_coeff;
 
 
-    for (int ts=0; ts<timesteps; ts++) {
+    for (ts=0; ts<timesteps; ts++) {
 
         // Hypso
 
-        for (int c=0; c<NUM_CELLS; c++) {
+        for (c=0; c<NUM_CELLS; c++) {
             fsat_ = hyps_fsat(&sgtemp_[c*20],hypsperc,sg,0.0);
             int idx = NUM_CELLS*ts + c;
 
@@ -153,13 +158,13 @@ void awral(double tat, double rgt, double pt, double avpt, double u2t, double ra
         }
 
         // HRU loop
-        for (int hru=0; hru<2; hru++) {
+        for (hru=0; hru<2; hru++) {
             //expanded these out now
 	    //HRUParameters hrup = hruparams[hru];
             //HRUSpatial hrus = hruspatial[hru];
 
 
-            for (int c=0; c<NUM_CELLS; c++) {
+            for (c=0; c<NUM_CELLS; c++) {
                 fegt_ = hyps_fsat(&sgtemp_[c*20],hypsperc,sg,eff_rd[hru]);
             }
 
@@ -185,7 +190,7 @@ void awral(double tat, double rgt, double pt, double avpt, double u2t, double ra
 
             #pragma ivdep
             #pragma vector always
-            for (int c=0; c<NUM_CELLS; c++) {
+            for (c=0; c<NUM_CELLS; c++) {
                 int idx = NUM_CELLS*ts + c;
                 int hru_cidx = hru*NUM_CELLS+c;
 
@@ -410,7 +415,7 @@ void awral(double tat, double rgt, double pt, double avpt, double u2t, double ra
         // Post HRU
         #pragma ivdep
         #pragma vector always
-        for (int c=0; c<NUM_CELLS; c++) {
+        for (c=0; c<NUM_CELLS; c++) {
             double k_rout_c = k_rout;
             double slope_c = slope;
             double kssat_c = kssat;

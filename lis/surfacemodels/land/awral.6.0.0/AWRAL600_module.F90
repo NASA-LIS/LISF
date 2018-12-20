@@ -189,6 +189,7 @@ module AWRAL600_module
         !-------------------------------------------------------------------------
         ! multilevel spatial parameter
         !-------------------------------------------------------------------------
+        real, pointer      :: height(:)
         real, pointer      :: fhru(:)
         real, pointer      :: hveg(:)
         real, pointer      :: laimax(:)

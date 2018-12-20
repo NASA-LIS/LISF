@@ -77,6 +77,8 @@ subroutine AWRAL600_main(n)
     real, allocatable    :: tmp_ss(:)              ! water content of the shallow soil store for each hru [mm]
     real, allocatable    :: tmp_sd(:)              ! water content of the deep soil store for each hru [mm]
     real, allocatable    :: tmp_mleaf(:)           ! leaf biomass [kg/m2]
+    real                 :: tmp_nhru               ! number of hydrologic response units [-]
+    real                 :: tmp_nhypsbins          ! number of hypsometric curve percentile bins [-]
     real                 :: tmp_slope_coeff        ! scaling factor for slope [-]
     real                 :: tmp_pair               ! air pressure [Pa]
     real                 :: tmp_kr_coeff           ! scaling factor for ratio of saturated hydraulic conductivity [-]
@@ -93,8 +95,8 @@ subroutine AWRAL600_main(n)
     real                 :: tmp_sdmax              ! maximum storage of the deep soil layer [mm]
     real                 :: tmp_kdsat              ! saturated hydraulic conductivity of shallow soil layer [mm/d]
     real                 :: tmp_ne                 ! effective porosity [-]
-    real                 :: tmp_height             ! elevation of a point on the hypsometric curve [m]
-    real                 :: tmp_hypsperc           ! hypsometric curve distribution percentile bins [%]
+    real, allocatable     :: tmp_height(:)             ! elevation of a point on the hypsometric curve [m]
+    real, allocatable     :: tmp_hypsperc(:)           ! hypsometric curve distribution percentile bins [%]
     real, allocatable    :: tmp_alb_dry(:)         ! dry soil albedo for each hru [-]
     real, allocatable    :: tmp_alb_wet(:)         ! wet soil albedo for each hru [-]
     real, allocatable    :: tmp_cgsmax(:)          ! coefficient relating vegetation photosynthetic capacity to maximum stomatal conductance for each hru [m/s]
@@ -117,8 +119,13 @@ subroutine AWRAL600_main(n)
     real, allocatable    :: tmp_hveg(:)            ! vegetation height for each hru [-]
     real, allocatable    :: tmp_laimax(:)          ! leaf area index max for each hru [-]
     integer              :: tmp_timesteps          ! number of daily timesteps [-]
-! take this out, put in hypso bins here   integer              :: tmp_cells              ! number of grid cells [-]
 
+<<<<<<< HEAD
+    allocate( tmp_hypsperc( AWRAL600_struc(n)%nhypsbins ) )
+=======
+    allocate( tmp_hypsoperc( AWRAL600_struc(n)%nhypsbins ) )
+>>>>>>> 640c971... Finished putting in all vars for AWRAL model. Now let the fun begin
+    allocate( tmp_height( AWRAL600_struc(n)%nhypsbins ) )
     allocate( tmp_s0( AWRAL600_struc(n)%nhru ) )
     allocate( tmp_ss( AWRAL600_struc(n)%nhru ) )
     allocate( tmp_sd( AWRAL600_struc(n)%nhru ) )
@@ -220,6 +227,8 @@ subroutine AWRAL600_main(n)
             tmp_minute = LIS_rc%mn
  
             ! get parameters 
+            tmp_nhru                                = AWRAL600_struc(n)%nhru
+            tmp_nhypsbins                           = AWRAL600_struc(n)%nhypsbins
             tmp_slope_coeff                         = AWRAL600_struc(n)%slope_coeff                     
             tmp_pair                                = AWRAL600_struc(n)%pair                            
             tmp_kr_coeff                            = AWRAL600_struc(n)%kr_coeff                        
@@ -236,8 +245,12 @@ subroutine AWRAL600_main(n)
             tmp_sdmax                               = AWRAL600_struc(n)%awral600(t)%sdmax                           
             tmp_kdsat                               = AWRAL600_struc(n)%awral600(t)%kdsat                           
             tmp_ne                                  = AWRAL600_struc(n)%awral600(t)%ne                              
-            tmp_height                              = AWRAL600_struc(n)%awral600(t)%height                          
-            tmp_hypsperc                            = AWRAL600_struc(n)%awral600(t)%hypsperc                        
+            tmp_height(:)                           = AWRAL600_struc(n)%awral600(t)%height(:)                          
+<<<<<<< HEAD
+            tmp_hypsperc(:)                         = AWRAL600_struc(n)%hypsperc(:)                        
+=======
+            tmp_hypsperc(:)                         = AWRAL600_struc(n)%awral600(t)%hypsperc(:)                        
+>>>>>>> 640c971... Finished putting in all vars for AWRAL model. Now let the fun begin
             tmp_alb_dry(:)                          = AWRAL600_struc(n)%alb_dry(:)                         
             tmp_alb_wet(:)                          = AWRAL600_struc(n)%alb_wet(:)                         
             tmp_cgsmax(:)                           = AWRAL600_struc(n)%cgsmax(:)                          
@@ -260,7 +273,6 @@ subroutine AWRAL600_main(n)
             tmp_hveg(:)                             = AWRAL600_struc(n)%awral600(t)%hveg(:)                            
             tmp_laimax(:)                           = AWRAL600_struc(n)%awral600(t)%laimax(:)                          
             tmp_timesteps                           = AWRAL600_struc(n)%timesteps                       
-            tmp_cells                               = AWRAL600_struc(n)%cells                           
  
             ! get state variables
             tmp_sr       = AWRAL600_struc(n)%awral600(t)%sr   
@@ -272,15 +284,7 @@ subroutine AWRAL600_main(n)
  
 
             ! call model physics 
-            call awral_driver_600(tmp_n                 , & ! in    - nest id [-]
-                                  tmp_latitude          , & ! in    - latitude in decimal degree [rad]
-                                  tmp_logitude          , & ! in    - longitude in decimal year [rad]
-                                  tmp_year              , & ! in    - year of the currrent time step [-]
-                                  tmp_month             , & ! in    - month of the current time step [-]
-                                  tmp_day               , & ! in    - day of the current time step [-]
-                                  tmp_hour              , & ! in    - hour of the current time step [-]
-                                  tmp_minute            , & ! in    - minute of the current time step [-]
-                                  tmp_Tair              , & ! in    - average air temperature [K]
+            call awral_driver_600(tmp_Tair              , & ! in    - average air temperature [K]
                                   tmp_Swdown            , & ! in    - downward shortwave radiation [W/m2]
                                   tmp_Rainf             , & ! in    - daily gross precipitation [kg/m2s]
                                   tmp_Qair              , & ! in    - actual vapour pressure [kg/kg]
@@ -299,6 +303,8 @@ subroutine AWRAL600_main(n)
                                   tmp_ss                , & ! inout - water content of the shallow soil store for each hru [mm]
                                   tmp_sd                , & ! inout - water content of the deep soil store for each hru [mm]
                                   tmp_mleaf             , & ! inout - leaf biomass [kg/m2]
+                                  tmp_nhru              , & ! in    - number of hydrologic response units [-]
+                                  tmp_nhypsbins         , & ! in    - number of hypsometric percentile bins [-]
                                   tmp_slope_coeff       , & ! in    - scaling factor for slope [-]
                                   tmp_pair              , & ! in    - air pressure [Pa]
                                   tmp_kr_coeff          , & ! in    - scaling factor for ratio of saturated hydraulic conductivity [-]
@@ -338,8 +344,11 @@ subroutine AWRAL600_main(n)
                                   tmp_fhru              , & ! in    - fraction of the cell which contains shallow and deep rooted vegetation [-]
                                   tmp_hveg              , & ! in    - vegetation height for each hru [-]
                                   tmp_laimax            , & ! in    - leaf area index max for each hru [-]
+<<<<<<< HEAD
+                                  tmp_timesteps         ) ! in    - number of daily timesteps [-]
+=======
                                   tmp_timesteps         , & ! in    - number of daily timesteps [-]
-                                  tmp_cells             )   ! in    - number of grid cells [-]
+>>>>>>> 640c971... Finished putting in all vars for AWRAL model. Now let the fun begin
  
     
             ! save state variables from local variables to global variables
@@ -370,7 +379,7 @@ subroutine AWRAL600_main(n)
             
             ![ 3] output variable: s0 (unit=mm). ***  latent heat flux
             do i=1, AWRAL600_struc(n)%nhru
-                call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SO_HRU, value = AWRAL600_struc(n)%awral600(t)%s0(i), &
+                call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_S0_HRU, value = AWRAL600_struc(n)%awral600(t)%s0(i), &
                                                   vlevel=i, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             end do
             
@@ -453,6 +462,12 @@ subroutine AWRAL600_main(n)
     deallocate( tmp_w0ref_alb )
     deallocate( tmp_wdlimu )
     deallocate( tmp_wslimu )
+    deallocate( tmp_height )
+<<<<<<< HEAD
+    deallocate( tmp_hypsperc )
+=======
+    deallocate( tmp_hypsoperc )
+>>>>>>> 640c971... Finished putting in all vars for AWRAL model. Now let the fun begin
     deallocate( tmp_fhru )
     deallocate( tmp_hveg )
     deallocate( tmp_laimax )

@@ -186,7 +186,7 @@ subroutine AWRAL600_setup()
         !----------------------------------------------!
         ! read: height
         write(LIS_logunit,*) "AWRAL600: reading parameter HEIGHT from ", trim(LIS_rc%paramfile(n))
-        do k = 1, 1
+        do k = 1, AWRAL600_struc(n)%nhypsbins
             call AWRAL600_read_MULTILEVEL_param(n, AWRAL600_struc(n)%LDT_ncvar_height, k, placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col

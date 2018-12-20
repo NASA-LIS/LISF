@@ -38,12 +38,18 @@ subroutine AWRAL600_finalize(n)
             deallocate(AWRAL600_struc(n)%awral600(t)%fhru)
             deallocate(AWRAL600_struc(n)%awral600(t)%hveg)
             deallocate(AWRAL600_struc(n)%awral600(t)%laimax)
+            deallocate(AWRAL600_struc(n)%awral600(t)%height)
         end do  ! tile loop
  
         ! free memory for awral600, the data at tile level
         deallocate(AWRAL600_struc(n)%awral600)
 
-        ! free momory for constant parameter 
+        ! free momory for constant parameter
+<<<<<<< HEAD
+        deallocate(AWRAL600_struc(n)%hypsperc) 
+=======
+        deallocate(AWRAL600_struc(n)%hypsoperc) 
+>>>>>>> 640c971... Finished putting in all vars for AWRAL model. Now let the fun begin
         deallocate(AWRAL600_struc(n)%alb_dry)
         deallocate(AWRAL600_struc(n)%alb_wet)
         deallocate(AWRAL600_struc(n)%cgsmax)

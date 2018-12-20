@@ -54,6 +54,20 @@ subroutine AWRAL600_readcrd()
     !---------------------------!
     ! Constant Parameters       !
     !---------------------------!
+    ! number of hydrologic response units
+    call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 nhru:", rc = rc)
+    do n=1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%nhru, rc=rc)
+        call LIS_verify(rc, "AWRAL600 nhru: not defined")
+    enddo
+
+    ! number of hypsometric curve percentile bins
+    call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 nhypsbins:", rc = rc)
+    do n=1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%nhypsbins, rc=rc)
+        call LIS_verify(rc, "AWRAL600 nhypsbins: not defined")
+    enddo
+
     ! scaling factor for slope
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 slope_coeff:", rc = rc)
     do n=1, LIS_rc%nnest
@@ -78,7 +92,7 @@ subroutine AWRAL600_readcrd()
     ! hypsometric percentile bins
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 hypsperc:", rc = rc)
     do n=1, LIS_rc%nnest
-        do i = 1, AWRAL600_struc(n)%nhru
+        do i = 1, AWRAL600_struc(n)%nhypsbins
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%hypsperc(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 hypsperc: not defined')
         enddo
@@ -252,14 +266,6 @@ subroutine AWRAL600_readcrd()
         call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%timesteps, rc=rc)
         call LIS_verify(rc, "AWRAL600 timesteps: not defined")
     enddo
- 
-    ! number of grid cells
-    call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 cells:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%cells, rc=rc)
-        call LIS_verify(rc, "AWRAL600 cells: not defined")
-    enddo
- 
 
     ! The following lines hard code the LDT NetCDF variable names. 
     do n=1, LIS_rc%nnest
@@ -277,7 +283,6 @@ subroutine AWRAL600_readcrd()
         AWRAL600_struc(n)%LDT_ncvar_kdsat    = 'AWRAL600_KDSAT'
         AWRAL600_struc(n)%LDT_ncvar_ne       = 'AWRAL600_NE'
         AWRAL600_struc(n)%LDT_ncvar_height   = 'AWRAL600_HEIGHT'
-        AWRAL600_struc(n)%LDT_ncvar_hypsperc = 'AWRAL600_HYPSPERC'
         AWRAL600_struc(n)%LDT_ncvar_fhru     = 'AWRAL600_FHRU'
         AWRAL600_struc(n)%LDT_ncvar_hveg     = 'AWRAL600_HVEG'
         AWRAL600_struc(n)%LDT_ncvar_laimax   = 'AWRAL600_LAIMAX'
