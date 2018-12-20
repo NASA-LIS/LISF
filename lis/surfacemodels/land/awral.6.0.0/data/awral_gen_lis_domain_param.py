@@ -16,7 +16,7 @@ def getLonIdx(self, longitude):
 
 class awral():
   def __init__(self):
-    self.tile_fractions=[1.0]
+    self.tile_fractions=[1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     self.llat = -44.00
     self.llon = 112.00
     self.latitude=-33.00
@@ -71,17 +71,14 @@ class awral():
         self.S0MAX = 100.*np.multiply(self.s0max_scale,self.s0fracawc_grid)
         self.SSMAX = 900.*np.multiply(self.ssmax_scale,self.ssfracawc_grid)
         self.SDMAX = 5000.*np.multiply(self.sdmax_scale,self.sdfracawc_grid)
-
         self.k0sat_grid = ds['parameters']['k0sat'][:]
         self.kssat_grid = ds['parameters']['kssat'][:]
         self.kdsat_grid = ds['parameters']['kdsat'][:]
         self.K0SAT = np.multiply(self.k0sat_scale,self.k0sat_grid)
         self.KSSAT = np.multiply(self.kssat_scale,self.kssat_grid)
         self.KDSAT = np.multiply(self.kdsat_scale,self.kdsat_grid)
-        
         self.KR_0S = np.minimum(150.0, np.maximum(1.0, self.K0SAT/self.KSSAT))
         self.KR_SD = np.minimum(150.0, np.maximum(1.0, self.KSSAT/self.KDSAT))
-
         self.pref_grid = ds['parameters']['pref'][:]
         self.PREFR = np.multiply(self.pref_gridscale,self.pref_grid)
         self.ne_grid = ds['parameters']['ne']
@@ -115,7 +112,7 @@ class awral():
     lon = rootgrp.createDimension("east_west", self.domsize)
     lat_b = rootgrp.createDimension("north_south_b", self.halosize)
     lon_b = rootgrp.createDimension("east_west_b", self.halosize)
-    sfctypes = rootgrp.createDimension("sfctypes", 1)
+    sfctypes = rootgrp.createDimension("sfctypes", 9)
     hrutypes = rootgrp.createDimension("hrutypes", self.num_hrus)
     hypsobins = rootgrp.createDimension("hypsobins", self.num_hypsobins)
     self.x_idx = getLonIdx(self,self.longitude)
