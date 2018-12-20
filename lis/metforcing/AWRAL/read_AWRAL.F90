@@ -96,6 +96,10 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
   allocate(lb(AWRAL_struc(n)%ncol,AWRAL_struc(n)%nrow))
 
 
+
+  write ( cyear, '(i4)' ) year
+  write ( cday, '(i3)' ) day
+
 !=== End Variable Definition =======================
   if(order.eq.1) then 
      AWRAL_struc(n)%metdata1 = LIS_rc%udef
