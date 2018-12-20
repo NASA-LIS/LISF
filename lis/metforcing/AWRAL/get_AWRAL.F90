@@ -112,9 +112,9 @@ subroutine get_AWRAL(n, findex)
       if ( LIS_rc%time > AWRAL_struc(n)%AWRALtime ) then
       ! Determine and return filename of AWRAL file 
         call AWRALfile( file_name, AWRAL_struc(n)%AWRALdir, yr2, doy2)
-        write(LIS_logunit,*) '[INFO] Getting new AWRAL precip data:: ', file_name
+        write(LIS_logunit,*) '[INFO] Getting new AWRAL forcing data:: ', file_name
       ! Open, read, and reinterpolate AWRAL field to LIS-defined grid
-        call read_AWRAL ( n, file_name, findex, order, ferror_AWRAL )
+        call read_AWRAL ( n, file_name, findex, order, yr2, doy2, ferror_AWRAL )
       ! Assign latest AWRAL file time to stored AWRAL time variable
         AWRAL_struc(n)%AWRALtime = timenext
       endif
@@ -126,7 +126,7 @@ subroutine get_AWRAL(n, findex)
        call AWRALfile( file_name, AWRAL_struc(n)%AWRALdir, yr1, doy1 )
        write(LIS_logunit,*) '[INFO] Getting new AWRAL precip data:: ', file_name
      ! Open, read, and reinterpolate AWRAL field to LIS-defined grid
-       call read_AWRAL ( n, file_name, findex, order, ferror_AWRAL )
+       call read_AWRAL ( n, file_name, findex, order, yr2, doy2, ferror_AWRAL )
      ! Assign latest AWRAL file time to stored AWRAL time variable
        AWRAL_struc(n)%AWRALtime = AWRAL_file_time1
 

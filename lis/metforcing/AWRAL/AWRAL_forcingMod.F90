@@ -69,6 +69,7 @@ module AWRAL_forcingMod
      integer            :: ncol                 ! Number of cols
      integer            :: nrow                 ! Number of rows
      integer            :: N_AF                 ! Number of met forcing vars
+     character(10), allocatable :: awral_fv(:)   ! Array of forcing var names
      character*40       :: AWRALdir              ! STAGE IV Directory
      real*8             :: AWRALtime             ! Nearest hourly instance of incoming file
      integer            :: mi                   ! Number of points in the input grid
@@ -154,6 +155,14 @@ contains
     do n=1, LIS_rc%nnest
        AWRAL_struc(n)%ts = 86400
        AWRAL_struc(n)%N_AF = 6
+       allocate (  AWRAL_struc(n)%awral_fv(6) ) 
+       AWRAL_struc(n)%awral_fv = (/  &
+       'tat       ',    &
+       'rgt      ',    &
+       'pt     ',    &
+       'avpt     ',    &
+       'u2t      ',    &
+       'radcskyt      '     /)
        call LIS_update_timestep(LIS_rc, n, AWRAL_struc(n)%ts)
     enddo
 

@@ -44,8 +44,7 @@ subroutine AWRALfile( name, AWRALdir, yr, doy)
    write ( cyear, '(i4)' ) yr
    write ( cdoy, '(i3)' ) doy
 
-   name = trim(AWRALdir)//'/AWRAL_'//trim(cyear)//'/'//&
-        trim(cdoy)
+   name = trim(AWRALdir)
 
 end subroutine AWRALfile
 

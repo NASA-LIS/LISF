@@ -15,24 +15,32 @@
 !  30 Jan 2017: Sujay Kumar, Initial version
 !
 ! !INTERFACE:
-subroutine read_AWRAL( n, fname,findex,order, ferror_AWRAL )
+subroutine read_AWRAL( n, fname, index, order, year, day, ferror_AWRAL )
 
 ! !USES:
+  use LIS_coreMod,        only : LIS_rc, LIS_domain, LIS_masterproc
   use LIS_coreMod,        only : LIS_rc, LIS_domain
   use LIS_logMod,         only : LIS_logunit, LIS_verify
   use LIS_metforcingMod,  only : LIS_forc
   use AWRAL_forcingMod,    only : AWRAL_struc
-
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+  use netcdf
+#endif
 #if (defined USE_GRIBAPI)
   use grib_api
 #endif
 
   implicit none
 ! !ARGUMENTS:
-  integer, intent(in) :: n
+  integer, intent(in)    :: order     ! lower(1) or upper(2) time interval bdry
+  integer, intent(in)    :: n         ! nest
+  integer, intent(in)    :: index    ! forcing index
   character(len=80)   :: fname          
-  integer, intent(in) :: findex
-  integer, intent(in) :: order
+  integer, intent(in) :: year
+  integer, intent(in) :: day
+  character(4) :: cyear
+  character(3) :: cday
+
   integer             :: ferror_AWRAL
 
 ! !DESCRIPTION:
@@ -60,28 +68,25 @@ subroutine read_AWRAL( n, fname,findex,order, ferror_AWRAL )
 
   integer            :: i, j, t, iret ! Loop indicies and error flags
   integer            :: ftn, ndata, index1,v
-  integer, parameter :: N_AF = 6 ! # of AWRAL forcing variables
 
   character(10) :: var_fname
   real               :: regrid(LIS_rc%lnc(n),LIS_rc%lnr(n))
-  character(10), dimension(N_AF), parameter :: awral_fv = (/  &
-       'tat       ',    &
-       'rgt      ',    &
-       'pt     ',    &
-       'avpt     ',    &
-       'u2t      ',    &
-       'radcskyt      '     /)  
-
-  
   real               :: AWRALin(AWRAL_struc(n)%ncol*AWRAL_struc(n)%nrow)
   logical*1          :: lb(AWRAL_struc(n)%ncol*AWRAL_struc(n)%nrow)
   logical            :: file_exists            
   integer            :: igrib
+! netcdf variables
+  integer :: ncid, varid, status 
+  integer            :: timestep
   real               :: missingValue
   integer            :: pds5_val, pds7_val
 
   integer            :: c1,r1,c,r
   real               :: AWRALin1(AWRAL_struc(n)%ncol*AWRAL_struc(n)%nrow)
+
+
+  write ( cyear, '(i4)' ) year
+  write ( cday, '(i3)' ) day
 
 !=== End Variable Definition =======================
   if(order.eq.1) then 
@@ -91,17 +96,10 @@ subroutine read_AWRAL( n, fname,findex,order, ferror_AWRAL )
   endif
 
 !-- Set necessary parameters for call to interp_AWRAL   
-  !precip_regrid = -1.0
-  !pt_regrid = LIS_rc%udef
-  !tat_regrid = LIS_rc%udef
-  !rgt_regrid = LIS_rc%udef
-  !avpt_regrid = LIS_rc%udef
-  !u2t_regrid = LIS_rc%udef
-  !radcskyt_regrid = LIS_rc%udef
 
 !-- Check initially if file exists:
-  do v = 1, N_AF  ! N_AF
-    var_fname = fname//'/'//awral_fv(v)//'.grb'
+  do v = 1,  AWRAL_struc(n)%N_AF  ! N_AF
+    var_fname = fname//'/'//AWRAL_struc(n)%awral_fv(v)//'_'//cyear//'.nc'
     inquire (file=trim(var_fname), exist=file_exists ) ! Check if file exists
      if (.not. file_exists)  then 
        write(LIS_logunit,*)"[ERR] Missing AWRAL file: ", fname
@@ -110,32 +108,35 @@ subroutine read_AWRAL( n, fname,findex,order, ferror_AWRAL )
     endif
   enddo
 
-#if(defined USE_GRIBAPI) 
-  do v = 1, N_AF ! N_AF
+!-- Get timestep from cdoy --!
+  timestep = day - 1
+
+  do v = 1, AWRAL_struc(n)%N_AF ! N_AF
     regrid = LIS_rc%udef
     ndata = AWRAL_struc(n)%ncol * AWRAL_struc(n)%nrow
     AWRALin = 0.0
-    var_fname = fname//'/'//awral_fv(v)//'.grb'
-
-    call grib_open_file(v,trim(var_fname),'r',iret)
-    call LIS_verify(iret,'error grib_open_file in read_AWRAL')
-  
-    call grib_new_from_file(v,igrib,iret)
-    call LIS_verify(iret,'error in grib_new_from_file in read_AWRAL')
-  
-    call grib_get(igrib,'indicatorOfParameter',pds5_val,iret)
-    call LIS_verify(iret, 'error in grib_get: indicatorOfParameter in read_AWRAL')
-  
-    call grib_get(igrib,'level',pds7_val,iret)
-    call LIS_verify(iret, 'error in grib_get: level in read_AWRAL')
-
-    if(pds5_val==20 .AND. pds7_val==0) then 
-	  call grib_get(igrib,'values',AWRALin,iret)
-      call LIS_verify(iret, 'error in grib_get:values in read_AWRAL')
+    var_fname = fname//'/'//AWRAL_struc(n)%awral_fv(v)//'_'//cyear//'.nc'
      
-    call grib_get(igrib,'missingValue',missingValue,iret)
-    call LIS_verify(iret, 'error in grib_get:missingValue in read_AWRAL')
-     
+    !-- netcdf reader --!
+    ! Open netCDF file.
+    status = nf90_open(var_fname, nf90_NoWrite, ncid)
+    status = nf90_inq_varid(ncid, trim(AWRAL_struc(n)%awral_fv(v)), varid)
+  
+    if(status/=0) then
+       if(LIS_masterproc) then
+            write(LIS_logunit,*)'[ERR] Problem opening file: ',var_fname,status
+            write(LIS_logunit,*)'[ERR]  Stopping...'
+            call LIS_endrun
+       endif
+         call LIS_endrun
+    else
+       if(LIS_masterproc) write(LIS_logunit,*)'[INFO] Opened file: ',var_fname
+    end if
+
+    status = nf90_get_var(ncid, varid, AWRALin, &
+                                     start=(/1,1,timestep/), &
+    count=(/AWRAL_struc(n)%ncol,AWRAL_struc(n)%nrow,1/))
+
     do r=1, AWRAL_struc(n)%nrow
         do c=1,AWRAL_struc(n)%ncol
            c1 = c
@@ -152,7 +153,7 @@ subroutine read_AWRAL( n, fname,findex,order, ferror_AWRAL )
         endif
     enddo
 
-    call interp_AWRAL( n, findex, ndata, AWRALin1, lb, LIS_rc%gridDesc(n,:), &
+    call interp_AWRAL( n, index, ndata, AWRALin1, lb, LIS_rc%gridDesc(n,:), &
           LIS_rc%lnc(n), LIS_rc%lnr(n), regrid )
 
     do j = 1, LIS_rc%lnr(n)
@@ -173,18 +174,9 @@ subroutine read_AWRAL( n, fname,findex,order, ferror_AWRAL )
         enddo
     enddo
 
-    call grib_release(igrib,iret)
-    call LIS_verify(iret,'error in grib_release in read_AWRAL')
-
-  else
-    write(LIS_logunit,*) 'Could not retrieve entries in file: ',trim(fname)
-    ferror_AWRAL = 1
-    return
-  endif
-
-  call grib_close_file(v)
+  ! Close netCDF file.
+    status=nf90_close(ncid)
   enddo
-#endif
      
 end subroutine read_AWRAL
 
