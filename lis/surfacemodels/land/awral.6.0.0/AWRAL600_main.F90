@@ -408,7 +408,6 @@ subroutine AWRAL600_main(n)
             AWRAL600_struc(n)%awral600(t)%ss_avg    = SNGL(tmp_ss_avg)   
             AWRAL600_struc(n)%awral600(t)%sd_avg    = SNGL(tmp_sd_avg)   
             AWRAL600_struc(n)%awral600(t)%qtot      = SNGL(tmp_qtot)     
- 
             
             ![ 1] output variable: sr (unit=mm). *** volume of water in the surface water store
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SR, value = AWRAL600_struc(n)%awral600(t)%sr, &
