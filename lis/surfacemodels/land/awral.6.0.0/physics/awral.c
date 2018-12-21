@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* Overall comment: looks like the fc compiler does not like the type being declared inside a loop so hence the ugly loops */
+/* Overall comment: wrapping means that some changes to the code were necessary */
 const int HYPS_LEN = 20; // +++ Should be supplied as input value; 20 hardcoded in other places
 const int NUM_CELLS = 1; // +++ LIS can only take one tile at a time
 
@@ -15,7 +15,7 @@ void copycells(const double *in, double *out, int len) {
 }
 
 void build_hypso(double *sgtemp, const double *height, const double ne, int cells) {
-    int c, l
+    int c, l;
     for (c = 0; c < cells; c ++) {
         for (l = 0; l < 20; l++) {
             int idx = c*HYPS_LEN + l;
@@ -35,7 +35,7 @@ __inline__ double hyps_fsat(double *sgtemp, const double *hypsfsat, double sg, d
     } else {
         int id0 = -1;
         int i;
-        for (int i=0;i<HYPS_LEN;i++) {
+        for (i = 0; i < HYPS_LEN; i ++) {
             if (sg_eff >= sgtemp[i]) {
                 id0++;
             } else {
@@ -112,7 +112,7 @@ void awral_driver_600_(double tat, double rgt, double pt, double avpt, double u2
 
     int hru, c, ts;
     #pragma ivdep
-    for (int hru=0; hru<2; hru++){
+    for (hru=0; hru<2; hru++){
         s0_[hru] = s0[hru];
         ss_[hru] = ss[hru];
         sd_[hru] = sd[hru];
