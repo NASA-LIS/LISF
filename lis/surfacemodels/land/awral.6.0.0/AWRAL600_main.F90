@@ -120,11 +120,7 @@ subroutine AWRAL600_main(n)
     real, allocatable    :: tmp_laimax(:)          ! leaf area index max for each hru [-]
     integer              :: tmp_timesteps          ! number of daily timesteps [-]
 
-<<<<<<< HEAD
     allocate( tmp_hypsperc( AWRAL600_struc(n)%nhypsbins ) )
-=======
-    allocate( tmp_hypsoperc( AWRAL600_struc(n)%nhypsbins ) )
->>>>>>> 640c971... Finished putting in all vars for AWRAL model. Now let the fun begin
     allocate( tmp_height( AWRAL600_struc(n)%nhypsbins ) )
     allocate( tmp_s0( AWRAL600_struc(n)%nhru ) )
     allocate( tmp_ss( AWRAL600_struc(n)%nhru ) )
@@ -246,11 +242,7 @@ subroutine AWRAL600_main(n)
             tmp_kdsat                               = AWRAL600_struc(n)%awral600(t)%kdsat                           
             tmp_ne                                  = AWRAL600_struc(n)%awral600(t)%ne                              
             tmp_height(:)                           = AWRAL600_struc(n)%awral600(t)%height(:)                          
-<<<<<<< HEAD
             tmp_hypsperc(:)                         = AWRAL600_struc(n)%hypsperc(:)                        
-=======
-            tmp_hypsperc(:)                         = AWRAL600_struc(n)%awral600(t)%hypsperc(:)                        
->>>>>>> 640c971... Finished putting in all vars for AWRAL model. Now let the fun begin
             tmp_alb_dry(:)                          = AWRAL600_struc(n)%alb_dry(:)                         
             tmp_alb_wet(:)                          = AWRAL600_struc(n)%alb_wet(:)                         
             tmp_cgsmax(:)                           = AWRAL600_struc(n)%cgsmax(:)                          
@@ -344,11 +336,7 @@ subroutine AWRAL600_main(n)
                                   tmp_fhru              , & ! in    - fraction of the cell which contains shallow and deep rooted vegetation [-]
                                   tmp_hveg              , & ! in    - vegetation height for each hru [-]
                                   tmp_laimax            , & ! in    - leaf area index max for each hru [-]
-<<<<<<< HEAD
                                   tmp_timesteps         ) ! in    - number of daily timesteps [-]
-=======
-                                  tmp_timesteps         , & ! in    - number of daily timesteps [-]
->>>>>>> 640c971... Finished putting in all vars for AWRAL model. Now let the fun begin
  
     
             ! save state variables from local variables to global variables
@@ -463,11 +451,7 @@ subroutine AWRAL600_main(n)
     deallocate( tmp_wdlimu )
     deallocate( tmp_wslimu )
     deallocate( tmp_height )
-<<<<<<< HEAD
     deallocate( tmp_hypsperc )
-=======
-    deallocate( tmp_hypsoperc )
->>>>>>> 640c971... Finished putting in all vars for AWRAL model. Now let the fun begin
     deallocate( tmp_fhru )
     deallocate( tmp_hveg )
     deallocate( tmp_laimax )

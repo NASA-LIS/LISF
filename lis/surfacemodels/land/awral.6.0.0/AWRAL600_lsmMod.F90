@@ -177,13 +177,8 @@ module AWRAL600_lsmMod
         real               :: slope_coeff
         real               :: pair
         real               :: kr_coeff
-<<<<<<< HEAD
         integer            :: nhru
         integer            :: nhypsbins
-=======
-        real               :: nhru
-        real               :: nhypsbins
->>>>>>> 640c971... Finished putting in all vars for AWRAL model. Now let the fun begin
         real, pointer      :: hypsperc(:)
         real, pointer      :: alb_dry(:)
         real, pointer      :: alb_wet(:)

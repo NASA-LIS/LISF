@@ -45,11 +45,7 @@ subroutine AWRAL600_finalize(n)
         deallocate(AWRAL600_struc(n)%awral600)
 
         ! free momory for constant parameter
-<<<<<<< HEAD
         deallocate(AWRAL600_struc(n)%hypsperc) 
-=======
-        deallocate(AWRAL600_struc(n)%hypsoperc) 
->>>>>>> 640c971... Finished putting in all vars for AWRAL model. Now let the fun begin
         deallocate(AWRAL600_struc(n)%alb_dry)
         deallocate(AWRAL600_struc(n)%alb_wet)
         deallocate(AWRAL600_struc(n)%cgsmax)
