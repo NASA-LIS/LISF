@@ -30,8 +30,8 @@ module LISWRFGridCompMod
   public :: LISWRF_export
 
   
-  type(LISWRFimport), allocatable :: LISWRF_import(:)
-  type(LISWRFexport), allocatable :: LISWRF_export(:)
+  type(LISWRFimport), allocatable, target :: LISWRF_import(:)
+  type(LISWRFexport), allocatable, target :: LISWRF_export(:)
 
   contains 
     subroutine LISWRF_alloc_states
@@ -108,6 +108,10 @@ module LISWRFGridCompMod
          allocate(LISWRF_export(n)%relsmc3(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISWRF_export(n)%relsmc4(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISWRF_export(n)%xland(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+#ifdef WRF_HYDRO
+         allocate(LISWRF_export(n)%infxsrt(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+         allocate(LISWRF_export(n)%soldrain(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+#endif
 
 !Export states
          allocate(LISWRF_export(n)%avgsurft_t(LIS_rc%ntiles(n)))
@@ -149,6 +153,10 @@ module LISWRFGridCompMod
          allocate(LISWRF_export(n)%relsmc3_t(LIS_rc%ntiles(n)))
          allocate(LISWRF_export(n)%relsmc4_t(LIS_rc%ntiles(n)))
          allocate(LISWRF_export(n)%xland_t(LIS_rc%ntiles(n)))
+#ifdef WRF_HYDRO
+         allocate(LISWRF_export(n)%infxsrt_t(LIS_rc%ntiles(n)))
+         allocate(LISWRF_export(n)%soldrain_t(LIS_rc%ntiles(n)))
+#endif
       enddo
     end subroutine LISWRF_alloc_states
 

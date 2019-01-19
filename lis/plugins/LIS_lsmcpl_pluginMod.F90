@@ -199,6 +199,12 @@ subroutine LIS_lsmcpl_plugin
     call registerlsmcplsetexport(trim(LIS_noah33Id)//"+"//&
                                  trim(LIS_wrfcplId)//char(0), &
                                  noah33_setwrfexport)
+    call registerlsmcplsetexport(trim(LIS_noah33Id)//"+"//&
+                                 trim(LIS_nuopccplId)//char(0), &
+                                 noah33_setwrfexport)
+    call registerlsmcplsetexport(trim(LIS_noah33Id)//"+"//&
+                                 trim(LIS_retroId)//char(0), &
+                                 noah33_setwrfexport)
 #endif
 
 #if ( defined SM_NOAH_3_6 )

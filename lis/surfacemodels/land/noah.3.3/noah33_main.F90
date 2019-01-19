@@ -118,6 +118,11 @@ subroutine noah33_main(n)
   real        :: flx1      ! precip-snow surface  (w m-2)
   real        :: flx2      ! freezing rain latent heat flux (w m-2)
   real        :: flx3      ! phase-change heat flux from snowmelt (w m-2)
+#ifdef WRF_HYDRO
+! The following variable are for WRF-HYDRO,
+!   which is not currently implemented within LIS without WRF_HYDRO:
+  real        :: etpnd1
+#endif
   real        :: snomlt    ! snow melt (m) (water equivalent)
   real        :: sncovr    ! fractional snow cover (unitless fraction, 0-1)
 !  real        :: runoff1   ! ground surface runoff (m s-1)
@@ -721,6 +726,11 @@ subroutine noah33_main(n)
         print*, 'b  SMCREF = ', noah33_struc(n)%noah(t)%smcref
         print*, 'b  SMCMAX = ', noah33_struc(n)%noah(t)%smcmax
         print*, 'b  NROOT = ', noah33_struc(n)%noah(t)%nroot
+#ifdef WRF_HYDRO
+        print*, 'b  SFHEAD1RT = ', noah33_struc(n)%noah(t)%sfhead1rt
+        print*, 'b  INFXS1RT = ', noah33_struc(n)%noah(t)%infxs1rt
+        print*, 'b  SOLDRAIN1RT = ', noah33_struc(n)%noah(t)%soldrain1rt
+#endif
         print *,' '
         print *,'CALLING SFLX'
         print *,' '
@@ -780,7 +790,13 @@ subroutine noah33_main(n)
                 noah33_struc(n)%noah(t)%zbot, noah33_struc(n)%noah(t)%refkdt, ptu, & 
                 noah33_struc(n)%noah(t)%frzx,                                      &
                 noah33_struc(n)%noah(t)%sndens, & !added for use in SCF DA, yliu 
-                noah33_struc(n)%noah(t)%lvcoef, tsoil)
+                noah33_struc(n)%noah(t)%lvcoef, tsoil &
+#ifdef WRF_HYDRO
+                ,noah33_struc(n)%noah(t)%sfhead1rt &
+                ,noah33_struc(n)%noah(t)%infxs1rt &
+                ,etpnd1 &
+#endif
+                )
 
 !     if(LIS_localPet.eq.8) then 
 !        if(t.ge.61.and.t.le.80) then 
@@ -795,6 +811,9 @@ subroutine noah33_main(n)
            noah33_struc(n)%noah(t)%sca = sncovr ! EMK NUWRF
            
            noah33_struc(n)%noah(t)%z0_old = noah33_struc(n)%noah(t)%z0
+#ifdef WRF_HYDRO
+           noah33_struc(n)%noah(t)%soldrain1rt = noah33_struc(n)%noah(t)%runoff2*dt*1000.0
+#endif
 #if _DEBUG_PRINT_
         print *,' '
         print*, "*****--------------After SFLX.------------****"
@@ -894,6 +913,11 @@ subroutine noah33_main(n)
         print*, 'a  SMCREF = ', noah33_struc(n)%noah(t)%smcref
         print*, 'a  SMCMAX = ', noah33_struc(n)%noah(t)%smcmax
         print*, 'a  NROOT = ', noah33_struc(n)%noah(t)%nroot
+#ifdef WRF_HYDRO
+        print*, 'a  SFHEAD1RT = ', noah33_struc(n)%noah(t)%sfhead1rt
+        print*, 'a  INFXS1RT = ', noah33_struc(n)%noah(t)%infxs1rt
+        print*, 'a  SOLDRAIN1RT = ', noah33_struc(n)%noah(t)%soldrain1rt
+#endif
 #endif
         elseif(ice.eq.1) then 
            noah33_struc(n)%noah(t)%sh2o = 1.0
