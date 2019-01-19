@@ -75,8 +75,6 @@ MODEL_LIB    := $(abspath $(MODEL_LIBDIR)/liblis.a)
 MODEL_MKDIR  := $(abspath $(MODEL_DIR)/make)
 MODEL_MK     := $(abspath $(MODEL_MKDIR)/Makefile)
 MODEL_MKINC  := $(abspath $(MODEL_MKDIR)/configure.lis)
-MODEL_DEPDIR := $(abspath $(MODEL_DIR)/make/MAKDEP)
-MODEL_DEPMK  := $(abspath $(MODEL_DEPDIR)/Makefile)
 
 MODEL_MODS   := $(abspath $(MODEL_MODDIR)/lis_coremod.mod)
 MODEL_MODS   += $(abspath $(MODEL_MODDIR)/lis_daobservationsmod.mod)
@@ -192,10 +190,8 @@ build_model:
 	@echo $(HR)
 	@echo "Building Model..."
 	@echo ""
-	$(call checkdir, $(MODEL_DEPDIR))
-	make -C $(MODEL_DEPDIR) -f $(MODEL_DEPMK)
 	$(call checkdir, $(MODEL_DIR))
-	make -C $(MODEL_MKDIR) -f $(MODEL_MK)
+	( cd $(MODEL_DIR); ./compile )
 
 $(MODEL_MODS): build_model
 
