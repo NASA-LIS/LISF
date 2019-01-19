@@ -1,8 +1,8 @@
 1 # Parallelism
 2 # Optimization level
-1 # Assume little/big_endian data format
-2 # Use GRIBAPI
-1 # Enable AFWA-specific grib configuration settings
+2 # Assume little/big_endian data format
+1 # Use GRIBAPI
+0 # Enable AFWA-specific grib configuration settings
 1 # Use NETCDF
 4 # NETCDF version
 1 # NETCDF use shuffle filter
