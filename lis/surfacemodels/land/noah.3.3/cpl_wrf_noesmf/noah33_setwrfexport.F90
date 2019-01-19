@@ -50,6 +50,12 @@ subroutine noah33_setwrfexport(n)
        noah33_struc(n)%noah%z0)
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%q1_t,&
        noah33_struc(n)%noah%q1)
+#ifdef WRF_HYDRO
+  call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%infxsrt_t,&
+       noah33_struc(n)%noah%infxs1rt)
+  call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%soldrain_t,&
+       noah33_struc(n)%noah%soldrain1rt)
+#endif
 
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      temp(i) = noah33_struc(n)%noah(i)%smc(1)

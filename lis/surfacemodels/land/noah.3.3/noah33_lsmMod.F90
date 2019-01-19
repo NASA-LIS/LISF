@@ -216,6 +216,11 @@ contains
           noah33_struc(n)%noah(i)%shdfac = 0 
           noah33_struc(n)%noah(i)%alb = 0 
           noah33_struc(n)%noah(i)%z0 = 0 
+#if WRF_HYDRO
+          noah33_struc(n)%noah(i)%sfhead1rt = 0
+          noah33_struc(n)%noah(i)%infxs1rt = 0
+          noah33_struc(n)%noah(i)%soldrain1rt = 0
+#endif
           
        enddo
 
