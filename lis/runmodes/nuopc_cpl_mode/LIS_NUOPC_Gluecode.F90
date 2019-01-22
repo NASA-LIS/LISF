@@ -1821,10 +1821,62 @@ contains
             itemName=trim(LIS_FieldList(fIndex)%stateName), &
             field=exportField,rc=rc)
           if(ESMF_STDERRORCHECK(rc)) return ! bail out
-          call LIS_CopyFromLIS( &
-            farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
-            field=exportField,nest=nest,rc=rc)
-          if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          if (LIS_FieldList(fIndex)%stateName .eq. "smliqfracl1") then
+            call LIS_CopyFromLIS( &
+              farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
+              field=exportField,nest=nest,fillVal=1.0,rc=rc)
+            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          elseif (LIS_FieldList(fIndex)%stateName .eq. "smliqfracl2") then
+            call LIS_CopyFromLIS( &
+              farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
+              field=exportField,nest=nest,fillVal=1.0,rc=rc)
+            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          elseif (LIS_FieldList(fIndex)%stateName .eq. "smliqfracl3") then
+            call LIS_CopyFromLIS( &
+              farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
+              field=exportField,nest=nest,fillVal=1.0,rc=rc)
+            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          elseif (LIS_FieldList(fIndex)%stateName .eq. "smliqfracl4") then
+            call LIS_CopyFromLIS( &
+              farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
+              field=exportField,nest=nest,fillVal=1.0,rc=rc)
+            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          elseif (LIS_FieldList(fIndex)%stateName .eq. "smfracl1") then
+            call LIS_CopyFromLIS( &
+              farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
+              field=exportField,nest=nest,fillVal=1.0,rc=rc)
+            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          elseif (LIS_FieldList(fIndex)%stateName .eq. "smfracl2") then
+            call LIS_CopyFromLIS( &
+              farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
+              field=exportField,nest=nest,fillVal=1.0,rc=rc)
+            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          elseif (LIS_FieldList(fIndex)%stateName .eq. "smfracl3") then
+            call LIS_CopyFromLIS( &
+              farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
+              field=exportField,nest=nest,fillVal=1.0,rc=rc)
+            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          elseif (LIS_FieldList(fIndex)%stateName .eq. "smfracl4") then
+            call LIS_CopyFromLIS( &
+              farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
+              field=exportField,nest=nest,fillVal=1.0,rc=rc)
+            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          elseif (LIS_FieldList(fIndex)%stateName .eq. "infxsrt") then
+            call LIS_CopyFromLIS( &
+              farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
+              field=exportField,nest=nest,fillVal=0.0,rc=rc)
+            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          elseif (LIS_FieldList(fIndex)%stateName .eq. "soldrain") then
+            call LIS_CopyFromLIS( &
+              farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
+              field=exportField,nest=nest,fillVal=0.0,rc=rc)
+            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          else
+            call LIS_CopyFromLIS( &
+              farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
+              field=exportField,nest=nest,rc=rc)
+            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          endif
         else
           call ESMF_LogWrite( trim(l_label)// &
             " field is not present in NUOPC export state="// &
