@@ -151,11 +151,12 @@ contains
 #undef METHOD
 #define METHOD "LIS_FieldCopyFromLisField"
 
-  subroutine LIS_FieldCopyFromLisField(fieldLIS,field,nest,rc)
+  subroutine LIS_FieldCopyFromLisField(fieldLIS,field,nest,fillVal,rc)
 ! !ARGUMENTS:
     type(ESMF_Field),intent(in)            :: fieldLIS
     type(ESMF_Field),intent(inout)         :: field
     integer,intent(in)                     :: nest
+    real(ESMF_KIND_R4),intent(in),optional :: fillVal
     integer,intent(out)                    :: rc
 ! !ARGUMENTS:
     type(ESMF_Array)                       :: arrayLIS
@@ -167,7 +168,8 @@ contains
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
     call ESMF_FieldGet(field=field,array=array,rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    call LIS_CopyFromLIS(arrayLIS=arrayLIS,array=array,nest=nest,rc=rc)
+    call LIS_CopyFromLIS(arrayLIS=arrayLIS,array=array,nest=nest,&
+      fillVal=fillVal,rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
   end subroutine
 
@@ -176,11 +178,12 @@ contains
 #undef METHOD
 #define METHOD "LIS_FieldCopyFromLisFarray"
 
-  subroutine LIS_FieldCopyFromLisFarray(farrayLIS,field,nest,rc)
+  subroutine LIS_FieldCopyFromLisFarray(farrayLIS,field,nest,fillVal,rc)
 ! !ARGUMENTS:
     real,intent(in),pointer                :: farrayLIS(:)
     type(ESMF_Field),intent(inout)         :: field
     integer,intent(in)                     :: nest
+    real(ESMF_KIND_R4),intent(in),optional :: fillVal
     integer,intent(out)                    :: rc
 ! !ARGUMENTS:
     type(ESMF_Array)                       :: array
@@ -189,7 +192,8 @@ contains
 
     call ESMF_FieldGet(field=field,array=array,rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    call LIS_CopyFromLIS(farrayLIS=farrayLIS,array=array,nest=nest,rc=rc)
+    call LIS_CopyFromLIS(farrayLIS=farrayLIS,array=array,nest=nest,&
+      fillVal=fillVal,rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
   end subroutine
 
@@ -418,11 +422,12 @@ contains
 #undef METHOD
 #define METHOD "LIS_ArrayCopyFromLisArray"
 
-  subroutine LIS_ArrayCopyFromLisArray(arrayLIS,array,nest,rc)
+  subroutine LIS_ArrayCopyFromLisArray(arrayLIS,array,nest,fillVal,rc)
 ! !ARGUMENTS:
     type(ESMF_Array),intent(inout)          :: arrayLIS
     type(ESMF_Array),intent(in)             :: array
     integer,intent(in)                      :: nest
+    real(ESMF_KIND_R4),intent(in),optional  :: fillVal
     integer,intent(out)                     :: rc
 ! !LOCAL VARIABLES:
     integer                         :: localDeCount, localDeCountLIS
@@ -481,28 +486,32 @@ contains
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I4,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS_I4,farray=farray_I4,nest=nest,rc=rc)
+      call LIS_CopyFromLIS(farrayLIS=farrayLIS_I4,farray=farray_I4,nest=nest,&
+        fillVal=fillVal,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
     elseif(typekind==ESMF_TYPEKIND_I8) then
       call ESMF_ArrayGet(array,farrayPtr=farray_I8,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I8,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS_I8,farray=farray_I8,nest=nest,rc=rc)
+      call LIS_CopyFromLIS(farrayLIS=farrayLIS_I8,farray=farray_I8,nest=nest,&
+        fillVal=fillVal,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
     elseif(typekind==ESMF_TYPEKIND_R4) then
       call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R4,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS_R4,farray=farray_R4,nest=nest,rc=rc)
+      call LIS_CopyFromLIS(farrayLIS=farrayLIS_R4,farray=farray_R4,nest=nest,&
+        fillVal=fillVal,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
     elseif(typekind==ESMF_TYPEKIND_R8) then
       call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R8,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS_R8,farray=farray_R8,nest=nest,rc=rc)
+      call LIS_CopyFromLIS(farrayLIS=farrayLIS_R8,farray=farray_R8,nest=nest,&
+        fillVal=fillVal,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
     else
       call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
@@ -516,11 +525,12 @@ contains
 #undef METHOD
 #define METHOD "LIS_ArrayCopyFromLisFarray"
 
-  subroutine LIS_ArrayCopyFromLisFarray(farrayLIS,array,nest,rc)
+  subroutine LIS_ArrayCopyFromLisFarray(farrayLIS,array,nest,fillVal,rc)
 ! !ARGUMENTS:
     real,intent(in),pointer                 :: farrayLIS(:)
     type(ESMF_Array),intent(inout)          :: array
     integer,intent(in)                      :: nest
+    real(ESMF_KIND_R4),intent(in),optional  :: fillVal
     integer,intent(out)                     :: rc
 ! !LOCAL VARIABLES:
     integer                         :: localDeCount
@@ -561,12 +571,14 @@ contains
     if(typekind==ESMF_TYPEKIND_R4) then
       call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray_R4,nest=nest,rc=rc)
+      call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray_R4,nest=nest,&
+        fillVal=fillVal,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
     elseif(typekind==ESMF_TYPEKIND_R8) then
       call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray_R8,nest=nest,rc=rc)
+      call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray_R8,nest=nest,&
+        fillVal=fillVal,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
     else
       call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
@@ -907,25 +919,32 @@ contains
 #undef METHOD
 #define METHOD "LIS_FarrayI4CopyFromLisFarrayI4"
 
-  subroutine LIS_FarrayI4CopyFromLisFarrayI4(farrayLIS,farray,nest,rc)
+  subroutine LIS_FarrayI4CopyFromLisFarrayI4(farrayLIS,farray,nest,fillVal,rc)
 ! !ARGUMENTS:
     integer(ESMF_KIND_I4),intent(in),pointer    :: farrayLIS(:)
     integer(ESMF_KIND_I4),intent(inout),pointer :: farray(:,:)
     integer,intent(in)                          :: nest
+    real(ESMF_KIND_R4),intent(in),optional      :: fillVal
     integer,intent(out)                         :: rc
 ! !LOCAL VARIABLES:
     integer                         :: tile, col, row
+    real(ESMF_KIND_R4)              :: actual_fillVal
 ! !DESCRIPTION:
 !  This routine copies from an LIS 1D array to a 2D array
 !EOP
     rc = ESMF_SUCCESS
+    if (present(fillVal)) then
+      actual_fillVal = fillVal
+    else
+      actual_fillVal = MISSINGVALUE
+    endif
     do row=1,LIS_rc%lnr(nest)
     do col=1,LIS_rc%lnc(nest)
       tile = LIS_domain(nest)%gindex(col,row)
       if(LIS_domain(nest)%gindex(col,row).ne.-1) then
         farray(col,row) = farrayLIS(tile)
       else
-        farray(col,row) = MISSINGVALUE
+        farray(col,row) = actual_fillVal
       endif
     enddo
     enddo
@@ -936,25 +955,32 @@ contains
 #undef METHOD
 #define METHOD "LIS_FarrayI8CopyFromLisFarrayI8"
 
-  subroutine LIS_FarrayI8CopyFromLisFarrayI8(farrayLIS,farray,nest,rc)
+  subroutine LIS_FarrayI8CopyFromLisFarrayI8(farrayLIS,farray,nest,fillVal,rc)
 ! !ARGUMENTS:
     integer(ESMF_KIND_I8),intent(in),pointer    :: farrayLIS(:)
     integer(ESMF_KIND_I8),intent(inout),pointer :: farray(:,:)
     integer,intent(in)                          :: nest
+    real(ESMF_KIND_R4),intent(in),optional      :: fillVal
     integer,intent(out)                         :: rc
 ! !LOCAL VARIABLES:
     integer                         :: tile, col, row
+    real(ESMF_KIND_R4)              :: actual_fillVal
 ! !DESCRIPTION:
 !  This routine copies from an LIS 1D array to a 2D array
 !EOP
     rc = ESMF_SUCCESS
+    if (present(fillVal)) then
+      actual_fillVal = fillVal
+    else
+      actual_fillVal = MISSINGVALUE
+    endif
     do row=1,LIS_rc%lnr(nest)
     do col=1,LIS_rc%lnc(nest)
       tile = LIS_domain(nest)%gindex(col,row)
       if(LIS_domain(nest)%gindex(col,row).ne.-1) then
         farray(col,row) = farrayLIS(tile)
       else
-        farray(col,row) = MISSINGVALUE
+        farray(col,row) = actual_fillVal
       endif
     enddo
     enddo
@@ -965,25 +991,32 @@ contains
 #undef METHOD
 #define METHOD "LIS_FarrayR8CopyFromLisFarrayR4"
 
-  subroutine LIS_FarrayR8CopyFromLisFarrayR4(farrayLIS,farray,nest,rc)
+  subroutine LIS_FarrayR8CopyFromLisFarrayR4(farrayLIS,farray,nest,fillVal,rc)
 ! !ARGUMENTS:
     real(ESMF_KIND_R4),intent(in),pointer       :: farrayLIS(:)
     real(ESMF_KIND_R8),intent(inout),pointer    :: farray(:,:)
     integer,intent(in)                          :: nest
+    real(ESMF_KIND_R4),intent(in),optional      :: fillVal
     integer,intent(out)                         :: rc
 ! !LOCAL VARIABLES:
     integer                         :: tile, col, row
+    real(ESMF_KIND_R4)              :: actual_fillVal
 ! !DESCRIPTION:
 !  This routine copies from an LIS 1D array to a 2D array
 !EOP
     rc = ESMF_SUCCESS
+    if (present(fillVal)) then
+      actual_fillVal = fillVal
+    else
+      actual_fillVal = MISSINGVALUE
+    endif
     do row=1,LIS_rc%lnr(nest)
     do col=1,LIS_rc%lnc(nest)
       tile = LIS_domain(nest)%gindex(col,row)
       if(LIS_domain(nest)%gindex(col,row).ne.-1) then
         farray(col,row) = farrayLIS(tile)
       else
-        farray(col,row) = MISSINGVALUE
+        farray(col,row) = actual_fillVal
       endif
     enddo
     enddo
@@ -994,25 +1027,32 @@ contains
 #undef METHOD
 #define METHOD "LIS_FarrayR4CopyFromLisFarrayR4"
 
-  subroutine LIS_FarrayR4CopyFromLisFarrayR4(farrayLIS,farray,nest,rc)
+  subroutine LIS_FarrayR4CopyFromLisFarrayR4(farrayLIS,farray,nest,fillVal,rc)
 ! !ARGUMENTS:
     real(ESMF_KIND_R4),intent(in),pointer       :: farrayLIS(:)
     real(ESMF_KIND_R4),intent(inout),pointer    :: farray(:,:)
     integer,intent(in)                          :: nest
+    real(ESMF_KIND_R4),intent(in),optional      :: fillVal
     integer,intent(out)                         :: rc
 ! !LOCAL VARIABLES:
     integer                         :: tile, col, row
+    real(ESMF_KIND_R4)              :: actual_fillVal
 ! !DESCRIPTION:
 !  This routine copies from an LIS 1D array to a 2D array
 !EOP
     rc = ESMF_SUCCESS
+    if (present(fillVal)) then
+      actual_fillVal = fillVal
+    else
+      actual_fillVal = MISSINGVALUE
+    endif
     do row=1,LIS_rc%lnr(nest)
     do col=1,LIS_rc%lnc(nest)
       tile = LIS_domain(nest)%gindex(col,row)
       if(LIS_domain(nest)%gindex(col,row).ne.-1) then
         farray(col,row) = farrayLIS(tile)
       else
-        farray(col,row) = MISSINGVALUE
+        farray(col,row) = actual_fillVal
       endif
     enddo
     enddo
@@ -1023,25 +1063,32 @@ contains
 #undef METHOD
 #define METHOD "LIS_FarrayR8CopyFromLisFarrayR8"
 
-  subroutine LIS_FarrayR8CopyFromLisFarrayR8(farrayLIS,farray,nest,rc)
+  subroutine LIS_FarrayR8CopyFromLisFarrayR8(farrayLIS,farray,nest,fillVal,rc)
 ! !ARGUMENTS:
     real(ESMF_KIND_R8),intent(in),pointer       :: farrayLIS(:)
     real(ESMF_KIND_R8),intent(inout),pointer    :: farray(:,:)
     integer,intent(in)                          :: nest
+    real(ESMF_KIND_R4),intent(in),optional      :: fillVal
     integer,intent(out)                         :: rc
 ! !LOCAL VARIABLES:
     integer                         :: tile, col, row
+    real(ESMF_KIND_R4)              :: actual_fillVal
 ! !DESCRIPTION:
 !  This routine copies from an LIS 1D array to a 2D array
 !EOP
     rc = ESMF_SUCCESS
+    if (present(fillVal)) then
+      actual_fillVal = fillVal
+    else
+      actual_fillVal = MISSINGVALUE
+    endif
     do row=1,LIS_rc%lnr(nest)
     do col=1,LIS_rc%lnc(nest)
       tile = LIS_domain(nest)%gindex(col,row)
       if(LIS_domain(nest)%gindex(col,row).ne.-1) then
         farray(col,row) = farrayLIS(tile)
       else
-        farray(col,row) = MISSINGVALUE
+        farray(col,row) = actual_fillVal
       endif
     enddo
     enddo
