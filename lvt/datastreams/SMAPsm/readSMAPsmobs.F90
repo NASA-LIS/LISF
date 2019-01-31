@@ -138,7 +138,7 @@ subroutine read_SMAPsm(source, fname, smobs)
   integer                       :: memrank = 2
   integer(hsize_t), allocatable :: dims(:)
   integer(hsize_t), dimension(2) :: dimsm
-  integer(hsize_t), dimension(2) :: offset_file
+  integer(hsize_t), dimension(2) :: offset_file = (/0,0/)
   integer(hsize_t), dimension(2) :: count_file
   integer(hsize_t), dimension(2) :: count_mem
   integer(hsize_t), dimension(2) :: offset_mem = (/0,0/)
