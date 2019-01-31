@@ -125,7 +125,7 @@ module AWRAL600_lsmMod
     !-------------------------------------------------------------------------
     ! PUBLIC MEMBER FUNCTIONS
     !-------------------------------------------------------------------------
-    public :: AWRAL600_ini
+    public :: AWRAL600_lsm_ini
     !-------------------------------------------------------------------------
     ! PUBLIC TYPES
     !-------------------------------------------------------------------------
@@ -209,11 +209,11 @@ contains
 
 !BOP
 !
-! !ROUTINE: AWRAL600_ini
-! \label{AWRAL600_ini}
+! !ROUTINE: AWRAL600_lsm_ini
+! \label{AWRAL600_lsm_ini}
 !
 ! !INTERFACE:
-    subroutine AWRAL600_ini()
+    subroutine AWRAL600_lsm_ini()
 ! !USES:
         use LIS_coreMod, only : LIS_rc
         use LIS_logMod, only : LIS_verify
@@ -287,5 +287,5 @@ contains
             allocate(LIS_sfmodel_struc(n)%lyrthk(1))
             LIS_sfmodel_struc(n)%ts = AWRAL600_struc(n)%ts
         enddo
-    end subroutine AWRAL600_ini
+    end subroutine AWRAL600_lsm_ini
 end module AWRAL600_lsmMod

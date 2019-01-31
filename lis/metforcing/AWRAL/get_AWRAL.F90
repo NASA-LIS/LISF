@@ -64,22 +64,25 @@ subroutine get_AWRAL(n, findex)
 
     integer :: doy1, yr1, mo1, da1, hr1, mn1, ss1
     integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2
-    real    :: gmt1, gmt2,ts1,ts2                    
+    integer :: doyn, yrn, mon, dan, hrn, mnn, ssn
+    real    :: gmt1, gmt2, gmtn, ts1, ts2, tsn                    
     real    :: gridDesci(LIS_rc%nnest,50)
+
+    integer :: index1
 
 !=== End Variable Definition =======================
 
-    yr1 = LIS_rc%yr  !current time
-    mo1 = LIS_rc%mo
-    da1 = LIS_rc%da
-    hr1 = 0
-    mn1 = 0
-    ss1 = 0
-    ts1 = 86400
-    call LIS_tick( timenext, doy1, gmt1, yr1, mo1, da1, hr1, mn1, ss1, ts1 )
+    yrn = LIS_rc%yr  !get time next day?
+    mon = LIS_rc%mo
+    dan = LIS_rc%da
+    hrn = 0
+    mnn = 0
+    ssn = 0
+    tsn = 86400
+    call LIS_tick( timenext, doyn, gmtn, yrn, mon, dan, hrn, mnn, ssn, tsn )
 
 !-- Determine LIS's current time and the time of the AWRAL file:
-    yr1 = LIS_rc%yr
+    yr1 = LIS_rc%yr !get time previous day?
     mo1 = LIS_rc%mo
     da1 = LIS_rc%da
     hr1 = 0
@@ -87,8 +90,9 @@ subroutine get_AWRAL(n, findex)
     ss1 = 0
     ts1 = -86400
     call LIS_tick( AWRAL_file_time1, doy1, gmt1, yr1, mo1, da1, hr1, mn1, ss1, ts1 )
+
 !-- AWRAL product time; end accumulation time data
-    yr2 = LIS_rc%yr     
+    yr2 = LIS_rc%yr !get current time?
     mo2 = LIS_rc%mo
     da2 = LIS_rc%da
     hr2 = 0
@@ -103,36 +107,33 @@ subroutine get_AWRAL(n, findex)
          LIS_rc%rstflag(n) = 0
     endif
 
-!-- Check for and get AWRAL Precipitation data
+!-- Check for and get AWRAL data
     ferror_AWRAL = 0
     order = 2
 
-  ! LIS timestep < AWRAL time interval (1hr)
+  ! LIS timestep < AWRAL time interval (1da)
     if( LIS_rc%ts < AWRAL_struc(n)%ts ) then
       if ( LIS_rc%time > AWRAL_struc(n)%AWRALtime ) then
-      ! Determine and return filename of AWRAL file 
-        call AWRALfile( file_name, AWRAL_struc(n)%AWRALdir, yr2, doy2)
-        write(LIS_logunit,*) '[INFO] Getting new AWRAL forcing data:: ', file_name
+        write(LIS_logunit,*) '[INFO] Getting new AWRAL data'
       ! Open, read, and reinterpolate AWRAL field to LIS-defined grid
-        call read_AWRAL ( n, file_name, findex, order, yr2, doy2, ferror_AWRAL )
+        call read_AWRAL ( order, n, findex, yrn, doyn, ferror_AWRAL )
       ! Assign latest AWRAL file time to stored AWRAL time variable
         AWRAL_struc(n)%AWRALtime = timenext
       endif
 
-  ! LIS timestep == AWRAL time interval (1hr)
+  ! LIS timestep == AWRAL time interval (1da)
     elseif( LIS_rc%ts == AWRAL_struc(n)%ts ) then
 
      ! Determine and return filename of AWRAL file 
-       call AWRALfile( file_name, AWRAL_struc(n)%AWRALdir, yr1, doy1 )
-       write(LIS_logunit,*) '[INFO] Getting new AWRAL precip data:: ', file_name
+       write(LIS_logunit,*) '[INFO] Getting new AWRAL data no time interp necessary'
      ! Open, read, and reinterpolate AWRAL field to LIS-defined grid
-       call read_AWRAL ( n, file_name, findex, order, yr2, doy2, ferror_AWRAL )
+       call read_AWRAL ( order, n, findex, yr1, doy1, ferror_AWRAL )
      ! Assign latest AWRAL file time to stored AWRAL time variable
        AWRAL_struc(n)%AWRALtime = AWRAL_file_time1
-
+       index1 = LIS_domain(n)%gindex(1,1)
     else
       write(LIS_logunit,*) "[ERR] AWRAL READER CANNOT HANDLE LIS "
-      write(LIS_logunit,*) "[ERR] TIMESTEP > 3600 secs -- AT THIS TIME.  STOPPING ..."
+      write(LIS_logunit,*) "[ERR] TIMESTEP > 86400 secs -- AT THIS TIME.  STOPPING ..."
       call LIS_endrun
     endif
 

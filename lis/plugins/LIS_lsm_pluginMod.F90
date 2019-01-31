@@ -597,8 +597,8 @@ subroutine LIS_lsm_plugin
 #endif
 
 #if ( defined SM_AWRAL_6_0_0 )
-   call registerlsminit(trim(LIS_AWRAL600Id)//char(0),vic412_lsm_ini)
-   call registerlsmsetup(trim(LIS_AWRAL600Id)//char(0),vic412_setup)
+   call registerlsminit(trim(LIS_AWRAL600Id)//char(0),AWRAL600_lsm_ini)
+   call registerlsmsetup(trim(LIS_AWRAL600Id)//char(0),AWRAL600_setup)
    call registerlsmf2t(trim(LIS_AWRAL600Id)//"+"//trim(LIS_retroId)//char(0),&
         AWRAL600_f2t)
    call registerlsmrun(trim(LIS_AWRAL600Id)//char(0),AWRAL600_main)

@@ -68,10 +68,8 @@ module AWRAL_forcingMod
      real               :: ts
      integer            :: ncol                 ! Number of cols
      integer            :: nrow                 ! Number of rows
-     integer            :: N_AF                 ! Number of met forcing vars
-     character(10), allocatable :: awral_fv(:)   ! Array of forcing var names
-     character*40       :: AWRALdir              ! STAGE IV Directory
-     real*8             :: AWRALtime             ! Nearest hourly instance of incoming file
+     character*100       :: AWRALdir              ! STAGE IV Directory
+     real*8             :: AWRALtime             ! Nearest daily instance of incoming file
      integer            :: mi                   ! Number of points in the input grid
      logical            :: interp_flag
 ! == Arrays for Bilinear Interpolation option (=1)
@@ -150,49 +148,41 @@ contains
 
     call readcrd_AWRAL()
 	
-	!LIS_rc%met_nf(findex) = NUM_ATMOS_FORCING
-
     do n=1, LIS_rc%nnest
        AWRAL_struc(n)%ts = 86400
-       AWRAL_struc(n)%N_AF = 6
-       allocate (  AWRAL_struc(n)%awral_fv(6) ) 
-       AWRAL_struc(n)%awral_fv = (/  &
-       'tat       ',    &
-       'rgt      ',    &
-       'pt     ',    &
-       'avpt     ',    &
-       'u2t      ',    &
-       'radcskyt      '     /)
        call LIS_update_timestep(LIS_rc, n, AWRAL_struc(n)%ts)
     enddo
 
-    LIS_rc%met_nf(findex) = 1
+    LIS_rc%met_nf(findex) = 6
 
     gridDesci = 0
 
     do n=1,LIS_rc%nnest
 
-       allocate(AWRAL_struc(n)%metdata1(LIS_rc%met_nf(findex),AWRAL_struc(n)%N_AF,&
+       allocate(AWRAL_struc(n)%metdata1(1,LIS_rc%met_nf(findex),&
             LIS_rc%ngrid(n)))
-       allocate(AWRAL_struc(n)%metdata2(LIS_rc%met_nf(findex),AWRAL_struc(n)%N_AF,&
+       allocate(AWRAL_struc(n)%metdata2(1,LIS_rc%met_nf(findex),&
             LIS_rc%ngrid(n)))
+   
 
-       AWRAL_struc(n)%ncol = 841
-       AWRAL_struc(n)%nrow = 681
+       AWRAL_struc(n)%ncol = 2
+       AWRAL_struc(n)%nrow = 2
 
        gridDesci(n,1) = 0.0                 ! Projection type (UPS)
        gridDesci(n,2) = AWRAL_struc(n)%ncol  ! X-dir amount of points
        gridDesci(n,3) = AWRAL_struc(n)%nrow  ! y-dir amount of points
-       gridDesci(n,4) = -44.00
-       gridDesci(n,5) = 112.00
-       gridDesci(n,6) = 128
-       gridDesci(n,7) = -10.00
+       gridDesci(n,4) = -33.0
+       gridDesci(n,5) = 145.00
+       gridDesci(n,6) = 145.05
+       gridDesci(n,7) = -32.95
        gridDesci(n,8) = 154.00
        gridDesci(n,9) = 0.05
        gridDesci(n,10) = 0.05
        gridDesci(n,20) = 64.0
 
+
        AWRAL_struc(n)%mi = AWRAL_struc(n)%ncol * AWRAL_struc(n)%nrow
+
 
        if ( LIS_isatAfinerResolution(n,gridDesci(n,9)) ) then
           AWRAL_struc(n)%interp_flag = .true. 

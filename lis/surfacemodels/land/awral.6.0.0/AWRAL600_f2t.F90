@@ -109,8 +109,7 @@ subroutine AWRAL600_f2t(n)
 
     call ESMF_FieldGet(pcpField, localDE = 0, farrayPtr = pcp, rc = status)
     call LIS_verify(status, "AWRAL600_f2t: error retrieving Rainf")
-    
- 
+
     !!! set the forcing counter
     AWRAL600_struc(n)%forc_count = AWRAL600_struc(n)%forc_count + 1
  

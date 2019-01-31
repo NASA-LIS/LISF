@@ -92,6 +92,7 @@ subroutine AWRAL600_readcrd()
     ! hypsometric percentile bins
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 hypsperc:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%hypsperc(AWRAL600_struc(n)%nhypsbins))
         do i = 1, AWRAL600_struc(n)%nhypsbins
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%hypsperc(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 hypsperc: not defined')
@@ -101,6 +102,7 @@ subroutine AWRAL600_readcrd()
     ! dry soil albedo for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 alb_dry:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%alb_dry(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%alb_dry(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 alb_dry: not defined')
@@ -110,6 +112,7 @@ subroutine AWRAL600_readcrd()
     ! wet soil albedo for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 alb_wet:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%alb_wet(AWRAL600_struc(n)%nhru))    
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%alb_wet(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 alb_wet: not defined')
@@ -119,6 +122,7 @@ subroutine AWRAL600_readcrd()
     ! coefficient relating vegetation photosynthetic capacity to maximum stomatal conductance for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 cgsmax:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%cgsmax(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%cgsmax(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 cgsmax: not defined')
@@ -128,6 +132,7 @@ subroutine AWRAL600_readcrd()
     ! specific ratio of the mean evaporation rate and the mean rainfall intensity during storms for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 er_frac_ref:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%er_frac_ref(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%er_frac_ref(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 er_frac_ref: not defined')
@@ -137,6 +142,7 @@ subroutine AWRAL600_readcrd()
     ! soil evaporation scaling factor corresponding to unlimited soil water supply for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 fsoilemax:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%fsoilemax(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%fsoilemax(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 fsoilemax: not defined')
@@ -146,6 +152,7 @@ subroutine AWRAL600_readcrd()
     ! reference leaf area index (at which fv = 0.63) for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 lairef:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%lairef(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%lairef(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 lairef: not defined')
@@ -155,6 +162,7 @@ subroutine AWRAL600_readcrd()
     ! rooting depth for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 rd:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%rd(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%rd(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 rd: not defined')
@@ -164,6 +172,7 @@ subroutine AWRAL600_readcrd()
     ! specific canopy rainfall storage per unit leaf area for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 s_sls:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%s_sls(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%s_sls(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 s_sls: not defined')
@@ -173,6 +182,7 @@ subroutine AWRAL600_readcrd()
     ! specific leaf area for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 sla:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%sla(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%sla(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 sla: not defined')
@@ -182,6 +192,7 @@ subroutine AWRAL600_readcrd()
     ! characteristic time scale for vegetation growth towards equilibrium for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 tgrow:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%tgrow(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%tgrow(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 tgrow: not defined')
@@ -191,6 +202,7 @@ subroutine AWRAL600_readcrd()
     ! characteristic time scale for vegetation senescence towards equilibrium for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 tsenc:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%tsenc(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%tsenc(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 tsenc: not defined')
@@ -200,6 +212,7 @@ subroutine AWRAL600_readcrd()
     ! maximum possible root water uptake from the deep soil store for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 ud0:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%ud0(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%ud0(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 ud0: not defined')
@@ -209,6 +222,7 @@ subroutine AWRAL600_readcrd()
     ! maximum possible root water uptake from the shallow soil store for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 us0:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%us0(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%us0(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 us0: not defined')
@@ -218,6 +232,7 @@ subroutine AWRAL600_readcrd()
     ! vegetation photosynthetic capacity index per unit canopy cover for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 vc:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%vc(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%vc(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 vc: not defined')
@@ -227,6 +242,7 @@ subroutine AWRAL600_readcrd()
     ! limiting the value of the relative soil moisture content of the top soil layer at which evaporation is reduced for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 w0lime:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%w0lime(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%w0lime(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 w0lime: not defined')
@@ -236,6 +252,7 @@ subroutine AWRAL600_readcrd()
     ! Reference value of w0 that determines the rate of albedo decrease with wetness for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 w0ref_alb:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%w0ref_alb(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%w0ref_alb(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 w0ref_alb: not defined')
@@ -245,6 +262,7 @@ subroutine AWRAL600_readcrd()
     ! water-limiting relative water content of the deep soil store for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 wdlimu:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%wdlimu(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%wdlimu(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 wdlimu: not defined')
@@ -254,6 +272,7 @@ subroutine AWRAL600_readcrd()
     ! water-limiting relative water content of the shallow soil store for each hru
     call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 wslimu:", rc = rc)
     do n=1, LIS_rc%nnest
+        allocate(AWRAL600_struc(n)%wslimu(AWRAL600_struc(n)%nhru))
         do i = 1, AWRAL600_struc(n)%nhru
             call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%wslimu(i), rc=rc)
             call LIS_verify(rc, 'AWRAL600 wslimu: not defined')
@@ -324,6 +343,7 @@ subroutine AWRAL600_readcrd()
         ! water storage in the surface soil layer for each hru
         call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 initial s0:", rc = rc)
         do n=1,LIS_rc%nnest
+            allocate(AWRAL600_struc(n)%init_s0(AWRAL600_struc(n)%nhru)) 
             do i=1, AWRAL600_struc(n)%nhru
                 call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%init_s0(i), rc=rc)
             end do
@@ -333,6 +353,7 @@ subroutine AWRAL600_readcrd()
         ! water content of the shallow soil store for each hru
         call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 initial ss:", rc = rc)
         do n=1,LIS_rc%nnest
+            allocate(AWRAL600_struc(n)%init_ss(AWRAL600_struc(n)%nhru))
             do i=1, AWRAL600_struc(n)%nhru
                 call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%init_ss(i), rc=rc)
             end do
@@ -342,6 +363,7 @@ subroutine AWRAL600_readcrd()
         ! water content of the deep soil store for each hru
         call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 initial sd:", rc = rc)
         do n=1,LIS_rc%nnest
+            allocate(AWRAL600_struc(n)%init_sd(AWRAL600_struc(n)%nhru))
             do i=1, AWRAL600_struc(n)%nhru
                 call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%init_sd(i), rc=rc)
             end do
@@ -351,6 +373,7 @@ subroutine AWRAL600_readcrd()
         ! leaf biomass
         call ESMF_ConfigFindLabel(LIS_config, "AWRAL600 initial mleaf:", rc = rc)
         do n=1,LIS_rc%nnest
+            allocate(AWRAL600_struc(n)%init_mleaf(AWRAL600_struc(n)%nhru))
             do i=1, AWRAL600_struc(n)%nhru
                 call ESMF_ConfigGetAttribute(LIS_config, AWRAL600_struc(n)%init_mleaf(i), rc=rc)
             end do

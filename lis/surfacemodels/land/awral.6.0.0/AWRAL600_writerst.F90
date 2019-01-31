@@ -163,7 +163,7 @@ subroutine AWRAL600_dump_restart(n, ftn, wformat)
                
     integer :: l, t 
     real    :: tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index))
-    integer :: dimID(6)
+    integer :: dimID(10) ! veg classes hardcoded to 10 I guess copied from everyone else
     integer :: sr_ID
     integer :: sg_ID
     integer :: s0_ID
@@ -173,50 +173,52 @@ subroutine AWRAL600_dump_restart(n, ftn, wformat)
     
     ! write the header of the restart file
     call LIS_writeGlobalHeader_restart(ftn, n, LIS_rc%lsm_index, &
-                                       "AWRAL600", dim1=1, dim2=2, dimID=dimID, &
+                                       "AWRAL600", dim1=AWRAL600_struc(n)%nhru, &
+				       dim2=AWRAL600_struc(n)%nhru, dimID=dimID, &
                                        output_format = trim(wformat))
 
     ! write the header for state variable sr
     !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, sr_ID, "SR", &
                                  "volume of water in the surface water store", &
-                                 "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+                                 "mm", vlevels=1, valid_min=0.0, valid_max=999.0)
     ! write the header for state variable sg
     !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, sg_ID, "SG", &
                                  "groundwater storage in the unconfined aquifer", &
-                                 "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+                                 "mm", vlevels=1, valid_min=0.0, valid_max=999.0)
     ! write the header for state variable s0
     !TODO: check dimension of the state variable following "vlevels="
     !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, s0_ID, "S0", &
                                  "water storage in the surface soil layer for each hru", &
-                                 "mm", vlevls=AWRAL600_struc(n)%nhru , valid_min=-99999.0, valid_max=99999.0, &
-var_flag = "xxxx") TODO: replace "xxxx" with correct "dimx"
+                                 "mm", vlevels=AWRAL600_struc(n)%nhru , valid_min=0.0, valid_max=999.0, &
+				 var_flag = "dim1") !TODO: replace "xxxx" with correct "dimx"
+
  
     ! write the header for state variable ss
     !TODO: check dimension of the state variable following "vlevels="
     !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, ss_ID, "SS", &
                                  "water content of the shallow soil store for each hru", &
-                                 "mm", vlevls=AWRAL600_struc(n)%nhru , valid_min=-99999.0, valid_max=99999.0, &
-var_flag = "xxxx") TODO: replace "xxxx" with correct "dimx"
+                                 "mm", vlevels=AWRAL600_struc(n)%nhru , valid_min=0.0, valid_max=999.0, &
+				 var_flag = "dim1") !TODO: replace "xxxx" with correct "dimx"
  
     ! write the header for state variable sd
     !TODO: check dimension of the state variable following "vlevels="
     !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, sd_ID, "SD", &
                                  "water content of the deep soil store for each hru", &
-                                 "mm", vlevls=AWRAL600_struc(n)%nhru , valid_min=-99999.0, valid_max=99999.0, &
-var_flag = "xxxx") TODO: replace "xxxx" with correct "dimx"
+                                 "mm", vlevels=AWRAL600_struc(n)%nhru , valid_min=0.0, valid_max=999.0, &
+				 var_flag = "dim1") !TODO: replace "xxxx" with correct "dimx"
  
     ! write the header for state variable mleaf
     !TODO: check dimension of the state variable following "vlevels="
     !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, mleaf_ID, "MLEAF", &
                                  "leaf biomass", &
-                                 "kg/m2", vlevls=AWRAL600_struc(n)%nhru , valid_min=-99999.0, valid_max=99999.0, &
-var_flag = "xxxx") TODO: replace "xxxx" with correct "dimx"
+                                 "kg/m2", vlevels=AWRAL600_struc(n)%nhru , valid_min=0.0, valid_max=999.0, &
+				 var_flag = "dim1") !TODO: replace "xxxx" with correct "dimx"
  
     ! close header of restart file
     call LIS_closeHeader_restart(ftn, n, LIS_rc%lsm_index, dimID, AWRAL600_struc(n)%rstInterval)

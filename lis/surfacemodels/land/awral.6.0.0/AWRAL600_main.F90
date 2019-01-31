@@ -50,75 +50,76 @@ subroutine AWRAL600_main(n)
 !EOP
 
 ! define variables for AWRAL600
-    integer              :: tmp_n                  ! nest id [-]
-    real                 :: tmp_latitude           ! latitude in decimal degree [rad]
-    real                 :: tmp_logitude           ! longitude in decimal year [rad]
-    integer              :: tmp_year               ! year of the currrent time step [-]
-    integer              :: tmp_month              ! month of the current time step [-]
-    integer              :: tmp_day                ! day of the current time step [-]
-    integer              :: tmp_hour               ! hour of the current time step [-]
-    integer              :: tmp_minute             ! minute of the current time step [-]
-    real                 :: tmp_Tair               ! average air temperature [K]
-    real                 :: tmp_Swdown             ! downward shortwave radiation [W/m2]
-    real                 :: tmp_Rainf              ! daily gross precipitation [kg/m2s]
-    real                 :: tmp_Qair               ! actual vapour pressure [kg/kg]
-    real                 :: tmp_Wind_E             ! 2m wind magnitude [m/s]
-    real                 :: tmp_Swdirect           ! expected downwelling shortwave radiation on a cloudless day [W/m2]
-    real                 :: tmp_e0                 ! potential evaporation [mm/d]
-    real                 :: tmp_etot               ! actual evapotranspiration [mm/d]
-    real                 :: tmp_dd                 ! vertical drainage from the bottom of the deep soil layer [mm]
-    real                 :: tmp_s0_avg             ! water storage in the surface soil layer [mm]
-    real                 :: tmp_ss_avg             ! water content of the shallow soil store [mm]
-    real                 :: tmp_sd_avg             ! water content of the deep soil store [mm]
-    real                 :: tmp_qtot               ! total discharge to stream [mm]
-    real                 :: tmp_sr                 ! volume of water in the surface water store [mm]
-    real                 :: tmp_sg                 ! groundwater storage in the unconfined aquifer [mm]
-    real, allocatable    :: tmp_s0(:)              ! water storage in the surface soil layer for each hru [mm]
-    real, allocatable    :: tmp_ss(:)              ! water content of the shallow soil store for each hru [mm]
-    real, allocatable    :: tmp_sd(:)              ! water content of the deep soil store for each hru [mm]
-    real, allocatable    :: tmp_mleaf(:)           ! leaf biomass [kg/m2]
-    real                 :: tmp_nhru               ! number of hydrologic response units [-]
-    real                 :: tmp_nhypsbins          ! number of hypsometric curve percentile bins [-]
-    real                 :: tmp_slope_coeff        ! scaling factor for slope [-]
-    real                 :: tmp_pair               ! air pressure [Pa]
-    real                 :: tmp_kr_coeff           ! scaling factor for ratio of saturated hydraulic conductivity [-]
-    real                 :: tmp_k_rout             ! rate coefficient controlling discharge to stream [-]
-    real                 :: tmp_kssat              ! saturated hydraulic conductivity of shallow soil layer [mm/d]
-    real                 :: tmp_prefr              ! reference value for precipitation [mm]
-    real                 :: tmp_s0max              ! maximum storage of the surface soil layer [mm]
-    real                 :: tmp_slope              ! slope of the land surface [%]
-    real                 :: tmp_ssmax              ! maximum storage of the shallow soil layer [mm]
-    real                 :: tmp_k_gw               ! groundwater drainage coefficient [1/d]
-    real                 :: tmp_kr_sd              ! routing delay factor for the deep layer [-]
-    real                 :: tmp_kr_0s              ! routing delay factor for the surface layer [-]
-    real                 :: tmp_k0sat              ! saturated hydraulic conductivity of surface soil layer [mm/d]
-    real                 :: tmp_sdmax              ! maximum storage of the deep soil layer [mm]
-    real                 :: tmp_kdsat              ! saturated hydraulic conductivity of shallow soil layer [mm/d]
-    real                 :: tmp_ne                 ! effective porosity [-]
-    real, allocatable     :: tmp_height(:)             ! elevation of a point on the hypsometric curve [m]
-    real, allocatable     :: tmp_hypsperc(:)           ! hypsometric curve distribution percentile bins [%]
-    real, allocatable    :: tmp_alb_dry(:)         ! dry soil albedo for each hru [-]
-    real, allocatable    :: tmp_alb_wet(:)         ! wet soil albedo for each hru [-]
-    real, allocatable    :: tmp_cgsmax(:)          ! coefficient relating vegetation photosynthetic capacity to maximum stomatal conductance for each hru [m/s]
-    real, allocatable    :: tmp_er_frac_ref(:)     ! specific ratio of the mean evaporation rate and the mean rainfall intensity during storms for each hru [-]
-    real, allocatable    :: tmp_fsoilemax(:)       ! soil evaporation scaling factor corresponding to unlimited soil water supply for each hru [-]
-    real, allocatable    :: tmp_lairef(:)          ! reference leaf area index (at which fv = 0.63) for each hru [-]
-    real, allocatable    :: tmp_rd(:)              ! rooting depth for each hru [m]
-    real, allocatable    :: tmp_s_sls(:)           ! specific canopy rainfall storage per unit leaf area for each hru [mm]
-    real, allocatable    :: tmp_sla(:)             ! specific leaf area for each hru [m2/kg]
-    real, allocatable    :: tmp_tgrow(:)           ! characteristic time scale for vegetation growth towards equilibrium for each hru [d]
-    real, allocatable    :: tmp_tsenc(:)           ! characteristic time scale for vegetation senescence towards equilibrium for each hru [d]
-    real, allocatable    :: tmp_ud0(:)             ! maximum possible root water uptake from the deep soil store for each hru [mm/d]
-    real, allocatable    :: tmp_us0(:)             ! maximum possible root water uptake from the shallow soil store for each hru [mm/d]
-    real, allocatable    :: tmp_vc(:)              ! vegetation photosynthetic capacity index per unit canopy cover for each hru [-]
-    real, allocatable    :: tmp_w0lime(:)          ! limiting the value of the relative soil moisture content of the top soil layer at which evaporation is reduced for each hru [-]
-    real, allocatable    :: tmp_w0ref_alb(:)       ! Reference value of w0 that determines the rate of albedo decrease with wetness for each hru [-]
-    real, allocatable    :: tmp_wdlimu(:)          ! water-limiting relative water content of the deep soil store for each hru [-]
-    real, allocatable    :: tmp_wslimu(:)          ! water-limiting relative water content of the shallow soil store for each hru [-]
-    real, allocatable    :: tmp_fhru(:)            ! fraction of the cell which contains shallow and deep rooted vegetation [-]
-    real, allocatable    :: tmp_hveg(:)            ! vegetation height for each hru [-]
-    real, allocatable    :: tmp_laimax(:)          ! leaf area index max for each hru [-]
-    integer              :: tmp_timesteps          ! number of daily timesteps [-]
+    integer, parameter            :: dp = selected_real_kind(15, 307) ! to store tmp vars as doubles - convert back
+    integer                       :: tmp_n                  ! nest id [-]
+    real                          :: tmp_latitude           ! latitude in decimal degree [rad]
+    real                          :: tmp_logitude           ! longitude in decimal year [rad]
+    integer                       :: tmp_year               ! year of the currrent time step [-]
+    integer                       :: tmp_month              ! month of the current time step [-]
+    integer                       :: tmp_day                ! day of the current time step [-]
+    integer                       :: tmp_hour               ! hour of the current time step [-]
+    integer                       :: tmp_minute             ! minute of the current time step [-]
+    real(kind=dp)                 :: tmp_Tair               ! average air temperature [K]
+    real(kind=dp)                 :: tmp_Swdown             ! downward shortwave radiation [W/m2]
+    real(kind=dp)                 :: tmp_Rainf              ! daily gross precipitation [kg/m2s]
+    real(kind=dp)                 :: tmp_Qair               ! actual vapour pressure [kg/kg]
+    real(kind=dp)                 :: tmp_Wind_E             ! 2m wind magnitude [m/s]
+    real(kind=dp)                 :: tmp_Swdirect           ! expected downwelling shortwave radiation on a cloudless day [W/m2]
+    real(kind=dp)                 :: tmp_e0                 ! potential evaporation [mm/d]
+    real(kind=dp)                 :: tmp_etot               ! actual evapotranspiration [mm/d]
+    real(kind=dp)                 :: tmp_dd                 ! vertical drainage from the bottom of the deep soil layer [mm]
+    real(kind=dp)                 :: tmp_s0_avg             ! water storage in the surface soil layer [mm]
+    real(kind=dp)                 :: tmp_ss_avg             ! water content of the shallow soil store [mm]
+    real(kind=dp)                 :: tmp_sd_avg             ! water content of the deep soil store [mm]
+    real(kind=dp)                 :: tmp_qtot               ! total discharge to stream [mm]
+    real(kind=dp)                 :: tmp_sr                 ! volume of water in the surface water store [mm]
+    real(kind=dp)                 :: tmp_sg                 ! groundwater storage in the unconfined aquifer [mm]
+    real(kind=dp), allocatable    :: tmp_s0(:)              ! water storage in the surface soil layer for each hru [mm]
+    real(kind=dp), allocatable    :: tmp_ss(:)              ! water content of the shallow soil store for each hru [mm]
+    real(kind=dp), allocatable    :: tmp_sd(:)              ! water content of the deep soil store for each hru [mm]
+    real(kind=dp), allocatable    :: tmp_mleaf(:)           ! leaf biomass [kg/m2]
+    integer                       :: tmp_nhru               ! number of hydrologic response units [-]
+    integer                       :: tmp_nhypsbins          ! number of hypsometric curve percentile bins [-]
+    real(kind=dp)                 :: tmp_slope_coeff        ! scaling factor for slope [-]
+    real(kind=dp)                 :: tmp_pair               ! air pressure [Pa]
+    real(kind=dp)                 :: tmp_kr_coeff           ! scaling factor for ratio of saturated hydraulic conductivity [-]
+    real(kind=dp)                 :: tmp_k_rout             ! rate coefficient controlling discharge to stream [-]
+    real(kind=dp)                 :: tmp_kssat              ! saturated hydraulic conductivity of shallow soil layer [mm/d]
+    real(kind=dp)                 :: tmp_prefr              ! reference value for precipitation [mm]
+    real(kind=dp)                 :: tmp_s0max              ! maximum storage of the surface soil layer [mm]
+    real(kind=dp)                 :: tmp_slope              ! slope of the land surface [%]
+    real(kind=dp)                 :: tmp_ssmax              ! maximum storage of the shallow soil layer [mm]
+    real(kind=dp)                 :: tmp_k_gw               ! groundwater drainage coefficient [1/d]
+    real(kind=dp)                 :: tmp_kr_sd              ! routing delay factor for the deep layer [-]
+    real(kind=dp)                 :: tmp_kr_0s              ! routing delay factor for the surface layer [-]
+    real(kind=dp)                 :: tmp_k0sat              ! saturated hydraulic conductivity of surface soil layer [mm/d]
+    real(kind=dp)                 :: tmp_sdmax              ! maximum storage of the deep soil layer [mm]
+    real(kind=dp)                 :: tmp_kdsat              ! saturated hydraulic conductivity of shallow soil layer [mm/d]
+    real(kind=dp)                 :: tmp_ne                 ! effective porosity [-]
+    real(kind=dp), allocatable    :: tmp_height(:)             ! elevation of a point on the hypsometric curve [m]
+    real(kind=dp), allocatable    :: tmp_hypsperc(:)           ! hypsometric curve distribution percentile bins [%]
+    real(kind=dp), allocatable    :: tmp_alb_dry(:)         ! dry soil albedo for each hru [-]
+    real(kind=dp), allocatable    :: tmp_alb_wet(:)         ! wet soil albedo for each hru [-]
+    real(kind=dp), allocatable    :: tmp_cgsmax(:)          ! coefficient relating vegetation photosynthetic capacity to maximum stomatal conductance for each hru [m/s]
+    real(kind=dp), allocatable    :: tmp_er_frac_ref(:)     ! specific ratio of the mean evaporation rate and the mean rainfall intensity during storms for each hru [-]
+    real(kind=dp), allocatable    :: tmp_fsoilemax(:)       ! soil evaporation scaling factor corresponding to unlimited soil water supply for each hru [-]
+    real(kind=dp), allocatable    :: tmp_lairef(:)          ! reference leaf area index (at which fv = 0.63) for each hru [-]
+    real(kind=dp), allocatable    :: tmp_rd(:)              ! rooting depth for each hru [m]
+    real(kind=dp), allocatable    :: tmp_s_sls(:)           ! specific canopy rainfall storage per unit leaf area for each hru [mm]
+    real(kind=dp), allocatable    :: tmp_sla(:)             ! specific leaf area for each hru [m2/kg]
+    real(kind=dp), allocatable    :: tmp_tgrow(:)           ! characteristic time scale for vegetation growth towards equilibrium for each hru [d]
+    real(kind=dp), allocatable    :: tmp_tsenc(:)           ! characteristic time scale for vegetation senescence towards equilibrium for each hru [d]
+    real(kind=dp), allocatable    :: tmp_ud0(:)             ! maximum possible root water uptake from the deep soil store for each hru [mm/d]
+    real(kind=dp), allocatable    :: tmp_us0(:)             ! maximum possible root water uptake from the shallow soil store for each hru [mm/d]
+    real(kind=dp), allocatable    :: tmp_vc(:)              ! vegetation photosynthetic capacity index per unit canopy cover for each hru [-]
+    real(kind=dp), allocatable    :: tmp_w0lime(:)          ! limiting the value of the relative soil moisture content of the top soil layer at which evaporation is reduced for each hru [-]
+    real(kind=dp), allocatable    :: tmp_w0ref_alb(:)       ! Reference value of w0 that determines the rate of albedo decrease with wetness for each hru [-]
+    real(kind=dp), allocatable    :: tmp_wdlimu(:)          ! water-limiting relative water content of the deep soil store for each hru [-]
+    real(kind=dp), allocatable    :: tmp_wslimu(:)          ! water-limiting relative water content of the shallow soil store for each hru [-]
+    real(kind=dp), allocatable    :: tmp_fhru(:)            ! fraction of the cell which contains shallow and deep rooted vegetation [-]
+    real(kind=dp), allocatable    :: tmp_hveg(:)            ! vegetation height for each hru [-]
+    real(kind=dp), allocatable    :: tmp_laimax(:)          ! leaf area index max for each hru [-]
+    integer                       :: tmp_timesteps          ! number of daily timesteps [-]
 
     allocate( tmp_hypsperc( AWRAL600_struc(n)%nhypsbins ) )
     allocate( tmp_height( AWRAL600_struc(n)%nhypsbins ) )
@@ -160,22 +161,31 @@ subroutine AWRAL600_main(n)
 
             ! retrieve forcing data from AWRAL600_struc(n)%awral600(t) and assign to local variables
             ! Tair: average air temperature
-            tmp_Tair         = AWRAL600_struc(n)%awral600(t)%Tair     / AWRAL600_struc(n)%forc_count
+            tmp_Tair         = AWRAL600_struc(n)%awral600(t)%Tair    / AWRAL600_struc(n)%forc_count
+	    tmp_Tair = ANINT(1000000.0*tmp_Tair)/1000000.0
  
             ! Swdown: downward shortwave radiation
-            tmp_Swdown       = AWRAL600_struc(n)%awral600(t)%Swdown   / AWRAL600_struc(n)%forc_count
+            tmp_Swdown       = 0.0 + AWRAL600_struc(n)%awral600(t)%Swdown   / AWRAL600_struc(n)%forc_count
+            tmp_Swdown = ANINT(1000000.0*tmp_Swdown)/1000000.0
  
             ! Rainf: daily gross precipitation
-            tmp_Rainf        = AWRAL600_struc(n)%awral600(t)%Rainf    / AWRAL600_struc(n)%forc_count
- 
+            tmp_Rainf        = 0.0 + AWRAL600_struc(n)%awral600(t)%Rainf    / AWRAL600_struc(n)%forc_count
+	    tmp_Rainf = ANINT(1000000.0*tmp_Rainf)/1000000.0 
+
             ! Qair: actual vapour pressure
-            tmp_Qair         = AWRAL600_struc(n)%awral600(t)%Qair     / AWRAL600_struc(n)%forc_count
- 
+            tmp_Qair         = 0.0 + AWRAL600_struc(n)%awral600(t)%Qair     / AWRAL600_struc(n)%forc_count
+ 	    tmp_Qair = ANINT(1000000.0*tmp_Qair)/1000000.0 
+
             ! Wind_E: 2m wind magnitude
-            tmp_Wind_E       = AWRAL600_struc(n)%awral600(t)%Wind_E   / AWRAL600_struc(n)%forc_count
- 
+            tmp_Wind_E       = 0.0 + AWRAL600_struc(n)%awral600(t)%Wind_E   / AWRAL600_struc(n)%forc_count
+	    tmp_Wind_E = ANINT(1000000.0*tmp_Wind_E)/1000000.0 
+
             ! Swdirect: expected downwelling shortwave radiation on a cloudless day
-            tmp_Swdirect     = AWRAL600_struc(n)%awral600(t)%Swdirect / AWRAL600_struc(n)%forc_count
+            tmp_Swdirect     = 0.0 + AWRAL600_struc(n)%awral600(t)%Swdirect / AWRAL600_struc(n)%forc_count
+	    tmp_Swdirect = ANINT(1000000.0*tmp_Swdirect)/1000000.0
+
+	    ! Print out forcing vars before they go in:
+            ! DEBUG print *, "Forcing vars before going into c: ",tmp_Tair, tmp_Swdown, tmp_Rainf, tmp_Qair, tmp_Wind_E, tmp_Swdirect 
  
             ! 
             ! check validity of Tair
@@ -222,57 +232,98 @@ subroutine AWRAL600_main(n)
             tmp_hour   = LIS_rc%hr
             tmp_minute = LIS_rc%mn
  
-            ! get parameters 
+            ! get parameters - single precision 
             tmp_nhru                                = AWRAL600_struc(n)%nhru
             tmp_nhypsbins                           = AWRAL600_struc(n)%nhypsbins
-            tmp_slope_coeff                         = AWRAL600_struc(n)%slope_coeff                     
-            tmp_pair                                = AWRAL600_struc(n)%pair                            
-            tmp_kr_coeff                            = AWRAL600_struc(n)%kr_coeff                        
-            tmp_k_rout                              = AWRAL600_struc(n)%awral600(t)%k_rout                          
-            tmp_kssat                               = AWRAL600_struc(n)%awral600(t)%kssat                           
-            tmp_prefr                               = AWRAL600_struc(n)%awral600(t)%prefr                           
+            tmp_slope_coeff                         = AWRAL600_struc(n)%slope_coeff 
+	    tmp_slope_coeff                	    = ANINT(1000000.0*tmp_slope_coeff)/1000000.0
+            tmp_pair                                = AWRAL600_struc(n)%pair 
+	    tmp_pair				    = ANINT(1000000.0*tmp_pair)/1000000.0                           
+            tmp_kr_coeff                            = AWRAL600_struc(n)%kr_coeff
+	    tmp_kr_coeff                            = ANINT(1000000.0*tmp_kr_coeff)/1000000.0                        
+            tmp_k_rout                              = AWRAL600_struc(n)%awral600(t)%k_rout
+	    tmp_k_rout                              = ANINT(1000000.0*tmp_k_rout)/1000000.0                          
+            tmp_kssat                               = AWRAL600_struc(n)%awral600(t)%kssat                         
+	    tmp_kssat                               = ANINT(1000000.0*tmp_kssat)/1000000.0
+            tmp_prefr                               = AWRAL600_struc(n)%awral600(t)%prefr                          
+	    tmp_prefr                               = ANINT(1000000.0*tmp_prefr)/1000000.0
             tmp_s0max                               = AWRAL600_struc(n)%awral600(t)%s0max                           
+	    tmp_s0max                               = ANINT(1000000.0*tmp_s0max)/1000000.0
             tmp_slope                               = AWRAL600_struc(n)%awral600(t)%slope                           
-            tmp_ssmax                               = AWRAL600_struc(n)%awral600(t)%ssmax                           
+	    tmp_slope                               = ANINT(1000000.0*tmp_slope)/1000000.0
+            tmp_ssmax                               = AWRAL600_struc(n)%awral600(t)%ssmax                          
+	    tmp_ssmax                               = ANINT(1000000.0*tmp_ssmax)/1000000.0
             tmp_k_gw                                = AWRAL600_struc(n)%awral600(t)%k_gw                            
+	    tmp_k_gw                                = ANINT(1000000.0*tmp_k_gw)/1000000.0
             tmp_kr_sd                               = AWRAL600_struc(n)%awral600(t)%kr_sd                           
+	    tmp_kr_sd                               = ANINT(1000000.0*tmp_kr_sd)/1000000.0
             tmp_kr_0s                               = AWRAL600_struc(n)%awral600(t)%kr_0s                           
+	    tmp_kr_0s                               = ANINT(1000000.0*tmp_kr_0s)/1000000.0
             tmp_k0sat                               = AWRAL600_struc(n)%awral600(t)%k0sat                           
+	    tmp_k0sat                               = ANINT(1000000.0*tmp_k0sat)/1000000.0
             tmp_sdmax                               = AWRAL600_struc(n)%awral600(t)%sdmax                           
+	    tmp_sdmax                               = ANINT(1000000.0*tmp_sdmax)/1000000.0
             tmp_kdsat                               = AWRAL600_struc(n)%awral600(t)%kdsat                           
+	    tmp_kdsat                               = ANINT(1000000.0*tmp_kdsat)/1000000.0
             tmp_ne                                  = AWRAL600_struc(n)%awral600(t)%ne                              
-            tmp_height(:)                           = AWRAL600_struc(n)%awral600(t)%height(:)                          
+	    tmp_ne                                  = ANINT(1000000.0*tmp_ne)/1000000.0
+            tmp_height(:)                           = AWRAL600_struc(n)%awral600(t)%height(:)                        
+	    tmp_height(:)                           = ANINT(1000000.0*tmp_height(:))/1000000.0
             tmp_hypsperc(:)                         = AWRAL600_struc(n)%hypsperc(:)                        
-            tmp_alb_dry(:)                          = AWRAL600_struc(n)%alb_dry(:)                         
+	    tmp_hypsperc(:)                         = ANINT(1000000.0*tmp_hypsperc(:))/1000000.0
+            tmp_alb_dry(:)                          = AWRAL600_struc(n)%alb_dry(:)                        
+	    tmp_alb_dry(:)                          = ANINT(1000000.0*tmp_alb_dry(:))/1000000.0
             tmp_alb_wet(:)                          = AWRAL600_struc(n)%alb_wet(:)                         
+	    tmp_alb_wet(:)                          = ANINT(1000000.0*tmp_alb_wet(:))/1000000.0
             tmp_cgsmax(:)                           = AWRAL600_struc(n)%cgsmax(:)                          
-            tmp_er_frac_ref(:)                      = AWRAL600_struc(n)%er_frac_ref(:)                     
+	    tmp_cgsmax(:)                           = ANINT(1000000.0*tmp_cgsmax(:))/1000000.0
+            tmp_er_frac_ref(:)                      = AWRAL600_struc(n)%er_frac_ref(:)                    
+	    tmp_er_frac_ref(:)                      = ANINT(1000000.0*tmp_er_frac_ref(:))/1000000.0
             tmp_fsoilemax(:)                        = AWRAL600_struc(n)%fsoilemax(:)                       
+	    tmp_fsoilemax(:)                        = ANINT(1000000.0*tmp_fsoilemax(:))/1000000.0
             tmp_lairef(:)                           = AWRAL600_struc(n)%lairef(:)                          
+	    tmp_lairef(:)                           = ANINT(1000000.0*tmp_lairef(:))/1000000.0
             tmp_rd(:)                               = AWRAL600_struc(n)%rd(:)                              
+	    tmp_rd(:)                               = ANINT(1000000.0*tmp_rd(:))/1000000.0
             tmp_s_sls(:)                            = AWRAL600_struc(n)%s_sls(:)                           
+	    tmp_s_sls(:)                            = ANINT(1000000.0*tmp_s_sls(:))/1000000.0
             tmp_sla(:)                              = AWRAL600_struc(n)%sla(:)                             
+	    tmp_sla(:)                              = ANINT(1000000.0*tmp_sla(:))/1000000.0
             tmp_tgrow(:)                            = AWRAL600_struc(n)%tgrow(:)                           
+	    tmp_tgrow(:)                            = ANINT(1000000.0*tmp_tgrow(:))/1000000.0
             tmp_tsenc(:)                            = AWRAL600_struc(n)%tsenc(:)                           
-            tmp_ud0(:)                              = AWRAL600_struc(n)%ud0(:)                             
+	    tmp_tsenc(:)                            = ANINT(1000000.0*tmp_tsenc(:))/1000000.0
+            tmp_ud0(:)                              = AWRAL600_struc(n)%ud0(:)                            
+	    tmp_ud0(:)                              = ANINT(1000000.0*tmp_ud0(:))/1000000.0
             tmp_us0(:)                              = AWRAL600_struc(n)%us0(:)                             
+	    tmp_us0(:)                              = ANINT(1000000.0*tmp_us0(:))/1000000.0
             tmp_vc(:)                               = AWRAL600_struc(n)%vc(:)                              
+	    tmp_vc(:)                               = ANINT(1000000.0*tmp_vc(:))/1000000.0
             tmp_w0lime(:)                           = AWRAL600_struc(n)%w0lime(:)                          
-            tmp_w0ref_alb(:)                        = AWRAL600_struc(n)%w0ref_alb(:)                       
+	    tmp_w0lime(:)                           = ANINT(1000000.0*tmp_w0lime(:))/1000000.0
+            tmp_w0ref_alb(:)                        = AWRAL600_struc(n)%w0ref_alb(:)                      
+	    tmp_w0ref_alb(:)                        = ANINT(1000000.0*tmp_w0ref_alb(:))/1000000.0
             tmp_wdlimu(:)                           = AWRAL600_struc(n)%wdlimu(:)                          
-            tmp_wslimu(:)                           = AWRAL600_struc(n)%wslimu(:)                          
+	    tmp_wdlimu(:)                           = ANINT(1000000.0*tmp_wdlimu(:))/1000000.0
+            tmp_wslimu(:)                           = AWRAL600_struc(n)%wslimu(:)                         
+	    tmp_wslimu(:)                           = ANINT(1000000.0*tmp_wslimu(:))/1000000.0
             tmp_fhru(:)                             = AWRAL600_struc(n)%awral600(t)%fhru(:)                            
+	    tmp_fhru(:)                             = ANINT(1000000.0*tmp_fhru(:))/1000000.0
             tmp_hveg(:)                             = AWRAL600_struc(n)%awral600(t)%hveg(:)                            
+	    tmp_hveg(:)                             = ANINT(1000000.0*tmp_hveg(:))/1000000.0
             tmp_laimax(:)                           = AWRAL600_struc(n)%awral600(t)%laimax(:)                          
+	    tmp_laimax(:)                           = ANINT(1000000.0*tmp_laimax(:))/1000000.0
             tmp_timesteps                           = AWRAL600_struc(n)%timesteps                       
  
             ! get state variables
-            tmp_sr       = AWRAL600_struc(n)%awral600(t)%sr   
-            tmp_sg       = AWRAL600_struc(n)%awral600(t)%sg   
-            tmp_s0(:)    = AWRAL600_struc(n)%awral600(t)%s0(:)   
-            tmp_ss(:)    = AWRAL600_struc(n)%awral600(t)%ss(:)   
-            tmp_sd(:)    = AWRAL600_struc(n)%awral600(t)%sd(:)   
-            tmp_mleaf(:) = AWRAL600_struc(n)%awral600(t)%mleaf(:)
+            tmp_sr       = ANINT(1000000.0*AWRAL600_struc(n)%awral600(t)%sr)/1000000.0   
+            tmp_sg       = ANINT(1000000.0*AWRAL600_struc(n)%awral600(t)%sg)/1000000.0   
+            tmp_s0(:)    = ANINT(1000000.0*AWRAL600_struc(n)%awral600(t)%s0(:))/1000000.0   
+            tmp_ss(:)    = ANINT(1000000.0*AWRAL600_struc(n)%awral600(t)%ss(:))/1000000.0   
+            tmp_sd(:)    = ANINT(1000000.0*AWRAL600_struc(n)%awral600(t)%sd(:))/1000000.0   
+            tmp_mleaf(:) = ANINT(1000000.0*AWRAL600_struc(n)%awral600(t)%mleaf(:))/1000000.0
+
+            ! DEBUG print *, "Before calling driver: fhru, hveg, laimax, sr, sg, s0, ss, sd, mleaf are: ", tmp_fhru, tmp_hveg, tmp_laimax, tmp_sr, tmp_sg, tmp_s0, tmp_ss, tmp_sd, tmp_mleaf
  
 
             ! call model physics 
@@ -295,8 +346,8 @@ subroutine AWRAL600_main(n)
                                   tmp_ss                , & ! inout - water content of the shallow soil store for each hru [mm]
                                   tmp_sd                , & ! inout - water content of the deep soil store for each hru [mm]
                                   tmp_mleaf             , & ! inout - leaf biomass [kg/m2]
-                                  tmp_nhru              , & ! in    - number of hydrologic response units [-]
-                                  tmp_nhypsbins         , & ! in    - number of hypsometric percentile bins [-]
+                                  !not included but could be tmp_nhru              , & ! in    - number of hydrologic response units [-]
+                                  !not included but could be tmp_nhypsbins         , & ! in    - number of hypsometric percentile bins [-]
                                   tmp_slope_coeff       , & ! in    - scaling factor for slope [-]
                                   tmp_pair              , & ! in    - air pressure [Pa]
                                   tmp_kr_coeff          , & ! in    - scaling factor for ratio of saturated hydraulic conductivity [-]
@@ -340,21 +391,23 @@ subroutine AWRAL600_main(n)
  
     
             ! save state variables from local variables to global variables
-            AWRAL600_struc(n)%awral600(t)%sr       = tmp_sr      
-            AWRAL600_struc(n)%awral600(t)%sg       = tmp_sg      
-            AWRAL600_struc(n)%awral600(t)%s0(:)    = tmp_s0(:)   
-            AWRAL600_struc(n)%awral600(t)%ss(:)    = tmp_ss(:)   
-            AWRAL600_struc(n)%awral600(t)%sd(:)    = tmp_sd(:)   
-            AWRAL600_struc(n)%awral600(t)%mleaf(:) = tmp_mleaf(:)
-    
+            AWRAL600_struc(n)%awral600(t)%sr       = SNGL(tmp_sr)      
+            AWRAL600_struc(n)%awral600(t)%sg       = SNGL(tmp_sg)      
+            AWRAL600_struc(n)%awral600(t)%s0(:)    = SNGL(tmp_s0(:))   
+            AWRAL600_struc(n)%awral600(t)%ss(:)    = SNGL(tmp_ss(:))   
+            AWRAL600_struc(n)%awral600(t)%sd(:)    = SNGL(tmp_sd(:))   
+            AWRAL600_struc(n)%awral600(t)%mleaf(:) = SNGL(tmp_mleaf(:))
+   
+            ! DEBUG print *, "AFTER calling driver outputvars: sr, sg, e0, etot, dd, s0_avg, ss_avg, sd_avg, qtot are: ", tmp_sr, tmp_sg, tmp_e0, tmp_etot, tmp_dd, tmp_s0_avg, tmp_ss_avg, tmp_sd_avg, tmp_qtot
+ 
             ! save output variables from local variables to global variables
-            AWRAL600_struc(n)%awral600(t)%e0        = tmp_e0       
-            AWRAL600_struc(n)%awral600(t)%etot      = tmp_etot     
-            AWRAL600_struc(n)%awral600(t)%dd        = tmp_dd       
-            AWRAL600_struc(n)%awral600(t)%s0_avg    = tmp_s0_avg   
-            AWRAL600_struc(n)%awral600(t)%ss_avg    = tmp_ss_avg   
-            AWRAL600_struc(n)%awral600(t)%sd_avg    = tmp_sd_avg   
-            AWRAL600_struc(n)%awral600(t)%qtot      = tmp_qtot     
+            AWRAL600_struc(n)%awral600(t)%e0        = SNGL(tmp_e0)       
+            AWRAL600_struc(n)%awral600(t)%etot      = SNGL(tmp_etot)     
+            AWRAL600_struc(n)%awral600(t)%dd        = SNGL(tmp_dd)       
+            AWRAL600_struc(n)%awral600(t)%s0_avg    = SNGL(tmp_s0_avg)  
+            AWRAL600_struc(n)%awral600(t)%ss_avg    = SNGL(tmp_ss_avg)   
+            AWRAL600_struc(n)%awral600(t)%sd_avg    = SNGL(tmp_sd_avg)   
+            AWRAL600_struc(n)%awral600(t)%qtot      = SNGL(tmp_qtot)     
  
             
             ![ 1] output variable: sr (unit=mm). *** volume of water in the surface water store
@@ -391,31 +444,31 @@ subroutine AWRAL600_main(n)
             
             ![ 7] output variable: e0 (unit=mm/d). *** potential evaporation
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_E0, value = AWRAL600_struc(n)%awral600(t)%e0, &
-                                              vlevel=1, unit="mm/d", direction="-", surface_type = LIS_rc%lsm_index)
+                                              vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             
             ![ 8] output variable: etot (unit=mm/d). *** actual evapotranspiration
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ETOT, value = AWRAL600_struc(n)%awral600(t)%etot, &
-                                              vlevel=1, unit="mm/d", direction="-", surface_type = LIS_rc%lsm_index)
+                                              vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             
             ![ 9] output variable: dd (unit=mm ). *** vertical drainage from the bottom of the deep soil layer
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_DD, value = AWRAL600_struc(n)%awral600(t)%dd, &
-                                              vlevel=1, unit="mm ", direction="-", surface_type = LIS_rc%lsm_index)
+                                              vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             
             ![ 10] output variable: s0_avg (unit=mm ). *** water storage in the surface soil layer
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_S0, value = AWRAL600_struc(n)%awral600(t)%s0_avg, &
-                                              vlevel=1, unit="mm ", direction="- ", surface_type = LIS_rc%lsm_index)
+                                              vlevel=1, unit="mm", direction="- ", surface_type = LIS_rc%lsm_index)
             
             ![ 11] output variable: ss_avg (unit=mm ). *** water content of the shallow soil store
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SS, value = AWRAL600_struc(n)%awral600(t)%ss_avg, &
-                                              vlevel=1, unit="mm ", direction="-", surface_type = LIS_rc%lsm_index)
+                                              vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             
             ![ 12] output variable: sd_avg (unit=mm ). *** water content of the deep soil store
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SD, value = AWRAL600_struc(n)%awral600(t)%sd_avg, &
-                                              vlevel=1, unit="mm ", direction="-", surface_type = LIS_rc%lsm_index)
+                                              vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             
             ![ 13] output variable: qtot (unit=mm ). *** total discharge to stream
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QTOT, value = AWRAL600_struc(n)%awral600(t)%qtot, &
-                                              vlevel=1, unit="mm ", direction="-", surface_type = LIS_rc%lsm_index)
+                                              vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             ! reset forcing variables to zeros
             AWRAL600_struc(n)%awral600(t)%Tair = 0.0
             AWRAL600_struc(n)%awral600(t)%Swdown = 0.0

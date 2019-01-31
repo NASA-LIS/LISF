@@ -14,6 +14,12 @@ def getLonIdx(self, longitude):
   idx = (longitude-self.llon)/self.resolution
   return int(idx)
 
+def maybe_encode(string, encoding='ascii'):
+    try:
+        return string.encode(encoding)
+    except UnicodeEncodeError:
+        return string
+
 class awral():
   def __init__(self):
     self.tile_fractions=[1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -91,14 +97,14 @@ class awral():
         self.FHRU = np.reshape(self.FHRU,(2,self.num_cellsy,self.num_cellsx))
         self.hveg_grid = ds['parameters']['hveg_dr'][:]
         zeros = np.zeros((self.num_cellsy, self.num_cellsx))
-        self.HVEG = (self.hveg_grid, zeros)
+        self.HVEG = (self.hveg_grid, self.hveg_grid) #This calculation is in the code for both hrus? Should it be?
         self.HVEG = np.reshape(self.HVEG,(2,self.num_cellsy,self.num_cellsx))
         self.laimax_grid = ds['parameters']['lai_max'][:]
         self.LAIMAX = (self.laimax_grid, self.laimax_grid)
         self.LAIMAX = np.reshape(self.LAIMAX,(2,self.num_cellsy,self.num_cellsx))
 
         self.hru_params={"AWRAL600_FHRU":self.FHRU, "AWRAL600_HVEG":self.HVEG, "AWRAL600_LAIMAX":self.LAIMAX}
-        self.grid_params={"AWRAL600_K_ROUT":self.K_ROUT, "AWRAL600_KSSAT":self.KSSAT, "AWRAL600_PREFR":self.PREFR, "AWRAL600_S0MAX":self.S0MAX, "AWRAL600_SLOPE":self.SLOPE, "AWRAL600_SSMAX":self.SSMAX, "AWRAL600_KDSAT":self.KDSAT, "AWRAL600_NE":self.NE} 
+        self.grid_params={"AWRAL600_K_ROUT":self.K_ROUT, "AWRAL600_K_GW":self.K_GW, "AWRAL600_K0SAT":self.K0SAT, "AWRAL600_KSSAT":self.KSSAT, "AWRAL600_PREFR":self.PREFR, "AWRAL600_S0MAX":self.S0MAX, "AWRAL600_SLOPE":self.SLOPE, "AWRAL600_SSMAX":self.SSMAX,  "AWRAL600_SDMAX":self.SDMAX, "AWRAL600_KDSAT":self.KDSAT, "AWRAL600_KR_0S":self.KR_0S, "AWRAL600_KR_SD":self.KR_SD, "AWRAL600_NE":self.NE} 
         self.hypso_params={"AWRAL600_HEIGHT":self.HEIGHT}
 
   def write_nc(self, nc_file):
@@ -145,7 +151,8 @@ class awral():
 
     rootgrp.createVariable("SURFACETYPE", "f4", ("sfctypes", "north_south", "east_west"))
     rootgrp.createVariable("LANDCOVER", "f4", ("sfctypes", "north_south", "east_west"))
-    for n in range(0, 1):
+    #related to srftypes
+    for n in range(0, 9):
       if self.tile_fractions[n]>0:
         rootgrp["SURFACETYPE"][n, :,:] = 1.0
         rootgrp["LANDCOVER"][n, :,:] = self.tile_fractions[n]
@@ -174,10 +181,14 @@ class awral():
     rootgrp.DX = 0.05
     rootgrp.DY = 0.05 
     rootgrp.INC_WATER_PTS = "false" 
-    rootgrp.LANDCOVER_SCHEME = "" 
-    rootgrp.WATERCLASS = 0 
-    rootgrp.LANDCLASS = 1 
-    rootgrp.NUMVEGTYPES = 1 
+    rootgrp.LANDCOVER_SCHEME = "IGBPNCEP"
+    rootgrp.BARESOILCLASS = 16
+    rootgrp.URBANCLASS = 13
+    rootgrp.SNOWCLASS = 15
+    rootgrp.WATERCLASS = 0
+    rootgrp.WETLANDCLASS = 11
+    rootgrp.GLACIERCLASS = 15
+    rootgrp.NUMVEGTYPES = 9
     rootgrp.LANDMASK_SOURCE = "AWRAL_LANDMASK" 
     rootgrp.title = "Land Data Toolkit (LDT) parameter-processed output" 
     rootgrp.institution = "NASA GSFC Hydrological Sciences Laboratory" 

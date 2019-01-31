@@ -1,0 +1,32 @@
+TEMPLATE LSM forcing Testcase
+
+This is a testcase that uses:
+  (a) The AWRAL forcing
+  (b) The awral.6.0.0 LSM option
+  (c) A time period from 00:00Z 1 Jun 2010 to 00:00Z 5 Jun 2010
+
+This directory contains:
+  (a) This README file
+  (e) The "lis.config" file used for this testcase
+  (f) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+      to select the output variables
+  (g) An "output.ctl" file used to display the output in GrADS from
+      the LIS run
+  (h) A "testcase.ctl" file used to display the packaged output in
+      GrADS from the OUTPUT tar file provided by the testcase
+
+Note that the "ldt.config" and "lis.config" files should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+To run this testcase:
+  (a) Generate the LIS executable
+  (b) Download the testcase input data from:
+         http://lis.gsfc.nasa.gov/Source/testcases
+      the testcase corresponding to TEMPLATE LSM FORCING TEST
+  (c) Run the LIS executable using the "lis.config" file with the
+      testcase input data
+
+NOTE: This is using the 4 pixel domain for both AWRAL forcing and the AWRAL600 land surface model.
+TODO: Change to the full Australian domain
+

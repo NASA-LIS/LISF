@@ -42,7 +42,7 @@ subroutine readcrd_AWRAL()
        write(LIS_logunit,*) '[INFO] Using AWRAL forcing'
        write(LIS_logunit,*) '[INFO] AWRAL forcing directory :', AWRAL_struc(n)%AWRALDIR
 
-    !- Setting observed precip times to zero to ensure data is read in
+    !- Setting observed forcing times to zero to ensure data is read in
     !   at first time step
        AWRAL_struc(n)%AWRALtime = 0.0
 

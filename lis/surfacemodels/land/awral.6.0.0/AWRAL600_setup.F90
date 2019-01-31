@@ -17,7 +17,7 @@
 subroutine AWRAL600_setup()
 ! !USES:
     use LIS_logMod,    only: LIS_logunit, LIS_verify, LIS_endrun
-    use LIS_fileIOMod, only: LIS_read_param, LIS_convertParamDataToLocalDomain
+    use LIS_fileIOMod, only: LIS_read_param !, NOT USED? LIS_convertParamDataToLocalDomain
     use LIS_coreMod,   only: LIS_rc, LIS_surface
     use AWRAL600_lsmMod
 
@@ -39,7 +39,11 @@ subroutine AWRAL600_setup()
 !    sdmax        - maximum storage of the deep soil layer [mm]
 !    kdsat        - saturated hydraulic conductivity of shallow soil layer [mm/d]
 !    ne           - effective porosity [-]
-!    hypsperc     - hypsometric curve distribution percentile bins [%]
+!    height       - elevation of a point on the hypsometric curve [m]
+!    fhru         - fraction of the cell which contains shallow and deep rooted vegetation [-]
+!    hveg         - vegetation height for each hru [-]
+!    laimax       - leaf area index max for each hru [-]
+!    
 ! 
 !  The routines invoked are:
 !  \begin{description}
@@ -54,6 +58,7 @@ subroutine AWRAL600_setup()
     integer           :: t, k, n
     integer           :: col, row
     real, allocatable :: placeholder(:,:)
+    real, allocatable :: placeholder2(:,:)
     
     mtype = LIS_rc%lsm_index
     
@@ -251,7 +256,7 @@ subroutine AWRAL600_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
                             LIS_ews_halo_ind, LIS_ewe_halo_ind, &
                             LIS_nss_halo_ind, LIS_nse_halo_ind   
     use LIS_logMod,  only : LIS_logunit, LIS_verify, LIS_endrun
-    use LIS_fileIOMod, only: LIS_read_param, LIS_convertParamDataToLocalDomain
+    use LIS_fileIOMod, only: LIS_read_param !NOT USED, LIS_convertParamDataToLocalDomain
     implicit none
 ! !ARGUMENTS: 
     integer, intent(in)          :: n
@@ -276,9 +281,9 @@ subroutine AWRAL600_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 
     integer       :: ios1
     integer       :: ios, nid, param_ID, nc_ID, nr_ID, dimids(3)
-    integer       :: nc, nr, t, nlevel, k
+    integer       :: nc, nr, t, k
+    integer       :: nlevel
     real, pointer :: level_data(:, :, :)
-    real, pointer :: level_data1(:, :, :)
     logical       :: file_exists
 
     inquire(file=LIS_rc%paramfile(n), exist=file_exists)
@@ -318,8 +323,7 @@ subroutine AWRAL600_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
         call LIS_verify(ios, trim(ncvar_name)//' failed to inquire the length of the 3rd dimension')
 
         ! allocate memory
-        allocate(level_data (LIS_rc%pnc(n), LIS_rc%pnr(n), nlevel))
-        allocate(level_data1(LIS_rc%gnc(n), LIS_rc%gnr(n), nlevel))
+        allocate(level_data (LIS_rc%gnc(n), LIS_rc%gnr(n), nlevel))
 
         ! inquire the variable ID of parameter 
         ios = nf90_inq_varid(nid, trim(ncvar_name), param_ID)
@@ -333,19 +337,18 @@ subroutine AWRAL600_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
         ios = nf90_close(nid)
         call LIS_verify(ios, 'Error in nf90_close in AWRAL600_read_MULTILEVEL_param')
 
-        ! convert parameter from global domain to local domain 
-        do k=1, nlevel
-           call LIS_convertParamDataToLocalDomain(n, level_data(:, :, k), level_data1(:, :, k)) 
-        enddo
+        ! convert parameter from global domain to local domain - don't need this as we're not doing any remapping but might need it in future
+        !do k=1, nlevel
+        !   call LIS_convertParamDataToLocalDomain(n, level_data(:, :, k), level_data1(:, :, k)) 
+        !enddo
 
         ! grab parameter at specific level
         placeholder(:, :) = & 
-             level_data1(LIS_ews_halo_ind(n, LIS_localPet+1):LIS_ewe_halo_ind(n, LIS_localPet+1), &
+             level_data(LIS_ews_halo_ind(n, LIS_localPet+1):LIS_ewe_halo_ind(n, LIS_localPet+1), &
                         LIS_nss_halo_ind(n, LIS_localPet+1):LIS_nse_halo_ind(n, LIS_localPet+1), level)
 
         ! free memory 
         deallocate(level_data)
-        deallocate(level_data1)
 
     else
         write(LIS_logunit, *) 'MULTILEVEL parameter data file: ', LIS_rc%paramfile(n), ' does not exist'
