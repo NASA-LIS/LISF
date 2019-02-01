@@ -115,4 +115,3 @@ Tempbot:      0    -  - 0 0 0 1 194 10  #
 RTM emissivity: 1      -        -         0          0         0       2    666     1  # RTM emissivity (H/V pol)
 #Short_name select? units signconv timeavg? min/max? std? vert.levels grib_id grib_scalefactor longname
 RTM Tb:         1      K        -         0          0         0       2    256     10 #  RTM Brightness Temperature (H/V pol)
-
