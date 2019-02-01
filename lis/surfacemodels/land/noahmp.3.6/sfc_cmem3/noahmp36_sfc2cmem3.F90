@@ -51,10 +51,11 @@ subroutine noahmp36_sfc2cmem3(n, sfcState)
        smcField, relsmcField, stcField, cmcField, vegFracField, &
        scField, snowhField, snodField, laiField
 ! These vars are pointers
-  real, pointer       :: wind_speed(:), land_coverage(:), land_temperature(:),  &
+  real, pointer       :: wind_speed(:), land_coverage(:), land_temperature(:), &
        soil_moisture_content(:), soil_temperature(:), canopy_water_content(:), &
        vegetation_fraction(:), snow_depth(:), snow_density(:), land_type(:), &
-       snow_coverage(:), snow_temperature(:), leaf_area_index(:), relative_soil_moisture_content(:)
+       snow_coverage(:), snow_temperature(:), leaf_area_index(:), &
+       relative_soil_moisture_content(:)
 !       snow_coverage(:), snow_temperature(:), leaf_area_index(:)
 ! the line above doesn't have relative_soil_moisture_content
   real, allocatable       :: lsm_var(:)
@@ -94,7 +95,8 @@ subroutine noahmp36_sfc2cmem3(n, sfcState)
 
   call ESMF_StateGet(sfcState,"Soil Moisture Content",smcField,rc=status)
   call LIS_verify(status)
-  call ESMF_FieldGet(smcField,localDE=0,farrayPtr=soil_moisture_content,rc=status)
+  call ESMF_FieldGet(smcField,localDE=0,farrayPtr=soil_moisture_content,&
+       rc=status)
   call LIS_verify(status)
 
   call ESMF_StateGet(sfcState,"Soil Temperature",stcField,rc=status)
@@ -104,12 +106,14 @@ subroutine noahmp36_sfc2cmem3(n, sfcState)
 
   call ESMF_StateGet(sfcState,"Canopy Water Content",cmcField,rc=status)
   call LIS_verify(status)
-  call ESMF_FieldGet(cmcField,localDE=0,farrayPtr=canopy_water_content,rc=status)
+  call ESMF_FieldGet(cmcField,localDE=0,farrayPtr=canopy_water_content,&
+       rc=status)
   call LIS_verify(status)
 
   call ESMF_StateGet(sfcState,"Vegetation Fraction",vegfracField,rc=status)
   call LIS_verify(status)
-  call ESMF_FieldGet(vegfracField,localDE=0,farrayPtr=vegetation_fraction,rc=status)
+  call ESMF_FieldGet(vegfracField,localDE=0,farrayPtr=vegetation_fraction,&
+       rc=status)
   call LIS_verify(status)
 
   call ESMF_StateGet(sfcState,"Snow Coverage",scField,rc=status)
@@ -132,9 +136,11 @@ subroutine noahmp36_sfc2cmem3(n, sfcState)
   call ESMF_FieldGet(laiField,localDE=0,farrayPtr=leaf_area_index,rc=status)
   call LIS_verify(status)
 
-  call ESMF_StateGet(sfcState,"Relative Soil Moisture Content",relsmcField,rc=status)
+  call ESMF_StateGet(sfcState,"Relative Soil Moisture Content",relsmcField,&
+       rc=status)
   call LIS_verify(status)
-  call ESMF_FieldGet(relsmcField,localDE=0,farrayPtr=relative_soil_moisture_content,rc=status)
+  call ESMF_FieldGet(relsmcField,localDE=0,&
+       farrayPtr=relative_soil_moisture_content,rc=status)
   call LIS_verify(status)
 
 ! In this section, we loop through the "patches" to accumulate the variable for each patch, then the routine LIS_patch2tile accumulates that patch over each tile and saves it as the variable named in the second-to-last parameter there.
@@ -154,7 +160,8 @@ subroutine noahmp36_sfc2cmem3(n, sfcState)
      ! Surface type independent data
      lsm_var(t) = sqrt(NOAHMP36_struc(n)%noahmp36(t)%wind_e*& 
           NOAHMP36_struc(n)%noahmp36(t)%wind_e+& 
-          NOAHMP36_struc(n)%noahmp36(t)%wind_n*NOAHMP36_struc(n)%noahmp36(t)%wind_n)
+          NOAHMP36_struc(n)%noahmp36(t)%wind_n*&
+          NOAHMP36_struc(n)%noahmp36(t)%wind_n)
   enddo
   !put in wind direction using math on u and v; deg. E. of N.
   call LIS_patch2tile(n,LIS_rc%lsm_index,wind_speed,lsm_var)
@@ -237,8 +244,10 @@ subroutine noahmp36_sfc2cmem3(n, sfcState)
   call LIS_patch2tile(n,LIS_rc%lsm_index,leaf_area_index, lsm_var)
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
            lsm_var(t) = &  
-                (NOAHMP36_struc(n)%noahmp36(t)%smc(1) - NOAHMP36_struc(n)%noahmp36(t)%smcwlt) / &
-                (NOAHMP36_struc(n)%noahmp36(t)%smcmax - NOAHMP36_struc(n)%noahmp36(t)%smcwlt)
+                (NOAHMP36_struc(n)%noahmp36(t)%smc(1) - &
+                NOAHMP36_struc(n)%noahmp36(t)%smcwlt) / &
+                (NOAHMP36_struc(n)%noahmp36(t)%smcmax - &
+                NOAHMP36_struc(n)%noahmp36(t)%smcwlt)
            if ( lsm_var(t) > 1.0 ) then
               lsm_var(t)  = 1.0
            endif
@@ -246,7 +255,8 @@ subroutine noahmp36_sfc2cmem3(n, sfcState)
               lsm_var(t)  = 0.01
            endif
   enddo
-  call LIS_patch2tile(n,LIS_rc%lsm_index,relative_soil_moisture_content, lsm_var)
+  call LIS_patch2tile(n,LIS_rc%lsm_index,relative_soil_moisture_content, &
+       lsm_var)
 
   deallocate(lsm_var)
   deallocate(snow_cov)
