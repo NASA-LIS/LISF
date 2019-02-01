@@ -253,5 +253,3 @@ subroutine noahmp36_sfc2cmem3(n, sfcState)
   deallocate(land_cov)
 
 end subroutine noahmp36_sfc2cmem3
-
-
