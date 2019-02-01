@@ -95,10 +95,7 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
   allocate(regrid(LIS_rc%lnc(n),LIS_rc%lnr(n)))
   allocate(lb(AWRAL_struc(n)%ncol,AWRAL_struc(n)%nrow))
 
-
-
   write ( cyear, '(i4)' ) year
-  write ( cday, '(i3)' ) day
 
 !=== End Variable Definition =======================
   if(order.eq.1) then 
