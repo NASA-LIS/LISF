@@ -2,8 +2,8 @@ dset ^TARGET_OUTPUT/RTM/%y4/%y4%m2%d2/LIS_HIST_%y4%m2%d2%h2%n2.d01.nc
 dtype netcdf
 options template
 UNDEF -9999.0
-xdef 57 linear -124.5 1.0
-ydef 27 linear 25.5 1.0
+xdef 58 linear -124.5 1.0
+ydef 28 linear 25.5 1.0
 zdef 1 linear 1 1
 TDEF 1 LINEAR 01z29mar2010 01hr
 vars 6
