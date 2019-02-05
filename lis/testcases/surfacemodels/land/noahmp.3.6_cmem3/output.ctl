@@ -5,7 +5,7 @@ UNDEF -9999.0
 xdef 58 linear -124.5 1.0
 ydef 28 linear 25.5 1.0
 zdef 1 linear 1 1
-TDEF 1 LINEAR 01z29mar2010 01hr
+TDEF 120 LINEAR 01z29mar2010 01hr
 vars 6
 RTM_emissivity_inst=>RTM_emiss_inst1 0 0,y,x rtm_emissivity_(H-pol)
 RTM_emissivity_inst=>RTM_emiss_inst2 0 1,y,x rtm_emissivity_(V-pol)
