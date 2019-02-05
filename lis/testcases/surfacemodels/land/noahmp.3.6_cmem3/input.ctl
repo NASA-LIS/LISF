@@ -2,8 +2,8 @@ dset ^lis_input.d01.nc
 dtype netcdf
 options template
 undef -9999
-xdef 57 linear -124.5 1.0
-ydef 27 linear 25.5 1.0
+xdef 58 linear -124.5 1.0
+ydef 28 linear 25.5 1.0
 zdef 1 linear 1 1
 TDEF 1 LINEAR 00z00jan2010 03hr
 vars 92
