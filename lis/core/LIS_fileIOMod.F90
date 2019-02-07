@@ -250,7 +250,7 @@ subroutine LIS_create_output_directory(mname)
    endif
 
 #if ( defined AIX )
-      call system('mkdir -p '//trim(out_dname))
+   call system('mkdir -p '//trim(out_dname))
    #else
    ! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
    ! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
