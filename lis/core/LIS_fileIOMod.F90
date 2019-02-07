@@ -19,6 +19,7 @@ module LIS_fileIOMod
 !   
 ! !REVISION HISTORY: 
 !  08 Apr 2004    James Geiger Initial Specification
+!  11 Oct 2018    Nargess Memarsadeghi, cleaned up and corrected LIS_create_output_directory
 ! 
 ! !USES: 
   use ESMF
@@ -177,14 +178,14 @@ contains
 ! \label{LIS_create_output_directory}
 !
 ! !INTERFACE:
-subroutine LIS_create_output_directory(mname,dir_name)
+subroutine LIS_create_output_directory(mname)
 ! !USES:
    use LIS_coreMod, only : LIS_rc
    use LIS_logMod,  only : LIS_log_msg, LIS_logunit
    implicit none 
 ! !ARGUMENTS:
    character(len=*)  :: mname
-   character(len=*), optional   :: dir_name
+
 !
 ! !DESCRIPTION:  
 !  Create the output directory for the output data files. The call creates
@@ -211,8 +212,6 @@ subroutine LIS_create_output_directory(mname,dir_name)
 !  \begin{description}
 !   \item [mname]
 !     a string describing the name of the model
-!   \item [dir\_name]
-!     name of the directory to override the above format
 !  \end{description}
 !
 !EOP
@@ -228,114 +227,45 @@ subroutine LIS_create_output_directory(mname,dir_name)
    ! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
    ! standard POSIX function. This requires defining the C wrapper function,
    ! and specifying new variables to pass to said C function.
-   integer, external :: LIS_create_subdirs 
-   character(len=201) :: c_string  
+   integer, external :: LIS_create_subdirs
+   character(len=201) :: c_string
 
-   if(LIS_rc%wstyle.eq."4 level hierarchy") then 
-
+   if(LIS_rc%wstyle.eq."4 level hierarchy") then
       out_dname = trim(LIS_rc%odir)//'/'
-      
       out_dname = trim(out_dname)//trim(mname)//'/'
-      
       write(unit=cdate, fmt='(i4.4)') LIS_rc%yr
       out_dname = trim(out_dname)//trim(cdate)//'/'
-    
       write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') LIS_rc%yr, LIS_rc%mo, LIS_rc%da
       out_dname = trim(out_dname)//trim(cdate1)
-
-      if ( present(dir_name) ) then
-         dir_name = out_dname
-      else
-#if ( defined AIX )
-         call system('mkdir -p '//trim(out_dname),ios)
-#else
-! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
-! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
-! standard POSIX function. 
-!            ios = system('mkdir -p '//trim(out_dname))
-            c_string = trim(out_dname)
-            ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
-#endif
-            if (ios .ne. 0) then
-               write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
-               flush(LIS_logunit)
-            end if
-      endif
    elseif(LIS_rc%wstyle.eq."3 level hierarchy") then 
       out_dname = trim(LIS_rc%odir)//'/'
-      
       out_dname = trim(out_dname)//trim(mname)//'/'
-
       write(unit=cdate1, fmt='(i4.4, i2.2)') LIS_rc%yr, LIS_rc%mo
       out_dname = trim(out_dname)//trim(cdate1)
-
-      if ( present(dir_name) ) then
-         dir_name = out_dname
-      else
-#if ( defined AIX )
-         call system('mkdir -p '//trim(out_dname),ios)
-#else
-! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
-! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
-! standard POSIX function. 
-!         ios = system('mkdir -p '//trim(out_dname))
-         c_string = trim(out_dname)
-         ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
-#endif
-         if (ios .ne. 0) then
-            write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
-            flush(LIS_logunit)
-         end if
-      endif      
    elseif(LIS_rc%wstyle.eq."2 level hierarchy") then 
       out_dname = trim(LIS_rc%odir)//'/'
-      
       out_dname = trim(out_dname)//trim(mname)//'/'
-
-      if ( present(dir_name) ) then
-         dir_name = out_dname
-      else
-#if ( defined AIX )
-         call system('mkdir -p '//trim(out_dname),ios)
-#else
-! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
-! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
-! standard POSIX function. 
-!         ios = system('mkdir -p '//trim(out_dname))
-         c_string = trim(out_dname)
-         ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
-#endif
-         if (ios .ne. 0) then
-            write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
-            flush(LIS_logunit)
-         end if
-      endif      
-   elseif(LIS_rc%wstyle.eq."WMO convention") then 
+   elseif(LIS_rc%wstyle.eq."WMO convention") then
       out_dname = trim(LIS_rc%odir)
-
-      if ( present(dir_name) ) then
-         dir_name = out_dname
-      else
-#if ( defined AIX )
-         call system('mkdir -p '//trim(out_dname))
-#else
-! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
-! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
-! standard POSIX function. 
-!         ios = system('mkdir -p '//trim(out_dname))
-         c_string = trim(out_dname)
-         ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
-#endif
-
-         if (ios .ne. 0) then
-            write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
-            flush(LIS_logunit)
-         end if
-
-      endif      
    endif
 
- end subroutine LIS_create_output_directory
+#if ( defined AIX )
+   call system('mkdir -p '//trim(out_dname))
+#else
+   ! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
+   ! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
+   ! standard POSIX function. 
+   !         ios = system('mkdir -p '//trim(out_dname))
+   c_string = trim(out_dname)
+   ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
+#endif
+
+   if (ios .ne. 0) then
+     write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
+     flush(LIS_logunit)
+   end if
+
+end subroutine LIS_create_output_directory
 
 
 !BOP
