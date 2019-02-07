@@ -258,7 +258,7 @@ subroutine LIS_create_output_directory(mname)
    !         ios = system('mkdir -p '//trim(out_dname))
    c_string = trim(out_dname)
    ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
-   #endif
+#endif
 
    if (ios .ne. 0) then
      write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
