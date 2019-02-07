@@ -249,7 +249,7 @@ subroutine LIS_create_output_directory(mname)
       out_dname = trim(LIS_rc%odir)
    endif
 
-   #if ( defined AIX )
+#if ( defined AIX )
       call system('mkdir -p '//trim(out_dname))
    #else
    ! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
