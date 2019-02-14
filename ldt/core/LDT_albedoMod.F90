@@ -311,7 +311,7 @@ contains
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,alb_gridtransform(n),&
               rc=rc)
-         call LDT_verify(rc,'Albedo spatial tranform: option not specified in the config file')
+         call LDT_verify(rc,'Albedo spatial transform: option not specified in the config file')
          LDT_albedo_struc(n)%alb_gridtransform = alb_gridtransform(n)
       enddo
 
@@ -357,7 +357,7 @@ contains
        do n=1,LDT_rc%nnest
           call ESMF_ConfigGetAttribute(LDT_config,mxsnoalb_gridtransform(n),&
                rc=rc)
-          call LDT_verify(rc,'Max snow albedo spatial tranform: option not specified in the config file')
+          call LDT_verify(rc,'Max snow albedo spatial transform: option not specified in the config file')
           LDT_albedo_struc(n)%mxsnoalb_gridtransform = mxsnoalb_gridtransform(n)
        enddo
 
