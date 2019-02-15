@@ -316,7 +316,7 @@ contains
        do n=1,LDT_rc%nnest
           call ESMF_ConfigGetAttribute(LDT_config,laisai_gridtransform(n),&
                rc=rc)
-          call LDT_verify(rc,'LAI/SAI spatial tranform: option not specified in the config file')
+          call LDT_verify(rc,'LAI/SAI spatial transform: option not specified in the config file')
           LDT_laisai_struc(n)%laisai_gridtransform = laisai_gridtransform(n)
        enddo
 

@@ -448,7 +448,7 @@ contains
        call ESMF_ConfigGetAttribute(LDT_config,&
             CLSMF25_struc(n)%catchparms_gridtransform,&
             rc=rc)
-       call LDT_verify(rc,'CLSMF25 tranform: option not specified in the config file')
+       call LDT_verify(rc,'CLSMF25 transform: option not specified in the config file')
     enddo
     
     call LDT_readDomainConfigSpecs("CLSMF25",catchparms_proj,&

@@ -177,7 +177,7 @@ contains
          call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%clim_gridtransform2,&
               rc=rc)
          call LDT_verify(rc,&
-              'Climate params spatial tranform 2: option not specified in the config file')
+              'Climate params spatial transform 2: option not specified in the config file')
         end if
       enddo
 
@@ -228,7 +228,7 @@ contains
          call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%clim_gridtransform,&
               rc=rc)
          call LDT_verify(rc,&
-              'Climate params spatial tranform: option not specified in the config file')
+              'Climate params spatial transform: option not specified in the config file')
       enddo
     end if
 

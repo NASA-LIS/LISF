@@ -524,7 +524,7 @@ contains
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,Snow17_struc(n)%snow17parms_gridtransform,&
               rc=rc)
-         call LDT_verify(rc,'SNOW17 parameter spatial tranform: option not specified in the config file')
+         call LDT_verify(rc,'SNOW17 parameter spatial transform: option not specified in the config file')
       enddo
 
       snow17%filltype = "none"

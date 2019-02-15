@@ -180,7 +180,7 @@ contains
              do n=1,LDT_rc%nnest
                 call ESMF_ConfigGetAttribute(LDT_config,LDT_LSMCrop_struc(n)%crop_gridtransform,&
                      rc=rc)
-                call LDT_verify(rc,'Crop map spatial tranform: option not specified in the config file')
+                call LDT_verify(rc,'Crop map spatial transform: option not specified in the config file')
              enddo
           endif
 
