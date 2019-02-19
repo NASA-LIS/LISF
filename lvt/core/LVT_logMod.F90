@@ -57,7 +57,7 @@ module LVT_logMod
   public :: LVT_logunit ! file unit number used for diagnostic logging
 !EOP  
 
-  integer, parameter :: stacksize= 2000
+  integer, parameter :: stacksize= 100000
   integer :: LVT_logunit 
   logical :: IOU(stacksize)  = .false. ! I/O file unit numbers
   

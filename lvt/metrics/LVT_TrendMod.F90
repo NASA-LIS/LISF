@@ -858,14 +858,15 @@ contains
        enddo
     
 ! Find the median value
-       call LVT_sort(slopes,count)
+!       call LVT_sort(slopes,count)
+       call LVT_quicksort(slopes, count, 1, count)
        if (mod(count,2).eq.0) then
           slope = (slopes(count/2)+slopes((count+2)/2))/2.0
        else
           slope = slopes((count+1)/2)
        endif
        
-! Calculate the confidence level
+! Calculate the confidence levelx
 !      z_0975 = 1.96
 !      z_0900 = 1.64
 !      z_095 = 2.00
