@@ -69,7 +69,7 @@ module LVT_TSMod
      integer      :: ts_rindex1
      integer      :: ts_cindex2
      integer      :: ts_rindex2
-     integer      :: ts_min_pts
+     real         :: ts_min_pts
      integer, allocatable  :: ts_tindex(:)
 
   end type ts_struc
@@ -489,7 +489,9 @@ contains
              if(maxv.eq.max_param) maxv = LVT_rc%udef 
              if(minv.eq.min_param) minv = LVT_rc%udef
 
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts.and.nsum_v.ne.0) then 
+!             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts.and.nsum_v.ne.0) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts).and.&
+                  nsum_v.ne.0) then 
                 mean_v = sum_v/nsum_v
              else
                 mean_v = LVT_rc%udef
@@ -564,7 +566,7 @@ contains
              endif             
              
              ci_val = LVT_rc%udef
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 call LVT_computeCI(metric_tsdom(1:nsum_v),nsum_v,&
                      LVT_rc%pval_CI,ci_val)
              endif
@@ -665,7 +667,7 @@ contains
              if(maxv.eq.max_param) maxv = LVT_rc%udef
              if(minv.eq.min_param) minv = LVT_rc%udef
 
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 mean_v = sum_v/nsum_v
              else
                 mean_v = LVT_rc%udef
@@ -735,7 +737,7 @@ contains
              endif
 
              ci_val = LVT_rc%udef
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 call LVT_computeCI(metric_tsdom(1:nsum_v),nsum_v,&
                      LVT_rc%pval_CI,ci_val)
              endif
@@ -766,7 +768,7 @@ contains
              if(maxv1.eq.max_param) maxv1 = LVT_rc%udef
              if(minv1.eq.min_param) minv1 = LVT_rc%udef
 
-             if(nsum_v1.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v1.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 mean_v1 = sum_v1/nsum_v1
              else
                 mean_v1 = LVT_rc%udef
@@ -793,7 +795,7 @@ contains
              endif           
              if(nsum_v1.le.1) sstd_v1 = LVT_rc%udef
              ci_val1 = LVT_rc%udef  
-             if(nsum_v1.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v1.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 call LVT_computeCI(metric_tsdom(1:nsum_v1),nsum_v1,&
                      LVT_rc%pval_CI,ci_val1)
              endif
@@ -916,7 +918,7 @@ contains
              if(maxv.eq.max_param) maxv = LVT_rc%udef
              if(minv.eq.min_param) minv = LVT_rc%udef
 
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 mean_v = sum_v/nsum_v
              else
                 mean_v = LVT_rc%udef
@@ -1006,7 +1008,7 @@ contains
              endif
 
              ci_val = LVT_rc%udef
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 call LVT_computeCI(metric_tsdom(1:nsum_v),nsum_v,&
                      LVT_rc%pval_CI,ci_val)
              endif
@@ -1116,7 +1118,7 @@ contains
              if(maxv.eq.max_param) maxv = LVT_rc%udef
              if(minv.eq.min_param) minv = LVT_rc%udef
 
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 mean_v = sum_v/nsum_v
              else
                 mean_v = LVT_rc%udef
@@ -1191,7 +1193,7 @@ contains
              endif
 
              ci_val = LVT_rc%udef
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 call LVT_computeCI(metric_tsdom(1:nsum_v),nsum_v,&
                      LVT_rc%pval_CI,ci_val)
              endif
@@ -1221,7 +1223,7 @@ contains
              if(maxv1.eq.max_param) maxv1 = LVT_rc%udef
              if(minv1.eq.min_param) minv1 = LVT_rc%udef
 
-             if(nsum_v1.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v1.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 mean_v1 = sum_v1/nsum_v1
              else
                 mean_v1 = LVT_rc%udef
@@ -1251,7 +1253,7 @@ contains
                 sstd_v1 = LVT_rc%udef
              endif           
              ci_val1 = LVT_rc%udef  
-             if(nsum_v1.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v1.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 call LVT_computeCI(metric_tsdom(1:nsum_v1),nsum_v1,&
                      LVT_rc%pval_CI,ci_val1)
              endif
@@ -1358,7 +1360,7 @@ contains
              if(maxv.eq.max_param) maxv = LVT_rc%udef
              if(minv.eq.min_param) minv = LVT_rc%udef
 
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 mean_v = sum_v/nsum_v
              else
                 mean_v = LVT_rc%udef
@@ -1436,7 +1438,7 @@ contains
              endif             
              
              ci_val = LVT_rc%udef
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 call LVT_computeCI(metric_tsdom(1:nsum_v),nsum_v,&
                      LVT_rc%pval_CI,ci_val)
              endif
