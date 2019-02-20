@@ -85,6 +85,7 @@ module LIS_NUOPC_Gluecode
     LIS_setDynParams !read time dependent data
   use LISWRFGridCompMod, only: &
     LISWRF_alloc_states, &
+    LISWRF_reset_states, &
     LISWRF_export
   use LIS_tbotAdjustMod, only: &
     LIS_createTmnUpdate
@@ -605,6 +606,7 @@ contains
        call LIS_perturb_readrestart
 
        call LISWRF_alloc_states
+       call LISWRF_reset_states
        call LIS_core_init
 
        call LIS_HookupInit(rc)
