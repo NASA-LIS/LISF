@@ -7,8 +7,8 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
 !BOP
-! !ROUTINE: noah33_sfc2cmem3
-! \label{noah33_sfc2cmem3}
+! !ROUTINE: noah36_sfc2cmem3
+! \label{noah36_sfc2cmem3}
 !
 ! !REVISION HISTORY:
 !  37 Mar 2009: Sujay Kumar; Initial Code
@@ -148,7 +148,7 @@ subroutine noah36_sfc2cmem3(n, sfcState)
      ! Snow surface type data
      ! Snow depth are m in CMEM3 and in noah
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     lsm_var(t) = noah33_struc(n)%noah(t)%snowh 
+     lsm_var(t) = noah36_struc(n)%noah(t)%snowh 
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,snow_depth,lsm_var)
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
