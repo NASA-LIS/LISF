@@ -51,12 +51,10 @@ subroutine readIMERGdata(source)
    ! Initialize variables
    prcp(:) = LVT_rc%udef
    prcp_final(:,:) = LVT_rc%udef
-
    currTime = float(LVT_rc%dhr(source))*3600+ &
         60*LVT_rc%dmn(source) + LVT_rc%dss(source)
    ! Read every 30 minutes
    alarmCheck = (mod(currtime,1800.0).eq.0)
-
    ! Read precipitation. IMERG data are available every 30 minutes.
    yr1 = LVT_rc%dyr(source)
    mo1 = LVT_rc%dmo(source)
@@ -67,7 +65,6 @@ subroutine readIMERGdata(source)
    call ESMF_TimeSet(time1,yy=yr1, mm=mo1, dd=da1, &
        h=hr1,m=mn1,s=ss1,calendar=LVT_calendar,rc=status)
    call LVT_verify(status)
-
    ! If it is 00Z, use previous day's time level
    if (mod(currtime,86400.0).eq.0) then
       call ESMF_TimeIntervalSet(lis_ts, s = 86400, &
@@ -79,7 +76,6 @@ subroutine readIMERGdata(source)
       call LVT_verify(status)  
    end if
    time2 = time1 - lis_ts
-
    call ESMF_TimeGet(time2,yy=yr2, mm=mo2, dd=da2, &
         h=hr2,m=mn2,s=ss2,calendar=LVT_calendar, &
         dayOfYear=jda2, rc=status)
@@ -88,7 +84,6 @@ subroutine readIMERGdata(source)
    if (alarmCheck) then
       call create_IMERG_filename(imergdata(source)%odir, &
                              yr1,mo1,da1,hr1,mn1,filename)
-
       inquire(file=trim(filename),exist=file_exists)
 
       if(file_exists) then 
