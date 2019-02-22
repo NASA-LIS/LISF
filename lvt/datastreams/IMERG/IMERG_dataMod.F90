@@ -2,7 +2,6 @@
 ! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------------
 !
-!
 ! NOTE:  Currently only V05B IMERG data are supported
 module IMERG_dataMod
 
@@ -43,10 +42,8 @@ module IMERG_dataMod
    type(imergdatadec), allocatable :: imergdata(:)
 
 contains
-
    !---------------------------------------------------------------------------
    subroutine IMERG_datainit(i)
-
       ! Imports
       use ESMF
       use LVT_coreMod
@@ -71,12 +68,10 @@ contains
       if(.not.allocated(imergdata)) then 
          allocate(imergdata(LVT_rc%nDataStreams))
       endif
-
       ! Get top level IMERG data directory
       call ESMF_ConfigGetAttribute(LVT_Config, imergdata(i)%odir, &
            label='IMERG data directory:', rc=status)
       call LVT_verify(status, 'IMERG data directory: not defined')
-
       ! Get IMERG version
       call ESMF_ConfigFindLabel(LVT_config,"IMERG version:",rc=status)
       if(status /= 0) then
@@ -87,11 +82,9 @@ contains
       else
          call ESMF_ConfigGetAttribute(LVT_config,imergdata(i)%imergver,rc=status)
       endif
-  
       ! Allocate arrays on LVT grid
       allocate(imergdata(i)%rlat(LVT_rc%lnc*LVT_rc%lnr))
       allocate(imergdata(i)%rlon(LVT_rc%lnc*LVT_rc%lnr))     
-
       ! Set IMERG grid and map projection information.
       gridDesci(:) = 0
       gridDesci(1) = 0        ! Lat/lon
@@ -105,18 +98,14 @@ contains
       gridDesci(9) =  0.1     ! Longitudinal direction increment
       gridDesci(10) = 0.1     ! Latitude direction increment
       gridDesci(20) = 64      
-      
       ! Set up interpolation data
       imergdata(i)%datares = 0.1
       imergdata(i)%nc = 3600
       imergdata(i)%nr = 1800
-
       ! Use budget-bilinear interpolation if IMERG resolution (0.1 deg)         
       ! is coarser than the analysis grid. Use upscale averaging if
       ! IMERG is finer than the analysis grid.
-
       if (LVT_isAtAFinerResolution(imergdata(i)%datares)) then
-
          ! Used only with budget interpolation
          allocate(imergdata(i)%n112(LVT_rc%lnc*LVT_rc%lnr,25))
          allocate(imergdata(i)%n122(LVT_rc%lnc*LVT_rc%lnr,25))
@@ -126,7 +115,6 @@ contains
          allocate(imergdata(i)%w122(LVT_rc%lnc*LVT_rc%lnr,25))
          allocate(imergdata(i)%w212(LVT_rc%lnc*LVT_rc%lnr,25))
          allocate(imergdata(i)%w222(LVT_rc%lnc*LVT_rc%lnr,25))
-
          imergdata(i)%n112 = 0
          imergdata(i)%n122 = 0
          imergdata(i)%n212 = 0
@@ -135,7 +123,6 @@ contains
          imergdata(i)%w122 = 0
          imergdata(i)%w212 = 0
          imergdata(i)%w222 = 0
-
          call conserv_interp_input(gridDesci,LVT_rc%gridDesc,&
               LVT_rc%lnc*LVT_rc%lnr, &
               imergdata(i)%rlat, imergdata(i)%rlon,&
@@ -144,17 +131,13 @@ contains
               imergdata(i)%w112, imergdata(i)%w122, &
               imergdata(i)%w212, imergdata(i)%w222)
       else
-         
          ! Used only with upscale averaging
          allocate(imergdata(i)%n11(imergdata(i)%nc*imergdata(i)%nr))
          imergdata(i)%n11 = 0
-
          call upscaleByAveraging_input(gridDesci,LVT_rc%gridDesc,&
               imergdata(i)%nc*imergdata(i)%nr, &
               LVT_rc%lnc*LVT_rc%lnr, &
               imergdata(i)%n11)
       end if
-
    end subroutine IMERG_datainit
-   
 end module IMERG_dataMod

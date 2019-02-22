@@ -2,9 +2,7 @@
 ! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------------
 #include "LVT_misc.h"
-
 !------------------------------------------------------------------------------
-
 !NOTE:  Currently only V05B IMERG data are supported.
 subroutine readIMERGdata(source)
 
@@ -88,7 +86,6 @@ subroutine readIMERGdata(source)
    call LVT_verify(status)
 
    if (alarmCheck) then
-      
       call create_IMERG_filename(imergdata(source)%odir, &
                              yr1,mo1,da1,hr1,mn1,filename)
 
@@ -147,9 +144,7 @@ subroutine readIMERGdata(source)
             prcp_final(c,r) = prcp(c+(r-1)*LVT_rc%lnc)
          end do ! c
       end do ! r
-
    end if ! alarmCheck
-
    ! Convert mm/hr to kg/m2s.
    do r=1,LVT_rc%lnr
       do c=1, LVT_rc%lnc
@@ -162,7 +157,6 @@ subroutine readIMERGdata(source)
    end do ! r
    call LVT_logSingleDataStreamVar(LVT_MOC_totalprecip,source,prcp_final,&
         vlevel=1,units='kg/m2s')
-   
    ! Now convert from kg/m2s to kg/m2
    do r=1,LVT_rc%lnr
       do c=1,LVT_rc%lnc
@@ -175,9 +169,7 @@ subroutine readIMERGdata(source)
    enddo ! r
    call LVT_logSingleDataStreamVar(LVT_MOC_totalprecip,source,prcp_final,&
         vlevel=1,units='kg/m2') 
-
 end subroutine readIMERGdata
-
 !------------------------------------------------------------------------------
 subroutine read_imerghdf(filename, col, row, precipout, ireaderr)
 #if(defined USE_HDF5)
@@ -212,9 +204,7 @@ subroutine read_imerghdf(filename, col, row, precipout, ireaderr)
       ysize = row
       dims(1) = xsize
       dims(2) = ysize
-
       bIsError=.false.
-
 !open fortran interface
       call h5open_f(istatus)
       if(istatus.ne.0) then
@@ -250,7 +240,6 @@ subroutine read_imerghdf(filename, col, row, precipout, ireaderr)
 !Put the real(1:,1:) on the precipout(0:,0:)
 !precipin is (ysize,xsize) starting at (lon=-179.9,lat=-89.9)
       precipout(1:xsize,1:ysize)=transpose(precipin)
-
 !close dataset
       call h5dclose_f(dsetid,istatus)
       if(istatus.ne.0) then
@@ -277,14 +266,10 @@ subroutine read_imerghdf(filename, col, row, precipout, ireaderr)
       endif
       ireaderr = istatus
 #endif
-
 end subroutine read_imerghdf
-
 !------------------------------------------------------------------------------
-
 subroutine create_IMERG_filename(odir, &
                              yr,mo,da,hr,mn,filename)
-    
    use IMERG_dataMod
    use LVT_logMod
 
@@ -333,7 +318,6 @@ subroutine create_IMERG_filename(odir, &
       write(LVT_logunit,*) "[ERR] Please choose either 'early', 'late', or 'final'."
       call LVT_endrun()
    endif
-
    filename = trim(odir)//"/"//cyr//cmo//trim(fstem)// &
          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//".V05B.HDF5"
 end subroutine create_IMERG_filename
