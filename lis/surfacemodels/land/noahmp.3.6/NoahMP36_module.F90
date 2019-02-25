@@ -582,6 +582,13 @@ module NoahMP36_module
      real               :: chb2
      real               :: fpice
      real               :: sfcheadrt
+     !Added by Chandana Gangodagamage
+!#ifdef WRF_HYDRO
+     real :: sfchead1rt
+     real :: infxs1rt
+     real :: soldrain1rt
+!#endif
+
      !-------------------------------------------------------------------------
      ! read in from ARS sm data files ! SY
      !-------------------------------------------------------------------------
