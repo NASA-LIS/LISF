@@ -214,7 +214,7 @@ subroutine NoahMP36_main(n)
     real                 :: tmp_sfcheadrt          ! extra output for WRF-HYDRO [m]
     ! Code added by Chandana Gangodagamage on 02/25/2019
     real                 :: tmp_infxs1rt           ! variable for LISHydro coupling [mm]
-    real                 :: tmp_soldrain1rt        ! varaible for LISHydro coupling [mm]
+    real                 :: tmp_soldrain1rt        ! variable for LISHydro coupling [mm]
     
     ! SY: Begin for enabling OPTUE
     ! SY: Begin corresponding to REDPRM
