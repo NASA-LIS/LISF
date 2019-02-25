@@ -768,7 +768,8 @@ contains
              if(maxv1.eq.max_param) maxv1 = LVT_rc%udef
              if(minv1.eq.min_param) minv1 = LVT_rc%udef
 
-             if(nsum_v1.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
+             if(nsum_v1.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts).and.&
+                  nsum_v1.gt.0) then 
                 mean_v1 = sum_v1/nsum_v1
              else
                 mean_v1 = LVT_rc%udef
