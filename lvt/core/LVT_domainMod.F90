@@ -3258,7 +3258,7 @@ contains
 !BOP
 ! !ROUTINE: LVT_readDataMask
 ! \label{LVT_readDataMask}
-! 
+! r
 ! !INTERFACE: 
   subroutine LVT_readDataMask
 ! !USES:     
