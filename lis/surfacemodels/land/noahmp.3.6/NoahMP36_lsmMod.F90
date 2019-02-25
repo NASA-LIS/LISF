@@ -308,6 +308,12 @@ contains
                 NOAHMP36_struc(n)%noahmp36(t)%qair = 0.0
                 NOAHMP36_struc(n)%noahmp36(t)%wind_e = 0.0
                 NOAHMP36_struc(n)%noahmp36(t)%wind_n = 0.0
+                !Added by Chandana Gangodagamage
+#if WRF_HYDRO
+                NOAHMP36_struc(n)%noahmp36(t)%sfhead1rt = 0
+                NOAHMP36_struc(n)%noahmp36(t)%infxs1rt = 0
+                NOAHMP36_struc(n)%noahmp36(t)%soldrain1rt = 0
+#endif
                 
                 NOAHMP36_struc(n)%noahmp36(t)%albd = -9999.0
                 NOAHMP36_struc(n)%noahmp36(t)%albi = -9999.0
