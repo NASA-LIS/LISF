@@ -646,15 +646,14 @@ contains
              if(dataEntry%count(t,k).gt.0) then 
                 if(dataEntry%timeAvgOpt.eq.3) then  !do nothing
                    continue       
-                elseif(dataEntry%timeAvgOpt.eq.2) then 
-                   dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/&
-                        dataEntry%count(t,k)
-                elseif(dataEntry%timeAvgOpt.eq.1) then 
+                elseif(dataEntry%timeAvgOpt.eq.2.or.dataEntry%timeAvgOpt.eq.1) then
                    dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/&
                         dataEntry%count(t,k)
                 else !do nothing
-
+                   continue
                 endif
+             else
+                dataEntry%modelOutput(1,t,k) = LIS_rc%udef
              endif
           enddo
        enddo
