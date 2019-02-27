@@ -23,7 +23,10 @@
 !  24Jan05 Rolf Reichle  Initial Specification
 !  07Jun05 Rolf Reichle  more init options
 !  07Jul05 Sujay Kumar   Specification in LIS
-! 
+!  27Feb19 Mahdi Navari  domin id was added to the initializing the seed 
+!                        this will solve the checkerboard pattern and 
+!                        stripe patterns in the DA results
+!
 !EOP 
 module landpert_routines
 
@@ -1458,11 +1461,11 @@ contains
     do m=1,N_domain
        do n=1,N_ens
           
-!          init_Pert_rseed(n,m) = RSEED_CONST0 +                    &
-!               domain_id(m)*RSEED_CONST1 + ens_id(n)*RSEED_CONST2
-
           init_Pert_rseed(n,m) = RSEED_CONST0 +                    &
-               RSEED_CONST1 + ens_id(n)*RSEED_CONST2
+               domain_id(m)*RSEED_CONST1 + ens_id(n)*RSEED_CONST2
+
+!          init_Pert_rseed(n,m) = RSEED_CONST0 +                    &
+!               RSEED_CONST1 + ens_id(n)*RSEED_CONST2
        end do
     end do 
     
@@ -1563,11 +1566,11 @@ contains
     do m=1,N_domain
        do n=1,N_ens
           
-!          init_Pert_rseed(n,m) = RSEED_CONST0 +                    &
-!               domain_id*RSEED_CONST1 + ens_id(n)*RSEED_CONST2
-
           init_Pert_rseed(n,m) = RSEED_CONST0 +                    &
-               RSEED_CONST1 + ens_id(n)*RSEED_CONST2
+               domain_id*RSEED_CONST1 + ens_id(n)*RSEED_CONST2
+
+!          init_Pert_rseed(n,m) = RSEED_CONST0 +                    &
+!               RSEED_CONST1 + ens_id(n)*RSEED_CONST2
 
        end do
     end do
