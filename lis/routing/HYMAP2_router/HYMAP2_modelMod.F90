@@ -274,6 +274,216 @@ contains
        
   end subroutine HYMAP2_calc_fldstg
   ! ================================================
+  ! ================================================
+  subroutine HYMAP2_calc_fldstg_1(ic,nz,grarea,rivlen,rivwth,            &
+                         rivstomax,fldstomax,fldhgt,&
+                         rivsto,fldsto,rivdph,flddph,flddph1,&
+                         fldelv1,fldwth,fldfrc,fldare,       &
+                         rivelv,nxtdst,rivare)
+    ! ================================================
+    ! to   calculate river and floodplain staging
+    ! by   Augusto Getirana
+    ! on   21 Aug 2018
+    ! at   GSFC/NASA, Greenbelt, USA
+    ! ================================================
+    implicit none
+
+    integer, intent(in)    :: ic
+    integer, intent(in)    :: nz           !number of stages in the sub-grid discretization
+    real,    intent(in)    :: grarea       !area of the grid [m2]
+    real,    intent(in)    :: rivlen       !channel length [m]
+    real,    intent(in)    :: rivwth       !river width [m]
+    real,    intent(in)    :: rivstomax
+    real,    intent(in)    :: fldstomax(nz) !maximum floodplain storage [m3]
+    real,    intent(in)    :: fldhgt(nz)
+    !real,    intent(in)    :: fldgrd(nz)    !floodplain gradient [-]
+    !integer, intent(in)    :: nextx               !point downstream horizontal
+    !integer, intent(in)    :: nexty               !point downstream vertical
+    !integer, intent(in)    :: nseqriv               !length of 1D sequnece for river
+    real,    intent(in)    :: rivelv              !river bed elevation [m]
+    real,    intent(in)    :: nxtdst              !distance to next grid [m]
+    real,    intent(in)    :: rivare              !river surface area [m2]
+    real,    intent(inout) :: rivsto       !river storage [m3]
+    real,    intent(inout) :: fldsto       !flood plain storage [m3]
+    real,    intent(inout) :: rivdph       !river depth [m]
+    real,    intent(inout) :: flddph       !floodplain depth [m]
+    real,    intent(inout) :: flddph1      !mean floodplain depth [m]
+    real,    intent(inout) :: fldelv1      !mean floodplain elevation [m]
+    real,    intent(inout) :: fldwth       !floodplain width [m]
+    real,    intent(out)   :: fldfrc       !area fraction
+    real,    intent(out)   :: fldare
+    integer                :: i
+    real*8                 :: rstoall
+    real*8                 :: rstonow
+    real*8                 :: rwthnow
+    real*8                 :: rstopre
+    real*8                 :: rwthpre
+    real*8                 :: rdphpre
+    real*8                 :: rwthinc
+    real*8                 :: rvel
+    real*8                 :: fldstoold
+    real*8                 :: h1,h2,v1,v2
+    ! ================================================
+    rstoall=rivsto+fldsto
+    if(rstoall>rivstomax)then
+      i=1
+      do while(rstoall>fldstomax(i).and.i<nz)
+        i=i+1
+      enddo
+      if(i>=nz)then
+        flddph=fldhgt(nz)+(rstoall-fldstomax(nz))/grarea
+        fldfrc=1.
+      else
+        if(i>1)then
+          h1=fldhgt(i-1);v1=fldstomax(i-1)
+          h2=fldhgt(i);v2=fldstomax(i)
+        elseif(i==1)then
+          h1=0.;v1=rivstomax
+          h2=fldhgt(1);v2=fldstomax(1)
+        else
+          stop 'Please check [HYMAP2_calc_fldstg] '
+        endif
+        flddph=h1+(h2-h1)*(rstoall-v1)/(v2-v1)
+        fldfrc=min(max(real(i)/real(nz)+(1./real(nz))*(rstoall-v1)/(v2-v1),0.),1.)
+
+      endif   
+      rivsto=rivstomax+rivlen*rivwth*flddph
+      rivdph=rivsto/rivlen/rivwth
+      fldsto=max(rstoall-rivsto,0.)
+      fldare=grarea*fldfrc
+      fldwth=fldare/rivlen
+      flddph1=fldsto/fldwth/rivlen
+    else
+      rivsto=rstoall
+      rivdph=max(0.,rstoall/rivare)
+      fldsto=0.
+      flddph=0.
+      if(rstoall>0.)then
+        fldfrc=rivare/grarea
+      else
+        fldfrc=0.
+      endif
+      fldare=fldfrc*grarea
+      fldwth=0.
+      flddph1=0.
+    endif
+     !ag - 18 June 2014
+     fldelv1=rivelv+rivdph-flddph1
+
+  end subroutine HYMAP2_calc_fldstg_1
+  ! ================================================
+  
+    ! ================================================
+  subroutine HYMAP2_calc_fldstg_0(ic,nz,grarea,rivlen,rivwth,            &
+                         rivstomax,fldstomax,fldgrd,         &
+                         rivsto,fldsto,rivdph,flddph,flddph1,&
+                         fldelv1,fldwth,fldfrc,fldare,       &
+                         rivelv,nxtdst,rivare)
+    ! ================================================
+    ! to   calculate river and floodplain staging
+    ! by   Augusto Getirana after Dai YAMAZAKI
+    ! on   27 Oct 2010
+    ! at   LEGOS/CNES, Toulouse, France
+    ! Adapted for single grid cell computation in 19 Feb 2016
+    ! ================================================
+    implicit none
+
+    integer, intent(in)    :: ic,nz           !number of stages in the sub-grid discretization
+    real,    intent(in)    :: grarea       !area of the grid [m2]
+    real,    intent(in)    :: rivlen       !channel length [m]
+    real,    intent(in)    :: rivwth       !river width [m]
+    real,    intent(in)    :: rivstomax
+    real,    intent(in)    :: fldstomax(nz) !maximum floodplain storage [m3]
+    real,    intent(in)    :: fldgrd(nz)    !floodplain gradient [-]
+    !integer, intent(in)    :: nextx               !point downstream horizontal
+    !integer, intent(in)    :: nexty               !point downstream vertical
+    !integer, intent(in)    :: nseqriv               !length of 1D sequnece for river
+    real,    intent(in)    :: rivelv              !river bed elevation [m]
+    real,    intent(in)    :: nxtdst              !distance to next grid [m]
+    real,    intent(in)    :: rivare              !river surface area [m2]
+    real,    intent(inout) :: rivsto       !river storage [m3]
+    real,    intent(inout) :: fldsto       !flood plain storage [m3]
+    real,    intent(inout) :: rivdph       !river depth [m]
+    real,    intent(inout) :: flddph       !floodplain depth [m]
+    real,    intent(inout) :: flddph1      !mean floodplain depth [m]
+    real,    intent(inout) :: fldelv1      !mean floodplain elevation [m]
+    real,    intent(inout) :: fldwth       !floodplain width [m]
+    !real,    intent(inout) :: rivinf       !total inflow to the grid [m3/s]
+    real,    intent(out)   :: fldfrc       !area fraction
+    real,    intent(out)   :: fldare
+    integer                :: i
+    real*8                   :: rstoall
+    real*8                 :: rstonow
+    real*8                   :: rwthnow
+    real*8                   :: rstopre
+    real*8                   :: rwthpre
+    real*8                   :: rdphpre
+    real*8                   :: rwthinc
+    real*8                   :: rvel
+    real*8                   :: fldstoold
+    ! ================================================
+    rstoall=rivsto+fldsto
+!if(ic==23509)rstoall=483502504.000
+    if(rstoall>rivstomax)then
+      i=1
+      rstopre=rivstomax
+      !rwthpre=rivwth
+      rwthpre=0.
+      rdphpre=0.
+      rwthinc=grarea/rivlen*0.10
+      !rwthinc=grarea/rivlen/dble(nz)
+      do while(rstoall>fldstomax(i))
+        rstopre=fldstomax(i)
+        rwthpre=rwthpre+rwthinc
+        rdphpre=rdphpre+fldgrd(i)*rwthinc
+        i=i+1
+        if(i>nz)then
+          rstonow=rstoall-rstopre
+          rwthnow=0.
+          flddph=rdphpre+rstonow/rwthpre/rivlen
+          goto 1000
+        endif
+      enddo
+      !rwthpre=max(rwthpre,rivwth)
+      rstonow=rstoall-rstopre
+      rwthnow=-rwthpre+(rwthpre**2.+2.*rstonow/rivlen/fldgrd(i))**0.5
+      flddph=rdphpre+fldgrd(i)*rwthnow
+1000  continue
+      rivsto=rivstomax+rivlen*rivwth*flddph
+      rivdph=rivsto/rivlen/rivwth
+      fldsto=rstoall-rivsto
+      fldsto=max(fldsto,0.)
+      fldfrc=((-rivwth+rwthpre+rwthnow)/(rwthinc*10.))+rivare/grarea
+      !fldfrc=((-rivwth+rwthpre+rwthnow)/(rwthinc*dble(nz)))+rivare/grarea
+      fldfrc=max(fldfrc,0.)
+      fldfrc=min(fldfrc,1.)
+      fldare=grarea*fldfrc
+      fldwth=fldare/rivlen
+      flddph1=fldsto/fldwth/rivlen
+    else
+      rivsto=rstoall
+      rivdph=max(0.,rstoall/rivare)
+      fldsto=0.
+      flddph=0.
+      if(rstoall>0.)then
+        fldfrc=rivare/grarea
+      else
+        fldfrc=0.
+      endif
+      fldare=fldfrc*grarea
+      fldwth=0.
+      flddph1=0.
+     endif
+     !ag - 18 June 2014
+     fldelv1=rivelv+rivdph-flddph1
+!if(ic==23509)then
+!do i=1,nz
+!write(*,'(10f15.3)')1.,1.,fldstomax(i),fldgrd(i)
+!enddo
+!endif    
+            
+  end subroutine HYMAP2_calc_fldstg_0
+  ! ================================================
   ! ================================================  
   subroutine HYMAP2_calc_rivout_kine(outlet,dt,rivelv,rivelv_down,nxtdst,&
                               rivwth,sfcelv,rivlen,manval,slpmin,&
@@ -384,7 +594,8 @@ contains
         
       if(dflw_imp>1.e-5.and.darea>1.e-5)then
         dout_pre=rivout_pre/rivwth
-        rivout=rivwth*(dout_pre+grv*dt*dflw_imp*dslope)/(1.+grv*dt*manval**2.*abs(dout_pre)*dflw_imp**(-7./3))
+        rivout=rivwth*(dout_pre+grv*dt*dflw_imp*dslope)/&
+             (1.+grv*dt*manval**2.*abs(dout_pre)*dflw_imp**(-7./3))
         if(rivout>=0.)then
           rivout=min(rivout,rivsto/dt)
           !stoout=stoout+rivout*dt
