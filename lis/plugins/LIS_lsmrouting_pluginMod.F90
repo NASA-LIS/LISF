@@ -70,6 +70,7 @@ subroutine LIS_lsmrouting_plugin
 #if ( defined SM_NOAHMP_3_6 )
    external noahmp36_getrunoffs
    external noahmp36_getrunoffs_mm
+   external noahmp36_getrunoffs_hymap2
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -182,8 +183,8 @@ subroutine LIS_lsmrouting_plugin
 
 #if ( defined SM_NOAHMP_3_6 )
    call registerlsmroutinggetrunoff(trim(LIS_noahmp36Id)//"+"//&
-                                    trim(LIS_HYMAP2routerId)//char(0), &
-                                    noahmp36_getrunoffs_mm)
+        trim(LIS_HYMAP2routerId)//char(0), &
+        noahmp36_getrunoffs_hymap2)
 #endif
 
 #if ( defined SM_RUC_3_7 )
