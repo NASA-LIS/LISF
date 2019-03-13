@@ -310,7 +310,7 @@ contains
                 NOAHMP36_struc(n)%noahmp36(t)%wind_n = 0.0
                 !Added by Chandana Gangodagamage
 #if WRF_HYDRO
-                NOAHMP36_struc(n)%noahmp36(t)%sfhead1rt = 0
+            !   NOAHMP36_struc(n)%noahmp36(t)%sfhead1rt = 0
                 NOAHMP36_struc(n)%noahmp36(t)%infxs1rt = 0
                 NOAHMP36_struc(n)%noahmp36(t)%soldrain1rt = 0
 #endif
