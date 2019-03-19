@@ -143,6 +143,8 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
   integer                :: ic,ic_down,i,iloc(1)
 
   !ag (29Jan2016)
+  integer                :: nt_local
+  real                   :: dta_local
   integer                :: counti, countf, count_rate
   integer                :: maxi
   real                   :: mindt
@@ -185,16 +187,25 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
   dtaout=dta
   iloc(:)=minloc(dta)
   i=iloc(1)
+
+  if(nseqall.gt.0) then 
+     nt_local = nt(i)
+     dta_local = dta(i)
+  else
+     nt_local = 1
+     dta_local = dt
+  endif
+
 !find the maximum of i and minimum dt across all processors
 #if (defined SPMD)
-  call MPI_ALLREDUCE(nt(i),maxi, 1, MPI_INTEGER, MPI_MAX, &
+  call MPI_ALLREDUCE(nt_local,maxi, 1, MPI_INTEGER, MPI_MAX, &
        LIS_mpi_comm,status)
 
-  call MPI_ALLREDUCE(dta(i),mindt, 1, MPI_REAL, MPI_MIN, &
+  call MPI_ALLREDUCE(dta_local,mindt, 1, MPI_REAL, MPI_MIN, &
        LIS_mpi_comm,status)
 #else 
-  maxi = nt(i)
-  mindt = dta(i)
+  maxi = nt_local
+  mindt = dta_local
 #endif
   rivout0=rivout
   rivvel0=rivvel
