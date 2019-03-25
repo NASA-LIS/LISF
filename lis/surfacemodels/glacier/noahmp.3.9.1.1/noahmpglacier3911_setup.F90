@@ -50,7 +50,7 @@ subroutine noahmpglacier3911_setup()
     integer           :: col, row
     real, allocatable :: placeholder(:,:)
 
-    mtype = LIS_rc%lsm_index
+    mtype = LIS_rc%glacier_index
     
     do n=1, LIS_rc%nnest
 
