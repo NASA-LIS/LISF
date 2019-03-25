@@ -293,6 +293,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_USDA_ARSsmpeObsId = "USDA ARSsm"
    character*50, public,  parameter :: LIS_ARSsmobsId = "ARS sm" ! SY
    character*50, public,  parameter :: LIS_ISMNsmobsId = "ISMN sm" 
+   character*50, public,  parameter :: LIS_SMAPsmobsId = "SMAP sm"
 !-------------------------------------------------------------------------
 ! Objective Function Evaluation Criteria
 !-------------------------------------------------------------------------

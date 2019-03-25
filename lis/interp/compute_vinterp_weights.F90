@@ -93,12 +93,13 @@ subroutine compute_vinterp_weights(obs_nlayers,lis_sf_d, &
   nlayers = 1
 
   do i=1, obs_nlayers
-     if(obs_d(i).ge.lis_sf_d) then 
+     if(obs_d(i).gt.lis_sf_d) then 
         nlayers = i 
         exit
      endif
   enddo
   
+  nlayers = max(1,nlayers-1)
   ! compute all depths upto the last observation depth
   
   ! first check if the top layer is too thick (difference > 2cm) then 
@@ -122,12 +123,12 @@ subroutine compute_vinterp_weights(obs_nlayers,lis_sf_d, &
   
   nlayers = 1
   do i=1, obs_nlayers
-     if(obs_d(i).ge.lis_rz_d) then 
+     if(obs_d(i).gt.lis_rz_d) then 
         nlayers = i 
         exit
      endif
   enddo
-  
+  nlayers = max(1,nlayers-1)
   ! if the deepest observation depth is shallower than the 
   ! LIS model depths
   
