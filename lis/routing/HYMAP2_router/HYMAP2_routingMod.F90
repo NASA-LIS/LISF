@@ -257,27 +257,6 @@ contains
        HYMAP2_routing_struc(n)%fileopen = 0 
        HYMAP2_routing_struc(n)%dt_proc  = 0.
     enddo
-
-#if 0 
-    !------------------------------------------------------------------------
-    ! Open runtime diagnostics file
-    !------------------------------------------------------------------------
-    call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%HYMAP2_dfile,label="HYMAP2 diagnostic output file:",&
-         rc=rc)
-    call LIS_verify(rc,'HYMAP2 diagnostic output file: not defined')
-    ! Make the diagnostic file directory names/path:
-    diag_fname = LIS_rc%HYMAP2_dfile
-    final_dirpos = scan(diag_fname, "/", BACK = .TRUE.)
-    if(final_dirpos.ne.0) then 
-      diag_dir = diag_fname(1:final_dirpos)
-      ios = LIS_create_subdirs(len_trim(diag_dir),trim(diag_dir))
-    endif
-
-    write(unit=temp1,fmt='(i4.4)') LIS_localPet
-    read(unit=temp1,fmt='(4a1)')fproc
-    LIS_rc%HYMAP2_dfile = trim(LIS_rc%HYMAP2_dfile)//"."//fproc(1)//fproc(2)//fproc(3)//fproc(4)
-    open(unit=HYMAP2_logunit,file=trim(LIS_rc%HYMAP2_dfile))
-#endif
        
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP2 routing model time step:",rc=status)
@@ -538,7 +517,6 @@ contains
             LIS_npes, MPI_INTEGER,0, &
             LIS_mpi_comm, status)
 #endif
-
        allocate(HYMAP2_routing_struc(n)%seqx(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%seqy(HYMAP2_routing_struc(n)%nseqall))
 
@@ -885,7 +863,7 @@ contains
     
     ctitle = 'HYMAP_floodplain_height'
     do n=1, LIS_rc%nnest
-       call HYMAP2_read_param_real(ctitle,HYMAP2_routing_struc(n)%nz,n,&
+       call HYMAP2_read_param_real(ctitle,n, HYMAP2_routing_struc(n)%nz,&
             tmp_real_nz)
        call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
             HYMAP2_routing_struc(n)%nz,&
@@ -1251,7 +1229,7 @@ contains
   end subroutine HYMAP2_routingInit
   !=============================================
   !=============================================
-  subroutine HYMAP2_read_param_real(ctitle,z,n,array)
+  subroutine HYMAP2_read_param_real(ctitle,n,z,array)
     
     !USES: 
     use LIS_coreMod
@@ -1264,14 +1242,14 @@ contains
     character(*), intent(in)    :: ctitle
     integer,      intent(in)    :: z
     integer,      intent(in)    :: n 
-    real*4,       intent(inout) :: array(LIS_rc%lnc(n),LIS_rc%lnr(n),z)
+    real,         intent(inout) :: array(LIS_rc%lnc(n),LIS_rc%lnr(n),z)
     integer                     :: ftn 
     logical                     :: file_exists
     integer                     :: status
     integer                     :: l
     integer                     :: varid
     character*100               :: cfile
-    real*4                      :: array1(LIS_rc%gnc(n),LIS_rc%gnr(n),z)
+!    real                        :: array1(LIS_rc%gnc(n),LIS_rc%gnr(n),z)
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
@@ -1286,20 +1264,26 @@ contains
             'nf90_inq_varid failed for '//trim(ctitle)//&
             ' in read_param_real@HYMAP2_routingMod')
        
-       call LIS_verify(nf90_get_var(ftn,varid, array1), &
-            'nf90_get_var failed for '//trim(ctitle)//&
+       call LIS_verify(nf90_get_var(ftn,varid, array,&
+            start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1),1/), &
+            count=(/(LIS_ewe_halo_ind(n,LIS_localPet+1)-&
+            LIS_ews_halo_ind(n,LIS_localPet+1)+1),&
+            (LIS_nse_halo_ind(n,LIS_localPet+1)-&
+           LIS_nss_halo_ind(n,LIS_localPet+1)+1),z/)),&
+           'nf90_get_var failed for '//trim(ctitle)//&
             ' in read_param_real@HYMAP2_routingMod')
        
        call LIS_verify(nf90_close(ftn),&
             'nf90_close failed in HYMAP2_routindMod')
        
-       do l=1,z
-          array(:,:,l) = nint(array1(&
-               LIS_ews_halo_ind(n,LIS_localPet+1):&         
-               LIS_ewe_halo_ind(n,LIS_localPet+1), &
-               LIS_nss_halo_ind(n,LIS_localPet+1): &
-               LIS_nse_halo_ind(n,LIS_localPet+1),l))
-       enddo
+!       do l=1,z
+!          array(:,:,l) = nint(array1(&
+!               LIS_ews_halo_ind(n,LIS_localPet+1):&         
+!               LIS_ewe_halo_ind(n,LIS_localPet+1), &
+!               LIS_nss_halo_ind(n,LIS_localPet+1): &
+!               LIS_nse_halo_ind(n,LIS_localPet+1),l))
+!       enddo
     else
        write(LIS_logunit,*) '[ERR] parameter input file '//trim(LIS_rc%paramfile(n))
        write(LIS_logunit,*) '[ERR] failed in read_param_real@HYMAP2_routingMod'
@@ -1322,13 +1306,12 @@ contains
     implicit none	  
     character(*), intent(in)    :: ctitle
     integer,      intent(in)    :: n 
-    real*4,       intent(inout) :: array(LIS_rc%lnc(n),LIS_rc%lnr(n))
+    real,         intent(inout) :: array(LIS_rc%lnc(n),LIS_rc%lnr(n))
     integer                     :: ftn 
     logical                     :: file_exists
     integer                     :: status
     integer                     :: varid
     character*100               :: cfile
-    real*4                      :: array1(LIS_rc%gnc(n),LIS_rc%gnr(n))
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
@@ -1343,18 +1326,19 @@ contains
             'nf90_inq_varid failed for '//trim(ctitle)//&
             ' in read_param_real@HYMAP2_routingMod')
        
-       call LIS_verify(nf90_get_var(ftn,varid, array1), &
-            'nf90_get_var failed for '//trim(ctitle)//&
+       call LIS_verify(nf90_get_var(ftn,varid, array,&
+            start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1)/), &
+            count=(/(LIS_ewe_halo_ind(n,LIS_localPet+1)-&
+            LIS_ews_halo_ind(n,LIS_localPet+1)+1),&
+            (LIS_nse_halo_ind(n,LIS_localPet+1)-&
+           LIS_nss_halo_ind(n,LIS_localPet+1)+1)/)),&
+           'nf90_get_var failed for '//trim(ctitle)//&
             ' in read_param_real@HYMAP2_routingMod')
        
        call LIS_verify(nf90_close(ftn),&
             'nf90_close failed in HYMAP2_routindMod')
        
-       array(:,:) = array1(&
-            LIS_ews_halo_ind(n,LIS_localPet+1):&         
-            LIS_ewe_halo_ind(n,LIS_localPet+1), &
-            LIS_nss_halo_ind(n,LIS_localPet+1): &
-            LIS_nse_halo_ind(n,LIS_localPet+1))
     else
        write(LIS_logunit,*) '[ERR] parameter input file '//trim(LIS_rc%paramfile(n))
        write(LIS_logunit,*) '[ERR] failed in read_param_real@HYMAP2_routingMod'
@@ -1384,7 +1368,6 @@ contains
     integer                     :: c,r,l
     character*100               :: cfile
     integer                     :: varid
-    real                        :: array1(LIS_rc%gnc(n),LIS_rc%gnr(n),z)
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
@@ -1399,20 +1382,19 @@ contains
             'nf90_inq_varid failed for '//trim(ctitle)//&
             ' in read_param_int@HYMAP2_routingMod')
        
-       call LIS_verify(nf90_get_var(ftn,varid, array1), &
-            'nf90_get_var failed for '//trim(ctitle)//&
+       call LIS_verify(nf90_get_var(ftn,varid, array,&
+            start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1),1/), &
+            count=(/(LIS_ewe_halo_ind(n,LIS_localPet+1)-&
+            LIS_ews_halo_ind(n,LIS_localPet+1)+1),&
+            (LIS_nse_halo_ind(n,LIS_localPet+1)-&
+           LIS_nss_halo_ind(n,LIS_localPet+1)+1),z/)),&
+           'nf90_get_var failed for '//trim(ctitle)//&
             ' in read_param_int@HYMAP2_routingMod')
-
+       
        call LIS_verify(nf90_close(ftn),&
             'nf90_close failed in HYMAP2_routindMod')
 
-       do l=1,z
-          array(:,:,l) = nint(array1(&
-               LIS_ews_halo_ind(n,LIS_localPet+1):&         
-               LIS_ewe_halo_ind(n,LIS_localPet+1), &
-               LIS_nss_halo_ind(n,LIS_localPet+1): &
-               LIS_nse_halo_ind(n,LIS_localPet+1),l))
-       enddo
     else
        write(LIS_logunit,*) '[ERR] parameter input file '//trim(LIS_rc%paramfile(n))
        write(LIS_logunit,*) '[ERR] failed in read_param_int@HYMAP2_routingMod'
@@ -1441,7 +1423,6 @@ contains
     integer                     :: c,r
     character*100               :: cfile
     integer                     :: varid
-    real                        :: array1(LIS_rc%gnc(n),LIS_rc%gnr(n))
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
@@ -1456,18 +1437,20 @@ contains
             'nf90_inq_varid failed for '//trim(ctitle)//&
             ' in read_param_int@HYMAP2_routingMod')
        
-       call LIS_verify(nf90_get_var(ftn,varid, array1), &
-            'nf90_get_var failed for '//trim(ctitle)//&
+
+       call LIS_verify(nf90_get_var(ftn,varid, array,&
+            start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1)/), &
+            count=(/(LIS_ewe_halo_ind(n,LIS_localPet+1)-&
+            LIS_ews_halo_ind(n,LIS_localPet+1)+1),&
+            (LIS_nse_halo_ind(n,LIS_localPet+1)-&
+           LIS_nss_halo_ind(n,LIS_localPet+1)+1)/)),&
+           'nf90_get_var failed for '//trim(ctitle)//&
             ' in read_param_int@HYMAP2_routingMod')
 
        call LIS_verify(nf90_close(ftn),&
             'nf90_close failed in HYMAP2_routindMod')
 
-       array(:,:) = nint(array1(&
-            LIS_ews_halo_ind(n,LIS_localPet+1):&         
-            LIS_ewe_halo_ind(n,LIS_localPet+1), &
-            LIS_nss_halo_ind(n,LIS_localPet+1): &
-            LIS_nse_halo_ind(n,LIS_localPet+1)))
     else
        write(LIS_logunit,*) '[ERR] parameter input file '//trim(LIS_rc%paramfile(n))
        write(LIS_logunit,*) '[ERR] failed in read_param_int@HYMAP2_routingMod'
