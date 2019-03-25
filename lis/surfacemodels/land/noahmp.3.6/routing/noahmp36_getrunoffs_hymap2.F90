@@ -65,28 +65,28 @@ subroutine noahmp36_getrunoffs_hymap2(n)
   if(status.ne.0)then 
      evapflag = 0
   endif
-
-  if(LIS_masterproc) then 
-     call ESMF_StateGet(LIS_runoff_state(n),"Surface Runoff",&
-          sfrunoff_field,rc=status)
-     call LIS_verify(status,'ESMF_StateGet failed for Surface Runoff')
-     
-     call ESMF_StateGet(LIS_runoff_state(n),"Subsurface Runoff",&
-          baseflow_field,rc=status)
-     call LIS_verify(status,'ESMF_StateGet failed for Subsurface Runoff')
-
-     call ESMF_FieldGet(sfrunoff_field,localDE=0,farrayPtr=sfrunoff,rc=status)
-     call LIS_verify(status,'ESMF_FieldGet failed for Surface Runoff')
-     
-     call ESMF_FieldGet(baseflow_field,localDE=0,farrayPtr=baseflow,rc=status)
-     call LIS_verify(status,'ESMF_FieldGet failed for Subsurface Runoff')
-
-  endif
+  
+  call ESMF_StateGet(LIS_runoff_state(n),"Surface Runoff",&
+       sfrunoff_field,rc=status)
+  call LIS_verify(status,'ESMF_StateGet failed for Surface Runoff')
+  
+  call ESMF_StateGet(LIS_runoff_state(n),"Subsurface Runoff",&
+       baseflow_field,rc=status)
+  call LIS_verify(status,'ESMF_StateGet failed for Subsurface Runoff')
+  
+  call ESMF_FieldGet(sfrunoff_field,localDE=0,farrayPtr=sfrunoff,rc=status)
+  call LIS_verify(status,'ESMF_FieldGet failed for Surface Runoff')
+  
+  call ESMF_FieldGet(baseflow_field,localDE=0,farrayPtr=baseflow,rc=status)
+  call LIS_verify(status,'ESMF_FieldGet failed for Subsurface Runoff')
 
   do t=1, LIS_rc%npatch(n,LIS_rc%lsm_index)  !units?
      runoff1(t) = NOAHMP36_struc(n)%noahmp36(t)%runsrf
      runoff2(t) = NOAHMP36_struc(n)%noahmp36(t)%runsub
   enddo
+
+  runoff1_t = LIS_rc%udef
+  runoff2_t = LIS_rc%udef
 
   call LIS_patch2tile(n,1,runoff1_t, runoff1)
   call LIS_patch2tile(n,1,runoff2_t, runoff2)

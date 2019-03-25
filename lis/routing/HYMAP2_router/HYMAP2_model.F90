@@ -227,7 +227,7 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
          (dble(hr)+(dble(mn)+(dble(ss)+dt1)/60.)/60.)/24.
 
     call HYMAP2_model_core(n,mis,nseqall,nz,time,&
-         dta(i),flowmap,linres,evapflag, &
+         mindt,flowmap,linres,evapflag, &
          resopflag,floodflag,dwiflag,                               &
          rivout_pre,rivdph_pre,grv,                 &
          fldout_pre,flddph_pre,fldelv1,                &
@@ -243,11 +243,17 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
         
     do ic=1,nseqall 
       rivout0(ic)=rivout0(ic)+fldout0(ic)
-      rivout(ic)=rivout(ic)+rivout0(ic)/real(nt(i))
-      rivvel(ic)=rivvel(ic)+rivvel0(ic)/real(nt(i))
-      fldout(ic)=fldout(ic)+fldout0(ic)/real(nt(i))
-      fldvel(ic)=fldvel(ic)+fldvel0(ic)/real(nt(i))
-      evpout(ic)=evpout(ic)+evpout0(ic)/real(nt(i))
+!      rivout(ic)=rivout(ic)+rivout0(ic)/real(nt(i))
+!      rivvel(ic)=rivvel(ic)+rivvel0(ic)/real(nt(i))
+!      fldout(ic)=fldout(ic)+fldout0(ic)/real(nt(i))
+!      fldvel(ic)=fldvel(ic)+fldvel0(ic)/real(nt(i))
+!      evpout(ic)=evpout(ic)+evpout0(ic)/real(nt(i))
+
+      rivout(ic)=rivout(ic)+rivout0(ic)/real(maxi)
+      rivvel(ic)=rivvel(ic)+rivvel0(ic)/real(maxi)
+      fldout(ic)=fldout(ic)+fldout0(ic)/real(maxi)
+      fldvel(ic)=fldvel(ic)+fldvel0(ic)/real(maxi)
+      evpout(ic)=evpout(ic)+evpout0(ic)/real(maxi)
     enddo
 
   enddo

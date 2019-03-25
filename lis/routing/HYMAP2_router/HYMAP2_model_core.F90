@@ -276,7 +276,6 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
        endif
     elseif(flowmap(ic)==2.or.flowmap(ic)==3.or.flowmap(ic)==4.or.flowmap(ic)==5)then
        !Calculate river flow based on the local inertia wave equation
-
        call HYMAP2_calc_rivout_iner(outlet(ic),dt,rivelv(ic),rivelv_down,&
             elevtn(ic),nxtdst(ic), rivwth(ic),rivsto(ic),rivsto_down,&
             rivdph(ic),rivdph_down,rivlen(ic),rivman(ic),&
