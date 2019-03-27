@@ -2638,7 +2638,7 @@ contains
                                           kk_sf(sf_index))%fgrd = & 
                                           LVT_surface(source,sf_index)%lis_tile(&
                                           kk_sf(sf_index))%fgrd * & 
-                                          LVT_topo(source)%aspectfgrd(c,r,slope_index)
+                                          LVT_topo(source)%aspectfgrd(c,r,aspect_index)
                                   endif                                  
                                endif
 
