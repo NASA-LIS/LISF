@@ -124,6 +124,7 @@ module LDT_DAmetricsDataMod
      type(DAmetricsEntry) :: rainfconv  ! Convective Rainfall rate (kg/m2/s)
 
      type(DAmetricsEntry) :: tws
+     type(DAmetricsEntry) :: vod
 
      type(DAmetricsEntry) ::  windforc
      type(DAmetricsEntry) ::  rainfforc
