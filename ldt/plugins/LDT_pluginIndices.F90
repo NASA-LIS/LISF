@@ -92,6 +92,8 @@ module LDT_pluginIndices
         = "GCOMW AMSR2 L3 snow depth"
    character*50, public,  parameter :: LDT_NASASMAPsmobsId            &
         = "NASA SMAP soil moisture"
+   character*50, public,  parameter :: LDT_NASASMAPvodobsId            &
+        = "NASA SMAP vegetation optical depth"
 
 !-------------------------------------------------------------------------
 ! Meteorological forcings

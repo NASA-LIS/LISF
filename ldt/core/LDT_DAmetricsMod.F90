@@ -86,6 +86,10 @@ contains
          LDT_DAobsData(n)%soilmoist_obs,LDT_DAmetrics%soilmoist)
     call registerMetricsEntry(LDT_DA_MOC_TWS,nsize,&
          LDT_DAobsData(n)%tws_obs,LDT_DAmetrics%tws)
+    call registerMetricsEntry(LDT_DA_MOC_VOD,nsize,&
+         LDT_DAobsData(n)%vod_obs,LDT_DAmetrics%vod)
+    call registerMetricsEntry(LDT_DA_MOC_LAI,nsize,&
+         LDT_DAobsData(n)%lai_obs,LDT_DAmetrics%lai)
 !------------------------------------------------------------------------
 ! the generation of the obsgrid only doesn't require a pass through the
 ! data
