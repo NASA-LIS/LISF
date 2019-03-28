@@ -60,6 +60,7 @@ contains
     use GCOMW_AMSR2L3snd_obsMod,   only : GCOMW_AMSR2L3snd_obsInit
     use NASASMAPsm_obsMod,         only : NASASMAPsm_obsinit
     use NASASMAPvod_obsMod,        only : NASASMAPvod_obsinit
+    use GLASSlai_obsMod,        only : GLASSlai_obsinit
 
     external readLISlsmSMObs
     external readsyntheticsmobs
@@ -82,6 +83,7 @@ contains
     external readGCOMW_AMSR2L3sndObs
     external readNASASMAPsmObs
     external readNASASMAPvodObs
+    external readGLASSlaiObs
 
     call registerdaobssetup(trim(LDT_LISlsmSMobsId)//char(0), LISlsmSM_obsInit)
     call registerdaobsread(trim(LDT_LISlsmSMobsId)//char(0), readLISlsmSMObs)
@@ -185,6 +187,11 @@ contains
          NASASMAPvod_obsinit)
     call registerdaobsread(trim(LDT_NASASMAPvodobsId)//char(0),&
          readNASASMAPvodObs)
+
+    call registerdaobssetup(trim(LDT_GLASSlaiobsId)//char(0),&
+         GLASSlai_obsinit)
+    call registerdaobsread(trim(LDT_GLASSlaiobsId)//char(0),&
+         readGLASSlaiObs)
 
 
   end subroutine LDT_DAobs_plugin
