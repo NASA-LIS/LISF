@@ -94,6 +94,8 @@ module LDT_pluginIndices
         = "NASA SMAP soil moisture"
    character*50, public,  parameter :: LDT_NASASMAPvodobsId            &
         = "NASA SMAP vegetation optical depth"
+   character*50, public,  parameter :: LDT_GLASSlaiobsId            &
+        = "GLASS LAI"
 
 !-------------------------------------------------------------------------
 ! Meteorological forcings
