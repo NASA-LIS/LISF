@@ -314,7 +314,7 @@ contains
     real(ESMF_KIND_R8),pointer      :: farray_R8(:,:)
 !
 ! !DESCRIPTION:
-!  
+!
 !
 !EOP
     rc = ESMF_SUCCESS
@@ -743,7 +743,7 @@ contains
             row = LIS_domain(nest)%tile(tile)%row
             noah33_struc(nest)%noah(tile)%sh2o(3) = farray(col,row)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_4') 
+        case ('liquid_fraction_of_soil_moisture_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row

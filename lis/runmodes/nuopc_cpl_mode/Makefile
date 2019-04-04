@@ -1,5 +1,5 @@
 #
-# --- LIS makefile 
+# --- LIS makefile
 # --- Requires ESMVv7+
 # --- LIS ESMF component.
 #
@@ -205,7 +205,7 @@ $(MODEL_LIB): build_model
 # Build Settings
 # ##############
 
-.SUFFIXES: 
+.SUFFIXES:
 .SUFFIXES: .c .C .f90 .F90 .F .f
 
 .F:
@@ -214,7 +214,7 @@ $(MODEL_LIB): build_model
 	@echo "Must have an explicit rule for" $*
 .C:
 	@echo "Must have an explicit rule for" $*
-.c: 
+.c:
 	@echo "Must have an explicit rule for" $*
 
 %.o : %.f90
