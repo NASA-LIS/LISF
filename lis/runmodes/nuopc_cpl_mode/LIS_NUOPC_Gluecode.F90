@@ -1729,6 +1729,11 @@ contains
                 stdName=LIS_FieldList(fIndex)%stdName, &
                 nest=nest,rc=rc)
               if(ESMF_STDERRORCHECK(rc)) return ! bail out
+            else if (LIS_rc%lsm.eq."NoahMP.3.6") then
+              call LIS_CopyToNoahMP_3_6(field=importField, &
+                stdName=LIS_FieldList(fIndex)%stdName, &
+                nest=nest,rc=rc)
+              if(ESMF_STDERRORCHECK(rc)) return ! bail out
             else
               call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
                 msg="Direct coupling is not implemented for "//trim(LIS_rc%lsm), &
