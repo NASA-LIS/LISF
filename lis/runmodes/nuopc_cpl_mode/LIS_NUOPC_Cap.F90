@@ -9,30 +9,30 @@
 !!
 !! @section Overview Overview
 !!
-!! The Land Information System (LIS) is a surface model wrapper developed 
-!! and maintained by the National Aeronautics and Space Administration (NASA). 
-!! LIS abstracts several land and ocean surface models with standard 
-!! interfaces.  The LIS cap wraps LIS with NUOPC compliant interfaces. The 
-!! result is configurable surface model capable of coupling with other models 
-!! in the National Unified Operational Prediction Capability (NUOPC).  As of 
+!! The Land Information System (LIS) is a surface model wrapper developed
+!! and maintained by the National Aeronautics and Space Administration (NASA).
+!! LIS abstracts several land and ocean surface models with standard
+!! interfaces.  The LIS cap wraps LIS with NUOPC compliant interfaces. The
+!! result is configurable surface model capable of coupling with other models
+!! in the National Unified Operational Prediction Capability (NUOPC).  As of
 !! LIS version 7.1 only Noah v2.7.1 and v.3.3 have NUOPC coupling capabilities.
 !!
-!! This page documents the technical design of the specialized NUOPC model and 
+!! This page documents the technical design of the specialized NUOPC model and
 !! the LIS gluecode.  For generic NUOPC model documentation please see the
 !! [NUOPC Reference Manual] (https://www.earthsystemcog.org/projects/nuopc/refmans).
 !!
 !!
 !! @section NuopcSpecialization NUOPC Model Specialized Entry Points
 !!
-!! This cap specializes the cap configuration, initialization, advertised 
+!! This cap specializes the cap configuration, initialization, advertised
 !! fields, realized fields, data initialization, clock, run, and finalize.
-!! 
+!!
 !! @subsection SetServices Set Services (Register Subroutines)
 !!
-!! Table summarizing the NUOPC specialized subroutines registered during 
-!! [SetServices] (@ref LIS_NUOPC::SetServices).  The "Phase" column says 
-!! whether the subroutine is called during the initialization, run, or 
-!! finalize part of the coupled system run. 
+!! Table summarizing the NUOPC specialized subroutines registered during
+!! [SetServices] (@ref LIS_NUOPC::SetServices).  The "Phase" column says
+!! whether the subroutine is called during the initialization, run, or
+!! finalize part of the coupled system run.
 !!
 !! Phase  |     Cap Subroutine                                | Description
 !! -------|---------------------------------------------------|-------------------------------------------------------------
@@ -58,20 +58,20 @@
 !! @subsection InitializeP0 InitializeP0
 !!
 !! During initialize phase 0 the runtime configuration is read in from model
-!! attributes and the initialization phase definition version is set to 
+!! attributes and the initialization phase definition version is set to
 !! IPDv03.
-!! 
+!!
 !! @subsection InitializeP1 InitializeP1
 !!
-!! During initialize phase 1 the model is initialized and the import and 
-!! export fields are advertised in nested import and export states. Import 
-!! fields are configured in the forcing variables list file. 
+!! During initialize phase 1 the model is initialized and the import and
+!! export fields are advertised in nested import and export states. Import
+!! fields are configured in the forcing variables list file.
 !!
 !! @subsection InitializeP3 InitializeP3
 !!
-!! During initialize phase 3 import and export fields are realized in each 
-!! nested import and export state if they are connected through NUOPC. 
-!! Realized fields are created on the LIS grid. All export fields are realized 
+!! During initialize phase 3 import and export fields are realized in each
+!! nested import and export state if they are connected through NUOPC.
+!! Realized fields are created on the LIS grid. All export fields are realized
 !! if realize all export fields is turned on.
 !!
 !! @subsection DataInitialize DataInitialize
@@ -81,12 +81,12 @@
 !! initialized this cap is marked initalized.
 !!
 !! @subsection SetClock SetClock
-!! 
+!!
 !! During set clock the cap creates a new clock for each nest. The time step
-!! for each nest is set in LIS configuration file and initialized during LIS 
-!! initialization. The time accumulation tracker for each timestep is reset to 
+!! for each nest is set in LIS configuration file and initialized during LIS
+!! initialization. The time accumulation tracker for each timestep is reset to
 !! zero.  The cap's time step is updated to the shortest time step
-!! of all nests. The restart write time step is also created and the restart 
+!! of all nests. The restart write time step is also created and the restart
 !! write time accumulation tracker is reset to zero.
 !!
 !!
@@ -98,12 +98,12 @@
 !!
 !! @subsection CheckImport CheckImport
 !!
-!! During check import the import data is checked to verify that it is at 
+!! During check import the import data is checked to verify that it is at
 !! the beginning or end of the timestep.
 !!
 !! @subsection ModelAdvance ModelAdvance
 !!
-!! During model advance each nest time accumulation tracker is increased by 
+!! During model advance each nest time accumulation tracker is increased by
 !! the timestep of the cap.  If the time accumlation tracker is greater than
 !! the time step of the nest then the nest is advanced.
 !!
@@ -115,7 +115,7 @@
 !!
 !! @subsection ModelFinalize ModelFinalize
 !!
-!! During model finalize LIS finalize subroutines are called and memory 
+!! During model finalize LIS finalize subroutines are called and memory
 !! allocated during cap initialization is released.
 !!
 !!
@@ -141,7 +141,7 @@
 !!
 !! The following tables list the import and export fields.
 !!
-!! @subsection ImportFields Import Fields 
+!! @subsection ImportFields Import Fields
 !!
 !! Import fields arelisted in the import_list parameter.
 !!
@@ -168,22 +168,22 @@
 !! pointer to the custom internal state data type is stored in the component.
 !!
 !! The cap allocates new memory for each field so that 2-D coordinate points
-!! can be translated into the LIS tiled field points. 
+!! can be translated into the LIS tiled field points.
 !!
 !! @section IO Input and Output
 !!
-!! Cap diagnostic output is written to the ESMF PET Logs. Cap diagnostic 
+!! Cap diagnostic output is written to the ESMF PET Logs. Cap diagnostic
 !! output can be increased or decreased by setting the Verbosity attribute.
 !!
-!! NUOPC state restart write files are written depending on the 
-!! RestartInterval attribute. If set to 0 then NUOPC state restart write files 
+!! NUOPC state restart write files are written depending on the
+!! RestartInterval attribute. If set to 0 then NUOPC state restart write files
 !! will never be written.
 !!
-!! LIS diagnostics output is written to the LIS logs configured in the LIS 
+!! LIS diagnostics output is written to the LIS logs configured in the LIS
 !! configuration file.
 !!
-!! LIS output files are written to the output directory configured in the LIS 
-!! configuration file.  LIS output includes LIS history files and LIS restart 
+!! LIS output files are written to the output directory configured in the LIS
+!! configuration file.  LIS output includes LIS history files and LIS restart
 !! files.
 !!
 !! @section Dependencies Dependencies
@@ -192,7 +192,7 @@
 !! - [HDF5 v1.8.11+] (https://support.hdfgroup.org/HDF5/)
 !! - [NetCDF v4.3.0+] (http://www.unidata.ucar.edu/software/netcdf/docs/)
 !! - [NetCDF FORTRAN] (http://www.unidata.ucar.edu/software/netcdf/docs/building_netcdf_fortran.html)
-!! - [JasPer v1.900.1] (https://www.ece.uvic.ca/~frodo/jasper) 
+!! - [JasPer v1.900.1] (https://www.ece.uvic.ca/~frodo/jasper)
 !! - [Grib API v1.12.3+] (https://software.ecmwf.int/wiki/display/GRIB/Home)
 !!
 !! @subsection HDF5 HDF5
@@ -268,8 +268,8 @@
 !! The LIS NUOPC cap is maintained in a GitHub repository:
 !! https://github.com/NESII/lis_cap
 !!
-!! @section References 
-!! 
+!! @section References
+!!
 !! - [LIS] (https://modelingguru.nasa.gov/community/atmospheric/lis)
 !! - [ESPS] (https://www.earthsystemcog.org/projects/esps)
 !! - [ESMF] (https://www.earthsystemcog.org/projects/esmf)
@@ -294,9 +294,9 @@ module LIS_NUOPC
   use LIS_ESMF_Extensions
 
   implicit none
-  
+
   private
-  
+
   public SetServices
 
   CHARACTER(LEN=*), PARAMETER :: label_InternalState = 'InternalState'
@@ -341,11 +341,11 @@ module LIS_NUOPC
 
 #undef METHOD
 #define METHOD "SetServices"
-  
+
   subroutine SetServices(gcomp, rc)
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
-    
+
     ! local variables
     integer                    :: stat
     type(type_InternalState)   :: is
@@ -533,13 +533,13 @@ module LIS_NUOPC
       convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     is%wrap%ltestfill_exp = (trim(value)=="true")
- 
+
     ! Switch to IPDv03 by filtering all other phaseMap entries
     call NUOPC_CompFilterPhaseMap(gcomp, ESMF_METHOD_INITIALIZE, &
       acceptStringList=(/"IPDv03p"/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
-    if (is%wrap%verbosity >= VERBOSITY_LV1) & 
+    if (is%wrap%verbosity >= VERBOSITY_LV1) &
       call LogAttributes(trim(cname),gcomp)
 
 #ifdef DEBUG
@@ -547,7 +547,7 @@ module LIS_NUOPC
 #endif
 
   end subroutine
-  
+
   !-----------------------------------------------------------------------------
 
 #undef METHOD
@@ -558,7 +558,7 @@ module LIS_NUOPC
     type(ESMF_State)        :: importState, exportState
     type(ESMF_Clock)        :: clock
     integer,intent(out)     :: rc
-    
+
     ! LOCAL VARIABLES
     character(32)              :: cname
     type(type_InternalState)   :: is
@@ -746,7 +746,7 @@ module LIS_NUOPC
       call LIS_ESMF_LogGrid(is%wrap%grids(nIndex), &
         trim(cname)//"_D"//trim(nStr),rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-      
+
       ! Write grid to NetCDF file.
       if (is%wrap%lwrite_grid) then
         call LIS_ESMF_GridWrite(is%wrap%grids(nIndex), &
@@ -829,7 +829,7 @@ module LIS_NUOPC
           if (ESMF_STDERRORCHECK(rc)) return
         endif
       enddo
- 
+
       call LIS_ESMF_FillState(is%wrap%NStateImp(nIndex),value=MISSINGVALUE,rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
       call LIS_ESMF_FillState(is%wrap%NStateExp(nIndex),value=MISSINGVALUE,rc=rc)
@@ -900,7 +900,7 @@ module LIS_NUOPC
       ! Initialize import and export fields
       call LIS_NUOPC_DataInit(nest=nIndex, &
         importState=is%wrap%NStateImp(nIndex), &
-        exportState=is%wrap%NStateExp(nIndex),rc=rc) 
+        exportState=is%wrap%NStateExp(nIndex),rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
       ! Fill import fields with test data
@@ -994,7 +994,7 @@ module LIS_NUOPC
 #endif
 
   end subroutine
-  
+
   !-----------------------------------------------------------------------------
 
 #undef METHOD
@@ -1162,7 +1162,7 @@ subroutine CheckImport(gcomp, rc)
       do nIndex=1,is%wrap%nnests
         write (nStr,"(I0)") nIndex
 
-        do fIndex = 1, size(LIS_FieldList) 
+        do fIndex = 1, size(LIS_FieldList)
           if (.NOT.LIS_FieldList(fIndex)%sharedMem) then
             call ESMF_StateGet(is%wrap%NStateImp(nIndex), &
               itemName=LIS_FieldList(fIndex)%stateName,itemType=itemType,rc=rc)
@@ -1170,7 +1170,7 @@ subroutine CheckImport(gcomp, rc)
             if ( itemType /= ESMF_STATEITEM_FIELD) cycle
             call ESMF_StateGet(is%wrap%NStateImp(nIndex), &
               itemName=LIS_FieldList(fIndex)%stateName,field=field,rc=rc)
-            if (ESMF_STDERRORCHECK(rc)) return 
+            if (ESMF_STDERRORCHECK(rc)) return
             fieldCurrTime = NUOPC_IsAtTime(field, modelCurrTime, rc=rc)
             if (ESMF_STDERRORCHECK(rc)) return  ! bail out
             if (.NOT.fieldCurrTime) then
@@ -1205,7 +1205,7 @@ subroutine CheckImport(gcomp, rc)
   subroutine ModelAdvance(gcomp, rc)
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
-    
+
     ! local variables
     character(32)               :: cname
     type(type_InternalState)    :: is
@@ -1260,16 +1260,16 @@ subroutine CheckImport(gcomp, rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! HERE THE MODEL ADVANCES: currTime -> currTime + timeStep
-    
+
     ! Because of the way that the internal Clock was set in SetClock(),
     ! its timeStep is likely smaller than the parent timeStep. As a consequence
-    ! the time interval covered by a single parent timeStep will result in 
+    ! the time interval covered by a single parent timeStep will result in
     ! multiple calls to the ModelAdvance() routine. Every time the currTime
     ! will come in by one internal timeStep advanced. This goes until the
     ! stopTime of the internal Clock has been reached.
 
     ! Write import files
-    if (is%wrap%lwrite_debug) then    
+    if (is%wrap%lwrite_debug) then
       is%wrap%debugImpAccum = is%wrap%debugImpAccum + timeStep
       if (is%wrap%debugImpAccum >= is%wrap%debugIntvl) then
         do nIndex=1,is%wrap%nnests
@@ -1309,7 +1309,7 @@ subroutine CheckImport(gcomp, rc)
 
       call ESMF_ClockGet(is%wrap%clocks(nIndex),timeStep=nestTimestep,rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-      
+
       do while (is%wrap%stepAccum(nIndex) >= nestTimestep)
         ! Gluecode NestAdvance
         call ESMF_LogWrite( &
