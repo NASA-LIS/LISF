@@ -53,6 +53,7 @@ subroutine readGLASSlaiObs(source)
   GLASSlaiobs(source)%startFlag = .false. 
   
   call create_GLASSlai_filename(glasslaiobs(Source)%odir, &
+       GLASSlaiobs(source)%source,&
        LVT_rc%dyr(source),LVT_rc%ddoy(source),&
        fname)
   
@@ -127,17 +128,15 @@ subroutine read_GLASS_LAI_data(source, fname, laiobs_ip)
   character*50            :: grid_name,lai_name
   integer                 :: start(2), edge(2), stride(2)
   integer*2, allocatable  :: lai_raw_avhrr(:)
-  integer*2, allocatable  :: lai_raw_modis(:)
+  integer*1, allocatable  :: lai_raw_modis(:)
   integer                 :: lat_off, lon_off
   real                    :: lai_in(GLASSlaiobs(source)%nc*GLASSlaiobs(source)%nr)
   logical*1               :: lai_data_b(GLASSlaiobs(source)%nc*GLASSlaiobs(source)%nr)
   logical*1               :: laiobs_b_ip(LVT_rc%lnc*LVT_rc%lnr)
 
   if(GLASSlaiobs(source)%source.eq."AVHRR") then 
-!     grid_name ="GLASS01B01"
      grid_name ="GLASS01B02"
   elseif(GLASSlaiobs(source)%source.eq."MODIS") then 
-!     grid_name ="GLASS01B01"
      grid_name ="GLASS01B01"
   endif
 
@@ -164,7 +163,7 @@ subroutine read_GLASS_LAI_data(source, fname, laiobs_ip)
   cornerlon(2)=GLASSlaiobs(source)%gridDesc(8)
   
   if(GLASSlaiobs(source)%source.eq."AVHRR") then 
- allocate(lai_raw_avhrr(nc*nr))
+     allocate(lai_raw_avhrr(nc*nr))
      iret = gdrdfld(grid_id,lai_name,start,stride,edge,lai_raw_avhrr)
      
      lai_data_b = .false. 
@@ -192,7 +191,6 @@ subroutine read_GLASS_LAI_data(source, fname, laiobs_ip)
   elseif(GLASSlaiobs(source)%source.eq."MODIS") then 
      allocate(lai_raw_modis(nc*nr))
      iret = gdrdfld(grid_id,lai_name,start,stride,edge,lai_raw_modis)
-     
      lai_data_b = .false. 
      
      lat_off = nint((cornerlat(1)+89.975)/0.05)+1
@@ -202,15 +200,17 @@ subroutine read_GLASS_LAI_data(source, fname, laiobs_ip)
         do c=1,GLASSlaiobs(source)%nc
            c1 = c + lon_off
            r1 = nr - (r + lat_off) + 1
-           
-           if(lai_raw_modis(c1+(r1-1)*nc).gt.0.and.&
-                lai_raw_avhrr(c1+(r1-1)*nc).ne.2550) then 
-              lai_in(c+(r-1)*GLASSlaiobs(source)%nc) =&
-                   lai_raw_modis(c1+(r1-1)*nc)*0.01
-              lai_data_b(c+(r-1)*GLASSlaiobs(source)%nc) =  .true. 
-           else
-              lai_in(c+(r-1)*GLASSlaiobs(source)%nc) = -9999.0
-              lai_data_b(c+(r-1)*GLASSlaiobs(source)%nc) = .false. 
+           if(c1.gt.0.and.c1.le.nc.and.&
+                r1.gt.0.and.r1.le.nr) then 
+              if(lai_raw_modis(c1+(r1-1)*nc).gt.0.and.&
+                   lai_raw_modis(c1+(r1-1)*nc).ne.2550) then 
+                 lai_in(c+(r-1)*GLASSlaiobs(source)%nc) =&
+                      lai_raw_modis(c1+(r1-1)*nc)*0.1
+                 lai_data_b(c+(r-1)*GLASSlaiobs(source)%nc) =  .true. 
+              else
+                 lai_in(c+(r-1)*GLASSlaiobs(source)%nc) = -9999.0
+                 lai_data_b(c+(r-1)*GLASSlaiobs(source)%nc) = .false. 
+              endif
            endif
         enddo
      enddo
@@ -252,12 +252,13 @@ end subroutine read_GLASS_LAI_data
 ! \label{create_GLASSlai_filename}
 ! 
 ! !INTERFACE: 
-subroutine create_GLASSlai_filename(ndir,  yr, doy, filename)
+subroutine create_GLASSlai_filename(ndir, source, yr, doy, filename)
 ! !USES:   
 
   implicit none
 ! !ARGUMENTS: 
   character(len=*)  :: filename
+  character(len=*)  :: source
   integer           :: yr, doy
   character (len=*) :: ndir
 ! 
@@ -280,9 +281,13 @@ subroutine create_GLASSlai_filename(ndir,  yr, doy, filename)
   write(unit=fyr, fmt='(i4.4)') yr
   write(unit=fdoy, fmt='(i3.3)') doy
 
-  filename = trim(ndir)//'/'//trim(fyr)//'/GLASS01B02.V04.A'//&
-       trim(fyr)//trim(fdoy)//'.hdf'
-
+  if(source.eq."AVHRR") then 
+     filename = trim(ndir)//'/'//trim(fyr)//'/GLASS01B02.V04.A'//&
+          trim(fyr)//trim(fdoy)//'.hdf'
+  elseif(source.eq."MODIS") then 
+     filename = trim(ndir)//'/'//trim(fyr)//'/GLASS01B01.V04.A'//&
+          trim(fyr)//trim(fdoy)//'.hdf'
+  endif
 end subroutine create_GLASSlai_filename
 
 
