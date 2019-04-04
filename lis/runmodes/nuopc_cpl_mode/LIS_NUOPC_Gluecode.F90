@@ -10,7 +10,7 @@
 #define T_ENTER(region) call ESMF_TraceRegionEnter(region)
 #define T_EXIT(region) call ESMF_TraceRegionExit(region)
 #else
-#define T_ENTER(region) 
+#define T_ENTER(region)
 #define T_EXIT(region)
 #endif
 #else
@@ -201,27 +201,27 @@ module LIS_NUOPC_Gluecode
   type(LIS_Field),dimension(78)  :: LIS_FieldList = (/ &
     LIS_Field(stdName='2m_air_temperature', &
       stateName='t2_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='K',transferOffer='will provide'), &
     LIS_Field(stdName='2m_heat_exchange_coefficient', &
       stateName='chs2_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='m/s',transferOffer='will provide'), &
     LIS_Field(stdName='2m_moisture_exchange_coefficient', &
       stateName='cqs2_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='m/s',transferOffer='will provide'), &
     LIS_Field(stdName='2m_potential_temperature', &
       stateName='th2_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='K',transferOffer='will provide'), &
     LIS_Field(stdName='2m_specific_humidity', &
       stateName='q2_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/kg',transferOffer='will provide'), &
     LIS_Field(stdName='air_temperature', &
       stateName='tair_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='K',transferOffer='will provide'), &
     LIS_Field(stdName='albedo', &
       stateName='albedo_f', &
@@ -233,31 +233,31 @@ module LIS_NUOPC_Gluecode
       units='-',transferOffer='will provide'), &
     LIS_Field(stdName='atmospheric_density', &
       stateName='density_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/m3',transferOffer='will provide'), &
     LIS_Field(stdName='canopy_moisture', &
       stateName='canopmoist', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='m',transferOffer='will provide'), &
     LIS_Field(stdName='convective_available_potential_energy', &
       stateName='cape_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='J/kg',transferOffer='will provide'), &
     LIS_Field(stdName='convective_rainfall_flux', &
       stateName='crainf_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/m2s',transferOffer='will provide'), &
     LIS_Field(stdName='cosine_solar_zenith_angle', &
       stateName='coszenith_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='-',transferOffer='will provide'), &
     LIS_Field(stdName='downward_heat_flux_in_soil', &
       stateName='qg', &
-      ampValue=90.d0, meanValue=-100.d0, & 
+      ampValue=90.d0, meanValue=-100.d0, &
       units='W/m2',transferOffer='will provide'), &
     LIS_Field(stdName='eastward_wind', &
       stateName='ewind_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='m/s',transferOffer='will provide'), &
     LIS_Field(stdName='effective_mixing_ratio', &
       stateName='effmixratio', &
@@ -265,27 +265,27 @@ module LIS_NUOPC_Gluecode
       units='kg/kg',transferOffer='will provide'), &
     LIS_Field(stdName='emissivity', &
       stateName='emiss_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='-',transferOffer='will provide'), &
     LIS_Field(stdName='forcing_height', &
       stateName='fheight_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='m',transferOffer='will provide'), &
     LIS_Field(stdName='green_vegetation_fraction', &
       stateName='greenness_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='-',transferOffer='will provide'), &
     LIS_Field(stdName='heat_exchange_coefficient_in_air', &
       stateName='ch_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='-',transferOffer='will provide'), &
     LIS_Field(stdName='latent_heat_flux_kinematic', &
       stateName='qlekinematic', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/m2s',transferOffer='will provide'), &
     LIS_Field(stdName='level_pressure', &
       stateName='lpressure_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='Pa',transferOffer='will provide'), &
     LIS_Field(stdName='liquid_fraction_of_soil_moisture_layer_1', &
       stateName='smliqfracl1', &
@@ -305,71 +305,71 @@ module LIS_NUOPC_Gluecode
       units='m3/m3',transferOffer='will provide'), &
     LIS_Field(stdName='liquid_water_content_of_surface_snow', &
       stateName='swe', &
-      ampValue=0.02d0, meanValue=0.d0, & 
+      ampValue=0.02d0, meanValue=0.d0, &
       units='kg/m2',transferOffer='will provide'), &
     LIS_Field(stdName='mixing_ratio', &
       stateName='mixratio_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/kg',transferOffer='will provide'), &
     LIS_Field(stdName='momentum_exchange_coefficient_in_air', &
       stateName='cm_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='-',transferOffer='will provide'), &
     LIS_Field(stdName='northward_wind', &
       stateName='nwind_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='m/s',transferOffer='will provide'), &
     LIS_Field(stdName='ozone_concentration', &
       stateName='o3_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/kg',transferOffer='will provide'), &
     LIS_Field(stdName='porosity', &
       stateName='porosity', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='-',transferOffer='will provide'), &
     LIS_Field(stdName='potential_evaporation', &
       stateName='pet_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/m2s',transferOffer='will provide'), &
     LIS_Field(stdName='rainfall_flux', &
       stateName='rainf_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/m2s',transferOffer='will provide'), &
     LIS_Field(stdName='reference_et', &
       stateName='refet_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/m2',transferOffer='will provide'), &
     LIS_Field(stdName='relative_soil_moisture', &
       stateName='relsmc', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='m3/m3',transferOffer='will provide'), &
     LIS_Field(stdName='root_zone_soil_moisture', &
       stateName='rootmoist', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='m3/m3',transferOffer='will provide'), &
     LIS_Field(stdName='seaicemask', &
       stateName='xice_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='-',transferOffer='will provide'), &
     LIS_Field(stdName='snow_depth', &
       stateName='snowdepth', &
-      ampValue=0.d0, meanValue=0.d0, & 
+      ampValue=0.d0, meanValue=0.d0, &
       units='m ',transferOffer='will provide'), &
     LIS_Field(stdName='snowfall_flux', &
       stateName='snowf_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/m2s',transferOffer='will provide'), &
     LIS_Field(stdName='snowflag', &
       stateName='snowflag_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='-',transferOffer='will provide'), &
     LIS_Field(stdName='snowmelt', &
       stateName='qsm', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/m2s',transferOffer='will provide'), &
     LIS_Field(stdName='soil_moisture_content', &
       stateName='soilmoist', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/m2',transferOffer='will provide'), &
     LIS_Field(stdName='soil_moisture_fraction_layer_1', &
       stateName='smfracl1', &
@@ -389,84 +389,84 @@ module LIS_NUOPC_Gluecode
       units='m3/m3',transferOffer='will provide'), &
     LIS_Field(stdName='soil_temperature_layer_1', &
       stateName='soiltempl1', &
-      ampValue=5.d0, meanValue=300.d0, & 
+      ampValue=5.d0, meanValue=300.d0, &
       units='K',transferOffer='will provide'), &
     LIS_Field(stdName='soil_temperature_layer_2', &
       stateName='soiltempl2', &
-      ampValue=5.d0, meanValue=295.d0, & 
+      ampValue=5.d0, meanValue=295.d0, &
       units='K',transferOffer='will provide'), &
     LIS_Field(stdName='soil_temperature_layer_3', &
       stateName='soiltempl3', &
-      ampValue=5.d0, meanValue=293.d0, & 
+      ampValue=5.d0, meanValue=293.d0, &
       units='K',transferOffer='will provide'), &
     LIS_Field(stdName='soil_temperature_layer_4', &
       stateName='soiltempl4', &
-      ampValue=5.d0, meanValue=290.d0, & 
+      ampValue=5.d0, meanValue=290.d0, &
       units='K',transferOffer='will provide'), &
     LIS_Field(stdName='soil_temperature_lower_boundary', &
       stateName='tmn_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='K',transferOffer='will provide'), &
     LIS_Field(stdName='specific_humidity', &
       stateName='qair_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/kg',transferOffer='will provide'), &
     LIS_Field(stdName='subsurface_runoff_amount', &
       stateName='qsb', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/m2',transferOffer='will provide'), &
     LIS_Field(stdName='surface_air_pressure', &
       stateName='psurf_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='Pa',transferOffer='will provide'), &
     LIS_Field(stdName='surface_diffuse_downwelling_shortwave_flux_in_air', &
       stateName='diffusesw_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='W/m2',transferOffer='will provide'), &
     LIS_Field(stdName='surface_direct_downwelling_shortwave_flux_in_air', &
       stateName='directsw_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='W/m2',transferOffer='will provide'), &
     LIS_Field(stdName='surface_downward_par_diffuse', &
       stateName='pardf_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='W/m2',transferOffer='will provide'), &
     LIS_Field(stdName='surface_downward_par_direct', &
       stateName='pardr_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='W/m2',transferOffer='will provide'), &
     LIS_Field(stdName='surface_downwelling_longwave_flux_in_air', &
       stateName='lwdown_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='W/m2',transferOffer='will provide'), &
     LIS_Field(stdName='surface_downwelling_shortwave_flux_in_air', &
       stateName='swdown_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='W/m2',transferOffer='will provide'), &
     LIS_Field(stdName='surface_net_downward_shortwave_flux', &
       stateName='swnet_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='W/m2',transferOffer='will provide'), &
     LIS_Field(stdName='surface_roughness_length', &
       stateName='roughness_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='m',transferOffer='will provide'), &
     LIS_Field(stdName='surface_runoff_amount', &
       stateName='qs', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/m2',transferOffer='will provide'), &
     LIS_Field(stdName='surface_snow_area_fraction', &
       stateName='snowcover', &
-      ampValue=0.d0, meanValue=0.d0, & 
+      ampValue=0.d0, meanValue=0.d0, &
       units='-',transferOffer='will provide'), &
     LIS_Field(stdName='surface_specific_humidity', &
       stateName='qsfc_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='kg/kg',transferOffer='will provide'), &
 #ifdef GSM_EXTLND
     LIS_Field(stdName='surface_temperature_land', &
       stateName='avgsurft', &
-      ampValue=10.d0, meanValue=295.d0, & 
+      ampValue=10.d0, meanValue=295.d0, &
       units='K',transferOffer='will provide'), &
 #else
     LIS_Field(stdName='surface_temperature', &
@@ -476,23 +476,23 @@ module LIS_NUOPC_Gluecode
 #endif
     LIS_Field(stdName='surface_upward_latent_heat_flux', &
       stateName='qle', &
-      ampValue=500.d0, meanValue=-100.d0, & 
+      ampValue=500.d0, meanValue=-100.d0, &
       units='W/m2',transferOffer='will provide'), &
     LIS_Field(stdName='surface_upward_sensible_heat_flux', &
       stateName='qh', &
-      ampValue=500.d0, meanValue=450.d0, & 
+      ampValue=500.d0, meanValue=450.d0, &
       units='W/m2',transferOffer='will provide'), &
     LIS_Field(stdName='vapor_pressure', &
       stateName='vaporpress_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='-',transferOffer='will provide'), &
     LIS_Field(stdName='vapor_pressure_deficit', &
       stateName='vaporpressdef_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='-',transferOffer='will provide'), &
     LIS_Field(stdName='vegetationtype', &
       stateName='vegtype', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='-',transferOffer='will provide'), &
     LIS_Field(stdName='wind_speed', &
       stateName='wind_f', &
@@ -500,12 +500,12 @@ module LIS_NUOPC_Gluecode
       units='m/s ',transferOffer='will provide'), &
     LIS_Field(stdName='surface_water_depth', &
       stateName='sfcheadrt_f', &
-      ampValue=1.d0, meanValue=0.d0, & 
+      ampValue=1.d0, meanValue=0.d0, &
       units='mm',transferOffer='will provide'), &
    LIS_Field(stdName='time_step_infiltration_excess', &
       stateName='infxsrt', &
       ampValue=1.d0, meanValue=0.d0, &
-      units='mm',transferOffer='will provide'), & 
+      units='mm',transferOffer='will provide'), &
    LIS_Field(stdName='soil_column_drainage', &
       stateName='soldrain', &
       ampValue=1.d0, meanValue=0.d0, &
@@ -518,7 +518,7 @@ module LIS_NUOPC_Gluecode
       stateName='ett', &
       ampValue=1.d0, meanValue=0.d0, &
       units='W/m2',transferOffer='will provide')/)
-  
+
 !EOP
 
 contains
@@ -645,7 +645,7 @@ contains
     call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
 #endif
 
-    ! See LIS_lsmcpl_pluginMod for subroutines registered to: 
+    ! See LIS_lsmcpl_pluginMod for subroutines registered to:
     ! "retrospective", "WRF coupling", "NUOPC coupling"
     call LIS_surfaceModel_setexport(nest)
 
@@ -776,7 +776,7 @@ contains
 
     T_ENTER("pertstat")	
     call LIS_surfaceModel_perturb_states(nest)
-    T_EXIT("pertstat") 
+    T_EXIT("pertstat")
 
     T_ENTER("readda")		
     call LIS_readDAobservations(nest)
@@ -806,7 +806,7 @@ contains
     ! Write LIS output data to export state
     ! =========================================================
 
-    ! See LIS_lsmcpl_pluginMod for subroutines registered to: 
+    ! See LIS_lsmcpl_pluginMod for subroutines registered to:
     ! "retrospective", "WRF coupling", "NUOPC coupling"
     call LIS_surfaceModel_setexport(nest)
 
@@ -814,7 +814,7 @@ contains
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
 
     ! convert runoff fields from (kg m-2 s-1) to (kg m-2)
-    
+
     call ESMF_TimeIntervalGet(timeStep, s=timeStepSecs, rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
 
@@ -830,7 +830,7 @@ contains
       call ESMF_StateGet(exportState, &
         itemName="qs", field=exportField, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
-    
+
       !call ESMF_FieldGet(exportField, grid=grid, rc=rc)
       !if (ESMF_STDERRORCHECK(rc)) return
 
@@ -839,7 +839,7 @@ contains
       !  staggerloc=ESMF_STAGGERLOC_CENTER, &
       !  farrayPtr=mask, rc=rc)
       !if (ESMF_STDERRORCHECK(rc)) return
- 
+
       call ESMF_FieldGet(exportField, farrayPtr=exportFarray, &
         exclusiveLBound=elb, exclusiveUBound=eub, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
@@ -872,7 +872,7 @@ contains
       call ESMF_StateGet(exportState, &
         itemName="qsb", field=exportField, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
-     
+
       call ESMF_FieldGet(exportField, farrayPtr=exportFarray, &
         exclusiveLBound=elb, exclusiveUBound=eub, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
@@ -896,7 +896,7 @@ contains
     endif
 
     ! end conversions
-    
+
 #ifdef DEBUG
     call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
 #endif
@@ -1695,7 +1695,7 @@ contains
     type(ESMF_Field)           :: importField
     type(ESMF_Field)           :: lisImportField
     integer                    :: fIndex
-    
+
     rc = ESMF_SUCCESS
 
 #ifdef DEBUG
@@ -1728,7 +1728,7 @@ contains
               call LIS_CopyToNoah_3_3(field=importField, &
                 stdName=LIS_FieldList(fIndex)%stdName, &
                 nest=nest,rc=rc)
-              if(ESMF_STDERRORCHECK(rc)) return ! bail out 
+              if(ESMF_STDERRORCHECK(rc)) return ! bail out
             else
               call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
                 msg="Direct coupling is not implemented for "//trim(LIS_rc%lsm), &
@@ -1736,7 +1736,7 @@ contains
               return  ! bail out
             endif
           else
-            call LIS_ForcFieldGet(LIS_FieldList(fIndex)%lisForcVarname, & 
+            call LIS_ForcFieldGet(LIS_FieldList(fIndex)%lisForcVarname, &
               nest=nest,itemType=lisItemType,rc=rc)
             if (ESMF_STDERRORCHECK(rc)) return
 
@@ -1757,7 +1757,7 @@ contains
         else ! not present in NOUPC import
           call ESMF_LogWrite( trim(l_label)// &
            " field is not present in NUOPC import state="// &
-            trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING) 
+            trim(LIS_FieldList(fIndex)%stateName),ESMF_LOGMSG_WARNING)
           cycle
         endif ! Not present in import state
       endif ! realizedImport
@@ -2317,7 +2317,7 @@ contains
           itemName=trim(varname), &
           field=field,rc=rc)
         if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      endif 
+      endif
     endif
 
 #ifdef DEBUG
@@ -2586,7 +2586,7 @@ contains
           " Number of forcing variables in met forcing dataset (", &
           mIndex,"): ",LIS_rc%met_nf(mIndex)
         call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
-      enddo    
+      enddo
     endif
 
     if (allocated(LIS_rc%metforc)) then
