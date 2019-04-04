@@ -118,10 +118,10 @@ contains
     glasslaiobs(i)%gridDesc(1) = 0  
     glasslaiobs(i)%gridDesc(2) = glasslaiobs(i)%nc
     glasslaiobs(i)%gridDesc(3) = glasslaiobs(i)%nr
-    glasslaiobs(i)%gridDesc(4) = -89.875
-    glasslaiobs(i)%gridDesc(5) = -179.875
-    glasslaiobs(i)%gridDesc(7) = 89.875
-    glasslaiobs(i)%gridDesc(8) = 179.875
+    glasslaiobs(i)%gridDesc(4) = -89.975
+    glasslaiobs(i)%gridDesc(5) = -179.975
+    glasslaiobs(i)%gridDesc(7) = 89.975
+    glasslaiobs(i)%gridDesc(8) = 179.975
     glasslaiobs(i)%gridDesc(6) = 128
     glasslaiobs(i)%gridDesc(9) = 0.05
     glasslaiobs(i)%gridDesc(10) = 0.05
