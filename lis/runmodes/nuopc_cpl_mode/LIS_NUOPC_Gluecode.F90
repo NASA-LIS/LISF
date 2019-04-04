@@ -734,6 +734,10 @@ contains
 
     call LIS_timemgr_set(LIS_rc, yy, mm, dd, h, m, s, 0, 0.0)
 
+    T_ENTER("datacopy")
+    call LIS_ImportFieldsCopy(nest,importState,rc=rc)
+    T_EXIT("datacopy")
+    if(ESMF_STDERRORCHECK(rc)) return ! bail out
     select case (mode)
       case (LIS_Offline)
         ! Read in data from Met forcing sources listed in lis.config
@@ -741,21 +745,12 @@ contains
         call LIS_get_met_forcing(nest)
         T_EXIT("getmetforc")
       case (LIS_Coupled)
-        ! Copy data from import state
-        T_ENTER("datacopy")
-        call LIS_ImportFieldsCopy(nest,importState,rc=rc)
-        T_EXIT("datacopy")
-        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        ! No extra work needs to be done
       case (LIS_Hybrid)
-        ! Read in data from Met forcing sources listed in lis.config
-        T_ENTER("getmetforc")
-        call LIS_get_met_forcing(nest)
-        T_EXIT("getmetforc")
-        ! Copy data from import state
-        T_ENTER("datacopy")
-        call LIS_ImportFieldsCopy(nest,importState,rc=rc)
-        T_EXIT("datacopy")
-        if(ESMF_STDERRORCHECK(rc)) return ! bail out        
+        call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+          msg="Mixed (coupled+offline) met forcing data is not allowed.", &
+          line=__LINE__, file=FILENAME, rcToReturn=rc)
+        return  ! bail out
       case default
         call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
           msg="Running mode is unknown.", &
@@ -1729,10 +1724,17 @@ contains
             field=importField,rc=rc)
 
           if (LIS_FieldList(fIndex)%directConn) then
-            call LIS_CopyToNoah_3_3(field=importField, &
-              stdName=LIS_FieldList(fIndex)%stdName, &
-              nest=nest,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out 
+            if (LIS_rc%lsm.eq."Noah.3.3") then
+              call LIS_CopyToNoah_3_3(field=importField, &
+                stdName=LIS_FieldList(fIndex)%stdName, &
+                nest=nest,rc=rc)
+              if(ESMF_STDERRORCHECK(rc)) return ! bail out 
+            else
+              call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+                msg="Direct coupling is not implemented for "//trim(LIS_rc%lsm), &
+                line=__LINE__, file=FILENAME, rcToReturn=rc)
+              return  ! bail out
+            endif
           else
             call LIS_ForcFieldGet(LIS_FieldList(fIndex)%lisForcVarname, & 
               nest=nest,itemType=lisItemType,rc=rc)
