@@ -6,7 +6,7 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #define LIS_NoahMP_TEST 0
-#define WRF_HYDRO 0  
+!#define WRF_HYDRO 0  
 ! !INTERFACE
 subroutine noahmp_driver_36(iloc, jloc, &
      landuse_tbl_name, soil_tbl_name,  gen_tbl_name,             & 
@@ -290,7 +290,7 @@ subroutine noahmp_driver_36(iloc, jloc, &
   real,   intent(out) :: chv2                 ! sensible heat exchange coefficient over vegetated fraction [-] 
   real,   intent(out) :: chb2                 ! sensible heat exchange coefficient over bare-ground [-] 
   real,   intent(out) :: fpice                ! snow fraction in precipitation [-] 
-  real,   intent(out) :: sfcheadrt            ! extra output for WRF-HYDRO [m] 
+  real,   intent(inout) :: sfcheadrt          ! extra output for WRF-HYDRO [m] 
 
   ! external function
   real, external      :: month_d_36
@@ -375,7 +375,9 @@ subroutine noahmp_driver_36(iloc, jloc, &
   ! dummy arguments for Noah-MP 
 !  iloc = 1
 !  jloc = 1 
+#ifndef WRF_HYDRO
   sfcheadrt = 0.0 
+#endif
 
   if (opt_sfc == 3) then
      stop "(opt_sfc == 3) and (opt_sfc == 4) are not for offline use"

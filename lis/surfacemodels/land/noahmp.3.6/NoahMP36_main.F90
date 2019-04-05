@@ -557,6 +557,9 @@ subroutine NoahMP36_main(n)
             tmp_WDPOOL      = NOAHMP36_struc(n)%noahmp36(t)%WDPOOL
             tmp_WRRAT       = NOAHMP36_struc(n)%noahmp36(t)%WRRAT
             tmp_MRP         = NOAHMP36_struc(n)%noahmp36(t)%MRP
+#ifdef WRF_HYDRO
+            tmp_sfcheadrt   = NoahMP36_struc(n)%noahmp36(t)%sfcheadrt
+#endif
             ! SY: End corresponding to read_mp_veg_parameters
             ! SY: End for enabling OPTUE: get calibratable parameters
             call noahmp_driver_36(LIS_localPet, t,tmp_landuse_tbl_name  , & ! in    - Noah model landuse parameter table [-]
