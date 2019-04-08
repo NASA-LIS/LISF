@@ -222,6 +222,10 @@ subroutine LIS_DAobs_plugin
     use NASASMAPsm_Mod,          only : NASASMAPsm_setup
 #endif
 
+#if ( defined DA_OBS_NASA_SMAPVOD )
+    use NASASMAPvod_Mod,          only : NASASMAPvod_setup
+#endif
+
 #if ( defined DA_OBS_GLASS_LAI )
     use GLASSLAI_Mod,          only : GLASSlai_setup
 #endif
@@ -360,6 +364,10 @@ subroutine LIS_DAobs_plugin
 
 #if ( defined DA_OBS_NASA_SMAPSM )
     external read_NASASMAPsm, write_NASASMAPsmobs
+#endif
+
+#if ( defined DA_OBS_NASA_SMAPVOD)
+    external read_NASASMAPvod, write_NASASMAPvodobs
 #endif
 
 #if ( defined DA_OBS_GLASS_LAI)
@@ -660,6 +668,15 @@ subroutine LIS_DAobs_plugin
         read_NASASMAPsm)
    call registerwritedaobs(trim(LIS_NASASMAPsmobsId)//char(0),&
         write_NASASMAPsmobs)
+#endif
+
+#if ( defined DA_OBS_NASA_SMAPVOD )
+   call registerdaobssetup(trim(LIS_NASASMAPvodobsId)//char(0),&
+        NASASMAPvod_setup)
+   call registerreaddaobs(trim(LIS_NASASMAPvodobsId)//char(0),&
+        read_NASASMAPvod)
+   call registerwritedaobs(trim(LIS_NASASMAPvodobsId)//char(0),&
+        write_NASASMAPvodobs)
 #endif
 
 #if ( defined DA_OBS_GLASS_LAI)

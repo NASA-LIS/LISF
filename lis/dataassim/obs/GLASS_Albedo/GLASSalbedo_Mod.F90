@@ -43,6 +43,7 @@ module GLASSalbedo_Mod
      integer                :: mi
      real*8                 :: time1, time2
      integer                :: fnd
+     integer                :: qcflag
      real,     allocatable  :: obs_bs1(:)
      real,     allocatable  :: obs_bs2(:)
      real,     allocatable  :: obs_ws1(:)
@@ -156,6 +157,14 @@ contains
        call ESMF_ConfigGetAttribute(LIS_config,GLASSalbedo_struc(n)%source,&
             rc=status)
        call LIS_verify(status, 'GLASS Albedo data source: is missing')
+    enddo
+
+    call ESMF_ConfigFindLabel(LIS_config,"GLASS Albedo apply QC flags:",&
+         rc=status)
+    do n=1,LIS_rc%nnest
+       call ESMF_ConfigGetAttribute(LIS_config,GLASSalbedo_struc(n)%qcflag,&
+            rc=status)
+       call LIS_verify(status, 'GLASS Albedo apply QC flags: is missing')
     enddo
 
    do n=1,LIS_rc%nnest
@@ -336,14 +345,14 @@ contains
           allocate(GLASSalbedo_struc(n)%rlat(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
           allocate(GLASSalbedo_struc(n)%rlon(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
 
-          allocate(GLASSalbedo_struc(n)%n11(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(GLASSalbedo_struc(n)%n12(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(GLASSalbedo_struc(n)%n21(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(GLASSalbedo_struc(n)%n22(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(GLASSalbedo_struc(n)%w11(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(GLASSalbedo_struc(n)%w12(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(GLASSalbedo_struc(n)%w21(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(GLASSalbedo_struc(n)%w22(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+          allocate(GLASSalbedo_struc(n)%n11(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GLASSalbedo_struc(n)%n12(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GLASSalbedo_struc(n)%n21(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GLASSalbedo_struc(n)%n22(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GLASSalbedo_struc(n)%w11(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GLASSalbedo_struc(n)%w12(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GLASSalbedo_struc(n)%w21(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GLASSalbedo_struc(n)%w22(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
           
           call bilinear_interp_input_withgrid(&
                GLASSalbedo_struc(n)%gridDesci(:), &
@@ -362,7 +371,7 @@ contains
           call upscaleByAveraging_input(GLASSalbedo_struc(n)%gridDesci(:),&
                LIS_rc%obs_gridDesc(k,:),&
                GLASSalbedo_struc(n)%nc*GLASSalbedo_struc(n)%nr, &
-               LIS_rc%lnc(n)*LIS_rc%lnr(n), GLASSalbedo_struc(n)%n11)
+               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k), GLASSalbedo_struc(n)%n11)
        endif
        
        call LIS_registerAlarm("GLASS Albedo read alarm",&

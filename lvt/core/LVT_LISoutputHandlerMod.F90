@@ -9928,13 +9928,20 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
              endif
           enddo
        enddo
-
        if(LVT_LIS_rc(source)%gridDesc(10).gt.LVT_rc%gridDesc(10)) then
           !interpolate
+!          call bilinear_interp(LVT_rc%gridDesc,li,gi,&
+!               lo,go,mi,mo,LVT_rc%rlat_dn,LVT_rc%rlon_dn,&
+!               LVT_rc%w11_dn,LVT_rc%w12_dn,LVT_rc%w21_dn,LVT_rc%w22_dn,&
+!               LVT_rc%n11_dn,LVT_rc%n12_dn,LVT_rc%n21_dn,LVT_rc%n22_dn,&
+!               LVT_rc%udef,iret)
+
           call bilinear_interp(LVT_rc%gridDesc,li,gi,&
-               lo,go,mi,mo,LVT_rc%rlat_dn,LVT_rc%rlon_dn,&
-               LVT_rc%w11_dn,LVT_rc%w12_dn,LVT_rc%w21_dn,LVT_rc%w22_dn,&
-               LVT_rc%n11_dn,LVT_rc%n12_dn,LVT_rc%n21_dn,LVT_rc%n22_dn,&
+               lo,go,mi,mo,LVT_LIS_rc(source)%rlat_dn,LVT_LIS_rc(source)%rlon_dn,&
+               LVT_LIS_rc(source)%w11_dn,LVT_LIS_rc(source)%w12_dn,&
+               LVT_LIS_rc(source)%w21_dn,LVT_LIS_rc(source)%w22_dn,&
+               LVT_LIS_rc(source)%n11_dn,LVT_LIS_rc(source)%n12_dn,&
+               LVT_LIS_rc(source)%n21_dn,LVT_LIS_rc(source)%n22_dn,&
                LVT_rc%udef,iret)
 
        else !upscale/average
@@ -10001,10 +10008,18 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           
           if(LVT_LIS_rc(source)%gridDesc(10).gt.LVT_rc%gridDesc(10)) then
              !interpolate
+!             call bilinear_interp(LVT_rc%gridDesc,li,gi,&
+!                  lo,go,mi,mo,LVT_rc%rlat_dn,LVT_rc%rlon_dn,&
+!                  LVT_rc%w11_dn,LVT_rc%w12_dn,LVT_rc%w21_dn,LVT_rc%w22_dn,&
+!                  LVT_rc%n11_dn,LVT_rc%n12_dn,LVT_rc%n21_dn,LVT_rc%n22_dn,&
+!                  LVT_rc%udef,iret)
+
              call bilinear_interp(LVT_rc%gridDesc,li,gi,&
-                  lo,go,mi,mo,LVT_rc%rlat_dn,LVT_rc%rlon_dn,&
-                  LVT_rc%w11_dn,LVT_rc%w12_dn,LVT_rc%w21_dn,LVT_rc%w22_dn,&
-                  LVT_rc%n11_dn,LVT_rc%n12_dn,LVT_rc%n21_dn,LVT_rc%n22_dn,&
+                  lo,go,mi,mo,LVT_LIS_rc(source)%rlat_dn,LVT_LIS_rc(source)%rlon_dn,&
+                  LVT_LIS_rc(source)%w11_dn,LVT_LIS_rc(source)%w12_dn,&
+                  LVT_LIS_rc(source)%w21_dn,LVT_LIS_rc(source)%w22_dn,&
+                  LVT_LIS_rc(source)%n11_dn,LVT_LIS_rc(source)%n12_dn,&
+                  LVT_LIS_rc(source)%n21_dn,LVT_LIS_rc(source)%n22_dn,&
                   LVT_rc%udef,iret)
              
           else !upscale/average

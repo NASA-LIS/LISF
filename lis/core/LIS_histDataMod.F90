@@ -5615,7 +5615,7 @@ end subroutine get_moc_attributes
     integer         :: tid
     logical         :: model_patch
 
-    tid = LIS_surface(n,1)%tile(t)%tile_id
+!    tid = LIS_surface(n,1)%tile(t)%tile_id
     model_patch = .true.
     call LIS_diagnoseOutputVar(LIS_histData(n)%head_routing_list, &
          LIS_MOC_ROUTING_COUNT, LIS_histData(n)%ptr_into_routing_list,&

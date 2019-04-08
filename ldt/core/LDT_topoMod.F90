@@ -310,7 +310,7 @@ contains
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%topo_gridtransform(n),&
               rc=rc)
-         call LDT_verify(rc,'Topography spatial tranform: option not specified in the config file')
+         call LDT_verify(rc,'Topography spatial transform: option not specified in the config file')
     
        ! Check tiled settings:
          if( LDT_LSMparam_struc(n)%elevation%num_bins > 1 .or. &

@@ -33,7 +33,7 @@ subroutine noahmpglacier3911_finalize(n)
     
     do n=1, LIS_rc%nnest
         ! free memory allocated for each tile
-       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+       do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
           deallocate(Noahmpgl3911_struc(n)%noahmpgl(t)%shdfac_monthly)
           deallocate(Noahmpgl3911_struc(n)%noahmpgl(t)%smceq)
           deallocate(Noahmpgl3911_struc(n)%noahmpgl(t)%sstc)

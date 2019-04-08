@@ -243,7 +243,7 @@ contains
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,gfrac_gridtransform(n),&
               rc=rc)
-         call LDT_verify(rc,'Greenness spatial tranform: option not specified in the config file')
+         call LDT_verify(rc,'Greenness spatial transform: option not specified in the config file')
          LDT_gfrac_struc(n)%gfrac_gridtransform = gfrac_gridtransform(n)
       enddo
    endif

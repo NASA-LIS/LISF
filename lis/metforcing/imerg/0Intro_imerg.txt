@@ -2,4 +2,10 @@
 !\section{IMERG}
 !This section describes the implementation of the L3 precipitation
 !product from GPM known as IMERG. 
+!
+!IMERG reader updated on 11/26/2018
+!The IMERG reader is updated to read in three versions of IMERG data:
+!early, late, and final
+!The reader currently is compatible with IMERG algorithm version V05B.
+!
 !EOP

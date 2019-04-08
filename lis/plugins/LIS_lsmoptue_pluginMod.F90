@@ -120,6 +120,9 @@ subroutine LIS_lsmoptue_plugin
    external NoahMP36_getpeobspred_ISMNsmobs
    external NoahMP36_setupobspred_ISMNsmobs
 
+   external NoahMP36_getpeobspred_SMAPsmobs
+   external NoahMP36_setupobspred_SMAPsmobs
+
 #endif
 
 !    call registerlsmf2t(trim(LIS_noah271Id)//char(0), &
@@ -269,6 +272,13 @@ subroutine LIS_lsmoptue_plugin
    call registerlsmpegetobspred(trim(LIS_noahmp36Id)//"+"//      &
                                 trim(LIS_ISMNsmobsId)//char(0), &
                                 NoahMP36_getpeobspred_ISMNsmobs)
+
+   call registerlsmpesetupobspred(trim(LIS_noahmp36Id)//"+"//      &
+                                  trim(LIS_SMAPsmobsId)//char(0), &
+                                  NoahMP36_setupobspred_SMAPsmobs)
+   call registerlsmpegetobspred(trim(LIS_noahmp36Id)//"+"//      &
+                                trim(LIS_SMAPsmobsId)//char(0), &
+                                NoahMP36_getpeobspred_SMAPsmobs)
 #endif
 
 #endif

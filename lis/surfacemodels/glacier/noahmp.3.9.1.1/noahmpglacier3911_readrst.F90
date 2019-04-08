@@ -101,10 +101,10 @@ subroutine noahmpglacier3911_readrst()
        wformat = trim(noahmpgl3911_struc(n)%rformat)
        ! coldstart
        if(LIS_rc%startcode .eq. "coldstart") then  
-          call noahmpglacier3911_coldstart(LIS_rc%lsm_index)
+          call noahmpglacier3911_coldstart(LIS_rc%glacier_index)
           ! restart
        elseif(LIS_rc%startcode .eq. "restart") then
-          allocate(tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index)))
+          allocate(tmptilen(LIS_rc%npatch(n, LIS_rc%glacier_index)))
           ! check the existance of restart file
           inquire(file=noahmpgl3911_struc(n)%rfile, exist=file_exists)
           If (.not. file_exists) then 
@@ -126,7 +126,7 @@ subroutine noahmpglacier3911_readrst()
                 call LIS_endrun
              endif
 
-             if(npatch .ne. LIS_rc%glbnpatch_red(n, LIS_rc%lsm_index)) then
+             if(npatch .ne. LIS_rc%glbnpatch_red(n, LIS_rc%glacier_index)) then
                 write(LIS_logunit,*) "restart tile space mismatch, halting..."
                 call LIS_endrun
              endif
@@ -139,103 +139,103 @@ subroutine noahmpglacier3911_readrst()
           endif
 
           ! read: snow albedo at last time step
-          call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%albold, &
+          call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%albold, &
                varname="ALBOLD", wformat=wformat)
 
           ! read: snow mass at the last time step
-          call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%sneqvo, &
+          call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%sneqvo, &
                varname="SNEQVO", wformat=wformat)
 
           ! read: snow/soil temperature
           do l=1, noahmpgl3911_struc(n)%nsoil + noahmpgl3911_struc(n)%nsnow
-             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="SSTC", &
+             call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, tmptilen, varname="SSTC", &
                   dim=l, vlevels = noahmpgl3911_struc(n)%nsoil + noahmpgl3911_struc(n)%nsnow,&
                   wformat=wformat)
-             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+             do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
                 noahmpgl3911_struc(n)%noahmpgl(t)%sstc(l) = tmptilen(t)
              enddo
           enddo
 
           ! read: volumetric liquid soil moisture
           do l=1, noahmpgl3911_struc(n)%nsoil ! TODO: check loop
-             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="SH2O", &
+             call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, tmptilen, varname="SH2O", &
                   dim=l, vlevels = noahmpgl3911_struc(n)%nsoil, wformat=wformat)
-             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+             do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
                 noahmpgl3911_struc(n)%noahmpgl(t)%sh2o(l) = tmptilen(t)
              enddo
           enddo
 
           ! read: volumetric soil moisture, ice + liquid
           do l=1, noahmpgl3911_struc(n)%nsoil ! TODO: check loop
-             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="SMC", &
+             call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, tmptilen, varname="SMC", &
                   dim=l, vlevels = noahmpgl3911_struc(n)%nsoil, wformat=wformat)
-             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+             do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
                 noahmpgl3911_struc(n)%noahmpgl(t)%smc(l) = tmptilen(t)
              enddo
           enddo
 
           ! read: ground temperature (skin temperature)
-          call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%tg, &
+          call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%tg, &
                varname="TG", wformat=wformat)
 
           ! read: snowfall on the ground
-          call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%qsnow, &
+          call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%qsnow, &
                varname="QSNOW", wformat=wformat)
 
           ! read: actual number of snow layers
-          call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%isnow, &
+          call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%isnow, &
                varname="ISNOW", wformat=wformat)
 
           ! read: snow/soil layer-bottom depth from snow surface
           do l=1, noahmpgl3911_struc(n)%nsoil + noahmpgl3911_struc(n)%nsnow
-             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="ZSS", &
+             call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, tmptilen, varname="ZSS", &
                   dim=l, vlevels = noahmpgl3911_struc(n)%nsoil + noahmpgl3911_struc(n)%nsnow, &
                   wformat=wformat)
-             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+             do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
                 noahmpgl3911_struc(n)%noahmpgl(t)%zss(l) = tmptilen(t)
              enddo
           enddo
 
           ! read: snow height
-          call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%snowh, &
+          call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%snowh, &
                varname="SNOWH", wformat=wformat)
 
           ! read: snow water equivalent
-          call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%sneqv, &
+          call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%sneqv, &
                varname="SNEQV", wformat=wformat)
 
           ! read: snow-layer ice
           do l=1, noahmpgl3911_struc(n)%nsnow ! TODO: check loop
-             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="SNOWICE", &
+             call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, tmptilen, varname="SNOWICE", &
                   dim=l, vlevels = noahmpgl3911_struc(n)%nsnow, wformat=wformat)
-             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+             do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
                 noahmpgl3911_struc(n)%noahmpgl(t)%snowice(l) = tmptilen(t)
              enddo
           enddo
 
           ! read: snow-layer liquid water
           do l=1, noahmpgl3911_struc(n)%nsnow ! TODO: check loop
-             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="SNOWLIQ", &
+             call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, tmptilen, varname="SNOWLIQ", &
                   dim=l, vlevels = noahmpgl3911_struc(n)%nsnow, wformat=wformat)
-             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+             do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
                 noahmpgl3911_struc(n)%noahmpgl(t)%snowliq(l) = tmptilen(t)
              enddo
           enddo
 
           ! read: momentum drag coefficient
-          call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%cm, &
+          call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%cm, &
                varname="CM", wformat=wformat)
 
           ! read: sensible heat exchange coefficient
-          call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%ch, &
+          call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%ch, &
                varname="CH", wformat=wformat)
 
           ! read: snow aging term
-          call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%tauss, &
+          call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%tauss, &
                varname="TAUSS", wformat=wformat)
 
           ! read: reference height for air temperature and humidity 
-          call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%zlvl, &
+          call LIS_readvar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%zlvl, &
                varname="ZLVL", wformat=wformat)
           ! close restart file
           if(wformat .eq. "binary") then

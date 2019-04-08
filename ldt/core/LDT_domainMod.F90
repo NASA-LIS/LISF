@@ -1904,7 +1904,7 @@ end subroutine LDT_timeInit
                                           kk_sf(sf_index))%fgrd = & 
                                           LDT_surface(n,sf_index)%tile(&
                                           kk_sf(sf_index))%fgrd * & 
-                                          LDT_LSMparam_struc(n)%aspectfgrd%value(c,r,slope_index)
+                                          LDT_LSMparam_struc(n)%aspectfgrd%value(c,r,aspect_index)
                                   endif                                  
                                endif
 

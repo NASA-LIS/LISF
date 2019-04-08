@@ -202,7 +202,7 @@ contains
          smin,            &
          ssec)
     
-    write(unit=LIS_logunit,FMT=*) 'Calibration period start time:',  &
+    write(unit=LIS_logunit,FMT=*) '[INFO] Calibration period start time:',  &
          stime,  &
          syear,  &
          smonth, &

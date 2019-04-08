@@ -15,6 +15,7 @@ module LVT_SortingMod
   PRIVATE   
   
   PUBLIC :: LVT_sort
+  PUBLIC :: LVT_quicksort
 
 CONTAINS
 
@@ -80,5 +81,33 @@ CONTAINS
       a    = b
       b    = Temp
    END SUBROUTINE  Swap
+
+   recursive subroutine LVT_quicksort(a, size, first, last)
+     implicit none
+     integer    :: size
+     real       :: a(size)
+     integer    :: first, last
+     real       :: x, t
+     
+     integer i, j
+     
+     x = a( (first+last) / 2 )
+     i = first
+     j = last
+     do
+        do while (a(i) < x)
+           i=i+1
+        end do
+        do while (x < a(j))
+           j=j-1
+        end do
+        if (i >= j) exit
+        t = a(i);  a(i) = a(j);  a(j) = t
+        i=i+1
+        j=j-1
+     end do
+     if (first < i-1) call LVT_quicksort(a, size, first, i-1)
+     if (j+1 < last)  call LVT_quicksort(a, size, j+1, last)
+   end subroutine LVT_quicksort
 
  end module LVT_SortingMod
