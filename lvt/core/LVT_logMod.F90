@@ -30,7 +30,7 @@ module LVT_logMod
 !
 ! !REVISION HISTORY:
 !  02 Oct 2008: Sujay Kumar; Initial version
-! 
+!  01 Feb 2019: Mahdi Navari ; stacksize increased to be able to read the ISMN data 
 !EOP
 !BOP
 !
@@ -57,7 +57,7 @@ module LVT_logMod
   public :: LVT_logunit ! file unit number used for diagnostic logging
 !EOP  
 
-  integer, parameter :: stacksize= 2000
+  integer, parameter :: stacksize= 10000 !2000
   integer :: LVT_logunit 
   logical :: IOU(stacksize)  = .false. ! I/O file unit numbers
   

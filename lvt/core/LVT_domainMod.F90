@@ -41,7 +41,8 @@ module LVT_domainMod
 !
 ! !REVISION HISTORY: 
 !  02 Oct 2008    Sujay Kumar  Initial Specification
-! 
+!  01 Feb 2019  Mahdi Navari : Added support for downscaling for LISlsmObs (developed by Sujay) 
+!
 !EOP
 !BOP
 !-----------------------------------------------------------------------------
@@ -1203,9 +1204,27 @@ contains
              LVT_LIS_rc(k)%gridDesc(20) = 64
              
              if(LVT_LIS_rc(k)%gridDesc(10).gt.LVT_rc%gridDesc(10)) then !interpolate. 
-                print*, 'downscaling for LISlsmObs not yet supported '
-                print*, 'stopping in LISlsm_obsMod'
-                stop
+                  allocate(LVT_LIS_rc(k)%rlat_dn(LVT_rc%lnc*LVT_rc%lnr))
+                  allocate(LVT_LIS_rc(k)%rlon_dn(LVT_rc%lnc*LVT_rc%lnr))
+                  allocate(LVT_LIS_rc(k)%n11_dn(LVT_rc%lnc*LVT_rc%lnr))
+                  allocate(LVT_LIS_rc(k)%n12_dn(LVT_rc%lnc*LVT_rc%lnr))
+                  allocate(LVT_LIS_rc(k)%n21_dn(LVT_rc%lnc*LVT_rc%lnr))
+                  allocate(LVT_LIS_rc(k)%n22_dn(LVT_rc%lnc*LVT_rc%lnr))
+                  allocate(LVT_LIS_rc(k)%w11_dn(LVT_rc%lnc*LVT_rc%lnr))
+                  allocate(LVT_LIS_rc(k)%w12_dn(LVT_rc%lnc*LVT_rc%lnr))
+                  allocate(LVT_LIS_rc(k)%w21_dn(LVT_rc%lnc*LVT_rc%lnr))
+                  allocate(LVT_LIS_rc(k)%w22_dn(LVT_rc%lnc*LVT_rc%lnr))
+  
+                  call bilinear_interp_input(LVT_LIS_rc(k)%gridDesc(:),&
+                       LVT_rc%gridDesc,LVT_rc%lnc*LVT_rc%lnr,&
+                       LVT_LIS_rc(k)%rlat_dn,LVT_LIS_rc(k)%rlon_dn, &
+                       LVT_LIS_rc(k)%n11_dn, LVT_LIS_rc(k)%n12_dn, &
+                       LVT_LIS_rc(k)%n21_dn, LVT_LIS_rc(k)%n22_dn, &
+                       LVT_LIS_rc(k)%w11_dn, LVT_LIS_rc(k)%w12_dn, &
+                       LVT_LIS_rc(k)%w21_dn, LVT_LIS_rc(k)%w22_dn)
+                !print*, 'downscaling for LISlsmObs not yet supported '
+                !print*, 'stopping in LISlsm_obsMod'
+                !stop
              else
                 allocate(LVT_LIS_rc(k)%n11_up(&
                      LVT_LIS_rc(k)%lnc*LVT_LIS_rc(k)%lnr))
