@@ -33,6 +33,8 @@
 ! 14 Nov 2017 Jossy Jacob Added MOD10A1V6 (MOD10A1_V006)
 !  17 Oct 2018  Mahdi Navari  Enhanced the LVT reader to read the 
 !               Veg. Water Content (VWC) from SMAP SM dataset ! 
+!  19 Nov 2018  Mahdi Navari added suport to read SMAP_L3 brightness temperature
+!
 !EOP
 module LVT_pluginIndices
 
@@ -223,6 +225,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_JULES2dobsId     = "JULES 2d data"
    character*50, public,  parameter :: LVT_SMAPsmobsId    = "SMAP soil moisture"
    character*50, public,  parameter :: LVT_SMAPvwcobsId    = "SMAP vegetation water content" ! MN
+   character*50, public,  parameter :: LVT_SMAP_L3TbId    = "SMAP L3 Tb" ! MN
    character*50, public,  parameter :: LVT_SMAPTBobsId    = "SMAP TB"
    character*50, public,  parameter :: LVT_GOME2SIFobsId  = "GOME2 SIF"
    character*50, public,  parameter :: LVT_DaymetobsId    = "Daymet"
