@@ -162,7 +162,7 @@ contains
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,Noah_struc(n)%slopetype_gridtransform,&
               rc=rc)
-         call LDT_verify(rc,'Slope type spatial tranform: option not specified in the config file')
+         call LDT_verify(rc,'Slope type spatial transform: option not specified in the config file')
       enddo
       
     ! Read in Slope type "fill" options:
@@ -285,7 +285,7 @@ contains
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,Noah_struc(n)%tbot_gridtransform,&
               rc=rc)
-         call LDT_verify(rc,'Bottom temperature tranform: option not specified in the config file')
+         call LDT_verify(rc,'Bottom temperature transform: option not specified in the config file')
       enddo
 
       Noah_struc(:)%tbot_topocorr = "none"

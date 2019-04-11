@@ -181,7 +181,7 @@ contains
     
     call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%wrsiparms_gridtransform,&
          label="WRSI spatial transform:",rc=rc)
-    call LDT_verify(rc,'WRSI tranform: option not specified in the config file')
+    call LDT_verify(rc,'WRSI transform: option not specified in the config file')
     
 !      call LDT_readDomainConfigSpecs("WRSI",LDT_rc%wrsiparms_proj,LDT_rc%wrsiparms_gridDesc)
 #endif

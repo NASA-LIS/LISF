@@ -180,7 +180,7 @@ contains
           call ESMF_ConfigGetAttribute(LDT_config,&
                LDT_irrig_struc(n)%irrigtype_gridtransform,&
                rc=rc)
-          call LDT_verify(rc,'Irrigation type spatial tranform: option not specified in the config file')
+          call LDT_verify(rc,'Irrigation type spatial transform: option not specified in the config file')
        enddo
      ! Set units and full names:
        do n=1,LDT_rc%nnest
@@ -202,7 +202,7 @@ contains
           call ESMF_ConfigGetAttribute(LDT_config,&
                LDT_irrig_struc(n)%irrigfrac_gridtransform,&
                rc=rc)
-          call LDT_verify(rc,'Irrigation fraction spatial tranform: option not specified in the config file')
+          call LDT_verify(rc,'Irrigation fraction spatial transform: option not specified in the config file')
        enddo
      ! Set units and full names:
        do n=1,LDT_rc%nnest

@@ -1666,7 +1666,7 @@ end subroutine LIS_quilt_b_domain
                                           kk_sf(sf_index))%fgrd = & 
                                           LIS_surface(n,sf_index)%tile(&
                                           kk_sf(sf_index))%fgrd * & 
-                                          LIS_topo(n)%aspectfgrd(c,r,slope_index)
+                                          LIS_topo(n)%aspectfgrd(c,r,aspect_index)
                                   endif                                  
                                endif
 

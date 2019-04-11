@@ -5539,7 +5539,7 @@ contains
          allocate(dataEntry%dirtypes(dataEntry%ndirs))
          dataEntry%dirtypes = (/"-"/)
       endif
-   elseif(name.eq."RTMemissivity") then 
+   elseif(name.eq."RTM_emissivity") then 
       if(LVT_MOC_RTM_EMISSIVITY(source).eq.LVT_rc%udef) then 
          LVT_MOC_RTM_EMISSIVITY(source) = var_count
          dataEntry%standard_name = "rtm_emissivity"
@@ -5555,7 +5555,7 @@ contains
          allocate(dataEntry%dirtypes(dataEntry%ndirs))
          dataEntry%dirtypes = (/"-"/)
       endif
-   elseif(name.eq."RTMTb") then 
+   elseif(name.eq."RTM_Tb") then 
       if(LVT_MOC_RTM_TB(source).eq.LVT_rc%udef) then 
          LVT_MOC_RTM_TB(source) = var_count
          dataEntry%standard_name = "rtm_brightness_temperature"
@@ -5571,7 +5571,7 @@ contains
          allocate(dataEntry%dirtypes(dataEntry%ndirs))
          dataEntry%dirtypes = (/"-"/)
       endif
-   elseif(name.eq."RTMSoilMoist") then 
+   elseif(name.eq."RTM_SoilMoist") then 
       if(LVT_MOC_RTM_SM(source).eq.LVT_rc%udef) then 
          LVT_MOC_RTM_SM(source) = var_count
          dataEntry%standard_name = "rtm_soil_moisture"

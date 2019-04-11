@@ -247,17 +247,30 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_SMOPS_SMAPsmobsId   = "SMOPS-SMAP soil moisture"  ! MN
    character*50, public,  parameter :: LIS_ASCAT_TUWsmobsId    = "ASCAT (TUW) soil moisture"
    character*50, public,  parameter :: LIS_IMSscaobsId         = "IMS snow cover"
-   character*50, public,  parameter :: LIS_GCOMW_AMSR2L3smobsId = "GCOMW AMSR2 L3 soil moisture"
-   character*50, public,  parameter :: LIS_GCOMW_AMSR2L3sndobsId = "GCOMW AMSR2 L3 snow depth"
-   character*50, public,  parameter :: LIS_SMOSL2smobsId       = "SMOS L2 soil moisture"
-   character*50, public,  parameter :: LIS_pildassmobsId             = "PILDAS SM"
-   character*50, public,  parameter :: LIS_SMOSNESDISsmobsId   = "SMOS(NESDIS) soil moisture"
-   character*50, public,  parameter :: LIS_NASASMAPsmobsId   = "SMAP(NASA) soil moisture"
-   character*50, public,  parameter :: LIS_GLASSlaiobsId   = "GLASS LAI"
-   character*50, public,  parameter :: LIS_MODISsportLAIobsId   = "MODIS SPoRT LAI"
-   character*50, public,  parameter :: LIS_GLASSalbedoobsId   = "GLASS Albedo"
-   character*50, public,  parameter :: LIS_SMAPNRTsmobsId   = "SMAP(NRT) soil moisture"
-   character*50, public,  parameter :: LIS_ASOsweobsId   = "ASO SWE"
+   character*50, public,  parameter :: LIS_GCOMW_AMSR2L3smobsId = &
+        "GCOMW AMSR2 L3 soil moisture"
+   character*50, public,  parameter :: LIS_GCOMW_AMSR2L3sndobsId = &
+        "GCOMW AMSR2 L3 snow depth"
+   character*50, public,  parameter :: LIS_SMOSL2smobsId         = &
+        "SMOS L2 soil moisture"
+   character*50, public,  parameter :: LIS_pildassmobsId         = &
+        "PILDAS SM"
+   character*50, public,  parameter :: LIS_SMOSNESDISsmobsId     = &
+        "SMOS(NESDIS) soil moisture"
+   character*50, public,  parameter :: LIS_NASASMAPsmobsId       = &
+        "SMAP(NASA) soil moisture"
+   character*50, public,  parameter :: LIS_NASASMAPvodobsId      = &
+        "SMAP(NASA) vegetation optical depth"
+   character*50, public,  parameter :: LIS_GLASSlaiobsId         = &
+        "GLASS LAI"
+   character*50, public,  parameter :: LIS_MODISsportLAIobsId    = &
+        "MODIS SPoRT LAI"
+   character*50, public,  parameter :: LIS_GLASSalbedoobsId      = &
+        "GLASS Albedo"
+   character*50, public,  parameter :: LIS_SMAPNRTsmobsId        = &
+        "SMAP(NRT) soil moisture"
+   character*50, public,  parameter :: LIS_ASOsweobsId           = &
+        "ASO SWE"
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms
 !-------------------------------------------------------------------------
@@ -293,6 +306,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_USDA_ARSsmpeObsId = "USDA ARSsm"
    character*50, public,  parameter :: LIS_ARSsmobsId = "ARS sm" ! SY
    character*50, public,  parameter :: LIS_ISMNsmobsId = "ISMN sm" 
+   character*50, public,  parameter :: LIS_SMAPsmobsId = "SMAP sm"
 !-------------------------------------------------------------------------
 ! Objective Function Evaluation Criteria
 !-------------------------------------------------------------------------

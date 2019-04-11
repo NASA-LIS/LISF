@@ -196,7 +196,7 @@ subroutine noahmpglacier3911_dump_restart(n, ftn, wformat)
 !EOP 
                
     integer :: l, t 
-    real    :: tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index))
+    real    :: tmptilen(LIS_rc%npatch(n, LIS_rc%glacier_index))
     integer :: dimID(10)
     integer :: albold_ID
     integer :: sneqvo_ID
@@ -238,7 +238,7 @@ subroutine noahmpglacier3911_dump_restart(n, ftn, wformat)
     integer :: zlvl_ID
     
     ! write the header of the restart file
-    call LIS_writeGlobalHeader_restart(ftn, n, LIS_rc%lsm_index, &
+    call LIS_writeGlobalHeader_restart(ftn, n, LIS_rc%glacier_index, &
          "NOAHMP36", &
          dim1 = noahmpgl3911_struc(n)%nsoil+noahmpgl3911_struc(n)%nsnow,   &
          dim2 = noahmpgl3911_struc(n)%nsoil, &
@@ -349,108 +349,108 @@ subroutine noahmpglacier3911_dump_restart(n, ftn, wformat)
          "reference height for air temperature and humidity", &
          "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! close header of restart file
-    call LIS_closeHeader_restart(ftn, n, LIS_rc%lsm_index, dimID, noahmpgl3911_struc(n)%rstInterval)
+    call LIS_closeHeader_restart(ftn, n, LIS_rc%glacier_index, dimID, noahmpgl3911_struc(n)%rstInterval)
     
     ! write state variables into restart file
     ! snow albedo at last time step
-    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%albold, &
+    call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%albold, &
          varid=albold_ID, dim=1, wformat=wformat)
     
     ! snow mass at the last time step
-    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%sneqvo, &
+    call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%sneqvo, &
          varid=sneqvo_ID, dim=1, wformat=wformat)
 
     ! snow/soil temperature
     do l=1, noahmpgl3911_struc(n)%nsoil+noahmpgl3911_struc(n)%nsnow   ! TODO: check loop
        tmptilen = 0
-       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+       do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
           tmptilen(t) = noahmpgl3911_struc(n)%noahmpgl(t)%sstc(l)
        enddo
-       call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+       call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, tmptilen, &
             varid=sstc_ID, dim=l, wformat=wformat)
     enddo
     ! volumetric liquid soil moisture
     do l=1, noahmpgl3911_struc(n)%nsoil   ! TODO: check loop
        tmptilen = 0
-       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+       do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
           tmptilen(t) = noahmpgl3911_struc(n)%noahmpgl(t)%sh2o(l)
        enddo
-       call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+       call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, tmptilen, &
             varid=sh2o_ID, dim=l, wformat=wformat)
     enddo
     ! volumetric soil moisture, ice + liquid
     do l=1, noahmpgl3911_struc(n)%nsoil   ! TODO: check loop
        tmptilen = 0
-       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+       do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
           tmptilen(t) = noahmpgl3911_struc(n)%noahmpgl(t)%smc(l)
        enddo
-       call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+       call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, tmptilen, &
             varid=smc_ID, dim=l, wformat=wformat)
     enddo
 
     ! ground temperature (skin temperature)
-    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%tg, &
+    call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%tg, &
          varid=tg_ID, dim=1, wformat=wformat)
 
     ! snowfall on the ground
-    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%qsnow, &
+    call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%qsnow, &
          varid=qsnow_ID, dim=1, wformat=wformat)
 
     ! actual number of snow layers
-    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%isnow, &
+    call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%isnow, &
          varid=isnow_ID, dim=1, wformat=wformat)
 
     ! snow/soil layer-bottom depth from snow surface
     do l=1, noahmpgl3911_struc(n)%nsoil+noahmpgl3911_struc(n)%nsnow   ! TODO: check loop
        tmptilen = 0
-       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+       do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
           tmptilen(t) = noahmpgl3911_struc(n)%noahmpgl(t)%zss(l)
        enddo
-       call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+       call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, tmptilen, &
             varid=zss_ID, dim=l, wformat=wformat)
     enddo
 
     ! snow height
-    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%snowh, &
+    call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%snowh, &
          varid=snowh_ID, dim=1, wformat=wformat)
 
     ! snow water equivalent
-    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%sneqv, &
+    call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%sneqv, &
          varid=sneqv_ID, dim=1, wformat=wformat)
 
     ! snow-layer ice
     do l=1, noahmpgl3911_struc(n)%nsnow   ! TODO: check loop
        tmptilen = 0
-       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+       do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
           tmptilen(t) = noahmpgl3911_struc(n)%noahmpgl(t)%snowice(l)
        enddo
-       call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+       call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, tmptilen, &
             varid=snowice_ID, dim=l, wformat=wformat)
     enddo
     ! snow-layer liquid water
     do l=1, noahmpgl3911_struc(n)%nsnow   ! TODO: check loop
        tmptilen = 0
-       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+       do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
           tmptilen(t) = noahmpgl3911_struc(n)%noahmpgl(t)%snowliq(l)
        enddo
-       call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+       call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, tmptilen, &
             varid=snowliq_ID, dim=l, wformat=wformat)
     enddo
 
     ! momentum drag coefficient
-    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%cm, &
+    call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%cm, &
          varid=cm_ID, dim=1, wformat=wformat)
 
     ! sensible heat exchange coefficient
-    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%ch, &
+    call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%ch, &
          varid=ch_ID, dim=1, wformat=wformat)
 
     ! snow aging term
-    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%tauss, &
+    call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%tauss, &
          varid=tauss_ID, dim=1, wformat=wformat)
 
     ! reference height for air temperature and humidity 
-    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, noahmpgl3911_struc(n)%noahmpgl%zlvl, &
+    call LIS_writevar_restart(ftn, n, LIS_rc%glacier_index, noahmpgl3911_struc(n)%noahmpgl%zlvl, &
          varid=zlvl_ID, dim=1, wformat=wformat)
 
 end subroutine noahmpglacier3911_dump_restart

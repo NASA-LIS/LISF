@@ -168,7 +168,7 @@ subroutine read_ISRIC_texture( n, num_bins, fgrd, texture_layers )
      enddo
    enddo
    deallocate(zval)
-  
+
    ! Map Parameter Grid Info to LIS Target Grid/Projection Info --
    subparam_gridDesc = 0.
    call LDT_RunDomainPts( n, LDT_rc%soiltext_proj, &
@@ -191,6 +191,11 @@ subroutine read_ISRIC_texture( n, num_bins, fgrd, texture_layers )
    deallocate(zval2)
    deallocate(lat_line)
    deallocate(lon_line)
+
+!   open(100,file='test.bin',form='unformatted')
+!   write(100) read_inputparm
+!   close(100)
+!   stop
 
 ! -------------------------------------------------------------------
 !    AGGREGATING FINE-SCALE GRIDS TO COARSER LIS OUTPUT GRID
@@ -253,7 +258,7 @@ subroutine read_ISRIC_texture( n, num_bins, fgrd, texture_layers )
          endif
       enddo
    endif
-  
+   
    ! Apply the spatial transform option:
    select case( LDT_rc%soiltext_gridtransform(n) )
 

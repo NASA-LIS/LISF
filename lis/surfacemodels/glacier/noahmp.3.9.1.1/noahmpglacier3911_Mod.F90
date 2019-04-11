@@ -264,21 +264,21 @@ contains
     
     do n=1, LIS_rc%nnest
        ! allocate memory for all tiles in current nest 
-       allocate(noahmpgl3911_struc(n)%noahmpgl(LIS_rc%npatch(n, LIS_rc%lsm_index)))
+       allocate(noahmpgl3911_struc(n)%noahmpgl(LIS_rc%npatch(n, LIS_rc%glacier_index)))
        !------------------------------------------------------------------------
        ! allocate memory for vector variables passed to model interfaces        
        ! TODO: check the following allocation statements carefully!
        !------------------------------------------------------------------------
        ! allocate memory for multilevel spatial parameter
 #if 0
-       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+       do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
           allocate(noahmpgl3911_struc(n)%noahmpgl(t)%shdfac_monthly(12))
           allocate(noahmpgl3911_struc(n)%noahmpgl(t)%smceq(noahmpgl3911_struc(n)%nsoil))
        enddo
 #endif
 
 ! allocate memory for state variables
-       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+       do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
           allocate(noahmpgl3911_struc(n)%noahmpgl(t)%sstc(&
                noahmpgl3911_struc(n)%nsoil + noahmpgl3911_struc(n)%nsnow))
           allocate(noahmpgl3911_struc(n)%noahmpgl(t)%sh2o(&
@@ -293,7 +293,7 @@ contains
                noahmpgl3911_struc(n)%nsnow))
        enddo
        ! initialize forcing variables to zeros
-       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+       do t=1, LIS_rc%npatch(n, LIS_rc%glacier_index)
           noahmpgl3911_struc(n)%noahmpgl(t)%lwdown = 0.0
           noahmpgl3911_struc(n)%noahmpgl(t)%swdown = 0.0
           noahmpgl3911_struc(n)%noahmpgl(t)%psurf = 0.0

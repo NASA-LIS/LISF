@@ -209,7 +209,7 @@ contains
        call ESMF_ConfigFindLabel(LDT_config,"Regional mask spatial transform:",rc=rc)
        do n=1,LDT_rc%nnest
           call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%reg_gridtransform(n),rc=rc)
-          call LDT_verify(rc,'Regional mask spatial tranform: option not specified in the config file')
+          call LDT_verify(rc,'Regional mask spatial transform: option not specified in the config file')
        enddo
 
        call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%reg_proj,&

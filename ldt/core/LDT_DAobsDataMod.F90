@@ -38,6 +38,8 @@ module LDT_DAobsDataMod
   public :: LDT_DA_MOC_SNOWDEPTH
   public :: LDT_DA_MOC_SOILMOIST 
   public :: LDT_DA_MOC_TWS
+  public :: LDT_DA_MOC_VOD
+  public :: LDT_DA_MOC_LAI
   public :: LDT_DA_MOC_COUNT
 !  public :: LDT_MOC_GRIB_COUNT
 
@@ -46,8 +48,10 @@ module LDT_DAobsDataMod
   integer, parameter :: LDT_DA_MOC_SNOWDEPTH  = 2
   integer, parameter :: LDT_DA_MOC_SOILMOIST  = 3
   integer, parameter :: LDT_DA_MOC_TWS        = 4
+  integer, parameter :: LDT_DA_MOC_VOD        = 5
+  integer, parameter :: LDT_DA_MOC_LAI        = 6
    ! READ ABOVE NOTE ABOUT SPECIAL CASE INDICES
-  integer, parameter :: LDT_DA_MOC_COUNT      = 4
+  integer, parameter :: LDT_DA_MOC_COUNT      = 6
   ! Add the special cases.  LDT_MOC_GRIB_COUNT should be used only in
    ! LDT_gribMod.F90.
 !  integer, parameter :: LDT_MOC_GRIB_COUNT = 100
@@ -86,6 +90,8 @@ module LDT_DAobsDataMod
      type(LDT_DAmetadataEntry) :: swe          ! Snow water equivalent (kg/m2)
      type(LDT_DAmetadataEntry) :: snowdepth
      type(LDT_DAmetadataEntry) :: soilmoist
+     type(LDT_DAmetadataEntry) :: vod
+     type(LDT_DAmetadataEntry) :: lai
 
   end type output_meta
 
@@ -98,6 +104,8 @@ module LDT_DAobsDataMod
      type(LDT_DAmetadataEntry) :: snowdepth_obs
      type(LDT_DAmetadataEntry) :: soilmoist_obs
      type(LDT_DAmetadataEntry) :: tws_obs
+     type(LDT_DAmetadataEntry) :: vod_obs
+     type(LDT_DAmetadataEntry) :: lai_obs
   end type obs_list_dec
 
   type, public :: obsdep
@@ -181,6 +189,10 @@ contains
          LDT_DAobsData(i)%soilmoist_obs,2,nsize,(/"kg/m2", "m3/m3"/))
     call register_obsDataEntry(i,LDT_DA_MOC_TWS ,&
          LDT_DAobsData(i)%tws_obs,1,nsize,(/"mm"/))
+    call register_obsDataEntry(i,LDT_DA_MOC_VOD ,&
+         LDT_DAobsData(i)%vod_obs,1,nsize,(/"-"/))
+    call register_obsDataEntry(i,LDT_DA_MOC_LAI ,&
+         LDT_DAobsData(i)%lai_obs,1,nsize,(/"-"/))
   end subroutine LDT_DAobsEntryInit
 
 !BOP

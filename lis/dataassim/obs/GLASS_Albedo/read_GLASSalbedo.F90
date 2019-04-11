@@ -101,6 +101,7 @@ subroutine read_GLASSalbedo(n, k, OBS_State, OBS_Pert_State)
      count = 0
      do while(.not.file_exists.and.count.lt.8) 
         call create_GLASSalbedo_filename(albedoobsdir, &
+             GLASSalbedo_struc(n)%source, &
              cyr, cdoy, fname1)
      
         inquire(file=fname1,exist=file_exists)          
@@ -119,13 +120,18 @@ subroutine read_GLASSalbedo(n, k, OBS_State, OBS_Pert_State)
         call LIS_tick(GLASSalbedo_struc(n)%time2,cdoy,cgmt,cyr,cmo,cda, &
              chr,cmn,css,(-8.0)*ts)
         call create_GLASSalbedo_filename(albedoobsdir, &
+             GLASSalbedo_struc(n)%source, &
              cyr, cdoy, fname2)
 
         write(LIS_logunit,*) '[INFO] Reading ',trim(fname1)
-        call read_GLASS_ALBEDO_data(n,k, fname1,GLASSalbedo_struc(n)%obs_bs1,&
+        call read_GLASS_ALBEDO_data(n,k, fname1,&
+             GLASSalbedo_struc(n)%source, &
+             GLASSalbedo_struc(n)%obs_bs1,&
              GLASSalbedo_struc(n)%obs_ws1)
         write(LIS_logunit,*) '[INFO] Reading ',trim(fname2)
-        call read_GLASS_ALBEDO_data(n,k, fname2,GLASSalbedo_struc(n)%obs_bs2,&
+        call read_GLASS_ALBEDO_data(n,k, fname2,&
+             GLASSalbedo_struc(n)%source, &
+             GLASSalbedo_struc(n)%obs_bs2,&
              GLASSalbedo_struc(n)%obs_ws2)
         GLASSalbedo_struc(n)%fnd = 1
      else
@@ -250,7 +256,7 @@ end subroutine read_GLASSalbedo
 ! \label{read_GLASS_ALBEDO_data}
 !
 ! !INTERFACE:
-subroutine read_GLASS_ALBEDO_data(n, k, fname, albedoobs_bs_ip, &
+subroutine read_GLASS_ALBEDO_data(n, k, fname, source, albedoobs_bs_ip, &
      albedoobs_ws_ip)
 ! 
 ! !USES:   
@@ -270,6 +276,7 @@ subroutine read_GLASS_ALBEDO_data(n, k, fname, albedoobs_bs_ip, &
   integer                       :: n 
   integer                       :: k
   character (len=*)             :: fname
+  character (len=*)             :: source
   real                          :: albedoobs_bs_ip(LIS_rc%obs_lnc(k)*&
        LIS_rc%obs_lnr(k))
   real                          :: albedoobs_ws_ip(LIS_rc%obs_lnc(k)*&
@@ -303,6 +310,7 @@ subroutine read_GLASS_ALBEDO_data(n, k, fname, albedoobs_bs_ip, &
   integer                 :: start(2), edge(2), stride(2)
   integer*2, allocatable  :: albedo_raw_avhrr(:)
   integer*2, allocatable  :: albedo_raw_modis(:)
+  integer*2, allocatable  :: albedo_qc(:)
   integer                 :: lat_off, lon_off
   real                    :: albedo_bs_in(GLASSalbedo_struc(n)%nc*&
        GLASSalbedo_struc(n)%nr)
@@ -312,7 +320,11 @@ subroutine read_GLASS_ALBEDO_data(n, k, fname, albedoobs_bs_ip, &
        GLASSalbedo_struc(n)%nr)
   logical*1               :: albedoobs_b_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
 
-  grid_name ="GLASS02B05"
+  if(source.eq."AVHRR") then 
+     grid_name ="GLASS02B05"
+  elseif(source.eq."MODIS") then 
+     grid_name ="GLASS02B06"
+  endif
 
   file_id = gdopen(trim(fname),DFACC_READ)
   if (file_id.eq.-1)then
@@ -336,6 +348,16 @@ subroutine read_GLASS_ALBEDO_data(n, k, fname, albedoobs_bs_ip, &
   cornerlat(2)=GLASSalbedo_struc(n)%gridDesci(7)
   cornerlon(2)=GLASSalbedo_struc(n)%gridDesci(8)
 
+  if(GLASSalbedo_struc(n)%qcflag.eq.1) then 
+
+     allocate(albedo_qc(nc*nr))
+     
+     iret = gdrdfld(grid_id,"QC_VIS",&
+          start, stride, edge, albedo_qc)           
+! The 0-1  bit in the QC flag denotes the overall quality. 
+! 0 indicates a good value and 1 indicates acceptable value
+  endif
+
   if(GLASSalbedo_struc(n)%source.eq."AVHRR") then 
 !black sky albedo /direct
      allocate(albedo_raw_avhrr(nc*nr))
@@ -355,6 +377,12 @@ subroutine read_GLASS_ALBEDO_data(n, k, fname, albedoobs_bs_ip, &
               albedo_bs_in(c+(r-1)*GLASSalbedo_struc(n)%nc) =&
                    albedo_raw_avhrr(c1+(r1-1)*nc)*0.0001
               albedo_data_b(c+(r-1)*GLASSalbedo_struc(n)%nc) =  .true. 
+              if(GLASSalbedo_struc(n)%qcflag.eq.1) then 
+                 if(ibits(albedo_qc(c1+(r1-1)*nc),0,1).gt.1) then 
+                    albedo_bs_in(c+(r-1)*GLASSalbedo_struc(n)%nc) = -9999.0
+                    albedo_data_b(c+(r-1)*GLASSalbedo_struc(n)%nc) = .false. 
+                 endif                 
+              endif
            else
               albedo_bs_in(c+(r-1)*GLASSalbedo_struc(n)%nc) = -9999.0
               albedo_data_b(c+(r-1)*GLASSalbedo_struc(n)%nc) = .false. 
@@ -378,7 +406,14 @@ subroutine read_GLASS_ALBEDO_data(n, k, fname, albedoobs_bs_ip, &
            if(albedo_raw_avhrr(c1+(r1-1)*nc).ge.0) then 
               albedo_ws_in(c+(r-1)*GLASSalbedo_struc(n)%nc) =&
                    albedo_raw_avhrr(c1+(r1-1)*nc)*0.0001
-              albedo_data_b(c+(r-1)*GLASSalbedo_struc(n)%nc) =  .true. 
+              albedo_data_b(c+(r-1)*GLASSalbedo_struc(n)%nc) =  .true.
+              if(GLASSalbedo_struc(n)%qcflag.eq.1) then 
+                 if(ibits(albedo_qc(c1+(r1-1)*nc),0,1).gt.1) then 
+                    albedo_ws_in(c+(r-1)*GLASSalbedo_struc(n)%nc) = -9999.0
+                    albedo_data_b(c+(r-1)*GLASSalbedo_struc(n)%nc) = .false. 
+                 endif                 
+              endif
+ 
            else
               albedo_ws_in(c+(r-1)*GLASSalbedo_struc(n)%nc) = -9999.0
               albedo_data_b(c+(r-1)*GLASSalbedo_struc(n)%nc) = .false. 
@@ -405,9 +440,18 @@ subroutine read_GLASS_ALBEDO_data(n, k, fname, albedoobs_bs_ip, &
               albedo_bs_in(c+(r-1)*GLASSalbedo_struc(n)%nc) =&
                    albedo_raw_modis(c1+(r1-1)*nc)*0.0001
               albedo_data_b(c+(r-1)*GLASSalbedo_struc(n)%nc) =  .true. 
+              
+              if(GLASSalbedo_struc(n)%qcflag.eq.1) then 
+                 if(ibits(albedo_qc(c1+(r1-1)*nc),0,1).gt.1) then 
+                    print*, ibits(albedo_qc(c1+(r1-1)*nc),0,1),albedo_bs_in(c+(r-1)*GLASSalbedo_struc(n)%nc)
+                    albedo_bs_in(c+(r-1)*GLASSalbedo_struc(n)%nc) = -9999.0
+                    albedo_data_b(c+(r-1)*GLASSalbedo_struc(n)%nc) = .false. 
+                 endif                 
+              endif
            else
               albedo_bs_in(c+(r-1)*GLASSalbedo_struc(n)%nc) = -9999.0
               albedo_data_b(c+(r-1)*GLASSalbedo_struc(n)%nc) = .false. 
+              
            endif
         enddo
      enddo
@@ -429,6 +473,12 @@ subroutine read_GLASS_ALBEDO_data(n, k, fname, albedoobs_bs_ip, &
               albedo_ws_in(c+(r-1)*GLASSalbedo_struc(n)%nc) =&
                    albedo_raw_modis(c1+(r1-1)*nc)*0.0001
               albedo_data_b(c+(r-1)*GLASSalbedo_struc(n)%nc) =  .true. 
+              if(GLASSalbedo_struc(n)%qcflag.eq.1) then 
+                 if(ibits(albedo_qc(c1+(r1-1)*nc),0,1).gt.1) then 
+                    albedo_ws_in(c+(r-1)*GLASSalbedo_struc(n)%nc) = -9999.0
+                    albedo_data_b(c+(r-1)*GLASSalbedo_struc(n)%nc) = .false. 
+                 endif                 
+              endif
            else
               albedo_ws_in(c+(r-1)*GLASSalbedo_struc(n)%nc) = -9999.0
               albedo_data_b(c+(r-1)*GLASSalbedo_struc(n)%nc) = .false. 
@@ -438,6 +488,10 @@ subroutine read_GLASS_ALBEDO_data(n, k, fname, albedoobs_bs_ip, &
 
      deallocate(albedo_raw_modis)
 
+  endif
+
+  if(GLASSalbedo_struc(n)%qcflag.eq.1) then 
+     deallocate(albedo_qc)
   endif
 !  open(100,file='test_inp.bin',form='unformatted')
 !  write(100) albedo_ws_in
@@ -500,12 +554,13 @@ end subroutine read_GLASS_ALBEDO_data
 ! \label{create_GLASSalbedo_filename}
 ! 
 ! !INTERFACE: 
-subroutine create_GLASSalbedo_filename(ndir,  yr, doy, filename)
+subroutine create_GLASSalbedo_filename(ndir, source, yr, doy, filename)
 ! !USES:   
 
   implicit none
 ! !ARGUMENTS: 
   character(len=*)  :: filename
+  character(len=*)  :: source
   integer           :: yr, doy
   character (len=*) :: ndir
 ! 
@@ -528,8 +583,13 @@ subroutine create_GLASSalbedo_filename(ndir,  yr, doy, filename)
   write(unit=fyr, fmt='(i4.4)') yr
   write(unit=fdoy, fmt='(i3.3)') doy
 
-  filename = trim(ndir)//'/'//trim(fyr)//'/GLASS02B05.V04.A'//&
-       trim(fyr)//trim(fdoy)//'.hdf'
+  if(source.eq."AVHRR") then 
+     filename = trim(ndir)//'/'//trim(fyr)//'/GLASS02B05.V04.A'//&
+          trim(fyr)//trim(fdoy)//'.hdf'
+  elseif(source.eq."MODIS") then 
+     filename = trim(ndir)//'/'//trim(fyr)//'/GLASS02B06.V04.A'//&
+          trim(fyr)//trim(fdoy)//'.hdf'
+  endif
 
 end subroutine create_GLASSalbedo_filename
 

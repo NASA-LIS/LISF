@@ -96,6 +96,7 @@ module LIS_historyMod
   public :: LIS_readvar_gridded  ! read a variable from a gridded file
   public :: LIS_writevar_gridded ! write a variable in grid space to a file
   public :: LIS_tile2grid        ! convert a tilespace variable to gridspace
+  public :: LIS_grid2tile        ! convert gridspace to tilespace
   public :: LIS_patch2tile       ! convert a patchspace variable to tilespace
   public :: LIS_grid2patch       ! convert a gridspace variable to patchspace
   public :: LIS_writevar_spread  ! writes ensemble spared to a gridded file
@@ -307,6 +308,7 @@ module LIS_historyMod
   interface LIS_grid2patch
 ! !PRIVATE MEMBER FUNCTIONS: 
 !     module procedure grid2patch
+     module procedure grid2patch_local
      module procedure grid2patch_global
      module procedure grid2patch_global_ens
 !
@@ -646,15 +648,14 @@ contains
              if(dataEntry%count(t,k).gt.0) then 
                 if(dataEntry%timeAvgOpt.eq.3) then  !do nothing
                    continue       
-                elseif(dataEntry%timeAvgOpt.eq.2) then 
-                   dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/&
-                        dataEntry%count(t,k)
-                elseif(dataEntry%timeAvgOpt.eq.1) then 
+                elseif(dataEntry%timeAvgOpt.eq.2.or.dataEntry%timeAvgOpt.eq.1) then
                    dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/&
                         dataEntry%count(t,k)
                 else !do nothing
-
+                   continue
                 endif
+             else
+                dataEntry%modelOutput(1,t,k) = LIS_rc%udef
              endif
           enddo
        enddo
@@ -6421,6 +6422,44 @@ subroutine writevar_grib2_withstats_real(ftn, ftn_stats, n,   &
           
 end subroutine writevar_grib2_withstats_real
 
+!BOP
+! !ROUTINE: LIS_grid2tile
+! \label{LIS_grid2tile}
+!
+! !INTERFACE:
+  subroutine LIS_grid2tile(n,gvar,tvar)
+! !USES:
+
+    implicit none
+! !ARGUMENTS:     
+    integer, intent(in) :: n
+    real                :: tvar(LIS_rc%ntiles(n))
+    real                :: gvar(LIS_rc%lnc(n),LIS_rc%lnr(n))
+! !DESCRIPTION:
+!  This routine converts a tile space variable to the corresponding
+!  grid space. The aggregation involves weighted average of each tile
+!  in a grid cell based on the vegetation distribution. 
+!
+!  The arguments are: 
+!  \begin{description}
+!   \item [n]
+!     index of the domain or nest.
+!   \item [tvar]
+!     variable dimensioned in the tile space. 
+!   \item [gvar]
+!     variable after converstion to the grid space
+!  \end{description}
+!
+!EOP
+    integer           :: t,c,r
+
+    do t=1,LIS_rc%ntiles(n)
+       r = LIS_domain(n)%tile(t)%row
+       c = LIS_domain(n)%tile(t)%col
+       tvar(t) = gvar(c,r)
+    enddo
+  end subroutine LIS_grid2tile
+
 
 !BOP
 ! !ROUTINE: tile2grid_local
@@ -6569,7 +6608,25 @@ end subroutine writevar_grib2_withstats_real
     
   end subroutine LIS_patch2tile
 
-  subroutine grid2patch_global(n,m,gvar,tvar)
+  subroutine grid2patch_local(n,m,gvar,tvar)
+
+    implicit none
+    
+    integer, intent(in) :: n 
+    integer, intent(in) :: m
+    real                :: gvar(LIS_rc%lnc(n), LIS_rc%lnr(n))
+    real                :: tvar(LIS_rc%npatch(n,m))
+    integer             :: t,r,c
+
+    do t=1,LIS_rc%npatch(n,m)
+       r = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row
+       c = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col
+       tvar(t) = gvar(c,r)
+    enddo
+
+  end subroutine grid2patch_local
+
+  subroutine grid2patch_global(n,m,gvar,tvar,dummy)
 
     implicit none
     
@@ -6581,6 +6638,7 @@ end subroutine writevar_grib2_withstats_real
     
     integer             :: count1
     integer             :: l,r,c,gid,stid,t,npatch, tid
+    logical             :: dummy
     integer             :: ierr
 
 !    if(LIS_masterproc) then        
