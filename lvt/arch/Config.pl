@@ -538,7 +538,11 @@ if($use_gribapi == 1) {
    printf misc_file "%s\n","#define USE_GRIBAPI ";
 }
 elsif($use_gribapi == 2) {
+   printf misc_file "%s\n","#define USE_GRIBAPI ";
    printf misc_file "%s\n","#define USE_ECCODES ";
+}
+else{
+   printf misc_file "%s\n","#undef USE_GRIBAPI ";
 }
 
 if($use_hdf4 == 1) {

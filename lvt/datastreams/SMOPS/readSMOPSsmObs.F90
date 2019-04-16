@@ -203,7 +203,7 @@ end subroutine readSMOPSsmObs
 subroutine read_SMOPS_data(source, fname, smobs_ip)
 ! 
 ! !USES:   
-#if (defined USE_ECCODES) 
+#if (defined USE_GRIBAPI)
    use grib_api
 #endif
   use LVT_coreMod,  only : LVT_rc
@@ -412,7 +412,7 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
 
    integer        :: ix, jx,c_s, c_e, r_s, r_e
 
-#if (defined USE_ECCODES)
+#if (defined USE_GRIBAPI)
    smDataNotAvailable = .false.
    ! Set QA values to NESDIS SMOPS undefined value.
    sm_ASCAT_A_qa_t = 9999
