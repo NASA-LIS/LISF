@@ -2705,12 +2705,12 @@ contains
     ! because bitmap in GRIB-1 file will fill in the rest
     
 
-#if (defined USE_GRIBAPI)
-    call grib_new_from_template(igrib,"GRIB1",iret)
-    call LVT_verify(iret, 'grib_new_from_template failed in LVT_DataStreamsMod')
-#else
+#if (defined USE_ECCODES)
     call grib_new_from_samples(igrib,"GRIB1",iret)
     call LVT_verify(iret, 'grib_new_from_samples failed in LVT_DataStreamsMod')
+#else
+    call grib_new_from_template(igrib,"GRIB1",iret)
+    call LVT_verify(iret, 'grib_new_from_template failed in LVT_DataStreamsMod')
 #endif
     
     call grib_set(igrib,'table2Version',LVT_rc%grib_table,iret)
@@ -2949,13 +2949,12 @@ contains
     ! Note passing string of defined points only to output
     ! because bitmap in GRIB-1 file will fill in the rest
     
-#if (defined USE_GRIBAPI)
-    call grib_new_from_template(igrib,"GRIB2",iret)
-    call LVT_verify(iret, 'grib_new_from_template failed in LVT_DataStreamsMod')
-#else
-    ! ECCodes version
+#if (defined USE_ECCODES)
     call grib_new_from_samples(igrib,"GRIB2",iret)
     call LVT_verify(iret, 'grib_new_from_samples failed in LVT_DataStreamsMod')
+#else
+    call grib_new_from_template(igrib,"GRIB2",iret)
+    call LVT_verify(iret, 'grib_new_from_template failed in LVT_DataStreamsMod')
 #endif
 
     ! Section 0: Indicator     
