@@ -304,6 +304,23 @@ The following tables provide some specific examples of the compiler and library 
 | HDF-EOS2       | 2.19v.1.00
 |====
 
+// discover
+.SUSE Linux Enterprise Server 11.3
+|====
+| Library        | Version
+
+| Intel compiler | 18.0.3.222
+| HDF 5          | 1.10.1
+| NetCDF         | 4.5.0
+| NetCDF-Fortran | 4.4.4
+| JasPer         | 2.0.14
+| ECCODES        | 2.7.0
+| Intel MPI      | 18.0.3.222
+| ESMF           | 7.1.0r
+| HDF 4          | 4.2.13
+| HDF-EOS2       | 2.19v.1.00
+|====
+
 // haise
 .Red Hat Enterprise Linux Server 6.7
 |====
@@ -388,6 +405,22 @@ The following tables provide some specific examples of the compiler and library 
 | HDF-EOS2       | 2.19v.1.00
 |====
 
+// conrad
+.Cray XC40
+|====
+| Library        | Version
+
+| Intel compiler | 17.0.2.174
+| HDF 5          | 1.8.18
+| NetCDF         | 4.4.1.1
+| NetCDF-Fortran | 4.4.4
+| JasPer         | 2.0.14
+| ECCODES        | 2.7.0
+| Cray-MPICH     | 7.5.3
+| ESMF           | 6.3.0rp1
+| HDF 4          | 4.2.12
+| HDF-EOS2       | 2.19v.1.00
+|====
 
 === Build Instructions
 
