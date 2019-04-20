@@ -38,12 +38,3 @@
 
 #define MISSINGVALUE 0
 
-!-------------------------------------------------------------------------------
-! Define Output Levels
-!-------------------------------------------------------------------------------
-
-#define VERBOSITY_LV0 0
-#define VERBOSITY_LV1 1
-#define VERBOSITY_LV2 255
-#define VERBOSITY_LV3 1023
-
