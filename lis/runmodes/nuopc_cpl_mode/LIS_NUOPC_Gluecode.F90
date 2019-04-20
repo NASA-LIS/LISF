@@ -147,10 +147,11 @@ module LIS_NUOPC_Gluecode
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !-----------------------------------------------------------------------------
-  public :: LIS_NUOPC_Init      ! init method for nuopc cpl mode
-  public :: LIS_NUOPC_DataInit  ! Copy data from internal state to export
-  public :: LIS_NUOPC_Run       ! run method for nuopc cpl mode
-  public :: LIS_NUOPC_Final     ! finalize method for nuopc cpl mode
+  public :: LIS_NUOPC_Init       ! init method for nuopc cpl mode
+  public :: LIS_NUOPC_DataInit   ! Copy data from internal state to export
+  public :: LIS_ImportFieldsCopy ! Copy data from import to internal state
+  public :: LIS_NUOPC_Run        ! run method for nuopc cpl mode
+  public :: LIS_NUOPC_Final      ! finalize method for nuopc cpl mode
   public :: LIS_GridCreate
   public :: LIS_TimestepGet
   public :: LIS_NestCntGet
@@ -669,11 +670,10 @@ contains
 ! !ROUTINE: LIS_NUOPC_Run
 !
 ! !INTERFACE:
-  subroutine LIS_NUOPC_Run(nest,mode,slice,importState,exportState,clock,rc)
+  subroutine LIS_NUOPC_Run(nest,mode,importState,exportState,clock,rc)
 ! !ARGUMENTS:
     integer,intent(in)                     :: nest
     integer,intent(in)                     :: mode
-    integer,intent(in)                     :: slice
     type(ESMF_State),intent(inout)         :: importState
     type(ESMF_State),intent(inout)         :: exportState
     type(ESMF_Clock),intent(in)            :: clock
@@ -688,7 +688,6 @@ contains
 !EOP
 !
 ! !LOCAL VARIABLES:
-    character(len=10)           :: sliceStr
     type(ESMF_Time)             :: currTime
     type(ESMF_Time)             :: stopTime
     type(ESMF_TimeInterval)     :: timeStep
@@ -714,12 +713,6 @@ contains
 #ifdef DEBUG
     call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
 #endif
-
-    if (slice > 999999999) then
-      sliceStr = '999999999+'
-    else
-      write (sliceStr,"(I0)") slice
-    endif
 
     ! use incoming clock
     call ESMF_ClockGet(clock, currTime=currTime, timeStep=timeStep, rc=rc)
@@ -844,10 +837,6 @@ contains
         exclusiveLBound=elb, exclusiveUBound=eub, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
 
-      !call NUOPC_Write(exportField, "LIS_QS_BEFORE.nc", &
-      !  timeslice=slice, rc=rc)
-      !if (ESMF_STDERRORCHECK(rc)) return
-
       do j=elb(2), eub(2)
       do i=elb(1), eub(1)
         !if (mask(i,j) /= 1) then
@@ -856,10 +845,6 @@ contains
         endif
       enddo
       enddo
-
-      !call NUOPC_Write(exportField, "LIS_QS_AFTER.nc", &
-      !  timeslice=slice, rc=rc)
-      !if (ESMF_STDERRORCHECK(rc)) return
 
     endif
 
@@ -877,10 +862,6 @@ contains
         exclusiveLBound=elb, exclusiveUBound=eub, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
 
-      !call NUOPC_Write(exportField, "LIS_QSB_BEFORE.nc", &
-      !  timeslice=slice, rc=rc)
-      !if (ESMF_STDERRORCHECK(rc)) return
-
       do j=elb(2), eub(2)
       do i=elb(1), eub(1)
         if (exportFarray(i,j) /= MISSINGVALUE) then
@@ -888,10 +869,6 @@ contains
         endif
       enddo
       enddo
-
-      !call NUOPC_Write(exportField, "LIS_QSB_AFTER.nc", &
-      !     timeslice=slice, rc=rc)
-      !if (ESMF_STDERRORCHECK(rc)) return
 
     endif
 
@@ -901,7 +878,7 @@ contains
     call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
 #endif
 
-    T_EXIT("nest:"//nestStr)	
+    T_EXIT("nest:"//nestStr)
 
   end subroutine
 
