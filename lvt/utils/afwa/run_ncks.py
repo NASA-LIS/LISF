@@ -24,6 +24,7 @@
 # 03 Apr 2018:  Eric Kemp (SSAI), path to ncks now hardwired to better comply
 #               with Air Force security requirements.
 # 11 Apr 2018:  Eric Kemp (SSAI), add option to skip ensemble spread
+# 04 Dec 2018:  Eric Kemp (SSAI), add mean 24hr Tair.
 #
 #------------------------------------------------------------------------------
 
@@ -69,6 +70,7 @@ _LVT_NOAH_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg', 'PotEvap_tavg',
                               'RHMin_inst',
                               'SoilMoist_tavg', 'SoilTemp_tavg',
                               'SWdown_f_tavg','Tair_f_max',
+                              'Tair_f_tavg',
                               'TotalPrecip_acc','Wind_f_tavg']
 
 # The 24-hr postprocessing should include the latest 3-hr snow depth and SWE.
@@ -99,6 +101,7 @@ _LVT_JULES_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
                                'RHMin_inst',
                                'SoilMoist_tavg', 'SoilTemp_tavg',
                                'SWdown_f_tavg','Tair_f_max',
+                               'Tair_f_tavg',
                                'TotalPrecip_acc','Wind_f_tavg']
 
 # The 24-hr postprocessing should include the latest 3-hr snow depth and SWE.

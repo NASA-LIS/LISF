@@ -15,6 +15,8 @@
 #               naming convention.
 # 30 Mar 2018:  Eric Kemp (SSAI), added more JULES variables.
 # 11 Apr 2018:  Eric Kemp (SSAI), added optional flag to skip ensemble spreads.
+# 16 Nov 2018:  Eric Kemp (SSAI), added Greenness_inst for 3hr.
+# 19 Nov 2018:  Eric Kemp (SSAI), added Tair_tavg for 24hr.
 #
 #------------------------------------------------------------------------------
 
@@ -35,6 +37,7 @@ _LIS_LSMS = ["NOAH","JULES"]
 # is not included in the list below.
 _LVT_NOAH_INVOCATIONS_3HR = ['Albedo_tavg', 'AvgSurfT_inst', 'AvgSurfT_tavg', 
                              'CanopInt_inst', 'Elevation_inst', 'Evap_tavg', 
+                             'Greenness_inst',
                              'LWdown_f_inst', 'LWdown_f_tavg',
                              'Landcover_inst', 'Landmask_inst', 'PotEvap_tavg',
                              'Psurf_f_inst', 'Psurf_f_tavg', 
@@ -55,6 +58,7 @@ _LVT_NOAH_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg', 'PotEvap_tavg',
                               'RHMin_inst',
                               'SoilMoist_tavg', 'SoilTemp_tavg',
                               'SWdown_f_tavg','Tair_f_max',
+                              'Tair_f_tavg',
                               'TotalPrecip_acc','Wind_f_tavg']
 
 # The 24-hr postprocessing should include the latest 3-hr snow depth and SWE.
@@ -64,6 +68,7 @@ _LVT_NOAH_INVOCATIONS_24HR_LATEST = ['SnowDepth_inst','SWE_inst']
 _LVT_JULES_INVOCATIONS_3HR = ['AvgSurfT_inst', 'AvgSurfT_tavg', 
                               'CanopInt_inst',
                               'Elevation_inst', 'Evap_tavg', 
+                              'Greenness_inst',
                               'LWdown_f_inst', 'LWdown_f_tavg',
                               'Landcover_inst', 'Landmask_inst',
                               'Psurf_f_inst', 'Psurf_f_tavg', 
@@ -85,6 +90,7 @@ _LVT_JULES_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
                                'RHMin_inst',
                                'SoilMoist_tavg', 'SoilTemp_tavg',
                                'SWdown_f_tavg','Tair_f_max',
+                               'Tair_f_tavg',
                                'TotalPrecip_acc','Wind_f_tavg']
 
 # The 24-hr postprocessing should include the latest 3-hr snow depth and SWE.

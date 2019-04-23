@@ -1,6 +1,6 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT----------------------------
 ! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-------------------------END NOTICE -- DO NOT EDIT----------------------------
 !BOP
 ! 
 ! !MODULE: LVT_pluginIndices
@@ -93,8 +93,14 @@ module LVT_pluginIndices
   integer, public,  parameter :: LVT_RELid          = 48
   integer, public,  parameter :: LVT_RESid          = 49
   integer, public,  parameter :: LVT_VULid          = 50
-  integer, public,  parameter :: LVT_KMEANSid          = 51
-  integer, public,  parameter :: LVT_METRIC_EINDEX   = 51
+  integer, public,  parameter :: LVT_KMEANSid       = 51
+
+  ! Tian decomposition of mean error...EMK
+  integer, public,  parameter :: LVT_THBid        = 52
+  integer, public,  parameter :: LVT_TMBid        = 53
+  integer, public,  parameter :: LVT_TFBid        = 54
+
+  integer, public,  parameter :: LVT_METRIC_EINDEX   = 54
 
 
 !  integer, public,  parameter :: LVT_KStestid      = 34
@@ -102,16 +108,16 @@ module LVT_pluginIndices
 
 !Information content metrics
 !EMK...These are always registered, so they must have unique values
-  integer, public,  parameter :: LVT_ICMETRIC_SINDEX = 52
-  integer, public,  parameter :: LVT_mentropyid      = 52
-  integer, public,  parameter :: LVT_igainid         = 53
-  integer, public,  parameter :: LVT_fcomplexityid   = 54
-  integer, public,  parameter :: LVT_ecomplexityid   = 55
-  integer, public,  parameter :: LVT_ICMETRIC_EINDEX = 55
+  integer, public,  parameter :: LVT_ICMETRIC_SINDEX = 55
+  integer, public,  parameter :: LVT_mentropyid      = 55
+  integer, public,  parameter :: LVT_igainid         = 56
+  integer, public,  parameter :: LVT_fcomplexityid   = 57
+  integer, public,  parameter :: LVT_ecomplexityid   = 58
+  integer, public,  parameter :: LVT_ICMETRIC_EINDEX = 58
 
 !ensemble metrics
 !EMK...These are currently disabled
-  integer, public,  parameter :: LVT_ENSMETRIC_SINDEX = 56
+  integer, public,  parameter :: LVT_ENSMETRIC_SINDEX = 59
 !  integer, public,  parameter :: LVT_EnsMEANid        = 41
 !  integer, public,  parameter :: LVT_EnsStdevid       = 42
 !  integer, public,  parameter :: LVT_EnsSpreadid      = 43
@@ -121,9 +127,9 @@ module LVT_pluginIndices
 !  integer, public,  parameter :: LVT_EnsMEid          = 47
 !  integer, public,  parameter :: LVT_EnsMeanBiasid    = 48
 !  integer, public,  parameter :: LVT_EnsPercentileid  = 49
-  integer, public,  parameter :: LVT_ENSMETRIC_EINDEX = 56
+  integer, public,  parameter :: LVT_ENSMETRIC_EINDEX = 59
 
-  integer, public,  parameter :: LVT_NMETRICS        = 56
+  integer, public,  parameter :: LVT_NMETRICS        = 59
 
 !-------------------------------------------------------------------------
 ! Run modes

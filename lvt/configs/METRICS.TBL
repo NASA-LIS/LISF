@@ -123,20 +123,14 @@
 #name                                total in-time writeTS extractTS threshold ASC ADC 
 Mean:                                  1   1    0   1   -9999.0  -9999.0 0  0  #Mean
 Min:                                   0   0    0   0   -9999.0  -9999.0 0  0  #Minimum
-MinTime:                               0   0    0   0   -9999.0  -9999.0 0  0  #MinTime
 Max:                                   0   0    0   0   -9999.0  -9999.0 0  0  #Maximum
-MaxTime:                               0   0    0   0   -9999.0  -9999.0 0  0  #MaxTime
 Sum:                                   0   0    0   0   -9999.0  -9999.0 0  0  #Sum
-Anomaly:                               0   0    0   0   -9999.0  -9999.0 0  0  #Anomaly
 Standard deviation:                    0   0    0   0   -9999.0  -9999.0 0  0  #Std
+Variance:                              0   0    0   0   -9999.0  -9999.0 0  0  #Var
+Anomaly:                               0   0    0   0   -9999.0  -9999.0 0  0  #Anomaly
 RMSE:                                  0   0    0   0   -9999.0  -9999.0 0  0  #RMSE
 Bias:                                  0   0    0   0   -9999.0  -9999.0 0  0  #Bias
-ubRMSE:                                0   0    0   0   -9999.0  -9999.0 0  0  #ubRMSE
 Mean absolute error:                   0   0    0   0   -9999.0  -9999.0 0  0  #MAE
-Anomaly RMSE:                          0   0    0   0   -9999.0  -9999.0 0  0  #ARMSE
-Anomaly correlation:                   0   0    0   0   -9999.0  -9999.0 0  0  #ARMSE
-Raw correlation:                       0   0    0   0   -9999.0  -9999.0 0  0  #RCORR
-Rank correlation:                      0   0    0   0   -9999.0  -9999.0 0  0  #RnkCORR
 Probability of detection (PODy):       0   0    0   0   0.1      0.3     0  0  #PODy
 Probability of detection (PODn):       0   0    0   0   0.1      0.3     0  0  #PODn
 False alarm ratio (FAR):               0   0    0   0   0.1      0.3     0  0  #FAR
@@ -145,12 +139,13 @@ Critical success index (CSI):          0   0    0   0   0.1      0.3     0  0  #
 Accuracy measure (ACC):                0   0    0   0   0.1      0.3     0  0  #ACC
 Frequency bias (FBIAS):                0   0    0   0   0.1      0.3     0  0  #FBIAS
 Equitable threat score (ETS):          0   0    0   0   0.1      0.3     0  0  #ETS
-Area metric:                           0   0    0   0   -9999.0  -9999.0 0  0  #Area
+Raw correlation:                       0   0    0   0   -9999.0  -9999.0 0  0  #RCORR
+Rank correlation:                      0   0    0   0   -9999.0  -9999.0 0  0  #RnkCORR
+Anomaly correlation:                   0   0    0   0   -9999.0  -9999.0 0  0  #ACORR
+Anomaly RMSE:                          0   0    0   0   -9999.0  -9999.0 0  0  #ARMSE
 Nash sutcliffe efficiency:             0   0    0   0   -9999.0  -9999.0 0  0  #NSE 
-Metric entropy:                        0   0    0   0   -9999.0  -9999.0 0  0  #mentropy
-Information gain:                      0   0    0   0   -9999.0  -9999.0 0  0  #igain
-Fluctuation complexity:                0   0    0   0   -9999.0  -9999.0 0  0  #fcomplexity
-Effective complexity:                  0   0    0   0   -9999.0  -9999.0 0  0  #ecomplexity
+ubRMSE:                                0   0    0   0   -9999.0  -9999.0 0  0  #ubRMSE
+Area metric:                           0   0    0   0   -9999.0  -9999.0 0  0  #Area
 Wavelet stat:                          0   0    0   0   -9999.0  -9999.0 0  0  #waveletstat
 Hausdorff norm:                        0   0    0   0   -9999.0  -9999.0 0  0  #Hnorm
 Standard precipitation index:          0   0    0   0   -9999.0  -9999.0 0  0  #SPI
@@ -159,7 +154,30 @@ Standardized soil water index:         0   0    0   0   -9999.0  -9999.0 0  0  #
 Standardized ground water index:       0   0    0   0   -9999.0  -9999.0 0  0  #SGWI
 Percentile:                            0   0    0   0   -9999.0  -9999.0 0  0  #Percentile
 River flow variate:                    0   0    0   0   -9999.0  -9999.0 0  0  #RFV
-K-S test:                              0   0    0   0   -9999.0  -9999.0 0  0  #K-S test
+MinTime:                               0   0    0   0   -9999.0  -9999.0 0  0  #MinTime
+MaxTime:                               0   0    0   0   -9999.0  -9999.0 0  0  #MaxTime
 Tendency:                              0   0    0   0   -9999.0  -9999.0 0  0  #Tendency
 Tendency correlation:                  0   0    0   0   -9999.0  -9999.0 0  0  #Tendency correlation
+Z score:                               0   0    0   0   -9999.0  -9999.0 0  0  #ZSCORE
+Trend:                                 0   0    0   0   -9999.0  -9999.0 0  0  #TREND
+Standard dS index:                     0   0    0   0   -9999.0  -9999.0 0  0  #SdSI
+Triple collocation:                    0   0    0   0   -9999.0  -9999.0 0  0  #TC
+Detection failure ratio (DFR):         0   0    0   0   0.1      0.3     0  0  #DFR
+Event frequency (EF):                  0   0    0   0   0.1      0.3     0  0  #EF
+Forecast frequency (FF):               0   0    0   0   0.1      0.3     0  0  #FF
+Heidke skill score (HSS):              0   0    0   0   0.1      0.3     0  0  #HSS
+Peirce skill score (PSS):              0   0    0   0   0.1      0.3     0  0  #PSS
+Clayton skill score (CSS):             0   0    0   0   0.1      0.3     0  0  #CSS
+Reliability:                           0   0    0   0   -9999.0  -9999.0 0  0  #REL
+Resilience:                            0   0    0   0   -9999.0  -9999.0 0  0  #RES
+Vulnerability:                         0   0    0   0   -9999.0  -9999.0 0  0  #VUL
+Tian Hit Bias:                         0   0    0   0   0.1      0.3     0  0  #THB
+Tian Miss Bias:                        0   0    0   0   0.1      0.3     0  0  #TMB
+Tian False Alarm Bias:                 0   0    0   0   0.1      0.3     0  0  #TFB
+Metric entropy:                        0   0    0   0   -9999.0  -9999.0 0  0  #mentropy
+Information gain:                      0   0    0   0   -9999.0  -9999.0 0  0  #igain
+Fluctuation complexity:                0   0    0   0   -9999.0  -9999.0 0  0  #fcomplexity
+Effective complexity:                  0   0    0   0   -9999.0  -9999.0 0  0  #ecomplexity
+K-S test:                              0   0    0   0   -9999.0  -9999.0 0  0  #K-S test
+
 #latex: \end{verbatim}

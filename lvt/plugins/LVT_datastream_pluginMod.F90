@@ -134,7 +134,7 @@ contains
     use JULES2D_obsMod,         only : JULES2D_obsinit
     use LVTbenchmarkOUT_obsMod, only : LVTbenchmarkOUT_obsInit
     use SMAP_smobsMod,          only : SMAP_smobsinit
-    use SMAP_vwcobsMod,         only : SMAP_vwcobsinit !MN
+    !use SMAP_vwcobsMod,         only : SMAP_vwcobsinit !MN
     use SMAP_TBobsMod,          only : SMAP_TBobsinit
     use GOME2_SIFobsMod,        only : GOME2_SIFobsinit
     use Daymet_obsMod,          only : Daymet_obsInit
@@ -534,10 +534,10 @@ contains
          readSMAPsmobs)
 
 ! MN: SMAP vegetation water content
-    call registerobssetup(trim(LVT_SMAPvwcobsId)//char(0), &
-         SMAP_vwcobsInit)
-    call registerobsread(trim(LVT_SMAPvwcobsId)//char(0),&
-         readSMAPvwcobs)
+!    call registerobssetup(trim(LVT_SMAPvwcobsId)//char(0), &
+!         SMAP_vwcobsInit)
+!    call registerobsread(trim(LVT_SMAPvwcobsId)//char(0),&
+!         readSMAPvwcobs)
 
 
     call registerobssetup(trim(LVT_SMAPTBobsId)//char(0), &

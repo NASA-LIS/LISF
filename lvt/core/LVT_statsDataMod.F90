@@ -1,6 +1,6 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT----------------------------
 ! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-------------------------END NOTICE -- DO NOT EDIT----------------------------
 !BOP
 ! 
 ! !MODULE: LVT_statsDataMod
@@ -1015,6 +1015,49 @@ module LVT_statsDataMod
      real,    allocatable :: obs_value_ci(:,:)
   end type vul_metric_spec
 
+  ! Tian bias decomposition...EMK
+  type thb_metric_spec
+     real,    allocatable :: value_total(:,:,:)
+     integer, allocatable :: count_value_total(:,:,:)
+     real,    allocatable :: value_ci(:,:)
+     real,    allocatable :: value_ts(:,:,:)
+     integer, allocatable :: count_value_ts(:,:,:)
+     real,    allocatable :: tavg_value_ts(:,:,:)
+     integer, allocatable :: tavg_count_value_ts(:,:,:)
+     real,    allocatable :: value_asc(:,:,:)
+     integer, allocatable :: count_value_asc(:,:,:)
+     real,    allocatable :: value_adc(:,:,:)
+     integer, allocatable :: count_value_adc(:,:,:)
+  end type thb_metric_spec
+
+  type tmb_metric_spec
+     real,    allocatable :: value_total(:,:,:)
+     integer, allocatable :: count_value_total(:,:,:)
+     real,    allocatable :: value_ci(:,:)
+     real,    allocatable :: value_ts(:,:,:)
+     integer, allocatable :: count_value_ts(:,:,:)
+     real,    allocatable :: tavg_value_ts(:,:,:)
+     integer, allocatable :: tavg_count_value_ts(:,:,:)
+     real,    allocatable :: value_asc(:,:,:)
+     integer, allocatable :: count_value_asc(:,:,:)
+     real,    allocatable :: value_adc(:,:,:)
+     integer, allocatable :: count_value_adc(:,:,:)
+  end type tmb_metric_spec
+
+  type tfb_metric_spec
+     real,    allocatable :: value_total(:,:,:)
+     integer, allocatable :: count_value_total(:,:,:)
+     real,    allocatable :: value_ci(:,:)
+     real,    allocatable :: value_ts(:,:,:)
+     integer, allocatable :: count_value_ts(:,:,:)
+     real,    allocatable :: tavg_value_ts(:,:,:)
+     integer, allocatable :: tavg_count_value_ts(:,:,:)
+     real,    allocatable :: value_asc(:,:,:)
+     integer, allocatable :: count_value_asc(:,:,:)
+     real,    allocatable :: value_adc(:,:,:)
+     integer, allocatable :: count_value_adc(:,:,:)
+  end type tfb_metric_spec
+
   type, public :: LVT_statsEntry
      
      type(min_metric_spec)      , allocatable :: min(:)   
@@ -1070,6 +1113,11 @@ module LVT_statsDataMod
      type(res_metric_spec)        , allocatable    :: res(:)
      type(vul_metric_spec)        , allocatable    :: vul(:)
      type(kmeans_metric_spec)     , allocatable :: kmeans(:)
+
+     ! Tian bias decomposition...EMK
+     type(thb_metric_spec)     , allocatable :: thb(:)
+     type(tmb_metric_spec)     , allocatable :: tmb(:)
+     type(tfb_metric_spec)     , allocatable :: tfb(:)
 
      integer          :: selectOpt    
      integer          :: computeVar
@@ -1404,6 +1452,12 @@ module LVT_statsDataMod
      type(LVT_metricEntry)   :: vul
      
      type(LVT_metricEntry)   :: kmeans
+
+     !Tian bias decomposition...EMK
+     type(LVT_metricEntry) :: THB
+     type(LVT_metricEntry) :: TMB
+     type(LVT_metricEntry) :: TFB
+
   end type metrics_struc
 
   type(metrics_struc) , save :: LVT_metrics

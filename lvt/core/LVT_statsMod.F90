@@ -316,6 +316,10 @@ contains
        call registerMetricEntry(LVT_RESId,LVT_metrics%res) 
        call registerMetricEntry(LVT_VULId,LVT_metrics%vul) 
        call registerMetricEntry(LVT_KMEANSId,LVT_metrics%kmeans)
+       ! Tian bias decomposition...EMK
+       call registerMetricEntry(LVT_THBId,LVT_metrics%thb)
+       call registerMetricEntry(LVT_TMBId,LVT_metrics%tmb)
+       call registerMetricEntry(LVT_TFBId,LVT_metrics%tfb)
 
        LVT_rc%metric_sindex = LVT_METRIC_SINDEX
        LVT_rc%metric_eindex = LVT_METRIC_EINDEX
