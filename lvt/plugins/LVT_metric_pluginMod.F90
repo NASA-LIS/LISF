@@ -1,6 +1,6 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT----------------------------
 ! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-------------------------END NOTICE -- DO NOT EDIT----------------------------
 !BOP
 ! 
 ! !MODULE: LVT_metric_pluginMod
@@ -295,6 +295,79 @@ contains
     use LVT_KMEANSMod, only : LVT_initKMEANS, LVT_diagnoseKMEANS, LVT_computeKMEANS,&
          LVT_writeMetric_KMEANS, LVT_resetMetric_KMEANS, LVT_writerestart_KMEANS, &
          LVT_readrestart_KMEANS
+
+    ! Tian decomposition of bias...EMK
+    use LVT_THBMod, only : LVT_initTHB, LVT_diagnoseTHB, LVT_computeTHB,&
+         LVT_writeMetric_THB, LVT_resetMetric_THB, LVT_writerestart_THB, &
+         LVT_readrestart_THB
+
+    use LVT_TMBMod, only : LVT_initTMB, LVT_diagnoseTMB, LVT_computeTMB,&
+         LVT_writeMetric_TMB, LVT_resetMetric_TMB, LVT_writerestart_TMB, &
+         LVT_readrestart_TMB
+
+    use LVT_TFBMod, only : LVT_initTFB, LVT_diagnoseTFB, LVT_computeTFB,&
+         LVT_writeMetric_TFB, LVT_resetMetric_TFB, LVT_writerestart_TFB, &
+         LVT_readrestart_TFB
+
+#if 0 
+    use LVT_ensMEANMod, only : LVT_initensMEAN, LVT_diagnoseensMEAN, &
+         LVT_computeensMEAN, LVT_writeMetric_ensMEAN, &
+         LVT_resetMetric_ensMEAN, LVT_writerestart_ensMEAN,&
+         LVT_readrestart_ensMEAN
+
+    use LVT_ensStdevMod, only : LVT_initensStdev, LVT_diagnoseensStdev, &
+         LVT_computeensStdev, LVT_writeMetric_ensStdev, &
+         LVT_resetMetric_ensStdev, LVT_writerestart_ensStdev,&
+         LVT_readrestart_ensStdev
+
+    use LVT_ensSpreadMod, only : LVT_initensSpread, LVT_diagnoseensSpread, &
+         LVT_computeensSpread, LVT_writeMetric_ensSpread, &
+         LVT_resetMetric_ensSpread, LVT_writerestart_ensSpread,&
+         LVT_readrestart_ensSpread
+
+    use LVT_ensLLMod, only : LVT_initensLL, LVT_diagnoseensLL, &
+         LVT_computeensLL, LVT_writeMetric_ensLL, &
+         LVT_resetMetric_ensLL, LVT_writerestart_ensLL, &
+         LVT_readrestart_ensLL
+
+    use LVT_ensXcorrMod, only : LVT_initensXcorr, LVT_diagnoseensXcorr, &
+         LVT_computeensXcorr, LVT_writeMetric_ensXcorr, &
+         LVT_resetMetric_ensXcorr, LVT_writerestart_ensXcorr, &
+         LVT_readrestart_ensXcorr
+
+    use LVT_ensSkillMod, only : LVT_initensSkill, LVT_diagnoseensSkill, &
+         LVT_computeensSkill, LVT_writeMetric_ensSkill, &
+         LVT_resetMetric_ensSkill, LVT_writerestart_ensSkill,&
+         LVT_readrestart_ensSkill
+
+    use LVT_ensMEMod, only : LVT_initensME, LVT_diagnoseensME, &
+         LVT_computeensME, LVT_writeMetric_ensME, &
+         LVT_resetMetric_ensME, LVT_writerestart_ensME,&
+         LVT_readrestart_ensME
+
+    use LVT_ensMeanBiasMod, only : LVT_initensMeanBias, LVT_diagnoseensMeanBias, &
+         LVT_computeensMeanBias, LVT_writeMetric_ensMeanBias, &
+         LVT_resetMetric_ensMeanBias, LVT_writerestart_ensMeanBias,&
+         LVT_readrestart_ensMeanBias
+
+    use LVT_ensPercentileMod, only : LVT_initensPercentile, LVT_diagnoseensPercentile, &
+         LVT_computeensPercentile, LVT_writeMetric_ensPercentile, &
+         LVT_resetMetric_ensPercentile, LVT_writerestart_ensPercentile,&
+         LVT_readrestart_ensPercentile
+
+    use LVT_PSDMod, only : LVT_initPSD, &
+         LVT_diagnosePSD, LVT_computePSD, &
+         LVT_writeMetric_PSD, LVT_resetMetric_PSD,&
+         LVT_writerestart_PSD, LVT_readrestart_PSD
+
+
+
+    use LVT_KStestMod, only : LVT_initKStest, &
+         LVT_diagnoseKStest, LVT_computeKStest,&
+         LVT_writeMetric_KStest, LVT_resetMetric_KStest,&
+         LVT_writerestart_KStest, LVT_readrestart_KStest
+
+#endif
 !EOP
 
     ! EMK Start of regular metrics
@@ -758,6 +831,34 @@ contains
     call registermetricreset(LVT_KMEANSid,LVT_resetMetric_KMEANS)
     call registermetricwriterestart(LVT_KMEANSid,LVT_writerestart_KMEANS)
     call registermetricreadrestart(LVT_KMEANSid,LVT_readrestart_KMEANS)
+
+    ! Tian decomposition of bias...EMK
+    call registermetricinit(LVT_THBid,LVT_initTHB)
+    call registermetricdiagnose(LVT_THBid, LVT_diagnoseTHB)
+    call registermetriccompute(LVT_THBid, LVT_computeTHB)
+    call registermetricwriteentry(LVT_THBid,&
+         LVT_writeMetric_THB)
+    call registermetricreset(LVT_THBid,LVT_resetMetric_THB)
+    call registermetricwriterestart(LVT_THBid,LVT_writerestart_THB)
+    call registermetricreadrestart(LVT_THBid,LVT_readrestart_THB)
+
+    call registermetricinit(LVT_TMBid,LVT_initTMB)
+    call registermetricdiagnose(LVT_TMBid, LVT_diagnoseTMB)
+    call registermetriccompute(LVT_TMBid, LVT_computeTMB)
+    call registermetricwriteentry(LVT_TMBid,&
+         LVT_writeMetric_TMB)
+    call registermetricreset(LVT_TMBid,LVT_resetMetric_TMB)
+    call registermetricwriterestart(LVT_TMBid,LVT_writerestart_TMB)
+    call registermetricreadrestart(LVT_TMBid,LVT_readrestart_TMB)
+
+    call registermetricinit(LVT_TFBid,LVT_initTFB)
+    call registermetricdiagnose(LVT_TFBid, LVT_diagnoseTFB)
+    call registermetriccompute(LVT_TFBid, LVT_computeTFB)
+    call registermetricwriteentry(LVT_TFBid,&
+         LVT_writeMetric_TFB)
+    call registermetricreset(LVT_TFBid,LVT_resetMetric_TFB)
+    call registermetricwriterestart(LVT_TFBid,LVT_writerestart_TFB)
+    call registermetricreadrestart(LVT_TFBid,LVT_readrestart_TFB)
 
     ! EMK End of regular metrics
 

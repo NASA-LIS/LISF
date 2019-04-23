@@ -1,6 +1,6 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT----------------------------
 ! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-------------------------END NOTICE -- DO NOT EDIT----------------------------
 !BOP
 ! 
 ! !ROUTINE: LVT_readMetricsAttributes
@@ -41,24 +41,14 @@ subroutine LVT_readMetricsAttributes(attribFile)
   call ESMF_ConfigLoadFile(attribConfig,trim(attribFile),rc=rc)
   call LVT_verify(rc,'loading file '//trim(attribFile)//' failed')
 
-
   call ESMF_ConfigFindLabel(attribConfig,"Mean:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%mean,"MEAN",rc)
-
-  call ESMF_ConfigFindLabel(attribConfig,"Anomaly:",rc=rc)
-  call get_metric_attributes(attribConfig, LVT_metrics%anomaly,"Anomaly",rc)
 
   call ESMF_ConfigFindLabel(attribConfig,"Min:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%min,"MIN",rc)
 
   call ESMF_ConfigFindLabel(attribConfig,"Max:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%max,"MAX",rc)
-
-  call ESMF_ConfigFindLabel(attribConfig,"MinTime:",rc=rc)
-  call get_metric_attributes(attribConfig, LVT_metrics%mintime,"MINTIME",rc)
-
-  call ESMF_ConfigFindLabel(attribConfig,"MaxTime:",rc=rc)
-  call get_metric_attributes(attribConfig, LVT_metrics%maxtime,"MAXTIME",rc)
 
   call ESMF_ConfigFindLabel(attribConfig,"Sum:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%sum,"SUM",rc)
@@ -69,47 +59,31 @@ subroutine LVT_readMetricsAttributes(attribFile)
   call ESMF_ConfigFindLabel(attribConfig,"Variance:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%variance,"VARIANCE",rc)
 
+  call ESMF_ConfigFindLabel(attribConfig,"Anomaly:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%anomaly,"Anomaly",rc)
+
   call ESMF_ConfigFindLabel(attribConfig,"RMSE:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%rmse,"RMSE",rc)
 
-  call ESMF_ConfigFindLabel(attribConfig,"Anomaly RMSE:",rc=rc)
-  call get_metric_attributes(attribConfig, LVT_metrics%armse,"ARMSE",rc)
-  
   call ESMF_ConfigFindLabel(attribConfig,"Bias:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%bias,"BIAS",rc)
 
   call ESMF_ConfigFindLabel(attribConfig,"Mean absolute error:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%mae,"MAE",rc)
 
-  call ESMF_ConfigFindLabel(attribConfig,"Anomaly correlation:",rc=rc)
-  call get_metric_attributes(attribConfig, LVT_metrics%acorr,"ACORR",rc)
-
-  call ESMF_ConfigFindLabel(attribConfig,"Raw correlation:",rc=rc)
-  call get_metric_attributes(attribConfig, LVT_metrics%rcorr,"RCORR",rc)
-
-  call ESMF_ConfigFindLabel(attribConfig,"Rank correlation:",rc=rc)
-  call get_metric_attributes(attribConfig, LVT_metrics%rnkcorr,"RNKCORR",rc)
-
-  call ESMF_ConfigFindLabel(attribConfig,"Probability of detection (PODy):",rc=rc)
+  call ESMF_ConfigFindLabel(attribConfig,"Probability of detection (PODy):",&
+       rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%pody,"PODY",rc)
 
-  call ESMF_ConfigFindLabel(attribConfig,"Probability of detection (PODn):",rc=rc)
+  call ESMF_ConfigFindLabel(attribConfig,"Probability of detection (PODn):",&
+       rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%podn,"PODN",rc)
 
   call ESMF_ConfigFindLabel(attribConfig,"False alarm ratio (FAR):",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%far,"FAR",rc)
 
-  ! EMK
-  call ESMF_ConfigFindLabel(attribConfig,"Detection failure ratio (DFR):",rc=rc)
-!  if (rc .ne. 0) then
-!     messages(1) = &
-!          '[ERR] Metrics configuration file is missing Detection failure ratio (DFR):'
-!     messages(2) = '[ERR] Aborting...'
-!     call LVT_abort(messages)
-!  end if
-  call get_metric_attributes(attribConfig, LVT_metrics%dfr,"DFR",rc)
-
-  call ESMF_ConfigFindLabel(attribConfig,"Probability of false detection (POFD):",rc=rc)
+  call ESMF_ConfigFindLabel(attribConfig, &
+       "Probability of false detection (POFD):",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%pofd,"POFD",rc)
 
   call ESMF_ConfigFindLabel(attribConfig,"Critical success index (CSI):",rc=rc)
@@ -121,61 +95,20 @@ subroutine LVT_readMetricsAttributes(attribFile)
   call ESMF_ConfigFindLabel(attribConfig,"Frequency bias (FBIAS):",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%fbias,"FBIAS",rc)
 
-  ! EMK
-  call ESMF_ConfigFindLabel(attribConfig,"Event frequency (EF):",rc=rc)
-!  if (rc .ne. 0) then
-!     messages(1) = &
-!          '[ERR] Metrics configuration file is missing Event frequency (EF):'
-!     messages(2) = '[ERR] Aborting...'
-!     call LVT_abort(messages)
-!  end if
-  call get_metric_attributes(attribConfig, LVT_metrics%ef,"EF",rc)
-
-  ! EMK
-  call ESMF_ConfigFindLabel(attribConfig,"Forecast frequency (FF):",rc=rc)
-!  if (rc .ne. 0) then
-!     messages(1) = &
-!          '[ERR] Metrics configuration file is missing Forecast frequency (FF):'
-!     messages(2) = '[ERR] Aborting...'
-!     call LVT_abort(messages)
-!  end if
-  call get_metric_attributes(attribConfig, LVT_metrics%ff,"FF",rc)
-
-  ! EMK
-  call ESMF_ConfigFindLabel(attribConfig,"Heidke skill score (HSS):",rc=rc)
-!  if (rc .ne. 0) then
-!     messages(1) = &
-!          '[ERR] Metrics configuration file is missing Heidke skill score (HSS):'
-!     messages(2) = '[ERR] Aborting...'
-!     call LVT_abort(messages)
-!  end if
-  call get_metric_attributes(attribConfig, LVT_metrics%hss,"HSS",rc)
-
-  ! EMK
-  call ESMF_ConfigFindLabel(attribConfig,"Peirce skill score (PSS):",rc=rc)
-!  if (rc .ne. 0) then
-!     messages(1) = &
-!          '[ERR] Metrics configuration file is missing Peirce skill score (PSS):'
-!     messages(2) = '[ERR] Aborting...'
-!     call LVT_abort(messages)
-!  end if
-  call get_metric_attributes(attribConfig, LVT_metrics%pss,"PSS",rc)
-
-  ! EMK
-  call ESMF_ConfigFindLabel(attribConfig,"Clayton skill score (CSS):",rc=rc)
-!  if (rc .ne. 0) then
-!     messages(1) = &
-!          '[ERR] Metrics configuration file is missing Clayton skill score (CSS):'
-!     messages(2) = '[ERR] Aborting...'
-!     call LVT_abort(messages)
-!  end if
-  call get_metric_attributes(attribConfig, LVT_metrics%css,"CSS",rc)
-
   call ESMF_ConfigFindLabel(attribConfig,"Equitable threat score (ETS):",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%ets,"ETS",rc)
 
-  call ESMF_ConfigFindLabel(attribConfig,"Area metric:",rc=rc)
-  call get_metric_attributes(attribConfig, LVT_metrics%area,"AREA",rc)
+  call ESMF_ConfigFindLabel(attribConfig,"Raw correlation:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%rcorr,"RCORR",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Rank correlation:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%rnkcorr,"RNKCORR",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Anomaly correlation:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%acorr,"ACORR",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Anomaly RMSE:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%armse,"ARMSE",rc)
 
   call ESMF_ConfigFindLabel(attribConfig,"Nash sutcliffe efficiency:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%nse,"NSE",rc)
@@ -183,20 +116,12 @@ subroutine LVT_readMetricsAttributes(attribFile)
   call ESMF_ConfigFindLabel(attribConfig,"ubRMSE:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%ubrmse,"ubRMSE",rc)
 
-  call ESMF_ConfigFindLabel(attribConfig,"Metric entropy:",rc=rc)
-  call get_metric_attributes(attribConfig, LVT_metrics%mentropy,"Mentropy",rc)
-
-  call ESMF_ConfigFindLabel(attribConfig,"Information gain:",rc=rc)
-  call get_metric_attributes(attribConfig, LVT_metrics%igain,"Igain",rc)
-
-  call ESMF_ConfigFindLabel(attribConfig,"Fluctuation complexity:",rc=rc)
-  call get_metric_attributes(attribConfig, LVT_metrics%fcomplexity,"Fcomplexity",rc)
-
-  call ESMF_ConfigFindLabel(attribConfig,"Effective complexity:",rc=rc)
-  call get_metric_attributes(attribConfig, LVT_metrics%ecomplexity,"Ecomplexity",rc)
+  call ESMF_ConfigFindLabel(attribConfig,"Area metric:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%area,"AREA",rc)
 
   call ESMF_ConfigFindLabel(attribConfig,"Wavelet stat:",rc=rc)
-  call get_metric_attributes(attribConfig, LVT_metrics%waveletStat,"Waveletstat",rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%waveletStat, &
+       "Waveletstat",rc)
 
   call ESMF_ConfigFindLabel(attribConfig,"Hausdorff norm:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%hn,"Hnorm",rc)
@@ -204,16 +129,15 @@ subroutine LVT_readMetricsAttributes(attribFile)
   call ESMF_ConfigFindLabel(attribConfig,"Standard precipitation index:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%spi,"SPI",rc)
 
-  call ESMF_ConfigFindLabel(attribConfig,"Standard dS index:",rc=rc)
-  call get_metric_attributes(attribConfig, LVT_metrics%SdSI,"SdSI",rc)
-
   call ESMF_ConfigFindLabel(attribConfig,"Standard runoff index:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%sri,"SRI",rc)
 
-  call ESMF_ConfigFindLabel(attribConfig,"Standardized soil water index:",rc=rc)
+  call ESMF_ConfigFindLabel(attribConfig,"Standardized soil water index:", &
+       rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%sswi,"SSWI",rc)
 
-  call ESMF_ConfigFindLabel(attribConfig,"Standardized ground water index:",rc=rc)
+  call ESMF_ConfigFindLabel(attribConfig,"Standardized ground water index:", &
+       rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%sgwi,"SGWI",rc)
 
   call ESMF_ConfigFindLabel(attribConfig,"Percentile:",rc=rc)
@@ -224,11 +148,18 @@ subroutine LVT_readMetricsAttributes(attribFile)
   call get_metric_attributes(attribConfig, LVT_metrics%rfv,&
        "RFV",rc)
 
+  call ESMF_ConfigFindLabel(attribConfig,"MinTime:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%mintime,"MINTIME",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"MaxTime:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%maxtime,"MAXTIME",rc)
+
   call ESMF_ConfigFindLabel(attribConfig,"Tendency:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%tendency,"TENDENCY",rc)
 
   call ESMF_ConfigFindLabel(attribConfig,"Tendency correlation:",rc=rc)
-  call get_metric_attributes(attribConfig, LVT_metrics%tendencycorr,"TENDENCYCORR",rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%tendencycorr,&
+       "TENDENCYCORR",rc)
 
   call ESMF_ConfigFindLabel(attribConfig,"Z score:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%zscore,"ZSCORE",rc)
@@ -236,8 +167,30 @@ subroutine LVT_readMetricsAttributes(attribFile)
   call ESMF_ConfigFindLabel(attribConfig,"Trend:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%trend,"TREND",rc)
 
+  call ESMF_ConfigFindLabel(attribConfig,"Standard dS index:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%SdSI,"SdSI",rc)
+
   call ESMF_ConfigFindLabel(attribConfig,"Triple collocation:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%tc,"TC",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Detection failure ratio (DFR):", &
+       rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%dfr,"DFR",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Event frequency (EF):",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%ef,"EF",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Forecast frequency (FF):",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%ff,"FF",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Heidke skill score (HSS):",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%hss,"HSS",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Peirce skill score (PSS):",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%pss,"PSS",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Clayton skill score (CSS):",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%css,"CSS",rc)
 
   call ESMF_ConfigFindLabel(attribConfig,"Reliability:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%rel,"REL",rc)
@@ -250,6 +203,30 @@ subroutine LVT_readMetricsAttributes(attribFile)
 
   call ESMF_ConfigFindLabel(attribConfig,"Kmeans:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%kmeans,"KMEANS",rc)
+
+  ! Tian bias decomposition...EMK
+  call ESMF_ConfigFindLabel(attribConfig,"Tian Hit Bias:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%thb,"THB",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Tian Miss Bias:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%tmb,"TMB",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Tian False Alarm Bias:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%tfb,"TFB",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Metric entropy:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%mentropy,"Mentropy",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Information gain:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%igain,"Igain",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Fluctuation complexity:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%fcomplexity, &
+       "Fcomplexity",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Effective complexity:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%ecomplexity, &
+       "Ecomplexity",rc)
 
 end subroutine LVT_readMetricsAttributes
 

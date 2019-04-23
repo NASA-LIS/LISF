@@ -10,6 +10,7 @@ vars = ["SoilMoist_tavg", "SoilTemp_tavg",
         "Evap_tavg", "LWdown_f_tavg", "PotEvap_tavg", 
         "SWdown_f_tavg",
         "Tair_f_max",
+        "Tair_f_tavg",
         "TotalPrecip_acc", "Wind_f_tavg"]
 
 #Handle command line

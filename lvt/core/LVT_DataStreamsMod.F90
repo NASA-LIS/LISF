@@ -443,7 +443,7 @@ contains
        lyrthk(k) = LVT_LIS_rc(1)%smthick(k) 
     end do
 
-    if (alarm_is_on()) then
+    if (LVT_557post_alarm_is_on()) then
        ! EMK...We need lat/lon for all grid points, not just for land.
        ! So we will recalculate here.
        ! FIXME...Add support for other projections, not just lat/lon.
@@ -3744,7 +3744,7 @@ contains
     ! variable here.
     local_computeFlag = LVT_rc%computeFlag
     if (LVT_rc%runmode.eq."557 post") then
-       local_computeFlag = alarm_is_on()
+       local_computeFlag = LVT_557post_alarm_is_on()
     end if
     !if(LVT_rc%computeFlag) then            
     if (local_computeFlag) then
@@ -3933,7 +3933,7 @@ contains
     ! to accomodate both.
     local_computeFlag = LVT_rc%computeFlag
     if (LVT_rc%runmode.eq."557 post") then
-       local_computeFlag = alarm_is_on()
+       local_computeFlag = LVT_557post_alarm_is_on()
     end if
     
 !    if(LVT_rc%computeFlag) then            

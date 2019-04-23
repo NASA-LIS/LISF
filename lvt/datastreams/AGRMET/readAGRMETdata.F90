@@ -54,54 +54,93 @@ subroutine readAGRMETdata(source)
 !               array, and replaced some 1-d arrays with scalar integers.
 !               This greatly reduces run-time.
 !  13 Nov 2017: Eric Kemp (SSAI).  Added specific humidity forcing.
+!  02 Nov 2018: Eric Kemp (SSAI).  Added support for n1280e domain.
 ! 
 !EOP
 
-  integer,   parameter         :: nc = 1440, nr=600
+  !integer,   parameter         :: nc = 1440, nr=600
+  integer :: nc,nr
   character*200                :: filename
   logical                      :: file_exists
   integer                      :: nunit,ufn,iret,ierr
   integer                      :: c,r
   integer                      :: ftn
   integer                      :: count1
-  real                         :: swd(nc*nr)
-  integer                      :: nswd(nc*nr)
-  real                         :: tair(nc*nr)
-  integer                      :: ntair(nc*nr)
-  real                         :: rainf(nc*nr)
-  integer                      :: nrainf(nc*nr)
-  real                         :: lwd(nc*nr)
-  integer                      :: nlwd(nc*nr)
-  real                         :: qle(nc*nr)
-  integer                      :: nqle(nc*nr)
-  real                         :: qh(nc*nr)
-  integer                      :: nqh(nc*nr)
-  real                         :: qg(nc*nr)
-  integer                      :: nqg(nc*nr)
-  real                         :: swe(nc*nr)
-  integer                      :: nswe(nc*nr)
-  real                         :: snod(nc*nr)
-  integer                      :: nsnod(nc*nr)
-  real                         :: sm1(nc*nr)
-  integer                      :: nsm1(nc*nr)
-  real                         :: sm2(nc*nr)
-  integer                      :: nsm2(nc*nr)
-  real                         :: sm3(nc*nr)
-  integer                      :: nsm3(nc*nr)
-  real                         :: sm4(nc*nr)
-  integer                      :: nsm4(nc*nr)
-  real                         :: st1(nc*nr)
-  integer                      :: nst1(nc*nr)
-  real                         :: st2(nc*nr)
-  integer                      :: nst2(nc*nr)
-  real                         :: st3(nc*nr)
-  integer                      :: nst3(nc*nr)
-  real                         :: st4(nc*nr)
-  integer                      :: nst4(nc*nr)
-  real                         :: qair(nc*nr) ! EMK Specific humidity
-  integer                      :: nqair(nc*nr)
+  real                         :: &
+       swd(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nswd(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       tair(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       ntair(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       rainf(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nrainf(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       lwd(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nlwd(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       qle(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nqle(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       qh(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nqh(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       qg(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nqg(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       swe(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nswe(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       snod(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nsnod(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       sm1(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nsm1(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       sm2(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nsm2(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       sm3(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nsm3(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       sm4(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nsm4(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       st1(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nst1(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       st2(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nst2(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       st3(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nst3(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       st4(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  integer                      :: &
+       nst4(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       qair(agrmetdata(source)%nc*agrmetdata(source)%nr) ! EMK Specific humidity
+  integer                      :: &
+       nqair(agrmetdata(source)%nc*agrmetdata(source)%nr)
 
-  logical*1                    :: lb(nc*nr)
+  logical*1                    :: &
+       lb(agrmetdata(source)%nc*agrmetdata(source)%nr)
   integer                      :: swd_topt, lwd_topt,rainf_topt,tair_topt
   integer                      :: qle_topt, qh_topt, qg_topt
   integer                      :: swe_topt, snod_topt
@@ -121,7 +160,8 @@ subroutine readAGRMETdata(source)
   type(ESMF_Time)              :: time2
   type(ESMF_TimeInterval)      :: lis_ts
   integer                      :: nvars
-  real                         :: var(nc*nr) ! EMK
+  real                         :: &
+       var(agrmetdata(source)%nc*agrmetdata(source)%nr) ! EMK
 
   integer                      :: index
   integer                      :: igrib
@@ -130,6 +170,9 @@ subroutine readAGRMETdata(source)
   integer                      :: lid  ! EMK
 
   integer                      :: status
+
+  nc = agrmetdata(source)%nc
+  nr = agrmetdata(source)%nr
 
 !These are hardcoded for now. 1-instantaneous, 7-timeavged
   swd_topt = 7
@@ -596,6 +639,7 @@ end subroutine readAGRMETdata
 subroutine interp_agrmetvar(source,nc, nr, var_input, nvar_input, var_output)
 ! 
 ! !USES:   
+  use LVT_logMod, only: LVT_logunit
   use LVT_coreMod,   only : LVT_rc
   use AGRMET_dataMod, only : agrmetdata
 
@@ -677,6 +721,7 @@ end subroutine interp_agrmetvar
 subroutine create_agrmetdata_filename(source, yr, mo, da, hr, filename)
 ! !USES:   
   use AGRMET_dataMod
+  use LVT_logMod, only: LVT_endrun, LVT_logunit
 
   implicit none
 
@@ -720,7 +765,9 @@ subroutine create_agrmetdata_filename(source, yr, mo, da, hr, filename)
   write(unit=fda, fmt='(i2.2)') da
   write(unit=fhr, fmt='(i2.2)') hr
 
-  filename = trim(agrmetdata(source)%odir)//'/'//trim(fyr)//trim(fmo)//trim(fda)//'/'&
+  if (trim(agrmetdata(source)%gridname) == "GLOBAL") then
+     ! Old 0.25 deg deterministic run
+     filename = trim(agrmetdata(source)%odir)//'/'//trim(fyr)//trim(fmo)//trim(fda)//'/'&
        //'PS.AFWA_SC.'//&
        trim(agrmetdata(source)%security_class)//'_DI.'//&
        trim(agrmetdata(source)%distribution_class)//&
@@ -728,7 +775,22 @@ subroutine create_agrmetdata_filename(source, yr, mo, da, hr, filename)
        '.C0P25DEG_AR.'//trim(agrmetdata(source)%area_of_data)//&
        '_PA.03-HR-SUM_DD.'//&
        trim(fyr)//trim(fmo)//trim(fda)//'_DT.'//trim(fhr)//'00_DF.GR1'
+  else if (trim(agrmetdata(source)%gridname) == "n1280e") then
+     ! In-house Bratseth run matching GALWEM n1280e domain
+     filename = trim(agrmetdata(source)%odir)//'/'//trim(fyr)//trim(fmo)//trim(fda)//'/'&
+       //'PS.AFWA_SC.'//&
+       trim(agrmetdata(source)%security_class)//'_DI.'//&
+       trim(agrmetdata(source)%distribution_class)//&
+       '_DC.'//trim(agrmetdata(source)%data_category)//'_GP.LIS_GR'//&
+       '.C0P09DEG_AR.'//trim(agrmetdata(source)%area_of_data)//&
+       '_PA.03-HR-SUM_DD.'//&
+       trim(fyr)//trim(fmo)//trim(fda)//'_DT.'//trim(fhr)//'00_DF.GR1'
        
-       
+  else
+     write(LVT_logunit,*) &
+          '[ERR] Internal error, unknown AGRMET data gridname ', &
+          trim(agrmetdata(source)%gridname)
+     call LVT_endrun()
+  end if
 end subroutine create_agrmetdata_filename
   
