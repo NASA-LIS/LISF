@@ -167,7 +167,9 @@ Surface model types:  "LSM"
 #latex: Noah.3.2    & Noah 3.2            \\
 #latex: Noah.3.3    & Noah 3.3            \\
 #latex: Noah.3.6    & Noah 3.6            \\
+#latex: Noah.3.9    & Noah 3.9            \\
 #latex: Noah-MP.3.6 & Noah-MP 3.6         \\
+#latex: Noah-MP.4.0.1 & Noah-MP 4.0.1     \\
 #latex: CLM.2       & CLM version 2.0     \\
 #latex: CLM.4.5     & CLM version 4.5     \\
 #latex: VIC.4.1.1   & VIC 4.1.1           \\
@@ -1010,13 +1012,13 @@ Landcover data source:    "MODIS_Native"
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
-#latex: \var{Landcover classification:} specifies the land cover 
+#latex: \var{Landcover classification:} specifies the land cover
 #latex: classification type.  Land cover or use classification types
 #latex: have been developed over the years by various organizations
-#latex: (e.g., USGS, IGBP) and research groups (e.g., satellite missions 
-#latex: associated with groups, like UMD, BU, etc.).
-#latex: For more information on some of these different land classifications
-#latex: and their characteristics, please refer to:
+#latex: (e.g., USGS, IGBP) and research groups (e.g., satellite
+#latex: missions  associated with groups, like UMD, BU, etc.).
+#latex: For more information on some of these different land
+#latex: classifications and their characteristics, please refer to:
 #latex:  http://edc2.usgs.gov/glcc/globdoc2\_0.php
 #latex:
 #latex: Acceptable values are:
@@ -1030,7 +1032,8 @@ Landcover data source:    "MODIS_Native"
 #latex: MOSAIC    &   7 Landcover types       \\
 #latex: ISA       &  13 Landcover types       \\
 #latex: CLM45     &  36 Landcover types       \\
-#latex: CONSTANT  &   2 Landcover types       \\
+#latex: Bondville &  Only for the Bondville metforcing benchmark testcase  \\
+#latex: CONSTANT  &   2 Landcover types (water, plus one constant type over all land) \\
 #latex: \end{tabular}
 #latex: END_DESCRIPTION
 
@@ -2949,7 +2952,7 @@ Bottom temperature resolution (dy):      0.2500
 #latex: BEGIN_DESCRIPTION
 #latex: \var{Noah-MP PBL Height Value:} specifies the
 #latex: option which to set the planetary boundary layer
-#latex: height (PBLH) value for the Noah-MP (3.6) model.
+#latex: height (PBLH) value for the Noah-MP model.
 #latex:
 #latex: END_DESCRIPTION
 

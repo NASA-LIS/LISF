@@ -276,6 +276,8 @@ contains
                LDT_LSMparam_struc(n)%landcover%num_bins = 13
              case( "CLM45" )
                LDT_LSMparam_struc(n)%landcover%num_bins = 36
+             case( "Bondville" )
+               LDT_LSMparam_struc(n)%landcover%num_bins = 20
              case default
                print *, "[ERR] CONSTANT Landcover classification not recognized."
                print *, "  Options:  UMD, IGBPNCEP, USGS, MOSAIC, ISA "
