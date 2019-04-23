@@ -101,6 +101,14 @@ contains
     call registerlsmparamprocwritedata(trim(LDT_noah36Id)//char(0),&
          NoahParms_writeData)
 
+  ! Noah 3.9 LSM:
+    call registerlsmparamprocinit(trim(LDT_noah39Id)//char(0),&
+         NoahParms_init)
+    call registerlsmparamprocwriteheader(trim(LDT_noah39Id)//char(0),&
+         NoahParms_writeHeader)
+    call registerlsmparamprocwritedata(trim(LDT_noah39Id)//char(0),&
+         NoahParms_writeData)
+
   ! Noah-MP (v3.6) LSM:
     call registerlsmparamprocinit(trim(LDT_noahmpId)//char(0),&
          NoahParms_init)
