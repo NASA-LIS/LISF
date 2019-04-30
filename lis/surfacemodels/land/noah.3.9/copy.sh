@@ -1,0 +1,16 @@
+cp ../noah.3.6/module_sfcdif_wrf_36.F90 .
+cp ../noah.3.6/noah36_coldstart.F90 .
+cp ../noah.3.6/noah36_dynsetup.F90 .
+cp ../noah.3.6/noah36_f2t.F90 .
+cp ../noah.3.6/noah36_finalize.F90 .
+cp ../noah.3.6/noah36_lsmMod.F90 .
+cp ../noah.3.6/noah36_main.F90 .
+cp ../noah.3.6/noah36_module.F90 .
+cp ../noah.3.6/noah36_readcrd.F90 .
+cp ../noah.3.6/noah36_readrst.F90 .
+cp ../noah.3.6/noah36_reset.F90 .
+cp ../noah.3.6/noah36_setsoils.F90 .
+cp ../noah.3.6/noah36_settbot.F90 .
+cp ../noah.3.6/noah36_setup.F90 .
+cp ../noah.3.6/noah36_setvegparms.F90 .
+cp ../noah.3.6/noah36_writerst.F90 .

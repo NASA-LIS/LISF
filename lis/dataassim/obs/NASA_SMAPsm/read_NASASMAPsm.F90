@@ -104,6 +104,7 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
   if(alarmCheck.or.NASASMAPsm_struc(n)%startMode) then 
      NASASMAPsm_struc(n)%startMode = .false.
 !MN: bug fix: "SPL3SMP" reader was updated to read the new version of data 
+!       if(NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP_E") then 
      if ( (NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP_E") .or. &
           (NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP") ) then
         call create_NASASMAPsm_filename(smobsdir, &
@@ -445,6 +446,9 @@ subroutine read_NASASMAP_E_data(n, k, pass, fname, smobs_ip)
   character*100,    parameter    :: sm_gr_name_A = "Soil_Moisture_Retrieval_Data_PM"
   character*100,    parameter    :: sm_field_name_A = "soil_moisture_pm"
   character*100,    parameter    :: sm_qa_name_A = "retrieval_qual_flag_pm"
+! MN 
+  character*100,    parameter    :: vwc_field_name_D = "vegetation_water_content"
+  character*100,    parameter    :: vwc_field_name_A = "vegetation_water_content_pm"
 
   integer(hsize_t), allocatable  :: dims(:)
   integer(hsize_t), dimension(2) :: dimsm
@@ -452,13 +456,16 @@ subroutine read_NASASMAP_E_data(n, k, pass, fname, smobs_ip)
   integer(hsize_t), dimension(2) :: count_mem
   integer(hid_t)                 :: memspace
   integer(hid_t)                 :: dataspace
-  integer                        :: memrank = 2
+  integer                        :: memrank = 2 ! scaler--> rank = 0 ; 2D array--> rank = 2
   integer(hsize_t), dimension(2) :: offset_mem = (/0,0/)
   integer(hsize_t), dimension(2) :: offset_file = (/0,0/)
   integer(hid_t)                 :: file_id
   integer(hid_t)                 :: sm_gr_id_D,sm_field_id_D,sm_qa_id_D
   integer(hid_t)                 :: sm_gr_id_A,sm_field_id_A,sm_qa_id_A
+  integer(hid_t)                 :: vwc_field_id_D ! MN 
+  integer(hid_t)                 :: vwc_field_id_A ! MN
   real,             allocatable  :: sm_field(:,:)
+  real,             allocatable  :: vwc_field(:,:)! MN
   integer,          allocatable  :: sm_qa(:,:)
   integer                        :: c,r,t
   logical*1                      :: sm_data_b(NASASMAPsm_struc(n)%nc*NASASMAPsm_struc(n)%nr)
@@ -472,6 +479,7 @@ subroutine read_NASASMAP_E_data(n, k, pass, fname, smobs_ip)
   
   allocate(sm_field(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
   allocate(sm_qa(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
+  allocate(vwc_field(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
   allocate(dims(2))
 
   dims(1) = NASASMAPsm_struc(n)%nc
@@ -521,6 +529,17 @@ subroutine read_NASASMAP_E_data(n, k, pass, fname, smobs_ip)
      call h5dclose_f(sm_qa_id_D,status)
      call LIS_verify(status,'Error in H5DCLOSE call')
 
+! MN get the vegetation water contnent 
+     call h5dopen_f(sm_gr_id_D,vwc_field_name_D,vwc_field_id_D, status)
+     call LIS_verify(status, 'Error opening Veg water content field in NASASMAP file')
+
+     call h5dread_f(vwc_field_id_D, H5T_NATIVE_REAL,vwc_field,dims,status, &
+          memspace, dataspace)
+     call LIS_verify(status, 'Error extracting Veg water content (AM) field from NASASMAPfile')
+
+     call h5dclose_f(vwc_field_id_D,status)
+     call LIS_verify(status,'Error in H5DCLOSE call')
+
      call h5gclose_f(sm_gr_id_D,status)
      call LIS_verify(status,'Error in H5GCLOSE call')
 
@@ -562,6 +581,17 @@ subroutine read_NASASMAP_E_data(n, k, pass, fname, smobs_ip)
      call h5dclose_f(sm_qa_id_A,status)
      call LIS_verify(status,'Error in H5DCLOSE call')
 
+! MN get the vegetation water contnent 
+     call h5dopen_f(sm_gr_id_A,vwc_field_name_A,vwc_field_id_A, status)
+     call LIS_verify(status, 'Error opening Veg water content field in NASASMAP file')
+
+     call h5dread_f(vwc_field_id_A, H5T_NATIVE_REAL,vwc_field,dims,status, &
+          memspace, dataspace)
+     call LIS_verify(status, 'Error extracting Veg water content (AM) field from NASASMAPfile')
+
+     call h5dclose_f(vwc_field_id_A,status)
+     call LIS_verify(status,'Error in H5DCLOSE call')
+
      call h5gclose_f(sm_gr_id_A,status)
      call LIS_verify(status,'Error in H5GCLOSE call')
      
@@ -572,7 +602,42 @@ subroutine read_NASASMAP_E_data(n, k, pass, fname, smobs_ip)
   
   call h5close_f(status)
   call LIS_verify(status,'Error in H5CLOSE call')
-  
+
+#if 0 
+! =============================================================================
+! MN the following section added 
+!  1- to filter the densly vegetaded areas. 
+!  2- combine the AM and PM data 
+     
+  sm_field = LIS_rc%udef
+  do r=1,NASASMAPsm_struc(n)%nr
+     do c=1,NASASMAPsm_struc(n)%nc
+        if(vwc_field_D(c,r).gt. 5 ) then !MN Aply QC : if VWC > 5 kg/m2 
+           sm_field_D(c,r) = LIS_rc%udef
+	 else 
+           if(sm_field_D(c,r).ne.LIS_rc%udef) then 
+              sm_field(c,r) = sm_field_D(c,r)
+           endif
+        endif
+     enddo
+  enddo
+
+! MN : Her we replace the PM observation with the AM opservations if 
+!      there are both PM and AM observations. I think this is 
+!      not a correct way to combine the PM and AM observations  ??????
+  do r=1,NASASMAPsm_struc(n)%nr
+     do c=1,NASASMAPsm_struc(n)%nc   
+        if(vwc_field_A(c,r).gt. 5 ) then !MN Aply QC : if VWC > 5 kg/m2 
+           sm_field_A(c,r) = LIS_rc%udef
+	 else      
+           if(sm_field_A(c,r).ne.LIS_rc%udef) then 
+              sm_field(c,r) = sm_field_A(c,r)
+           endif
+        enddo
+  enddo
+! MN end added section 
+! =============================================================================
+#endif  
   sm_data_b = .false. 
   t = 1
 
@@ -586,17 +651,24 @@ subroutine read_NASASMAP_E_data(n, k, pass, fname, smobs_ip)
   do r=1,NASASMAPsm_struc(n)%nr
      do c=1,NASASMAPsm_struc(n)%nc        
         sm_data(t) = sm_field(c,r)
-        if(sm_data(t).ne.-9999.0) then 
-           if(NASASMAPsm_struc(n)%qcFlag.eq.1) then 
-              if(ibits(sm_qa(c,r),0,1).eq.0) then 
-                 sm_data_b(t) = .true.
+
+        if(vwc_field(c,r).gt. 5 ) then !MN Aply QC : if VWC > 5 kg/m2 
+           sm_data(t) = LIS_rc%udef
+	 else 
+
+           if(sm_data(t).ne.-9999.0) then 
+              if(NASASMAPsm_struc(n)%qcFlag.eq.1) then 
+                 if(ibits(sm_qa(c,r),0,1).eq.0) then 
+                    sm_data_b(t) = .true.
+                 else
+                    sm_data(t) = -9999.0
+                 endif
               else
-                 sm_data(t) = -9999.0
+                 sm_data_b(t) = .true.
               endif
-           else
-              sm_data_b(t) = .true.
            endif
         endif
+
         t = t+1
      enddo
   enddo
@@ -684,10 +756,15 @@ subroutine read_NASASMAP_data(n, k, fname, smobs_ip)
   character*100,    parameter    :: sm_field_name_D = "soil_moisture"
   character*100,    parameter    :: sm_gr_name_A = "Soil_Moisture_Retrieval_Data_PM"
   character*100,    parameter    :: sm_field_name_A = "soil_moisture_pm"
+! MN 
+  character*100,    parameter    :: vwc_field_name_D = "vegetation_water_content"
+  character*100,    parameter    :: vwc_field_name_A = "vegetation_water_content_pm"
 
   integer(hid_t)                 :: file_id, sm_gr_id,sm_field_id
   integer(hid_t)                 :: sm_gr_id_D,sm_field_id_D
   integer(hid_t)                 :: sm_gr_id_A,sm_field_id_A
+  integer(hid_t)                 :: vwc_field_id_D ! MN 
+  integer(hid_t)                 :: vwc_field_id_A ! MN
   integer(hid_t)                 :: dataspace
   integer(hid_t)                 :: memspace
   integer                        :: memrank = 2
@@ -700,6 +777,8 @@ subroutine read_NASASMAP_data(n, k, fname, smobs_ip)
   real,             allocatable  :: sm_field(:,:)
   real,             allocatable  :: sm_field_D(:,:)
   real,             allocatable  :: sm_field_A(:,:)
+  real,             allocatable  :: vwc_field_D(:,:)! MN
+  real,             allocatable  :: vwc_field_A(:,:)! MN
   integer,          allocatable  :: sm_qa(:,:)
   integer                        :: c,r,t
   logical*1                      :: sm_data_b(NASASMAPsm_struc(n)%nc*NASASMAPsm_struc(n)%nr)
@@ -715,6 +794,8 @@ subroutine read_NASASMAP_data(n, k, fname, smobs_ip)
   allocate(sm_field_D(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
   allocate(sm_field_A(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
 !  allocate(sm_qa(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
+  allocate(vwc_field_A(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
+  allocate(vwc_field_D(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
   allocate(dims(2))
 
   dims(1) = NASASMAPsm_struc(n)%nc
@@ -749,6 +830,18 @@ subroutine read_NASASMAP_data(n, k, fname, smobs_ip)
   call h5dread_f(sm_field_id_D, H5T_NATIVE_REAL,sm_field_D,dims,status, &
        memspace, dataspace)
   call LIS_verify(status, 'Error extracting SM field from NASASMAPfile')
+
+! MN get the vegetation water contnent DES (6 AM)
+  call h5dopen_f(sm_gr_id_D,vwc_field_name_D,vwc_field_id_D, status)
+  call LIS_verify(status, 'Error opening Veg water content field in NASASMAP file')
+
+  call h5dread_f(vwc_field_id_D, H5T_NATIVE_REAL,vwc_field_D,dims,status, &
+          memspace, dataspace)
+  call LIS_verify(status, 'Error extracting Veg water content (AM) field from NASASMAPfile')
+
+  call h5dclose_f(vwc_field_id_D,status)
+  call LIS_verify(status,'Error in H5DCLOSE call')
+
  
 !Read the PM (ascending) data 
   call h5gopen_f(file_id,sm_gr_name_A,sm_gr_id_A, status)
@@ -775,12 +868,25 @@ subroutine read_NASASMAP_data(n, k, fname, smobs_ip)
        memspace, dataspace)
   call LIS_verify(status, 'Error extracting SM field from NASASMAPfile')
 
+! MN get the vegetation water contnent ASC (6 PM)
+  call h5dopen_f(sm_gr_id_A,vwc_field_name_A,vwc_field_id_A, status)
+  call LIS_verify(status, 'Error opening Veg water content field in NASASMAP file')
+
+  call h5dread_f(vwc_field_id_A, H5T_NATIVE_REAL,vwc_field_A,dims,status, &
+          memspace, dataspace)
+  call LIS_verify(status, 'Error extracting Veg water content (AM) field from NASASMAPfile')
+
+  call h5dclose_f(vwc_field_id_A,status)
+  call LIS_verify(status,'Error in H5DCLOSE call')
 
   call h5dclose_f(sm_field_id_D,status)
   call LIS_verify(status,'Error in H5DCLOSE call')
 
   call h5dclose_f(sm_field_id_A,status)
   call LIS_verify(status,'Error in H5DCLOSE call')
+
+
+! MN why this part has been commented out    ???????
 
 !  call h5dopen_f(sm_gr_id,sm_qa_name,sm_qa_id, status)
 !  call LIS_verify(status, 'Error opening SM QA field in NASASMAP file')
@@ -805,18 +911,32 @@ subroutine read_NASASMAP_data(n, k, fname, smobs_ip)
   call h5close_f(status)
   call LIS_verify(status,'Error in H5CLOSE call')
 
+
+
   sm_field = LIS_rc%udef
   do r=1,NASASMAPsm_struc(n)%nr
-     do c=1,NASASMAPsm_struc(n)%nc        
-        if(sm_field_D(c,r).ne.LIS_rc%udef) then 
-           sm_field(c,r) = sm_field_D(c,r)
+     do c=1,NASASMAPsm_struc(n)%nc
+        if(vwc_field_D(c,r).gt. 5 ) then !MN Aply QC : if VWC > 5 kg/m2 
+           sm_field_D(c,r) = LIS_rc%udef
+	 else 
+           if(sm_field_D(c,r).ne.LIS_rc%udef) then 
+              sm_field(c,r) = sm_field_D(c,r)
+           endif
         endif
      enddo
   enddo
+
+! MN : Her we replace the PM observation with the AM opservations if 
+!      there are both PM and AM observations. I think this is 
+!      not a correct way to combine the PM and AM observations  ??????
   do r=1,NASASMAPsm_struc(n)%nr
-     do c=1,NASASMAPsm_struc(n)%nc        
-        if(sm_field_A(c,r).ne.LIS_rc%udef) then 
-           sm_field(c,r) = sm_field_A(c,r)
+     do c=1,NASASMAPsm_struc(n)%nc   
+        if(vwc_field_A(c,r).gt. 5 ) then !MN Aply QC : if VWC > 5 kg/m2 
+           sm_field_A(c,r) = LIS_rc%udef
+	 else      
+           if(sm_field_A(c,r).ne.LIS_rc%udef) then 
+              sm_field(c,r) = sm_field_A(c,r)
+           endif
         endif
      enddo
   enddo
@@ -824,6 +944,8 @@ subroutine read_NASASMAP_data(n, k, fname, smobs_ip)
   
   sm_data_b = .false. 
   t = 1
+
+! Why qc flag has been disabled  ??????
 
   do r=1,NASASMAPsm_struc(n)%nr
      do c=1,NASASMAPsm_struc(n)%nc        
@@ -913,9 +1035,9 @@ subroutine create_NASASMAPsm_filename(ndir, designation, yr, mo,da, filename)
           trim(fda)//'/SMAP_L3_SM_P_'&
           //trim(fyr)//trim(fmo)//trim(fda)//&
          '.h5'
-
 ! For example:
 ! SMAP_L3_SM_P_E_20180811.h5 -> SMAP_L3_SM_P_E_20180811_R16010_001.h5
+! MN for sake of convenience instead of real name the symbolic link was used
   elseif(designation.eq."SPL3SMP_E") then 
      filename = trim(ndir)//'/'//trim(fyr)//'.'//trim(fmo)//'.'//&
           trim(fda)//'/SMAP_L3_SM_P_E_'&

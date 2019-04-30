@@ -41,9 +41,9 @@ subroutine timeinterp_Loobos(n,findex)
   integer :: index1,tid
   integer :: status
   type(ESMF_Field)   :: tairField,qairField,uField,vField,swdownField
-  type(ESMF_Field)   :: lwdownField,psurfField,pcpField,cpcpField
+  type(ESMF_Field)   :: lwdownField,psurfField,rainField,snowField
   real,pointer       :: tair(:),qair(:),uwind(:),vwind(:)
-  real,pointer       :: swdown(:),lwdown(:),psurf(:),pcp(:),cpcp(:)
+  real,pointer       :: swdown(:),lwdown(:),psurf(:),rain(:),snow(:)
   real, parameter    :: eps = 0.622
   real               :: svp,qs,E
 
@@ -85,14 +85,14 @@ subroutine timeinterp_Loobos(n,findex)
        'Error: Enable Psurf in the forcing variables list')
 
   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Rainf%varname(1),  &
-       pcpField,rc=status)
+       rainField,rc=status)
   call LIS_verify(status,                                          &
        'Error: Enable Rainf in the forcing variables list')
 
-  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_CRainf%varname(1), &
-       cpcpField,rc=status)
+  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Snowf%varname(1), &
+       snowField,rc=status)
   call LIS_verify(status,                                          &
-       'Error: Enable CRainf in the forcing variables list')
+       'Error: Enable Snowf in the forcing variables list')
 
   call ESMF_FieldGet(tairField,localDE=0,farrayPtr=tair,rc=status)
   call LIS_verify(status)
@@ -115,10 +115,10 @@ subroutine timeinterp_Loobos(n,findex)
   call ESMF_FieldGet(psurfField,localDE=0,farrayPtr=psurf,rc=status)
   call LIS_verify(status)
 
-  call ESMF_FieldGet(pcpField,localDE=0,farrayPtr=pcp,rc=status)
+  call ESMF_FieldGet(rainField,localDE=0,farrayPtr=rain,rc=status)
   call LIS_verify(status)
 
-  call ESMF_FieldGet(cpcpField,localDE=0,farrayPtr=cpcp,rc=status)
+  call ESMF_FieldGet(snowField,localDE=0,farrayPtr=snow,rc=status)
   call LIS_verify(status)
 
   !      write(LIS_logunit,*) 'Btime1: ',Loobos_struc(n)%Loobostime1
@@ -145,7 +145,8 @@ subroutine timeinterp_Loobos(n,findex)
              wt2 * Loobos_struc(n)%metdata2(6,index1)
         lwdown(t) = wt1 * Loobos_struc(n)%metdata1(7,index1) +                    &
              wt2 * Loobos_struc(n)%metdata2(7,index1)
-        pcp(t) = Loobos_struc(n)%metdata1(8,index1)
+        rain(t) = Loobos_struc(n)%metdata1(8,index1)
+        snow(t) = Loobos_struc(n)%metdata1(9,index1)
   enddo
 end subroutine timeinterp_Loobos
 

@@ -22,6 +22,7 @@ module Bondville_forcingMod
 !
 ! !REVISION HISTORY: 
 ! 05 Oct 2010: David Mocko, Updated for Bondville test case
+! 26 Oct 2018: David Mocko, Updated for Noah-MP-4.0.1 HRLDAS test case
 ! 
   implicit none
   PRIVATE
@@ -39,6 +40,7 @@ module Bondville_forcingMod
   type, public         :: Bondville_type_dec
      real                 :: ts
      character*80         :: Bondvillefile
+     integer              :: mp
      real                 :: undef
      real*8               :: starttime,Bondvilletime1,Bondvilletime2
      integer              :: findtime1,findtime2,nstns
@@ -137,20 +139,39 @@ contains
           write(LIS_logunit,*) 'Filename not found; stopping program'
           call LIS_endrun
        endif
-       open(ftn,file=trim(Bondville_struc(n)%Bondvillefile),status='old')
        Bondville_struc(n)%nstns = 1
        Bondville_struc(n)%undef = -999.0
        allocate(Bondville_struc(n)%stnid(Bondville_struc(n)%nstns))
        allocate(Bondville_struc(n)%stnlat(Bondville_struc(n)%nstns))
        allocate(Bondville_struc(n)%stnlon(Bondville_struc(n)%nstns))
-       read(ftn,100) skipline
+       open(ftn,file=trim(Bondville_struc(n)%Bondvillefile),status='old')
+
+! If MP=0, use the older "bondville.dat" forcing file.
+!    This option is to support older testcases.
+! If MP.ne.0, use the new Noah-MP-4.0.1 HRLDAS "bondville.dat" file.
+       if (Bondville_struc(n)%MP.eq.0) then
+          read(ftn,100) skipline
 ! Read in start time here
-       read(ftn,101) skipline,styr,stmo,std,sth,stm
-       read(ftn,100) skipline
-       read(ftn,100) skipline
-       read(ftn,100) skipline,Bondville_struc(n)%stnlat(1)
-       read(ftn,100) skipline,Bondville_struc(n)%stnlon(1)
-       read(ftn,102) skipline,tinc
+          read(ftn,101) skipline,styr,stmo,std,sth,stm
+          read(ftn,100) skipline
+          read(ftn,100) skipline
+          read(ftn,100) skipline,Bondville_struc(n)%stnlat(1)
+          read(ftn,100) skipline,Bondville_struc(n)%stnlon(1)
+          read(ftn,102) skipline,tinc
+       else
+          do i = 1,4
+             read(ftn,100) skipline
+          enddo
+          read(ftn,110) skipline,Bondville_struc(n)%stnlat(1)
+          read(ftn,110) skipline,Bondville_struc(n)%stnlon(1)
+          tinc = 1800
+! Read in start time here
+          do i = 1,49
+             read(ftn,101) skipline
+          enddo
+          read(ftn,111) styr,stmo,std,sth,stm
+       endif
+
        tinc = tinc / 60
        Bondville_struc(n)%stnid(1) = 'Bondville'
        write(LIS_logunit,*) 'Number of stations: ',                  &
@@ -185,11 +206,14 @@ contains
             '--------------------------------------------------------'
        close(ftn)
        
-100    format(A25,F6.2)
-101    format(A25,1X,I4,4I2)
-102    format(A25,I4)
-103    format(1X,A14,I8,A1,I2,A1,I2,A1,I2,A1,I2)
-       
+ 100   format(A25,F6.2)
+ 101   format(A25,1X,I4,4I2)
+ 102   format(A25,I4)
+ 103   format(1X,A14,I8,A1,I2,A1,I2,A1,I2,A1,I2)
+
+ 110   format(A25,1X,F6.2)
+ 111   format(I4,4I3)
+
        allocate(Bondville_struc(n)%stnwt(LIS_rc%lnc(n)*LIS_rc%lnr(n),&
             Bondville_struc(n)%nstns))
        call compute_stnwts(Bondville_struc(n)%nstns,LIS_rc%gridDesc,&

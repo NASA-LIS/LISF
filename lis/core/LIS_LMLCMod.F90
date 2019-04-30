@@ -309,6 +309,17 @@ subroutine read_landcover(n)
      ios = nf90_get_att(nid, NF90_GLOBAL, 'GLACIERCLASS', LIS_rc%glacierclass)
      call LIS_verify(ios,'Error in nf90_get_att in read_landcover')
 
+     ios = nf90_get_att(nid, NF90_GLOBAL, 'CROPCLASS', LIS_rc%cropclass)
+!<kluge -- jim testing>
+! Temporarily disable error check for cropclass.  cropclass was added
+! to support NoahMP 4.0.1.  No other lsm uses this right now, so everyone's
+! runs will fail until they rerun LDT.
+!
+! Discuss with everyone whether this should be a required attribute and
+! give everyone time to reprocess their domain and parameter files.
+!     call LIS_verify(ios,'Error in nf90_get_att in read_landcover')
+!</kluge -- jim testing>
+
      ios = nf90_get_att(nid, NF90_GLOBAL, 'NUMVEGTYPES', LIS_rc%nvegtypes)
      call LIS_verify(ios,'Error in nf90_get_att in read_landcover')
 

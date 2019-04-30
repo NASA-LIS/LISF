@@ -99,6 +99,9 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
   character*100          :: smap_filename(10),tstring(10)
   character(len=4) :: istring
   character(len=200) :: cmd
+  integer :: rc
+
+  integer, external :: create_filelist ! C function
 
   smap_filename = ""
   tstring       = ""
@@ -181,13 +184,33 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
 !             '/SMAP_L2_*'//trim(yyyymmdd)//'T'//trim(hh)&
 !             //"*.h5 > SMAP_filelist"//&
 !             ".dat"
-        list_files = 'ls '//trim(smobsdir)//&
-             '/SMAP_L2_*'//trim(yyyymmdd)//'T'//trim(hh)&
-             //"*.h5 > SMAP_filelist"//&
-             ".dat"
+        !list_files = 'ls '//trim(smobsdir)//&
+        !     '/SMAP_L2_*'//trim(yyyymmdd)//'T'//trim(hh)&
+        !     //"*.h5 > SMAP_filelist"//&
+        !     ".dat"
+        !!fproc(1)//fproc(2)//fproc(3)//fproc(4)//".dat"
+        !call system(trim(list_files))
 
-        !fproc(1)//fproc(2)//fproc(3)//fproc(4)//".dat"
-        call system(trim(list_files))
+        ! EMK...Avoid use of the 'ls' system command.
+        list_files = trim(smobsdir)//&
+             '/SMAP_L2_*'//trim(yyyymmdd)//'T'//trim(hh)&
+             //"*.h5"
+        write(LIS_logunit,*) &
+             '[INFO] Searching for ',trim(list_files)
+
+        rc = create_filelist(trim(list_files)//char(0), &
+             "SMAP_filelist.dat"//char(0))
+        if (rc .ne. 0) then
+           write(LIS_logunit,*) &
+                '[WARN] Problem encountered when searching for SMAP files'
+           write(LIS_logunit,*) &
+                'Was searching for ',trim(list_files)
+           write(LIS_logunit,*) &
+                'LIS will continue...'
+        endif
+
+        ! EMK TODO...Replace this with C code that uses the POSIX link
+        ! function.
         do i = 0, LIS_npes-1
            write(istring,'(I4.4)') i
            cmd = 'cp SMAP_filelist.dat SMAP_filelist.'//istring//".dat"
