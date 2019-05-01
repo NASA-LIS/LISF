@@ -417,6 +417,7 @@ contains
             rc = status)
 
     endif
+
     call LIS_timemgr_set(LIS_rc,yr,mo,da,hr,mn,ss,ms,0.0)
     
     LIS_rc%syr= yr
@@ -843,7 +844,7 @@ contains
 
     call ESMF_ClockSet(clock=LIS_clock,timestep=timeStep,rc=rc)
     call LIS_verify(rc,'ESMF_ClockSet failed in LIS_timeMgrMod')
-
+ 
   end subroutine LIS_update_clock
 
 
@@ -3746,5 +3747,4 @@ end subroutine LIS_registerAlarm
 
   end subroutine LIS_mon3char
 
-  
 end module LIS_timeMgrMod

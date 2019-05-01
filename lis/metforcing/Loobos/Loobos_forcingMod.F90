@@ -114,7 +114,7 @@ contains
     enddo
 
 
-    LIS_rc%met_nf(findex) = 8 !number of met variables in Loobos
+    LIS_rc%met_nf(findex) = 9 !number of met variables in Loobos
 
     ftn = LIS_getNextUnitNumber()
     do n = 1,LIS_rc%nnest
@@ -144,10 +144,10 @@ contains
        allocate(Loobos_struc(n)%stnlat(Loobos_struc(n)%nstns))
        allocate(Loobos_struc(n)%stnlon(Loobos_struc(n)%nstns))
        
-       styr = 1997
-       stmo = 1
-       std  = 1
-       sth  = 0 
+       styr = 1996
+       stmo = 12
+       std  = 31
+       sth  = 23
        stm  = 0 
        Loobos_struc(n)%stnlat(1) = 52.168
        Loobos_struc(n)%stnlon(1) = 5.744
