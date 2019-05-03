@@ -985,6 +985,10 @@ subroutine noah39_main(n)
                 noah39_struc(n)%noah(t)%Q1,                            &
                 noah39_struc(n)%noah(t)%SNOTIME1,                      &
                 RIBB,noah39_struc(n)%noah(t)%lvcoef,tsoil)
+
+! flx4 is not calculated in the glacial physics,
+! so set it to zero, as it is output on land points. - D. Mocko
+           flx4 = 0.0
         endif
 
 ! Save variables for passing to WRF or for output
