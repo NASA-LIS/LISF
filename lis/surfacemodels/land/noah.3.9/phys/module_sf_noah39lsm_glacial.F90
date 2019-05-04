@@ -189,7 +189,7 @@ CONTAINS
          &                PRCP1,RCH,RR,RSNOW,SNDENS,SNCOND,SN_NEW,     &
          &                T1V,T24,T2V,TH2V,TSNOW,Z0,PRCPF,RHO
     real, intent(in)   :: LVCOEF
-    real, intent(in)   :: TSOIL
+    REAL, INTENT(OUT)  :: TSOIL
 ! ----------------------------------------------------------------------
 ! DECLARATIONS - PARAMETERS
 ! ----------------------------------------------------------------------
@@ -364,7 +364,7 @@ CONTAINS
          &       DQSDT2,FLX2,EMISSI,T1)
 
     CALL SNOPAC (ETP,ETA,PRCP,PRCPF,SNOWNG,NSOIL,DT,DF1,        &
-         &       Q2,T1,SFCTMP,T24,TH2,FDOWN,SSOIL,STC,          &
+         &       Q2,T1,SFCTMP,T24,TH2,FDOWN,SSOIL,TSOIL,STC,    & ! TSOIL added - D. Mocko
          &       SFCPRS,RCH,RR,SNEQV,SNDENS,SNOWH,ZSOIL,TBOT,   &
          &       SNOMLT,DEW,FLX1,FLX2,FLX3,ESNOW,EMISSI,RIBB)
 
@@ -854,7 +854,7 @@ CONTAINS
 ! ----------------------------------------------------------------------
 
   SUBROUTINE SNOPAC (ETP,ETA,PRCP,PRCPF,SNOWNG,NSOIL,DT,DF1,           &
-       &             Q2,T1,SFCTMP,T24,TH2,FDOWN,SSOIL,STC,             &
+       &             Q2,T1,SFCTMP,T24,TH2,FDOWN,SSOIL,TSOIL,STC,       & ! TSOIL added - D. Mocko
        &             SFCPRS,RCH,RR,SNEQV,SNDENS,SNOWH,ZSOIL,TBOT,      &
        &             SNOMLT,DEW,FLX1,FLX2,FLX3,ESNOW,EMISSI,RIBB)
 
@@ -871,6 +871,7 @@ CONTAINS
          &                   T24,TBOT,TH2,EMISSI
     REAL, INTENT(INOUT)   :: SNEQV,FLX2,PRCPF,SNOWH,SNDENS,T1,RIBB,ETP
     REAL, INTENT(OUT)     :: DEW,ESNOW,FLX1,FLX3,SSOIL,SNOMLT
+    REAL, INTENT(OUT)     :: TSOIL 
     REAL, DIMENSION(1:NSOIL),INTENT(IN)     :: ZSOIL
     REAL, DIMENSION(1:NSOIL), INTENT(INOUT) :: STC
     REAL, DIMENSION(1:NSOIL) :: ET1
@@ -1051,6 +1052,9 @@ CONTAINS
 ! ----------------------------------------------------------------------
     ZZ1 = 1.0
     YY = STC (1) -0.5* SSOIL * ZSOIL (1)* ZZ1/ DF1
+
+    ! added by David Mocko on 5/2/2019
+    TSOIL = YY
 
 ! ----------------------------------------------------------------------
 ! SHFLX WILL CALC/UPDATE THE SOIL TEMPS.
