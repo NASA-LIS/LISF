@@ -98,8 +98,9 @@
 
    do c = 1,LIS_rc%ntiles(n)
         index1 = LIS_domain(n)%tile(c)%index
+        ! test that precip is above 0 just in case forcing undef not set to LIS undef?
         if( AWRAL_struc(n)%metdata2(1,1,index1) .ne.LIS_rc%udef.and. &
-              AWRAL_struc(n)%metdata2(1,1,index1) >= 0.0 ) then
+              AWRAL_struc(n)%metdata2(1,6,index1) >= 0.0 ) then
             tmp(c) = AWRAL_struc(n)%metdata2(1,1,index1)
             q2(c) = AWRAL_struc(n)%metdata2(1,2,index1)
             swdown(c) = AWRAL_struc(n)%metdata2(1,3,index1)
@@ -114,7 +115,7 @@
             uwind(c) = LIS_rc%udef
             pcp(c) = LIS_rc%udef
          endif
-         ! DEBUG print *,"forcing vars in timeinterp: ", tmp(c), q2(c), swdown(c), swdir(c), uwind(c), pcp(c)
+         ! DEBUG print *, "forcing vars in timeinterp: ", tmp(c), q2(c), swdown(c), swdir(c), uwind(c), pcp(c)
    enddo
 
 end subroutine timeinterp_AWRAL

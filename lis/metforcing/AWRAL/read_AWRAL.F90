@@ -88,8 +88,6 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
   real,allocatable   :: datain1(:,:) ! no idea?
 
 
-  write ( cyear, '(i4)' ) year
-
   allocate(datain(AWRAL_struc(n)%ncol,AWRAL_struc(n)%nrow))
   allocate(datain1(AWRAL_struc(n)%ncol,AWRAL_struc(n)%nrow))
   allocate(regrid(LIS_rc%lnc(n),LIS_rc%lnr(n)))
@@ -147,7 +145,7 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
                                      start=(/1,1,timestep/), &
     count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),1/))
 
-   ! probably need to use these once the land mask needs to be taken into consideration 
+   ! probably need to use these once regridding and the land mask needs to be taken into consideration 
 
    ! do r=1, AWRAL_struc(n)%nrow
    !     do c=1,AWRAL_struc(n)%ncol
@@ -179,6 +177,7 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
                  elseif(order.eq.2) then 
                     AWRAL_struc(n)%metdata2(1,v,index1) = datain(i,j)
                  endif
+                 ! DEBUG write (*,*) "v is: ", v, " and datain is: ",datain(i,j)
               endif
            endif
            

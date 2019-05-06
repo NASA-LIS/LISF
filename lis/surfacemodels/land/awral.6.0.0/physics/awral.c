@@ -88,12 +88,11 @@ __inline__ void calc_soil_flows(double *s, double *i, double *e, double *drain, 
 }
 
 /* New declaration for LIS - NOTE that LIS passes in one cell at at time- need cell number for building hypsometric curves */
-void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, double *u2t, double *radcskyt, double *e0, double *etot, double *dd, double *s0_avg, double *ss_avg, double *sd_avg, double *qtot, double *sr, double *sg, double *s0, double * ss, double * sd, double * mleaf, double *slope_coeff, double *pair, double *kr_coeff, double *k_rout, double *kssat, double *prefr, double *s0max, double *slope, double *ssmax, double *k_gw, double *kr_sd, double *kr_0s, double *k0sat, double *sdmax, double *kdsat, double *ne, double * height, double * hypsperc, double * alb_dry, double * alb_wet, double * cgsmax, double * er_frac_ref, double * fsoilemax, double * lairef, double * rd, double * s_sls, double * sla, double * tgrow, double * tsenc, double * ud0, double * us0, double * vc, double * w0lime, double * w0ref_alb, double * wdlimu, double * wslimu, double * fhru, double * hveg, double * laimax, int *timesteps) {    
+void awral_driver_600_(int *debug, double *tat, double *rgt, double *pt, double *avpt, double *u2t, double *radcskyt, double *e0, double *etot, double *dd, double *s0_avg, double *ss_avg, double *sd_avg, double *qtot, double *sr, double *sg, double *s0, double * ss, double * sd, double * mleaf, double *slope_coeff, double *pair, double *kr_coeff, double *k_rout, double *kssat, double *prefr, double *s0max, double *slope, double *ssmax, double *k_gw, double *kr_sd, double *kr_0s, double *k0sat, double *sdmax, double *kdsat, double *ne, double * height, double * hypsperc, double * alb_dry, double * alb_wet, double * cgsmax, double * er_frac_ref, double * fsoilemax, double * lairef, double * rd, double * s_sls, double * sla, double * tgrow, double * tsenc, double * ud0, double * us0, double * vc, double * w0lime, double * w0ref_alb, double * wdlimu, double * wslimu, double * fhru, double * hveg, double * laimax, int *timesteps) {    
     //File pointer for debugging:
     FILE *fp;
-    int debug = 0;
-    if (debug == 1){
-    	fp = fopen("debug_file.log","w");
+    if (*debug >= 0){
+    	fp = fopen("debug_file.log","a");
     }
     // +++ These could use the final_states arrays and avoid the extra mallocs...
     // More generally, could have user supplied arrays for all mallocs...
@@ -124,12 +123,9 @@ void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, doubl
         mleaf_[hru] = mleaf[hru];
     }
 
-    if (debug == 1){
-    	fprintf(fp, "forcing data is: rgt %f tat %f avpt %f u2t %f pt %f radcskyt %f", *rgt, *tat, *avpt, *u2t, *pt, *radcskyt);
-    }
     const double stefbolz  = 5.67e-8;
 
-    double *sgtemp_ = malloc(20*sizeof(double));
+    double *sgtemp_ = malloc(HYPS_LEN*sizeof(double));
 
     build_hypso(sgtemp_,height,*ne,NUM_CELLS);
 
@@ -146,18 +142,17 @@ void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, doubl
     double slope_coeff_const = *slope_coeff;
     double pair_const = *pair;
     double kr_coeff_const = *kr_coeff;
-    if (debug == 1){
+    if (*debug >= 0){
     	fprintf(fp, "\noverall consts are: slope_coeff %f pair %f kr_coeff %f",slope_coeff_const, pair_const, kr_coeff_const);
     }
     for (ts=0; ts<*timesteps; ts++) {
 
         // Hypso
-
         for (c=0; c<NUM_CELLS; c++) {
-            fsat_ = hyps_fsat(&sgtemp_[c*20],hypsperc,*sg,0.0);
+            fsat_ = hyps_fsat(&sgtemp_[c*HYPS_LEN],hypsperc,*sg,0.0);
             int idx = NUM_CELLS*ts + c;
 
-            //Zero fill fhru-averaged outputs
+            //Zero fill fhru-averaged outputs (NB if this was more than 1 cell - need to pass in as arrays)
             *e0 = 0.0;
             *etot = 0.0;
             *dd = 0.0;
@@ -168,13 +163,8 @@ void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, doubl
 
         // HRU loop
         for (hru=0; hru<2; hru++) {
-            //expanded these out now
-	    //HRUParameters hrup = hruparams[hru];
-            //HRUSpatial hrus = hruspatial[hru];
-
-
             for (c=0; c<NUM_CELLS; c++) {
-                fegt_ = hyps_fsat(&sgtemp_[c*20],hypsperc,*sg,eff_rd[hru]);
+                fegt_ = hyps_fsat(&sgtemp_[c*HYPS_LEN],hypsperc,*sg,eff_rd[hru]);
             }
 
             double alb_dry_hru = alb_dry[hru];
@@ -195,9 +185,6 @@ void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, doubl
             double w0ref_alb_hru = w0ref_alb[hru];
             double wdlimu_hru = wdlimu[hru];
             double wslimu_hru = wslimu[hru];
-            if (debug == 1){
-            	fprintf(fp, "\nhru consts are: alb_dry_hru %f alb_wet_hru %f cgsmax_hru %f er_frac_ref_hru %f fsoilemax_hru %f lairef_hru %f rd_hru %f s_sls_hru %f sla_hru %f tgrow_hru %f tsenc_hru %f ud0_hru %f us0_hru %f vc_hru %f w0lime_hru %f w0ref_alb_hru %f wdlimu_hru %f wslimu_hru %f", alb_dry_hru, alb_wet_hru, cgsmax_hru, er_frac_ref_hru, fsoilemax_hru, lairef_hru, rd_hru, s_sls_hru, sla_hru, tgrow_hru, tsenc_hru, ud0_hru, us0_hru, vc_hru, w0lime_hru, w0ref_alb_hru, wdlimu_hru, wslimu_hru);
-	    }
 
             #pragma ivdep
             #pragma vector always
@@ -209,8 +196,6 @@ void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, doubl
                 double ss_c = ss_[hru];
                 double sd_c = sd_[hru];
                 double mleaf_c = mleaf_[hru];
-
-                //
 
                 //Load spatial data
                 double k_rout_c = *k_rout;
@@ -226,16 +211,12 @@ void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, doubl
                 double k0sat_c = *k0sat;
                 double ssmax_c = *ssmax;
                 double ne_c = *ne;
-                if (debug == 1){
-		    fprintf(fp, "\nspatial data is: krout %f slope %f kssat %f k_gw %f sdmax %f prefr %f kr_0s %f s0max %f kdsat %f kr_sd %f k0sat %f ssmax %f ne %f", *k_rout, *slope, *kssat, *k_gw, *sdmax, *prefr, *kr_0s, *s0max, *kdsat, *kr_sd, *k0sat, *ssmax, *ne);
-		}
+
                 //Load HRU spatial data
                 double fhru_c = fhru[hru];
                 double hveg_c = hveg[hru];
                 double laimax_c = laimax[hru];
-                if (debug == 1){
-		    fprintf(fp, "\nhru gridded data is: fru %f hveg %f laimax %f",fhru_c, hveg_c, laimax_c);
-		}
+                
                 //Load forcing data
                 double rgt_idx = *rgt;
                 double tat_idx = *tat;
@@ -255,9 +236,27 @@ void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, doubl
                 double pe = avpt_idx;
                 double u2 = u2t_idx;
                 double radclearsky = radcskyt_idx;
-                if (debug == 1){
-		    fprintf(fp, "\nforcing name change is: ta %f pg %f rg %f pe %f u2 %f radclearsky %f",ta, pg, rg, pe, u2, radclearsky);
-		}
+                
+                if (*debug >= 0){
+                    fprintf(fp, "\n\nforcing data is: rg %f ta %f pe %f u2 %f pg %f radclearsky %f", rg, ta, pe, u2, pg, radclearsky);
+                }
+
+                if (*debug >= 0){
+                    fprintf(fp, "\nhru %d consts are: alb_dry_hru %f alb_wet_hru %f cgsmax_hru %f er_frac_ref_hru %f fsoilemax_hru %f lairef_hru %f rd_hru %f s_sls_hru %f sla_hru %f tgrow_hru %f tsenc_hru %f ud0_hru %f us0_hru %f vc_hru %f w0lime_hru %f w0ref_alb_hru %f wdlimu_hru %f wslimu_hru %f", hru, alb_dry_hru, alb_wet_hru, cgsmax_hru, er_frac_ref_hru, fsoilemax_hru, lairef_hru, rd_hru, s_sls_hru, sla_hru, tgrow_hru, tsenc_hru, ud0_hru, us0_hru, vc_hru, w0lime_hru, w0ref_alb_hru, wdlimu_hru, wslimu_hru);
+                }
+
+                if (*debug >= 0){
+                    fprintf(fp, "\nspatial data is: krout %f slope %f kssat %f k_gw %f sdmax %f prefr %f kr_0s %f s0max %f kdsat %f kr_sd %f k0sat %f ssmax %f ne %f", k_rout_c, slope_c, kssat_c, k_gw_c, sdmax_c, prefr_c, kr_0s_c, s0max_c, kdsat_c, kr_sd_c, k0sat_c, ssmax_c, ne_c);
+                }
+
+                if (*debug >= 0){
+                    fprintf(fp, "\nhru gridded data is: fru %f hveg %f laimax %f",fhru_c, hveg_c, laimax_c);
+                }
+
+                if (*debug >= 0){
+                    fprintf(fp, "\ninitial states for hru are: s0 %f ss %f sd %f mleaf %f", s0_c, ss_c, sd_c, mleaf_c);
+                }
+
                 double lai = sla_hru * mleaf_c;
                 double fveg = 1.0 - exp(-lai / lairef_hru);
                 double fsoil = 1.0 - fveg;
@@ -274,11 +273,7 @@ void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, doubl
 
                 double keps = 1.4e-3 * ((ta / 187.0) * (ta / 187.0) + ta / 107.0 + 1.0) * (6.36 * pair_const + pe) / pes;
 
-                double denom1 = (240.97 + ta)*(240.97 + ta);
-		if (debug == 1){
-                     fprintf(fp, "\ndebug: denom1 is %f and pes is %f",denom1, pes);
-		}
-                double delta = 4217.457 / (denom1) * pes;
+                double delta = 4217.457 / ((240.97 + ta)*(240.97 + ta)) * pes;
                 double gamma = 0.000646 * pair_const * (1.0 + 0.000946 * ta);
                 double lambda = 2.501 - (0.002361 * ta);
 
@@ -295,10 +290,8 @@ void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, doubl
                 double rln = (rlin - rlout) * 0.0864;
                 double rneff = rsn + rln;
 
-                //THIS CALCULATION IS IN HERE FOR BOTH HRUs SHOULD IT BE? I HAVE SPECIFIED THE HVEG TO BE THE SAME FOR BOTH
                 double fh = log(813.0 / hveg_c - 5.45);
-                double denom2 = fh * (fh + 2.3);
-                double ku2 = 0.305 / (denom2);
+                double ku2 = 0.305 / (fh * (fh + 2.3));
                 double ga = ku2*u2;
 
                 //  Potential evaporation
@@ -348,6 +341,10 @@ void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, doubl
                     ei = fveg * pg;
                 } else {
                     ei = fveg * pwet + fer * (pg-pwet);
+                }
+
+                if (*debug >= 0){
+                     fprintf(fp, "\nContributions to ei: pg %f pwet %f fveg %f fer %f sveg %f", pg, pwet, fveg, fer, sveg);
                 }
 
                 double pn = fmax(0.0,pg-ei);
@@ -430,9 +427,15 @@ void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, doubl
                 *s0_avg += s0_c*fhru_c;
                 *ss_avg += ss_c*fhru_c;
                 *sd_avg += sd_c*fhru_c;
-                if (debug == 1){
-		     fprintf(fp, "\nOutput vars e0 %f etot %f dd %f s0_avg %f ss_avg %f sd_avg %f", *e0, *etot, *dd, *s0_avg, *ss_avg, *sd_avg);
+                if (*debug >= 0){
+                     fprintf(fp, "\nContributions to etot vars fegt %f fsat %f es %f eg %f ei %f y %f ee %f et %f", fegt, fsat, es, eg_c, ei, y_c, ee, et);
+                }
+                if (*debug >= 0){
+		     fprintf(fp, "\nOutput vars for each hru: e0 %f etot %f dd %f s0 %f ss %f sd %f", e0_c, etot_c, dd_c, s0_c, ss_c, sd_c);
 		}
+                if (*debug >= 0 && hru == 1){
+                     fprintf(fp, "\nOutput vars averaged across each hru: e0 %f etot %f dd %f s0 %f ss %f sd %f", *e0, *etot, *dd, *s0_avg, *ss_avg, *sd_avg);
+                }
             } // end cell loop
         } // end HRU loop
 
@@ -494,12 +497,12 @@ void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, doubl
             // Set final states
             *sr  = sr_c;
             *sg = sg_c;
-            if (debug == 1){
+            if (*debug >= 0){
 		fprintf(fp, "\nOutput vars qtot %f sr %f sg %f", *qtot, *sr, *sg);
 	    }
         }
     }
-    if (debug == 1){
+    if (*debug >= 0){
     	fclose(fp);
     }	
     free(s0_);

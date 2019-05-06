@@ -165,16 +165,16 @@ contains
             LIS_rc%ngrid(n)))
    
 
-       AWRAL_struc(n)%ncol = 2
-       AWRAL_struc(n)%nrow = 2
+       AWRAL_struc(n)%ncol = 841
+       AWRAL_struc(n)%nrow = 681
 
        gridDesci(n,1) = 0.0                 ! Projection type (UPS)
        gridDesci(n,2) = AWRAL_struc(n)%ncol  ! X-dir amount of points
        gridDesci(n,3) = AWRAL_struc(n)%nrow  ! y-dir amount of points
-       gridDesci(n,4) = -33.0
-       gridDesci(n,5) = 145.00
-       gridDesci(n,6) = 145.05
-       gridDesci(n,7) = -32.95
+       gridDesci(n,4) = -44.00
+       gridDesci(n,5) = 112.00
+       gridDesci(n,6) = 154.00
+       gridDesci(n,7) = -10.00
        gridDesci(n,8) = 154.00
        gridDesci(n,9) = 0.05
        gridDesci(n,10) = 0.05

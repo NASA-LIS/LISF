@@ -77,14 +77,14 @@ SLiqFrac:     0  -       -    0 0 0 1  65 1000    # Fraction of SWE in the liqui
 SnowThresh    0  -       -    0 0 0 1  66 1000    # Snow depth threshold (m)
 
 #Forcings
-Wind_f:       0  m/s     -    1 0 0 1 177 10      # Near Surface Wind (m/s)
-Rainf_f:      1  kg/m2s  DN   1 0 0 1 162 1000    # Average rainfall rate
+Wind_f:       0  m/s     -    0 0 0 1 177 10      # Near Surface Wind (m/s)
+Rainf_f:      1  kg/m2s  DN   0 0 0 1 162 1000    # Average rainfall rate
 Snowf_f:      0  kg/m2s  DN   0 0 0 1 161 1000    # Average snowfall rate
-Tair_f:       1  K       -    1 0 0 1  11 10      # Near surface air temperature
-Qair_f:       1  kg/kg   -    1 0 0 1  51 1000    # Near surface specific humidity
-Psurf_f:      0  Pa      -    1 0 0 1   1 10      # Surface pressure
-SWdown_f:     1  W/m2    DN   1 0 0 1 204 10      # Surface incident shortwave radiation
-LWdown_f:     0  W/m2    DN   1 0 0 1 205 10      # Surface incident longwave radiation
+Tair_f:       1  K       -    0 0 0 1  11 10      # Near surface air temperature
+Qair_f:       1  kg/kg   -    0 0 0 1  51 1000    # Near surface specific humidity
+Psurf_f:      0  Pa      -    0 0 0 1   1 10      # Surface pressure
+SWdown_f:     1  W/m2    DN   0 0 0 1 204 10      # Surface incident shortwave radiation
+LWdown_f:     0  W/m2    DN   0 0 0 1 205 10      # Surface incident longwave radiation
 
 #Additional forcings
 DirectSW_f:   1  W/m2    -    0 0 0 1 256 10      # Surface direct incident shortwave radiation
@@ -94,7 +94,7 @@ EWind_f:      1  m/s     E    0 0 0 1 256 10      # Eastward wind
 FHeight_f:    0  m       -    0 0 0 1 256 10      # Height of forcing variables
 CH_f:         0  m/s     -    0 0 0 1 256 10      # Surface exchange coefficient for heat
 CM_f:         0  m/s     -    0 0 0 1 256 10      # Surface Exchange Coefficient for momentum
-Emiss_f:      0  -       -    1 0 0 1 256 10      # Surface emissivity
+Emiss_f:      0  -       -    0 0 0 1 256 10      # Surface emissivity
 MixRatio_f:   0  kg/kg   -    0 0 0 1 256 10      # Surface mixing ration
 CosZenith_f:  0  -       -    0 0 0 1 256 10      # Cosine of zenith angle
 Albedo_f:     0  -       -    0 0 0 1 256 10      # Surface albedo
@@ -120,11 +120,17 @@ Tempbot:      0  -       -    0 0 0 1 194 10      # Bottom soil temperature
 #Routing
 Streamflow:   0  m3/s    -    1 0 0 1 333 1       # Streamflow
 
-AWRA600
-e0:                       1  mm   - 0 0 0 1 0 1 # potential evaporation
-etot:                     1  mm   - 0 0 0 1 0 1 # actual evapotranspiration
-qtot:                     1  mm   - 0 0 0 1 0 1 # total discharge to stream
-dd:                       1  mm   - 0 0 0 1 0 1 # vertical drainage from the bottom of the deep soil layer
-s0_avg:                   1  mm   - 0 0 0 1 0 1 # water storage in the surface soil layer
-ss_avg:                   1  mm   - 0 0 0 1 0 1 # water content of the shallow soil store
-sd_avg:                   1  mm   - 0 0 0 1 0 1 # water content of the deep soil store
+#AWRAL600
+e0:                       1  mm    - 0 0 0 1 0 1 # potential evaporation
+etot:                     1  mm    - 0 0 0 1 0 1 # actual evapotranspiration
+qtot:                     1  mm    - 0 0 0 1 0 1 # total discharge to stream
+sr:			  1  mm    - 0 0 0 1 0 1 # volume of water in the surface water store
+sg:                       1  mm    - 0 0 0 1 0 1 # groundwater storage in the unconfined aquifer
+dd:                       1  mm    - 0 0 0 1 0 1 # vertical drainage from the bottom of the deep soil layer
+s0:                       1  mm    - 0 0 0 2 0 1 # water storage in the surface soil layer for each hru
+ss:                       1  mm    - 0 0 0 2 0 1 # water content of the shallow soil store for each hru
+sd:                       1  mm    - 0 0 0 2 0 1 # water content of the deep soil store for each hru
+mleaf:                    1  kg/m2 - 0 0 0 2 0 1 # leaf biomass for each hru
+s0_avg:                   1  mm    - 0 0 0 1 0 1 # water storage in the surface soil layer
+ss_avg:                   1  mm    - 0 0 0 1 0 1 # water content of the shallow soil store
+sd_avg:                   1  mm    - 0 0 0 1 0 1 # water content of the deep soil store

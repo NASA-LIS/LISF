@@ -58,14 +58,14 @@ subroutine get_AWRAL(n, findex)
     integer :: order
 
     real*8  :: timenext
-    real*8  :: AWRAL_file_time1       ! End boundary time for STAGEIV file
-    real*8  :: AWRAL_file_time2       ! End boundary time for STAGEIV file
+    real*8  :: AWRAL_file_timep       ! End boundary time for STAGEIV file
+    real*8  :: AWRAL_file_timec       ! End boundary time for STAGEIV file
     character(80) :: file_name       ! Filename variables for precip data sources
 
-    integer :: doy1, yr1, mo1, da1, hr1, mn1, ss1
-    integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2
+    integer :: doyp, yrp, mop, dap, hrp, mnp, ssp
+    integer :: doyc, yrc, moc, dac, hrc, mnc, ssc
     integer :: doyn, yrn, mon, dan, hrn, mnn, ssn
-    real    :: gmt1, gmt2, gmtn, ts1, ts2, tsn                    
+    real    :: gmtp, gmtc, gmtn, tsp, tsc, tsn                    
     real    :: gridDesci(LIS_rc%nnest,50)
 
     integer :: index1
@@ -78,28 +78,28 @@ subroutine get_AWRAL(n, findex)
     hrn = 0
     mnn = 0
     ssn = 0
-    tsn = 86400
+    tsn = 172800
     call LIS_tick( timenext, doyn, gmtn, yrn, mon, dan, hrn, mnn, ssn, tsn )
 
 !-- Determine LIS's current time and the time of the AWRAL file:
-    yr1 = LIS_rc%yr !get time previous day?
-    mo1 = LIS_rc%mo
-    da1 = LIS_rc%da
-    hr1 = 0
-    mn1 = 0
-    ss1 = 0
-    ts1 = -86400
-    call LIS_tick( AWRAL_file_time1, doy1, gmt1, yr1, mo1, da1, hr1, mn1, ss1, ts1 )
+    yrp = LIS_rc%yr !get time previous day?
+    mop = LIS_rc%mo
+    dap = LIS_rc%da
+    hrp = 0
+    mnp = 0
+    ssp = 0
+    tsp = 0
+    call LIS_tick( AWRAL_file_timep, doyp, gmtp, yrp, mop, dap, hrp, mnp, ssp, tsp )
 
 !-- AWRAL product time; end accumulation time data
-    yr2 = LIS_rc%yr !get current time?
-    mo2 = LIS_rc%mo
-    da2 = LIS_rc%da
-    hr2 = 0
-    mn2 = 0
-    ss2 = 0
-    ts2 = 0
-    call LIS_tick( AWRAL_file_time2, doy2, gmt2, yr2, mo2, da2, hr2, mn2, ss2, ts2 )
+    yrc = LIS_rc%yr !get current time?
+    moc = LIS_rc%mo
+    dac = LIS_rc%da
+    hrc = 0
+    mnc = 0
+    ssc = 0
+    tsc = 86400
+    call LIS_tick( AWRAL_file_timec, doyc, gmtc, yrc, moc, dac, hrc, mnc, ssc, tsc )
 
 !-- Ensure that data is found during first time step
     if ( LIS_get_nstep(LIS_rc,n) == 1 .or. LIS_rc%rstflag(n) == 1) then 
@@ -127,9 +127,10 @@ subroutine get_AWRAL(n, findex)
      ! Determine and return filename of AWRAL file 
        write(LIS_logunit,*) '[INFO] Getting new AWRAL data no time interp necessary'
      ! Open, read, and reinterpolate AWRAL field to LIS-defined grid
-       call read_AWRAL ( order, n, findex, yr1, doy1, ferror_AWRAL )
+       call read_AWRAL ( order, n, findex, yrc, doyc, ferror_AWRAL )
      ! Assign latest AWRAL file time to stored AWRAL time variable
-       AWRAL_struc(n)%AWRALtime = AWRAL_file_time1
+       write(*,*) "Time is: ", AWRAL_file_timec
+       AWRAL_struc(n)%AWRALtime = AWRAL_file_timec
        index1 = LIS_domain(n)%gindex(1,1)
     else
       write(LIS_logunit,*) "[ERR] AWRAL READER CANNOT HANDLE LIS "
