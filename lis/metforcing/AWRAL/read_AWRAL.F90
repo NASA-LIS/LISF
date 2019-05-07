@@ -144,29 +144,7 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
     status = nf90_get_var(ncid, varid, datain, &
                                      start=(/1,1,timestep/), &
     count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),1/))
-
-   ! probably need to use these once regridding and the land mask needs to be taken into consideration 
-
-   ! do r=1, AWRAL_struc(n)%nrow
-   !     do c=1,AWRAL_struc(n)%ncol
-   !        c1 = c
-   !        r1 = AWRAL_struc(n)%nrow-r+1
-   !        datain1(c1+(r1-1)*AWRAL_struc(n)%ncol) = &
-   !             datain(c+(r-1)*AWRAL_struc(n)%ncol)
-   !     enddo
-   ! enddo
-
-    !lb = .false. 
-    !do t=1,ndata
-    !    if ( datain1(t) .ne. missingvalue ) then
-    !       lb(t) = .true. 
-    !    endif
-    !enddo
-
-    ! don't need this for the time being
-    ! call interp_AWRAL( n, findex, ndata, datain, lb, LIS_rc%gridDesc(n,:), &
-    !      LIS_rc%lnc(n), LIS_rc%lnr(n), regrid )
-    
+ 
     do j = 1, LIS_rc%lnr(n)
         do i = 1, LIS_rc%lnc(n)
            if ( datain(i,j) .ne. LIS_rc%udef ) then
@@ -177,7 +155,6 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
                  elseif(order.eq.2) then 
                     AWRAL_struc(n)%metdata2(1,v,index1) = datain(i,j)
                  endif
-                 ! DEBUG write (*,*) "v is: ", v, " and datain is: ",datain(i,j)
               endif
            endif
            

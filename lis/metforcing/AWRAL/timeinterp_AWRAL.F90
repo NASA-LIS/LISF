@@ -87,7 +87,7 @@
   call ESMF_FieldGet(pcpField,localDE=0,farrayPtr=pcp,rc=status)
   call LIS_verify(status)
 
-   !    reminder what the indexing is for which vars
+   !    reminder what the indexing is for all fields
    !    1'tat',    &
    !    2'avpt',    &
    !    3'rgt',    &
@@ -98,7 +98,7 @@
 
    do c = 1,LIS_rc%ntiles(n)
         index1 = LIS_domain(n)%tile(c)%index
-        ! test that precip is above 0 just in case forcing undef not set to LIS undef?
+        ! test that precip is above or equal to 0 just in case forcing undef not set to LIS undef
         if( AWRAL_struc(n)%metdata2(1,1,index1) .ne.LIS_rc%udef.and. &
               AWRAL_struc(n)%metdata2(1,6,index1) >= 0.0 ) then
             tmp(c) = AWRAL_struc(n)%metdata2(1,1,index1)
@@ -106,7 +106,7 @@
             swdown(c) = AWRAL_struc(n)%metdata2(1,3,index1)
             swdir(c) = AWRAL_struc(n)%metdata2(1,4,index1) 
             uwind(c) = AWRAL_struc(n)%metdata2(1,5,index1)
-            pcp(c) = AWRAL_struc(n)%metdata2(1,6,index1)  ! don't need to convert into rates per second?
+            pcp(c) = AWRAL_struc(n)%metdata2(1,6,index1)
          else
             tmp(c) = LIS_rc%udef
             q2(c) = LIS_rc%udef
@@ -115,7 +115,6 @@
             uwind(c) = LIS_rc%udef
             pcp(c) = LIS_rc%udef
          endif
-         ! DEBUG print *, "forcing vars in timeinterp: ", tmp(c), q2(c), swdown(c), swdir(c), uwind(c), pcp(c)
    enddo
 
 end subroutine timeinterp_AWRAL

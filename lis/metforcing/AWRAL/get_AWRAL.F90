@@ -72,7 +72,7 @@ subroutine get_AWRAL(n, findex)
 
 !=== End Variable Definition =======================
 
-    yrn = LIS_rc%yr  !get time next day?
+    yrn = LIS_rc%yr  !get time next day
     mon = LIS_rc%mo
     dan = LIS_rc%da
     hrn = 0
@@ -82,7 +82,7 @@ subroutine get_AWRAL(n, findex)
     call LIS_tick( timenext, doyn, gmtn, yrn, mon, dan, hrn, mnn, ssn, tsn )
 
 !-- Determine LIS's current time and the time of the AWRAL file:
-    yrp = LIS_rc%yr !get time previous day?
+    yrp = LIS_rc%yr !get time previous day
     mop = LIS_rc%mo
     dap = LIS_rc%da
     hrp = 0
@@ -92,7 +92,7 @@ subroutine get_AWRAL(n, findex)
     call LIS_tick( AWRAL_file_timep, doyp, gmtp, yrp, mop, dap, hrp, mnp, ssp, tsp )
 
 !-- AWRAL product time; end accumulation time data
-    yrc = LIS_rc%yr !get current time?
+    yrc = LIS_rc%yr !get current time
     moc = LIS_rc%mo
     dac = LIS_rc%da
     hrc = 0
@@ -113,19 +113,17 @@ subroutine get_AWRAL(n, findex)
 
   ! LIS timestep < AWRAL time interval (1da)
     if( LIS_rc%ts < AWRAL_struc(n)%ts ) then
-      if ( LIS_rc%time > AWRAL_struc(n)%AWRALtime ) then
-        write(LIS_logunit,*) '[INFO] Getting new AWRAL data'
-      ! Open, read, and reinterpolate AWRAL field to LIS-defined grid
-        call read_AWRAL ( order, n, findex, yrn, doyn, ferror_AWRAL )
-      ! Assign latest AWRAL file time to stored AWRAL time variable
-        AWRAL_struc(n)%AWRALtime = timenext
-      endif
+      write(LIS_logunit,*) "[ERR] AWRAL READER CANNOT HANDLE TIME INTERPOLATION "
+      write(LIS_logunit,*) "[ERR] TIMESTEP < 86400 secs -- AT THIS TIME.  STOPPING ..."
+      call LIS_endrun
+    endif
+
 
   ! LIS timestep == AWRAL time interval (1da)
-    elseif( LIS_rc%ts == AWRAL_struc(n)%ts ) then
+    if( LIS_rc%ts == AWRAL_struc(n)%ts ) then
 
      ! Determine and return filename of AWRAL file 
-       write(LIS_logunit,*) '[INFO] Getting new AWRAL data no time interp necessary'
+       write(LIS_logunit,*) '[INFO] Getting new AWRAL data, no time interpolation necessary'
      ! Open, read, and reinterpolate AWRAL field to LIS-defined grid
        call read_AWRAL ( order, n, findex, yrc, doyc, ferror_AWRAL )
      ! Assign latest AWRAL file time to stored AWRAL time variable

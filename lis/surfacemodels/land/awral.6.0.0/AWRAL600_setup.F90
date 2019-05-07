@@ -337,11 +337,6 @@ subroutine AWRAL600_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
         ios = nf90_close(nid)
         call LIS_verify(ios, 'Error in nf90_close in AWRAL600_read_MULTILEVEL_param')
 
-        ! convert parameter from global domain to local domain - don't need this as we're not doing any remapping but might need it in future
-        !do k=1, nlevel
-        !   call LIS_convertParamDataToLocalDomain(n, level_data(:, :, k), level_data1(:, :, k)) 
-        !enddo
-
         ! grab parameter at specific level
         placeholder(:, :) = & 
              level_data(LIS_ews_halo_ind(n, LIS_localPet+1):LIS_ewe_halo_ind(n, LIS_localPet+1), &

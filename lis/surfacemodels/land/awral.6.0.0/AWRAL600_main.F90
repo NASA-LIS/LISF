@@ -51,10 +51,6 @@ subroutine AWRAL600_main(n)
 
 ! define variables for AWRAL600
     integer, parameter            :: dp = selected_real_kind(15, 307) ! to store tmp vars as doubles - convert back
-    integer                       :: debug                  ! if -1 then no debug
-    real                          :: sublon, sublat, tol
-    real                          :: tmp_debuglat           ! debug cell lat
-    real                          :: tmp_debuglon           ! debug cell lon
     integer                       :: tmp_n                  ! nest id [-]
     real                          :: tmp_latitude           ! latitude in decimal degree [rad]
     real                          :: tmp_longitude           ! longitude in decimal year [rad]
@@ -225,7 +221,7 @@ subroutine AWRAL600_main(n)
                 call LIS_endrun()
             endif
             ! 
-            debug      = -1
+            
             tmp_latitude  = lat
             tmp_longitude = lon
             tmp_year   = LIS_rc%yr
@@ -316,8 +312,6 @@ subroutine AWRAL600_main(n)
             tmp_laimax(:)                           = AWRAL600_struc(n)%awral600(t)%laimax(:)                          
 	    tmp_laimax(:)                           = ANINT(1000000.0*tmp_laimax(:))/1000000.0
             tmp_timesteps                           = AWRAL600_struc(n)%timesteps
-            tmp_debuglat                            = -38.30
-            tmp_debuglon                            = 142.35                        
  
             ! get state variables
             tmp_sr       = ANINT(1000000.0*AWRAL600_struc(n)%awral600(t)%sr)/1000000.0   
@@ -327,26 +321,8 @@ subroutine AWRAL600_main(n)
             tmp_sd(:)    = ANINT(1000000.0*AWRAL600_struc(n)%awral600(t)%sd(:))/1000000.0   
             tmp_mleaf(:) = ANINT(1000000.0*AWRAL600_struc(n)%awral600(t)%mleaf(:))/1000000.0
 
-            ! DEBUG
-            tol = 0.001
-            sublat = ABS(tmp_debuglat - tmp_latitude)
-            sublon = ABS(tmp_debuglon - tmp_longitude)
-            if (sublon < tol .and. sublat < tol) then
-              debug = t
-              print *, "Before calling driver: cell, lat, lon, fhru, hveg, laimax, sr, sg, s0, ss, sd, mleaf, and tgrow are: ",t, lat, lon, tmp_fhru, tmp_hveg, tmp_laimax, tmp_sr, tmp_sg, tmp_s0, tmp_ss, tmp_sd, tmp_mleaf, tmp_tgrow
-            else
-              debug = -1
-            end if
-            ! Print out forcing vars before they go in:
-            ! DEBUG
-            if (sublon < tol .and. sublat < tol) then
-              print *, "Forcing vars before going into c Tair, Swdown, Rainf, Qair, Wind, Swdirect: ",tmp_Tair, tmp_Swdown, tmp_Rainf, tmp_Qair, tmp_Wind_E, tmp_Swdirect
-            endif
-
-
             ! call model physics 
-            call awral_driver_600(debug             , & ! in    - debug variable
-                                  tmp_Tair              , & ! in    - average air temperature [K]
+            call awral_driver_600(tmp_Tair              , & ! in    - average air temperature [K]
                                   tmp_Swdown            , & ! in    - downward shortwave radiation [W/m2]
                                   tmp_Rainf             , & ! in    - daily gross precipitation [kg/m2s]
                                   tmp_Qair              , & ! in    - actual vapour pressure [kg/kg]
@@ -416,11 +392,6 @@ subroutine AWRAL600_main(n)
             AWRAL600_struc(n)%awral600(t)%ss(:)    = SNGL(tmp_ss(:))   
             AWRAL600_struc(n)%awral600(t)%sd(:)    = SNGL(tmp_sd(:))   
             AWRAL600_struc(n)%awral600(t)%mleaf(:) = SNGL(tmp_mleaf(:))
-   
-            ! DEBUG
-            if (sublon < tol .and. sublat < tol) then 
-               print *, "AFTER calling driver outputvars: sr, sg, e0, etot, dd, s0_avg, ss_avg, sd_avg, qtot are: ", tmp_sr, tmp_sg, tmp_e0, tmp_etot, tmp_dd, tmp_s0_avg, tmp_ss_avg, tmp_sd_avg, tmp_qtot
-            endif 
 
             ! save output variables from local variables to global variables
             AWRAL600_struc(n)%awral600(t)%e0        = SNGL(tmp_e0)       

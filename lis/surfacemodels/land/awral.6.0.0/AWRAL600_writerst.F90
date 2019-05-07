@@ -24,9 +24,7 @@ subroutine AWRAL600_writerst(n)
                                LIS_create_restart_filename
     use AWRAL600_lsmMod
 
-#if (defined USE_NETCDF3 .OR. defined USE_NETCDF4)
     use netcdf
-#endif
 
     implicit none
     ! !ARGUMENTS:
@@ -68,14 +66,10 @@ subroutine AWRAL600_writerst(n)
                 ftn = LIS_getNextUnitNumber()
                 open(ftn,file=filen,status="unknown", form="unformatted")
             elseif(wformat .eq. "netcdf") then
-#if (defined USE_NETCDF4)
                 status = nf90_create(path=filen, cmode=nf90_hdf5, ncid = ftn)
                 call LIS_verify(status,"Error in nf90_open in AWRAL600_writerst")
-#endif
-#if (defined USE_NETCDF3)
                 status = nf90_create(Path = filen, cmode = nf90_clobber, ncid = ftn)
                 call LIS_verify(status, "Error in nf90_open in AWRAL600_writerst")
-#endif
              endif
         endif
     
@@ -85,10 +79,8 @@ subroutine AWRAL600_writerst(n)
             if(wformat .eq. "binary") then
                 call LIS_releaseUnitNumber(ftn)
             elseif(wformat .eq. "netcdf") then
-#if (defined USE_NETCDF3 .OR. defined USE_NETCDF4)
                 status = nf90_close(ftn)
                 call LIS_verify(status, "Error in nf90_close in AWRAL600_writerst")
-#endif
             endif
             write(LIS_logunit, *) "AWRAL600 archive restart written: ", filen
         endif
