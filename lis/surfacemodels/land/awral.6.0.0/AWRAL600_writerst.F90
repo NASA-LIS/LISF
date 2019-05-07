@@ -54,7 +54,7 @@ subroutine AWRAL600_writerst(n)
     ! set restart alarm
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "AWRAL600 restart alarm")
     
-    ! set restart file format (read from LIS configration file_
+    ! set restart file format (read from LIS configration file)
     wformat = trim(AWRAL600_struc(n)%rformat)
     
     if(alarmCheck .or. (LIS_rc%endtime ==1)) then

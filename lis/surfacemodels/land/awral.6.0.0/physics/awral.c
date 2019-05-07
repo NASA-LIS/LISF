@@ -88,12 +88,7 @@ __inline__ void calc_soil_flows(double *s, double *i, double *e, double *drain, 
 }
 
 /* New declaration for LIS - NOTE that LIS passes in one cell at at time- need cell number for building hypsometric curves */
-void awral_driver_600_(int *debug, double *tat, double *rgt, double *pt, double *avpt, double *u2t, double *radcskyt, double *e0, double *etot, double *dd, double *s0_avg, double *ss_avg, double *sd_avg, double *qtot, double *sr, double *sg, double *s0, double * ss, double * sd, double * mleaf, double *slope_coeff, double *pair, double *kr_coeff, double *k_rout, double *kssat, double *prefr, double *s0max, double *slope, double *ssmax, double *k_gw, double *kr_sd, double *kr_0s, double *k0sat, double *sdmax, double *kdsat, double *ne, double * height, double * hypsperc, double * alb_dry, double * alb_wet, double * cgsmax, double * er_frac_ref, double * fsoilemax, double * lairef, double * rd, double * s_sls, double * sla, double * tgrow, double * tsenc, double * ud0, double * us0, double * vc, double * w0lime, double * w0ref_alb, double * wdlimu, double * wslimu, double * fhru, double * hveg, double * laimax, int *timesteps) {    
-    //File pointer for debugging:
-    FILE *fp;
-    if (*debug >= 0){
-    	fp = fopen("debug_file.log","a");
-    }
+void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, double *u2t, double *radcskyt, double *e0, double *etot, double *dd, double *s0_avg, double *ss_avg, double *sd_avg, double *qtot, double *sr, double *sg, double *s0, double * ss, double * sd, double * mleaf, double *slope_coeff, double *pair, double *kr_coeff, double *k_rout, double *kssat, double *prefr, double *s0max, double *slope, double *ssmax, double *k_gw, double *kr_sd, double *kr_0s, double *k0sat, double *sdmax, double *kdsat, double *ne, double * height, double * hypsperc, double * alb_dry, double * alb_wet, double * cgsmax, double * er_frac_ref, double * fsoilemax, double * lairef, double * rd, double * s_sls, double * sla, double * tgrow, double * tsenc, double * ud0, double * us0, double * vc, double * w0lime, double * w0ref_alb, double * wdlimu, double * wslimu, double * fhru, double * hveg, double * laimax, int *timesteps) {    
     // +++ These could use the final_states arrays and avoid the extra mallocs...
     // More generally, could have user supplied arrays for all mallocs...
     // Declare States
@@ -142,9 +137,7 @@ void awral_driver_600_(int *debug, double *tat, double *rgt, double *pt, double 
     double slope_coeff_const = *slope_coeff;
     double pair_const = *pair;
     double kr_coeff_const = *kr_coeff;
-    if (*debug >= 0){
-    	fprintf(fp, "\noverall consts are: slope_coeff %f pair %f kr_coeff %f",slope_coeff_const, pair_const, kr_coeff_const);
-    }
+    
     for (ts=0; ts<*timesteps; ts++) {
 
         // Hypso
@@ -237,26 +230,6 @@ void awral_driver_600_(int *debug, double *tat, double *rgt, double *pt, double 
                 double u2 = u2t_idx;
                 double radclearsky = radcskyt_idx;
                 
-                if (*debug >= 0){
-                    fprintf(fp, "\n\nforcing data is: rg %f ta %f pe %f u2 %f pg %f radclearsky %f", rg, ta, pe, u2, pg, radclearsky);
-                }
-
-                if (*debug >= 0){
-                    fprintf(fp, "\nhru %d consts are: alb_dry_hru %f alb_wet_hru %f cgsmax_hru %f er_frac_ref_hru %f fsoilemax_hru %f lairef_hru %f rd_hru %f s_sls_hru %f sla_hru %f tgrow_hru %f tsenc_hru %f ud0_hru %f us0_hru %f vc_hru %f w0lime_hru %f w0ref_alb_hru %f wdlimu_hru %f wslimu_hru %f", hru, alb_dry_hru, alb_wet_hru, cgsmax_hru, er_frac_ref_hru, fsoilemax_hru, lairef_hru, rd_hru, s_sls_hru, sla_hru, tgrow_hru, tsenc_hru, ud0_hru, us0_hru, vc_hru, w0lime_hru, w0ref_alb_hru, wdlimu_hru, wslimu_hru);
-                }
-
-                if (*debug >= 0){
-                    fprintf(fp, "\nspatial data is: krout %f slope %f kssat %f k_gw %f sdmax %f prefr %f kr_0s %f s0max %f kdsat %f kr_sd %f k0sat %f ssmax %f ne %f", k_rout_c, slope_c, kssat_c, k_gw_c, sdmax_c, prefr_c, kr_0s_c, s0max_c, kdsat_c, kr_sd_c, k0sat_c, ssmax_c, ne_c);
-                }
-
-                if (*debug >= 0){
-                    fprintf(fp, "\nhru gridded data is: fru %f hveg %f laimax %f",fhru_c, hveg_c, laimax_c);
-                }
-
-                if (*debug >= 0){
-                    fprintf(fp, "\ninitial states for hru are: s0 %f ss %f sd %f mleaf %f", s0_c, ss_c, sd_c, mleaf_c);
-                }
-
                 double lai = sla_hru * mleaf_c;
                 double fveg = 1.0 - exp(-lai / lairef_hru);
                 double fsoil = 1.0 - fveg;
@@ -343,10 +316,6 @@ void awral_driver_600_(int *debug, double *tat, double *rgt, double *pt, double 
                     ei = fveg * pwet + fer * (pg-pwet);
                 }
 
-                if (*debug >= 0){
-                     fprintf(fp, "\nContributions to ei: pg %f pwet %f fveg %f fer %f sveg %f", pg, pwet, fveg, fer, sveg);
-                }
-
                 double pn = fmax(0.0,pg-ei);
                 double rhof = (1.0 - fsat)*(pn - (prefr_c*tanh(pn/prefr_c)));
                 double rsof = fsat * pn;
@@ -427,15 +396,6 @@ void awral_driver_600_(int *debug, double *tat, double *rgt, double *pt, double 
                 *s0_avg += s0_c*fhru_c;
                 *ss_avg += ss_c*fhru_c;
                 *sd_avg += sd_c*fhru_c;
-                if (*debug >= 0){
-                     fprintf(fp, "\nContributions to etot vars fegt %f fsat %f es %f eg %f ei %f y %f ee %f et %f", fegt, fsat, es, eg_c, ei, y_c, ee, et);
-                }
-                if (*debug >= 0){
-		     fprintf(fp, "\nOutput vars for each hru: e0 %f etot %f dd %f s0 %f ss %f sd %f", e0_c, etot_c, dd_c, s0_c, ss_c, sd_c);
-		}
-                if (*debug >= 0 && hru == 1){
-                     fprintf(fp, "\nOutput vars averaged across each hru: e0 %f etot %f dd %f s0 %f ss %f sd %f", *e0, *etot, *dd, *s0_avg, *ss_avg, *sd_avg);
-                }
             } // end cell loop
         } // end HRU loop
 
@@ -497,14 +457,9 @@ void awral_driver_600_(int *debug, double *tat, double *rgt, double *pt, double 
             // Set final states
             *sr  = sr_c;
             *sg = sg_c;
-            if (*debug >= 0){
-		fprintf(fp, "\nOutput vars qtot %f sr %f sg %f", *qtot, *sr, *sg);
-	    }
         }
     }
-    if (*debug >= 0){
-    	fclose(fp);
-    }	
+
     free(s0_);
     free(ss_);
     free(sd_);
