@@ -445,8 +445,6 @@ contains
       integer :: r
       integer :: rc
 
-      write(LIS_logunit,*)'EMK shape(snoanl) = ',shape(snoanl)
-
       allocate(gi(LDTSI_obs(n)%nc_ldt*LDTSI_obs(n)%nr_ldt))
       gi(:) = 0
       allocate(li(LDTSI_obs(n)%nc_ldt*LDTSI_obs(n)%nr_ldt))
