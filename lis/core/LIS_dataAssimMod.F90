@@ -1262,8 +1262,8 @@ contains
      call LIS_verify(nf90_inquire_dimension(nid, gId, len=ngrid_file), &
           'Error nf90_inquire_dimension:ngrid')
 
-     allocate(mu_file(ngrid_file,ntimes, nlevs_file))
-     allocate(sigma_file(ngrid_file,ntimes, nlevs_file))
+     allocate(mu_file(ngrid_file, 1, nlevs_file))
+     allocate(sigma_file(ngrid_file, 1, nlevs_file))
 
      call LIS_verify(nf90_inq_varid(nid,trim(varname)//'_mu',muid),&
           'nf90_inq_varid failed for for '//trim(varname)//'_mu')
