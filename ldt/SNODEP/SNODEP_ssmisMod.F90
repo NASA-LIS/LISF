@@ -475,7 +475,7 @@ contains
          
          !Get SurfaceFlag (0:Land, 1:Reserved, 2:Near coast, 3:Ice, 4:Possilbe ice, 5:Ocean, 6:Coast,
          !                  7-14: Reserved, 15: Missing value)
-         if ((flag .eq. .true.) .and. (surflag(i)==0 .or. surflag(i)==2)) then
+         if ((flag .eqv. .true.) .and. (surflag(i)==0 .or. surflag(i)==2)) then
             if (option==1) then
                snowdepth(i)=4445.0-17.95*tb37v(i) 
             else if (option==2) then
@@ -969,7 +969,7 @@ contains
       character*2                    :: st_hr_str, cnt
       
       ! EMK
-      character*12,                  :: program_name          ! NAME OF CALLING PROGRAM
+      character*12                   :: program_name          ! NAME OF CALLING PROGRAM
       character*12                   :: routine_name          ! NAME OF THIS ROUTINE
       
       ! define data values
