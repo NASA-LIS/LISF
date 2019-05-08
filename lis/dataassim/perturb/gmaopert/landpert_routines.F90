@@ -1515,12 +1515,13 @@ contains
 ! \label{get_init_Pert_rseed}
 ! 
 ! !INTERFACE: 
-  subroutine get_init_Pert_rseed( N_ens, N_domain, ens_id, domain_id, &
+  subroutine get_init_Pert_rseed( N_ens, N_domain, gnc, gnr, &
+       ens_id, domain_id, &
        init_Pert_rseed )
 
     implicit none
 ! !ARGUMENTS:     
-    integer, intent(in) :: N_ens, N_domain
+    integer, intent(in) :: N_ens, N_domain, gnc, gnr
     integer, dimension(N_ens),    intent(in) :: ens_id
     integer, intent(in) :: domain_id
     integer, dimension(N_ens,N_domain), intent(out) :: init_Pert_rseed
@@ -1565,9 +1566,16 @@ contains
     
     do m=1,N_domain
        do n=1,N_ens
-          
-          init_Pert_rseed(n,m) = RSEED_CONST0 +                    &
-               domain_id*RSEED_CONST1 + ens_id(n)*RSEED_CONST2
+
+          ! EMK Replaced equation for picking unique negative number for
+          ! each ensemble member of each global grid location.
+          init_Pert_rseed(n,m) = (domain_id) + &
+               ( ens_id(n)*gnc*gnr   ) + &
+               ( (m-1)*gnc*gnr*N_ens )
+          init_Pert_rseed(n,m) = -1 * init_Pert_rseed(n,m)
+
+!          init_Pert_rseed(n,m) = RSEED_CONST0 +                    &
+!               domain_id*RSEED_CONST1 + ens_id(n)*RSEED_CONST2
 
 !          init_Pert_rseed(n,m) = RSEED_CONST0 +                    &
 !               RSEED_CONST1 + ens_id(n)*RSEED_CONST2
