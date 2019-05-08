@@ -255,8 +255,8 @@ contains
          LDTSI_obs%nr_lis = 0
          LDTSI_obs%mi = 0
          
-         ! FIXME:  Is this right?
-         call LIS_registerAlarm("LDTSI read alarm", 3600.0, 3600.0)
+
+         call LIS_registerAlarm("LDTSI read alarm", 21600.0, 21600.0)
          
          call ESMF_StateAdd(OBS_State(n), (/obsField(n)/), rc=status)
          call LIS_verify(status)

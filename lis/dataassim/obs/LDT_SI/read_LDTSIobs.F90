@@ -77,6 +77,11 @@ subroutine read_LDTSIobs(n, k, OBS_State, OBS_Pert_State)
       call LDTSI_filename(filename, obsdir, yyyy, mm, dd, hh)
 
       inquire(file=trim(filename), exist=file_exists)
+
+      if (.not. file_exists) then
+         write(LIS_logunit,*)'[WARN] Cannot find file ',trim(filename)
+      end if
+
    end if
 
    ! Jump out if we have no file to process
