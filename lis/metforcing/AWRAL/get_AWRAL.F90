@@ -127,7 +127,6 @@ subroutine get_AWRAL(n, findex)
      ! Open, read, and reinterpolate AWRAL field to LIS-defined grid
        call read_AWRAL ( order, n, findex, yrc, doyc, ferror_AWRAL )
      ! Assign latest AWRAL file time to stored AWRAL time variable
-       write(*,*) "Time is: ", AWRAL_file_timec
        AWRAL_struc(n)%AWRALtime = AWRAL_file_timec
        index1 = LIS_domain(n)%gindex(1,1)
     else
