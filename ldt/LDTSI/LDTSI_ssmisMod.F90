@@ -2,12 +2,13 @@
 ! NASA GSFC Land Data Toolkit (LDT) V1.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: SNODEP_ssmisMod
+! MODULE: LDTSI_ssmisMod
 !
 ! REVISION HISTORY:
 !  30 Dec 2018: Yeosang Yoon; Initial Implementation
 !  03 Apr 2019: Yeosang Yoon; Update codes to fit LDT format
 !  16 Apr 2019: Eric Kemp; Put code into module
+!  09 May 2019: Eric Kemp; Renamed LDTSI
 !
 ! DESCRIPTION:
 ! Source code for the retrieval of snow depth and sea ice concentration from 
@@ -17,23 +18,23 @@
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
 
-module SNODEP_ssmisMod
+module LDTSI_ssmisMod
 
    ! Defaults
    implicit none
    private
    
    ! Public routines
-   public :: SNODEP_proc_ssmis
+   public :: LDTSI_proc_ssmis
 
 contains
 
    ! Public routine for processing SSMIS data
-   subroutine SNODEP_proc_ssmis(date10, ssmis_in, ssmis, option)
+   subroutine LDTSI_proc_ssmis(date10, ssmis_in, ssmis, option)
 
       ! Imports
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
-      use SNODEP_utilMod
+      use LDTSI_utilMod
       
       ! Defaults
       implicit none
@@ -162,7 +163,7 @@ contains
       close(10)
       close(20)
   
-      ! write netCDF file for SNODEP
+      ! write netCDF file for LDTSI
       nc_filename = trim(ssmis)//'ssmis_snoice_0p25deg.'//date10//'.nc'
       write (LDT_logunit,*) &
            '[INFO] Writing SSMIS data to ', trim(nc_filename)
@@ -194,7 +195,7 @@ contains
       if(allocated(tb91v)) deallocate(tb91v)
       if(allocated(tb91h)) deallocate(tb91h)
       
-   end subroutine SNODEP_proc_ssmis
+   end subroutine LDTSI_proc_ssmis
 
    ! *** Remaining routines are private ***
 
@@ -386,7 +387,7 @@ contains
       ! option == 3; Foster et al., 1997 
 
       ! Imports
-      use LDT_snodepMod, only: snodep_settings
+      use LDT_ldtsiMod, only: ldtsi_settings
       
       ! Defaults
       implicit none
@@ -430,7 +431,7 @@ contains
             lat_grid(i)=-89.875+0.25*(i-1)
          end do
          
-         ff_filename=trim(snodep_settings%ff_file)
+         ff_filename=trim(ldtsi_settings%ff_file)
          ! read forest fraction    
          call read_forestfraction(ff_filename,ff)
       end if
@@ -951,7 +952,7 @@ contains
    subroutine search_files(date10, ssmis_in)
 
       ! Imports
-      use SNODEP_utilMod, only: date10_julhr, julhr_date10
+      use LDTSI_utilMod, only: date10_julhr, julhr_date10
 
       ! Defaults
       implicit none
@@ -1026,4 +1027,4 @@ contains
       
    end subroutine search_files
    
-end module SNODEP_ssmisMod
+end module LDTSI_ssmisMod
