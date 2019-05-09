@@ -396,7 +396,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Bogus value for climo if not defined at land point
-      cfg_entry = "LDTSI bogus climatology snow depth value (m):",
+      cfg_entry = "LDTSI bogus climatology snow depth value (m):"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, &
