@@ -169,7 +169,7 @@ contains
           h1=elevtn;v1=rivstomax
           h2=dph(1);v2=fldstomax(1)
         else
-          stop'[HYMAP2_get_volume_profile] Please check Reservoir elevation'
+          stop '[HYMAP2_get_volume_profile] Please check Reservoir elevation'
         endif
         vol=v1+(v2-v1)*(elv-h1)/(h2-h1)
       endif   
@@ -210,7 +210,7 @@ contains
           h1=elevtn;v1=rivstomax
           h2=dph(1);v2=fldstomax(1)
         else
-          stop'[HYMAP2_get_elevation_profile] Please check Reservoir elevation'
+          stop '[HYMAP2_get_elevation_profile] Please check Reservoir elevation'
         endif
         elv=h1+(h2-h1)*(vol-v1)/(v2-v1)
       endif   
