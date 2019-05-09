@@ -2,10 +2,11 @@
 ! NASA GSFC Land Data Toolkit (LDT) V1.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: SNODEP_gofsMod
+! MODULE: LDTSI_gofsMod
 ! 
 ! REVISION HISTORY:
 ! 01 Apr 2019  Eric Kemp  First version.
+! 09 May 2019  Eric Kemp  Rename to LDTSI
 !
 ! DESCRIPTION:
 ! Source code for reading US Navy GOFS data.
@@ -14,7 +15,7 @@
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
 
-module SNODEP_gofsMod
+module LDTSI_gofsMod
 
    ! Defaults
    implicit none
@@ -702,4 +703,4 @@ contains
 
 #endif
 
-end module SNODEP_gofsMod
+end module LDTSI_gofsMod
