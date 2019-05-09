@@ -2,7 +2,7 @@
 ! NASA GSFC Land Data Toolkit (LDT) V1.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: SNODEP_netcdfMod
+! MODULE: LDTSI_netcdfMod
 ! 
 ! REVISION HISTORY:
 ! 01 Mar 2019  Eric Kemp  First version.
@@ -15,35 +15,35 @@
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
 
-module SNODEP_netcdfMod
+module LDTSI_netcdfMod
 
    ! Defaults
    implicit none
    private
 
    ! Public routines
-   public :: SNODEP_write_netcdf
-   public :: SNODEP_read_netcdf
-   public :: SNODEP_read_netcdf_12z
+   public :: LDTSI_write_netcdf
+   public :: LDTSI_read_netcdf
+   public :: LDTSI_read_netcdf_12z
 
 contains
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
-   ! Subroutine for writing SNODEP analysis to netCDF
-   subroutine SNODEP_write_netcdf(date10)
+   ! Subroutine for writing LDTSI analysis to netCDF
+   subroutine LDTSI_write_netcdf(date10)
 
       ! Imports
       use LDT_coreMod, only: LDT_rc, LDT_masterproc
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
-      use LDT_snodepMod, only: snodep_settings
+      use LDT_ldtsiMod, only: ldtsi_settings
 #if ( defined SPMD )
       use mpi
 #endif
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
       use netcdf
 #endif
-      use SNODEP_arraysMod, only: SNODEP_arrays
-      use SNODEP_paramsMod
+      use LDTSI_arraysMod, only: LDTSI_arrays
+      use LDTSI_paramsMod
 
       ! Arguments
       character*10, intent(in) :: date10
@@ -81,7 +81,7 @@ contains
          nr = LDT_rc%lnr(1)
 
          ! FIXME:  Set this in ldt.config
-         outfilename = "snodep_"//date10//".nc"
+         outfilename = "ldtsi_"//date10//".nc"
 
          write(LDT_logunit,*)'[INFO] Creating NETCDF file ',trim(outfilename)
 
@@ -148,7 +148,7 @@ contains
             
          case default
             write(LDT_logunit,*) &
-                 '[ERR] Only latlon map projection supported for SNODEP'
+                 '[ERR] Only latlon map projection supported for LDTSI'
             call LDT_endrun()
          end select
          
@@ -200,10 +200,10 @@ contains
          call LDT_verify(nf90_def_var(ncid,'time',nf90_double,&
               dimids=dim_ids(3), varid=time_varid), &
               '[ERR] nf90_def_var failed')
-         cyyyy = snodep_settings%date10(1:4)
-         cmm = snodep_settings%date10(5:6)
-         cdd = snodep_settings%date10(7:8)
-         chh = snodep_settings%date10(9:10)
+         cyyyy = ldtsi_settings%date10(1:4)
+         cmm = ldtsi_settings%date10(5:6)
+         cdd = ldtsi_settings%date10(7:8)
+         chh = ldtsi_settings%date10(9:10)
          write(time_units,'(A)') &
               "seconds since "//trim(cyyyy)//"-"//trim(cmm)//"-"//trim(cdd)//&
               " "//trim(chh)//":00:00"
@@ -335,7 +335,7 @@ contains
               "CF-1.7"), &
               '[ERR] nf90_put_att failed')         
          call LDT_verify(nf90_put_att(ncid,nf90_global,"title", &
-              "LDT SNODEP analysis"), &
+              "LDT LDTSI analysis"), &
               '[ERR] nf90_put_att failed')
          call LDT_verify(nf90_put_att(ncid,nf90_global,"institution", &
               "NASA GSFC Hydrological Sciences Laboratory"), &
@@ -386,13 +386,13 @@ contains
          call LDT_verify(nf90_put_var(ncid,time_varid,0.0), &
               '[ERR] nf90_put_var failed for time')
          
-         ! Write the SNODEP fields
+         ! Write the LDTSI fields
          call LDT_verify(nf90_put_var(ncid,snoanl_varid,&
-              SNODEP_arrays%snoanl(:,:), &
+              LDTSI_arrays%snoanl(:,:), &
               (/1,1/),(/nc,nr/)), &
               '[ERR] nf90_put_var failed for snoanl')
          call LDT_verify(nf90_put_var(ncid,snoage_varid,&
-              SNODEP_arrays%snoage(:,:), &
+              LDTSI_arrays%snoage(:,:), &
               (/1,1/),(/nc,nr/)), &
               '[ERR] nf90_put_var failed')
 
@@ -402,10 +402,10 @@ contains
          allocate(icecon_tmp(nc,nr))
          do j = 1,nr
             do i = 1,nc
-               if (SNODEP_arrays%icecon(i,j) < 0) then
+               if (LDTSI_arrays%icecon(i,j) < 0) then
                   icecon_tmp(i,j) = -1
                else
-                  icecon_tmp(i,j) = 0.01*(SNODEP_arrays%icecon(i,j))
+                  icecon_tmp(i,j) = 0.01*(LDTSI_arrays%icecon(i,j))
                endif
             end do
          end do
@@ -414,13 +414,13 @@ contains
               '[ERR] nf90_put_var failed for icecon')
          deallocate(icecon_tmp)
 
-         ! The rest of the SNODEP fields.
+         ! The rest of the LDTSI fields.
          call LDT_verify(nf90_put_var(ncid,icemask_varid, &
-              SNODEP_arrays%icemask(:,:), &
+              LDTSI_arrays%icemask(:,:), &
               (/1,1/),(/nc,nr/)), &
               '[ERR] nf90_put_var failed for icemask')
          call LDT_verify(nf90_put_var(ncid,iceage_varid, &
-              SNODEP_arrays%iceage(:,:), &
+              LDTSI_arrays%iceage(:,:), &
               (/1,1/),(/nc,nr/)), &
               '[ERR] nf90_put_var failed for iceage')
                   
@@ -435,26 +435,26 @@ contains
 #endif
 
       write(LDT_logunit,*) &
-           '[INFO] Finished writing LDT SNODEP parameters to netcdf file'
+           '[INFO] Finished writing LDT LDTSI parameters to netcdf file'
 
-   end subroutine SNODEP_write_netcdf
+   end subroutine LDTSI_write_netcdf
       
 #else
    ! Dummy version
-   subroutine SNODEP_write_netcdf(date10)
+   subroutine LDTSI_write_netcdf(date10)
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       implicit none
       character*10, intent(in) :: date10
       write(LDT_logunit,*)'[ERR] LDT not compiled with NETCDF support!'
-      write(LDT_logunit,*)'Cannot write out SNODEP data'
+      write(LDT_logunit,*)'Cannot write out LDTSI data'
       write(LDT_logunit,*)'Recompile with NETCDF support and try again!'
       call LDT_endrun()
-   end subroutine SNODEP_write_netcdf
+   end subroutine LDTSI_write_netcdf
 #endif
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
-   ! Subroutine for reading SNODEP analysis to netCDF
-   subroutine SNODEP_read_netcdf(date10,ierr)
+   ! Subroutine for reading LDTSI analysis to netCDF
+   subroutine LDTSI_read_netcdf(date10,ierr)
 
       ! Imports
       use LDT_coreMod, only: LDT_rc
@@ -462,7 +462,7 @@ contains
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
       use netcdf
 #endif
-      use SNODEP_arraysMod, only: SNODEP_arrays
+      use LDTSI_arraysMod, only: LDTSI_arrays
 
       ! Defaults
       implicit none
@@ -487,7 +487,7 @@ contains
       nr = LDT_rc%lnr(1)
 
       ! See if file exists
-      infilename = "snodep_"//date10//".nc"
+      infilename = "ldtsi_"//date10//".nc"
       inquire(file=trim(infilename), exist=file_exists)
       if (.not. file_exists) return
 
@@ -532,7 +532,7 @@ contains
            nlat .ne. nr .or. &
            nlon .ne. nc) then
          write(LDT_logunit, *) &
-              '[ERR] Dimension mismatch between LDT and SNODEP input'
+              '[ERR] Dimension mismatch between LDT and LDTSI input'
          write(LDT_logunit,*) &
               '[ERR] Expected time = 1, lat = ',nr,' lon = ',nc
          write(LDT_logunit,*) &
@@ -540,7 +540,7 @@ contains
          call LDT_endrun()
       end if
 
-      ! Fetch the SNODEP analysis variable IDs
+      ! Fetch the LDTSI analysis variable IDs
       call LDT_verify(nf90_inq_varid(ncid=ncid, &
            name='snoanl', &
            varid=snoanl_varid), &
@@ -562,22 +562,22 @@ contains
            varid=iceage_varid), &
            '[ERR] Error in nf90_inq_varid for iceage')
 
-      ! Read the SNODEP variables
+      ! Read the LDTSI variables
       allocate(tmp(nc,nr,1)) ! Need 3D array
       call LDT_verify(nf90_get_var(ncid=ncid, &
            varid=snoanl_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for snoanl')
-      SNODEP_arrays%olddep(:,:) = tmp(:,:,1)
+      LDTSI_arrays%olddep(:,:) = tmp(:,:,1)
 
       call LDT_verify(nf90_get_var(ncid=ncid, &
            varid=snoage_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for snoage')
-      !SNODEP_arrays%snoage(:,:) = tmp(:,:,1)
+      !LDTSI_arrays%snoage(:,:) = tmp(:,:,1)
       do r = 1, nr
          do c = 1, nc
-            SNODEP_arrays%snoage(c,r) = nint(tmp(c,r,1))
+            LDTSI_arrays%snoage(c,r) = nint(tmp(c,r,1))
          end do ! c
       end do ! r
 
@@ -589,9 +589,9 @@ contains
       do r = 1, nr
          do c = 1, nc
             if (tmp(c,r,1) < 0) then
-               SNODEP_arrays%oldcon(c,r) = -1
+               LDTSI_arrays%oldcon(c,r) = -1
             else
-               SNODEP_arrays%oldcon(c,r) = nint(100*tmp(c,r,1))
+               LDTSI_arrays%oldcon(c,r) = nint(100*tmp(c,r,1))
             end if
          end do
       end do
@@ -600,10 +600,10 @@ contains
            varid=icemask_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for icemask')
-      !SNODEP_arrays%oldmask(:,:) = tmp(:,:,1)
+      !LDTSI_arrays%oldmask(:,:) = tmp(:,:,1)
       do r = 1, nr
          do c = 1, nc
-            SNODEP_arrays%oldmask(c,r) = nint(tmp(c,r,1))
+            LDTSI_arrays%oldmask(c,r) = nint(tmp(c,r,1))
          end do ! c
       end do ! r
  
@@ -611,10 +611,10 @@ contains
            varid=iceage_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for iceage')
-      !SNODEP_arrays%iceage(:,:) = tmp(:,:,1)
+      !LDTSI_arrays%iceage(:,:) = tmp(:,:,1)
       do r = 1, nr
          do c = 1, nc
-            SNODEP_arrays%iceage(c,r) = nint(tmp(c,r,1))
+            LDTSI_arrays%iceage(c,r) = nint(tmp(c,r,1))
          end do ! c
       end do ! r
 
@@ -626,28 +626,28 @@ contains
 
       ! Normal exit
       ierr = 0
-   end subroutine SNODEP_read_netcdf
+   end subroutine LDTSI_read_netcdf
 
 #else
    ! Dummy version
-   subroutine SNODEP_read_netcdf(date10, ierr)
+   subroutine LDTSI_read_netcdf(date10, ierr)
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       implicit none
       character*10, intent(in) :: date10
       integer, intent(out) :: ierr
       ierr = 1
       write(LDT_logunit,*)'[ERR] LDT not compiled with NETCDF support!'
-      write(LDT_logunit,*)'Cannot read out SNODEP data'
+      write(LDT_logunit,*)'Cannot read out LDTSI data'
       write(LDT_logunit,*)'Recompile with NETCDF support and try again!'
       call LDT_endrun()
-   end subroutine SNODEP_read_netcdf
+   end subroutine LDTSI_read_netcdf
 
 #endif
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
-   ! Subroutine for reading 12Z SNODEP analysis to netCDF
+   ! Subroutine for reading 12Z LDTSI analysis to netCDF
    ! Only snoage and iceage are read.
-   subroutine SNODEP_read_netcdf_12z(date10,ierr)
+   subroutine LDTSI_read_netcdf_12z(date10,ierr)
 
       ! Imports
       use LDT_coreMod, only: LDT_rc
@@ -655,7 +655,7 @@ contains
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
       use netcdf
 #endif
-      use SNODEP_arraysMod, only: SNODEP_arrays
+      use LDTSI_arraysMod, only: LDTSI_arrays
 
       ! Defaults
       implicit none
@@ -679,7 +679,7 @@ contains
       nr = LDT_rc%lnr(1)
 
       ! See if file exists
-      infilename = "snodep_"//date10//".nc"
+      infilename = "ldtsi_"//date10//".nc"
       inquire(file=trim(infilename), exist=file_exists)
       if (.not. file_exists) return
 
@@ -725,7 +725,7 @@ contains
            nlat .ne. nr .or. &
            nlon .ne. nc) then
          write(LDT_logunit, *) &
-              '[ERR] Dimension mismatch between LDT and SNODEP input'
+              '[ERR] Dimension mismatch between LDT and LDTSI input'
          write(LDT_logunit,*) &
               '[ERR] Expected time = 1, lat = ',nr,' lon = ',nc
          write(LDT_logunit,*) &
@@ -733,7 +733,7 @@ contains
          call LDT_endrun()
       end if
 
-      ! Fetch the SNODEP analysis variable IDs
+      ! Fetch the LDTSI analysis variable IDs
       call LDT_verify(nf90_inq_varid(ncid=ncid, &
            name='snoage', &
            varid=snoage_varid), &
@@ -743,16 +743,16 @@ contains
            varid=iceage_varid), &
            '[ERR] Error in nf90_inq_varid for iceage')
 
-      ! Read the SNODEP variables
+      ! Read the LDTSI variables
       allocate(tmp(nc,nr,1)) ! Need 3D array
       call LDT_verify(nf90_get_var(ncid=ncid, &
            varid=snoage_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for snoage')
-      !SNODEP_arrays%snoage12z(:,:) = tmp(:,:,1)
+      !LDTSI_arrays%snoage12z(:,:) = tmp(:,:,1)
       do r = 1, nr
          do c = 1, nc
-            SNODEP_arrays%snoage12z(c,r) = nint(tmp(c,r,1))            
+            LDTSI_arrays%snoage12z(c,r) = nint(tmp(c,r,1))            
          end do ! c
       end do ! r
 
@@ -760,10 +760,10 @@ contains
            varid=iceage_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for iceage')
-      !SNODEP_arrays%iceage12z(:,:) = tmp(:,:,1)
+      !LDTSI_arrays%iceage12z(:,:) = tmp(:,:,1)
       do r = 1, nr
          do c = 1, nc
-            SNODEP_arrays%iceage12z(c,r) = nint(tmp(c,r,1))
+            LDTSI_arrays%iceage12z(c,r) = nint(tmp(c,r,1))
          end do ! c
       end do ! r
 
@@ -775,22 +775,22 @@ contains
 
       ! Normal exit
       ierr = 0
-   end subroutine SNODEP_read_netcdf_12z
+   end subroutine LDTSI_read_netcdf_12z
 
 #else
    ! Dummy version
-   subroutine SNODEP_read_netcdf_12z(date10,ierr)
+   subroutine LDTSI_read_netcdf_12z(date10,ierr)
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       implicit none
       character*10, intent(in) :: date10
       integer, intent(out) :: ierr
       ierr = 1
       write(LDT_logunit,*)'[ERR] LDT not compiled with NETCDF support!'
-      write(LDT_logunit,*)'Cannot read out SNODEP data'
+      write(LDT_logunit,*)'Cannot read out LDTSI data'
       write(LDT_logunit,*)'Recompile with NETCDF support and try again!'
       call LDT_endrun()
-   end subroutine SNODEP_read_netcdf_12z
+   end subroutine LDTSI_read_netcdf_12z
 
 #endif
 
-end module SNODEP_netcdfMod
+end module LDTSI_netcdfMod
