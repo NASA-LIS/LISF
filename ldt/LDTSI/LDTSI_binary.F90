@@ -1,12 +1,12 @@
-! Temporary subroutine for writing SNODEP fields in binary
+! Temporary subroutine for writing LDTSI fields in binary
 
 #include "LDT_misc.h"
 
-subroutine snodep_binary()
+subroutine LDTSI_binary()
    
    ! Imports
    use LDT_logMod, only: LDT_logunit
-   use SNODEP_arraysMod, only: SNODEP_arrays
+   use LDTSI_arraysMod, only: LDTSI_arrays
 
    ! Defaults
    implicit none
@@ -19,19 +19,19 @@ subroutine snodep_binary()
    integer :: istat
 
    ! Open file
-   file_path = "snodep.bin"
-   write(LDT_logunit,*)"Writing snodep.bin"
+   file_path = "ldtsi.bin"
+   write(LDT_logunit,*)"Writing ldtsi.bin"
    open(unit=lunit,file=file_path, form='unformatted', action='write', &
         iostat=istat, status='unknown')
    
-   ! Write SNODEP fields
-   write(lunit) SNODEP_arrays%snoanl
-   write(lunit) SNODEP_arrays%snoage
-   write(lunit) SNODEP_arrays%icecon
-   write(lunit) SNODEP_arrays%icemask
-   write(lunit) SNODEP_arrays%iceage
+   ! Write LDTSI fields
+   write(lunit) LDTSI_arrays%snoanl
+   write(lunit) LDTSI_arrays%snoage
+   write(lunit) LDTSI_arrays%icecon
+   write(lunit) LDTSI_arrays%icemask
+   write(lunit) LDTSI_arrays%iceage
    
    ! Close file
    close(lunit)
 
-end subroutine snodep_binary
+end subroutine LDTSI_binary
