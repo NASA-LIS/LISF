@@ -2,10 +2,11 @@
 ! NASA GSFC Land Data Toolkit (LDT) V1.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: SNODEP_lisMod
+! MODULE: LDTSI_lisMod
 ! 
 ! REVISION HISTORY:
 ! 01 Mar 2019  Eric Kemp  First version.
+! 09 May 2019  Eric Kemp  Renamed to LDTSI.
 !
 ! DESCRIPTION:
 ! Source code for reading LIS 2-meter temperatures.
@@ -13,7 +14,7 @@
 
 #include "LDT_misc.h"
 
-module SNODEP_lisMod
+module LDTSI_lisMod
 
    ! Defaults
    implicit none
@@ -32,7 +33,7 @@ contains
       use grib_api
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_verify, LDT_endrun
-      use SNODEP_paramsMod
+      use LDTSI_paramsMod
 
       ! Defaults
       implicit none
@@ -390,22 +391,22 @@ contains
 
    ! Builds path to LIS GRIB2 file
    subroutine construct_lis_grib2_filename(date10, filename)
-      use LDT_snodepMod, only: snodep_settings
+      use LDT_ldtsiMod, only: ldtsi_settings
       implicit none
       character*10, intent(in) :: date10
       character*255, intent(out) :: filename
-      filename = trim(snodep_settings%lis_grib2_dir) &
+      filename = trim(ldtsi_settings%lis_grib2_dir) &
            // "/PS." &
            // "557WW_SC." &
-           // trim(snodep_settings%security_class) // "_DI." &
-           // trim(snodep_settings%data_category) // "_GP." &
+           // trim(ldtsi_settings%security_class) // "_DI." &
+           // trim(ldtsi_settings%data_category) // "_GP." &
            // "LIS_GR." &
-           // trim(snodep_settings%data_res) // "_AR." &
-           // trim(snodep_settings%area_of_data) // "_PA." &
+           // trim(ldtsi_settings%data_res) // "_AR." &
+           // trim(ldtsi_settings%area_of_data) // "_PA." &
            // "LIS_DD." &
            // date10(1:8) // "_DT." &
            // date10(9:10) // "00_DF." &
            // "GR2"                     
    end subroutine construct_lis_grib2_filename
 
-end module SNODEP_lisMod
+end module LDTSI_lisMod
