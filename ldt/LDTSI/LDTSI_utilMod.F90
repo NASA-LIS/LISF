@@ -2,18 +2,19 @@
 ! NASA Goddard Space Flight Center Land Information System (LIS) v7.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: SNODEP_utilMod
+! MODULE: LDTSI_utilMod
 ! 
 ! REVISION HISTORY:
 ! 08 Feb 2019  Eric Kemp  First ported to LDT.
+! 09 May 2019  Eric Kemp  Renamed LDTSI.
 !
 ! DESCRIPTION:
 ! Source code for util library for Air Force snow depth analysis.
 !-------------------------------------------------------------------------
 
 #include "LDT_misc.h"
-
-module SNODEP_utilMod
+   
+module LDTSI_utilMod
 
    !Defaults
    implicit none
@@ -192,6 +193,7 @@ contains
       !     10 Aug 1999  Ported to IBM SP2.......................Mr Gayno/DNXM
       !     24 Feb 2010  Converted to FTN 90 for SNODEP...Mr Lewiston/16WS/WXE
       !     22 Mar 2019  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+      !     09 May 2019  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !
       !-----------------------------------------------------------------------
       !-----------------------------------------------------------------------
@@ -359,6 +361,7 @@ contains
       !**  21 JUL 04 CONVERTED TO FORTRAN 90 FOR 16TH MESH......MR EYLANDER/DNXM
       !**  10 MAY 11 UPDATED FOR SNODEP UPGRADE.............MR LEWISTON/16WS/WXE
       !**  22 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+      !**  09 Ma  19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**
       !*************************************************************************
       !*************************************************************************
@@ -488,6 +491,7 @@ contains
       !                  arguments...............................Mr Gayno/DNXM
       !     24 Feb 2010  Converted to FTN 90 for SNODEP...Mr Lewiston/16WS/WXE
       !     22 Mar 2019  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+      !     09 May 2019  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !
       !-----------------------------------------------------------------------
       !-----------------------------------------------------------------------
@@ -720,6 +724,7 @@ contains
       !**  04 Aug 99 Initial AGRMET version..............................Mr Gayno/DNXM
       !**  24 Feb 10 Converted to FORTRAN 90 for SNODEP...........Mr Lewiston/16WS/WXE
       !**  22 Mar 19 Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+      !**  09 May 19 Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -827,6 +832,7 @@ contains
       !**  08 Jun 04 Made the file_name length dynamic.......................AER, Inc.
       !**  24 Feb 10 Converted to FORTRAN 90 for SNODEP...........Mr Lewiston/16WS/WXE
       !**  22 Mar 19 Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+      !**  09 May 19 Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -953,6 +959,7 @@ contains
       !               assignment statement.  Ported to IBM SP2...Mr Gayno/DNXM
       !     15 Sep 09 Incorporated into SNODEP............Mr Lewiston/2WXG/WEA
       !     22 Mar 19 Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+      !     09 May 19 Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !  
       !-----------------------------------------------------------------------
       !-----------------------------------------------------------------------
@@ -1051,4 +1058,4 @@ contains
       return      
    end subroutine tmjul4
 
-end module SNODEP_utilMod
+end module LDTSI_utilMod
