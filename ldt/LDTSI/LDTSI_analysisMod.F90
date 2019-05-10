@@ -2058,6 +2058,7 @@ contains
 
       ! Find the date/time group of the previous cycle
       found = .false.
+      found_12z = .false. 
       limit = 20
       tries = 1
       
