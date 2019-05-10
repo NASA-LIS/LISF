@@ -158,7 +158,7 @@ contains
       
       ! *** for SSMIS now depth retrieval, Yeosang Yoon
       ! get SSMIS raw datasets
-      cfg_entry = "SSMIS raw data directory:"
+      cfg_entry = "LDTSI SSMIS raw data directory:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%ssmis_raw_dir, &
@@ -175,7 +175,7 @@ contains
 
       ! get forest fraction for algorithm 3
       if (ldtsi_settings%ssmis_option==3) then         
-         cfg_entry = "SSMIS forest fraction file:"         
+         cfg_entry = "LDTSI SSMIS forest fraction file:"         
          call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
          call LDT_verify(rc, trim(cfg_entry)//" not specified")
          call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%ff_file, &
