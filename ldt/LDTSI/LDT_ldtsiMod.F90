@@ -344,7 +344,7 @@ contains
 
       ! ** New Bratseth settings **
       ! Get obs_err_var
-      cfg_entry = "LDTSI observation error variance (m^-2):"
+      cfg_entry = "LDTSI observation error variance (m^2):"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%ob_err_var,&
@@ -352,7 +352,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")      
 
       ! Get back_err_var
-      cfg_entry = "LDTSI background error variance (m^-2):"
+      cfg_entry = "LDTSI background error variance (m^2):"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%back_err_var,&
