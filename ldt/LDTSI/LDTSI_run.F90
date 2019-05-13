@@ -5,8 +5,8 @@
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
 
-! Main SNODEP driver in LDT
-subroutine SNODEP_run()
+! Main LDTSI driver
+subroutine LDTSI_run()
    
    !*****************************************************************************************
    !*****************************************************************************************
@@ -15,8 +15,8 @@ subroutine SNODEP_run()
    !**
    !**  PURPOSE:  DRIVER ROUTINE FOR THE SNOW DEPTH ANALYSIS MODEL.
    !**
-   !**   See SNODEP_arraysMod.F90 for common array descriptions
-   !**   See SNODEP_paramsMod.F90 for common parameter descriptions
+   !**   See LDTSI_arraysMod.F90 for common array descriptions
+   !**   See LDTSI_paramsMod.F90 for common parameter descriptions
    !**
    !**  UPDATES
    !**  =======
@@ -54,6 +54,7 @@ subroutine SNODEP_run()
    !**  15 FEB 17  ADDED VIIRS DATA........................................MR PUSKAR/16WS/WXE
    !**  28 DEC 17  ADDED FILTER FOR MISSING ELEVATIONS...................MR LEWISTON/16WS/WXE
    !**  25 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+   !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
    !**
    !*****************************************************************************************
    !*****************************************************************************************
@@ -63,19 +64,19 @@ subroutine SNODEP_run()
    use LDT_coreMod, only: LDT_masterproc, LDT_rc
    use LDT_logMod, only: LDT_logunit, LDT_endrun
    use LDT_pluginIndices
-   use LDT_snodepMod, only: snodep_settings 
+   use LDT_ldtsiMod, only: ldtsi_settings 
    use map_utils 
 #if ( defined SPMD )
    use mpi
 #endif
-   use SNODEP_analysisMod 
-   use SNODEP_arraysMod, only: SNODEP_arrays
-   use SNODEP_gofsMod
-   use SNODEP_lisMod, only:  read_gr2_t2
-   use SNODEP_netcdfMod 
-   use SNODEP_paramsMod
-   use SNODEP_ssmisMod, only: SNODEP_proc_ssmis
-   use SNODEP_utilMod 
+   use LDTSI_analysisMod 
+   use LDTSI_arraysMod, only: LDTSI_arrays
+   use LDTSI_gofsMod
+   use LDTSI_lisMod, only:  read_gr2_t2
+   use LDTSI_netcdfMod 
+   use LDTSI_paramsMod
+   use LDTSI_ssmisMod, only: LDTSI_proc_ssmis
+   use LDTSI_utilMod 
 
    ! Defaults
    implicit none
@@ -133,20 +134,20 @@ subroutine SNODEP_run()
    character*100              ::  ssmis_raw_dir       ! SSMIS RAW FILE DIRECTORY PATH   
    integer                    ::  ssmis_option        ! option for snow depth retrieval algorithm
 
-   maxsobs = snodep_settings%maxsobs
+   maxsobs = ldtsi_settings%maxsobs
 
    ! Only the master process handles the file output
    if (LDT_masterproc) then
-      routine_name = "SNODEP"
+      routine_name = "LDTSI"
       message = ' '
       hemi    = 3
 
-      write (LDT_logunit,*) '[INFO] RUNNING SNODEP MODEL'
+      write (LDT_logunit,*) '[INFO] RUNNING LDTSI MODEL'
 
       ! Check the LDT map projection.  
       ! FIXME:  Support other projections in addition to LATLON
       if (trim(LDT_rc%lis_map_proj) .ne. LDT_latlonId) then
-         write(LDT_logunit,*)'[ERR] LDT SNODEP only supports lat/lon grid'
+         write(LDT_logunit,*)'[ERR] LDTSI only supports lat/lon grid'
          call LDT_endrun()
       end if
 
@@ -154,25 +155,25 @@ subroutine SNODEP_run()
       call read_params(nc,nr,landmask,elevations, landice)
 
       ! Copy ldt.config files to local variables
-      date10 = trim(snodep_settings%date10)
-      fracdir = trim(snodep_settings%fracdir)
-      modif = trim(snodep_settings%modif)
-      sfcobs = trim(snodep_settings%sfcobs)
-      ssmis = trim(snodep_settings%ssmis)
-      stmpdir = trim(snodep_settings%stmpdir)
-      static = trim(snodep_settings%static)
-      unmod = trim(snodep_settings%unmod)
-      viirsdir = trim(snodep_settings%viirsdir)
+      date10 = trim(ldtsi_settings%date10)
+      fracdir = trim(ldtsi_settings%fracdir)
+      modif = trim(ldtsi_settings%modif)
+      sfcobs = trim(ldtsi_settings%sfcobs)
+      ssmis = trim(ldtsi_settings%ssmis)
+      stmpdir = trim(ldtsi_settings%stmpdir)
+      static = trim(ldtsi_settings%static)
+      unmod = trim(ldtsi_settings%unmod)
+      viirsdir = trim(ldtsi_settings%viirsdir)
       
       ! for SSMIS snow depth, Yeosang Yoon
-      ssmis_raw_dir = trim(snodep_settings%ssmis_raw_dir)
+      ssmis_raw_dir = trim(ldtsi_settings%ssmis_raw_dir)
 
       ! FIXME Specify blacklist filename in ldt.config
       ! EMK Read blacklist file.
-      inquire(file='SNODEP_blacklist.cfg',exist=found_blacklist_file)
+      inquire(file='LDTSI_blacklist.cfg',exist=found_blacklist_file)
       num_blacklist_stns = 0
       if (found_blacklist_file) then
-         open(2, file='SNODEP_blacklist.cfg')
+         open(2, file='LDTSI_blacklist.cfg')
          ! First, count the number of lines in the file
          icount = 0
          do
@@ -198,29 +199,29 @@ subroutine SNODEP_run()
       read (date10(5:6), '(i2)', err=4200) month
 
       ! ALLOCATE GRIDDED DATA ARRAYS.
-      allocate (SNODEP_arrays%climo            (nc,     nr))
-      allocate (SNODEP_arrays%elevat           (nc,     nr))
-      allocate (SNODEP_arrays%iceage           (nc,     nr))
-      allocate (SNODEP_arrays%iceage12z        (nc,     nr))
-      allocate (SNODEP_arrays%icecon           (nc,     nr))
-      allocate (SNODEP_arrays%icemask          (nc,     nr))
-      allocate (SNODEP_arrays%oldcon           (nc,     nr))
-      allocate (SNODEP_arrays%olddep           (nc,     nr))
-      allocate (SNODEP_arrays%oldmask          (nc,     nr))
-      allocate (SNODEP_arrays%ptlat            (nc,     nr))
-      allocate (SNODEP_arrays%ptlon            (nc,     nr))
+      allocate (LDTSI_arrays%climo            (nc,     nr))
+      allocate (LDTSI_arrays%elevat           (nc,     nr))
+      allocate (LDTSI_arrays%iceage           (nc,     nr))
+      allocate (LDTSI_arrays%iceage12z        (nc,     nr))
+      allocate (LDTSI_arrays%icecon           (nc,     nr))
+      allocate (LDTSI_arrays%icemask          (nc,     nr))
+      allocate (LDTSI_arrays%oldcon           (nc,     nr))
+      allocate (LDTSI_arrays%olddep           (nc,     nr))
+      allocate (LDTSI_arrays%oldmask          (nc,     nr))
+      allocate (LDTSI_arrays%ptlat            (nc,     nr))
+      allocate (LDTSI_arrays%ptlon            (nc,     nr))
       ! This is the LIS data interpolated to the LDT grid
       allocate (sfctmp_lis       (nc,     nr))
-      allocate (SNODEP_arrays%snoage           (nc,     nr))
-      allocate (SNODEP_arrays%snoage12z        (nc,     nr))
-      allocate (SNODEP_arrays%snoanl           (nc,     nr))
-      allocate (SNODEP_arrays%snofrac          (nc,     nr))
-      allocate (SNODEP_arrays%snow_poss        (nc,     nr))
-      allocate (SNODEP_arrays%ssmis_depth      (nc,     nr))
-      allocate (SNODEP_arrays%ssmis_icecon     (nc,     nr))
-      allocate (SNODEP_arrays%sst              (nc,     nr))
-      allocate (SNODEP_arrays%viirsmap         (nc,     nr))
-      allocate (SNODEP_arrays%gofs_icecon(nc,nr))
+      allocate (LDTSI_arrays%snoage           (nc,     nr))
+      allocate (LDTSI_arrays%snoage12z        (nc,     nr))
+      allocate (LDTSI_arrays%snoanl           (nc,     nr))
+      allocate (LDTSI_arrays%snofrac          (nc,     nr))
+      allocate (LDTSI_arrays%snow_poss        (nc,     nr))
+      allocate (LDTSI_arrays%ssmis_depth      (nc,     nr))
+      allocate (LDTSI_arrays%ssmis_icecon     (nc,     nr))
+      allocate (LDTSI_arrays%sst              (nc,     nr))
+      allocate (LDTSI_arrays%viirsmap         (nc,     nr))
+      allocate (LDTSI_arrays%gofs_icecon(nc,nr))
 
       ! RETRIEVE STATIC DATA SETS.
       write (LDT_logunit,*) '[INFO] CALLING GETGEO TO GET STATIC FIELDS'
@@ -232,31 +233,31 @@ subroutine SNODEP_run()
       ! value.
       arctlatr = float(arctlat) / 100.0
       allocate(climo_tmp(nc,nr))
-      climo_tmp(:,:) = SNODEP_arrays%climo(:,:)
+      climo_tmp(:,:) = LDTSI_arrays%climo(:,:)
       do r = 1, nr
          do c = 1, nc
-            if (SNODEP_arrays%ptlat(c,r) > -40.0 .and. &
-                 SNODEP_arrays%ptlat(c,r) < 40.0) cycle
+            if (LDTSI_arrays%ptlat(c,r) > -40.0 .and. &
+                 LDTSI_arrays%ptlat(c,r) < 40.0) cycle
             ! See if climo exists for glacier point.  If not, use a fill-in.
             !if (landmask(c,r) > 0.5 .and. &
-            !     SNODEP_arrays%climo(c,r) .le. 0) then
+            !     LDTSI_arrays%climo(c,r) .le. 0) then
             if (landmask(c,r) > 0.5 .and. &
-                 SNODEP_arrays%climo(c,r) .le. 0) then
+                 LDTSI_arrays%climo(c,r) .le. 0) then
                if (landice(c,r) > 0.5) then
-                  climo_tmp(c,r) = snodep_settings%fill_climo
+                  climo_tmp(c,r) = ldtsi_settings%fill_climo
                else
-                  !climo_tmp(c,r) = snodep_settings%unkdep
+                  !climo_tmp(c,r) = ldtsi_settings%unkdep
                   climo_tmp(c,r) = 0 
                end if
             end if
          end do ! c
       end do ! r
 
-      SNODEP_arrays%climo(:,:) = climo_tmp(:,:)
+      LDTSI_arrays%climo(:,:) = climo_tmp(:,:)
       deallocate(climo_tmp)
 
       ! RETRIEVE THE PREVIOUS SNOW ANALYSIS.
-      ! First, try reading LDT SNODEP in netCDF format.  If that doesn't work,
+      ! First, try reading LDTSI in netCDF format.  If that doesn't work,
       ! fall back on the legacy SNODEP at 0.25 deg resolution.
       write (LDT_logunit,*) &
            '[INFO] CALLING GETSNO_NC TO GET PREVIOUS SNOW AND ICE DATA'
@@ -282,9 +283,9 @@ subroutine SNODEP_run()
       cycle_loop : do while (julhr .lt. julhr_end)
 
          ! EMK Create bratseth object
-         call bratseth%new(maxsobs, snodep_settings%back_err_var, &
-              snodep_settings%back_err_h_corr_len, &
-              snodep_settings%back_err_v_corr_len)
+         call bratseth%new(maxsobs, ldtsi_settings%back_err_var, &
+              ldtsi_settings%back_err_h_corr_len, &
+              ldtsi_settings%back_err_v_corr_len)
 
          julhr = julhr + 6
          call julhr_date10 (julhr, date10, program_name, routine_name)
@@ -320,8 +321,8 @@ subroutine SNODEP_run()
          fh = 0 ! Dummy value
          write (LDT_logunit,*) &
               '[INFO] CALLING PROCESS_GOFS_SST TO GET SEA SURFACE TEMPERATURES'
-         call process_gofs_sst(snodep_settings%gofs_sst_dir, &
-              nc, nr, landmask, SNODEP_arrays%sst, &
+         call process_gofs_sst(ldtsi_settings%gofs_sst_dir, &
+              nc, nr, landmask, LDTSI_arrays%sst, &
               yyyy, mm, dd, hh, fh, ierr)
          if (ierr .ne. 0) then
             ! Fall back on legacy GETSST for 0.25 deg data.
@@ -331,7 +332,7 @@ subroutine SNODEP_run()
          end if
 
          ! RETRIEVE FRACTIONAL SNOW DATA.         
-         if (snodep_settings%usefrac) then               
+         if (ldtsi_settings%usefrac) then               
             write (LDT_logunit,*) &
                  '[INFO] CALLING GETFRAC TO GET FRACTIONAL SNOW DATA'
             call getfrac (date10, fracdir)               
@@ -364,7 +365,7 @@ subroutine SNODEP_run()
             relev = real(staelv(j))
             call bratseth%append_ob(network10,platform10,rob,rlat,rlon,&
                  relev, &
-                 snodep_settings%ob_err_var,back=-1.)
+                 ldtsi_settings%ob_err_var,back=-1.)
          end do
 
          ! Clean up
@@ -383,8 +384,8 @@ subroutine SNODEP_run()
          read (date10(7: 8), '(i2)', err=4200) dd
          read (date10(9:10), '(i2)', err=4200) hh
          fh = 0 ! Dummy value
-         call process_gofs_cice(snodep_settings%gofs_cice_dir, &
-              nc, nr, landmask, SNODEP_arrays%gofs_icecon, &
+         call process_gofs_cice(ldtsi_settings%gofs_cice_dir, &
+              nc, nr, landmask, LDTSI_arrays%gofs_icecon, &
               yyyy, mm, dd, hh, fh, ierr)
          if (ierr == 0) then
             found_gofs_cice = .true.
@@ -394,9 +395,9 @@ subroutine SNODEP_run()
         
          ! Estimates SSMIS-based snow depth, Yeosang Yoon
          write (LDT_logunit,*) &
-              '[INFO] CALLING SNODEP_PROC_SSMIS'
-         call SNODEP_proc_ssmis(date10, ssmis_raw_dir, ssmis, &
-              snodep_settings%ssmis_option) 
+              '[INFO] CALLING LDTSI_PROC_SSMIS'
+         call LDTSI_proc_ssmis(date10, ssmis_raw_dir, ssmis, &
+              ldtsi_settings%ssmis_option) 
          
          ! RETRIEVE SSMIS DATA.         
          write (LDT_logunit,*) &
@@ -404,16 +405,16 @@ subroutine SNODEP_run()
          call getsmi (date10, ssmis)
 
          ! RETRIEVE VIIRS DATA.
-         if (snodep_settings%useviirs) then
+         if (ldtsi_settings%useviirs) then
             write (LDT_logunit,*) &
                  '[INFO] CALLING GETVIIRS TO GET VIIRS SNOW MAP'
             call getviirs(date10, viirsdir)
          end if
 
          ! PERFORM THE SNOW ANALYSIS.
-         SNODEP_arrays%snoanl(:,:) = -1
-         SNODEP_arrays%icecon(:,:) = -1
-         SNODEP_arrays%icemask(:,:) = -1
+         LDTSI_arrays%snoanl(:,:) = -1
+         LDTSI_arrays%icecon(:,:) = -1
+         LDTSI_arrays%icemask(:,:) = -1
          write(LDT_logunit,*) &
               '[INFO] CALLING RUN_SNOW_ANALYSIS_NOGLACIER'
          call run_snow_analysis_noglacier(runcycle,nc,nr,landmask, landice,  &
@@ -442,10 +443,10 @@ subroutine SNODEP_run()
          ! TO REQUIRE MANUAL MODIFICATIONS.  ANY BAD OB SHOULD SHOW HERE.
          write(LDT_logunit,6800) bratseth%count_all_obs()
          call bratseth%sort_obs_by_id()
-         call bratseth%print_snowdepths(snodep_settings%minprt)
+         call bratseth%print_snowdepths(ldtsi_settings%minprt)
 
          ! EMK Write out in netcdf format
-         call snodep_write_netcdf(date10)
+         call LDTSI_write_netcdf(date10)
 
          ! Clean up bratseth object
          call bratseth%delete()
@@ -454,28 +455,28 @@ subroutine SNODEP_run()
       end do cycle_loop
 
       ! DEALLOCATE ALL ARRAYS.
-      deallocate (snodep_arrays%climo)
-      deallocate (snodep_arrays%elevat)
-      deallocate (snodep_arrays%iceage)
-      deallocate (snodep_arrays%iceage12z)
-      deallocate (snodep_arrays%icecon)
-      deallocate (snodep_arrays%icemask)
-      deallocate (snodep_arrays%oldcon)
-      deallocate (snodep_arrays%olddep)
-      deallocate (snodep_arrays%oldmask)
-      deallocate (snodep_arrays%ptlat)
-      deallocate (snodep_arrays%ptlon)
+      deallocate (ldtsi_arrays%climo)
+      deallocate (ldtsi_arrays%elevat)
+      deallocate (ldtsi_arrays%iceage)
+      deallocate (ldtsi_arrays%iceage12z)
+      deallocate (ldtsi_arrays%icecon)
+      deallocate (ldtsi_arrays%icemask)
+      deallocate (ldtsi_arrays%oldcon)
+      deallocate (ldtsi_arrays%olddep)
+      deallocate (ldtsi_arrays%oldmask)
+      deallocate (ldtsi_arrays%ptlat)
+      deallocate (ldtsi_arrays%ptlon)
       deallocate (sfctmp_lis)
-      deallocate (snodep_arrays%snoage)
-      deallocate (snodep_arrays%snoage12z)
-      deallocate (snodep_arrays%snoanl)
-      deallocate (snodep_arrays%snofrac)
-      deallocate (snodep_arrays%snow_poss)
-      deallocate (snodep_arrays%ssmis_depth)
-      deallocate (snodep_arrays%ssmis_icecon)
-      deallocate (snodep_arrays%sst)
-      deallocate (snodep_arrays%viirsmap)
-      deallocate (snodep_arrays%gofs_icecon)
+      deallocate (ldtsi_arrays%snoage)
+      deallocate (ldtsi_arrays%snoage12z)
+      deallocate (ldtsi_arrays%snoanl)
+      deallocate (ldtsi_arrays%snofrac)
+      deallocate (ldtsi_arrays%snow_poss)
+      deallocate (ldtsi_arrays%ssmis_depth)
+      deallocate (ldtsi_arrays%ssmis_icecon)
+      deallocate (ldtsi_arrays%sst)
+      deallocate (ldtsi_arrays%viirsmap)
+      deallocate (ldtsi_arrays%gofs_icecon)
       deallocate(landmask)
       deallocate(elevations)
       deallocate(landice)
@@ -497,8 +498,8 @@ subroutine SNODEP_run()
    call LDT_endrun()
 
    ! FORMAT STATEMENTS.   
-6800 format (/, 1X, 55('-'),                                       &
-        /, 3X, '[INFO] PROGRAM:  SNODEP',                                &
+6800 format (/, 1X, 55('-'),                                             &
+        /, 3X, '[INFO] PROGRAM:  LDTSI',                                 &
         /, 5X, '[INFO] TOTAL STATIONS PROCESSED = ', I5,                 &
         /, 5X, '[INFO] PRINTING DEPTH REPORTS BY NETWORK & STATION ID'   &
         /, 5X, '[INFO] ELEV OF "-1000" INDICATES ELEVATION NOT REPORTED' &
@@ -554,7 +555,7 @@ contains
       inquire(file=trim(filename), exist=file_exists)
       if (.not. file_exists) then
          write(LDT_logunit,*) &
-              '[ERR] Cannot find ',trim(filename),' for SNODEP analysis'
+              '[ERR] Cannot find ',trim(filename),' for LDTSI analysis'
          write(LDT_logunit,*)'LDT will stop'
          call LDT_endrun()
       end if
@@ -647,4 +648,4 @@ contains
    end subroutine read_params
 #endif
       
-end subroutine SNODEP_run
+end subroutine LDTSI_run

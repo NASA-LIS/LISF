@@ -2,10 +2,11 @@
 ! NASA Goddard Space Flight Center Land Information System (LIS) v7.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: SNODEP_analysisMod
+! MODULE: LDTSI_analysisMod
 ! 
 ! REVISION HISTORY:
 ! 08 Feb 2019  Eric Kemp  First ported to LDT.
+! 09 May 2019  Eric Kemp  Renamed LDTSI
 !
 ! DESCRIPTION:
 ! Source code for Air Force snow depth analysis.
@@ -13,7 +14,7 @@
 
 #include "LDT_misc.h"
 
-module SNODEP_analysisMod
+module LDTSI_analysisMod
 
    ! Defaults
    implicit none
@@ -60,7 +61,7 @@ contains
       !**
       !**  FILES ACCESSED: NONE
       !**
-      !**  SEE SNODEP_paramsMod.F90 FOR COMMON PARAMETER DESCRIPTIONS
+      !**  SEE LDTSI_paramsMod.F90 FOR COMMON PARAMETER DESCRIPTIONS
       !**
       !**  UPDATES
       !**  =======
@@ -80,8 +81,8 @@ contains
       !***********************************************************************
 
       ! Imports
-      use LDT_snodepMod, only: snodep_settings
-      use SNODEP_paramsMod
+      use LDT_ldtsiMod, only: ldtsi_settings
+      use LDTSI_paramsMod
 
       ! Defaults
       implicit none
@@ -105,7 +106,7 @@ contains
 
          ! PREVIOUS DAY HAD SNOW COVER, ADJUST TOWARDS CLIMATOLOGY.
          ! INCREMENT THE AGE ONE DAY.
-         adjust = (pntclm - pntold) * (snodep_settings%clmadj)
+         adjust = (pntclm - pntold) * (ldtsi_settings%clmadj)
          pntanl = pntold + adjust
          pntage = pntage + 1
 
@@ -278,23 +279,24 @@ contains
       !**  07 NOV 12  INITIAL VERSION.............................MR LEWISTON/16WS/WXE
       !**  15 NOV 13  ADDED SEARCH BACK IF CURRENT DAY NOT FOUND..MR LEWISTON/16WS/WXE
       !**  21 Mar 19  Adapted to LDT...Eric Kemp, NASA GSFC/SSAI
+      !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !*******************************************************************************
       !*******************************************************************************
 
       ! Imports
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_endrun
-      use LDT_snodepMod, only: snodep_settings
+      use LDT_ldtsiMod, only: ldtsi_settings
       use map_utils
-      use SNODEP_arraysMod, only: SNODEP_arrays
-      use SNODEP_paramsMod
-      use SNODEP_utilMod
+      use LDTSI_arraysMod, only: LDTSI_arrays
+      use LDTSI_paramsMod
+      use LDTSI_utilMod
 
       ! Defaults
       implicit none
 
       ! Arguments
-      character*10,  intent(in)   :: date10           ! DATE-TIME GROUP OF SNODEP CYCLE
+      character*10,  intent(in)   :: date10           ! DATE-TIME GROUP OF LDTSI CYCLE
       character*100, intent(in)   :: fracdir          ! FRACTIONAL SNOW DIRECTORY PATH
       
       ! Local constants
@@ -341,7 +343,7 @@ contains
       message = ' '
       pntcnt  = 0
       snocum  = 0.0
-      SNODEP_arrays%snofrac = -1
+      LDTSI_arrays%snofrac = -1
 
       ! RETRIEVE FRACTIONAL SNOW DATA.
       cyclhr = date10 (9:10)
@@ -408,7 +410,7 @@ contains
             do i = 1, LDT_rc%lnc(1)
                if (pntcnt(i,j) > 0) then
                   fracnt = fracnt + 1
-                  SNODEP_arrays%snofrac(i,j) = snocum(i,j) / real(pntcnt(i,j))
+                  LDTSI_arrays%snofrac(i,j) = snocum(i,j) / real(pntcnt(i,j))
                end if
             end do ! i
          end do ! j
@@ -417,7 +419,7 @@ contains
 
       else
 
-         snodep_settings%usefrac = .false.
+         ldtsi_settings%usefrac = .false.
          message(1) = '[WARN]  FRACTIONAL SNOW FILE NOT FOUND'
          message(2) = '[WARN]  PATH = ' // trim(file_path)
          call error_message (program_name, routine_name, message)
@@ -477,8 +479,8 @@ contains
       !**  ${STATIC}/snoclimo_0p25deg_dec.dat    R  SNOW CLIMATOLOGY FOR DECEMBER
       !**  ${STATIC}/snow_mask_0p25deg.dat       R  MASK INDICATING SNOW POSSIBLE
       !**
-      !**   See SNODEP_arraysMod.F90 for common array descriptions
-      !**   See SNODEP_paramsMod.F90 for common parameter descriptions
+      !**   See LDTSI_arraysMod.F90 for common array descriptions
+      !**   See LDTSI_paramsMod.F90 for common parameter descriptions
       !**
       !**  UPDATES
       !**  =======
@@ -499,6 +501,7 @@ contains
       !**  11 SEP 12  REMOVED SNOW_DENSITY........................MR LEWISTON/16WS/WXE
       !**  14 DEC 12  REMOVED OBSOLETE ERROR HANDLING FOR CLIMO...MR LEWISTON/16WS/WXE
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+      !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -507,9 +510,9 @@ contains
       use LDT_coreMod, only: LDT_domain, LDT_rc
       use LDT_logMod, only: LDT_endrun
       use map_utils
-      use SNODEP_arraysMod, only: SNODEP_arrays
-      use SNODEP_paramsMod
-      use SNODEP_utilMod ! EMK
+      use LDTSI_arraysMod, only: LDTSI_arrays
+      use LDTSI_paramsMod
+      use LDTSI_utilMod ! EMK
 
       ! Defaults
       implicit none
@@ -567,7 +570,7 @@ contains
       CALL PUTGET_REAL (CLIMO_0p25deg, 'r', FILE_PATH, PROGRAM_NAME,    &
            ROUTINE_NAME, IGRID, JGRID)
 
-      SNODEP_arrays%climo(:,:) = -1
+      LDTSI_arrays%climo(:,:) = -1
       do r = 1,nr
          do c = 1,nc
             gindex = c+(r-1)*nc
@@ -587,9 +590,9 @@ contains
                j_0p25deg = jgrid
             end if
             if (climo_0p25deg(i_0p25deg,j_0p25deg) < -1) then
-               SNODEP_arrays%climo(c,r) = -1
+               LDTSI_arrays%climo(c,r) = -1
             else
-               SNODEP_arrays%climo(c,r) = climo_0p25deg(i_0p25deg,j_0p25deg)
+               LDTSI_arrays%climo(c,r) = climo_0p25deg(i_0p25deg,j_0p25deg)
             end if
          end do ! c
       end do ! r
@@ -598,7 +601,7 @@ contains
       do r = 1,nr
          do c = 1 ,nc
             gindex = c+(r-1)*LDT_rc%lnc(1)
-            SNODEP_arrays%ptlat(c,r) = LDT_domain(1)%lat(gindex)
+            LDTSI_arrays%ptlat(c,r) = LDT_domain(1)%lat(gindex)
          end do ! i
       end do ! j
 
@@ -606,14 +609,14 @@ contains
       do r = 1,nr
          do c = 1 ,nc
             gindex = c+(r-1)*LDT_rc%lnc(1)
-            SNODEP_arrays%ptlon(c,r) = LDT_domain(1)%lon(gindex)
+            LDTSI_arrays%ptlon(c,r) = LDT_domain(1)%lon(gindex)
          end do ! i
       end do ! j
 
       ! EMK Copy LDT terrain data to elevat array
       do r = 1,nr
          do c = 1 ,nc
-            SNODEP_arrays%elevat(c,r) = elevations(c,r)
+            LDTSI_arrays%elevat(c,r) = elevations(c,r)
          end do ! i
       end do ! j
 
@@ -625,7 +628,7 @@ contains
       ! Interpolate the "snow possible" mask to the LDT grid.  
       ! For simplicity, just use the value of the 0.25 deg grid box that the
       ! LDT grid point is within.
-      SNODEP_arrays%snow_poss(:,:) = 0
+      LDTSI_arrays%snow_poss(:,:) = 0
       do r = 1,nr
          do c = 1,nc
             gindex = c+(r-1)*LDT_rc%lnc(1)
@@ -644,7 +647,7 @@ contains
             else if (j_0p25deg .gt. jgrid) then
                j_0p25deg = jgrid
             end if
-            SNODEP_arrays%snow_poss(c,r) = &
+            LDTSI_arrays%snow_poss(c,r) = &
                  snow_poss_0p25deg(i_0p25deg,j_0p25deg)
          end do ! i
       end do ! j
@@ -682,7 +685,7 @@ contains
       !**  ${SFCOBS}/sfcsno_nh.06hr.YYYYMMDD12.txt  R  SSMIS NH SNOW AND ICE EDR DATA
       !**  ${SFCOBS}/sfcsno_sh.06hr.YYYYMMDD12.txt  R  SSMIS SH SNOW AND ICE EDR DATA
       !**
-      !**   See SNODEP_paramsMod.F90 for common parameter descriptions
+      !**   See LDTSI_paramsMod.F90 for common parameter descriptions
       !**
       !**  UPDATES
       !**  =======
@@ -721,16 +724,17 @@ contains
       !**  10 OCT 13  CHANGED FROM 24-HOUR TO 6-HOUR FILES........MR LEWISTON/16WS/WXE
       !**  26 JAN 17  REMOVED LEGACY JMOBS CHECKS AGAINST DEPTH.....MR PUSKAR/16WS/WXE
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+      !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
 
       ! Imports
       use LDT_logMod, only: LDT_logunit
-      use LDT_snodepMod, only: snodep_settings
+      use LDT_ldtsiMod, only: ldtsi_settings
       use map_utils ! EMK
-      use SNODEP_paramsMod
-      use SNODEP_utilMod ! EMK
+      use LDTSI_paramsMod
+      use LDTSI_utilMod ! EMK
 
       ! Defaults
       implicit none
@@ -799,8 +803,8 @@ contains
       data routine_name / 'GETOBS      '/
 
       ! ALLOCATE PROCESSED STATION LIST TO MAX NUMBER OF OBS RETURNED.
-      allocate (oldnet (snodep_settings%maxsobs))
-      allocate (oldsta (snodep_settings%maxsobs))
+      allocate (oldnet (ldtsi_settings%maxsobs))
+      allocate (oldsta (ldtsi_settings%maxsobs))
 
       ! INITIALIZE VARIABLES.
       depth        = missing
@@ -881,11 +885,11 @@ contains
                   enddo duplicate_obs
 
                   ! IF TEMP NOT TOO WARM, CONTINUE PROCESSING.
-                  temp_check : if (itemp <= snodep_settings%thresh) then
+                  temp_check : if (itemp <= ldtsi_settings%thresh) then
 
                      ! IF LATITUDE IS 40 OR LESS, CHECK WHERE SNOW IS
                      ! UNLIKELY BASED ON ELEVATION, MONTH, AND LATITUDE.
-                     if (abs(oblat) <= snodep_settings%trplat(1)) then
+                     if (abs(oblat) <= ldtsi_settings%trplat(1)) then
                         call summer (obelev, hemi, oblat, month, towarm)
                      endif
 
@@ -996,7 +1000,7 @@ contains
 
                         ! IF WE'RE IN A POLAR REGION AND TEMPERATURE EXCEEDS THE
                         ! MAXIMUM, ASSUME INVALID TEMPERATURE AND REJECT THE OB.
-                     else if (itemp > snodep_settings%arctmax) then
+                     else if (itemp > ldtsi_settings%arctmax) then
 
                         printlat = float (oblat) / 100.0
                         printlon = float (oblon) / 100.0
@@ -1125,7 +1129,7 @@ contains
       !**  ---------------------------------------------------- --- -----------------------------
       !**  ${STMPDIR}/lis_sfctmp_0p25deg.yyyymmddhh.dat         R/W LIS 2-METER SHELTER TEMP
       !**
-      !**   See SNODEP_paramsMod.F90 for common parameter descriptions
+      !**   See LDTSI_paramsMod.F90 for common parameter descriptions
       !**
       !**  UPDATES
       !**  =======
@@ -1134,6 +1138,7 @@ contains
       !**  10 OCT 13  ADDED STATUS TO DEGRIB ERROR MESSAGES.................MR LEWISTON/16WS/WXE
       !**  26 SEP 17  CHANGED LIS FILENAME FROM AFWA TO 557WW.................MR PUSKAR/16WS/WXE
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+      !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**
       !*****************************************************************************************
       !*****************************************************************************************
@@ -1142,8 +1147,8 @@ contains
       use LDT_coreMod, only: LDT_domain, LDT_rc
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use map_utils
-      use SNODEP_paramsMod
-      use SNODEP_utilMod ! EMK
+      use LDTSI_paramsMod
+      use LDTSI_utilMod ! EMK
 
       ! Defaults
       implicit none
@@ -1299,8 +1304,8 @@ contains
       !**  ssmis_snoice_nh.06hr.YYYYMMDDHH.txt  R  SSMIS NH SNOW AND ICE EDR DATA
       !**  ssmis_snoice_sh.06hr.YYYYMMDDHH.txt  R  SSMIS SH SNOW AND ICE EDR DATA
       !**
-      !**   See SNODEP_arraysMod.F90 for common array descriptions
-      !**   See SNODEP_paramsMod.F90 for common parameter descriptions
+      !**   See LDTSI_arraysMod.F90 for common array descriptions
+      !**   See LDTSI_paramsMod.F90 for common parameter descriptions
       !**
       !**  UPDATES
       !**  =======
@@ -1333,6 +1338,7 @@ contains
       !**  10 OCT 13  CHANGED FROM 24-HOUR TO 6-HOUR FILES........MR LEWISTON/16WS/WXE
       !**  16 JAN 18  ADDED DTG TO "NO SSMIS EDR" MESSAGES.......MR LEWISTON/16WS/WXET
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+      !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -1341,9 +1347,9 @@ contains
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use map_utils ! EMK
-      use SNODEP_arraysMod, only: SNODEP_arrays
-      use SNODEP_paramsMod
-      use SNODEP_utilMod ! EMK
+      use LDTSI_arraysMod, only: LDTSI_arrays
+      use LDTSI_paramsMod
+      use LDTSI_utilMod ! EMK
 
       ! Defaults
       implicit none
@@ -1440,8 +1446,8 @@ contains
       snocount_0p25deg     = 0
       snorecs      = 0
       snototal_0p25deg     = 0
-      SNODEP_arrays%ssmis_depth  = misanl
-      SNODEP_arrays%ssmis_icecon = missing
+      LDTSI_arrays%ssmis_depth  = misanl
+      LDTSI_arrays%ssmis_icecon = missing
 
       ! LOOP THROUGH HEMISPHERES.
       hemi_loop : do hemi = 1, 2
@@ -1582,9 +1588,9 @@ contains
                   j_0p25deg = jgrid
                end if
 
-               SNODEP_arrays%ssmis_icecon(c,r) = &
+               LDTSI_arrays%ssmis_icecon(c,r) = &
                     ssmis_icecon_0p25deg(i_0p25deg, j_0p25deg)
-               SNODEP_arrays%ssmis_depth(c,r) = &
+               LDTSI_arrays%ssmis_depth(c,r) = &
                     ssmis_depth_0p25deg(i_0p25deg, j_0p25deg)
 
             end do ! c
@@ -1662,8 +1668,8 @@ contains
       !**  ${PREVDIR}/snoage_0p25deg.${DATE10_PREV}.dat   R  SNOW AGE
       !**  ${PREVDIR}/snodep_0p25deg.${DATE10_PREV}.dat   R  SNOW DEPTH
       !**
-      !**   See SNODEP_arraysMod.F90 for common array descriptions
-      !**   See SNODEP_paramsMod.F90 for common parameter descriptions
+      !**   See LDTSI_arraysMod.F90 for common array descriptions
+      !**   See LDTSI_paramsMod.F90 for common parameter descriptions
       !**
       !**  UPDATES
       !**  =======
@@ -1681,6 +1687,7 @@ contains
       !**  29 MAY 12  MOVED MODIFIED DATA TEST HERE FROM SCRIPT...MR LEWISTON/16WS/WXE
       !**  10 OCT 13  CHANGED FROM 24-HOUR TO 6-HOUR CYCLES.......MR LEWISTON/16WS/WXE
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+      !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -1689,9 +1696,9 @@ contains
       use LDT_coreMod, only: LDT_domain, LDT_rc
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use map_utils
-      use SNODEP_arraysMod, only: SNODEP_arrays
-      use SNODEP_paramsMod
-      use SNODEP_utilMod ! EMK
+      use LDTSI_arraysMod, only: LDTSI_arrays
+      use LDTSI_paramsMod
+      use LDTSI_utilMod ! EMK
 
       ! Defaults
       implicit none
@@ -1924,14 +1931,14 @@ contains
       ! For simplicity, just use the value of the 0.25 deg grid box that the
       ! LDT grid point is within.
       if (.not. just_12z) then
-         SNODEP_arrays%olddep(:,:) = -1
-         SNODEP_arrays%snoage(:,:) = -1
-         SNODEP_arrays%iceage(:,:) = -1
-         SNODEP_arrays%oldcon(:,:) = -1
-         SNODEP_arrays%oldmask(:,:) = -1
+         LDTSI_arrays%olddep(:,:) = -1
+         LDTSI_arrays%snoage(:,:) = -1
+         LDTSI_arrays%iceage(:,:) = -1
+         LDTSI_arrays%oldcon(:,:) = -1
+         LDTSI_arrays%oldmask(:,:) = -1
       end if
-      SNODEP_arrays%snoage12z(:,:) = -1
-      SNODEP_arrays%iceage12z(:,:) = -1
+      LDTSI_arrays%snoage12z(:,:) = -1
+      LDTSI_arrays%iceage12z(:,:) = -1
       do r = 1,nr
          do c = 1,nc
             gindex = c+(r-1)*LDT_rc%lnc(1)
@@ -1952,17 +1959,17 @@ contains
                j_0p25deg = jgrid
             end if
             if (.not. just_12z) then
-               SNODEP_arrays%olddep(c,r) = olddep_0p25deg(i_0p25deg,j_0p25deg)
-               SNODEP_arrays%snoage(c,r) = snoage_0p25deg(i_0p25deg,j_0p25deg)
-               SNODEP_arrays%iceage(c,r) = iceage_0p25deg(i_0p25deg,j_0p25deg)
-               SNODEP_arrays%oldcon(c,r) = oldcon_0p25deg(i_0p25deg,j_0p25deg)
-               SNODEP_arrays%oldmask(c,r) = &
+               LDTSI_arrays%olddep(c,r) = olddep_0p25deg(i_0p25deg,j_0p25deg)
+               LDTSI_arrays%snoage(c,r) = snoage_0p25deg(i_0p25deg,j_0p25deg)
+               LDTSI_arrays%iceage(c,r) = iceage_0p25deg(i_0p25deg,j_0p25deg)
+               LDTSI_arrays%oldcon(c,r) = oldcon_0p25deg(i_0p25deg,j_0p25deg)
+               LDTSI_arrays%oldmask(c,r) = &
                     oldmask_0p25deg(i_0p25deg,j_0p25deg)
             endif
             if (runcycle .eq. 12) then
-               SNODEP_arrays%snoage12z(c,r) = &
+               LDTSI_arrays%snoage12z(c,r) = &
                     snoage12z_0p25deg(i_0p25deg,j_0p25deg)
-               SNODEP_arrays%iceage12z(c,r) = &
+               LDTSI_arrays%iceage12z(c,r) = &
                     iceage12z_0p25deg(i_0p25deg,j_0p25deg)
             end if
          end do ! c
@@ -1986,16 +1993,16 @@ contains
             gindex = c+(r-1)*LDT_rc%lnc(1)
             rlat = LDT_domain(1)%lat(gindex)
             if (rlat < 40.0 .and. rlat > -40.0) cycle
-            if (SNODEP_arrays%olddep(c,r) .le. 0 .and. &
-                 SNODEP_arrays%climo(c,r) > 0) then
-               SNODEP_arrays%olddep(c,r) = SNODEP_arrays%climo(c,r)
-               SNODEP_arrays%oldmask(c,r) = 1
+            if (LDTSI_arrays%olddep(c,r) .le. 0 .and. &
+                 LDTSI_arrays%climo(c,r) > 0) then
+               LDTSI_arrays%olddep(c,r) = LDTSI_arrays%climo(c,r)
+               LDTSI_arrays%oldmask(c,r) = 1
                if (landice(c,r) > 0.5) then
-                  SNODEP_arrays%snoage(c,r) = maxage
-                  SNODEP_arrays%snoage12z(c,r) = maxage                
+                  LDTSI_arrays%snoage(c,r) = maxage
+                  LDTSI_arrays%snoage12z(c,r) = maxage                
                else
-                  SNODEP_arrays%snoage(c,r) = 1
-                  SNODEP_arrays%snoage12z(c,r) = 1
+                  LDTSI_arrays%snoage(c,r) = 1
+                  LDTSI_arrays%snoage12z(c,r) = 1
                endif
             end if
 
@@ -2019,16 +2026,16 @@ contains
            'CHECKING FOR PREVIOUS CYCLE')
    end subroutine getsno
 
-   ! Fetch LDT SNODEP data from netCDF
+   ! Fetch LDTSI data from netCDF
    subroutine getsno_nc(date10, julhr_beg, ierr)
 
       ! Imports
       use LDT_logMod, only: LDT_logunit, LDT_endrun
-      use SNODEP_netcdfMod, only: SNODEP_read_netcdf, &
-           SNODEP_read_netcdf_12z
-      use SNODEP_utilMod, only: abort_message, date10_julhr, &
+      use LDTSI_netcdfMod, only: LDTSI_read_netcdf, &
+           LDTSI_read_netcdf_12z
+      use LDTSI_utilMod, only: abort_message, date10_julhr, &
            julhr_date10
-      use SNODEP_paramsMod, only: msglns, program_name
+      use LDTSI_paramsMod, only: msglns, program_name
 
       ! Defaults
       implicit none
@@ -2051,6 +2058,7 @@ contains
 
       ! Find the date/time group of the previous cycle
       found = .false.
+      found_12z = .false. 
       limit = 20
       tries = 1
       
@@ -2061,7 +2069,7 @@ contains
       do while ((.not. found) .and. (tries .le. limit))
          julhr_beg = julhr_beg - 6
          call julhr_date10(julhr_beg, date10_prev, program_name, routine_name)
-         call SNODEP_read_netcdf(date10_prev,ierr)
+         call LDTSI_read_netcdf(date10_prev,ierr)
          if (ierr == 0) then
             found = .true.
          else
@@ -2079,7 +2087,7 @@ contains
          do while ((.not. found_12z) .and. (tries .le. limit))
             julhr = julhr - 24
             call julhr_date10 (julhr, date10_prev, program_name, routine_name)
-            call SNODEP_read_netcdf_12z(date10_prev,ierr)
+            call LDTSI_read_netcdf_12z(date10_prev,ierr)
             if (ierr == 0) then
                found_12z = .true.
             else
@@ -2093,11 +2101,11 @@ contains
       ! to the caller.  Caller will need to try the legacy SNODEP instead.
       if (.not. found) then
          write(LDT_logunit,*) &
-              '[WARN] Cannot find prior LDT SNODEP analysis'
+              '[WARN] Cannot find prior LDTSI analysis'
          ierr = 2
       else if (.not. found_12z) then
          write(LDT_logunit,*) &
-              '[WARN] Cannot find prior 12Z LDT SNODEP analysis'
+              '[WARN] Cannot find prior 12Z LDTSI analysis'
          ierr = 1
       else
          ierr = 0
@@ -2140,8 +2148,8 @@ contains
       !**  ------------------------ --- --------------------------------------
       !**  sst.dat                   R  NAVY SEA SURFACE TEMPS
       !**
-      !**   See SNODEP_arraysMod.F90 for common array descriptions
-      !**   See SNODEP_paramsMod.F90 for common parameter descriptions
+      !**   See LDTSI_arraysMod.F90 for common array descriptions
+      !**   See LDTSI_paramsMod.F90 for common parameter descriptions
       !**
       !**  UPDATES
       !**  =======
@@ -2154,6 +2162,7 @@ contains
       !**  18 SEP 14  REMOVED TRIM FROM PATH_GRIB IN COPEN CALL...MR LEWISTON/16WS/WXE
       !**  03 APR 15  UPDATED INPUT GRIB FILE NAME FORMAT.........MR LEWISTON/16WS/WXE
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+      !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -2162,9 +2171,9 @@ contains
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use map_utils
-      use SNODEP_arraysMod, only : SNODEP_arrays
-      use SNODEP_paramsMod
-      use SNODEP_utilMod ! EMK
+      use LDTSI_arraysMod, only : LDTSI_arrays
+      use LDTSI_paramsMod
+      use LDTSI_utilMod ! EMK
 
       ! Defaults
       implicit none
@@ -2256,7 +2265,7 @@ contains
             ! REALLY LOOKING BACK ONLY 24 HOURS (IF THAT MAKES SENSE...).
             if (hrdiff .gt. 48) then
                message(1) = '  SST DATA IS MORE THAN 24 HOURS OLD'
-               message(2) = '  SNODEP CYCLE = ' // date10
+               message(2) = '  LDTSI CYCLE = ' // date10
                message(3) = '  SEA SFC TEMP = ' // date10_sst
                call error_message (program_name, routine_name, message)
 
@@ -2284,7 +2293,7 @@ contains
            jdim=sst_jgrid, &
            proj=sst_0p25deg_proj)
 
-      SNODEP_arrays%sst(:,:) = -1
+      LDTSI_arrays%sst(:,:) = -1
       nr = LDT_rc%lnr(1)
       nc = LDT_rc%lnc(1)
       do r = 1,nr
@@ -2306,9 +2315,9 @@ contains
                j_0p25deg = jgrid
             end if
             if (sst_0p25deg(i_0p25deg,j_0p25deg) < -1) then
-               SNODEP_arrays%sst(c,r) = -1
+               LDTSI_arrays%sst(c,r) = -1
             else
-               SNODEP_arrays%sst(c,r) = sst_0p25deg(i_0p25deg,j_0p25deg)
+               LDTSI_arrays%sst(c,r) = sst_0p25deg(i_0p25deg,j_0p25deg)
             end if
          end do ! c
       end do ! r
@@ -2370,6 +2379,7 @@ contains
       !**  =======
       !**  15 FEB 17  ADAPTED FROM GETFRAC ......................... M PUSKAR/16WS/WXE
       !**  22 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+      !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -2377,11 +2387,11 @@ contains
       ! Imports
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_endrun
-      use LDT_snodepMod, only: snodep_settings
+      use LDT_ldtsiMod, only: ldtsi_settings
       use map_utils
-      use SNODEP_arraysMod, only: SNODEP_arrays
-      use SNODEP_paramsMod
-      use SNODEP_utilMod ! EMK
+      use LDTSI_arraysMod, only: LDTSI_arrays
+      use LDTSI_paramsMod
+      use LDTSI_utilMod ! EMK
 
       ! Defaults
       implicit none
@@ -2458,7 +2468,7 @@ contains
       map_exists   = .false.
       age_exists   = .false.
       message  = ' '
-      SNODEP_arrays%viirsmap = 255
+      LDTSI_arrays%viirsmap = 255
 
       ! RETRIEVE VIIRS SNOW DATA.
       cyclhr = date10 (9:10)
@@ -2473,7 +2483,7 @@ contains
 
       file_search : do while ((.not. map_exists) .and. &
            (.not. age_exists) .and. &
-           (icount .le. snodep_settings%maxpixage))
+           (icount .le. ldtsi_settings%maxpixage))
 
          snomap_path = trim (viirsdir) // '/snomap_0p005deg.' // datefr &
               // '.tiff'
@@ -2565,7 +2575,7 @@ contains
 
                      ! Skip if the pixel age is too old.
                      if (agebuf_slice(i_viirs) > &
-                          snodep_settings%maxpixage) cycle
+                          ldtsi_settings%maxpixage) cycle
                
                      ! Increment the appropriate snow/bare counter
                      if (mapbuf_slice(i_viirs) .eq. 0) then
@@ -2599,14 +2609,14 @@ contains
          ! From the geolocated data, create the final VIIRS snow cover map
          do j = 1, nr
             do i = 1, nc
-               min_snow_count = snodep_settings%minfrac * pixels(i,j)
-               min_bare_count = snodep_settings%minbare * pixels(i,j)
+               min_snow_count = ldtsi_settings%minfrac * pixels(i,j)
+               min_bare_count = ldtsi_settings%minbare * pixels(i,j)
                if (snow(i,j) > min_snow_count) then
-                  SNODEP_arrays%viirsmap(i,j) = 1
+                  ldtsi_arrays%viirsmap(i,j) = 1
                else if (bare(i,j) > min_bare_count) then
-                  SNODEP_arrays%viirsmap(i,j) = 0
+                  ldtsi_arrays%viirsmap(i,j) = 0
                else
-                  SNODEP_arrays%viirsmap(i,j) = 255
+                  ldtsi_arrays%viirsmap(i,j) = 255
                end if
             end do ! i
          end do ! j
@@ -2617,7 +2627,7 @@ contains
       else
 
          if (.not. map_exists) then
-            snodep_settings%useviirs = .false.
+            ldtsi_settings%useviirs = .false.
             message(1) = '[WARN] VIIRS SNOW MAP FILE NOT FOUND'
             !message(2) = '[WARN] PATH = ' // trim(snomap_path)
             call error_message (program_name, routine_name, message)
@@ -2625,7 +2635,7 @@ contains
          end if
 
          if (.not. age_exists) then
-            snodep_settings%useviirs = .false.
+            ldtsi_settings%useviirs = .false.
             message(1) = '[WARN] VIIRS SNOW AGE FILE NOT FOUND'
             !message(2) = '[WARN] PATH = ' // trim(snoage_path)
             call error_message (program_name, routine_name, message)
@@ -2659,10 +2669,10 @@ contains
       use LDT_bratsethMod
       use LDT_coreMod, only: LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_endrun
-      use LDT_snodepMod, only: snodep_settings
+      use LDT_ldtsiMod, only: ldtsi_settings
       use map_utils
-      use SNODEP_arraysMod, only: SNODEP_arrays
-      use SNODEP_paramsMod
+      use LDTSI_arraysMod, only: LDTSI_arrays
+      use LDTSI_paramsMod
       
       ! Defaults
       implicit none
@@ -2705,7 +2715,7 @@ contains
       snomask(:,:) = -1 ! Unknown
       skip_grid_points(:,:) = .false.
       updated(:,:) = .false.
-      rthresh = float(snodep_settings%thresh) / 10.0
+      rthresh = float(ldtsi_settings%thresh) / 10.0
 
       ! Build mask to screen out areas we don't want to analyze.
       do r = 1,nr
@@ -2713,12 +2723,12 @@ contains
             if (landmask(c,r) < 0.5) then
                skip_grid_points(c,r) = .true.
                ! EMK...Make sure prior analysis has no snow here
-               SNODEP_arrays%snoanl(c,r) = -1
-               SNODEP_arrays%snoage(c,r) = -1               
+               LDTSI_arrays%snoanl(c,r) = -1
+               LDTSI_arrays%snoage(c,r) = -1               
             else if (landice(c,r) > 0.5) then
                ! Use LDT landcover to identify glaciers
                skip_grid_points(c,r) = .true.
-            else if (SNODEP_arrays%snow_poss(c,r) == 0) then
+            else if (LDTSI_arrays%snow_poss(c,r) == 0) then
                ! Since the snow_poss mask is coarse resolution (0.25 deg),
                ! there may be articificial snow-free gaps introduced when 
                ! downscaling.  So, we will allow snow analysis to run in high 
@@ -2729,8 +2739,8 @@ contains
                if (rlat > -40.0 .and. rlat < 40.0) then
                   skip_grid_points(c,r) = .true.
                   ! No snow allowed, so zero out these fields now
-                  SNODEP_arrays%snoanl(c,r) = 0
-                  SNODEP_arrays%snoage(c,r) = 0               
+                  LDTSI_arrays%snoanl(c,r) = 0
+                  LDTSI_arrays%snoage(c,r) = 0               
                end if
             end if
          end do ! c
@@ -2740,7 +2750,7 @@ contains
       do r = 1, nr
          do c = 1, nc
             if (skip_grid_points(c,r)) cycle
-            SNODEP_arrays%snoanl(c,r) = SNODEP_arrays%olddep(c,r)
+            LDTSI_arrays%snoanl(c,r) = LDTSI_arrays%olddep(c,r)
          end do ! c
       end do ! r
 
@@ -2752,23 +2762,23 @@ contains
 
             ! Get SSMIS value
             satdep = misanl 
-            if (SNODEP_arrays%ssmis_depth(c,r) >= 0) then
-               satdep = SNODEP_arrays%ssmis_depth(c,r)
+            if (LDTSI_arrays%ssmis_depth(c,r) >= 0) then
+               satdep = LDTSI_arrays%ssmis_depth(c,r)
             end if
 
             ! Handle SSMIS detection problem with very shallow snow.  If below
             ! minimum depth, preserve prior analysis if larger than SSMIS.
             if (satdep >= 0) then
-               if (satdep .le. snodep_settings%minsat) then
-                  if (satdep > SNODEP_arrays%olddep(c,r)) then
-                     SNODEP_arrays%snoanl(c,r) = satdep
+               if (satdep .le. ldtsi_settings%minsat) then
+                  if (satdep > LDTSI_arrays%olddep(c,r)) then
+                     LDTSI_arrays%snoanl(c,r) = satdep
                      updated(c,r) = .true.
                      if (satdep > 0) then
                         snomask(c,r) = 1
                      end if
                   end if
                else
-                  SNODEP_arrays%snoanl(c,r) = satdep
+                  LDTSI_arrays%snoanl(c,r) = satdep
                   updated(c,r) = .true.
                   if (satdep > 0) then
                      snomask(c,r) = 1
@@ -2780,11 +2790,11 @@ contains
       end do ! r
 
       ! Update the snow mask using the fractional snow
-      if (snodep_settings%usefrac) then
+      if (ldtsi_settings%usefrac) then
          do r = 1, nr
             do c = 1, nc     
                if (skip_grid_points(c,r)) cycle
-               if (SNODEP_arrays%snofrac(c,r) > snodep_settings%minfrac) then
+               if (LDTSI_arrays%snofrac(c,r) > ldtsi_settings%minfrac) then
                   snomask(c,r) = 1
                end if
             end do ! c
@@ -2792,13 +2802,13 @@ contains
       end if ! usefrac
 
       ! Adjust snow mask based on VIIRS
-      if (snodep_settings%useviirs) then
+      if (ldtsi_settings%useviirs) then
          do r = 1,nr
             do c = 1, nc
                if (skip_grid_points(c,r)) cycle
-               if (SNODEP_arrays%viirsmap(c,r) == 0) then
+               if (LDTSI_arrays%viirsmap(c,r) == 0) then
                   snomask(c,r) = 0
-               else if (SNODEP_arrays%viirsmap(c,r) == 1) then
+               else if (LDTSI_arrays%viirsmap(c,r) == 1) then
                   snomask(c,r) = 1
                end if
             end do ! c
@@ -2824,11 +2834,11 @@ contains
          do c = 1,nc
             if (skip_grid_points(c,r)) cycle
             if (snomask(c,r) .eq. 0 .and. &
-                 SNODEP_arrays%snoanl(c,r) > 0) then
-               SNODEP_arrays%snoanl(c,r) = 0 
-               SNODEP_arrays%snoage(c,r) = 0
+                 LDTSI_arrays%snoanl(c,r) > 0) then
+               LDTSI_arrays%snoanl(c,r) = 0 
+               LDTSI_arrays%snoage(c,r) = 0
             end if
-            if (SNODEP_arrays%snoanl(c,r) .ne. SNODEP_arrays%olddep(c,r)) then
+            if (LDTSI_arrays%snoanl(c,r) .ne. LDTSI_arrays%olddep(c,r)) then
                updated(c,r) = .true.
             end if
          end do ! c
@@ -2850,12 +2860,12 @@ contains
 
       write(LDT_logunit,*) &
            '[INFO] Reject obs where snow is never permitted'
-      call bratseth%run_nosnow_qc(nc,nr,SNODEP_arrays%snow_poss)
+      call bratseth%run_nosnow_qc(nc,nr,LDTSI_arrays%snow_poss)
 
       write(LDT_logunit,*) &
            '[INFO] Reject obs with elevations too different from LDT'
       call bratseth%run_elev_qc(1,nc,nr,elevations,&
-           snodep_settings%elevqc_diff_threshold)
+           ldtsi_settings%elevqc_diff_threshold)
       
       write(LDT_logunit,*)'[INFO] Check for duplicate obs'
       call bratseth%run_dup_qc()
@@ -2883,12 +2893,12 @@ contains
          if (skip_grid_points(c,r)) then
             !write(LDT_logunit,*) &
             !     '[INFO] Bad background, job, lat, lon, c, r, back: ', &
-            !     job, lat, lon, c, r, SNODEP_arrays%snoanl(c,r)
+            !     job, lat, lon, c, r, LDTSI_arrays%snoanl(c,r)
             !write(LDT_logunit,*)'EMK: REJECT job, back: ', &
-            !     job, SNODEP_arrays%snoanl(c,r)
+            !     job, LDTSI_arrays%snoanl(c,r)
             glacier_zone_count = glacier_zone_count + 1
             call bratseth%reject_ob(job, "GLACIER ZONE REJECT")
-         else if (SNODEP_arrays%snoanl(c,r) < 0) then
+         else if (LDTSI_arrays%snoanl(c,r) < 0) then
             bad_back_count = bad_back_count + 1
             call bratseth%reject_ob(job, "BAD BACKGROUND REJECT")
          else if (snomask(c,r) == 0) then
@@ -2898,14 +2908,14 @@ contains
                !write(LDT_logunit,*) &
                !     '[INFO] Ob with zero snomask, job, lat, lon, ', &
                !     'c, r, back: ', &
-               !     job, lat, lon, c, r, SNODEP_arrays%snoanl(c,r)
+               !     job, lat, lon, c, r, LDTSI_arrays%snoanl(c,r)
                snomask_reject_count = snomask_reject_count + 1
                call bratseth%reject_ob(job,"SAT AND T SNOMASK REJECT")
             else
-               call bratseth%set_back(job,SNODEP_arrays%snoanl(c,r))
+               call bratseth%set_back(job,LDTSI_arrays%snoanl(c,r))
             end if
          else 
-            call bratseth%set_back(job,SNODEP_arrays%snoanl(c,r))
+            call bratseth%set_back(job,LDTSI_arrays%snoanl(c,r))
          end if
       end do ! j
       write(LDT_logunit,*) '[INFO] Rejected ',glacier_zone_count, &
@@ -2923,13 +2933,13 @@ contains
       num_good_obs = bratseth%count_good_obs()
       write(LDT_logunit,*) &
            '[INFO] Reject obs with snow depths too low compared to background'
-      call bratseth%run_skewed_back_qc(snodep_settings%skewed_backqc_threshold)
+      call bratseth%run_skewed_back_qc(ldtsi_settings%skewed_backqc_threshold)
 
       ! Reject obs that differ "too much" from background.  
       num_good_obs = bratseth%count_good_obs()
       write(LDT_logunit,*) &
            '[INFO] Reject obs that differ too much from background'
-      call bratseth%run_back_qc(snodep_settings%back_err_var)
+      call bratseth%run_back_qc(ldtsi_settings%back_err_var)
 
       write(LDT_logunit,*) &
            '[INFO] Merge obs in the same LDT grid box'
@@ -2946,7 +2956,7 @@ contains
          ! We need separate arrays for input background field and output
          ! analysis
          allocate(gbacks(nc,nr))
-         gbacks(:,:) = SNODEP_arrays%snoanl(:,:)
+         gbacks(:,:) = LDTSI_arrays%snoanl(:,:)
 
          ! Calculate the inverse data density for each observation.
          call bratseth%calc_inv_data_dens()
@@ -2957,7 +2967,7 @@ contains
 
          ! Now interpolate to the analysis grid
          call bratseth%calc_grid_anas(1, nc, nr, gbacks, elevations, &
-              SNODEP_arrays%snoanl, skip_grid_points)
+              LDTSI_arrays%snoanl, skip_grid_points)
 
          ! Clean up
          deallocate(gbacks)
@@ -2968,10 +2978,10 @@ contains
       do r = 1,nr
          do c = 1,nc
             if (skip_grid_points(c,r)) cycle
-            if (SNODEP_arrays%snoanl(c,r) < 0.01) then
-               SNODEP_arrays%snoanl(c,r) = 0
+            if (LDTSI_arrays%snoanl(c,r) < 0.01) then
+               LDTSI_arrays%snoanl(c,r) = 0
             end if
-            if (SNODEP_arrays%snoanl(c,r) .ne. SNODEP_arrays%olddep(c,r)) then
+            if (LDTSI_arrays%snoanl(c,r) .ne. LDTSI_arrays%olddep(c,r)) then
                updated(c,r) = .true.
             end if
          end do ! c
@@ -2983,49 +2993,49 @@ contains
 
             if (skip_grid_points(c,r)) cycle
 
-            if (snomask(c,r) == 1 .and. SNODEP_arrays%snoanl(c,r) == 0) then
+            if (snomask(c,r) == 1 .and. LDTSI_arrays%snoanl(c,r) == 0) then
                ! Handle case where satellite says snow but none is analyzed.
                ! Start with prior analysis, and apply climo adjustment if 12Z.
-               SNODEP_arrays%snoanl(c,r) = SNODEP_arrays%olddep(c,r)
+               LDTSI_arrays%snoanl(c,r) = LDTSI_arrays%olddep(c,r)
                if (runcycle == 12) then
-                  SNODEP_arrays%snoage(c,r) = &
-                       min(SNODEP_arrays%snoage(c,r), &
-                       SNODEP_arrays%snoage12z(c,r))
-                  call appclm(SNODEP_arrays%climo(c,r), &
-                       SNODEP_arrays%olddep(c,r), &
-                       SNODEP_arrays%snoanl(c,r), &
-                       SNODEP_arrays%snoage(c,r))
+                  LDTSI_arrays%snoage(c,r) = &
+                       min(LDTSI_arrays%snoage(c,r), &
+                       LDTSI_arrays%snoage12z(c,r))
+                  call appclm(LDTSI_arrays%climo(c,r), &
+                       LDTSI_arrays%olddep(c,r), &
+                       LDTSI_arrays%snoanl(c,r), &
+                       LDTSI_arrays%snoage(c,r))
                end if
                ! If no snow in prior analysis, or if climo adjustment
                ! removes snow, put in bogus value.
-               if (SNODEP_arrays%snoanl(c,r) == 0) then
-                  SNODEP_arrays%snoanl(c,r) = snodep_settings%unkdep
-                  SNODEP_arrays%snoage(c,r) = 1
+               if (LDTSI_arrays%snoanl(c,r) == 0) then
+                  LDTSI_arrays%snoanl(c,r) = ldtsi_settings%unkdep
+                  LDTSI_arrays%snoage(c,r) = 1
                end if
             else if (updated(c,r)) then
                ! Handle cases where snow depth was updated.  This
                ! includes case where satellite says there is snow and
                ! the analysis agrees.
-               if (SNODEP_arrays%snoanl(c,r) == 0) then
-                  SNODEP_arrays%snoage(c,r) = 0
-               else if ((SNODEP_arrays%snoanl(c,r) - &
-                    SNODEP_arrays%olddep(c,r)) >= snothresh) then
-                  SNODEP_arrays%snoage(c,r) = 1
+               if (LDTSI_arrays%snoanl(c,r) == 0) then
+                  LDTSI_arrays%snoage(c,r) = 0
+               else if ((LDTSI_arrays%snoanl(c,r) - &
+                    LDTSI_arrays%olddep(c,r)) >= snothresh) then
+                  LDTSI_arrays%snoage(c,r) = 1
                else if (runcycle == 12) then
-                  SNODEP_arrays%snoage(c,r) = &
-                       min((SNODEP_arrays%snoage(c,r)+1), maxage)
+                  LDTSI_arrays%snoage(c,r) = &
+                       min((LDTSI_arrays%snoage(c,r)+1), maxage)
                end if
             else
                ! No updates were made from prior analysis.  Permit
                ! adjustment to climatology.
                if (runcycle .eq. 12) then
-                  SNODEP_arrays%snoage(c,r) = &
-                       min(SNODEP_arrays%snoage(c,r), &
-                           SNODEP_arrays%snoage12z(c,r))
-                  call appclm(SNODEP_arrays%climo(c,r), &
-                       SNODEP_arrays%olddep(c,r), &
-                       SNODEP_arrays%snoanl(c,r), &
-                       SNODEP_arrays%snoage(c,r))
+                  LDTSI_arrays%snoage(c,r) = &
+                       min(LDTSI_arrays%snoage(c,r), &
+                           LDTSI_arrays%snoage12z(c,r))
+                  call appclm(LDTSI_arrays%climo(c,r), &
+                       LDTSI_arrays%olddep(c,r), &
+                       LDTSI_arrays%snoanl(c,r), &
+                       LDTSI_arrays%snoage(c,r))
                end if
             end if
          end do ! c
@@ -3042,9 +3052,9 @@ contains
    subroutine run_snow_analysis_glacier(runcycle, nc, nr, landmask, landice)
       
       ! Imports
-      use LDT_snodepMod, only: snodep_settings
-      use SNODEP_arraysMod, only: SNODEP_arrays
-      use SNODEP_paramsMod
+      use LDT_ldtsiMod, only: ldtsi_settings
+      use LDTSI_arraysMod, only: LDTSI_arrays
+      use LDTSI_paramsMod
       
       ! Defaults
       implicit none
@@ -3064,7 +3074,7 @@ contains
       
       ! NOTE: Do not overwrite snoanl with olddep, as that will destroy
       ! analysis over non-glaciers
-      rthresh = float(snodep_settings%thresh) / 10.0
+      rthresh = float(ldtsi_settings%thresh) / 10.0
       arctlatr = float(arctlat) / 100.0
 
       ! HANDLE GLACIERS.  Glaciers may occur on land points with
@@ -3082,8 +3092,8 @@ contains
             ! Avoid water
             if (landmask(c,r) < 0.5) then
                ! EMK...Make sure prior analysis has no snow here
-               SNODEP_arrays%snoanl(c,r) = -1
-               SNODEP_arrays%snoage(c,r) = -1               
+               LDTSI_arrays%snoanl(c,r) = -1
+               LDTSI_arrays%snoage(c,r) = -1               
                cycle
             end if
 
@@ -3096,12 +3106,12 @@ contains
 
             ! This is now a possible glacier point.  Initialize the analysis
             ! from the previous value.
-            SNODEP_arrays%snoanl(c,r) = SNODEP_arrays%olddep(c,r)            
+            LDTSI_arrays%snoanl(c,r) = LDTSI_arrays%olddep(c,r)            
             ! EMK...In case of landmask disagreements between 0.25 deg
             ! legacy SNODEP and LDT grid
-            if (SNODEP_arrays%snoanl(c,r) < 0) then
-               SNODEP_arrays%snoanl(c,r) = SNODEP_arrays%climo(c,r)
-               SNODEP_arrays%snoage(c,r) = maxage
+            if (LDTSI_arrays%snoanl(c,r) < 0) then
+               LDTSI_arrays%snoanl(c,r) = LDTSI_arrays%climo(c,r)
+               LDTSI_arrays%snoage(c,r) = maxage
             end if
 
             ! Glaciers are adjusted to climatalogy over the long term (at
@@ -3110,16 +3120,16 @@ contains
             ! If no prior snow depth exists, the glacier is "new"; insert a 
             ! fake value for the current analysis.
             if (runcycle .eq. 12) then
-               call appclm(SNODEP_arrays%climo(c,r), &
-                    SNODEP_arrays%olddep(c,r), &
-                    SNODEP_arrays%snoanl(c,r), &
-                    SNODEP_arrays%snoage(c,r))
+               call appclm(LDTSI_arrays%climo(c,r), &
+                    LDTSI_arrays%olddep(c,r), &
+                    LDTSI_arrays%snoanl(c,r), &
+                    LDTSI_arrays%snoage(c,r))
             end if
             ! It is possible that climo adjustment removes snow.  In that case,
             ! put in a bogus value.
-            if (SNODEP_arrays%snoanl(c,r) .le. 0) then
-               SNODEP_arrays%snoanl(c,r) = snodep_settings%unkdep
-               SNODEP_arrays%snoage(c,r) = 1
+            if (LDTSI_arrays%snoanl(c,r) .le. 0) then
+               LDTSI_arrays%snoanl(c,r) = ldtsi_settings%unkdep
+               LDTSI_arrays%snoage(c,r) = 1
             end if
 
          end do ! c
@@ -3132,9 +3142,9 @@ contains
    subroutine run_seaice_analysis_ssmis(month,runcycle,nc,nr,landmask)
 
       ! Imports
-      use LDT_snodepMod, only: snodep_settings
-      use SNODEP_arraysMod, only: SNODEP_arrays
-      use SNODEP_paramsMod
+      use LDT_ldtsiMod, only: ldtsi_settings
+      use LDTSI_arraysMod, only: LDTSI_arrays
+      use LDTSI_paramsMod
 
       ! Defaults
       implicit none
@@ -3155,100 +3165,100 @@ contains
 
             ! Only run over water
             if (landmask(c,r) > 0.5) then
-               SNODEP_arrays%icecon(c,r) = -1
-               SNODEP_arrays%icemask(c,r) = -1
-               SNODEP_arrays%iceage(c,r) = -1
+               LDTSI_arrays%icecon(c,r) = -1
+               LDTSI_arrays%icemask(c,r) = -1
+               LDTSI_arrays%iceage(c,r) = -1
                cycle
             end if
 
             ! Initialize arrays
-            SNODEP_arrays%icemask(c,r) = 0
-            SNODEP_arrays%icecon(c,r) = 0
+            LDTSI_arrays%icemask(c,r) = 0
+            LDTSI_arrays%icecon(c,r) = 0
 
             ! Find hemisphere
-            if (SNODEP_arrays%ptlat(c,r) .ge. 0) then
+            if (LDTSI_arrays%ptlat(c,r) .ge. 0) then
                hemi = 1
             else
                hemi = 2
             end if
 
-            if (abs(SNODEP_arrays%ptlat(c,r)) &
-                 < snodep_settings%latchk(month,hemi)) then
+            if (abs(LDTSI_arrays%ptlat(c,r)) &
+                 < ldtsi_settings%latchk(month,hemi)) then
                ! Force sea ice removal in low latitudes, a function of
                ! month and hemisphere
-               SNODEP_arrays%icemask(c,r) = 0
-               SNODEP_arrays%icecon(c,r) = 0
-               SNODEP_arrays%iceage(c,r) = 0
+               LDTSI_arrays%icemask(c,r) = 0
+               LDTSI_arrays%icecon(c,r) = 0
+               LDTSI_arrays%iceage(c,r) = 0
                
-            else if (abs(SNODEP_arrays%ptlat(c,r)) >= &
-                 snodep_settings%icelat(month,hemi)) then
+            else if (abs(LDTSI_arrays%ptlat(c,r)) >= &
+                 ldtsi_settings%icelat(month,hemi)) then
                ! Force sea ice in high latitudes, a function of month and
                ! hemisphere, unless valid SSMIS says otherwise.  
-               if (SNODEP_arrays%ssmis_icecon(c,r) >= 0 .and. &
-                    SNODEP_arrays%ssmis_icecon(c,r) .le. 100) then
-                  SNODEP_arrays%icecon(c,r) = SNODEP_arrays%ssmis_icecon(c,r)
-                  if (SNODEP_arrays%icecon(c,r) > snodep_settings%minice) then
-                     SNODEP_arrays%icemask(c,r) = icepnt
+               if (LDTSI_arrays%ssmis_icecon(c,r) >= 0 .and. &
+                    LDTSI_arrays%ssmis_icecon(c,r) .le. 100) then
+                  LDTSI_arrays%icecon(c,r) = LDTSI_arrays%ssmis_icecon(c,r)
+                  if (LDTSI_arrays%icecon(c,r) > ldtsi_settings%minice) then
+                     LDTSI_arrays%icemask(c,r) = icepnt
                   else
-                     SNODEP_arrays%icemask(c,r) = 0
-                     SNODEP_arrays%iceage(c,r) = 0
+                     LDTSI_arrays%icemask(c,r) = 0
+                     LDTSI_arrays%iceage(c,r) = 0
                   end if
                else
                   ! No SSMI available.  Force sea ice and find a reasonable
                   ! value.
-                  SNODEP_arrays%icemask(c,r) = icepnt
-                  if (SNODEP_arrays%oldcon(c,r) > snodep_settings%minice) then
-                     SNODEP_arrays%icecon(c,r) = &
-                          SNODEP_arrays%oldcon(c,r) ! Prior analysis
+                  LDTSI_arrays%icemask(c,r) = icepnt
+                  if (LDTSI_arrays%oldcon(c,r) > ldtsi_settings%minice) then
+                     LDTSI_arrays%icecon(c,r) = &
+                          LDTSI_arrays%oldcon(c,r) ! Prior analysis
                   else
-                     SNODEP_arrays%icecon(c,r) = icedef ! Bogus value
+                     LDTSI_arrays%icecon(c,r) = icedef ! Bogus value
                   end if
                end if
 
             else
                ! Mid-latitude case.  
-               if ( (SNODEP_arrays%ssmis_icecon(c,r) > &
-                    snodep_settings%minice) .and. &
-                    (SNODEP_arrays%ssmis_icecon(c,r) .le. 100)) then
+               if ( (LDTSI_arrays%ssmis_icecon(c,r) > &
+                    ldtsi_settings%minice) .and. &
+                    (LDTSI_arrays%ssmis_icecon(c,r) .le. 100)) then
                   ! Valid SSMIS detected ice
-                  SNODEP_arrays%icemask(c,r) = icepnt
-                  SNODEP_arrays%icecon(c,r) = SNODEP_arrays%ssmis_icecon(c,r)
-               else if (SNODEP_arrays%ssmis_icecon(c,r) >= 0 .and. &
-                    SNODEP_arrays%ssmis_icecon(c,r) .le. &
-                    snodep_settings%minice) then
+                  LDTSI_arrays%icemask(c,r) = icepnt
+                  LDTSI_arrays%icecon(c,r) = LDTSI_arrays%ssmis_icecon(c,r)
+               else if (LDTSI_arrays%ssmis_icecon(c,r) >= 0 .and. &
+                    LDTSI_arrays%ssmis_icecon(c,r) .le. &
+                    ldtsi_settings%minice) then
                   ! Valid SSMIS detected no ice
-                  SNODEP_arrays%icemask(c,r) = 0
-                  SNODEP_arrays%icecon(c,r) = 0
-                  SNODEP_arrays%iceage(c,r) = 0
+                  LDTSI_arrays%icemask(c,r) = 0
+                  LDTSI_arrays%icecon(c,r) = 0
+                  LDTSI_arrays%iceage(c,r) = 0
                else
                   ! No valid SSMIS data.  Attempt to use prior analysis
-                  if (SNODEP_arrays%oldcon(c,r) > snodep_settings%minice) then
-                     SNODEP_arrays%icemask(c,r) = icepnt
-                     SNODEP_arrays%icecon(c,r) = SNODEP_arrays%oldcon(c,r)
+                  if (LDTSI_arrays%oldcon(c,r) > ldtsi_settings%minice) then
+                     LDTSI_arrays%icemask(c,r) = icepnt
+                     LDTSI_arrays%icecon(c,r) = LDTSI_arrays%oldcon(c,r)
                   else
                      ! Prior analysis is either ice free or missing.  Assume
                      ! ice free.
-                     SNODEP_arrays%icemask(c,r) = 0
-                     SNODEP_arrays%icecon(c,r) = 0
-                     SNODEP_arrays%iceage(c,r) = 0
+                     LDTSI_arrays%icemask(c,r) = 0
+                     LDTSI_arrays%icecon(c,r) = 0
+                     LDTSI_arrays%iceage(c,r) = 0
                   end if
                end if
             end if
 
             ! Apply SST filter
-            if (SNODEP_arrays%sst(c,r) > 275) then
-               SNODEP_arrays%icemask(c,r) = 0
-               SNODEP_arrays%icecon(c,r) = 0
-               SNODEP_arrays%iceage(c,r) = 0
+            if (LDTSI_arrays%sst(c,r) > 275) then
+               LDTSI_arrays%icemask(c,r) = 0
+               LDTSI_arrays%icecon(c,r) = 0
+               LDTSI_arrays%iceage(c,r) = 0
             end if
             
             ! Update age if this is a 12Z analysis
-            if (SNODEP_arrays%icemask(c,r) == icepnt) then
+            if (LDTSI_arrays%icemask(c,r) == icepnt) then
                if ( runcycle == 12 .and. &
-                    SNODEP_arrays%iceage(c,r) == &
-                    SNODEP_arrays%iceage12z(c,r)) then
-                  SNODEP_arrays%iceage(c,r) = &
-                       min( (SNODEP_arrays%iceage(c,r)+1), maxage)
+                    LDTSI_arrays%iceage(c,r) == &
+                    LDTSI_arrays%iceage12z(c,r)) then
+                  LDTSI_arrays%iceage(c,r) = &
+                       min( (LDTSI_arrays%iceage(c,r)+1), maxage)
                end if
             end if
                
@@ -3261,9 +3271,9 @@ contains
    subroutine run_seaice_analysis_gofs(month, runcycle, nc, nr, landmask)
 
       ! Imports
-      use LDT_snodepMod, only: snodep_settings
-      use SNODEP_arraysMod, only: SNODEP_arrays
-      use SNODEP_paramsMod
+      use LDT_ldtsiMod, only: ldtsi_settings
+      use LDTSI_arraysMod, only: LDTSI_arrays
+      use LDTSI_paramsMod
 
       ! Defaults
       implicit none
@@ -3285,14 +3295,14 @@ contains
             
             ! Only run over water
             if (landmask(c,r) > 0.5) then
-               SNODEP_arrays%icecon(c,r) = -1
-               SNODEP_arrays%icemask(c,r) = -1
-               SNODEP_arrays%iceage(c,r) = -1
+               LDTSI_arrays%icecon(c,r) = -1
+               LDTSI_arrays%icemask(c,r) = -1
+               LDTSI_arrays%iceage(c,r) = -1
                cycle
             end if
       
             ! Find hemisphere
-            if (SNODEP_arrays%ptlat(c,r) >= 0) then
+            if (LDTSI_arrays%ptlat(c,r) >= 0) then
                hemi = 1
             else
                hemi = 2
@@ -3302,69 +3312,69 @@ contains
 
             ! Use the GOFS data if available.  Otherwise, try to fall back
             ! on prior analysis subject to certain constraints.
-            if (SNODEP_arrays%gofs_icecon(c,r) >= 0) then
+            if (LDTSI_arrays%gofs_icecon(c,r) >= 0) then
                ! We have valid GOFS data
-               SNODEP_arrays%icecon(c,r) = &
-                    nint(SNODEP_arrays%gofs_icecon(c,r))
-               if (SNODEP_arrays%icecon(c,r) > snodep_settings%minice) then
-                  SNODEP_arrays%icemask(c,r) = icepnt
+               LDTSI_arrays%icecon(c,r) = &
+                    nint(LDTSI_arrays%gofs_icecon(c,r))
+               if (LDTSI_arrays%icecon(c,r) > ldtsi_settings%minice) then
+                  LDTSI_arrays%icemask(c,r) = icepnt
                else
-                  SNODEP_arrays%icemask(c,r) = 0
-                  SNODEP_arrays%iceage(c,r) = 0
+                  LDTSI_arrays%icemask(c,r) = 0
+                  LDTSI_arrays%iceage(c,r) = 0
                end if
                check_sst = .false.  ! Defer to GOFS
 
-            else if (abs(SNODEP_arrays%ptlat(c,r)) < &
-                 snodep_settings%latchk(month,hemi)) then
+            else if (abs(LDTSI_arrays%ptlat(c,r)) < &
+                 ldtsi_settings%latchk(month,hemi)) then
                ! GOFS is missing at this point, and we are in low latitudes.
                ! Force no seaice.
-               SNODEP_arrays%icemask(c,r) = 0
-               SNODEP_arrays%icecon(c,r) = 0
-               SNODEP_arrays%iceage(c,r) = 0
+               LDTSI_arrays%icemask(c,r) = 0
+               LDTSI_arrays%icecon(c,r) = 0
+               LDTSI_arrays%iceage(c,r) = 0
                
-            else if (abs(SNODEP_arrays%ptlat(c,r)) >= &
-                 snodep_settings%icelat(month,hemi)) then
+            else if (abs(LDTSI_arrays%ptlat(c,r)) >= &
+                 ldtsi_settings%icelat(month,hemi)) then
                ! GOFS is missing at this point, and we are in high latitudes.
                ! Force sea ice and find a reasonable value.
-               SNODEP_arrays%icemask(c,r) = icepnt
-               if (SNODEP_arrays%oldcon(c,r) > snodep_settings%minice) then
-                  SNODEP_arrays%icecon(c,r) = &
-                       SNODEP_arrays%oldcon(c,r) ! Prior analysis
+               LDTSI_arrays%icemask(c,r) = icepnt
+               if (LDTSI_arrays%oldcon(c,r) > ldtsi_settings%minice) then
+                  LDTSI_arrays%icecon(c,r) = &
+                       LDTSI_arrays%oldcon(c,r) ! Prior analysis
                else
-                  SNODEP_arrays%icecon(c,r) = icedef ! Bogus value
+                  LDTSI_arrays%icecon(c,r) = icedef ! Bogus value
                end if
 
             else
                ! GOFS is missing at this point, and we are in mid-latitudes.
                ! Attempt to use prior analysis.
-               if (SNODEP_arrays%oldcon(c,r) > snodep_settings%minice) then
-                  SNODEP_arrays%icemask(c,r) = icepnt
-                  SNODEP_arrays%icecon(c,r) = SNODEP_arrays%oldcon(c,r)
+               if (LDTSI_arrays%oldcon(c,r) > ldtsi_settings%minice) then
+                  LDTSI_arrays%icemask(c,r) = icepnt
+                  LDTSI_arrays%icecon(c,r) = LDTSI_arrays%oldcon(c,r)
                else
                   ! Prior analysis is either ice free or missing.  Assume
                   ! ice free.
-                  SNODEP_arrays%icemask(c,r) = 0
-                  SNODEP_arrays%icecon(c,r) = 0
-                  SNODEP_arrays%iceage(c,r) = 0
+                  LDTSI_arrays%icemask(c,r) = 0
+                  LDTSI_arrays%icecon(c,r) = 0
+                  LDTSI_arrays%iceage(c,r) = 0
                end if
             end if
                
             ! Apply the SST filter unless we used the GOFS sea ice value.
             if (check_sst) then
-               if (SNODEP_arrays%sst(c,r) > 275) then
-                  SNODEP_arrays%icemask(c,r) = 0
-                  SNODEP_arrays%icecon(c,r) = 0
-                  SNODEP_arrays%iceage(c,r) = 0
+               if (LDTSI_arrays%sst(c,r) > 275) then
+                  LDTSI_arrays%icemask(c,r) = 0
+                  LDTSI_arrays%icecon(c,r) = 0
+                  LDTSI_arrays%iceage(c,r) = 0
                end if
             end if
             
             ! Update age if this is a 12Z analysis
-            if (SNODEP_arrays%icemask(c,r) == icepnt) then
+            if (LDTSI_arrays%icemask(c,r) == icepnt) then
                if ( runcycle == 12 .and. &
-                    SNODEP_arrays%iceage(c,r) == &
-                    SNODEP_arrays%iceage12z(c,r)) then
-                  SNODEP_arrays%iceage(c,r) = &
-                       min( (SNODEP_arrays%iceage(c,r)+1), maxage)
+                    LDTSI_arrays%iceage(c,r) == &
+                    LDTSI_arrays%iceage12z(c,r)) then
+                  LDTSI_arrays%iceage(c,r) = &
+                       min( (LDTSI_arrays%iceage(c,r)+1), maxage)
                end if
             end if
 
@@ -3391,7 +3401,7 @@ contains
       !**
       !**   OUTPUT:  TOWARM
       !**
-      !**  SEE SNODEP_paramsMod.F90 FOR PARAMETER DESCRIPTIONS
+      !**  SEE LDTSI_paramsMod.F90 FOR PARAMETER DESCRIPTIONS
       !**
       !**  UPDATES
       !**  =======
@@ -3403,13 +3413,14 @@ contains
       !**             AND TUNBLK DEFINITIONS TO MODULES...............MR EYLANDER/DNXM
       !**  15 SEP 10  ADDED ABS() TO LATITUDE CHECK...............MR LEWISTON/16WS/WXE
       !**  22 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+      !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
 
       ! Imports
-      use LDT_snodepMod, only: snodep_settings
-      use SNODEP_paramsMod
+      use LDT_ldtsiMod, only: ldtsi_settings
+      use LDTSI_paramsMod
 
       ! Defaults
       implicit none
@@ -3445,22 +3456,22 @@ contains
 
       ! CHECK IF LATITUDE IS LESS THAN OR EQUAL TO 30 DEGREES AND
       ! LESS THAN OR EQUAL TO 20 DEGREES.
-      if (abs (oblat) <= snodep_settings%trplat(2)) then
-         if (abs (oblat) <= snodep_settings%trplat(3)) then
+      if (abs (oblat) <= ldtsi_settings%trplat(2)) then
+         if (abs (oblat) <= ldtsi_settings%trplat(3)) then
 
-            if (obelev <= snodep_settings%elvlim(1)) then
+            if (obelev <= ldtsi_settings%elvlim(1)) then
                ! IF THE ELEVATION IS LESS THAN OR EQUAL TO 1000 METERS,
                ! SET TOWARM FLAG TO TRUE.
                towarm = .true.
             elseif ((sumnth(month,hemi,2) == 1) .and.       &
-                 (obelev <= snodep_settings%elvlim(2)))      then
+                 (obelev <= ldtsi_settings%elvlim(2)))      then
                ! IF IT'S A SUMMER MONTH AND THE ELEVATION IS LESS THAN OR
                ! EQUAL TO 1500 METERS, SET TOWARM FLAG TO TRUE.
                towarm = .true.
             endif
 
          elseif ((sumnth(month,hemi,2) == 1) .and.          &
-              (obelev <= snodep_settings%elvlim(3)))      then
+              (obelev <= ldtsi_settings%elvlim(3)))      then
             ! THE LATITUDE IS BETWEEN 20 AND 30 DEGRESS.  IF IT'S A SUMMER
             ! MONTH AND THE ELEVATION IS LESS THAN OR EQUAL TO 1000 METERS,
             ! SET TOWARM FLAG TO TRUE.
@@ -3468,7 +3479,7 @@ contains
          endif
 
       elseif ((sumnth(month,hemi,1) == 1) .and.              &
-           (obelev <= snodep_settings%elvlim(4)))      then
+           (obelev <= ldtsi_settings%elvlim(4)))      then
          ! THE LATITUDE IS BETWEEN 30 AND 40 DEGRESS.  IF IT'S A SUMMER
          ! MONTH AND THE ELEVATION IS LESS THAN OR EQUAL TO 1000 METERS,
          ! SET TOWARM FLAG TO TRUE.
@@ -3479,4 +3490,4 @@ contains
 
    end subroutine summer
 
-end module SNODEP_analysisMod
+end module LDTSI_analysisMod

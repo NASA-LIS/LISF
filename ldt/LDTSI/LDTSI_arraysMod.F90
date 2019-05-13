@@ -5,9 +5,9 @@
 !*****************************************************************************************
 !*****************************************************************************************
 !**
-!**  NAME: SNODEP_ARRAYS
+!**  NAME: LDTSI_ARRAYS
 !**
-!**  PURPOSE: HOLDS SNODEP MODEL SHARED ARRAYS
+!**  PURPOSE: HOLDS LDTSI MODEL SHARED ARRAYS
 !**
 !**  UPDATES
 !**  =======
@@ -24,19 +24,20 @@
 !**  10 OCT 13  ADDED ICEAGE12Z AND SNOAGE12Z.........................MR LEWISTON/16WS/WXE
 !**  15 FEB 17  ADDED VIIRS DATA........................................MR PUSKAR/16WS/WXE
 !**  22 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+!**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
 !** 
 !*****************************************************************************************
 !*****************************************************************************************
 
 #include "LDT_misc.h"
 
-module SNODEP_arraysMod
+module LDTSI_arraysMod
 
    ! Defaults
    implicit none
    private
 
-   type SNODEP_arrays_t
+   type LDTSI_arrays_t
       integer*1,  allocatable    :: snow_poss        ( : , : )    ! SNOW POSSIBLE MASK (0=NO SNOW; 1=SNOW)
       integer,    allocatable    :: iceage           ( : , : )    ! ICE AGE (DAYS)
       integer,    allocatable    :: iceage12z        ( : , : )    ! ICE AGE (DAYS) PROM PREVIOUS 12Z
@@ -54,12 +55,12 @@ module SNODEP_arraysMod
       real,       allocatable    :: ptlat            ( : , : )    ! GRID POINT LATITUDES
       real,       allocatable    :: ptlon            ( : , : )    ! GRID POINT LONGITUDES
       real,       allocatable    :: snoanl           ( : , : )    ! CURRENT SNOW DEPTH ANALYSIS (METERS)
-      real,       allocatable    :: snofrac          ( : , : )    ! FRACTIONAL SNOW DATA ON SNODEP GRID
+      real,       allocatable    :: snofrac          ( : , : )    ! FRACTIONAL SNOW DATA ON LDTSI GRID
       real,       allocatable    :: ssmis_depth      ( : , : )    ! SNOW DEPTH FROM SSMIS EDRS
       real,       allocatable    :: sst              ( : , : )    ! NAVY SEA SURFACE TEMPERATURES (KELVIN)
       real, allocatable :: gofs_icecon(:,:)
-   end type SNODEP_arrays_t
+   end type LDTSI_arrays_t
 
-   type(SNODEP_arrays_t), public :: SNODEP_arrays
+   type(LDTSI_arrays_t), public :: LDTSI_arrays
 
-end module SNODEP_arraysMod
+end module LDTSI_arraysMod
