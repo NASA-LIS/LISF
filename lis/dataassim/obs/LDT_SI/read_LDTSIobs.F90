@@ -175,7 +175,7 @@ contains
       write(unit=cdd, fmt='(i2.2)') dd
       write(unit=chh, fmt='(i2.2)') hh
       filename = trim(dir) // "/" &
-           // "snodep_" &
+           // "ldtsi_" &
            // trim(cyyyy) // trim(cmm) // trim(cdd) // trim(chh) &
            // ".nc"           
    end subroutine LDTSI_filename
