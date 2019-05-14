@@ -145,7 +145,9 @@
    do r = 1, nrows
       do c = 1, ncols;  i = i + 1
          gi1(i) = read_input(c,r) * scale_factor
-         if( gi1(i) .ne. LDT_rc%udef ) li1(i) = .true.
+         if( gi1(i) .ne. LDT_rc%udef ) then
+           li1(i) = .true.
+         endif
       enddo
    enddo
    deallocate( read_input )
