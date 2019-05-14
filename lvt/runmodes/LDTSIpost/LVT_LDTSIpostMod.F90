@@ -359,116 +359,24 @@ contains
       call check_gridID(gridID)
 
       ! Set the LDTSI grid description
-      griddesci(:) = 0
-      griddesci(1) = 0 ! lat/lon
-      griddesci(2) = this%nc
-      griddesci(3) = this%nr
-      griddesci(4) = this%sw_corner_lat
-      griddesci(5) = this%sw_corner_lon
-      griddesci(6) = 128
-      griddesci(7) = this%ne_corner_lat
-      griddesci(8) = this%ne_corner_lon
-      griddesci(9) = this%dx
-      griddesci(10) = this%dy
-      griddesci(11) = 64
-      griddesci(20) = 255
-      griddesci(30) = 0
-      griddesci(32) = this%nc
-      griddesci(33) = this%nr
-      griddesci(34) = this%sw_corner_lat
-      griddesci(35) = this%sw_corner_lon
-      griddesci(36) = 128
-      griddesci(37) = this%ne_corner_lat
-      griddesci(38) = this%ne_corner_lon
-      griddesci(39) = this%dx
-      griddesci(40) = this%dy
+      call set_griddesci(this, griddesci)
 
       ! Set the output grid description
       if (trim(gridID) .eq. trim(GLOBAL_LL0P25)) then
-         gridDefinitionTemplateNumber = 0
-         nc_out = 1440
-         nr_out =  720
-         griddesco(:) = 0
-         griddesco(1) = 0 ! lat/lon
-         griddesco(2) = nc_out
-         griddesco(3) = nr_out
-         griddesco(4) =  -89.875000
-         griddesco(5) = -179.875000
-         griddesco(6) = 128
-         griddesco(7) =   89.875000
-         griddesco(8) =  179.875000
-         griddesco(9) =  0.250000
-         griddesco(10) = 0.250000
-         griddesco(11) = 64
-         griddesco(20) = 255
-         griddesco(30) = 0
-         griddesco(32) = nc_out
-         griddesco(33) = nr_out
-         griddesco(34) =  -89.875000
-         griddesco(35) = -179.875000
-         griddesco(36) = 128
-         griddesco(37) =   89.875000
-         griddesco(38) =  179.875000
-         griddesco(39) = 0.250000
-         griddesco(40) = 0.250000
-         
+         call set_griddesco_global_ll0p25(this, griddesco)         
       else if (trim(gridID) .eq. trim(NH_PS16)) then
-
-         gridDefinitionTemplateNumber = 20
-         xmesh = 47.625/2
-         xpnmcaf = 513
-         ypnmcaf = 513
-         orient = 100.0
-         xj = float(1) - ypnmcaf
-         xi = float(1) - xpnmcaf
-         call polarToLatLon(xi,xj,xmesh,orient,alat,alon)
-         
-         nc_out = 1024
-         nr_out = 1024
-         griddesco(:) = 0
-         griddesco(1) = 5
-         griddesco(2) = nc_out
-         griddesco(3) = nr_out
-         griddesco(4) = alat
-         griddesco(5) = alon
-         griddesco(6) = 8
-         griddesco(7) = orient
-         griddesco(8) = xmesh
-         griddesco(9) = xmesh
-         griddesco(10) = 0.0
-         griddesco(11) = 128
-         griddesco(13) = 1
-         griddesco(20) = 128
-         
+         call set_griddesco_nh_ps16(this, griddesco)         
       else if (trim(gridID) .eq. trim(SH_PS16)) then
+         call set_griddesco_nh_ps16(this, griddesco)
+      end if
 
+      ! Useful grid variables for later
+      nc_out = griddesco(2)
+      nr_out = griddesco(3)
+      if (griddesco(0) == 0) then
+         gridDefinitionTemplateNumber = 0
+      else if (griddesco(0) == 5) then
          gridDefinitionTemplateNumber = 20
-
-         xmesh = -1*47.625/2
-         xpnmcaf = 513
-         ypnmcaf = 513
-         orient = 280
-         xj = float(1) - ypnmcaf
-         xi = float(1) - xpnmcaf
-         call polarToLatLon(xi,xj,xmesh,orient,alat,alon)
-
-         nc_out = 1024
-         nr_out = 1024         
-         griddesco(:) = 0
-         griddesco(1) = 5
-         griddesco(2) = nc_out
-         griddesco(3) = nr_out
-         griddesco(4) = alat
-         griddesco(5) = alon
-         griddesco(6) = 8
-         griddesco(7) = orient
-         griddesco(8) = xmesh
-         griddesco(9) = xmesh
-         griddesco(10) = 0.0
-         griddesco(11) = 128
-         griddesco(13) = 1
-         griddesco(20) = 128
-
       end if
 
       ! Calculate neighbor weights for upscaling
@@ -502,110 +410,8 @@ contains
       end do ! r
       call upscaleByAveraging((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, li, gi, lo, go)
-
-#if (defined USE_GRIBAPI)
-      call grib_new_from_template(igrib, "GRIB2", rc)
-#else
-      call grib_new_from_samples(igrib, "GRIB2", rc)
-#endif
-
-      ! Section 0: Indicator
-      ! Octet 7
-      call grib_set(igrib, 'discipline', 0, rc)
-
-      ! Section 1: Identification
-      ! Octets 6-7
-      call grib_set(igrib, 'centre', LVT_rc%grib_center_id, rc)
-      ! Octets 8-9
-      call grib_set(igrib, 'subCentre', LVT_rc%grib_subcenter_id, rc)
-      ! Octet 10
-      call grib_set(igrib, 'tablesVersion', LVT_rc%grib_table, rc)
-      ! Octet 11
-      call grib_set(igrib, 'localTabelsVersion', 1, rc)
-      ! Octet 12
-      call grib_set(igrib, 'significanceOfReferenceTime', 0, rc)
-      ! Octet 13-16
-      yyyymmdd = LVT_rc%yyyymmddhh(1:8)
-      read(idate8,'(i8)') yyyymmdd
-      call grib_set(igrib, 'dataDate', idate8, rc)
-      ! Octet 17-19
-      hhmm = LVT_rc%yyyymmddhh(9:10) // '00'
-      read(idate4,'(i4)') hhmm
-      call grib_set(igrib, 'dataTime', idate4, rc)
-      ! Octet 20
-      call grib_set(igrib, 'productionStatusOfProcessedData', 0, rc)
-      ! Octet 21
-      call grib_set(igrib, 'typeOfProcessedData', 0, rc)
-
-      ! Section 2:  Local Use Section (Optional) -- none for now
-
-      ! Section 3: Grid
-      call grib_set(igrib, 'gridDefinitionTemplateNumber', &
-           gridDefinitionTemplateNumber, rc)
-      ! Shape of the earth.  (Spherical earth, radius = 6,367,470.0 m)
-      call grib_set(igrib, 'shapeOfTheEarth', 0, rc)
-      ! Change data order
-      call grib_set(igrib, 'swapScanningLat', 1, rc)
-      ! Set dimensions
-      if (gridDefinitionTemplateNumber == 0) then
-         call grib_set(igrib, 'Ni', nc_out, rc)
-         call grib_set(igrib, 'Nj', nr_out, rc)
-         call grib_set(igrib, 'latitudeOfFirstGridPointInDegrees', &
-              -89.875000, rc)
-         call grib_set(igrib, 'longitudeOfFirstGridPointInDegrees', &
-              -179.875000, rc)
-         call grib_set(igrib, 'latitudeOfLastGridPointInDegrees', &
-              89.875000, rc)
-         call grib_set(igrib, 'longitudeOfLastGridPointInDegrees', &
-              179.875000, rc)
-         call grib_set(igrib, 'gridType', 'regular_ll', rc)
-         call grib_set(igrib, 'iDirectionIncrementInDegrees', &
-              griddesco(9), rc)
-         call grib_set(igrib, 'jDirectionIncrementInDegrees', &
-              griddesco(10), rc)
-      else if (gridDefinitionTemplateNumber == 0) then
-         call grib_set(igrib, 'Nx', nc_out, rc)
-         call grib_set(igrib, 'Ny', nr_out, rc)
-      end if
-
-      ! Section 4: Product Definition Section
-      ! Octets 8-9
-      call grib_set(igrib, 'productionDefinitionTemplateNumber', 0, rc)
-      ! Octet 10
-      call grib_set(igrib, 'parameterCategory', 1, rc)
-      ! Octet 11
-      call grib_set(igrib, 'parameterNumber', 11, rc)
-      ! Octet 12
-      call grib_set(igrib, 'typeOfGeneratingProcess', 0, rc)
-      ! Octet 13...Mark as SNODEP (unmodified)
-      call grib_set(igrib, 'backgroundGeneratingProcessIdentifier', &
-           35, rc)
-      ! Octet 14...Mark as SNODEP (unmodified)
-      call grib_set(igrib, 'generatingProcessIdentifier', 35, rc)
-      ! Octet 15-17 is skipped
-      ! Octet 18...Use hours
-      call grib_set(igrib, 'indicatorOfUnitOfTimeRange', 1, rc)
-      ! Octets 19-22 
-      call grib_set(igrib, 'forecastTime', 0, rc)
-      ! Octets 23-34
-      call grib_set(igrib, 'typeOfFirstFixedSurface', 1, rc)
-      call grib_set(igrib, 'typeOfSecondFixedSurface', 255, rc)
-      call grib_set(igrib, 'scaleFactorOfFirstFixedSurface', 0, rc)
-      call grib_set(igrib, 'scaledValueOfFirstFixedSurface', 0, rc)
-      call grib_set(igrib, 'scaleFactorOfSecondFixedSurface', 255, rc)
-      call grib_set(igrib, 'scaledValueOfSecondFixedSurface', 255, rc)
-
-      ! Section 5: Data Representation
-      call grib_set(igrib, 'packingType', LVT_rc%grib_packing_type, rc)
-      call grib_set(igrib, 'missingValue', LVT_rc%udef, rc)
-
-      ! Section 6: Bit-Map
-      call grib_set(igrib, 'bitmapPresent', 1, rc)
-
-      ! Section 7
-      call grib_set(igrib, 'values', go, rc)
-      call grib_write(igrib, ftn, rc)
-      call grib_release(igrib, rc)
+      call write_grib2(ftn, griddesco, &
+           nc_out, nr_out, go)
 
       ! Close the GRIB2 file
       call grib_close_file(ftn, rc)
@@ -615,7 +421,6 @@ contains
       deallocate(li)
       deallocate(gi)
       deallocate(go)
-
 
    end subroutine interp_and_output_grib2
 
@@ -687,4 +492,289 @@ contains
            trim(hh) // '00_DF.GR2'
            
    end subroutine build_filename_g2
+
+   ! Internal subroutine for setting griddesci
+   ! FIXME:  Add support for non-lat/lon projections
+   subroutine set_griddesci(this, griddesci)
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      class(LVT_LDTSIpost_t), intent(inout) :: this
+      real, intent(inout) ::  griddesci(50)
+
+      griddesci(:) = 0
+
+      griddesci(1) = 0 ! lat/lon
+      griddesci(2) = this%nc
+      griddesci(3) = this%nr
+      griddesci(4) = this%sw_corner_lat
+      griddesci(5) = this%sw_corner_lon
+      griddesci(6) = 128
+      griddesci(7) = this%ne_corner_lat
+      griddesci(8) = this%ne_corner_lon
+      griddesci(9) = this%dx
+      griddesci(10) = this%dy
+      griddesci(11) = 64
+      griddesci(20) = 255
+      griddesci(30) = 0
+      griddesci(32) = this%nc
+      griddesci(33) = this%nr
+      griddesci(34) = this%sw_corner_lat
+      griddesci(35) = this%sw_corner_lon
+      griddesci(36) = 128
+      griddesci(37) = this%ne_corner_lat
+      griddesci(38) = this%ne_corner_lon
+      griddesci(39) = this%dx
+      griddesci(40) = this%dy
+
+   end subroutine set_griddesci
+
+   ! Internal subroutine for setting griddesco for global lat/lon 0.25 deg grid
+   subroutine set_griddesco_global_ll0p25(this, griddesco)
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      class(LVT_LDTSIpost_t), intent(inout) :: this
+      real, intent(inout) ::  griddesco(50)
+
+      griddesco(:) = 0
+      griddesco(1) = 0 ! lat/lon
+      griddesco(2) = 1440
+      griddesco(3) =  720
+      griddesco(4) =  -89.875000
+      griddesco(5) = -179.875000
+      griddesco(6) = 128
+      griddesco(7) =   89.875000
+      griddesco(8) =  179.875000
+      griddesco(9) =  0.250000
+      griddesco(10) = 0.250000
+      griddesco(11) = 64
+      griddesco(20) = 255
+      griddesco(30) = 0
+      griddesco(32) = 1440
+      griddesco(33) =  720
+      griddesco(34) =  -89.875000
+      griddesco(35) = -179.875000
+      griddesco(36) = 128
+      griddesco(37) =   89.875000
+      griddesco(38) =  179.875000
+      griddesco(39) = 0.250000
+      griddesco(40) = 0.250000
+      
+   end subroutine set_griddesco_global_ll0p25
+
+   ! Internal subroutine for setting griddesco for global lat/lon 0.25 deg grid
+   subroutine set_griddesco_nh_ps16(this, griddesco)
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      class(LVT_LDTSIpost_t), intent(inout) :: this
+      real, intent(inout) ::  griddesco(50)
+
+      ! Local variables
+      real :: xmesh, xpnmcaf, ypnmcaf, orient, xj, xi, alat, alon
+
+      xmesh = 47.625/2
+      xpnmcaf = 513
+      ypnmcaf = 513
+      orient = 100.0
+      xj = float(1) - ypnmcaf
+      xi = float(1) - xpnmcaf
+      call polarToLatLon(xi,xj,xmesh,orient,alat,alon)
+         
+      griddesco(:) = 0
+      griddesco(1) = 5
+      griddesco(2) = 1024
+      griddesco(3) = 1024
+      griddesco(4) = alat
+      griddesco(5) = alon
+      griddesco(6) = 8
+      griddesco(7) = orient
+      griddesco(8) = xmesh
+      griddesco(9) = xmesh
+      griddesco(10) = 0.0
+      griddesco(11) = 128
+      griddesco(13) = 1
+      griddesco(20) = 128
+      
+   end subroutine set_griddesco_nh_ps16
+
+   ! Internal subroutine for setting griddesco for global lat/lon 0.25 deg grid
+   subroutine set_griddesco_sh_ps16(this, griddesco)
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      class(LVT_LDTSIpost_t), intent(inout) :: this
+      real, intent(inout) ::  griddesco(50)
+
+      ! Local variables
+      real :: xmesh, xpnmcaf, ypnmcaf, orient, xj, xi, alat, alon
+
+      xmesh = -1*47.625/2
+      xpnmcaf = 513
+      ypnmcaf = 513
+      orient = 280
+      xj = float(1) - ypnmcaf
+      xi = float(1) - xpnmcaf
+      call polarToLatLon(xi,xj,xmesh,orient,alat,alon)
+      
+      griddesco(:) = 0
+      griddesco(1) = 5
+      griddesco(2) = 1024
+      griddesco(3) = 1024
+      griddesco(4) = alat
+      griddesco(5) = alon
+      griddesco(6) = 8
+      griddesco(7) = orient
+      griddesco(8) = xmesh
+      griddesco(9) = xmesh
+      griddesco(10) = 0.0
+      griddesco(11) = 128
+      griddesco(13) = 1
+      griddesco(20) = 128
+      
+   end subroutine set_griddesco_sh_ps16
+
+
+   ! Internal subroutine for writing grib2 message
+   subroutine write_grib2(ftn, griddesco, &
+        nc_out, nr_out, go)
+
+      ! Imports
+      use grib_api
+      use LVT_coreMod, only: LVT_rc
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: ftn
+      real, intent(in) :: griddesco(50)
+      integer, intent(in) :: nc_out
+      integer, intent(in) :: nr_out
+      real, intent(in) :: go(nc_out*nr_out)
+
+      ! Local variables
+      integer :: igrib, rc
+      character(len=8) :: yyyymmdd
+      character(len=4) :: hhmm
+      integer :: idate8, idate4
+
+#if (defined USE_GRIBAPI)
+      call grib_new_from_template(igrib, "GRIB2", rc)
+#else
+      call grib_new_from_samples(igrib, "GRIB2", rc)
+#endif
+
+      ! Section 0: Indicator
+      ! Octet 7
+      call grib_set(igrib, 'discipline', 0, rc)
+
+      ! Section 1: Identification
+      ! Octets 6-7
+      call grib_set(igrib, 'centre', LVT_rc%grib_center_id, rc)
+      ! Octets 8-9
+      call grib_set(igrib, 'subCentre', LVT_rc%grib_subcenter_id, rc)
+      ! Octet 10
+      call grib_set(igrib, 'tablesVersion', LVT_rc%grib_table, rc)
+      ! Octet 11
+      call grib_set(igrib, 'localTabelsVersion', 1, rc)
+      ! Octet 12
+      call grib_set(igrib, 'significanceOfReferenceTime', 0, rc)
+      ! Octet 13-16
+      yyyymmdd = LVT_rc%yyyymmddhh(1:8)
+      read(idate8,'(i8)') yyyymmdd
+      call grib_set(igrib, 'dataDate', idate8, rc)
+      ! Octet 17-19
+      hhmm = LVT_rc%yyyymmddhh(9:10) // '00'
+      read(idate4,'(i4)') hhmm
+      call grib_set(igrib, 'dataTime', idate4, rc)
+      ! Octet 20
+      call grib_set(igrib, 'productionStatusOfProcessedData', 0, rc)
+      ! Octet 21
+      call grib_set(igrib, 'typeOfProcessedData', 0, rc)
+
+      ! Section 2:  Local Use Section (Optional) -- none for now
+
+      ! Section 3: Grid
+      if (griddesco(0) == 0) then
+         call grib_set(igrib, 'gridDefinitionTemplateNumber', 0, rc)
+      else if (griddesco(0) == 5) then
+         call grib_set(igrib, 'gridDefinitionTemplateNumber', 20, rc)
+      end if
+
+      ! Shape of the earth.  (Spherical earth, radius = 6,367,470.0 m)
+      call grib_set(igrib, 'shapeOfTheEarth', 0, rc)
+      ! Change data order
+      call grib_set(igrib, 'swapScanningLat', 1, rc)
+      ! Set dimensions
+      if (griddesco(0) == 0) then
+         call grib_set(igrib, 'Ni', nc_out, rc)
+         call grib_set(igrib, 'Nj', nr_out, rc)
+         call grib_set(igrib, 'latitudeOfFirstGridPointInDegrees', &
+              griddesco(4), rc)
+         call grib_set(igrib, 'longitudeOfFirstGridPointInDegrees', &
+              griddesco(5), rc)
+         call grib_set(igrib, 'latitudeOfLastGridPointInDegrees', &
+              griddesco(7), rc)
+         call grib_set(igrib, 'longitudeOfLastGridPointInDegrees', &
+              griddesco(8), rc)
+         call grib_set(igrib, 'gridType', 'regular_ll', rc)
+         call grib_set(igrib, 'iDirectionIncrementInDegrees', &
+              griddesco(9), rc)
+         call grib_set(igrib, 'jDirectionIncrementInDegrees', &
+              griddesco(10), rc)
+      else if (griddesco(0) == 5) then
+         call grib_set(igrib, 'Nx', nc_out, rc)
+         call grib_set(igrib, 'Ny', nr_out, rc)
+      end if
+
+      ! Section 4: Product Definition Section
+      ! Octets 8-9
+      call grib_set(igrib, 'productionDefinitionTemplateNumber', 0, rc)
+      ! Octet 10
+      call grib_set(igrib, 'parameterCategory', 1, rc)
+      ! Octet 11
+      call grib_set(igrib, 'parameterNumber', 11, rc)
+      ! Octet 12
+      call grib_set(igrib, 'typeOfGeneratingProcess', 0, rc)
+      ! Octet 13...Mark as SNODEP (unmodified)
+      call grib_set(igrib, 'backgroundGeneratingProcessIdentifier', &
+           35, rc)
+      ! Octet 14...Mark as SNODEP (unmodified)
+      call grib_set(igrib, 'generatingProcessIdentifier', 35, rc)
+      ! Octet 15-17 is skipped
+      ! Octet 18...Use hours
+      call grib_set(igrib, 'indicatorOfUnitOfTimeRange', 1, rc)
+      ! Octets 19-22 
+      call grib_set(igrib, 'forecastTime', 0, rc)
+      ! Octets 23-34
+      call grib_set(igrib, 'typeOfFirstFixedSurface', 1, rc)
+      call grib_set(igrib, 'typeOfSecondFixedSurface', 255, rc)
+      call grib_set(igrib, 'scaleFactorOfFirstFixedSurface', 0, rc)
+      call grib_set(igrib, 'scaledValueOfFirstFixedSurface', 0, rc)
+      call grib_set(igrib, 'scaleFactorOfSecondFixedSurface', 255, rc)
+      call grib_set(igrib, 'scaledValueOfSecondFixedSurface', 255, rc)
+
+      ! Section 5: Data Representation
+      call grib_set(igrib, 'packingType', LVT_rc%grib_packing_type, rc)
+      call grib_set(igrib, 'missingValue', LVT_rc%udef, rc)
+
+      ! Section 6: Bit-Map
+      call grib_set(igrib, 'bitmapPresent', 1, rc)
+
+      ! Section 7
+      call grib_set(igrib, 'values', go, rc)
+      call grib_write(igrib, ftn, rc)
+      call grib_release(igrib, rc)
+
+   end subroutine write_grib2
 end module LVT_LDTSIpostMod
