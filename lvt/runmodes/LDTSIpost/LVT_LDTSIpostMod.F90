@@ -410,8 +410,8 @@ contains
       end do ! r
       call upscaleByAveraging((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, li, gi, lo, go)
-      call write_grib2(ftn, griddesco, &
-           nc_out, nr_out, go)
+      call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
+           dspln=0, cat=1, num=11, typegenproc=0, genproc=35, fcsttime=0)
 
       ! Close the GRIB2 file
       call grib_close_file(ftn, rc)
@@ -646,7 +646,7 @@ contains
 
    ! Internal subroutine for writing grib2 message
    subroutine write_grib2(ftn, griddesco, &
-        nc_out, nr_out, go)
+        nc_out, nr_out, go, dspln, cat, num, typegenproc, genproc, fcsttime)
 
       ! Imports
       use grib_api
@@ -661,6 +661,12 @@ contains
       integer, intent(in) :: nc_out
       integer, intent(in) :: nr_out
       real, intent(in) :: go(nc_out*nr_out)
+      integer, intent(in) :: dspln
+      integer, intent(in) :: cat
+      integer, intent(in) :: num
+      integer, intent(in) :: typegenproc
+      integer, intent(in) :: genproc
+      integer, intent(in) :: fcsttime
 
       ! Local variables
       integer :: igrib, rc
@@ -676,7 +682,7 @@ contains
 
       ! Section 0: Indicator
       ! Octet 7
-      call grib_set(igrib, 'discipline', 0, rc)
+      call grib_set(igrib, 'discipline', dspln, rc)
 
       ! Section 1: Identification
       ! Octets 6-7
@@ -686,7 +692,7 @@ contains
       ! Octet 10
       call grib_set(igrib, 'tablesVersion', LVT_rc%grib_table, rc)
       ! Octet 11
-      call grib_set(igrib, 'localTabelsVersion', 1, rc)
+      call grib_set(igrib, 'localTablesVersion', 1, rc)
       ! Octet 12
       call grib_set(igrib, 'significanceOfReferenceTime', 0, rc)
       ! Octet 13-16
@@ -741,21 +747,21 @@ contains
       ! Octets 8-9
       call grib_set(igrib, 'productionDefinitionTemplateNumber', 0, rc)
       ! Octet 10
-      call grib_set(igrib, 'parameterCategory', 1, rc)
+      call grib_set(igrib, 'parameterCategory', cat, rc)
       ! Octet 11
-      call grib_set(igrib, 'parameterNumber', 11, rc)
+      call grib_set(igrib, 'parameterNumber', num, rc)
       ! Octet 12
-      call grib_set(igrib, 'typeOfGeneratingProcess', 0, rc)
+      call grib_set(igrib, 'typeOfGeneratingProcess', typegenproc, rc)
       ! Octet 13...Mark as SNODEP (unmodified)
       call grib_set(igrib, 'backgroundGeneratingProcessIdentifier', &
-           35, rc)
+           genproc, rc)
       ! Octet 14...Mark as SNODEP (unmodified)
-      call grib_set(igrib, 'generatingProcessIdentifier', 35, rc)
+      call grib_set(igrib, 'generatingProcessIdentifier', genproc, rc)
       ! Octet 15-17 is skipped
       ! Octet 18...Use hours
       call grib_set(igrib, 'indicatorOfUnitOfTimeRange', 1, rc)
       ! Octets 19-22 
-      call grib_set(igrib, 'forecastTime', 0, rc)
+      call grib_set(igrib, 'forecastTime', fcsttime, rc)
       ! Octets 23-34
       call grib_set(igrib, 'typeOfFirstFixedSurface', 1, rc)
       call grib_set(igrib, 'typeOfSecondFixedSurface', 255, rc)
