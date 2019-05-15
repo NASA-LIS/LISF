@@ -413,6 +413,76 @@ contains
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
            dspln=0, cat=1, num=11, typegenproc=0, genproc=35, fcsttime=0)
 
+      ! Interpolate snoage
+      do r = 1, this%nr
+         do c = 1, this%nc
+            if (this%snoage(c,r) < 0) then
+               li(c + (r-1)*this%nc) = .false.
+               gi(c + (r-1)*this%nc) = LVT_rc%udef
+            else
+               li(c + (r-1)*this%nc) = .true.
+               gi(c + (r-1)*this%nc) = this%snoage(c,r)
+            end if
+         end do ! c
+      end do ! r
+      call upscaleByAveraging((this%nc*this%nr), &
+           (nc_out*nr_out), LVT_rc%udef, li, gi, lo, go)
+      call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
+           dspln=0, cat=1, num=17, typegenproc=0, genproc=35, fcsttime=0)
+
+      ! TODO:  Handle icecon
+      do r = 1, this%nr
+         do c = 1, this%nc
+            if (this%icecon(c,r) < 0) then
+               li(c + (r-1)*this%nc) = .false.
+               gi(c + (r-1)*this%nc) = LVT_rc%udef
+            else
+               li(c + (r-1)*this%nc) = .true.
+               gi(c + (r-1)*this%nc) = this%icecon(c,r)
+            end if
+         end do ! c
+      end do ! r
+      call upscaleByAveraging((this%nc*this%nr), &
+           (nc_out*nr_out), LVT_rc%udef, li, gi, lo, go)
+      call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
+           dspln=10, cat=2, num=0, typegenproc=0, genproc=35, fcsttime=0)
+
+      ! TODO:  Handle icemask
+      do r = 1, this%nr
+         do c = 1, this%nc
+            if (this%icemask(c,r) < 0) then
+               li(c + (r-1)*this%nc) = .false.
+               gi(c + (r-1)*this%nc) = LVT_rc%udef
+            else
+               li(c + (r-1)*this%nc) = .true.
+               gi(c + (r-1)*this%nc) = this%icemask(c,r)
+            end if
+         end do ! c
+      end do ! r
+      call upscaleByAveraging((this%nc*this%nr), &
+           (nc_out*nr_out), LVT_rc%udef, li, gi, lo, go)
+      ! FIXME:  Find parameter number for ice mask
+      call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
+           dspln=10, cat=2, num=192, typegenproc=0, genproc=35, fcsttime=0)
+
+      ! TODO:  Handle iceage
+      do r = 1, this%nr
+         do c = 1, this%nc
+            if (this%icemask(c,r) < 0) then
+               li(c + (r-1)*this%nc) = .false.
+               gi(c + (r-1)*this%nc) = LVT_rc%udef
+            else
+               li(c + (r-1)*this%nc) = .true.
+               gi(c + (r-1)*this%nc) = this%icemask(c,r)
+            end if
+         end do ! c
+      end do ! r
+      call upscaleByAveraging((this%nc*this%nr), &
+           (nc_out*nr_out), LVT_rc%udef, li, gi, lo, go)
+      ! FIXME:  Find parameter number for ice age
+      call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
+           dspln=10, cat=2, num=193, typegenproc=0, genproc=35, fcsttime=0)
+
       ! Close the GRIB2 file
       call grib_close_file(ftn, rc)
 
