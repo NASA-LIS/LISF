@@ -476,7 +476,9 @@ contains
             end if
          end do ! c
       end do ! r
-      call upscaleByAveraging((this%nc*this%nr), &
+      !call upscaleByAveraging((this%nc*this%nr), &
+      !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      call upscaleByMode((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
            dspln=0, cat=1, num=17, typegenproc=0, fcsttime=0)
@@ -510,7 +512,9 @@ contains
             end if
          end do ! c
       end do ! r
-      call upscaleByAveraging((this%nc*this%nr), &
+      !call upscaleByAveraging((this%nc*this%nr), &
+      !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      call upscaleByMode((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       ! FIXME:  Find parameter number for ice mask
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
@@ -528,7 +532,9 @@ contains
             end if
          end do ! c
       end do ! r
-      call upscaleByAveraging((this%nc*this%nr), &
+      !call upscaleByAveraging((this%nc*this%nr), &
+      !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      call upscaleByMode((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       ! FIXME:  Find parameter number for ice age
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
