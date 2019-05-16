@@ -376,9 +376,9 @@ contains
       ! Useful grid variables for later
       nc_out = griddesco(2)
       nr_out = griddesco(3)
-      if (griddesco(0) == 0) then
+      if (griddesco(1) == 0) then
          gridDefinitionTemplateNumber = 0
-      else if (griddesco(0) == 5) then
+      else if (griddesco(1) == 5) then
          gridDefinitionTemplateNumber = 20
       end if
 
@@ -787,9 +787,9 @@ contains
       ! Section 2:  Local Use Section (Optional) -- none for now
 
       ! Section 3: Grid
-      if (griddesco(0) == 0) then
+      if (griddesco(1) == 0) then
          call grib_set(igrib, 'gridDefinitionTemplateNumber', 0, rc)
-      else if (griddesco(0) == 5) then
+      else if (griddesco(1) == 5) then
          call grib_set(igrib, 'gridDefinitionTemplateNumber', 20, rc)
       end if
 
@@ -798,7 +798,7 @@ contains
       ! Change data order
       call grib_set(igrib, 'swapScanningLat', 1, rc)
       ! Set dimensions
-      if (griddesco(0) == 0) then
+      if (griddesco(1) == 0) then
          call grib_set(igrib, 'Ni', nc_out, rc)
          call grib_set(igrib, 'Nj', nr_out, rc)
          call grib_set(igrib, 'latitudeOfFirstGridPointInDegrees', &
@@ -814,7 +814,7 @@ contains
               griddesco(9), rc)
          call grib_set(igrib, 'jDirectionIncrementInDegrees', &
               griddesco(10), rc)
-      else if (griddesco(0) == 5) then
+      else if (griddesco(1) == 5) then
          call grib_set(igrib, 'Nx', nc_out, rc)
          call grib_set(igrib, 'Ny', nr_out, rc)
 
