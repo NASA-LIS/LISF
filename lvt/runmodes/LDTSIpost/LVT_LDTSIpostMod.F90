@@ -408,7 +408,7 @@ contains
       else if (trim(gridID) .eq. trim(NH_PS16)) then
          call set_griddesco_nh_ps16(this, griddesco)         
       else if (trim(gridID) .eq. trim(SH_PS16)) then
-         call set_griddesco_nh_ps16(this, griddesco)
+         call set_griddesco_sh_ps16(this, griddesco)
       end if
 
       ! Useful grid variables for later
@@ -716,10 +716,12 @@ contains
       ! Local variables
       real :: xmesh, xpnmcaf, ypnmcaf, orient, xj, xi, alat, alon
 
-      xmesh = 47.625/2
+      !xmesh = 47.625/2
+      xmesh = 23.798479 ! Per 557WW GRIB2 manual
       xpnmcaf = 513
       ypnmcaf = 513
-      orient = 100.0
+      !orient = 100.0
+      orient = -80.0 ! Per 557WW GRIB2 manual
       xj = float(1) - ypnmcaf
       xi = float(1) - xpnmcaf
       call polarToLatLon(xi,xj,xmesh,orient,alat,alon)
@@ -754,10 +756,12 @@ contains
       ! Local variables
       real :: xmesh, xpnmcaf, ypnmcaf, orient, xj, xi, alat, alon
 
-      xmesh = -1*47.625/2
+      !xmesh = -1*47.625/2
+      xmesh = -23.798479 ! Per 557WW GRIB2 manual
       xpnmcaf = 513
       ypnmcaf = 513
-      orient = 280
+      !orient = 280
+      orient = -80. ! Per 557WW GRIB2 manual
       xj = float(1) - ypnmcaf
       xi = float(1) - xpnmcaf
       call polarToLatLon(xi,xj,xmesh,orient,alat,alon)
@@ -902,12 +906,19 @@ contains
               griddesco(4))
          call LVT_grib_set(igrib, 'longitudeOfFirstGridPointInDegrees', &
               griddesco(5))
+         call LVT_grib_set(igrib, 'LaD', griddesco(10))
          call LVT_grib_set(igrib, 'orientationOfTheGrid', &
               griddesco(7))
          call LVT_grib_set(igrib, 'DxInMetres', &
-              griddesco(8))
+              abs(1000*griddesco(8)))
          call LVT_grib_set(igrib, 'DyInMetres', &
-              griddesco(9))         
+              abs(1000*griddesco(9)))
+         if (griddesco(4) < 0) then
+            call LVT_grib_set(igrib, 'projectionCentreFlag', 0)
+         else
+            call LVT_grib_set(igrib, 'projectionCentreFlag', 1)
+         end if
+         call LVT_grib_set(igrib, 'scanningMode', 0)
       end if
 
       ! Section 4: Product Definition Section
