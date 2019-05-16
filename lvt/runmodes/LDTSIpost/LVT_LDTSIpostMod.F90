@@ -12,6 +12,8 @@
 ! Air Force grids, and outputting GRIB2 files.
 !------------------------------------------------------------------------------
 
+#include "LVT_misc.h"
+
 module LVT_LDTSIpostMod
 
    implicit none
@@ -45,9 +47,9 @@ module LVT_LDTSIpostMod
 
    end type LVT_LDTSIpost_t
 
-   character(len=50), parameter :: GLOBAL_LL0P25 = 'global_ll0p25'
-   character(len=50), parameter :: NH_PS16 = 'nh_ps16'
-   character(len=50), parameter :: SH_PS16 = 'sh_ps16'
+   character(len=15), parameter, public :: GLOBAL_LL0P25 = 'global_ll0p25'
+   character(len=15), parameter, public :: NH_PS16 = 'nh_ps16'
+   character(len=15), parameter, public :: SH_PS16 = 'sh_ps16'
 
 contains
    
@@ -126,7 +128,7 @@ contains
    subroutine read_ldtsi_ncfile(this)
 
       ! Imports
-      use LVT_logMod, only: LVT_logunit, LVT_endrun
+      use LVT_logMod, only: LVT_logunit, LVT_endrun, LVT_verify
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
       use netcdf
 #endif
@@ -139,11 +141,12 @@ contains
 
       ! Local variables
       integer :: ncid
-      integer :: dims_ids(3)
+      integer :: dim_ids(3)
       integer :: ntime, nlat, nlon
       real, allocatable :: tmp(:,:,:)
       integer :: snoanl_varid, snoage_varid, icecon_varid, icemask_varid, &
            iceage_varid
+      integer :: c,r
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
       write(LVT_logunit,*)'[INFO] Reading LDTSI file ',trim(this%input_nc_file)
@@ -312,7 +315,7 @@ contains
 
       ! Close the file
       call LVT_verify(nf90_close(ncid), &
-           '[ERR] Error in nf90_close for ' // trim(this%input_nc_file)
+           '[ERR] Error in nf90_close for ' // trim(this%input_nc_file))
 
 #else
       write(LVT_logunit,*) &
@@ -385,7 +388,8 @@ contains
            (this%nc*this%nr), (nc_out*nr_out), n11)
 
       ! Construct the GRIB2 filename
-      call build_filename_g2(gridID, LVT_rc%yyyymmddhh, fname)
+      call build_filename_g2(gridID, LVT_rc%output_dir, &
+           LVT_rc%yyyymmddhh, fname)
       
       ! Open the GRIB2 file
       call grib_open_file(ftn, fname, 'w', rc)
@@ -430,7 +434,7 @@ contains
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
            dspln=0, cat=1, num=17, typegenproc=0, genproc=35, fcsttime=0)
 
-      ! TODO:  Handle icecon
+      ! Handle icecon
       do r = 1, this%nr
          do c = 1, this%nc
             if (this%icecon(c,r) < 0) then
@@ -446,8 +450,8 @@ contains
            (nc_out*nr_out), LVT_rc%udef, li, gi, lo, go)
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
            dspln=10, cat=2, num=0, typegenproc=0, genproc=35, fcsttime=0)
-
-      ! TODO:  Handle icemask
+      
+      !  Handle icemask
       do r = 1, this%nr
          do c = 1, this%nc
             if (this%icemask(c,r) < 0) then
@@ -465,7 +469,7 @@ contains
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
            dspln=10, cat=2, num=192, typegenproc=0, genproc=35, fcsttime=0)
 
-      ! TODO:  Handle iceage
+      ! Handle iceage
       do r = 1, this%nr
          do c = 1, this%nc
             if (this%icemask(c,r) < 0) then
@@ -525,13 +529,14 @@ contains
    end subroutine check_gridID
 
    ! Build the grib2 filename
-   subroutine build_filename_g2(gridID, yyyymmddhh, filename)
+   subroutine build_filename_g2(gridID, output_dir, yyyymmddhh, filename)
 
       ! Defaults
       implicit none
 
       ! Arguments
       character(len=*), intent(in) :: gridID
+      character(len=255), intent(in) :: output_dir
       character(len=10), intent(in) :: yyyymmddhh
       character(len=255), intent(out) :: filename
 
@@ -554,7 +559,7 @@ contains
       yyyymmdd = yyyymmddhh(1:8)
       hh = yyyymmddhh(9:10)
 
-      filename = &
+      filename = trim(output_dir) // &
            'PS.AFWA_SC.U_DI.D_GP.SNODEP_GR.' // &
            trim(grid) // '_AR.' // &
            trim(area) // '_PA.SNODEP_DD' // &
@@ -721,6 +726,7 @@ contains
       ! Imports
       use grib_api
       use LVT_coreMod, only: LVT_rc
+      use LVT_logMod, only: LVT_logunit, LVT_endrun, LVT_verify
 
       ! Defaults
       implicit none
@@ -745,9 +751,9 @@ contains
       integer :: idate8, idate4
 
 #if (defined USE_GRIBAPI)
-      call grib_new_from_template(igrib, "GRIB2", rc)
-#else
       call grib_new_from_samples(igrib, "GRIB2", rc)
+#else
+      call grib_new_from_template(igrib, "GRIB2", rc)
 #endif
 
       ! Section 0: Indicator
@@ -811,6 +817,11 @@ contains
       else if (griddesco(0) == 5) then
          call grib_set(igrib, 'Nx', nc_out, rc)
          call grib_set(igrib, 'Ny', nr_out, rc)
+
+         ! EMK TEST
+         write(LVT_logunit,*)'EMK TEST STOP'
+         call LVT_endrun()
+
       end if
 
       ! Section 4: Product Definition Section

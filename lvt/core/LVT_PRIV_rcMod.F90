@@ -376,6 +376,7 @@ module LVT_PRIV_rcMod
      logical :: output_nh_ps16
      logical :: output_sh_ps16
      character(len=255) :: input_dir
+     character(len=255) :: output_dir
   end type lvtrcdec
   
   type lisrcdec
