@@ -354,13 +354,14 @@ contains
       logical*1, allocatable :: li(:), lo(:)
       real, allocatable :: gi(:), go(:)
       character(len=255) :: fname
-      integer :: ftn, rc
+      integer :: ftn, rc, status2
       integer :: c,r
       integer :: igrib
       character(len=8) :: yyyymmdd
       character(len=4) :: hhmm
       integer :: idate8, idate4
       integer :: gridDefinitionTemplateNumber
+      character(len=255) :: msg
 
       ! Sanity check the gridID. 
       call check_gridID(gridID)
@@ -397,6 +398,15 @@ contains
       
       ! Open the GRIB2 file
       call grib_open_file(ftn, fname, 'w', rc)
+      if (rc .ne. GRIB_SUCCESS) then
+         write(LVT_logunit,*)'[ERR] Error from grib_open_file'
+         call grib_get_error_string(rc, msg, status2)
+         write(LVT_logunit,*)'[ERR] ', trim(msg)
+         write(LVT_logunit,*)'[ERR] LVT will stop'
+         call LVT_endrun()
+      else
+         write(LVT_logunit,*)'[INFO] Writing to ', trim(fname)
+      end if
 
       ! Allocate memory for interpolation
       allocate(li(this%nc*this%nr))
@@ -493,11 +503,19 @@ contains
 
       ! Close the GRIB2 file
       call grib_close_file(ftn, rc)
+      if (rc .ne. GRIB_SUCCESS) then
+         write(LVT_logunit,*)'[ERR] Error from grib_close_file'
+         call grib_get_error_string(rc, msg, status2)
+         write(LVT_logunit,*)'[ERR] ', trim(msg)
+         write(LVT_logunit,*)'[ERR] LVT will stop'
+         call LVT_endrun()
+      end if
 
       ! Clean up
       deallocate(n11)
       deallocate(li)
       deallocate(gi)
+      deallocate(lo)
       deallocate(go)
 
    end subroutine interp_and_output_grib2
@@ -563,7 +581,7 @@ contains
       yyyymmdd = yyyymmddhh(1:8)
       hh = yyyymmddhh(9:10)
 
-      filename = trim(output_dir) // &
+      filename = trim(output_dir) // '/' // &
            'PS.AFWA_SC.U_DI.D_GP.SNODEP_GR.' // &
            trim(grid) // '_AR.' // &
            trim(area) // '_PA.SNODEP_DD' // &
@@ -722,7 +740,6 @@ contains
       
    end subroutine set_griddesco_sh_ps16
 
-
    ! Internal subroutine for writing grib2 message
    subroutine write_grib2(ftn, griddesco, &
         nc_out, nr_out, go, dspln, cat, num, typegenproc, fcsttime)
@@ -814,10 +831,13 @@ contains
 
       ! Shape of the earth.  (Spherical earth, radius = 6,367,470.0 m)
       call LVT_grib_set(igrib, 'shapeOfTheEarth', 0)
+
       ! Change data order
-      call LVT_grib_set(igrib, 'swapScanningLat', 1)
+      !call LVT_grib_set(igrib, 'swapScanningLat', 1)
+
       ! Set dimensions
       if (griddesco(1) == 0) then
+         ! Latitude/longitude
          call LVT_grib_set(igrib, 'Ni', nc_out)
          call LVT_grib_set(igrib, 'Nj', nr_out)
          call LVT_grib_set(igrib, 'latitudeOfFirstGridPointInDegrees', &
@@ -834,18 +854,24 @@ contains
          call LVT_grib_set(igrib, 'jDirectionIncrementInDegrees', &
               griddesco(10))
       else if (griddesco(1) == 5) then
+         ! Polar stereographic
          call LVT_grib_set(igrib, 'Nx', nc_out)
          call LVT_grib_set(igrib, 'Ny', nr_out)
-
-         ! EMK TEST
-         write(LVT_logunit,*)'EMK TEST STOP'
-         call LVT_endrun()
-
+         call LVT_grib_set(igrib, 'latitudeOfFirstGridPointInDegrees', &
+              griddesco(4))
+         call LVT_grib_set(igrib, 'longitudeOfFirstGridPointInDegrees', &
+              griddesco(5))
+         call LVT_grib_set(igrib, 'orientationOfTheGrid', &
+              griddesco(7))
+         call LVT_grib_set(igrib, 'DxInMetres', &
+              griddesco(8))
+         call LVT_grib_set(igrib, 'DyInMetres', &
+              griddesco(9))         
       end if
 
       ! Section 4: Product Definition Section
       ! Octets 8-9
-      call LVT_grib_set(igrib, 'productionDefinitionTemplateNumber', 0)
+      call LVT_grib_set(igrib, 'productDefinitionTemplateNumber', 0)
       ! Octet 10
       call LVT_grib_set(igrib, 'parameterCategory', cat)
       ! Octet 11
