@@ -128,6 +128,7 @@ contains
    subroutine read_ldtsi_ncfile(this)
 
       ! Imports
+      use LVT_coreMod, only: LVT_rc
       use LVT_logMod, only: LVT_logunit, LVT_endrun, LVT_verify
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
       use netcdf
@@ -244,27 +245,42 @@ contains
            values=tmp), &
            '[ERR] Error in nf90_get_var for snoanl')
       allocate(this%snoanl(nlon,nlat))
-      this%snoanl(:,:) = tmp(:,:,1)
+      do r = 1, nlat
+         do c = 1, nlon
+            if (tmp(c,r,1) < 0) then
+               this%snoanl(c,r) = LVT_rc%udef
+            else
+               this%snoanl(c,r) = tmp(c,r,1)
+            end if
+         end do
+      end do
 
       call LVT_verify(nf90_get_var(ncid=ncid, &
            varid=snoage_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for snoage')
       allocate(this%snoage(nlon,nlat))
-      this%snoage(:,:) = tmp(:,:,1)
+      do r = 1, nlat
+         do c = 1, nlon
+            if (tmp(c,r,1) < 0) then
+               this%snoage(c,r) = LVT_rc%udef
+            else
+               this%snoage(c,r) = tmp(c,r,1)
+            end if
+         end do
+      end do
 
       call LVT_verify(nf90_get_var(ncid=ncid, &
            varid=icecon_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for icecon')
       allocate(this%icecon(nlon,nlat))
-      ! A unit transform is needed here
       do r = 1, nlat
          do c = 1, nlon
             if (tmp(c,r,1) < 0) then
-               this%icecon(c,r) = -1
+               this%icecon(c,r) = LVT_rc%udef
             else
-               this%icecon(c,r) = 100*tmp(c,r,1)
+               this%icecon(c,r) = tmp(c,r,1)
             end if
          end do
       end do
@@ -274,13 +290,30 @@ contains
            values=tmp), &
            '[ERR] Error in nf90_get_var for icemask')
       allocate(this%icemask(nlon,nlat))
-      this%icemask(:,:) = tmp(:,:,1)
+      do r = 1, nlat
+         do c = 1, nlon
+            if (tmp(c,r,1) < 0) then
+               this%icemask(c,r) = LVT_rc%udef
+            else
+               this%icemask(c,r) = tmp(c,r,1)
+            end if
+         end do
+      end do
 
       call LVT_verify(nf90_get_var(ncid=ncid, &
            varid=iceage_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for icemask')
-      this%iceage(:,:) = tmp(:,:,1)
+      allocate(this%iceage(nlon,nlat))
+      do r = 1, nlat
+         do c = 1, nlon
+            if (tmp(c,r,1) < 0) then
+               this%iceage(c,r) = LVT_rc%udef
+            else
+               this%iceage(c,r) = tmp(c,r,1)
+            end if
+         end do
+      end do
 
       ! Clean up
       deallocate(tmp)
@@ -491,7 +524,7 @@ contains
                gi(c + (r-1)*this%nc) = LVT_rc%udef
             else
                li(c + (r-1)*this%nc) = .true.
-               gi(c + (r-1)*this%nc) = this%icemask(c,r)
+               gi(c + (r-1)*this%nc) = this%iceage(c,r)
             end if
          end do ! c
       end do ! r
@@ -828,8 +861,7 @@ contains
       else if (griddesco(1) == 5) then
          call LVT_grib_set(igrib, 'gridDefinitionTemplateNumber', 20)
       end if
-
-      ! Shape of the earth.  (Spherical earth, radius = 6,367,470.0 m)
+      ! Octet 15
       call LVT_grib_set(igrib, 'shapeOfTheEarth', 0)
 
       ! Change data order
@@ -840,6 +872,8 @@ contains
          ! Latitude/longitude
          call LVT_grib_set(igrib, 'Ni', nc_out)
          call LVT_grib_set(igrib, 'Nj', nr_out)
+         call LVT_grib_set(igrib, 'basicAngleOfTheInitialProductionDomain', &
+              0)
          call LVT_grib_set(igrib, 'latitudeOfFirstGridPointInDegrees', &
               griddesco(4))
          call LVT_grib_set(igrib, 'longitudeOfFirstGridPointInDegrees', &
@@ -848,11 +882,12 @@ contains
               griddesco(7))
          call LVT_grib_set(igrib, 'longitudeOfLastGridPointInDegrees', &
               griddesco(8))
-         call LVT_grib_set(igrib, 'gridType', 'regular_ll')
+         !call LVT_grib_set(igrib, 'gridType', 'regular_ll')
          call LVT_grib_set(igrib, 'iDirectionIncrementInDegrees', &
               griddesco(9))
          call LVT_grib_set(igrib, 'jDirectionIncrementInDegrees', &
               griddesco(10))
+         call LVT_grib_set(igrib, 'scanningMode', 64)
       else if (griddesco(1) == 5) then
          ! Polar stereographic
          call LVT_grib_set(igrib, 'Nx', nc_out)
@@ -889,13 +924,8 @@ contains
       call LVT_grib_set(igrib, 'indicatorOfUnitOfTimeRange', 1)
       ! Octets 19-22 
       call LVT_grib_set(igrib, 'forecastTime', fcsttime)
-      ! Octets 23-34
+      ! Octets 23-34...Ground or water surface
       call LVT_grib_set(igrib, 'typeOfFirstFixedSurface', 1)
-      call LVT_grib_set(igrib, 'typeOfSecondFixedSurface', 255)
-      call LVT_grib_set(igrib, 'scaleFactorOfFirstFixedSurface', 0)
-      call LVT_grib_set(igrib, 'scaledValueOfFirstFixedSurface', 0)
-      call LVT_grib_set(igrib, 'scaleFactorOfSecondFixedSurface', 255)
-      call LVT_grib_set(igrib, 'scaledValueOfSecondFixedSurface', 255)
 
       ! Section 5: Data Representation
       call LVT_grib_set(igrib, 'packingType', LVT_rc%grib_packing_type)
