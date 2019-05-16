@@ -243,18 +243,21 @@ contains
            varid=snoanl_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for snoanl')
+      allocate(this%snoanl(nlon,nlat))
       this%snoanl(:,:) = tmp(:,:,1)
 
       call LVT_verify(nf90_get_var(ncid=ncid, &
            varid=snoage_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for snoage')
+      allocate(this%snoage(nlon,nlat))
       this%snoage(:,:) = tmp(:,:,1)
 
       call LVT_verify(nf90_get_var(ncid=ncid, &
            varid=icecon_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for icecon')
+      allocate(this%icecon(nlon,nlat))
       ! A unit transform is needed here
       do r = 1, nlat
          do c = 1, nlon
@@ -270,6 +273,7 @@ contains
            varid=icemask_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for icemask')
+      allocate(this%icemask(nlon,nlat))
       this%icemask(:,:) = tmp(:,:,1)
 
       call LVT_verify(nf90_get_var(ncid=ncid, &
@@ -396,7 +400,7 @@ contains
 
       ! Allocate memory for interpolation
       allocate(li(this%nc*this%nr))
-      allocate(gi(this%nr*this%nr))
+      allocate(gi(this%nc*this%nr))
       allocate(lo(nc_out*nr_out))
       allocate(go(nc_out*nr_out))
 
@@ -413,9 +417,9 @@ contains
          end do ! c
       end do ! r
       call upscaleByAveraging((this%nc*this%nr), &
-           (nc_out*nr_out), LVT_rc%udef, li, gi, lo, go)
+           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-           dspln=0, cat=1, num=11, typegenproc=0, genproc=35, fcsttime=0)
+           dspln=0, cat=1, num=11, typegenproc=0, fcsttime=0)
 
       ! Interpolate snoage
       do r = 1, this%nr
@@ -430,9 +434,9 @@ contains
          end do ! c
       end do ! r
       call upscaleByAveraging((this%nc*this%nr), &
-           (nc_out*nr_out), LVT_rc%udef, li, gi, lo, go)
+           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-           dspln=0, cat=1, num=17, typegenproc=0, genproc=35, fcsttime=0)
+           dspln=0, cat=1, num=17, typegenproc=0, fcsttime=0)
 
       ! Handle icecon
       do r = 1, this%nr
@@ -447,9 +451,9 @@ contains
          end do ! c
       end do ! r
       call upscaleByAveraging((this%nc*this%nr), &
-           (nc_out*nr_out), LVT_rc%udef, li, gi, lo, go)
+           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-           dspln=10, cat=2, num=0, typegenproc=0, genproc=35, fcsttime=0)
+           dspln=10, cat=2, num=0, typegenproc=0, fcsttime=0)
       
       !  Handle icemask
       do r = 1, this%nr
@@ -464,10 +468,10 @@ contains
          end do ! c
       end do ! r
       call upscaleByAveraging((this%nc*this%nr), &
-           (nc_out*nr_out), LVT_rc%udef, li, gi, lo, go)
+           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       ! FIXME:  Find parameter number for ice mask
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-           dspln=10, cat=2, num=192, typegenproc=0, genproc=35, fcsttime=0)
+           dspln=10, cat=2, num=192, typegenproc=0, fcsttime=0)
 
       ! Handle iceage
       do r = 1, this%nr
@@ -482,10 +486,10 @@ contains
          end do ! c
       end do ! r
       call upscaleByAveraging((this%nc*this%nr), &
-           (nc_out*nr_out), LVT_rc%udef, li, gi, lo, go)
+           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       ! FIXME:  Find parameter number for ice age
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-           dspln=10, cat=2, num=193, typegenproc=0, genproc=35, fcsttime=0)
+           dspln=10, cat=2, num=193, typegenproc=0, fcsttime=0)
 
       ! Close the GRIB2 file
       call grib_close_file(ftn, rc)
@@ -721,11 +725,12 @@ contains
 
    ! Internal subroutine for writing grib2 message
    subroutine write_grib2(ftn, griddesco, &
-        nc_out, nr_out, go, dspln, cat, num, typegenproc, genproc, fcsttime)
+        nc_out, nr_out, go, dspln, cat, num, typegenproc, fcsttime)
 
-      ! Imports
+      ! Imports      
       use grib_api
       use LVT_coreMod, only: LVT_rc
+      use LVT_gribWrapperMod, only: LVT_grib_set
       use LVT_logMod, only: LVT_logunit, LVT_endrun, LVT_verify
 
       ! Defaults
@@ -741,82 +746,96 @@ contains
       integer, intent(in) :: cat
       integer, intent(in) :: num
       integer, intent(in) :: typegenproc
-      integer, intent(in) :: genproc
       integer, intent(in) :: fcsttime
 
       ! Local variables
-      integer :: igrib, rc
+      integer :: igrib, rc, status2
       character(len=8) :: yyyymmdd
       character(len=4) :: hhmm
       integer :: idate8, idate4
+      character(len=255) :: msg
 
 #if (defined USE_GRIBAPI)
       call grib_new_from_samples(igrib, "GRIB2", rc)
+      if (rc .ne. GRIB_SUCCESS) then
+         write(LVT_logunit,*)'[ERR] Error from grib_new_from_samples'
+         call grib_get_error_string(rc, msg, status2)
+         write(LVT_logunit,*)'[ERR] ',trim(msg)
+         write(LVT_logunit,*)'[ERR] LVT will stop'
+         call LVT_endrun()
+      end if
 #else
       call grib_new_from_template(igrib, "GRIB2", rc)
+      if (rc .ne. GRIB_SUCCESS) then
+         write(LVT_logunit,*)'[ERR] Error from grib_new_from_template'
+         call grib_get_error_string(rc, msg, status2)
+         write(LVT_logunit,*)'[ERR] ',trim(msg)
+         write(LVT_logunit,*)'[ERR] LVT will stop'
+         call LVT_endrun()
+      end if
 #endif
 
       ! Section 0: Indicator
       ! Octet 7
-      call grib_set(igrib, 'discipline', dspln, rc)
+      call LVT_grib_set(igrib, 'discipline', dspln)
 
       ! Section 1: Identification
       ! Octets 6-7
-      call grib_set(igrib, 'centre', LVT_rc%grib_center_id, rc)
+      call LVT_grib_set(igrib, 'centre', LVT_rc%grib_center_id)
       ! Octets 8-9
-      call grib_set(igrib, 'subCentre', LVT_rc%grib_subcenter_id, rc)
+      call LVT_grib_set(igrib, 'subCentre', LVT_rc%grib_subcenter_id)
       ! Octet 10
-      call grib_set(igrib, 'tablesVersion', LVT_rc%grib_table, rc)
+      call LVT_grib_set(igrib, 'tablesVersion', LVT_rc%grib_table)
       ! Octet 11
-      call grib_set(igrib, 'localTablesVersion', 1, rc)
+      call LVT_grib_set(igrib, 'localTablesVersion', 1)
       ! Octet 12
-      call grib_set(igrib, 'significanceOfReferenceTime', 0, rc)
+      call LVT_grib_set(igrib, 'significanceOfReferenceTime', 0)
       ! Octet 13-16
       yyyymmdd = LVT_rc%yyyymmddhh(1:8)
-      read(idate8,'(i8)') yyyymmdd
-      call grib_set(igrib, 'dataDate', idate8, rc)
+      read(yyyymmdd,'(i8)') idate8
+      call LVT_grib_set(igrib, 'dataDate', idate8)
       ! Octet 17-19
       hhmm = LVT_rc%yyyymmddhh(9:10) // '00'
-      read(idate4,'(i4)') hhmm
-      call grib_set(igrib, 'dataTime', idate4, rc)
+      read(hhmm,'(i4)') idate4
+      call LVT_grib_set(igrib, 'dataTime', idate4)
       ! Octet 20
-      call grib_set(igrib, 'productionStatusOfProcessedData', 0, rc)
+      call LVT_grib_set(igrib, 'productionStatusOfProcessedData', 0)
       ! Octet 21
-      call grib_set(igrib, 'typeOfProcessedData', 0, rc)
+      call LVT_grib_set(igrib, 'typeOfProcessedData', 0)
 
       ! Section 2:  Local Use Section (Optional) -- none for now
 
       ! Section 3: Grid
       if (griddesco(1) == 0) then
-         call grib_set(igrib, 'gridDefinitionTemplateNumber', 0, rc)
+         call LVT_grib_set(igrib, 'gridDefinitionTemplateNumber', 0)
       else if (griddesco(1) == 5) then
-         call grib_set(igrib, 'gridDefinitionTemplateNumber', 20, rc)
+         call LVT_grib_set(igrib, 'gridDefinitionTemplateNumber', 20)
       end if
 
       ! Shape of the earth.  (Spherical earth, radius = 6,367,470.0 m)
-      call grib_set(igrib, 'shapeOfTheEarth', 0, rc)
+      call LVT_grib_set(igrib, 'shapeOfTheEarth', 0)
       ! Change data order
-      call grib_set(igrib, 'swapScanningLat', 1, rc)
+      call LVT_grib_set(igrib, 'swapScanningLat', 1)
       ! Set dimensions
       if (griddesco(1) == 0) then
-         call grib_set(igrib, 'Ni', nc_out, rc)
-         call grib_set(igrib, 'Nj', nr_out, rc)
-         call grib_set(igrib, 'latitudeOfFirstGridPointInDegrees', &
-              griddesco(4), rc)
-         call grib_set(igrib, 'longitudeOfFirstGridPointInDegrees', &
-              griddesco(5), rc)
-         call grib_set(igrib, 'latitudeOfLastGridPointInDegrees', &
-              griddesco(7), rc)
-         call grib_set(igrib, 'longitudeOfLastGridPointInDegrees', &
-              griddesco(8), rc)
-         call grib_set(igrib, 'gridType', 'regular_ll', rc)
-         call grib_set(igrib, 'iDirectionIncrementInDegrees', &
-              griddesco(9), rc)
-         call grib_set(igrib, 'jDirectionIncrementInDegrees', &
-              griddesco(10), rc)
+         call LVT_grib_set(igrib, 'Ni', nc_out)
+         call LVT_grib_set(igrib, 'Nj', nr_out)
+         call LVT_grib_set(igrib, 'latitudeOfFirstGridPointInDegrees', &
+              griddesco(4))
+         call LVT_grib_set(igrib, 'longitudeOfFirstGridPointInDegrees', &
+              griddesco(5))
+         call LVT_grib_set(igrib, 'latitudeOfLastGridPointInDegrees', &
+              griddesco(7))
+         call LVT_grib_set(igrib, 'longitudeOfLastGridPointInDegrees', &
+              griddesco(8))
+         call LVT_grib_set(igrib, 'gridType', 'regular_ll')
+         call LVT_grib_set(igrib, 'iDirectionIncrementInDegrees', &
+              griddesco(9))
+         call LVT_grib_set(igrib, 'jDirectionIncrementInDegrees', &
+              griddesco(10))
       else if (griddesco(1) == 5) then
-         call grib_set(igrib, 'Nx', nc_out, rc)
-         call grib_set(igrib, 'Ny', nr_out, rc)
+         call LVT_grib_set(igrib, 'Nx', nc_out)
+         call LVT_grib_set(igrib, 'Ny', nr_out)
 
          ! EMK TEST
          write(LVT_logunit,*)'EMK TEST STOP'
@@ -826,42 +845,60 @@ contains
 
       ! Section 4: Product Definition Section
       ! Octets 8-9
-      call grib_set(igrib, 'productionDefinitionTemplateNumber', 0, rc)
+      call LVT_grib_set(igrib, 'productionDefinitionTemplateNumber', 0)
       ! Octet 10
-      call grib_set(igrib, 'parameterCategory', cat, rc)
+      call LVT_grib_set(igrib, 'parameterCategory', cat)
       ! Octet 11
-      call grib_set(igrib, 'parameterNumber', num, rc)
+      call LVT_grib_set(igrib, 'parameterNumber', num)
       ! Octet 12
-      call grib_set(igrib, 'typeOfGeneratingProcess', typegenproc, rc)
-      ! Octet 13...Mark as SNODEP (unmodified)
-      call grib_set(igrib, 'backgroundGeneratingProcessIdentifier', &
-           genproc, rc)
-      ! Octet 14...Mark as SNODEP (unmodified)
-      call grib_set(igrib, 'generatingProcessIdentifier', genproc, rc)
+      call LVT_grib_set(igrib, 'typeOfGeneratingProcess', typegenproc)
+      ! Octet 13
+      call LVT_grib_set(igrib, 'backgroundGeneratingProcessIdentifier', &
+           LVT_rc%grib_process_id)
+      ! Octet 14
+      call LVT_grib_set(igrib, 'generatingProcessIdentifier', &
+           LVT_rc%grib_process_id)
       ! Octet 15-17 is skipped
       ! Octet 18...Use hours
-      call grib_set(igrib, 'indicatorOfUnitOfTimeRange', 1, rc)
+      call LVT_grib_set(igrib, 'indicatorOfUnitOfTimeRange', 1)
       ! Octets 19-22 
-      call grib_set(igrib, 'forecastTime', fcsttime, rc)
+      call LVT_grib_set(igrib, 'forecastTime', fcsttime)
       ! Octets 23-34
-      call grib_set(igrib, 'typeOfFirstFixedSurface', 1, rc)
-      call grib_set(igrib, 'typeOfSecondFixedSurface', 255, rc)
-      call grib_set(igrib, 'scaleFactorOfFirstFixedSurface', 0, rc)
-      call grib_set(igrib, 'scaledValueOfFirstFixedSurface', 0, rc)
-      call grib_set(igrib, 'scaleFactorOfSecondFixedSurface', 255, rc)
-      call grib_set(igrib, 'scaledValueOfSecondFixedSurface', 255, rc)
+      call LVT_grib_set(igrib, 'typeOfFirstFixedSurface', 1)
+      call LVT_grib_set(igrib, 'typeOfSecondFixedSurface', 255)
+      call LVT_grib_set(igrib, 'scaleFactorOfFirstFixedSurface', 0)
+      call LVT_grib_set(igrib, 'scaledValueOfFirstFixedSurface', 0)
+      call LVT_grib_set(igrib, 'scaleFactorOfSecondFixedSurface', 255)
+      call LVT_grib_set(igrib, 'scaledValueOfSecondFixedSurface', 255)
 
       ! Section 5: Data Representation
-      call grib_set(igrib, 'packingType', LVT_rc%grib_packing_type, rc)
-      call grib_set(igrib, 'missingValue', LVT_rc%udef, rc)
+      call LVT_grib_set(igrib, 'packingType', LVT_rc%grib_packing_type)
+      call LVT_grib_set(igrib, 'missingValue', LVT_rc%udef)
 
       ! Section 6: Bit-Map
-      call grib_set(igrib, 'bitmapPresent', 1, rc)
+      call LVT_grib_set(igrib, 'bitmapPresent', 1)
 
       ! Section 7
-      call grib_set(igrib, 'values', go, rc)
+      call LVT_grib_set(igrib, 'values', go)
+
       call grib_write(igrib, ftn, rc)
+      if (rc .ne. GRIB_SUCCESS) then
+         write(LVT_logunit,*)'[ERR] Error from grib_write'
+         call grib_get_error_string(rc, msg, status2)
+         write(LVT_logunit,*)'[ERR] ', trim(msg)
+         write(LVT_Logunit,*)'[ERR] LVT will stop'
+         call LVT_endrun()
+      end if
+
       call grib_release(igrib, rc)
+      if (rc .ne. GRIB_SUCCESS) then
+         write(LVT_logunit,*)'[ERR] Error from grib_release'
+         call grib_get_error_string(rc, msg, status2)
+         write(LVT_logunit,*)'[ERR] ', trim(msg)
+         write(LVT_Logunit,*)'[ERR] LVT will stop'
+         call LVT_endrun()
+      end if
 
    end subroutine write_grib2
+
 end module LVT_LDTSIpostMod
