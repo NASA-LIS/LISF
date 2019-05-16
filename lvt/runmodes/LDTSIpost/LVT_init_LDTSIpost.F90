@@ -16,11 +16,6 @@ subroutine LVT_init_LDTSIpost()
    ! Other initialize steps
    call LVT_flush(LVT_logunit)
 
-
-   ! TEST
-   write(LVT_logunit,*)'EMK TEST STOP'
-   call LVT_endrun()
-
 contains
 
    ! Internal subroutine for reading LDTSIpost-specific config settings
@@ -38,24 +33,26 @@ contains
       character(len=255) :: cfgline
       integer :: rc
       
-      cfgline = "LDTSI valid date (YYYYMMDDHH):"
-      call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%yyyymmddhh, &
-           label=trim(cfgline), rc=rc)
-      call LVT_verify(rc, trim(cfgline)//" not defined")
-      
-      cfgline = "LDTSI output global lat/lon:"
+      !cfgline = "LDTSI valid date (YYYYMMDDHH):"
+      !call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%yyyymmddhh, &
+      !     label=trim(cfgline), rc=rc)
+      !call LVT_verify(rc, trim(cfgline)//" not defined")
+      write(LVT_rc%yyyymmddhh, '(I4.4,I2.2,I2.2,I2.2)') &
+           LVT_rc%syr, LVT_rc%smo, LVT_rc%sda, LVT_rc%shr
+
+      cfgline = "LDTSI output global 0.25deg lat/lon:"
       call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%output_global_ll0p25, &
            label=trim(cfgline), rc=rc)
       call LVT_verify(rc, trim(cfgline)//" not defined")
       
       cfgline = &
-           "LDTSI output northern hemisphere 16th mesh polar stereographic:"
+           "LDTSI output NH 16th mesh polar stereographic:"
       call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%output_nh_ps16, &
            label=trim(cfgline), rc=rc)
       call LVT_verify(rc, trim(cfgline)//" not defined")
       
       cfgline = &
-           "LDTSI output southern hemisphere 16th mesh polar stereographic:"
+           "LDTSI output SH 16th mesh polar stereographic:"
       call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%output_sh_ps16, &
            label=trim(cfgline), rc=rc)
       call LVT_verify(rc, trim(cfgline)//" not defined")
@@ -71,6 +68,11 @@ contains
       
       cfgline = "LDTSI input netcdf directory:"
       call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%input_dir, &
+           label=trim(cfgline), rc=rc)
+      call LVT_verify(rc, trim(cfgline)//" not defined")
+
+      cfgline = "LDTSI output grib2 directory:"
+      call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%output_dir, &
            label=trim(cfgline), rc=rc)
       call LVT_verify(rc, trim(cfgline)//" not defined")
                        
