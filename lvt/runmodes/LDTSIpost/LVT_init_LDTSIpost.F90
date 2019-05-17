@@ -75,7 +75,19 @@ contains
       call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%output_dir, &
            label=trim(cfgline), rc=rc)
       call LVT_verify(rc, trim(cfgline)//" not defined")
-                       
+
+      ! Sanity check earlier lvt.config setting
+      if (trim(LVT_rc%lvt_out_format) .ne. "grib2") then
+         write(LVT_logunit,*) &
+              '[ERR] LVT output format must be set to "grib2" for ' // &
+              '"LDTSI post" runmode'
+         write(LVT_logunit,*) &
+              '[ERR] Instead of "grib2", found "' // &
+              trim(LVT_rc%lvt_out_format) // '"'
+         write(LVT_logunit,*) '[ERR] Update lvt.config and try again!'
+         write(LVT_logunit,*) '[ERR] LVT will stop'
+         call LVT_endrun()
+      end if
    end subroutine read_ldtsipost_settings
    
 end subroutine LVT_init_LDTSIpost
