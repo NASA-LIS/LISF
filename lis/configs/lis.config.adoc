@@ -1143,7 +1143,6 @@ endif::devonly[]
 |"`Windsat`"                    | Windsat
 ifdef::devonly[]
 |"`Windsat C-band`"             | Windsat C-band
-|"`SNODEP`"                     | AFWA SNODEP
 |"`ANSA SWE`"                   | ANSA SWE
 endif::devonly[]
 |"`ANSA SCF`"                   | ANSA SCF
@@ -1166,6 +1165,8 @@ endif::devonly[]
 |"`PILDAS SM`"                  | PILDAS soil moisture
 |"`SMOS L2 soil moisture`"      | SMOS L2 soil moisture
 |"`SMOS(NESDIS) soil moisture`" | NESDIS SMOS soil moisture
+|"`SNODEP`"                     | AFWA SNODEP
+|"`LDTSI`"                      | LDT Snow and Ice Analysis
 |====
 
 .Example _lis.config_ entry
@@ -1981,8 +1982,6 @@ WindSat C-band number of bins in the CDF: 100
 endif::devonly[]
 
 
-ifdef::devonly[]
-
 ==== SNODEP Assimilation
 anchor:sssec_snodepda[SNODEP Assimilation]
 
@@ -2009,8 +2008,18 @@ SNODEP data directory:                  ./FORCING/AFWA1
 SNODEP mesh resolution:                 8
 SNODEP naming convention:               LIS
 ....
-endif::devonly[]
 
+
+==== LDTSI Assimilation
+anchor:sssec_ldtsida[LDTSI Assimilation]
+
+`LDTSI data directory:` specifies the directory for the
+LDTSI data.
+
+.Example _lis.config_ entry
+....
+LDTSI data directory:                  ./FORCING/LDTSI
+....
 
 ifdef::devonly[]
 
