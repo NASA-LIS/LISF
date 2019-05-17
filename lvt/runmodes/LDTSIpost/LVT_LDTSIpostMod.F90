@@ -386,6 +386,7 @@ contains
       integer, allocatable :: n11(:)
       logical*1, allocatable :: li(:), lo(:)
       real, allocatable :: gi(:), go(:)
+      real, allocatable :: go2d(:,:)
       character(len=255) :: fname
       integer :: ftn, rc, status2
       integer :: c,r
@@ -446,6 +447,9 @@ contains
       allocate(gi(this%nc*this%nr))
       allocate(lo(nc_out*nr_out))
       allocate(go(nc_out*nr_out))
+      if (griddesco(1) == 5) then
+         allocate(go2d(nc_out, nr_out))
+      end if
 
       ! Interpolate snoanl
       do r = 1, this%nr
@@ -461,6 +465,18 @@ contains
       end do ! r
       call upscaleByAveraging((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      ! If using Air Force polar stereographic, we must flip the grid so
+      ! the origin is in the upper-left corner instead of lower-left
+      do r = 1, nr_out
+         do c = 1, nc_out
+            go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+         end do ! c
+      end do ! r
+      do r = 1, nr_out
+         do c = 1, nc_out
+            go(c + (r-1)*nc_out) = go2d(c,r)
+         end do ! c
+      end do ! r
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
            dspln=0, cat=1, num=11, typegenproc=0, fcsttime=0)
 
@@ -556,6 +572,7 @@ contains
       deallocate(gi)
       deallocate(lo)
       deallocate(go)
+      if (allocated(go2d)) deallocate(go2d)
 
    end subroutine interp_and_output_grib2
 
@@ -706,6 +723,9 @@ contains
    ! Internal subroutine for setting griddesco for global lat/lon 0.25 deg grid
    subroutine set_griddesco_nh_ps16(this, griddesco)
 
+      ! Imports
+      use LVT_logMod, only: LVT_logunit
+
       ! Defaults
       implicit none
 
@@ -722,10 +742,18 @@ contains
       ypnmcaf = 513
       !orient = 100.0
       orient = -80.0 ! Per 557WW GRIB2 manual
-      xj = float(1) - ypnmcaf
-      xi = float(1) - xpnmcaf
-      call polarToLatLon(xi,xj,xmesh,orient,alat,alon)
-         
+      !xj = float(1) - ypnmcaf
+      !xi = float(1) - xpnmcaf
+      !call polarToLatLon(xi,xj,xmesh,orient,alat,alon)
+
+      ! We need to use the USAF code to calculate the lat/lon.  However,
+      ! the Air Force grid specifies the origin in the upper-left corner,
+      ! while the NCEP interpolation code  specifies in the origin in the
+      ! lower-left corner.  Since we must first interpolate, we will use
+      ! the NCEP convention at this step
+      call pstoll(1, 1, float(1), float(1024), 16, alat, alon)
+      write(LVT_logunit,*)'EMK: nh_ps16 pstoll 1,1024,alat,alon = ',alat,alon
+
       griddesco(:) = 0
       griddesco(1) = 5
       griddesco(2) = 1024
@@ -757,14 +785,22 @@ contains
       real :: xmesh, xpnmcaf, ypnmcaf, orient, xj, xi, alat, alon
 
       !xmesh = -1*47.625/2
-      xmesh = -23.798479 ! Per 557WW GRIB2 manual
+      xmesh = 23.798479 ! Per 557WW GRIB2 manual
       xpnmcaf = 513
       ypnmcaf = 513
       !orient = 280
       orient = -80. ! Per 557WW GRIB2 manual
-      xj = float(1) - ypnmcaf
-      xi = float(1) - xpnmcaf
-      call polarToLatLon(xi,xj,xmesh,orient,alat,alon)
+      !xj = float(1) - ypnmcaf
+      !xi = float(1) - xpnmcaf
+      !call polarToLatLon(xi,xj,xmesh,orient,alat,alon)
+      ! We need to use the USAF code to calculate the lat/lon.  However,
+      ! the Air Force grid specifies the origin in the upper-left corner,
+      ! while the NCEP interpolation code  specifies in the origin in the
+      ! lower-left corner.  Since we must first interpolate, we will use
+      ! the NCEP convention at this step
+      call pstoll(2, 1, float(1), float(1024), 16, alat, alon)
+      write(LVT_logunit,*)'EMK: nh_ps16 pstoll 1,1024,alat,alon = ',alat,alon
+
       
       griddesco(:) = 0
       griddesco(1) = 5
@@ -872,7 +908,11 @@ contains
          call LVT_grib_set(igrib, 'gridDefinitionTemplateNumber', 20)
       end if
       ! Octet 15
-      call LVT_grib_set(igrib, 'shapeOfTheEarth', 0)
+      if (griddesco(1) == 0) then
+         call LVT_grib_set(igrib, 'shapeOfTheEarth', 0)
+      else if (griddesco(1) == 5) then
+         call LVT_grib_set(igrib, 'shapeOfTheEarth', 8)
+      end if
 
       ! Change data order
       !call LVT_grib_set(igrib, 'swapScanningLat', 1)
