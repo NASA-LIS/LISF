@@ -35,16 +35,16 @@ MODULE MODULE_SF_NOAHMPLSM_401
   private ::               HSTEP   
   private ::                         ROSR12
   private ::       PHASECHANGE
-  private ::               FRH2O           
+  public ::               FRH2O      !Yeosang Yoon; for snow DA, change private -> public     
 
   private :: WATER
   private ::       CANWATER
   private ::       SNOWWATER
   private ::               SNOWFALL
-  private ::               COMBINE
-  private ::               DIVIDE
-  private ::                         COMBO
-  private ::               COMPACT
+  public  ::               COMBINE   !Yeosang Yoon; for snow DA, change private -> public   
+  public  ::               DIVIDE    !Yeosang Yoon; for snow DA, change private -> public
+  private ::               COMBO 
+  public  ::               COMPACT   !Yeosang Yoon; for snow DA, change private -> public
   private ::               SNOWH2O
   private ::       SOILWATER
   private ::               ZWTEQ

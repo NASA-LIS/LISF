@@ -352,6 +352,7 @@ module NoahMP401_module
         ! forcing
         !-------------------------------------------------------------------------
         real               :: tair
+        real               :: sfctmp    ! Yeosang Yoon for snow DA
         real               :: psurf
         real               :: wind_e
         real               :: wind_n
