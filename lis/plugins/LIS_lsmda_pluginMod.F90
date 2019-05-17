@@ -24,6 +24,7 @@ module LIS_lsmda_pluginMod
 !  Oct  2018 : Mhdi Navari , added Noah.3.9 
 !  21 Oct 2018: Mahdi Navari, added NoahMP.3.9
 !  Dec 2018: Mahdi Navari: added Noah-MP.4.0.1
+!  13 May 2019: Yeosang Yoon, added SNODEP Assimilation for NoahMP.4.0.1
 !
 !EOP
   implicit none
@@ -169,6 +170,12 @@ subroutine LIS_lsmda_plugin
 
 #if ( defined SM_NOAH_3_9 )
    use noah39_dasoilm_Mod
+#if ( defined DA_OBS_LDTSI )
+   use noah39_dasnow_Mod
+#endif
+#if ( defined DA_OBS_SNODEP )
+   use noah39_dasnow_Mod
+#endif
 #endif
 
 #if ( defined SM_NOAHMP_3_6 )
@@ -183,6 +190,7 @@ subroutine LIS_lsmda_plugin
 
 #if ( defined SM_NOAHMP_4_0_1 )
    use NoahMP401_dasoilm_Mod
+   use noahmp401_dasnodep_Mod
 #endif
 
 
@@ -343,6 +351,35 @@ subroutine LIS_lsmda_plugin
    external noah39_scale_soilm
    external noah39_descale_soilm
    external noah39_updatesoilm
+
+#if ( defined DA_OBS_LDTSI )
+! Noah-3.9 snow depth
+   external noah39_getldtsivars
+   external noah39_transform_ldtsi
+   external noah39_map_ldtsi
+   external noah39_updateldtsi
+   external noah39_qcldtsi
+   external noah39_setldtsivars
+   external noah39_getldtsipred
+   external noah39_scale_ldtsi
+   external noah39_descale_ldtsi
+   external noah39_qc_ldtsiobs
+#endif
+
+#if ( defined DA_OBS_SNODEP )
+! Noah-3.9 snow depth
+   external noah39_getsnodepvars
+   external noah39_transform_snodep
+   external noah39_map_snodep
+   external noah39_updatesnodep
+   external noah39_qcsnodep
+   external noah39_setsnodepvars
+   external noah39_getsnodeppred
+   external noah39_scale_snodep
+   external noah39_descale_snodep
+   external noah39_qc_snodepobs
+#endif
+
 #endif
 
 #if ( defined SM_NOAHMP_3_6 )
@@ -425,6 +462,21 @@ subroutine LIS_lsmda_plugin
    external NoahMP401_scale_soilm
    external NoahMP401_descale_soilm
    external NoahMP401_updatesoilm
+
+#if ( defined DA_OBS_SNODEP )
+! NoahMP-4.0.1 SNODEP
+   external noahmp401_getsnodepvars
+   external noahmp401_transform_snodep
+   !external noahmp401_map_snodep
+   external noahmp401_updatesnodepvars
+   external noahmp401_qcsnodep
+   external noahmp401_setsnodepvars
+   external noahmp401_getsnodeppred
+   external noahmp401_scale_snodep
+   external noahmp401_descale_snodep
+   external noahmp401_qc_snodepobs
+#endif
+
 #endif
 
 #if ( defined SM_CLSM_F2_5 )
@@ -1607,6 +1659,61 @@ subroutine LIS_lsmda_plugin
         trim(LIS_NASASMAPsmobsId )//char(0),noah39_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_noah39Id)//"+"//&
         trim(LIS_NASASMAPsmobsId )//char(0),noah39_updatesoilm)
+
+#if ( defined DA_OBS_LDTSI )
+! Noah-3.9 snow depth
+! DA + snodep wirings
+   call registerlsmdainit(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noah39_dasnow_init)
+   call registerlsmdagetstatevar(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noah39_getldtsivars)
+   call registerlsmdaobstransform(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noah39_transform_ldtsi)
+   call registerlsmdamapobstolsm(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noah39_map_ldtsi)
+   call registerlsmdaupdatestate(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noah39_updateldtsi)
+   call registerlsmdaqcstate(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noah39_qcldtsi)
+   call registerlsmdasetstatevar(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noah39_setldtsivars)
+   call registerlsmdagetobspred(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noah39_getldtsipred)
+   call registerlsmdascalestatevar(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noah39_scale_ldtsi)
+   call registerlsmdadescalestatevar(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noah39_descale_ldtsi)
+   call registerlsmdaqcobsstate(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noah39_qc_ldtsiobs)
+#endif
+
+#if ( defined DA_OBS_SNODEP )
+! Noah-3.6 snow depth
+! DA + snodep wirings
+   call registerlsmdainit(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noah39_dasnow_init)
+   call registerlsmdagetstatevar(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noah39_getsnodepvars)
+   call registerlsmdaobstransform(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noah39_transform_snodep)
+   call registerlsmdamapobstolsm(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noah39_map_snodep)
+   call registerlsmdaupdatestate(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noah39_updatesnodep)
+   call registerlsmdaqcstate(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noah39_qcsnodep)
+   call registerlsmdasetstatevar(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noah39_setsnodepvars)
+   call registerlsmdagetobspred(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noah39_getsnodeppred)
+   call registerlsmdascalestatevar(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noah39_scale_snodep)
+   call registerlsmdadescalestatevar(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noah39_descale_snodep)
+   call registerlsmdaqcobsstate(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noah39_qc_snodepobs)
+#endif
+
 #endif
 
 
@@ -1755,7 +1862,7 @@ subroutine LIS_lsmda_plugin
         trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_updatesoilm)
 #endif
 
-
+! Yeosang Yoon, SNODEP
 #if ( defined DA_OBS_SNODEP )
 ! DA + snodep wirings
    call registerlsmdainit(trim(LIS_noahmp36Id)//"+"//&
@@ -2111,6 +2218,33 @@ subroutine LIS_lsmda_plugin
    call registerlsmdamapobstolsm(trim(LIS_noahmp36Id)//"+"//&
         trim(LIS_GLASSalbedoobsId)//char(0),noahmp36_map_albedo)
 
+#endif
+
+#if ( defined SM_NOAHMP_4_0_1 )
+! Yeosang Yoon, SNODEP DA
+#if ( defined DA_OBS_SNODEP )
+! DA + snodep wirings
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noahmp401_dasnodep_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noahmp401_getsnodepvars)
+   call registerlsmdaobstransform(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noahmp401_transform_snodep)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noahmp401_updatesnodepvars)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noahmp401_setsnodepvars)
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noahmp401_getsnodeppred)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noahmp401_qcsnodep)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noahmp401_qc_snodepobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noahmp401_scale_snodep)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),noahmp401_descale_snodep)
+#endif
 #endif
 
 #if ( defined SM_CLSM_F2_5 )
