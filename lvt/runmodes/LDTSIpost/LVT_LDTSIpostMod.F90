@@ -467,18 +467,20 @@ contains
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       ! If using Air Force polar stereographic, we must flip the grid so
       ! the origin is in the upper-left corner instead of lower-left
-      do r = 1, nr_out
-         do c = 1, nc_out
-            go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
-         end do ! c
-      end do ! r
-      do r = 1, nr_out
-         do c = 1, nc_out
-            go(c + (r-1)*nc_out) = go2d(c,r)
-         end do ! c
-      end do ! r
+      if (griddesco(1) == 5) then
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+            end do ! c
+         end do ! r
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go(c + (r-1)*nc_out) = go2d(c,r)
+            end do ! c
+         end do ! r
+      end if
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-           dspln=0, cat=1, num=11, typegenproc=0, fcsttime=0)
+           dspln=0, cat=1, num=11, typegenproc=12, fcsttime=0)
 
       ! Interpolate snoage
       do r = 1, this%nr
@@ -496,8 +498,20 @@ contains
       !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       call upscaleByMode((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (griddesco(1) == 5) then
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+            end do ! c
+         end do ! r
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go(c + (r-1)*nc_out) = go2d(c,r)
+            end do ! c
+         end do ! r
+      end if
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-           dspln=0, cat=1, num=17, typegenproc=0, fcsttime=0)
+           dspln=0, cat=1, num=17, typegenproc=12, fcsttime=0)
 
       ! Handle icecon
       do r = 1, this%nr
@@ -513,8 +527,20 @@ contains
       end do ! r
       call upscaleByAveraging((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (griddesco(1) == 5) then
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+            end do ! c
+         end do ! r
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go(c + (r-1)*nc_out) = go2d(c,r)
+            end do ! c
+         end do ! r
+      end if
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-           dspln=10, cat=2, num=0, typegenproc=0, fcsttime=0)
+           dspln=10, cat=2, num=0, typegenproc=12, fcsttime=0)
       
       !  Handle icemask
       do r = 1, this%nr
@@ -532,9 +558,21 @@ contains
       !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       call upscaleByMode((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (griddesco(1) == 5) then
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+            end do ! c
+         end do ! r
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go(c + (r-1)*nc_out) = go2d(c,r)
+            end do ! c
+         end do ! r
+      end if
       ! FIXME:  Find parameter number for ice mask
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-           dspln=10, cat=2, num=192, typegenproc=0, fcsttime=0)
+           dspln=10, cat=2, num=192, typegenproc=12, fcsttime=0)
 
       ! Handle iceage
       do r = 1, this%nr
@@ -552,9 +590,21 @@ contains
       !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       call upscaleByMode((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (griddesco(1) == 5) then
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+            end do ! c
+         end do ! r
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go(c + (r-1)*nc_out) = go2d(c,r)
+            end do ! c
+         end do ! r
+      end if
       ! FIXME:  Find parameter number for ice age
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-           dspln=10, cat=2, num=193, typegenproc=0, fcsttime=0)
+           dspln=10, cat=2, num=193, typegenproc=12, fcsttime=0)
 
       ! Close the GRIB2 file
       call grib_close_file(ftn, rc)
@@ -752,7 +802,6 @@ contains
       ! lower-left corner.  Since we must first interpolate, we will use
       ! the NCEP convention at this step
       call pstoll(1, 1, float(1), float(1024), 16, alat, alon)
-      write(LVT_logunit,*)'EMK: nh_ps16 pstoll 1,1024,alat,alon = ',alat,alon
 
       griddesco(:) = 0
       griddesco(1) = 5
@@ -773,6 +822,9 @@ contains
 
    ! Internal subroutine for setting griddesco for global lat/lon 0.25 deg grid
    subroutine set_griddesco_sh_ps16(this, griddesco)
+
+      ! Imports
+      use LVT_logMod, only: LVT_logunit
 
       ! Defaults
       implicit none
@@ -799,8 +851,6 @@ contains
       ! lower-left corner.  Since we must first interpolate, we will use
       ! the NCEP convention at this step
       call pstoll(2, 1, float(1), float(1024), 16, alat, alon)
-      write(LVT_logunit,*)'EMK: nh_ps16 pstoll 1,1024,alat,alon = ',alat,alon
-
       
       griddesco(:) = 0
       griddesco(1) = 5
@@ -911,11 +961,11 @@ contains
       if (griddesco(1) == 0) then
          call LVT_grib_set(igrib, 'shapeOfTheEarth', 0)
       else if (griddesco(1) == 5) then
-         call LVT_grib_set(igrib, 'shapeOfTheEarth', 8)
+         call LVT_grib_set(igrib, 'shapeOfTheEarth', 1)
+         call LVT_grib_set(igrib, 'scaleFactorOfRadiusOfSphericalEarth', 10.)
+         call LVT_grib_set(igrib, 'scaledValueOfRadiusOfSphericalEarth', &
+              63712213)
       end if
-
-      ! Change data order
-      !call LVT_grib_set(igrib, 'swapScanningLat', 1)
 
       ! Set dimensions
       if (griddesco(1) == 0) then
@@ -956,7 +1006,7 @@ contains
          if (griddesco(4) < 0) then
             call LVT_grib_set(igrib, 'projectionCentreFlag', 0)
          else
-            call LVT_grib_set(igrib, 'projectionCentreFlag', 1)
+            call LVT_grib_set(igrib, 'projectionCentreFlag', 128)
          end if
          call LVT_grib_set(igrib, 'scanningMode', 0)
       end if
