@@ -409,6 +409,7 @@ contains
          call set_griddesco_global_ll0p25(this, griddesco)         
       else if (trim(gridID) .eq. trim(NH_PS16)) then
          call set_griddesco_nh_ps16(this, griddesco)         
+         write(LVT_logunit,*)'EMK: griddesco = ',griddesco
       else if (trim(gridID) .eq. trim(SH_PS16)) then
          call set_griddesco_sh_ps16(this, griddesco)
       end if
@@ -466,6 +467,9 @@ contains
       end do ! r
       call upscaleByAveraging((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (trim(gridID) .eq. NH_PS16) then
+         call write_netcdf_ps(griddesco, nc_out, nr_out, go)
+      end if
       ! If using Air Force polar stereographic, we must flip the grid so
       ! the origin is in the upper-left corner instead of lower-left
       if (griddesco(1) == 5) then
@@ -606,9 +610,6 @@ contains
       ! FIXME:  Find parameter number for ice age
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
            dspln=10, cat=2, num=193, typegenproc=12, fcsttime=0)
-      !if (griddesco(1) == 0) then
-      !   call write_netcdf(griddesco, nc_out, nr_out, go)
-      !end if
 
       ! Close the GRIB2 file
       call grib_close_file(ftn, rc)
@@ -802,10 +803,13 @@ contains
 
       ! We need to use the USAF code to calculate the lat/lon.  However,
       ! the Air Force grid specifies the origin in the upper-left corner,
-      ! while the NCEP interpolation code  specifies in the origin in the
+      ! while the NCEP interpolation code specifies in the origin in the
       ! lower-left corner.  Since we must first interpolate, we will use
       ! the NCEP convention at this step
       call pstoll(1, 1, float(1), float(1024), 16, alat, alon)
+      if (alon > 180.) then
+         alon = alon - 360.
+      end if
 
       griddesco(:) = 0
       griddesco(1) = 5
@@ -817,11 +821,14 @@ contains
       griddesco(7) = orient
       griddesco(8) = xmesh
       griddesco(9) = xmesh
-      griddesco(10) = 0.0
-      griddesco(11) = 128
-      griddesco(13) = 1
-      griddesco(20) = 128
-      
+      griddesco(10) = 60.0
+      griddesco(11) = orient
+      griddesco(20) = 64
+
+      ! Stash away the upper-left lat/lon for later use
+      call pstoll(1, 1, float(1), float(1), 16, alat, alon)
+      griddesco(30) = alat
+      griddesco(31) = alon
    end subroutine set_griddesco_nh_ps16
 
    ! Internal subroutine for setting griddesco for global lat/lon 0.25 deg grid
@@ -1001,9 +1008,9 @@ contains
          call LVT_grib_set(igrib, 'Nx', nc_out)
          call LVT_grib_set(igrib, 'Ny', nr_out)
          call LVT_grib_set(igrib, 'latitudeOfFirstGridPointInDegrees', &
-              griddesco(4))
+              griddesco(30))
          call LVT_grib_set(igrib, 'longitudeOfFirstGridPointInDegrees', &
-              griddesco(5))
+              griddesco(31))
          call LVT_grib_set(igrib, 'LaD', griddesco(10))
          call LVT_grib_set(igrib, 'orientationOfTheGrid', &
               griddesco(7))
@@ -1072,11 +1079,11 @@ contains
 
    end subroutine write_grib2
 
-
    ! NetCDF output
-   subroutine write_netcdf(griddesco, nc_out, nr_out, go)
+   subroutine write_netcdf_latlon(griddesco, nc_out, nr_out, go)
 
       ! Imports
+      use LVT_coreMod, only: LVT_rc
       use LVT_logMod, only: LVT_logunit, LVT_verify, LVT_endrun
       use netcdf
       
@@ -1236,7 +1243,7 @@ contains
            "long_name","depth of surface snow over land"),&
            '[ERR] nf90_put_att failed')
       call LVT_verify(nf90_put_att(ncid,snoanl_varid, &
-           '_FillValue',-9999.), &
+           '_FillValue',LVT_rc%udef), &
            '[ERR] nf90_put_att failed for SNOANL')
 
       ! Define the snow depth analysis
@@ -1253,7 +1260,7 @@ contains
            "long_name","depth of surface snow over land"),&
            '[ERR] nf90_put_att failed')
       call LVT_verify(nf90_put_att(ncid,snoanl2_varid, &
-           '_FillValue',-9999.), &
+           '_FillValue', LVT_rc%udef), &
            '[ERR] nf90_put_att failed for SNOANL2')
 
       ! Miscellaneous header information
@@ -1310,5 +1317,208 @@ contains
       call LVT_verify(nf90_close(ncid), &
            '[ERR] nf90_close failed!')
 
-   end subroutine write_netcdf
+   end subroutine write_netcdf_latlon
+
+   subroutine write_netcdf_ps(griddesco, nc_out, nr_out, go)
+
+      ! Imports
+      use LVT_coreMod, only: LVT_rc
+      use LVT_logMod, only: LVT_logunit, LVT_verify, LVT_endrun
+      use netcdf
+      
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      real, intent(in) :: griddesco(50)
+      integer, intent(in) :: nc_out
+      integer, intent(in) :: nr_out
+      real, intent(in) :: go(nc_out*nr_out)
+
+      ! Local variables
+      character(len=255) :: outfilename
+      integer :: shuffle, deflate, deflate_level
+      integer :: iret, ncid
+      integer :: dim_ids(2)
+      integer :: snoanl_varid, snoanl2_varid
+      integer :: lon_varid, lat_varid, xc_varid, yc_varid
+      character*4 :: cyyyy
+      character*2 :: cmm,cdd,chh
+      character*120 :: time_units
+      real, allocatable :: lats(:,:), lons(:,:)
+      real, allocatable :: xc(:), yc(:)
+      integer :: i,j,c,r
+      real, allocatable :: snoanl(:,:)
+      real :: alat, alon
+
+      outfilename = "foo.nc"
+      write(LVT_logunit,*)'[INFO] Creating netCDF file ', trim(outfilename)
+
+      ! Copy the netcdf compression settings
+      shuffle = NETCDF_shuffle
+      deflate = NETCDF_deflate
+      deflate_level = NETCDF_deflate_level
+
+      ! Create the output file
+      iret=nf90_create(path=trim(outfilename), &
+           cmode=nf90_netcdf4, ncid=ncid)
+      call LVT_verify(iret, &
+           '[ERR] nf90_create failed')
+
+      ! Write out dimensions headers
+      call LVT_verify(nf90_def_dim(ncid,'yc',nr_out,dim_ids(2)), &
+           '[ERR] nf90_def_dim failed')
+      call LVT_verify(nf90_def_dim(ncid,'xc',nc_out,dim_ids(1)), &
+           '[ERR] nf90_def_dim failed')
+
+      call LVT_verify(nf90_def_var(ncid, "xc", nf90_float, dim_ids(1), &
+           xc_varid),'[ERR] nf90_def_var failed')
+      call LVT_verify(nf90_def_var_deflate(ncid, &
+           xc_varid, shuffle, deflate, deflate_level), &
+           '[ERR] nf90_def_var_deflate')
+       call LVT_verify(nf90_put_att(ncid,xc_varid, &
+           "axis","X"), &
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,xc_varid, &
+           "long_name","x-coordinate in Cartesian system"),&
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,xc_varid, &
+           "units","m"),&
+           '[ERR] nf90_put_att failed')
+
+      call LVT_verify(nf90_def_var(ncid, "yc", nf90_float, dim_ids(2), &
+           yc_varid),'[ERR] nf90_def_var failed')
+      call LVT_verify(nf90_def_var_deflate(ncid, &
+           yc_varid, shuffle, deflate, deflate_level), &
+           '[ERR] nf90_def_var_deflate')
+       call LVT_verify(nf90_put_att(ncid,yc_varid, &
+           "axis","Y"), &
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,yc_varid, &
+           "long_name","y-coordinate in Cartesian system"),&
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,yc_varid, &
+           "units","m"),&
+           '[ERR] nf90_put_att failed')
+
+      call LVT_verify(nf90_def_var(ncid, "lon", nf90_float, dim_ids, &
+           lon_varid),'[ERR] nf90_def_var failed')
+      call LVT_verify(nf90_def_var_deflate(ncid, &
+           lon_varid, shuffle, deflate, deflate_level), &
+           '[ERR] nf90_def_var_deflate')
+      call LVT_verify(nf90_put_att(ncid, lon_varid, &
+           "long_name","longitude"),&
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid, lon_varid, &
+           "units","degrees_east"),&
+           '[ERR] nf90_put_att failed')
+
+      call LVT_verify(nf90_def_var(ncid, "lat", nf90_float, dim_ids, &
+           lat_varid),'[ERR] nf90_def_var failed')
+      call LVT_verify(nf90_def_var_deflate(ncid, &
+           lat_varid, shuffle, deflate, deflate_level), &
+           '[ERR] nf90_def_var_deflate')
+      call LVT_verify(nf90_put_att(ncid, lat_varid, &
+           "long_name","latitude"),&
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid, lat_varid, &
+           "units","degrees_north"),&
+           '[ERR] nf90_put_att failed')
+
+      call LVT_verify(nf90_def_var(ncid,"snoanl",nf90_float, &
+           dimids=dim_ids, &
+           varid=snoanl_varid),'[ERR] nf90_def_var failed')
+      call LVT_verify(nf90_def_var_deflate(ncid,&
+           snoanl_varid, shuffle, deflate, deflate_level), &
+           '[ERR] nf90_def_var_deflate failed')
+      call LVT_verify(nf90_put_att(ncid,snoanl_varid, &
+           "units","m"),&
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,snoanl_varid, &
+           "long_name","depth of surface snow over land"),&
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,snoanl_varid, &
+           '_FillValue', LVT_rc%udef), &
+           '[ERR] nf90_put_att failed for SNOANL')
+
+      call LVT_verify(nf90_def_var(ncid,"snoanl2",nf90_float, &
+           dimids=dim_ids, &
+           varid=snoanl2_varid),'[ERR] nf90_def_var failed')
+      call LVT_verify(nf90_def_var_deflate(ncid,&
+           snoanl2_varid, shuffle, deflate, deflate_level), &
+           '[ERR] nf90_def_var_deflate failed')
+      call LVT_verify(nf90_put_att(ncid,snoanl2_varid, &
+           "units","m"),&
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,snoanl2_varid, &
+           "long_name","depth of surface snow over land"),&
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,snoanl2_varid, &
+           '_FillValue', LVT_rc%udef), &
+           '[ERR] nf90_put_att failed for SNOANL2')
+
+      ! Miscellaneous header information
+      call LVT_verify(nf90_put_att(ncid,nf90_global,"Conventions", &
+           "CF-1.7"), &
+           '[ERR] nf90_put_att failed')         
+
+      ! We are ready to write the actual data.  This requires taking NETCDF
+      ! out of define mode.
+      call LVT_verify(nf90_enddef(ncid), &
+           '[ERR] ncf90_enddef failed')
+
+
+      allocate(xc(nc_out))
+      do c = 1, nc_out
+         xc(c) = c
+      end do
+      allocate(yc(nr_out))
+      do r = 1, nr_out
+         yc(r) = r
+      end do
+      allocate(lats(nc_out, nr_out))
+      allocate(lons(nc_out, nr_out))
+      do r = 1, nr_out
+         do c = 1, nc_out
+            call pstoll(1, 1, float(c), float(r), 16, alat, alon)
+            lats(c,r) = alat
+            lons(c,r) = alon
+         end do
+      end do
+      call LVT_verify(nf90_put_var(ncid,lat_varid, &
+           lats,(/1,1/),(/nc_out,nr_out/)), &
+           '[ERR] nf90_put_var failed for lats')
+      call LVT_verify(nf90_put_var(ncid,lon_varid, &
+           lons,(/1,1/),(/nc_out,nr_out/)), &
+           '[ERR] nf90_put_var failed for lons')
+      call LVT_verify(nf90_put_var(ncid,xc_varid, &
+           xc,(/1,1/),(/nc_out/)), &
+           '[ERR] nf90_put_var failed for xc')
+      call LVT_verify(nf90_put_var(ncid,yc_varid, &
+           yc,(/1/),(/nr_out/)), &
+           '[ERR] nf90_put_var failed for yc')
+      deallocate(lats)
+      deallocate(lons)
+      deallocate(xc)
+      deallocate(yc)
+      allocate(snoanl(nc_out,nr_out))
+      do r = 1, nr_out
+         do c = 1, nc_out
+            snoanl(c,r) = go(c + (r-1)*nc_out)
+         end do
+      end do
+      call LVT_verify(nf90_put_var(ncid,snoanl_varid,&
+           snoanl(:,:), &
+           (/1,1/),(/nc_out,nr_out/)), &
+           '[ERR] nf90_put_var failed for snoanl')
+      call LVT_verify(nf90_put_var(ncid,snoanl2_varid,&
+           snoanl(:,:), &
+           (/1,1/),(/nc_out,nr_out/)), &
+           '[ERR] nf90_put_var failed for snoanl2')
+      deallocate(snoanl)
+
+      call LVT_verify(nf90_close(ncid), &
+           '[ERR] nf90_close failed!')
+
+   end subroutine write_netcdf_ps
 end module LVT_LDTSIpostMod
