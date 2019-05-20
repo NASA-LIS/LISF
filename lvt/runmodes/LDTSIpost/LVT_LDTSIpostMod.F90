@@ -13,6 +13,7 @@
 !------------------------------------------------------------------------------
 
 #include "LVT_misc.h"
+#include "LVT_NetCDF_inc.h"
 
 module LVT_LDTSIpostMod
 
@@ -481,130 +482,133 @@ contains
       end if
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
            dspln=0, cat=1, num=11, typegenproc=12, fcsttime=0)
-
-      ! Interpolate snoage
-      do r = 1, this%nr
-         do c = 1, this%nc
-            if (this%snoage(c,r) < 0) then
-               li(c + (r-1)*this%nc) = .false.
-               gi(c + (r-1)*this%nc) = LVT_rc%udef
-            else
-               li(c + (r-1)*this%nc) = .true.
-               gi(c + (r-1)*this%nc) = this%snoage(c,r)
-            end if
-         end do ! c
-      end do ! r
-      !call upscaleByAveraging((this%nc*this%nr), &
-      !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-      call upscaleByMode((this%nc*this%nr), &
-           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-      if (griddesco(1) == 5) then
-         do r = 1, nr_out
-            do c = 1, nc_out
-               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
-            end do ! c
-         end do ! r
-         do r = 1, nr_out
-            do c = 1, nc_out
-               go(c + (r-1)*nc_out) = go2d(c,r)
-            end do ! c
-         end do ! r
+      if (griddesco(1) == 0) then
+         call write_netcdf(griddesco, nc_out, nr_out, go)
       end if
-      call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-           dspln=0, cat=1, num=17, typegenproc=12, fcsttime=0)
 
-      ! Handle icecon
-      do r = 1, this%nr
-         do c = 1, this%nc
-            if (this%icecon(c,r) < 0) then
-               li(c + (r-1)*this%nc) = .false.
-               gi(c + (r-1)*this%nc) = LVT_rc%udef
-            else
-               li(c + (r-1)*this%nc) = .true.
-               gi(c + (r-1)*this%nc) = this%icecon(c,r)
-            end if
-         end do ! c
-      end do ! r
-      call upscaleByAveraging((this%nc*this%nr), &
-           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-      if (griddesco(1) == 5) then
-         do r = 1, nr_out
-            do c = 1, nc_out
-               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
-            end do ! c
-         end do ! r
-         do r = 1, nr_out
-            do c = 1, nc_out
-               go(c + (r-1)*nc_out) = go2d(c,r)
-            end do ! c
-         end do ! r
-      end if
-      call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-           dspln=10, cat=2, num=0, typegenproc=12, fcsttime=0)
+!       ! Interpolate snoage
+!       do r = 1, this%nr
+!          do c = 1, this%nc
+!             if (this%snoage(c,r) < 0) then
+!                li(c + (r-1)*this%nc) = .false.
+!                gi(c + (r-1)*this%nc) = LVT_rc%udef
+!             else
+!                li(c + (r-1)*this%nc) = .true.
+!                gi(c + (r-1)*this%nc) = this%snoage(c,r)
+!             end if
+!          end do ! c
+!       end do ! r
+!       !call upscaleByAveraging((this%nc*this%nr), &
+!       !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+!       call upscaleByMode((this%nc*this%nr), &
+!            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+!       if (griddesco(1) == 5) then
+!          do r = 1, nr_out
+!             do c = 1, nc_out
+!                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+!             end do ! c
+!          end do ! r
+!          do r = 1, nr_out
+!             do c = 1, nc_out
+!                go(c + (r-1)*nc_out) = go2d(c,r)
+!             end do ! c
+!          end do ! r
+!       end if
+!       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
+!            dspln=0, cat=1, num=17, typegenproc=12, fcsttime=0)
+
+!       ! Handle icecon
+!       do r = 1, this%nr
+!          do c = 1, this%nc
+!             if (this%icecon(c,r) < 0) then
+!                li(c + (r-1)*this%nc) = .false.
+!                gi(c + (r-1)*this%nc) = LVT_rc%udef
+!             else
+!                li(c + (r-1)*this%nc) = .true.
+!                gi(c + (r-1)*this%nc) = this%icecon(c,r)
+!             end if
+!          end do ! c
+!       end do ! r
+!       call upscaleByAveraging((this%nc*this%nr), &
+!            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+!       if (griddesco(1) == 5) then
+!          do r = 1, nr_out
+!             do c = 1, nc_out
+!                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+!             end do ! c
+!          end do ! r
+!          do r = 1, nr_out
+!             do c = 1, nc_out
+!                go(c + (r-1)*nc_out) = go2d(c,r)
+!             end do ! c
+!          end do ! r
+!       end if
+!       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
+!            dspln=10, cat=2, num=0, typegenproc=12, fcsttime=0)
       
-      !  Handle icemask
-      do r = 1, this%nr
-         do c = 1, this%nc
-            if (this%icemask(c,r) < 0) then
-               li(c + (r-1)*this%nc) = .false.
-               gi(c + (r-1)*this%nc) = LVT_rc%udef
-            else
-               li(c + (r-1)*this%nc) = .true.
-               gi(c + (r-1)*this%nc) = this%icemask(c,r)
-            end if
-         end do ! c
-      end do ! r
-      !call upscaleByAveraging((this%nc*this%nr), &
-      !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-      call upscaleByMode((this%nc*this%nr), &
-           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-      if (griddesco(1) == 5) then
-         do r = 1, nr_out
-            do c = 1, nc_out
-               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
-            end do ! c
-         end do ! r
-         do r = 1, nr_out
-            do c = 1, nc_out
-               go(c + (r-1)*nc_out) = go2d(c,r)
-            end do ! c
-         end do ! r
-      end if
-      ! FIXME:  Find parameter number for ice mask
-      call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-           dspln=10, cat=2, num=192, typegenproc=12, fcsttime=0)
+!       !  Handle icemask
+!       do r = 1, this%nr
+!          do c = 1, this%nc
+!             if (this%icemask(c,r) < 0) then
+!                li(c + (r-1)*this%nc) = .false.
+!                gi(c + (r-1)*this%nc) = LVT_rc%udef
+!             else
+!                li(c + (r-1)*this%nc) = .true.
+!                gi(c + (r-1)*this%nc) = this%icemask(c,r)
+!             end if
+!          end do ! c
+!       end do ! r
+!       !call upscaleByAveraging((this%nc*this%nr), &
+!       !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+!       call upscaleByMode((this%nc*this%nr), &
+!            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+!       if (griddesco(1) == 5) then
+!          do r = 1, nr_out
+!             do c = 1, nc_out
+!                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+!             end do ! c
+!          end do ! r
+!          do r = 1, nr_out
+!             do c = 1, nc_out
+!                go(c + (r-1)*nc_out) = go2d(c,r)
+!             end do ! c
+!          end do ! r
+!       end if
+!       ! FIXME:  Find parameter number for ice mask
+!       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
+!            dspln=10, cat=2, num=192, typegenproc=12, fcsttime=0)
 
-      ! Handle iceage
-      do r = 1, this%nr
-         do c = 1, this%nc
-            if (this%icemask(c,r) < 0) then
-               li(c + (r-1)*this%nc) = .false.
-               gi(c + (r-1)*this%nc) = LVT_rc%udef
-            else
-               li(c + (r-1)*this%nc) = .true.
-               gi(c + (r-1)*this%nc) = this%iceage(c,r)
-            end if
-         end do ! c
-      end do ! r
-      !call upscaleByAveraging((this%nc*this%nr), &
-      !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-      call upscaleByMode((this%nc*this%nr), &
-           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-      if (griddesco(1) == 5) then
-         do r = 1, nr_out
-            do c = 1, nc_out
-               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
-            end do ! c
-         end do ! r
-         do r = 1, nr_out
-            do c = 1, nc_out
-               go(c + (r-1)*nc_out) = go2d(c,r)
-            end do ! c
-         end do ! r
-      end if
-      ! FIXME:  Find parameter number for ice age
-      call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-           dspln=10, cat=2, num=193, typegenproc=12, fcsttime=0)
+!       ! Handle iceage
+!       do r = 1, this%nr
+!          do c = 1, this%nc
+!             if (this%icemask(c,r) < 0) then
+!                li(c + (r-1)*this%nc) = .false.
+!                gi(c + (r-1)*this%nc) = LVT_rc%udef
+!             else
+!                li(c + (r-1)*this%nc) = .true.
+!                gi(c + (r-1)*this%nc) = this%iceage(c,r)
+!             end if
+!          end do ! c
+!       end do ! r
+!       !call upscaleByAveraging((this%nc*this%nr), &
+!       !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+!       call upscaleByMode((this%nc*this%nr), &
+!            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+!       if (griddesco(1) == 5) then
+!          do r = 1, nr_out
+!             do c = 1, nc_out
+!                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+!             end do ! c
+!          end do ! r
+!          do r = 1, nr_out
+!             do c = 1, nc_out
+!                go(c + (r-1)*nc_out) = go2d(c,r)
+!             end do ! c
+!          end do ! r
+!       end if
+!       ! FIXME:  Find parameter number for ice age
+!       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
+!            dspln=10, cat=2, num=193, typegenproc=12, fcsttime=0)
 
       ! Close the GRIB2 file
       call grib_close_file(ftn, rc)
@@ -978,16 +982,20 @@ contains
               griddesco(4))
          call LVT_grib_set(igrib, 'longitudeOfFirstGridPointInDegrees', &
               griddesco(5))
+         !call LVT_grib_set(igrib, 'resolutionAndComponentFlags', 48)
          call LVT_grib_set(igrib, 'latitudeOfLastGridPointInDegrees', &
               griddesco(7))
          call LVT_grib_set(igrib, 'longitudeOfLastGridPointInDegrees', &
               griddesco(8))
-         !call LVT_grib_set(igrib, 'gridType', 'regular_ll')
          call LVT_grib_set(igrib, 'iDirectionIncrementInDegrees', &
               griddesco(9))
          call LVT_grib_set(igrib, 'jDirectionIncrementInDegrees', &
               griddesco(10))
-         call LVT_grib_set(igrib, 'scanningMode', 64)
+         !call LVT_grib_set(igrib, 'scanningMode', 64)
+         call LVT_grib_set(igrib, 'iScansNegatively', 0)
+         call LVT_grib_set(igrib, 'jScansPositively', 1)
+         call LVT_grib_set(igrib, 'jPointsAreConsecutive', 0)
+
       else if (griddesco(1) == 5) then
          ! Polar stereographic
          call LVT_grib_set(igrib, 'Nx', nc_out)
@@ -1064,4 +1072,243 @@ contains
 
    end subroutine write_grib2
 
+
+   ! NetCDF output
+   subroutine write_netcdf(griddesco, nc_out, nr_out, go)
+
+      ! Imports
+      use LVT_logMod, only: LVT_logunit, LVT_verify, LVT_endrun
+      use netcdf
+      
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      real, intent(in) :: griddesco(50)
+      integer, intent(in) :: nc_out
+      integer, intent(in) :: nr_out
+      real, intent(in) :: go(nc_out*nr_out)
+
+      ! Local variables
+      character(len=255) :: outfilename
+      integer :: shuffle, deflate, deflate_level
+      integer :: iret, ncid
+      integer :: dim_ids(3)
+      real :: dlon, dlat, swlat, swlon, nelat, nelon
+      integer :: snoanl_varid, snoanl2_varid
+      integer :: lon_varid, lat_varid, time_varid
+      character*4 :: cyyyy
+      character*2 :: cmm,cdd,chh
+      character*120 :: time_units
+      real, allocatable :: lats(:), lons(:)
+      integer :: i,j,c,r
+      real, allocatable :: snoanl(:,:)
+
+      outfilename = "foo.nc"
+      write(LVT_logunit,*)'[INFO] Creating netCDF file ', trim(outfilename)
+
+      ! Copy the netcdf compression settings
+      shuffle = NETCDF_shuffle
+      deflate = NETCDF_deflate
+      deflate_level = NETCDF_deflate_level
+
+      ! Create the output file
+      iret=nf90_create(path=trim(outfilename), &
+           cmode=nf90_netcdf4, ncid=ncid)
+      call LVT_verify(iret, &
+           '[ERR] nf90_create failed')
+
+      ! Write out dimensions headers
+      call LVT_verify(nf90_def_dim(ncid,'time',1,dim_ids(3)), &
+           '[ERR] nf90_def_dim failed')
+      call LVT_verify(nf90_def_dim(ncid,'lat',nr_out,dim_ids(2)), &
+           '[ERR] nf90_def_dim failed')
+      call LVT_verify(nf90_def_dim(ncid,'lon',nc_out,dim_ids(1)), &
+           '[ERR] nf90_def_dim failed')
+
+      ! Map projection
+      select case ("latlon")
+      case ("latlon")
+         dlon  = gridDesco(9)
+         dlat  = gridDesco(10)
+         swlat = gridDesco(4)
+         swlon = gridDesco(5)
+         nelat = gridDesco(7)
+         nelon = gridDesco(8)
+         
+         call LVT_verify(nf90_put_att(ncid,nf90_global,&
+              "MAP_PROJECTION", "EQUIDISTANT CYLINDRICAL"), &
+              '[ERR] nf90_put_att failed')
+         call LVT_verify(nf90_put_att(ncid,nf90_global,&
+              "SOUTH_WEST_CORNER_LAT", swlat), &
+              '[ERR] nf90_put_att failed')
+         call LVT_verify(nf90_put_att(ncid,nf90_global,&
+              "SOUTH_WEST_CORNER_LON", swlon), &
+              '[ERR] nf90_put_att failed')
+         call LVT_verify(nf90_put_att(ncid,nf90_global, &
+              "NORTH_EAST_CORNER_LAT", nelat), &
+              '[ERR] nf90_put_att failed')
+         call LVT_verify(nf90_put_att(ncid,nf90_global, &
+              "NORTH_EAST_CORNER_LON", nelon), &
+              '[ERR] nf90_put_att failed')
+         call LVT_verify(nf90_put_att(ncid,nf90_global, &
+              "DX",dlon),&
+              '[ERR] nf90_put_att failed')
+         call LVT_verify(nf90_put_att(ncid,nf90_global, &
+              "DY",dlat), &
+              '[ERR] nf90_put_att failed')
+         
+      case default
+         write(LVT_logunit,*) &
+              '[ERR] Only latlon map projection supported!'
+         call LVT_endrun()
+      end select
+
+      ! Include the water points
+      call LVT_verify(nf90_put_att(ncid,nf90_global, &
+           "INC_WATER_PTS","true"), &
+           '[ERR] nf90_put_att failed')
+      
+      ! Construct the longitudes
+      ! FIXME:  Add support for other map projections
+      call LVT_verify(nf90_def_var(ncid,"lon",nf90_float,dim_ids(1), &
+           lon_varid),'[ERR] nf90_def_var failed')
+      call LVT_verify(nf90_def_var_deflate(ncid,&
+           lon_varid, shuffle, deflate, deflate_level),&
+           '[ERR] nf90_def_var_deflate')
+      call LVT_verify(nf90_put_att(ncid,lon_varid, &
+           "units","degrees_east"), &
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,lon_varid, &
+           "long_name","longitude"),&
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,lon_varid, &
+           "standard_name","longitude"),&
+           '[ERR] nf90_put_att failed')
+
+      ! Construct the latitudes
+      ! FIXME:  Add support for other map projections
+      call LVT_verify(nf90_def_var(ncid,"lat",nf90_float,dim_ids(2), &
+           lat_varid),'[ERR] nf90_def_var failed')
+      call LVT_verify(nf90_def_var_deflate(ncid,&
+           lat_varid, shuffle, deflate, deflate_level),&
+           '[ERR] nf90_def_var_deflate')
+      call LVT_verify(nf90_put_att(ncid,lat_varid, &
+           "units","degrees_north"), &
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,lat_varid, &
+           "long_name","latitude"),&
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,lat_varid, &
+           "standard_name","latitude"),&
+           '[ERR] nf90_put_att failed')
+      
+      ! Define the time array.  The valid time will be written as an
+      ! attribute.
+      call LVT_verify(nf90_def_var(ncid,'time',nf90_double,&
+           dimids=dim_ids(3), varid=time_varid), &
+           '[ERR] nf90_def_var failed')
+      cyyyy = '2018'
+      cmm = '12'
+      cdd = '08'
+      chh = '00'
+      write(time_units,'(A)') &
+           "seconds since "//trim(cyyyy)//"-"//trim(cmm)//"-"//trim(cdd)//&
+           " "//trim(chh)//":00:00"
+      call LVT_verify(nf90_put_att(ncid,time_varid, &
+           "units",trim(time_units)),&
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,time_varid, &
+           "long_name","time"),&             
+           '[ERR] nf90_put_att failed')
+      
+      ! Define the snow depth analysis
+      call LVT_verify(nf90_def_var(ncid,"snoanl",nf90_float, &
+           dimids=dim_ids, &
+           varid=snoanl_varid),'[ERR] nf90_def_var failed')
+      call LVT_verify(nf90_def_var_deflate(ncid,&
+           snoanl_varid, shuffle, deflate, deflate_level), &
+           '[ERR] nf90_def_var_deflate failed')
+      call LVT_verify(nf90_put_att(ncid,snoanl_varid, &
+           "units","m"),&
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,snoanl_varid, &
+           "long_name","depth of surface snow over land"),&
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,snoanl_varid, &
+           '_FillValue',-9999.), &
+           '[ERR] nf90_put_att failed for SNOANL')
+
+      ! Define the snow depth analysis
+      call LVT_verify(nf90_def_var(ncid,"snoanl2",nf90_float, &
+           dimids=dim_ids, &
+           varid=snoanl2_varid),'[ERR] nf90_def_var failed')
+      call LVT_verify(nf90_def_var_deflate(ncid,&
+           snoanl2_varid, shuffle, deflate, deflate_level), &
+           '[ERR] nf90_def_var_deflate failed')
+      call LVT_verify(nf90_put_att(ncid,snoanl2_varid, &
+           "units","m"),&
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,snoanl2_varid, &
+           "long_name","depth of surface snow over land"),&
+           '[ERR] nf90_put_att failed')
+      call LVT_verify(nf90_put_att(ncid,snoanl2_varid, &
+           '_FillValue',-9999.), &
+           '[ERR] nf90_put_att failed for SNOANL2')
+
+      ! Miscellaneous header information
+      call LVT_verify(nf90_put_att(ncid,nf90_global,"Conventions", &
+           "CF-1.7"), &
+           '[ERR] nf90_put_att failed')         
+
+      ! We are ready to write the actual data.  This requires taking NETCDF
+      ! out of define mode.
+      call LVT_verify(nf90_enddef(ncid), &
+           '[ERR] ncf90_enddef failed')
+
+      ! Write the latitude data
+      allocate(lats(nr_out))
+      do j = 1, nr_out
+         lats(j) = swlat + (j-1)*(dlat)
+      end do
+      call LVT_verify(nf90_put_var(ncid,lat_varid, &
+           lats(:),(/1/),(/nr_out/)), &
+           '[ERR] nf90_put_var failed for lats')
+      deallocate(lats)
+
+      ! Write the longitude data
+      allocate(lons(nc_out))
+      do i = 1, nc_out
+         lons(i) = swlon + (i-1)*(dlon)
+      end do
+      call LVT_verify(nf90_put_var(ncid,lon_varid,lons(:),&
+           (/1/),(/nc_out/)), &
+           '[ERR] nf90_put_var failed for lon')
+      deallocate(lons)
+
+      ! Write the time data
+      call LVT_verify(nf90_put_var(ncid,time_varid,0.0), &
+           '[ERR] nf90_put_var failed for time')
+
+      ! Write the LDTSI fields
+      allocate(snoanl(nc_out,nr_out))
+      do r = 1, nr_out
+         do c = 1, nc_out
+            snoanl(c,r) = go(c + (r-1)*nc_out)
+         end do
+      end do
+      call LVT_verify(nf90_put_var(ncid,snoanl_varid,&
+           snoanl(:,:), &
+           (/1,1/),(/nc_out,nr_out/)), &
+           '[ERR] nf90_put_var failed for snoanl')
+      call LVT_verify(nf90_put_var(ncid,snoanl2_varid,&
+           snoanl(:,:), &
+           (/1,1/),(/nc_out,nr_out/)), &
+           '[ERR] nf90_put_var failed for snoanl2')
+      deallocate(snoanl)
+
+      call LVT_verify(nf90_close(ncid), &
+           '[ERR] nf90_close failed!')
+
+   end subroutine write_netcdf
 end module LVT_LDTSIpostMod
