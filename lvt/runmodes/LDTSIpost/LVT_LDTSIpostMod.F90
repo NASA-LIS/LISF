@@ -409,7 +409,6 @@ contains
          call set_griddesco_global_ll0p25(this, griddesco)         
       else if (trim(gridID) .eq. trim(NH_PS16)) then
          call set_griddesco_nh_ps16(this, griddesco)         
-         write(LVT_logunit,*)'EMK: griddesco = ',griddesco
       else if (trim(gridID) .eq. trim(SH_PS16)) then
          call set_griddesco_sh_ps16(this, griddesco)
       end if
@@ -467,9 +466,6 @@ contains
       end do ! r
       call upscaleByAveraging((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-      if (trim(gridID) .eq. NH_PS16) then
-         call write_netcdf_ps(griddesco, nc_out, nr_out, go)
-      end if
       ! If using Air Force polar stereographic, we must flip the grid so
       ! the origin is in the upper-left corner instead of lower-left
       if (griddesco(1) == 5) then
@@ -595,6 +591,9 @@ contains
       !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       call upscaleByMode((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      !if (trim(gridID) .eq. SH_PS16) then
+      !   call write_netcdf_ps(griddesco, nc_out, nr_out, go)
+      !end if
       if (griddesco(1) == 5) then
          do r = 1, nr_out
             do c = 1, nc_out
@@ -873,11 +872,15 @@ contains
       griddesco(7) = orient
       griddesco(8) = xmesh
       griddesco(9) = xmesh
-      griddesco(10) = 0.0
-      griddesco(11) = 128
-      griddesco(13) = 1
-      griddesco(20) = 128
+      griddesco(10) = -60.0
+      griddesco(11) = orient
+      griddesco(20) = 64
       
+      ! Stash away the upper-left lat/lon for later use
+      call pstoll(2, 1, float(1), float(1), 16, alat, alon)
+      griddesco(30) = alat
+      griddesco(31) = alon
+
    end subroutine set_griddesco_sh_ps16
 
    ! Internal subroutine for writing grib2 message
@@ -1467,7 +1470,6 @@ contains
       call LVT_verify(nf90_enddef(ncid), &
            '[ERR] ncf90_enddef failed')
 
-
       allocate(xc(nc_out))
       do c = 1, nc_out
          xc(c) = c
@@ -1480,7 +1482,7 @@ contains
       allocate(lons(nc_out, nr_out))
       do r = 1, nr_out
          do c = 1, nc_out
-            call pstoll(1, 1, float(c), float(r), 16, alat, alon)
+            call pstoll(2, 1, float(c), float(r), 16, alat, alon)
             lats(c,r) = alat
             lons(c,r) = alon
          end do
