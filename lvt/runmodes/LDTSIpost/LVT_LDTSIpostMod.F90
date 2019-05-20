@@ -482,133 +482,133 @@ contains
       end if
       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
            dspln=0, cat=1, num=11, typegenproc=12, fcsttime=0)
-      if (griddesco(1) == 0) then
-         call write_netcdf(griddesco, nc_out, nr_out, go)
+
+      ! Interpolate snoage
+      do r = 1, this%nr
+         do c = 1, this%nc
+            if (this%snoage(c,r) < 0) then
+               li(c + (r-1)*this%nc) = .false.
+               gi(c + (r-1)*this%nc) = LVT_rc%udef
+            else
+               li(c + (r-1)*this%nc) = .true.
+               gi(c + (r-1)*this%nc) = this%snoage(c,r)
+            end if
+         end do ! c
+      end do ! r
+      !call upscaleByAveraging((this%nc*this%nr), &
+      !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      call upscaleByMode((this%nc*this%nr), &
+           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (griddesco(1) == 5) then
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+            end do ! c
+         end do ! r
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go(c + (r-1)*nc_out) = go2d(c,r)
+            end do ! c
+         end do ! r
       end if
+      call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
+           dspln=0, cat=1, num=17, typegenproc=12, fcsttime=0)
 
-!       ! Interpolate snoage
-!       do r = 1, this%nr
-!          do c = 1, this%nc
-!             if (this%snoage(c,r) < 0) then
-!                li(c + (r-1)*this%nc) = .false.
-!                gi(c + (r-1)*this%nc) = LVT_rc%udef
-!             else
-!                li(c + (r-1)*this%nc) = .true.
-!                gi(c + (r-1)*this%nc) = this%snoage(c,r)
-!             end if
-!          end do ! c
-!       end do ! r
-!       !call upscaleByAveraging((this%nc*this%nr), &
-!       !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-!       call upscaleByMode((this%nc*this%nr), &
-!            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-!       if (griddesco(1) == 5) then
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
-!             end do ! c
-!          end do ! r
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go(c + (r-1)*nc_out) = go2d(c,r)
-!             end do ! c
-!          end do ! r
-!       end if
-!       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-!            dspln=0, cat=1, num=17, typegenproc=12, fcsttime=0)
-
-!       ! Handle icecon
-!       do r = 1, this%nr
-!          do c = 1, this%nc
-!             if (this%icecon(c,r) < 0) then
-!                li(c + (r-1)*this%nc) = .false.
-!                gi(c + (r-1)*this%nc) = LVT_rc%udef
-!             else
-!                li(c + (r-1)*this%nc) = .true.
-!                gi(c + (r-1)*this%nc) = this%icecon(c,r)
-!             end if
-!          end do ! c
-!       end do ! r
-!       call upscaleByAveraging((this%nc*this%nr), &
-!            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-!       if (griddesco(1) == 5) then
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
-!             end do ! c
-!          end do ! r
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go(c + (r-1)*nc_out) = go2d(c,r)
-!             end do ! c
-!          end do ! r
-!       end if
-!       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-!            dspln=10, cat=2, num=0, typegenproc=12, fcsttime=0)
+      ! Handle icecon
+      do r = 1, this%nr
+         do c = 1, this%nc
+            if (this%icecon(c,r) < 0) then
+               li(c + (r-1)*this%nc) = .false.
+               gi(c + (r-1)*this%nc) = LVT_rc%udef
+            else
+               li(c + (r-1)*this%nc) = .true.
+               gi(c + (r-1)*this%nc) = this%icecon(c,r)
+            end if
+         end do ! c
+      end do ! r
+      call upscaleByAveraging((this%nc*this%nr), &
+           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (griddesco(1) == 5) then
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+            end do ! c
+         end do ! r
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go(c + (r-1)*nc_out) = go2d(c,r)
+            end do ! c
+         end do ! r
+      end if
+      call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
+           dspln=10, cat=2, num=0, typegenproc=12, fcsttime=0)
       
-!       !  Handle icemask
-!       do r = 1, this%nr
-!          do c = 1, this%nc
-!             if (this%icemask(c,r) < 0) then
-!                li(c + (r-1)*this%nc) = .false.
-!                gi(c + (r-1)*this%nc) = LVT_rc%udef
-!             else
-!                li(c + (r-1)*this%nc) = .true.
-!                gi(c + (r-1)*this%nc) = this%icemask(c,r)
-!             end if
-!          end do ! c
-!       end do ! r
-!       !call upscaleByAveraging((this%nc*this%nr), &
-!       !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-!       call upscaleByMode((this%nc*this%nr), &
-!            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-!       if (griddesco(1) == 5) then
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
-!             end do ! c
-!          end do ! r
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go(c + (r-1)*nc_out) = go2d(c,r)
-!             end do ! c
-!          end do ! r
-!       end if
-!       ! FIXME:  Find parameter number for ice mask
-!       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-!            dspln=10, cat=2, num=192, typegenproc=12, fcsttime=0)
+      !  Handle icemask
+      do r = 1, this%nr
+         do c = 1, this%nc
+            if (this%icemask(c,r) < 0) then
+               li(c + (r-1)*this%nc) = .false.
+               gi(c + (r-1)*this%nc) = LVT_rc%udef
+            else
+               li(c + (r-1)*this%nc) = .true.
+               gi(c + (r-1)*this%nc) = this%icemask(c,r)
+            end if
+         end do ! c
+      end do ! r
+      !call upscaleByAveraging((this%nc*this%nr), &
+      !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      call upscaleByMode((this%nc*this%nr), &
+           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (griddesco(1) == 5) then
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+            end do ! c
+         end do ! r
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go(c + (r-1)*nc_out) = go2d(c,r)
+            end do ! c
+         end do ! r
+      end if
+      ! FIXME:  Find parameter number for ice mask
+      call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
+           dspln=10, cat=2, num=192, typegenproc=12, fcsttime=0)
 
-!       ! Handle iceage
-!       do r = 1, this%nr
-!          do c = 1, this%nc
-!             if (this%icemask(c,r) < 0) then
-!                li(c + (r-1)*this%nc) = .false.
-!                gi(c + (r-1)*this%nc) = LVT_rc%udef
-!             else
-!                li(c + (r-1)*this%nc) = .true.
-!                gi(c + (r-1)*this%nc) = this%iceage(c,r)
-!             end if
-!          end do ! c
-!       end do ! r
-!       !call upscaleByAveraging((this%nc*this%nr), &
-!       !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-!       call upscaleByMode((this%nc*this%nr), &
-!            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-!       if (griddesco(1) == 5) then
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
-!             end do ! c
-!          end do ! r
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go(c + (r-1)*nc_out) = go2d(c,r)
-!             end do ! c
-!          end do ! r
-!       end if
-!       ! FIXME:  Find parameter number for ice age
-!       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-!            dspln=10, cat=2, num=193, typegenproc=12, fcsttime=0)
+      ! Handle iceage
+      do r = 1, this%nr
+         do c = 1, this%nc
+            if (this%icemask(c,r) < 0) then
+               li(c + (r-1)*this%nc) = .false.
+               gi(c + (r-1)*this%nc) = LVT_rc%udef
+            else
+               li(c + (r-1)*this%nc) = .true.
+               gi(c + (r-1)*this%nc) = this%iceage(c,r)
+            end if
+         end do ! c
+      end do ! r
+      !call upscaleByAveraging((this%nc*this%nr), &
+      !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      call upscaleByMode((this%nc*this%nr), &
+           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (griddesco(1) == 5) then
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+            end do ! c
+         end do ! r
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go(c + (r-1)*nc_out) = go2d(c,r)
+            end do ! c
+         end do ! r
+      end if
+      ! FIXME:  Find parameter number for ice age
+      call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
+           dspln=10, cat=2, num=193, typegenproc=12, fcsttime=0)
+      !if (griddesco(1) == 0) then
+      !   call write_netcdf(griddesco, nc_out, nr_out, go)
+      !end if
 
       ! Close the GRIB2 file
       call grib_close_file(ftn, rc)
@@ -724,7 +724,7 @@ contains
       griddesci(9) = this%dx
       griddesci(10) = this%dy
       griddesci(11) = 64
-      griddesci(20) = 255
+      griddesci(20) = 64
       griddesci(30) = 0
       griddesci(32) = this%nc
       griddesci(33) = this%nr
@@ -760,7 +760,7 @@ contains
       griddesco(9) =  0.250000
       griddesco(10) = 0.250000
       griddesco(11) = 64
-      griddesco(20) = 255
+      griddesco(20) = 64
       griddesco(30) = 0
       griddesco(32) = 1440
       griddesco(33) =  720
