@@ -437,7 +437,7 @@ contains
       call upscaleByAveraging_input(griddesci, griddesco, &
            (this%nc*this%nr), (nc_out*nr_out), n11)
 
-      ! Calculate neighbor weights for bilinea
+      ! Calculate neighbor weights for bilinear
       if (griddesco(1) == 5) then
          allocate(rlat_bin(nc_out*nr_out))
          allocate(rlon_bin(nc_out*nr_out))
@@ -539,9 +539,6 @@ contains
             end do
          end do
       end if
-      if (trim(gridID) .eq. SH_PS16) then
-         call write_netcdf_ps(griddesco, nc_out, nr_out, go)
-      end if
       ! If using Air Force polar stereographic, we must flip the grid so
       ! the origin is in the upper-left corner instead of lower-left
       if (griddesco(1) == 5) then
@@ -604,6 +601,26 @@ contains
       end do ! r
       call upscaleByAveraging((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (griddesco(1) == 5) then
+         call bilinear_interp(griddesco, li, gi, lo_bin, go_bin, &
+              (this%nc*this%nr), (nc_out*nr_out), &
+              rlat_bin, rlon_bin, &
+              w11_bin, w12_bin, w21_bin, w22_bin, &
+              n11_bin, n12_bin, n21_bin, n22_bin, &
+              LVT_rc%udef, iret)
+         do r = 1, nr_out
+            do c = 1, nc_out
+               if (.not. lo(c + (r-1)*nc_out)) then
+                  if (lo_bin(c + (r-1)*nc_out)) then
+                     go(c + (r-1)*nc_out) = go_bin(c + (r-1)*nc_out)
+                  end if
+               end if
+            end do
+         end do
+      end if
+      if (trim(gridID) .eq. SH_PS16) then
+         call write_netcdf_ps(griddesco, nc_out, nr_out, go)
+      end if
       if (griddesco(1) == 5) then
          do r = 1, nr_out
             do c = 1, nc_out
