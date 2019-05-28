@@ -26,7 +26,10 @@ subroutine write_LDTSIobs(n, k, OBS_State)
    ! Arguments
    integer, intent(in) :: n
    integer, intent(in) :: k
-   type(ESMF_State), intent(in) :: OBS_State
+   type(ESMF_State), intent(inout) :: OBS_State 
+
+   ! NOTE:  intent(inout) above for OBS_State is to maintain compatibility
+   ! with ESMF 5.2.0rp3
 
    ! Local variables
    logical                  :: data_update
