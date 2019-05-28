@@ -385,11 +385,21 @@ contains
       real :: xmesh, xpnmcaf, ypnmcaf, orient, xj, xi, alat, alon
       integer :: nc_out, nr_out
       integer, allocatable :: n11(:)
-      logical*1, allocatable :: li(:), lo(:)
-      real, allocatable :: gi(:), go(:)
+      real, allocatable :: rlat_bin(:)
+      real, allocatable :: rlon_bin(:)
+      integer, allocatable :: n11_bin(:)
+      integer, allocatable :: n12_bin(:)
+      integer, allocatable :: n21_bin(:)
+      integer, allocatable :: n22_bin(:)
+      real, allocatable :: w11_bin(:)
+      real, allocatable :: w12_bin(:)
+      real, allocatable :: w21_bin(:)
+      real, allocatable :: w22_bin(:)      
+      logical*1, allocatable :: li(:), lo(:), lo_bin(:)
+      real, allocatable :: gi(:), go(:), go_bin(:)
       real, allocatable :: go2d(:,:)
       character(len=255) :: fname
-      integer :: ftn, rc, status2
+      integer :: ftn, rc, status2, iret
       integer :: c,r
       integer :: igrib
       character(len=8) :: yyyymmdd
@@ -427,6 +437,50 @@ contains
       call upscaleByAveraging_input(griddesci, griddesco, &
            (this%nc*this%nr), (nc_out*nr_out), n11)
 
+      ! Calculate neighbor weights for bilinea
+      if (griddesco(1) == 5) then
+         allocate(rlat_bin(nc_out*nr_out))
+         allocate(rlon_bin(nc_out*nr_out))
+         if (trim(gridID) .eq. NH_PS16) then
+            do r = 1, nr_out
+               do c = 1, nc_out
+                  call pstoll(1, 1, float(c), float(nr_out - r + 1), 16, &
+                       alat, alon)
+                  if (alon > 180.) then
+                     alon = alon - 360.
+                  end if
+                  rlat_bin(c + (r-1)*nc_out) = alat
+                  rlon_bin(c + (r-1)*nc_out) = alon
+               end do ! c
+            end do ! r
+         else if (trim(gridID) .eq. SH_PS16) then
+            do r = 1, nr_out
+               do c = 1, nc_out
+                  call pstoll(2, 1, float(c), float(nr_out - r + 1), 16, &
+                       alat, alon)
+                  if (alon > 180.) then
+                     alon = alon - 360.
+                  end if
+                  rlat_bin(c + (r-1)*nc_out) = alat
+                  rlon_bin(c + (r-1)*nc_out) = alon
+               end do ! c
+            end do ! r
+         end if
+         allocate(n11_bin(nc_out*nr_out))
+         allocate(n12_bin(nc_out*nr_out))
+         allocate(n21_bin(nc_out*nr_out))
+         allocate(n22_bin(nc_out*nr_out))
+         allocate(w11_bin(nc_out*nr_out))
+         allocate(w12_bin(nc_out*nr_out))
+         allocate(w21_bin(nc_out*nr_out))
+         allocate(w22_bin(nc_out*nr_out))         
+         call bilinear_interp_input_usaf(griddesci, griddesco, &
+              (nc_out*nr_out), &
+              rlat_bin, rlon_bin, &
+              n11_bin, n12_bin, n21_bin, n22_bin, &
+              w11_bin, w12_bin, w21_bin, w22_bin, gridID)
+      end if
+
       ! Construct the GRIB2 filename
       call build_filename_g2(gridID, LVT_rc%output_dir, &
            LVT_rc%yyyymmddhh, fname)
@@ -450,6 +504,8 @@ contains
       allocate(go(nc_out*nr_out))
       if (griddesco(1) == 5) then
          allocate(go2d(nc_out, nr_out))
+         allocate(go_bin(nc_out*nr_out))
+         allocate(lo_bin(nc_out*nr_out))
       end if
 
       ! Interpolate snoanl
@@ -466,6 +522,26 @@ contains
       end do ! r
       call upscaleByAveraging((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (griddesco(1) == 5) then
+         call bilinear_interp(griddesco, li, gi, lo_bin, go_bin, &
+              (this%nc*this%nr), (nc_out*nr_out), &
+              rlat_bin, rlon_bin, &
+              w11_bin, w12_bin, w21_bin, w22_bin, &
+              n11_bin, n12_bin, n21_bin, n22_bin, &
+              LVT_rc%udef, iret)
+         do r = 1, nr_out
+            do c = 1, nc_out
+               if (.not. lo(c + (r-1)*nc_out)) then
+                  if (lo_bin(c + (r-1)*nc_out)) then
+                     go(c + (r-1)*nc_out) = go_bin(c + (r-1)*nc_out)
+                  end if
+               end if
+            end do
+         end do
+      end if
+      if (trim(gridID) .eq. SH_PS16) then
+         call write_netcdf_ps(griddesco, nc_out, nr_out, go)
+      end if
       ! If using Air Force polar stereographic, we must flip the grid so
       ! the origin is in the upper-left corner instead of lower-left
       if (griddesco(1) == 5) then
@@ -591,9 +667,6 @@ contains
       !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       call upscaleByMode((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-      !if (trim(gridID) .eq. SH_PS16) then
-      !   call write_netcdf_ps(griddesco, nc_out, nr_out, go)
-      !end if
       if (griddesco(1) == 5) then
          do r = 1, nr_out
             do c = 1, nc_out
@@ -622,12 +695,23 @@ contains
 
       ! Clean up
       deallocate(n11)
+      if (allocated(rlat_bin)) deallocate(rlat_bin)
+      if (allocated(rlon_bin)) deallocate(rlon_bin)
+      if (allocated(n11_bin)) deallocate(n11_bin)
+      if (allocated(n12_bin)) deallocate(n12_bin)
+      if (allocated(n21_bin)) deallocate(n21_bin)
+      if (allocated(n22_bin)) deallocate(n22_bin)
+      if (allocated(w11_bin)) deallocate(w11_bin)
+      if (allocated(w12_bin)) deallocate(w12_bin)
+      if (allocated(w21_bin)) deallocate(w21_bin)
+      if (allocated(w22_bin)) deallocate(w22_bin)
       deallocate(li)
       deallocate(gi)
       deallocate(lo)
       deallocate(go)
       if (allocated(go2d)) deallocate(go2d)
-
+      if (allocated(lo_bin)) deallocate(lo_bin)
+      if (allocated(go_bin)) deallocate(go_bin)
    end subroutine interp_and_output_grib2
 
    ! Internal subroutine for checking gridID
@@ -1343,7 +1427,7 @@ contains
       integer :: shuffle, deflate, deflate_level
       integer :: iret, ncid
       integer :: dim_ids(2)
-      integer :: snoanl_varid, snoanl2_varid
+      integer :: snoanl_varid
       integer :: lon_varid, lat_varid, xc_varid, yc_varid
       character*4 :: cyyyy
       character*2 :: cmm,cdd,chh
@@ -1444,22 +1528,6 @@ contains
            '_FillValue', LVT_rc%udef), &
            '[ERR] nf90_put_att failed for SNOANL')
 
-      call LVT_verify(nf90_def_var(ncid,"snoanl2",nf90_float, &
-           dimids=dim_ids, &
-           varid=snoanl2_varid),'[ERR] nf90_def_var failed')
-      call LVT_verify(nf90_def_var_deflate(ncid,&
-           snoanl2_varid, shuffle, deflate, deflate_level), &
-           '[ERR] nf90_def_var_deflate failed')
-      call LVT_verify(nf90_put_att(ncid,snoanl2_varid, &
-           "units","m"),&
-           '[ERR] nf90_put_att failed')
-      call LVT_verify(nf90_put_att(ncid,snoanl2_varid, &
-           "long_name","depth of surface snow over land"),&
-           '[ERR] nf90_put_att failed')
-      call LVT_verify(nf90_put_att(ncid,snoanl2_varid, &
-           '_FillValue', LVT_rc%udef), &
-           '[ERR] nf90_put_att failed for SNOANL2')
-
       ! Miscellaneous header information
       call LVT_verify(nf90_put_att(ncid,nf90_global,"Conventions", &
            "CF-1.7"), &
@@ -1513,14 +1581,86 @@ contains
            snoanl(:,:), &
            (/1,1/),(/nc_out,nr_out/)), &
            '[ERR] nf90_put_var failed for snoanl')
-      call LVT_verify(nf90_put_var(ncid,snoanl2_varid,&
-           snoanl(:,:), &
-           (/1,1/),(/nc_out,nr_out/)), &
-           '[ERR] nf90_put_var failed for snoanl2')
       deallocate(snoanl)
 
       call LVT_verify(nf90_close(ncid), &
            '[ERR] nf90_close failed!')
 
    end subroutine write_netcdf_ps
+
+   subroutine bilinear_interp_input_usaf(gridDesci, gridDesco, npts, &
+        rlat, rlon, n11, n12, n21, n22, w11, w12, w21, w22, afwa_grid)
+      
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      real, intent(in)    :: gridDesci(50)
+      real, intent(in)    :: gridDesco(50)
+      integer, intent(in) :: npts
+      real, intent(inout) :: rlat(npts)
+      real, intent(inout) :: rlon(npts)
+      integer, intent(inout) :: n11(npts)
+      integer, intent(inout) :: n12(npts)
+      integer, intent(inout) :: n21(npts)
+      integer, intent(inout) :: n22(npts)
+      real, intent(inout) :: w11(npts)
+      real, intent(inout) :: w12(npts)
+      real, intent(inout) :: w21(npts)
+      real, intent(inout) :: w22(npts)
+      character(len=*), intent(in) :: afwa_grid
+
+      ! Local variables
+      integer :: mo
+      integer :: nv
+      real :: xpts(npts), ypts(npts)
+      integer :: n
+      real :: xi, xf, yi, yf
+      integer :: i1, i2, j1, j2
+      integer, external :: get_fieldpos
+      real, parameter     :: fill = -9999.0
+
+      mo = npts
+      if (trim(afwa_grid) .ne. NH_PS16 .and. &
+           trim(afwa_grid) .ne. SH_PS16) then
+         if (gridDesco(1).ge.0) then
+            call compute_earth_coord(gridDesco, mo, fill, &
+                 xpts, ypts, rlon, rlat,nv)
+         endif
+      end if
+      call compute_grid_coord(gridDesci, mo, fill, xpts, ypts, rlon, rlat, nv)
+      do n=1,mo
+         xi=xpts(n)
+         yi=ypts(n)
+         if(xi.ne.fill.and.yi.ne.fill) then
+            i1=xi
+            i2=i1+1
+            j1=yi
+            j2=j1+1 
+            xf=xi-i1
+            yf=yi-j1
+            n11(n)=get_fieldpos(i1, j1, gridDesci)
+            n21(n)=get_fieldpos(i2, j1, gridDesci)
+            n12(n)=get_fieldpos(i1, j2, gridDesci)
+            n22(n)=get_fieldpos(i2, j2, gridDesci)
+            if(min(n11(n),n21(n),n12(n),n22(n)).gt.0) then
+               w11(n)=(1-xf)*(1-yf)
+               w21(n)=xf*(1-yf)
+               w12(n)=(1-xf)*yf
+               w22(n)=xf*yf
+            else
+               n11(n)=0
+               n21(n)=0
+               n12(n)=0
+               n22(n)=0
+            endif
+         else
+            n11(n)=0
+            n21(n)=0
+            n12(n)=0
+            n22(n)=0
+         endif
+      enddo
+            
+   end subroutine bilinear_interp_input_usaf
 end module LVT_LDTSIpostMod
