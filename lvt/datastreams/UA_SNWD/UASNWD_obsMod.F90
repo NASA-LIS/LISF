@@ -29,6 +29,9 @@ module UASNWD_obsMod
 !  Temporal coverage is from 1 Jan 1982 - 2017 
 ! 
 ! !FILES USED:
+!
+! !REVISION HISTORY: 
+!  28 May 2019: Rhae Sung Kim, Initial Specification!
 ! 
 !EOP
 

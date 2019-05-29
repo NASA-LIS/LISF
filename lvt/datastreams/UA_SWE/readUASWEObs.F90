@@ -36,7 +36,8 @@ subroutine readUASWEObs(source)
 !  data. The data for a given year is read into memory at the 
 !  start of a year and indexed into during each day.
 ! 
-! !FILES USED:
+! !REVISION HISTORY: 
+!  28 May 2019: Rhae Sung Kim, Initial Specification! 
 ! 
 !EOP
 
