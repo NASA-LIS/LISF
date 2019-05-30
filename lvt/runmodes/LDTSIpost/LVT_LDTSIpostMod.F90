@@ -395,8 +395,12 @@ contains
       real, allocatable :: w12_bin(:)
       real, allocatable :: w21_bin(:)
       real, allocatable :: w22_bin(:)      
-      logical*1, allocatable :: li(:), lo(:), lo_bin(:)
-      real, allocatable :: gi(:), go(:), go_bin(:)
+      integer, allocatable :: n11_neighbor(:)
+      real, allocatable :: rlat_neighbor(:)
+      real, allocatable :: rlon_neighbor(:)
+      
+      logical*1, allocatable :: li(:), lo(:), lo_bin(:), lo_neighbor(:)
+      real, allocatable :: gi(:), go(:), go_bin(:), go_neighbor(:)
       real, allocatable :: go2d(:,:)
       character(len=255) :: fname
       integer :: ftn, rc, status2, iret
@@ -432,12 +436,12 @@ contains
          gridDefinitionTemplateNumber = 20
       end if
 
-      ! Calculate neighbor weights for upscaling
+      ! Calculate weights for upscaling (averaging or mode)
       allocate(n11(this%nc*this%nr))
       call upscaleByAveraging_input(griddesci, griddesco, &
            (this%nc*this%nr), (nc_out*nr_out), n11)
 
-      ! Calculate neighbor weights for bilinear
+      ! Calculate weights for bilinear interpolation
       if (griddesco(1) == 5) then
          allocate(rlat_bin(nc_out*nr_out))
          allocate(rlon_bin(nc_out*nr_out))
@@ -481,6 +485,42 @@ contains
               w11_bin, w12_bin, w21_bin, w22_bin, gridID)
       end if
 
+      ! Calculate weights for neighbor interpolation
+      if (griddesco(1) == 5) then
+         allocate(rlat_neighbor(nc_out*nr_out))
+         allocate(rlon_neighbor(nc_out*nr_out))
+         if (trim(gridID) .eq. NH_PS16) then
+            do r = 1, nr_out
+               do c = 1, nc_out
+                  call pstoll(1, 1, float(c), float(nr_out - r + 1), 16, &
+                       alat, alon)
+                  if (alon > 180.) then
+                     alon = alon - 360.
+                  end if
+                  rlat_neighbor(c + (r-1)*nc_out) = alat
+                  rlon_neighbor(c + (r-1)*nc_out) = alon
+               end do ! c
+            end do ! r
+         else if (trim(gridID) .eq. SH_PS16) then
+            do r = 1, nr_out
+               do c = 1, nc_out
+                  call pstoll(2, 1, float(c), float(nr_out - r + 1), 16, &
+                       alat, alon)
+                  if (alon > 180.) then
+                     alon = alon - 360.
+                  end if
+                  rlat_neighbor(c + (r-1)*nc_out) = alat
+                  rlon_neighbor(c + (r-1)*nc_out) = alon
+               end do ! c
+            end do ! r
+         end if
+         allocate(n11_neighbor(nc_out*nr_out))
+         call neighbor_interp_input_usaf(griddesci, griddesco, &
+              (nc_out*nr_out), &
+              rlat_neighbor, rlon_neighbor, &
+              n11_neighbor, gridID)
+      end if
+
       ! Construct the GRIB2 filename
       call build_filename_g2(gridID, LVT_rc%output_dir, &
            LVT_rc%yyyymmddhh, fname)
@@ -506,6 +546,8 @@ contains
          allocate(go2d(nc_out, nr_out))
          allocate(go_bin(nc_out*nr_out))
          allocate(lo_bin(nc_out*nr_out))
+         allocate(go_neighbor(nc_out*nr_out))
+         allocate(lo_neighbor(nc_out*nr_out))
       end if
 
       ! Interpolate snoanl
@@ -538,10 +580,8 @@ contains
                end if
             end do
          end do
-      end if
-      ! If using Air Force polar stereographic, we must flip the grid so
-      ! the origin is in the upper-left corner instead of lower-left
-      if (griddesco(1) == 5) then
+         ! If using Air Force polar stereographic, we must flip the grid so
+         ! the origin is in the upper-left corner instead of lower-left
          do r = 1, nr_out
             do c = 1, nc_out
                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
@@ -568,11 +608,25 @@ contains
             end if
          end do ! c
       end do ! r
-      !call upscaleByAveraging((this%nc*this%nr), &
-      !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       call upscaleByMode((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       if (griddesco(1) == 5) then
+         call neighbor_interp(griddesco, li, gi, lo_neighbor, go_neighbor, &
+              (this%nc*this%nr), (nc_out*nr_out), &
+              rlat_neighbor, rlon_neighbor, &
+              n11_neighbor, &
+              LVT_rc%udef, iret)
+         do r = 1, nr_out
+            do c = 1, nc_out
+               if (.not. lo(c + (r-1)*nc_out)) then
+                  if (lo_neighbor(c + (r-1)*nc_out)) then
+                     go(c + (r-1)*nc_out) = go_neighbor(c + (r-1)*nc_out)
+                  end if
+               end if
+            end do
+         end do
+         ! If using Air Force polar stereographic, we must flip the grid so
+         ! the origin is in the upper-left corner instead of lower-left
          do r = 1, nr_out
             do c = 1, nc_out
                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
@@ -617,11 +671,8 @@ contains
                end if
             end do
          end do
-      end if
-      if (trim(gridID) .eq. SH_PS16) then
-         call write_netcdf_ps(griddesco, nc_out, nr_out, go)
-      end if
-      if (griddesco(1) == 5) then
+         ! If using Air Force polar stereographic, we must flip the grid so
+         ! the origin is in the upper-left corner instead of lower-left
          do r = 1, nr_out
             do c = 1, nc_out
                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
@@ -648,11 +699,25 @@ contains
             end if
          end do ! c
       end do ! r
-      !call upscaleByAveraging((this%nc*this%nr), &
-      !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       call upscaleByMode((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       if (griddesco(1) == 5) then
+         call neighbor_interp(griddesco, li, gi, lo_neighbor, go_neighbor, &
+              (this%nc*this%nr), (nc_out*nr_out), &
+              rlat_neighbor, rlon_neighbor, &
+              n11_neighbor, &
+              LVT_rc%udef, iret)
+         do r = 1, nr_out
+            do c = 1, nc_out
+               if (.not. lo(c + (r-1)*nc_out)) then
+                  if (lo_neighbor(c + (r-1)*nc_out)) then
+                     go(c + (r-1)*nc_out) = go_neighbor(c + (r-1)*nc_out)
+                  end if
+               end if
+            end do
+         end do
+         ! If using Air Force polar stereographic, we must flip the grid so
+         ! the origin is in the upper-left corner instead of lower-left
          do r = 1, nr_out
             do c = 1, nc_out
                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
@@ -680,11 +745,25 @@ contains
             end if
          end do ! c
       end do ! r
-      !call upscaleByAveraging((this%nc*this%nr), &
-      !     (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       call upscaleByMode((this%nc*this%nr), &
            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       if (griddesco(1) == 5) then
+         call neighbor_interp(griddesco, li, gi, lo_neighbor, go_neighbor, &
+              (this%nc*this%nr), (nc_out*nr_out), &
+              rlat_neighbor, rlon_neighbor, &
+              n11_neighbor, &
+              LVT_rc%udef, iret)
+         do r = 1, nr_out
+            do c = 1, nc_out
+               if (.not. lo(c + (r-1)*nc_out)) then
+                  if (lo_neighbor(c + (r-1)*nc_out)) then
+                     go(c + (r-1)*nc_out) = go_neighbor(c + (r-1)*nc_out)
+                  end if
+               end if
+            end do
+         end do
+         ! If using Air Force polar stereographic, we must flip the grid so
+         ! the origin is in the upper-left corner instead of lower-left
          do r = 1, nr_out
             do c = 1, nc_out
                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
@@ -722,6 +801,9 @@ contains
       if (allocated(w12_bin)) deallocate(w12_bin)
       if (allocated(w21_bin)) deallocate(w21_bin)
       if (allocated(w22_bin)) deallocate(w22_bin)
+      if (allocated(rlat_neighbor)) deallocate(rlat_neighbor)
+      if (allocated(rlon_neighbor)) deallocate(rlon_neighbor)
+      if (allocated(n11_neighbor)) deallocate(n11_neighbor)
       deallocate(li)
       deallocate(gi)
       deallocate(lo)
@@ -729,6 +811,8 @@ contains
       if (allocated(go2d)) deallocate(go2d)
       if (allocated(lo_bin)) deallocate(lo_bin)
       if (allocated(go_bin)) deallocate(go_bin)
+      if (allocated(lo_neighbor)) deallocate(lo_neighbor)
+      if (allocated(go_neighbor)) deallocate(go_neighbor)
    end subroutine interp_and_output_grib2
 
    ! Internal subroutine for checking gridID
@@ -1113,11 +1197,17 @@ contains
          call LVT_grib_set(igrib, 'Ny', nr_out)
          call LVT_grib_set(igrib, 'latitudeOfFirstGridPointInDegrees', &
               griddesco(30))
+         ! NOTE:  ECCODES will not accept a value of -125, so we use the
+         ! equivalent of 235 in the southern hemisphere
          call LVT_grib_set(igrib, 'longitudeOfFirstGridPointInDegrees', &
               griddesco(31))
-         call LVT_grib_set(igrib, 'LaD', griddesco(10))
+         !call LVT_grib_set(igrib, 'LaD', griddesco(10))
+         !call LVT_grib_set(igrib, 'orientationOfTheGrid', &
+         !     griddesco(7))
+         call LVT_grib_set(igrib, 'LaD', 1e6*griddesco(10))
          call LVT_grib_set(igrib, 'orientationOfTheGrid', &
-              griddesco(7))
+              1e6*griddesco(7))
+
          call LVT_grib_set(igrib, 'DxInMetres', &
               abs(1000*griddesco(8)))
          call LVT_grib_set(igrib, 'DyInMetres', &
@@ -1183,7 +1273,8 @@ contains
 
    end subroutine write_grib2
 
-   ! NetCDF output
+   ! Internal subroutine for writing global lat/lon output in netCDF.
+   ! For testing purposes.
    subroutine write_netcdf_latlon(griddesco, nc_out, nr_out, go)
 
       ! Imports
@@ -1423,6 +1514,8 @@ contains
 
    end subroutine write_netcdf_latlon
 
+   ! Internal subroutine for writing polar stereographic output in netCDF.
+   ! For testing purposes.
    subroutine write_netcdf_ps(griddesco, nc_out, nr_out, go)
 
       ! Imports
@@ -1605,6 +1698,9 @@ contains
 
    end subroutine write_netcdf_ps
 
+   ! Internal subroutine to set up weights for bilinear interpolation.
+   ! Based on bilinear_interp_input, but handles Air Force 16th
+   ! mesh polar stereographic grids.
    subroutine bilinear_interp_input_usaf(gridDesci, gridDesco, npts, &
         rlat, rlon, n11, n12, n21, n22, w11, w12, w21, w22, afwa_grid)
       
@@ -1680,4 +1776,55 @@ contains
       enddo
             
    end subroutine bilinear_interp_input_usaf
+
+   ! Internal subroutine to set up weights for neighbor interpolation.
+   ! Based on neighbor_interp_input, but handles Air Force 16th
+   ! mesh polar stereographic grids.
+   subroutine neighbor_interp_input_usaf(griddesci, griddesco, npts, &
+        rlat2, rlon2, n112, afwa_grid)
+
+      ! Defaults
+      implicit none
+      
+      ! Arguments
+      real, intent(in) :: griddesci(50)
+      real, intent(in) :: griddesco(50)
+      integer, intent(in) :: npts
+      real, intent(inout) :: rlat2(npts)
+      real, intent(inout) :: rlon2(npts)
+      integer, intent(inout) :: n112(npts)
+      character(len=*), intent(in) :: afwa_grid
+
+      ! Local variables
+      integer             :: n
+      integer             :: mo, nv 
+      real                :: xpts(npts), ypts(npts)
+      integer             :: i1, j1
+      real                :: xi, yi
+      integer, external   :: get_fieldpos
+      real, parameter     :: fill = -9999.0
+
+      mo = npts
+      if (trim(afwa_grid) .ne. NH_PS16 .and. &
+           trim(afwa_grid) .ne. SH_PS16) then
+         if (gridDesco(1) .ge. 0) then
+            call compute_earth_coord(griddesco, mo, fill, xpts, ypts, &
+                 rlon2, rlat2, nv)
+         end if
+      end if
+      call compute_grid_coord(griddesci, mo, fill, xpts, ypts, &
+           rlon2, rlat2, nv)
+      do n=1, mo
+         xi = xpts(n)
+         yi = ypts(n)
+         if (xi .ne. fill .and. yi .ne. fill) then
+            i1 = nint(xi)
+            j1 = nint(yi)
+            n112(n) = get_fieldpos(i1, j1, griddesci)
+         else
+            n112(n) = 0
+         endif
+      enddo
+      
+   end subroutine neighbor_interp_input_usaf
 end module LVT_LDTSIpostMod
