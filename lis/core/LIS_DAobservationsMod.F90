@@ -370,7 +370,7 @@ contains
 #endif
        do k=1,LIS_rc%ndas
 
-          allocate(deblklist(2,2,LIS_npes))
+          allocate(deblklist(1,2,LIS_npes))
           do i=0,LIS_npes-1
              stid = LIS_ooffsets(k,i)+1
              enid = stid + LIS_obs_ngrids(k,i)-1
