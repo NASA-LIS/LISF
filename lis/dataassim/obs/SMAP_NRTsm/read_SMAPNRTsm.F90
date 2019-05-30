@@ -451,7 +451,9 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
            allocate(ssdev(LIS_rc%obs_ngrid(k)))
            ssdev = SMAPNRTsm_struc(n)%ssdev_inp 
            
-           if(SMAPNRTsm_struc(n)%ntimes.eq.1) then 
+           if (SMAPNRTsm_struc(n)%cdf_read_opt .eq. 1) then
+              jj = 1
+           else if(SMAPNRTsm_struc(n)%ntimes.eq.1) then 
               jj = 1
            else
               jj = LIS_rc%mo
