@@ -6,6 +6,14 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
+! Macros for tracing - Requires ESMF 7_1_0+
+#ifdef ESMF_TRACE
+#define TRACE_ENTER(region) call ESMF_TraceRegionEnter(region)
+#define TRACE_EXIT(region) call ESMF_TraceRegionExit(region)
+#else
+#define TRACE_ENTER(region)
+#define TRACE_EXIT(region)
+#endif
 module LIS_DAobservationsMod
 
 !BOP
@@ -178,6 +186,7 @@ contains
     logical                  :: name_found
     character*20             :: alglist(10)
 
+    TRACE_ENTER("daobs_init")
     if(LIS_rc%ndas.gt.0) then 
 
        allocate(LIS_OBS_State(LIS_rc%nnest, LIS_rc%ndas))
@@ -285,6 +294,7 @@ contains
           endif
        enddo
     endif
+    TRACE_EXIT("daobs_init")
   end subroutine LIS_initDAobservations
 
 !BOP
@@ -1465,10 +1475,12 @@ contains
 !EOP
     integer          :: k 
 
+    TRACE_ENTER("daobs_read")
     do k=1,LIS_rc%ndas
        call readDAObs(trim(LIS_rc%daset(k))//char(0), n, k, &
             LIS_OBS_State(n,k), LIS_OBS_Pert_State(n,k))
     enddo
+    TRACE_EXIT("daobs_read")
 
   end subroutine LIS_readDAobservations
 
@@ -1508,6 +1520,7 @@ contains
     type(ESMF_Field), allocatable :: obs_field(:)
     real,             pointer     :: obs_temp(:,:)
 
+    TRACE_ENTER("daobs_perturb")
     do k=1,LIS_rc%ndas
        if(LIS_rc%perturb_obs(k).ne."none") then 
           curr_time = float(LIS_rc%hr)*3600+60*float(LIS_rc%mn)+float(LIS_rc%ss)
@@ -1566,6 +1579,7 @@ contains
        endif
 
     enddo
+    TRACE_EXIT("daobs_perturb")
     
   end subroutine LIS_perturb_DAobservations
 
@@ -1618,6 +1632,7 @@ contains
     real                         :: obs_gvar(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
     integer                      :: iret
 
+    TRACE_ENTER("daobs_patch2obs")
     lis_gvar  = 0.0
     nlis_gvar = 0
 
@@ -1670,6 +1685,7 @@ contains
           endif
        enddo
     enddo
+    TRACE_EXIT("daobs_patch2obs")
 
   end subroutine LIS_convertPatchSpaceToObsSpace
 
@@ -1724,6 +1740,7 @@ contains
     integer                      :: iret
 
     ovar = LIS_rc%udef
+    TRACE_ENTER("daobs_patch2obsEns")
     do m=1,LIS_rc%nensem(n)
        lis_gvar  = 0.0
        nlis_gvar = 0
@@ -1780,6 +1797,7 @@ contains
        enddo
     enddo
  
+    TRACE_EXIT("daobs_patch2obsEns")
   end subroutine LIS_convertPatchSpaceToObsEnsSpace
 
 !BOP
@@ -1819,6 +1837,7 @@ contains
     real                              :: lat, lon, col,row
     integer                           :: gid,c,r
 
+    TRACE_ENTER("daobs_tile2obs")
     lat = LIS_domain(n)%grid(LIS_domain(n)%gindex( & 
          LIS_surface(n,patch_index)%tile(tileid)%col,&
          LIS_surface(n,patch_index)%tile(tileid)%row))%lat
@@ -1841,6 +1860,7 @@ contains
          lat,lon)
     st_id = gid
     en_id = gid
+    TRACE_EXIT("daobs_tile2obs")
     
   end subroutine LIS_mapTileSpaceToObsSpace
 
@@ -1886,6 +1906,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
    integer :: ierr
    integer :: gdeltas
 
+   TRACE_ENTER("daobs_oneD2twoD")
    if ( LIS_masterproc ) then 
       allocate(gtmp1d(LIS_rc%obs_glbngrid(k)))
       allocate(gtmp(LIS_rc%obs_gnc(k), LIS_rc%obs_gnr(k)))
@@ -1921,6 +1942,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
       enddo
    endif
    deallocate(gtmp1d)
+   TRACE_EXIT("daobs_oneD2twoD")
   
  end subroutine LIS_gather_1dgrid_to_2dgrid_obs
 
@@ -1967,6 +1989,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
    integer :: gid
    integer :: ierr
 
+   TRACE_ENTER("daobs_gblTwo2locTwo")
    allocate(gtmp1d(LIS_rc%obs_gnc(k)*LIS_rc%obs_gnr(k)))
    gtmp1d = LIS_rc%udef
 
@@ -1996,6 +2019,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
           LIS_nss_obs_halo_ind(k,LIS_localPet+1): &
           LIS_nse_obs_halo_ind(k,LIS_localPet+1))
    deallocate(gtmp2d)
+   TRACE_EXIT("daobs_gblTwo2locTwo")
 
  end subroutine LIS_scatter_global_to_local_grid_obs
 
@@ -2029,6 +2053,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
 !  \end{description}
 !EOP
 
+    TRACE_ENTER("daobs_getDomRes")
     if ( LIS_rc%obs_gridDesc(k,1) .eq. 0 ) then
        dx = LIS_rc%obs_gridDesc(k,9)
        dy = LIS_rc%obs_gridDesc(k,10)
@@ -2052,6 +2077,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
        call LIS_endrun()
 
     endif
+    TRACE_EXIT("daobs_getDomRes")
   end subroutine LIS_getObsDomainResolutions
 
 !BOP
@@ -2092,6 +2118,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
     integer       :: c,r,t,count1, ierr
     integer       :: gdeltas
     
+    TRACE_ENTER("daobs_writeGridObs")
     if(LIS_masterproc) then 
        allocate(gtmp(LIS_rc%obs_gnc(k),LIS_rc%obs_gnr(k)))
        allocate(gtmp1(LIS_rc%obs_glbngrid(k)))
@@ -2130,6 +2157,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
        deallocate(gtmp)
     endif
     deallocate(gtmp1)
+    TRACE_EXIT("daobs_writeGridObs")
     
   end subroutine LIS_writevar_gridded_obs
 
@@ -2175,6 +2203,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
     integer :: odeltas
     integer :: i,c,r,l,t,count1
 
+    TRACE_ENTER("daobs_writeInnov")
     if(LIS_masterproc) then 
        allocate(gtmp(LIS_rc%obs_glbngrid(k)*LIS_rc%nobtypes(k)))
        allocate(gtmp1(LIS_rc%obs_gnc(k),LIS_rc%obs_gnr(k)))
@@ -2216,6 +2245,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
        deallocate(gtmp1)
     endif
     deallocate(gtmp)
+    TRACE_EXIT("daobs_writeInnov")
   end subroutine LIS_writevar_innov
 
 !BOP
@@ -2253,6 +2283,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
     integer             :: gid, tid, ntiles, stid
     integer             :: lmask
 
+    TRACE_ENTER("daobs_gblOne2lclOne")
     do t=1, LIS_rc%obs_ngrid(k)
        c = LIS_obs_domain(n,k)%col(t) + LIS_ews_obs_halo_ind(k,LIS_localPet+1)-1
        r = LIS_obs_domain(n,k)%row(t) + LIS_nss_obs_halo_ind(k,LIS_localPet+1)-1
@@ -2278,6 +2309,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
        enddo
     enddo
 #endif   
+    TRACE_EXIT("daobs_gblOne2lclOne")
 
   end subroutine LIS_convertObsVarToLocalSpace
 
@@ -2320,6 +2352,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
 
     integer                 :: c,r
 
+    TRACE_ENTER("daobs_checkObs")
     validObsFlag = 0 
     obs_2d       = LIS_rc%udef
 
@@ -2333,6 +2366,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
           end if
        end do
     end do
+    TRACE_EXIT("daobs_checkObs")
 
   end subroutine LIS_checkForValidObs
 
