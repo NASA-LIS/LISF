@@ -1201,21 +1201,20 @@ contains
          ! equivalent of 235 in the southern hemisphere
          call LVT_grib_set(igrib, 'longitudeOfFirstGridPointInDegrees', &
               griddesco(31))
-         !call LVT_grib_set(igrib, 'LaD', griddesco(10))
-         !call LVT_grib_set(igrib, 'orientationOfTheGrid', &
-         !     griddesco(7))
+         call LVT_grib_set(igrib, 'resolutionAndComponentFlags', 0)
          call LVT_grib_set(igrib, 'LaD', 1e6*griddesco(10))
          call LVT_grib_set(igrib, 'orientationOfTheGrid', &
               1e6*griddesco(7))
-
          call LVT_grib_set(igrib, 'DxInMetres', &
               abs(1000*griddesco(8)))
          call LVT_grib_set(igrib, 'DyInMetres', &
               abs(1000*griddesco(9)))
          if (griddesco(4) < 0) then
             call LVT_grib_set(igrib, 'projectionCentreFlag', 0)
-         else
-            call LVT_grib_set(igrib, 'projectionCentreFlag', 128)
+         else            
+            !call LVT_grib_set(igrib, 'projectionCentreFlag', 128)
+            ! Fix orientation of SH grid.
+            call LVT_grib_set(igrib, 'projectionCentreFlag', 1)
          end if
          call LVT_grib_set(igrib, 'scanningMode', 0)
       end if
