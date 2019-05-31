@@ -184,7 +184,7 @@ subroutine create_gdasfilename(option, name00, name03, name06, &
   if ( option == 2 ) then !bookend 2
      if ( .not. is_analysis_hr ) F06flag = .true. ! need to read two files
   else
-     if ( is_analysis_hr ) F06flag = .false. ! need to read only one file
+     if ( is_analysis_hr ) F06flag = .true. ! need to read two files
   endif
 
   if ( option == 2 ) then !bookend 2 
