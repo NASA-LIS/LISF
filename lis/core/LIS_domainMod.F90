@@ -121,10 +121,12 @@ contains
     integer :: stid, enid
     integer :: status
     integer :: gindex, ntiles
+    integer, allocatable :: tileSeqIndx(:)
     
     type(ESMF_DistGrid) :: tileDG
     type(ESMF_DistGrid) :: gridDG
     type(ESMF_DistGrid) :: patchDG(LIS_rc%max_model_types)
+    type(ESMF_DistGrid) :: arbDG
 
     integer             :: ntiless
     integer             :: ngrids
@@ -132,6 +134,9 @@ contains
     integer             :: gdeltas
     integer             :: npatches(LIS_rc%max_model_types)
     integer             :: patch_deltas(LIS_rc%max_model_types)
+    integer             :: nc, nr
+
+    integer             :: ntilesperensem
 
     TRACE_ENTER("dom_init")
 !    call LIS_domain_plugin
@@ -350,6 +355,33 @@ contains
                gridEdgeLWidth=(/0/), gridEdgeUWidth=(/0/),rc=status)
           call LIS_verify(status)
        enddo
+
+       nc = (LIS_ewe_ind(n,LIS_localPet+1) - LIS_ews_ind(n,LIS_localPet+1) + 1)
+       nr = (LIS_nse_ind(n,LIS_localPet+1) - LIS_nss_ind(n,LIS_localPet+1) + 1)
+       if (SIZE(LIS_domain(n)%gindex) .ne. (nc*nr)) then
+           write(LIS_logunit,*) &
+              '[ERR], SIZE(gindex) does not match East-West x North-South size'
+           call LIS_endrun()
+       endif
+
+       ntilesperensem = LIS_rc%glbntiles(n) / LIS_rc%nensem(n)
+       allocate(tileSeqIndx(LIS_rc%ntiles(n)))
+       do i=1,LIS_rc%ntiles(n)
+          tileSeqIndx(i) = ( LIS_domain(n)%tile(i)%col + LIS_ews_ind(n,LIS_localPet+1) - 1 + &
+                           ((LIS_domain(n)%tile(i)%row + LIS_nss_ind(n,LIS_localPet+1) - 2) * &
+                           LIS_rc%gnc(n) ) ) + ( ( LIS_domain(n)%tile(i)%ensem - 1) * &
+                           ntilesperensem )
+       enddo
+
+       arbDG = ESMF_DistGridCreate(arbSeqIndexList=tileSeqIndx,rc=status)
+       call LIS_verify(status)
+
+       deallocate(tileSeqIndx)
+
+       LIS_locStream(n) = ESMF_LocStreamCreate(name="LIS Tile LocStream",&
+            indexflag=ESMF_INDEX_DELOCAL, coordSys=ESMF_COORDSYS_CART,&
+            distgrid = arbDG, rc=status)
+       call LIS_verify(status)
        
        call LIS_histDataInit(n,LIS_rc%ntiles(n))
 

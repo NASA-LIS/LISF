@@ -45,6 +45,7 @@ module LIS_histDataMod
   use LIS_coreMod
   use LIS_logMod
   use LIS_mpiMod
+  use LIS_cplMod, only : LIS_cplBcast
 
   implicit none
 
@@ -57,6 +58,7 @@ module LIS_histDataMod
   public :: LIS_diagnoseIrrigationOutputVar
   public :: LIS_resetOutputVars
   public :: LIS_rescaleCount
+  public :: LIS_bcastDiagFlag
 
 !-----------------------------------------------------------------------------
 ! !PUBLIC TYPES:
@@ -64,6 +66,10 @@ module LIS_histDataMod
 ! MOC - Model Output Convention
 !-----------------------------------------------------------------------------
   public :: LIS_histData
+  public :: LIS_histFB
+  public :: LIS_histSend
+  public :: LIS_histRecv
+  public :: LIS_histFbLog
   ! LSM
   public :: LIS_MOC_SWNET   
   public :: LIS_MOC_LWNET   
@@ -963,6 +969,9 @@ module LIS_histDataMod
   end type output_meta
 
   type(output_meta),     allocatable :: LIS_histData(:)
+  type(ESMF_FieldBundle),allocatable :: LIS_histFB(:)
+  logical                            :: LIS_histSend = .false.
+  logical                            :: LIS_histRecv = .false.
 
 contains
  
@@ -1028,6 +1037,9 @@ contains
     LIS_MOC_ROUTING_COUNT = 0
     LIS_MOC_RTM_COUNT     = 0
     LIS_MOC_IRRIG_COUNT   = 0 
+
+    LIS_histFB(n) =  ESMF_FieldBundleCreate(rc=rc)
+    call LIS_verify(rc,'ESMF_FieldBundleCreate failed.')
 
     call ESMF_ConfigFindLabel(LIS_config,"Model output attributes file:", &
                               rc=rc)
@@ -5110,7 +5122,6 @@ contains
     call LIS_resetOutputVars(n,3) !for RTM
     call LIS_resetOutputVars(n,4) !for Irrigation
 
-
 end subroutine LIS_histDataInit
 
 !BOP
@@ -5927,6 +5938,77 @@ end subroutine LIS_diagnoseIrrigationOutputVar
 
   end subroutine LIS_rescaleCount
 
+!BOP
+! !ROUTINE: LIS_bcastDiagFlag
+! \label{LIS_bcastDiagFlag}
+!
+! !INTERFACE:
+  subroutine LIS_bcastDiagFlag(n,group)
+!
+    use LIS_mpiMod
+
+     implicit none
+! !ARGUMENTS:
+     integer, intent(in) :: n, group
+
+! !DESCRIPTION:
+!   This routine calculates ttlDiagAllProc as the sum of the
+!   diagFlags on each processor then broadcasts a 1 to each
+!   LIS_histRecv if the sum is greater than 0.
+!
+!   The arguments are:
+!   \begin{description}
+!   \item[n]  index of the nest \newline
+!   \item[group]  output group (1 = LSM; 2 = ROUTING; 3 = RTM) \newline
+!   \end{description}
+!EOP
+
+     type(LIS_metadataEntry), pointer :: dataEntry
+     integer :: ttlDiagAllProc
+     integer :: diagAllProc
+     integer :: m, k
+     integer :: ierr
+
+     if(group.eq.1) then !LSM output
+        dataEntry => LIS_histData(n)%head_lsm_list
+     elseif(group.eq.2) then !ROUTING
+        dataEntry => LIS_histData(n)%head_routing_list
+     elseif(group.eq.3) then !RTM
+        dataEntry => LIS_histData(n)%head_rtm_list
+     elseif(group.eq.4) then !Irrigation
+        dataEntry => LIS_histData(n)%head_irrig_list
+     endif
+
+     do while ( associated(dataEntry) )
+        if(dataEntry%selectOpt.ne.0) then
+           if ( LIS_histSend ) then
+#if (defined SPMD)
+              call mpi_reduce(dataEntry%diagFlag, &
+                 ttlDiagAllProc, 1, &
+                 MPI_INTEGER, MPI_SUM, &
+                 0,LIS_mpi_comm,ierr)
+#else
+              ttlDiagAllProc = dataEntry%diagFlag
+#endif
+              if ( ttlDiagAllProc .gt. 0 ) then
+                diagAllProc = 1
+              else
+                diagAllProc = 0
+              endif
+           endif
+
+           call LIS_cplBcast(diagAllProc,ierr)
+           call LIS_verify(ierr,'LIS_bcastDiagFlag: LIS_cplBcast')
+
+           if ( LIS_histRecv ) then
+             dataEntry%diagFlag = diagAllProc
+           endif
+
+        endif
+        dataEntry => dataEntry%next
+     enddo
+
+  end subroutine LIS_bcastDiagFlag
 
 !BOP
 ! !ROUTINE: register_dataEntry
@@ -5982,7 +6064,11 @@ end subroutine LIS_diagnoseIrrigationOutputVar
 !   
       type(LIS_metadataEntry), pointer :: dataEntry
       logical                          :: model_patch_tmp
+      type(ESMF_Field)                 :: modelOutputField
+      type(ESMF_Field)                 :: countField
+      type(ESMF_Field)                 :: minField, maxField
       integer                          :: i, ierr
+      type(ESMF_Index_Flag)            :: indexflag
 
       if(present(model_patch)) then 
          model_patch_tmp = model_patch
@@ -6005,6 +6091,81 @@ end subroutine LIS_diagnoseIrrigationOutputVar
 
       call allocate_dataEntry(dataEntry,nunits,ntiles,unittypes, &
                               ndirs,dirtypes, model_patch_tmp)
+
+      if(dataEntry%selectOpt.ne.0) then
+         call ESMF_LocStreamGet(LIS_locStream(n),indexflag=indexflag,rc=ierr)
+         if ( ierr /= ESMF_SUCCESS ) then
+            write(LIS_logunit,*) '[ERR] register_dataEntry: ', &
+                                 dataEntry%standard_name,       &
+                                 ' ESMF_LocStreamGet error.'
+            write(LIS_logunit,*) '[ERR] Program stopping.'
+            call LIS_endrun()
+         endif
+         modelOutputField = ESMF_FieldCreate(LIS_locStream(n), &
+                     dataEntry%modelOutput, &
+                     indexflag=indexflag,gridToFieldMap=(/2/), &
+                     name=dataEntry%short_name,rc=ierr)
+         if ( ierr /= ESMF_SUCCESS ) then
+            write(LIS_logunit,*) '[ERR] register_dataEntry: ', &
+                                 dataEntry%standard_name,       &
+                                 ' ESMF_FieldCreate error.'
+            write(LIS_logunit,*) '[ERR] Program stopping.'
+            call LIS_endrun()
+         endif
+         countField = ESMF_FieldCreate(LIS_locStream(n), &
+                     dataEntry%count, &
+                     indexflag=indexflag,gridToFieldMap=(/1/), &
+                     name=TRIM(dataEntry%short_name)//'_count',rc=ierr)
+         if ( ierr /= ESMF_SUCCESS ) then
+            write(LIS_logunit,*) '[ERR] register_dataEntry: ', &
+                                 dataEntry%standard_name,       &
+                                 ' ESMF_FieldCreate count error.'
+            write(LIS_logunit,*) '[ERR] Program stopping.'
+            call LIS_endrun()
+         endif
+         call ESMF_FieldBundleAdd(LIS_histFB(n), &
+                     (/modelOutputField, countField/),rc=ierr)
+         if ( ierr /= ESMF_SUCCESS ) then
+            write(LIS_logunit,*) '[ERR] register_dataEntry: ', &
+                                 dataEntry%standard_name,       &
+                                 ' ESMF_FieldBundleAdd error.'
+            write(LIS_logunit,*) '[ERR] Program stopping.'
+            call LIS_endrun()
+         endif
+         if(dataEntry%minMaxOpt.ne.0) then
+            minField = ESMF_FieldCreate(LIS_locStream(n), &
+                        dataEntry%minimum, &
+                        indexflag=indexflag,gridToFieldMap=(/1/), &
+                        name=TRIM(dataEntry%short_name)//'_min',rc=ierr)
+            if ( ierr /= ESMF_SUCCESS ) then
+               write(LIS_logunit,*) '[ERR] register_dataEntry: ', &
+                                    dataEntry%standard_name,       &
+                                    ' ESMF_FieldCreate min error.'
+               write(LIS_logunit,*) '[ERR] Program stopping.'
+               call LIS_endrun()
+            endif
+            maxField = ESMF_FieldCreate(LIS_locStream(n), &
+                        dataEntry%maximum, &
+                        indexflag=indexflag,gridToFieldMap=(/1/), &
+                        name=TRIM(dataEntry%short_name)//'_max',rc=ierr)
+            if ( ierr /= ESMF_SUCCESS ) then
+               write(LIS_logunit,*) '[ERR] register_dataEntry: ', &
+                                    dataEntry%standard_name,       &
+                                    ' ESMF_FieldCreate max error.'
+               write(LIS_logunit,*) '[ERR] Program stopping.'
+               call LIS_endrun()
+            endif
+            call ESMF_FieldBundleAdd(LIS_histFB(n), &
+                        (/minField,maxField/), rc=ierr)
+            if ( ierr /= ESMF_SUCCESS ) then
+               write(LIS_logunit,*) '[ERR] register_dataEntry: ', &
+                                    dataEntry%standard_name,       &
+                                    ' ESMF_FieldBundleAdd minMax error.'
+               write(LIS_logunit,*) '[ERR] Program stopping.'
+               call LIS_endrun()
+            endif
+         endif
+      endif
 
       ierr = -1
       do i = 1,dataEntry%ndirs
@@ -6092,5 +6253,169 @@ end subroutine LIS_diagnoseIrrigationOutputVar
      enddo
 
   end subroutine set_ptr_into_list
+
+!BOP
+!  !ROUTINE: LIS_histFbLog
+! \label{LIS_histFbLog}
+!
+! !INTERFACE:
+  subroutine LIS_histFbLog(n)
+! !USES:
+
+    implicit none
+
+! !ARGUMENTS:
+    integer,  intent(IN)   :: n
+!
+! !DESCRIPTION:
+!  This routine initializes the required linked lists to hold the selected
+!  list of LSM variables
+!
+!   The arguments are:
+!   \begin{description}
+!    \item[n]  index of the nest \newline
+!   \end{description}
+!
+!EOP
+    integer           :: rc
+
+    character*100     :: tstring, fstring
+    character*3       :: cstring
+    character*16      :: nstring, dstring
+    character*16      :: maxstring, minstring
+    integer,pointer   :: fptr_count(:,:)
+    real,pointer      :: fptr_moutput(:,:,:)
+    real,pointer      :: fptr_minmax(:,:)
+    type(ESMF_Field), allocatable :: fields(:)
+    type(ESMF_TypeKind_Flag)      :: fTypekind
+    integer                       :: fieldCount, i, j, k
+    integer                       :: fDimCount, fRank
+    integer, allocatable          :: fTotalUBound(:)
+    integer                       :: min_count, max_count
+    real                          :: min_moutput, max_moutput
+    real                          :: min_minmax, max_minmax
+
+
+     write (tstring,'(I0)') LIS_rc%tscount(n)
+     write (nstring,'(I0)') n
+     if ( LIS_histSend ) then
+       write (cstring,'(A)') 'SND'
+     elseif ( LIS_histRecv ) then
+       write (cstring,'(A)') 'RCV'
+     else
+       write (cstring,'(A)') 'N-A'
+     endif
+     write(LIS_logunit,*) '[INFO] LIS_histFB: ', &
+                          ' stp=', trim(tstring), &
+                          ' cmp=', trim(cstring), &
+                          ' nst=', trim(nstring)
+     call ESMF_FieldBundleGet(LIS_histFB(n), fieldCount=fieldCount, rc=rc)
+     if ( rc /= ESMF_SUCCESS ) then
+       write(LIS_logunit,*) '[ERR] ESMF_FieldBundleGet: ', &
+                            ' fieldCount.'
+       write(LIS_logunit,*) '[ERR] Program stopping.'
+       call LIS_endrun()
+     endif
+     allocate(fields(fieldCount))
+     call ESMF_FieldBundleGet(LIS_histFB(n), fieldList=fields, rc=rc)
+     if ( rc /= ESMF_SUCCESS ) then
+       write(LIS_logunit,*) '[ERR] ESMF_FieldBundleGet: ', &
+                            ' fieldList.'
+       write(LIS_logunit,*) '[ERR] Program stopping.'
+       call LIS_endrun()
+     endif
+     do i=1, fieldCount
+       call ESMF_FieldGet(fields(i), rank=fRank, dimCount=fDimCount, &
+         typekind=fTypekind, name=fstring, rc=rc)
+       if ( rc /= ESMF_SUCCESS ) then
+         write(LIS_logunit,*) '[ERR] ESMF_FieldGet: ', &
+                              ' name.'
+         write(LIS_logunit,*) '[ERR] Program stopping.'
+         call LIS_endrun()
+       endif
+       write (dstring,'(I0)') fDimCount
+       allocate(fTotalUBound(fRank))
+       call ESMF_FieldGetBounds(fields(i), totalUBound=fTotalUBound, rc=rc)
+       if ( rc /= ESMF_SUCCESS ) then
+         write(LIS_logunit,*) '[ERR] ESMF_FieldGetBounds: ', &
+                              ' fld=', trim(fstring), &
+                              ' totalUBounds.'
+         write(LIS_logunit,*) '[ERR] Program stopping.'
+         call LIS_endrun()
+       endif
+       if ((fRank .eq. 2) .and. (fTypekind .eq. ESMF_TYPEKIND_I4)) then
+         nullify(fptr_count)
+         call ESMF_FieldGet(fields(i), farrayPtr=fptr_count, rc=rc)
+         if ( rc /= ESMF_SUCCESS ) then
+           write(LIS_logunit,*) '[ERR] ESMF_FieldGet: ', &
+                                ' fld=', trim(fstring), &
+                                ' farrayPtr count.'
+           write(LIS_logunit,*) '[ERR] Program stopping.'
+           call LIS_endrun()
+         endif
+         min_count = fptr_count(1,1)
+         max_count = fptr_count(1,1)
+         do j=1, ubound(fptr_count,2)
+           min_count = MIN(min_count,MINVAL(fptr_count(:,j)))
+           max_count = MAX(max_count,MAXVAL(fptr_count(:,j)))
+         enddo
+         write (minstring,'(I0)') min_count
+         write (maxstring,'(I0)') max_count
+       elseif ((fRank .eq. 2) .and. (fTypekind .eq. ESMF_TYPEKIND_R4)) then
+         nullify(fptr_minmax)
+         call ESMF_FieldGet(fields(i), farrayPtr=fptr_minmax, rc=rc)
+         if ( rc /= ESMF_SUCCESS ) then
+           write(LIS_logunit,*) '[ERR] ESMF_FieldGet: ', &
+                                ' fld=', trim(fstring), &
+                                ' farrayPtr count.'
+           write(LIS_logunit,*) '[ERR] Program stopping.'
+           call LIS_endrun()
+         endif
+         min_minmax = fptr_minmax(1,1)
+         max_minmax = fptr_minmax(1,1)
+         do j=1, ubound(fptr_minmax,2)
+           min_minmax = MIN(min_minmax,MINVAL(fptr_minmax(:,j)))
+           max_minmax = MAX(max_minmax,MAXVAL(fptr_minmax(:,j)))
+         enddo
+         write (minstring,'(F0.3)') min_minmax
+         write (maxstring,'(F0.3)') max_minmax
+       elseif ((fRank .eq. 3) .and. (fTypekind .eq. ESMF_TYPEKIND_R4)) then
+         nullify(fptr_moutput)
+         call ESMF_FieldGet(fields(i), farrayPtr=fptr_moutput, rc=rc)
+         if ( rc /= ESMF_SUCCESS ) then
+           write(LIS_logunit,*) '[ERR] ESMF_FieldGet: ', &
+                                ' fld=', trim(fstring), &
+                                ' farrayPtr count.'
+           write(LIS_logunit,*) '[ERR] Program stopping.'
+           call LIS_endrun()
+         endif
+         min_moutput = fptr_moutput(1,1,1)
+         max_moutput = fptr_moutput(1,1,1)
+         do j=1, ubound(fptr_moutput,3)
+         do k=1, ubound(fptr_moutput,1)
+           min_moutput = MIN(min_moutput,MINVAL(fptr_moutput(k,:,j)))
+           max_moutput = MAX(max_moutput,MAXVAL(fptr_moutput(k,:,j)))
+         enddo
+         enddo
+         write (minstring,'(F0.3)') min_moutput
+         write (maxstring,'(F0.3)') max_moutput
+       else
+         write(LIS_logunit,*) '[ERR] ESMF_histFB: ', &
+                              ' fld=', trim(fstring), &
+                              ' rank and typekind unknown.'
+         write(LIS_logunit,*) '[ERR] Program stopping.'
+         call LIS_endrun()
+       endif
+       write(LIS_logunit,*) '[INFO] LIS_histFB: ', &
+                            ' fld=', trim(fstring), &
+                            ' dim=', trim(dstring), &
+                            ' min=', trim(minstring), &
+                            ' max=', trim(maxstring), &
+                            ' ubd=', fTotalUBound
+       deallocate(fTotalUBound)
+     enddo
+     deallocate(fields)
+
+end subroutine LIS_histFbLog
 
 end module LIS_histDataMod
