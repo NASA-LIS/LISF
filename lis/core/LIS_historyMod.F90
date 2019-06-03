@@ -70,6 +70,7 @@ module LIS_historyMod
   use LIS_histDataMod
   use LIS_timeMgrMod
   use LIS_logMod
+  use LIS_cplMod, only : LIS_cplRun
 
 #if ( defined USE_GRIBAPI)
   use grib_api
@@ -405,7 +406,7 @@ contains
        sopen, nsoillayers, outInterval, lyrthk, &
        nsoillayers2, group, model_name, lyrthk2)
 ! !USES:
-
+    use ESMF
 ! !ARGUMENTS: 
     integer,   intent(in)   :: n 
     character(len=*),   intent(in)   :: lsmoutfile
@@ -492,11 +493,17 @@ contains
     ftn = 12
     ftn_stats = 65 + n +10*group_temp
 
+    if ( LIS_histSend .OR. LIS_histRecv ) then
+       call LIS_bcastDiagFlag(n,group_temp)
+       call LIS_cplRun(n,rc=iret)
+       call LIS_verify(iret,'LIS_cplRun: error')
+    endif
     call LIS_rescaleCount(n,group_temp)
 
     write(LIS_logunit,*)'[INFO] Writing surface model output to:  ', &
          trim(lsmoutfile) ! EMK
 
+    if ( .NOT. LIS_histSend ) then
     if(LIS_rc%wout.eq."binary") then 
        if(LIS_masterproc) then 
           open(ftn,file=lsmoutfile,form='unformatted')
@@ -559,6 +566,7 @@ contains
        endif
 #endif
     endif
+    endif ! Skip running on LIS_histSend
     ! After writing reset the variables
     call LIS_resetOutputVars(n,group_temp)
   end subroutine LIS_writeModelOutput

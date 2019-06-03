@@ -1,0 +1,5 @@
+!BOP
+!\section{Surface Model Output Running Mode}
+!This is a running mode customized to output surface model data 
+!concurrently with simulation. 
+!EOP

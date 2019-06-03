@@ -33,8 +33,9 @@ subroutine LIS_readConfig()
 ! !USES:
   use ESMF 
   use LIS_coreMod,     only : LIS_rc, LIS_config, &
-                              LIS_localPet, LIS_npes, LIS_masterproc
-  use LIS_histDataMod, only : LIS_histData
+                              LIS_localPet, LIS_globalPet, LIS_npes, &
+                              LIS_masterproc
+  use LIS_histDataMod, only : LIS_histData, LIS_histFB
   use LIS_timeMgrMod,  only : LIS_date2time, LIS_parseTimeString
   use LIS_logMod
   use LIS_mpiMod, only: LIS_mpi_comm ! EMK
@@ -118,6 +119,8 @@ subroutine LIS_readConfig()
 #endif
 
   write(unit=temp1,fmt='(i4.4)') LIS_localPet
+  write(unit=temp1,fmt='(i4.4)') LIS_globalPet
+
   read(unit=temp1,fmt='(4a1)')fproc
   LIS_rc%dfile = trim(LIS_rc%dfile)//"."//fproc(1)//fproc(2)//fproc(3)//fproc(4)
   open(unit=LIS_logunit,file=trim(LIS_rc%dfile))
@@ -973,6 +976,7 @@ subroutine LIS_readConfig()
 
 
   allocate(LIS_histData(LIS_rc%nnest))
+  allocate(LIS_histFB(LIS_rc%nnest))
 
   do i=1,LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config,LIS_histData(i)%syear,&

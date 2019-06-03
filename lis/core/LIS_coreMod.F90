@@ -81,6 +81,8 @@ module LIS_coreMod
 !    grid object for the tile space-vector of tiles
 !   \item[LIS\_vecGrid]
 !    grid object for the grid space-vector of grid pts
+!   \item[LIS\_locStream]
+!    location stream object for the tile space-vector of tiles
 !  \end{description}
 !
 ! !REVISION HISTORY:
@@ -122,6 +124,7 @@ module LIS_coreMod
   public :: LIS_vm
   public :: LIS_masterproc
   public :: LIS_localPet
+  public :: LIS_globalPet
   public :: LIS_npes
   public :: LIS_ews_ind
   public :: LIS_ewe_ind
@@ -153,6 +156,7 @@ module LIS_coreMod
   public :: LIS_vecGrid
   public :: LIS_routing
   public :: LIS_routing_gdeltas, LIS_routing_goffsets
+  public :: LIS_locStream
 
   integer, allocatable  :: LIS_routing_gdeltas(:,:), LIS_routing_goffsets(:,:)
 
@@ -201,6 +205,7 @@ module LIS_coreMod
   type(ESMF_VM), save            :: LIS_vm
   logical                        :: LIS_masterproc
   integer                        :: LIS_localPet
+  integer                        :: LIS_globalPet
   integer                        :: LIS_npes
   logical                        :: LIS_init_esmf
 
@@ -220,6 +225,7 @@ module LIS_coreMod
   type(ESMF_Grid),     allocatable   :: LIS_vecTile(:)
   type(ESMF_Grid),     allocatable   :: LIS_vecPatch(:,:)
   type(ESMF_Grid),     allocatable   :: LIS_vecGrid(:)
+  type(ESMF_Locstream),allocatable   :: LIS_locStream(:)
 
 !BOPI
 ! !ROUTINE: LIS_config_init
@@ -655,6 +661,7 @@ contains
     integer, optional :: liscomm
 
     integer           :: ier        ! return error status
+    type(ESMF_VM)     :: globalvm
 
 
     ! If liscomm is present, then assume that a virtual machine
@@ -676,6 +683,16 @@ contains
                defaultCalKind=ESMF_CALKIND_GREGORIAN,&
                logkindflag=ESMF_LOGKIND_NONE,rc=ier)
        endif
+    endif
+
+    call ESMF_VMGetGlobal(vm=globalvm, rc=ier)
+    if (ier /= ESMF_SUCCESS) then
+       print *, "LIS: spmd_init_generic: error getting global VM information."
+    endif
+
+    call ESMF_VMGet(globalvm,localPet=LIS_globalPet,rc=ier)
+    if (ier /= ESMF_SUCCESS) then
+       print *, "LIS: spmd_init_generic: error getting global VM information."
     endif
 
     call ESMF_VMGet(lisvm,localPet=LIS_localPet,petCount=LIS_npes,&
@@ -779,6 +796,7 @@ contains
     allocate(LIS_vecTile(nnest))
     allocate(LIS_vecPatch(nnest,nmodels))
     allocate(LIS_vecGrid(nnest))
+    allocate(LIS_locStream(nnest))
 
     LIS_ews_ind = 0
     LIS_ewe_ind = 0
@@ -857,6 +875,7 @@ contains
     deallocate(LIS_vecTile)
     deallocate(LIS_vecPatch)
     deallocate(LIS_vecGrid)
+    deallocate(LIS_locStream)
 
     deallocate(LIS_npatches)
     deallocate(LIS_patch_offsets)
@@ -867,7 +886,7 @@ contains
 #if ( defined COUPLED)
 #else
 #if ( defined SPMD )
-    call MPI_FINALIZE(ierr)
+!    call MPI_FINALIZE(ierr)
 #endif
 #endif
   end subroutine spmd_finalize
