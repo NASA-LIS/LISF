@@ -9511,6 +9511,10 @@ location of the max root depth file for flood irrigation.
 `Drip irrigation max root depth file:` specifies the
 location of the max root depth file for drip irrigation.
 
+`Groundwater abstraction for irrigation:` specifies whether
+to withdraw water used for irrigation from the groundwater.
+1=Yes 0=No (default=0)
+
 .Example _lis.config_ entry
 ....
 Irrigation scheme:            "none"
