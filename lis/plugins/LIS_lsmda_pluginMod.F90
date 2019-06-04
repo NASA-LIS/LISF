@@ -191,6 +191,7 @@ subroutine LIS_lsmda_plugin
 #if ( defined SM_NOAHMP_4_0_1 )
    use NoahMP401_dasoilm_Mod
    use noahmp401_dasnodep_Mod
+   use noahmp401_daldtsi_Mod
 #endif
 
 
@@ -467,7 +468,7 @@ subroutine LIS_lsmda_plugin
 ! NoahMP-4.0.1 SNODEP
    external noahmp401_getsnodepvars
    external noahmp401_transform_snodep
-   !external noahmp401_map_snodep
+   external noahmp401_map_snodep
    external noahmp401_updatesnodepvars
    external noahmp401_qcsnodep
    external noahmp401_setsnodepvars
@@ -475,6 +476,20 @@ subroutine LIS_lsmda_plugin
    external noahmp401_scale_snodep
    external noahmp401_descale_snodep
    external noahmp401_qc_snodepobs
+#endif
+
+#if ( defined DA_OBS_DA_OBS_LDTSI )
+! NoahMP-4.0.1 LDTSI
+   external noahmp401_getldtsivars
+   external noahmp401_transform_ldtsi
+   external noahmp401_map_ldtsi
+   external noahmp401_updateldtsivars
+   external noahmp401_qcldtsi
+   external noahmp401_setldtsivars
+   external noahmp401_getldtsipred
+   external noahmp401_scale_ldtsi
+   external noahmp401_descale_ldtsi
+   external noahmp401_qc_ldtsiobs
 #endif
 
 #endif
@@ -2244,6 +2259,31 @@ subroutine LIS_lsmda_plugin
         trim(LIS_snodepobsId)//char(0),noahmp401_scale_snodep)
    call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_snodepobsId)//char(0),noahmp401_descale_snodep)
+#endif
+
+! Yeosang Yoon, LDTSI DA
+#if ( defined DA_OBS_LDTSI )
+! DA + ldtsi wirings
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noahmp401_daldtsi_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noahmp401_getldtsivars)
+   call registerlsmdaobstransform(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noahmp401_transform_ldtsi)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noahmp401_updateldtsivars)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noahmp401_setldtsivars)
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noahmp401_getldtsipred)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noahmp401_qcldtsi)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noahmp401_qc_ldtsiobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noahmp401_scale_ldtsi)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),noahmp401_descale_ldtsi)
 #endif
 #endif
 
