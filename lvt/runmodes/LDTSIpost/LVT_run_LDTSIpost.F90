@@ -19,12 +19,12 @@ subroutine LVT_run_LDTSIpost()
    grids(1) = GLOBAL_LL0P25
    grids(2) = NH_PS16
    grids(3) = SH_PS16
-
    call LDTSIpost%new()
    call LDTSIpost%read_ldtsi_ncfile()
-   do i = 1, 3
-      call LDTSIpost%interp_and_output_grib2(grids(i))
-   end do   
+   call LDTSIpost%output_grib2()
+   !do i = 1, 3
+   !   call LDTSIpost%interp_and_output_grib2(grids(i))
+   !end do   
    call LDTSIpost%delete()
    call LVT_endrun()
 end subroutine LVT_run_LDTSIpost

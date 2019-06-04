@@ -80,7 +80,7 @@ contains
       if (trim(LVT_rc%lvt_out_format) .ne. "grib2") then
          write(LVT_logunit,*) &
               '[ERR] LVT output format must be set to "grib2" for ' // &
-              '"LDTSI post" runmode'
+              '"LDTSIpost" runmode'
          write(LVT_logunit,*) &
               '[ERR] Instead of "grib2", found "' // &
               trim(LVT_rc%lvt_out_format) // '"'
@@ -88,6 +88,13 @@ contains
          write(LVT_logunit,*) '[ERR] LVT will stop'
          call LVT_endrun()
       end if
+
+      ! Hard code these settings for 557WW
+      LVT_rc%security_class = 'U'
+      LVT_rc%distribution_class = 'C'
+      LVT_rc%data_category = 'C'
+      LVT_rc%area_of_data = 'GLOBAL'
+
    end subroutine read_ldtsipost_settings
    
 end subroutine LVT_init_LDTSIpost
