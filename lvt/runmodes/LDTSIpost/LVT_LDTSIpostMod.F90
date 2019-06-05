@@ -8,8 +8,9 @@
 ! 13 May 2019  Eric Kemp  Initial version
 !
 ! DESCRIPTION:
-! Source code for reading LDTSI netCDF files, interpolating to predefined
-! Air Force grids, and outputting GRIB2 files.
+! Source code for reading LDTSI netCDF file, writing back out in GRIB2, 
+! interpolating to predefined Air Force grids, and outputting those grids in
+! GRIB1 files.
 !------------------------------------------------------------------------------
 
 #include "LVT_misc.h"
@@ -45,7 +46,7 @@ module LVT_LDTSIpostMod
       procedure delete
       procedure read_ldtsi_ncfile
       procedure output_grib2
-      !procedure interp_and_output_grib2
+      procedure interp_and_output_grib1
 
    end type LVT_LDTSIpost_t
 
@@ -470,455 +471,455 @@ contains
       deallocate(go)
    end subroutine output_grib2
 
-!    ! Interpolate and output LDTSI data in GRIB2 format.
-!    subroutine interp_and_output_grib2(this, gridID)
+   ! Interpolate and output LDTSI data in GRIB1 format.
+   subroutine interp_and_output_grib1(this, gridID)
 
-!       ! Imports
-!       use grib_api
-!       use LVT_coreMod, only: LVT_rc
-!       use LVT_logMod, only: LVT_logunit, LVT_endrun
+      ! Imports
+      use grib_api
+      use LVT_coreMod, only: LVT_rc
+      use LVT_logMod, only: LVT_logunit, LVT_endrun
 
-!       ! Defaults
-!       implicit none
+      ! Defaults
+      implicit none
 
-!       ! Arguments
-!       class(LVT_LDTSIpost_t), intent(inout) :: this
-!       character(len=*), intent(in) :: gridID
+      ! Arguments
+      class(LVT_LDTSIpost_t), intent(inout) :: this
+      character(len=*), intent(in) :: gridID
 
-!       ! Local variables
-!       real :: griddesci(50), griddesco(50)
-!       real :: xmesh, xpnmcaf, ypnmcaf, orient, xj, xi, alat, alon
-!       integer :: nc_out, nr_out
-!       integer, allocatable :: n11(:)
-!       real, allocatable :: rlat_bin(:)
-!       real, allocatable :: rlon_bin(:)
-!       integer, allocatable :: n11_bin(:)
-!       integer, allocatable :: n12_bin(:)
-!       integer, allocatable :: n21_bin(:)
-!       integer, allocatable :: n22_bin(:)
-!       real, allocatable :: w11_bin(:)
-!       real, allocatable :: w12_bin(:)
-!       real, allocatable :: w21_bin(:)
-!       real, allocatable :: w22_bin(:)      
-!       integer, allocatable :: n11_neighbor(:)
-!       real, allocatable :: rlat_neighbor(:)
-!       real, allocatable :: rlon_neighbor(:)
+      ! Local variables
+      real :: griddesci(50), griddesco(50)
+      real :: xmesh, xpnmcaf, ypnmcaf, orient, xj, xi, alat, alon
+      integer :: nc_out, nr_out
+      integer, allocatable :: n11(:)
+      real, allocatable :: rlat_bin(:)
+      real, allocatable :: rlon_bin(:)
+      integer, allocatable :: n11_bin(:)
+      integer, allocatable :: n12_bin(:)
+      integer, allocatable :: n21_bin(:)
+      integer, allocatable :: n22_bin(:)
+      real, allocatable :: w11_bin(:)
+      real, allocatable :: w12_bin(:)
+      real, allocatable :: w21_bin(:)
+      real, allocatable :: w22_bin(:)      
+      integer, allocatable :: n11_neighbor(:)
+      real, allocatable :: rlat_neighbor(:)
+      real, allocatable :: rlon_neighbor(:)
       
-!       logical*1, allocatable :: li(:), lo(:), lo_bin(:), lo_neighbor(:)
-!       real, allocatable :: gi(:), go(:), go_bin(:), go_neighbor(:)
-!       real, allocatable :: go2d(:,:)
-!       character(len=255) :: fname
-!       integer :: ftn, rc, status2, iret
-!       integer :: c,r
-!       integer :: igrib
-!       character(len=8) :: yyyymmdd
-!       character(len=4) :: hhmm
-!       integer :: idate8, idate4
-!       integer :: gridDefinitionTemplateNumber
-!       character(len=255) :: msg
+      logical*1, allocatable :: li(:), lo(:), lo_bin(:), lo_neighbor(:)
+      real, allocatable :: gi(:), go(:), go_bin(:), go_neighbor(:)
+      real, allocatable :: go2d(:,:)
+      character(len=255) :: fname
+      integer :: ftn, rc, status2, iret
+      integer :: c,r
+      integer :: igrib
+      character(len=8) :: yyyymmdd
+      character(len=4) :: hhmm
+      integer :: idate8, idate4
+      integer :: gridDefinitionTemplateNumber
+      character(len=255) :: msg
 
-!       ! Sanity check the gridID. 
-!       call check_gridID(gridID)
+      ! Sanity check the gridID. 
+      call check_gridID(gridID)
 
-!       ! Set the LDTSI grid description
-!       call set_griddesci(this, griddesci)
+      ! Set the LDTSI grid description
+      call set_griddesci(this, griddesci)
 
-!       ! Set the output grid description
-!       if (trim(gridID) .eq. trim(GLOBAL_LL0P25)) then
-!          call set_griddesco_global_ll0p25(this, griddesco)         
-!       else if (trim(gridID) .eq. trim(NH_PS16)) then
-!          call set_griddesco_nh_ps16(this, griddesco)         
-!       else if (trim(gridID) .eq. trim(SH_PS16)) then
-!          call set_griddesco_sh_ps16(this, griddesco)
-!       end if
+      ! Set the output grid description
+      if (trim(gridID) .eq. trim(GLOBAL_LL0P25)) then
+         call set_griddesco_global_ll0p25(this, griddesco)         
+      else if (trim(gridID) .eq. trim(NH_PS16)) then
+         call set_griddesco_nh_ps16(this, griddesco)         
+      else if (trim(gridID) .eq. trim(SH_PS16)) then
+         call set_griddesco_sh_ps16(this, griddesco)
+      end if
 
-!       ! Useful grid variables for later
-!       nc_out = griddesco(2)
-!       nr_out = griddesco(3)
-!       if (griddesco(1) == 0) then
-!          gridDefinitionTemplateNumber = 0
-!       else if (griddesco(1) == 5) then
-!          gridDefinitionTemplateNumber = 20
-!       end if
+      ! Useful grid variables for later
+      nc_out = griddesco(2)
+      nr_out = griddesco(3)
+      if (griddesco(1) == 0) then
+         gridDefinitionTemplateNumber = 0
+      else if (griddesco(1) == 5) then
+         gridDefinitionTemplateNumber = 20
+      end if
 
-!       ! Calculate weights for upscaling (averaging or mode)
-!       allocate(n11(this%nc*this%nr))
-!       call upscaleByAveraging_input(griddesci, griddesco, &
-!            (this%nc*this%nr), (nc_out*nr_out), n11)
+      ! Calculate weights for upscaling (averaging or mode)
+      allocate(n11(this%nc*this%nr))
+      call upscaleByAveraging_input(griddesci, griddesco, &
+           (this%nc*this%nr), (nc_out*nr_out), n11)
 
-!       ! Calculate weights for bilinear interpolation
-!       if (griddesco(1) == 5) then
-!          allocate(rlat_bin(nc_out*nr_out))
-!          allocate(rlon_bin(nc_out*nr_out))
-!          if (trim(gridID) .eq. NH_PS16) then
-!             do r = 1, nr_out
-!                do c = 1, nc_out
-!                   call pstoll(1, 1, float(c), float(nr_out - r + 1), 16, &
-!                        alat, alon)
-!                   if (alon > 180.) then
-!                      alon = alon - 360.
-!                   end if
-!                   rlat_bin(c + (r-1)*nc_out) = alat
-!                   rlon_bin(c + (r-1)*nc_out) = alon
-!                end do ! c
-!             end do ! r
-!          else if (trim(gridID) .eq. SH_PS16) then
-!             do r = 1, nr_out
-!                do c = 1, nc_out
-!                   call pstoll(2, 1, float(c), float(nr_out - r + 1), 16, &
-!                        alat, alon)
-!                   if (alon > 180.) then
-!                      alon = alon - 360.
-!                   end if
-!                   rlat_bin(c + (r-1)*nc_out) = alat
-!                   rlon_bin(c + (r-1)*nc_out) = alon
-!                end do ! c
-!             end do ! r
-!          end if
-!          allocate(n11_bin(nc_out*nr_out))
-!          allocate(n12_bin(nc_out*nr_out))
-!          allocate(n21_bin(nc_out*nr_out))
-!          allocate(n22_bin(nc_out*nr_out))
-!          allocate(w11_bin(nc_out*nr_out))
-!          allocate(w12_bin(nc_out*nr_out))
-!          allocate(w21_bin(nc_out*nr_out))
-!          allocate(w22_bin(nc_out*nr_out))         
-!          call bilinear_interp_input_usaf(griddesci, griddesco, &
-!               (nc_out*nr_out), &
-!               rlat_bin, rlon_bin, &
-!               n11_bin, n12_bin, n21_bin, n22_bin, &
-!               w11_bin, w12_bin, w21_bin, w22_bin, gridID)
-!       end if
+      ! Calculate weights for bilinear interpolation
+      if (griddesco(1) == 5) then
+         allocate(rlat_bin(nc_out*nr_out))
+         allocate(rlon_bin(nc_out*nr_out))
+         if (trim(gridID) .eq. NH_PS16) then
+            do r = 1, nr_out
+               do c = 1, nc_out
+                  call pstoll(1, 1, float(c), float(nr_out - r + 1), 16, &
+                       alat, alon)
+                  if (alon > 180.) then
+                     alon = alon - 360.
+                  end if
+                  rlat_bin(c + (r-1)*nc_out) = alat
+                  rlon_bin(c + (r-1)*nc_out) = alon
+               end do ! c
+            end do ! r
+         else if (trim(gridID) .eq. SH_PS16) then
+            do r = 1, nr_out
+               do c = 1, nc_out
+                  call pstoll(2, 1, float(c), float(nr_out - r + 1), 16, &
+                       alat, alon)
+                  if (alon > 180.) then
+                     alon = alon - 360.
+                  end if
+                  rlat_bin(c + (r-1)*nc_out) = alat
+                  rlon_bin(c + (r-1)*nc_out) = alon
+               end do ! c
+            end do ! r
+         end if
+         allocate(n11_bin(nc_out*nr_out))
+         allocate(n12_bin(nc_out*nr_out))
+         allocate(n21_bin(nc_out*nr_out))
+         allocate(n22_bin(nc_out*nr_out))
+         allocate(w11_bin(nc_out*nr_out))
+         allocate(w12_bin(nc_out*nr_out))
+         allocate(w21_bin(nc_out*nr_out))
+         allocate(w22_bin(nc_out*nr_out))         
+         call bilinear_interp_input_usaf(griddesci, griddesco, &
+              (nc_out*nr_out), &
+              rlat_bin, rlon_bin, &
+              n11_bin, n12_bin, n21_bin, n22_bin, &
+              w11_bin, w12_bin, w21_bin, w22_bin, gridID)
+      end if
 
-!       ! Calculate weights for neighbor interpolation
-!       if (griddesco(1) == 5) then
-!          allocate(rlat_neighbor(nc_out*nr_out))
-!          allocate(rlon_neighbor(nc_out*nr_out))
-!          if (trim(gridID) .eq. NH_PS16) then
-!             do r = 1, nr_out
-!                do c = 1, nc_out
-!                   call pstoll(1, 1, float(c), float(nr_out - r + 1), 16, &
-!                        alat, alon)
-!                   if (alon > 180.) then
-!                      alon = alon - 360.
-!                   end if
-!                   rlat_neighbor(c + (r-1)*nc_out) = alat
-!                   rlon_neighbor(c + (r-1)*nc_out) = alon
-!                end do ! c
-!             end do ! r
-!          else if (trim(gridID) .eq. SH_PS16) then
-!             do r = 1, nr_out
-!                do c = 1, nc_out
-!                   call pstoll(2, 1, float(c), float(nr_out - r + 1), 16, &
-!                        alat, alon)
-!                   if (alon > 180.) then
-!                      alon = alon - 360.
-!                   end if
-!                   rlat_neighbor(c + (r-1)*nc_out) = alat
-!                   rlon_neighbor(c + (r-1)*nc_out) = alon
-!                end do ! c
-!             end do ! r
-!          end if
-!          allocate(n11_neighbor(nc_out*nr_out))
-!          call neighbor_interp_input_usaf(griddesci, griddesco, &
-!               (nc_out*nr_out), &
-!               rlat_neighbor, rlon_neighbor, &
-!               n11_neighbor, gridID)
-!       end if
+      ! Calculate weights for neighbor interpolation
+      if (griddesco(1) == 5) then
+         allocate(rlat_neighbor(nc_out*nr_out))
+         allocate(rlon_neighbor(nc_out*nr_out))
+         if (trim(gridID) .eq. NH_PS16) then
+            do r = 1, nr_out
+               do c = 1, nc_out
+                  call pstoll(1, 1, float(c), float(nr_out - r + 1), 16, &
+                       alat, alon)
+                  if (alon > 180.) then
+                     alon = alon - 360.
+                  end if
+                  rlat_neighbor(c + (r-1)*nc_out) = alat
+                  rlon_neighbor(c + (r-1)*nc_out) = alon
+               end do ! c
+            end do ! r
+         else if (trim(gridID) .eq. SH_PS16) then
+            do r = 1, nr_out
+               do c = 1, nc_out
+                  call pstoll(2, 1, float(c), float(nr_out - r + 1), 16, &
+                       alat, alon)
+                  if (alon > 180.) then
+                     alon = alon - 360.
+                  end if
+                  rlat_neighbor(c + (r-1)*nc_out) = alat
+                  rlon_neighbor(c + (r-1)*nc_out) = alon
+               end do ! c
+            end do ! r
+         end if
+         allocate(n11_neighbor(nc_out*nr_out))
+         call neighbor_interp_input_usaf(griddesci, griddesco, &
+              (nc_out*nr_out), &
+              rlat_neighbor, rlon_neighbor, &
+              n11_neighbor, gridID)
+      end if
 
-!       ! Construct the GRIB2 filename
-!       call build_filename_g2(gridID, LVT_rc%output_dir, &
-!            LVT_rc%yyyymmddhh, fname)
+      ! Construct the GRIB2 filename
+      call build_filename_g1(gridID, LVT_rc%output_dir, &
+           LVT_rc%yyyymmddhh, fname)
       
-!       ! Open the GRIB2 file
-!       call grib_open_file(ftn, fname, 'w', rc)
-!       if (rc .ne. GRIB_SUCCESS) then
-!          write(LVT_logunit,*)'[ERR] Error from grib_open_file'
-!          call grib_get_error_string(rc, msg, status2)
-!          write(LVT_logunit,*)'[ERR] ', trim(msg)
-!          write(LVT_logunit,*)'[ERR] LVT will stop'
-!          call LVT_endrun()
-!       else
-!          write(LVT_logunit,*)'[INFO] Writing to ', trim(fname)
-!       end if
+      ! Open the GRIB1 file
+      call grib_open_file(ftn, fname, 'w', rc)
+      if (rc .ne. GRIB_SUCCESS) then
+         write(LVT_logunit,*)'[ERR] Error from grib_open_file'
+         call grib_get_error_string(rc, msg, status2)
+         write(LVT_logunit,*)'[ERR] ', trim(msg)
+         write(LVT_logunit,*)'[ERR] LVT will stop'
+         call LVT_endrun()
+      else
+         write(LVT_logunit,*)'[INFO] Writing to ', trim(fname)
+      end if
 
-!       ! Allocate memory for interpolation
-!       allocate(li(this%nc*this%nr))
-!       allocate(gi(this%nc*this%nr))
-!       allocate(lo(nc_out*nr_out))
-!       allocate(go(nc_out*nr_out))
-!       if (griddesco(1) == 5) then
-!          allocate(go2d(nc_out, nr_out))
-!          allocate(go_bin(nc_out*nr_out))
-!          allocate(lo_bin(nc_out*nr_out))
-!          allocate(go_neighbor(nc_out*nr_out))
-!          allocate(lo_neighbor(nc_out*nr_out))
-!       end if
+      ! Allocate memory for interpolation
+      allocate(li(this%nc*this%nr))
+      allocate(gi(this%nc*this%nr))
+      allocate(lo(nc_out*nr_out))
+      allocate(go(nc_out*nr_out))
+      if (griddesco(1) == 5) then
+         allocate(go2d(nc_out, nr_out))
+         allocate(go_bin(nc_out*nr_out))
+         allocate(lo_bin(nc_out*nr_out))
+         allocate(go_neighbor(nc_out*nr_out))
+         allocate(lo_neighbor(nc_out*nr_out))
+      end if
 
-!       ! Interpolate snoanl
-!       do r = 1, this%nr
-!          do c = 1, this%nc
-!             if (this%snoanl(c,r) < 0) then
-!                li(c + (r-1)*this%nc) = .false.
-!                gi(c + (r-1)*this%nc) = LVT_rc%udef
-!             else
-!                li(c + (r-1)*this%nc) = .true.
-!                gi(c + (r-1)*this%nc) = this%snoanl(c,r)               
-!             end if
-!          end do ! c
-!       end do ! r
-!       call upscaleByAveraging((this%nc*this%nr), &
-!            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-!       if (griddesco(1) == 5) then
-!          call bilinear_interp(griddesco, li, gi, lo_bin, go_bin, &
-!               (this%nc*this%nr), (nc_out*nr_out), &
-!               rlat_bin, rlon_bin, &
-!               w11_bin, w12_bin, w21_bin, w22_bin, &
-!               n11_bin, n12_bin, n21_bin, n22_bin, &
-!               LVT_rc%udef, iret)
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                if (.not. lo(c + (r-1)*nc_out)) then
-!                   if (lo_bin(c + (r-1)*nc_out)) then
-!                      go(c + (r-1)*nc_out) = go_bin(c + (r-1)*nc_out)
-!                   end if
-!                end if
-!             end do
-!          end do
-!          ! If using Air Force polar stereographic, we must flip the grid so
-!          ! the origin is in the upper-left corner instead of lower-left
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
-!             end do ! c
-!          end do ! r
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go(c + (r-1)*nc_out) = go2d(c,r)
-!             end do ! c
-!          end do ! r
-!       end if
-!       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-!            dspln=0, cat=1, num=11, typegenproc=12, fcsttime=0)
+      ! Interpolate snoanl
+      do r = 1, this%nr
+         do c = 1, this%nc
+            if (this%snoanl(c,r) < 0) then
+               li(c + (r-1)*this%nc) = .false.
+               gi(c + (r-1)*this%nc) = LVT_rc%udef
+            else
+               li(c + (r-1)*this%nc) = .true.
+               gi(c + (r-1)*this%nc) = this%snoanl(c,r)               
+            end if
+         end do ! c
+      end do ! r
+      call upscaleByAveraging((this%nc*this%nr), &
+           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (griddesco(1) == 5) then
+         call bilinear_interp(griddesco, li, gi, lo_bin, go_bin, &
+              (this%nc*this%nr), (nc_out*nr_out), &
+              rlat_bin, rlon_bin, &
+              w11_bin, w12_bin, w21_bin, w22_bin, &
+              n11_bin, n12_bin, n21_bin, n22_bin, &
+              LVT_rc%udef, iret)
+         do r = 1, nr_out
+            do c = 1, nc_out
+               if (.not. lo(c + (r-1)*nc_out)) then
+                  if (lo_bin(c + (r-1)*nc_out)) then
+                     go(c + (r-1)*nc_out) = go_bin(c + (r-1)*nc_out)
+                  end if
+               end if
+            end do
+         end do
+         ! If using Air Force polar stereographic, we must flip the grid so
+         ! the origin is in the upper-left corner instead of lower-left
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+            end do ! c
+         end do ! r
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go(c + (r-1)*nc_out) = go2d(c,r)
+            end do ! c
+         end do ! r
+      end if
+      call write_grib1(ftn, griddesco, nc_out, nr_out, go, param=66, &
+           decimal_scale_factor=0)
+      !call write_grib1(ftn, griddesco, nc_out, nr_out, go, param=66, &
+      !     decimal_scale_factor=2)
 
-!       ! Interpolate snoage
-!       do r = 1, this%nr
-!          do c = 1, this%nc
-!             if (this%snoage(c,r) < 0) then
-!                li(c + (r-1)*this%nc) = .false.
-!                gi(c + (r-1)*this%nc) = LVT_rc%udef
-!             else
-!                li(c + (r-1)*this%nc) = .true.
-!                gi(c + (r-1)*this%nc) = this%snoage(c,r)
-!             end if
-!          end do ! c
-!       end do ! r
-!       call upscaleByMode((this%nc*this%nr), &
-!            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-!       if (griddesco(1) == 5) then
-!          call neighbor_interp(griddesco, li, gi, lo_neighbor, go_neighbor, &
-!               (this%nc*this%nr), (nc_out*nr_out), &
-!               rlat_neighbor, rlon_neighbor, &
-!               n11_neighbor, &
-!               LVT_rc%udef, iret)
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                if (.not. lo(c + (r-1)*nc_out)) then
-!                   if (lo_neighbor(c + (r-1)*nc_out)) then
-!                      go(c + (r-1)*nc_out) = go_neighbor(c + (r-1)*nc_out)
-!                   end if
-!                end if
-!             end do
-!          end do
-!          ! If using Air Force polar stereographic, we must flip the grid so
-!          ! the origin is in the upper-left corner instead of lower-left
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
-!             end do ! c
-!          end do ! r
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go(c + (r-1)*nc_out) = go2d(c,r)
-!             end do ! c
-!          end do ! r
-!       end if
-!       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-!            dspln=0, cat=1, num=17, typegenproc=12, fcsttime=0)
+      ! Interpolate snoage
+      do r = 1, this%nr
+         do c = 1, this%nc
+            if (this%snoage(c,r) < 0) then
+               li(c + (r-1)*this%nc) = .false.
+               gi(c + (r-1)*this%nc) = LVT_rc%udef
+            else
+               li(c + (r-1)*this%nc) = .true.
+               gi(c + (r-1)*this%nc) = this%snoage(c,r)
+            end if
+         end do ! c
+      end do ! r
+      call upscaleByMode((this%nc*this%nr), &
+           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (griddesco(1) == 5) then
+         call neighbor_interp(griddesco, li, gi, lo_neighbor, go_neighbor, &
+              (this%nc*this%nr), (nc_out*nr_out), &
+              rlat_neighbor, rlon_neighbor, &
+              n11_neighbor, &
+              LVT_rc%udef, iret)
+         do r = 1, nr_out
+            do c = 1, nc_out
+               if (.not. lo(c + (r-1)*nc_out)) then
+                  if (lo_neighbor(c + (r-1)*nc_out)) then
+                     go(c + (r-1)*nc_out) = go_neighbor(c + (r-1)*nc_out)
+                  end if
+               end if
+            end do
+         end do
+         ! If using Air Force polar stereographic, we must flip the grid so
+         ! the origin is in the upper-left corner instead of lower-left
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+            end do ! c
+         end do ! r
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go(c + (r-1)*nc_out) = go2d(c,r)
+            end do ! c
+         end do ! r
+      end if
+      call write_grib1(ftn, griddesco, nc_out, nr_out, go, param=175, &
+           decimal_scale_factor=0)
 
-!       ! Handle icecon
-!       do r = 1, this%nr
-!          do c = 1, this%nc
-!             if (this%icecon(c,r) < 0) then
-!                li(c + (r-1)*this%nc) = .false.
-!                gi(c + (r-1)*this%nc) = LVT_rc%udef
-!             else
-!                li(c + (r-1)*this%nc) = .true.
-!                gi(c + (r-1)*this%nc) = this%icecon(c,r)
-!             end if
-!          end do ! c
-!       end do ! r
-!       call upscaleByAveraging((this%nc*this%nr), &
-!            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-!       if (griddesco(1) == 5) then
-!          call bilinear_interp(griddesco, li, gi, lo_bin, go_bin, &
-!               (this%nc*this%nr), (nc_out*nr_out), &
-!               rlat_bin, rlon_bin, &
-!               w11_bin, w12_bin, w21_bin, w22_bin, &
-!               n11_bin, n12_bin, n21_bin, n22_bin, &
-!               LVT_rc%udef, iret)
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                if (.not. lo(c + (r-1)*nc_out)) then
-!                   if (lo_bin(c + (r-1)*nc_out)) then
-!                      go(c + (r-1)*nc_out) = go_bin(c + (r-1)*nc_out)
-!                   end if
-!                end if
-!             end do
-!          end do
-!          ! If using Air Force polar stereographic, we must flip the grid so
-!          ! the origin is in the upper-left corner instead of lower-left
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
-!             end do ! c
-!          end do ! r
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go(c + (r-1)*nc_out) = go2d(c,r)
-!             end do ! c
-!          end do ! r
-!       end if
-!       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-!            dspln=10, cat=2, num=0, typegenproc=12, fcsttime=0)
+      ! Handle icecon
+      do r = 1, this%nr
+         do c = 1, this%nc
+            if (this%icecon(c,r) < 0) then
+               li(c + (r-1)*this%nc) = .false.
+               gi(c + (r-1)*this%nc) = LVT_rc%udef
+            else
+               li(c + (r-1)*this%nc) = .true.
+               gi(c + (r-1)*this%nc) = this%icecon(c,r)
+            end if
+         end do ! c
+      end do ! r
+      call upscaleByAveraging((this%nc*this%nr), &
+           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (griddesco(1) == 5) then
+         call bilinear_interp(griddesco, li, gi, lo_bin, go_bin, &
+              (this%nc*this%nr), (nc_out*nr_out), &
+              rlat_bin, rlon_bin, &
+              w11_bin, w12_bin, w21_bin, w22_bin, &
+              n11_bin, n12_bin, n21_bin, n22_bin, &
+              LVT_rc%udef, iret)
+         do r = 1, nr_out
+            do c = 1, nc_out
+               if (.not. lo(c + (r-1)*nc_out)) then
+                  if (lo_bin(c + (r-1)*nc_out)) then
+                     go(c + (r-1)*nc_out) = go_bin(c + (r-1)*nc_out)
+                  end if
+               end if
+            end do
+         end do
+         ! If using Air Force polar stereographic, we must flip the grid so
+         ! the origin is in the upper-left corner instead of lower-left
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+            end do ! c
+         end do ! r
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go(c + (r-1)*nc_out) = go2d(c,r)
+            end do ! c
+         end do ! r
+      end if
+      call write_grib1(ftn, griddesco, nc_out, nr_out, go, param=128, &
+           decimal_scale_factor=0)
       
-!       !  Handle icemask
-!       do r = 1, this%nr
-!          do c = 1, this%nc
-!             if (this%icemask(c,r) < 0) then
-!                li(c + (r-1)*this%nc) = .false.
-!                gi(c + (r-1)*this%nc) = LVT_rc%udef
-!             else
-!                li(c + (r-1)*this%nc) = .true.
-!                gi(c + (r-1)*this%nc) = this%icemask(c,r)
-!             end if
-!          end do ! c
-!       end do ! r
-!       call upscaleByMode((this%nc*this%nr), &
-!            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-!       if (griddesco(1) == 5) then
-!          call neighbor_interp(griddesco, li, gi, lo_neighbor, go_neighbor, &
-!               (this%nc*this%nr), (nc_out*nr_out), &
-!               rlat_neighbor, rlon_neighbor, &
-!               n11_neighbor, &
-!               LVT_rc%udef, iret)
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                if (.not. lo(c + (r-1)*nc_out)) then
-!                   if (lo_neighbor(c + (r-1)*nc_out)) then
-!                      go(c + (r-1)*nc_out) = go_neighbor(c + (r-1)*nc_out)
-!                   end if
-!                end if
-!             end do
-!          end do
-!          ! If using Air Force polar stereographic, we must flip the grid so
-!          ! the origin is in the upper-left corner instead of lower-left
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
-!             end do ! c
-!          end do ! r
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go(c + (r-1)*nc_out) = go2d(c,r)
-!             end do ! c
-!          end do ! r
-!       end if
-!       ! FIXME:  Find parameter number for ice mask
-!       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-!            dspln=10, cat=2, num=192, typegenproc=12, fcsttime=0)
+      !  Handle icemask
+      do r = 1, this%nr
+         do c = 1, this%nc
+            if (this%icemask(c,r) < 0) then
+               li(c + (r-1)*this%nc) = .false.
+               gi(c + (r-1)*this%nc) = LVT_rc%udef
+            else
+               li(c + (r-1)*this%nc) = .true.
+               gi(c + (r-1)*this%nc) = this%icemask(c,r)
+            end if
+         end do ! c
+      end do ! r
+      call upscaleByMode((this%nc*this%nr), &
+           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (griddesco(1) == 5) then
+         call neighbor_interp(griddesco, li, gi, lo_neighbor, go_neighbor, &
+              (this%nc*this%nr), (nc_out*nr_out), &
+              rlat_neighbor, rlon_neighbor, &
+              n11_neighbor, &
+              LVT_rc%udef, iret)
+         do r = 1, nr_out
+            do c = 1, nc_out
+               if (.not. lo(c + (r-1)*nc_out)) then
+                  if (lo_neighbor(c + (r-1)*nc_out)) then
+                     go(c + (r-1)*nc_out) = go_neighbor(c + (r-1)*nc_out)
+                  end if
+               end if
+            end do
+         end do
+         ! If using Air Force polar stereographic, we must flip the grid so
+         ! the origin is in the upper-left corner instead of lower-left
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+            end do ! c
+         end do ! r
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go(c + (r-1)*nc_out) = go2d(c,r)
+            end do ! c
+         end do ! r
+      end if
+      call write_grib1(ftn, griddesco, nc_out, nr_out, go, param=91, &
+           decimal_scale_factor=0)
 
-!       ! Handle iceage
-!       do r = 1, this%nr
-!          do c = 1, this%nc
-!             if (this%icemask(c,r) < 0) then
-!                li(c + (r-1)*this%nc) = .false.
-!                gi(c + (r-1)*this%nc) = LVT_rc%udef
-!             else
-!                li(c + (r-1)*this%nc) = .true.
-!                gi(c + (r-1)*this%nc) = this%iceage(c,r)
-!             end if
-!          end do ! c
-!       end do ! r
-!       call upscaleByMode((this%nc*this%nr), &
-!            (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
-!       if (griddesco(1) == 5) then
-!          call neighbor_interp(griddesco, li, gi, lo_neighbor, go_neighbor, &
-!               (this%nc*this%nr), (nc_out*nr_out), &
-!               rlat_neighbor, rlon_neighbor, &
-!               n11_neighbor, &
-!               LVT_rc%udef, iret)
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                if (.not. lo(c + (r-1)*nc_out)) then
-!                   if (lo_neighbor(c + (r-1)*nc_out)) then
-!                      go(c + (r-1)*nc_out) = go_neighbor(c + (r-1)*nc_out)
-!                   end if
-!                end if
-!             end do
-!          end do
-!          ! If using Air Force polar stereographic, we must flip the grid so
-!          ! the origin is in the upper-left corner instead of lower-left
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
-!             end do ! c
-!          end do ! r
-!          do r = 1, nr_out
-!             do c = 1, nc_out
-!                go(c + (r-1)*nc_out) = go2d(c,r)
-!             end do ! c
-!          end do ! r
-!       end if
-!       ! FIXME:  Find parameter number for ice age
-!       call write_grib2(ftn, griddesco, nc_out, nr_out, go, &
-!            dspln=10, cat=2, num=193, typegenproc=12, fcsttime=0)
+      ! Handle iceage
+      do r = 1, this%nr
+         do c = 1, this%nc
+            if (this%icemask(c,r) < 0) then
+               li(c + (r-1)*this%nc) = .false.
+               gi(c + (r-1)*this%nc) = LVT_rc%udef
+            else
+               li(c + (r-1)*this%nc) = .true.
+               gi(c + (r-1)*this%nc) = this%iceage(c,r)
+            end if
+         end do ! c
+      end do ! r
+      call upscaleByMode((this%nc*this%nr), &
+           (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
+      if (griddesco(1) == 5) then
+         call neighbor_interp(griddesco, li, gi, lo_neighbor, go_neighbor, &
+              (this%nc*this%nr), (nc_out*nr_out), &
+              rlat_neighbor, rlon_neighbor, &
+              n11_neighbor, &
+              LVT_rc%udef, iret)
+         do r = 1, nr_out
+            do c = 1, nc_out
+               if (.not. lo(c + (r-1)*nc_out)) then
+                  if (lo_neighbor(c + (r-1)*nc_out)) then
+                     go(c + (r-1)*nc_out) = go_neighbor(c + (r-1)*nc_out)
+                  end if
+               end if
+            end do
+         end do
+         ! If using Air Force polar stereographic, we must flip the grid so
+         ! the origin is in the upper-left corner instead of lower-left
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go2d(c,nr_out - r + 1) = go(c + (r-1)*nc_out)
+            end do ! c
+         end do ! r
+         do r = 1, nr_out
+            do c = 1, nc_out
+               go(c + (r-1)*nc_out) = go2d(c,r)
+            end do ! c
+         end do ! r
+      end if
+      call write_grib1(ftn, griddesco, nc_out, nr_out, go, param=129, &
+           decimal_scale_factor=0)
 
-!       ! Close the GRIB2 file
-!       call grib_close_file(ftn, rc)
-!       if (rc .ne. GRIB_SUCCESS) then
-!          write(LVT_logunit,*)'[ERR] Error from grib_close_file'
-!          call grib_get_error_string(rc, msg, status2)
-!          write(LVT_logunit,*)'[ERR] ', trim(msg)
-!          write(LVT_logunit,*)'[ERR] LVT will stop'
-!          call LVT_endrun()
-!       end if
+      ! Close the GRIB1 file
+      call grib_close_file(ftn, rc)
+      if (rc .ne. GRIB_SUCCESS) then
+         write(LVT_logunit,*)'[ERR] Error from grib_close_file'
+         call grib_get_error_string(rc, msg, status2)
+         write(LVT_logunit,*)'[ERR] ', trim(msg)
+         write(LVT_logunit,*)'[ERR] LVT will stop'
+         call LVT_endrun()
+      end if
 
-!       ! Clean up
-!       deallocate(n11)
-!       if (allocated(rlat_bin)) deallocate(rlat_bin)
-!       if (allocated(rlon_bin)) deallocate(rlon_bin)
-!       if (allocated(n11_bin)) deallocate(n11_bin)
-!       if (allocated(n12_bin)) deallocate(n12_bin)
-!       if (allocated(n21_bin)) deallocate(n21_bin)
-!       if (allocated(n22_bin)) deallocate(n22_bin)
-!       if (allocated(w11_bin)) deallocate(w11_bin)
-!       if (allocated(w12_bin)) deallocate(w12_bin)
-!       if (allocated(w21_bin)) deallocate(w21_bin)
-!       if (allocated(w22_bin)) deallocate(w22_bin)
-!       if (allocated(rlat_neighbor)) deallocate(rlat_neighbor)
-!       if (allocated(rlon_neighbor)) deallocate(rlon_neighbor)
-!       if (allocated(n11_neighbor)) deallocate(n11_neighbor)
-!       deallocate(li)
-!       deallocate(gi)
-!       deallocate(lo)
-!       deallocate(go)
-!       if (allocated(go2d)) deallocate(go2d)
-!       if (allocated(lo_bin)) deallocate(lo_bin)
-!       if (allocated(go_bin)) deallocate(go_bin)
-!       if (allocated(lo_neighbor)) deallocate(lo_neighbor)
-!       if (allocated(go_neighbor)) deallocate(go_neighbor)
-!    end subroutine interp_and_output_grib2
+      ! Clean up
+      deallocate(n11)
+      if (allocated(rlat_bin)) deallocate(rlat_bin)
+      if (allocated(rlon_bin)) deallocate(rlon_bin)
+      if (allocated(n11_bin)) deallocate(n11_bin)
+      if (allocated(n12_bin)) deallocate(n12_bin)
+      if (allocated(n21_bin)) deallocate(n21_bin)
+      if (allocated(n22_bin)) deallocate(n22_bin)
+      if (allocated(w11_bin)) deallocate(w11_bin)
+      if (allocated(w12_bin)) deallocate(w12_bin)
+      if (allocated(w21_bin)) deallocate(w21_bin)
+      if (allocated(w22_bin)) deallocate(w22_bin)
+      if (allocated(rlat_neighbor)) deallocate(rlat_neighbor)
+      if (allocated(rlon_neighbor)) deallocate(rlon_neighbor)
+      if (allocated(n11_neighbor)) deallocate(n11_neighbor)
+      deallocate(li)
+      deallocate(gi)
+      deallocate(lo)
+      deallocate(go)
+      if (allocated(go2d)) deallocate(go2d)
+      if (allocated(lo_bin)) deallocate(lo_bin)
+      if (allocated(go_bin)) deallocate(go_bin)
+      if (allocated(lo_neighbor)) deallocate(lo_neighbor)
+      if (allocated(go_neighbor)) deallocate(go_neighbor)
+   end subroutine interp_and_output_grib1
 
    ! Internal subroutine for checking gridID
    subroutine check_gridID(gridID)
@@ -976,45 +977,45 @@ contains
 
    end subroutine build_filename_g2
    
-!    ! Build the grib2 filename
-!    subroutine build_filename_g2(gridID, output_dir, yyyymmddhh, filename)
+   ! Build the grib2 filename
+   subroutine build_filename_g1(gridID, output_dir, yyyymmddhh, filename)
 
-!       ! Defaults
-!       implicit none
+      ! Defaults
+      implicit none
 
-!       ! Arguments
-!       character(len=*), intent(in) :: gridID
-!       character(len=255), intent(in) :: output_dir
-!       character(len=10), intent(in) :: yyyymmddhh
-!       character(len=255), intent(out) :: filename
+      ! Arguments
+      character(len=*), intent(in) :: gridID
+      character(len=255), intent(in) :: output_dir
+      character(len=10), intent(in) :: yyyymmddhh
+      character(len=255), intent(out) :: filename
 
-!       ! Local variables
-!       character(len=10) :: grid
-!       character(len=10) :: area
-!       character(len=8)  :: yyyymmdd
-!       character(len=2)  :: hh
+      ! Local variables
+      character(len=10) :: grid
+      character(len=10) :: area
+      character(len=8)  :: yyyymmdd
+      character(len=2)  :: hh
 
-!       if (trim(gridID) .eq. trim(GLOBAL_LL0P25)) then
-!          grid = 'C0P25DEG'
-!          area = 'GLOBAL'
-!       else if (trim(gridID) .eq. trim(NH_PS16)) then
-!          grid = 'P24KM'
-!          area = 'N-HEM'
-!       else if (trim(gridID) .eq. trim(SH_PS16)) then
-!          grid = 'P24KM'
-!          area = 'S-HEM'
-!       end if
-!       yyyymmdd = yyyymmddhh(1:8)
-!       hh = yyyymmddhh(9:10)
+      if (trim(gridID) .eq. trim(GLOBAL_LL0P25)) then
+         grid = 'C0P25DEG'
+         area = 'GLOBAL'
+      else if (trim(gridID) .eq. trim(NH_PS16)) then
+         grid = 'P24KM'
+         area = 'N-HEM'
+      else if (trim(gridID) .eq. trim(SH_PS16)) then
+         grid = 'P24KM'
+         area = 'S-HEM'
+      end if
+      yyyymmdd = yyyymmddhh(1:8)
+      hh = yyyymmddhh(9:10)
 
-!       filename = trim(output_dir) // '/' // &
-!            'PS.AFWA_SC.U_DI.D_GP.SNODEP_GR.' // &
-!            trim(grid) // '_AR.' // &
-!            trim(area) // '_PA.SNODEP_DD' // &
-!            trim(yyyymmdd) // '_DT.' // &
-!            trim(hh) // '00_DF.GR2'
+      filename = trim(output_dir) // '/' // &
+           'PS.AFWA_SC.U_DI.D_GP.SNODEP_GR.' // &
+           trim(grid) // '_AR.' // &
+           trim(area) // '_PA.SNODEP_DD' // &
+           trim(yyyymmdd) // '_DT.' // &
+           trim(hh) // '00_DF.GR1'
            
-!    end subroutine build_filename_g2
+   end subroutine build_filename_g1
 
    ! Internal subroutine for setting griddesci
    ! FIXME:  Add support for non-lat/lon projections
@@ -1402,6 +1403,204 @@ contains
       end if
 
    end subroutine write_grib2
+
+   ! Internal subroutine for writing grib1 message
+   subroutine write_grib1(ftn, griddesco, &
+        nc_out, nr_out, go, param, decimal_scale_factor)
+
+      ! Imports      
+      use grib_api
+      use LVT_coreMod, only: LVT_rc
+      use LVT_gribWrapperMod, only: LVT_grib_set
+      use LVT_logMod, only: LVT_logunit, LVT_endrun, LVT_verify
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: ftn
+      real, intent(in) :: griddesco(50)
+      integer, intent(in) :: nc_out
+      integer, intent(in) :: nr_out
+      real, intent(in) :: go(nc_out*nr_out)
+      integer, intent(in) :: param
+      integer, intent(in) :: decimal_scale_factor
+
+      ! Local variables
+      integer :: igrib, rc, status2
+      character(len=255) :: msg
+      character(len=4) :: cyyyy
+      character(len=2) :: cmm, cdd, chh
+      integer :: iyyyy, imm, idd, ihh, iyear, iyoc, ic
+      
+#if (defined USE_GRIBAPI)
+      call grib_new_from_samples(igrib, "GRIB1", rc)
+      if (rc .ne. GRIB_SUCCESS) then
+         write(LVT_logunit,*)'[ERR] Error from grib_new_from_samples'
+         call grib_get_error_string(rc, msg, status2)
+         write(LVT_logunit,*)'[ERR] ',trim(msg)
+         write(LVT_logunit,*)'[ERR] LVT will stop'
+         call LVT_endrun()
+      end if
+#else
+      call grib_new_from_template(igrib, "GRIB1", rc)
+      if (rc .ne. GRIB_SUCCESS) then
+         write(LVT_logunit,*)'[ERR] Error from grib_new_from_template'
+         call grib_get_error_string(rc, msg, status2)
+         write(LVT_logunit,*)'[ERR] ',trim(msg)
+         write(LVT_logunit,*)'[ERR] LVT will stop'
+         call LVT_endrun()
+      end if
+#endif
+
+      ! Section 1: Product Definition Section
+      ! Octet 4
+      call LVT_grib_set(igrib, 'table2Version', 128)
+      ! Octet 5
+      call LVT_grib_set(igrib, 'centre', 57)
+      ! Octet 6
+      call LVT_grib_set(igrib, 'generatingProcessIdentifier', 35)
+      ! Octet 7
+      call LVT_grib_set(igrib, 'gridDefinition', 255)
+      !! Octet 8
+      !call LVT_grib_set(igrib, 'section1Flags', 64)
+      ! Octet 9
+      call LVT_grib_set(igrib, 'indicatorOfParameter', param)
+      ! Octet 10
+      call LVT_grib_set(igrib, 'indicatorOfTypeOfLevel', 1)
+      ! Octet 11-12
+      call LVT_grib_set(igrib, 'level', 0)
+      ! Octet 13
+      !cyyyy = LVT_rc%yyyymmddhh(1:4)
+      !read(cyyyy, '(i4)') iyyyy
+      !call LVT_grib_set(igrib, 'yearOfCentury', iyyyy)
+      iyear = 1000 * (ichar(LVT_rc%yyyymmddhh(1:1)) - 48) +             &
+               100 * (ichar(LVT_rc%yyyymmddhh(2:2)) - 48) +             &
+                10 * (ichar(LVT_rc%yyyymmddhh(3:3)) - 48) +             &
+                     (ichar(LVT_rc%yyyymmddhh(4:4)) - 48)
+      iyoc = mod(iyear,1000)
+      if (iyoc .eq. 0) iyoc = 100
+      call LVT_grib_set(igrib, 'yearOfCentury', iyoc)
+
+      ! Octet 14
+      cmm = LVT_rc%yyyymmddhh(5:6)
+      read(cmm, '(i2)') imm
+      call LVT_grib_set(igrib, 'month', imm)
+      ! Octet 15
+      cdd = LVT_rc%yyyymmddhh(7:8)
+      read(cdd, '(i2)') idd
+      call LVT_grib_set(igrib, 'day', idd)
+      ! Octet 16
+      chh = LVT_rc%yyyymmddhh(9:10)
+      read(chh, '(i2)') ihh
+      call LVT_grib_set(igrib, 'hour', ihh)
+      ! Octet 17
+      call LVT_grib_set(igrib, 'minute', 0)
+      ! Octet 18
+      call LVT_grib_set(igrib, 'unitOfTimeRange', 1)
+      ! Octet 19-20
+      call LVT_grib_set(igrib, 'P1', 0)
+      call LVT_grib_set(igrib, 'P2', 0)
+      ! Octet 21
+      call LVT_grib_set(igrib, 'timeRangeIndicator', 0)
+      ! Octet 22-23
+      call LVT_grib_set(igrib, 'numberIncludedInAverage', 0)
+      ! Octet 24
+      call LVT_grib_set(igrib, 'numberMissingFromAveragesOrAccumulations', 0)
+      ! Octet 25
+      if (iyoc == 100) then
+         ic = iyear / 100
+      else
+         ic = (iyear / 100) + 1
+      end if
+      call LVT_grib_set(igrib, 'centuryOfReferenceTimeOfData', ic)
+      ! Octet 26
+      call LVT_grib_set(igrib, 'subCentre', 2)
+      ! Octet 27-28
+      call LVT_grib_set(igrib, 'decimalScaleFactor', decimal_scale_factor)
+
+      ! Section 2: Grid Description Section
+      ! Octet 4
+      call LVT_grib_set(igrib, 'numberOfVerticalCoordinateValues', 1)
+      ! Octet 5
+      call LVT_grib_set(igrib, 'pvlLocation', 255)
+      ! Octet 6
+      if (griddesco(1) == 0) then
+         call LVT_grib_set(igrib, 'dataRepresentationType', 0)
+      else if (griddesco(1) == 5) then
+         call LVT_grib_set(igrib, 'dataRepresentationType', 5)
+      end if
+      ! Octets 7-32
+      if (griddesco(1) == 0) then
+         call LVT_grib_set(igrib, 'Ni', nc_out)
+         call LVT_grib_set(igrib, 'Nj', nr_out)
+         call LVT_grib_set(igrib, 'latitudeOfFirstGridPointInDegrees', &
+              griddesco(4))
+         call LVT_grib_set(igrib, 'longitudeOfFirstGridPointInDegrees', &
+              griddesco(5))
+         call LVT_grib_set(igrib, 'latitudeOfLastGridPointInDegrees', &
+              griddesco(7))
+         call LVT_grib_set(igrib, 'longitudeOfLastGridPointInDegrees', &
+              griddesco(8))
+         call LVT_grib_set(igrib, 'iDirectionIncrementInDegrees', &
+              griddesco(9))
+         call LVT_grib_set(igrib, 'jDirectionIncrementInDegrees', &
+              griddesco(10))
+         call LVT_grib_set(igrib, 'iScansNegatively', 0)
+         call LVT_grib_set(igrib, 'jScansPositively', 1)
+         call LVT_grib_set(igrib, 'jPointsAreConsecutive', 0)
+
+      else if (griddesco(1) == 5) then
+         ! Polar stereographic
+         call LVT_grib_set(igrib, 'Nx', nc_out)
+         call LVT_grib_set(igrib, 'Ny', nr_out)
+         call LVT_grib_set(igrib, 'latitudeOfFirstGridPointInDegrees', &
+              griddesco(30))
+         call LVT_grib_set(igrib, 'longitudeOfFirstGridPointInDegrees', &
+              griddesco(31))
+         call LVT_grib_set(igrib, 'resolutionAndComponentFlags', 0)
+         call LVT_grib_set(igrib, 'orientationOfTheGrid', &
+              1e6*griddesco(7))
+         call LVT_grib_set(igrib, 'DxInMetres', &
+              abs(1000*griddesco(8)))
+         call LVT_grib_set(igrib, 'DyInMetres', &
+              abs(1000*griddesco(9)))
+         if (griddesco(4) < 0) then
+            call LVT_grib_set(igrib, 'projectionCentreFlag', 0)
+         else            
+            call LVT_grib_set(igrib, 'projectionCentreFlag', 1)
+         end if
+         call LVT_grib_set(igrib, 'scanningMode', 0)
+      end if
+
+      ! Section 3: Bit-map section
+      ! This is handled implicitly by ECCODES based on the following
+      call LVT_grib_set(igrib, 'missingValue', LVT_rc%udef)
+      call LVT_grib_set(igrib, 'values', go)
+      call LVT_grib_set(igrib, 'bitmapPresent', 1)
+            
+      ! Section 4:  Binary data section -- handled implicitly
+
+      ! Write the message
+      call grib_write(igrib, ftn, rc)
+      if (rc .ne. GRIB_SUCCESS) then
+         write(LVT_logunit,*)'[ERR] Error from grib_write'
+         call grib_get_error_string(rc, msg, status2)
+         write(LVT_logunit,*)'[ERR] ', trim(msg)
+         write(LVT_Logunit,*)'[ERR] LVT will stop'
+         call LVT_endrun()
+      end if
+
+      call grib_release(igrib, rc)
+      if (rc .ne. GRIB_SUCCESS) then
+         write(LVT_logunit,*)'[ERR] Error from grib_release'
+         call grib_get_error_string(rc, msg, status2)
+         write(LVT_logunit,*)'[ERR] ', trim(msg)
+         write(LVT_logunit,*)'[ERR] LVT will stop'
+         call LVT_endrun()
+      end if
+            
+   end subroutine write_grib1
 
    ! Internal subroutine for writing global lat/lon output in netCDF.
    ! For testing purposes.
