@@ -138,6 +138,7 @@ contains
   subroutine HYMAP2_get_volume_profile(nz,elevtn,fldhgt,fldstomax,grarea,rivstomax,rivelv,rivlen,rivwth,elv,vol)
    
     use HYMAP2_routingMod, only : HYMAP2_routing_struc
+    use LIS_logMod,        only : LIS_logunit, LIS_endrun
     
     implicit none
    
@@ -169,7 +170,9 @@ contains
           h1=elevtn;v1=rivstomax
           h2=dph(1);v2=fldstomax(1)
         else
-          stop '[HYMAP2_get_volume_profile] Please check Reservoir elevation'
+          write(LIS_logunit,*) '[ERR] HYMAP2_get_volume_profile: ' // &
+                               'Please check Reservoir elevation'
+          call LIS_endrun
         endif
         vol=v1+(v2-v1)*(elv-h1)/(h2-h1)
       endif   
@@ -181,6 +184,8 @@ contains
   !=============================================  
   subroutine HYMAP2_get_elevation_profile(nz,elevtn,fldhgt,fldstomax,grarea,rivstomax,rivelv,rivlen,rivwth,elv,vol)
    
+    use LIS_logMod, only : LIS_logunit, LIS_endrun
+
     implicit none
    
     integer, intent(in)  :: nz
@@ -210,7 +215,9 @@ contains
           h1=elevtn;v1=rivstomax
           h2=dph(1);v2=fldstomax(1)
         else
-          stop '[HYMAP2_get_elevation_profile] Please check Reservoir elevation'
+          write(LIS_logunit,*) '[ERR] HYMAP2_get_elevation_profile: ' // &
+                               'Please check Reservoir elevation'
+          call LIS_endrun
         endif
         elv=h1+(h2-h1)*(vol-v1)/(v2-v1)
       endif   
