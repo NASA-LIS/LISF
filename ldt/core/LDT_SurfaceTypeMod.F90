@@ -112,7 +112,8 @@ contains
 
    !- Landcover types:
       if( isSurfaceTypeSelected(1) ) then
-        num_lctypes = LDT_LSMparam_struc(n)%landcover%num_bins
+        num_lctypes = LDT_LSMparam_struc(n)%landcover%num_bins + LDT_rc%numcrop(n)
+!        print *, " Number of num_lctypes (LDT_surfacetype_init): ",num_lctypes
       endif
 
    !- Lake tiles:

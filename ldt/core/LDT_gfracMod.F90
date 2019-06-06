@@ -211,15 +211,15 @@ contains
          call ESMF_ConfigGetAttribute(LDT_config,gfracInterval(n),rc=rc)
          call LDT_verify(rc,'Greenness climatology interval: not specified')
          if( trim(gfracInterval(n)) .ne. "monthly" ) then
-            write(LDT_logunit,*) "ERR: 'monthly' Greenness fraction interval option specified."
+            write(LDT_logunit,*) "[ERR] 'monthly' Greenness fraction interval option specified."
             write(LDT_logunit,*) "    Set ... Greenness climatology interval:  monthly"
             write(LDT_logunit,*) "    Stopping."
             call LDT_endrun
          endif
          if( gfracInterval(n) == "monthly" .and. &
               LDT_gfrac_struc(n)%gfrac%vlevels .ne. 12 )then
-            write(LDT_logunit,*) "ERR: The 'monthly' Greenness climatology interval option "
-            write(LDT_logunit,*) "   should have '12' in the parameter attribs table."
+            write(LDT_logunit,*) "[ERR] The 'monthly' greenness climatology interval option "
+            write(LDT_logunit,*) "   should have '12' in params/gfrac/set_gfrac_attribs.F90."
             write(LDT_logunit,*) "   Please change to '12' there.  Stopping."
             call LDT_endrun
          endif

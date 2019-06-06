@@ -96,14 +96,12 @@ subroutine read_Monfredaetal08_croptype(n, num_types, fgrd)
    integer, allocatable  :: lat_line(:,:), lon_line(:,:)
 
    character(20), allocatable :: croptype_array(:)
-   real      :: cropdom(LDT_rc%lnc(n),LDT_rc%lnr(n))
    real      :: croptype_frac(LDT_rc%lnc(n),LDT_rc%lnr(n),LDT_rc%numcrop(n))
    real      :: subcroptype_frac(LDT_rc%lnc(n),LDT_rc%lnr(n),14)
 
 !__________________________________________________________________
 
    croptype_frac = 0.0
-   cropdom  = 0.0
    fgrd     = 0.0
 
 !- Set parameter grid array inputs:
@@ -137,7 +135,6 @@ subroutine read_Monfredaetal08_croptype(n, num_types, fgrd)
         write(LDT_logunit,*) "    with a resolution (0.0833deg), but the LIS run domain resolution"
         write(LDT_logunit,*) "    selected is not equal to that. So please select a spatial"
         write(LDT_logunit,*) "    transform other than 'none'."
-        write(LDT_logunit,*) "Program stopping ..."
         call LDT_endrun
      endif
    endif
@@ -148,7 +145,6 @@ subroutine read_Monfredaetal08_croptype(n, num_types, fgrd)
    if(.not.file_exists) then
       write(LDT_logunit,*) "[ERR] The Monfreda et al. (2008) crop type map diretory: ",&
                             trim(LDT_LSMCrop_struc(n)%croptfile)," is not correct. "
-      write(LDT_logunit,*) "Program stopping ..."
       call LDT_endrun
    endif
    write(LDT_logunit,*)"[INFO] Reading Monfreda et al. (2008) crop file: ",trim(LDT_LSMCrop_struc(n)%croptfile)
@@ -157,27 +153,29 @@ subroutine read_Monfredaetal08_croptype(n, num_types, fgrd)
 !- Retrieve the croptype array for user-selected classification:
    allocate( croptype_array(LDT_rc%numcrop(n)) )
    croptype_array = "none"
-   call readcropinventory( n, LDT_LSMCrop_struc(n)%crop_classification, &
+   call readcropinventory( n, LDT_rc%crop_classification(n), &
                            LDT_rc%numcrop(n), croptype_array ) 
 
 !- Open each Crop-type file:
    do i = 1, LDT_rc%numcrop(n)
 
-   !  Ignore "others" croptype of "CROPMAP" classification for now:
+   !  Ignore "others" crop type of "CROPMAP" classification for now:
       if( croptype_array(i) == "others" ) cycle   
 
       tempfile = trim(LDT_LSMCrop_struc(n)%croptfile)//"/"//trim(croptype_array(i))//"_5min.nc"
-      write(LDT_logunit,*)"  Opening crop type file: ",trim(tempfile)
+      write(LDT_logunit,*)" - Opening crop type file: ",trim(tempfile)
 
       call readMonfredaCropfiles( n, tempfile, subpnc, subpnr, subparam_gridDesc, &
                                   lat_line, lon_line, croptype_frac(:,:,i) )
+
+!      print *, "Monfreda crops:: ",i, croptype_frac(218,128,i)
 
    end do    ! End Crop Type File Read
 
 
 !- Some regions are dominated by "other" crop types, like California, Florida, 
 !  if using the "CROPMAP" crop types....
-   if( LDT_LSMCrop_struc(n)%crop_classification == "CROPMAP" ) then
+   if( LDT_rc%crop_classification(n) == "CROPMAP" ) then
      subcroptype_frac = 0.
      do i = 1, LDT_rc%numcrop(n)
         if( croptype_array(i) == "others" ) then
@@ -198,13 +196,13 @@ subroutine read_Monfredaetal08_croptype(n, num_types, fgrd)
             if(i2==12) tempfile = trim(LDT_LSMCrop_struc(n)%croptfile)//"/stringbean_5min.nc"
             if(i2==13) tempfile = trim(LDT_LSMCrop_struc(n)%croptfile)//"/greencorn_5min.nc"
             if(i2==14) tempfile = trim(LDT_LSMCrop_struc(n)%croptfile)//"/potato_5min.nc"
-            write(LDT_logunit,*)"  Opening crop type file: ",trim(tempfile)
+            write(LDT_logunit,*)" ... Opening 'others' crop type file: ",trim(tempfile)
 
             call readMonfredaCropfiles( n, tempfile, subpnc, subpnr, subparam_gridDesc, &
                                         lat_line, lon_line, subcroptype_frac(:,:,i2) )
           enddo
 
-       !- Find dominant crop type out of inventory list:
+       !- Find dominant crop type out of subcrop "others" inventory list:
           do r = 1, LDT_rc%lnr(n)
              do c = 1, LDT_rc%lnc(n)
                 if( maxval(subcroptype_frac(c,r,:)) == LDT_rc%udef ) then
@@ -215,36 +213,29 @@ subroutine read_Monfredaetal08_croptype(n, num_types, fgrd)
                 endif
              enddo
           enddo
-          exit   ! Exit main croptype loop when "others" reached"
+!          print *, "Monfreda crops:: ",i, croptype_frac(218,128,i)
+          exit   ! Exit main croptype loop when "others" reached
         endif    
-     enddo
+     enddo       ! End i - "others" crop loop
    endif         ! End accounting for CROPMAP "others" crop type
 
-
-!- Find dominant crop type out of inventory list:
+!- Write final gridcell fractions:
    do r = 1, LDT_rc%lnr(n)
       do c = 1, LDT_rc%lnc(n)
-         cropdom(c,r) = maxval(croptype_frac(c,r,:) )
-
-         if( maxval(croptype_frac(c,r,:)) == LDT_rc%udef ) then
-            fgrd(c,r,1) = LDT_rc%udef
-         else
-            if( LDT_LSMCrop_struc(n)%crop_classification == "CROPMAP" ) then
-               fgrd(c,r,1) = maxloc(croptype_frac(c,r,:),1,&
-                             mask=croptype_frac(c,r,:).ne.LDT_rc%udef )+13.0
-!               if(fgrd(c,r,1) == 21.) fgrd(c,r,1) = LDT_rc%udef
-            else
-              fgrd(c,r,1) = maxloc(croptype_frac(c,r,:),1,&
-                            mask=croptype_frac(c,r,:).ne.LDT_rc%udef )
-            endif
-         endif
+         do i = 1, LDT_rc%numcrop(n)
+           if( maxval(croptype_frac(c,r,:)) == LDT_rc%udef ) then
+              fgrd(c,r,i) = LDT_rc%udef
+           else
+              fgrd(c,r,i) = croptype_frac(c,r,i)
+           endif
+         enddo 
       enddo
    enddo
 
    deallocate( croptype_array )
    deallocate( lat_line, lon_line )
 
-  write(LDT_logunit,*) "[INFO] Done reading 'Monfredaetal08' Crop map type. "
+  write(LDT_logunit,*) "[INFO] Done reading 'Monfredaetal08' crop map type. "
 
 
 end subroutine read_Monfredaetal08_croptype
@@ -289,7 +280,7 @@ subroutine readMonfredaCropfiles( n, tempfile, subpnc, subpnr, subparam_gridDesc
 !
 #if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
     ierr = nf90_open(path=tempfile,mode=NF90_NOWRITE,ncid=ftn)
-    call LDT_verify(ierr,'error opening Monfreda etal (2008) crop type file')
+    call LDT_verify(ierr,'Error opening Monfreda et al (2008) crop type file.')
 
     ierr = nf90_inq_varid(ftn,'cropdata',cropid)
     call LDT_verify(ierr, 'nf90_inq_varid failed for crop type in read_Monfredaetal08_croptype')
@@ -377,7 +368,6 @@ subroutine readMonfredaCropfiles( n, tempfile, subpnc, subpnr, subparam_gridDesc
        write(*,*)"   for the tiled 'Monfredaetal08' crop type maps. Please select either:"
        write(*,*)"  -- neighbor, bilinear, budget-bilinear (to downscale)"
        write(*,*)"  -- average (to upscale)"
-       write(*,*)" Stopping program ..."
        call LDT_endrun
 
     end select  ! End vegtype/cnt aggregation method

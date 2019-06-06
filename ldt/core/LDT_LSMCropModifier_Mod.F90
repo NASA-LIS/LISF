@@ -19,7 +19,8 @@ module LDT_LSMCropModifier_Mod
 !
 ! !REVISION HISTORY:
 !  14 Jan 2014: K. Arsenault: Added to modify LSM parameters with crop data 
-! ___________________________________________________________
+!  14 May 2019: K. Arsenault: Expanded crop support for tiling
+! ____________________________________________________________________________
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -53,10 +54,8 @@ module LDT_LSMCropModifier_Mod
      character*50      :: crop_proj
      character*140     :: croptfile
    ! LSM/Crop-specific entries:
-!     logical            :: assimcropinfo
      character*20      :: assign_cropvalue
      character*20      :: config_croptype
-     character*20      :: crop_classification
      character*100     :: croplib_dir
 
      type(LDT_paramEntry) :: croptype    ! Crop type land cover
@@ -81,7 +80,7 @@ contains
        if( LDT_rc%assimcropinfo(n) ) then
          if(rc.ne.0) then 
             LDT_LSMCrop_struc(n)%selectOpt = 0
-            call LDT_warning(rc,"WARNING: Crop type data source: not defined")
+            call LDT_warning(rc,"WARNING: Crop type data source: not defined in config file")
             return
          else
             if(source.eq."none") then 
@@ -125,14 +124,21 @@ contains
     implicit none
 
     integer  :: n
-    integer  :: c,r,t,k,i,j
+    integer  :: c,r,t,k,i,i2,j
     integer  :: rc
     integer  :: crop_index
     real     :: landcover_fgrd
     real     :: crop_fgrd
+    real     :: ratio
+    real     :: vegtype_cropfrac1, vegtype_cropfrac2
+    real     :: croptypes_sumfrac
+    real     :: sumtemp, fractemp   ! FOR TESTING PURPOSES ONLY
     logical  :: crop_select
     logical  :: croptype_select
     character(20) :: croptemp
+    integer  :: domcroptype
+    real, allocatable    :: croparray(:)
+
     type(LDT_fillopts) :: croptype
 
    ! _____________________________________________________
@@ -149,31 +155,27 @@ contains
        if( crop_select ) then
           write(LDT_logunit,*)" - - - - - - Updating LSM Parameters with Crop Information - - - - - - -"
 
-          !     do n = 1, LDT_rc%nnest
-          !        allocate(sosdata(LDT_rc%lnc(n),LDT_rc%lnr(n)))
-          !        allocate(lgpdata(LDT_rc%lnc(n),LDT_rc%lnr(n)))
-          !     enddo
-
-      !-- Crop Parameters:
-          allocate ( LDT_rc%numcrop(LDT_rc%nnest) )
-
        !- Crop type:
           do n=1,LDT_rc%nnest
              if(LDT_LSMCrop_struc(n)%croptype%selectOpt.eq.1) then
                 croptype_select = .true.
              !- Allocate croptype values:
+                LDT_LSMCrop_struc(n)%croptype%num_bins = LDT_rc%numcrop(n) 
                 allocate(LDT_LSMCrop_struc(n)%croptype%value(&
                      LDT_rc%lnc(n),LDT_rc%lnr(n),&
                      LDT_LSMCrop_struc(n)%croptype%num_bins))
                 LDT_LSMCrop_struc(n)%croptype%value = -9999.   ! perhaps change to 0. later
              endif
+             ! Set crop type parameter derived type:
              call setCropParmsFullnames(n,"croptype",LDT_LSMCrop_struc(n)%croptype%source)
           enddo   ! End nest loop
 
+          ! Read in croptype map config entries:
           if( croptype_select ) then
              call ESMF_ConfigFindLabel(LDT_config,"Crop type file:", rc=rc)
              do n=1,LDT_rc%nnest
                 call ESMF_ConfigGetAttribute(LDT_config,LDT_LSMCrop_struc(n)%croptfile,rc=rc)
+                call LDT_verify(rc,'Crop type file: option not specified in the config file')
              enddo
              call ESMF_ConfigFindLabel(LDT_config,"Crop map spatial transform:",&
                   rc=rc)
@@ -184,59 +186,33 @@ contains
              enddo
           endif
 
-          !- Crop classification:
-          LDT_LSMCrop_struc(:)%crop_classification = "none"
-          call ESMF_ConfigFindLabel(LDT_config,"Crop classification:",rc=rc)
-          do n=1,LDT_rc%nnest
-             call ESMF_ConfigGetAttribute(LDT_config,LDT_LSMCrop_struc(n)%crop_classification,rc=rc)
-             call LDT_verify(rc,'Crop classification: not specified')
-          enddo
-
-          !- Assign number of crop types based on classification selected:
-          do n=1,LDT_rc%nnest
-             select case( LDT_LSMCrop_struc(n)%crop_classification )
-             case( "CROPMAP" )
-                LDT_rc%numcrop(n) = 19
-             case( "FAOSTAT01" )
-                LDT_rc%numcrop(n) = 18
-             case( "FAOSTAT05" )
-                LDT_rc%numcrop(n) = 175
-             case default
-                write(LDT_logunit,*) "[ERR] THE CROP CLASSIFICATION TYPE, ",&
-                     trim(LDT_LSMCrop_struc(n)%crop_classification),", IS NOT RECOGNIZED."
-                write(LDT_logunit,*) "  Please enter one of the following options: "
-                write(LDT_logunit,*) "   -- CROPMAP   "
-                write(LDT_logunit,*) "   -- FAOSTAT01 "
-                write(LDT_logunit,*) "   -- FAOSTAT05 "
-                write(LDT_logunit,*) "  Stopping ..." 
-                call LDT_endrun
-             end select
-             write(LDT_logunit,*) " -- Number of crop types for, ", &
-                  trim(LDT_LSMCrop_struc(n)%crop_classification),", is :: ",LDT_rc%numcrop(n)
-          enddo   ! End Nest Loop
-
+          ! Read in the other crop library and type config file entries:
           LDT_LSMCrop_struc(:)%croplib_dir = "none"
           call ESMF_ConfigFindLabel(LDT_config,"Crop library directory:",rc=rc)
           do n=1,LDT_rc%nnest
              call ESMF_ConfigGetAttribute(LDT_config,LDT_LSMCrop_struc(n)%croplib_dir,rc=rc)
-             call LDT_verify(rc,'Crop library directory: not specified')
+             call LDT_verify(rc,'Crop library directory: not specified in the config file')
           enddo
           LDT_LSMCrop_struc(:)%assign_cropvalue = "none"
           call ESMF_ConfigFindLabel(LDT_config,"Assign crop value type:",rc=rc)
           do n=1,LDT_rc%nnest
              call ESMF_ConfigGetAttribute(LDT_config,LDT_LSMCrop_struc(n)%assign_cropvalue,rc=rc)
-             call LDT_verify(rc,'Assign crop value type: not specified')
+             call LDT_verify(rc,'Assign crop value type: not specified in the config file')
           enddo
           LDT_LSMCrop_struc(:)%config_croptype = "none"
           call ESMF_ConfigFindLabel(LDT_config,"Default crop type:",rc=rc)
           do n=1,LDT_rc%nnest
              call ESMF_ConfigGetAttribute(LDT_config,&
                   LDT_LSMCrop_struc(n)%config_croptype,rc=rc)
-             call LDT_verify(rc,'Default crop type: not specified')
+             call LDT_verify(rc,'Default crop type: not specified in the config file')
           enddo
 
        !- Append crop information to landcover map:
           do n = 1, LDT_rc%nnest
+
+             write(LDT_logunit,*)"[INFO] CURRENT LSM-Crop Tile Module accounts for"
+             write(LDT_logunit,*)"[INFO]  single LANDCOVER crop type for now. Will"
+             write(LDT_logunit,*)"[INFO]  expand to include other CROP/IRRIG classes ..."
 
           !- Determine which landcover classification "crop" index:
              select case ( LDT_rc%lc_type(n) )
@@ -267,25 +243,177 @@ contains
              if( croptype_select ) then
 
                 if( LDT_LSMCrop_struc(n)%crop_gridtransform == "tile" ) then
+                   print *, "[WARN] CURRENTLY CROPTILE IS NOT SUPPORTED IN LIS ..."
                    LDT_LSMCrop_struc(n)%croptype%vlevels = &
                         LDT_LSMCrop_struc(n)%croptype%num_bins
                 elseif( LDT_LSMCrop_struc(n)%crop_gridtransform == "mode" ) then
+                   print *, "[WARN] NEED TO TRANSFORM THE MODE TO WRITING OUT"
+                   print *, "[WARN] DOMINANT CROP TYPE IN A CROP TILE ..."
+                   LDT_LSMCrop_struc(n)%croptype%vlevels = 1
+                elseif( LDT_LSMCrop_struc(n)%crop_gridtransform == "average" ) then
+                   print *, "[WARN] CURRENTLY LIS IS SETUP FOR DOMINANT CROPTYPE"
                    LDT_LSMCrop_struc(n)%croptype%vlevels = 1
                 endif
 
              !- Read crop type file and "blend" with output landcover map:
                 if( LDT_LSMCrop_struc(n)%croptype%source .ne. "CONSTANT" ) then
 
-                   call readcroptype(&
+                  call readcroptype(&
                         trim(LDT_LSMCrop_struc(n)%croptype%source)//char(0),&
                         n, LDT_LSMCrop_struc(n)%croptype%num_bins, &
                         LDT_LSMCrop_struc(n)%croptype%value )
 
+                   ! CHECKS:
+!                   print *, "LSMCrop module: ", LDT_LSMCrop_struc(n)%croptype%value(218,128,:)
+!                   print *, "LSMCrop sum:    ", &
+!                    sum(LDT_LSMCrop_struc(n)%croptype%value(218,128,:), &
+!                     mask=LDT_LSMCrop_struc(n)%croptype%value(218,128,:).ne.LDT_rc%udef) 
+!                   print *, "VEGETATION FRACS: ",LDT_LSMparam_struc(n)%landcover%value(218,128,:)
+!                   print *, "VEG-CROP TYPE FRAC: ",LDT_LSMparam_struc(n)%landcover%value(218,128,LDT_rc%cropclass1)
+!                   print *, "SURFACE TYPES: ",LDT_LSMparam_struc(n)%sfctype%value(218,128,:)
+!                   print *, "SURFACE-CROP TYPE: ",LDT_LSMparam_struc(n)%sfctype%value(218,128,LDT_rc%cropclass1)
+
+                  ! Perform user-options on croptype array and merge with vegtype:
+                  do r = 1, LDT_rc%lnr(n)
+                    do c = 1, LDT_rc%lnc(n)
+
+                       ! Compare vegetation crop class fraction with sum of croptype fractions:
+                       vegtype_cropfrac1 = LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%cropclass1)
+                       croptypes_sumfrac = sum(LDT_LSMCrop_struc(n)%croptype%value(c,r,:), &
+                                           mask=LDT_LSMCrop_struc(n)%croptype%value(c,r,:).ne.LDT_rc%udef)
+
+                       ! Re-normalize the crop fraction totals (user option):
+                       if( croptypes_sumfrac > 1.0 ) then
+                         ratio = 1.0 / croptypes_sumfrac
+                         do i = 1, LDT_rc%numcrop(n)
+                            if( LDT_LSMCrop_struc(n)%croptype%value(c,r,i).ne.LDT_rc%udef ) then
+                               LDT_LSMCrop_struc(n)%croptype%value(c,r,i) = &
+                                   LDT_LSMCrop_struc(n)%croptype%value(c,r,i) * ratio
+                            endif
+                            croptypes_sumfrac = sum(LDT_LSMCrop_struc(n)%croptype%value(c,r,:), &
+                                      mask=LDT_LSMCrop_struc(n)%croptype%value(c,r,:).ne.LDT_rc%udef)
+                         enddo
+                       endif
+
+                       ! If croptypes not present, but vegetation class crop present:
+                       if( croptypes_sumfrac == 0. .and. vegtype_cropfrac1 > 0. ) then
+
+                          LDT_LSMCrop_struc(n)%croptype%value(c,r,1) = &    ! Replace with crop selected by user
+                              LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%cropclass1)
+
+                          LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%cropclass1) = 0.
+                          LDT_LSMparam_struc(n)%sfctype%value(c,r,LDT_rc%cropclass1) = 0.
+
+                       ! If croptypes present, but vegetation class crop not:
+                       elseif( croptypes_sumfrac > 0. .and. vegtype_cropfrac1 == 0. ) then
+                          LDT_LSMCrop_struc(n)%croptype%value(c,r,:) = 0.
+     
+                       ! Both croptypes and veg-crop class present:
+                       elseif( croptypes_sumfrac > 0. .and. vegtype_cropfrac1 > 0. ) then
+
+                         ratio = vegtype_cropfrac1 / croptypes_sumfrac 
+!                         write(500,*) c, r, croptypes_sumfrac, vegtype_cropfrac1, ratio
+                         do i = 1, LDT_rc%numcrop(n)                  
+                            if( LDT_LSMCrop_struc(n)%croptype%value(c,r,i).ne.LDT_rc%udef ) then
+                               fractemp = LDT_LSMCrop_struc(n)%croptype%value(c,r,i)
+                               LDT_LSMCrop_struc(n)%croptype%value(c,r,i) = &
+                                   LDT_LSMCrop_struc(n)%croptype%value(c,r,i) * ratio
+!                               write(501,*) c, r, i, LDT_LSMCrop_struc(n)%croptype%value(c,r,i), fractemp
+                            endif
+                         enddo
+                         LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%cropclass1) = 0.
+                         LDT_LSMparam_struc(n)%sfctype%value(c,r,LDT_rc%cropclass1) = 0.
+
+!                         sumtemp=sum(LDT_LSMCrop_struc(n)%croptype%value(c,r,:), &
+!                              mask=LDT_LSMCrop_struc(n)%croptype%value(c,r,:).ne.LDT_rc%udef)
+!                         if( sumtemp > 1.05 .or. sumtemp < 0.95 ) then
+!                           write(502,*) c,r, sumtemp
+!                         endif
+                       endif
+
+                       ! Double-check for CROPMAP classification with UMD vegtype:
+                       if( LDT_rc%crop_classification(n) .eq. "CROPMAP" .and. &  
+                            LDT_rc%lc_type(n) .ne. "UMD" ) then
+                          write(LDT_logunit,*)"[ERR] CROPMAP Classification only works "
+                          write(LDT_logunit,*)"  with the UMD landcover classification."
+                          call LDT_endrun
+
+                       ! Populate crop tiles within expanded landcover/surfacetype arrays:         
+                       else
+                         i2 = 0
+                         do i = 1, LDT_rc%numcrop(n)
+                           i2 = LDT_rc%nt + i    ! Add onto vegtypes
+
+                           if( LDT_LSMCrop_struc(n)%croptype%value(c,r,i).ne.LDT_rc%udef ) then
+                             LDT_LSMparam_struc(n)%landcover%value(c,r,i2) = &
+                                 LDT_LSMCrop_struc(n)%croptype%value(c,r,i) 
+                             ! Ensure updates to surfacetype array is updated
+                             if( LDT_LSMCrop_struc(n)%croptype%value(c,r,i) > 0.0 ) then
+                               LDT_LSMparam_struc(n)%sfctype%value(c,r,i2) = 1.0
+                             endif
+                           endif
+!                           ! TEMPORARY CHCECK FOR FINAL LANDCOVER == 1.0
+!                           croptypes_sumfrac = sum(LDT_LSMparam_struc(n)%landcover%value(c,r,:), &
+!                                     mask=LDT_LSMparam_struc(n)%landcover%value(c,r,:).ne.LDT_rc%udef)
+!                           if( croptypes_sumfrac > 1.05 .or. croptypes_sumfrac < 0.95 ) then
+!                              write(503,*) c,r,croptypes_sumfrac
+!                           endif
+                         enddo
+                       endif
+
+                    end do
+                  end do
+
+!                  print *, "LSMCrop module(2): ", LDT_LSMCrop_struc(n)%croptype%value(218,128,:)
+!                  print *, "LSMCrop sum(2):    ", &
+!                   sum(LDT_LSMCrop_struc(n)%croptype%value(218,128,:), &
+!                    mask=LDT_LSMCrop_struc(n)%croptype%value(218,128,:).ne.LDT_rc%udef)
+
+                  ! Convert CROPTYPE to single dominant type for now, LIS - required!
+                  !  This is for testing purposes; will be replaced with the vegtiles in LIS ...
+                  allocate(croparray(LDT_LSMCrop_struc(n)%croptype%num_bins))
+                  croparray = LDT_rc%udef
+                  do r = 1, LDT_rc%lnr(n)
+                    do c = 1, LDT_rc%lnc(n)
+
+                      if( maxval(LDT_LSMCrop_struc(n)%croptype%value(c,r,:)) == LDT_rc%udef) then
+                         LDT_LSMCrop_struc(n)%croptype%value(c,r,1) = LDT_rc%udef
+                      else
+                       croptypes_sumfrac = sum(LDT_LSMCrop_struc(n)%croptype%value(c,r,:), &
+                                            mask=LDT_LSMCrop_struc(n)%croptype%value(c,r,:).ne.LDT_rc%udef)
+
+                       if( croptypes_sumfrac == 0 ) then 
+                          LDT_LSMCrop_struc(n)%croptype%value(c,r,1) = LDT_rc%udef
+                       else
+                         croparray(:) = LDT_LSMCrop_struc(n)%croptype%value(c,r,:)
+                        ! For final CROPTYPE output field -- designate as dominant type 
+                        !  for now -- as required by LIS at this time... 
+                         if( LDT_rc%crop_classification(n) == "CROPMAP" ) then
+                           domcroptype = &
+                             maxloc(croparray(:),1,mask=croparray.ne.LDT_rc%udef) + 13.0
+                         else
+                           domcroptype = &
+                             maxloc(croparray(:),1,mask=croparray.ne.LDT_rc%udef) + LDT_rc%nt
+                           LDT_LSMCrop_struc(n)%croptype%value(c,r,1) = domcroptype
+                         endif
+                       endif
+
+                      endif
+                    end do  
+                  end do
+
+
+!!  OLDER VERSION OF THE CODE ... SUPPORTED SINGLE CROP TYPE ONLY - DOMINANT TYPE ...
+#if 0
                  ! Ensure consistency of dominant crop map with landcover cropland:
                    croptemp = "maize"   
-                   call assigncroptype( n, LDT_LSMCrop_struc(n)%crop_classification,   &
+                   call assigncroptype( n, LDT_rc%crop_classification(n),   &
                         LDT_rc%numcrop(n), croptemp, crop_index ) ! default - most common crop
-                !  like in Ozdogan etal (2010)
+
+                   print *, "Crop_index:: ",crop_index
+                   print *, " Crop class 1 and 2 :: ",LDT_rc%cropclass1, LDT_rc%cropclass2
+
+                !  Like in Ozdogan et al (2010):
                    do r = 1, LDT_rc%lnr(n)
                       do c = 1, LDT_rc%lnc(n)
                        ! Landcover map crop(s') gridcell fractions:
@@ -312,11 +440,13 @@ contains
 
                       enddo
                    enddo
+#endif
+!! OLDER CODE, BASED ON CROPMAP - OZDOGAN ET AL(2010) RULES
 
-             !- Assign crop type file:
+             !- Assign single crop type value:
                 else
-                   if( LDT_LSMCrop_struc(n)%assign_cropvalue == "single") then
-                      call assigncroptype( n, LDT_LSMCrop_struc(n)%crop_classification,   &
+                   if( LDT_LSMCrop_struc(n)%assign_cropvalue == "single" ) then
+                      call assigncroptype( n, LDT_rc%crop_classification(n),   &
                            LDT_rc%numcrop(n), LDT_LSMCrop_struc(n)%config_croptype, & 
                            crop_index )
 
@@ -334,15 +464,15 @@ contains
                       enddo
 
                    else
-                      print *, " You've selected CONSTANT but need to select "
-                      print*, "'single' crop value assignment !! "
+                      print *, "[WARN] You've selected CONSTANT, so you need to select "
+                      print*,  "'single' crop value assignment for this case. "
                    endif
                 endif  ! End Crop Type Map or Assignment Condition
 
              endif     ! End crop type logical selection
-          end do   ! End nest loop
+          end do       ! End nest loop
 
-       end if  ! Ending the LSM-Crop modifier check
+       end if   ! Ending the LSM-Crop modifier check
     end if
 
   end subroutine LDT_LSMCropMod_init
@@ -372,7 +502,7 @@ contains
      end if
  
      call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"CROPCLASS_SCHEME", &
-          LDT_LSMCrop_struc(n)%crop_classification))
+          LDT_rc%crop_classification(n)))
  
      call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"CROPCLASS_NUMBER", &
           LDT_rc%numcrop(n)))

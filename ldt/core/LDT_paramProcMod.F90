@@ -130,6 +130,7 @@ contains
 !-- Initialize and/or read in each parameter selected in ldt.config:
     call LDT_surfacetype_init
     call LDT_LMLC_init
+    call LDT_LSMCropMod_init
     call LDT_lakeparams_init
     call LDT_openwater_init
     call LDT_glacier_init
@@ -147,7 +148,6 @@ contains
 
     call LDT_routingParams_init
     call LDT_irrigation_init
-    call LDT_LSMCropMod_init
 
   end subroutine LDT_paramProcInit
 
@@ -212,6 +212,7 @@ contains
     integer             :: rc
     integer             :: m
     logical             :: const_lc
+    logical             :: crop_select
     character*50        :: const_lctype
     character*100       :: source
 ! _________________________________________
@@ -245,7 +246,9 @@ contains
           call LDT_verify(rc,"Landcover data source: not defined")
           call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%landcover,&
                "LANDCOVER",source)
+!          print *, "LANDCOVER (LDT_set_param_attribs):", LDT_LSMparam_struc(n)%landcover%num_bins 
           call setLandcoverCategories(n,source)
+!          print *, "LANDCOVER (setLandcoverCategories):", LDT_LSMparam_struc(n)%landcover%num_bins 
         ! Note: Landcover source/classification options will be merged 
         !        and new options to be specified in future LDT versions.
        endif
@@ -262,7 +265,7 @@ contains
        do n=1,LDT_rc%nnest
           if( LDT_LSMparam_struc(n)%landcover%source == "CONSTANT" ) then
             call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%lc_type(n),rc=rc)
-            call LDT_verify(rc,'Landcover classification: not specified')
+            call LDT_verify(rc,'Landcover classification: not specified in config file')
             select case( LDT_rc%lc_type(n) )
              case( "UMD" )
                LDT_LSMparam_struc(n)%landcover%num_bins = 14
@@ -281,12 +284,11 @@ contains
              case default
                print *, "[ERR] CONSTANT Landcover classification not recognized."
                print *, "  Options:  UMD, IGBPNCEP, USGS, MOSAIC, ISA "
-               print *, " Stopping ..."
                call LDT_endrun
             end select
           else
             call ESMF_ConfigGetAttribute(LDT_config,const_lctype,rc=rc)
-            call LDT_verify(rc,'Landcover classification: not specified')
+            call LDT_verify(rc,'Landcover classification: not specified in config file')
           endif
        enddo
     endif
@@ -296,7 +298,7 @@ contains
        LDT_rc%nt = LDT_LSMparam_struc(n)%landcover%num_bins
     enddo
 
- !- Read in Lakecover data source option:
+    !- Lakecover data source check:
     call ESMF_ConfigFindLabel(LDT_config,"Lakecover data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
@@ -308,7 +310,7 @@ contains
       endif
     enddo
 
-    !- glacier mask data source check:
+    !- Glacier mask data source check:
     call ESMF_ConfigFindLabel(LDT_config,"Glacier mask data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
@@ -318,7 +320,38 @@ contains
              "GLACIERMASK",source)
           call setGlacierMaskCategories(n,source)
        endif
-     enddo
+    enddo
+
+    !- Crop data source check and crop classification number of types:
+    allocate(LDT_rc%crop_classification(LDT_rc%nnest))
+    LDT_rc%crop_classification = "none"
+    allocate ( LDT_rc%numcrop(LDT_rc%nnest) )
+    LDT_rc%numcrop = 0
+    if( isSurfaceTypeSelected(1) .and. LDT_rc%assimcropinfo(1) .eqv. .true. ) then
+       call ESMF_ConfigFindLabel(LDT_config,"Crop classification:",rc=rc)
+       do n=1,LDT_rc%nnest
+          call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%crop_classification(n),rc=rc)
+          call LDT_verify(rc,'Crop classification: not specified in the config file')
+       enddo
+       ! Determine number of crop types for classification specified:
+       do n=1,LDT_rc%nnest
+!          print *, "Crop types:",LDT_rc%numcrop(n),"; for: ",LDT_rc%crop_classification(n) 
+          call setCropClassCategories(n,LDT_rc%crop_classification(n))
+!          print *, "Crop types:",LDT_rc%numcrop(n),"; for: ",LDT_rc%crop_classification(n) 
+          write(LDT_logunit,*) "[INFO]  Number of crop types for, ", &
+               trim(LDT_rc%crop_classification(n)),", is :: ",LDT_rc%numcrop(n)
+          ! 
+          ! Note: CROPMAP classification only works with 13-class UMD (minus water class):
+          ! Putting check in place:
+          if( LDT_rc%lc_type(n) .ne. "UMD" .and. &
+              LDT_rc%crop_classification(n) == "CROPMAP" ) then
+               write(LDT_logunit,*) "[ERR] CROPMAP CLASSIFICATION ONLY WORKS ",&
+                    " WITH UMD LAND CLASSIFICATION (13-land classes)."
+               write(*,*) "  Stopping ..."
+               call LDT_endrun 
+          endif
+       enddo
+    endif
 
  !- Read in Soil texture data source option:
     call ESMF_ConfigFindLabel(LDT_config,"Soil texture data source:",rc=rc)
@@ -347,12 +380,9 @@ contains
             "SAND",source)
     enddo
   ! LSM-required parameter check:
-!    if( index(LDT_rc%lsm,"Noah") == 1 .or. &
-!        index(LDT_rc%lsm,"CLM" )) then
       if( rc /= 0 .and. LDT_LSMparam_struc(1)%sand%selectOpt .ne. 1) then
          call LDT_warning(rc,"WARNING: Soil fraction data source: not defined")
       endif
-!    endif
 
  !- Read in elevation, slope, aspect Data Source Options:
     call ESMF_ConfigFindLabel(LDT_config,"Elevation data source:",rc=rc)
@@ -1330,8 +1360,44 @@ contains
        stop
     end select
 
-
   end subroutine setLandcoverCategories
+
+  subroutine setCropClassCategories(n,source)
+
+    use LDT_coreMod, only : LDT_rc
+    integer          :: n
+    character(len=*) :: source
+
+! Specify number of crop types by source:
+
+    select case( source )
+
+     case( "CROPMAP" )
+       LDT_rc%numcrop(n) = 19
+     case( "FAOSTAT01" )
+       LDT_rc%numcrop(n) = 18
+     case( "FAOSTAT05" )
+       LDT_rc%numcrop(n) = 175
+     case( "MIRCAIrrig" )
+       LDT_rc%numcrop(n) = 26
+     case( "MIRCA52" )
+       LDT_rc%numcrop(n) = 52
+
+     case default
+       write(LDT_logunit,*) "[ERR] THE CROP CLASSIFICATION TYPE, ",&
+             trim(source),", IS NOT RECOGNIZED."
+       write(*,*) "  Please enter one of the following options: "
+       write(*,*) "   -- CROPMAP   "
+       write(*,*) "   -- FAOSTAT01 "
+       write(*,*) "   -- FAOSTAT05 "
+       write(*,*) "   -- MIRCAIrrig "
+       write(*,*) "   -- MIRCA52 "
+       write(*,*) "  Stopping ..."
+       stop
+
+    end select
+
+  end subroutine setCropClassCategories
 
 end module LDT_paramProcMod
 

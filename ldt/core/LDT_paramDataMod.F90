@@ -93,6 +93,9 @@ module LDT_paramDataMod
      type(LDT_paramEntry) :: aspect
      type(LDT_paramEntry) :: aspectfgrd  ! Aspect tile gridcell fraction
      type(LDT_paramEntry) :: curvature
+
+   ! Crop type parameters
+     type(LDT_paramEntry) :: croptype 
      
   end type lsmparam_type_dec
   
@@ -111,7 +114,7 @@ CONTAINS
                                      paramEntryIn, paramEntryOut)
 
 ! !DESCRIPTION:
-!   This routine populates an added parameter's attribute entries
+!  This routine populates an added parameter's attribute entries
 !  based on another parameter entered from the attribs config file.
 !
 ! !USES:

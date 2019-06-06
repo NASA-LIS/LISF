@@ -378,15 +378,16 @@ contains
       grass = 10 
       shrub1 = 6
       shrub2 = 9
-   elseif(LIS_rc%lcscheme.eq."USGS") then !UMD
+   elseif(LIS_rc%lcscheme.eq."USGS") then !USGS
       crop1 = 2
       crop2 = 6
       grass = 7 
       shrub1 = 8
       shrub2 = 10
    else
-      write(LIS_logunit,*) 'The landcover scheme ',trim(LIS_rc%lcscheme)
-      write(LIS_logunit,*) 'is not supported for irrigation '
+      write(LIS_logunit,*) "The landcover scheme, ",trim(LIS_rc%lcscheme)
+      write(LIS_logunit,*) "is not supported for 'drip' irrigation at this time. "
+      write(LIS_logunit,*) " Stopping ..."
       call LIS_endrun()
    endif
    
