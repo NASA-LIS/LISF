@@ -36,7 +36,8 @@ subroutine read_gdas( order, n, findex, &
   use LIS_timeMgrMod,     only : LIS_get_nstep, LIS_date2time
   use LIS_metforcingMod,  only : LIS_forc
   use gdas_forcingMod,    only : gdas_struc
-  use LIS_logMod,         only : LIS_logunit
+  use LIS_logMod,         only : LIS_logunit, LIS_endrun
+  use LIS_surfaceModelDataMod
 
   implicit none
 ! !ARGUMENTS:
@@ -105,6 +106,26 @@ subroutine read_gdas( order, n, findex, &
   nstep = LIS_get_nstep(LIS_rc,n)
 
   nforce = gdas_struc(n)%nmif
+
+!--------------------------------------------------------------------------
+! Check model timestep and output interval and stop if the timestep
+! and/or output interval will cause incorrect output to be generated.
+!--------------------------------------------------------------------------
+  if(LIS_rc%ts .ge. 10800 .AND. LIS_rc%ts .lt. 21600) then
+     write(LIS_logunit,*) '[WARN] Model timestep is greater than or equal'
+     write(LIS_logunit,*) '[WARN]   to 3 hours, which will cause errors in the '
+     write(LIS_logunit,*) '[WARN]   GDAS reader. Change the model timestep to a '
+     write(LIS_logunit,*) '[WARN]   value less than 3 hours (1hr is suggested.)'
+     call LIS_endrun()
+ endif
+  if(LIS_sfmodel_struc(n)%outInterval .ge. 21600 .AND. LIS_rc%ts .eq. 21600) then
+     write(LIS_logunit,*) '[WARN] Model timestep is 6hr and output interval is greater than'
+     write(LIS_logunit,*) '[WARN]   or equal to 6hr. This setup can cause issues in the reader'
+     write(LIS_logunit,*) '[WARN]   where the output is not the true 6hr average and/or the '
+     write(LIS_logunit,*) '[WARN]   data being written is shifted by one timestep.'
+     write(LIS_logunit,*) '[WARN] It is suggested that the model timestep be changed to 1hr or less.'
+     call LIS_endrun()
+  endif
 
 !--------------------------------------------------------------------------
 ! if there's a problem then ferror is set to zero

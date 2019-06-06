@@ -111,6 +111,13 @@ if ( config.getboolean('virtual_da', 'enabled') and
      config.getboolean('DA OBS SNODEP', 'enabled') ):
       config.set('virtual_da_obs_snodep', 'enabled', 'true')
 
+config.add_section('virtual_da_obs_ldtsi')
+config.set('virtual_da_obs_ldtsi', 'enabled', 'false')
+config.set('virtual_da_obs_ldtsi', 'virtual', 'true')
+if ( config.getboolean('virtual_da', 'enabled') and
+     config.getboolean('DA OBS LDTSI', 'enabled') ):
+      config.set('virtual_da_obs_ldtsi', 'enabled', 'true')
+
 #
 # Write Filepath and LIS_plugins.h
 #

@@ -13,6 +13,7 @@
 !  The initial specification of the subroutine is by Sujay Kumar.
 !
 !   10/25/18: Shugong Wang, Zhuo Wang; initial implementation for NoahMP401 with LIS-7
+!   05/15/19: Yeosang Yoon; code added for snow DA to work
 !
 ! !INTERFACE:
 subroutine NoahMP401_main(n)
@@ -254,6 +255,8 @@ subroutine NoahMP401_main(n)
             ! retrieve forcing data from NOAHMP401_struc(n)%noahmp401(t) and assign to local variables
             ! tair: air temperature
             tmp_tair       = NOAHMP401_struc(n)%noahmp401(t)%tair   / NOAHMP401_struc(n)%forc_count
+            ! Yeosang Yoon, for snow DA
+            NOAHMP401_struc(n)%noahmp401(t)%sfctmp = tmp_tair
 
             ! psurf: air pressure
             tmp_psurf      = NOAHMP401_struc(n)%noahmp401(t)%psurf  / NOAHMP401_struc(n)%forc_count
@@ -891,6 +894,13 @@ subroutine NoahMP401_main(n)
             do i=1, NOAHMP401_struc(n)%nsnow
                 call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWLIQ, value = NOAHMP401_struc(n)%noahmp401(t)%snowliq(i), &
                                                   vlevel=i, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
+            end do
+
+            ! Yeosang Yoon, for snow DA
+            ! output variable: z_snow (unit=m). ***  snow layer-bottom depth from snow surface
+            do i=1, NOAHMP401_struc(n)%nsnow
+                call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOW_LBDFSS, value = NOAHMP401_struc(n)%noahmp401(t)%zss(i), &
+                                                  vlevel=i, unit="m", direction="-", surface_type = LIS_rc%lsm_index)
             end do
 
             ![ 32] output variable: lfmass (unit=g/m2). ***  leaf mass

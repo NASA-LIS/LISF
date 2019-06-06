@@ -1143,7 +1143,6 @@ endif::devonly[]
 |"`Windsat`"                    | Windsat
 ifdef::devonly[]
 |"`Windsat C-band`"             | Windsat C-band
-|"`SNODEP`"                     | AFWA SNODEP
 |"`ANSA SWE`"                   | ANSA SWE
 endif::devonly[]
 |"`ANSA SCF`"                   | ANSA SCF
@@ -1163,9 +1162,12 @@ endif::devonly[]
 |"`GCOMW AMSR2 L3 snow depth`"  | AMSR2 (GCOMW) L3 snow depth
 |"`GCOMW AMSR2 L3 soil moisture`" | AMSR2 (GCOMW) soil moisture
 |"`SMAP(NASA) soil moisture`"   | NASA SMAP soil moisture
+|"`SMAP(NRT) soil moisture`"    | Near-real time SMAP soil moisture
 |"`PILDAS SM`"                  | PILDAS soil moisture
 |"`SMOS L2 soil moisture`"      | SMOS L2 soil moisture
 |"`SMOS(NESDIS) soil moisture`" | NESDIS SMOS soil moisture
+|"`SNODEP`"                     | AFWA SNODEP
+|"`LDTSI`"                      | LDT Snow and Ice Analysis
 |====
 
 .Example _lis.config_ entry
@@ -1981,8 +1983,6 @@ WindSat C-band number of bins in the CDF: 100
 endif::devonly[]
 
 
-ifdef::devonly[]
-
 ==== SNODEP Assimilation
 anchor:sssec_snodepda[SNODEP Assimilation]
 
@@ -2009,8 +2009,18 @@ SNODEP data directory:                  ./FORCING/AFWA1
 SNODEP mesh resolution:                 8
 SNODEP naming convention:               LIS
 ....
-endif::devonly[]
 
+
+==== LDTSI Assimilation
+anchor:sssec_ldtsida[LDTSI Assimilation]
+
+`LDTSI data directory:` specifies the directory for the
+LDTSI data.
+
+.Example _lis.config_ entry
+....
+LDTSI data directory:                  ./FORCING/LDTSI
+....
 
 ifdef::devonly[]
 
@@ -2566,6 +2576,20 @@ name of the observation CDF file.
 `SMOPS ASCAT soil moisture number of bins in the CDF:` specifies the
 number of bins in the CDF.
 
+`SMOPS ASCAT CDF read option:` specifies whether to read all months of
+or to read month by month from a monthly CDF file.
+
+Acceptable values are:
+
+|====
+|Value    | Description
+
+|0 | Read all months
+|1 | Read month by month
+|====
+
+NOTE: Select 0 for yearly CDF data.
+
 `SMOPS ASCAT use realtime data:` specifies whether to use
 the 6 hour data feed instead of the daily data feed.
 Acceptable values are:
@@ -2646,6 +2670,7 @@ then you may specify their version with either '1.3', '2.0', or '3.0'.
 SMOPS ASCAT soil moisture data directory:       'input'
 SMOPS ASCAT model CDF file:                      lsm_cdf.nc
 SMOPS ASCAT observation CDF file:                obs_cdf.nc
+SMOPS ASCAT CDF read option:                     0
 SMOPS ASCAT soil moisture number of bins in the CDF: 100
 SMOPS ASCAT use realtime data: 0
 SMOPS ASCAT soil moisture use scaled standard deviation model: 1
@@ -2957,6 +2982,19 @@ CDF file.
 `SMAP(NASA) soil moisture number of bins in the CDF:` specifies the number of
 bins in the CDF.
 
+`SMAP(NASA) CDF read option:` specifies whether to read all months of
+or to read month by month from a monthly CDF file.
+
+Acceptable values are:
+
+|====
+|Value    | Description
+
+|0 | Read all months
+|1 | Read month by month
+|====
+
+NOTE: Select 0 for yearly CDF data.
 
 .Example _lis.config_ entry
 ....
@@ -2966,6 +3004,57 @@ SMAP(NASA) soil moisture use scaled standard deviation model:
 SMAP(NASA) model CDF file:
 SMAP(NASA) observation CDF file:
 SMAP(NASA) soil moisture number of bins in the CDF:
+SMAP(NASA) CDF read option:
+....
+
+
+==== SMAP (NRT) soil moisture assimilation
+anchor:sssec_smapnrtsmda[SMAP (NRT) soil moisture assimilation]
+
+`SMAP(NRT) soil moisture data directory:` specifies the SMAP(NRT) soil
+moisture data directory
+
+`SMAP(NRT) soil moisture apply SMAP QC flags:` specifies whether to apply
+SMAP QC flags.
+
+NOTE: This is no longer used.  Set it to 0.
+
+`SMAP(NRT) soil moisture use scaled standard deviation model:` specifies
+whether the observation error standard deviation is to be scaled using model
+and observation standard deviation.
+
+`SMAP(NRT) model CDF file:` specifies the name of the model CDF file
+(observations will be scaled into this climatology).
+
+`SMAP(NRT) observation CDF file:` specifies the name of the observation
+CDF file.
+
+`SMAP(NRT) soil moisture number of bins in the CDF:` specifies the number of
+bins in the CDF.
+
+`SMAP(NRT) CDF read option:` specifies whether to read all months of
+or to read month by month from a monthly CDF file.
+
+Acceptable values are:
+
+|====
+|Value    | Description
+
+|0 | Read all months
+|1 | Read month by month
+|====
+
+NOTE: Select 0 for yearly CDF data.
+
+.Example _lis.config_ entry
+....
+SMAP(NRT) soil moisture data directory:
+SMAP(NRT) soil moisture apply SMAP QC flags:
+SMAP(NRT) soil moisture use scaled standard deviation model:
+SMAP(NRT) model CDF file:
+SMAP(NRT) observation CDF file:
+SMAP(NRT) soil moisture number of bins in the CDF:
+SMAP(NRT) CDF read option:
 ....
 
 
