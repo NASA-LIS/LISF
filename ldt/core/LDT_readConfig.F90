@@ -183,7 +183,7 @@ subroutine LDT_readConfig(configfile)
      call ESMF_ConfigFindLabel(LDT_config,"Incorporate crop information:",rc=rc)
      do n=1,LDT_rc%nnest
         call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%assimcropinfo(n),rc=rc)
-        call LDT_verify(rc,'Incorporate crop information: not specified')
+        call LDT_verify(rc,'Incorporate crop information: not specified in the config file')
      enddo
    endif
 

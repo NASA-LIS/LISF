@@ -52,9 +52,14 @@ subroutine setCropParmsFullnames(n,datatype,source)
           LDT_LSMCrop_struc(n)%croptype%standard_name =&
               "Monfreda et al (2008) crop types"
 
-        case( "MIRCA2000" )
+       case( "MIRCAIrrig" )
           LDT_LSMCrop_struc(n)%croptype%standard_name =&
-              "MIRCA2000 26 crop types (Portmann et al, 2010)"
+              "MIRCA-2000 Irrigated crop types"
+
+       case( "MIRCA52" )
+          LDT_LSMCrop_struc(n)%croptype%standard_name =&
+              "MIRCA-2000 Irrigated+Rainfed crop types"
+
       end select
 
     case default

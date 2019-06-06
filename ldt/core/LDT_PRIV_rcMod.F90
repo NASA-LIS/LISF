@@ -54,10 +54,13 @@ module LDT_PRIV_rcMod
      character*50           :: lakemodel
      character*50           :: routingmodel
      logical                :: inc_water_pts
-     real,          allocatable :: gridcell_water_frac(:)
-     real,          allocatable :: gridcell_glacier_frac(:)
-   ! LSM/Crop-specific entries:
-     logical,       allocatable :: assimcropinfo(:)
+     real,      allocatable :: gridcell_water_frac(:)
+     real,      allocatable :: gridcell_glacier_frac(:)
+
+! -- LSM/Crop-specific entries:
+     logical,   allocatable :: assimcropinfo(:)         ! Incorporate crop information
+     character*20, allocatable :: crop_classification(:)   ! Crop classification scheme
+     integer, allocatable   :: numcrop(:)               ! Number crop types 
 
 ! -- Forcing input parameters:
      integer                :: nf
@@ -102,7 +105,6 @@ module LDT_PRIV_rcMod
 
 ! -- Tile parameters:
      integer                :: nt             ! Number veg types (to be removed)
-     integer, allocatable   :: numcrop(:)     ! Number crop types 
 
      integer                :: surface_maxt
      real                   :: surface_minp    

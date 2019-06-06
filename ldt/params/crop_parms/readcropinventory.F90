@@ -68,6 +68,14 @@ subroutine readcropinventory( nest, crop_classification, &
    open(ftn, file=cropinv_file, status='old', form='formatted',&
         iostat=ios1)
 
+   if( ios1 /= 0 ) then
+     write(LDT_logunit,*)"[ERR] Issue with opening up the Crop Inventory file, "
+     write(LDT_logunit,*)" "//trim(cropinv_file)
+     write(LDT_logunit,*)" Check directory path or Crop Library file."
+     write(LDT_logunit,*)" Stopping run ..."
+     call LDT_endrun
+   endif
+
 !- Read crop inventory file:
    read(ftn,fmt=*) header1
    do i = 1, num_types

@@ -214,6 +214,9 @@ subroutine noah33_getirrigationstates(n,irrigState)
         if(LIS_rc%lcscheme.eq."UMD") then !UMD
            veg_index1 = 6
            veg_index2 = 11
+        elseif(LIS_rc%lcscheme.eq."UMD+MIRCAIrrig") then !UMD+MIRCAIrrig (Temporary, KRA)
+           veg_index1 = 6
+           veg_index2 = 16
         elseif(LIS_rc%lcscheme.eq."MODIS".or.LIS_rc%lcscheme.eq."IGBPNCEP") then 
            veg_index1 = 6
            veg_index2 = 14
@@ -222,7 +225,7 @@ subroutine noah33_getirrigationstates(n,irrigState)
            veg_index2 = 10
         else
            write(LIS_logunit,*) '[ERR] The landcover scheme ',trim(LIS_rc%lcscheme)
-           write(LIS_logunit,*) '[ERR] is not supported for irrigation '
+           write(LIS_logunit,*) '[ERR] is not supported for the Noah.3.3 irrigation module.'
            call LIS_endrun()
         endif
         

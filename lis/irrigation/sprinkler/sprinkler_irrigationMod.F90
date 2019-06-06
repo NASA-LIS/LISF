@@ -310,7 +310,6 @@ contains
     logical                :: file_exists    
     real,   allocatable    :: l_croptype(:,:)
     real,   allocatable    :: glb_croptype(:,:)
-    real,   allocatable    :: glb_croptype1(:,:)
 ! __________________________________________________________________________
     
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -322,34 +321,37 @@ contains
        write(LIS_logunit,*)"[INFO] Reading crop classification information ..."
        ios = nf90_open(path=LIS_rc%paramfile(n),&
                        mode=NF90_NOWRITE,ncid=nid)
-       call LIS_verify(ios,'Error in nf90_open in LIS_irrigation_init')
+       call LIS_verify(ios,'Error in nf90_open in read_irrigRootdepth (sprinkler)')
  
        ios = nf90_get_att(nid, NF90_GLOBAL, 'CROPCLASS_SCHEME', LIS_rc%cropscheme)
-       call LIS_verify(ios,'Error in nf90_get_att in LIS_irrigation_init')
+       call LIS_verify(ios,'Error in nf90_get_att in read_irrigRootdepth (sprinkler)')
  
        ios = nf90_get_att(nid, NF90_GLOBAL, 'CROPCLASS_NUMBER', LIS_rc%numbercrops)
-       call LIS_verify(ios,'Error in nf90_get_att in LIS_irrigation_init')
+       call LIS_verify(ios,'Error in nf90_get_att in read_irrigRootdepth (sprinkler)')
        write(LIS_logunit,*)"[INFO] Read in crop classfication: ",trim(LIS_rc%cropscheme),&
                           ", with the number of crop types:",LIS_rc%numbercrops
        ios = nf90_close(nid)
-       call LIS_verify(ios,'nf90_close failed in sprinkler_irrigationMod')
+       call LIS_verify(ios,'nf90_close failed in read_irrigRootdepth (sprinkler)')
     endif
 
   ! Estimate total crop types, added to landcover scheme class total:
     select case ( LIS_rc%lcscheme )
      case( "UMD" )
        total_vegtypes = 13 + LIS_rc%numbercrops
+     case( "UMD+MIRCAIrrig" )
+       total_vegtypes = 14 + LIS_rc%numbercrops
      case( "IGBP", "IGBPNCEP" )
        total_vegtypes = 20 + LIS_rc%numbercrops
      case( "USGS" )
        total_vegtypes = 24 + LIS_rc%numbercrops
      case default
        write(LIS_logunit,*) "[ERR] The landcover scheme, ",trim(LIS_rc%lcscheme),","
-       write(LIS_logunit,*) "[ERR] is not supported for irrigation. Stopping program ... "
+       write(LIS_logunit,*) "[ERR] is not supported for sprinkler irrigation. "
+       write(LIS_logunit,*) " Stopping program ... "
        call LIS_endrun()
     end select
   ! Assign default 32 UMD+CROPMAP for now, due to indexing for max root depth input files:
-    total_vegtypes = 13 + LIS_rc%numbercrops
+!    total_vegtypes = 13 + LIS_rc%numbercrops   ! KRA: Commenting out to account for crops
 
     allocate(l_croptype(LIS_rc%lnc(n),LIS_rc%lnr(n)))
 
@@ -373,20 +375,20 @@ contains
     if(file_exists) then 
        ios = nf90_open(path=LIS_rc%paramfile(n),&
                        mode=NF90_NOWRITE,ncid=nid)
-       call LIS_verify(ios,'Error in nf90_open in the lis input netcdf file')
+       call LIS_verify(ios,'Error in nf90_open in read_irrigRootdepth (sprinkler)')
 
        write(LIS_logunit,*) "[INFO] Reading in the crop type field ... "
        
        allocate(glb_croptype(LIS_rc%gnc(n),LIS_rc%gnr(n)))
        
        ios = nf90_inq_varid(nid,'CROPTYPE',croptypeId)
-       call LIS_verify(ios,'nf90_inq_varid failed for CROPTYPE')
+       call LIS_verify(ios,'nf90_inq_varid failed for CROPTYPE (sprinkler)')
        
        ios = nf90_get_var(nid, croptypeId, glb_croptype)
-       call LIS_verify(ios,'nf90_get_var failed for CROPTYPE')
+       call LIS_verify(ios,'nf90_get_var failed for CROPTYPE (sprinkler)')
 
        ios = nf90_close(nid)
-       call LIS_verify(ios,'nf90_close failed in sprinkler_irrigationMod')
+       call LIS_verify(ios,'nf90_close failed in read_irrigRootdepth (sprinkler)')
        
        l_croptype(:,:) = glb_croptype(&
             LIS_ews_halo_ind(n,LIS_localPet+1):&         
@@ -466,9 +468,16 @@ contains
        grass  = 7 
        shrub1 = 8
        shrub2 = 10
+     case( "UMD+MIRCAIrrig" )  ! TEMPORARILY ADDED HERE (KRA)
+       crop1  = 16   ! Maize
+       crop2  = 22   ! Soybeans
+       grass  = 10
+       shrub1 = 6
+       shrub2 = 9
      case default
        write(LIS_logunit,*) "[ERR] The landcover scheme, ",trim(LIS_rc%lcscheme),","
-       write(LIS_logunit,*) "[ERR] is not supported for irrigation. Stopping program ... "
+       write(LIS_logunit,*) "[ERR] is not supported for 'sprinkler' irrigation."
+       write(LIS_logunit,*) " Stopping program ... "
        call LIS_endrun()
    end select
    

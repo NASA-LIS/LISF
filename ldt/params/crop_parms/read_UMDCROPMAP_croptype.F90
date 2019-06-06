@@ -74,6 +74,8 @@ subroutine read_UMDCROPMAP_croptype(n, num_types, fgrd)
 
 !__________________________________________________________________
 
+   print *, " Number of CROPMAP types: ",num_types
+
    water_class  = 33
 
    vegcnt  = 0.
