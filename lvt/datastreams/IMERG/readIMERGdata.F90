@@ -88,7 +88,8 @@ subroutine readIMERGdata(source)
 
       if(file_exists) then 
          write(LVT_logunit,*) '[INFO] Reading IMERG data ',trim(filename)
-         call read_imerghdf(filename, imergdata%nc, imergdata%nr, prcp_in, ireaderr)
+         call read_imerghdf(filename, imergdata(source)%nc, &
+              imergdata(source)%nr, prcp_in, ireaderr)
          if(ireaderr .eq. 0) then
             ! Use budget-bilinear interpolation if IMERG data are at 
             ! coarser resolution than the analysis grid; otherwise, use
