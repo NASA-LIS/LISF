@@ -1009,9 +1009,9 @@ contains
       hh = yyyymmddhh(9:10)
 
       filename = trim(output_dir) // '/' // &
-           'PS.AFWA_SC.U_DI.D_GP.SNODEP_GR.' // &
+           'PS.AFWA_SC.U_DI.D_GP.SNODEP-U_GR.' // &
            trim(grid) // '_AR.' // &
-           trim(area) // '_PA.SNODEP_DD' // &
+           trim(area) // '_PA.SNODEP_DD.' // &
            trim(yyyymmdd) // '_DT.' // &
            trim(hh) // '00_DF.GR1'
            
