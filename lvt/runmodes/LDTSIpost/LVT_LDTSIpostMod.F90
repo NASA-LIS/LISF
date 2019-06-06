@@ -1105,16 +1105,10 @@ contains
       ! Local variables
       real :: xmesh, xpnmcaf, ypnmcaf, orient, xj, xi, alat, alon
 
-      !xmesh = 47.625/2
       xmesh = 23.798479 ! Per 557WW GRIB2 manual
       xpnmcaf = 513
       ypnmcaf = 513
-      !orient = 100.0
       orient = -80.0 ! Per 557WW GRIB2 manual
-      !xj = float(1) - ypnmcaf
-      !xi = float(1) - xpnmcaf
-      !call polarToLatLon(xi,xj,xmesh,orient,alat,alon)
-
       ! We need to use the USAF code to calculate the lat/lon.  However,
       ! the Air Force grid specifies the origin in the upper-left corner,
       ! while the NCEP interpolation code specifies in the origin in the
@@ -1161,15 +1155,10 @@ contains
       ! Local variables
       real :: xmesh, xpnmcaf, ypnmcaf, orient, xj, xi, alat, alon
 
-      !xmesh = -1*47.625/2
       xmesh = 23.798479 ! Per 557WW GRIB2 manual
       xpnmcaf = 513
       ypnmcaf = 513
-      !orient = 280
       orient = -80. ! Per 557WW GRIB2 manual
-      !xj = float(1) - ypnmcaf
-      !xi = float(1) - xpnmcaf
-      !call polarToLatLon(xi,xj,xmesh,orient,alat,alon)
       ! We need to use the USAF code to calculate the lat/lon.  However,
       ! the Air Force grid specifies the origin in the upper-left corner,
       ! while the NCEP interpolation code  specifies in the origin in the
@@ -1307,7 +1296,6 @@ contains
               griddesco(4))
          call LVT_grib_set(igrib, 'longitudeOfFirstGridPointInDegrees', &
               griddesco(5))
-         !call LVT_grib_set(igrib, 'resolutionAndComponentFlags', 48)
          call LVT_grib_set(igrib, 'latitudeOfLastGridPointInDegrees', &
               griddesco(7))
          call LVT_grib_set(igrib, 'longitudeOfLastGridPointInDegrees', &
@@ -1316,7 +1304,6 @@ contains
               griddesco(9))
          call LVT_grib_set(igrib, 'jDirectionIncrementInDegrees', &
               griddesco(10))
-         !call LVT_grib_set(igrib, 'scanningMode', 64)
          call LVT_grib_set(igrib, 'iScansNegatively', 0)
          call LVT_grib_set(igrib, 'jScansPositively', 1)
          call LVT_grib_set(igrib, 'jPointsAreConsecutive', 0)
@@ -1342,8 +1329,6 @@ contains
          if (griddesco(4) < 0) then
             call LVT_grib_set(igrib, 'projectionCentreFlag', 0)
          else            
-            !call LVT_grib_set(igrib, 'projectionCentreFlag', 128)
-            ! Fix orientation of SH grid.
             call LVT_grib_set(igrib, 'projectionCentreFlag', 1)
          end if
          call LVT_grib_set(igrib, 'scanningMode', 0)
@@ -1462,8 +1447,6 @@ contains
       call LVT_grib_set(igrib, 'generatingProcessIdentifier', 35)
       ! Octet 7
       call LVT_grib_set(igrib, 'gridDefinition', 255)
-      !! Octet 8
-      !call LVT_grib_set(igrib, 'section1Flags', 64)
       ! Octet 9
       call LVT_grib_set(igrib, 'indicatorOfParameter', param)
       ! Octet 10
@@ -1471,9 +1454,6 @@ contains
       ! Octet 11-12
       call LVT_grib_set(igrib, 'level', 0)
       ! Octet 13
-      !cyyyy = LVT_rc%yyyymmddhh(1:4)
-      !read(cyyyy, '(i4)') iyyyy
-      !call LVT_grib_set(igrib, 'yearOfCentury', iyyyy)
       iyear = 1000 * (ichar(LVT_rc%yyyymmddhh(1:1)) - 48) +             &
                100 * (ichar(LVT_rc%yyyymmddhh(2:2)) - 48) +             &
                 10 * (ichar(LVT_rc%yyyymmddhh(3:3)) - 48) +             &
