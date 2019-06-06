@@ -443,24 +443,24 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
       param_ASCAT_B = 214; param_ASCAT_B_qa = 235
       param_SMOS  = 212; param_SMOS_qa  = 233
       if ( SMOPSsmobs(source)%useSMOS.eq.1 ) then
-         write(LVT_logunit,*) '[Warning] LVT does not process SMOS ' // &
+         write(LVT_logunit,*) '[WARN] LVT does not process SMOS ' // &
             'from SMOPS version 1.3.'
          smDataNotAvailable = .true.
          smobs_ip = LVT_rc%udef
       endif
       if ( SMOPSsmobs(source)%useAMSR2.eq.1 ) then
-         write(LVT_logunit,*) '[Warning] AMSR2 is not available ' // &
+         write(LVT_logunit,*) '[WARN] AMSR2 is not available ' // &
             'in SMOPS version 1.3'
          smDataNotAvailable = .true.
          smobs_ip = LVT_rc%udef
       endif
       if ( SMOPSsmobs(source)%useSMAP.eq.1 ) then
-         write(LVT_logunit,*) '[Warning] SMAP is not available ' // &
+         write(LVT_logunit,*) '[WARN] SMAP is not available ' // &
             'in SMOPS version 1.3.'
          smDataNotAvailable = .true.
          smobs_ip = LVT_rc%udef
       endif
-      write(LVT_logunit,*) '[MSG] Reading SMOPS dataset '//&
+      write(LVT_logunit,*) '[INFO] Reading SMOPS dataset '//&
          'as SMOPS version 1.3'
    elseif ( timenow >= SMOPSsmobs(source)%version2_time .and. &
             timenow <  SMOPSsmobs(source)%version3_time ) then
@@ -470,23 +470,23 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
       param_SMOS  = 212; param_SMOS_qa  = 233
       param_AMSR2 = 215; param_AMSR2_qa = 236
       if ( SMOPSsmobs(source)%useSMOS.eq.1 ) then
-         write(LVT_logunit,*) '[Warning] LVT does not process SMOS ' // &
+         write(LVT_logunit,*) '[WARN] LVT does not process SMOS ' // &
             'from SMOPS version 2.0.'
          smDataNotAvailable = .true.
          smobs_ip = LVT_rc%udef
       endif
       if ( SMOPSsmobs(source)%useAMSR2.eq.1 ) then
-         write(LVT_logunit,*) '[Warning] LVT does not process AMSR2 ' // &
+         write(LVT_logunit,*) '[WARN] LVT does not process AMSR2 ' // &
             'in SMOPS version 2.0.'
          smDataNotAvailable = .true.
          smobs_ip = LVT_rc%udef
       endif
       if(SMOPSsmobs(source)%useSMAP.eq.1 ) then
-         write(LVT_logunit,*) '[Warning] SMAP is not availabe in SMOPS version 2'
+         write(LVT_logunit,*) '[WARN] SMAP is not availabe in SMOPS version 2'
          smDataNotAvailable = .true.
          smobs_ip = LVT_rc%udef
       endif
-      write(LVT_logunit,*) '[MSG] Reading SMOPS dataset '//&
+      write(LVT_logunit,*) '[INFO] Reading SMOPS dataset '//&
          'as SMOPS version 2.0'
    else ! ( timenow >= SMOPSsmobs(source)%version3_time ) then
       ! SMOPS version 3
@@ -495,7 +495,7 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
       param_SMOS  = 212; param_SMOS_qa  = 242
       param_AMSR2 = 215; param_AMSR2_qa = 245
       param_SMAP  = 218; param_SMAP_qa  = 248
-      write(LVT_logunit,*) '[MSG] Reading SMOPS dataset '//&
+      write(LVT_logunit,*) '[INFO] Reading SMOPS dataset '//&
          'as SMOPS version 3.0'
    endif
 
@@ -539,11 +539,6 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
      endif
      !call LVT_verify(iret, &
      !     'grib_get: parameterNumber failed in readSMOPSsmobs')
-print*, 'fname' , fname
-print*, 'param number', param_num 
-
-
-
      var_found_ascat = .false. 
      if(SMOPSsmobs(source)%useASCAT.eq.1) then 
         if(param_num.eq.param_ASCAT_A) then 

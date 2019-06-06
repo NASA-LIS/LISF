@@ -10,11 +10,11 @@ template = "lvt.config.template"
 #enddt = datetime.datetime(2008,5,16,0)
 #startdt = datetime.datetime(2018,2,28,0)
 #enddt =   datetime.datetime(2018,3, 1,0)
-startdt = datetime.datetime(2008, 12, 1, 0)
-enddt =   datetime.datetime(2008, 12, 2, 0)
+startdt = datetime.datetime(2018,  7,30, 0)
+enddt =   datetime.datetime(2018,  7,31, 0)
 
-output = "netcdf"
-#output = "grib2"
+#output = "netcdf"
+output = "grib2"
 
 # Most variables are processed independently, and are listed below.
 var_attributes = {
@@ -30,6 +30,8 @@ var_attributes = {
         "SWdown_f    1  1  W/m2   -  1  1 SWdown_f    1  1  W/m2   -  1  1",
     "Tair_f_max" : \
         "Tair_f_max  1  1  K      -  1  1 Tair_f_max  1  1  K      -  1  1",
+    "Tair_f_tavg" : \
+        "Tair_f      1  1  K      -  1  1 Tair_f      1  1  K      -  1  1",
     "TotalPrecip_acc" : \
         "TotalPrecip 1  1  kg/m2  -  3  1 TotalPrecip 1  1  kg/m2  -  3  1",
     "Wind_f_tavg" : \

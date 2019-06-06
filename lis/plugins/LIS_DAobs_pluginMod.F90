@@ -130,6 +130,10 @@ subroutine LIS_DAobs_plugin
    use SNODEPobs_Mod,           only : SNODEPobs_setup
 #endif
 
+#if ( defined DA_OBS_LDTSI )
+   use LDTSIobs_Mod,           only : LDTSIobs_setup
+#endif
+
 #if 0 
    use NASA_AMSREsm_Mod,        only : NASA_AMSREsm_setup
 #endif
@@ -222,6 +226,10 @@ subroutine LIS_DAobs_plugin
     use NASASMAPsm_Mod,          only : NASASMAPsm_setup
 #endif
 
+#if ( defined DA_OBS_NASA_SMAPVOD )
+    use NASASMAPvod_Mod,          only : NASASMAPvod_setup
+#endif
+
 #if ( defined DA_OBS_GLASS_LAI )
     use GLASSLAI_Mod,          only : GLASSlai_setup
 #endif
@@ -267,6 +275,10 @@ subroutine LIS_DAobs_plugin
 
 #if ( defined DA_OBS_SNODEP )
    external read_SNODEPobs, write_SNODEPobs
+#endif
+
+#if ( defined DA_OBS_LDTSI )
+   external read_LDTSIobs, write_LDTSIobs
 #endif
 
 #if 0
@@ -362,6 +374,10 @@ subroutine LIS_DAobs_plugin
     external read_NASASMAPsm, write_NASASMAPsmobs
 #endif
 
+#if ( defined DA_OBS_NASA_SMAPVOD)
+    external read_NASASMAPvod, write_NASASMAPvodobs
+#endif
+
 #if ( defined DA_OBS_GLASS_LAI)
     external read_GLASSlai, write_GLASSlai
 #endif
@@ -433,6 +449,13 @@ subroutine LIS_DAobs_plugin
    call registerdaobssetup(trim(LIS_snodepobsId)//char(0),SNODEPobs_setup)
    call registerreaddaobs(trim(LIS_snodepobsId)//char(0),read_SNODEPobs)
    call registerwritedaobs(trim(LIS_snodepobsId)//char(0),write_SNODEPobs)
+#endif
+
+#if ( defined DA_OBS_LDTSI )
+!LDTSI obs 
+   call registerdaobssetup(trim(LIS_ldtsiobsId)//char(0),LDTSIobs_setup)
+   call registerreaddaobs(trim(LIS_ldtsiobsId)//char(0),read_LDTSIobs)
+   call registerwritedaobs(trim(LIS_ldtsiobsId)//char(0),write_LDTSIobs)
 #endif
 
 #if 0
@@ -660,6 +683,15 @@ subroutine LIS_DAobs_plugin
         read_NASASMAPsm)
    call registerwritedaobs(trim(LIS_NASASMAPsmobsId)//char(0),&
         write_NASASMAPsmobs)
+#endif
+
+#if ( defined DA_OBS_NASA_SMAPVOD )
+   call registerdaobssetup(trim(LIS_NASASMAPvodobsId)//char(0),&
+        NASASMAPvod_setup)
+   call registerreaddaobs(trim(LIS_NASASMAPvodobsId)//char(0),&
+        read_NASASMAPvod)
+   call registerwritedaobs(trim(LIS_NASASMAPvodobsId)//char(0),&
+        write_NASASMAPvodobs)
 #endif
 
 #if ( defined DA_OBS_GLASS_LAI)

@@ -1,0 +1,249 @@
+
+# Overall driver options
+#LDT running mode:                   "LSM parameter processing"
+LDT running mode:                   "LDTSI analysis"
+Processed LSM parameter filename:   LDTOUT/lis_input.10km_noah_juleslandmask.cap.nc 
+LIS number of nests:                 1
+Number of surface model types:       2
+Surface model types:                 LSM  Openwater
+Land surface model:                  Noah.3.6
+Lake model :                         none
+Routing model:                       none
+Open water model:                    none
+Water fraction cutoff value:         0.5
+
+Number of met forcing sources: 0
+Met forcing sources:                 none
+LDT diagnostic file: ldtlog
+Mask-parameter fill diagnostic file: LDTOUT/MPFilltest.log
+LDT output directory: LDTOUT
+Undefined value: -9999.0
+Number of ensembles per tile: 1
+Number of processors along x:         1
+Number of processors along y:         1
+Output methodology: "2d gridspace"
+Output data format: netcdf
+Output naming style: "3 level hierarchy"
+# EMK TEST
+Maximum number of surface type tiles per grid:     1
+Minimum cutoff percentage (surface type tiles):    0.05
+Maximum number of soil texture tiles per grid:     1
+Minimum cutoff percentage (soil texture tiles):    0.05
+Maximum number of soil fraction tiles per grid:    1
+Minimum cutoff percentage (soil fraction tiles):   0.05
+Maximum number of elevation bands per grid:        1
+Minimum cutoff percentage (elevation bands):       0.05
+Maximum number of slope bands per grid:            1
+Minimum cutoff percentage (slope bands):           0.05
+Maximum number of aspect bands per grid:           1
+Minimum cutoff percentage (aspect bands):          0.05
+
+
+# Domain specification
+
+# GALWEM 10-km test
+#Map projection of the LIS domain:       latlon
+#Run domain lower left lat:            -89.9531250
+#Run domain lower left lon:              0.0703125
+#Run domain upper right lat:            89.9531250
+#Run domain upper right lon:           359.9296875
+#Run domain resolution (dx):             0.140625
+#Run domain resolution (dy):             0.093750
+
+# Rotated GALWEM 10-km domain
+Map projection of the LIS domain:       latlon
+Run domain lower left lat:            -89.9531250
+Run domain lower left lon:           -179.9296875
+Run domain upper right lat:            89.9531250
+Run domain upper right lon:           179.9296875
+Run domain resolution (dx):             0.140625
+Run domain resolution (dy):             0.093750
+
+# Parameters
+Landcover data source:     MODIS_Native 
+Landcover classification:  IGBPNCEP 
+Landcover file:            ./LS_PARAMETERS/noah_2dparms/igbp.bin
+Landcover spatial transform:     tile
+#Landcover fill option:           none # Set to none if creating land mask
+Landcover fill option:           neighbor
+Landcover fill value:            10
+Landcover fill radius:           5
+Landcover map projection:       latlon
+
+Create or readin landmask:    readin
+Landmask file: cap2ldt_updated.nc
+Landmask data source:         UKMO_CAP_Netcdf
+Landmask spatial transform: none
+Landmask lower left lat:            -89.9531250
+Landmask lower left lon:           -179.9296875
+Landmask upper right lat:            89.9531250
+Landmask upper right lon:           179.9296875
+Landmask resolution (dx):             0.140625
+Landmask resolution (dy):             0.093750
+Landmask map projection:      latlon
+
+# Crop-Irrigation parameters
+Incorporate crop information:     .false.
+Irrigation type data source:      none
+Irrigation fraction data source:  none
+
+# Soil Parameters
+Soil fraction data source:       none
+Soils spatial transform:         none
+Soils fill option:               none
+Soils map projection:            latlon
+
+Soil texture data source:       STATSGOFAO_Native
+Soil texture map:               ./LS_PARAMETERS/noah_2dparms/topsoil30snew
+Soil texture spatial transform:   mode
+Soil texture fill option:         neighbor
+Soil texture fill value:          6
+Soil texture fill value for Antarctica:   16
+Soil texture fill radius:         5
+Soil texture map projection:     latlon
+Soil texture force exclusion of water points during fill: true
+
+# Topography parameters -- Elevation, Slope, Aspect
+Elevation data source:        SRTM_Native
+Elevation number of bands:        1
+Elevation map:       ./LS_PARAMETERS/topo_parms/SRTM/SRTM30/raw_wgtopo30antarc
+Elevation fill option: none # Preserve elevation for water bodies
+Elevation fill value:             0
+Elevation fill radius:            5
+
+Slope data source:        SRTM_Native
+Slope number of bands:        1
+Slope map:       ./LS_PARAMETERS/topo_parms/SRTM/SRTM30/raw_wgtopo30antarc
+Slope fill option:            none # Preserve slope for water bodies
+Slope fill value:             0
+Slope fill radius:            5.
+
+Aspect data source:        SRTM_Native
+Aspect number of bands:        1
+Aspect map:       ./LS_PARAMETERS/topo_parms/SRTM/SRTM30/raw_wgtopo30antarc
+Aspect fill option:            none # Preserve aspect ratio for water bodies
+Aspect fill value:             3.14159
+Aspect fill radius:            5.
+
+Topography spatial transform:     average 
+Topography map projection:       latlon
+
+# LSM-specific parameters
+Albedo data source:          NCEP_Native
+Albedo map:                 ./LS_PARAMETERS/noah_2dparms/albedo 
+Albedo climatology interval:    monthly
+Albedo spatial transform:       budget-bilinear
+Albedo fill option:             neighbor
+Albedo fill value:              0.15
+Albedo fill radius:             5
+Albedo map projection:          latlon
+
+Max snow albedo data source: Barlage_Native
+Max snow albedo map:        ./LS_PARAMETERS/noah_2dparms/maximum_snow_albedo.hdf
+Max snow albedo spatial transform:     average
+Max snow albedo fill option:           neighbor
+Max snow albedo fill value:           0.3
+Max snow albedo fill radius:          5
+Max snow albedo map projection:        latlon
+
+Greenness data source:         NCEP_Native
+Greenness fraction map:        ./LS_PARAMETERS/noah_2dparms/gfrac
+Greenness climatology interval:    monthly
+Calculate min-max greenness fraction:  .false.
+Greenness maximum map:         ./LS_PARAMETERS/noah_2dparms/gfrac_max.asc
+Greenness minimum map:         ./LS_PARAMETERS/noah_2dparms/gfrac_min.asc
+Greenness spatial transform:       budget-bilinear
+Greenness fill option:             neighbor
+Greenness fill radius:             5
+Greenness fill value:              0.3
+Greenness maximum fill value:     1.0
+Greenness minimum fill value:     0.0
+Greenness map projection:         latlon
+
+Slope type data source:   none
+
+Bottom temperature data source:   ISLSCP1
+Bottom temperature map:          ./LS_PARAMETERS/noah_2dparms/SOILTEMP.60
+Bottom temperature spatial transform:    budget-bilinear
+Bottom temperature fill option:      average      
+Bottom temperature fill value:       287.0       
+Bottom temperature fill radius:       5.
+Bottom temperature topographic downscaling:  lapse-rate
+Bottom temperature map projection:      latlon
+
+
+# ------------------------
+# EMK New section for LDTSI
+
+# *** Former Environment Variables ***
+LDTSI valid date (YYYYMMDDHH):  2018120618 
+LDTSI fractional snow data directory:     ./SNODEPIN/snofrac/
+LDTSI modified data directory:            ./SNODEPIN/modified/
+LDTSI surface obs data directory:         ./SNODEPIN/sfcobs/
+LDTSI SSMIS data directory:               ./SNODEPIN/SSMIS/algorithm03/
+LDTSI surface temperature data directory: ./SNODEPIN/sfctmps/
+LDTSI static data directory:              ./SNODEPIN/static/
+LDTSI unmodified data directory:          ./PREVDIR/algorithm03/
+LDTSI VIIRS data directory:               ./SNODEPIN/viirs/
+LDTSI SSMIS raw data directory:      ./SNODEPIN/OBSI_SSMISUPP/
+# Retrievals 1: Hollinger,1991, 2: Chang et al.,1987, 3:Foster et al.,1997
+LDTSI SSMIS snow depth retrieval algorithm option:   3
+# Forest fraction only for algorithm 3
+LDTSI SSMIS forest fraction file:     ./SNODEPIN/ForestFraction_0p25deg.nc 
+
+# *** Former Namelist Variables ***
+LDTSI decimal fraction adjustment of snow depth towards climo: 0.1
+LDTSI default snow depth (m) when actual depth unknown: 0.1
+LDTSI minimum snow depth (m) for which to print a diagnostic: 0.025
+LDTSI maximum number of surface observations allowed: 200000
+LDTSI SSMIS shallow snow depth threshold (m): 0.15
+# There should be three latitudes listed below, defining three latitude bands
+# for sanity checking snow reports in different seasons.
+# Strongly recommend 4000 3000 2000
+LDTSI latitudes (deg * 100) for summer climo check: 4000 3000 2000
+# There should be four elevations listed below, defining four elevation
+# levels for sanity checking snow reports in different seasons.
+# Strongly recommend 1000 1500 1000 1000
+LDTSI elevations (m) for summer climo check: 1000 1500 1000 1000
+LDTSI temperature (deg K * 10) above which no snow is allowed: 2820
+LDTSI max reported temperature (deg K * 10) allowed around poles: 3030
+LDTSI minimum ice concentration (%) needed to set ice flag: 15
+# There should 24 latitudes defined below, each row definining a hemisphere
+# (NH first row, SH second row), and each column defining a month 
+# (J F M A M J J A S O N D).  These are used to define "high latitudes"
+# in the SSMIS-based sea ice analysis.
+LDTSI high latitude thresholds (deg) for sea ice::
+       81.0 81.0 81.0 81.0 81.0 81.0 81.0 82.0 82.0 82.0 81.0 81.0 
+       90.0 90.0 78.0 78.0 68.0 68.0 67.0 67.0 66.0 66.0 68.0 70.0 
+::
+# There should 24 latitudes defined below, each row definining a hemisphere
+# (NH first row, SH second row), and each column defining a month 
+# (J F M A M J J A S O N D).  These are used to define "low latitudes"
+# in the SSMIS-based sea ice analysis.
+LDTSI low latitude thresholds (deg) for sea ice::
+       45.0 44.0 44.0 45.0 51.0 52.0 55.0 65.0 65.0 62.0 53.0 50.0 
+       60.0 62.0 62.0 60.0 58.0 56.0 55.0 55.0 53.0 54.0 55.0 57.0 
+::
+LDTSI max age of VIIRS pixels to use: 3
+LDTSI min VIIRS fraction to mark point as bare ground: 0.6
+LDTSI min VIIRS/CDFS-II fraction to mark point as snow: 0.4
+LDTSI use CDFS-II fractional snow data: .true.
+LDTSI use VIIRS snow mask: .true.
+# Bratseth settings
+LDTSI observation error variance (m^2):  0.0006
+LDTSI background error variance (m^2):   0.0010
+LDTSI background error horizontal correlation length (m):  55555.
+LDTSI background error vertical correlation length (m):      800.
+LDTSI elevQC difference threshold (m): 400.
+LDTSI skewed backQC snow depth threshold (m):  0.4
+# Other new settings
+LDTSI bogus climatology snow depth value (m): 0.2
+LDTSI GOFS SST data directory: ./SNODEPIN//GOFS
+LDTSI GOFS CICE data directory: ./SNODEPIN//GOFS
+LDTSI LIS GRIB2 data directory: /discover/nobackup/emkemp/AFWA/data/LIS_GRIB2
+LDTSI LIS GRIB2 security class: U
+LDTSI LIS GRIB2 data category:  C
+LDTSI LIS GRIB2 data resolution: C0P09DEG
+LDTSI LIS GRIB2 area of data: GLOBAL
+
+

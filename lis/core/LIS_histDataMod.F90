@@ -97,6 +97,10 @@ module LIS_histDataMod
   public :: LIS_MOC_AVGSURFT  
   public :: LIS_MOC_RADT      
   public :: LIS_MOC_ALBEDO    
+  public :: LIS_MOC_ALBEDO_DIR_V    
+  public :: LIS_MOC_ALBEDO_DIF_V    
+  public :: LIS_MOC_ALBEDO_DIR_N    
+  public :: LIS_MOC_ALBEDO_DIF_N    
   public :: LIS_MOC_SWE       
   public :: LIS_MOC_SNOWDENSITY
   public :: LIS_MOC_SNOWGRAIN
@@ -492,6 +496,10 @@ module LIS_histDataMod
   integer :: LIS_MOC_AVGSURFT   = -9999
   integer :: LIS_MOC_RADT       = -9999
   integer :: LIS_MOC_ALBEDO     = -9999
+  integer :: LIS_MOC_ALBEDO_DIR_V     = -9999
+  integer :: LIS_MOC_ALBEDO_DIF_V     = -9999
+  integer :: LIS_MOC_ALBEDO_DIR_N     = -9999
+  integer :: LIS_MOC_ALBEDO_DIF_N     = -9999
   integer :: LIS_MOC_SWE        = -9999
   integer :: LIS_MOC_SNOWDENSITY = -9999
   integer :: LIS_MOC_SNOWGRAIN  = -9999
@@ -1630,6 +1638,56 @@ contains
             n,2,ntiles,(/"-","%"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
+    
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AlbDirVis:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "AlbDirVis",&
+         "surface_albedo_for_direct_beam_visible_light",&
+         "surface albedo for direct beam visible light",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_ALBEDO_DIR_V,&
+            LIS_histData(n)%head_lsm_list,&
+            n,2,ntiles,(/"-","%"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AlbDifVis:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "AlbDifVis",&
+         "surface_albedo_for_diffuse_visible_light",&
+         "surface albedo for diffuse visible light",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_ALBEDO_DIF_V,&
+            LIS_histData(n)%head_lsm_list,&
+            n,2,ntiles,(/"-","%"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    
+    
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AlbDirNIR:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "AlbDirNIR",&
+         "surface_albedo_for_direct_beam_NIR_light",&
+         "surface albedo for direct beam NIR light",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_ALBEDO_DIR_N,&
+            LIS_histData(n)%head_lsm_list,&
+            n,2,ntiles,(/"-","%"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AlbDifNIR:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "AlbDifNIR",&
+         "surface_albedo_for_diffuse_NIR_light",&
+         "surface albedo for diffuse NIR light",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_ALBEDO_DIF_N,&
+            LIS_histData(n)%head_lsm_list,&
+            n,2,ntiles,(/"-","%"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"SWE:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -1752,6 +1810,19 @@ contains
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
+    endif
+
+    ! Added by Zhuo Wang on 11/11/2018
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Smcwtd:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+          "SMCWTD",&
+          "smcwtd",&
+          "SM content in the layer to the water table when deep",rc)
+    if ( rc == 1 ) then
+         call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_BETWEENWATER,&
+              LIS_histData(n)%head_lsm_list,&
+              n,1,ntiles,(/"m3/m3"/),1,(/"-"/),1,1,1,&
+              model_patch=.true.)
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"SurfStor:",rc=rc)
@@ -4319,6 +4390,19 @@ contains
             model_patch=.true.)
     endif
 
+    ! Added by Zhuo Wang on 11/11/2018
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "Wslake:", rc = rc)
+    Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Wslake",  &
+         "Wslake",  &
+         "lake water storage",rc)
+    if ( rc == 1 ) then
+         call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_LAKEWATER, &
+              LIS_histData(n)%head_lsm_list,&
+              n, 1, ntiles,(/"mm"/), 1, (/"-"/),1,1,1,&
+              model_patch=.true.)
+    endif
+
     Call ESMF_ConfigFindLabel(modelSpecConfig, "ActSnowNL:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "ActSnowNL", &
@@ -5426,7 +5510,7 @@ end subroutine get_moc_attributes
     integer         :: tid
     logical         :: model_patch
 
-    tid = LIS_surface(n,1)%tile(t)%tile_id
+!    tid = LIS_surface(n,1)%tile(t)%tile_id
     model_patch = .true.
     call LIS_diagnoseOutputVar(LIS_histData(n)%head_routing_list, &
          LIS_MOC_ROUTING_COUNT, LIS_histData(n)%ptr_into_routing_list,&

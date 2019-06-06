@@ -59,7 +59,7 @@ subroutine read_Loobos(n,ftn,findex,order,itime)
   integer :: i,c,r,f,count1, k 
   real    :: rain(Loobos_struc(n)%nstns)
   real    :: snow(Loobos_struc(n)%nstns)
-  real    :: pcp(Loobos_struc(n)%nstns)
+  !real    :: pcp(Loobos_struc(n)%nstns)
   real    :: psurf(Loobos_struc(n)%nstns)
   real    :: tair(Loobos_struc(n)%nstns)
   real    :: qair(Loobos_struc(n)%nstns)
@@ -67,7 +67,7 @@ subroutine read_Loobos(n,ftn,findex,order,itime)
   real    :: lwdown(Loobos_struc(n)%nstns)
   real    :: u(Loobos_struc(n)%nstns)
   real    :: v(Loobos_struc(n)%nstns)
-  real    :: varfield(8,LIS_rc%lnc(n)*LIS_rc%lnr(n))
+  real    :: varfield(9,LIS_rc%lnc(n)*LIS_rc%lnr(n))
   real    :: varfield1(LIS_rc%lnc(n),LIS_rc%lnr(n))
   real*8  :: listime,loobos_time
   real    :: lisgmt,loobos_gmt
@@ -100,7 +100,7 @@ subroutine read_Loobos(n,ftn,findex,order,itime)
            read(line,40) loobos_yr,loobos_mon,loobos_day,loobos_hr,loobos_min,         &
                 swdown(i),lwdown(i), rain(i), snow(i), tair(i),u(i),psurf(i),qair(i) 
            v(i)   = 0
-           pcp(i) = rain(i) + snow(i) 
+           !pcp(i) = rain(i) + snow(i) 
            loobos_sec = 0
            !loobos_tick = 21600
            loobos_tick = 0 
@@ -175,11 +175,18 @@ subroutine read_Loobos(n,ftn,findex,order,itime)
        Loobos_struc(n)%undef,lwdown,varfield(7,:),         &
        LIS_rc%lnc(n)*LIS_rc%lnr(n),Loobos_struc(n)%nstns)
 
-  call normalize_stnwts(pcp,Loobos_struc(n)%nstns,             &
+  call normalize_stnwts(rain,Loobos_struc(n)%nstns,             &
        LIS_rc%lnc(n)*LIS_rc%lnr(n),Loobos_struc(n)%undef,  &
        Loobos_struc(n)%stnwt)
   call interp_stndata(Loobos_struc(n)%stnwt,                   &
-       Loobos_struc(n)%undef,pcp,varfield(8,:),            &
+       Loobos_struc(n)%undef,rain,varfield(8,:),            &
+       LIS_rc%lnc(n)*LIS_rc%lnr(n),Loobos_struc(n)%nstns)
+  
+  call normalize_stnwts(snow,Loobos_struc(n)%nstns,             &
+       LIS_rc%lnc(n)*LIS_rc%lnr(n),Loobos_struc(n)%undef,  &
+       Loobos_struc(n)%stnwt)
+  call interp_stndata(Loobos_struc(n)%stnwt,                   &
+       Loobos_struc(n)%undef,snow,varfield(9,:),            &
        LIS_rc%lnc(n)*LIS_rc%lnr(n),Loobos_struc(n)%nstns)
 
   do f = 1,8

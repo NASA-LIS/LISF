@@ -391,6 +391,31 @@ if($enable_geotiff == 1) {
     }
 }
 
+# EMK...Add LIBGEOTIFF support for Air Force
+print "Enable LIBGEOTIFF support? (1-yes, 0-no, default=1): ";
+$enable_libgeotiff=<stdin>;
+if($enable_libgeotiff eq "\n"){
+    $enable_libgeotiff=1;
+}
+if($enable_libgeotiff == 1) {
+    if(defined($ENV{LDT_LIBGEOTIFF})){
+	$sys_libgeotiff_path = $ENV{LDT_LIBGEOTIFF};
+	$lib = "/lib/";
+	$lib_libgeotiff=$sys_libgeotiff_path.$lib;
+	$include = "/include/";
+	$inc_libgeotiff=$sys_libgeotiff_path.$include;
+    }
+    else {
+	print "--------------ERROR---------------------\n";
+	print "Please specify the LIBGEOTIFF path using\n";
+	print "the LDT_LIBGEOTIFF variable.\n";
+	print "LIBGEOTIFF can be obtained from https://github.com/OSGeo/libgeotiff\n";
+	print "Configuration exiting ....\n";
+	print "--------------ERROR---------------------\n";
+	exit 1;
+    }
+}
+
 print "Include date/time stamp history? (1-yes, 0-no, default=1): ";
 $use_history=<stdin>;
 if($use_history eq "\n"){
@@ -517,6 +542,12 @@ if($enable_geotiff== 1){
    $ldflags = $ldflags." -L\$(LIB_FORTRANGIS) -lfortrangis -lfortranc -L\$(LIB_GDAL) -lgdal";
 }
 
+# EMK...Added LIGBEOTIFF for Air Force
+if($enable_libgeotiff== 1){
+    $cflags = $cflags." -I\$(INC_LIBGEOTIFF)";
+    $ldflags = $ldflags." -L\$(LIB_LIBGEOTIFF) -ltiff -lgeotiff -lm -lz -ljpeg";
+}
+
 
 open(conf_file,">configure.ldt");
 printf conf_file "%s%s\n","FC              = $sys_fc";
@@ -547,6 +578,10 @@ printf conf_file "%s%s\n","LIB_HDFEOS      = $lib_hdfeos";
 printf conf_file "%s%s\n","INC_FORTRANGIS1 = $inc_fortrangis1";
 printf conf_file "%s%s\n","INC_FORTRANGIS2 = $inc_fortrangis2";
 printf conf_file "%s%s\n","LIB_FORTRANGIS  = $lib_fortrangis";
+# EMK...Added LIBGEOTIFF for Air Force
+printf conf_file "%s%s\n","INC_LIBGEOTIFF  = $inc_libgeotiff";
+printf conf_file "%s%s\n","LIB_LIBGEOTIFF  = $lib_libgeotiff";
+
 printf conf_file "%s%s\n","LIB_GDAL        = $lib_gdal";
 printf conf_file "%s%s\n","CFLAGS          = $cflags";
 printf conf_file "%s%s\n","FFLAGS77        = $fflags77";
@@ -604,6 +639,15 @@ if($enable_geotiff == 1) {
 else{
    printf misc_file "%s\n","#undef USE_GDAL ";
 }
+
+# EMK Added LIBGEOTIFF support for Air Force
+if($enable_libgeotiff == 1) {
+    printf misc_file "%s\n","#define USE_LIBGEOTIFF ";
+}
+else{
+    printf misc_file "%s\n","#undef USE_LIBGEOTIFF ";
+}
+
 
 if($use_history == 1) {
    printf misc_file "%s\n","#undef LDT_SKIP_HISTORY ";

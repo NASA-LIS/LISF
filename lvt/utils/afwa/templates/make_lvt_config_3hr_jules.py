@@ -14,8 +14,8 @@ template = "lvt.config.template"
 #enddt =   datetime.datetime(2011, 3,  1, 21)
 #startdt = datetime.datetime(2011, 8, 31, 21)
 #enddt =   datetime.datetime(2011, 9,  1, 21)
-startdt = datetime.datetime(2008, 12,  1,  0)
-enddt =   datetime.datetime(2008, 12,  2,  0)
+startdt = datetime.datetime(2018,  7, 29,  0)
+enddt =   datetime.datetime(2018,  7, 31,  0)
 
 #output = "netcdf"
 output = "grib2"

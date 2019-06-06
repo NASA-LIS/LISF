@@ -531,7 +531,7 @@ print_dbg('cli_args: ',cli_args)
 files = cli_args.files
 
 for full_filename in files:
-   print_status('\nGenerating dependencies for {}'.format(full_filename))
+   print_status('Generating dependencies for {}'.format(full_filename))
    # derivatives of full_filename
    base_filename = os.path.basename(full_filename)
    depname = basename_new_suffix(base_filename,'.d')

@@ -956,9 +956,17 @@ NCAR Noah land surface model version 3.3
 +
 NCAR Noah land surface model version 3.6
 
+*** _noah.3.9_
++
+NCAR Noah land surface model version 3.9
+
 *** _noahmp.3.6_
 +
 NCAR Noah multiphysics land surface model version 3.6
+
+*** _noahmp.4.0.1_
++
+NCAR Noah multiphysics land surface model version 4.0.1
 
 *** _rdhm.3.5.6_
 +

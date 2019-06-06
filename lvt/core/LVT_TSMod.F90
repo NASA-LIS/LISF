@@ -69,7 +69,7 @@ module LVT_TSMod
      integer      :: ts_rindex1
      integer      :: ts_cindex2
      integer      :: ts_rindex2
-     integer      :: ts_min_pts
+     real         :: ts_min_pts
      integer, allocatable  :: ts_tindex(:)
 
   end type ts_struc
@@ -120,88 +120,115 @@ contains
 ! !OUTPUT PARAMETERS:
 !
 ! !DESCRIPTION: 
-!   This subroutine performs the initialization steps required for 
-!   time series extraction. The routine reads the time series location file, 
-!   which specifies the locations of interest. The locations can be specified
-!   in three different formats: (1) using the lat/lon values (2) using the 
-!   column/row indices and (3) using the tile indices. A sample file is 
-!   shown below: \newline
-!   
-!   \begin{verbatim}
-!    #Number of locations
-!    2
-!    #Location style (1-lat/lon, 2-col/row, 3-tile)
-!    1 
-!    #Location name, (next line) SW-lat, SW-lon, NE-lat, NE-lon, 
-!    min number of grid points
-!    WEST_US
-!    40 -130 50 -110 5
-!    HIGH_PLAINS_US
-!    43 -110 49 -100 2
-!    .....
-!    .....
-!
-!   \end{verbatim}
-!    
-!   If the location style is 2, the user specifies the column and 
-!   row indices for the bounding boxes, instead of the corner lat/lon
-!   values. A sample file with location style 2 is shown below: 
+!   This subroutine performs the initialization steps required for
+!   time series extraction.  The subroutine reads the time series
+!   location file, which specifies the locations of interest.
 ! 
-!   \begin{verbatim}
-!    #Number of locations
-!    1
-!    #Location style (1-lat/lon, 2-col/row, 3-tile)
-!    2 
-!    #Location name, (next line) SW-col, SW-row, NE-col, NE-row, 
-!    min number of grid points
-!    WEST_US
-!    1  1  20 30 5
-!    EAST_US
-!    1  1  10 10 5
-!    .....
-!    .....
-!
-!   \end{verbatim}
-!
-!   If the location style is 3, the user specifies the tile indices
-!   for specifying the bounds (starting tile index and ending tile 
-!   index). A sample file with location style 3 is shown below: 
-!
-!   \begin{verbatim}
-!    #Number of locations
-!    1
-!    #Location style (1-lat/lon, 2-col/row, 3-tile)
-!    3 
-!    #Location name, (next line) Start index, Ending index, 
-!    min number of grid points
-!    WEST_US
-!    1  20 5
-!    EAST_US
-!    1  10 5
-!    .....
-!    .....
-!
-!   \end{verbatim}
-!   If the location style is 5, the user specifies a categorical map
-!   which then will be used to define the regions. The categories must
-!   be sequentially ordered from 1. 
-!
-!   \begin{verbatim}
-!    #Number of locations
-!    16
-!    #Location style (1-lat/lon, 2-col/row, 3-tile)
-!    5
-!    #location name
-!    min number of grid points
-!    HUC01 
-!    1
-!    HUC02
-!    1
-!    ....
-!    #categorical mapname
-!    USGS_HUC.1gd4r
-!
-!   \end{verbatim}
+!  The locations can be specified in five different formats:
+!  (1) using the lat/lon values; (2) using the column/row indices;
+!  (3) using the tile indices; (4) specifying lat/lon values to
+!  draw a polygon around a region; and (5) using a categorical
+!  from which to define subregions.
+! 
+!  Note that LVT has been updated so the format of the time series
+!  locations file uses a minimum fraction of the domain before the
+!  temporal calculations will occur.  Previously, the time series
+!  locations file used a minimum number of observations.  A value
+!  for this ``min frac'' of 0.1 (for example) implies that at least
+!  10 percent of the total number of points in the domain location
+!  must be available for the temporal calculations to occur.
+! 
+!  A sample file with location style 1 is shown below:
+! 
+!  \begin{verbatim}
+!   #Number of locations
+!   2
+!   #Location style (1-lat/lon, 2-col/row, 3-tile, 4-polygon, 5-map)
+!   1
+!   #Name (then, next line), SW-lat, SW-lon, NE-lat, NE-lon, min frac
+!   WEST_US
+!   40.0 -130.0 50.0 -110.0 0.0
+!   HIGH_PLAINS_US
+!   43.0 -110.0 49.0 -100.0 0.0
+!  \end{verbatim}
+! 
+!  If the location style is 2, the user specifies the column and
+!  row indices for the bounding boxes, instead of the corner lat/lon
+!  values.  A sample file with location style 2 is shown below:
+! 
+!  \begin{verbatim}
+!   #Number of locations
+!   2
+!   #Location style (1-lat/lon, 2-col/row, 3-tile, 4-polygon, 5-map)
+!   2
+!   #Name (then, next line), SW-col, SW-row, NE-col, NE-row, min frac
+!   WEST_US
+!    1 1 20 30 0.0
+!   EAST_US
+!   21 1 40 30 0.0
+!  \end{verbatim}
+! 
+!  If the location style is 3, the user specifies the tile indices
+!  for specifying the bounds (starting tile index and ending tile
+!  index).  A sample file with location style 3 is shown below:
+! 
+!  \begin{verbatim}
+!   #Number of locations
+!   2
+!   #Location style (1-lat/lon, 2-col/row, 3-tile, 4-polygon, 5-map)
+!   3
+!   #Name (then, next line), Start index, End index, min frac
+!   WEST_US
+!    1 20 0.0
+!   EAST_US
+!   21 40 0.0
+!  \end{verbatim}
+! 
+!  If the location style is 4, the user explicitly specifies the
+!  lat/lons of each grid point to be used to specify a region in
+!  the shape of a polygon.  Users should be careful with this
+!  location style option, as they cannot specify a minimum fraction
+!  of the domain that must have valid observations.  A sample file
+!  with location style 4 is shown below:
+!  
+!  \begin{verbatim}
+!   #Number of locations
+!   2
+!   #Location style (1-lat/lon, 2-col/row, 3-tile, 4-polygon, 5-map)
+!   4
+!   #Number of points followed by lat/lon of each point
+!   REGION1
+!   3
+!   34.4 -103.2
+!   33.4 -100.2
+!   32.1  -99.3
+!   REGION2
+!   2
+!   40.2 -103.3
+!   42.2 -104.2
+!  \end{verbatim}
+! 
+!  If the location style is 5, the user explicitly specifies a
+!  categorical map from which to define subregions.  In the map,
+!  the categories must be in numerically increasing order from 1.
+!  The map must be a binary direct-access file, with point (1,1)
+!  in the southwest corner of the domain.  A sample file with
+!  location style 5 is shown below:
+! 
+!  \begin{verbatim}
+!   #Number of stations
+!   3
+!   #Location style (1-lat/lon, 2-col/row, 3-tile, 4-polygon, 5-map)
+!   5
+!   #Name (then, next line), min frac
+!   NEWENGLAND
+!   0.0
+!   MIDATLANTIC
+!   0.0
+!   SOUTHATLANTIC
+!   0.0
+!   #categorical map
+!   ../huc02_conus_0.125dg.1gd4r
 ! 
 ! !FILES USED:
 !
@@ -269,9 +296,12 @@ contains
                 LVT_TSobj(k)%ts_tindex(kk) = LVT_domain%gindex(&
                      nint(col),nint(row))
              enddo
-             LVT_TSobj(k)%ts_min_pts = 1  
-          elseif(LVT_rc%tsspecstyle.eq.5) then 
-             read(10,*)  LVT_TSobj(k)%ts_min_pts
+! Assume with location style 4 that there must be at least a small
+! fraction of points in the polygon with valid values.  Previously,
+! this was hard-coded to at least one valid value in the polygon.
+             LVT_TSobj(k)%ts_min_pts = 0.001
+          elseif(LVT_rc%tsspecstyle.eq.5) then
+             read(10,*) LVT_TSobj(k)%ts_min_pts
           endif
        enddo
        
@@ -489,7 +519,9 @@ contains
              if(maxv.eq.max_param) maxv = LVT_rc%udef 
              if(minv.eq.min_param) minv = LVT_rc%udef
 
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts.and.nsum_v.ne.0) then 
+!             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts.and.nsum_v.ne.0) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts).and.&
+                  nsum_v.ne.0) then 
                 mean_v = sum_v/nsum_v
              else
                 mean_v = LVT_rc%udef
@@ -564,7 +596,7 @@ contains
              endif             
              
              ci_val = LVT_rc%udef
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 call LVT_computeCI(metric_tsdom(1:nsum_v),nsum_v,&
                      LVT_rc%pval_CI,ci_val)
              endif
@@ -665,7 +697,7 @@ contains
              if(maxv.eq.max_param) maxv = LVT_rc%udef
              if(minv.eq.min_param) minv = LVT_rc%udef
 
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 mean_v = sum_v/nsum_v
              else
                 mean_v = LVT_rc%udef
@@ -735,7 +767,7 @@ contains
              endif
 
              ci_val = LVT_rc%udef
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 call LVT_computeCI(metric_tsdom(1:nsum_v),nsum_v,&
                      LVT_rc%pval_CI,ci_val)
              endif
@@ -766,7 +798,8 @@ contains
              if(maxv1.eq.max_param) maxv1 = LVT_rc%udef
              if(minv1.eq.min_param) minv1 = LVT_rc%udef
 
-             if(nsum_v1.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v1.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts).and.&
+                  nsum_v1.gt.0) then 
                 mean_v1 = sum_v1/nsum_v1
              else
                 mean_v1 = LVT_rc%udef
@@ -793,7 +826,7 @@ contains
              endif           
              if(nsum_v1.le.1) sstd_v1 = LVT_rc%udef
              ci_val1 = LVT_rc%udef  
-             if(nsum_v1.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v1.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 call LVT_computeCI(metric_tsdom(1:nsum_v1),nsum_v1,&
                      LVT_rc%pval_CI,ci_val1)
              endif
@@ -916,7 +949,7 @@ contains
              if(maxv.eq.max_param) maxv = LVT_rc%udef
              if(minv.eq.min_param) minv = LVT_rc%udef
 
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 mean_v = sum_v/nsum_v
              else
                 mean_v = LVT_rc%udef
@@ -1006,7 +1039,7 @@ contains
              endif
 
              ci_val = LVT_rc%udef
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 call LVT_computeCI(metric_tsdom(1:nsum_v),nsum_v,&
                      LVT_rc%pval_CI,ci_val)
              endif
@@ -1116,7 +1149,7 @@ contains
              if(maxv.eq.max_param) maxv = LVT_rc%udef
              if(minv.eq.min_param) minv = LVT_rc%udef
 
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 mean_v = sum_v/nsum_v
              else
                 mean_v = LVT_rc%udef
@@ -1191,7 +1224,7 @@ contains
              endif
 
              ci_val = LVT_rc%udef
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 call LVT_computeCI(metric_tsdom(1:nsum_v),nsum_v,&
                      LVT_rc%pval_CI,ci_val)
              endif
@@ -1221,7 +1254,7 @@ contains
              if(maxv1.eq.max_param) maxv1 = LVT_rc%udef
              if(minv1.eq.min_param) minv1 = LVT_rc%udef
 
-             if(nsum_v1.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v1.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 mean_v1 = sum_v1/nsum_v1
              else
                 mean_v1 = LVT_rc%udef
@@ -1251,7 +1284,7 @@ contains
                 sstd_v1 = LVT_rc%udef
              endif           
              ci_val1 = LVT_rc%udef  
-             if(nsum_v1.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v1.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 call LVT_computeCI(metric_tsdom(1:nsum_v1),nsum_v1,&
                      LVT_rc%pval_CI,ci_val1)
              endif
@@ -1358,7 +1391,7 @@ contains
              if(maxv.eq.max_param) maxv = LVT_rc%udef
              if(minv.eq.min_param) minv = LVT_rc%udef
 
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 mean_v = sum_v/nsum_v
              else
                 mean_v = LVT_rc%udef
@@ -1436,7 +1469,7 @@ contains
              endif             
              
              ci_val = LVT_rc%udef
-             if(nsum_v.ge.LVT_TSobj(i)%ts_min_pts) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
                 call LVT_computeCI(metric_tsdom(1:nsum_v),nsum_v,&
                      LVT_rc%pval_CI,ci_val)
              endif

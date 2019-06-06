@@ -228,7 +228,7 @@ contains
           call ESMF_ConfigGetAttribute(LDT_config,&
                FLAKE_struc(n)%inlandwater_gridtransform,&
                rc=rc)
-          call LDT_verify(rc,'Inland waterbody spatial tranform: &
+          call LDT_verify(rc,'Inland waterbody spatial transform: &
                option not specified in the config file')
        enddo
     endif   
@@ -319,7 +319,7 @@ contains
           call ESMF_ConfigGetAttribute(LDT_config, &
                FLAKE_struc(n)%lakeparms_gridtransform,&
                rc=rc)
-          call LDT_verify(rc,'Lake params spatial tranform: option not specified in the config file')
+          call LDT_verify(rc,'Lake params spatial transform: option not specified in the config file')
        enddo
 
     endif

@@ -48,6 +48,7 @@ subroutine LIS_glacierrouting_plugin
 
 #if ( defined SM_NOAHMP_GLACIER_3_9_1_1 )
    external noahmpglacier3911_getrunoffs_mm
+   external noahmpglacier3911_getrunoffs_hymap2
 #endif
 
 #if ( defined SM_GLACIER_TEMPLATE )
@@ -60,6 +61,10 @@ subroutine LIS_glacierrouting_plugin
    call registerglacierroutinggetrunoff(trim(LIS_noahmpglacier3911Id)//"+"//&
         trim(LIS_HYMAProuterId)//char(0), &
         noahmpglacier3911_getrunoffs_mm)
+
+   call registerglacierroutinggetrunoff(trim(LIS_noahmpglacier3911Id)//"+"//&
+        trim(LIS_HYMAP2routerId)//char(0), &
+        noahmpglacier3911_getrunoffs_hymap2)
 #endif
 
 #endif

@@ -81,7 +81,6 @@ contains
 
     integer   :: n 
     integer   :: rc
-    integer   :: k
 ! ____________________________________________
 
     allocate(LDT_LSMparam_struc(LDT_rc%nnest))
@@ -114,7 +113,6 @@ contains
     use LDT_paramMaskCheckMod
 
     integer   :: n 
-    integer   :: rc
 ! ____________________________________________
 
     write(LDT_logunit,*) "LSM User-selected:  ",trim(LDT_rc%lsm)
@@ -276,6 +274,8 @@ contains
                LDT_LSMparam_struc(n)%landcover%num_bins = 13
              case( "CLM45" )
                LDT_LSMparam_struc(n)%landcover%num_bins = 36
+             case( "Bondville" )
+               LDT_LSMparam_struc(n)%landcover%num_bins = 20
              case default
                print *, "[ERR] CONSTANT Landcover classification not recognized."
                print *, "  Options:  UMD, IGBPNCEP, USGS, MOSAIC, ISA "
@@ -1009,7 +1009,6 @@ contains
     
     integer, intent(in)   :: n 
 
-    integer               :: iret
     integer               :: m
     integer               :: dimID(3), monthID, qID
     integer,allocatable   :: met_dimID(:,:)
@@ -1070,7 +1069,6 @@ contains
 !EOP
     
     integer, intent(in)   :: n 
-    integer               :: iret
     integer               :: ierr
 ! ________________________________________________________
 
@@ -1100,7 +1098,6 @@ contains
     integer     :: met_dimID(LDT_rc%nmetforc_parms,3)
     integer     :: monthID
     integer     :: qID
-    integer     :: k
     
     call LDT_LMLC_writeHeader(n,ftn,dimID)
     call LDT_surfacetype_writeHeader(n,ftn,dimID)
@@ -1131,8 +1128,6 @@ contains
 
     integer  :: n 
     integer  :: ftn
-
-    integer :: ierr
 
     call LDT_LMLC_writeData(n,ftn)
     call LDT_surfacetype_writeData(n,ftn)

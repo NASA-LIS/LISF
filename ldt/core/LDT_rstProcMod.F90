@@ -168,10 +168,14 @@ module LDT_rstProcMod
             model_name = "NOAH33"
          elseif(LDT_rc%lsm.eq."Noah.3.6") then 
             model_name = "NOAH36"
+         elseif(LDT_rc%lsm.eq."Noah.3.9") then 
+            model_name = "NOAH39"
          elseif(LDT_rc%lsm.eq."Noah.2.7.1") then 
             model_name = "NOAH271"
          elseif(LDT_rc%lsm.eq."Noah-MP.3.6") then 
             model_name = "NOAHMP36"
+         elseif(LDT_rc%lsm.eq."Noah-MP.4.0.1") then 
+            model_name = "NOAHMP401"
          elseif(LDT_rc%lsm.eq."CLSMF2.5") then 
             model_name = "CLSMF25"
          elseif(LDT_rc%lsm.eq."RUC.3.7") then 
@@ -182,7 +186,8 @@ module LDT_rstProcMod
             model_name = "VIC412"
          else
             write(LDT_logunit,*) "[INFO] Climatological Restart File Generation - LSMs supported: "
-            write(LDT_logunit,*) "  -- CLSMF2.5, Noah.3.2, Noah.3.3, Noah.3.6, Noah-MP.3.6, "
+            write(LDT_logunit,*) "  -- CLSMF2.5, Noah.3.2, Noah.3.3, Noah.3.6, Noah.3.9, "
+            write(LDT_logunit,*) "  -- Noah-MP.3.6, Noah-MP.4.0.1, "
             write(LDT_logunit,*) "     Noah.2.7.1, RUC.3.7, VIC.4.1.1, VIC.4.1.2 "
             write(LDT_logunit,*) "[ERR] No other LSMs supported at this time ... stopping."
             call LDT_endrun() 
@@ -359,10 +364,14 @@ module LDT_rstProcMod
               model_name = "NOAH33"
            elseif(LDT_rc%lsm.eq."Noah.3.6") then
               model_name = "NOAH36"
+           elseif(LDT_rc%lsm.eq."Noah.3.9") then
+              model_name = "NOAH39"
            elseif(LDT_rc%lsm.eq."Noah.2.7.1") then
               model_name = "NOAH271"
            elseif(LDT_rc%lsm.eq."Noah-MP.3.6") then
               model_name = "NOAHMP36"
+           elseif(LDT_rc%lsm.eq."Noah-MP.4.0.1") then
+              model_name = "NOAHMP401"
            elseif(LDT_rc%lsm.eq."CLSMF2.5") then 
               model_name = "CLSMF25"
            elseif(LDT_rc%lsm.eq."RUC.3.7") then    
@@ -373,7 +382,8 @@ module LDT_rstProcMod
               model_name = "VIC412"
            else
               write(LDT_logunit,*) "[INFO] Climatological Restart File Generation - LSMs supported: "
-              write(LDT_logunit,*) "  -- CLSMF2.5, Noah.3.2, Noah.3.3, Noah.3.6, Noah-MP.3.6, "
+              write(LDT_logunit,*) "  -- CLSMF2.5, Noah.3.2, Noah.3.3, Noah.3.6, Noah.3.9, "
+              write(LDT_logunit,*) "  -- Noah-MP.3.6, Noah-MP.4.0.1, "
               write(LDT_logunit,*) "     Noah.2.7.1, RUC.3.7, VIC.4.1.1, VIC.4.1.2 "
               write(LDT_logunit,*) "[ERR] No other LSMs supported at this time ... stopping."
               call LDT_endrun() 

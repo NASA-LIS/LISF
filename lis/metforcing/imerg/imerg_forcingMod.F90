@@ -65,6 +65,7 @@ module imerg_forcingMod
      real    :: ts
      integer :: ncold, nrold     ! IMERG dimensions
      character*100 :: imergdir   ! IMERG Forcing Directory
+     character*5 :: imergver     ! IMERG version (early, late, final)
      real*8  :: imergtime
      real*8  :: griduptime1
      logical :: gridchange1

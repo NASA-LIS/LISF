@@ -1,6 +1,6 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT----------------------------
 ! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-------------------------END NOTICE -- DO NOT EDIT----------------------------
 !BOP
 ! 
 ! !MODULE: AGRMET_dataMod
@@ -24,6 +24,7 @@
 !
 ! !REVISION HISTORY: 
 !  09 Dec 2010   Sujay Kumar  Initial Specification
+!  02 Nov 2018   Eric Kemp    Added support for n1280e configuration
 ! 
 !EOP
 !
@@ -65,6 +66,8 @@ module AGRMET_dataMod
      integer                 :: nc
      integer                 :: nr
      type(ESMF_TimeInterval) :: ts
+
+     character*20           :: gridname
   end type agrmetdatadec
 
   type(agrmetdatadec),allocatable:: agrmetdata(:)
@@ -137,6 +140,10 @@ contains
          label='AGRMET data area of data:', rc=status)
     call LVT_verify(status, 'AGRMET data area of data: not defined')
 
+    call ESMF_ConfigGetAttribute(LVT_Config, agrmetdata(i)%gridname, &
+         label='AGRMET data gridname:', rc=status)
+    call LVT_verify(status, 'AGRMET data gridname: not defined')
+
     call ESMF_ConfigGetAttribute(LVT_Config, time, &
          label='AGRMET data output interval:', rc=status)
     call LVT_verify(status, 'AGRMET data output interval: not defined')
@@ -157,21 +164,53 @@ contains
     allocate(agrmetdata(i)%w21(LVT_rc%lnc*LVT_rc%lnr))
     allocate(agrmetdata(i)%w22(LVT_rc%lnc*LVT_rc%lnr))
 
-    gridDesci = 0 
-    gridDesci(1) = 0 
-    gridDesci(2) = 1440
-    gridDesci(3) = 600
-    gridDesci(4) = -59.875
-    gridDesci(5) = -179.875
-    gridDesci(7) = 89.875
-    gridDesci(8) = 179.875
-    gridDesci(6) = 128
-    gridDesci(9) = 0.250
-    gridDesci(10) = 0.250
-    gridDesci(20) = 64
+    ! Sanity check the grid type
+    ! NOTE:  557WW refers to the 0.25 deg deterministic product as "GLOBAL"
+    ! even though it excludes Antarctica
+    if (trim(agrmetdata(i)%gridname) == "GLOBAL") then
+       gridDesci = 0 
+       gridDesci(1) = 0 
+       gridDesci(2) = 1440
+       gridDesci(3) = 600
+       gridDesci(4) = -59.875
+       gridDesci(5) = -179.875
+       gridDesci(7) = 89.875
+       gridDesci(8) = 179.875
+       gridDesci(6) = 128
+       gridDesci(9) = 0.250
+       gridDesci(10) = 0.250
+       gridDesci(20) = 64
 
-    agrmetdata(i)%nc = 1440
-    agrmetdata(i)%nr =  600
+       agrmetdata(i)%nc = 1440
+       agrmetdata(i)%nr =  600
+       
+    else if (trim(agrmetdata(i)%gridname) == "n1280e") then
+       ! NOTE:  This is the in-house Bratseth reanalysis produced at rough
+       ! 0.09 deg resolution.  The name is taken from the global configuration
+       ! for GALWEM.
+       gridDesci = 0 
+       gridDesci(1) = 0 
+       gridDesci(2) = 2560
+       gridDesci(3) = 1920
+       gridDesci(4) =  -89.9531250
+       gridDesci(5) = -179.9296875
+       gridDesci(7) =   89.9531250
+       gridDesci(8) =  179.9296875
+       gridDesci(6) = 128
+       gridDesci(9) =  0.140625 ! dlon
+       gridDesci(10) = 0.093750 ! dlat
+       gridDesci(20) = 64
+
+       agrmetdata(i)%nc = 2560
+       agrmetdata(i)%nr = 1920
+    else
+       write(LVT_logunit,*)'[ERR] Invalid AGRMET grid type specified!'
+       write(LVT_logunit,*)'Currently supports GLOBAL and n1280e'
+       write(LVT_logunit,*)'Found ',trim(agrmetdata(i)%gridname)
+       call LVT_endrun()
+    end if
+
+    write(LVT_logunit,*)'EMK: AGRMET calling bilinear_interp_input...'
     call bilinear_interp_input(gridDesci,LVT_rc%gridDesc,&
          LVT_rc%lnc*LVT_rc%lnr, &
          agrmetdata(i)%rlat, agrmetdata(i)%rlon,&
@@ -179,24 +218,6 @@ contains
          agrmetdata(i)%n21, agrmetdata(i)%n22, & 
          agrmetdata(i)%w11, agrmetdata(i)%w12, &
          agrmetdata(i)%w21, agrmetdata(i)%w22)
-
-#if 0
-    yr1 = 2002     !grid update time
-    mo1 = 5
-    da1 = 29
-    hr1 = 12
-    mn1 = 0; ss1 = 0
-    call LVT_date2time(agrmetdata(i)%changetime1,updoy,upgmt,&
-         yr1,mo1,da1,hr1,mn1,ss1 )
-    
-    yr1 = 2002     !grid update time
-    mo1 = 11
-    da1 = 6
-    hr1 = 12
-    mn1 = 0; ss1 = 0
-    call LVT_date2time(agrmetdata(i)%changetime2,updoy,upgmt,&
-         yr1,mo1,da1,hr1,mn1,ss1 )
-#endif
 
     call ESMF_TimeIntervalSet(agrmetdata(i)%ts, s = 10800, &
          rc=status)

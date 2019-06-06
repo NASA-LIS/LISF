@@ -118,7 +118,8 @@ contains
             units="-", &
             full_name="Noah LSM slope type")
 
-      if( LDT_rc%lsm == "Noah-MP.3.6" ) then
+      if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.                        &
+          (LDT_rc%lsm.eq."Noah-MP.4.0.1")) then
          call set_param_attribs(Noah_struc(n)%pblh,"NOAHMP36_PBLH",&
                units="m", &
                full_name="Noah-MP LSM planetary boundary height")
@@ -162,7 +163,7 @@ contains
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,Noah_struc(n)%slopetype_gridtransform,&
               rc=rc)
-         call LDT_verify(rc,'Slope type spatial tranform: option not specified in the config file')
+         call LDT_verify(rc,'Slope type spatial transform: option not specified in the config file')
       enddo
       
     ! Read in Slope type "fill" options:
@@ -285,7 +286,7 @@ contains
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,Noah_struc(n)%tbot_gridtransform,&
               rc=rc)
-         call LDT_verify(rc,'Bottom temperature tranform: option not specified in the config file')
+         call LDT_verify(rc,'Bottom temperature transform: option not specified in the config file')
       enddo
 
       Noah_struc(:)%tbot_topocorr = "none"
@@ -412,7 +413,7 @@ contains
 ! -- Noah-MP Planetary Boundary Layer Height: --
 
    check_data = .false.
-   if( LDT_rc%lsm == "Noah-MP.3.6" ) then
+   if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.(LDT_rc%lsm.eq."Noah-MP.4.0.1")) then
 
 !   if(check_data) &! then
      write(LDT_logunit,*)" - - - - - - - - - Noah-MP Parameters - - - - - - - - - - - -"
@@ -449,7 +450,8 @@ contains
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
              Noah_struc(n)%slopetype)
 
-    if( LDT_rc%lsm == "Noah-MP.3.6" ) then
+    if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.                        &
+        (LDT_rc%lsm.eq."Noah-MP.4.0.1")) then
         call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
                  Noah_struc(n)%pblh)
     endif
@@ -465,7 +467,8 @@ contains
 
     call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%slopetype)
 
-    if( LDT_rc%lsm == "Noah-MP.3.6" ) then
+    if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.                        &
+        (LDT_rc%lsm.eq."Noah-MP.4.0.1")) then
         call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%pblh)
     endif
 

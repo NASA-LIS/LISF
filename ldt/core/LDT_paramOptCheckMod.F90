@@ -288,6 +288,13 @@ contains
             write(LDT_logunit,*) " Stopping ..."
             call LDT_endrun
           endif
+        case( "Bondville" )
+          if( nt .lt. 20 .or. nt .ge. 21 ) then            
+            write(LDT_logunit,*) "Param_Check: Bondville has a minimum of 20 types (includes water)."
+            write(LDT_logunit,*) "             Value is currently at: ",nt
+            write(LDT_logunit,*) " Stopping ..."
+            call LDT_endrun
+          endif
         case( "JULES_PFT" )
           if( nt .lt. 10) then            
             write(LDT_logunit,*) "Param_Check: UKMO_IGBP_PFT has a minimum of 10 types (includes water)."

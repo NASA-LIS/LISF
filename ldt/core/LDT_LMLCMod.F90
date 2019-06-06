@@ -19,6 +19,7 @@ module LDT_LMLCMod
 !
 !  18 Jul 2008: Sujay Kumar; Initial implementation
 !  18 Jul 2013: KR Arsenault; Expanded options
+!  30 Nov 2018: David Mocko; Added Bondville landcover classification
 !
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -209,7 +210,7 @@ contains
        call ESMF_ConfigFindLabel(LDT_config,"Regional mask spatial transform:",rc=rc)
        do n=1,LDT_rc%nnest
           call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%reg_gridtransform(n),rc=rc)
-          call LDT_verify(rc,'Regional mask spatial tranform: option not specified in the config file')
+          call LDT_verify(rc,'Regional mask spatial transform: option not specified in the config file')
        enddo
 
        call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%reg_proj,&
@@ -408,12 +409,11 @@ contains
            LDT_LSMparam_struc(n)%regmask)
     endif
 
-
     call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"LANDCOVER_SCHEME", &
          LDT_rc%lc_type(n)))
 
   ! Attributes serving Noah-MP only (at this time):
-    if( LDT_rc%lsm == "Noah-MP.3.6" ) then
+    if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.(LDT_rc%lsm.eq."Noah-MP.4.0.1")) then
       select case( LDT_rc%lc_type(n) ) 
        case( "IGBPNCEP" ) 
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
@@ -433,6 +433,11 @@ contains
        case( "UMD" )
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
               13))
+       case( "Bondville" ) 
+         call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
+              20))
+         call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"LANDCOVER_SCHEME", &
+              "IGBPNCEP"))
       end select
     endif
 
@@ -448,6 +453,8 @@ contains
          LDT_rc%wetlandclass))
     call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"GLACIERCLASS", &
          LDT_rc%glacierclass))
+    call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"CROPCLASS", &
+         LDT_rc%cropclass1))
 
 ! - Enter number of vegetation land use types only:
 !   (no wetland, snow/ice, water classes included at this time)
@@ -482,6 +489,9 @@ contains
       case ( "CLM45" )
         call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMVEGTYPES", &
              36))
+      case ( "Bondville" )
+        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMVEGTYPES", &
+             17))
       case ( "CONSTANT" )
         call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMVEGTYPES", &
              LDT_LSMparam_struc(n)%landcover%num_bins))

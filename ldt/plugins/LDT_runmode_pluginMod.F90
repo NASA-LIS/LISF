@@ -69,6 +69,9 @@ contains
     external LDT_init_ANNproc
     external LDT_run_ANNproc
 
+    external LDT_init_ldtsi
+    external LDT_run_ldtsi
+
   ! Parameter Preprocessing:
     call registerldtinit(trim(LDT_LSMparamprocId)//char(0), &
          LDT_init_LSMparamproc)
@@ -121,6 +124,12 @@ contains
          LDT_init_ANNproc)
     call registerldtrun(trim(LDT_ANNprocId)//char(0), &
          LDT_run_ANNproc)
+
+    ! LDTSI analysis
+    call registerldtinit(trim(LDT_ldtsiId)//char(0), &
+         LDT_init_ldtsi)
+    call registerldtrun(trim(LDT_ldtsiId)//char(0), &
+         LDT_run_ldtsi)
 
   end subroutine LDT_runmode_plugin
 

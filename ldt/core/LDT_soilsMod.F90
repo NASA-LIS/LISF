@@ -968,7 +968,7 @@ module LDT_soilsMod
          LDT_rc%soil_classification(1)))
 
   ! Attributes serving Noah-MP only (at this time):
-    if( LDT_rc%lsm == "Noah-MP.3.6" ) then
+    if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.(LDT_rc%lsm.eq."Noah-MP.4.0.1")) then
     ! Number of soil types:
       if( LDT_rc%soil_classification(1) == "STATSGO" ) then
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_SOILTYPES", &

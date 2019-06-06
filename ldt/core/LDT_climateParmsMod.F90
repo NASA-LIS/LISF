@@ -107,6 +107,28 @@ contains
        call LDT_warning(rc,"PPT climatology data source: not defined")
     endif
 
+! Climate Tmin / Tmax included here - but currently not fully supported.
+! Tmin:
+    call ESMF_ConfigFindLabel(LDT_config,"Tmin climatology data source:",rc=rc)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
+       call LDT_set_param_attribs(rc,LDT_climate_struc(n)%climtmin,&
+            "CLIMTMIN",source)
+    enddo
+    if( LDT_rc%nmetforc > 0 .and. rc /= 0 ) then
+       call LDT_warning(rc,"Tmin climatology data source: not defined")
+    endif
+! Tmax:
+    call ESMF_ConfigFindLabel(LDT_config,"Tmax climatology data source:",rc=rc)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
+       call LDT_set_param_attribs(rc,LDT_climate_struc(n)%climtmax,&
+            "CLIMTMAX",source)
+    enddo
+    if( LDT_rc%nmetforc > 0 .and. rc /= 0 ) then
+       call LDT_warning(rc,"Tmax climatology data source: not defined")
+    endif
+
   end subroutine LDT_climate_readParamSpecs
 
 !BOP
@@ -145,8 +167,11 @@ contains
 
     type(LDT_fillopts) :: climppt
     logical            :: climppt_select
+    logical            :: climtmin_select
+    logical            :: climtmax_select
 
 ! __________________________________________________________________
+
 
    climppt_select = .false.
    do n = 1, LDT_rc%nnest
@@ -154,6 +179,12 @@ contains
         climppt_select = .true.
       endif
    enddo
+   ! Climate Tmin and Tmax sources not supported at this time.
+   ! - Initializing sources to 0 for now.
+   climtmin_select = .false.
+   LDT_climate_struc%climtmin%selectOpt = 0
+   climtmax_select = .false.
+   LDT_climate_struc%climtmax%selectOpt = 0
 
    if( climppt_select ) then
      write(LDT_logunit,*)" - - - - - - - - Climate Downscaling Parameters - - - - - - - - -"
@@ -177,7 +208,7 @@ contains
          call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%clim_gridtransform2,&
               rc=rc)
          call LDT_verify(rc,&
-              'Climate params spatial tranform 2: option not specified in the config file')
+              'Climate params spatial transform 2: option not specified in the config file')
         end if
       enddo
 
@@ -220,15 +251,12 @@ contains
     end if
 
     if( climppt_select ) then
-!        LDT_climate_struc(1)%climtmin%selectOpt == 1 .or.  &
-!        LDT_climate_struc(1)%climtmax%selectOpt == 1 ) then
-
       call ESMF_ConfigFindLabel(LDT_config,"Climate params spatial transform:",rc=rc)
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%clim_gridtransform,&
               rc=rc)
          call LDT_verify(rc,&
-              'Climate params spatial tranform: option not specified in the config file')
+              'Climate params spatial transform: option not specified in the config file')
       enddo
     end if
 
@@ -263,6 +291,7 @@ contains
           end if
        endif
 
+#if 0
     !- Max. Temperature Climatology:
        if( LDT_climate_struc(n)%climtmax%selectOpt > 0 ) then 
        !- LIS run domain:
@@ -283,7 +312,9 @@ contains
             end do
           end if
        endif
+#endif
 
+#if 0
     !- Min. Temperature Climatology:
        if( LDT_climate_struc(n)%climtmin%selectOpt > 0 ) then 
        !- LIS run domain:
@@ -304,6 +335,7 @@ contains
             end do
           end if
        endif  ! End tmin check
+#endif
 
     enddo  ! end nest loop
 
@@ -405,11 +437,11 @@ contains
        endif     ! End ClimPPT check
 
     !- Min Temperature Climatology Files:
-       if( LDT_climate_struc(n)%climtmin%selectOpt == 1 ) then 
-       endif
+!       if( LDT_climate_struc(n)%climtmin%selectOpt == 1 ) then 
+!       endif
     !- Max Temperature Climatology Files:
-       if( LDT_climate_struc(n)%climtmax%selectOpt == 1 ) then 
-       endif
+!       if( LDT_climate_struc(n)%climtmax%selectOpt == 1 ) then 
+!       endif
 
     enddo
 

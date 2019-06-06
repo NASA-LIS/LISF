@@ -44,6 +44,7 @@ module LVT_coreMod
   public :: LVT_endofrun
   public :: LVT_isAtAfinerResolution
   public :: LVT_core_init
+  public :: LVT_557post_alarm_is_on ! EMK
 !-----------------------------------------------------------------------------
 ! !PUBLIC TYPES:
 !-----------------------------------------------------------------------------
@@ -658,6 +659,10 @@ contains
        endif
     end if
 
+    ! EMK...For 557 post mode, alarm should be set when ready to write.
+    if (LVT_rc%runmode .eq. "557 post") then
+       LVT_rc%computeFlag = LVT_557post_alarm_is_on()
+    end if
   end subroutine LVT_ticktime
 
 !BOP
@@ -1191,5 +1196,36 @@ end function checkTS
        call LVT_endrun()
     endif
   end subroutine LVT_core_init
+
+  ! EMK...Return logical indicating if alarm should ring.
+  ! Used by "557 post" runmode.
+  logical function LVT_557post_alarm_is_on() result(alarmCheck)
+     use LVT_timeMgrMod,      only : LVT_get_julhr
+     implicit none
+
+     logical, save :: firstTime = .true.
+     integer, save :: starttime = 0
+     integer :: curtime
+     integer :: difftime
+
+     alarmCheck = .false.
+     if (firstTime) then
+        call LVT_get_julss(LVT_rc%syr, LVT_rc%smo, LVT_rc%sda, &
+             LVT_rc%shr, LVT_rc%smn, LVT_rc%sss, &
+             starttime)
+        firstTime = .false.
+     end if
+     call LVT_get_julss(LVT_rc%yr, LVT_rc%mo, LVT_rc%da, &
+          LVT_rc%hr, LVT_rc%mn, LVT_rc%ss, &
+          curtime)
+     difftime = curtime - starttime
+     if (difftime .gt. 0) then
+        if (mod(difftime,LVT_rc%statswriteint).eq.0) then
+           alarmCheck = .true.
+        end if
+     end if
+
+     return
+  end function LVT_557post_alarm_is_on
 
 end module LVT_coreMod

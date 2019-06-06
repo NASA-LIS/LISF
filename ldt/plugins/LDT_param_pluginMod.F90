@@ -101,12 +101,28 @@ contains
     call registerlsmparamprocwritedata(trim(LDT_noah36Id)//char(0),&
          NoahParms_writeData)
 
-  ! Noah-MP (v3.6) LSM:
-    call registerlsmparamprocinit(trim(LDT_noahmpId)//char(0),&
+  ! Noah 3.9 LSM:
+    call registerlsmparamprocinit(trim(LDT_noah39Id)//char(0),&
          NoahParms_init)
-    call registerlsmparamprocwriteheader(trim(LDT_noahmpId)//char(0),&
+    call registerlsmparamprocwriteheader(trim(LDT_noah39Id)//char(0),&
          NoahParms_writeHeader)
-    call registerlsmparamprocwritedata(trim(LDT_noahmpId)//char(0),&
+    call registerlsmparamprocwritedata(trim(LDT_noah39Id)//char(0),&
+         NoahParms_writeData)
+
+  ! Noah-MP (v3.6) LSM:
+    call registerlsmparamprocinit(trim(LDT_noahmp36Id)//char(0),&
+         NoahParms_init)
+    call registerlsmparamprocwriteheader(trim(LDT_noahmp36Id)//char(0),&
+         NoahParms_writeHeader)
+    call registerlsmparamprocwritedata(trim(LDT_noahmp36Id)//char(0),&
+         NoahParms_writeData)
+
+  ! Noah-MP (v4.0.1) LSM:
+    call registerlsmparamprocinit(trim(LDT_noahmp401Id)//char(0),&
+         NoahParms_init)
+    call registerlsmparamprocwriteheader(trim(LDT_noahmp401Id)//char(0),&
+         NoahParms_writeHeader)
+    call registerlsmparamprocwritedata(trim(LDT_noahmp401Id)//char(0),&
          NoahParms_writeData)
 
   ! CLSM F2.5 LSM:

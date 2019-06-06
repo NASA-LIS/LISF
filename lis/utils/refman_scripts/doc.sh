@@ -110,7 +110,9 @@ ls_lsms=`find ./src/surfacemodels/land/cable -name *.txt -print -o -name *.F90 -
          find ./src/surfacemodels/land/noah.3.2 -name *.txt -print -o -name *.F90 -print;   \
          find ./src/surfacemodels/land/noah.3.3 -name *.txt -print -o -name *.F90 -print;   \
          find ./src/surfacemodels/land/noah.3.6 -name *.txt -print -o -name *.F90 -print;   \
+         find ./src/surfacemodels/land/noah.3.9 -name *.txt -print -o -name *.F90 -print;   \
          find ./src/surfacemodels/land/noahmp.3.6 -name *.txt -print -o -name *.F90 -print;   \
+         find ./src/surfacemodels/land/noahmp.4.0.1 -name *.txt -print -o -name *.F90 -print;   \
          find ./src/surfacemodels/land/rdhm.3.5.6 -name *.txt -print -o -name *.F90 -print; \
          find ./src/surfacemodels/land/sib2 -name *.txt -print -o -name *.F90 -print;       \
          find ./src/surfacemodels/land/template -name *.txt -print -o -name *.F90 -print;`
