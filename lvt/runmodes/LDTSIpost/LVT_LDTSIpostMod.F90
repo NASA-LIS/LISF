@@ -700,9 +700,7 @@ contains
          end do ! r
       end if
       call write_grib1(ftn, griddesco, nc_out, nr_out, go, param=66, &
-           decimal_scale_factor=0)
-      !call write_grib1(ftn, griddesco, nc_out, nr_out, go, param=66, &
-      !     decimal_scale_factor=2)
+           decimal_scale_factor=2, bits_per_value=8)
 
       ! Interpolate snoage
       do r = 1, this%nr
@@ -747,7 +745,7 @@ contains
          end do ! r
       end if
       call write_grib1(ftn, griddesco, nc_out, nr_out, go, param=175, &
-           decimal_scale_factor=0)
+           decimal_scale_factor=0, bits_per_value=7)
 
       ! Handle icecon
       do r = 1, this%nr
@@ -757,7 +755,7 @@ contains
                gi(c + (r-1)*this%nc) = LVT_rc%udef
             else
                li(c + (r-1)*this%nc) = .true.
-               gi(c + (r-1)*this%nc) = this%icecon(c,r)
+               gi(c + (r-1)*this%nc) = this%icecon(c,r)*100 ! GRIB1 is in %
             end if
          end do ! c
       end do ! r
@@ -793,7 +791,7 @@ contains
          end do ! r
       end if
       call write_grib1(ftn, griddesco, nc_out, nr_out, go, param=128, &
-           decimal_scale_factor=0)
+           decimal_scale_factor=0, bits_per_value=7)
       
       !  Handle icemask
       do r = 1, this%nr
@@ -838,7 +836,7 @@ contains
          end do ! r
       end if
       call write_grib1(ftn, griddesco, nc_out, nr_out, go, param=91, &
-           decimal_scale_factor=0)
+           decimal_scale_factor=0, bits_per_value=1)
 
       ! Handle iceage
       do r = 1, this%nr
@@ -883,7 +881,7 @@ contains
          end do ! r
       end if
       call write_grib1(ftn, griddesco, nc_out, nr_out, go, param=129, &
-           decimal_scale_factor=0)
+           decimal_scale_factor=0, bits_per_value=9)
 
       ! Close the GRIB1 file
       call grib_close_file(ftn, rc)
@@ -1406,7 +1404,8 @@ contains
 
    ! Internal subroutine for writing grib1 message
    subroutine write_grib1(ftn, griddesco, &
-        nc_out, nr_out, go, param, decimal_scale_factor)
+        nc_out, nr_out, go, param, decimal_scale_factor, &
+        bits_per_value)
 
       ! Imports      
       use grib_api
@@ -1425,6 +1424,7 @@ contains
       real, intent(in) :: go(nc_out*nr_out)
       integer, intent(in) :: param
       integer, intent(in) :: decimal_scale_factor
+      integer, intent(in) :: bits_per_value
 
       ! Local variables
       integer :: igrib, rc, status2
@@ -1521,7 +1521,7 @@ contains
 
       ! Section 2: Grid Description Section
       ! Octet 4
-      call LVT_grib_set(igrib, 'numberOfVerticalCoordinateValues', 1)
+      call LVT_grib_set(igrib, 'numberOfVerticalCoordinateValues', 0)
       ! Octet 5
       call LVT_grib_set(igrib, 'pvlLocation', 255)
       ! Octet 6
@@ -1576,9 +1576,10 @@ contains
       ! Section 3: Bit-map section
       ! This is handled implicitly by ECCODES based on the following
       call LVT_grib_set(igrib, 'missingValue', LVT_rc%udef)
-      call LVT_grib_set(igrib, 'values', go)
       call LVT_grib_set(igrib, 'bitmapPresent', 1)
-            
+      call LVT_grib_set(igrib, 'bitsPerValue', bits_per_value)
+      call LVT_grib_set(igrib, 'values', go)
+
       ! Section 4:  Binary data section -- handled implicitly
 
       ! Write the message
