@@ -9,6 +9,8 @@
 !
 ! !REVISION HISTORY:
 !  19 Sep 2014: K. Arsenault; Initial Specification
+!  17 May 2019: H. Beaudoing; added GRIPC_AQUASTAT irrigation type and 
+!                             GIA_GRIPC irrigation fraction sources
 !
 ! !INTERFACE:
 subroutine setIrrigParmsFullnames(n,datatype,source)
@@ -46,6 +48,9 @@ subroutine setIrrigParmsFullnames(n,datatype,source)
         case( "GRIPC" )
           LDT_irrig_struc(n)%irrigtype%standard_name =&
              "GRIPC (Salmon,2013) Irrigation type (tiles)"
+        case( "AQUASTAT-GRIPC" )
+          LDT_irrig_struc(n)%irrigtype%standard_name =&
+             "Merged AQUASTAT and GRIPC (Salmon,2013) Irrigation type (tiles)"
       end select
 
     case( "irrigfrac" )
@@ -56,6 +61,9 @@ subroutine setIrrigParmsFullnames(n,datatype,source)
         case( "MODIS_OG" )
           LDT_irrig_struc(n)%irrigfrac%standard_name =&
               "MODIS (Ozdogan+Gutman,2008) Irrig gridcell fraction"
+        case( "GIA-GRIPC" )
+          LDT_irrig_struc(n)%irrigfrac%standard_name =&
+              "Merged GIA (Meier et al, 2018) and GRIPC (Salmon,2013) Irrig gridcell fraction"
       end select
 
     case default

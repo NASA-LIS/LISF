@@ -9,6 +9,7 @@
 !
 ! !REVISION HISTORY:
 !  19 Sep 2014: K. Arsenault; Initial Specification
+!  21 May 2019: H. Beaudoing; Added MIRCA2000 crop map
 !
 ! !INTERFACE:
 subroutine setCropParmsFullnames(n,datatype,source)
@@ -50,6 +51,10 @@ subroutine setCropParmsFullnames(n,datatype,source)
         case( "Monfreda08" )
           LDT_LSMCrop_struc(n)%croptype%standard_name =&
               "Monfreda et al (2008) crop types"
+
+        case( "MIRCA2000" )
+          LDT_LSMCrop_struc(n)%croptype%standard_name =&
+              "MIRCA2000 26 crop types (Portmann et al, 2010)"
       end select
 
     case default
