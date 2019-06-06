@@ -478,7 +478,7 @@ subroutine LIS_lsmda_plugin
    external noahmp401_qc_snodepobs
 #endif
 
-#if ( defined DA_OBS_DA_OBS_LDTSI )
+#if ( defined DA_OBS_LDTSI )
 ! NoahMP-4.0.1 LDTSI
    external noahmp401_getldtsivars
    external noahmp401_transform_ldtsi
