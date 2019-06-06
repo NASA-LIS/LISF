@@ -11,7 +11,7 @@
 ! 17Jul2006; K. Arsenault, Added Stage IV
 ! 13 Feb 2015; Jonathan Case, modified for MRMS QPE
 ! 07 Sep 2017; Jessica Erlingis, modified for operational MRMS QPE
-! 22 Feb 2019; Jessica Erlingis, modified to add nearest neighbor case
+! 06 Jun 2019; Jessica Erlingis, modified to dellocate arrays if allocated 
 !
 ! !INTERFACE:
 subroutine finalize_mrms_grib(findex)
@@ -35,40 +35,97 @@ subroutine finalize_mrms_grib(findex)
   do n=1,LIS_rc%nnest
     dom=LIS_rc%lis_map_proj
     res=LIS_rc%gridDesc(n,9)
-    if ( (((dom.eq."latlon").or.(dom.eq."gaussian")) .and. (res.eq.0.01)) .or. & !Nearest neighbor case
-      (((dom.eq."mercator").or.(dom.eq."lambert").or.                       &
-      (dom.eq."polar").or.(dom.eq."UTM")) .and. (res.eq.1.0)) ) then
-      deallocate(mrms_grib_struc(n)%n113)
-    endif 
-    if ( (((dom.eq."latlon").or.(dom.eq."gaussian")) .and. (res.lt.0.01)) .or. &
-         (((dom.eq."mercator").or.(dom.eq."lambert").or.                       &
-           (dom.eq."polar").or.(dom.eq."UTM")) .and. (res.lt.1.0)) ) then
-      if(trim(LIS_rc%met_interp(findex)).eq."bilinear") then 
-         deallocate(mrms_grib_struc(n)%rlat1)
-         deallocate(mrms_grib_struc(n)%rlon1)
-         deallocate(mrms_grib_struc(n)%n111)
-         deallocate(mrms_grib_struc(n)%n121)
-         deallocate(mrms_grib_struc(n)%n211)
-         deallocate(mrms_grib_struc(n)%n221)
-         deallocate(mrms_grib_struc(n)%w111)
-         deallocate(mrms_grib_struc(n)%w121)
-         deallocate(mrms_grib_struc(n)%w211)
-         deallocate(mrms_grib_struc(n)%w221)
-      elseif(trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then 
-         deallocate(mrms_grib_struc(n)%rlat2)
-         deallocate(mrms_grib_struc(n)%rlon2)
-         deallocate(mrms_grib_struc(n)%n112)
-         deallocate(mrms_grib_struc(n)%n122)
-         deallocate(mrms_grib_struc(n)%n212)
-         deallocate(mrms_grib_struc(n)%n222)
-         deallocate(mrms_grib_struc(n)%w112)
-         deallocate(mrms_grib_struc(n)%w122)
-         deallocate(mrms_grib_struc(n)%w212)
-         deallocate(mrms_grib_struc(n)%w222)
-      endif
-    else ! upscaling deallocate
-      deallocate(mrms_grib_struc(n)%n11)
+
+    ! Deallocate each array if it has been previously allocated
+
+    if ( allocated(mrms_grib_struc(n)%n113) ) then
+       deallocate(mrms_grib_struc(n)%n113)
     endif
+  
+    if ( allocated(mrms_grib_struc(n)%rlat1) ) then
+       deallocate(mrms_grib_struc(n)%rlat1)
+    endif 
+
+    if ( allocated(mrms_grib_struc(n)%rlon1) ) then
+       deallocate(mrms_grib_struc(n)%rlon1)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%n111) ) then
+       deallocate(mrms_grib_struc(n)%n111)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%n121) ) then
+       deallocate(mrms_grib_struc(n)%n121)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%n211) ) then
+       deallocate(mrms_grib_struc(n)%n211)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%n221) ) then
+       deallocate(mrms_grib_struc(n)%n221)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%w111) ) then
+       deallocate(mrms_grib_struc(n)%w111)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%w121) ) then
+       deallocate(mrms_grib_struc(n)%w121)
+    endif
+    
+    if ( allocated(mrms_grib_struc(n)%w211) ) then
+       deallocate(mrms_grib_struc(n)%w211)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%w221) ) then
+       deallocate(mrms_grib_struc(n)%w221) 
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%rlat2) ) then
+       deallocate(mrms_grib_struc(n)%rlat2)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%rlon2) ) then
+       deallocate(mrms_grib_struc(n)%rlon2)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%n112) ) then
+       deallocate(mrms_grib_struc(n)%n112)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%n122) ) then
+       deallocate(mrms_grib_struc(n)%n122)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%n212) ) then
+       deallocate(mrms_grib_struc(n)%n212)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%n222) ) then
+       deallocate(mrms_grib_struc(n)%n222)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%w112) ) then
+       deallocate(mrms_grib_struc(n)%w112)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%w122) ) then
+       deallocate(mrms_grib_struc(n)%w122)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%w212) ) then 
+       deallocate(mrms_grib_struc(n)%w212)
+    endif
+  
+    if ( allocated(mrms_grib_struc(n)%w222) ) then
+       deallocate(mrms_grib_struc(n)%w222)
+    endif
+
+    if ( allocated(mrms_grib_struc(n)%n11) ) then
+       deallocate(mrms_grib_struc(n)%n11)
+    endif
+
  enddo
  deallocate(mrms_grib_struc)
 

@@ -101,7 +101,7 @@ module mrms_grib_forcingMod
 
 ! J.Case (ENSCO, Inc. 2/13/2015)
 ! == Array for upscale by averaging.
-     integer, pointer       :: n11(:)   ! Array that maps the location of each 
+     integer, allocatable       :: n11(:)   ! Array that maps the location of each 
                                         ! input grid point in the output grid.
 
   end type mrms_grib_type_dec
