@@ -38,7 +38,7 @@ subroutine readcrd_imerg()
 
   call ESMF_ConfigFindLabel(LIS_config,"IMERG product:",rc=rc)
   if(rc /= 0) then
-     write(LIS_logunit,*) "[WARN] IMERG product not specified. Defauling to 'final' version."
+     write(LIS_logunit,*) "[WARN] IMERG product not specified. Defauling to 'final' product."
      write(LIS_logunit,*) "[WARN] Valid options for IMERG are 'early', 'late', and 'final'."
 
      do n=1, LIS_rc%nnest
