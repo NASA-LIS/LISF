@@ -5903,15 +5903,21 @@ anchor:sssec_supp_imerg[IMERG precipitation]
 `IMERG forcing directory:` specifies the location of the
 GPM IMERG precipitation forcing files.
 
-'IMERG version:' specifies the version of the GPM IMERG 
+'IMERG product:' specifies the product of the GPM IMERG 
 precipitation forcing files. The valid options are: early,
 late, and final. If no version is specified, the reader will
-default to the 'final' version of GPM IMERG. 
+default to the 'final' product of GPM IMERG. 
+
+'IMERG version:' specifies the version of the GPM IMERG
+precipitation forcing files. If no version is specified, 
+the reader will default to the latest version of GPM IMERG.
+(Currently V06B).
 
 .Example _lis.config_ entry
 ....
 IMERG forcing directory:     ./FORCING/IMERG
-IMERG version: 'final'
+IMERG product: 'final'
+IMERG version: 'V06B'
 ....
 
 
