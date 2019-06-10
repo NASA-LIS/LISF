@@ -47,11 +47,13 @@ module LDT_irrigationMod
 
      character*140    :: irrigtypefile
      character*140    :: irrigfracfile
-     real, allocatable    :: irrig_gridDesc(:)
+     real, allocatable :: irrig_gridDesc(:)
      character*50     :: irrig_proj
 
      character*50     :: irrigtype_gridtransform
      character*50     :: irrigfrac_gridtransform
+
+     character*50     :: irrigfrac_typeopt
 
      ! Irrigation parameters
      type(LDT_paramEntry) :: irrigtype   ! Type of irrigation
@@ -204,13 +206,34 @@ contains
                rc=rc)
           call LDT_verify(rc,'Irrigation fraction spatial transform: option not specified in the config file')
        enddo
-     ! Set units and full names:
+       ! Set units and full names:
        do n=1,LDT_rc%nnest
           LDT_irrig_struc(n)%irrigfrac%units="-"
           call setIrrigParmsFullnames( n, "irrigfrac", &
                   LDT_irrig_struc(n)%irrigfrac%source )
        enddo
-
+       ! Option to select irrigation type, if GRIPC selected: 
+       if( LDT_irrig_struc(1)%irrigfrac%source == "GRIPC" )then
+         call ESMF_ConfigFindLabel(LDT_config,"Irrigation fraction type option:",rc=rc)
+         do n=1,LDT_rc%nnest
+            call ESMF_ConfigGetAttribute(LDT_config,&
+                 LDT_irrig_struc(n)%irrigfrac_typeopt,&
+                 default="sprinkler",&
+                 rc=rc)
+            call LDT_verify(rc,'Irrigation fraction type option: option not specified in the config file')
+            select case ( LDT_irrig_struc(n)%irrigfrac_typeopt )
+             case( "sprinkler", "paddy", "sprinkler+paddy" )
+               write(LDT_logunit,*) "[INFO]  For GRIPC irrigation fraction, " 
+               write(LDT_logunit,*) "  the type of irrigation selected is: ",&
+                    trim(LDT_irrig_struc(n)%irrigfrac_typeopt)
+             case default
+               write(LDT_logunit,*) "[ERR]  Incorrect GRIPC irrigation fraction type selected."
+               write(LDT_logunit,*) "  Check your ldt.config file and enter one of these options:"
+               write(LDT_logunit,*) "    sprinkler | paddy | sprinkler+paddy "
+               call LDT_endrun
+            end select  
+         enddo
+       end if
     end if
 
 

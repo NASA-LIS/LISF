@@ -196,7 +196,7 @@
       do nc = 1, subpnc
          i = i + 1
 !         if( var_in(nc,nr) == 2. .or. &  ! Irrigated type
-!             var_in(nc,nr) == 3. ) then  ! Rice-patty area
+!             var_in(nc,nr) == 3. ) then  ! Rice-paddy area
          if( var_in(nc,nr) > 0. ) then  
             gi(i) = var_in(nc,nr)  
             li(i) = .true.
@@ -236,10 +236,16 @@
 
        ! Estimate 2-D fraction for just irrigation:
          if( isum > 0. ) then
-          ! Irrigated layer only:
-            irrigfrac(nc,nr) = (irrigfrac_cnt(nc,nr,2) / isum) * 100.   
-          ! Irrigated + rice patty layers:
-!            irrigfrac(nc,nr) = ((irrigfrac_cnt(nc,nr,2)+irrigfrac_cnt(nc,nr,3)) / isum) * 100.
+          ! Irrigated layer "sprinkler" only:
+            if( LDT_irrig_struc(n)%irrigfrac_typeopt == "sprinkler" ) then
+              irrigfrac(nc,nr) = (irrigfrac_cnt(nc,nr,2) / isum) * 100.   
+          ! Rice paddy layer-only:
+            elseif ( LDT_irrig_struc(n)%irrigfrac_typeopt == "paddy" ) then
+              irrigfrac(nc,nr) = (irrigfrac_cnt(nc,nr,3) / isum) * 100.   
+          ! Irrigated + rice paddy layers:
+            elseif ( LDT_irrig_struc(n)%irrigfrac_typeopt == "sprinkler+paddy" ) then
+              irrigfrac(nc,nr) = ((irrigfrac_cnt(nc,nr,2)+irrigfrac_cnt(nc,nr,3)) / isum) * 100.
+            endif
          else
             irrigfrac(nc,nr) = 0.
          endif
