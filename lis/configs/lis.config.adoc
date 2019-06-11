@@ -6536,6 +6536,27 @@ anchor:sssec_gdast1534forcing[GDAS T1534]
 `GDAS T1534 forcing directory:`
 ....
 
+==== MRMS
+anchor:sssec_mrmsforcing[MRMS]
+
+`MRMS forcing directory:` specifies the location of the MRMS metforcing data.
+
+`MRMS masking:` specifies whether to use a monthly-varying mask for where MRMS
+data are considered acceptable to the user. (1=Yes 0=No)
+
+`MRMS mask threshold:` specifies Radar Quality Index value (on scale of 0-100)
+above which to use MRMS data and below which to use a different forcing.
+
+`MRMS mask directory:` specifies the location of the MRMS mask files.
+
+.Example _lis.config_ entry
+....
+MRMS forcing directory:
+MRMS masking: 1
+MRMS mask threshold: 60.0
+MRMS mask directory: ./input/MASKS/
+....
+
 
 === Land surface models
 anchor:ssec_lsm[Land surface models]
