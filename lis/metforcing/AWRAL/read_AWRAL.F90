@@ -151,19 +151,18 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
     do j = 1, LIS_rc%lnr(n)
         do i = 1, LIS_rc%lnc(n)
            index1 = LIS_domain(n)%gindex(i,j)
-           latt = LIS_domain(n)%grid(index1)%lat
-           lont = LIS_domain(n)%grid(index1)%lon
-           call awrallatlon_2_globalgrid(latt, lont, AWRAL_struc(n)%gridDesci(4), AWRAL_struc(n)%gridDesci(5), AWRAL_struc(n)%gridDesci(9), AWRAL_struc(n)%gridDesci(10), rowt, colt)
-           if ( temp2awral(colt,rowt,v) .ne. LIS_rc%udef ) then
-              if(index1 .ne. -1) then
-                 if(order.eq.1) then 
-                    AWRAL_struc(n)%metdata1(1,v,index1) = temp2awral(colt,rowt,v)
-                 elseif(order.eq.2) then 
-                    AWRAL_struc(n)%metdata2(1,v,index1) = temp2awral(colt,rowt,v)
-                 endif
-              endif
+           if(index1 .ne. -1) then
+             latt = LIS_domain(n)%grid(index1)%lat
+             lont = LIS_domain(n)%grid(index1)%lon
+             call awrallatlon_2_globalgrid(latt, lont, AWRAL_struc(n)%gridDesci(4), AWRAL_struc(n)%gridDesci(5), AWRAL_struc(n)%gridDesci(9), AWRAL_struc(n)%gridDesci(10), rowt, colt)
+             if ( temp2awral(colt,rowt,v) .ne. LIS_rc%udef ) then
+               if(order.eq.1) then 
+                 AWRAL_struc(n)%metdata1(1,v,index1) = temp2awral(colt,rowt,v)
+               elseif(order.eq.2) then 
+                 AWRAL_struc(n)%metdata2(1,v,index1) = temp2awral(colt,rowt,v)
+               endif
+             endif
            endif
-           
         enddo
     enddo
   enddo
