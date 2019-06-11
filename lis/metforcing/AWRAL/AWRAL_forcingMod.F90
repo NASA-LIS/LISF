@@ -68,7 +68,8 @@ module AWRAL_forcingMod
      real               :: ts
      integer            :: ncol                 ! Number of cols
      integer            :: nrow                 ! Number of rows
-     character*100       :: AWRALdir              ! STAGE IV Directory
+     real 		:: gridDesci(50)
+     character*100      :: AWRALdir              ! STAGE IV Directory
      real*8             :: AWRALtime             ! Nearest daily instance of incoming file
      integer            :: mi                   ! Number of points in the input grid
      logical            :: interp_flag
@@ -126,7 +127,6 @@ contains
 !  \end{description}
 !
 !EOP
-    real :: gridDesci(LIS_rc%nnest, 50)
     integer :: n
 
     integer :: updoy, yr1,mo1,da1,hr1,mn1,ss1
@@ -155,8 +155,6 @@ contains
 
     LIS_rc%met_nf(findex) = 6
 
-    gridDesci = 0
-
     do n=1,LIS_rc%nnest
 
        allocate(AWRAL_struc(n)%metdata1(1,LIS_rc%met_nf(findex),&
@@ -167,24 +165,28 @@ contains
 
        AWRAL_struc(n)%ncol = 841
        AWRAL_struc(n)%nrow = 681
+       AWRAL_struc(n)%gridDesci = 0
 
-       gridDesci(n,1) = 0.0                 ! Projection type (UPS)
-       gridDesci(n,2) = AWRAL_struc(n)%ncol  ! X-dir amount of points
-       gridDesci(n,3) = AWRAL_struc(n)%nrow  ! y-dir amount of points
-       gridDesci(n,4) = -44.00
-       gridDesci(n,5) = 112.00
-       gridDesci(n,6) = 154.00
-       gridDesci(n,7) = -10.00
-       gridDesci(n,8) = 154.00
-       gridDesci(n,9) = 0.05
-       gridDesci(n,10) = 0.05
-       gridDesci(n,20) = 64.0
-
+       ! Define parameters for lat/lon projection
+       AWRAL_struc(n)%gridDesci(1) = 0      ! indicates lat/lon projection
+       AWRAL_struc(n)%gridDesci(2) = AWRAL_struc(n)%ncol  ! number of columns in the domain
+       AWRAL_struc(n)%gridDesci(3) = AWRAL_struc(n)%nrow  ! number of rows in the domain
+       AWRAL_struc(n)%gridDesci(4) = -44.00  ! latitude of the lower left corner CELL CENTER of the domain?
+       AWRAL_struc(n)%gridDesci(5) = 112.00  ! longitude of the lower left corner CELL CENTER of the domain?
+       AWRAL_struc(n)%gridDesci(6) = -10.00   ! latitude of the upper right corner CELL CENTER of the domain?
+       AWRAL_struc(n)%gridDesci(7) = 154.00   ! latitude of the upper right corner CELL CENTER of the domain?
+       AWRAL_struc(n)%gridDesci(8) = 154.00 ! No idea?
+       AWRAL_struc(n)%gridDesci(9) = 0.05   ! spatial resolution (in degrees) along the E-W dimension
+       AWRAL_struc(n)%gridDesci(10) = 0.05    ! spatial resolution (in degrees) along the N-S dimension
+       AWRAL_struc(n)%gridDesci(20) = 64.0  ! used to specify the ordering of data
+       ! (Non-divisible by 32 indicates E-W ordering, else N-S ordering)
+       !  Set now to 255 per interp/get_fieldpos explanation:
+       !   E-W ordering indicates elements located in row-order array, i.e., one row, then next and so on
 
        AWRAL_struc(n)%mi = AWRAL_struc(n)%ncol * AWRAL_struc(n)%nrow
 
 
-       if ( LIS_isatAfinerResolution(n,gridDesci(n,9)) ) then
+       if ( LIS_isatAfinerResolution(n, AWRAL_struc(n)%gridDesci(9)) ) then
           AWRAL_struc(n)%interp_flag = .true. 
 ! === BILINEAR INTERPOLATION ==== 
           if (trim(LIS_rc%met_interp(findex)) .eq. "bilinear") then
@@ -197,7 +199,7 @@ contains
              allocate(AWRAL_struc(n)%w211(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
              allocate(AWRAL_struc(n)%w221(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
              
-             call bilinear_interp_input(n, gridDesci(n,:),&
+             call bilinear_interp_input(n, AWRAL_struc(n)%gridDesci(:),&
                   AWRAL_struc(n)%n111, AWRAL_struc(n)%n121, &
                   AWRAL_struc(n)%n211, AWRAL_struc(n)%n221, &
                   AWRAL_struc(n)%w111, AWRAL_struc(n)%w121, &
@@ -214,7 +216,7 @@ contains
              allocate(AWRAL_struc(n)%w212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
              allocate(AWRAL_struc(n)%w222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
              
-             call conserv_interp_input(n, gridDesci(n,:), &
+             call conserv_interp_input(n, AWRAL_struc(n)%gridDesci(:), &
                   AWRAL_struc(n)%n112, AWRAL_struc(n)%n122, &
                   AWRAL_struc(n)%n212, AWRAL_struc(n)%n222, &
                   AWRAL_struc(n)%w112, AWRAL_struc(n)%w122, &
@@ -227,7 +229,7 @@ contains
           allocate(AWRAL_struc(n)%n111(AWRAL_struc(n)%mi))
 
           call upscaleByAveraging_input(&
-               gridDesci(n,:),              &
+               AWRAL_struc(n)%gridDesci(:),              &
                LIS_rc%gridDesc(n,:),        &
                AWRAL_struc(n)%mi,            &
                LIS_rc%lnc(n)*LIS_rc%lnr(n), &

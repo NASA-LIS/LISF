@@ -66,7 +66,6 @@ subroutine get_AWRAL(n, findex)
     integer :: doyc, yrc, moc, dac, hrc, mnc, ssc
     integer :: doyn, yrn, mon, dan, hrn, mnn, ssn
     real    :: gmtp, gmtc, gmtn, tsp, tsc, tsn                    
-    real    :: gridDesci(LIS_rc%nnest,50)
 
     integer :: index1
 
@@ -78,7 +77,7 @@ subroutine get_AWRAL(n, findex)
     hrn = 0
     mnn = 0
     ssn = 0
-    tsn = 172800
+    tsn = 86400
     call LIS_tick( timenext, doyn, gmtn, yrn, mon, dan, hrn, mnn, ssn, tsn )
 
 !-- Determine LIS's current time and the time of the AWRAL file:
@@ -88,7 +87,7 @@ subroutine get_AWRAL(n, findex)
     hrp = 0
     mnp = 0
     ssp = 0
-    tsp = 0
+    tsp = -86400
     call LIS_tick( AWRAL_file_timep, doyp, gmtp, yrp, mop, dap, hrp, mnp, ssp, tsp )
 
 !-- AWRAL product time; end accumulation time data
@@ -98,7 +97,7 @@ subroutine get_AWRAL(n, findex)
     hrc = 0
     mnc = 0
     ssc = 0
-    tsc = 86400
+    tsc = 0
     call LIS_tick( AWRAL_file_timec, doyc, gmtc, yrc, moc, dac, hrc, mnc, ssc, tsc )
 
 !-- Ensure that data is found during first time step

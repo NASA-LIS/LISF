@@ -74,25 +74,19 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
 
 
   character*100 :: var_fname
-  real,allocatable  :: regrid(:,:) ! original size of the model domain (lat,lon)
   real,allocatable  :: datain(:,:) ! input data (lat,lon)
-  logical*1,allocatable  :: lb(:,:) ! input bitmap??
   logical            :: file_exists            
 ! netcdf variables
   integer :: ncid, varid, status 
   integer            :: timestep
-  real               :: missingValue
+  real               :: missingValue, latt, lont
   integer            :: pds5_val, pds7_val
 
-  integer            :: c1,r1,c,r
-  real,allocatable   :: datain1(:,:) ! no idea?
-
+  integer            :: c1,r1,c,r,rowt,colt
+  real,allocatable   :: temp2awral(:,:,:)
 
   allocate(datain(AWRAL_struc(n)%ncol,AWRAL_struc(n)%nrow))
-  allocate(datain1(AWRAL_struc(n)%ncol,AWRAL_struc(n)%nrow))
-  allocate(regrid(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-  allocate(lb(AWRAL_struc(n)%ncol,AWRAL_struc(n)%nrow))
-
+  allocate(temp2awral(AWRAL_struc(n)%ncol,AWRAL_struc(n)%nrow,N_AF))
   write ( cyear, '(i4)' ) year
 
 !=== End Variable Definition =======================
@@ -117,10 +111,9 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
   enddo
 
 !-- Get timestep from cdoy --!
-  timestep = doy - 1
+  timestep = doy
 
   do v = 1, N_AF ! N_AF
-    regrid = LIS_rc%udef
     ndata = AWRAL_struc(n)%ncol * AWRAL_struc(n)%nrow
     datain = 0.0
     var_fname = trim(AWRAL_struc(n)%AWRALdir)//'/'//trim(awral_fv(v))//'_'//trim(cyear)//'.nc'
@@ -143,27 +136,69 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
 
     status = nf90_get_var(ncid, varid, datain, &
                                      start=(/1,1,timestep/), &
-    count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),1/))
+    count=(/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
  
+    status=nf90_close(ncid)
+    do j=1,AWRAL_struc(n)%nrow
+         do i=1,AWRAL_struc(n)%ncol
+            temp2awral(i,j,v) = datain(i,j)           
+         enddo
+    enddo
+  enddo
+
+
+  do v = 1, N_AF ! N_AF   
     do j = 1, LIS_rc%lnr(n)
         do i = 1, LIS_rc%lnc(n)
-           if ( datain(i,j) .ne. LIS_rc%udef ) then
-              index1 = LIS_domain(n)%gindex(i,j)
+           index1 = LIS_domain(n)%gindex(i,j)
+           latt = LIS_domain(n)%grid(index1)%lat
+           lont = LIS_domain(n)%grid(index1)%lon
+           call awrallatlon_2_globalgrid(latt, lont, AWRAL_struc(n)%gridDesci(4), AWRAL_struc(n)%gridDesci(5), AWRAL_struc(n)%gridDesci(9), AWRAL_struc(n)%gridDesci(10), rowt, colt)
+           if ( temp2awral(colt,rowt,v) .ne. LIS_rc%udef ) then
               if(index1 .ne. -1) then
                  if(order.eq.1) then 
-                    AWRAL_struc(n)%metdata1(1,v,index1) = datain(i,j)
+                    AWRAL_struc(n)%metdata1(1,v,index1) = temp2awral(colt,rowt,v)
                  elseif(order.eq.2) then 
-                    AWRAL_struc(n)%metdata2(1,v,index1) = datain(i,j)
+                    AWRAL_struc(n)%metdata2(1,v,index1) = temp2awral(colt,rowt,v)
                  endif
               endif
            endif
            
         enddo
     enddo
-
-  ! Close netCDF file.
-    status=nf90_close(ncid)
   enddo
-     
+  deallocate(datain)
+  deallocate(temp2awral)
 end subroutine read_AWRAL
+
+!BOP
+!
+! !ROUTINE: awrallatlon_2_globalgrid
+! \label{awrallatlon_2_globalgrid}
+!
+! !REVISION HISTORY:
+!  05.06.2019: Wendy Sharples
+!
+! !INTERFACE:
+subroutine awrallatlon_2_globalgrid(lat, lon, latllcnr, lonllcnr, deltalat, deltalon, row, col)
+  use LIS_logMod,           only : LIS_logunit, LIS_endrun
+
+  implicit none
+! !ARGUMENTS:
+  real, intent(in)                     :: lat, lon, latllcnr, lonllcnr, deltalat, deltalon
+  integer, intent(inout)               :: row, col
+!
+! !DESCRIPTION:
+! Gets global i,j from lat,lon
+!
+!
+!EOP
+
+  real                                :: row_real, col_real
+  
+  row_real = (deltalat + ABS(latllcnr - lat))/deltalat
+  col_real = (deltalon + ABS(lonllcnr - lon))/deltalon
+  row = NINT(row_real)
+  col = NINT(col_real) 
+end subroutine awrallatlon_2_globalgrid
 
