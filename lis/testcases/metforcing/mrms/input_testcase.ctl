@@ -1,4 +1,4 @@
-dset ^lis_input.d01.nc
+dset ^lis_input_testcase.d01.nc
 dtype netcdf
 undef -9999
 xdef 891 linear -115.925 0.01

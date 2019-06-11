@@ -36,8 +36,8 @@ Ending hour:                            0
 Ending minute:                             0
 Ending second:                             0
 Undefined value:                       -9999
-Output directory:                      "OUTPUT/MRMS_testcase/mask/"
-Diagnostic output file:                "OUTPUT/MRMS_testcase/mask/lislog" 
+Output directory:                      "OUTPUT"
+Diagnostic output file:                "OUTPUT/lislog"
 Number of ensembles per tile:           1
 
 #The following options are used for subgrid tiling based on vegetation
@@ -129,7 +129,7 @@ Run domain resolution (dx):                0.01
 Run domain resolution (dy):                0.01
 
 #The following options list the choice of parameter maps to be used
-LIS domain and parameter data file:     ./lis_input_testcase.d01.nc
+LIS domain and parameter data file:     ./lis_input.d01.nc
 Landmask data source:                   LDT
 Landcover data source:                  LDT
 Soil texture data source:               LDT
