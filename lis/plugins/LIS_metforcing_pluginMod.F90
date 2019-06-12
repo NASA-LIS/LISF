@@ -322,6 +322,10 @@ subroutine LIS_metforcing_plugin
    use HiMATGMU_forcingMod
 #endif
 
+#if ( defined MF_MRMS )
+   use mrms_grib_forcingMod
+#endif
+
 #if ( defined MF_MET_TEMPLATE )
    external get_metForcTemplate
    external timeinterp_metForcTemplate
@@ -693,6 +697,13 @@ subroutine LIS_metforcing_plugin
    external timeinterp_HiMATGMU
    external reset_HiMATGMU
    external finalize_HiMATGMU
+#endif
+
+#if ( defined MF_MRMS )
+   external get_mrms_grib
+   external timeinterp_mrms_grib
+   external finalize_mrms_grib
+   external reset_mrms_grib
 #endif
 
 #if ( defined MF_MET_TEMPLATE )
@@ -1261,6 +1272,16 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_HiMATGMU)
    call registerresetmetforc(trim(LIS_HiMATGMUforcId)//char(0),reset_HiMATGMU)
    call registerfinalmetforc(trim(LIS_HiMATGMUforcId)//char(0),finalize_HiMATGMU)
+#endif
+
+#if ( defined MF_MRMS )
+! - MRMS operational forcing, 0.1-deg, added by J. Erlingis
+   call registerinitmetforc(trim(LIS_mrmsId)//char(0),init_MRMS_grib)
+   call registerretrievemetforc(trim(LIS_mrmsId)//char(0),get_mrms_grib)
+   call registertimeinterpmetforc(trim(LIS_mrmsId)//char(0), &
+                                  timeinterp_mrms_grib)
+   call registerfinalmetforc(trim(LIS_mrmsId)//char(0),finalize_mrms_grib)
+   call registerresetmetforc(trim(LIS_mrmsId)//char(0),reset_mrms_grib)
 #endif
 end subroutine LIS_metforcing_plugin
 

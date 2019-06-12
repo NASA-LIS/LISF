@@ -26,6 +26,8 @@
 !  17 Feb 2004;   Sujay Kumar  Initial Specification
 !  17 Oct 2018  Mahdi Navari  Enhanced the LVT reader to read the 
 !               Veg. Water Content (VWC) from SMAP SM dataset ! 
+!  19 Nov 2018  Mahdi Navari added suport to read SMAP_L3 brightness temperature
+!
 !EOP
 module LVT_datastream_pluginMod
 
@@ -134,7 +136,8 @@ contains
     use JULES2D_obsMod,         only : JULES2D_obsinit
     use LVTbenchmarkOUT_obsMod, only : LVTbenchmarkOUT_obsInit
     use SMAP_smobsMod,          only : SMAP_smobsinit
-    !use SMAP_vwcobsMod,         only : SMAP_vwcobsinit !MN
+    use SMAP_vwcobsMod,         only : SMAP_vwcobsinit !MN
+    use SMAP_L3TBMod,         only : SMAP_L3TBinit  !MN   
     use SMAP_TBobsMod,          only : SMAP_TBobsinit
     use GOME2_SIFobsMod,        only : GOME2_SIFobsinit
     use Daymet_obsMod,          only : Daymet_obsInit
@@ -233,6 +236,7 @@ contains
     external readLVTbenchmarkOUTobs
     external readSMAPsmobs
     external readSMAPvwcobs ! MN vegwtation water content
+    external readSMAP_L3TB ! MN Tb from SMAP SM data       
     external readSMAPTBobs
     external readGOME2_SIFobs
     external readDaymetObs
@@ -541,6 +545,11 @@ contains
 !    call registerobsread(trim(LVT_SMAPvwcobsId)//char(0),&
 !         readSMAPvwcobs)
 
+! MN: SMAP L3 Tb
+    call registerobssetup(trim(LVT_SMAP_L3TbId)//char(0), &
+            SMAP_L3TBinit)
+    call registerobsread(trim(LVT_SMAP_L3TbId)//char(0),&
+            readSMAP_L3TB)
 
     call registerobssetup(trim(LVT_SMAPTBobsId)//char(0), &
          SMAP_TBobsInit)

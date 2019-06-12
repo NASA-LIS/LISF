@@ -172,6 +172,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_WRFoutId          = "WRFout"
    character*50, public,  parameter :: LIS_AWAPforcId        = "AWAP"
    character*50, public,  parameter :: LIS_HiMATGMUforcId    = "HiMAT GMU"
+   character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------

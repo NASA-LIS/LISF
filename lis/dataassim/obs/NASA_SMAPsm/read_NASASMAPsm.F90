@@ -15,6 +15,7 @@
 !  20 Sep 2012: Sujay Kumar; Updated to the NETCDF version of the data. 
 !  15 Jul 2018: Mahdi Navari: Bug in the SMAP reader was fixed
 !  31 Aug 2018: Mahdi Navari, Edited to read SPL3SMP.005 & SPL3SMP_E.002
+!  1  Apr 2019: Yonghwan Kwon: Upated for reading monthy CDF for the current month
 !
 ! !INTERFACE: 
 subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
@@ -85,7 +86,7 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
   real                   :: smvalue
   real                   :: model_delta(LIS_rc%obs_ngrid(k))
   real                   :: obs_delta(LIS_rc%obs_ngrid(k))
-  
+ 
   call ESMF_AttributeGet(OBS_State,"Data Directory",&
        smobsdir, rc=status)
   call LIS_verify(status)
@@ -265,20 +266,77 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
 !  Transform data to the LSM climatology using a CDF-scaling approach
 !-------------------------------------------------------------------------     
 
+  ! Read monthly CDF (only for the current month)
+  if (NASASMAPsm_struc(n)%ntimes.gt.1.and.NASASMAPsm_struc(n)%cdf_read_opt.eq.1) then
+     if (.not. NASASMAPsm_struc(n)%cdf_read_mon.or.LIS_rc%da.eq.1.and.LIS_rc%hr.eq.0.and.LIS_rc%mn.eq.0.and.LIS_rc%ss.eq.0) then
+        call LIS_readMeanSigmaData(n,k,&
+             NASASMAPsm_struc(n)%ntimes,&
+             LIS_rc%obs_ngrid(k), &
+             NASASMAPsm_struc(n)%modelcdffile, &
+             "SoilMoist",&
+             NASASMAPsm_struc(n)%model_mu,&
+             NASASMAPsm_struc(n)%model_sigma,&
+             LIS_rc%mo)
+
+        call LIS_readMeanSigmaData(n,k,&
+             NASASMAPsm_struc(n)%ntimes,&
+             LIS_rc%obs_ngrid(k), &
+             NASASMAPsm_struc(n)%obscdffile, &
+             "SoilMoist",&
+             NASASMAPsm_struc(n)%obs_mu,&
+             NASASMAPsm_struc(n)%obs_sigma,&
+             LIS_rc%mo)
+
+        call LIS_readCDFdata(n,k,&
+             NASASMAPsm_struc(n)%nbins,&
+             NASASMAPsm_struc(n)%ntimes,&
+             LIS_rc%obs_ngrid(k), &
+             NASASMAPsm_struc(n)%modelcdffile, &
+             "SoilMoist",&
+             NASASMAPsm_struc(n)%model_xrange,&
+             NASASMAPsm_struc(n)%model_cdf,&
+             LIS_rc%mo)
+
+        call LIS_readCDFdata(n,k,&
+             NASASMAPsm_struc(n)%nbins,&
+             NASASMAPsm_struc(n)%ntimes,&
+             LIS_rc%obs_ngrid(k), &
+             NASASMAPsm_struc(n)%obscdffile, &
+             "SoilMoist",&
+             NASASMAPsm_struc(n)%obs_xrange,&
+             NASASMAPsm_struc(n)%obs_cdf,&
+             LIS_rc%mo)
+
+        NASASMAPsm_struc(n)%cdf_read_mon = .true.
+     endif
+  endif
+
   if(LIS_rc%dascaloption(k).eq."CDF matching".and.fnd.ne.0) then
-     
-     call LIS_rescale_with_CDF_matching(     &
-          n,k,                               & 
-          NASASMAPsm_struc(n)%nbins,         & 
-          NASASMAPsm_struc(n)%ntimes,        & 
-          MAX_SM_VALUE,                      & 
-          MIN_SM_VALUE,                      & 
-          NASASMAPsm_struc(n)%model_xrange,  &
-          NASASMAPsm_struc(n)%obs_xrange,    &
-          NASASMAPsm_struc(n)%model_cdf,     &
-          NASASMAPsm_struc(n)%obs_cdf,       &
-          sm_current)
-     
+     if (NASASMAPsm_struc(n)%ntimes.gt.1.and.NASASMAPsm_struc(n)%cdf_read_opt.eq.1) then   
+        call LIS_rescale_with_CDF_matching(     &
+             n,k,                               &
+             NASASMAPsm_struc(n)%nbins,         &
+             1,                                 &
+             MAX_SM_VALUE,                      &
+             MIN_SM_VALUE,                      &
+             NASASMAPsm_struc(n)%model_xrange,  &
+             NASASMAPsm_struc(n)%obs_xrange,    &
+             NASASMAPsm_struc(n)%model_cdf,     &
+             NASASMAPsm_struc(n)%obs_cdf,       &
+             sm_current)                             
+     else
+        call LIS_rescale_with_CDF_matching(     &
+             n,k,                               & 
+             NASASMAPsm_struc(n)%nbins,         & 
+             NASASMAPsm_struc(n)%ntimes,        & 
+             MAX_SM_VALUE,                      & 
+             MIN_SM_VALUE,                      & 
+             NASASMAPsm_struc(n)%model_xrange,  &
+             NASASMAPsm_struc(n)%obs_xrange,    &
+             NASASMAPsm_struc(n)%model_cdf,     &
+             NASASMAPsm_struc(n)%obs_cdf,       &
+             sm_current)                      
+     endif  
   endif
   
   obsl = LIS_rc%udef 
