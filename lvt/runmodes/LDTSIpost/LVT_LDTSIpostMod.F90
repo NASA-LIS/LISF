@@ -856,7 +856,7 @@ contains
             end if
          end do ! c
       end do ! r
-      if (griddesco(1) == 1) then
+      if (griddesco(1) == 0) then
          call upscaleByMode((this%nc*this%nr), &
               (nc_out*nr_out), LVT_rc%udef, n11, li, gi, lo, go)
       else if (griddesco(1) == 5) then
