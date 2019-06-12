@@ -3,11 +3,11 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------------
 !BOP
 ! 
-! !MODULE: UASWE_obsMod
-! \label(UASWE_obsMod)
+! !MODULE: UASNOW_obsMod
+! \label(UASNOW_obsMod)
 !
 ! !INTERFACE:
-module UASWE_obsMod
+module UASNOW_obsMod
 ! 
 ! !USES:   
   use ESMF
@@ -21,8 +21,8 @@ module UASWE_obsMod
 !
 ! !DESCRIPTION:
 !  This module handles the observation plugin for the 
-!  University of Arizona (UA) SWE data.
-!  The UA SWE data is provides in the NAD 1983 grid with 
+!  University of Arizona (UA) SWE/Snow Depth data.
+!  The UA Snow data is provides in the NAD 1983 grid with 
 !  4km resolution. The domain extents are from (24, -125) to (50, -66.5). 
 !  The data entries are 16-bit signed integers.
 !  
@@ -31,13 +31,13 @@ module UASWE_obsMod
 ! !FILES USED:
 !
 ! !REVISION HISTORY: 
-!  28 May 2019: Rhae Sung Kim, Initial Specification!! 
+!  28 May 2019: Rhae Sung Kim, Initial Specification!
 !EOP
 
-  PUBLIC :: UASWE_obsinit
-  PUBLIC :: uasweobs
+  PUBLIC :: UASNOW_obsinit
+  PUBLIC :: uasnowobs
 
-  type, public :: uasweobsdec
+  type, public :: uasnowobsdec
      character*100        :: odir
      integer              :: nc, nr
      integer              :: yr
@@ -55,19 +55,20 @@ module UASWE_obsMod
      real,    allocatable     :: w21(:)
      real,    allocatable     :: w22(:)
      real,    allocatable     :: swe(:,:,:)
-  end type uasweobsdec
+     real,    allocatable     :: snwd(:,:,:)
+  end type uasnowobsdec
 
-  type(uasweobsdec), allocatable :: uasweobs(:)
+  type(uasnowobsdec), allocatable :: uasnowobs(:)
 
 contains
   
 !BOP
 ! 
-! !ROUTINE: UASWE_obsinit
-! \label{UASWE_obsinit}
+! !ROUTINE: UASNOW_obsinit
+! \label{UASNOW_obsinit}
 !
 ! !INTERFACE: 
-  subroutine UASWE_obsinit(i)
+  subroutine UASNOW_obsinit(i)
 ! 
 ! !USES: 
     use ESMF
@@ -85,7 +86,7 @@ contains
 !
 ! !DESCRIPTION: 
 !  This subroutine initializes and sets up the data structures required
-!  for reading UA SWE data. 
+!  for reading UA Snow data. 
 ! 
 ! !FILES USED:
 !
@@ -94,32 +95,32 @@ contains
     real               :: gridDesci(50)
     integer            :: status
     
-    if(.not.allocated(uasweobs)) then 
-       allocate(uasweobs(LVT_rc%nDataStreams))
+    if(.not.allocated(uasnowobs)) then 
+       allocate(uasnowobs(LVT_rc%nDataStreams))
     endif
 
-    call ESMF_ConfigGetAttribute(LVT_config, uasweobs(i)%odir, &
-         label='UA SWE observation directory:',rc=status)
-    call LVT_verify(status, 'UA SWE observation directory: not defined')
+    call ESMF_ConfigGetAttribute(LVT_config, uasnowobs(i)%odir, &
+         label='UA Snow observation directory:',rc=status)
+    call LVT_verify(status, 'UA Snow observation directory: not defined')
 
     gridDesci = 0 
     call LVT_update_timestep(LVT_rc, 86400)
 
-    allocate(uasweobs(i)%rlat(LVT_rc%lnc*LVT_rc%lnr))
-    allocate(uasweobs(i)%rlon(LVT_rc%lnc*LVT_rc%lnr))
+    allocate(uasnowobs(i)%rlat(LVT_rc%lnc*LVT_rc%lnr))
+    allocate(uasnowobs(i)%rlon(LVT_rc%lnc*LVT_rc%lnr))
 
-    allocate(uasweobs(i)%w11(LVT_rc%lnc*LVT_rc%lnr))
-    allocate(uasweobs(i)%w12(LVT_rc%lnc*LVT_rc%lnr))
-    allocate(uasweobs(i)%w21(LVT_rc%lnc*LVT_rc%lnr))
-    allocate(uasweobs(i)%w22(LVT_rc%lnc*LVT_rc%lnr))
+    allocate(uasnowobs(i)%w11(LVT_rc%lnc*LVT_rc%lnr))
+    allocate(uasnowobs(i)%w12(LVT_rc%lnc*LVT_rc%lnr))
+    allocate(uasnowobs(i)%w21(LVT_rc%lnc*LVT_rc%lnr))
+    allocate(uasnowobs(i)%w22(LVT_rc%lnc*LVT_rc%lnr))
 
-    allocate(uasweobs(i)%n11(LVT_rc%lnc*LVT_rc%lnr))
-    allocate(uasweobs(i)%n12(LVT_rc%lnc*LVT_rc%lnr))
-    allocate(uasweobs(i)%n21(LVT_rc%lnc*LVT_rc%lnr))
-    allocate(uasweobs(i)%n22(LVT_rc%lnc*LVT_rc%lnr))
+    allocate(uasnowobs(i)%n11(LVT_rc%lnc*LVT_rc%lnr))
+    allocate(uasnowobs(i)%n12(LVT_rc%lnc*LVT_rc%lnr))
+    allocate(uasnowobs(i)%n21(LVT_rc%lnc*LVT_rc%lnr))
+    allocate(uasnowobs(i)%n22(LVT_rc%lnc*LVT_rc%lnr))
 
-    uasweobs(i)%nc = 1405
-    uasweobs(i)%nr = 621
+    uasnowobs(i)%nc = 1405
+    uasnowobs(i)%nr = 621
     
     gridDesci(1) = 0 
     gridDesci(2) = 1405
@@ -135,19 +136,21 @@ contains
     
     call bilinear_interp_input(gridDesci,LVT_rc%gridDesc,&
          LVT_rc%lnc*LVT_rc%lnr, &
-         uasweobs(i)%rlat,  uasweobs(i)%rlon, &  
-         uasweobs(i)%n11, uasweobs(i)%n12,   & 
-         uasweobs(i)%n21, uasweobs(i)%n22,   & 
-         uasweobs(i)%w11, uasweobs(i)%w12,   & 
-         uasweobs(i)%w21, uasweobs(i)%w22)
+         uasnowobs(i)%rlat,  uasnowobs(i)%rlon, &  
+         uasnowobs(i)%n11, uasnowobs(i)%n12,   & 
+         uasnowobs(i)%n21, uasnowobs(i)%n22,   & 
+         uasnowobs(i)%w11, uasnowobs(i)%w12,   & 
+         uasnowobs(i)%w21, uasnowobs(i)%w22)
 
-    allocate(uasweobs(i)%swe(uasweobs(i)%nc,&
-         uasweobs(i)%nr,366))
-    
-    call ESMF_TimeIntervalSet(uasweobs(i)%timestep, s=86400, rc=status)
-    call LVT_verify(status, 'error in setting timestep (uasweobs)')
+    allocate(uasnowobs(i)%swe(uasnowobs(i)%nc,&
+         uasnowobs(i)%nr,366))
+    allocate(uasnowobs(i)%snwd(uasnowobs(i)%nc,&
+         uasnowobs(i)%nr,366))    
+ 
+    call ESMF_TimeIntervalSet(uasnowobs(i)%timestep, s=86400, rc=status)
+    call LVT_verify(status, 'error in setting timestep (uasnowobs)')
         
-  end subroutine UASWE_obsinit
+  end subroutine UASNOW_obsinit
 
 
-end module UASWE_obsMod
+end module UASNOW_obsMod

@@ -4,11 +4,11 @@
 #include "LVT_misc.h"
 !BOP
 ! 
-! !ROUTINE: readUASNWDObs
-! \label{readUASNWDObs}
+! !ROUTINE: readUASNOWObs
+! \label{readUASNOWObs}
 !
 ! !INTERFACE: 
-subroutine readUASNWDObs(source)
+subroutine readUASNOWObs(source)
 ! 
 ! !USES:   
   use ESMF
@@ -17,7 +17,7 @@ subroutine readUASNWDObs(source)
   use LVT_logMod,     only : LVT_logunit, LVT_getNextUnitNumber, &
        LVT_releaseUnitNumber, LVT_verify, LVT_endrun
   use LVT_timeMgrMod, only : LVT_calendar, LVT_tick
-  use UASNWD_obsMod,    only : uasnwdobs
+  use UASNOW_obsMod,    only : uasnowobs
   use map_utils
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -32,14 +32,12 @@ subroutine readUASNWDObs(source)
 ! !OUTPUT PARAMETERS:
 !
 ! !DESCRIPTION: 
-!  This subroutine reads and processes the gridded UA SNWD
+!  This subroutine reads and processes the gridded UA SNOW
 !  data. The data for a given year is read into memory at the 
 !  start of a year and indexed into during each day.
 ! 
-! !FILES USED:
-!
 ! !REVISION HISTORY: 
-!  28 May 2019: Rhae Sung Kim, Initial Specification!
+!  28 May 2019: Rhae Sung Kim, Initial Specification! 
 ! 
 !EOP
 
@@ -47,11 +45,15 @@ subroutine readUASNWDObs(source)
   character*100       :: uafilename
   character*4         :: fyr
   logical             :: file_exists
+  real, allocatable   :: swe1(:,:,:),swe2(:,:,:)
   real, allocatable   :: snwd1(:,:,:),snwd2(:,:,:)
-  real                :: snwd_in(uasnwdobs(source)%nc*uasnwdobs(source)%nr)
-  logical*1           :: lb(uasnwdobs(source)%nc*uasnwdobs(source)%nr)
+  real                :: swe_in(uasnowobs(source)%nc*uasnowobs(source)%nr)
+  real                :: snwd_in(uasnowobs(source)%nc*uasnowobs(source)%nr)
+  logical*1           :: lb(uasnowobs(source)%nc*uasnowobs(source)%nr)
   logical*1           :: lo(LVT_rc%lnc*LVT_rc%lnr)
+  real                :: swe_out(LVT_rc%lnc*LVT_rc%lnr)
   real                :: snwd_out(LVT_rc%lnc*LVT_rc%lnr)
+  real                :: swe_final(LVT_rc%lnc, LVT_rc%lnr)
   real                :: snwd_final(LVT_rc%lnc, LVT_rc%lnr)
   integer             :: k,c,r,nt,jj
   integer             :: nid,varid
@@ -61,14 +63,16 @@ subroutine readUASNWDObs(source)
   real                :: timenow
   logical             :: alarmCheck
 
+  swe_out = LVT_rc%udef
+  swe_final = LVT_rc%udef
   snwd_out = LVT_rc%udef
   snwd_final = LVT_rc%udef
 
-if((uasnwdobs(source)%yr.ne.LVT_rc%dyr(source)).or.&
+if((uasnowobs(source)%yr.ne.LVT_rc%dyr(source)).or.&
        LVT_rc%resetFlag(source)) then 
 
      LVT_rc%resetFlag(source) = .false. 
-     call ESMF_TimeSet(uasnwdobs(source)%startTime,&
+     call ESMF_TimeSet(uasnowobs(source)%startTime,&
           yy=LVT_rc%dyr(source), &
           mm=1, & 
           dd = 1, &
@@ -78,14 +82,15 @@ if((uasnwdobs(source)%yr.ne.LVT_rc%dyr(source)).or.&
           rc=status)
      call LVT_verify(status, 'error in setting scan start time')
 
-     uasnwdobs(source)%yr = LVT_rc%dyr(source)
-     uasnwdobs(source)%snwd = LVT_rc%udef
+     uasnowobs(source)%yr = LVT_rc%dyr(source)
+     uasnowobs(source)%swe = LVT_rc%udef
+     uasnowobs(source)%snwd = LVT_rc%udef
 
   do jj=1,2 !once to read the current year and one to read
             !next year -This is done because the UA data is provided
-            !in water years.
+            !in water years. 
      if(jj.eq.1) then 
-        call create_UASNWD_filename(uasnwdobs(source)%odir, &
+        call create_UASNOW_filename(uasnowobs(source)%odir, &
              LVT_rc%dyr(source), uafilename)
 
              if((mod(LVT_rc%dyr(source),4) .eq. 0 .and. &
@@ -96,8 +101,12 @@ if((uasnwdobs(source)%yr.ne.LVT_rc%dyr(source)).or.&
                  nt = 365
              endif
 
-             allocate(snwd1(uasnwdobs(source)%nc,&
-                      uasnwdobs(source)%nr,&    
+             allocate(swe1(uasnowobs(source)%nc,&
+                      uasnowobs(source)%nr,&    
+                      nt))
+              
+             allocate(snwd1(uasnowobs(source)%nc,&
+                      uasnowobs(source)%nr,&
                       nt))
 
              inquire(file=trim(uafilename), exist=file_exists)
@@ -110,6 +119,18 @@ if((uasnwdobs(source)%yr.ne.LVT_rc%dyr(source)).or.&
              iret = nf90_open(path=trim(uafilename),mode=NF90_NOWRITE,ncid=nid)
              call LVT_verify(iret, 'Error opening file'//trim(uafilename))
 
+             iret = nf90_inq_varid(nid, 'SWE',varid)
+             call LVT_verify(iret, 'Error nf90_inq_varid: SWE')
+
+             iret = nf90_get_var(nid,varid, SWE1)
+             call LVT_verify(iret, 'Error nf90_get_var: SWE')
+
+             iret = nf90_close(nid)
+             call LVT_verify(iret, 'Error nf90_close')
+
+             iret = nf90_open(path=trim(uafilename),mode=NF90_NOWRITE,ncid=nid)
+             call LVT_verify(iret, 'Error opening file'//trim(uafilename))
+
              iret = nf90_inq_varid(nid, 'DEPTH',varid)
              call LVT_verify(iret, 'Error nf90_inq_varid: SNWD')
 
@@ -119,13 +140,14 @@ if((uasnwdobs(source)%yr.ne.LVT_rc%dyr(source)).or.&
              iret = nf90_close(nid)
              call LVT_verify(iret, 'Error nf90_close')
 #endif
-             uasnwdobs(source)%snwd(:,:,1:nt-92) = snwd1(:,:,93:nt) !Jan.to Sep.
+             uasnowobs(source)%swe(:,:,1:nt-92) = swe1(:,:,93:nt) !Jan.-Sep.
+             uasnowobs(source)%snwd(:,:,1:nt-92) = snwd1(:,:,93:nt) !Jan.to Sep.
              endif
            
              write(LVT_logunit,*) '[INFO] Finished processing ',trim(uafilename)
 
      elseif(jj.eq.2) then
-        call create_UASNWD_filename(uasnwdobs(source)%odir, &
+        call create_UASNOW_filename(uasnowobs(source)%odir, &
              LVT_rc%dyr(source)+1, uafilename)
 
             if((mod(LVT_rc%dyr(source)+1,4) .eq. 0 .and. &
@@ -136,8 +158,11 @@ if((uasnwdobs(source)%yr.ne.LVT_rc%dyr(source)).or.&
                 nt = 365
             endif
 
-            allocate(snwd2(uasnwdobs(source)%nc,&
-                     uasnwdobs(source)%nr,&    
+            allocate(swe2(uasnowobs(source)%nc,&
+                     uasnowobs(source)%nr,&    
+                     nt))
+            allocate(snwd2(uasnowobs(source)%nc,&
+                     uasnowobs(source)%nr,&
                      nt))
 
             inquire(file=trim(uafilename), exist=file_exists)
@@ -150,6 +175,18 @@ if((uasnwdobs(source)%yr.ne.LVT_rc%dyr(source)).or.&
             iret = nf90_open(path=trim(uafilename),mode=NF90_NOWRITE,ncid=nid)
             call LVT_verify(iret, 'Error opening file'//trim(uafilename))
 
+            iret = nf90_inq_varid(nid, 'SWE',varid)
+            call LVT_verify(iret, 'Error nf90_inq_varid: SWE')
+
+            iret = nf90_get_var(nid,varid, SWE2)
+            call LVT_verify(iret, 'Error nf90_get_var: SWE')
+
+            iret = nf90_close(nid)
+            call LVT_verify(iret, 'Error nf90_close')
+
+            iret = nf90_open(path=trim(uafilename),mode=NF90_NOWRITE,ncid=nid)
+            call LVT_verify(iret, 'Error opening file'//trim(uafilename))
+
             iret = nf90_inq_varid(nid, 'DEPTH',varid)
             call LVT_verify(iret, 'Error nf90_inq_varid: SNWD')
 
@@ -159,12 +196,14 @@ if((uasnwdobs(source)%yr.ne.LVT_rc%dyr(source)).or.&
             iret = nf90_close(nid)
             call LVT_verify(iret, 'Error nf90_close')
 #endif
-            uasnwdobs(source)%snwd(:,:,nt-92+1:nt) = snwd2(:,:,1:92) !Oct. to Dec.
+            uasnowobs(source)%swe(:,:,nt-92+1:nt) = swe2(:,:,1:92) !Oct.-Dec.
+            uasnowobs(source)%snwd(:,:,nt-92+1:nt) = snwd2(:,:,1:92) !Oct. to Dec.
             endif
            
             write(LVT_logunit,*) '[INFO] Finished processing ',trim(uafilename)
      endif
   enddo
+  deallocate(swe1,swe2)
   deallocate(snwd1,snwd2)
 endif 
 
@@ -179,48 +218,77 @@ endif
           s = LVT_rc%dss(source), calendar=LVT_calendar, rc=status)
      call LVT_verify(status, 'uatime1 set failed')
      
-     k = nint((uatime1 - uasnwdobs(source)%starttime)/&
-          uasnwdobs(source)%timestep)+1
+     k = nint((uatime1 - uasnowobs(source)%starttime)/&
+          uasnowobs(source)%timestep)+1
      
      lb = .false. 
+     swe_in = LVT_rc%udef
      snwd_in = LVT_rc%udef
-     do r=1,uasnwdobs(source)%nr
-        do c=1,uasnwdobs(source)%nc
-           if(uasnwdobs(source)%snwd(c,r,k).ge.0) then
-              snwd_in(c+(r-1)*uasnwdobs(source)%nc) = &
-                   uasnwdobs(source)%snwd(c,r,k)
-              lb(c+(r-1)*uasnwdobs(source)%nc) = .true. 
+    
+     do r=1,uasnowobs(source)%nr
+        do c=1,uasnowobs(source)%nc
+           if(uasnowobs(source)%swe(c,r,k).ge.0) then
+              swe_in(c+(r-1)*uasnowobs(source)%nc) = &
+                   uasnowobs(source)%swe(c,r,k)
+              lb(c+(r-1)*uasnowobs(source)%nc) = .true. 
+           endif
+
+           if(uasnowobs(source)%snwd(c,r,k).ge.0) then
+              snwd_in(c+(r-1)*uasnowobs(source)%nc) = &
+                   uasnowobs(source)%snwd(c,r,k)
+              lb(c+(r-1)*uasnowobs(source)%nc) = .true.           
            endif
         enddo
      enddo
      
+     call bilinear_interp(LVT_rc%gridDesc,lb,swe_in, &
+          lo,swe_out, &
+          uasnowobs(source)%nc*uasnowobs(source)%nr, &
+          LVT_rc%lnc*LVT_rc%lnr,   &
+          uasnowobs(source)%rlat, &
+          uasnowobs(source)%rlon, &
+          uasnowobs(source)%w11,  &
+          uasnowobs(source)%w12,  &
+          uasnowobs(source)%w21,  &
+          uasnowobs(source)%w22,  &
+          uasnowobs(source)%n11,  &
+          uasnowobs(source)%n12,  &
+          uasnowobs(source)%n21,  &
+          uasnowobs(source)%n22,  &
+          LVT_rc%udef, iret)     
+
      call bilinear_interp(LVT_rc%gridDesc,lb,snwd_in, &
           lo,snwd_out, &
-          uasnwdobs(source)%nc*uasnwdobs(source)%nr, &
+          uasnowobs(source)%nc*uasnowobs(source)%nr, &
           LVT_rc%lnc*LVT_rc%lnr,   &
-          uasnwdobs(source)%rlat, &
-          uasnwdobs(source)%rlon, &
-          uasnwdobs(source)%w11,  &
-          uasnwdobs(source)%w12,  &
-          uasnwdobs(source)%w21,  &
-          uasnwdobs(source)%w22,  &
-          uasnwdobs(source)%n11,  &
-          uasnwdobs(source)%n12,  &
-          uasnwdobs(source)%n21,  &
-          uasnwdobs(source)%n22,  &
-          LVT_rc%udef, iret)     
+          uasnowobs(source)%rlat, &
+          uasnowobs(source)%rlon, &
+          uasnowobs(source)%w11,  &
+          uasnowobs(source)%w12,  &
+          uasnowobs(source)%w21,  &
+          uasnowobs(source)%w22,  &
+          uasnowobs(source)%n11,  &
+          uasnowobs(source)%n12,  &
+          uasnowobs(source)%n21,  &
+          uasnowobs(source)%n22,  &
+          LVT_rc%udef, iret)
      
      do r=1,LVT_rc%lnr
         do c=1, LVT_rc%lnc
+           swe_final(c,r) = swe_out(c+(r-1)*LVT_rc%lnc)
            snwd_final(c,r) = snwd_out(c+(r-1)*LVT_rc%lnc)
         enddo
      enddo
-     
-     ! Convert mm to m
+    
      do r=1,LVT_rc%lnr
         do c=1,LVT_rc%lnc
-           if(snwd_final(c,r).ge.0) then 
-              snwd_final(c,r) = snwd_final(c,r)/1000.0 
+           if(swe_final(c,r).ge.0) then
+              swe_final(c,r) = swe_final(c,r)/86400.0 ! Convert mm to kg/m2s (note that 1 mm = 1 kg/m2)
+           else
+              swe_final(c,r) = LVT_rc%udef
+           endif
+           if(snwd_final(c,r).ge.0) then
+              snwd_final(c,r) = snwd_final(c,r)/1000.0 ! Convert mm to m
            else
               snwd_final(c,r) = LVT_rc%udef
            endif
@@ -228,17 +296,31 @@ endif
      enddo
   endif
 
+  call LVT_logSingleDataStreamVar(LVT_MOC_SWE,source,swe_final,vlevel=1,units="kg/m2s")
   call LVT_logSingleDataStreamVar(LVT_MOC_SNOWDEPTH,source,snwd_final,vlevel=1,units="m")
 
-end subroutine readUASNWDObs
+  ! Now convert from kg/m2s to kg/m2
+  do r=1,LVT_rc%lnr
+     do c=1,LVT_rc%lnc
+        if(swe_final(c,r).ge.0) then
+           swe_final(c,r) = swe_final(c,r)*86400.0 !kg/m2
+        else
+           swe_final(c,r) = LVT_rc%udef
+        endif
+     enddo
+  enddo
+
+  call LVT_logSingleDataStreamVar(LVT_MOC_SWE,source,swe_final,vlevel=1,units="kg/m2")
+
+end subroutine readUASNOWObs
 
 !BOP
 ! 
-! !ROUTINE: create_UASNWD_filename
-! \label(create_UASNWD_filename)
+! !ROUTINE: create_UASNOW_filename
+! \label(create_UASNOW_filename)
 !
 ! !INTERFACE:
-subroutine create_UASNWD_filename(odir, yr,uaname)
+subroutine create_UASNOW_filename(odir, yr,uaname)
 ! 
 ! !USES:   
   use LVT_String_Utility
@@ -258,4 +340,4 @@ subroutine create_UASNWD_filename(odir, yr,uaname)
 
   uaname = trim(odir)//'/4km_SWE_Depth_WY'//trim(fyr)//'_v01.nc'
 
-end subroutine create_UASNWD_filename
+end subroutine create_UASNOW_filename

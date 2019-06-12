@@ -252,8 +252,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_GDASdataId = "GDAS"
    character*50, public,  parameter :: LVT_ASOSWEdataId = "ASO SWE"
    character*50, public,  parameter :: LVT_IMERGdataId = "GPM IMERG"
-   character*50, public,  parameter :: LVT_UASWEdataId = "UA SWE"
-   character*50, public,  parameter :: LVT_UASNWDdataId = "UA SNWD"
+   character*50, public,  parameter :: LVT_UASNOWdataId = "UA SNOW"
 
 !-------------------------------------------------------------------------
 ! Training algorithms
