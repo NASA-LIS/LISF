@@ -2862,31 +2862,17 @@ WG SWRC station list file:
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
-#latex: \subsubsection{UA SWE observations}
+#latex: \subsubsection{UA SNOW observations}
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_DESCRIPTION
-#latex: \var{UA SWE observation directory:}  specifies the location of  
+#latex: \var{UA SNOW observation directory:}  specifies the location of  
 #latex: the University of Arizona SWE data
 #latex:
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
-UA SWE observation directory:             ./UA_SWE
-#latex: END_CONFIG
-
-#latex: BEGIN_DESCRIPTION
-#latex: \subsubsection{UA Snow Depth observations}
-#latex: END_DESCRIPTION
-
-#latex: BEGIN_DESCRIPTION
-#latex: \var{UA SNWD observation directory:}  specifies the location of        
-#latex: the University of Arizona Snow Depth data
-#latex:
-#latex: END_DESCRIPTION
-
-#latex: BEGIN_CONFIG
-UA SNWD observation directory:             ./UA_SWE
+UA SNOW observation directory:             ./UA_SNOW
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
