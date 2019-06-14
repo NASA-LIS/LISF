@@ -75,7 +75,7 @@ subroutine readcrd_imerg()
      write(LIS_logunit,*)'Using IMERG forcing'
      write(LIS_logunit,*)'IMERG forcing directory : ',trim(imerg_struc(n)%IMERGDIR)
      write(LIS_logunit,*)'IMERG version : ',trim(imerg_struc(n)%imergver)
-     write(LIS_logunit,*)'IMERG prodcut : ',trim(imerg_struc(n)%imergprd)
+     write(LIS_logunit,*)'IMERG product : ',trim(imerg_struc(n)%imergprd)
 !------------------------------------------------------------------------
 ! Setting global observed precip times to zero to ensure 
 ! data is read in during first time step
