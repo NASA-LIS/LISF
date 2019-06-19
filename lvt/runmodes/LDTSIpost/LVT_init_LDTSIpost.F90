@@ -33,31 +33,33 @@ contains
       character(len=255) :: cfgline
       integer :: rc
       
-      !cfgline = "LDTSI valid date (YYYYMMDDHH):"
-      !call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%yyyymmddhh, &
-      !     label=trim(cfgline), rc=rc)
-      !call LVT_verify(rc, trim(cfgline)//" not defined")
       write(LVT_rc%yyyymmddhh, '(I4.4,I2.2,I2.2,I2.2)') &
            LVT_rc%syr, LVT_rc%smo, LVT_rc%sda, LVT_rc%shr
 
-      cfgline = "LDTSI output global 0.25deg lat/lon:"
+      cfgline = "LDTSI output GRIB2 native grid:"
+      call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%output_native, &
+           label=trim(cfgline), rc=rc)
+      call LVT_verify(rc, trim(cfgline)//" not defined")
+
+      cfgline = "LDTSI output GRIB1 global 0.25deg lat/lon:"
       call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%output_global_ll0p25, &
            label=trim(cfgline), rc=rc)
       call LVT_verify(rc, trim(cfgline)//" not defined")
       
       cfgline = &
-           "LDTSI output NH 16th mesh polar stereographic:"
+           "LDTSI output GRIB1 NH 16th mesh polar stereographic:"
       call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%output_nh_ps16, &
            label=trim(cfgline), rc=rc)
       call LVT_verify(rc, trim(cfgline)//" not defined")
       
       cfgline = &
-           "LDTSI output SH 16th mesh polar stereographic:"
+           "LDTSI output GRIB1 SH 16th mesh polar stereographic:"
       call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%output_sh_ps16, &
            label=trim(cfgline), rc=rc)
       call LVT_verify(rc, trim(cfgline)//" not defined")
       
-      if ( .not. LVT_rc%output_global_ll0p25 .and. &
+      if ( .not. LVT_rc%output_native .and. &
+           .not. LVT_rc%output_global_ll0p25 .and. &
            .not. LVT_rc%output_nh_ps16 .and. &
            .not. LVT_rc%output_sh_ps16) then
          write(LVT_logunit,*) "[ERR] No output selected for LDTSIpost mode!"
@@ -71,23 +73,23 @@ contains
            label=trim(cfgline), rc=rc)
       call LVT_verify(rc, trim(cfgline)//" not defined")
 
-      cfgline = "LDTSI output grib2 directory:"
+      cfgline = "LDTSI output grib directory:"
       call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%output_dir, &
            label=trim(cfgline), rc=rc)
       call LVT_verify(rc, trim(cfgline)//" not defined")
 
       ! Sanity check earlier lvt.config setting
-      if (trim(LVT_rc%lvt_out_format) .ne. "grib2") then
-         write(LVT_logunit,*) &
-              '[ERR] LVT output format must be set to "grib2" for ' // &
-              '"LDTSIpost" runmode'
-         write(LVT_logunit,*) &
-              '[ERR] Instead of "grib2", found "' // &
-              trim(LVT_rc%lvt_out_format) // '"'
-         write(LVT_logunit,*) '[ERR] Update lvt.config and try again!'
-         write(LVT_logunit,*) '[ERR] LVT will stop'
-         call LVT_endrun()
-      end if
+!      if (trim(LVT_rc%lvt_out_format) .ne. "grib2") then
+!         write(LVT_logunit,*) &
+!              '[ERR] LVT output format must be set to "grib2" for ' // &
+!              '"LDTSIpost" runmode'
+!         write(LVT_logunit,*) &
+!              '[ERR] Instead of "grib2", found "' // &
+!              trim(LVT_rc%lvt_out_format) // '"'
+!         write(LVT_logunit,*) '[ERR] Update lvt.config and try again!'
+!         write(LVT_logunit,*) '[ERR] LVT will stop'
+!         call LVT_endrun()
+!      end if
 
       ! Hard code these settings for 557WW
       LVT_rc%security_class = 'U'
