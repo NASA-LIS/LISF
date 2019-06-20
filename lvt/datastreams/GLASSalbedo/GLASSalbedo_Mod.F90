@@ -1,6 +1,6 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
 ! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!------------------------END NOTICE -- DO NOT EDIT-----------------------------
 !BOP
 ! 
 ! !MODULE: GLASSalbedoobsMod
