@@ -63,7 +63,6 @@ subroutine readGLASSalbedoObs(source)
   call create_GLASSalbedo_filename(glassalbedoobs(Source)%odir, &
        LVT_rc%dyr(source),LVT_rc%ddoy(source),gridname, &
        fname)
-  write(*,*) fname 
   inquire(file=trim(fname),exist=file_exists) 
   
   ! Check if both files exist:
