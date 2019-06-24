@@ -27,7 +27,7 @@ subroutine noahmp401_setldtsivars(n, LSM_State)
   use ESMF
   use LIS_coreMod, only : LIS_rc, LIS_domain, LIS_surface
   use LIS_snowMod, only : LIS_snow_struc
-  use LIS_logMod, only : LIS_logunit, LIS_verify
+  use LIS_logMod, only : LIS_logunit, LIS_verify, LIS_endrun
   use noahmp401_lsmMod
 
   implicit none
@@ -73,10 +73,10 @@ subroutine noahmp401_setldtsivars(n, LSM_State)
      call noahmp401_ldtsi_update(n, t, dsneqv, dsnowh)
 
      if(noahmp401_struc(n)%noahmp401(t)%sneqv.lt.0.or.&
-          noahmp401_struc(n)%noahmp401(t)%snowh.lt.0) then 
-        print*, dsneqv, dsnowh
-        print*, swe(t), snod(t)
-        stop
+          noahmp401_struc(n)%noahmp401(t)%snowh.lt.0) then
+        write(LIS_logunit,*) '[ERR] DA update error'
+        write(LIS_logunit,*) 'dsneqv, dsnowh, swe(t), snod(t)', dsneqv, dsnowh, swe(t), snod(t) 
+        call LIS_endrun()
      endif
   enddo
 end subroutine noahmp401_setldtsivars
