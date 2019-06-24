@@ -44,6 +44,7 @@ subroutine reset_gdas
      gridDesci(10) = 47
      gridDesci(20) = 0
      gdas_struc(n)%mi = gdas_struc(n)%nc*gdas_struc(n)%nr
+     gdas_struc(n)%reset_flag = .true.
        
        ! This grid is good for some time in the 1990's.
        ! Look up the exact dates.

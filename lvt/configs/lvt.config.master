@@ -220,6 +220,7 @@ LVT output methodology:                 "2d gridspace"
 #latex: ``USCRN soil moisture'' & USCRN soil moisture data\\
 #latex: ``SMAP soil moistu'' & SMAP soil moisture data\\
 #latex: ``SMAP vegetation water content'' & SMAP vegetation water content\\
+#latex: ``SMAP L3 Tb'' & SMAP L3 brightness temperature\\  
 #latex: \end{tabular}
 #latex: 
 #latex: END_DESCRIPTION
@@ -460,6 +461,12 @@ Input domain and mask data file:                ./lis_input.d01.nc
 LVT datastream attributes table::
 Qle         1 1 W/m2   DN   1   1 Qh        1 1 W/m2    DN    1  1
 RootMoist   1 1 m3/m3   -   1   1 RootMoist 1 1 m3/m3   -     1  1
+none     VWC   1  1  kg/m2  -   1   1  
+!none     SMAPL3TB  1  1 K  -   1  4 
+none     SMAPL3TBv_D  1  1 K  -   1   1 
+none     SMAPL3TBv_A  1  1 K  -   1   1  
+none     SMAPL3TBh_D  1  1 K  -   1   1  
+none     SMAPL3TBh_A  1  1 K  -   1   1 
 :: 
 #latex: END_CONFIG
 
@@ -2831,7 +2838,7 @@ USCRN soil moisture station file:            ./USCRN/USCRN_stations.txt
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
-SMAP soil moisture observation directory: ../SPL3SMP
+SMAP soil moisture observation directory: ../SPL3SMP.005
 SMAP soil moisture data designation:      SPL3SMP
 
 #latex: END_CONFIG
