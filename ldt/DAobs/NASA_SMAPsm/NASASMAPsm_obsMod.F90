@@ -13,7 +13,8 @@
 !  21 Aug 2016: Sujay Kumar, Initial Specification
 !  12 Feb 2018: Mahdi Navari, openwater proximity detection was added
 ! 			edited to read New version of the SPL3SMP_R14 (file structure
-! 			 differs from the previous versions) 
+! 			 differs from the previous versions)
+!  04 Jun 2019: Sujay Kumar, Updated to support SMAP L2 retrievals 
 
 module NASASMAPsm_obsMod
 ! !USES: 
@@ -131,10 +132,6 @@ contains
           gridDesci(10) = 0.36 
           gridDesci(11) = 1 !for the global switch
 
-           
-          allocate(NASASMAPsmobs(n)%n11(LDT_rc%lnc(n)*LDT_rc%lnr(n)))       
-          call neighbor_interp_input (n, gridDesci,&
-               NASASMAPsmobs(n)%n11)
        elseif(NASASMAPsmobs(n)%data_designation.eq."SPL3SMP_E") then 
           NASASMAPsmobs(n)%nc = 3856
           NASASMAPsmobs(n)%nr = 1624
@@ -148,11 +145,37 @@ contains
           gridDesci(10) = 0.09 
           gridDesci(11) = 1 !for the global switch
 
-           
-          allocate(NASASMAPsmobs(n)%n11(LDT_rc%lnc(n)*LDT_rc%lnr(n)))       
-          call neighbor_interp_input (n, gridDesci,&
-               NASASMAPsmobs(n)%n11)
+       elseif(NASASMAPsmobs(n)%data_designation.eq."SPL2SMP") then 
+          NASASMAPsmobs(n)%nc = 964
+          NASASMAPsmobs(n)%nr = 406
+
+          gridDesci = 0 
+          gridDesci(1) = 9
+          gridDesci(2) = 964
+          gridDesci(3) = 406
+          gridDesci(9) = 4 !M36 grid
+          gridDesci(20) = 64
+          gridDesci(10) = 0.36 
+          gridDesci(11) = 1 !for the global switch
+
+       elseif(NASASMAPsmobs(n)%data_designation.eq."SPL2SMP_E") then 
+          NASASMAPsmobs(n)%nc = 3856
+          NASASMAPsmobs(n)%nr = 1624
+
+          gridDesci = 0 
+          gridDesci(1) = 9
+          gridDesci(2) = 3856
+          gridDesci(3) = 1624
+          gridDesci(9) = 5 !M09 grid
+          gridDesci(20) = 64
+          gridDesci(10) = 0.09 
+          gridDesci(11) = 1 !for the global switch
        endif
+       allocate(NASASMAPsmobs(n)%n11(LDT_rc%lnc(n)*LDT_rc%lnr(n)))       
+       call neighbor_interp_input (n, gridDesci,&
+            NASASMAPsmobs(n)%n11)
+       
+
     enddo
   end subroutine NASASMAPsm_obsinit
      
