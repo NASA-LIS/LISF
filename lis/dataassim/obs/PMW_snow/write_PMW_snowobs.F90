@@ -11,23 +11,25 @@
 ! \label{write_PMW_snowobs}
 ! 
 ! !REVISION HISTORY: 
-! 1 Jun 2009: Sujay Kumar; Initial Specification
+!  01 Jun 2009: Sujay Kumar; Initial Specification
+!  21 Jun 2019: Yeosang Yoon; Updated the file to work with the DA observation
+!                             space updates
 ! 
 ! !INTERFACE: 
-subroutine write_PMW_snowobs(n, OBS_State)
+subroutine write_PMW_snowobs(n, k, OBS_State)
 ! !USES: 
   use ESMF
-  use LIS_coreMod,    only : LIS_rc, LIS_masterproc
+  use LIS_coreMod,    only : LIS_masterproc
   use LIS_logMod,     only : LIS_verify, LIS_getNextUnitNumber, &
        LIS_releaseUnitNumber
   use LIS_fileIOMod,  only : LIS_create_output_directory
-  use LIS_historyMod, only : LIS_writevar_gridded
-  
+  use LIS_DAobservationsMod, only: LIS_writevar_gridded_obs
   implicit none
 
 ! !ARGUMENTS: 
 
   integer,     intent(in)  :: n 
+  integer,     intent(in)  :: k
   type(ESMF_State)         :: OBS_State
 !
 ! !DESCRIPTION: 
@@ -58,13 +60,13 @@ subroutine write_PMW_snowobs(n, OBS_State)
 
      if(LIS_masterproc) then 
         ftn = LIS_getNextUnitNumber()
-        call PMW_snow_obsname(obsname)        
+        call PMW_snow_obsname(n,k,obsname)        
 
         call LIS_create_output_directory('DAOBS')
         open(ftn,file=trim(obsname), form='unformatted')
      endif
 
-     call LIS_writevar_gridded(ftn,n,snowobs)
+     call LIS_writevar_gridded_obs(ftn,n,k,snowobs)
      
      if(LIS_masterproc) then 
         call LIS_releaseUnitNumber(ftn)
@@ -79,24 +81,31 @@ end subroutine write_PMW_snowobs
 ! \label{PMW_snow_obsname}
 ! 
 ! !INTERFACE: 
-subroutine PMW_snow_obsname(obsname)
+subroutine PMW_snow_obsname(n,k,obsname)
 ! !USES: 
   use LIS_coreMod, only : LIS_rc
 
 ! !ARGUMENTS: 
-  character(len=*)      :: obsname
-! 
+  integer, intent(in) :: n
+  integer, intent(in) :: k
+  character(len=*), intent(out) :: obsname
+
 ! !DESCRIPTION: 
 ! 
 !EOP
-
+  character(len=10) :: cda
+  character(len=12) :: cdate
   character(len=12) :: cdate1
 
   write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
        LIS_rc%yr, LIS_rc%mo, &
        LIS_rc%da, LIS_rc%hr,LIS_rc%mn
 
-  obsname = trim(LIS_rc%odir)//'/DAOBS/'//cdate1(1:6)//'/'//cdate1//   &
-            '.1gs4r'
+  write(unit=cda, fmt='(a2,i2.2)') '.a',k
+  write(unit=cdate, fmt='(a2,i2.2)') '.d',n
+
+   obsname = trim(LIS_rc%odir)//'/DAOBS/'//cdate1(1:6)//&
+        '/LISDAOBS_'//cdate1// &
+        trim(cda)//trim(cdate)//'.1gs4r'
   
 end subroutine PMW_snow_obsname

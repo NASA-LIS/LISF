@@ -11,22 +11,27 @@
 ! \label{read_PMW_snow}
 !
 ! !REVISION HISTORY:
-!  1 Jun 2009: Sujay Kumar; Initial Specification
+!  01 Jun 2009: Sujay Kumar; Initial Specification
+!  21 Jun 2019: Yeosang Yoon; Updated the file to work with the DA observation
+!                             space updates 
 !
 ! !INTERFACE: 
-subroutine read_PMW_snow(n, OBS_State,OBS_Pert_State) 
+subroutine read_PMW_snow(n, k, OBS_State,OBS_Pert_State) 
 ! !USES: 
   use ESMF
   use LIS_mpiMod
   use LIS_coreMod
   use LIS_timeMgrMod
   use LIS_logMod
-  use LIS_pluginIndices, only : LIS_PMWsnowobsId
-  use PMW_snow_Mod, only : PMW_snow_struc
+  use LIS_pluginIndices,     only : LIS_PMWsnowobsId
+  use LIS_DAobservationsMod, only : LIS_obs_domain
+  use PMW_snow_Mod,          only : PMW_snow_struc
 
   implicit none
+
 ! !ARGUMENTS: 
   integer, intent(in) :: n 
+  integer, intent(in) :: k
   type(ESMF_State)    :: OBS_State
   type(ESMF_State)    :: OBS_Pert_State
 !
@@ -51,16 +56,18 @@ subroutine read_PMW_snow(n, OBS_State,OBS_Pert_State)
   logical                       :: data_upd, file_exists
   logical                       :: dataflag(LIS_npes)
   logical                       :: dataflag_local
+  logical                       :: data_update
   integer                       :: c,r, p, t
   character*100                 :: obsdir, pmw_filename
   real                          :: lon, lhour, lhour1
   integer                       :: zone
-  real                          :: ssdev(LIS_rc%ngrid(n))
-  logical*1                     :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
+  real                          :: ssdev(LIS_rc%obs_ngrid(k))
+  logical*1                     :: lo(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
   real,             pointer     :: obsl(:)
-  integer                       :: gid(LIS_rc%ngrid(n))
-  integer                       :: assimflag(LIS_rc%ngrid(n))
+  integer, allocatable          :: gid(:)
+  integer, allocatable          :: assimflag(:)
   integer                       :: status, iret, ierr
+  integer                       :: grid_index
 
   lhour1 = PMW_snow_struc(n)%assim_lhour
 
@@ -68,90 +75,83 @@ subroutine read_PMW_snow(n, OBS_State,OBS_Pert_State)
        obsdir, rc=status)
   call LIS_verify(status,'Error in AttributeGet: Data Directory')
 
+  call ESMF_AttributeGet(OBS_State,"Data Update Status",&
+       data_update, rc=status)
+  call LIS_verify(status)
+
+  file_exists = .false.
+  data_upd = .false.
+
 !-------------------------------------------------------------------------
 !   Read the data at 0z daily. 
 !-------------------------------------------------------------------------
   alarmCheck = LIS_isAlarmRinging(LIS_rc, "PMW snow data read alarm")
 
+!  if(alarmCheck) then
   if(alarmCheck.or.PMW_snow_struc(n)%startMode) then 
      PMW_snow_struc(n)%startMode = .false.
-     
      PMW_snow_struc(n)%snow = LIS_rc%udef
      
      call PMW_snow_filename(pmw_filename,PMW_snow_struc(n)%data_fn_conv, obsdir,&
           LIS_rc%yr,LIS_rc%mo,LIS_rc%da)       
 
-     inquire(file=pmw_filename,exist=file_exists)
-     if(file_exists) then 
-        write(LIS_logunit,*)  'Reading PMW snow data from ',trim(pmw_filename)
+     inquire(file=trim(pmw_filename),exist=file_exists)
 
-        if (PMW_snow_struc(n)%data_format .eq. 'HDF4' .and. PMW_snow_struc(n)%data_coordsys .eq. 'EASE') then          
-           call read_PMWSnow_HDF4(n, pmw_filename)
-  
-        elseif (PMW_snow_struc(n)%data_format .eq. 'HDF-EOS' .and. PMW_snow_struc(n)%data_coordsys .eq. 'EASE') then
-           call read_PMWSnow_HDFEOS(n, pmw_filename)
+     if (.not. file_exists) then
+        write(LIS_logunit,*)'[WARN] Cannot find file ',trim(pmw_filename)
+     end if
+  end if
 
-        elseif (PMW_snow_struc(n)%data_format .eq. 'HDF5' .and. PMW_snow_struc(n)%data_coordsys .eq. 'LATLON') then
-           call read_PMWSnow_HDF5(n, pmw_filename)
-        endif 
-     endif
-
-        !if (LIS_rc%mo .eq. 11) then
-        !open(100,file='snowdata.bin',form='unformatted')
-        !write(100) PMW_snow_struc(n)%snow
-        !close(100)
-        !print*, PMW_snow_struc(n)%snow
-        !stop
-        !endif
-
-!        call neighbor_interp(LIS_rc%gridDesc(n,:), ibi, li, tsnow_flag,&
-!             ibo, lo,ANSAsnow_struc(n)%snwd_flag, &
-!             ANSAsnow_struc(n)%mi, LIS_rc%lnc(n)*LIS_rc%lnr(n),&
-!             ANSAsnow_struc(n)%rlat,ANSAsnow_struc(n)%rlon,&
-!             ANSAsnow_struc(n)%n113,LIS_rc%udef,iret)
-
-!        deallocate(snwd_flag_field)
-
-
-  endif
+  ! Jump out if we have no file to process
+  if (.not. file_exists) then
+     call ESMF_AttributeSet(OBS_State, "Data Update Status",&
+         .false., rc=status)
+     call LIS_verify(status)
+     return
+  end if
 
 !-------------------------------------------------------------------------
-!  Update the OBS_State 
+!  Update the OBS_State
 !-------------------------------------------------------------------------     
 
-  call ESMF_StateGet(OBS_State,"Observation01",snowfield,&
-       rc=status)
+  call ESMF_StateGet(OBS_State,"Observation01",snowfield,rc=status)
   call LIS_verify(status, 'Error: StateGet Observation01')
   
   call ESMF_FieldGet(snowfield,localDE=0,farrayPtr=obsl,rc=status)
   call LIS_verify(status, 'Error: FieldGet')
-  
-  obsl = LIS_rc%udef 
-  
-  do r =1,LIS_rc%lnr(n)
-     do c =1,LIS_rc%lnc(n)
-        if (LIS_domain(n)%gindex(c,r) .ne. -1)then
-     
-!localtime of this gridcell
-           lon = LIS_domain(n)%grid(LIS_domain(n)%gindex(c,r))%lon
-           call LIS_localtime(LIS_rc%gmt,lon,lhour,zone)
+ 
+  ! Pull PMW snow observations (only tested read_PMWSnow_HDF5 ()) 
+  ! TODO: need to update read_PMWSnow_HDF4() and read_PMWSnow_HDFEOS()
+  if(file_exists) then
+    write(LIS_logunit,*)  'Reading PMW snow data from ',trim(pmw_filename)
+    if (PMW_snow_struc(n)%data_format .eq. 'HDF4' .and. PMW_snow_struc(n)%data_coordsys .eq. 'EASE') then
+       call read_PMWSnow_HDF4(n, pmw_filename)
+    elseif (PMW_snow_struc(n)%data_format .eq. 'HDF-EOS' .and. PMW_snow_struc(n)%data_coordsys .eq. 'EASE') then
+       call read_PMWSnow_HDFEOS(n, pmw_filename)
+    elseif (PMW_snow_struc(n)%data_format .eq. 'HDF5' .and. PMW_snow_struc(n)%data_coordsys .eq. 'LATLON') then
+       call read_PMWSnow_HDF5(n,k, pmw_filename)
+    endif
+  endif
 
-           !if(lhour.gt.(lhour1-nint(LIS_rc%ts/3600.0)).and.lhour.le.lhour1) then  
-           if(lhour.le.lhour1 .and. (lhour1-lhour).lt.LIS_rc%ts/3600.0) then  
-              obsl(LIS_domain(n)%gindex(c,r))=&
-                   PMW_snow_struc(n)%snow(c+LIS_rc%lnc(n)*(r-1))
-           endif
+  obsl = LIS_rc%udef
+  do r =1,LIS_rc%obs_lnr(k)
+     do c =1,LIS_rc%obs_lnc(k)
+        if (LIS_obs_domain(n,k)%gindex(c,r) .ne. -1)then
+           grid_index = c+(r-1)*LIS_rc%obs_lnc(k)
 
-        end if
-     end do
-  end do
+           obsl(LIS_obs_domain(n,k)%gindex(c,r))=PMW_snow_struc(n)%snow(grid_index)
+        endif
+     enddo
+  enddo
 
   dataflag_local = .false. 
 
-! LSM-based QC
+!-------------------------------------------------------------------------
+!  Apply LSM based quality control and screening of observations
+!-------------------------------------------------------------------------
   call lsmdaqcobsstate(trim(LIS_rc%lsm)//"+"&
        //trim(LIS_PMWsnowobsId)//char(0), & 
-       n, OBS_state)
+       n,k,OBS_state)
 
   call ESMF_StateGet(OBS_State,"Observation01",snowField,&
        rc=status)
@@ -160,29 +160,31 @@ subroutine read_PMW_snow(n, OBS_State,OBS_Pert_State)
   call ESMF_FieldGet(snowField,localDE=0,farrayPtr=obsl,rc=status)
   call LIS_verify(status)
 
-  do r =1,LIS_rc%lnr(n)
-     do c =1,LIS_rc%lnc(n)
-        if (LIS_domain(n)%gindex(c,r) .ne. -1)then
-           if(obsl(LIS_domain(n)%gindex(c,r)).ne.-9999.0) then 
-              dataflag_local = .true. 
+  do r =1,LIS_rc%obs_lnr(k)
+     do c =1,LIS_rc%obs_lnc(k)
+        if (LIS_obs_domain(n,k)%gindex(c,r) .ne. -1)then
+           if(obsl(LIS_obs_domain(n,k)%gindex(c,r)).ne.-9999.0) then
+              dataflag_local = .true.
            endif
         endif
      end do
   end do
 
-
 #if (defined SPMD)
   call MPI_ALLGATHER(dataflag_local,1, MPI_LOGICAL, dataflag(:),&
        1, MPI_LOGICAL, LIS_mpi_comm, ierr)
 #endif
+
   data_upd = .false.
-  
   do p=1,LIS_npes
      data_upd = data_upd.or.dataflag(p)
   enddo
 
+  allocate(gid(LIS_rc%obs_ngrid(k)))
+  allocate(assimflag(LIS_rc%obs_ngrid(k)))
+
   if(data_upd) then 
-     do t=1,LIS_rc%ngrid(n)
+     do t = 1, LIS_rc%obs_ngrid(k)
         gid(t) = t
         if(obsl(t).ne.-9999.0) then 
            assimflag(t) = 1
@@ -190,7 +192,7 @@ subroutine read_PMW_snow(n, OBS_State,OBS_Pert_State)
            assimflag(t) = 0
         endif
      enddo
-     
+ 
      call ESMF_AttributeSet(OBS_State,"Data Update Status",&
           .true., rc=status)
      call LIS_verify(status, 'Error: AttributeSet in Data Update Status')
@@ -200,30 +202,25 @@ subroutine read_PMW_snow(n, OBS_State,OBS_Pert_State)
           rc=status)
      call LIS_verify(status, 'ESMF_StateGet for Observation01 for OBS_Pert_State failed in read_PMW_snow')
      
-     if(LIS_rc%ngrid(n).gt.0) then 
-
-!linearly scale the observation err
+     if(LIS_rc%obs_ngrid(k).gt.0) then
+        !linearly scale the observation err
         ssdev = PMW_snow_struc(n)%ssdev 
-        do t=1,LIS_rc%ngrid(n)
+        do t=1,LIS_rc%obs_ngrid(k)
            if(obsl(t).ne.-9999.0) then 
               ssdev(t) =  PMW_snow_struc(n)%ssdev !+ 0.05*obsl(t)
-!for values adjusted with confidence
-!              if(PMW_snow_struc(n)%snwd_flag(t).eq.1) then 
-!                 ssdev(t) = 0.1 !assuming multiplicative
-!              endif
            endif
         enddo
 
         call ESMF_AttributeSet(pertField,"Standard Deviation",&
-             ssdev,itemCount=LIS_rc%ngrid(n),rc=status)
+             ssdev, itemCount=LIS_rc%obs_ngrid(k), rc=status)
         call LIS_verify(status)
 
         call ESMF_AttributeSet(snowfield,"Grid Number",&
-             gid,itemCount=LIS_rc%ngrid(n),rc=status)
+             gid,itemCount=LIS_rc%obs_ngrid(k),rc=status)
         call LIS_verify(status,'Error: AttributeSet in Grid Number')
         
         call ESMF_AttributeSet(snowfield,"Assimilation Flag",&
-             assimflag,itemCount=LIS_rc%ngrid(n),rc=status)
+             assimflag,itemCount=LIS_rc%obs_ngrid(k),rc=status)
         call LIS_verify(status, 'Error: AttributeSet in Assimilation Flag')
         
      endif
@@ -233,6 +230,10 @@ subroutine read_PMW_snow(n, OBS_State,OBS_Pert_State)
      call LIS_verify(status, "Error: AttributeSet Data Update Status")
      return
   end if
+
+   ! Clean up
+   deallocate(assimflag)
+   deallocate(gid)
   
 end subroutine read_PMW_snow
 
@@ -552,7 +553,7 @@ end subroutine read_PMWSnow_HDFEOS
 ! \label{read_PMWSnow_HDF5}
 ! 
 ! !INTERFACE: 
-subroutine read_PMWSnow_HDF5(n,name)
+subroutine read_PMWSnow_HDF5(n,k,name)
 ! !USES: 
 #if (defined USE_HDF5) 
   use hdf5
@@ -564,6 +565,7 @@ subroutine read_PMWSnow_HDF5(n,name)
 
 ! !ARGUMENTS:   
   integer, intent(in)  :: n 
+  integer, intent(in)  :: k
   character(len=*)     :: name
 ! 
 ! !DESCRIPTION: 
@@ -715,10 +717,11 @@ subroutine read_PMWSnow_HDF5(n,name)
    li = .false.
    do i=1,PMW_snow_struc(n)%mi
       if (tsnow_qc(i) .ne. LIS_rc%udef) li(i) = .true.
-   enddo  
+   enddo
+
    call bilinear_interp(LIS_rc%gridDesc(n,:),li,tsnow_qc,&
         lo,PMW_snow_struc(n)%snow,&
-        PMW_snow_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n),&
+        PMW_snow_struc(n)%mi,PMW_snow_struc(n)%mo,&
         LIS_domain(n)%lat, LIS_domain(n)%lon,&
         PMW_snow_struc(n)%w11,PMW_snow_struc(n)%w12, &
         PMW_snow_struc(n)%w21,PMW_snow_struc(n)%w22, &

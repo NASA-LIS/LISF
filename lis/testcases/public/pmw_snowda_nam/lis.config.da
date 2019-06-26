@@ -88,7 +88,7 @@ Data assimilation output ensemble members:           0
 Data assimilation output ensemble spread:            0
 Data assimilation output innovations:                1 
 Data assimilation scaling strategy:                none
-Data assimilation observation domain file:     ./CDF_Files/pmw_cdf_domain.nc 
+Data assimilation observation domain file:         ./lis_input.d01.nc
 Number of state variables:                           2
 
 Data assimilation use a trained forward model:       0
@@ -126,7 +126,7 @@ Observation perturbation attributes file: ANSASNWD_pertattribs.txt
 # all datasets
 PMW snow data directory:                          "./input/ANSA_OI"
 PMW snow data file format (HDF4, HDF-EOS, HDF5):  "HDF5"
-PMW snow data coordindate system (EASE, LATLON):  "LATLON"
+PMW snow data coordinate system (EASE, LATLON):   "LATLON"
 PMW snow data variable (SWE, snow depth):         "snow depth"
 PMW snow data unit (m, cm, mm, inch):             "mm"
 PMW snow data use flag (1=yes, 0=no):                1

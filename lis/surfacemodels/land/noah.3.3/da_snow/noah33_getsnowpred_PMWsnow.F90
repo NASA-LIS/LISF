@@ -14,8 +14,11 @@
 ! 25Jun2006: Sujay Kumar: Updated for the ESMF design
 !  02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
 ! Mar 14 2014, Yuqiong Liu: Modified to asismilate SWE or snow depth
+! 21 Jun 2019: Yeosang Yoon; Updated the file to work with the DA observation
+!              space updates.
+!
 ! !INTERFACE:
-subroutine noah33_getsnowpred_PMWsnow(n, obs_pred)
+subroutine noah33_getsnowpred_PMWsnow(n, k, obs_pred)
 
 ! !USES:
   use ESMF
@@ -23,11 +26,14 @@ subroutine noah33_getsnowpred_PMWsnow(n, obs_pred)
   use noah33_lsmMod
   use PMW_snow_Mod, only : PMW_snow_struc
   use LIS_logMod,   only: LIS_logunit
+  use LIS_DAobservationsMod
 
   implicit none
 ! !ARGUMENTS: 
   integer, intent(in)    :: n
+  integer, intent(in)    :: k
   real                   :: obs_pred(LIS_rc%ngrid(n),LIS_rc%nensem(n))
+  real                   :: snwd(LIS_rc%npatch(n,LIS_rc%lsm_index))
 !EOP
 
   integer                :: i,t,m,gid
@@ -49,18 +55,25 @@ subroutine noah33_getsnowpred_PMWsnow(n, obs_pred)
             write(LIS_logunit, *) '[ERR] unit conversion for ', &
             PMW_snow_struc(n)%dataunit, '[ERR] currently not supported'
         endif
-
-        if (PMW_snow_struc(n)%data_var .eq. 'snow depth') then
-            obs_pred(gid,m)= noah33_struc(n)%noah(t)%snowh*c1
-        elseif (PMW_snow_struc(n)%data_var .eq. 'SWE') then
-            obs_pred(gid,m)= noah33_struc(n)%noah(t)%sneqv*c1
-        else
-           write(LIS_logunit, *) '[ERR] Snow assimilation of ', PMW_snow_struc(n)%data_var, &
-             ' is not supported'
-           return
-        endif
      enddo
   enddo
+
+  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     if (PMW_snow_struc(n)%data_var .eq. 'snow depth') then
+        snwd(t) = noah33_struc(n)%noah(t)%snowh*c1   
+     elseif (PMW_snow_struc(n)%data_var .eq. 'SWE') then
+        snwd(t) = noah33_struc(n)%noah(t)%sneqv*c1
+     else
+        write(LIS_logunit, *) '[ERR] Snow assimilation of ', PMW_snow_struc(n)%data_var, &
+             ' is not supported'
+        return
+     endif
+  enddo
   
+  call LIS_convertPatchSpaceToObsEnsSpace(n,k,&
+       LIS_rc%lsm_index, &
+       snwd,&
+       obs_pred)
+
 end subroutine noah33_getsnowpred_PMWsnow
 

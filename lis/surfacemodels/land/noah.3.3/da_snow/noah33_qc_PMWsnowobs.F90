@@ -12,19 +12,23 @@
 ! !REVISION HISTORY:
 ! 25Feb2008: Sujay Kumar: Initial Specification
 ! 13Mar2014: Yuqiong Liu, modified for qc PMW SWE and snow depth obs
+! 21 Jun 2019: Yeosang Yoon; Updated the file to work with the DA observation
+!              space updates.
 ! !INTERFACE:
-subroutine noah33_qc_PMWsnowobs(n,OBS_State)
+subroutine noah33_qc_PMWsnowobs(n,k,OBS_State)
 ! !USES:
   use ESMF
   use LIS_coreMod
   use LIS_logMod,  only : LIS_verify
   use LIS_constantsMod, only : LIS_CONST_TKFRZ
   use noah33_lsmMod
+  use LIS_DAobservationsMod
   use PMW_snow_Mod, only : PMW_snow_struc
 
   implicit none
 ! !ARGUMENTS: 
   integer, intent(in)      :: n
+  integer, intent(in)      :: k
   type(ESMF_State)         :: OBS_State
 !
 ! !DESCRIPTION:
@@ -47,7 +51,12 @@ subroutine noah33_qc_PMWsnowobs(n,OBS_State)
   integer                  :: t
   integer                  :: gid
   integer                  :: status
-
+  real                     :: stc1(LIS_rc%npatch(n,LIS_rc%lsm_index))
+  real                     :: vegt(LIS_rc%npatch(n,LIS_rc%lsm_index))
+  real                     :: shdfac_obs(LIS_rc%obs_ngrid(k))
+  real                     :: t1_obs(LIS_rc%obs_ngrid(k))
+  real                     :: stc1_obs(LIS_rc%obs_ngrid(k))
+  real                     :: vegt_obs(LIS_rc%obs_ngrid(k))
   
   call ESMF_StateGet(OBS_State,"Observation01",obs_snow_field,&
        rc=status)
@@ -56,24 +65,42 @@ subroutine noah33_qc_PMWsnowobs(n,OBS_State)
   call ESMF_FieldGet(obs_snow_field,localDE=0,farrayPtr=snowobs,rc=status)
   call LIS_verify(status,&
        "ESMF_FieldGet failed in noah33_qc_PMWsnowobs")
-  
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
-     gid  = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index
+  do t=1, LIS_rc%npatch(n,LIS_rc%lsm_index)
 
-     if(snowobs(gid).ne.LIS_rc%udef) then 
-        !GVF mask
-        if(PMW_snow_struc(n)%gvf_mask.eq.1 .and. noah33_struc(n)%noah(t)%shdfac.gt.0.7) then 
-           snowobs(gid) = LIS_rc%udef
-        !forest mask        
-        elseif(PMW_snow_struc(n)%lctype_mask.eq.1 .and. noah33_struc(n)%noah(t)%vegt.le.4) then
-           snowobs(gid) = LIS_rc%udef
-        !LSM temperature mask
-        elseif(PMW_snow_struc(n)%temp_mask.eq.1 .and. noah33_struc(n)%noah(t)%t1.ge.278.15) then 
-           snowobs(gid) = LIS_rc%udef
-        !LSM temperature mask
-        elseif(PMW_snow_struc(n)%temp_mask.eq.1 .and. noah33_struc(n)%noah(t)%stc(1).ge.278.15) then 
-           snowobs(gid) = LIS_rc%udef
+     stc1(t) = noah33_struc(n)%noah(t)%stc(1)
+     vegt(t) = noah33_struc(n)%noah(t)%vegt
+  enddo
+
+  call LIS_convertPatchSpaceToObsSpace(n,k,&
+       LIS_rc%lsm_index, &
+       noah33_struc(n)%noah(:)%t1,&
+       t1_obs)
+  call LIS_convertPatchSpaceToObsSpace(n,k,&
+       LIS_rc%lsm_index, &
+       noah33_struc(n)%noah(:)%shdfac,&
+       shdfac_obs)
+
+  call LIS_convertPatchSpaceToObsSpace(n,k,&
+       LIS_rc%lsm_index, &
+       stc1,&
+       stc1_obs)
+  call LIS_convertPatchSpaceToObsSpace(n,k,&
+       LIS_rc%lsm_index, &
+       vegt,&
+       vegt_obs)
+
+  do t=1,LIS_rc%obs_ngrid(k)
+     if(snowobs(t).ne.LIS_rc%udef) then
+        if(shdfac_obs(t).gt.0.7) then
+           snowobs(t) = LIS_rc%udef
+        elseif(vegt_obs(t).le.4) then !forest types
+           snowobs(t) = LIS_rc%udef
+       !assume that snow will not form at 5 deg. celcius or higher ground temp.
+       elseif(t1_obs(t).ge.278.15) then
+           snowobs(t) = LIS_rc%udef
+       elseif(stc1_obs(t).ge.278.15) then
+           snowobs(t) = LIS_rc%udef
         endif
      endif
   enddo

@@ -49,8 +49,9 @@
 !  1 Jun 09   Sujay Kumar;  Initial Specification
 !  12 Apr 2012 Yuqiong Liu; adapted to assimilate PMW-based snow depth or
 !                           SWE data
-
- 
+!  21 Jun 2019: Yeosang Yoon; Updated the file to work with the DA observation
+!                             space updates
+! 
 module PMW_snow_Mod
 ! !USES: 
   use ESMF
@@ -79,6 +80,7 @@ module PMW_snow_Mod
      integer             :: nc,nr
      integer             :: offset1, offset2 !for HDF5 data subsetting
      real                :: gridDesc(6)
+     real,    allocatable    :: rlat(:),rlon(:)
      real,    allocatable    :: rlat2(:,:),rlon2(:,:)
      integer, allocatable    :: n11(:), n12(:), n21(:), n22(:), n112(:,:), n113(:)
      real,    allocatable    :: w11(:), w12(:), w21(:), w22(:)
@@ -120,7 +122,7 @@ contains
     implicit none 
 
 ! !ARGUMENTS: 
-    integer                ::  k 
+    integer, intent(in)    ::  k 
     type(ESMF_State)       ::  OBS_State(LIS_rc%nnest)
     type(ESMF_State)       ::  OBS_Pert_State(LIS_rc%nnest)
 ! 
@@ -194,7 +196,7 @@ contains
        call LIS_verify(status)
        
        call ESMF_AttributeSet(OBS_State(n),"Number Of Observations",&
-            LIS_rc%ngrid(n),rc=status)
+            LIS_rc%obs_ngrid(k),rc=status)
        call LIS_verify(status)
        
     enddo
@@ -242,7 +244,7 @@ contains
        call ESMF_StateAdd(OBS_State(n),(/obsField(n)/),rc=status)
        call LIS_verify(status)
 
-       allocate(ssdev(LIS_rc%ngrid(n)))
+       allocate(ssdev(LIS_rc%obs_ngrid(k)))
 
        if(trim(LIS_rc%perturb_obs(k)).ne."none") then 
 
@@ -276,9 +278,9 @@ contains
                obs_pert%perttype(1), rc=status)
           call LIS_verify(status)
           
-          if(LIS_rc%ngrid(n).gt.0) then 
+          if(LIS_rc%obs_ngrid(k).gt.0) then
              call ESMF_AttributeSet(pertField(n),"Standard Deviation",&
-                  ssdev,itemCount=LIS_rc%ngrid(n),rc=status)
+                  ssdev,itemCount=LIS_rc%obs_ngrid(k),rc=status)
              call LIS_verify(status)
           endif
 
@@ -320,16 +322,18 @@ contains
 ! compute interpolation wights
     do n=1, LIS_rc%nnest
 
-       PMW_snow_struc(n)%mo = LIS_rc%lnc(n)*LIS_rc%lnr(n)
-
-       if (PMW_snow_struc(n)%data_coordsys .eq. "LATLON") then          
-          call computeInterpWeights_latlon()
-       else if (PMW_snow_struc(n)%data_coordsys .eq. "EASE") then
-          call computeInterpWeights_ease()
-       end if
+       PMW_snow_struc(n)%mo = LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)
 
        allocate(PMW_snow_struc(n)%snow(PMW_snow_struc(n)%mo))
        PMW_snow_struc(n)%snow = LIS_rc%udef
+
+       ! only tested with computeInterpWeights_latlon(k)
+       ! TODO: need to update computeInterpWeights_ease()
+       if (PMW_snow_struc(n)%data_coordsys .eq. "LATLON") then          
+          call computeInterpWeights_latlon(k)
+       else if (PMW_snow_struc(n)%data_coordsys .eq. "EASE") then
+          call computeInterpWeights_ease()
+       end if
        
        call LIS_registerAlarm("PMW snow data read alarm",&
             86400.0, 86400.0)
@@ -709,15 +713,16 @@ contains
 ! \label{PMW_snow_computeInterpWeights_latlon}
 ! 
 ! !INTERFACE: 
-  subroutine computeInterpWeights_latlon()
+  subroutine computeInterpWeights_latlon(k)
 ! !USES: 
     use LIS_coreMod, only : LIS_rc, LIS_config, LIS_domain
     use LIS_logMod, only : LIS_logunit
 
     implicit none
-
-    integer    :: n, i
-    real       :: dx, dy
+    
+    integer, intent(in)    ::  k
+    integer                :: n, i
+    real                   :: dx, dy
 ! 
 ! !DESCRIPTION: 
 !   This subroutine sets up the interpolation weights to transform the 
@@ -778,25 +783,32 @@ contains
 
        PMW_snow_struc(n)%mi = PMW_snow_struc(n)%nc*PMW_snow_struc(n)%nr
 
-       allocate(PMW_snow_struc(n)%n11(PMW_snow_struc(n)%mo))
-       allocate(PMW_snow_struc(n)%n12(PMW_snow_struc(n)%mo))
-       allocate(PMW_snow_struc(n)%n21(PMW_snow_struc(n)%mo))
-       allocate(PMW_snow_struc(n)%n22(PMW_snow_struc(n)%mo))
+       allocate(PMW_snow_struc(n)%n11(PMW_snow_struc(n)%mi))
+       allocate(PMW_snow_struc(n)%n12(PMW_snow_struc(n)%mi))
+       allocate(PMW_snow_struc(n)%n21(PMW_snow_struc(n)%mi))
+       allocate(PMW_snow_struc(n)%n22(PMW_snow_struc(n)%mi))
 
-       allocate(PMW_snow_struc(n)%w11(PMW_snow_struc(n)%mo))
-       allocate(PMW_snow_struc(n)%w12(PMW_snow_struc(n)%mo))
-       allocate(PMW_snow_struc(n)%w21(PMW_snow_struc(n)%mo))
-       allocate(PMW_snow_struc(n)%w22(PMW_snow_struc(n)%mo))
+       allocate(PMW_snow_struc(n)%w11(PMW_snow_struc(n)%mi))
+       allocate(PMW_snow_struc(n)%w12(PMW_snow_struc(n)%mi))
+       allocate(PMW_snow_struc(n)%w21(PMW_snow_struc(n)%mi))
+       allocate(PMW_snow_struc(n)%w22(PMW_snow_struc(n)%mi))
 
-       call bilinear_interp_input(n, gridDesci(n,:),&
-            PMW_snow_struc(n)%n11,PMW_snow_struc(n)%n12,&
-            PMW_snow_struc(n)%n21,PMW_snow_struc(n)%n22,&
-            PMW_snow_struc(n)%w11,PMW_snow_struc(n)%w12,&
-            PMW_snow_struc(n)%w21,PMW_snow_struc(n)%w22)
+       allocate(PMW_snow_struc(n)%rlat(PMW_snow_struc(n)%mi))
+       allocate(PMW_snow_struc(n)%rlon(PMW_snow_struc(n)%mi))
 
-       allocate(PMW_snow_struc(n)%n113(PMW_snow_struc(n)%mo))
+       call bilinear_interp_input_withgrid(gridDesci(n,:),&
+            LIS_rc%obs_gridDesc(k,:),&
+            PMW_snow_struc(n)%mi, &
+            PMW_snow_struc(n)%rlat, &
+            PMW_snow_struc(n)%rlon, &
+            PMW_snow_struc(n)%n11, PMW_snow_struc(n)%n12,&
+            PMW_snow_struc(n)%n21, PMW_snow_struc(n)%n22,&
+            PMW_snow_struc(n)%w11, PMW_snow_struc(n)%w12,&
+            PMW_snow_struc(n)%w21, PMW_snow_struc(n)%w22)
 
-#if 0 
+
+#if 0
+       allocate(PMW_snow_struc(n)%n113(PMW_snow_struc(n)%mo)) 
        call neighbor_interp_input(n, gridDesci(n,:),&
             PMW_snow_struc(n)%n113)
 
