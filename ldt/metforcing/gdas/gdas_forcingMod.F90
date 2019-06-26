@@ -23,9 +23,9 @@ module gdas_forcingMod
 !
 !  On 2019/06/12 12Z, GDAS removed precipitation fields from the f00 data
 !  files. The data fields in these files are now all instantaneous values.
-!  When the reader is using data files after this time, a new subroutine will
-!  be used that excludes precipitation as well as reads in instantaneous radiation
-!  data. For data files prior to the switch, the reader will use the old subroutine.
+!  When the reader is using data files after this time, the subroutine will
+!  skip the precipitation fields and read in instantaneous radiation data 
+!  from the f00 files.
 !
 !  The implementation in LDT has the derived data type {\tt gdas\_struc} that
 !  includes the variables that specify the runtime options, and the 
