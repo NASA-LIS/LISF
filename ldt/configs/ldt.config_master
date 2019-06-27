@@ -5026,7 +5026,14 @@ LIS TWS output domain resolution (dy):          0.125
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
-#latex: \var{NASA SMAP soil moisture data designation:} \attention{specifies what?}
+#latex: \var{NASA SMAP soil moisture data designation:} 
+#latex: \begin{tabular}{ll}
+#latex: Value & Description  \\
+#latex: ``SPL2SMP''    & employ level2 36km radiometer only product\\
+#latex: ``SPL2SMP_E''    & employ level2 9km enhanced/oversampled product \\
+#latex: ``SPL3SMP''    & employ level3 36km radiometer only product\\
+#latex: ``SPL3SMP_E''    & employ level3 9km enhanced/oversampled product \\
+#latex: \end{tabular}
 #latex:
 #latex: \var{NASA SMAP soil moisture observation directory:}
 #latex: specifies the location of the data directory containing the NASA 
@@ -5048,6 +5055,50 @@ NASA SMAP soil moisture observation directory:
 #latex: BEGIN_CONFIG
 SMOS NESDIS soil moisture observation directory:
 #latex: END_CONFIG
+
+
+#latex: BEGIN_DESCRIPTION
+#latex: \var{NASA SMAP vegetation optical depth observation directory:} 
+#latex: specifies the location of the data directory containing the L2 SMAP vegetation
+#latex: optical depth retrievals. 
+#latex:
+#latex: \var{NASA SMAP vegetation optical depth data designation:}
+#latex: specifies the type/source of VOD retrievals. Acceptable values are:
+#latex: 
+#latex: \begin{tabular}{ll}
+#latex: Value & Description  \\
+#latex: ``SPL2SMP''    & employ level2 36km radiometer only product\\
+#latex: ``SPL2SMP_E''    & employ level2 9km enhanced/oversampled product \\
+#latex: \end{tabular}
+#latex:
+#latex: END_DESCRIPTION
+
+#latex: BEGIN_CONFIG
+NASA SMAP vegetation optical depth observation directory: ../SPL2SMP_E.002
+NASA SMAP vegetation optical depth data designation:      'SPL2SMP_E'
+#latex: END_CONFIG
+
+#latex: BEGIN_DESCRIPTION
+#latex: \var{LPRM vegetation optical depth observation directory:}
+#latex: specifies the location of the data directory containing the LPRM vegetation
+#latex: optical depth retrievals from LPRM.
+#latex:
+#latex: \var{LPRM vegetation optical depth data designation:}
+#latex: specifies the type/source of VOD retrievals. Acceptable values are:
+#latex: 
+#latex: \begin{tabular}{ll}
+#latex: Value & Description  \\
+#latex: ``X-band''    & employ X-band based VOD \\
+#latex: ``C-band''    & employ C-band based VOD \\
+#latex: \end{tabular}
+#latex:
+#latex: END_DESCRIPTION
+
+#latex: BEGIN_CONFIG
+LPRM vegetation optical depth observation directory: ../LPRM_VOD
+LPRM vegetation optical depth data designation:      'X-band'
+#latex: END_CONFIG
+
 
 #latex: BEGIN_DESCRIPTION
 #latex: \var{HYMAP river width map:}
