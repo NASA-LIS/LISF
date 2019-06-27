@@ -97,6 +97,8 @@ module LDT_pluginIndices
         = "NASA SMAP vegetation optical depth"
    character*50, public,  parameter :: LDT_GLASSlaiobsId            &
         = "GLASS LAI"
+   character*50, public,  parameter :: LDT_LPRMvodobsId            &
+        = "LPRM vegetation optical depth"
 
 !-------------------------------------------------------------------------
 ! Meteorological forcings
