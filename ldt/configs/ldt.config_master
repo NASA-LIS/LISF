@@ -92,6 +92,8 @@
 #latex:                                   downscaling \\
 #latex: ``Statistical downscaling of met forcing'' &  Statistical options to 
 #latex:                                   downscale or generate forcing climatologies \\
+#latex: ``OPTUE parameter processing'' & Process the OPT/UE output to generate 
+#latex:                                   optimized parameters\\
 #latex: ``LDTSI analysis'' & LDT Snow and Ice analysis \\
 #latex: \end{tabular}
 #latex: END_DESCRIPTION
@@ -5532,4 +5534,15 @@ LDTSI LIS GRIB2 security class: U
 LDTSI LIS GRIB2 data category:  C
 LDTSI LIS GRIB2 data resolution: C0P09DEG
 LDTSI LIS GRIB2 area of data: GLOBAL
+#latex: END_CONFIG
+
+#latex: BEGIN_DESCRIPTION
+#latex:
+#latex: \var{LIS OPT/UE output file:} name of the OPT/UE output file generated 
+#latex: from a LIS simulation
+#latex:
+#latex: END_DESCRIPTION
+
+#latex: BEGIN_CONFIG
+LIS OPT/UE output file: ./GA.0059.1gd4r
 #latex: END_CONFIG

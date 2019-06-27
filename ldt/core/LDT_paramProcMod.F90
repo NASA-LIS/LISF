@@ -41,6 +41,7 @@ module LDT_paramProcMod
 
   use LDT_logMod
   use LDT_paramDataMod
+  use LDT_OPTUEMod
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -1117,7 +1118,8 @@ contains
 
 ! - Forcing-specific parameter headers
     call LDT_forcingParms_writeHeader(n,ftn,dimID,met_dimID)
-
+!OPT/UE parameters
+    call LDT_optue_writeHeader(n,ftn,dimID)
   end subroutine writeParamHeaders
 
 
@@ -1148,6 +1150,8 @@ contains
 
 ! - Forcing-specific data
     call LDT_forcingParms_writeData(n,ftn)
+! OPT/UE parameters
+    call LDT_optue_writeData(n,ftn)
 
   end subroutine writeParamData
 
