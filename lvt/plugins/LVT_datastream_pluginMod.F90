@@ -162,6 +162,7 @@ contains
     use GDASforc_dataMod,       only : GDASforc_datainit    
     use ASOSWE_obsMod,          only : ASOSWE_obsinit
     use IMERG_dataMod,          only : IMERG_datainit
+    use UASNOW_obsMod,          only : UASNOW_obsinit
  
     external readtemplateObs
     external readLISoutput
@@ -260,6 +261,7 @@ contains
     external readGDASforcdata
     external readASOSWEObs
     external readIMERGdata
+    external readUASNOWObs
 
     call registerobsread(trim(LVT_LVTbenchmarkobsId)//char(0),&
          readLVTbenchmarkOUTobs)
@@ -653,6 +655,9 @@ contains
 
     call registerobssetup(trim(LVT_IMERGdataId)//char(0), IMERG_datainit)
     call registerobsread(trim(LVT_IMERGdataId)//char(0) , readIMERGdata)
+
+    call registerobssetup(trim(LVT_UASNOWdataId)//char(0), UASNOW_obsinit)
+    call registerobsread(trim(LVT_UASNOWdataId)//char(0) , readUASNOWObs)
 
   end subroutine LVT_datastream_plugin
 end module LVT_datastream_pluginMod
