@@ -17,21 +17,21 @@ This is system is open for reading, but registration is required to post questio
 
 To request help from the LIS development team, please visit our community within Modeling Guru at https://modelingguru.nasa.gov/community/atmospheric/lis.  Select the "`Discussions`" tab.  Please review the existing posts; your question may already be answered.  If it is not, then please "`Start a discussion`" to post your question there.  Note that posting a question requires a registered account (see Section <<ssec_modelingguru>>).
 
-When reporting a bug or an error running LIS, please provide a description of the problem, including any error messages printed to the screen.  Attach a copy of the _lislog.0000_ file.  Also attach a copy of any relevant supporting files such as:
+When reporting a bug or an error running LIS, please provide a description of the problem, including any error messages printed to the screen.  Attach a copy of the _lislog.0000_ file.  Also attach a copy of any relevant supporting files such as: +
 
-For LIS:
-    lis.config
-    lislog.0000
-    MODEL_OUTPUT_LIST.TBL
-    configure.lis (in your make directory)
-For LDT:
-    ldt.config
-    ldtlog.0000
-    configure.ldt (in your make directory)
-For LVT:
-    lvt.config
-    lvtlog.0000
-    configure.lvt (in your make directory)
+For LIS: +
+  * lis.config +
+  * lislog.0000 +
+  * MODEL_OUTPUT_LIST.TBL +
+  * configure.lis (in your make directory) +
+For LDT: +
+  * ldt.config +
+  * ldtlog.0000 +
+  * configure.ldt (in your make directory) +
+For LVT: +
+  * lvt.config +
+  * lvtlog.0000 +
+  * configure.lvt (in your make directory)
 
 Please note that the LIS development team does not receive funding to provide community support.  Your questions and issues are important to us, but we can address them only when time permits.
 
