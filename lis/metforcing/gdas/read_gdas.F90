@@ -27,6 +27,8 @@
 !  29 Apr 2010: Sujay Kumar: Fixed the mixing of instantaneous and time 
 !               averaged fields.
 !  25 Jan 2012: Sujay Kumar; Switched to the use of grib-api library
+!  18 Jun 2019: Hiroko Beaudoing; Separated reading routine for f00 analysis
+!               files following GDAS model upgrade happened on 12 Jun 2019.
 !
 ! !INTERFACE:
 subroutine read_gdas( order, n, findex, &
@@ -117,7 +119,9 @@ subroutine read_gdas( order, n, findex, &
 ! Set up to open file and retrieve specified field 
 !--------------------------------------------------------------------------
   fname = name00
-  call retrieve_gdas_variables(n, findex, fname,glbdata_i, ferror1)
+!  call retrieve_gdas_variables(n, findex, fname,glbdata_i, ferror1)
+!HKB use special routine for f00 files following 06/12/2019 GDAS upgrades
+  call retrieve_gdas_noprecip(n, findex, fname,glbdata_i, ferror1)
 
 !--------------------------------------------------------------------------
 ! read 3hr forecast for time averaged fields
@@ -390,6 +394,209 @@ subroutine retrieve_gdas_variables(n, findex, fname, glbdata, errorcode)
   endif
 #endif     
 end subroutine retrieve_gdas_variables
+!BOP
+! 
+! !ROUTINE: retrieve_gdas_noprecip
+! \label{retrieve_gdas_noprecip}
+! 
+! !INTERFACE: 
+subroutine retrieve_gdas_noprecip(n, findex, fname, glbdata, errorcode)
+! !USES: 
+  use LIS_coreMod,        only : LIS_rc, LIS_domain
+  use LIS_logMod,         only : LIS_logunit,LIS_getNextUnitNumber,& 
+       LIS_releaseUnitNumber, LIS_verify, LIS_warning
+  use gdas_forcingMod,    only : gdas_struc
+
+#if (defined USE_GRIBAPI)
+  use grib_api
+#endif
+
+  implicit none
+! !ARGUMENTS: 
+  integer               :: n 
+  integer               :: findex
+  character(len=*)      :: fname
+  real                  :: glbdata(10,LIS_rc%ngrid(n))
+  integer               :: errorcode
+! 
+! !DESCRIPTION: 
+!   This subroutine retrieves GDAS forcing variables, and interpolates
+!  them to the LIS grid. 
+! 
+!EOP
+
+  integer               :: ngdas
+  real, allocatable :: f(:)
+  real, dimension(LIS_rc%lnc(n), LIS_rc%lnr(n)) :: varfield
+  integer :: igrib
+  integer :: iv,c,r,t
+  real    :: missingValue 
+  integer :: iret
+  integer :: ftn 
+  integer, dimension(gdas_struc(n)%nmif) :: pds5, pds7, pds6,pds16
+  integer :: pds5_val, pds7_val, pds16_val
+  logical*1, allocatable :: lb(:)
+  logical :: file_exists
+  integer :: kk
+  integer :: var_index
+  integer :: nvars
+  integer :: rc
+  logical :: var_status(gdas_struc(n)%nmif)
+  logical :: pcp_flag, var_found
+  integer :: grid_size
+
+#if(defined USE_GRIBAPI) 
+! HKB...Drop last two entries (precip)
+  pds5 = (/ 011,051,204,205,033,034,001 /) !parameter
+  pds6 = -1
+  pds7 = (/ 002,002,000,000,010,010,000 /) !htlev2
+! index 10 indicates instantaneous, 003 indicates time average
+! HKB...All instantaneous fiedls in f00 files
+  pds16 = (/010,010,010,010,010,010,010 /) 
+
+  ngdas = (gdas_struc(n)%ncold*gdas_struc(n)%nrold)
+
+  varfield = 0 
+  errorcode = 1
+  var_status = .false. 
+
+  inquire (file=fname, exist=file_exists)
+  if (file_exists) then      
+
+     call grib_open_file(ftn,trim(fname),'r',iret)
+     if(iret.ne.0) then 
+        write(LIS_logunit,*) '[ERR] Could not open file: ',trim(fname)
+        errorcode = 0
+        return
+     endif
+
+     call grib_count_in_file(ftn,nvars,iret)
+     call LIS_warning(iret, 'error in grib_count_in_file in read_gdas')
+     if(iret.ne.0) then 
+        errorcode = 0
+        return 
+     endif
+
+     allocate(lb(gdas_struc(n)%ncold*gdas_struc(n)%nrold))
+     allocate(f(gdas_struc(n)%ncold*gdas_struc(n)%nrold))
+     
+     do kk=1,nvars
+        call grib_new_from_file(ftn, igrib, iret)
+        call LIS_warning(iret, 'error in grib_new_from_file in read_gdas')
+        if(iret.ne.0) then 
+           write(LIS_logunit,*) &
+                '[ERR] Could not retrieve entries in file f00a: ',trim(fname)
+           errorcode = 0
+           deallocate(lb)
+           deallocate(f)
+           return           
+        endif
+
+        ! Trap the old "Could not find correct forcing parameter in file"
+        ! error from LIS 6.  This error occurred right before a GDAS
+        ! grid change.  LIS would try to read ahead, but the new data
+        ! would be on the new grid, so LIS would misread it resulting in
+        ! the above error message.  The LIS would roll back to the previous
+        ! day for GDAS forcing.
+        ! Trap this by checking the number of values in one of the
+        ! GRIB fields.
+        call grib_get_size(igrib,'values',grid_size)
+        if ( grid_size /= ngdas ) then
+           write(LIS_logunit,*) &
+              '[ERR] Number of values does not match expected', trim(fname)
+           errorcode = 0
+           deallocate(lb)
+           deallocate(f)
+           return
+        endif
+
+        call grib_get(igrib,'indicatorOfParameter',pds5_val,rc)
+        call LIS_verify(rc, 'error in grib_get: indicatorOfParameter in read_gdas')
+
+        call grib_get(igrib,'level',pds7_val,rc)
+        call LIS_verify(rc, 'error in grib_get: level in read_gdas')
+
+        call grib_get(igrib,'timeRangeIndicator',pds16_val,rc)
+        call LIS_verify(rc, 'error in grib_get: timeRangeIndicator in read_gdas')
+!HKB        write(LIS_logunit,*) '[INFO] f00 pds: ',kk,pds5_val,pds7_val,pds16_val
+
+        var_found = .false. 
+!HKB        do iv=1,9
+        do iv=1,7
+           if((pds5_val.eq.pds5(iv)).and.&
+                (pds7_val.eq.pds7(iv)).and.&
+                (pds16_val.eq.pds16(iv))) then
+              var_found = .true.
+              var_index = iv
+              var_status(iv) = .true. 
+              exit
+           endif
+        enddo
+        f = -9999.0
+        call grib_get(igrib,'values',f,rc)
+        call LIS_warning(rc, 'error in grib_get:values in read_gdas')
+
+        if(rc.ne.0) then 
+           write(LIS_logunit,*) &
+                '[ERR] Could not retrieve entries in file f00a: ',trim(fname),kk,rc
+           errorcode = 0
+           deallocate(lb)
+           deallocate(f)
+           return           
+        endif
+
+        call grib_get(igrib,'missingValue',missingValue,rc)
+        call LIS_verify(rc, 'error in grib_get:missingValue in read_gdas')
+
+        call grib_release(igrib,rc)
+        call LIS_verify(rc, 'error in grib_release in read_gdas')
+        
+        if(var_found) then 
+           lb = .false.
+           do t=1,ngdas
+              if(f(t).ne.missingValue) lb(t) = .true. 
+           enddo
+           
+           pcp_flag = .false. 
+           if(var_index.eq.8.or.var_index.eq.9) pcp_flag = .true. 
+           
+           call interp_gdas(n, findex,pcp_flag,ngdas,f,&
+                lb,LIS_rc%gridDesc(n,:), &
+                LIS_rc%lnc(n),LIS_rc%lnr(n),varfield)
+           
+           do r=1,LIS_rc%lnr(n)
+              do c=1,LIS_rc%lnc(n)
+                 if(LIS_domain(n)%gindex(c,r).ne.-1) then 
+                    glbdata(var_index,LIS_domain(n)%gindex(c,r)) =&
+                         varfield(c,r)
+                 endif
+              enddo
+           enddo
+        endif
+
+     enddo
+     call grib_close_file(ftn)
+
+     deallocate(lb)
+     deallocate(f)     
+         
+!HKB     do kk=1,9
+     do kk=1,7
+        if(.not.var_status(kk)) then 
+           write(LIS_logunit,*) &
+                '[ERR] Could not retrieve entries in file f00b: ',trim(fname),kk
+           errorcode = 0
+           
+           return
+        endif
+     enddo
+  else
+     write(LIS_logunit,*) &
+          '[ERR] Could not find file: ',trim(fname)
+     errorcode = 0
+  endif
+#endif     
+end subroutine retrieve_gdas_noprecip
 !BOP
 ! !ROUTINE: interp_gdas
 ! \label{interp_gdas}

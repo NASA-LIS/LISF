@@ -40,6 +40,10 @@ subroutine set_irrigation_attribs( n, source )
       LDT_irrig_struc(n)%irrigtype%num_bins = 4
       LDT_irrig_struc(n)%irrigtype%num_times = 1
 
+    case( "AQUASTAT" )
+      LDT_irrig_struc(n)%irrigtype%num_bins = 3
+      LDT_irrig_struc(n)%irrigtype%num_times = 1
+
     case default
       print *, "[ERR] Irrigation type source not recognized: ",trim(source)
       print *, " Please select:   GRIPC"

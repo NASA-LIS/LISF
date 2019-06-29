@@ -9,7 +9,6 @@
 !
 ! !REVISION HISTORY:
 !  19 Sep 2014: K. Arsenault; Initial Specification
-!  21 May 2019: H. Beaudoing; Added MIRCA2000 crop map
 !
 ! !INTERFACE:
 subroutine setCropParmsFullnames(n,datatype,source)
