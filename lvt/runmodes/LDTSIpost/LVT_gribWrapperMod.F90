@@ -11,8 +11,6 @@
 ! Provides some error-checking wrapper routines for GRIB_API/ECCODES.
 !------------------------------------------------------------------------------
 
-#include "LVT_misc.h"
-
 module LVT_gribWrapperMod
    
    implicit none
