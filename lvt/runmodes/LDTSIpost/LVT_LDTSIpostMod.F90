@@ -1306,7 +1306,7 @@ contains
       integer :: idate8, idate4
       character(len=255) :: msg
 
-#if (defined USE_GRIBAPI)
+#if (defined USE_ECCODES)
       call grib_new_from_samples(igrib, "GRIB2", rc)
       if (rc .ne. GRIB_SUCCESS) then
          write(LVT_logunit,*)'[ERR] Error from grib_new_from_samples'
@@ -1506,7 +1506,7 @@ contains
       character(len=2) :: cmm, cdd, chh
       integer :: iyyyy, imm, idd, ihh, iyear, iyoc, ic
       
-#if (defined USE_GRIBAPI)
+#if (defined USE_ECCODES)
       call grib_new_from_samples(igrib, "GRIB1", rc)
       if (rc .ne. GRIB_SUCCESS) then
          write(LVT_logunit,*)'[ERR] Error from grib_new_from_samples'
