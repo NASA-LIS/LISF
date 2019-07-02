@@ -128,7 +128,9 @@ contains
        do r=1,LDT_rc%lnr(n)
           do c=1,LDT_rc%lnc(n)
              if(fitness(c,r).eq.-1E20) then 
-                LDT_OPTUEparam_struc(n)%param(:)%value(c,r,1) = LDT_rc%udef
+                do t=1,LDT_OPTUEparam_struc(n)%nparam
+                   LDT_OPTUEparam_struc(n)%param(t)%value(c,r,1) = LDT_rc%udef
+                enddo
              endif
           enddo
        enddo
