@@ -1,4 +1,4 @@
-DSET ^TARGET_OUTPUT/MRMS_testcase/mask/SURFACEMODEL/%y4%m2/LIS_HIST_%y4%m2%d20000.d01.nc
+DSET ^TARGET_OUTPUT/SURFACEMODEL/%y4%m2/LIS_HIST_%y4%m2%d20000.d01.nc
 options template
 dtype netcdf
 TITLE LIS output
