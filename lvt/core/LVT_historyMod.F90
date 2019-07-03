@@ -258,7 +258,9 @@ contains
 ! 
 !EOP
 
-    integer               :: dimID(5),dimID_t(4)
+    !integer               :: dimID(5),dimID_t(4)
+    integer,save          :: dimID(5) ! EMK preserve between calls
+    integer               :: dimID_t(4)
     integer               :: tdimID
     character*8             :: xtime_begin_date
     character*6             :: xtime_begin_time
