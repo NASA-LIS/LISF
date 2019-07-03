@@ -116,6 +116,11 @@ contains
                 read(ftn) LDT_OPTUEparam_struc(n)%param(t)%value(:,:,1)
                 LDT_OPTUEparam_struc(n)%param(t)%selectOpt = 1
                 LDT_OPTUEparam_struc(n)%param(t)%vlevels = 1
+                LDT_OPTUEparam_struc(n)%param(t)%standard_name = ''
+                LDT_OPTUEparam_struc(n)%param(t)%units = ''
+                LDT_OPTUEparam_struc(n)%param(t)%valid_min = 0
+                LDT_OPTUEparam_struc(n)%param(t)%valid_max = 0
+                LDT_OPTUEparam_struc(n)%param(t)%num_bins = 1
              endif
           enddo
           call LDT_releaseUnitNumber(ftn)
