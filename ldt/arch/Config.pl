@@ -414,6 +414,41 @@ if($enable_libgeotiff == 1) {
 	print "--------------ERROR---------------------\n";
 	exit 1;
     }
+    if ($cray_modifications == 1) {
+       if(defined($ENV{LDT_LIBTIFF})){
+          $sys_libtiff_path = $ENV{LDT_LIBTIFF};
+       }
+       else {
+             print "--------------ERROR---------------------\n";
+             print "Please specify the LIBTIFF path using\n";
+             print "the LDT_LIBTIFF variable.\n";
+             print "Configuration exiting ....\n";
+             print "--------------ERROR---------------------\n";
+             exit 1;
+       }
+       if(defined($ENV{LDT_LIBJBIG})){
+          $sys_libjbig_path = $ENV{LDT_LIBJBIG};
+       }
+       else {
+             print "--------------ERROR---------------------\n";
+             print "Please specify the LIBJBIG path using\n";
+             print "the LDT_LIBJBIG variable.\n";
+             print "Configuration exiting ....\n";
+             print "--------------ERROR---------------------\n";
+             exit 1;
+       }
+       if(defined($ENV{LDT_LIBLZMA})){
+          $sys_liblzma_path = $ENV{LDT_LIBLZMA};
+       }
+       else {
+             print "--------------ERROR---------------------\n";
+             print "Please specify the LIBLZMA path using\n";
+             print "the LDT_LIBLZMA variable.\n";
+             print "Configuration exiting ....\n";
+             print "--------------ERROR---------------------\n";
+             exit 1;
+       }
+    }
 }
 
 print "Include date/time stamp history? (1-yes, 0-no, default=1): ";
@@ -540,12 +575,21 @@ if($enable_geotiff== 1){
    $fflags77 = $fflags77." -I\$(INC_FORTRANGIS1) -I\$(INC_FORTRANGIS2)";
    $fflags = $fflags." -I\$(INC_FORTRANGIS1) -I\$(INC_FORTRANGIS2)";
    $ldflags = $ldflags." -L\$(LIB_FORTRANGIS) -lfortrangis -lfortranc -L\$(LIB_GDAL) -lgdal";
+   if ( $cray_modifications == 1 ) {
+      $ldflags = $ldflags." -ljasper -ljpeg -lz -lstdc++";
+   }
 }
 
 # EMK...Added LIGBEOTIFF for Air Force
 if($enable_libgeotiff== 1){
     $cflags = $cflags." -I\$(INC_LIBGEOTIFF)";
-    $ldflags = $ldflags." -L\$(LIB_LIBGEOTIFF) -ltiff -lgeotiff -lm -lz -ljpeg";
+    $tiffpath = "";
+    $tiffdeps = "";
+    if ( $cray_modifications == 1 ) {
+       $tiffpath = " -L".$sys_libtiff_path;
+       $tiffdeps = " -L".$sys_libjbig_path." -ljbig "." -L".$sys_liblzma_path." -llzma ";
+    }
+    $ldflags = $ldflags." -L\$(LIB_LIBGEOTIFF) ".$tiffpath." -ltiff -lgeotiff -lm -lz -ljpeg ".$tiffdeps;
 }
 
 
