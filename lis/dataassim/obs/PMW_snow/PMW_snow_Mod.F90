@@ -783,22 +783,22 @@ contains
 
        PMW_snow_struc(n)%mi = PMW_snow_struc(n)%nc*PMW_snow_struc(n)%nr
 
-       allocate(PMW_snow_struc(n)%n11(PMW_snow_struc(n)%mi))
-       allocate(PMW_snow_struc(n)%n12(PMW_snow_struc(n)%mi))
-       allocate(PMW_snow_struc(n)%n21(PMW_snow_struc(n)%mi))
-       allocate(PMW_snow_struc(n)%n22(PMW_snow_struc(n)%mi))
+       allocate(PMW_snow_struc(n)%n11(PMW_snow_struc(n)%mo))
+       allocate(PMW_snow_struc(n)%n12(PMW_snow_struc(n)%mo))
+       allocate(PMW_snow_struc(n)%n21(PMW_snow_struc(n)%mo))
+       allocate(PMW_snow_struc(n)%n22(PMW_snow_struc(n)%mo))
 
-       allocate(PMW_snow_struc(n)%w11(PMW_snow_struc(n)%mi))
-       allocate(PMW_snow_struc(n)%w12(PMW_snow_struc(n)%mi))
-       allocate(PMW_snow_struc(n)%w21(PMW_snow_struc(n)%mi))
-       allocate(PMW_snow_struc(n)%w22(PMW_snow_struc(n)%mi))
+       allocate(PMW_snow_struc(n)%w11(PMW_snow_struc(n)%mo))
+       allocate(PMW_snow_struc(n)%w12(PMW_snow_struc(n)%mo))
+       allocate(PMW_snow_struc(n)%w21(PMW_snow_struc(n)%mo))
+       allocate(PMW_snow_struc(n)%w22(PMW_snow_struc(n)%mo))
 
-       allocate(PMW_snow_struc(n)%rlat(PMW_snow_struc(n)%mi))
-       allocate(PMW_snow_struc(n)%rlon(PMW_snow_struc(n)%mi))
+       allocate(PMW_snow_struc(n)%rlat(PMW_snow_struc(n)%mo))
+       allocate(PMW_snow_struc(n)%rlon(PMW_snow_struc(n)%mo))
 
        call bilinear_interp_input_withgrid(gridDesci(n,:),&
             LIS_rc%obs_gridDesc(k,:),&
-            PMW_snow_struc(n)%mi, &
+            PMW_snow_struc(n)%mo, &
             PMW_snow_struc(n)%rlat, &
             PMW_snow_struc(n)%rlon, &
             PMW_snow_struc(n)%n11, PMW_snow_struc(n)%n12,&
