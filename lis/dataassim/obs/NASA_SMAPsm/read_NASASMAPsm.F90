@@ -16,6 +16,10 @@
 !  15 Jul 2018: Mahdi Navari: Bug in the SMAP reader was fixed
 !  31 Aug 2018: Mahdi Navari, Edited to read SPL3SMP.005 & SPL3SMP_E.002
 !  1  Apr 2019: Yonghwan Kwon: Upated for reading monthy CDF for the current month
+! 11 July 2019: Mahdi Navari, There are several version of SMAP sm data available in each directory
+!                  with different Release number and different CRID Version Number. The reader was 
+!                  modified to read the latest version of data (the reader no longer reads the symbolic 
+!                  link to the SMAP sm data)
 !
 ! !INTERFACE: 
 subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
@@ -87,6 +91,22 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
   real                   :: model_delta(LIS_rc%obs_ngrid(k))
   real                   :: obs_delta(LIS_rc%obs_ngrid(k))
  
+
+  character*4       :: yyyy
+  character*2       :: mm,dd,hh
+  integer               :: yr, mo, da, hr, mn, ss
+  integer               :: doy
+ character*200      :: list_files
+  character*100     :: temp1
+  character*1        :: fproc(4)
+  integer               :: ftn,ierr
+  character*100     :: smap_filename(10),tstring(10)
+  character(len=4) :: istring
+  character(len=200) :: cmd
+  integer :: rc
+
+  smap_filename = ""
+
   call ESMF_AttributeGet(OBS_State,"Data Directory",&
        smobsdir, rc=status)
   call LIS_verify(status)
@@ -104,41 +124,112 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
 
   if(alarmCheck.or.NASASMAPsm_struc(n)%startMode) then 
      NASASMAPsm_struc(n)%startMode = .false.
-!MN: bug fix: "SPL3SMP" reader was updated to read the new version of data 
-!       if(NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP_E") then 
-     if ( (NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP_E") .or. &
-          (NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP") ) then
-        call create_NASASMAPsm_filename(smobsdir, &
-             NASASMAPsm_struc(n)%data_designation,&
-             LIS_rc%yr, LIS_rc%mo, &
-             LIS_rc%da, fname)
-        
-        inquire(file=fname,exist=file_exists)
-        
-        if(file_exists) then 
-           write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
-           call read_NASASMAP_E_data(n,k,'D',fname,smobs_D)
-        else
-           write(LIS_logunit,*) '[WARN] Missing SMAP file: ',trim(fname)
+
+     if  (NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP_E") then
+!----------------------------------------------------------------------------------------------------------------
+! MN: create filename for 9 km product
+!----------------------------------------------------------------------------------------------------------------
+!        call create_NASASMAPsm_filename(smobsdir, &
+!            NASASMAPsm_struc(n)%data_designation,&
+!             LIS_rc%yr, LIS_rc%mo, &
+!             LIS_rc%da, fname)
+
+! get the local CPU number
+    write(unit=temp1,fmt='(i4.4)') LIS_localPet
+! convert that to 4 one char. string 
+     read(unit=temp1,fmt='(4a1)')fproc
+
+     write(yyyy,'(i4.4)') LIS_rc%yr
+     write(mm,'(i2.2)') LIS_rc%mo
+     write(dd,'(i2.2)') LIS_rc%da
+     
+     ! EMK...Make sure only one PET calls the file system to determine what
+     ! SMAP files are available.  Then create a copy of the file list for
+     ! every PET.
+     if (LIS_masterproc) then
+
+        list_files = 'ls '//trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'//&
+          trim(dd)//'/SMAP_L3_SM_P_E_'&
+          //trim(yyyy)//trim(mm)//trim(dd)//&
+          '*.h5> SMAP_filelist'//&
+             '.dat'
+
+        call system(trim(list_files))
+! make copy of the SMAP_filelist for each CPU 
+        do i = 0, LIS_npes-1
+           write(istring,'(I4.4)') i
+           cmd = 'cp SMAP_filelist.dat SMAP_filelist.'//istring//'.dat'
+           call system(trim(cmd))
+        end do ! i
+     end if
+#if (defined SPMD)
+     call mpi_barrier(lis_mpi_comm,ierr)
+#endif
+
+     i =1
+     ftn = LIS_getNextUnitNumber()
+     open(ftn,file="./SMAP_filelist."//&
+          fproc(1)//fproc(2)//fproc(3)//fproc(4)//'.dat',& ! put the char. string together 
+          status='old',iostat=ierr)
+
+! if multiple files for the same time and orbits are present, the latest
+! one will overwrite older ones, though multiple (redundant) reads occur. 
+! This assumes that the 'ls command' will list the files in that order. 
+ 
+     do while(ierr.eq.0) 
+        read(ftn,'(a)',iostat=ierr) fname
+        if(ierr.ne.0) then 
+           exit
         endif
 
-        call create_NASASMAPsm_filename(smobsdir, &
-             NASASMAPsm_struc(n)%data_designation,&
-             LIS_rc%yr, LIS_rc%mo, &
-             LIS_rc%da, fname)
+#if 0
+        ! From the filename, parse out minute, second
+        mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))
+!        tstring(i) = fname(mn_ind:mn_ind+14)
+
+!        read(fname(mn_ind+23:mn_ind+25),'(i3.3)') runid(i)
+
+        mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))+11        
+        read(fname(mn_ind:mn_ind+1),'(i2.2)') mn
+        ss=0
+        call LIS_tick(timenow,doy,gmt,LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
+             LIS_rc%hr, mn, ss, 0.0)
         
-        inquire(file=fname,exist=file_exists)
+!        orb_ind = index(fname,'SMAP_L2_SM_P_NRT_')+17
+!        read(fname(orb_ind:orb_ind+4),'(i5.5)') orbid(i)
+#endif
+
+        smap_filename(i) = fname        
+!        inquire(file=fname,exist=file_exists)       
+!        if(file_exists) then 
+!           write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
+           write(LIS_logunit,*) '[INFO] reading ',trim(smap_filename(i))
+           call read_NASASMAP_E_data(n,k,'D',smap_filename(i),smobs_D)
+!        else
+!           write(LIS_logunit,*) '[WARN] Missing SMAP file: ',trim(fname)
+!        endif
+
+!        call create_NASASMAPsm_filename(smobsdir, &
+!             NASASMAPsm_struc(n)%data_designation,&
+!             LIS_rc%yr, LIS_rc%mo, &
+!             LIS_rc%da, fname)
         
-        if(file_exists) then 
-           write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
-           call read_NASASMAP_E_data(n,k,'A',fname,smobs_A)
-        else
-           write(LIS_logunit,*) '[WARN] Missing SMAP file: ',trim(fname)
-        endif
+!        inquire(file=fname,exist=file_exists)
+        
+!        if(file_exists) then 
+!           write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
+           write(LIS_logunit,*) '[INFO] reading ',trim(smap_filename(i))
+           call read_NASASMAP_E_data(n,k,'A',smap_filename(i),smobs_A)
+!        else
+!           write(LIS_logunit,*) '[WARN] Missing SMAP file: ',trim(fname)
+!        endif
+
+        i = i +1 
+     enddo
 
         NASASMAPsm_struc(n)%smobs  = LIS_rc%udef
         NASASMAPsm_struc(n)%smtime = -1
-
+       call LIS_releaseUnitNumber(ftn)
 !------------------------------------------------------------------------- 
 !   Ascending pass assumed to be at 6pm localtime and the descending 
 !   pass is assumed to be at 6am local time
@@ -173,27 +264,147 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
               endif
            enddo
         enddo
-     else
-        NASASMAPsm_struc(n)%smobs = LIS_rc%udef
-        smobs = LIS_rc%udef
 
-        call create_NASASMAPsm_filename(smobsdir, &
-             NASASMAPsm_struc(n)%data_designation,&
-             LIS_rc%yr, LIS_rc%mo, &
-             LIS_rc%da, fname)
-        
-        inquire(file=fname,exist=file_exists)
-        
-        if(file_exists) then 
-           write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
-           call read_NASASMAP_data(n,k,fname,smobs)
-        else
-           write(LIS_logunit,*) '[WARN] Missing SMAP file: ',trim(fname)
+     elseif (NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP")  then    
+!----------------------------------------------------------------------------------------------------------------
+! MN: create filename for 36km product  (SMAP_L3_SM_P_)
+!----------------------------------------------------------------------------------------------------------------
+!        call create_NASASMAPsm_filename(smobsdir, &
+!             NASASMAPsm_struc(n)%data_designation,&
+!             LIS_rc%yr, LIS_rc%mo, &
+!             LIS_rc%da, fname)
+    write(unit=temp1,fmt='(i4.4)') LIS_localPet
+     read(unit=temp1,fmt='(4a1)')fproc
+
+     write(yyyy,'(i4.4)') LIS_rc%yr
+     write(mm,'(i2.2)') LIS_rc%mo
+     write(dd,'(i2.2)') LIS_rc%da
+
+     
+     ! EMK...Make sure only one PET calls the file system to determine what
+     ! SMAP files are available.  Then create a copy of the file list for
+     ! every PET.
+     if (LIS_masterproc) then
+          list_files = 'ls '//trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'//&
+          trim(dd)//'/SMAP_L3_SM_P_'&
+          //trim(yyyy)//trim(mm)//trim(dd)//&
+          '*.h5> SMAP_filelist'//&
+             '.dat'
+
+        call system(trim(list_files))
+        do i = 0, LIS_npes-1
+           write(istring,'(I4.4)') i
+           cmd = 'cp SMAP_filelist.dat SMAP_filelist.'//istring//'.dat'
+           call system(trim(cmd))
+        end do ! i
+     end if
+#if (defined SPMD)
+     call mpi_barrier(lis_mpi_comm,ierr)
+#endif
+
+     i =1
+     ftn = LIS_getNextUnitNumber()
+     open(ftn,file="./SMAP_filelist."//&
+          fproc(1)//fproc(2)//fproc(3)//fproc(4)//".dat",&
+          status='old',iostat=ierr)
+
+! if multiple files for the same time and orbits are present, the latest
+! one will overwrite older ones, though multiple (redundant) reads occur. 
+! This assumes that the 'ls command' will list the files in that order. 
+ 
+     do while(ierr.eq.0) 
+        read(ftn,'(a)',iostat=ierr) fname
+        if(ierr.ne.0) then 
+           exit
         endif
+
+
+#if 0
+        ! From the filename, parse out minute, second
+        mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))
+!        tstring(i) = fname(mn_ind:mn_ind+14)
+
+!        read(fname(mn_ind+23:mn_ind+25),'(i3.3)') runid(i)
+
+        mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))+11        
+        read(fname(mn_ind:mn_ind+1),'(i2.2)') mn
+        ss=0
+        call LIS_tick(timenow,doy,gmt,LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
+             LIS_rc%hr, mn, ss, 0.0)
         
+!        orb_ind = index(fname,'SMAP_L2_SM_P_NRT_')+17
+!        read(fname(orb_ind:orb_ind+4),'(i5.5)') orbid(i)
+#endif
+
+
+        smap_filename(i) = fname        
+!        inquire(file=fname,exist=file_exists)       
+!        if(file_exists) then 
+!           write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
+           write(LIS_logunit,*) '[INFO] reading ',trim(smap_filename(i))
+           call read_NASASMAP_data(n,k,'D',smap_filename(i),smobs_D)
+!        else
+!           write(LIS_logunit,*) '[WARN] Missing SMAP file: ',trim(fname)
+!        endif
+
+!        call create_NASASMAPsm_filename(smobsdir, &
+!             NASASMAPsm_struc(n)%data_designation,&
+!             LIS_rc%yr, LIS_rc%mo, &
+!             LIS_rc%da, fname)
+        
+!        inquire(file=fname,exist=file_exists)
+        
+!        if(file_exists) then 
+!           write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
+           write(LIS_logunit,*) '[INFO] reading ',trim(smap_filename(i))
+           call read_NASASMAP_data(n,k,'A',smap_filename(i),smobs_A)
+!        else
+!           write(LIS_logunit,*) '[WARN] Missing SMAP file: ',trim(fname)
+!        endif
+
+        i = i +1 
+     enddo
+       
+
         NASASMAPsm_struc(n)%smobs  = LIS_rc%udef
         NASASMAPsm_struc(n)%smtime = -1
+       call LIS_releaseUnitNumber(ftn)
+!------------------------------------------------------------------------- 
+!   Ascending pass assumed to be at 6pm localtime and the descending 
+!   pass is assumed to be at 6am local time
+!-------------------------------------------------------------------------
+        do r=1,LIS_rc%obs_lnr(k)
+           do c=1,LIS_rc%obs_lnc(k)
+              grid_index = LIS_obs_domain(n,k)%gindex(c,r)
+              if(grid_index.ne.-1) then 
+                 
+                 if(smobs_D(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0) then   
+                    NASASMAPsm_struc(n)%smobs(c,r) = &
+                         smobs_D(c+(r-1)*LIS_rc%obs_lnc(k))                 
+                    lon = LIS_obs_domain(n,k)%lon(c+(r-1)*LIS_rc%obs_lnc(k))
+                    lhour = 6.0
+                    call LIS_localtime2gmt (gmt,lon,lhour,zone)
+                    NASASMAPsm_struc(n)%smtime(c,r) = gmt
 
+                 endif
+!-------------------------------------------------------------------------  
+! The ascending data is used only over locations where descending data
+! doesn't exist. 
+!-------------------------------------------------------------------------
+                 if(smobs_A(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0.and.&
+                      NASASMAPsm_struc(n)%smobs(c,r).eq.-9999.0) then   
+                    NASASMAPsm_struc(n)%smobs(c,r) = &
+                         smobs_A(c+(r-1)*LIS_rc%obs_lnc(k))                 
+                    lon = LIS_obs_domain(n,k)%lon(c+(r-1)*LIS_rc%obs_lnc(k))
+                    lhour = 18.0
+                    call LIS_localtime2gmt (gmt,lon,lhour,zone)
+                    NASASMAPsm_struc(n)%smtime(c,r) = gmt
+                 endif
+              endif
+           enddo
+        enddo
+
+#if 0 
 !-------------------------------------------------------------------------  
 !  From the SMAP documentation: 
 !  The current approach for the SPL3SMP product is to use the nearest 
@@ -222,11 +433,10 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
               endif
            enddo
         enddo
+#endif
 
-     endif
-
-  endif
-  
+     endif ! sensor
+  endif ! alram
   
   call ESMF_StateGet(OBS_State,"Observation01",smfield,&
        rc=status)
@@ -750,6 +960,8 @@ subroutine read_NASASMAP_E_data(n, k, pass, fname, smobs_ip)
 
 end subroutine read_NASASMAP_E_data
 
+! MN: the data structure in both 36 km and 9 km products is the same therefore  
+!         read_NASASMAP_E_data is similar to read_NASASMAP_data
 
 !BOP
 ! 
@@ -757,7 +969,7 @@ end subroutine read_NASASMAP_E_data
 ! \label{read_NASASMAP_data}
 !
 ! !INTERFACE:
-subroutine read_NASASMAP_data(n, k, fname, smobs_ip)
+subroutine read_NASASMAP_data(n, k, pass, fname, smobs_ip)
 ! 
 ! !USES:   
 
@@ -775,6 +987,7 @@ subroutine read_NASASMAP_data(n, k, fname, smobs_ip)
 ! 
   integer                       :: n 
   integer                       :: k
+  character (len=*)             :: pass
   character (len=*)             :: fname
   real                          :: smobs_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
 
@@ -806,37 +1019,33 @@ subroutine read_NASASMAP_data(n, k, fname, smobs_ip)
 !EOP
 
 #if (defined USE_HDF5)
-  character*100,    parameter    :: sm_gr_name = "Soil_Moisture_Retrieval_Data"
-  character*100,    parameter    :: sm_field_name = "soil_moisture"
-  character*100,    parameter    :: sm_qa_name = "retrieval_qual_flag"
 
   character*100,    parameter    :: sm_gr_name_D = "Soil_Moisture_Retrieval_Data_AM"
   character*100,    parameter    :: sm_field_name_D = "soil_moisture"
+  character*100,    parameter    :: sm_qa_name_D = "retrieval_qual_flag"
   character*100,    parameter    :: sm_gr_name_A = "Soil_Moisture_Retrieval_Data_PM"
   character*100,    parameter    :: sm_field_name_A = "soil_moisture_pm"
+  character*100,    parameter    :: sm_qa_name_A = "retrieval_qual_flag_pm"
 ! MN 
   character*100,    parameter    :: vwc_field_name_D = "vegetation_water_content"
   character*100,    parameter    :: vwc_field_name_A = "vegetation_water_content_pm"
 
-  integer(hid_t)                 :: file_id, sm_gr_id,sm_field_id
-  integer(hid_t)                 :: sm_gr_id_D,sm_field_id_D
-  integer(hid_t)                 :: sm_gr_id_A,sm_field_id_A
-  integer(hid_t)                 :: vwc_field_id_D ! MN 
-  integer(hid_t)                 :: vwc_field_id_A ! MN
-  integer(hid_t)                 :: dataspace
-  integer(hid_t)                 :: memspace
-  integer                        :: memrank = 2
   integer(hsize_t), allocatable  :: dims(:)
   integer(hsize_t), dimension(2) :: dimsm
-  integer(hsize_t), dimension(2) :: offset_file
   integer(hsize_t), dimension(2) :: count_file
   integer(hsize_t), dimension(2) :: count_mem
+  integer(hid_t)                 :: memspace
+  integer(hid_t)                 :: dataspace
+  integer                        :: memrank = 2 ! scaler--> rank = 0 ; 2D array--> rank = 2
   integer(hsize_t), dimension(2) :: offset_mem = (/0,0/)
+  integer(hsize_t), dimension(2) :: offset_file = (/0,0/)
+  integer(hid_t)                 :: file_id
+  integer(hid_t)                 :: sm_gr_id_D,sm_field_id_D,sm_qa_id_D
+  integer(hid_t)                 :: sm_gr_id_A,sm_field_id_A,sm_qa_id_A
+  integer(hid_t)                 :: vwc_field_id_D ! MN 
+  integer(hid_t)                 :: vwc_field_id_A ! MN
   real,             allocatable  :: sm_field(:,:)
-  real,             allocatable  :: sm_field_D(:,:)
-  real,             allocatable  :: sm_field_A(:,:)
-  real,             allocatable  :: vwc_field_D(:,:)! MN
-  real,             allocatable  :: vwc_field_A(:,:)! MN
+  real,             allocatable  :: vwc_field(:,:)! MN
   integer,          allocatable  :: sm_qa(:,:)
   integer                        :: c,r,t
   logical*1                      :: sm_data_b(NASASMAPsm_struc(n)%nc*NASASMAPsm_struc(n)%nr)
@@ -849,11 +1058,8 @@ subroutine read_NASASMAP_data(n, k, fname, smobs_ip)
   count_mem  = (/NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr/)
   
   allocate(sm_field(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
-  allocate(sm_field_D(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
-  allocate(sm_field_A(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
-!  allocate(sm_qa(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
-  allocate(vwc_field_A(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
-  allocate(vwc_field_D(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
+  allocate(sm_qa(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
+  allocate(vwc_field(NASASMAPsm_struc(n)%nc, NASASMAPsm_struc(n)%nr))
   allocate(dims(2))
 
   dims(1) = NASASMAPsm_struc(n)%nc
@@ -865,103 +1071,111 @@ subroutine read_NASASMAP_data(n, k, fname, smobs_ip)
   call h5fopen_f(trim(fname),H5F_ACC_RDONLY_F, file_id, status) 
   call LIS_verify(status, 'Error opening NASASMAP file ')
   
-  call h5gopen_f(file_id,sm_gr_name_D,sm_gr_id_D, status)
-  call LIS_verify(status, 'Error opening SM group in NASASMAP file')
-  
-  call h5dopen_f(sm_gr_id_D,sm_field_name_D,sm_field_id_D, status)
-  call LIS_verify(status, 'Error opening SM field in NASASMAP file')
-  
-  call h5dget_space_f(sm_field_id_D, dataspace, status)
-  call LIS_verify(status, 'Error in h5dget_space_f: readNASASMAPObs')
-  
-  call h5sselect_hyperslab_f(dataspace, H5S_SELECT_SET_F, &
-       start=offset_file, count=count_file, hdferr=status)
-  call LIS_verify(status, 'Error setting hyperslab dataspace in readNASASMAPObs')
-  
-  call h5screate_simple_f(memrank,dimsm, memspace, status)
-  call LIS_verify(status, 'Error in h5create_simple_f; read_NASASMAPsm')
-  
-  call h5sselect_hyperslab_f(memspace, H5S_SELECT_SET_F, &
-       start=offset_mem, count=count_mem, hdferr=status)
-  call LIS_verify(status, 'Error in h5sselect_hyperslab_f: read_NASASMAPsm')
-  
-  call h5dread_f(sm_field_id_D, H5T_NATIVE_REAL,sm_field_D,dims,status, &
-       memspace, dataspace)
-  call LIS_verify(status, 'Error extracting SM field from NASASMAPfile')
-
-! MN get the vegetation water contnent DES (6 AM)
-  call h5dopen_f(sm_gr_id_D,vwc_field_name_D,vwc_field_id_D, status)
-  call LIS_verify(status, 'Error opening Veg water content field in NASASMAP file')
-
-  call h5dread_f(vwc_field_id_D, H5T_NATIVE_REAL,vwc_field_D,dims,status, &
+  if(pass.eq.'D') then 
+     call h5gopen_f(file_id,sm_gr_name_D,sm_gr_id_D, status)
+     call LIS_verify(status, 'Error opening SM group in NASASMAP file')
+     
+     call h5dopen_f(sm_gr_id_D,sm_field_name_D,sm_field_id_D, status)
+     call LIS_verify(status, 'Error opening SM field in NASASMAP file')
+     
+     call h5dget_space_f(sm_field_id_D, dataspace, status)
+     call LIS_verify(status, 'Error in h5dget_space_f: readNASASMAPObs')
+     
+     call h5sselect_hyperslab_f(dataspace, H5S_SELECT_SET_F, &
+          start=offset_file, count=count_file, hdferr=status)
+     call LIS_verify(status, 'Error setting hyperslab dataspace in readNASASMAPObs')
+     
+     call h5screate_simple_f(memrank,dimsm, memspace, status)
+     call LIS_verify(status, 'Error in h5create_simple_f; read_NASASMAPsm')
+     
+     call h5sselect_hyperslab_f(memspace, H5S_SELECT_SET_F, &
+          start=offset_mem, count=count_mem, hdferr=status)
+     call LIS_verify(status, 'Error in h5sselect_hyperslab_f: read_NASASMAPsm')
+     
+     call h5dread_f(sm_field_id_D, H5T_NATIVE_REAL,sm_field,dims,status, &
           memspace, dataspace)
-  call LIS_verify(status, 'Error extracting Veg water content (AM) field from NASASMAPfile')
+     call LIS_verify(status, 'Error extracting SM field from NASASMAPfile')
 
-  call h5dclose_f(vwc_field_id_D,status)
-  call LIS_verify(status,'Error in H5DCLOSE call')
+     call h5dclose_f(sm_field_id_D,status)
+     call LIS_verify(status,'Error in H5DCLOSE call')
 
- 
-!Read the PM (ascending) data 
-  call h5gopen_f(file_id,sm_gr_name_A,sm_gr_id_A, status)
-  call LIS_verify(status, 'Error opening SM group in NASASMAP file')
-  
-  call h5dopen_f(sm_gr_id_A,sm_field_name_A,sm_field_id_A, status)
-  call LIS_verify(status, 'Error opening SM field in NASASMAP file')
-  
-  call h5dget_space_f(sm_field_id_A, dataspace, status)
-  call LIS_verify(status, 'Error in h5dget_space_f: readNASASMAPObs')
-  
-  call h5sselect_hyperslab_f(dataspace, H5S_SELECT_SET_F, &
-       start=offset_file, count=count_file, hdferr=status)
-  call LIS_verify(status, 'Error setting hyperslab dataspace in readNASASMAPObs')
-  
-  call h5screate_simple_f(memrank,dimsm, memspace, status)
-  call LIS_verify(status, 'Error in h5create_simple_f; read_NASASMAPsm')
-  
-  call h5sselect_hyperslab_f(memspace, H5S_SELECT_SET_F, &
-       start=offset_mem, count=count_mem, hdferr=status)
-  call LIS_verify(status, 'Error in h5sselect_hyperslab_f: read_NASASMAPsm')
-  
-  call h5dread_f(sm_field_id_A, H5T_NATIVE_REAL,sm_field_A,dims,status, &
-       memspace, dataspace)
-  call LIS_verify(status, 'Error extracting SM field from NASASMAPfile')
-
-! MN get the vegetation water contnent ASC (6 PM)
-  call h5dopen_f(sm_gr_id_A,vwc_field_name_A,vwc_field_id_A, status)
-  call LIS_verify(status, 'Error opening Veg water content field in NASASMAP file')
-
-  call h5dread_f(vwc_field_id_A, H5T_NATIVE_REAL,vwc_field_A,dims,status, &
+     call h5dopen_f(sm_gr_id_D,sm_qa_name_D,sm_qa_id_D, status)
+     call LIS_verify(status, 'Error opening SM QA field in NASASMAP file')
+     
+     call h5dread_f(sm_qa_id_D, H5T_NATIVE_INTEGER,sm_qa,dims,status, &
           memspace, dataspace)
-  call LIS_verify(status, 'Error extracting Veg water content (AM) field from NASASMAPfile')
+     call LIS_verify(status, 'Error extracting SM QA field from NASASMAPfile')
+     
+     call h5dclose_f(sm_qa_id_D,status)
+     call LIS_verify(status,'Error in H5DCLOSE call')
 
-  call h5dclose_f(vwc_field_id_A,status)
-  call LIS_verify(status,'Error in H5DCLOSE call')
+! MN get the vegetation water contnent 
+     call h5dopen_f(sm_gr_id_D,vwc_field_name_D,vwc_field_id_D, status)
+     call LIS_verify(status, 'Error opening Veg water content field in NASASMAP file')
 
-  call h5dclose_f(sm_field_id_D,status)
-  call LIS_verify(status,'Error in H5DCLOSE call')
+     call h5dread_f(vwc_field_id_D, H5T_NATIVE_REAL,vwc_field,dims,status, &
+          memspace, dataspace)
+     call LIS_verify(status, 'Error extracting Veg water content (AM) field from NASASMAPfile')
 
-  call h5dclose_f(sm_field_id_A,status)
-  call LIS_verify(status,'Error in H5DCLOSE call')
+     call h5dclose_f(vwc_field_id_D,status)
+     call LIS_verify(status,'Error in H5DCLOSE call')
 
+     call h5gclose_f(sm_gr_id_D,status)
+     call LIS_verify(status,'Error in H5GCLOSE call')
 
-! MN why this part has been commented out    ???????
+  else
+     call h5gopen_f(file_id,sm_gr_name_A,sm_gr_id_A, status)
+     call LIS_verify(status, 'Error opening SM group in NASASMAP file')
+     
+     call h5dopen_f(sm_gr_id_A,sm_field_name_A,sm_field_id_A, status)
+     call LIS_verify(status, 'Error opening SM field in NASASMAP file')
+     
+     call h5dget_space_f(sm_field_id_A, dataspace, status)
+     call LIS_verify(status, 'Error in h5dget_space_f: readNASASMAPObs')
+     
+     call h5sselect_hyperslab_f(dataspace, H5S_SELECT_SET_F, &
+          start=offset_file, count=count_file, hdferr=status)
+     call LIS_verify(status, 'Error setting hyperslab dataspace in readNASASMAPObs')
+     
+     call h5screate_simple_f(memrank,dimsm, memspace, status)
+     call LIS_verify(status, 'Error in h5create_simple_f; read_NASASMAPsm')
+     
+     call h5sselect_hyperslab_f(memspace, H5S_SELECT_SET_F, &
+          start=offset_mem, count=count_mem, hdferr=status)
+     call LIS_verify(status, 'Error in h5sselect_hyperslab_f: read_NASASMAPsm')
+     
+     call h5dread_f(sm_field_id_A, H5T_NATIVE_REAL,sm_field,dims,status, &
+          memspace, dataspace)
+     call LIS_verify(status, 'Error extracting SM field from NASASMAPfile')
 
-!  call h5dopen_f(sm_gr_id,sm_qa_name,sm_qa_id, status)
-!  call LIS_verify(status, 'Error opening SM QA field in NASASMAP file')
-  
-!  call h5dread_f(sm_qa_id, H5T_NATIVE_INTEGER,sm_qa,dims,status, &
-!       memspace, dataspace)
-!  call LIS_verify(status, 'Error extracting SM QA field from NASASMAPfile')
-!  
-!  call h5dclose_f(sm_qa_id,status)
-!  call LIS_verify(status,'Error in H5DCLOSE call')
-  
+     call h5dclose_f(sm_field_id_A,status)
+     call LIS_verify(status,'Error in H5DCLOSE call')
+     
+     call h5dopen_f(sm_gr_id_A,sm_qa_name_A,sm_qa_id_A, status)
+     call LIS_verify(status, 'Error opening SM QA field in NASASMAP file')
+     
+     call h5dread_f(sm_qa_id_A, H5T_NATIVE_INTEGER,sm_qa,dims,status, &
+          memspace, dataspace)
+     call LIS_verify(status, 'Error extracting SM QA field from NASASMAPfile')
 
-  call h5gclose_f(sm_gr_id_D,status)
-  call LIS_verify(status,'Error in H5GCLOSE call')
+     call h5dclose_f(sm_qa_id_A,status)
+     call LIS_verify(status,'Error in H5DCLOSE call')
 
-  call h5gclose_f(sm_gr_id_A,status)
-  call LIS_verify(status,'Error in H5GCLOSE call')
+! MN get the vegetation water contnent 
+     call h5dopen_f(sm_gr_id_A,vwc_field_name_A,vwc_field_id_A, status)
+     call LIS_verify(status, 'Error opening Veg water content field in NASASMAP file')
+
+     call h5dread_f(vwc_field_id_A, H5T_NATIVE_REAL,vwc_field,dims,status, &
+          memspace, dataspace)
+     call LIS_verify(status, 'Error extracting Veg water content (AM) field from NASASMAPfile')
+
+     call h5dclose_f(vwc_field_id_A,status)
+     call LIS_verify(status,'Error in H5DCLOSE call')
+
+     call h5gclose_f(sm_gr_id_A,status)
+     call LIS_verify(status,'Error in H5GCLOSE call')
+     
+  endif
   
   call h5fclose_f(file_id,status)
   call LIS_verify(status,'Error in H5FCLOSE call')
@@ -969,8 +1183,12 @@ subroutine read_NASASMAP_data(n, k, fname, smobs_ip)
   call h5close_f(status)
   call LIS_verify(status,'Error in H5CLOSE call')
 
-
-
+#if 0 
+! =============================================================================
+! MN the following section added 
+!  1- to filter the densly vegetaded areas. 
+!  2- combine the AM and PM data 
+     
   sm_field = LIS_rc%udef
   do r=1,NASASMAPsm_struc(n)%nr
      do c=1,NASASMAPsm_struc(n)%nc
@@ -995,33 +1213,48 @@ subroutine read_NASASMAP_data(n, k, fname, smobs_ip)
            if(sm_field_A(c,r).ne.LIS_rc%udef) then 
               sm_field(c,r) = sm_field_A(c,r)
            endif
-        endif
-     enddo
+        enddo
   enddo
-
-  
+! MN end added section 
+! =============================================================================
+#endif  
   sm_data_b = .false. 
   t = 1
 
-! Why qc flag has been disabled  ??????
+! The retrieval_quality_field variable's binary representation consists of bits
+! that indicate whether retrieval is performed or not at a given grid cell. 
+! When retrieval is performed, it contains additional bits to further 
+! indicate the exit status and quality of the retrieval. The first bit 
+! indicates the recommended quality (0-means retrieval has recommended quality
+!
 
   do r=1,NASASMAPsm_struc(n)%nr
      do c=1,NASASMAPsm_struc(n)%nc        
         sm_data(t) = sm_field(c,r)
-        if(sm_data(t).ne.-9999.0) then 
-!           if(NASASMAPsm_struc(n)%qcFlag.eq.1) then 
-!              if(ibits(sm_qa(c,r),0,1).eq.0) then 
-           sm_data_b(t) = .true. 
-!              endif
-!           else
-!              sm_data_b(t) = .true.
-!           endif
+
+        if(vwc_field(c,r).gt. 5 ) then !MN Aply QC : if VWC > 5 kg/m2 
+           sm_data(t) = LIS_rc%udef
+	 else 
+
+           if(sm_data(t).ne.-9999.0) then 
+              if(NASASMAPsm_struc(n)%qcFlag.eq.1) then 
+                 if(ibits(sm_qa(c,r),0,1).eq.0) then 
+                    sm_data_b(t) = .true.
+                 else
+                    sm_data(t) = -9999.0
+                 endif
+              else
+                 sm_data_b(t) = .true.
+              endif
+           endif
         endif
+
         t = t+1
      enddo
   enddo
 
-!  deallocate(sm_qa)
+  deallocate(sm_qa)
+
 !--------------------------------------------------------------------------
 ! Interpolate to the LIS running domain
 !-------------------------------------------------------------------------- 
@@ -1037,9 +1270,11 @@ subroutine read_NASASMAP_data(n, k, fname, smobs_ip)
 
 #endif
 
+
+
 end subroutine read_NASASMAP_data
 
-
+#if 0 
 !BOP
 ! !ROUTINE: create_NASASMAPsm_filename
 ! \label{create_NASASMAPsm_filename}
@@ -1106,7 +1341,7 @@ subroutine create_NASASMAPsm_filename(ndir, designation, yr, mo,da, filename)
 
 end subroutine create_NASASMAPsm_filename
 
-
+#endif
 
 
 
