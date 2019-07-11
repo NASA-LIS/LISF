@@ -12,7 +12,7 @@ subroutine readSMAPsmobs(source)
 ! 
 ! !USES:   
   use ESMF
-  use LVT_coreMod,      only : LVT_rc
+  use LVT_coreMod
   use LVT_histDataMod
   use LVT_logMod
   use LVT_timeMgrMod
@@ -36,6 +36,10 @@ subroutine readSMAPsmobs(source)
 !  21 July 2010: Sujay Kumar, Initial Specification
 !  17 Aug 2018: Mahdi Navari, Edited to read SPL3SMP.005 & SPL3SMP_E.002 
 !  19 Jun 2019: Sujay Kumar; Added support for SMAP L2 data
+!  9 July 2019: Mahdi Navari, There are several version of SMAP sm data available in each directory
+!                  with different Release number and different CRID Version Number. The reader was
+!                  modified to read the latest version of data (the reader no longer reads the symbolic
+!                  link to the SMAP sm data)
 !EOP
 
   logical           :: alarmcheck, file_exists, readflag
@@ -57,6 +61,7 @@ subroutine readSMAPsmobs(source)
   integer           :: doy
   real*8            :: timenow
   real              :: smobs(LVT_rc%lnc,LVT_rc%lnr)
+  character(len=3)  :: CRID
 
   smc = LVT_rc%udef
   smobs = LVT_rc%udef
@@ -128,26 +133,83 @@ subroutine readSMAPsmobs(source)
            enddo
         enddo
 
-     else
-        call SMAP_sm_filename(source,name,&
-             SMAP_smobs(source)%data_designation, & 
-             SMAP_smobs(source)%odir, & 
-             LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source))
-        
-        inquire(file=name, exist=file_exists) 
-        
-        if(file_exists) then 
-           readflag = .true. 
-        else
-           readflag = .false. 
-        endif
-        
-        if(readflag) then 
-           write(LVT_logunit,*) '[INFO] Reading SMAP file ',name
-           call read_SMAPsm(source, name, smc)
-           
-        endif
-     endif
+     elseif (SMAP_smobs(source)%data_designation .eq. "SPL3SMP_E") then
+!----------------------------------------------------------------------------------------------------------------
+! create filename for 9 km product
+!----------------------------------------------------------------------------------------------------------------
+
+         write (yyyy, '(i4.4)') LVT_rc%yr
+         write (mm, '(i2.2)') LVT_rc%mo
+         write (dd, '(i2.2)') LVT_rc%da
+         write (CRID, '(a)') SMAP_smobs(i)%release_number
+
+         list_files = 'ls '//trim(SMAP_smobs(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
+                      trim(dd)//'/SMAP_L3_SM_P_E_' &
+                      //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+                         trim(CRID)//'*.h5> SMAP_filelist'// &
+                         '.dat'
+
+         call system(trim(list_files))
+         i = 1
+         ftn = LVT_getNextUnitNumber()
+         open (ftn, file="./SMAP_filelist.dat", &
+               status='old', iostat=ierr)
+
+! if multiple files for the same time and orbits are present, the latest
+! one will overwrite older ones, though multiple (redundant) reads occur.
+! This assumes that the 'ls command' will list the files in that order.
+
+         do while (ierr .eq. 0)
+            read (ftn, '(a)', iostat=ierr) fname
+            if (ierr .ne. 0) then
+               exit
+            endif
+            smap_filename(i) = fname
+            write (LVT_logunit, *) '[INFO] reading ', trim(smap_filename(i))
+            call read_SMAPsm(source, smap_filename(i), smc)
+            i = i + 1
+         enddo
+         call LVT_releaseUnitNumber(ftn)
+
+      elseif (SMAP_smobs(source)%data_designation .eq. "SPL3SMP") then
+!----------------------------------------------------------------------------------------------------------------
+! create filename for 36 km product
+!----------------------------------------------------------------------------------------------------------------
+
+         write (yyyy, '(i4.4)') LVT_rc%yr
+         write (mm, '(i2.2)') LVT_rc%mo
+         write (dd, '(i2.2)') LVT_rc%da
+         write (CRID, '(a)') SMAP_smobs(i)%release_number
+
+         list_files = 'ls '//trim(SMAP_smobs(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
+                      trim(dd)//'/SMAP_L3_SM_P_' &
+                      //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+                         trim(CRID)//'*.h5> SMAP_filelist'// &
+                         '.dat'
+
+         call system(trim(list_files))
+         i = 1
+         ftn = LVT_getNextUnitNumber()
+         open (ftn, file="./SMAP_filelist.dat", &
+               status='old', iostat=ierr)
+
+! if multiple files for the same time and orbits are present, the latest
+! one will overwrite older ones, though multiple (redundant) reads occur.
+! This assumes that the 'ls command' will list the files in that order.
+
+         do while (ierr .eq. 0)
+            read (ftn, '(a)', iostat=ierr) fname
+            if (ierr .ne. 0) then
+               exit
+            endif
+            smap_filename(i) = fname
+            write (LVT_logunit, *) '[INFO] reading ', trim(smap_filename(i))
+            call read_SMAPsm(source, smap_filename(i), smc)
+            i = i + 1
+         enddo
+
+         call LVT_releaseUnitNumber(ftn)
+      endif
   endif
 
   call LVT_logSingleDataStreamVar(LVT_MOC_SOILMOIST, source,&
@@ -653,6 +715,8 @@ subroutine read_SMAPsm(source, fname, smobs)
 
 end subroutine read_SMAPsm
 
+
+# if 0
 !BOP
 ! 
 ! !ROUTINE: SMAP_sm_filename
@@ -729,3 +793,4 @@ subroutine SMAP_sm_filename(source, name, designation, ndir, yr, mo,da)
   endif
 
 end subroutine SMAP_sm_filename
+# endif
