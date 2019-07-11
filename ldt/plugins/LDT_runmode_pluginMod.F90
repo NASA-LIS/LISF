@@ -134,7 +134,7 @@ contains
     call registerldtrun(trim(LDT_ldtsiId)//char(0), &
          LDT_run_ldtsi)
 
-    ! LDTSI analysis
+    ! OPTUE processing
     call registerldtinit(trim(LDT_OPTUEparamprocId)//char(0), &
          LDT_init_OPTUEparamproc)
     call registerldtrun(trim(LDT_OPTUEparamprocId)//char(0), &

@@ -1118,8 +1118,12 @@ contains
 
 ! - Forcing-specific parameter headers
     call LDT_forcingParms_writeHeader(n,ftn,dimID,met_dimID)
+
 !OPT/UE parameters
-    call LDT_optue_writeHeader(n,ftn,dimID)
+    if (LDT_rc%runmode.eq."OPTUE parameter processing") then
+       call LDT_optue_writeHeader(n,ftn,dimID)
+    endif
+
   end subroutine writeParamHeaders
 
 
@@ -1150,8 +1154,11 @@ contains
 
 ! - Forcing-specific data
     call LDT_forcingParms_writeData(n,ftn)
+
 ! OPT/UE parameters
-    call LDT_optue_writeData(n,ftn)
+    if (LDT_rc%runmode.eq."OPTUE parameter processing") then
+       call LDT_optue_writeData(n,ftn)
+    endif
 
   end subroutine writeParamData
 
