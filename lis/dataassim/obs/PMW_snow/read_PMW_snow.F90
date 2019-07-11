@@ -719,6 +719,8 @@ subroutine read_PMWSnow_HDF5(n,k,name)
       if (tsnow_qc(i) .ne. LIS_rc%udef) li(i) = .true.
    enddo
 
+  LIS_domain(n)%lat = 0.0
+  LIS_domain(n)%lon = 0.0
    call bilinear_interp(LIS_rc%gridDesc(n,:),li,tsnow_qc,&
         lo,PMW_snow_struc(n)%snow,&
         PMW_snow_struc(n)%mi,PMW_snow_struc(n)%mo,&

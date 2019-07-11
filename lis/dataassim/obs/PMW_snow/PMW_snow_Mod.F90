@@ -796,6 +796,8 @@ contains
        allocate(PMW_snow_struc(n)%rlat(PMW_snow_struc(n)%mo))
        allocate(PMW_snow_struc(n)%rlon(PMW_snow_struc(n)%mo))
 
+       PMW_snow_struc(n)%rlat(:)=0.0
+       PMW_snow_struc(n)%rlon(:)=0.0
        call bilinear_interp_input_withgrid(gridDesci(n,:),&
             LIS_rc%obs_gridDesc(k,:),&
             PMW_snow_struc(n)%mo, &
@@ -805,7 +807,6 @@ contains
             PMW_snow_struc(n)%n21, PMW_snow_struc(n)%n22,&
             PMW_snow_struc(n)%w11, PMW_snow_struc(n)%w12,&
             PMW_snow_struc(n)%w21, PMW_snow_struc(n)%w22)
-
 
 #if 0
        allocate(PMW_snow_struc(n)%n113(PMW_snow_struc(n)%mo)) 
