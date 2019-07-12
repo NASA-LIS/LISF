@@ -2,54 +2,25 @@
 == Test-cases
 anchor:sec_testcases[Test-cases]
 
-This section describes how to obtain and how to use the test-cases provided by the LIS team.
+This section describes how to obtain and how to use the test cases provided by the LIS team.
 
 There are two categories of testcases: public tests and internal tests.
 
 
 === Public tests
 
-These test-cases are provided for the general LIS user to run.  They help demonstrate a successful installation of LIS and its required libraries.  They also demonstrate how to configure several different use-cases of LIS.  These test-cases are comprised of three parts: a _testcases_ sub-directory included in the LIS source code, input data, and output data.
+The new LIS framework (LISF) set of public testcases include a full end-to-end suite of LDT, LIS, and LVT cases that build off each other with several different steps, which are outlined in the table below. The suite of testcases include generating model parameter and assimilation-based input files using LDT, running the Noah land surface model (LSM) for a sample "open-loop" (or baseline) experiment and a data assimilation (DA) experiment using LIS, and then comparing output from the sample experiments using LVT. 
 
+The new public test cases are available from our main LIS webpage:
 
-==== The _testcases_ Sub-directory
-anchor:sssec_ptestcases[The _testcases_ Sub-directory]
+{listesturl}
 
-The public test-cases are contained within the _src/testcases/public_ directory.  The available tests are:
-
-NLDAS2-a::
-NLDAS domain + NLDAS-2 forcing + Noah-3.3 LSM + HYMAP router + AMSR-E DA soil moisture
-
-NLDAS2-b::
-NLDAS domain + NLDAS-2 forcing + CLSM-F2.5 LSM + HYMAP router + GRACE DA
-
-NLDAS2-c::
-RDHM 3.5.6 (Sac-HTET) over the NLDAS domain using NLDAS-2 forcing
-
-GLDAS::
-VIC 4.1.2.l over a global 1 deg domain using Princeton forcing
-
-pmw_snowda_nam::
-PMW SNOW DA case over Alaska with NAM forcing
-
-OPTUE::
-PMM related case featuring parameter and uncertainty estimation
-
-geowrsi.2::
-GeoWRSI over an East Africa domain using USGS PET and RFE2 precip
-
-These test-case sub-directories contain the files needed to help you test LIS.  In particular, they contain the needed run-time configuration files, and they contain scripts for downloading data.  Each of the test-case sub-directory contains a _README_ file.  Each _README_ file contains a description of the test-case and instructions regarding how to download and run the test-case.
-
-
-==== Input and output data
-anchor:ssec_pinput_output[Input and output data]
-
-The input and output data needed to run the public test-cases are hosted on LIS' public data portal.  Please see the "`LIS Test Cases`" section of LIS' web-site ({lisurl}).
+All required input and data files are bundled with each of the cases from the above website. Also, documentation is provided that accompanies each of the cases for additional details and information. Below the table of test cases on the webpage, users will find information about which version, compiler and libraries used to generate and test the different test cases provided. 
 
 
 === Internal tests
 
-These test-cases are typically used by the LIS development team to test various components of the LIS source code.  These test-cases are comprised of three parts: a _testcases_ sub-directory included in the LIS source code, input data, and output data.
+These test cases are typically used by the LIS development team to test various components of the LIS source code.  These test cases are comprised of three parts: a _testcases_ sub-directory included in the LIS source code, input data, and output data.
 
 
 ==== The _testcases_ Sub-directory
