@@ -75,8 +75,7 @@ subroutine read_SRTM_aspect( n, num_bins, fgrd, aspectave )
   
   ftn = LDT_getNextUnitNumber()
   open(ftn,file=LDT_rc%aspfile(n),form='unformatted', &
-       access='direct',recl=4,status='old')
-  
+       access='direct',convert='big_endian',recl=4,status='old')
 
 ! -------------------------------------------------------------------
 !     AGGREGATING FINE-SCALE GRIDS TO COARSER LIS OUTPUT GRID
