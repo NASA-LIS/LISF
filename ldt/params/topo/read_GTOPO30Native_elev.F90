@@ -178,13 +178,13 @@ subroutine read_GTOPO30Native_elev( n, num_bins, fgrd, elevave )
   tempfile = trim(LDT_rc%elevfile(n))//"/gt30"//we(2)//ns(2)//".dem"
   inquire(file=tempfile, exist=file_exists)
   if(.not.file_exists) then
-     write(LDT_logunit,*) "[ERR] GTOPO30-Native elevation map directory, ",&
-                           trim(LDT_rc%elevfile(n))," not found."
+     write(LDT_logunit,*) "[ERR] GTOPO30-Native elevation map file, ",&
+                           trim(tempfile),", not found."
      write(LDT_logunit,*) "Program stopping ..."
      call LDT_endrun
   endif
-  write(LDT_logunit,*) "[INFO] Reading Native GTOPO30 elevation files, found in directory: ",&
-                        trim(LDT_rc%elevfile(n))
+  write(LDT_logunit,*) "[INFO] Reading Native GTOPO30 elevation files",&
+                       " found in directory: ",trim(LDT_rc%elevfile(n))
   
 ! --
 !  Open and read in tile files:
@@ -214,7 +214,7 @@ subroutine read_GTOPO30Native_elev( n, num_bins, fgrd, elevave )
          if( l < 4 ) then
            open(ftn, file=trim(LDT_rc%elevfile(n))//"/gt30"//we(k)//ns(l)//".dem", &
               form="unformatted", access="direct", status="old", &
-              recl=tile_nc*tile_nr*2)
+              convert='big_endian',recl=tile_nc*tile_nr*2)
            read(ftn, rec=1) read_elevtile(:, :, k)
 
            ! Mosaic all elevation tiles together:
@@ -227,7 +227,7 @@ subroutine read_GTOPO30Native_elev( n, num_bins, fgrd, elevave )
          elseif( l == 4 ) then
            open(ftn, file=trim(LDT_rc%elevfile(n))//"/gt30"//we_antarc(k)//ns(l)//".dem", &
               form="unformatted", access="direct", status="old", &
-              recl=tile_nc_antarc*tile_nr_antarc*2)
+              convert='big_endian',recl=tile_nc_antarc*tile_nr_antarc*2)
            read(ftn, rec=1) read_elevtile_antarc(:, :, k)
 
            ! Mosaic all elevation tiles together:
@@ -338,7 +338,7 @@ subroutine read_GTOPO30Native_elev( n, num_bins, fgrd, elevave )
    end select
    deallocate( gi1, li1 )
 
-   write(LDT_logunit, *) "[INFO] Done reading Native GTOPO30 elevation file."
+   write(LDT_logunit, *) "[INFO] Done reading Native GTOPO30 elevation files."
 
 end subroutine read_GTOPO30Native_elev
 
