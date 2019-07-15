@@ -11,643 +11,560 @@
 ! \label{read_NASASMAPsm}
 !
 ! !REVISION HISTORY:
-!  17 Jun 2010: Sujay Kumar; Updated for use with LPRM AMSRE Version 5. 
-!  20 Sep 2012: Sujay Kumar; Updated to the NETCDF version of the data. 
+!  17 Jun 2010: Sujay Kumar; Updated for use with LPRM AMSRE Version 5.
+!  20 Sep 2012: Sujay Kumar; Updated to the NETCDF version of the data.
 !  15 Jul 2018: Mahdi Navari: Bug in the SMAP reader was fixed
 !  31 Aug 2018: Mahdi Navari, Edited to read SPL3SMP.005 & SPL3SMP_E.002
 !  1  Apr 2019: Yonghwan Kwon: Upated for reading monthy CDF for the current month
 ! 11 July 2019: Mahdi Navari, There are several version of SMAP sm data available in each directory
-!                  with different Release number and different CRID Version Number. The reader was 
-!                  modified to read the latest version of data (the reader no longer reads the symbolic 
+!                  with different Release number and different CRID Version Number. The reader was
+!                  modified to read the latest version of data (the reader no longer reads the symbolic
 !                  link to the SMAP sm data)
 !
-! !INTERFACE: 
+! !INTERFACE:
 subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
-! !USES: 
-  use ESMF
-  use LIS_mpiMod
-  use LIS_coreMod
-  use LIS_logMod
-  use LIS_timeMgrMod
-  use LIS_dataAssimMod
-  use LIS_DAobservationsMod
-  use map_utils
-  use LIS_pluginIndices
-  use NASASMAPsm_Mod, only : NASASMAPsm_struc
+! !USES:
+   use ESMF
+   use LIS_mpiMod
+   use LIS_coreMod
+   use LIS_logMod
+   use LIS_timeMgrMod
+   use LIS_dataAssimMod
+   use LIS_DAobservationsMod
+   use map_utils
+   use LIS_pluginIndices
+   use NASASMAPsm_Mod, only: NASASMAPsm_struc
 
-  implicit none
-! !ARGUMENTS: 
-  integer, intent(in) :: n 
-  integer, intent(in) :: k
-  type(ESMF_State)    :: OBS_State
-  type(ESMF_State)    :: OBS_Pert_State
+   implicit none
+! !ARGUMENTS:
+   integer, intent(in) :: n
+   integer, intent(in) :: k
+   type(ESMF_State)    :: OBS_State
+   type(ESMF_State)    :: OBS_Pert_State
 !
 ! !DESCRIPTION:
-!  
-!  reads the AMSRE soil moisture observations 
+!
+!  reads the AMSRE soil moisture observations
 !  from NETCDF files and applies the spatial masking for dense
 !  vegetation, rain and RFI. The data is then rescaled
 !  to the land surface model's climatology using rescaling
-!  algorithms. 
-!  
-!  The arguments are: 
+!  algorithms.
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest
 !  \item[OBS\_State] observations state
 !  \end{description}
 !
 !EOP
-  real, parameter        ::  minssdev = 0.05
-  real, parameter        ::  maxssdev = 0.11
-  real,  parameter       :: MAX_SM_VALUE=0.45, MIN_SM_VALUE=0.0001
-  integer                :: status
-  integer                :: grid_index
-  character*100          :: smobsdir
-  character*100          :: fname
-  logical                :: alarmCheck, file_exists
-  integer                :: t,c,r,i,j,p,jj
-  real,          pointer :: obsl(:)
-  type(ESMF_Field)       :: smfield, pertField
-  integer                :: gid(LIS_rc%obs_ngrid(k))
-  integer                :: assimflag(LIS_rc%obs_ngrid(k))
-  real                   :: obs_unsc(LIS_rc%obs_ngrid(k))
-  logical                :: data_update
-  logical                :: data_upd_flag(LIS_npes)
-  logical                :: data_upd_flag_local
-  logical                :: data_upd
-  real                   :: smobs(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
-  real                   :: smobs_D(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
-  real                   :: smobs_A(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
-  real                   :: sm_current(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k))
-  real                   :: dt
-  real                   :: lon
-  real                   :: lhour
-  real                   :: gmt
-  integer                :: zone
-  integer                :: fnd
-  real, allocatable      :: ssdev(:)
-  integer                :: lis_julss
-  real                   :: smvalue
-  real                   :: model_delta(LIS_rc%obs_ngrid(k))
-  real                   :: obs_delta(LIS_rc%obs_ngrid(k))
- 
+   real, parameter        ::  minssdev = 0.05
+   real, parameter        ::  maxssdev = 0.11
+   real, parameter       :: MAX_SM_VALUE = 0.45, MIN_SM_VALUE = 0.0001
+   integer                :: status
+   integer                :: grid_index
+   character*100          :: smobsdir
+   character*100          :: fname
+   logical                :: alarmCheck, file_exists
+   integer                :: t, c, r, i, j, p, jj
+   real, pointer :: obsl(:)
+   type(ESMF_Field)       :: smfield, pertField
+   integer                :: gid(LIS_rc%obs_ngrid(k))
+   integer                :: assimflag(LIS_rc%obs_ngrid(k))
+   real                   :: obs_unsc(LIS_rc%obs_ngrid(k))
+   logical                :: data_update
+   logical                :: data_upd_flag(LIS_npes)
+   logical                :: data_upd_flag_local
+   logical                :: data_upd
+   real                   :: smobs(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
+   real                   :: smobs_D(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
+   real                   :: smobs_A(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
+   real                   :: sm_current(LIS_rc%obs_lnc(k), LIS_rc%obs_lnr(k))
+   real                   :: dt
+   real                   :: lon
+   real                   :: lhour
+   real                   :: gmt
+   integer                :: zone
+   integer                :: fnd
+   real, allocatable      :: ssdev(:)
+   integer                :: lis_julss
+   real                   :: smvalue
+   real                   :: model_delta(LIS_rc%obs_ngrid(k))
+   real                   :: obs_delta(LIS_rc%obs_ngrid(k))
+   character*4       :: yyyy
+   character*2       :: mm, dd, hh
+   integer               :: yr, mo, da, hr, mn, ss
+   integer               :: doy
+   character*200      :: list_files
+   character*100     :: temp1
+   character*1        :: fproc(4)
+   integer               :: ftn, ierr
+   character*100     :: smap_filename(10), tstring(10)
+   character(len=4) :: istring
+   character(len=200) :: cmd
+   integer :: rc
 
-  character*4       :: yyyy
-  character*2       :: mm,dd,hh
-  integer               :: yr, mo, da, hr, mn, ss
-  integer               :: doy
- character*200      :: list_files
-  character*100     :: temp1
-  character*1        :: fproc(4)
-  integer               :: ftn,ierr
-  character*100     :: smap_filename(10),tstring(10)
-  character(len=4) :: istring
-  character(len=200) :: cmd
-  integer :: rc
+   smap_filename = ""
 
-  smap_filename = ""
+   call ESMF_AttributeGet(OBS_State, "Data Directory", &
+                          smobsdir, rc=status)
+   call LIS_verify(status)
+   call ESMF_AttributeGet(OBS_State, "Data Update Status", &
+                          data_update, rc=status)
+   call LIS_verify(status)
 
-  call ESMF_AttributeGet(OBS_State,"Data Directory",&
-       smobsdir, rc=status)
-  call LIS_verify(status)
-  call ESMF_AttributeGet(OBS_State,"Data Update Status",&
-       data_update, rc=status)
-  call LIS_verify(status)
+   data_upd = .false.
+   obs_unsc = LIS_rc%udef
 
-  data_upd = .false. 
-  obs_unsc = LIS_rc%udef
+   alarmCheck = LIS_isAlarmRinging(LIS_rc, "NASASMAP read alarm")
 
-  alarmCheck = LIS_isAlarmRinging(LIS_rc, "NASASMAP read alarm")
+   smobs_A = LIS_rc%udef
+   smobs_D = LIS_rc%udef
 
-  smobs_A = LIS_rc%udef
-  smobs_D = LIS_rc%udef
+   if (alarmCheck .or. NASASMAPsm_struc(n)%startMode) then
+      NASASMAPsm_struc(n)%startMode = .false.
 
-  if(alarmCheck.or.NASASMAPsm_struc(n)%startMode) then 
-     NASASMAPsm_struc(n)%startMode = .false.
-
-     if  (NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP_E") then
-!----------------------------------------------------------------------------------------------------------------
+      if (NASASMAPsm_struc(n)%data_designation .eq. "SPL3SMP_E") then
+!---------------------------------------------------------------------------
 ! MN: create filename for 9 km product
-!----------------------------------------------------------------------------------------------------------------
-!        call create_NASASMAPsm_filename(smobsdir, &
-!            NASASMAPsm_struc(n)%data_designation,&
-!             LIS_rc%yr, LIS_rc%mo, &
-!             LIS_rc%da, fname)
+!---------------------------------------------------------------------------
 
 ! get the local CPU number
-    write(unit=temp1,fmt='(i4.4)') LIS_localPet
-! convert that to 4 one char. string 
-     read(unit=temp1,fmt='(4a1)')fproc
+         write (unit=temp1, fmt='(i4.4)') LIS_localPet
+! convert that to 4 one char. string
+         read (unit=temp1, fmt='(4a1)') fproc
 
-     write(yyyy,'(i4.4)') LIS_rc%yr
-     write(mm,'(i2.2)') LIS_rc%mo
-     write(dd,'(i2.2)') LIS_rc%da
-     
-     ! EMK...Make sure only one PET calls the file system to determine what
-     ! SMAP files are available.  Then create a copy of the file list for
-     ! every PET.
-     if (LIS_masterproc) then
+         write (yyyy, '(i4.4)') LIS_rc%yr
+         write (mm, '(i2.2)') LIS_rc%mo
+         write (dd, '(i2.2)') LIS_rc%da
 
-        list_files = 'ls '//trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'//&
-          trim(dd)//'/SMAP_L3_SM_P_E_'&
-          //trim(yyyy)//trim(mm)//trim(dd)//&
-          '*.h5> SMAP_filelist'//&
-             '.dat'
+         ! EMK...Make sure only one PET calls the file system to determine what
+         ! SMAP files are available.  Then create a copy of the file list for
+         ! every PET.
+         if (LIS_masterproc) then
 
-        call system(trim(list_files))
-! make copy of the SMAP_filelist for each CPU 
-        do i = 0, LIS_npes-1
-           write(istring,'(I4.4)') i
-           cmd = 'cp SMAP_filelist.dat SMAP_filelist.'//istring//'.dat'
-           call system(trim(cmd))
-        end do ! i
-     end if
+            list_files = 'ls '//trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
+                         trim(dd)//'/SMAP_L3_SM_P_E_' &
+                         //trim(yyyy)//trim(mm)//trim(dd)// &
+                         '*.h5> SMAP_filelist'// &
+                         '.dat'
+
+            call system(trim(list_files))
+! make copy of the SMAP_filelist for each CPU
+            do i = 0, LIS_npes - 1
+               write (istring, '(I4.4)') i
+               cmd = 'cp SMAP_filelist.dat SMAP_filelist.'//istring//'.dat'
+               call system(trim(cmd))
+            end do ! i
+         end if
 #if (defined SPMD)
-     call mpi_barrier(lis_mpi_comm,ierr)
+         call mpi_barrier(lis_mpi_comm, ierr)
 #endif
 
-     i =1
-     ftn = LIS_getNextUnitNumber()
-     open(ftn,file="./SMAP_filelist."//&
-          fproc(1)//fproc(2)//fproc(3)//fproc(4)//'.dat',& ! put the char. string together 
-          status='old',iostat=ierr)
+         i = 1
+         ftn = LIS_getNextUnitNumber()
+         open (ftn, file="./SMAP_filelist."// &
+               fproc(1)//fproc(2)//fproc(3)//fproc(4)//'.dat', & ! put the char. string together
+               status='old', iostat=ierr)
 
 ! if multiple files for the same time and orbits are present, the latest
-! one will overwrite older ones, though multiple (redundant) reads occur. 
-! This assumes that the 'ls command' will list the files in that order. 
- 
-     do while(ierr.eq.0) 
-        read(ftn,'(a)',iostat=ierr) fname
-        if(ierr.ne.0) then 
-           exit
-        endif
+! one will overwrite older ones, though multiple (redundant) reads occur.
+! This assumes that the 'ls command' will list the files in that order.
 
-#if 0
-        ! From the filename, parse out minute, second
-        mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))
-!        tstring(i) = fname(mn_ind:mn_ind+14)
+         do while (ierr .eq. 0)
+            read (ftn, '(a)', iostat=ierr) fname
+            if (ierr .ne. 0) then
+               exit
+            endif
 
-!        read(fname(mn_ind+23:mn_ind+25),'(i3.3)') runid(i)
+            smap_filename(i) = fname
+            write (LIS_logunit, *) '[INFO] reading ', trim(smap_filename(i))
+            call read_NASASMAP_E_data(n, k, 'D', smap_filename(i), smobs_D)
 
-        mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))+11        
-        read(fname(mn_ind:mn_ind+1),'(i2.2)') mn
-        ss=0
-        call LIS_tick(timenow,doy,gmt,LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
-             LIS_rc%hr, mn, ss, 0.0)
-        
-!        orb_ind = index(fname,'SMAP_L2_SM_P_NRT_')+17
-!        read(fname(orb_ind:orb_ind+4),'(i5.5)') orbid(i)
-#endif
+            write (LIS_logunit, *) '[INFO] reading ', trim(smap_filename(i))
+            call read_NASASMAP_E_data(n, k, 'A', smap_filename(i), smobs_A)
+            i = i + 1
+         enddo
 
-        smap_filename(i) = fname        
-!        inquire(file=fname,exist=file_exists)       
-!        if(file_exists) then 
-!           write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
-           write(LIS_logunit,*) '[INFO] reading ',trim(smap_filename(i))
-           call read_NASASMAP_E_data(n,k,'D',smap_filename(i),smobs_D)
-!        else
-!           write(LIS_logunit,*) '[WARN] Missing SMAP file: ',trim(fname)
-!        endif
-
-!        call create_NASASMAPsm_filename(smobsdir, &
-!             NASASMAPsm_struc(n)%data_designation,&
-!             LIS_rc%yr, LIS_rc%mo, &
-!             LIS_rc%da, fname)
-        
-!        inquire(file=fname,exist=file_exists)
-        
-!        if(file_exists) then 
-!           write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
-           write(LIS_logunit,*) '[INFO] reading ',trim(smap_filename(i))
-           call read_NASASMAP_E_data(n,k,'A',smap_filename(i),smobs_A)
-!        else
-!           write(LIS_logunit,*) '[WARN] Missing SMAP file: ',trim(fname)
-!        endif
-
-        i = i +1 
-     enddo
-
-        NASASMAPsm_struc(n)%smobs  = LIS_rc%udef
-        NASASMAPsm_struc(n)%smtime = -1
-       call LIS_releaseUnitNumber(ftn)
-!------------------------------------------------------------------------- 
-!   Ascending pass assumed to be at 6pm localtime and the descending 
+         NASASMAPsm_struc(n)%smobs = LIS_rc%udef
+         NASASMAPsm_struc(n)%smtime = -1
+         call LIS_releaseUnitNumber(ftn)
+!-------------------------------------------------------------------------
+!   Ascending pass assumed to be at 6pm localtime and the descending
 !   pass is assumed to be at 6am local time
 !-------------------------------------------------------------------------
-        do r=1,LIS_rc%obs_lnr(k)
-           do c=1,LIS_rc%obs_lnc(k)
-              grid_index = LIS_obs_domain(n,k)%gindex(c,r)
-              if(grid_index.ne.-1) then 
-                 
-                 if(smobs_D(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0) then   
-                    NASASMAPsm_struc(n)%smobs(c,r) = &
-                         smobs_D(c+(r-1)*LIS_rc%obs_lnc(k))                 
-                    lon = LIS_obs_domain(n,k)%lon(c+(r-1)*LIS_rc%obs_lnc(k))
-                    lhour = 6.0
-                    call LIS_localtime2gmt (gmt,lon,lhour,zone)
-                    NASASMAPsm_struc(n)%smtime(c,r) = gmt
+         do r = 1, LIS_rc%obs_lnr(k)
+            do c = 1, LIS_rc%obs_lnc(k)
+               grid_index = LIS_obs_domain(n, k)%gindex(c, r)
+               if (grid_index .ne. -1) then
 
-                 endif
-!-------------------------------------------------------------------------  
-! The ascending data is used only over locations where descending data
-! doesn't exist. 
+                  if (smobs_D(c + (r - 1)*LIS_rc%obs_lnc(k)) .ne. -9999.0) then
+                     NASASMAPsm_struc(n)%smobs(c, r) = &
+                        smobs_D(c + (r - 1)*LIS_rc%obs_lnc(k))
+                     lon = LIS_obs_domain(n, k)%lon(c + (r - 1)*LIS_rc%obs_lnc(k))
+                     lhour = 6.0
+                     call LIS_localtime2gmt(gmt, lon, lhour, zone)
+                     NASASMAPsm_struc(n)%smtime(c, r) = gmt
+
+                  endif
 !-------------------------------------------------------------------------
-                 if(smobs_A(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0.and.&
-                      NASASMAPsm_struc(n)%smobs(c,r).eq.-9999.0) then   
-                    NASASMAPsm_struc(n)%smobs(c,r) = &
-                         smobs_A(c+(r-1)*LIS_rc%obs_lnc(k))                 
-                    lon = LIS_obs_domain(n,k)%lon(c+(r-1)*LIS_rc%obs_lnc(k))
-                    lhour = 18.0
-                    call LIS_localtime2gmt (gmt,lon,lhour,zone)
-                    NASASMAPsm_struc(n)%smtime(c,r) = gmt
-                 endif
-              endif
-           enddo
-        enddo
+! The ascending data is used only over locations where descending data
+! doesn't exist.
+!-------------------------------------------------------------------------
+                  if (smobs_A(c + (r - 1)*LIS_rc%obs_lnc(k)) .ne. -9999.0 .and. &
+                      NASASMAPsm_struc(n)%smobs(c, r) .eq. -9999.0) then
+                     NASASMAPsm_struc(n)%smobs(c, r) = &
+                        smobs_A(c + (r - 1)*LIS_rc%obs_lnc(k))
+                     lon = LIS_obs_domain(n, k)%lon(c + (r - 1)*LIS_rc%obs_lnc(k))
+                     lhour = 18.0
+                     call LIS_localtime2gmt(gmt, lon, lhour, zone)
+                     NASASMAPsm_struc(n)%smtime(c, r) = gmt
+                  endif
+               endif
+            enddo
+         enddo
 
-     elseif (NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP")  then    
-!----------------------------------------------------------------------------------------------------------------
+      elseif (NASASMAPsm_struc(n)%data_designation .eq. "SPL3SMP") then
+!-------------------------------------------------------------------------
 ! MN: create filename for 36km product  (SMAP_L3_SM_P_)
-!----------------------------------------------------------------------------------------------------------------
-!        call create_NASASMAPsm_filename(smobsdir, &
-!             NASASMAPsm_struc(n)%data_designation,&
-!             LIS_rc%yr, LIS_rc%mo, &
-!             LIS_rc%da, fname)
-    write(unit=temp1,fmt='(i4.4)') LIS_localPet
-     read(unit=temp1,fmt='(4a1)')fproc
+!-------------------------------------------------------------------------
 
-     write(yyyy,'(i4.4)') LIS_rc%yr
-     write(mm,'(i2.2)') LIS_rc%mo
-     write(dd,'(i2.2)') LIS_rc%da
+         write (unit=temp1, fmt='(i4.4)') LIS_localPet
+         read (unit=temp1, fmt='(4a1)') fproc
 
-     
-     ! EMK...Make sure only one PET calls the file system to determine what
-     ! SMAP files are available.  Then create a copy of the file list for
-     ! every PET.
-     if (LIS_masterproc) then
-          list_files = 'ls '//trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'//&
-          trim(dd)//'/SMAP_L3_SM_P_'&
-          //trim(yyyy)//trim(mm)//trim(dd)//&
-          '*.h5> SMAP_filelist'//&
-             '.dat'
+         write (yyyy, '(i4.4)') LIS_rc%yr
+         write (mm, '(i2.2)') LIS_rc%mo
+         write (dd, '(i2.2)') LIS_rc%da
 
-        call system(trim(list_files))
-        do i = 0, LIS_npes-1
-           write(istring,'(I4.4)') i
-           cmd = 'cp SMAP_filelist.dat SMAP_filelist.'//istring//'.dat'
-           call system(trim(cmd))
-        end do ! i
-     end if
+         ! EMK...Make sure only one PET calls the file system to determine what
+         ! SMAP files are available.  Then create a copy of the file list for
+         ! every PET.
+         if (LIS_masterproc) then
+            list_files = 'ls '//trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
+                         trim(dd)//'/SMAP_L3_SM_P_' &
+                         //trim(yyyy)//trim(mm)//trim(dd)// &
+                         '*.h5> SMAP_filelist'// &
+                         '.dat'
+
+            call system(trim(list_files))
+            do i = 0, LIS_npes - 1
+               write (istring, '(I4.4)') i
+               cmd = 'cp SMAP_filelist.dat SMAP_filelist.'//istring//'.dat'
+               call system(trim(cmd))
+            end do ! i
+         end if
 #if (defined SPMD)
-     call mpi_barrier(lis_mpi_comm,ierr)
+         call mpi_barrier(lis_mpi_comm, ierr)
 #endif
 
-     i =1
-     ftn = LIS_getNextUnitNumber()
-     open(ftn,file="./SMAP_filelist."//&
-          fproc(1)//fproc(2)//fproc(3)//fproc(4)//".dat",&
-          status='old',iostat=ierr)
+         i = 1
+         ftn = LIS_getNextUnitNumber()
+         open (ftn, file="./SMAP_filelist."// &
+               fproc(1)//fproc(2)//fproc(3)//fproc(4)//".dat", &
+               status='old', iostat=ierr)
 
 ! if multiple files for the same time and orbits are present, the latest
-! one will overwrite older ones, though multiple (redundant) reads occur. 
-! This assumes that the 'ls command' will list the files in that order. 
- 
-     do while(ierr.eq.0) 
-        read(ftn,'(a)',iostat=ierr) fname
-        if(ierr.ne.0) then 
-           exit
-        endif
+! one will overwrite older ones, though multiple (redundant) reads occur.
+! This assumes that the 'ls command' will list the files in that order.
 
+         do while (ierr .eq. 0)
+            read (ftn, '(a)', iostat=ierr) fname
+            if (ierr .ne. 0) then
+               exit
+            endif
 
-#if 0
-        ! From the filename, parse out minute, second
-        mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))
-!        tstring(i) = fname(mn_ind:mn_ind+14)
+            smap_filename(i) = fname
 
-!        read(fname(mn_ind+23:mn_ind+25),'(i3.3)') runid(i)
+            write (LIS_logunit, *) '[INFO] reading ', trim(smap_filename(i))
+            call read_NASASMAP_data(n, k, 'D', smap_filename(i), smobs_D)
 
-        mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))+11        
-        read(fname(mn_ind:mn_ind+1),'(i2.2)') mn
-        ss=0
-        call LIS_tick(timenow,doy,gmt,LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
-             LIS_rc%hr, mn, ss, 0.0)
-        
-!        orb_ind = index(fname,'SMAP_L2_SM_P_NRT_')+17
-!        read(fname(orb_ind:orb_ind+4),'(i5.5)') orbid(i)
-#endif
+            write (LIS_logunit, *) '[INFO] reading ', trim(smap_filename(i))
+            call read_NASASMAP_data(n, k, 'A', smap_filename(i), smobs_A)
+            i = i + 1
+         enddo
 
-
-        smap_filename(i) = fname        
-!        inquire(file=fname,exist=file_exists)       
-!        if(file_exists) then 
-!           write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
-           write(LIS_logunit,*) '[INFO] reading ',trim(smap_filename(i))
-           call read_NASASMAP_data(n,k,'D',smap_filename(i),smobs_D)
-!        else
-!           write(LIS_logunit,*) '[WARN] Missing SMAP file: ',trim(fname)
-!        endif
-
-!        call create_NASASMAPsm_filename(smobsdir, &
-!             NASASMAPsm_struc(n)%data_designation,&
-!             LIS_rc%yr, LIS_rc%mo, &
-!             LIS_rc%da, fname)
-        
-!        inquire(file=fname,exist=file_exists)
-        
-!        if(file_exists) then 
-!           write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
-           write(LIS_logunit,*) '[INFO] reading ',trim(smap_filename(i))
-           call read_NASASMAP_data(n,k,'A',smap_filename(i),smobs_A)
-!        else
-!           write(LIS_logunit,*) '[WARN] Missing SMAP file: ',trim(fname)
-!        endif
-
-        i = i +1 
-     enddo
-       
-
-        NASASMAPsm_struc(n)%smobs  = LIS_rc%udef
-        NASASMAPsm_struc(n)%smtime = -1
-       call LIS_releaseUnitNumber(ftn)
-!------------------------------------------------------------------------- 
-!   Ascending pass assumed to be at 6pm localtime and the descending 
+         NASASMAPsm_struc(n)%smobs = LIS_rc%udef
+         NASASMAPsm_struc(n)%smtime = -1
+         call LIS_releaseUnitNumber(ftn)
+!-------------------------------------------------------------------------
+!   Ascending pass assumed to be at 6pm localtime and the descending
 !   pass is assumed to be at 6am local time
 !-------------------------------------------------------------------------
-        do r=1,LIS_rc%obs_lnr(k)
-           do c=1,LIS_rc%obs_lnc(k)
-              grid_index = LIS_obs_domain(n,k)%gindex(c,r)
-              if(grid_index.ne.-1) then 
-                 
-                 if(smobs_D(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0) then   
-                    NASASMAPsm_struc(n)%smobs(c,r) = &
-                         smobs_D(c+(r-1)*LIS_rc%obs_lnc(k))                 
-                    lon = LIS_obs_domain(n,k)%lon(c+(r-1)*LIS_rc%obs_lnc(k))
-                    lhour = 6.0
-                    call LIS_localtime2gmt (gmt,lon,lhour,zone)
-                    NASASMAPsm_struc(n)%smtime(c,r) = gmt
+         do r = 1, LIS_rc%obs_lnr(k)
+            do c = 1, LIS_rc%obs_lnc(k)
+               grid_index = LIS_obs_domain(n, k)%gindex(c, r)
+               if (grid_index .ne. -1) then
 
-                 endif
-!-------------------------------------------------------------------------  
-! The ascending data is used only over locations where descending data
-! doesn't exist. 
+                  if (smobs_D(c + (r - 1)*LIS_rc%obs_lnc(k)) .ne. -9999.0) then
+                     NASASMAPsm_struc(n)%smobs(c, r) = &
+                        smobs_D(c + (r - 1)*LIS_rc%obs_lnc(k))
+                     lon = LIS_obs_domain(n, k)%lon(c + (r - 1)*LIS_rc%obs_lnc(k))
+                     lhour = 6.0
+                     call LIS_localtime2gmt(gmt, lon, lhour, zone)
+                     NASASMAPsm_struc(n)%smtime(c, r) = gmt
+
+                  endif
 !-------------------------------------------------------------------------
-                 if(smobs_A(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0.and.&
-                      NASASMAPsm_struc(n)%smobs(c,r).eq.-9999.0) then   
-                    NASASMAPsm_struc(n)%smobs(c,r) = &
-                         smobs_A(c+(r-1)*LIS_rc%obs_lnc(k))                 
-                    lon = LIS_obs_domain(n,k)%lon(c+(r-1)*LIS_rc%obs_lnc(k))
-                    lhour = 18.0
-                    call LIS_localtime2gmt (gmt,lon,lhour,zone)
-                    NASASMAPsm_struc(n)%smtime(c,r) = gmt
-                 endif
-              endif
-           enddo
-        enddo
+! The ascending data is used only over locations where descending data
+! doesn't exist.
+!-------------------------------------------------------------------------
+                  if (smobs_A(c + (r - 1)*LIS_rc%obs_lnc(k)) .ne. -9999.0 .and. &
+                      NASASMAPsm_struc(n)%smobs(c, r) .eq. -9999.0) then
+                     NASASMAPsm_struc(n)%smobs(c, r) = &
+                        smobs_A(c + (r - 1)*LIS_rc%obs_lnc(k))
+                     lon = LIS_obs_domain(n, k)%lon(c + (r - 1)*LIS_rc%obs_lnc(k))
+                     lhour = 18.0
+                     call LIS_localtime2gmt(gmt, lon, lhour, zone)
+                     NASASMAPsm_struc(n)%smtime(c, r) = gmt
+                  endif
+               endif
+            enddo
+         enddo
 
-#if 0 
-!-------------------------------------------------------------------------  
-!  From the SMAP documentation: 
-!  The current approach for the SPL3SMP product is to use the nearest 
-!  6:00 a.m. LST criterion to perform Level-3 compositing for the 
-!  descending passes. According to this criterion, for a given grid cell, 
-!  an L2 data point acquired closest to 6:00 a.m. local solar time will 
-!  make its way to the final Level-3 file; other late-coming L2 data 
-!  points falling into the same grid cell will be ignored. For a given 
-!  file whose time stamp (yyyy-mm-ddThh:mm:ss) is expressed in UTC, only 
-!  the hh:mm:ss part is converted into local solar time. 
+#if 0
+!-------------------------------------------------------------------------
+!  From the SMAP documentation:
+!  The current approach for the SPL3SMP product is to use the nearest
+!  6:00 a.m. LST criterion to perform Level-3 compositing for the
+!  descending passes. According to this criterion, for a given grid cell,
+!  an L2 data point acquired closest to 6:00 a.m. local solar time will
+!  make its way to the final Level-3 file; other late-coming L2 data
+!  points falling into the same grid cell will be ignored. For a given
+!  file whose time stamp (yyyy-mm-ddThh:mm:ss) is expressed in UTC, only
+!  the hh:mm:ss part is converted into local solar time.
 !  (O'Neill et al. 2012)
 !-------------------------------------------------------------------------
-        do r=1,LIS_rc%obs_lnr(k)
-           do c=1,LIS_rc%obs_lnc(k)
-              grid_index = LIS_obs_domain(n,k)%gindex(c,r)
-              if(grid_index.ne.-1) then 
-                 
-                 if(smobs(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0) then   
-                    NASASMAPsm_struc(n)%smobs(c,r) = &
-                         smobs(c+(r-1)*LIS_rc%obs_lnc(k))                 
-                    lon = LIS_obs_domain(n,k)%lon(c+(r-1)*LIS_rc%obs_lnc(k))
-                    lhour = 6.0 
-                    call LIS_localtime2gmt (gmt,lon,lhour,zone)
-                    NASASMAPsm_struc(n)%smtime(c,r) = gmt
-                 endif
-              endif
-           enddo
-        enddo
+         do r = 1, LIS_rc%obs_lnr(k)
+            do c = 1, LIS_rc%obs_lnc(k)
+               grid_index = LIS_obs_domain(n, k)%gindex(c, r)
+               if (grid_index .ne. -1) then
+
+                  if (smobs(c + (r - 1)*LIS_rc%obs_lnc(k)) .ne. -9999.0) then
+                     NASASMAPsm_struc(n)%smobs(c, r) = &
+                        smobs(c + (r - 1)*LIS_rc%obs_lnc(k))
+                     lon = LIS_obs_domain(n, k)%lon(c + (r - 1)*LIS_rc%obs_lnc(k))
+                     lhour = 6.0
+                     call LIS_localtime2gmt(gmt, lon, lhour, zone)
+                     NASASMAPsm_struc(n)%smtime(c, r) = gmt
+                  endif
+               endif
+            enddo
+         enddo
 #endif
 
-     endif ! sensor
-  endif ! alram
-  
-  call ESMF_StateGet(OBS_State,"Observation01",smfield,&
-       rc=status)
-  call LIS_verify(status, 'Error: StateGet Observation01')
-  
-  call ESMF_FieldGet(smfield,localDE=0,farrayPtr=obsl,rc=status)
-  call LIS_verify(status, 'Error: FieldGet')
-  
-  fnd = 0 
-  sm_current = LIS_rc%udef
- 
-  ! dt is not defined as absolute value of the time difference to avoid
-  ! double counting of the data in assimilation. 
+      endif ! sensor
+   endif ! alram
 
-  do r=1,LIS_rc%obs_lnr(k)
-     do c=1,LIS_rc%obs_lnc(k)
-        if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
-           grid_index = c+(r-1)*LIS_rc%obs_lnc(k)
+   call ESMF_StateGet(OBS_State, "Observation01", smfield, &
+                      rc=status)
+   call LIS_verify(status, 'Error: StateGet Observation01')
 
-           dt = (LIS_rc%gmt - NASASMAPsm_struc(n)%smtime(c,r))*3600.0
-           if(dt.ge.0.and.dt.lt.LIS_rc%ts) then 
-              sm_current(c,r) = & 
-                   NASASMAPsm_struc(n)%smobs(c,r)
-              if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
-                 obs_unsc(LIS_obs_domain(n,k)%gindex(c,r)) = &
-                      sm_current(c,r)
-              endif
-              if(sm_current(c,r).ne.LIS_rc%udef) then 
-                 fnd = 1
-              endif
-           endif
-        endif
-     enddo
-  enddo
- 
+   call ESMF_FieldGet(smfield, localDE=0, farrayPtr=obsl, rc=status)
+   call LIS_verify(status, 'Error: FieldGet')
+
+   fnd = 0
+   sm_current = LIS_rc%udef
+
+   ! dt is not defined as absolute value of the time difference to avoid
+   ! double counting of the data in assimilation.
+
+   do r = 1, LIS_rc%obs_lnr(k)
+      do c = 1, LIS_rc%obs_lnc(k)
+         if (LIS_obs_domain(n, k)%gindex(c, r) .ne. -1) then
+            grid_index = c + (r - 1)*LIS_rc%obs_lnc(k)
+
+            dt = (LIS_rc%gmt - NASASMAPsm_struc(n)%smtime(c, r))*3600.0
+            if (dt .ge. 0 .and. dt .lt. LIS_rc%ts) then
+               sm_current(c, r) = &
+                  NASASMAPsm_struc(n)%smobs(c, r)
+               if (LIS_obs_domain(n, k)%gindex(c, r) .ne. -1) then
+                  obs_unsc(LIS_obs_domain(n, k)%gindex(c, r)) = &
+                     sm_current(c, r)
+               endif
+               if (sm_current(c, r) .ne. LIS_rc%udef) then
+                  fnd = 1
+               endif
+            endif
+         endif
+      enddo
+   enddo
+
 !-------------------------------------------------------------------------
 !  Transform data to the LSM climatology using a CDF-scaling approach
-!-------------------------------------------------------------------------     
+!-------------------------------------------------------------------------
 
-  ! Read monthly CDF (only for the current month)
-  if (NASASMAPsm_struc(n)%ntimes.gt.1.and.NASASMAPsm_struc(n)%cdf_read_opt.eq.1) then
-     if (.not. NASASMAPsm_struc(n)%cdf_read_mon.or.LIS_rc%da.eq.1.and.LIS_rc%hr.eq.0.and.LIS_rc%mn.eq.0.and.LIS_rc%ss.eq.0) then
-        call LIS_readMeanSigmaData(n,k,&
-             NASASMAPsm_struc(n)%ntimes,&
-             LIS_rc%obs_ngrid(k), &
-             NASASMAPsm_struc(n)%modelcdffile, &
-             "SoilMoist",&
-             NASASMAPsm_struc(n)%model_mu,&
-             NASASMAPsm_struc(n)%model_sigma,&
-             LIS_rc%mo)
+   ! Read monthly CDF (only for the current month)
+   if (NASASMAPsm_struc(n)%ntimes .gt. 1 .and. NASASMAPsm_struc(n)%cdf_read_opt .eq. 1) then
+      if (.not. NASASMAPsm_struc(n)%cdf_read_mon .or. LIS_rc%da .eq. 1 .and. LIS_rc%hr .eq. 0 .and. &
+          LIS_rc%mn .eq. 0 .and. LIS_rc%ss .eq. 0) then
+         call LIS_readMeanSigmaData(n, k, &
+                                    NASASMAPsm_struc(n)%ntimes, &
+                                    LIS_rc%obs_ngrid(k), &
+                                    NASASMAPsm_struc(n)%modelcdffile, &
+                                    "SoilMoist", &
+                                    NASASMAPsm_struc(n)%model_mu, &
+                                    NASASMAPsm_struc(n)%model_sigma, &
+                                    LIS_rc%mo)
 
-        call LIS_readMeanSigmaData(n,k,&
-             NASASMAPsm_struc(n)%ntimes,&
-             LIS_rc%obs_ngrid(k), &
-             NASASMAPsm_struc(n)%obscdffile, &
-             "SoilMoist",&
-             NASASMAPsm_struc(n)%obs_mu,&
-             NASASMAPsm_struc(n)%obs_sigma,&
-             LIS_rc%mo)
+         call LIS_readMeanSigmaData(n, k, &
+                                    NASASMAPsm_struc(n)%ntimes, &
+                                    LIS_rc%obs_ngrid(k), &
+                                    NASASMAPsm_struc(n)%obscdffile, &
+                                    "SoilMoist", &
+                                    NASASMAPsm_struc(n)%obs_mu, &
+                                    NASASMAPsm_struc(n)%obs_sigma, &
+                                    LIS_rc%mo)
 
-        call LIS_readCDFdata(n,k,&
-             NASASMAPsm_struc(n)%nbins,&
-             NASASMAPsm_struc(n)%ntimes,&
-             LIS_rc%obs_ngrid(k), &
-             NASASMAPsm_struc(n)%modelcdffile, &
-             "SoilMoist",&
-             NASASMAPsm_struc(n)%model_xrange,&
-             NASASMAPsm_struc(n)%model_cdf,&
-             LIS_rc%mo)
+         call LIS_readCDFdata(n, k, &
+                              NASASMAPsm_struc(n)%nbins, &
+                              NASASMAPsm_struc(n)%ntimes, &
+                              LIS_rc%obs_ngrid(k), &
+                              NASASMAPsm_struc(n)%modelcdffile, &
+                              "SoilMoist", &
+                              NASASMAPsm_struc(n)%model_xrange, &
+                              NASASMAPsm_struc(n)%model_cdf, &
+                              LIS_rc%mo)
 
-        call LIS_readCDFdata(n,k,&
-             NASASMAPsm_struc(n)%nbins,&
-             NASASMAPsm_struc(n)%ntimes,&
-             LIS_rc%obs_ngrid(k), &
-             NASASMAPsm_struc(n)%obscdffile, &
-             "SoilMoist",&
-             NASASMAPsm_struc(n)%obs_xrange,&
-             NASASMAPsm_struc(n)%obs_cdf,&
-             LIS_rc%mo)
+         call LIS_readCDFdata(n, k, &
+                              NASASMAPsm_struc(n)%nbins, &
+                              NASASMAPsm_struc(n)%ntimes, &
+                              LIS_rc%obs_ngrid(k), &
+                              NASASMAPsm_struc(n)%obscdffile, &
+                              "SoilMoist", &
+                              NASASMAPsm_struc(n)%obs_xrange, &
+                              NASASMAPsm_struc(n)%obs_cdf, &
+                              LIS_rc%mo)
 
-        NASASMAPsm_struc(n)%cdf_read_mon = .true.
-     endif
-  endif
+         NASASMAPsm_struc(n)%cdf_read_mon = .true.
+      endif
+   endif
 
-  if(LIS_rc%dascaloption(k).eq."CDF matching".and.fnd.ne.0) then
-     if (NASASMAPsm_struc(n)%ntimes.gt.1.and.NASASMAPsm_struc(n)%cdf_read_opt.eq.1) then   
-        call LIS_rescale_with_CDF_matching(     &
-             n,k,                               &
-             NASASMAPsm_struc(n)%nbins,         &
-             1,                                 &
-             MAX_SM_VALUE,                      &
-             MIN_SM_VALUE,                      &
-             NASASMAPsm_struc(n)%model_xrange,  &
-             NASASMAPsm_struc(n)%obs_xrange,    &
-             NASASMAPsm_struc(n)%model_cdf,     &
-             NASASMAPsm_struc(n)%obs_cdf,       &
-             sm_current)                             
-     else
-        call LIS_rescale_with_CDF_matching(     &
-             n,k,                               & 
-             NASASMAPsm_struc(n)%nbins,         & 
-             NASASMAPsm_struc(n)%ntimes,        & 
-             MAX_SM_VALUE,                      & 
-             MIN_SM_VALUE,                      & 
-             NASASMAPsm_struc(n)%model_xrange,  &
-             NASASMAPsm_struc(n)%obs_xrange,    &
-             NASASMAPsm_struc(n)%model_cdf,     &
-             NASASMAPsm_struc(n)%obs_cdf,       &
-             sm_current)                      
-     endif  
-  endif
-  
-  obsl = LIS_rc%udef 
-  do r=1, LIS_rc%obs_lnr(k)
-     do c=1, LIS_rc%obs_lnc(k)
-        if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
-           obsl(LIS_obs_domain(n,k)%gindex(c,r))=sm_current(c,r)
-        endif
-     enddo
-  enddo
-  !-------------------------------------------------------------------------
-  !  Apply LSM based QC and screening of observations
-  !-------------------------------------------------------------------------  
-  call lsmdaqcobsstate(trim(LIS_rc%lsm)//"+"&
-       //trim(LIS_NASASMAPsmobsId)//char(0),n,k,OBS_state)
+   if (LIS_rc%dascaloption(k) .eq. "CDF matching" .and. fnd .ne. 0) then
+      if (NASASMAPsm_struc(n)%ntimes .gt. 1 .and. NASASMAPsm_struc(n)%cdf_read_opt .eq. 1) then
+         call LIS_rescale_with_CDF_matching( &
+            n, k, &
+            NASASMAPsm_struc(n)%nbins, &
+            1, &
+            MAX_SM_VALUE, &
+            MIN_SM_VALUE, &
+            NASASMAPsm_struc(n)%model_xrange, &
+            NASASMAPsm_struc(n)%obs_xrange, &
+            NASASMAPsm_struc(n)%model_cdf, &
+            NASASMAPsm_struc(n)%obs_cdf, &
+            sm_current)
+      else
+         call LIS_rescale_with_CDF_matching( &
+            n, k, &
+            NASASMAPsm_struc(n)%nbins, &
+            NASASMAPsm_struc(n)%ntimes, &
+            MAX_SM_VALUE, &
+            MIN_SM_VALUE, &
+            NASASMAPsm_struc(n)%model_xrange, &
+            NASASMAPsm_struc(n)%obs_xrange, &
+            NASASMAPsm_struc(n)%model_cdf, &
+            NASASMAPsm_struc(n)%obs_cdf, &
+            sm_current)
+      endif
+   endif
 
-  call LIS_checkForValidObs(n,k,obsl,fnd,sm_current)
+   obsl = LIS_rc%udef
+   do r = 1, LIS_rc%obs_lnr(k)
+      do c = 1, LIS_rc%obs_lnc(k)
+         if (LIS_obs_domain(n, k)%gindex(c, r) .ne. -1) then
+            obsl(LIS_obs_domain(n, k)%gindex(c, r)) = sm_current(c, r)
+         endif
+      enddo
+   enddo
+   !-------------------------------------------------------------------------
+   !  Apply LSM based QC and screening of observations
+   !-------------------------------------------------------------------------
+   call lsmdaqcobsstate(trim(LIS_rc%lsm)//"+" &
+                        //trim(LIS_NASASMAPsmobsId)//char(0), n, k, OBS_state)
 
-  if(fnd.eq.0) then 
-     data_upd_flag_local = .false. 
-  else
-     data_upd_flag_local = .true. 
-  endif
-        
+   call LIS_checkForValidObs(n, k, obsl, fnd, sm_current)
+
+   if (fnd .eq. 0) then
+      data_upd_flag_local = .false.
+   else
+      data_upd_flag_local = .true.
+   endif
+
 #if (defined SPMD)
-  call MPI_ALLGATHER(data_upd_flag_local,1, &
-       MPI_LOGICAL, data_upd_flag(:),&
-       1, MPI_LOGICAL, LIS_mpi_comm, status)
+   call MPI_ALLGATHER(data_upd_flag_local, 1, &
+                      MPI_LOGICAL, data_upd_flag(:), &
+                      1, MPI_LOGICAL, LIS_mpi_comm, status)
 #endif
-  data_upd = .false.
-  do p=1,LIS_npes
-     data_upd = data_upd.or.data_upd_flag(p)
-  enddo
-  
-  if(data_upd) then 
+   data_upd = .false.
+   do p = 1, LIS_npes
+      data_upd = data_upd .or. data_upd_flag(p)
+   enddo
 
-     do t=1,LIS_rc%obs_ngrid(k)
-        gid(t) = t
-        if(obsl(t).ne.-9999.0) then 
-           assimflag(t) = 1
-        else
-           assimflag(t) = 0
-        endif
-     enddo
-  
-     call ESMF_AttributeSet(OBS_State,"Data Update Status",&
-          .true. , rc=status)
-     call LIS_verify(status)
+   if (data_upd) then
 
-     if(LIS_rc%obs_ngrid(k).gt.0) then 
-        call ESMF_AttributeSet(smField,"Grid Number",&
-             gid,itemCount=LIS_rc%obs_ngrid(k),rc=status)
-        call LIS_verify(status)
-        
-        call ESMF_AttributeSet(smField,"Assimilation Flag",&
-             assimflag,itemCount=LIS_rc%obs_ngrid(k),rc=status)
-        call LIS_verify(status)
+      do t = 1, LIS_rc%obs_ngrid(k)
+         gid(t) = t
+         if (obsl(t) .ne. -9999.0) then
+            assimflag(t) = 1
+         else
+            assimflag(t) = 0
+         endif
+      enddo
 
-        call ESMF_AttributeSet(smfield, "Unscaled Obs",&
-             obs_unsc, itemCount=LIS_rc%obs_ngrid(k), rc=status)
-        call LIS_verify(status, 'Error in setting Unscaled Obs attribute')
+      call ESMF_AttributeSet(OBS_State, "Data Update Status", &
+                             .true., rc=status)
+      call LIS_verify(status)
 
-     endif
+      if (LIS_rc%obs_ngrid(k) .gt. 0) then
+         call ESMF_AttributeSet(smField, "Grid Number", &
+                                gid, itemCount=LIS_rc%obs_ngrid(k), rc=status)
+         call LIS_verify(status)
 
-     if(LIS_rc%dascaloption(k).eq."CDF matching") then 
-        if(NASASMAPsm_struc(n)%useSsdevScal.eq.1) then
-           call ESMF_StateGet(OBS_Pert_State,"Observation01",pertfield,&
-                rc=status)
-           call LIS_verify(status, 'Error: StateGet Observation01')
-           
-           allocate(ssdev(LIS_rc%obs_ngrid(k)))
-           ssdev = NASASMAPsm_struc(n)%ssdev_inp 
-           
-           if(NASASMAPsm_struc(n)%ntimes.eq.1) then 
-              jj = 1
-           else
-              jj = LIS_rc%mo
-           endif
-           do t=1,LIS_rc%obs_ngrid(k)
-              if(NASASMAPsm_struc(n)%obs_sigma(t,jj).gt.0) then 
-                 ssdev(t) = ssdev(t)*NASASMAPsm_struc(n)%model_sigma(t,jj)/&
-                      NASASMAPsm_struc(n)%obs_sigma(t,jj)
-                 if(ssdev(t).lt.minssdev) then 
-                    ssdev(t) = minssdev
-                 endif
-              endif
-           enddo
-           
-           if(LIS_rc%obs_ngrid(k).gt.0) then 
-              call ESMF_AttributeSet(pertField,"Standard Deviation",&
-                   ssdev,itemCount=LIS_rc%obs_ngrid(k),rc=status)
-              call LIS_verify(status)
-           endif
-           deallocate(ssdev)
-        endif
-     endif
-  else
-     call ESMF_AttributeSet(OBS_State,"Data Update Status",&
-          .false., rc=status)
-     call LIS_verify(status)     
-  endif
+         call ESMF_AttributeSet(smField, "Assimilation Flag", &
+                                assimflag, itemCount=LIS_rc%obs_ngrid(k), rc=status)
+         call LIS_verify(status)
+
+         call ESMF_AttributeSet(smfield, "Unscaled Obs", &
+                                obs_unsc, itemCount=LIS_rc%obs_ngrid(k), rc=status)
+         call LIS_verify(status, 'Error in setting Unscaled Obs attribute')
+
+      endif
+
+      if (LIS_rc%dascaloption(k) .eq. "CDF matching") then
+         if (NASASMAPsm_struc(n)%useSsdevScal .eq. 1) then
+            call ESMF_StateGet(OBS_Pert_State, "Observation01", pertfield, &
+                               rc=status)
+            call LIS_verify(status, 'Error: StateGet Observation01')
+
+            allocate (ssdev(LIS_rc%obs_ngrid(k)))
+            ssdev = NASASMAPsm_struc(n)%ssdev_inp
+
+            if (NASASMAPsm_struc(n)%ntimes .eq. 1) then
+               jj = 1
+            else
+               jj = LIS_rc%mo
+            endif
+            do t = 1, LIS_rc%obs_ngrid(k)
+               if (NASASMAPsm_struc(n)%obs_sigma(t, jj) .gt. 0) then
+                  ssdev(t) = ssdev(t)*NASASMAPsm_struc(n)%model_sigma(t, jj)/ &
+                             NASASMAPsm_struc(n)%obs_sigma(t, jj)
+                  if (ssdev(t) .lt. minssdev) then
+                     ssdev(t) = minssdev
+                  endif
+               endif
+            enddo
+
+            if (LIS_rc%obs_ngrid(k) .gt. 0) then
+               call ESMF_AttributeSet(pertField, "Standard Deviation", &
+                                      ssdev, itemCount=LIS_rc%obs_ngrid(k), rc=status)
+               call LIS_verify(status)
+            endif
+            deallocate (ssdev)
+         endif
+      endif
+   else
+      call ESMF_AttributeSet(OBS_State, "Data Update Status", &
+                             .false., rc=status)
+      call LIS_verify(status)
+   endif
 
 end subroutine read_NASASMAPsm
 
