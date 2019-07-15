@@ -3,159 +3,153 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------------
 #include "LVT_misc.h"
 !BOP
-! 
+!
 ! !ROUTINE: readSMAPvwcobs
 ! \label{readSMAPvwcobs}
 !
-! !INTERFACE: 
+! !INTERFACE:
 subroutine readSMAPvwcobs(source)
-! 
-! !USES:   
-  use ESMF
-  use LVT_coreMod,      only : LVT_rc
-  use LVT_histDataMod
-  use LVT_logMod  !,       only : LVT_logunit
-  use SMAP_vwcobsMod, only : SMAP_vwcobs
-
-  implicit none
 !
-! !INPUT PARAMETERS: 
-  integer,   intent(in)       :: source
-! 
+! !USES:
+   use ESMF
+   use LVT_coreMod, only: LVT_rc
+   use LVT_histDataMod
+   use LVT_logMod  !,       only : LVT_logunit
+   use SMAP_vwcobsMod, only: SMAP_vwcobs
+
+   implicit none
+!
+! !INPUT PARAMETERS:
+   integer, intent(in)       :: source
+!
 ! !OUTPUT PARAMETERS:
 !
-! !DESCRIPTION: 
-! 
-! This subroutine provides the data reader for the standard 
-! NASA soil moisture retrieval product. 
-! 
+! !DESCRIPTION:
+!
+! This subroutine provides the data reader for the standard
+! NASA soil moisture retrieval product.
+!
 ! !FILES USED:
 !
-! !REVISION HISTORY: 
+! !REVISION HISTORY:
 !  21 July 2010: Sujay Kumar, Initial Specification
-!  28 Aug 2018: Mahdi Navari, Edited to read Vegetation water 
-!               content from SPL3SMP.005 & SPL3SMP_E.002 
+!  28 Aug 2018: Mahdi Navari, Edited to read Vegetation water
+!               content from SPL3SMP.005 & SPL3SMP_E.002
 ! 11 July 2019: Mahdi Navari, There are several version of SMAP sm data available in each directory
-!                  with different Release number and different CRID Version Number. The reader was 
-!                  modified to read the latest version of data (the reader no longer reads the symbolic 
+!                  with different Release number and different CRID Version Number. The reader was
+!                  modified to read the latest version of data (the reader no longer reads the symbolic
 !                  link to the SMAP sm data)
 !
 !EOP
 
-  logical           :: alarmcheck, file_exists, readflag
-  integer           :: iret
-  character*200     :: fname
-  real              :: vwc(LVT_rc%lnc, LVT_rc%lnr)
-  integer           :: fnd ,i
-  real              :: timenow
+   logical           :: alarmcheck, file_exists, readflag
+   integer           :: iret
+   character*200     :: fname
+   real              :: vwc(LVT_rc%lnc, LVT_rc%lnr)
+   integer           :: fnd, i
+   real              :: timenow
+   character*4       :: yyyy
+   character*2       :: mm, dd, hh
+   integer               :: yr, mo, da, hr, mn, ss
+   integer               :: doy
+   character*200      :: list_files
+   integer               :: ftn, ierr
+   character*100     :: smap_filename(10)
 
-  character*4       :: yyyy
-  character*2       :: mm,dd,hh
-  integer               :: yr, mo, da, hr, mn, ss
-  integer               :: doy
- character*200      :: list_files
-  integer               :: ftn,ierr
-  character*100     :: smap_filename(10)
+   smap_filename = ""
+   vwc = LVT_rc%udef
 
-  smap_filename = ""
-  vwc = LVT_rc%udef
+   timenow = float(LVT_rc%dhr(source))*3600 + &
+             60*LVT_rc%dmn(source) + LVT_rc%dss(source)
+   alarmcheck = (mod(timenow, 86400.0) .eq. 0)
+   if (SMAP_vwcobs(source)%startflag .or. alarmCheck .or. &
+       LVT_rc%resetFlag(source)) then
+      LVT_rc%resetFlag(source) = .false.
+      SMAP_vwcobs(source)%startflag = .false.
 
-  timenow = float(LVT_rc%dhr(source))*3600 +&
-       60*LVT_rc%dmn(source) + LVT_rc%dss(source)
-  alarmcheck = (mod(timenow, 86400.0).eq.0)
-  if(SMAP_vwcobs(source)%startflag.or.alarmCheck.or.&
-       LVT_rc%resetFlag(source)) then 
-     
-     LVT_rc%resetFlag(source) = .false. 
-
-     SMAP_vwcobs(source)%startflag = .false. 
-
-     if (SMAP_vwcobs(source)%data_designation.eq."SPL3SMP_E") then 
+      if (SMAP_vwcobs(source)%data_designation .eq. "SPL3SMP_E") then
 !----------------------------------------------------------------------------------------------------------------
 ! create filename for 9 km product
 !----------------------------------------------------------------------------------------------------------------
-!     call SMAP_vwc_filename(source,name,&
-!          SMAP_vwcobs(source)%data_designation, & 
-!          SMAP_vwcobs(source)%odir, & 
-!        LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source))
-     write(yyyy,'(i4.4)') LVT_rc%yr
-     write(mm,'(i2.2)') LVT_rc%mo
-     write(dd,'(i2.2)') LVT_rc%da
-     
-        list_files = 'ls '//trim(SMAP_vwcobs(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'//&
-          trim(dd)//'/SMAP_L3_SM_P_E_'&
-          //trim(yyyy)//trim(mm)//trim(dd)//&
-          '*.h5> SMAP_filelist'//&
-             '.dat'
-     i =1
-     ftn = LVT_getNextUnitNumber()
-     open(ftn,file="./SMAP_filelist.dat",&
-          status='old',iostat=ierr)
+         write (yyyy, '(i4.4)') LVT_rc%yr
+         write (mm, '(i2.2)') LVT_rc%mo
+         write (dd, '(i2.2)') LVT_rc%da
+
+         list_files = 'ls '//trim(SMAP_vwcobs(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
+                      trim(dd)//'/SMAP_L3_SM_P_E_' &
+                      //trim(yyyy)//trim(mm)//trim(dd)// &
+                      '*.h5> SMAP_filelist'// &
+                      '.dat'
+
+         call system(trim(list_files))
+         i = 1
+         ftn = LVT_getNextUnitNumber()
+         open (ftn, file="./SMAP_filelist.dat", &
+               status='old', iostat=ierr)
 
 ! if multiple files for the same time and orbits are present, the latest
-! one will overwrite older ones, though multiple (redundant) reads occur. 
-! This assumes that the 'ls command' will list the files in that order. 
-     
-     do while(ierr.eq.0) 
-        read(ftn,'(a)',iostat=ierr) fname
-        if(ierr.ne.0) then 
-           exit
-        endif
-        smap_filename(i) = fname                 
-        write(LVT_logunit,*) '[INFO] Reading SMAP file ',smap_filename(i)
-        call read_SMAPsm(source, smap_filename(i), vwc)
-        i = i +1 
-     enddo    
-     call LVT_releaseUnitNumber(ftn)
-     
-     elseif (SMAP_vwcobs(source)%data_designation.eq."SPL3SMP")  then
+! one will overwrite older ones, though multiple (redundant) reads occur.
+! This assumes that the 'ls command' will list the files in that order.
+
+         do while (ierr .eq. 0)
+            read (ftn, '(a)', iostat=ierr) fname
+            if (ierr .ne. 0) then
+               exit
+            endif
+            smap_filename(i) = fname
+            write (LVT_logunit, *) '[INFO] Reading SMAP file ', smap_filename(i)
+            call read_SMAPsm(source, smap_filename(i), vwc)
+            i = i + 1
+         enddo
+         call LVT_releaseUnitNumber(ftn)
+
+      elseif (SMAP_vwcobs(source)%data_designation .eq. "SPL3SMP") then
 !----------------------------------------------------------------------------------------------------------------
 ! create filename for 36 km product
 !----------------------------------------------------------------------------------------------------------------
-     write(yyyy,'(i4.4)') LVT_rc%yr
-     write(mm,'(i2.2)') LVT_rc%mo
-     write(dd,'(i2.2)') LVT_rc%da
+         write (yyyy, '(i4.4)') LVT_rc%yr
+         write (mm, '(i2.2)') LVT_rc%mo
+         write (dd, '(i2.2)') LVT_rc%da
 
-          list_files = 'ls '//trim(SMAP_vwcobs(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'//&
-          trim(dd)//'/SMAP_L3_SM_P_'&
-          //trim(yyyy)//trim(mm)//trim(dd)//&
-          '*.h5> SMAP_filelist'//&
-             '.dat'
+         list_files = 'ls '//trim(SMAP_vwcobs(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
+                      trim(dd)//'/SMAP_L3_SM_P_' &
+                      //trim(yyyy)//trim(mm)//trim(dd)// &
+                      '*.h5> SMAP_filelist'// &
+                      '.dat'
 
-        call system(trim(list_files))
-     i =1
-     ftn = LVT_getNextUnitNumber()
-     open(ftn,file="./SMAP_filelist.dat",&
-          status='old',iostat=ierr)
+         call system(trim(list_files))
+         i = 1
+         ftn = LVT_getNextUnitNumber()
+         open (ftn, file="./SMAP_filelist.dat", &
+               status='old', iostat=ierr)
 
 ! if multiple files for the same time and orbits are present, the latest
-! one will overwrite older ones, though multiple (redundant) reads occur. 
-! This assumes that the 'ls command' will list the files in that order. 
-     
-     do while(ierr.eq.0) 
-        read(ftn,'(a)',iostat=ierr) fname
-        if(ierr.ne.0) then 
-           exit
-        endif
-        smap_filename(i) = fname
-        write(LVT_logunit,*) '[INFO] Reading SMAP file ',smap_filename(i)
-        call read_SMAPsm(source, smap_filename(i), vwc)
-        i = i +1 
-     enddo    
-     call LVT_releaseUnitNumber(ftn)
+! one will overwrite older ones, though multiple (redundant) reads occur.
+! This assumes that the 'ls command' will list the files in that order.
 
-     endif   ! sensor     
-  endif ! alaram
+         do while (ierr .eq. 0)
+            read (ftn, '(a)', iostat=ierr) fname
+            if (ierr .ne. 0) then
+               exit
+            endif
+            smap_filename(i) = fname
+            write (LVT_logunit, *) '[INFO] Reading SMAP file ', smap_filename(i)
+            call read_SMAPsm(source, smap_filename(i), vwc)
+            i = i + 1
+         enddo
+         call LVT_releaseUnitNumber(ftn)
 
-  call LVT_logSingleDataStreamVar(LVT_MOC_VEGWATERCONTENT, source,&
-       vwc,vlevel=1,units="kg/m2")
- 
+      endif   ! sensor
+   endif ! alaram
+
+   call LVT_logSingleDataStreamVar(LVT_MOC_VEGWATERCONTENT, source, &
+                                   vwc, vlevel=1, units="kg/m2")
+
 !  open(100,file='test.bin',form='unformatted')
 !  write(100) vwc
 !  close(100)
 !  stop
 end subroutine readSMAPvwcobs
-
 !BOP
 ! 
 ! !ROUTINE: read_SMAPsm
