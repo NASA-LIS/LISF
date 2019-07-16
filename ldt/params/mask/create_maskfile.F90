@@ -112,6 +112,17 @@
              totalsum = sum( vegcnt(c,r,1:nt), &
                         mask=vegcnt(c,r,1:nt).ne.LDT_rc%udef )
 
+             ! Check gridcell veg total sum:
+             if( totalsum == 0. ) then
+                write(LDT_logunit,*) "[ERR] Total vegetation for gridcell, c=",c,", r=",r
+                write(LDT_logunit,*) "   has the sum of: ",totalsum
+                write(LDT_logunit,*) "  This check performed in routine: create_maskfile "
+                ! Set then localmask to 0.0 (water point or undefined)
+                localmask(c,r) = 0.0
+                cycle
+!                call LDT_endrun 
+             endif
+
              if( (vegsum/totalsum) >= LDT_rc%gridcell_water_frac(n) ) then  
                localmask(c,r) = 1.0   ! Designated land points
              else
