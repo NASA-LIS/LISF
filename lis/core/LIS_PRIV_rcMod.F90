@@ -943,7 +943,11 @@ module LIS_PRIV_rcMod
 
      integer                :: forecastMode
      logical                :: zterp_correction
-     
+
+     real                   :: irrigation_GVFparam1   !WN
+     real                   :: irrigation_GVFparam2   !WN
+     integer                :: irrigation_GWabstraction !JE 
+ 
   end type lisrcdec
   
 end module LIS_PRIV_rcMod
