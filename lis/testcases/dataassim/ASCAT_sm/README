@@ -22,10 +22,7 @@ This directory contains:
 
 To run this test case: 
   (a) Generate the LIS executable. 
-  (b) Download the sample input data from: 
-	http://lis.gsfc.nasa.gov/Source/testcases  
-      the testcase corresponding to ASCAT SM DA TEST
-  (c) Run the LIS executable using the lis.config file and the sample 
+  (b) Run the LIS executable using the lis.config file and the sample 
       input data. 
-  (d) View the NetCDF output using the sample grads file. 
+  (c) View the NetCDF output using the sample grads file. 
        
