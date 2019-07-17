@@ -77,19 +77,19 @@ subroutine noahMP36_setwrfexport(n)
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%smc4_t,&
        temp)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NOAHMP36_struc(n)%noahmp36(i)%sstc(1)
+     temp(i) = NOAHMP36_struc(n)%noahmp36(i)%sstc(NOAHMP36_struc(n)%nsnow+1)
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%stc1_t,temp)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NOAHMP36_struc(n)%noahmp36(i)%sstc(2)
+     temp(i) = NOAHMP36_struc(n)%noahmp36(i)%sstc(NOAHMP36_struc(n)%nsnow+2)
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%stc2_t,temp)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NOAHMP36_struc(n)%noahmp36(i)%sstc(3)
+     temp(i) = NOAHMP36_struc(n)%noahmp36(i)%sstc(NOAHMP36_struc(n)%nsnow+3)
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%stc3_t,temp)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NOAHMP36_struc(n)%noahmp36(i)%sstc(4)
+     temp(i) = NOAHMP36_struc(n)%noahmp36(i)%sstc(NOAHMP36_struc(n)%nsnow+4)
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%stc4_t,temp)
 
