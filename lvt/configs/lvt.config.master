@@ -2896,19 +2896,28 @@ LIS OptUE number of model parameters:   4
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
+#latex: \var{OptUE output data directory:} specifies the location
+#latex: of the root directory containing OptUE outputs
+#latex: 
+#latex: END_DESCRIPTION
+
+#latex: BEGIN_CONFIG
+OptUE output data directory:  '../OUTPUT'
+#latex: END_CONFIG
+
+#latex: BEGIN_DESCRIPTION
 #latex: \var{OptUE algorithm used:} specifies the index of the 
 #latex: optimization/uncertainty estimation algorithm used 
 #latex: 
 #latex: Acceptable values are:
 #latex: 
-#latex: \begin{tabular}{ll}
+#latex: \begin{tabular}{l}
 #latex: Value & Description     \\
-#latex:  1 & Levenberg- Marquardt \\
-#latex:  2 & Genetic Algorithm \\
-#latex:  3 & SCE-UA \\
-#latex:  4 & MCSIM \\
-#latex:  5 & MCMC \\
-#latex:  6 & DEMC \\
+#latex:  Levenberg- Marquardt \\
+#latex:  Genetic Algorithm \\
+#latex:  Monte carlo sampling\\
+#latex:  Random walk markov chain monte carlo\\
+#latex:  Differential evolution monte carlo\\ 
 #latex: \end{tabular}
 #latex: 
 #latex: END_DESCRIPTION
