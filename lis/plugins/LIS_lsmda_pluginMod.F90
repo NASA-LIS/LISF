@@ -24,7 +24,8 @@ module LIS_lsmda_pluginMod
 !  Oct  2018 : Mhdi Navari , added Noah.3.9 
 !  21 Oct 2018: Mahdi Navari, added NoahMP.3.9
 !  Dec 2018: Mahdi Navari: added Noah-MP.4.0.1
-!  13 May 2019: Yeosang Yoon, added SNODEP Assimilation for NoahMP.4.0.1
+!  13 May 2019: Yeosang Yoon, added SNODEP & LDTSI Assimilation for NoahMP.4.0.1
+!  06 Jun 2019: Yeosang Yoon, added SNODEP Assimilation for Jules 5.0
 !
 !EOP
   implicit none
@@ -215,6 +216,7 @@ subroutine LIS_lsmda_plugin
 ! Disable; JULES.5.0 DA not ready yet.
 #if ( defined SM_JULES_5_0 )
    use jules50_dasoilm_Mod
+   use jules50_dasnodep_Mod
 #endif
 
 #if ( defined SM_JULES_5_2 )
@@ -601,6 +603,21 @@ subroutine LIS_lsmda_plugin
    external jules50_scale_soilm
    external jules50_descale_soilm
    external jules50_updatesoilm
+
+! Yeosang Yoon SNODEP DA
+#if ( defined DA_OBS_SNODEP )
+   external jules50_getsnodepvars
+   external jules50_transform_snodep
+   external jules50_map_snodep
+   external jules50_updatesnodep
+   external jules50_qcsnodep
+   external jules50_setsnodepvars
+   external jules50_getsnodeppred
+   external jules50_scale_snodep
+   external jules50_descale_snodep
+   external jules50_qc_snodepobs
+#endif
+
 #endif
 
 #if ( defined SM_JULES_5_2 )
@@ -1814,69 +1831,6 @@ subroutine LIS_lsmda_plugin
         trim(LIS_synsndId)//char(0),noahmp36_qc_snowobs)
 
 
-#if ( defined SM_NOAHMP_4_0_1 )
-! MN 
-! Noah-MP.4.0.1 RT SMOPS ASCAT soil moisture
-   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_dasoilm_init)
-   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_getsoilm)
-   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_setsoilm)
-   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_getsmpred)
-   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_qcsoilm)
-   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_qc_soilmobs)
-   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_scale_soilm)
-   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_descale_soilm)
-   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_updatesoilm)
-
-! Noah-MP.4.0.1 SMAP(NRT) soil moisture
-   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_dasoilm_init)
-   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_getsoilm)
-   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_setsoilm)
-   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_getsmpred)
-   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_qcsoilm)
-   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_qc_soilmobs)
-   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_scale_soilm)
-   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_descale_soilm)
-   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_updatesoilm)
-!MN
-! Noah-MP.4.0.1 SMAP(NASA) soil moisture
-   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_dasoilm_init)
-   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_getsoilm)
-   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_setsoilm)
-   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_getsmpred)
-   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_qcsoilm)
-   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_qc_soilmobs)
-   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_scale_soilm)
-   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_descale_soilm)
-   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_updatesoilm)
-#endif
-
 ! Yeosang Yoon, SNODEP
 #if ( defined DA_OBS_SNODEP )
 ! DA + snodep wirings
@@ -2235,7 +2189,68 @@ subroutine LIS_lsmda_plugin
 
 #endif
 
+
 #if ( defined SM_NOAHMP_4_0_1 )
+! MN
+! Noah-MP.4.0.1 RT SMOPS ASCAT soil moisture
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_dasoilm_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_getsoilm)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_setsoilm)
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_getsmpred)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_qcsoilm)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_qc_soilmobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_scale_soilm)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_descale_soilm)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP401_updatesoilm)
+
+! Noah-MP.4.0.1 SMAP(NRT) soil moisture
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_dasoilm_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_getsoilm)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_setsoilm)
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_getsmpred)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_qcsoilm)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_qc_soilmobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_scale_soilm)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_descale_soilm)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP401_updatesoilm)
+!MN
+! Noah-MP.4.0.1 SMAP(NASA) soil moisture
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_dasoilm_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_getsoilm)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_setsoilm)
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_getsmpred)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_qcsoilm)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_qc_soilmobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_scale_soilm)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_descale_soilm)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_updatesoilm)
 ! Yeosang Yoon, SNODEP DA
 #if ( defined DA_OBS_SNODEP )
 ! DA + snodep wirings
@@ -2821,7 +2836,7 @@ subroutine LIS_lsmda_plugin
         trim(LIS_pildassmobsId)//char(0),jules43_updatesoilm)
 #endif
 
-# if 0
+#if 0
 !MN: Jules 5.0 PILDAS soil moisture
 #if ( defined SM_JULES_5_0 )
    call registerlsmdainit(trim(LIS_jules50Id)//"+"//&
@@ -2843,7 +2858,7 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaupdatestate(trim(LIS_jules50Id)//"+"//&
         trim(LIS_pildassmobsId)//char(0),jules50_updatesoilm)
 #endif
-# endif
+#endif
 
 !MN: Jules 5.0 SMAP(NASA) soil moisture
 #if ( defined JULES_5_0_DEV )
@@ -2913,6 +2928,34 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaupdatestate(trim(LIS_jules50Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules50_updatesoilm)
 #endif
+
+#if ( defined DA_OBS_SNODEP )
+! Jules 5.0 snow depth, Yeosang Yoon
+! DA + snodep wirings
+   call registerlsmdainit(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules50_dasnodep_init)
+   call registerlsmdagetstatevar(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules50_getsnodepvars)
+   call registerlsmdaobstransform(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules50_transform_snodep)
+   call registerlsmdamapobstolsm(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules50_map_snodep)
+   call registerlsmdaupdatestate(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules50_updatesnodep)
+   call registerlsmdaqcstate(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules50_qcsnodep)
+   call registerlsmdasetstatevar(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules50_setsnodepvars)
+   call registerlsmdagetobspred(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules50_getsnodeppred)
+   call registerlsmdascalestatevar(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules50_scale_snodep)
+   call registerlsmdadescalestatevar(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules50_descale_snodep)
+   call registerlsmdaqcobsstate(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules50_qc_snodepobs)
+#endif
+
 #endif
 
 
