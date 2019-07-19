@@ -70,6 +70,9 @@ contains
     external LVT_init_557post
     external LVT_run_557post
 
+    external LVT_init_LDTSIpost
+    external LVT_run_LDTSIpost
+
     call registerlvtinit(trim(LVT_DataCompId)//char(0),LVT_init_DataComp) 
     call registerlvtrun(trim(LVT_DataCompId)//char(0),LVT_run_DataComp)
 
@@ -87,6 +90,9 @@ contains
 
     call registerlvtinit(trim(LVT_557postId)//char(0),LVT_init_557post)
     call registerlvtrun(trim(LVT_557postId)//char(0),LVT_run_557post)
+
+    call registerlvtinit(trim(LVT_LDTSIpostId)//char(0),LVT_init_LDTSIpost)
+    call registerlvtrun(trim(LVT_LDTSIpostId)//char(0),LVT_run_LDTSIpost)
 
   end subroutine LVT_runmode_plugin
 end module LVT_runmode_pluginMod
