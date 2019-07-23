@@ -1,0 +1,34 @@
+
+[[sec-run]]
+== Running the Executable
+
+This section describes how to run the LDT executable.
+
+First you should create a directory to run LDT in. It is suggested that you run LDT in a directory that is separate from your source code. This running directory shall be referred to as _$RUNNING_. Next, copy the LDT executable into your running directory.
+
+....
+% cp $WORKING/LDT $RUNNING
+....
+
+The single-process version of `LDT` is executed by the following command issued in the _$RUNNING_ directory.
+
+....
+% ./LDT
+....
+
+Note that when using the Lahey Fortran compiler, you must issue this command to run the single-process version of LDT:
+
+....
+% ./LDT -Wl,T
+....
+
+Some systems require that you submit your job into a batch queue. Please consult with your system adminstrator for instructions on how to do this.
+
+Note that before running LDT, you must set your environment to have an unlimited stack size. For the Bash shell, run
+
+....
+% ulimit -s unlimited
+....
+
+To customize your run, you must modify the _ldt.config_ configuration file. See Section <<sec-ldtconfigfile>> for more information.
+

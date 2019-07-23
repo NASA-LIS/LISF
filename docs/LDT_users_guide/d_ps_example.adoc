@@ -1,0 +1,8 @@
+
+[[sec-d_ps_example]]
+== Polar Stereographic Domain Example
+
+This section describes how to compute the values for the run domain and param domain sections on a polar stereographic projection.
+
+[red]#STUB!#
+
