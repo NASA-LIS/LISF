@@ -169,6 +169,10 @@ subroutine LIS_lsm_plugin
    use jules53_lsmMod, only : jules53_ini
 #endif
 
+#if ( defined SM_JULES_5_X )
+   use jules5x_lsmMod, only : jules5x_ini
+#endif
+
 #if ( defined SM_CLM_2 )
    use clm2_lsmMod, only : clm2_lsm_ini
    use clm2_atmdrvMod, only : clm2_atmdrv
@@ -267,6 +271,16 @@ subroutine LIS_lsm_plugin
    external jules53_dynsetup
    external jules53_writerst
    external jules53_finalize
+#endif
+
+#if ( defined SM_JULES_5_X )
+   external jules5x_main
+   external jules5x_setup
+   external jules5x_readrst
+   external jules5x_f2t
+   external jules5x_dynsetup
+   external jules5x_writerst
+   external jules5x_finalize
 #endif
 
 #if ( defined SM_MOSAIC )
@@ -534,6 +548,20 @@ subroutine LIS_lsm_plugin
    call registerlsmdynsetup(trim(LIS_jules53Id)//char(0),jules53_dynsetup)
    call registerlsmwrst(trim(LIS_jules53Id)//char(0),jules53_writerst)
    call registerlsmfinalize(trim(LIS_jules53Id)//char(0),jules53_finalize)
+#endif
+
+#if ( defined SM_JULES_5_X )
+   call registerlsminit(trim(LIS_jules5xId)//char(0),jules5x_ini)
+   call registerlsmsetup(trim(LIS_jules5xId)//char(0),jules5x_setup)
+   call registerlsmf2t(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_retroId)//char(0),jules5x_f2t)
+   call registerlsmf2t(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_agrmetrunId)//char(0),jules5x_f2t)
+   call registerlsmrun(trim(LIS_jules5xId)//char(0),jules5x_main)
+   call registerlsmrestart(trim(LIS_jules5xId)//char(0),jules5x_readrst)
+   call registerlsmdynsetup(trim(LIS_jules5xId)//char(0),jules5x_dynsetup)
+   call registerlsmwrst(trim(LIS_jules5xId)//char(0),jules5x_writerst)
+   call registerlsmfinalize(trim(LIS_jules5xId)//char(0),jules5x_finalize)
 #endif
 
 #if ( defined SM_NOAH_3_6 )
