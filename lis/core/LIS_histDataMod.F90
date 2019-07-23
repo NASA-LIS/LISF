@@ -449,17 +449,21 @@ module LIS_histDataMod
   PUBLIC :: LIS_MOC_JULES_FSAT
   PUBLIC :: LIS_MOC_JULES_FWETL 
   public :: LIS_MOC_JULES_ESOIL     
+  public :: LIS_MOC_INFILTRATION
+  public :: LIS_MOC_SFCWATER       
   
-  integer :: LIS_MOC_JULES_STHZW = -9999
-  integer :: LIS_MOC_JULES_STHU = -9999
+  integer :: LIS_MOC_JULES_STHZW    = -9999
+  integer :: LIS_MOC_JULES_STHU     = -9999
   integer :: LIS_MOC_JULES_STHU_MIN = -9999
-  integer :: LIS_MOC_JULES_STHF = -9999
-  integer :: LIS_MOC_JULES_SMVCCL = -9999
-  integer :: LIS_MOC_JULES_SMVCST = -9999
-  integer :: LIS_MOC_JULES_SMVCWT = -9999
-  integer :: LIS_MOC_JULES_FSAT  = -9999
-  integer :: LIS_MOC_JULES_FWETL = -9999 
-  integer :: LIS_MOC_JULES_ESOIL = -9999 
+  integer :: LIS_MOC_JULES_STHF     = -9999
+  integer :: LIS_MOC_JULES_SMVCCL   = -9999
+  integer :: LIS_MOC_JULES_SMVCST   = -9999
+  integer :: LIS_MOC_JULES_SMVCWT   = -9999
+  integer :: LIS_MOC_JULES_FSAT     = -9999
+  integer :: LIS_MOC_JULES_FWETL    = -9999 
+  integer :: LIS_MOC_JULES_ESOIL    = -9999 
+  integer :: LIS_MOC_INFILTRATION   = -9999
+  integer :: LIS_MOC_SFCWATER       = -9999
 
    ! ALMA ENERGY BALANCE COMPONENTS
   integer :: LIS_MOC_SWNET      = -9999
@@ -1118,7 +1122,7 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_JULES_ESOIL,&
             LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"kg/m2s"/),&
+            n,2,ntiles,(/"kg/m2s", "kg/m2 "/),&
             2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
@@ -1182,6 +1186,30 @@ contains
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"m3/m3"/),1,(/"-"/),1,112,0,&
             model_patch=.true.)
+    endif
+    
+    ! precipitation from canopy (kg m{-2} s{-1})
+    call ESMF_ConfigFindLabel(modelSpecConfig,"CDrip:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
+         "CDrip",&
+         "Precipitation_Water_Drip_from_canopy",&
+         "Precipitation Water Drip from canopy",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_DRIP,&
+         LIS_histData(n)%head_lsm_list,&
+            n,2,ntiles,(/"kg/m2s", "kg/m2 "/),1,(/"-"/),2,1,1)
+    endif
+    
+    ! total water reaching ground  (kg m{-2} s{-1})
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Sfcwtr:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
+         "Sfcwtr",&
+         "total_water_reach_ground",&
+         "total water reach ground",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_SFCWATER, &
+         LIS_histData(n)%head_lsm_list,&
+            n,2,ntiles,(/"kg/m2s", "kg/m2 "/),1,(/"-"/),2,1,1)
     endif
 
     ! Arguments to register_dataEntry:
@@ -1409,7 +1437,7 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_EVAP,&
             LIS_histData(n)%head_lsm_list,&
-            n,3,ntiles,(/"kg/m2s","mm/hr ","W/m2  "/),&
+            n,4,ntiles,(/"kg/m2s","mm/hr ","W/m2  ", "kg/m2 "/),&
             2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
@@ -1811,6 +1839,20 @@ contains
             n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
+    
+    ! added by Shugong Wang 03/14/2019
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Infil:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Infil",&
+         "water_infiltration_into_soil_column",&
+         "water infiltration into soil column",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_INFILTRATION,&
+            LIS_histData(n)%head_lsm_list,&
+            n,2,ntiles,(/"kg/m2s","kg/m2 "/),&
+            1,(/"-"/),2,1,1,&
+            model_patch=.true.)
+    endif
 
     ! Added by Zhuo Wang on 11/11/2018
     call ESMF_ConfigFindLabel(modelSpecConfig,"Smcwtd:",rc=rc)
@@ -1937,7 +1979,7 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_ECANOP,&
             LIS_histData(n)%head_lsm_list,&
-            n,3,ntiles,(/"kg/m2s","mm/hr ","W/m2  "/),&
+            n,4,ntiles,(/"kg/m2s","mm/hr ","W/m2  ", "kg/m2 "/),&
             2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
@@ -2025,7 +2067,7 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SUBSNOW,&
             LIS_histData(n)%head_lsm_list,n,&
-            4,ntiles,(/"kg/m2s","mm/hr ","W/m2  ","mm    "/),&
+            5,ntiles,(/"kg/m2s","mm/hr ","W/m2  ","mm    ", "kg/m2 "/),&
             1,(/"-"/),2,1,1,&
             model_patch=.true.)
     endif
