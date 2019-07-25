@@ -137,7 +137,8 @@ contains
     use LVTbenchmarkOUT_obsMod, only : LVTbenchmarkOUT_obsInit
     use SMAP_smobsMod,          only : SMAP_smobsinit
     use SMAP_vwcobsMod,         only : SMAP_vwcobsinit !MN
-    use SMAP_L3TBMod,         only : SMAP_L3TBinit  !MN   
+    use SMAP_vodobsMod,         only : SMAP_vodobsinit
+    use SMAP_L3TBMod,           only : SMAP_L3TBinit  !MN   
     use SMAP_TBobsMod,          only : SMAP_TBobsinit
     use GOME2_SIFobsMod,        only : GOME2_SIFobsinit
     use Daymet_obsMod,          only : Daymet_obsInit
@@ -235,6 +236,7 @@ contains
     external readGIMMSMODIS_NDVIobs
     external readLVTbenchmarkOUTobs
     external readSMAPsmobs
+    external readSMAPvodobs
     external readSMAPvwcobs ! MN vegwtation water content
     external readSMAP_L3TB ! MN Tb from SMAP SM data       
     external readSMAPTBobs
@@ -538,6 +540,12 @@ contains
          SMAP_smobsInit)
     call registerobsread(trim(LVT_SMAPsmobsId)//char(0),&
          readSMAPsmobs)
+
+    call registerobssetup(trim(LVT_SMAPvodobsId)//char(0), &
+         SMAP_vodobsInit)
+    call registerobsread(trim(LVT_SMAPvodobsId)//char(0),&
+         readSMAPvodobs)
+
 
 ! MN: SMAP vegetation water content
 !    call registerobssetup(trim(LVT_SMAPvwcobsId)//char(0), &

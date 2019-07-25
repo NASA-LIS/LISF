@@ -111,12 +111,12 @@ module LVT_histDataMod
   public :: LVT_MOC_SNOWAGE
   public :: LVT_MOC_SURFSTOR  
   public :: LVT_MOC_SOILMOIST 
-  public :: LVT_MOC_VEGWATERCONTENT ! MN
-!  public :: LVT_MOC_L3TB ! MN 
-  public :: LVT_MOC_L3TBv_D ! MN 
-  public :: LVT_MOC_L3TBv_A ! MN
-  public :: LVT_MOC_L3TBh_D ! MN
-  public :: LVT_MOC_L3TBh_A ! MN
+  public :: LVT_MOC_VEGWATERCONTENT 
+  public :: LVT_MOC_VOD
+  public :: LVT_MOC_L3TBv_D 
+  public :: LVT_MOC_L3TBv_A 
+  public :: LVT_MOC_L3TBh_D 
+  public :: LVT_MOC_L3TBh_A 
   public :: LVT_MOC_SOILTEMP  
   public :: LVT_MOC_SMLIQFRAC
   public :: LVT_MOC_SMFROZFRAC
@@ -471,7 +471,8 @@ module LVT_histDataMod
   integer :: LVT_MOC_SWEVEG(3)     = -9999
   integer :: LVT_MOC_SNOWAGE(3)    = -9999 
   integer :: LVT_MOC_SURFSTOR(3)   = -9999
-  integer :: LVT_MOC_VEGWATERCONTENT(3)   = -9999 !MN
+  integer :: LVT_MOC_VEGWATERCONTENT(3)   = -9999 
+  integer :: LVT_MOC_VOD(3)   = -9999 
 ! integer :: LVT_MOC_L3TB(3)   = -9999 !MN
  integer :: LVT_MOC_L3TBv_D(3)   = -9999 !MN
  integer :: LVT_MOC_L3TBv_A(3)   = -9999 !MN
@@ -3553,6 +3554,22 @@ contains
          allocate(dataEntry%valid_min(dataEntry%nunits))
          allocate(dataEntry%valid_max(dataEntry%nunits))
          dataEntry%unittypes = (/"kg/m2"/)
+         dataEntry%valid_min = (/0.0/)
+         dataEntry%valid_max = (/100.0/)
+         dataEntry%ndirs = 1
+         allocate(dataEntry%dirtypes(dataEntry%ndirs))
+         dataEntry%dirtypes = (/"-"/)
+      endif
+   elseif(name.eq."VOD") then 
+      if(LVT_MOC_VOD(source).eq.LVT_rc%udef) then 
+         LVT_MOC_VOD(source) = var_count
+         dataEntry%standard_name = "vegetation_optical_depth" 
+         dataEntry%long_name ="vegetation optical depth" 
+         dataEntry%nunits = 1
+         allocate(dataEntry%unittypes(dataEntry%nunits))
+         allocate(dataEntry%valid_min(dataEntry%nunits))
+         allocate(dataEntry%valid_max(dataEntry%nunits))
+         dataEntry%unittypes = (/"-"/)
          dataEntry%valid_min = (/0.0/)
          dataEntry%valid_max = (/100.0/)
          dataEntry%ndirs = 1
