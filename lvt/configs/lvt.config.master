@@ -218,7 +218,7 @@ LVT output methodology:                 "2d gridspace"
 #latex: ``GLEAM'' & GLEAM data\\
 #latex: ``FLUXNET2015 dataset'' & Measurements from FLUXNET2015 dataset\\
 #latex: ``USCRN soil moisture'' & USCRN soil moisture data\\
-#latex: ``SMAP soil moistu'' & SMAP soil moisture data\\
+#latex: ``SMAP soil moisture'' & SMAP soil moisture data\\
 #latex: ``SMAP vegetation water content'' & SMAP vegetation water content\\
 #latex: ``UA SNOW'' & University of Arizona SWE/Snow depth data\\
 #latex: ``SMAP L3 Tb'' & SMAP L3 brightness temperature\\  
@@ -2833,6 +2833,8 @@ USCRN soil moisture station file:            ./USCRN/USCRN_stations.txt
 #latex: Value & Description   \\
 #latex: SPL3SMP & SMAP L3 Radiometer Global Daily 36 km EASE-Grid Soil Moisture \\
 #latex: SPL3SMP_E & SMAP Enhanced L3 Radiometer Global Daily 9 km EASE-Grid Soil Moisture\\
+#latex: SPL2SMP & SMAP L2 Radiometer Global Daily 36 km EASE-Grid Soil Moisture \\
+#latex: SPL2SMP_E & SMAP Enhanced L2 Radiometer Global Daily 9 km EASE-Grid Soil Moisture\\
 #latex: \end{tabular}
 #latex: 
 #latex: 
