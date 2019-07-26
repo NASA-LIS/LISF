@@ -222,6 +222,7 @@ LVT output methodology:                 "2d gridspace"
 #latex: ``USCRN soil moisture'' & USCRN soil moisture data\\
 #latex: ``SMAP soil moisture'' & SMAP soil moisture data\\
 #latex: ``SMAP vegetation water content'' & SMAP vegetation water content\\
+#latex: ``SMAP vegetation optical depth'' & SMAP vegetation optical depthx\\
 #latex: ``UA SNOW'' & University of Arizona SWE/Snow depth data\\
 #latex: ``SMAP L3 Tb'' & SMAP L3 brightness temperature\\  
 #latex: \end{tabular}
@@ -2845,6 +2846,33 @@ USCRN soil moisture station file:            ./USCRN/USCRN_stations.txt
 #latex: BEGIN_CONFIG
 SMAP soil moisture observation directory: ../SPL3SMP.005
 SMAP soil moisture data designation:      SPL3SMP
+
+
+#latex: BEGIN_DESCRIPTION
+#latex: \subsubsection{SMAP vegetation optical depth}
+#latex: END_DESCRIPTION
+
+#latex: BEGIN_DESCRIPTION
+#latex: \var{SMAP vegetation optical depth observation directory:} specifies
+#latex: the location of the SMAP vegetation optical depth (VOD) observation directory.
+#latex: 
+#latex: \var{SMAP vegetation optical depth data designation:} specifies
+#latex: the designation of the SMAP data. 
+#latex:
+#latex: Acceptable values are:
+#latex: 
+#latex: \begin{tabular}{ll}
+#latex: Value & Description   \\
+#latex: SPL2SMP & SMAP L3 Radiometer Global Daily 36 km EASE-Grid VOD \\
+#latex: SPL2SMP_E & SMAP Enhanced L3 Radiometer Global Daily 9 km EASE-Grid VOD\\
+#latex: \end{tabular}
+#latex: 
+#latex: 
+#latex: END_DESCRIPTION
+
+#latex: BEGIN_CONFIG
+SMAP vegetation optical depth observation directory: ../SPL3SMP.005
+SMAP vegetation optical depth data designation:      SPL3SMP
 
 #latex: END_CONFIG
 #latex: BEGIN_DESCRIPTION
