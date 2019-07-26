@@ -527,6 +527,9 @@ if($enable_geotiff== 1){
    $fflags77 = $fflags77." -I\$(INC_FORTRANGIS1) -I\$(INC_FORTRANGIS2)";
    $fflags = $fflags." -I\$(INC_FORTRANGIS1) -I\$(INC_FORTRANGIS2)";
    $ldflags = $ldflags." -L\$(LIB_FORTRANGIS) -lfortrangis -lfortranc -L\$(LIB_GDAL) -lgdal";
+   if ( $cray_modifications == 1 ) {
+      $ldflags = $ldflags." -ljasper -ljpeg -lz -lstdc++";
+   }
 }
 
 open(conf_file,">configure.lvt");

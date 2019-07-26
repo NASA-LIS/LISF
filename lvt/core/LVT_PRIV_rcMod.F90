@@ -370,6 +370,14 @@ module LVT_PRIV_rcMod
      integer                    :: applyNoiseReductionFilter
      character*100              :: smoothingFilterType
 
+     ! For LDTSIpost
+     character(len=10) :: yyyymmddhh
+     logical :: output_native
+     logical :: output_global_ll0p25
+     logical :: output_nh_ps16
+     logical :: output_sh_ps16
+     character(len=255) :: input_dir
+     character(len=255) :: output_dir
   end type lvtrcdec
   
   type lisrcdec

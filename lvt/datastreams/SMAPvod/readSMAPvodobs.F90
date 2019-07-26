@@ -294,12 +294,13 @@ subroutine read_SMAPL2vod_data(source, fname, vodobs_inp, time)
 !grid the data in EASE projection
   do t=1,maxdims(1)
 !     if(ibits(vod_qa(t),0,1).eq.0) then 
+     if(ease_col(t).gt.0.and.ease_row(t).gt.0) then 
         vod_data(ease_col(t) + &
              (ease_row(t)-1)*SMAP_vodobs(source)%nc) = vod_field(t) 
         if(vod_field(t).ne.-9999.0) then 
            vod_data_b(ease_col(t) + &
                 (ease_row(t)-1)*SMAP_vodobs(source)%nc) = .true. 
-!        endif
+        endif
      endif
   enddo
   
