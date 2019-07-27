@@ -87,7 +87,6 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
 
   allocate(datain(AWRAL_struc(n)%ncol,AWRAL_struc(n)%nrow))
   allocate(temp2awral(AWRAL_struc(n)%ncol,AWRAL_struc(n)%nrow,N_AF))
-  write ( cyear, '(i4)' ) year
 
 !=== End Variable Definition =======================
   if(order.eq.1) then 
@@ -98,6 +97,7 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
 
 
 !-- Set necessary parameters for call to interp_AWRAL   
+  write(cyear, '(i4.4)') year
 
 !-- Check initially if file exists:
   do v = 1, N_AF  ! N_AF
@@ -112,6 +112,16 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
 
 !-- Get timestep from cdoy --!
   timestep = doy
+
+!-- Check forcing is on the same grid as the model --!
+  if((AWRAL_struc(n)%ncol .neqv. LIS_rc%gnr(n)) .or. (AWRAL_struc(n)%ncol .neqv. LIS_rc%gnc(n))) then
+     if(LIS_masterproc) then
+          write(LIS_logunit,*)'[ERR] Problem using AWRAL forcing: Forcing must be on the same grid as the model'
+          write(LIS_logunit,*)'[ERR] Remapping not implemented. Stopping...'
+          call LIS_endrun
+     endif
+  endif
+  
 
   do v = 1, N_AF ! N_AF
     ndata = AWRAL_struc(n)%ncol * AWRAL_struc(n)%nrow
@@ -132,7 +142,7 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
          call LIS_endrun
     else
        if(LIS_masterproc) write(LIS_logunit,*)'[INFO] Opened file: ',var_fname
-    end if
+    endif
 
     status = nf90_get_var(ncid, varid, datain, &
                                      start=(/1,1,timestep/), &
