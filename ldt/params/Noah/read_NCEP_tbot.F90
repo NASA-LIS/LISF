@@ -55,7 +55,7 @@ subroutine read_NCEP_tbot(n, array)
 
   ftn = LDT_getNextUnitNumber()
   open(ftn, file=Noah_struc(n)%tbotFile, access='direct',status='old', &
-       form="unformatted", recl=4)
+       form="unformatted",convert='big_endian',recl=4)
   
   call readLISdata(n, ftn, Noah_struc(n)%tbot_proj,  &
                    Noah_struc(n)%tbot_gridtransform, &

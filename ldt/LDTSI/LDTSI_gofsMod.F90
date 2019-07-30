@@ -77,11 +77,12 @@ contains
 
       ! At this point, we are rolling back to earlier CICE file
       ! Start looping for earlier files
+      julhr = julhr_orig
       do
          write(LDT_logunit,*)'[WARN] Cannot find ',trim(filename)
          fh = fh + 24
          julhr = julhr - 24
-         if ( (julhr - julhr_orig) > 24*5) then
+         if ( (julhr_orig - julhr) > 24*5) then
             write(LDT_logunit,*)&
                 '[WARN] *** GIVING UP ON GOFS CICE FOR ',trim(region),' ***'
             write(LDT_logunit,*) &

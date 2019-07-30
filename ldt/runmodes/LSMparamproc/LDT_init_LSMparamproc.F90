@@ -6,7 +6,6 @@
     use LDT_domainMod
     use LDT_paramProcMod
     use LDT_logMod
-    use LDT_metforcingMod
 
     write(LDT_logunit,*) "----------------------------------"
     write(LDT_logunit,*) " Start of LDT parameter processing "

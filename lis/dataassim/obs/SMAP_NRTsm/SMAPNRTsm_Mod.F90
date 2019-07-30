@@ -66,8 +66,8 @@ module SMAPNRTsm_Mod
                                              !e.g., 4/29 13:00:00)
      integer                :: cdf_read_opt  ! 0: read all months at one time
                                              ! 1: read only the current month
-     character*100,         :: modelcdffile
-     character*100,         :: obscdffile
+     character*100          :: modelcdffile
+     character*100          :: obscdffile
   end type SMAPNRTsm_dec
   
   type(SMAPNRTsm_dec),allocatable :: SMAPNRTsm_struc(:)

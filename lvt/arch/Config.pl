@@ -131,14 +131,13 @@ if($opt_lev == -3) {
     }
 }
 
-
 if($opt_lev == -2) {
    $sys_opt = "-g -check bounds,format,output_conversion,pointers,stack,uninit -fp-stack-check -ftrapuv ";
    $sys_c_opt = "-g ";
 }
 if($opt_lev == -1) {
-   $sys_opt = "-g ";
-   $sys_c_opt = "-g ";
+   $sys_opt = "-g -O0";
+   $sys_c_opt = "-g -O0";
 }
 elsif($opt_lev == 0) {
    $sys_opt = "-O0 ";
@@ -446,14 +445,14 @@ if($use_matlab eq "\n"){
 
 if($sys_arch eq "linux_ifc") {
    if ($use_endian == 1 ) {
-      $cflags = "-c ".$sys_c_opt." -DIFC";
-      $fflags77= "-c ".$sys_opt."-nomixed_str_len_arg -names lowercase -convert little_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) ";
-      $fflags =" -c ".$sys_opt."-u -traceback -fpe0  -nomixed_str_len_arg -names lowercase -convert little_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) ";
+      $cflags = "-c ".$sys_c_opt." -traceback -DIFC";
+      $fflags77= "-c ".$sys_opt." -traceback -nomixed_str_len_arg -names lowercase -convert little_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) ";
+      $fflags =" -c ".$sys_opt." -u -traceback -fpe0  -nomixed_str_len_arg -names lowercase -convert little_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) ";
    }
    else {
-      $cflags = "-c ".$sys_c_opt." -DIFC";
-      $fflags77= "-c ".$sys_opt."-nomixed_str_len_arg -names lowercase -convert big_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) ";
-      $fflags =" -c ".$sys_opt."-u -traceback -fpe0  -nomixed_str_len_arg -names lowercase -convert big_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) ";
+      $cflags = "-c ".$sys_c_opt." -traceback -DIFC";
+      $fflags77= "-c ".$sys_opt." -traceback -nomixed_str_len_arg -names lowercase -convert big_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) ";
+      $fflags =" -c ".$sys_opt." -u -traceback -fpe0  -nomixed_str_len_arg -names lowercase -convert big_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) ";
    }
    $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt ";
 }
@@ -474,9 +473,9 @@ elsif($sys_arch eq "Darwin_gfortran" || $sys_arch eq "linux_gfortran") {
    else {
       $endian = "-fconvert=big-endian";
    }
-   $cflags = "-c -DGFORTRAN ";
-   $fflags77= "-c -pass-exit-codes ".$sys_opt." ".$sys_par." ".$endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DHIDE_MPI -I\$(MOD_ESMF) ";
-   $fflags =" -c -pass-exit-codes -ffree-line-length-0 ".$sys_opt." ".$sys_par." ".$endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DHIDE_MPI -I\$(MOD_ESMF) ";
+   $cflags = "-c ".$sys_c_opt." -DGFORTRAN ";
+   $fflags77= "-c -pass-exit-codes ".$sys_opt." -fbacktrace ".$sys_par." ".$endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DHIDE_MPI -I\$(MOD_ESMF) ";
+   $fflags =" -c -pass-exit-codes -ffree-line-length-0 ".$sys_opt." -fbacktrace ".$sys_par." ".$endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DHIDE_MPI -I\$(MOD_ESMF) ";
    $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++ ";
 }
 elsif($sys_arch eq "AIX") {
@@ -535,6 +534,9 @@ if($enable_geotiff== 1){
    $fflags77 = $fflags77." -I\$(INC_FORTRANGIS1) -I\$(INC_FORTRANGIS2)";
    $fflags = $fflags." -I\$(INC_FORTRANGIS1) -I\$(INC_FORTRANGIS2)";
    $ldflags = $ldflags." -L\$(LIB_FORTRANGIS) -lfortrangis -lfortranc -L\$(LIB_GDAL) -lgdal";
+   if ( $cray_modifications == 1 ) {
+      $ldflags = $ldflags." -ljasper -ljpeg -lz -lstdc++";
+   }
 }
 
 open(conf_file,">configure.lvt");

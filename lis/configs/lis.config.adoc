@@ -5903,15 +5903,21 @@ anchor:sssec_supp_imerg[IMERG precipitation]
 `IMERG forcing directory:` specifies the location of the
 GPM IMERG precipitation forcing files.
 
-'IMERG version:' specifies the version of the GPM IMERG 
+'IMERG product:' specifies the product of the GPM IMERG 
 precipitation forcing files. The valid options are: early,
 late, and final. If no version is specified, the reader will
-default to the 'final' version of GPM IMERG. 
+default to the 'final' product of GPM IMERG. 
+
+'IMERG version:' specifies the version of the GPM IMERG
+precipitation forcing files. If no version is specified, 
+the reader will default to the latest version of GPM IMERG.
+(Currently V06B).
 
 .Example _lis.config_ entry
 ....
 IMERG forcing directory:     ./FORCING/IMERG
-IMERG version: 'final'
+IMERG product: 'final'
+IMERG version: 'V06B'
 ....
 
 
@@ -9620,6 +9626,17 @@ location of the max root depth file for flood irrigation.
 
 `Drip irrigation max root depth file:` specifies the
 location of the max root depth file for drip irrigation.
+
+`Irrigation GVF parameter 1:` specifies growing season for
+irrigation in Noah-MP (set to 0.40 for Noah 3.3 irrigation)
+
+`Irrigation GVF parameter 2:` specifies growing season for
+irrigation in Noah-MP (set to 0.00 for Noah 3.3 irrigation)
+
+`Groundwater abstraction for irrigation:` specifies whether
+to withdraw water used for irrigation from the groundwater
+in Noah-MP.
+1=Yes 0=No (default=0)
 
 .Example _lis.config_ entry
 ....
