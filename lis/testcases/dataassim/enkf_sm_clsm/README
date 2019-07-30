@@ -26,7 +26,7 @@ To run this test case:
   (a) Generate the LIS executable. 
   (b) Conduct the openloop simulation : copy lis.config.openloop to 
       lis.cong and run the LIS executable
-  (c) Coduct the assimilation simulation: copy the lis.config.assim to 
+  (c) Conduct the assimilation simulation: copy the lis.config.assim to 
       lis.config and run the LIS executable
   (d) View the binary output using the sample grads files. 
 
