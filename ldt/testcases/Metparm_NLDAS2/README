@@ -1,24 +1,19 @@
 
 Focus:  NLDAS-2 Forcing Elevation Parameter Processing
 
-Description:  This test case involves the processing
+Description:  This case involves the processing
       of NLDAS-2 elevation parameters obtained from the 
       original USGS institution source website.
 
-This test case uses the following files:
+This case uses the following files:
   (a) this README file
-  (b) the wget data download scripts:  wget_nldasparms_portal.sh;
-  (c) the ldt.config input file used with LDT for this testcase;
-  (d) test_output.xdf GrADS control file to view the LDT-generated output;
-  (e) and to compare with output data, download the original output
-       tar-zipped file, unpack and compare with those given files.
+  (c) the ldt.config input file used with LDT 
+  (b) test_output.xdf GrADS control file to view the LDT-generated output
 
-To run this test case: 
+To run this case: 
  
-  (a) Run the download script in a working directory where you want 
-       to place the NLDAS-2 input data:
-
-       sh wget_nldasparms_portal.sh
+  (a) Modify the ldt.config provided with this case to match your 
+       file directory setup.
 
   (b) Generate and copy your LDT executable to your working directory. 
 
@@ -31,8 +26,6 @@ To run this test case:
   (d) View the NetCDF (*.nc) output using the sample grads file or
        the ncview executable (if you have it installed).
 
-  (f) Download and unpack the output LDT test case output data by running
-       the wget script:  sh wget_nldas2elev_output.sh
 
 Caveats: 
   (a) Please note that this is a more basic functional test for purpose
