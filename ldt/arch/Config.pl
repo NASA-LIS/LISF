@@ -88,7 +88,7 @@ if($opt_lev == -3) {
 	$sys_opt = "-g -warn";
 	$sys_opt .= 
 	    " -check bounds,format,output_conversion,pointers,stack,uninit";
-	$sys_opt .= " -fp-stack-check -ftrapuv";
+	$sys_opt .= " -fp-stack-check -ftrapuv ";
 	
 	$sys_c_opt = "-g -Wall -Wcast-qual -Wcheck -Wdeprecated";
 	$sys_c_opt .= " -Wextra-tokens -Wformat";
@@ -106,12 +106,12 @@ if($opt_lev == -3) {
     elsif($sys_arch eq "linux_pgi") {
 	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
 	print "Using '-g'\n";
-	$sys_opt = "-g";
+	$sys_opt = "-g ";
     }
     elsif($sys_arch eq "linux_absoft") {
 	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
 	print "Using '-g'\n";
-	$sys_opt = "-g";
+	$sys_opt = "-g ";
     }
     elsif($sys_arch eq "linux_lf95") {
 	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
@@ -123,7 +123,7 @@ if($opt_lev == -3) {
 	$sys_opt .= " -Wrealloc-lhs-all";
 	# Run-time options
 	$sys_opt .= " -ffpe-trap=invalid,zero,overflow";
-	$sys_opt .= " -fcheck=all,no-array-temps";
+	$sys_opt .= " -fcheck=all,no-array-temps ";
 
 	$sys_c_opt = "-g -Wall -Wextra -Wpedantic -Wformat -Wtraditional";
 	$sys_c_opt .= " -Wconversion";
@@ -133,13 +133,13 @@ if($opt_lev == -3) {
     elsif($sys_arch eq "AIX") {
 	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
 	print "Using '-g'\n";
-	$sys_opt = "-g";
+	$sys_opt = "-g ";
     }
 }
 
 if($opt_lev == -2) {
    if($sys_arch eq "linux_ifc") {
-      $sys_opt = "-g -check bounds,format,output_conversion,pointers,stack,uninit  ";
+      $sys_opt = "-g -check bounds,format,output_conversion,pointers,stack,uninit ";
       $sys_c_opt = "-g ";
    }
    elsif($sys_arch eq "linux_gfortran") {
