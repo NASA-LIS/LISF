@@ -158,6 +158,7 @@ subroutine noahmp36_settws(n, LSM_State)
      !Wanshu
      delta5 = gws(t)-NOAHMP36_struc(n)%noahmp36(t)%wa
 
+
      ! MN: check    MIN_THRESHOLD < volumetric liquid soil moisture < threshold 
      if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(1)+delta1.gt.MIN_THRESHOLD .and.&
           NOAHMP36_struc(n)%noahmp36(t)%sh2o(1)+delta1.lt.&
@@ -310,19 +311,11 @@ subroutine noahmp36_settws(n, LSM_State)
               !Wanshu
 !              NOAHMP36_struc(n)%noahmp36(t)%wa = gws(t)
  
-              if(soilm1(t).lt.0) then 
-                 print*, 'setsoilm1 ',t,soilm1(t)
-                 stop
-              endif
               if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(2)+delta2.gt.MIN_THRESHOLD .and.&
                    NOAHMP36_struc(n)%noahmp36(t)%sh2o(2)+delta2.lt.sm_threshold) then 
                  NOAHMP36_struc(n)%noahmp36(t)%sh2o(2) = NOAHMP36_struc(n)%noahmp36(t)%sh2o(2)+&
                       soilm2(t)-NOAHMP36_struc(n)%noahmp36(t)%smc(2)
                  NOAHMP36_struc(n)%noahmp36(t)%smc(2) = soilm2(t)
-                 if(soilm2(t).lt.0) then 
-                    print*, 'setsoilm2 ',t,soilm2(t)
-                    stop
-                 endif
               endif
 ! MN: Test shutdown the update for 4th layer   
               if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(3)+delta3.gt.MIN_THRESHOLD .and.&
@@ -330,10 +323,6 @@ subroutine noahmp36_settws(n, LSM_State)
                  NOAHMP36_struc(n)%noahmp36(t)%sh2o(3) = NOAHMP36_struc(n)%noahmp36(t)%sh2o(3)+&
                       soilm3(t)-NOAHMP36_struc(n)%noahmp36(t)%smc(3)
                  NOAHMP36_struc(n)%noahmp36(t)%smc(3) = soilm3(t)
-                 if(soilm3(t).lt.0) then 
-                    print*, 'setsoilm3 ',t,soilm3(t)
-                    stop
-                 endif
               endif
 
               if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(4)+delta4.gt.MIN_THRESHOLD .and.&
@@ -342,10 +331,6 @@ subroutine noahmp36_settws(n, LSM_State)
                       soilm4(t)-NOAHMP36_struc(n)%noahmp36(t)%smc(4)
                  NOAHMP36_struc(n)%noahmp36(t)%smc(4) = soilm4(t)
 
-                 if(soilm4(t).lt.0) then 
-                    print*, 'setsoilm4 ',t,soilm4(t)
-                    stop
-                 endif
               endif
              !Wanshu
               if(NOAHMP36_struc(n)%noahmp36(t)%wa+delta5.gt.MIN_GWS_THRESHOLD.and.&
