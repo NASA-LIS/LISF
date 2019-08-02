@@ -61,9 +61,9 @@ subroutine read_GRACEobs(n,k, OBS_State, OBS_Pert_State)
   integer             :: gid(LIS_rc%obs_ngrid(k))
   integer             :: assimflag(LIS_rc%obs_ngrid(k))
 
-  character*100       :: GRACEobsdir
+  character*200       :: GRACEobsdir ! Natt, change 100 to 200
   logical             :: file_exists
-  character*100       :: name
+  character*200       :: name ! Natt, change 100 to 200
 
   integer             :: col,row
   logical             :: data_upd
@@ -248,6 +248,10 @@ subroutine read_GRACEobs(n,k, OBS_State, OBS_Pert_State)
                  call LIS_verify(status)
               endif
            endif
+        else
+            ! Natt: Let's print it out when LIS cannot find the file
+            write(LIS_logunit,*)  '[WARNING] GRACE data not found ',trim(name)
+            
         endif
      endif
   end if

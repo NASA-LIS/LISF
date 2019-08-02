@@ -93,7 +93,7 @@ subroutine noahmp36_gettws(n, LSM_State)
      soilm3(t) = NOAHMP36_struc(n)%noahmp36(t)%smc(3)
      soilm4(t) = NOAHMP36_struc(n)%noahmp36(t)%smc(4)
      gws(t)    = NOAHMP36_struc(n)%noahmp36(t)%wa
-     swe(t) = noahmp36_struc(n)%noahmp36(t)%sneqv/1000.0 !to m
+     swe(t) = noahmp36_struc(n)%noahmp36(t)%sneqv/1000.0 ! to m
      snod(t) = noahmp36_struc(n)%noahmp36(t)%snowh
   enddo
 

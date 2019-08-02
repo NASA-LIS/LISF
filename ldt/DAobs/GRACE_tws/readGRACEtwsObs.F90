@@ -425,7 +425,9 @@ subroutine readGRACEtwsObs(n)
      
      dt = float((currTime-GRACEtwsobs%refTime))/24.0
 
-    if(GRACEtwsobs%datasource.eq."GRACE TWS Mascon 0.5 deg") then 
+    if(GRACEtwsobs%datasource.eq."GRACE TWS Mascon 0.25 deg") then 
+       md_nc=720
+    elseif(GRACEtwsobs%datasource.eq."GRACE TWS Mascon 0.5 deg") then 
        md_nc=360
     elseif(GRACEtwsobs%datasource.eq."GRACE TWS Original 1 deg") then 
        md_nc=180
