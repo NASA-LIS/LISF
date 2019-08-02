@@ -22,7 +22,8 @@ module HYMAP2_routingMod
 !             Basin.  Journal of Hydrometeorology, 13, 1641-1665.
 !             doi: http://dx.doi.org/10.1175/JHM-D-12-021.1
 !             Augusto C.V. Getirana, and Rodrigo C.D. Paiva, 2013: Mapping 
-!             large-scale river flow hydraulics in the Amazon Basin, Water!             Resour. Res., 49, doi:10.1002/wrcr.20212
+!             large-scale river flow hydraulics in the Amazon Basin,
+!             Water Resour. Res., 49, doi:10.1002/wrcr.20212
 !
 ! !REVISION HISTORY: 
 ! 08 Nov 2011: Augusto Getirana, Initial implementation in LIS based on the 
@@ -1259,10 +1260,10 @@ contains
 
        call LIS_verify(nf90_open(path=LIS_rc%paramfile(n),&
             mode=NF90_NOWRITE, ncid = ftn), &
-            'nf90_open failed in read_param_real@HYMAP2_routingMod')
+            'nf90_open failed in read_param_real in HYMAP2_routingMod')
        call LIS_verify(nf90_inq_varid(ftn,trim(ctitle),varid), &
             'nf90_inq_varid failed for '//trim(ctitle)//&
-            ' in read_param_real@HYMAP2_routingMod')
+            ' in read_param_real in HYMAP2_routingMod')
        
        call LIS_verify(nf90_get_var(ftn,varid, array,&
             start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
@@ -1272,10 +1273,10 @@ contains
             (LIS_nse_halo_ind(n,LIS_localPet+1)-&
            LIS_nss_halo_ind(n,LIS_localPet+1)+1),z/)),&
            'nf90_get_var failed for '//trim(ctitle)//&
-            ' in read_param_real@HYMAP2_routingMod')
+            ' in read_param_real in HYMAP2_routingMod')
        
        call LIS_verify(nf90_close(ftn),&
-            'nf90_close failed in HYMAP2_routindMod')
+            'nf90_close failed in HYMAP2_routingMod')
        
 !       do l=1,z
 !          array(:,:,l) = nint(array1(&
@@ -1286,7 +1287,7 @@ contains
 !       enddo
     else
        write(LIS_logunit,*) '[ERR] parameter input file '//trim(LIS_rc%paramfile(n))
-       write(LIS_logunit,*) '[ERR] failed in read_param_real@HYMAP2_routingMod'
+       write(LIS_logunit,*) '[ERR] failed in read_param_real in HYMAP2_routingMod'
        call LIS_endrun()
     endif
     
@@ -1321,10 +1322,10 @@ contains
 
        call LIS_verify(nf90_open(path=LIS_rc%paramfile(n),&
             mode=NF90_NOWRITE, ncid = ftn), &
-            'nf90_open failed in read_param_real@HYMAP2_routingMod')
+            'nf90_open failed in read_param_real in HYMAP2_routingMod')
        call LIS_verify(nf90_inq_varid(ftn,trim(ctitle),varid), &
             'nf90_inq_varid failed for '//trim(ctitle)//&
-            ' in read_param_real@HYMAP2_routingMod')
+            ' in read_param_real in HYMAP2_routingMod')
        
        call LIS_verify(nf90_get_var(ftn,varid, array,&
             start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
@@ -1334,14 +1335,14 @@ contains
             (LIS_nse_halo_ind(n,LIS_localPet+1)-&
            LIS_nss_halo_ind(n,LIS_localPet+1)+1)/)),&
            'nf90_get_var failed for '//trim(ctitle)//&
-            ' in read_param_real@HYMAP2_routingMod')
+            ' in read_param_real in HYMAP2_routingMod')
        
        call LIS_verify(nf90_close(ftn),&
-            'nf90_close failed in HYMAP2_routindMod')
+            'nf90_close failed in HYMAP2_routingMod')
        
     else
        write(LIS_logunit,*) '[ERR] parameter input file '//trim(LIS_rc%paramfile(n))
-       write(LIS_logunit,*) '[ERR] failed in read_param_real@HYMAP2_routingMod'
+       write(LIS_logunit,*) '[ERR] failed in read_param_real in HYMAP2_routingMod'
        call LIS_endrun()
     endif
     
@@ -1377,10 +1378,10 @@ contains
 
        call LIS_verify(nf90_open(path=LIS_rc%paramfile(n),&
             mode=NF90_NOWRITE, ncid = ftn), &
-            'nf90_open failed in read_param_int@HYMAP2_routingMod')
+            'nf90_open failed in read_param_int in HYMAP2_routingMod')
        call LIS_verify(nf90_inq_varid(ftn,trim(ctitle),varid), &
             'nf90_inq_varid failed for '//trim(ctitle)//&
-            ' in read_param_int@HYMAP2_routingMod')
+            ' in read_param_int in HYMAP2_routingMod')
        
        call LIS_verify(nf90_get_var(ftn,varid, array,&
             start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
@@ -1390,14 +1391,14 @@ contains
             (LIS_nse_halo_ind(n,LIS_localPet+1)-&
            LIS_nss_halo_ind(n,LIS_localPet+1)+1),z/)),&
            'nf90_get_var failed for '//trim(ctitle)//&
-            ' in read_param_int@HYMAP2_routingMod')
+            ' in read_param_int in HYMAP2_routingMod')
        
        call LIS_verify(nf90_close(ftn),&
-            'nf90_close failed in HYMAP2_routindMod')
+            'nf90_close failed in HYMAP2_routingMod')
 
     else
        write(LIS_logunit,*) '[ERR] parameter input file '//trim(LIS_rc%paramfile(n))
-       write(LIS_logunit,*) '[ERR] failed in read_param_int@HYMAP2_routingMod'
+       write(LIS_logunit,*) '[ERR] failed in read_param_int in HYMAP2_routingMod'
        call LIS_endrun()
     endif
     
@@ -1432,10 +1433,10 @@ contains
 
        call LIS_verify(nf90_open(path=LIS_rc%paramfile(n),&
             mode=NF90_NOWRITE, ncid = ftn), &
-            'nf90_open failed in read_param_int@HYMAP2_routingMod')
+            'nf90_open failed in read_param_int in HYMAP2_routingMod')
        call LIS_verify(nf90_inq_varid(ftn,trim(ctitle),varid), &
             'nf90_inq_varid failed for '//trim(ctitle)//&
-            ' in read_param_int@HYMAP2_routingMod')
+            ' in read_param_int in HYMAP2_routingMod')
        
 
        call LIS_verify(nf90_get_var(ftn,varid, array,&
@@ -1446,14 +1447,14 @@ contains
             (LIS_nse_halo_ind(n,LIS_localPet+1)-&
            LIS_nss_halo_ind(n,LIS_localPet+1)+1)/)),&
            'nf90_get_var failed for '//trim(ctitle)//&
-            ' in read_param_int@HYMAP2_routingMod')
+            ' in read_param_int in HYMAP2_routingMod')
 
        call LIS_verify(nf90_close(ftn),&
-            'nf90_close failed in HYMAP2_routindMod')
+            'nf90_close failed in HYMAP2_routingMod')
 
     else
        write(LIS_logunit,*) '[ERR] parameter input file '//trim(LIS_rc%paramfile(n))
-       write(LIS_logunit,*) '[ERR] failed in read_param_int@HYMAP2_routingMod'
+       write(LIS_logunit,*) '[ERR] failed in read_param_int in HYMAP2_routingMod'
        call LIS_endrun()
     endif
     
@@ -1488,21 +1489,21 @@ contains
 
        call LIS_verify(nf90_open(path=LIS_rc%paramfile(n),&
             mode=NF90_NOWRITE, ncid = ftn), &
-            'nf90_open failed in read_param_int@HYMAP2_routingMod')
+            'nf90_open failed in read_param_int in HYMAP2_routingMod')
        call LIS_verify(nf90_inq_varid(ftn,trim(ctitle),varid), &
             'nf90_inq_varid failed for '//trim(ctitle)//&
-            ' in read_param_int@HYMAP2_routingMod')
+            ' in read_param_int in HYMAP2_routingMod')
        
        call LIS_verify(nf90_get_var(ftn,varid, array), &
             'nf90_get_var failed for '//trim(ctitle)//&
-            ' in read_param_int@HYMAP2_routingMod')
+            ' in read_param_int in HYMAP2_routingMod')
 
        call LIS_verify(nf90_close(ftn),&
-            'nf90_close failed in HYMAP2_routindMod')
+            'nf90_close failed in HYMAP2_routingMod')
 
     else
        write(LIS_logunit,*) '[ERR] parameter input file '//trim(LIS_rc%paramfile(n))
-       write(LIS_logunit,*) '[ERR] failed in read_param_int@HYMAP2_routingMod'
+       write(LIS_logunit,*) '[ERR] failed in read_param_int in HYMAP2_routingMod'
        call LIS_endrun()
     endif
     
@@ -1565,13 +1566,13 @@ contains
       close(2)
     else
       write(LIS_logunit,*) 'header file '//trim(yheader)
-      write(LIS_logunit,*) 'failed in read_header@HYMAP2_routingMod'
+      write(LIS_logunit,*) 'failed in read_header in HYMAP2_routingMod'
       call LIS_endrun()
     endif
     return
 10  continue
     write(LIS_logunit,*) 'header file '//trim(yheader)
-    write(LIS_logunit,*) 'failed in read_header@HYMAP2_routingMod'
+    write(LIS_logunit,*) 'failed in read_header in HYMAP2_routingMod'
     call LIS_endrun()
 
   end subroutine HYMAP2_read_header_resop
@@ -1604,13 +1605,13 @@ contains
       close(2)
     else
       write(LIS_logunit,*) 'header file '//trim(yheader)
-      write(LIS_logunit,*) 'failed in read_header@HYMAP2_routingMod'
+      write(LIS_logunit,*) 'failed in read_header in HYMAP2_routingMod'
       call LIS_endrun()
     endif
     return
 10  continue
     write(LIS_logunit,*) 'header file '//trim(yheader)
-    write(LIS_logunit,*) 'failed in read_header@HYMAP2_routingMod'
+    write(LIS_logunit,*) 'failed in read_header in HYMAP2_routingMod'
     call LIS_endrun()
 
   end subroutine HYMAP2_read_header
@@ -1640,7 +1641,7 @@ contains
       close(1)
     else
       write(LIS_logunit,*) 'reservoir data time series file '//trim(yfile)
-      write(LIS_logunit,*) 'failed in read_resop_alt@HYMAP2_routing_init'
+      write(LIS_logunit,*) 'failed in read_resop_alt in HYMAP2_routing_init'
       call LIS_endrun()
     endif  
 

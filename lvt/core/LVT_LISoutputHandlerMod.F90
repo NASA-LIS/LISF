@@ -3335,9 +3335,9 @@ contains
 
           call ESMF_ConfigFindLabel(modelSpecConfig, "RiverVelocity:",rc=rc)
           call get_moc_attributes(modelspecConfig,LVT_LISoutput(kk)%head_routing_list,&
-               "RiverVelocity",&
-               "River_Velocity",&
-               "River Velocity","F",rc)
+               "RiverFlowVelocity",&
+               "River_Flow_Velocity",&
+               "River Flow Velocity","F",rc)
           if(rc.eq.1) then 
              call register_dataEntry(LVT_LIS_MOC_ROUTING_COUNT(kk), LVT_LIS_MOC_RIVVEL(kk), &
                   LVT_LISoutput(kk)%head_routing_list, &
@@ -3365,7 +3365,7 @@ contains
           if(rc.eq.1) then 
              call register_dataEntry(LVT_LIS_MOC_ROUTING_COUNT(kk), LVT_LIS_MOC_fldevap(kk), &
                   LVT_LISoutput(kk)%head_routing_list, &
-                  1,nsize,nensem,(/"m3"/),1,("-"),&
+                  1,nsize,nensem,(/"kg/m2s"/),1,("-"),&
                   valid_min=(/0.0/),valid_max=(/500000.0/),gribSFC=1,gribLvl=1)
           endif
 
@@ -3449,7 +3449,7 @@ contains
           if(rc.eq.1) then 
              call register_dataEntry(LVT_LIS_MOC_ROUTING_COUNT(kk), LVT_LIS_MOC_RNFSTO(kk), &
                   LVT_LISoutput(kk)%head_routing_list, &
-                  1,nsize,nensem,(/"m3"/),1,("-"),&
+                  1,nsize,nensem,(/"mm"/),1,("-"),&
                   valid_min=(/0.0/),valid_max=(/500000.0/),gribSFC=1,gribLvl=1)
           endif
 
@@ -3461,7 +3461,7 @@ contains
           if(rc.eq.1) then 
              call register_dataEntry(LVT_LIS_MOC_ROUTING_COUNT(kk), LVT_LIS_MOC_BSFSTO(kk), &
                   LVT_LISoutput(kk)%head_routing_list, &
-                  1,nsize,nensem,(/"m3"/),1,("-"),&
+                  1,nsize,nensem,(/"mm"/),1,("-"),&
                   valid_min=(/0.0/),valid_max=(/500000.0/),gribSFC=1,gribLvl=1)
           endif
 

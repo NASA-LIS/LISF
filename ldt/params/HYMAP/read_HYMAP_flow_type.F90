@@ -55,7 +55,7 @@ subroutine read_HYMAP_flow_type(n, array)
   endif
 
   open(ftn, file=trim(HYMAP_struc(n)%flowtypefile), access='direct',&
-       status='old', form="unformatted", recl=4)
+       status='old', form="unformatted", convert="big_endian", recl=4)
   
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &

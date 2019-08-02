@@ -5481,6 +5481,7 @@ elseif(name.eq."SMAPL3TBh_A") then ! MN
          LVT_MOC_RIVVEL(source) = var_count
          dataEntry%standard_name ="river_flow_velocity"
          dataEntry%long_name = "river_flow_velocity"
+         dataEntry%short_name = "RiverFlowVelocity"
          dataEntry%nunits = 1
          allocate(dataEntry%unittypes(dataEntry%nunits))
          allocate(dataEntry%valid_min(dataEntry%nunits))
@@ -5517,7 +5518,7 @@ elseif(name.eq."SMAPL3TBh_A") then ! MN
          allocate(dataEntry%unittypes(dataEntry%nunits))
          allocate(dataEntry%valid_min(dataEntry%nunits))
          allocate(dataEntry%valid_max(dataEntry%nunits))
-         dataEntry%unittypes = (/"m3"/)
+         dataEntry%unittypes = (/"kg/m2s"/)
          dataEntry%valid_min = (/0.0/)
          dataEntry%valid_max = (/500000.0/)
          dataEntry%ndirs = 1
@@ -5597,7 +5598,7 @@ elseif(name.eq."SMAPL3TBh_A") then ! MN
          allocate(dataEntry%unittypes(dataEntry%nunits))
          allocate(dataEntry%valid_min(dataEntry%nunits))
          allocate(dataEntry%valid_max(dataEntry%nunits))
-         dataEntry%unittypes = (/"-"/)
+         dataEntry%unittypes = (/"m2"/)
          dataEntry%valid_min = (/0.0/)
          dataEntry%valid_max = (/500000.0/)
          dataEntry%ndirs = 1
@@ -5629,7 +5630,7 @@ elseif(name.eq."SMAPL3TBh_A") then ! MN
          allocate(dataEntry%unittypes(dataEntry%nunits))
          allocate(dataEntry%valid_min(dataEntry%nunits))
          allocate(dataEntry%valid_max(dataEntry%nunits))
-         dataEntry%unittypes = (/"m3"/)
+         dataEntry%unittypes = (/"mm"/)
          dataEntry%valid_min = (/0.0/)
          dataEntry%valid_max = (/500000.0/)
          dataEntry%ndirs = 1
@@ -5645,7 +5646,7 @@ elseif(name.eq."SMAPL3TBh_A") then ! MN
          allocate(dataEntry%unittypes(dataEntry%nunits))
          allocate(dataEntry%valid_min(dataEntry%nunits))
          allocate(dataEntry%valid_max(dataEntry%nunits))
-         dataEntry%unittypes = (/"m3"/)
+         dataEntry%unittypes = (/"mm"/)
          dataEntry%valid_min = (/0.0/)
          dataEntry%valid_max = (/500000.0/)
          dataEntry%ndirs = 1

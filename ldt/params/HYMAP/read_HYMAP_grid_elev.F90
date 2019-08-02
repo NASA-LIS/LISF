@@ -47,15 +47,15 @@ subroutine read_HYMAP_grid_elev(n, array)
 
   ftn = LDT_getNextUnitNumber()
 
-  inquire(file=trim(HYMAP_struc(n)%gridelevFile), exist=file_exists)
+  inquire(file=trim(HYMAP_struc(n)%gridelevfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Gridelev map ',trim(HYMAP_struc(n)%gridelevFile),' not found'
+     write(LDT_logunit,*) 'Gridelev map ',trim(HYMAP_struc(n)%gridelevfile),' not found'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif
 
-  open(ftn, file=trim(HYMAP_struc(n)%gridelevFile), access='direct',&
-       status='old', form="unformatted", recl=4)
+  open(ftn, file=trim(HYMAP_struc(n)%gridelevfile), access='direct',&
+       status='old', form="unformatted", convert="big_endian", recl=4)
   
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &

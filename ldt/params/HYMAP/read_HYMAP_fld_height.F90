@@ -61,7 +61,7 @@ subroutine read_HYMAP_fld_height(n, array)
   endif
 
   open(ftn, file=trim(HYMAP_struc(n)%fldheightfile), access='direct',&
-       status='old', form="unformatted", recl=4)
+       status='old', form="unformatted", convert="big_endian", recl=4)
   
   do r=1,LDT_rc%lnr(n)
      do c=1,LDT_rc%lnc(n)
