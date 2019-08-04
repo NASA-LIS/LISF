@@ -37,6 +37,7 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_StatDscaleMetforcprocId = "Statistical downscaling of met forcing"
    character*50, public,  parameter :: LDT_ldtsiId = "LDTSI analysis"
    character*50, public,  parameter :: LDT_OPTUEparamprocId   = "OPTUE parameter processing"
+   character*50, public,  parameter :: LDT_obsSimprocId   = "Observation simulator"
 
 !-------------------------------------------------------------------------
 ! Domains
@@ -365,5 +366,9 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_forcingClimoId  = "Climatology"
    character*50, public,  parameter :: LDT_bayesianMergeId = "Bayesian merging"
 
+!-------------------------------------------------------------------------
+!  obs simulator
+!-------------------------------------------------------------------------
+   character*50, public,  parameter :: LDT_LISoutNatureRunDataId = "LIS output"
 !EOC
  end module LDT_pluginIndices
