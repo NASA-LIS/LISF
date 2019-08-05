@@ -55,6 +55,7 @@ subroutine readSMAPvwcobs(source)
    character*200      :: list_files
    integer               :: ftn, ierr
    character*100     :: smap_filename(10)
+   character(len=3) :: CRID
 
    smap_filename = ""
    vwc = LVT_rc%udef
@@ -74,12 +75,13 @@ subroutine readSMAPvwcobs(source)
          write (yyyy, '(i4.4)') LVT_rc%yr
          write (mm, '(i2.2)') LVT_rc%mo
          write (dd, '(i2.2)') LVT_rc%da
+         write (CRID, '(a)') SMAP_vwcobs(i)%release_number
 
          list_files = 'ls '//trim(SMAP_vwcobs(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
                       trim(dd)//'/SMAP_L3_SM_P_E_' &
-                      //trim(yyyy)//trim(mm)//trim(dd)// &
-                      '*.h5> SMAP_filelist'// &
-                      '.dat'
+                      //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+                         trim(CRID)//'*.h5> SMAP_filelist'// &
+                         '.dat'
 
          call system(trim(list_files))
          i = 1
@@ -110,12 +112,13 @@ subroutine readSMAPvwcobs(source)
          write (yyyy, '(i4.4)') LVT_rc%yr
          write (mm, '(i2.2)') LVT_rc%mo
          write (dd, '(i2.2)') LVT_rc%da
+         write (CRID, '(a)') SMAP_vwcobs(i)%release_number
 
          list_files = 'ls '//trim(SMAP_vwcobs(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
                       trim(dd)//'/SMAP_L3_SM_P_' &
-                      //trim(yyyy)//trim(mm)//trim(dd)// &
-                      '*.h5> SMAP_filelist'// &
-                      '.dat'
+                      //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+                         trim(CRID)//'*.h5> SMAP_filelist'// &
+                         '.dat'
 
          call system(trim(list_files))
          i = 1
