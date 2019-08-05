@@ -54,6 +54,7 @@ subroutine readSMAP_L3TB(source)
    character*200      :: list_files
    integer               :: ftn, ierr
    character*100     :: smap_filename(10)
+   character(len=3) :: CRID
 
    smap_filename = ""
    Tb = LVT_rc%udef
@@ -73,12 +74,13 @@ subroutine readSMAP_L3TB(source)
          write (yyyy, '(i4.4)') LVT_rc%yr
          write (mm, '(i2.2)') LVT_rc%mo
          write (dd, '(i2.2)') LVT_rc%da
+         write (CRID, '(a)') SMAP_L3TB(i)%release_number
 
          list_files = 'ls '//trim(SMAP_L3TB(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
                       trim(dd)//'/SMAP_L3_SM_P_E_' &
-                      //trim(yyyy)//trim(mm)//trim(dd)// &
-                      '*.h5> SMAP_filelist'// &
-                      '.dat'
+                      //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+                         trim(CRID)//'*.h5> SMAP_filelist'// &
+                         '.dat'
 
          call system(trim(list_files))
          i = 1
@@ -109,12 +111,13 @@ subroutine readSMAP_L3TB(source)
          write (yyyy, '(i4.4)') LVT_rc%yr
          write (mm, '(i2.2)') LVT_rc%mo
          write (dd, '(i2.2)') LVT_rc%da
+         write (CRID, '(a)') SMAP_L3TB(i)%release_number
 
          list_files = 'ls '//trim(SMAP_L3TB(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
                       trim(dd)//'/SMAP_L3_SM_P_' &
-                      //trim(yyyy)//trim(mm)//trim(dd)// &
-                      '*.h5> SMAP_filelist'// &
-                      '.dat'
+                      //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+                         trim(CRID)//'*.h5> SMAP_filelist'// &
+                         '.dat'
 
          call system(trim(list_files))
          i = 1
