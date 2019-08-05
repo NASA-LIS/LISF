@@ -58,7 +58,7 @@ subroutine readNASASMAPsmObs(n)
    character*200     :: list_files
    character*100     :: smap_filename(10)
    real              :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
-
+   character(len=3) :: CRID
 !-----------------------------------------------------------------------
 ! It is assumed that CDF is computed using daily observations.
 !-----------------------------------------------------------------------
@@ -124,12 +124,13 @@ subroutine readNASASMAPsmObs(n)
       write (yyyy, '(i4.4)') LDT_rc%yr
       write (mm, '(i2.2)') LDT_rc%mo
       write (dd, '(i2.2)') LDT_rc%da
+      write (CRID, '(a)') NASASMAPsmobs(n)%release_number
 
       list_files = 'ls '//trim(NASASMAPsmobs(n)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
                    trim(dd)//'/SMAP_L3_SM_P_E_' &
-                   //trim(yyyy)//trim(mm)//trim(dd)// &
-                   '*.h5> SMAP_filelist'// &
-                   '.dat'
+                   //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+                         trim(CRID)//'*.h5> SMAP_filelist'// &
+                         '.dat'
 
       call system(trim(list_files))
       i = 1
@@ -172,12 +173,13 @@ subroutine readNASASMAPsmObs(n)
       write (yyyy, '(i4.4)') LDT_rc%yr
       write (mm, '(i2.2)') LDT_rc%mo
       write (dd, '(i2.2)') LDT_rc%da
+      write (CRID, '(a)') NASASMAPsmobs(n)%release_number
 
       list_files = 'ls '//trim(NASASMAPsmobs(n)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
                    trim(dd)//'/SMAP_L3_SM_P_' &
-                   //trim(yyyy)//trim(mm)//trim(dd)// &
-                   '*.h5> SMAP_filelist'// &
-                   '.dat'
+                   //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+                         trim(CRID)//'*.h5> SMAP_filelist'// &
+                         '.dat'
 
       call system(trim(list_files))
       i = 1
