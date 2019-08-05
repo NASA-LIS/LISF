@@ -102,6 +102,7 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    character(len=4) :: istring
    character(len=200) :: cmd
    integer :: rc
+   character(len=3) :: CRID
 
    smap_filename = ""
 
@@ -136,6 +137,7 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
          write (yyyy, '(i4.4)') LIS_rc%yr
          write (mm, '(i2.2)') LIS_rc%mo
          write (dd, '(i2.2)') LIS_rc%da
+         write (CRID, '(a)') NASASMAPsm_struc(n)%release_number
 
          ! EMK...Make sure only one PET calls the file system to determine what
          ! SMAP files are available.  Then create a copy of the file list for
@@ -144,8 +146,8 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
 
             list_files = 'ls '//trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
                          trim(dd)//'/SMAP_L3_SM_P_E_' &
-                         //trim(yyyy)//trim(mm)//trim(dd)// &
-                         '*.h5> SMAP_filelist'// &
+                         //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+                         trim(CRID)//'*.h5> SMAP_filelist'// &
                          '.dat'
 
             call system(trim(list_files))
@@ -234,6 +236,7 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
          write (yyyy, '(i4.4)') LIS_rc%yr
          write (mm, '(i2.2)') LIS_rc%mo
          write (dd, '(i2.2)') LIS_rc%da
+         write (CRID, '(a)') NASASMAPsm_struc(n)%release_number
 
          ! EMK...Make sure only one PET calls the file system to determine what
          ! SMAP files are available.  Then create a copy of the file list for
@@ -241,8 +244,8 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
          if (LIS_masterproc) then
             list_files = 'ls '//trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
                          trim(dd)//'/SMAP_L3_SM_P_' &
-                         //trim(yyyy)//trim(mm)//trim(dd)// &
-                         '*.h5> SMAP_filelist'// &
+                         //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+                         trim(CRID)//'*.h5> SMAP_filelist'// &
                          '.dat'
 
             call system(trim(list_files))
@@ -788,41 +791,7 @@ subroutine read_NASASMAP_E_data(n, k, pass, fname, smobs_ip)
   call h5close_f(status)
   call LIS_verify(status,'Error in H5CLOSE call')
 
-#if 0 
-! =============================================================================
-! MN the following section added 
-!  1- to filter the densly vegetaded areas. 
-!  2- combine the AM and PM data 
-     
-  sm_field = LIS_rc%udef
-  do r=1,NASASMAPsm_struc(n)%nr
-     do c=1,NASASMAPsm_struc(n)%nc
-        if(vwc_field_D(c,r).gt. 5 ) then !MN Aply QC : if VWC > 5 kg/m2 
-           sm_field_D(c,r) = LIS_rc%udef
-	 else 
-           if(sm_field_D(c,r).ne.LIS_rc%udef) then 
-              sm_field(c,r) = sm_field_D(c,r)
-           endif
-        endif
-     enddo
-  enddo
 
-! MN : Her we replace the PM observation with the AM opservations if 
-!      there are both PM and AM observations. I think this is 
-!      not a correct way to combine the PM and AM observations  ??????
-  do r=1,NASASMAPsm_struc(n)%nr
-     do c=1,NASASMAPsm_struc(n)%nc   
-        if(vwc_field_A(c,r).gt. 5 ) then !MN Aply QC : if VWC > 5 kg/m2 
-           sm_field_A(c,r) = LIS_rc%udef
-	 else      
-           if(sm_field_A(c,r).ne.LIS_rc%udef) then 
-              sm_field(c,r) = sm_field_A(c,r)
-           endif
-        enddo
-  enddo
-! MN end added section 
-! =============================================================================
-#endif  
   sm_data_b = .false. 
   t = 1
 
@@ -1100,41 +1069,6 @@ subroutine read_NASASMAP_data(n, k, pass, fname, smobs_ip)
   call h5close_f(status)
   call LIS_verify(status,'Error in H5CLOSE call')
 
-#if 0 
-! =============================================================================
-! MN the following section added 
-!  1- to filter the densly vegetaded areas. 
-!  2- combine the AM and PM data 
-     
-  sm_field = LIS_rc%udef
-  do r=1,NASASMAPsm_struc(n)%nr
-     do c=1,NASASMAPsm_struc(n)%nc
-        if(vwc_field_D(c,r).gt. 5 ) then !MN Aply QC : if VWC > 5 kg/m2 
-           sm_field_D(c,r) = LIS_rc%udef
-	 else 
-           if(sm_field_D(c,r).ne.LIS_rc%udef) then 
-              sm_field(c,r) = sm_field_D(c,r)
-           endif
-        endif
-     enddo
-  enddo
-
-! MN : Her we replace the PM observation with the AM opservations if 
-!      there are both PM and AM observations. I think this is 
-!      not a correct way to combine the PM and AM observations  ??????
-  do r=1,NASASMAPsm_struc(n)%nr
-     do c=1,NASASMAPsm_struc(n)%nc   
-        if(vwc_field_A(c,r).gt. 5 ) then !MN Aply QC : if VWC > 5 kg/m2 
-           sm_field_A(c,r) = LIS_rc%udef
-	 else      
-           if(sm_field_A(c,r).ne.LIS_rc%udef) then 
-              sm_field(c,r) = sm_field_A(c,r)
-           endif
-        enddo
-  enddo
-! MN end added section 
-! =============================================================================
-#endif  
   sm_data_b = .false. 
   t = 1
 
