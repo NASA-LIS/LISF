@@ -9627,6 +9627,17 @@ location of the max root depth file for flood irrigation.
 `Drip irrigation max root depth file:` specifies the
 location of the max root depth file for drip irrigation.
 
+`Irrigation GVF parameter 1:` specifies growing season for
+irrigation in Noah-MP (set to 0.40 for Noah 3.3 irrigation)
+
+`Irrigation GVF parameter 2:` specifies growing season for
+irrigation in Noah-MP (set to 0.00 for Noah 3.3 irrigation)
+
+`Groundwater abstraction for irrigation:` specifies whether
+to withdraw water used for irrigation from the groundwater
+in Noah-MP.
+1=Yes 0=No (default=0)
+
 .Example _lis.config_ entry
 ....
 Irrigation scheme:            "none"

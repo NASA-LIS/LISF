@@ -36,6 +36,7 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_MetTDscaleprocId = "Metforce temporal downscaling"
    character*50, public,  parameter :: LDT_StatDscaleMetforcprocId = "Statistical downscaling of met forcing"
    character*50, public,  parameter :: LDT_ldtsiId = "LDTSI analysis"
+   character*50, public,  parameter :: LDT_OPTUEparamprocId   = "OPTUE parameter processing"
 
 !-------------------------------------------------------------------------
 ! Domains

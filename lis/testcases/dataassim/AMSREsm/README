@@ -31,10 +31,7 @@ CDF levels:
 
 2) Store CDF and CDF levels files in the directory specified in
 lis.config.  These files need to be named noah_cdf.sqr4, amsr_cdf.sqr4,
-cdf_levs.txt respectively.  Samples of these files can be found from
-/discover/nobackup/bli/lis5.0/run/. Note these sample files are for the
-specified domain in lis.config.amsre and the number of CDF levels given
-in lis.config.amsre only.
+cdf_levs.txt respectively.  
 
 3) Run LIS.
 

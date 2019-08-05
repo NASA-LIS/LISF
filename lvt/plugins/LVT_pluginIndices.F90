@@ -143,6 +143,8 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_optUEId  = "OPTUE output processing"
    character*50, public,  parameter :: LVT_rtmrunId  = "RTM output processing"
    character*50, public,  parameter :: LVT_557postId = "557 post"
+   character*50, public,  parameter :: LVT_ldtsipostId = "LDTSI post"
+
 !-------------------------------------------------------------------------
 ! Domains
 !-------------------------------------------------------------------------
@@ -230,6 +232,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_JULESobsId     = "JULES data"
    character*50, public,  parameter :: LVT_JULES2dobsId     = "JULES 2d data"
    character*50, public,  parameter :: LVT_SMAPsmobsId    = "SMAP soil moisture"
+   character*50, public,  parameter :: LVT_SMAPvodobsId    = "SMAP vegetation optical depth" 
    character*50, public,  parameter :: LVT_SMAPvwcobsId    = "SMAP vegetation water content" ! MN
    character*50, public,  parameter :: LVT_SMAP_L3TbId    = "SMAP L3 Tb" ! MN
    character*50, public,  parameter :: LVT_SMAPTBobsId    = "SMAP TB"
@@ -255,6 +258,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_GDASdataId = "GDAS"
    character*50, public,  parameter :: LVT_ASOSWEdataId = "ASO SWE"
    character*50, public,  parameter :: LVT_IMERGdataId = "GPM IMERG"
+   character*50, public,  parameter :: LVT_UASNOWdataId = "UA SNOW"
 
 !-------------------------------------------------------------------------
 ! Training algorithms

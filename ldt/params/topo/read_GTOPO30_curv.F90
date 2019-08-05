@@ -51,7 +51,7 @@ subroutine read_GTOPO30_curv(n,curv)
   
   ftn = LDT_getNextUnitNumber()
   open(ftn,file=LDT_rc%curvfile(n),form='unformatted', &
-       access='direct',recl=4,status='old')
+       access='direct',convert='big_endian',recl=4,status='old')
 
   call readLISdata(n, ftn, LDT_rc%topo_proj, LDT_rc%topo_gridtransform(n), &
                    LDT_rc%topo_gridDesc(n,:), 1, curv )
