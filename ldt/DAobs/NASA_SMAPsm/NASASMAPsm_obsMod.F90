@@ -13,8 +13,11 @@
 !  21 Aug 2016: Sujay Kumar, Initial Specification
 !  12 Feb 2018: Mahdi Navari, openwater proximity detection was added
 ! 			edited to read New version of the SPL3SMP_R14 (file structure
-! 			 differs from the previous versions) 
-
+! 			 differs from the previous versions)
+!  04 Jun 2019: Sujay Kumar, Updated to support SMAP L2 retrievals 
+!  15 Aug 2019 Mahdi Navari : SMAP Composite Release ID was added (this option asks a user to 
+!         enter the part of Composite Release ID a three-character string like R16 )
+!
 module NASASMAPsm_obsMod
 ! !USES: 
   use ESMF
@@ -36,6 +39,7 @@ module NASASMAPsm_obsMod
 
      character*100          :: odir
      character*20           :: data_designation
+     character*3             :: release_number
      real                   :: search_radius
      integer                :: mo
      real,    allocatable   :: smobs(:,:)
@@ -90,6 +94,16 @@ contains
     enddo
 
     call ESMF_ConfigFindLabel(LDT_config, &
+         'SMAP(NASA) soil moisture Composite Release ID (e.g., R16):', rc=status)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_Config, &
+            NASASMAPsmobs(n)%release_number, &
+            rc=status)
+       call LDT_verify(status, &
+            'SMAP(NASA) soil moisture Composite Release ID (e.g., R16): not defined')
+    enddo
+
+    call ESMF_ConfigFindLabel(LDT_config, &
          'NASA SMAP soil moisture data designation:', rc=status)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_Config, &
@@ -131,10 +145,6 @@ contains
           gridDesci(10) = 0.36 
           gridDesci(11) = 1 !for the global switch
 
-           
-          allocate(NASASMAPsmobs(n)%n11(LDT_rc%lnc(n)*LDT_rc%lnr(n)))       
-          call neighbor_interp_input (n, gridDesci,&
-               NASASMAPsmobs(n)%n11)
        elseif(NASASMAPsmobs(n)%data_designation.eq."SPL3SMP_E") then 
           NASASMAPsmobs(n)%nc = 3856
           NASASMAPsmobs(n)%nr = 1624
@@ -148,11 +158,37 @@ contains
           gridDesci(10) = 0.09 
           gridDesci(11) = 1 !for the global switch
 
-           
-          allocate(NASASMAPsmobs(n)%n11(LDT_rc%lnc(n)*LDT_rc%lnr(n)))       
-          call neighbor_interp_input (n, gridDesci,&
-               NASASMAPsmobs(n)%n11)
+       elseif(NASASMAPsmobs(n)%data_designation.eq."SPL2SMP") then 
+          NASASMAPsmobs(n)%nc = 964
+          NASASMAPsmobs(n)%nr = 406
+
+          gridDesci = 0 
+          gridDesci(1) = 9
+          gridDesci(2) = 964
+          gridDesci(3) = 406
+          gridDesci(9) = 4 !M36 grid
+          gridDesci(20) = 64
+          gridDesci(10) = 0.36 
+          gridDesci(11) = 1 !for the global switch
+
+       elseif(NASASMAPsmobs(n)%data_designation.eq."SPL2SMP_E") then 
+          NASASMAPsmobs(n)%nc = 3856
+          NASASMAPsmobs(n)%nr = 1624
+
+          gridDesci = 0 
+          gridDesci(1) = 9
+          gridDesci(2) = 3856
+          gridDesci(3) = 1624
+          gridDesci(9) = 5 !M09 grid
+          gridDesci(20) = 64
+          gridDesci(10) = 0.09 
+          gridDesci(11) = 1 !for the global switch
        endif
+       allocate(NASASMAPsmobs(n)%n11(LDT_rc%lnc(n)*LDT_rc%lnr(n)))       
+       call neighbor_interp_input (n, gridDesci,&
+            NASASMAPsmobs(n)%n11)
+       
+
     enddo
   end subroutine NASASMAPsm_obsinit
      
