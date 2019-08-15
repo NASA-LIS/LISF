@@ -5058,6 +5058,14 @@ NASA SMAP soil moisture observation directory:
 SMOS NESDIS soil moisture observation directory:
 #latex: END_CONFIG
 
+#latex: BEGIN_DESCRIPTION
+#latex: \var{SMAP(NASA) soil moisture Composite Release ID (e.g., R16):} specifies
+#latex: first three characters of the Composite Release ID (CRID) (e.g., R16) 
+#latex: END_DESCRIPTION
+
+#latex: BEGIN_CONFIG
+SMAP(NASA) soil moisture Composite Release ID (e.g., R16):
+#latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
 #latex: \var{NASA SMAP vegetation optical depth observation directory:} 
