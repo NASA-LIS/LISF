@@ -97,7 +97,7 @@ contains
          'SMAP(NASA) soil moisture Composite Release ID (e.g., R16):', rc=status)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_Config, &
-            NASASMAPsmobs(n)%data_designation, &
+            NASASMAPsmobs(n)%release_number, &
             rc=status)
        call LDT_verify(status, &
             'SMAP(NASA) soil moisture Composite Release ID (e.g., R16): not defined')
@@ -107,7 +107,7 @@ contains
          'NASA SMAP soil moisture data designation:', rc=status)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_Config, &
-            NASASMAPsmobs(n)%release_number, &
+            NASASMAPsmobs(n)%data_designation, &
             rc=status)
        call LDT_verify(status, &
             'NASA SMAP soil moisture data designation: not defined')
