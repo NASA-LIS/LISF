@@ -45,6 +45,8 @@ module LVT_histDataMod
 !  2 Oct 2008    Sujay Kumar  Initial Specification
 !  17 Oct 2018  Mahdi Navari  Enhanced the LVT reader to read the 
 !               Veg. Water Content (VWC) from SMAP SM dataset 
+!  19 Nov 2018  Mahdi Navari added suport to read SMAP_L3 brightness temperature
+!
 ! 
 !EOP
 !BOP
@@ -109,7 +111,12 @@ module LVT_histDataMod
   public :: LVT_MOC_SNOWAGE
   public :: LVT_MOC_SURFSTOR  
   public :: LVT_MOC_SOILMOIST 
-  public :: LVT_MOC_VEGWATERCONTENT ! MN
+  public :: LVT_MOC_VEGWATERCONTENT 
+  public :: LVT_MOC_VOD
+  public :: LVT_MOC_L3TBv_D 
+  public :: LVT_MOC_L3TBv_A 
+  public :: LVT_MOC_L3TBh_D 
+  public :: LVT_MOC_L3TBh_A 
   public :: LVT_MOC_SOILTEMP  
   public :: LVT_MOC_SMLIQFRAC
   public :: LVT_MOC_SMFROZFRAC
@@ -464,7 +471,13 @@ module LVT_histDataMod
   integer :: LVT_MOC_SWEVEG(3)     = -9999
   integer :: LVT_MOC_SNOWAGE(3)    = -9999 
   integer :: LVT_MOC_SURFSTOR(3)   = -9999
-  integer :: LVT_MOC_VEGWATERCONTENT(3)   = -9999
+  integer :: LVT_MOC_VEGWATERCONTENT(3)   = -9999 
+  integer :: LVT_MOC_VOD(3)   = -9999 
+! integer :: LVT_MOC_L3TB(3)   = -9999 !MN
+ integer :: LVT_MOC_L3TBv_D(3)   = -9999 !MN
+ integer :: LVT_MOC_L3TBv_A(3)   = -9999 !MN
+ integer :: LVT_MOC_L3TBh_D(3)   = -9999 !MN
+ integer :: LVT_MOC_L3TBh_A(3)   = -9999 !MN
 
    ! ALMA SUBSURFACE STATE VARIABLES
    integer :: LVT_MOC_SOILMOIST(3)  = -9999
@@ -3533,7 +3546,7 @@ contains
       endif
    elseif(name.eq."VWC") then ! MN 
       if(LVT_MOC_VEGWATERCONTENT(source).eq.LVT_rc%udef) then 
-         LVT_MOC_SWE(source) = var_count
+         LVT_MOC_VEGWATERCONTENT(source) = var_count
          dataEntry%standard_name = "vegetation_water_content" 
          dataEntry%long_name ="vegetation water content" 
          dataEntry%nunits = 1
@@ -3547,6 +3560,106 @@ contains
          allocate(dataEntry%dirtypes(dataEntry%ndirs))
          dataEntry%dirtypes = (/"-"/)
       endif
+   elseif(name.eq."VOD") then 
+      if(LVT_MOC_VOD(source).eq.LVT_rc%udef) then 
+         LVT_MOC_VOD(source) = var_count
+         dataEntry%standard_name = "vegetation_optical_depth" 
+         dataEntry%long_name ="vegetation optical depth" 
+         dataEntry%nunits = 1
+         allocate(dataEntry%unittypes(dataEntry%nunits))
+         allocate(dataEntry%valid_min(dataEntry%nunits))
+         allocate(dataEntry%valid_max(dataEntry%nunits))
+         dataEntry%unittypes = (/"-"/)
+         dataEntry%valid_min = (/0.0/)
+         dataEntry%valid_max = (/100.0/)
+         dataEntry%ndirs = 1
+         allocate(dataEntry%dirtypes(dataEntry%ndirs))
+         dataEntry%dirtypes = (/"-"/)
+      endif
+#if 0
+elseif(name.eq."SMAPL3TB") then ! MN 
+      if(LVT_MOC_L3TB(source).eq.LVT_rc%udef) then 
+         LVT_MOC_L3TB(source) = var_count
+         dataEntry%standard_name = "brightness_temperature" 
+         dataEntry%long_name ="brightness temperature" 
+         dataEntry%nunits = 1
+         allocate(dataEntry%unittypes(dataEntry%nunits))
+         allocate(dataEntry%valid_min(dataEntry%nunits))
+         allocate(dataEntry%valid_max(dataEntry%nunits))
+         dataEntry%unittypes = (/"K"/)
+         dataEntry%valid_min = (/0.0/) 
+         dataEntry%valid_max = (/350.0/)
+         dataEntry%ndirs = 1
+         allocate(dataEntry%dirtypes(dataEntry%ndirs))
+         dataEntry%dirtypes = (/"-"/)
+      endif
+#endif
+elseif(name.eq."SMAPL3TBv_D") then ! MN 
+      if(LVT_MOC_L3TBv_D(source).eq.LVT_rc%udef) then 
+         LVT_MOC_L3TBv_D(source) = var_count
+         dataEntry%standard_name = "brightness_temperature" 
+         dataEntry%long_name ="brightness temperature" 
+         dataEntry%nunits = 1
+         allocate(dataEntry%unittypes(dataEntry%nunits))
+         allocate(dataEntry%valid_min(dataEntry%nunits))
+         allocate(dataEntry%valid_max(dataEntry%nunits))
+         dataEntry%unittypes = (/"K"/)
+         dataEntry%valid_min = (/0.0/) 
+         dataEntry%valid_max = (/350.0/)
+         dataEntry%ndirs = 1
+         allocate(dataEntry%dirtypes(dataEntry%ndirs))
+         dataEntry%dirtypes = (/"-"/)
+      endif
+elseif(name.eq."SMAPL3TBv_A") then ! MN 
+      if(LVT_MOC_L3TBv_A(source).eq.LVT_rc%udef) then 
+         LVT_MOC_L3TBv_A(source) = var_count
+         dataEntry%standard_name = "brightness_temperature" 
+         dataEntry%long_name ="brightness temperature" 
+         dataEntry%nunits = 1
+         allocate(dataEntry%unittypes(dataEntry%nunits))
+         allocate(dataEntry%valid_min(dataEntry%nunits))
+         allocate(dataEntry%valid_max(dataEntry%nunits))
+         dataEntry%unittypes = (/"K"/)
+         dataEntry%valid_min = (/0.0/) 
+         dataEntry%valid_max = (/350.0/)
+         dataEntry%ndirs = 1
+         allocate(dataEntry%dirtypes(dataEntry%ndirs))
+         dataEntry%dirtypes = (/"-"/)
+      endif
+elseif(name.eq."SMAPL3TBh_D") then ! MN 
+      if(LVT_MOC_L3TBh_D(source).eq.LVT_rc%udef) then 
+         LVT_MOC_L3TBh_D(source) = var_count
+         dataEntry%standard_name = "brightness_temperature" 
+         dataEntry%long_name ="brightness temperature" 
+         dataEntry%nunits = 1
+         allocate(dataEntry%unittypes(dataEntry%nunits))
+         allocate(dataEntry%valid_min(dataEntry%nunits))
+         allocate(dataEntry%valid_max(dataEntry%nunits))
+         dataEntry%unittypes = (/"K"/)
+         dataEntry%valid_min = (/0.0/) 
+         dataEntry%valid_max = (/350.0/)
+         dataEntry%ndirs = 1
+         allocate(dataEntry%dirtypes(dataEntry%ndirs))
+         dataEntry%dirtypes = (/"-"/)
+      endif
+
+elseif(name.eq."SMAPL3TBh_A") then ! MN 
+      if(LVT_MOC_L3TBh_A(source).eq.LVT_rc%udef) then 
+         LVT_MOC_L3TBh_A(source) = var_count
+         dataEntry%standard_name = "brightness_temperature" 
+         dataEntry%long_name ="brightness temperature" 
+         dataEntry%nunits = 1
+         allocate(dataEntry%unittypes(dataEntry%nunits))
+         allocate(dataEntry%valid_min(dataEntry%nunits))
+         allocate(dataEntry%valid_max(dataEntry%nunits))
+         dataEntry%unittypes = (/"K"/)
+         dataEntry%valid_min = (/0.0/) 
+         dataEntry%valid_max = (/350.0/)
+         dataEntry%ndirs = 1
+         allocate(dataEntry%dirtypes(dataEntry%ndirs))
+         dataEntry%dirtypes = (/"-"/)
+      endif
+
    elseif(name.eq."SIF") then 
       if(LVT_MOC_SIF(source).eq.LVT_rc%udef) then 
          LVT_MOC_SIF(source) = var_count

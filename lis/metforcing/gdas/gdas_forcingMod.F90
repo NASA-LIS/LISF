@@ -24,7 +24,12 @@ module gdas_forcingMod
 !   2005/05/31 - 2010/07/27 :   T382 (1152x576) grid \newline
 !   2010/07/28 - 2015/01/14 :   T574 (1760x880) grid \newline
 !   2015/01/14 - onwards    :  T1534 (3072x1536) grid
-
+!
+!  On 2019/06/12 12Z, GDAS removed precipitation fields from the f00 data
+!  files. The data fields in these files are now all instantaneous values.
+!  When the reader is using data files after this time, a new subroutine will
+!  be used that excludes precipitation as well as reads in instantaneous radiation
+!  data. For data files prior to the switch, the reader will use the old subroutine.
 !
 !  The implementation in LIS has the derived data type {\tt gdas\_struc} that
 !  includes the variables that specify the runtime options, and the
@@ -55,6 +60,9 @@ module gdas_forcingMod
 !    The time to switch GDAS resolution to T574
 !  \item[griduptime6]
 !    The time to switch GDAS resolution to T1534
+!  \item[datastructime1]
+!    The time to switch to new data structure for f00 files
+!    that removed precipitation fields.
 !  \item[findtime1, findtime2]
 !   boolean flags to indicate which time is to be read for
 !   temporal interpolation.
@@ -104,8 +112,10 @@ module gdas_forcingMod
      real*8        :: gdastime1, gdastime2
      real*8        :: griduptime1, griduptime2, griduptime3
      real*8        :: griduptime4, griduptime5, griduptime6
+     real*8        :: datastructime1
      logical       :: gridchange1, gridchange2, gridchange3
      logical       :: gridchange4, gridchange5, gridchange6
+     logical       :: dstrucchange1
      integer       :: mi
      integer       :: findtime1, findtime2
 
@@ -273,12 +283,22 @@ contains
        mn1 = 0; ss1 = 0
        call LIS_date2time(gdas_struc(n)%griduptime6,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1 )
 
+       ! Set time for f00 data structure change
+       yr1 = 2019
+       mo1 = 06
+       da1 = 12
+       hr1 = 9 !09Z is when the reader reads in the 12Zf00 file
+       mn1 = 0; ss1 = 0
+       call LIS_date2time(gdas_struc(n)%datastructime1,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1)
+ 
        gdas_struc(n)%gridchange1 = .true.
        gdas_struc(n)%gridchange2 = .true.
        gdas_struc(n)%gridchange3 = .true.
        gdas_struc(n)%gridchange4 = .true.
        gdas_struc(n)%gridchange5 = .true.
        gdas_struc(n)%gridchange6 = .true.
+
+       gdas_struc(n)%dstrucchange1 = .true.
 
        ! Setting up weights for Interpolation
        call gdas_reset_interp_input(n, findex, gridDesci)

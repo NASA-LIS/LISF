@@ -1,28 +1,20 @@
 
 Focus:  CLSM F2.5 LSM  Parameters 
 
-Description:  This test case involves the processing
+Description:  This case involves the processing
       of  2-D CLSMF2.5 LSM parameters to be used
       with the CLSM "Fortuna-2.5" model version in 
       LIS.
 
-This test case uses the following files:
+This case uses the following files:
   (a) this README file;
-  (b) the wget data download scripts:  
-      wget_clsmf25parms_portal.sh, wget_lisumdlc_portal.sh, wget_clsmf25_output.sh
+  (b) the ldt.config input file to LDT used for this testcase;
+  (c) test_output.xdf GrADS control file to view the LDT-generated output;
 
-  (c) the ldt.config input file to LDT used for this testcase;
-  (d) test_output.xdf GrADS control file to view the LDT-generated output;
-  (e) and to compare with output data, download the original output
-       tar-zipped file, unpack and compare with those given files.
+ To run this case: 
 
- To run this test case: 
-
-  (a) Run the download scripts in your working directory where you want 
-       to place the CLSMF2.5 parameter and UMD landcover dataset:
-
-       sh wget_clsmf25parms_portal.sh
-       sh wget_lisumdlc_portal.sh
+  (a) Modify the ldt.config file provided with this case pointing 
+       to your file directory setup.
 
   (b) Generate the LDT executable and copy it to your working directory.
 
@@ -34,16 +26,6 @@ This test case uses the following files:
 
   (d) View the NetCDF (*.nc) output using the sample grads file or
        the ncview executable (if you have it installed).
-
-  (e) Download and unpack the LDT test case output data to compare with
-       by running the final script:
-
-       sh wget_clsmf25_output.sh
-
-      Then unpack the original output files with:
-   
-       tar -xzvf Public-LDT_CLSMF25_output_v71.tar.gz
-
 
 Caveats: 
   (a) Please note that this is a more basic functional test for purpose

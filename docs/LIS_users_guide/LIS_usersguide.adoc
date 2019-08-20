@@ -9,7 +9,8 @@
 :stem: latexmath
 :devonly!:
 :lisrevision: 7.2
-:lisurl: http://lis.gsfc.nasa.gov
+:lisurl: https://lis.gsfc.nasa.gov
+:listesturl: https://lis.gsfc.nasa.gov/tests/lis
 :svnurl: http://subversion.apache.org
 :listarball: LIS_public_release_7.2r.tar.gz
 :lispublicna: Not available in the {listarball} public release of LIS 7.2.

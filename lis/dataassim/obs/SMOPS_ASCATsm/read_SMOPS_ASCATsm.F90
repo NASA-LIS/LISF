@@ -17,6 +17,7 @@
 !  15 May 2017: Eric Kemp; LIS current date/time no longer directly passed
 !               to SMOPS filename subroutine to avoid accidently changing
 !               the time.
+!  1  Apr 2019: Yonghwan Kwon: Upated for reading monthy CDF for the current month
 !
 ! !INTERFACE: 
 subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
@@ -190,7 +191,52 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
 !  Transform data to the LSM climatology using a CDF-scaling approach
 !-------------------------------------------------------------------------     
 
-  if(fnd.ne.0) then        
+  ! Read monthly CDF (only for the current month)
+  if (SMOPS_ASCATsm_struc(n)%ntimes.gt.1.and.SMOPS_ASCATsm_struc(n)%cdf_read_opt.eq.1) then
+     if (.not. SMOPS_ASCATsm_struc(n)%cdf_read_mon.or.LIS_rc%da.eq.1.and.LIS_rc%hr.eq.0.and.LIS_rc%mn.eq.0.and.LIS_rc%ss.eq.0) then
+        call LIS_readMeanSigmaData(n,k,&
+             SMOPS_ASCATsm_struc(n)%ntimes,&
+             LIS_rc%obs_ngrid(k), &
+             SMOPS_ASCATsm_struc(n)%modelcdffile, &
+             "SoilMoist",&
+             SMOPS_ASCATsm_struc(n)%model_mu,&
+             SMOPS_ASCATsm_struc(n)%model_sigma,&
+             LIS_rc%mo)
+
+        call LIS_readMeanSigmaData(n,k,&
+             SMOPS_ASCATsm_struc(n)%ntimes,&
+             LIS_rc%obs_ngrid(k), &
+             SMOPS_ASCATsm_struc(n)%obscdffile, &
+             "SoilMoist",&
+             SMOPS_ASCATsm_struc(n)%obs_mu,&
+             SMOPS_ASCATsm_struc(n)%obs_sigma,&
+             LIS_rc%mo)
+
+        call LIS_readCDFdata(n,k,&
+             SMOPS_ASCATsm_struc(n)%nbins,&
+             SMOPS_ASCATsm_struc(n)%ntimes,&
+             LIS_rc%obs_ngrid(k), &
+             SMOPS_ASCATsm_struc(n)%modelcdffile, &
+             "SoilMoist",&
+             SMOPS_ASCATsm_struc(n)%model_xrange,&
+             SMOPS_ASCATsm_struc(n)%model_cdf,&
+             LIS_rc%mo)
+
+        call LIS_readCDFdata(n,k,&
+             SMOPS_ASCATsm_struc(n)%nbins,&
+             SMOPS_ASCATsm_struc(n)%ntimes,&
+             LIS_rc%obs_ngrid(k), &
+             SMOPS_ASCATsm_struc(n)%obscdffile, &
+             "SoilMoist",&
+             SMOPS_ASCATsm_struc(n)%obs_xrange,&
+             SMOPS_ASCATsm_struc(n)%obs_cdf,&
+             LIS_rc%mo)
+
+        SMOPS_ASCATsm_struc(n)%cdf_read_mon = .true.
+     endif
+  endif
+
+  if(fnd.ne.0) then
      ! Store the unscaled obs (ie, before the rescaling)
      do r =1,LIS_rc%obs_lnr(k)
         do c =1,LIS_rc%obs_lnc(k)
@@ -201,17 +247,31 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
         end do
      end do
 
-     call LIS_rescale_with_CDF_matching(    &
-          n,k,                              & 
-          SMOPS_ASCATsm_struc(n)%nbins,         & 
-          SMOPS_ASCATsm_struc(n)%ntimes,         & 
-          MAX_SM_VALUE,                        & 
-          MIN_SM_VALUE,                        & 
-          SMOPS_ASCATsm_struc(n)%model_xrange,  &
-          SMOPS_ASCATsm_struc(n)%obs_xrange,    &
-          SMOPS_ASCATsm_struc(n)%model_cdf,     &
-          SMOPS_ASCATsm_struc(n)%obs_cdf,       &
-          sm_current)
+     if (SMOPS_ASCATsm_struc(n)%ntimes.gt.1.and.SMOPS_ASCATsm_struc(n)%cdf_read_opt.eq.1) then
+        call LIS_rescale_with_CDF_matching(     &
+             n,k,                               &
+             SMOPS_ASCATsm_struc(n)%nbins,         &
+             1,                                 &
+             MAX_SM_VALUE,                      &
+             MIN_SM_VALUE,                      &
+             SMOPS_ASCATsm_struc(n)%model_xrange,  &
+             SMOPS_ASCATsm_struc(n)%obs_xrange,    &
+             SMOPS_ASCATsm_struc(n)%model_cdf,     &
+             SMOPS_ASCATsm_struc(n)%obs_cdf,       &
+             sm_current)
+     else
+        call LIS_rescale_with_CDF_matching(    &
+             n,k,                              & 
+             SMOPS_ASCATsm_struc(n)%nbins,         & 
+             SMOPS_ASCATsm_struc(n)%ntimes,         & 
+             MAX_SM_VALUE,                        & 
+             MIN_SM_VALUE,                        & 
+             SMOPS_ASCATsm_struc(n)%model_xrange,  &
+             SMOPS_ASCATsm_struc(n)%obs_xrange,    &
+             SMOPS_ASCATsm_struc(n)%model_cdf,     &
+             SMOPS_ASCATsm_struc(n)%obs_cdf,       &
+             sm_current)                              
+     endif  
   endif
   obsl = LIS_rc%udef 
   if(fnd.ne.0) then 
@@ -289,7 +349,9 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
         allocate(ssdev(LIS_rc%obs_ngrid(k)))
         ssdev = SMOPS_ASCATsm_struc(n)%ssdev_inp 
 
-        if(SMOPS_ASCATsm_struc(n)%ntimes.eq.1) then 
+        if (SMOPS_ASCATsm_struc(n)%cdf_read_opt .eq. 1) then
+           jj = 1
+        else if(SMOPS_ASCATsm_struc(n)%ntimes.eq.1) then 
            jj = 1
         else
            jj = LIS_rc%mo
