@@ -3746,13 +3746,6 @@ NASA SMAP soil moisture data designation:
 NASA SMAP soil moisture observation directory:
 ....
 
-`SMOS NESDIS soil moisture observation directory:` specifies the location of the data directory containing the SMOS soil moisture retrievals from NOAA NESDIS.
-
-.Example _ldt.config_ entry
-....
-SMOS NESDIS soil moisture observation directory:
-....
-
 `NASA SMAP vegetation optical depth observation directory:` specifies the location of the data directory containing the L2 SMAP vegetation optical depth retrievals.
 
 `NASA SMAP vegetation optical depth data designation:` specifies the type/source of VOD retrievals. Acceptable values are:
@@ -3769,6 +3762,13 @@ SMOS NESDIS soil moisture observation directory:
 ....
 NASA SMAP vegetation optical depth observation directory: ../SPL2SMP_E.002
 NASA SMAP vegetation optical depth data designation:      'SPL2SMP_E'
+....
+
+`SMOS NESDIS soil moisture observation directory:` specifies the location of the data directory containing the SMOS soil moisture retrievals from NOAA NESDIS.
+
+.Example _ldt.config_ entry
+....
+SMOS NESDIS soil moisture observation directory:
 ....
 
 `LPRM vegetation optical depth observation directory:` specifies the location of the data directory containing the LPRM vegetation optical depth retrievals from LPRM.
