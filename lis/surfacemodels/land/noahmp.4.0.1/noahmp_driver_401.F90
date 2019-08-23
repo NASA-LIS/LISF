@@ -9,7 +9,7 @@
 ! Oct 15 2018 Zhuo Wang modifed for implementing Noah-MP 4.0.1 
 
 #undef LIS_NoahMP_TEST 
-#undef WRF_HYDRO  
+!#undef WRF_HYDRO
 ! !INTERFACE
 subroutine noahmp_driver_401(n, ttile, itimestep, &  
      latitude, longitude,                                        &
@@ -296,7 +296,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   real    :: soldn
   real    :: lwdn
   real    :: sfcprs(2)            ! multiple layer is required 
-  real    :: sfcheadrt            ! For WRF-Hydro
+  real, dimension(1,1) :: sfcheadrt,INFXSRT,soldrain ! For WRF-Hydro
   real    :: dz8w3d(2) 
   real, allocatable, dimension(:) :: zsoil
   real, allocatable, dimension(:) :: zsnso
@@ -473,7 +473,9 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
    ! Fraction of grid determining seaice (from WRF and HRLDAS)
    xice_thres = 0.5
 
+#ifndef WRF_HYDRO
    sfcheadrt = 0.0
+#endif
 ! SR = frozen precip fraction.  For offline, it is set to zero.
 ! If running coupled to WRF, then SR is set by the WRF model.
    if (snf_opt.ne.4) then
