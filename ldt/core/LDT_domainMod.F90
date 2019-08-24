@@ -506,8 +506,6 @@ end subroutine LDT_timeInit
     integer   :: bufsize
 
 
-    print *, "In LDT_setDomainSpecs ... (KRA)"
-
     call LDT_domain_plugin
 
     ! Read in the domain's config file entries:
@@ -897,9 +895,8 @@ end subroutine LDT_timeInit
     mytask_x = mod( LDT_localPet, LDT_rc%npesx )
     mytask_y = LDT_localPet / LDT_rc%npesx
 
- 
-    print *, "In core/LDT_domainMod.F90 ... (KRA)"
-    print *, nc, nr, LDT_rc%npesx, LDT_rc%npesy, mytask_x, mytask_y
+!    print *, "In core/LDT_domainMod.F90 ... (KRA)"
+!    print *, nc, nr, LDT_rc%npesx, LDT_rc%npesy, mytask_x, mytask_y
 
     j = 1
     ips = -1

@@ -97,8 +97,6 @@ subroutine readinput_latlon
      call LDT_verify(rc, 'Run domain resolution (dy): not defined')
   enddo
 
-  print *, " In domains/latlon/readinput_latlon.F90 ... (KRA) "
-
   do n=1,LDT_rc%nnest
      stlat = run_dd(n,1)
      stlon = run_dd(n,2)
@@ -120,25 +118,25 @@ subroutine readinput_latlon
      endif
 #endif
 
-     ! INSTALL A CHECK HERE IF LAT/LON VALUES ARE REVERSE ... CROSSING INTERNATIONAL DATELINE ...
+     ! Check if lon values are reverse (e.g., crosses International Dateline)
      if( run_dd(n,4)-run_dd(n,2) < 0. ) then   ! Check long. extents
-        print *, " Long(1) > Long(2) == ",run_dd(n,2), run_dd(n,4)
-        print *, " CALCULATING NC ... "
         nc = nint(diff_lon(run_dd(n,4),run_dd(n,2))/run_dd(n,5)) + 1
      else
         nc = (nint((run_dd(n,4)-run_dd(n,2))/run_dd(n,5))) + 1
      endif
 
-     if( run_dd(n,3)-run_dd(n,1) < 0. ) then   ! Check lat. extents
-        print *, " Lat(1) > Lat(2) == ",run_dd(n,1), run_dd(n,3)
-        print *, " CALCULATING NR ... "
-        stop
-     else
-        nr = (nint((run_dd(n,3)-run_dd(n,1))/run_dd(n,6))) + 1
-     endif
+!     print *, " Lat(1) > Lat(2) == ",run_dd(n,1), run_dd(n,3)
+!     print *, run_dd(n,3)-run_dd(n,1)
+!     if( run_dd(n,3)-run_dd(n,1) < 0. ) then   ! Check lat. extents
+!        print *, " Lat(1) > Lat(2) == ",run_dd(n,1), run_dd(n,3)
+!        print *, " CALCULATING NR ... "
+!        stop
+!     else
+     nr = (nint((run_dd(n,3)-run_dd(n,1))/run_dd(n,6))) + 1
+!     endif
+     LDT_rc%gnc(n) = nc
+     LDT_rc%gnr(n) = nr
      
-     print *, stlat, stlon, dx, dy, nc, nr
-
      ! Quilt domain - decompose global domain:
      call LDT_quilt_domain(n,nc,nr)
   
@@ -152,11 +150,6 @@ subroutine readinput_latlon
           LDT_rc%gridDesc(n,4),LDT_rc%gridDesc(n,7),&
           LDT_rc%gridDesc(n,5),LDT_rc%gridDesc(n,8)
      
-     ! AGAIN - SAME ISSUE ... -NEGATIVE GNC OR GNR VALUES ... ??
-     ! NEED TO ADD CHECKS HERE TOO ...
-     LDT_rc%gnc(n) = nint((run_dd(n,4)-run_dd(n,2))/run_dd(n,5))+1
-     LDT_rc%gnr(n) = nint((run_dd(n,3)-run_dd(n,1))/run_dd(n,6))+1
-
      LDT_rc%gridDesc(n,1) = 0
      LDT_rc%gridDesc(n,9) = run_dd(n,5)
      
