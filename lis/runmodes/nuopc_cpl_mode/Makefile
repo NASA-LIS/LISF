@@ -271,6 +271,8 @@ else ifneq (,$(wildcard $(MODEL_RDIR)/.svn))
 	@svn info $(MODEL_RDIR) | grep URL >> $(CAP_VERS)
 	@svn info $(MODEL_RDIR) | grep "Last Changed Rev" >> $(CAP_VERS)
 	@echo >> $(CAP_VERS)
+else
+	@echo "# Version Information Not Found" > $(CAP_VERS)
 endif
 
 $(CAP_MK): $(CAP_LIB) $(CAP_MODS)
