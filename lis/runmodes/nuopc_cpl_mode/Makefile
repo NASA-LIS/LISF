@@ -43,6 +43,11 @@ override ESMF_F90COMPILECPPFLAGS += -DDEBUG
 override ESMF_CXXCOMPILECPPFLAGS += -DDEBUG
 endif
 
+ifdef DBGBUILD
+ESMF_F90COMPILEOPTS += -g -traceback
+ESMF_CXXCOMPILEOPTS += -g -traceback
+endif
+
 # ###########################
 # Determine Installation Path
 # ###########################
@@ -64,10 +69,11 @@ endif
 # ###############
 
 ifndef LIS_DIR
-MODEL_DIR    := $(abspath $(DIR)/../..)
+MODEL_RDIR   := $(abspath $(DIR)/../../..)
 else
-MODEL_DIR    := $(abspath $(LIS_DIR))
+MODEL_RDIR   := $(abspath $(LIS_DIR))
 endif
+MODEL_DIR    := $(abspath $(MODEL_RDIR)/lis)
 MODEL_OBJDIR := $(abspath $(MODEL_DIR)/make)
 MODEL_MODDIR := $(abspath $(MODEL_DIR)/make)
 MODEL_LIBDIR := $(abspath $(MODEL_DIR))
@@ -245,17 +251,27 @@ $(CAP_VERS): $(CAP_LIB) $(CAP_MODS)
 	@echo $(HR)
 	@echo "Generating Version Information"
 	@echo
-	@echo "# NUOPC Cap Version" > $(CAP_VERS)
-	@if [ -d .svn ]; then \
-	  echo "SVN Repository" > $(CAP_VERS); \
-	  svn info . | grep URL >> $(CAP_VERS); \
-	  svn info . | grep "Last Changed Rev" >> $(CAP_VERS); \
-	elif [ -d .git ]; then \
-	  echo "Git Repository" > $(CAP_VERS); \
-	  git show . | grep -m 1 "commit " >> $(CAP_VERS); \
-	  git show . | grep -m 1 "Author: " >> $(CAP_VERS); \
-	  git show . | grep -m 1 "Date: " >> $(CAP_VERS); \
-	fi
+ifneq (,$(wildcard $(MODEL_RDIR)/.git))
+	@echo "# NUOPC Cap Revision #" > $(CAP_VERS)
+	@git log . | grep -m 1 "commit " >> $(CAP_VERS)
+	@git log . | grep -m 1 "Author: " >> $(CAP_VERS)
+	@git log . | grep -m 1 "Date: " >> $(CAP_VERS)
+	@echo >> $(CAP_VERS)
+	@echo "# Model Revision     #" >> $(CAP_VERS)
+	@git log $(MODEL_RDIR) | grep -m 1 "commit " >> $(CAP_VERS)
+	@git log $(MODEL_RDIR) | grep -m 1 "Author: " >> $(CAP_VERS)
+	@git log $(MODEL_RDIR) | grep -m 1 "Date: " >> $(CAP_VERS)
+	@echo >> $(CAP_VERS)
+else ifneq (,$(wildcard $(MODEL_RDIR)/.svn))
+	@echo "# NUOPC Cap Revision #" > $(CAP_VERS)
+	@svn info . | grep URL >> $(CAP_VERS)
+	@svn info . | grep "Last Changed Rev" >> $(CAP_VERS)
+	@echo >> $(CAP_VERS)
+	@echo "# Model Revision     #" >> $(CAP_VERS)
+	@svn info $(MODEL_RDIR) | grep URL >> $(CAP_VERS)
+	@svn info $(MODEL_RDIR) | grep "Last Changed Rev" >> $(CAP_VERS)
+	@echo >> $(CAP_VERS)
+endif
 
 $(CAP_MK): $(CAP_LIB) $(CAP_MODS)
 	@echo $(HR)
