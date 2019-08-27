@@ -318,6 +318,15 @@ Most of the configure options are be self-explanatory.  Here are a few specific 
 //select the default value of 0.  OpenMP support is
 //experimental.  Please do not use.
 
+* for `Optimization level (-3=strict checks with warnings, -2=strict checks, -1=debug, 0,1,2,3, default=2):`
++
+[IMPORTANT]
+====
+There is an open issue regarding compiling LVT with the GNU compilers version 7.3 (and higher).  One of the modules takes a long time to compile, and the compilation consumes a lot of memory, often to the point of aborting.
+
+When using the GNU compilers, you should select `0`.
+====
+
 * for `Assume little/big_endian data format (1-little, 2-big, default=2):`,
 select the default value of 2.  By default, LVT reads and writes binary data in the big endian format.  Only select the value of 1, if you have reformatted all required binary data into the little endian format.
 
