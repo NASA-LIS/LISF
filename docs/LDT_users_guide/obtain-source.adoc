@@ -8,7 +8,7 @@ Beginning with LIS public release 7.1rp1, the LIS and LDT source code is availab
 
 Due to the history of LDT's development, prior versions of the LDT source code may not be freely distributed. That older source code is available only to U.S. government agencies or entities with a U.S.  government grant/contract. {lisurl}[LIS' web-site] explains how qualified persons may request a copy of the older source code.
 
-//[[sec_important_note_fs]]
+[[sec-important_note_fs]]
 === Important Note Regarding File Systems
 
 LDT is developed on Linux/Unix platforms. Its build process expects a case sensitive file system. Please make sure that you unpack and/or 'svn checkout' the LDT code into a directory within a case sensitive file system. In particular, if you are using LDT within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LDT from within a shared folder. Move the LDT source code into a directory within the virtual machine.
