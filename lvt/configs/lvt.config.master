@@ -2826,7 +2826,7 @@ USCRN soil moisture station file:            ./USCRN/USCRN_stations.txt
 #latex: \begin{tabular}{ll}
 #latex: Value & Description   \\
 #latex: SPL3SMP & SMAP L3 Radiometer Global Daily 36 km EASE-Grid Soil Moisture \\
-#latex: SPL3SMP_E & SMAP Enhanced L3 Radiometer Global Daily 9 km EASE-Grid Soil Moisture\\
+#latex: SPL3SMP\_E & SMAP Enhanced L3 Radiometer Global Daily 9 km EASE-Grid Soil Moisture\\
 #latex: \end{tabular}
 #latex: 
 #latex: 
@@ -3061,7 +3061,7 @@ Number of state variables in the DA update: 4
 #latex:    (recommended).
 #latex:  \item Postprocess over 3 or 24 hour periods.
 #latex:  \item Interpolate US Navy GOFS (HYCOM) sea ice and sea surface 
-#latex     temperature data to the LIS grid.
+#latex:    temperature data to the LIS grid.
 #latex:  \item Output in GRIB2 or netCDF.
 #latex:  \end{itemize}
 #latex:
@@ -3074,7 +3074,7 @@ Number of state variables in the DA update: 4
 #latex:  For netCDF, it is necessary to use the NCO tool `ncks' to merge
 #latex:  the postprocessed fields together into a single file.
 #latex:
-#latex;  These capabilities are activated by setting LVT running mode to
+#latex:  These capabilities are activated by setting LVT running mode to
 #latex:  ``557 post''
 #latex:  
 #latex:  When using this runmode:  
@@ -3099,7 +3099,7 @@ Number of state variables in the DA update: 4
 #latex:  It is recommended that scripts be used to customize lvt.config
 #latex:  files for each LVT invocation, and then run LVT in individual
 #latex:  batch modes.  Example scripts are provided in lvt/util/afwa/templates,
-#latex:  along with customized MODEL_OUTPUT_LIST.TBL files for use by
+#latex:  along with customized MODEL\_OUTPUT\_LIST.TBL files for use by
 #latex:  557WW.  Sample scripts to automate merging of GRIB2 or netCDF output
 #latex:  files are given in lvt/utils/afwa.
 #latex:
@@ -3202,7 +3202,7 @@ Smoothing filter type:        "gaussian filter"
 #latex: Acceptable values are:
 #latex:
 #latex: \begin{tabular}{ll}
-#latex: Value & Description
+#latex: Value & Description \\
 #latex: .true. & Output in GRIB2 \\
 #latex: .false. & Do not output in GRIB2 \\
 #latex: \end{tabular}
@@ -3219,7 +3219,7 @@ LDTSI output GRIB2 native grid: .true.
 #latex: Acceptable values are:
 #latex:
 #latex: \begin{tabular}{ll}
-#latex: Value & Description
+#latex: Value & Description \\
 #latex: .true. & Interpolate and output in GRIB1 \\
 #latex: .false. & Do not interpolate or output \\
 #latex: \end{tabular}
@@ -3237,7 +3237,7 @@ LDTSI output GRIB1 global 0.25deg lat/lon: .true.
 #latex: Acceptable values are:
 #latex:
 #latex: \begin{tabular}{ll}
-#latex: Value & Description
+#latex: Value & Description \\
 #latex: .true. & Interpolate and output in GRIB1 \\
 #latex: .false. & Do not interpolate or output \\
 #latex: \end{tabular}
@@ -3255,7 +3255,7 @@ LDTSI output GRIB1 NH 16th mesh polar stereographic: .true.
 #latex: Acceptable values are:
 #latex:
 #latex: \begin{tabular}{ll}
-#latex: Value & Description
+#latex: Value & Description \\
 #latex: .true. & Interpolate and output in GRIB1 \\
 #latex: .false. & Do not interpolate or output \\
 #latex: \end{tabular}

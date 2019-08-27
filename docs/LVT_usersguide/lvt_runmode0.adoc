@@ -1,0 +1,24 @@
+
+[[sec-lvt_runmode0]]
+== How to verify a "`non-LIS`" dataset?
+
+This section provides a description of how to convert a non-LIS data to a "`LIS-style`" so that verification and evaluation can be conducted using LVT.
+
+First, an observation plugin for the dataset of interest must be developed within LVT. This plugin will handle the reading, processing and any spatial interpolation of the data and will connect the processed variables to the LVT core using the `LVT_logSingleVar` interface.
+
+In the _lvt.config_ file, specify the runmode to be "`Observation processing`".
+
+....
+LIS Running mode: "Observation processing"
+....
+
+Though not used, the files _METRICS.TBL_ and _TS_LOCATIONS.TXT_ must be provided as a placeholder. The sample files provided along with the source code (under _src/configs_) can be used.
+
+Finally, specify the _MODEL_OUTPUT_LIST_LVT.TBL_ file such that the selection option for all the variables that should appear in the reprocessed files is enabled (Note that this is the second column in the file _MODEL_OUTPUT_LIST_LVT.TBL_.  The last column which specifies "`Use in LVT`" option is ignored in this running mode.
+
+The processed files in the "`LIS-style`" will be generated in the location specified by the following option:
+
+....
+Stats output directory: ./OUTPUT
+....
+
