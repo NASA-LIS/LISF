@@ -1,6 +1,6 @@
-= Land surface Verification Toolkit (LVT): LVT 7.2 Users' Guide
-:revnumber: 1.3
-:revdate: 6 May 2015
+= Land surface Verification Toolkit (LVT): LVT {lisrevision} Users' Guide
+:revnumber: 1.4
+:revdate: 28 Aug 2019
 :doctype: book
 :sectnums:
 :toc:
@@ -9,7 +9,7 @@
 :imagesoutdir: images
 :stem: latexmath
 :devonly:
-:lisrevision: 7.2
+:lisrevision: 7.3
 :lisurl: http://lis.gsfc.nasa.gov
 :svnurl: http://subversion.apache.org
 :lvturl: http://lis.gsfc.nasa.gov/LVT
