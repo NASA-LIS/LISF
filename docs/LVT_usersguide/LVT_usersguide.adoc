@@ -13,6 +13,8 @@
 :lisurl: http://lis.gsfc.nasa.gov
 :svnurl: http://subversion.apache.org
 :lvturl: http://lis.gsfc.nasa.gov/LVT
+:nasalisf: https://github.com/NASA-LIS/LISF
+:githuburl: https://github.com
 :lispublicrelease: Initial version - for LDT
 :lvttarball: LVT_public_release_7.2r.tar.gz
 :emdash: —
