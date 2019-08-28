@@ -12,6 +12,8 @@
 :lisrevision: 7.2
 :lisurl: http://lis.gsfc.nasa.gov/LDT
 :svnurl: http://subversion.apache.org
+:nasalisf: https://github.com/NASA-LIS/LISF
+:githuburl: https://github.com
 :lispublicrelease: Initial version - for LDT
 :ldttarball: LDT_public_release_7.2r.tar.gz
 :emdash: —
