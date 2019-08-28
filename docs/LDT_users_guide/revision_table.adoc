@@ -2,6 +2,7 @@
 |====
 | Revision | Summary of Changes             | Date
 
+| 1.8      | LDT 7.3 557WW Release          | Aug 28, 2019
 | 1.7      | LDT 7.2 AFWA Release patch 1   | Feb 9, 2018
 | 1.6      | LDT 7.2 AFWA Release           | Feb 2, 2018
 | 1.5      | LDT 7.2 AFWA Beta Release      | Nov 24, 2017
