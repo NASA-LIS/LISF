@@ -124,16 +124,7 @@ subroutine readinput_latlon
      else
         nc = (nint((run_dd(n,4)-run_dd(n,2))/run_dd(n,5))) + 1
      endif
-
-!     print *, " Lat(1) > Lat(2) == ",run_dd(n,1), run_dd(n,3)
-!     print *, run_dd(n,3)-run_dd(n,1)
-!     if( run_dd(n,3)-run_dd(n,1) < 0. ) then   ! Check lat. extents
-!        print *, " Lat(1) > Lat(2) == ",run_dd(n,1), run_dd(n,3)
-!        print *, " CALCULATING NR ... "
-!        stop
-!     else
      nr = (nint((run_dd(n,3)-run_dd(n,1))/run_dd(n,6))) + 1
-!     endif
      LDT_rc%gnc(n) = nc
      LDT_rc%gnr(n) = nr
      
@@ -144,9 +135,13 @@ subroutine readinput_latlon
      LDT_rc%gridDesc(n,4) = stlat + (LDT_nss_halo_ind(n,LDT_localPet+1)-1)*dy
      LDT_rc%gridDesc(n,5) = stlon + (LDT_ews_halo_ind(n,LDT_localPet+1)-1)*dx
      LDT_rc%gridDesc(n,7) = stlat + (LDT_nse_halo_ind(n,LDT_localPet+1)-1)*dy
-     LDT_rc%gridDesc(n,8) = stlon + (LDT_ewe_halo_ind(n,LDT_localPet+1)-1)*dx
 
-     write(unit=LDT_logunit,fmt=*) 'local domain ',&
+     LDT_rc%gridDesc(n,8) = stlon + (LDT_ewe_halo_ind(n,LDT_localPet+1)-1)*dx
+     if( LDT_rc%gridDesc(n,8) > 180. ) then
+       LDT_rc%gridDesc(n,8) = LDT_rc%gridDesc(n,8) - 360.0 
+     endif 
+
+     write(unit=LDT_logunit,fmt=*) 'local domain: ',&
           LDT_rc%gridDesc(n,4),LDT_rc%gridDesc(n,7),&
           LDT_rc%gridDesc(n,5),LDT_rc%gridDesc(n,8)
      
@@ -160,25 +155,28 @@ subroutine readinput_latlon
         LDT_rc%gridDesc(n,20) = 64
      endif
 
-     ! HERE ARE THE ORIGINAL CHECKS FOR WHEN LAT2<LAT1; LON2<LON1 .... !! (KRA) .
+     ! HERE ARE THE ORIGINAL CHECKS FOR WHEN LAT2<LAT1; LON2<LON1 ...
 
      if(LDT_rc%gridDesc(n,7).lt.LDT_rc%gridDesc(n,4)) then
-        write(unit=LDT_logunit,fmt=*) 'lat2 must be greater than lat1'
+        write(unit=LDT_logunit,fmt=*) '[WARN] lat2 must be greater than lat1 ...'
         write(LDT_logunit,*) LDT_rc%gridDesc(n,7),LDT_rc%gridDesc(n,4)
-        write(unit=LDT_logunit,fmt=*) 'Stopping run...'
+!        write(unit=LDT_logunit,fmt=*) 'Stopping run...'
         call LDT_endrun
      endif
      if(LDT_rc%gridDesc(n,8).lt.LDT_rc%gridDesc(n,5)) then
-        write(unit=LDT_logunit,fmt=*) 'lon2 must be greater than lon1'
+        write(unit=LDT_logunit,fmt=*) '[WARN] lon2 should  be greater than lon1 ...'
         write(LDT_logunit,*) LDT_rc%gridDesc(n,8),LDT_rc%gridDesc(n,5)
-        write(unit=LDT_logunit,fmt=*) 'Stopping run...'
-        call LDT_endrun
+!        write(unit=LDT_logunit,fmt=*) 'Stopping run...'
+!        call LDT_endrun
      endif
      
-     LDT_rc%gridDesc(n,2) = nint((LDT_rc%gridDesc(n,8)-LDT_rc%gridDesc(n,5))&
-          /LDT_rc%gridDesc(n,9))+ 1      ! dx
+     ! Difference in number of longitudes (dx):
+     LDT_rc%gridDesc(n,2) = nint(diff_lon(LDT_rc%gridDesc(n,8),LDT_rc%gridDesc(n,5))&
+                          / LDT_rc%gridDesc(n,9)) + 1   
+
+     ! Difference in number of latitudes (dy):
      LDT_rc%gridDesc(n,3) = nint((LDT_rc%gridDesc(n,7)-LDT_rc%gridDesc(n,4))&
-          /LDT_rc%gridDesc(n,10)) + 1    ! dy
+                          / LDT_rc%gridDesc(n,10)) + 1    
 
      write(LDT_logunit,*)'-------------------- LDT/LIS Domain ----------------------'
      do k=1,13

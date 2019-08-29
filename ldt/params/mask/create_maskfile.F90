@@ -104,10 +104,12 @@
           !  (need to retain water points for mask-parm checks later):
              do t = 1, nt
                 if( t /= LDT_rc%waterclass ) then
-                  if( vegcnt(c,r,t) /= LDT_rc%udef) &
+                  if( vegcnt(c,r,t) /= LDT_rc%udef) then
                      vegsum = vegsum + vegcnt(c,r,t)
+                  endif
                 endif
              end do
+
 
              totalsum = sum( vegcnt(c,r,1:nt), &
                         mask=vegcnt(c,r,1:nt).ne.LDT_rc%udef )

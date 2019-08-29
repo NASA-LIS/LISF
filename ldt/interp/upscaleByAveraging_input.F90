@@ -82,6 +82,9 @@ subroutine upscaleByAveraging_input( gridDesci, gridDesco, mi, mo, n11 )
   real, parameter     :: fill = -9999.0
 ! ______________________________________________________________
 
+!  print*, "gridin : ",gridDesci(1:10)
+!  print*, "gridout: ",gridDesco(1:10)
+
   allocate( xpts(mi), ypts(mi), rlat(mi), rlon(mi) )
 
   if(gridDesci(1).ge.0) then 

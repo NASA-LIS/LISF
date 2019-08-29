@@ -907,7 +907,7 @@ subroutine LDT_create_daobs_filename(n, fname)
 
 !- Non-supported projections (at this time):
     case default 
-      print*, "This type of run domain or parameter projection:  ",trim(param_proj)
+      print*, "[ERR] This type of run domain or parameter projection:  ",trim(param_proj)
       print*, " is not supported.  Please change to one of these:"
       print*, " -- latlon, lambert, polar, gaussian, mercator, hrap."
       print*, "Program stopping ...."
@@ -953,7 +953,7 @@ subroutine LDT_create_daobs_filename(n, fname)
    integer :: iret
 
 !- Grid transform arrays:
-   integer, allocatable :: n11(:)     ! Map array for aggregating methods
+   integer, allocatable     :: n11(:)     ! Map array for aggregating methods
 
    integer, allocatable     :: n113(:)    ! Map array for nearest neighbor interp
 

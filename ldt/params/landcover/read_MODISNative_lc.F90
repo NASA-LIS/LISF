@@ -83,6 +83,7 @@ subroutine read_MODISNative_lc(n, num_types, fgrd, maskarray )
 !__________________________________________________________________
 
    num_types = 20 
+
 !- Check if land cover file exists:
    inquire( file=trim(LDT_rc%vfile(n)), exist=file_exists )
    if(.not. file_exists) then
@@ -150,10 +151,10 @@ subroutine read_MODISNative_lc(n, num_types, fgrd, maskarray )
 
 !- Other landcover classifications associated with MODIS landcover:
     case default  ! Non-supported options
-      write(LDT_logunit,*) " The native MODIS map with land classification: ",&
+      write(LDT_logunit,*) "[ERR] The native MODIS map with land classification: ",&
                              trim(LDT_rc%lc_type(n)),", is not yet supported."
       write(LDT_logunit,*) " -- Please select: IGBPNCEP "
-      write(LDT_logunit,*) "Program stopping ..."
+      write(LDT_logunit,*) " Program stopping ..."
       call LDT_endrun
 
    end select
@@ -196,14 +197,24 @@ subroutine read_MODISNative_lc(n, num_types, fgrd, maskarray )
    mo = LDT_rc%lnc(n)*LDT_rc%lnr(n)
    lo1 = .false.;  lo2 = .false.
 
+   ! TEMP (KRA)
+!   open(80, file='temp.gbin', form='unformatted',&
+!       access ='direct', recl=4)
+
 !- Assign 2-D array to 1-D for aggregation routines:
    i = 0
    do r = 1, subpnr
       do c = 1, subpnc;  i = i + 1
+         ! TEMP(KRA)
+!         write(80,rec=i) subset_veg(c,r)
+
          gi(i) = subset_veg(c,r)
          if( gi(i) .ne. LDT_rc%udef ) li(i) = .true.
       enddo
    enddo
+
+   ! TEMP (KRA)
+!   close (80)
 
 !- Aggregation/Spatial Transform Section:
    select case ( LDT_rc%lc_gridtransform(n) )
