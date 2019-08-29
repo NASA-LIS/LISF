@@ -112,8 +112,6 @@ contains
       do c = 1, LDT_rc%lnc(n)
          call ij_to_latlon( LDT_domain(n)%ldtproj,float(c),float(r),&
                             rlat(c,r),rlon(c,r) )
-         ! TEMP (KRA)
-!         write(200,*) c, r, rlon(c,r), rlat(c,r)
          if(rlat(c,r).gt.lisdom_max_lat) lisdom_max_lat = rlat(c,r)
          if(rlon(c,r).gt.lisdom_max_lon) lisdom_max_lon = rlon(c,r)
          if(rlat(c,r).lt.lisdom_min_lat) lisdom_min_lat = rlat(c,r)
@@ -121,7 +119,6 @@ contains
       enddo
    enddo
 
-!   print *, "Inside ... core/LDT_gridmappingMod.F90 (KRA) ..."
 !   print *, "Rlon, min/max: ",(rlon(1,1)), (rlon(LDT_rc%lnc(n),LDT_rc%lnr(n)))
 !   print *, "Rlat, min/max: ",(rlat(1,1)), (rlat(LDT_rc%lnc(n),LDT_rc%lnr(n)))
 
@@ -381,8 +378,6 @@ contains
            lat_line(c,r) = nint((rlat(c,r)-param_grid(4))/param_grid(10))+1
            lon_line(c,r) = nint((rlon(c,r)-param_grid(5))/param_grid(9))+1
 !           lon_line(c,r) = nint(diff_lon(rlon(c,r),param_grid(5))/param_grid(9))+1
-           ! TEMP (KRA)
-!           write(300,*) c,r,lat_line(c,r),lon_line(c,r)
         enddo
      enddo
      deallocate(rlat,rlon)

@@ -197,24 +197,14 @@ subroutine read_MODISNative_lc(n, num_types, fgrd, maskarray )
    mo = LDT_rc%lnc(n)*LDT_rc%lnr(n)
    lo1 = .false.;  lo2 = .false.
 
-   ! TEMP (KRA)
-!   open(80, file='temp.gbin', form='unformatted',&
-!       access ='direct', recl=4)
-
 !- Assign 2-D array to 1-D for aggregation routines:
    i = 0
    do r = 1, subpnr
       do c = 1, subpnc;  i = i + 1
-         ! TEMP(KRA)
-!         write(80,rec=i) subset_veg(c,r)
-
          gi(i) = subset_veg(c,r)
          if( gi(i) .ne. LDT_rc%udef ) li(i) = .true.
       enddo
    enddo
-
-   ! TEMP (KRA)
-!   close (80)
 
 !- Aggregation/Spatial Transform Section:
    select case ( LDT_rc%lc_gridtransform(n) )

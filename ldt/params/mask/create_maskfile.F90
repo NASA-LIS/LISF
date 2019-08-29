@@ -48,11 +48,11 @@
 !   \end{description}
 !
 !EOP      
-  integer :: c, r, t, i
-  real    :: vegsum, totalsum
-!_________________________________________________________________________________
+  integer  :: c, r, t, i
+  real     :: vegsum, totalsum
   real     :: maxv
   integer  :: maxt
+!_________________________________________________________________________________
 
    LDT_rc%nmaskpts = 0.
    localmask = 0.
