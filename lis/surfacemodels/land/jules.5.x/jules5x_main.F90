@@ -152,10 +152,12 @@ subroutine jules5x_main(n)
             snow_tile(:, :)     = 0.0
             snow_grnd(:, :)     = 0.0
             tstar_tile(:, :)    = 0.0
+            ! Make sure JULES calcuate Qle
+            sf_diag%slh         = .True.
             dt = LIS_rc%ts
             lat = LIS_domain(n)%grid(cur_grid)%lat
             lon = LIS_domain(n)%grid(cur_grid)%lon
-
+  
             ! compute gridbox average for tstar
             tstar_box=0.0
             do t=start_k, end_k
