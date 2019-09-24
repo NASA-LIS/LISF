@@ -5103,6 +5103,15 @@ LPRM vegetation optical depth data designation:      'X-band'
 
 
 #latex: BEGIN_DESCRIPTION
+#latex: \var{SMAP(NASA) soil moisture Composite Release ID (e.g., R16):} specifies
+#latex: First three characters of the Composite Release ID (CRID) (e.g., R16) 
+#latex: END_DESCRIPTION
+
+#latex: BEGIN_CONFIG
+SMAP(NASA) soil moisture Composite Release ID (e.g., R16):
+#latex: END_CONFIG
+
+#latex: BEGIN_DESCRIPTION
 #latex: \var{HYMAP river width map:}
 #latex: specifies the name of the HYMAP river width data file.
 #latex:
