@@ -597,7 +597,7 @@ module LIS_NUOPC
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! Max nest check
-    if ( nIndex > MAXNEST ) then
+    if ( is%wrap%nnests > MAXNEST ) then
       call ESMF_LogSetError(ESMF_FAILURE, &
         msg="Maximum nest size is 999,999,999.", &
         line=__LINE__,file=__FILE__,rcToReturn=rc)
