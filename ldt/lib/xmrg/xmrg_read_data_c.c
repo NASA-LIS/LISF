@@ -52,6 +52,7 @@ int xmrg_read_data_c_(char *in_file_name, float *data1d, float *nodata_default)
     if (in_file_ptr == NULL)
     {
         printf("xmrg_read_data_c_: can not open file %s for input.\n", in_file_name);
+        free(buf4byte);
         return(1) ;
     }
 
@@ -223,6 +224,7 @@ int xmrg_read_data_c_(char *in_file_name, float *data1d, float *nodata_default)
     {
         /*printf("numbytes %d\n",numbytes);*/
         printf("Error! Header file is in a nonstandard format. Data NOT READ!\n");
+        free(buf4byte);
         return(1);
     }
 
