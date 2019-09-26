@@ -45,7 +45,7 @@ void * lis_calloc(size_t n, size_t size, char * caller)
 
    if ( ptr == NULL )
    {
-      len = 30 + strlen(caller) + 1;
+      len = 31 + strlen(caller) + 1;
       msg = (char *) malloc(len);
       count = sprintf(msg,"ERR: %s -- Cannot allocate memory",caller);
 
@@ -86,7 +86,7 @@ void * lis_malloc(size_t size, char * caller)
 
    if ( ptr == NULL )
    {
-      len = 30 + strlen(caller) + 1;
+      len = 31 + strlen(caller) + 1;
       msg = (char *) malloc(len);
       count = sprintf(msg,"ERR: %s -- Cannot allocate memory",caller);
 
