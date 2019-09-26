@@ -56,6 +56,7 @@ void * lis_calloc(size_t n, size_t size, char * caller)
       }
       
       lis_log_msgC(msg);
+      free(msg);
    }
 
    return ptr;
@@ -96,6 +97,7 @@ void * lis_malloc(size_t size, char * caller)
       }
       
       lis_log_msgC(msg);
+      free(msg);
    }
 
    return ptr;
