@@ -832,6 +832,9 @@ module LIS_NUOPC
           field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
             grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          call ESMF_FieldFill(field, dataFillScheme="const", &
+            const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
+          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
           call NUOPC_Realize(is%wrap%NStateExp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedExport = .TRUE.
@@ -847,18 +850,27 @@ module LIS_NUOPC
           field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
             grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          call ESMF_FieldFill(field, dataFillScheme="const", &
+            const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
+          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
           call NUOPC_Realize(is%wrap%NStateExp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedExport = .TRUE.
           field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
             grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
           if(ESMF_STDERRORCHECK(rc)) return
+          call ESMF_FieldFill(field, dataFillScheme="const", &
+            const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
+          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
           call NUOPC_Realize(is%wrap%NStateImp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedImport = .TRUE.
         elseif (realizeExp) then
           field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
             grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
+          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          call ESMF_FieldFill(field, dataFillScheme="const", &
+            const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return  ! bail out
           call NUOPC_Realize(is%wrap%NStateExp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
@@ -867,15 +879,18 @@ module LIS_NUOPC
             relaxedflag=.true.,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
         elseif (realizeImp) then
-          call ESMF_StateRemove(is%wrap%NStateExp(nIndex),(/trim(LIS_FieldList(fIndex)%stateName)/), &
-            relaxedflag=.true.,rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return
           field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
             grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
+          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          call ESMF_FieldFill(field, dataFillScheme="const", &
+            const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return  ! bail out
           call NUOPC_Realize(is%wrap%NStateImp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedImport = .TRUE.
+          call ESMF_StateRemove(is%wrap%NStateExp(nIndex),(/trim(LIS_FieldList(fIndex)%stateName)/), &
+            relaxedflag=.true.,rc=rc)
+          if (ESMF_STDERRORCHECK(rc)) return
         else
           call ESMF_StateRemove(is%wrap%NStateExp(nIndex),(/trim(LIS_FieldList(fIndex)%stateName)/), &
             relaxedflag=.true.,rc=rc)
@@ -1021,6 +1036,7 @@ module LIS_NUOPC
       write (nStr,"(I0)") nIndex
 
       if (is%wrap%importDependency) then
+        ! Check data dependencies
         importCurrent = NUOPC_IsAtTime(is%wrap%NStateImp(nIndex), &
           time=currTime, rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
@@ -1037,6 +1053,42 @@ module LIS_NUOPC
             ESMF_LOGMSG_INFO)
           importUpdated = .FALSE.
         endif
+      else
+        ! Reset all import fields to zero
+        call ESMF_StateGet(is%wrap%NStateImp(nIndex),itemCount=itemCount, rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return ! bail out
+
+        allocate( &
+          itemNameList(itemCount), &
+          itemTypeList(itemCount), &
+          stat=stat)
+        if (ESMF_LogFoundAllocError(statusToCheck=stat, &
+          msg="Allocation of state item list memory failed.", &
+          line=__LINE__, &
+          file=__FILE__)) &
+          return  ! bail out
+
+        call ESMF_StateGet(is%wrap%NStateImp(nIndex),itemNameList=itemNameList, &
+          itemTypeList=itemTypeList,rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return
+
+        do iIndex=1, itemCount
+          if ( itemTypeList(iIndex) == ESMF_STATEITEM_FIELD) then
+            call ESMF_StateGet(is%wrap%NStateImp(nIndex),field=field, &
+              itemName=itemNameList(iIndex),rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return
+            call ESMF_FieldFill(field, dataFillScheme="const", &
+              const1=0.0D0, rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return
+          endif
+        enddo
+
+        deallocate(itemNameList, itemTypeList, stat=stat)
+        if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
+          msg="Deallocation of state item list memory failed.", &
+          line=__LINE__, &
+          file=__FILE__)) &
+          return  ! bail out
       endif
 
       ! Initialize import and export fields
