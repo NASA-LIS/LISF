@@ -367,8 +367,14 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_bayesianMergeId = "Bayesian merging"
 
 !-------------------------------------------------------------------------
-!  obs simulator
+!  obs simulator nature run source
 !-------------------------------------------------------------------------
    character*50, public,  parameter :: LDT_LISoutNatureRunDataId = "LIS output"
+
+!-------------------------------------------------------------------------
+!  obs simulator OSSE mask
+!-------------------------------------------------------------------------
+   character*50, public,  parameter :: LDT_LISoutOSSEmaskDataId = "LIS output"
+
 !EOC
  end module LDT_pluginIndices

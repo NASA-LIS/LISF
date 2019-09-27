@@ -46,13 +46,12 @@ module LDT_obsSimMod
   type, public :: obsSimEntry
 
      character*50              :: natRunSource
+     character*50              :: OSSEmaskSource
      integer                   :: nVars
      character*50, allocatable :: varNames(:)
      character*50              :: ttransform
      character*50              :: masktype
-     integer                   :: applyExtMask
      character*50              :: maskdir
-     character*50              :: maskmodel
      character*50              :: errDist
      real                      :: errStdev
      integer                   :: seed(NRANDSEED)
@@ -76,6 +75,7 @@ contains
 ! !USES: 
     use LDT_coreMod
     use LDT_NatureRunData_pluginMod
+    use LDT_OSSEmaskData_pluginMod
 
 ! 
 ! !DESCRIPTION: 
@@ -95,6 +95,11 @@ contains
          label="Observation simulator nature run source:", &
          rc=rc)
     call LDT_verify(rc,'Observation simulator nature run source: not specified')
+
+    call ESMF_ConfigGetAttribute(LDT_config,LDT_obsSim_struc%OSSEmasksource,&
+         label="Observation simulator OSSE mask source:", &
+         rc=rc)
+    call LDT_verify(rc,'Observation simulator OSSE mask source: not specified')
 
     call ESMF_ConfigGetAttribute(LDT_config,LDT_obsSim_struc%nVars,&
          label="Observation simulator number of simulated variables:", &
@@ -181,25 +186,12 @@ contains
        endif      
     endif
 
-    if(LDT_obsSim_struc%masktype.eq."time-varying") then 
-       call ESMF_ConfigGetAttribute(LDT_config,LDT_obsSim_struc%applyextMask,&
-         label="Observation simulator apply external mask:", &
-         rc=rc)
-       call LDT_verify(rc, 'Observation simulator apply external mask: not specified')
-
-       if(LDT_obsSim_struc%applyExtMask.eq.0) then 
-          
-          call ESMF_ConfigGetAttribute(LDT_config,LDT_obsSim_struc%maskmodel,&
-               label="Observation simulator mask simulation model:", &
-               rc=rc)
-          call LDT_verify(rc,"Observation simulator mask simulation model: not specified")
-          
-       endif
-    endif
-
     call LDT_NatureRunData_plugin
+    call LDT_OSSEmaskData_plugin  
 
     call setupnaturerunsource(trim(LDT_obsSim_struc%natRunSource)//char(0))
+
+    call setupossemasksource(trim(LDT_obsSim_struc%OSSEmasksource)//char(0))
 
     allocate(LDT_obsSim_struc%value(LDT_rc%lnc(n),LDT_rc%lnr(n),&
          LDT_obsSim_struc%nVars))
@@ -267,7 +259,7 @@ contains
 
     if(LDT_obsSim_struc%ttransform.eq."instantaneous") then 
 
-    elseif(LDT_obsSim_struc%ttransform.eq."time-varying") then
+    elseif(LDT_obsSim_struc%ttransform.eq."time-averaged") then
        
        if(mod(float(LDT_rc%hr)*3600+60*float(LDT_rc%mn)+float(LDT_rc%ss),&
             LDT_rc%tavgInterval).eq.0) then   
@@ -277,12 +269,12 @@ contains
                    LDT_obsSim_struc%value(c,r,k) = &
                         LDT_obsSim_struc%value(c,r,k)/&
                         LDT_obsSim_struc%count(c,r,k) 
+                   
                 endif
              enddo
           enddo
        endif
     endif
-
   end subroutine LDT_temporalTransformObsSimData
 
 
@@ -323,9 +315,13 @@ contains
           enddo
 
        elseif(LDT_obsSim_struc%masktype.eq."time-varying") then 
+          
+          call readOSSEmasksource(trim(LDT_obsSim_struc%natRunSource)//char(0),&
+               n)
 
        endif
     endif
+
   end subroutine LDT_applyObsSimMask
 
 
@@ -371,6 +367,7 @@ contains
           enddo
        enddo       
     endif
+
   end subroutine LDT_applyObsSimErrorModel
 
 
@@ -495,16 +492,28 @@ contains
        k = vlevel
     endif
 
-    do r=1,LDT_rc%lnr(n)
-       do c=1,LDT_rc%lnc(n)
-          if(value(c,r).ne.LDT_rc%udef) then 
-             LDT_obsSim_struc%value(c,r,k) = &
-                  LDT_obsSim_struc%value(c,r,k) + value(c,r)
-             LDT_obsSim_struc%count(c,r,k) = &
-                  LDT_obsSim_struc%count(c,r,k) + 1
-          endif
+    if(LDT_obsSim_struc%ttransform.eq."instantaneous") then 
+       do r=1,LDT_rc%lnr(n)
+          do c=1,LDT_rc%lnc(n)
+             if(value(c,r).ne.LDT_rc%udef) then 
+                LDT_obsSim_struc%value(c,r,k) = value(c,r)
+                LDT_obsSim_struc%count(c,r,k) = 1
+             endif
+          enddo
        enddo
-    enddo
+       
+    elseif(LDT_obsSim_struc%ttransform.eq."time-averaged") then 
+       do r=1,LDT_rc%lnr(n)
+          do c=1,LDT_rc%lnc(n)
+             if(value(c,r).ne.LDT_rc%udef) then 
+                LDT_obsSim_struc%value(c,r,k) = &
+                     LDT_obsSim_struc%value(c,r,k) + value(c,r)
+                LDT_obsSim_struc%count(c,r,k) = &
+                     LDT_obsSim_struc%count(c,r,k) + 1
+             endif
+          enddo
+       enddo
+    endif
   end subroutine LDT_logNatureRunData
 
  end module LDT_obsSimMod

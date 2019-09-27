@@ -8,12 +8,13 @@ module LDT_NatureRunData_pluginMod
 ! 
 ! !DESCRIPTION: 
 !   This module contains the definition of the functions used for
-!   defining routines that initialize various LDT-obss. 
+!   defining sources of nature runs to be used in OSSEs. 
+! 
 !   The user defined functions are incorporated into 
 !   the appropriate registry to be later invoked through generic calls. 
 !   
 ! !REVISION HISTORY: 
-!  17 Feb 2004;   Sujay Kumar  Initial Specification
+!  08 Aug 2019;   Sujay Kumar  Initial Specification
 ! 
 !EOP  
   implicit none
@@ -30,9 +31,9 @@ contains
 !
 ! !DESCRIPTION:
 !
-!  This is a plugin point for introducing a new LDT-obs. 
+!  This is a plugin point for introducing a new nature run source
 !  The interface mandates that the following interfaces be implemented
-!  and registered for each LDT-obs. 
+!  and registered for each data source
 !
 !
 ! !INTERFACE:
