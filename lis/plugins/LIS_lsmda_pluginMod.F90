@@ -25,7 +25,7 @@ module LIS_lsmda_pluginMod
 !  21 Oct 2018: Mahdi Navari, added NoahMP.3.9
 !  Dec 2018: Mahdi Navari: added Noah-MP.4.0.1
 !  13 May 2019: Yeosang Yoon, added SNODEP & LDTSI Assimilation for NoahMP.4.0.1
-!  06 Jun 2019: Yeosang Yoon, added SNODEP Assimilation for Jules 5.0
+!  06 Jun 2019: Yeosang Yoon, added SNODEP & LDTSI  Assimilation for Jules 5.0
 !
 !EOP
   implicit none
@@ -217,6 +217,7 @@ subroutine LIS_lsmda_plugin
 #if ( defined SM_JULES_5_0 )
    use jules50_dasoilm_Mod
    use jules50_dasnodep_Mod
+   use jules50_daldtsi_Mod
 #endif
 
 #if ( defined SM_JULES_5_2 )
@@ -616,6 +617,20 @@ subroutine LIS_lsmda_plugin
    external jules50_scale_snodep
    external jules50_descale_snodep
    external jules50_qc_snodepobs
+#endif
+
+! Yeosang Yoon LDTSI DA
+#if ( defined DA_OBS_LDTSI )
+   external jules50_getldtsivars
+   external jules50_transform_ldtsi
+   external jules50_map_ldtsi
+   external jules50_updateldtsi
+   external jules50_qcldtsi
+   external jules50_setldtsivars
+   external jules50_getldtsipred
+   external jules50_scale_ldtsi
+   external jules50_descale_ldtsi
+   external jules50_qc_ldtsiobs
 #endif
 
 #endif
@@ -2954,6 +2969,33 @@ subroutine LIS_lsmda_plugin
         trim(LIS_snodepobsId)//char(0),jules50_descale_snodep)
    call registerlsmdaqcobsstate(trim(LIS_jules50Id)//"+"//&
         trim(LIS_snodepobsId)//char(0),jules50_qc_snodepobs)
+#endif
+
+#if ( defined DA_OBS_LDTSI )
+! Jules 5.0 LDTSI, Yeosang Yoon
+! DA + snodep wirings
+   call registerlsmdainit(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),jules50_daldtsi_init)
+   call registerlsmdagetstatevar(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),jules50_getldtsivars)
+   call registerlsmdaobstransform(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),jules50_transform_ldtsi)
+   call registerlsmdamapobstolsm(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),jules50_map_ldtsi)
+   call registerlsmdaupdatestate(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),jules50_updateldtsi)
+   call registerlsmdaqcstate(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),jules50_qcldtsi)
+   call registerlsmdasetstatevar(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),jules50_setldtsivars)
+   call registerlsmdagetobspred(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),jules50_getldtsipred)
+   call registerlsmdascalestatevar(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),jules50_scale_ldtsi)
+   call registerlsmdadescalestatevar(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),jules50_descale_ldtsi)
+   call registerlsmdaqcobsstate(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_ldtsiobsId)//char(0),jules50_qc_ldtsiobs)
 #endif
 
 #endif

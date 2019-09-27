@@ -1,0 +1,33 @@
+
+[[sec-backgrd]]
+== Background
+
+Verification and evaluation are essential processes in the development and application of simulation models. The Land surface Verification Toolkit (LVT) is an integrated framework designed specifically for evaluating land surface model (LSM) outputs. The system was originally designed as a post processor to the NASA Land Information System (LIS), which is an integrated framework to conduct multi-model land surface model simulations and data assimilation integrations. LVT also includes the capabilities to convert any land surface-specific dataset to a "`LIS output format/style`", thus enabling cross-comparisons of a broad set of land surface datasets (in-situ, remotely sensed, and reanalysis products).
+
+=== LVT
+
+LVT provides a formal system for LSM output evaluation and verification.  The capabilities of LVT also provides a tool to systematically evaluate and benchmark LSM performance and the impact of computational enhancements such as data assimilation. LVT includes a range of both deterministic and probabilistic verification measures, with similarity-based and object-based methods in development.
+
+LVT is designed as an object oriented framework, with a number of points of flexibility known as "`plugins`". Specific implementations are added to the framework through the plugin-interfaces. LVT uses the plugin-based architecture to support the processing of different types of observational data sets, ranging from in-situ, satellite and remotely sensed and reanalysis products.
+
+In addition to providing methods for model output verification, LVT also provides capabilities to analyze the outputs from LIS data assimilation (LIS-DA) and the LIS optimization and uncertainty estimation (LIS-OPTUE) subsystems.
+
+=== Summary of key features
+
+The key capabilities of LVT can be summarized as follows:
+
+* Capability to convert a given dataset to "`LIS-style format`"
+* A text-based, configurable input interface
+* Supports a broad range of in-situ, remotely-sensed and reanalysis data products. For e.g.:
+** Surface fluxes - Ameriflux, ARM, CEOP, AMMA
+** Soil moisture - SCAN, SMOSREX, AMSR-E retrievals
+** Snow - COOP, GSOD, SNODAS, SNODEP, CMC, FMI, GlobSnow, SNOTEL
+** LST - ISCCP
+** Radiation - SURFRAD
+* A number of deterministic and probabistic verification measures. E.g.  RMSE, Bias, Correlations, POD, FAR, etc.
+* Supports the computation of land surface model diagnostics and closure checks. E.g.: Energy, water balance checks, seasonal and average diurnal cycles
+* Options of time series extraction of individual grid points and area averages
+* Options of temporal averaging. E.g. : Comparisons at hourly, daily, monthly scales
+* Options for data masking. E.g. Apply an external mask to the comparisons, apply thresholds on the comparisons
+* Supports the analysis of outputs from LIS-OPTUE and LIS-DA subsystems.  For e.g: Analysis of normalized innovations from LIS-DA
+

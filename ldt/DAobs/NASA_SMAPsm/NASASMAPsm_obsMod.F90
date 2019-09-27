@@ -15,7 +15,9 @@
 ! 			edited to read New version of the SPL3SMP_R14 (file structure
 ! 			 differs from the previous versions)
 !  04 Jun 2019: Sujay Kumar, Updated to support SMAP L2 retrievals 
-
+!  15 Aug 2019 Mahdi Navari : SMAP Composite Release ID was added (this option asks a user to 
+!         enter the part of Composite Release ID a three-character string like R16 )
+!
 module NASASMAPsm_obsMod
 ! !USES: 
   use ESMF
@@ -37,6 +39,7 @@ module NASASMAPsm_obsMod
 
      character*100          :: odir
      character*20           :: data_designation
+     character*3             :: release_number
      real                   :: search_radius
      integer                :: mo
      real,    allocatable   :: smobs(:,:)
@@ -88,6 +91,16 @@ contains
             rc=status)
        call LDT_verify(status, &
             'NASA SMAP soil moisture observation directory: not defined')
+    enddo
+
+    call ESMF_ConfigFindLabel(LDT_config, &
+         'SMAP(NASA) soil moisture Composite Release ID (e.g., R16):', rc=status)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_Config, &
+            NASASMAPsmobs(n)%release_number, &
+            rc=status)
+       call LDT_verify(status, &
+            'SMAP(NASA) soil moisture Composite Release ID (e.g., R16): not defined')
     enddo
 
     call ESMF_ConfigFindLabel(LDT_config, &

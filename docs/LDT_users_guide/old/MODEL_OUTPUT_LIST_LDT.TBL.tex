@@ -1,0 +1,224 @@
+ \comment{
+# This is the MODEL_OUTPUT_LIST_LDT.TBL file.  It contains the 
+# user-configurable options plus documentation for the LIS output. 
+#
+# Please add any updates to the LIS code regarding configuration options
+# to this file -- including documentation.
+# Documentation must be placed in between 
+#     \end{verbatim}
+#     \begin{verbatim}
+# markers.
+#
+# All documentation must the marked up with " " tags.
+#
+# Actual lines of the MODEL_OUTPUT_LIST.TBL file should not be marked up.
+#
+#
+# To include this file in the User's Guide:
+# 1) Checkout the latest copy of this file from the repository.
+# 2) Place it with the source for the User's Guide.
+# 3) Rename it MODEL_OUTPUT_LIST.TBL.tex
+# 4) Edit the MODEL_OUTPUT_LIST.TBL.tex file:
+#    Remove the string ""
+#    Replace the string "\end{verbatim}" with the string "\end{verbatim}"
+#    Replace the string "\begin{verbatim}" with the string "\begin{verbatim}"
+#
+# These are the commands (vi) that I use to process this file for the
+# User's Guide.
+#
+#:%s///
+#:%s/\end{verbatim}/\\end{verbatim}/
+#:%s/\begin{verbatim}/\\begin{verbatim}/
+ }
+
+
+
+ \begin{verbatim}
+
+ \end{verbatim}
+ \section{Model Output Specifications} \label{sec:modeloutputlisttable}
+ This section defines the specification of the model output from LIS. 
+ This file is specified in a space delimited column format. 
+ Each row consists of the following entries:
+ \nextpar
+
+ \var{Short Name} ALMA compliant short name of the variable.
+ \nextpar
+
+ \var{Use option} determines whether to write the variable.
+ Acceptable values are: 
+ \nextpar
+ \begin{tabular}{ll}
+ Value & Description            \\
+  0 & do not write the variable \\
+  1 & write the variable        \\
+ \end{tabular}
+ \nextpar
+
+ \var{Units} the desired unit of the output variable.
+ \nextpar
+
+ \var{Time Average option} determines how temporally process the 
+ variable.
+ Acceptable values are: 
+ \nextpar
+ \begin{tabular}{ll}
+ Value & Description            \\
+  0 & Instantaneous output \\
+  1 & Time averaged output      \\
+  2 & Instantaneous and Time averaged output      \\
+  3 & Accumulated output      \\
+ \end{tabular}
+ \nextpar
+
+ \var{Min/Max option} determines whether to record minimum and
+ maximum values for the variable.
+ Acceptable values are: 
+ \nextpar
+ \begin{tabular}{ll}
+ Value & Description            \\
+  0 & Do no compute minimum and maximum values \\
+  1 & Do compute minimum and maximum values      \\
+ \end{tabular}
+ \nextpar
+
+ \var{Number of vertical levels} The number of vertical levels 
+ corresponding to the variable. 
+ \nextpar
+
+ \var{grib ID} The grib ID to be used for the variable if output
+ is written in grib1 format. 
+ \nextpar
+ 
+ \var{grib scale factor} The grib scale factor to be used for the 
+ variable if output is written in grib1 format. 
+ \nextpar
+ 
+ \var{Use in LDT option} determines whether to include the variable
+ in the LDT analysis. 
+ Acceptable values are: 
+ \nextpar
+ \begin{tabular}{ll}
+ Value & Description            \\
+  0 & do not include the variable \\
+  1 & include the variable        \\
+ \end{tabular}
+ \nextpar
+
+ \nextpar
+ 
+ Note that this is a full list of output variables.  Not all models
+ support all these variables.  You must check the source code to
+ verify that the model you want to run supports the variables that
+ you want to write.  
+ \begin{verbatim}
+
+#short_name select? units timeavg? vert.levels gribid longname
+#Energy balance components
+Swnet:        0  W/m2  1  0 0 1 111 10 0 # Net Shortwave Radiation (W/m2)
+Lwnet:        0  W/m2  1  0 0 1 112 10 0 # Net Longwave Radiation (W/m2)
+Qle:          0  W/m2  1  0 0 1 121 10 0 # Latent Heat Flux (W/m2)
+Qh:           0  W/m2  1  0 0 1 122 10 0 # Sensible Heat Flux (W/m2)
+Qg:           0  W/m2  1  0 0 1 155 10 0 # Ground Heat Flux (W/m2)
+Qf:           0  W/m2  1  0 0 1 229 10 0 # Energy of fusion (W/m2)
+Qv:           0  W/m2  1  0 0 1 134 10 0 # Energy of sublimation (W/m2)
+Qa:           0  W/m2  1  0 0 1 136 10 0 # Advective Energy (W/m2)
+Qtau:         0  W/m2  1  0 0 1 135 10 0 # Momentum flux (N/m2)
+DelSurfHeat:  0  W/m2  1  0 0 1 137 10 0 # Change in surface heat storage (J/m2)
+DelColdCont:  0  W/m2  1  0 0 1 138 10 0 # Change in snow cold content (J/m2)
+BR:           0  -     1  0 0 1 138 10 0 # Change in snow cold content (J/m2)
+EF:           0  -     1  0 0 1 138 10 0 # Change in snow cold content (J/m2)
+
+#Water balance components
+Snowf:        0  kg/m2s  1 0 0 1 161 10000 0 # Snowfall rate (kg/m2s)
+Rainf:        0  kg/m2s  1 0 0 1 162 10000  0 # Rainfall rate (kg/m2s)
+RainfConv:    0  kg/m2s  1 0 0 0 163 10000 0 # Convective Rainfall rate (kg/m2s)
+TotalPrecip:  0  kg/m2s  1 0 0 0 164 10000 0 # Total Precipitation rate (kg/m2s)
+Evap:         1  kg/m2s  1 0 0 1  57 10000 0 # Total Evapotranspiration (kg/m2s)
+Qs:           1  kg/m2   1 0 0 1 235 10000  0 # Surface runoff (kg/m2s)
+Qrec:         0  kg/m2   1 0 0 0 143 10000  0 # Recharge (kg/m2s)
+Qsb:          1  kg/m2   1 0 0 1 254 10000  0 # Subsurface runoff (kg/m2s)
+Qsm:          1  kg/m2   0 0 0 1 99  10000  0 # Snowmelt (kg/m2s)
+Qfz:          0  kg/m2s  1 0 0 0 146 10000  0 # Refreezing of water in the snowpack (kg/m2s)
+Qst:          0  kg/m2s  1 0 0 0 147 10000  0 # Snow throughfall (kg/m2s)
+DelSoilMoist: 0  kg/m2   1 0 0 0 148 10000  0 # Change in soil moisture (kg/m2)
+DelSWE:       0  kg/m2   1 0 0 0 149 1000   0 # Change in snow water equivalent (kg/m2)
+DelSurfStor:  0  kg/m2   1 0 0 0 150 1000   0 # Change in surface water storage (kg/m2)
+DelIntercept: 0  kg/m2   1 0 0 0 151 1000   0 # Change in interception storage (kg/m2)
+RHMin:        0   -      0 0 0 0  51  10    0 # Minimum 2 meter relative humidity (-)
+
+#Surface State Variables 
+SnowT:        0   K      1 0 0 1 152 10 0 # Snow surface temperature (K)
+VegT:         0   K      1 0 0 0 153 10 0 # Vegetation canopy temperature (K)
+BareSoilT:    0   K      1 0 0 0 154 10 0 # Temperature of bare soil (K)
+AvgSurfT:     0   K      1 0 0 1 148 10 0 # Average surface temperature (K)
+RadT:         0   K      1 0 0 0 156 10 0 # Surface Radiative Temperature (K)
+Albedo:       0   -      1 0 0 1  84 100 0 # Surface Albedo (-)
+SWE:          1   m      0 0 0 1  65 1000 0 # Snow Water Equivalent (kg/m2)
+SnowDepth:    1   m      1 0 0 1  66 1000 1 # Snow Depth (m)
+Snowcover:    1   -      1 0 0 1  66 100 0 # Snow Depth (m)
+SWEVeg:       0   kg/m2  1 0 0 0 159 1000 0 # SWE intercepted by vegetation (kg/m2)
+SurfStor:     0   kg/m2  1 0 0 0 160 1000 0 # Surface water storage (kg/m2)
+SLiqFrac:     0   -      0 0 0 0 65 1000 0 # fraction of SWE in the liquid phase
+RootTemp:     0   K      1 0 0 1 65 1000 0 # fraction of SWE in the liquid phase
+
+#Subsurface State Variables
+SoilMoist:    0    m3/m3  1 0 0 4 86 1000 0 # Average layer soil moisture (kg/m2)
+SoilTemp:     0    K      1 0 0 4 85 1000 0 # Average layer soil temperature (K)
+SmLiqFrac:    0    kg/m2  1 1 0 0 85 100 0 # Average layer fraction of liquid moisture (-)
+SmFrozFrac:   0    kg/m2  1 1 0 0 85 100 0 # Average layer fraction of frozen moisture (-)
+SoilWet:      0    kg/m2  1 1 0 0 85 100 0 # Total soil wetness (-)
+RelSMC:       0    m3/m3  0 0 0 0 86 1000 0 # Relative soil moistuture
+
+#Evaporation components
+PotEvap:      0    kg/m2s  1 1 0 0 166 1 0 # Potential Evapotranspiration (kg/m2s)
+ECanop:       0    kg/m2s  1 1 0 0 200 1 0 # Interception evaporation (kg/m2s)
+TVeg:         0    kg/m2s  1 1 0 0 210 1 0 # Vegetation transpiration (kg/m2s)
+ESoil:        0    kg/m2s  1 1 0 0 199 1 0 # Bare soil evaporation (kg/m2s)
+EWater:       0    kg/m2s  1 1 0 0 170 1 0 # Open water evaporation (kg/m2s)
+RootMoist:    0    m3/m3   1 0 0 1 171 1 0 # Root zone soil moisture (kg/m2)
+CanopInt:     0    kg/m2   1 0 0 1 223 1000 0 # Total canopy water storage (kg/m2)
+EvapSnow:     0    kg/m2s  1 1 0 0 173 1000 0 # Snow evaporation (kg/m2s)
+SubSnow:      0    kg/m2s  1 1 0 0 198 1000 0 # Snow sublimation (kg/m2s)
+SubSurf:      0    kg/m2s  1 1 0 0 175 1000 0 # Sublimation of the snow free area (kg/m2s)
+ACond:        0    m/s     1 1 0 0 179 10000 0 # Aerodynamic conductance
+CCond:        0    m/s     1 0 0 0 179 1000000 0 # Canopy conductance
+
+#Forcings 
+Wind_f:         0    m/s       1 0 0 1 177 10   0 # Near Surface Wind (m/s)
+Rainf_f:        1    kg/m2s    1 0 0 1 162 1000 0 # Average rainfall rate 
+Snowf_f:        0    kg/m2s    0 1 0 0 161 1000 0 # Average snowfall rate
+Tair_f:         0    K         1 0 0 1  11 10 0 # Near surface air temperature
+Qair_f:         0    kg/kg     1 0 0 1  51 1000 0 # Near surface specific humidity
+Psurf_f:        0    Pa        1 0 0 1  1  10 0 # Surface pressure
+SWdown_f:       0    W/m2      1 0 0 1 204 10 0 # Surface incident shortwave radiation
+LWdown_f:       0    W/m2      1 0 0 1 205 10 0 # Surface incident longwave radiation
+
+#Parameters 
+Landmask:     1    -  0 1 0 0  81 1 0 # Land Mask (0 - Water, 1- Land)
+Landcover:    1    -  0 1 0 0 186 1 0 # Land cover
+Soiltype:     0    -  0 1 0 0 187 1 0 # soil type
+SandFrac:     1    -  0 1 0 0 999 1 0 # sand fraction
+ClayFrac:     1    -  0 1 0 0 999 1 0 # clay fraction
+SiltFrac:     1    -  0 1 0 0 999 1 0 # silt fraction
+Porosity:     0    -  3 1 0 0 999 1 0 # porosity
+Soilcolor:    0    -  0 1 0 0 188 1 0 # soil color
+Elevation:    1    m  0 1 0 0 189 10 0 # elevation
+Slope:        0    -  0 1 0 0 999 10 0 # slope
+LAI:          0    -  0 1 0 0 190 100 0 # LAI
+SAI:          0    -  0 1 0 0 191 100 0 # SAI
+Snfralbedo:   0    -  0 1 0 0 192 100 0 # Snow free albedo
+Mxsnalbedo:   0    -  0 1 0 0 192 100 0 # Max snow albedo
+Greenness:    1    -  0 1 0 0  87 100 0 # Green vegetation fraction
+Tempbot:      0    -  0 1 0 0 194 10 0 # bottom temperature
+
+EBAL:         0    -  0 1 0 0 177 10 0 #Energy balance
+WBAL:         0    -  0 1 0 0 177 10 0 #Water balance
+EVAPBAL:      0    -  0 1 0 0 177 10 0 #Evaporation balance
+
+Streamflow:      0    m3/s  0 1 0 0 177 10 0 #Streamflow 
+
+RTM emissivity:      0    -  0 1 0 0 177 10 0 #RTM Emissivity
+RTM Tb:              0    K  0 1 0 0 177 10 0 #RTM Brightness Temperature
+
+ \end{verbatim}
