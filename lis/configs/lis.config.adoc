@@ -4613,7 +4613,7 @@ MODIS real-time LAI files.
 
 .Example _lis.config_ entry
 ....
-MODIS LAI data directory:
+MODIS RT LAI data directory:
 ....
 
 
