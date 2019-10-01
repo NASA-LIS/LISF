@@ -99,10 +99,6 @@ int FTN(lis_create_subdirs) (int  *length,
 
 	if (*ptr == '\0' && strlen(work) > 0) {
 
-	    /* See if the directory already exists */
-	    if (stat(work, &sb) == 0 && S_ISDIR(sb.st_mode)) {
-		status = 0;
-	    } else {
 		/* We must create the directory.  Set default permissions to 
 		   rwx for user, group, and other.  Permissions can be removed
 		   at run time using the shell 'umask' command. */
@@ -110,7 +106,7 @@ int FTN(lis_create_subdirs) (int  *length,
 
 		/* Handle error */
 		if (status != 0) {
-		    /* Gracefully handle possible race condition */
+		    /* Gracefully handle when the directory already exists*/
 		    if (errno == EEXIST) {
 			status = 0;
 		    } else {
@@ -127,7 +123,6 @@ int FTN(lis_create_subdirs) (int  *length,
 			status = 1;
 		    }
 		}
-	    }
 	}
 
 	/* Restore subdirectory token if necessary */
