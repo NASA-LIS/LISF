@@ -743,15 +743,13 @@ module LDT_ensRstMod
                call LDT_endrun
             endif
 
-            ! If output ensemble restart file exists, don't overwrite ...
+            ! If output ensemble restart file exists, provide warning ...
             inquire( file=trim(LDT_rc%outputrst), exist=file_exists )
             if(file_exists) then
-               write(LDT_logunit,*) "[WARN] If the HYMAP binary restart file, "
+               write(LDT_logunit,*) "[WARN] HYMAP binary restart file, "
                write(LDT_logunit,*)  trim(LDT_rc%outputrst)
-               write(LDT_logunit,*) "  already exists, then remove or rename it and run LDT again."
-               write(LDT_logunit,*) "  Otherwise intended ensemble HYMAP restart file will not be"
-               write(LDT_logunit,*) "  generated.  Stopping program ..."
-               call LDT_endrun
+               write(LDT_logunit,*) "  already exists! Overwriting the file ..."
+!               call LDT_endrun
             endif
 
             ! Create output binary file:
@@ -822,15 +820,13 @@ module LDT_ensRstMod
                call LDT_endrun
             endif
 
-            ! If output ensemble restart file exists, don't overwrite ...
+            ! If output ensemble restart file exists, provide warning ...
             inquire( file=trim(LDT_rc%outputrst), exist=file_exists )
             if(file_exists) then
-               write(LDT_logunit,*) "[WARN] If the HYMAP binary restart file, "
+               write(LDT_logunit,*) "[WARN] HYMAP binary restart file, "
                write(LDT_logunit,*)  trim(LDT_rc%outputrst)
-               write(LDT_logunit,*) "  already exists, then remove or rename it and run LDT again."
-               write(LDT_logunit,*) "  Otherwise intended ensemble HYMAP restart file will not be"
-               write(LDT_logunit,*) "  generated.  Stopping program ..."
-               call LDT_endrun
+               write(LDT_logunit,*) "  already exists! Overwriting the file ..."
+!               call LDT_endrun
             endif
 
             ! Create output binary file:
