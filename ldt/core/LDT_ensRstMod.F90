@@ -437,7 +437,7 @@ module LDT_ensRstMod
                call LDT_endrun
             endif
 
-            ! If output ensemble restart file exists, don't overwrite ...
+            ! If output ensemble restart file exists, provide warning...
             inquire( file=trim(LDT_rc%outputrst), exist=file_exists )
             if(file_exists) then
                write(LDT_logunit,*) "[WARN] If the HYMAP2 binary restart file, "
