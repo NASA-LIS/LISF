@@ -86,6 +86,7 @@ void FTN(registerroutingparamprocinit)(char *j,void (*func)(), int len)
   struct routingparamprocinitnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct routingparamprocinitnode*) malloc(sizeof(struct routingparamprocinitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);
@@ -161,6 +162,7 @@ void FTN(registerroutingparamprocwriteheader)(char *j,void (*func)(int*, int*, i
   struct routingparamprocwheadernode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct routingparamprocwheadernode*) malloc(sizeof(struct routingparamprocwheadernode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);
@@ -238,6 +240,7 @@ void FTN(registerroutingparamprocwritedata)(char *j,void (*func)(int*, int*), in
   struct routingparamprocwdatanode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct routingparamprocwdatanode*) malloc(sizeof(struct routingparamprocwdatanode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);

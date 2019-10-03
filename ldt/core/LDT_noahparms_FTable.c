@@ -69,6 +69,7 @@ void FTN(registerreadtbot)(char *j,void (*func)(int*,float*), int len)
   struct tbotnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct tbotnode*) malloc(sizeof(struct tbotnode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);

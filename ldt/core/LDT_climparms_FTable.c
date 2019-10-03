@@ -87,6 +87,7 @@ void FTN(registerreadclimppt)(char *j,void (*func)(int*,int*,int*,float*,float*)
   struct climpptnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct climpptnode*) malloc(sizeof(struct climpptnode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);
@@ -168,6 +169,7 @@ void FTN(registerreadclimtmin)(char *j,void (*func)(int*,float*),int len)
   struct climtminnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct climtminnode*) malloc(sizeof(struct climtminnode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);
@@ -248,6 +250,7 @@ void FTN(registerreadclimtmax)(char *j,void (*func)(int*,float*),int len)
   struct climtmaxnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct climtmaxnode*) malloc(sizeof(struct climtmaxnode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);

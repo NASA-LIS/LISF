@@ -75,6 +75,7 @@ void FTN(registerinput)(char *j,void (*func)(), int len)
   struct domaininputnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct domaininputnode*) malloc(sizeof(struct domaininputnode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);
@@ -150,6 +151,7 @@ void FTN(registerdomain)(char *j,void (*func)(), int len)
   struct domainmakenode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct domainmakenode*) malloc(sizeof(struct domainmakenode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);

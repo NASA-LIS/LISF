@@ -99,6 +99,7 @@ void FTN(registerreadelev)(char *j, void (*func)(int*, int*, float*, float*), in
   struct elevnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct elevnode*) malloc(sizeof(struct elevnode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);
@@ -191,6 +192,7 @@ void FTN(registerreadslope)(char *j, void (*func)(int*, int*, float*, float*), i
   struct slopenode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct slopenode*) malloc(sizeof(struct slopenode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);
@@ -283,6 +285,7 @@ void FTN(registerreadaspect)(char *j, void (*func)(int*, int*, float*, float*), 
   struct aspectnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct aspectnode*) malloc(sizeof(struct aspectnode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);
@@ -365,6 +368,7 @@ void FTN(registerreadcurv)(char *j, void (*func)(int*, float*), int len)
   struct curvnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct curvnode*) malloc(sizeof(struct curvnode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);

@@ -69,6 +69,7 @@ void FTN(registerapplytimedscale)(char *j,void (*func)(int*),int len)
   struct timedscalenode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct timedscalenode*) malloc(sizeof(struct timedscalenode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);

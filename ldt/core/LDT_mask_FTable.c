@@ -76,6 +76,7 @@ void FTN(registerreadmask)(char *j, void (*func)(int*, float*),int len)
   struct mnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct mnode*) malloc(sizeof(struct mnode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);
@@ -156,6 +157,7 @@ void FTN(registerreadregmask)(char *j, void (*func)(int*, float*),int len)
   struct rgmnode* pnode;
   // create node
 
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct rgmnode*) malloc(sizeof(struct rgmnode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);

@@ -106,6 +106,7 @@ void FTN(registersetlaiattribs)(char *j, void (*func)(),int len)
   struct laisetnode* pnode; 
   // create node
 
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct laisetnode*) malloc(sizeof(struct laisetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);
@@ -190,6 +191,7 @@ void FTN(registerreadlai)(char *j,void (*func)(int*,float*,float*), int len)
   struct lainode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct lainode*) malloc(sizeof(struct lainode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);
@@ -274,6 +276,7 @@ void FTN(registerreadsai)(char *j,void (*func)(int*,float*), int len)
   struct sainode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct sainode*) malloc(sizeof(struct sainode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);
@@ -356,6 +359,7 @@ void FTN(registerreadlaimin)(char *j,void (*func)(int*,float*),int len)
   struct laiminnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct laiminnode*) malloc(sizeof(struct laiminnode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);
@@ -436,6 +440,7 @@ void FTN(registerreadlaimax)(char *j,void (*func)(int*,float*),int len)
   struct laimaxnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct laimaxnode*) malloc(sizeof(struct laimaxnode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);

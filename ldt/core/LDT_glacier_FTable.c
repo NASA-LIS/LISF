@@ -69,6 +69,7 @@ void FTN(registerreadglaciermask)(char *j, void (*func)(int*, float*), int len)
   struct glaciermasknode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct glaciermasknode*) malloc(sizeof(struct glaciermasknode));
   pnode->name=(char*) malloc(len*sizeof(char));
   strncpy(pnode->name,j,len);
