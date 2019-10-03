@@ -248,7 +248,7 @@ subroutine LDT_create_output_directory(mname,dir_name)
 subroutine LDT_create_output_filename(n, fname, model_name, odir, writeint)
 ! !USES:
    use LDT_coreMod,  only : LDT_rc
-   use LDT_logMod,   only : LDT_log_msg, LDT_endrun
+   use LDT_logMod,   only : LDT_log_msg, LDT_logunit, LDT_endrun
 
    implicit none 
 ! !ARGUMENTS:
