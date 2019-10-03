@@ -78,7 +78,7 @@ void FTN(registerreadmask)(char *j, void (*func)(int*, float*),int len)
   
   pnode=(struct mnode*) malloc(sizeof(struct mnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -158,7 +158,7 @@ void FTN(registerreadregmask)(char *j, void (*func)(int*, float*),int len)
 
   pnode=(struct rgmnode*) malloc(sizeof(struct rgmnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL;
 

@@ -88,7 +88,7 @@ void FTN(registerlsmparamprocinit)(char *j,void (*func)(), int len)
   
   pnode=(struct lsmparamprocinitnode*) malloc(sizeof(struct lsmparamprocinitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -163,7 +163,7 @@ void FTN(registerlsmparamprocwriteheader)(char *j,void (*func)(int*, int*, int*,
   
   pnode=(struct lsmparamprocwheadernode*) malloc(sizeof(struct lsmparamprocwheadernode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -240,7 +240,7 @@ void FTN(registerlsmparamprocwritedata)(char *j,void (*func)(int*, int*), int le
   
   pnode=(struct lsmparamprocwdatanode*) malloc(sizeof(struct lsmparamprocwdatanode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

@@ -158,7 +158,7 @@ void FTN(registersetsoilfractionattribs)(char *j, void (*func)(),int len)
 
   pnode=(struct soilfracsetnode*) malloc(sizeof(struct soilfracsetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -241,7 +241,7 @@ void FTN(registerreadsoilfrac)(char *j, void (*func)(int*, int*,
   
   pnode=(struct soilfracnode*) malloc(sizeof(struct soilfracnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -324,7 +324,7 @@ void FTN(registersettextureattribs)(char *j, void (*func)(),int len)
 
   pnode=(struct txtsetnode*) malloc(sizeof(struct txtsetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -406,7 +406,7 @@ void FTN(registerreadsoiltexture)(char *j,void (*func)(int*, int*, float*, float
   
   pnode=(struct txtnode*) malloc(sizeof(struct txtnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -491,7 +491,7 @@ void FTN(registerreadporosity)(char *j,void (*func)(int*, float*, float*),int le
   
   pnode=(struct porosnode*) malloc(sizeof(struct porosnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -571,7 +571,7 @@ void FTN(readporosity)(char *j,int *n, float *array, float *marray, int len)
   
 //  pnode=(struct drootnode*) malloc(sizeof(struct drootnode));
 //  pnode->name=(char*) malloc(len*sizeof(char));
-//  strcpy(pnode->name,j);
+//  strncpy(pnode->name,j,len);
 //  pnode->func = func;
 //  pnode->next = NULL; 
 
@@ -650,7 +650,7 @@ void FTN(registerreadcolor)(char *j, void (*func)(int*, float*),int len)
   
   pnode=(struct colornode*) malloc(sizeof(struct colornode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -730,7 +730,7 @@ void FTN(registersethsgattribs)(char *j, void (*func)(),int len)
 
   pnode=(struct hsgsetnode*) malloc(sizeof(struct hsgsetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL;
 
@@ -803,7 +803,7 @@ void FTN(registerreadhsg)(char *j, void (*func)(int*, float*), int len)
 
   pnode=(struct hsgnode*) malloc(sizeof(struct hsgnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL;
 
@@ -882,7 +882,7 @@ void FTN(registerreadsoildepth)(char *j,void (*func)(int*, float*),int len)
   
   pnode=(struct dsoilnode*) malloc(sizeof(struct dsoilnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

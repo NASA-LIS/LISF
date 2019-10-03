@@ -77,7 +77,7 @@ void FTN(registerdaobssetup)(char *j,void (*func)(),int len)
   
   pnode=(struct daobsinitnode*) malloc(sizeof(struct daobsinitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -152,7 +152,7 @@ void FTN(registerdaobsread)(char *j,void (*func)(int*), int len)
   
   pnode=(struct daobsreadnode*) malloc(sizeof(struct daobsreadnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

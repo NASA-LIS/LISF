@@ -101,7 +101,7 @@ void FTN(registerreadelev)(char *j, void (*func)(int*, int*, float*, float*), in
   
   pnode=(struct elevnode*) malloc(sizeof(struct elevnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -193,7 +193,7 @@ void FTN(registerreadslope)(char *j, void (*func)(int*, int*, float*, float*), i
   
   pnode=(struct slopenode*) malloc(sizeof(struct slopenode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -285,7 +285,7 @@ void FTN(registerreadaspect)(char *j, void (*func)(int*, int*, float*, float*), 
   
   pnode=(struct aspectnode*) malloc(sizeof(struct aspectnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -367,7 +367,7 @@ void FTN(registerreadcurv)(char *j, void (*func)(int*, float*), int len)
   
   pnode=(struct curvnode*) malloc(sizeof(struct curvnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

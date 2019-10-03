@@ -78,7 +78,7 @@ void FTN(registerldtinit)(char *j,void (*func)(), int len)
   
   pnode=(struct rmodeinitnode*) malloc(sizeof(struct rmodeinitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -152,7 +152,7 @@ void FTN(registerldtrun)(char *j,void (*func)(), int len)
   
   pnode=(struct rmoderunnode*) malloc(sizeof(struct rmoderunnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

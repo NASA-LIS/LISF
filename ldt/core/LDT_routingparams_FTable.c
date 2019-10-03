@@ -88,7 +88,7 @@ void FTN(registerroutingparamprocinit)(char *j,void (*func)(), int len)
   
   pnode=(struct routingparamprocinitnode*) malloc(sizeof(struct routingparamprocinitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -163,7 +163,7 @@ void FTN(registerroutingparamprocwriteheader)(char *j,void (*func)(int*, int*, i
   
   pnode=(struct routingparamprocwheadernode*) malloc(sizeof(struct routingparamprocwheadernode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -240,7 +240,7 @@ void FTN(registerroutingparamprocwritedata)(char *j,void (*func)(int*, int*), in
   
   pnode=(struct routingparamprocwdatanode*) malloc(sizeof(struct routingparamprocwdatanode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

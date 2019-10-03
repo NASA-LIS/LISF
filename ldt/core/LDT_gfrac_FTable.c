@@ -98,7 +98,7 @@ void FTN(registersetgfracattribs)(char *j, void (*func)(),int len)
 
   pnode=(struct gfracsetnode*) malloc(sizeof(struct gfracsetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -180,7 +180,7 @@ void FTN(registerreadgfrac)(char *j,void (*func)(int*,float*,float*),int len)
   
   pnode=(struct gfracnode*) malloc(sizeof(struct gfracnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -263,7 +263,7 @@ void FTN(registerreadshdmin)(char *j,void (*func)(int*,float*),int len)
   
   pnode=(struct shdminnode*) malloc(sizeof(struct shdminnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -343,7 +343,7 @@ void FTN(registerreadshdmax)(char *j,void (*func)(int*,float*),int len)
   
   pnode=(struct shdmaxnode*) malloc(sizeof(struct shdmaxnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

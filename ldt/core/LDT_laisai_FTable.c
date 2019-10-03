@@ -108,7 +108,7 @@ void FTN(registersetlaiattribs)(char *j, void (*func)(),int len)
 
   pnode=(struct laisetnode*) malloc(sizeof(struct laisetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -192,7 +192,7 @@ void FTN(registerreadlai)(char *j,void (*func)(int*,float*,float*), int len)
   
   pnode=(struct lainode*) malloc(sizeof(struct lainode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -276,7 +276,7 @@ void FTN(registerreadsai)(char *j,void (*func)(int*,float*), int len)
   
   pnode=(struct sainode*) malloc(sizeof(struct sainode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -358,7 +358,7 @@ void FTN(registerreadlaimin)(char *j,void (*func)(int*,float*),int len)
   
   pnode=(struct laiminnode*) malloc(sizeof(struct laiminnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -438,7 +438,7 @@ void FTN(registerreadlaimax)(char *j,void (*func)(int*,float*),int len)
   
   pnode=(struct laimaxnode*) malloc(sizeof(struct laimaxnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

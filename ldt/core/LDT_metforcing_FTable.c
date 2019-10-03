@@ -106,7 +106,7 @@ void FTN(registerinitmetforc)(char *j, void (*func)(int*), int len)
   
   pnode=(struct forcinginputnode*) malloc(sizeof(struct forcinginputnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -186,7 +186,7 @@ void FTN(registerretrievemetforc)(char *j,void (*func)(int*, int*), int len)
   
   pnode=(struct forcinggetnode*) malloc(sizeof(struct forcinggetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -263,7 +263,7 @@ void FTN(registertimeinterpmetforc)(char *j,void (*func)(int*, int*), int len)
   
   pnode=(struct forcingtinterpnode*) malloc(sizeof(struct forcingtinterpnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -342,7 +342,7 @@ void FTN(registerfinalmetforc)(char *j,void (*func)(int*), int len)
   
   pnode=(struct forcingfinalnode*) malloc(sizeof(struct forcingfinalnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -419,7 +419,7 @@ void FTN(registerresetmetforc)(char *j,void (*func)(int*), int len)
   
   pnode=(struct forcingresetnode*) malloc(sizeof(struct forcingresetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

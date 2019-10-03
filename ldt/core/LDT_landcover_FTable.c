@@ -100,7 +100,7 @@ void FTN(registerreadlc)(char *j, void (*func)(int*, int*, float*, float*),int l
 
   pnode=(struct lcnode*) malloc(sizeof(struct lcnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -183,7 +183,7 @@ void FTN(registerreadcroptype)(char *j, void (*func)(int*, int*, float*),int len
 
   pnode=(struct croplcnode*) malloc(sizeof(struct croplcnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL;
 
@@ -263,7 +263,7 @@ void FTN(registerreadrootdepth)(char *j,void (*func)(int*,float*),int len)
 
   pnode=(struct drootnode*) malloc(sizeof(struct drootnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL;
 

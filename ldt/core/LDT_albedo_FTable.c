@@ -90,7 +90,7 @@ void FTN(registersetalbedoattribs)(char *j, void (*func)(),int len)
 
   pnode=(struct albedosetnode*) malloc(sizeof(struct albedosetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -174,7 +174,7 @@ void FTN(registerreadalbedo)(char *j,void (*func)(int*,float*), int len )
   
   pnode=(struct albedonode*) malloc(sizeof(struct albedonode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -255,7 +255,7 @@ void FTN(registerreadmxsnoalb)(char *j,void (*func)(int*,float*),int len)
   
   pnode=(struct mxsnoalbnode*) malloc(sizeof(struct mxsnoalbnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

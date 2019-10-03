@@ -95,7 +95,7 @@ void FTN(registeranninputsourcesetup)(char *j,void (*func)(),int len)
   
   pnode=(struct anninpsetupnode*) malloc(sizeof(struct anninpsetupnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -169,7 +169,7 @@ void FTN(registerannoutputsourcesetup)(char *j,void (*func)(),int len)
   
   pnode=(struct annoutsetupnode*) malloc(sizeof(struct annoutsetupnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -243,7 +243,7 @@ void FTN(registerreadanninputsource)(char *j,void (*func)(int*, int*, int*, int*
   
   pnode=(struct anninputsourcenode*) malloc(sizeof(struct anninputsourcenode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -316,7 +316,7 @@ void FTN(registerreadannoutputsource)(char *j,void (*func)(int*, int*, int*, int
   
   pnode=(struct annoutputsourcenode*) malloc(sizeof(struct annoutputsourcenode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

@@ -89,7 +89,7 @@ void FTN(registerreadclimppt)(char *j,void (*func)(int*,int*,int*,float*,float*)
   
   pnode=(struct climpptnode*) malloc(sizeof(struct climpptnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -170,7 +170,7 @@ void FTN(registerreadclimtmin)(char *j,void (*func)(int*,float*),int len)
   
   pnode=(struct climtminnode*) malloc(sizeof(struct climtminnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -250,7 +250,7 @@ void FTN(registerreadclimtmax)(char *j,void (*func)(int*,float*),int len)
   
   pnode=(struct climtmaxnode*) malloc(sizeof(struct climtmaxnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

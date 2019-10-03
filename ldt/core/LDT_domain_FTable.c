@@ -77,7 +77,7 @@ void FTN(registerinput)(char *j,void (*func)(), int len)
   
   pnode=(struct domaininputnode*) malloc(sizeof(struct domaininputnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -152,7 +152,7 @@ void FTN(registerdomain)(char *j,void (*func)(), int len)
   
   pnode=(struct domainmakenode*) malloc(sizeof(struct domainmakenode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

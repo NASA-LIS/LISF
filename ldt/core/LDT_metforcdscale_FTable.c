@@ -71,7 +71,7 @@ void FTN(registerapplytimedscale)(char *j,void (*func)(int*),int len)
   
   pnode=(struct timedscalenode*) malloc(sizeof(struct timedscalenode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

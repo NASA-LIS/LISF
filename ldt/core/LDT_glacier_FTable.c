@@ -71,7 +71,7 @@ void FTN(registerreadglaciermask)(char *j, void (*func)(int*, float*), int len)
   
   pnode=(struct glaciermasknode*) malloc(sizeof(struct glaciermasknode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

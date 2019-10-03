@@ -71,7 +71,7 @@ void FTN(registerreadtbot)(char *j,void (*func)(int*,float*), int len)
   
   pnode=(struct tbotnode*) malloc(sizeof(struct tbotnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

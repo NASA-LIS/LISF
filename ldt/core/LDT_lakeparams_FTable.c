@@ -88,7 +88,7 @@ void FTN(registerlakeparamprocinit)(char *j,void (*func)(), int len)
   
   pnode=(struct lakeparamprocinitnode*) malloc(sizeof(struct lakeparamprocinitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -163,7 +163,7 @@ void FTN(registerlakeparamprocwriteheader)(char *j,void (*func)(int*, int*, int*
   
   pnode=(struct lakeparamprocwheadernode*) malloc(sizeof(struct lakeparamprocwheadernode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -240,7 +240,7 @@ void FTN(registerlakeparamprocwritedata)(char *j,void (*func)(int*, int*), int l
   
   pnode=(struct lakeparamprocwdatanode*) malloc(sizeof(struct lakeparamprocwdatanode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

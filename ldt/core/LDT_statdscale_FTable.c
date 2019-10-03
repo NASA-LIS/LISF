@@ -93,7 +93,7 @@ void FTN(registerinitstatdscale)(char *j,void (*func)(), int len)
   
   pnode=(struct statdscaleinitnode*) malloc(sizeof(struct statdscaleinitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -165,7 +165,7 @@ void FTN(registerdiagnosestatdscale)(char *j,void (*func)(int*, int*), int len)
   
   pnode=(struct statdscalediagnode*) malloc(sizeof(struct statdscalediagnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -238,7 +238,7 @@ void FTN(registercomputestatdscale)(char *j,void (*func)(int*), int len)
   
   pnode=(struct statdscalecomputenode*) malloc(sizeof(struct statdscalecomputenode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -311,7 +311,7 @@ void FTN(registeroutputstatdscale)(char *j,void (*func)(int*), int len)
   
   pnode=(struct statdscaleoutputnode*) malloc(sizeof(struct statdscaleoutputnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
