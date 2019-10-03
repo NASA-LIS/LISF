@@ -116,7 +116,7 @@
 
              ! Check gridcell veg total sum:
              if( totalsum == 0. ) then
-                write(LDT_logunit,*) "[ERR] Total vegetation for gridcell, c=",c,", r=",r
+                write(LDT_logunit,*) "[WARN] Total vegetation for gridcell, c=",c,", r=",r
                 write(LDT_logunit,*) "   has the sum of: ",totalsum
                 write(LDT_logunit,*) "  This check performed in routine: create_maskfile "
                 ! Set then localmask to 0.0 (water point or undefined)

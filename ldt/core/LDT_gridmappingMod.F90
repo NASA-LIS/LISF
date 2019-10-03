@@ -119,9 +119,6 @@ contains
       enddo
    enddo
 
-!   print *, "Rlon, min/max: ",(rlon(1,1)), (rlon(LDT_rc%lnc(n),LDT_rc%lnr(n)))
-!   print *, "Rlat, min/max: ",(rlat(1,1)), (rlat(LDT_rc%lnc(n),LDT_rc%lnr(n)))
-
    lisdom_min_lat = rlat(1,1)
    lisdom_min_lon = rlon(1,1)
    lisdom_max_lat = rlat(LDT_rc%lnc(n),LDT_rc%lnr(n))
@@ -551,8 +548,8 @@ contains
 ! ------------------------------------------------
 
    case default
-      write(*,*) "This parameter projection (",trim(param_proj),") is not supported ..." 
-      write(*,*) "Program stopping ... "
+      write(LDT_logunit,*) "[ERR] This parameter projection (",trim(param_proj),") is not supported." 
+      write(LDT_logunit,*) "Program stopping ... "
       call LDT_endrun
 
   end select

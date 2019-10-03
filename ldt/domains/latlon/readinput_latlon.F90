@@ -103,21 +103,6 @@ subroutine readinput_latlon
      dx    = run_dd(n,5)
      dy    = run_dd(n,6)
 
-#if 0
-     if(run_dd(n,3).lt.run_dd(n,1)) then
-        write(unit=LDT_logunit,fmt=*) 'lat2 must be greater than lat1'
-        write(LDT_logunit,*) run_dd(n,3),run_dd(n,1)
-        write(unit=LDT_logunit,fmt=*) 'Stopping run...'
-        call LDT_endrun
-     endif
-     if(run_dd(n,4).lt.run_dd(n,2)) then
-        write(unit=LDT_logunit,fmt=*) 'lon2 must be greater than lon1'
-        write(LDT_logunit,*) run_dd(n,4),run_dd(n,2)
-        write(unit=LDT_logunit,fmt=*) 'Stopping run...'
-        call LDT_endrun
-     endif
-#endif
-
      ! Check if lon values are reverse (e.g., crosses International Dateline)
      if( run_dd(n,4)-run_dd(n,2) < 0. ) then   ! Check long. extents
         nc = nint(diff_lon(run_dd(n,4),run_dd(n,2))/run_dd(n,5)) + 1
@@ -155,19 +140,16 @@ subroutine readinput_latlon
         LDT_rc%gridDesc(n,20) = 64
      endif
 
-     ! HERE ARE THE ORIGINAL CHECKS FOR WHEN LAT2<LAT1; LON2<LON1 ...
+     ! Original checks for when LAT2<LAT1; LON2<LON1:
 
      if(LDT_rc%gridDesc(n,7).lt.LDT_rc%gridDesc(n,4)) then
-        write(unit=LDT_logunit,fmt=*) '[WARN] lat2 must be greater than lat1 ...'
+        write(LDT_logunit,*) '[ERR] lat2 must be greater than lat1 ...'
         write(LDT_logunit,*) LDT_rc%gridDesc(n,7),LDT_rc%gridDesc(n,4)
-!        write(unit=LDT_logunit,fmt=*) 'Stopping run...'
         call LDT_endrun
      endif
      if(LDT_rc%gridDesc(n,8).lt.LDT_rc%gridDesc(n,5)) then
-        write(unit=LDT_logunit,fmt=*) '[WARN] lon2 should  be greater than lon1 ...'
+        write(LDT_logunit,*) '[ERR] lon2 should  be greater than lon1 ...'
         write(LDT_logunit,*) LDT_rc%gridDesc(n,8),LDT_rc%gridDesc(n,5)
-!        write(unit=LDT_logunit,fmt=*) 'Stopping run...'
-!        call LDT_endrun
      endif
      
      ! Difference in number of longitudes (dx):

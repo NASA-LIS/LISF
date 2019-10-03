@@ -1016,7 +1016,6 @@ contains
     integer               :: dimID(3), monthID, qID
     integer,allocatable   :: met_dimID(:,:)
     integer               :: tdimID, xtimeID
-!    integer :: i,j  ! TEMP -- KRA
 
 !SVK-edit    
     if(LDT_masterproc) then 
@@ -1028,24 +1027,10 @@ contains
             (/1,1/),(/LDT_rc%gnc(n),LDT_rc%gnr(n)/)),&
             'nf90_put_att failed for xlat')
 
-!       do j=1,LDT_rc%gnr(n)
-!        do i=1,LDT_rc%gnc(n)
-!           write(501,*) LDT_LSMparam_struc(n)%param_file_ftn, LDT_LSMparam_struc(n)%xlatid, &
-!                  LDT_LSMparam_struc(n)%xlat%value(i,j,1)
-!        enddo
-!       enddo
-       
        call LDT_verify(nf90_put_var(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlonid, LDT_LSMparam_struc(n)%xlon%value(:,:,1),&
             (/1,1/),(/LDT_rc%gnc(n),LDT_rc%gnr(n)/)),&
             'nf90_put_att failed for xlon')
-
-!       do j=1,LDT_rc%gnr(n)
-!        do i=1,LDT_rc%gnc(n)
-!           write(501,*) LDT_LSMparam_struc(n)%param_file_ftn, LDT_LSMparam_struc(n)%xlonid, &
-!                  LDT_LSMparam_struc(n)%xlon%value(i,j,1)
-!        enddo
-!       enddo
 
        call LDT_verify(nf90_put_var(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlatbid, LDT_LSMparam_struc(n)%xlat_b%value(:,:,1),&
