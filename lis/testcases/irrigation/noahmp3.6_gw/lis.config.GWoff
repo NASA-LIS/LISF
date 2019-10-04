@@ -21,7 +21,7 @@ Enable new zterp correction (met forcing): .false.
 Number of ensembles per tile:        1
 
 #Runtime options
-Forcing variables list file:        ./forcing_variables.txt
+Forcing variables list file:        ./input/forcing_variables.txt
 Output forcing:                            1   #1-yes
 Output parameters:                         0   #0- no
 Output methodology:                        "2d gridspace"
@@ -42,8 +42,8 @@ Ending hour:                               1
 Ending minute:                             0
 Ending second:                             0
 Undefined value:                          -9999
-Output directory:                         './Sprinkler/GWoff/'
-Diagnostic output file:                   './Sprinkler/GWoff/lislog'
+Output directory:                         'OUTPUT'
+Diagnostic output file:                   'OUTPUT/lislog'
 
 #The following options are used for subgrid tiling based on vegetation
 Maximum number of surface type tiles per grid:     1
@@ -145,7 +145,7 @@ SNODEP mesh resolution:  8
 
 #The following options list the choice of parameter maps to be used:
 
-LIS domain and parameter data file:    ./lis_input.nc
+LIS domain and parameter data file:    ./lis_input.d01.nc
 
 Landmask data source:            "LDT"
 Landcover data source:           "LDT"

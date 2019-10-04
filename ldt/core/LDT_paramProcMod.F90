@@ -1017,13 +1017,14 @@ contains
 
 !SVK-edit    
     if(LDT_masterproc) then 
+
        call LDT_verify(nf90_enddef(LDT_LSMparam_struc(n)%param_file_ftn))
-       
+
        call LDT_verify(nf90_put_var(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlatid, LDT_LSMparam_struc(n)%xlat%value(:,:,1),&
             (/1,1/),(/LDT_rc%gnc(n),LDT_rc%gnr(n)/)),&
             'nf90_put_att failed for xlat')
-       
+
        call LDT_verify(nf90_put_var(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlonid, LDT_LSMparam_struc(n)%xlon%value(:,:,1),&
             (/1,1/),(/LDT_rc%gnc(n),LDT_rc%gnr(n)/)),&

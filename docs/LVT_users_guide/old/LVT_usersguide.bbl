@@ -1,0 +1,16 @@
+\begin{thebibliography}{1}
+
+\bibitem{kumar_etal_gmd_2012}
+S.V. Kumar, C.D. Peters-Lidard, J.A. Santanello, K.~Harrison, Y.~Liu, and
+  M.~Shaw.
+\newblock Land surface verification toolkit (lvt)- a generalized framework for
+  land surface model evaluation.
+\newblock {\em Geosci. Model Dev.}, pages 869--886, 2012.
+
+\bibitem{protex}
+W.~Sawyer and A.~da~Silva.
+\newblock Protex: A sample fortran 90 source code documentation system.
+\newblock Technical report, NASA GMAO, 1997.
+\newblock DAO Office Note 97-11.
+
+\end{thebibliography}

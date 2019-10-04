@@ -5101,6 +5101,15 @@ LPRM vegetation optical depth data designation:      'X-band'
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
+#latex: \var{SMAP(NASA) soil moisture Composite Release ID (e.g., R16):} specifies
+#latex: First three characters of the Composite Release ID (CRID) (e.g., R16) 
+#latex: END_DESCRIPTION
+
+#latex: BEGIN_CONFIG
+SMAP(NASA) soil moisture Composite Release ID (e.g., R16):
+#latex: END_CONFIG
+
+#latex: BEGIN_DESCRIPTION
 #latex: This section describes the parameters needed for the
 #latex: HYMAP and the HYMAP2 routing models.  The config entries
 #latex: only have ''HYMAP `` within them, as they apply to both
