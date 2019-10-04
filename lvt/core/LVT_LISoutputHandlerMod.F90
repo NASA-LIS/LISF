@@ -10268,6 +10268,8 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
   subroutine mapLISdataToLVT(source,lvtdataEntry, lisdataEntry)
 ! !ARGUMENTS: 
 
+    implicit none
+
     integer                    :: source
     type(LVT_metadataEntry)    :: lvtdataEntry
     type(LVT_LISmetadataEntry) :: lisdataEntry
@@ -10277,6 +10279,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
 ! 
 ! This routine maps the LIS output data to the LVT data
 ! structure for a particular variable
+!
+! If the LIS output is in ensemble space and the LVT analysis 
+! is based on a single member, this routine also 
+! computes the ensemble mean before mapping to the LVT 
+! data structures
 ! 
 !  The arguments are: 
 !  \begin{description}
@@ -10286,9 +10293,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
 !     the LIS data entry object
 !  \end{description}
 !EOP
-    integer             :: k 
+    
+    integer             :: k
+    integer             :: g
     real                :: scale_f
-!    do k=1, dataEntry%selectNlevs
+
     scale_f = 1.0
 
     do k=1, lvtdataEntry%vlevels
@@ -10314,9 +10323,22 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
 
           call LVT_endrun()
        endif
-       lvtdataEntry%value(:,:,k) = lisdataEntry%value(:,:,k)*scale_f
-       lvtdataEntry%count(:,:,k) = lisdataEntry%count(:,:,k)
-
+       if(LVT_LIS_rc(source)%nensem.eq.LVT_rc%nensem) then
+          lvtdataEntry%value(:,:,k) = lisdataEntry%value(:,:,k)*scale_f
+          lvtdataEntry%count(:,:,k) = lisdataEntry%count(:,:,k)
+       else
+          if(LVT_rc%nensem.eq.1) then 
+             do g=1,LVT_rc%npts
+                lvtdataEntry%value(g,1,k) = sum(lisdataEntry%value(g,&
+                     1:LVT_LIS_rc(source)%nensem,k)*scale_f)/&
+                     LVT_LIS_rc(source)%nensem
+                lvtdataEntry%count(g,1,k) = lisdataEntry%count(g,1,k)
+             enddo
+          else
+             write(LVT_logunit,*) '[ERR] The number of ensembles in LVT must be 1'
+             call LVT_endrun()
+          endif
+       endif
     enddo
   end subroutine mapLISdataToLVT
 
