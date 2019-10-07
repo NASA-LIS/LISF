@@ -111,9 +111,10 @@ void FTN(registerlandslidemodelinit)(char *j, void (*func)(),int len)
   struct landslideinitnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct landslideinitnode*) malloc(sizeof(struct landslideinitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -183,9 +184,10 @@ void FTN(registerlandslidemodelrun)(char *j, void (*func)(int*),int len)
   struct landsliderunnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct landsliderunnode*) malloc(sizeof(struct landsliderunnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -257,9 +259,10 @@ void FTN(registerlandslidemodeloutput)(char *j, void (*func)(int*),int len)
   struct landslideoutnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct landslideoutnode*) malloc(sizeof(struct landslideoutnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -332,9 +335,10 @@ void FTN(registerlandslidemodelfinalize)(char *j, void (*func)(),int len)
   struct landslidefinalnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct landslidefinalnode*) malloc(sizeof(struct landslidefinalnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -407,9 +411,10 @@ void FTN(registersetuplandslidepeobspred)(char *j, void (*func)(void*),int len)
   struct landslidesetpeprednode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct landslidesetpeprednode*) malloc(sizeof(struct landslidesetpeprednode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -484,9 +489,10 @@ void FTN(registerqclandslidedecisionspace)(char *j, void (*func)(void*, void*),i
   struct landslideqcpedecnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct landslideqcpedecnode*) malloc(sizeof(struct landslideqcpedecnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -560,9 +566,10 @@ void FTN(registersetlandslidedecisionspace)(char *j, void (*func)(void*),int len
   struct landslidesetpedecnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct landslidesetpedecnode*) malloc(sizeof(struct landslidesetpedecnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -631,9 +638,10 @@ void FTN(registerlandslidemodelreset)(char *j, void (*func)(),int len)
   struct landslideresetnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct landslideresetnode*) malloc(sizeof(struct landslideresetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

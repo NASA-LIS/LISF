@@ -68,9 +68,10 @@ void FTN(registerirrigationschemeinit)(char *j, void (*func)(void*),int len)
   struct irrigationinitnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct irrigationinitnode*) malloc(sizeof(struct irrigationinitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -140,9 +141,10 @@ void FTN(registerirrigationupdate)(char *j, void (*func)(int*, void*),int len)
   struct irrigationapplyupdatenode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct irrigationapplyupdatenode*) malloc(sizeof(struct irrigationapplyupdatenode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

@@ -99,9 +99,10 @@ void FTN(registerbiasestimationinit)(char *j, void (*func)(),int len)
   struct biasinitnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct biasinitnode*) malloc(sizeof(struct biasinitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -176,9 +177,10 @@ void FTN(registerbiasestimationsetup)(char *j, void (*func)(int*),int len)
   struct biassetupnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct biassetupnode*) malloc(sizeof(struct biassetupnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -255,9 +257,10 @@ void FTN(registerbiasestimationcompute)(char *j, void (*func)(int*, int*),int le
   struct biascompnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct biascompnode*) malloc(sizeof(struct biascompnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -335,9 +338,10 @@ void FTN(registerbiasestimationupdate)(char *j, void (*func)(int*, int*),int len
   struct biasupdnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct biasupdnode*) malloc(sizeof(struct biasupdnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -414,9 +418,10 @@ void FTN(registerbiasestimationrestart)(char *j, void (*func)(int*, int*),int le
   struct biasoutnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct biasoutnode*) malloc(sizeof(struct biasoutnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -494,9 +499,10 @@ void FTN(registerbiasestimationfinalize)(char *j, void (*func)(),int len)
   struct biasfinalnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct biasfinalnode*) malloc(sizeof(struct biasfinalnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

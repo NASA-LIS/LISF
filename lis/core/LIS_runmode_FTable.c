@@ -73,9 +73,10 @@ void FTN(registerlisinit)(char *j, void (*func)(),int len)
   struct rmodeinitnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct rmodeinitnode*) malloc(sizeof(struct rmodeinitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -148,9 +149,10 @@ void FTN(registerlisrun)(char *j, void (*func)(),int len)
   struct rmoderunnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct rmoderunnode*) malloc(sizeof(struct rmoderunnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -222,9 +224,10 @@ void FTN(registerlisfinalize)(char *j, void (*func)(),int len)
   struct rmodefinalnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct rmodefinalnode*) malloc(sizeof(struct rmodefinalnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

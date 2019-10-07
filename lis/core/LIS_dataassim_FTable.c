@@ -143,9 +143,10 @@ void FTN(registerdainit)(char *j, void (*func)(),int len)
   struct dainitnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct dainitnode*) malloc(sizeof(struct dainitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -218,9 +219,10 @@ void FTN(registerdasetup)(char *j, void (*func)(int*),int len)
   struct dasetupnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct dasetupnode*) malloc(sizeof(struct dasetupnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -295,9 +297,10 @@ void FTN(registerapplyincrements)(char *j, void (*func)(int*, int*),int len)
   struct daapplyincrnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct daapplyincrnode*) malloc(sizeof(struct daapplyincrnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -372,9 +375,10 @@ void FTN(registercomputeincrements)(char *j, void (*func)(int*, int*),int len)
   struct dacompincrnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct dacompincrnode*) malloc(sizeof(struct dacompincrnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -448,9 +452,10 @@ void FTN(registerdafinalize)(char *j, void (*func)(),int len)
   struct dafinalnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct dafinalnode*) malloc(sizeof(struct dafinalnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -522,9 +527,10 @@ void FTN(registerdaoutput)(char *j, void (*func)(int*, int*),int len)
   struct daoutnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct daoutnode*) malloc(sizeof(struct daoutnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -598,9 +604,10 @@ void FTN(registergetnso)(char *j, void (*func)(int*, int*, int*, int*),int len)
   struct dagetnsonode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct dagetnsonode*) malloc(sizeof(struct dagetnsonode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -682,9 +689,10 @@ void FTN(registerdaobssetup)(char *j, void (*func)(int*, void*, void*),int len)
   struct daobssetnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct daobssetnode*) malloc(sizeof(struct daobssetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -762,9 +770,10 @@ void FTN(registerreaddaobs)(char *j, void (*func)(int*, int*, void*, void*),int 
   struct daobsreadnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct daobsreadnode*) malloc(sizeof(struct daobsreadnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -841,9 +850,10 @@ void FTN(registerwritedaobs)(char *j, void (*func)(int*, int*, void*),int len)
   struct daobswritenode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct daobswritenode*) malloc(sizeof(struct daobswritenode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

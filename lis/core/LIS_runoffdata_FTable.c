@@ -63,9 +63,10 @@ void FTN(registerinitrunoffdata)(char *j, void (*func)(), int len)
   struct runoffdatainitnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct runoffdatainitnode*) malloc(sizeof(struct runoffdatainitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -135,9 +136,10 @@ void FTN(registerreadrunoffdata)(char *j, void (*func)(int*,float*, float*), int
   struct runoffdatareadnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct runoffdatareadnode*) malloc(sizeof(struct runoffdatareadnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

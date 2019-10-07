@@ -63,9 +63,10 @@ void FTN(registeralbedosetup)(char *j,void (*func)(int*),int len)
   struct albsetnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct albsetnode*) malloc(sizeof(struct albsetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -139,9 +140,10 @@ void FTN(registerreadalbedo)(char *j,void (*func)(int*, void*, void*, float*, fl
   struct albreadnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct albreadnode*) malloc(sizeof(struct albreadnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

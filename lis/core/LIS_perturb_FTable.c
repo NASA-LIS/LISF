@@ -89,9 +89,10 @@ void FTN(registerperturbinit)(char *j, void (*func)(int*),int len)
   struct pertinitnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct pertinitnode*) malloc(sizeof(struct pertinitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -164,9 +165,10 @@ void FTN(registerperturbsetup)(char *j, void (*func)(int*, int*, void*, void*),i
   struct pertsetnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct pertsetnode*) malloc(sizeof(struct pertsetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -245,9 +247,10 @@ void FTN(registerperturbmethod)(char *j, void (*func)(int*, int*, int*, void*, v
   struct pertmethodnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct pertmethodnode*) malloc(sizeof(struct pertmethodnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -327,9 +330,10 @@ void FTN(registerperturbwriterst)(char *j, void (*func)(int*),int len)
   struct pertwrtnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct pertwrtnode*) malloc(sizeof(struct pertwrtnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -401,9 +405,10 @@ void FTN(registerperturbreadrst)(char *j, void (*func)(),int len)
   struct pertrstnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct pertrstnode*) malloc(sizeof(struct pertrstnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

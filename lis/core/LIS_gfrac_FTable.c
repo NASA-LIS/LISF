@@ -64,9 +64,10 @@ void FTN(registergfracsetup)(char *j,void (*func)(int*),int len)
   struct gfracsetnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct gfracsetnode*) malloc(sizeof(struct gfracsetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -141,9 +142,10 @@ void FTN(registerreadgfrac)(char *j,void (*func)(int*, void*, void*, float*, flo
   struct gfracreadnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct gfracreadnode*) malloc(sizeof(struct gfracreadnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

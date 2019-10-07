@@ -122,9 +122,10 @@ void FTN(registeropenwaterinit)(char *j, void (*func)(int*),int len)
   struct openwaterinitnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct openwaterinitnode*) malloc(sizeof(struct openwaterinitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -193,9 +194,10 @@ void FTN(registeropenwaterrun)(char *j, void (*func)(int*, int*),int len)
   struct openwaterrunnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct openwaterrunnode*) malloc(sizeof(struct openwaterrunnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -268,9 +270,10 @@ void FTN(registeropenwaterfinalize)(char *j, void (*func)(),int len)
   struct openwaterfinalnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct openwaterfinalnode*) malloc(sizeof(struct openwaterfinalnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -339,9 +342,10 @@ void FTN(registeropenwatersetup)(char *j, void (*func)(int*),int len)
   struct openwatersetupnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct openwatersetupnode*) malloc(sizeof(struct openwatersetupnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -412,9 +416,10 @@ void FTN(registeropenwaterrestart)(char *j, void (*func)(int*),int len)
   struct openwaterrestartnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct openwaterrestartnode*) malloc(sizeof(struct openwaterrestartnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -484,9 +489,10 @@ void FTN(registeropenwaterdynsetup)(char *j, void (*func)(int*, int*),int len)
   struct openwaterdynsetnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct openwaterdynsetnode*) malloc(sizeof(struct openwaterdynsetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -558,9 +564,10 @@ void FTN(registeropenwateroutput)(char *j, void (*func)(int*, int*),int len)
   struct openwateroutputnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct openwateroutputnode*) malloc(sizeof(struct openwateroutputnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -634,9 +641,10 @@ void FTN(registeropenwaterf2t)(char *j, void (*func)(int*, int*),int len)
   struct openwaterf2tnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct openwaterf2tnode*) malloc(sizeof(struct openwaterf2tnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -709,9 +717,10 @@ void FTN(registeropenwaterwrst)(char *j, void (*func)(int*),int len)
   struct openwaterwriterstnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct openwaterwriterstnode*) malloc(sizeof(struct openwaterwriterstnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

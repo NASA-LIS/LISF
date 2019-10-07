@@ -64,9 +64,10 @@ void FTN(registeremissivitysetup)(char *j,void (*func)(int*),int len)
   struct emisssetnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct emisssetnode*) malloc(sizeof(struct emisssetnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -141,9 +142,10 @@ void FTN(registerreademissivity)(char *j,void (*func)(int*, void*, void*, float*
   struct emissreadnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct emissreadnode*) malloc(sizeof(struct emissreadnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

@@ -83,9 +83,10 @@ void FTN(registerroutinginit)(char *j, void (*func)(),int len)
   struct routinginitnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct routinginitnode*) malloc(sizeof(struct routinginitnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -151,9 +152,10 @@ void FTN(registerroutingreadrestart)(char *j, void (*func)(),int len)
   struct routingrrstnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct routingrrstnode*) malloc(sizeof(struct routingrrstnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -218,9 +220,10 @@ void FTN(registerroutingrun)(char *j, void (*func)(int*),int len)
   struct routingrunnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct routingrunnode*) malloc(sizeof(struct routingrunnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -285,9 +288,10 @@ void FTN(registerroutingoutput)(char *j, void (*func)(int*),int len)
   struct routingoutnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct routingoutnode*) malloc(sizeof(struct routingoutnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -352,9 +356,10 @@ void FTN(registerroutingwriterestart)(char *j, void (*func)(int*),int len)
   struct routingwrstnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct routingwrstnode*) malloc(sizeof(struct routingwrstnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
