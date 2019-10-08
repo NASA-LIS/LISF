@@ -443,7 +443,7 @@ contains
        lyrthk(k) = LVT_LIS_rc(1)%smthick(k) 
     end do
 
-    if (alarm_is_on()) then
+    if (LVT_557post_alarm_is_on()) then
        ! EMK...We need lat/lon for all grid points, not just for land.
        ! So we will recalculate here.
        ! FIXME...Add support for other projections, not just lat/lon.
@@ -2705,12 +2705,12 @@ contains
     ! because bitmap in GRIB-1 file will fill in the rest
     
 
-#if (defined USE_GRIBAPI)
-    call grib_new_from_template(igrib,"GRIB1",iret)
-    call LVT_verify(iret, 'grib_new_from_template failed in LVT_DataStreamsMod')
-#else
+#if (defined USE_ECCODES)
     call grib_new_from_samples(igrib,"GRIB1",iret)
     call LVT_verify(iret, 'grib_new_from_samples failed in LVT_DataStreamsMod')
+#else
+    call grib_new_from_template(igrib,"GRIB1",iret)
+    call LVT_verify(iret, 'grib_new_from_template failed in LVT_DataStreamsMod')
 #endif
     
     call grib_set(igrib,'table2Version',LVT_rc%grib_table,iret)
@@ -2949,13 +2949,12 @@ contains
     ! Note passing string of defined points only to output
     ! because bitmap in GRIB-1 file will fill in the rest
     
-#if (defined USE_GRIBAPI)
-    call grib_new_from_template(igrib,"GRIB2",iret)
-    call LVT_verify(iret, 'grib_new_from_template failed in LVT_DataStreamsMod')
-#else
-    ! ECCodes version
+#if (defined USE_ECCODES)
     call grib_new_from_samples(igrib,"GRIB2",iret)
     call LVT_verify(iret, 'grib_new_from_samples failed in LVT_DataStreamsMod')
+#else
+    call grib_new_from_template(igrib,"GRIB2",iret)
+    call LVT_verify(iret, 'grib_new_from_template failed in LVT_DataStreamsMod')
 #endif
 
     ! Section 0: Indicator     
@@ -3745,7 +3744,7 @@ contains
     ! variable here.
     local_computeFlag = LVT_rc%computeFlag
     if (LVT_rc%runmode.eq."557 post") then
-       local_computeFlag = alarm_is_on()
+       local_computeFlag = LVT_557post_alarm_is_on()
     end if
     !if(LVT_rc%computeFlag) then            
     if (local_computeFlag) then
@@ -3934,7 +3933,7 @@ contains
     ! to accomodate both.
     local_computeFlag = LVT_rc%computeFlag
     if (LVT_rc%runmode.eq."557 post") then
-       local_computeFlag = alarm_is_on()
+       local_computeFlag = LVT_557post_alarm_is_on()
     end if
     
 !    if(LVT_rc%computeFlag) then            

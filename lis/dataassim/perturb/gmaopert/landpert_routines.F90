@@ -23,7 +23,10 @@
 !  24Jan05 Rolf Reichle  Initial Specification
 !  07Jun05 Rolf Reichle  more init options
 !  07Jul05 Sujay Kumar   Specification in LIS
-! 
+!  27Feb19 Mahdi Navari  domin id was added to the initializing the seed 
+!                        this will solve the checkerboard pattern and 
+!                        stripe patterns in the DA results
+!
 !EOP 
 module landpert_routines
 
@@ -1406,118 +1409,19 @@ contains
     
   end subroutine get_sqrt_corr_matrix
 
-#if 0 
 !BOP
 ! 
 ! !ROUTINE: get_init_Pert_rseed
 ! \label{get_init_Pert_rseed}
 ! 
 ! !INTERFACE: 
-  subroutine get_init_Pert_rseed( N_ens, N_domain, ens_id, domain_id, &
+  subroutine get_init_Pert_rseed( N_ens, N_domain, gnc, gnr, &
+       ens_id, domain_id, &
        init_Pert_rseed )
 
     implicit none
 ! !ARGUMENTS:     
-    integer, intent(in) :: N_ens, N_domain
-    integer, dimension(N_ens),    intent(in) :: ens_id
-    integer, dimension(N_domain), intent(in) :: domain_id
-    integer, dimension(N_ens,N_domain), intent(out) :: init_Pert_rseed
-
-! !DESCRIPTION:    
-! get initial random seed "init\_Pert\_rseed" for initializing 
-! Pert\_rseed within get\_pert()
-!
-! A different random seed is necessary for each ensemble member.
-! In parallel applications, the random seed must also be different
-! for each subdomain.
-!
-! This subroutine is meant as a sample for how the initial Pert\_rseed 
-! can be set.  
-! In this example, ens\_id and domain\_id are meant to be 
-! nonnegative small integers.
-!
-!EOP    
-    ! --------------------------------------------------
-    ! 
-    ! local parameter values for initial random seed
-    
-    integer, parameter :: RSEED_CONST0 =     -1
-    integer, parameter :: RSEED_CONST1 = -10000    ! must be negative
-    integer, parameter :: RSEED_CONST2 =    -10    ! must be negative
-    
-    ! --------------------------------------------------
-    !
-    ! local variables
-    
-    integer :: m, n, i, j
-    
-    character(200) :: tmpstring
-    
-    ! -------------------------------------------------------------
-    
-    do m=1,N_domain
-       do n=1,N_ens
-          
-!          init_Pert_rseed(n,m) = RSEED_CONST0 +                    &
-!               domain_id(m)*RSEED_CONST1 + ens_id(n)*RSEED_CONST2
-
-          init_Pert_rseed(n,m) = RSEED_CONST0 +                    &
-               RSEED_CONST1 + ens_id(n)*RSEED_CONST2
-       end do
-    end do 
-    
-    !!write (*,*) 'init_Pert_rseed=', init_Pert_rseed
-    
-    ! make sure init_Pert_rseed is negative and no two numbers are the same
-    
-    do m=1,N_domain
-       do n=1,N_ens
-          
-          if (init_Pert_rseed(n,m)>=0) then
-             
-             tmpstring = 'get_init_Pert_rseed(): found nonnegative'
-             tmpstring = trim(tmpstring) // ' component of init_Pert_rseed'
-             tmpstring = trim(tmpstring) // ' - STOPPING.'
-             write (*,*) tmpstring
-             stop
-             
-          end if
-          
-          do i=m+1,N_domain
-             do j=n+1,N_ens
-                
-                if (init_Pert_rseed(j,i)==init_Pert_rseed(n,m)) then
-                   
-                   tmpstring = 'get_init_Pert_rseed(): found identical'
-                   tmpstring = trim(tmpstring) // ' components'
-                   tmpstring = trim(tmpstring) // ' of init_Pert_rseed'
-                   tmpstring = trim(tmpstring) // ' - STOPPING.'
-                   write (*,*) tmpstring
-                   stop
-                   
-                end if
-                
-             end do
-          end do
-          
-       end do
-    end do
-    
-  end subroutine get_init_Pert_rseed
-#endif
-
-!BOP
-! 
-! !ROUTINE: get_init_Pert_rseed
-! \label{get_init_Pert_rseed}
-! 
-! !INTERFACE: 
-  subroutine get_init_Pert_rseed( N_ens, N_domain, ens_id, domain_id, &
-       init_Pert_rseed )
-
-    implicit none
-! !ARGUMENTS:     
-    integer, intent(in) :: N_ens, N_domain
+    integer, intent(in) :: N_ens, N_domain, gnc, gnr
     integer, dimension(N_ens),    intent(in) :: ens_id
     integer, intent(in) :: domain_id
     integer, dimension(N_ens,N_domain), intent(out) :: init_Pert_rseed
@@ -1537,20 +1441,6 @@ contains
 !
 !EOP    
     ! --------------------------------------------------
-    ! 
-    ! local parameter values for initial random seed
-#if 0    
-    integer, parameter :: RSEED_CONST0 =     -1
-!    integer, parameter :: RSEED_CONST1 = -1000    ! must be negative
-    integer, parameter :: RSEED_CONST1 = -2   ! must be negative
-    integer, parameter :: RSEED_CONST2 =    -3    ! must be negative
-#endif
-
-    integer, parameter :: RSEED_CONST0 =     -1
-    integer, parameter :: RSEED_CONST1 = -10000    ! must be negative
-    integer, parameter :: RSEED_CONST2 =    -10    ! must be negative
-    
-    ! --------------------------------------------------
     !
     ! local variables
     
@@ -1562,17 +1452,16 @@ contains
     
     do m=1,N_domain
        do n=1,N_ens
-          
-!          init_Pert_rseed(n,m) = RSEED_CONST0 +                    &
-!               domain_id*RSEED_CONST1 + ens_id(n)*RSEED_CONST2
 
-          init_Pert_rseed(n,m) = RSEED_CONST0 +                    &
-               RSEED_CONST1 + ens_id(n)*RSEED_CONST2
+          ! EMK Replaced equation for picking unique negative number for
+          ! each ensemble member of each global grid location.
+          init_Pert_rseed(n,m) = (domain_id) + &
+               ( ens_id(n)*gnc*gnr   ) + &
+               ( (m-1)*gnc*gnr*N_ens )
+          init_Pert_rseed(n,m) = -1 * init_Pert_rseed(n,m)
 
        end do
     end do
-    
-    !!write (*,*) 'init_Pert_rseed=', init_Pert_rseed
     
     ! make sure init_Pert_rseed is negative and no two numbers are the same
     

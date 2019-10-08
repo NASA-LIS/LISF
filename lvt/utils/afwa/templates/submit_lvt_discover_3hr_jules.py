@@ -11,6 +11,7 @@ vars = ['RelSMC_inst',
         'RHMin_inst',
         'AvgSurfT_inst', 'AvgSurfT_tavg', 
         'CanopInt_inst','Elevation_inst', 'Evap_tavg', 
+        'Greenness_inst',
         'LWdown_f_inst', 'LWdown_f_tavg',
         'Landcover_inst', 'Landmask_inst',
         'Psurf_f_inst', 'Psurf_f_tavg', 
@@ -47,7 +48,9 @@ if [ ! -z $SLURM_SUBMIT_DIR ] ; then
     cd $SLURM_SUBMIT_DIR || exit 1
 fi
 
-source /discover/nobackup/emkemp/AFWA/modules.sh
+#source /discover/nobackup/emkemp/AFWA/modules.sh
+module purge
+module load ~jvgeiger/privatemodules/lis_7_intel_18_0_3_222
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1

@@ -75,15 +75,71 @@ else {
    $sys_par = "";
 }
 
-print "Optimization level (-2=strict checks, -1=debug, 0,1,2,3, default=2): ";
+print "Optimization level (-3=strict checks with warnings, -2=strict checks, -1=debug, 0,1,2,3, default=2): ";
 $opt_lev=<stdin>;
 chomp($opt_lev);
 if($opt_lev eq ""){
    $opt_lev=2;
 }
+if($opt_lev == -3) {
+   # Default flags for C.
+    $sys_c_opt = "-g";
+    if($sys_arch eq "linux_ifc"){
+	$sys_opt = "-g -warn";
+	$sys_opt .= 
+	    " -check bounds,format,output_conversion,pointers,stack,uninit";
+	$sys_opt .= " -fp-stack-check -ftrapuv ";
+	
+	$sys_c_opt = "-g -Wall -Wcast-qual -Wcheck -Wdeprecated";
+	$sys_c_opt .= " -Wextra-tokens -Wformat";
+	$sys_c_opt .= " -Wformat-security -Wmissing-declarations";
+	$sys_c_opt .= " -Wmissing-prototypes -Wpointer-arith -Wremarks";
+	$sys_c_opt .= " -Wreturn-type -Wshadow -Wsign-compare";
+	$sys_c_opt .= " -Wstrict-prototypes -Wtrigraphs -Wuninitialized";
+	$sys_c_opt .= " -Wunused-function -Wunused-parameter";
+	$sys_c_opt .= " -Wunused-variable -Wwrite-strings";
+	# Run-time flags
+	$sys_c_opt .= " -check=conversions,stack,uninit";
+	$sys_c_opt .= " -fp-stack-check -fp-trap=common -fp-trap-all=common";
+	$sys_c_opt .= " -ftrapuv";
+    }
+    elsif($sys_arch eq "linux_pgi") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+	$sys_opt = "-g ";
+    }
+    elsif($sys_arch eq "linux_absoft") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+	$sys_opt = "-g ";
+    }
+    elsif($sys_arch eq "linux_lf95") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+    }
+    elsif($sys_arch eq "Darwin_gfortran" || $sys_arch eq "linux_gfortran") {
+	$sys_opt = "-g -Wall -Wcharacter-truncation";
+	$sys_opt .= " -Wconversion-extra -Wextra -Wpedantic -Wrealloc-lhs";
+	$sys_opt .= " -Wrealloc-lhs-all";
+	# Run-time options
+	$sys_opt .= " -ffpe-trap=invalid,zero,overflow";
+	$sys_opt .= " -fcheck=all,no-array-temps ";
+
+	$sys_c_opt = "-g -Wall -Wextra -Wpedantic -Wformat -Wtraditional";
+	$sys_c_opt .= " -Wconversion";
+	# Run-time flags
+	$sys_c_opt .= " -fstack-protector-all -fstack-check -ftrapv";
+    }
+    elsif($sys_arch eq "AIX") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+	$sys_opt = "-g ";
+    }
+}
+
 if($opt_lev == -2) {
    if($sys_arch eq "linux_ifc") {
-      $sys_opt = "-g -check bounds,format,output_conversion,pointers,stack,uninit  ";
+      $sys_opt = "-g -check bounds,format,output_conversion,pointers,stack,uninit ";
       $sys_c_opt = "-g ";
    }
    elsif($sys_arch eq "linux_gfortran") {
@@ -391,6 +447,66 @@ if($enable_geotiff == 1) {
     }
 }
 
+# EMK...Add LIBGEOTIFF support for Air Force
+print "Enable LIBGEOTIFF support? (1-yes, 0-no, default=1): ";
+$enable_libgeotiff=<stdin>;
+if($enable_libgeotiff eq "\n"){
+    $enable_libgeotiff=1;
+}
+if($enable_libgeotiff == 1) {
+    if(defined($ENV{LDT_LIBGEOTIFF})){
+	$sys_libgeotiff_path = $ENV{LDT_LIBGEOTIFF};
+	$lib = "/lib/";
+	$lib_libgeotiff=$sys_libgeotiff_path.$lib;
+	$include = "/include/";
+	$inc_libgeotiff=$sys_libgeotiff_path.$include;
+    }
+    else {
+	print "--------------ERROR---------------------\n";
+	print "Please specify the LIBGEOTIFF path using\n";
+	print "the LDT_LIBGEOTIFF variable.\n";
+	print "LIBGEOTIFF can be obtained from https://github.com/OSGeo/libgeotiff\n";
+	print "Configuration exiting ....\n";
+	print "--------------ERROR---------------------\n";
+	exit 1;
+    }
+    if ($cray_modifications == 1) {
+       if(defined($ENV{LDT_LIBTIFF})){
+          $sys_libtiff_path = $ENV{LDT_LIBTIFF};
+       }
+       else {
+             print "--------------ERROR---------------------\n";
+             print "Please specify the LIBTIFF path using\n";
+             print "the LDT_LIBTIFF variable.\n";
+             print "Configuration exiting ....\n";
+             print "--------------ERROR---------------------\n";
+             exit 1;
+       }
+       if(defined($ENV{LDT_LIBJBIG})){
+          $sys_libjbig_path = $ENV{LDT_LIBJBIG};
+       }
+       else {
+             print "--------------ERROR---------------------\n";
+             print "Please specify the LIBJBIG path using\n";
+             print "the LDT_LIBJBIG variable.\n";
+             print "Configuration exiting ....\n";
+             print "--------------ERROR---------------------\n";
+             exit 1;
+       }
+       if(defined($ENV{LDT_LIBLZMA})){
+          $sys_liblzma_path = $ENV{LDT_LIBLZMA};
+       }
+       else {
+             print "--------------ERROR---------------------\n";
+             print "Please specify the LIBLZMA path using\n";
+             print "the LDT_LIBLZMA variable.\n";
+             print "Configuration exiting ....\n";
+             print "--------------ERROR---------------------\n";
+             exit 1;
+       }
+    }
+}
+
 print "Include date/time stamp history? (1-yes, 0-no, default=1): ";
 $use_history=<stdin>;
 if($use_history eq "\n"){
@@ -515,6 +631,21 @@ if($enable_geotiff== 1){
    $fflags77 = $fflags77." -I\$(INC_FORTRANGIS1) -I\$(INC_FORTRANGIS2)";
    $fflags = $fflags." -I\$(INC_FORTRANGIS1) -I\$(INC_FORTRANGIS2)";
    $ldflags = $ldflags." -L\$(LIB_FORTRANGIS) -lfortrangis -lfortranc -L\$(LIB_GDAL) -lgdal";
+   if ( $cray_modifications == 1 ) {
+      $ldflags = $ldflags." -ljasper -ljpeg -lz -lstdc++";
+   }
+}
+
+# EMK...Added LIGBEOTIFF for Air Force
+if($enable_libgeotiff== 1){
+    $cflags = $cflags." -I\$(INC_LIBGEOTIFF)";
+    $tiffpath = "";
+    $tiffdeps = "";
+    if ( $cray_modifications == 1 ) {
+       $tiffpath = " -L".$sys_libtiff_path;
+       $tiffdeps = " -L".$sys_libjbig_path." -ljbig "." -L".$sys_liblzma_path." -llzma ";
+    }
+    $ldflags = $ldflags." -L\$(LIB_LIBGEOTIFF) ".$tiffpath." -ltiff -lgeotiff -lm -lz -ljpeg ".$tiffdeps;
 }
 
 
@@ -547,6 +678,10 @@ printf conf_file "%s%s\n","LIB_HDFEOS      = $lib_hdfeos";
 printf conf_file "%s%s\n","INC_FORTRANGIS1 = $inc_fortrangis1";
 printf conf_file "%s%s\n","INC_FORTRANGIS2 = $inc_fortrangis2";
 printf conf_file "%s%s\n","LIB_FORTRANGIS  = $lib_fortrangis";
+# EMK...Added LIBGEOTIFF for Air Force
+printf conf_file "%s%s\n","INC_LIBGEOTIFF  = $inc_libgeotiff";
+printf conf_file "%s%s\n","LIB_LIBGEOTIFF  = $lib_libgeotiff";
+
 printf conf_file "%s%s\n","LIB_GDAL        = $lib_gdal";
 printf conf_file "%s%s\n","CFLAGS          = $cflags";
 printf conf_file "%s%s\n","FFLAGS77        = $fflags77";
@@ -604,6 +739,15 @@ if($enable_geotiff == 1) {
 else{
    printf misc_file "%s\n","#undef USE_GDAL ";
 }
+
+# EMK Added LIBGEOTIFF support for Air Force
+if($enable_libgeotiff == 1) {
+    printf misc_file "%s\n","#define USE_LIBGEOTIFF ";
+}
+else{
+    printf misc_file "%s\n","#undef USE_LIBGEOTIFF ";
+}
+
 
 if($use_history == 1) {
    printf misc_file "%s\n","#undef LDT_SKIP_HISTORY ";

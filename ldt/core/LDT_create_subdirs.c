@@ -15,6 +15,7 @@
 
 /* ANSI C Standard Headers */
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 

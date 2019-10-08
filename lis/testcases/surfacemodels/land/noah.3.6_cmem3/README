@@ -1,0 +1,29 @@
+Noah-3.6 CMEM3 Radiative Tranfer Model Test Case
+
+This test-case performs a 1 degree simulation over the continental US
+with the Noah-3.6 landsurface model and CMEM3 Radiative Transfer 
+Model from 2010-3-29 to 2010-4-3 to test the Noah-3.6 plugin.
+
+This directory contains: 
+
+* this README file.
+* the ldt.config file used to generate the parameter and domain file.
+  (This file should be edited to make sure that the locations of the 
+  paramter and forcing files are specified correctly.)
+* the lis.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.) 
+* the MODEL_OUTPUT_LIST.TBL file used to specify the output variables.
+* a sample grads control file that can be used to visualize the 
+  ldt parameters/domain. (input.ctl)
+* a sample grads control file that can be used to visualize the 
+  output. (output.ctl)
+
+To run this test case: 
+
+* Generate the LDT executable.
+* Generate the LIS executable. 
+* Run the LDT executable using the ldt.config file
+* Run the LIS executable using the lis.config file and the sample 
+  input data. 
+* View the output using the sample grads file. 

@@ -89,12 +89,14 @@ subroutine read_gdas( order, n, findex, &
   real    :: glbdata_a(10,LDT_rc%ngrid(n))
   real    :: glbdata_a_f06(10,LDT_rc%ngrid(n))
   integer :: nstep
+  logical :: dataStrucflag
 
 !=== End Variable Definition =======================
-
+  glbdata_i = LDT_rc%udef
   glbdata_a = LDT_rc%udef
   glbdata_a_f06 = LDT_rc%udef
   ngdas = (gdas_struc(n)%nc*gdas_struc(n)%nr)
+  dataStrucflag = .false.
 !--------------------------------------------------------------------------
 ! Set the GRIB parameter specifiers
 !--------------------------------------------------------------------------
@@ -112,14 +114,19 @@ subroutine read_gdas( order, n, findex, &
 !--------------------------------------------------------------------------
 ! Set up to open file and retrieve specified field 
 !--------------------------------------------------------------------------
+  
   fname = name00
-  call retrieve_gdas_variables(n, findex, fname,glbdata_i, ferror1)
+  if(gdas_struc(n)%dstrucchange1 .AND.  gdas_struc(n)%gdastime1 .ge. gdas_struc(n)%datastructime1) then
+    dataStrucflag = .true.  !HKB Use special routine for f00 files following 2019 Jun 12 12Z GDAS upgrades
+  endif
+  call retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata_i, ferror1)
+  dataStrucflag = .false. !Reset flag since f03 and f06 files are not affected by 2019 Jun 12 upgrade
 
 !--------------------------------------------------------------------------
 ! read 3hr forecast for time averaged fields
 !--------------------------------------------------------------------------
   fname = name03
-  call retrieve_gdas_variables(n, findex, fname,glbdata_a, ferror2)
+  call retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata_a, ferror2)
 
 !--------------------------------------------------------------------------
 ! read 6hr forecast for time averaged fields, if required. 
@@ -127,7 +134,7 @@ subroutine read_gdas( order, n, findex, &
 
   if(F06flag) then 
      fname = name06
-     call retrieve_gdas_variables(n, findex, fname,glbdata_a_f06, ferror3)
+     call retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata_a_f06, ferror3)
   end if
   
   ferror = 1
@@ -187,7 +194,7 @@ end subroutine read_gdas
 ! \label{retrieve_gdas_variables}
 ! 
 ! !INTERFACE: 
-subroutine retrieve_gdas_variables(n, findex, fname, glbdata, errorcode)
+subroutine retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata, errorcode)
 ! !USES: 
   use LDT_coreMod,        only : LDT_rc, LDT_domain
   use LDT_logMod,         only : LDT_logunit,LDT_getNextUnitNumber,& 
@@ -203,6 +210,7 @@ subroutine retrieve_gdas_variables(n, findex, fname, glbdata, errorcode)
   integer               :: n 
   integer               :: findex
   character(len=*)      :: fname
+  logical               :: dataStrucflag
   real                  :: glbdata(10,LDT_rc%ngrid(n))
   integer               :: errorcode
 ! 
@@ -216,7 +224,7 @@ subroutine retrieve_gdas_variables(n, findex, fname, glbdata, errorcode)
   real, allocatable :: f(:)
   real, dimension(LDT_rc%lnc(n), LDT_rc%lnr(n)) :: varfield
   integer :: igrib
-  integer :: iv,c,r,t
+  integer :: iv,ivmax,c,r,t
   real    :: missingValue 
   integer :: iret
   integer :: ftn 
@@ -241,7 +249,16 @@ subroutine retrieve_gdas_variables(n, findex, fname, glbdata, errorcode)
   pds7 = (/ 002,002,000,000,010,010,000,000,000 /) !htlev2
 ! index 10 indicates instantaneous, 003 indicates time average
 !  pds16 = (/010,010,003,003,010,010,010,003,003,003 /) 
-  pds16 = (/010,010,003,003,010,010,010,003,003 /) 
+
+  if(dataStrucflag) then
+    ! HKB...All instantaneous fields in f00 files
+    pds16 = (/010,010,010,010,010,010,010,010,010 /)
+    ivmax = 7
+  else
+    ! index 10 indicates instantaneous, 003 indicates time average
+    pds16 = (/010,010,003,003,010,010,010,003,003 /)
+    ivmax = 9
+  endif
 
   ngdas = (gdas_struc(n)%nc*gdas_struc(n)%nr)
 
@@ -309,7 +326,7 @@ subroutine retrieve_gdas_variables(n, findex, fname, glbdata, errorcode)
         call LDT_verify(rc, 'error in grib_get: timeRangeIndicator in read_gdas')
 
         var_found = .false. 
-        do iv=1,9
+        do iv=1,ivmax
            if((pds5_val.eq.pds5(iv)).and.&
                 (pds7_val.eq.pds7(iv)).and.&
                 (pds16_val.eq.pds16(iv))) then
@@ -367,7 +384,7 @@ subroutine retrieve_gdas_variables(n, findex, fname, glbdata, errorcode)
      deallocate(lb)
      deallocate(f)     
          
-     do kk=1,9
+     do kk=1,ivmax
         if(.not.var_status(kk)) then 
            write(LDT_logunit,*) &
               '[ERR] Could not retrieve entries in file: ',trim(fname)

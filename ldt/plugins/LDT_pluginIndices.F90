@@ -35,6 +35,8 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_MetForcprocId    = "Metforce processing"
    character*50, public,  parameter :: LDT_MetTDscaleprocId = "Metforce temporal downscaling"
    character*50, public,  parameter :: LDT_StatDscaleMetforcprocId = "Statistical downscaling of met forcing"
+   character*50, public,  parameter :: LDT_ldtsiId = "LDTSI analysis"
+   character*50, public,  parameter :: LDT_OPTUEparamprocId   = "OPTUE parameter processing"
 
 !-------------------------------------------------------------------------
 ! Domains
@@ -96,6 +98,8 @@ module LDT_pluginIndices
         = "NASA SMAP vegetation optical depth"
    character*50, public,  parameter :: LDT_GLASSlaiobsId            &
         = "GLASS LAI"
+   character*50, public,  parameter :: LDT_LPRMvodobsId            &
+        = "LPRM vegetation optical depth"
 
 !-------------------------------------------------------------------------
 ! Meteorological forcings
@@ -153,10 +157,10 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_noah271Id     = "Noah.2.7.1"
    character*50, public,  parameter :: LDT_noah32Id      = "Noah.3.2"
    character*50, public,  parameter :: LDT_noah33Id      = "Noah.3.3"
-   character*50, public,  parameter :: LDT_noah34Id      = "Noah.3.4"
-   character*50, public,  parameter :: LDT_noah35Id      = "Noah.3.5"
    character*50, public,  parameter :: LDT_noah36Id      = "Noah.3.6"
-   character*50, public,  parameter :: LDT_noahmpId      = "Noah-MP.3.6"
+   character*50, public,  parameter :: LDT_noah39Id      = "Noah.3.9"
+   character*50, public,  parameter :: LDT_noahmp36Id      = "Noah-MP.3.6"
+   character*50, public,  parameter :: LDT_noahmp401Id   = "Noah-MP.4.0.1"
    character*50, public,  parameter :: LDT_clm2Id        = "CLM.2"
    character*50, public,  parameter :: LDT_clm45Id       = "CLM.4.5"
    character*50, public,  parameter :: LDT_vic411Id      = "VIC.4.1.1"

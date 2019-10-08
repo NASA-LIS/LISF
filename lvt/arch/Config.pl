@@ -69,18 +69,75 @@ if($par_lev == 1) {
    $sys_par = " -DSPMD ";
 }
 
-print "Optimization level (-2=strict checks, -1=debug, 0,1,2,3, default=2): ";
+print "Optimization level (-3=strict checks with warnings, -2=strict checks, -1=debug, 0,1,2,3, default=2): ";
 $opt_lev=<stdin>;
 if($opt_lev eq "\n"){
    $opt_lev=2;
 }
+
+if($opt_lev == -3) {
+   # Default flags for C.
+    $sys_c_opt = "-g";
+    if($sys_arch eq "linux_ifc"){
+	$sys_opt = "-g -warn";
+	$sys_opt .= 
+           " -check bounds,format,output_conversion,pointers,stack,uninit";
+	$sys_opt .= " -fp-stack-check -ftrapuv ";
+
+	$sys_c_opt = "-g -Wall -Wcast-qual -Wcheck -Wdeprecated";
+	$sys_c_opt .= " -Wextra-tokens -Wformat";
+	$sys_c_opt .= " -Wformat-security -Wmissing-declarations";
+	$sys_c_opt .= " -Wmissing-prototypes -Wpointer-arith -Wremarks";
+	$sys_c_opt .= " -Wreturn-type -Wshadow -Wsign-compare";
+	$sys_c_opt .= " -Wstrict-prototypes -Wtrigraphs -Wuninitialized";
+	$sys_c_opt .= " -Wunused-function -Wunused-parameter";
+	$sys_c_opt .= " -Wunused-variable -Wwrite-strings";
+	# Run-time flags
+	$sys_c_opt .= " -check=conversions,stack,uninit";
+	$sys_c_opt .= " -fp-stack-check -fp-trap=common -fp-trap-all=common";
+	$sys_c_opt .= " -ftrapuv";
+    }
+    elsif($sys_arch eq "linux_pgi") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+	$sys_opt = "-g ";
+    }
+    elsif($sys_arch eq "linux_absoft") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+	$sys_opt = "-g ";
+    }
+    elsif($sys_arch eq "linux_lf95") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+    }
+    elsif($sys_arch eq "Darwin_gfortran" || $sys_arch eq "linux_gfortran") {
+	$sys_opt = "-g -Wall -Wcharacter-truncation";
+	$sys_opt .= " -Wconversion-extra -Wextra -Wpedantic -Wrealloc-lhs";
+	$sys_opt .= " -Wrealloc-lhs-all";
+	# Run-time options
+	$sys_opt .= " -ffpe-trap=invalid,zero,overflow";
+	$sys_opt .= " -fcheck=all,no-array-temps ";
+
+	$sys_c_opt = "-g -Wall -Wextra -Wpedantic -Wformat -Wtraditional";
+	$sys_c_opt .= " -Wconversion";
+	# Run-time flags
+	$sys_c_opt .= " -fstack-protector-all -fstack-check -ftrapv";
+    }
+    elsif($sys_arch eq "AIX") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+	$sys_opt = "-g ";
+    }
+}
+
 if($opt_lev == -2) {
-   $sys_opt = "-g -check bounds,format,output_conversion,pointers,stack,uninit  -fp-stack-check -ftrapuv ";
+   $sys_opt = "-g -check bounds,format,output_conversion,pointers,stack,uninit -fp-stack-check -ftrapuv ";
    $sys_c_opt = "-g ";
 }
 if($opt_lev == -1) {
-   $sys_opt = "-g ";
-   $sys_c_opt = "-g ";
+   $sys_opt = "-g -O0";
+   $sys_c_opt = "-g -O0";
 }
 elsif($opt_lev == 0) {
    $sys_opt = "-O0 ";
@@ -388,14 +445,14 @@ if($use_matlab eq "\n"){
 
 if($sys_arch eq "linux_ifc") {
    if ($use_endian == 1 ) {
-      $cflags = "-c ".$sys_c_opt." -DIFC";
-      $fflags77= "-c ".$sys_opt."-nomixed_str_len_arg -names lowercase -convert little_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) ";
-      $fflags =" -c ".$sys_opt."-u -traceback -fpe0  -nomixed_str_len_arg -names lowercase -convert little_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) ";
+      $cflags = "-c ".$sys_c_opt." -traceback -DIFC";
+      $fflags77= "-c ".$sys_opt." -traceback -nomixed_str_len_arg -names lowercase -convert little_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) ";
+      $fflags =" -c ".$sys_opt." -u -traceback -fpe0  -nomixed_str_len_arg -names lowercase -convert little_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) ";
    }
    else {
-      $cflags = "-c ".$sys_c_opt." -DIFC";
-      $fflags77= "-c ".$sys_opt."-nomixed_str_len_arg -names lowercase -convert big_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) ";
-      $fflags =" -c ".$sys_opt."-u -traceback -fpe0  -nomixed_str_len_arg -names lowercase -convert big_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) ";
+      $cflags = "-c ".$sys_c_opt." -traceback -DIFC";
+      $fflags77= "-c ".$sys_opt." -traceback -nomixed_str_len_arg -names lowercase -convert big_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) ";
+      $fflags =" -c ".$sys_opt." -u -traceback -fpe0  -nomixed_str_len_arg -names lowercase -convert big_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) ";
    }
    $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt ";
 }
@@ -416,9 +473,9 @@ elsif($sys_arch eq "Darwin_gfortran" || $sys_arch eq "linux_gfortran") {
    else {
       $endian = "-fconvert=big-endian";
    }
-   $cflags = "-c -DGFORTRAN ";
-   $fflags77= "-c -pass-exit-codes ".$sys_opt." ".$sys_par." ".$endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DHIDE_MPI -I\$(MOD_ESMF) ";
-   $fflags =" -c -pass-exit-codes -ffree-line-length-0 ".$sys_opt." ".$sys_par." ".$endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DHIDE_MPI -I\$(MOD_ESMF) ";
+   $cflags = "-c ".$sys_c_opt." -DGFORTRAN ";
+   $fflags77= "-c -pass-exit-codes ".$sys_opt." -fbacktrace ".$sys_par." ".$endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DHIDE_MPI -I\$(MOD_ESMF) ";
+   $fflags =" -c -pass-exit-codes -ffree-line-length-0 ".$sys_opt." -fbacktrace ".$sys_par." ".$endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DHIDE_MPI -I\$(MOD_ESMF) ";
    $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++ ";
 }
 elsif($sys_arch eq "AIX") {
@@ -477,6 +534,9 @@ if($enable_geotiff== 1){
    $fflags77 = $fflags77." -I\$(INC_FORTRANGIS1) -I\$(INC_FORTRANGIS2)";
    $fflags = $fflags." -I\$(INC_FORTRANGIS1) -I\$(INC_FORTRANGIS2)";
    $ldflags = $ldflags." -L\$(LIB_FORTRANGIS) -lfortrangis -lfortranc -L\$(LIB_GDAL) -lgdal";
+   if ( $cray_modifications == 1 ) {
+      $ldflags = $ldflags." -ljasper -ljpeg -lz -lstdc++";
+   }
 }
 
 open(conf_file,">configure.lvt");
@@ -538,7 +598,11 @@ if($use_gribapi == 1) {
    printf misc_file "%s\n","#define USE_GRIBAPI ";
 }
 elsif($use_gribapi == 2) {
+   printf misc_file "%s\n","#define USE_GRIBAPI ";
    printf misc_file "%s\n","#define USE_ECCODES ";
+}
+else{
+   printf misc_file "%s\n","#undef USE_GRIBAPI ";
 }
 
 if($use_hdf4 == 1) {

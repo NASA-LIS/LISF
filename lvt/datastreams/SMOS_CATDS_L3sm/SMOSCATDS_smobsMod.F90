@@ -135,6 +135,7 @@ contains
     SMOSCATDS_smobs(i)%gridDesci(8) = 179.8703
 
     SMOSCATDS_smobs(i)%gridDesci(9) = 1
+    SMOSCATDS_smobs(i)%gridDesci(10) = 0.25 ! MN: based on Kristi's email 1/16/2019    
     SMOSCATDS_smobs(i)%gridDesci(20) = 64
     
     SMOSCATDS_smobs(i)%gridDesci(2) = ease_nc  !nx

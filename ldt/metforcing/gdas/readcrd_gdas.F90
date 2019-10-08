@@ -16,7 +16,7 @@ subroutine readcrd_gdas(findex)
 ! !USES:
   use ESMF
   use LDT_coreMod,   only : LDT_rc, LDT_config
-  use LDT_logMod,    only : LDT_logunit, LDT_verify
+  use LDT_logMod,    only : LDT_logunit, LDT_verify, LDT_endrun
   use gdas_forcingMod, only: gdas_struc
 !
 ! !DESCRIPTION:
@@ -28,6 +28,17 @@ subroutine readcrd_gdas(findex)
   implicit none
   integer, intent(in) :: findex
   integer :: n, rc
+
+! Add a check to prevent LDT to be run at 3hr timesteps when using GDAS reader
+! This is a temporary check until a complete bug fix is added to LDT
+  if(LDT_rc%metForcOutInterval .eq. 10800) then
+      write(LDT_logunit,*) '[WARN] There is currently a bug associated with this reader when'
+      write(LDT_logunit,*) '[WARN]   being run at 3hr.'
+      write(LDT_logunit,*) '[WARN] Please restart the LDT run with "Processed metforcing output interval:"'
+      write(LDT_logunit,*) '[WARN]   set to another value (either 1hr or 6hr is suggested).'
+      call LDT_endrun
+  endif
+
 
 !  if( LDT_rc%met_ecor(findex) .ne. "none" .and. &
   if( LDT_rc%met_ecor_parms(findex) .ne. "none" .and. &

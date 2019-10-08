@@ -64,7 +64,9 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_noah32Id    = "Noah.3.2"
    character*50, public,  parameter :: LIS_noah33Id    = "Noah.3.3"
    character*50, public,  parameter :: LIS_noah36Id    = "Noah.3.6"
+   character*50, public,  parameter :: LIS_noah39Id    = "Noah.3.9"
    character*50, public,  parameter :: LIS_noahmp36Id  = "NoahMP.3.6"
+   character*50, public,  parameter :: LIS_noahmp401Id = "Noah-MP.4.0.1"
    character*50, public,  parameter :: LIS_ruc37Id     = "RUC.3.7"
    character*50, public,  parameter :: LIS_clm2Id      = "CLM.2"
    character*50, public,  parameter :: LIS_vic411Id    = "VIC.4.1.1"
@@ -76,6 +78,8 @@ module LIS_pluginIndices
    !character*50, public,  parameter :: LIS_tessId      = "HTESSEL"
    character*50, public,  parameter :: LIS_jules43Id     = "JULES.4.3"
    character*50, public,  parameter :: LIS_jules50Id     = "JULES.5.0"
+   character*50, public,  parameter :: LIS_jules52Id     = "JULES.5.2"
+   character*50, public,  parameter :: LIS_jules53Id     = "JULES.5.3"
    character*50, public,  parameter :: LIS_cableId     = "CABLE"
    character*50, public,  parameter :: LIS_fasstId     = "FASST"
    !character*50, public,  parameter :: LIS_sheelsId    = "SHEELS"
@@ -170,6 +174,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_AWAPforcId        = "AWAP"
    character*50, public,  parameter :: LIS_HiMATGMUforcId    = "HiMAT GMU"
    character*50, public,  parameter :: LIS_AWRALforcId    = "AWRAL processed forcing"
+   character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------
@@ -230,6 +235,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_WindSatsmobsId      = "Windsat"
    character*50, public,  parameter :: LIS_WindSatCsmobsId     = "Windsat C-band"
    character*50, public,  parameter :: LIS_snodepobsId         = "SNODEP"
+   character*50, public,  parameter :: LIS_ldtsiobsId          = "LDTSI"
    character*50, public,  parameter :: LIS_ANSASWEsnowobsId    = "ANSA SWE"
    character*50, public,  parameter :: LIS_ANSASCFsnowobsId    = "ANSA SCF"
    character*50, public,  parameter :: LIS_ANSASNWDsnowobsId   = "ANSA snow depth"

@@ -43,11 +43,11 @@
 !  \end{description}
 !
 !EOP      
-  integer   :: ftn, iret
+  integer   :: iret
   logical   :: file_exists
   integer   :: ferror_bil
   integer, save :: file_status
-  integer   :: c, r, i, j 
+  integer   :: c, r, i
   integer   :: mi                        ! Total number of input param grid array points
   integer   :: mo                        ! Total number of output LIS grid array points
   integer, allocatable :: n11(:)         ! Map array for aggregating methods
@@ -57,7 +57,7 @@
   real      :: go1(out_ncols*out_nrows)  ! output lis 1d grid
   logical*1 :: lo1(out_ncols*out_nrows)  ! output logical mask (to match go)
   real      :: param_gridDesc(20)
-  real      :: subparam_gridDesc(20)
+!  real      :: subparam_gridDesc(20)
 
 !- BIL Format file read paramters:
   integer, parameter :: xd=43200, yd=18000       ! Dimension of original data
@@ -186,7 +186,9 @@
 !        print *, " Setting World Clim Data Array for Averaging (large loop)  ..."
         do i = 1, mi
            gi1(i) = real4ptr1dL(i)
-           if( gi1(i) .ne. LDT_rc%udef ) li1(i) = .true.
+           if( gi1(i) .ne. LDT_rc%udef ) then
+             li1(i) = .true.
+           endif
         enddo
 
      !- Average finer scale points to output grid:

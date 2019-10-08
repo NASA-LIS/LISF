@@ -163,12 +163,23 @@ if($opt_lev == -3) {
    elsif($sys_arch eq "linux_lf95") {
       print "Optimization level $opt_lev is not defined for $sys_arch.\n";
       print "Using '-g'\n";
-      $sys_opt = "-g";
    }
    elsif($sys_arch eq "Darwin_gfortran" || $sys_arch eq "linux_gfortran") {
-      print "Optimization level $opt_lev is not defined for $sys_arch.\n";
-      print "Using '-g'\n";
-      $sys_opt = "-g";
+      #print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+      #print "Using '-g'\n";
+      #$sys_opt = "-g";
+      $sys_opt = "-g -Wall -Wcharacter-truncation";
+      $sys_opt .= " -Wconversion-extra -Wextra -Wpedantic -Wrealloc-lhs";
+      $sys_opt .= " -Wrealloc-lhs-all";
+      # Run-time options
+      $sys_opt .= " -ffpe-trap=invalid,zero,overflow";
+      $sys_opt .= " -fcheck=all,no-array-temps";
+
+      $sys_c_opt = "-g -Wall -Wextra -Wpedantic -Wformat -Wtraditional";
+      $sys_c_opt .= " -Wconversion";
+      # Run-time flags
+      $sys_c_opt .= " -fstack-protector-all -fstack-check -ftrapv";
+
    }
    elsif($sys_arch eq "AIX") {
       print "Optimization level $opt_lev is not defined for $sys_arch.\n";
@@ -709,15 +720,15 @@ elsif($sys_arch eq "linux_absoft") {
 elsif($sys_arch eq "linux_lf95") {
 }
 elsif($sys_arch eq "linux_gfortran") {
-   $cflags = "-c ".$sys_opt." -DGFORTRAN -DLINUX";
-   $fflags77= "-c ".$sys_opt." ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DLINUX ".$sys_par_d." -I\$(MOD_ESMF)";
-   $fflags ="-c -ffree-line-length-0 ".$sys_opt." ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DLINUX ".$sys_par_d." -I\$(MOD_ESMF)";
+   $cflags = "-c ".$sys_c_opt." -DGFORTRAN -DLINUX";
+   $fflags77= "-c ".$sys_opt." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DLINUX ".$sys_par_d." -I\$(MOD_ESMF)";
+   $fflags ="-c -ffree-line-length-0 ".$sys_opt." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DLINUX ".$sys_par_d." -I\$(MOD_ESMF)";
    $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++ -lz";
 }
 elsif($sys_arch eq "Darwin_gfortran") {
-   $cflags = "-c ".$sys_opt." -DGFORTRAN";
-   $fflags77= "-c ".$sys_opt." ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN ".$sys_par_d." -I\$(MOD_ESMF)";
-   $fflags ="-c -ffree-line-length-0 ".$sys_opt." ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN ".$sys_par_d." -I\$(MOD_ESMF)";
+   $cflags = "-c ".$sys_c_opt." -DGFORTRAN";
+   $fflags77= "-c ".$sys_opt." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN ".$sys_par_d." -I\$(MOD_ESMF)";
+   $fflags ="-c -ffree-line-length-0 ".$sys_opt." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN ".$sys_par_d." -I\$(MOD_ESMF)";
    $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++";
 }
 elsif($sys_arch eq "AIX") {
