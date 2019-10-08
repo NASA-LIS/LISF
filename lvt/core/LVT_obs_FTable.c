@@ -59,9 +59,10 @@ void FTN(registerobssetup)(char *j,void (*func)(int*), int len)
   struct obsininode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct obsininode*) malloc(sizeof(struct obsininode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -133,9 +134,10 @@ void FTN(registerobsread)(char *j,void (*func)(int*), int len)
   struct obsreadnode* pnode; 
   // create node
   
+  len += 1; // ensure that there is space for terminating null
   pnode=(struct obsreadnode*) malloc(sizeof(struct obsreadnode));
   pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
