@@ -1,32 +1,34 @@
 TEMPLATE LSM forcing Testcase
 
 This is a testcase that uses:
-  (a) The AWRAL forcing
+  (a) The AWRAL forcing over the Australian domain at 0.05 degree spatial resolution
   (b) The awral.6.0.0 LSM option
-  (c) A time period from 00:00Z 1 Jun 2010 to 00:00Z 5 Jun 2010
+  (c) The Australian domain at 0.05 degree spatial resoluion
+  (c) A time period from 00:00Z 30 Jun 2010 to 00:00Z 5 July 2010 with a restart file from 00:00Z 30 June 2010
 
 This directory contains:
   (a) This README file
-  (e) The "lis.config" file used for this testcase
-  (f) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+  (b) The "AWRAL600.rst.lis.config" file used for this testcase
+  (c) The "AWRAL600_OUTPUT_LIST.TBL" file used by the AWRAL600.rst.lis.config file
       to select the output variables
-  (g) An "output.ctl" file used to display the output in GrADS from
-      the LIS run
-  (h) A "testcase.ctl" file used to display the packaged output in
-      GrADS from the OUTPUT tar file provided by the testcase
 
-Note that the "ldt.config" and "lis.config" files should be edited
+Note that the "AWRAL600.rst.lis.config" files should be edited
 to make sure that the locations of the parameter and forcing files
 are specified correctly.
 
 To run this testcase:
   (a) Generate the LIS executable
-  (b) Download the testcase input data from:
+  (b) Download the testcase input and output data from:
          http://lis.gsfc.nasa.gov/Source/testcases
-      the testcase corresponding to TEMPLATE LSM FORCING TEST
-  (c) Run the LIS executable using the "lis.config" file with the
-      testcase input data
+      the testcase corresponding to AWRAL 6.0 LSM TEST
+  (c) Run the LIS executable using the "AWRAL600lis.rst.config" file with the
+      testcase input data (E.g. mpirun -np 4 ./LIS -f AWRAL600lis.rst.config)
 
-NOTE: This is using the 4 pixel domain for both AWRAL forcing and the AWRAL600 land surface model.
-TODO: Change to the full Australian domain
+Caveats:
+  (a) Please note that this is a simple functional test and the output
+      from the testcase is not expected to be used for any scientific
+      evaluation.
+  (b) The forcing and model domain must match and be at the same resolution
+  (c) The user can compare their netcdf outputs against the netcdf outputs supplied using standard climate data operator tools (E.g. cdo)
+
 
