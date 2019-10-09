@@ -5551,6 +5551,18 @@ Acceptable values are:
 |1     | Use the lowest model level forcing.
 |====
 
+`MERRA2 use 2m wind fields:` specifies whether to use the 
+2m diagnosed wind fields. This option will only work if the 
+lowest model level forcing option is turned off.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use the 2m diagnosed wind speed fields.
+|1     | Use the 2m diagnosed wind speed fields.
+|====
+
 `MERRA2 use corrected total precipitation:` specifies whether
 to use the bias corrected total precipitation.
 Acceptable values are:
@@ -5565,7 +5577,8 @@ Acceptable values are:
 .Example _lis.config_ entry
 ....
 MERRA2 forcing directory:              ./MERRA2/
-MERRA2 use lowest model level forcing:     1 
+MERRA2 use lowest model level forcing:     1
+MERRA2 use 2m wind fields:                 0 
 MERRA2 use corrected total precipitation:  1
 ....
 
