@@ -89,13 +89,14 @@ void FTN(registeranninputsourcesetup)(char *j,void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct anninpsetupnode* current;
   struct anninpsetupnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct anninpsetupnode*) malloc(sizeof(struct anninpsetupnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -164,13 +165,14 @@ void FTN(registerannoutputsourcesetup)(char *j,void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct annoutsetupnode* current;
   struct annoutsetupnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct annoutsetupnode*) malloc(sizeof(struct annoutsetupnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -239,13 +241,14 @@ void FTN(registerreadanninputsource)(char *j,void (*func)(int*, int*, int*, int*
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct anninputsourcenode* current;
   struct anninputsourcenode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct anninputsourcenode*) malloc(sizeof(struct anninputsourcenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -313,13 +316,14 @@ void FTN(registerreadannoutputsource)(char *j,void (*func)(int*, int*, int*, int
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct annoutputsourcenode* current;
   struct annoutputsourcenode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct annoutputsourcenode*) malloc(sizeof(struct annoutputsourcenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 

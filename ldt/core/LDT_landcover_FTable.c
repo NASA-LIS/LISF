@@ -94,13 +94,14 @@ void FTN(registerreadlc)(char *j, void (*func)(int*, int*, float*, float*),int l
 //   \end{description}
 //EOP
 { 
+  int len1;
   struct lcnode* current;
   struct lcnode* pnode; 
   // create node
 
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lcnode*) malloc(sizeof(struct lcnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -178,13 +179,14 @@ void FTN(registerreadcroptype)(char *j, void (*func)(int*, int*, float*),int len
 //  \end{description}
   //EOP
 {
+  int len1;
   struct croplcnode* current;
   struct croplcnode* pnode;
   // create node
 
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct croplcnode*) malloc(sizeof(struct croplcnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL;
@@ -258,14 +260,14 @@ void FTN(registerreadrootdepth)(char *j,void (*func)(int*,float*),int len)
 //  \end{description}
   //EOP
 {
-
+  int len1;
   struct drootnode* current;
   struct drootnode* pnode;
   // create node
 
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct drootnode*) malloc(sizeof(struct drootnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL;

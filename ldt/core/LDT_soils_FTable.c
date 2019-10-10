@@ -152,13 +152,14 @@ void FTN(registersetsoilfractionattribs)(char *j, void (*func)(),int len)
 //   \end{description}
 //EOP
 { 
+  int len1;
   struct soilfracsetnode* current;
   struct soilfracsetnode* pnode; 
   // create node
 
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct soilfracsetnode*) malloc(sizeof(struct soilfracsetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -236,13 +237,14 @@ void FTN(registerreadsoilfrac)(char *j, void (*func)(int*, int*,
 //  \end{description}
   //EOP
 { 
+  int len1;
   struct soilfracnode* current;
   struct soilfracnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct soilfracnode*) malloc(sizeof(struct soilfracnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -320,13 +322,14 @@ void FTN(registersettextureattribs)(char *j, void (*func)(),int len)
 //   \end{description}
 //EOP
 { 
+  int len1;
   struct txtsetnode* current;
   struct txtsetnode* pnode; 
   // create node
 
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct txtsetnode*) malloc(sizeof(struct txtsetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -402,14 +405,14 @@ void FTN(settextureattribs)(char *j,int len)
 void FTN(registerreadsoiltexture)(char *j,void (*func)(int*, int*, float*, float*),int len)
 //EOP 
 { 
-
+  int len1;
   struct txtnode* current;
   struct txtnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct txtnode*) malloc(sizeof(struct txtnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -488,14 +491,14 @@ void FTN(registerreadporosity)(char *j,void (*func)(int*, float*, float*),int le
 //  \end{description}
   //EOP
 {
-
+  int len1;
   struct porosnode* current;
   struct porosnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct porosnode*) malloc(sizeof(struct porosnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -570,13 +573,14 @@ void FTN(readporosity)(char *j,int *n, float *array, float *marray, int len)
   //EOP
 //{ 
 
+//  int len1;
 //  struct drootnode* current;
 // struct drootnode* pnode; 
   // create node
   
-//  len += 1; // ensure that there is space for terminating null
+//  len1 = len + 1; // ensure that there is space for terminating null
 //  pnode=(struct drootnode*) malloc(sizeof(struct drootnode));
-//  pnode->name=(char*) malloc(len*sizeof(char));
+//  pnode->name=(char*) calloc(len1,sizeof(char));
 //  strncpy(pnode->name,j,len);
 //  pnode->func = func;
 //  pnode->next = NULL; 
@@ -650,13 +654,14 @@ void FTN(registerreadcolor)(char *j, void (*func)(int*, float*),int len)
 //  \end{description}
   //EOP
 { 
+  int len1;
   struct colornode* current;
   struct colornode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct colornode*) malloc(sizeof(struct colornode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -731,13 +736,14 @@ void FTN(registersethsgattribs)(char *j, void (*func)(),int len)
 //   \end{description}
 //EOP
 {
+  int len1;
   struct hsgsetnode* current;
   struct hsgsetnode* pnode;
   // create node
 
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct hsgsetnode*) malloc(sizeof(struct hsgsetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL;
@@ -805,13 +811,14 @@ void FTN(registerreadhsg)(char *j, void (*func)(int*, float*), int len)
 //  \end{description}
   //EOP
 {
+  int len1;
   struct hsgnode* current;
   struct hsgnode* pnode;
   // create node
 
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct hsgnode*) malloc(sizeof(struct hsgnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL;
@@ -884,14 +891,14 @@ void FTN(registerreadsoildepth)(char *j,void (*func)(int*, float*),int len)
 //  \end{description}
   //EOP
 { 
-
+  int len1;
   struct dsoilnode* current;
   struct dsoilnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct dsoilnode*) malloc(sizeof(struct dsoilnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
