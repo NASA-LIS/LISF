@@ -85,13 +85,14 @@ void FTN(registerperturbinit)(char *j, void (*func)(int*),int len)
 //. \end{description}
 //EOP
 { 
+  int len1;
   struct pertinitnode* current;
   struct pertinitnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct pertinitnode*) malloc(sizeof(struct pertinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -161,13 +162,14 @@ void FTN(registerperturbsetup)(char *j, void (*func)(int*, int*, void*, void*),i
 //. \end{description}
 //EOP
 { 
+  int len1;
   struct pertsetnode* current;
   struct pertsetnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct pertsetnode*) malloc(sizeof(struct pertsetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -243,13 +245,14 @@ void FTN(registerperturbmethod)(char *j, void (*func)(int*, int*, int*, void*, v
 //. \end{description}
 //EOP
 { 
+  int len1;
   struct pertmethodnode* current;
   struct pertmethodnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct pertmethodnode*) malloc(sizeof(struct pertmethodnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -326,13 +329,14 @@ void FTN(registerperturbwriterst)(char *j, void (*func)(int*),int len)
 //. \end{description}
 //EOP
 { 
+  int len1;
   struct pertwrtnode* current;
   struct pertwrtnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct pertwrtnode*) malloc(sizeof(struct pertwrtnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -401,13 +405,14 @@ void FTN(registerperturbreadrst)(char *j, void (*func)(),int len)
 //. \end{description}
 //EOP
 { 
+  int len1;
   struct pertrstnode* current;
   struct pertrstnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct pertrstnode*) malloc(sizeof(struct pertrstnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 

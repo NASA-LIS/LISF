@@ -59,13 +59,14 @@ void FTN(registeralbedosetup)(char *j,void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct albsetnode* current;
   struct albsetnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct albsetnode*) malloc(sizeof(struct albsetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -136,13 +137,14 @@ void FTN(registerreadalbedo)(char *j,void (*func)(int*, void*, void*, float*, fl
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct albreadnode* current;
   struct albreadnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct albreadnode*) malloc(sizeof(struct albreadnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
