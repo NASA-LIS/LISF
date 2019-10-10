@@ -92,13 +92,14 @@ void FTN(registersetgfracattribs)(char *j, void (*func)(),int len)
 //   \end{description}
 //EOP
 { 
+  int len1;
   struct gfracsetnode* current;
   struct gfracsetnode* pnode; 
   // create node
 
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct gfracsetnode*) malloc(sizeof(struct gfracsetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -175,13 +176,14 @@ void FTN(registerreadgfrac)(char *j,void (*func)(int*,float*,float*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct gfracnode* current;
   struct gfracnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct gfracnode*) malloc(sizeof(struct gfracnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -259,13 +261,14 @@ void FTN(registerreadshdmin)(char *j,void (*func)(int*,float*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct shdminnode* current;
   struct shdminnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct shdminnode*) malloc(sizeof(struct shdminnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -340,13 +343,14 @@ void FTN(registerreadshdmax)(char *j,void (*func)(int*,float*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct shdmaxnode* current;
   struct shdmaxnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct shdmaxnode*) malloc(sizeof(struct shdmaxnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 

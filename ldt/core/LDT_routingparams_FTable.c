@@ -82,13 +82,14 @@ void FTN(registerroutingparamprocinit)(char *j,void (*func)(), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct routingparamprocinitnode* current;
   struct routingparamprocinitnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct routingparamprocinitnode*) malloc(sizeof(struct routingparamprocinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -158,13 +159,14 @@ void FTN(registerroutingparamprocwriteheader)(char *j,void (*func)(int*, int*, i
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct routingparamprocwheadernode* current;
   struct routingparamprocwheadernode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct routingparamprocwheadernode*) malloc(sizeof(struct routingparamprocwheadernode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -236,13 +238,14 @@ void FTN(registerroutingparamprocwritedata)(char *j,void (*func)(int*, int*), in
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct routingparamprocwdatanode* current;
   struct routingparamprocwdatanode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct routingparamprocwdatanode*) malloc(sizeof(struct routingparamprocwdatanode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 

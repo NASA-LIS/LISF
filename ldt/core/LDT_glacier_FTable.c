@@ -65,13 +65,14 @@ void FTN(registerreadglaciermask)(char *j, void (*func)(int*, float*), int len)
 //  \end{description}
   //EOP
 { 
+  int len1;
   struct glaciermasknode* current;
   struct glaciermasknode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct glaciermasknode*) malloc(sizeof(struct glaciermasknode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
