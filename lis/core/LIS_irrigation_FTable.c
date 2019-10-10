@@ -64,13 +64,14 @@ struct irrigationfinalnode* irrigationfinal_table = NULL;
 void FTN(registerirrigationschemeinit)(char *j, void (*func)(void*),int len)
 //EOP
 { 
+  int len1;
   struct irrigationinitnode* current;
   struct irrigationinitnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct irrigationinitnode*) malloc(sizeof(struct irrigationinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -137,13 +138,14 @@ void FTN(registerirrigationupdate)(char *j, void (*func)(int*, void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct irrigationapplyupdatenode* current;
   struct irrigationapplyupdatenode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct irrigationapplyupdatenode*) malloc(sizeof(struct irrigationapplyupdatenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 

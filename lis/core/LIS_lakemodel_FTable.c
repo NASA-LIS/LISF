@@ -118,13 +118,14 @@ struct lakemodelwriterstnode* lakemodelwriterst_table = NULL;
 void FTN(registerlakemodelinit)(char *j, void (*func)(int*),int len)
 //EOP
 { 
+  int len1;
   struct lakemodelinitnode* current;
   struct lakemodelinitnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lakemodelinitnode*) malloc(sizeof(struct lakemodelinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -190,13 +191,14 @@ void FTN(registerlakemodelrun)(char *j, void (*func)(int*, int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lakemodelrunnode* current;
   struct lakemodelrunnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lakemodelrunnode*) malloc(sizeof(struct lakemodelrunnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -266,13 +268,14 @@ void FTN(registerlakemodelfinalize)(char *j, void (*func)(),int len)
 // 
 //EOP
 { 
+  int len1;
   struct lakemodelfinalnode* current;
   struct lakemodelfinalnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lakemodelfinalnode*) malloc(sizeof(struct lakemodelfinalnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -338,13 +341,14 @@ void FTN(registerlakemodelsetup)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lakemodelsetupnode* current;
   struct lakemodelsetupnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lakemodelsetupnode*) malloc(sizeof(struct lakemodelsetupnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -411,14 +415,14 @@ void FTN(registerlakemodelrestart)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
-
+  int len1;
   struct lakemodelrestartnode* current;
   struct lakemodelrestartnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lakemodelrestartnode*) malloc(sizeof(struct lakemodelrestartnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -485,13 +489,14 @@ void FTN(registerlakemodeldynsetup)(char *j, void (*func)(int*, int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lakemodeldynsetnode* current;
   struct lakemodeldynsetnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lakemodeldynsetnode*) malloc(sizeof(struct lakemodeldynsetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -559,14 +564,14 @@ void FTN(registerlakemodeloutput)(char *j, void (*func)(int*, int*),int len)
 //  \end{description}
 //EOP
 { 
-
+  int len1;
   struct lakemodeloutputnode* current;
   struct lakemodeloutputnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lakemodeloutputnode*) malloc(sizeof(struct lakemodeloutputnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -637,13 +642,14 @@ void FTN(registerlakemodelf2t)(char *j, void (*func)(int*, int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lakemodelf2tnode* current;
   struct lakemodelf2tnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lakemodelf2tnode*) malloc(sizeof(struct lakemodelf2tnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -713,13 +719,14 @@ void FTN(registerlakemodelwrst)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lakemodelwriterstnode* current;
   struct lakemodelwriterstnode* pnode; 
   // create node
   
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lakemodelwriterstnode*) malloc(sizeof(struct lakemodelwriterstnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
