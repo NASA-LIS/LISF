@@ -55,12 +55,13 @@ void FTN(registerlvtinit)(char *j,void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct rmodeinitnode* pnode;
   struct rmodeinitnode* current;
 
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct rmodeinitnode*) malloc(sizeof(struct rmodeinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
@@ -127,12 +128,13 @@ void FTN(registerlvtrun)(char *j,void (*func)(), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct rmoderunnode* pnode;
   struct rmoderunnode* current;
 
-  len += 1; // ensure that there is space for terminating null
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct rmoderunnode*) malloc(sizeof(struct rmoderunnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
+  pnode->name=(char*) calloc(len1,sizeof(char));
   strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
