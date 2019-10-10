@@ -193,7 +193,7 @@ subroutine get_SPORTgfrac(n,filename, array)
     gvf = 0.0
     flag = '1'
     write (LIS_logunit,*) "Before readgvfmodis; gvf_nc / gvf_nr / npts = ",gvf_nc,gvf_nr,npts
-    iretgz = readgvfmodis( zname, gvf_nc, gvf_nr, flag, gvf )
+    iretgz = readgvfmodis( trim(zname)//char(0), gvf_nc, gvf_nr, flag, gvf )
     if ( iretgz > 0) then       ! FAILED TO READ
       write (LIS_logunit,*) "** Failed to read GVF gzipped file: ", zname
       deallocate(gvf)
