@@ -4606,6 +4606,7 @@ contains
     integer :: varid
     integer :: status
     integer :: count1 ,c,r,npatch,t,gid,stid,tid
+    integer :: glbnpatch_size
     character*20 :: wform
 
     if(present(wformat)) then 
@@ -4613,7 +4614,8 @@ contains
     else
        wform = "binary"
     endif
-    allocate(gtmp(LIS_rc%glbnpatch_red(n,m)))
+    glbnpatch_size = LIS_rc%glbnpatch_red(n,m)
+    allocate(gtmp(glbnpatch_size))
     if(wform.eq."binary") then 
        read(ftn) gtmp
     elseif(wform.eq."netcdf") then 
@@ -4622,10 +4624,16 @@ contains
        call LIS_verify(status,'Error in nf90_inq_varid in LIS_readvar_restart')
 
        if(present(dim).and.present(vlevels)) then 
-          allocate(gtmp_v(LIS_rc%glbnpatch_red(n,m),vlevels))
-          status = nf90_get_var(ftn,varid,gtmp_v)
+          if ( dim > vlevels ) then
+             write(LIS_logunit,*) '[ERR] LIS_readvar_restart: ' // &
+                'requested level greater than total number of levels'
+             call LIS_endrun
+          endif
+          allocate(gtmp_v(glbnpatch_size,1))
+          status = nf90_get_var(ftn,varid,gtmp_v,&
+             start=(/1,dim/),count=(/glbnpatch_size,1/))
           call LIS_verify(status,'Error in nf90_get_var in LIS_readvar_restart')
-          gtmp = gtmp_v(:,dim)
+          gtmp = gtmp_v(:,1)
           deallocate(gtmp_v)
        else
           status = nf90_get_var(ftn,varid,gtmp)
