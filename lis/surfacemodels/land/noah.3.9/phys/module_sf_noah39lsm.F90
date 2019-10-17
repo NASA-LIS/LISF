@@ -3848,6 +3848,7 @@ CONTAINS
 ! FROZEN GROUND VERSION:
 ! REDUCTION OF INFILTRATION BASED ON FROZEN GROUND PARAMETERS
 ! ----------------------------------------------------------------------
+         ! Prevent divide-by-zero [Yonghwan Kwon 10/16/2019]
          if ((PX + DDT) == 0) then
             INFMAX = 0
          else
