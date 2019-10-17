@@ -3848,7 +3848,12 @@ CONTAINS
 ! FROZEN GROUND VERSION:
 ! REDUCTION OF INFILTRATION BASED ON FROZEN GROUND PARAMETERS
 ! ----------------------------------------------------------------------
-         INFMAX = (PX * (DDT / (PX + DDT)))/ DT
+         if ((PX + DDT) == 0) then
+            INFMAX = 0
+         else
+            INFMAX = (PX * (DDT / (PX + DDT)))/ DT
+         endif
+
          FCR = 1.
          IF (DICE >  1.E-2) THEN
             ACRT = CVFRZ * FRZX / DICE
