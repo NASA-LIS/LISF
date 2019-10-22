@@ -9,15 +9,16 @@
 !
 ! !INTERFACE:
 subroutine readSMAPsmobs(source)
-!
-! !USES:
-   use ESMF
-   use LVT_coreMod, only: LVT_rc
-   use LVT_histDataMod
-   use LVT_logMod   !,       !only : LVT_logunit
-   use SMAP_smobsMod, only: SMAP_smobs
+! 
+! !USES:   
+  use ESMF
+  use LVT_coreMod,      only : LVT_rc
+  use LVT_histDataMod
+  use LVT_logMod
+  use LVT_timeMgrMod
+  use SMAP_smobsMod, only : SMAP_smobs
 
-   implicit none
+  implicit none
 !
 ! !INPUT PARAMETERS:
    integer, intent(in)       :: source
@@ -34,7 +35,7 @@ subroutine readSMAPsmobs(source)
 ! !REVISION HISTORY:
 !  21 July 2010: Sujay Kumar, Initial Specification
 !  17 Aug 2018: Mahdi Navari, Edited to read SPL3SMP.005 & SPL3SMP_E.002
-! 9 July 2019: Mahdi Navari, There are several version of SMAP sm data available in each directory
+!  9 July 2019: Mahdi Navari, There are several version of SMAP sm data available in each directory
 !                  with different Release number and different CRID Version Number. The reader was
 !                  modified to read the latest version of data (the reader no longer reads the symbolic
 !                  link to the SMAP sm data)
@@ -153,12 +154,202 @@ subroutine readSMAPsmobs(source)
 !  write(100) smc
 !  close(100)
 !  stop
+ 
 end subroutine readSMAPsmobs
 
 
 
 ! MN: the data structure in both 36 km and 9 km products is the same therefore  
 !         we use the same reader for both products.
+
+!BOP
+! 
+! !ROUTINE: read_SMAPL2sm_data
+! \label{read_SMAPL2sm_data}
+!
+! !INTERFACE:
+subroutine read_SMAPL2sm_data(source, fname, smobs_inp, time)
+! 
+! !USES:   
+
+  use LVT_coreMod
+  use LVT_logMod
+  use LVT_timeMgrMod
+  use SMAP_smobsMod, only : SMAP_smobs
+#if (defined USE_HDF5) 
+  use hdf5
+#endif
+
+  implicit none
+!
+! !INPUT PARAMETERS: 
+! 
+  integer                  :: source
+  character (len=*)        :: fname
+  real                     :: smobs_inp(LVT_rc%lnc,LVT_rc%lnr)
+  real*8                   :: time
+
+! !OUTPUT PARAMETERS:
+!
+!
+! !DESCRIPTION: 
+!
+!
+!EOP
+
+#if (defined USE_HDF5)
+
+  character*100,    parameter    :: sm_gr_name = "Soil_Moisture_Retrieval_Data"
+  character*100,    parameter    :: sm_field_name = "soil_moisture"
+  character*100,    parameter    :: sm_qa_name = "retrieval_qual_flag"
+
+  integer(hsize_t), dimension(1) :: dims
+  integer(hsize_t), dimension(1) :: maxdims
+  integer(hid_t)                 :: file_id
+  integer(hid_t)                 :: dspace_id
+  integer(hid_t)                 :: row_id, col_id
+  integer(hid_t)                 :: sm_gr_id,sm_field_id, sm_qa_id
+  integer(hid_t)                 :: sm_gr_id_A,sm_field_id_A
+  real,             allocatable  :: sm_field(:)
+  integer,          allocatable  :: sm_qa(:)
+  integer,          allocatable  :: ease_row(:)
+  integer,          allocatable  :: ease_col(:)
+  integer                        :: c,r,t
+  logical*1                      :: sm_data_b(SMAP_smobs(source)%nc*SMAP_smobs(source)%nr)
+  logical*1                      :: smobs_b_ip(LVT_rc%lnc*LVT_rc%lnr)
+  real                           :: sm_data(SMAP_smobs(source)%nc*SMAP_smobs(source)%nr)
+  real                           :: smobs_ip(LVT_rc%lnc*LVT_rc%lnr)
+
+  integer                        :: status,ios,iret
+
+  smobs_inp = LVT_rc%udef
+
+  call h5open_f(status)
+  call LVT_verify(status, 'Error opening HDF fortran interface')
+  
+  call h5fopen_f(trim(fname),H5F_ACC_RDONLY_F, file_id, status) 
+  call LVT_verify(status, 'Error opening SMAP L2 file ')
+  
+  call h5gopen_f(file_id,sm_gr_name,sm_gr_id, status)
+  call LVT_verify(status, 'Error opening SM group in SMAP L2 file')
+  
+  call h5dopen_f(sm_gr_id,sm_field_name,sm_field_id, status)
+  call LVT_verify(status, 'Error opening SM field in SMAP L2 file')
+
+  call h5dopen_f(sm_gr_id,"EASE_row_index",row_id, status)
+  call LVT_verify(status, 'Error opening row index field in SMAP L2 file')
+
+  call h5dopen_f(sm_gr_id,"EASE_column_index",col_id, status)
+  call LVT_verify(status, 'Error opening column index field in SMAP L2 file')
+
+  call h5dopen_f(sm_gr_id, sm_qa_name,sm_qa_id, status)
+  call LVT_verify(status, 'Error opening QA field in SMAP L2 file')
+  
+  call h5dget_space_f(sm_field_id, dspace_id, status)
+  call LVT_verify(status, 'Error in h5dget_space_f: readSMAP L2Obs')
+  
+! Size of the arrays
+! This routine returns -1 on failure, rank on success. 
+  call h5sget_simple_extent_dims_f(dspace_id, dims, maxdims, status) 
+  if(status.eq.-1) then 
+     call LVT_verify(status, 'Error in h5sget_simple_extent_dims_f: readSMAP L2Obs')
+  endif
+  
+  allocate(sm_field(maxdims(1)))
+  allocate(sm_qa(maxdims(1)))
+  allocate(ease_row(maxdims(1)))
+  allocate(ease_col(maxdims(1)))
+
+  call h5dread_f(row_id, H5T_NATIVE_INTEGER,ease_row,dims,status)
+  call LVT_verify(status, 'Error extracting row index from SMAP L2 file')
+
+  call h5dread_f(col_id, H5T_NATIVE_INTEGER,ease_col,dims,status)
+  call LVT_verify(status, 'Error extracting col index from SMAP L2 file')
+  
+  call h5dread_f(sm_field_id, H5T_NATIVE_REAL,sm_field,dims,status)
+  call LVT_verify(status, 'Error extracting SM field from SMAP L2 file')
+
+  call h5dread_f(sm_qa_id, H5T_NATIVE_INTEGER,sm_qa,dims,status)
+  call LVT_verify(status, 'Error extracting SM field from SMAP L2 file')
+  
+  call h5dclose_f(sm_qa_id,status)
+  call LVT_verify(status,'Error in H5DCLOSE call')
+
+  call h5dclose_f(row_id,status)
+  call LVT_verify(status,'Error in H5DCLOSE call')
+
+  call h5dclose_f(col_id,status)
+  call LVT_verify(status,'Error in H5DCLOSE call')
+
+  call h5dclose_f(sm_field_id,status)
+  call LVT_verify(status,'Error in H5DCLOSE call')
+  
+  call h5gclose_f(sm_gr_id,status)
+  call LVT_verify(status,'Error in H5GCLOSE call')
+    
+  call h5fclose_f(file_id,status)
+  call LVT_verify(status,'Error in H5FCLOSE call')
+  
+  call h5close_f(status)
+  call LVT_verify(status,'Error in H5CLOSE call')
+
+  sm_data = LVT_rc%udef
+  sm_data_b = .false. 
+
+!grid the data in EASE projection
+  do t=1,maxdims(1)
+!     if(ibits(sm_qa(t),0,1).eq.0) then 
+     if(ease_col(t).gt.0.and.ease_row(t).gt.0) then 
+        sm_data(ease_col(t) + &
+             (ease_row(t)-1)*SMAP_smobs(source)%nc) = sm_field(t) 
+        if(sm_field(t).ne.-9999.0) then 
+           sm_data_b(ease_col(t) + &
+                (ease_row(t)-1)*SMAP_smobs(source)%nc) = .true. 
+        endif
+     endif
+  enddo
+  
+  t = 1
+
+!  open(100,file='test_inp.bin',form='unformatted')
+!  write(100) sm_data
+!  close(100)
+!--------------------------------------------------------------------------
+! Interpolate to the LVT running domain
+!-------------------------------------------------------------------------- 
+  call neighbor_interp(LVT_rc%gridDesc, sm_data_b, sm_data, &
+       smobs_b_ip, smobs_ip, &
+       SMAP_smobs(source)%nc*SMAP_smobs(source)%nr,&
+       LVT_rc%lnc*LVT_rc%lnr,&
+       SMAP_smobs(source)%rlat2, SMAP_smobs(source)%rlon2,&
+       SMAP_smobs(source)%n112,LVT_rc%udef, iret)
+
+!  open(100,file='test_out.bin',form='unformatted')
+!  write(100) smobs_ip
+!  close(100)
+!  stop
+
+  deallocate(sm_field)
+  deallocate(sm_qa)
+  deallocate(ease_row)
+  deallocate(ease_col)
+
+!overwrite the input data 
+  do r=1,LVT_rc%lnr
+     do c=1,LVT_rc%lnc
+        if(smobs_ip(c+(r-1)*LVT_rc%lnc).ne.-9999.0) then 
+           smobs_inp(c,r) = & 
+                smobs_ip(c+(r-1)*LVT_rc%lnc)
+
+           SMAP_smobs(source)%smtime(c,r) = & 
+                time
+        endif
+     enddo
+  enddo
+
+#endif
+
+end subroutine read_SMAPL2sm_data
 
 !BOP
 ! 
