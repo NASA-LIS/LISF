@@ -163,7 +163,7 @@ contains
     integer          :: n
     character*100    :: ALBEDO12M
     character*100    :: SNOALB
-    character(len=4) :: flag
+    integer          :: flag
     
     allocate(LDT_albedo_struc(LDT_rc%nnest))
 
@@ -678,7 +678,7 @@ contains
 
     integer    :: t_dimID(4)
     integer    :: t_dimID2(4)
-    character(len=4) :: flag
+    integer    :: flag
 
     t_dimID(1) = dimID(1)
     t_dimID(2) = dimID(2)

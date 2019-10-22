@@ -408,7 +408,7 @@ contains
     integer      :: ftn
     integer      :: dimID(4)
     integer      :: tdimID(4)
-    character(len=4) :: flag, flagn*5
+    integer :: flag, flagn
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
    if( LDT_rc%assimcropinfo(n) ) then

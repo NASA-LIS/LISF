@@ -304,7 +304,7 @@ contains
 
     integer   :: n 
     integer   :: rc
-    character(len=4) :: flag
+    integer   :: flag
 ! ____________________________________________
 
     write(LDT_logunit,*) "LSM User-selected:  ",trim(LDT_rc%lsm)
@@ -404,7 +404,7 @@ contains
 !EOP
     integer   :: n
     integer   :: rc
-    character(len=4) :: flag
+    integer   :: flag
 ! ____________________________________________
 
     write(LDT_logunit,*) "[INFO] - - - - - - MODEL PARAMETERS (NOT Selected) - - - - - - - "
@@ -672,7 +672,7 @@ contains
     character*100       :: source
     character*100       :: HGT_M
     character*100       :: LANDUSEF
-    character(len=4)    :: flag
+    integer             :: flag
 ! _________________________________________
 
 ! - Universal LSM-based parameters -
@@ -1515,7 +1515,7 @@ contains
 
     integer               :: shuffle, deflate, deflate_level
     integer               :: bufsize
-    character(len=4)      :: flag    ! Dummy variables
+    integer               :: flag    ! Dummy variables
     character(len=10)     :: XLAT_M  !replaced the variable "lat"
     character(len=10)     :: XLONG_M !replaced the variable "lon" 
 ! ________________________________________________________
@@ -2093,7 +2093,7 @@ contains
     integer               :: dimID(3), monthID, qID
     integer,allocatable   :: met_dimID(:,:)
     integer               :: tdimID, xtimeID
-    character(len=4)      :: flag
+    integer               :: flag
 
 !SVK-edit    
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -2218,7 +2218,7 @@ contains
     integer     :: monthID
     integer     :: qID
     integer     :: k
-    character(len=4) :: flag
+    integer     :: flag
  
     call LDT_LMLC_writeHeader(n,ftn,dimID,flag)
     call LDT_surfacetype_writeHeader(n,ftn,dimID,flag)
@@ -2286,7 +2286,7 @@ contains
     integer  :: ftn
 
     integer :: ierr
-    character(len=4) :: flag
+    integer :: flag
 
     call LDT_LMLC_writeData(n,ftn,flag)
     call LDT_surfacetype_writeData(n,ftn)

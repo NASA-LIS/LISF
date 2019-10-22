@@ -462,7 +462,7 @@ contains
    integer :: n, c, r, t
    real, allocatable  :: landcover_fgrd(:,:,:)
    type(LDT_fillopts) :: landcover
-   character(len=4) :: flag
+   integer            :: flag
 
    integer             :: nc,nr,nlctypes, ntxtypes
    real, allocatable   :: luindex(:,:),sctdom(:,:)
@@ -972,7 +972,7 @@ contains
     integer      :: tdimID(4)
     integer      :: varid
     integer      :: luindexId
-    character(len=4) :: flag
+    integer      :: flag
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
     tdimID(1) = dimID(1)
@@ -1162,7 +1162,7 @@ contains
     integer  :: ftn
     integer  :: ierr
     integer  :: nc,nr
-    character(len=4) :: flag
+    integer  :: flag
 
     nr=size(LDT_LSMparam_struc(n)%luindex%value,1)
     nc=size(LDT_LSMparam_struc(n)%luindex%value,2)

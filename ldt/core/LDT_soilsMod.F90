@@ -1010,7 +1010,7 @@ module LDT_soilsMod
     type(LDT_fillopts)  :: porosity
     logical             :: soil_select
     logical             :: check_data
-    character(len=4)    :: flag
+    integer             :: flag
 
     integer             :: nc,nr, ntxtypes
     real, allocatable   :: sctdom(:,:)
@@ -1809,7 +1809,7 @@ module LDT_soilsMod
     integer    :: ftn
     integer    :: dimID(4)
     integer    :: tdimID(4)
-    character(len=4) :: flag
+    integer    :: flag
     integer    :: sctdomId   
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
 
@@ -2002,7 +2002,7 @@ module LDT_soilsMod
     integer      :: n 
     integer      :: ftn
     integer      :: ierr
-    character(len=4) :: flag
+    integer      :: flag
     integer      :: nc,nr    
 
     !write SCT_DOM

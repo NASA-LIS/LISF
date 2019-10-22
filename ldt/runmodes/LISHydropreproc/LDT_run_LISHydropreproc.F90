@@ -10,7 +10,7 @@ subroutine LDT_run_LISHydropreproc
   implicit none
 
   integer :: n
-  character(len=4) :: flag 
+  integer :: flag 
 
   do n=1,LDT_rc%nnest
      call LDT_paramProcWriteHeader(n, flag)

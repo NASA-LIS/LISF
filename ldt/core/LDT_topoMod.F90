@@ -593,7 +593,7 @@ contains
     integer   :: dimID(4)
     integer   :: tdimID(4)
     integer   :: tdimID2(4)
-    character(len=4) :: flag
+    integer   :: flag
 
     tdimID(1) = dimID(1)
     tdimID(2) = dimID(2)

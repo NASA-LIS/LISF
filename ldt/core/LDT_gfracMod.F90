@@ -146,7 +146,7 @@ contains
     integer           :: rc
     integer           :: n
     character*100     :: GREENFRAC
-    character(len=4)  :: flag
+    integer           :: flag
     
     allocate(LDT_gfrac_struc(LDT_rc%nnest))
 
@@ -595,7 +595,7 @@ contains
     integer     :: monthID
 
     integer     :: t_dimID(4)
-    character(len=4) :: flag
+    integer     :: flag
 
     if(LDT_gfrac_struc(n)%gfrac%selectOpt.gt.0) then 
        if(LDT_gfrac_struc(n)%gfracInterval.eq."monthly") then !monthly

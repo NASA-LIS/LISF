@@ -7,7 +7,7 @@
     use LDT_paramProcMod
     use LDT_logMod
     use LDT_metforcingMod
-    character(len=4) :: flag
+    integer :: flag
 
     write(LDT_logunit,*) "----------------------------------"
     write(LDT_logunit,*) " Start of LDT parameter processing "
