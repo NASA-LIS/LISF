@@ -61,7 +61,9 @@ module LIS_historyMod
 !   1 Apr 2015: Hiroko Beaudoing; Added GRIB-2 routines
 !  15 May 2015: Hiroko Beaudoing; Added nsoillayers2, lyrthk2 for when soil
 !                   moisture and temperature having different number of layers
-!                   used in GRIB1 & GRIB2 format             
+!                   used in GRIB1 & GRIB2 format
+!  18 Oct 2018: David Mocko: Check lis.config entry for option to turn off
+!                   writing ASCII stats files with netCDF output format
 !
 ! !USES: 
   use LIS_coreMod
@@ -5364,14 +5366,16 @@ contains
              call LIS_verify(iret,'nf90_put_var failed in LIS_historyMod')
           endif
           if(ftn_stats.ne.-1) then
-             call stats(gtmp1,LIS_rc%udef,LIS_rc%glbntiles_red(n),vmean, & 
-                        vstdev,vmin,vmax)
-             if(form==1) then 
-                write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
-             elseif(form==2) then 
-                write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+             if ( LIS_rc%sout ) then
+                call stats(gtmp1,LIS_rc%udef,LIS_rc%glbntiles_red(n), &
+                           vmean,vstdev,vmin,vmax)
+                if(form==1) then
+                   write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
+                elseif(form==2) then
+                   write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+                endif
+                call lis_flush(ftn_stats)
              endif
-             call lis_flush(ftn_stats)
           endif
           deallocate(gtmp1)
        endif
@@ -5439,15 +5443,17 @@ contains
              iret = nf90_put_var(ftn,varid,gtmp,(/1,1/),&
                                  (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
           endif 
-          if(ftn_stats.ne.-1) then 
-             call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),vmean, & 
-                        vstdev,vmin, vmax)
-             if(form==1) then 
-                write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
-             elseif(form==2) then 
-                write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+          if(ftn_stats.ne.-1) then
+             if ( LIS_rc%sout ) then
+                call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),&
+                           vmean,vstdev,vmin,vmax)
+                if(form==1) then
+                   write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
+                elseif(form==2) then
+                   write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+                endif
+                call lis_flush(ftn_stats)
              endif
-             call lis_flush(ftn_stats)
           endif
           deallocate(gtmp)
        endif
@@ -5519,15 +5525,17 @@ contains
                 iret = nf90_put_var(ftn,varid,gtmp,(/1,1/),&
                      (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
              endif
-             if(ftn_stats.ne.-1) then 
-                call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),vmean, & 
-                     vstdev,vmin, vmax)
-                if(form==1) then 
-                   write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
-                elseif(form==2) then 
-                   write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+             if(ftn_stats.ne.-1) then
+                if ( LIS_rc%sout ) then
+                   call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),&
+                              vmean,vstdev,vmin,vmax)
+                   if(form==1) then
+                      write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
+                   elseif(form==2) then
+                      write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+                   endif
+                   call lis_flush(ftn_stats)
                 endif
-                call lis_flush(ftn_stats)
              endif
              deallocate(gtmp)
           endif
@@ -5618,16 +5626,18 @@ contains
                         (/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
                 endif
              enddo
-             if(ftn_stats.ne.-1) then 
-                call stats_ens(gtmp_ens,LIS_rc%udef,&
-                     LIS_rc%gnc(n), LIS_rc%gnr(n),LIS_rc%nensem(n),vmean, & 
-                     vstdev,vmin, vmax)
-                if(form==1) then 
-                   write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
-                elseif(form==2) then 
-                   write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+             if(ftn_stats.ne.-1) then
+                if ( LIS_rc%sout ) then
+                   call stats_ens(gtmp_ens,LIS_rc%udef,               &
+                        LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nensem(n), &
+                        vmean,vstdev,vmin,vmax)
+                   if(form==1) then
+                      write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
+                   elseif(form==2) then
+                      write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+                   endif
+                   call lis_flush(ftn_stats)
                 endif
-                call lis_flush(ftn_stats)
              endif
              deallocate(gtmp_ens)
           endif
