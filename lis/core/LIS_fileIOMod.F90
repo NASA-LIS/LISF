@@ -20,6 +20,7 @@ module LIS_fileIOMod
 ! !REVISION HISTORY: 
 !  08 Apr 2004    James Geiger Initial Specification
 !  11 Oct 2018    Nargess Memarsadeghi, cleaned up and corrected LIS_create_output_directory
+!  18 Oct 2019    David Mocko, corrected creation of sub-directories for "WMO convention"
 ! 
 ! !USES: 
   use ESMF
@@ -246,7 +247,21 @@ subroutine LIS_create_output_directory(mname)
       out_dname = trim(LIS_rc%odir)//'/'
       out_dname = trim(out_dname)//trim(mname)//'/'
    elseif(LIS_rc%wstyle.eq."WMO convention") then
+! If output style is "WMO convention", ensure that the below
+! sub-directories are created before other parts of LIS will
+! try to write datasets into those sub-directories. - Mocko
       out_dname = trim(LIS_rc%odir)
+      if (trim(mname).eq."SURFACEMODEL") then
+         continue
+      elseif (trim(mname).eq."DAPERT") then
+         out_dname = trim(LIS_rc%odir)//'/'
+         out_dname = trim(out_dname)//trim(mname)//'/'
+      elseif (trim(mname).eq."DAOBS") then
+         out_dname = trim(LIS_rc%odir)//'/'
+         out_dname = trim(out_dname)//trim(mname)//'/'
+         write(unit=cdate1, fmt='(i4.4, i2.2)') LIS_rc%yr, LIS_rc%mo
+         out_dname = trim(out_dname)//trim(cdate1)
+      endif
    endif
 
 #if ( defined AIX )
