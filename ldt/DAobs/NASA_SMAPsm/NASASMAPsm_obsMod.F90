@@ -16,6 +16,7 @@
 ! 			 differs from the previous versions)
 !  04 Jun 2019: Sujay Kumar, Updated to support SMAP L2 retrievals 
 !  31 July 2019 Mahdi Navari : SMAP Composite Release ID was added (this option asks a user to 
+!  15 Aug 2019 Mahdi Navari : SMAP Composite Release ID was added (this option asks a user to 
 !         enter the part of Composite Release ID a three-character string like R16 )
 !
 module NASASMAPsm_obsMod
