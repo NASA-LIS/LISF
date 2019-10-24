@@ -231,6 +231,9 @@ subroutine NoahMP401_main(n)
     real                 :: TWS_out                ! terrestrial water storage [mm]
     ! Code added by David Mocko 04/25/2019
     real                 :: startsm, startswe, startint, startgw, endsm
+    real                 :: tmp_sfcheadrt          ! extra input  for WRF-HYDRO [m]
+    real                 :: tmp_infxs1rt           ! extra output for WRF-HYDRO [m]
+    real                 :: tmp_soldrain1rt        ! extra output for WRF-HYDRO [m]
 
     ! EMK for 557WW
     real :: tmp_q2sat, tmp_es
@@ -478,6 +481,7 @@ subroutine NoahMP401_main(n)
             tmp_grain           = NOAHMP401_struc(n)%noahmp401(t)%grain
             tmp_gdd             = NOAHMP401_struc(n)%noahmp401(t)%gdd
             tmp_pgs             = NOAHMP401_struc(n)%noahmp401(t)%pgs
+            tmp_sfcheadrt       = NoahMP401_struc(n)%noahmp401(t)%sfcheadrt
 
 ! Calculate water storages at start of timestep
             startsm = 0.0
@@ -490,7 +494,6 @@ subroutine NoahMP401_main(n)
             startgw  = tmp_wa
 
             ! call model physics
-
             call noahmp_driver_401(n                     , & ! in    - nest id [-]
                                    tmp_ttile             , & ! in    - tile id [-]
                                    tmp_itimestep         , & ! in    - timestep number [-]
@@ -657,7 +660,10 @@ subroutine NoahMP401_main(n)
                                    tmp_chv2              , & ! out   - veg 2m exchange coefficient [-]
                                    tmp_chb2              , & ! out   - bare 2m exchange coefficient [-]
                                    tmp_relsmc            , &
-                                   NOAHMP401_struc(n)%noahmp401(t)%param)   ! out   - relative soil moisture [-]
+                                   NOAHMP401_struc(n)%noahmp401(t)%param, & ! out   - relative soil moisture [-]
+                                   tmp_sfcheadrt         , & 
+                                   tmp_infxs1rt          , &
+                                   tmp_soldrain1rt    ) ! out   - extra output for WRF-HYDRO [m]
 
             ! save state variables from local variables to global variables
             NOAHMP401_struc(n)%noahmp401(t)%sfcrunoff       = tmp_sfcrunoff
@@ -769,6 +775,8 @@ subroutine NoahMP401_main(n)
             NOAHMP401_struc(n)%noahmp401(t)%chuc      = tmp_chuc
             NOAHMP401_struc(n)%noahmp401(t)%chv2      = tmp_chv2
             NOAHMP401_struc(n)%noahmp401(t)%chb2      = tmp_chb2
+            NOAHMP401_struc(n)%noahmp401(t)%infxs1rt  = tmp_infxs1rt
+            NOAHMP401_struc(n)%noahmp401(t)%soldrain1rt  = tmp_soldrain1rt
 
             ! EMK Update RHMin for 557WW
             if (tmp_tair .lt. &

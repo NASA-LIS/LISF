@@ -47,9 +47,10 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
      bgap    , wgap    , tgb     , tgv     , chv     , chb     , & ! out Noah MP only
      shg     , shc     , shb     , evg     , evb     , ghv     , & ! out Noah MP only
      ghb     , irg     , irc     , irb     , tr      , evc     , & ! out Noah MP only
-     chleaf  , chuc    , chv2    , chb2    , relsmc, &
-     parameters) ! out Noah MP only
-  
+     chleaf  , chuc    , chv2    , chb2    , relsmc,             &
+     parameters ,                                                & ! out Noah MP only
+     sfcheadrt , INFXSRT, soldrain)                                ! For WRF-Hydro
+
   use module_sf_noahmpdrv_401, only: noahmplsm_401
   use module_sf_noahmplsm_401
   use LIS_coreMod, only    : LIS_rc
@@ -874,6 +875,11 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
 
   rainf = prcp * (1.0 - fpice)/dt  ! added by Shugong for LIS output 
   snowf = prcp * fpice/dt          ! added by Shugong for LIS output 
+
+#ifndef WRF_HYDRO
+  INFXSRT  = 0.0
+  soldrain = 0.0
+#endif
 
   deallocate(zsoil)
   deallocate(zsnso)
