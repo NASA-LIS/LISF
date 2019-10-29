@@ -47,7 +47,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
                             bgap    , wgap    , tgb     , tgv     , chv     , chb     , & ! out Noah MP only
                             shg     , shc     , shb     , evg     , evb     , ghv     , & ! out Noah MP only
                             ghb     , irg     , irc     , irb     , tr      , evc     , & ! out Noah MP only
-                            chleaf  , chuc    , chv2    , chb2                          ) ! out Noah MP only
+                            chleaf  , chuc    , chv2    , chb2    , relsmc              ) ! out Noah MP only
 
   use module_sf_noahmpdrv_401, only: noahmplsm_401
   use LIS_coreMod, only    : LIS_rc
@@ -243,6 +243,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   real, intent(out) :: chuc                   ! under canopy exchange coefficient 
   real, intent(out) :: chv2                   ! veg 2m exchange coefficient
   real, intent(out) :: chb2                   ! bare 2m exchange coefficient
+  real, intent(out) :: relsmc(nsoil)          ! relative soil moisture [-]
 
 ! real, intent(inout) :: sfcheadrt,INFXSRT,soldrain   ! for WRF-Hydro
 !--------------------------------------------------------------------------------
@@ -440,6 +441,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   real, dimension(1,1) :: chucout
   real, dimension(1,1) :: chv2out
   real, dimension(1,1) :: chb2out
+  real, dimension(1,nsoil,1) :: relsmcout
   real, dimension(1,1) :: rsout
 
    ids = 1
@@ -691,6 +693,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   chucout(1,1)  = chuc
   chv2out(1,1)  = chv2
   chb2out(1,1)  = chb2
+  relsmcout(1,:,1)  = relsmc(:)
   rsout(1,1)    = rs
 
 ! Code from module_NoahMP_hrldas_driver.F.  Initial guess only.
@@ -731,7 +734,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
                        pgsinout     ,                                                   & ! in/out Noah MP only
                        gecros_stateinout,                                               & ! in/out gecros model
 
-                       t2mvout , t2mbout , q2mvout , q2mbout ,                     & ! out Noah MP only
+                       t2mvout , t2mbout , q2mvout , q2mbout , relsmcout,          & ! out Noah MP only
                        tradout , neeout  , gppout  , nppout  , fvegout , runsfout, & ! out Noah MP only
                        runsbout, ecanout , edirout , etranout, fsaout  , firaout , & ! out Noah MP only
                        aparout , psnout  , savout  , sagout  , rssunout, rsshaout, & ! out Noah MP only
@@ -858,6 +861,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   chuc = chucout(1,1)
   chv2 = chv2out(1,1)
   chb2 = chb2out(1,1)
+  relsmc(:) = relsmcout(1,:,1)
   rs = rsout(1,1)
 
   rainf = prcp * (1.0 - fpice)/dt  ! added by Shugong for LIS output 
