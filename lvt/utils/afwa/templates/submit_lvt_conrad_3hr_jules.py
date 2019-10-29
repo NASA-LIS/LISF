@@ -5,13 +5,12 @@ import subprocess
 import sys
 import time
 
-vars = ['RelSMC_inst',
+vars = ['RelSMC_inst', 'SmLiqFrac_inst',
         'SoilMoist_inst', 'SoilMoist_tavg',
         'SoilTemp_inst', 'SoilTemp_tavg',
         'RHMin_inst',
-        'AvgSurfT_inst', 'AvgSurfT_tavg', 
+        'Albedo_tavg', 'AvgSurfT_inst', 'AvgSurfT_tavg', 
         'CanopInt_inst', 'Elevation_inst', 'Evap_tavg', 
-        'Greenness_inst', 
         'LWdown_f_inst', 'LWdown_f_tavg',
         'Landcover_inst', 'Landmask_inst',
         'Psurf_f_inst', 'Psurf_f_tavg', 
