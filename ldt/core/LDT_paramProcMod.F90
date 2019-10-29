@@ -329,7 +329,7 @@ contains
     call LDT_albedo_init
     call LDT_laisai_init
     call LDT_topo_init
-    call LDT_LSMparams_init
+    call LDT_LSMparams_init(flag)
 
  !- Meteorological forcing setup:
     call LDT_forcingparms_init

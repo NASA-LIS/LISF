@@ -38,7 +38,7 @@
 struct lsmparamprocinitnode
 { 
   char *name;
-  void (*func)();
+  void (*func)(int*);
 
   struct lsmparamprocinitnode* next;
 } ;
@@ -69,7 +69,7 @@ struct lsmparamprocwdatanode* lsmparamprocwdata_table = NULL;
 // \label{registerlsmparamprocinit}
 //
 // !INTERFACE:
-void FTN(registerlsmparamprocinit)(char *j,void (*func)(), int len)
+void FTN(registerlsmparamprocinit)(char *j,void (*func)(int*), int len)
 //  
 // !DESCRIPTION: 
 // Makes an entry in the registry for the routine to 
@@ -109,7 +109,7 @@ void FTN(registerlsmparamprocinit)(char *j,void (*func)(), int len)
 // \label{lsmparamprocinit}
 //
 // !INTERFACE:
-void FTN(lsmparamprocinit)(char *j, int len)
+void FTN(lsmparamprocinit)(char *j, int *flag,int len)
 // !DESCRIPTION: 
 //  Calls the routine from the registry to initialize the 
 //  the LSM parameter processing init routine
@@ -134,7 +134,7 @@ void FTN(lsmparamprocinit)(char *j, int len)
       printf("****************Error****************************\n"); 
     }
   }
-  current->func(); 
+  current->func(flag); 
 }
 
 
