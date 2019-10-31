@@ -27,6 +27,7 @@ subroutine NoahMP401_main(n)
     use LIS_logMod, only     : LIS_logunit, LIS_endrun
     use LIS_FORC_AttributesMod
     use NoahMP401_lsmMod
+    use module_sf_noahmplsm_401, only: calhum, noahmp_parameters
 
     implicit none
 ! !ARGUMENTS:
@@ -230,6 +231,11 @@ subroutine NoahMP401_main(n)
     real                 :: TWS_out                ! terrestrial water storage [mm]
     ! Code added by David Mocko 04/25/2019
     real                 :: startsm, startswe, startint, startgw, endsm
+
+    ! EMK for 557WW
+    real :: tmp_q2sat, tmp_dqstd2
+    type(noahmp_parameters) :: tmp_parameters
+    character*3 :: fnest
 
     allocate( tmp_sldpth( NOAHMP401_struc(n)%nsoil ) )
     allocate( tmp_shdfac_monthly( 12 ) )
@@ -762,6 +768,24 @@ subroutine NoahMP401_main(n)
             NOAHMP401_struc(n)%noahmp401(t)%chv2      = tmp_chv2
             NOAHMP401_struc(n)%noahmp401(t)%chb2      = tmp_chb2
 
+            ! EMK Update RHMin for 557WW
+            if (tmp_tair .lt. &
+                 noahmp401_struc(n)%noahmp401(t)%tair_agl_min) then
+               noahmp401_struc(n)%noahmp401(t)%tair_agl_min = tmp_tair
+               call calhum(tmp_parameters, tmp_tair, tmp_psurf, tmp_q2sat, &
+                    tmp_dqstd2)
+               noahmp401_struc(n)%noahmp401(t)%rhmin = tmp_qair / tmp_q2sat
+            endif
+
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RHMIN, &
+             value=noahmp401_struc(n)%noahmp401(t)%rhmin, &
+             vlevel=1, unit="-", direction="-",&
+             surface_type=LIS_rc%lsm_index)
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RHMIN, &
+             value=(100.*noahmp401_struc(n)%noahmp401(t)%rhmin), &
+             vlevel=1, unit="%", direction="-",&
+             surface_type=LIS_rc%lsm_index)
+
             ![ 1] output variable: tsk (unit=K  ). ***  surface radiative temperature
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RADT, value = NOAHMP401_struc(n)%noahmp401(t)%tsk, &
                                               vlevel=1, unit="K", direction="-", surface_type = LIS_rc%lsm_index)
@@ -1284,5 +1308,18 @@ subroutine NoahMP401_main(n)
     deallocate( tmp_snowliq )
     deallocate( tmp_smoiseq )
     deallocate( tmp_gecros_state )
+
+    ! EMK...See if noahmp401_struc(n)%noahmp401(t)%tair_agl_min needs to be 
+    ! reset for calculating RHMin.  
+    write(fnest,'(i3.3)') n
+    alarmCheck = LIS_isAlarmRinging(LIS_rc, &
+         "NoahMP401 RHMin alarm "//trim(fnest))
+    if (alarmCheck) then
+       write(LIS_logunit,*) &
+            '[INFO] Resetting tair_agl_min for RHMin calculation'
+       do t = 1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+          noahmp401_struc(n)%noahmp401(t)%tair_agl_min = 999.
+       end do
+    end if
 
 end subroutine NoahMP401_main
