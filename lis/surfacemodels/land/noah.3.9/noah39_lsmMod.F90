@@ -245,6 +245,11 @@ contains
             noah39_struc(n)%ts,&
             noah39_struc(n)%rstInterval)
 
+       ! EMK Add alarm to reset tair_agl_min.  We will use 3 hours.
+       call LIS_registerAlarm("Noah39 RHMin alarm "//trim(fnest),&
+            noah39_struc(n)%ts,&
+            10800.)
+
        ! Initialize min/max values to implausible values.
        noah39_struc(n)%noah(:)%tair_agl_min = 999.0
 
