@@ -236,6 +236,7 @@ contains
         implicit none        
         integer  :: n, t     
         integer  :: status   
+        character*3 :: fnest ! EMK for RHMin
 
         ! allocate memory for nest 
         allocate(NOAHMP401_struc(LIS_rc%nnest))
@@ -295,6 +296,15 @@ contains
             call LIS_registerAlarm("NoahMP401 restart alarm", &
                                    NOAHMP401_struc(n)%ts,&
                                    NOAHMP401_struc(n)%rstInterval)
+            
+            ! EMK Add alarm to reset tair_agl_min.  We will use 3 hours.
+            write(fnest,'(i3.3)') n
+            call LIS_registerAlarm("NoahMP401 RHMin alarm "//trim(fnest),&
+                 NOAHMP401_struc(n)%ts,&
+                 10800.)
+            ! Initialize min/max values to implausible values.
+            NOAHMP401_struc(n)%noahmp401(:)%tair_agl_min = 999.0
+
             !------------------------------------------------------------------------
             ! TODO: setup number of soil moisture/temperature layers and depth here  
             !------------------------------------------------------------------------
