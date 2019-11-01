@@ -5,21 +5,21 @@ import subprocess
 import sys
 import time
 
-vars = ['RelSMC_inst', 'SmLiqFrac_inst',
+vars = ['RelSMC_inst','SmLiqFrac_inst',
         'SoilMoist_inst', 'SoilMoist_tavg',
         'SoilTemp_inst', 'SoilTemp_tavg',
         'RHMin_inst',
         'Albedo_tavg', 'AvgSurfT_inst', 'AvgSurfT_tavg', 
-        'CanopInt_inst','Elevation_inst', 'Evap_tavg', 
+        'CanopInt_inst', 'Elevation_inst', 'Evap_tavg', 
+        'Greenness_inst',
         'LWdown_f_inst', 'LWdown_f_tavg',
         'Landcover_inst', 'Landmask_inst',
         'Psurf_f_inst', 'Psurf_f_tavg', 
         'Qair_f_inst', 'Qair_f_tavg',
-        'Qh_tavg', 'Qle_tavg', 
-        'Qs_acc','Qsb_acc',
-        'SWE_inst',
+        'Qg_tavg', 'Qh_tavg', 'Qle_tavg', 'Qs_acc', 
+        'Qsb_acc', 'SWE_inst',
         'SWdown_f_inst', 'SWdown_f_tavg', 
-        'SnowDepth_inst', 
+        'SnowDepth_inst', 'Snowcover_inst',
         'Soiltype_inst', 
         'Tair_f_inst', 'Tair_f_max', 
         'Tair_f_tavg',
@@ -58,13 +58,10 @@ fi
 if [ ! -e lvt.config.%s.3hr ] ; then
    echo "ERROR, lvt.config.%s.3hr does not exist!" && exit 1
 fi
-
-mkdir -p STATS.%s.3hr || exit 1
-
 time ./LVT lvt.config.%s.3hr || exit 1
 
 exit 0
-""" %(var,var,var,var,var,var)
+""" %(var,var,var,var,var)
     f.write(line)
     f.close()
 

@@ -6,16 +6,8 @@ import sys
 
 template = "lvt.config.template"
 
-#startdt = datetime.datetime(2008,5,15,0)
-#enddt = datetime.datetime(2008,5,16,0)
-#startdt = datetime.datetime(2018, 2,28, 0)
-#enddt =   datetime.datetime(2018, 3, 1, 0)
-#startdt = datetime.datetime(2011, 2, 28, 21)
-#enddt =   datetime.datetime(2011, 3,  1, 21)
-#startdt = datetime.datetime(2011, 8, 31, 21)
-#enddt =   datetime.datetime(2011, 9,  1, 21)
-startdt = datetime.datetime(2018,  7, 29,  0)
-enddt =   datetime.datetime(2018,  7, 31,  0)
+startdt = datetime.datetime(2018, 9,13, 12)
+enddt =   datetime.datetime(2018, 9,14, 12)
 
 #output = "netcdf"
 output = "grib2"
@@ -34,6 +26,8 @@ var_attributes = {
         "Elevation   1  1  m      -  0  1 Elevation   1  1  m      -  0  1",
     "Evap_tavg" : \
         "Evap        1  1  kg/m2s -  1  1 Evap        1  1  kg/m2s -  1  1",
+    "Greenness_inst" : \
+        "Greenness   1  1  -      -  0  1 Greenness   1  1  -      -  0  1",
     "Landmask_inst" : \
         "Landmask    1  1  -      -  0  1 Landmask    1  1  -      -  0  1",
     "Landcover_inst" : \
@@ -50,6 +44,8 @@ var_attributes = {
         "Qair_f      1  1  kg/kg  -  0  1 Qair_f      1  1  kg/kg  -  0  1",
     "Qair_f_tavg" : \
         "Qair_f      1  1  kg/kg  -  1  1 Qair_f      1  1  kg/kg  -  1  1",
+    "Qg_tavg" : \
+        "Qg          1  1  W/m2   -  1  1 Qg          1  1  W/m2   -  1  1",
     "Qh_tavg" : \
         "Qh          1  1  W/m2   -  1  1 Qh          1  1  W/m2   -  1  1",
     "Qle_tavg" : \
@@ -62,6 +58,8 @@ var_attributes = {
         "RelSMC      1  4  -      -  0  4 RelSMC      1  4  -      -  0  4",
     "SmLiqFrac_inst" : \
         "SmLiqFrac   1  4  m3/m3  -  0  4 SmLiqFrac   1  4  m3/m3  -  0  4",
+    "Snowcover_inst" : \
+        "Snowcover   1  1  %      -  0  1 Snowcover   1  1  %      -  0  1",
     "SnowDepth_inst" : \
         "SnowDepth   1  1  m      -  0  1 SnowDepth   1  1  m      -  0  1",
     "SoilMoist_inst" : \
