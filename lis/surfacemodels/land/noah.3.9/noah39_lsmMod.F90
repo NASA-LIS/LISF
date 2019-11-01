@@ -259,7 +259,7 @@ contains
 
        ! Initialize min/max values to implausible values.
        noah39_struc(n)%noah(:)%tair_agl_min = 999.0
-       noah39_struc(n)%noah(:)%tair_agl_min = 999.0
+       noah39_struc(n)%noah(:)%rhmin = 999.0
 
 
        noah39_struc(n)%z0brd_upd = 0 
