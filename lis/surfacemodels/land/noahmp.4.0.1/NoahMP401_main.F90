@@ -819,6 +819,9 @@ subroutine NoahMP401_main(n)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWCOVER, value = NOAHMP401_struc(n)%noahmp401(t)%snowc, &
                                               vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
 
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWCOVER, value = (NOAHMP401_struc(n)%noahmp401(t)%snowc*100.0), &
+                                              vlevel=1, unit="%", direction="-", surface_type = LIS_rc%lsm_index)
+
             ![ 7] output variable: smc (unit=m3/m3). ***  volumetric soil moisture
             do i=1, NOAHMP401_struc(n)%nsoil
                 call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SOILMOIST, value = NOAHMP401_struc(n)%noahmp401(t)%smc(i), &
