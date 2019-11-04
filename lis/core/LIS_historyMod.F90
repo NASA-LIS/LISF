@@ -483,6 +483,9 @@ contains
 
     call LIS_rescaleCount(n,group_temp)
 
+    write(LIS_logunit,*)'[INFO] Writing surface model output to:  ', &
+         trim(lsmoutfile) ! EMK
+
     if(LIS_rc%wout.eq."binary") then 
        if(LIS_masterproc) then 
           open(ftn,file=lsmoutfile,form='unformatted')
