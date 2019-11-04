@@ -762,7 +762,7 @@ contains
        !inlctypes= LDT_LSMparam_struc(n)%landcover%num_bins  !size(landcover,3)
        do r = 1,LDT_rc%lnr(n)    ! nr
            do c = 1, LDT_rc%lnc(n) ! nc
-              maxv = -1
+              maxv = 0.0
               domv = -1
                 do  t = 1, nlctypes
                   if (landcover1(c,r,t).gt.maxv) then
@@ -779,10 +779,12 @@ contains
                 !   !print *, luindex(c,r)
                 !endif
                ! print *,c, r, luindex(c,r)
-           enddo
-       enddo
-
-
+                if(domv.eq.-1) then 
+                   luindex(c,r) = LDT_rc%waterclass
+                endif
+             enddo
+          enddo
+          
         !print*,"print luindex", luindex
         !print*,"print shape(luindex):", shape(luindex)
         LDT_LSMparam_struc(n)%luindex%value(:,:,1) =luindex
