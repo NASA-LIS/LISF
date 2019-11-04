@@ -779,12 +779,15 @@ contains
                 !   !print *, luindex(c,r)
                 !endif
                ! print *,c, r, luindex(c,r)
-                if(domv.eq.-1) then 
+                if(domv.eq.-1.and.sum(landcover1(c,r,:)).eq.0) then 
                    luindex(c,r) = LDT_rc%waterclass
+                   landcover1(c,r,LDT_rc%waterclass) = 1.0
                 endif
              enddo
           enddo
           
+          LDT_LSMparam_struc(n)%landcover%value = landcover1
+          deallocate(landcover1)
         !print*,"print luindex", luindex
         !print*,"print shape(luindex):", shape(luindex)
         LDT_LSMparam_struc(n)%luindex%value(:,:,1) =luindex
