@@ -214,7 +214,6 @@ subroutine LIS_lsmda_plugin
    use jules43_dasoilm_Mod
 #endif
 
-! Disable; JULES.5.0 DA not ready yet.
 #if ( defined SM_JULES_5_0 )
    use jules50_dasoilm_Mod
    use jules50_dasnodep_Mod
