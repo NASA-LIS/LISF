@@ -26,6 +26,8 @@ module LIS_lsmda_pluginMod
 !  Dec 2018: Mahdi Navari: added Noah-MP.4.0.1
 !  13 May 2019: Yeosang Yoon, added SNODEP & LDTSI Assimilation for NoahMP.4.0.1
 !  06 Jun 2019: Yeosang Yoon, added SNODEP & LDTSI  Assimilation for Jules 5.0
+!  05 Nov 2019: David Mocko, removed JULES_5_0_DEV compiler flag and
+!                            enabled the compilation of JULES 5.3 DA
 !
 !EOP
   implicit none
@@ -212,7 +214,6 @@ subroutine LIS_lsmda_plugin
    use jules43_dasoilm_Mod
 #endif
 
-#if ( defined JULES_5_0_DEV )
 ! Disable; JULES.5.0 DA not ready yet.
 #if ( defined SM_JULES_5_0 )
    use jules50_dasoilm_Mod
@@ -224,12 +225,8 @@ subroutine LIS_lsmda_plugin
    use jules52_dasoilm_Mod
 #endif
 
-#if 0
 #if ( defined SM_JULES_5_3 )
    use jules53_dasoilm_Mod
-#endif
-#endif
-
 #endif
 
 #if ( defined SM_NOAH_2_7_1 )
@@ -648,7 +645,6 @@ subroutine LIS_lsmda_plugin
    external jules52_updatesoilm
 #endif
 
-#if 0
 #if ( defined SM_JULES_5_3)
 !MN Jules 5.0 soil moisture
    external jules53_getsoilm
@@ -660,7 +656,6 @@ subroutine LIS_lsmda_plugin
    external jules53_scale_soilm
    external jules53_descale_soilm
    external jules53_updatesoilm
-#endif
 #endif
 
 #if ( defined SM_NOAH_2_7_1 )
@@ -2875,10 +2870,8 @@ subroutine LIS_lsmda_plugin
 #endif
 #endif
 
-!MN: Jules 5.0 SMAP(NASA) soil moisture
-#if ( defined JULES_5_0_DEV )
-!Disable JULES.5.0 DA; not ready yet.
 #if ( defined SM_JULES_5_0 )
+!MN: Jules 5.0 SMAP(NASA) soil moisture
    call registerlsmdainit(trim(LIS_jules50Id)//"+"//&
         trim(LIS_NASASMAPsmobsId)//char(0),jules50_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules50Id)//"+"//&
@@ -2897,10 +2890,8 @@ subroutine LIS_lsmda_plugin
         trim(LIS_NASASMAPsmobsId)//char(0),jules50_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules50Id)//"+"//&
         trim(LIS_NASASMAPsmobsId)//char(0),jules50_updatesoilm)
-#endif
 
 ! MN: Jules 5.0 SMAP(NRT) soil moisture
-#if ( defined SM_JULES_5_0 )
    call registerlsmdainit(trim(LIS_jules50Id)//"+"//&
         trim(LIS_SMAPNRTsmobsId)//char(0),jules50_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules50Id)//"+"//&
@@ -2919,11 +2910,8 @@ subroutine LIS_lsmda_plugin
         trim(LIS_SMAPNRTsmobsId)//char(0),jules50_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules50Id)//"+"//&
         trim(LIS_SMAPNRTsmobsId)//char(0),jules50_updatesoilm)
-#endif
 
-! MN 
-! Jules 5.0 SMOPS ASCAT soil moisture
-#if ( defined SM_JULES_5_0 )
+! MN: Jules 5.0 SMOPS ASCAT soil moisture
    call registerlsmdainit(trim(LIS_jules50Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules50_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules50Id)//"+"//&
@@ -2942,7 +2930,6 @@ subroutine LIS_lsmda_plugin
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules50_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules50Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules50_updatesoilm)
-#endif
 
 #if ( defined DA_OBS_SNODEP )
 ! Jules 5.0 snow depth, Yeosang Yoon
@@ -2998,13 +2985,10 @@ subroutine LIS_lsmda_plugin
         trim(LIS_ldtsiobsId)//char(0),jules50_qc_ldtsiobs)
 #endif
 
-#endif
+#endif  !endif for SM_JULES_5_0
 
-
-!MN: Jules 5.2 SMAP(NASA) soil moisture
-#if ( defined JULES_5_0_DEV )
-!Disable JULES.5.2 DA; not ready yet.
 #if ( defined SM_JULES_5_2)
+!MN: Jules 5.2 SMAP(NASA) soil moisture
    call registerlsmdainit(trim(LIS_jules52Id)//"+"//&
         trim(LIS_NASASMAPsmobsId)//char(0),jules52_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules52Id)//"+"//&
@@ -3023,10 +3007,8 @@ subroutine LIS_lsmda_plugin
         trim(LIS_NASASMAPsmobsId)//char(0),jules52_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules52Id)//"+"//&
         trim(LIS_NASASMAPsmobsId)//char(0),jules52_updatesoilm)
-#endif
 
 ! MN: Jules 5.2 SMAP(NRT) soil moisture
-#if ( defined SM_JULES_5_2 )
    call registerlsmdainit(trim(LIS_jules52Id)//"+"//&
         trim(LIS_SMAPNRTsmobsId)//char(0),jules52_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules52Id)//"+"//&
@@ -3045,11 +3027,8 @@ subroutine LIS_lsmda_plugin
         trim(LIS_SMAPNRTsmobsId)//char(0),jules52_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules52Id)//"+"//&
         trim(LIS_SMAPNRTsmobsId)//char(0),jules52_updatesoilm)
-#endif
 
-! MN 
-! Jules 5.2 SMOPS ASCAT soil moisture
-#if ( defined SM_JULES_5_2 )
+! MN: Jules 5.2 SMOPS ASCAT soil moisture
    call registerlsmdainit(trim(LIS_jules52Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules52_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules52Id)//"+"//&
@@ -3068,13 +3047,10 @@ subroutine LIS_lsmda_plugin
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules52_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules52Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules52_updatesoilm)
-#endif
-#endif
+#endif  !endif for SM_JULES_5_2
 
-
-#if 0 
-!MN: Jules 5.3 SMAP(NASA) soil moisture
 #if ( defined SM_JULES_5_3 )
+!MN: Jules 5.3 SMAP(NASA) soil moisture
    call registerlsmdainit(trim(LIS_jules53Id)//"+"//&
         trim(LIS_NASASMAPsmobsId)//char(0),jules53_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules53Id)//"+"//&
@@ -3093,10 +3069,8 @@ subroutine LIS_lsmda_plugin
         trim(LIS_NASASMAPsmobsId)//char(0),jules53_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules53Id)//"+"//&
         trim(LIS_NASASMAPsmobsId)//char(0),jules53_updatesoilm)
-#endif
 
 ! MN: Jules 5.3 SMAP(NRT) soil moisture
-#if ( defined SM_JULES_5_3 )
    call registerlsmdainit(trim(LIS_jules53Id)//"+"//&
         trim(LIS_SMAPNRTsmobsId)//char(0),jules53_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules53Id)//"+"//&
@@ -3115,11 +3089,8 @@ subroutine LIS_lsmda_plugin
         trim(LIS_SMAPNRTsmobsId)//char(0),jules53_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules53Id)//"+"//&
         trim(LIS_SMAPNRTsmobsId)//char(0),jules53_updatesoilm)
-#endif
 
-! MN 
-! Jules 5.3 SMOPS ASCAT soil moisture
-#if ( defined SM_JULES_5_3 )
+! MN: Jules 5.3 SMOPS ASCAT soil moisture
    call registerlsmdainit(trim(LIS_jules53Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules53_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules53Id)//"+"//&
@@ -3138,10 +3109,9 @@ subroutine LIS_lsmda_plugin
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules53_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules53Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules53_updatesoilm)
-#endif
+#endif  !endif for SM_JULES_5_3
 
-#endif ! if 0 for jules53
+#endif  !endif for DA_DIRECT_INSERTION, DA_ENKS, or DA_ENKF
 
-#endif
 end subroutine LIS_lsmda_plugin
 end module LIS_lsmda_pluginMod
