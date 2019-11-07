@@ -17,6 +17,7 @@
 # 11 Apr 2018:  Eric Kemp (SSAI), added optional flag to skip ensemble spreads.
 # 16 Nov 2018:  Eric Kemp (SSAI), added Greenness_inst for 3hr.
 # 19 Nov 2018:  Eric Kemp (SSAI), added Tair_tavg for 24hr.
+# 07 Nov 2019:  Eric Kemp (SSAI), removed Soiltype_inst for JULES.
 #
 #------------------------------------------------------------------------------
 
@@ -81,7 +82,6 @@ _LVT_JULES_INVOCATIONS_3HR = ['AvgSurfT_inst', 'AvgSurfT_tavg',
                               'SnowDepth_inst', 
                               'SoilMoist_inst', 'SoilMoist_tavg',
                               'SoilTemp_inst', 'SoilTemp_tavg',
-                              'Soiltype_inst', 
                               'Tair_f_inst', 'Tair_f_max', 
                               'Tair_f_tavg',
                               'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
