@@ -72,8 +72,6 @@ var_attributes = {
         "SoilTemp    1  4  K      -  0  4 SoilTemp    1  4  K      -  0  4",
     "SoilTemp_tavg" : \
         "SoilTemp    1  4  K      -  1  4 SoilTemp    1  4  K      -  1  4",
-    "Soiltype_inst" : \
-        "Soiltype    1  1  -      -  0  1 Soiltype    1  1  -      -  0  1",
     "SWdown_f_inst" : \
         "SWdown_f    1  1  W/m2   -  0  1 SWdown_f    1  1  W/m2   -  0  1",
     "SWdown_f_tavg" : \

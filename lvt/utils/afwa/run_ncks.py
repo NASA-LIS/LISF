@@ -25,6 +25,7 @@
 #               with Air Force security requirements.
 # 11 Apr 2018:  Eric Kemp (SSAI), add option to skip ensemble spread
 # 04 Dec 2018:  Eric Kemp (SSAI), add mean 24hr Tair.
+# 07 Nov 2019:  Eric Kemp (SSAI), removed Soiltype_inst for JULES.
 #
 #------------------------------------------------------------------------------
 
@@ -92,7 +93,6 @@ _LVT_JULES_INVOCATIONS_3HR = ['AvgSurfT_inst', 'AvgSurfT_tavg',
                               'SnowDepth_inst', 
                               'SoilMoist_inst', 'SoilMoist_tavg',
                               'SoilTemp_inst', 'SoilTemp_tavg',
-                              'Soiltype_inst', 
                               'Tair_f_inst', 'Tair_f_max', 
                               'Tair_f_tavg',
                               'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
