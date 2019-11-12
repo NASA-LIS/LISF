@@ -113,7 +113,7 @@ int FTN(lis_create_subdirs) (int  *length,
 
             /* Handle errors */
             if (stat_rc == -1) {
-                /* EONENT is returned via errno if component of path doesn't 
+                /* ENOENT is returned via errno if component of path doesn't
                    exist.  This isn't an error for our purposes, since we can
                    attempt to create a directory below. */
                 if (errno != ENOENT) {
