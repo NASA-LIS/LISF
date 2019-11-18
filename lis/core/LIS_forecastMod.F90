@@ -161,6 +161,11 @@ contains
 #else
        c_string = trim(out_dname)
        ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
+       if (ios .ne. 0) then
+          write(LIS_logunit,*)'[ERR] problem creating directory ', &
+               trim(c_string)
+          call LIS_flush(LIS_logunit)
+       end if
 #endif
        rst_fname = trim(LIS_rc%odir)//'/FCST/LIS_RST_FCST_'
        write(unit=fiter,fmt='(i4.4)')  LIS_forecast_struc(n)%iterId
