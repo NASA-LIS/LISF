@@ -103,6 +103,11 @@ subroutine LIS_readConfig()
     !ios = LIS_create_subdirs(len_trim(diag_dir),trim(diag_dir))
     if (LIS_masterproc) then
        ios = LIS_create_subdirs(len_trim(diag_dir),trim(diag_dir))
+       if (ios .ne. 0) then
+          write(LIS_logunit,*)'[ERR] Problem creating directory ', &
+               trim(diag_dir)
+          flush(LIS_logunit)
+       end if
     end if
   endif
 
