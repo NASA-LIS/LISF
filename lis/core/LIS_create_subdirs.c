@@ -130,27 +130,14 @@ int FTN(lis_create_subdirs) (int  *length,
                     error = 1;
                 }
 
-            } else {
-                
-                /* If stat was successful, check if path is a directory.  Use
-                   POSIX S_ISDIR macro */
-                isdir_rc = S_ISDIR(sb.st_mode);
-                if (!isdir_rc) {
-                    /* Path is not a directory, but does exist.  Handle 
-                       error. */
-                    fprintf(stderr,
-                            "ERROR, %s exists and is not a directory!\n", 
-                            work);
-                    error = 1;
-                }
             }
 
-            if (!error  && !isdir_rc) {
-                /* At this point, path doesn't exist and we had no serious
-                   errors.  We must create the directory.  Set default 
-                   permissions to rwx for user, group, and other.  
-                   Permissions can be removed at run time using the shell 
-                   'umask' command. */
+            if ( stat_rc == -1 && error == 0) {
+                /* At this point, work path doesn't exist but no error
+                   occurred.  We will attempt to create the directory. 
+                   Set default permissions to rwx for user, group, and
+                   other.  Permissions can be removed at run time using
+                   the shell 'umask' command. */
                 mkdir_rc = mkdir(work, 0777);
 
                 /* Handle error */
