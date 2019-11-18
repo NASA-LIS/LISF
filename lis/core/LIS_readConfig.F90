@@ -106,7 +106,7 @@ subroutine LIS_readConfig()
        if (ios .ne. 0) then
           write(LIS_logunit,*)'[ERR] Problem creating directory ', &
                trim(diag_dir)
-          flush(LIS_logunit)
+          call LIS_flush(LIS_logunit)
        end if
     end if
   endif

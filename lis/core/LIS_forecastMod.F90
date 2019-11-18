@@ -164,7 +164,7 @@ contains
        if (ios .ne. 0) then
           write(LIS_logunit,*)'[ERR] problem creating directory ', &
                trim(c_string)
-          flush(LIS_logunit)
+          call LIS_flush(LIS_logunit)
        end if
 #endif
        rst_fname = trim(LIS_rc%odir)//'/FCST/LIS_RST_FCST_'
