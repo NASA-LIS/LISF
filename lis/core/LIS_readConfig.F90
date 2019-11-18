@@ -37,7 +37,7 @@ subroutine LIS_readConfig()
   use LIS_histDataMod, only : LIS_histData
   use LIS_timeMgrMod,  only : LIS_date2time, LIS_parseTimeString
   use LIS_logMod
-  use LIS_mpiMod, only: LIS_mpi_comm ! EMK TEST
+  use LIS_mpiMod, only: LIS_mpi_comm ! EMK
 !
 ! !DESCRIPTION:
 !
