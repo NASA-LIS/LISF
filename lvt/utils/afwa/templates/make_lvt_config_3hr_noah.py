@@ -57,7 +57,7 @@ var_attributes = {
     "Qsb_acc" : \
         "Qsb         1  1  kg/m2  -  3  1 Qsb         1  1  kg/m2  -  3  1",
     "RelSMC_inst" : \
-        "RelSMC      1  4  m3/m3  -  0  4 RelSMC      1  4  m3/m3  -  0  4",
+        "RelSMC      1  4  -      -  0  4 RelSMC      1  4  -      -  0  4",
     "SmLiqFrac_inst" : \
         "SmLiqFrac   1  4  m3/m3  -  0  4 SmLiqFrac   1  4  m3/m3  -  0  4",
     "Snowcover_inst" : \
