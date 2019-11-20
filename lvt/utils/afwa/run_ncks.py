@@ -25,6 +25,8 @@
 #               with Air Force security requirements.
 # 11 Apr 2018:  Eric Kemp (SSAI), add option to skip ensemble spread
 # 04 Dec 2018:  Eric Kemp (SSAI), add mean 24hr Tair.
+# 07 Nov 2019:  Eric Kemp (SSAI), removed Soiltype_inst for JULES.  Added
+#               support for NoahMP
 #
 #------------------------------------------------------------------------------
 
@@ -41,7 +43,7 @@ _NCKS_PATH = "/app/nco/4.5.2-gnu/bin/ncks" # On Conrad
 #_NCKS_PATH = "/usr/local/other/SLES11.1/nco/4.4.4/intel-12.1.0.233/bin/ncks"
 
 # Supported LIS LSMs
-_LIS_LSMS = ["NOAH","JULES"] 
+_LIS_LSMS = ["NOAH", "NOAHMP", "JULES"] 
 
 # The LVT invocations for Noah LSM output.  Each invocation handles a subset
 # of the total variable list due to memory limitations.  
@@ -76,6 +78,39 @@ _LVT_NOAH_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg', 'PotEvap_tavg',
 # The 24-hr postprocessing should include the latest 3-hr snow depth and SWE.
 _LVT_NOAH_INVOCATIONS_24HR_LATEST = ['SnowDepth_inst','SWE_inst']
 
+# The LVT invocations for NoahMP LSM output.  Each invocation handles a subset
+# of the total variable list due to memory limitations.  
+_LVT_NOAHMP_INVOCATIONS_3HR = ['Albedo_tavg', 
+                               'AvgSurfT_inst', 'AvgSurfT_tavg', 
+                               'CanopInt_inst', 'Elevation_inst', 'Evap_tavg', 
+                               'LWdown_f_inst', 'LWdown_f_tavg',
+                               'Landcover_inst', 'Landmask_inst', 
+                               'Psurf_f_inst', 'Psurf_f_tavg', 
+                               'Qair_f_inst', 'Qair_f_tavg',
+                               'Qg_tavg', 'Qh_tavg', 'Qle_tavg', 
+                               'Qs_acc', 'Qsb_acc', 
+                               'RelSMC_inst', 'RHMin_inst',
+                               'SWE_inst',
+                               'SWdown_f_inst', 'SWdown_f_tavg', 
+                               'SmLiqFrac_inst', 'SnowDepth_inst', 
+                               'Snowcover_inst',
+                               'SoilMoist_inst', 'SoilMoist_tavg',
+                               'SoilTemp_inst', 'SoilTemp_tavg',
+                               'Soiltype_inst', 
+                               'Tair_f_inst', 'Tair_f_max', 
+                               'Tair_f_tavg',
+                               'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
+
+_LVT_NOAHMP_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg', 
+                                'RHMin_inst',
+                                'SoilMoist_tavg', 'SoilTemp_tavg',
+                                'SWdown_f_tavg','Tair_f_max',
+                                'Tair_f_tavg',
+                                'TotalPrecip_acc','Wind_f_tavg']
+
+# The 24-hr postprocessing should include the latest 3-hr snow depth and SWE.
+_LVT_NOAHMP_INVOCATIONS_24HR_LATEST = ['SnowDepth_inst','SWE_inst']
+
 # The LVT invocations for JULES LSM output.
 _LVT_JULES_INVOCATIONS_3HR = ['AvgSurfT_inst', 'AvgSurfT_tavg', 
                               'CanopInt_inst',
@@ -92,7 +127,6 @@ _LVT_JULES_INVOCATIONS_3HR = ['AvgSurfT_inst', 'AvgSurfT_tavg',
                               'SnowDepth_inst', 
                               'SoilMoist_inst', 'SoilMoist_tavg',
                               'SoilTemp_inst', 'SoilTemp_tavg',
-                              'Soiltype_inst', 
                               'Tair_f_inst', 'Tair_f_max', 
                               'Tair_f_tavg',
                               'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
@@ -112,6 +146,9 @@ _INVOCATIONS = {
     "NOAH_3HR" : _LVT_NOAH_INVOCATIONS_3HR,
     "NOAH_24HR" : _LVT_NOAH_INVOCATIONS_24HR,
     "NOAH_24HR_LATEST" : _LVT_NOAH_INVOCATIONS_24HR_LATEST,
+    "NOAHMP_3HR" : _LVT_NOAHMP_INVOCATIONS_3HR,
+    "NOAHMP_24HR" : _LVT_NOAHMP_INVOCATIONS_24HR,
+    "NOAHMP_24HR_LATEST" : _LVT_NOAHMP_INVOCATIONS_24HR_LATEST,
     "JULES_3HR" : _LVT_JULES_INVOCATIONS_3HR,
     "JULES_24HR" : _LVT_JULES_INVOCATIONS_24HR,
     "JULES_24HR_LATEST" : _LVT_JULES_INVOCATIONS_24HR_LATEST,
@@ -137,6 +174,26 @@ _LIS_NOAH_VARIABLES_24HR_LATEST = {}
 for var in _LVT_NOAH_INVOCATIONS_24HR_LATEST:
     _LIS_NOAH_VARIABLES_24HR_LATEST[var] = [var]
 
+# The NoahMP variables handled by each LVT invocation.
+_LIS_NOAHMP_VARIABLES_3HR = {}
+for var in _LVT_NOAHMP_INVOCATIONS_3HR:
+    if var == "RHMin_inst":
+        _LIS_NOAHMP_VARIABLES_3HR[var] = [var,"Tair_f_min"]
+    else:
+        _LIS_NOAHMP_VARIABLES_3HR[var] = [var]
+
+# The NoahMP variables handled by each LVT invocation.
+_LIS_NOAHMP_VARIABLES_24HR = {}
+for var in _LVT_NOAHMP_INVOCATIONS_24HR:
+    if var == "RHMin_inst":
+        _LIS_NOAHMP_VARIABLES_24HR[var] = [var,"Tair_f_min"]
+    else:
+        _LIS_NOAHMP_VARIABLES_24HR[var] = [var]
+
+_LIS_NOAHMP_VARIABLES_24HR_LATEST = {}
+for var in _LVT_NOAHMP_INVOCATIONS_24HR_LATEST:
+    _LIS_NOAHMP_VARIABLES_24HR_LATEST[var] = [var]
+
 # The JULES variables handled by each LVT invocation.
 _LIS_JULES_VARIABLES_3HR = {}
 for var in _LVT_JULES_INVOCATIONS_3HR:
@@ -159,6 +216,9 @@ _LIS_VARIABLES = {
     "NOAH_3HR" : _LIS_NOAH_VARIABLES_3HR,
     "NOAH_24HR" : _LIS_NOAH_VARIABLES_24HR,
     "NOAH_24HR_LATEST" : _LIS_NOAH_VARIABLES_24HR_LATEST,
+    "NOAHMP_3HR" : _LIS_NOAHMP_VARIABLES_3HR,
+    "NOAHMP_24HR" : _LIS_NOAHMP_VARIABLES_24HR,
+    "NOAHMP_24HR_LATEST" : _LIS_NOAHMP_VARIABLES_24HR_LATEST,
     "JULES_3HR" : _LIS_JULES_VARIABLES_3HR,
     "JULES_24HR" : _LIS_JULES_VARIABLES_24HR,
     "JULES_24HR_LATEST" : _LIS_JULES_VARIABLES_24HR_LATEST,

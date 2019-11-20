@@ -82,13 +82,15 @@ void FTN(registerlakeparamprocinit)(char *j,void (*func)(), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lakeparamprocinitnode* current;
   struct lakeparamprocinitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lakeparamprocinitnode*) malloc(sizeof(struct lakeparamprocinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -157,13 +159,15 @@ void FTN(registerlakeparamprocwriteheader)(char *j,void (*func)(int*, int*, int*
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lakeparamprocwheadernode* current;
   struct lakeparamprocwheadernode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lakeparamprocwheadernode*) malloc(sizeof(struct lakeparamprocwheadernode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -234,13 +238,15 @@ void FTN(registerlakeparamprocwritedata)(char *j,void (*func)(int*, int*), int l
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lakeparamprocwdatanode* current;
   struct lakeparamprocwdatanode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lakeparamprocwdatanode*) malloc(sizeof(struct lakeparamprocwdatanode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

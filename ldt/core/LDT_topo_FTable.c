@@ -95,13 +95,15 @@ void FTN(registerreadelev)(char *j, void (*func)(int*, int*, float*, float*), in
 //  \end{description}
   //EOP
 { 
+  int len1;
   struct elevnode* current;
   struct elevnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct elevnode*) malloc(sizeof(struct elevnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -186,14 +188,15 @@ void FTN(registerreadslope)(char *j, void (*func)(int*, int*, float*, float*), i
 //  \end{description}
   //EOP
 { 
-
+  int len1;
   struct slopenode* current;
   struct slopenode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct slopenode*) malloc(sizeof(struct slopenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -279,13 +282,15 @@ void FTN(registerreadaspect)(char *j, void (*func)(int*, int*, float*, float*), 
 //  \end{description}
   //EOP
 { 
+  int len1;
   struct aspectnode* current;
   struct aspectnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct aspectnode*) malloc(sizeof(struct aspectnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -361,13 +366,15 @@ void FTN(registerreadcurv)(char *j, void (*func)(int*, float*), int len)
 //  \end{description}
   //EOP
 { 
+  int len1;
   struct curvnode* current;
   struct curvnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct curvnode*) malloc(sizeof(struct curvnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

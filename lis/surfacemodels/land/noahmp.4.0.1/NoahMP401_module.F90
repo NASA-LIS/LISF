@@ -489,5 +489,9 @@ module NoahMP401_module
         real               :: chv2
         real               :: chb2
 
+        !EMK for 557WW
+        real :: tair_agl_min
+        real :: rhmin
+
     end type noahmp401dec
 end module NoahMP401_module

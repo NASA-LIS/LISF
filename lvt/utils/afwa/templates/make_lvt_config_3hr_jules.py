@@ -26,14 +26,14 @@ var_attributes = {
         "AvgSurfT    1  1  K      -  0  1 AvgSurfT    1  1  K      -  0  1",
     "AvgSurfT_tavg" : \
         "AvgSurfT    1  1  K      -  1  1 AvgSurfT    1  1  K      -  1  1",
+    "Albedo_tavg" : \
+        "Albedo      1  1  %      -  1  1 Albedo      1  1  %      -  1  1",
     "CanopInt_inst" : \
         "CanopInt    1  1  kg/m2  -  0  1 CanopInt    1  1  kg/m2  -  0  1",
     "Elevation_inst" : \
         "Elevation   1  1  m      -  0  1 Elevation   1  1  m      -  0  1",
     "Evap_tavg" : \
         "Evap        1  1  kg/m2s -  1  1 Evap        1  1  kg/m2s -  1  1",
-    "Greenness_inst" : \
-        "Greenness   1  1  -      -  0  1 Greenness   1  1  -      -  0  1",
     "Landmask_inst" : \
         "Landmask    1  1  -      -  0  1 Landmask    1  1  -      -  0  1",
     "Landcover_inst" : \
@@ -59,7 +59,9 @@ var_attributes = {
     "Qsb_acc" : \
         "Qsb         1  1  kg/m2  -  3  1 Qsb         1  1  kg/m2  -  3  1",
     "RelSMC_inst" : \
-        "RelSMC      1  4  m3/m3  -  0  4 RelSMC      1  4  m3/m3  -  0  4",
+        "RelSMC      1  4  -      -  0  4 RelSMC      1  4  -      -  0  4",
+    "SmLiqFrac_inst" : \
+        "SmLiqFrac   1  4  m3/m3  -  0  4 SmLiqFrac   1  4  m3/m3  -  0  4",
     "SnowDepth_inst" : \
         "SnowDepth   1  1  m      -  0  1 SnowDepth   1  1  m      -  0  1",
     "SoilMoist_inst" : \
@@ -70,8 +72,6 @@ var_attributes = {
         "SoilTemp    1  4  K      -  0  4 SoilTemp    1  4  K      -  0  4",
     "SoilTemp_tavg" : \
         "SoilTemp    1  4  K      -  1  4 SoilTemp    1  4  K      -  1  4",
-    "Soiltype_inst" : \
-        "Soiltype    1  1  -      -  0  1 Soiltype    1  1  -      -  0  1",
     "SWdown_f_inst" : \
         "SWdown_f    1  1  W/m2   -  0  1 SWdown_f    1  1  W/m2   -  0  1",
     "SWdown_f_tavg" : \
