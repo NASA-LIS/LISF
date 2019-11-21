@@ -3262,6 +3262,17 @@ contains
                end if
             end if
                
+            ! EMK...Sanity check iceage.  Make sure not missing if
+            ! icemask is defined.  This can happen if LDTSI is 
+            ! coldstarted at a time other than 12Z.
+            if (runcycle .ne. 12) then
+               if (LDTSI_arrays%icemask(c,r) .ne. -1) then
+                  if (LDTSI_arrays%iceage(c,r) .eq. -1) then
+                     LDTSI_arrays%iceage(c,r) = 0
+                  end if
+               end if
+            end if
+
          end do ! c
       end do ! r
 
@@ -3375,6 +3386,17 @@ contains
                     LDTSI_arrays%iceage12z(c,r)) then
                   LDTSI_arrays%iceage(c,r) = &
                        min( (LDTSI_arrays%iceage(c,r)+1), maxage)
+               end if
+            end if
+
+            ! EMK...Sanity check iceage.  Make sure not missing if
+            ! icemask is defined.  This can happen if LDTSI is 
+            ! coldstarted at a time other than 12Z.
+            if (runcycle .ne. 12) then
+               if (LDTSI_arrays%icemask(c,r) .ne. -1) then
+                  if (LDTSI_arrays%iceage(c,r) .eq. -1) then
+                     LDTSI_arrays%iceage(c,r) = 0
+                  end if
                end if
             end if
 
