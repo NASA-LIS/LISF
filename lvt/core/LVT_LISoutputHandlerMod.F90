@@ -3158,7 +3158,7 @@ contains
                   3, nsize, nensem, (/"%    ", "m3/m3", "-    "/), &
                   1, (/"-"/),&
                   valid_min=(/0.0, 0.0, 0.0/), &
-                  valid_max=(/1.0, 1.0, 1.0/), &
+                  valid_max=(/100.0, 1.0, 1.0/), &
                   gribSFC=grib_depthlvl, gribLvl=0)     
           endif
 
