@@ -3151,16 +3151,15 @@ contains
                "relative_soil_moisture",&
                "relative soil moisture", "F",rc)
           if(rc.eq.1) then 
-!              call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_RELSMC(kk),&
-!                   LVT_LISoutput(kk)%head_lsm_list,&
-!                   2,nsize,nensem,(/"%    ","m3/m3"/),1,(/"-"/),&
-!                   valid_min=(/0.0,0.0/),valid_max=(/1.0,1.0/),gribSFC=grib_depthlvl,gribLvl=0)     
-             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_RELSMC(kk),&
+             !EMK...Add support for "-"
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_RELSMC(kk),&
                   LVT_LISoutput(kk)%head_lsm_list,&
-                  3,nsize,nensem,(/"%    ","m3/m3","-    "/),1,(/"-"/),&
-                  valid_min=(/0.0,0.0/),valid_max=(/1.0,1.0/),gribSFC=grib_depthlvl,gribLvl=0)     
-
-!                  valid_min=(/0.0/),valid_max=(/1.0/),gribSFC=1,gribLvl=1)    
+                  3, nsize, nensem, (/"%    ", "m3/m3", "-    "/), &
+                  1, (/"-"/),&
+                  valid_min=(/0.0, 0.0, 0.0/), &
+                  valid_max=(/1.0, 1.0, 1.0/), &
+                  gribSFC=grib_depthlvl, gribLvl=0)     
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig,"TotalPrecip:",rc=rc)
