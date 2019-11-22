@@ -5040,13 +5040,13 @@ contains
          LVT_MOC_RELSMC(source) = var_count
          dataEntry%standard_name ="relative_soil_moisture"
          dataEntry%long_name = "relative soil moisture"
-         dataEntry%nunits = 2
+         dataEntry%nunits = 3
          allocate(dataEntry%unittypes(dataEntry%nunits))
          allocate(dataEntry%valid_min(dataEntry%nunits))
          allocate(dataEntry%valid_max(dataEntry%nunits))
-         dataEntry%unittypes = (/"m3/m3","%    "/)
-         dataEntry%valid_min = (/0.0, 0.0/)
-         dataEntry%valid_max = (/1.0, 100.0/)
+         dataEntry%unittypes = (/"m3/m3","%    ","-    "/)
+         dataEntry%valid_min = (/0.0, 0.0, 0.0/)
+         dataEntry%valid_max = (/1.0, 100.0, 1.0/)
          dataEntry%ndirs = 1
          allocate(dataEntry%dirtypes(dataEntry%ndirs))
          dataEntry%dirtypes = (/"-"/)
