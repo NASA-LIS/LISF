@@ -19,7 +19,7 @@ vars = ['RelSMC_inst', 'SmLiqFrac_inst',
         'Qs_acc','Qsb_acc',
         'SWE_inst',
         'SWdown_f_inst', 'SWdown_f_tavg', 
-        'SnowDepth_inst', 
+        'SnowDepth_inst', 'Snowcover_inst',
         'Tair_f_inst', 'Tair_f_max', 
         'Tair_f_tavg',
         'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
