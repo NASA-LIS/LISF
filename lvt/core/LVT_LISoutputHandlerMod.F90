@@ -7356,7 +7356,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           endif
        enddo    
        if(unit_id.eq.-1) then 
-          write(LVT_logunit,*) '[ERR1] routine to diagnose ',trim(dataEntry%standard_name),&
+          write(LVT_logunit,*) &
+               '[ERR] LVT_readSingleBinaryVar: routine to diagnose ', &
+               trim(dataEntry%standard_name),&
                ' in units of ',trim(dataEntry%units),' is not defined'
           write(LVT_logunit,*) '[ERR] for diagnostic output...'
           call LVT_endrun()
@@ -7646,7 +7648,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           endif
        enddo    
        if(unit_id.eq.-1) then 
-          write(LVT_logunit,*) '[ERR2] routine to diagnose ',trim(dataEntry%standard_name),&
+          write(LVT_logunit,*) &
+               '[ERR] LVT_readSingleGrib1Var: routine to diagnose ', &
+               trim(dataEntry%standard_name),&
                ' in units of ',trim(dataEntry%units),' is not defined'
           write(LVT_logunit,*) '[ERR] for diagnostic output...'
           call LVT_endrun()
@@ -7903,7 +7907,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           endif
        enddo    
        if(unit_id.eq.-1) then 
-          write(LVT_logunit,*) '[ERR3] routine to diagnose ',trim(dataEntry%standard_name),&
+          write(LVT_logunit,*) &
+               '[ERR] LVT_readSingleNETCDFVar: routine to diagnose ', &
+               trim(dataEntry%standard_name),&
                ' in units of ',trim(dataEntry%units),' is not defined'
           write(LVT_logunit,*) '[ERR] for diagnostic output...'
           call LVT_endrun()
@@ -8848,7 +8854,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           endif
        enddo    
        if(unit_id.eq.-1) then 
-          write(LVT_logunit,*) '[ERR4] routine to diagnose ',trim(dataEntry%standard_name),&
+          write(LVT_logunit,*) &
+               '[ERR] LVT_readSingleNETCDFVar_batch: routine to diagnose ', &
+               trim(dataEntry%standard_name),&
                ' in units of ',trim(dataEntry%units),' is not defined'
           write(LVT_logunit,*) '[ERR] for diagnostic output...'
           call LVT_endrun()
