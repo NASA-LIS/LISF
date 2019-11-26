@@ -172,7 +172,9 @@ subroutine read_SMAPvwc(source, fname, vwcobs)
 
   implicit none
 
-  real                           :: vwcobs(LVT_rc%lnc,LVT_rc%lnr)
+  integer                       :: source
+  character(len=*)              :: fname
+  real                          :: vwcobs(LVT_rc%lnc,LVT_rc%lnr)
   
 !
 ! !INPUT PARAMETERS: 
@@ -190,8 +192,6 @@ subroutine read_SMAPvwc(source, fname, vwcobs)
 
 #if (defined USE_HDF5)
 
-  integer                       :: source 
-  character(len=*)              :: fname
   character*100,   parameter    :: vwc_gr_name = "Soil_Moisture_Retrieval_Data"
   character*100,   parameter    :: vwc_field_name = "soil_moisture"
 

@@ -430,7 +430,9 @@ subroutine read_SMAPsm(source, fname, smobs)
 
   implicit none
 
-  real                           :: smobs(LVT_rc%lnc,LVT_rc%lnr)
+  integer                       :: source
+  character(len=*)              :: fname
+  real                          :: smobs(LVT_rc%lnc,LVT_rc%lnr)
   
 !
 ! !INPUT PARAMETERS: 
@@ -444,12 +446,9 @@ subroutine read_SMAPsm(source, fname, smobs)
 ! !REVISION HISTORY: 
 ! 
 !EOP
-!BOP
 
 #if (defined USE_HDF5)
 
-  integer                       :: source 
-  character(len=*)              :: fname
   character*100,   parameter    :: sm_gr_name = "Soil_Moisture_Retrieval_Data"
   character*100,   parameter    :: sm_field_name = "soil_moisture"
 
