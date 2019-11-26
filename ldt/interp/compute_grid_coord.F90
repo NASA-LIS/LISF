@@ -99,8 +99,8 @@ subroutine compute_grid_coord(gridDesc,npts,fill,xpts,ypts,rlon,rlat,nret)
      call compute_grid_coord_ease(gridDesc,npts,fill,xpts,ypts,&
           rlon,rlat,nret)
   else
-     print*, 'Unrecognized Projection .... '
-     print*, 'Program stopping ..'
+     print *, '[ERR] Unrecognized Projection .... '
+     print *, 'Program stopping ..'
      stop
   endif
 

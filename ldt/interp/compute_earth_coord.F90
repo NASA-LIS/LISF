@@ -24,6 +24,7 @@ subroutine compute_earth_coord(gridDesc,npts,fill,xpts,ypts,rlon,rlat,nret,&
   real        :: rlon(npts)
   integer     :: nret
   logical     :: gen_xypts
+!
 ! !DESCRIPTION: 
 !  This subroutine computes the earth coordinates (lat/lon values) 
 !  of the specified domain. This routine is based on the grid
@@ -134,8 +135,9 @@ subroutine compute_earth_coord(gridDesc,npts,fill,xpts,ypts,rlon,rlat,nret,&
      call compute_earth_coord_ease(gridDesc,npts,fill,xpts,ypts,&
           rlon,rlat,nret)
   else
-     print*, 'Unrecognized Projection .... '
-     print*, 'Program stopping ..'
+     print *, '[ERR] Unrecognized Projection ... '
+     print *, 'Program stopping ...'
      stop
   endif
+
 end subroutine compute_earth_coord

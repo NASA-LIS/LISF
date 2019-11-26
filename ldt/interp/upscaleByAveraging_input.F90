@@ -13,12 +13,8 @@ subroutine upscaleByAveraging_input( gridDesci, gridDesco, mi, mo, n11 )
 ! 
 ! !USES:   
 !
-! !INPUT PARAMETERS: 
-! 
-! !OUTPUT PARAMETERS:
-!
 ! !DESCRIPTION: 
-!  This subprogram performs issues calls to compute the 
+!  This subprogram performs and issues calls to compute the 
 !  neighbor information for upscaling data for scalar fields
 !  The grids are defined by their grid description arrays. 
 !  
