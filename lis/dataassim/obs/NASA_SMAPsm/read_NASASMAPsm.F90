@@ -98,13 +98,11 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    character*100     :: temp1
    character*1        :: fproc(4)
    integer               :: ftn, ierr
-   character*100     :: smap_filename(10), tstring(10)
    character(len=4) :: istring
    character(len=200) :: cmd
    integer :: rc
    character(len=3) :: CRID
 
-   smap_filename = ""
 
    call ESMF_AttributeGet(OBS_State, "Data Directory", &
                           smobsdir, rc=status)
@@ -162,7 +160,6 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
          call mpi_barrier(lis_mpi_comm, ierr)
 #endif
 
-         i = 1
          ftn = LIS_getNextUnitNumber()
          open (ftn, file="./SMAP_filelist."// &
                fproc(1)//fproc(2)//fproc(3)//fproc(4)//'.dat', & ! put the char. string together
@@ -178,13 +175,11 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
                exit
             endif
 
-            smap_filename(i) = fname
-            write (LIS_logunit, *) '[INFO] reading ', trim(smap_filename(i))
-            call read_NASASMAP_E_data(n, k, 'D', smap_filename(i), smobs_D)
+            write (LIS_logunit, *) '[INFO] reading ', trim(fname)
+            call read_NASASMAP_E_data(n, k, 'D', fname, smobs_D)
 
-            write (LIS_logunit, *) '[INFO] reading ', trim(smap_filename(i))
-            call read_NASASMAP_E_data(n, k, 'A', smap_filename(i), smobs_A)
-            i = i + 1
+            write (LIS_logunit, *) '[INFO] reading ', trim(fname)
+            call read_NASASMAP_E_data(n, k, 'A', fname, smobs_A)
          enddo
 
          NASASMAPsm_struc(n)%smobs = LIS_rc%udef
@@ -259,7 +254,6 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
          call mpi_barrier(lis_mpi_comm, ierr)
 #endif
 
-         i = 1
          ftn = LIS_getNextUnitNumber()
          open (ftn, file="./SMAP_filelist."// &
                fproc(1)//fproc(2)//fproc(3)//fproc(4)//".dat", &
@@ -275,14 +269,11 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
                exit
             endif
 
-            smap_filename(i) = fname
+            write (LIS_logunit, *) '[INFO] reading ', trim(fname)
+            call read_NASASMAP_data(n, k, 'D', fname, smobs_D)
 
-            write (LIS_logunit, *) '[INFO] reading ', trim(smap_filename(i))
-            call read_NASASMAP_data(n, k, 'D', smap_filename(i), smobs_D)
-
-            write (LIS_logunit, *) '[INFO] reading ', trim(smap_filename(i))
-            call read_NASASMAP_data(n, k, 'A', smap_filename(i), smobs_A)
-            i = i + 1
+            write (LIS_logunit, *) '[INFO] reading ', trim(fname)
+            call read_NASASMAP_data(n, k, 'A', fname, smobs_A)
          enddo
 
          NASASMAPsm_struc(n)%smobs = LIS_rc%udef

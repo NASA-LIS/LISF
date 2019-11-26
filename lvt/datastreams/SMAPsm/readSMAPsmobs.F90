@@ -51,8 +51,7 @@ subroutine readSMAPsmobs(source)
   character*4       :: yyyy
   character*2       :: mm,dd,hh
   character*200     :: list_files
-  integer           :: i,ftn,ierr
-  character*200     :: smap_filename(10)
+  integer           :: ftn,ierr
   character*200     :: fname
   integer           :: mn_ind
   integer           :: yr, mo, da, hr, mn, ss
@@ -99,7 +98,6 @@ subroutine readSMAPsmobs(source)
         
         call system(trim(list_files))
 
-        i =1
         ftn = LVT_getNextUnitNumber()
         open(ftn,file="./SMAP_filelist.dat",&
              status='old',iostat=ierr)
@@ -117,13 +115,10 @@ subroutine readSMAPsmobs(source)
            call LVT_tick(timenow,doy,gmt,LVT_rc%yr, LVT_rc%mo, LVT_rc%da, &
                 LVT_rc%hr, mn, ss, 0)
         
-           smap_filename(i) = fname
+           write(LVT_logunit,*) '[INFO] reading ',trim(fname)
            
-           write(LVT_logunit,*) '[INFO] reading ',trim(smap_filename(i))
-           
-           call read_SMAPL2sm_data(source,smap_filename(i),smobs,timenow)
+           call read_SMAPL2sm_data(source,fname,smobs,timenow)
 
-           i = i+1
         enddo
         call LVT_releaseUnitNumber(ftn)
         
@@ -150,7 +145,6 @@ subroutine readSMAPsmobs(source)
                          '.dat'
 
          call system(trim(list_files))
-         i = 1
          ftn = LVT_getNextUnitNumber()
          open (ftn, file="./SMAP_filelist.dat", &
                status='old', iostat=ierr)
@@ -164,10 +158,8 @@ subroutine readSMAPsmobs(source)
             if (ierr .ne. 0) then
                exit
             endif
-            smap_filename(i) = fname
-            write (LVT_logunit, *) '[INFO] reading ', trim(smap_filename(i))
-            call read_SMAPsm(source, smap_filename(i), smc)
-            i = i + 1
+            write (LVT_logunit, *) '[INFO] reading ', trim(fname)
+            call read_SMAPsm(source, fname, smc)
          enddo
          call LVT_releaseUnitNumber(ftn)
 
@@ -188,7 +180,6 @@ subroutine readSMAPsmobs(source)
                          '.dat'
 
          call system(trim(list_files))
-         i = 1
          ftn = LVT_getNextUnitNumber()
          open (ftn, file="./SMAP_filelist.dat", &
                status='old', iostat=ierr)
@@ -202,10 +193,8 @@ subroutine readSMAPsmobs(source)
             if (ierr .ne. 0) then
                exit
             endif
-            smap_filename(i) = fname
-            write (LVT_logunit, *) '[INFO] reading ', trim(smap_filename(i))
-            call read_SMAPsm(source, smap_filename(i), smc)
-            i = i + 1
+            write (LVT_logunit, *) '[INFO] reading ', trim(fname)
+            call read_SMAPsm(source, fname, smc)
          enddo
 
          call LVT_releaseUnitNumber(ftn)

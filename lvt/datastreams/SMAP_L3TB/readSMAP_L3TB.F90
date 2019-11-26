@@ -45,7 +45,7 @@ subroutine readSMAP_L3TB(source)
    integer           :: iret
    character*200     :: fname
    real              :: Tb(LVT_rc%lnc, LVT_rc%lnr, 4)
-   integer           :: fnd, i
+   integer           :: fnd
    real              :: timenow
    character*4       :: yyyy
    character*2       :: mm, dd, hh
@@ -53,10 +53,8 @@ subroutine readSMAP_L3TB(source)
    integer               :: doy
    character*200      :: list_files
    integer               :: ftn, ierr
-   character*100     :: smap_filename(10)
    character(len=3) :: CRID
 
-   smap_filename = ""
    Tb = LVT_rc%udef
 
    timenow = float(LVT_rc%dhr(source))*3600 + &
@@ -83,7 +81,6 @@ subroutine readSMAP_L3TB(source)
                          '.dat'
 
          call system(trim(list_files))
-         i = 1
          ftn = LVT_getNextUnitNumber()
          open (ftn, file="./SMAP_filelist.dat", &
                status='old', iostat=ierr)
@@ -97,10 +94,8 @@ subroutine readSMAP_L3TB(source)
             if (ierr .ne. 0) then
                exit
             endif
-            smap_filename(i) = fname
-            write (LVT_logunit, *) '[INFO] Reading SMAP file ', smap_filename(i)
-            call read_SMAP_L3Tb(source, smap_filename(i), Tb)
-            i = i + 1
+            write (LVT_logunit, *) '[INFO] Reading SMAP file ', trim(fname)
+            call read_SMAP_L3Tb(source, fname, Tb)
          enddo
          call LVT_releaseUnitNumber(ftn)
 
@@ -120,7 +115,6 @@ subroutine readSMAP_L3TB(source)
                          '.dat'
 
          call system(trim(list_files))
-         i = 1
          ftn = LVT_getNextUnitNumber()
          open (ftn, file="./SMAP_filelist.dat", &
                status='old', iostat=ierr)
@@ -134,10 +128,8 @@ subroutine readSMAP_L3TB(source)
             if (ierr .ne. 0) then
                exit
             endif
-            smap_filename(i) = fname
-            write (LVT_logunit, *) '[INFO] Reading SMAP file ', smap_filename(i)
-            call read_SMAP_L3Tb(source, smap_filename(i), Tb)
-            i = i + 1
+            write (LVT_logunit, *) '[INFO] Reading SMAP file ', trim(fname)
+            call read_SMAP_L3Tb(source, fname, Tb)
          enddo
 
          call LVT_releaseUnitNumber(ftn)
