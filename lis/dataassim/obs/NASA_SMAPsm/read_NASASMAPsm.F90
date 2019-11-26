@@ -65,7 +65,7 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    character*100          :: smobsdir
    character*100          :: fname
    logical                :: alarmCheck, file_exists
-   integer                :: t, c, r, i, j, p, jj
+   integer                :: t, c, r, j, p, jj
    real, pointer :: obsl(:)
    type(ESMF_Field)       :: smfield, pertField
    integer                :: gid(LIS_rc%obs_ngrid(k))
@@ -95,10 +95,7 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    integer               :: yr, mo, da, hr, mn, ss
    integer               :: doy
    character*200      :: list_files
-   character*100     :: temp1
-   character*1        :: fproc(4)
    integer               :: ftn, ierr
-   character(len=4) :: istring
    character(len=200) :: cmd
    integer :: rc
    character(len=3) :: CRID
@@ -127,19 +124,13 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
 ! MN: create filename for 9 km product
 !---------------------------------------------------------------------------
 
-! get the local CPU number
-         write (unit=temp1, fmt='(i4.4)') LIS_localPet
-! convert that to 4 one char. string
-         read (unit=temp1, fmt='(4a1)') fproc
-
          write (yyyy, '(i4.4)') LIS_rc%yr
          write (mm, '(i2.2)') LIS_rc%mo
          write (dd, '(i2.2)') LIS_rc%da
          write (CRID, '(a)') NASASMAPsm_struc(n)%release_number
 
          ! EMK...Make sure only one PET calls the file system to determine what
-         ! SMAP files are available.  Then create a copy of the file list for
-         ! every PET.
+         ! SMAP files are available.
          if (LIS_masterproc) then
 
             list_files = 'ls '//trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
@@ -149,21 +140,14 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
                          '.dat'
 
             call system(trim(list_files))
-! make copy of the SMAP_filelist for each CPU
-            do i = 0, LIS_npes - 1
-               write (istring, '(I4.4)') i
-               cmd = 'cp SMAP_filelist.dat SMAP_filelist.'//istring//'.dat'
-               call system(trim(cmd))
-            end do ! i
          end if
 #if (defined SPMD)
          call mpi_barrier(lis_mpi_comm, ierr)
 #endif
 
          ftn = LIS_getNextUnitNumber()
-         open (ftn, file="./SMAP_filelist."// &
-               fproc(1)//fproc(2)//fproc(3)//fproc(4)//'.dat', & ! put the char. string together
-               status='old', iostat=ierr)
+         open (ftn, file="./SMAP_filelist.dat", &
+               action='read', status='old', iostat=ierr)
 
 ! if multiple files for the same time and orbits are present, the latest
 ! one will overwrite older ones, though multiple (redundant) reads occur.
@@ -225,17 +209,13 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
 ! MN: create filename for 36km product  (SMAP_L3_SM_P_)
 !-------------------------------------------------------------------------
 
-         write (unit=temp1, fmt='(i4.4)') LIS_localPet
-         read (unit=temp1, fmt='(4a1)') fproc
-
          write (yyyy, '(i4.4)') LIS_rc%yr
          write (mm, '(i2.2)') LIS_rc%mo
          write (dd, '(i2.2)') LIS_rc%da
          write (CRID, '(a)') NASASMAPsm_struc(n)%release_number
 
          ! EMK...Make sure only one PET calls the file system to determine what
-         ! SMAP files are available.  Then create a copy of the file list for
-         ! every PET.
+         ! SMAP files are available.
          if (LIS_masterproc) then
             list_files = 'ls '//trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
                          trim(dd)//'/SMAP_L3_SM_P_' &
@@ -244,20 +224,14 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
                          '.dat'
 
             call system(trim(list_files))
-            do i = 0, LIS_npes - 1
-               write (istring, '(I4.4)') i
-               cmd = 'cp SMAP_filelist.dat SMAP_filelist.'//istring//'.dat'
-               call system(trim(cmd))
-            end do ! i
          end if
 #if (defined SPMD)
          call mpi_barrier(lis_mpi_comm, ierr)
 #endif
 
          ftn = LIS_getNextUnitNumber()
-         open (ftn, file="./SMAP_filelist."// &
-               fproc(1)//fproc(2)//fproc(3)//fproc(4)//".dat", &
-               status='old', iostat=ierr)
+         open (ftn, file="./SMAP_filelist.dat", &
+               action='read', status='old', iostat=ierr)
 
 ! if multiple files for the same time and orbits are present, the latest
 ! one will overwrite older ones, though multiple (redundant) reads occur.
