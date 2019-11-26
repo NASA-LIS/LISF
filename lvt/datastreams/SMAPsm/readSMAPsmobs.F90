@@ -141,7 +141,7 @@ subroutine readSMAPsmobs(source)
          write (yyyy, '(i4.4)') LVT_rc%yr
          write (mm, '(i2.2)') LVT_rc%mo
          write (dd, '(i2.2)') LVT_rc%da
-         write (CRID, '(a)') SMAP_smobs(i)%release_number
+         write (CRID, '(a)') SMAP_smobs(source)%release_number
 
          list_files = 'ls '//trim(SMAP_smobs(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
                       trim(dd)//'/SMAP_L3_SM_P_E_' &
@@ -179,7 +179,7 @@ subroutine readSMAPsmobs(source)
          write (yyyy, '(i4.4)') LVT_rc%yr
          write (mm, '(i2.2)') LVT_rc%mo
          write (dd, '(i2.2)') LVT_rc%da
-         write (CRID, '(a)') SMAP_smobs(i)%release_number
+         write (CRID, '(a)') SMAP_smobs(source)%release_number
 
          list_files = 'ls '//trim(SMAP_smobs(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
                       trim(dd)//'/SMAP_L3_SM_P_' &
