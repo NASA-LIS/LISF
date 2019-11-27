@@ -660,7 +660,7 @@ contains
     tdimID(2) = dimID(2)
     tdimID(4) = dimID(4)
    
-    call LDT_verify(nf90_def_dim(ftn,'sfctypes',&
+    call LDT_verify(nf90_def_dim(ftn,'land_cat',&
          LDT_LSMparam_struc(n)%sfctype%vlevels,tdimID(3)))
 
     call LDT_writeNETCDFdataHeader(n,ftn,tdimID,&
