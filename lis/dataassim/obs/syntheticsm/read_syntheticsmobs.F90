@@ -106,7 +106,6 @@ subroutine read_syntheticsmobs(n, k, OBS_State, OBS_Pert_state)
      call ESMF_FieldGet(smfield,localDE=0,farrayPtr=obsl,rc=status)
      call LIS_verify(status)
      obsl = -1
-     ftn = LIS_getNextUnitNumber()
 
 !     open(ftn,file=name,form='unformatted')
 !     call readobsvar_1dgridded(ftn,n,k,obsl)
