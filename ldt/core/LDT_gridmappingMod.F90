@@ -122,13 +122,8 @@ contains
    enddo
 
 !- Set bounding points for LIS run domain for subsetting step:
-  ! Fixed code below to address IDL issue ...
-!   lisdom_min_lat = rlat(1,1)
-!   lisdom_min_lon = rlon(1,1)
-!   lisdom_max_lat = rlat(LDT_rc%lnc(n),LDT_rc%lnr(n))
-!   lisdom_max_lon = rlon(LDT_rc%lnc(n),LDT_rc%lnr(n))
 
-!- Calculate LIS run domain corner point resolutions: 
+   ! Calculate LIS run domain corner point resolutions: 
    lisdom_xres_ll = abs(rlon(2,1)-rlon(1,1))
    lisdom_yres_ll = abs(rlat(1,2)-rlat(1,1))
    lisdom_xres_ur = abs(rlon(LDT_rc%lnc(n),  LDT_rc%lnr(n))  &
@@ -394,8 +389,6 @@ contains
            lat_line(c,r) = nint((rlat(c,r)-param_grid(4))/param_grid(10))+1
            lon_line(c,r) = nint((rlon(c,r)-param_grid(5))/param_grid(9))+1
 !           lon_line(c,r) = nint(diff_lon(rlon(c,r),param_grid(5))/param_grid(9))+1
-
-!           write(600,*) c, r, rlon(c,r), rlat(c,r), lon_line(c,r), lat_line(c,r)  ! KRA
         enddo
      enddo
      deallocate(rlat,rlon)

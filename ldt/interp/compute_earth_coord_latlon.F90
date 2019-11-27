@@ -10,7 +10,7 @@
 ! !REVISION HISTORY: 
 !   04-10-96 Mark Iredell;  Initial Specification
 !   05-27-04 Sujay Kumar;   Modified verision with floating point arithmetic. 
-!   11-25-19 K. Arsenault;  Ensure longitude orientation (E->W) 
+!   11-25-19 K. Arsenault;  Ensure longitude orientation (W->E)
 !
 ! !INTERFACE:
 subroutine compute_earth_coord_latlon(gridDesc,npts,fill,xpts,ypts,& 
@@ -69,16 +69,14 @@ subroutine compute_earth_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
      else
         dlat=gridDesc(10)    ! S-N
      endif
-#if 0
      ! Original long. orientation code:
-     if(rlon1.gt.rlon2) then 
-        dlon=-gridDesc(9)    ! W-E
-     else
-        dlon = gridDesc(9)   ! E-W
-     endif
-#endif
-     ! Updated code:
-     dlon = gridDesc(9)      ! E-W orientation
+!     if(rlon1.gt.rlon2) then 
+!        dlon=-gridDesc(9)    ! E-W
+!     else
+!        dlon = gridDesc(9)   ! W-E
+!     endif
+     ! Updated code (KRA):
+     dlon = gridDesc(9)      ! W-E orientation
 
      xmin=0
      xmax=im+1
@@ -94,7 +92,7 @@ subroutine compute_earth_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
         if( xpts(n).ge.xmin.and.xpts(n).le.xmax.and. & 
             ypts(n).ge.ymin.and.ypts(n).le.ymax ) then
 
-!  original code (KRA)
+!  original code 
 !           rlon(n)=rlon1+dlon*(xpts(n)-1)
 !           if(rlon(n).lt.0) then 
 !              rlon(n) = 360+rlon(n)
@@ -107,7 +105,6 @@ subroutine compute_earth_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
            if( rlon(n) > 360. ) then
              rlon(n) = dlon*(xpts(n)-1)  ! rlon1 reset to 0. in this case
            endif
-!            write(601,*) n, rlon(n)  ! KRA
 
            rlat(n)=rlat1+dlat*(ypts(n)-1)
            nret=nret+1

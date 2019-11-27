@@ -9,11 +9,11 @@
 ! !REVISION HISTORY: 
 !   04-10-1996 Mark Iredell; Initial Specification
 !   05-27-2004 Sujay Kumar;  Modified verision with floating point arithmetic. 
-!   11-25-2019 K. Arsenault; Ensure longitude orientation (E->W) 
+!   11-25-2019 K. Arsenault; Ensure longitude orientation (W->E)
 !
 ! !INTERFACE:
 subroutine compute_grid_coord_latlon(gridDesc,npts,fill,xpts,ypts,& 
-     rlon,rlat,nret)
+              rlon,rlat,nret)
 
   implicit none
 ! !ARGUMENTS: 
@@ -67,16 +67,14 @@ subroutine compute_grid_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
      else
         dlat=gridDesc(10)    ! S-N
      endif
-#if 0 
      ! Original long. orientation code:
-     if(rlon1.gt.rlon2) then 
-        dlon =-gridDesc(9)  ! W-E
-     else
-        dlon = gridDesc(9)  ! E-W
-     endif
-#endif
-     ! Updated code:
-     dlon = gridDesc(9)     ! E-W orientation
+!     if(rlon1.gt.rlon2) then 
+!        dlon =-gridDesc(9)  ! E-W
+!     else
+!        dlon = gridDesc(9)  ! W-E
+!     endif
+     ! Updated code (KRA):
+     dlon = gridDesc(9)     ! W-E orientation
 
      xmin=0
      xmax=im+1
@@ -96,7 +94,6 @@ subroutine compute_grid_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
            else
               xpts(n) = 1+(rlon(n)-rlon1)/dlon
            endif
-!           write(602,*) n, rlon(n), rlon1, dlon, xpts(n)
 
            ypts(n)=1+(rlat(n)-rlat1)/dlat
 
