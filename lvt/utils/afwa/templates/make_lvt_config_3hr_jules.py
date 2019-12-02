@@ -64,6 +64,8 @@ var_attributes = {
         "SmLiqFrac   1  4  m3/m3  -  0  4 SmLiqFrac   1  4  m3/m3  -  0  4",
     "SnowDepth_inst" : \
         "SnowDepth   1  1  m      -  0  1 SnowDepth   1  1  m      -  0  1",
+    "Snowcover_inst" : \
+        "Snowcover   1  1  %      -  0  1 Snowcover   1  1  %      -  0  1",
     "SoilMoist_inst" : \
         "SoilMoist   1  4  m3/m3  -  0  4 SoilMoist   1  4  m3/m3  -  0  4",
     "SoilMoist_tavg" : \
