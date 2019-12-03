@@ -3339,9 +3339,9 @@ contains
 
           call ESMF_ConfigFindLabel(modelSpecConfig, "RiverVelocity:",rc=rc)
           call get_moc_attributes(modelspecConfig,LVT_LISoutput(kk)%head_routing_list,&
-               "RiverVelocity",&
-               "River_Velocity",&
-               "River Velocity","F",rc)
+               "RiverFlowVelocity",&
+               "River_Flow_Velocity",&
+               "River Flow Velocity","F",rc)
           if(rc.eq.1) then 
              call register_dataEntry(LVT_LIS_MOC_ROUTING_COUNT(kk), LVT_LIS_MOC_RIVVEL(kk), &
                   LVT_LISoutput(kk)%head_routing_list, &
@@ -3369,7 +3369,7 @@ contains
           if(rc.eq.1) then 
              call register_dataEntry(LVT_LIS_MOC_ROUTING_COUNT(kk), LVT_LIS_MOC_fldevap(kk), &
                   LVT_LISoutput(kk)%head_routing_list, &
-                  1,nsize,nensem,(/"m3"/),1,("-"),&
+                  1,nsize,nensem,(/"kg/m2s"/),1,("-"),&
                   valid_min=(/0.0/),valid_max=(/500000.0/),gribSFC=1,gribLvl=1)
           endif
 
@@ -3453,7 +3453,7 @@ contains
           if(rc.eq.1) then 
              call register_dataEntry(LVT_LIS_MOC_ROUTING_COUNT(kk), LVT_LIS_MOC_RNFSTO(kk), &
                   LVT_LISoutput(kk)%head_routing_list, &
-                  1,nsize,nensem,(/"m3"/),1,("-"),&
+                  1,nsize,nensem,(/"mm"/),1,("-"),&
                   valid_min=(/0.0/),valid_max=(/500000.0/),gribSFC=1,gribLvl=1)
           endif
 
@@ -3465,7 +3465,7 @@ contains
           if(rc.eq.1) then 
              call register_dataEntry(LVT_LIS_MOC_ROUTING_COUNT(kk), LVT_LIS_MOC_BSFSTO(kk), &
                   LVT_LISoutput(kk)%head_routing_list, &
-                  1,nsize,nensem,(/"m3"/),1,("-"),&
+                  1,nsize,nensem,(/"mm"/),1,("-"),&
                   valid_min=(/0.0/),valid_max=(/500000.0/),gribSFC=1,gribLvl=1)
           endif
 
@@ -10280,6 +10280,8 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
   subroutine mapLISdataToLVT(source,lvtdataEntry, lisdataEntry)
 ! !ARGUMENTS: 
 
+    implicit none
+
     integer                    :: source
     type(LVT_metadataEntry)    :: lvtdataEntry
     type(LVT_LISmetadataEntry) :: lisdataEntry
@@ -10289,6 +10291,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
 ! 
 ! This routine maps the LIS output data to the LVT data
 ! structure for a particular variable
+!
+! If the LIS output is in ensemble space and the LVT analysis 
+! is based on a single member, this routine also 
+! computes the ensemble mean before mapping to the LVT 
+! data structures
 ! 
 !  The arguments are: 
 !  \begin{description}
@@ -10298,9 +10305,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
 !     the LIS data entry object
 !  \end{description}
 !EOP
-    integer             :: k 
+    
+    integer             :: k
+    integer             :: g
     real                :: scale_f
-!    do k=1, dataEntry%selectNlevs
+
     scale_f = 1.0
 
     do k=1, lvtdataEntry%vlevels
@@ -10326,9 +10335,22 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
 
           call LVT_endrun()
        endif
-       lvtdataEntry%value(:,:,k) = lisdataEntry%value(:,:,k)*scale_f
-       lvtdataEntry%count(:,:,k) = lisdataEntry%count(:,:,k)
-
+       if(LVT_LIS_rc(source)%nensem.eq.LVT_rc%nensem) then
+          lvtdataEntry%value(:,:,k) = lisdataEntry%value(:,:,k)*scale_f
+          lvtdataEntry%count(:,:,k) = lisdataEntry%count(:,:,k)
+       else
+          if(LVT_rc%nensem.eq.1) then 
+             do g=1,LVT_rc%npts
+                lvtdataEntry%value(g,1,k) = sum(lisdataEntry%value(g,&
+                     1:LVT_LIS_rc(source)%nensem,k)*scale_f)/&
+                     LVT_LIS_rc(source)%nensem
+                lvtdataEntry%count(g,1,k) = lisdataEntry%count(g,1,k)
+             enddo
+          else
+             write(LVT_logunit,*) '[ERR] The number of ensembles in LVT must be 1'
+             call LVT_endrun()
+          endif
+       endif
     enddo
   end subroutine mapLISdataToLVT
 

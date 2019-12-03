@@ -141,9 +141,14 @@ contains
     character*40  :: vname
 
 !read decision space file, number of generations, 
+    call ESMF_ConfigGetAttribute(LVT_config,LVT_rc%odir,&
+         label="OptUE output data directory:", rc=status)
+    call LVT_verify(status, 'OptUE output data directory: not defined')
+
     call ESMF_ConfigGetAttribute(LVT_config,algname,&
          label="OptUE algorithm used:", rc=status)
     call LVT_verify(status, 'OptUE algorithm used: not defined')
+
     if(algname.eq."Genetic algorithm") then 
        LVT_optuectl%algname = 'GA'
        LVT_optuectl%optuealg = 2
@@ -195,7 +200,7 @@ contains
    
     count = 0 
     do i=1,LVT_optuectl%nparam_total
-       read(ftn,*) vname, selectOpt, parmin,parmax
+       read(ftn,*) selectOpt, vname, parmin,parmax
        write(LVT_logunit,*) '[INFO] vname ',vname,&
             parmin,parmax
        if(selectOpt.eq.1) then 

@@ -965,11 +965,12 @@ Halo size along y: 0
 Acceptable values are:
 
 |====
-|Value            | Description
+|Value             | Description
 
-|none             | do not use a routing model
-|"`NLDAS router`" | use the NLDAS router
-|"`HYMAP router`" | use the HyMAP router
+|none              | do not use a routing model
+|"`NLDAS router`"  | use the NLDAS router
+|"`HYMAP router`"  | use the HyMAP router
+|"`HYMAP2 router`" | use the HyMAP2 router
 |====
 
 
@@ -4613,7 +4614,7 @@ MODIS real-time LAI files.
 
 .Example _lis.config_ entry
 ....
-MODIS LAI data directory:
+MODIS RT LAI data directory:
 ....
 
 
@@ -5550,6 +5551,18 @@ Acceptable values are:
 |1     | Use the lowest model level forcing.
 |====
 
+`MERRA2 use 2m wind fields:` specifies whether to use the 
+2m diagnosed wind fields. This option will only work if the 
+lowest model level forcing option is turned off.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use the 2m diagnosed wind speed fields.
+|1     | Use the 2m diagnosed wind speed fields.
+|====
+
 `MERRA2 use corrected total precipitation:` specifies whether
 to use the bias corrected total precipitation.
 Acceptable values are:
@@ -5564,7 +5577,8 @@ Acceptable values are:
 .Example _lis.config_ entry
 ....
 MERRA2 forcing directory:              ./MERRA2/
-MERRA2 use lowest model level forcing:     1 
+MERRA2 use lowest model level forcing:     1
+MERRA2 use 2m wind fields:                 0 
 MERRA2 use corrected total precipitation:  1
 ....
 
@@ -5903,15 +5917,21 @@ anchor:sssec_supp_imerg[IMERG precipitation]
 `IMERG forcing directory:` specifies the location of the
 GPM IMERG precipitation forcing files.
 
-'IMERG version:' specifies the version of the GPM IMERG 
+'IMERG product:' specifies the product of the GPM IMERG 
 precipitation forcing files. The valid options are: early,
 late, and final. If no version is specified, the reader will
-default to the 'final' version of GPM IMERG. 
+default to the 'final' product of GPM IMERG. 
+
+'IMERG version:' specifies the version of the GPM IMERG
+precipitation forcing files. If no version is specified, 
+the reader will default to the latest version of GPM IMERG.
+(Currently V06B).
 
 .Example _lis.config_ entry
 ....
 IMERG forcing directory:     ./FORCING/IMERG
-IMERG version: 'final'
+IMERG product: 'final'
+IMERG version: 'V06B'
 ....
 
 
@@ -6534,6 +6554,27 @@ anchor:sssec_gdast1534forcing[GDAS T1534]
 .Example _lis.config_ entry
 ....
 `GDAS T1534 forcing directory:`
+....
+
+==== MRMS
+anchor:sssec_mrmsforcing[MRMS]
+
+`MRMS forcing directory:` specifies the location of the MRMS metforcing data.
+
+`MRMS masking:` specifies whether to use a monthly-varying mask for where MRMS
+data are considered acceptable to the user. (1=Yes 0=No)
+
+`MRMS mask threshold:` specifies Radar Quality Index value (on scale of 0-100)
+above which to use MRMS data and below which to use a different forcing.
+
+`MRMS mask directory:` specifies the location of the MRMS mask files.
+
+.Example _lis.config_ entry
+....
+MRMS forcing directory:
+MRMS masking: 1
+MRMS mask threshold: 60.0
+MRMS mask directory: ./input/MASKS/
 ....
 
 
@@ -9600,6 +9641,17 @@ location of the max root depth file for flood irrigation.
 `Drip irrigation max root depth file:` specifies the
 location of the max root depth file for drip irrigation.
 
+`Irrigation GVF parameter 1:` specifies growing season for
+irrigation in Noah-MP (set to 0.40 for Noah 3.3 irrigation)
+
+`Irrigation GVF parameter 2:` specifies growing season for
+irrigation in Noah-MP (set to 0.00 for Noah 3.3 irrigation)
+
+`Groundwater abstraction for irrigation:` specifies whether
+to withdraw water used for irrigation from the groundwater
+in Noah-MP.
+1=Yes 0=No (default=0)
+
 .Example _lis.config_ entry
 ....
 Irrigation scheme:            "none"
@@ -9619,7 +9671,7 @@ anchor:ssec_routing[Routing]
 anchor:sssec_hymaprouting[HYMAP routing]
 
 `HYMAP routing model time step:` specifies the timestep for
-the run.
+the HyMAP router.
 
 See Section <<ssec_timeinterval>> for a description
 of how to specify a time interval.
@@ -9630,8 +9682,8 @@ writing interval for the HyMAP router.
 See Section <<ssec_timeinterval>> for a description
 of how to specify a time interval.
 
-`HYMAP run in ensemble mode:` specifies whether to run in
-ensemble mode.
+`HYMAP run in ensemble mode:` specifies whether to run the
+HyMAP router in ensemble mode.
 Acceptable values are:
 
 |====
@@ -9653,7 +9705,7 @@ Acceptable values are:
 |====
 
 `HYMAP routing model linear reservoir flag:` specifies whether to
-use model linear reservoir.
+use linear reservoirs in the HyMAP router.
 Acceptable values are:
 
 |====
@@ -9664,7 +9716,9 @@ Acceptable values are:
 |====
 
 `HYMAP routing model evaporation option:` specifies whether
-to compute evaporation in flood plains.
+to compute evaporation in flood plains in the HyMAP router.
+Note that the ability to calculate this evaporation is
+currently disabled in the HyMAP router code.
 Acceptable values are:
 
 |====
@@ -9674,15 +9728,15 @@ Acceptable values are:
 |2     | Do not compute evaporation in flood plains
 |====
 
-`HYMAP routing model start mode:` specifies if a restart mode is
-being used.
+`HYMAP routing model start mode:` specifies the restart mode
+to be used for the HyMAP router.
 Acceptable values are:
 
 |====
 |Value     | Description
 
-|restart   | A restart mode is being used
-|coldstart | A cold start mode is being used, no restart file read
+|restart   | A restart mode is being used; read a HyMAP restart file
+|coldstart | A cold start mode is being used; no restart file read
 |====
 
 `HYMAP routing model restart interval:` defines the restart writing
@@ -9705,6 +9759,194 @@ HYMAP routing model evaporation option: 2
 HYMAP routing model start mode: "coldstart"
 HYMAP routing model restart interval: "1mo"
 HYMAP routing model restart file: "./OL/ROUTING/200001/LIS_RST_HYMAP_router_200001312345.d01.bin"
+....
+
+
+==== HYMAP2 routing
+anchor:sssec_hymap2routing[HYMAP2 routing]
+
+`HYMAP2 routing model time step:` specifies the timestep for
+the HyMAP2 router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`HYMAP2 routing model output interval:` defines the output
+writing interval for the HyMAP2 router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`HYMAP2 run in ensemble mode:` specifies whether to run the
+HyMAP2 router in ensemble mode.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not run in ensemble mode
+|1     | Run in ensemble mode
+|====
+
+`HYMAP2 routing method:` specifies the HyMAP2 routing method
+to use.
+Acceptable values are:
+
+|====
+|Value              | Description
+
+|kinematic          | use kinematic method
+|diffusive          | use diffusive method
+|"`local intertia`" | use local intertia method
+|hybrid             | use hybrid method (requires a river flow map from LDT)
+|====
+
+`HYMAP2 routing model time step method:` specifies the HyMAP2
+routing model time step method to use.
+Acceptable values are:
+
+|====
+|Value     | Description
+
+|constant  | use constant timestep
+|adaptive  | use adaptive (time-varying) timesteps (must provide an alfa coefficient value)
+|====
+
+`HYMAP2 routing model adaptive time step alfa coefficient:`
+specifies the adaptive time step alfa coefficent (a real number)
+for the HyMAP2 router.  This coefficient is not needed if using
+the `constant` time step method.
+
+`HYMAP2 floodplain dynamics:` specifies whether simulate
+floodplain dynamics in the HyMAP2 router.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use
+|====
+
+`HYMAP2 reservoir operation option:` specifies whether to use
+reservoir operations in the HyMAP2 router.  This option is still
+in development in the HyMAP2 router within LIS.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use (additional lis.config entries required)
+|====
+
+`HYMAP2 number of reservoirs:` specifies the number of reservoirs
+to use with the HyMAP2 router.  This config entry is only used
+when `HYMAP2 reservoir operation option:` is set to 1.  The number
+of reservoirs should be an integer.
+
+`HYMAP2 reservoir operation input time series size:` specifies the
+time series length (or number of time steps in the inputs files)
+when using reservoir operations with the HyMAP2 router.  This config
+entry is only used when `HYMAP2 reservoir operation option:` is set
+to 1.  The time series size should be an integer.
+
+`HYMAP2 reservoir operation input directory:` specifies the input
+directory for the reservoir operation files to be used when using
+reservoir operations with the HyMAP2 router.  This config entry is
+only used when `HYMAP2 reservoir operation option:` is set to 1.
+
+`HYMAP2 reservoir operation header filename:` specifies the filename
+header for the reservoir operation files to be used when using
+reservoir operations with the HyMAP2 router.  This config entry is
+only used when `HYMAP2 reservoir operation option:` is set to 1.
+
+`HYMAP2 reservoir operation input data type:` specifies the input
+data type for the reservoir operation files to be used when using
+reservoir operations with the HyMAP2 router.  This config entry is
+only used when `HYMAP2 reservoir operation option:` is set to 1.  
+
+|====
+|Value            | Description
+
+|"`water level`"  | Use water level data
+|streamflow       | Use streamflow data
+|====
+
+`HYMAP2 routing model linear reservoir flag:` specifies whether to
+use linear reservoirs in the HyMAP2 router.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use
+|====
+
+`HYMAP2 routing model evaporation option:` specifies whether
+to compute evaporation in flood plains in the HyMAP2 router.
+Acceptable values are:
+
+|====
+|Value   | Description
+
+|none    | Do not compute evaporation in flood plains
+|penman  | Compute evaporation in flood plains using Penman method
+|====
+
+`HYMAP2 routing model dwi flag:` specifies whether
+to use DWI maps from LDT in the HyMAP2 router.
+Acceptable values are:
+
+|====
+|Value   | Description
+|0       | Do not use DWI maps
+|1       | Use DWI maps (requires two DWI fields from LDT)
+
+|====
+
+`HYMAP2 routing model start mode:` specifies the restart mode
+to be used for the HyMAP2 router.
+Acceptable values are:
+
+|====
+|Value     | Description
+
+|restart   | A restart mode is being used; read a HyMAP2 restart file
+|coldstart | A cold start mode is being used; no restart file read
+|====
+
+`HYMAP2 routing model restart interval:` defines the restart writing
+interval for the HyMAP2 router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`HYMAP2 routing model restart file:` specifies the HyMAP2 router
+active restart file.
+
+.Example _lis.config_ entry
+....
+HYMAP2 routing model time step: "30mn"
+HYMAP2 routing model output interval: "1da"
+HYMAP2 run in ensemble mode: 0
+HYMAP2 routing method: "kinematic"
+HYMAP2 routing model time step method: "constant"
+HYMAP2 routing model adaptive time step alfa coefficient: 0.7
+HYMAP2 floodplain dynamics: 1
+HYMAP2 reservoir operation option: 0
+HYMAP2 number of reservoirs: 0
+HYMAP2 reservoir operation input time series size: 1
+HYMAP2 reservoir operation input directory: "./reservoir_data"
+HYMAP2 reservoir operation header filename: "RESDATA"
+HYMAP2 reservoir operation input data type: "streamflow"
+HYMAP2 routing model linear reservoir flag: 1
+HYMAP2 routing model evaporation option: "none"
+HYMAP2 routing model dwi flag: 0
+HYMAP2 routing model start mode: "coldstart"
+HYMAP2 routing model restart interval: "1mo"
+HYMAP2 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP2_router_197901030000.d01.nc
 ....
 
 

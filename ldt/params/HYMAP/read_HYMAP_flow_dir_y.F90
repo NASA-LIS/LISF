@@ -47,16 +47,16 @@ subroutine read_HYMAP_flow_dir_y(n, array)
   integer :: iarray(LDT_rc%lnc(n),LDT_rc%lnr(n),1)
 ! __________________________________________________
 
-  inquire(file=trim(HYMAP_struc(n)%flowdiryFile), exist=file_exists)
+  inquire(file=trim(HYMAP_struc(n)%flowdiryfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Flowdiry map ',trim(HYMAP_struc(n)%flowdiryFile),' not found'
+     write(LDT_logunit,*) 'Flowdiry map ',trim(HYMAP_struc(n)%flowdiryfile),' not found'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif
 
   ftn = LDT_getNextUnitNumber()
-  open(ftn, file=trim(HYMAP_struc(n)%flowdiryFile), access='direct',&
-       status='old', form="unformatted", recl=4)
+  open(ftn, file=trim(HYMAP_struc(n)%flowdiryfile), access='direct',&
+       status='old', form="unformatted", convert="big_endian", recl=4)
   
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &

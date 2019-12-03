@@ -51,9 +51,9 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
   integer, intent(in)  :: nz           !number of stages in the sub-grid discretization
 
   integer, intent(in)  :: linres       !linear reservoir flag: 1 - use linear reservoirs; or 0 - do not use
-  integer, intent(in)  :: evapflag     !evaporation flag: 1 - do not compute ; or 2 - compute evapotation in floodplains
+  integer, intent(in)  :: evapflag !evaporation flag: 1 - compute evaporation in floodplains; 0 - do not compute
   integer, intent(in)  :: resopflag    !reservoir operation flag: 1 - simulate reservoirs (it requires additional data)
-  integer, intent(in)  :: floodflag    !floodplain dynamics flag: 1 - simulate floodplain dynamics; or 2 - do not simulate floodplain dynamics
+  integer, intent(in)  :: floodflag    !floodplain dynamics flag: 1 - simulate floodplain dynamics; or 0 - do not simulate floodplain dynamics
   integer, intent(in)  :: dwiflag      !deep water infiltration flag
   real,    intent(in)  :: mis         !real undefined value
   real,    intent(in)  :: grv

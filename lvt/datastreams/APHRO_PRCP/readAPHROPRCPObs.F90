@@ -40,7 +40,8 @@ subroutine readAPHROPRCPobs(source)
 !
 ! !REVISION HISTORY: 
 !  09 AUG 2017: Sujay Kumar, Initial Specification
-! 
+!  23 SEP 2019: Yeosang Yoon, Update file name for product for 2007-2015 
+!
 !EOP
 
   integer             :: ftn 
@@ -94,8 +95,13 @@ subroutine readAPHROPRCPobs(source)
 
     if(aphroprcpobs(source)%loc.eq."MA") then 
        write(fyr,fmt='(i4.4)') LVT_rc%dyr(source)
-       filename = trim(aphroprcpobs(source)%odir)//&
-            '/APHRO_MA_025deg_V1101.'//trim(fyr)//'.nc'
+       if(LVT_rc%dyr(source)>=2007) then           ! Yeosang Yoon
+          filename = trim(aphroprcpobs(source)%odir)//&
+               '/APHRO_MA_025deg_V1101_EXR1.'//trim(fyr)//'.nc' 
+       else
+          filename = trim(aphroprcpobs(source)%odir)//&
+               '/APHRO_MA_025deg_V1101.'//trim(fyr)//'.nc'
+       endif
     endif
 
      inquire(file=trim(filename), exist=file_exists) 
