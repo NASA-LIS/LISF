@@ -9,7 +9,7 @@
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
 echo "------------------------------------------------------------------------"
-echo 'Setting up configuration for LDT version 7.2r...'
+echo 'Setting up configuration for LDT'
 
 cd arch
 perl Config.pl
