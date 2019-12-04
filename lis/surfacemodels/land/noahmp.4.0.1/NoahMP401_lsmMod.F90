@@ -323,7 +323,11 @@ contains
             ! TODO: set number of soil temperature layers in surface model
             LIS_sfmodel_struc(n)%nst_layers = NOAHMP401_struc(n)%nsoil
             allocate(LIS_sfmodel_struc(n)%lyrthk(NOAHMP401_struc(n)%nsoil))
-            LIS_sfmodel_struc(n)%lyrthk(:) = NOAHMP401_struc(n)%sldpth(:)
+            !LIS_sfmodel_struc(n)%lyrthk(:) = NOAHMP401_struc(n)%sldpth(:)
+            !EMK...Output soil layer thicknesses in centimeters for 
+            !consistency with other LSMs.  
+            LIS_sfmodel_struc(n)%lyrthk(:) = &
+                 100*NOAHMP401_struc(n)%sldpth(:)
             LIS_sfmodel_struc(n)%ts = NOAHMP401_struc(n)%ts
         enddo
     end subroutine NoahMP401_ini
