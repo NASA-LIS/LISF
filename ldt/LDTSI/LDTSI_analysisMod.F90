@@ -1910,8 +1910,8 @@ contains
 
       ! IF NO PREVIOUS DATA FOUND, CANNOT CONTINUE.
       if (.not. found) then
-         message(1) = '[ERR] PREVIOUS SNODEP DATA MISSING'
-         message(2) = '[ERR] SNODEP CANNOT CONTINUE'
+         message(1) = '[ERR] PREVIOUS USAFSI DATA MISSING'
+         message(2) = '[ERR] USAFSI CANNOT CONTINUE'
          call abort_message (program_name, routine_name, message)
       end if
 
@@ -2101,11 +2101,11 @@ contains
       ! to the caller.  Caller will need to try the legacy SNODEP instead.
       if (.not. found) then
          write(LDT_logunit,*) &
-              '[WARN] Cannot find prior LDTSI analysis'
+              '[WARN] Cannot find prior USAFSI analysis'
          ierr = 2
       else if (.not. found_12z) then
          write(LDT_logunit,*) &
-              '[WARN] Cannot find prior 12Z LDTSI analysis'
+              '[WARN] Cannot find prior 12Z USAFSI analysis'
          ierr = 1
       else
          ierr = 0
@@ -2265,7 +2265,7 @@ contains
             ! REALLY LOOKING BACK ONLY 24 HOURS (IF THAT MAKES SENSE...).
             if (hrdiff .gt. 48) then
                message(1) = '  SST DATA IS MORE THAN 24 HOURS OLD'
-               message(2) = '  LDTSI CYCLE = ' // date10
+               message(2) = '  USAFSI CYCLE = ' // date10
                message(3) = '  SEA SFC TEMP = ' // date10_sst
                call error_message (program_name, routine_name, message)
 

@@ -49,7 +49,7 @@ module LDTSI_paramsMod
    implicit none
    public
 
-   character*12, parameter     :: program_name = 'LDTSI'        ! NAME OF MAIN PROGRAM
+   character*12, parameter     :: program_name = 'USAFSI'        ! NAME OF MAIN PROGRAM
    
    integer, parameter    :: msglns      = 20                     ! MAXIMUM NUMBER OF LINES IN ERROR MESSAGE
 

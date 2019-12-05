@@ -148,7 +148,7 @@ contains
             
          case default
             write(LDT_logunit,*) &
-                 '[ERR] Only latlon map projection supported for LDTSI'
+                 '[ERR] Only latlon map projection supported for USAFSI'
             call LDT_endrun()
          end select
          
@@ -435,7 +435,7 @@ contains
 #endif
 
       write(LDT_logunit,*) &
-           '[INFO] Finished writing LDT LDTSI parameters to netcdf file'
+           '[INFO] Finished writing LDT USAFSI parameters to netcdf file'
 
    end subroutine LDTSI_write_netcdf
       
@@ -446,7 +446,7 @@ contains
       implicit none
       character*10, intent(in) :: date10
       write(LDT_logunit,*)'[ERR] LDT not compiled with NETCDF support!'
-      write(LDT_logunit,*)'Cannot write out LDTSI data'
+      write(LDT_logunit,*)'Cannot write out USAFSI data'
       write(LDT_logunit,*)'Recompile with NETCDF support and try again!'
       call LDT_endrun()
    end subroutine LDTSI_write_netcdf
@@ -532,7 +532,7 @@ contains
            nlat .ne. nr .or. &
            nlon .ne. nc) then
          write(LDT_logunit, *) &
-              '[ERR] Dimension mismatch between LDT and LDTSI input'
+              '[ERR] Dimension mismatch between LDT and USAFSI input'
          write(LDT_logunit,*) &
               '[ERR] Expected time = 1, lat = ',nr,' lon = ',nc
          write(LDT_logunit,*) &
@@ -637,7 +637,7 @@ contains
       integer, intent(out) :: ierr
       ierr = 1
       write(LDT_logunit,*)'[ERR] LDT not compiled with NETCDF support!'
-      write(LDT_logunit,*)'Cannot read out LDTSI data'
+      write(LDT_logunit,*)'Cannot read out USAFSI data'
       write(LDT_logunit,*)'Recompile with NETCDF support and try again!'
       call LDT_endrun()
    end subroutine LDTSI_read_netcdf
@@ -725,7 +725,7 @@ contains
            nlat .ne. nr .or. &
            nlon .ne. nc) then
          write(LDT_logunit, *) &
-              '[ERR] Dimension mismatch between LDT and LDTSI input'
+              '[ERR] Dimension mismatch between LDT and USAFSI input'
          write(LDT_logunit,*) &
               '[ERR] Expected time = 1, lat = ',nr,' lon = ',nc
          write(LDT_logunit,*) &
@@ -786,7 +786,7 @@ contains
       integer, intent(out) :: ierr
       ierr = 1
       write(LDT_logunit,*)'[ERR] LDT not compiled with NETCDF support!'
-      write(LDT_logunit,*)'Cannot read out LDTSI data'
+      write(LDT_logunit,*)'Cannot read out USAFSI data'
       write(LDT_logunit,*)'Recompile with NETCDF support and try again!'
       call LDT_endrun()
    end subroutine LDTSI_read_netcdf_12z

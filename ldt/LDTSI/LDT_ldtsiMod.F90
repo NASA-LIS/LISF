@@ -94,63 +94,63 @@ contains
       ! *** Get former environment variables ***
 
       ! Get date10
-      cfg_entry = "LDTSI valid date (YYYYMMDDHH):"
+      cfg_entry = "USAFSI valid date (YYYYMMDDHH):"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%date10, rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get fracdir      
-      cfg_entry = "LDTSI fractional snow data directory:"
+      cfg_entry = "USAFSI fractional snow data directory:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%fracdir, rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       
       ! Get modif
-      cfg_entry = "LDTSI modified data directory:"
+      cfg_entry = "USAFSI modified data directory:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%modif, rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get sfcobs
-      cfg_entry = "LDTSI surface obs data directory:"
+      cfg_entry = "USAFSI surface obs data directory:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%sfcobs, rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get ssmis.  
-      cfg_entry = "LDTSI SSMIS data directory:"
+      cfg_entry = "USAFSI SSMIS data directory:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%ssmis, rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get stmpdir
-      cfg_entry = "LDTSI surface temperature data directory:"
+      cfg_entry = "USAFSI surface temperature data directory:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%stmpdir, rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get static
-      cfg_entry = "LDTSI static data directory:"
+      cfg_entry = "USAFSI static data directory:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%static, rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get unmod
-      cfg_entry = "LDTSI unmodified data directory:"
+      cfg_entry = "USAFSI unmodified data directory:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%unmod, rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get viirsdir
-      cfg_entry = "LDTSI VIIRS data directory:"
+      cfg_entry = "USAFSI VIIRS data directory:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%viirsdir, rc=rc)
@@ -158,7 +158,7 @@ contains
       
       ! *** for SSMIS now depth retrieval, Yeosang Yoon
       ! get SSMIS raw datasets
-      cfg_entry = "LDTSI SSMIS raw data directory:"
+      cfg_entry = "USAFSI SSMIS raw data directory:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%ssmis_raw_dir, &
@@ -166,7 +166,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! get option for SSMIS snow depth retrieval alogrithm
-      cfg_entry = "LDTSI SSMIS snow depth retrieval algorithm option:"
+      cfg_entry = "USAFSI SSMIS snow depth retrieval algorithm option:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%ssmis_option, &
@@ -175,7 +175,7 @@ contains
 
       ! get forest fraction for algorithm 3
       if (ldtsi_settings%ssmis_option==3) then         
-         cfg_entry = "LDTSI SSMIS forest fraction file:"         
+         cfg_entry = "USAFSI SSMIS forest fraction file:"         
          call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
          call LDT_verify(rc, trim(cfg_entry)//" not specified")
          call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%ff_file, &
@@ -187,7 +187,7 @@ contains
 
       ! Get clmadj
       cfg_entry = &
-           "LDTSI decimal fraction adjustment of snow depth towards climo:"
+           "USAFSI decimal fraction adjustment of snow depth towards climo:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%clmadj,&
@@ -195,7 +195,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get unkdep
-      cfg_entry = "LDTSI default snow depth (m) when actual depth unknown:"
+      cfg_entry = "USAFSI default snow depth (m) when actual depth unknown:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%unkdep,&
@@ -204,7 +204,7 @@ contains
       
       ! Get minprt
       cfg_entry = &
-           "LDTSI minimum snow depth (m) for which to print a diagnostic:"
+           "USAFSI minimum snow depth (m) for which to print a diagnostic:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%minprt,&
@@ -212,7 +212,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get maxsobs
-      cfg_entry = "LDTSI maximum number of surface observations allowed:"
+      cfg_entry = "USAFSI maximum number of surface observations allowed:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%maxsobs,&
@@ -220,7 +220,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       
       ! Get minsat
-      cfg_entry = "LDTSI SSMIS shallow snow depth threshold (m):"
+      cfg_entry = "USAFSI SSMIS shallow snow depth threshold (m):"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%minsat,&
@@ -228,7 +228,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get trplat
-      cfg_entry = "LDTSI latitudes (deg * 100) for summer climo check:"
+      cfg_entry = "USAFSI latitudes (deg * 100) for summer climo check:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       do c = 1,3
@@ -238,7 +238,7 @@ contains
       end do ! c
 
       ! Get elvlim
-      cfg_entry = "LDTSI elevations (m) for summer climo check:"
+      cfg_entry = "USAFSI elevations (m) for summer climo check:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       do c = 1,4
@@ -249,7 +249,7 @@ contains
       
       ! Get thresh
       cfg_entry = &
-           "LDTSI temperature (deg K * 10) above which no snow is allowed:"
+           "USAFSI temperature (deg K * 10) above which no snow is allowed:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%thresh,&
@@ -259,7 +259,7 @@ contains
 
       ! Get arctmax
       cfg_entry = &
-           "LDTSI max reported temperature (deg K * 10) allowed around poles:"
+           "USAFSI max reported temperature (deg K * 10) allowed around poles:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%arctmax,&
@@ -267,7 +267,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       
       ! Get minice
-      cfg_entry = "LDTSI minimum ice concentration (%) needed to set ice flag:"
+      cfg_entry = "USAFSI minimum ice concentration (%) needed to set ice flag:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%minice,&
@@ -275,7 +275,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")      
 
       ! Get icelat
-      cfg_entry = "LDTSI high latitude thresholds (deg) for sea ice::"
+      cfg_entry = "USAFSI high latitude thresholds (deg) for sea ice::"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")      
       do r = 1,2
@@ -289,7 +289,7 @@ contains
       end do ! r
 
       ! Get latchk
-      cfg_entry = "LDTSI low latitude thresholds (deg) for sea ice::"
+      cfg_entry = "USAFSI low latitude thresholds (deg) for sea ice::"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")      
       do r = 1,2
@@ -303,7 +303,7 @@ contains
       end do ! r
 
       ! Get maxpixage
-      cfg_entry = "LDTSI max age of VIIRS pixels to use:"
+      cfg_entry = "USAFSI max age of VIIRS pixels to use:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")      
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%maxpixage,&
@@ -311,7 +311,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")      
 
       ! Get minbare
-      cfg_entry = "LDTSI min VIIRS fraction to mark point as bare ground:"
+      cfg_entry = "USAFSI min VIIRS fraction to mark point as bare ground:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")      
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%minbare,&
@@ -319,7 +319,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")      
       
       ! Get minfrac
-      cfg_entry = "LDTSI min VIIRS/CDFS-II fraction to mark point as snow:"
+      cfg_entry = "USAFSI min VIIRS/CDFS-II fraction to mark point as snow:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")      
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%minfrac,&
@@ -327,7 +327,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")      
 
       ! Get usefrac
-      cfg_entry = "LDTSI use CDFS-II fractional snow data:"
+      cfg_entry = "USAFSI use CDFS-II fractional snow data:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")      
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%usefrac,&
@@ -335,7 +335,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")      
 
       ! Get useviirs
-      cfg_entry = "LDTSI use VIIRS snow mask:"
+      cfg_entry = "USAFSI use VIIRS snow mask:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")      
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%useviirs,&
@@ -344,7 +344,7 @@ contains
 
       ! ** New Bratseth settings **
       ! Get obs_err_var
-      cfg_entry = "LDTSI observation error variance (m^2):"
+      cfg_entry = "USAFSI observation error variance (m^2):"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%ob_err_var,&
@@ -352,7 +352,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")      
 
       ! Get back_err_var
-      cfg_entry = "LDTSI background error variance (m^2):"
+      cfg_entry = "USAFSI background error variance (m^2):"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, ldtsi_settings%back_err_var,&
@@ -360,7 +360,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get back_err_h_corr_len
-      cfg_entry = "LDTSI background error horizontal correlation length (m):"
+      cfg_entry = "USAFSI background error horizontal correlation length (m):"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, &
@@ -369,7 +369,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get back_err_v_corr_len
-      cfg_entry = "LDTSI background error vertical correlation length (m):"
+      cfg_entry = "USAFSI background error vertical correlation length (m):"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, &
@@ -378,7 +378,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get elev_diff_thresh
-      cfg_entry = "LDTSI elevQC difference threshold (m):"
+      cfg_entry = "USAFSI elevQC difference threshold (m):"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, &
@@ -387,7 +387,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get skewed_backqc_threshold
-      cfg_entry = "LDTSI skewed backQC snow depth threshold (m):"
+      cfg_entry = "USAFSI skewed backQC snow depth threshold (m):"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, &
@@ -396,7 +396,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Bogus value for climo if not defined at land point
-      cfg_entry = "LDTSI bogus climatology snow depth value (m):"
+      cfg_entry = "USAFSI bogus climatology snow depth value (m):"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, &
@@ -405,7 +405,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get gofs_sst_dir
-      cfg_entry = "LDTSI GOFS SST data directory:"
+      cfg_entry = "USAFSI GOFS SST data directory:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, &
@@ -414,7 +414,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get gofs_cice_dir
-      cfg_entry = "LDTSI GOFS CICE data directory:"
+      cfg_entry = "USAFSI GOFS CICE data directory:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, &
@@ -423,7 +423,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get lis_grib2_dir
-      cfg_entry = "LDTSI LIS GRIB2 data directory:"
+      cfg_entry = "USAFSI LIS GRIB2 data directory:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, &
@@ -432,7 +432,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get security class
-      cfg_entry = "LDTSI LIS GRIB2 security class:"
+      cfg_entry = "USAFSI LIS GRIB2 security class:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, &
@@ -441,7 +441,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get data category
-      cfg_entry = "LDTSI LIS GRIB2 data category:"
+      cfg_entry = "USAFSI LIS GRIB2 data category:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, &
@@ -450,7 +450,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get data resolution
-      cfg_entry = "LDTSI LIS GRIB2 data resolution:"
+      cfg_entry = "USAFSI LIS GRIB2 data resolution:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, &
@@ -459,7 +459,7 @@ contains
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
       ! Get area of data
-      cfg_entry = "LDTSI LIS GRIB2 area of data:"
+      cfg_entry = "USAFSI LIS GRIB2 area of data:"
       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
       call ESMF_ConfigGetAttribute(LDT_config, &
