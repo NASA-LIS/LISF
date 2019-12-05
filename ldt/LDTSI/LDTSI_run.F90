@@ -138,16 +138,16 @@ subroutine LDTSI_run()
 
    ! Only the master process handles the file output
    if (LDT_masterproc) then
-      routine_name = "LDTSI"
+      routine_name = "USAFSI"
       message = ' '
       hemi    = 3
 
-      write (LDT_logunit,*) '[INFO] RUNNING LDTSI MODEL'
+      write (LDT_logunit,*) '[INFO] RUNNING USAFSI MODEL'
 
       ! Check the LDT map projection.  
       ! FIXME:  Support other projections in addition to LATLON
       if (trim(LDT_rc%lis_map_proj) .ne. LDT_latlonId) then
-         write(LDT_logunit,*)'[ERR] LDTSI only supports lat/lon grid'
+         write(LDT_logunit,*)'[ERR] USAFSI only supports lat/lon grid'
          call LDT_endrun()
       end if
 
@@ -395,7 +395,7 @@ subroutine LDTSI_run()
         
          ! Estimates SSMIS-based snow depth, Yeosang Yoon
          write (LDT_logunit,*) &
-              '[INFO] CALLING LDTSI_PROC_SSMIS'
+              '[INFO] CALLING USAFSI_PROC_SSMIS'
          call LDTSI_proc_ssmis(date10, ssmis_raw_dir, ssmis, &
               ldtsi_settings%ssmis_option) 
          
@@ -499,7 +499,7 @@ subroutine LDTSI_run()
 
    ! FORMAT STATEMENTS.   
 6800 format (/, 1X, 55('-'),                                             &
-        /, 3X, '[INFO] PROGRAM:  LDTSI',                                 &
+        /, 3X, '[INFO] PROGRAM:  USAFSI',                                &
         /, 5X, '[INFO] TOTAL STATIONS PROCESSED = ', I5,                 &
         /, 5X, '[INFO] PRINTING DEPTH REPORTS BY NETWORK & STATION ID'   &
         /, 5X, '[INFO] ELEV OF "-1000" INDICATES ELEVATION NOT REPORTED' &
@@ -555,7 +555,7 @@ contains
       inquire(file=trim(filename), exist=file_exists)
       if (.not. file_exists) then
          write(LDT_logunit,*) &
-              '[ERR] Cannot find ',trim(filename),' for LDTSI analysis'
+              '[ERR] Cannot find ',trim(filename),' for USAFSI analysis'
          write(LDT_logunit,*)'LDT will stop'
          call LDT_endrun()
       end if

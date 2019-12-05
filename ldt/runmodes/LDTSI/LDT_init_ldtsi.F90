@@ -13,7 +13,7 @@ subroutine LDT_init_LDTSI()
    implicit none
 
    write(LDT_logunit,*) "----------------------------------------"
-   write(LDT_logunit,*) " Start of LDTSI processing "
+   write(LDT_logunit,*) " Start of USAFSI processing "
    write(LDT_logunit,*) "----------------------------------------"
 
    call LDT_setDomainSpecs()
