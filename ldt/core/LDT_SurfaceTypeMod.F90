@@ -556,7 +556,7 @@ contains
    integer :: c, r, t, l, i
 
    if( LDT_rc%waterclass == 0. ) then
-     write(*,*) "No water class for associated landcover ...."
+     write(*,*) "[ERR] No water class for associated landcover ..."
      write(*,*) " Stopping for now until solution entered."
      call LDT_endrun
    endif

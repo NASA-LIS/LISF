@@ -184,8 +184,15 @@ subroutine read_MODISNative_lc(n, num_types, fgrd, maskarray )
    do r = 1, subpnr
       do c = 1, subpnc
          subset_veg(c,r) = input_vegtype(lon_line(c,r),lat_line(c,r))
+!KRA        if( subset_veg(c,r) .ne. 17 )then
+!           write(701,*) c, r, lon_line(c,r), input_vegtype(lon_line(c,r),lat_line(c,r))
+!         endif
       enddo
    enddo
+!   print *, subpnc, subpnr
+!   open( 10, file="temp.gbin", form="unformatted", access="sequential" )
+!   write(10) subset_veg
+!   close(10)
 
 ! -------------------------------------------------------------------
 !     AGGREGATING FINE-SCALE GRIDS TO COARSER LIS OUTPUT GRID
@@ -232,6 +239,11 @@ subroutine read_MODISNative_lc(n, num_types, fgrd, maskarray )
         call LDT_transform_paramgrid(n, LDT_rc%lc_gridtransform(n), &
                  subparam_gridDesc, mi, LDT_rc%nt, gi, li, mo, go2, lo2 )
 
+! KRA
+!   print *, LDT_rc%lnc(n), LDT_rc%lnr(n)
+!   open( 10, file="temp.gbin", form="unformatted", access="sequential" )
+! KRA
+
      !- Convert 1D vegcnt to 2D grid arrays:
         i = 0
         do r = 1, LDT_rc%lnr(n) 
@@ -242,6 +254,13 @@ subroutine read_MODISNative_lc(n, num_types, fgrd, maskarray )
               end do
            enddo
         enddo
+
+! KRA
+!    do t = 1, LDT_rc%nt
+!       write(10) vegcnt(:,:,t)
+!    enddo
+!    close(10)
+! KRA
 
    end select  ! End vegtype/cnt aggregation method
    deallocate( gi, li )

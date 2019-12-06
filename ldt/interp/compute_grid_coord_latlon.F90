@@ -90,11 +90,15 @@ subroutine compute_grid_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
 
            ! Account for 0-360 domain
            if(rlon(n).gt.180) then 
-              xpts(n) = 1+(rlon(n)-360-rlon1)/dlon
+              ! Updated code (KRA):
+              if( rlon1 <= 0. ) then
+                xpts(n) = 1+(rlon(n)-360-rlon1)/dlon
+              elseif( rlon1 > 0. ) then
+                xpts(n) = 1+(rlon(n)-rlon1)/dlon
+              endif
            else
               xpts(n) = 1+(rlon(n)-rlon1)/dlon
            endif
-
            ypts(n)=1+(rlat(n)-rlat1)/dlat
 
            if(xpts(n).ge.xmin.and.xpts(n).le.xmax.and. & 

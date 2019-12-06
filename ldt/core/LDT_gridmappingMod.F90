@@ -136,7 +136,7 @@ contains
    lisdom_max_lat = min((rlat(LDT_rc%lnc(n),LDT_rc%lnr(n))+(5*lisdom_yres_ll)),90.0)
 
    ! Account for crossing IDL:
-   if( rlon(LDT_rc%lnc(n),LDT_rc%lnr(n)) >= rlon(1,1) ) then
+   if( rlon(1,1) <= rlon(LDT_rc%lnc(n),LDT_rc%lnr(n)) ) then
      lisdom_min_lon = max((rlon(1,1)-(5*lisdom_xres_ll)),-180.0)
      lisdom_max_lon = min((rlon(LDT_rc%lnc(n),LDT_rc%lnr(n))+(5*lisdom_xres_ll)),180.0)
    else  
@@ -388,7 +388,6 @@ contains
                               rlat(c,r), rlon(c,r) )
            lat_line(c,r) = nint((rlat(c,r)-param_grid(4))/param_grid(10))+1
            lon_line(c,r) = nint((rlon(c,r)-param_grid(5))/param_grid(9))+1
-!           lon_line(c,r) = nint(diff_lon(rlon(c,r),param_grid(5))/param_grid(9))+1
         enddo
      enddo
      deallocate(rlat,rlon)

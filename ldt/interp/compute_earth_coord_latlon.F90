@@ -105,7 +105,6 @@ subroutine compute_earth_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
            if( rlon(n) > 360. ) then
              rlon(n) = dlon*(xpts(n)-1)  ! rlon1 reset to 0. in this case
            endif
-
            rlat(n)=rlat1+dlat*(ypts(n)-1)
            nret=nret+1
         else
