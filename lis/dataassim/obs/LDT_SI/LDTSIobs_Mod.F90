@@ -101,13 +101,13 @@ contains
            rc=status)
       call LIS_verify(status)
 
-      call ESMF_ConfigFindLabel(LIS_config, "LDTSI data directory:",&
+      call ESMF_ConfigFindLabel(LIS_config, "USAFSI data directory:",&
            rc=status)
       do n = 1, LIS_rc%nnest
          call ESMF_ConfigGetAttribute(LIS_config, LDTSIobsdir,&
               rc=status)
          if (status .ne. ESMF_SUCCESS)then
-            write(LIS_logunit,*) "[ERR] LDTSI data directory is missing"
+            write(LIS_logunit,*) "[ERR] USAFSI data directory is missing"
          end if
          call LIS_verify(status)
          call ESMF_AttributeSet(OBS_State(n), "Data Directory",&
@@ -133,7 +133,7 @@ contains
          call LIS_verify(status)
       end do ! n
 
-      write(LIS_logunit,*)'[INFO] Read LDTSI data specifications'
+      write(LIS_logunit,*)'[INFO] Read USAFSI data specifications'
 
       ! Create the array containers that will contain the observations
       ! and the perturbations
@@ -255,7 +255,7 @@ contains
          LDTSI_obs%nr_lis = 0
          LDTSI_obs%mi = 0
          
-         call LIS_registerAlarm("LDTSI read alarm", 21600.0, 21600.0)         
+         call LIS_registerAlarm("USAFSI read alarm", 21600.0, 21600.0)         
          call ESMF_StateAdd(OBS_State(n), (/obsField(n)/), rc=status)
          call LIS_verify(status)
          

@@ -66,7 +66,7 @@ subroutine read_LDTSIobs(n, k, OBS_State, OBS_Pert_State)
 
    file_exists = .false.
 
-   alarmCheck = LIS_isAlarmRinging(LIS_rc, "LDTSI read alarm")
+   alarmCheck = LIS_isAlarmRinging(LIS_rc, "USAFSI read alarm")
 
    if (alarmCheck) then
       call ESMF_TimeIntervalSet(deltaT, s=nint(LIS_rc%ts))
@@ -104,7 +104,7 @@ subroutine read_LDTSIobs(n, k, OBS_State, OBS_Pert_State)
    call LDTSI_reader(filename, n, k, snoanl, ierr)   
    if (ierr .ne. 0) then
       write(LIS_logunit,*) &
-           "[WARN] Could not read from LDTSI file ", trim(filename)
+           "[WARN] Could not read from USAFSI file ", trim(filename)
       call ESMF_AttributeSet(OBS_State, "Data Update Status",&
           .false., rc=status)
       call LIS_verify(status)
@@ -225,7 +225,7 @@ contains
       ierr = 1 ! Change this below
       
       write(LIS_logunit,*) &
-           "[INFO] Reading LDTSI file ", trim(filename)
+           "[INFO] Reading USAFSI file ", trim(filename)
       
       ! Open the file for reading
       call LIS_verify(nf90_open(path=trim(filename), &
@@ -302,7 +302,7 @@ contains
            '[ERR] Error in nf90_get_att for MAP_PROJECTION')
       if (trim(map_projection_name) .ne. "EQUIDISTANT CYLINDRICAL") then
          write(LIS_logunit,*) &
-              "[ERR] Unsupported map projection for LDTSI product!"
+              "[ERR] Unsupported map projection for USAFSI product!"
          write(LIS_logunit,*) &
               "[ERR] Expected EQUIDISTANT CYLINDRICAL, found ", &
               trim(map_projection_name)
