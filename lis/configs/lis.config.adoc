@@ -295,6 +295,9 @@ Acceptable values for the sources are:
 |"`GDAS`"                      | GDAS
 |"`GEOS`"                      | GEOS
 |"`GEOS5 forecast`"            | GEOS5 Forecast
+ifdef::devonly[]
+|"`GEFS forecast`"             | GEFS Forecast
+endif::devonly[]
 |"`ECMWF`"                     | ECMWF
 |"`GSWP1`"                     | GSWP1
 |"`GSWP2`"                     | GSWP2
@@ -6172,6 +6175,46 @@ ensemble members desired for the GEOS-5 forecast dataset.
 GEOS5 forecast forcing directory:     ./MET_FORCING/GEOS5/
 GEOS5 forecast forcing number of ensemble members:   11
 ....
+
+
+ifdef::devonly[]
+
+==== GEFS Forecast
+anchor:sssec_gefsforecast[GEFS forecast]
+
+`GEFS forecast directory:` specifies the location
+of the GEFS forecast forcing files.
+
+`GEFS forecast type:` specifies the GEFS forecast
+product type, which can either be Reforecast2 or Operational.
+Currently, only the Reforecast2 product is supported.
+
+`GEFS forecast run mode:` specifies the run mode related
+to the GEFS dataset, which can either be forecast or analysis
+run mode. Currently, only the forecast mode is supported.
+
+`GEFS forecast grid projection:` specifies the GEFS forecast
+product grid projection, which can either be latlon or gaussian.
+Currently only latlon is supported.
+
+`GEFS pressure level field:` specifies the GEFS pressure
+level field, which can either be surface (default setting in LIS)
+or mean sea level (msl) can be selected (which is not supported yet).
+
+`GEFS forecast number of ensemble members:` specifies the number
+of GEFS ensemble members being read in. Reforecast2 currently
+supports up to a 11 members.
+
+.Example _lis.config_ entry
+....
+GEFS forecast directory:        ./MET_FORCING/GEFS/Reforecast/
+GEFS forecast type:              Reforecast2      # Reforecast2 | Operational
+GEFS forecast run mode:          forecast         # forecast | analysis
+GEFS forecast grid projection:   latlon           # latlon | gaussian
+GEFS pressure level field:       surface          # surface | msl
+GEFS forecast number of ensemble members:  11
+....
+endif::devonly[]
 
 
 ==== Generic Ensemble Forecast Reader
