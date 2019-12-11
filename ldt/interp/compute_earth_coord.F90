@@ -14,6 +14,9 @@
 subroutine compute_earth_coord(gridDesc,npts,fill,xpts,ypts,rlon,rlat,nret,&
                                gen_xypts)
 
+! Use:
+  use LDT_logMod
+
   implicit none
 ! !ARGUMENTS: 
   real        :: gridDesc(20)
@@ -135,9 +138,9 @@ subroutine compute_earth_coord(gridDesc,npts,fill,xpts,ypts,rlon,rlat,nret,&
      call compute_earth_coord_ease(gridDesc,npts,fill,xpts,ypts,&
           rlon,rlat,nret)
   else
-     print *, '[ERR] Unrecognized Projection ... '
-     print *, 'Program stopping ...'
-     stop
+     write(LDT_logunit,*) '[ERR] Unrecognized Projection ... '
+     write(LDT_logunit,*) 'Program stopping ...'
+     call LDT_endrun
   endif
 
 end subroutine compute_earth_coord
