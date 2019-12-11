@@ -295,9 +295,7 @@ Acceptable values for the sources are:
 |"`GDAS`"                      | GDAS
 |"`GEOS`"                      | GEOS
 |"`GEOS5 forecast`"            | GEOS5 Forecast
-ifdef::devonly[]
 |"`GEFS forecast`"             | GEFS Forecast
-endif::devonly[]
 |"`ECMWF`"                     | ECMWF
 |"`GSWP1`"                     | GSWP1
 |"`GSWP2`"                     | GSWP2
@@ -6177,8 +6175,6 @@ GEOS5 forecast forcing number of ensemble members:   11
 ....
 
 
-ifdef::devonly[]
-
 ==== GEFS Forecast
 anchor:sssec_gefsforecast[GEFS forecast]
 
@@ -6214,7 +6210,6 @@ GEFS forecast grid projection:   latlon           # latlon | gaussian
 GEFS pressure level field:       surface          # surface | msl
 GEFS forecast number of ensemble members:  11
 ....
-endif::devonly[]
 
 
 ==== Generic Ensemble Forecast Reader
