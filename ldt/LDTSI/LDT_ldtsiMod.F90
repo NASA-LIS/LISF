@@ -69,6 +69,9 @@ module LDT_ldtsiMod
       character*20 :: data_category
       character*20 :: data_res
       character*20 :: area_of_data
+     
+      ! Output file name (prefix)
+      character*20 :: output_prefix
 
    end type ldtsi_t
    type(ldtsi_t), public :: ldtsi_settings
@@ -466,7 +469,16 @@ contains
            ldtsi_settings%area_of_data, &
            rc=rc)
       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-     
+    
+      ! Get output file name (prefix)
+      cfg_entry = "USAFSI output filename (prefix):"
+      call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+      call LDT_verify(rc, trim(cfg_entry)//" not specified")
+      call ESMF_ConfigGetAttribute(LDT_config, &
+           ldtsi_settings%output_prefix, &
+           rc=rc)
+      call LDT_verify(rc, trim(cfg_entry)//" not specified")
+ 
    end subroutine LDT_ldtsiInit
 
    ! This calls the actual LDTSI driver
