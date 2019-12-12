@@ -266,7 +266,7 @@ contains
             "created on date: "//date(1:4)//"-"//date(5:6)//"-"//&
             date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)))
        call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,"references", &
-            "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"))
+            "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"))
        call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,"comment", &
             "website: http://lis.gsfc.nasa.gov/"))
        
@@ -812,7 +812,7 @@ contains
          "created on date: "//date(1:4)//"-"//date(5:6)//"-"//&
          date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)))
     call LDT_verify(nf90_put_att(LDT_rc%ftn_cdf,NF90_GLOBAL,"references", &
-         "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"))
+         "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"))
     call LDT_verify(nf90_put_att(LDT_rc%ftn_cdf,NF90_GLOBAL,"comment", &
          "website: http://lis.gsfc.nasa.gov/"))
 #endif
@@ -971,7 +971,7 @@ contains
          "created on date: "//date(1:4)//"-"//date(5:6)//"-"//&
          date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)))
     call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,"references", &
-         "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"))
+         "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"))
     call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,"comment", &
          "website: http://lis.gsfc.nasa.gov/"))
 

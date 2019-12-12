@@ -351,7 +351,7 @@ contains
               '[ERR] nf90_put_att failed')
 #endif
          call LDT_verify(nf90_put_att(ncid,nf90_global,"references", &
-              "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"), &
+              "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"),&
               '[ERR] nf90_put_att failed')
          call LDT_verify(nf90_put_att(ncid,nf90_global,"comment", &
               "website: http://lis.gsfc.nasa.gov/"), &
