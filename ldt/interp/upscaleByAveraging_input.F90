@@ -13,12 +13,8 @@ subroutine upscaleByAveraging_input( gridDesci, gridDesco, mi, mo, n11 )
 ! 
 ! !USES:   
 !
-! !INPUT PARAMETERS: 
-! 
-! !OUTPUT PARAMETERS:
-!
 ! !DESCRIPTION: 
-!  This subprogram performs issues calls to compute the 
+!  This subprogram performs and issues calls to compute the 
 !  neighbor information for upscaling data for scalar fields
 !  The grids are defined by their grid description arrays. 
 !  
@@ -32,7 +28,7 @@ subroutine upscaleByAveraging_input( gridDesci, gridDesco, mi, mo, n11 )
 !  Note that the input grid needs to be setup either as a global 
 !  grid or with halos padded around it (if using a subset of the
 !  global grid), for the algorithm to work properly in a 
-!  multiprocessor environment.This is to avoid a case where the 
+!  multiprocessor environment. This is to avoid a case where the 
 !  required input grid points are split across different processors.  
 !  
 !  The grid description arrays are based on the decoding 
@@ -85,7 +81,7 @@ subroutine upscaleByAveraging_input( gridDesci, gridDesco, mi, mo, n11 )
   allocate( xpts(mi), ypts(mi), rlat(mi), rlon(mi) )
 
   if(gridDesci(1).ge.0) then 
-     call compute_earth_coord(gridDesci,mi,fill, xpts, ypts, rlon, rlat,nv,.true.)
+     call compute_earth_coord(gridDesci,mi,fill, xpts, ypts, rlon, rlat, nv,.true.)
   endif
   call compute_grid_coord(gridDesco,mi,fill, xpts, ypts, rlon, rlat, nv)
 

@@ -188,7 +188,7 @@ contains
       else
          write(LDT_logunit,*) "[ERR] Fill option for Elevation is not valid: ",trim(elev%filltype)
          write(LDT_logunit,*) "  Please select one of these:  none, neighbor or average "
-         write(LDT_logunit,*) "  Programming stopping ..."
+         write(LDT_logunit,*) "  Program stopping ..."
          call LDT_endrun
       end if
 

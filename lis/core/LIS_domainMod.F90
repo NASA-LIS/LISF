@@ -978,13 +978,13 @@ end subroutine LIS_quilt_b_domain
      
      ! Locals
      integer :: c, r, t, m, mm, tt
-     real    :: maxv
-     real :: model_type_fractions(LIS_rc%max_model_types)
+     real    :: maxv, maxtilefrac
+     real    :: model_type_fractions(LIS_rc%max_model_types)
 
      ! Sanity check
      if (maxt > 1) then
         write(LIS_logunit,*) &
-             '[ERR], calculate_dominant_sfctile only works for maxt = 1!'
+             '[ERR] Calculate_dominant_sfctile only works for maxt = 1!'
         call LIS_endrun()
      end if
      
@@ -1006,7 +1006,7 @@ end subroutine LIS_quilt_b_domain
               model_type_fractions(m) = &
                    model_type_fractions(m) + fgrd(c,r,t)
            end do ! t
-           
+
            ! Now find which surface model type has the highest fraction.
            maxv = 0
            mm = 0
@@ -1038,6 +1038,7 @@ end subroutine LIS_quilt_b_domain
 
            ! At this point, remaining tiles are associated with only a single 
            ! surface model type. Exclude tiles below minimum tile grid area). 
+           maxtilefrac=maxval(fgrd(c,r,:))
            do t=1,ntypes
               if (fgrd(c,r,t).lt.minp) then
                  fgrd(c,r,t)=0.0 
@@ -1057,7 +1058,13 @@ end subroutine LIS_quilt_b_domain
            ! Sanity check: Make sure we still have one tile left!
            if (tt .eq. 0) then
               write(LIS_logunit,*) &
-                   '[ERR] No surface tiles remain!'
+                "[ERR] No surface model tile fraction >= minp,",minp
+              write(LIS_logunit,*) &
+                "  which is the 'Minimum cutoff percentage (surface type tiles):'"
+              write(LIS_logunit,*) &
+                "  value set in your lis.config file. Highest tile fraction value is:",maxtilefrac
+              write(LIS_logunit,*) &
+                "  Thus, surface tiles set to '0' for gridpoint:"
               write(LIS_logunit,*) &
                    'c,r,fgrd: ',c,r,fgrd(c,r,:)
               call LIS_flush(LIS_logunit)
