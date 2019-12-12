@@ -73,6 +73,7 @@ contains
       real :: dlat, dlon
       real :: swlat, swlon
       real :: nelat, nelon
+      character*20 :: output_prefix     
 
       ! Only the master process handles the file output
       if (LDT_masterproc) then
@@ -80,8 +81,11 @@ contains
          nc = LDT_rc%lnc(1)
          nr = LDT_rc%lnr(1)
 
+         ! Copy ldt.config files to local variables
+         output_prefix = trim(ldtsi_settings%output_prefix)
+
          ! FIXME:  Set this in ldt.config
-         outfilename = "ldtsi_"//date10//".nc"
+         outfilename = trim(output_prefix)//"_"//date10//".nc"
 
          write(LDT_logunit,*)'[INFO] Creating NETCDF file ',trim(outfilename)
 
@@ -463,6 +467,7 @@ contains
       use netcdf
 #endif
       use LDTSI_arraysMod, only: LDTSI_arrays
+      use LDT_ldtsiMod, only: ldtsi_settings
 
       ! Defaults
       implicit none
@@ -487,7 +492,7 @@ contains
       nr = LDT_rc%lnr(1)
 
       ! See if file exists
-      infilename = "ldtsi_"//date10//".nc"
+      infilename = trim(ldtsi_settings%output_prefix)//"_"//date10//".nc"
       inquire(file=trim(infilename), exist=file_exists)
       if (.not. file_exists) return
 

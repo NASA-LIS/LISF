@@ -95,4 +95,8 @@ USAFSI LIS GRIB2 data category:   C
 USAFSI LIS GRIB2 data resolution: C0P09DEG
 USAFSI LIS GRIB2 area of data:    GLOBAL
 
+# Define USAFSI outputfile name prefix (e.g., usafsi)
+# Output file name will be "prefix_+USAFSI valid date(yyyymmddhh)+.nc"
+# e.g., usafsi_2018121112.nc  
+USAFSI output filename (prefix):  "usafsi" 
 
