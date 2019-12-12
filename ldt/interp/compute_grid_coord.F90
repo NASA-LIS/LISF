@@ -13,6 +13,9 @@
 ! !INTERFACE:
 subroutine compute_grid_coord(gridDesc,npts,fill,xpts,ypts,rlon,rlat,nret)
 
+! Use:
+  use LDT_logMod
+
   implicit none
 ! !ARGUMENTS: 
   real        :: gridDesc(20)
@@ -99,9 +102,9 @@ subroutine compute_grid_coord(gridDesc,npts,fill,xpts,ypts,rlon,rlat,nret)
      call compute_grid_coord_ease(gridDesc,npts,fill,xpts,ypts,&
           rlon,rlat,nret)
   else
-     print*, 'Unrecognized Projection .... '
-     print*, 'Program stopping ..'
-     stop
+     write(LDT_logunit,*) '[ERR] Unrecognized Projection .... '
+     write(LDT_logunit,*) 'Program stopping ..'
+     call LDT_endrun
   endif
 
 end subroutine compute_grid_coord
