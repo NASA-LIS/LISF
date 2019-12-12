@@ -985,10 +985,10 @@ contains
 
     !read the obs landmask
 
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
     do n=1,LIS_rc%nnest
        do k=1,LIS_rc%ndas
 
-#if (defined USE_NETCDF3 || defined USE_NETCDF4)
           inquire(file=trim(LIS_rc%obsDomainFile(k)), exist=file_exists)
           if(file_exists) then 
              
