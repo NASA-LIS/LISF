@@ -57,9 +57,9 @@ module LDT_LMLCMod
 ! 
 ! !DESCRIPTION:
 ! This interface provides routines for writing NETCDF header both 
-! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
-! preprocessing requiremetns. A dummy argument call "flagX" was added 
-! to overload the LISHydro procedue.
+! in the standard preprocessing mode for LIS 
+! as well as in the LISHydro(WRFHydro) 
+! preprocessing mode.
 !EOP 
   end interface
 
@@ -76,9 +76,8 @@ module LDT_LMLCMod
 ! 
 ! !DESCRIPTION:
 ! This interface provides routines for writing NETCDF header both 
-! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
-! preprocessing requiremetns. A dummy argument call "flagX" was added 
-! to overload the LISHydro procedue.
+! in the standard preprocessing mode for LIS as well as LISHydro(WRFHydro) 
+! preprocessing mode.
 !EOP 
   end interface
 
@@ -95,9 +94,8 @@ module LDT_LMLCMod
 ! 
 ! !DESCRIPTION:
 ! This interface provides routines for writing NETCDF header both 
-! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
-! preprocessing requiremetns. A dummy argument call "flagX" was added 
-! to overload the LISHydro procedue.
+! in standard preprocessing mode for LIS as well as LISHydro(WRFHydro) 
+! preprocessing mode.
 !EOP 
   end interface
 
@@ -107,8 +105,8 @@ contains
 
 !BOP
 ! 
-! !ROUTINE: LDT_LMLC_init
-! \label{LDT_LMLC_init}
+! !ROUTINE: LMLC_init_LIS
+! \label{LMLC_init_LIS}
 ! 
 ! !INTERFACE:
   subroutine LMLC_init_LIS()
@@ -123,7 +121,8 @@ contains
 ! !DESCRIPTION:
 !
 ! Allocates memory for data structures for reading 
-! landmask and landcover datasets
+! landmask and landcover datasets in the standard 
+! preprocessing mode for LIS
 !
 !EOP
    implicit none
@@ -438,8 +437,8 @@ contains
 
 !BOP
 ! 
-! !ROUTINE: LDT_LMLC_init
-! \label{LDT_LMLC_init}
+! !ROUTINE: LMLC_init_LISHydro
+! \label{LMLC_init_LISHydro}
 ! 
 ! !INTERFACE:
   subroutine LMLC_init_LISHydro(flag)
@@ -454,7 +453,8 @@ contains
 ! !DESCRIPTION:
 !
 ! Allocates memory for data structures for reading 
-! landmask and landcover datasets
+! landmask and landcover datasets in the preprocessing
+! mode for LIShydro
 !
 !EOP
    implicit none
@@ -699,8 +699,6 @@ contains
        LDT_LSMparam_struc(n)%landcover%value(:,:,1:LDT_LSMparam_struc(n)%landcover%num_bins) = &
             landcover_fgrd(:,:,1:LDT_LSMparam_struc(n)%landcover%num_bins)
        
-      ! allocate(landcover1(LDT_rc%lnc(n),LDT_rc%lnr(n),nlctypes))
-      ! landcover1 = LDT_LSMparam_struc(n)%landcover%value
     !- Copy readin/created landmask to place holder:
        LDT_LSMparam_struc(n)%landmask2%value(:,:,:) = &
             LDT_LSMparam_struc(n)%landmask%value(:,:,:)
@@ -747,19 +745,12 @@ contains
     ! __________________________________________________
 
     ! _____________________LU_INDEX_____________________________
-       !print*, LDT_LSMparam_struc(n)%landcover%value
-       !LU_INDEX = "LANDCOVER"
        nlctypes= LDT_LSMparam_struc(n)%landcover%num_bins  !size(landcover,3)
        !print*, "nlctypes:", nlctypes
        allocate(luindex(LDT_rc%lnc(n),LDT_rc%lnr(n)))
-       ! luindex1 = LDT_LSMparam_struc(n)%luindex
        allocate(landcover1(LDT_rc%lnc(n),LDT_rc%lnr(n),nlctypes))
        landcover1 = LDT_LSMparam_struc(n)%landcover%value
-       !print*,"landcover1:", landcover1
-       !nr=size(landcover1,1)
-       !nc=size(landcover1,2)
-       !print *,nr, nc
-       !inlctypes= LDT_LSMparam_struc(n)%landcover%num_bins  !size(landcover,3)
+
        do r = 1,LDT_rc%lnr(n)    ! nr
            do c = 1, LDT_rc%lnc(n) ! nc
               maxv = 0.0
@@ -768,17 +759,10 @@ contains
                   if (landcover1(c,r,t).gt.maxv) then
                     maxv = landcover1(c,r,t)
                     domv = t
-                    !print *, domv 
                   endif
                 enddo
-                !if (domv.ne.17) then   !non water pixels 
                 luindex(c,r) = domv
-                !   !print *, luindex(c,r)
-                !else
-                !   luindex(c,r) = -9999
-                !   !print *, luindex(c,r)
-                !endif
-               ! print *,c, r, luindex(c,r)
+
                 if(domv.eq.-1.and.sum(landcover1(c,r,:)).eq.0) then 
                    luindex(c,r) = LDT_rc%waterclass
                    landcover1(c,r,LDT_rc%waterclass) = 1.0
@@ -788,11 +772,10 @@ contains
           
           LDT_LSMparam_struc(n)%landcover%value = landcover1
           deallocate(landcover1)
-        !print*,"print luindex", luindex
-        !print*,"print shape(luindex):", shape(luindex)
+
         LDT_LSMparam_struc(n)%luindex%value(:,:,1) =luindex
         LDT_LSMparam_struc(n)%luindex%short_name    = "LU_INDEX"
-        !print *, LDT_LSMparam_struc(n)%luindex%value(:,:,1)
+
     !-----------------------------------------------------
 
 
@@ -828,10 +811,22 @@ contains
 
   end subroutine LMLC_init_LISHydro
 
-
+!BOP
+! 
+! !ROUTINE: LMLC_writeHeader_LIS
+! \label{LMLC_writeHeader_LIS}
+!
+! !INTERFACE:
   subroutine LMLC_writeHeader_LIS(n,ftn,dimID)
-    
+! !USES: 
     use LDT_coreMod, only : LDT_rc
+! 
+! !DESCRIPTION: 
+!
+! This subroutine writes the NetCDF headers for the landcover
+! and landmask fields in the standard preprocessing mode for LIS
+!
+!EOP
 
     integer      :: n 
     integer      :: ftn
@@ -842,12 +837,6 @@ contains
     tdimID(1) = dimID(1)
     tdimID(2) = dimID(2)
    
-!    call LDT_verify(nf90_def_dim(ftn,'sfctypes',&
-!         LDT_LSMparam_struc(n)%sfctype%vlevels,tdimID(3)))
-
-!    call LDT_writeNETCDFdataHeader(n,ftn,tdimID,&
-!         LDT_LSMparam_struc(n)%landcover)
-
     call LDT_writeNETCDFdataHeader(n,ftn,tdimID,&
          LDT_LSMparam_struc(n)%dommask)
 
@@ -967,10 +956,21 @@ contains
   end subroutine LMLC_writeHeader_LIS
 
 
+!BOP
+! !ROUTINE: LMLC_writeHeader_LISHydro
+! \label{LMLC_writeHeader_LISHydro}
+!
+! !INTERFACE: 
  subroutine LMLC_writeHeader_LISHydro(n,ftn,dimID, flag)
-    
+! !USES:    
     use LDT_coreMod, only : LDT_rc
-
+! 
+! !DESCRIPTION: 
+!
+! This subroutine writes the NetCDF headers for the landcover
+! and landmask fields in the LISHydro preprocessing mode
+!
+!EOP
     integer      :: n 
     integer      :: ftn
     integer      :: dimID(4)    !changed dimID(3) to dimID(4)
@@ -984,23 +984,11 @@ contains
     tdimID(2) = dimID(2)
     tdimID(3) = dimID(4)   !assigned 'Time' dim here
    
-!    call LDT_verify(nf90_def_dim(ftn,'sfctypes',&
-!         LDT_LSMparam_struc(n)%sfctype%vlevels,tdimID(3)))
-
-!    call LDT_writeNETCDFdataHeader(n,ftn,tdimID,&
-!         LDT_LSMparam_struc(n)%landcover)
-
        ! LU_INDEX field attributes: !!
     call LDT_verify(nf90_def_var(ftn, &
             "LU_INDEX", &
             nf90_float, (/dimID(1:2),dimID(4)/),LDT_LSMparam_struc(n)%luindexId), &
             'nf90_def_var failed for LDT_LSMparam_struc(n)%luindex')
-    !print *,"dimID =", (/tdimID(1:2),tdimID(3)/)
-!  #if(defined USE_NETCDF4) 
-!       call LDT_verify(nf90_def_var_deflate(LDT_LSMparam_struc(n)%param_file_ftn,&
-!            LDT_LSMparam_struc(n)%luindex, shuffle, deflate, deflate_level),&
-!            'nf90_def_var_deflate failed for LDT_LSMparam_struc(n)%luindex')
-! #endif
     call LDT_verify(nf90_put_att(ftn,LDT_LSMparam_struc(n)%luindexId, &
             "standard_name","Dominant category"),&
             'nf90_put_att failed for luindex:standard_name')
@@ -1013,9 +1001,6 @@ contains
     call LDT_verify(nf90_put_att(ftn,LDT_LSMparam_struc(n)%luindexId, &
             "add_offset",0.0),&
             'nf90_put_att failed for luindex:add_offset')
-    !call LDT_verify(nf90_put_att(ftn,LDT_LSMparam_struc(n)%luindexId, &
-    !        "missing_value",-9999.),&
-    !        'nf90_put_att failed for luindex:missing_value')
     call LDT_verify(nf90_put_att(ftn,LDT_LSMparam_struc(n)%luindexId, &
             "vmin",0.0),&
             'nf90_put_att failed for luindex:vmin')
@@ -1139,10 +1124,24 @@ contains
 #endif
   end subroutine LMLC_writeHeader_LISHydro
 
+!BOP
+! 
+! !ROUTINE: LMLC_writeData_LIS
+! \label{LMLC_writeData_LIS}
+! 
+! !INTERFACE:
   subroutine LMLC_writeData_LIS(n,ftn)
-
+! !USES:
     use LDT_coreMod
-
+!
+! !DESCRIPTION: 
+! 
+! This subroutine writes the landcover
+! and landmask fields in NetCDF file in the 
+! standard preprocessing mode for LIS
+!
+! 
+!EOP
     integer  :: n 
     integer  :: ftn
     integer  :: ierr
@@ -1159,10 +1158,24 @@ contains
 
   end subroutine LMLC_writeData_LIS
 
+!BOP
+! 
+! !ROUTINE: LMLC_writeData_LISHydro
+! \label{LMLC_writeData_LISHydro}
+! 
+! !INTERFACE:
   subroutine LMLC_writeData_LISHydro(n,ftn,flag)
-
+! !USES: 
     use LDT_coreMod
-
+!
+! !DESCRIPTION: 
+! 
+! This subroutine writes the landcover
+! and landmask fields in NetCDF file in the 
+! standard preprocessing mode for LISHydro
+!
+! 
+!EOP
     integer  :: n 
     integer  :: ftn
     integer  :: ierr

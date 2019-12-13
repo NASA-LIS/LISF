@@ -73,9 +73,8 @@ module LDT_paramProcMod
 ! 
 ! !DESCRIPTION:
 ! This interface provides routines for writing NETCDF header both 
-! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
-! preprocessing requiremetns. A dummy argument call "flagX" was added 
-! to overload the LISHydro procedue.
+! in the standard preprocessing mode for LIS  as well as in the 
+! LISHydro(WRFHydro) preprocessing mode.
 !EOP 
   end interface
 
@@ -92,17 +91,16 @@ module LDT_paramProcMod
      module procedure writeParamHeaders_LISHydro
 ! 
 ! !DESCRIPTION:
-! This interface provides routines for writing NETCDF header both 
-! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
-! preprocessing requiremetns. A dummy argument call "flagX" was added 
-! to overload the LISHydro procedue.
+! This interface provides routines for writing NETCDF parameter headers both 
+! in the standard preprocessing mode for LIS  as well as in the 
+! LISHydro(WRFHydro) preprocessing mode. 
 !EOP 
   end interface
 
 !BOP 
 ! 
-! !ROUTINE: writeParamHeaders 
-! \label{writeParamHeaders}
+! !ROUTINE: writeParamData
+! \label{writeParamData}
 ! 
 ! !INTERFACE:
   interface writeParamData
@@ -111,10 +109,9 @@ module LDT_paramProcMod
      module procedure writeParamData_LISHydro
 ! 
 ! !DESCRIPTION:
-! This interface provides routines for writing NETCDF header both 
-! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
-! preprocessing requiremetns. A dummy argument call "flagX" was added 
-! to overload the LISHydro procedue.
+! This interface provides routines for writing parameter data both 
+! in the standard LIS preprocessing mode as well as in the LISHydro(WRFHydro) 
+! preprocessing mode. 
 !EOP 
   end interface
 
@@ -131,10 +128,9 @@ module LDT_paramProcMod
      module procedure readParamSpecs_LISHydro
 ! 
 ! !DESCRIPTION:
-! This interface provides routines for writing NETCDF header both 
-! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
-! preprocessing requiremetns. A dummy argument call "flagX" was added 
-! to overload the LISHydro procedue.
+! This interface provides routines for reading parameter specifications
+! in the standard LIS preprocessing mode as well as in the LISHydro(WRFHydro) 
+! preprocessing mode. 
 !EOP 
   end interface
 
@@ -151,10 +147,9 @@ module LDT_paramProcMod
      module procedure paramProcInit_LISHydro
 ! 
 ! !DESCRIPTION:
-! This interface provides routines for writing NETCDF header both 
-! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
-! preprocessing requiremetns. A dummy argument call "flagX" was added 
-! to overload the LISHydro procedue.
+! This interface provides routines for parameter processing 
+! in the standard LIS preprocessing mode as well as in the LISHydro(WRFHydro) 
+! preprocessing mode.
 !EOP 
   end interface
 
@@ -171,17 +166,16 @@ module LDT_paramProcMod
      module procedure readProcParamInit_LISHydro
 ! 
 ! !DESCRIPTION:
-! This interface provides routines for writing NETCDF header both 
-! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
-! preprocessing requiremetns. A dummy argument call "flagX" was added 
-! to overload the LISHydro procedue.
+! This interface provides routines for reading the configuration
+! options in the standard in LIS preprocessing mode as well as
+! in the LISHydro(WRFHydro) preprocessing mode. 
 !EOP 
   end interface
 
 !BOP 
 ! 
-! !ROUTINE: LDT_readProcParamInit 
-! \label{LDT_readProcParamInit}
+! !ROUTINE: LDT_readProcParamWrite
+! \label{LDT_readProcParamWrite}
 ! 
 ! !INTERFACE:
   interface LDT_paramProcWrite
@@ -190,15 +184,11 @@ module LDT_paramProcMod
      module procedure paramProcWrite_LISHydro
 ! 
 ! !DESCRIPTION:
-! This interface provides routines for writing NETCDF header both 
-! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
-! preprocessing requiremetns. A dummy argument call "flagX" was added 
-! to overload the LISHydro procedue.
+! This interface provides routines for writing parameter data 
+! in the standard LIS preprocessing mode as well as in the LISHydro(WRFHydro) 
+! preprocessing mode.
 !EOP 
   end interface
-
-
-
 
 contains
 
@@ -242,8 +232,8 @@ contains
 
 
 !BOP
-! !ROUTINE: LDT_paramProcInit
-! \label{LDT_paramProcInit}
+! !ROUTINE: paramProcInit_LIS
+! \label{paramProcInit_LIS}
 !
 ! !INTERFACE: 
   subroutine paramProcInit_LIS()
@@ -252,6 +242,13 @@ contains
     use LDT_coreMod, only : LDT_rc, LDT_config
     use LDT_logMod,  only : LDT_logunit, LDT_verify
     use LDT_paramMaskCheckMod
+!
+! !DESCRIPTION: 
+!
+! This subroutine specifies the iniitalization steps for parameter processing 
+! in the standard LIS preprocessing mode. 
+!  
+!EOP
 
     integer   :: n 
 ! ____________________________________________
@@ -291,8 +288,8 @@ contains
   end subroutine ParamProcInit_LIS
 
 !BOP
-! !ROUTINE: LDT_paramProcInit
-! \label{LDT_paramProcInit}
+! !ROUTINE: paramProcInit_LISHydro
+! \label{paramProcInit_LISHydro}
 !
 ! !INTERFACE: 
   subroutine paramProcInit_LISHydro(flag)
@@ -301,6 +298,11 @@ contains
     use LDT_coreMod, only : LDT_rc, LDT_config
     use LDT_logMod,  only : LDT_logunit, LDT_verify
     use LDT_paramMaskCheckMod
+!
+! !DESCRIPTION:
+! This subroutine specifies the iniitalization steps for parameter processing 
+! in the standard LIS preprocessing mode. 
+!EOP
 
     integer   :: n 
     integer   :: rc
@@ -343,8 +345,8 @@ contains
   end subroutine paramProcInit_LISHydro
 
 !BOP
-! !ROUTINE: LDT_readProcParamInit
-! \label{LDT_readProcParamProcInit}
+! !ROUTINE: readProcParamInit_LIS
+! \label{readProcParamProcInit_LIS}
 !
 ! !INTERFACE: 
   subroutine readProcParamInit_LIS()
@@ -356,9 +358,10 @@ contains
 !
 ! !DESCRIPTION:
 !   This routine looks for which data sources to be
-!    read in, setting the filepath/name of the 
-!    parameter-mask data fill log, and sets the main
-!    non-LSM type parameters required to run LDT.
+!   read in, setting the filepath/name of the 
+!   parameter-mask data fill log, and sets the main
+!   non-LSM type parameters required to run LDT, in
+!   the standard preprocessing mode for LIS. 
 !
 !EOP
     integer   :: n
@@ -384,8 +387,8 @@ contains
   end subroutine ReadProcParamInit_LIS
 
 !BOP
-! !ROUTINE: LDT_readProcParamInit
-! \label{LDT_readProcParamProcInit}
+! !ROUTINE: readProcParamInit_LISHydro
+! \label{readProcParamInit_LISHydro}
 !
 ! !INTERFACE: 
   subroutine readProcParamInit_LISHydro(flag)
@@ -399,7 +402,8 @@ contains
 !   This routine looks for which data sources to be
 !    read in, setting the filepath/name of the 
 !    parameter-mask data fill log, and sets the main
-!    non-LSM type parameters required to run LDT.
+!    non-LSM type parameters required to run LDTm in
+!    the LIShydro preprocessing mode. 
 !
 !EOP
     integer   :: n
@@ -434,7 +438,8 @@ contains
 
 ! !DESCRIPTION:
 !   This routine specifies the names of the data 
-!    sources for each parameter type.
+!   sources for each parameter type, in the standard
+!   preprocessing mode for LIS. 
 !
 ! !USES:
     use LDT_coreMod,  only : LDT_rc, LDT_config
@@ -651,14 +656,15 @@ contains
   
 
 !BOP
-! !ROUTINE: LDT_readParamSpecs
-! \label{LDT_readParamSpecs}
+! !ROUTINE: readParamSpecs_LISHydro
+! \label{readParamSpecs_LISHydro}
 !
 ! !INTERFACE:
   subroutine readParamSpecs_LISHydro(flag)
 ! !DESCRIPTION:
 !   This routine specifies the names of the data 
-!    sources for each parameter type.
+!   sources for each parameter type, in the 
+!   LISHydro preprocessing mode 
 !
 ! !USES:
     use LDT_coreMod,  only : LDT_rc, LDT_config
@@ -695,21 +701,6 @@ contains
        call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%regmask,&
             "REGIONMASK",source)
     enddo
-
- !- Read in Landcover Data Source option: 
-!    call ESMF_ConfigFindLabel(LDT_config,"Landcover data source:",rc=rc)
-!    do n=1,LDT_rc%nnest
-!       call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
-!       if( isSurfaceTypeSelected(1) ) then
-!          call LDT_verify(rc,"Landcover data source: not defined")
-!          call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%landcover,&
-!               "LANDCOVER",source)
-!          call setLandcoverCategories(n,source)
-!        ! Note: Landcover source/classification options will be merged 
-!        !        and new options to be specified in future LDT versions.
-!       endif
-!    enddo
- 
 
 
     call ESMF_ConfigFindLabel(LDT_config,"Landcover data source:",rc=rc)
@@ -902,15 +893,14 @@ contains
 
   end subroutine readParamSpecs_LISHydro
 
-
-
 !BOP
-! !ROUTINE: LDT_paramProcWriteHeader
-! \label{LDT_paramProcWriteHeader}
+! !ROUTINE: paramProcWriteHeader_LIS
+! \label{paramProcWriteHeader_LIS}
 !
 ! !DESCRIPTION:
 !  This routine writes the header information
-!   for the output parameter file in netcdf format.
+!  for the output parameter file in netcdf format,
+!  in the standard preprocessing mode for LIS
 !
 ! !INTERFACE: 
   subroutine paramProcWriteHeader_LIS(n)
@@ -1484,12 +1474,13 @@ contains
   end subroutine ParamProcWriteHeader_LIS
 
 !BOP
-! !ROUTINE: LDT_paramProcWriteHeader
-! \label{LDT_paramProcWriteHeader}
+! !ROUTINE: paramProcWriteHeader_LISHydro
+! \label{paramProcWriteHeader_LISHydro}
 !
 ! !DESCRIPTION:
 !  This routine writes the header information
-!   for the output parameter file in netcdf format.
+!  for the output parameter file in netcdf format,
+!  in the LISHydro preprocessing mode.  
 !
 ! !INTERFACE: 
   subroutine paramProcWriteHeader_LISHydro(n, flag)
@@ -2018,9 +2009,10 @@ contains
 !End netcdf USE directives
     endif
   end subroutine paramProcWriteHeader_LISHydro
+
 !BOP
-! !ROUTINE: LDT_paramProcWrite
-! \label{LDT_paramProcWrite}
+! !ROUTINE: paramProcWrite_LIS
+! \label{paramProcWrite_LIS}
 !
 ! !INTERFACE: 
   subroutine paramProcWrite_LIS(n)
@@ -2029,7 +2021,12 @@ contains
     use LDT_coreMod
     use LDT_logMod
     use map_utils
-    
+! 
+! !DESCRIPTION: 
+!  This subroutine writes the parameter data in 
+!  the standard preprocessing mode for LIS
+!EOP
+   
     integer, intent(in)   :: n 
 
     integer               :: m
@@ -2075,8 +2072,8 @@ contains
   end subroutine ParamProcWrite_LIS
 
 !BOP
-! !ROUTINE: LDT_paramProcWrite
-! \label{LDT_paramProcWrite}
+! !ROUTINE: paramProcWrite_LISHydro
+! \label{paramProcWrite_LISHydro}
 !
 ! !INTERFACE: 
   subroutine paramProcWrite_LISHydro(n,flag)
@@ -2085,6 +2082,10 @@ contains
     use LDT_coreMod
     use LDT_logMod
     use map_utils
+! !DESCRIPTION: 
+!  This subroutine writes the parameter data in 
+!  the standard preprocessing mode for LISHydro
+!EOP
     
     integer, intent(in)   :: n 
 
@@ -2132,6 +2133,7 @@ contains
 #endif    
 
   end subroutine paramProcWrite_LISHydro
+
 !BOP
 ! !ROUTINE: LDT_paramProcWriteFinalize
 ! \label{LDT_paramProcWriteFinalize}
@@ -2147,7 +2149,8 @@ contains
     use mpi
 #endif
 ! !DESCRIPTION:
-!
+!  Finalizes the parameter processing routines
+!  
 !EOP
     
     integer, intent(in)   :: n 
@@ -2169,11 +2172,21 @@ contains
 
   end subroutine LDT_paramProcWriteFinalize
 
-
-  subroutine writeParamHeaders_LIS(n, ftn, dimID, met_dimID, monthID, qID)
-    
+!BOP
+! 
+! !ROUTINE: writeParamHeaders_LIS
+! \label{writeParamHeaders_LIS}
+! 
+! !INTERFACE: 
+  subroutine writeParamHeaders_LIS(n, ftn, dimID, met_dimID, monthID, qID)    
 ! !USES:
     use LDT_coreMod, only : LDT_rc, LDT_config
+! 
+! !DESCRIPTION: 
+!  This subroutine invokes the routines to write the data headers
+!  in the standard parameter preprocessing mode for LIS. 
+!
+!EOP
     integer     :: n 
     integer     :: ftn
     integer     :: dimID(3)
@@ -2207,10 +2220,19 @@ contains
 
   end subroutine writeParamHeaders_LIS
 
+!BOP
+! !ROUTINE: writeParamHeaders_LISHydro
+! \label{writeParamHeaders_LISHydro}
+! 
+! !INTERFACE: 
   subroutine writeParamHeaders_LISHydro(n, ftn, dimID, met_dimID, monthID, qID, flag)
     
 ! !USES:
     use LDT_coreMod, only : LDT_rc, LDT_config
+! !DESCRIPTION: 
+!  This subroutine invokes the routines to write the data headers
+!  in the parameter preprocessing mode for LISHydro. 
+!EOP
     integer     :: n 
     integer     :: ftn
     integer     :: dimID(4)
@@ -2241,10 +2263,20 @@ contains
 
   end subroutine writeParamHeaders_LISHydro
 
+!BOP
+! !ROUTINE: writeParamData_LIS
+!\label{writeParamData_LIS}
+! 
+! !INTERFACE: 
   subroutine writeParamData_LIS(n, ftn)
-
 ! !USES:
     use LDT_coreMod
+! 
+! !DESCRIPTION: 
+! 
+!  This routine writes the parameter data to file
+!  in the standard preprocessing mode for LIS. 
+!EOP
 
     integer  :: n 
     integer  :: ftn
@@ -2276,11 +2308,21 @@ contains
 
   end subroutine writeParamData_LIS
 
+!BOP
+!
+! !ROUTINE: writeParamData_LISHydro
+! \label{writeParamData_LISHydro}
+! 
+! !INTERFACE: 
   subroutine writeParamData_LISHydro(n, ftn,flag)
 
 ! !USES:
-    use mpi
     use LDT_coreMod
+! !DESCRIPTION: 
+! 
+!  This routine writes the parameter data to file
+!  in the preprocessing mode for LIShydro
+!EOP
 
     integer  :: n 
     integer  :: ftn

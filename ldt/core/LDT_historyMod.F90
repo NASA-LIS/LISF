@@ -1992,8 +1992,19 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
   
  end subroutine gather_gridded_vector_output
 
+!BOP
+!
+! !ROUTINE: writeNETCDFdataHeader_LIS
+! \label{writeNETCDFdataHeader_LIS}
+! 
+! !INTERFACE: 
  subroutine writeNETCDFdataHeader_LIS(n,ftn,dimID, paramEntry, wtype, fdimID)
-   
+! 
+! !DESCRIPTION: 
+!  This subroutine writes the NetCDF data headers in the 
+!  standard preprocessing mode for LIS
+!EOP
+ 
    integer               :: n 
    integer               :: ftn
    integer               :: dimID(3)
@@ -2044,8 +2055,19 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
 #endif
   end subroutine WriteNETCDFdataHeader_LIS
 
+!BOP
+!
+! !ROUTINE: writeNETCDFdataHeader_LISHydro
+! \label{writeNETCDFdataHeader_LISHydro}
+! 
+! !INTERFACE: 
  subroutine writeNETCDFdataHeader_LISHydro(n,ftn,dimID, paramEntry, flag)
    
+! !DESCRIPTION: 
+!  This subroutine writes the NetCDF data headers in the 
+!  preprocessing mode for LISHydro
+!EOP
+
    integer               :: n 
    integer               :: ftn
    integer               :: dimID(4)
@@ -2062,15 +2084,12 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
        if(paramEntry%vlevels.gt.1) then 
           call LDT_verify(nf90_def_var(ftn,trim(paramEntry%short_name),&
                nf90_float, dimids = dimID, varID=paramEntry%vid))
-          !print*, "dimID :", dimID
        else if (dimID(3) == 3 ) then
           call LDT_verify(nf90_def_var(ftn,trim(paramEntry%short_name),&
                nf90_float, dimids = dimID(1:3), varID=paramEntry%vid))
-          !print*,"dimID(1:3):",dimID(1:3)
        else
           call LDT_verify(nf90_def_var(ftn,trim(paramEntry%short_name),&
                nf90_float, dimids = dimID(1:2), varID=paramEntry%vid))
-          !print*,"dimID(1:2):",dimID(1:3)
        endif
 
 #if (defined USE_NETCDF4) 
@@ -2119,7 +2138,7 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
 #endif
       enddo
       if(LDT_masterproc) then 
-!         print*, 'writing att ',trim(paramEntry%short_name), LDT_localPet
+
          count =1 
          do l=1,LDT_npes
             do r=LDT_nss_ind(n,l), LDT_nse_ind(n,l)
@@ -2427,8 +2446,18 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
 
  end subroutine writeNETCDFdata_giventype
 
+!BOP
+! !ROUTINE: writeNETCDFdata_LISHydro
+!  \label{writeNETCDFdata_LISHydro}
+! 
+! !INTERFACE: 
  subroutine writeNETCDFdata_LISHydro( n, ftn, paramEntry,flag )
-    
+! 
+! !DESCRIPTION: 
+!  This routine writes the data for a given parameter entry 
+!  to the NetCDF file, in the preprocessing mode for LISHydro
+!
+!EOP    
    integer              :: n 
    integer              :: ftn
    type(LDT_paramEntry) :: paramEntry    
@@ -2465,7 +2494,6 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
 #endif
       enddo
       if(LDT_masterproc) then 
-!         print*, 'writing att ',trim(paramEntry%short_name), LDT_localPet
          count =1 
          do l=1,LDT_npes
             do r=LDT_nss_ind(n,l), LDT_nse_ind(n,l)
@@ -2479,11 +2507,11 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
             call LDT_verify(nf90_put_var(ftn, paramEntry%vid,gtmp2,&
                  (/1,1,1/),(/LDT_rc%gnc(n),LDT_rc%gnr(n),&
                  paramEntry%vlevels/)), &
-                 'error in nf90_put_var in LDT_writeNETCDFdata (writeNETCDFdata_default)')
+                 'error in nf90_put_var in LDT_writeNETCDFdata (writeNETCDFdata_LISHydro)')
          else
             call LDT_verify(nf90_put_var(ftn, paramEntry%vid,gtmp2(:,:,1),&
                  (/1,1/),(/LDT_rc%gnc(n),LDT_rc%gnr(n)/)),&
-                 'nf90_put_var failed in LDT_writeNETCDFdata (writeNETCDFdata_default)')
+                 'nf90_put_var failed in LDT_writeNETCDFdata (writeNETCDFdata_LISHydro)')
          endif
 
 #if ( defined USE_NETCDF3 )
@@ -2497,10 +2525,6 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
               "scale_factor",1.0))
          call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
               "add_offset",0.0))
-         !call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
-         !     "missing_value",LDT_rc%udef))
-         !      call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
-         !           "_FillValue",LDT_rc%udef))
          call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
               "vmin",paramEntry%valid_min))
          call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&

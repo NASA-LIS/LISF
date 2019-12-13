@@ -85,6 +85,25 @@ module LDT_soilsMod
 
 !BOP 
 ! 
+! !ROUTINE: LDT_soils_init
+! \label{LDT_soils_init}
+! 
+! !INTERFACE:
+  interface LDT_soils_init
+! !PRIVATE MEMBER FUNCTIONS: 
+     module procedure soils_init_LIS
+     module procedure soils_init_LISHydro
+! 
+! !DESCRIPTION:
+! This interface provides the initialization routines for processing
+! soil parameters both in the standard LIS preprocessing mode 
+! as well as in the LISHydro(WRFHydro) preprocessing mode.
+!EOP 
+  end interface
+
+
+!BOP 
+! 
 ! !ROUTINE: LDT_soils_writeHeader 
 ! \label{LDT_soils_writeHeader}
 ! 
@@ -95,36 +114,17 @@ module LDT_soilsMod
      module procedure soils_writeHeader_LISHydro
 ! 
 ! !DESCRIPTION:
-! This interface provides routines for writing NETCDF header both 
-! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
-! preprocessing requiremetns. A dummy argument call "flagX" was added 
-! to overload the LISHydro procedue.
+! This interface provides routines for writing NETCDF header for soils data
+! both in the standard LIS preprocessing mode as well as in 
+! the LISHydro(WRFHydro) preprocessing mode.
 !EOP 
   end interface
 
-!BOP 
-! 
-! !ROUTINE: LDT_soils_writeHeader 
-! \label{LDT_soils_writeHeader}
-! 
-! !INTERFACE:
-  interface LDT_soils_init
-! !PRIVATE MEMBER FUNCTIONS: 
-     module procedure soils_init_LIS
-     module procedure soils_init_LISHydro
-! 
-! !DESCRIPTION:
-! This interface provides routines for writing NETCDF header both 
-! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
-! preprocessing requiremetns. A dummy argument call "flagX" was added 
-! to overload the LISHydro procedue.
-!EOP 
-  end interface
 
 !BOP 
 ! 
-! !ROUTINE: LDT_soils_writeHeader 
-! \label{LDT_soils_writeHeader}
+! !ROUTINE: LDT_soils_writeData
+! \label{LDT_soils_writeData}
 ! 
 ! !INTERFACE:
   interface LDT_soils_writeData
@@ -133,17 +133,27 @@ module LDT_soilsMod
      module procedure soils_writeData_LISHydro
 ! 
 ! !DESCRIPTION:
-! This interface provides routines for writing NETCDF header both 
-! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
-! preprocessing requiremetns. A dummy argument call "flagX" was added 
-! to overload the LISHydro procedue.
+! This interface provides routines for writing soils data both 
+! in the standard LIS preprocessing mode as well as in the LISHydro(WRFHydro) 
+! preprocessing mode.
 !EOP 
   end interface
 
 
  contains
 
+!BOP
+! 
+! !ROUTINE: LDT_soils_readParamSpecs
+! \label{LDT_soils_readParamSpecs}
+! 
+! !INTERFACE: 
    subroutine LDT_soils_readParamSpecs
+! 
+! !DESCRIPTION: 
+!  This subroutine reads the soil parameter specifications 
+!  from the config file.  
+!EOP
 
      character*100    :: source
      integer          :: rc
@@ -251,8 +261,8 @@ module LDT_soilsMod
 
 !BOP
 ! 
-! !ROUTINE: LDT_soils_init
-! \label{LDT_soils_init}
+! !ROUTINE: soils_init_LIS
+! \label{soils_init_LIS}
 ! 
 ! !INTERFACE:
   subroutine soils_init_LIS()
@@ -268,7 +278,8 @@ module LDT_soilsMod
 !
 ! Allocates memory for data structures for reading 
 ! soils datasets and reads the soils data based on the 
-! choice of options specified in the ldt configuration. 
+! choice of options specified in the ldt configuration, 
+! in the standard LIS preprocessing mode. 
 ! 
 !  The routines invoked are: 
 !  \begin{description}
@@ -944,8 +955,8 @@ module LDT_soilsMod
 
 !BOP
 ! 
-! !ROUTINE: LDT_soils_init
-! \label{LDT_soils_init}
+! !ROUTINE: soils_init_LISHydro
+! \label{soils_init_LISHydro}
 ! 
 ! !INTERFACE:
   subroutine soils_init_LISHydro(flag)
@@ -961,7 +972,8 @@ module LDT_soilsMod
 !
 ! Allocates memory for data structures for reading 
 ! soils datasets and reads the soils data based on the 
-! choice of options specified in the ldt configuration. 
+! choice of options specified in the ldt configuration, 
+! in the LISHydro preprocessing mode 
 ! 
 !  The routines invoked are: 
 !  \begin{description}
@@ -1693,11 +1705,23 @@ module LDT_soilsMod
    
  end subroutine soils_init_LISHydro
 
+!BOP
+! !ROUTINE: soils_writeHeader_LIS
+! \label{soils_writeHeader_LIS}
+! 
+! !INTERFACE: 
  subroutine soils_writeHeader_LIS(n,ftn,dimID)
-
+! !USES: 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
 #endif
+! 
+! !DESCRIPTION: 
+!
+!  This routine writes the NetCDF headers for soils data fields
+!  in the standard preprocessing mode for LIS. 
+!
+!EOP
     integer    :: n 
     integer    :: ftn
     integer    :: dimID(3)
@@ -1800,11 +1824,23 @@ module LDT_soilsMod
 #endif
   end subroutine Soils_writeHeader_LIS
 
+!BOP
+! !ROUTINE: soils_writeHeader_LISHydro
+! \label{soils_writeHeader_LISHydro}
+!
+! !INTERFACE: 
  subroutine soils_writeHeader_LISHydro(n,ftn,dimID,flag)
-
+! !USES: 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
 #endif
+! 
+! !DESCRIPTION: 
+!
+!  This routine writes the NetCDF headers for soils data fields
+!  in the preprocessing mode for LISHydro. 
+!
+!EOP
     integer    :: n 
     integer    :: ftn
     integer    :: dimID(4)
@@ -1946,10 +1982,20 @@ module LDT_soilsMod
 #endif
   end subroutine soils_writeHeader_LISHydro
 
+!BOP
+! !ROUTINE: soils_writeData_LIS
+! \label{soils_writeData_LIS}
+! 
+! !INTERFACE: 
   subroutine soils_writeData_LIS(n,ftn)
-
+! !USES: 
     use LDT_coreMod, only : LDT_rc
-
+! 
+! !DESCRIPTION: 
+!  This routine writes the soils data fields to the NetCDF file
+!  in the standard preprocessing mode for LIS.  
+!
+!EOP
     integer      :: n 
     integer      :: ftn
     integer      :: ierr
@@ -1994,11 +2040,21 @@ module LDT_soilsMod
 
   end subroutine Soils_writeData_LIS
 
+!BOP
+! 
+! !ROUTINE: soils_writeData_LISHydro
+! \label{soils_writeData_LISHydro}
+!
+! !INTERFACE: 
   subroutine soils_writeData_LISHydro(n,ftn,flag)
-
+! !USES: 
     use LDT_coreMod, only : LDT_rc
     use netcdf    
-
+! !DESCRIPTION: 
+!  This routine writes the soils data fields to the NetCDF file
+!  in the standard preprocessing mode for LISHydro.  
+!
+!EOP
     integer      :: n 
     integer      :: ftn
     integer      :: ierr

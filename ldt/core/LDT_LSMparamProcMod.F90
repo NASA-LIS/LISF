@@ -17,6 +17,7 @@ module LDT_LSMparamProcMod
 ! 
   use ESMF
   use LDT_coreMod
+  use LDT_logMod
 
   implicit none
   PRIVATE
@@ -39,10 +40,9 @@ module LDT_LSMparamProcMod
      module procedure LSMparams_init_LISHydro
 ! 
 ! !DESCRIPTION:
-! This interface provides routines for writing NETCDF header both 
-! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
-! preprocessing requiremetns. A dummy argument call "flagX" was added 
-! to overload the LISHydro procedue.
+! This interface provides routines for writing LSM parameters in both 
+! in the preprocessing mode for LIS as well as in the LISHydro(WRFHydro) 
+! preprocessing mode. 
 !EOP 
   end interface
 
@@ -74,7 +74,20 @@ contains
     flag = 1
 
     if(LDT_rc%lsm.ne."none") then 
-       call lsmparamprocinit(trim(LDT_rc%lsm)//char(0),flag)
+       if(LDT_rc%lsm.ne."Noah.2.7.1".or.&
+            LDT_rc%lsm.ne."Noah.3.2".or.&
+            LDT_rc%lsm.ne."Noah.3.3".or.&
+            LDT_rc%lsm.ne."Noah.3.6".or.&
+            LDT_rc%lsm.ne."Noah.3.9".or.&
+            LDT_rc%lsm.ne."Noah-MP.3.6".or.&
+            LDT_rc%lsm.ne."Noah-MP.4.0.1") then 
+
+          call lsmparamprocinit(trim(LDT_rc%lsm)//char(0),flag)
+       else
+          write(LDT_logunit,*)'[ERR] Support for this LSM in the LISHydro preprocessing mode'
+          write(LDT_logunit,*)'[ERR] is not supported'
+          call LDT_endrun()
+       endif
     endif
   end subroutine LSMparams_init_LISHydro
 
