@@ -1824,7 +1824,7 @@ contains
             date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)))
 #endif
        call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"references", &
-            "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"))
+            "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"))
        call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"comment", &
             "website: http://lis.gsfc.nasa.gov/"))
 
