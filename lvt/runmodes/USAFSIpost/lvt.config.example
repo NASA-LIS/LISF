@@ -8,12 +8,13 @@ Starting day:     08
 Starting hour:    00
 Starting minute:  00
 Starting second:  00
-LDTSI output GRIB2 native grid: .true.
-LDTSI output GRIB1 global 0.25deg lat/lon: .true.
-LDTSI output GRIB1 NH 16th mesh polar stereographic: .true.
-LDTSI output GRIB1 SH 16th mesh polar stereographic: .true.
-LDTSI input netcdf directory: ./LDTSI
-LDTSI output grib directory: ./grib
+USAFSI output GRIB2 native grid: .true.
+USAFSI output GRIB1 global 0.25deg lat/lon: .true.
+USAFSI output GRIB1 NH 16th mesh polar stereographic: .true.
+USAFSI output GRIB1 SH 16th mesh polar stereographic: .true.
+USAFSI input netcdf directory: ./LDTSI
+USAFSI input netcdf prefix: ldtsi
+USAFSI output grib directory: ./grib
 
 # The remaining settings are required for input by LVT, but not used by the
 # LDTSIproc runmode.
