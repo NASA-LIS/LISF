@@ -82,7 +82,7 @@ contains
          nr = LDT_rc%lnr(1)
 
          ! Copy ldt.config files to local variables
-         output_prefix = trim(usafsi_settings%output_prefix)
+         output_prefix = trim(usafsi_settings%netcdf_prefix)
 
          ! FIXME:  Set this in ldt.config
          outfilename = trim(output_prefix)//"_"//date10//".nc"
@@ -492,7 +492,7 @@ contains
       nr = LDT_rc%lnr(1)
 
       ! See if file exists
-      infilename = trim(usafsi_settings%output_prefix)//"_"//date10//".nc"
+      infilename = trim(usafsi_settings%netcdf_prefix)//"_"//date10//".nc"
       inquire(file=trim(infilename), exist=file_exists)
       if (.not. file_exists) return
 
@@ -657,7 +657,7 @@ contains
       ! Imports
       use LDT_coreMod, only: LDT_rc
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
-      use LDT_usafsiInit, only: usafsi_settings
+      use LDT_usafsiMod, only: usafsi_settings
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
       use netcdf
 #endif
