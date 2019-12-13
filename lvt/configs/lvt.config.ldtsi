@@ -1,8 +1,8 @@
-# Settings for LDTSI post runmode.
+# Settings for USAFSI post runmode.
 LVT diagnostic file: lvtlog
-LVT running mode:   "LDTSI post"
+LVT running mode:   "USAFSI post"
 Undefined value: -9999
-#NOTE:  LDTSI post only processes single time level, and uses the "Starting"
+#NOTE:  USAFSI post only processes single time level, and uses the "Starting"
 #entries to define that time
 Starting year:  2018
 Starting month:   12
@@ -10,12 +10,13 @@ Starting day:     07
 Starting hour:    12
 Starting minute:  00
 Starting second:  00
-LDTSI output GRIB2 native grid: .true.
-LDTSI output GRIB1 global 0.25deg lat/lon: .true.
-LDTSI output GRIB1 NH 16th mesh polar stereographic: .true.
-LDTSI output GRIB1 SH 16th mesh polar stereographic: .true.
-LDTSI input netcdf directory: ./
-LDTSI output grib directory: ./grib
+USAFSI output GRIB2 native grid: .true.
+USAFSI output GRIB1 global 0.25deg lat/lon: .true.
+USAFSI output GRIB1 NH 16th mesh polar stereographic: .true.
+USAFSI output GRIB1 SH 16th mesh polar stereographic: .true.
+USAFSI input netcdf directory: ./
+USAFSI input netcdf prefix:  usafsi
+USAFSI output grib directory: ./grib
 
 # The remaining settings are required for input by LVT, but not used by the
 # LDTSIproc runmode.
