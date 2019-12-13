@@ -48,6 +48,7 @@ subroutine read_LDTSIobs(n, k, OBS_State, OBS_Pert_State)
    integer             :: nc
    integer             :: nr
    character(100)      :: obsdir
+   character(40)       :: prefix 
    real,    pointer    :: obsl(:)
    integer             :: r
    type(ESMF_Field)    :: snowfield
@@ -59,6 +60,9 @@ subroutine read_LDTSIobs(n, k, OBS_State, OBS_Pert_State)
 
    call ESMF_AttributeGet(OBS_State, "Data Directory",&
         obsdir, rc=status)
+   call LIS_verify(status)
+   call ESMF_AttributeGet(OBS_State, "Input file name (prefix)",&
+        prefix, rc=status)
    call LIS_verify(status)
    call ESMF_AttributeGet(OBS_State, "Data Update Status",&
        data_update, rc=status)
@@ -74,7 +78,7 @@ subroutine read_LDTSIobs(n, k, OBS_State, OBS_Pert_State)
       currTime = currTime + deltaT
 
       call ESMF_TimeGet(currTime, yy=yyyy, mm=mm, dd=dd, h=hh, rc=status)
-      call LDTSI_filename(filename, obsdir, yyyy, mm, dd, hh)
+      call LDTSI_filename(filename, obsdir, prefix, yyyy, mm, dd, hh)
 
       inquire(file=trim(filename), exist=file_exists)
 
@@ -160,10 +164,11 @@ subroutine read_LDTSIobs(n, k, OBS_State, OBS_Pert_State)
 contains
 
    ! Constructs LDTSI filename
-   subroutine LDTSI_filename(filename, dir, yyyy, mm, dd, hh)
+   subroutine LDTSI_filename(filename, dir, prefix, yyyy, mm, dd, hh)
       implicit none
       character(255), intent(inout) :: filename
       character(100), intent(in) :: dir
+      character(40),  intent(in) :: prefix  
       integer, intent(in) :: yyyy
       integer, intent(in) :: mm
       integer, intent(in) :: dd
@@ -175,9 +180,9 @@ contains
       write(unit=cdd, fmt='(i2.2)') dd
       write(unit=chh, fmt='(i2.2)') hh
       filename = trim(dir) // "/" &
-           // "ldtsi_" &
+           // trim(prefix)//"_" &
            // trim(cyyyy) // trim(cmm) // trim(cdd) // trim(chh) &
-           // ".nc"           
+           // ".nc"
    end subroutine LDTSI_filename
    
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
