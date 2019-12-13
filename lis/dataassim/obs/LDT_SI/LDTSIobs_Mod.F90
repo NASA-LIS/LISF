@@ -56,7 +56,7 @@ contains
       use LIS_coreMod, only: LIS_rc, LIS_config
       use LIS_DAobservationsMod, only: LIS_obsVecGrid, LIS_obsEnsOnGrid
       use LIS_logMod, only: LIS_verify, LIS_logunit, LIS_getNextUnitNumber, &
-           LIS_releaseUnitNumber
+           LIS_releaseUnitNumber, LIS_endrun
       use LIS_perturbMod, only: LIS_readPertAttributes, pert_dec_type
       use LIS_timeMgrMod, only: LIS_registerAlarm
 
@@ -72,7 +72,8 @@ contains
       integer                ::  ftn
       integer                ::  i
       type(ESMF_ArraySpec)   ::  intarrspec
-      character(100)          ::  LDTSIobsdir
+      character(100)         ::  LDTSIobsdir
+      character(40)          ::  USAFSI_infile_name
       integer                ::  n
       type(pert_dec_type)    ::  obs_pert
       real, pointer          ::  obs_temp(:,:)
@@ -112,6 +113,21 @@ contains
          call LIS_verify(status)
          call ESMF_AttributeSet(OBS_State(n), "Data Directory",&
               LDTSIobsdir, rc=status)
+         call LIS_verify(status)
+      end do ! n
+
+      call ESMF_ConfigFindLabel(LIS_config, "USAFSI input filename (prefix):",&
+           rc=status)
+      do n = 1, LIS_rc%nnest
+         call ESMF_ConfigGetAttribute(LIS_config, USAFSI_infile_name,&
+              rc=status)
+         if (status .ne. ESMF_SUCCESS)then
+            write(LIS_logunit,*) "[ERR] USAFSI input filename (prefix) is missing"
+            call LIS_endrun()
+         end if
+         call LIS_verify(status)
+         call ESMF_AttributeSet(OBS_State(n), "Input file name (prefix)",&
+              USAFSI_infile_name, rc=status)
          call LIS_verify(status)
       end do ! n
 
