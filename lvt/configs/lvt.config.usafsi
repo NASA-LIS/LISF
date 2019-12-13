@@ -19,7 +19,7 @@ USAFSI input netcdf prefix:  usafsi
 USAFSI output grib directory: ./grib
 
 # The remaining settings are required for input by LVT, but not used by the
-# LDTSIproc runmode.
+# USAFSIproc runmode.
 Map projection of the LVT analysis: latlon
 Analysis data sources: "LIS output" "none"
 LVT output format: grib2
