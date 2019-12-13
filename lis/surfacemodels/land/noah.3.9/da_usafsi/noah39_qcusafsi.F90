@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noah39_qcldtsi
-! \label{noah39_qcldtsi}
+! !ROUTINE: noah39_qcusafsi
+! \label{noah39_qcusafsi}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
@@ -16,8 +16,10 @@
 !  21 Jul 2011: James Geiger; Modified for Noah 3.2
 !  30 Jan 2015: Yuqiong Liu; added additional QC
 !  09 Apr 2019: Eric Kemp; Updated to Noah 3.9 and LDT-SI
+!  13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
+!
 ! !INTERFACE:
-subroutine noah39_qcldtsi(n, LSM_State)
+subroutine noah39_qcusafsi(n, LSM_State)
 
 ! !USES:
   use ESMF
@@ -157,5 +159,5 @@ subroutine noah39_qcldtsi(n, LSM_State)
      swe(t) = snod(t)*sndens
 
   enddo
-end subroutine noah39_qcldtsi
+end subroutine noah39_qcusafsi
 

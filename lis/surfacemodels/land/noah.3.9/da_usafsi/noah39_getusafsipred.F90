@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noah39_getldtsipred
-! \label{noah39_getldtsipred}
+! !ROUTINE: noah39_getusafsipred
+! \label{noah39_getusafsipred}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
@@ -17,9 +17,10 @@
 ! 24 May 2017: Yeosang Yoon: updated the file to work with the DA observation
 !              space updates. 
 ! 09 Apr 2019: Eric Kemp: Updated for Noah 3.9 and LDT-SI
+! 13 Dec 2019: Eric Kemp: Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine noah39_getldtsipred(n, k, obs_pred)
+subroutine noah39_getusafsipred(n, k, obs_pred)
 
 ! !USES:
   use ESMF
@@ -34,7 +35,7 @@ subroutine noah39_getldtsipred(n, k, obs_pred)
   real                   :: obs_pred(LIS_rc%ngrid(n),LIS_rc%nensem(n))
 !
 ! !DESCRIPTION: 
-!  This routine computes the obspred ('Hx') term for LDT-SI DA assimilation
+!  This routine computes the obspred ('Hx') term for USAFSI DA assimilation
 !  instances. 
 ! 
 !EOP
@@ -53,5 +54,5 @@ subroutine noah39_getldtsipred(n, k, obs_pred)
        snwd,&
        obs_pred)
 
-end subroutine noah39_getldtsipred
+end subroutine noah39_getusafsipred
 

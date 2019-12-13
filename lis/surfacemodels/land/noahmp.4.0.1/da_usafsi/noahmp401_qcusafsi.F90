@@ -6,7 +6,7 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noahmp401_qcldtsi
+! !ROUTINE: noahmp401_qcusafsi
 ! \label{noahmp401_qcsnow}
 !
 ! !REVISION HISTORY:
@@ -18,9 +18,10 @@
 ! 03 Oct 2018: Yeosang Yoon; Modified for NoahMP 3.6
 ! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1 and SNODEP
 ! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine noahmp401_qcldtsi(n, LSM_State)
+subroutine noahmp401_qcusafsi(n, LSM_State)
 
 ! !USES:
   use ESMF
@@ -94,5 +95,5 @@ subroutine noahmp401_qcldtsi(n, LSM_State)
   enddo
 
 
-end subroutine noahmp401_qcldtsi
+end subroutine noahmp401_qcusafsi
 

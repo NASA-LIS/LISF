@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noahmp401_scale_ldtsi
-! \label{noahmp401_scale_ldtsi}
+! !ROUTINE: noahmp401_scale_usafsi
+! \label{noahmp401_scale_usafsi}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
@@ -16,9 +16,10 @@
 ! 03 Oct 2018: Yeosang Yoon; Modified for NoahMP 3.6
 ! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1 and SNODEP
 ! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine noahmp401_scale_ldtsi(n, LSM_State)
+subroutine noahmp401_scale_usafsi(n, LSM_State)
 
 ! !USES:
   use ESMF
@@ -67,5 +68,5 @@ subroutine noahmp401_scale_ldtsi(n, LSM_State)
   enddo
 #endif
 
-end subroutine noahmp401_scale_ldtsi
+end subroutine noahmp401_scale_usafsi
 

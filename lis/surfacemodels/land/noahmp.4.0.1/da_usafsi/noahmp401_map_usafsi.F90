@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noahmp401_map_ldtsi
-! \label{noahmp401_map_ldtsi}
+! !ROUTINE: noahmp401_map_usafsi
+! \label{noahmp401_map_usafsi}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
@@ -16,9 +16,10 @@
 !  21 Jul 2011: James Geiger; Modified for Noah 3.2
 ! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1 and SNODEP
 ! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
+! 31 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine noahmp401_map_ldtsi(n,k,OBS_State,LSM_Incr_State)
+subroutine noahmp401_map_usafsi(n,k,OBS_State,LSM_Incr_State)
 ! !USES:
   use ESMF
   use LIS_coreMod, only : LIS_rc, LIS_surface
@@ -47,12 +48,12 @@ subroutine noahmp401_map_ldtsi(n,k,OBS_State,LSM_Incr_State)
 !
 !EOP
   type(ESMF_Field)         :: sweIncrField
-  type(ESMF_Field)         :: obs_ldtsi_field
+  type(ESMF_Field)         :: obs_usafsi_field
   real, pointer            :: sweincr(:)
   type(ESMF_Field)         :: snodIncrField
   real, pointer            :: snodincr(:)
   real                     :: tmpsneqv
-  real, pointer            :: ldtsiobs(:)
+  real, pointer            :: usafsiobs(:)
   integer                  :: t
   integer                  :: status
   integer                  :: obs_state_count
@@ -85,10 +86,10 @@ subroutine noahmp401_map_ldtsi(n,k,OBS_State,LSM_Incr_State)
   call ESMF_StateGet(OBS_State,itemNameList=obs_state_objs,rc=status)
   call LIS_verify(status)
   
-  call ESMF_StateGet(OBS_State,obs_state_objs(1),obs_ldtsi_field,&
+  call ESMF_StateGet(OBS_State,obs_state_objs(1),obs_usafsi_field,&
        rc=status)
   call LIS_verify(status)
-  call ESMF_FieldGet(obs_ldtsi_field,localDE=0,farrayPtr=ldtsiobs,rc=status)
+  call ESMF_FieldGet(obs_usafsi_field,localDE=0,farrayPtr=usafsiobs,rc=status)
   call LIS_verify(status)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
@@ -104,14 +105,14 @@ subroutine noahmp401_map_ldtsi(n,k,OBS_State,LSM_Incr_State)
 ! Assume here that st_id and en_id are the same and that we are
 ! working with an model grid finer than the observation grid
 
-     if(ldtsiobs(st_id).ge.0) then 
+     if(usafsiobs(st_id).ge.0) then 
         if(noahmp401_snod(t).gt.1e-6) then 
            tmpsneqv = noahmp401_swe(t)/noahmp401_snod(t)
         else
            tmpsneqv = 0.0
         endif
 
-        snod(t) = ldtsiobs(st_id)
+        snod(t) = usafsiobs(st_id)
 
 ! Based on SNODEP, we manually update SWE
         if(snod(t).lt.2.54E-3) tmpsneqv = 0.0
@@ -131,5 +132,5 @@ subroutine noahmp401_map_ldtsi(n,k,OBS_State,LSM_Incr_State)
   deallocate(noahmp401_snod)
   deallocate(snod)
 
-end subroutine noahmp401_map_ldtsi
+end subroutine noahmp401_map_usafsi
    

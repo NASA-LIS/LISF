@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noah39_updateldtsi
-! \label{noah39_updateldtsi}
+! !ROUTINE: noah39_updateusafsi
+! \label{noah39_updateusafsi}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
@@ -16,9 +16,10 @@
 !  21 Jul 2011: James Geiger; Modified for Noah 3.2
 ! 01 May 2014: Yuqiong Liu; modified for better QC
 ! 09 Apr 2019: Eric Kemp: Modified for Noah 3.9 and LDT-SI
+! 13 Dec 2019: Eric Kemp: Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine noah39_updateldtsi(n, LSM_State, LSM_Incr_State)
+subroutine noah39_updateusafsi(n, LSM_State, LSM_Incr_State)
 ! !USES:
   use ESMF
   use LIS_coreMod
@@ -34,7 +35,7 @@ subroutine noah39_updateldtsi(n, LSM_State, LSM_Incr_State)
 ! !DESCRIPTION:
 !
 !  Updates the related state prognostic variable objects for
-!  LDT-SI data assimilation
+!  USAF data assimilation
 ! 
 !  The arguments are: 
 !  \begin{description}
@@ -162,5 +163,5 @@ subroutine noah39_updateldtsi(n, LSM_State, LSM_Incr_State)
 
   enddo
   
-end subroutine noah39_updateldtsi
+end subroutine noah39_updateusafsi
 

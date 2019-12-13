@@ -1167,7 +1167,7 @@ endif::devonly[]
 |"`SMOS L2 soil moisture`"      | SMOS L2 soil moisture
 |"`SMOS(NESDIS) soil moisture`" | NESDIS SMOS soil moisture
 |"`SNODEP`"                     | AFWA SNODEP
-|"`LDTSI`"                      | LDT Snow and Ice Analysis
+|"`USAFSI`"                     | USAF Snow and Ice Analysis
 |====
 
 .Example _lis.config_ entry
@@ -2012,7 +2012,7 @@ SNODEP naming convention:               LIS
 
 
 ==== USAFSI Assimilation
-anchor:sssec_ldtsida[USAFSI Assimilation]
+anchor:sssec_usafsida[USAFSI Assimilation]
 
 `USAFSI data directory:` specifies the directory for the
 USAFSI data.

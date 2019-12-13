@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noahmp401_updateldtsivars
-! \label{noahmp401_updateldtsivars}
+! !ROUTINE: noahmp401_updateusafsivars
+! \label{noahmp401_updateusafsivars}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
@@ -15,9 +15,10 @@
 ! 02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
 ! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1 and SNODEP
 ! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine noahmp401_updateldtsivars(n, LSM_State, LSM_Incr_State)
+subroutine noahmp401_updateusafsivars(n, LSM_State, LSM_Incr_State)
 ! !USES:
   use ESMF
   use LIS_coreMod, only : LIS_rc
@@ -78,5 +79,5 @@ subroutine noahmp401_updateldtsivars(n, LSM_State, LSM_Incr_State)
      snod(t) = snod(t) + snodincr(t)
   enddo
 
-end subroutine noahmp401_updateldtsivars
+end subroutine noahmp401_updateusafsivars
 

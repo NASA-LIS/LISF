@@ -28,6 +28,7 @@ module LIS_lsmda_pluginMod
 !  06 Jun 2019: Yeosang Yoon, added SNODEP & LDTSI  Assimilation for Jules 5.0
 !  05 Nov 2019: David Mocko, removed JULES_5_0_DEV compiler flag and
 !                            enabled the compilation of JULES 5.3 DA
+!  13 Dec 2019: Eric Kemp, replaced LDTSI with USAFSI
 !
 !EOP
   implicit none
@@ -173,7 +174,7 @@ subroutine LIS_lsmda_plugin
 
 #if ( defined SM_NOAH_3_9 )
    use noah39_dasoilm_Mod
-#if ( defined DA_OBS_LDTSI )
+#if ( defined DA_OBS_USAFSI )
    use noah39_dasnow_Mod
 #endif
 #if ( defined DA_OBS_SNODEP )
@@ -194,7 +195,7 @@ subroutine LIS_lsmda_plugin
 #if ( defined SM_NOAHMP_4_0_1 )
    use NoahMP401_dasoilm_Mod
    use noahmp401_dasnodep_Mod
-   use noahmp401_daldtsi_Mod
+   use noahmp401_dausafsi_Mod
 #endif
 
 
@@ -217,7 +218,7 @@ subroutine LIS_lsmda_plugin
 #if ( defined SM_JULES_5_0 )
    use jules50_dasoilm_Mod
    use jules50_dasnodep_Mod
-   use jules50_daldtsi_Mod
+   use jules50_dausafsi_Mod
 #endif
 
 #if ( defined SM_JULES_5_2 )
@@ -352,18 +353,18 @@ subroutine LIS_lsmda_plugin
    external noah39_descale_soilm
    external noah39_updatesoilm
 
-#if ( defined DA_OBS_LDTSI )
+#if ( defined DA_OBS_USAFSI )
 ! Noah-3.9 snow depth
-   external noah39_getldtsivars
-   external noah39_transform_ldtsi
-   external noah39_map_ldtsi
-   external noah39_updateldtsi
-   external noah39_qcldtsi
-   external noah39_setldtsivars
-   external noah39_getldtsipred
-   external noah39_scale_ldtsi
-   external noah39_descale_ldtsi
-   external noah39_qc_ldtsiobs
+   external noah39_getusafsivars
+   external noah39_transform_usafsi
+   external noah39_map_usafsi
+   external noah39_updateusafsi
+   external noah39_qcusafsi
+   external noah39_setusafsivars
+   external noah39_getusafsipred
+   external noah39_scale_usafsi
+   external noah39_descale_usafsi
+   external noah39_qc_usafsiobs
 #endif
 
 #if ( defined DA_OBS_SNODEP )
@@ -477,18 +478,18 @@ subroutine LIS_lsmda_plugin
    external noahmp401_qc_snodepobs
 #endif
 
-#if ( defined DA_OBS_LDTSI )
-! NoahMP-4.0.1 LDTSI
-   external noahmp401_getldtsivars
-   external noahmp401_transform_ldtsi
-   external noahmp401_map_ldtsi
-   external noahmp401_updateldtsivars
-   external noahmp401_qcldtsi
-   external noahmp401_setldtsivars
-   external noahmp401_getldtsipred
-   external noahmp401_scale_ldtsi
-   external noahmp401_descale_ldtsi
-   external noahmp401_qc_ldtsiobs
+#if ( defined DA_OBS_USAFSI )
+! NoahMP-4.0.1_USAFSI
+   external noahmp401_getusafsivars
+   external noahmp401_transform_usafsi
+   external noahmp401_map_usafsi
+   external noahmp401_updateusafsivars
+   external noahmp401_qcusafsi
+   external noahmp401_setusafsivars
+   external noahmp401_getusafsipred
+   external noahmp401_scale_usafsi
+   external noahmp401_descale_usafsi
+   external noahmp401_qc_usafsiobs
 #endif
 
 #endif
@@ -615,18 +616,18 @@ subroutine LIS_lsmda_plugin
    external jules50_qc_snodepobs
 #endif
 
-! Yeosang Yoon LDTSI DA
-#if ( defined DA_OBS_LDTSI )
-   external jules50_getldtsivars
-   external jules50_transform_ldtsi
-   external jules50_map_ldtsi
-   external jules50_updateldtsi
-   external jules50_qcldtsi
-   external jules50_setldtsivars
-   external jules50_getldtsipred
-   external jules50_scale_ldtsi
-   external jules50_descale_ldtsi
-   external jules50_qc_ldtsiobs
+! Yeosang Yoon USAFSI DA
+#if ( defined DA_OBS_USAFSI )
+   external jules50_getusafsivars
+   external jules50_transform_usafsi
+   external jules50_map_usafsi
+   external jules50_updateusafsi
+   external jules50_qcusafsi
+   external jules50_setusafsivars
+   external jules50_getusafsipred
+   external jules50_scale_usafsi
+   external jules50_descale_usafsi
+   external jules50_qc_usafsiobs
 #endif
 
 #endif
@@ -1701,31 +1702,31 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaupdatestate(trim(LIS_noah39Id)//"+"//&
         trim(LIS_NASASMAPsmobsId )//char(0),noah39_updatesoilm)
 
-#if ( defined DA_OBS_LDTSI )
+#if ( defined DA_OBS_USAFSI )
 ! Noah-3.9 snow depth
 ! DA + snodep wirings
    call registerlsmdainit(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_dasnow_init)
+        trim(LIS_usafsiobsId)//char(0),noah39_dasnow_init)
    call registerlsmdagetstatevar(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_getldtsivars)
+        trim(LIS_usafsiobsId)//char(0),noah39_getusafsivars)
    call registerlsmdaobstransform(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_transform_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),noah39_transform_usafsi)
    call registerlsmdamapobstolsm(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_map_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),noah39_map_usafsi)
    call registerlsmdaupdatestate(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_updateldtsi)
+        trim(LIS_usafsiobsId)//char(0),noah39_updateusafsi)
    call registerlsmdaqcstate(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_qcldtsi)
+        trim(LIS_usafsiobsId)//char(0),noah39_qcusafsi)
    call registerlsmdasetstatevar(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_setldtsivars)
+        trim(LIS_usafsiobsId)//char(0),noah39_setusafsivars)
    call registerlsmdagetobspred(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_getldtsipred)
+        trim(LIS_usafsiobsId)//char(0),noah39_getusafsipred)
    call registerlsmdascalestatevar(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_scale_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),noah39_scale_usafsi)
    call registerlsmdadescalestatevar(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_descale_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),noah39_descale_usafsi)
    call registerlsmdaqcobsstate(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_qc_ldtsiobs)
+        trim(LIS_usafsiobsId)//char(0),noah39_qc_usafsiobs)
 #endif
 
 #if ( defined DA_OBS_SNODEP )
@@ -2285,29 +2286,29 @@ subroutine LIS_lsmda_plugin
         trim(LIS_snodepobsId)//char(0),noahmp401_descale_snodep)
 #endif
 
-! Yeosang Yoon, LDTSI DA
-#if ( defined DA_OBS_LDTSI )
-! DA + ldtsi wirings
+! Yeosang Yoon, USAFSI DA
+#if ( defined DA_OBS_USAFSI )
+! DA + usafsi wirings
    call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_daldtsi_init)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_dausafsi_init)
    call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_getldtsivars)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_getusafsivars)
    call registerlsmdaobstransform(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_transform_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_transform_usafsi)
    call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_updateldtsivars)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_updateusafsivars)
    call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_setldtsivars)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_setusafsivars)
    call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_getldtsipred)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_getusafsipred)
    call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_qcldtsi)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_qcusafsi)
    call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_qc_ldtsiobs)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_qc_usafsiobs)
    call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_scale_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_scale_usafsi)
    call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_descale_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_descale_usafsi)
 #endif
 #endif
 
@@ -2957,31 +2958,31 @@ subroutine LIS_lsmda_plugin
         trim(LIS_snodepobsId)//char(0),jules50_qc_snodepobs)
 #endif
 
-#if ( defined DA_OBS_LDTSI )
-! Jules 5.0 LDTSI, Yeosang Yoon
+#if ( defined DA_OBS_USAFSI )
+! Jules 5.0 USAFSI, Yeosang Yoon
 ! DA + snodep wirings
    call registerlsmdainit(trim(LIS_jules50Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),jules50_daldtsi_init)
+        trim(LIS_usafsiobsId)//char(0),jules50_dausafsi_init)
    call registerlsmdagetstatevar(trim(LIS_jules50Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),jules50_getldtsivars)
+        trim(LIS_usafsiobsId)//char(0),jules50_getusafsivars)
    call registerlsmdaobstransform(trim(LIS_jules50Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),jules50_transform_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),jules50_transform_usafsi)
    call registerlsmdamapobstolsm(trim(LIS_jules50Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),jules50_map_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),jules50_map_usafsi)
    call registerlsmdaupdatestate(trim(LIS_jules50Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),jules50_updateldtsi)
+        trim(LIS_usafsiobsId)//char(0),jules50_updateusafsi)
    call registerlsmdaqcstate(trim(LIS_jules50Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),jules50_qcldtsi)
+        trim(LIS_usafsiobsId)//char(0),jules50_qcusafsi)
    call registerlsmdasetstatevar(trim(LIS_jules50Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),jules50_setldtsivars)
+        trim(LIS_usafsiobsId)//char(0),jules50_setusafsivars)
    call registerlsmdagetobspred(trim(LIS_jules50Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),jules50_getldtsipred)
+        trim(LIS_usafsiobsId)//char(0),jules50_getusafsipred)
    call registerlsmdascalestatevar(trim(LIS_jules50Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),jules50_scale_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),jules50_scale_usafsi)
    call registerlsmdadescalestatevar(trim(LIS_jules50Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),jules50_descale_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),jules50_descale_usafsi)
    call registerlsmdaqcobsstate(trim(LIS_jules50Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),jules50_qc_ldtsiobs)
+        trim(LIS_usafsiobsId)//char(0),jules50_qc_usafsiobs)
 #endif
 
 #endif  !endif for SM_JULES_5_0
