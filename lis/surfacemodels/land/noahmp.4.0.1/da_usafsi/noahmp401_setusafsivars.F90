@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noahmp401_setldtsivars
-! \label{noahmp401_setldtsivars}
+! !ROUTINE: noahmp401_setusafsivars
+! \label{noahmp401_setusafsivars}
 !
 ! !REVISION HISTORY:
 ! 15 Aug 2017: Sujay Kumar; Initial Specification
@@ -20,9 +20,10 @@
 ! 03 Oct 2018: Yeosang Yoon; Modified for NoahMP 3.6
 ! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1 and SNODEP
 ! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine noahmp401_setldtsivars(n, LSM_State)
+subroutine noahmp401_setusafsivars(n, LSM_State)
 ! !USES:
   use ESMF
   use LIS_coreMod, only : LIS_rc, LIS_domain, LIS_surface
@@ -70,7 +71,7 @@ subroutine noahmp401_setldtsivars(n, LSM_State)
 ! the update is rejected. This may cause inconsistent ensemble 
 ! updates. TBD
 
-     call noahmp401_ldtsi_update(n, t, dsneqv, dsnowh)
+     call noahmp401_usafsi_update(n, t, dsneqv, dsnowh)
 
      if(noahmp401_struc(n)%noahmp401(t)%sneqv.lt.0.or.&
           noahmp401_struc(n)%noahmp401(t)%snowh.lt.0) then
@@ -79,6 +80,6 @@ subroutine noahmp401_setldtsivars(n, LSM_State)
         call LIS_endrun()
      endif
   enddo
-end subroutine noahmp401_setldtsivars
+end subroutine noahmp401_setusafsivars
 
 

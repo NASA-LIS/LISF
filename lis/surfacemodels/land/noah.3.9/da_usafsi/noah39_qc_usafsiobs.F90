@@ -6,15 +6,16 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noah39_qc_ldtsiobs
-! \label{noah39_qc_ldtsiobs}
+! !ROUTINE: noah39_qc_usafsiobs
+! \label{noah39_qc_usafsiobs}
 !
 ! !REVISION HISTORY:
 ! 25Feb2008: Sujay Kumar: Initial Specification
 ! 09Apr2019: Eric Kemp: Updated to Noah 3.9 and LDT-SI
+! 13Dec2019: Eric Kemp: Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine noah39_qc_ldtsiobs(n,OBS_State)
+subroutine noah39_qc_usafsiobs(n,OBS_State)
 ! !USES:
   use ESMF
   use LIS_coreMod
@@ -42,26 +43,26 @@ subroutine noah39_qc_ldtsiobs(n,OBS_State)
 !EOP
   type(ESMF_Field)         :: obs_snow_field
 
-  real, pointer            :: ldtsiobs(:)
+  real, pointer            :: usafsiobs(:)
   integer                  :: status
 
   
   call ESMF_StateGet(OBS_State,"Observation01",obs_snow_field,&
        rc=status)
   call LIS_verify(status,&
-       "ESMF_StateGet failed in noah39_qc_ldtsiobs")
-  call ESMF_FieldGet(obs_snow_field,localDE=0,farrayPtr=ldtsiobs,rc=status)
+       "ESMF_StateGet failed in noah39_qc_usafsiobs")
+  call ESMF_FieldGet(obs_snow_field,localDE=0,farrayPtr=usafsiobs,rc=status)
   call LIS_verify(status,&
-       "ESMF_FieldGet failed in noah39_qc_ldtsiobs")
+       "ESMF_FieldGet failed in noah39_qc_usafsiobs")
   
   !do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
 !     gid  = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index
 
 !     if(noah39_struc(n)%noah(t)%shdfac.gt.0.7) then 
-!        ldtsiobs(gid) = LIS_rc%udef        
+!        usafsiobs(gid) = LIS_rc%udef        
 !     endif
   !enddo
 
-end subroutine noah39_qc_ldtsiobs
+end subroutine noah39_qc_usafsiobs
 

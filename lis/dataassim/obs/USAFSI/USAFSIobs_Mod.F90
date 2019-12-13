@@ -6,32 +6,32 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: LDTSIobs_Mod
+! MODULE: USAFSIobs_Mod
 !
 ! REVISION HISTORY:
 ! 09 Apr 2019  Eric Kemp  Initial specification
 !
 ! DESCRIPTION:
-! Source code for using LDT Snow and Ice analysis.
+! Source code for using USAF Snow and Ice analysis.
 !------------------------------------------------------------------------------
 
 #include "LIS_misc.h"
 
-module LDTSIobs_Mod
+module USAFSIobs_Mod
 
    ! Defaults
    implicit none
    private
 
    ! Public routines
-   public :: LDTSIobs_finalize
-   public :: LDTSIobs_setup
+   public :: USAFSIobs_finalize
+   public :: USAFSIobs_setup
 
    ! Public variables
-   public :: LDTSI_obs, LDTSI_obs_t
+   public :: USAFSI_obs, USAFSI_obs_t
 
    ! Declare type
-   type :: LDTSI_obs_t
+   type :: USAFSI_obs_t
       real, allocatable :: rlat1(:)
       real, allocatable :: rlon1(:)
       integer, allocatable :: n111(:)
@@ -42,14 +42,14 @@ module LDTSIobs_Mod
       integer :: nr_lis ! On LIS grid
       integer :: mi ! On LDT grid
       real :: gridDesco(50)
-   end type LDTSI_obs_t
+   end type USAFSI_obs_t
 
-   type(LDTSI_obs_t), allocatable :: LDTSI_obs(:)
+   type(USAFSI_obs_t), allocatable :: USAFSI_obs(:)
 
 contains
 
-   ! Complete rnntime initializations for LDTSI product
-   subroutine LDTSIobs_setup(k, OBS_State, OBS_Pert_State)
+   ! Complete rnntime initializations for USAFSI product
+   subroutine USAFSIobs_setup(k, OBS_State, OBS_Pert_State)
 
       ! Imports
       use ESMF
@@ -72,7 +72,7 @@ contains
       integer                ::  ftn
       integer                ::  i
       type(ESMF_ArraySpec)   ::  intarrspec
-      character(100)         ::  LDTSIobsdir
+      character(100)         ::  USAFSIobsdir
       character(40)          ::  USAFSI_infile_name
       integer                ::  n
       type(pert_dec_type)    ::  obs_pert
@@ -89,7 +89,7 @@ contains
       character(1)            ::  vid(2)
       character(40), allocatable  ::  vname(:)
       
-      allocate(LDTSI_obs(LIS_rc%nnest))
+      allocate(USAFSI_obs(LIS_rc%nnest))
       call ESMF_ArraySpecSet(intarrspec, rank=1, typekind=ESMF_TYPEKIND_I4,&
            rc=status)
       call LIS_verify(status)
@@ -105,14 +105,14 @@ contains
       call ESMF_ConfigFindLabel(LIS_config, "USAFSI data directory:",&
            rc=status)
       do n = 1, LIS_rc%nnest
-         call ESMF_ConfigGetAttribute(LIS_config, LDTSIobsdir,&
+         call ESMF_ConfigGetAttribute(LIS_config, USAFSIobsdir,&
               rc=status)
          if (status .ne. ESMF_SUCCESS)then
             write(LIS_logunit,*) "[ERR] USAFSI data directory is missing"
          end if
          call LIS_verify(status)
          call ESMF_AttributeSet(OBS_State(n), "Data Directory",&
-              LDTSIobsdir, rc=status)
+              USAFSIobsdir, rc=status)
          call LIS_verify(status)
       end do ! n
 
@@ -263,13 +263,13 @@ contains
 
          ! The LDT-SI grid information will be read in from the LDT
          ! netCDF file.  For now, put in dummy data.
-         LDTSI_obs(n)%gridDesco(:) = 0         
-         LDTSI_obs%mo1 = 0
-         LDTSI_obs%nc_ldt = 0
-         LDTSI_obs%nr_ldt = 0
-         LDTSI_obs%nc_lis = 0
-         LDTSI_obs%nr_lis = 0
-         LDTSI_obs%mi = 0
+         USAFSI_obs(n)%gridDesco(:) = 0         
+         USAFSI_obs%mo1 = 0
+         USAFSI_obs%nc_ldt = 0
+         USAFSI_obs%nr_ldt = 0
+         USAFSI_obs%nc_lis = 0
+         USAFSI_obs%nr_lis = 0
+         USAFSI_obs%mi = 0
          
          call LIS_registerAlarm("USAFSI read alarm", 21600.0, 21600.0)         
          call ESMF_StateAdd(OBS_State(n), (/obsField(n)/), rc=status)
@@ -279,11 +279,11 @@ contains
 
       write(LIS_logunit,*) &
            '[INFO] Created the States to hold the observations data'
-   end subroutine LDTSIobs_setup
+   end subroutine USAFSIobs_setup
 
-   ! Dummy subroutine to finalize work with LDTSI data
-   subroutine LDTSIobs_finalize()
+   ! Dummy subroutine to finalize work with USAFSI data
+   subroutine USAFSIobs_finalize()
       implicit none
-   end subroutine LDTSIobs_finalize
+   end subroutine USAFSIobs_finalize
 
-end module LDTSIobs_Mod
+end module USAFSIobs_Mod

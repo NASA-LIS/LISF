@@ -9,14 +9,14 @@
 #include "LIS_misc.h"
 #include "LIS_NetCDF_inc.h"
 
-! Read the LDT SI observations and process for later use within the 
+! Read the USAFSI observations and process for later use within the 
 ! DA algorithm
 ! TODO:  Wrap this in a module
-subroutine read_LDTSIobs(n, k, OBS_State, OBS_Pert_State)
+subroutine read_USAFSIobs(n, k, OBS_State, OBS_Pert_State)
 
    ! Imports
    use ESMF
-   use LDTSIobs_Mod, only: LDTSI_obs
+   use USAFSIobs_Mod, only: USAFSI_obs
    use LIS_coreMod, only: LIS_rc
    use LIS_DAobservationsMod, only: LIS_obs_domain
    use LIS_logMod, only: LIS_verify, LIS_logunit
@@ -78,7 +78,7 @@ subroutine read_LDTSIobs(n, k, OBS_State, OBS_Pert_State)
       currTime = currTime + deltaT
 
       call ESMF_TimeGet(currTime, yy=yyyy, mm=mm, dd=dd, h=hh, rc=status)
-      call LDTSI_filename(filename, obsdir, prefix, yyyy, mm, dd, hh)
+      call USAFSI_filename(filename, obsdir, prefix, yyyy, mm, dd, hh)
 
       inquire(file=trim(filename), exist=file_exists)
 
@@ -105,7 +105,7 @@ subroutine read_LDTSIobs(n, k, OBS_State, OBS_Pert_State)
    call LIS_verify(status)
 
    ! Pull the snow depth from the file
-   call LDTSI_reader(filename, n, k, snoanl, ierr)   
+   call USAFSI_reader(filename, n, k, snoanl, ierr)   
    if (ierr .ne. 0) then
       write(LIS_logunit,*) &
            "[WARN] Could not read from USAFSI file ", trim(filename)
@@ -117,7 +117,7 @@ subroutine read_LDTSIobs(n, k, OBS_State, OBS_Pert_State)
 
    ! Interpolate the data
    allocate(varfield(LIS_rc%obs_lnc(k), LIS_rc%obs_lnr(k)))
-   call interp_LDTSIfield(n, k, snoanl, LIS_rc%udef, varfield)
+   call interp_USAFSIfield(n, k, snoanl, LIS_rc%udef, varfield)
 
    do r = 1, LIS_rc%obs_lnr(n)
       do c = 1, LIS_rc%obs_lnc(n)
@@ -157,14 +157,14 @@ subroutine read_LDTSIobs(n, k, OBS_State, OBS_Pert_State)
    deallocate(gid)
    deallocate(snoanl)
    deallocate(varfield)
-   deallocate(LDTSI_obs(n)%rlat1)
-   deallocate(LDTSI_obs(n)%rlon1)
-   deallocate(LDTSI_obs(n)%n111)
+   deallocate(USAFSI_obs(n)%rlat1)
+   deallocate(USAFSI_obs(n)%rlon1)
+   deallocate(USAFSI_obs(n)%n111)
 
 contains
 
-   ! Constructs LDTSI filename
-   subroutine LDTSI_filename(filename, dir, prefix, yyyy, mm, dd, hh)
+   ! Constructs USAFSI filename
+   subroutine USAFSI_filename(filename, dir, prefix, yyyy, mm, dd, hh)
       implicit none
       character(255), intent(inout) :: filename
       character(100), intent(in) :: dir
@@ -183,15 +183,15 @@ contains
            // trim(prefix)//"_" &
            // trim(cyyyy) // trim(cmm) // trim(cdd) // trim(chh) &
            // ".nc"
-   end subroutine LDTSI_filename
+   end subroutine USAFSI_filename
    
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
    
-   ! Reads LDTSI netcdf file
-   subroutine LDTSI_reader(filename, n, k, snoanl, ierr)
+   ! Reads USAFSI netcdf file
+   subroutine USAFSI_reader(filename, n, k, snoanl, ierr)
       
       ! Imports 
-      use LDTSIobs_Mod, only: LDTSI_obs
+      use USAFSIobs_Mod, only: USAFSI_obs
       use LIS_coreMod, only: LIS_rc
       use LIS_logMod, only: LIS_logunit, LIS_verify, LIS_endrun
       use netcdf
@@ -314,7 +314,7 @@ contains
          call LIS_endrun()
       end if
 
-      ! Fetch the LDTSI data resolution
+      ! Fetch the USAFSI data resolution
       call LIS_verify(nf90_get_att(ncid=ncid, &
            varid=NF90_GLOBAL, &
            name="DX", &
@@ -369,48 +369,48 @@ contains
       tmp_griddesci(11) = 64
       tmp_griddesci(20) = 64
 
-      LDTSI_obs(n)%nc_ldt = nlon
-      LDTSI_obs(n)%nr_ldt = nlat
-      LDTSI_obs(n)%mi = nlon*nlat ! On LDT grid
+      USAFSI_obs(n)%nc_ldt = nlon
+      USAFSI_obs(n)%nr_ldt = nlat
+      USAFSI_obs(n)%mi = nlon*nlat ! On LDT grid
 
       ! These are on LIS grid
-      LDTSI_obs(n)%nc_lis = &
+      USAFSI_obs(n)%nc_lis = &
            nint((LIS_rc%obs_gridDesc(k,8) - LIS_rc%obs_gridDesc(k,5)) / &
                  LIS_rc%obs_gridDesc(k,9)) + 1
-      LDTSI_obs(n)%nr_lis = &
+      USAFSI_obs(n)%nr_lis = &
            nint((LIS_rc%obs_gridDesc(k,7) - LIS_rc%obs_gridDesc(k,4)) / &
                  LIS_rc%obs_gridDesc(k,10)) + 1
-      LDTSI_obs(n)%mo1 = LDTSI_obs(n)%nc_lis * LDTSI_obs(n)%nr_lis
+      USAFSI_obs(n)%mo1 = USAFSI_obs(n)%nc_lis * USAFSI_obs(n)%nr_lis
 
-      LDTSI_obs(n)%gridDesco(1) = 0
-      LDTSI_obs(n)%gridDesco(2) = LDTSI_obs(n)%nc_lis
-      LDTSI_obs(n)%gridDesco(3) = LDTSI_obs(n)%nr_lis
-      LDTSI_obs(n)%gridDesco(4) = LIS_rc%obs_gridDesc(k,4)
-      LDTSI_obs(n)%gridDesco(5) = LIS_rc%obs_gridDesc(k,5)
-      LDTSI_obs(n)%gridDesco(6) = LIS_rc%obs_gridDesc(k,6)
-      LDTSI_obs(n)%gridDesco(7) = LIS_rc%obs_gridDesc(k,7)
-      LDTSI_obs(n)%gridDesco(8) = LIS_rc%obs_gridDesc(k,8)
-      LDTSI_obs(n)%gridDesco(9) = LIS_rc%obs_gridDesc(k,9)
-      LDTSI_obs(n)%gridDesco(10) = LIS_rc%obs_gridDesc(k,10)
-      LDTSI_obs(n)%gridDesco(20) = 255
+      USAFSI_obs(n)%gridDesco(1) = 0
+      USAFSI_obs(n)%gridDesco(2) = USAFSI_obs(n)%nc_lis
+      USAFSI_obs(n)%gridDesco(3) = USAFSI_obs(n)%nr_lis
+      USAFSI_obs(n)%gridDesco(4) = LIS_rc%obs_gridDesc(k,4)
+      USAFSI_obs(n)%gridDesco(5) = LIS_rc%obs_gridDesc(k,5)
+      USAFSI_obs(n)%gridDesco(6) = LIS_rc%obs_gridDesc(k,6)
+      USAFSI_obs(n)%gridDesco(7) = LIS_rc%obs_gridDesc(k,7)
+      USAFSI_obs(n)%gridDesco(8) = LIS_rc%obs_gridDesc(k,8)
+      USAFSI_obs(n)%gridDesco(9) = LIS_rc%obs_gridDesc(k,9)
+      USAFSI_obs(n)%gridDesco(10) = LIS_rc%obs_gridDesc(k,10)
+      USAFSI_obs(n)%gridDesco(20) = 255
 
-      allocate(LDTSI_obs(n)%rlat1(LDTSI_obs(n)%mo1))
-      allocate(LDTSI_obs(n)%rlon1(LDTSI_obs(n)%mo1))
-      allocate(LDTSI_obs(n)%n111(LDTSI_obs(n)%mo1))
+      allocate(USAFSI_obs(n)%rlat1(USAFSI_obs(n)%mo1))
+      allocate(USAFSI_obs(n)%rlon1(USAFSI_obs(n)%mo1))
+      allocate(USAFSI_obs(n)%n111(USAFSI_obs(n)%mo1))
 
       call neighbor_interp_input_withgrid(tmp_gridDesci, &
-           LDTSI_obs(n)%gridDesco, &
-           LDTSI_obs(n)%mo1, LDTSI_obs(n)%rlat1, &
-           LDTSI_obs(n)%rlon1, LDTSI_obs(n)%n111)
+           USAFSI_obs(n)%gridDesco, &
+           USAFSI_obs(n)%mo1, USAFSI_obs(n)%rlat1, &
+           USAFSI_obs(n)%rlon1, USAFSI_obs(n)%n111)
 
       ! Normal exit
       ierr = 0
-   end subroutine LDTSI_reader
+   end subroutine USAFSI_reader
 
 #else
 
    ! Dummy version
-   subroutine LDTSI_reader(filename, n, k, snoanl, ierr)
+   subroutine USAFSI_reader(filename, n, k, snoanl, ierr)
       use LIS_logMod, only: LIS_logunit, LIS_endrun
       implicit none
       character(255), intent(in) :: filename
@@ -424,15 +424,15 @@ contains
       write(LIS_logunit,*) &
            "[ERR] Recompile and try again!"
       call LIS_endrun()
-   end subroutine LDTSI_reader
+   end subroutine USAFSI_reader
 
 #endif
 
-   ! Interpolates the LDTSI data to the LIS grid
-   subroutine interp_LDTSIfield(n, k, snoanl, udef, varfield)
+   ! Interpolates the USAFSI data to the LIS grid
+   subroutine interp_USAFSIfield(n, k, snoanl, udef, varfield)
 
       ! Imports
-      use LDTSIobs_Mod, only: LDTSI_obs
+      use USAFSIobs_Mod, only: USAFSI_obs
       use LIS_coreMod, only: LIS_rc
 
       ! Defaults
@@ -441,7 +441,7 @@ contains
       ! Arguments
       integer, intent(in) :: n
       integer, intent(in) :: k
-      real, intent(in) :: snoanl(LDTSI_obs(n)%nc_ldt, LDTSI_obs(n)%nr_ldt)
+      real, intent(in) :: snoanl(USAFSI_obs(n)%nc_ldt, USAFSI_obs(n)%nr_ldt)
       real, intent(in) :: udef
       real, intent(out) :: varfield(LIS_rc%obs_lnc(k), LIS_rc%obs_lnr(k))
 
@@ -455,16 +455,16 @@ contains
       integer :: r
       integer :: rc
 
-      allocate(gi(LDTSI_obs(n)%nc_ldt*LDTSI_obs(n)%nr_ldt))
+      allocate(gi(USAFSI_obs(n)%nc_ldt*USAFSI_obs(n)%nr_ldt))
       gi(:) = 0
-      allocate(li(LDTSI_obs(n)%nc_ldt*LDTSI_obs(n)%nr_ldt))
+      allocate(li(USAFSI_obs(n)%nc_ldt*USAFSI_obs(n)%nr_ldt))
       li(:) = .false.
 
-      do r = 1, LDTSI_obs(n)%nr_ldt
-         do c = 1, LDTSI_obs(n)%nc_ldt
+      do r = 1, USAFSI_obs(n)%nr_ldt
+         do c = 1, USAFSI_obs(n)%nc_ldt
             if (snoanl(c,r) < 0) cycle
-            li(c + (r-1)*LDTSI_obs(n)%nc_ldt) = .true.
-            gi(c + (r-1)*LDTSI_obs(n)%nc_ldt) = snoanl(c,r)
+            li(c + (r-1)*USAFSI_obs(n)%nc_ldt) = .true.
+            gi(c + (r-1)*USAFSI_obs(n)%nc_ldt) = snoanl(c,r)
          end do ! c
       end do ! r
 
@@ -473,12 +473,12 @@ contains
       allocate(lo(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
       lo(:) = .false.
 
-      call neighbor_interp(LDTSI_obs(n)%gridDesco, &
+      call neighbor_interp(USAFSI_obs(n)%gridDesco, &
            li, gi, lo, go, &
-           LDTSI_obs(n)%mi, LDTSI_obs(n)%mo1, &
-           LDTSI_obs(n)%rlat1, &
-           LDTSI_obs(n)%rlon1, &
-           LDTSI_obs(n)%n111, &
+           USAFSI_obs(n)%mi, USAFSI_obs(n)%mo1, &
+           USAFSI_obs(n)%rlat1, &
+           USAFSI_obs(n)%rlon1, &
+           USAFSI_obs(n)%n111, &
            udef, rc)
 
       do r = 1, LIS_rc%obs_lnr(k)
@@ -491,6 +491,6 @@ contains
       deallocate(lo)
       deallocate(go)
       deallocate(gi)
-   end subroutine interp_LDTSIfield
+   end subroutine interp_USAFSIfield
 
-end subroutine read_LDTSIobs
+end subroutine read_USAFSIobs

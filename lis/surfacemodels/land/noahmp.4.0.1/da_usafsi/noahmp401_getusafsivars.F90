@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noahmp401_getldtsivars
-! \label{noahmp401_getldtsivars}
+! !ROUTINE: noahmp401_getusafsivars
+! \label{noahmp401_getusafsivars}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
@@ -16,9 +16,11 @@
 ! 03OC2018: Yeosang Yoon; Modified for NoahMP 3.6
 ! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1 and SNODEP
 ! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
+!
 ! !INTERFACE:
 !
-subroutine noahmp401_getldtsivars(n, LSM_State)
+subroutine noahmp401_getusafsivars(n, LSM_State)
 ! !USES:
   use ESMF
   use LIS_coreMod, only : LIS_rc
@@ -64,5 +66,5 @@ subroutine noahmp401_getldtsivars(n, LSM_State)
      swe(t) = noahmp401_struc(n)%noahmp401(t)%sneqv/1000.0 !to m
      snod(t) = noahmp401_struc(n)%noahmp401(t)%snowh
   enddo
-end subroutine noahmp401_getldtsivars
+end subroutine noahmp401_getusafsivars
 

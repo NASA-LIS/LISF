@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noahmp401_transform_ldtsi
-! \label{noahmp401_transform_ldtsi}
+! !ROUTINE: noahmp401_transform_usafsi
+! \label{noahmp401_transform_usafsi}
 !
 ! !REVISION HISTORY:
 ! 25Jun2006: Sujay Kumar: Initial Specification
@@ -16,9 +16,10 @@
 !  03 Oct 2018; Yeosang Yoon; Modified for NoahMP 3.6
 !  14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1
 ! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine noahmp401_transform_ldtsi(n,OBS_State)
+subroutine noahmp401_transform_usafsi(n,OBS_State)
 
 ! !USES:
   use ESMF
@@ -45,4 +46,4 @@ subroutine noahmp401_transform_ldtsi(n,OBS_State)
 
   ! Since LDT-SI is already in meters, no work is needed here.
 
-end subroutine noahmp401_transform_ldtsi
+end subroutine noahmp401_transform_usafsi

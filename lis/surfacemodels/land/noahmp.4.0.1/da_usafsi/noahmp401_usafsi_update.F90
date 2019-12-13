@@ -6,16 +6,18 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noahmp401_ldtsi_update
-! \label{noahmp401_ldtsi_update}
+! !ROUTINE: noahmp401_usafsi_update
+! \label{noahmp401_usafsi_update}
 !
 ! !REVISION HISTORY:
 !  13 Aug 2017: Sujay Kumar; Initial specification
 !  14 Dec 2018: Yeosang Yoon; Modified code for NoahMP 4.0.1 and SNODEP
 !  15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
+!  13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
+
 !
 ! !INTERFACE
-subroutine noahmp401_ldtsi_update(n, t, dsneqv, dsnowh)
+subroutine noahmp401_usafsi_update(n, t, dsneqv, dsnowh)
 
   use LIS_coreMod
   use NoahMP401_lsmMod
@@ -351,4 +353,4 @@ subroutine noahmp401_ldtsi_update(n, t, dsneqv, dsnowh)
   deallocate(zsnso)
   deallocate(sice)
 
-end subroutine noahmp401_ldtsi_update
+end subroutine noahmp401_usafsi_update

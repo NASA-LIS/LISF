@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noah39_getldtsivars
-! \label{noah39_getldtsivars}
+! !ROUTINE: noah39_getusafsivars
+! \label{noah39_getusafsivars}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
@@ -15,9 +15,10 @@
 !  02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
 !  21 Jul 2011: James Geiger; Modified for Noah 3.2
 !  09 Apr 2019: Eric Kemp: Modified for Noah 3.9 and LDT-SI
+!  13 Dec 2019: Eric Kemp: Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine noah39_getldtsivars(n, LSM_State)
+subroutine noah39_getusafsivars(n, LSM_State)
 ! !USES:
   use ESMF
   use LIS_coreMod, only : LIS_rc
@@ -64,5 +65,5 @@ subroutine noah39_getldtsivars(n, LSM_State)
      snod(t) = noah39_struc(n)%noah(t)%snowh
   enddo
   
-end subroutine noah39_getldtsivars
+end subroutine noah39_getusafsivars
 

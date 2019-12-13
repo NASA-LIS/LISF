@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noahmp401_getldtsipred
-! \label{noahmp401_getldtsipred}
+! !ROUTINE: noahmp401_getusafsipred
+! \label{noahmp401_getusafsipred}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
@@ -19,9 +19,10 @@
 ! 03 Oct 2018: Yeosang Yoon; Modified for NoahMP 3.6
 ! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1 and SNODEP
 ! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine noahmp401_getldtsipred(n, k, obs_pred)
+subroutine noahmp401_getusafsipred(n, k, obs_pred)
 
 ! !USES:
   use ESMF
@@ -52,5 +53,5 @@ subroutine noahmp401_getldtsipred(n, k, obs_pred)
        snwd,&
        obs_pred)
   
-end subroutine noahmp401_getldtsipred
+end subroutine noahmp401_getusafsipred
 
