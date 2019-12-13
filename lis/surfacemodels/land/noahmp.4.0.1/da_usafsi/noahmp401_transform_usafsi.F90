@@ -44,6 +44,6 @@ subroutine noahmp401_transform_usafsi(n,OBS_State)
 !  \end{description}
 !EOP
 
-  ! Since LDT-SI is already in meters, no work is needed here.
+  ! Since USAFSI is already in meters, no work is needed here.
 
 end subroutine noahmp401_transform_usafsi

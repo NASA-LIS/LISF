@@ -35,7 +35,7 @@ subroutine noah39_qcusafsi(n, LSM_State)
 ! !DESCRIPTION:
 !
 !  QC's the related state prognostic variable objects for
-!  LDT-SI data assimilation
+!  USAFSI data assimilation
 ! 
 !  The arguments are: 
 !  \begin{description}

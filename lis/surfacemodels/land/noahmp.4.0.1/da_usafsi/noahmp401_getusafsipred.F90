@@ -39,7 +39,7 @@ subroutine noahmp401_getusafsipred(n, k, obs_pred)
 !EOP
 
 ! !DESCRIPTION:
-!  This routine computes the obspred ('Hx') term for LDT-SI DA assimilation
+!  This routine computes the obspred ('Hx') term for USAFSI DA assimilation
 !  instances.
 
   integer                :: t

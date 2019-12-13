@@ -261,7 +261,7 @@ contains
          deallocate(varmin)
          deallocate(ssdev)
 
-         ! The LDT-SI grid information will be read in from the LDT
+         ! The USAFSI grid information will be read in from the LDT
          ! netCDF file.  For now, put in dummy data.
          USAFSI_obs(n)%gridDesco(:) = 0         
          USAFSI_obs%mo1 = 0
