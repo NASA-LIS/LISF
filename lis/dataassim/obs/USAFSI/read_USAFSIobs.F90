@@ -61,7 +61,7 @@ subroutine read_USAFSIobs(n, k, OBS_State, OBS_Pert_State)
    call ESMF_AttributeGet(OBS_State, "Data Directory",&
         obsdir, rc=status)
    call LIS_verify(status)
-   call ESMF_AttributeGet(OBS_State, "Input file name (prefix)",&
+   call ESMF_AttributeGet(OBS_State, "Netcdf filename prefix",&
         prefix, rc=status)
    call LIS_verify(status)
    call ESMF_AttributeGet(OBS_State, "Data Update Status",&

@@ -116,17 +116,17 @@ contains
          call LIS_verify(status)
       end do ! n
 
-      call ESMF_ConfigFindLabel(LIS_config, "USAFSI input filename (prefix):",&
+      call ESMF_ConfigFindLabel(LIS_config, "USAFSI netcdf filename prefix:",&
            rc=status)
       do n = 1, LIS_rc%nnest
          call ESMF_ConfigGetAttribute(LIS_config, USAFSI_infile_name,&
               rc=status)
          if (status .ne. ESMF_SUCCESS)then
-            write(LIS_logunit,*) "[ERR] USAFSI input filename (prefix) is missing"
+            write(LIS_logunit,*) "[ERR] USAFSI netcdf filename prefix is missing"
             call LIS_endrun()
          end if
          call LIS_verify(status)
-         call ESMF_AttributeSet(OBS_State(n), "Input file name (prefix)",&
+         call ESMF_AttributeSet(OBS_State(n), "Netcdf filename prefix",&
               USAFSI_infile_name, rc=status)
          call LIS_verify(status)
       end do ! n

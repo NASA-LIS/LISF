@@ -2017,14 +2017,14 @@ anchor:sssec_usafsida[USAFSI Assimilation]
 `USAFSI data directory:` specifies the directory for the
 USAFSI data.
 
-`USAFSI input filename (prefix):` specifies the prefix of 
+`USAFSI netcdf filename prefix:` specifies the prefix of 
 the USAFSI dataset. If prefix is "usafsi", file name will 
 be "usafsi_yyyymmddhh.nc."
 
 .Example _lis.config_ entry
 ....
 USAFSI data directory:                  ./FORCING/USAFSI
-USAFSI input filename (prefix):         usafsi
+USAFSI netcdf filename prefix:         usafsi
 ....
 
 ifdef::devonly[]
