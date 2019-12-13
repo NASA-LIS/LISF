@@ -185,7 +185,7 @@ subroutine get_VIIRSgfrac(n,filename, array)
     gvf = 0.0
     flag = '1'
     write (LIS_logunit,*) "Before readgvfviirs; gvf_nc / gvf_nr / npts = ",gvf_nc,gvf_nr,npts
-    iretgz = readgvfviirs( zname, gvf_nc, gvf_nr, flag, gvf )
+    iretgz = readgvfviirs( trim(zname)//char(0), gvf_nc, gvf_nr, flag, gvf )
     if ( iretgz > 0) then       ! FAILED TO READ
       write (LIS_logunit,*) "** Failed to read GVF gzipped file: ", zname
       deallocate(gvf)

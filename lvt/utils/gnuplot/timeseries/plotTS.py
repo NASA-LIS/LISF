@@ -9,57 +9,57 @@ infile=open('ts.config','r')
 for line in infile:
     try:
         (option,out_img_format)=line.split("Output format for images:")
-    except ValueError:
-        pass
+    except ValueError as e:
+        print e
     try:
         (option,lvt_config)=line.split("LVT config file:")
-    except ValueError:
-        pass
+    except ValueError as e:
+        print e
     try:
         (option,lvt_ts_file)=line.split("LVT time series locations file:")
-    except ValueError:
-        pass
+    except ValueError as e:
+        print e
     try:
         (option,outfilename)=line.split("gnuplot output filename:")
-    except ValueError:
-        pass
+    except ValueError as e:
+        print e
 
     try:
         (option,plt_summ_stats)=line.split("Plot summary stats in the image:")
-    except ValueError:
-        pass
+    except ValueError as e:
+        print e
     try:
         (option,n_plt_vars)=line.split("Number of variables to plot:")
-    except ValueError:
-        pass
+    except ValueError as e:
+        print e
     try:
         (option,d1_label)=line.split("data series 1 label:")
-    except ValueError:
-        pass
+    except ValueError as e:
+        print e
     try:
         (option,d1_style)=line.split("data series 1 style:")
-    except ValueError:
-        pass
+    except ValueError as e:
+        print e
     try:
         (option,d2_label)=line.split("data series 2 label:")
-    except ValueError:
-        pass
+    except ValueError as e:
+        print e
     try:
         (option,d2_style)=line.split("data series 2 style:")
-    except ValueError:
-        pass
+    except ValueError as e:
+        print e
     try:
         (option,n_x_tics)=line.split("Number of xtics:")
-    except ValueError:
-        pass    
+    except ValueError as e:
+        print e
     try:
         (option,vnames)=line.split("Variable names:")
-    except ValueError:
-        pass
+    except ValueError as e:
+        print e
     try:
         (option,vunits)=line.split("Variable units:")
-    except ValueError:
-        pass
+    except ValueError as e:
+        print e
 
 
 #open lvt.config file and read entries. 
@@ -67,8 +67,8 @@ lvtfile=open(lvt_config.strip(),'r')
 for line in lvtfile:
     try:
         (option,statsodir)=line.split("Stats output directory:")
-    except ValueError:
-        pass
+    except ValueError as e:
+        print e
 
 outfile = open(outfilename.strip(),'w')
 #outfile = open('ts.plt','w')

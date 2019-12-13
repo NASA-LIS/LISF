@@ -178,6 +178,10 @@ subroutine LIS_metforcing_plugin
    use geos5fcst_forcingMod
 #endif
 
+#if ( defined MF_GEFS_FORECAST )
+   use gefs_forcingMod
+#endif
+
 #if ( defined MF_GDAS_LSWG )
    use gdasLSWG_forcingMod
 #endif
@@ -470,6 +474,13 @@ subroutine LIS_metforcing_plugin
    external timeinterp_geos5fcst
    external finalize_geos5fcst
    external reset_geos5fcst
+#endif
+
+#if ( defined MF_GEFS_FORECAST )
+   external get_gefs
+   external timeinterp_gefs
+   external finalize_gefs
+   external reset_gefs
 #endif
 
 #if ( defined MF_GDAS_LSWG )
@@ -927,6 +938,16 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_geos5fcst)
    call registerfinalmetforc(trim(LIS_geos5fcstId)//char(0),finalize_geos5fcst)
    call registerresetmetforc(trim(LIS_geos5fcstId)//char(0),reset_geos5fcst)
+#endif
+
+#if ( defined MF_GEFS_FORECAST )
+! - GEFS forecast forcing:
+   call registerinitmetforc(trim(LIS_gefsId)//char(0),init_GEFS)
+   call registerretrievemetforc(trim(LIS_gefsId)//char(0),get_gefs)
+   call registertimeinterpmetforc(trim(LIS_gefsID)//char(0), &
+                                  timeinterp_gefs)
+   call registerfinalmetforc(trim(LIS_gefsId)//char(0),finalize_gefs)
+   call registerresetmetforc(trim(LIS_gefsId)//char(0),reset_gefs)
 #endif
 
 #if ( defined MF_GDAS_LSWG )

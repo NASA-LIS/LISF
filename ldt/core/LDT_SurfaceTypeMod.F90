@@ -575,11 +575,10 @@ contains
    integer :: c, r, t, l, i
 
    if( LDT_rc%waterclass == 0. ) then
-     write(*,*) "No water class for associated landcover ...."
-     write(*,*) " Stopping for now until solution entered."
+     write(LDT_logunit,*) "[ERR] No water class for associated landcover ..."
+     write(LDT_logunit,*) " Stopping for now until solution entered."
      call LDT_endrun
    endif
-
    write(LDT_logunit,fmt=*) '[INFO] SURFACETYPE -- Assigning openwater surface types'
 
    openwaterfgrd = 0.

@@ -79,13 +79,15 @@ struct routingoutnode* routingout_table = NULL;
 void FTN(registerroutinginit)(char *j, void (*func)(),int len)
 //EOP
 { 
+  int len1;
   struct routinginitnode* current;
   struct routinginitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct routinginitnode*) malloc(sizeof(struct routinginitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -147,13 +149,15 @@ void FTN(routinginit)(char *j,int len)
 void FTN(registerroutingreadrestart)(char *j, void (*func)(),int len)
 //EOP
 { 
+  int len1;
   struct routingrrstnode* current;
   struct routingrrstnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct routingrrstnode*) malloc(sizeof(struct routingrrstnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -214,13 +218,15 @@ void FTN(routingreadrestart)(char *j,int len)
 void FTN(registerroutingrun)(char *j, void (*func)(int*),int len)
 //EOP
 { 
+  int len1;
   struct routingrunnode* current;
   struct routingrunnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct routingrunnode*) malloc(sizeof(struct routingrunnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -281,13 +287,15 @@ void FTN(routingrun)(char *j, int *n,int len)
 void FTN(registerroutingoutput)(char *j, void (*func)(int*),int len)
 //EOP
 { 
+  int len1;
   struct routingoutnode* current;
   struct routingoutnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct routingoutnode*) malloc(sizeof(struct routingoutnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -348,13 +356,15 @@ void FTN(routingoutput)(char *j, int *n,int len)
 void FTN(registerroutingwriterestart)(char *j, void (*func)(int*),int len)
 //EOP
 { 
+  int len1;
   struct routingwrstnode* current;
   struct routingwrstnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct routingwrstnode*) malloc(sizeof(struct routingwrstnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

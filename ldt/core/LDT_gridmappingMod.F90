@@ -14,6 +14,7 @@ module LDT_gridmappingMod
 !  10 Jul 2012;  Kristi Arsenault;  Initial Specification
 !  10 Feb 2014;  Kristi Arsenault;  Updated routines to include add. options
 !  14 Aug 2019;  Kristi Arsenault;  Updated to account for crossing IDL
+!  21 Nov 2019;  Kristi Arsenault;  Add buffer to target domain for subsetting
 ! 
   implicit none
   PRIVATE
@@ -50,7 +51,7 @@ contains
    integer, intent(out)     :: subparam_nc, subparam_nr
    integer, allocatable, intent(out) :: lat_line(:,:)
    integer, allocatable, intent(out) :: lon_line(:,:)
-
+!
 ! !DESCRIPTION: 
 !  This subroutine creates the input parameter grid information
 !  required for reading in just a subsetted or the full global
@@ -58,6 +59,7 @@ contains
 !
 ! REVISION HISTORY:
 !  13FEB2014 -- K.R. Arsenault: Initial Specification
+!  13NOV2019 -- K.R. Arsenault: Added new buffer for LIS domain
 ! 
 !EOP      
    type(proj_info)  :: subset_paramproj
@@ -119,18 +121,28 @@ contains
       enddo
    enddo
 
-   lisdom_min_lat = rlat(1,1)
-   lisdom_min_lon = rlon(1,1)
-   lisdom_max_lat = rlat(LDT_rc%lnc(n),LDT_rc%lnr(n))
-   lisdom_max_lon = rlon(LDT_rc%lnc(n),LDT_rc%lnr(n))
+!- Set bounding points for LIS run domain for subsetting step:
 
-!- Calculate LIS run domain corner point resolutions: 
+   ! Calculate LIS run domain corner point resolutions: 
    lisdom_xres_ll = abs(rlon(2,1)-rlon(1,1))
    lisdom_yres_ll = abs(rlat(1,2)-rlat(1,1))
    lisdom_xres_ur = abs(rlon(LDT_rc%lnc(n),  LDT_rc%lnr(n))  &
                   - rlon(LDT_rc%lnc(n)-1,LDT_rc%lnr(n)) )
    lisdom_yres_ur = abs(rlat(LDT_rc%lnc(n),  LDT_rc%lnr(n))  &
                   - rlat(LDT_rc%lnc(n),  LDT_rc%lnr(n)-1) )
+
+   ! Incorporate buffer for target grid (e.g., helps with curvilinear projections)
+   lisdom_min_lat = max((rlat(1,1)-(5*lisdom_yres_ll)),-90.0)
+   lisdom_max_lat = min((rlat(LDT_rc%lnc(n),LDT_rc%lnr(n))+(5*lisdom_yres_ll)),90.0)
+
+   ! Account for crossing IDL:
+   if( rlon(1,1) <= rlon(LDT_rc%lnc(n),LDT_rc%lnr(n)) ) then
+     lisdom_min_lon = max((rlon(1,1)-(5*lisdom_xres_ll)),-180.0)
+     lisdom_max_lon = min((rlon(LDT_rc%lnc(n),LDT_rc%lnr(n))+(5*lisdom_xres_ll)),180.0)
+   else  
+     lisdom_min_lon = max((rlon(1,1)-(5*lisdom_xres_ll)),0.0)
+     lisdom_max_lon = min((rlon(LDT_rc%lnc(n),LDT_rc%lnr(n))+(5*lisdom_xres_ll)),0.0)
+   endif
 
 ! -------------------------------------------------------------
 !  Select Parameter File Projection Type
@@ -165,10 +177,11 @@ contains
           elseif( param_grid(9) < (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor)) then
              subparm_lllat_ext = lisdom_min_lat - (lisdom_yres_ll/2.) + &
                   (param_grid(10)/2.0)
-             subparm_lllon_ext = lisdom_min_lon - (lisdom_xres_ll/2.) + &
-                  (param_grid(9)/2.0)
              subparm_urlat_ext = lisdom_max_lat + (lisdom_yres_ur/2.) - &
                   (param_grid(10)/2.0)
+
+             subparm_lllon_ext = lisdom_min_lon - (lisdom_xres_ll/2.) + &
+                  (param_grid(9)/2.0)
              subparm_urlon_ext = lisdom_max_lon + (lisdom_xres_ur/2.) - &
                   (param_grid(9)/2.0)
 
@@ -178,6 +191,7 @@ contains
              subparm_urlat_ext = param_grid(7)
              subparm_lllon_ext = param_grid(5)
              subparm_urlon_ext = param_grid(8)
+
           endif
  
    !- Lambert conformal LIS run domain:
@@ -374,7 +388,6 @@ contains
                               rlat(c,r), rlon(c,r) )
            lat_line(c,r) = nint((rlat(c,r)-param_grid(4))/param_grid(10))+1
            lon_line(c,r) = nint((rlon(c,r)-param_grid(5))/param_grid(9))+1
-!           lon_line(c,r) = nint(diff_lon(rlon(c,r),param_grid(5))/param_grid(9))+1
         enddo
      enddo
      deallocate(rlat,rlon)
@@ -422,7 +435,7 @@ contains
      subparam_gridDesc(10) = param_grid(10)
      subparam_gridDesc(11) = 64.
      subparam_gridDesc(20) = 64.
-  
+
      ! Set up map_set parameter array ...
 !    subset_paramproj = LDT_domain(n)%ldtproj
      call map_set( PROJ_GAUSS, subparam_gridDesc(4), subparam_gridDesc(5), &

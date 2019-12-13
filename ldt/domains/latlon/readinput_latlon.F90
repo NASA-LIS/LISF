@@ -148,8 +148,8 @@ subroutine readinput_latlon
         call LDT_endrun
      endif
      if(LDT_rc%gridDesc(n,8).lt.LDT_rc%gridDesc(n,5)) then
-        write(LDT_logunit,*) '[ERR] lon2 should  be greater than lon1 ...'
-        write(LDT_logunit,*) LDT_rc%gridDesc(n,8),LDT_rc%gridDesc(n,5)
+        write(LDT_logunit,*) '[INFO] lon2 < lon1 ... ', &
+                             LDT_rc%gridDesc(n,8),LDT_rc%gridDesc(n,5)
      endif
      
      ! Difference in number of longitudes (dx):
