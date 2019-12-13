@@ -2,11 +2,12 @@
 ! NASA GSFC Land Data Toolkit (LDT) V1.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: LDTSI_lisMod
+! MODULE: USAFSI_lisMod
 ! 
 ! REVISION HISTORY:
 ! 01 Mar 2019  Eric Kemp  First version.
 ! 09 May 2019  Eric Kemp  Renamed to LDTSI.
+! 13 Dec 2019  Eric Kemp  Renamed to USAFSI.
 !
 ! DESCRIPTION:
 ! Source code for reading LIS 2-meter temperatures.
@@ -14,7 +15,7 @@
 
 #include "LDT_misc.h"
 
-module LDTSI_lisMod
+module USAFSI_lisMod
 
    ! Defaults
    implicit none
@@ -33,7 +34,7 @@ contains
       use grib_api
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_verify, LDT_endrun
-      use LDTSI_paramsMod
+      use USAFSI_paramsMod
 
       ! Defaults
       implicit none
@@ -391,22 +392,22 @@ contains
 
    ! Builds path to LIS GRIB2 file
    subroutine construct_lis_grib2_filename(date10, filename)
-      use LDT_ldtsiMod, only: ldtsi_settings
+      use LDT_usafsiMod, only: usafsi_settings
       implicit none
       character*10, intent(in) :: date10
       character*255, intent(out) :: filename
-      filename = trim(ldtsi_settings%lis_grib2_dir) &
+      filename = trim(usafsi_settings%lis_grib2_dir) &
            // "/PS." &
            // "557WW_SC." &
-           // trim(ldtsi_settings%security_class) // "_DI." &
-           // trim(ldtsi_settings%data_category) // "_GP." &
+           // trim(usafsi_settings%security_class) // "_DI." &
+           // trim(usafsi_settings%data_category) // "_GP." &
            // "LIS_GR." &
-           // trim(ldtsi_settings%data_res) // "_AR." &
-           // trim(ldtsi_settings%area_of_data) // "_PA." &
+           // trim(usafsi_settings%data_res) // "_AR." &
+           // trim(usafsi_settings%area_of_data) // "_PA." &
            // "LIS_DD." &
            // date10(1:8) // "_DT." &
            // date10(9:10) // "00_DF." &
            // "GR2"                     
    end subroutine construct_lis_grib2_filename
 
-end module LDTSI_lisMod
+end module USAFSI_lisMod

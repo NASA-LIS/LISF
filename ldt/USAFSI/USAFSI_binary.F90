@@ -1,12 +1,12 @@
-! Temporary subroutine for writing LDTSI fields in binary
+! Temporary subroutine for writing USAFSI fields in binary
 
 #include "LDT_misc.h"
 
-subroutine LDTSI_binary()
+subroutine USAFSI_binary()
    
    ! Imports
    use LDT_logMod, only: LDT_logunit
-   use LDTSI_arraysMod, only: LDTSI_arrays
+   use USAFSI_arraysMod, only: USAFSI_arrays
 
    ! Defaults
    implicit none
@@ -19,19 +19,19 @@ subroutine LDTSI_binary()
    integer :: istat
 
    ! Open file
-   file_path = "ldtsi.bin"
-   write(LDT_logunit,*)"Writing ldtsi.bin"
+   file_path = "usafsi.bin"
+   write(LDT_logunit,*)"Writing usafsi.bin"
    open(unit=lunit,file=file_path, form='unformatted', action='write', &
         iostat=istat, status='unknown')
    
-   ! Write LDTSI fields
-   write(lunit) LDTSI_arrays%snoanl
-   write(lunit) LDTSI_arrays%snoage
-   write(lunit) LDTSI_arrays%icecon
-   write(lunit) LDTSI_arrays%icemask
-   write(lunit) LDTSI_arrays%iceage
+   ! Write USAFSI fields
+   write(lunit) USAFSI_arrays%snoanl
+   write(lunit) USAFSI_arrays%snoage
+   write(lunit) USAFSI_arrays%icecon
+   write(lunit) USAFSI_arrays%icemask
+   write(lunit) USAFSI_arrays%iceage
    
    ! Close file
    close(lunit)
 
-end subroutine LDTSI_binary
+end subroutine USAFSI_binary

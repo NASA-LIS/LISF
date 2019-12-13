@@ -21,6 +21,8 @@ Run domain resolution (dy):             0.093750
 # ------------------------
 # EMK New section for USAFSI
 
+USAFSI netcdf filename prefix:  'usafsi'
+
 # *** Former Environment Variables ***
 USAFSI valid date (YYYYMMDDHH):            2018121112
 USAFSI fractional snow data directory:     ./USAFSIIN/snofrac/

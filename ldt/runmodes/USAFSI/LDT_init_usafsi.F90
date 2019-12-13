@@ -1,13 +1,13 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA GSFC Land Data Toolkit (LDT) V1.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-subroutine LDT_init_LDTSI()
+subroutine LDT_init_USAFSI()
 
    ! Imports
    use LDT_domainMod, only: LDT_setDomainSpecs
    use LDT_logMod, only: LDT_logunit, LDT_flush
    use LDT_paramProcMod, only: LDT_paramProcConfig
-   use LDT_ldtsiMod, only: LDT_ldtsiInit
+   use LDT_usafsiMod, only: LDT_usafsiInit
 
    ! Defaults
    implicit none
@@ -18,7 +18,7 @@ subroutine LDT_init_LDTSI()
 
    call LDT_setDomainSpecs()
    call LDT_paramProcConfig()
-   call LDT_ldtsiInit()
+   call LDT_usafsiInit()
    call LDT_flush(LDT_logunit)
 
-end subroutine LDT_init_ldtsi
+end subroutine LDT_init_USAFSI
