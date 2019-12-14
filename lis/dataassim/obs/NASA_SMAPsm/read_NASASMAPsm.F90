@@ -99,6 +99,7 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    character(len=200) :: cmd
    integer :: rc
    character(len=3) :: CRID
+   integer, external :: create_filelist ! C function
 
 
    call ESMF_AttributeGet(OBS_State, "Data Directory", &
@@ -133,13 +134,22 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
          ! SMAP files are available.
          if (LIS_masterproc) then
 
-            list_files = 'ls '//trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
+            list_files = trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
                          trim(dd)//'/SMAP_L3_SM_P_E_' &
                          //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
-                         trim(CRID)//'*.h5> SMAP_filelist'// &
-                         '.dat'
-
-            call system(trim(list_files))
+                         trim(CRID)//'*.h5'
+            write(LIS_logunit,*) &
+                  '[INFO] Searching for ',trim(list_files)
+            rc = create_filelist(trim(list_files)//char(0), &
+                 "SMAP_filelist.dat"//char(0))
+            if (rc .ne. 0) then
+               write(LIS_logunit,*) &
+                    '[WARN] Problem encountered when searching for SMAP files'
+               write(LIS_logunit,*) &
+                    'Was searching for ',trim(list_files)
+               write(LIS_logunit,*) &
+                    'LIS will continue...'
+            endif
          end if
 #if (defined SPMD)
          call mpi_barrier(lis_mpi_comm, ierr)
@@ -217,13 +227,22 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
          ! EMK...Make sure only one PET calls the file system to determine what
          ! SMAP files are available.
          if (LIS_masterproc) then
-            list_files = 'ls '//trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
+            list_files = trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
                          trim(dd)//'/SMAP_L3_SM_P_' &
                          //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
-                         trim(CRID)//'*.h5> SMAP_filelist'// &
-                         '.dat'
-
-            call system(trim(list_files))
+                         trim(CRID)//'*.h5'
+            write(LIS_logunit,*) &
+                  '[INFO] Searching for ',trim(list_files)
+            rc = create_filelist(trim(list_files)//char(0), &
+                 "SMAP_filelist.dat"//char(0))
+            if (rc .ne. 0) then
+               write(LIS_logunit,*) &
+                    '[WARN] Problem encountered when searching for SMAP files'
+               write(LIS_logunit,*) &
+                    'Was searching for ',trim(list_files)
+               write(LIS_logunit,*) &
+                    'LIS will continue...'
+            endif
          end if
 #if (defined SPMD)
          call mpi_barrier(lis_mpi_comm, ierr)
