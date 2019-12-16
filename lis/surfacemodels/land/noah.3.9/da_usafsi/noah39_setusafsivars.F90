@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noah39_setldtsivars
-! \label{noah39_setldtsivars}
+! !ROUTINE: noah39_setusafsivars
+! \label{noah39_setusafsivars}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
@@ -15,9 +15,11 @@
 !  02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
 !  21 Jul 2011: James Geiger; Modified for Noah 3.2
 !  09 Apr 2019: Eric Kemp; Modified for Noah 3.9 and LDT-SI
+!  13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
+
 !
 ! !INTERFACE:
-subroutine noah39_setldtsivars(n, LSM_State)
+subroutine noah39_setusafsivars(n, LSM_State)
 ! !USES:
   use ESMF
   use LIS_coreMod, only : LIS_rc, LIS_surface
@@ -95,5 +97,5 @@ subroutine noah39_setldtsivars(n, LSM_State)
 
   enddo
   
-end subroutine noah39_setldtsivars
+end subroutine noah39_setusafsivars
 

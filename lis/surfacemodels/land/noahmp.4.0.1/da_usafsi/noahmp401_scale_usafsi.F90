@@ -6,18 +6,20 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noahmp401_descale_ldtsi
-! \label{noahmp401_descale_ldtsi}
+! !ROUTINE: noahmp401_scale_usafsi
+! \label{noahmp401_scale_usafsi}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
 ! 25Jun2006: Sujay Kumar: Updated for the ESMF design
 ! 02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
+! 03 Oct 2018: Yeosang Yoon; Modified for NoahMP 3.6
 ! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1 and SNODEP
 ! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine noahmp401_descale_ldtsi(n, LSM_State, LSM_Incr_State)
+subroutine noahmp401_scale_usafsi(n, LSM_State)
 
 ! !USES:
   use ESMF
@@ -29,7 +31,6 @@ subroutine noahmp401_descale_ldtsi(n, LSM_State, LSM_Incr_State)
 ! !ARGUMENTS: 
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
-  type(ESMF_State)       :: LSM_Incr_State
 !
 ! !DESCRIPTION:
 !
@@ -51,7 +52,7 @@ subroutine noahmp401_descale_ldtsi(n, LSM_State, LSM_Incr_State)
   real, pointer          :: swe(:)
   real, pointer          :: snod(:)
  
-#if 0
+#if 0 
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status)
   call ESMF_StateGet(LSM_State,"Snowdepth",snodField,rc=status)
@@ -63,9 +64,9 @@ subroutine noahmp401_descale_ldtsi(n, LSM_State, LSM_Incr_State)
   call LIS_verify(status)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     swe(t) = swe(t)*1000.0
+     swe(t) = swe(t)/1000.0
   enddo
 #endif
 
-end subroutine noahmp401_descale_ldtsi
+end subroutine noahmp401_scale_usafsi
 
