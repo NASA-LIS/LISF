@@ -152,7 +152,7 @@ contains
        allocate( sinterp_struc(n)%n111(numinpts) )
        call upscaleByAveraging_input( input_gridDesc(:),&
                    LIS_rc%gridDesc(n,:), numinpts, numoutpts,&
-                   LIS_rc%lnc(n)*LIS_rc%lnr(n), sinterp_struc(n)%n111)
+                   sinterp_struc(n)%n111)
 
    ! Nearest neighbor search ("downscaling"):
      case( "neighbor" )
