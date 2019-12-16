@@ -8,9 +8,9 @@
 
 #include "LIS_misc.h"
 
-! Write the transformed LDTSI observations to a file.
+! Write the transformed USAFSI observations to a file.
 ! TODO: Wrap this in a module
-subroutine write_LDTSIobs(n, k, OBS_State)
+subroutine write_USAFSIobs(n, k, OBS_State)
 
    ! Imports
    use ESMF
@@ -54,7 +54,7 @@ subroutine write_LDTSIobs(n, k, OBS_State)
       
       if (LIS_masterproc) then 
          ftn = LIS_getNextUnitNumber()
-         call LDTSI_obsname(n, k, obsname)        
+         call USAFSI_obsname(n, k, obsname)        
          
          call LIS_create_output_directory('DAOBS')
          open(ftn, file=trim(obsname), form='unformatted')
@@ -67,10 +67,10 @@ subroutine write_LDTSIobs(n, k, OBS_State)
       end if
       
    end if
-end subroutine write_LDTSIobs
+end subroutine write_USAFSIobs
 
 ! Construct output file name
-subroutine LDTSI_obsname(n, k, obsname)
+subroutine USAFSI_obsname(n, k, obsname)
 
    ! Imports
    use LIS_coreMod, only: LIS_rc
@@ -99,4 +99,4 @@ subroutine LDTSI_obsname(n, k, obsname)
         '/LISDAOBS_'//cdate1// &
         trim(cda)//trim(cdate)//'.1gs4r'
 
-end subroutine LDTSI_obsname
+end subroutine USAFSI_obsname

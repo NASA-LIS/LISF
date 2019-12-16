@@ -6,25 +6,24 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noahmp401_scale_ldtsi
-! \label{noahmp401_scale_ldtsi}
+! !ROUTINE: noah39_getusafsivars
+! \label{noah39_getusafsivars}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
 ! 25Jun2006: Sujay Kumar: Updated for the ESMF design
-! 02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-! 03 Oct 2018: Yeosang Yoon; Modified for NoahMP 3.6
-! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1 and SNODEP
-! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
+!  02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
+!  21 Jul 2011: James Geiger; Modified for Noah 3.2
+!  09 Apr 2019: Eric Kemp: Modified for Noah 3.9 and LDT-SI
+!  13 Dec 2019: Eric Kemp: Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine noahmp401_scale_ldtsi(n, LSM_State)
-
+subroutine noah39_getusafsivars(n, LSM_State)
 ! !USES:
   use ESMF
   use LIS_coreMod, only : LIS_rc
-  use noahmp401_lsmMod
-  use LIS_logMod
+  use LIS_logMod,  only : LIS_verify
+  use noah39_lsmMod
 
   implicit none
 ! !ARGUMENTS: 
@@ -41,8 +40,8 @@ subroutine noahmp401_scale_ldtsi(n, LSM_State)
 !  \item[n] index of the nest \newline
 !  \item[LSM\_State] ESMF State container for LSM state variables \newline
 !  \end{description}
+!
 !EOP
-
   type(ESMF_Field)       :: sweField
   type(ESMF_Field)       :: snodField
 
@@ -51,21 +50,20 @@ subroutine noahmp401_scale_ldtsi(n, LSM_State)
   real, pointer          :: swe(:)
   real, pointer          :: snod(:)
  
-#if 0 
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status)
   call ESMF_StateGet(LSM_State,"Snowdepth",snodField,rc=status)
   call LIS_verify(status)
-
+ 
   call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
   call LIS_verify(status)
   call ESMF_FieldGet(snodField,localDE=0,farrayPtr=snod,rc=status)
   call LIS_verify(status)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     swe(t) = swe(t)/1000.0
+     swe(t) = noah39_struc(n)%noah(t)%sneqv
+     snod(t) = noah39_struc(n)%noah(t)%snowh
   enddo
-#endif
-
-end subroutine noahmp401_scale_ldtsi
+  
+end subroutine noah39_getusafsivars
 

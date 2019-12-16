@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noahmp401_qc_ldtsiobs
-! \label{noahmp401_qc_ldtsiobs}
+! !ROUTINE: noahmp401_qc_usafsiobs
+! \label{noahmp401_qc_usafsiobs}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
@@ -18,9 +18,10 @@
 !  03 Oct 2018: Yeosang Yoon; Modified for NoahMP 3.6
 !  14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1
 ! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine noahmp401_qc_ldtsiobs(n,k,OBS_State)
+subroutine noahmp401_qc_usafsiobs(n,k,OBS_State)
 ! !USES:
   use ESMF
   use LIS_coreMod
@@ -64,10 +65,10 @@ subroutine noahmp401_qc_ldtsiobs(n,k,OBS_State)
 
   call ESMF_StateGet(OBS_State,"Observation01",obs_snow_field,rc=status)
   call LIS_verify(status,&
-       "ESMF_StateGet failed in noahmp401_qc_ldtsiobs")
+       "ESMF_StateGet failed in noahmp401_qc_usafsiobs")
   call ESMF_FieldGet(obs_snow_field,localDE=0,farrayPtr=snowobs,rc=status)
   call LIS_verify(status,&
-       "ESMF_FieldGet failed in noahmp401_qc_ldtsiobs")
+       "ESMF_FieldGet failed in noahmp401_qc_usafsiobs")
   
   do t=1, LIS_rc%npatch(n,LIS_rc%lsm_index)
      !stc1(t) = noahmp401_struc(n)%noahmp401(t)%sstc(1) ! get snow/veg temp.
@@ -100,5 +101,5 @@ subroutine noahmp401_qc_ldtsiobs(n,k,OBS_State)
 !     endif
 !  enddo
 
-end subroutine noahmp401_qc_ldtsiobs
+end subroutine noahmp401_qc_usafsiobs
 

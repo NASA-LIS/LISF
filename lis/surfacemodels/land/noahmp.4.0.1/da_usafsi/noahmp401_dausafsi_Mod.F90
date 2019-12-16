@@ -6,10 +6,10 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
-module noahmp401_daldtsi_Mod
+module noahmp401_dausafsi_Mod
 !BOP
 !
-! !MODULE: noahmp401_daldtsi_Mod
+! !MODULE: noahmp401_dausafsi_Mod
 !
 ! !DESCRIPTION:
 !  
@@ -23,7 +23,7 @@ module noahmp401_daldtsi_Mod
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !-----------------------------------------------------------------------------
-  public :: noahmp401_daldtsi_init
+  public :: noahmp401_dausafsi_init
 !-----------------------------------------------------------------------------
 ! !PUBLIC TYPES:
 !-----------------------------------------------------------------------------
@@ -33,15 +33,15 @@ module noahmp401_daldtsi_Mod
 contains
 !BOP
 ! 
-! !ROUTINE: noahmp401_daldtsi_init
-! \label{noahmp401_daldtsi_init}
+! !ROUTINE: noahmp401_dausafsi_init
+! \label{noahmp401_dausafsi_init}
 ! 
 ! !INTERFACE:
-  subroutine noahmp401_daldtsi_init()
+  subroutine noahmp401_dausafsi_init()
 ! !USES:
 ! !DESCRIPTION:        
 !
 !EOP
     implicit none
-  end subroutine noahmp401_daldtsi_init
-end module noahmp401_daldtsi_Mod
+  end subroutine noahmp401_dausafsi_init
+end module noahmp401_dausafsi_Mod
