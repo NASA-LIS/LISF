@@ -2,13 +2,14 @@
 ! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
 !-------------------------END NOTICE -- DO NOT EDIT----------------------------
 !
-! MODULE: LVT_LDTSIpostMod
+! MODULE: LVT_USAFSIpostMod
 !
 ! REVISION HISTORY:
 ! 13 May 2019  Eric Kemp  Initial version
+! 13 Dec 2019  Eric Kemp  Changed to USAFSI.
 !
 ! DESCRIPTION:
-! Source code for reading LDTSI netCDF file, writing back out in GRIB2, 
+! Source code for reading USAFSI netCDF file, writing back out in GRIB2, 
 ! interpolating to predefined Air Force grids, and outputting those grids in
 ! GRIB1 files.
 !------------------------------------------------------------------------------
@@ -16,12 +17,12 @@
 #include "LVT_misc.h"
 #include "LVT_NetCDF_inc.h"
 
-module LVT_LDTSIpostMod
+module LVT_USAFSIpostMod
 
    implicit none
    private
 
-   type, public :: LVT_LDTSIpost_t
+   type, public :: LVT_USAFSIpost_t
       private
       character(len=255) :: input_nc_file
       integer :: nc
@@ -44,11 +45,11 @@ module LVT_LDTSIpostMod
       ! Object methods
       procedure new
       procedure delete
-      procedure read_ldtsi_ncfile
+      procedure read_usafsi_ncfile
       procedure output_grib2
       procedure interp_and_output_grib1
 
-   end type LVT_LDTSIpost_t
+   end type LVT_USAFSIpost_t
 
    character(len=15), parameter, public :: GLOBAL_LL0P25 = 'global_ll0p25'
    character(len=15), parameter, public :: NH_PS16 = 'nh_ps16'
@@ -56,7 +57,7 @@ module LVT_LDTSIpostMod
 
 contains
    
-   ! Constructor for LVT_LDTSIpost_t object
+   ! Constructor for LVT_USAFSIpost_t object
    subroutine new(this)
       
       ! Imports
@@ -67,7 +68,7 @@ contains
       implicit none
 
       ! Arguments
-      class(LVT_LDTSIpost_t), intent(inout) :: this
+      class(LVT_USAFSIpost_t), intent(inout) :: this
 
       ! Local variables
       logical :: file_exists
@@ -75,7 +76,7 @@ contains
       ! Construct the input netCDF filename
       this%input_nc_file = &
            trim(LVT_rc%input_dir) // &
-           "/ldtsi_" // &
+           trim(LVT_rc%input_prefix) // &
            trim(LVT_rc%yyyymmddhh) // &
            ".nc"
 
@@ -100,14 +101,14 @@ contains
 
    end subroutine new
 
-   ! Destructor of LVT_LDTSIpost_t object
+   ! Destructor of LVT_USAFSIpost_t object
    subroutine delete(this)
 
       ! Defaults
       implicit none
 
       ! Arguments
-      class(LVT_LDTSIpost_t), intent(inout) :: this
+      class(LVT_USAFSIpost_t), intent(inout) :: this
 
       this%input_nc_file = "NULL"
       this%nc = 0
@@ -127,8 +128,8 @@ contains
 
    end subroutine delete
 
-   ! Method for reading LDTSI netCDF file.
-   subroutine read_ldtsi_ncfile(this)
+   ! Method for reading USAFSI netCDF file.
+   subroutine read_usafsi_ncfile(this)
 
       ! Imports
       use LVT_coreMod, only: LVT_rc
@@ -141,7 +142,7 @@ contains
       implicit none
 
       ! Arguments
-      class(LVT_LDTSIpost_t), intent(inout) :: this
+      class(LVT_USAFSIpost_t), intent(inout) :: this
 
       ! Local variables
       integer :: ncid
@@ -153,7 +154,8 @@ contains
       integer :: c,r
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
-      write(LVT_logunit,*)'[INFO] Reading LDTSI file ',trim(this%input_nc_file)
+      write(LVT_logunit,*)'[INFO] Reading USAFSI file ', &
+           trim(this%input_nc_file)
       
       ! Open the file for reading
       call LVT_verify(nf90_open(path=trim(this%input_nc_file), &
@@ -172,7 +174,7 @@ contains
       ! TODO:  Support other map projections
       if (trim(this%map_projection) .ne. 'EQUIDISTANT CYLINDRICAL') then
          write(LVT_logunit,*) &
-              '[ERR] Unrecognized map projection found in LDTSI file!'
+              '[ERR] Unrecognized map projection found in USAFSI file!'
          write(LVT_logunit,*) '[ERR] Expected EQUIDISTANT CYLINDRICAL'
          write(LVT_logunit,*) '[ERR] Found ',trim(this%map_projection)
          write(LVT_logunit,*) '[ERR] LVT will exit gracefully'
@@ -219,7 +221,7 @@ contains
       this%nc = nlon
       this%nr = nlat
 
-      ! Fetch the LDTSI analysis variable IDs
+      ! Fetch the USAFSI analysis variable IDs
       call LVT_verify(nf90_inq_varid(ncid=ncid, &
            name='snoanl', &
            varid=snoanl_varid), &
@@ -241,7 +243,7 @@ contains
            varid=iceage_varid), &
            '[ERR] Error in nf90_inq_varid for snoanl')
 
-      ! Read the LDTSI variables
+      ! Read the USAFSI variables
       allocate(tmp(nlon, nlat, ntime)) ! Need 3D array
       call LVT_verify(nf90_get_var(ncid=ncid, &
            varid=snoanl_varid, &
@@ -359,15 +361,15 @@ contains
 
 #else
       write(LVT_logunit,*) &
-           '[ERR] Must compile LVT with netCDF support for LDTSIpost mode!'
+           '[ERR] Must compile LVT with netCDF support for USAFSIpost mode!'
       write(LVT_logunit,*) &
            '[ERR] LVT will exit gracefully.'
       call LVT_endrun()
 #endif
 
-   end subroutine read_ldtsi_ncfile
+   end subroutine read_usafsi_ncfile
 
-   ! Output LDTSI data in GRIB2 format.
+   ! Output USAFSI data in GRIB2 format.
    subroutine output_grib2(this)
 
       ! Imports
@@ -379,7 +381,7 @@ contains
       implicit none
 
       ! Arguments
-      class(LVT_LDTSIpost_t), intent(inout) :: this
+      class(LVT_USAFSIpost_t), intent(inout) :: this
 
       ! Local variables
       real :: griddesci(50)
@@ -389,7 +391,7 @@ contains
       real, allocatable :: go(:)
       integer :: c, r
 
-      ! Set the LDTSI grid description
+      ! Set the USAFSI grid description
       call set_griddesci(this, griddesci)
 
       ! Construct the GRIB2 filename
@@ -471,7 +473,7 @@ contains
       deallocate(go)
    end subroutine output_grib2
 
-   ! Interpolate and output LDTSI data in GRIB1 format.
+   ! Interpolate and output USAFSI data in GRIB1 format.
    subroutine interp_and_output_grib1(this, gridID)
 
       ! Imports
@@ -483,7 +485,7 @@ contains
       implicit none
 
       ! Arguments
-      class(LVT_LDTSIpost_t), intent(inout) :: this
+      class(LVT_USAFSIpost_t), intent(inout) :: this
       character(len=*), intent(in) :: gridID
 
       ! Local variables
@@ -524,7 +526,7 @@ contains
       ! Set the grid definition number
       grid_definition = set_grid_definition(gridID)
 
-      ! Set the LDTSI grid description
+      ! Set the USAFSI grid description
       call set_griddesci(this, griddesci)
 
       ! Set the output grid description
@@ -1050,9 +1052,9 @@ contains
            // '/PS.557WW_SC.' &
            // trim(LVT_rc%security_class)//'_DI.' &
            // trim(LVT_rc%data_category)//'_GP.' &
-           // 'LDTSI_GR.C0P09DEG_AR.' &
+           // 'USAFSI_GR.C0P09DEG_AR.' &
            // trim(LVT_rc%area_of_data)//'_PA.' &
-           //'LDTSI_DD.' &
+           //'USAFSI_DD.' &
            // yyyymmddhh(1:8)//'_DT.' &
            // yyyymmddhh(9:10)//'00_DF.GR2'
 
@@ -1106,7 +1108,7 @@ contains
       implicit none
 
       ! Arguments
-      class(LVT_LDTSIpost_t), intent(inout) :: this
+      class(LVT_USAFSIpost_t), intent(inout) :: this
       real, intent(inout) ::  griddesci(50)
 
       griddesci(:) = 0
@@ -1143,7 +1145,7 @@ contains
       implicit none
 
       ! Arguments
-      class(LVT_LDTSIpost_t), intent(inout) :: this
+      class(LVT_USAFSIpost_t), intent(inout) :: this
       real, intent(inout) ::  griddesco(50)
 
       griddesco(:) = 0
@@ -1183,7 +1185,7 @@ contains
       implicit none
 
       ! Arguments
-      class(LVT_LDTSIpost_t), intent(inout) :: this
+      class(LVT_USAFSIpost_t), intent(inout) :: this
       real, intent(inout) ::  griddesco(50)
 
       ! Local variables
@@ -1235,7 +1237,7 @@ contains
       implicit none
 
       ! Arguments
-      class(LVT_LDTSIpost_t), intent(inout) :: this
+      class(LVT_USAFSIpost_t), intent(inout) :: this
       real, intent(inout) ::  griddesco(50)
 
       ! Local variables
@@ -1890,7 +1892,7 @@ contains
       call LVT_verify(nf90_put_var(ncid,time_varid,0.0), &
            '[ERR] nf90_put_var failed for time')
 
-      ! Write the LDTSI fields
+      ! Write the USAFSI fields
       allocate(snoanl(nc_out,nr_out))
       do r = 1, nr_out
          do c = 1, nc_out
@@ -2238,4 +2240,4 @@ contains
       end if
    end function set_grid_definition
 
-end module LVT_LDTSIpostMod
+end module LVT_USAFSIpostMod
