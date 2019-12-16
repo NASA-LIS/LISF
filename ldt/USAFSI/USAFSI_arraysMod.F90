@@ -5,9 +5,9 @@
 !*****************************************************************************************
 !*****************************************************************************************
 !**
-!**  NAME: LDTSI_ARRAYS
+!**  NAME: USAFSI_ARRAYS
 !**
-!**  PURPOSE: HOLDS LDTSI MODEL SHARED ARRAYS
+!**  PURPOSE: HOLDS USAFSI MODEL SHARED ARRAYS
 !**
 !**  UPDATES
 !**  =======
@@ -25,19 +25,20 @@
 !**  15 FEB 17  ADDED VIIRS DATA........................................MR PUSKAR/16WS/WXE
 !**  22 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
 !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
+!**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
 !** 
 !*****************************************************************************************
 !*****************************************************************************************
 
 #include "LDT_misc.h"
 
-module LDTSI_arraysMod
+module USAFSI_arraysMod
 
    ! Defaults
    implicit none
    private
 
-   type LDTSI_arrays_t
+   type USAFSI_arrays_t
       integer*1,  allocatable    :: snow_poss        ( : , : )    ! SNOW POSSIBLE MASK (0=NO SNOW; 1=SNOW)
       integer,    allocatable    :: iceage           ( : , : )    ! ICE AGE (DAYS)
       integer,    allocatable    :: iceage12z        ( : , : )    ! ICE AGE (DAYS) PROM PREVIOUS 12Z
@@ -55,12 +56,12 @@ module LDTSI_arraysMod
       real,       allocatable    :: ptlat            ( : , : )    ! GRID POINT LATITUDES
       real,       allocatable    :: ptlon            ( : , : )    ! GRID POINT LONGITUDES
       real,       allocatable    :: snoanl           ( : , : )    ! CURRENT SNOW DEPTH ANALYSIS (METERS)
-      real,       allocatable    :: snofrac          ( : , : )    ! FRACTIONAL SNOW DATA ON LDTSI GRID
+      real,       allocatable    :: snofrac          ( : , : )    ! FRACTIONAL SNOW DATA ON USAFSI GRID
       real,       allocatable    :: ssmis_depth      ( : , : )    ! SNOW DEPTH FROM SSMIS EDRS
       real,       allocatable    :: sst              ( : , : )    ! NAVY SEA SURFACE TEMPERATURES (KELVIN)
       real, allocatable :: gofs_icecon(:,:)
-   end type LDTSI_arrays_t
+   end type USAFSI_arrays_t
 
-   type(LDTSI_arrays_t), public :: LDTSI_arrays
+   type(USAFSI_arrays_t), public :: USAFSI_arrays
 
-end module LDTSI_arraysMod
+end module USAFSI_arraysMod

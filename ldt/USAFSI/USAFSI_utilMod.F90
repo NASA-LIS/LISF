@@ -2,11 +2,12 @@
 ! NASA Goddard Space Flight Center Land Information System (LIS) v7.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: LDTSI_utilMod
+! MODULE: USAFSI_utilMod
 ! 
 ! REVISION HISTORY:
 ! 08 Feb 2019  Eric Kemp  First ported to LDT.
 ! 09 May 2019  Eric Kemp  Renamed LDTSI.
+! 13 Dec 2019  Eric Kemp  Renamed USAFSI.
 !
 ! DESCRIPTION:
 ! Source code for util library for Air Force snow depth analysis.
@@ -14,7 +15,7 @@
 
 #include "LDT_misc.h"
    
-module LDTSI_utilMod
+module USAFSI_utilMod
 
    !Defaults
    implicit none
@@ -194,6 +195,7 @@ contains
       !     24 Feb 2010  Converted to FTN 90 for SNODEP...Mr Lewiston/16WS/WXE
       !     22 Mar 2019  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !     09 May 2019  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
+      !     13 Dec 2019  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
       !
       !-----------------------------------------------------------------------
       !-----------------------------------------------------------------------
@@ -361,7 +363,8 @@ contains
       !**  21 JUL 04 CONVERTED TO FORTRAN 90 FOR 16TH MESH......MR EYLANDER/DNXM
       !**  10 MAY 11 UPDATED FOR SNODEP UPGRADE.............MR LEWISTON/16WS/WXE
       !**  22 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
-      !**  09 Ma  19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
+      !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
+      !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
       !**
       !*************************************************************************
       !*************************************************************************
@@ -492,6 +495,7 @@ contains
       !     24 Feb 2010  Converted to FTN 90 for SNODEP...Mr Lewiston/16WS/WXE
       !     22 Mar 2019  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !     09 May 2019  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
+      !     13 Dec 2019  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
       !
       !-----------------------------------------------------------------------
       !-----------------------------------------------------------------------
@@ -725,6 +729,7 @@ contains
       !**  24 Feb 10 Converted to FORTRAN 90 for SNODEP...........Mr Lewiston/16WS/WXE
       !**  22 Mar 19 Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19 Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
+      !**  13 Dec 19 Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -833,6 +838,7 @@ contains
       !**  24 Feb 10 Converted to FORTRAN 90 for SNODEP...........Mr Lewiston/16WS/WXE
       !**  22 Mar 19 Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19 Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
+      !**  13 Dec 19 Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -960,6 +966,7 @@ contains
       !     15 Sep 09 Incorporated into SNODEP............Mr Lewiston/2WXG/WEA
       !     22 Mar 19 Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !     09 May 19 Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
+      !     13 Dec 19 Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
       !  
       !-----------------------------------------------------------------------
       !-----------------------------------------------------------------------
@@ -1058,4 +1065,4 @@ contains
       return      
    end subroutine tmjul4
 
-end module LDTSI_utilMod
+end module USAFSI_utilMod

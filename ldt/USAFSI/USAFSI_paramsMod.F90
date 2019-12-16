@@ -7,7 +7,7 @@
 !**
 !**  NAME: PARAMETERS
 !**
-!**  PURPOSE: HOLDS PARAMETER STATEMENTS FOR LDTSI
+!**  PURPOSE: HOLDS PARAMETER STATEMENTS FOR USAFSI
 !**
 !**  FILES ACCESSED: NONE
 !**
@@ -36,20 +36,21 @@
 !**  12 SEP 11  REMOVED MAXSWE..............................MR LEWISTON/16WS/WXE
 !**  14 DEC 12  REMOVED RECLEN_LIS..........................MR LEWISTON/16WS/WXE
 !**  22 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
-!**  09 Mar 19  Renamed LDTSI...ERic Kemp, NASA GSFC/SSAI
+!**  09 Mar 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
+!**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
 !**
 !*******************************************************************************
 !*******************************************************************************
 
 #include "LDT_misc.h"
 
-module LDTSI_paramsMod
+module USAFSI_paramsMod
 
    ! Defaults
    implicit none
    public
 
-   character*12, parameter     :: program_name = 'LDTSI'        ! NAME OF MAIN PROGRAM
+   character*12, parameter     :: program_name = 'USAFSI'        ! NAME OF MAIN PROGRAM
    
    integer, parameter    :: msglns      = 20                     ! MAXIMUM NUMBER OF LINES IN ERROR MESSAGE
 
@@ -78,4 +79,4 @@ module LDTSI_paramsMod
    real,    parameter    :: snothresh   = 0.02                   ! THRESHOLD VALUE FOR TRACKING SNOW DEPTH
 
    integer, parameter :: icedef = 95 ! Bogus value for ice concentration
-end module LDTSI_paramsMod
+end module USAFSI_paramsMod

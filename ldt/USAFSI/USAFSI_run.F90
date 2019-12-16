@@ -5,8 +5,8 @@
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
 
-! Main LDTSI driver
-subroutine LDTSI_run()
+! Main USAFSI driver
+subroutine USAFSI_run()
    
    !*****************************************************************************************
    !*****************************************************************************************
@@ -15,8 +15,8 @@ subroutine LDTSI_run()
    !**
    !**  PURPOSE:  DRIVER ROUTINE FOR THE SNOW DEPTH ANALYSIS MODEL.
    !**
-   !**   See LDTSI_arraysMod.F90 for common array descriptions
-   !**   See LDTSI_paramsMod.F90 for common parameter descriptions
+   !**   See USAFSI_arraysMod.F90 for common array descriptions
+   !**   See USAFSI_paramsMod.F90 for common parameter descriptions
    !**
    !**  UPDATES
    !**  =======
@@ -55,6 +55,7 @@ subroutine LDTSI_run()
    !**  28 DEC 17  ADDED FILTER FOR MISSING ELEVATIONS...................MR LEWISTON/16WS/WXE
    !**  25 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
    !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
+   !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
    !**
    !*****************************************************************************************
    !*****************************************************************************************
@@ -64,19 +65,19 @@ subroutine LDTSI_run()
    use LDT_coreMod, only: LDT_masterproc, LDT_rc
    use LDT_logMod, only: LDT_logunit, LDT_endrun
    use LDT_pluginIndices
-   use LDT_ldtsiMod, only: ldtsi_settings 
+   use LDT_usafsiMod, only: usafsi_settings 
    use map_utils 
 #if ( defined SPMD )
    use mpi
 #endif
-   use LDTSI_analysisMod 
-   use LDTSI_arraysMod, only: LDTSI_arrays
-   use LDTSI_gofsMod
-   use LDTSI_lisMod, only:  read_gr2_t2
-   use LDTSI_netcdfMod 
-   use LDTSI_paramsMod
-   use LDTSI_ssmisMod, only: LDTSI_proc_ssmis
-   use LDTSI_utilMod 
+   use USAFSI_analysisMod 
+   use USAFSI_arraysMod, only: USAFSI_arrays
+   use USAFSI_gofsMod
+   use USAFSI_lisMod, only:  read_gr2_t2
+   use USAFSI_netcdfMod 
+   use USAFSI_paramsMod
+   use USAFSI_ssmisMod, only: USAFSI_proc_ssmis
+   use USAFSI_utilMod 
 
    ! Defaults
    implicit none
@@ -134,20 +135,20 @@ subroutine LDTSI_run()
    character*100              ::  ssmis_raw_dir       ! SSMIS RAW FILE DIRECTORY PATH   
    integer                    ::  ssmis_option        ! option for snow depth retrieval algorithm
 
-   maxsobs = ldtsi_settings%maxsobs
+   maxsobs = usafsi_settings%maxsobs
 
    ! Only the master process handles the file output
    if (LDT_masterproc) then
-      routine_name = "LDTSI"
+      routine_name = "USAFSI"
       message = ' '
       hemi    = 3
 
-      write (LDT_logunit,*) '[INFO] RUNNING LDTSI MODEL'
+      write (LDT_logunit,*) '[INFO] RUNNING USAFSI MODEL'
 
       ! Check the LDT map projection.  
       ! FIXME:  Support other projections in addition to LATLON
       if (trim(LDT_rc%lis_map_proj) .ne. LDT_latlonId) then
-         write(LDT_logunit,*)'[ERR] LDTSI only supports lat/lon grid'
+         write(LDT_logunit,*)'[ERR] USAFSI only supports lat/lon grid'
          call LDT_endrun()
       end if
 
@@ -155,25 +156,25 @@ subroutine LDTSI_run()
       call read_params(nc,nr,landmask,elevations, landice)
 
       ! Copy ldt.config files to local variables
-      date10 = trim(ldtsi_settings%date10)
-      fracdir = trim(ldtsi_settings%fracdir)
-      modif = trim(ldtsi_settings%modif)
-      sfcobs = trim(ldtsi_settings%sfcobs)
-      ssmis = trim(ldtsi_settings%ssmis)
-      stmpdir = trim(ldtsi_settings%stmpdir)
-      static = trim(ldtsi_settings%static)
-      unmod = trim(ldtsi_settings%unmod)
-      viirsdir = trim(ldtsi_settings%viirsdir)
+      date10 = trim(usafsi_settings%date10)
+      fracdir = trim(usafsi_settings%fracdir)
+      modif = trim(usafsi_settings%modif)
+      sfcobs = trim(usafsi_settings%sfcobs)
+      ssmis = trim(usafsi_settings%ssmis)
+      stmpdir = trim(usafsi_settings%stmpdir)
+      static = trim(usafsi_settings%static)
+      unmod = trim(usafsi_settings%unmod)
+      viirsdir = trim(usafsi_settings%viirsdir)
       
       ! for SSMIS snow depth, Yeosang Yoon
-      ssmis_raw_dir = trim(ldtsi_settings%ssmis_raw_dir)
+      ssmis_raw_dir = trim(usafsi_settings%ssmis_raw_dir)
 
       ! FIXME Specify blacklist filename in ldt.config
       ! EMK Read blacklist file.
-      inquire(file='LDTSI_blacklist.cfg',exist=found_blacklist_file)
+      inquire(file='USAFSI_blacklist.cfg',exist=found_blacklist_file)
       num_blacklist_stns = 0
       if (found_blacklist_file) then
-         open(2, file='LDTSI_blacklist.cfg')
+         open(2, file='USAFSI_blacklist.cfg')
          ! First, count the number of lines in the file
          icount = 0
          do
@@ -199,29 +200,29 @@ subroutine LDTSI_run()
       read (date10(5:6), '(i2)', err=4200) month
 
       ! ALLOCATE GRIDDED DATA ARRAYS.
-      allocate (LDTSI_arrays%climo            (nc,     nr))
-      allocate (LDTSI_arrays%elevat           (nc,     nr))
-      allocate (LDTSI_arrays%iceage           (nc,     nr))
-      allocate (LDTSI_arrays%iceage12z        (nc,     nr))
-      allocate (LDTSI_arrays%icecon           (nc,     nr))
-      allocate (LDTSI_arrays%icemask          (nc,     nr))
-      allocate (LDTSI_arrays%oldcon           (nc,     nr))
-      allocate (LDTSI_arrays%olddep           (nc,     nr))
-      allocate (LDTSI_arrays%oldmask          (nc,     nr))
-      allocate (LDTSI_arrays%ptlat            (nc,     nr))
-      allocate (LDTSI_arrays%ptlon            (nc,     nr))
+      allocate (USAFSI_arrays%climo            (nc,     nr))
+      allocate (USAFSI_arrays%elevat           (nc,     nr))
+      allocate (USAFSI_arrays%iceage           (nc,     nr))
+      allocate (USAFSI_arrays%iceage12z        (nc,     nr))
+      allocate (USAFSI_arrays%icecon           (nc,     nr))
+      allocate (USAFSI_arrays%icemask          (nc,     nr))
+      allocate (USAFSI_arrays%oldcon           (nc,     nr))
+      allocate (USAFSI_arrays%olddep           (nc,     nr))
+      allocate (USAFSI_arrays%oldmask          (nc,     nr))
+      allocate (USAFSI_arrays%ptlat            (nc,     nr))
+      allocate (USAFSI_arrays%ptlon            (nc,     nr))
       ! This is the LIS data interpolated to the LDT grid
       allocate (sfctmp_lis       (nc,     nr))
-      allocate (LDTSI_arrays%snoage           (nc,     nr))
-      allocate (LDTSI_arrays%snoage12z        (nc,     nr))
-      allocate (LDTSI_arrays%snoanl           (nc,     nr))
-      allocate (LDTSI_arrays%snofrac          (nc,     nr))
-      allocate (LDTSI_arrays%snow_poss        (nc,     nr))
-      allocate (LDTSI_arrays%ssmis_depth      (nc,     nr))
-      allocate (LDTSI_arrays%ssmis_icecon     (nc,     nr))
-      allocate (LDTSI_arrays%sst              (nc,     nr))
-      allocate (LDTSI_arrays%viirsmap         (nc,     nr))
-      allocate (LDTSI_arrays%gofs_icecon(nc,nr))
+      allocate (USAFSI_arrays%snoage           (nc,     nr))
+      allocate (USAFSI_arrays%snoage12z        (nc,     nr))
+      allocate (USAFSI_arrays%snoanl           (nc,     nr))
+      allocate (USAFSI_arrays%snofrac          (nc,     nr))
+      allocate (USAFSI_arrays%snow_poss        (nc,     nr))
+      allocate (USAFSI_arrays%ssmis_depth      (nc,     nr))
+      allocate (USAFSI_arrays%ssmis_icecon     (nc,     nr))
+      allocate (USAFSI_arrays%sst              (nc,     nr))
+      allocate (USAFSI_arrays%viirsmap         (nc,     nr))
+      allocate (USAFSI_arrays%gofs_icecon(nc,nr))
 
       ! RETRIEVE STATIC DATA SETS.
       write (LDT_logunit,*) '[INFO] CALLING GETGEO TO GET STATIC FIELDS'
@@ -233,31 +234,31 @@ subroutine LDTSI_run()
       ! value.
       arctlatr = float(arctlat) / 100.0
       allocate(climo_tmp(nc,nr))
-      climo_tmp(:,:) = LDTSI_arrays%climo(:,:)
+      climo_tmp(:,:) = USAFSI_arrays%climo(:,:)
       do r = 1, nr
          do c = 1, nc
-            if (LDTSI_arrays%ptlat(c,r) > -40.0 .and. &
-                 LDTSI_arrays%ptlat(c,r) < 40.0) cycle
+            if (USAFSI_arrays%ptlat(c,r) > -40.0 .and. &
+                 USAFSI_arrays%ptlat(c,r) < 40.0) cycle
             ! See if climo exists for glacier point.  If not, use a fill-in.
             !if (landmask(c,r) > 0.5 .and. &
-            !     LDTSI_arrays%climo(c,r) .le. 0) then
+            !     USAFSI_arrays%climo(c,r) .le. 0) then
             if (landmask(c,r) > 0.5 .and. &
-                 LDTSI_arrays%climo(c,r) .le. 0) then
+                 USAFSI_arrays%climo(c,r) .le. 0) then
                if (landice(c,r) > 0.5) then
-                  climo_tmp(c,r) = ldtsi_settings%fill_climo
+                  climo_tmp(c,r) = usafsi_settings%fill_climo
                else
-                  !climo_tmp(c,r) = ldtsi_settings%unkdep
+                  !climo_tmp(c,r) = usafsi_settings%unkdep
                   climo_tmp(c,r) = 0 
                end if
             end if
          end do ! c
       end do ! r
 
-      LDTSI_arrays%climo(:,:) = climo_tmp(:,:)
+      USAFSI_arrays%climo(:,:) = climo_tmp(:,:)
       deallocate(climo_tmp)
 
       ! RETRIEVE THE PREVIOUS SNOW ANALYSIS.
-      ! First, try reading LDTSI in netCDF format.  If that doesn't work,
+      ! First, try reading USAFSI in netCDF format.  If that doesn't work,
       ! fall back on the legacy SNODEP at 0.25 deg resolution.
       write (LDT_logunit,*) &
            '[INFO] CALLING GETSNO_NC TO GET PREVIOUS SNOW AND ICE DATA'
@@ -283,9 +284,9 @@ subroutine LDTSI_run()
       cycle_loop : do while (julhr .lt. julhr_end)
 
          ! EMK Create bratseth object
-         call bratseth%new(maxsobs, ldtsi_settings%back_err_var, &
-              ldtsi_settings%back_err_h_corr_len, &
-              ldtsi_settings%back_err_v_corr_len)
+         call bratseth%new(maxsobs, usafsi_settings%back_err_var, &
+              usafsi_settings%back_err_h_corr_len, &
+              usafsi_settings%back_err_v_corr_len)
 
          julhr = julhr + 6
          call julhr_date10 (julhr, date10, program_name, routine_name)
@@ -321,8 +322,8 @@ subroutine LDTSI_run()
          fh = 0 ! Dummy value
          write (LDT_logunit,*) &
               '[INFO] CALLING PROCESS_GOFS_SST TO GET SEA SURFACE TEMPERATURES'
-         call process_gofs_sst(ldtsi_settings%gofs_sst_dir, &
-              nc, nr, landmask, LDTSI_arrays%sst, &
+         call process_gofs_sst(usafsi_settings%gofs_sst_dir, &
+              nc, nr, landmask, usafSI_arrays%sst, &
               yyyy, mm, dd, hh, fh, ierr)
          if (ierr .ne. 0) then
             ! Fall back on legacy GETSST for 0.25 deg data.
@@ -332,7 +333,7 @@ subroutine LDTSI_run()
          end if
 
          ! RETRIEVE FRACTIONAL SNOW DATA.         
-         if (ldtsi_settings%usefrac) then               
+         if (usafsi_settings%usefrac) then               
             write (LDT_logunit,*) &
                  '[INFO] CALLING GETFRAC TO GET FRACTIONAL SNOW DATA'
             call getfrac (date10, fracdir)               
@@ -365,7 +366,7 @@ subroutine LDTSI_run()
             relev = real(staelv(j))
             call bratseth%append_ob(network10,platform10,rob,rlat,rlon,&
                  relev, &
-                 ldtsi_settings%ob_err_var,back=-1.)
+                 usafsi_settings%ob_err_var,back=-1.)
          end do
 
          ! Clean up
@@ -384,8 +385,8 @@ subroutine LDTSI_run()
          read (date10(7: 8), '(i2)', err=4200) dd
          read (date10(9:10), '(i2)', err=4200) hh
          fh = 0 ! Dummy value
-         call process_gofs_cice(ldtsi_settings%gofs_cice_dir, &
-              nc, nr, landmask, LDTSI_arrays%gofs_icecon, &
+         call process_gofs_cice(usafsi_settings%gofs_cice_dir, &
+              nc, nr, landmask, USAFSI_arrays%gofs_icecon, &
               yyyy, mm, dd, hh, fh, ierr)
          if (ierr == 0) then
             found_gofs_cice = .true.
@@ -395,9 +396,9 @@ subroutine LDTSI_run()
         
          ! Estimates SSMIS-based snow depth, Yeosang Yoon
          write (LDT_logunit,*) &
-              '[INFO] CALLING LDTSI_PROC_SSMIS'
-         call LDTSI_proc_ssmis(date10, ssmis_raw_dir, ssmis, &
-              ldtsi_settings%ssmis_option) 
+              '[INFO] CALLING USAFSI_PROC_SSMIS'
+         call USAFSI_proc_ssmis(date10, ssmis_raw_dir, ssmis, &
+              usafsi_settings%ssmis_option) 
          
          ! RETRIEVE SSMIS DATA.         
          write (LDT_logunit,*) &
@@ -405,16 +406,16 @@ subroutine LDTSI_run()
          call getsmi (date10, ssmis)
 
          ! RETRIEVE VIIRS DATA.
-         if (ldtsi_settings%useviirs) then
+         if (usafsi_settings%useviirs) then
             write (LDT_logunit,*) &
                  '[INFO] CALLING GETVIIRS TO GET VIIRS SNOW MAP'
             call getviirs(date10, viirsdir)
          end if
 
          ! PERFORM THE SNOW ANALYSIS.
-         LDTSI_arrays%snoanl(:,:) = -1
-         LDTSI_arrays%icecon(:,:) = -1
-         LDTSI_arrays%icemask(:,:) = -1
+         USAFSI_arrays%snoanl(:,:) = -1
+         USAFSI_arrays%icecon(:,:) = -1
+         USAFSI_arrays%icemask(:,:) = -1
          write(LDT_logunit,*) &
               '[INFO] CALLING RUN_SNOW_ANALYSIS_NOGLACIER'
          call run_snow_analysis_noglacier(runcycle,nc,nr,landmask, landice,  &
@@ -443,10 +444,10 @@ subroutine LDTSI_run()
          ! TO REQUIRE MANUAL MODIFICATIONS.  ANY BAD OB SHOULD SHOW HERE.
          write(LDT_logunit,6800) bratseth%count_all_obs()
          call bratseth%sort_obs_by_id()
-         call bratseth%print_snowdepths(ldtsi_settings%minprt)
+         call bratseth%print_snowdepths(usafsi_settings%minprt)
 
          ! EMK Write out in netcdf format
-         call LDTSI_write_netcdf(date10)
+         call USAFSI_write_netcdf(date10)
 
          ! Clean up bratseth object
          call bratseth%delete()
@@ -455,28 +456,28 @@ subroutine LDTSI_run()
       end do cycle_loop
 
       ! DEALLOCATE ALL ARRAYS.
-      deallocate (ldtsi_arrays%climo)
-      deallocate (ldtsi_arrays%elevat)
-      deallocate (ldtsi_arrays%iceage)
-      deallocate (ldtsi_arrays%iceage12z)
-      deallocate (ldtsi_arrays%icecon)
-      deallocate (ldtsi_arrays%icemask)
-      deallocate (ldtsi_arrays%oldcon)
-      deallocate (ldtsi_arrays%olddep)
-      deallocate (ldtsi_arrays%oldmask)
-      deallocate (ldtsi_arrays%ptlat)
-      deallocate (ldtsi_arrays%ptlon)
+      deallocate (usafsi_arrays%climo)
+      deallocate (usafsi_arrays%elevat)
+      deallocate (usafsi_arrays%iceage)
+      deallocate (usafsi_arrays%iceage12z)
+      deallocate (usafsi_arrays%icecon)
+      deallocate (usafsi_arrays%icemask)
+      deallocate (usafsi_arrays%oldcon)
+      deallocate (usafsi_arrays%olddep)
+      deallocate (usafsi_arrays%oldmask)
+      deallocate (usafsi_arrays%ptlat)
+      deallocate (usafsi_arrays%ptlon)
       deallocate (sfctmp_lis)
-      deallocate (ldtsi_arrays%snoage)
-      deallocate (ldtsi_arrays%snoage12z)
-      deallocate (ldtsi_arrays%snoanl)
-      deallocate (ldtsi_arrays%snofrac)
-      deallocate (ldtsi_arrays%snow_poss)
-      deallocate (ldtsi_arrays%ssmis_depth)
-      deallocate (ldtsi_arrays%ssmis_icecon)
-      deallocate (ldtsi_arrays%sst)
-      deallocate (ldtsi_arrays%viirsmap)
-      deallocate (ldtsi_arrays%gofs_icecon)
+      deallocate (usafsi_arrays%snoage)
+      deallocate (usafsi_arrays%snoage12z)
+      deallocate (usafsi_arrays%snoanl)
+      deallocate (usafsi_arrays%snofrac)
+      deallocate (usafsi_arrays%snow_poss)
+      deallocate (usafsi_arrays%ssmis_depth)
+      deallocate (usafsi_arrays%ssmis_icecon)
+      deallocate (usafsi_arrays%sst)
+      deallocate (usafsi_arrays%viirsmap)
+      deallocate (usafsi_arrays%gofs_icecon)
       deallocate(landmask)
       deallocate(elevations)
       deallocate(landice)
@@ -499,7 +500,7 @@ subroutine LDTSI_run()
 
    ! FORMAT STATEMENTS.   
 6800 format (/, 1X, 55('-'),                                             &
-        /, 3X, '[INFO] PROGRAM:  LDTSI',                                 &
+        /, 3X, '[INFO] PROGRAM:  USAFSI',                                &
         /, 5X, '[INFO] TOTAL STATIONS PROCESSED = ', I5,                 &
         /, 5X, '[INFO] PRINTING DEPTH REPORTS BY NETWORK & STATION ID'   &
         /, 5X, '[INFO] ELEV OF "-1000" INDICATES ELEVATION NOT REPORTED' &
@@ -555,7 +556,7 @@ contains
       inquire(file=trim(filename), exist=file_exists)
       if (.not. file_exists) then
          write(LDT_logunit,*) &
-              '[ERR] Cannot find ',trim(filename),' for LDTSI analysis'
+              '[ERR] Cannot find ',trim(filename),' for USAFSI analysis'
          write(LDT_logunit,*)'LDT will stop'
          call LDT_endrun()
       end if
@@ -648,4 +649,4 @@ contains
    end subroutine read_params
 #endif
       
-end subroutine LDTSI_run
+end subroutine USAFSI_run
