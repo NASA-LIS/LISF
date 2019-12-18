@@ -1118,7 +1118,7 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_JULES_ESOIL,&
             LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"kg/m2s"/),&
+            n,2,ntiles,(/"kg/m2s", "kg/m2 "/),&
             2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif

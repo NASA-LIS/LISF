@@ -79,6 +79,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_jules50Id     = "JULES.5.0"
    character*50, public,  parameter :: LIS_jules52Id     = "JULES.5.2"
    character*50, public,  parameter :: LIS_jules53Id     = "JULES.5.3"
+   character*50, public,  parameter :: LIS_jules5xId     = "JULES"
    character*50, public,  parameter :: LIS_cableId     = "CABLE"
    character*50, public,  parameter :: LIS_fasstId     = "FASST"
    !character*50, public,  parameter :: LIS_sheelsId    = "SHEELS"
