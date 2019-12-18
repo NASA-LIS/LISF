@@ -1054,9 +1054,9 @@ subroutine LDT_create_daobs_filename(n, fname)
          array_out(:,1) = array_in(:)
 
       case default
-         write(*,*) "[ERR] This spatial transformation option ("//trim(gridtransform_opt)//") "
-         write(*,*) " is not currently supported."
-         write(*,*) " Program stopping ..."
+         write(LDT_logunit,*) "[ERR] This spatial transformation option ("//trim(gridtransform_opt)//") "
+         write(LDT_logunit,*) " is not currently supported."
+         write(LDT_logunit,*) " Program stopping ..."
          call LDT_endrun
     end select
 
@@ -1250,8 +1250,8 @@ subroutine LDT_create_daobs_filename(n, fname)
       enddo
 #endif
     case default
-      write(*,*) "[ERR] This parameter projection is not supported (in readparam_real_2d)"
-      write(*,*) " Program stopping ..."
+      write(LDT_logunit,*) "[ERR] This parameter projection is not supported (in readparam_real_2d)"
+      write(LDT_logunit,*) " Program stopping ..."
       call LDT_endrun
    end select 
 
@@ -1431,8 +1431,8 @@ subroutine LDT_create_daobs_filename(n, fname)
       enddo
 #endif
     case default
-      write(*,*) "[ERR] This parameter projection is not supported (in readparam_int_2d)"
-      write(*,*) " Program stopping ..."
+      write(LDT_logunit,*) "[ERR] This parameter projection is not supported (in readparam_int_2d)"
+      write(LDT_logunit,*) " Program stopping ..."
       call LDT_endrun
    end select 
 

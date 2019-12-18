@@ -86,7 +86,6 @@ subroutine compute_earth_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
      ymin=0
      ymax=jm+1
      nret=0
-
      if( rlon1 < 0 ) then
        rlon1 = 360+rlon1
      endif
@@ -94,7 +93,6 @@ subroutine compute_earth_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
      do n=1,npts
         if( xpts(n).ge.xmin.and.xpts(n).le.xmax.and. & 
             ypts(n).ge.ymin.and.ypts(n).le.ymax ) then
-
 !  original code 
 !           rlon(n)=rlon1+dlon*(xpts(n)-1)
 !           if(rlon(n).lt.0) then 
@@ -103,7 +101,7 @@ subroutine compute_earth_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
 !  new code (KRA)
            rlon(n) = rlon1+dlon*(xpts(n)-1)
            if( rlon(n) > 360. ) then
-             rlon(n) = dlon*(xpts(n)-1)  ! rlon1 reset to 0. in this case
+             rlon(n) = rlon(n)-360. 
            endif
            rlat(n)=rlat1+dlat*(ypts(n)-1)
            nret=nret+1
