@@ -77,6 +77,9 @@ contains
    real,allocatable :: lats(:)
    real             :: diff_lon
    integer          :: nlats
+   integer          :: buffer_flag
+   real             :: rlat1, rlat2, rlon1, rlon2
+   real             :: plat1, plat2, plon1, plon2
 ! _____________________________________________________
 
    glpnr = 0
@@ -131,17 +134,39 @@ contains
    lisdom_yres_ur = abs(rlat(LDT_rc%lnc(n),  LDT_rc%lnr(n))  &
                   - rlat(LDT_rc%lnc(n),  LDT_rc%lnr(n)-1) )
 
-   ! Incorporate buffer for target grid (e.g., helps with curvilinear projections)
-   lisdom_min_lat = max((rlat(1,1)-(5*lisdom_yres_ll)),-90.0)
-   lisdom_max_lat = min((rlat(LDT_rc%lnc(n),LDT_rc%lnr(n))+(5*lisdom_yres_ll)),90.0)
+   buffer_flag = 1
+   ! Checks for when to implement a "buffer" for specific domains and
+   !  projections ...
+   rlat1=rlat(1,1);  rlat2=rlat(LDT_rc%lnc(n),LDT_rc%lnr(n))
+   rlon1=rlon(1,1);  rlon2=rlon(LDT_rc%lnc(n),LDT_rc%lnr(n))
+   plat1=param_grid(4);  plat2=param_grid(7) 
+   plon1=param_grid(5);  plon2=param_grid(8)
 
-   ! Account for crossing IDL:
-   if( rlon(1,1) <= rlon(LDT_rc%lnc(n),LDT_rc%lnr(n)) ) then
-     lisdom_min_lon = max((rlon(1,1)-(5*lisdom_xres_ll)),-180.0)
-     lisdom_max_lon = min((rlon(LDT_rc%lnc(n),LDT_rc%lnr(n))+(5*lisdom_xres_ll)),180.0)
-   else  
-     lisdom_min_lon = max((rlon(1,1)-(5*lisdom_xres_ll)),0.0)
-     lisdom_max_lon = min((rlon(LDT_rc%lnc(n),LDT_rc%lnr(n))+(5*lisdom_xres_ll)),0.0)
+   ! Parameter geographic extents match LIS run domain extents:
+   if( rlat1==plat1 .and. rlat2==plat2 .and. &
+       rlon1==plon1 .and. rlon2==plon2 ) then
+     buffer_flag = 0   ! Buffer not need
+   endif
+
+   ! Incorporate buffer for target grid (e.g., helps with curvilinear projections)
+   if( buffer_flag == 1 ) then 
+     write(LDT_logunit,*) "[INFO] Incorporating buffer around subsetted grid domain ... "
+     lisdom_min_lat = max((rlat(1,1)-(5*lisdom_yres_ll)),-90.0)
+     lisdom_max_lat = min((rlat(LDT_rc%lnc(n),LDT_rc%lnr(n))+(5*lisdom_yres_ll)),90.0)
+     ! Account for crossing IDL:
+     if( rlon(1,1) <= rlon(LDT_rc%lnc(n),LDT_rc%lnr(n)) ) then
+       lisdom_min_lon = max((rlon(1,1)-(5*lisdom_xres_ll)),-180.0)
+       lisdom_max_lon = min((rlon(LDT_rc%lnc(n),LDT_rc%lnr(n))+(5*lisdom_xres_ll)),180.0)
+     else  
+       lisdom_min_lon = max((rlon(1,1)-(5*lisdom_xres_ll)),0.0)
+       lisdom_max_lon = min((rlon(LDT_rc%lnc(n),LDT_rc%lnr(n))+(5*lisdom_xres_ll)),0.0)
+     endif
+   else  ! No buffer applied
+!     write(LDT_logunit,*) "[INFO] No buffer incorporated ... "
+     lisdom_min_lat = rlat(1,1)
+     lisdom_max_lat = rlat(LDT_rc%lnc(n),LDT_rc%lnr(n))
+     lisdom_min_lon = rlon(1,1)
+     lisdom_max_lon = rlon(LDT_rc%lnc(n),LDT_rc%lnr(n))
    endif
 
 ! -------------------------------------------------------------
@@ -157,7 +182,6 @@ contains
 
   !- Calculate total points for global (or "full") parameter file domains:
      glpnr = nint((param_grid(7)-param_grid(4))/param_grid(10)) + 1
-!     glpnc = nint((param_grid(8)-param_grid(5))/param_grid(9) ) + 1
      glpnc = nint(diff_lon(param_grid(8),param_grid(5))/param_grid(9) ) + 1
 
   !- LIS RUN DOMAIN GRID INFORMATION: 
@@ -331,7 +355,6 @@ contains
    !! Assemble the parameter subdomain extents and other info:
 
      ! Estimate final number of subsetted parameter points:
-!     subparam_nc = nint((subparm_urlon_ext - subparm_lllon_ext)/param_grid(9) ) + 1
      subparam_nc = nint(diff_lon(subparm_urlon_ext,subparm_lllon_ext)/param_grid(9) ) + 1
      subparam_nr = nint((subparm_urlat_ext - subparm_lllat_ext)/param_grid(10)) + 1
 
@@ -408,21 +431,21 @@ contains
 
    case ( "gaussian" )
 
-      !glpnc = nint((param_grid(8)-param_grid(5))/param_grid(9)) + 1
-      glpnc = nint(diff_lon(param_grid(8),param_grid(5))/param_grid(9)) + 1
-      glpnr = param_grid(3)
+     !glpnc = nint((param_grid(8)-param_grid(5))/param_grid(9)) + 1
+     glpnc = nint(diff_lon(param_grid(8),param_grid(5))/param_grid(9)) + 1
+     glpnr = param_grid(3)
 
-    ! Assume that parameter grid resolution SAME as LIS run grid resolution
-      subparm_lllat_ext = lisdom_min_lat
-      subparm_lllon_ext = lisdom_min_lon
-      subparm_urlat_ext = lisdom_max_lat
-      subparm_urlon_ext = lisdom_max_lon
+     ! Assume that parameter grid resolution SAME as LIS run grid resolution
+     subparm_lllat_ext = lisdom_min_lat
+     subparm_lllon_ext = lisdom_min_lon
+     subparm_urlat_ext = lisdom_max_lat
+     subparm_urlon_ext = lisdom_max_lon
 
-  !- Estimate final number of subsetted parameter points:
-      subparam_nc = LDT_rc%lnc(n)
-      subparam_nr = LDT_rc%lnr(n) 
+     ! Estimate final number of subsetted parameter points:
+     subparam_nc = LDT_rc%lnc(n)
+     subparam_nr = LDT_rc%lnr(n) 
 
-  !- Set subsetted parameter grid array inputs:
+     ! Set subsetted parameter grid array inputs:
      subparam_gridDesc(1)  = 4  
      subparam_gridDesc(2)  = float(subparam_nc)
      subparam_gridDesc(3)  = float(subparam_nr)
