@@ -145,13 +145,14 @@ subroutine readUASNOWObs(source)
 
          uasnowobs(source)%swe(:,:)  = swe1(:,:,k) !Jan. to Sep.
          uasnowobs(source)%snwd(:,:) = snwd1(:,:,k) !Jan. to Sep.
+
+         deallocate(swe1)
+         deallocate(snwd1)        
+
       else
          write(LVT_logunit,*) '[WARN] UA file not found: ',&
                                 trim(uafilename)
       endif
-
-      deallocate(swe1)
-      deallocate(snwd1)
 
       lb = .false.
       swe_in = LVT_rc%udef
