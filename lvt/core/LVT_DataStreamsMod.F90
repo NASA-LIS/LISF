@@ -1532,6 +1532,7 @@ contains
                       if(.not.((dataEntry%short_name.eq."Landcover").or.&
                            (dataEntry%short_name.eq."Landmask").or.&
                            (dataEntry%short_name.eq."Soiltype").or.&
+                           (dataEntry%short_name.eq.'Elevation').or. & 
                            (dataEntry%short_name.eq."Greenness").or.&
                            (dataEntry%short_name.eq."Tair_f_min").or.&
                            (dataEntry%short_name.eq."Tair_f_max").or.&
