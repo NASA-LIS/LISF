@@ -143,7 +143,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_optUEId  = "OPTUE output processing"
    character*50, public,  parameter :: LVT_rtmrunId  = "RTM output processing"
    character*50, public,  parameter :: LVT_557postId = "557 post"
-   character*50, public,  parameter :: LVT_ldtsipostId = "LDTSI post"
+   character*50, public,  parameter :: LVT_usafsipostId = "USAFSI post"
 
 !-------------------------------------------------------------------------
 ! Domains

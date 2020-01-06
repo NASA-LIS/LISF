@@ -27,6 +27,8 @@
 # 04 Dec 2018:  Eric Kemp (SSAI), add mean 24hr Tair.
 # 07 Nov 2019:  Eric Kemp (SSAI), removed Soiltype_inst for JULES.  Added
 #               support for NoahMP
+# 03 Dec 2019:  Eric Kemp (SSAI), added Greenness_inst for Noah and NoahMP.
+#               Not included for JULES since that LSM doesn't use it.
 #
 #------------------------------------------------------------------------------
 
@@ -50,6 +52,7 @@ _LIS_LSMS = ["NOAH", "NOAHMP", "JULES"]
 _LVT_NOAH_INVOCATIONS_3HR = ['Albedo_tavg', 
                              'AvgSurfT_inst', 'AvgSurfT_tavg', 
                              'CanopInt_inst', 'Elevation_inst', 'Evap_tavg', 
+                             'Greenness_inst',
                              'LWdown_f_inst', 'LWdown_f_tavg',
                              'Landcover_inst', 'Landmask_inst', 'PotEvap_tavg',
                              'Psurf_f_inst', 'Psurf_f_tavg', 
@@ -83,6 +86,7 @@ _LVT_NOAH_INVOCATIONS_24HR_LATEST = ['SnowDepth_inst','SWE_inst']
 _LVT_NOAHMP_INVOCATIONS_3HR = ['Albedo_tavg', 
                                'AvgSurfT_inst', 'AvgSurfT_tavg', 
                                'CanopInt_inst', 'Elevation_inst', 'Evap_tavg', 
+                               'Greenness_inst',
                                'LWdown_f_inst', 'LWdown_f_tavg',
                                'Landcover_inst', 'Landmask_inst', 
                                'Psurf_f_inst', 'Psurf_f_tavg', 
