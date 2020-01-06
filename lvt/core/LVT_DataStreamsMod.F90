@@ -1537,9 +1537,16 @@ contains
                       ! smoothing.  The original exception list did not
                       ! consider forcing perturbations.  It seams best
                       ! to just trust the setting in the lvt.config file.
-                      if(LVT_rc%applyNoiseReductionFilter.eq.1) then 
-                         call applyNoiseReductionFilter(gtmp1_1d_mem)
-                      endif
+                      ! EMK...Restored exception list for categorical 
+                      ! variables, since smoothing makes no physical sense
+                      if (.not. ( &
+                           (dataEntry%short_name .eq. "Landcover") .or. &
+                           (dataEntry%short_name .eq. "Landmask") .or. &
+                           (dataEntry%short_name .eq. "Soiltype"))) then
+                         if(LVT_rc%applyNoiseReductionFilter.eq.1) then 
+                            call applyNoiseReductionFilter(gtmp1_1d_mem)
+                         end if
+                      end if
 
                       ! Now provide smoothed field to ensemble mean and
                       ! spread
