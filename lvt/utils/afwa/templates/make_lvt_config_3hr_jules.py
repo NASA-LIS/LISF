@@ -6,19 +6,11 @@ import sys
 
 template = "lvt.config.template"
 
-#startdt = datetime.datetime(2008,5,15,0)
-#enddt = datetime.datetime(2008,5,16,0)
-#startdt = datetime.datetime(2018, 2,28, 0)
-#enddt =   datetime.datetime(2018, 3, 1, 0)
-#startdt = datetime.datetime(2011, 2, 28, 21)
-#enddt =   datetime.datetime(2011, 3,  1, 21)
-#startdt = datetime.datetime(2011, 8, 31, 21)
-#enddt =   datetime.datetime(2011, 9,  1, 21)
 startdt = datetime.datetime(2018,  7, 29,  0)
 enddt = datetime.datetime(2018,  7, 31,  0)
 
-#output = "netcdf"
-output = "grib2"
+output = "netcdf"
+#output = "grib2"
 
 # Most variables are processed independently, and are listed below.
 var_attributes = {
@@ -102,6 +94,22 @@ var_attributes_special = {
         "RHMin       1  1  %      -  0  1 RHMin       1  1  %      -  0  1",
 }
 
+# Smooth variables that are perturbed, derived from perturbed variables,
+# or are LSM outputs that are affected by perturbed variables via physics.
+smooth_vars = ["AvgSurfT_inst", "AvgSurfT_tavg", 
+               "Albedo_tavg", "CanopInt_inst",
+               "Evap_tavg", "LWdown_f_inst", 
+               "LWdown_f_tavg", "Qh_tavg", "Qle_tavg", 
+               "Qs_acc", "Qsb_acc", "RelSMC_inst", 
+               "SmLiqFrac_inst", "SnowDepth_inst",
+               "Snowcover_inst", "SoilMoist_inst",
+               "SoilMoist_tavg", "SoilTemp_inst", 
+               "SoilTemp_tavg", "SWdown_f_inst",
+               "SWdown_f_tavg", "SWE_inst",
+               "Tair_f_inst", "Tair_f_max",
+               "Tair_f_tavg", "TotalPrecip_acc",
+               "Tair_f_min", "RHMin_inst"]
+
 lines = open(template, 'r').readlines()
 
 vars = list(var_attributes.keys())
@@ -118,6 +126,11 @@ for var in vars:
                 line = "Process HYCOM data: 1\n"
             else:
                 line = "Process HYCOM data: 0\n"
+        elif "Apply noise reduction filter:" in line:
+            if var in smooth_vars:
+                line = "Apply noise reduction filter: 1\n"
+            else:
+                line = "Apply noise reduction filter: 0\n"
         elif "Starting year:" in line:
             line = "Starting year: %s\n" % (startdt.year)
         elif "Starting month:" in line:
