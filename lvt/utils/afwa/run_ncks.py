@@ -29,6 +29,7 @@
 #               support for NoahMP
 # 03 Dec 2019:  Eric Kemp (SSAI), added Greenness_inst for Noah and NoahMP.
 #               Not included for JULES since that LSM doesn't use it.
+# 09 Jan 2020:  Eric Kemp (SSAI), added Tair_f_min for JULES for 3hr.
 #
 #------------------------------------------------------------------------------
 
@@ -41,8 +42,8 @@ import sys
 #------------------------------------------------------------------------------
 
 # Path to NCO ncks program
-_NCKS_PATH = "/app/nco/4.5.2-gnu/bin/ncks" # On Conrad
-#_NCKS_PATH = "/usr/local/other/SLES11.1/nco/4.4.4/intel-12.1.0.233/bin/ncks"
+#_NCKS_PATH = "/app/nco/4.5.2-gnu/bin/ncks" # On Conrad
+_NCKS_PATH = "/usr/local/other/SLES11.1/nco/4.4.4/intel-12.1.0.233/bin/ncks"
 
 # Supported LIS LSMs
 _LIS_LSMS = ["NOAH", "NOAHMP", "JULES"] 
@@ -201,7 +202,10 @@ for var in _LVT_NOAHMP_INVOCATIONS_24HR_LATEST:
 # The JULES variables handled by each LVT invocation.
 _LIS_JULES_VARIABLES_3HR = {}
 for var in _LVT_JULES_INVOCATIONS_3HR:
-    _LIS_JULES_VARIABLES_3HR[var] = [var]
+    if var == "RHMin_inst":
+        _LIS_JULES_VARIABLES_3HR[var] = [var,"Tair_f_min"]
+    else:
+        _LIS_JULES_VARIABLES_3HR[var] = [var]
 
 # The JULES variables handled by each LVT invocation.
 _LIS_JULES_VARIABLES_24HR = {}
