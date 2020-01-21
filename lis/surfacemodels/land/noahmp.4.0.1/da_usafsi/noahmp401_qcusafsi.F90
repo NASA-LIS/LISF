@@ -38,7 +38,7 @@ subroutine noahmp401_qcusafsi(n, LSM_State)
 ! !DESCRIPTION:
 !
 !  QC's the related state prognostic variable objects for
-!  SNODEP data assimilation
+!  USAFSI data assimilation
 !
 !  The arguments are: 
 !  \begin{description}
