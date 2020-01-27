@@ -161,12 +161,20 @@ subroutine LIS_lsm_plugin
    use jules50_lsmMod, only : jules50_ini
 #endif
 
+#if ( defined SM_JULES_5_1 )
+   use jules51_lsmMod, only : jules51_ini
+#endif
+
 #if ( defined SM_JULES_5_2 )
    use jules52_lsmMod, only : jules52_ini
 #endif
 
 #if ( defined SM_JULES_5_3 )
    use jules53_lsmMod, only : jules53_ini
+#endif
+
+#if ( defined SM_JULES_5_4 )
+   use jules54_lsmMod, only : jules54_ini
 #endif
 
 #if ( defined SM_JULES_5_X )
@@ -253,6 +261,16 @@ subroutine LIS_lsm_plugin
    external jules50_finalize
 #endif
 
+#if ( defined SM_JULES_5_1 )
+   external jules51_main
+   external jules51_setup
+   external jules51_readrst
+   external jules51_f2t
+   external jules51_dynsetup
+   external jules51_writerst
+   external jules51_finalize
+#endif
+
 #if ( defined SM_JULES_5_2 )
    external jules52_main
    external jules52_setup
@@ -271,6 +289,16 @@ subroutine LIS_lsm_plugin
    external jules53_dynsetup
    external jules53_writerst
    external jules53_finalize
+#endif
+
+#if ( defined SM_JULES_5_4 )
+   external jules54_main
+   external jules54_setup
+   external jules54_readrst
+   external jules54_f2t
+   external jules54_dynsetup
+   external jules54_writerst
+   external jules54_finalize
 #endif
 
 #if ( defined SM_JULES_5_X )
@@ -522,6 +550,20 @@ subroutine LIS_lsm_plugin
    call registerlsmfinalize(trim(LIS_jules50Id)//char(0),jules50_finalize)
 #endif
 
+#if ( defined SM_JULES_5_1 )
+   call registerlsminit(trim(LIS_jules51Id)//char(0),jules51_ini)
+   call registerlsmsetup(trim(LIS_jules51Id)//char(0),jules51_setup)
+   call registerlsmf2t(trim(LIS_jules51Id)//"+"//&
+        trim(LIS_retroId)//char(0),jules51_f2t)
+   call registerlsmf2t(trim(LIS_jules51Id)//"+"//&
+        trim(LIS_agrmetrunId)//char(0),jules51_f2t)
+   call registerlsmrun(trim(LIS_jules51Id)//char(0),jules51_main)
+   call registerlsmrestart(trim(LIS_jules51Id)//char(0),jules51_readrst)
+   call registerlsmdynsetup(trim(LIS_jules51Id)//char(0),jules51_dynsetup)
+   call registerlsmwrst(trim(LIS_jules51Id)//char(0),jules51_writerst)
+   call registerlsmfinalize(trim(LIS_jules51Id)//char(0),jules51_finalize)
+#endif
+
 #if ( defined SM_JULES_5_2 )
    call registerlsminit(trim(LIS_jules52Id)//char(0),jules52_ini)
    call registerlsmsetup(trim(LIS_jules52Id)//char(0),jules52_setup)
@@ -548,6 +590,20 @@ subroutine LIS_lsm_plugin
    call registerlsmdynsetup(trim(LIS_jules53Id)//char(0),jules53_dynsetup)
    call registerlsmwrst(trim(LIS_jules53Id)//char(0),jules53_writerst)
    call registerlsmfinalize(trim(LIS_jules53Id)//char(0),jules53_finalize)
+#endif
+
+#if ( defined SM_JULES_5_4 )
+   call registerlsminit(trim(LIS_jules54Id)//char(0),jules54_ini)
+   call registerlsmsetup(trim(LIS_jules54Id)//char(0),jules54_setup)
+   call registerlsmf2t(trim(LIS_jules54Id)//"+"//&
+        trim(LIS_retroId)//char(0),jules54_f2t)
+   call registerlsmf2t(trim(LIS_jules54Id)//"+"//&
+        trim(LIS_agrmetrunId)//char(0),jules54_f2t)
+   call registerlsmrun(trim(LIS_jules54Id)//char(0),jules54_main)
+   call registerlsmrestart(trim(LIS_jules54Id)//char(0),jules54_readrst)
+   call registerlsmdynsetup(trim(LIS_jules54Id)//char(0),jules54_dynsetup)
+   call registerlsmwrst(trim(LIS_jules54Id)//char(0),jules54_writerst)
+   call registerlsmfinalize(trim(LIS_jules54Id)//char(0),jules54_finalize)
 #endif
 
 #if ( defined SM_JULES_5_X )
