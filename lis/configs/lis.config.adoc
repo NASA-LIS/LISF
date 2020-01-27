@@ -1169,7 +1169,7 @@ endif::devonly[]
 |"`SMOS L2 soil moisture`"      | SMOS L2 soil moisture
 |"`SMOS(NESDIS) soil moisture`" | NESDIS SMOS soil moisture
 |"`SNODEP`"                     | AFWA SNODEP
-|"`LDTSI`"                      | LDT Snow and Ice Analysis
+|"`USAFSI`"                     | USAF Snow and Ice Analysis
 |====
 
 .Example _lis.config_ entry
@@ -2013,15 +2013,20 @@ SNODEP naming convention:               LIS
 ....
 
 
-==== LDTSI Assimilation
-anchor:sssec_ldtsida[LDTSI Assimilation]
+==== USAFSI Assimilation
+anchor:sssec_usafsida[USAFSI Assimilation]
 
-`LDTSI data directory:` specifies the directory for the
-LDTSI data.
+`USAFSI data directory:` specifies the directory for the
+USAFSI data.
+
+`USAFSI netcdf filename prefix:` specifies the prefix of 
+the USAFSI dataset. If prefix is "usafsi", file name will 
+be "usafsi_yyyymmddhh.nc."
 
 .Example _lis.config_ entry
 ....
-LDTSI data directory:                  ./FORCING/LDTSI
+USAFSI data directory:                  ./FORCING/USAFSI
+USAFSI netcdf filename prefix:         usafsi
 ....
 
 ifdef::devonly[]

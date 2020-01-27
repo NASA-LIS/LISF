@@ -9,7 +9,7 @@
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
 echo "------------------------------------------------------------------------"
-echo 'Setting up configuration for LIS version 7.2r...'
+echo 'Setting up configuration for LIS'
 
 cd arch
 perl Config.pl
