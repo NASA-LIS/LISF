@@ -3151,11 +3151,15 @@ contains
                "relative_soil_moisture",&
                "relative soil moisture", "F",rc)
           if(rc.eq.1) then 
-             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_RELSMC(kk),&
+             !EMK...Add support for "-"
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_RELSMC(kk),&
                   LVT_LISoutput(kk)%head_lsm_list,&
-                  2,nsize,nensem,(/"%    ","m3/m3"/),1,(/"-"/),&
-                  valid_min=(/0.0,0.0/),valid_max=(/1.0,1.0/),gribSFC=grib_depthlvl,gribLvl=0)     
-!                  valid_min=(/0.0/),valid_max=(/1.0/),gribSFC=1,gribLvl=1)    
+                  3, nsize, nensem, (/"%    ", "m3/m3", "-    "/), &
+                  1, (/"-"/),&
+                  valid_min=(/0.0, 0.0, 0.0/), &
+                  valid_max=(/100.0, 1.0, 1.0/), &
+                  gribSFC=grib_depthlvl, gribLvl=0)     
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig,"TotalPrecip:",rc=rc)
@@ -7352,7 +7356,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           endif
        enddo    
        if(unit_id.eq.-1) then 
-          write(LVT_logunit,*) '[ERR] routine to diagnose ',trim(dataEntry%standard_name),&
+          write(LVT_logunit,*) &
+               '[ERR] LVT_readSingleBinaryVar: routine to diagnose ', &
+               trim(dataEntry%standard_name),&
                ' in units of ',trim(dataEntry%units),' is not defined'
           write(LVT_logunit,*) '[ERR] for diagnostic output...'
           call LVT_endrun()
@@ -7642,7 +7648,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           endif
        enddo    
        if(unit_id.eq.-1) then 
-          write(LVT_logunit,*) '[ERR] routine to diagnose ',trim(dataEntry%standard_name),&
+          write(LVT_logunit,*) &
+               '[ERR] LVT_readSingleGrib1Var: routine to diagnose ', &
+               trim(dataEntry%standard_name),&
                ' in units of ',trim(dataEntry%units),' is not defined'
           write(LVT_logunit,*) '[ERR] for diagnostic output...'
           call LVT_endrun()
@@ -7899,7 +7907,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           endif
        enddo    
        if(unit_id.eq.-1) then 
-          write(LVT_logunit,*) '[ERR] routine to diagnose ',trim(dataEntry%standard_name),&
+          write(LVT_logunit,*) &
+               '[ERR] LVT_readSingleNETCDFVar: routine to diagnose ', &
+               trim(dataEntry%standard_name),&
                ' in units of ',trim(dataEntry%units),' is not defined'
           write(LVT_logunit,*) '[ERR] for diagnostic output...'
           call LVT_endrun()
@@ -8844,7 +8854,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           endif
        enddo    
        if(unit_id.eq.-1) then 
-          write(LVT_logunit,*) '[ERR] routine to diagnose ',trim(dataEntry%standard_name),&
+          write(LVT_logunit,*) &
+               '[ERR] LVT_readSingleNETCDFVar_batch: routine to diagnose ', &
+               trim(dataEntry%standard_name),&
                ' in units of ',trim(dataEntry%units),' is not defined'
           write(LVT_logunit,*) '[ERR] for diagnostic output...'
           call LVT_endrun()
