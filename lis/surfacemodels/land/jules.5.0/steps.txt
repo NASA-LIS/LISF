@@ -1,0 +1,12 @@
+ Step 1: Check out JULES 5.0 code
+    fcm co https://code.metoffice.gov.uk/svn/jules/main/trunk@9522 jules.5.0
+Step 2: Check out LIS code
+    git clone https://github.com/shugongwang/LISF.git jules.test
+Step 3: Put the code together
+    cd jules.test/lis/surfacemodels/land/jules.5.0/
+    cp -r  (path_to_jules)/jules.5.0/src .
+    cp -r  (path_to_jules)/jules.5.0/utils . 
+    ./couple_jules_to_lis.sh
+Step 4: Configure and compile LIS
+    ./configure
+    ./compile
