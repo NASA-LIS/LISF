@@ -11,7 +11,7 @@ sed -i 's/CALL\ init_output(nml_dir)/!\ CALL\ init_output(nml_dir)/g' \
   ./src/initialisation/standalone/init.F90
 sed -i 's/CALL\ init_params(nml_dir)/!\ CALL\ init_params(nml_dir)/g' \
   ./src/initialisation/standalone/init.F90
-sed -i 's/CALL\ init_parms(nml_dir)/!\ CALL\ init_parms(nml_dir)/g' \
+sed -i 's/CALL\ init_parms()/!\ CALL\ init_parms()/g' \
   ./src/initialisation/standalone/init.F90
 sed -i 's/CALL\ init_ic(nml_dir)/!\ CALL\ init_ic(nml_dir)/g' \
   ./src/initialisation/standalone/init.F90
