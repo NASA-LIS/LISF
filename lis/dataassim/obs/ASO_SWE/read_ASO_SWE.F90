@@ -184,11 +184,18 @@ subroutine read_ASO_SWE(n, k, OBS_State, OBS_Pert_State)
            do c=1,LIS_rc%obs_lnc(k)
               if(nswe_ip(c,r).ne.0) then
                  swe_ip(c,r) = swe_ip(c,r)/nswe_ip(c,r)
+! Because of the boundary of the observed image, we screen out 
+! zero snow values
+                 if(swe_ip(c,r).eq.0) then
+                    swe_ip(c,r) = LIS_rc%udef
+                 endif
+
               else
                  swe_ip(c,r) = LIS_rc%udef
               endif
            enddo
         enddo
+
 #endif
 
      endif
