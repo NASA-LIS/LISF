@@ -20,7 +20,7 @@ This section describes the options in the _lvt.config_ file.
 | "`OPTUE output processing`"   | parameter estimation/uncertainty output analysis
 | "`RTM output processing`"     | radiative transfer model output analysis
 | "`557 post`"                  | LIS postprocessing mode for 557WW operations
-| "`LDTSI post`"                | special postprocessing mode for LDTSI
+| "`USAFSI post`"                | special postprocessing mode for USAFSI
 |===
 
 .Example _lvt.config_ entry
@@ -2331,10 +2331,10 @@ Apply noise reduction filter: 1
 Smoothing filter type:        "gaussian filter"
 ....
 
-[[ssec-ldtsipostrunmode]]
-=== LDTSI post
+[[ssec-usafsipostrunmode]]
+=== USAFSI post
 
-This runmode is used to postprocess LDTSI (snow and ice) analyses, which are originally produced in netCDF format. LVT will optionally convert the fields to GRIB2 format and output on the LDT grid (no interpolations). In addition, three options are provided for GRIB1 output: (1) interpolate to 0.25 deg lat/lon domain; (2) interpolate to Air Force Northern Hemisphere 16th mesh polar stereographic grid; and (3) interpolate to Air Force Southern Hemisphere 16th mesh polar stereographic grid. These GRIB1 products are intended as look-alike replacements for the legacy Air Force SNODEP product. These options are activated for runmode="`LDTSI post`"
+This runmode is used to postprocess USAFSI (snow and ice) analyses, which are originally produced in netCDF format. LVT will optionally convert the fields to GRIB2 format and output on the LDT grid (no interpolations). In addition, three options are provided for GRIB1 output: (1) interpolate to 0.25 deg lat/lon domain; (2) interpolate to Air Force Northern Hemisphere 16th mesh polar stereographic grid; and (3) interpolate to Air Force Southern Hemisphere 16th mesh polar stereographic grid. These GRIB1 products are intended as look-alike replacements for the legacy Air Force SNODEP product. These options are activated for runmode="`USAFSI post`"
 
 When run in this mode, LVT will interpret the starting year, month, etc as the valid date/time to process, and will ignore the ending date and time information. (In other words, only a single date and time will be processed.)
 
@@ -2342,7 +2342,7 @@ LVT will also use the diagnostic file and undefined value entries.
 
 Other entries that are required but not actually used in this runmode include the map projection, analysis sources, output format, output GRIB settings, the output methodology, start mode, clock timestep, metrics computation and output frequencies, option to apply temporal smoothing to obs, option to apply external mask, option for stratifying by external data and/or variable, and an observation count threshold. These other entries are required by the LVT config initialization routine, which is called by the LVT driver for all runmodes.
 
-`LDTSI output GRIB2 native grid:` Specifies if LDTSI should be output in GRIB2 (no interpolation).  Acceptable values are:
+`USAFSI output GRIB2 native grid:` Specifies if USAFSI should be output in GRIB2 (no interpolation).  Acceptable values are:
 
 [cols="<,<",]
 |===
@@ -2354,10 +2354,10 @@ Other entries that are required but not actually used in this runmode include th
 
 .Example _lvt.config_ entry
 ....
-LDTSI output GRIB2 native grid: .true.
+USAFSI output GRIB2 native grid: .true.
 ....
 
-`LDTSI output GRIB1 global 0.25deg lat/lon:` Specifies if LDTSI should be interpolated to 0.25 deg lat/lon grid and output in GRIB1.  Acceptable values are:
+`USAFSI output GRIB1 global 0.25deg lat/lon:` Specifies if USAFSI should be interpolated to 0.25 deg lat/lon grid and output in GRIB1.  Acceptable values are:
 
 [cols="<,<",]
 |===
@@ -2369,10 +2369,10 @@ LDTSI output GRIB2 native grid: .true.
 
 .Example _lvt.config_ entry
 ....
-LDTSI output GRIB1 global 0.25deg lat/lon: .true.
+USAFSI output GRIB1 global 0.25deg lat/lon: .true.
 ....
 
-`LDTSI output GRIB1 NH 16th mesh polar stereographic:` Specifies if LDTSI should be interpolated to Northern Hemispheric 16th mesh polar stereographic grid and output in GRIB1.  Acceptable values are:
+`USAFSI output GRIB1 NH 16th mesh polar stereographic:` Specifies if USAFSI should be interpolated to Northern Hemispheric 16th mesh polar stereographic grid and output in GRIB1.  Acceptable values are:
 
 [cols="<,<",]
 |===
@@ -2384,10 +2384,10 @@ LDTSI output GRIB1 global 0.25deg lat/lon: .true.
 
 .Example _lvt.config_ entry
 ....
-LDTSI output GRIB1 NH 16th mesh polar stereographic: .true.
+USAFSI output GRIB1 NH 16th mesh polar stereographic: .true.
 ....
 
-`LDTSI output GRIB 1 SH 16th mesh polar stereographic:` Specifies if LDTSI should be interpolated to Southern Hemispheric 16th mesh polar stereographic grid and output in GRIB1.  Acceptable values are:
+`USAFSI output GRIB 1 SH 16th mesh polar stereographic:` Specifies if USAFSI should be interpolated to Southern Hemispheric 16th mesh polar stereographic grid and output in GRIB1.  Acceptable values are:
 
 [cols="<,<",]
 |===
@@ -2399,20 +2399,20 @@ LDTSI output GRIB1 NH 16th mesh polar stereographic: .true.
 
 .Example _lvt.config_ entry
 ....
-LDTSI output GRIB1 SH 16th mesh polar stereographic: .true.
+USAFSI output GRIB1 SH 16th mesh polar stereographic: .true.
 ....
 
-`LDTSI input netcdf directory:` Specifies path of directory containing LDTSI netcdf files to process.
-
-.Example _lvt.config_ entry
-....
-LDTSI input netcdf directory: ./LDTSI
-....
-
-`LDTSI output grib directory:` Specifies path of directory to write GRIB2 and/or GRIB1 files.
+`USAFSI input netcdf directory:` Specifies path of directory containing USAFSI netcdf files to process.
 
 .Example _lvt.config_ entry
 ....
-LDTSI output grib directory: ./grib
+USAFSI input netcdf directory: ./USAFSI
+....
+
+`USAFSI output grib directory:` Specifies path of directory to write GRIB2 and/or GRIB1 files.
+
+.Example _lvt.config_ entry
+....
+USAFSI output grib directory: ./grib
 ....
 
