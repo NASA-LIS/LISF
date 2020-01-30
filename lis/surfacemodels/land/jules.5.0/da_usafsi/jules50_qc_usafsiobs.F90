@@ -6,40 +6,43 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: jules50_scale_ldtsi
-! \label{jules50_scale_ldtsi}
+! !ROUTINE: jules50_qc_usafsiobs
+! \label{jules50_qc_usafsiobs}
 !
 ! !REVISION HISTORY:
-! 27Feb2005: Sujay Kumar; Initial Specification
-! 25Jun2006: Sujay Kumar: Updated for the ESMF design
-! 02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
+! 25Feb2008: Sujay Kumar: Initial Specification
 ! 05 Nov 2018: Yeosang Yoon; Modified for Jules 5.0 and SNODEP data
 ! 08 Jul 2019: Yeosang Yoon; Modified for Jules.5.0 and LDT-SI data
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI.
 !
 ! !INTERFACE:
-subroutine jules50_scale_ldtsi(n, LSM_State)
-
+subroutine jules50_qc_usafsiobs(n,OBS_State)
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc
+  use LIS_coreMod
+  use LIS_logMod,  only : LIS_verify
   use jules50_lsmMod
 
   implicit none
 ! !ARGUMENTS: 
-  integer, intent(in)    :: n
-  type(ESMF_State)       :: LSM_State
+  integer, intent(in)      :: n
+  integer                  :: t
+  type(ESMF_State)         :: OBS_State
 !
 ! !DESCRIPTION:
 !
-!  Returns the snow related state prognostic variables for
-!  data assimilation
-! 
+!  This subroutine performs any model-based QC of the observation 
+!  prior to data assimilation. Here the snow observations
+!  are flagged when LSM indicates that (1) rain is falling (2)
+!  ground is fully or partially covered with snow. 
+!  
 !  The arguments are: 
 !  \begin{description}
 !  \item[n] index of the nest \newline
-!  \item[LSM\_State] ESMF State container for LSM state variables \newline
+!  \item[OBS\_State] ESMF state container for observations \newline
 !  \end{description}
+!
 !EOP
 
-end subroutine jules50_scale_ldtsi
+end subroutine jules50_qc_usafsiobs
 

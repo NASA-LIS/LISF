@@ -6,15 +6,16 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
-module jules50_daldtsi_Mod
+module jules50_dausafsi_Mod
 !BOP
 !
-! !MODULE: jules50_daldtsi_Mod
+! !MODULE: jules50_dausafsi_Mod
 !
 ! !DESCRIPTION:
 !  
 ! !REVISION HISTORY:
 ! 08 Jul 2019: Yeosang Yoon; Modified for Jules.5.0 and LDT-SI data
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !
 ! !USES:        
 
@@ -24,7 +25,7 @@ module jules50_daldtsi_Mod
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !-----------------------------------------------------------------------------
-  public :: jules50_daldtsi_init
+  public :: jules50_dausafsi_init
 !-----------------------------------------------------------------------------
 ! !PUBLIC TYPES:
 !-----------------------------------------------------------------------------
@@ -34,16 +35,16 @@ module jules50_daldtsi_Mod
 contains
 !BOP
 ! 
-! !ROUTINE: jules50_daldtsi_init
-! \label{jules50_daldtsi_init}
+! !ROUTINE: jules50_dausafsi_init
+! \label{jules50_dausafsi_init}
 ! 
 ! !INTERFACE:
-  subroutine jules50_daldtsi_init()
+  subroutine jules50_dausafsi_init()
 ! !USES:
 ! !DESCRIPTION:        
 !
 !EOP
     implicit none
 
-  end subroutine jules50_daldtsi_init
-end module jules50_daldtsi_Mod
+  end subroutine jules50_dausafsi_init
+end module jules50_dausafsi_Mod

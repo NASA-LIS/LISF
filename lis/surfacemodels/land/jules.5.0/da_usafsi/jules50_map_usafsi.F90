@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: jules50_map_ldtsi
-! \label{jules50_map_ldtsi}
+! !ROUTINE: jules50_map_usafsi
+! \label{jules50_map_usafsi}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
@@ -16,9 +16,10 @@
 ! 21 Jul 2011: James Geiger; Modified for Noah 3.2
 ! 05 Nov 2018: Yeosang Yoon; Modified for Jules 5.0 and SNODEP data
 ! 08 Jul 2019: Yeosang Yoon; Modified for Jules.5.0 and LDT-SI data
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine jules50_map_ldtsi(n,k,OBS_State,LSM_Incr_State)
+subroutine jules50_map_usafsi(n,k,OBS_State,LSM_Incr_State)
 ! !USES:
   use ESMF
   use LIS_coreMod,  only : LIS_rc
@@ -35,7 +36,7 @@ subroutine jules50_map_ldtsi(n,k,OBS_State,LSM_Incr_State)
 ! !DESCRIPTION:
 !
 !  This subroutine directly maps the observation state to the corresponding 
-!  variables in the LSM state for LDT-SI data assimilation.
+!  variables in the LSM state for USAF data assimilation.
 !  
 !  The arguments are: 
 !  \begin{description}
@@ -46,12 +47,12 @@ subroutine jules50_map_ldtsi(n,k,OBS_State,LSM_Incr_State)
 !
 !EOP
   type(ESMF_Field)         :: sweIncrField
-  type(ESMF_Field)         :: obs_ldtsi_field
+  type(ESMF_Field)         :: obs_usafsi_field
   real, pointer            :: sweincr(:)
   type(ESMF_Field)         :: snodIncrField
   real, pointer            :: snodincr(:)
   real                     :: snoden
-  real, pointer            :: ldtsiobs(:)
+  real, pointer            :: usafsiobs(:)
   integer                  :: t, pft
   integer                  :: status
   integer                  :: obs_state_count
@@ -84,10 +85,10 @@ subroutine jules50_map_ldtsi(n,k,OBS_State,LSM_Incr_State)
   call ESMF_StateGet(OBS_State,itemNameList=obs_state_objs,rc=status)
   call LIS_verify(status)
   
-  call ESMF_StateGet(OBS_State,obs_state_objs(1),obs_ldtsi_field,&
+  call ESMF_StateGet(OBS_State,obs_state_objs(1),obs_usafsi_field,&
        rc=status)
   call LIS_verify(status)
-  call ESMF_FieldGet(obs_ldtsi_field,localDE=0,farrayPtr=ldtsiobs,rc=status)
+  call ESMF_FieldGet(obs_usafsi_field,localDE=0,farrayPtr=usafsiobs,rc=status)
   call LIS_verify(status)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)  
@@ -105,26 +106,25 @@ subroutine jules50_map_ldtsi(n,k,OBS_State,LSM_Incr_State)
 ! Assume here that st_id and en_id are the same and that we are
 ! working with an model grid finer than the observation grid
 
-     if(ldtsiobs(st_id).ge.0) then 
+     if(usafsiobs(st_id).ge.0) then 
         if(jules50_snod(t).gt.1e-6) then 
            snoden = jules50_swe(t)/jules50_snod(t)
         else
            snoden = 0.0
         endif
 
-        snod(t) = ldtsiobs(st_id)
+        snod(t) = usafsiobs(st_id)
 
-! Based on observation, we manually update SWE
-! Units: Snow depth (m), SWE (kg/m2), Density (kg/m3)
-        if(snod(t).lt.1e-6) snoden = 0.0
-        if(snod(t).ge.1e-6.and.snoden.lt.100.0) then
-           snoden = 100.0
+! Based on USAFSI, we manually update SWE
+        if(snod(t).lt.2.54E-3) snoden = 0.0
+        if(snod(t).ge.2.54E-3.and.snoden.lt.0.001) then
+           snoden = 0.20
         endif
         sweincr(t)  = snod(t)*snoden - jules50_swe(t)
         snodincr(t) = snod(t) - jules50_snod(t)
      else
-        sweincr(t)  = 0.0 
-        snodincr(t) = 0.0 
+        sweincr(t)  = 0.0
+        snodincr(t) = 0.0
      endif
   enddo
   
@@ -133,5 +133,5 @@ subroutine jules50_map_ldtsi(n,k,OBS_State,LSM_Incr_State)
   deallocate(jules50_snod)
   deallocate(snod)
 
-end subroutine jules50_map_ldtsi
+end subroutine jules50_map_usafsi
    

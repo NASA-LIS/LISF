@@ -6,18 +6,19 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: jules50_descale_ldtsi
-! \label{jules50_descale_ldtsi}
+! !ROUTINE: jules50_scale_usafsi
+! \label{jules50_scale_usafsi}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
 ! 25Jun2006: Sujay Kumar: Updated for the ESMF design
 ! 02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-! 05 Nov 2018: Yeosang Yoon; Modified for Jules 5.0 and SNODEP data0
+! 05 Nov 2018: Yeosang Yoon; Modified for Jules 5.0 and SNODEP data
 ! 08 Jul 2019: Yeosang Yoon; Modified for Jules.5.0 and LDT-SI data
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine jules50_descale_ldtsi(n, LSM_State, LSM_Incr_State)
+subroutine jules50_scale_usafsi(n, LSM_State)
 
 ! !USES:
   use ESMF
@@ -28,7 +29,6 @@ subroutine jules50_descale_ldtsi(n, LSM_State, LSM_Incr_State)
 ! !ARGUMENTS: 
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
-  type(ESMF_State)       :: LSM_Incr_State
 !
 ! !DESCRIPTION:
 !
@@ -41,5 +41,6 @@ subroutine jules50_descale_ldtsi(n, LSM_State, LSM_Incr_State)
 !  \item[LSM\_State] ESMF State container for LSM state variables \newline
 !  \end{description}
 !EOP
-end subroutine jules50_descale_ldtsi
+
+end subroutine jules50_scale_usafsi
 

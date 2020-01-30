@@ -6,16 +6,17 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: jules50_ldtsi_update
-! \label{jules50_ldtsi_update}
+! !ROUTINE: jules50_usafsi_update
+! \label{jules50_usafsi_update}
 !
 ! !REVISION HISTORY:
 ! 18 Jun 2019: Yeosang Yoon; Initial specification
 ! 08 Jul 2019: Yeosang Yoon; Modified for Jules.5.0 and LDT-SI data
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !
 ! !INTERFACE
 
-subroutine jules50_ldtsi_update(n, t, dsneqv, dsnowh)
+subroutine jules50_usafsi_update(n, t, dsneqv, dsnowh)
 
   use LIS_coreMod
   use jules50_lsmMod
@@ -135,6 +136,8 @@ DO p = 1,nsurft
       sliq(:,p,:)     = 0.0
       rgrain(i,p)     = r0
       rgrainl(:,p,:)  = r0
+      rho_snow(:,p,:) = 0.0
+      tsnow(:,p,:)    = tm
     END IF
  
     IF ( snowdepth(i,p) > 0 ) THEN 
@@ -251,6 +254,8 @@ DO p = 1,nsurft
       sliq(:,p,:)     = 0.0
       rgrain(i,p)     = r0
       rgrainl(:,p,:)  = r0
+      rho_snow(:,p,:) = 0.0
+      tsnow(:,p,:)    = tm
     END IF
 
     jules50_struc(n)%jules50(t)%snowdepth(p)     = snowdepth(i,p)
@@ -276,5 +281,5 @@ DO p = 1,nsurft
 
 END DO  !  tiles
 
-end subroutine jules50_ldtsi_update
+end subroutine jules50_usafsi_update
 

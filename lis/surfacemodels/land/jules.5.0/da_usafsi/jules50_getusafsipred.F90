@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: jules50_getldtsipred
-! \label{jules50_getldtsipred}
+! !ROUTINE: jules50_getusafsipred
+! \label{jules50_getusafsipred}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
@@ -18,9 +18,10 @@
 !              space updates. 
 ! 05 Nov 2018: Yeosang Yoon; Modified for Jules 5.0 and SNODEP data
 ! 08 Jul 2019: Yeosang Yoon; Modified for Jules.5.0 and LDT-SI data
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine jules50_getldtsipred(n, k, obs_pred)
+subroutine jules50_getusafsipred(n, k, obs_pred)
 
 ! !USES:
   use ESMF
@@ -35,7 +36,7 @@ subroutine jules50_getldtsipred(n, k, obs_pred)
   real                   :: obs_pred(LIS_rc%ngrid(n),LIS_rc%nensem(n))
 !
 ! !DESCRIPTION: 
-! This routine computes the obspred ('Hx') term for LDT-SI DA assimilation
+! This routine computes the obspred ('Hx') term for USAF DA assimilation
 ! instances.
 ! 
 !EOP
@@ -54,5 +55,5 @@ subroutine jules50_getldtsipred(n, k, obs_pred)
        snwd,&
        obs_pred)
 
-end subroutine jules50_getldtsipred
+end subroutine jules50_getusafsipred
 

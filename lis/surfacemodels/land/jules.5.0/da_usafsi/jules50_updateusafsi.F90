@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: jules50_updateldtsi
-! \label{jules50_updateldtsi}
+! !ROUTINE: jules50_updateusafsi
+! \label{jules50_updateusafsi}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
@@ -17,9 +17,11 @@
 ! 01 May 2014: Yuqiong Liu; modified for better QC
 ! 05 Nov 2018: Yeosang Yoon; Modified for Jules 5.0 and SNODEP data
 ! 08 Jul 2019: Yeosang Yoon; Modified for Jules.5.0 and LDT-SI data
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
+! 30 Dec 2019: Yeosang Yoon; Updated QC
 !
 ! !INTERFACE:
-subroutine jules50_updateldtsi(n, LSM_State, LSM_Incr_State)
+subroutine jules50_updateusafsi(n, LSM_State, LSM_Incr_State)
 ! !USES:
   use ESMF
   use LIS_coreMod
@@ -35,7 +37,7 @@ subroutine jules50_updateldtsi(n, LSM_State, LSM_Incr_State)
 ! !DESCRIPTION:
 !
 !  Updates the related state prognostic variable objects for
-!  LDT-SI data assimilation
+!  USAFSI data assimilation
 ! 
 !  The arguments are: 
 !  \begin{description}
@@ -103,7 +105,7 @@ subroutine jules50_updateldtsi(n, LSM_State, LSM_Incr_State)
      swetmp = swe(t) + sweincr(t)
      snodtmp = snod(t) + snodincr(t)
 
-     if((snodtmp.lt.0)) then
+     if((snodtmp.lt.0 .or. swetmp.lt.0)) then
         update_flag(gid) = .false.
         perc_violation(gid) = perc_violation(gid) +1
      endif
@@ -153,25 +155,30 @@ subroutine jules50_updateldtsi(n, LSM_State, LSM_Incr_State)
      snodtmp = snod(t) + snodincr(t)
      swetmp  = swe(t) + sweincr(t)
 
+!Use the model's snow density from the previous timestep
+     sndens = 0.0
      pft = jules50_struc(n)%jules50(t)%pft
      if(jules50_struc(n)%jules50(t)%snowdepth(pft).gt.0) then
        sndens = jules50_struc(n)%jules50(t)%snow_mass_ij/jules50_struc(n)%jules50(t)%snowdepth(pft)
-     else
-       sndens = 0.0
      endif
 
      if(update_flag(gid)) then
         snod(t) = snodtmp
         swe(t) = swetmp
      elseif(perc_violation(gid).lt.0.2) then
-       if(snodtmp.lt.0) then
+       if(snodtmp.lt.0.0) then  ! average of the good ensemble members
           snod(t) = snodmean(gid)
-          swe(t) = snod(t)*sndens
+          swe(t) =  snodmean(gid)*sndens
        else
           snod(t) = snodtmp
           swe(t) = swetmp
        endif
+     else            ! do not update
+       snod(t) = jules50_struc(n)%jules50(t)%snowdepth(pft)
+       swe(t)  = jules50_struc(n)%jules50(t)%snow_mass_ij
      end if
+
   enddo
-end subroutine jules50_updateldtsi
+
+end subroutine jules50_updateusafsi
 

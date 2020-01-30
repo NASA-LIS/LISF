@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: jules50_qcldtsi
-! \label{jules50_qcldtsi}
+! !ROUTINE: jules50_qcusafsi
+! \label{jules50_qcusafsi}
 !
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
@@ -17,9 +17,11 @@
 ! 30 Jan 2015: Yuqiong Liu; added additional QC
 ! 05 Nov 2018: Yeosang Yoon; Modified for Jules 5.0 and SNODEP
 ! 08 Jul 2019: Yeosang Yoon; Modified for Jules.5.0 and LDT-SI data
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
+! 30 Dec 2019: Yeosang Yoon; updated QC
 !
 ! !INTERFACE:
-subroutine jules50_qcldtsi(n, LSM_State)
+subroutine jules50_qcusafsi(n, LSM_State)
 
 ! !USES:
   use ESMF
@@ -35,7 +37,7 @@ subroutine jules50_qcldtsi(n, LSM_State)
 ! !DESCRIPTION:
 !
 !  QC's the related state prognostic variable objects for
-!  LDT-SI data assimilation
+!  USAFSI data assimilation
 ! 
 !  The arguments are: 
 !  \begin{description}
@@ -80,50 +82,16 @@ subroutine jules50_qcldtsi(n, LSM_State)
   call LIS_verify(status)
 
   update_flag    = .true.
-  perc_violation = 0.0
-  snodmean       = 0.0
-  nsnodmean      = 0
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
      gid = LIS_domain(n)%gindex(&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
 
-     if((snod(t).lt.snodmin)) then
+     if((snod(t).lt.snodmin) .or. swe(t).lt.swemin) then
         update_flag(gid) = .false.
-        perc_violation(gid) = perc_violation(gid) +1
      endif
 
-  enddo
-
-  do gid=1,LIS_rc%ngrid(n)
-     perc_violation(gid) = perc_violation(gid)/real(LIS_rc%nensem(n))
-  enddo
-
-! For ensembles that are unphysical, compute the
-! ensemble average after excluding them. This
-! is done only if the majority of the ensemble
-! members are good (>80%)
-
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-
-     gid = LIS_domain(n)%gindex(&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
-     if(.not.update_flag(gid)) then
-        if(perc_violation(gid).lt.0.2) then
-           if(snod(t).ge.0) then
-              snodmean(gid) = snodmean(gid) + snod(t)
-              nsnodmean(gid) = nsnodmean(gid) + 1
-           endif
-        endif
-     endif
-  enddo
-
-  do gid=1,LIS_rc%ngrid(n)
-     if(nsnodmean(gid).gt.0) then
-        snodmean(gid) = snodmean(gid) / real(nsnodmean(gid))
-     endif
   enddo
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
@@ -132,34 +100,29 @@ subroutine jules50_qcldtsi(n, LSM_State)
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
 
 !Use the model's snow density from the previous timestep
+     sndens = 0.0
      pft = jules50_struc(n)%jules50(t)%pft
      if(jules50_struc(n)%jules50(t)%snowdepth(pft).gt.0) then
        sndens = jules50_struc(n)%jules50(t)%snow_mass_ij/jules50_struc(n)%jules50(t)%snowdepth(pft)
-     else
-       sndens = 0.0
      endif
 
-! If the update is unphysical, simply set to the average of
-! the good ensemble members. If all else fails, do not
-! update.
-
+!If the update is unphysical, do not update.
      if(update_flag(gid)) then
         snod(t) = snod(t)
-     elseif(perc_violation(gid).lt.0.2) then
-        if(snod(t).lt.snodmin) then
-           snod(t) = snodmean(gid)
-        else
-           snod(t) = jules50_struc(n)%jules50(t)%snowdepth(pft)
-        endif
-     endif
+        swe(t)  = snod(t)*sndens
+     else ! do not update
+        snod(t) = jules50_struc(n)%jules50(t)%snowdepth(pft)
+        swe(t)  = jules50_struc(n)%jules50(t)%snow_mass_ij
+     end if
 
+     if(swe(t).gt.swemax) then
+        swe(t) = swemax
+     endif
      if(snod(t).gt.snodmax) then
         snod(t) = snodmax
      endif
 
-     swe(t) = snod(t)*sndens
+  end do
 
-  enddo
-
-end subroutine jules50_qcldtsi
+end subroutine jules50_qcusafsi
 
