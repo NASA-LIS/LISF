@@ -6,8 +6,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: jules50_transform_ldtsi
-! \label{jules50_transform_ldtsi}
+! !ROUTINE: jules50_transform_usafsi
+! \label{jules50_transform_usafsi}
 !
 ! !REVISION HISTORY:
 ! 25Jun2006: Sujay Kumar: Initial Specification
@@ -15,9 +15,10 @@
 ! 21 Jul 2011: James Geiger; Modified for Noah 3.2
 ! 05 Nov 2018: Yeosang Yoon; Modified for Jules 5.0 and SNODEP data
 ! 08 Jul 2019: Yeosang Yoon; Modified for Jules.5.0 and LDT-SI data
+! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !
 ! !INTERFACE:
-subroutine jules50_transform_ldtsi(n,OBS_State)
+subroutine jules50_transform_usafsi(n,OBS_State)
 
 ! !USES:
   use ESMF
@@ -32,7 +33,7 @@ subroutine jules50_transform_ldtsi(n,OBS_State)
 !
 ! !DESCRIPTION:
 !
-!  This subroutine transforms the LDT-SI state
+!  This subroutine transforms the USAFSI state
 !  (mm) to the lsm state
 !  
 !  The arguments are: 
@@ -42,6 +43,6 @@ subroutine jules50_transform_ldtsi(n,OBS_State)
 !  \end{description}
 !EOP
 
-  ! Since LDT-SI is already in meters, no work is needed here.
+  ! Since USAFSI is already in meters, no work is needed here.
   
-end subroutine jules50_transform_ldtsi
+end subroutine jules50_transform_usafsi
