@@ -49,7 +49,8 @@ subroutine read_HYMAP_grid_elev(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%gridelevfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Gridelev map ',trim(HYMAP_struc(n)%gridelevfile),' not found'
+     write(LDT_logunit,*) '[ERR] Gridelev map, ',&
+           trim(HYMAP_struc(n)%gridelevfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif
