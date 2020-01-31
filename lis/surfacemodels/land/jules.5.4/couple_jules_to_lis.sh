@@ -172,8 +172,8 @@ sed -i 's/USE\ mpi/USE lis_mpi_dummy/g' \
   ./src/control/standalone/parallel/scatter_land_field.inc
 sed -i 's/USE\ mpi/USE lis_mpi_dummy/g' \
   ./src/control/standalone/spinup/spinup_check.inc
-#sed -i 's/USE\ mpi/USE lis_mpi_dummy/g' \
-#  ./src/initialisation/standalone/ancillaries/init_overbank.inc
+sed -i 's/USE\ mpi/USE lis_mpi_dummy/g' \
+  ./src/initialisation/standalone/ancillaries/init_overbank.inc
 sed -i -e 's/USE\ mpi/USE lis_mpi_dummy/g' \
        -e '/lis_mpi_dummy,/ s/$/,mpi_comm_size/g' \
   ./src/initialisation/standalone/ancillaries/init_rivers_props.inc

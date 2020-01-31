@@ -177,7 +177,7 @@ sed -i 's/USE\ mpi/USE lis_mpi_dummy/g' \
 sed -i -e 's/USE\ mpi/USE lis_mpi_dummy/g' \
        -e '/lis_mpi_dummy,/ s/$/,mpi_comm_size/g' \
   ./src/initialisation/standalone/ancillaries/init_rivers_props.inc
-sed -i 's/USE\ mpi/USE lis_mpi_dummy/g' \
+sed -i 's/USE\ MPI/USE lis_mpi_dummy/g' \
   ./src/initialisation/standalone/initial_conditions/init_ic.inc
 sed -i 's/USE\ mpi/USE lis_mpi_dummy/g' \
   ./src/io/output/internal_open_output_file.inc
