@@ -389,6 +389,24 @@ LDT output directory:       OUTPUT
 Undefined value:             -9999.0
 ....
 
+`Add buffer to parameter grid domain:` adds a set buffer around a parameter file target domain. 
+Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"0" |No buffer added
+|"1" |Buffer included
+|===
+
+The default value is 1.
+
+.Example _ldt.config_ entry
+....
+Add buffer to parameter grid domain:     0
+....
+
 `Number of ensembles per tile:` specifies the number of ensembles of tiles to be used. The value should be greater than or equal to 1.
 
 .Example _ldt.config_ entry

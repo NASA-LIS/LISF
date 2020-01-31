@@ -382,6 +382,11 @@ subroutine LDT_readConfig(configfile)
        rc=rc)
   call LDT_verify(rc,'Undefined value: not defined')
 
+! Option to add buffer around parameter grid domain:
+  call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%add_buffer,&
+       label="Add buffer to parameter grid domain:",&
+       default=1,rc=rc)
+  call LDT_verify(rc,'Add buffer to parameter grid domain: not defined')
 
 ! Set number of processors along x and y directions:
   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%npesx,&
