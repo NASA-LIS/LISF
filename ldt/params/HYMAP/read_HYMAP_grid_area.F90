@@ -49,7 +49,8 @@ subroutine read_HYMAP_grid_area(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%gridareafile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Gridarea map ',trim(HYMAP_struc(n)%gridareafile),' not found'
+     write(LDT_logunit,*) '[ERR] Gridarea map, ',&
+           trim(HYMAP_struc(n)%gridareafile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif

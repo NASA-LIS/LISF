@@ -142,10 +142,20 @@ contains
    plat1=param_grid(4);  plat2=param_grid(7) 
    plon1=param_grid(5);  plon2=param_grid(8)
 
+  !-- Checks for turning off buffer domain ...
    ! Parameter geographic extents match LIS run domain extents:
    if( rlat1==plat1 .and. rlat2==plat2 .and. &
        rlon1==plon1 .and. rlon2==plon2 ) then
-     buffer_flag = 0   ! Buffer not need
+     buffer_flag = 0   ! Buffer not needed
+   endif
+   ! Turn off buffer when latlon x/y resolutions are the same:
+   if( param_proj == "latlon" .and. &
+       param_grid(9) == lisdom_xres_ll.and. &
+       param_grid(10) == lisdom_yres_ll )then
+     buffer_flag = 0   ! Buffer not needed
+   endif 
+   if( LDT_rc%add_buffer == 0 ) then   ! New LDT config option
+     buffer_flag = 0
    endif
 
    ! Incorporate buffer for target grid (e.g., helps with curvilinear projections)
