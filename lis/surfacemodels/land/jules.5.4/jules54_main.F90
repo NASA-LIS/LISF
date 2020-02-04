@@ -153,6 +153,8 @@ subroutine jules54_main(n)
             snow_tile(:, :)     = 0.0
             snow_grnd(:, :)     = 0.0
             tstar_tile(:, :)    = 0.0
+            ! Make sure JULES calcuate Qle
+            sf_diag%slh         = .True.
             dt = LIS_rc%nts(n)
             lat = LIS_domain(n)%grid(cur_grid)%lat
             lon = LIS_domain(n)%grid(cur_grid)%lon
