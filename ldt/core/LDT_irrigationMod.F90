@@ -220,7 +220,6 @@ contains
           call ESMF_ConfigGetAttribute(LDT_config,LDT_irrig_struc(n)%irrig_proj,&
                label="Irrigation fraction map projection:",rc=rc)
           call LDT_verify(rc,'Irrigation fraction map projection: option not specified in the config file')
-          print *, LDT_irrig_struc(n)%irrig_proj
 
           call LDT_readDomainConfigSpecs("Irrigation fraction", &
                     LDT_irrig_struc(n)%irrig_proj, &

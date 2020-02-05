@@ -159,7 +159,7 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_noah33Id      = "Noah.3.3"
    character*50, public,  parameter :: LDT_noah36Id      = "Noah.3.6"
    character*50, public,  parameter :: LDT_noah39Id      = "Noah.3.9"
-   character*50, public,  parameter :: LDT_noahmp36Id      = "Noah-MP.3.6"
+   character*50, public,  parameter :: LDT_noahmp36Id    = "Noah-MP.3.6"
    character*50, public,  parameter :: LDT_noahmp401Id   = "Noah-MP.4.0.1"
    character*50, public,  parameter :: LDT_clm2Id        = "CLM.2"
    character*50, public,  parameter :: LDT_clm45Id       = "CLM.4.5"
