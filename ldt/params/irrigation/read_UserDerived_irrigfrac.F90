@@ -8,7 +8,7 @@
 !  \label{read_UserDerived_irrigfrac}
 !
 ! !REVISION HISTORY:
-!  03 Feb 2020: K. Arsenault;  Added UserDerived map
+!  03 Feb 2020: K. Arsenault; Added Irrigation UserDerived map reader
 !
 ! !INTERFACE:
  subroutine read_UserDerived_irrigfrac(n, fgrd) 
@@ -38,7 +38,7 @@
 !  \item[n]
 !   index of the nest
 !  \item[fgrd]
-!   irrigation fraction
+!   irrigation fraction (user-derived and readin)
 !  \end{description}
 !
 !EOP      
@@ -57,42 +57,6 @@
 ! ______________________________________________________________
 
    noncrop = 255
-
-!- Set parameter grid array inputs:
-#if 0
-   LDT_irrig_struc(n)%irrig_proj  = "latlon"
-   param_gridDesc(1)  = 0.     
-   param_gridDesc(2)  = input_cols
-   param_gridDesc(3)  = input_rows
-   param_gridDesc(4)  = 20.0099   ! LL lat 
-   param_gridDesc(5)  = 21.2861   ! LL lon
-   param_gridDesc(6)  = 128
-   param_gridDesc(7)  = 39.9989   ! UR lat
-   param_gridDesc(8)  = 52.2033   ! UR lon
-   param_gridDesc(9)  = IN_yres     ! dy: 0.00225
-   param_gridDesc(10) = IN_xres     ! dx: 0.00225
-   param_gridDesc(20) = 64
-
-!       write(LDT_logunit,*)"[ERR] Other spatial grid transformations are not currently supported"
-!       write(LDT_logunit,*)"   user-derived irrigation area percentage. Please select either:"
-!       write(LDT_logunit,*)"  -- neighbor, biliear  (to downscale)"
-!       write(LDT_logunit,*)"  -- neighbor, average (to upscale)"
-!       call LDT_endrun
-
-   if( LDT_rc%lis_map_proj.eq."latlon" ) then
-    if( LDT_rc%gridDesc(n,4) < (param_gridDesc(4)-IN_yres) .or.  & ! LL Lat
-        LDT_rc%gridDesc(n,5) < (param_gridDesc(5)-IN_xres) .or.  & ! LL Lon
-        LDT_rc%gridDesc(n,7) > (param_gridDesc(7)+IN_yres) .or.  & ! UR Lat
-        LDT_rc%gridDesc(n,8) > (param_gridDesc(8)+IN_xres) ) then  ! UR Lon
-      write(LDT_logunit,*)"[ERR] LDT Run domain exceeds 'UserDerived' domain ... "
-      write(LDT_logunit,*)"Run (LL_lat):",LDT_rc%gridDesc(n,4),"< Param:",(param_gridDesc(4)-IN_yres)
-      write(LDT_logunit,*)"Run (LL_lon):",LDT_rc%gridDesc(n,5),"< Param:",(param_gridDesc(5)-IN_xres)
-      write(LDT_logunit,*)"Run (UR_lat):",LDT_rc%gridDesc(n,7),"> Param:",(param_gridDesc(7)-IN_yres)
-      write(LDT_logunit,*)"Run (UR_lon):",LDT_rc%gridDesc(n,8),"> Param:",(param_gridDesc(8)-IN_xres)
-      call LDT_endrun
-    end if
-   endif
-#endif
 
 !- Check if file is present:
    inquire(file=trim(LDT_irrig_struc(n)%irrigfracfile), exist=file_exists)
@@ -126,7 +90,7 @@
 
   call LDT_releaseUnitNumber(ftn)
 
-  write(LDT_logunit,*) "[INFO] Done reading User Defined irrigation gridcell fractions"
+  write(LDT_logunit,*) "[INFO] Done reading User derived irrigation gridcell fractions"
 
 end subroutine read_UserDerived_irrigfrac
 
