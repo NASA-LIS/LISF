@@ -81,12 +81,13 @@
   do r = 1,LDT_rc%lnr(n)
      do c = 1,LDT_rc%lnc(n)
         if( array(c,r,1).lt.0 ) then
-           fgrd(c,r) = LDT_rc%udef
+           fgrd(c,r) = 0.
         else
            fgrd(c,r) = array(c,r,1)
         endif
      enddo
   enddo
+!  fgrd(:,:) = array(:,:,1)
 
   call LDT_releaseUnitNumber(ftn)
 
