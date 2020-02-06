@@ -29,6 +29,8 @@ module SMAP_smobsMod
 !
 ! !REVISION HISTORY: 
 !  21 July 2016: Sujay Kumar, Initial Specification
+!  31 July 2019 Mahdi Navari : SMAP Composite Release ID was added (this option asks a user to 
+!         enter the part of Composite Release ID a three-character string like R16 )
 ! 
 !EOP
 
@@ -45,7 +47,7 @@ module SMAP_smobsMod
 
      character*100        :: odir
      character*20         :: data_designation
-
+     character*3           :: release_number
      integer              :: nc
      integer              :: nr
      integer              :: mo
@@ -118,6 +120,10 @@ contains
     call LVT_verify(status, &
          'SMAP soil moisture data designation: not defined')
 
+    call ESMF_ConfigGetAttribute(LVT_Config, SMAP_smobs(i)%release_number, &
+         label='SMAP(NASA) soil moisture Composite Release ID (e.g., R16):', rc=status)
+    call LVT_verify(status, &
+         'SMAP(NASA) soil moisture Composite Release ID (e.g., R16): not defined')
 
     if(SMAP_smobs(i)%data_designation.eq."SPL3SMAP") then 
        !SMAP L3 radar/radiometer daily 9km
