@@ -22,6 +22,11 @@ module directInsertion_Mod
 !                            structures
 ! 
 ! !USES:
+  use ESMF
+  use LIS_coreMod
+  use LIS_DAobservationsMod
+  use LIS_surfaceModelMod
+  use LIS_logMod
 
   implicit none
   PRIVATE
@@ -86,11 +91,7 @@ contains
 !  \end{description} 
 !
 ! !USES:     
-    use ESMF
-    use LIS_coreMod,only          : LIS_rc
-    use LIS_lsmMod, only          : LIS_LSM_State, LIS_LSM_Incr_State
-    use LIS_DAobservationsMod, only : LIS_OBS_State
-    use LIS_logMod, only          : LIS_logunit, LIS_verify
+
 !EOP
     integer, intent(in)      :: n 
     integer, intent(in)      :: k
@@ -101,23 +102,16 @@ contains
          value=data_status,rc=status)
     call LIS_verify(status)
 
-    call ESMF_AttributeSet(LIS_LSM_Incr_State(n,k),&
-         "Fresh Increments Status", .false., rc=status)
-    call LIS_verify(status)    
+    call LIS_surfaceModel_DASetFreshIncrementsStatus(n,k,.false.)
     
     if(data_status) then 
-       write(LIS_logunit,*) 'Using Direct Insertion for Assimilation',n
-       call lsmdagetstatevar(trim(LIS_rc%lsm)//"+"//&
-            trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k))
-       call Lsmdaobstransform(trim(LIS_rc%lsm)//"+"//&
-            trim(LIS_rc%daset(k))//char(0), n, LIS_OBS_State(n,k))
-       call lsmdamapobstolsm(trim(LIS_rc%lsm)//"+"//&
-            trim(LIS_rc%daset(k))//char(0), n, k, LIS_OBS_State(n,k),&
-            LIS_LSM_Incr_State(n,k))
-       
-       call ESMF_AttributeSet(LIS_LSM_Incr_State(n,k), &
-            "Fresh Increments Status",&
-            value = .true., rc=status)
+       write(LIS_logunit,*) '[INFO] Using Direct Insertion for Assimilation',k
+       call LIS_surfaceModel_DAGetStateVar(n,k)
+
+       call LIS_surfaceModel_DAobsTransform(n,k)
+       call LIS_surfaceModel_DAmapObsToLSM(n,k)
+
+       call LIS_surfaceModel_DASetFreshIncrementsStatus(n,k,.true.)
     endif
 
   end subroutine di_increments
@@ -132,7 +126,6 @@ contains
 ! !USES: 
     use ESMF
     use LIS_coreMod, only         : LIS_rc
-    use LIS_lsmMod, only          : LIS_LSM_State, LIS_LSM_Incr_State
 ! !ARGUMENTS: 
     integer, intent(in)    :: n
     integer, intent(in)    :: k
@@ -153,23 +146,20 @@ contains
     logical       :: fresh_incr
     integer                  :: status
 
-    call ESMF_AttributeGet(LIS_LSM_Incr_State(n,k),"Fresh Increments Status",&
-         value = fresh_incr, rc=status)
+    call LIS_surfaceModel_DAGetFreshIncrementsStatus(n,k,fresh_incr)
 
     if(fresh_incr) then 
 !-----------------------------------------------------------------
 ! apply increments
 !-----------------------------------------------------------------
-       call lsmdaupdatestate(trim(LIS_rc%lsm)//"+"//&
-            trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k),&
-            LIS_LSM_Incr_State(n,k))       
+       call LIS_surfaceModel_DAUpdateState(n,k)
 !----------------------------------------------------------------------
 !  Update the LSM's state variables
 !----------------------------------------------------------------------       
-       call lsmdaqcstate(trim(LIS_rc%lsm)//"+"//&
-            trim(LIS_rc%daset(k))//char(0),n,LIS_LSM_State(n,k))
-       call lsmdasetstatevar(trim(LIS_rc%lsm)//"+"//&
-            trim(LIS_rc%daset(k))//char(0),n, LIS_LSM_State(n,k))
+       call LIS_surfaceModel_DAQCstate(n,k)
+       
+       call LIS_surfaceModel_DASetStateVar(n,k)
+
     endif
 
   end subroutine di_update
