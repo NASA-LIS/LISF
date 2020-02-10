@@ -196,5 +196,5 @@ vim -N -u NONE -i NONE -e -s \
 ### Step 4: delete src/params/shared/cable_maths_constants_mod.F90, which has a bug and not necessary
 # rm ./src/params/shared/cable_maths_constants_mod.F90
 
-### Step 5: delete jules.F9o0 
+### Step 5: delete jules.F90
 rm ./src/control/standalone/jules.F90
