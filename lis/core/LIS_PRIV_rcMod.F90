@@ -947,7 +947,9 @@ module LIS_PRIV_rcMod
      real                   :: irrigation_GVFparam1   !WN
      real                   :: irrigation_GVFparam2   !WN
      integer                :: irrigation_GWabstraction !JE 
- 
+
+     logical, allocatable       :: LSM_DAinst_valid(:)
+     logical, allocatable       :: Routing_DAinst_valid(:)
   end type lisrcdec
   
 end module LIS_PRIV_rcMod

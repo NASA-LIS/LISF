@@ -196,6 +196,8 @@ contains
     logical               :: check_flag
     character*1000        :: allunits
 
+    integer               :: m
+
     TRACE_ENTER("DA_init")
     max_index = -1
     do i=1,LIS_rc%ndas
@@ -433,9 +435,22 @@ contains
        endif
     endif
 
-    do i=1,LIS_rc%ndas
-       call lsmdainit(trim(LIS_rc%lsm)//"+"//&
-            trim(LIS_rc%daset(i))//char(0),i)
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          do i=1,LIS_rc%ndas
+             if(LIS_rc%LSM_DAinst_valid(i)) then
+                call lsmdainit(trim(LIS_rc%lsm)//"+"//&
+                     trim(LIS_rc%daset(i))//char(0),i)
+             endif
+          enddo
+          do i=1,LIS_rc%ndas
+             if(LIS_rc%Routing_DAinst_valid(i)) then
+                call routingdainit(trim(LIS_rc%routingmodel)//"+"//&
+                     trim(LIS_rc%daset(i))//char(0),i)
+             endif
+          enddo
+       endif
     enddo
 
 #endif

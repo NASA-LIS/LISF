@@ -661,6 +661,7 @@ subroutine LIS_readConfig()
   allocate(LIS_rc%wensems(LIS_rc%ndas))
   allocate(LIS_rc%wobs(LIS_rc%ndas))
   allocate(LIS_rc%winnov(LIS_rc%ndas))
+  
 
   npert_forc = 0 
   npert_state = 0 
@@ -925,6 +926,10 @@ subroutine LIS_readConfig()
      endif
   enddo
   
+  call ESMF_ConfigGetAttribute(LIS_config, LIS_rc%routingmodel, &
+       label="Routing model:",default="none", rc=rc)
+
+
  LIS_rc%endcode = 1
 
 88 format(a4,25x,a3,5x,16a)

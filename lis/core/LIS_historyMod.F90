@@ -164,6 +164,16 @@ module LIS_historyMod
   end interface
 
 !BOP
+! !ROUTINE: LIS_grid2tile
+! \label{LIS_grid2tile}
+!
+! !INTERFACE:
+  interface LIS_grid2tile
+     module procedure grid2tile
+     module procedure grid2tile_ens
+  end interface
+  
+!BOP
 ! 
 ! !ROUTINE: LIS_writevar_reduced_tilespace
 ! \label{LIS_writevar_reduced_tilespace}
@@ -371,6 +381,7 @@ module LIS_historyMod
   interface LIS_tile2grid
 ! !PRIVATE MEMBER FUNCTIONS: 
      module procedure tile2grid_local
+     module procedure tile2grid_local_ens
      module procedure tile2grid_global_ens
      module procedure tile2grid_global_noens
 ! 
@@ -6423,11 +6434,53 @@ subroutine writevar_grib2_withstats_real(ftn, ftn_stats, n,   &
 end subroutine writevar_grib2_withstats_real
 
 !BOP
-! !ROUTINE: LIS_grid2tile
-! \label{LIS_grid2tile}
+! !ROUTINE: grid2tile_ens
+! \label{grid2tile_ens}
 !
 ! !INTERFACE:
-  subroutine LIS_grid2tile(n,gvar,tvar)
+  subroutine grid2tile_ens(n,m,gvar,tvar)
+! !USES:
+
+    implicit none
+! !ARGUMENTS:     
+    integer, intent(in) :: n
+    integer, intent(in) :: m
+    real                :: gvar(LIS_rc%lnc(n),LIS_rc%lnr(n))
+    real                :: tvar(LIS_rc%ntiles(n))
+
+! !DESCRIPTION:
+!  This routine converts a tile space variable to the corresponding
+!  grid space. The aggregation involves weighted average of each tile
+!  in a grid cell based on the vegetation distribution. 
+!
+!  The arguments are: 
+!  \begin{description}
+!   \item [n]
+!     index of the domain or nest.
+!   \item [tvar]
+!     variable dimensioned in the tile space. 
+!   \item [gvar]
+!     variable after converstion to the grid space
+!  \end{description}
+!
+!EOP
+    integer           :: i,t,c,r
+
+    do i=1,LIS_rc%ntiles(n),LIS_rc%nensem(n)
+       r = LIS_domain(n)%tile(i)%row
+       c = LIS_domain(n)%tile(i)%col
+       t = i+m-1
+       tvar(t) = gvar(c,r)
+    enddo
+
+  end subroutine grid2tile_ens
+
+!BOP
+! !ROUTINE: grid2tile
+! \label{grid2tile}
+!
+! !INTERFACE:
+  subroutine grid2tile(n,gvar,tvar)
 ! !USES:
 
     implicit none
@@ -6458,7 +6511,7 @@ end subroutine writevar_grib2_withstats_real
        c = LIS_domain(n)%tile(t)%col
        tvar(t) = gvar(c,r)
     enddo
-  end subroutine LIS_grid2tile
+  end subroutine grid2tile
 
 
 !BOP
@@ -6507,7 +6560,49 @@ end subroutine writevar_grib2_withstats_real
     
   end subroutine tile2grid_local
 
-  subroutine tile2grid_global_ens(n,ensid,gvar,gvar_tile)
+!BOP
+! !ROUTINE: tile2grid_local_ens
+! \label{tile2grid_local_ens}
+!
+! !INTERFACE:
+  subroutine tile2grid_local_ens(n,m,gvar,tvar)
+! !USES:
+
+    implicit none
+! !ARGUMENTS:     
+    integer, intent(in) :: n
+    integer, intent(in) :: m
+    real              :: gvar(LIS_rc%lnc(n),LIS_rc%lnr(n))
+    real, intent(in)  :: tvar(LIS_rc%ntiles(n))
+! !DESCRIPTION:
+!  This routine converts a tile space variable to the corresponding
+!  grid space. The aggregation involves weighted average of each tile
+!  in a grid cell based on the vegetation distribution. 
+!
+!  The arguments are: 
+!  \begin{description}
+!   \item [n]
+!     index of the domain or nest.
+!   \item [tvar]
+!     variable dimensioned in the tile space. 
+!   \item [gvar]
+!     variable after converstion to the grid space
+!  \end{description}
+!
+!EOP
+    integer           :: i,c,r,t
+
+    gvar = 0.0
+    do i=1,LIS_rc%ntiles(n),LIS_rc%nensem(n)
+       c = LIS_domain(n)%tile(i)%col
+       r = LIS_domain(n)%tile(i)%row
+       t = i+m-1
+       gvar(c,r) = tvar(t)          
+    enddo
+    
+  end subroutine tile2grid_local_ens
+
+  subroutine tile2grid_global_ens(n,ensid,gvar,gvar_tile,global)
 
     implicit none
     
