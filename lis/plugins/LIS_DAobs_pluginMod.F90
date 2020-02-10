@@ -501,6 +501,7 @@ subroutine LIS_DAobs_plugin
    call registerdaobssetup(trim(LIS_usafsiobsId)//char(0),USAFSIobs_setup)
    call registerreaddaobs(trim(LIS_usafsiobsId)//char(0),read_USAFSIobs)
    call registerwritedaobs(trim(LIS_usafsiobsId)//char(0),write_USAFSIobs)
+
 #endif
 
 #if 0
