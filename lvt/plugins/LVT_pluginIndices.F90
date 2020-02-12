@@ -204,6 +204,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_NLDAS2obsId        = "NLDAS2"
    character*50, public,  parameter :: LVT_GHCNobsId          = "GHCN"
    character*50, public,  parameter :: LVT_ALEXIobsId         = "ALEXI"
+   character*50, public,  parameter :: LVT_ALEXIesiobsId      = "ALEXI ESI"
    character*50, public,  parameter :: LVT_GRACEobsId         = "GRACE"
    character*50, public,  parameter :: LVT_simGRACEobsId      = "simulated GRACE"
    character*50, public,  parameter :: LVT_USGSGWwellobsId    = "USGS ground water well data"
