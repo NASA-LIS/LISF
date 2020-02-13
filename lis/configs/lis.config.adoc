@@ -7283,6 +7283,11 @@ height in meters of air temperature and specific humidity observations.
 `Noah.3.6 reference height for forcing u and v:` specifies the
 height in meters of u and v wind forcings.
 
+`Noah.3.6 removal of residual snow fix:` specifies whether or not
+a snow fix is used (1 - fix is active, 0 - inactive). The land-surface
+model was found to keep very small amounts of snow in rare cases. This
+fix zeros out snow values that are under a predetermined threshold.
+
 .Example _lis.config_ entry
 ....
 Noah.3.6 model timestep:                  15mn
@@ -7325,6 +7330,7 @@ Noah.3.6 background albedo:   0.18  0.17  0.16  0.15  0.15  0.15  0.15  0.16  0.
 Noah.3.6 background roughness length: 0.020 0.020 0.025 0.030 0.035 0.036 0.035 0.030 0.027 0.025 0.020 0.020
 Noah.3.6 reference height for forcing T and q:   2.0      # (m) - negative=use height from forcing data
 Noah.3.6 reference height for forcing u and v:  10.0      # (m) - negative=use height from forcing data
+Noah.3.6 removal of residual snow fix: 0
 ....
 
 

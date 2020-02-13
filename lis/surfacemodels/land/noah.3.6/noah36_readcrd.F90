@@ -237,6 +237,17 @@ subroutine noah36_readcrd()
      call LIS_verify(rc,'Noah.3.6 reference height for forcing u and v: not defined')
   enddo
 
+  call ESMF_ConfigFindLabel(LIS_config,"Noah.3.6 removal of residual snow fix:",rc=rc)
+  do n=1,LIS_rc%nnest
+    call ESMF_ConfigGetAttribute(LIS_config,noah36_struc(n)%snowfix,rc=rc)
+    if (noah36_struc(n)%snowfix .ne. 1) then
+      noah36_struc(n)%snowfix = 0
+      write(LIS_logunit,*) "[INFO] Custom Noah 3.6 snow fix option IS NOT active."
+    else
+      write(LIS_logunit,*) "[INFO] Custom Noah 3.6 snow fix option is active."
+    endif
+  enddo
+  
   write(LIS_logunit,*) '[INFO] Running Noah-3.6 LSM:'
 
 end subroutine noah36_readcrd
