@@ -1,0 +1,48 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+! !ROUTINE: jules50_qc_snodepobs
+! \label{jules50_qc_snodepobs}
+!
+! !REVISION HISTORY:
+! 25Feb2008: Sujay Kumar: Initial Specification
+! 05 Nov 2018: Yeosang Yoon; Modified for Jules 5.0
+!
+! !INTERFACE:
+subroutine jules50_qc_snodepobs(n,OBS_State)
+! !USES:
+  use ESMF
+  use LIS_coreMod
+  use LIS_logMod,  only : LIS_verify
+  use LIS_constantsMod, only : LIS_CONST_TKFRZ
+  use jules50_lsmMod
+
+  implicit none
+! !ARGUMENTS: 
+  integer, intent(in)      :: n
+  integer                  :: t
+  real                     :: elev
+  type(ESMF_State)         :: OBS_State
+!
+! !DESCRIPTION:
+!
+!  This subroutine performs any model-based QC of the observation 
+!  prior to data assimilation. Here the snow observations
+!  are flagged when LSM indicates that (1) rain is falling (2)
+!  ground is fully or partially covered with snow. 
+!  
+!  The arguments are: 
+!  \begin{description}
+!  \item[n] index of the nest \newline
+!  \item[OBS\_State] ESMF state container for observations \newline
+!  \end{description}
+!
+!EOP
+
+end subroutine jules50_qc_snodepobs
+
