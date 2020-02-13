@@ -1,0 +1,38 @@
+JULES.5.3 LSM Testcase
+
+This is a testcase that uses:
+  (a) The NLDAS2 forcing
+  (b) Nearest-neighbour Interpolation
+  (c) The JULES version 5.3 land surface model
+  (d) North American domain at 1/8 degree spatial resolution
+  (e) A time period from 13z 1 Jan 1979 to 00z 1 Mar 1979
+
+This directory contains:
+  (a) This README file
+  (b) The "ldt.config" file to generate the parameters using LDT
+  (c) An "input.ctl" file used to open the LDT parameters in GrADS
+  (d) An "input_testcase.ctl" file used to open the LDT parameters in GrADS
+  (e) The "lis.config" file used for this testcase
+  (f) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+     to select the output variables
+  (g) An "output.ctl" file used to display the output in GrADS from
+      the LIS run
+  (h) A "testcase.ctl" file used to display the output in GrADS from
+      the LIS run
+
+Note that the "ldt.config" and "lis.config" files should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+To run this testcase:
+  (a) Generate the LDT and the LIS executables
+  (b) Run the LDT executable using the "ldt.config" file 
+      with the testcase input data
+  (c) Run the LIS executable using the "lis.config" file with the
+      testcase input data
+  (d) View the binary output using the testcase GrADS files
+
+Caveats:
+  (a) Please note that this is a simple functional test and the output
+      from the testcase is not expected to be used for any scientific
+      evaluation.
