@@ -1539,6 +1539,7 @@ contains
     integer,intent(out)                         :: rc
 ! !LOCAL VARIABLES:
     integer                         :: tile, col, row
+    integer,allocatable             :: tcount(:,:)
     real(ESMF_KIND_R4)              :: actual_fillVal
 ! !DESCRIPTION:
 !  This routine copies from an LIS 1D array to a 2D array
@@ -1549,16 +1550,26 @@ contains
     else
       actual_fillVal = MISSINGVALUE
     endif
-    do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      tile = LIS_domain(nest)%gindex(col,row)
-      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-        farray(col,row) = farrayLIS(tile)
-      else
+
+    allocate(tcount(lbound(farray,1):ubound(farray,1),lbound(farray,2):ubound(farray,2)))
+    farray(:,:) = 0
+    tcount(:,:) = 0
+    do tile=1,LIS_rc%ntiles(nest)
+      col = LIS_domain(nest)%tile(tile)%col
+      row = LIS_domain(nest)%tile(tile)%row
+      farray(col,row) = farray(col,row) + farrayLIS(tile)
+      tcount(col,row) = tcount(col,row) + 1
+    enddo
+    do col=lbound(farray,1),ubound(farray,1)
+    do row=lbound(farray,2),ubound(farray,2)
+      if (tcount(col,row) .eq. 0) then
         farray(col,row) = actual_fillVal
-      endif
+      else
+        farray(col,row) = farray(col,row) / tcount(col,row)
+      end if
     enddo
     enddo
+    deallocate(tcount)
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -1575,6 +1586,7 @@ contains
     integer,intent(out)                         :: rc
 ! !LOCAL VARIABLES:
     integer                         :: tile, col, row
+    integer,allocatable             :: tcount(:,:)
     real(ESMF_KIND_R4)              :: actual_fillVal
 ! !DESCRIPTION:
 !  This routine copies from an LIS 1D array to a 2D array
@@ -1585,16 +1597,27 @@ contains
     else
       actual_fillVal = MISSINGVALUE
     endif
-    do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      tile = LIS_domain(nest)%gindex(col,row)
-      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-        farray(col,row) = farrayLIS(tile)
-      else
+
+    allocate(tcount(lbound(farray,1):ubound(farray,1),lbound(farray,2):ubound(farray,2)))
+    farray(:,:) = 0
+    tcount(:,:) = 0
+    do tile=1,LIS_rc%ntiles(nest)
+      col = LIS_domain(nest)%tile(tile)%col
+      row = LIS_domain(nest)%tile(tile)%row
+      farray(col,row) = farray(col,row) + farrayLIS(tile)
+      tcount(col,row) = tcount(col,row) + 1
+    enddo
+    do col=lbound(farray,1),ubound(farray,1)
+    do row=lbound(farray,2),ubound(farray,2)
+      if (tcount(col,row) .eq. 0) then
         farray(col,row) = actual_fillVal
-      endif
+      else
+        farray(col,row) = farray(col,row) / tcount(col,row)
+      end if
     enddo
     enddo
+    deallocate(tcount)
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -1611,6 +1634,7 @@ contains
     integer,intent(out)                         :: rc
 ! !LOCAL VARIABLES:
     integer                         :: tile, col, row
+    integer,allocatable             :: tcount(:,:)
     real(ESMF_KIND_R4)              :: actual_fillVal
 ! !DESCRIPTION:
 !  This routine copies from an LIS 1D array to a 2D array
@@ -1621,16 +1645,27 @@ contains
     else
       actual_fillVal = MISSINGVALUE
     endif
-    do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      tile = LIS_domain(nest)%gindex(col,row)
-      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-        farray(col,row) = farrayLIS(tile)
-      else
+
+    allocate(tcount(lbound(farray,1):ubound(farray,1),lbound(farray,2):ubound(farray,2)))
+    farray(:,:) = 0
+    tcount(:,:) = 0
+    do tile=1,LIS_rc%ntiles(nest)
+      col = LIS_domain(nest)%tile(tile)%col
+      row = LIS_domain(nest)%tile(tile)%row
+      farray(col,row) = farray(col,row) + farrayLIS(tile)
+      tcount(col,row) = tcount(col,row) + 1
+    enddo
+    do col=lbound(farray,1),ubound(farray,1)
+    do row=lbound(farray,2),ubound(farray,2)
+      if (tcount(col,row) .eq. 0) then
         farray(col,row) = actual_fillVal
-      endif
+      else
+        farray(col,row) = farray(col,row) / tcount(col,row)
+      end if
     enddo
     enddo
+    deallocate(tcount)
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -1647,6 +1682,7 @@ contains
     integer,intent(out)                         :: rc
 ! !LOCAL VARIABLES:
     integer                         :: tile, col, row
+    integer,allocatable             :: tcount(:,:)
     real(ESMF_KIND_R4)              :: actual_fillVal
 ! !DESCRIPTION:
 !  This routine copies from an LIS 1D array to a 2D array
@@ -1657,16 +1693,27 @@ contains
     else
       actual_fillVal = MISSINGVALUE
     endif
-    do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      tile = LIS_domain(nest)%gindex(col,row)
-      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-        farray(col,row) = farrayLIS(tile)
-      else
+
+    allocate(tcount(lbound(farray,1):ubound(farray,1),lbound(farray,2):ubound(farray,2)))
+    farray(:,:) = 0
+    tcount(:,:) = 0
+    do tile=1,LIS_rc%ntiles(nest)
+      col = LIS_domain(nest)%tile(tile)%col
+      row = LIS_domain(nest)%tile(tile)%row
+      farray(col,row) = farray(col,row) + farrayLIS(tile)
+      tcount(col,row) = tcount(col,row) + 1
+    enddo
+    do col=lbound(farray,1),ubound(farray,1)
+    do row=lbound(farray,2),ubound(farray,2)
+      if (tcount(col,row) .eq. 0) then
         farray(col,row) = actual_fillVal
-      endif
+      else
+        farray(col,row) = farray(col,row) / tcount(col,row)
+      end if
     enddo
     enddo
+    deallocate(tcount)
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -1683,6 +1730,7 @@ contains
     integer,intent(out)                         :: rc
 ! !LOCAL VARIABLES:
     integer                         :: tile, col, row
+    integer,allocatable             :: tcount(:,:)
     real(ESMF_KIND_R4)              :: actual_fillVal
 ! !DESCRIPTION:
 !  This routine copies from an LIS 1D array to a 2D array
@@ -1693,16 +1741,26 @@ contains
     else
       actual_fillVal = MISSINGVALUE
     endif
-    do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      tile = LIS_domain(nest)%gindex(col,row)
-      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-        farray(col,row) = farrayLIS(tile)
-      else
+
+    allocate(tcount(lbound(farray,1):ubound(farray,1),lbound(farray,2):ubound(farray,2)))
+    farray(:,:) = 0
+    tcount(:,:) = 0
+    do tile=1,LIS_rc%ntiles(nest)
+      col = LIS_domain(nest)%tile(tile)%col
+      row = LIS_domain(nest)%tile(tile)%row
+      farray(col,row) = farray(col,row) + farrayLIS(tile)
+      tcount(col,row) = tcount(col,row) + 1
+    enddo
+    do col=lbound(farray,1),ubound(farray,1)
+    do row=lbound(farray,2),ubound(farray,2)
+      if (tcount(col,row) .eq. 0) then
         farray(col,row) = actual_fillVal
-      endif
+      else
+        farray(col,row) = farray(col,row) / tcount(col,row)
+      end if
     enddo
     enddo
+    deallocate(tcount)
   end subroutine
 
 end module
