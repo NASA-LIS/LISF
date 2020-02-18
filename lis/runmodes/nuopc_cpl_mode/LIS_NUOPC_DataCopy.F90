@@ -1560,12 +1560,12 @@ contains
       farray(col,row) = farray(col,row) + farrayLIS(tile)
       tcount(col,row) = tcount(col,row) + 1
     enddo
-    do col=lbound(farray,1),ubound(farray,1)
-    do row=lbound(farray,2),ubound(farray,2)
-      if (tcount(col,row) .eq. 0) then
-        farray(col,row) = actual_fillVal
+    do row=1,LIS_rc%lnr(nest)
+    do col=1,LIS_rc%lnc(nest)
+      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
+        farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
       else
-        farray(col,row) = farray(col,row) / tcount(col,row)
+        farray(col,row) = actual_fillVal
       end if
     enddo
     enddo
@@ -1607,12 +1607,12 @@ contains
       farray(col,row) = farray(col,row) + farrayLIS(tile)
       tcount(col,row) = tcount(col,row) + 1
     enddo
-    do col=lbound(farray,1),ubound(farray,1)
-    do row=lbound(farray,2),ubound(farray,2)
-      if (tcount(col,row) .eq. 0) then
-        farray(col,row) = actual_fillVal
+    do row=1,LIS_rc%lnr(nest)
+    do col=1,LIS_rc%lnc(nest)
+      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
+        farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
       else
-        farray(col,row) = farray(col,row) / tcount(col,row)
+        farray(col,row) = actual_fillVal
       end if
     enddo
     enddo
@@ -1655,12 +1655,12 @@ contains
       farray(col,row) = farray(col,row) + farrayLIS(tile)
       tcount(col,row) = tcount(col,row) + 1
     enddo
-    do col=lbound(farray,1),ubound(farray,1)
-    do row=lbound(farray,2),ubound(farray,2)
-      if (tcount(col,row) .eq. 0) then
-        farray(col,row) = actual_fillVal
+    do row=1,LIS_rc%lnr(nest)
+    do col=1,LIS_rc%lnc(nest)
+      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
+        farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
       else
-        farray(col,row) = farray(col,row) / tcount(col,row)
+        farray(col,row) = actual_fillVal
       end if
     enddo
     enddo
@@ -1703,12 +1703,12 @@ contains
       farray(col,row) = farray(col,row) + farrayLIS(tile)
       tcount(col,row) = tcount(col,row) + 1
     enddo
-    do col=lbound(farray,1),ubound(farray,1)
-    do row=lbound(farray,2),ubound(farray,2)
-      if (tcount(col,row) .eq. 0) then
-        farray(col,row) = actual_fillVal
+    do row=1,LIS_rc%lnr(nest)
+    do col=1,LIS_rc%lnc(nest)
+      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
+        farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
       else
-        farray(col,row) = farray(col,row) / tcount(col,row)
+        farray(col,row) = actual_fillVal
       end if
     enddo
     enddo
@@ -1751,12 +1751,12 @@ contains
       farray(col,row) = farray(col,row) + farrayLIS(tile)
       tcount(col,row) = tcount(col,row) + 1
     enddo
-    do col=lbound(farray,1),ubound(farray,1)
-    do row=lbound(farray,2),ubound(farray,2)
-      if (tcount(col,row) .eq. 0) then
-        farray(col,row) = actual_fillVal
+    do row=1,LIS_rc%lnr(nest)
+    do col=1,LIS_rc%lnc(nest)
+      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
+        farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
       else
-        farray(col,row) = farray(col,row) / tcount(col,row)
+        farray(col,row) = actual_fillVal
       end if
     enddo
     enddo
