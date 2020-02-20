@@ -29,6 +29,7 @@ module LIS_lsmda_pluginMod
 !  05 Nov 2019: David Mocko, removed JULES_5_0_DEV compiler flag and
 !                            enabled the compilation of JULES 5.3 DA
 !  13 Dec 2019: Eric Kemp, replaced LDTSI with USAFSI
+!  17 Feb 2020: Yeosang Yoon, added SNODEP & USAFSI Assimilation for Jules 5.x
 !
 !EOP
   implicit none
@@ -227,6 +228,11 @@ subroutine LIS_lsmda_plugin
 
 #if ( defined SM_JULES_5_3 )
    use jules53_dasoilm_Mod
+#endif
+
+#if ( defined SM_JULES_5_X )
+   use jules5x_dasnodep_Mod
+   use jules5x_dausafsi_Mod
 #endif
 
 #if ( defined SM_NOAH_2_7_1 )
@@ -656,6 +662,34 @@ subroutine LIS_lsmda_plugin
    external jules53_scale_soilm
    external jules53_descale_soilm
    external jules53_updatesoilm
+#endif
+
+#if ( defined SM_JULES_5_X )
+#if ( defined DA_OBS_SNODEP )
+   external jules5x_getsnodepvars
+   external jules5x_transform_snodep
+   external jules5x_map_snodep
+   external jules5x_updatesnodep
+   external jules5x_qcsnodep
+   external jules5x_setsnodepvars
+   external jules5x_getsnodeppred
+   external jules5x_scale_snodep
+   external jules5x_descale_snodep
+   external jules5x_qc_snodepobs
+#endif
+
+#if ( defined DA_OBS_USAFSI )
+   external jules5x_getusafsivars
+   external jules5x_transform_usafsi
+   external jules5x_map_usafsi
+   external jules5x_updateusafsi
+   external jules5x_qcusafsi
+   external jules5x_setusafsivars
+   external jules5x_getusafsipred
+   external jules5x_scale_usafsi
+   external jules5x_descale_usafsi
+   external jules5x_qc_usafsiobs
+#endif
 #endif
 
 #if ( defined SM_NOAH_2_7_1 )
@@ -3110,6 +3144,59 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaupdatestate(trim(LIS_jules53Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules53_updatesoilm)
 #endif  !endif for SM_JULES_5_3
+
+#if ( defined SM_JULES_5_X )
+#if ( defined DA_OBS_SNODEP )
+! Jules 5.x snow depth, Yeosang Yoon
+   call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_dasnodep_init)
+   call registerlsmdagetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_getsnodepvars)
+   call registerlsmdaobstransform(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_transform_snodep)
+   call registerlsmdamapobstolsm(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_map_snodep)
+   call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_updatesnodep)
+   call registerlsmdaqcstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_qcsnodep)
+   call registerlsmdasetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_setsnodepvars)
+   call registerlsmdagetobspred(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_getsnodeppred)
+   call registerlsmdascalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_scale_snodep)
+   call registerlsmdadescalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_descale_snodep)
+   call registerlsmdaqcobsstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_qc_snodepobs)
+#endif
+
+#if ( defined DA_OBS_USAFSI )
+   call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_dausafsi_init)
+   call registerlsmdagetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_getusafsivars)
+   call registerlsmdaobstransform(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_transform_usafsi)
+   call registerlsmdamapobstolsm(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_map_usafsi)
+   call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_updateusafsi)
+   call registerlsmdaqcstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_qcusafsi)
+   call registerlsmdasetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_setusafsivars)
+   call registerlsmdagetobspred(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_getusafsipred)
+   call registerlsmdascalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_scale_usafsi)
+   call registerlsmdadescalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_descale_usafsi)
+   call registerlsmdaqcobsstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_qc_usafsiobs)
+#endif
+#endif !endif for SM_JULES_5_X
 
 #endif  !endif for DA_DIRECT_INSERTION, DA_ENKS, or DA_ENKF
 
