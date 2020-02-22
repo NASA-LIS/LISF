@@ -726,6 +726,10 @@ subroutine jules5x_main(n)
                     value = snow_frac,                                                   &
                     vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
 
+                  call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWCOVER,             &
+                    value = (snow_frac*100.0),                                           &
+                    vlevel=1, unit="%", direction="-", surface_type = LIS_rc%lsm_index)
+
                   prcp = jules5x_struc(n)%jules5x(t)%rainf/jules5x_struc(n)%forc_count
                   
                   if (jules5x_struc(n)%jules5x(t)%tair  .lt. 273.16) then 
