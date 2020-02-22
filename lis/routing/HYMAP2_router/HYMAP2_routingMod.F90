@@ -1279,6 +1279,8 @@ contains
 !  create the Routing perturbation state only if perturbation
 !  option is turned on. 
 !---------------------------------------------------------------------
+    Routing_DAvalid = .false. 
+
     if(LIS_rc%ndas.gt.0.or.LIS_rc%nperts.gt.0) then 
        
        Routing_DAvalid = .true. 
