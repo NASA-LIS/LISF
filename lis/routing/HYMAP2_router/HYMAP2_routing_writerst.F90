@@ -130,7 +130,6 @@ subroutine HYMAP2_dump_restart(n, ftn)
     call HYMAP2_writeGlobalHeader_restart(ftn, n, &
          "HYMAP2", &
          dimID)
-
     call HYMAP2_writeHeader_restart(ftn, n, dimID, rivsto_ID, "RIVSTO", &
          "river storage", &
          "-", 1, -99999.0, 99999.0)
@@ -161,54 +160,54 @@ subroutine HYMAP2_dump_restart(n, ftn)
     ! write state variables into restart file
     ! snow albedo at last time step
     if(HYMAP2_routing_struc(n)%useens.eq.0) then 
-       call HYMAP2_writevar_restart(ftn,n,1, &
+       call HYMAP2_writevar_restart(ftn,n, &
             HYMAP2_routing_struc(n)%rivsto, &
             rivsto_ID)    
-       call HYMAP2_writevar_restart(ftn,n,1, &
+       call HYMAP2_writevar_restart(ftn,n, &
             HYMAP2_routing_struc(n)%fldsto, &
             fldsto_ID)    
-       call HYMAP2_writevar_restart(ftn,n,1, &
+       call HYMAP2_writevar_restart(ftn,n, &
             HYMAP2_routing_struc(n)%rnfsto, &
             rnfsto_ID)    
-       call HYMAP2_writevar_restart(ftn,n,1, &
+       call HYMAP2_writevar_restart(ftn,n, &
             HYMAP2_routing_struc(n)%bsfsto, &
             bsfsto_ID)    
-       call HYMAP2_writevar_restart(ftn,n,1, &
+       call HYMAP2_writevar_restart(ftn,n, &
             HYMAP2_routing_struc(n)%rivout_pre, &
             rivout_pre_ID)    
-       call HYMAP2_writevar_restart(ftn,n,1, &
+       call HYMAP2_writevar_restart(ftn,n, &
             HYMAP2_routing_struc(n)%rivdph_pre, &
             rivdph_pre_ID)    
-       call HYMAP2_writevar_restart(ftn,n,1, &
+       call HYMAP2_writevar_restart(ftn,n, &
             HYMAP2_routing_struc(n)%fldout_pre, &
             fldout_pre_ID)    
-       call HYMAP2_writevar_restart(ftn,n,1, &
+       call HYMAP2_writevar_restart(ftn,n, &
             HYMAP2_routing_struc(n)%flddph_pre, &
             flddph_pre_ID)    
     else
 
-       call HYMAP2_writevar_restart_ens(ftn,n,LIS_rc%nensem(n), &
+       call HYMAP2_writevar_restart_ens(ftn,n,&
             HYMAP2_routing_struc(n)%rivsto, &
             rivsto_ID)    
-       call HYMAP2_writevar_restart_ens(ftn,n,LIS_rc%nensem(n), &
+       call HYMAP2_writevar_restart_ens(ftn,n,&
             HYMAP2_routing_struc(n)%fldsto, &
             fldsto_ID)    
-       call HYMAP2_writevar_restart_ens(ftn,n,LIS_rc%nensem(n), &
+       call HYMAP2_writevar_restart_ens(ftn,n,&
             HYMAP2_routing_struc(n)%rnfsto, &
             rnfsto_ID)    
-       call HYMAP2_writevar_restart_ens(ftn,n,LIS_rc%nensem(n), &
+       call HYMAP2_writevar_restart_ens(ftn,n,&
             HYMAP2_routing_struc(n)%bsfsto, &
             bsfsto_ID)    
-       call HYMAP2_writevar_restart_ens(ftn,n,LIS_rc%nensem(n), &
+       call HYMAP2_writevar_restart_ens(ftn,n, &
             HYMAP2_routing_struc(n)%rivout_pre, &
             rivout_pre_ID)    
-       call HYMAP2_writevar_restart_ens(ftn,n,LIS_rc%nensem(n), &
+       call HYMAP2_writevar_restart_ens(ftn,n, &
             HYMAP2_routing_struc(n)%rivdph_pre, &
             rivdph_pre_ID)    
-       call HYMAP2_writevar_restart_ens(ftn,n,LIS_rc%nensem(n), &
+       call HYMAP2_writevar_restart_ens(ftn,n, &
             HYMAP2_routing_struc(n)%fldout_pre, &
             fldout_pre_ID)    
-       call HYMAP2_writevar_restart_ens(ftn,n,LIS_rc%nensem(n), &
+       call HYMAP2_writevar_restart_ens(ftn,n, &
             HYMAP2_routing_struc(n)%flddph_pre, &
             flddph_pre_ID)    
     endif
