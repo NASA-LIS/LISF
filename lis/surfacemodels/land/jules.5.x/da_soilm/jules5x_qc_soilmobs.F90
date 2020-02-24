@@ -12,6 +12,7 @@
 ! !REVISION HISTORY:
 ! 25Feb2008: Sujay Kumar: Initial Specification
 ! 21 Dec 2018: Mahdi Navari; Modified for JULES 5.3
+! 12 Feb 2020: Shugong Wang; Modifed for JULES 5.5 and later version
 !
 ! !INTERFACE:
 subroutine jules5x_qc_soilmobs(n,k,OBS_State)
@@ -407,6 +408,10 @@ sneqv = 0
            smobs(t) = LIS_rc%udef
         elseif(vegt_obs(t).eq.9) then !Land-ice
            smobs(t) = LIS_rc%udef
+        elseif(l_aggregate) then
+           if (smcmax_obs(t) == 0) then !glacier grid !Yonghwan Kwon
+              smobs(t) = LIS_rc%udef
+           endif
         elseif(sneqv_obs(t).gt.0.001) then 
            smobs(t) = LIS_rc%udef
         elseif(fsno_obs(t).gt.0) then   
@@ -416,12 +421,12 @@ sneqv = 0
         elseif(smcmax_obs(t)-smobs(t).lt.0.02) then 
            smobs(t) = LIS_rc%udef
 !#if 0
-        elseif(shdfac_obs(t).gt.0.7) then ! vegetation fraction 
-           smobs(t) = LIS_rc%udef    
+        !elseif(shdfac_obs(t).gt.0.7) then ! vegetation fraction 
+        !   smobs(t) = LIS_rc%udef    
 !#endif  
 !In some soil types wilting point is very high e.g. 0.237 m3/m3
-        elseif(smobs(t) - smcwlt_obs(t).lt.0.02) then  ! changed from 0.02 to ... 
-            smobs(t) = LIS_rc%udef
+        !elseif(smobs(t) - smcwlt_obs(t).lt.0.02) then  ! changed from 0.02 to ... 
+        !    smobs(t) = LIS_rc%udef                           !Yonghwan Kwon: Temporary commented out
 
         endif
      endif
