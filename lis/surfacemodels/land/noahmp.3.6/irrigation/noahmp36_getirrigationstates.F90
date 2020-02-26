@@ -57,6 +57,9 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
 ! May 2018: Wanshu Nie; Add temperature check for GRACE-DA purpose
 ! May 2019: Jessica Erlingis; Incorporate W. Nie's updates into LIS
 !                             and add optional flag for groundwater abstraction
+! Feb 2020: Jessica Erlingis; Correct sprinkler scheme so that it checks moisture
+!                             at otimess and applies constant rate for irrhrs
+
 !EOP
   implicit none
   ! Sprinkler parameters
@@ -96,6 +99,7 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
   integer              :: lroot,veg_index1,veg_index2
   real                 :: gsthresh, ltime
   real                 :: shdfac, shdmin, shdmax
+  real                 :: timestep, shift_otimes, shift_otimee
 ! _______________wanshu  add GW extraction_______________________________
   real                 :: AWS
   real                 :: Dtime
@@ -139,8 +143,6 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
   call LIS_read_shdmax(n,placeshdmax)
   call LIS_read_shdmin(n,placeshdmin)
 
- irrigRate =0.0
-
 !----------------------------------------------------------------------
 ! Set start and end times for selected irrigation type
 !----------------------------------------------------------------------
@@ -160,6 +162,19 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
   
  
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+
+     timestep = NOAHMP36_struc(n)%dt
+     
+     ! Adjust bounds by timestep to account for the fact that LIS_rc%hr, etc. will
+     ! represents the END of the integration timestep window
+
+     !write(LIS_logunit,*) 'Orig window ', otimes, otimee
+
+     shift_otimes = otimes + (timestep/3600.)
+     shift_otimee = otimee + (timestep/3600.)
+
+     !write(LIS_logunit,*) 'Timestep ', timestep
+     !write(LIS_logunit,*) 'Shift window ', shift_otimes, shift_otimee
 
      twater  = 0.0
      water   = 0.0
@@ -211,17 +226,25 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
      if(lhr.lt.0) lhr = lhr+24
                 
      ltime = real(lhr)+real(LIS_rc%mn)/60.0+real(LIS_rc%ss)/3600.0
-   !  write(LIS_logunit,*) 'local time:', ltime
-       
+!     write(LIS_logunit,*) 'local time:', ltime
+    
      shdfac =  NOAHMP36_struc(n)%noahmp36(t)%shdfac_monthly(LIS_rc%mo)
+
+   ! If we are outside of the irrigation window, set rate to 0
+     if ((ltime.gt.shift_otimee).or.(ltime.lt.shift_otimes)) then
+       irrigRate(t) = 0.0
+       write(LIS_logunit,*) ltime, 'is outside the irrigation window'     
+     endif
 
 ! Calculate vegetation and root depth parameters
    
      !if((ltime.ge.otimes).and.(ltime.lt.otimee)) then 
 !---------wanshu----add temp check----
 ! JE This temperature check avoids irrigating at temperatures near or below 0C
-     if((ltime.ge.otimes).and.(ltime.lt.otimee).and.(sfctemp.gt.tempcheck)) then 
+     if((ltime.ge.shift_otimes).and.(ltime.le.shift_otimee).and. &
+         (sfctemp.gt.tempcheck)) then 
 !------------------------------------
+        !write(LIS_logunit,*) ltime, 'is inside the irrigation window ', irrigRate(t)
         vegt = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%vegt
        !----------------------------------------------------------------------       
        !    Proceed if it is non-forest, non-baresoil, non-urban
@@ -303,7 +326,7 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
                        !    If local time at the tile fall in the irrigation check
                        !    hour then check the root zone average soil moisture
                        !----------------------------------------------------------------------       
-                       !if(ltime.eq.otimes) then 
+                       if(ltime.eq.shift_otimes) then !Check moisture availability at otimes only
                          !-------------------------------------------------------------
                          !     Compute the root zone accumlative soil moisture [mm], 
                          !     field capacity [mm], and wilting point [mm] 
@@ -344,12 +367,13 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
                                 twater = twater*(100.0/(100.0-efcor))
                              !-----------------------------------------------------------------------------
                              !     Compute irrigation rate
-                                 irrigRate(t)=twater/((otimee-ltime)*3600.0)  
-                              !  write(LIS_logunit,*) 'twater', twater
+                             !    irrigRate(t)=twater/((otimee-ltime)*3600.0) !For checking each time step
+                                 irrigRate(t) = twater/(irrhr*3600.0)
+                                 !write(LIS_logunit,*) 'twater', twater
 
                            endif
                         endif
-                    ! endif
+                     endif
                        !!!!! DRIP IRRIGATION (NOT CURRENTLY IMPLEMENTED)
                   elseif(LIS_rc%irrigation_type.eq."Drip") then
                        ! Need to get crop coefficient so that we can caculate unstressed Transp
@@ -449,7 +473,7 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
            ! Remove irrigated water from groundwater 
            !JE Add in flag to turn groundwater abstraction on/off
            if (LIS_rc%irrigation_GWabstraction.eq.1) then
-              write(LIS_logunit,*) 'Withdrawing irrigation from groundwater'
+              !write(LIS_logunit,*) 'Withdrawing irrigation from groundwater'
               AWS = NOAHMP36_struc(n)%noahmp36(t)%wa
               Dtime = NOAHMP36_struc(n)%dt
               NOAHMP36_struc(n)%noahmp36(t)%wa = AWS - irrigRate(t)*Dtime
