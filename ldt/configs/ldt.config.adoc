@@ -407,6 +407,28 @@ The default value is 1.
 Add buffer to parameter grid domain:     0
 ....
 
+`Buffer count in x-direction:` adds a set number of pixels that buffer 
+around a parameter file target domain, both in the x- and y-directions.
+Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"0" |No buffer added
+|"1 (or greater)" |Buffer points included
+|===
+
+The default value is 5.
+
+.Example _ldt.config_ entry
+....
+Buffer count in x-direction:   10 
+Buffer count in y-direction:   10
+....
+
+
+
 `Number of ensembles per tile:` specifies the number of ensembles of tiles to be used. The value should be greater than or equal to 1.
 
 .Example _ldt.config_ entry
