@@ -29,6 +29,7 @@ module LIS_lsmda_pluginMod
 !  05 Nov 2019: David Mocko, removed JULES_5_0_DEV compiler flag and
 !                            enabled the compilation of JULES 5.3 DA
 !  13 Dec 2019: Eric Kemp, replaced LDTSI with USAFSI
+!  17 Feb 2020: Yeosang Yoon, added SNODEP & USAFSI Assimilation for Jules 5.x
 !
 !EOP
   implicit none
@@ -231,6 +232,8 @@ subroutine LIS_lsmda_plugin
 
 #if ( defined SM_JULES_5_X )
    use jules5x_dasoilm_Mod
+   use jules5x_dasnodep_Mod
+   use jules5x_dausafsi_Mod
 #endif
 
 #if ( defined SM_NOAH_2_7_1 )
@@ -673,6 +676,32 @@ subroutine LIS_lsmda_plugin
    external jules5x_scale_soilm
    external jules5x_descale_soilm
    external jules5x_updatesoilm
+
+#if ( defined DA_OBS_SNODEP )
+   external jules5x_getsnodepvars
+   external jules5x_transform_snodep
+   external jules5x_map_snodep
+   external jules5x_updatesnodep
+   external jules5x_qcsnodep
+   external jules5x_setsnodepvars
+   external jules5x_getsnodeppred
+   external jules5x_scale_snodep
+   external jules5x_descale_snodep
+   external jules5x_qc_snodepobs
+#endif
+
+#if ( defined DA_OBS_USAFSI )
+   external jules5x_getusafsivars
+   external jules5x_transform_usafsi
+   external jules5x_map_usafsi
+   external jules5x_updateusafsi
+   external jules5x_qcusafsi
+   external jules5x_setusafsivars
+   external jules5x_getusafsipred
+   external jules5x_scale_usafsi
+   external jules5x_descale_usafsi
+   external jules5x_qc_usafsiobs
+#endif
 #endif
 
 #if ( defined SM_NOAH_2_7_1 )
@@ -2975,126 +3004,6 @@ subroutine LIS_lsmda_plugin
         trim(LIS_snodepobsId)//char(0),jules50_qc_snodepobs)
 #endif
 
-!! Added by Shugong Wang for JULES 5.5+ DA 
-#if ( defined SM_JULES_5_X )
-!SW: JULES 5.5+ SMAP(NASA) soil moisture
-   call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_dasoilm_init)
-   call registerlsmdagetstatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_getsoilm)
-   call registerlsmdasetstatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_setsoilm)
-   call registerlsmdagetobspred(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_getsmpred)
-   call registerlsmdaqcstate(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_qcsoilm)
-   call registerlsmdaqcobsstate(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_qc_soilmobs)
-   call registerlsmdascalestatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_scale_soilm)
-   call registerlsmdadescalestatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_descale_soilm)
-   call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_updatesoilm)
-
-! SW: JULES 5.5+ SMAP(NRT) soil moisture
-   call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_dasoilm_init)
-   call registerlsmdagetstatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_getsoilm)
-   call registerlsmdasetstatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_setsoilm)
-   call registerlsmdagetobspred(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_getsmpred)
-   call registerlsmdaqcstate(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_qcsoilm)
-   call registerlsmdaqcobsstate(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_qc_soilmobs)
-   call registerlsmdascalestatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_scale_soilm)
-   call registerlsmdadescalestatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_descale_soilm)
-   call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_updatesoilm)
-
-! SW: JULES 5.5+ SMOPS ASCAT soil moisture
-   call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_dasoilm_init)
-   call registerlsmdagetstatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_getsoilm)
-   call registerlsmdasetstatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_setsoilm)
-   call registerlsmdagetobspred(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_getsmpred)
-   call registerlsmdaqcstate(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_qcsoilm)
-   call registerlsmdaqcobsstate(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_qc_soilmobs)
-   call registerlsmdascalestatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_scale_soilm)
-   call registerlsmdadescalestatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_descale_soilm)
-   call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_updatesoilm)
-
-!#if ( defined DA_OBS_SNODEP )
-#if (0 )
-! Jules 5.0 snow depth, Yeosang Yoon
-! DA + snodep wirings
-   call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_snodepobsId)//char(0),jules5x_dasnodep_init)
-   call registerlsmdagetstatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_snodepobsId)//char(0),jules5x_getsnodepvars)
-   call registerlsmdaobstransform(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_snodepobsId)//char(0),jules5x_transform_snodep)
-   call registerlsmdamapobstolsm(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_snodepobsId)//char(0),jules5x_map_snodep)
-   call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_snodepobsId)//char(0),jules5x_updatesnodep)
-   call registerlsmdaqcstate(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_snodepobsId)//char(0),jules5x_qcsnodep)
-   call registerlsmdasetstatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_snodepobsId)//char(0),jules5x_setsnodepvars)
-   call registerlsmdagetobspred(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_snodepobsId)//char(0),jules5x_getsnodeppred)
-   call registerlsmdascalestatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_snodepobsId)//char(0),jules5x_scale_snodep)
-   call registerlsmdadescalestatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_snodepobsId)//char(0),jules5x_descale_snodep)
-   call registerlsmdaqcobsstate(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_snodepobsId)//char(0),jules5x_qc_snodepobs)
-#endif
-
-!#if (defined DA_OBS_USAFSI )
-#if ( 0 )
-! Jules 5.0 USAFSI, Yeosang Yoon
-! DA + snodep wirings
-   call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_usafsiobsId)//char(0),jules5x_dausafsi_init)
-   call registerlsmdagetstatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_usafsiobsId)//char(0),jules5x_getusafsivars)
-   call registerlsmdaobstransform(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_usafsiobsId)//char(0),jules5x_transform_usafsi)
-   call registerlsmdamapobstolsm(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_usafsiobsId)//char(0),jules5x_map_usafsi)
-   call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_usafsiobsId)//char(0),jules5x_updateusafsi)
-   call registerlsmdaqcstate(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_usafsiobsId)//char(0),jules5x_qcusafsi)
-   call registerlsmdasetstatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_usafsiobsId)//char(0),jules5x_setusafsivars)
-   call registerlsmdagetobspred(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_usafsiobsId)//char(0),jules5x_getusafsipred)
-   call registerlsmdascalestatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_usafsiobsId)//char(0),jules5x_scale_usafsi)
-   call registerlsmdadescalestatevar(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_usafsiobsId)//char(0),jules5x_descale_usafsi)
-   call registerlsmdaqcobsstate(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_usafsiobsId)//char(0),jules5x_qc_usafsiobs)
-#endif
-
-#endif  !endif for SM_JULES_5_X
-
 #if ( defined DA_OBS_USAFSI )
 ! Jules 5.0 USAFSI, Yeosang Yoon
 ! DA + snodep wirings
@@ -3308,8 +3217,58 @@ subroutine LIS_lsmda_plugin
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_updatesoilm)
-#endif  !endif for SM_JULES_5_X
 
+#if ( defined DA_OBS_SNODEP )
+! Jules 5.x snow depth, Yeosang Yoon
+   call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_dasnodep_init)
+   call registerlsmdagetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_getsnodepvars)
+   call registerlsmdaobstransform(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_transform_snodep)
+   call registerlsmdamapobstolsm(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_map_snodep)
+   call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_updatesnodep)
+   call registerlsmdaqcstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_qcsnodep)
+   call registerlsmdasetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_setsnodepvars)
+   call registerlsmdagetobspred(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_getsnodeppred)
+   call registerlsmdascalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_scale_snodep)
+   call registerlsmdadescalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_descale_snodep)
+   call registerlsmdaqcobsstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_qc_snodepobs)
+#endif
+
+#if ( defined DA_OBS_USAFSI )
+   call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_dausafsi_init)
+   call registerlsmdagetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_getusafsivars)
+   call registerlsmdaobstransform(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_transform_usafsi)
+   call registerlsmdamapobstolsm(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_map_usafsi)
+   call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_updateusafsi)
+   call registerlsmdaqcstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_qcusafsi)
+   call registerlsmdasetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_setusafsivars)
+   call registerlsmdagetobspred(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_getusafsipred)
+   call registerlsmdascalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_scale_usafsi)
+   call registerlsmdadescalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_descale_usafsi)
+   call registerlsmdaqcobsstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_qc_usafsiobs)
+#endif
+#endif 
 
 #endif  !endif for DA_DIRECT_INSERTION, DA_ENKS, or DA_ENKF
 

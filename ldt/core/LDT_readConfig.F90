@@ -388,6 +388,17 @@ subroutine LDT_readConfig(configfile)
        default=1,rc=rc)
   call LDT_verify(rc,'Add buffer to parameter grid domain: not defined')
 
+  call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%x_buffer,&
+       label="Buffer count in x-direction:",&
+       default=5,rc=rc)
+  call LDT_verify(rc,'Buffer count in x-direction: not defined')
+
+  call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%y_buffer,&
+       label="Buffer count in y-direction:",&
+       default=5,rc=rc)
+  call LDT_verify(rc,'Buffer count in y-direction: not defined')
+
+
 ! Set number of processors along x and y directions:
   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%npesx,&
        label="Number of processors along x:", &
