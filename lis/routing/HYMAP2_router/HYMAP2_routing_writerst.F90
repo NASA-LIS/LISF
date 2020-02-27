@@ -130,7 +130,6 @@ subroutine HYMAP2_dump_restart(n, ftn)
     call HYMAP2_writeGlobalHeader_restart(ftn, n, &
          "HYMAP2", &
          dimID)
-
     call HYMAP2_writeHeader_restart(ftn, n, dimID, rivsto_ID, "RIVSTO", &
          "river storage", &
          "-", 1, -99999.0, 99999.0)

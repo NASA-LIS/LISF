@@ -159,6 +159,8 @@ contains
 !  create the LSM perturbation state only if perturbation
 !  option is turned on. 
 !---------------------------------------------------------------------
+    LSM_DAvalid = .false. 
+
     if(LIS_rc%ndas.gt.0.or.LIS_rc%nperts.gt.0) then 
 
        allocate(LIS_LSM_State(LIS_rc%nnest, LIS_rc%nperts))
