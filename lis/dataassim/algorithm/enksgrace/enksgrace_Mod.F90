@@ -234,7 +234,8 @@ contains
     logical                       :: assim
     integer                       :: gid, t,p
     real                          :: avg_factor
-!    integer                       :: days(12), mindex !BZ    
+!    integer                       :: days(12), mindex !BZ  
+#if 0   
 !    data days /31,28,31,30,31,30,31,31,30,31,30,31/  !BZ
 !----------------------------------------------------------------------------
 !  Check if the observation state is updated or not. If it is updated,
@@ -501,6 +502,8 @@ contains
        deallocate(Obs_pred)
        deallocate(Obs_pert)
     end if
+
+#endif
     
   end subroutine enksgrace_increments
 

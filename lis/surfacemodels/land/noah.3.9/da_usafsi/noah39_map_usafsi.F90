@@ -23,7 +23,7 @@ subroutine noah39_map_usafsi(n,k,OBS_State,LSM_Incr_State)
   use ESMF
   use LIS_coreMod, only : LIS_rc
   use LIS_logMod,   only  : LIS_verify
-  use LIS_DAobservationsMod
+  use LIS_lsmMod
   use noah39_lsmMod
 
   implicit none
@@ -97,9 +97,7 @@ subroutine noah39_map_usafsi(n,k,OBS_State,LSM_Incr_State)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
-     call LIS_mapTileSpaceToObsSpace(n, k, LIS_rc%lsm_index, &
-          t, st_id, en_id)
-
+     call LIS_lsm_DAmapTileSpaceToObsSpace(n,k,t,st_id,en_id)
 ! Assume here that st_id and en_id are the same and that we are
 ! working with an model grid finer than the observation grid
 
