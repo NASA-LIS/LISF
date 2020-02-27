@@ -18,11 +18,12 @@
 module LIS_surfaceModelMod
   use ESMF
   use LIS_coreMod
-  use LIS_lsmMod
   use LIS_lakemodelMod
   use LIS_glaciermodelMod
   use LIS_openwatermodelMod
   use LIS_surfaceModelDataMod
+  use LIS_lsmMod
+  use LIS_routingMod
   use LIS_timeMgrMod
   use LIS_logMod
   use LIS_RTMMod
@@ -45,6 +46,24 @@ module LIS_surfaceModelMod
   public :: LIS_surfaceModel_reset
   public :: LIS_surfaceModel_diagnoseVarsforDA
   public :: LIS_surfaceModel_setexport
+  public :: LIS_surfaceModel_DAGetObsPred
+  public :: LIS_surfaceModel_DAGetStateVar
+  public :: LIS_surfaceModel_DASetStateVar
+  public :: LIS_surfaceModel_DAScaleStateVar
+  public :: LIS_surfaceModel_DADescaleStateVar
+  public :: LIS_surfaceModel_DAUpdateState
+  public :: LIS_surfaceModel_DAQCState
+  public :: LIS_surfaceModel_DAgetStateSpaceSize
+  public :: LIS_surfaceModel_DAextractStateVector
+  public :: LIS_surfaceModel_DASetFreshIncrementsStatus
+  public :: LIS_surfaceModel_DAGetFreshIncrementsStatus
+  public :: LIS_surfaceModel_DAsetAnlysisUpdates
+  public :: LIS_surfaceModel_DAmapTileSpaceToObsSpace
+  public :: LIS_surfaceModel_DAgetStateVarNames
+  public :: LIS_surfaceModel_DAobsTransform
+  public :: LIS_surfaceModel_DAmapObsToLSM
+  public :: LIS_surfaceModel_DAqcObsState
+  public :: LIS_surfaceModel_getlatlons
 
 !BOP
 ! !ROUTINE: LIS_surfaceModel_setexport
@@ -456,6 +475,7 @@ contains
     do m=1,LIS_rc%nsf_model_types
        if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
           call LIS_lsm_perturb_states(n)
+          call LIS_routing_perturb_states(n)
        elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
 
        elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
@@ -479,7 +499,8 @@ contains
     integer,    intent(IN)  :: n 
 
 ! !DESCRIPTION:
-! This routine diagnoses output for data assimilation.
+! This routine diagnoses variables needed for obspred
+! calculations for data assimilation.
 !
 !  The arguments are: 
 !  \begin{description}
@@ -503,6 +524,375 @@ contains
     TRACE_EXIT("sf_diagDAout")
 
   end subroutine LIS_surfaceModel_diagnoseVarsforDA
+
+
+  subroutine LIS_surfaceModel_DAGetObsPred(n,k,Obs_Pred)
+    
+    integer                :: n
+    integer                :: k
+    real                   :: obs_pred(LIS_rc%obs_ngrid(k),LIS_rc%nensem(n))
+
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+
+          call LIS_lsm_DAGetObsPred(n,k,Obs_Pred)
+          call LIS_routing_DAGetObsPred(n,k,Obs_pred)
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+  end subroutine LIS_surfaceModel_DAGetObsPred
+
+
+  subroutine LIS_surfaceModel_DAGetStateVar(n,k)
+    integer                :: n
+    integer                :: k
+    
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DAGetStateVar(n,k)
+          call LIS_routing_DAGetStateVar(n,k)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+  end subroutine LIS_surfaceModel_DAGetStateVar
+
+  subroutine LIS_surfaceModel_DASetStateVar(n,k)
+    integer                :: n
+    integer                :: k
+    
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DASetStateVar(n,k)
+          call LIS_routing_DASetStateVar(n,k)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+  end subroutine LIS_surfaceModel_DASetStateVar
+
+  subroutine LIS_surfaceModel_DAScaleStateVar(n,k)
+    integer                :: n
+    integer                :: k
+    
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DAScaleStateVar(n,k)
+          call LIS_routing_DAScaleStateVar(n,k)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+  end subroutine LIS_surfaceModel_DAScaleStateVar
+
+  subroutine LIS_surfaceModel_DADescaleStateVar(n,k)
+    integer                :: n
+    integer                :: k
+    
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DADescaleStateVar(n,k)
+          call LIS_routing_DADescaleStateVar(n,k)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+  end subroutine LIS_surfaceModel_DADescaleStateVar
+
+  subroutine LIS_surfaceModel_DAUpdateState(n,k)
+    integer                :: n
+    integer                :: k
+    
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DAUpdateState(n,k)
+          call LIS_routing_DAUpdateState(n,k)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+  end subroutine LIS_surfaceModel_DAUpdateState
+
+  subroutine LIS_surfaceModel_DAQCState(n,k)
+    integer                :: n
+    integer                :: k
+    
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DAQCState(n,k)
+          call LIS_routing_DAQCState(n,k)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+  end subroutine LIS_surfaceModel_DAQCState
+
+  function LIS_surfaceModel_DAgetStateSpaceSize(n,k) result(size)
+    integer                :: n
+    integer                :: k
+    integer                :: size
+    integer                :: m
+
+    size = 0
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DAgetStateSpaceSize(n,k,size)
+          call LIS_routing_DAgetStateSpaceSize(n,k,size)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+          
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+          
+       endif
+    enddo
+
+  end function LIS_surfaceModel_DAgetStateSpaceSize
+
+  subroutine LIS_surfaceModel_DAextractStateVector(n,k,Nstate,state_size,stvar)
+
+    integer                :: n
+    integer                :: k
+    integer                :: Nstate
+    integer                :: state_size
+    real                   :: stvar(Nstate,state_size)
+    
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DAextractStateVector(n,k,state_size,stvar)
+          call LIS_routing_DAextractStateVector(n,k,state_size,stvar)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+
+  end subroutine LIS_surfaceModel_DAextractStateVector
+
+  subroutine LIS_surfaceModel_DASetFreshIncrementsStatus(n,k,setStatus)
+    
+    integer                :: n
+    integer                :: k
+    logical                :: setStatus
+
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DAsetFreshIncrementsStatus(n,k,setStatus)
+          call LIS_routing_DAsetFreshIncrementsStatus(n,k,setStatus)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+  end subroutine LIS_surfaceModel_DASetFreshIncrementsStatus
+
+  subroutine LIS_surfaceModel_DAGetFreshIncrementsStatus(n,k,setStatus)
+    
+    integer                :: n
+    integer                :: k
+    logical                :: setStatus
+
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DAgetFreshIncrementsStatus(n,k,setStatus)
+          call LIS_routing_DAgetFreshIncrementsStatus(n,k,setStatus)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+  end subroutine LIS_surfaceModel_DAGetFreshIncrementsStatus
+
+  subroutine LIS_surfaceModel_DAsetAnlysisUpdates(n,k,Nstate,state_size,&
+       stvar,stincr)
+
+    integer                :: n
+    integer                :: k
+    integer                :: Nstate
+    integer                :: state_size
+    real                   :: stvar(Nstate,state_size)
+    real                   :: stincr(Nstate,state_size)
+
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DAsetAnlysisUpdates(n,k,state_size,stvar,stincr)
+          call LIS_routing_DAsetAnlysisUpdates(n,k,state_size,stvar,stincr)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+
+  end subroutine LIS_surfaceModel_DAsetAnlysisUpdates
+
+  subroutine LIS_surfaceModel_DAmapTileSpaceToObsSpace(&
+       n,k,tileid,st_id,en_id)
+
+    integer                :: n 
+    integer                :: k
+    integer                :: tileid
+    integer                :: st_id
+    integer                :: en_id
+
+
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DAmapTileSpaceToObsSpace(n,k,tileid,st_id,en_id)
+          call LIS_routing_DAmapTileSpaceToObsSpace(n,k,tileid,st_id,en_id)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+
+  end subroutine LIS_surfaceModel_DAmapTileSpaceToObsSpace
+
+  subroutine LIS_surfaceModel_DAgetStateVarNames(n,k,stateNames)
+
+    integer                :: n 
+    integer                :: k
+    character(len=*)       :: stateNames(LIS_rc%nstVars(k))
+
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DAgetStateVarNames(n,k,stateNames)
+          call LIS_routing_DAgetStateVarNames(n,k,stateNames)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+
+  end subroutine LIS_surfaceModel_DAgetStateVarNames
+
+
+  subroutine LIS_surfaceModel_DAobsTransform(n,k)
+
+    integer                :: n 
+    integer                :: k
+
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DAobsTransform(n,k)
+          call LIS_routing_DAobsTransform(n,k)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+
+  end subroutine LIS_surfaceModel_DAobsTransform
+
+  subroutine LIS_surfaceModel_DAmapObsToLSM(n,k)
+
+    integer                :: n 
+    integer                :: k
+
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DAmapObsToLSM(n,k)
+          call LIS_routing_DAmapObsToRouting(n,k)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+          
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+  end subroutine LIS_surfaceModel_DAmapObsToLSM
+
+
+  subroutine LIS_surfaceModel_DAqcObsState(n,k)
+
+    integer                :: n 
+    integer                :: k
+
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_DAqcObsState(n,k)
+          call LIS_routing_DAqcObsState(n,k)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+          
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+  end subroutine LIS_surfaceModel_DAqcObsState
+
+  subroutine LIS_surfaceModel_getlatlons(n,k,state_size,lats,lons)
+    
+    integer                :: n
+    integer                :: k
+    integer                :: state_size
+    real                   :: lats(state_size)
+    real                   :: lons(state_size)
+    
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          call LIS_lsm_getlatlons(n,k,state_size,lats,lons)
+          call LIS_routing_getlatlons(n,k,state_size,lats,lons)
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then 
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then 
+
+       endif
+    enddo
+
+  end subroutine LIS_surfaceModel_getlatlons
 
 !BOP
 ! 
