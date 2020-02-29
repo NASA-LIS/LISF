@@ -52,6 +52,11 @@ module LIS_NUOPC_DataCopy
     module procedure LIS_FarrayR8CopyToLisFarrayR4
     module procedure LIS_FarrayR4CopyToLisFarrayR4
     module procedure LIS_FarrayR8CopyToLisFarrayR8
+    module procedure LIS_EnsFarrayI4CopyToLisFarrayI4
+    module procedure LIS_EnsFarrayI8CopyToLisFarrayI8
+    module procedure LIS_EnsFarrayR8CopyToLisFarrayR4
+    module procedure LIS_EnsFarrayR4CopyToLisFarrayR4
+    module procedure LIS_EnsFarrayR8CopyToLisFarrayR8
   end interface
 
   interface LIS_CopyToNoah_3_3
@@ -59,6 +64,8 @@ module LIS_NUOPC_DataCopy
     module procedure LIS_ArrayCopyToNoah_3_3
     module procedure LIS_FarrayR8CopyToNoah_3_3
     module procedure LIS_FarrayR4CopyToNoah_3_3
+    module procedure LIS_EnsFarrayR4CopyToNoah_3_3
+    module procedure LIS_EnsFarrayR8CopyToNoah_3_3
   end interface
 
   interface LIS_CopyToNoahMP_3_6
@@ -66,6 +73,8 @@ module LIS_NUOPC_DataCopy
     module procedure LIS_ArrayCopyToNoahMP_3_6
     module procedure LIS_FarrayR8CopyToNoahMP_3_6
     module procedure LIS_FarrayR4CopyToNoahMP_3_6
+    module procedure LIS_EnsFarrayR4CopyToNoahMP_3_6
+    module procedure LIS_EnsFarrayR8CopyToNoahMP_3_6
   end interface
 
   interface LIS_CopyToNoahMP_4_0_1
@@ -73,6 +82,8 @@ module LIS_NUOPC_DataCopy
     module procedure LIS_ArrayCopyToNoahMP_4_0_1
     module procedure LIS_FarrayR8CopyToNoahMP_4_0_1
     module procedure LIS_FarrayR4CopyToNoahMP_4_0_1
+    module procedure LIS_EnsFarrayR4CopyToNoahMP_4_0_1
+    module procedure LIS_EnsFarrayR8CopyToNoahMP_4_0_1
   end interface
 
   interface LIS_CopyFromLIS
@@ -85,6 +96,11 @@ module LIS_NUOPC_DataCopy
     module procedure LIS_FarrayR8CopyFromLisFarrayR4
     module procedure LIS_FarrayR4CopyFromLisFarrayR4
     module procedure LIS_FarrayR8CopyFromLisFarrayR8
+    module procedure LIS_EnsFarrayI4CopyFromLisFarrayI4
+    module procedure LIS_EnsFarrayI8CopyFromLisFarrayI8
+    module procedure LIS_EnsFarrayR8CopyFromLisFarrayR4
+    module procedure LIS_EnsFarrayR4CopyFromLisFarrayR4
+    module procedure LIS_EnsFarrayR8CopyFromLisFarrayR8
   end interface
 
 !-----------------------------------------------------------------------------
@@ -282,6 +298,10 @@ contains
     integer(ESMF_KIND_I8),pointer   :: farray_I8(:,:)
     real(ESMF_KIND_R4),pointer      :: farray_R4(:,:)
     real(ESMF_KIND_R8),pointer      :: farray_R8(:,:)
+    integer(ESMF_KIND_I4),pointer   :: farray3D_I4(:,:,:)
+    integer(ESMF_KIND_I8),pointer   :: farray3D_I8(:,:,:)
+    real(ESMF_KIND_R4),pointer      :: farray3D_R4(:,:,:)
+    real(ESMF_KIND_R8),pointer      :: farray3D_R8(:,:,:)
 !
 ! !DESCRIPTION:
 !  This routine copies from the cap to LIS or from LIS to the cap
@@ -296,9 +316,9 @@ contains
       localDeCount=localDeCount,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
-    if (rank /= 2) then
+    if (rank /= 2 .AND. rank /= 3) then
       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D array.", &
+        msg="Cannot copy. Array is not a 2D or 3D array.", &
         line=__LINE__, file=FILENAME, rcToReturn=rc)
       return  ! bail out
     endif
@@ -322,33 +342,61 @@ contains
     endif
 
     if(typekind==ESMF_TYPEKIND_I4) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_I4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I4,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToLIS(farray=farray_I4,farrayLIS=farrayLIS_I4,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      if(rank==2) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_I4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToLIS(farray=farray_I4,farrayLIS=farrayLIS_I4,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_I4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToLIS(farray=farray3D_I4,farrayLIS=farrayLIS_I4,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      endif
     elseif(typekind==ESMF_TYPEKIND_I8) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_I8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I8,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToLIS(farray=farray_I8,farrayLIS=farrayLIS_I8,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      if(rank==2) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_I8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToLIS(farray=farray_I8,farrayLIS=farrayLIS_I8,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_I8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToLIS(farray=farray3D_I8,farrayLIS=farrayLIS_I8,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      endif
     elseif(typekind==ESMF_TYPEKIND_R4) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R4,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToLIS(farray=farray_R4,farrayLIS=farrayLIS_R4,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      if(rank==2) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToLIS(farray=farray_R4,farrayLIS=farrayLIS_R4,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_R4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToLIS(farray=farray3D_R4,farrayLIS=farrayLIS_R4,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      endif
     elseif(typekind==ESMF_TYPEKIND_R8) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R8,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToLIS(farray=farray_R8,farrayLIS=farrayLIS_R8,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      if(rank==2) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToLIS(farray=farray_R8,farrayLIS=farrayLIS_R8,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_R8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToLIS(farray=farray3D_R8,farrayLIS=farrayLIS_R8,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      endif
     else
       call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
         msg="Typekind copy not implemented.",rcToReturn=rc)
@@ -373,6 +421,8 @@ contains
     integer                         :: rank
     real(ESMF_KIND_R4),pointer      :: farray_R4(:,:)
     real(ESMF_KIND_R8),pointer      :: farray_R8(:,:)
+    real(ESMF_KIND_R4),pointer      :: farray3D_R4(:,:,:)
+    real(ESMF_KIND_R8),pointer      :: farray3D_R8(:,:,:)
 !
 ! !DESCRIPTION:
 !
@@ -384,9 +434,9 @@ contains
       localDeCount=localDeCount,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
-    if (rank /= 2) then
+    if (rank /= 2 .AND. rank /= 3) then
       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D array.", &
+        msg="Cannot copy. Array is not a 2D or 3D array.", &
         line=__LINE__, file=FILENAME, rcToReturn=rc)
       return  ! bail out
     endif
@@ -397,20 +447,38 @@ contains
       return  ! bail out
     endif
 
-    if(typekind==ESMF_TYPEKIND_R4) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToNoah_3_3(farray=farray_R4,stdName=stdName,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    elseif(typekind==ESMF_TYPEKIND_R8) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToNoah_3_3(farray=farray_R8,stdName=stdName,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
+    if(rank==2) then
+      if(typekind==ESMF_TYPEKIND_R4) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToNoah_3_3(farray=farray_R4,stdName=stdName,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      elseif(typekind==ESMF_TYPEKIND_R8) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToNoah_3_3(farray=farray_R8,stdName=stdName,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+          msg="Typekind copy not implemented.",rcToReturn=rc)
+        return
+      endif
     else
-      call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-        msg="Typekind copy not implemented.",rcToReturn=rc)
-      return
+      if(typekind==ESMF_TYPEKIND_R4) then
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_R4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToNoah_3_3(farray=farray3D_R4,stdName=stdName,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      elseif(typekind==ESMF_TYPEKIND_R8) then
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_R8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToNoah_3_3(farray=farray3D_R8,stdName=stdName,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+          msg="Typekind copy not implemented.",rcToReturn=rc)
+        return
+      endif
     endif
   end subroutine
 
@@ -431,6 +499,8 @@ contains
     integer                         :: rank
     real(ESMF_KIND_R4),pointer      :: farray_R4(:,:)
     real(ESMF_KIND_R8),pointer      :: farray_R8(:,:)
+    real(ESMF_KIND_R4),pointer      :: farray3D_R4(:,:,:)
+    real(ESMF_KIND_R8),pointer      :: farray3D_R8(:,:,:)
 !
 ! !DESCRIPTION:
 !
@@ -442,9 +512,9 @@ contains
       localDeCount=localDeCount,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
-    if (rank /= 2) then
+    if (rank /= 2 .AND. rank /= 3) then
       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D array.", &
+        msg="Cannot copy. Array is not a 2D or 3D array.", &
         line=__LINE__, file=FILENAME, rcToReturn=rc)
       return  ! bail out
     endif
@@ -455,20 +525,38 @@ contains
       return  ! bail out
     endif
 
-    if(typekind==ESMF_TYPEKIND_R4) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToNoahMP_3_6(farray=farray_R4,stdName=stdName,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    elseif(typekind==ESMF_TYPEKIND_R8) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToNoahMP_3_6(farray=farray_R8,stdName=stdName,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
+    if(rank==2) then
+      if(typekind==ESMF_TYPEKIND_R4) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToNoahMP_3_6(farray=farray_R4,stdName=stdName,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      elseif(typekind==ESMF_TYPEKIND_R8) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToNoahMP_3_6(farray=farray_R8,stdName=stdName,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+          msg="Typekind copy not implemented.",rcToReturn=rc)
+        return
+      endif
     else
-      call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-        msg="Typekind copy not implemented.",rcToReturn=rc)
-      return
+      if(typekind==ESMF_TYPEKIND_R4) then
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_R4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToNoahMP_3_6(farray=farray3D_R4,stdName=stdName,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      elseif(typekind==ESMF_TYPEKIND_R8) then
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_R8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToNoahMP_3_6(farray=farray3D_R8,stdName=stdName,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+          msg="Typekind copy not implemented.",rcToReturn=rc)
+        return
+      endif
     endif
   end subroutine
 
@@ -489,6 +577,8 @@ contains
     integer                         :: rank
     real(ESMF_KIND_R4),pointer      :: farray_R4(:,:)
     real(ESMF_KIND_R8),pointer      :: farray_R8(:,:)
+    real(ESMF_KIND_R4),pointer      :: farray3D_R4(:,:,:)
+    real(ESMF_KIND_R8),pointer      :: farray3D_R8(:,:,:)
 !
 ! !DESCRIPTION:
 !
@@ -500,9 +590,9 @@ contains
       localDeCount=localDeCount,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
-    if (rank /= 2) then
+    if (rank /= 2 .AND. rank /= 3) then
       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D array.", &
+        msg="Cannot copy. Array is not a 2D or 3D array.", &
         line=__LINE__, file=FILENAME, rcToReturn=rc)
       return  ! bail out
     endif
@@ -513,20 +603,38 @@ contains
       return  ! bail out
     endif
 
-    if(typekind==ESMF_TYPEKIND_R4) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToNoahMP_4_0_1(farray=farray_R4,stdName=stdName,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    elseif(typekind==ESMF_TYPEKIND_R8) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToNoahMP_4_0_1(farray=farray_R8,stdName=stdName,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
+    if(rank==2) then
+      if(typekind==ESMF_TYPEKIND_R4) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToNoahMP_4_0_1(farray=farray_R4,stdName=stdName,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      elseif(typekind==ESMF_TYPEKIND_R8) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToNoahMP_4_0_1(farray=farray_R8,stdName=stdName,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+          msg="Typekind copy not implemented.",rcToReturn=rc)
+        return
+      endif
     else
-      call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-        msg="Typekind copy not implemented.",rcToReturn=rc)
-      return
+      if(typekind==ESMF_TYPEKIND_R4) then
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_R4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToNoahMP_4_0_1(farray=farray3D_R4,stdName=stdName,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      elseif(typekind==ESMF_TYPEKIND_R8) then
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_R8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToNoahMP_4_0_1(farray=farray3D_R8,stdName=stdName,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+          msg="Typekind copy not implemented.",rcToReturn=rc)
+        return
+      endif
     endif
   end subroutine
 
@@ -547,6 +655,8 @@ contains
     integer                         :: rank
     real(ESMF_KIND_R4),pointer      :: farray_R4(:,:)
     real(ESMF_KIND_R8),pointer      :: farray_R8(:,:)
+    real(ESMF_KIND_R4),pointer      :: farray3D_R4(:,:,:)
+    real(ESMF_KIND_R8),pointer      :: farray3D_R8(:,:,:)
 !
 ! !DESCRIPTION:
 !  This routine copies from the cap to LIS or from LIS to the cap
@@ -558,9 +668,9 @@ contains
       localDeCount=localDeCount,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
-    if (rank /= 2) then
+    if (rank /= 2 .AND. rank /= 3) then
       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D array.", &
+        msg="Cannot copy. Array is not a 2D or 3D array.", &
         line=__LINE__, file=FILENAME, rcToReturn=rc)
       return  ! bail out
     endif
@@ -577,20 +687,38 @@ contains
       return  ! bail out
     endif
 
-    if(typekind==ESMF_TYPEKIND_R4) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToLIS(farray=farray_R4,farrayLIS=farrayLIS,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    elseif(typekind==ESMF_TYPEKIND_R8) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyToLIS(farray=farray_R8,farrayLIS=farrayLIS,nest=nest,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
+    if(rank==2) then
+      if(typekind==ESMF_TYPEKIND_R4) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToLIS(farray=farray_R4,farrayLIS=farrayLIS,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      elseif(typekind==ESMF_TYPEKIND_R8) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToLIS(farray=farray_R8,farrayLIS=farrayLIS,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+          msg="Typekind copy not implemented.",rcToReturn=rc)
+        return
+      endif
     else
-      call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-        msg="Typekind copy not implemented.",rcToReturn=rc)
-      return
+      if(typekind==ESMF_TYPEKIND_R4) then
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_R4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToLIS(farray=farray3D_R4,farrayLIS=farrayLIS,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      elseif(typekind==ESMF_TYPEKIND_R8) then
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_R8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyToLIS(farray=farray3D_R8,farrayLIS=farrayLIS,nest=nest,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+          msg="Typekind copy not implemented.",rcToReturn=rc)
+        return
+      endif
     endif
   end subroutine
 
@@ -619,6 +747,10 @@ contains
     integer(ESMF_KIND_I8),pointer   :: farray_I8(:,:)
     real(ESMF_KIND_R4),pointer      :: farray_R4(:,:)
     real(ESMF_KIND_R8),pointer      :: farray_R8(:,:)
+    integer(ESMF_KIND_I4),pointer   :: farray3D_I4(:,:,:)
+    integer(ESMF_KIND_I8),pointer   :: farray3D_I8(:,:,:)
+    real(ESMF_KIND_R4),pointer      :: farray3D_R4(:,:,:)
+    real(ESMF_KIND_R8),pointer      :: farray3D_R8(:,:,:)
 !
 ! !DESCRIPTION:
 !  This routine copies from the cap to LIS or from LIS to the cap
@@ -633,9 +765,9 @@ contains
       localDeCount=localDeCount,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
-    if (rank /= 2) then
+    if (rank /= 2 .AND. rank /= 3) then
       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D array.", &
+        msg="Cannot copy. Array is not a 2D or 3D array.", &
         line=__LINE__, file=FILENAME, rcToReturn=rc)
       return  ! bail out
     endif
@@ -659,37 +791,69 @@ contains
     endif
 
     if(typekind==ESMF_TYPEKIND_I4) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_I4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I4,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS_I4,farray=farray_I4,nest=nest,&
-        fillVal=fillVal,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      if(rank==2) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_I4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyFromLIS(farrayLIS=farrayLIS_I4,farray=farray_I4,nest=nest,&
+          fillVal=fillVal,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_I4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyFromLIS(farrayLIS=farrayLIS_I4,farray=farray3D_I4,nest=nest,&
+          fillVal=fillVal,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      endif
     elseif(typekind==ESMF_TYPEKIND_I8) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_I8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I8,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS_I8,farray=farray_I8,nest=nest,&
-        fillVal=fillVal,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      if(rank==2) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_I8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyFromLIS(farrayLIS=farrayLIS_I8,farray=farray_I8,nest=nest,&
+          fillVal=fillVal,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_I8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyFromLIS(farrayLIS=farrayLIS_I8,farray=farray3D_I8,nest=nest,&
+          fillVal=fillVal,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      endif
     elseif(typekind==ESMF_TYPEKIND_R4) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R4,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS_R4,farray=farray_R4,nest=nest,&
-        fillVal=fillVal,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      if(rank==2) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyFromLIS(farrayLIS=farrayLIS_R4,farray=farray_R4,nest=nest,&
+          fillVal=fillVal,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_R4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyFromLIS(farrayLIS=farrayLIS_R4,farray=farray3D_R4,nest=nest,&
+          fillVal=fillVal,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      endif
     elseif(typekind==ESMF_TYPEKIND_R8) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R8,rc=rc)
       if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS_R8,farray=farray_R8,nest=nest,&
-        fillVal=fillVal,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      if (rank==2) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyFromLIS(farrayLIS=farrayLIS_R8,farray=farray_R8,nest=nest,&
+          fillVal=fillVal,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_R8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyFromLIS(farrayLIS=farrayLIS_R8,farray=farray3D_R8,nest=nest,&
+          fillVal=fillVal,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      endif
     else
       call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
         msg="Typekind copy not implemented.",rcToReturn=rc)
@@ -715,6 +879,8 @@ contains
     integer                         :: rank
     real(ESMF_KIND_R4),pointer      :: farray_R4(:,:)
     real(ESMF_KIND_R8),pointer      :: farray_R8(:,:)
+    real(ESMF_KIND_R4),pointer      :: farray3D_R4(:,:,:)
+    real(ESMF_KIND_R8),pointer      :: farray3D_R8(:,:,:)
 !
 ! !DESCRIPTION:
 !  This routine copies from the cap to LIS or from LIS to the cap
@@ -726,9 +892,9 @@ contains
       localDeCount=localDeCount,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
-    if (rank /= 2) then
+    if (rank /= 2 .AND. rank /= 3) then
       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D array.", &
+        msg="Cannot copy. Array is not a 2D or 3D array.", &
         line=__LINE__, file=FILENAME, rcToReturn=rc)
       return  ! bail out
     endif
@@ -745,22 +911,42 @@ contains
       return  ! bail out
     endif
 
-    if(typekind==ESMF_TYPEKIND_R4) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray_R4,nest=nest,&
-        fillVal=fillVal,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-    elseif(typekind==ESMF_TYPEKIND_R8) then
-      call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
-      call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray_R8,nest=nest,&
-        fillVal=fillVal,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return ! bail out
+    if(rank==2) then
+      if(typekind==ESMF_TYPEKIND_R4) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray_R4,nest=nest,&
+          fillVal=fillVal,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      elseif(typekind==ESMF_TYPEKIND_R8) then
+        call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray_R8,nest=nest,&
+          fillVal=fillVal,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+          msg="Typekind copy not implemented.",rcToReturn=rc)
+        return
+      endif
     else
-      call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-        msg="Typekind copy not implemented.",rcToReturn=rc)
-      return
+      if(typekind==ESMF_TYPEKIND_R4) then
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_R4,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray3D_R4,nest=nest,&
+          fillVal=fillVal,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      elseif(typekind==ESMF_TYPEKIND_R8) then
+        call ESMF_ArrayGet(array,farrayPtr=farray3D_R8,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray3D_R8,nest=nest,&
+          fillVal=fillVal,rc=rc)
+        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+      else
+        call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+          msg="Typekind copy not implemented.",rcToReturn=rc)
+        return
+      endif
     endif
   end subroutine
 
@@ -1761,6 +1947,1049 @@ contains
     enddo
     enddo
     deallocate(tcount)
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayI4CopyToLisFarrayI4"
+
+  subroutine LIS_EnsFarrayI4CopyToLisFarrayI4(farray,farrayLIS,nest,rc)
+! !ARGUMENTS:
+    integer(ESMF_KIND_I4),intent(in),pointer    :: farray(:,:,:)
+    integer(ESMF_KIND_I4),intent(inout),pointer :: farrayLIS(:)
+    integer,intent(in)                          :: nest
+    integer,intent(out)                         :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+! !DESCRIPTION:
+!  This routine copies from a 2D array to an LIS 1D array
+!EOP
+    rc = ESMF_SUCCESS
+    do tile=1,LIS_rc%ntiles(nest)
+      col = LIS_domain(nest)%tile(tile)%col
+      row = LIS_domain(nest)%tile(tile)%row
+      ens = LIS_domain(nest)%tile(tile)%ensem
+      farrayLIS(tile) = farray(col,row,ens)
+    enddo
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayI8CopyToLisFarrayI8"
+
+  subroutine LIS_EnsFarrayI8CopyToLisFarrayI8(farray,farrayLIS,nest,rc)
+! !ARGUMENTS:
+    integer(ESMF_KIND_I8),intent(in),pointer    :: farray(:,:,:)
+    integer(ESMF_KIND_I8),intent(inout),pointer :: farrayLIS(:)
+    integer,intent(in)                          :: nest
+    integer,intent(out)                         :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+! !DESCRIPTION:
+!  This routine copies from a 2D array to an LIS 1D array
+!EOP
+    rc = ESMF_SUCCESS
+    do tile=1,LIS_rc%ntiles(nest)
+      col = LIS_domain(nest)%tile(tile)%col
+      row = LIS_domain(nest)%tile(tile)%row
+      ens = LIS_domain(nest)%tile(tile)%ensem
+      farrayLIS(tile) = farray(col,row,ens)
+    enddo
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayR8CopyToLisFarrayR4"
+
+  subroutine LIS_EnsFarrayR8CopyToLisFarrayR4(farray,farrayLIS,nest,rc)
+! !ARGUMENTS:
+    real(ESMF_KIND_R8),intent(in),pointer    :: farray(:,:,:)
+    real(ESMF_KIND_R4),intent(inout),pointer :: farrayLIS(:)
+    integer,intent(in)                       :: nest
+    integer,intent(out)                      :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+! !DESCRIPTION:
+!  This routine copies from a 2D array to an LIS 1D array
+!EOP
+    rc = ESMF_SUCCESS
+    do tile=1,LIS_rc%ntiles(nest)
+      col = LIS_domain(nest)%tile(tile)%col
+      row = LIS_domain(nest)%tile(tile)%row
+      ens = LIS_domain(nest)%tile(tile)%ensem
+      farrayLIS(tile) = farray(col,row,ens)
+    enddo
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayR4CopyToLisFarrayR4"
+
+  subroutine LIS_EnsFarrayR4CopyToLisFarrayR4(farray,farrayLIS,nest,rc)
+! !ARGUMENTS:
+    real(ESMF_KIND_R4),intent(in),pointer    :: farray(:,:,:)
+    real(ESMF_KIND_R4),intent(inout),pointer :: farrayLIS(:)
+    integer,intent(in)                       :: nest
+    integer,intent(out)                      :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+! !DESCRIPTION:
+!  This routine copies from a 2D array to an LIS 1D array
+!EOP
+    rc = ESMF_SUCCESS
+    do tile=1,LIS_rc%ntiles(nest)
+      col = LIS_domain(nest)%tile(tile)%col
+      row = LIS_domain(nest)%tile(tile)%row
+      ens = LIS_domain(nest)%tile(tile)%ensem
+      farrayLIS(tile) = farray(col,row,ens)
+    enddo
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayR8CopyToLisFarrayR8"
+
+  subroutine LIS_EnsFarrayR8CopyToLisFarrayR8(farray,farrayLIS,nest,rc)
+! !ARGUMENTS:
+    real(ESMF_KIND_R8),intent(in),pointer    :: farray(:,:,:)
+    real(ESMF_KIND_R8),intent(inout),pointer :: farrayLIS(:)
+    integer,intent(in)                       :: nest
+    integer,intent(out)                      :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+! !DESCRIPTION:
+!  This routine copies from a 2D array to an LIS 1D array
+!EOP
+    rc = ESMF_SUCCESS
+    do tile=1,LIS_rc%ntiles(nest)
+      col = LIS_domain(nest)%tile(tile)%col
+      row = LIS_domain(nest)%tile(tile)%row
+      ens = LIS_domain(nest)%tile(tile)%ensem
+      farrayLIS(tile) = farray(col,row,ens)
+    enddo
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayR4CopyToNoah_3_3"
+
+  subroutine LIS_EnsFarrayR4CopyToNoah_3_3(farray,stdName,nest,rc)
+! !ARGUMENTS:
+    real(ESMF_KIND_R4),intent(in),pointer       :: farray(:,:,:)
+    character(*),intent(in)                     :: stdName
+    integer,intent(in)                          :: nest
+    integer,intent(out)                         :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+! !DESCRIPTION:
+!  This routine copies from a 2D array to an LIS 1D array
+!EOP
+    rc = ESMF_SUCCESS
+    select case (trim(stdName))
+        case ('liquid_fraction_of_soil_moisture_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%sh2o(1) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%sh2o(2) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%sh2o(3) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%sh2o(4) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%smc(1) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%smc(2) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%smc(3) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%smc(4) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%stc(1) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%stc(2) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%stc(3) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%stc(4) = farray(col,row,ens)
+          enddo
+#ifdef WRF_HYDRO
+        case ('surface_water_depth')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%sfhead1rt = farray(col,row,ens)
+          enddo
+#endif
+        case default
+          call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+            msg="Cannot directly hookup to noah33 "//trim(stdName), &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return  ! bail ou
+      end select
+
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayR4CopyToNoahMP_3_6"
+
+  subroutine LIS_EnsFarrayR4CopyToNoahMP_3_6(farray,stdName,nest,rc)
+! !ARGUMENTS:
+    real(ESMF_KIND_R4),intent(in),pointer       :: farray(:,:,:)
+    character(*),intent(in)                     :: stdName
+    integer,intent(in)                          :: nest
+    integer,intent(out)                         :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+! !DESCRIPTION:
+!  This routine copies from a 2D array to an LIS 1D array
+!EOP
+    rc = ESMF_SUCCESS
+    select case (trim(stdName))
+        case ('liquid_fraction_of_soil_moisture_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(1) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(2) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(3) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(4) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%smc(1) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%smc(2) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%smc(3) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%smc(4) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+1) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+2) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+3) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+4) = farray(col,row,ens)
+          enddo
+#ifdef WRF_HYDRO
+        case ('surface_water_depth')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sfcheadrt = farray(col,row,ens)
+          enddo
+#endif
+        case default
+          call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+            msg="Cannot directly hookup to NoahMP36 "//trim(stdName), &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return  ! bail ou
+      end select
+
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayR4CopyToNoahMP_4_0_1"
+
+  subroutine LIS_EnsFarrayR4CopyToNoahMP_4_0_1(farray,stdName,nest,rc)
+! !ARGUMENTS:
+    real(ESMF_KIND_R4),intent(in),pointer       :: farray(:,:,:)
+    character(*),intent(in)                     :: stdName
+    integer,intent(in)                          :: nest
+    integer,intent(out)                         :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+! !DESCRIPTION:
+!  This routine copies from a 2D array to an LIS 1D array
+!EOP
+    rc = ESMF_SUCCESS
+    select case (trim(stdName))
+        case ('liquid_fraction_of_soil_moisture_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(1) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(2) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(3) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(4) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%smc(1) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%smc(2) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%smc(3) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%smc(4) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+1) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+2) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+3) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+4) = farray(col,row,ens)
+          enddo
+#ifdef WRF_HYDRO
+        case ('surface_water_depth')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%sfcheadrt = farray(col,row,ens)
+          enddo
+#endif
+        case default
+          call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+            msg="Cannot directly hookup to Noahmp401 "//trim(stdName), &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return  ! bail ou
+      end select
+
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayR8CopyToNoah_3_3"
+
+  subroutine LIS_EnsFarrayR8CopyToNoah_3_3(farray,stdName,nest,rc)
+! !ARGUMENTS:
+    real(ESMF_KIND_R8),intent(in),pointer       :: farray(:,:,:)
+    character(*),intent(in)                     :: stdName
+    integer,intent(in)                          :: nest
+    integer,intent(out)                         :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+! !DESCRIPTION:
+!  This routine copies from a 2D array to an LIS 1D array
+!EOP
+    rc = ESMF_SUCCESS
+    select case (trim(stdName))
+        case ('liquid_fraction_of_soil_moisture_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%sh2o(1) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%sh2o(2) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%sh2o(3) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%sh2o(4) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%smc(1) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%smc(2) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%smc(3) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%smc(4) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%stc(1) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%stc(2) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%stc(3) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%stc(4) = farray(col,row,ens)
+          enddo
+#ifdef WRF_HYDRO
+        case ('surface_water_depth')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            noah33_struc(nest)%noah(tile)%sfhead1rt = farray(col,row,ens)
+          enddo
+#endif
+        case default
+          call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+            msg="Cannot directly hookup to noah33 "//trim(stdName), &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return  ! bail out
+      end select
+
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayR8CopyToNoahMP_3_6"
+
+  subroutine LIS_EnsFarrayR8CopyToNoahMP_3_6(farray,stdName,nest,rc)
+! !ARGUMENTS:
+    real(ESMF_KIND_R8),intent(in),pointer       :: farray(:,:,:)
+    character(*),intent(in)                     :: stdName
+    integer,intent(in)                          :: nest
+    integer,intent(out)                         :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+! !DESCRIPTION:
+!  This routine copies from a 2D array to an LIS 1D array
+!EOP
+    rc = ESMF_SUCCESS
+    select case (trim(stdName))
+        case ('liquid_fraction_of_soil_moisture_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(1) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(2) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(3) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(4) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%smc(1) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%smc(2) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%smc(3) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%smc(4) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+1) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+2) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+3) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+4) = farray(col,row,ens)
+          enddo
+#ifdef WRF_HYDRO
+        case ('surface_water_depth')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            NoahMP36_struc(nest)%noahmp36(tile)%sfcheadrt = farray(col,row,ens)
+          enddo
+#endif
+        case default
+          call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+            msg="Cannot directly hookup to NoahMP36 "//trim(stdName), &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return  ! bail ou
+      end select
+
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+#undef METHOD
+#define METHOD "LIS_EnsFarrayR8CopyToNoahMP_4_0_1"
+
+  subroutine LIS_EnsFarrayR8CopyToNoahMP_4_0_1(farray,stdName,nest,rc)
+! !ARGUMENTS:
+    real(ESMF_KIND_R8),intent(in),pointer       :: farray(:,:,:)
+    character(*),intent(in)                     :: stdName
+    integer,intent(in)                          :: nest
+    integer,intent(out)                         :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+! !DESCRIPTION:
+!  This routine copies from a 2D array to an LIS 1D array
+!EOP
+    rc = ESMF_SUCCESS
+    select case (trim(stdName))
+        case ('liquid_fraction_of_soil_moisture_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(1) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(2) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(3) = farray(col,row,ens)
+          enddo
+        case ('liquid_fraction_of_soil_moisture_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(4) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%smc(1) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%smc(2) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%smc(3) = farray(col,row,ens)
+          enddo
+        case ('soil_moisture_fraction_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%smc(4) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+1) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+2) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+3) = farray(col,row,ens)
+          enddo
+        case ('soil_temperature_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+4) = farray(col,row,ens)
+          enddo
+#ifdef WRF_HYDRO
+        case ('surface_water_depth')
+          do tile=1,LIS_rc%ntiles(nest)
+            col = LIS_domain(nest)%tile(tile)%col
+            row = LIS_domain(nest)%tile(tile)%row
+            ens = LIS_domain(nest)%tile(tile)%ensem
+            Noahmp401_struc(nest)%noahmp401(tile)%sfcheadrt = farray(col,row,ens)
+          enddo
+#endif
+        case default
+          call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+            msg="Cannot directly hookup to Noahmp401 "//trim(stdName), &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return  ! bail ou
+      end select
+
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayI4CopyFromLisFarrayI4"
+
+  subroutine LIS_EnsFarrayI4CopyFromLisFarrayI4(farrayLIS,farray,nest,fillVal,rc)
+! !ARGUMENTS:
+    integer(ESMF_KIND_I4),intent(in),pointer    :: farrayLIS(:)
+    integer(ESMF_KIND_I4),intent(inout),pointer :: farray(:,:,:)
+    integer,intent(in)                          :: nest
+    real(ESMF_KIND_R4),intent(in),optional      :: fillVal
+    integer,intent(out)                         :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+    real(ESMF_KIND_R4)              :: actual_fillVal
+! !DESCRIPTION:
+!  This routine copies from an LIS 1D array to a 2D array
+!EOP
+    rc = ESMF_SUCCESS
+    if (present(fillVal)) then
+      actual_fillVal = fillVal
+    else
+      actual_fillVal = MISSINGVALUE
+    endif
+
+    do tile=1,LIS_rc%ntiles(nest)
+      col = LIS_domain(nest)%tile(tile)%col
+      row = LIS_domain(nest)%tile(tile)%row
+      ens = LIS_domain(nest)%tile(tile)%ensem
+      farray(col,row,ens) = farrayLIS(tile)
+    enddo
+    do row=1,LIS_rc%lnr(nest)
+    do col=1,LIS_rc%lnc(nest)
+      if(LIS_domain(nest)%gindex(col,row).eq.-1) then
+        farray(col,row,ens) = actual_fillVal
+      end if
+    enddo
+    enddo
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayI8CopyFromLisFarrayI8"
+
+  subroutine LIS_EnsFarrayI8CopyFromLisFarrayI8(farrayLIS,farray,nest,fillVal,rc)
+! !ARGUMENTS:
+    integer(ESMF_KIND_I8),intent(in),pointer    :: farrayLIS(:)
+    integer(ESMF_KIND_I8),intent(inout),pointer :: farray(:,:,:)
+    integer,intent(in)                          :: nest
+    real(ESMF_KIND_R4),intent(in),optional      :: fillVal
+    integer,intent(out)                         :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+    real(ESMF_KIND_R4)              :: actual_fillVal
+! !DESCRIPTION:
+!  This routine copies from an LIS 1D array to a 2D array
+!EOP
+    rc = ESMF_SUCCESS
+    if (present(fillVal)) then
+      actual_fillVal = fillVal
+    else
+      actual_fillVal = MISSINGVALUE
+    endif
+
+    do tile=1,LIS_rc%ntiles(nest)
+      col = LIS_domain(nest)%tile(tile)%col
+      row = LIS_domain(nest)%tile(tile)%row
+      ens = LIS_domain(nest)%tile(tile)%ensem
+      farray(col,row,ens) = farrayLIS(tile)
+    enddo
+    do row=1,LIS_rc%lnr(nest)
+    do col=1,LIS_rc%lnc(nest)
+      if(LIS_domain(nest)%gindex(col,row).eq.-1) then
+        farray(col,row,ens) = actual_fillVal
+      end if
+    enddo
+    enddo
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayR8CopyFromLisFarrayR4"
+
+  subroutine LIS_EnsFarrayR8CopyFromLisFarrayR4(farrayLIS,farray,nest,fillVal,rc)
+! !ARGUMENTS:
+    real(ESMF_KIND_R4),intent(in),pointer       :: farrayLIS(:)
+    real(ESMF_KIND_R8),intent(inout),pointer    :: farray(:,:,:)
+    integer,intent(in)                          :: nest
+    real(ESMF_KIND_R4),intent(in),optional      :: fillVal
+    integer,intent(out)                         :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+    real(ESMF_KIND_R4)              :: actual_fillVal
+! !DESCRIPTION:
+!  This routine copies from an LIS 1D array to a 2D array
+!EOP
+    rc = ESMF_SUCCESS
+    if (present(fillVal)) then
+      actual_fillVal = fillVal
+    else
+      actual_fillVal = MISSINGVALUE
+    endif
+
+    do tile=1,LIS_rc%ntiles(nest)
+      col = LIS_domain(nest)%tile(tile)%col
+      row = LIS_domain(nest)%tile(tile)%row
+      ens = LIS_domain(nest)%tile(tile)%ensem
+      farray(col,row,ens) = farrayLIS(tile)
+    enddo
+    do row=1,LIS_rc%lnr(nest)
+    do col=1,LIS_rc%lnc(nest)
+      if(LIS_domain(nest)%gindex(col,row).eq.-1) then
+        farray(col,row,ens) = actual_fillVal
+      end if
+    enddo
+    enddo
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayR4CopyFromLisFarrayR4"
+
+  subroutine LIS_EnsFarrayR4CopyFromLisFarrayR4(farrayLIS,farray,nest,fillVal,rc)
+! !ARGUMENTS:
+    real(ESMF_KIND_R4),intent(in),pointer       :: farrayLIS(:)
+    real(ESMF_KIND_R4),intent(inout),pointer    :: farray(:,:,:)
+    integer,intent(in)                          :: nest
+    real(ESMF_KIND_R4),intent(in),optional      :: fillVal
+    integer,intent(out)                         :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+    real(ESMF_KIND_R4)              :: actual_fillVal
+! !DESCRIPTION:
+!  This routine copies from an LIS 1D array to a 2D array
+!EOP
+    rc = ESMF_SUCCESS
+    if (present(fillVal)) then
+      actual_fillVal = fillVal
+    else
+      actual_fillVal = MISSINGVALUE
+    endif
+
+    do tile=1,LIS_rc%ntiles(nest)
+      col = LIS_domain(nest)%tile(tile)%col
+      row = LIS_domain(nest)%tile(tile)%row
+      ens = LIS_domain(nest)%tile(tile)%ensem
+      farray(col,row,ens) = farrayLIS(tile)
+    enddo
+    do row=1,LIS_rc%lnr(nest)
+    do col=1,LIS_rc%lnc(nest)
+      if(LIS_domain(nest)%gindex(col,row).eq.-1) then
+        farray(col,row,ens) = actual_fillVal
+      end if
+    enddo
+    enddo
+  end subroutine
+
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayR8CopyFromLisFarrayR8"
+
+  subroutine LIS_EnsFarrayR8CopyFromLisFarrayR8(farrayLIS,farray,nest,fillVal,rc)
+! !ARGUMENTS:
+    real(ESMF_KIND_R8),intent(in),pointer       :: farrayLIS(:)
+    real(ESMF_KIND_R8),intent(inout),pointer    :: farray(:,:,:)
+    integer,intent(in)                          :: nest
+    real(ESMF_KIND_R4),intent(in),optional      :: fillVal
+    integer,intent(out)                         :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+    real(ESMF_KIND_R4)              :: actual_fillVal
+! !DESCRIPTION:
+!  This routine copies from an LIS 1D array to a 2D array
+!EOP
+    rc = ESMF_SUCCESS
+    if (present(fillVal)) then
+      actual_fillVal = fillVal
+    else
+      actual_fillVal = MISSINGVALUE
+    endif
+
+    do tile=1,LIS_rc%ntiles(nest)
+      col = LIS_domain(nest)%tile(tile)%col
+      row = LIS_domain(nest)%tile(tile)%row
+      ens = LIS_domain(nest)%tile(tile)%ensem
+      farray(col,row,ens) = farrayLIS(tile)
+    enddo
+    do row=1,LIS_rc%lnr(nest)
+    do col=1,LIS_rc%lnc(nest)
+      if(LIS_domain(nest)%gindex(col,row).eq.-1) then
+        farray(col,row,ens) = actual_fillVal
+      end if
+    enddo
+    enddo
   end subroutine
 
 end module

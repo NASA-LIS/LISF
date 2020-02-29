@@ -155,6 +155,7 @@ module LIS_NUOPC_Gluecode
   public :: LIS_GridCreate
   public :: LIS_TimestepGet
   public :: LIS_NestCntGet
+  public :: LIS_EnsMemberCntGet
   public :: LIS_RunModeGet
   public :: LIS_Unknown
   public :: LIS_Offline
@@ -2385,6 +2386,40 @@ contains
 #endif
 
   end function
+
+  !-----------------------------------------------------------------------------
+  ! Retrieve ensemble information from LIS_rc
+  !-----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsMemberCntGet"
+
+!BOP
+! !FUNCTION: LIS_EnsMemberCntGet(nest,ensemble,ensMemberCnt,rc)
+! !INTERFACE:
+  subroutine LIS_EnsMemberCntGet(nest,ensemble,ensMemberCnt,rc)
+! !ARGUMENTS:
+    integer,intent(in)            :: nest
+    logical,intent(out)           :: ensemble
+    integer,intent(out)           :: ensMemberCnt
+    integer,intent(out)           :: rc
+! !DESCRIPTION:
+!   Return  ensemble information
+!
+!EOP
+!
+! !LOCAL VARIABLES:
+
+    rc = ESMF_SUCCESS
+
+    if (LIS_rc%nensem(nest) .gt. 1) then
+      ensemble = .TRUE.
+    else
+      ensemble = .FALSE.
+    endif
+    ensMemberCnt = LIS_rc%nensem(nest)
+
+  end subroutine
 
   !-----------------------------------------------------------------------------
   ! Retrieve NUOPC coupling mode

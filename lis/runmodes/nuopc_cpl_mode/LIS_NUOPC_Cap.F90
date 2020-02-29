@@ -308,6 +308,8 @@ module LIS_NUOPC
     character(len=40)     :: dirOutput        = "."
     integer               :: nnests           = 0
     integer               :: nfields          = size(LIS_FieldList)
+    logical,allocatable                 :: ensemble(:)
+    integer,allocatable                 :: ensMemberCnt(:)
     type(ESMF_Grid),allocatable         :: grids(:)
     type(ESMF_Clock),allocatable        :: clocks(:)
     type(ESMF_TimeInterval),allocatable :: stepAccum(:)
@@ -605,6 +607,8 @@ module LIS_NUOPC
     endif
 
     allocate( &
+      is%wrap%ensemble(is%wrap%nnests), &
+      is%wrap%ensMemberCnt(is%wrap%nnests), &
       is%wrap%grids(is%wrap%nnests), &
       is%wrap%clocks(is%wrap%nnests), &
       is%wrap%stepAccum(is%wrap%nnests), &
@@ -792,6 +796,11 @@ module LIS_NUOPC
     do nIndex = 1, is%wrap%nnests
       write (nStr,"(I0)") nIndex
 
+      ! count ensemble members
+      call LIS_EnsMemberCntGet(nIndex, is%wrap%ensemble(nIndex), &
+        is%wrap%ensMemberCnt(nIndex), rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+
       ! Call gluecode to create grid.
       is%wrap%grids(nIndex) = LIS_GridCreate(nIndex, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
@@ -829,9 +838,16 @@ module LIS_NUOPC
         endif
 
         if (realizeImp .AND. realizeExp .AND. LIS_FieldList(fIndex)%sharedMem) then
-          field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
-            grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (is%wrap%ensemble(nIndex)) then
+            field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
+              grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, &
+              ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          else
+            field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
+              grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          endif
           call ESMF_FieldFill(field, dataFillScheme="const", &
             const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return  ! bail out
@@ -840,25 +856,46 @@ module LIS_NUOPC
           LIS_FieldList(fIndex)%realizedExport = .TRUE.
           call ESMF_FieldGet(field=field,array=array,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
-          field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
-            grid=is%wrap%grids(nIndex), array=array, rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return
+          if (is%wrap%ensemble(nIndex)) then
+            field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
+              grid=is%wrap%grids(nIndex), array=array, &
+              ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return
+          else
+            field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
+              grid=is%wrap%grids(nIndex), array=array, rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return
+          endif
           call NUOPC_Realize(is%wrap%NStateImp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedImport = .TRUE.
         elseif (realizeImp .AND. realizeExp) then
-          field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
-            grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (is%wrap%ensemble(nIndex)) then
+            field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
+              grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, &
+              ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          else
+            field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
+              grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          endif
           call ESMF_FieldFill(field, dataFillScheme="const", &
             const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return  ! bail out
           call NUOPC_Realize(is%wrap%NStateExp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedExport = .TRUE.
-          field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
-            grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
-          if(ESMF_STDERRORCHECK(rc)) return
+          if (is%wrap%ensemble(nIndex)) then
+            field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
+              grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, &
+              ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)
+            if(ESMF_STDERRORCHECK(rc)) return
+          else
+            field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
+              grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
+            if(ESMF_STDERRORCHECK(rc)) return
+          endif
           call ESMF_FieldFill(field, dataFillScheme="const", &
             const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return  ! bail out
@@ -866,9 +903,16 @@ module LIS_NUOPC
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedImport = .TRUE.
         elseif (realizeExp) then
-          field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
-            grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (is%wrap%ensemble(nIndex)) then
+            field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
+              grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, &
+              ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          else
+            field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
+              grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          endif
           call ESMF_FieldFill(field, dataFillScheme="const", &
             const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return  ! bail out
@@ -879,9 +923,16 @@ module LIS_NUOPC
             relaxedflag=.true.,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
         elseif (realizeImp) then
-          field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
-            grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (is%wrap%ensemble(nIndex)) then
+            field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
+              grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, &
+              ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          else
+            field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
+              grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          endif
           call ESMF_FieldFill(field, dataFillScheme="const", &
             const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return  ! bail out
