@@ -261,8 +261,6 @@ subroutine read_NASASMAPvod(n, k, OBS_State, OBS_Pert_State)
 
   if(LIS_rc%dascaloption(k).eq."CDF matching".and.fnd.ne.0) then
      
-     open(100,file='test_out.bin',form='unformatted')
-     write(100) lai_current
      call LIS_rescale_with_CDF_matching(     &
           n,k,                               & 
           NASASMAPvod_struc(n)%nbins,         & 
