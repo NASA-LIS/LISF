@@ -348,19 +348,19 @@ def process_fortran90_file(fname, prereqs):
       print(e)
    else:
       for line in f:
-         fname = find_use_module_statement(line)
-         if fname:
-            prereqs = add_prerequisite(prereqs, fname, '.o')
-         fname = find_f_include_statement(line)
-         if fname:
-            prereqs = add_prerequisite(prereqs, fname)
+         name = find_use_module_statement(line)
+         if name:
+            prereqs = add_prerequisite(prereqs, name, '.o')
+         name = find_f_include_statement(line)
+         if name:
+            prereqs = add_prerequisite(prereqs, name)
             print_dbg('recursing')
-            prereqs = process_fortran90_file(fname, prereqs)
-         fname = find_c_include_statement(line)
-         if fname:
-            prereqs = add_prerequisite(prereqs, fname)
+            prereqs = process_fortran90_file(name, prereqs)
+         name = find_c_include_statement(line)
+         if name:
+            prereqs = add_prerequisite(prereqs, name)
             print_dbg('recursing')
-            prereqs = process_fortran90_file(fname, prereqs)
+            prereqs = process_fortran90_file(name, prereqs)
       f.close()
    finally:
       return prereqs
@@ -383,14 +383,14 @@ def process_fortran77_file(fname, prereqs):
       print(e)
    else:
       for line in f:
-         fname = find_f_include_statement(line)
-         if fname:
-            prereqs = add_prerequisite(prereqs, fname)
-            prereqs = process_fortran77_file(fname, prereqs)
-         fname = find_c_include_statement(line)
-         if fname:
-            prereqs = add_prerequisite(prereqs, fname)
-            prereqs = process_fortran77_file(fname, prereqs)
+         name = find_f_include_statement(line)
+         if name:
+            prereqs = add_prerequisite(prereqs, name)
+            prereqs = process_fortran77_file(name, prereqs)
+         name = find_c_include_statement(line)
+         if name:
+            prereqs = add_prerequisite(prereqs, name)
+            prereqs = process_fortran77_file(name, prereqs)
       f.close()
    finally:
       return prereqs
