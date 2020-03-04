@@ -5,6 +5,26 @@ import os
 import re
 import glob
 
+#
+# Note that an issue was encountered processing (with Python3) a Fortran90 source file
+# that was not UTF-8 encoded.  Because the purpose of this program in to scan C and
+# Fortran source files to generate prerequisites/dependencies and because for these
+# languages keywords are ASCII, this program deals with encoding issues using the
+# "errors=replace" option of the open function.  Any encoding errors will occur within
+# comments and can be ignored.
+#
+# Note that to support using both Python2 and Python3, the open function has been
+# aliased.  Use the input_open function to open input files; use the output_open
+# function to open output files.
+#
+if sys.version_info.major == 2:
+   import io
+   input_open = io.open
+   output_open = open
+else:
+   input_open = open
+   output_open = open
+
 
 def print_err(*pargs, **kwargs):
    """
@@ -240,7 +260,7 @@ def contains_module_definition(file_name, desired_mod):
    Return whether file_name contains the module definition for desired_mod.
    """
    desired_mod = desired_mod.lower()
-   with open(file_name, 'r') as f:
+   with input_open(file_name, 'r', errors='replace') as f:
       for line in f:
          result = module_def_pattern.match(line)
          if result:
@@ -341,26 +361,26 @@ def process_fortran90_file(fname, prereqs):
    """
    try:
       ffname = find_file(fname)
-      f = open(ffname, 'r')
+      f = input_open(ffname, 'r', errors='replace')
    except IOError as e:
       print_err("Cannot open file '{}'; skipping.".format(fname))
    except Exception as e:
       print(e)
    else:
       for line in f:
-         fname = find_use_module_statement(line)
-         if fname:
-            prereqs = add_prerequisite(prereqs, fname, '.o')
-         fname = find_f_include_statement(line)
-         if fname:
-            prereqs = add_prerequisite(prereqs, fname)
+         name = find_use_module_statement(line)
+         if name:
+            prereqs = add_prerequisite(prereqs, name, '.o')
+         name = find_f_include_statement(line)
+         if name:
+            prereqs = add_prerequisite(prereqs, name)
             print_dbg('recursing')
-            prereqs = process_fortran90_file(fname, prereqs)
-         fname = find_c_include_statement(line)
-         if fname:
-            prereqs = add_prerequisite(prereqs, fname)
+            prereqs = process_fortran90_file(name, prereqs)
+         name = find_c_include_statement(line)
+         if name:
+            prereqs = add_prerequisite(prereqs, name)
             print_dbg('recursing')
-            prereqs = process_fortran90_file(fname, prereqs)
+            prereqs = process_fortran90_file(name, prereqs)
       f.close()
    finally:
       return prereqs
@@ -376,21 +396,21 @@ def process_fortran77_file(fname, prereqs):
    """
    try:
       ffname = find_file(fname)
-      f = open(ffname, 'r')
+      f = input_open(ffname, 'r', errors='replace')
    except IOError as e:
       print_err("Cannot open file '{}'; skipping.".format(fname))
    except Exception as e:
       print(e)
    else:
       for line in f:
-         fname = find_f_include_statement(line)
-         if fname:
-            prereqs = add_prerequisite(prereqs, fname)
-            prereqs = process_fortran77_file(fname, prereqs)
-         fname = find_c_include_statement(line)
-         if fname:
-            prereqs = add_prerequisite(prereqs, fname)
-            prereqs = process_fortran77_file(fname, prereqs)
+         name = find_f_include_statement(line)
+         if name:
+            prereqs = add_prerequisite(prereqs, name)
+            prereqs = process_fortran77_file(name, prereqs)
+         name = find_c_include_statement(line)
+         if name:
+            prereqs = add_prerequisite(prereqs, name)
+            prereqs = process_fortran77_file(name, prereqs)
       f.close()
    finally:
       return prereqs
@@ -406,7 +426,7 @@ def process_c_file(fname, prereqs):
    """
    try:
       ffname = find_file(fname)
-      f = open(ffname, 'r')
+      f = input_open(ffname, 'r', errors='replace')
    except IOError as e:
       print_err("Cannot open file '{}'; skipping.".format(fname))
    except Exception as e:
@@ -538,7 +558,7 @@ for full_filename in files:
    target = basename_new_suffix(base_filename,'.o')
 
    # open and initialize the dependency list
-   depfile = open(depname, 'w')
+   depfile = output_open(depname, 'w')
    prereqs = set()
 
    try:
