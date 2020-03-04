@@ -1,7 +1,15 @@
 #!/usr/bin/env python
 from __future__ import print_function
-import StringIO
-import ConfigParser
+import sys
+
+if sys.version_info.major == 2:
+   import StringIO as io
+   import ConfigParser
+   configparser = ConfigParser.SafeConfigParser
+else:
+   import io
+   import configparser
+   configparser = configparser.ConfigParser
 
 '''
    This program processes the default configuration file, default.cfg,
@@ -54,7 +62,8 @@ interp
 #
 # Process sections and enable/disable table
 #
-config = ConfigParser.SafeConfigParser()
+#config = configparser.ConfigParser()
+config = configparser()
 config.read('default.cfg')
 
 try:
@@ -131,7 +140,7 @@ fpath = ' ../{0}'
 dentry = '#{0} {1}\n'
 
 filepath.write('dirs := .')
-paths = StringIO.StringIO(required_filepath)
+paths = io.StringIO(required_filepath)
 for line in paths:
    filepath.write(fpath.format(line.strip()))
 
