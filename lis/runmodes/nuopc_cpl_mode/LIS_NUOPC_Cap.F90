@@ -131,6 +131,7 @@
 !! realize_all_export | false          | Realize all export fields including non connected fields.
 !! config_file        | lis.config     | Set the LIS configuration file.
 !! nest_to_nest       | false          | Turn on nest to nest coupling. Each nest will be identified with an integer.
+!! coupled_ensemble   | false          | Couple ensemble members using 3D fields with ungridded dimension.
 !! import_dependency  | false          | Data initialization will loop until all import field dependencies are satisfied.
 !! output_directory   | [CNAME]_OUTPUT | Configure the LIS Cap output directory.
 !!
@@ -304,11 +305,11 @@ module LIS_NUOPC
     character(len=64)     :: configFile       = 'lis.config'
     logical               :: realizeAllExport = .FALSE.
     logical               :: nestToNest       = .FALSE.
+    logical               :: cplEns           = .FALSE.
     logical               :: importDependency = .FALSE.
     character(len=40)     :: dirOutput        = "."
     integer               :: nnests           = 0
     integer               :: nfields          = size(LIS_FieldList)
-    logical,allocatable                 :: ensemble(:)
     integer,allocatable                 :: ensMemberCnt(:)
     type(ESMF_Grid),allocatable         :: grids(:)
     type(ESMF_Clock),allocatable        :: clocks(:)
@@ -489,6 +490,12 @@ module LIS_NUOPC
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
       is%wrap%nestToNest = (trim(value)=="true")
 
+      ! Turn on ensemble coupling
+      call ESMF_AttributeGet(gcomp, name="coupled_ensemble", value=value, &
+        defaultValue="false", convention="NUOPC", purpose="Instance", rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      is%wrap%cplEns = (trim(value)=="true")
+
       ! Realize all export fields
       call ESMF_AttributeGet(gcomp, name="import_dependency", &
         value=value, defaultValue="false", &
@@ -513,6 +520,9 @@ module LIS_NUOPC
         call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
         write (logMsg, "(A,(A,L1))") trim(cname)//': ', &
           'Nest To Nest           = ',is%wrap%nestToNest
+        call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
+        write (logMsg, "(A,(A,L1))") trim(cname)//': ', &
+          'Coupled Ensemble       = ',is%wrap%cplEns
         call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
         write (logMsg, "(A,(A,L1))") trim(cname)//': ', &
           'Import Dependency      = ',is%wrap%importDependency
@@ -607,7 +617,6 @@ module LIS_NUOPC
     endif
 
     allocate( &
-      is%wrap%ensemble(is%wrap%nnests), &
       is%wrap%ensMemberCnt(is%wrap%nnests), &
       is%wrap%grids(is%wrap%nnests), &
       is%wrap%clocks(is%wrap%nnests), &
@@ -797,9 +806,13 @@ module LIS_NUOPC
       write (nStr,"(I0)") nIndex
 
       ! count ensemble members
-      call LIS_EnsMemberCntGet(nIndex, is%wrap%ensemble(nIndex), &
-        is%wrap%ensMemberCnt(nIndex), rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (is%wrap%cplEns) then
+        call LIS_EnsMemberCntGet(nIndex, &
+          is%wrap%ensMemberCnt(nIndex), rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      else
+        is%wrap%ensMemberCnt(nIndex) = 0
+      endif
 
       ! Call gluecode to create grid.
       is%wrap%grids(nIndex) = LIS_GridCreate(nIndex, rc=rc)
@@ -838,7 +851,7 @@ module LIS_NUOPC
         endif
 
         if (realizeImp .AND. realizeExp .AND. LIS_FieldList(fIndex)%sharedMem) then
-          if (is%wrap%ensemble(nIndex)) then
+          if (is%wrap%cplEns) then
             field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, &
               ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)
@@ -856,7 +869,7 @@ module LIS_NUOPC
           LIS_FieldList(fIndex)%realizedExport = .TRUE.
           call ESMF_FieldGet(field=field,array=array,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
-          if (is%wrap%ensemble(nIndex)) then
+          if (is%wrap%cplEns) then
             field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
               grid=is%wrap%grids(nIndex), array=array, &
               ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)
@@ -870,7 +883,7 @@ module LIS_NUOPC
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedImport = .TRUE.
         elseif (realizeImp .AND. realizeExp) then
-          if (is%wrap%ensemble(nIndex)) then
+          if (is%wrap%cplEns) then
             field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, &
               ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)
@@ -886,7 +899,7 @@ module LIS_NUOPC
           call NUOPC_Realize(is%wrap%NStateExp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedExport = .TRUE.
-          if (is%wrap%ensemble(nIndex)) then
+          if (is%wrap%cplEns) then
             field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, &
               ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)
@@ -903,7 +916,7 @@ module LIS_NUOPC
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedImport = .TRUE.
         elseif (realizeExp) then
-          if (is%wrap%ensemble(nIndex)) then
+          if (is%wrap%cplEns) then
             field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, &
               ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)
@@ -923,7 +936,7 @@ module LIS_NUOPC
             relaxedflag=.true.,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
         elseif (realizeImp) then
-          if (is%wrap%ensemble(nIndex)) then
+          if (is%wrap%cplEns) then
             field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, &
               ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)

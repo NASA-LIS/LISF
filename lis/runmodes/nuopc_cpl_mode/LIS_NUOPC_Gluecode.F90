@@ -2397,10 +2397,9 @@ contains
 !BOP
 ! !FUNCTION: LIS_EnsMemberCntGet(nest,ensemble,ensMemberCnt,rc)
 ! !INTERFACE:
-  subroutine LIS_EnsMemberCntGet(nest,ensemble,ensMemberCnt,rc)
+  subroutine LIS_EnsMemberCntGet(nest,ensMemberCnt,rc)
 ! !ARGUMENTS:
     integer,intent(in)            :: nest
-    logical,intent(out)           :: ensemble
     integer,intent(out)           :: ensMemberCnt
     integer,intent(out)           :: rc
 ! !DESCRIPTION:
@@ -2412,11 +2411,6 @@ contains
 
     rc = ESMF_SUCCESS
 
-    if (LIS_rc%nensem(nest) .gt. 1) then
-      ensemble = .TRUE.
-    else
-      ensemble = .FALSE.
-    endif
     ensMemberCnt = LIS_rc%nensem(nest)
 
   end subroutine
