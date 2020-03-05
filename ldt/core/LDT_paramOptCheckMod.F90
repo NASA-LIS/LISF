@@ -288,6 +288,13 @@ contains
             write(LDT_logunit,*) " Stopping ..."
             call LDT_endrun
           endif
+        case( "IGBP" )
+          if( nt .lt. 17 .or. nt .ge. 18 ) then
+            write(LDT_logunit,*) "Param_Check: IGBP has a minimum of 17 types (includes water)."
+            write(LDT_logunit,*) "             Value is currently at: ",nt
+            write(LDT_logunit,*) " Stopping ..."
+            call LDT_endrun
+          endif
         case( "Bondville" )
           if( nt .lt. 20 .or. nt .ge. 21 ) then            
             write(LDT_logunit,*) "Param_Check: Bondville has a minimum of 20 types (includes water)."
@@ -337,6 +344,7 @@ contains
           write(LDT_logunit,*) "             supported or not entered correctly. Please try: "
           write(LDT_logunit,*) "          -- UMD "
           write(LDT_logunit,*) "          -- USGS "
+          write(LDT_logunit,*) "          -- IGBP "
           write(LDT_logunit,*) "          -- IGBPNCEP "
           write(LDT_logunit,*) "          -- JULES_PFT "
           write(LDT_logunit,*) "          -- MOSAIC "

@@ -910,11 +910,16 @@ contains
     external read_GRIPC_irrigtype
     external read_GRIPC_irrigfrac
 
+    external read_UserDerived_irrigfrac
+
     call registerreadirrigfrac(trim(LDT_modOGirrigId)//char(0),&
          read_OzdoganGutman_irrigfrac)
 
     call registerreadirrigtype(trim(LDT_gripcirrigId)//char(0),read_GRIPC_irrigtype)
     call registerreadirrigfrac(trim(LDT_gripcirrigId)//char(0),read_GRIPC_irrigfrac)
+
+    ! Added user-derived irrigation fraction input option:
+    call registerreadirrigfrac(trim(LDT_userinputirrigId)//char(0),read_UserDerived_irrigfrac)
 
   end subroutine LDT_irrigation_plugin
 
