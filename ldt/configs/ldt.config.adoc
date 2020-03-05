@@ -1256,6 +1256,7 @@ Irrigation type spatial transform:    mode
 
 |MODIS_OG |Irrigation area fraction map by Ozdogan and Gutman (2008)
 |GRIPC |Irrigation area fraction map by Salmon (2013)
+!UserDerived |User derived irrigation fraction map
 |===
 
 .Example _ldt.config_ entry
@@ -1278,12 +1279,41 @@ Irrigation fraction map:  ../irrigation/irrig.percent.eighth.1gd4r
 
 |none |Data is on same grid as LIS output domain
 |average |Upscale by averaging values for each gridcell
+|neighbor |Upscale or downscale using nearest neighbor values
 |===
 
 .Example _ldt.config_ entry
 ....
-Irrigation fraction spatial transform:     none
+Irrigation fraction map projection:   laton 
 ....
+
+`Irrigation fraction map projection:` indicates the grid projection defines an input irrigation maps. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|latlon |Lat/Lon projection with SW to NE data ordering
+|===
+
+.Example _ldt.config_ entry
+....
+Irrigation fraction map projection:    latlon
+....
+
+
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying irrigation data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Irrigation fraction lower left lat:      -59.87500
+Irrigation fraction lower left lon:     -179.87500
+Irrigation fraction upper right lat:      89.87500
+Irrigation fraction upper right lon:     179.87500
+Irrigation fraction resolution (dx):       0.2500
+Irrigation fraction resolution (dy):       0.2500
+....
+
 
 [[ssec-soilspecparams]]
 === Soil Parameters
