@@ -144,16 +144,11 @@ subroutine noah33_getirrigationstates(n,irrigState)
 
      timestep = LIS_rc%ts
 
-!     write(LIS_logunit,*) 'Orig window ', otimes, otimee
-
-     ! Adjust bounds by timestep to account for the fact that LIS_rc%hr, etc. will
-     ! represents the END of the integration timestep window
+     ! Adjust bounds by timestep to account for the fact that LIS_rc%hr, etc.
+     ! will represents the END of the integration timestep window
 
      shift_otimes = otimes + (timestep/3600.)
      shift_otimee = otimee + (timestep/3600.)
-
-!     write(LIS_logunit,*) 'Timestep ', timestep
-!     write(LIS_logunit,*) 'Shift window ', shift_otimes, shift_otimee
 
      irrig_check_frozen_soil = .false.
      
@@ -217,8 +212,6 @@ subroutine noah33_getirrigationstates(n,irrigState)
                 
      ltime = real(lhr)+real(LIS_rc%mn)/60.0+real(LIS_rc%ss)/3600.0
 
-!     write(LIS_logunit,*) 'local time:', ltime
-      
      shdfac =  noah33_struc(n)%noah(t)%shdfac
        
 ! Calculate vegetation and root depth parameters
@@ -226,7 +219,6 @@ subroutine noah33_getirrigationstates(n,irrigState)
    ! If we are outside of the irrigation window, set rate to 0
      if ((ltime.ge.shift_otimee).or.(ltime.lt.shift_otimes)) then
        irrigRate(t) = 0.0
-!       write(LIS_logunit,*) ltime, 'is outside the irrigation window'
      endif
    
      if((ltime.ge.shift_otimes).and.(ltime.lt.shift_otimee)) then 
@@ -339,7 +331,8 @@ subroutine noah33_getirrigationstates(n,irrigState)
 !     Compute irrigation rate
 !-----------------------------------------------------------------------------
                                 irrigRate(t) = twater/(irrhr*3600.0)
-                                write(LIS_logunit,*) 'Irrigating',ltime, twater
+                                write(LIS_logunit,*) '[INFO] Irrigating', &
+                                     ltime, twater
                              endif
                           endif
                        endif
