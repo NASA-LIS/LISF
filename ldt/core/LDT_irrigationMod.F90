@@ -150,6 +150,7 @@ contains
    endif
 
    do n=1,LDT_rc%nnest
+   
       if( irrigtype_select ) then 
 
          call set_irrigation_attribs( n, LDT_irrig_struc(n)%irrigtype%source )
@@ -226,10 +227,16 @@ contains
                     LDT_irrig_struc(n)%irrig_gridDesc)
 
           if( LDT_irrig_struc(n)%irrig_proj == "latlon" ) then
+
             call LDT_gridOptChecks( n,"Irrigation fraction", &
                      LDT_irrig_struc(n)%irrigfrac_gridtransform, &
                      LDT_irrig_struc(n)%irrig_proj, &
                      LDT_irrig_struc(n)%irrig_gridDesc(9) )
+          else
+             !EMK...Handle unsupported map projection.
+             write(LDT_logunit,*) &
+                  '[ERR] Irrigation fraction map projection only supports latlont'
+             call LDT_endrun()
           endif
         endif
        enddo
