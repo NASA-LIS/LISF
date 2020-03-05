@@ -2826,7 +2826,7 @@ contains
     do row=1,LIS_rc%lnr(nest)
     do col=1,LIS_rc%lnc(nest)
       if(LIS_domain(nest)%gindex(col,row).eq.-1) then
-        farray(col,row,ens) = actual_fillVal
+        farray(col,row,:) = actual_fillVal
       end if
     enddo
     enddo
@@ -2866,7 +2866,7 @@ contains
     do row=1,LIS_rc%lnr(nest)
     do col=1,LIS_rc%lnc(nest)
       if(LIS_domain(nest)%gindex(col,row).eq.-1) then
-        farray(col,row,ens) = actual_fillVal
+        farray(col,row,:) = actual_fillVal
       end if
     enddo
     enddo
@@ -2906,7 +2906,7 @@ contains
     do row=1,LIS_rc%lnr(nest)
     do col=1,LIS_rc%lnc(nest)
       if(LIS_domain(nest)%gindex(col,row).eq.-1) then
-        farray(col,row,ens) = actual_fillVal
+        farray(col,row,:) = actual_fillVal
       end if
     enddo
     enddo
@@ -2946,7 +2946,7 @@ contains
     do row=1,LIS_rc%lnr(nest)
     do col=1,LIS_rc%lnc(nest)
       if(LIS_domain(nest)%gindex(col,row).eq.-1) then
-        farray(col,row,ens) = actual_fillVal
+        farray(col,row,:) = actual_fillVal
       end if
     enddo
     enddo
@@ -2986,7 +2986,7 @@ contains
     do row=1,LIS_rc%lnr(nest)
     do col=1,LIS_rc%lnc(nest)
       if(LIS_domain(nest)%gindex(col,row).eq.-1) then
-        farray(col,row,ens) = actual_fillVal
+        farray(col,row,:) = actual_fillVal
       end if
     enddo
     enddo
