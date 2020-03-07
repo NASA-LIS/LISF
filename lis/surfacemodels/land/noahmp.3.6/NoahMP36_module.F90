@@ -520,6 +520,11 @@ module NoahMP36_module
      real               :: albd(2)
      real               :: albi(2)
      logical            :: alb_upd_flag
+     !ag (12Sep2019)
+     ! 2-way coupling parameters
+     real               :: rivsto
+     real               :: fldsto
+     real               :: fldfrc
      !-------------------------------------------------------------------------
      ! output
      !-------------------------------------------------------------------------

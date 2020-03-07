@@ -161,15 +161,17 @@ contains
    ! Incorporate buffer for target grid (e.g., helps with curvilinear projections)
    if( buffer_flag == 1 ) then 
      write(LDT_logunit,*) "[INFO] Incorporating buffer around subsetted grid domain ... "
-     lisdom_min_lat = max((rlat(1,1)-(5*lisdom_yres_ll)),-90.0)
-     lisdom_max_lat = min((rlat(LDT_rc%lnc(n),LDT_rc%lnr(n))+(5*lisdom_yres_ll)),90.0)
+     lisdom_min_lat = max((rlat(1,1)-(LDT_rc%y_buffer*lisdom_yres_ll)),-90.0)
+     lisdom_max_lat = min((rlat(LDT_rc%lnc(n),LDT_rc%lnr(n))+(LDT_rc%y_buffer*lisdom_yres_ll)),90.0)
      ! Account for crossing IDL:
      if( rlon(1,1) <= rlon(LDT_rc%lnc(n),LDT_rc%lnr(n)) ) then
-       lisdom_min_lon = max((rlon(1,1)-(5*lisdom_xres_ll)),-180.0)
-       lisdom_max_lon = min((rlon(LDT_rc%lnc(n),LDT_rc%lnr(n))+(5*lisdom_xres_ll)),180.0)
+       lisdom_min_lon = max((rlon(1,1)-(LDT_rc%x_buffer*lisdom_xres_ll)),-180.0)
+       lisdom_max_lon = min((rlon(LDT_rc%lnc(n),&
+                             LDT_rc%lnr(n))+(LDT_rc%x_buffer*lisdom_xres_ll)),180.0)
      else  
-       lisdom_min_lon = max((rlon(1,1)-(5*lisdom_xres_ll)),0.0)
-       lisdom_max_lon = min((rlon(LDT_rc%lnc(n),LDT_rc%lnr(n))+(5*lisdom_xres_ll)),0.0)
+       lisdom_min_lon = max((rlon(1,1)-(LDT_rc%x_buffer*lisdom_xres_ll)),0.0)
+       lisdom_max_lon = min((rlon(LDT_rc%lnc(n),&
+                            LDT_rc%lnr(n))+(LDT_rc%x_buffer*lisdom_xres_ll)),0.0)
      endif
    else  ! No buffer applied
 !     write(LDT_logunit,*) "[INFO] No buffer incorporated ... "

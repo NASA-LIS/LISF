@@ -58,6 +58,9 @@ subroutine HYMAP2_routing_run(n)
   integer               :: m
   type(ESMF_Field)      :: sf_runoff_field
   type(ESMF_Field)      :: baseflow_field  
+  type(ESMF_Field)      :: rivsto_field  
+  type(ESMF_Field)      :: fldsto_field
+  type(ESMF_Field)      :: fldfrc_field
   real,   pointer       :: surface_runoff_t(:)
   real,   pointer       :: baseflow_t(:)
   real,   allocatable   :: surface_runoff(:)
@@ -104,7 +107,10 @@ subroutine HYMAP2_routing_run(n)
 
   real,   allocatable   :: ewat_lvec(:)
   real,   allocatable   :: edif_lvec(:)
-
+  real,   pointer       :: rivstotmp_lvec(:)
+  real,   pointer       :: fldstotmp_lvec(:)
+  real,   pointer       :: fldfrctmp_lvec(:)
+  
   integer               :: status
   logical               :: alarmCheck
   integer               :: c,r,t
@@ -116,7 +122,7 @@ subroutine HYMAP2_routing_run(n)
   real,pointer       :: tmp(:),q2(:),uwind(:),vwind(:),swd(:),lwd(:)
   real,pointer       :: psurf(:)
 
-  integer            :: ix, iy, ix1, iy1
+  integer            :: i,ix, iy, ix1, iy1
 !TBD:SVK - need to redo the code to work with ntiles rather than npatches. 
 !
   alarmCheck = LIS_isAlarmRinging(LIS_rc, "HYMAP2 router model alarm")
@@ -619,7 +625,72 @@ subroutine HYMAP2_routing_run(n)
         call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%edif(:,1),&
              edif_lvec)
 
-     endif
+     !ag (12Sep2019)
+        if (HYMAP2_routing_struc(n)%enable2waycpl==1) then
+          ! River Storage
+          call ESMF_StateGet(LIS_runoff_state(n),"River Storage",rivsto_field, rc=status)
+          call LIS_verify(status, "HYMAP2_routing_run: ESMF_StateGet failed for River Storage")
+
+          call ESMF_FieldGet(rivsto_field,localDE=0,farrayPtr=rivstotmp_lvec,rc=status)
+          call LIS_verify(status)
+
+          ! convert from m3 to m 
+          do i=1,HYMAP2_routing_struc(n)%nseqall
+             HYMAP2_routing_struc(n)%rivstotmp(i,:)=HYMAP2_routing_struc(n)%rivsto(i,:)/&
+                  HYMAP2_routing_struc(n)%grarea(i)
+          enddo
+          
+          !HYMAP2_routing_struc(n)%rivstotmp=HYMAP2_routing_struc(n)%rivsto
+          
+          call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
+               HYMAP2_routing_struc(n)%nseqall,&
+               HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
+               HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),     HYMAP2_routing_struc(n)%rivstotmp)
+
+          call LIS_grid2tile(n,tmp_nensem(:,:,1),rivstotmp_lvec)
+          !write(LIS_logunit,*) 'rivsto from Routing', rivstotmp_lvec
+
+          ! Flood Storage
+          call ESMF_StateGet(LIS_runoff_state(n),"Flood Storage",fldsto_field, rc=status)
+          call LIS_verify(status, "HYMAP2_routing_run: ESMF_StateGet failed for Flood Storage")
+
+          call ESMF_FieldGet(fldsto_field,localDE=0,farrayPtr=fldstotmp_lvec,rc=status)
+          call LIS_verify(status)
+ 
+          ! convert from m3 to m  
+          do i=1,HYMAP2_routing_struc(n)%nseqall
+          HYMAP2_routing_struc(n)%fldstotmp(i,:)=HYMAP2_routing_struc(n)%fldsto(i,:)/&
+               HYMAP2_routing_struc(n)%grarea(i)
+          enddo
+
+          !HYMAP2_routing_struc(n)%fldstotmp=HYMAP2_routing_struc(n)%fldsto
+
+          call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
+               HYMAP2_routing_struc(n)%nseqall,&
+               HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
+               HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),     HYMAP2_routing_struc(n)%fldstotmp)
+
+          call LIS_grid2tile(n,tmp_nensem(:,:,1),fldstotmp_lvec)
+          !write(LIS_logunit,*) 'fldsto from Routing', fldstotmp_lvec
+
+          ! Flooded Fraction
+          call ESMF_StateGet(LIS_runoff_state(n),"Flooded Fraction",fldfrc_field, rc=status)
+          call LIS_verify(status, "HYMAP2_routing_run: ESMF_StateGet failed for Flooded Fraction")
+
+          call ESMF_FieldGet(fldfrc_field,localDE=0,farrayPtr=fldfrctmp_lvec,rc=status)
+          call LIS_verify(status)
+          
+          !create flooded fraction flags
+          where(fldfrc_lvec>=HYMAP2_routing_struc(n)%fldfrc2waycpl)
+            fldfrctmp_lvec=1.
+          else where
+            fldfrctmp_lvec=0.
+          end where
+
+       endif
+
+       deallocate(tmp_nensem)
+    endif
 
      do t=1, LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)
         call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_RIVSTO,&

@@ -30,6 +30,8 @@ subroutine NoahMP36_main(n)
     use LIS_FORC_AttributesMod 
     use NoahMP36_lsmMod
    !use other modules
+    use ESMF
+    use LIS_routingMod, only : LIS_runoff_state
   
     implicit none
 ! !ARGUMENTS:
@@ -283,6 +285,7 @@ subroutine NoahMP36_main(n)
     real                 :: tmp_WDPOOL         !     wood pool (switch 1 or 0) depending on woody or not [-]
     real                 :: tmp_WRRAT          !     wood to non-wood ratio
     real                 :: tmp_MRP            !     microbial respiration parameter [umol co2 /kg c/ s]
+    
     ! SY: End corresponding to read_mp_veg_parameters
     ! SY: End for enabling OPTUE
 
@@ -295,6 +298,32 @@ subroutine NoahMP36_main(n)
     real                 :: bdsno
     ! Code added by Rhae Sung Kim 
     real                 :: layersd
+
+    !ag (12Sep2019)
+    real                 :: tmp_rivsto         !     MNB ADD LATER
+    real                 :: tmp_fldsto         !     MNB ADD LATER
+    real                 :: tmp_fldfrc         !     MNB ADD LATER
+
+    !ag (18Sep2019)
+    integer                    :: enable2waycpl
+    type(ESMF_Field)      :: rivsto_field  
+    type(ESMF_Field)      :: fldsto_field
+    type(ESMF_Field)      :: fldfrc_field
+!    real,   pointer         :: rivsto_t(:)
+!    real,   pointer         :: fldsto_t(:)
+    real,   allocatable   :: rivsto(:)
+    real,   allocatable   :: fldsto(:)
+    real,   allocatable   :: fldfrc(:)
+!    real,   allocatable   :: tmp_rivsto(:,:),tmp_fldsto(:,:)
+  
+!    real,   allocatable   :: rivsto_mm(:,:),fldsto_mm(:,:)
+    real,   allocatable   :: tmp_nensem(:,:,:)
+
+    integer               :: status
+    integer               :: c,r
+    integer               :: ios, nid,rivid,fldid
+
+    integer            :: tid
 
     allocate( tmp_sldpth( NOAHMP36_struc(n)%nsoil ) )
     allocate( tmp_shdfac_monthly( 12 ) )
@@ -309,6 +338,29 @@ subroutine NoahMP36_main(n)
     ! check NoahMP36 alarm. If alarm is ring, run model. 
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP36 model alarm")
     if (alarmCheck) Then
+    
+      !ag (18Sep2019)
+      !get surface water storage variables for 2-way coupling
+!      call ESMF_AttributeGet(LIS_runoff_state(n),"2 way coupling",enable2waycpl, rc=status)
+      !call LIS_verify(status)
+!      if(enable2waycpl==1) then 
+        !River Storage
+!        call ESMF_StateGet(LIS_runoff_state(n),"River Storage",rivsto_field,rc=status)
+        !call LIS_verify(status,'NoahMP36_main: ESMF_StateGet failed for River Storage')
+!        call ESMF_FieldGet(rivsto_field,localDE=0,farrayPtr=rivsto_t,rc=status)
+        !call ESMF_FieldGet(rivsto_field,localDE=0,farrayPtr=NOAHMP36_struc(n)%noahmp36(:)%rivsto,rc=status)
+!        call LIS_verify(status,'NoahMP36_main: ESMF_FieldGet failed for River Storage')
+!        call LIS_tile2grid(n,NOAHMP36_struc(n)%noahmp36(:)%rivsto,rivsto_t)
+
+        !Flood Storage
+!        call ESMF_StateGet(LIS_runoff_state(n),"Flood Storage",fldsto_field,rc=status)
+        !call LIS_verify(status,'NoahMP36_main: ESMF_StateGet failed for Flood Storage')
+!        call ESMF_FieldGet(fldsto_field,localDE=0,farrayPtr=fldsto_t,rc=status)
+        !call ESMF_FieldGet(fldsto_field,localDE=0,farrayPtr=NOAHMP36_struc(n)%noahmp36(:)%fldsto,rc=status)
+!        call LIS_verify(status,'NoahMP36_main: ESMF_FieldGet failed for Flood Storage')
+!        call LIS_tile2grid(n,NOAHMP36_struc(n)%noahmp36(:)%fldsto,fldsto_t)
+!      endif
+
        do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
           dt = LIS_rc%ts
           row = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row
@@ -340,7 +392,15 @@ subroutine NoahMP36_main(n)
  
             ! prcp: precipitation Rate
             tmp_prcp       = NOAHMP36_struc(n)%noahmp36(t)%prcp   / NOAHMP36_struc(n)%forc_count
- 
+            
+            !ag(18Sep2019)
+            ! rivsto/fldsto: River storage and flood storage
+            ! NOAHMP36_struc(n)%noahmp36(t)%rivsto and NOAHMP36_struc(n)%noahmp36(t)%fldsto
+            ! are updated in noahmp36_getsws_hymap2.F90
+            tmp_rivsto = NOAHMP36_struc(n)%noahmp36(t)%rivsto
+            tmp_fldsto = NOAHMP36_struc(n)%noahmp36(t)%fldsto
+            tmp_fldfrc = NOAHMP36_struc(n)%noahmp36(t)%fldfrc
+
 !            if(t.eq.13859) write(111,fmt='(i4.4,i2.2,i2.2,i2.2,i2.2,8E14.3)') &
 !                 LIS_rc%yr,LIS_rc%mo,LIS_rc%da, LIS_rc%hr, LIS_rc%mn, &
 !                 tmp_tair, tmp_qair, tmp_swdown, tmp_lwdown,tmp_wind_n,tmp_wind_e,tmp_psurf,&
@@ -391,6 +451,25 @@ subroutine NoahMP36_main(n)
             ! check validity of prcp
             if(tmp_prcp .eq. LIS_rc%udef) then
                 write(LIS_logunit, *) "undefined value found for forcing variable prcp in NoahMP36"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+            !ag (23Sep2019)
+            ! check validity of rivsto
+            if(tmp_rivsto .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable rivsto in NoahMP36"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+            ! check validity of fldsto
+            if(tmp_fldsto .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable fldsto in NoahMP36"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+            ! check validity of fldfrc
+            if(tmp_fldfrc .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable fldfrc in NoahMP36"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
@@ -553,6 +632,9 @@ subroutine NoahMP36_main(n)
             tmp_MRP         = NOAHMP36_struc(n)%noahmp36(t)%MRP
             ! SY: End corresponding to read_mp_veg_parameters
             ! SY: End for enabling OPTUE: get calibratable parameters
+!if(t==467)then
+!  write(31,'(100f12.7)')
+!endif
             call noahmp_driver_36(LIS_localPet, t,tmp_landuse_tbl_name  , & ! in    - Noah model landuse parameter table [-]
                                   tmp_soil_tbl_name     , & ! in    - Noah model soil parameter table [-]
                                   tmp_gen_tbl_name      , & ! in    - Noah model general parameter table [-]
@@ -767,9 +849,41 @@ subroutine NoahMP36_main(n)
                                   tmp_chv2              , & ! out   - sensible heat exchange coefficient over vegetated fraction [-]
                                   tmp_chb2              , & ! out   - sensible heat exchange coefficient over bare-ground [-]
                                   tmp_fpice             , & ! out   - snow fraction in precipitation [-]
+                                  !ag (12Sep2019)
+                                  tmp_rivsto            , & ! in   - river storage [m/s] 
+                                  tmp_fldsto            , & ! in   - flood storage [m/s]
+                                  tmp_fldfrc            , & ! in   - flood storage [m/s]
+                                  
                                   tmp_sfcheadrt         )   ! out   - extra output for WRF-HYDRO [m]
             
-            ! save state variables from local variables to global variables
+!if(t==467)write(30,'(100f12.7)')(tmp_rivsto+tmp_fldsto)*1000, &
+!                                        tmp_prcp*tmp_dt, &
+!                                        (tmp_runsrf+tmp_runsub)*tmp_dt, &
+!                                        (tmp_ecan+tmp_etran+tmp_edir)*tmp_dt, &
+!                                        tmp_runsrf*tmp_dt, &
+!                                        tmp_runsub*tmp_dt, &
+!                                        tmp_ecan*tmp_dt, &
+!                                        tmp_etran*tmp_dt, &
+!                                        tmp_edir*tmp_dt !,sum(tmp_sh2o*tmp_zss),tmp_smcwtd*tmp_zwt
+
+!            !ag (24Sep2019)
+!            !update surface runoff if 2-way coupling 
+!            call ESMF_AttributeGet(LIS_runoff_state(n),"2 way coupling",enable2waycpl, rc=status)
+!            if(enable2waycpl==1)then
+!              tmp_runsrf=tmp_runsrf+tmp_runsub-(tmp_rivsto+tmp_fldsto)*0.001
+!            endif
+
+! if(t==467)write(31,'(100f12.7)')(tmp_rivsto+tmp_fldsto)*1000, &
+!                                        tmp_prcp*tmp_dt, &
+!                                        (tmp_runsrf+tmp_runsub)*tmp_dt, &
+!                                        (tmp_ecan+tmp_etran+tmp_edir)*tmp_dt, &
+!                                        tmp_runsrf*tmp_dt, &
+!                                        tmp_runsub*tmp_dt, &
+!                                        tmp_ecan*tmp_dt, &
+!                                        tmp_etran*tmp_dt, &
+!                                        tmp_edir*tmp_dt !,sum(tmp_sh2o*tmp_zss),tmp_smcwtd*tmp_zwt
+
+           ! save state variables from local variables to global variables
             NOAHMP36_struc(n)%noahmp36(t)%albold      = tmp_albold
             NOAHMP36_struc(n)%noahmp36(t)%sneqvo      = tmp_sneqvo
             NOAHMP36_struc(n)%noahmp36(t)%sstc(:)     = tmp_sstc(:)
