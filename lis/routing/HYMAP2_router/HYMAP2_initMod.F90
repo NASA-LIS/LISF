@@ -78,7 +78,9 @@ contains
       do iy=1,ny
          ix1 = ix + offx - 1
          iy1 = iy + offy -1
-         if(nextx(ix1,iy1)/=imis.and.mask(ix,iy)>0)nseqall=nseqall+1
+         if(nextx(ix1,iy1)/=imis.and.mask(ix,iy)>0) then 
+            nseqall=nseqall+1
+         endif
       enddo
    enddo
    write(LIS_logunit,*)'[get_vector_size] number of cells',nseqall

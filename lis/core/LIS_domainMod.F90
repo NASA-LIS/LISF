@@ -170,7 +170,6 @@ contains
 
     do n=1,LIS_rc%nnest
        do k = 1, LIS_rc%ngrid(n)
-!TODO: clean this up with ntiles_pergrid array instead of maximum 
           allocate(LIS_domain(n)%grid(k)%subgrid_tiles(&
                LIS_rc%surface_maxt*&
                LIS_rc%soilt_maxt*&
@@ -351,7 +350,7 @@ contains
           call LIS_verify(status)
        enddo
        
-       call LIS_histDataInit(n,LIS_rc%ntiles(n))
+       call LIS_histDataInit(n,LIS_rc%ntiles(n))      
 
     enddo
     TRACE_EXIT("dom_init")

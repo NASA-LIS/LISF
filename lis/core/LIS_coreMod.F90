@@ -151,8 +151,20 @@ module LIS_coreMod
   public :: LIS_vecTile
   public :: LIS_vecPatch
   public :: LIS_vecGrid
+  public :: LIS_routing
+  public :: LIS_routing_gdeltas, LIS_routing_goffsets
 
+  integer, allocatable  :: LIS_routing_gdeltas(:,:), LIS_routing_goffsets(:,:)
 
+  type, public :: routing_type_dec
+     integer, allocatable :: dommask(:,:)
+     integer, allocatable :: nextx(:,:)
+     integer, allocatable :: gindex(:,:)
+     type(tiledec), allocatable :: tile(:)
+     integer, allocatable       :: ntiles_pergrid(:)
+  end type routing_type_dec
+  
+  type(routing_type_dec), allocatable :: LIS_routing(:)
 
 !EOP
   type, public :: lis_domain_type
@@ -199,7 +211,7 @@ module LIS_coreMod
   integer, allocatable           :: LIS_nss_b_ind(:,:),LIS_nse_b_ind(:,:)
   integer, allocatable           :: LIS_deltas(:,:),LIS_offsets(:,:)
   integer, allocatable           :: LIS_tdeltas(:,:),LIS_toffsets(:,:)
-  integer, allocatable           :: LIS_gdeltas(:,:),LIS_goffsets(:,:)
+  integer, allocatable           :: LIS_gdeltas(:,:),LIS_goffsets(:,:)  
   integer, allocatable           :: LIS_ntiless(:,:),LIS_ngrids(:,:)
   integer, allocatable           :: LIS_npatches(:,:,:)
   integer, allocatable           :: LIS_patch_deltas(:,:,:),LIS_patch_offsets(:,:,:)

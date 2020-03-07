@@ -261,12 +261,12 @@ subroutine HYMAP2_dump_restart(n, ftn)
        
        if(HYMAP2_routing_struc(n)%useens.eq.0) then 
           call LIS_verify(nf90_def_dim(ftn,'ntiles',&
-               HYMAP2_routing_struc(n)%nseqall_glb,&
+               LIS_rc%glbnroutinggrid(n),&
                dimID(1)),&
                'nf90_def_dim failed for ntiles in HYMAP2_writeGlobalHeader_restart')
        else
           call LIS_verify(nf90_def_dim(ftn,'ntiles',&
-               HYMAP2_routing_struc(n)%nseqall_glb*LIS_rc%nensem(n),&
+               LIS_rc%glbnroutinggrid(n)*LIS_rc%nensem(n),&
                dimID(1)),&
                'nf90_def_dim failed for ntiles in HYMAP2_writeGlobalHeader_restart')
        endif
@@ -565,6 +565,7 @@ subroutine HYMAP2_dump_restart(n, ftn)
   subroutine HYMAP2_writevar_restart(ftn, n, var, varid)
 ! !USES:
     use LIS_coreMod
+    use LIS_routingMod
     use LIS_mpiMod
     use LIS_logMod
     use HYMAP2_routingMod
@@ -576,7 +577,7 @@ subroutine HYMAP2_dump_restart(n, ftn)
 ! !ARGUMENTS: 
     integer, intent(in) :: ftn
     integer, intent(in) :: n
-    real                :: var(HYMAP2_routing_struc(n)%nseqall)
+    real                :: var(LIS_rc%nroutinggrid(n))
     integer             :: varid
 
 ! !DESCRIPTION:
@@ -598,36 +599,36 @@ subroutine HYMAP2_dump_restart(n, ftn)
     integer :: ierr
 
     if(LIS_masterproc) then 
-       allocate(gtmp(HYMAP2_routing_struc(n)%nseqall_glb))
-       allocate(gtmp1(HYMAP2_routing_struc(n)%nseqall_glb))
+       allocate(gtmp(LIS_rc%glbnroutinggrid(n)))
+       allocate(gtmp1(LIS_rc%glbnroutinggrid(n)))
     else
        allocate(gtmp1(1))
     endif
 #if (defined SPMD)     
-    call MPI_GATHERV(var,HYMAP2_routing_struc(n)%nseqall,&
+    call MPI_GATHERV(var,LIS_rc%nroutinggrid(n),&
          MPI_REAL,gtmp1,&
-         HYMAP2_routing_struc(n)%gdeltas(:),&
-         HYMAP2_routing_struc(n)%goffsets(:),&
+         LIS_routing_gdeltas(n,:),&
+         LIS_routing_goffsets(n,:),&
          MPI_REAL,0,LIS_mpi_comm,ierr)
 #else 
        gtmp1 = var
 #endif
     if(LIS_masterproc) then
        do l=1,LIS_npes
-          do i=1,HYMAP2_routing_struc(n)%gdeltas(l-1)
+          do i=1,LIS_routing_gdeltas(n,l-1)
              ix = HYMAP2_routing_struc(n)%seqx_glb(i+&
-                  HYMAP2_routing_struc(n)%goffsets(l-1))
+                  LIS_routing_goffsets(n,l-1))
              iy = HYMAP2_routing_struc(n)%seqy_glb(i+&
-                  HYMAP2_routing_struc(n)%goffsets(l-1))
+                  LIS_routing_goffsets(n,l-1))
              ix1 = ix + LIS_ews_halo_ind(n,l) - 1
              iy1 = iy + LIS_nss_halo_ind(n,l)-1
              gtmp(HYMAP2_routing_struc(n)%sindex(ix1,iy1)) = &
-                  gtmp1(i+HYMAP2_routing_struc(n)%goffsets(l-1))
+                  gtmp1(i+LIS_routing_goffsets(n,l-1))
           enddo
        enddo
 #if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
        ierr = nf90_put_var(ftn,varid,gtmp,(/1/),&
-               (/HYMAP2_routing_struc(n)%nseqall_glb/))
+               (/LIS_rc%glbnroutinggrid(n)/))
        call LIS_verify(ierr,'nf90_put_var failed in LIS_historyMod')
 #endif   
        deallocate(gtmp)       
@@ -645,6 +646,7 @@ subroutine HYMAP2_dump_restart(n, ftn)
   subroutine HYMAP2_writevar_restart_ens(ftn, n, var, varid)
 ! !USES:
     use LIS_coreMod
+    use LIS_routingMod
     use LIS_mpiMod
     use LIS_logMod
     use HYMAP2_routingMod
@@ -656,7 +658,7 @@ subroutine HYMAP2_dump_restart(n, ftn)
 ! !ARGUMENTS: 
     integer, intent(in) :: ftn
     integer, intent(in) :: n
-    real                :: var(HYMAP2_routing_struc(n)%nseqall,LIS_rc%nensem(n))
+    real                :: var(LIS_rc%nroutinggrid(n),LIS_rc%nensem(n))
     integer             :: varid
 
 ! !DESCRIPTION:
@@ -680,17 +682,17 @@ subroutine HYMAP2_dump_restart(n, ftn)
     integer :: ierr
 
     if(LIS_masterproc) then 
-       allocate(gtmp(HYMAP2_routing_struc(n)%nseqall_glb*LIS_rc%nensem(n)))
-       allocate(gtmp1(HYMAP2_routing_struc(n)%nseqall_glb,LIS_rc%nensem(n)))
+       allocate(gtmp(LIS_rc%glbnroutinggrid(n)*LIS_rc%nensem(n)))
+       allocate(gtmp1(LIS_rc%glbnroutinggrid(n),LIS_rc%nensem(n)))
     else
-       allocate(gtmp1(1,1))
+       allocate(gtmp1(1,LIS_rc%nensem(n)))
     endif
 #if (defined SPMD)    
     do m=1,LIS_rc%nensem(n)  
-       call MPI_GATHERV(var(:,m),HYMAP2_routing_struc(n)%nseqall,&
+       call MPI_GATHERV(var(:,m),LIS_rc%nroutinggrid(n),&
             MPI_REAL,gtmp1(:,m),&
-            HYMAP2_routing_struc(n)%gdeltas(:),&
-            HYMAP2_routing_struc(n)%goffsets(:),&
+            LIS_routing_gdeltas(n,:),&
+            LIS_routing_goffsets(n,:),&
             MPI_REAL,0,LIS_mpi_comm,ierr)
 #else 
        gtmp1(:,m) = var(:)
@@ -699,22 +701,22 @@ subroutine HYMAP2_dump_restart(n, ftn)
     if(LIS_masterproc) then
        do m=1,LIS_rc%nensem(n)  
           do l=1,LIS_npes
-             do i=1,HYMAP2_routing_struc(n)%gdeltas(l-1)
+             do i=1,LIS_routing_gdeltas(n,l-1)
                 ix = HYMAP2_routing_struc(n)%seqx_glb(i+&
-                     HYMAP2_routing_struc(n)%goffsets(l-1))
+                     LIS_routing_goffsets(n,l-1))
                 iy = HYMAP2_routing_struc(n)%seqy_glb(i+&
-                     HYMAP2_routing_struc(n)%goffsets(l-1))
+                     LIS_routing_goffsets(n,l-1))
                 ix1 = ix + LIS_ews_halo_ind(n,l) - 1
                 iy1 = iy + LIS_nss_halo_ind(n,l)-1
                 gtmp(HYMAP2_routing_struc(n)%sindex(ix1,iy1)+&
-                     (m-1)*HYMAP2_routing_struc(n)%nseqall_glb) = &
-                     gtmp1(i+HYMAP2_routing_struc(n)%goffsets(l-1),m)
+                     (m-1)*LIS_rc%glbnroutinggrid(n)) = &
+                     gtmp1(i+LIS_routing_goffsets(n,l-1),m)
              enddo
           enddo
        enddo    
 #if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
        ierr = nf90_put_var(ftn,varid,gtmp,(/1/),&
-            (/HYMAP2_routing_struc(n)%nseqall_glb*LIS_rc%nensem(n)/))
+            (/LIS_rc%glbnroutinggrid(n)*LIS_rc%nensem(n)/))
        call LIS_verify(ierr,'nf90_put_var failed in LIS_historyMod')
 #endif   
        deallocate(gtmp)       

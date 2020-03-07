@@ -121,26 +121,26 @@ subroutine HYMAP2_routing_run(n)
 !
   alarmCheck = LIS_isAlarmRinging(LIS_rc, "HYMAP2 router model alarm")
   if(alarmCheck) then
-     allocate(rivsto_lvec(LIS_rc%ntiles(n)))
-     allocate(rivdph_lvec(LIS_rc%ntiles(n)))
-     allocate(rivvel_lvec(LIS_rc%ntiles(n)))
-     allocate(rivout_lvec(LIS_rc%ntiles(n)))
-     allocate(evpout_lvec(LIS_rc%ntiles(n)))
-     allocate(fldout_lvec(LIS_rc%ntiles(n)))
-     allocate(fldsto_lvec(LIS_rc%ntiles(n)))
-     allocate(flddph_lvec(LIS_rc%ntiles(n)))
-     allocate(fldvel_lvec(LIS_rc%ntiles(n)))
-     allocate(fldfrc_lvec(LIS_rc%ntiles(n)))
-     allocate(fldare_lvec(LIS_rc%ntiles(n)))
-     allocate(sfcelv_lvec(LIS_rc%ntiles(n)))
-     allocate(rnfsto_lvec(LIS_rc%ntiles(n)))
-     allocate(bsfsto_lvec(LIS_rc%ntiles(n)))
-     allocate(rnfdwi_lvec(LIS_rc%ntiles(n)))
-     allocate(bsfdwi_lvec(LIS_rc%ntiles(n)))
-     allocate(surfws_lvec(LIS_rc%ntiles(n)))
+     allocate(rivsto_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(rivdph_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(rivvel_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(rivout_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(evpout_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(fldout_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(fldsto_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(flddph_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(fldvel_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(fldfrc_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(fldare_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(sfcelv_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(rnfsto_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(bsfsto_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(rnfdwi_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(bsfdwi_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(surfws_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
 
-     allocate(ewat_lvec(LIS_rc%ntiles(n)))
-     allocate(edif_lvec(LIS_rc%ntiles(n)))
+     allocate(ewat_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
+     allocate(edif_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
 
      rivsto_lvec = LIS_rc%udef
      rivdph_lvec = LIS_rc%udef
@@ -305,7 +305,6 @@ subroutine HYMAP2_routing_run(n)
 
      if(HYMAP2_routing_struc(n)%useens.eq.1) then !ensemble mode
 
-        allocate(tmp_nensem(LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%nensem(n)))
         tmpr=0.
         tmpb=0.
         
@@ -424,178 +423,45 @@ subroutine HYMAP2_routing_run(n)
 ! The following calls are done because the vector size in LIS and HYMAP are different 
 ! (and because the LIS I/O system is being leveraged for output
 
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%rivsto(:,m))    
-        
-           call LIS_grid2tile(n,m, tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%rivsto(:,m),&
                 rivsto_lvec)
-        
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%rivdph(:,m))             
-           
-           call LIS_grid2tile(n,m, tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%rivdph(:,m),&
                 rivdph_lvec)
-           
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%rivvel(:,m))             
-           
-           call LIS_grid2tile(n,m, tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%rivvel(:,m),&
                 rivvel_lvec)
-        
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%rivout(:,m))  
-        
-           call LIS_grid2tile(n,m, tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%rivout(:,m),&
                 rivout_lvec)
-           
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%evpout(:,m))             
-        
-           call LIS_grid2tile(n,m,tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%evpout(:,m),&
                 evpout_lvec)
-           
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%fldout(:,m))             
-
-           call LIS_grid2tile(n,m,tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%fldout(:,m),&
                 fldout_lvec)
-           
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%fldsto(:,m))             
-           
-           call LIS_grid2tile(n,m,tmp_nensem(:,:,m),&
-                fldsto_lvec)           
-           
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%flddph(:,m))             
-
-           call LIS_grid2tile(n,tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%fldsto(:,m),&
+                fldsto_lvec)
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%flddph(:,m),&
                 flddph_lvec)
-           
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%fldvel(:,m))  
-           
-           call LIS_grid2tile(n,m,tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%fldvel(:,m),&
                 fldvel_lvec)
-           
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%fldfrc(:,m))             
-
-           call LIS_grid2tile(n,m,tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%fldfrc(:,m),&
                 fldfrc_lvec)
-           
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%fldare(:,m))             
-
-           call LIS_grid2tile(n,m,tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%fldare(:,m),&
                 fldare_lvec)
-           
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%sfcelv(:,m))    
-
-           call LIS_grid2tile(n,m,tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%sfcelv(:,m),&
                 sfcelv_lvec)
-
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                rnfsto_mm(:,m))             
-
-           call LIS_grid2tile(n,m,tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%rnfsto(:,m),&
                 rnfsto_lvec)
-           
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),bsfsto_mm(:,m))         
-
-           call LIS_grid2tile(n,m,tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%bsfsto(:,m),&
                 bsfsto_lvec)
-           
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%rnfdwi(:,m)) 
-
-           call LIS_grid2tile(n,m,tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%rnfdwi(:,m),&
                 rnfdwi_lvec)
-           
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%bsfdwi(:,m))   
-           
-           call LIS_grid2tile(n,m,tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%bsfdwi(:,m),&
                 bsfdwi_lvec)
-           
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%surfws(:,m))             
-           
-           call LIS_grid2tile(n,m,tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%surfws(:,m),&
                 surfws_lvec)
-           
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%ewat(:,m))             
-           
-           call LIS_grid2tile(n,m,tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%ewat(:,m),&
                 ewat_lvec)
-           
-           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-                HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,m),&
-                HYMAP2_routing_struc(n)%edif(:,m))             
-
-           call LIS_grid2tile(n,m,tmp_nensem(:,:,m),&
+           call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%edif(:,m),&
                 edif_lvec)
         enddo
-        deallocate(tmp_nensem)
-        
      else !single member run
         allocate(tmp_nensem(LIS_rc%lnc(n),LIS_rc%lnr(n),1))
         tmpr=0.
@@ -704,9 +570,7 @@ subroutine HYMAP2_routing_run(n)
              HYMAP2_routing_struc(n)%bsfdwi,&
              HYMAP2_routing_struc(n)%surfws,&
              HYMAP2_routing_struc(n)%dtaout)            
-        
-
-      
+              
         rnfsto_mm(:,1)=1000*HYMAP2_routing_struc(n)%rnfsto(:,1)/&
              HYMAP2_routing_struc(n)%grarea
         bsfsto_mm(:,1)=1000*HYMAP2_routing_struc(n)%bsfsto(:,1)/&
@@ -715,180 +579,49 @@ subroutine HYMAP2_routing_run(n)
 ! The following calls are done because the vector size in LIS and HYMAP are different 
 ! (and because the LIS I/O system is being leveraged for output
 
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%rivsto)    
-        
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%rivsto(:,1),&
              rivsto_lvec)
-        
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%rivdph)             
-        
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%rivdph(:,1),&
              rivdph_lvec)
-        
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%rivvel)             
-        
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%rivvel(:,1),&
              rivvel_lvec)
-        
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%rivout)  
-        
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%rivout(:,1),&
              rivout_lvec)
-        
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%evpout)             
-        
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%evpout(:,1),&
              evpout_lvec)
-        
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%fldout)             
-
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%fldout(:,1),&
              fldout_lvec)
-
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%fldsto)             
-
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
-             fldsto_lvec)           
-
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%flddph)             
-
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%fldsto(:,1),&
+             fldsto_lvec)
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%flddph(:,1),&
              flddph_lvec)
-
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%fldvel)  
-
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%fldvel(:,1),&
              fldvel_lvec)
-
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%fldfrc)             
-
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%fldfrc(:,1),&
              fldfrc_lvec)
-
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%fldare)             
-
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%fldare(:,1),&
              fldare_lvec)
-
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%sfcelv)    
-
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%sfcelv(:,1),&
              sfcelv_lvec)
-
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             rnfsto_mm)             
-
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%rnfsto(:,1),&
              rnfsto_lvec)
-
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),bsfsto_mm)             
-
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%bsfsto(:,1),&
              bsfsto_lvec)
-
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%rnfdwi) 
-
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%rnfdwi(:,1),&
              rnfdwi_lvec)
-
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%bsfdwi)   
-
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%bsfdwi(:,1),&
              bsfdwi_lvec)
-
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%surfws)             
-
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%surfws(:,1),&
              surfws_lvec)
-
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%ewat)             
-
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%ewat(:,1),&
              ewat_lvec)
-
-        call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),&
-             HYMAP2_routing_struc(n)%edif)             
-
-        call LIS_grid2tile(n,tmp_nensem(:,:,1),&
+        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%edif(:,1),&
              edif_lvec)
 
-        deallocate(tmp_nensem)
      endif
 
-     do t=1, LIS_rc%ntiles(n)
+     do t=1, LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)
         call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_RIVSTO,&
              value=rivsto_lvec(t),vlevel=1,unit="m3",&  
              direction="-")
@@ -1013,3 +746,46 @@ subroutine HYMAP2_routing_run(n)
   endif
 
 end subroutine HYMAP2_routing_run
+
+!BOP
+! !ROUTINE: HYMAP2_grid2tile
+! \label{HYMAP2_grid2tile}
+!
+! !INTERFACE:
+!
+! !INTERFACE:
+  subroutine HYMAP2_grid2tile(n,m,tvar,tvar_ens)
+! !USES:
+    use LIS_coreMod
+
+    implicit none
+! !ARGUMENTS:     
+    integer, intent(in) :: n
+    integer, intent(in) :: m
+    real                :: tvar(LIS_rc%nroutinggrid(n))
+    real                :: tvar_ens(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n))
+
+! !DESCRIPTION:
+!  This routine converts a tile space variable to the corresponding
+!  grid space. The aggregation involves weighted average of each tile
+!  in a grid cell based on the vegetation distribution. 
+!
+!  The arguments are: 
+!  \begin{description}
+!   \item [n]
+!     index of the domain or nest.
+!   \item [tvar]
+!     variable dimensioned in the tile space. 
+!   \item [gvar]
+!     variable after converstion to the grid space
+!  \end{description}
+!
+!EOP
+    integer           :: i,t,c,r
+
+    do i=1,LIS_rc%nroutinggrid(n)
+       t = m + (i-1)*LIS_rc%nensem(n)
+       tvar_ens(t) = tvar(i)
+    enddo
+
+  end subroutine HYMAP2_grid2tile

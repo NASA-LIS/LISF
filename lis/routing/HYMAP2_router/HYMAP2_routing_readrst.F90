@@ -182,7 +182,7 @@ end subroutine HYMAP2_routing_readrst
 ! !ARGUMENTS: 
     integer, intent(in)   :: ftn
     integer, intent(in)   :: n
-    real, intent(inout)   :: var(HYMAP2_routing_struc(n)%nseqall)
+    real, intent(inout)   :: var(LIS_rc%nroutinggrid(n))
     character(len=*)      :: varname
     
 ! !DESCRIPTION:
@@ -203,7 +203,7 @@ end subroutine HYMAP2_routing_readrst
     integer           :: i,ix,iy,ix1,iy1
     integer           :: status
 
-    allocate(gtmp(HYMAP2_routing_struc(n)%nseqall_glb))
+    allocate(gtmp(LIS_rc%glbnroutinggrid(n)))
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
     status = nf90_inq_varid(ftn,trim(varname),varid)
     call LIS_verify(status,'Error in nf90_inq_varid in HYMAP2_readvar_restart')
@@ -211,7 +211,7 @@ end subroutine HYMAP2_routing_readrst
     call LIS_verify(status,'Error in nf90_get_var in HYMAP2_readvar_restart')
 #endif       
 
-    do i=1,HYMAP2_routing_struc(n)%nseqall
+    do i=1,LIS_rc%nroutinggrid(n)
        ix = HYMAP2_routing_struc(n)%seqx(i)
        iy = HYMAP2_routing_struc(n)%seqy(i)
        ix1 = ix + LIS_ews_halo_ind(n,LIS_localPet+1) -1
@@ -241,7 +241,7 @@ end subroutine HYMAP2_routing_readrst
 ! !ARGUMENTS: 
     integer, intent(in)   :: ftn
     integer, intent(in)   :: n
-    real, intent(inout)   :: var(HYMAP2_routing_struc(n)%nseqall,&
+    real, intent(inout)   :: var(LIS_rc%nroutinggrid(n),&
          LIS_rc%nensem(n))
     character(len=*)      :: varname
     
@@ -263,7 +263,7 @@ end subroutine HYMAP2_routing_readrst
     integer           :: i,m,ix,iy,ix1,iy1
     integer           :: status
 
-    allocate(gtmp(HYMAP2_routing_struc(n)%nseqall_glb*LIS_rc%nensem(n)))
+    allocate(gtmp(LIS_rc%glbnroutinggrid(n)*LIS_rc%nensem(n)))
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
     status = nf90_inq_varid(ftn,trim(varname),varid)
     call LIS_verify(status,'Error in nf90_inq_varid in HYMAP2_readvar_restart_ens')
@@ -271,13 +271,13 @@ end subroutine HYMAP2_routing_readrst
     call LIS_verify(status,'Error in nf90_get_var in HYMAP2_readvar_restart_ens')
 #endif       
     do m=1,LIS_rc%nensem(n)
-       do i=1,HYMAP2_routing_struc(n)%nseqall
+       do i=1,LIS_rc%nroutinggrid(n)
           ix = HYMAP2_routing_struc(n)%seqx(i)
           iy = HYMAP2_routing_struc(n)%seqy(i)
           ix1 = ix + LIS_ews_halo_ind(n,LIS_localPet+1) -1
           iy1 = iy + LIS_nss_halo_ind(n,LIS_localPet+1) -1
           var(i,m)  = gtmp(HYMAP2_routing_struc(n)%sindex(ix1,iy1)+&
-               (m-1)*HYMAP2_routing_struc(n)%nseqall_glb)
+               (m-1)*LIS_rc%glbnroutinggrid(n))
        enddo
     enddo
 
