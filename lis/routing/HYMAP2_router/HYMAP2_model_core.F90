@@ -208,14 +208,14 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
  enddo
  
 
- allocate(rivelv_glb(HYMAP2_routing_struc(n)%nseqall_glb))
- allocate(rivsto_glb(HYMAP2_routing_struc(n)%nseqall_glb))
- allocate(rivdph_glb(HYMAP2_routing_struc(n)%nseqall_glb))
- allocate(rivdph_pre_glb(HYMAP2_routing_struc(n)%nseqall_glb))
- allocate(fldelv1_glb(HYMAP2_routing_struc(n)%nseqall_glb))
- allocate(fldsto_glb(HYMAP2_routing_struc(n)%nseqall_glb))
- allocate(flddph1_glb(HYMAP2_routing_struc(n)%nseqall_glb))
- allocate(flddph_pre_glb(HYMAP2_routing_struc(n)%nseqall_glb))
+ allocate(rivelv_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(rivsto_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(rivdph_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(rivdph_pre_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(fldelv1_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(fldsto_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(flddph1_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(flddph_pre_glb(LIS_rc%glbnroutinggrid(n)))
  
  call HYMAP2_gather_tiles(n,rivelv,rivelv_glb)
  call HYMAP2_gather_tiles(n,rivsto,rivsto_glb)
@@ -332,8 +332,8 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
        elevtn,fldhgt,fldstomax,grarea,rivstomax,rivelv,rivlen,rivwth)
   ! ================================================
 
-  allocate(rivout_glb(HYMAP2_routing_struc(n)%nseqall_glb))
-  allocate(fldout_glb(HYMAP2_routing_struc(n)%nseqall_glb))
+  allocate(rivout_glb(LIS_rc%glbnroutinggrid(n)))
+  allocate(fldout_glb(LIS_rc%glbnroutinggrid(n)))
   
   call HYMAP2_gather_tiles(n,rivout,rivout_glb)
   call HYMAP2_gather_tiles(n,fldout,fldout_glb)
@@ -341,7 +341,7 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
   call HYMAP2_gather_tiles(n,fldsto,fldsto_glb)
 
   if(LIS_masterproc) then 
-     do ic=1,HYMAP2_routing_struc(n)%nseqall_glb 
+     do ic=1,LIS_rc%glbnroutinggrid(n) 
         if(HYMAP2_routing_struc(n)%outlet_glb(ic)==mis)cycle
         if(HYMAP2_routing_struc(n)%outlet_glb(ic)==0)then
            ic_down=HYMAP2_routing_struc(n)%next_glb(ic)
@@ -368,22 +368,22 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
 
 #if (defined SPMD)
   call MPI_BCAST(rivout_glb, &
-       HYMAP2_routing_struc(n)%nseqall_glb, &
+       LIS_rc%glbnroutinggrid(n), &
        MPI_REAL,0, &
        LIS_mpi_comm, status)
   
   call MPI_BCAST(fldout_glb, &
-       HYMAP2_routing_struc(n)%nseqall_glb, &
+       LIS_rc%glbnroutinggrid(n), &
        MPI_REAL,0, &
        LIS_mpi_comm, status)
 
   call MPI_BCAST(rivsto_glb, &
-       HYMAP2_routing_struc(n)%nseqall_glb, &
+       LIS_rc%glbnroutinggrid(n), &
        MPI_REAL,0, &
        LIS_mpi_comm, status)
 
   call MPI_BCAST(fldsto_glb, &
-       HYMAP2_routing_struc(n)%nseqall_glb, &
+       LIS_rc%glbnroutinggrid(n), &
        MPI_REAL,0, &
        LIS_mpi_comm, status)
 
@@ -424,6 +424,7 @@ end subroutine HYMAP2_model_core
 subroutine HYMAP2_gather_tiles(n,var,var_glb)
 ! !USES:
   use LIS_coreMod
+  use LIS_routingMod
   use LIS_mpiMod
   use HYMAP2_routingMod
 !
@@ -435,32 +436,32 @@ subroutine HYMAP2_gather_tiles(n,var,var_glb)
   implicit none
 
   integer        :: n 
-  real           :: var(HYMAP2_routing_struc(n)%nseqall)
-  real           :: var_glb(HYMAP2_routing_struc(n)%nseqall_glb)
+  real           :: var(LIS_rc%nroutinggrid(n))
+  real           :: var_glb(LIS_rc%glbnroutinggrid(n))
 
-  real           :: tmpvar(HYMAP2_routing_struc(n)%nseqall_glb)
+  real           :: tmpvar(LIS_rc%glbnroutinggrid(n))
   integer        :: i,l,ix,iy,ix1,iy1
   integer        :: status
 
 #if (defined SPMD)
   call MPI_ALLGATHERV(var,&
-       HYMAP2_routing_struc(n)%nseqall,&
+       LIS_rc%nroutinggrid(n),&
        MPI_REAL,tmpvar,&
-       HYMAP2_routing_struc(n)%gdeltas(:),&
-       HYMAP2_routing_struc(n)%goffsets(:),&
+       LIS_routing_gdeltas(n,:),&
+       LIS_routing_goffsets(n,:),&
        MPI_REAL,LIS_mpi_comm,status)
 #endif
   !rearrange them to be in correct order.
   do l=1,LIS_npes
-     do i=1,HYMAP2_routing_struc(n)%gdeltas(l-1)
+     do i=1,LIS_routing_gdeltas(n,l-1)
         ix = HYMAP2_routing_struc(n)%seqx_glb(i+&
-             HYMAP2_routing_struc(n)%goffsets(l-1))
+             LIS_routing_goffsets(n,l-1))
         iy = HYMAP2_routing_struc(n)%seqy_glb(i+&
-             HYMAP2_routing_struc(n)%goffsets(l-1))
+             LIS_routing_goffsets(n,l-1))
         ix1 = ix + LIS_ews_halo_ind(n,l) - 1
         iy1 = iy + LIS_nss_halo_ind(n,l)-1
         var_glb(HYMAP2_routing_struc(n)%sindex(ix1,iy1)) = &
-             tmpvar(i+HYMAP2_routing_struc(n)%goffsets(l-1))
+             tmpvar(i+LIS_routing_goffsets(n,l-1))
      enddo
   enddo
 
@@ -484,12 +485,12 @@ subroutine HYMAP2_map_g2l(n, var_glb,var_local)
   implicit none
 
   integer             :: n 
-  real                :: var_glb(HYMAP2_routing_struc(n)%nseqall_glb)
-  real                :: var_local(HYMAP2_routing_struc(n)%nseqall)
+  real                :: var_glb(LIS_rc%glbnroutinggrid(n))
+  real                :: var_local(LIS_rc%nroutinggrid(n))
 
   integer             :: i, ix,iy,ix1,iy1,jx,jy
 
-  do i=1,HYMAP2_routing_struc(n)%nseqall
+  do i=1,LIS_rc%nroutinggrid(n)
      ix = HYMAP2_routing_struc(n)%seqx(i)
      iy = HYMAP2_routing_struc(n)%seqy(i)
      ix1 = ix + LIS_ews_halo_ind(n,LIS_localPet+1) -1

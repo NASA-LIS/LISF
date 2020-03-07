@@ -67,9 +67,7 @@ module HYMAP2_routingMod
   integer, allocatable :: seqy_glb(:)
   !integer              :: nseqriv       !length of 1D sequnece for river
   integer              :: nseqall       !length of 1D sequnece for river and mouth  
-  integer              :: nseqall_glb   !global length of 1D sequnece for river and mouth  
-  integer, allocatable :: gdeltas(:)
-  integer, allocatable :: goffsets(:)
+!  integer              :: nseqall_glb   !global length of 1D sequnece for river and mouth  
 ! === Map ===============================================
   integer, allocatable :: sindex(:,:)     !2-D sequence index
   integer, allocatable :: outlet(:)       !outlet flag: 0 - river; 1 - ocean
@@ -475,7 +473,7 @@ contains
        allocate(HYMAP2_routing_struc(n)%nextx(LIS_rc%gnc(n),LIS_rc%gnr(n)))
        ctitle = 'HYMAP_flow_direction_x'
        call HYMAP2_read_param_int_2d_global(ctitle,n,HYMAP2_routing_struc(n)%nextx)
-       
+
        allocate(HYMAP2_routing_struc(n)%nexty(LIS_rc%gnc(n),LIS_rc%gnr(n)))
        ctitle = 'HYMAP_flow_direction_y'
        call HYMAP2_read_param_int_2d_global(ctitle,n,HYMAP2_routing_struc(n)%nexty)
@@ -500,7 +498,10 @@ contains
        ctitle = 'HYMAP_basin_mask'
        call HYMAP2_read_param_int_2d_global(ctitle,n,maskg)	  
       
-       
+       !Assign the mask to the routing data structure
+       LIS_routing(n)%dommask = mask
+       LIS_routing(n)%nextx = HYMAP2_routing_struc(n)%nextx
+
        write(LIS_logunit,*) '[INFO] Get number of HYMAP2 grid cells'
        call HYMAP2_get_vector_size(LIS_rc%lnc(n),LIS_rc%lnr(n),&
             LIS_rc%gnc(n),LIS_rc%gnr(n),&
@@ -510,49 +511,48 @@ contains
             HYMAP2_routing_struc(n)%nextx,&
             mask,HYMAP2_routing_struc(n)%nseqall)
 
-       allocate(HYMAP2_routing_struc(n)%gdeltas(0:LIS_npes-1))
-       allocate(HYMAP2_routing_struc(n)%goffsets(0:LIS_npes-1))
+       LIS_rc%nroutinggrid(n) = HYMAP2_routing_struc(n)%nseqall
 
        gdeltas = HYMAP2_routing_struc(n)%nseqall
        
 #if (defined SPMD)
-       call MPI_ALLREDUCE(HYMAP2_routing_struc(n)%nseqall,&
-            HYMAP2_routing_struc(n)%nseqall_glb,1,&
+       call MPI_ALLREDUCE(LIS_rc%nroutinggrid(n),&
+            LIS_rc%glbnroutinggrid(n),1,&
             MPI_INTEGER,MPI_SUM,&
             LIS_mpi_comm,status)
 
        call MPI_ALLGATHER(gdeltas,1,MPI_INTEGER,&
-            HYMAP2_routing_struc(n)%gdeltas(:),1,MPI_INTEGER,&
+            LIS_routing_gdeltas(n,:),1,MPI_INTEGER,&
             LIS_mpi_comm,status)
 
 #else
-       HYMAP2_routing_struc(n)%nseqall_glb = HYMAP2_routing_struc(n)%nseqall
+       LIS_rc%glbnroutinggrid(n) = LIS_rc%nroutinggrid(n)
 #endif
 
        if(LIS_masterproc) then 
-          HYMAP2_routing_struc(n)%goffsets = 0 
+          LIS_routing_goffsets(n,:) = 0 
           do i=1,LIS_npes-1
-             HYMAP2_routing_struc(n)%goffsets(i) = &
-                  HYMAP2_routing_struc(n)%goffsets(i-1) +& 
-                  HYMAP2_routing_struc(n)%gdeltas(i-1)
+             LIS_routing_goffsets(n,i) = &
+                  LIS_routing_goffsets(n,i-1) +& 
+                  LIS_routing_gdeltas(n,i-1)
           enddo
        endif
 #if (defined SPMD)
-       call MPI_BCAST(HYMAP2_routing_struc(n)%goffsets, &
+       call MPI_BCAST(LIS_routing_goffsets(n,:), &
             LIS_npes, MPI_INTEGER,0, &
             LIS_mpi_comm, status)
 #endif
        allocate(HYMAP2_routing_struc(n)%seqx(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%seqy(HYMAP2_routing_struc(n)%nseqall))
 
-       allocate(HYMAP2_routing_struc(n)%seqx_glb(HYMAP2_routing_struc(n)%nseqall_glb))
-       allocate(HYMAP2_routing_struc(n)%seqy_glb(HYMAP2_routing_struc(n)%nseqall_glb))
+       allocate(HYMAP2_routing_struc(n)%seqx_glb(LIS_rc%glbnroutinggrid(n)))
+       allocate(HYMAP2_routing_struc(n)%seqy_glb(LIS_rc%glbnroutinggrid(n)))
 
        allocate(HYMAP2_routing_struc(n)%sindex(LIS_rc%gnc(n),LIS_rc%gnr(n)))
        allocate(HYMAP2_routing_struc(n)%outlet(HYMAP2_routing_struc(n)%nseqall))
-       allocate(HYMAP2_routing_struc(n)%outlet_glb(HYMAP2_routing_struc(n)%nseqall_glb))
+       allocate(HYMAP2_routing_struc(n)%outlet_glb(LIS_rc%glbnroutinggrid(n)))
        allocate(HYMAP2_routing_struc(n)%next(HYMAP2_routing_struc(n)%nseqall))
-       allocate(HYMAP2_routing_struc(n)%next_glb(HYMAP2_routing_struc(n)%nseqall_glb))
+       allocate(HYMAP2_routing_struc(n)%next_glb(LIS_rc%glbnroutinggrid(n)))
        !allocate(HYMAP2_routing_struc(n)%nextx(HYMAP2_routing_struc(n)%nseqall))
        !allocate(HYMAP2_routing_struc(n)%nexty(HYMAP2_routing_struc(n)%nseqall)) 
        !allocate(HYMAP2_routing_struc(n)%mask(HYMAP2_routing_struc(n)%nseqall))
@@ -785,7 +785,7 @@ contains
     do n=1, LIS_rc%nnest
        call HYMAP2_get_sindex(LIS_rc%gnc(n),&
             LIS_rc%gnr(n),&
-            HYMAP2_routing_struc(n)%nseqall_glb,&
+            LIS_rc%glbnroutinggrid(n),&
             HYMAP2_routing_struc(n)%imis,&
             HYMAP2_routing_struc(n)%nextx,&
             HYMAP2_routing_struc(n)%nexty,maskg,&
@@ -824,18 +824,18 @@ contains
 #if (defined SPMD)
     do n=1,LIS_rc%nnest    
        call MPI_ALLGATHERV(HYMAP2_routing_struc(n)%seqx,&
-            HYMAP2_routing_struc(n)%nseqall,MPI_INTEGER,&
+            LIS_rc%nroutinggrid(n),MPI_INTEGER,&
             HYMAP2_routing_struc(n)%seqx_glb,&
-            HYMAP2_routing_struc(n)%gdeltas(:),&
-            HYMAP2_routing_struc(n)%goffsets(:),&
+            LIS_routing_gdeltas(n,:),&
+            LIS_routing_goffsets(n,:),&
             MPI_INTEGER,&
             LIS_mpi_comm,status)
 
        call MPI_ALLGATHERV(HYMAP2_routing_struc(n)%seqy,&
-            HYMAP2_routing_struc(n)%nseqall,MPI_INTEGER,&
+            LIS_rc%nroutinggrid(n),MPI_INTEGER,&
             HYMAP2_routing_struc(n)%seqy_glb,&
-            HYMAP2_routing_struc(n)%gdeltas(:),&
-            HYMAP2_routing_struc(n)%goffsets(:),&
+            LIS_routing_gdeltas(n,:),&
+            LIS_routing_goffsets(n,:),&
             MPI_INTEGER,&
             LIS_mpi_comm,status)
     enddo
@@ -1254,15 +1254,15 @@ contains
     do n=1,LIS_rc%nnest
        allocate(deblklist(1,2,LIS_npes))
        do i=0,LIS_npes-1
-          stid = HYMAP2_routing_struc(n)%goffsets(i)*LIS_rc%nensem(n)+1
-          enid = stid + HYMAP2_routing_struc(n)%gdeltas(i)*LIS_rc%nensem(n)-1
+          stid = LIS_routing_goffsets(n,i)*LIS_rc%nensem(n)+1
+          enid = stid + LIS_routing_gdeltas(n,i)*LIS_rc%nensem(n)-1
           
           deblklist(:,1,i+1) = (/stid/)
           deblklist(:,2,i+1) = (/enid/)
        enddo
 
        patchDG = ESMF_DistGridCreate(minIndex=(/1/),&
-            maxIndex=(/HYMAP2_routing_struc(n)%nseqall_glb*LIS_rc%nensem(n)/),&
+            maxIndex=(/LIS_rc%glbnroutinggrid(n)*LIS_rc%nensem(n)/),&
             deBlockList=deblklist,rc=status)
        call LIS_verify(status)
        

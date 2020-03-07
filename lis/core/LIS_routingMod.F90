@@ -19,9 +19,12 @@ module LIS_routingMod
 ! 
 ! !USES: 
   use LIS_coreMod
+  use LIS_PRIV_tileMod
   use LIS_logMod
+  use LIS_histDataMod
   use LIS_DAobs_pluginMod
   use LIS_DAobservationsMod
+  use LIS_mpiMod
   use map_utils
   use ESMF
 
@@ -71,6 +74,7 @@ module LIS_routingMod
   type(ESMF_State), allocatable :: LIS_routing_pert_state(:,:)
   type(ESMF_State), allocatable :: LIS_routing_incr_state(:,:)
 
+
   contains
 !BOP
 ! !ROUTINE: LIS_routing_init
@@ -84,14 +88,38 @@ module LIS_routingMod
 !EOP
     integer           :: rc
     integer           :: i
-    integer           :: n, status
+    integer           :: n
+    integer           :: status
     character*1       :: nestid(2)
     character*100     :: temp
 
-    integer       :: ftn
-    integer       :: j,k
+    integer              :: c,r,j,k,kk,m,l
+    integer              :: cg,rg
+    integer              :: ftn
+    integer              :: ierr
+    integer              :: count
+    integer, allocatable :: ntiles_pergrid(:)
+    integer, allocatable :: gtmp(:,:)
+    integer, allocatable :: gtmp1(:)
 
     if(LIS_rc%routingmodel.ne."none") then 
+
+       allocate(LIS_routing(LIS_rc%nnest))
+
+       do n=1,LIS_rc%nnest
+          allocate(LIS_routing(n)%dommask(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+          allocate(LIS_routing(n)%nextx(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+          allocate(LIS_routing(n)%gindex(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+          allocate(LIS_routing(n)%ntiles_pergrid(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+          allocate(ntiles_pergrid(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+       enddo
+
+       allocate(LIS_rc%nroutinggrid(LIS_rc%nnest))
+       allocate(LIS_rc%glbnroutinggrid(LIS_rc%nnest))
+       allocate(LIS_rc%glbnroutinggrid_red(LIS_rc%nnest))
+       
+       allocate(LIS_routing_gdeltas(LIS_rc%nnest,0:LIS_npes-1))
+       allocate(LIS_routing_goffsets(LIS_rc%nnest,0:LIS_npes-1))
 
        allocate(LIS_rc%Routing_DAinst_valid(LIS_rc%ndas))
        
@@ -121,9 +149,91 @@ module LIS_routingMod
 
        call routinginit(trim(LIS_rc%routingmodel)//char(0))
 
-       
-    endif
+       do n=1,LIS_rc%nnest
+          allocate(LIS_routing(n)%tile(LIS_rc%nroutinggrid(n)*&
+               LIS_rc%nensem(n)))
 
+          call LIS_routingHistDataInit(n,LIS_rc%nroutinggrid(n)*&
+               LIS_rc%nensem(n))
+          
+          k = 1
+          kk = 1
+          LIS_routing(n)%gindex = -1
+          ntiles_pergrid = 0 
+
+          do c=1,LIS_rc%lnc(n)
+             do r=1,LIS_rc%lnr(n)
+                cg = c+LIS_ews_halo_ind(n,LIS_localPet+1)-1
+                rg = r+LIS_nss_halo_ind(n,LIS_localPet+1)-1
+                if(LIS_routing(n)%dommask(c,r).gt.0.and.&
+                     LIS_routing(n)%nextx(cg,rg).ne.LIS_rc%udef) then           
+                   do m=1,LIS_rc%nensem(n)
+                      LIS_routing(n)%tile(k)%ensem = m
+                      LIS_routing(n)%tile(k)%row = r
+                      LIS_routing(n)%tile(k)%col = c
+                      LIS_routing(n)%tile(k)%index = kk
+                      ntiles_pergrid(r+(c-1)*LIS_rc%lnr(n)) = &
+                           ntiles_pergrid(r+(c-1)*LIS_rc%lnr(n)) + 1
+                      k = k + 1
+                   enddo
+                   LIS_routing(n)%gindex(c,r) = kk
+
+                   kk = kk + 1
+                endif
+             enddo
+          enddo
+          
+          if(LIS_masterproc) then 
+             allocate(gtmp(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+             allocate(gtmp1(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+          else
+             allocate(gtmp1(1))
+          endif
+#if (defined SPMD)
+          call MPI_GATHERV(ntiles_pergrid,LIS_deltas(n,LIS_localPet),&
+               MPI_INTEGER,gtmp1,&
+               LIS_deltas(n,:),LIS_offsets(n,:),&
+               MPI_INTEGER,0,LIS_mpi_comm,ierr)
+#else
+          gtmp1 = ntiles_pergrid
+#endif
+          if(LIS_masterproc) then 
+             count=1
+             do l=1,LIS_npes
+                do c=LIS_ews_ind(n,l), LIS_ewe_ind(n,l)
+                   do r=LIS_nss_ind(n,l), LIS_nse_ind(n,l)
+                      gtmp(c,r) = gtmp1(count)
+                      count = count+1
+                   enddo
+                enddo
+             enddo
+
+             count=1
+             do c=1,LIS_rc%gnc(n)
+                do r=1,LIS_rc%gnr(n)
+                   LIS_routing(n)%ntiles_pergrid(count) = gtmp(c,r)
+                   count = count+1
+                enddo
+             enddo
+
+             deallocate(gtmp)
+             deallocate(gtmp1)
+          else
+             deallocate(gtmp1)
+          endif
+
+#if (defined SPMD)
+          call MPI_Bcast(LIS_routing(n)%ntiles_pergrid,&
+               LIS_rc%gnc(n)*LIS_rc%gnr(n),&
+               MPI_INTEGER,0,LIS_mpi_comm,ierr)
+#endif   
+          do k=1,LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)
+             LIS_routing(n)%tile(k)%pens = 1.0/float(LIS_rc%nensem(n))
+             LIS_routing(n)%tile(k)%fgrd = 1.0  !no subgrid routing tiling for now
+          enddo
+
+       end do
+    end if
 
   end subroutine LIS_routing_init
 
