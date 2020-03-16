@@ -235,12 +235,12 @@ _OTHER_VARIABLES = ["latitude","longitude","time","water_temp","aice","hi"]
 #------------------------------------------------------------------------------
 # Print command line usage
 def usage():
-    print "Usage: %s yyyymmddhh lsm period [--nospread]" %(sys.argv[0])
-    print "   where:"
-    print "           yyyymmddhh is valid year/month/day/hour in UTC"
-    print "           lsm is name of land surface model used by LIS"
-    print "           period is processing time length in hours (3 or 24)"
-    print "           --nospread is optional flag to skip ensemble spread"
+    print("Usage: %s yyyymmddhh lsm period [--nospread]" %(sys.argv[0]))
+    print("   where:")
+    print("           yyyymmddhh is valid year/month/day/hour in UTC")
+    print("           lsm is name of land surface model used by LIS")
+    print("           period is processing time length in hours (3 or 24)")
+    print("           --nospread is optional flag to skip ensemble spread")
 
 #------------------------------------------------------------------------------
 # Read command line arguments
@@ -248,7 +248,7 @@ def read_cmd_args():
 
     # Check if argument count is correct
     if len(sys.argv) not in [4,5]:
-        print "[ERR] Invalid number of command line arguments!"
+        print("[ERR] Invalid number of command line arguments!")
         usage()
         sys.exit(1)
 
@@ -261,7 +261,7 @@ def read_cmd_args():
         hour   = int(yyyymmddhh[8:10])
         validdt = datetime.datetime(year,month,day,hour)
     except:
-        print "[ERR] Cannot process yyyymmddhh argument!"
+        print("[ERR] Cannot process yyyymmddhh argument!")
         usage()
         sys.exit(1)
 
@@ -272,12 +272,12 @@ def read_cmd_args():
             lsm = _LIS_LSMS[i]
             break
     if lsm == None:
-        print "[ERR] Invalid lsm selection!"
-        print " lsm value is %s" %(sys.argv[2])
+        print("[ERR] Invalid lsm selection!")
+        print(" lsm value is %s" %(sys.argv[2]))
         text = " Supported lsms:" 
         for lsm in _LIS_LSMS:
             text += " %s" %(lsm)
-        print text
+        print(text)
         sys.exit(1)
 
     # Get period
@@ -288,9 +288,9 @@ def read_cmd_args():
             period = period_options[i]
             break
     if period == None:
-        print "[ERR] Invalid time period selected!"
-        print "  Read in %s" %(sys.argv[3])
-        print "  Only supports 3 or 24!"
+        print("[ERR] Invalid time period selected!")
+        print("  Read in %s" %(sys.argv[3]))
+        print("  Only supports 3 or 24!")
         sys.exit(1)
 
     # Check if we are skipping ensemble spread
@@ -299,7 +299,7 @@ def read_cmd_args():
         if sys.argv[4] == "--nospread":
             skip_ens_spread = True
         else:
-            print "[ERR] Invalid argument %s" %(sys.argv[4])
+            print("[ERR] Invalid argument %s" %(sys.argv[4]))
             usage()
     
     # See if ncks exists and is executable by current user (the script)
@@ -307,12 +307,12 @@ def read_cmd_args():
     # to better comply with Air Force security requirements.
     ncks = _NCKS_PATH
     if not os.path.isfile(ncks):
-        print "[ERR] Binary %s does not exist!" %(ncks)
-        print "[ERR] Modify %s to correct the path to ncks!" %(sys.argv[0])
+        print("[ERR] Binary %s does not exist!" %(ncks))
+        print("[ERR] Modify %s to correct the path to ncks!" %(sys.argv[0]))
         sys.exit(1)
     if not os.access(ncks,os.X_OK):
-        print "[ERR] %s cannot be executed by current user!" %(ncks)
-        print "[ERR] Modify %s to correct the path to ncks!" %(sys.argv[0])
+        print("[ERR] %s cannot be executed by current user!" %(ncks))
+        print("[ERR] Modify %s to correct the path to ncks!" %(sys.argv[0]))
         sys.exit(1)
 
     return validdt,lsm,ncks,period,skip_ens_spread
@@ -344,7 +344,7 @@ def get_nc_mean_files(validdt,lsm,period):
 
         mean_path = path + ".nc"
         if not os.path.exists(mean_path):
-            print "[ERR], %s does not exist!" %(mean_path)
+            print("[ERR], %s does not exist!" %(mean_path))
             sys.exit(1)
 
         mean_nc_infiles[invocation] = mean_path
@@ -398,7 +398,7 @@ def get_nc_ssdev_files(validdt,lsm,period):
 
         ssdev_path = path + "_SSDEV.nc"
         if not os.path.exists(ssdev_path):
-            print "[ERR], %s does not exist!" %(ssdev_path)
+            print("[ERR], %s does not exist!" %(ssdev_path))
             sys.exit(1)
 
         ssdev_nc_infiles[invocation] = ssdev_path
@@ -449,7 +449,7 @@ def get_nc_latest_files(validdt,lsm):
 
         latest_path = path + ".nc"
         if not os.path.exists(latest_path):
-            print "[ERR], %s does not exist!" %(latest_path)
+            print("[ERR], %s does not exist!" %(latest_path))
             sys.exit(1)
 
         latest_nc_infiles[invocation] = latest_path
@@ -467,10 +467,10 @@ def merge_nc_files(lsm,ncks,period,nc_infiles, \
     # Start with ensemble mean
     cmd = "cp %s %s" %(nc_infiles[_INVOCATIONS[key][0]], \
                            nc_outfile)
-    print cmd
+    print(cmd)
     rc = subprocess.call(cmd,shell=True)
     if rc != 0:
-        print "[ERR] Problem with cp!"
+        print("[ERR] Problem with cp!")
         sys.exit(1)
 
     invocations = _INVOCATIONS[key][1:]
@@ -479,10 +479,10 @@ def merge_nc_files(lsm,ncks,period,nc_infiles, \
         for variable in variables:
             cmd = "%s -A -v %s %s %s" \
                 %(ncks,variable,nc_infiles[invocation],nc_outfile)
-            print cmd
+            print(cmd)
             rc = subprocess.call(cmd,shell=True)
             if rc != 0:
-                print "[ERR] Problem with ncks!"
+                print("[ERR] Problem with ncks!")
                 sys.exit(1)
 
     # For 24-hr postprocessing, we also must concatenate several 3-hr fields
@@ -495,10 +495,10 @@ def merge_nc_files(lsm,ncks,period,nc_infiles, \
                 cmd = "%s -A -v %s %s %s" \
                     %(ncks,variable,
                       latest_nc_infiles[invocation],nc_outfile)
-                print cmd
+                print(cmd)
                 rc = subprocess.call(cmd,shell=True)
                 if rc != 0:
-                    print "[ERR] Problem with ncks!"
+                    print("[ERR] Problem with ncks!")
                     sys.exit(1)
 
 #------------------------------------------------------------------------------

@@ -102,7 +102,7 @@ var_attributes_special = {
 
 lines = open(template,'r').readlines()
 
-vars = var_attributes.keys()
+vars = list(var_attributes.keys())
 vars.append("RHMin_inst") # RHMin will be handled specially below
 vars.sort()
 firstVar = True
@@ -139,8 +139,7 @@ for var in vars:
             # Special handling for RHMin_inst, which must be processed with
             # Tair_f_min
             if var == "RHMin_inst": 
-                keys = var_attributes_special.keys()
-                keys.sort()
+                keys = sorted(list(var_attributes_special.keys()))
                 for key in keys:
                     line += "%s\n" %(var_attributes_special[key])
             # The general case
@@ -156,7 +155,7 @@ for var in vars:
 
     firstVar = False
     newfile = "lvt.config.%s.3hr" %(var)
-    print "Writing %s" %(newfile)
+    print("Writing %s" %(newfile))
     f = open(newfile,"w")
     for line in newlines:
         f.write(line)

@@ -14,7 +14,7 @@ vars = ["SoilMoist_tavg", "SoilTemp_tavg",
         "TotalPrecip_acc", "Wind_f_tavg"]
 
 if not os.path.exists("LVT"):
-    print "ERROR, LVT executable does not exist!"
+    print("ERROR, LVT executable does not exist!")
     sys.exit(1)
 
 for var in vars:
@@ -57,10 +57,10 @@ exit 0
     f.close()
 
     cmd = "sbatch %s" %(scriptname)
-    print cmd
+    print(cmd)
     rc = subprocess.call(cmd,shell=True)
     if rc != 0:
-        print "[ERR] Problem with sbatch!"
+        print("[ERR] Problem with sbatch!")
         sys.exit(1)
     time.sleep(1) # Don't overwhelm SLURM
 
