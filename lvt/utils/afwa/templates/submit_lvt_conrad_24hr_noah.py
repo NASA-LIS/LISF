@@ -15,11 +15,11 @@ vars = ["SoilMoist_tavg", "SoilTemp_tavg",
 
 #Handle command line
 def usage():
-    print "Usage:  %s chargecode queue" %(sys.argv[0])
-    print "  where chargecode is PBS project_code"
-    print "  and   queue is PBS queue OR reservation number"
+    print("Usage:  %s chargecode queue" %(sys.argv[0]))
+    print("  where chargecode is PBS project_code")
+    print("  and   queue is PBS queue OR reservation number")
 if len(sys.argv) != 3:
-    print "ERROR, problem with command line arguments!"
+    print("ERROR, problem with command line arguments!")
     usage()
     sys.exit(1)
 project_code = sys.argv[1]
@@ -27,7 +27,7 @@ reservation = sys.argv[2]
 
 # Make sure LVT executable is in place before launching jobs
 if not os.path.exists("LVT"):
-    print "ERROR, LVT executable does not exist!"
+    print("ERROR, LVT executable does not exist!")
     sys.exit(1)
 
 # Loop through each invocation, create a batch script, and launch the
@@ -70,10 +70,10 @@ exit 0
     f.close()
 
     cmd = "qsub %s" %(scriptname)
-    print cmd
+    print(cmd)
     rc = subprocess.call(cmd,shell=True)
     if rc != 0:
-        print "[ERR] Problem with qsub!"
+        print("[ERR] Problem with qsub!")
         sys.exit(1)
     time.sleep(1) # Don't overwhelm PBS!
 

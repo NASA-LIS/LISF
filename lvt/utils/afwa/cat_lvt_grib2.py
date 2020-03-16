@@ -143,12 +143,12 @@ _INVOCATIONS = {
 #------------------------------------------------------------------------------
 # Print command line usage
 def usage():
-    print "Usage: %s yyyymmddhh lsm period [--nospread]" %(sys.argv[0])
-    print "   where:"
-    print "         yyyymmddhh is valid year/month/day/hour in UTC"
-    print "         lsm is name of land surface model used by LIS"
-    print "         period is time period (hours) for postprocessing (3 or 24)"
-    print "         --nospread is optional flag to skip ensemble spread"
+    print("Usage: %s yyyymmddhh lsm period [--nospread]" %(sys.argv[0]))
+    print("   where:")
+    print("         yyyymmddhh is valid year/month/day/hour in UTC")
+    print("         lsm is name of land surface model used by LIS")
+    print("         period is time period (hours) for postprocessing (3 or 24)")
+    print("         --nospread is optional flag to skip ensemble spread")
 
 #------------------------------------------------------------------------------
 # Read command line arguments
@@ -156,7 +156,7 @@ def read_cmd_args():
 
     # Check if argument count is correct
     if len(sys.argv) not in [4,5]:
-        print "[ERR] Invalid number of command line arguments!"
+        print("[ERR] Invalid number of command line arguments!")
         usage()
         sys.exit(1)
 
@@ -169,7 +169,7 @@ def read_cmd_args():
         hour   = int(yyyymmddhh[8:10])
         validdt = datetime.datetime(year,month,day,hour)
     except:
-        print "[ERR] Cannot process yyyymmddhh argument!"
+        print("[ERR] Cannot process yyyymmddhh argument!")
         usage()
         sys.exit(1)
 
@@ -180,12 +180,12 @@ def read_cmd_args():
           lsm = _LIS_LSMS[i]
           break
     if lsm == None:
-        print "[ERR] Invalid lsm selection!"
-        print " lsm value is %s" %(sys.argv[2])
+        print("[ERR] Invalid lsm selection!")
+        print(" lsm value is %s" %(sys.argv[2]))
         text = " Supported lsms:" 
         for lsm in _LIS_LSMS:
             text += " %s" %(lsm)
-        print text
+        print(text)
         sys.exit(1)
       
     # Get processing hour
@@ -197,9 +197,9 @@ def read_cmd_args():
             period = period_options[i]
             break
     if period == None:    
-        print "[ERR] Invalid period selection!"
-        print " period value is %s" %(sys.argv[3])
-        print " Supported time periods are: 3 and 24"
+        print("[ERR] Invalid period selection!")
+        print(" period value is %s" %(sys.argv[3]))
+        print(" Supported time periods are: 3 and 24")
         sys.exit(1)
 
     # Check if ensemble spread should be skipped
@@ -208,7 +208,7 @@ def read_cmd_args():
         if sys.argv[4] == "--nospread":
             skip_ens_spread = True
         else:
-            print "[ERR] Invalid argument %s" %(sys.argv[4])
+            print("[ERR] Invalid argument %s" %(sys.argv[4]))
             usage()
 
     return validdt,lsm,period,skip_ens_spread
@@ -240,7 +240,7 @@ def get_gr2_mean_files(validdt,lsm,period):
 
         mean_path = path + ".GR2"
         if not os.path.exists(mean_path):
-            print "[ERR], %s does not exist!" %(mean_path)
+            print("[ERR], %s does not exist!" %(mean_path))
             sys.exit(1)
         mean_gr2_infiles[invocation] = mean_path
         
@@ -292,7 +292,7 @@ def get_gr2_ssdev_files(validdt,lsm,period):
 
         ssdev_path = path + "_SSDEV.GR2"
         if not os.path.exists(ssdev_path):
-            print "[ERR], %s does not exist!" %(ssdev_path)
+            print("[ERR], %s does not exist!" %(ssdev_path))
             sys.exit(1)
         ssdev_gr2_infiles[invocation] = ssdev_path
 
@@ -342,7 +342,7 @@ def get_gr2_latest_files(validdt,lsm):
 
         latest_path = path + ".GR2"
         if not os.path.exists(latest_path):
-            print "[ERR], %s does not exist!" %(latest_path)
+            print("[ERR], %s does not exist!" %(latest_path))
             sys.exit(1)
         latest_gr2_infiles[invocation] = latest_path
         
@@ -367,10 +367,10 @@ def merge_gr2_files(lsm, period,gr2_infiles, gr2_outfile,
             cmd += " %s" %(latest_gr2_infiles[invocation])
     cmd += " > %s" %(gr2_outfile)
 
-    print cmd
+    print(cmd)
     rc = subprocess.call(cmd,shell=True)
     if rc != 0:
-        print "[ERR] Problem with cat!"
+        print("[ERR] Problem with cat!")
         sys.exit(1)
 
 #------------------------------------------------------------------------------
