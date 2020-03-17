@@ -34,7 +34,7 @@ subroutine noahmp401_transform_usafsi(n,OBS_State)
 !
 ! !DESCRIPTION:
 !
-!  This subroutine transforms the SNODEP state
+!  This subroutine transforms the USAFSI state
 !  (mm) to the lsm state
 !  
 !  The arguments are: 

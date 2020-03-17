@@ -17,13 +17,14 @@
 ! 30 Jan 2015: Yuqiong Liu; added additional QC
 ! 03 Oct 2018: Yeosang Yoon; Modified for NoahMP 3.6
 ! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1
+! 09 Jan 2020: Yeosang Yoon; update QC
 !
 ! !INTERFACE:
 subroutine noahmp401_qcsnodep(n, LSM_State)
 
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc
+  use LIS_coreMod
   use noahmp401_lsmMod
   use LIS_logMod
 
@@ -45,13 +46,16 @@ subroutine noahmp401_qcsnodep(n, LSM_State)
 !EOP
   type(ESMF_Field)       :: sweField
   type(ESMF_Field)       :: snodField
-  integer                :: t
+  integer                :: t, gid
   integer                :: status
   real, pointer          :: swe(:)
   real, pointer          :: snod(:)
 
   real                   :: swemax,snodmax
   real                   :: swemin,snodmin
+
+  real                   :: sndens
+  logical                :: update_flag(LIS_rc%ngrid(n))
  
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status)
@@ -72,26 +76,47 @@ subroutine noahmp401_qcsnodep(n, LSM_State)
   call ESMF_AttributeGet(snodField,"Min Value",snodmin,rc=status)
   call LIS_verify(status)
 
+  update_flag    = .true.
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     if(swe(t).lt.swemin) then 
-        swe(t) = swemin
+
+     gid = LIS_domain(n)%gindex(&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
+
+     if((snod(t).lt.snodmin) .or. swe(t).lt.swemin) then
+        update_flag(gid) = .false.
      endif
-     if(snod(t).lt.snodmin) then 
-        snod(t) = snodmin
-     endif
-     if(swe(t).gt.swemax) then 
-        swe(t) = swemax
-     endif
-     if(snod(t).gt.snodmax) then 
-        snod(t) = snodmax
-     endif
-     !Additional qc's to ensure consistency.. 
-     if(swe(t).le.0.0) snod(t) = 0.0
-     if(snod(t).lt.swe(t)) then 
-        snod(t) = swe(t)
-     endif
+
   enddo
 
+  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     gid = LIS_domain(n)%gindex(&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
+
+!Use the model's snow density from the previous timestep
+     sndens = 0.0
+     if(noahmp401_struc(n)%noahmp401(t)%snowh.gt.0) then
+       sndens = noahmp401_struc(n)%noahmp401(t)%sneqv/noahmp401_struc(n)%noahmp401(t)%snowh
+     endif
+
+!If the update is unphysical, do not update.
+     if(update_flag(gid)) then
+        snod(t) = snod(t)
+        swe(t)  = snod(t)*sndens
+     else ! do not update
+        snod(t) = noahmp401_struc(n)%noahmp401(t)%snowh
+        swe(t)  = noahmp401_struc(n)%noahmp401(t)%sneqv
+     end if
+
+     if(swe(t).gt.swemax) then
+        swe(t) = swemax
+     endif
+     if(snod(t).gt.snodmax) then
+        snod(t) = snodmax
+     endif
+
+  end do
 
 end subroutine noahmp401_qcsnodep
 
