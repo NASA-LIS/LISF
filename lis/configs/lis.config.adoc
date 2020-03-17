@@ -4894,6 +4894,17 @@ Acceptable values are:
 |GALWEM | use UK Unified Model (GALWEM) data
 |====
 
+`AGRMET GALWEM nominal resolution (km):` specifies the nominal horizontal
+resolution of the GALWEM GRIB2 data in kilometers.
+Acceptable values are:
+
+|====
+|Value  | Description
+
+|17     | 17-km (long-time operational resolution at USAF)
+|10     | 10-km (proposed operational resolution upgrade for 2020)
+|====
+
 `AGRMET analysis directory:` specifies the location where temporary
 precip analysis fields will be written.
 
