@@ -3,63 +3,63 @@
 # currently assumes eps files - need to modify for ESMPy to read config 
 # options
 
-print "Generating the gnuplot script for time series plots ..."
+print("Generating the gnuplot script for time series plots ...")
 
 infile=open('ts.config','r')
 for line in infile:
     try:
         (option,out_img_format)=line.split("Output format for images:")
     except ValueError as e:
-        print e
+        print(e)
     try:
         (option,lvt_config)=line.split("LVT config file:")
     except ValueError as e:
-        print e
+        print(e)
     try:
         (option,lvt_ts_file)=line.split("LVT time series locations file:")
     except ValueError as e:
-        print e
+        print(e)
     try:
         (option,outfilename)=line.split("gnuplot output filename:")
     except ValueError as e:
-        print e
+        print(e)
 
     try:
         (option,plt_summ_stats)=line.split("Plot summary stats in the image:")
     except ValueError as e:
-        print e
+        print(e)
     try:
         (option,n_plt_vars)=line.split("Number of variables to plot:")
     except ValueError as e:
-        print e
+        print(e)
     try:
         (option,d1_label)=line.split("data series 1 label:")
     except ValueError as e:
-        print e
+        print(e)
     try:
         (option,d1_style)=line.split("data series 1 style:")
     except ValueError as e:
-        print e
+        print(e)
     try:
         (option,d2_label)=line.split("data series 2 label:")
     except ValueError as e:
-        print e
+        print(e)
     try:
         (option,d2_style)=line.split("data series 2 style:")
     except ValueError as e:
-        print e
+        print(e)
     try:
         (option,n_x_tics)=line.split("Number of xtics:")
     except ValueError as e:
-        print e
+        print(e)
     try:
         (option,vnames)=line.split("Variable names:")
     except ValueError as e:
-        print e
+        print(e)
     try:
         (option,vunits)=line.split("Variable units:")
     except ValueError as e:
-        print e
+        print(e)
 
 
 #open lvt.config file and read entries. 
@@ -68,7 +68,7 @@ for line in lvtfile:
     try:
         (option,statsodir)=line.split("Stats output directory:")
     except ValueError as e:
-        print e
+        print(e)
 
 outfile = open(outfilename.strip(),'w')
 #outfile = open('ts.plt','w')
@@ -103,8 +103,8 @@ outfile.writelines(cline)
 plt_summ_stats = int(plt_summ_stats)
 if plt_summ_stats == 1:
     rmsefile = statsodir.strip() + '/RMSE_SUMMARY_STATS.dat'
-    print rmsefile
+    print(rmsefile)
 outfile.close()
 
-print 'Sucessfully generated the gnuplot script '+outfilename
+print('Sucessfully generated the gnuplot script '+outfilename)
 
