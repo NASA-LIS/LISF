@@ -178,8 +178,8 @@ subroutine get_era5(n, findex)
            order = 1
            call era5files(n,kk,findex,era5_struc(n)%era5dir, yr1, mo1, da1, &
                 fname)
-           write(unit=LIS_logunit,fmt=*)'[INFO] getting file.. ',trim(fname)
-           call read_era5(n, kk,order, mo1, &
+!           write(unit=LIS_logunit,fmt=*)'[INFO] getting file.. ',trim(fname)
+           call read_era5(n, kk,order, yr1,mo1, da1, hr1, &
                 findex, fname, ferror)
         enddo
 
@@ -205,10 +205,10 @@ subroutine get_era5(n, findex)
      !- Obtaining ERA5 File:
         do kk= era5_struc(n)%st_iterid, era5_struc(n)%en_iterid
           order = 2
-          call era5files(n,kk,findex,era5_struc(n)%era5dir, yr1, mo1, da1, &
+          call era5files(n,kk,findex,era5_struc(n)%era5dir, yr2, mo2, da2, &
                fname)
-          write(unit=LIS_logunit,fmt=*)'[INFO] getting file.. ',trim(fname)
-          call read_era5(n, kk,order, mo1, &
+!          write(unit=LIS_logunit,fmt=*)'[INFO] getting file.. ',trim(fname)
+          call read_era5(n, kk,order, yr2,mo2, da2, hr2, &
                findex, fname, ferror)
         end do
 
@@ -248,8 +248,7 @@ subroutine era5files(n, kk, findex, era5dir, yr, mo, da, fname)
   character(len=*), intent(out) :: fname
 
 ! !DESCRIPTION:
-!   This subroutine puts together ERA5 file names for
-!   daily netcdf files
+!   This subroutine generates the timestamped ERA5 file names
 !
 !  The arguments are:
 !  \begin{description}
