@@ -13,48 +13,11 @@ module era5_forcingMod
 ! !DESCRIPTION:
 !  This module contains variables and data structures that are used
 !  for the implementation of the ERA5 forcing data.
-!  The data is global 1 degree dataset in latlon
+!  The data is global 1/4 degree dataset in latlon
 !  projection, and at 1 hourly intervals. The derived
 !  data type {\tt era5\_struc}
 !  includes the variables that specify the runtime options, and the
 !  weights and neighbor information to be used for spatial interpolation.
-!  They are described below:
-!  \begin{description}
-!  \item[ncold]
-!    Number of columns (along the east west dimension) for the input data
-!  \item[nrold]
-!    Number of rows (along the north south dimension) for the input data
-!  \item[nmif]
-!    Number of forcing variables in the ECMWF data
-!  \item[era5time1]
-!    The nearest, previous 1 hour instance of the incoming
-!    data (as a real time).
-!  \item[era5time2]
-!    The nearest, next 1 hour instance of the incoming
-!    data (as a real time).
-!  \item[era5dir]
-!    Directory containing the input data
-!  \item[mi]
-!    Number of points in the input grid
-!  \item[n111,n121,n211,n221]
-!    Arrays containing the neighbor information of the input grid
-!    for each grid point in LIS, for bilinear interpolation.
-!  \item[w111,w121,w211,w221]
-!    Arrays containing the weights of the input grid
-!    for each grid point in LIS, for bilinear interpolation.
-!  \item[n122,n122,n212,n222]
-!    Arrays containing the neighbor information of the input grid
-!    for each grid point in LIS, for conservative interpolation.
-!  \item[w112,w122,w212,w222]
-!    Arrays containing the weights of the input grid
-!    for each grid point in LIS, for conservative interpolation.
-!  \item[n113]
-!    Arrays containing the neighbor information of the input grid
-!    for each grid point in LIS, for n. neighbor interpolation.
-!  \item[findtime1, findtime2]
-!   boolean flags to indicate which time is to be read for
-!   temporal interpolation.
-!  \end{description}
 !
 ! !USES:
   implicit none
@@ -80,6 +43,7 @@ module era5_forcingMod
      character*40 :: mapfile
      real*8       :: era5time1,era5time2
      logical      :: reset_flag
+     integer      :: mo1,mo2
 
      integer, allocatable :: G2P(:,:)
      integer                :: mi
@@ -168,9 +132,13 @@ contains
     allocate(era5_struc(LIS_rc%nnest))
 
     do n=1,LIS_rc%nnest
+       
        era5_struc(n)%ncold = 1440
        era5_struc(n)%nrold = 720
        era5_struc(n)%npts = 340819
+       era5_struc(n)%mo1 = -1
+       era5_struc(n)%mo2 = -1
+
     enddo
 
     call readcrd_era5()
