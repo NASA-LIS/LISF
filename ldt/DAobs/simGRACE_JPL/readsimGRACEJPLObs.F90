@@ -9,7 +9,8 @@
 ! 
 ! !REVISION HISTORY: 
 !  24 Feb 2015: Sujay Kumar, Initial Specification
-! 
+!  12 Dec 2019: Eric Kemp, Added interface block for calling
+!               create_lsm_output_filename.
 ! !INTERFACE: 
 subroutine readsimGRACEJPLObs(n)
 ! !USES:   
@@ -59,6 +60,32 @@ subroutine readsimGRACEJPLObs(n)
   integer                 :: dt1
   type(ESMF_TimeInterval) :: dayInt,deltat
   type(ESMF_Time)         :: ctime,reftime
+
+  !EMK...Add interface block for create_lsm_output_filename.  This is required
+  !per the Fortran 90 standard since the subroutine has optional arguments but
+  !is not defined in a module.  TODO:  Put the subroutine in a module.
+  interface
+     subroutine create_lsm_output_filename(n, form, fname, odir, wstyle, wopt,&
+          run_dd, map_proj, security_class,   &
+          distribution_class, data_category,  &
+          area_of_data, write_interval)
+        integer,   intent(IN)        :: n
+        character(len=*)             :: fname
+        character(len=*)             :: form
+        character(len=*)             :: odir
+        character(len=*)             :: wstyle
+        character(len=*)             :: wopt
+        real, dimension(8), optional :: run_dd
+        character(len=*),   optional :: map_proj
+        character(len=*),   optional :: security_class
+        character(len=*),   optional :: distribution_class
+        character(len=*),   optional :: data_category
+        character(len=*),   optional :: area_of_data
+        character(len=*),   optional :: write_interval
+     end subroutine create_lsm_output_filename
+  end interface
+
+
 !
 ! At initial time, read the data into memory. At all other times, 
 ! simply index into the correct temporal location of the data. 

@@ -420,6 +420,8 @@ module LVT_histDataMod
   public :: LVT_MOC_TAIRFORC_MIN
   public :: LVT_MOC_TAIRFORC_MAX
 
+  public :: LVT_MOC_ESI
+
   public :: LVT_temp_maxvEntry
   public :: LVT_temp_minvEntry
 
@@ -820,6 +822,8 @@ module LVT_histDataMod
    integer :: LVT_MOC_TAIRFORC_MAX(3)
 
    integer :: LVT_MOC_IRRIGATEDWATER(3)           = -9999 
+   
+   integer :: LVT_MOC_ESI(3) = -9999
 
    integer :: LVT_MOC_COUNT(3)
 
@@ -5153,13 +5157,13 @@ elseif(name.eq."SMAPL3TBh_A") then ! MN
          LVT_MOC_RELSMC(source) = var_count
          dataEntry%standard_name ="relative_soil_moisture"
          dataEntry%long_name = "relative soil moisture"
-         dataEntry%nunits = 2
+         dataEntry%nunits = 3
          allocate(dataEntry%unittypes(dataEntry%nunits))
          allocate(dataEntry%valid_min(dataEntry%nunits))
          allocate(dataEntry%valid_max(dataEntry%nunits))
-         dataEntry%unittypes = (/"m3/m3","%    "/)
-         dataEntry%valid_min = (/0.0, 0.0/)
-         dataEntry%valid_max = (/1.0, 100.0/)
+         dataEntry%unittypes = (/"m3/m3","%    ","-    "/)
+         dataEntry%valid_min = (/0.0, 0.0, 0.0/)
+         dataEntry%valid_max = (/1.0, 100.0, 1.0/)
          dataEntry%ndirs = 1
          allocate(dataEntry%dirtypes(dataEntry%ndirs))
          dataEntry%dirtypes = (/"-"/)
@@ -5919,6 +5923,22 @@ elseif(name.eq."SMAPL3TBh_A") then ! MN
          allocate(dataEntry%valid_min(dataEntry%nunits))
          allocate(dataEntry%valid_max(dataEntry%nunits))
          dataEntry%unittypes = (/"K"/)
+         dataEntry%valid_min = (/-9999.0/)
+         dataEntry%valid_max = (/-9999.0/)
+         dataEntry%ndirs = 1
+         allocate(dataEntry%dirtypes(dataEntry%ndirs))
+         dataEntry%dirtypes = (/"-"/)
+      endif
+   elseif(name.eq."ESI") then 
+      if(LVT_MOC_ESI(source).eq.LVT_rc%udef) then 
+         LVT_MOC_ESI(source) = var_count
+         dataEntry%standard_name = "ESI"
+         dataEntry%long_name = "ESI"
+         dataEntry%nunits = 1
+         allocate(dataEntry%unittypes(dataEntry%nunits))
+         allocate(dataEntry%valid_min(dataEntry%nunits))
+         allocate(dataEntry%valid_max(dataEntry%nunits))
+         dataEntry%unittypes = (/"-"/)
          dataEntry%valid_min = (/-9999.0/)
          dataEntry%valid_max = (/-9999.0/)
          dataEntry%ndirs = 1

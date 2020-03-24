@@ -27,6 +27,9 @@
 # 04 Dec 2018:  Eric Kemp (SSAI), add mean 24hr Tair.
 # 07 Nov 2019:  Eric Kemp (SSAI), removed Soiltype_inst for JULES.  Added
 #               support for NoahMP
+# 03 Dec 2019:  Eric Kemp (SSAI), added Greenness_inst for Noah and NoahMP.
+#               Not included for JULES since that LSM doesn't use it.
+# 09 Jan 2020:  Eric Kemp (SSAI), added Tair_f_min for JULES for 3hr.
 #
 #------------------------------------------------------------------------------
 
@@ -39,8 +42,8 @@ import sys
 #------------------------------------------------------------------------------
 
 # Path to NCO ncks program
-_NCKS_PATH = "/app/nco/4.5.2-gnu/bin/ncks" # On Conrad
-#_NCKS_PATH = "/usr/local/other/SLES11.1/nco/4.4.4/intel-12.1.0.233/bin/ncks"
+#_NCKS_PATH = "/app/nco/4.5.2-gnu/bin/ncks" # On Conrad
+_NCKS_PATH = "/usr/local/other/SLES11.1/nco/4.4.4/intel-12.1.0.233/bin/ncks"
 
 # Supported LIS LSMs
 _LIS_LSMS = ["NOAH", "NOAHMP", "JULES"] 
@@ -50,6 +53,7 @@ _LIS_LSMS = ["NOAH", "NOAHMP", "JULES"]
 _LVT_NOAH_INVOCATIONS_3HR = ['Albedo_tavg', 
                              'AvgSurfT_inst', 'AvgSurfT_tavg', 
                              'CanopInt_inst', 'Elevation_inst', 'Evap_tavg', 
+                             'Greenness_inst',
                              'LWdown_f_inst', 'LWdown_f_tavg',
                              'Landcover_inst', 'Landmask_inst', 'PotEvap_tavg',
                              'Psurf_f_inst', 'Psurf_f_tavg', 
@@ -83,6 +87,7 @@ _LVT_NOAH_INVOCATIONS_24HR_LATEST = ['SnowDepth_inst','SWE_inst']
 _LVT_NOAHMP_INVOCATIONS_3HR = ['Albedo_tavg', 
                                'AvgSurfT_inst', 'AvgSurfT_tavg', 
                                'CanopInt_inst', 'Elevation_inst', 'Evap_tavg', 
+                               'Greenness_inst',
                                'LWdown_f_inst', 'LWdown_f_tavg',
                                'Landcover_inst', 'Landmask_inst', 
                                'Psurf_f_inst', 'Psurf_f_tavg', 
@@ -197,7 +202,10 @@ for var in _LVT_NOAHMP_INVOCATIONS_24HR_LATEST:
 # The JULES variables handled by each LVT invocation.
 _LIS_JULES_VARIABLES_3HR = {}
 for var in _LVT_JULES_INVOCATIONS_3HR:
-    _LIS_JULES_VARIABLES_3HR[var] = [var]
+    if var == "RHMin_inst":
+        _LIS_JULES_VARIABLES_3HR[var] = [var,"Tair_f_min"]
+    else:
+        _LIS_JULES_VARIABLES_3HR[var] = [var]
 
 # The JULES variables handled by each LVT invocation.
 _LIS_JULES_VARIABLES_24HR = {}

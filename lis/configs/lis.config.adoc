@@ -1169,7 +1169,7 @@ endif::devonly[]
 |"`SMOS L2 soil moisture`"      | SMOS L2 soil moisture
 |"`SMOS(NESDIS) soil moisture`" | NESDIS SMOS soil moisture
 |"`SNODEP`"                     | AFWA SNODEP
-|"`LDTSI`"                      | LDT Snow and Ice Analysis
+|"`USAFSI`"                     | USAF Snow and Ice Analysis
 |====
 
 .Example _lis.config_ entry
@@ -2013,15 +2013,20 @@ SNODEP naming convention:               LIS
 ....
 
 
-==== LDTSI Assimilation
-anchor:sssec_ldtsida[LDTSI Assimilation]
+==== USAFSI Assimilation
+anchor:sssec_usafsida[USAFSI Assimilation]
 
-`LDTSI data directory:` specifies the directory for the
-LDTSI data.
+`USAFSI data directory:` specifies the directory for the
+USAFSI data.
+
+`USAFSI netcdf filename prefix:` specifies the prefix of 
+the USAFSI dataset. If prefix is "usafsi", file name will 
+be "usafsi_yyyymmddhh.nc."
 
 .Example _lis.config_ entry
 ....
-LDTSI data directory:                  ./FORCING/LDTSI
+USAFSI data directory:                  ./FORCING/USAFSI
+USAFSI netcdf filename prefix:         usafsi
 ....
 
 ifdef::devonly[]
@@ -4889,6 +4894,17 @@ Acceptable values are:
 |GALWEM | use UK Unified Model (GALWEM) data
 |====
 
+`AGRMET GALWEM nominal resolution (km):` specifies the nominal horizontal
+resolution of the GALWEM GRIB2 data in kilometers.
+Acceptable values are:
+
+|====
+|Value  | Description
+
+|17     | 17-km (long-time operational resolution at USAF)
+|10     | 10-km (proposed operational resolution upgrade for 2020)
+|====
+
 `AGRMET analysis directory:` specifies the location where temporary
 precip analysis fields will be written.
 
@@ -7321,6 +7337,11 @@ height in meters of air temperature and specific humidity observations.
 `Noah.3.6 reference height for forcing u and v:` specifies the
 height in meters of u and v wind forcings.
 
+`Noah.3.6 removal of residual snow fix:` specifies whether or not
+a snow fix is used (1 - fix is active, 0 - inactive). The land-surface
+model was found to keep very small amounts of snow in rare cases. This
+fix zeros out snow values that are under a predetermined threshold.
+
 .Example _lis.config_ entry
 ....
 Noah.3.6 model timestep:                  15mn
@@ -7363,6 +7384,7 @@ Noah.3.6 background albedo:   0.18  0.17  0.16  0.15  0.15  0.15  0.15  0.16  0.
 Noah.3.6 background roughness length: 0.020 0.020 0.025 0.030 0.035 0.036 0.035 0.030 0.027 0.025 0.020 0.020
 Noah.3.6 reference height for forcing T and q:   2.0      # (m) - negative=use height from forcing data
 Noah.3.6 reference height for forcing u and v:  10.0      # (m) - negative=use height from forcing data
+Noah.3.6 removal of residual snow fix: 0
 ....
 
 

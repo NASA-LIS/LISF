@@ -15,7 +15,7 @@ module HYMAP_parmsMod
 !
 !  29 Mar 2013: Sujay Kumar; Initial implementation
 !   2 Dec 2015: Augusto Getirana: Included drainage area and basin maps
-!   1 Nov 2017: Augusto Getirana: Included flow type maps and, baseflow and and surface runoff dwi maps
+!   1 Nov 2017: Augusto Getirana: Included flow type maps, baseflow and surface runoff dwi maps
 !
   use ESMF
   use LDT_coreMod

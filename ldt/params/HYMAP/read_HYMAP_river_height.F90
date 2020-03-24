@@ -48,7 +48,8 @@ subroutine read_HYMAP_river_height(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%riverheightfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Riverheight map ',trim(HYMAP_struc(n)%riverheightfile),' not found'
+     write(LDT_logunit,*) '[ERR] River height map, ',&
+           trim(HYMAP_struc(n)%riverheightfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif
