@@ -143,7 +143,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_optUEId  = "OPTUE output processing"
    character*50, public,  parameter :: LVT_rtmrunId  = "RTM output processing"
    character*50, public,  parameter :: LVT_557postId = "557 post"
-   character*50, public,  parameter :: LVT_ldtsipostId = "LDTSI post"
+   character*50, public,  parameter :: LVT_usafsipostId = "USAFSI post"
 
 !-------------------------------------------------------------------------
 ! Domains
@@ -204,6 +204,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_NLDAS2obsId        = "NLDAS2"
    character*50, public,  parameter :: LVT_GHCNobsId          = "GHCN"
    character*50, public,  parameter :: LVT_ALEXIobsId         = "ALEXI"
+   character*50, public,  parameter :: LVT_ALEXIesiobsId      = "ALEXI ESI"
    character*50, public,  parameter :: LVT_GRACEobsId         = "GRACE"
    character*50, public,  parameter :: LVT_simGRACEobsId      = "simulated GRACE"
    character*50, public,  parameter :: LVT_USGSGWwellobsId    = "USGS ground water well data"

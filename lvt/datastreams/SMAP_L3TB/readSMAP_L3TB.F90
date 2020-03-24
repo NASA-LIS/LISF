@@ -3,107 +3,167 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------------
 #include "LVT_misc.h"
 !BOP
-! 
+!
 ! !ROUTINE: readSMAP_L3TB
 ! \label{readSMAP_L3TB}
 !
-! !INTERFACE: 
+! !INTERFACE:
 subroutine readSMAP_L3TB(source)
-! 
-! !USES:   
-  use ESMF
-  use LVT_coreMod,      only : LVT_rc
-  use LVT_histDataMod
-  use LVT_logMod,       only : LVT_logunit
-  use SMAP_L3TBMod, only : SMAP_L3TB
-
-  implicit none
 !
-! !INPUT PARAMETERS: 
-  integer,   intent(in)       :: source
-! 
+! !USES:
+   use ESMF
+   use LVT_coreMod, only: LVT_rc
+   use LVT_histDataMod
+   use LVT_logMod !,       only : LVT_logunit
+   use SMAP_L3TBMod, only: SMAP_L3TB
+
+   implicit none
+!
+! !INPUT PARAMETERS:
+   integer, intent(in)       :: source
+!
 ! !OUTPUT PARAMETERS:
 !
-! !DESCRIPTION: 
-! 
-! This subroutine provides the data reader for the standard 
-! NASA soil moisture retrieval product. 
-! 
+! !DESCRIPTION:
+!
+! This subroutine provides the data reader for the standard
+! NASA soil moisture retrieval product.
+!
 ! !FILES USED:
 !
-! !REVISION HISTORY: 
+! !REVISION HISTORY:
 !  19 Nov 2018: Mahdi Navari , Sujay Kumar, Initial Specification
 !  March 2019: Peter Shellito  Fix polarization field typos
- 
+! 9  July 2019: Mahdi Navari fixed bug in file name generator
+! 11  July 2019: Mahdi Navari, There are several version of SMAP sm data available in each directory
+!                  with different Release number and different CRID Version Number. The reader was
+!                  modified to read the latest version of data (the reader no longer reads the symbolic
+!                  link to the SMAP sm data)
 !EOP
 
-  logical           :: alarmcheck, file_exists, readflag
-  integer           :: iret
-  character*200     :: name
-  real              :: Tb(LVT_rc%lnc, LVT_rc%lnr,4)
-  integer           :: fnd 
-  real              :: timenow
+   logical           :: alarmcheck, file_exists, readflag
+   integer           :: iret
+   character*200     :: fname
+   real              :: Tb(LVT_rc%lnc, LVT_rc%lnr, 4)
+   integer           :: fnd
+   real              :: timenow
+   character*4       :: yyyy
+   character*2       :: mm, dd, hh
+   integer               :: yr, mo, da, hr, mn, ss
+   integer               :: doy
+   character*200      :: list_files
+   integer               :: ftn, ierr
+   character(len=3) :: CRID
 
-  Tb = LVT_rc%udef
+   Tb = LVT_rc%udef
 
-  timenow = float(LVT_rc%dhr(source))*3600 +&
-       60*LVT_rc%dmn(source) + LVT_rc%dss(source)
-  alarmcheck = (mod(timenow, 86400.0).eq.0)
-  if(SMAP_L3TB(source)%startflag.or.alarmCheck.or.&
-       LVT_rc%resetFlag(source)) then 
-     
-     LVT_rc%resetFlag(source) = .false. 
+   timenow = float(LVT_rc%dhr(source))*3600 + &
+             60*LVT_rc%dmn(source) + LVT_rc%dss(source)
+   alarmcheck = (mod(timenow, 86400.0) .eq. 0)
+   if (SMAP_L3TB(source)%startflag .or. alarmCheck .or. &
+       LVT_rc%resetFlag(source)) then
+      LVT_rc%resetFlag(source) = .false.
+      SMAP_L3TB(source)%startflag = .false.
 
-     SMAP_L3TB(source)%startflag = .false. 
-     call SMAP_sm_filename(source,name,&
-          SMAP_L3TB(source)%data_designation, & 
-          SMAP_L3TB(source)%odir, & 
-        LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source))
-                 
-     inquire(file=name, exist=file_exists) 
+      if (SMAP_L3TB(source)%data_designation .eq. "SPL3SMP_E") then
+!----------------------------------------------------------------------------------------------------------------
+! create filename for 9 km product
+!----------------------------------------------------------------------------------------------------------------
+         write (yyyy, '(i4.4)') LVT_rc%yr
+         write (mm, '(i2.2)') LVT_rc%mo
+         write (dd, '(i2.2)') LVT_rc%da
+         write (CRID, '(a)') SMAP_L3TB(source)%release_number
 
-     if(file_exists) then 
-        readflag = .true. 
-     else
-        readflag = .false. 
-     endif
-     
-     if(readflag) then 
-        write(LVT_logunit,*) '[INFO] Reading SMAP file ',name
-        call read_SMAP_L3Tb(source, name, Tb)
-        
-     endif
-  endif
+         list_files = 'ls '//trim(SMAP_L3TB(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
+                      trim(dd)//'/SMAP_L3_SM_P_E_' &
+                      //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+                         trim(CRID)//'*.h5> SMAP_filelist'// &
+                         '.dat'
+
+         call system(trim(list_files))
+         ftn = LVT_getNextUnitNumber()
+         open (ftn, file="./SMAP_filelist.dat", &
+               status='old', iostat=ierr)
+
+! if multiple files for the same time and orbits are present, the latest
+! one will overwrite older ones, though multiple (redundant) reads occur.
+! This assumes that the 'ls command' will list the files in that order.
+
+         do while (ierr .eq. 0)
+            read (ftn, '(a)', iostat=ierr) fname
+            if (ierr .ne. 0) then
+               exit
+            endif
+            write (LVT_logunit, *) '[INFO] Reading SMAP file ', trim(fname)
+            call read_SMAP_L3Tb(source, fname, Tb)
+         enddo
+         call LVT_releaseUnitNumber(ftn)
+
+      elseif (SMAP_L3TB(source)%data_designation .eq. "SPL3SMP") then
+!----------------------------------------------------------------------------------------------------------------
+! create filename for 36 km product
+!----------------------------------------------------------------------------------------------------------------
+         write (yyyy, '(i4.4)') LVT_rc%yr
+         write (mm, '(i2.2)') LVT_rc%mo
+         write (dd, '(i2.2)') LVT_rc%da
+         write (CRID, '(a)') SMAP_L3TB(source)%release_number
+
+         list_files = 'ls '//trim(SMAP_L3TB(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
+                      trim(dd)//'/SMAP_L3_SM_P_' &
+                      //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+                         trim(CRID)//'*.h5> SMAP_filelist'// &
+                         '.dat'
+
+         call system(trim(list_files))
+         ftn = LVT_getNextUnitNumber()
+         open (ftn, file="./SMAP_filelist.dat", &
+               status='old', iostat=ierr)
+
+! if multiple files for the same time and orbits are present, the latest
+! one will overwrite older ones, though multiple (redundant) reads occur.
+! This assumes that the 'ls command' will list the files in that order.
+
+         do while (ierr .eq. 0)
+            read (ftn, '(a)', iostat=ierr) fname
+            if (ierr .ne. 0) then
+               exit
+            endif
+            write (LVT_logunit, *) '[INFO] Reading SMAP file ', trim(fname)
+            call read_SMAP_L3Tb(source, fname, Tb)
+         enddo
+
+         call LVT_releaseUnitNumber(ftn)
+      endif ! sensor
+   endif ! alaram
 
 #if 0
-! MN : CHECK  
-  call LVT_logSingleDataStreamVar(LVT_MOC_L3TB, source,&
-       Tb(:,:,1),vlevel=1,units="K")
-  call LVT_logSingleDataStreamVar(LVT_MOC_L3TB, source,&
-       Tb(:,:,2),vlevel=1,units="K") 
- call LVT_logSingleDataStreamVar(LVT_MOC_L3TB, source,&
-       Tb(:,:,3),vlevel=1,units="K")
-  call LVT_logSingleDataStreamVar(LVT_MOC_L3TB, source,&
-       Tb(:,:,4),vlevel=1,units="K") 
+! MN : CHECK
+   call LVT_logSingleDataStreamVar(LVT_MOC_L3TB, source, &
+                                   Tb(:, :, 1), vlevel=1, units="K")
+   call LVT_logSingleDataStreamVar(LVT_MOC_L3TB, source, &
+                                   Tb(:, :, 2), vlevel=1, units="K")
+   call LVT_logSingleDataStreamVar(LVT_MOC_L3TB, source, &
+                                   Tb(:, :, 3), vlevel=1, units="K")
+   call LVT_logSingleDataStreamVar(LVT_MOC_L3TB, source, &
+                                   Tb(:, :, 4), vlevel=1, units="K")
 #endif
 
- if(LVT_MOC_L3TBv_D(source).ge.1) then
-     call LVT_logSingleDataStreamVar(LVT_MOC_L3TBv_D, source,&
-       Tb(:,:,1),vlevel=1,units="K")
-  endif
- if(LVT_MOC_L3TBv_D(source).ge.1) then
-     call LVT_logSingleDataStreamVar(LVT_MOC_L3TBv_A, source,&
-       Tb(:,:,2),vlevel=1,units="K")
-  endif
- if(LVT_MOC_L3TBv_D(source).ge.1) then
-     call LVT_logSingleDataStreamVar(LVT_MOC_L3TBh_D, source,&
-       Tb(:,:,3),vlevel=1,units="K")
-  endif
- if(LVT_MOC_L3TBv_D(source).ge.1) then
-     call LVT_logSingleDataStreamVar(LVT_MOC_L3TBh_A, source,&
-       Tb(:,:,4),vlevel=1,units="K")
-  endif
-
+   if (LVT_MOC_L3TBv_D(source) .ge. 1) then
+      call LVT_logSingleDataStreamVar(LVT_MOC_L3TBv_D, source, &
+                                      Tb(:, :, 1), vlevel=1, units="K")
+   endif
+   if (LVT_MOC_L3TBv_D(source) .ge. 1) then
+      call LVT_logSingleDataStreamVar(LVT_MOC_L3TBv_A, source, &
+                                      Tb(:, :, 2), vlevel=1, units="K")
+   endif
+   if (LVT_MOC_L3TBv_D(source) .ge. 1) then
+      call LVT_logSingleDataStreamVar(LVT_MOC_L3TBh_D, source, &
+                                      Tb(:, :, 3), vlevel=1, units="K")
+   endif
+   if (LVT_MOC_L3TBv_D(source) .ge. 1) then
+      call LVT_logSingleDataStreamVar(LVT_MOC_L3TBh_A, source, &
+                                      Tb(:, :, 4), vlevel=1, units="K")
+   endif
 
 !  open(100,file='test.bin',form='unformatted')
 !  write(100) Tbv
@@ -581,6 +641,7 @@ endif
 
 end subroutine read_SMAP_L3Tb
 
+#if 0
 !BOP
 ! 
 ! !ROUTINE: SMAP_L3TB_filename
@@ -657,3 +718,4 @@ subroutine SMAP_L3TB_filename(source, name, designation, ndir, yr, mo,da)
   endif
 
 end subroutine SMAP_L3TB_filename
+#endif

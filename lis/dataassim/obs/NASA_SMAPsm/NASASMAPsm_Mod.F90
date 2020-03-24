@@ -16,7 +16,9 @@
 ! !REVISION HISTORY: 
 !  22 Aug 2016    Sujay Kumar; initial specification
 !  1  Apr 2019  Yonghwan Kwon: Upated for reading monthy CDF for the current month
-! 
+!  31 July 2019 Mahdi Navari : SMAP Composite Release ID was added (this option asks a user to 
+!         enter the part of Composite Release ID a three-character string like R16 )
+!
 module NASASMAPsm_Mod
 ! !USES: 
   use ESMF
@@ -59,7 +61,7 @@ module NASASMAPsm_Mod
      real,    allocatable       :: model_sigma(:,:)
      real,    allocatable       :: obs_sigma(:,:)
      character*20           :: data_designation
-
+     character*3             :: release_number
      integer                :: nbins
      integer                :: ntimes
 
@@ -139,6 +141,9 @@ contains
     real, allocatable          :: ssdev_grid(:,:)
     integer                :: ngrid
 
+
+
+
     allocate(NASASMAPsm_struc(LIS_rc%nnest))
 
     call ESMF_ArraySpecSet(intarrspec,rank=1,typekind=ESMF_TYPEKIND_I4,&
@@ -172,7 +177,15 @@ contains
             NASASMAPsm_struc(n)%data_designation,&
             rc=status)
        call LIS_verify(status, 'SMAP(NASA) soil moisture data designation: is missing')
+    enddo
 
+    call ESMF_ConfigFindLabel(LIS_config,"SMAP(NASA) soil moisture Composite Release ID (e.g., R16):",&
+         rc=status)
+    do n=1,LIS_rc%nnest
+       call ESMF_ConfigGetAttribute(LIS_config,&
+            NASASMAPsm_struc(n)%release_number,&
+            rc=status)
+       call LIS_verify(status, 'SMAP(NASA) soil moisture Composite Release ID: is missing')
     enddo
 
     call ESMF_ConfigFindLabel(LIS_config,"SMAP(NASA) soil moisture use scaled standard deviation model:",&

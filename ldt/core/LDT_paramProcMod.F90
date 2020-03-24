@@ -505,6 +505,8 @@ contains
                LDT_LSMparam_struc(n)%landcover%num_bins = 14
              case( "IGBPNCEP" )
                LDT_LSMparam_struc(n)%landcover%num_bins = 20
+             case( "IGBP" )
+               LDT_LSMparam_struc(n)%landcover%num_bins = 17
              case( "USGS" )
                LDT_LSMparam_struc(n)%landcover%num_bins = 24
              case( "MOSAIC" )
@@ -517,7 +519,7 @@ contains
                LDT_LSMparam_struc(n)%landcover%num_bins = 20
              case default
                print *, "[ERR] CONSTANT Landcover classification not recognized."
-               print *, "  Options:  UMD, IGBPNCEP, USGS, MOSAIC, ISA "
+               print *, "  Options:  UMD, IGBPNCEP, IGBP, USGS, MOSAIC, ISA "
                print *, " Stopping ..."
                call LDT_endrun
             end select
@@ -2364,7 +2366,7 @@ contains
             "(FLake) GLDB lake fraction map"
      case default
        print*, "The Lake Cover Type, ",trim(source),", is not known. "
-       print*, "Please define setLakecoverCategories" 
+       print*, "[ERR] Please define setLakecoverCategories" 
        print*, "Stopping ..."
        stop
     end select
