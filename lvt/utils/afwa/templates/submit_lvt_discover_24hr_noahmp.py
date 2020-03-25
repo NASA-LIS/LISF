@@ -18,8 +18,8 @@ if not os.path.exists("LVT"):
     sys.exit(1)
 
 for var in vars:
-    scriptname = "run_lvt.%s_24hr.sh" %(var)
-    f = open(scriptname,"w")
+    scriptname = "run_lvt.%s_24hr.sh" % (var)
+    f = open(scriptname, "w")
     line = """#!/bin/sh
 #SBATCH --job-name=%s.24hr
 #SBATCH --time=0:15:00
@@ -49,16 +49,14 @@ fi
 time ./LVT lvt.config.%s.24hr || exit 1
 
 exit 0
-""" %(var,var,var,var,var)
+""" % (var, var, var, var, var)
     f.write(line)
     f.close()
 
-    cmd = "sbatch %s" %(scriptname)
+    cmd = "sbatch %s" % (scriptname)
     print(cmd)
-    rc = subprocess.call(cmd,shell=True)
+    rc = subprocess.call(cmd, shell=True)
     if rc != 0:
         print("[ERR] Problem with sbatch!")
         sys.exit(1)
-    time.sleep(1) # Don't overwhelm SLURM
-
-
+    time.sleep(1)  # Don't overwhelm SLURM
