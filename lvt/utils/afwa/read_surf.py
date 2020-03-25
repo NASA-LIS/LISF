@@ -27,43 +27,43 @@ if len(sys.argv) == 3:
 
 ancil = mule.AncilFile.from_file(test_file)
 if ancil.fixed_length_header != None:
-    print "***fixed_length_header***"
+    print("***fixed_length_header***")
     for header in mule._UM_FIXED_LENGTH_HEADER:
         key,i = header[0],header[1]
-        print i,key,' ',ancil.fixed_length_header.raw[i]
+        print(i,key,' ',ancil.fixed_length_header.raw[i])
 if ancil.integer_constants != None:
-    print "***integer_constants***"
+    print("***integer_constants***")
     for header in mule.ancil._ANCIL_INTEGER_CONSTANTS:
         key,i = header[0],header[1]
-        print i,key,' ',ancil.integer_constants.raw[i]
+        print(i,key,' ',ancil.integer_constants.raw[i])
 if ancil.real_constants != None:
-    print "***real_constants***"
+    print("***real_constants***")
     for header in mule.ancil._ANCIL_REAL_CONSTANTS:
         key,i = header[0],header[1]
-        print i,key,' ',ancil.real_constants.raw[i]
+        print(i,key,' ',ancil.real_constants.raw[i])
 if ancil.level_dependent_constants != None:
-    print "***level_dependent_constants***"
+    print("***level_dependent_constants***")
     for header in mule.ancil._ANCIL_LEVEL_DEPENDENT_CONSTANTS:
         key,i = header[0],header[1]
-        print i,key,' ',ancil.level_dependent_constants.raw[i]
+        print(i,key,' ',ancil.level_dependent_constants.raw[i])
 if ancil.row_dependent_constants != None:
-    print "***row_dependent_constants***"
+    print("***row_dependent_constants***")
     for header in mule.ancil._ANCIL_ROW_DEPENDENT_CONSTANTS:
         key,i = header[0],header[1]
-        print i,key,' ',ancil.row_dependent_constants.raw[i]
+        print(i,key,' ',ancil.row_dependent_constants.raw[i])
 if ancil.column_dependent_constants != None:
-    print "***row_dependent_constants***"
+    print("***row_dependent_constants***")
     for header in mule.ancil._ANCIL_COLUMN_DEPENDENT_CONSTANTS:
         key,i = header[0],header[1]
-        print i,key,' ',ancil.column_dependent_constants.raw[i]
-print '*** ',len(ancil.fields),' fields in file'
+        print(i,key,' ',ancil.column_dependent_constants.raw[i])
+print('*** ',len(ancil.fields),' fields in file')
 counter = 0
 for field in ancil.fields:
     counter += 1
-    print counter, field
+    print(counter, field)
     for header in mule._LOOKUP_HEADER_3:
         key,i = header[0],header[1]
-        print i,key,' ',field.raw[i]
+        print(i,key,' ',field.raw[i])
 
 if plot:
     for field in ancil.fields:

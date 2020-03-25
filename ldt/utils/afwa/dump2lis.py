@@ -12,7 +12,7 @@ Created on Apr 2, 2018
 import os 
 import sys
 import mule 
-import ConfigParser
+import configparser
 import numpy as np 
 import numpy.ma as ma
 import netCDF4 as nc4 
@@ -41,7 +41,7 @@ class dump2lis(object):
     self.dump_var = np.zeros((self.nrow, self.ncol)) 
 
   def read_config_file(self):
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read(self.config_file)
     self.dump_file     = config.get("UM", "UM dump file")
     self.stashmaster   = config.get("UM", "STASH Master file")
@@ -122,10 +122,10 @@ class dump2lis(object):
 if __name__=="__main__":
   # using the command line argument 
   # dump2lis config_file_name 
-  if len(sys.argv) <> 2:
+  if len(sys.argv) != 2:
     print("Usage: dump2lis config_file_name")
     sys.exit() 
-  if os.path.isfile(sys.argv[1]) <> True:
+  if os.path.isfile(sys.argv[1]) != True:
     print("The configuation file {0} does not exist. Please double check.".format(sys.argv[1]))
   d2l = dump2lis(sys.argv[1]) 
   d2l.read_config_file() 
