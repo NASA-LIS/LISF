@@ -198,7 +198,7 @@ class nc2surf(object):
                 self.start_lon = lons[i]
                 break
         if self.start_lon == None:
-            print "ERROR finding starting longitude for LIS grid!"
+            print("ERROR finding starting longitude for LIS grid!")
             sys.exit(1)
         self.i_pm = i # First index at or past prime meridian
         del lons
@@ -466,16 +466,16 @@ class nc2surf(object):
         for key in varlist:
 
             # See if the varname and source are recognized
-            if key not in varIds.keys():
-                print "WARN, %s not recognized!" %(key)
+            if key not in list(varIds.keys()):
+                print("WARN, %s not recognized!" %(key))
                 continue
 
             # See if the source is recognized
             infile_type = key.split(":")[1]
             if infile_type not in ["LDT","LVT"]:
-                print "ERROR, invalid infile type %s" %(infile_type)
-                print "Found in %s" %(key)
-                print "Internal error, aborting..."
+                print("ERROR, invalid infile type %s" %(infile_type))
+                print("Found in %s" %(key))
+                print("Internal error, aborting...")
                 sys.exit(1)
             
             # Trim the varname to exclude the source
@@ -487,7 +487,7 @@ class nc2surf(object):
                     var_wilt = self.ncid_ldt.variables["JULES_SM_WILT"]
                     fillValue = var_wilt.missing_value
                     var_wilt = var_wilt[:,:] # Copies to NumPy array
-                    if type(var_wilt) == np.ma.core.MaskedArray:
+                    if isinstance(var_wilt, np.ma.core.MaskedArray):
                         var_wilt = var_wilt.data
                     # Soil moisture should not be below 0.1 * wilting point
                     var_wilt0p1 = np.where(var_wilt == fillValue, 
@@ -499,13 +499,13 @@ class nc2surf(object):
                 try:
                     var = self.ncid_ldt.variables[varid]
                 except:
-                    print "WARN, %s not available in LDT file!" %(varid)
+                    print("WARN, %s not available in LDT file!" %(varid))
                     continue
             elif infile_type == "LVT":
                 try:
                     var = self.ncid_lvt.variables[varid]
                 except:
-                    print "WARN, %s not available in LVT file!" %(varid)
+                    print("WARN, %s not available in LVT file!" %(varid))
                     continue
 
             # Save the "missing data" value for this netCDF variable
@@ -523,7 +523,7 @@ class nc2surf(object):
                 var = var[:,:,:]
                 nlev = var.shape[0]
             else:
-                print "ERROR, unsupported array with ",ndim,' dimensions!'
+                print("ERROR, unsupported array with ",ndim,' dimensions!')
                 sys.exit(1)
 
             # Loop through each level.
@@ -541,7 +541,7 @@ class nc2surf(object):
 
                 # MULE doesn't like masked arrays, so pull the raw
                 # data out in this case.
-                if type(var2d) == np.ma.core.MaskedArray:
+                if isinstance(var2d, np.ma.core.MaskedArray):
                     var2d = var2d.data
 
                 # Update the missing value to match that used in SURF
@@ -578,7 +578,7 @@ class nc2surf(object):
                 var2d_provider = mule.ArrayDataProvider(var2d_for_surf)
 
                 # Now add the field to the SURF object.
-                print "var: %s, ilev: %s" %(key,ilev)
+                print("var: %s, ilev: %s" %(key,ilev))
                 surf = self._add_field(key,var2d_for_surf,lblev,ilev, \
                                            nlev,var2d_provider,surf)
                 
@@ -590,11 +590,11 @@ class nc2surf(object):
 #------------------------------------------------------------------------------
 # Print command line usage.
 def usage():
-    print "Usage: %s yyyymmddhh lvt_nc ldt_nc" %(sys.argv[0])
-    print "   where:"
-    print "           yyyymmddhh is valid year/month/day/hour in UTC"
-    print "           lvt_nc is name of LVT netCDF file to convert to SURF"
-    print "           ldt_nc is name of LDT netCDF file with JULES ancillaries"
+    print("Usage: %s yyyymmddhh lvt_nc ldt_nc" %(sys.argv[0]))
+    print("   where:")
+    print("           yyyymmddhh is valid year/month/day/hour in UTC")
+    print("           lvt_nc is name of LVT netCDF file to convert to SURF")
+    print("           ldt_nc is name of LDT netCDF file with JULES ancillaries")
 
 #------------------------------------------------------------------------------
 # Read command line arguments
@@ -602,7 +602,7 @@ def read_cmd_args():
 
     # Check if argument count is correct
     if len(sys.argv) != 4:
-        print "[ERR] Invalid number of command line arguments!"
+        print("[ERR] Invalid number of command line arguments!")
         usage()
         sys.exit(1)
 
@@ -615,7 +615,7 @@ def read_cmd_args():
         hour   = int(yyyymmddhh[8:10])
         validdt = datetime.datetime(year,month,day,hour)
     except:
-        print "[ERR] Cannot process yyyymmddhh argument!"
+        print("[ERR] Cannot process yyyymmddhh argument!")
         usage()
         sys.exit(1)
 
@@ -625,7 +625,7 @@ def read_cmd_args():
         ncid_lvt = netCDF4.Dataset(lvt_nc,mode='r',
                                    format='NETCDF4_CLASSIC')
     except:
-        print "[ERR] Cannot open %s with netCDF4 library!" %(lvt_nc)
+        print("[ERR] Cannot open %s with netCDF4 library!" %(lvt_nc))
         usage()
         sys.exit(1)
     ncid_lvt.close()
@@ -636,7 +636,7 @@ def read_cmd_args():
         ncid_ldt = netCDF4.Dataset(ldt_nc,mode='r',
                                    format='NETCDF4_CLASSIC')
     except:
-        print "[ERR] Cannot open %s with netCDF4 library!" %(ldt_nc)
+        print("[ERR] Cannot open %s with netCDF4 library!" %(ldt_nc))
         usage()
         sys.exit(1)
     ncid_ldt.close()
@@ -700,7 +700,7 @@ if __name__ == "__main__":
           file_type)
     surf.create_surf_file(file_type,varfields,surffile)
 
-    print "convert_nc2surf.py completed!"
+    print("convert_nc2surf.py completed!")
     sys.exit(0)
 
 
