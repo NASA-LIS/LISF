@@ -271,7 +271,6 @@ subroutine read_SMAPL2sm_data(source, fname, smobs_inp, time)
 
   integer                        :: status,ios,iret
 
-  smobs_inp = LVT_rc%udef
 
   call h5open_f(status)
   call LVT_verify(status, 'Error opening HDF fortran interface')
