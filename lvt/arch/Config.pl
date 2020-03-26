@@ -474,6 +474,13 @@ if($use_matlab eq "\n"){
 }
 
 
+if(defined($ENV{LVT_JPEG})){
+   $libjpeg = "-L".$ENV{LVT_JPEG}."/lib"." -ljpeg";
+}
+else{
+   $libjpeg = "-ljpeg";
+}
+
 if($sys_arch eq "linux_ifc") {
    if ($use_endian == 1 ) {
       $cflags = "-c ".$sys_c_opt." -traceback -DIFC";
@@ -550,7 +557,7 @@ if($use_hdfeos == 1){
 if($use_hdf4 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF4) ";
    $fflags = $fflags." -I\$(INC_HDF4) ";
-   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf -ljpeg -lz ";
+   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz ";
 }
 if($use_hdf5 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF5) ";
@@ -566,7 +573,7 @@ if($enable_geotiff== 1){
    $fflags = $fflags." -I\$(INC_FORTRANGIS1) -I\$(INC_FORTRANGIS2)";
    $ldflags = $ldflags." -L\$(LIB_FORTRANGIS) -lfortrangis -lfortranc -L\$(LIB_GDAL) -lgdal";
    if ( $cray_modifications == 1 ) {
-      $ldflags = $ldflags." -ljasper -ljpeg -lz -lstdc++";
+      $ldflags = $ldflags." ".$ljpeg2000." ".$libjpeg." -lz -lstdc++";
    }
 }
 
