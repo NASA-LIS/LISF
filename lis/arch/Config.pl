@@ -708,6 +708,13 @@ if($use_lapack == 1) {
    }
 }
 
+if(defined($ENV{LIS_JPEG})){
+   $libjpeg = "-L".$ENV{LIS_JPEG}."/lib"." -ljpeg";
+}
+else{
+   $libjpeg = "-ljpeg";
+}
+
 if($ENV{ESMF_TRACE} > 0){
    $use_esmf_trace = 1 
 }
@@ -792,7 +799,7 @@ if($use_hdfeos == 1){
 if($use_hdf4 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF4)";
    $fflags = $fflags." -I\$(INC_HDF4)";
-   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf -ljpeg -lz";
+   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz";
 }
 if($use_hdf5 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF5)";
