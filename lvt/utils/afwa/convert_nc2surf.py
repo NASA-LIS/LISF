@@ -7,9 +7,9 @@
 # variables on GALWEM global grid, and convert to SURF format for input
 # by GALWEM.
 #
-# REQUIREMENTS:
-# * Python 2.6 or 2.7
-# * UKMO MULE Python library (for writing SURF files)
+# REQUIREMENTS as of 26 March 2020:
+# * Python 3.6
+# * UKMO MULE Python library 2020.01.1
 # * UNIDATA NetCDF4 Python library (for reading netCDF4 files)
 # * NumPy Python library (for array objects)
 #
@@ -28,6 +28,8 @@
 # 19 Jul 2019:  Eric Kemp (SSAI), adjust soil moisture so it is no less than
 #               0.1 * the wilting point.  Also, reset any negative snow fields
 #               to zero.
+# 26 Mar 2020:  Jim Geiger, Eric Kemp:  Upgraded to Python 3.6.  Also,
+#               upgraded to MULE 2020.01.1.
 #
 # ------------------------------------------------------------------------------
 # Standard modules
@@ -235,7 +237,8 @@ class nc2surf(object):
                 'north_pole_lon':   0.0,
             },
             'level_dependent_constants': {
-                'dims': (1, None),  # MULE wants this
+                #'dims': (1, None),  # MULE wants this
+                'dims': (1, 1),  # MULE 2020.01.1 wants this
             },
         }
 
@@ -261,7 +264,8 @@ class nc2surf(object):
                 'north_pole_lon':   0.0,
             },
             'level_dependent_constants': {
-                'dims': (1, None),  # MULE wants this
+                #'dims': (1, None),  # MULE wants this
+                'dims': (1, 1),  # MULE 2020.01.1 wants this
             },
         }
 
@@ -287,7 +291,8 @@ class nc2surf(object):
                 'north_pole_lon':   0.0,
             },
             'level_dependent_constants': {
-                'dims': (1, None),  # MULE wants this
+                #'dims': (1, None),  # MULE wants this
+                'dims': (1, 1),  # MULE 2020.01.1 wants this
             },
         }
 
@@ -305,7 +310,7 @@ class nc2surf(object):
             },
             'integer_constants': {
                 'num_times':   1,
-                #                'num_levels' :   1,  # In sample _glu_smc file
+                #'num_levels' :   1,  # In sample _glu_smc file
                 'num_levels':   4,   # MULE wants this instead
                 'num_field_types':   5,  # Five variables in smc file
             },
@@ -314,7 +319,8 @@ class nc2surf(object):
                 'north_pole_lon':   0.0,
             },
             'level_dependent_constants': {
-                'dims': (4, None),  # MULE wants this for 4 soil layers
+                #'dims': (4, None),  # MULE wants this for 4 soil layers
+                'dims': (4, 1),  # MULE 2020.01.1 wants this.
             },
         }
 
@@ -359,9 +365,11 @@ class nc2surf(object):
         self.template["real_constants"]["start_lat"] = self.start_lat
         self.template["real_constants"]["start_lon"] = self.start_lon
 
-        if file_type == "_glu_smc":
-            self.template["level_dependent_constants"]["soil_thickness"] = \
-                self.soil_layer_thicknesses[:]
+        # This doesn't work with MULE 2020.01.1.  We handle this
+        # in create_surf_file.
+        #if file_type == "_glu_smc":
+        #    self.template["level_dependent_constants"]["soil_thickness"] = \
+        #        self.soil_layer_thicknesses[:]
 
     # --------------------------------------------------------------------------
     # Internal method to create and attach Field object to SURF object
@@ -451,6 +459,20 @@ class nc2surf(object):
 
         # Create SURF object
         surf = mule.AncilFile.from_template(self.template)
+
+        # MULE 2020.01.1 does not accept a soil thickness section, but
+        # it is required by the UM RECON preprocessor when processing
+        # soil data.  So, we need to add it here.
+        if file_type == "_glu_smc":
+            # Create empty set of level dependent constants.
+            ldc = mule.ff.FF_LevelDependentConstants.empty(4)
+            ldc.soil_thickness[:] = self.soil_layer_thicknesses[:]
+            # Attach the constants to the file
+            surf.level_dependent_constants = ldc
+            # This won't pass validation anymore, so we disable it.
+            def dummy_validate(*args, **kwargs):
+                pass
+            surf.validate = dummy_validate
 
         # The UM RECON preprocessor does not work if the SURF file (other
         # than _glu_smc) has a LEVEL_DEPENDENT_CONSTANTS section.  However,
