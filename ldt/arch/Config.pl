@@ -496,6 +496,13 @@ if($use_history eq "\n"){
 }
 
 
+if(defined($ENV{LDT_JPEG})){
+   $libjpeg = "-L".$ENV{LDT_JPEG}."/lib"." -ljpeg";
+}
+else{
+   $libjpeg = "-ljpeg";
+}
+
 if($sys_arch eq "linux_ifc") {
    if($use_omp == 1) {
       if($use_endian == 1) {
@@ -599,7 +606,7 @@ if($use_hdfeos == 1){
 if($use_hdf4 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF4) ";
    $fflags = $fflags." -I\$(INC_HDF4) ";
-   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf -ljpeg -lz ";
+   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz ";
 }
 if($use_hdf5 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF5) ";
@@ -614,7 +621,7 @@ if($enable_geotiff== 1){
    $fflags = $fflags." -I\$(INC_FORTRANGIS1) -I\$(INC_FORTRANGIS2)";
    $ldflags = $ldflags." -L\$(LIB_FORTRANGIS) -lfortrangis -lfortranc -L\$(LIB_GDAL) -lgdal";
    if ( $cray_modifications == 1 ) {
-      $ldflags = $ldflags." -ljasper -ljpeg -lz -lstdc++";
+      $ldflags = $ldflags." ".$ljpeg2000." ".$libjpeg." -lz -lstdc++";
    }
 }
 
@@ -627,7 +634,7 @@ if($enable_libgeotiff== 1){
        $tiffpath = " -L".$sys_libtiff_path;
        $tiffdeps = " -L".$sys_libjbig_path." -ljbig "." -L".$sys_liblzma_path." -llzma ";
     }
-    $ldflags = $ldflags." -L\$(LIB_LIBGEOTIFF) ".$tiffpath." -ltiff -lgeotiff -lm -lz -ljpeg ".$tiffdeps;
+    $ldflags = $ldflags." -L\$(LIB_LIBGEOTIFF) ".$tiffpath." -ltiff -lgeotiff -lm -lz ".$libjpeg." ".$tiffdeps;
 }
 
 
