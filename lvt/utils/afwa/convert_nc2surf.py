@@ -228,6 +228,7 @@ class Nc2Surf:
         del lons
 
         self.template = None
+        self.lblev = None
 
     #--------------------------------------------------------------------------
     def _create_surf_template(self, file_type, varfields):
@@ -377,7 +378,7 @@ class Nc2Surf:
         self.template["real_constants"]["start_lon"] = self.start_lon
 
     #--------------------------------------------------------------------------
-    def _add_field(self, key, lblev, ilev, var2d_provider, surf):
+    def _add_field(self, key, ilev, var2d_provider, surf):
         """
         Internal method to create and attach Field object to SURF object.
         Refer to Unified Model Documentation Paper F03 for meaning of metadata.
@@ -423,7 +424,7 @@ class Nc2Surf:
         # field.lbproj = 900 # Not populated for UM post 8.4
         field.lbproj = _INTEGER_MDI
         field.lbtyp = _VARIDS[key]["LBTYP"]
-        field.lblev = lblev
+        field.lblev = self.lblev
         field.lbrsvd1 = 0
         field.lbrsvd2 = 0
         field.lbrsvd3 = 0
@@ -556,12 +557,12 @@ class Nc2Surf:
                 # In 2D case, work with the whole array.
                 if var.ndim == 2:
                     var2d = var[:, :]
-                    lblev = 9999  # Indicates surface level
+                    self.lblev = 9999  # Indicates surface level
                 # In 3D case, pull out the current vertical level as
                 # a 2D array.
                 else:
                     var2d = var[ilev, :, :]
-                    lblev = ilev+1  # Use 1-based indexing
+                    self.lblev = ilev+1  # Use 1-based indexing
 
                 # MULE doesn't like masked arrays, so pull the raw
                 # data out in this case.
@@ -608,7 +609,7 @@ class Nc2Surf:
                 # Now add the field to the SURF object.
                 print("var: %s, ilev: %s" % (key, ilev))
 
-                surf = self._add_field(key, lblev, ilev,
+                surf = self._add_field(key, ilev,
                                        var2d_provider, surf)
 
         # All fields have been added to the SURF object.  Write to file.
