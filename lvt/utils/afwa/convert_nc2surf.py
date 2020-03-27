@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-# -----------------------------------------------------------------------------
+"""
+#------------------------------------------------------------------------------
 #
 # SCRIPT: convert_nc2surf.py
 #
@@ -28,30 +29,33 @@
 # 19 Jul 2019:  Eric Kemp (SSAI), adjust soil moisture so it is no less than
 #               0.1 * the wilting point.  Also, reset any negative snow fields
 #               to zero.
-# 26 Mar 2020:  Jim Geiger, Eric Kemp:  Upgraded to Python 3.6.  Also,
+# 27 Mar 2020:  Jim Geiger, Eric Kemp:  Upgraded to Python 3.6.  Also,
 #               upgraded to MULE 2020.01.1.
 #
-# -----------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+"""
+
 # Standard modules
+import copy
 import datetime
 import decimal
 import sys
 
-# -----------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Non-standard modules
 import numpy as np
 import netCDF4
 import mule
 
-# -----------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Version of UM model.  Used below when assigning metadata to SURF files.
 _MODEL_VERSION = 1006
 
-# -----------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # SURF Variable codes, based on STASHmaster_A file used with GALWEM.
 # Each key is a combination of the variable name and the source program that
 # produced the netCDF file.
-varIds = {
+_VARIDS = {
     # Surface temperature after timestep (1 level)...From LVT
     "water_temp:LVT": {
         "LBFC": 16,       # PPF
@@ -142,13 +146,19 @@ varIds = {
     },
 }
 
-# -----------------------------------------------------------------------------
-# Class for generating the SURF files.
-class nc2surf(object):
+#------------------------------------------------------------------------------
+# Grab the missing data values from the MULE library
+_INTEGER_MDI = copy.deepcopy(mule.IntegerConstants.MDI)
+_REAL_MDI = copy.deepcopy(mule.RealConstants.MDI)
 
-    # -------------------------------------------------------------------------
-    # Initialize object
+#------------------------------------------------------------------------------
+class Nc2Surf:
+    """Class for generating the SURF files."""
+
+    #--------------------------------------------------------------------------
     def __init__(self, ncfile_lvt, ncfile_ldt):
+        """Initializes object"""
+
         # Open LDT netCDF file
         self.ncid_ldt = netCDF4.Dataset(ncfile_ldt, mode='r',
                                         format='NETCDF4_CLASSIC')
@@ -171,8 +181,8 @@ class nc2surf(object):
         self.ncols = len(self.ncid_lvt.dimensions['east_west'])
         self.nrows = len(self.ncid_lvt.dimensions['north_south'])
         self.nlevs = self.ncid_lvt.__dict__['NUM_SOIL_LAYERS']
-        self.dx = self.ncid_lvt.__dict__['DX']
-        self.dy = self.ncid_lvt.__dict__['DY']
+        self.dx_ = self.ncid_lvt.__dict__['DX']
+        self.dy_ = self.ncid_lvt.__dict__['DY']
         self.start_lat = self.ncid_lvt.variables['latitude'][0, 0]
 
         # Convert soil layer depths to meters.  Use fixed precision.
@@ -194,20 +204,24 @@ class nc2surf(object):
         # Determine first non-negative longitude and index
         lons = self.ncid_lvt.variables['longitude'][0, :]
         self.start_lon = None
-        for i in range(0, len(lons)):
-            if not lons[i] < 0:
-                self.start_lon = lons[i]
+        for i, lon in enumerate(lons):
+            if not lon < 0:
+                self.start_lon = lon
                 break
-        if self.start_lon == None:
+        if self.start_lon is None:
             print("ERROR finding starting longitude for LIS grid!")
             sys.exit(1)
         self.i_pm = i  # First index at or past prime meridian
         del lons
 
-    # -------------------------------------------------------------------------
-    # Internal method for creating SURF object from template.  Refer to
-    # Unified Model Documentation Paper F03 for meaning of metadata codes.
+        self.template = None
+
+    #--------------------------------------------------------------------------
     def _create_surf_template(self, file_type, varfields):
+        """
+        Internal method for creating SURF object from template. Refer to
+        Unified Model Documentation Paper F03 for meaning of metadata codes.
+        """
 
         # For SST field, currently only 1 field will be written
         # (Surface Temperature After Timestep).  Longer term, we will
@@ -344,15 +358,18 @@ class nc2surf(object):
         self.template["integer_constants"]["num_rows"] = self.nrows
         self.template["integer_constants"]["num_field_types"] = len(varfields)
 
-        self.template["real_constants"]["col_spacing"] = self.dx
-        self.template["real_constants"]["row_spacing"] = self.dy
+        self.template["real_constants"]["col_spacing"] = self.dx_
+        self.template["real_constants"]["row_spacing"] = self.dy_
         self.template["real_constants"]["start_lat"] = self.start_lat
         self.template["real_constants"]["start_lon"] = self.start_lon
 
-    # -------------------------------------------------------------------------
-    # Internal method to create and attach Field object to SURF object
-    # Refer to Unified Model Documentation Paper F03 for meaning of metadata.
-    def _add_field(self, key, var2d, lblev, ilev, nlev, var2d_provider, surf):
+    #--------------------------------------------------------------------------
+    def _add_field(self, key, lblev, ilev, nlev, var2d_provider, surf):
+        """
+        Internal method to create and attach Field object to SURF object.
+        Refer to Unified Model Documentation Paper F03 for meaning of metadata.
+        """
+
         # Determine how many fields are already in the SURF object
         num_fields = len(surf.fields)
         # Create Field3 object and populate records
@@ -380,17 +397,17 @@ class nc2surf(object):
         field.lbext = 0  # No extra data
         field.lbpack = 0  # No packing
         field.lbrel = 2
-        field.lbfc = varIds[key]["LBFC"]
+        field.lbfc = _VARIDS[key]["LBFC"]
         field.lbcfc = 0  # Always 0 for UM
         field.lbproc = 0  # No processing -- raw field
-        field.lbvc = varIds[key]["LBVC"]
+        field.lbvc = _VARIDS[key]["LBVC"]
         field.lbrvc = 0
         field.lbexp = 0
         # field.lbegin = 0 # For AncilFile???
         # field.lbnrec = foo # Disk length...Let MULE handle this
         # field.lbproj = 900 # Not populated for UM post 8.4
-        field.lbproj = mule._INTEGER_MDI
-        field.lbtyp = varIds[key]["LBTYP"]
+        field.lbproj = _INTEGER_MDI
+        field.lbtyp = _VARIDS[key]["LBTYP"]
         field.lblev = lblev
         field.lbrsvd1 = 0
         field.lbrsvd2 = 0
@@ -401,9 +418,9 @@ class nc2surf(object):
         field.lbuser1 = 1  # Real field
         field.lbuser2 = (num_fields*self.nrows*self.ncols) + 1
         field.lbuser3 = 0  # No rim or halo sizes
-        field.lbuser4 = varIds[key]["ITEM_CODE"]
+        field.lbuser4 = _VARIDS[key]["ITEM_CODE"]
         #field.lbuser5 = 0
-        field.lbuser5 = varIds[key]["LBPLEV"]  # "STASH Psuedo dimension"
+        field.lbuser5 = _VARIDS[key]["LBPLEV"]  # "STASH Psuedo dimension"
         field.lbuser6 = 0  # Free space for users...Let MULE handle this
         field.lbuser7 = 1  # Atmosphere
         field.bdatum = 0  # Datum value constant subtracted from field
@@ -415,20 +432,20 @@ class nc2surf(object):
         field.bplon = 0
         # Grid settings
         field.bgor = 0
-        field.bzy = self.start_lat - self.dy
-        field.bdy = self.dy
-        field.bzx = self.start_lon - self.dx
-        field.bdx = self.dx
-        field.bmdi = mule._REAL_MDI
+        field.bzy = self.start_lat - self.dy_
+        field.bdy = self.dy_
+        field.bzx = self.start_lon - self.dx_
+        field.bdx = self.dx_
+        field.bmdi = _REAL_MDI
         field.bmks = 1.0
         field.raw[1] = self.year
         field.set_data_provider(var2d_provider)
         surf.fields.append(field)
         return surf
 
-    # -------------------------------------------------------------------------
-    # Method for creating SURF object with fields
+    #--------------------------------------------------------------------------
     def create_surf_file(self, file_type, varlist, surffile):
+        """Method for creating SURF object with fields"""
 
         # Create template for SURF file
         self._create_surf_template(file_type, varlist)
@@ -437,7 +454,7 @@ class nc2surf(object):
         surf = mule.AncilFile.from_template(self.template)
 
         # MULE 2020.01.1 does not accept a soil thickness section for
-        # Ancils, but it is required by the UM RECON preprocessor when 
+        # Ancils, but it is required by the UM RECON preprocessor when
         # processing soil data.  So, we need to add it here, borrowing
         # from FieldsFile.
         if file_type == "_glu_smc":
@@ -457,7 +474,7 @@ class nc2surf(object):
         for key in varlist:
 
             # See if the varname and source are recognized
-            if key not in list(varIds.keys()):
+            if key not in list(_VARIDS.keys()):
                 print("WARN, %s not recognized!" % (key))
                 continue
 
@@ -476,34 +493,35 @@ class nc2surf(object):
             if infile_type == "LVT":
                 if varid == "SoilMoist_inst":
                     var_wilt = self.ncid_ldt.variables["JULES_SM_WILT"]
-                    fillValue = var_wilt.missing_value
+                    fill_value = var_wilt.missing_value
                     var_wilt = var_wilt[:, :]  # Copies to NumPy array
                     if isinstance(var_wilt, np.ma.core.MaskedArray):
                         var_wilt = var_wilt.data
                     # Soil moisture should not be below 0.1 * wilting point
-                    var_wilt0p1 = np.where(var_wilt == fillValue,
-                                           mule._REAL_MDI, 0.1*var_wilt)
+                    var_wilt0p1 = np.where(var_wilt == fill_value,
+                                           _REAL_MDI, 0.1*var_wilt)
 
             # Attempt to retrieve the variable from the appropriate
             # netCDF file.
             if infile_type == "LDT":
-                try:
+                if varid in self.ncid_ldt.variables:
                     var = self.ncid_ldt.variables[varid]
-                except:
+                else:
                     print("WARN, %s not available in LDT file!" % (varid))
                     continue
             elif infile_type == "LVT":
-                try:
+                if varid in self.ncid_lvt.variables:
                     var = self.ncid_lvt.variables[varid]
-                except:
+                else:
                     print("WARN, %s not available in LVT file!" % (varid))
                     continue
 
             # Save the "missing data" value for this netCDF variable
             if infile_type == "LVT":
-                fillValue = var._FillValue
+                #fill_value = var._FillValue
+                fill_value = var.missing_value
             elif infile_type == "LDT":
-                fillValue = var.missing_value
+                fill_value = var.missing_value
 
             # At this point we have a reference to the variable.  Copy to
             # a NumPy array, and record the number of vertical levels.
@@ -537,14 +555,17 @@ class nc2surf(object):
                     var2d = var2d.data
 
                 # Update the missing value to match that used in SURF
-                var2d = np.where(var2d == fillValue, mule._REAL_MDI, var2d)
+                var2d = np.where(var2d == fill_value,
+                                 _REAL_MDI,
+                                 var2d)
 
                 # EMK...For SoilMoist, make sure no less than 0.1*wilting point
                 # Wilting point is in m3/m3
                 if varid == "SoilMoist_inst":
                     var2d_tmp = np.where(var2d < var_wilt0p1, var_wilt0p1,
                                          var2d)
-                    var2d = np.where(var2d == mule._REAL_MDI, mule._REAL_MDI,
+                    var2d = np.where(var2d == _REAL_MDI,
+                                     _REAL_MDI,
                                      var2d_tmp)
 
                 # EMK...For SoilMoist, convert from m3/m3 to kg m-2.
@@ -554,14 +575,15 @@ class nc2surf(object):
                     dzsoil = soil_layer_thicknesses[ilev]*0.01  # cm to m
                     # EMK Use below for old pre-LIS 7.2 LVT data
                     # dzsoil = soil_layer_thicknesses[ilev] # Already in m
-                    var2d = np.where(var2d == mule._REAL_MDI,
-                                     mule._REAL_MDI,
+                    var2d = np.where(var2d == _REAL_MDI,
+                                     _REAL_MDI,
                                      var2d*1000*dzsoil)
 
                 # EMK...For snow fields, make sure nonnegative
                 if varid in ["SWE_inst", "SnowDepth_inst"]:
                     var2d_tmp = np.where(var2d < 0, 0, var2d)
-                    var2d = np.where(var2d == mule._REAL_MDI, mule._REAL_MDI,
+                    var2d = np.where(var2d == _REAL_MDI,
+                                     _REAL_MDI,
                                      var2d_tmp)
 
                 # Rotate the field to match the 0:360 longitudinal convention
@@ -571,31 +593,24 @@ class nc2surf(object):
 
                 # Now add the field to the SURF object.
                 print("var: %s, ilev: %s" % (key, ilev))
-                surf = self._add_field(key, var2d_for_surf, lblev, ilev,
+                surf = self._add_field(key, lblev, ilev,
                                        nlev, var2d_provider, surf)
 
         # All fields have been added to the SURF object.  Write to file.
         surf.to_file(surffile)
 
-# -----------------------------------------------------------------------------
-
-# -----------------------------------------------------------------------------
-# Print command line usage.
-
-
+#------------------------------------------------------------------------------
 def usage():
+    """Print command line usage."""
     print("Usage: %s yyyymmddhh lvt_nc ldt_nc" % (sys.argv[0]))
     print("   where:")
     print("          yyyymmddhh is valid year/month/day/hour in UTC")
     print("          lvt_nc is name of LVT netCDF file to convert to SURF")
     print("          ldt_nc is name of LDT netCDF file with JULES ancillaries")
 
-# -----------------------------------------------------------------------------
-# Read command line arguments
-
-
+#-----------------------------------------------------------------------------
 def read_cmd_args():
-
+    """Read command line arguments"""
     # Check if argument count is correct
     if len(sys.argv) != 4:
         print("[ERR] Invalid number of command line arguments!")
@@ -617,85 +632,74 @@ def read_cmd_args():
 
     # See if lvt_nc file can be opened
     lvt_nc = sys.argv[2]
-    try:
-        ncid_lvt = netCDF4.Dataset(lvt_nc, mode='r',
-                                   format='NETCDF4_CLASSIC')
-    except:
-        print("[ERR] Cannot open %s with netCDF4 library!" % (lvt_nc))
-        usage()
-        sys.exit(1)
+    ncid_lvt = netCDF4.Dataset(lvt_nc, mode='r',
+                               format='NETCDF4_CLASSIC')
     ncid_lvt.close()
 
     # See if ldt_nc file can be opened
     ldt_nc = sys.argv[3]
-    try:
-        ncid_ldt = netCDF4.Dataset(ldt_nc, mode='r',
-                                   format='NETCDF4_CLASSIC')
-    except:
-        print("[ERR] Cannot open %s with netCDF4 library!" % (ldt_nc))
-        usage()
-        sys.exit(1)
+    ncid_ldt = netCDF4.Dataset(ldt_nc, mode='r',
+                               format='NETCDF4_CLASSIC')
     ncid_ldt.close()
 
     return validdt, lvt_nc, ldt_nc
 
-# -----------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Main Driver.
-
 if __name__ == "__main__":
 
     # Process command line arguments
-    validdt, lvt_nc, ldt_nc = read_cmd_args()
+    VALIDDT, LVT_NC, LDT_NC = read_cmd_args()
 
     # Create SURF object
-    surf = nc2surf(lvt_nc, ldt_nc)
+    SURF = Nc2Surf(LVT_NC, LDT_NC)
 
     # Generate glu_sst SURF file
-    file_type = "_glu_sst"
+    FILE_TYPE = "_glu_sst"
     # FUTURE...Add support for SST anomaly
-    varfields = ["water_temp:LVT"]
-    surffile = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
-        % (validdt.year,
-           validdt.month,
-           validdt.day,
-           validdt.hour,
-           file_type)
-    surf.create_surf_file(file_type, varfields, surffile)
+    VARFIELDS = ["water_temp:LVT"]
+    SURFFILE = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
+        % (VALIDDT.year,
+           VALIDDT.month,
+           VALIDDT.day,
+           VALIDDT.hour,
+           FILE_TYPE)
+    SURF.create_surf_file(FILE_TYPE, VARFIELDS, SURFFILE)
 
     # Generate glu_ice SURF file
-    file_type = "_glu_ice"
-    varfields = ["aice:LVT", "hi:LVT"]
-    surffile = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
-        % (validdt.year,
-           validdt.month,
-           validdt.day,
-           validdt.hour,
-           file_type)
-    surf.create_surf_file(file_type, varfields, surffile)
+    FILE_TYPE = "_glu_ice"
+    VARFIELDS = ["aice:LVT", "hi:LVT"]
+    SURFFILE = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
+        % (VALIDDT.year,
+           VALIDDT.month,
+           VALIDDT.day,
+           VALIDDT.hour,
+           FILE_TYPE)
+    SURF.create_surf_file(FILE_TYPE, VARFIELDS, SURFFILE)
 
     # Generate glu_snow SURF file
-    file_type = "_glu_snow"
-    varfields = ["SWE_inst:LVT", "SnowDepth_inst:LVT"]
-    surffile = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
-        % (validdt.year,
-           validdt.month,
-           validdt.day,
-           validdt.hour,
-           file_type)
-    surf.create_surf_file(file_type, varfields, surffile)
+    FILE_TYPE = "_glu_snow"
+    VARFIELDS = ["SWE_inst:LVT", "SnowDepth_inst:LVT"]
+    SURFFILE = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
+        % (VALIDDT.year,
+           VALIDDT.month,
+           VALIDDT.day,
+           VALIDDT.hour,
+           FILE_TYPE)
+    SURF.create_surf_file(FILE_TYPE, VARFIELDS, SURFFILE)
 
     # Generate glu_smc SURF file
-    file_type = "_glu_smc"
-    varfields = ["SoilMoist_inst:LVT", "SoilTemp_inst:LVT",
+    FILE_TYPE = "_glu_smc"
+    VARFIELDS = ["SoilMoist_inst:LVT", "SoilTemp_inst:LVT",
                  "AvgSurfT_inst:LVT",
                  "JULES_SM_WILT:LDT", "JULES_SM_CRIT:LDT"]
-    surffile = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
-        % (validdt.year,
-           validdt.month,
-           validdt.day,
-           validdt.hour,
-           file_type)
-    surf.create_surf_file(file_type, varfields, surffile)
+    SURFFILE = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
+        % (VALIDDT.year,
+           VALIDDT.month,
+           VALIDDT.day,
+           VALIDDT.hour,
+           FILE_TYPE)
+    SURF.create_surf_file(FILE_TYPE, VARFIELDS, SURFFILE)
 
     print("convert_nc2surf.py completed!")
     sys.exit(0)
