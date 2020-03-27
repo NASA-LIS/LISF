@@ -378,18 +378,8 @@ class Nc2Surf:
         self.template["real_constants"]["start_lon"] = self.start_lon
 
     #--------------------------------------------------------------------------
-    def _add_field(self, key, ilev, var2d_provider, surf):
-        """
-        Internal method to create and attach Field object to SURF object.
-        Refer to Unified Model Documentation Paper F03 for meaning of metadata.
-        """
-
-        nlev = _NLEVS[key.split(":")[0]]
-
-        # Determine how many fields are already in the SURF object
-        num_fields = len(surf.fields)
-        # Create Field3 object and populate records
-        field = mule.Field3.empty()
+    def _set_field_lb(self, num_fields, key, field):
+        """Set the "lb" attributes in the Field object"""
         field.lbyr = self.year
         field.lbmon = self.month
         field.lbdat = self.day
@@ -439,6 +429,26 @@ class Nc2Surf:
         field.lbuser5 = _VARIDS[key]["LBPLEV"]  # "STASH Psuedo dimension"
         field.lbuser6 = 0  # Free space for users...Let MULE handle this
         field.lbuser7 = 1  # Atmosphere
+
+    #--------------------------------------------------------------------------
+    def _add_field(self, key, ilev, var2d_provider, surf):
+        """
+        Internal method to create and attach Field object to SURF object.
+        Refer to Unified Model Documentation Paper F03 for meaning of metadata.
+        """
+
+        nlev = _NLEVS[key.split(":")[0]]
+
+        # Determine how many fields are already in the SURF object
+        num_fields = len(surf.fields)
+
+        # Create Field3 object
+        field = mule.Field3.empty()
+
+        # Populate the field records starting with "lb"
+        self._set_field_lb(num_fields, key, field)
+
+        # Populate remaining records
         field.bdatum = 0  # Datum value constant subtracted from field
         if nlev == 1:
             field.blev = 0  # Surface AGL
@@ -456,6 +466,8 @@ class Nc2Surf:
         field.bmks = 1.0
         field.raw[1] = self.year
         field.set_data_provider(var2d_provider)
+
+        # Append to the surf object and return that object
         surf.fields.append(field)
         return surf
 
