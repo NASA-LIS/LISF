@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #
 # SCRIPT: convert_nc2surf.py
 #
@@ -31,24 +31,23 @@
 # 26 Mar 2020:  Jim Geiger, Eric Kemp:  Upgraded to Python 3.6.  Also,
 #               upgraded to MULE 2020.01.1.
 #
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Standard modules
 import datetime
 import decimal
-import os
 import sys
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Non-standard modules
-import mule
-import netCDF4
 import numpy as np
+import netCDF4
+import mule
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Version of UM model.  Used below when assigning metadata to SURF files.
 _MODEL_VERSION = 1006
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # SURF Variable codes, based on STASHmaster_A file used with GALWEM.
 # Each key is a combination of the variable name and the source program that
 # produced the netCDF file.
@@ -62,7 +61,7 @@ varIds = {
         "LBPLEV": 0,      # STASH pseudo dimension
     },
     # SST anomaly (1 level)...From LVT
-    "SSTanom:LVT": {  # FIXME:  Not supported yet
+    "SSTanom:LVT": {  # FUTURE:  Not supported yet
         "LBFC": 0,        # PPF
         "ITEM_CODE": 39,  # Item
         "LBTYP": 0,       # CFFF
@@ -143,13 +142,11 @@ varIds = {
     },
 }
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Class for generating the SURF files.
-
-
 class nc2surf(object):
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Initialize object
     def __init__(self, ncfile_lvt, ncfile_ldt):
         # Open LDT netCDF file
@@ -207,7 +204,7 @@ class nc2surf(object):
         self.i_pm = i  # First index at or past prime meridian
         del lons
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Internal method for creating SURF object from template.  Refer to
     # Unified Model Documentation Paper F03 for meaning of metadata codes.
     def _create_surf_template(self, file_type, varfields):
@@ -236,10 +233,6 @@ class nc2surf(object):
                 'north_pole_lat':   90.0,
                 'north_pole_lon':   0.0,
             },
-            'level_dependent_constants': {
-                #'dims': (1, None),  # MULE wants this
-                'dims': (1, 1),  # MULE 2020.01.1 wants this
-            },
         }
 
         _glu_ice_template = {
@@ -263,10 +256,6 @@ class nc2surf(object):
                 'north_pole_lat':   90.0,
                 'north_pole_lon':   0.0,
             },
-            'level_dependent_constants': {
-                #'dims': (1, None),  # MULE wants this
-                'dims': (1, 1),  # MULE 2020.01.1 wants this
-            },
         }
 
         _glu_snow_template = {
@@ -289,10 +278,6 @@ class nc2surf(object):
             'real_constants': {
                 'north_pole_lat':   90.0,
                 'north_pole_lon':   0.0,
-            },
-            'level_dependent_constants': {
-                #'dims': (1, None),  # MULE wants this
-                'dims': (1, 1),  # MULE 2020.01.1 wants this
             },
         }
 
@@ -319,7 +304,6 @@ class nc2surf(object):
                 'north_pole_lon':   0.0,
             },
             'level_dependent_constants': {
-                #'dims': (4, None),  # MULE wants this for 4 soil layers
                 'dims': (4, 1),  # MULE 2020.01.1 wants this.
             },
         }
@@ -365,13 +349,7 @@ class nc2surf(object):
         self.template["real_constants"]["start_lat"] = self.start_lat
         self.template["real_constants"]["start_lon"] = self.start_lon
 
-        # This doesn't work with MULE 2020.01.1.  We handle this
-        # in create_surf_file.
-        #if file_type == "_glu_smc":
-        #    self.template["level_dependent_constants"]["soil_thickness"] = \
-        #        self.soil_layer_thicknesses[:]
-
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Internal method to create and attach Field object to SURF object
     # Refer to Unified Model Documentation Paper F03 for meaning of metadata.
     def _add_field(self, key, var2d, lblev, ilev, nlev, var2d_provider, surf):
@@ -419,7 +397,7 @@ class nc2surf(object):
         field.lbrsvd3 = 0
         field.lbrsvd4 = 0
         field.lbsrce = 10000*_MODEL_VERSION + 1111
-        # FIXME...Set to 3 for landsea mask
+        # FUTURE...Set to 3 for landsea mask
         field.lbuser1 = 1  # Real field
         field.lbuser2 = (num_fields*self.nrows*self.ncols) + 1
         field.lbuser3 = 0  # No rim or halo sizes
@@ -428,12 +406,10 @@ class nc2surf(object):
         field.lbuser5 = varIds[key]["LBPLEV"]  # "STASH Psuedo dimension"
         field.lbuser6 = 0  # Free space for users...Let MULE handle this
         field.lbuser7 = 1  # Atmosphere
-        field.bdatum = 0  # Datum value constant subtracted from each field
-        # value
+        field.bdatum = 0  # Datum value constant subtracted from field
         if nlev == 1:
             field.blev = 0  # Surface AGL
         else:
-            #field.blev = self.soil_layer_depths[ilev]
             field.blev = self.soil_layer_thicknesses[ilev]
         field.bplat = 90
         field.bplon = 0
@@ -450,7 +426,7 @@ class nc2surf(object):
         surf.fields.append(field)
         return surf
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Method for creating SURF object with fields
     def create_surf_file(self, file_type, varlist, surffile):
 
@@ -460,31 +436,22 @@ class nc2surf(object):
         # Create SURF object
         surf = mule.AncilFile.from_template(self.template)
 
-        # MULE 2020.01.1 does not accept a soil thickness section, but
-        # it is required by the UM RECON preprocessor when processing
-        # soil data.  So, we need to add it here.
+        # MULE 2020.01.1 does not accept a soil thickness section for
+        # Ancils, but it is required by the UM RECON preprocessor when 
+        # processing soil data.  So, we need to add it here, borrowing
+        # from FieldsFile.
         if file_type == "_glu_smc":
-            # Create empty set of level dependent constants.
-            ldc = mule.ff.FF_LevelDependentConstants.empty(4)
+
+            # Create empty set of level dependent constants, fill the
+            # soil thicknesses, and attach.
+            ldc = mule.ff.FF_LevelDependentConstants.empty(4) # 4 soil layers
             ldc.soil_thickness[:] = self.soil_layer_thicknesses[:]
-            # Attach the constants to the file
             surf.level_dependent_constants = ldc
+
             # This won't pass validation anymore, so we disable it.
             def dummy_validate(*args, **kwargs):
                 pass
             surf.validate = dummy_validate
-
-        # The UM RECON preprocessor does not work if the SURF file (other
-        # than _glu_smc) has a LEVEL_DEPENDENT_CONSTANTS section.  However,
-        # the MULE library executes validation code that requires the
-        # LEVEL_DEPENDENT_CONSTANTS section to exist.  The current
-        # workaround is to disable the validation for this specific SURF
-        # file, and remove the troublesome section.
-        if file_type in ["_glu_snow", "_glu_ice", "_glu_sst"]:
-            def dummy_validate(*args, **kwargs):
-                pass
-            surf.validate = dummy_validate
-            surf.level_dependent_constants = None
 
         # Create Field3 object for each variable
         for key in varlist:
@@ -547,7 +514,8 @@ class nc2surf(object):
                 var = var[:, :, :]
                 nlev = var.shape[0]
             else:
-                print("ERROR, unsupported array with ", ndim, ' dimensions!')
+                print("ERROR, unsupported array with ", var.ndim,
+                      ' dimensions!')
                 sys.exit(1)
 
             # Loop through each level.
@@ -609,20 +577,20 @@ class nc2surf(object):
         # All fields have been added to the SURF object.  Write to file.
         surf.to_file(surffile)
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Print command line usage.
 
 
 def usage():
     print("Usage: %s yyyymmddhh lvt_nc ldt_nc" % (sys.argv[0]))
     print("   where:")
-    print("           yyyymmddhh is valid year/month/day/hour in UTC")
-    print("           lvt_nc is name of LVT netCDF file to convert to SURF")
-    print("           ldt_nc is name of LDT netCDF file with JULES ancillaries")
+    print("          yyyymmddhh is valid year/month/day/hour in UTC")
+    print("          lvt_nc is name of LVT netCDF file to convert to SURF")
+    print("          ldt_nc is name of LDT netCDF file with JULES ancillaries")
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Read command line arguments
 
 
@@ -671,9 +639,8 @@ def read_cmd_args():
 
     return validdt, lvt_nc, ldt_nc
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Main Driver.
-
 
 if __name__ == "__main__":
 
@@ -685,7 +652,7 @@ if __name__ == "__main__":
 
     # Generate glu_sst SURF file
     file_type = "_glu_sst"
-    # FIXME...Add support for SST anomaly
+    # FUTURE...Add support for SST anomaly
     varfields = ["water_temp:LVT"]
     surffile = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
         % (validdt.year,
@@ -719,7 +686,8 @@ if __name__ == "__main__":
 
     # Generate glu_smc SURF file
     file_type = "_glu_smc"
-    varfields = ["SoilMoist_inst:LVT", "SoilTemp_inst:LVT", "AvgSurfT_inst:LVT",
+    varfields = ["SoilMoist_inst:LVT", "SoilTemp_inst:LVT",
+                 "AvgSurfT_inst:LVT",
                  "JULES_SM_WILT:LDT", "JULES_SM_CRIT:LDT"]
     surffile = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
         % (validdt.year,
