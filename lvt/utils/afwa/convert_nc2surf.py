@@ -146,6 +146,19 @@ _VARIDS = {
     },
 }
 
+_NLEVS = {
+    "water_temp" : 1,
+    "aice" : 1,
+    "hi" : 1,
+    "SWE_inst" : 1,
+    "SnowDepth_inst" : 1,
+    "SoilMoist_inst" : 4,
+    "SoilTemp_inst" : 4,
+    "AvgSurfT_inst" : 1,
+    "JULES_SM_WILT" : 1,
+    "JULES_SM_CRIT" : 1,
+}
+
 #------------------------------------------------------------------------------
 # Grab the missing data values from the MULE library
 _INTEGER_MDI = copy.deepcopy(mule.IntegerConstants.MDI)
@@ -364,11 +377,13 @@ class Nc2Surf:
         self.template["real_constants"]["start_lon"] = self.start_lon
 
     #--------------------------------------------------------------------------
-    def _add_field(self, key, lblev, ilev, nlev, var2d_provider, surf):
+    def _add_field(self, key, lblev, ilev, var2d_provider, surf):
         """
         Internal method to create and attach Field object to SURF object.
         Refer to Unified Model Documentation Paper F03 for meaning of metadata.
         """
+
+        nlev = _NLEVS[key.split(":")[0]]
 
         # Determine how many fields are already in the SURF object
         num_fields = len(surf.fields)
@@ -527,16 +542,15 @@ class Nc2Surf:
             # a NumPy array, and record the number of vertical levels.
             if var.ndim == 2:
                 var = var[:, :]
-                nlev = 1
             elif var.ndim == 3:
                 var = var[:, :, :]
-                nlev = var.shape[0]
             else:
                 print("ERROR, unsupported array with ", var.ndim,
                       ' dimensions!')
                 sys.exit(1)
 
             # Loop through each level.
+            nlev = _NLEVS[varid]
             for ilev in range(0, nlev):
 
                 # In 2D case, work with the whole array.
@@ -593,8 +607,9 @@ class Nc2Surf:
 
                 # Now add the field to the SURF object.
                 print("var: %s, ilev: %s" % (key, ilev))
+
                 surf = self._add_field(key, lblev, ilev,
-                                       nlev, var2d_provider, surf)
+                                       var2d_provider, surf)
 
         # All fields have been added to the SURF object.  Write to file.
         surf.to_file(surffile)
