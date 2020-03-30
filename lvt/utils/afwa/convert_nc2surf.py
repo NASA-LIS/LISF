@@ -146,6 +146,7 @@ _VARIDS = {
     },
 }
 
+# Number of levels per output variable.
 _NLEVS = {
     "water_temp" : 1,
     "aice" : 1,
@@ -163,6 +164,27 @@ _NLEVS = {
 # Grab the missing data values from the MULE library
 _INTEGER_MDI = copy.deepcopy(mule.IntegerConstants.MDI)
 _REAL_MDI = copy.deepcopy(mule.RealConstants.MDI)
+
+#------------------------------------------------------------------------------
+def _check_infile_type(key):
+    # See if the source is recognized
+    infile_type = key.split(":")[1]
+    if infile_type not in ["LDT", "LVT"]:
+        print("ERROR, invalid infile type %s" % (infile_type))
+        print("Found in %s" % (key))
+        print("Internal error, aborting...")
+        sys.exit(1)
+    return infile_type
+
+#------------------------------------------------------------------------------
+def _handle_snowfields_var2d(var2d):
+    """Make sure snow fields are nonnegative."""
+    var2d_tmp = np.where(var2d < 0, 0, var2d)
+    var2d = np.where(var2d == _REAL_MDI,
+                     _REAL_MDI,
+                     var2d_tmp)
+    del var2d_tmp
+    return var2d
 
 #------------------------------------------------------------------------------
 class Nc2Surf:
@@ -472,6 +494,125 @@ class Nc2Surf:
         return surf
 
     #--------------------------------------------------------------------------
+    def _handle_glu_smc(self, file_type, surf):
+        """Add soil thickness section to _glu_smc SURF file."""
+
+        # MULE 2020.01.1 does not accept a soil thickness section for
+        # Ancils, but it is required by the UM RECON preprocessor when
+        # processing soil data.  So, we need to add it here, borrowing
+        # from FieldsFile.
+        if file_type != "_glu_smc":
+            return surf
+
+        # Create empty set of level dependent constants, fill the
+        # soil thicknesses, and attach.
+        ldc = mule.ff.FF_LevelDependentConstants.empty(4) # 4 soil layers
+        ldc.soil_thickness[:] = self.soil_layer_thicknesses[:]
+        surf.level_dependent_constants = ldc
+        # This won't pass validation anymore, so we disable it.
+        def dummy_validate(*args, **kwargs):
+            pass
+        surf.validate = dummy_validate
+        return surf
+
+    #--------------------------------------------------------------------------
+    def _handle_soilmoist_wilt(self):
+        # EMK...Pull wilting point data if processing Soil Moisture
+        var_wilt = self.ncid_ldt.variables["JULES_SM_WILT"]
+        fill_value = var_wilt.missing_value
+        var_wilt = var_wilt[:, :]  # Copies to NumPy array
+        if isinstance(var_wilt, np.ma.core.MaskedArray):
+            var_wilt = var_wilt.data
+        # Soil moisture should not be below 0.1 * wilting point
+        var_wilt0p1 = np.where(var_wilt == fill_value,
+                               _REAL_MDI, 0.1*var_wilt)
+        return var_wilt0p1
+
+    #--------------------------------------------------------------------------
+    def _get_var_and_fill_value(self, infile_type, varid):
+        var = None
+        fill_value = None
+        if infile_type == "LDT":
+            if varid in self.ncid_ldt.variables:
+                var = self.ncid_ldt.variables[varid]
+            else:
+                print("WARN, %s not available in LDT file!" % (varid))
+        elif infile_type == "LVT":
+            if varid in self.ncid_lvt.variables:
+                var = self.ncid_lvt.variables[varid]
+            else:
+                print("WARN, %s not available in LVT file!" % (varid))
+        if var is None:
+            return var, fill_value # Both are None
+        fill_value = var.missing_value
+        # At this point we have a reference to the variable.  Copy to
+        # a NumPy array, and record the number of vertical levels.
+        if var.ndim == 2:
+            var = var[:, :]
+        elif var.ndim == 3:
+            var = var[:, :, :]
+        else:
+            print("ERROR, unsupported array with ", var.ndim,
+                  ' dimensions!')
+            sys.exit(1)
+
+        return var, fill_value
+
+    #--------------------------------------------------------------------------
+    def _create_var2d(self, var, ilev, fill_value):
+        # In 2D case, work with the whole array.
+        if var.ndim == 2:
+            var2d = var[:, :]
+            self.lblev = 9999  # Indicates surface level
+        # In 3D case, pull out the current vertical level as a 2D array
+        else:
+            var2d = var[ilev, :, :]
+            self.lblev = ilev+1  # Use 1-based indexing
+
+        # MULE doesn't like masked arrays, so pull the raw
+        # data out in this case.
+        if isinstance(var2d, np.ma.core.MaskedArray):
+            var2d = var2d.data
+
+        # Update the missing value to match that used in SURF
+        var2d = np.where(var2d == fill_value,
+                         _REAL_MDI,
+                         var2d)
+
+        return var2d
+
+    #--------------------------------------------------------------------------
+    def _handle_soilmoist_var2d(self, ilev, var2d, var_wilt0p1):
+        """Adjust SoilMoist to no less than 10% of wilting point, and convert
+        from m3/m3 to kg m-2."""
+        var2d_tmp = np.where(var2d < var_wilt0p1,
+                             var_wilt0p1,
+                             var2d)
+        var2d = np.where(var2d == _REAL_MDI,
+                         _REAL_MDI,
+                         var2d_tmp)
+        del var2d_tmp
+        soil_layer_thicknesses = \
+            self.ncid_lvt.getncattr("SOIL_LAYER_THICKNESSES")
+        dzsoil = soil_layer_thicknesses[ilev]*0.01  # cm to m
+        # EMK Use below for old pre-LIS 7.2 LVT data
+        # dzsoil = soil_layer_thicknesses[ilev] # Already in m
+        var2d = np.where(var2d == _REAL_MDI,
+                         _REAL_MDI,
+                         var2d*1000*dzsoil)
+        del dzsoil
+        return var2d
+
+    #--------------------------------------------------------------------------
+    def _create_var2d_provider(self, var2d):
+        """Create MULE provider for var2d.  Also, rotate the data to
+        UKMO convention."""
+        var2d_for_surf = np.roll(var2d, self.i_pm, axis=1)
+        var2d_provider = mule.ArrayDataProvider(var2d_for_surf)
+        del var2d_for_surf
+        return var2d_provider
+
+    #--------------------------------------------------------------------------
     def create_surf_file(self, file_type, varlist, surffile):
         """Method for creating SURF object with fields"""
 
@@ -481,22 +622,8 @@ class Nc2Surf:
         # Create SURF object
         surf = mule.AncilFile.from_template(self.template)
 
-        # MULE 2020.01.1 does not accept a soil thickness section for
-        # Ancils, but it is required by the UM RECON preprocessor when
-        # processing soil data.  So, we need to add it here, borrowing
-        # from FieldsFile.
-        if file_type == "_glu_smc":
-
-            # Create empty set of level dependent constants, fill the
-            # soil thicknesses, and attach.
-            ldc = mule.ff.FF_LevelDependentConstants.empty(4) # 4 soil layers
-            ldc.soil_thickness[:] = self.soil_layer_thicknesses[:]
-            surf.level_dependent_constants = ldc
-
-            # This won't pass validation anymore, so we disable it.
-            def dummy_validate(*args, **kwargs):
-                pass
-            surf.validate = dummy_validate
+        # Add soil thickness section to _glu_smc SURF file.
+        surf = self._handle_glu_smc(file_type, surf)
 
         # Create Field3 object for each variable
         for key in varlist:
@@ -507,12 +634,7 @@ class Nc2Surf:
                 continue
 
             # See if the source is recognized
-            infile_type = key.split(":")[1]
-            if infile_type not in ["LDT", "LVT"]:
-                print("ERROR, invalid infile type %s" % (infile_type))
-                print("Found in %s" % (key))
-                print("Internal error, aborting...")
-                sys.exit(1)
+            infile_type = _check_infile_type(key)
 
             # Trim the varname to exclude the source
             varid = key.split(":")[0]
@@ -520,103 +642,34 @@ class Nc2Surf:
             # EMK...Pull wilting point data if processing Soil Moisture
             if infile_type == "LVT":
                 if varid == "SoilMoist_inst":
-                    var_wilt = self.ncid_ldt.variables["JULES_SM_WILT"]
-                    fill_value = var_wilt.missing_value
-                    var_wilt = var_wilt[:, :]  # Copies to NumPy array
-                    if isinstance(var_wilt, np.ma.core.MaskedArray):
-                        var_wilt = var_wilt.data
-                    # Soil moisture should not be below 0.1 * wilting point
-                    var_wilt0p1 = np.where(var_wilt == fill_value,
-                                           _REAL_MDI, 0.1*var_wilt)
+                    var_wilt0p1 = self._handle_soilmoist_wilt()
 
             # Attempt to retrieve the variable from the appropriate
             # netCDF file.
-            if infile_type == "LDT":
-                if varid in self.ncid_ldt.variables:
-                    var = self.ncid_ldt.variables[varid]
-                else:
-                    print("WARN, %s not available in LDT file!" % (varid))
-                    continue
-            elif infile_type == "LVT":
-                if varid in self.ncid_lvt.variables:
-                    var = self.ncid_lvt.variables[varid]
-                else:
-                    print("WARN, %s not available in LVT file!" % (varid))
-                    continue
-
-            # Save the "missing data" value for this netCDF variable
-            if infile_type == "LVT":
-                #fill_value = var._FillValue
-                fill_value = var.missing_value
-            elif infile_type == "LDT":
-                fill_value = var.missing_value
-
-            # At this point we have a reference to the variable.  Copy to
-            # a NumPy array, and record the number of vertical levels.
-            if var.ndim == 2:
-                var = var[:, :]
-            elif var.ndim == 3:
-                var = var[:, :, :]
-            else:
-                print("ERROR, unsupported array with ", var.ndim,
-                      ' dimensions!')
-                sys.exit(1)
+            var, fill_value = self._get_var_and_fill_value(infile_type, varid)
+            if var is None:
+                continue
 
             # Loop through each level.
             nlev = _NLEVS[varid]
             for ilev in range(0, nlev):
 
-                # In 2D case, work with the whole array.
-                if var.ndim == 2:
-                    var2d = var[:, :]
-                    self.lblev = 9999  # Indicates surface level
-                # In 3D case, pull out the current vertical level as
-                # a 2D array.
-                else:
-                    var2d = var[ilev, :, :]
-                    self.lblev = ilev+1  # Use 1-based indexing
-
-                # MULE doesn't like masked arrays, so pull the raw
-                # data out in this case.
-                if isinstance(var2d, np.ma.core.MaskedArray):
-                    var2d = var2d.data
-
-                # Update the missing value to match that used in SURF
-                var2d = np.where(var2d == fill_value,
-                                 _REAL_MDI,
-                                 var2d)
+                var2d = self._create_var2d(var, ilev, fill_value)
 
                 # EMK...For SoilMoist, make sure no less than 0.1*wilting point
-                # Wilting point is in m3/m3
+                # Wilting point is in m3/m3.  Then convert from m3/m3 to
+                # kg m_2.
                 if varid == "SoilMoist_inst":
-                    var2d_tmp = np.where(var2d < var_wilt0p1, var_wilt0p1,
-                                         var2d)
-                    var2d = np.where(var2d == _REAL_MDI,
-                                     _REAL_MDI,
-                                     var2d_tmp)
-
-                # EMK...For SoilMoist, convert from m3/m3 to kg m-2.
-                if varid == "SoilMoist_inst":
-                    soil_layer_thicknesses = \
-                        self.ncid_lvt.getncattr("SOIL_LAYER_THICKNESSES")
-                    dzsoil = soil_layer_thicknesses[ilev]*0.01  # cm to m
-                    # EMK Use below for old pre-LIS 7.2 LVT data
-                    # dzsoil = soil_layer_thicknesses[ilev] # Already in m
-                    var2d = np.where(var2d == _REAL_MDI,
-                                     _REAL_MDI,
-                                     var2d*1000*dzsoil)
+                    var2d = self._handle_soilmoist_var2d(ilev, var2d,
+                                                         var_wilt0p1)
 
                 # EMK...For snow fields, make sure nonnegative
                 if varid in ["SWE_inst", "SnowDepth_inst"]:
-                    var2d_tmp = np.where(var2d < 0, 0, var2d)
-                    var2d = np.where(var2d == _REAL_MDI,
-                                     _REAL_MDI,
-                                     var2d_tmp)
+                    var2d = _handle_snowfields_var2d(var2d)
 
                 # Rotate the field to match the 0:360 longitudinal convention
                 # used by GALWEM.  Then create a "provider" of the data.
-                var2d_for_surf = np.roll(var2d, self.i_pm, axis=1)
-                var2d_provider = mule.ArrayDataProvider(var2d_for_surf)
+                var2d_provider = self._create_var2d_provider(var2d)
 
                 # Now add the field to the SURF object.
                 print("var: %s, ilev: %s" % (key, ilev))
