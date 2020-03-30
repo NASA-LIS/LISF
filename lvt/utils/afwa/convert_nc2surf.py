@@ -194,6 +194,12 @@ class Nc2Surf:
     def __init__(self, ncfile_lvt, ncfile_ldt):
         """Initializes object"""
 
+        # NOTE:  Pylint complains about netCDF4 not having Dataset as a
+        # member.  But this is false -- Dataset is a class, and we use
+        # the constructor below.  Since this appears to be a bug, we
+        # disable the no-member check in this function.
+        # pylint: disable=no-member
+
         # Open LDT netCDF file
         self.ncid_ldt = netCDF4.Dataset(ncfile_ldt, mode='r',
                                         format='NETCDF4_CLASSIC')
@@ -201,6 +207,9 @@ class Nc2Surf:
         # Open LVT netCDF file
         self.ncid_lvt = netCDF4.Dataset(ncfile_lvt, mode='r',
                                         format='NETCDF4_CLASSIC')
+
+        # pylint: enable=no-member
+
         # Fetch valid time
         time = self.ncid_lvt.variables["time"]
         yyyymmdd = time.__dict__["begin_date"]
@@ -507,11 +516,25 @@ class Nc2Surf:
         # Create empty set of level dependent constants, fill the
         # soil thicknesses, and attach.
         ldc = mule.ff.FF_LevelDependentConstants.empty(4) # 4 soil layers
+
+        # NOTE:  Pylint complains that the FF_LevelDependentConstants instance
+        # has no soil_thickness member.  But this demonstrably false.  Since
+        # this is a bug, we disable the no-member check here.
+        # pylint: disable=no-member
         ldc.soil_thickness[:] = self.soil_layer_thicknesses[:]
+        # pylint: enable=no-member
         surf.level_dependent_constants = ldc
         # This won't pass validation anymore, so we disable it.
+        # NOTE: Pylint doesn't like this since *args and **kwargs are not
+        # used.  Unfortunately, MULE doesn't have an option to just turn off
+        # validation, and arguments must be allowed by the validation function.
+        # So, for this particular function, we turn off checking for unused
+        # arguments.
         def dummy_validate(*args, **kwargs):
+            # pylint: disable=unused-argument
             pass
+            # pylint: enable=unused-argument
+
         surf.validate = dummy_validate
         return surf
 
@@ -680,6 +703,10 @@ class Nc2Surf:
         # All fields have been added to the SURF object.  Write to file.
         surf.to_file(surffile)
 
+    #--------------------------------------------------------------------------
+    def __str__(self):
+        return self.__class__.__name__
+
 #------------------------------------------------------------------------------
 def usage():
     """Print command line usage."""
@@ -700,16 +727,30 @@ def read_cmd_args():
 
     # Convert yyyymmddhh argument to a datetime object
     yyyymmddhh = sys.argv[1]
+    if len(yyyymmddhh) != 10:
+        print("[ERR] Invalid yyyymmddhh argument %s!" %(yyyymmddhh))
+        print("[ERR] Check length!")
+        usage()
+        sys.exit(1)
+
+    print("[INFO] Processing date/time %s" %(yyyymmddhh))
     try:
         year = int(yyyymmddhh[0:4])
         month = int(yyyymmddhh[4:6])
         day = int(yyyymmddhh[6:8])
         hour = int(yyyymmddhh[8:10])
         validdt = datetime.datetime(year, month, day, hour)
-    except:
-        print("[ERR] Cannot process yyyymmddhh argument!")
+    except ValueError:
+        print("[ERR] Cannot process date/time %s" %(yyyymmddhh))
         usage()
-        sys.exit(1)
+        print("[ERR] Will raise Python exception for debugging...")
+        raise
+
+    # NOTE:  Pylint complains about netCDF4 not having Dataset as a
+    # member.  But this is false -- Dataset is a class, and we use
+    # the constructor below.  Since this appears to be a bug, we
+    # disable the no-member check in this function.
+    # pylint: disable=no-member
 
     # See if lvt_nc file can be opened
     lvt_nc = sys.argv[2]
@@ -722,6 +763,7 @@ def read_cmd_args():
     ncid_ldt = netCDF4.Dataset(ldt_nc, mode='r',
                                format='NETCDF4_CLASSIC')
     ncid_ldt.close()
+    # pylint: enable=no-member
 
     return validdt, lvt_nc, ldt_nc
 
