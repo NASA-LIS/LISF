@@ -166,8 +166,8 @@ _INTEGER_MDI = copy.deepcopy(mule.IntegerConstants.MDI)
 _REAL_MDI = copy.deepcopy(mule.RealConstants.MDI)
 
 #------------------------------------------------------------------------------
-def _check_infile_type(key):
-    # See if the source is recognized
+def _get_infile_type(key):
+    """Get the infile_type based on the key. Sanity check included."""
     infile_type = key.split(":")[1]
     if infile_type not in ["LDT", "LVT"]:
         print("ERROR, invalid infile type %s" % (infile_type))
@@ -213,21 +213,24 @@ class Nc2Surf:
         # Fetch valid time
         time = self.ncid_lvt.variables["time"]
         yyyymmdd = time.__dict__["begin_date"]
-        self.year = int(yyyymmdd[0:4])
-        self.month = int(yyyymmdd[4:6])
-        self.day = int(yyyymmdd[6:])
+        self.time = {}
+        self.time["year"] = int(yyyymmdd[0:4])
+        self.time["month"] = int(yyyymmdd[4:6])
+        self.time["day"] = int(yyyymmdd[6:])
         hhmmss = time.__dict__["begin_time"]
-        self.hour = int(hhmmss[0:2])
-        self.minute = int(hhmmss[2:4])
-        self.second = int(hhmmss[4:])
+        self.time["hour"] = int(hhmmss[0:2])
+        self.time["minute"] = int(hhmmss[2:4])
+        self.time["second"] = int(hhmmss[4:])
         del time
-        # Fetch constants
-        self.ncols = len(self.ncid_lvt.dimensions['east_west'])
-        self.nrows = len(self.ncid_lvt.dimensions['north_south'])
-        self.nlevs = self.ncid_lvt.__dict__['NUM_SOIL_LAYERS']
-        self.dx_ = self.ncid_lvt.__dict__['DX']
-        self.dy_ = self.ncid_lvt.__dict__['DY']
-        self.start_lat = self.ncid_lvt.variables['latitude'][0, 0]
+
+        # Fetch grid constants
+        self.grid = {}
+        self.grid["ncols"] = len(self.ncid_lvt.dimensions['east_west'])
+        self.grid["nrows"] = len(self.ncid_lvt.dimensions['north_south'])
+        self.grid["nlevs"] = self.ncid_lvt.__dict__['NUM_SOIL_LAYERS']
+        self.grid["dx"] = self.ncid_lvt.__dict__['DX']
+        self.grid["dy"] = self.ncid_lvt.__dict__['DY']
+        self.grid["start_lat"] = self.ncid_lvt.variables['latitude'][0, 0]
 
         # Convert soil layer depths to meters.  Use fixed precision.
         slt_cm = \
@@ -235,27 +238,29 @@ class Nc2Surf:
         cm2m = decimal.Decimal('0.01')
         slt_m = \
             [cm2m*decimal.Decimal("%s" % x) for x in slt_cm]
-        # EMK...Use below for old pre-LIS 7.2 LVT output
+        # EMK...Use below for old pre-LIS 7.2 LVT output, which
+        # erroneously had output in meters
         # slt_m = \
         #    [decimal.Decimal("%s" %x) for x in slt_cm]
-        self.soil_layer_thicknesses = slt_m
+        self.grid["soil_layer_thicknesses"] = slt_m
 
         # Find soil layer depths
-        self.soil_layer_depths = self.soil_layer_thicknesses[:]
-        for i in range(1, len(self.soil_layer_thicknesses)):
-            self.soil_layer_depths[i] += self.soil_layer_depths[i-1]
+        self.grid["soil_layer_depths"] = self.grid["soil_layer_thicknesses"][:]
+        for i in range(1, len(self.grid["soil_layer_thicknesses"])):
+            self.grid["soil_layer_depths"][i] += \
+                self.grid["soil_layer_depths"][i-1]
 
         # Determine first non-negative longitude and index
         lons = self.ncid_lvt.variables['longitude'][0, :]
-        self.start_lon = None
+        self.grid["start_lon"] = None
         for i, lon in enumerate(lons):
             if not lon < 0:
-                self.start_lon = lon
+                self.grid["start_lon"] = lon
                 break
-        if self.start_lon is None:
+        if self.grid["start_lon"] is None:
             print("ERROR finding starting longitude for LIS grid!")
             sys.exit(1)
-        self.i_pm = i  # First index at or past prime meridian
+        self.grid["i_pm"] = i  # First index at or past prime meridian
         del lons
 
         self.template = None
@@ -378,59 +383,59 @@ class Nc2Surf:
         self.template = _templates[file_type]
 
         # Customize appropriate settings
-        self.template["fixed_length_header"]["t1_year"] = self.year
-        self.template["fixed_length_header"]["t1_month"] = self.month
-        self.template["fixed_length_header"]["t1_day"] = self.day
-        self.template["fixed_length_header"]["t1_hour"] = self.hour
-        self.template["fixed_length_header"]["t1_minute"] = self.minute
-        self.template["fixed_length_header"]["t1_second"] = self.second
+        self.template["fixed_length_header"]["t1_year"] = self.time["year"]
+        self.template["fixed_length_header"]["t1_month"] = self.time["month"]
+        self.template["fixed_length_header"]["t1_day"] = self.time["day"]
+        self.template["fixed_length_header"]["t1_hour"] = self.time["hour"]
+        self.template["fixed_length_header"]["t1_minute"] = self.time["minute"]
+        self.template["fixed_length_header"]["t1_second"] = self.time["second"]
 
-        self.template["fixed_length_header"]["t2_year"] = self.year
-        self.template["fixed_length_header"]["t2_month"] = self.month
-        self.template["fixed_length_header"]["t2_day"] = self.day
-        self.template["fixed_length_header"]["t2_hour"] = self.hour
-        self.template["fixed_length_header"]["t2_minute"] = self.minute
-        self.template["fixed_length_header"]["t2_second"] = self.second
+        self.template["fixed_length_header"]["t2_year"] = self.time["year"]
+        self.template["fixed_length_header"]["t2_month"] = self.time["month"]
+        self.template["fixed_length_header"]["t2_day"] = self.time["day"]
+        self.template["fixed_length_header"]["t2_hour"] = self.time["hour"]
+        self.template["fixed_length_header"]["t2_minute"] = self.time["minute"]
+        self.template["fixed_length_header"]["t2_second"] = self.time["second"]
 
-        self.template["fixed_length_header"]["t3_year"] = self.year
-        self.template["fixed_length_header"]["t3_month"] = self.month
-        self.template["fixed_length_header"]["t3_day"] = self.day
-        self.template["fixed_length_header"]["t3_hour"] = self.hour
-        self.template["fixed_length_header"]["t3_minute"] = self.minute
-        self.template["fixed_length_header"]["t3_second"] = self.second
+        self.template["fixed_length_header"]["t3_year"] = self.time["year"]
+        self.template["fixed_length_header"]["t3_month"] = self.time["month"]
+        self.template["fixed_length_header"]["t3_day"] = self.time["day"]
+        self.template["fixed_length_header"]["t3_hour"] = self.time["hour"]
+        self.template["fixed_length_header"]["t3_minute"] = self.time["minute"]
+        self.template["fixed_length_header"]["t3_second"] = self.time["second"]
 
-        self.template["integer_constants"]["num_cols"] = self.ncols
-        self.template["integer_constants"]["num_rows"] = self.nrows
+        self.template["integer_constants"]["num_cols"] = self.grid["ncols"]
+        self.template["integer_constants"]["num_rows"] = self.grid["nrows"]
         self.template["integer_constants"]["num_field_types"] = len(varfields)
 
-        self.template["real_constants"]["col_spacing"] = self.dx_
-        self.template["real_constants"]["row_spacing"] = self.dy_
-        self.template["real_constants"]["start_lat"] = self.start_lat
-        self.template["real_constants"]["start_lon"] = self.start_lon
+        self.template["real_constants"]["col_spacing"] = self.grid["dx"]
+        self.template["real_constants"]["row_spacing"] = self.grid["dy"]
+        self.template["real_constants"]["start_lat"] = self.grid["start_lat"]
+        self.template["real_constants"]["start_lon"] = self.grid["start_lon"]
 
     #--------------------------------------------------------------------------
     def _set_field_lb(self, num_fields, key, field):
         """Set the "lb" attributes in the Field object"""
-        field.lbyr = self.year
-        field.lbmon = self.month
-        field.lbdat = self.day
-        field.lbhr = self.hour
-        field.lbmin = self.minute
-        field.lbsec = self.second
-        field.lbyrd = self.year
-        field.lbmond = self.month
-        field.lbdatd = self.day
-        field.lbhrd = self.hour
-        field.lbmind = self.minute
-        field.lbsecd = self.second
+        field.lbyr = self.time["year"]
+        field.lbmon = self.time["month"]
+        field.lbdat = self.time["day"]
+        field.lbhr = self.time["hour"]
+        field.lbmin = self.time["minute"]
+        field.lbsec = self.time["second"]
+        field.lbyrd = self.time["year"]
+        field.lbmond = self.time["month"]
+        field.lbdatd = self.time["day"]
+        field.lbhrd = self.time["hour"]
+        field.lbmind = self.time["minute"]
+        field.lbsecd = self.time["second"]
         field.lbtim = 1  # Dates use Gregorian calendar
         field.lbft = 0  # No difference between valid time and data time
         # field.lblrec = foo # Let MULE determine this
         field.lbcode = 1  # Lat/lon grid
         field.lbhem = 0  # Global field
         # Note:  Set lbrow and lbnpt to zero for land-packed field
-        field.lbrow = self.nrows
-        field.lbnpt = self.ncols
+        field.lbrow = self.grid["nrows"]
+        field.lbnpt = self.grid["ncols"]
         field.lbext = 0  # No extra data
         field.lbpack = 0  # No packing
         field.lbrel = 2
@@ -453,7 +458,7 @@ class Nc2Surf:
         field.lbsrce = 10000*_MODEL_VERSION + 1111
         # FUTURE...Set to 3 for landsea mask
         field.lbuser1 = 1  # Real field
-        field.lbuser2 = (num_fields*self.nrows*self.ncols) + 1
+        field.lbuser2 = (num_fields*self.grid["nrows"]*self.grid["ncols"]) + 1
         field.lbuser3 = 0  # No rim or halo sizes
         field.lbuser4 = _VARIDS[key]["ITEM_CODE"]
         #field.lbuser5 = 0
@@ -484,18 +489,18 @@ class Nc2Surf:
         if nlev == 1:
             field.blev = 0  # Surface AGL
         else:
-            field.blev = self.soil_layer_thicknesses[ilev]
+            field.blev = self.grid["soil_layer_thicknesses"][ilev]
         field.bplat = 90
         field.bplon = 0
         # Grid settings
         field.bgor = 0
-        field.bzy = self.start_lat - self.dy_
-        field.bdy = self.dy_
-        field.bzx = self.start_lon - self.dx_
-        field.bdx = self.dx_
+        field.bzy = self.grid["start_lat"] - self.grid["dy"]
+        field.bdy = self.grid["dy"]
+        field.bzx = self.grid["start_lon"] - self.grid["dx"]
+        field.bdx = self.grid["dx"]
         field.bmdi = _REAL_MDI
         field.bmks = 1.0
-        field.raw[1] = self.year
+        field.raw[1] = self.time["year"]
         field.set_data_provider(var2d_provider)
 
         # Append to the surf object and return that object
@@ -521,8 +526,9 @@ class Nc2Surf:
         # has no soil_thickness member.  But this demonstrably false.  Since
         # this is a bug, we disable the no-member check here.
         # pylint: disable=no-member
-        ldc.soil_thickness[:] = self.soil_layer_thicknesses[:]
+        ldc.soil_thickness[:] = self.grid["soil_layer_thicknesses"][:]
         # pylint: enable=no-member
+
         surf.level_dependent_constants = ldc
         # This won't pass validation anymore, so we disable it.
         # NOTE: Pylint doesn't like this since *args and **kwargs are not
@@ -615,11 +621,7 @@ class Nc2Surf:
                          _REAL_MDI,
                          var2d_tmp)
         del var2d_tmp
-        soil_layer_thicknesses = \
-            self.ncid_lvt.getncattr("SOIL_LAYER_THICKNESSES")
-        dzsoil = soil_layer_thicknesses[ilev]*0.01  # cm to m
-        # EMK Use below for old pre-LIS 7.2 LVT data
-        # dzsoil = soil_layer_thicknesses[ilev] # Already in m
+        dzsoil = float(self.grid["soil_layer_thicknesses"][ilev])
         var2d = np.where(var2d == _REAL_MDI,
                          _REAL_MDI,
                          var2d*1000*dzsoil)
@@ -630,7 +632,7 @@ class Nc2Surf:
     def _create_var2d_provider(self, var2d):
         """Create MULE provider for var2d.  Also, rotate the data to
         UKMO convention."""
-        var2d_for_surf = np.roll(var2d, self.i_pm, axis=1)
+        var2d_for_surf = np.roll(var2d, self.grid["i_pm"], axis=1)
         var2d_provider = mule.ArrayDataProvider(var2d_for_surf)
         del var2d_for_surf
         return var2d_provider
@@ -657,7 +659,7 @@ class Nc2Surf:
                 continue
 
             # See if the source is recognized
-            infile_type = _check_infile_type(key)
+            infile_type = _get_infile_type(key)
 
             # Trim the varname to exclude the source
             varid = key.split(":")[0]
