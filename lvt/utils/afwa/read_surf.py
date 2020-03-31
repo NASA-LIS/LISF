@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""
 # -----------------------------------------------------------------------------
 #
 # SCRIPT: read_surf.py
@@ -8,57 +9,62 @@
 #
 # FUTURE:  Add plotting capability with matplotlib.
 #
-# REQUIREMENTS as of 27 March 2020:
+# REQUIREMENTS as of 31 March 2020:
 # * Python 3.6
 # * UKMO MULE Python library 2020.01.1
 # * NumPy Python library (for array objects)
 #
 # -----------------------------------------------------------------------------
+"""
+
 # Standard modules
-import os
 import sys
 
 # Non-standard modules
 #import matplotlib.pyplot as plt
 import mule
-import numpy
+#import numpy
 
 #if len(sys.argv) in [2, 3]:
 if len(sys.argv) in [2]:
-    filename = sys.argv[1]
+    FILENAME = sys.argv[1]
 else:
     print("Usage: %s filename" %(sys.argv[0]))
     sys.exit(1)
 
 # plot = False
 # if len(sys.argv) == 3:
-#     if sys.argv[2] == "-plot":
+#     if sys.argv[2] == "--plot":
 #         plot = True
 
-ancil = mule.AncilFile.from_file(filename)
+ANCIL = mule.AncilFile.from_file(FILENAME)
 
-if ancil.fixed_length_header != None:
+if ANCIL.fixed_length_header is not None:
     print("***fixed_length_header***")
-    for header in mule._UM_FIXED_LENGTH_HEADER:
+    for header in mule.FixedLengthHeader.HEADER_MAPPING:
         key, i = header[0], header[1]
-        print(i, key, ' ', ancil.fixed_length_header.raw[i])
+        print(i, key, ' ', ANCIL.fixed_length_header.raw[i])
         # Useful to store the number of level dependent constants for later
         if key == "level_dependent_constants_dim2":
-            length_ldc = int(ancil.fixed_length_header.raw[i])
+            length_ldc = int(ANCIL.fixed_length_header.raw[i])
 
-if ancil.integer_constants != None:
+# NOTE:  Pylint cannot see most of the components of the AncilFile class,
+# and issues error messages and penalizes accordingly.  So, we disable the
+# no-member check for sanity.
+# pylint: disable=no-member
+if ANCIL.integer_constants is not None:
     print("***integer_constants***")
-    for header in mule.ancil._ANCIL_INTEGER_CONSTANTS:
+    for header in mule.ancil.Ancil_IntegerConstants.HEADER_MAPPING:
         key, i = header[0], header[1]
-        print(i, key, ' ', ancil.integer_constants.raw[i])
+        print(i, key, ' ', ANCIL.integer_constants.raw[i])
 
-if ancil.real_constants != None:
+if ANCIL.real_constants is not None:
     print("***real_constants***")
-    for header in mule.ancil._ANCIL_REAL_CONSTANTS:
+    for header in mule.ancil.Ancil_RealConstants.HEADER_MAPPING:
         key, i = header[0], header[1]
-        print(i, key, ' ', ancil.real_constants.raw[i])
+        print(i, key, ' ', ANCIL.real_constants.raw[i])
 
-if ancil.level_dependent_constants != None:
+if ANCIL.level_dependent_constants is not None:
     print("***level_dependent_constants***")
     # NOTE...MULE 2020.01.1 removed level dependent constants from
     # ancil files, but this is required by the UM RECON preprocessor.
@@ -66,35 +72,36 @@ if ancil.level_dependent_constants != None:
     # Since older SURF files may have a subset of the FieldsFile level
     # dependent constants, we have additional logic to check the number
     # of constants in the file.
-    for header in mule.ff._FF_LEVEL_DEPENDENT_CONSTANTS:
+    #for header in mule.ff._FF_LEVEL_DEPENDENT_CONSTANTS:
+    for header in mule.ff.FF_LevelDependentConstants.HEADER_MAPPING:
         key, i = header[0], header[1]
         idx = header[1][1]
         if idx <= length_ldc:
-            print(idx, key, ' ', ancil.level_dependent_constants.raw[i])
+            print(idx, key, ' ', ANCIL.level_dependent_constants.raw[i])
 
-if ancil.row_dependent_constants != None:
+if ANCIL.row_dependent_constants is not None:
     print("***row_dependent_constants***")
-    for header in mule.ancil._ANCIL_ROW_DEPENDENT_CONSTANTS:
+    for header in mule.ancil.Ancil_RowDependentConstants.HEADER_MAPPING:
         key, i = header[0], header[1]
-        print(i, key, ' ', ancil.row_dependent_constants.raw[i])
+        print(i, key, ' ', ANCIL.row_dependent_constants.raw[i])
 
-if ancil.column_dependent_constants != None:
+if ANCIL.column_dependent_constants is not None:
     print("***row_dependent_constants***")
-    for header in mule.ancil._ANCIL_COLUMN_DEPENDENT_CONSTANTS:
+    for header in mule.ancil.Ancil_ColumnDependentConstants.HEADER_MAPPING:
         key, i = header[0], header[1]
-        print(i, key, ' ', ancil.column_dependent_constants.raw[i])
+        print(i, key, ' ', ANCIL.column_dependent_constants.raw[i])
 
-print('*** ', len(ancil.fields), ' fields in file')
-counter = 0
-for field in ancil.fields:
-    counter += 1
-    print(counter, field)
-    for header in mule._LOOKUP_HEADER_3:
+print('*** ', len(ANCIL.fields), ' fields in file')
+for jj, field in enumerate(ANCIL.fields):
+    print(jj, field)
+    for header in mule.Field3.HEADER_MAPPING:
         key, i = header[0], header[1]
         print(i, key, ' ', field.raw[i])
 
+#------------------------------------------------------------------------------
+# FUTURE:  Add plotting support for matplotlib
 # if plot:
-#     for field in ancil.fields:
+#     for field in ANCIL.fields:
 #         # if field.lbfc not in [93,0,122,23,1510,329,330]:
 #         #    continue
 #         # print field
