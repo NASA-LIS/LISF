@@ -41,7 +41,7 @@ ANCIL = mule.AncilFile.from_file(FILENAME)
 
 if ANCIL.fixed_length_header is not None:
     print("***fixed_length_header***")
-    for header in mule.FixedLengthHeader.HEADER_MAPPING:
+    for header in ANCIL.fixed_length_header.HEADER_MAPPING:
         key, i = header[0], header[1]
         print(i, key, ' ', ANCIL.fixed_length_header.raw[i])
         # Useful to store the number of level dependent constants for later
@@ -54,13 +54,13 @@ if ANCIL.fixed_length_header is not None:
 # pylint: disable=no-member
 if ANCIL.integer_constants is not None:
     print("***integer_constants***")
-    for header in mule.ancil.Ancil_IntegerConstants.HEADER_MAPPING:
+    for header in ANCIL.integer_constants.HEADER_MAPPING:
         key, i = header[0], header[1]
         print(i, key, ' ', ANCIL.integer_constants.raw[i])
 
 if ANCIL.real_constants is not None:
     print("***real_constants***")
-    for header in mule.ancil.Ancil_RealConstants.HEADER_MAPPING:
+    for header in ANCIL.real_constants.HEADER_MAPPING:
         key, i = header[0], header[1]
         print(i, key, ' ', ANCIL.real_constants.raw[i])
 
@@ -72,7 +72,6 @@ if ANCIL.level_dependent_constants is not None:
     # Since older SURF files may have a subset of the FieldsFile level
     # dependent constants, we have additional logic to check the number
     # of constants in the file.
-    #for header in mule.ff._FF_LEVEL_DEPENDENT_CONSTANTS:
     for header in mule.ff.FF_LevelDependentConstants.HEADER_MAPPING:
         key, i = header[0], header[1]
         idx = header[1][1]
@@ -81,20 +80,20 @@ if ANCIL.level_dependent_constants is not None:
 
 if ANCIL.row_dependent_constants is not None:
     print("***row_dependent_constants***")
-    for header in mule.ancil.Ancil_RowDependentConstants.HEADER_MAPPING:
+    for header in ANCIL.level_dependent_constants.HEADER_MAPPING:
         key, i = header[0], header[1]
         print(i, key, ' ', ANCIL.row_dependent_constants.raw[i])
 
 if ANCIL.column_dependent_constants is not None:
     print("***row_dependent_constants***")
-    for header in mule.ancil.Ancil_ColumnDependentConstants.HEADER_MAPPING:
+    for header in ANCIL.column_dependent_constants.HEADER_MAPPING:
         key, i = header[0], header[1]
         print(i, key, ' ', ANCIL.column_dependent_constants.raw[i])
 
 print('*** ', len(ANCIL.fields), ' fields in file')
 for jj, field in enumerate(ANCIL.fields):
-    print(jj, field)
-    for header in mule.Field3.HEADER_MAPPING:
+    print(jj+1, field)
+    for header in field.HEADER_MAPPING:
         key, i = header[0], header[1]
         print(i, key, ' ', field.raw[i])
 
