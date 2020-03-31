@@ -170,9 +170,9 @@ def _get_infile_type(key):
     """Get the infile_type based on the key. Sanity check included."""
     infile_type = key.split(":")[1]
     if infile_type not in ["LDT", "LVT"]:
-        print("ERROR, invalid infile type %s" % (infile_type))
-        print("Found in %s" % (key))
-        print("Internal error, aborting...")
+        print("[ERR] Invalid infile type %s" % (infile_type))
+        print("[ERR] Found in %s" % (key))
+        print("[ERR] Internal error, aborting...")
         sys.exit(1)
     return infile_type
 
@@ -258,7 +258,7 @@ class Nc2Surf:
                 self.grid["start_lon"] = lon
                 break
         if self.grid["start_lon"] is None:
-            print("ERROR finding starting longitude for LIS grid!")
+            print("[ERR] No starting longitude for LIS grid!")
             sys.exit(1)
         self.grid["i_pm"] = i  # First index at or past prime meridian
         del lons
@@ -565,12 +565,12 @@ class Nc2Surf:
             if varid in self.ncid_ldt.variables:
                 var = self.ncid_ldt.variables[varid]
             else:
-                print("WARN, %s not available in LDT file!" % (varid))
+                print("[WARN] %s not available in LDT file!" % (varid))
         elif infile_type == "LVT":
             if varid in self.ncid_lvt.variables:
                 var = self.ncid_lvt.variables[varid]
             else:
-                print("WARN, %s not available in LVT file!" % (varid))
+                print("[WARN] %s not available in LVT file!" % (varid))
         if var is None:
             return var, fill_value # Both are None
         fill_value = var.missing_value
@@ -581,7 +581,7 @@ class Nc2Surf:
         elif var.ndim == 3:
             var = var[:, :, :]
         else:
-            print("ERROR, unsupported array with ", var.ndim,
+            print("[ERR] Unsupported array with ", var.ndim,
                   ' dimensions!')
             sys.exit(1)
 
@@ -589,6 +589,8 @@ class Nc2Surf:
 
     #--------------------------------------------------------------------------
     def _create_var2d(self, var, ilev, fill_value):
+        """Creates a 2d numpy array from the requested variable."""
+
         # In 2D case, work with the whole array.
         if var.ndim == 2:
             var2d = var[:, :]
@@ -655,7 +657,7 @@ class Nc2Surf:
 
             # See if the varname and source are recognized
             if key not in list(_VARIDS.keys()):
-                print("WARN, %s not recognized!" % (key))
+                print("[WARN] %s not recognized!" % (key))
                 continue
 
             # See if the source is recognized
@@ -697,7 +699,7 @@ class Nc2Surf:
                 var2d_provider = self._create_var2d_provider(var2d)
 
                 # Now add the field to the SURF object.
-                print("var: %s, ilev: %s" % (key, ilev))
+                print("[INFO] Processing %s, ilev: %s" % (key, ilev))
 
                 surf = self._add_field(key, ilev,
                                        var2d_provider, surf)
@@ -712,11 +714,11 @@ class Nc2Surf:
 #------------------------------------------------------------------------------
 def usage():
     """Print command line usage."""
-    print("Usage: %s yyyymmddhh lvt_nc ldt_nc" % (sys.argv[0]))
-    print("   where:")
-    print("          yyyymmddhh is valid year/month/day/hour in UTC")
-    print("          lvt_nc is name of LVT netCDF file to convert to SURF")
-    print("          ldt_nc is name of LDT netCDF file with JULES ancillaries")
+    print("[INFO] Usage: %s yyyymmddhh lvt_nc ldt_nc" % (sys.argv[0]))
+    print("[INFO]   where:")
+    print("[INFO]    yyyymmddhh is valid year/month/day/hour in UTC")
+    print("[INFO]    lvt_nc is name of LVT netCDF file to convert to SURF")
+    print("[INFO]    ldt_nc is name of LDT netCDF file with JULES ancillaries")
 
 #-----------------------------------------------------------------------------
 def read_cmd_args():
@@ -745,8 +747,7 @@ def read_cmd_args():
     except ValueError:
         print("[ERR] Cannot process date/time %s" %(yyyymmddhh))
         usage()
-        print("[ERR] Will raise Python exception for debugging...")
-        raise
+        sys.exit(1)
 
     # NOTE:  Pylint complains about netCDF4 not having Dataset as a
     # member.  But this is false -- Dataset is a class, and we use
@@ -826,5 +827,5 @@ if __name__ == "__main__":
            FILE_TYPE)
     SURF.create_surf_file(FILE_TYPE, VARFIELDS, SURFFILE)
 
-    print("convert_nc2surf.py completed!")
+    print("[INFO] convert_nc2surf.py completed!")
     sys.exit(0)
