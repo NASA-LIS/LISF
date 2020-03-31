@@ -438,7 +438,7 @@ class Nc2Surf:
         field.lbnpt = self.grid["ncols"]
         field.lbext = 0  # No extra data
         field.lbpack = 0  # No packing
-        field.lbrel = 2
+        field.lbrel = 3 # For UM 8.1 and upwards
         field.lbfc = _VARIDS[key]["LBFC"]
         field.lbcfc = 0  # Always 0 for UM
         field.lbproc = 0  # No processing -- raw field
