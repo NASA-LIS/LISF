@@ -29,7 +29,7 @@
 # 19 Jul 2019:  Eric Kemp (SSAI), adjust soil moisture so it is no less than
 #               0.1 * the wilting point.  Also, reset any negative snow fields
 #               to zero.
-# 27 Mar 2020:  Jim Geiger, Eric Kemp:  Upgraded to Python 3.6.  Also,
+# 31 Mar 2020:  Jim Geiger, Eric Kemp:  Upgraded to Python 3.6.  Also,
 #               upgraded to MULE 2020.01.1.
 #
 #------------------------------------------------------------------------------
