@@ -4905,6 +4905,16 @@ Acceptable values are:
 |10     | 10-km (proposed operational resolution upgrade for 2020)
 |====
 
+`AGRMET GFS filename version:` specifies which filename version convention
+is used for the GFS GRIB files.
+Acceptable values are:
+
+|====
+|Value  | Description
+|1      | Example: MT.avn_CY.00_fh.0000_tl.press_gr.0p5deg
+|2      | Example: PS.NCEP_SC.U_DI.A_DC.GRID_GP.GFS_SP.SIMPLE_GR.C0P5DEG_AR.GLOBAL_PA.GFS_DD.20200213_CY.00_FH.000_DF.GR2
+|====
+
 `AGRMET analysis directory:` specifies the location where temporary
 precip analysis fields will be written.
 
