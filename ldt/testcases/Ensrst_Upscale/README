@@ -1,43 +1,29 @@
 
 Focus:  Upscaling a Single Member Restart File to an Ensemble Restart file
 
-Description:  This test case involves the upscaling or generating an ensemble restart
+Description:  This case involves the upscaling or generating an ensemble restart
       file from a single member or baseline run restart file.
 
 This test case uses the following files:
   (a) this README file
-  (b) the wget data download scripts: 
-     wget_lisumdlc_portal.sh, wget_ensrst_upscale_testfiles.sh
-  (c) the ldt.config input file used by LDT for this testcase
-  (d) the input ensemble-member LIS-generated restart file:
-        LIS_RST_NOAH33_201212312330.d01.nc
-  (e) and to compare with output data, download the original output
-       tar-zipped file, unpack and compare with those given files.
+  (b) the ldt.config input file 
 
-To run this test case: 
+To run this case: 
  
-  (a) Run the download scripts in a working directory where you want 
-       to place the landcover input data (mask will be created):
-
-       sh wget_lisumdlc_portal.sh
-       sh wget_ensrst_upscale_testfiles.sh
-
-    -- Input files should be written to the directory named:  "./input"
+  (a) Select a single-member LIS model restart file, such as:
+       LIS_RST_NOAH33_201212312330.d01.nc
+      from your run output directory.
 
   (b) Generate the LDT executable and copy to your working directory.
 
-  (c) Run the LDT executable with the provided ldt.config file by typing:
+  (c) Modify the ldt.config file to point to your LIS model restart file.
+
+  (d) Run the LDT executable with the provided ldt.config file by typing:
       ./LDT ldt.config
 
-  (d) View the NetCDF (*.nc) output using a tool, like
+  (e) View the NetCDF (*.nc) output using a tool, like
        the ncview executable (if you have it installed).
 
-  (e) Unpack the downloaded ensemble restart testcase original output: 
-
-       tar -xzvf Public-LDT_Ensrst_Upscale_output_v71.tar.gz
-
-      which you can compare with what you produced with these test case files. 
-      The files include:  ensrst_orig.nc, ldtlog.0000, MaskParamFill.log 
 
 Caveats: 
   (a) Please note that this is a more basic functional test for purpose

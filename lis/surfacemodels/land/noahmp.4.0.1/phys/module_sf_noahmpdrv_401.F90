@@ -35,7 +35,7 @@ CONTAINS
 	        WOODXY, STBLCPXY, FASTCPXY,    XLAIXY,   XSAIXY,   TAUSSXY, & ! IN/OUT Noah MP only
 	       SMOISEQ, SMCWTDXY,DEEPRECHXY,   RECHXY,  GRAINXY,    GDDXY,PGSXY,  & ! IN/OUT Noah MP only
                GECROS_STATE,                                                & ! IN/OUT gecros model
-	        T2MVXY,   T2MBXY,    Q2MVXY,   Q2MBXY,                      & ! OUT Noah MP only
+	        T2MVXY,   T2MBXY,    Q2MVXY,   Q2MBXY, RELSMCXY,            & ! OUT Noah MP only
 	        TRADXY,    NEEXY,    GPPXY,     NPPXY,   FVEGXY,   RUNSFXY, & ! OUT Noah MP only
 	       RUNSBXY,   ECANXY,   EDIRXY,   ETRANXY,    FSAXY,    FIRAXY, & ! OUT Noah MP only
 	        APARXY,    PSNXY,    SAVXY,     SAGXY,  RSSUNXY,   RSSHAXY, & ! OUT Noah MP only
@@ -267,6 +267,7 @@ CONTAINS
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  CHUCXY    ! under canopy exchange coefficient 
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  CHV2XY    ! veg 2m exchange coefficient 
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  CHB2XY    ! bare 2m exchange coefficient 
+    REAL,    DIMENSION( ims:ime, 1:nsoil, jms:jme ), INTENT(OUT  ) ::  RELSMCXY  ! relative soil moisture [-]
     REAL,    INTENT(OUT) :: FPICE                                                ! snow fraction of precip
     INTEGER,  INTENT(IN   )   ::     ids,ide, jds,jde, kds,kde,  &  ! d -> domain
          &                           ims,ime, jms,jme, kms,kme,  &  ! m -> memory
@@ -406,6 +407,7 @@ CONTAINS
     REAL                                :: CHUC         ! under canopy exchange coefficient 
     REAL                                :: CHV2         ! veg 2m exchange coefficient 
     REAL                                :: CHB2         ! bare 2m exchange coefficient 
+    REAL,   DIMENSION( 1:NSOIL)         :: RELSMC       ! relative soil moisture [-]
   REAL   :: PAHV    !precipitation advected heat - vegetation net (W/m2)
   REAL   :: PAHG    !precipitation advected heat - under canopy net (W/m2)
   REAL   :: PAHB    !precipitation advected heat - bare ground net (W/m2)
@@ -844,6 +846,7 @@ CONTAINS
          Z0WRF  = 0.002
          QFX(I,J) = ESOIL
          LH (I,J) = FGEV
+         RELSMC = 1.0
 
         ELSE
 
@@ -870,7 +873,7 @@ CONTAINS
             Z0WRF   ,                                                   &
             FSA     , FSR     , FIRA    , FSH     , SSOIL   , FCEV    , & ! OUT : 
             FGEV    , FCTR    , ECAN    , ETRAN   , ESOIL   , TRAD    , & ! OUT : 
-            SUBSNOW ,                                                   & ! OUT : 
+            SUBSNOW , RELSMC  ,                                       & ! OUT : 
             TGB     , TGV     , T2MV    , T2MB    , Q2MV    , Q2MB    , & ! OUT : 
             RUNSF   , RUNSB   , APAR    , PSN     , SAV     , SAG     , & ! OUT : 
             FSNO    , NEE     , GPP     , NPP     , FVEGMP  , SALB    , & ! OUT : 
@@ -1020,6 +1023,7 @@ CONTAINS
              CHUCXY   (I,J)                = CHUC
              CHV2XY   (I,J)                = CHV2
              CHB2XY   (I,J)                = CHB2
+             RELSMCXY (I,      1:NSOIL,J)  = RELSMC   (      1:NSOIL)
              RECHXY   (I,J)                = RECHXY(I,J) + RECH*1.E3 !RECHARGE TO THE WATER TABLE
              DEEPRECHXY(I,J)               = DEEPRECHXY(I,J) + DEEPRECH
              SMCWTDXY(I,J)                 = SMCWTD

@@ -801,7 +801,7 @@ subroutine noah36_main(n)
                 noah36_struc(n)%noah(t)%frzx,                                      &
                 noah36_struc(n)%noah(t)%sndens, & !added for use in SCF DA, yliu 
                 noah36_struc(n)%noah(t)%lvcoef, tsoil,                           &
-                sfhead1rt, infxs1rt, etpnd1)
+                sfhead1rt, infxs1rt, etpnd1, noah36_struc(n)%snowfix)
 
            noah36_struc(n)%noah(t)%sca = sncovr ! EMK NUWRF
            noah36_struc(n)%noah(t)%z0_old = noah36_struc(n)%noah(t)%z0

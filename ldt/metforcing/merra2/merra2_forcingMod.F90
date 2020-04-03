@@ -152,7 +152,7 @@ contains
     real    :: upgmt
 
     allocate(merra2_struc(LDT_rc%nnest))
-    write(LDT_logunit,fmt=*)"MSG: Initializing MERRA-2 forcing grid ... "
+    write(LDT_logunit,fmt=*)"[INFO] Initializing MERRA-2 forcing grid ... "
 
  !- Read in config file entries:
     call readcrd_merra2()

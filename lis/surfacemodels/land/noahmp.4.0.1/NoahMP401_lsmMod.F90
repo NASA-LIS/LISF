@@ -217,7 +217,7 @@ contains
     subroutine NoahMP401_ini()
 ! !USES:
         use LIS_coreMod, only : LIS_rc
-        use LIS_logMod, only : LIS_verify
+        use LIS_logMod, only : LIS_verify, LIS_logunit
         use LIS_timeMgrMod, only : LIS_clock,  LIS_calendar, &
             LIS_update_timestep, LIS_registerAlarm
         use LIS_surfaceModelDataMod, only : LIS_sfmodel_struc
@@ -236,6 +236,7 @@ contains
         implicit none        
         integer  :: n, t     
         integer  :: status   
+        character*3 :: fnest ! EMK for RHMin
 
         ! allocate memory for nest 
         allocate(NOAHMP401_struc(LIS_rc%nnest))
@@ -295,6 +296,25 @@ contains
             call LIS_registerAlarm("NoahMP401 restart alarm", &
                                    NOAHMP401_struc(n)%ts,&
                                    NOAHMP401_struc(n)%rstInterval)
+            
+            ! EMK Add alarm to reset tair_agl_min for RHMin.  This should 
+            ! match the output interval, since that is used for calculating 
+            ! Tair_F_min.            
+            write(fnest,'(i3.3)') n
+            call LIS_registerAlarm("NoahMP401 RHMin alarm "//trim(fnest),&
+                 NOAHMP401_struc(n)%ts,&
+                 LIS_sfmodel_struc(n)%outInterval)
+            if (LIS_sfmodel_struc(n)%outInterval .gt. 86400 .or. &
+                 trim(LIS_sfmodel_struc(n)%outIntervalType) .eq. "dekad") then
+               write(LIS_logunit,*) &
+                    '[WARN] If RHMin is selected for output, please reset ', &
+                    'surface model output interval to no more than 24 hours.'
+            end if
+
+            ! Initialize min/max values to implausible values.
+            NOAHMP401_struc(n)%noahmp401(:)%tair_agl_min = 999.0
+            NOAHMP401_struc(n)%noahmp401(:)%rhmin = 999.0
+
             !------------------------------------------------------------------------
             ! TODO: setup number of soil moisture/temperature layers and depth here  
             !------------------------------------------------------------------------
@@ -303,7 +323,11 @@ contains
             ! TODO: set number of soil temperature layers in surface model
             LIS_sfmodel_struc(n)%nst_layers = NOAHMP401_struc(n)%nsoil
             allocate(LIS_sfmodel_struc(n)%lyrthk(NOAHMP401_struc(n)%nsoil))
-            LIS_sfmodel_struc(n)%lyrthk(:) = NOAHMP401_struc(n)%sldpth(:)
+            !LIS_sfmodel_struc(n)%lyrthk(:) = NOAHMP401_struc(n)%sldpth(:)
+            !EMK...Output soil layer thicknesses in centimeters for 
+            !consistency with other LSMs.  
+            LIS_sfmodel_struc(n)%lyrthk(:) = &
+                 100*NOAHMP401_struc(n)%sldpth(:)
             LIS_sfmodel_struc(n)%ts = NOAHMP401_struc(n)%ts
         enddo
     end subroutine NoahMP401_ini

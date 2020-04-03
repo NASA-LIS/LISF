@@ -267,6 +267,8 @@ contains
                LDT_LSMparam_struc(n)%landcover%num_bins = 14
              case( "IGBPNCEP" )
                LDT_LSMparam_struc(n)%landcover%num_bins = 20
+             case( "IGBP" )
+               LDT_LSMparam_struc(n)%landcover%num_bins = 17
              case( "USGS" )
                LDT_LSMparam_struc(n)%landcover%num_bins = 24
              case( "MOSAIC" )
@@ -279,7 +281,7 @@ contains
                LDT_LSMparam_struc(n)%landcover%num_bins = 20
              case default
                print *, "[ERR] CONSTANT Landcover classification not recognized."
-               print *, "  Options:  UMD, IGBPNCEP, USGS, MOSAIC, ISA "
+               print *, "  Options:  UMD, IGBPNCEP, IGBP, USGS, MOSAIC, ISA "
                print *, " Stopping ..."
                call LDT_endrun
             end select
@@ -774,7 +776,7 @@ contains
             date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)))
 #endif
        call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"references", &
-            "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"))
+            "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"))
        call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"comment", &
             "website: http://lis.gsfc.nasa.gov/"))
        
@@ -1017,13 +1019,14 @@ contains
 
 !SVK-edit    
     if(LDT_masterproc) then 
+
        call LDT_verify(nf90_enddef(LDT_LSMparam_struc(n)%param_file_ftn))
-       
+
        call LDT_verify(nf90_put_var(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlatid, LDT_LSMparam_struc(n)%xlat%value(:,:,1),&
             (/1,1/),(/LDT_rc%gnc(n),LDT_rc%gnr(n)/)),&
             'nf90_put_att failed for xlat')
-       
+
        call LDT_verify(nf90_put_var(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlonid, LDT_LSMparam_struc(n)%xlon%value(:,:,1),&
             (/1,1/),(/LDT_rc%gnc(n),LDT_rc%gnr(n)/)),&
@@ -1118,8 +1121,12 @@ contains
 
 ! - Forcing-specific parameter headers
     call LDT_forcingParms_writeHeader(n,ftn,dimID,met_dimID)
+
 !OPT/UE parameters
-    call LDT_optue_writeHeader(n,ftn,dimID)
+    if (LDT_rc%runmode.eq."OPTUE parameter processing") then
+       call LDT_optue_writeHeader(n,ftn,dimID)
+    endif
+
   end subroutine writeParamHeaders
 
 
@@ -1150,8 +1157,11 @@ contains
 
 ! - Forcing-specific data
     call LDT_forcingParms_writeData(n,ftn)
+
 ! OPT/UE parameters
-    call LDT_optue_writeData(n,ftn)
+    if (LDT_rc%runmode.eq."OPTUE parameter processing") then
+       call LDT_optue_writeData(n,ftn)
+    endif
 
   end subroutine writeParamData
 
@@ -1166,7 +1176,7 @@ contains
             "(FLake) GLDB lake fraction map"
      case default
        print*, "The Lake Cover Type, ",trim(source),", is not known. "
-       print*, "Please define setLakecoverCategories" 
+       print*, "[ERR] Please define setLakecoverCategories" 
        print*, "Stopping ..."
        stop
     end select

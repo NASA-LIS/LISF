@@ -108,6 +108,7 @@ contains
     use NLDAS2_dataMod,         only : NLDAS2_dataInit
     use GHCN_obsMod,            only : GHCN_obsInit
     use ALEXI_obsMod,           only : ALEXI_obsInit
+    use ALEXIesi_obsMod,        only : ALEXIesi_obsInit
     use GRACE_obsMod,           only : GRACE_obsInit
     use simGRACE_obsMod,        only : simGRACE_obsInit
     use USGSGWwell_obsMod,      only : USGSGWwell_obsInit
@@ -137,7 +138,9 @@ contains
     use LVTbenchmarkOUT_obsMod, only : LVTbenchmarkOUT_obsInit
     use SMAP_smobsMod,          only : SMAP_smobsinit
     use SMAP_vwcobsMod,         only : SMAP_vwcobsinit !MN
-    use SMAP_L3TBMod,         only : SMAP_L3TBinit  !MN   
+    use SMAP_vodobsMod,         only : SMAP_vodobsinit
+    use LPRM_vodobsMod,         only : LPRM_vodobsinit 
+    use SMAP_L3TBMod,           only : SMAP_L3TBinit  !MN   
     use SMAP_TBobsMod,          only : SMAP_TBobsinit
     use GOME2_SIFobsMod,        only : GOME2_SIFobsinit
     use Daymet_obsMod,          only : Daymet_obsInit
@@ -207,6 +210,7 @@ contains
     external readNLDAS2data
     external readGHCNObs
     external readALEXIobs
+    external readALEXIesiobs
     external readGRACEObs
     external readsimGRACEObs
     external readUSGSGWwellobs
@@ -235,6 +239,8 @@ contains
     external readGIMMSMODIS_NDVIobs
     external readLVTbenchmarkOUTobs
     external readSMAPsmobs
+    external readSMAPvodobs
+    external readLPRMvodobs 
     external readSMAPvwcobs ! MN vegwtation water content
     external readSMAP_L3TB ! MN Tb from SMAP SM data       
     external readSMAPTBobs
@@ -405,6 +411,9 @@ contains
     call registerobssetup(trim(LVT_ALEXIobsId)//char(0), ALEXI_obsinit)
     call registerobsread(trim(LVT_ALEXIobsId)//char(0),readALEXIobs)
 
+    call registerobssetup(trim(LVT_ALEXIesiobsId)//char(0), ALEXIesi_obsinit)
+    call registerobsread(trim(LVT_ALEXIesiobsId)//char(0),readALEXIesiobs)
+
     call registerobssetup(trim(LVT_GRACEobsId)//char(0), GRACE_obsinit)
     call registerobsread(trim(LVT_GRACEobsId)//char(0),readGRACEObs)
 
@@ -538,6 +547,16 @@ contains
          SMAP_smobsInit)
     call registerobsread(trim(LVT_SMAPsmobsId)//char(0),&
          readSMAPsmobs)
+
+    call registerobssetup(trim(LVT_SMAPvodobsId)//char(0), &
+         SMAP_vodobsInit)
+    call registerobsread(trim(LVT_SMAPvodobsId)//char(0),&
+         readSMAPvodobs)
+
+    call registerobssetup(trim(LVT_LPRMvodobsId)//char(0), &
+         LPRM_vodobsInit)
+    call registerobsread(trim(LVT_LPRMvodobsId)//char(0),&
+         readLPRMvodobs)
 
 ! MN: SMAP vegetation water content
 !    call registerobssetup(trim(LVT_SMAPvwcobsId)//char(0), &

@@ -1,0 +1,98 @@
+= Creating a custom modulefile
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+== Introduction
+
+NCCS uses the Environment Modules Project (http://modules.sourceforge.net/), better known as the `module` command, to manage multiple versions of programs and libraries.  Users use it to manage their environment.  Users are not restricted to only the system level modulefiles provided by NCCS.  Users may create their own.  One specific use of custom modulefiles is to manage various LIS-related environments; e.g., to manage compilers and environment variables for compiling and running LIS 6 vs LIS 7 or for compiling and running with the Intel compilers vs the GCC compilers.  This post explains how to create a custom modulefile.
+
+Please refer to the man pages for _module(1)_ and _modulefile(4)_ for more information.
+
+
+== Set up
+
+First create a sub-directory named _privatemodules_ in your home directory.
+
+Then add this command to your _.profile_ (or equivalent) login file.
+....
+module use --append $HOME/privatemodules
+....
+
+This will make your custom modulefiles available to the `module` program every time that you log on.
+
+[NOTE]
+====
+Please note that on-line resources suggest using `module load use.own` to set up your custom modulefiles.  This command will create, if necessary, a _privatemodules_ sub-directory in your home directory along with providing a sample modulefile named _null_.  Then this command will add your _privatemodules_ sub-directory to the `$MODULEPATH` environment variable, making your custom modulefiles available to the `module` program.
+
+However, that command does not work on all systems.  On some systems, like _discover_, you have to run `module load $MODULESHOME/modulefiles/use.own`.
+
+Also note that if you subsequently run the `module purge` command, then you must rerun the `module load use.own` command to make your custom modulefiles available again.
+
+Thus, instead of using `module load use.own`, this post suggests that you add `module use --append $HOME/privatemodules` to your _.profile_ file.  This command neither relies on the system to find the _use.own_ module nor is affected by a `module purge` command.
+====
+
+
+== Creating a custom modulefile
+
+Below is a sample custom modulefile.  It loads the modules and sets the environment variables needed to set up an Intel-18-based development environment.  To use it, copy the contents of the listing into _$HOME/privatemodules/intel_18_0_3_222_.  Then run the command:
+
+....
+discover07$ module load intel_18_0_3_222
+....
+
+After loading the custom modulefile, a `module list` command will report something similar to:
+
+....
+discover07$ module list
+Currently Loaded Modulefiles:
+  1) comp/intel-18.0.3.222   5) other/svn-1.9.5
+  2) mpi/impi-18.0.3.222     6) other/vim-8.0
+  3) tool/tview-2017.1.21    7) intel_18_0_3_222
+  4) other/git-2.9.3
+....
+
+include::sample_intel_18_0_3_222[]
+
+
+== Additional custom modulefiles
+
+It is suggested that you keep your custom modulefiles as lean as possible.  Do not load more modules than are needed for a particular task.  The above sample custom modulefile loads only the modules needed to perform general software development with the Intel 18 compilers.
+
+But Jim, I need Matlab, R, IDL, etc., what should I do?  Create additional custom modulefiles targeting the other tools and tasks that you need.  For example, create a custom modulefile for Matlab.  It should load only the modules needed to run Matlab, and it should set only environment variables required and related to running Matlab.
+
+WARNING: When you load too many unrelated modules into your environment, you run the risk of creating undetected incompatibilites between tools and libraries.  For example, you may end up loading three different NetCDF libraries.  And one day LIS runs, but the next day LIS cannot read its own restart file.
+
+When dealing with multiple tasks using multiple custom modulefiles, you may either load and change the custom modulefiles, or you may launch multiple `xterm` s (one for each task) on discover, and load your different custom modulefiles in each `xterm`.
+
+.Example of loading and changing custom modulefiles
+....
+discover07$ module load lis_7_intel_14_0_3_174_sp3
+
+# Work, work, work
+
+discover07$ module purge
+discover07$ module load my_matlab_mod
+
+# Plot, plot, plot
+....
+
+
+== Sample _.profile_ and _.bashrc_ files
+
+Please refer to the man page for _bash(1)_ for more information regarding the use of the _.profile_ and _.bashrc_ files.
+
+include::profile[]
+
+include::bashrc[]
+
+
+== LISF development environments
+
+Custom modulefiles used to compile LISF are found in the _env_ directory at the top of the source code.
+

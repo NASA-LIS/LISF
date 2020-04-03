@@ -330,13 +330,15 @@ struct lsmirriggetnode* lsmirrigget_table = NULL;
 void FTN(registerlsminit)(char *j, void (*func)(),int len)
 //EOP
 { 
+  int len1;
   struct lsminitnode* current;
   struct lsminitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsminitnode*) malloc(sizeof(struct lsminitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -405,13 +407,15 @@ void FTN(registerlsmrun)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmrunnode* current;
   struct lsmrunnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmrunnode*) malloc(sizeof(struct lsmrunnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -480,13 +484,15 @@ void FTN(registerlsmfinalize)(char *j, void (*func)(),int len)
 // 
 //EOP
 { 
+  int len1;
   struct lsmfinalnode* current;
   struct lsmfinalnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmfinalnode*) malloc(sizeof(struct lsmfinalnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -553,13 +559,15 @@ void FTN(registerlsmreset)(char *j, void (*func)(),int len)
 // 
 //EOP
 { 
+  int len1;
   struct lsmresetnode* current;
   struct lsmresetnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmresetnode*) malloc(sizeof(struct lsmresetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -624,13 +632,15 @@ void FTN(registerlsmsetup)(char *j, void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmsetupnode* current;
   struct lsmsetupnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmsetupnode*) malloc(sizeof(struct lsmsetupnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -697,14 +707,15 @@ void FTN(registerlsmrestart)(char *j, void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
-
+  int len1;
   struct lsmrestartnode* current;
   struct lsmrestartnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmrestartnode*) malloc(sizeof(struct lsmrestartnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -770,13 +781,15 @@ void FTN(registerlsmdynsetup)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmdynsetnode* current;
   struct lsmdynsetnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmdynsetnode*) malloc(sizeof(struct lsmdynsetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -847,13 +860,15 @@ void FTN(registerlsmf2t)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmf2tnode* current;
   struct lsmf2tnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmf2tnode*) malloc(sizeof(struct lsmf2tnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -923,13 +938,15 @@ void FTN(registerlsmwrst)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmwriterstnode* current;
   struct lsmwriterstnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmwriterstnode*) malloc(sizeof(struct lsmwriterstnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -996,13 +1013,15 @@ void FTN(registerlsmdainit)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmdainitnode* current;
   struct lsmdainitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmdainitnode*) malloc(sizeof(struct lsmdainitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1066,13 +1085,15 @@ void FTN(registerlsmdagetstatevar)(char *j, void (*func)(int*, void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmdagetvarnode* current;
   struct lsmdagetvarnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmdagetvarnode*) malloc(sizeof(struct lsmdagetvarnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1142,13 +1163,15 @@ void FTN(registerlsmdasetstatevar)(char *j, void (*func)(int*, void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmdasetvarnode* current;
   struct lsmdasetvarnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmdasetvarnode*) malloc(sizeof(struct lsmdasetvarnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1222,13 +1245,15 @@ void FTN(registerlsmdaobstransform)(char *j, void (*func)(int*, void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmdaobstransformnode* current;
   struct lsmdaobstransformnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmdaobstransformnode*) malloc(sizeof(struct lsmdaobstransformnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1300,13 +1325,15 @@ void FTN(registerlsmdagetobspred)(char *j, void (*func)(int*,int*,float*),int le
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmdaobsprednode* current;
   struct lsmdaobsprednode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmdaobsprednode*) malloc(sizeof(struct lsmdaobsprednode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1378,14 +1405,15 @@ void FTN(registerlsmdadiagnosevars)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
-
+  int len1;
   struct lsmdiagfordanode* current;
   struct lsmdiagfordanode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmdiagfordanode*) malloc(sizeof(struct lsmdiagfordanode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1455,13 +1483,15 @@ void FTN(registerlsmdamapobstolsm)(char *j, void (*func)(int*, int*, void*, void
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmdamapobstolsmnode* current;
   struct lsmdamapobstolsmnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmdamapobstolsmnode*) malloc(sizeof(struct lsmdamapobstolsmnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1535,13 +1565,15 @@ void FTN(registerlsmdaqcstate)(char *j, void (*func)(int*, void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmdaqcstatenode* current;
   struct lsmdaqcstatenode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmdaqcstatenode*) malloc(sizeof(struct lsmdaqcstatenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1612,13 +1644,15 @@ void FTN(registerlsmdaqcobsstate)(char *j, void (*func)(int*, int*, void*),int l
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmdaqcobsnode* current;
   struct lsmdaqcobsnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmdaqcobsnode*) malloc(sizeof(struct lsmdaqcobsnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1692,13 +1726,15 @@ void FTN(registerlsmdascalestatevar)(char *j, void (*func)(int*, void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmdascalenode* current;
   struct lsmdascalenode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmdascalenode*) malloc(sizeof(struct lsmdascalenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1772,13 +1808,15 @@ void FTN(registerlsmdadescalestatevar)(char *j, void (*func)(int*, void*, void*)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmdadescalenode* current;
   struct lsmdadescalenode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmdadescalenode*) malloc(sizeof(struct lsmdadescalenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1849,13 +1887,15 @@ void FTN(registerlsmdaupdatestate)(char *j, void (*func)(int*, void*, void*),int
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmdaupdatenode* current;
   struct lsmdaupdatenode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmdaupdatenode*) malloc(sizeof(struct lsmdaupdatenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1984,13 +2024,15 @@ void FTN(registerlsmcplsetexport)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmcplsetexportnode* current;
   struct lsmcplsetexportnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmcplsetexportnode*) malloc(sizeof(struct lsmcplsetexportnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -2059,13 +2101,15 @@ void FTN(registerlsmpesetdecisionspace)(char *j, void (*func)(void*,void*),int l
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmpesetdecnode* current;
   struct lsmpesetdecnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmpesetdecnode*) malloc(sizeof(struct lsmpesetdecnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -2133,13 +2177,15 @@ void FTN(registerlsmpegetdecisionspace)(char *j, void (*func)(void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmpegetdecnode* current;
   struct lsmpegetdecnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmpegetdecnode*) malloc(sizeof(struct lsmpegetdecnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -2206,13 +2252,15 @@ void FTN(registerlsmpesetupdecisionspace)(char *j, void (*func)(void*, void*),in
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmpesetupdecnode* current;
   struct lsmpesetupdecnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmpesetupdecnode*) malloc(sizeof(struct lsmpesetupdecnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -2280,13 +2328,15 @@ void FTN(registerlsmpesetupobspred)(char *j, void (*func)(void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmpesetupobsprednode* current;
   struct lsmpesetupobsprednode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmpesetupobsprednode*) malloc(sizeof(struct lsmpesetupobsprednode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -2353,13 +2403,15 @@ void FTN(registerlsmpegetobspred)(char *j, void (*func)(void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmpeobsprednode* current;
   struct lsmpeobsprednode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmpeobsprednode*) malloc(sizeof(struct lsmpeobsprednode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -2427,13 +2479,15 @@ void FTN(registerlsmroutinggetrunoff)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmroutinggetrunoffnode* current;
   struct lsmroutinggetrunoffnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmroutinggetrunoffnode*) malloc(sizeof(struct lsmroutinggetrunoffnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -2503,13 +2557,15 @@ void FTN(registerlsm2rtm)(char *j,  void (*func)(int*, void*), int len)
 //. \end{description}
 //EOP
 { 
+  int len1;
   struct lsm2rtmnode* current;
   struct lsm2rtmnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsm2rtmnode*) malloc(sizeof(struct lsm2rtmnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -2578,13 +2634,15 @@ void FTN(registerlsmirrigationgetstates)(char *j,  void (*func)(int*, void*), in
 //. \end{description}
 //EOP
 { 
+  int len1;
   struct lsmirriggetnode* current;
   struct lsmirriggetnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmirriggetnode*) malloc(sizeof(struct lsmirriggetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
