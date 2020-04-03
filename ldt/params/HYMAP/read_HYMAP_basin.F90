@@ -47,14 +47,15 @@ subroutine read_HYMAP_basin(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%basinfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Basin map ',trim(HYMAP_struc(n)%basinfile),' not found'
+     write(LDT_logunit,*) '[ERR] Basin map, ',&
+           trim(HYMAP_struc(n)%basinfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif
 
   ftn = LDT_getNextUnitNumber()
   open(ftn, file=trim(HYMAP_struc(n)%basinfile), access='direct',&
-       status='old', form="unformatted", recl=4)
+       status='old', form="unformatted", convert="big_endian", recl=4)
   
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &

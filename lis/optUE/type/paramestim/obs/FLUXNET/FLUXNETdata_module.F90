@@ -158,9 +158,7 @@ contains
        allocate(FLUXNETdata_struc(n)%qle(LIS_rc%lnc(n)*LIS_rc%lnr(n),12))
        allocate(FLUXNETdata_struc(n)%qh(LIS_rc%lnc(n)*LIS_rc%lnr(n),12))
 
-       call neighbor_interp_input(gridDesci,&
-            LIS_rc%lnc(n), LIS_rc%lnr(n),&
-            LIS_domain(n)%lat, LIS_domain(n)%lon,&
+       call neighbor_interp_input(n,gridDesci,&
             FLUXNETdata_struc(n)%n11)       
     enddo
     write(LIS_logunit,*) 'Created the States to hold FLUXNET observations'

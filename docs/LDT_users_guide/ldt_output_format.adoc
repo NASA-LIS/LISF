@@ -1,0 +1,55 @@
+
+[[sec-ldt_output_format]]
+== Description of output files from LDT
+
+This section provides a description of various output files generated during an LDT processing run. The main output format for LDT is NetCDF (*._nc_). This includes NetCDF with HDF5 compression capabilities.
+
+The output file could be named something like, lis_input.d01.nc. To view the header and/or data information, you will need ncview and/or ncdump utilities, both provided by the Unidata webpage (http://www.unidata.ucar.edu/software/netcdf/).
+
+Some of the main components (as found in the header information) will include:
+
+* dimensions : _east_west, north_south, month, sfctypes, etc._
+* variables : _time, LANDMASK, LANDCOVER, SURFACETYPE, etc._
+* global attributes : _title, references, MAP_PROJECTION, DX, DY, etc._
+
+=== Dimensions attributes
+
+The LDT output file, like the NetCDF file, contains header information for the dimensions. The list can include:
+
+[subs=attributes]
+....
+ dimensions:
+        east_west = 80 ;
+        north_south = 37 ;
+        month = 12 ;
+        time = 1 ;
+        sfctypes = 14 ;
+        soiltypes = 16 ;
+        soilfracbins = 3 ;
+        elevbins = 1 ;
+        slopebins = 1 ;
+        aspectbins = 1 ;
+	{vertellipsis}
+....
+
+This file can be used to determine the number of tiles used in a LIS model simulation. The number of tiles are specified in this dimensions header information.
+
+=== Variable attributes
+
+The LDT output file, like the NetCDF file, contains header information for the variable or paremeter file attributes. The list can include: (for example)
+
+[subs=attributes]
+....
+ variables:
+     float LANDCOVER(sfctypes, north_south, east_west) ;
+             LANDCOVER:standard_name = "UMD land cover" ;
+             LANDCOVER:units = "-" ;
+             LANDCOVER:scale_factor = 1.f ;
+             LANDCOVER:add_offset = 0.f ;
+             LANDCOVER:missing_value = -9999.f ;
+             LANDCOVER:vmin = 0.f ;
+             LANDCOVER:vmax = 0.f ;
+             LANDCOVER:num_bins = 14 ;
+	     {vertellipsis}
+....
+

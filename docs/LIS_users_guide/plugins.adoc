@@ -23,7 +23,7 @@ Noah.2.7.1: Off
 
 Below is a list of all optional components that may be enabled/disabled along with their default settings.
 
-NOTE: Not all the optional components listed below are available in public release of LIS.
+NOTE: Not all the optional components listed below are available in the public release of LIS.
 
 
 Please do not copy this whole list into a _user.cfg_ file.  Create a _user.cfg_ file containing only the components that you want to toggle.
@@ -41,5 +41,5 @@ After creating a _user.cfg_ file you must recompile the LIS source code.  First 
 % cd ..
 ....
 
-Then re-run the _configure_ script.  This will process the _user.cfg_ file.  Then run the _compile_ script to compile the LIS source code.
+Then re-run the _compile_ script.  This will process your _user.cfg_ file and then compile the LIS source code accordingly.
 

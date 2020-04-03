@@ -107,7 +107,7 @@ subroutine read_ISLSCP1_tbot(n, array)
 
 !- Open 60-minute deep soil temperature data file: 
   open (ftn, file=trim(Noah_struc(n)%tbotFile), form="unformatted", status='old', &
-        access='direct', recl=length )
+        access='direct', convert='big_endian',recl=length )
 
 ! begin_record and end_record may be calculated as follows:
 ! nrec: from north to south (max 1080)

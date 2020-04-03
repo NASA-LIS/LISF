@@ -372,7 +372,7 @@ contains
 		   Z0WRF   , &
                    FSA     , FSR     , FIRA    , FSH     , SSOIL   , FCEV    , & ! OUT : 
                    FGEV    , FCTR    , ECAN    , ETRAN   , EDIR    , TRAD    , & ! OUT :
-                   SUBSNOW ,                                                   & ! OUT :
+                   SUBSNOW , RELSMC  ,                                         & ! OUT :
                    TGB     , TGV     , T2MV    , T2MB    , Q2V     , Q2B     , & ! OUT :
                    RUNSRF  , RUNSUB  , APAR    , PSN     , SAV     , SAG     , & ! OUT :
                    FSNO    , NEE     , GPP     , NPP     , FVEG    , ALBEDO  , & ! OUT :
@@ -494,6 +494,7 @@ contains
   REAL                           , INTENT(OUT)   :: ETRAN  !transpiration rate (mm/s)
   REAL                           , INTENT(OUT)   :: EDIR   !soil surface evaporation rate (mm/s]
   REAL                           , INTENT(OUT)   :: SUBSNOW !snow sublimation rate (mm/s)
+  REAL, DIMENSION(       1:NSOIL), INTENT(OUT)   :: RELSMC !relative soil moisture [-]
   REAL                           , INTENT(OUT)   :: RUNSRF !surface runoff [mm/s] 
   REAL                           , INTENT(OUT)   :: RUNSUB !baseflow (saturation excess) [mm/s]
   REAL                           , INTENT(OUT)   :: PSN    !total photosynthesis (umol co2/m2/s) [+]
@@ -836,6 +837,10 @@ contains
       ALBEDO = -999.9
     END IF
     
+! David Mocko - Added RELSMC after Noah-3.X code
+    RELSMC(:) = (SMC(:)               - parameters%SMCWLT(:)) /        &
+                (parameters%SMCMAX(:) - parameters%SMCWLT(:))
+
   END SUBROUTINE NOAHMP_SFLX
 
 !== begin atm ======================================================================================

@@ -1,0 +1,29 @@
+
+\section{configure.lvt} \label{sec:configure.lvt}
+This is a sample \file{configure.lvt} file used for compiling LVT on the NCCS
+discover machine (Linux, 64bit with intel compiler)
+
+\begin{verbatim}
+FC              =       mpif90
+FC77            =       mpif90
+LD              =       mpif90
+CC              =       mpicc
+AR              =       ar ru
+INC_NETCDF      = /home/user/lib/netcdf-3.6.3/include/
+LIB_NETCDF      = /home/user/lib/netcdf-3.6.3/lib/
+LIB_ESMF        = /home/user/esmf/lib/libO/Linux.intel.64.mpi.default/
+MOD_ESMF        = /home/user/mod/modO/Linux.intel.64.mpi.default/
+CFLAGS          = -c -DIFC
+FFLAGS77        = -c -O0 -nomixed_str_len_arg -names lowercase \
+                  -convert big_endian -assume byterecl -DHIDE_SHR_MSG \
+                  -DNO_SHR_VMATH -DIFC -I$(MOD_ESMF) -DSPMD -DUSE_INCLUDE_MPI
+
+FFLAGS          = -c -g -u -traceback -fpe0 -nomixed_str_len_arg \
+                  -names lowercase -convert big_endian -assume byterecl \
+                  -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -I$(MOD_ESMF) \
+                  -I$(INC_NETCDF) -DUSE_INCLUDE_MPI
+LDFLAGS         = ../lib/w3lib/libw3.a ../lib/read_grib/readgrib.a \
+                  ../lib/grib/griblib.a  -lmpi -L$(LIB_NETCDF) -lnetcdf \
+                  -L$(LIB_ESMF) -lesmf \
+                  -lstdc++ -limf -lm -lgcc -lgcc_s -lrt 
+\end{verbatim}

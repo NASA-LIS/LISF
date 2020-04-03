@@ -25,6 +25,9 @@
 #               temperature fields.
 # 18 Apr 2018:  Eric Kemp (SSAI), disabled LEVEL_DEPENDENT_CONSTANTS section
 #               for most SURF files.
+# 19 Jul 2019:  Eric Kemp (SSAI), adjust soil moisture so it is no less than
+#               0.1 * the wilting point.  Also, reset any negative snow fields
+#               to zero.
 #
 #------------------------------------------------------------------------------
 # Standard modules
@@ -177,6 +180,9 @@ class nc2surf(object):
         cm2m = decimal.Decimal('0.01')
         slt_m = \
             [cm2m*decimal.Decimal("%s" %x) for x in slt_cm]
+        # EMK...Use below for old pre-LIS 7.2 LVT output
+        #slt_m = \
+        #    [decimal.Decimal("%s" %x) for x in slt_cm]
         self.soil_layer_thicknesses = slt_m
 
         # Find soil layer depths
@@ -475,6 +481,18 @@ class nc2surf(object):
             # Trim the varname to exclude the source
             varid = key.split(":")[0]
 
+            # EMK...Pull wilting point data if processing Soil Moisture
+            if infile_type == "LVT":
+                if varid == "SoilMoist_inst":
+                    var_wilt = self.ncid_ldt.variables["JULES_SM_WILT"]
+                    fillValue = var_wilt.missing_value
+                    var_wilt = var_wilt[:,:] # Copies to NumPy array
+                    if type(var_wilt) == np.ma.core.MaskedArray:
+                        var_wilt = var_wilt.data
+                    # Soil moisture should not be below 0.1 * wilting point
+                    var_wilt0p1 = np.where(var_wilt == fillValue, 
+                                           mule._REAL_MDI, 0.1*var_wilt)
+
             # Attempt to retrieve the variable from the appropriate
             # netCDF file.
             if infile_type == "LDT":
@@ -529,15 +547,31 @@ class nc2surf(object):
                 # Update the missing value to match that used in SURF
                 var2d = np.where(var2d == fillValue, mule._REAL_MDI, var2d)
 
+                # EMK...For SoilMoist, make sure no less than 0.1*wilting point
+                # Wilting point is in m3/m3
+                if varid == "SoilMoist_inst":
+                    var2d_tmp = np.where(var2d < var_wilt0p1, var_wilt0p1,
+                                         var2d)
+                    var2d = np.where(var2d == mule._REAL_MDI, mule._REAL_MDI,
+                                     var2d_tmp)
+
                 # EMK...For SoilMoist, convert from m3/m3 to kg m-2.
                 if varid == "SoilMoist_inst":
                     soil_layer_thicknesses = \
                         self.ncid_lvt.getncattr("SOIL_LAYER_THICKNESSES")
                     dzsoil = soil_layer_thicknesses[ilev]*0.01 # cm to m
+                    # EMK Use below for old pre-LIS 7.2 LVT data
+                    #dzsoil = soil_layer_thicknesses[ilev] # Already in m
                     var2d = np.where(var2d == mule._REAL_MDI,
                                      mule._REAL_MDI,
                                      var2d*1000*dzsoil)
 
+                # EMK...For snow fields, make sure nonnegative
+                if varid in ["SWE_inst", "SnowDepth_inst"]:
+                    var2d_tmp = np.where(var2d < 0, 0, var2d)
+                    var2d = np.where(var2d == mule._REAL_MDI, mule._REAL_MDI,
+                                     var2d_tmp)
+                                     
                 # Rotate the field to match the 0:360 longitudinal convention
                 # used by GALWEM.  Then create a "provider" of the data.
                 var2d_for_surf = np.roll(var2d,self.i_pm,axis=1)

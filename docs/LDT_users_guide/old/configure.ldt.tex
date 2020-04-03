@@ -1,0 +1,37 @@
+
+\section{configure.ldt} \label{sec:configure.ldt}
+This is a sample \file{configure.ldt} file used for compiling LDT on the NCCS
+discover machine (Linux, 64bit with intel compiler)
+
+\begin{verbatim}
+FC              = mpif90
+FC77            = mpif90
+LD              = mpif90
+CC              = mpicc
+AR              = ar
+MOD_ESMF        = /home/user/libs/esmf_5_2_0rp2_intel_12_1_0_233_impi_4_0_0_028-beta/
+LIB_ESMF        = /home/user/libs/esmf_5_2_0rp2_intel_12_1_0_233_impi_4_0_0_028-beta/lib/libO/Linux.intel.64.intelmpi.default
+INC_NETCDF      = /home/user/libs/netcdf-4.1.3_intel_12_1_0_233/include/
+LIB_NETCDF      = /home/user/libs/netcdf-4.1.3_intel_12_1_0_233/lib/
+INC_HDF4        = /home/user/libs/HDF4.2r4_noNETCDF_intel_12_1_0_233/include/
+LIB_HDF4        = /home/user/libs/HDF4.2r4_noNETCDF_intel_12_1_0_233/lib/
+INC_HDF5        = /home/user/libs/hdf5-1.8.8_intel_12_1_0_233/include/
+LIB_HDF5        = /home/user/libs/hdf5-1.8.8_intel_12_1_0_233/lib/
+INC_HDFEOS      = /home/user/libs/hdfeos/include/
+LIB_HDFEOS      = /home/user/libs/hdfeos/lib/
+INC_GRIBAPI     = /home/user/libs/grib_api-1.9.16_intel_12_1_0_233/include/
+LIB_GRIBAPI     = /home/user/libs/grib_api-1.9.16_intel_12_1_0_233/lib/
+CFLAGS          = -c -g -DIFC
+FFLAGS77        = -c -g -check all,bounds,format,output_conversion,pointers \
+                  -nomixed_str_len_arg -names lowercase -convert big_endian \
+                  -assume byterecl -DIFC -I$(MOD_ESMF)-I$(INC_GRIBAPI) \
+                  -I$(INC_NETCDF) -I$(INC_HDFEOS) -I$(INC_HDF4) -I$(INC_HDF5)
+FFLAGS          =  -c -g -check all,bounds,format,output_conversion,pointers  \
+                   -u -traceback -fpe0  -nomixed_str_len_arg -names lowercase \
+                   -convert big_endian -assume byterecl -DIFC -I$(MOD_ESMF) \
+                   -I$(INC_GRIBAPI) -I$(INC_NETCDF) -I$(INC_HDFEOS) -I$(INC_HDF4) -I$(INC_HDF5)
+LDFLAGS         =  -L$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -L$(LIB_GRIBAPI) \
+                   -lgrib_api_f90 -lgrib_api -L$(LIB_NETCDF) -lnetcdf -lnetcdff \
+                   -L$(LIB_HDFEOS) -lhdfeos -lGctp -L$(LIB_HDF4) -lmfhdf -ldf -ljpeg \
+                   -L$(LIB_HDF5) -lhdf5_fortran -lhdf5
+\end{verbatim}

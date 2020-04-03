@@ -2,62 +2,35 @@
 == Test-cases
 anchor:sec_testcases[Test-cases]
 
-This section describes how to obtain and how to use the test-cases provided by the LIS team.
+This section describes how to obtain and how to use the test cases provided by the LIS team.
 
 There are two categories of testcases: public tests and internal tests.
 
 
 === Public tests
 
-These test-cases are provided for the general LIS user to run.  They help demonstrate a successful installation of LIS and its required libraries.  They also demonstrate how to configure several different use-cases of LIS.  These test-cases are comprised of three parts: a _testcases_ sub-directory included in the LIS source code, input data, and output data.
+The new LIS framework (LISF) set of public testcases include a full end-to-end suite of LDT, LIS, and LVT cases that build off each other with several different steps, which are outlined in the table below. The suite of testcases include generating model parameter and assimilation-based input files using LDT, running the Noah land surface model (LSM) for a sample "open-loop" (or baseline) experiment and a data assimilation (DA) experiment using LIS, and then comparing output from the sample experiments using LVT. 
 
+The new public test cases are available from our main LIS webpage:
 
-==== The _testcases_ Sub-directory
-anchor:sssec_ptestcases[The _testcases_ Sub-directory]
+{listesturl}
 
-The public test-cases are contained within the _src/testcases/public_ directory.  The available tests are:
-
-NLDAS2-a::
-NLDAS domain + NLDAS-2 forcing + Noah-3.3 LSM + HYMAP router + AMSR-E DA soil moisture
-
-NLDAS2-b::
-NLDAS domain + NLDAS-2 forcing + CLSM-F2.5 LSM + HYMAP router + GRACE DA
-
-NLDAS2-c::
-RDHM 3.5.6 (Sac-HTET) over the NLDAS domain using NLDAS-2 forcing
-
-GLDAS::
-VIC 4.1.2.l over a global 1 deg domain using Princeton forcing
-
-pmw_snowda_nam::
-PMW SNOW DA case over Alaska with NAM forcing
-
-OPTUE::
-PMM related case featuring parameter and uncertainty estimation
-
-geowrsi.2::
-GeoWRSI over an East Africa domain using USGS PET and RFE2 precip
-
-These test-case sub-directories contain the files needed to help you test LIS.  In particular, they contain the needed run-time configuration files, and they contain scripts for downloading data.  Each of the test-case sub-directory contains a _README_ file.  Each _README_ file contains a description of the test-case and instructions regarding how to download and run the test-case.
-
-
-==== Input and output data
-anchor:ssec_pinput_output[Input and output data]
-
-The input and output data needed to run the public test-cases are hosted on LIS' public data portal.  Please see the "`LIS Test Cases`" section of LIS' web-site ({lisurl}).
+All required input and data files are bundled with each of the cases from the above website. Also, documentation is provided that accompanies each of the cases for additional details and information. Below the table of test cases on the webpage, users will find information about which version, compiler and libraries used to generate and test the different test cases provided. 
 
 
 === Internal tests
 
-These test-cases are typically used by the LIS development team to test various components of the LIS source code.  These test-cases are comprised of three parts: a _testcases_ sub-directory included in the LIS source code, input data, and output data.
+The main purpose of these test cases is for the LIS development team to internally test various components of the LIS source code.  These test cases are comprised of three parts: a _testcases_ sub-directory included in the LIS source code, input data, and output data.
 
+For these test cases, we do not provide any of the input or output datasets, but users are welcome to use the config files in these subdirectory cases as a guide to setting up their own individual experiments and for their own testing purposes.
 
 ==== The _testcases_ Sub-directory
 anchor:sssec_testcases[The _testcases_ Sub-directory]
 
 The layout of the _testcases_ sub-directory matches the layout of the top-level _src_ directory.  For example, LIS contains support for processing GDAS forcing data.  These routines are in _src/metforcing/gdas_.  The test-case for GDAS is in _src/testcases/metforcing/gdas_.
 
-These test-case sub-directories contain several files to help you test LIS.  For example, the _src/testcases/metforcing/gdas_ test-case contains six files:
+
+These test-case sub-directories contain several files.  For example, the _src/testcases/metforcing/gdas_ test-case contains these main files:
 
 . _README_
 +
@@ -78,82 +51,4 @@ is a configuration file to set the output for the test-case.
 . _output.ctl_
 +
 is a GrADS descriptor file.  This file is used with GrADS to plot the output data that you will generate when you run LIS.  You may also read this file to obtain metadata regarding the structure of the output files.  This metadata is useful in helping you plot the output using a different program.
-
-. _testcase.ctl_
-+
-is a GrADS descriptor file.  This file is used with GrADS to plot the output data that is distributed via the LIS web-site ({lisurl}) for this test-case.
-
-
-==== Test-cases LDT
-anchor:sssec_testcases-ldt[Test-cases LDT]
-
-For each test-case, the LIS team has created a corresponding LDT input data file that contains all the required data for running LDT to generate the LIS input parameter file.
-
-To obtain the LDT input data for a test-case:
-
-. Go to LIS' web-site: {lisurl}
-. Follow the "`LIS Test Cases`" link.
-. Follow the link corresponding to the desired test-case.
-
-
-==== Test-cases Input
-anchor:sssec_testcases-input[Test-cases Input]
-
-For each test-case, the LIS team has created a corresponding input data file that contains all the required data for running the test-case.
-
-To obtain the input data for a test-case:
-
-. Go to LIS' web-site: {lisurl}
-. Follow the "`LIS Test Cases`" link.
-. Follow the link corresponding to the desired test-case.
-
-
-==== Test-cases Output
-anchor:sssec_testcases-output[Test-cases Output]
-
-For each test-case, the LIS team has created a corresponding output data file that contains all the output data produced from the test-case.
-
-To obtain the output data for a test-case:
-
-. Go to LIS' web-site: {lisurl}
-. Follow the "`LIS Test Cases`" link.
-. Follow the link corresponding to the desired test-case.
-
-
-==== Output Example
-anchor:sssec_outputexample[Output Example]
-
-For example, output data for the "`Noah 3.3 LSM TEST`" contains:
-
-* _TARGET_OUTPUT/lislog.0000_
-* _TARGET_OUTPUT/SURFACEMODEL.d01.stats_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021029/LIS_HIST_200210290300.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021029/LIS_HIST_200210290600.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021029/LIS_HIST_200210290900.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021029/LIS_HIST_200210291200.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021029/LIS_HIST_200210291500.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021029/LIS_HIST_200210291800.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021029/LIS_HIST_200210292100.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021030/LIS_HIST_200210300000.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021030/LIS_RST_NOAH33_200210300000.d01.nc_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021030/LIS_HIST_200210300300.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021030/LIS_HIST_200210300600.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021030/LIS_HIST_200210300900.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021030/LIS_HIST_200210301200.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021030/LIS_HIST_200210301500.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021030/LIS_HIST_200210301800.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021030/LIS_HIST_200210302100.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021031/LIS_HIST_200210310000.d01.gs4r_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021031/LIS_RST_NOAH33_200210310000.d01.nc_
-* _TARGET_OUTPUT/SURFACEMODEL/2002/20021031/LIS_RST_NOAH33_200210310100.d01.nc_
-
-The file, _TARGET_OUTPUT/lislog.0000_, is the log from the run.
-
-The file, _TARGET_OUTPUT/SURFACEMODEL.d01.stats_, contains statistics from the run.
-
-The files labelled like _TARGET_OUTPUT/SURFACEMODEL/2002/20021029/LIS_HIST_200210290300.d01.gs4r_ contain the output from the run.  Read the _testcase.ctl_ file contained in the appropriate _testcases_ sub-directory of the LIS source code for metadata pertaining to these output files.
-
-The files labelled like _TARGET_OUTPUT/SURFACEMODEL/2002/20021030/LIS_RST_NOAH33_200210300000.d01.nc_ are restart files.  They may be used to continue or restart a run.  The data are valid for the date and time indicated by the date-stamp in the file name.  For example, the restart data in this file, _TARGET_OUTPUT/SURFACEMODEL/2002/20021030/LIS_RST_NOAH33_200210300000.d01.nc_ are valid for 2002-10-30T00:00:00.
-
-These output data files are large and require post-processing before reading them, see Section <<sec_postproc>>.
 

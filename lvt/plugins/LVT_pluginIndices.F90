@@ -143,6 +143,8 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_optUEId  = "OPTUE output processing"
    character*50, public,  parameter :: LVT_rtmrunId  = "RTM output processing"
    character*50, public,  parameter :: LVT_557postId = "557 post"
+   character*50, public,  parameter :: LVT_usafsipostId = "USAFSI post"
+
 !-------------------------------------------------------------------------
 ! Domains
 !-------------------------------------------------------------------------
@@ -202,6 +204,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_NLDAS2obsId        = "NLDAS2"
    character*50, public,  parameter :: LVT_GHCNobsId          = "GHCN"
    character*50, public,  parameter :: LVT_ALEXIobsId         = "ALEXI"
+   character*50, public,  parameter :: LVT_ALEXIesiobsId      = "ALEXI ESI"
    character*50, public,  parameter :: LVT_GRACEobsId         = "GRACE"
    character*50, public,  parameter :: LVT_simGRACEobsId      = "simulated GRACE"
    character*50, public,  parameter :: LVT_USGSGWwellobsId    = "USGS ground water well data"
@@ -230,6 +233,8 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_JULESobsId     = "JULES data"
    character*50, public,  parameter :: LVT_JULES2dobsId     = "JULES 2d data"
    character*50, public,  parameter :: LVT_SMAPsmobsId    = "SMAP soil moisture"
+   character*50, public,  parameter :: LVT_SMAPvodobsId    = "SMAP vegetation optical depth" 
+   character*50, public,  parameter :: LVT_LPRMvodobsId  = "LPRM vegetation optical depth"
    character*50, public,  parameter :: LVT_SMAPvwcobsId    = "SMAP vegetation water content" ! MN
    character*50, public,  parameter :: LVT_SMAP_L3TbId    = "SMAP L3 Tb" ! MN
    character*50, public,  parameter :: LVT_SMAPTBobsId    = "SMAP TB"

@@ -32,12 +32,9 @@ This directory contains:
 
 To run this test case: 
   (a) Generate the LIS executable. 
-  (b) Download the sample input data from: 
-	http://lis.gsfc.nasa.gov/Source/testcases  
-      the testcase corresponding to PALS FORCING TEST
-  (c) Run the LIS executable using the lis.config file and the sample 
+  (b) Run the LIS executable using the lis.config file and your sample 
       input data. 
-  (d) View the binary output using the sample grads file. 
+  (c) View the binary output using the sample grads file. 
 
 
 Notes:
@@ -61,7 +58,7 @@ chosen from the class that is appropriate for this particular PALS site.
 Again, if you would like the routine to do this for all 20 PALS sites,
 please contact the author.
 
-A Matalb script is provided to compare the LIS results with the measured
+A Matlab script is provided to compare the LIS results with the measured
 PALS data at this site. Simply start matlab, change the lis_output
 directory, and run the gather_results.m script. This script will take a
 number of hours to collect data from each LIS output file.
@@ -75,6 +72,4 @@ Everything else can be left alone across all PALS sites.
 
 Author contact information:
 Grey Nearing
-NASA GSFC
-grey.s.nearing@nasa.gov
 

@@ -1,0 +1,48 @@
+
+[[sec-intro]]
+== Introduction
+
+This is the User's Guide for the Land surface Data Toolkit (LDT). This document describes how to download and install the LDT software and instructions on building an executable.
+
+This document consists of several sections, described as follows:
+
+* *Introduction*: the section you are currently reading
+* *Background*: general information about the LDT
+* *Preliminary Information*: general information, steps, instructions, and definitions used throughout the rest of this document
+* *Obtaining the Source Code*: the steps needed to download the source code
+* *Building the Executable*: the steps needed to build the LDT executable
+
+=== What's New
+//\attention{See \file{RELEASE\_NOTES} found in the \file{source.tar.gz} file for more
+//details.  (See Section~\ref{sec:obtain-src}.)}
+
+==== Version 7.2
+
+. Includes artificial neural network processing runmode
+ifdef::devonly[]
+. Supports NESDIS SMOPS datasets versions 1.3, 2.0, and 3.0
+. Supports JULES parameters
+. Supports ISRIC soil texture data
+endif::devonly[]
+
+==== Version 7.1
+
+. Includes MetTimeDScale runmode
+. Includes Metforcproc runmode
+. Supports crop parameters
+. Supports CLM2 parameters
+. Supports Flake parameters
+. Supports Mosaic parameters
+. Supports Noah parameters
+. Supports SiB2 parameters
+. Supports VIC parameters
+. Supports TRMM 3B42 V7 real time precipitation
+. Supports Aquarius L2 soil moisture observations
+. Supports GCOMW AMSR2 L3 soil moisture observations
+. Supports SMOS L2 soil moisture observations
+. Supports simulated GRACE products
+
+==== Version 7.0
+
+. This is the initial version developed for processing data inputs to LIS version 7.0 or higher.
+

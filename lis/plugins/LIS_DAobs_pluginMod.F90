@@ -130,8 +130,8 @@ subroutine LIS_DAobs_plugin
    use SNODEPobs_Mod,           only : SNODEPobs_setup
 #endif
 
-#if ( defined DA_OBS_LDTSI )
-   use LDTSIobs_Mod,           only : LDTSIobs_setup
+#if ( defined DA_OBS_USAFSI )
+   use USAFSIobs_Mod,           only : USAFSIobs_setup
 #endif
 
 #if 0 
@@ -277,8 +277,8 @@ subroutine LIS_DAobs_plugin
    external read_SNODEPobs, write_SNODEPobs
 #endif
 
-#if ( defined DA_OBS_LDTSI )
-   external read_LDTSIobs, write_LDTSIobs
+#if ( defined DA_OBS_USAFSI )
+   external read_USAFSIobs, write_USAFSIobs
 #endif
 
 #if 0
@@ -451,11 +451,11 @@ subroutine LIS_DAobs_plugin
    call registerwritedaobs(trim(LIS_snodepobsId)//char(0),write_SNODEPobs)
 #endif
 
-#if ( defined DA_OBS_LDTSI )
-!LDTSI obs 
-   call registerdaobssetup(trim(LIS_ldtsiobsId)//char(0),LDTSIobs_setup)
-   call registerreaddaobs(trim(LIS_ldtsiobsId)//char(0),read_LDTSIobs)
-   call registerwritedaobs(trim(LIS_ldtsiobsId)//char(0),write_LDTSIobs)
+#if ( defined DA_OBS_USAFSI )
+!USAFSI obs 
+   call registerdaobssetup(trim(LIS_usafsiobsId)//char(0),USAFSIobs_setup)
+   call registerreaddaobs(trim(LIS_usafsiobsId)//char(0),read_USAFSIobs)
+   call registerwritedaobs(trim(LIS_usafsiobsId)//char(0),write_USAFSIobs)
 #endif
 
 #if 0

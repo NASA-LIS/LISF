@@ -8,15 +8,12 @@ This is a testcase that uses:
 This directory contains:
   (a) This README file
   (b) The "ldt.config" file to generate the parameters using LDT
-  (c) The "param_attribs.txt" file to select the parameters for LDT
-  (d) An "input.xdf" file used to open the LDT parameters in GrADS
-  (e) The "lis.config" file used for this testcase
-  (f) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+  (c) An "input.xdf" file used to open the LDT parameters in GrADS
+  (d) The "lis.config" file used for this testcase
+  (e) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
       to select the output variables
-  (g) An "output.ctl" file used to display the output in GrADS from
+  (f) An "output.ctl" file used to display the output in GrADS from
       the LIS run
-  (h) A "testcase.ctl" file used to display the packaged output in
-      GrADS from the OUTPUT tar file provided by the testcase
 
 Note that the "ldt.config" and "lis.config" files should be edited
 to make sure that the locations of the parameter and forcing files
@@ -24,12 +21,9 @@ are specified correctly.
 
 To run this testcase:
   (a) Generate the LDT and the LIS executables
-  (b) Download the testcase input data from:
-         http://lis.gsfc.nasa.gov/Source/testcases
-      the testcase corresponding to TEMPLATE LSM FORCING TEST
-  (c) Run the LDT executable using the "ldt.config" file and the
-      "param_attribs.txt" file with the testcase input data
-  (d) Run the LIS executable using the "lis.config" file with the
+  (b) Run the LDT executable using the "ldt.config" file 
+      with the testcase input data
+  (c) Run the LIS executable using the "lis.config" file with the
       testcase input data
-  (e) View the binary output using the testcase GrADS files
+  (d) View the binary output using the testcase GrADS files
 

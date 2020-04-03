@@ -161,13 +161,13 @@ subroutine read_SRTM_Native_elev( n, num_bins, fgrd, elevave )
   tempfile = trim(LDT_rc%elevfile(n))//"/"//we(2)//ns(2)//".DEM"
   inquire(file=tempfile, exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) "[ERR] SRTM-Native elevation map directory, ",&
-                           trim(LDT_rc%elevfile(n))," not found."
+     write(LDT_logunit,*) "[ERR] SRTM-Native elevation map file, ",&
+                           trim(tempfile),", not found."
      write(LDT_logunit,*) "Program stopping ..."
      call LDT_endrun
   endif
-  write(LDT_logunit,*)"[INFO] Reading Native SRTM elevation files, found in directory: ",&
-                        trim(LDT_rc%elevfile(n))
+  write(LDT_logunit,*) "[INFO] Reading Native SRTM elevation files",&
+                       " found in directory: ",trim(LDT_rc%elevfile(n))
 ! --
 !  Open and read in tile files:
 ! --
@@ -198,7 +198,7 @@ subroutine read_SRTM_Native_elev( n, num_bins, fgrd, elevave )
          if( l < 4 ) then
            open(ftn, file=trim(LDT_rc%elevfile(n))//"/"//we(k)//ns(l)//".DEM", &
                 form="unformatted", access="direct", status="old", &
-                recl=tile_nc*tile_nr*2)
+                convert='big_endian',recl=tile_nc*tile_nr*2)
            read(ftn, rec=1) read_elevtile(:, :, k)
 
            ! Mosaic all elevation tiles together:
@@ -219,7 +219,7 @@ subroutine read_SRTM_Native_elev( n, num_bins, fgrd, elevave )
            else
              open(ftn, file=trim(LDT_rc%elevfile(n))//"/gt30"//we_antarc(k)//ns(l)//".dem", &
                 form="unformatted", access="direct", status="old", &
-                recl=tile_nc_antarc*tile_nr_antarc*2)
+                convert='big_endian',recl=tile_nc_antarc*tile_nr_antarc*2)
              read(ftn, rec=1) read_elevtile_antarc(:, :, k)
 
              ! EMK....Make sure GTOPO30 ocean points are set to same

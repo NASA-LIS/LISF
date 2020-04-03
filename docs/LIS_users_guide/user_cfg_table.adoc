@@ -4,11 +4,11 @@
 | Component name    | Default state
 
 | retrospective     | On
-| AGRMET ops        | Off
+| AGRMET ops        | On
 | WRF coupling      | On
 | GCE coupling      | Off
 | param estimation  | On
-| RTM forward       | Off
+| RTM forward       | On
 | ensemble smoother | On
 | forecast          | On
 |====
@@ -21,6 +21,7 @@
 | LDT-generated                          | On
 | CLIM-Standard                          | On
 | GenEnsFcst                             | On
+| PPTEnsFcst                             | On
 | GDAS                                   | On
 | GDAS T1534                             | On
 | GEOS                                   | On
@@ -48,18 +49,18 @@
 | CPC STAGEII                            | On
 | CPC STAGEIV                            | On
 | NARR                                   | On
-| ALMIPII forcing                        | Off
+| ALMIPII forcing                        | On
 | RFE2(daily)                            | On
 | CEOP                                   | On
 | SCAN                                   | On
-| ARMS                                   | Off
+| ARMS                                   | On
 | GDAS(LSWG)                             | On
 | MET RDHM.3.5.6                         | On
-| GDAS(3d)                               | Off
+| GDAS(3d)                               | On
 | AGRMET radiation (polar stereographic) | On
 | AGRMET radiation (latlon)              | On
 | Bondville                              | On
-| FASST test                             | Off
+| FASST test                             | On
 | TRIGRS test                            | Off
 | SNOTEL                                 | On
 | COOP                                   | On
@@ -69,10 +70,13 @@
 | PALS station forcing                   | On
 | PILDAS                                 | On
 | PET USGS                               | On
-| CaPA                                   | Off
+| CaPA                                   | On
 | NAM242                                 | On
 | WRFout                                 | On
 | AWAP                                   | On
+| HiMAT GMU                              | On
+| Loobos                                 | On
+| MRMS                                   | On
 |====
 
 .Parameters
@@ -85,9 +89,9 @@
 | SPORT              | On
 | VIIRS              | On
 | ALMIPII GFRAC      | On
-| ALMIPII roughness  | Off
-| ALMIPII albedo     | Off
-| ALMIPII emissivity | Off
+| ALMIPII roughness  | On
+| ALMIPII albedo     | On
+| ALMIPII emissivity | On
 |====
 
 .RTMS
@@ -105,8 +109,8 @@
 |====
 | Component name | Default state
 
-| GLS            | Off
-| TRIGRS         | Off
+| GLS            | On
+| TRIGRS         | On
 |====
 
 .Routing
@@ -115,6 +119,7 @@
 
 | NLDAS router   | On
 | HYMAP router   | On
+| HYMAP2 router  | On
 |====
 
 .Irrigation
@@ -132,10 +137,15 @@
 
 | Direct insertion        | On
 | EnKF                    | On
+| EnSRF                   | On
+| EKF                     | On
 | EnKS                    | On
-| DA OBS syntheticsm      | Off
-| DA OBS syntheticsnd     | Off
-| DA OBS SNODEP           | Off
+| PF                      | Off
+| DA OBS syntheticsm      | On
+| DA OBS syntheticsnd     | On
+| DA OBS syntheticSnowTB  | On
+| DA OBS SNODEP           | On
+| DA OBS LDTSI            | On
 | DA OBS PMW_snow         | On
 | DA OBS ANSA_SCF         | On
 | DA OBS ESACCI_sm        | On
@@ -145,11 +155,17 @@
 | DA OBS ANSA_SNWD        | On
 | DA OBS GCOMW_AMSR2L3SND | On
 | DA OBS SMOPS_ASCATsm    | On
+| DA OBS SMOPS_SMOSsm     | Off
 | DA OBS SMOPS_AMSR2sm    | Off
 | DA OBS SMOPS_SMAPsm     | Off
-| DA OBS SMOPS_SMOSsm     | Off
 | DA OBS SMOS_NESDIS      | On
 | DA OBS NASA_SMAPsm      | On
+| DA OBS NASA_SMAPvod     | On
+| DA OBS ASO_SWE          | On
+| DA OBS GLASS_LAI        | On
+| DA OBS GLASS_Albedo     | On
+| DA OBS MODISSPORT_LAI   | On
+| DA OBS NRT_SMAPsm       | On
 | DA OBS pildas           | On
 | DA OBS GRACE            | On
 |====
@@ -158,44 +174,47 @@
 |====
 | Component name  | Default state
 
-| bias estimation | On
+| bias estimation |  On
 |====
 
 .Perturbations
 |====
 | Component name | Default state
 
-| perturbations  | On
+| perturbations  |  On
 |====
 
 .Optimization / Parameter estimation
 |====
 | Component name        | Default state
 
-| OPTUE ES              | Off
+| OPTUE ES              | On
 | OPTUE LM              | On
 | OPTUE GA              | On
-| OPTUE SCEUA           | Off
+| OPTUE SCEUA           | On
 | OPTUE MCSIM           | On
 | OPTUE RWMCMC          | On
 | OPTUE DEMC            | On
 | OPTUE DEMCz           | On
 | PE OBS template       | On
-| PE OBS pesynsm1       | Off
-| PE OBS ISCCP_Tskin    | Off
-| PE OBS wgPBMRsm       | Off
-| PE OBS CNRS           | Off
+| PE OBS pesynsm1       | On
+| PE OBS ISCCP_Tskin    | On
+| PE OBS wgPBMRsm       | On
+| PE OBS CNRS           | On
 | PE OBS AMSRE_SR       | On
 | PE OBS LPRM_AMSREsm   | On
 | PE OBS EmptyObs       | On
-| PE OBS ARM            | Off
-| PE OBS Macon_LS_data  | Off
-| PE OBS Global_LS_data | Off
-| PE OBS Ameriflux      | Off
-| PE OBS FLUXNET        | Off
-| PE OBS USDA_ARSsm     | Off
+| PE OBS ARM            | On
+| PE OBS Macon_LS_data  | On
+| PE OBS Global_LS_data | On
+| PE OBS Ameriflux      | On
+| PE OBS FLUXNET        | On
+| PE OBS USDA_ARSsm     | On
+| PE OBS ARSsm          | On
+| PE OBS ISMNsm         | On
+| PE OBS SMAPsm         | On
 | PE OBJFUNC LS         | On
-| PE OBJFUNC LM         | Off
+| PE OBJFUNC LM         | On
 | PE OBJFUNC LL         | On
 | PE OBJFUNC P          | On
 |====
@@ -210,8 +229,8 @@
 | Noah.3.3            | On
 | Noah.3.6            | On
 | Noah.3.9            | On
-| Noah-MP.3.6         | On
-| Noah-MP.4.0.1       | On
+| NoahMP.3.6          | On
+| NoahMP.4.0.1        | On
 | RUC.3.7             | On
 | CLM.2               | On
 | VIC.4.1.1           | On
@@ -219,6 +238,10 @@
 | Mosaic              | On
 | HySSIB              | On
 | JULES.4.3           | Off
+| JULES.5.0_DEV       | Off
+| JULES.5.0           | Off
+| JULES.5.2           | Off
+| JULES.5.3           | Off
 | CABLE               | On
 | FASST               | Off
 | CLSM F2.5           | On
@@ -226,6 +249,8 @@
 | LSM RDHM.3.5.6      | On
 | SUMMA.1.0           | Off
 | Flake.1.0           | Off
+| NoahMP-GL.3.9.1.1   | On
+| template glacier    | On
 | template open water | On
 |====
 
@@ -233,7 +258,7 @@
 |====
 | Component name   | Default state
 
-| ESP boot         | Off
+| ESP boot         | On
 | ESP conventional | On
 |====
 

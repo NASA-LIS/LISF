@@ -1,0 +1,37 @@
+International Date Line (IDL) Domain Testcase
+
+This is a testcase that uses:
+  (a) The latlon projection 
+  (b) A domain that crosses the International Date Line
+  (c) The Noah version 3.6 land surface model
+  (d) MERRA2 forcing files
+  (e) Domain that covers eastern Australia and New Zealand,
+       with a 11 km spatial resolution
+  (f) A time period from 01:00Z 1 Jan 2001 to 01:00Z 3 Jan 2001
+
+This directory contains:
+  (a) This README file
+  (b) The "ldt.config" file to generate the parameters using LDT
+  (c) An "input.xdf" file used to open the LDT parameters in GrADS
+  (d) The "lis.config" file used for this testcase
+  (e) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+      to select the output variables
+  (f) An "output.ctl" file used to display the output in GrADS from
+      the LIS run
+  (g) A "testcase.ctl" file used to display the packaged output in
+      GrADS from the OUTPUT tar file provided by the testcase
+
+To run this testcase:
+  (a) Generate the LDT and the LIS executables and copy to local 
+      working directory
+  (b) Run the LDT executable using the "ldt.config" file and the
+      file with the testcase input data
+  (c) Run the LIS executable using the "lis.config" file with the
+      testcase input data
+  (d) View the netcdf output using the testcase GrADS files
+
+Caveats:
+  (a) Please note that this is a simple functional test and the output
+      from the testcase is not expected to be used for any scientific
+      evaluation.
+

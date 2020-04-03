@@ -193,13 +193,15 @@ void FTN(registeroptuealginit)(char *j, void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct optueinitnode* current;
   struct optueinitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct optueinitnode*) malloc(sizeof(struct optueinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -271,13 +273,15 @@ void FTN(registeroptuealgsetup)(char *j, void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct optuesetnode* current;
   struct optuesetnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct optuesetnode*) malloc(sizeof(struct optuesetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -349,13 +353,15 @@ void FTN(registeroptueconvergencecheck)(char *j, void (*func)(void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct optuecchknode* current;
   struct optuecchknode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct optuecchknode*) malloc(sizeof(struct optuecchknode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -424,13 +430,15 @@ void FTN(registeroptuealgrun)(char *j, void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct optuerunnode* current;
   struct optuerunnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct optuerunnode*) malloc(sizeof(struct optuerunnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -500,13 +508,15 @@ void FTN(registeroptuegetdecisionspace)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct optuegetdecnode* current;
   struct optuegetdecnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct optuegetdecnode*) malloc(sizeof(struct optuegetdecnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -578,13 +588,15 @@ void FTN(registeroptuesetdecisionspace)(char *j, void (*func)(int*, void*),int l
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct optuesetdecnode* current;
   struct optuesetdecnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct optuesetdecnode*) malloc(sizeof(struct optuesetdecnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -658,13 +670,15 @@ void FTN(registeroptuegetnparam)(char *j, void (*func)(void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct optuegetnpnode* current;
   struct optuegetnpnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct optuegetnpnode*) malloc(sizeof(struct optuegetnpnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -735,13 +749,15 @@ void FTN(registeroptuereadrestart)(char *j, void (*func)(void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct optuerstnode* current;
   struct optuerstnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct optuerstnode*) malloc(sizeof(struct optuerstnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -813,13 +829,15 @@ void FTN(registerpeobssetup)(char *j, void (*func)(void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct peobsinitnode* current;
   struct peobsinitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct peobsinitnode*) malloc(sizeof(struct peobsinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -892,13 +910,15 @@ void FTN(registerpeobsreset)(char *j, void (*func)(void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct peobsresetnode* current;
   struct peobsresetnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct peobsresetnode*) malloc(sizeof(struct peobsresetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -971,13 +991,15 @@ void FTN(registergetpeobs)(char *j, void (*func)(void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct peobsgetnode* current;
   struct peobsgetnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct peobsgetnode*) malloc(sizeof(struct peobsgetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1051,13 +1073,15 @@ void FTN(registerwritepeobs)(char *j, void (*func)(void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct peobswritenode* current;
   struct peobswritenode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct peobswritenode*) malloc(sizeof(struct peobswritenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1132,13 +1156,15 @@ void FTN(registerinitobjfunctype)(char *j, void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct objfuncinitnode* current;
   struct objfuncinitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct objfuncinitnode*) malloc(sizeof(struct objfuncinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1209,13 +1235,15 @@ void FTN(registercomputeobjfunctype)(char *j, void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct objfunccomputenode* current;
   struct objfunccomputenode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct objfunccomputenode*) malloc(sizeof(struct objfunccomputenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1285,13 +1313,15 @@ void FTN(registerupdateobjfunctype)(char *j, void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct objfuncupdatenode* current;
   struct objfuncupdatenode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct objfuncupdatenode*) malloc(sizeof(struct objfuncupdatenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1361,13 +1391,15 @@ void FTN(registerresetobjfunctype)(char *j, void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct objfuncresetnode* current;
   struct objfuncresetnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct objfuncresetnode*) malloc(sizeof(struct objfuncresetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -1436,13 +1468,15 @@ void FTN(registeroptuetypeobjfunceval)(char *j, void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct objfuncevalnode* current;
   struct objfuncevalnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct objfuncevalnode*) malloc(sizeof(struct objfuncevalnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

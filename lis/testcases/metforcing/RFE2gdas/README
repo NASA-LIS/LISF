@@ -14,7 +14,6 @@ This directory contains:
 * testcase.ctl
      GrADS descriptor file for the supplied test case output
 
-
 This is a test case that uses: 
 
 * the RFE2-GDAS disaggregated precipitation forcing 
@@ -29,15 +28,9 @@ This is a test case that uses:
 To run this test case: 
 
 * Generate the LIS executable. 
-* Download the sample input data from: 
-  http://lis.gsfc.nasa.gov/Source/testcases  
-  the testcase corresponding to "RFE2-GDAS Precipitation FORCING" test case.
 * Run the LIS executable using the lis.config file and the sample 
   input data. 
-* View the binary output using the sample grads file.  Compare against
-  the sample output corresponding to "RFE2-GDAS Precipitation FORCING" test
-  case.
-
+* View the binary output using the sample grads file. 
 
 Note that results were verified by summing the hourly results into daily
 totals and comparing those daily totals against the input forcing.

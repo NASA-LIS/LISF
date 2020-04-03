@@ -3,138 +3,217 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
-! 
+!
 ! !ROUTINE: readNASASMAPsmObs
 ! \label{readNASASMAPsmObs}
-! 
-! !REVISION HISTORY: 
+!
+! !REVISION HISTORY:
 !  21 July 2010: Sujay Kumar, Initial Specification
 !  12 Feb 2018: Mahdi Navari, openwater proximity detection was added
-! 			edited to read New version of the SPL3SMP_R14 (file structure
-! 			 differs from the previous versions) 
+!                         edited to read New version of the SPL3SMP_R14 (file structure
+!                          differs from the previous versions)
 !  31 Aug 2018: Mahdi Navari, Edited to read SPL3SMP.005 & SPL3SMP_E.002
 !  04 Jun 2019: Sujay Kumar, Updated to support SMAP L2 retrievals
-! 
-! !INTERFACE: 
+!  15 Aug 2019: Mahdi Navari, There are several version of SMAP sm data available in each directory
+!                  with different Release number and different CRID Version Number. The reader was
+!                  modified to read the latest version of data (the reader no longer reads the symbolic
+!                  link to the SMAP sm data)
+!
+! !INTERFACE:
 subroutine readNASASMAPsmObs(n)
-! !USES:   
-  use ESMF
-  use LDT_coreMod
-  use LDT_logMod
-  use LDT_timeMgrMod
-  use LDT_DAobsDataMod
-  use NASASMAPsm_obsMod
-  use map_utils
+! !USES:
+   use ESMF
+   use LDT_coreMod
+   use LDT_logMod
+   use LDT_timeMgrMod
+   use LDT_DAobsDataMod
+   use NASASMAPsm_obsMod
+   use map_utils
 
-  implicit none
-! !ARGUMENTS: 
-  integer, intent(in) :: n
-! 
-! !DESCRIPTION: 
-! 
+   implicit none
+! !ARGUMENTS:
+   integer, intent(in) :: n
+!
+! !DESCRIPTION:
+!
 ! This subroutine provides the data reader for the ESACCI
-! soil moisture retrieval product. 
+! soil moisture retrieval product.
 !
 !EOP
 
-  real*8            :: timenow
-  logical           :: alarmCheck
-  logical           :: file_exists
-  integer           :: c,r,i,j
-  character*100     :: fname
-  integer           :: mn_ind
-  integer           :: yr, mo, da, hr, mn, ss
-  integer           :: doy
-  integer           :: ftn
-  integer           :: ierr
-  real              :: gmt
-  character*8       :: yyyymmdd
-  character*4       :: yyyy
-  character*2       :: mm,dd,hh
-  character*200     :: list_files
-  character*100     :: smap_filename(10)
-  real              :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
-
+   real*8            :: timenow
+   logical           :: alarmCheck
+   logical           :: file_exists
+   integer           :: c, r, i, j
+   character*100     :: fname
+   integer           :: mn_ind
+   integer           :: yr, mo, da, hr, mn, ss
+   integer           :: doy
+   integer           :: ftn
+   integer           :: ierr
+   real              :: gmt
+   character*8       :: yyyymmdd
+   character*4       :: yyyy
+   character*2       :: mm, dd, hh
+   character*200     :: list_files
+   character*100     :: smap_filename(10)
+   real              :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
+   character(len=3) :: CRID
 !-----------------------------------------------------------------------
-! It is assumed that CDF is computed using daily observations. 
+! It is assumed that CDF is computed using daily observations.
 !-----------------------------------------------------------------------
-  NASASMAPsmobs(n)%smobs = LDT_rc%udef
-  smobs= LDT_rc%udef
+   NASASMAPsmobs(n)%smobs = LDT_rc%udef
+   smobs = LDT_rc%udef
 
-  if(NASASMAPsmobs(n)%data_designation.eq."SPL2SMP".or.&
-       NASASMAPsmobs(n)%data_designation.eq."SPL2SMP_E") then 
+   if (NASASMAPsmobs(n)%data_designation .eq. "SPL2SMP" .or. &
+       NASASMAPsmobs(n)%data_designation .eq. "SPL2SMP_E") then
 
-     if(LDT_rc%ts.gt.3600) then 
-        write(LDT_logunit,*)'[ERR] Please set the LDT timestep to 1hr or less'
-        write(LDT_logunit,*)'[ERR] This is required for SMAPL2 data processing'
-        call LDT_endrun()
-     endif
+      if (LDT_rc%ts .gt. 3600) then
+         write (LDT_logunit, *) '[ERR] Please set the LDT timestep to 1hr or less'
+         write (LDT_logunit, *) '[ERR] This is required for SMAPL2 data processing'
+         call LDT_endrun()
+      endif
 
-     write(yyyymmdd,'(i4.4,2i2.2)') LDT_rc%yr, LDT_rc%mo, LDT_rc%da
-     write(yyyy,'(i4.4)') LDT_rc%yr
-     write(mm,'(i2.2)') LDT_rc%mo
-     write(dd,'(i2.2)') LDT_rc%da
-     write(hh,'(i2.2)') LDT_rc%hr
-     
-     list_files = 'ls '//trim(NASASMAPsmobs(n)%odir)//&
-          '/'//trim(yyyy)//'.'//trim(mm)//'.'//dd//&
-          '/SMAP_L2_*'//trim(yyyymmdd)//'T'//trim(hh)&
-          //"*.h5 > SMAP_filelist.dat"
-     
-     call system(trim(list_files))
+      write (yyyymmdd, '(i4.4,2i2.2)') LDT_rc%yr, LDT_rc%mo, LDT_rc%da
+      write (yyyy, '(i4.4)') LDT_rc%yr
+      write (mm, '(i2.2)') LDT_rc%mo
+      write (dd, '(i2.2)') LDT_rc%da
+      write (hh, '(i2.2)') LDT_rc%hr
 
-     i = 1
-     ftn = LDT_getNextUnitNumber()
-     open(ftn,file="./SMAP_filelist.dat",&
-          status='old',iostat=ierr)
-     
-     do while(ierr.eq.0) 
-        read(ftn,'(a)',iostat=ierr) fname
-        if(ierr.ne.0) then 
-           exit
-        endif
-        mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))
-        
-        mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))+11        
-        read(fname(mn_ind:mn_ind+1),'(i2.2)') mn
-        ss=0
-        call LDT_tick(timenow,doy,gmt,LDT_rc%yr, LDT_rc%mo, LDT_rc%da, &
-                LDT_rc%hr, mn, ss, 0.0)
-        
-        smap_filename(i) = fname
-        
-        write(LDT_logunit,*) '[INFO] reading ',trim(smap_filename(i))
-        
-        call read_SMAPL2sm_data(n,smap_filename(i),&
-             NASASMAPsmobs(n)%smobs,timenow)
-        
-        i = i+1
-     enddo
-     call LDT_releaseUnitNumber(ftn)
-  else
-     call create_NASASMAPsm_filename(NASASMAPsmobs(n)%odir, &
-          NASASMAPsmobs(n)%data_designation,&
-          LDT_rc%yr, LDT_rc%mo, LDT_rc%da, fname)
-     
-     inquire(file=trim(fname),exist=file_exists)
-     if(file_exists) then
-        
-        write(LDT_logunit,*) '[INFO] Reading ..',trim(fname)
-        call read_NASASMAP_data(n, fname, smobs)
-        write(LDT_logunit,*) '[INFO] Finished reading ',trim(fname)
-        
-        do r=1,LDT_rc%lnr(n)
-           do c=1,LDT_rc%lnc(n)
-              if(smobs(c+(r-1)*LDT_rc%lnc(n)).ne.-9999.0) then 
-                 NASASMAPsmobs(n)%smobs(c,r) = smobs(c+(r-1)*LDT_rc%lnc(n))
-              endif
-           enddo
-        enddo
-     endif
-  endif
+      list_files = 'ls '//trim(NASASMAPsmobs(n)%odir)// &
+                   '/'//trim(yyyy)//'.'//trim(mm)//'.'//dd// &
+                   '/SMAP_L2_*'//trim(yyyymmdd)//'T'//trim(hh) &
+                   //"*.h5 > SMAP_filelist.dat"
 
-  call LDT_logSingleDAobs(n,LDT_DAobsData(n)%soilmoist_obs,&
-       NASASMAPsmobs(n)%smobs,vlevel=1)
+      call system(trim(list_files))
+
+      i = 1
+      ftn = LDT_getNextUnitNumber()
+      open (ftn, file="./SMAP_filelist.dat", &
+            status='old', iostat=ierr)
+
+      do while (ierr .eq. 0)
+         read (ftn, '(a)', iostat=ierr) fname
+         if (ierr .ne. 0) then
+            exit
+         endif
+         mn_ind = index(fname, trim(yyyymmdd)//'T'//trim(hh))
+
+         mn_ind = index(fname, trim(yyyymmdd)//'T'//trim(hh)) + 11
+         read (fname(mn_ind:mn_ind + 1), '(i2.2)') mn
+         ss = 0
+         call LDT_tick(timenow, doy, gmt, LDT_rc%yr, LDT_rc%mo, LDT_rc%da, &
+                       LDT_rc%hr, mn, ss, 0.0)
+
+         smap_filename(i) = fname
+
+         write (LDT_logunit, *) '[INFO] reading ', trim(smap_filename(i))
+
+         call read_SMAPL2sm_data(n, smap_filename(i), &
+                                 NASASMAPsmobs(n)%smobs, timenow)
+
+         i = i + 1
+      enddo
+      call LDT_releaseUnitNumber(ftn)
+
+   elseif (NASASMAPsmobs(n)%data_designation .eq. "SPL3SMP_E") then
+
+!----------------------------------------------------------------------------------------------------------------
+! create filename for 9 km product
+!----------------------------------------------------------------------------------------------------------------
+      write (yyyy, '(i4.4)') LDT_rc%yr
+      write (mm, '(i2.2)') LDT_rc%mo
+      write (dd, '(i2.2)') LDT_rc%da
+      write (CRID, '(a)') NASASMAPsmobs(n)%release_number
+
+      list_files = 'ls '//trim(NASASMAPsmobs(n)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
+                   trim(dd)//'/SMAP_L3_SM_P_E_' &
+                   //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+                         trim(CRID)//'*.h5> SMAP_filelist'// &
+                         '.dat'
+
+      call system(trim(list_files))
+      i = 1
+      ftn = LDT_getNextUnitNumber()
+      open (ftn, file="./SMAP_filelist.dat", &
+            status='old', iostat=ierr)
+
+! if multiple files for the same time and orbits are present, the latest
+! one will overwrite older ones, though multiple (redundant) reads occur.
+! This assumes that the 'ls command' will list the files in that order.
+
+      do while (ierr .eq. 0)
+         read (ftn, '(a)', iostat=ierr) fname
+         if (ierr .ne. 0) then
+            exit
+         endif
+         smap_filename(i) = fname
+         write (LDT_logunit, *) '[INFO] reading ', trim(smap_filename(i))
+         call read_NASASMAP_data(n, smap_filename(i), smobs)
+         i = i + 1
+      enddo
+      call LDT_releaseUnitNumber(ftn)
+
+!        write(LDT_logunit,*) '[INFO] Reading ..',trim(fname)
+!        call read_NASASMAP_data(n, fname, smobs)
+!        write(LDT_logunit,*) '[INFO] Finished reading ',trim(fname)
+
+      do r = 1, LDT_rc%lnr(n)
+         do c = 1, LDT_rc%lnc(n)
+            if (smobs(c + (r - 1)*LDT_rc%lnc(n)) .ne. -9999.0) then
+               NASASMAPsmobs(n)%smobs(c, r) = smobs(c + (r - 1)*LDT_rc%lnc(n))
+            endif
+         enddo
+      enddo
+      !endif
+   elseif (NASASMAPsmobs(n)%data_designation .eq. "SPL3SMP") then
+!----------------------------------------------------------------------------------------------------------------
+! create filename for 36 km product
+!----------------------------------------------------------------------------------------------------------------
+      write (yyyy, '(i4.4)') LDT_rc%yr
+      write (mm, '(i2.2)') LDT_rc%mo
+      write (dd, '(i2.2)') LDT_rc%da
+      write (CRID, '(a)') NASASMAPsmobs(n)%release_number
+
+      list_files = 'ls '//trim(NASASMAPsmobs(n)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
+                   trim(dd)//'/SMAP_L3_SM_P_' &
+                   //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+                         trim(CRID)//'*.h5> SMAP_filelist'// &
+                         '.dat'
+
+      call system(trim(list_files))
+      i = 1
+      ftn = LDT_getNextUnitNumber()
+      open (ftn, file="./SMAP_filelist.dat", &
+            status='old', iostat=ierr)
+
+! if multiple files for the same time and orbits are present, the latest
+! one will overwrite older ones, though multiple (redundant) reads occur.
+! This assumes that the 'ls command' will list the files in that order.
+
+      do while (ierr .eq. 0)
+         read (ftn, '(a)', iostat=ierr) fname
+         if (ierr .ne. 0) then
+            exit
+         endif
+         smap_filename(i) = fname
+         write (LDT_logunit, *) '[INFO] reading ', trim(smap_filename(i))
+         call read_NASASMAP_data(n, smap_filename(i), smobs)
+         i = i + 1
+      enddo
+
+      call LDT_releaseUnitNumber(ftn)
+      do r = 1, LDT_rc%lnr(n)
+         do c = 1, LDT_rc%lnc(n)
+            if (smobs(c + (r - 1)*LDT_rc%lnc(n)) .ne. -9999.0) then
+               NASASMAPsmobs(n)%smobs(c, r) = smobs(c + (r - 1)*LDT_rc%lnc(n))
+            endif
+         enddo
+      enddo
+   endif ! sensor
+
+   call LDT_logSingleDAobs(n, LDT_DAobsData(n)%soilmoist_obs, &
+                           NASASMAPsmobs(n)%smobs, vlevel=1)
 
 end subroutine readNASASMAPsmObs
 
@@ -616,6 +695,8 @@ subroutine read_NASASMAP_data(n, fname, smobs_ip)
 
 end subroutine read_NASASMAP_data
 
+
+# if 0
 !BOP
 ! !ROUTINE: create_NASASMAPsm_filename
 ! \label{create_NASASMAPsm_filename}
@@ -678,3 +759,4 @@ subroutine create_NASASMAPsm_filename(ndir, designation,yr, mo,da, filename)
   endif
   
 end subroutine create_NASASMAPsm_filename
+#endif

@@ -1,47 +1,28 @@
 
 Focus:  Native PRISM Precipitation Climatology Parameters
 
-Description:  This test case involves the processing
+Description:  This case involves the processing
       of PRISM precipitation climatology parameters.
 
-This test case uses the following files:
+This case uses the following files:
   (a) this README file
-  (b) the wget data download scripts:  
-    wget_prism_clim_portal.sh
-    wget_gdasparms_portal.sh
-    wget_nldasparms_portal.sh
-    wget_prism_clim_portal.sh
-    wget_prism_output.sh
-  (c) the ldt.config input file to LDT used for this testcase;
-  (d) test_output.xdf GrADS control file to view the LDT-generated output;
-  (e) and to compare with output data, download the original output
-       tar-zipped file, unpack and compare with those given files.
+  (b) the ldt.config input file 
+  (c) test_output.xdf GrADS control file to view the LDT-generated output
 
-To run this test case: 
+To run this case: 
  
-  (a) Run the download scripts in a working directory where you want 
-       to place the PRISM precipitation climatology input data and the
-       GDAS and NLDAS2 forcing elevation files.
-
-      sh wget_prism_clim_portal.sh
-      sh wget_gdasparms_portal.sh
-      sh wget_nldasparms_portal.sh
+  (a) Modify the ldt.config file provided to point to your input
+       data directories.
 
   (b) Generate the LDT executable and copy it to your working directory.
 
   (c) Run the LDT executable using the ldt.config file,  
-       and the PIRSM 2-D input parameters.  To run, type:
+       and the PRISM 2-D input parameters.  To run, type:
       ./LDT ldt.config
 
   (d) View the NetCDF (*.nc) output using the sample grads file, test_output.xdf,  
        or the ncview executable (if you have it installed).
 
-  (e) Download and unpack the LDT test case output data using the script:
-
-      sh wget_prism_output.sh
-      tar -xzvf Public-LDT_PRISM_output_v71.tar.gz
-
-      to compare with what you produced with these test case files. 
 
 Caveats: 
   (a) Please note that this is a more basic functional test for purpose

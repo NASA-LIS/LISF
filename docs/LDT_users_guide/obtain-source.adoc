@@ -1,0 +1,101 @@
+
+[[sec-obtain-src]]
+== Obtaining the Source Code
+
+This section describes how to obtain the source code needed to build the LDT executable.
+
+Beginning with LIS public release 7.1rp1, the LIS and LDT source code is available as open source under the NASA Open Source Agreement (NOSA).  Please see {lisurl}[LIS`' web-site] for a copy the NOSA.
+
+Due to the history of LDT's development, prior versions of the LDT source code may not be freely distributed. That older source code is available only to U.S. government agencies or entities with a U.S.  government grant/contract. {lisurl}[LIS' web-site] explains how qualified persons may request a copy of the older source code.
+
+[[sec-important_note_fs]]
+=== Important Note Regarding File Systems
+
+LDT is developed on Linux/Unix platforms. Its build process expects a case sensitive file system. Please make sure that you unpack and/or `git clone` the LDT code into a directory within a case sensitive file system. In particular, if you are using LDT within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LDT from within a shared folder. Move the LDT source code into a directory within the virtual machine.
+
+=== GitHub
+
+The LDT {lisrevision} source code is available on GitHub under the NASA-LIS organization at {nasalisf}.  Official public releases will be available under the "`Releases`" link.
+
+NOTE: All users are encouraged to go to {lisurl}[LIS`' web-site] to fill in the Registration Form and join the mailing list.
+
+// TODO: Revise this section after an official public release has been created.
+// [[sec-releasetarball]]
+// ==== Public Release Source Code Tar File
+// 
+// The LDT {lisrevision} source code is available for download as a tar-file from {lisurl}[LIS' web-site]. All users are encouraged to fill in the Registration Form and join the mailing list, both also accessible from {lisurl}[LIS' web-site]. After downloading the LDT tar-file:
+// 
+// :sectnums!: // disable section numbers
+// 
+// ===== Step 1
+// 
+// Create a directory to unpack the tar-file into. Let's call it _TOPLEVELDIR_.
+// 
+// ===== Step 2
+// 
+// Place the tar-file in this directory.
+// 
+// [subs="attributes"]
+// ....
+// % mv {ldttarball} TOPLEVELDIR
+// ....
+// 
+// ===== Step 3
+// 
+// Go into this directory.
+// 
+// ....
+// % cd TOPLEVELDIR
+// ....
+// 
+// ===== Step 4
+// 
+// Unzip and untar the tar-file.
+// 
+// [subs="attributes"]
+// ....
+// % gzip -dc {ldttarball} | tar xf -
+// ....
+// 
+// Note that the directory containing the LDT source code will be referred to as _$WORKING_ throughout the rest of this document.
+// 
+// :sectnums: // re-enable section numbers
+
+[[sec-checkoutsrc]]
+==== master branch
+
+The LDT source code is maintained in a git repository hosted on GitHub.  If you wish to work with the latest development code (in the master branch), then you must use the `git` client to obtain the LDT source code.  If you need any help regarding `git` or GitHub, please go to {githuburl}.
+
+:sectnums!: // disable section numbers
+
+===== Step 1
+
+Create a directory to clone the code into. Let's call it _TOPLEVELDIR_.
+
+===== Step 2
+
+Go into this directory.
+
+....
+% cd TOPLEVELDIR
+....
+
+===== Step 3
+
+Clone the master branch.
+
+[subs="attributes"]
+....
+% git clone {nasalisf}
+....
+
+===== Note
+
+Note that the directory containing the LISF source code will be referred to as _$WORKING_ throughout the rest of this document.
+
+Cloning the LISF source code (according the instructions in Section <<sec-obtain-src>>) will create a directory named _LISF_.  The LDT specific source code is in _LISF/ldt_.
+
+:sectnums: // re-enable section numbers
+
+Processed documentation may be found on {lisurl}[LIS`' web-site] under the "`Docs`" menu.
+

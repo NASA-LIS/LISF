@@ -1,0 +1,143 @@
+
+[[sec-lvt_output_format]]
+== Description of output files from LVT
+
+This section provides a description of various output files generated during an LVT analysis.
+
+For the purposes of illustration, consider the following parameters for an LVT analysis
+
+* Variables : _Qle, Qh_
+* Metrics : _MEAN_ and _RMSE_
+* LSM : _Noah 3.2_
+* location (from _TS_LOCATIONS.TXT_) : _E20_
+* Experiment name : _RUN_
+
+=== METADATA files
+
+If the LVT output format is specified as binary, then a number of METADATA files will be output. The METADATA files contain the spatial domain, grid and map projection specifications and the list of variables and the order in which they appear. For the above example, a file named _MEAN_NOAH32_E20RUN_METADATA.dat_ will be created with entries such as the following:
+
+....
+ DIMENSIONS
+ east-west          499
+ north-south          499
+
+ Missing value   -9999.000
+
+ GRID INFORMATION
+ MAP_PROJECTION: LAMBERT CONFORMAL
+ SOUTH_WEST_CORNER_LAT   34.42922
+ SOUTH_WEST_CORNER_LON  -100.6136
+ TRUELAT1   36.70000
+ TRUELAT2   36.70000
+ STANDARD_LON  -97.90000
+ DX   1.000000
+ DY   1.000000
+ VARIABLE: Qle           1
+ VARIABLE: COUNT_Qle           1
+ VARIABLE: OBS_Qle           1
+ VARIABLE: OBS_COUNT_Qle           1
+ VARIABLE: Qh           1
+ .....
+ .....
+....
+
+This file can be used to determine the order of variables written to the gridded output files.
+
+For NETCDF output, the header of each file contains similar information.
+
+=== Stats summary file
+
+The LVT analysis will write out a summary file, for each computed metric with the following name: _MEAN_SUMMARY_STATS.dat_. This file can be used to not only determine the domain averaged statistics, but also the order in which variables are written to files. For the above example the file _MEAN_SUMMARY_STATS.dat_ will contain entries such as the following (The columns 1 to 4 represent the location name, average value for that location, confidence interval, number of points contributing to the average):
+
+....
+ ---------------------------------------------------------
+ VAR: Qle
+ ---------------------------------------------------------
+     ALL:      0.710E+02 +/-      0.492E+01            22
+       E1:     0.767E+02 +/-       -                    1
+       E2:     0.826E+02 +/-       -                    1
+       E3:     0.421E+02 +/-       -                    1
+       E4:     0.659E+02 +/-       -                    1
+ .....
+ .....
+
+
+ ---------------------------------------------------------
+ VAR: OBS_Qle
+ ---------------------------------------------------------
+     ALL:      0.906E+02 +/-      0.834E+02            11
+       E1:    -0.100E+05 +/-       -                    0
+       E2:     0.670E+02 +/-       -                    1
+       E3:    -0.100E+05 +/-       -                    0
+       E4:     0.496E+02 +/-       -                    1
+ .....
+ .....
+
+
+ ---------------------------------------------------------
+ VAR: Qh
+ ---------------------------------------------------------
+     ALL:      0.151E+02 +/-      0.564E+01            22
+       E1:     0.329E+02 +/-       -                    1
+       E2:    -0.678E+01 +/-       -                    1
+       E3:     0.164E+02 +/-       -                    1
+       E4:     0.207E+02 +/-       -                    1
+ .....
+ .....
+
+
+....
+
+=== ASCII Time Series files
+
+If the extract time series option is enabled for a particular metric in METRICS.TBL, then a corresponding time series file will be generated (similar files will be generated for each location in the _TS_LOCATIONS.TXT_ file).
+
+The time series files with the following names will be generated: _MEAN_E4.dat_, _RMSE_E4.dat_
+
+The _MEAN_E4.dat_ file will have entries such as the following:
+
+....
+2007 05 02 01 00  qle qle_STD qle_min qle_max qle_ensSTD qle_CI obs_qle obs_qle_STD
+obs_qle_min obs_qle_max obs_qle_ensSTD obs_qle_CI qh qh_STD qh_min qh_max qh_ensSTD
+qh_CI obs_qh obs_qh_STD obs_qh_min obs_qh_max obs_qh_ensSTD obs_qh_CI
+
+2007 05 02 02 00  qle qle_STD qle_min qle_max qle_ensSTD qle_CI obs_qle obs_qle_STD
+obs_qle_min obs_qle_max obs_qle_ensSTD obs_qle_CI qh qh_STD qh_min qh_max qh_ensSTD
+qh_CI obs_qh obs_qh_STD obs_qh_min obs_qh_max obs_qh_ensSTD obs_qh_CI
+.....
+.....
+....
+
+The columns represent Time (columns 1-5: year, month, day, hour, minute), mean value, spatial standard deviation, minimum, maximum, ensemble standard deviation, confidence interval of Qle from model (columns 6-11), and mean value, spatial standard deviation, minimum, maximum, ensemble standard deviation, confidence interval of Qle from observations (columns 12-17), and mean value, spatial standard deviation, minimum, maximum, ensemble standard deviation, confidence interval of Qh from model (columns 18-23), and mean value, spatial standard deviation, minimum, maximum, ensemble standard deviation, confidence interval of Qh from observations (columns 24-29).
+
+If more variables are included in the analysis, then additional columns will be included for each variable (6 columns per variable).
+
+For metrics such as RMSE (e.g. _RMSE_E4.dat_, the file entries will be as follows (note that there are no columns for observation values):
+
+....
+2007 05 02 01 00 rmse_qle rmse_qle_STD rmse_qle_min rmse_qle_max
+rmse_qle_ensSTD rmse_qle_CI
+2007 05 02 02 00 rmse_qle rmse_qle_STD rmse_qle_min rmse_qle_max
+rmse_qle_ensSTD rmse_qle_CI
+.....
+.....
+....
+
+=== Domain time Series files (Binary/NETCDF)
+
+LVT will output a gridded/tiled output file for each chosen metric, at each stats output interval, if the "`write time series`" option is enabled (in METRICS.TBL) for that metric. For the above example, files such as the following will be generated.
+
+_MEAN_TS.200705020000.d01.nc_ +
+_MEAN_TS.200705030000.d01.nc_ +
+_MEAN_TS.200705040000.d01.nc_
+
+_RMSE_TS.200705020000.d01.nc_ +
+_RMSE_TS.200705030000.d01.nc_ +
+_RMSE_TS.200705040000.d01.nc_
+
+where the timestamp indicates the end time of each analysis interval.  For binary output file extention of "`.gs4r`" will be used instead of "`.nc`".
+
+=== Final domain files (Binary/NETCDF)
+
+LVT will output a gridded/tiled output file for each chosen metric. For the above example, two final files will be generated with filenames of _MEAN_FINAL.200705100000.d01.nc_ and _RMSE_FINAL.200705100000.d01.nc_, where the timestamp indicates the end time of the LVT analysis. For binary output file extention of "`.gs4r`" will be used instead of "`.nc`".
+

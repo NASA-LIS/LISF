@@ -440,14 +440,7 @@ subroutine LVT_readConfig(configfile)
   call ESMF_ConfigGetAttribute(LVT_config,LVT_rc%statsodir,&
        label="Metrics output directory:",&
        rc=rc)
-
-  call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%nensem,&
-       label="Number of ensembles in the LVT analysis:", default=1, rc=rc)
-  
-  call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%noebal_refet,&
-       label="Calculate reference ET without energy balance:", default=0, rc=rc)
-
-  if(rc.ne.0) then 
+  if(rc.ne.0) then
      write(LVT_logunit,*) "[INFO] Please note that the option 'Stats output directory:' is"
      write(LVT_logunit,*) "[INFO] now deprecated. It should be replaced with the"
      write(LVT_logunit,*) "[INFO] entry - 'Metrics output directory:' in the lvt.config file"
@@ -455,6 +448,11 @@ subroutine LVT_readConfig(configfile)
   endif
   call LVT_verify(rc,'Metrics output directory: not defined')
 
+  call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%nensem,&
+       label="Number of ensembles in the LVT analysis:", default=1, rc=rc)
+  
+  call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%noebal_refet,&
+       label="Calculate reference ET without energy balance:", default=0, rc=rc)
 
   if(LVT_rc%runmode.eq.LVT_DataCompId) then 
 

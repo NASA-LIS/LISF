@@ -20,22 +20,22 @@ subroutine readSNODASObs(source)
   implicit none
 !
 ! !INPUT PARAMETERS: 
-
 ! 
 ! !OUTPUT PARAMETERS:
 !
 ! !DESCRIPTION: 
 ! 
-! This subroutine provides the data reader for SNODAS SWE and snowdepth data. 
-! LVT expects the data to be provided in a timestamped manner. The raw 
-! SNODAS binary files are read, and the data is interpolated to the 
-! LIS model output. The data is interpolated using the bilinear 
-! averaging technique. 
+! This subroutine provides the data reader for SNODAS SWE and snowdepth data.
+! LVT expects the data to be provided in a timestamped manner. The raw
+! SNODAS binary files are read, and the data is interpolated to the
+! LIS model output. The data is interpolated using the bilinear
+! averaging technique.
 ! 
 ! !FILES USED:
 !
 ! !REVISION HISTORY: 
 !  6 May 2010: Sujay Kumar, Initial Specification
+!  1 Aug 2019: David Mocko, Added/fixed log messages
 ! 
 !EOP
   integer                :: source
@@ -62,23 +62,28 @@ subroutine readSNODASObs(source)
   var_ip  = LVT_rc%udef
 
   call ESMF_TimeSet(snodastime1,yy=LVT_rc%dyr(source), &
-       mm=LVT_rc%dmo(source), dd=LVT_rc%dda(source), h=LVT_rc%dhr(source), m=LVT_rc%dmn(source), &
-       s = LVT_rc%dss(source), calendar=LVT_calendar, rc=status)
+       mm=LVT_rc%dmo(source), dd=LVT_rc%dda(source), h=LVT_rc%dhr(source), &
+       m=LVT_rc%dmn(source), s=LVT_rc%dss(source), calendar=LVT_calendar, &
+       rc=status)
   call LVT_verify(status, 'snodastime1 set failed')
 
   offset = (snodastime1-snodasobs(source)%starttime)/snodasobs(source)%timestep
 
-  if((nint(offset)-offset).eq.0) then !only when LIS time matches the observation
+  if ((nint(offset)-offset).eq.0) then !only when LIS time matches the observation
   
-     call create_SNODAS_swefilename(snodasobs(source)%odir, LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source), &
+     call create_SNODAS_swefilename(snodasobs(source)%odir, &
+          LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source), &
           snodas_swefilename)
      
      inquire(file=trim(snodas_swefilename),exist=file_exists)
-     if(file_exists) then 
-        write(LVT_logunit,*) '[INFO] Reading SNODAS SWE data ',trim(snodas_swefilename)
+
+     if (file_exists) then 
+        write(LVT_logunit,*) '[INFO] Reading SNODAS SWE data ', &
+                             trim(snodas_swefilename)
         
         ftn=LVT_getNextUnitNumber()
-        open(ftn,file=trim(snodas_swefilename),form='unformatted', access='direct',&
+        open(ftn,file=trim(snodas_swefilename),form='unformatted', &
+             access='direct',convert='big_endian',                 &
              recl=snodasobs(source)%nc*snodasobs(source)%nr*2)
         
         read(ftn,rec=1) var
@@ -103,7 +108,11 @@ subroutine readSNODASObs(source)
         readflag = .false. 
         call LVT_releaseUnitNumber(ftn)
 
-        write(LVT_logunit,*) '[INFO] Successfully processed SWE from ',trim(snodas_snwdfilename)
+        write(LVT_logunit,*) '[INFO] Successfully processed SWE from ', &
+                             trim(snodas_swefilename)
+     else
+        write(LVT_logunit,*) '[WARN] Could not find SNODAS SWE file ', &
+                             trim(snodas_swefilename)
      endif
   endif
 
@@ -123,23 +132,28 @@ subroutine readSNODASObs(source)
   var_ip  = LVT_rc%udef
 
   call ESMF_TimeSet(snodastime1,yy=LVT_rc%dyr(source), &
-       mm=LVT_rc%dmo(source), dd=LVT_rc%dda(source), h=LVT_rc%dhr(source), m=LVT_rc%dmn(source), &
-       s = LVT_rc%dss(source), calendar=LVT_calendar, rc=status)
+       mm=LVT_rc%dmo(source), dd=LVT_rc%dda(source), h=LVT_rc%dhr(source), &
+       m=LVT_rc%dmn(source), s=LVT_rc%dss(source), calendar=LVT_calendar, &
+       rc=status)
   call LVT_verify(status, 'snodastime1 set failed')
 
   offset = (snodastime1-snodasobs(source)%starttime)/snodasobs(source)%timestep
 
-  if((nint(offset)-offset).eq.0) then !only when LIS time matches the observation
+  if ((nint(offset)-offset).eq.0) then !only when LIS time matches the observation
   
-     call create_SNODAS_snwdfilename(snodasobs(source)%odir, LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source), &
+     call create_SNODAS_snwdfilename(snodasobs(source)%odir, &
+          LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source), &
           snodas_snwdfilename)
      
      inquire(file=trim(snodas_snwdfilename),exist=file_exists)
-     if(file_exists) then 
-        write(LVT_logunit,*) '[INFO] Reading SNODAS SNWD data ',trim(snodas_snwdfilename)
+
+     if (file_exists) then 
+        write(LVT_logunit,*) '[INFO] Reading SNODAS SNWD data ', &
+                             trim(snodas_snwdfilename)
         
         ftn=LVT_getNextUnitNumber()
-        open(ftn,file=trim(snodas_snwdfilename),form='unformatted', access='direct',&
+        open(ftn,file=trim(snodas_snwdfilename),form='unformatted', &
+             access='direct',convert='big_endian',                  &
              recl=snodasobs(source)%nc*snodasobs(source)%nr*2)
         
         read(ftn,rec=1) var
@@ -164,7 +178,11 @@ subroutine readSNODASObs(source)
         readflag = .false. 
         call LVT_releaseUnitNumber(ftn)
 
-        write(LVT_logunit,*) '[INFO] Successfully processed SNWD from ',trim(snodas_snwdfilename)
+        write(LVT_logunit,*) '[INFO] Successfully processed SNWD from ', &
+                             trim(snodas_snwdfilename)
+     else
+        write(LVT_logunit,*) '[WARN] Could not find SNODAS SNWD file ', &
+                             trim(snodas_snwdfilename)
      endif
   endif
 
@@ -194,8 +212,8 @@ subroutine create_SNODAS_swefilename(odir, yr,mo,da, snodasname)
 !
 ! !DESCRIPTION: 
 ! 
-! This routine creates a timestamped SNODAS filename. The filename 
-! convention is as follows: 
+! This routine creates a timestamped SNODAS filename.
+! The filename convention is as follows: 
 !   us : region (united states)
 !   ssm : simple snow model
 !   v1  : operational snow model output
@@ -253,8 +271,8 @@ subroutine create_SNODAS_snwdfilename(odir, yr,mo,da, snodasname)
   character(len=*), intent(out) :: snodasname
 !
 ! !DESCRIPTION: 
-! This routine creates a timestamped SNODAS filename. The filename 
-! convention is as follows: 
+! This routine creates a timestamped SNODAS filename.
+! The filename convention is as follows: 
 !   us : region (united states)
 !   ssm : simple snow model
 !   v1  : operational snow model output

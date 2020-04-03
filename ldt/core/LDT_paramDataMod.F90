@@ -178,7 +178,7 @@ CONTAINS
        paramEntry%standard_name =trim(short_name)
     else
        paramEntry%selectOpt = 0
-       paramEntry%short_name =""
+       paramEntry%short_name ="none"
        paramEntry%vlevels = 0
        paramEntry%zlevels = 0
        paramEntry%source = ""

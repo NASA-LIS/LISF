@@ -74,7 +74,7 @@ subroutine read_SRTM_slope( n, num_bins, fgrd, slopeave )
   
   ftn = LDT_getNextUnitNumber()
   open(ftn,file=LDT_rc%slfile(n),form='unformatted', &
-       access='direct',recl=4,status='old')
+       access='direct',convert='big_endian',recl=4,status='old')
 
 ! -------------------------------------------------------------------
 !     AGGREGATING FINE-SCALE GRIDS TO COARSER LIS OUTPUT GRID

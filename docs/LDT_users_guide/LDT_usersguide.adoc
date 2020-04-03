@@ -1,0 +1,70 @@
+= Land Data Toolkit (LDT): LDT {lisrevision} Users' Guide
+:revnumber: 1.8
+:revdate: 28 Aug 2019
+:doctype: book
+:sectnums:
+:toc:
+:math:
+:mathematical-format: svg
+:imagesoutdir: images
+:stem: latexmath
+:devonly:
+:lisrevision: 7.3
+:lisurl: http://lis.gsfc.nasa.gov/LDT
+:svnurl: http://subversion.apache.org
+:nasalisf: https://github.com/NASA-LIS/LISF
+:githuburl: https://github.com
+:lispublicrelease: Initial version - for LDT
+:ldttarball: LDT_public_release_7.2r.tar.gz
+:emdash: —
+:endash: –
+:vertellipsis: ⋮
+
+
+// Set :devonly: when compiling the developers' version of the Users' Guide.
+// Set :devonly!: when compiling the public version of the Users' Guide.
+//
+// The ifdef::devonly[] command allows one to include text for the developers'
+// version of the Users' Guide.
+// Usage:
+// ifdef::devonly[]
+// line one
+// line two
+// endif::devonly[]
+
+
+// asciidoctor-pdf -r asciidoctor-mathematical LDT_usersguide.adoc
+
+
+include::revision_table.adoc[]
+
+include::intro.adoc[]
+include::backgrd.adoc[]
+include::prelim.adoc[]
+include::obtain-source.adoc[]
+include::build.adoc[]
+include::run.adoc[]
+include::../../ldt/configs/ldt.config.adoc[]
+//include::MODEL_OUTPUT_LIST_LDT.TBL.adoc[]
+[appendix]
+//include::ldt_runmode0.adoc[]
+include::ldt_output_format.adoc[]
+[appendix]
+include::d_latlon_example.adoc[]
+[appendix]
+include::d_lambert_example.adoc[]
+[appendix]
+include::d_gaussian_example.adoc[]
+[appendix]
+include::d_ps_example.adoc[]
+[appendix]
+include::d_hrap_example.adoc[]
+[appendix]
+include::d_mercator_example.adoc[]
+ifdef::devonly[]
+[appendix]
+include::d_utm_example.adoc[]
+endif::devonly[]
+//include::configure.ldt.adoc[]
+include::lis_refs.bib.adoc[]
+

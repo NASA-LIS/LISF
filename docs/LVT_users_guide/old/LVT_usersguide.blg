@@ -1,0 +1,58 @@
+This is BibTeX, Version 0.99d (TeX Live 2017)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: LVT_usersguide.aux
+A level-1 auxiliary file: intro.aux
+A level-1 auxiliary file: backgrd.aux
+A level-1 auxiliary file: prelim.aux
+A level-1 auxiliary file: obtain-source.aux
+A level-1 auxiliary file: build.aux
+A level-1 auxiliary file: run.aux
+A level-1 auxiliary file: lvt.config.aux
+A level-1 auxiliary file: METRICS.TBL.aux
+A level-1 auxiliary file: MODEL_OUTPUT_LIST_LVT.TBL.aux
+A level-1 auxiliary file: common_errors.aux
+A level-1 auxiliary file: lvt_runmode0.aux
+A level-1 auxiliary file: lvt_output_format.aux
+The style file: plain.bst
+Database file #1: lis_refs.bib
+You've used 2 entries,
+            2118 wiz_defined-function locations,
+            521 strings with 4556 characters,
+and the built_in function-call counts, 809 in all, are:
+= -- 81
+> -- 46
+< -- 1
++ -- 18
+- -- 16
+* -- 53
+:= -- 142
+add.period$ -- 7
+call.type$ -- 2
+change.case$ -- 15
+chr.to.int$ -- 0
+cite$ -- 2
+duplicate$ -- 28
+empty$ -- 48
+format.name$ -- 16
+if$ -- 166
+int.to.chr$ -- 0
+int.to.str$ -- 2
+missing$ -- 1
+newline$ -- 14
+num.names$ -- 4
+pop$ -- 12
+preamble$ -- 1
+purify$ -- 12
+quote$ -- 0
+skip$ -- 25
+stack$ -- 0
+substring$ -- 42
+swap$ -- 10
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 8
+warning$ -- 0
+while$ -- 7
+width$ -- 3
+write$ -- 26

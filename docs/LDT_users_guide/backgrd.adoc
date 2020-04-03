@@ -1,0 +1,28 @@
+
+[[sec-backgrd]]
+== Background
+
+A key step in preparing for land surface model (LSM) and hydrologic model simulations is ensuring that all parameters and data inputs belong to the same grid, projection, units, etc. The Land surface Data Toolkit (LDT) is an integrated framework designed specifically for processing data inputs for such land surface and hydrological models. The system not only acts as a pre-processor to the NASA Land Information System (LIS), which is an integrated framework designed for multi-model LSM simulations and data assimilation (DA) integrations, but as a land surface-based observation and DA input processor. LDT is also capable of deriving restart inputs and ensuring data quality control for inputs to LSMs and DA routines.
+
+=== LDT
+
+LDT provides an environment for processing LSM data and parameters, restart files and data assimilation based inputs (e.g., for bias correction methods). LDT offers and will offer a variety of user options and inputs to processing datasets for use within LIS and even stand-alone models. LDT is being designed with not only LIS in mind but for other independent models and data processing systems as well. This intended design is facilitated by the use of common data formats, like NetCDF, which provide detailed data header information.
+
+LDT shares similar object oriented framework designs as LIS, with a number of points of flexibility known as "`plugins`". Specific implementations are added to the framework through the plugin-interfaces. LDT uses the plugin-based architecture to support the processing of different types of observational data sets, ranging from in-situ, satellite and remotely sensed and reanalysis products.
+
+=== Summary of key features
+
+The key capabilities of LDT can be summarized as follows:
+
+* Processing and grouping parameters needed for different LSMs and
+hydrologic models
+* Producing observation-based data assimilation inputs (e.g., CDF matching)
+* Generate custom-made restart files for LSMs
+* Read in a variety of model inputs, for example:
+** Land cover maps — UMD AVHRR, MODIS-IGBP, USGS, etc.
+** Soil parameters — soil fractions, texture, color, etc.
+** Topographic — elevation, slope, aspect, etc.
+** Dynamic parameters — greenness fraction, LAI/SAI, albedo, etc.
+* Expanding LSM parameter tiling options to include topographic, soils, and other parameter information, beyond just land cover type tiling
+* Options for reading in or deriving a land/water mask during processing
+

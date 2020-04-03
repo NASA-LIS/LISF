@@ -1,0 +1,24 @@
+
+[[sec-d_hrap_example]]
+== HRAP Domain Example
+
+This section describes how to compute the values for the run domain and param domain sections on a HRAP projection.
+
+[red]#STUB!#
+
+The spatial HRAP resolution has a default value of 1.0, which indicates a horizontal resolution of 4.7625 KM (valid at 1.0). Finer resolution values are then entered as 0.5, 0.25, etc. to represent half, quarter, etc. of the original 4.7625 KM gridcell length. All other HRAP-based polar stereographic grid parameters are already handled within the LDT or LIS code, since HRAP utilizes specific true latitude, standard longitude, and orientation values.
+
+Note that HRAP is a special case of a polar stereographic grid. For HRAP,
+
+true lat = 60.0
+
+standard lon = -105.000
+
+orientation = 0.0
+
+resolution at true lat is 4.7625 km when resolution is set to 1.0; i.e.,
+
+....
+Run domain hrap resolution:            1
+....
+

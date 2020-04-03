@@ -12,83 +12,78 @@ Due to the history of LIS`' development,  prior versions of the LIS source code 
 === Important Note Regarding File Systems
 anchor:sec_important_note_fs[Important Note Regarding File Systems]
 
-LIS is developed on Linux/Unix platforms.  Its build process expects a case sensitive file system.  Please make sure that you unpack and/or `svn checkout` the LIS code into a directory within a case sensitive file system.  In particular, if you are using LIS within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LIS from within a shared folder.  Move the LIS source code into a directory within the virtual machine.
+LIS is developed on Linux/Unix platforms.  Its build process expects a case sensitive file system.  Please make sure that you unpack and/or `git clone` the LIS code into a directory within a case sensitive file system.  In particular, if you are using LIS within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LIS from within a shared folder.  Move the LIS source code into a directory within the virtual machine.
 
 
-=== Public Release Code Access
-anchor:sec_publicaccess[Public Release Code Access]
+=== GitHub
 
-The LIS {lisrevision} source code is available for download as a tar-file from {lisurl}[LIS`' web-site].  All users are encouraged to fill in the Registration Form and join the mailing list, both also accessible from {lisurl}[LIS`' web-site].  After downloading the LIS tar-file:
+The LIS {lisrevision} source code is available on GitHub under the NASA-LIS organization at {nasalisf}.  Official public releases will be available under the "`Releases`" link.
 
-:sectnums!: // disable section numbers
-
-==== Step 1
-
-Create a directory to unpack the tar-file into.  Let`'s call it _TOPLEVELDIR_.
+NOTE: All users are encouraged to go to {lisurl}[LIS`' web-site] to fill in the Registration Form and join the mailing list.
 
 
-==== Step 2
+// TODO: Revise this section after an official public release has been created.
+// ==== Public Release Code Access
+// anchor:sec_publicaccess[Public Release Code Access]
+// 
+// The LIS {lisrevision} source code is available for download as a tar-file from {lisurl}[LIS`' web-site].  All users are encouraged to fill in the Registration Form and join the mailing list, both also accessible from {lisurl}[LIS`' web-site].  After downloading the LIS tar-file:
+// 
+// :sectnums!: // disable section numbers
+// 
+// ===== Step 1
+// 
+// Create a directory to unpack the tar-file into.  Let`'s call it _TOPLEVELDIR_.
+// 
+// 
+// ===== Step 2
+// 
+// Place the tar-file in this directory.
+// 
+// [subs="attributes"]
+// ....
+// % mv {listarball} TOPLEVELDIR
+// ....
+// 
+// 
+// ===== Step3
+// 
+// Go into this directory.
+// 
+// ....
+// % cd TOPLEVELDIR
+// ....
+// 
+// 
+// ===== Step 4
+// 
+// Unzip and untar the tar-file.
+// 
+// [subs="attributes"]
+// ....
+// % gzip -dc {listarball} | tar xf -
+// ....
+// 
+// 
+// ===== Note
+// 
+// Note that the directory containing the LIS source code will be referred to as _$WORKING_ throughout the rest of this document.
+// 
+// :sectnums: // re-enable section numbers
 
-Place the tar-file in this directory.
+==== master branch
+anchor:sec_checkoutsrc[master branch]
 
-[subs="attributes"]
-....
-% mv {listarball} TOPLEVELDIR
-....
-
-
-==== Step3
-
-Go into this directory.
-
-....
-% cd TOPLEVELDIR
-....
-
-
-==== Step 4
-
-Unzip and untar the tar-file.
-
-[subs="attributes"]
-....
-% gzip -dc {listarball} | tar xf -
-....
-
-
-==== Note
-
-Note that the directory containing the LIS source code will be referred to as _$WORKING_ throughout the rest of this document.
-
-:sectnums: // re-enable section numbers
-
-=== Restricted Code Access (NASA only)
-anchor:sec_checkoutsrc[Restricted Code Access (NASA only)]
-
-NOTE: These instructions are for those granted access to the LIS source code repository.  If you are not a NASA LIS developer or select collaborator, then please refer to the previous instructions in Section <<sec_publicaccess>> above.
-
-The LIS source code is maintained in a Subversion repository.  Due to several U.S. government restrictions, only the LIS development team and select collaborators may have access to the repository.  Those developers must use the Subversion client (`svn`) to obtain the LIS source code.  If you need any help regarding Subversion, please go to {svnurl}.
-
-//To obtain the source code needed for LIS`' {lismilestonedesc} revision
-//{lisrevision}:
-//To obtain the source code needed for LIS revision {lisrevision} you must
-//Developers must
-//first obtain access to the LIS source code respository.  To obtain access
-//you must contact the LIS team.  Once you have access to the repository, you
-//will be given the correct Subversion command to run to checkout the source
-//code.
-
-For those granted access to the LIS source code repository:
+The LIS source code is maintained in a git repository hosted on GitHub.  If you wish to work with the latest development code (in the master branch), then you must use the `git` client to obtain the LIS source code.  If you need any help regarding `git` or GitHub, please go to {githuburl}.
 
 :sectnums!: // disable section numbers
 
 
-==== Step 1
+===== Step 1
 
-Create a directory to checkout the code into.  Let`'s call it _TOPLEVELDIR_.
+Create a directory to clone the code into.  Let`'s call it _TOPLEVELDIR_.
 
 
-==== Step 2
+===== Step 2
 
 Go into this directory.
 
@@ -97,28 +92,19 @@ Go into this directory.
 ....
 
 
-==== Step 3
+===== Step 3
 
-Check out the source code into a directory called _src_.
+Clone the master branch.
 
-For the public version, run the following command:
-
+[subs="attributes"]
 ....
-% svn checkout https://progress.nccs.nasa.gov/svn/lis/7/public7.2 src
+% git clone {nasalisf}
 ....
 
-ifdef::devonly[]
-For the development version, run the following command:
 
-....
-% svn checkout https://progress.nccs.nasa.gov/svn/lis/7/new_development src
-....
-endif::devonly[]
+===== Note
 
-
-==== Note
-
-Note that the directory containing the LIS source code will be referred to as _$WORKING_ throughout the rest of this document.
+Note that the directory containing the LISF source code will be referred to as _$WORKING_ throughout the rest of this document.
 
 :sectnums: // re-enable section numbers
 
@@ -126,7 +112,7 @@ Note that the directory containing the LIS source code will be referred to as _$
 === Source files
 anchor:sec_src_desc[Source files]
 
-Checking out the LIS source code (according the instructions in Section <<sec_obtain-src>>) will create a directory named _src_.  The structure of _src_ is as follows:
+Cloning the LISF source code (according the instructions in Section <<sec_obtain-src>>) will create a directory named _LISF_.  The LIS specific source code is in _LISF/lis_.  The structure of _LISF/lis_ is as follows:
 
 * _LICENSES_
 +
@@ -1112,5 +1098,5 @@ testcases for verifying various functionalities
 +
 Miscellaneous helpful utilities
 
-Source code documentation may be found on {lisurl}[LIS`' web-site].  Follow the "`Documentation`" link.
+Processed documentation may be found on {lisurl}[LIS`' web-site] under the "`Docs`" menu.
 

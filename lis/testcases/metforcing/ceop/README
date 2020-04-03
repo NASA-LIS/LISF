@@ -18,14 +18,9 @@ This directory contains:
 
 To run this test case: 
   (a) Generate the LIS executable. 
-  (b) Download the sample input data from: 
-	http://lis.gsfc.nasa.gov/Source/testcases  
-      the testcase corresponding to CEOP station data FORCING TEST
-  (c) Run the LIS executable using the lis.config file and the sample 
+  (b) Run the LIS executable using the lis.config file and your sample 
       input data. 
-  (d) View the binary output using the sample grads file. 
-  (e) The output can be contrasted with the output from using only 
-      GDAS forcing for impacts of using the CEOP station data. 
+  (c) View the binary output using the sample grads file. 
 
 Caveats: 
   (a) Please note that the station data spatial interpolators currently 

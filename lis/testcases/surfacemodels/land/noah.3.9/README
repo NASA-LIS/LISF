@@ -21,12 +21,9 @@ are specified correctly.
 
 To run this testcase:
   (a) Generate the LDT and the LIS executables
-  (b) Download the testcase input data from:
-         http://lis.gsfc.nasa.gov/Source/testcases
-      the testcase corresponding to Noah 3.9.1 LSM TEST
-  (c) Run the LDT executable using the "ldt.config" file 
+  (b) Run the LDT executable using the "ldt.config" file 
       with the testcase input data
-  (d) Run the LIS executable using the "lis.config" file with the
+  (c) Run the LIS executable using the "lis.config" file with the
       testcase input data
 
 Caveats:

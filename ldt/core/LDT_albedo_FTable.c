@@ -84,13 +84,15 @@ void FTN(registersetalbedoattribs)(char *j, void (*func)(),int len)
 //   \end{description}
 //EOP
 { 
+  int len1;
   struct albedosetnode* current;
   struct albedosetnode* pnode; 
   // create node
 
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct albedosetnode*) malloc(sizeof(struct albedosetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -167,14 +169,15 @@ void FTN(registerreadalbedo)(char *j,void (*func)(int*,float*), int len )
 //  \end{description}
 //EOP
 { 
-
+  int len1;
   struct albedonode* current;
   struct albedonode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct albedonode*) malloc(sizeof(struct albedonode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -249,13 +252,15 @@ void FTN(registerreadmxsnoalb)(char *j,void (*func)(int*,float*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct mxsnoalbnode* current;
   struct mxsnoalbnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct mxsnoalbnode*) malloc(sizeof(struct mxsnoalbnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

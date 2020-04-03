@@ -7,19 +7,19 @@ import time
 
 vars = ["SoilMoist_tavg", "SoilTemp_tavg",
         "RHMin_inst",
-        "Evap_tavg", "LWdown_f_tavg", 
+        "Evap_tavg", "LWdown_f_tavg",
         "SWdown_f_tavg",
         "Tair_f_max",
         "Tair_f_tavg",
         "TotalPrecip_acc", "Wind_f_tavg"]
 
 if not os.path.exists("LVT"):
-    print "ERROR, LVT executable does not exist!"
+    print("ERROR, LVT executable does not exist!")
     sys.exit(1)
 
 for var in vars:
-    scriptname = "run_lvt.%s_24hr.sh" %(var)
-    f = open(scriptname,"w")
+    scriptname = "run_lvt.%s_24hr.sh" % (var)
+    f = open(scriptname, "w")
     line = """#!/bin/sh
 #SBATCH --job-name=%s.24hr
 #SBATCH --time=0:15:00
@@ -52,16 +52,14 @@ mkdir -p STATS.%s.24hr || exit 1
 time ./LVT lvt.config.%s.24hr || exit 1
 
 exit 0
-""" %(var,var,var,var,var,var)
+""" % (var, var, var, var, var, var)
     f.write(line)
     f.close()
 
-    cmd = "sbatch %s" %(scriptname)
-    print cmd
-    rc = subprocess.call(cmd,shell=True)
+    cmd = "sbatch %s" % (scriptname)
+    print(cmd)
+    rc = subprocess.call(cmd, shell=True)
     if rc != 0:
-        print "[ERR] Problem with sbatch!"
+        print("[ERR] Problem with sbatch!")
         sys.exit(1)
-    time.sleep(1) # Don't overwhelm SLURM
-
-
+    time.sleep(1)  # Don't overwhelm SLURM

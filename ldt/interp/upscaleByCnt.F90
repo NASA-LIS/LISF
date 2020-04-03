@@ -33,9 +33,6 @@ subroutine upscaleByCnt( mi, mo, nt, udef, n11,li, gi, lo, go )
 !   by their grid description arrays, which are based on the decoding 
 !   schemes used by NCEP. 
 !  
-!  The grid description arrays are based on the decoding 
-!  schemes used by NCEP. 
-!   
 !  The current code recognizes the following projections: \newline
 !             (gridDesc(1)=0) equidistant cylindrical \newline
 !            
