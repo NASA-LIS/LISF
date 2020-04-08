@@ -298,11 +298,11 @@ else{
 }
 
 
-print "Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=1): ";
+print "Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=2): ";
 $use_gribapi=<stdin>;
 chomp($use_gribapi);
 if($use_gribapi eq ""){
-   $use_gribapi=1;
+   $use_gribapi=2;
 }
 
 if($use_gribapi == 1) {
