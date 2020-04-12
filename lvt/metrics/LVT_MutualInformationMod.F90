@@ -250,32 +250,23 @@ contains
              do k=1,model%selectNlevs
                 m_k = k+model%startNlevs -1
                 o_k = k+obs%startNlevs -1
-                if(trim(obs%units).eq.trim(model%units)) then
-                   if(obs%count(t,m,o_k).ne.0.and. &
-                        model%count(t,m,m_k).ne.0) then      
-                      if(metric%selectOpt.eq.1) then
-                         
-                         if(model%value(t,m,m_k).gt.stats%mi(m)%xmaxval(t,k)) then 
-                            stats%mi(m)%xmaxval(t,k) = model%value(t,m,m_k)
-                         endif
-                         if(obs%value(t,m,o_k).gt.stats%mi(m)%ymaxval(t,k)) then 
-                            stats%mi(m)%ymaxval(t,k) = obs%value(t,m,o_k)
-                         endif
-                         if(model%value(t,m,m_k).lt.stats%mi(m)%xminval(t,k)) then 
-                            stats%mi(m)%xminval(t,k) = model%value(t,m,m_k)
-                         endif
-                         if(obs%value(t,m,o_k).lt.stats%mi(m)%yminval(t,k)) then 
-                            stats%mi(m)%yminval(t,k) = obs%value(t,m,o_k)
-                         endif
+                if(obs%count(t,m,o_k).ne.0.and. &
+                     model%count(t,m,m_k).ne.0) then      
+                   if(metric%selectOpt.eq.1) then
+                      
+                      if(model%value(t,m,m_k).gt.stats%mi(m)%xmaxval(t,k)) then 
+                         stats%mi(m)%xmaxval(t,k) = model%value(t,m,m_k)
+                      endif
+                      if(obs%value(t,m,o_k).gt.stats%mi(m)%ymaxval(t,k)) then 
+                         stats%mi(m)%ymaxval(t,k) = obs%value(t,m,o_k)
+                      endif
+                      if(model%value(t,m,m_k).lt.stats%mi(m)%xminval(t,k)) then 
+                         stats%mi(m)%xminval(t,k) = model%value(t,m,m_k)
+                      endif
+                      if(obs%value(t,m,o_k).lt.stats%mi(m)%yminval(t,k)) then 
+                         stats%mi(m)%yminval(t,k) = obs%value(t,m,o_k)
                       endif
                    endif
-                else
-                   write(LVT_logunit,*) '[ERR] For variable ',trim(model%standard_name)
-                   write(LVT_logunit,*) '[ERR] observations are in ',trim(obs%units)
-                   write(LVT_logunit,*) '[ERR] and LIS output is in ',trim(model%units)
-                   write(LVT_logunit,*) '[ERR] please add the support of ',&
-                        trim(model%units), '[ERR] in the observation plugin'
-                   call LVT_endrun
                 endif
              enddo
           enddo
@@ -332,41 +323,32 @@ contains
              do k=1,model%selectNlevs
                 m_k = k+model%startNlevs -1
                 o_k = k+obs%startNlevs -1
-                if(trim(obs%units).eq.trim(model%units)) then
-                   if(obs%count(t,m,o_k).ne.0.and. &
-                        model%count(t,m,m_k).ne.0) then      
-                      if(metric%selectOpt.eq.1.and.&
-                           stats%mi(m)%xdelta(t,k).gt.0.and.&
-                           stats%mi(m)%ydelta(t,k).gt.0) then
-
-                         xbinval = nint((model%value(t,m,m_k) - &
-                              stats%mi(m)%xminval(t,k))/&
-                              stats%mi(m)%xdelta(t,k)) + 1
-                         
-                         if(xbinval.le.0) xbinval = 1
-                         if(xbinval.gt.MI_nbins) xbinval = MI_nbins
-
-                         ybinval = nint((obs%value(t,m,o_k) - &
-                              stats%mi(m)%yminval(t,k))/&
-                              stats%mi(m)%ydelta(t,k)) + 1
-
-                         if(ybinval.le.0) ybinval = 1
-                         if(ybinval.gt.MI_nbins) ybinval = MI_nbins
-
-                         stats%mi(m)%pxy(t,k,xbinval,ybinval) = &
-                              stats%mi(m)%pxy(t,k,xbinval,ybinval) + 1
-
-                         stats%mi(m)%count_total(t,k) = &
-                              stats%mi(m)%count_total(t,k) + 1
-                      endif
+                if(obs%count(t,m,o_k).ne.0.and. &
+                     model%count(t,m,m_k).ne.0) then      
+                   if(metric%selectOpt.eq.1.and.&
+                        stats%mi(m)%xdelta(t,k).gt.0.and.&
+                        stats%mi(m)%ydelta(t,k).gt.0) then
+                      
+                      xbinval = nint((model%value(t,m,m_k) - &
+                           stats%mi(m)%xminval(t,k))/&
+                           stats%mi(m)%xdelta(t,k)) + 1
+                      
+                      if(xbinval.le.0) xbinval = 1
+                      if(xbinval.gt.MI_nbins) xbinval = MI_nbins
+                      
+                      ybinval = nint((obs%value(t,m,o_k) - &
+                           stats%mi(m)%yminval(t,k))/&
+                           stats%mi(m)%ydelta(t,k)) + 1
+                      
+                      if(ybinval.le.0) ybinval = 1
+                      if(ybinval.gt.MI_nbins) ybinval = MI_nbins
+                      
+                      stats%mi(m)%pxy(t,k,xbinval,ybinval) = &
+                           stats%mi(m)%pxy(t,k,xbinval,ybinval) + 1
+                      
+                      stats%mi(m)%count_total(t,k) = &
+                           stats%mi(m)%count_total(t,k) + 1
                    endif
-                else
-                   write(LVT_logunit,*) '[ERR] For variable ',trim(model%standard_name)
-                   write(LVT_logunit,*) '[ERR] observations are in ',trim(obs%units)
-                   write(LVT_logunit,*) '[ERR] and LIS output is in ',trim(model%units)
-                   write(LVT_logunit,*) '[ERR] please add the support of ',&
-                        trim(model%units), '[ERR] in the observation plugin'
-                   call LVT_endrun
                 endif
              enddo
           enddo
