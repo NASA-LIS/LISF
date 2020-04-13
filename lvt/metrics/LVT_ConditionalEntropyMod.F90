@@ -121,7 +121,7 @@ contains
 
     metric%npass = 2
     metric%obsData = .false. 
-    metric%stdevFlag = .true. 
+    metric%stdevFlag = .false. 
 
   end subroutine LVT_initConditionalEntropy
   
