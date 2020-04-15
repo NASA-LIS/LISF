@@ -70,7 +70,7 @@ class surf2lisnc(object):
 
         # shift coordinate
         data = self.surf_var
-        col1 = self.ncol/2
+        col1 = self.ncol//2
         col2 = self.ncol
         tmp = ma.zeros((self.nrow, self.ncol))
         tmp[:, :] = data[:, :]
