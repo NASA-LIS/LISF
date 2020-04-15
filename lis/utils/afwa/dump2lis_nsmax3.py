@@ -108,7 +108,7 @@ class dump2lis(object):
 
     def shift_um2lis(self):
         data = self.dump_var
-        col1 = self.ncol/2
+        col1 = self.ncol//2
         col2 = self.ncol
         tmp = ma.zeros((self.nrow, self.ncol))
         tmp[:, :] = data[:, :]
