@@ -67,10 +67,48 @@ module LDT_gfracMod
 
   type(gfrac_type_dec), allocatable :: LDT_gfrac_struc(:)
 
+!BOP 
+! 
+! !ROUTINE: LDT_greenness_writeHeader 
+! \label{LDT_greenness_writeHeader}
+! 
+! !INTERFACE:
+  interface LDT_greenness_writeHeader
+! !PRIVATE MEMBER FUNCTIONS: 
+     module procedure LDT_greenness_writeHeader_LIS
+     module procedure LDT_greenness_writeHeader_LISHydro
+! 
+! !DESCRIPTION:
+! This interface provides routines for writing NETCDF header both 
+! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
+! preprocessing requiremetns. A dummy argument call "flagX" was added 
+! to overload the LISHydro procedue.
+!EOP 
+  end interface
+
+
+!BOP 
+! 
+! !ROUTINE: LDT_gfrac_readParamSpecs 
+! \label{LDT_gfrac_readParamSpecs}
+! 
+! !INTERFACE:
+  interface LDT_gfrac_readParamSpecs
+! !PRIVATE MEMBER FUNCTIONS: 
+     module procedure gfrac_readParamSpecs_LIS
+     module procedure gfrac_readParamSpecs_LISHydro
+! 
+! !DESCRIPTION:
+! This interface provides routines for writing NETCDF header both 
+! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
+! preprocessing requiremetns. A dummy argument call "flagX" was added 
+! to overload the LISHydro procedue.
+!EOP 
+  end interface
 
 contains
 
-  subroutine LDT_gfrac_readParamSpecs
+  subroutine gfrac_readParamSpecs_LIS
     
     character*100     :: source
     integer           :: rc
@@ -100,7 +138,47 @@ contains
       endif
     endif
 
-  end subroutine LDT_gfrac_readParamSpecs
+  end subroutine Gfrac_readParamSpecs_LIS
+
+  subroutine gfrac_readParamSpecs_LISHydro(flag)
+    
+    character*100     :: source
+    integer           :: rc
+    integer           :: n
+    character*100     :: GREENFRAC
+    integer           :: flag
+    
+    allocate(LDT_gfrac_struc(LDT_rc%nnest))
+
+  ! Greenness fraction files:
+    call ESMF_ConfigFindLabel(LDT_config,"Greenness data source:",rc=rc)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
+!       call LDT_warning(rc,"Greenness data source: not defined")
+    enddo 
+    GREENFRAC="GREENNESS"
+    call ESMF_ConfigFindLabel(LDT_config,"Greenness fraction metadata variable name:",rc=rc)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,GREENFRAC,rc=rc)
+
+       call LDT_set_param_attribs(rc,LDT_gfrac_struc(n)%gfrac,&
+            "GREENFRAC",source)
+       call LDT_set_param_attribs(rc,LDT_gfrac_struc(n)%shdmax,&
+            "SHDMAX",source)
+       call LDT_set_param_attribs(rc,LDT_gfrac_struc(n)%shdmin,&
+            "SHDMIN",source)
+    enddo
+  ! LSM-required parameter check:
+    if( index(LDT_rc%lsm,"Noah") == 1 .or. &
+        index(LDT_rc%lsm,"CLSM") == 1 .or. &
+        index(LDT_rc%lsm,"RDHM") == 1 .or. &
+        index(LDT_rc%lsm,"SACHTET") == 1 ) then
+      if( rc /= 0 ) then
+         call LDT_warning(rc,"WARNING: Greenness data source: not defined")
+      endif
+    endif
+
+  end subroutine gfrac_readParamSpecs_LISHydro
 
 !BOP
 ! 
@@ -479,7 +557,7 @@ contains
 
   end subroutine LDT_greenness_init
 
-  subroutine LDT_greenness_writeHeader(n,ftn,dimID,monthID)
+  subroutine LDT_greenness_writeHeader_LIS(n,ftn,dimID,monthID)
 
     integer     :: n 
     integer     :: ftn
@@ -507,7 +585,39 @@ contains
        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"GREENNESS_DATA_INTERVAL", &
             LDT_gfrac_struc(n)%gfracInterval))
     endif
-  end subroutine LDT_greenness_writeHeader
+  end subroutine LDT_greenness_writeHeader_LIS
+  
+  subroutine LDT_greenness_writeHeader_LISHydro(n,ftn,dimID,monthID,flag)
+
+    integer     :: n 
+    integer     :: ftn
+    integer     :: dimID(4)
+    integer     :: monthID
+
+    integer     :: t_dimID(4)
+    integer     :: flag
+
+    if(LDT_gfrac_struc(n)%gfrac%selectOpt.gt.0) then 
+       if(LDT_gfrac_struc(n)%gfracInterval.eq."monthly") then !monthly
+          t_dimID(1) = dimID(1)
+          t_dimID(2) = dimID(2)
+          t_dimID(3) = monthID       
+          t_dimID(4) = dimID(4)
+   
+          call LDT_writeNETCDFdataHeader(n,ftn,t_dimID,&
+               LDT_gfrac_struc(n)%gfrac,flag)
+          
+          call LDT_writeNETCDFdataHeader(n,ftn,t_dimID,&
+               LDT_gfrac_struc(n)%shdmin,flag)
+          
+          call LDT_writeNETCDFdataHeader(n,ftn,t_dimID,&
+               LDT_gfrac_struc(n)%shdmax,flag)
+       endif
+
+       call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"GREENNESS_DATA_INTERVAL", &
+            LDT_gfrac_struc(n)%gfracInterval))
+    endif
+  end subroutine LDT_greenness_writeHeader_LISHydro
 
   subroutine LDT_greenness_writeData(n,ftn)
 
