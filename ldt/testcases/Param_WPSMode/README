@@ -1,0 +1,30 @@
+
+Focus:  LISHydro preprocessing for WRFHydro
+
+Description:  This case involves the processing LIS-WRF-Hydro parameters
+      writing WRF-compatible output.
+
+This test case uses the following files:
+  (a) this README file
+  (b) the ldt.config input file used with LDT for this testcase
+  (c) input.ctl GrADS control file to view the LDT-generated output
+
+To run this case: 
+ 
+  (a) Modify the ldt.config file provided here for your local file 
+       directory setup.
+
+  (b) Generate the LDT executable and copy to local working directory. 
+
+  (c) Run the LDT executable with the ldt.config file, 
+       and generate the NLDAS-2 forcing output for a selected domain.
+
+      ./LDT ldt.config
+
+  (d) View the NetCDF (*.nc) output using the sample grads file or
+       the ncview executable (if you have it installed).
+
+
+Caveats: 
+  (a) Please note that this is a more basic functional test for purpose
+      of learning major LDT features.
