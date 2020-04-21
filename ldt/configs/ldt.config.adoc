@@ -400,7 +400,7 @@ Acceptable values are:
 |"1" |Buffer included
 |===
 
-The default value is 1.
+The default value is 0.
 
 .Example _ldt.config_ entry
 ....
@@ -419,7 +419,7 @@ Acceptable values are:
 |"1 (or greater)" |Buffer points included
 |===
 
-The default value is 5.
+The default value is 5, and only activated if buffer option is selected.
 
 .Example _ldt.config_ entry
 ....
