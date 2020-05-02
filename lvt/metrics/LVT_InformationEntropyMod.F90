@@ -18,6 +18,7 @@ module LVT_InformationEntropyMod
   use LVT_TSMod
   use LVT_logMod
   use LVT_CIMod
+  use LVT_NumericalRecipesMod
 
   implicit none
 
@@ -717,14 +718,6 @@ contains
 
   end subroutine computeSingleInformationEntropy
 
-  function log2(x)
-    real  :: log2
-    real  :: x
-
-    log2= log(x)/log(2.0)
-
-  end function log2
-
 !BOP
 ! 
 ! !ROUTINE: LVT_writeMetric_InformationEntropy
@@ -919,38 +912,6 @@ contains
 ! 
 !EOP
 
-#if 0 
-    integer              :: k,l,m
-    type(LVT_metaDataEntry), pointer :: model
-    type(LVT_metaDataEntry), pointer :: obs
-    type(LVT_statsEntry),    pointer :: stats
-
-    call LVT_getDataStream1Ptr(model)
-    call LVT_getDataStream2Ptr(obs)
-    call LVT_getstatsEntryPtr(stats)
-    
-    do while(associated(model))
-       
-       if(LVT_metrics%ie%selectOpt.eq.1) then 
-          if(stats%selectOpt.eq.1.and.obs%selectNlevs.ge.1) then 
-             do m=1,LVT_rc%nensem
-                do k=1,model%selectNlevs
-                   
-                   call LVT_writevar_restart(ftn,&
-                        stats%ie(m)%value_total(:,k))
-                   call LVT_writevar_restart(ftn,&
-                        stats%ie(m)%count_total(:,k))
-                enddo
-             enddo
-          end if
-       end if
-       
-       model => model%next
-       obs   => obs%next
-       stats => stats%next
-
-    end do
-#endif
              
   end subroutine LVT_writerestart_InformationEntropy
 
@@ -976,40 +937,6 @@ contains
 ! 
 !EOP
 
-#if 0 
-    type(LVT_metaDataEntry), pointer :: model
-    type(LVT_metaDataEntry), pointer :: obs
-    type(LVT_statsEntry),    pointer :: stats
-    integer              :: k,l,m
-
-
-    call LVT_getDataStream1Ptr(model)
-    call LVT_getDataStream2Ptr(obs)
-    call LVT_getstatsEntryPtr(stats)
-    
-    do while(associated(model))
-       
-       if(LVT_metrics%ie%selectOpt.eq.1) then 
-          if(stats%selectOpt.eq.1.and.obs%selectNlevs.ge.1) then 
-             do m=1,LVT_rc%nensem
-                do k=1,model%selectNlevs
-                   
-                   call LVT_readvar_restart(ftn,&
-                        stats%ie(m)%value_total(:,k))
-                   call LVT_readvar_restart(ftn,&
-                        stats%ie(m)%count_total(:,k))
-                enddo
-             enddo
-          end if
-       endif
-
-       model => model%next
-       obs   => obs%next
-       stats => stats%next
-
-    enddo
-
-#endif             
   end subroutine LVT_readrestart_InformationEntropy
 
 
