@@ -18,6 +18,7 @@ module LVT_MutualInformationMod
   use LVT_TSMod
   use LVT_logMod
   use LVT_CIMod
+  use LVT_NumericalRecipesMod
 
   implicit none
 
@@ -614,9 +615,6 @@ contains
                       stats%mi(m)%value_total(t,k) = 0 
                       do kk=1,MI_nbins
                          do pp=1,MI_nbins
-!                            print*,kk,pp,stats%mi(m)%pxy(t,k,kk,pp),&
-!                                 px(kk),&
-!                                 py(pp)
                             if(px(kk).ne.LVT_rc%udef.and.&
                                  py(pp).ne.LVT_rc%udef.and.&
                                  stats%mi(m)%pxy(t,k,kk,pp).ne.LVT_rc%udef.and.&
@@ -627,12 +625,6 @@ contains
                                     stats%mi(m)%pxy(t,k,kk,pp)*&
                                     log2(stats%mi(m)%pxy(t,k,kk,pp)/&
                                     (px(kk)*py(pp)))
-!                               print*, t,kk,pp,stats%mi(m)%pxy(t,k,kk,pp),&
-!                                    stats%mi(m)%px(t,k,kk),&
-!                                    stats%mi(m)%py(t,k,pp),&
-!                                    log(stats%mi(m)%pxy(t,k,kk,pp)/&
-!                                    (stats%mi(m)%px(t,k,kk)*&
-!                                    stats%mi(m)%py(t,k,pp)))
                             endif
                          enddo
                       enddo
@@ -659,14 +651,6 @@ contains
 
 
   end subroutine computeSingleMutualInformation
-
-  function log2(x)
-    real  :: log2
-    real  :: x
-
-    log2= log(x)/log(2.0)
-
-  end function log2
 
 !BOP
 ! 
