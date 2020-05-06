@@ -465,7 +465,6 @@ subroutine LIS_lsmda_plugin
    external NoahMP401_getsoilm           
    external NoahMP401_setsoilm              
    external NoahMP401_getsmpred
-!   external NoahMP401_getLbandTbPred   !we need this for Lband DA
    external NoahMP401_qcsoilm
    external NoahMP401_qc_soilmobs
    external NoahMP401_scale_soilm
@@ -475,7 +474,6 @@ subroutine LIS_lsmda_plugin
    external NoahMP401_getsnowvars         
    external NoahMP401_setsnowvars              
    external NoahMP401_getsnowpred
-!   external NoahMP401_getLbandTbPred   !we need this for Lband DA
    external NoahMP401_qcsnow
    external NoahMP401_qc_snowobs
    external NoahMP401_scale_snow
