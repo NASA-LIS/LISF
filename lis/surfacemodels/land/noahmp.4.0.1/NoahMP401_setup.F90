@@ -253,7 +253,10 @@ subroutine NoahMP401_setup()
            CALL TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,&
                 NoahMP401_struc(n)%noahmp401(t)%param)
         enddo
-        
+   
+     !optional read of Optimized parameters
+
+        call NoahMP401_read_OPT_parameters()     
      enddo
 
 end subroutine NoahMP401_setup
