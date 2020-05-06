@@ -21,8 +21,8 @@ subroutine noahmp401_snow_update(n, t, dsneqv, dsnowh)
 
   use LIS_coreMod
   use NoahMP401_lsmMod
-  USE MODULE_SF_NOAHMPLSM_401
-  USE NOAHMP_TABLES_401
+  use module_sf_noahmplsm_401
+  use noahmp_tables_401
 
   implicit none
 ! 
@@ -118,7 +118,7 @@ subroutine noahmp401_snow_update(n, t, dsneqv, dsnowh)
   ! set ZSOIL 
   allocate(zsoil(nsoil))
   ! zsoil is negative.
-  zsoil(1) = -NOAHMP401_struc(n)%sldpth(1)
+  zsoil(1) = -noahmp401_struc(n)%sldpth(1)
   do i = 2, nsoil
      zsoil(i) = zsoil(i-1) - NOAHMP401_struc(n)%sldpth(i)
   enddo
@@ -126,50 +126,50 @@ subroutine noahmp401_snow_update(n, t, dsneqv, dsnowh)
 
   ! state variables 
   snice(-nsnow+1:0) = &
-       NOAHMP401_struc(n)%noahmp401(t)%snowice(1:nsnow)
+       noahmp401_struc(n)%noahmp401(t)%snowice(1:nsnow)
   snliq(-nsnow+1:0) = &
-       NOAHMP401_struc(n)%noahmp401(t)%snowliq(1:nsnow) 
+       noahmp401_struc(n)%noahmp401(t)%snowliq(1:nsnow) 
   stc(-nsnow+1:0) = &
-       NOAHMP401_struc(n)%noahmp401(t)%tsno(1:nsnow)
+       noahmp401_struc(n)%noahmp401(t)%tsno(1:nsnow)
   ! soil temperature
   stc(1:nsoil) = &
-       NOAHMP401_struc(n)%noahmp401(t)%tslb(1:nsoil)    
+       noahmp401_struc(n)%noahmp401(t)%tslb(1:nsoil)    
 
 
   ! from snowfall routine
   ! creating a new layer
-  IF(ISNOW == 0.and.(dsneqv.gt.0.and.dsnowh.gt.0))  THEN
-     SNOWH = SNOWH + dsnowh
-     SNEQV = SNEQV + dsneqv
-  END IF
+  if(isnow == 0.and.(dsneqv.gt.0.and.dsnowh.gt.0))  then
+     snowh = snowh + dsnowh
+     sneqv = sneqv + dsneqv
+  end if
   
-  NEWNODE = 0 
+  newnode = 0 
 
-  IF(ISNOW == 0 .AND. SNOWH >= 0.025.and.&
-       (dsneqv.gt.0.and.dsnowh.gt.0))  THEN !MB: change limit
-     ISNOW    = -1
-     NEWNODE  =  1
-     DZSNSO(0)= SNOWH
-     SNOWH    = 0.
-     STC(0)   = MIN(273.16, NOAHMP401_struc(n)%noahmp401(t)%sfctmp)   ! temporary setup
-     SNICE(0) = SNEQV
-     SNLIQ(0) = 0.
-  END IF
+  if(isnow == 0 .and. snowh >= 0.025.and.&
+       (dsneqv.gt.0.and.dsnowh.gt.0))  then !mb: change limit
+     isnow    = -1
+     newnode  =  1
+     dzsnso(0)= snowh
+     snowh    = 0.
+     stc(0)   = min(273.16, noahmp401_struc(n)%noahmp401(t)%sfctmp) 
+     snice(0) = sneqv
+     snliq(0) = 0.
+  end if
   
   ! snow with layers
-  IF(ISNOW <  0 .AND. NEWNODE == 0 .and. &
+  if(isnow <  0 .and. newnode == 0 .and. &
        (dsneqv.gt.0.and.dsnowh.gt.0)) then
-     SNICE(ISNOW+1)  = SNICE(ISNOW+1)   + dsneqv
-     DZSNSO(ISNOW+1) = DZSNSO(ISNOW+1)  + dsnowh
-  ENDIF
+     snice(isnow+1)  = snice(isnow+1)   + dsneqv
+     dzsnso(isnow+1) = dzsnso(isnow+1)  + dsnowh
+  endif
   
   if(dsneqv.lt.0.and.dsnowh.lt.0) then
      snowh1 = snowh + dsnowh
      sneqv1 = sneqv + dsneqv
      if(snowh1.ge.0.and.sneqv1.ge.0) then         
-        SNOWH = SNOWH + dsnowh
-        SNEQV = SNEQV + dsneqv
-! Update dzsnso
+        snowh = snowh + dsnowh
+        sneqv = sneqv + dsneqv
+! update dzsnso
 ! how do you determine the thickness of a layer?
         if(snowh.le.dzsnso(0)) then 
            isnow = 0
@@ -196,8 +196,8 @@ subroutine noahmp401_snow_update(n, t, dsneqv, dsnowh)
     endif
   enddo
 
-  sice(:) = max(0.0, NOAHMP401_struc(n)%noahmp401(t)%smc(:)&
-       - NOAHMP401_struc(n)%noahmp401(t)%sh2o(:))   
+  sice(:) = max(0.0, noahmp401_struc(n)%noahmp401(t)%smc(:)&
+       - noahmp401_struc(n)%noahmp401(t)%sh2o(:))   
 
   !imelt
   do j = -nsnow+1, nsoil
@@ -210,9 +210,9 @@ subroutine noahmp401_snow_update(n, t, dsneqv, dsnowh)
   end do
   
   do j = 1, nsoil         ! soil
-     mliq(j) =  NOAHMP401_struc(n)%noahmp401(t)%sh2o(j) * dzsnso(j) * 1000.
-     mice(j) = (NOAHMP401_struc(n)%noahmp401(t)%smc(j) - &
-          NOAHMP401_struc(n)%noahmp401(t)%sh2o(j))  * dzsnso(j) * 1000.
+     mliq(j) =  noahmp401_struc(n)%noahmp401(t)%sh2o(j) * dzsnso(j) * 1000.
+     mice(j) = (noahmp401_struc(n)%noahmp401(t)%smc(j) - &
+          noahmp401_struc(n)%noahmp401(t)%sh2o(j))  * dzsnso(j) * 1000.
   end do
   
   do j = isnow+1,nsoil    ! all layers
@@ -220,21 +220,11 @@ subroutine noahmp401_snow_update(n, t, dsneqv, dsnowh)
   enddo
   
   do j = 1,nsoil
-!     if (opt_frz == 1) then
-! Assuming the use of option 1 for now
-        if(stc(j) < tfrz) then
-           smp = hfus*(tfrz-stc(j))/(grav*stc(j))             !(m)
-           SUPERCOOL(J) = parameters%SMCMAX(J)*(SMP/parameters%PSISAT(J))**(-1./parameters%BEXP(J))
-           SUPERCOOL(J) = SUPERCOOL(J)*DZSNSO(J)*1000.        !(mm)
-        end if
-!     end if
-!     if (opt_frz == 2) then
-!        call frh2o (supercool(j),&
-!             NOAHMP401_struc(n)%noahmp401(t)%sstc(j),&
-!             NOAHMP401_struc(n)%noahmp401(t)%smc(j),&
-!             NOAHMP401_struc(n)%noahmp401(t)%sh2o(j))
-!        supercool(j) = supercool(j)*dzsnso(j)*1000.        !(mm)
-!     end if
+     if(stc(j) < tfrz) then
+        smp = hfus*(tfrz-stc(j))/(grav*stc(j))             !(m)
+        supercool(j) = parameters%smcmax(j)*(smp/parameters%psisat(j))**(-1./parameters%bexp(j))
+        supercool(j) = supercool(j)*dzsnso(j)*1000.        !(mm)
+     end if
   enddo
 
   do j = isnow+1,nsoil
@@ -245,7 +235,7 @@ subroutine noahmp401_snow_update(n, t, dsneqv, dsnowh)
         imelt(j) = 2
      endif
      
-     ! If snow exists, but its thickness is not enough to create a layer
+     ! if snow exists, but its thickness is not enough to create a layer
      if (isnow == 0 &
           .and. sneqv > 0. .and. j == 1) then
         if (stc(j) >= tfrz) then
@@ -254,8 +244,8 @@ subroutine noahmp401_snow_update(n, t, dsneqv, dsnowh)
      endif
   enddo
 
-  ! from SNOWWATER 
-  SNOFLOW = 0.0
+  ! from snowwater 
+  snoflow = 0.0
   ponding1 = 0.0
   ponding2 = 0.0  
 
@@ -282,64 +272,64 @@ subroutine noahmp401_snow_update(n, t, dsneqv, dsnowh)
   enddo
   
   !to obtain equilibrium state of snow in glacier region
-  IF(SNEQV > 2000.) THEN   ! 2000 mm -> maximum water depth
-     BDSNOW      = SNICE(0) / DZSNSO(0)
-     SNOFLOW     = (SNEQV - 2000.)
-     SNICE(0)    = SNICE(0)  - SNOFLOW
-     DZSNSO(0)   = DZSNSO(0) - SNOFLOW/BDSNOW
-     !SNOFLOW     = SNOFLOW / DT
-  END IF
+  if(sneqv > 2000.) then   ! 2000 mm -> maximum water depth
+     bdsnow      = snice(0) / dzsnso(0)
+     snoflow     = (sneqv - 2000.)
+     snice(0)    = snice(0)  - snoflow
+     dzsnso(0)   = dzsnso(0) - snoflow/bdsnow
+     !snoflow     = snoflow / dt
+  end if
 
   ! sum up snow mass for layered snow
-  IF(ISNOW < 0) THEN  ! MB: only do for multi-layer
-     SNEQV = 0.
-     SNOWH = 0.      ! Yeosang Yoon
-     DO IZ = ISNOW+1,0
-        SNEQV = SNEQV + SNICE(IZ) + SNLIQ(IZ)
-        SNOWH = SNOWH + DZSNSO(IZ)             ! Yeosang Yoon
-     ENDDO
-  END IF
+  if(isnow < 0) then  ! mb: only do for multi-layer
+     sneqv = 0.
+     snowh = 0.      ! yeosang yoon
+     do iz = isnow+1,0
+        sneqv = sneqv + snice(iz) + snliq(iz)
+        snowh = snowh + dzsnso(iz)             ! yeosang yoon
+     enddo
+  end if
 
-  ! Yeosag Yoon, no snow layer case, limit snow density to 1000
-   IF (ISNOW == 0 .AND. SNEQV > 0. .AND. SNOWH > 0.) THEN
-        BDSNOW = SNEQV/SNOWH
-        IF (BDSNOW >= DENH2O) THEN
-            SNOWH  = SNOWH*(BDSNOW/1000.) ! change unit, SNEQV=[mm] SNOWH=[m]
-        END IF
-   END IF
+  ! no snow layer case, limit snow density to 1000
+   if (isnow == 0 .and. sneqv > 0. .and. snowh > 0.) then
+        bdsnow = sneqv/snowh
+        if (bdsnow >= denh2o) then
+            snowh  = snowh*(bdsnow/1000.) ! change unit, sneqv=[mm] snowh=[m]
+        end if
+   end if
 
-  ! Reset ZSNSO and layer thinkness DZSNSO
-  DO IZ = ISNOW+1, 0
-     DZSNSO(IZ) = -DZSNSO(IZ)
-  END DO
+  ! reset zsnso and layer thinkness dzsnso
+  do iz = isnow+1, 0
+     dzsnso(iz) = -dzsnso(iz)
+  end do
   
-  DZSNSO(1) = ZSOIL(1)
-  DO IZ = 2,NSOIL
-     DZSNSO(IZ) = (ZSOIL(IZ) - ZSOIL(IZ-1))
-  END DO
+  dzsnso(1) = zsoil(1)
+  do iz = 2,nsoil
+     dzsnso(iz) = (zsoil(iz) - zsoil(iz-1))
+  end do
   
-  ZSNSO(ISNOW+1) = DZSNSO(ISNOW+1)
-  DO IZ = ISNOW+2 ,NSOIL
-     ZSNSO(IZ) = ZSNSO(IZ-1) + DZSNSO(IZ)
-  ENDDO
+  zsnso(isnow+1) = dzsnso(isnow+1)
+  do iz = isnow+2 ,nsoil
+     zsnso(iz) = zsnso(iz-1) + dzsnso(iz)
+  enddo
 
-  DO IZ = ISNOW+1 ,NSOIL
-     DZSNSO(IZ) = -DZSNSO(IZ)
-  END DO
+  do iz = isnow+1 ,nsoil
+     dzsnso(iz) = -dzsnso(iz)
+  end do
 
   ! update state vars
   noahmp401_struc(n)%noahmp401(t)%isnow = isnow
   noahmp401_struc(n)%noahmp401(t)%sneqv = sneqv
   noahmp401_struc(n)%noahmp401(t)%snowh = snowh 
 
-  NOAHMP401_struc(n)%noahmp401(t)%zss(1:nsnow+&
+  noahmp401_struc(n)%noahmp401(t)%zss(1:nsnow+&
        nsoil) = zsnso(-nsnow+1:nsoil)
-  NOAHMP401_struc(n)%noahmp401(t)%snowice(1:nsnow) = & 
+  noahmp401_struc(n)%noahmp401(t)%snowice(1:nsnow) = & 
        snice(-nsnow+1:0) 
-  NOAHMP401_struc(n)%noahmp401(t)%snowliq(1:nsnow)  = &        
+  noahmp401_struc(n)%noahmp401(t)%snowliq(1:nsnow)  = &        
        snliq(-nsnow+1:0) 
-  NOAHMP401_struc(n)%noahmp401(t)%tsno(1:nsnow) = stc(-nsnow+1:0)
-  NOAHMP401_struc(n)%noahmp401(t)%tslb(1:nsoil) = stc(1:nsoil)
+  noahmp401_struc(n)%noahmp401(t)%tsno(1:nsnow) = stc(-nsnow+1:0)
+  noahmp401_struc(n)%noahmp401(t)%tslb(1:nsoil) = stc(1:nsoil)
 
   deallocate(ficeold)
   deallocate(snice)

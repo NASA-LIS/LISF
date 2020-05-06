@@ -243,14 +243,6 @@ contains
     real,         allocatable         :: lons(:), lats(:)
     real,         allocatable         :: state_lat(:), state_lon(:)
     
-    !these variables are used to test if the pf is working as intended
-    !real, dimension(1,20)          :: Pw_norm
-    !real, dimension(1,20)          :: Pw_combined
-    !real,  dimension(1,20)           :: Pw_raw
-    !real, dimension(20)           :: Pw_cumsum
-    !real, allocatable, dimension(:,:)           :: updated_state    
-
-
 !----------------------------------------------------------------------------
 !  Check if the observation state is updated or not. If it is updated,
 !  the data is then assimilated. 
@@ -426,28 +418,6 @@ contains
                   obs_param,obs_da,Obs_cov)
           endif
           if(assim.and.obspred_flag) then   
-!#if 0 
-!test...............
-             !if(gid.eq.1) then 
-!             if(tileid.eq.61.and.LIS_localPet.eq.8) then 
-              !  print*, 'gid',gid
-               ! print*, 'mo da hr', LIS_rc%mo, LIS_rc%da, LIS_rc%hr
-               ! print*, 'obs ',obs_da(1)%value
-               ! print*, 'obspred ',obspred_da(1,:)
-               ! print*, 'obspert ',obspert_da(1,1)
-               ! print*, 'obscov ',obs_cov
-               ! print*, 'Observation ',Observations(1)%value
-               ! print*, 'Nobs ',N_selected_obs
-               ! print*, 'Nstate ',N_state
-               ! print*, 'stincr ', state_incr(1,:)
-           !  endif
-!#endif             
-!test...................
-                
-!                svk_obsda(svk_col,svk_row) = obs_da(1)%value
-!                svk_obspred(svk_col,svk_row) = sum(obspred_da(1,:))/N_ens
-!                svk_obspert(svk_col,svk_row) = obspert_da(1,1)
-!                svk_statebf(svk_col,svk_row) = sum(state_incr(1, ((i-1)*N_ens+1):((i-1)*N_ens+N_ens)))/N_ens
              call pf_analysis(gid,N_state,N_selected_obs, N_ens, &
                   obs_da,                                        & 
                   obspred_da,                       &
@@ -455,25 +425,6 @@ contains
                   Obs_cov,                          &
                   state_incr(:, ((i-1)*N_ens+1):((i-1)*N_ens+N_ens)),&
                   state_lon, state_lat,xcompact,ycompact)
-
-             
-             !if(gid.eq.1) then
-               !print*, 'Pw_combined ',Pw_combined
-               !print*, 'Pw_raw ',Pw_raw
-               !print*, 'Pw_cumsum ',Pw_cumsum
-               !print*, 'stincr ', state_incr
-!                state_tmp(:,(i-1)*N_ens+1:(i-1)*N_ens+N_ens) = &
-!                     state_incr(:,(i-1)*N_ens+1:(i-1)*N_ens+N_ens)
-!                print*, 'stincr af',sum(state_tmp(1, ((i-1)*N_ens+1):((i-1)*N_ens+N_ens)))/N_ens, sum(state_tmp(2, ((i-1)*N_ens+1):((i-1)*N_ens+N_ens)))/N_ens
-!             if(tileid.eq.61.and.LIS_localPet.eq.8) then 
-!             state_tmp(:,(i-1)*N_ens+1:(i-1)*N_ens+N_ens) = &
-!                  state_tmp(:,(i-1)*N_ens+1:(i-1)*N_ens+N_ens) + &
-!                  state_incr(:,(i-1)*N_ens+1:(i-1)*N_ens+N_ens)
-!             print*, 'stincr af',sum(state_tmp(1, ((i-1)*N_ens+1):((i-1)*N_ens+N_ens)))/N_ens, sum(state_tmp(2, ((i-1)*N_ens+1):((i-1)*N_ens+N_ens)))/N_ens
-!             print*, ''
-
-!             svk_stateaf(svk_col,svk_row) = sum(state_tmp(1, ((i-1)*N_ens+1):((i-1)*N_ens+N_ens)))/N_ens
-             !endif
           else
              state_incr(:,(i-1)*N_ens+1:(i-1)*N_ens+N_ens) = 0.0            
           endif

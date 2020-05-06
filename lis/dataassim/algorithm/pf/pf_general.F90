@@ -17,6 +17,8 @@
 !EOP
 module pf_general
   
+  use LIS_logMod
+
   implicit none
   
   private
@@ -111,21 +113,7 @@ contains
     real                                 :: iii
     real                                 :: Pw_sum
     
-    !OUTOUTS - for PF testing
-    !real, dimension(N_ens)               :: Pw_cumsum_output
-    !real, intent(out), dimension(N_obs,N_ens)        :: Pw_raw_output
-    !real, intent(out), dimension(1,N_ens)            :: Pw_norm_output
-    !real, intent(out), dimension(1,N_ens)            :: Pw_combined_output
-    !real, dimension(N_state,N_ens)       :: updated_state_output
-    
     ! ------------------------------------------------------------------
-
-!    if(present(xcompact).and.present(ycompact)) then 
-!       write(LIS_logunit,*) 'Currently only 1-d filter is supported...'
-!       write(LIS_logunit,*) 'Program stopping...'
-!       call LIS_endrun()
-!    endif
-
     ! find out whether Hadamard product should be applied
 
     apply_hadamard = (               &
@@ -141,9 +129,6 @@ contains
     !calculate determinate of observation error covariance matrix
     det_Obs_cov=determinant(Obs_cov)
     
-    !calculate inverse of observation error covariance matrix
-    !call gjinvert(N_obs,Obs_cov, Obs_cov_inv) 
-
     !calcualte innovations, or difference between obs prediction made by the model and observations
     do i=1,N_obs
        do jj=1,N_ens
@@ -404,26 +389,24 @@ contains
     
     real :: get_gaspari_cohn, dx, dy, xcompact, ycompact, d
 
-!    real :: dist,maxdist
     ! compute (anisotropic) distance relative to compact support
     
     d = sqrt( (dx/xcompact)**2 + (dy/ycompact)**2 )    
     get_gaspari_cohn = gaspari_cohn(d)
 
-!    dist = dx**2 + dy**2
-!    maxdist = xcompact**2 + ycompact**2
-!    if(dist.le.maxdist) then 
-!       get_gaspari_cohn = (maxdist -dist)/(maxdist+dist)
-!    else
-!       get_gaspari_cohn = 0.0
-!    endif
-
   end function get_gaspari_cohn
   
   ! ************************************************************
 
+
+!BOP
+! 
+! !ROUTINE: giinvert
 !
+! !INTERFACE:
 !
+  subroutine gjinvert(n, A_orig,A_inv)
+! !DESCRIPTION:  
 ! Gauss-Jordan Method for Matrix Inversion
 !
 ! Inversion of n-square matrix
@@ -436,35 +419,13 @@ contains
 !      M.S. Thesis, Dept. of Hydrology and Water Resources, University of 
 !      Arizona.  261 pp.
 !
-! Version History
-!   05 May 2005  Matthew Garcia  Initial specification
-!
-!BOP
-! 
-! !ROUTINE:
-!
-! !INTERFACE:
-! 
-! !USES:   
-!
-! !INPUT PARAMETERS: 
-! 
-! !OUTPUT PARAMETERS:
-!
-! !DESCRIPTION: 
-! 
-! !FILES USED:
-!
-! !REVISION HISTORY: 
 ! 
 !EOP
-  subroutine gjinvert(n, A_orig,A_inv)
-!
-! argument variables
+
     integer, intent(IN) :: n
     real, intent(IN) :: A_orig(n,n)
     real, intent(OUT) :: A_inv(n,n)
-    !
+
 ! local variables
     real :: big,dum,pivinv
     real :: a(n,n),b(n,1)
@@ -472,7 +433,7 @@ contains
     integer :: i,j,k,l,ll
     integer :: m = 0
     integer :: ipiv(n),indxr(n),indxc(n)
-!
+
     a = A_orig
     ipiv = 0
     do i = 1,n
@@ -487,8 +448,8 @@ contains
                       icol = k
                    endif
                 else if (ipiv(k).gt.1) then
-                   print *,'ERR: mqb_module -- error in matrix inversion'
-                   stop
+                   write(LIS_logunit,*) '[ERR] mqb_module -- error in matrix inversion'
+                   call LIS_endrun()
                 endif
              end do
           endif
@@ -510,8 +471,8 @@ contains
        indxr(i)=irow
        indxc(i)=icol
        if (a(icol,icol).eq.0) then
-          print *,'ERR: mqb_module -- singular matrix encountered'
-          stop
+          write(LIS_logunit,*) '[ERR] mqb_module -- singular matrix encountered'
+          call LIS_endrun()
        endif
        !
        pivinv = 1 / a(icol,icol)
