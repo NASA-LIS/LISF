@@ -110,6 +110,7 @@ subroutine HYMAP2_routing_run(n)
   real,   pointer       :: rivstotmp_lvec(:)
   real,   pointer       :: fldstotmp_lvec(:)
   real,   pointer       :: fldfrctmp_lvec(:)
+  real                  :: fldfrctmp1_lvec(LIS_rc%ntiles(n))
   
   integer               :: status
   logical               :: alarmCheck
@@ -645,7 +646,8 @@ subroutine HYMAP2_routing_run(n)
           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
                HYMAP2_routing_struc(n)%nseqall,&
                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-               HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),     HYMAP2_routing_struc(n)%rivstotmp)
+               HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1), &
+               HYMAP2_routing_struc(n)%rivstotmp)
 
           call LIS_grid2tile(n,tmp_nensem(:,:,1),rivstotmp_lvec)
           !write(LIS_logunit,*) 'rivsto from Routing', rivstotmp_lvec
@@ -659,8 +661,8 @@ subroutine HYMAP2_routing_run(n)
  
           ! convert from m3 to m  
           do i=1,HYMAP2_routing_struc(n)%nseqall
-          HYMAP2_routing_struc(n)%fldstotmp(i,:)=HYMAP2_routing_struc(n)%fldsto(i,:)/&
-               HYMAP2_routing_struc(n)%grarea(i)
+             HYMAP2_routing_struc(n)%fldstotmp(i,:)=HYMAP2_routing_struc(n)%fldsto(i,:)/&
+                  HYMAP2_routing_struc(n)%grarea(i)
           enddo
 
           !HYMAP2_routing_struc(n)%fldstotmp=HYMAP2_routing_struc(n)%fldsto
@@ -668,7 +670,8 @@ subroutine HYMAP2_routing_run(n)
           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
                HYMAP2_routing_struc(n)%nseqall,&
                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
-               HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1),     HYMAP2_routing_struc(n)%fldstotmp)
+               HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1), &
+               HYMAP2_routing_struc(n)%fldstotmp)
 
           call LIS_grid2tile(n,tmp_nensem(:,:,1),fldstotmp_lvec)
           !write(LIS_logunit,*) 'fldsto from Routing', fldstotmp_lvec
@@ -681,14 +684,27 @@ subroutine HYMAP2_routing_run(n)
           call LIS_verify(status)
           
           !create flooded fraction flags
-          where(fldfrc_lvec>=HYMAP2_routing_struc(n)%fldfrc2waycpl)
-            fldfrctmp_lvec=1.
-          else where
-            fldfrctmp_lvec=0.
-          end where
+!          where(fldfrc_lvec>=HYMAP2_routing_struc(n)%fldfrc2waycpl)
+!            fldfrctmp_lvec=1.
+!          else where
+!            fldfrctmp_lvec=0.
+!          end where
+          call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
+               HYMAP2_routing_struc(n)%nseqall,&
+               HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&
+               HYMAP2_routing_struc(n)%seqy,tmp_nensem(:,:,1), &
+               HYMAP2_routing_struc(n)%fldfrc)
 
+          call LIS_grid2tile(n,tmp_nensem(:,:,1),fldfrctmp1_lvec)
+
+          do t=1,LIS_rc%ntiles(n)
+             if(fldfrctmp1_lvec(t) >= HYMAP2_routing_struc(n)%fldfrc2waycpl) then 
+                fldfrctmp_lvec(t)=1.
+             else
+                fldfrctmp_lvec(t)=0.
+             endif
+          enddo
        endif
-
        deallocate(tmp_nensem)
     endif
 

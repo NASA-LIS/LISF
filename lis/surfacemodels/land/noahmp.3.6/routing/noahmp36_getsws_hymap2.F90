@@ -42,7 +42,8 @@ subroutine noahmp36_getsws_hymap2(n)
 !  real                     :: tmp(LIS_rc%lnc(n),LIS_rc%lnr(n))
 !  logical :: dummy
   
-  call ESMF_AttributeGet(LIS_runoff_state(n),"2 way coupling",enable2waycpl, rc=status)
+  call ESMF_AttributeGet(LIS_runoff_state(n),"2 way coupling",&
+       enable2waycpl, rc=status)
   call LIS_verify(status)
 
   if(enable2waycpl==1) then 
@@ -52,7 +53,8 @@ subroutine noahmp36_getsws_hymap2(n)
      
      call ESMF_FieldGet(rivsto_field,localDE=0,farrayPtr=rivstotmp,rc=status)
      call LIS_verify(status,'ESMF_FieldGet failed for River Storage')
-     where(rivstotmp/=LIS_rc%udef)NOAHMP36_struc(n)%noahmp36(:)%rivsto=rivstotmp/NOAHMP36_struc(n)%dt
+     where(rivstotmp/=LIS_rc%udef) &
+          NOAHMP36_struc(n)%noahmp36(:)%rivsto=rivstotmp/NOAHMP36_struc(n)%dt
 
      ! Flood Storage
      call ESMF_StateGet(LIS_runoff_state(n),"Flood Storage",fldsto_field,rc=status)
@@ -60,7 +62,8 @@ subroutine noahmp36_getsws_hymap2(n)
      
      call ESMF_FieldGet(fldsto_field,localDE=0,farrayPtr=fldstotmp,rc=status)
      call LIS_verify(status,'ESMF_FieldGet failed for Flood Storage')
-     where(fldstotmp/=LIS_rc%udef)NOAHMP36_struc(n)%noahmp36(:)%fldsto=fldstotmp/NOAHMP36_struc(n)%dt
+     where(fldstotmp/=LIS_rc%udef)&
+          NOAHMP36_struc(n)%noahmp36(:)%fldsto=fldstotmp/NOAHMP36_struc(n)%dt
 
      ! Flooded Fraction Flag
      call ESMF_StateGet(LIS_runoff_state(n),"Flooded Fraction",fldfrc_field,rc=status)
