@@ -214,9 +214,7 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
 
    ! If we are outside of the irrigation window, set rate to 0
      if ((ltime.gt.shift_otimee).or.(ltime.lt.shift_otimes)) then
-       irrigRate(t) = 0.0
-!       write(LIS_logunit,*) '[INFO] ',ltime, &
-!            'is outside the irrigation window'     
+       irrigRate(t) = 0.0    
      endif
 
 ! Calculate vegetation and root depth parameters
