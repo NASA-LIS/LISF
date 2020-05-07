@@ -209,7 +209,7 @@ module LDT_pluginIndices
 !-------------------------------------------------------------------------
    character*50, public,  parameter :: LDT_umdcropmapId   = "UMDCROPMAP"
    character*50, public,  parameter :: LDT_monfredacropId = "Monfreda08"
-   character*50, public,  parameter :: LDT_mircairrcropId = "MIRCAIrrig"
+   character*50, public,  parameter :: LDT_mircairrcropId = "MIRCA"
    character*50, public,  parameter :: LDT_mirca52cropId  = "MIRCA52"
 
 !------------------------------------------------------------------------

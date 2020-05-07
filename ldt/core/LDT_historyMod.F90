@@ -40,6 +40,8 @@ module LDT_historyMod
 !                   model output in different formats for all LSMs
 !  13 Jul 2008: Sujay Kumar; Added support for GRIB2
 !  01 Sep 2015: KR Arsenault; Adding support for parallel computing in LDT
+!  28 Feb 2020: H. Beaudoing; Added handling of variables that doesn't conform
+!                             to default array shape and type (3D; real) 
 ! 
 ! !USES: 
   use LDT_paramDataMod
@@ -1988,8 +1990,10 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
    else 
     if ( trim(wtype) .eq. "double" ) then
       wtype_temp = nf90_double
-    else
+    elseif ( trim(wtype) .eq. "int" ) then
       wtype_temp = nf90_int
+    else
+      wtype_temp = nf90_float
     endif
    endif
 
@@ -2174,11 +2178,13 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
    type(LDT_paramEntry) :: paramEntry    
    character(len=*)     :: wtype
    
-   integer           :: c,r,k,l,count,ierr,z
-   real*8, allocatable :: dltmp(:,:,:)
-   real*8, allocatable :: dgtmp1(:,:,:),dgtmp2(:,:,:,:)
+   integer              :: c,r,k,l,count,ierr,z
+   real*8, allocatable  :: dltmp(:,:,:)
+   real*8, allocatable  :: dgtmp1(:,:,:),dgtmp2(:,:,:,:)
    integer, allocatable :: iltmp(:,:,:)
    integer, allocatable :: igtmp1(:,:,:),igtmp2(:,:,:,:)
+   real, allocatable    :: fltmp(:,:,:)
+   real, allocatable    :: fgtmp1(:,:,:),fgtmp2(:,:,:,:)
 
 !SVK edit
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)   
@@ -2362,6 +2368,97 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
       deallocate(iltmp)
       deallocate(igtmp1)
       deallocate(igtmp2)
+
+     elseif ( trim(wtype) .eq. "float" ) then
+      allocate(fltmp(LDT_rc%lnc(n)*LDT_rc%lnr(n),paramEntry%vlevels,paramEntry%zlevels))
+      
+      do r=1,LDT_rc%lnr(n)
+         do c=1,LDT_rc%lnc(n)
+            if(paramEntry%zlevels.gt.1) then 
+             fltmp(c+(r-1)*LDT_rc%lnc(n),:,:) = paramEntry%value4d(c,r,:,:)
+            else
+             fltmp(c+(r-1)*LDT_rc%lnc(n),:,1) = paramEntry%value4d(c,r,:,1)
+            endif
+         enddo
+      enddo
+      if(LDT_masterproc) then 
+         allocate(fgtmp1(LDT_rc%gnc(n)*LDT_rc%gnr(n),paramEntry%vlevels,paramEntry%zlevels))
+         allocate(fgtmp2(LDT_rc%gnc(n),LDT_rc%gnr(n),paramEntry%vlevels,paramEntry%zlevels))
+      else
+         allocate(fgtmp1(1,paramEntry%vlevels,paramEntry%zlevels))
+         allocate(fgtmp2(1,1,paramEntry%vlevels,paramEntry%zlevels))
+      endif
+      
+     do z=1,paramEntry%zlevels
+      do k=1,paramEntry%vlevels
+#if (defined SPMD) 
+         call MPI_GATHERV(fltmp(:,k,z),LDT_deltas(n,LDT_localPet),MPI_REAL,fgtmp1(:,k,z),&
+              LDT_deltas(n,:),LDT_offsets(n,:),MPI_REAL,0,MPI_COMM_WORLD,ierr)
+#else
+         fgtmp1(:,k,z) = fltmp(:,k,z)
+#endif
+      enddo
+     enddo
+      if(LDT_masterproc) then 
+!         print*, 'writing att ',trim(paramEntry%short_name), LDT_localPet
+         count =1 
+         do l=1,LDT_npes
+            do r=LDT_nss_ind(n,l), LDT_nse_ind(n,l)
+                do c=LDT_ews_ind(n,l), LDT_ewe_ind(n,l)
+                   fgtmp2(c,r,:,:) = fgtmp1(count,:,:)
+                   count = count+1
+                enddo
+             enddo
+          enddo
+         if(paramEntry%vlevels.gt.1) then 
+          if(paramEntry%zlevels.gt.1) then 
+            call LDT_verify(nf90_put_var(ftn, paramEntry%vid,fgtmp2,&
+                 (/1,1,1,1/),(/LDT_rc%gnc(n),LDT_rc%gnr(n),&
+                 paramEntry%vlevels,paramEntry%zlevels/)), &
+                 'error in nf90_put_var in LDT_writeNETCDFdata (writeNETCDFdata_giventype)')
+          else
+            call LDT_verify(nf90_put_var(ftn, paramEntry%vid,fgtmp2(:,:,:,1),&
+                 (/1,1,1/),(/LDT_rc%gnc(n),LDT_rc%gnr(n),&
+                 paramEntry%vlevels/)), &
+                 'error in nf90_put_var in LDT_writeNETCDFdata (writeNETCDFdata_giventype)')
+          endif
+         else
+            call LDT_verify(nf90_put_var(ftn, paramEntry%vid,fgtmp2(:,:,1,1),&
+                 (/1,1/),(/LDT_rc%gnc(n),LDT_rc%gnr(n)/)),&
+                 'nf90_put_var failed in LDT_writeNETCDFdata (writeNETCDFdata_giventype)')
+         endif
+
+
+#if ( defined USE_NETCDF3 )
+         call LDT_verify(nf90_redef(ftn))
+#endif
+         call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "standard_name",trim(paramEntry%standard_name)))
+         call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "units",trim(paramEntry%units)))
+         call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "scale_factor",1.0))
+         call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "add_offset",0.0))
+         call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "missing_value",LDT_rc%udef))
+         !      call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+         !           "_FillValue",LDT_rc%udef))
+         call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "vmin",paramEntry%valid_min))
+         call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "vmax",paramEntry%valid_max))
+         call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "num_bins",paramEntry%num_bins))
+
+#if ( defined USE_NETCDF3 )
+         call LDT_verify(nf90_enddef(ftn))
+#endif
+      endif
+      deallocate(fltmp)
+      deallocate(fgtmp1)
+      deallocate(fgtmp2)
+
      endif ! if wtype
    endif
 #endif

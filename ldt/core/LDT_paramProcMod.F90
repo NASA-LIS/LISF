@@ -130,6 +130,7 @@ contains
 !-- Initialize and/or read in each parameter selected in ldt.config:
     call LDT_surfacetype_init
     call LDT_LMLC_init
+    call LDT_irrigation_init   !HKB: moved up before crop mapping
     call LDT_LSMCropMod_init
     call LDT_lakeparams_init
     call LDT_openwater_init
@@ -147,7 +148,6 @@ contains
     call LDT_climateParms_init
 
     call LDT_routingParams_init
-    call LDT_irrigation_init
 
   end subroutine LDT_paramProcInit
 
@@ -1378,7 +1378,7 @@ contains
        LDT_rc%numcrop(n) = 18
      case( "FAOSTAT05" )
        LDT_rc%numcrop(n) = 175
-     case( "MIRCAIrrig" )
+     case( "MIRCA" )
        LDT_rc%numcrop(n) = 26
      case( "MIRCA52" )
        LDT_rc%numcrop(n) = 52
@@ -1390,7 +1390,7 @@ contains
        write(*,*) "   -- CROPMAP   "
        write(*,*) "   -- FAOSTAT01 "
        write(*,*) "   -- FAOSTAT05 "
-       write(*,*) "   -- MIRCAIrrig "
+       write(*,*) "   -- MIRCA "
        write(*,*) "   -- MIRCA52 "
        write(*,*) "  Stopping ..."
        stop

@@ -338,9 +338,10 @@ contains
     select case ( LIS_rc%lcscheme )
      case( "UMD" )
        total_vegtypes = 13 + LIS_rc%numbercrops
-     case( "UMD+MIRCAIrrig" )
+     case( "UMD+MIRCA" )
        total_vegtypes = 14 + LIS_rc%numbercrops
-     case( "IGBP", "IGBPNCEP" )
+     !case( "IGBP", "IGBPNCEP")
+     case( "IGBP", "IGBPNCEP", "IGBP+MIRCA", "IGBPNCEP+MIRCA" )
        total_vegtypes = 20 + LIS_rc%numbercrops
      case( "USGS" )
        total_vegtypes = 24 + LIS_rc%numbercrops
@@ -456,7 +457,11 @@ contains
        grass  = 10 
        shrub1 = 6
        shrub2 = 9
-     case( "IGBP", "IGBPNCEP", "MODIS" )
+     !case( "IGBP", "IGBPNCEP", "MODIS" )
+     ! TEMPORARILY ADDED HERE (HKB) for single crop tile option
+     ! once multiple crop tile is unabled, +MIRCA should be separated
+     ! into a case where crop1 and crop2 are set for cspecific croptypes
+     case( "IGBP", "IGBPNCEP", "MODIS", "IGBP+MIRCA", "IGBPNCEP+MIRCA" )
        crop1  = 12
        crop2  = 14
        grass  = 10 
@@ -468,7 +473,7 @@ contains
        grass  = 7 
        shrub1 = 8
        shrub2 = 10
-     case( "UMD+MIRCAIrrig" )  ! TEMPORARILY ADDED HERE (KRA)
+     case( "UMD+MIRCA" )  ! TEMPORARILY ADDED HERE (KRA)
        crop1  = 16   ! Maize
        crop2  = 22   ! Soybeans
        grass  = 10

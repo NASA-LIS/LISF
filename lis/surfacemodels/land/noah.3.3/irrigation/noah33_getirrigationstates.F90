@@ -214,10 +214,15 @@ subroutine noah33_getirrigationstates(n,irrigState)
         if(LIS_rc%lcscheme.eq."UMD") then !UMD
            veg_index1 = 6
            veg_index2 = 11
-        elseif(LIS_rc%lcscheme.eq."UMD+MIRCAIrrig") then !UMD+MIRCAIrrig (Temporary, KRA)
+        elseif(LIS_rc%lcscheme.eq."UMD+MIRCA") then !UMD+MIRCA (Temporary, KRA)
            veg_index1 = 6
            veg_index2 = 16
-        elseif(LIS_rc%lcscheme.eq."MODIS".or.LIS_rc%lcscheme.eq."IGBPNCEP") then 
+!        elseif(LIS_rc%lcscheme.eq."MODIS".or.LIS_rc%lcscheme.eq."IGBPNCEP") then 
+     ! TEMPORARILY ADDED HERE (HKB) for single crop tile option
+     ! once multiple crop tile is unabled, +MIRCA should be separated
+     ! into a case where veg_index1 and veg_index2 are set for croptypes
+        elseif(LIS_rc%lcscheme.eq."MODIS".or.LIS_rc%lcscheme.eq."IGBPNCEP".or.&
+           LIS_rc%lcscheme.eq."IGBPNCEP+MIRCA") then  
            veg_index1 = 6
            veg_index2 = 14
         elseif(LIS_rc%lcscheme.eq."USGS") then !UMD

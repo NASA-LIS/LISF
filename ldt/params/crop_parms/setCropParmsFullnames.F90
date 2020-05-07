@@ -9,6 +9,7 @@
 !
 ! !REVISION HISTORY:
 !  19 Sep 2014: K. Arsenault; Initial Specification
+!  27 Feb 2020: H. Beaudoing; Added optional parameters for MIRCA data
 !
 ! !INTERFACE:
 subroutine setCropParmsFullnames(n,datatype,source)
@@ -51,13 +52,52 @@ subroutine setCropParmsFullnames(n,datatype,source)
           LDT_LSMCrop_struc(n)%croptype%standard_name =&
               "Monfreda et al (2008) crop types"
 
-       case( "MIRCAIrrig" )
+       case( "MIRCA" )
           LDT_LSMCrop_struc(n)%croptype%standard_name =&
-              "MIRCA-2000 Irrigated crop types"
+              "MIRCA-2000 crop types"
 
        case( "MIRCA52" )
           LDT_LSMCrop_struc(n)%croptype%standard_name =&
               "MIRCA-2000 Irrigated+Rainfed crop types"
+
+      end select
+
+    case( "plantday" )
+      select case( source )
+       case( "MIRCA" )
+          LDT_LSMCrop_struc(n)%plantday%standard_name =&
+              "MIRCA-2000 crop planting date"
+
+       case( "MIRCA52" )
+          LDT_LSMCrop_struc(n)%plantday%standard_name =&
+              "MIRCA-2000 Irrigated+Rainfed crop planting date"
+
+      end select
+
+    case( "harvestday" )
+      select case( source )
+       case( "MIRCA" )
+          LDT_LSMCrop_struc(n)%harvestday%standard_name =&
+              "MIRCA-2000 crop harvesting date"
+
+       case( "MIRCA52" )
+          LDT_LSMCrop_struc(n)%harvestday%standard_name =&
+              "MIRCA-2000 Irrigated+Rainfed crop harvesting date"
+      end select
+
+    case( "irrigcrop" )
+      select case( source )
+       case( "MIRCA", "MIRCA52" )
+          LDT_LSMCrop_struc(n)%irrigcrop%standard_name =&
+              "MIRCA-2000 irrigation crop fraction"
+
+      end select
+
+    case( "rainfedcrop" )
+      select case( source )
+       case( "MIRCA", "MIRCA52" )
+          LDT_LSMCrop_struc(n)%rainfedcrop%standard_name =&
+              "MIRCA-2000 rainfed crop fraction"
 
       end select
 
@@ -66,5 +106,6 @@ subroutine setCropParmsFullnames(n,datatype,source)
       print *, " Program stopping ..."
       stop
    end select
+
 
 end subroutine setCropParmsFullnames

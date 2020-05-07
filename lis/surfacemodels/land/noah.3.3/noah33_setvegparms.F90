@@ -87,7 +87,8 @@ subroutine noah33_setvegparms(mtype)
      if (LIS_rc%lcscheme.eq."MODIS")    mminlu = 'MODI'
      if (LIS_rc%lcscheme.eq."ECOCLIMAP2") mminlu = 'ECM2'
      ! New landcover+crop tile combinations:
-     if (LIS_rc%lcscheme.eq."UMD+MIRCAIrrig") mminlu = 'MIIU'
+     if (LIS_rc%lcscheme.eq."UMD+MIRCA") mminlu = 'MIIU'
+     if (LIS_rc%lcscheme.eq."IGBPNCEP+MIRCA") mminlu = 'MIIM'
 
 !-----------------------------------------------------------------------
 ! Set Noah3.3 vegetation type at tile from the LIS domain

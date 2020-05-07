@@ -54,10 +54,13 @@ module LDT_irrigationMod
      character*50     :: irrigfrac_gridtransform
 
      character*50     :: irrigfrac_typeopt
+     character*50     :: irrigassign_typeopt
+     real             :: irrigassign_sprinklerfrac
 
      ! Irrigation parameters
-     type(LDT_paramEntry) :: irrigtype   ! Type of irrigation
+     type(LDT_paramEntry) :: irrigtype   ! Type of irrigation = 3
      type(LDT_paramEntry) :: irrigfrac   ! Irrigation gridcell fraction
+     type(LDT_paramEntry) :: cropwatsrc  ! Type of cropwater source
 
   end type irrig_type_dec
 
@@ -134,6 +137,8 @@ contains
     logical  :: irrigfrac_select
     logical  :: irrigtype_select
 
+    integer  :: i,j,l
+
 ! _____________________________________________________________
 
    irrigfrac_select = .false.
@@ -160,6 +165,13 @@ contains
          allocate(LDT_irrig_struc(n)%irrigtype%value(&
               LDT_rc%lnc(n),LDT_rc%lnr(n),&
               LDT_irrig_struc(n)%irrigtype%vlevels))       
+         !HKB
+         if( LDT_irrig_struc(1)%irrigtype%source == "GRIPC" )then
+           LDT_irrig_struc(n)%cropwatsrc%vlevels = LDT_irrig_struc(n)%cropwatsrc%num_bins
+           allocate(LDT_irrig_struc(n)%cropwatsrc%value(&
+                    LDT_rc%lnc(n),LDT_rc%lnr(n),&
+                    LDT_irrig_struc(n)%cropwatsrc%vlevels))       
+         endif
       endif
       if( irrigfrac_select ) then
          LDT_irrig_struc(n)%irrigfrac%vlevels = LDT_irrig_struc(n)%irrigfrac%num_bins
@@ -190,6 +202,43 @@ contains
           call setIrrigParmsFullnames( n, "irrigtype", &
                   LDT_irrig_struc(n)%irrigtype%source )
        enddo
+       !HKB
+       ! Option to assign irrigation crop types (rainfed,irrigated,paddy,nocrop)       ! to irrigation types (sprinkler,drip,flood), if GRIPC selected: 
+       if( LDT_irrig_struc(1)%irrigtype%source == "GRIPC" )then
+         call ESMF_ConfigFindLabel(LDT_config,"Assign irrigation type:",rc=rc)
+         do n=1,LDT_rc%nnest
+            call ESMF_ConfigGetAttribute(LDT_config,&
+                 LDT_irrig_struc(n)%irrigassign_typeopt,&
+                 default="sprinkler",&
+                 rc=rc)
+            call LDT_verify(rc,'Assign irrigation type: option not specified in the config file')
+            select case ( LDT_irrig_struc(n)%irrigassign_typeopt )
+             case( "sprinkler", "drip", "sprinkler+drip" )
+               write(LDT_logunit,*) "[INFO]  For assigning GRIPC irrigation, " 
+               write(LDT_logunit,*) "  the type of irrigation selected is: ",&
+                    trim(LDT_irrig_struc(n)%irrigassign_typeopt)
+             case default
+               write(LDT_logunit,*) "[ERR]  Incorrect GRIPC assign irrigation type selected."
+               write(LDT_logunit,*) "  Check your ldt.config file and enter one of these options:"
+               write(LDT_logunit,*) "    sprinkler | drip | sprinkler+drip "
+               call LDT_endrun
+            end select  
+         enddo
+         call ESMF_ConfigFindLabel(LDT_config,"Assign sprinkler fraction:",rc=rc)
+         do n=1,LDT_rc%nnest
+            call ESMF_ConfigGetAttribute(LDT_config,&
+                 LDT_irrig_struc(n)%irrigassign_sprinklerfrac,&
+                 default=0.5,&
+                 rc=rc)
+            call LDT_verify(rc,'Assign sprinkler fraction: option not specified in the config file')
+            select case ( LDT_irrig_struc(n)%irrigassign_typeopt )
+             case( "sprinkler+drip" )
+               write(LDT_logunit,*) "[INFO]  For assigning sprinkler irrigation, " 
+               write(LDT_logunit,*) "  the fraction selected is: ",&
+                    LDT_irrig_struc(n)%irrigassign_sprinklerfrac
+            end select  
+         enddo
+       end if  !irrigtype%source == "GRIPC"
     end if
   ! Irrigation fraction ldt.config entries:
     if( irrigfrac_select ) then
@@ -208,7 +257,7 @@ contains
        enddo
        ! Set units and full names:
        do n=1,LDT_rc%nnest
-          LDT_irrig_struc(n)%irrigfrac%units="-"
+          LDT_irrig_struc(n)%irrigfrac%units="%"    ! HKB in %
           call setIrrigParmsFullnames( n, "irrigfrac", &
                   LDT_irrig_struc(n)%irrigfrac%source )
        enddo
@@ -244,9 +293,44 @@ contains
        if( LDT_irrig_struc(n)%irrigtype%selectOpt == 1 ) then
           write(LDT_logunit,*) "Reading irrigation type: "//&
                trim(LDT_irrig_struc(n)%irrigtypefile)
+        if( LDT_irrig_struc(1)%irrigtype%source == "AQUASTAT" )then
           call readirrigtype( trim(LDT_irrig_struc(n)%irrigtype%source)//char(0),&
                 n, LDT_irrig_struc(n)%irrigtype%value,   &
                 LDT_irrig_struc(n)%irrigtype%num_bins )
+        else if( LDT_irrig_struc(1)%irrigtype%source == "GRIPC" )then
+        ! HKB: Irrigation types are fractions of Sprinkler, Drip, and Flood.
+        ! Assign irrigation type, if GRIPC selected: 
+          call readirrigtype( trim(LDT_irrig_struc(n)%irrigtype%source)//char(0),&
+                n, LDT_irrig_struc(n)%cropwatsrc%value,   &
+                LDT_irrig_struc(n)%cropwatsrc%num_bins )
+          call assignirrigtype( trim(LDT_irrig_struc(n)%irrigtype%source)//char(0), &
+                n, LDT_irrig_struc(n)%irrigassign_typeopt, &
+                LDT_irrig_struc(n)%irrigassign_sprinklerfrac, &
+                LDT_irrig_struc(n)%cropwatsrc%value,   &
+                LDT_irrig_struc(n)%cropwatsrc%num_bins, &
+                LDT_irrig_struc(n)%irrigtype%value,   &
+                LDT_irrig_struc(n)%irrigtype%num_bins )
+        else
+               write(LDT_logunit,*) "[ERR]  Irrigation type data selected "
+               write(LDT_logunit,*) " is not yet supported... stopping... "
+               call LDT_endrun
+        endif
+        ! Fill where parameter values are missing compared to land/water mask:
+        ! via discreteParam_Fill doesn't work since lots of missing values (0)
+        ! Impose land/water mask for water points:
+        write(LDT_logunit,*) "[INFO] Imposing mask values for: ", &
+                         trim(LDT_irrig_struc(n)%irrigtype%short_name)
+        write(fill_logunit,*) "Imposing mask values for: ", &
+                         trim(LDT_irrig_struc(n)%irrigtype%short_name)
+        do l = 1, LDT_irrig_struc(n)%irrigtype%num_bins
+          do j = 1, LDT_rc%lnr(n)
+           do i = 1, LDT_rc%lnc(n)
+             if (LDT_LSMparam_struc(n)%landmask2%value(i,j,1).eq.0) then
+               LDT_irrig_struc(n)%irrigtype%value(i,j,l) = LDT_rc%udef
+             endif
+           enddo
+          enddo
+        enddo
        endif
  
     !- Irrigation fraction:
@@ -267,6 +351,19 @@ contains
 !                LDT_irrig_struc(n)%irrigfrac%num_bins,           &
 !                LDT_irrig_struc(n)%irrigfrac%value, param_waterval,  &
 !                LDT_irrig_struc(n)%landmask2%value, fill_option, fill_value, fill_rad )
+          ! Impose land/water mask for water points:
+          write(LDT_logunit,*) "[INFO] Imposing mask values for: ", &
+                           trim(LDT_irrig_struc(n)%irrigfrac%short_name)
+          write(fill_logunit,*) "Imposing mask values for: ", &
+                           trim(LDT_irrig_struc(n)%irrigfrac%short_name)
+          do j = 1, LDT_rc%lnr(n)
+           do i = 1, LDT_rc%lnc(n)
+             if (LDT_LSMparam_struc(n)%landmask2%value(i,j,1).eq.0) then
+               LDT_irrig_struc(n)%irrigfrac%value(i,j,1) = LDT_rc%udef
+             endif
+           enddo
+          enddo
+ 
        end if
 
     enddo

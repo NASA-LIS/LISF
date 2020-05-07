@@ -47,13 +47,10 @@ subroutine setIrrigParmsFullnames(n,datatype,source)
       select case( source )
         case( "GRIPC" )
           LDT_irrig_struc(n)%irrigtype%standard_name =&
-             "GRIPC (Salmon,2013) Irrigation type (tiles)"
+             "GRIPC (Salmon,2013) Irrigation type fraction"
         case( "AQUASTAT" )
           LDT_irrig_struc(n)%irrigtype%standard_name =&
-             "AQUASTAT and USGS reported Irrigation type (tiles)"
-        case( "AQUASTAT-GRIPC" )
-          LDT_irrig_struc(n)%irrigtype%standard_name =&
-             "Merged AQUASTAT and GRIPC (Salmon,2013) Irrigation type (tiles)"
+             "AQUASTAT and USGS reported Irrigation type fraction"
       end select
 
     case( "irrigfrac" )
@@ -67,9 +64,6 @@ subroutine setIrrigParmsFullnames(n,datatype,source)
         case( "GIA" )
           LDT_irrig_struc(n)%irrigfrac%standard_name =&
               "GIA (Meier et al, 2018) Irrig gridcell fraction"
-        case( "GIA-GRIPC" )
-          LDT_irrig_struc(n)%irrigfrac%standard_name =&
-              "Merged GIA (Meier et al, 2018) and GRIPC (Salmon,2013) Irrig gridcell fraction"
       end select
 
     case default

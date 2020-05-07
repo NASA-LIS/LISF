@@ -51,7 +51,7 @@
 !  so only none, mode, or neighbor are supported.
 !  The irrigation type output contains values over land regardless of the grid
 !  cell being irritated or cropland land cover.
-!  Note the irrigtype defined with this routine is actuall irrigation method,
+!  Note the irrigtype defined with this routine is actual irrigation method,
 !  which is different from those with GRIPC dataset.
 !
 !  The legend is:
@@ -127,7 +127,7 @@
 
 !- Open report files to be processed::
 !!! irrigtypefile in ldt.config point to the directory where files
-!!! are found---Hard Coded!!!
+!!! are found---file names are Hard Coded here!!!
    glbfile = trim(LDT_irrig_struc(n)%irrigtypefile)//'Global_IMethod.data'
    usfile = trim(LDT_irrig_struc(n)%irrigtypefile)//'US_IMethod.2015'
    polfile = trim(LDT_irrig_struc(n)%irrigtypefile)//'GADM_Country_and_USStates_codes_1km.nc4'
@@ -223,8 +223,8 @@
    subparam_gridDesc = 0.
    call LDT_RunDomainPts( n, LDT_irrig_struc(n)%irrig_proj, param_gridDesc(:), &
             glpnc, glpnr, subpnc, subpnr, subparam_gridDesc, lat_line, lon_line )
-   print*,'here:',glpnc, glpnr, subpnc, subpnr, LDT_rc%lnc(n), LDT_rc%lnr(n)
-   print*,'subparam_gridDesc:',subparam_gridDesc
+!   print*,'AQUASTAT:',glpnc, glpnr, subpnc, subpnr, LDT_rc%lnc(n), LDT_rc%lnr(n)
+!   print*,'subparam_gridDesc:',subparam_gridDesc
 ! _________
    allocate( var_in(subpnc,subpnr,2) )
    var_in = float(noncrop)
@@ -245,10 +245,10 @@
       end do
    end do
 !HKB test output
-   open (unit=99,file='country.bin',form='unformatted',status='unknown')
-   write(99) var_in(:,:,1)
-   write(99) var_in(:,:,2)
-   close(99)
+!   open (unit=99,file='country.bin',form='unformatted',status='unknown')
+!   write(99) var_in(:,:,1)
+!   write(99) var_in(:,:,2)
+!   close(99)
 
 ! -------------------------------------------------------------------
    fgrd           = 0.
@@ -271,12 +271,13 @@
    endif
 
    allocate( li(mi), gi(mi), n11(mi) )
-   gi  = float(noncrop)
-   li  = .false.
-   lo1 = .false.
 
 !- Loop over country and state 
    do j = 1, 2   
+
+   gi  = float(noncrop)
+   li  = .false.
+   lo1 = .false.
 
 !- Assign 2-D array to 1-D for aggregation routines:
    i = 0

@@ -216,6 +216,7 @@
    call LDT_RunDomainPts( n, LDT_irrig_struc(n)%irrig_proj, param_gridDesc(:), &
            glpnc, glpnr, subpnc, subpnr, subparam_gridDesc, lat_line, lon_line )
 
+!   print*,'glpnc,glpnr,subpnc,subpnr:',glpnc, glpnr, subpnc, subpnr
 ! _________
    allocate( var_in(subpnc,subpnr) )
    var_in = LDT_rc%udef
@@ -224,8 +225,9 @@
           param_gridDesc(9)) + 1
    y_offset = nint((subparam_gridDesc(4)-param_gridDesc(4))/&
           param_gridDesc(10)) + 1
+!   print*,'x_offset,y_offset:',x_offset,y_offset
 
-   var_in = zval2(x_offset:x_offset+ subpnc, y_offset:y_offset+subpnr)
+   var_in = zval2(x_offset:x_offset+subpnc-1, y_offset:y_offset+subpnr-1)
           
    deallocate( zval )
    deallocate( zval2 )

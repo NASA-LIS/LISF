@@ -37,8 +37,10 @@ subroutine set_irrigation_attribs( n, source )
    select case( source )
 
     case( "GRIPC" )
-      LDT_irrig_struc(n)%irrigtype%num_bins = 4
+      LDT_irrig_struc(n)%irrigtype%num_bins = 3
       LDT_irrig_struc(n)%irrigtype%num_times = 1
+      LDT_irrig_struc(n)%cropwatsrc%num_bins = 4
+      LDT_irrig_struc(n)%cropwatsrc%num_times = 1
 
     case( "AQUASTAT" )
       LDT_irrig_struc(n)%irrigtype%num_bins = 3
@@ -46,7 +48,7 @@ subroutine set_irrigation_attribs( n, source )
 
     case default
       print *, "[ERR] Irrigation type source not recognized: ",trim(source)
-      print *, " Please select:   GRIPC"
+      print *, " Please select:   GRIPC or AQUASTAT"
       print *, " Program stopping ..."
       stop
 !      call LDT_endrun

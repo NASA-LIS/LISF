@@ -12,6 +12,7 @@ module LDT_paramDataMod
 !
 ! !REVISION HISTORY: 
 !  02 Apr 2012:  Sujay Kumar;  Initial Specification
+!  28 Feb 2020:  H. Beaudoing; Added 4-dimentional array type
 ! 
 
   implicit none
@@ -39,6 +40,7 @@ module LDT_paramDataMod
      real          :: valid_max
      character*100 :: standard_name
      real, allocatable :: value(:,:,:)
+     real, allocatable :: value4d(:,:,:,:)  !HKB 
      real          :: scale_factor
      real          :: add_offset
      character*100 :: long_name
@@ -96,6 +98,10 @@ module LDT_paramDataMod
 
    ! Crop type parameters
      type(LDT_paramEntry) :: croptype 
+     type(LDT_paramEntry) :: irrigcrop
+     type(LDT_paramEntry) :: rainfedcrop
+     type(LDT_paramEntry) :: plantday
+     type(LDT_paramEntry) :: harvestday   
      
   end type lsmparam_type_dec
   

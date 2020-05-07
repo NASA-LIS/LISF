@@ -9,6 +9,7 @@
 !
 ! !REVISION HISTORY:
 !  23  Jul 2014: KR Arsenault; Implementing crop layers
+!  13  Mar 2020: HK Beaudoing; Added MIRCA dataset handling
 !
 ! !INTERFACE:
 subroutine assigncroptype( nest, crop_classification, &
@@ -75,6 +76,11 @@ subroutine assigncroptype( nest, crop_classification, &
    read(ftn,fmt=*) header1
    do i = 1, num_types
       read(ftn,fmt=*) k, read_cropname, read_fullname 
+!-- special case handling for MIRCA
+      if ( trim(crop_classification) .eq. "MIRCA" .or. &
+           trim(crop_classification) .eq. "MIRCA52" ) then
+           call filetocropname (read_cropname)
+      endif
       if( croptype == read_cropname ) then
         crop_index = k    ! Crop_index assignment
         exit
@@ -84,3 +90,67 @@ subroutine assigncroptype( nest, crop_classification, &
    call LDT_releaseUnitNumber(ftn)
 
 end subroutine assigncroptype
+
+ subroutine filetocropname (cropname)
+! MIRCA filename contains number instead of cropname, so it needs to be 
+! mapped out to those found in CROPMAP and FAO
+ implicit none
+ character(20),intent(inout)  :: cropname
+ character(20) :: temp
+ 
+ temp = cropname
+ select case (trim(temp))
+  case ("01")
+    cropname = "wheat"
+  case ("02")
+    cropname = "maize"
+  case ("03")
+    cropname = "rice"
+  case ("04")
+    cropname = "barley"
+  case ("05")
+    cropname = "rye"
+  case ("06")
+    cropname = "millet"
+  case ("07")
+    cropname = "sorghum"
+  case ("08")
+    cropname = "soybean"
+  case ("09")
+    cropname = "sunflower"
+  case ("10")
+    cropname = "potato"
+  case ("11")
+    cropname = "cassava"
+  case ("12")
+    cropname = "sugarcane"
+  case ("13")
+    cropname = "sugarbeet"
+  case ("14")
+    cropname = "oilpalm"
+  case ("15")
+    cropname = "rapeseed"
+  case ("16")
+    cropname = "groundnut"
+  case ("17")
+    cropname = "pulsenes"
+  case ("18")
+    cropname = "citrusnes"
+  case ("19")
+    cropname = "datepalm"
+  case ("20")
+    cropname = "grape"
+  case ("21")
+    cropname = "cotton"
+  case ("22")
+    cropname = "cocoa"
+  case ("23")
+    cropname = "coffee"
+  case ("24")
+    cropname = "othersper"
+  case ("25")
+    cropname = "grassnes"
+  case ("26")
+    cropname = "othersann"
+ end select
+ end subroutine filetocropname

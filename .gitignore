@@ -1,3 +1,9 @@
 *.o
 *.mod
 *.d
+ldt/**/LDT*
+lis/**/LIS*
+lvt/**/LVT*
+**/**/configure*
+lis/make/Filepath
+lis/make/user.cfg
