@@ -309,6 +309,12 @@ contains
          LVT_writeMetric_TFB, LVT_resetMetric_TFB, LVT_writerestart_TFB, &
          LVT_readrestart_TFB
 
+    use LVT_MutualInformationMod, only : LVT_initMutualInformation, &
+         LVT_diagnoseMutualInformation, LVT_computeMutualInformation,&
+         LVT_writeMetric_MutualInformation, LVT_resetMetric_MutualInformation,&
+         LVT_writerestart_MutualInformation, LVT_readrestart_MutualInformation
+
+
 #if 0 
     use LVT_ensMEANMod, only : LVT_initensMEAN, LVT_diagnoseensMEAN, &
          LVT_computeensMEAN, LVT_writeMetric_ensMEAN, &
@@ -360,12 +366,11 @@ contains
          LVT_writeMetric_PSD, LVT_resetMetric_PSD,&
          LVT_writerestart_PSD, LVT_readrestart_PSD
 
-
-
     use LVT_KStestMod, only : LVT_initKStest, &
          LVT_diagnoseKStest, LVT_computeKStest,&
          LVT_writeMetric_KStest, LVT_resetMetric_KStest,&
          LVT_writerestart_KStest, LVT_readrestart_KStest
+
 
 #endif
 !EOP
@@ -908,6 +913,16 @@ contains
          LVT_readrestart_EffectiveComplexity)
 
     ! EMK End of information content metrics
+    call registermetricinit(LVT_miid,LVT_initMutualInformation)
+    call registermetricdiagnose(LVT_miid, LVT_diagnoseMutualInformation)
+    call registermetriccompute(LVT_miid, LVT_computeMutualInformation)
+    call registermetricwriteentry(LVT_miid,&
+         LVT_writeMetric_MutualInformation)
+    call registermetricreset(LVT_miid,LVT_resetMetric_MutualInformation)
+    call registermetricwriterestart(LVT_miid,&
+         LVT_writerestart_MutualInformation)
+    call registermetricreadrestart(LVT_miid,&
+         LVT_readrestart_MutualInformation)
 
 
   end subroutine LVT_metric_plugin
