@@ -321,6 +321,8 @@ contains
        call registerMetricEntry(LVT_TMBId,LVT_metrics%tmb)
        call registerMetricEntry(LVT_TFBId,LVT_metrics%tfb)
 
+       call registerMetricEntry(LVT_miId,LVT_metrics%mi)
+
        LVT_rc%metric_sindex = LVT_METRIC_SINDEX
        LVT_rc%metric_eindex = LVT_METRIC_EINDEX
     endif   

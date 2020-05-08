@@ -175,5 +175,5 @@ Triple collocation:                    0    0       0         0       -9999.0  -
 Reliability:                           0    0       0         0       -9999.0  -9999.0    0    0  #REL
 Resilience:                            0    0       0         0       -9999.0  -9999.0    0    0  #RES
 Vulnerability:                         0    0       0         0       -9999.0  -9999.0    0    0  #VUL
-
+Mutual information:                    0    0       0         0       -9999.0  -9999.0    0    0  #MI
 #latex: \end{verbatim}
