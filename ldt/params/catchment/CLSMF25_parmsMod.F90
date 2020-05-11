@@ -114,7 +114,7 @@ contains
 ! \label{catchmentParms_init}
 ! 
 ! !INTERFACE:
-  subroutine catchmentParms_init
+  subroutine catchmentParms_init(flag)
 ! !USES:
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
     use LDT_logMod,    only : LDT_verify
@@ -133,6 +133,7 @@ contains
 !
 !EOP
     implicit none
+    integer      :: flag
     integer      :: n
     integer      :: rc
     character*50 :: catchparms_proj

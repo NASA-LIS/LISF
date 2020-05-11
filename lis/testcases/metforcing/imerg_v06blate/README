@@ -1,7 +1,7 @@
 IMERG Precipitation reader - Global Reader Test Case
 
 This test-case performs a 1/8 degree global simulation with the
-TEMPLATE LSM option from 2019-05-30 to 2019-05-31 to test the processing
+TEMPLATE LSM option from 2014-02-10 to 2014-02-11 to test the processing
 of the IMERG precipitation forcing data set.
 
 This directory contains: 

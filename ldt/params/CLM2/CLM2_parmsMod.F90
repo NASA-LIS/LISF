@@ -63,7 +63,7 @@ contains
 ! \label{CLM2parms_init}
 ! 
 ! !INTERFACE:
-  subroutine CLM2parms_init
+  subroutine CLM2parms_init(flag)
 
 ! !USES:
    use LDT_logMod,  only : LDT_verify, LDT_endrun, &
@@ -82,6 +82,7 @@ contains
 !EOP
    implicit none
    integer  :: n
+   integer  :: flag
    integer  :: c,r,m,k
    integer  :: rc
    integer  :: file_status

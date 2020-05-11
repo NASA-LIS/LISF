@@ -77,7 +77,6 @@ contains
    real,allocatable :: lats(:)
    real             :: diff_lon
    integer          :: nlats
-   integer          :: buffer_flag
    real             :: rlat1, rlat2, rlon1, rlon2
    real             :: plat1, plat2, plon1, plon2
 ! _____________________________________________________
@@ -123,6 +122,12 @@ contains
          if(rlon(c,r).lt.lisdom_min_lon) lisdom_min_lon = rlon(c,r)
       enddo
    enddo
+   !NEW: Account for crossing IDL (KRA):
+   if( rlon(1,1) > rlon(LDT_rc%lnc(n),LDT_rc%lnr(n)) ) then
+     lisdom_min_lon = minval(rlon(1,:))
+     lisdom_max_lon = maxval(rlon(LDT_rc%lnc(n),:))
+   endif
+   !NEW ABOVE
 
 !- Set bounding points for LIS run domain for subsetting step:
 
@@ -134,52 +139,25 @@ contains
    lisdom_yres_ur = abs(rlat(LDT_rc%lnc(n),  LDT_rc%lnr(n))  &
                   - rlat(LDT_rc%lnc(n),  LDT_rc%lnr(n)-1) )
 
-   buffer_flag = 1
-   ! Checks for when to implement a "buffer" for specific domains and
-   !  projections ...
-   rlat1=rlat(1,1);  rlat2=rlat(LDT_rc%lnc(n),LDT_rc%lnr(n))
-   rlon1=rlon(1,1);  rlon2=rlon(LDT_rc%lnc(n),LDT_rc%lnr(n))
-   plat1=param_grid(4);  plat2=param_grid(7) 
-   plon1=param_grid(5);  plon2=param_grid(8)
 
-  !-- Checks for turning off buffer domain ...
-   ! Parameter geographic extents match LIS run domain extents:
-   if( rlat1==plat1 .and. rlat2==plat2 .and. &
-       rlon1==plon1 .and. rlon2==plon2 ) then
-     buffer_flag = 0   ! Buffer not needed
-   endif
-   ! Turn off buffer when latlon x/y resolutions are the same:
-   if( param_proj == "latlon" .and. &
-       param_grid(9) == lisdom_xres_ll.and. &
-       param_grid(10) == lisdom_yres_ll )then
-     buffer_flag = 0   ! Buffer not needed
-   endif 
-   if( LDT_rc%add_buffer == 0 ) then   ! New LDT config option
-     buffer_flag = 0
-   endif
+!! NEW (KRA) -- ADD BUFFER OPTION, IF USER WANTS TO USE IT:
+   if( LDT_rc%add_buffer == 1 ) then
 
-   ! Incorporate buffer for target grid (e.g., helps with curvilinear projections)
-   if( buffer_flag == 1 ) then 
      write(LDT_logunit,*) "[INFO] Incorporating buffer around subsetted grid domain ... "
-     lisdom_min_lat = max((rlat(1,1)-(LDT_rc%y_buffer*lisdom_yres_ll)),-90.0)
-     lisdom_max_lat = min((rlat(LDT_rc%lnc(n),LDT_rc%lnr(n))+(LDT_rc%y_buffer*lisdom_yres_ll)),90.0)
+     lisdom_min_lat = max((lisdom_min_lat-(LDT_rc%y_buffer*lisdom_yres_ll)),-90.0)
+     lisdom_max_lat = min((lisdom_max_lat+(LDT_rc%y_buffer*lisdom_yres_ll)),90.0)
      ! Account for crossing IDL:
      if( rlon(1,1) <= rlon(LDT_rc%lnc(n),LDT_rc%lnr(n)) ) then
-       lisdom_min_lon = max((rlon(1,1)-(LDT_rc%x_buffer*lisdom_xres_ll)),-180.0)
-       lisdom_max_lon = min((rlon(LDT_rc%lnc(n),&
-                             LDT_rc%lnr(n))+(LDT_rc%x_buffer*lisdom_xres_ll)),180.0)
-     else  
-       lisdom_min_lon = max((rlon(1,1)-(LDT_rc%x_buffer*lisdom_xres_ll)),0.0)
-       lisdom_max_lon = min((rlon(LDT_rc%lnc(n),&
-                            LDT_rc%lnr(n))+(LDT_rc%x_buffer*lisdom_xres_ll)),0.0)
+       lisdom_min_lon = max((lisdom_min_lon-(LDT_rc%x_buffer*lisdom_xres_ll)),-180.0)
+       lisdom_max_lon = min((lisdom_max_lon+(LDT_rc%x_buffer*lisdom_xres_ll)),180.0)
+     else
+       lisdom_min_lon = max((lisdom_min_lon-(LDT_rc%x_buffer*lisdom_xres_ll)),0.0)
+       lisdom_max_lon = min((lisdom_max_lon+(LDT_rc%x_buffer*lisdom_xres_ll)),0.0)
      endif
-   else  ! No buffer applied
-!     write(LDT_logunit,*) "[INFO] No buffer incorporated ... "
-     lisdom_min_lat = rlat(1,1)
-     lisdom_max_lat = rlat(LDT_rc%lnc(n),LDT_rc%lnr(n))
-     lisdom_min_lon = rlon(1,1)
-     lisdom_max_lon = rlon(LDT_rc%lnc(n),LDT_rc%lnr(n))
+
    endif
+!! NEW
+
 
 ! -------------------------------------------------------------
 !  Select Parameter File Projection Type

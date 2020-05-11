@@ -64,6 +64,25 @@ module LDT_LSMCropModifier_Mod
 
   type(LSMCrop_type_dec), allocatable :: LDT_LSMCrop_struc(:)
 
+!BOP 
+! 
+! !ROUTINE: LDT_LSMCropMod_writeHeader 
+! \label{LDT_LSMCropMod_writeHeader}
+! 
+! !INTERFACE:
+  interface LDT_LSMCropMod_writeHeader
+! !PRIVATE MEMBER FUNCTIONS: 
+     module procedure LDT_LSMCropMod_writeHeader_LIS
+     module procedure LDT_LSMCropMod_writeHeader_LISHydro
+! 
+! !DESCRIPTION:
+! This interface provides routines for writing NETCDF header both 
+! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
+! preprocessing requiremetns. A dummy argument call "flagX" was added 
+! to overload the LISHydro procedue.
+!EOP 
+  end interface
+
 contains
 
   subroutine LDT_LSMCrop_readParamSpecs
@@ -348,7 +367,7 @@ contains
   end subroutine LDT_LSMCropMod_init
 
 
-  subroutine LDT_LSMCropMod_writeHeader(n,ftn,dimID)
+  subroutine LDT_LSMCropMod_writeHeader_LIS(n,ftn,dimID)
 
     use LDT_coreMod, only : LDT_rc
 
@@ -379,7 +398,42 @@ contains
    endif
 #endif
    
-  end subroutine LDT_LSMCropMod_writeHeader
+ end subroutine LDT_LSMCropMod_writeHeader_LIS
+
+  subroutine LDT_LSMCropMod_writeHeader_LISHydro(n,ftn,dimID,flag)
+
+    use LDT_coreMod, only : LDT_rc
+
+    integer      :: n
+    integer      :: ftn
+    integer      :: dimID(4)
+    integer      :: tdimID(4)
+    integer :: flag, flagn
+
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+   if( LDT_rc%assimcropinfo(n) ) then
+
+     tdimID(1) = dimID(1)
+     tdimID(2) = dimID(2)
+     tdimID(4) = dimID(4)
+
+     if( LDT_LSMCrop_struc(n)%croptype%selectOpt > 0 ) then
+       call LDT_verify(nf90_def_dim(ftn,'croptypes',&
+            LDT_LSMCrop_struc(n)%croptype%vlevels,tdimID(3)))
+ 
+       call LDT_writeNETCDFdataHeader(n,ftn,tdimID,&
+            LDT_LSMCrop_struc(n)%croptype,flagn)
+     end if
+ 
+     call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"CROPCLASS_SCHEME", &
+          LDT_LSMCrop_struc(n)%crop_classification))
+ 
+     call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"CROPCLASS_NUMBER", &
+          LDT_rc%numcrop(n)))
+   endif
+#endif
+   
+  end subroutine LDT_LSMCropMod_writeHeader_LISHydro
 
 
   subroutine LDT_LSMCropMod_writeData(n,ftn)
