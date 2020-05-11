@@ -37,6 +37,7 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_StatDscaleMetforcprocId = "Statistical downscaling of met forcing"
    character*50, public,  parameter :: LDT_usafsiId = "USAFSI analysis"
    character*50, public,  parameter :: LDT_OPTUEparamprocId   = "OPTUE parameter processing"
+   character*50, public,  parameter :: LDT_LISHydropreprocId  = "LISHydro preprocessing for WRFHydro"
 
 !-------------------------------------------------------------------------
 ! Domains
