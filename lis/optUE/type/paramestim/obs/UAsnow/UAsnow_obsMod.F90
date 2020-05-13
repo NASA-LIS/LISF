@@ -10,6 +10,15 @@
 ! !MODULE: UAsnow_obsMod
 ! 
 ! !DESCRIPTION: 
+!  This module handles the observation plugin for the
+!  University of Arizona (UA) SWE/Snow Depth data v01
+!  for use within the LIS OPT/UE subsystem. 
+!  The UA SNOW data is provided in the NAD 1983 grid
+!  with ~4-km resolution. The domain extents are from
+!  approximately (24N, -125W) to (50N, -66.5W).
+!  The data entries are 16-bit signed integers.
+!  
+!  https://nsidc.org/data/nsidc-0719
 !
 !   
 ! !REVISION HISTORY: 
@@ -73,6 +82,10 @@ contains
 ! 
 ! !DESCRIPTION: 
 !   
+!  This routines completes the setup of the UA snow plugin
+!  for OPTUE. This includes the definition of the data grid and the 
+!  setup of the interpolation weights. 
+!   
 !   The arguments are: 
 !   \begin{description}
 !    \item[Obs\_State]   observation state object 
@@ -116,6 +129,10 @@ contains
     enddo
 
     do n=1,LIS_rc%nnest
+!----------------------------------------------------------------------
+! Describes the native grid projection, spatial extent, and resolution
+! of the UA snow data  (lat/lon, CONUS domain, at ~4km resolution)
+!----------------------------------------------------------------------
        gridDesci = 0
        gridDesci(1) = 0
        gridDesci(2) = 1405

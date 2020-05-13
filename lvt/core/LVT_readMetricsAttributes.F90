@@ -228,6 +228,19 @@ subroutine LVT_readMetricsAttributes(attribFile)
   call get_metric_attributes(attribConfig, LVT_metrics%ecomplexity, &
        "Ecomplexity",rc)
 
+  call ESMF_ConfigFindLabel(attribConfig,"Information entropy:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%ie, &
+       "IE",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Conditional entropy:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%ce, &
+       "CE",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Mutual information:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%mi, &
+       "MI",rc)
+
+
 end subroutine LVT_readMetricsAttributes
 
 !BOP

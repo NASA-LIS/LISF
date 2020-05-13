@@ -1058,6 +1058,49 @@ module LVT_statsDataMod
      integer, allocatable :: count_value_adc(:,:,:)
   end type tfb_metric_spec
 
+ type ie_metric_spec
+     real,    allocatable :: xmaxval(:,:)
+     real,    allocatable :: xminval(:,:)
+     real,    allocatable :: ymaxval(:,:)
+     real,    allocatable :: yminval(:,:)
+     real,    allocatable :: xdelta(:,:)
+     real,    allocatable :: ydelta(:,:)
+     real,    allocatable :: px(:,:,:)
+     real,    allocatable :: py(:,:,:)
+     real,    allocatable :: model_value_total(:,:)
+     integer, allocatable :: model_count_total(:,:)
+     real,    allocatable :: model_value_ci(:)
+     real,    allocatable :: obs_value_total(:,:)
+     integer, allocatable :: obs_count_total(:,:)
+     real,    allocatable :: obs_value_ci(:)
+  end type ie_metric_spec
+
+  type ce_metric_spec
+     real,    allocatable :: xmaxval(:,:)
+     real,    allocatable :: xminval(:,:)
+     real,    allocatable :: ymaxval(:,:)
+     real,    allocatable :: yminval(:,:)
+     real,    allocatable :: xdelta(:,:)
+     real,    allocatable :: ydelta(:,:)
+     real,    allocatable :: pxy(:,:,:,:)
+     real,    allocatable :: value_total(:,:)
+     integer, allocatable :: count_total(:,:)
+     real,    allocatable :: value_ci(:)
+  end type ce_metric_spec
+
+  type mi_metric_spec
+     real,    allocatable :: xmaxval(:,:)
+     real,    allocatable :: xminval(:,:)
+     real,    allocatable :: ymaxval(:,:)
+     real,    allocatable :: yminval(:,:)
+     real,    allocatable :: xdelta(:,:)
+     real,    allocatable :: ydelta(:,:)
+     real,    allocatable :: pxy(:,:,:,:)
+     real,    allocatable :: value_total(:,:)
+     integer, allocatable :: count_total(:,:)
+     real,    allocatable :: value_ci(:)
+  end type mi_metric_spec
+
   type, public :: LVT_statsEntry
      
      type(min_metric_spec)      , allocatable :: min(:)   
@@ -1118,6 +1161,10 @@ module LVT_statsDataMod
      type(thb_metric_spec)     , allocatable :: thb(:)
      type(tmb_metric_spec)     , allocatable :: tmb(:)
      type(tfb_metric_spec)     , allocatable :: tfb(:)
+     type(ie_metric_spec)      , allocatable :: ie(:)
+     type(ce_metric_spec)      , allocatable :: ce(:)
+
+     type(mi_metric_spec)      , allocatable :: mi(:)
 
      integer          :: selectOpt    
      integer          :: computeVar
@@ -1457,6 +1504,10 @@ module LVT_statsDataMod
      type(LVT_metricEntry) :: THB
      type(LVT_metricEntry) :: TMB
      type(LVT_metricEntry) :: TFB
+     type(LVT_metricEntry) :: ie
+     type(LVT_metricEntry) :: ce
+
+     type(LVT_metricEntry) :: mi
 
   end type metrics_struc
 
