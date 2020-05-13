@@ -5,6 +5,8 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
+#include "LIS_misc.h"
+#include "LIS_NetCDF_inc.h"
 !BOP
 ! !ROUTINE: read_syntheticsndobs
 !  \label{read_syntheticsndobs}
@@ -20,7 +22,9 @@ subroutine read_syntheticsndobs(n, k, OBS_State, OBS_Pert_State)
   use LIS_coreMod
   use LIS_logMod
   use LIS_DAobservationsMod
-
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+  use netcdf
+#endif
   implicit none
 ! !ARGUMENTS: 
   integer, intent(in) :: n 
@@ -41,11 +45,14 @@ subroutine read_syntheticsndobs(n, k, OBS_State, OBS_Pert_State)
 !EOP
   type(ESMF_Field)    :: sndField
 
+  integer             :: ftn
+  integer             :: c,r
   real,    pointer    :: obsl(:)
   integer             :: gid(LIS_rc%obs_ngrid(k))
   integer             :: assimflag(LIS_rc%obs_ngrid(k))
-  real, allocatable       :: dummy(:)
 
+  integer             :: snodid
+  real                :: snodobs(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k))
   character*100       :: sndobsdir
   logical             :: data_update
   logical             :: file_exists
@@ -76,26 +83,38 @@ subroutine read_syntheticsndobs(n, k, OBS_State, OBS_Pert_State)
   endif
 
   if (readflag) then 
-     allocate(dummy(LIS_rc%obs_ngrid(k)))
-     write(LIS_logunit,*)  'Reading syn data ',name
-     
+
      call ESMF_StateGet(OBS_State,"Observation01",sndField,&
           rc=status)
-     call LIS_verify(status)
+     call LIS_verify(status, 'ESMF_StateGet failed in read_syntheticsndobs')
      call ESMF_FieldGet(sndField,localDE=0, farrayPtr=obsl,rc=status)
-     call LIS_verify(status)
+     call LIS_verify(status,'ESMF_FieldGet failed in read_syntheticsndobs')
      
-     open(90, file=trim(name),form='unformatted')
-     do t=1,1
-        if(t==1) then 
-           call readobsvar_1dgridded_snd(90,n,k,obsl)  !Yeosang Yoon
-           !call LIS_readvar_gridded(90,n,obsl)
-        else 
-           call readobsvar_1dgridded_snd(90,n,k,obsl)
-           !call LIS_readvar_gridded(90,n,dummy)
-        endif
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+     write(LIS_logunit,*)  '[INFO] Reading syn data ',name
+     
+     call LIS_verify(nf90_open(path=trim(name),mode=NF90_NOWRITE,ncid=ftn),&
+          'Error opening file '//trim(name))
+     call LIS_verify(nf90_inq_varid(ftn,'SnowDepth_tavg',snodid),&
+          'Error nf90_inq_varid: SnowDepth_tavg')
+     
+     call LIS_verify(nf90_get_var(ftn,snodid,snodobs,&
+          start=(/LIS_ews_obs_halo_ind(n,LIS_localPet+1),&         
+          LIS_nss_obs_halo_ind(n,LIS_localPet+1)/),&
+          count = (/LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)/)),&
+          'Error in nf90_get_var')
+     call LIS_verify(nf90_close(ftn))
+
+     do r =1,LIS_rc%obs_lnr(k)
+        do c =1,LIS_rc%obs_lnc(k)
+           if (LIS_obs_domain(n,k)%gindex(c,r) .ne. -1)then
+              obsl(LIS_obs_domain(n,k)%gindex(c,r)) = &
+                   snodobs(c,r)
+           end if
+        end do
      end do
-     close(90)
+
+#endif
      readflag = .false.
 
      do t=1,LIS_rc%obs_ngrid(k)
@@ -109,17 +128,18 @@ subroutine read_syntheticsndobs(n, k, OBS_State, OBS_Pert_State)
 
      call ESMF_AttributeSet(OBS_State,"Data Update Status",&
           .true., rc=status)
-     call LIS_verify(status)
+     call LIS_verify(status,'ESMF_AttributeGet failed in read_syntheticsndobs')
 
-     call ESMF_AttributeSet(sndField,"Grid Number",&
-          gid, itemCount=LIS_rc%obs_ngrid(k),rc=status)
-     call LIS_verify(status)
+     if(LIS_rc%obs_ngrid(k).gt.0) then 
+        call ESMF_AttributeSet(sndField,"Grid Number",&
+             gid, itemCount=LIS_rc%obs_ngrid(k),rc=status)
+        call LIS_verify(status)
 
-     call ESMF_AttributeSet(sndField,"Assimilation Flag",&
-          assimflag,itemCount=LIS_rc%obs_ngrid(k),rc=status)
-     call LIS_verify(status)
+        call ESMF_AttributeSet(sndField,"Assimilation Flag",&
+             assimflag,itemCount=LIS_rc%obs_ngrid(k),rc=status)
+        call LIS_verify(status)
+     endif
 
-     deallocate(dummy)
   else
      call ESMF_AttributeSet(OBS_State,"Data Update Status",&
           .false., rc=status)
@@ -151,8 +171,9 @@ subroutine synsnd_filename(name, ndir, yr, mo,da,hr,mn)
   write(unit=fhr, fmt='(i2.2)') hr
   write(unit=fmn, fmt='(i2.2)') mn  
   
-  name = trim(ndir)//'/'//trim(fyr)//trim(fmo)//trim(fda)//trim(fhr)//&
-       trim(fmn)//'.d01.gs4r'
+  name = trim(ndir)//'/'//trim(fyr)//trim(fmo)//'/SimObs_'//&
+       trim(fyr)//trim(fmo)//trim(fda)//trim(fhr)//&
+       trim(fmn)//'.nc'
 end subroutine synsnd_filename
 
 !BOP

@@ -97,6 +97,7 @@ subroutine read_UAsnowobs(Obj_Space)
      UA_swe = LIS_rc%udef
      UA_snwd = LIS_rc%udef
 
+     !UA data is defined for water years, beginning in October
      call ESMF_TimeSet(UAsnow_obs_struc(n)%startTime, &
           yy = LIS_rc%yr, & 
           mm = 10, &

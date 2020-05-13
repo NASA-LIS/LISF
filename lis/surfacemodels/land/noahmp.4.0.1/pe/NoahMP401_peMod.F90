@@ -97,10 +97,6 @@ contains
     call ESMF_FieldGet(feasField,localDE=0,farrayPtr=mod_flag,rc=status)
     call LIS_verify(status)
     
-!    write(LIS_logunit,*) '[INFO] Here 1 in NoahMP401_setup_pedecvars, mod_flag: ', mod_flag
-
-!    mod_flag = 0  !now initialized centrally in LIS_optUEMod.F90 as lsms,rtms,etc. can raise flag
-
     call ESMF_ConfigGetAttribute(LIS_config,decSpaceAttribsFile,&
          label="LSM Decision space attributes file:",rc=status)
     call LIS_verify(status, "LSM Decision space attributes file: not defined")
@@ -121,8 +117,6 @@ contains
          NoahMP401_pe_struc(n)%param_select, &
          NoahMP401_pe_struc(n)%param_min, &
          NoahMP401_pe_struc(n)%param_max)
-!    write(LIS_logunit,*) 'NoahMP401_pe_struc(n)%param_name: ', &
-!            NoahMP401_pe_struc(n)%param_name
 
     call ESMF_ArraySpecSet(arrspec1,rank=1,typekind=ESMF_TYPEKIND_R4,&
          rc=status)
@@ -610,7 +604,7 @@ contains
                      .or. &
                      (vardata(gid) .gt. NoahMP401_pe_struc(n)%param_max(i))) ) then
                    count=count+1   
-                   print*, '*****************************************************************', '  ', &
+                   write(LIS_logunit,*) '*****************************************************************', '  ', &
                         'WARNING: noah default value is out of LIS-OPT/UE bounds '                , '  ', &
                         'for ', vname                                                             , '  ', &
                         'at '                                                                     , '  ', &

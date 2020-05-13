@@ -178,15 +178,12 @@ subroutine NoahMP401_checkConstraints(n,DEC_State,mod_flag_NoahMP401)
   allocate(vardata1(LIS_rc%npatch(n,LIS_rc%lsm_index)))
   allocate(vardata2(LIS_rc%npatch(n,LIS_rc%lsm_index)))
 
-  !SMCMAX > SMCDRY
   vname='SMCMAX'
   call NoahMP401_getvardata(n,DEC_State,vname,vardata1, status1)
-!  vname='SMCDRY'
-!  call NoahMP401_getvardata(n,DEC_State,vname,vardata2, status2)
+
   if(status1.ne.0) vardata1=NoahMP401_struc(n)%noahmp401(:)%param%smcmax(1)
-!  if(status2.ne.0) vardata2=NoahMP401_struc(n)%noahmp401(:)%smcdry
+
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-!     if(vardata1(t).le.vardata2(t)) then
      if(vardata1(t).le.NoahMP401_struc(n)%noahmp401(t)%param%smcdry(1)) then
         mod_flag_NoahMP401(t) = 1
      endif
@@ -465,12 +462,11 @@ subroutine NoahMP401_setModFlag(n,DEC_State,Feas_State,mod_flag_NoahMP401)
   call LIS_verify(status)
   call ESMF_FieldGet(feasField,localDE=0,farrayPtr=modflag,rc=status)
   call LIS_verify(status)
-!  write(LIS_logunit,*) 'NoahMP401_setModFlag 1 modflag:', modflag
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      if(mod_flag_NoahMP401(t).eq.1) then 
         modflag(t)=1
      endif
   enddo
-!  write(LIS_logunit,*) 'NoahMP401_setModFlag 2 modflag:', modflag
+
 end subroutine NoahMP401_setModFlag

@@ -4555,9 +4555,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                    swe_calc%value(gid,m,1) = &
                         swe%value(gid,m,1)
                    swe_calc%count(gid,m,1) = swe%count(gid,m,1)
-                   if(swe_calc%value(gid,m,1).gt.2000) then 
-                      swe_calc%value(gid,m,1) = 2000.0
-                   endif
+!                   if(swe_calc%value(gid,m,1).gt.2000) then 
+!                      swe_calc%value(gid,m,1) = 2000.0
+!                   endif
                 enddo
              enddo
           endif
