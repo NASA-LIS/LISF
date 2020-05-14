@@ -345,12 +345,186 @@ module NoahMP401_module
 !  10/25/18: Shugong Wang, Zhuo Wang Initial implementation for LIS 7 and NoahMP401
 !
 !EOP
+   USE MODULE_SF_NOAHMPLSM_401
     implicit none
-    private
+
+    INTEGER, PRIVATE, PARAMETER :: MBAND = 2
+    INTEGER, PRIVATE, PARAMETER :: NSOIL = 4
+    INTEGER, PRIVATE, PARAMETER :: NSTAGE = 8
+
+#if 0
+    TYPE noahmp_parameters ! define a NoahMP parameters type
+       
+       !---------------------------------------
+       ! From the veg section of MPTABLE.TBL
+       !---------------------------------------
+
+       LOGICAL :: URBAN_FLAG
+       INTEGER :: ISWATER
+       INTEGER :: ISBARREN
+       INTEGER :: ISICE
+       INTEGER :: ISCROP
+       INTEGER :: EBLFOREST
+       
+       REAL :: CH2OP              !maximum intercepted h2o per unit lai+sai (mm)
+       REAL :: DLEAF              !characteristic leaf dimension (m)
+       REAL :: Z0MVT              !momentum roughness length (m)
+       REAL :: HVT                !top of canopy (m)
+       REAL :: HVB                !bottom of canopy (m)
+       REAL :: DEN                !tree density (no. of trunks per m2)
+       REAL :: RC                 !tree crown radius (m)
+       REAL :: MFSNO              !snowmelt m parameter ()
+       REAL :: SAIM(12)           !monthly stem area index, one-sided
+       REAL :: LAIM(12)           !monthly leaf area index, one-sided
+       REAL :: SLA                !single-side leaf area per Kg [m2/kg]
+       REAL :: DILEFC             !coeficient for leaf stress death [1/s]
+       REAL :: DILEFW             !coeficient for leaf stress death [1/s]
+       REAL :: FRAGR              !fraction of growth respiration  !original was 0.3 
+       REAL :: LTOVRC             !leaf turnover [1/s]
+       
+       REAL :: C3PSN              !photosynthetic pathway: 0. = c4, 1. = c3
+       REAL :: KC25               !co2 michaelis-menten constant at 25c (pa)
+       REAL :: AKC                !q10 for kc25
+       REAL :: KO25               !o2 michaelis-menten constant at 25c (pa)
+       REAL :: AKO                !q10 for ko25
+       REAL :: VCMX25             !maximum rate of carboxylation at 25c (umol co2/m**2/s)
+       REAL :: AVCMX              !q10 for vcmx25
+       REAL :: BP                 !minimum leaf conductance (umol/m**2/s)
+       REAL :: MP                 !slope of conductance-to-photosynthesis relationship
+       REAL :: QE25               !quantum efficiency at 25c (umol co2 / umol photon)
+       REAL :: AQE                !q10 for qe25
+       REAL :: RMF25              !leaf maintenance respiration at 25c (umol co2/m**2/s)
+       REAL :: RMS25              !stem maintenance respiration at 25c (umol co2/kg bio/s)
+       REAL :: RMR25              !root maintenance respiration at 25c (umol co2/kg bio/s)
+       REAL :: ARM                !q10 for maintenance respiration
+       REAL :: FOLNMX             !foliage nitrogen concentration when f(n)=1 (%)
+       REAL :: TMIN               !minimum temperature for photosynthesis (k)
+       
+       REAL :: XL                 !leaf/stem orientation index
+       REAL :: RHOL(MBAND)        !leaf reflectance: 1=vis, 2=nir
+       REAL :: RHOS(MBAND)        !stem reflectance: 1=vis, 2=nir
+       REAL :: TAUL(MBAND)        !leaf transmittance: 1=vis, 2=nir
+       REAL :: TAUS(MBAND)        !stem transmittance: 1=vis, 2=nir
+
+       REAL :: MRP                !microbial respiration parameter (umol co2 /kg c/ s)
+       REAL :: CWPVT              !empirical canopy wind parameter
+       
+       REAL :: WRRAT              !wood to non-wood ratio
+       REAL :: WDPOOL             !wood pool (switch 1 or 0) depending on woody or not [-]
+       REAL :: TDLEF              !characteristic T for leaf freezing [K]
+       
+       INTEGER :: NROOT              !number of soil layers with root present
+       REAL :: RGL                !Parameter used in radiation stress function
+       REAL :: RSMIN              !Minimum stomatal resistance [s m-1]
+       REAL :: HS                 !Parameter used in vapor pressure deficit function
+       REAL :: TOPT               !Optimum transpiration air temperature [K]
+       REAL :: RSMAX              !Maximal stomatal resistance [s m-1]
+       
+       REAL :: SLAREA
+       REAL :: EPS(5)
+       
+!------------------------------------------------------------------------------------------!
+! From the rad section of MPTABLE.TBL
+!------------------------------------------------------------------------------------------!
+
+       REAL :: ALBSAT(MBAND)       !saturated soil albedos: 1=vis, 2=nir
+       REAL :: ALBDRY(MBAND)       !dry soil albedos: 1=vis, 2=nir
+       REAL :: ALBICE(MBAND)       !albedo land ice: 1=vis, 2=nir
+       REAL :: ALBLAK(MBAND)       !albedo frozen lakes: 1=vis, 2=nir
+       REAL :: OMEGAS(MBAND)       !two-stream parameter omega for snow
+       REAL :: BETADS              !two-stream parameter betad for snow
+       REAL :: BETAIS              !two-stream parameter betad for snow
+       REAL :: EG(2)               !emissivity
+       
+!------------------------------------------------------------------------------------------!
+! From the globals section of MPTABLE.TBL
+!------------------------------------------------------------------------------------------!
+ 
+       REAL :: CO2          !co2 partial pressure
+       REAL :: O2           !o2 partial pressure
+       REAL :: TIMEAN       !gridcell mean topgraphic index (global mean)
+       REAL :: FSATMX       !maximum surface saturated fraction (global mean)
+       REAL :: Z0SNO        !snow surface roughness length (m) (0.002)
+       REAL :: SSI          !liquid water holding capacity for snowpack (m3/m3)
+       REAL :: SWEMX        !new snow mass to fully cover old snow (mm)
+       REAL :: RSURF_SNOW   !surface resistance for snow(s/m)
+       
+!------------------------------------------------------------------------------------------!
+! From the crop section of MPTABLE.TBL
+!------------------------------------------------------------------------------------------!
+       
+       INTEGER :: PLTDAY           ! Planting date
+       INTEGER :: HSDAY            ! Harvest date
+       REAL :: PLANTPOP         ! Plant density [per ha] - used?
+       REAL :: IRRI             ! Irrigation strategy 0= non-irrigation 1=irrigation (no water-stress)
+       REAL :: GDDTBASE         ! Base temperature for GDD accumulation [C]
+       REAL :: GDDTCUT          ! Upper temperature for GDD accumulation [C]
+       REAL :: GDDS1            ! GDD from seeding to emergence
+       REAL :: GDDS2            ! GDD from seeding to initial vegetative 
+       REAL :: GDDS3            ! GDD from seeding to post vegetative 
+       REAL :: GDDS4            ! GDD from seeding to intial reproductive
+       REAL :: GDDS5            ! GDD from seeding to pysical maturity 
+       INTEGER :: C3C4             ! photosynthetic pathway:  1 = c3 2 = c4
+       REAL :: AREF             ! reference maximum CO2 assimulation rate 
+       REAL :: PSNRF            ! CO2 assimulation reduction factor(0-1) (caused by non-modeling part,e.g.pest,weeds)
+       REAL :: I2PAR            ! Fraction of incoming solar radiation to photosynthetically active radiation
+       REAL :: TASSIM0          ! Minimum temperature for CO2 assimulation [C]
+       REAL :: TASSIM1          ! CO2 assimulation linearly increasing until temperature reaches T1 [C]
+       REAL :: TASSIM2          ! CO2 assmilation rate remain at Aref until temperature reaches T2 [C]
+       REAL :: K                ! light extinction coefficient
+       REAL :: EPSI             ! initial light use efficiency
+       REAL :: Q10MR            ! q10 for maintainance respiration
+       REAL :: FOLN_MX          ! foliage nitrogen concentration when f(n)=1 (%)
+       REAL :: LEFREEZ          ! characteristic T for leaf freezing [K]
+       REAL :: DILE_FC(NSTAGE)  ! coeficient for temperature leaf stress death [1/s]
+       REAL :: DILE_FW(NSTAGE)  ! coeficient for water leaf stress death [1/s]
+       REAL :: FRA_GR           ! fraction of growth respiration 
+       REAL :: LF_OVRC(NSTAGE)  ! fraction of leaf turnover  [1/s]
+       REAL :: ST_OVRC(NSTAGE)  ! fraction of stem turnover  [1/s]
+       REAL :: RT_OVRC(NSTAGE)  ! fraction of root tunrover  [1/s]
+       REAL :: LFMR25           ! leaf maintenance respiration at 25C [umol CO2/m**2  /s]
+       REAL :: STMR25           ! stem maintenance respiration at 25C [umol CO2/kg bio/s]
+       REAL :: RTMR25           ! root maintenance respiration at 25C [umol CO2/kg bio/s]
+       REAL :: GRAINMR25        ! grain maintenance respiration at 25C [umol CO2/kg bio/s]
+       REAL :: LFPT(NSTAGE)     ! fraction of carbohydrate flux to leaf
+       REAL :: STPT(NSTAGE)     ! fraction of carbohydrate flux to stem
+       REAL :: RTPT(NSTAGE)     ! fraction of carbohydrate flux to root
+       REAL :: GRAINPT(NSTAGE)  ! fraction of carbohydrate flux to grain
+       REAL :: BIO2LAI          ! leaf are per living leaf biomass [m^2/kg]
+
+!------------------------------------------------------------------------------------------!
+! From the SOILPARM.TBL tables, as functions of soil category.
+!------------------------------------------------------------------------------------------!
+       REAL :: BEXP(NSOIL)   !B parameter
+       REAL :: SMCDRY(NSOIL) !dry soil moisture threshold where direct evap from top
+       !layer ends (volumetric) (not used MB: 20140718)
+       REAL :: SMCWLT(NSOIL) !wilting point soil moisture (volumetric)
+       REAL :: SMCREF(NSOIL) !reference soil moisture (field capacity) (volumetric)
+       REAL :: SMCMAX(NSOIL) !porosity, saturated value of soil moisture (volumetric)
+       REAL :: PSISAT(NSOIL) !saturated soil matric potential
+       REAL :: DKSAT(NSOIL)  !saturated soil hydraulic conductivity
+       REAL :: DWSAT(NSOIL)  !saturated soil hydraulic diffusivity
+       REAL :: QUARTZ(NSOIL) !soil quartz content
+       REAL :: F1            !soil thermal diffusivity/conductivity coef (not used MB: 20140718)
+!------------------------------------------------------------------------------------------!
+! From the GENPARM.TBL file
+!------------------------------------------------------------------------------------------!
+       REAL :: SLOPE       !slope index (0 - 1)
+       REAL :: CSOIL       !vol. soil heat capacity [j/m3/K]
+       REAL :: ZBOT        !Depth (m) of lower boundary soil temperature
+       REAL :: CZIL        !Calculate roughness length of heat
+       REAL :: REFDK
+       REAL :: REFKDT
+       
+       REAL :: KDT         !used in compute maximum infiltration rate (in INFIL)
+       REAL :: FRZX        !used in compute maximum infiltration rate (in INFIL)
+     
+    END TYPE noahmp_parameters
+#endif
     type, public :: noahmp401dec
-        !-------------------------------------------------------------------------
+        !------------------------------------------------------
         ! forcing
-        !-------------------------------------------------------------------------
+        !------------------------------------------------------
         real               :: tair
         real               :: sfctmp    ! Yeosang Yoon for snow DA
         real               :: psurf
@@ -360,9 +534,9 @@ module NoahMP401_module
         real               :: swdown
         real               :: lwdown
         real               :: prcp
-        !-------------------------------------------------------------------------
+        !--------------------------------------------------------
         ! spatial parameter
-        !-------------------------------------------------------------------------
+        !--------------------------------------------------------
         integer            :: vegetype
         integer            :: soiltype
         real               :: tbot
@@ -373,14 +547,14 @@ module NoahMP401_module
         real               :: soilcL2
         real               :: soilcL3
         real               :: soilcL4
-        !-------------------------------------------------------------------------
+        !----------------------------------------------------------
         ! multilevel spatial parameter
-        !-------------------------------------------------------------------------
+        !----------------------------------------------------------
         real, pointer      :: shdfac_monthly(:)
         real, pointer      :: soilcomp(:)
-        !-------------------------------------------------------------------------
+        !----------------------------------------------------------
         ! state
-        !-------------------------------------------------------------------------
+        !----------------------------------------------------------
         real               :: sfcrunoff
         real               :: udrrunoff
         real, pointer      :: smc(:)
@@ -429,9 +603,9 @@ module NoahMP401_module
         real               :: gdd
         integer            :: pgs
         real, pointer      :: gecros_state(:)
-        !-------------------------------------------------------------------------
+        !-------------------------------------------------------
         ! output
-        !-------------------------------------------------------------------------
+        !-------------------------------------------------------
         real               :: tsk
 !       real               :: fsh
         real               :: hfx
@@ -493,5 +667,7 @@ module NoahMP401_module
         real :: tair_agl_min
         real :: rhmin
 
+        type(noahmp_parameters) :: param
     end type noahmp401dec
+
 end module NoahMP401_module
