@@ -241,6 +241,20 @@ subroutine NoahMP401_checkConstraints(n,DEC_State,mod_flag_NoahMP401)
      endif
   enddo
 
+
+  !HVT > Z0MVT
+  vname='MNSNALB'
+  call NoahMP401_getvardata(n,DEC_State,vname,vardata1, status1)
+  vname='MXSNALB'
+  call NoahMP401_getvardata(n,DEC_State,vname,vardata2, status2)
+  if(status1.ne.0) vardata1=NoahMP401_struc(n)%noahmp401(:)%param%MNSNALB
+  if(status2.ne.0) vardata2=NoahMP401_struc(n)%noahmp401(:)%param%MXSNALB
+  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     if(vardata1(t).ge.vardata2(t)) then 
+        mod_flag_NoahMP401(t) = 1
+     endif
+  enddo
+
   deallocate(vardata1)
   deallocate(vardata2)
 
@@ -357,6 +371,12 @@ subroutine NoahMP401_setVars(n,DEC_State,mod_flag_NoahMP401)
                    NoahMP401_struc(n)%noahmp401(t)%param%SWEMX = vardata(t)
               if(vname.eq."RSURF_SNOW") &
                    NoahMP401_struc(n)%noahmp401(t)%param%RSURF_SNOW = vardata(t)
+              if(vname.eq."MNSNALB") &
+                   NoahMP401_struc(n)%noahmp401(t)%param%MNSNALB = vardata(t)
+              if(vname.eq."MXSNALB") &
+                   NoahMP401_struc(n)%noahmp401(t)%param%MXSNALB= vardata(t)
+              if(vname.eq."SNDECAYEXP") &
+                   NoahMP401_struc(n)%noahmp401(t)%param%SNDECAYEXP = vardata(t)
               if(vname.eq."RHOL1") &
                    NoahMP401_struc(n)%noahmp401(t)%param%RHOL(1) = vardata(t)
               if(vname.eq."RHOL2") &

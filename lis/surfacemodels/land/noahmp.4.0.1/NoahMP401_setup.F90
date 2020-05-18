@@ -584,4 +584,8 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
       parameters%FRZX = FRZK * FRZFACT
     END IF
 
+    parameters%mxsnalb = 0.84
+    parameters%mnsnalb = 0.55
+    parameters%sndecayexp = 0.01
+
  END SUBROUTINE TRANSFER_MP_PARAMETERS
