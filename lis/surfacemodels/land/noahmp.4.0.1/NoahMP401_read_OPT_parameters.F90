@@ -231,6 +231,44 @@ subroutine NoahMP401_read_OPT_parameters()
            endif
         enddo
      endif
+
+     call NOAHMP401_read_OPT_param(n, "MXSNALB", placeholder, var_found)
+     if(var_found) then 
+        do t = 1, LIS_rc%npatch(n, mtype)
+           col = LIS_surface(n, mtype)%tile(t)%col
+           row = LIS_surface(n, mtype)%tile(t)%row
+           if(placeholder(col,row).ne.LIS_rc%udef) then 
+              NOAHMP401_struc(n)%noahmp401(t)%param%mxsnalb =&
+                   placeholder(col, row)
+           endif
+        enddo
+     endif
+
+
+     call NOAHMP401_read_OPT_param(n, "MNSNALB", placeholder, var_found)
+     if(var_found) then 
+        do t = 1, LIS_rc%npatch(n, mtype)
+           col = LIS_surface(n, mtype)%tile(t)%col
+           row = LIS_surface(n, mtype)%tile(t)%row
+           if(placeholder(col,row).ne.LIS_rc%udef) then 
+              NOAHMP401_struc(n)%noahmp401(t)%param%mnsnalb =&
+                   placeholder(col, row)
+           endif
+        enddo
+     endif
+
+
+     call NOAHMP401_read_OPT_param(n, "SNDECAYEXP", placeholder, var_found)
+     if(var_found) then 
+        do t = 1, LIS_rc%npatch(n, mtype)
+           col = LIS_surface(n, mtype)%tile(t)%col
+           row = LIS_surface(n, mtype)%tile(t)%row
+           if(placeholder(col,row).ne.LIS_rc%udef) then 
+              NOAHMP401_struc(n)%noahmp401(t)%param%sndecayexp =&
+                   placeholder(col, row)
+           endif
+        enddo
+     endif
      deallocate(placeholder)
     
   end do

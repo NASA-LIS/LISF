@@ -375,6 +375,22 @@ contains
                 vardata(t) = NoahMP401_struc(n)%noahmp401(t)%param%rsurf_snow
              enddo
           endif
+          if(vname.eq."MNSNALB")      then 
+             do t=1,NT 
+                vardata(t) = NoahMP401_struc(n)%noahmp401(t)%param%mnsnalb
+             enddo
+          endif
+          if(vname.eq."MXSNALB")      then 
+             do t=1,NT 
+                vardata(t) = NoahMP401_struc(n)%noahmp401(t)%param%mxsnalb
+             enddo
+          endif
+          if(vname.eq."SNDECAYEXP")      then 
+             do t=1,NT 
+                vardata(t) = NoahMP401_struc(n)%noahmp401(t)%param%sndecayexp
+             enddo
+          endif
+
           if(vname.eq."RHOL1")  then 
              do t=1,NT 
                 vardata(t) = NoahMP401_struc(n)%noahmp401(t)%param%RHOL(1)
