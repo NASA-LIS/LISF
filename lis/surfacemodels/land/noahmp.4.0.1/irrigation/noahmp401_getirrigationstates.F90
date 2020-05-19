@@ -19,10 +19,8 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
   use LIS_coreMod
   use LIS_logMod
   use NoahMP401_lsmMod
-!  use MODULE_SF_NOAHMPLSM_401, only: MAXSMC, REFSMC, WLTSMC
   use NOAHMP_TABLES_401, ONLY : SMCMAX_TABLE, SMCWLT_TABLE, SMCREF_TABLE
   use LIS_vegDataMod, only: LIS_read_shdmin, LIS_read_shdmax
-! use MODULE_SF_NOAHMPLSM_401, only: SMCMAX, PSISAT, DKSAT, BEXP
  
 ! !DESCRIPTION:        
 !
@@ -221,8 +219,6 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
    ! If we are outside of the irrigation window, set rate to 0
      if ((ltime.gt.shift_otimee).or.(ltime.lt.shift_otimes)) then
        irrigRate(t) = 0.0
-       !write(LIS_logunit,*) '[INFO] ',ltime, &
-       !     'is outside the irrigation window'     
      endif
 
 ! Calculate vegetation and root depth parameters
@@ -269,7 +265,6 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
                  shdmax =placeshdmax(LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,     &
                                         LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
                  
-               ! write(*,*) 'test for greenness fraction value:', shdfac, shdmin, shdmax
                ! let gsthresh be a function of the range, which means the larger
                ! the range is, the higher GVF threshold will be for this grid.                           
                ! JE Gsthresh is a GVF threshold used to identify a growing season for each
@@ -431,7 +426,6 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
                               !     Compute irrigation rate
                               !-----------------------------------------------------------------------------
                               irrigRate(t) = twater/LIS_rc%ts
-!                              noah33_struc(n)%noah(t)%smc(1) = smcmax   ! Original
 
                             ! BZ modification 4/2/2015 to account for ippix and all soil layers:
                                do l = 1, LIS_rc%irrigation_mxsoildpth
