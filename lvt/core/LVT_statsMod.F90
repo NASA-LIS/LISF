@@ -148,7 +148,8 @@ contains
 ! interval for anomaly metrics calculations
     if((LVT_metrics%anomaly%selectOpt.gt.0).or.&
          (LVT_metrics%acorr%selectOpt.gt.0).or.&
-         (LVT_metrics%armse%selectOpt.gt.0)) then 
+         (LVT_metrics%armse%selectOpt.gt.0).or.&
+         (LVT_metrics%arnkcorr%selectOpt.gt.0)) then 
        call ESMF_ConfigGetAttribute(LVT_config,&
             anomalyTwindow,&
             label="Averaging window for computing mean values in anomaly calculations:",rc=rc)
@@ -285,6 +286,7 @@ contains
        call registerMetricEntry(LVT_ETSId,LVT_metrics%ETS)
        call registerMetricEntry(LVT_RCORRId,LVT_metrics%RCORR)
        call registerMetricEntry(LVT_RNKCORRId,LVT_metrics%RNKCORR)
+       call registerMetricEntry(LVT_ARNKCORRId,LVT_metrics%ARNKCORR)
        call registerMetricEntry(LVT_ACORRId,LVT_metrics%ACORR)
        call registerMetricEntry(LVT_ARMSEId,LVT_metrics%ARMSE)
        call registerMetricEntry(LVT_NSEId,LVT_metrics%NSE)
