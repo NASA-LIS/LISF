@@ -210,11 +210,6 @@ subroutine readSMAPsmobs(source)
   call LVT_logSingleDataStreamVar(LVT_MOC_SOILMOIST, source,&
        smc,vlevel=1,units="m3/m3")
 
-!  open(100,file='test_out.bin',form='unformatted')
-!  write(100) smc
-!  close(100)
-!  stop
- 
 end subroutine readSMAPsmobs
 
 !BOP
@@ -365,9 +360,6 @@ subroutine read_SMAPL2sm_data(source, fname, smobs_inp, time)
   
   t = 1
 
-!  open(100,file='test_inp.bin',form='unformatted')
-!  write(100) sm_data
-!  close(100)
 !--------------------------------------------------------------------------
 ! Interpolate to the LVT running domain
 !-------------------------------------------------------------------------- 
@@ -377,11 +369,6 @@ subroutine read_SMAPL2sm_data(source, fname, smobs_inp, time)
        LVT_rc%lnc*LVT_rc%lnr,&
        SMAP_smobs(source)%rlat2, SMAP_smobs(source)%rlon2,&
        SMAP_smobs(source)%n112,LVT_rc%udef, iret)
-
-!  open(100,file='test_out.bin',form='unformatted')
-!  write(100) smobs_ip
-!  close(100)
-!  stop
 
   deallocate(sm_field)
   deallocate(sm_qa)
