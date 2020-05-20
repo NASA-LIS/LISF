@@ -245,9 +245,7 @@ contains
     allocate(SMAP_smobs(i)%smtime(LVT_rc%lnc,LVT_rc%lnr))
     allocate(SMAP_smobs(i)%smqc(LVT_rc%lnc*LVT_rc%lnr,2))
 
-!-------------------------------------------------------------------------
-!  AMSRE data contains the a top soil soil moisture data
-!-------------------------------------------------------------------------
+    call system("mkdir -p "//trim('SMAPsm'))
 
   end subroutine SMAP_smobsinit
 
