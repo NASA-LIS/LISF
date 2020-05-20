@@ -101,6 +101,10 @@ subroutine LIS_PEobs_plugin
    use SMAPsm_obsMod,     only : SMAPsm_obs_setup
 #endif
 
+#if ( defined PE_OBS_UASNOW)
+   use UAsnow_obsMod,     only : UAsnow_obs_setup
+#endif
+
 #if ( defined PE_OBS_AMSRE_SR )
    use AMSRE_SR_em_obsMod,    only : AMSRE_SR_em_obs_setup
 #endif
@@ -168,6 +172,10 @@ subroutine LIS_PEobs_plugin
 
 #if ( defined PE_OBS_SMAPSM )
    external read_SMAPsmobs, write_SMAPsmobs, reset_SMAPsmobs
+#endif
+
+#if ( defined PE_OBS_UASNOW )
+   external read_UAsnowobs, write_UAsnowobs, reset_UAsnowobs
 #endif
 
 #if ( defined PE_OBS_AMSRE_SR )
@@ -357,6 +365,17 @@ subroutine LIS_PEobs_plugin
                            write_SMAPsmobs)
    call registerpeobsreset(trim(LIS_SMAPsmobsId)//char(0), &
                            reset_SMAPsmobs)
+#endif
+
+#if ( defined PE_OBS_UASNOW )
+   call registerpeobssetup(trim(LIS_UAsnowobsId)//char(0), &
+                           UAsnow_obs_setup)
+   call registergetpeobs(trim(LIS_UAsnowobsId)//char(0), &
+                         read_UAsnowobs)
+   call registerwritepeobs(trim(LIS_UAsnowobsId)//char(0), &
+                           write_UAsnowobs)
+   call registerpeobsreset(trim(LIS_UAsnowobsId)//char(0), &
+                           reset_UAsnowobs)
 #endif
 
 #endif
