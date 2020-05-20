@@ -796,6 +796,33 @@ module LVT_statsDataMod
      integer, allocatable :: count_value_adc(:,:,:)
 
   end type rnkcorr_metric_spec
+
+
+  type arnkcorr_metric_spec
+     real,    allocatable :: obs_value_final(:,:,:,:)
+     real,    allocatable :: model_value_final(:,:,:,:)
+     real   , allocatable :: rval_r(:,:,:)
+     integer, allocatable :: count_value(:,:,:)
+     real,    allocatable :: value_ci(:,:)
+
+     real,    allocatable :: obs_value_ts(:,:,:,:)
+     real,    allocatable :: model_value_ts(:,:,:,:)
+     real   , allocatable :: rval_ts_r(:,:,:)
+     integer, allocatable :: count_value_ts(:,:,:)
+     real   , allocatable :: tavg_value_ts(:,:,:)
+     integer, allocatable :: tavg_count_value_ts(:,:,:)
+
+     real,    allocatable :: value_asc(:,:,:)
+     integer, allocatable :: count_value_asc(:,:,:)
+     real,    allocatable :: value_adc(:,:,:)
+     integer, allocatable :: count_value_adc(:,:,:)
+
+     real,    allocatable :: model_value_climo(:,:,:,:)
+     real,    allocatable :: obs_value_climo(:,:,:,:)
+     integer, allocatable :: count_obs_value_climo(:,:,:,:)
+     integer, allocatable :: count_model_value_climo(:,:,:,:)
+
+  end type arnkcorr_metric_spec
   
   type acorr_metric_spec
      real,    allocatable :: model_value_climo(:,:,:,:)
@@ -1095,6 +1122,7 @@ module LVT_statsDataMod
      type(ets_metric_spec)      , allocatable :: ets(:)
      type(rcorr_metric_spec)    , allocatable :: rcorr(:)
      type(rnkcorr_metric_spec)  , allocatable :: rnkcorr(:)
+     type(arnkcorr_metric_spec) , allocatable :: arnkcorr(:)
      type(acorr_metric_spec)    , allocatable :: acorr(:)
      type(armse_metric_spec)    , allocatable :: armse(:)
      type(nse_metric_spec)      , allocatable :: nse(:)
@@ -1406,6 +1434,7 @@ module LVT_statsDataMod
      type(LVT_metricEntry)   :: acorr
      type(LVT_metricEntry)   :: rcorr
      type(LVT_metricEntry)   :: rnkcorr
+     type(LVT_metricEntry)   :: arnkcorr
 
      type(LVT_metricEntry)   :: pody
      type(LVT_metricEntry)   :: podn
