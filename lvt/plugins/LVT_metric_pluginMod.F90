@@ -309,6 +309,25 @@ contains
          LVT_writeMetric_TFB, LVT_resetMetric_TFB, LVT_writerestart_TFB, &
          LVT_readrestart_TFB
 
+    use LVT_InformationEntropyMod, only : LVT_initInformationEntropy, &
+         LVT_diagnoseInformationEntropy, LVT_computeInformationEntropy,&
+         LVT_writeMetric_InformationEntropy, &
+         LVT_resetMetric_InformationEntropy, &
+         LVT_writerestart_InformationEntropy, &
+         LVT_readrestart_InformationEntropy
+
+    use LVT_ConditionalEntropyMod, only : LVT_initConditionalEntropy, &
+         LVT_diagnoseConditionalEntropy, LVT_computeConditionalEntropy,&
+         LVT_writeMetric_ConditionalEntropy, &
+         LVT_resetMetric_ConditionalEntropy, &
+         LVT_writerestart_ConditionalEntropy, &
+         LVT_readrestart_ConditionalEntropy
+
+    use LVT_MutualInformationMod, only : LVT_initMutualInformation, &
+         LVT_diagnoseMutualInformation, LVT_computeMutualInformation,&
+         LVT_writeMetric_MutualInformation, LVT_resetMetric_MutualInformation,&
+         LVT_writerestart_MutualInformation, LVT_readrestart_MutualInformation
+
 #if 0 
     use LVT_ensMEANMod, only : LVT_initensMEAN, LVT_diagnoseensMEAN, &
          LVT_computeensMEAN, LVT_writeMetric_ensMEAN, &
@@ -360,12 +379,11 @@ contains
          LVT_writeMetric_PSD, LVT_resetMetric_PSD,&
          LVT_writerestart_PSD, LVT_readrestart_PSD
 
-
-
     use LVT_KStestMod, only : LVT_initKStest, &
          LVT_diagnoseKStest, LVT_computeKStest,&
          LVT_writeMetric_KStest, LVT_resetMetric_KStest,&
          LVT_writerestart_KStest, LVT_readrestart_KStest
+
 
 #endif
 !EOP
@@ -907,8 +925,35 @@ contains
     call registermetricreadrestart(LVT_ecomplexityid,&
          LVT_readrestart_EffectiveComplexity)
 
+    call registermetricinit(LVT_IEid,LVT_initInformationEntropy)
+    call registermetricdiagnose(LVT_IEid, LVT_diagnoseInformationEntropy)
+    call registermetriccompute(LVT_IEid, LVT_computeInformationEntropy)
+    call registermetricwriteentry(LVT_IEid,&
+         LVT_writeMetric_InformationEntropy)
+    call registermetricreset(LVT_IEid,LVT_resetMetric_InformationEntropy)
+    call registermetricwriterestart(LVT_IEid,LVT_writerestart_InformationEntropy)
+    call registermetricreadrestart(LVT_IEid,LVT_readrestart_InformationEntropy)
+
+    call registermetricinit(LVT_CEid,LVT_initConditionalEntropy)
+    call registermetricdiagnose(LVT_CEid, LVT_diagnoseConditionalEntropy)
+    call registermetriccompute(LVT_CEid, LVT_computeConditionalEntropy)
+    call registermetricwriteentry(LVT_CEid,&
+         LVT_writeMetric_ConditionalEntropy)
+    call registermetricreset(LVT_CEid,LVT_resetMetric_ConditionalEntropy)
+    call registermetricwriterestart(LVT_CEid,LVT_writerestart_ConditionalEntropy)
+    call registermetricreadrestart(LVT_CEid,LVT_readrestart_ConditionalEntropy)
+
+    call registermetricinit(LVT_miid,LVT_initMutualInformation)
+    call registermetricdiagnose(LVT_miid, LVT_diagnoseMutualInformation)
+    call registermetriccompute(LVT_miid, LVT_computeMutualInformation)
+    call registermetricwriteentry(LVT_miid,&
+         LVT_writeMetric_MutualInformation)
+    call registermetricreset(LVT_miid,LVT_resetMetric_MutualInformation)
+    call registermetricwriterestart(LVT_miid,&
+         LVT_writerestart_MutualInformation)
+    call registermetricreadrestart(LVT_miid,&
+         LVT_readrestart_MutualInformation)
+
     ! EMK End of information content metrics
-
-
   end subroutine LVT_metric_plugin
 end module LVT_metric_pluginMod
