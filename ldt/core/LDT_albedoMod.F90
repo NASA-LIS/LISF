@@ -71,10 +71,48 @@ module LDT_albedoMod
 
   type(albedo_type_dec), allocatable :: LDT_albedo_struc(:)
 
+!BOP 
+! 
+! !ROUTINE: LDT_albedo_writeHeader 
+! \label{LDT_albedo_writeHeader}
+! 
+! !INTERFACE:
+  interface LDT_albedo_writeHeader
+! !PRIVATE MEMBER FUNCTIONS: 
+     module procedure albedo_writeHeader_LIS
+     module procedure albedo_writeHeader_LISHydro
+! 
+! !DESCRIPTION:
+! This interface provides routines for writing NETCDF header both 
+! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
+! preprocessing requiremetns. A dummy argument call "flagX" was added 
+! to overload the LISHydro procedue.
+!EOP 
+  end interface
+
+!BOP 
+! 
+! !ROUTINE: LDT_albedo_readParamSpecs 
+! \label{LDT_albedo_readParamSpecs}
+! 
+! !INTERFACE:
+  interface LDT_albedo_readParamSpecs
+! !PRIVATE MEMBER FUNCTIONS: 
+     module procedure albedo_readParamSpecs_LIS
+     module procedure albedo_readParamSpecs_LISHydro
+! 
+! !DESCRIPTION:
+! This interface provides routines for writing NETCDF header both 
+! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
+! preprocessing requiremetns. A dummy argument call "flagX" was added 
+! to overload the LISHydro procedue.
+!EOP 
+  end interface
+
 
 contains
 
-  subroutine LDT_albedo_readParamSpecs
+  subroutine albedo_readParamSpecs_LIS
     
     character*100    :: source
     integer          :: rc
@@ -116,7 +154,70 @@ contains
       endif
     endif
 
-  end subroutine LDT_albedo_readParamSpecs
+  end subroutine albedo_readParamSpecs_LIS
+
+  subroutine albedo_readParamSpecs_LISHydro(flag)
+    
+    character*100    :: source
+    integer          :: rc
+    integer          :: n
+    character*100    :: ALBEDO12M
+    character*100    :: SNOALB
+    integer          :: flag
+    
+    allocate(LDT_albedo_struc(LDT_rc%nnest))
+
+    call ESMF_ConfigFindLabel(LDT_config,"Albedo data source:",rc=rc)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
+    enddo
+    
+    ALBEDO12M = "ALBEDO"    
+    call ESMF_ConfigFindLabel(LDT_config,"Albedo metadata variable name:",rc=rc)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,ALBEDO12M,rc=rc)
+       call LDT_set_param_attribs(rc,LDT_albedo_struc(n)%albedo,&
+            "ALBEDO12M",source)
+    enddo
+
+
+
+
+  ! LSM-required parameter check:
+    if( index(LDT_rc%lsm,"Noah") == 1 ) then ! .or. &
+!        index(LDT_rc%lsm,"CLSM") == 1 ) then
+      if( rc /= 0 ) then
+         call LDT_warning(rc,"[WARN] Albedo data source: not defined")
+      endif
+    elseif( index(LDT_rc%lsm,"CLSM") == 1 ) then
+      write(LDT_logunit,*) &
+       "[INFO] CLSM F2.5 :: Currently albedo maps are built-in to the model parameter side"
+    endif
+
+    call ESMF_ConfigFindLabel(LDT_config,"Max snow albedo data source:",rc=rc)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
+    enddo
+   
+    SNOALB = "MXSNALBEDO" 
+    call ESMF_ConfigFindLabel(LDT_config,"Max snow albedo metadata variable name:",rc=rc)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,SNOALB,rc=rc)
+       call LDT_set_param_attribs(rc,LDT_albedo_struc(n)%mxsnoalb,&
+            "SNOALB",source)
+    enddo
+ 
+  ! LSM-required parameter check:
+    if( index(LDT_rc%lsm,"Noah") == 1 .or. &
+        index(LDT_rc%lsm,"CLSM") == 1 .or. &
+        index(LDT_rc%lsm,"RDHM") == 1 .or. &
+        index(LDT_rc%lsm,"SACHTET") == 1 ) then
+      if( rc /= 0 ) then
+         call LDT_warning(rc,"[WARN] Max snow albedo data source: not defined")
+      endif
+    endif
+
+  end subroutine albedo_readParamSpecs_LISHydro
 
 !BOP
 ! 
@@ -532,7 +633,7 @@ contains
   end subroutine LDT_albedo_init
 
 
-  subroutine LDT_albedo_writeHeader(n,ftn,dimID,monthID,qid)
+  subroutine albedo_writeHeader_LIS(n,ftn,dimID,monthID,qid)
 
     integer    :: n 
     integer    :: ftn
@@ -565,8 +666,48 @@ contains
             LDT_albedo_struc(n)%mxsnoalb)
 
 
-  end subroutine LDT_albedo_writeHeader
+  end subroutine albedo_writeHeader_LIS
 
+  subroutine albedo_writeHeader_LISHydro(n,ftn,dimID,monthID,qid,flag)
+
+    integer    :: n 
+    integer    :: ftn
+    integer    :: dimID(4)
+    integer    :: monthID
+    integer    :: qID
+
+    integer    :: t_dimID(4)
+    integer    :: t_dimID2(4)
+    integer    :: flag
+
+    t_dimID(1) = dimID(1)
+    t_dimID(2) = dimID(2)
+    t_dimID2(1) = dimID(1)
+    t_dimID2(2) = dimID(2)
+
+ !- Snow-free albedo:
+    if( LDT_albedo_struc(n)%albedo%selectOpt.eq.1 ) then
+       t_dimID(4) = dimID(4)
+       if( LDT_albedo_struc(n)%albInterval.eq."monthly" ) &   ! monthly
+          t_dimID(3) = monthID  
+       if( LDT_albedo_struc(n)%albInterval.eq."quarterly" ) &   ! quarterly
+          t_dimID(3) = qID  
+
+       call LDT_writeNETCDFdataHeader(n,ftn,t_dimID,&
+            LDT_albedo_struc(n)%albedo,flag)
+
+       call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"ALBEDO_DATA_INTERVAL", &
+            LDT_albedo_struc(n)%albInterval))
+    endif
+
+ !- Max snow albedo:
+    if( LDT_albedo_struc(n)%mxsnoalb%selectOpt.eq.1 ) then ! &
+       t_dimID2(3) = dimID(4)
+       call LDT_writeNETCDFdataHeader(n,ftn,t_dimID2,&
+            LDT_albedo_struc(n)%mxsnoalb,flag)
+    endif
+
+  end subroutine albedo_writeHeader_LISHydro
 
   subroutine LDT_albedo_writeData(n,ftn)
 

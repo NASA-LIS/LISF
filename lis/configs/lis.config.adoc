@@ -4905,6 +4905,16 @@ Acceptable values are:
 |10     | 10-km (proposed operational resolution upgrade for 2020)
 |====
 
+`AGRMET GFS filename version:` specifies which filename version convention
+is used for the GFS GRIB files.
+Acceptable values are:
+
+|====
+|Value  | Description
+|1      | Example: MT.avn_CY.00_fh.0000_tl.press_gr.0p5deg
+|2      | Example: PS.NCEP_SC.U_DI.A_DC.GRID_GP.GFS_SP.SIMPLE_GR.C0P5DEG_AR.GLOBAL_PA.GFS_DD.20200213_CY.00_FH.000_DF.GR2
+|====
+
 `AGRMET analysis directory:` specifies the location where temporary
 precip analysis fields will be written.
 
@@ -9702,14 +9712,26 @@ location of the max root depth file for flood irrigation.
 location of the max root depth file for drip irrigation.
 
 `Irrigation GVF parameter 1:` specifies growing season for
-irrigation in Noah-MP (set to 0.40 for Noah 3.3 irrigation)
+irrigation in Noah-MP [set to 0.40 for Ozdogan et al. (2010)
+irrigation]
 
 `Irrigation GVF parameter 2:` specifies growing season for
-irrigation in Noah-MP (set to 0.00 for Noah 3.3 irrigation)
+irrigation in Noah-MP [set to 0.00 for Ozdogan et al. (2010) 
+irrigation]
+
+In the original GVF threshold in the sprinkler irrigation scheme by Ozdogan et al. (2010), 
+a fraction of 0.4 was applied as part of the max-min seasonality in GVF. Nie et al. (2018) 
+added a dyanmic option. These two parameters and the GVF range allow the user to adjust
+the percentage of the irrigation cut-off so that areas of greater GVF range will have a 
+higher percentage cut-off and areas of lower GVF range will have a lower cut-off. In the 
+code, the irrigation threhold contains the term 
+(GVFparam1 + GVFparam2*(shdmax-shdmin))
+instead of a static value of 0.4. By using this equation, the user may adjust the cut-off 
+percentage as a function of GVF range (shdmax-shdmin).
 
 `Groundwater abstraction for irrigation:` specifies whether
 to withdraw water used for irrigation from the groundwater
-in Noah-MP.
+in Noah-MP
 1=Yes 0=No (default=0)
 
 .Example _lis.config_ entry
