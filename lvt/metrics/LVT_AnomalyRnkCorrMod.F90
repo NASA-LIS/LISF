@@ -60,7 +60,6 @@ module LVT_AnomalyRnkCorrMod
     integer          :: nsize_total
     integer          :: nsize_season
     integer          :: tscale
-!  integer :: minObsCountForClimo = 8
     integer :: minObsCountForClimo  
  end type arnkcorrdec
 
