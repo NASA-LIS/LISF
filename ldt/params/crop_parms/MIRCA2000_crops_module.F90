@@ -154,10 +154,10 @@ subroutine read_MIRCA2000_croptype(n,num_types,fgrd)
     tempfiler = trim(LDT_LSMCrop_struc(n)%croptfile)//trim(croptype_array(i))//"_rainfed_12.flt"
 
     write(LDT_logunit,*)"  Opening irrigated crop type file: ",trim(tempfilei)
-    call readMIRCA2000Cropfiles( n, tempfilei, irrigated,  &
+    call readMIRCA2000Cropfiles( n, tempfilei, cropcaflag, irrigated,  &
                                  irrigplant, irrigharvest )
     write(LDT_logunit,*)"  Opening rainfed crop type file: ",trim(tempfiler)
-    call readMIRCA2000Cropfiles( n, tempfiler, rainfed, &
+    call readMIRCA2000Cropfiles( n, tempfiler, cropcaflag, rainfed, &
                                  rainfedplant, rainfedharvest )
 
     if ( LDT_rc%numcrop(n) .eq. 26 ) then    ! irrigated crops
@@ -302,7 +302,7 @@ subroutine read_MIRCA2000_croptype(n,num_types,fgrd)
 end subroutine read_MIRCA2000_croptype
 
 
- subroutine readMIRCA2000Cropfiles( n, tempfile, croptypefrac, &
+ subroutine readMIRCA2000Cropfiles( n, tempfile, cropcaflag, croptypefrac, &
                                     plantday, harvestday )
                                   
 ! !USES:
@@ -317,6 +317,7 @@ end subroutine read_MIRCA2000_croptype
 ! !ARGUMENTS:
    integer,       intent(in) :: n
    character(140),intent(in) :: tempfile
+   logical,       intent(in) :: cropcaflag
    real,         intent(out) :: croptypefrac(LDT_rc%lnc(n),LDT_rc%lnr(n))
    real,intent(out) :: plantday(LDT_rc%lnc(n),LDT_rc%lnr(n),LDT_LSMCrop_struc(n)%multicroppingmax) ! lon x lat x seasons
    real,intent(out) :: harvestday(LDT_rc%lnc(n),LDT_rc%lnr(n),LDT_LSMCrop_struc(n)%multicroppingmax) ! lon x lat x seasons
@@ -544,8 +545,13 @@ end subroutine read_MIRCA2000_croptype
 !HKB: compute crop planting/harvesting days here with "var_out"
 !     (lnc,lnr,12), per crop with 2 seasons
 ! -------------------------------------------------------------------
-    call getplantharvest2mc(mc,LDT_rc%lnc(n),LDT_rc%lnr(n),var_out, &
+    if ( cropcaflag ) then
+     call getplantharvest2mc(mc,LDT_rc%lnc(n),LDT_rc%lnr(n),var_out, &
                             plantday,harvestday)
+    else
+     plantday = LDT_rc%udef
+     harvestday = LDT_rc%udef
+    endif
     deallocate( gi1, li1 )
     deallocate( lat_line, lon_line )
     deallocate( var_in )

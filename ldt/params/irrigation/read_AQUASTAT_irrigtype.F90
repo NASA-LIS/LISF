@@ -244,11 +244,6 @@
          endif
       end do
    end do
-!HKB test output
-!   open (unit=99,file='country.bin',form='unformatted',status='unknown')
-!   write(99) var_in(:,:,1)
-!   write(99) var_in(:,:,2)
-!   close(99)
 
 ! -------------------------------------------------------------------
    fgrd           = 0.
@@ -271,6 +266,8 @@
    endif
 
    allocate( li(mi), gi(mi), n11(mi) )
+!HKB test output -- need to use single processor run
+!    open (unit=99,file='country.bin',form='unformatted',status='unknown')
 
 !- Loop over country and state 
    do j = 1, 2   
@@ -315,6 +312,8 @@
       call LDT_endrun
  
    end select  ! End grid cnt aggregation method
+!HKB test output
+!    write(99) lis_cnt_mask    ! country
 
 ! ____________
 !- Map country_code -> type: flood, drip,sprink, & noncrop
@@ -338,7 +337,7 @@
            enddo
          enddo
         endif  ! tarea
-     end do cnt_loop
+    end do cnt_loop
    elseif ( j .eq. 2 ) then
    ! Overlay USA irrig methods
     st_loop : do i = 1,N_STATES
@@ -357,6 +356,8 @@
 
    end do   ! j 
 
+!HKB test output
+!    close(99)
    deallocate ( gi, li, n11 )
    deallocate ( var_in )
    deallocate (lis_cnt_mask)

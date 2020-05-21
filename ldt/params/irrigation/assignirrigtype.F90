@@ -99,7 +99,8 @@ subroutine assignirrigtype( source, n, typeopt, factor, in_fgrd, &
    enddo
 
   else
-    write(LDT_logunit,*)"[ERR] Assign irrigation types currently supported for"
+    write(LDT_logunit,*)"[ERR] Assign irrigation types currently not supported"
+    write(LDT_logunit,*)"      for ",trim(source)
     write(LDT_logunit,*)"      only GRIPC ... stopping...."
     call LDT_endrun
   endif

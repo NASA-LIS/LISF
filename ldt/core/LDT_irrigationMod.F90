@@ -303,7 +303,7 @@ contains
           call readirrigtype( trim(LDT_irrig_struc(n)%irrigtype%source)//char(0),&
                 n, LDT_irrig_struc(n)%cropwatsrc%value,   &
                 LDT_irrig_struc(n)%cropwatsrc%num_bins )
-          call assignirrigtype( trim(LDT_irrig_struc(n)%irrigtype%source)//char(0), &
+          call assignirrigtype( trim(LDT_irrig_struc(n)%irrigtype%source), &
                 n, LDT_irrig_struc(n)%irrigassign_typeopt, &
                 LDT_irrig_struc(n)%irrigassign_sprinklerfrac, &
                 LDT_irrig_struc(n)%cropwatsrc%value,   &

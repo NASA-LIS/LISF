@@ -626,6 +626,7 @@ contains
 
                         endif  ! vegtype_cropfrac1 > irrigcrops_sumfrac
                        endif  ! vegtype_cropfrac1 and croptypes_sumfrac > 0
+
                      else
 !----------------------Original blending: align croptypes with vegetation class 
 !----------------------  trust vegetation class data over cropmaps
@@ -802,10 +803,10 @@ contains
 
              !- Assign single crop type value:
                 else    ! LDT_LSMCrop_struc(n)%croptype%source = "CONSTANT" 
-                   if( LDT_LSMCrop_struc(n)%assign_cropvalue == "single" ) then
+                  if( LDT_LSMCrop_struc(n)%assign_cropvalue == "single" ) then
                       call assigncroptype( n, LDT_rc%crop_classification(n),   &
-                           LDT_rc%numcrop(n), LDT_LSMCrop_struc(n)%config_croptype, & 
-                           crop_index )
+                      LDT_rc%numcrop(n), LDT_LSMCrop_struc(n)%config_croptype, &
+                      crop_index )
                    !- Append crop_index to land cover classes
                    if( LDT_rc%crop_classification(n) == "CROPMAP" ) then
                      ! alredy done, do nothing
@@ -847,10 +848,10 @@ contains
                          enddo
                       enddo
 
-                   else
+                  else
                       print *, "[WARN] You've selected CONSTANT, so you need to select "
                       print*,  "'single' crop value assignment for this case. "
-                   endif
+                  endif
                 endif  ! End Crop Type Map or Assignment Condition
 
              endif     ! End crop type logical selection
