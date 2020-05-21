@@ -219,7 +219,7 @@ contains
     elseif(LVT_rc%scInterval.eq.12) then 
        LVT_rc%nasc = 1
        allocate(LVT_rc%scname(LVT_rc%nasc))
-       LVT_rc%scname(2) = 'YYR'
+       LVT_rc%scname(1) = 'YYR'
     endif
 ! The average diurnal cycle will be resolved at the stats
 ! output frequency
