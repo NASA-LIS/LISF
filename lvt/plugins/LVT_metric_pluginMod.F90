@@ -153,6 +153,10 @@ contains
          LVT_computeRnkCorr, LVT_writeMetric_RnkCorr, LVT_resetMetric_RnkCorr,&
          LVT_writerestart_RnkCorr, LVT_readrestart_RnkCorr
 
+    use LVT_AnomalyRnkCorrMod, only : LVT_initAnomalyRnkCorr, LVT_diagnoseAnomalyRnkCorr, &
+         LVT_computeAnomalyRnkCorr, LVT_writeMetric_AnomalyRnkCorr, LVT_resetMetric_AnomalyRnkCorr,&
+         LVT_writerestart_AnomalyRnkCorr, LVT_readrestart_AnomalyRnkCorr
+
     use LVT_AnomalyCorrMod, only : LVT_initAnomalyCorr, &
          LVT_diagnoseAnomalyCorr, LVT_computeAnomalyCorr,&
          LVT_writeMetric_AnomalyCorr, LVT_resetMetric_AnomalyCorr,&
@@ -569,6 +573,15 @@ contains
     call registermetricreset(LVT_RNKCORRid,LVT_resetMetric_RnkCorr)
     call registermetricwriterestart(LVT_RNKCORRid,LVT_writerestart_RnkCorr)
     call registermetricreadrestart(LVT_RNKCORRid,LVT_readrestart_RnkCorr)
+
+    call registermetricinit(LVT_ARNKCORRid,LVT_initAnomalyRnkCorr)
+    call registermetricdiagnose(LVT_ARNKCORRid, LVT_diagnoseAnomalyRnkCorr)
+    call registermetriccompute(LVT_ARNKCORRid, LVT_computeAnomalyRnkCorr)
+    call registermetricwriteentry(LVT_ARNKCORRid,&
+         LVT_writeMetric_AnomalyRnkCorr)
+    call registermetricreset(LVT_ARNKCORRid,LVT_resetMetric_AnomalyRnkCorr)
+    call registermetricwriterestart(LVT_ARNKCORRid,LVT_writerestart_AnomalyRnkCorr)
+    call registermetricreadrestart(LVT_ARNKCORRid,LVT_readrestart_AnomalyRnkCorr)
 
     call registermetricinit(LVT_ACORRid,LVT_initAnomalyCorr)
     call registermetricdiagnose(LVT_ACORRid, LVT_diagnoseAnomalyCorr)

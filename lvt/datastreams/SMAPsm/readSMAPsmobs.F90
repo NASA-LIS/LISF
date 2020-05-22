@@ -85,21 +85,23 @@ subroutine readSMAPsmobs(source)
      if((SMAP_smobs(source)%data_designation.eq."SPL2SMP_E").or.&
           (SMAP_smobs(source)%data_designation.eq."SPL2SMP")) then  
 
-        write(yyyymmdd,'(i4.4,2i2.2)') LVT_rc%yr, LVT_rc%mo, LVT_rc%da
-        write(yyyy,'(i4.4)') LVT_rc%yr
-        write(mm,'(i2.2)') LVT_rc%mo
-        write(dd,'(i2.2)') LVT_rc%da
-        write(hh,'(i2.2)') LVT_rc%hr
+        write(yyyymmdd,'(i4.4,2i2.2)') LVT_rc%dyr(source), &
+             LVT_rc%dmo(source), &
+             LVT_rc%dda(source)
+        write(yyyy,'(i4.4)') LVT_rc%dyr(source)
+        write(mm,'(i2.2)') LVT_rc%dmo(source)
+        write(dd,'(i2.2)') LVT_rc%dda(source)
+        write(hh,'(i2.2)') LVT_rc%dhr(source)
         
         list_files = 'ls '//trim(SMAP_smobs(source)%odir)//&
              '/'//trim(yyyy)//'.'//trim(mm)//'.'//dd//&
              '/SMAP_L2_*'//trim(yyyymmdd)//'T'//trim(hh)&
-             //"*.h5 > SMAP_filelist.dat"
+             //"*.h5 > SMAPsm/SMAP_filelist.dat"
         
         call system(trim(list_files))
 
         ftn = LVT_getNextUnitNumber()
-        open(ftn,file="./SMAP_filelist.dat",&
+        open(ftn,file="./SMAPsm/SMAP_filelist.dat",&
              status='old',iostat=ierr)
         
         do while(ierr.eq.0) 
@@ -112,8 +114,10 @@ subroutine readSMAPsmobs(source)
            mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))+11        
            read(fname(mn_ind:mn_ind+1),'(i2.2)') mn
            ss=0
-           call LVT_tick(timenow,doy,gmt,LVT_rc%yr, LVT_rc%mo, LVT_rc%da, &
-                LVT_rc%hr, mn, ss, 0)
+           call LVT_tick(timenow,doy,gmt,LVT_rc%dyr(source), &
+                LVT_rc%dmo(source), &
+                LVT_rc%dda(source), &
+                LVT_rc%dhr(source), mn, ss, 0)
         
            write(LVT_logunit,*) '[INFO] reading ',trim(fname)
            
@@ -129,24 +133,25 @@ subroutine readSMAPsmobs(source)
         enddo
 
      elseif (SMAP_smobs(source)%data_designation .eq. "SPL3SMP_E") then
-!----------------------------------------------------------------------------------------------------------------
+!-----------------------------------------------------------------------
 ! create filename for 9 km product
-!----------------------------------------------------------------------------------------------------------------
+!-----------------------------------------------------------------------
 
-         write (yyyy, '(i4.4)') LVT_rc%yr
-         write (mm, '(i2.2)') LVT_rc%mo
-         write (dd, '(i2.2)') LVT_rc%da
+         write (yyyy, '(i4.4)') LVT_rc%dyr(source)
+         write (mm, '(i2.2)') LVT_rc%dmo(source)
+         write (dd, '(i2.2)') LVT_rc%dda(source)
          write (CRID, '(a)') SMAP_smobs(source)%release_number
-
-         list_files = 'ls '//trim(SMAP_smobs(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
-                      trim(dd)//'/SMAP_L3_SM_P_E_' &
-                      //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
-                         trim(CRID)//'*.h5> SMAP_filelist'// &
-                         '.dat'
+         
+         list_files = 'ls '//trim(SMAP_smobs(source)%odir)//'/'//&
+              trim(yyyy)//'.'//trim(mm)//'.'// &
+              trim(dd)//'/SMAP_L3_SM_P_E_' &
+              //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+              trim(CRID)//'*.h5> SMAPsm/SMAP_filelist'// &
+              '.dat'
 
          call system(trim(list_files))
          ftn = LVT_getNextUnitNumber()
-         open (ftn, file="./SMAP_filelist.dat", &
+         open (ftn, file="./SMAPsm/SMAP_filelist.dat", &
                status='old', iostat=ierr)
 
 ! if multiple files for the same time and orbits are present, the latest
@@ -164,21 +169,22 @@ subroutine readSMAPsmobs(source)
          call LVT_releaseUnitNumber(ftn)
 
       elseif (SMAP_smobs(source)%data_designation .eq. "SPL3SMP") then
-!----------------------------------------------------------------------------------------------------------------
+!-----------------------------------------------------------------------
 ! create filename for 36 km product
-!----------------------------------------------------------------------------------------------------------------
+!-----------------------------------------------------------------------
 
-         write (yyyy, '(i4.4)') LVT_rc%yr
-         write (mm, '(i2.2)') LVT_rc%mo
-         write (dd, '(i2.2)') LVT_rc%da
+         write (yyyy, '(i4.4)') LVT_rc%dyr(source)
+         write (mm, '(i2.2)') LVT_rc%dmo(source)
+         write (dd, '(i2.2)') LVT_rc%dda(source)
          write (CRID, '(a)') SMAP_smobs(source)%release_number
 
-         list_files = 'ls '//trim(SMAP_smobs(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
-                      trim(dd)//'/SMAP_L3_SM_P_' &
-                      //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
-                         trim(CRID)//'*.h5> SMAP_filelist'// &
-                         '.dat'
-
+         list_files = 'ls '//trim(SMAP_smobs(source)%odir)//'/'//&
+              trim(yyyy)//'.'//trim(mm)//'.'// &
+              trim(dd)//'/SMAP_L3_SM_P_' &
+              //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+              trim(CRID)//'*.h5> SMAPsm/SMAP_filelist'// &
+              '.dat'
+         
          call system(trim(list_files))
          ftn = LVT_getNextUnitNumber()
          open (ftn, file="./SMAP_filelist.dat", &
@@ -204,11 +210,6 @@ subroutine readSMAPsmobs(source)
   call LVT_logSingleDataStreamVar(LVT_MOC_SOILMOIST, source,&
        smc,vlevel=1,units="m3/m3")
 
-!  open(100,file='test_out.bin',form='unformatted')
-!  write(100) smc
-!  close(100)
-!  stop
- 
 end subroutine readSMAPsmobs
 
 !BOP
@@ -359,9 +360,6 @@ subroutine read_SMAPL2sm_data(source, fname, smobs_inp, time)
   
   t = 1
 
-!  open(100,file='test_inp.bin',form='unformatted')
-!  write(100) sm_data
-!  close(100)
 !--------------------------------------------------------------------------
 ! Interpolate to the LVT running domain
 !-------------------------------------------------------------------------- 
@@ -371,11 +369,6 @@ subroutine read_SMAPL2sm_data(source, fname, smobs_inp, time)
        LVT_rc%lnc*LVT_rc%lnr,&
        SMAP_smobs(source)%rlat2, SMAP_smobs(source)%rlon2,&
        SMAP_smobs(source)%n112,LVT_rc%udef, iret)
-
-!  open(100,file='test_out.bin',form='unformatted')
-!  write(100) smobs_ip
-!  close(100)
-!  stop
 
   deallocate(sm_field)
   deallocate(sm_qa)
@@ -439,15 +432,20 @@ subroutine read_SMAPsm(source, fname, smobs)
 
   character*100,   parameter    :: sm_gr_name = "Soil_Moisture_Retrieval_Data"
   character*100,   parameter    :: sm_field_name = "soil_moisture"
+  character*100,   parameter    :: sm_qa_name_D = "retrieval_qual_flag"
+  character*100,    parameter   :: sm_gr_name_D = "Soil_Moisture_Retrieval_Data_AM"
+  character*100,    parameter   :: sm_field_name_D = "soil_moisture"
+  character*100,    parameter   :: sm_gr_name_A = "Soil_Moisture_Retrieval_Data_PM"
+  character*100,    parameter   :: sm_field_name_A = "soil_moisture_pm"
+  character*100,    parameter   :: sm_qa_name_A = "retrieval_qual_flag_pm"
 
-  character*100,    parameter    :: sm_gr_name_D = "Soil_Moisture_Retrieval_Data_AM"
-  character*100,    parameter    :: sm_field_name_D = "soil_moisture"
-  character*100,    parameter    :: sm_gr_name_A = "Soil_Moisture_Retrieval_Data_PM"
-  character*100,    parameter    :: sm_field_name_A = "soil_moisture_pm"
+  character*100,  parameter     :: vwc_field_name_D = "vegetation_water_content"
+  character*100,  parameter     :: vwc_field_name_A = "vegetation_water_content_pm"
 
   integer(hid_t)                :: file_id, sm_gr_id,sm_field_id
-  integer(hid_t)                :: sm_gr_id_D,sm_field_id_D
-  integer(hid_t)                :: sm_gr_id_A,sm_field_id_A
+  integer(hid_t)                :: sm_gr_id_D,sm_field_id_D,sm_qa_id_D
+  integer(hid_t)                :: sm_gr_id_A,sm_field_id_A,sm_qa_id_A
+  integer(hid_t)                :: vwc_field_id_D, vwc_field_id_A
   integer(hid_t)                :: dataspace
   integer(hid_t)                :: memspace
   integer                       :: memrank = 2
@@ -458,6 +456,10 @@ subroutine read_SMAPsm(source, fname, smobs)
   integer(hsize_t), dimension(2) :: count_mem
   integer(hsize_t), dimension(2) :: offset_mem = (/0,0/)
   real,             allocatable  :: sm_field(:,:)
+  real,             allocatable  :: vwc_field_A(:,:)
+  real,             allocatable  :: vwc_field_D(:,:)
+  integer,          allocatable  :: sm_qa_D(:,:)
+  integer,          allocatable  :: sm_qa_A(:,:)
   real,             allocatable  :: sm_field_D(:,:)
   real,             allocatable  :: sm_field_A(:,:)
   real                           :: sm1d(SMAP_smobs(source)%nc*SMAP_smobs(source)%nr)
@@ -475,6 +477,8 @@ subroutine read_SMAPsm(source, fname, smobs)
   allocate(sm_field(SMAP_smobs(source)%nc, SMAP_smobs(source)%nr))
   allocate(sm_field_D(SMAP_smobs(source)%nc, SMAP_smobs(source)%nr))
   allocate(sm_field_A(SMAP_smobs(source)%nc, SMAP_smobs(source)%nr))
+  allocate(sm_qa_A(SMAP_smobs(source)%nc, SMAP_smobs(source)%nr))
+  allocate(sm_qa_D(SMAP_smobs(source)%nc, SMAP_smobs(source)%nr))
   allocate(dims(2))
 
   dims(1) = SMAP_smobs(source)%nc
@@ -513,6 +517,20 @@ subroutine read_SMAPsm(source, fname, smobs)
           memspace, dataspace)
      call LVT_verify(status, 'Error extracting SM (AM) field from NASASMAPfile')
 
+     call h5dopen_f(sm_gr_id_D,sm_qa_name_D,sm_qa_id_D, status)
+     call LVT_verify(status, 'Error opening SM QA field in NASASMAP file')
+     
+     call h5dread_f(sm_qa_id_D, H5T_NATIVE_INTEGER,sm_qa_D,dims,status, &
+          memspace, dataspace)
+     call LVT_verify(status, 'Error extracting SM QA field from NASASMAPfile')
+
+!     call h5dopen_f(sm_gr_id_D,vwc_field_name_D,vwc_field_id_D, status)
+!     call LVT_verify(status, 'Error opening Veg water content field in NASASMAP file')
+
+!     call h5dread_f(vwc_field_id_D, H5T_NATIVE_REAL,vwc_field_D,dims,status, &
+!          memspace, dataspace)
+!     call LVT_verify(status, 'Error extracting Veg water content (AM) field from NASASMAPfile')
+
 !Read the PM (ascending) data     
      call h5gopen_f(file_id,sm_gr_name_A,sm_gr_id_A, status)
      call LVT_verify(status, 'Error opening SM group (PM) in NASASMAP file')
@@ -538,12 +556,37 @@ subroutine read_SMAPsm(source, fname, smobs)
           memspace, dataspace)
      call LVT_verify(status, 'Error extracting SM (AM) field from NASASMAPfile')
 
+     call h5dopen_f(sm_gr_id_A,sm_qa_name_A,sm_qa_id_A, status)
+     call LVT_verify(status, 'Error opening SM QA field in NASASMAP file')
+     
+     call h5dread_f(sm_qa_id_A, H5T_NATIVE_INTEGER,sm_qa_A,dims,status, &
+          memspace, dataspace)
+     call LVT_verify(status, 'Error extracting SM QA field from NASASMAPfile')
+
+!     call h5dopen_f(sm_gr_id_A,vwc_field_name_A,vwc_field_id_A, status)
+!     call LVT_verify(status, 'Error opening Veg water content field in NASASMAP file')
+
+!     call h5dread_f(vwc_field_id_A, H5T_NATIVE_REAL,vwc_field_A,dims,status, &
+!          memspace, dataspace)
+!     call LVT_verify(status, 'Error extracting Veg water content (AM) field from NASASMAPfile')
 
      call h5dclose_f(sm_field_id_D,status)
      call LVT_verify(status,'Error in H5DCLOSE call')
 
      call h5dclose_f(sm_field_id_A,status)
      call LVT_verify(status,'Error in H5DCLOSE call')
+
+     call h5dclose_f(sm_qa_id_D,status)
+     call LVT_verify(status,'Error in H5DCLOSE call')
+
+!     call h5dclose_f(vwc_field_id_D,status)
+!     call LVT_verify(status,'Error in H5DCLOSE call')
+
+     call h5dclose_f(sm_qa_id_A,status)
+     call LVT_verify(status,'Error in H5DCLOSE call')
+
+!     call h5dclose_f(vwc_field_id_A,status)
+!     call LVT_verify(status,'Error in H5DCLOSE call')
 
      call h5gclose_f(sm_gr_id_D,status)
      call LVT_verify(status,'Error in H5GCLOSE call')
@@ -655,6 +698,13 @@ subroutine read_SMAPsm(source, fname, smobs)
            if(sm_field_D(c,r).ne.LVT_rc%udef) then
               sm_field(c,r) = sm_field_D(c,r)
            endif
+!           if(vwc_field_D(c,r).gt.5) then 
+!              sm_field(c,r) = LVT_rc%udef
+!           endif
+           if(ibits(sm_qa_D(c,r),0,1).ne.0) then 
+              sm_field(c,r) = LVT_rc%udef
+           endif
+           
         enddo
      enddo
      do r=1,SMAP_smobs(source)%nr
@@ -662,6 +712,9 @@ subroutine read_SMAPsm(source, fname, smobs)
            if(sm_field_A(c,r).ne.LVT_rc%udef) then
               if(sm_field(c,r).eq.LVT_rc%udef) then 
                  sm_field(c,r) = sm_field_A(c,r)
+                 if(ibits(sm_qa_A(c,r),0,1).ne.0) then 
+                    sm_field(c,r) = LVT_rc%udef
+                 endif
               endif
            endif
         enddo
@@ -696,8 +749,11 @@ subroutine read_SMAPsm(source, fname, smobs)
   enddo
 
   deallocate(sm_field)
+  deallocate(sm_field_A)
+  deallocate(sm_field_D)
   deallocate(dims)
-
+  deallocate(sm_qa_A)
+  deallocate(sm_qa_D)
 #endif
 
 end subroutine read_SMAPsm

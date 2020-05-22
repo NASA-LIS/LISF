@@ -65,46 +65,48 @@ module LVT_pluginIndices
   integer, public,  parameter :: LVT_ETSid         = 18
   integer, public,  parameter :: LVT_Rcorrid       = 19
   integer, public,  parameter :: LVT_Rnkcorrid     = 20
-  integer, public,  parameter :: LVT_Acorrid       = 21
-  integer, public,  parameter :: LVT_ARMSEid       = 22
-  integer, public,  parameter :: LVT_NSEid         = 23
-  integer, public,  parameter :: LVT_ubRMSEid      = 24
-  integer, public,  parameter :: LVT_AREAid        = 25
-  integer, public,  parameter :: LVT_waveletStatId = 26
-  integer, public,  parameter :: LVT_hnId          = 27
-  integer, public,  parameter :: LVT_spiId         = 28
-  integer, public,  parameter :: LVT_sriId         = 29
-  integer, public,  parameter :: LVT_sswiId        = 30
-  integer, public,  parameter :: LVT_sgwiId        = 31
-  integer, public,  parameter :: LVT_percentileId  = 32
-  integer, public,  parameter :: LVT_RFVid         = 33
-  integer, public,  parameter :: LVT_MinTimeid       = 34
-  integer, public,  parameter :: LVT_MaxTimeid       = 35
-  integer, public,  parameter :: LVT_Tendencyid      = 36
-  integer, public,  parameter :: LVT_TendencyCorrid  = 37
-  integer, public,  parameter :: LVT_Zscoreid        = 38
-  integer, public,  parameter :: LVT_Trendid        = 39
-  integer, public,  parameter :: LVT_SdSIId         = 40
-  integer, public,  parameter :: LVT_TCId           = 41
-  integer, public,  parameter :: LVT_DFRid         = 42    ! EMK
-  integer, public,  parameter :: LVT_EFid          = 43    ! EMK
-  integer, public,  parameter :: LVT_FFid          = 44    ! EMK
-  integer, public,  parameter :: LVT_HSSid          = 45    ! EMK
-  integer, public,  parameter :: LVT_PSSid          = 46    ! EMK
-  integer, public,  parameter :: LVT_CSSid          = 47    ! EMK
-  integer, public,  parameter :: LVT_RELid          = 48
-  integer, public,  parameter :: LVT_RESid          = 49
-  integer, public,  parameter :: LVT_VULid          = 50
-  integer, public,  parameter :: LVT_KMEANSid       = 51
+  integer, public,  parameter :: LVT_ARnkcorrid    = 21
+  integer, public,  parameter :: LVT_Acorrid       = 22
+  integer, public,  parameter :: LVT_ARMSEid       = 23
+  integer, public,  parameter :: LVT_NSEid         = 24
+  integer, public,  parameter :: LVT_ubRMSEid      = 25
+  integer, public,  parameter :: LVT_AREAid        = 26
+  integer, public,  parameter :: LVT_waveletStatId = 27
+  integer, public,  parameter :: LVT_hnId          = 28
+  integer, public,  parameter :: LVT_spiId         = 29
+  integer, public,  parameter :: LVT_sriId         = 30
+  integer, public,  parameter :: LVT_sswiId        = 31
+  integer, public,  parameter :: LVT_sgwiId        = 32
+  integer, public,  parameter :: LVT_percentileId  = 33
+  integer, public,  parameter :: LVT_RFVid         = 34
+  integer, public,  parameter :: LVT_MinTimeid       = 35
+  integer, public,  parameter :: LVT_MaxTimeid       = 36
+  integer, public,  parameter :: LVT_Tendencyid      = 37
+  integer, public,  parameter :: LVT_TendencyCorrid  = 38
+  integer, public,  parameter :: LVT_Zscoreid        = 39
+  integer, public,  parameter :: LVT_Trendid        = 40
+  integer, public,  parameter :: LVT_SdSIId         = 41
+  integer, public,  parameter :: LVT_TCId           = 42
+  integer, public,  parameter :: LVT_DFRid         = 43   ! EMK
+  integer, public,  parameter :: LVT_EFid          = 44    ! EMK
+  integer, public,  parameter :: LVT_FFid          = 45    ! EMK
+  integer, public,  parameter :: LVT_HSSid          = 46    ! EMK
+  integer, public,  parameter :: LVT_PSSid          = 47    ! EMK
+  integer, public,  parameter :: LVT_CSSid          = 48    ! EMK
+  integer, public,  parameter :: LVT_RELid          = 49
+  integer, public,  parameter :: LVT_RESid          = 50
+  integer, public,  parameter :: LVT_VULid          = 51
+  integer, public,  parameter :: LVT_KMEANSid       = 52
 
   ! Tian decomposition of mean error...EMK
-  integer, public,  parameter :: LVT_THBid        = 52
-  integer, public,  parameter :: LVT_TMBid        = 53
-  integer, public,  parameter :: LVT_TFBid        = 54
-  integer, public,  parameter :: LVT_IEid        = 55
-  integer, public,  parameter :: LVT_CEid        = 56
-  integer, public,  parameter :: LVT_MIid         = 57
-  integer, public,  parameter :: LVT_METRIC_EINDEX   = 57
+  integer, public,  parameter :: LVT_THBid        = 53
+  integer, public,  parameter :: LVT_TMBid        = 54
+  integer, public,  parameter :: LVT_TFBid        = 55
+  integer, public,  parameter :: LVT_IEid        = 56
+  integer, public,  parameter :: LVT_CEid        = 57
+  integer, public,  parameter :: LVT_MIid         = 58
+  integer, public,  parameter :: LVT_METRIC_EINDEX   = 58
+
 
 !  integer, public,  parameter :: LVT_KStestid      = 34
 !  integer, public,  parameter :: LVT_PSDId         = 27
@@ -112,30 +114,19 @@ module LVT_pluginIndices
 !Information content metrics
 !EMK...These are always registered, so they must have unique values
 
-  integer, public,  parameter :: LVT_ICMETRIC_SINDEX = 58
-  integer, public,  parameter :: LVT_mentropyid      = 58
-  integer, public,  parameter :: LVT_igainid         = 59
-  integer, public,  parameter :: LVT_fcomplexityid   = 60
-  integer, public,  parameter :: LVT_ecomplexityid   = 61
-  integer, public,  parameter :: LVT_ICMETRIC_EINDEX = 61
+  integer, public,  parameter :: LVT_ICMETRIC_SINDEX = 59
+  integer, public,  parameter :: LVT_mentropyid      = 59
+  integer, public,  parameter :: LVT_igainid         = 60
+  integer, public,  parameter :: LVT_fcomplexityid   = 61
+  integer, public,  parameter :: LVT_ecomplexityid   = 62
+  integer, public,  parameter :: LVT_ICMETRIC_EINDEX = 62
 
 !ensemble metrics
 !EMK...These are currently disabled
-  integer, public,  parameter :: LVT_ENSMETRIC_SINDEX = 62
+  integer, public,  parameter :: LVT_ENSMETRIC_SINDEX = 63
+  integer, public,  parameter :: LVT_ENSMETRIC_EINDEX = 63
 
-!  integer, public,  parameter :: LVT_EnsMEANid        = 41
-!  integer, public,  parameter :: LVT_EnsStdevid       = 42
-!  integer, public,  parameter :: LVT_EnsSpreadid      = 43
-!  integer, public,  parameter :: LVT_EnsLLid          = 44
-!  integer, public,  parameter :: LVT_EnsXcorrid       = 45
-!  integer, public,  parameter :: LVT_EnsSkillid       = 46
-!  integer, public,  parameter :: LVT_EnsMEid          = 47
-!  integer, public,  parameter :: LVT_EnsMeanBiasid    = 48
-!  integer, public,  parameter :: LVT_EnsPercentileid  = 49
-
-  integer, public,  parameter :: LVT_ENSMETRIC_EINDEX = 62
-
-  integer, public,  parameter :: LVT_NMETRICS        = 62
+  integer, public,  parameter :: LVT_NMETRICS        = 63
 
 !-------------------------------------------------------------------------
 ! Run modes
