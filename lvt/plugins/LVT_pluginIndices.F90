@@ -104,29 +104,26 @@ module LVT_pluginIndices
   integer, public,  parameter :: LVT_TFBid        = 55
   integer, public,  parameter :: LVT_IEid        = 56
   integer, public,  parameter :: LVT_CEid        = 57
-  integer, public,  parameter :: LVT_MIid         = 58
-  integer, public,  parameter :: LVT_METRIC_EINDEX   = 58
-
-
-!  integer, public,  parameter :: LVT_KStestid      = 34
-!  integer, public,  parameter :: LVT_PSDId         = 27
+  integer, public,  parameter :: LVT_JEid        = 58
+  integer, public,  parameter :: LVT_MIid         = 59
+  integer, public,  parameter :: LVT_METRIC_EINDEX   = 59
 
 !Information content metrics
 !EMK...These are always registered, so they must have unique values
 
-  integer, public,  parameter :: LVT_ICMETRIC_SINDEX = 59
-  integer, public,  parameter :: LVT_mentropyid      = 59
-  integer, public,  parameter :: LVT_igainid         = 60
-  integer, public,  parameter :: LVT_fcomplexityid   = 61
-  integer, public,  parameter :: LVT_ecomplexityid   = 62
-  integer, public,  parameter :: LVT_ICMETRIC_EINDEX = 62
+  integer, public,  parameter :: LVT_ICMETRIC_SINDEX = 60
+  integer, public,  parameter :: LVT_mentropyid      = 60
+  integer, public,  parameter :: LVT_igainid         = 61
+  integer, public,  parameter :: LVT_fcomplexityid   = 62
+  integer, public,  parameter :: LVT_ecomplexityid   = 63
+  integer, public,  parameter :: LVT_ICMETRIC_EINDEX = 63
 
 !ensemble metrics
 !EMK...These are currently disabled
-  integer, public,  parameter :: LVT_ENSMETRIC_SINDEX = 63
-  integer, public,  parameter :: LVT_ENSMETRIC_EINDEX = 63
+  integer, public,  parameter :: LVT_ENSMETRIC_SINDEX = 64
+  integer, public,  parameter :: LVT_ENSMETRIC_EINDEX = 64
 
-  integer, public,  parameter :: LVT_NMETRICS        = 63
+  integer, public,  parameter :: LVT_NMETRICS        = 64
 
 !-------------------------------------------------------------------------
 ! Run modes
