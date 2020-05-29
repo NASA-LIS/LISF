@@ -1839,8 +1839,31 @@ ISMN observation directory:             ./ISMN
 #latex: BEGIN_DESCRIPTION
 #latex: \var{LPRM AMSR-E soil moisture observation directory:}  specifies the location of the LPRM AMSR-E soil moisture retrievals
 #latex: 
+#latex: \var{LPRM AMSR-E data version:}  specifies the version of LPRM 
+#latex: soil moisture data to be used
+#latex: Acceptable values are:
+#latex: 
+#latex: \begin{tabular}{ll}
+#latex: Value & Description \\
+#latex: GES-DISC     & NASA GES-DISC version  \\
+#latex: V5     & version 5 data (from VU)         \\
+#latex: \end{tabular}
+#latex: 
+#latex: \var{LPRM AMSR-E data channel:}  specifies the frequency 
+#latex: channel of the soil moisture retrieval (This option is 
+#latex: only needed for the GES-DISC data version)
+#latex:
+#latex: Acceptable values are:
+#latex: 
+#latex: \begin{tabular}{ll}
+#latex: Value & Description \\
+#latex: X-band    & X-band retrieval \\ 
+#latex: C-band    & C-band retrieval \\
+#latex: \end{tabular}
+#latex: 
 #latex: \var{LPRM AMSR-E use raw data:}  specifies whether to use
-#latex: the LPRM AMSR-E raw data.
+#latex: the LPRM AMSR-E raw data (This option is only used for 
+#latex: V5 data)
 #latex: Acceptable values are:
 #latex: 
 #latex: \begin{tabular}{ll}
@@ -1848,11 +1871,14 @@ ISMN observation directory:             ./ISMN
 #latex: 0     & Do not use  \\
 #latex: 1     & Use         \\
 #latex: \end{tabular}
+
 #latex: 
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
 LPRM AMSR-E soil moisture observation directory: ./LPRM-AMSRE
+LPRM AMSR-E soil moisture data version:  GES-DISC
+LPRM AMSR-E soil moisture data channel: X-band
 LPRM AMSR-E use raw data:                        0
 #latex: END_CONFIG
 
