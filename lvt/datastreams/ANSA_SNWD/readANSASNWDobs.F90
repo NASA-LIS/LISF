@@ -110,7 +110,7 @@ subroutine readANSASNWDobs(source)
 
         call LVT_verify(status, 'Error opening ANSA file ')
 
-        if(LVT_rc%yr.ge.2010) then 
+        if(LVT_rc%dyr(source).ge.2010) then 
            call h5dopen_f(file_id,snwd_field_name1,snwd_field_id, status)
            call LVT_verify(status, 'Error opening SNWD field in ANSA file')
         else
