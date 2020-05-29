@@ -114,7 +114,7 @@ subroutine readUSCRNsmObs(source)
           rc=status)
      call LVT_verify(status, 'error in setting USCRNsm start time')
 
-     uscrnsmobs(source)%yr = LVT_rc%yr
+     uscrnsmobs(source)%yr = LVT_rc%dyr(source)
      uscrnsmobs(source)%sm = LVT_rc%udef
      uscrnsmobs(source)%rootsm = LVT_rc%udef
      uscrnsmobs(source)%soilt = LVT_rc%udef
