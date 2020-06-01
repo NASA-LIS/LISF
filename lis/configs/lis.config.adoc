@@ -8256,9 +8256,9 @@ are:
 |Value | Note | Description
 
 | 0    |  **  | No urban scheme
-| 1    |      | Single-layer 
-| 2    |      | Multi-layer BEP scheme
-| 3    |      | Multi-layer BEM scheme
+| 1    |  NS  | Single-layer 
+| 2    |  NS  | Multi-layer BEP scheme
+| 3    |  NS  | Multi-layer BEM scheme
 |====
 
 `Noah-MP.4.0.1 reference height of temperature and humidity:`
