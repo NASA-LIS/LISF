@@ -161,8 +161,6 @@ subroutine readSNOTELObs(source)
                     t = nint((snoteltime-snotelobs(source)%starttime)/&
                          snotelobs(source)%timestep)+1
                     if(t.ge.1.and.t.le.366) then 
-                       !                 print*, 'snotel ',yr, mo, da, 'st ', snotelobs(source)%yr, LVT_rc%mo, t
-
                        if(swe_data.ge.0) then 
                           snotelobs(source)%swe(i,t) = swe_data*0.0254 !convert from inches to m
                        else
@@ -170,8 +168,8 @@ subroutine readSNOTELObs(source)
                        endif
 
                        if(snotelobs(source)%swe(i,t).gt.20) then 
-                          print*, 'error?',i,t,snotelobs(source)%swe(i,t)
-                          stop
+                          write(LVT_logunit,*) '[ERR]',i,t,snotelobs(source)%swe(i,t)
+                          call LVT_endrun()
                        endif
                     endif
 
@@ -183,8 +181,8 @@ subroutine readSNOTELObs(source)
                        endif
 
                        if(snotelobs(source)%prcp(i,t).gt.20) then 
-                          print*, 'error?',i,t,snotelobs(source)%prcp(i,t)
-                          stop
+                          write(LVT_logunit,*) i,t,snotelobs(source)%prcp(i,t)
+                          call LVT_endrun()
                        endif
                     endif
                  endif
