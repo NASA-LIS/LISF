@@ -1115,6 +1115,23 @@ module LVT_statsDataMod
      real,    allocatable :: value_ci(:)
   end type ce_metric_spec
 
+  type je_metric_spec
+     real,    allocatable :: xmaxval(:,:)
+     real,    allocatable :: xminval(:,:)
+     real,    allocatable :: ymaxval(:,:)
+     real,    allocatable :: yminval(:,:)
+     real,    allocatable :: zmaxval(:,:)
+     real,    allocatable :: zminval(:,:)
+     real,    allocatable :: xdelta(:,:)
+     real,    allocatable :: ydelta(:,:)
+     real,    allocatable :: zdelta(:,:)
+     real,    allocatable :: pxy(:,:,:,:)
+     real,    allocatable :: pxyz(:,:,:,:,:)
+     real,    allocatable :: value_total(:,:)
+     integer, allocatable :: count_total(:,:)
+     real,    allocatable :: value_ci(:)
+  end type je_metric_spec
+
   type mi_metric_spec
      real,    allocatable :: xmaxval(:,:)
      real,    allocatable :: xminval(:,:)
@@ -1191,7 +1208,7 @@ module LVT_statsDataMod
      type(tfb_metric_spec)     , allocatable :: tfb(:)
      type(ie_metric_spec)      , allocatable :: ie(:)
      type(ce_metric_spec)      , allocatable :: ce(:)
-
+     type(je_metric_spec)      , allocatable :: je(:)
      type(mi_metric_spec)      , allocatable :: mi(:)
 
      integer          :: selectOpt    
@@ -1535,6 +1552,7 @@ module LVT_statsDataMod
      type(LVT_metricEntry) :: TFB
      type(LVT_metricEntry) :: ie
      type(LVT_metricEntry) :: ce
+     type(LVT_metricEntry) :: je
 
      type(LVT_metricEntry) :: mi
 
