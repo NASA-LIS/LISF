@@ -106,7 +106,7 @@ subroutine readSCANObs(source)
           rc=status)
      call LVT_verify(status, 'error in setting scan start time')
 
-     scanobs(source)%yr = LVT_rc%yr
+     scanobs(source)%yr = LVT_rc%dyr(source)
      scanobs(source)%sm = LVT_rc%udef
      scanobs(source)%rootsm = LVT_rc%udef
      scanobs(source)%soilt = LVT_rc%udef
