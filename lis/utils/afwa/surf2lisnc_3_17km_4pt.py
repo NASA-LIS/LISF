@@ -5,255 +5,276 @@ Created on June 10, 2019
 @email: shugong.wang@nasa.gov
 '''
 
-import os 
-import mule 
+import os
+import mule
 import numpy.ma as ma
-import numpy    as np
-import netCDF4 as nc4 
-import datetime as dt 
+import numpy as np
+import netCDF4 as nc4
+import datetime as dt
+
 
 class surf2lisnc(object):
-  '''
-  surf2lisnc: taking JULES state variables from UM SURF file
-  and write into a NetCDF file of LIS output format 
-  '''
-  
-  def __init__(self, nc_file, stash_file):
-    self.nc_file       = nc_file
-    self.stashmaster   = stash_file
-    self.nrow          = 1152
-    self.ncol          = 1536
-    self.surf_var      = ma.zeros((self.nrow, self.ncol)) 
-    self.lat           = ma.zeros((self.nrow, self.ncol)) 
-    self.lon           = ma.zeros((self.nrow, self.ncol)) 
-    self.mask          = ma.zeros((1920,2560))    
-    nc_ldt             = nc4.Dataset('lis_input.10k.global.ps41.nc','r')
-    self.mask[:,:]     = nc_ldt["LANDMASK"][:,:]
+    '''
+    surf2lisnc: taking JULES state variables from UM SURF file
+    and write into a NetCDF file of LIS output format 
+    '''
 
-    if os.path.isfile(self.nc_file)==True:
-      os.remove(self.nc_file)
-      print("File %s has been deleted. A new file will be created." %self.nc_file)
-    print("creating LIS style NetCDF file {0}".format(self.nc_file)) 
-    self.rootgrp  = nc4.Dataset(self.nc_file, mode="w")
-    self.lat      = self.rootgrp.createDimension("north_south", 1920)
-    self.lon      = self.rootgrp.createDimension("east_west", 2560)
-    self.smcprof  = self.rootgrp.createDimension("SoilMoist_profiles", 4)
-    self.time     = self.rootgrp.createDimension("time", 1)
-    
-  def read_surf_variable(self, section, item, lblev=-1, lbuser5=-1):
-    if lblev>=0 and lbuser5==-1:
-      for field in self.surf.fields:
-        if field.stash.section==section and field.stash.item==item and field.lblev==lblev:
-          info = "section=%03d item=%03d lblev=%02d %s"  %(field.stash.section, field.stash.item, field.lblev, field.stash.name)
-          print(info)
-          self.surf_var[:,:] = field.get_data()[:,:]
-          break
-    elif lblev==-1 and lbuser5>=0:
-      for field in self.surf.fields:
-        if field.stash.section==section and field.stash.item==item and field.lbuser5==lbuser5:
-          info = "section=%03d item=%03d lbuser5=%02d %s"  %(field.stash.section, field.stash.item, field.lbuser5, field.stash.name)
-          print(info)
-          self.surf_var[:,:] = field.get_data()[:,:]
-          break
-    elif lblev==-1 and lbuser5==-1:
-      for field in self.surf.fields:
-        if field.stash.section==section and field.stash.item==item:
-          info = "section=%03d item=%03d %s"  %(field.stash.section, field.stash.item,  field.stash.name)
-          print(info)
-          self.surf_var[:,:] = field.get_data()[:,:]
-          break
-    
-    # shift coordinate
-    data = self.surf_var
-    col1 = self.ncol/2
-    col2 = self.ncol
-    tmp = ma.zeros((self.nrow, self.ncol))
-    tmp[:,:] = data[:,:]
+    def __init__(self, nc_file, stash_file):
+        self.nc_file = nc_file
+        self.stashmaster = stash_file
+        self.nrow = 1152
+        self.ncol = 1536
+        self.surf_var = ma.zeros((self.nrow, self.ncol))
+        self.lat = ma.zeros((self.nrow, self.ncol))
+        self.lon = ma.zeros((self.nrow, self.ncol))
+        self.mask = ma.zeros((1920, 2560))
+        nc_ldt = nc4.Dataset('lis_input.10k.global.ps41.nc', 'r')
+        self.mask[:, :] = nc_ldt["LANDMASK"][:, :]
 
-    data[:,0   :col1] = tmp[:,col1:col2]
-    data[:,col1:col2] = tmp[:,0   :col1]
+        if os.path.isfile(self.nc_file) == True:
+            os.remove(self.nc_file)
+            print("File %s has been deleted. A new file will be created." %
+                  self.nc_file)
+        print("creating LIS style NetCDF file {0}".format(self.nc_file))
+        self.rootgrp = nc4.Dataset(self.nc_file, mode="w")
+        self.lat = self.rootgrp.createDimension("north_south", 1920)
+        self.lon = self.rootgrp.createDimension("east_west", 2560)
+        self.smcprof = self.rootgrp.createDimension("SoilMoist_profiles", 4)
+        self.time = self.rootgrp.createDimension("time", 1)
 
-  def read_surf_smc(self, surf_file):
-    layer_thickness=[100.0, 250.0, 650.0, 2000.0]
-    print("reading STASH master file {0}".format(self.stashmaster))
-    sm=mule.stashmaster.STASHmaster.from_file(self.stashmaster)
-    
-    print("reading UM surf file {0}".format(surf_file))
-    self.surf=mule.AncilFile.from_file(surf_file)
-    print("attaching the STASH master file {0} to the mule reader".format(self.stashmaster))
-    self.surf.attach_stashmaster_info(sm)
-    # section=000 item=009 lblev=01 lbuser4=0009 SOIL MOISTURE CONTENT IN A LAYER
-    smc = np.zeros((4, 1920, 2560))
-    surf_v = np.zeros((1152, 1536))
-    smc[:,:,:] =  -9999.0
-    
-    dlat_10k = 180.0/1920.0
-    dlon_10k = 360.0/2560.0
+    def read_surf_variable(self, section, item, lblev=-1, lbuser5=-1):
+        if lblev >= 0 and lbuser5 == -1:
+            for field in self.surf.fields:
+                if field.stash.section == section and field.stash.item == item and field.lblev == lblev:
+                    info = "section=%03d item=%03d lblev=%02d %s" % (
+                        field.stash.section, field.stash.item, field.lblev, field.stash.name)
+                    print(info)
+                    self.surf_var[:, :] = field.get_data()[:, :]
+                    break
+        elif lblev == -1 and lbuser5 >= 0:
+            for field in self.surf.fields:
+                if field.stash.section == section and field.stash.item == item and field.lbuser5 == lbuser5:
+                    info = "section=%03d item=%03d lbuser5=%02d %s" % (
+                        field.stash.section, field.stash.item, field.lbuser5, field.stash.name)
+                    print(info)
+                    self.surf_var[:, :] = field.get_data()[:, :]
+                    break
+        elif lblev == -1 and lbuser5 == -1:
+            for field in self.surf.fields:
+                if field.stash.section == section and field.stash.item == item:
+                    info = "section=%03d item=%03d %s" % (
+                        field.stash.section, field.stash.item,  field.stash.name)
+                    print(info)
+                    self.surf_var[:, :] = field.get_data()[:, :]
+                    break
 
-    dlat_17k = 180.0/1152.0
-    dlon_17k = 360.0/1536.0
-    ns = 2
+        # shift coordinate
+        data = self.surf_var
+        col1 = self.ncol//2
+        col2 = self.ncol
+        tmp = ma.zeros((self.nrow, self.ncol))
+        tmp[:, :] = data[:, :]
 
-    for k in range(0,4):
-      self.read_surf_variable(0, 9, lblev=k+1)
-      surf_v[:,:] = self.surf_var[:,:]
-      for row in range(0,1920):
-        for col in range(0,2560):
-          if self.mask[row, col] ==1:
-            tmp_sum = 0.0
-            tmp_cnt = 0.0
-            for r in range(0,ns):
-              for c in range(0,ns):
-                #lon = col * dlon_10k + 0.2*c*dlon_10k
-                #lat = row * dlat_10k + 0.2*c*dlat_10k
-                lon = col * dlon_10k + dlon_10k/(2.0*ns) + (1.0*c/ns)*dlon_10k 
-                lat = row * dlat_10k + dlat_10k/(2.0*ns) + (1.0*c/ns)*dlat_10k
+        data[:, 0:col1] = tmp[:, col1:col2]
+        data[:, col1:col2] = tmp[:, 0:col1]
 
-                col_17k = int(lon/dlon_17k)
-                row_17k = int(lat/dlat_17k)
-                #if self.surf_var[row_17k, col_17k]>=0:
-                if surf_v[row_17k, col_17k]>=0:
-                  #tmp_sum = self.surf_var[row_17k,col_17k]/layer_thickness[k]
-                  tmp_sum = tmp_sum + surf_v[row_17k,col_17k]/layer_thickness[k]
-                  tmp_cnt = tmp_cnt + 1.0 
-                  #print('%f %d' %(tmp_sum, tmp_cnt))
+    def read_surf_smc(self, surf_file):
+        layer_thickness = [100.0, 250.0, 650.0, 2000.0]
+        print("reading STASH master file {0}".format(self.stashmaster))
+        sm = mule.stashmaster.STASHmaster.from_file(self.stashmaster)
 
-            if tmp_cnt > 0.0:
-              #print('row = %d col=%d, row_17k=%d, col_17k=%d' %(row, col, row_17k, col_17k))
-            #else:
-              smc[k,row,col] = tmp_sum/tmp_cnt    
-              
-      #smc[k,:,:] = self.surf_var[:,:]/layer_thickness[k]
+        print("reading UM surf file {0}".format(surf_file))
+        self.surf = mule.AncilFile.from_file(surf_file)
+        print("attaching the STASH master file {0} to the mule reader".format(
+            self.stashmaster))
+        self.surf.attach_stashmaster_info(sm)
+        # section=000 item=009 lblev=01 lbuser4=0009 SOIL MOISTURE CONTENT IN A LAYER
+        smc = np.zeros((4, 1920, 2560))
+        surf_v = np.zeros((1152, 1536))
+        smc[:, :, :] = -9999.0
 
-    print(smc[0,:,:].max())
-    #reset no_data value
-    #smc[smc<-9999]=-9999
-    nc_data = self.rootgrp.createVariable("SoilMoist_inst", "f4", ("SoilMoist_profiles","north_south", "east_west"))
-    nc_data[:,:,:] = smc[:,:,:]
+        dlat_10k = 180.0/1920.0
+        dlon_10k = 360.0/2560.0
 
-  def read_surf_swe(self, surf_file):
-    print("reading STASH master file {0}".format(self.stashmaster))
-    sm=mule.stashmaster.STASHmaster.from_file(self.stashmaster)
-    
-    print("reading UM surf file {0}".format(surf_file))
-    self.surf=mule.AncilFile.from_file(surf_file)
-    print("attaching the STASH master file {0} to the mule reader".format(self.stashmaster))
-    self.surf.attach_stashmaster_info(sm)
-    
-    # 9 SNOW_MASS_IJ, section=000 item=023 lblev=9999 lbuser4=0023 SNOW AMOUNT OVER LAND AFT TSTP KG/M2
-    swe = np.zeros((1920, 2560))
-    surf_v = np.zeros((1152, 1536))
-    swe[:,:] = -9999.0 
-    dlat_10k = 180.0/1920.0
-    dlon_10k = 360.0/2560.0
-    dlat_17k = 180.0/1152.0
-    dlon_17k = 360.0/1536.0
-    ns = 2
-  
-    self.read_surf_variable(0, 23)
-    surf_v[:,:] = self.surf_var[:,:]
-    for row in range(0,1920):
-      for col in range(0,2560):
-        if self.mask[row, col] ==1:
-          swe[row,col] = 0.0
-          tmp_sum = 0.0
-          tmp_cnt = 0.0
-          for r in range(0,ns):
-            for c in range(0,ns):
-              lon = col * dlon_10k + dlon_10k/(2.0*ns) + (1.0*c/ns)*dlon_10k 
-              lat = row * dlat_10k + dlat_10k/(2.0*ns) + (1.0*c/ns)*dlat_10k
+        dlat_17k = 180.0/1152.0
+        dlon_17k = 360.0/1536.0
+        ns = 2
 
-              col_17k = int(lon/dlon_17k)
-              row_17k = int(lat/dlat_17k)
+        for k in range(0, 4):
+            self.read_surf_variable(0, 9, lblev=k+1)
+            surf_v[:, :] = self.surf_var[:, :]
+            for row in range(0, 1920):
+                for col in range(0, 2560):
+                    if self.mask[row, col] == 1:
+                        tmp_sum = 0.0
+                        tmp_cnt = 0.0
+                        for r in range(0, ns):
+                            for c in range(0, ns):
+                                #lon = col * dlon_10k + 0.2*c*dlon_10k
+                                #lat = row * dlat_10k + 0.2*c*dlat_10k
+                                lon = col * dlon_10k + dlon_10k / \
+                                    (2.0*ns) + (1.0*c/ns)*dlon_10k
+                                lat = row * dlat_10k + dlat_10k / \
+                                    (2.0*ns) + (1.0*c/ns)*dlat_10k
 
-              if surf_v[row_17k, col_17k] > 0:
-                tmp_sum = tmp_sum + surf_v[row_17k,col_17k]
-                tmp_cnt = tmp_cnt + 1.0 
+                                col_17k = int(lon/dlon_17k)
+                                row_17k = int(lat/dlat_17k)
+                                # if self.surf_var[row_17k, col_17k]>=0:
+                                if surf_v[row_17k, col_17k] >= 0:
+                                    #tmp_sum = self.surf_var[row_17k,col_17k]/layer_thickness[k]
+                                    tmp_sum = tmp_sum + \
+                                        surf_v[row_17k, col_17k] / \
+                                        layer_thickness[k]
+                                    tmp_cnt = tmp_cnt + 1.0
+                                    #print('%f %d' %(tmp_sum, tmp_cnt))
 
-          if tmp_cnt > 0.0:
-            swe[row,col] = tmp_sum/tmp_cnt
+                        if tmp_cnt > 0.0:
+                            #print('row = %d col=%d, row_17k=%d, col_17k=%d' %(row, col, row_17k, col_17k))
+                            # else:
+                            smc[k, row, col] = tmp_sum/tmp_cnt
 
-    nc_data = self.rootgrp.createVariable("SWE_inst", "f4", ("north_south", "east_west"))
-    nc_data[:,:] = swe[:,:]
-  
-  def write_lat_lon(self, lat, lon):
-    nc_lat = self.rootgrp.createVariable("lat", "f4", ("north_south", "east_west"))
-    nc_lon = self.rootgrp.createVariable("lon", "f4", ("north_south", "east_west"))
-    nc_lat[:,:] = lat[:,:]
-    nc_lon[:,:] = lon[:,:]
+            #smc[k,:,:] = self.surf_var[:,:]/layer_thickness[k]
 
-  def write_attributes(self):
-    #missing_value = -9999.f ;
-    self.rootgrp.missing_value = -9999.0
-    #NUM_SOIL_LAYERS = 4 ;
-    self.rootgrp.NUM_SOIL_LAYERS = 4
-    #SOIL_LAYER_THICKNESSES = 10.f, 25.f, 65.f, 200.f ;
-    self.rootgrp.SOIL_LAYER_THICKNESSES=[10.0, 25.0, 65.0, 200.0]
-    #title = "LIS land surface model output" ;
-    self.rootgrp.title = "LIS land surface model output"
-    #institution = "NASA GSFC" ;
-    self.rootgrp.institution = "NASA GSFC"
-    #source = "+template open water" ;
-    self.rootgrp.source = "+template open water"
-    #history = "created on date: 2019-06-11T16:44:58.636" ;
-    self.rootgrp.history = "created on date: 2019-06-11T16:44:58.636"
-    #references = "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007" ;
-    self.rootgrp.references = "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"
-    #conventions = "CF-1.6" ;
-    self.rootgrp.conventions = "CF-1.6"
-    #comment = "website: http://lis.gsfc.nasa.gov/" ;
-    self.rootgrp.comment = "website: http://lis.gsfc.nasa.gov/" 
-    #MAP_PROJECTION = "EQUIDISTANT CYLINDRICAL" ;
-    self.rootgrp.MAP_PROJECTION = "EQUIDISTANT CYLINDRICAL"
-    #SOUTH_WEST_CORNER_LAT = -89.95312f ;
-    self.rootgrp.SOUTH_WEST_CORNER_LAT = -89.95312
-    #SOUTH_WEST_CORNER_LON = -179.9297f ;
-    self.rootgrp.SOUTH_WEST_CORNER_LON = -179.9297
-    #DX = 0.140625f ;
-    self.rootgrp.DX = 0.140625
-    #DY = 0.09375f ;
-    self.rootgrp.DY = 0.09375
-  
-  def finalize(self):
-    self.rootgrp.close()
+        print(smc[0, :, :].max())
+        # reset no_data value
+        # smc[smc<-9999]=-9999
+        nc_data = self.rootgrp.createVariable(
+            "SoilMoist_inst", "f4", ("SoilMoist_profiles", "north_south", "east_west"))
+        nc_data[:, :, :] = smc[:, :, :]
+
+    def read_surf_swe(self, surf_file):
+        print("reading STASH master file {0}".format(self.stashmaster))
+        sm = mule.stashmaster.STASHmaster.from_file(self.stashmaster)
+
+        print("reading UM surf file {0}".format(surf_file))
+        self.surf = mule.AncilFile.from_file(surf_file)
+        print("attaching the STASH master file {0} to the mule reader".format(
+            self.stashmaster))
+        self.surf.attach_stashmaster_info(sm)
+
+        # 9 SNOW_MASS_IJ, section=000 item=023 lblev=9999 lbuser4=0023 SNOW AMOUNT OVER LAND AFT TSTP KG/M2
+        swe = np.zeros((1920, 2560))
+        surf_v = np.zeros((1152, 1536))
+        swe[:, :] = -9999.0
+        dlat_10k = 180.0/1920.0
+        dlon_10k = 360.0/2560.0
+        dlat_17k = 180.0/1152.0
+        dlon_17k = 360.0/1536.0
+        ns = 2
+
+        self.read_surf_variable(0, 23)
+        surf_v[:, :] = self.surf_var[:, :]
+        for row in range(0, 1920):
+            for col in range(0, 2560):
+                if self.mask[row, col] == 1:
+                    swe[row, col] = 0.0
+                    tmp_sum = 0.0
+                    tmp_cnt = 0.0
+                    for r in range(0, ns):
+                        for c in range(0, ns):
+                            lon = col * dlon_10k + dlon_10k / \
+                                (2.0*ns) + (1.0*c/ns)*dlon_10k
+                            lat = row * dlat_10k + dlat_10k / \
+                                (2.0*ns) + (1.0*c/ns)*dlat_10k
+
+                            col_17k = int(lon/dlon_17k)
+                            row_17k = int(lat/dlat_17k)
+
+                            if surf_v[row_17k, col_17k] > 0:
+                                tmp_sum = tmp_sum + surf_v[row_17k, col_17k]
+                                tmp_cnt = tmp_cnt + 1.0
+
+                    if tmp_cnt > 0.0:
+                        swe[row, col] = tmp_sum/tmp_cnt
+
+        nc_data = self.rootgrp.createVariable(
+            "SWE_inst", "f4", ("north_south", "east_west"))
+        nc_data[:, :] = swe[:, :]
+
+    def write_lat_lon(self, lat, lon):
+        nc_lat = self.rootgrp.createVariable(
+            "lat", "f4", ("north_south", "east_west"))
+        nc_lon = self.rootgrp.createVariable(
+            "lon", "f4", ("north_south", "east_west"))
+        nc_lat[:, :] = lat[:, :]
+        nc_lon[:, :] = lon[:, :]
+
+    def write_attributes(self):
+        # missing_value = -9999.f ;
+        self.rootgrp.missing_value = -9999.0
+        #NUM_SOIL_LAYERS = 4 ;
+        self.rootgrp.NUM_SOIL_LAYERS = 4
+        # SOIL_LAYER_THICKNESSES = 10.f, 25.f, 65.f, 200.f ;
+        self.rootgrp.SOIL_LAYER_THICKNESSES = [10.0, 25.0, 65.0, 200.0]
+        #title = "LIS land surface model output" ;
+        self.rootgrp.title = "LIS land surface model output"
+        #institution = "NASA GSFC" ;
+        self.rootgrp.institution = "NASA GSFC"
+        #source = "+template open water" ;
+        self.rootgrp.source = "+template open water"
+        #history = "created on date: 2019-06-11T16:44:58.636" ;
+        self.rootgrp.history = "created on date: 2019-06-11T16:44:58.636"
+        #references = "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007" ;
+        self.rootgrp.references = "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"
+        #conventions = "CF-1.6" ;
+        self.rootgrp.conventions = "CF-1.6"
+        #comment = "website: http://lis.gsfc.nasa.gov/" ;
+        self.rootgrp.comment = "website: http://lis.gsfc.nasa.gov/"
+        #MAP_PROJECTION = "EQUIDISTANT CYLINDRICAL" ;
+        self.rootgrp.MAP_PROJECTION = "EQUIDISTANT CYLINDRICAL"
+        # SOUTH_WEST_CORNER_LAT = -89.95312f ;
+        self.rootgrp.SOUTH_WEST_CORNER_LAT = -89.95312
+        # SOUTH_WEST_CORNER_LON = -179.9297f ;
+        self.rootgrp.SOUTH_WEST_CORNER_LON = -179.9297
+        # DX = 0.140625f ;
+        self.rootgrp.DX = 0.140625
+        # DY = 0.09375f ;
+        self.rootgrp.DY = 0.09375
+
+    def finalize(self):
+        self.rootgrp.close()
 
 
-#### main script 
-if __name__=="__main__":
-  stash_file = "./STASHmaster_A"
-  start_date = dt.datetime(2015,8,25)
-  # 20170710T0600Z
-  end_date   = dt.datetime(2017,7,10)
-  td         = dt.timedelta(days=1)
-  output_dir = "OUTPUT_17KM"
-  cur_date   = start_date
-  lis_example = nc4.Dataset("LIS_HIST_200711080000.d01.nc","r")
-  lat = lis_example["lat"][:,:]
-  lon = lis_example["lon"][:,:]
-  prev_smc_file = ""
-  prev_snow_file = ""
-  while cur_date<=end_date:
-    out_dir  = "%s/SURFACEMODEL/%04d%02d" %(output_dir, cur_date.year, cur_date.month)
-    if os.path.isdir(out_dir) == False:
-      os.mkdir(out_dir)
-    # LIS_HIST_200711300000.d01.nc
-    nc_file    = "./%s/LIS_HIST_%04d%02d%02d0000.d01.nc" %(out_dir, cur_date.year, cur_date.month, cur_date.day)
-    s2n = surf2lisnc(nc_file, stash_file)  
-    
-    smc_file  = "./WARM_START/%04d%02d%02dT0600Z_glu_smc" %(cur_date.year, cur_date.month, cur_date.day)
-    ## deal with missing data
-    if os.path.isfile(smc_file) == False:
-      smc_file = prev_smc_file
-    s2n.read_surf_smc(smc_file)
+# main script
+if __name__ == "__main__":
+    stash_file = "./STASHmaster_A"
+    start_date = dt.datetime(2015, 8, 25)
+    # 20170710T0600Z
+    end_date = dt.datetime(2017, 7, 10)
+    td = dt.timedelta(days=1)
+    output_dir = "OUTPUT_17KM"
+    cur_date = start_date
+    lis_example = nc4.Dataset("LIS_HIST_200711080000.d01.nc", "r")
+    lat = lis_example["lat"][:, :]
+    lon = lis_example["lon"][:, :]
+    prev_smc_file = ""
+    prev_snow_file = ""
+    while cur_date <= end_date:
+        out_dir = "%s/SURFACEMODEL/%04d%02d" % (
+            output_dir, cur_date.year, cur_date.month)
+        if os.path.isdir(out_dir) == False:
+            os.mkdir(out_dir)
+        # LIS_HIST_200711300000.d01.nc
+        nc_file = "./%s/LIS_HIST_%04d%02d%02d0000.d01.nc" % (
+            out_dir, cur_date.year, cur_date.month, cur_date.day)
+        s2n = surf2lisnc(nc_file, stash_file)
 
-    snow_file  = "./WARM_START/%04d%02d%02dT0600Z_glu_snow" %(cur_date.year, cur_date.month, cur_date.day)
-    if os.path.isfile(snow_file) == False:
-      snow_file = prev_snow_file
-    s2n.read_surf_swe(snow_file)
-    ## lat lon
-    s2n.write_lat_lon(lat, lon) 
-    s2n.write_attributes()
-    s2n.finalize()
-    cur_date = cur_date + td 
-    prev_smc_file = smc_file
-    prev_snow_file = snow_file
+        smc_file = "./WARM_START/%04d%02d%02dT0600Z_glu_smc" % (
+            cur_date.year, cur_date.month, cur_date.day)
+        # deal with missing data
+        if os.path.isfile(smc_file) == False:
+            smc_file = prev_smc_file
+        s2n.read_surf_smc(smc_file)
+
+        snow_file = "./WARM_START/%04d%02d%02dT0600Z_glu_snow" % (
+            cur_date.year, cur_date.month, cur_date.day)
+        if os.path.isfile(snow_file) == False:
+            snow_file = prev_snow_file
+        s2n.read_surf_swe(snow_file)
+        # lat lon
+        s2n.write_lat_lon(lat, lon)
+        s2n.write_attributes()
+        s2n.finalize()
+        cur_date = cur_date + td
+        prev_smc_file = smc_file
+        prev_snow_file = snow_file

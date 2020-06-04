@@ -65,13 +65,15 @@ void FTN(registerapplytimedscale)(char *j,void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct timedscalenode* current;
   struct timedscalenode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct timedscalenode*) malloc(sizeof(struct timedscalenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

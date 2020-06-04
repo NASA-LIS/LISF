@@ -505,6 +505,7 @@ end subroutine LDT_timeInit
     integer   :: n, c,r,gindex
     integer   :: bufsize
 
+
     call LDT_domain_plugin
 
     ! Read in the domain's config file entries:
@@ -860,7 +861,7 @@ end subroutine LDT_timeInit
 ! \label{LDT_quilt_domain}
 ! 
 ! !INTERFACE: 
-  subroutine LDT_quilt_domain(n, nc, nr )
+  subroutine LDT_quilt_domain( n, nc, nr )
 
 ! !USES:     
 
@@ -890,29 +891,33 @@ end subroutine LDT_timeInit
     integer    :: nss_ind
     integer    :: nse_ind
 
-     mytask_x = mod( LDT_localPet, LDT_rc%npesx )
-     mytask_y = LDT_localPet / LDT_rc%npesx
 
-     j = 1
-     ips = -1
-     do i=1, nc+1
-        call LDT_mpDecomp(i,j,1,nc+1,1,nr+1,LDT_rc%npesx, LDT_rc%npesy,Px,Py,P)
-        
-        if(Px.eq. mytask_x) then 
-           ipe = i 
-           if(ips.eq.-1) ips = i 
-        endif
-     enddo
+    mytask_x = mod( LDT_localPet, LDT_rc%npesx )
+    mytask_y = LDT_localPet / LDT_rc%npesx
+
+    j = 1
+    ips = -1
+    do i=1, nc+1
+       call LDT_mpDecomp(i,j,1,nc+1,1,nr+1,LDT_rc%npesx, LDT_rc%npesy,Px,Py,P)
+       if(Px.eq.mytask_x) then 
+          ipe = i 
+          if(ips.eq.-1) then
+            ips = i 
+          endif
+       endif
+    enddo
      
-     i = 1
-     jps = -1
-     do j=1, nr+1
-        call LDT_mpDecomp(i,j,1,nc+1,1,nr+1,LDT_rc%npesx,LDT_rc%npesy, Px, Py, P)
-        if(Py.eq.mytask_y) then 
-           jpe = j
-           if(jps.eq.-1) jps = j 
-        endif
-     enddo
+    i = 1
+    jps = -1
+    do j=1, nr+1
+       call LDT_mpDecomp(i,j,1,nc+1,1,nr+1,LDT_rc%npesx,LDT_rc%npesy, Px, Py, P)
+       if(Py.eq.mytask_y) then 
+          jpe = j
+          if(jps.eq.-1) then 
+            jps = j 
+          endif
+       endif
+    enddo
 
 ! Original LDT code:
 #if 0
@@ -1264,7 +1269,7 @@ end subroutine LDT_timeInit
      ! Locals
      integer :: c, r, t, m, mm, tt
      real    :: maxv
-     real :: model_type_fractions(LDT_rc%max_model_types)
+     real    :: model_type_fractions(LDT_rc%max_model_types)
 
      ! Sanity check
      if (maxt > 1) then
@@ -1515,7 +1520,6 @@ end subroutine LDT_timeInit
              if(rsum.lt.0.9999.or.rsum.gt.1.0001)then  !check renormalization
                 write(LDT_logunit,*) &
                      'Renormalization failed in calculate_domdistribution'
-!                print*, c,r,fgrd(c,r,:)
                 call LDT_endrun()
              endif
           endif

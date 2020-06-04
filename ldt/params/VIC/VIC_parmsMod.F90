@@ -72,7 +72,7 @@ contains
 ! \label{VICparms_init}
 ! 
 ! !INTERFACE:
-  subroutine VICparms_init
+  subroutine VICparms_init(flag)
 
 ! !USES:
    use LDT_logMod,    only : LDT_verify, LDT_endrun, &
@@ -90,6 +90,7 @@ contains
 !
 !EOP
    implicit none
+   integer  :: flag
    integer  :: n
    integer  :: c,r,m,k
    integer  :: rc

@@ -20,6 +20,7 @@ module LIS_fileIOMod
 ! !REVISION HISTORY: 
 !  08 Apr 2004    James Geiger Initial Specification
 !  11 Oct 2018    Nargess Memarsadeghi, cleaned up and corrected LIS_create_output_directory
+!  18 Oct 2019    David Mocko, corrected creation of sub-directories for "WMO convention"
 ! 
 ! !USES: 
   use ESMF
@@ -246,7 +247,21 @@ subroutine LIS_create_output_directory(mname)
       out_dname = trim(LIS_rc%odir)//'/'
       out_dname = trim(out_dname)//trim(mname)//'/'
    elseif(LIS_rc%wstyle.eq."WMO convention") then
+! If output style is "WMO convention", ensure that the below
+! sub-directories are created before other parts of LIS will
+! try to write datasets into those sub-directories. - Mocko
       out_dname = trim(LIS_rc%odir)
+      if (trim(mname).eq."SURFACEMODEL") then
+         continue
+      elseif (trim(mname).eq."DAPERT") then
+         out_dname = trim(LIS_rc%odir)//'/'
+         out_dname = trim(out_dname)//trim(mname)//'/'
+      elseif (trim(mname).eq."DAOBS") then
+         out_dname = trim(LIS_rc%odir)//'/'
+         out_dname = trim(out_dname)//trim(mname)//'/'
+         write(unit=cdate1, fmt='(i4.4, i2.2)') LIS_rc%yr, LIS_rc%mo
+         out_dname = trim(out_dname)//trim(cdate1)
+      endif
    endif
 
 #if ( defined AIX )
@@ -3424,6 +3439,8 @@ end subroutine readgparam_real_2d
 !    name of the parameter field
 !   \item[array]
 !    retrieved parameter value
+!   \item[rc]
+!    file read return code
 !   \end{description}
 !
 !EOP      
@@ -3441,29 +3458,29 @@ end subroutine readgparam_real_2d
 
      ios = nf90_open(path=trim(LIS_rc%paramfile(n)),&
           mode=NF90_NOWRITE,ncid=nid)
-     call LIS_verify(ios,'Error in nf90_open in readparam_real_2d')
+     call LIS_verify(ios,'Error in nf90_open in readparam_real_2d_rc')
      
      ios = nf90_inq_dimid(nid,"east_west",ncId)
-     call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d')
+     call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d_rc')
 
      ios = nf90_inq_dimid(nid,"north_south",nrId)
-     call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d')
+     call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d_rc')
 
      ios = nf90_inquire_dimension(nid,ncId, len=nc)
-     call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d')
+     call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d_rc')
 
      ios = nf90_inquire_dimension(nid,nrId, len=nr)
-     call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d')
+     call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d_rc')
 
      ios = nf90_inq_varid(nid,trim(pname),paramid)
      if(ios.ne.0) then 
         rc = 1
      else
         ios = nf90_get_var(nid,paramid,param)
-        call LIS_verify(ios,'Error in nf90_get_var in readparam_real_2d')
+        call LIS_verify(ios,'Error in nf90_get_var in readparam_real_2d_rc')
         
         ios = nf90_close(nid)
-        call LIS_verify(ios,'Error in nf90_close in readparam_real_2d')
+        call LIS_verify(ios,'Error in nf90_close in readparam_real_2d_rc')
         
         array(:,:) = param(:,:)
         rc = 0

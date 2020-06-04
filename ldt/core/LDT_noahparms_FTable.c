@@ -65,13 +65,15 @@ void FTN(registerreadtbot)(char *j,void (*func)(int*,float*), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct tbotnode* current;
   struct tbotnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct tbotnode*) malloc(sizeof(struct tbotnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

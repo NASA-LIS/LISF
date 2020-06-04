@@ -47,15 +47,16 @@ subroutine read_HYMAP_drain_area(n, array)
 
   ftn = LDT_getNextUnitNumber()
 
-  inquire(file=trim(HYMAP_struc(n)%drainareaFile), exist=file_exists)
+  inquire(file=trim(HYMAP_struc(n)%drainareafile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Drainarea map ',trim(HYMAP_struc(n)%drainareaFile),' not found'
+     write(LDT_logunit,*) '[ERR] Drainage area map, ',&
+           trim(HYMAP_struc(n)%drainareafile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif
 
-  open(ftn, file=trim(HYMAP_struc(n)%drainareaFile), access='direct',&
-       status='old', form="unformatted", recl=4)
+  open(ftn, file=trim(HYMAP_struc(n)%drainareafile), access='direct',&
+       status='old', form="unformatted", convert="big_endian", recl=4)
   
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &

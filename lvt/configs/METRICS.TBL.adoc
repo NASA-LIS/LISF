@@ -87,6 +87,7 @@ Mean absolute error:                   0    0       0         0       -9999.0  -
 Anomaly correlation:                   0    0       0         0       -9999.0  -9999.0    0    0  #ACORR
 Raw correlation:                       0    0       0         0       -9999.0  -9999.0    0    0  #RCORR
 Rank correlation:                      0    0       0         0       -9999.0  -9999.0    0    0  #RNKCORR
+Anomaly rank correlation:              0    0       0         0       -9999.0  -9999.0    0    0  #ARNKCORR
 Probability of detection (PODy):       0    0       0         0           0.1      0.3    0    0  #PODY
 Probability of detection (PODn):       0    0       0         0           0.1      0.3    0    0  #PODN
 False alarm ratio (FAR):               0    0       0         0           0.1      0.3    0    0  #FAR
@@ -124,5 +125,9 @@ Triple collocation:                    0    0       0         0       -9999.0  -
 Reliability:                           0    0       0         0       -9999.0  -9999.0    0    0  #REL
 Resilience:                            0    0       0         0       -9999.0  -9999.0    0    0  #RES
 Vulnerability:                         0    0       0         0       -9999.0  -9999.0    0    0  #VUL
+Information entropy:                   0    0       0         0       -9999.0  -9999.0    0    0  #IE
+Conditional entropy:                   0    0       0         0       -9999.0  -9999.0    0    0  #CE
+Joint entropy:                         0    0       0         0       -9999.0  -9999.0    0    0  #JE
+Mutual information:                    0    0       0         0       -9999.0  -9999.0    0    0  #MI
 ....
 

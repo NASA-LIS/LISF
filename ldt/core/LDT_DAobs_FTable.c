@@ -71,13 +71,15 @@ void FTN(registerdaobssetup)(char *j,void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct daobsinitnode* current;
   struct daobsinitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct daobsinitnode*) malloc(sizeof(struct daobsinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -146,13 +148,15 @@ void FTN(registerdaobsread)(char *j,void (*func)(int*), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct daobsreadnode* current;
   struct daobsreadnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct daobsreadnode*) malloc(sizeof(struct daobsreadnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

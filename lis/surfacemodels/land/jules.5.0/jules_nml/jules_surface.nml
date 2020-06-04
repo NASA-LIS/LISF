@@ -1,0 +1,10 @@
+&jules_surface
+iscrntdiag=0,
+l_aggregate=.false.,
+l_anthrop_heat_src=.false.,
+l_elev_land_ice=.false.,
+l_elev_lw_down=.false.,
+l_epot_corr=.true.,
+l_land_ice_imp=.false.,
+l_point_data=.true.,
+/

@@ -5,6 +5,9 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+#include "LIS_misc.h"
+
 !BOP
 !
 ! !ROUTINE: LIS_readConfig
@@ -34,6 +37,7 @@ subroutine LIS_readConfig()
   use LIS_histDataMod, only : LIS_histData
   use LIS_timeMgrMod,  only : LIS_date2time, LIS_parseTimeString
   use LIS_logMod
+  use LIS_mpiMod, only: LIS_mpi_comm ! EMK
 !
 ! !DESCRIPTION:
 !
@@ -62,6 +66,7 @@ subroutine LIS_readConfig()
   integer        :: final_dirpos
   character(100) :: diag_fname
   character(100) :: diag_dir
+  integer :: ierr ! EMK
   integer, external  :: LIS_create_subdirs
 ! ______________________________________________________________
 
@@ -88,14 +93,29 @@ subroutine LIS_readConfig()
   call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%dfile,label="Diagnostic output file:",&
        rc=rc)
   call LIS_verify(rc,'Diagnostic output file: not defined')
-  
+
  ! Make the diagnostic file directory names/path:
   diag_fname = LIS_rc%dfile
   final_dirpos = scan(diag_fname, "/", BACK = .TRUE.)
   if(final_dirpos.ne.0) then 
     diag_dir = diag_fname(1:final_dirpos)
-    ios = LIS_create_subdirs(len_trim(diag_dir),trim(diag_dir))
+    !EMK...Only a single invocation is needed.
+    !ios = LIS_create_subdirs(len_trim(diag_dir),trim(diag_dir))
+    if (LIS_masterproc) then
+       ios = LIS_create_subdirs(len_trim(diag_dir),trim(diag_dir))
+       if (ios .ne. 0) then
+          write(LIS_logunit,*)'[ERR] Problem creating directory ', &
+               trim(diag_dir)
+          call LIS_flush(LIS_logunit)
+       end if
+    end if
   endif
+
+! EMK... Make sure diagnostic file directory has been created before 
+! continuing.
+#if (defined SPMD)
+  call mpi_barrier(LIS_mpi_comm, ierr)
+#endif
 
   write(unit=temp1,fmt='(i4.4)') LIS_localPet
   read(unit=temp1,fmt='(4a1)')fproc

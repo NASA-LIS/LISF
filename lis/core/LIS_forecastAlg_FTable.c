@@ -57,13 +57,15 @@ void FTN(registerforecastalginit)(char *j, void (*func)(), int len)
 //. \end{description}
 //EOP
 { 
+  int len1;
   struct forecastalginitnode* current;
   struct forecastalginitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct forecastalginitnode*) malloc(sizeof(struct forecastalginitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -130,13 +132,15 @@ void FTN(registerforecastsampledate)(char *j, void (*func)(int*, int*, int*, int
 //. \end{description}
 //EOP
 { 
+  int len1;
   struct forecastalgsamplenode* current;
   struct forecastalgsamplenode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct forecastalgsamplenode*) malloc(sizeof(struct forecastalgsamplenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

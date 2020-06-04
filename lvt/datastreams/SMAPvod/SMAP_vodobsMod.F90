@@ -239,6 +239,7 @@ contains
     allocate(SMAP_vodobs(i)%vodtime(LVT_rc%lnc,LVT_rc%lnr))
     allocate(SMAP_vodobs(i)%vodqc(LVT_rc%lnc*LVT_rc%lnr,2))
 
+    call system("mkdir -p "//trim('SMAPvod'))     
 
   end subroutine SMAP_vodobsinit
 
