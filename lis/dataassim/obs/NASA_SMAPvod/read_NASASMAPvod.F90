@@ -73,12 +73,29 @@ subroutine read_NASASMAPvod(n, k, OBS_State, OBS_Pert_State)
   real                   :: dt
   real                   :: lon
   real                   :: lhour
-  real                   :: gmt
   integer                :: zone
   integer                :: fnd
   real, allocatable      :: ssdev(:)
   integer                :: lis_julss
   real                   :: smvalue
+  character*200          :: list_files
+  character*100          :: smap_filename(10)
+  real*8                 :: timenow, time1,time2,time3
+  integer                :: doy
+  real                   :: gmt
+  character(len=4)       :: istring
+  character(len=200)     :: cmd
+  integer                :: ftn
+  integer                :: ierr
+  character*100          :: temp1
+  character*1            :: fproc(4)
+  integer                :: mn_ind
+  integer                :: yr, mo, da, hr, mn, ss
+  integer                :: cyr, cmo, cda, chr, cmn, css
+  integer                :: nyr, nmo, nda, nhr, nmn, nss
+  character*8            :: yyyymmdd
+  character*4            :: yyyy
+  character*2            :: mm,dd,hh
   real                   :: model_delta(LIS_rc%obs_ngrid(k))
   real                   :: obs_delta(LIS_rc%obs_ngrid(k))
   
@@ -92,14 +109,100 @@ subroutine read_NASASMAPvod(n, k, OBS_State, OBS_Pert_State)
   data_upd = .false. 
   obs_unsc = LIS_rc%udef
 
-  alarmCheck = LIS_isAlarmRinging(LIS_rc, "NASASMAP read alarm")
+  alarmCheck = LIS_isAlarmRinging(LIS_rc, "NASASMAP VOD read alarm")
 
   vodobs_A = LIS_rc%udef
   vodobs_D = LIS_rc%udef
 
+  cyr = LIS_rc%yr
+  cmo = LIS_rc%mo
+  cda = LIS_rc%da
+  chr = LIS_rc%hr
+  cmn = LIS_rc%mn
+  css = LIS_rc%ss
+
+  call LIS_tick(time1,doy,gmt,cyr,cmo,cda,chr,cmn,css,0.0)
+  nyr = LIS_rc%yr
+  nmo = LIS_rc%mo
+  nda = LIS_rc%da
+  nhr = LIS_rc%hr
+  nmn = LIS_rc%mn
+  nss = LIS_rc%ss
+
+  call LIS_tick(time2,doy,gmt,nyr,nmo,nda,nhr,nmn,nss,3600.0)
+  nyr = LIS_rc%yr
+  nmo = LIS_rc%mo
+  nda = LIS_rc%da
+  nhr = LIS_rc%hr
+  nmn = LIS_rc%mn
+  nss = LIS_rc%ss
+
+  call LIS_tick(time3,doy,gmt,nyr,nmo,nda,nhr,nmn,nss,LIS_rc%ts)
+
   if(alarmCheck.or.NASASMAPvod_struc(n)%startMode) then 
      NASASMAPvod_struc(n)%startMode = .false.
-     if ( (NASASMAPvod_struc(n)%data_designation.eq."SPL3SMP_E") .or. &
+     if ( (NASASMAPvod_struc(n)%data_designation.eq."SPL2SMP_E") .or. &
+          (NASASMAPvod_struc(n)%data_designation.eq."SPL2SMP") ) then
+       
+        NASASMAPvod_struc(n)%vodobs = LIS_rc%udef
+        NASASMAPvod_struc(n)%vodtime = -1.0
+
+        write(temp1,fmt='(i4.4)') LIS_localPet
+        read(temp1,fmt='(4a1)') fproc
+        write(yyyymmdd,'(i4.4,2i2.2)') LIS_rc%yr, LIS_rc%mo, LIS_rc%da
+        write(yyyy,'(i4.4)') LIS_rc%yr
+        write(mm,'(i2.2)') LIS_rc%mo
+        write(dd,'(i2.2)') LIS_rc%da
+        write(hh,'(i2.2)') LIS_rc%hr
+        
+        if(LIS_masterproc) then 
+           list_files = "ls "//trim((vodobsdir))//&
+                "/"//trim(yyyy)//"."//trim(mm)//"."//dd//&
+                "/SMAP_L2_*"//trim(yyyymmdd)//"T"//trim(hh)&
+                //"*.h5 > SMAP_filelist.vod.dat"
+        
+           call system(trim(list_files))
+           do i=0,LIS_npes-1
+              write(istring,'(I4.4)') i
+              cmd = 'cp SMAP_filelist.vod.dat SMAP_filelist.vod.'//istring//".dat"
+              call system(trim(cmd))
+           end do ! i
+        end if
+#if (defined SPMD)
+        call mpi_barrier(lis_mpi_comm,ierr)
+#endif
+
+        i = 1
+        ftn = LIS_getNextUnitNumber()
+        open(ftn,file="./SMAP_filelist.vod."//&
+             fproc(1)//fproc(2)//fproc(3)//fproc(4)//".dat",&
+             status='old',iostat=ierr)
+
+        do while(ierr.eq.0) 
+           read(ftn,'(a)',iostat=ierr) fname
+           if(ierr.ne.0) then 
+              exit
+           endif
+           mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))
+           
+           mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))+11        
+           read(fname(mn_ind:mn_ind+1),'(i2.2)') mn
+           ss=0
+           call LIS_tick(timenow,doy,gmt,LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
+                LIS_rc%hr, mn, ss, 0.0)
+           
+           smap_filename(i) = fname
+           
+           write(LIS_logunit,*) '[INFO] reading ',trim(smap_filename(i))
+           
+           call read_SMAPL2vod_data(n,k,smap_filename(i),&
+                NASASMAPvod_struc(n)%vodobs,timenow)
+           
+           i = i+1
+        enddo
+        call LIS_releaseUnitNumber(ftn)
+
+     elseif ( (NASASMAPvod_struc(n)%data_designation.eq."SPL3SMP_E") .or. &
           (NASASMAPvod_struc(n)%data_designation.eq."SPL3SMP") ) then
         call create_NASASMAPvod_filename(vodobsdir, &
              NASASMAPvod_struc(n)%data_designation,&
@@ -234,27 +337,52 @@ subroutine read_NASASMAPvod(n, k, OBS_State, OBS_Pert_State)
   ! dt is not defined as absolute value of the time difference to avoid
   ! double counting of the data in assimilation. 
 
-  do r=1,LIS_rc%obs_lnr(k)
-     do c=1,LIS_rc%obs_lnc(k)
-        if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
-           grid_index = c+(r-1)*LIS_rc%obs_lnc(k)
+  if ( (NASASMAPvod_struc(n)%data_designation.eq."SPL2SMP_E") .or. &
+       (NASASMAPvod_struc(n)%data_designation.eq."SPL2SMP") ) then
 
-           dt = (LIS_rc%gmt - NASASMAPvod_struc(n)%vodtime(c,r))*3600.0
-           if(dt.ge.0.and.dt.lt.LIS_rc%ts) then 
-              lai_current(c,r) = & 
-                   NASASMAPvod_struc(n)%vodobs(c,r)
-              if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
-                 obs_unsc(LIS_obs_domain(n,k)%gindex(c,r)) = &
-                      lai_current(c,r)
-              endif
-              if(lai_current(c,r).ne.LIS_rc%udef) then 
-                 fnd = 1
+     do r=1,LIS_rc%obs_lnr(k)
+        do c=1,LIS_rc%obs_lnc(k)
+           if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
+              grid_index = c+(r-1)*LIS_rc%obs_lnc(k)
+              dt = (NASASMAPvod_struc(n)%vodtime(c,r)-time1)
+              if(dt.ge.0.and.dt.lt.(time3-time1)) then 
+                 lai_current(c,r) = & 
+                      NASASMAPvod_struc(n)%vodobs(c,r)
+                 if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
+                    obs_unsc(LIS_obs_domain(n,k)%gindex(c,r)) = &
+                         lai_current(c,r)
+                 endif
+                 if(lai_current(c,r).ne.LIS_rc%udef) then 
+                    fnd = 1
+                 endif
               endif
            endif
-        endif
+        enddo
      enddo
-  enddo
- 
+
+  else
+     do r=1,LIS_rc%obs_lnr(k)
+        do c=1,LIS_rc%obs_lnc(k)
+           if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
+              grid_index = c+(r-1)*LIS_rc%obs_lnc(k)
+              
+              dt = (LIS_rc%gmt - NASASMAPvod_struc(n)%vodtime(c,r))*3600.0
+              if(dt.ge.0.and.dt.lt.LIS_rc%ts) then 
+                 lai_current(c,r) = & 
+                      NASASMAPvod_struc(n)%vodobs(c,r)
+                 if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
+                    obs_unsc(LIS_obs_domain(n,k)%gindex(c,r)) = &
+                         lai_current(c,r)
+                 endif
+                 if(lai_current(c,r).ne.LIS_rc%udef) then 
+                    fnd = 1
+                 endif
+              endif
+           endif
+        enddo
+     enddo
+  endif
+
 !-------------------------------------------------------------------------
 !  Transform data to the LSM climatology using a CDF-scaling approach
 !-------------------------------------------------------------------------     
@@ -375,6 +503,185 @@ subroutine read_NASASMAPvod(n, k, OBS_State, OBS_Pert_State)
   endif
 
 end subroutine read_NASASMAPvod
+
+!BOP
+! 
+! !ROUTINE: read_SMAPL2vod_data
+! \label{read_SMAPL2vod_data}
+!
+! !INTERFACE:
+subroutine read_SMAPL2vod_data(n, k,fname, vodobs_inp, time)
+! 
+! !USES:   
+
+  use LIS_coreMod
+  use LIS_logMod
+  use LIS_timeMgrMod
+  use NASASMAPvod_Mod, only : NASASMAPvod_struc
+
+#if (defined USE_HDF5) 
+  use hdf5
+#endif
+
+  implicit none
+!
+! !INPUT PARAMETERS: 
+! 
+  integer                  :: n
+  integer                  :: k
+  character (len=*)        :: fname
+  real                     :: vodobs_inp(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k))
+  real*8                   :: time
+
+! !OUTPUT PARAMETERS:
+!
+!
+! !DESCRIPTION: 
+!
+!
+!EOP
+
+#if (defined USE_HDF5)
+
+  character*100,    parameter    :: vod_gr_name = "Soil_Moisture_Retrieval_Data"
+  character*100,    parameter    :: vod_field_name = "vegetation_opacity_option3"
+  character*100,    parameter    :: vod_qa_name = "retrieval_qual_flag"
+
+  integer(hsize_t), dimension(1) :: dims
+  integer(hsize_t), dimension(1) :: maxdims
+  integer(hid_t)                 :: file_id
+  integer(hid_t)                 :: dspace_id
+  integer(hid_t)                 :: row_id, col_id
+  integer(hid_t)                 :: vod_gr_id,vod_field_id, vod_qa_id
+  integer(hid_t)                 :: vod_gr_id_A,vod_field_id_A
+  real,             allocatable  :: vod_field(:)
+  integer,          allocatable  :: vod_qa(:)
+  integer,          allocatable  :: ease_row(:)
+  integer,          allocatable  :: ease_col(:)
+  integer                        :: c,r,t
+  logical*1                      :: vod_data_b(NASASMAPvod_struc(n)%nc*NASASMAPvod_struc(n)%nr)
+  logical*1                      :: vodobs_b_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
+  real                           :: vod_data(NASASMAPvod_struc(n)%nc*NASASMAPvod_struc(n)%nr)
+  real                           :: vodobs_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
+
+  integer                        :: status,ios,iret
+
+  call h5open_f(status)
+  call LIS_verify(status, 'Error opening HDF fortran interface')
+  
+  call h5fopen_f(trim(fname),H5F_ACC_RDONLY_F, file_id, status) 
+  call LIS_verify(status, 'Error opening SMAP L2 file ')
+  
+  call h5gopen_f(file_id,vod_gr_name,vod_gr_id, status)
+  call LIS_verify(status, 'Error opening VOD group in SMAP L2 file')
+  
+  call h5dopen_f(vod_gr_id,vod_field_name,vod_field_id, status)
+  call LIS_verify(status, 'Error opening VOD field in SMAP L2 file')
+
+  call h5dopen_f(vod_gr_id,"EASE_row_index",row_id, status)
+  call LIS_verify(status, 'Error opening row index field in SMAP L2 file')
+
+  call h5dopen_f(vod_gr_id,"EASE_column_index",col_id, status)
+  call LIS_verify(status, 'Error opening column index field in SMAP L2 file')
+
+!  call h5dopen_f(sm_gr_id, sm_qa_name,sm_qa_id, status)
+!  call LIS_verify(status, 'Error opening QA field in SMAP L2 file')
+  
+  call h5dget_space_f(vod_field_id, dspace_id, status)
+  call LIS_verify(status, 'Error in h5dget_space_f: reaSMAP L2Obs')
+  
+! Size of the arrays
+! This routine returns -1 on failure, rank on success. 
+  call h5sget_simple_extent_dims_f(dspace_id, dims, maxdims, status) 
+  if(status.eq.-1) then 
+     call LIS_verify(status, 'Error in h5sget_simple_extent_dims_f: readSMAP L2Obs')
+  endif
+  
+  allocate(vod_field(maxdims(1)))
+!  allocate(sm_qa(maxdims(1)))
+  allocate(ease_row(maxdims(1)))
+  allocate(ease_col(maxdims(1)))
+
+  call h5dread_f(row_id, H5T_NATIVE_INTEGER,ease_row,dims,status)
+  call LIS_verify(status, 'Error extracting row index from SMAP L2 file')
+
+  call h5dread_f(col_id, H5T_NATIVE_INTEGER,ease_col,dims,status)
+  call LIS_verify(status, 'Error extracting col index from SMAP L2 file')
+  
+  call h5dread_f(vod_field_id, H5T_NATIVE_REAL,vod_field,dims,status)
+  call LIS_verify(status, 'Error extracting VOD field from SMAP L2 file')
+
+!  call h5dread_f(vod_qa_id, H5T_NATIVE_INTEGER,vod_qa,dims,status)
+!  call LIS_verify(status, 'Error extracting VOD field from SMAP L2 file')
+  
+!  call h5dclose_f(vod_qa_id,status)
+!  call LIS_verify(status,'Error in H5DCLOSE call')
+
+  call h5dclose_f(row_id,status)
+  call LIS_verify(status,'Error in H5DCLOSE call')
+
+  call h5dclose_f(col_id,status)
+  call LIS_verify(status,'Error in H5DCLOSE call')
+
+  call h5dclose_f(vod_field_id,status)
+  call LIS_verify(status,'Error in H5DCLOSE call')
+  
+  call h5gclose_f(vod_gr_id,status)
+  call LIS_verify(status,'Error in H5GCLOSE call')
+    
+  call h5fclose_f(file_id,status)
+  call LIS_verify(status,'Error in H5FCLOSE call')
+  
+  call h5close_f(status)
+  call LIS_verify(status,'Error in H5CLOSE call')
+
+  vod_data = LIS_rc%udef
+  vod_data_b = .false. 
+
+!grid the data in EASE projection
+  do t=1,maxdims(1)
+     if(ease_col(t).gt.0.and.ease_row(t).gt.0) then 
+        vod_data(ease_col(t) + &
+             (ease_row(t)-1)*NASASMAPvod_struc(n)%nc) = vod_field(t) 
+        if(vod_field(t).ne.-9999.0) then 
+           vod_data_b(ease_col(t) + &
+                (ease_row(t)-1)*NASASMAPvod_struc(n)%nc) = .true. 
+        endif
+     endif
+  enddo
+  
+  t = 1
+!--------------------------------------------------------------------------
+! Interpolate to the LIS running domain
+!-------------------------------------------------------------------------- 
+  call neighbor_interp(LIS_rc%obs_gridDesc(k,:), vod_data_b, vod_data, &
+       vodobs_b_ip, vodobs_ip, &
+       NASASMAPvod_struc(n)%nc*NASASMAPvod_struc(n)%nr, &
+       LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k), &
+       NASASMAPvod_struc(n)%rlat, NASASMAPvod_struc(n)%rlon,&
+       NASASMAPvod_struc(n)%n11, LIS_rc%udef, ios)
+
+
+  deallocate(vod_field)
+!  deallocate(vod_qa)
+  deallocate(ease_row)
+  deallocate(ease_col)
+
+!overwrite the input data 
+  do r=1,LIS_rc%obs_lnr(k)
+     do c=1,LIS_rc%obs_lnc(k)
+        if(vodobs_ip(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0) then 
+           vodobs_inp(c,r) = & 
+                vodobs_ip(c+(r-1)*LIS_rc%obs_lnc(k))
+           
+           NASASMAPvod_struc(n)%vodtime(c,r) = & 
+                time
+        endif
+     enddo
+  enddo
+#endif
+
+end subroutine read_SMAPL2vod_data
 
 !BOP
 ! 
