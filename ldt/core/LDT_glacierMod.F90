@@ -18,7 +18,7 @@ module LDT_glacierMod
 ! !REVISION HISTORY:
 !
 !  30 Mar 2018: Sujay Kumar; Initial implementation
-!
+!   3 Oct 2019: Mahdi Navari; glacier fraction added 
   use ESMF
 #if ( defined SPMD )
   use mpi
@@ -136,6 +136,12 @@ module LDT_glacierMod
           allocate(LDT_LSMparam_struc(n)%glaciermask%value(&
                LDT_rc%lnc(n),LDT_rc%lnr(n),&
                LDT_LSMparam_struc(n)%glaciermask%num_bins))
+! MN added for glacier fraction 
+          LDT_LSMparam_struc(n)%glacierfrac%vlevels = &
+               LDT_LSMparam_struc(n)%glacierfrac%num_bins
+          allocate(LDT_LSMparam_struc(n)%glacierfrac%value(&
+               LDT_rc%lnc(n),LDT_rc%lnr(n),&
+               LDT_LSMparam_struc(n)%glacierfrac%num_bins))
        endif
     enddo
     
@@ -193,9 +199,11 @@ module LDT_glacierMod
              
              call readglaciermask(&
                   trim(LDT_LSMparam_struc(n)%glaciermask%source)//char(0),&
-                  n,LDT_LSMparam_struc(n)%glaciermask%value)
+                  n,LDT_LSMparam_struc(n)%glaciermask%value, &
+                  LDT_LSMparam_struc(n)%glacierfrac%value ) ! MN 
           else
              LDT_LSMparam_struc(n)%glaciermask%value = 0.0
+             LDT_LSMparam_struc(n)%glacierfrac%value   = 0.0! MN 
           endif
 
        ! Fill where parameter values are missing compared to land/water mask:
@@ -335,6 +343,8 @@ module LDT_glacierMod
     if(LDT_LSMparam_struc(n)%glaciermask%selectOpt.eq.1) then
        call LDT_writeNETCDFdataHeader(n,ftn,tdimID,&
             LDT_LSMparam_struc(n)%glaciermask)
+       call LDT_writeNETCDFdataHeader(n,ftn,tdimID,&
+            LDT_LSMparam_struc(n)%glacierfrac) ! MN glacier fraction
     endif
 #endif
   end subroutine LDT_glacier_writeHeader
@@ -349,6 +359,7 @@ module LDT_glacierMod
 
     if(LDT_LSMparam_struc(n)%glaciermask%selectOpt.eq.1) then
        call LDT_writeNETCDFdata(n,ftn,LDT_LSMparam_struc(n)%glaciermask)
+       call LDT_writeNETCDFdata(n,ftn,LDT_LSMparam_struc(n)%glacierfrac)! MN glacier fraction
     endif
 
   end subroutine LDT_glacier_writeData
