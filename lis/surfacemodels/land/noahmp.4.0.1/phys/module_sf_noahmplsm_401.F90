@@ -344,6 +344,10 @@ MODULE MODULE_SF_NOAHMPLSM_401
      REAL :: KDT         !used in compute maximum infiltration rate (in INFIL)
      REAL :: FRZX        !used in compute maximum infiltration rate (in INFIL)
 
+     REAL :: sndecayexp
+     REAL :: MXSNALB
+     REAL :: MNSNALB
+
   END TYPE noahmp_parameters
 
 contains
@@ -372,7 +376,7 @@ contains
 		   Z0WRF   , &
                    FSA     , FSR     , FIRA    , FSH     , SSOIL   , FCEV    , & ! OUT : 
                    FGEV    , FCTR    , ECAN    , ETRAN   , EDIR    , TRAD    , & ! OUT :
-                   SUBSNOW ,                                                   & ! OUT :
+                   SUBSNOW , RELSMC  ,                                         & ! OUT :
                    TGB     , TGV     , T2MV    , T2MB    , Q2V     , Q2B     , & ! OUT :
                    RUNSRF  , RUNSUB  , APAR    , PSN     , SAV     , SAG     , & ! OUT :
                    FSNO    , NEE     , GPP     , NPP     , FVEG    , ALBEDO  , & ! OUT :
@@ -494,6 +498,7 @@ contains
   REAL                           , INTENT(OUT)   :: ETRAN  !transpiration rate (mm/s)
   REAL                           , INTENT(OUT)   :: EDIR   !soil surface evaporation rate (mm/s]
   REAL                           , INTENT(OUT)   :: SUBSNOW !snow sublimation rate (mm/s)
+  REAL, DIMENSION(       1:NSOIL), INTENT(OUT)   :: RELSMC !relative soil moisture [-]
   REAL                           , INTENT(OUT)   :: RUNSRF !surface runoff [mm/s] 
   REAL                           , INTENT(OUT)   :: RUNSUB !baseflow (saturation excess) [mm/s]
   REAL                           , INTENT(OUT)   :: PSN    !total photosynthesis (umol co2/m2/s) [+]
@@ -836,6 +841,10 @@ contains
       ALBEDO = -999.9
     END IF
     
+! David Mocko - Added RELSMC after Noah-3.X code
+    RELSMC(:) = (SMC(:)               - parameters%SMCWLT(:)) /        &
+                (parameters%SMCMAX(:) - parameters%SMCWLT(:))
+
   END SUBROUTINE NOAHMP_SFLX
 
 !== begin atm ======================================================================================
@@ -2950,8 +2959,18 @@ ENDIF   ! CROPTYPE == 0
 
 ! when cosz > 0
 
-         ALB = 0.55 + (ALBOLD-0.55) * EXP(-0.01*DT/3600.)
+!         ALB = 0.55 + (ALBOLD-0.55) * EXP(-0.01*DT/3600.)
+         ALB = parameters%mnsnalb + &
+              (ALBOLD-parameters%mnsnalb) * &
+              EXP(-parameters%sndecayexp*DT/3600.)
 
+! 1 mm fresh snow(SWE) -- 10mm snow depth, assumed the fresh snow density 100kg/m3
+! here assume 1cm snow depth will fully cover the old snow
+
+         IF (QSNOW > 0.) then
+           ALB = ALB + MIN(QSNOW,parameters%SWEMX/DT) * &
+                (parameters%mxsnalb-ALB)/(parameters%SWEMX/DT)
+         ENDIF
 ! 1 mm fresh snow(SWE) -- 10mm snow depth, assumed the fresh snow density 100kg/m3
 ! here assume 1cm snow depth will fully cover the old snow
 

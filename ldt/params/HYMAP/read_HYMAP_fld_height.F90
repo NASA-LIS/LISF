@@ -55,13 +55,14 @@ subroutine read_HYMAP_fld_height(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%fldheightfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Fldheight map ',trim(HYMAP_struc(n)%fldheightfile),' not found'
+     write(LDT_logunit,*) '[ERR] Fldheight map, ',trim(HYMAP_struc(n)%fldheightfile),&
+                          ', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif
 
   open(ftn, file=trim(HYMAP_struc(n)%fldheightfile), access='direct',&
-       status='old', form="unformatted", recl=4)
+       status='old', form="unformatted", convert="big_endian", recl=4)
   
   do r=1,LDT_rc%lnr(n)
      do c=1,LDT_rc%lnc(n)

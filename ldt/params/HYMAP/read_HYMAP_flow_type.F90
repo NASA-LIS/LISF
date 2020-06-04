@@ -49,13 +49,14 @@ subroutine read_HYMAP_flow_type(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%flowtypefile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Flow type map ',trim(HYMAP_struc(n)%flowtypefile),' not found'
+     write(LDT_logunit,*) '[ERR] Flow type map, ',&
+           trim(HYMAP_struc(n)%flowtypefile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif
 
   open(ftn, file=trim(HYMAP_struc(n)%flowtypefile), access='direct',&
-       status='old', form="unformatted", recl=4)
+       status='old', form="unformatted", convert="big_endian", recl=4)
   
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &

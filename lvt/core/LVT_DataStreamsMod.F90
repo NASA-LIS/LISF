@@ -410,6 +410,10 @@ contains
     character*10                         :: stepType_mean
     character*10                         :: stepType_ssdev
 
+    ! EMK...For Welford algorithm
+    integer :: count
+    real :: mean, m2, stddev, new_value
+    
     ! EMK...This is only used when LVT is run in "557 post" mode.
     if (trim(LVT_rc%runmode) .ne. "557 post") return
 
@@ -1529,22 +1533,20 @@ contains
                       enddo ! r
 
                       ! Apply the smoother
-                      if(.not.((dataEntry%short_name.eq."Landcover").or.&
-                           (dataEntry%short_name.eq."Landmask").or.&
-                           (dataEntry%short_name.eq."Soiltype").or.&
-                           (dataEntry%short_name.eq."Greenness").or.&
-                           (dataEntry%short_name.eq."Tair_f_min").or.&
-                           (dataEntry%short_name.eq."Tair_f_max").or.&
-                           (dataEntry%short_name.eq."TotalPrecip").or.&
-                           (dataEntry%short_name.eq."Wind_f").or.&
-                           (dataEntry%short_name.eq."Tair_f").or.&
-                           (dataEntry%short_name.eq."SWdown_f").or.&
-                           (dataEntry%short_name.eq."LWdown_f").or.&
-                           (dataEntry%short_name.eq."RHMin"))) then 
+                      ! EMK...Removed the hardwired exceptions to
+                      ! smoothing.  The original exception list did not
+                      ! consider forcing perturbations.  It seams best
+                      ! to just trust the setting in the lvt.config file.
+                      ! EMK...Restored exception list for categorical 
+                      ! variables, since smoothing makes no physical sense
+                      if (.not. ( &
+                           (dataEntry%short_name .eq. "Landcover") .or. &
+                           (dataEntry%short_name .eq. "Landmask") .or. &
+                           (dataEntry%short_name .eq. "Soiltype"))) then
                          if(LVT_rc%applyNoiseReductionFilter.eq.1) then 
                             call applyNoiseReductionFilter(gtmp1_1d_mem)
-                         endif
-                      endif
+                         end if
+                      end if
 
                       ! Now provide smoothed field to ensemble mean and
                       ! spread
@@ -1552,15 +1554,25 @@ contains
                          do c=1,LVT_rc%lnc
                             if(LVT_domain%gindex(c,r).ne.-1) then 
                                gid = LVT_domain%gindex(c,r)
-                               gtmp1_1d(c+(r-1)*LVT_rc%lnc) = &
-                                    gtmp1_1d(c+(r-1)*LVT_rc%lnc) + &
-                                    gtmp1_1d_mem(c+(r-1)*LVT_rc%lnc)
-                               ngtmp1_1d(c+(r-1)*LVT_rc%lnc) = &
-                                    ngtmp1_1d(c+(r-1)*LVT_rc%lnc) + 1
+
                                if (LVT_rc%nensem > 1) then
-                                  gtmp1_ss(c+(r-1)*LVT_rc%lnc) = &
-                                       gtmp1_ss(c+(r-1)*LVT_rc%lnc) + & 
-                                       (gtmp1_1d_mem(c+(r-1)*LVT_rc%lnc))**2
+                                  ! Use Welford algorithm to calculate
+                                  ! mean and standard deviation
+                                  count = ngtmp1_1d(c+(r-1)*LVT_rc%lnc)
+                                  mean = gtmp1_1d(c+(r-1)*LVT_rc%lnc)
+                                  m2 = gtmp1_ss(c+(r-1)*LVT_rc%lnc)
+                                  new_value = gtmp1_1d_mem(c+(r-1)*LVT_rc%lnc)
+                                  call welford_update(count, mean, m2, &
+                                       new_value)
+                                  ngtmp1_1d(c+(r-1)*LVT_rc%lnc) = count
+                                  gtmp1_1d(c+(r-1)*LVT_rc%lnc) = mean
+                                  gtmp1_ss(c+(r-1)*LVT_rc%lnc) = m2
+                               else
+                                  gtmp1_1d(c+(r-1)*LVT_rc%lnc) = &
+                                       gtmp1_1d(c+(r-1)*LVT_rc%lnc) + &
+                                       gtmp1_1d_mem(c+(r-1)*LVT_rc%lnc)
+                                  ngtmp1_1d(c+(r-1)*LVT_rc%lnc) = &
+                                       ngtmp1_1d(c+(r-1)*LVT_rc%lnc) + 1
                                end if
                             endif
                          enddo ! c
@@ -1571,103 +1583,34 @@ contains
                    ! Finalize the ensemble mean and spread
                    do r=1,LVT_rc%lnr
                       do c=1,LVT_rc%lnc
-                         if(ngtmp1_1d(c+(r-1)*LVT_rc%lnc).gt.0) then
-                            gtmp1_1d(c+(r-1)*LVT_rc%lnc) = &
-                                 gtmp1_1d(c+(r-1)*LVT_rc%lnc)/&
-                                 ngtmp1_1d(c+(r-1)*LVT_rc%lnc)
-                                                              
-                            if (LVT_rc%nensem > 1) then
-                               variance = gtmp1_ss(c+(r-1)*LVT_rc%lnc)/&
-                                    ngtmp1_1d(c+(r-1)*LVT_rc%lnc) - & 
-                                    gtmp1_1d(c+(r-1)*LVT_rc%lnc)**2
-                               if(variance.gt.0) then 
-                                  gtmp1_ss(c+(r-1)*LVT_rc%lnc) = & 
-                                       sqrt(variance)
-                               else
-                                  gtmp1_ss(c+(r-1)*LVT_rc%lnc) = LVT_rc%udef
-                               endif
-                            else
+                         if (LVT_rc%nensem > 1) then
+                            ! Use Welford algorithm to calculate mean and
+                            ! standard deviation
+                            count = ngtmp1_1d(c+(r-1)*LVT_rc%lnc)
+                            if (count < 1) then
+                               gtmp1_1d(c+(r-1)*LVT_rc%lnc) = LVT_rc%udef
                                gtmp1_ss(c+(r-1)*LVT_rc%lnc) = LVT_rc%udef
+                            else
+                               mean = gtmp1_1d(c+(r-1)*LVT_rc%lnc)
+                               m2 = gtmp1_ss(c+(r-1)*LVT_rc%lnc)
+                               call welford_finalize(count, mean, m2, stddev)
+                               gtmp1_1d(c+(r-1)*LVT_rc%lnc) = mean
+                               gtmp1_ss(c+(r-1)*LVT_rc%lnc) = stddev
                             end if
-                         else
-                            gtmp1_1d(c+(r-1)*LVT_rc%lnc) = LVT_rc%udef
+                         else ! No ensembles, just calculate mean
+                            if(ngtmp1_1d(c+(r-1)*LVT_rc%lnc).gt.0) then
+                               gtmp1_1d(c+(r-1)*LVT_rc%lnc) = &
+                                    gtmp1_1d(c+(r-1)*LVT_rc%lnc)/&
+                                    ngtmp1_1d(c+(r-1)*LVT_rc%lnc)
+                            else
+                               gtmp1_1d(c+(r-1)*LVT_rc%lnc) = LVT_rc%udef
+                            end if
                             gtmp1_ss(c+(r-1)*LVT_rc%lnc) = LVT_rc%udef
-                         endif
+                         end if
                       enddo ! c
                    enddo ! r
                    ! EMK END...k loop ends further down
-
-!                 do k=1,dataEntry%vlevels
-!                    gtmp1_1d = 0.0
-!                    ngtmp1_1d = 0
-!                    gtmp1_ss = 0.0
-
-!                    do m=1,LVT_rc%nensem
-!                       do r=1,LVT_rc%lnr
-!                          do c=1,LVT_rc%lnc
-!                             if(LVT_domain%gindex(c,r).ne.-1) then 
-!                                gid = LVT_domain%gindex(c,r)
-!                                gtmp1_1d(c+(r-1)*LVT_rc%lnc) = &
-!                                     gtmp1_1d(c+(r-1)*LVT_rc%lnc) + &
-!                                     dataEntry%value(gid,m,k) 
-!                                ngtmp1_1d(c+(r-1)*LVT_rc%lnc) = &
-!                                     ngtmp1_1d(c+(r-1)*LVT_rc%lnc) + 1
-
-!                                gtmp1_ss(c+(r-1)*LVT_rc%lnc) = &
-!                                     gtmp1_ss(c+(r-1)*LVT_rc%lnc) + & 
-!                                     dataEntry%value(gid,m,k)**2
-                               
-!                             endif
-!                          enddo
-!                       enddo
-!                    enddo
-
-!                    do r=1,LVT_rc%lnr
-!                       do c=1,LVT_rc%lnc
-!                          if(ngtmp1_1d(c+(r-1)*LVT_rc%lnc).gt.0) then
-!                             gtmp1_1d(c+(r-1)*LVT_rc%lnc) = &
-!                                  gtmp1_1d(c+(r-1)*LVT_rc%lnc)/&
-!                                     ngtmp1_1d(c+(r-1)*LVT_rc%lnc)
-!                             variance = gtmp1_ss(c+(r-1)*LVT_rc%lnc)/&
-!                                  ngtmp1_1d(c+(r-1)*LVT_rc%lnc) - & 
-!                                  gtmp1_1d(c+(r-1)*LVT_rc%lnc)**2
-
-!                             if(variance.gt.0) then 
-!                                gtmp1_ss(c+(r-1)*LVT_rc%lnc) = & 
-!                                     sqrt(variance)
-!                             else
-!                                gtmp1_ss(c+(r-1)*LVT_rc%lnc) = LVT_rc%udef
-!                             endif                            
-!                          else
-!                             gtmp1_1d(c+(r-1)*LVT_rc%lnc) = LVT_rc%udef
-!                             gtmp1_ss(c+(r-1)*LVT_rc%lnc) = LVT_rc%udef
-!                          endif
-!                       enddo
-!                    enddo
-! !                   open(100,file='test.bin',form='unformatted')
-! !                   write(100) gtmp1_1d
-!                    if(.not.((dataEntry%short_name.eq."Landcover").or.&
-!                         (dataEntry%short_name.eq."Landmask").or.&
-!                         (dataEntry%short_name.eq."Soiltype").or.&
-!                         (dataEntry%short_name.eq."Greenness").or.&
-!                         (dataEntry%short_name.eq."Tair_f_min").or.&
-!                         (dataEntry%short_name.eq."Tair_f_max").or.&
-!                         (dataEntry%short_name.eq."TotalPrecip").or.&
-!                         (dataEntry%short_name.eq."Wind_f").or.&
-!                         (dataEntry%short_name.eq."Tair_f").or.&
-!                         (dataEntry%short_name.eq."SWdown_f").or.&
-!                         (dataEntry%short_name.eq."LWdown_f").or.&
-!                         (dataEntry%short_name.eq."RHMin"))) then 
-!                       if(LVT_rc%applyNoiseReductionFilter.eq.1) then 
-!                          call applyNoiseReductionFilter(gtmp1_1d)
-!                       endif
-!                    endif
-
-! !                   write(100) gtmp1_1d
-! !                   close(100)
-! !                   stop
-                   
-                   
+                                     
                    if(LVT_rc%lvt_out_format.eq."grib2") then 
 
                       call writeSingleGrib2Var(ftn_mean,&
@@ -4242,4 +4185,48 @@ contains
      return
   end subroutine construct_hycom_cice_filename
 
+  ! EMK...Calculate mean and standard deviation using Welford algorithm.
+  ! See https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
+  ! Intent is to avoid catastrophic cancellation when calculating variance,
+  ! which can result in negative variance and imaginary standard deviation.
+  ! REFERENCES:
+  ! Chan, T F, G H Golub, and R J LeVeque, 1983:  Algorithms for computing
+  !   the sample variance:  Analysis and recommendations.  The American
+  !   Statistician, 37, 242-247.  doi:10.1080/00031305.1983.10483115.
+  ! Knuth, D E, 1998:  The Art of Computer Programming, volume 2: 
+  !   Seminumerical Algorithms.  Third Edition, p 232.  Boston:  
+  !   Addison-Wesley.
+  ! Ling, R F, 1974:  Comparisons of several algorithms for computing
+  !   sample means and variances.  Journal of the American Statistical
+  !   Association, 69, 859-866.  doi:10.2307/2286154.
+  ! Welford, B P, 1962:  Note on a method for calculating corrected sums of
+  !   squares and products.  Technometrics, 4, 419-420. doi:10.2307/1266577.
+
+  subroutine welford_update(count, mean, m2, new_value)
+     implicit none
+     integer, intent(inout) :: count
+     real, intent(inout) :: mean
+     real, intent(inout) :: m2
+     real, intent(in) :: new_value
+     real :: delta, delta2
+     count = count + 1
+     delta = new_value - mean
+     mean = mean + (delta / real(count))
+     delta2 = new_value - mean
+     m2 = m2 + (delta * delta2)    
+  end subroutine welford_update
+  subroutine welford_finalize(count, mean, m2, stddev)
+     implicit none
+     integer, intent(in) :: count
+     real, intent(inout) :: mean
+     real, intent(in) :: m2
+     real, intent(out) :: stddev
+     if (count < 1) then
+        mean = 0
+        stddev = 0
+     else
+        stddev = sqrt(m2 / real(count))
+     end if
+  end subroutine welford_finalize
+  
 end module LVT_DataStreamsMod

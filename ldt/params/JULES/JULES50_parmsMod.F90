@@ -94,7 +94,7 @@ contains
 ! \label{JULES50parms_init}
 ! 
 ! !INTERFACE:
-  subroutine JULES50parms_init
+  subroutine JULES50parms_init(flag)
 
 ! !USES:
    use LDT_logMod,    only : LDT_verify, LDT_endrun, &
@@ -113,6 +113,7 @@ contains
 !
 !EOP
    implicit none
+   integer  :: flag
    integer  :: n
    integer  :: c,r,m,k
    integer  :: rc

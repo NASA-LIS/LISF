@@ -49,7 +49,7 @@ subroutine readinput_gaussian
 !    funtion to find index of a given latitude within in a given
 !    array of Gaussian latitudes
 !  \item[diff\_lon] (\ref{diff_lon}) \newline
-!    funtion to compute the difference between to given longitude values
+!    funtion to compute the difference between two given longitude values
 !  \item[LDT\_quilt\_domain] (\ref{LDT_quilt_domain}) \newline
 !    routine to quilt the given domain
 !  \item[map\_set] (\ref{map_set}) \newline

@@ -47,15 +47,16 @@ subroutine read_HYMAP_baseflow_dwi_ratio(n, array)
 
   ftn = LDT_getNextUnitNumber()
 
-  inquire(file=trim(HYMAP_struc(n)%baseflowdwiratioFile), exist=file_exists)
+  inquire(file=trim(HYMAP_struc(n)%baseflowdwiratiofile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'baseflow DWI ratio map ',trim(HYMAP_struc(n)%baseflowdwiratioFile),' not found'
+     write(LDT_logunit,*) '[ERR] baseflow DWI ratio map, ',&
+          trim(HYMAP_struc(n)%baseflowdwiratiofile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif
 
-  open(ftn, file=trim(HYMAP_struc(n)%baseflowdwiratioFile), access='direct',&
-       status='old', form="unformatted", recl=4)
+  open(ftn, file=trim(HYMAP_struc(n)%baseflowdwiratiofile), access='direct',&
+       status='old', form="unformatted", convert="big_endian", recl=4)
   
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &

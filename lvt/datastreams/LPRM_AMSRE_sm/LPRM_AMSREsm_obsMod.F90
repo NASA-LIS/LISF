@@ -45,6 +45,8 @@ module LPRM_AMSREsm_obsMod
 
      character*100           :: odir
      integer                 :: rawdata
+     character*10            :: version
+     character*10            :: channel
      real                    :: gridDesci(50)
      integer                :: lprmnc, lprmnr
      type(proj_info)        :: lprmproj
@@ -112,9 +114,31 @@ contains
     call LVT_verify(status, &
          'LPRM AMSR-E soil moisture observation directory: not defined')
     
-    call ESMF_ConfigGetAttribute(LVT_config, LPRM_AMSREsmobs(i)%rawdata, &
-         label='LPRM AMSR-E use raw data:', rc=status)
-    call LVT_verify(status, 'LPRM AMSR-E use raw data: not defined')
+
+    call ESMF_ConfigGetAttribute(LVT_config, LPRM_AMSREsmobs(i)%version, &
+         label='LPRM AMSR-E soil moisture data version:', rc=status)
+    if(status.ne.0) then 
+       write(LVT_logunit,*) "[ERR] 'LPRM AMSR-E soil moisture data version:' not defined"
+       write(LVT_logunit,*) "[ERR] supported options are: "
+       write(LVT_logunit,*) "[ERR] 'V05' or 'GES-DISC'"
+       call LVT_endrun()
+    endif
+
+    if(LPRM_AMSREsmobs(i)%version.eq."GES-DISC") then 
+       call ESMF_ConfigGetAttribute(LVT_config, LPRM_AMSREsmobs(i)%channel, &
+            label='LPRM AMSR-E soil moisture data channel:', rc=status)
+       if(status.ne.0) then 
+          write(LVT_logunit,*) "[ERR] 'LPRM AMSR-E soil moisture data channel:' not defined"
+          write(LVT_logunit,*) "[ERR] supported options are: "
+          write(LVT_logunit,*) "[ERR] 'X-band' or 'C-band'"
+          call LVT_endrun()
+       endif
+    elseif(LPRM_AMSREsmobs(i)%version.eq."V05") then 
+       call ESMF_ConfigGetAttribute(LVT_config, LPRM_AMSREsmobs(i)%rawdata, &
+            label='LPRM AMSR-E soil moisture use raw data:', rc=status)
+       call LVT_verify(status, 'LPRM AMSR-E soil moisture use raw data: not defined')
+       
+    endif
 
     LPRM_AMSREsmobs(i)%startmode = .true. 
 

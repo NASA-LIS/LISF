@@ -40,6 +40,25 @@ module LDT_topoMod
 
 !EOP
 
+!BOP 
+! 
+! !ROUTINE: LDT_topo_writeHeader 
+! \label{LDT_topo_writeHeader}
+! 
+! !INTERFACE:
+  interface LDT_topo_writeHeader
+! !PRIVATE MEMBER FUNCTIONS: 
+     module procedure topo_writeHeader_LIS
+     module procedure topo_writeHeader_LISHydro
+! 
+! !DESCRIPTION:
+! This interface provides routines for writing NETCDF header both 
+! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
+! preprocessing requiremetns. A dummy argument call "flagX" was added 
+! to overload the LISHydro procedue.
+!EOP 
+  end interface
+
 contains
 
 !BOP
@@ -188,7 +207,7 @@ contains
       else
          write(LDT_logunit,*) "[ERR] Fill option for Elevation is not valid: ",trim(elev%filltype)
          write(LDT_logunit,*) "  Please select one of these:  none, neighbor or average "
-         write(LDT_logunit,*) "  Programming stopping ..."
+         write(LDT_logunit,*) "  Program stopping ..."
          call LDT_endrun
       end if
 
@@ -502,7 +521,7 @@ contains
   end subroutine LDT_topo_init
 
 
-  subroutine LDT_topo_writeHeader(n,ftn,dimID)
+  subroutine topo_writeHeader_LIS(n,ftn,dimID)
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
@@ -562,7 +581,76 @@ contains
     endif
 #endif
 
-  end subroutine LDT_topo_writeHeader
+  end subroutine Topo_writeHeader_LIS
+
+  subroutine topo_writeHeader_LISHydro(n,ftn,dimID,flag)
+
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+    use netcdf
+#endif
+    integer   :: n 
+    integer   :: ftn
+    integer   :: dimID(4)
+    integer   :: tdimID(4)
+    integer   :: tdimID2(4)
+    integer   :: flag
+
+    tdimID(1) = dimID(1)
+    tdimID(2) = dimID(2)
+    tdimID(4) = dimID(4)
+    tdimID2(1) = dimID(1)
+    tdimID2(2) = dimID(2)
+    tdimID2(3) = dimID(4)
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+
+ !- Write elevation headers:
+    if( LDT_LSMparam_struc(n)%elevation%selectOpt.eq.1 ) then
+      LDT_LSMparam_struc(n)%elevation%vlevels = LDT_LSMparam_struc(n)%elevation%num_bins
+      LDT_LSMparam_struc(n)%elevfgrd%vlevels = LDT_LSMparam_struc(n)%elevfgrd%num_bins
+
+      call LDT_verify(nf90_def_dim(ftn,'elevbins',&
+           LDT_LSMparam_struc(n)%elevation%num_bins,tdimID(3)))
+
+      call LDT_writeNETCDFdataHeader(n,ftn,tdimID2,&
+           LDT_LSMparam_struc(n)%elevfgrd,flag)
+      call LDT_writeNETCDFdataHeader(n,ftn,tdimID2,&
+           LDT_LSMparam_struc(n)%elevation,flag)
+    endif
+ !- Write slope headers:
+    if( LDT_LSMparam_struc(n)%slope%selectOpt.eq.1 ) then
+      LDT_LSMparam_struc(n)%slope%vlevels = LDT_LSMparam_struc(n)%slope%num_bins
+      LDT_LSMparam_struc(n)%slopefgrd%vlevels = LDT_LSMparam_struc(n)%slopefgrd%num_bins
+      call LDT_verify(nf90_def_dim(ftn,'slopebins',&
+           LDT_LSMparam_struc(n)%slope%num_bins,tdimID(3)))
+
+      call LDT_writeNETCDFdataHeader(n,ftn,tdimID2,&
+           LDT_LSMparam_struc(n)%slopefgrd,flag)
+      call LDT_writeNETCDFdataHeader(n,ftn,tdimID2,&
+           LDT_LSMparam_struc(n)%slope,flag)
+    endif
+
+ !- Write aspect headers:
+    if( LDT_LSMparam_struc(n)%aspect%selectOpt.eq.1 ) then
+      LDT_LSMparam_struc(n)%aspect%vlevels = LDT_LSMparam_struc(n)%aspect%num_bins
+      LDT_LSMparam_struc(n)%aspectfgrd%vlevels = LDT_LSMparam_struc(n)%aspectfgrd%num_bins
+      call LDT_verify(nf90_def_dim(ftn,'aspectbins',&
+           LDT_LSMparam_struc(n)%aspect%num_bins,tdimID(3)))
+
+      call LDT_writeNETCDFdataHeader(n,ftn,tdimID2,&
+           LDT_LSMparam_struc(n)%aspectfgrd,flag)
+      call LDT_writeNETCDFdataHeader(n,ftn,tdimID2,&
+           LDT_LSMparam_struc(n)%aspect,flag)
+    endif
+
+ !- Write curvature headers:
+    if(LDT_LSMparam_struc(n)%curvature%selectOpt.eq.1) then
+      call LDT_writeNETCDFdataHeader(n,ftn,tdimID2,&
+           LDT_LSMparam_struc(n)%curvature,flag)
+    endif
+#endif
+
+  end subroutine topo_writeHeader_LISHydro
+
 
   subroutine LDT_topo_writeData(n,ftn)
 

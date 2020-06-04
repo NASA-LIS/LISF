@@ -55,6 +55,7 @@ int  xmrg_read_header_c_(char  *in_file_name,
     if (in_file_ptr == NULL)
     {
         printf("xmrg_read_header_c: can not open file %s for input.\n", in_file_name);
+        free(buf4byte);
         return(1);
     }
 

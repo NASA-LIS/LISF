@@ -23,7 +23,7 @@ Not all options described here are available in the public version of LDT.
 |"`Metforce temporal downscaling`" |Meteorological forcing temporal downscaling
 |"`Statistical downscaling of met forcing`" |Statistical options to downscale or generate forcing climatologies
 |"`OPTUE parameter processing`" |Process the OPT/UE output to generate optimized parameters
-|"`LDTSI analysis`" |LDT Snow and Ice analysis
+|"`USAFSI analysis`" |USAF Snow and Ice analysis
 |===
 
 .Example _ldt.config_ entry
@@ -388,6 +388,46 @@ LDT output directory:       OUTPUT
 ....
 Undefined value:             -9999.0
 ....
+
+`Add buffer to parameter grid domain:` adds a set buffer around a parameter file target domain. 
+Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"0" |No buffer added
+|"1" |Buffer included
+|===
+
+The default value is 0.
+
+.Example _ldt.config_ entry
+....
+Add buffer to parameter grid domain:     0
+....
+
+`Buffer count in x-direction:` adds a set number of pixels that buffer 
+around a parameter file target domain, both in the x- and y-directions.
+Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"0" |No buffer added
+|"1 (or greater)" |Buffer points included
+|===
+
+The default value is 5, and only activated if buffer option is selected.
+
+.Example _ldt.config_ entry
+....
+Buffer count in x-direction:   10 
+Buffer count in y-direction:   10
+....
+
+
 
 `Number of ensembles per tile:` specifies the number of ensembles of tiles to be used. The value should be greater than or equal to 1.
 
@@ -1216,6 +1256,7 @@ Irrigation type spatial transform:    mode
 
 |MODIS_OG |Irrigation area fraction map by Ozdogan and Gutman (2008)
 |GRIPC |Irrigation area fraction map by Salmon (2013)
+!UserDerived |User derived irrigation fraction map
 |===
 
 .Example _ldt.config_ entry
@@ -1238,12 +1279,41 @@ Irrigation fraction map:  ../irrigation/irrig.percent.eighth.1gd4r
 
 |none |Data is on same grid as LIS output domain
 |average |Upscale by averaging values for each gridcell
+|neighbor |Upscale or downscale using nearest neighbor values
 |===
 
 .Example _ldt.config_ entry
 ....
-Irrigation fraction spatial transform:     none
+Irrigation fraction map projection:   laton 
 ....
+
+`Irrigation fraction map projection:` indicates the grid projection defines an input irrigation maps. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|latlon |Lat/Lon projection with SW to NE data ordering
+|===
+
+.Example _ldt.config_ entry
+....
+Irrigation fraction map projection:    latlon
+....
+
+
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying irrigation data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Irrigation fraction lower left lat:      -59.87500
+Irrigation fraction lower left lon:     -179.87500
+Irrigation fraction upper right lat:      89.87500
+Irrigation fraction upper right lon:     179.87500
+Irrigation fraction resolution (dx):       0.2500
+Irrigation fraction resolution (dy):       0.2500
+....
+
 
 [[ssec-soilspecparams]]
 === Soil Parameters
@@ -4012,30 +4082,32 @@ MODIS LST data directory:
 Search radius for openwater proximity detection: 
 ....
 
-[[ssec-ldtsi]]
-=== LDT Snow and Ice Analysis
+[[ssec-usafsi]]
+=== USAF Snow and Ice Analysis
 
-`LDTSI valid date (YYYYMMDDHH):` valid date and hour (UTC) of analysis
+`USAFSI netcdf filename prefix:` prefix used in constructing USAFSI netcdf filenames
 
-`LDTSI fractional snow data directory:` directory with CDFS-II fractional snow data
+`USAFSI valid date (YYYYMMDDHH):` valid date and hour (UTC) of analysis
 
-`LDTSI modified data directory:` directory with legacy SNODEP "`modified`" data
+`USAFSI fractional snow data directory:` directory with CDFS-II fractional snow data
 
-`LDTSI surface obs data directory:` directory with surface snow reports
+`USAFSI modified data directory:` directory with legacy SNODEP "`modified`" data
 
-`LDTSI SSMIS data directory:` directory with SSMIS snow depth retrievals
+`USAFSI surface obs data directory:` directory with surface snow reports
 
-`LDTSI surface temperature data directory:` directory with legacy 0.25 deg LIS ungribbed surface temperatures
+`USAFSI SSMIS data directory:` directory with SSMIS snow depth retrievals
 
-`LDTSI static data directory:` directory with legacy SNODEP static data
+`USAFSI surface temperature data directory:` directory with legacy 0.25 deg LIS ungribbed surface temperatures
 
-`LDTSI unmodified data directory:` directory with legacy SNODEP "`unmodified`" data
+`USAFSI static data directory:` directory with legacy SNODEP static data
 
-`LDTSI VIIRS data directory:` directory with VIIRS TIFF files
+`USAFSI unmodified data directory:` directory with legacy SNODEP "`unmodified`" data
 
-`LDTSI SSMIS raw data directory:` directory with SSMIS BUFR files
+`USAFSI VIIRS data directory:` directory with VIIRS TIFF files
 
-`LDTSI SSMIS snow depth retrieval algorithm:` version of SSMIS retrieval algorithm. Acceptable values are:
+`USAFSI SSMIS raw data directory:` directory with SSMIS BUFR files
+
+`USAFSI SSMIS snow depth retrieval algorithm:` version of SSMIS retrieval algorithm. Acceptable values are:
 
 [cols="<,<",]
 |===
@@ -4046,131 +4118,132 @@ Search radius for openwater proximity detection:
 |3 |Foster et al (1997), recommended
 |===
 
-`LDTSI SSMIS forest fraction file:` path to netCDF forest fraction file (for Foster et al (1997) algorithm)
+`USAFSI SSMIS forest fraction file:` path to netCDF forest fraction file (for Foster et al (1997) algorithm)
 
 .Example _ldt.config_ entry
 ....
-LDTSI valid date (YYYYMMDDHH):  2018120618
-LDTSI fractional snow data directory:     ./SNODEPIN/snofrac/
-LDTSI modified data directory:            ./SNODEPIN/modified/
-LDTSI surface obs data directory:         ./SNODEPIN/sfcobs/
-LDTSI SSMIS data directory:               ./SNODEPIN/SSMIS/algorithm03/
-LDTSI surface temperature data directory: ./SNODEPIN/sfctmps/
-LDTSI static data directory:              ./SNODEPIN/static/
-LDTSI unmodified data directory:          ./PREVDIR/algorithm03/
-LDTSI VIIRS data directory:               ./SNODEPIN/viirs/
-LDTSI SSMIS raw data directory:           ./SNODEPIN/OBSI_SSMISUPP/
-LDTSI SSMIS snow depth retrieval algorithm option:   3
-LDTSI SSMIS forest fraction file:     ./SNODEPIN/ForestFraction_0p25deg.nc
+USAFSI netcdf filename prefix:  usafsi
+USAFSI valid date (YYYYMMDDHH):  2018120618
+USAFSI fractional snow data directory:     ./SNODEPIN/snofrac/
+USAFSI modified data directory:            ./SNODEPIN/modified/
+USAFSI surface obs data directory:         ./SNODEPIN/sfcobs/
+USAFSI SSMIS data directory:               ./SNODEPIN/SSMIS/algorithm03/
+USAFSI surface temperature data directory: ./SNODEPIN/sfctmps/
+USAFSI static data directory:              ./SNODEPIN/static/
+USAFSI unmodified data directory:          ./PREVDIR/algorithm03/
+USAFSI VIIRS data directory:               ./SNODEPIN/viirs/
+USAFSI SSMIS raw data directory:           ./SNODEPIN/OBSI_SSMISUPP/
+USAFSI SSMIS snow depth retrieval algorithm option:   3
+USAFSI SSMIS forest fraction file:     ./SNODEPIN/ForestFraction_0p25deg.nc
 ....
 
-`LDTSI decimal fraction adjustment of snow depth towards climo):` controls drift to climo in data void region
+`USAFSI decimal fraction adjustment of snow depth towards climo):` controls drift to climo in data void region
 
-`LDTSI default snow depth (m) when actual depth unknown:` bogus value for when snow detected but depth unknown
+`USAFSI default snow depth (m) when actual depth unknown:` bogus value for when snow detected but depth unknown
 
-`LDTSI minimum snow depth (m) for which to print a diagnostic:` threshold for printing surface ob report
+`USAFSI minimum snow depth (m) for which to print a diagnostic:` threshold for printing surface ob report
 
-`LDTSI maximum number of surface observations allowed:` self-explanatory
+`USAFSI maximum number of surface observations allowed:` self-explanatory
 
-`LDTSI SSMIS shallow snow depth threshold (m):` minimum SSMIS snow depth considered reasonable
+`USAFSI SSMIS shallow snow depth threshold (m):` minimum SSMIS snow depth considered reasonable
 
-`LDTSI latitudes (deg * 100) for summer climo check:` three latitude bands used for sanity checking snow reports
+`USAFSI latitudes (deg * 100) for summer climo check:` three latitude bands used for sanity checking snow reports
 
-`LDTSI elevations (m) for summer climo check:` four elevations used for sanity checking snow reports
+`USAFSI elevations (m) for summer climo check:` four elevations used for sanity checking snow reports
 
-`LDTSI temperature (deg K * 10) above which no snow is allowed:` used to adjust snow analysis
+`USAFSI temperature (deg K * 10) above which no snow is allowed:` used to adjust snow analysis
 
-`LDTSI minimum ice concentration (%) needed to set ice flag:` used when constructing binary sea ice field
+`USAFSI minimum ice concentration (%) needed to set ice flag:` used when constructing binary sea ice field
 
-`LDTSI LDTSI high latitude thresholds (deg) for sea ice::` 24 latitudes, each row defining a hemisphere (NH, then SH), each column defining a month (J F M A M J J A S O N D). Used to define "high latitudes" in SSMIS-based sea ice analysis.
+`USAFSI high latitude thresholds (deg) for sea ice::` 24 latitudes, each row defining a hemisphere (NH, then SH), each column defining a month (J F M A M J J A S O N D). Used to define "high latitudes" in SSMIS-based sea ice analysis.
 
-`LDTSI low latitude thresholds (deg) for sea ice:` 24 latitudes, each row defining a hemisphere (NH, then SH), each column defining a month (J F M A M J J A S O N D). Used to define "low latitudes" in SSMIS-based sea ice analysis.
+`USAFSI low latitude thresholds (deg) for sea ice:` 24 latitudes, each row defining a hemisphere (NH, then SH), each column defining a month (J F M A M J J A S O N D). Used to define "low latitudes" in SSMIS-based sea ice analysis.
 
-`LDTSI max age of VIIRS pixels to use:` used to ignore old VIIRS data
+`USAFSI max age of VIIRS pixels to use:` used to ignore old VIIRS data
 
-`LDTSI min VIIRS fraction to mark point as bare ground:` fraction of no-snow VIIRS pixels in LDT grid box required to mark as "`no-snow`"
+`USAFSI min VIIRS fraction to mark point as bare ground:` fraction of no-snow VIIRS pixels in LDT grid box required to mark as "`no-snow`"
 
-`LDTSI min VIIRS/CDFS-II fraction to mark point as snow:` fraction of snowy VIIRS pixels or CDFS-II in LDT grid box required to mark as "`snow`"
+`USAFSI min VIIRS/CDFS-II fraction to mark point as snow:` fraction of snowy VIIRS pixels or CDFS-II in LDT grid box required to mark as "`snow`"
 
-`LDTSI use CDFS-II fractional snow data:` self-explanatory
+`USAFSI use CDFS-II fractional snow data:` self-explanatory
 
-`LDTSI use VIIRS snow mask:` self-explanatory
+`USAFSI use VIIRS snow mask:` self-explanatory
 
 .Example _ldt.config_ entry
 ....
-LDTSI decimal fraction adjustment of snow depth towards climo: 0.1
-LDTSI default snow depth (m) when actual depth unknown: 0.1
-LDTSI minimum snow depth (m) for which to print a diagnostic: 0.025
-LDTSI maximum number of surface observations allowed: 200000
-LDTSI SSMIS shallow snow depth threshold (m): 0.15
-LDTSI latitudes (deg * 100) for summer climo check: 4000 3000 2000
-LDTSI elevations (m) for summer climo check: 1000 1500 1000 1000
-LDTSI temperature (deg K * 10) above which no snow is allowed: 2820
-LDTSI max reported temperature (deg K * 10) allowed around poles: 3030
-LDTSI minimum ice concentration (%) needed to set ice flag: 15
-LDTSI high latitude thresholds (deg) for sea ice::
+USAFSI decimal fraction adjustment of snow depth towards climo: 0.1
+USAFSI default snow depth (m) when actual depth unknown: 0.1
+USAFSI minimum snow depth (m) for which to print a diagnostic: 0.025
+USAFSI maximum number of surface observations allowed: 200000
+USAFSI SSMIS shallow snow depth threshold (m): 0.15
+USAFSI latitudes (deg * 100) for summer climo check: 4000 3000 2000
+USAFSI elevations (m) for summer climo check: 1000 1500 1000 1000
+USAFSI temperature (deg K * 10) above which no snow is allowed: 2820
+USAFSI max reported temperature (deg K * 10) allowed around poles: 3030
+USAFSI minimum ice concentration (%) needed to set ice flag: 15
+USAFSI high latitude thresholds (deg) for sea ice::
        81.0 81.0 81.0 81.0 81.0 81.0 81.0 82.0 82.0 82.0 81.0 81.0
        90.0 90.0 78.0 78.0 68.0 68.0 67.0 67.0 66.0 66.0 68.0 70.0
 ::
-LDTSI low latitude thresholds (deg) for sea ice::
+USAFSI low latitude thresholds (deg) for sea ice::
        45.0 44.0 44.0 45.0 51.0 52.0 55.0 65.0 65.0 62.0 53.0 50.0
        60.0 62.0 62.0 60.0 58.0 56.0 55.0 55.0 53.0 54.0 55.0 57.0
 ::
-LDTSI max age of VIIRS pixels to use: 3
-LDTSI min VIIRS fraction to mark point as bare ground: 0.6
-LDTSI min VIIRS/CDFS-II fraction to mark point as snow: 0.4
-LDTSI use CDFS-II fractional snow data: .true.
-LDTSI use VIIRS snow mask: .true.
+USAFSI max age of VIIRS pixels to use: 3
+USAFSI min VIIRS fraction to mark point as bare ground: 0.6
+USAFSI min VIIRS/CDFS-II fraction to mark point as snow: 0.4
+USAFSI use CDFS-II fractional snow data: .true.
+USAFSI use VIIRS snow mask: .true.
 ....
 
-`LDTSI observation error variance (m^2):` error variance assigned to surface snow reports
+`USAFSI observation error variance (m^2):` error variance assigned to surface snow reports
 
-`LDTSI background error variance (m^2):` error variance assigned to first-guess field
+`USAFSI background error variance (m^2):` error variance assigned to first-guess field
 
-`LDTSI background error horizontal correlation length (m):` correlation length for spreading snow depth corrections horizontally
+`USAFSI background error horizontal correlation length (m):` correlation length for spreading snow depth corrections horizontally
 
-`LDTSI background error vertical correlation length (m):` correlation length for spreading snow depth corrections vertically
+`USAFSI background error vertical correlation length (m):` correlation length for spreading snow depth corrections vertically
 
-`LDTSI elevQC difference threshold (m):` threshold for sanity checking snow report elevation against LDT
+`USAFSI elevQC difference threshold (m):` threshold for sanity checking snow report elevation against LDT
 
-`LDTSI skewed backQC snow depth threshold (m):` threshold for rejecting abnormally small snow depth reports
+`USAFSI skewed backQC snow depth threshold (m):` threshold for rejecting abnormally small snow depth reports
 
 .Example _ldt.config_ entry
 ....
-LDTSI observation error variance (m^2):  0.0006
-LDTSI background error variance (m^2):   0.0010
-LDTSI background error horizontal correlation length (m):  55555.
-LDTSI background error vertical correlation length (m):      800.
-LDTSI elevQC difference threshold (m): 400.
-LDTSI skewed backQC snow depth threshold (m):  0.4
+USAFSI observation error variance (m^2):  0.0006
+USAFSI background error variance (m^2):   0.0010
+USAFSI background error horizontal correlation length (m):  55555.
+USAFSI background error vertical correlation length (m):      800.
+USAFSI elevQC difference threshold (m): 400.
+USAFSI skewed backQC snow depth threshold (m):  0.4
 ....
 
-`LDTSI bogus climatology snow depth value (m):` bogus value for climatology if not available
+`USAFSI bogus climatology snow depth value (m):` bogus value for climatology if not available
 
-`LDTSI GOFS SST data directory:` directory with GOFS sea surface temperature netCDF files
+`USAFSI GOFS SST data directory:` directory with GOFS sea surface temperature netCDF files
 
-`LDTSI GOFS CICE data directory:` directory with GOFS sea ice netCDF files
+`USAFSI GOFS CICE data directory:` directory with GOFS sea ice netCDF files
 
-`LDTSI LIS GRIB2 data directory:` directory with LIS GRIB2 2-m temperature analyses
+`USAFSI LIS GRIB2 data directory:` directory with LIS GRIB2 2-m temperature analyses
 
-`LDTSI LIS GRIB2 security class:` used for constructing LIS GRIB2 filename
+`USAFSI LIS GRIB2 security class:` used for constructing LIS GRIB2 filename
 
-`LDTSI LIS GRIB2 data category:` used for constructing LIS GRIB2 filename
+`USAFSI LIS GRIB2 data category:` used for constructing LIS GRIB2 filename
 
-`LDTSI LIS GRIB2 data resolution:` used for constructing LIS GRIB2 filename
+`USAFSI LIS GRIB2 data resolution:` used for constructing LIS GRIB2 filename
 
-`LDTSI LIS GRIB2 area of data:` used for constructing LIS GRIB2 filename
+`USAFSI LIS GRIB2 area of data:` used for constructing LIS GRIB2 filename
 
 .Example _ldt.config_ entry
 ....
-LDTSI bogus climatology snow depth value (m): 0.2
-LDTSI GOFS SST data directory: ./SNODEPIN//GOFS
-LDTSI GOFS CICE data directory: ./SNODEPIN//GOFS
-LDTSI LIS GRIB2 data directory: /discover/nobackup/emkemp/AFWA/data/LIS_GRIB2
-LDTSI LIS GRIB2 security class: U
-LDTSI LIS GRIB2 data category:  C
-LDTSI LIS GRIB2 data resolution: C0P09DEG
-LDTSI LIS GRIB2 area of data: GLOBAL
+USAFSI bogus climatology snow depth value (m): 0.2
+USAFSI GOFS SST data directory: ./SNODEPIN//GOFS
+USAFSI GOFS CICE data directory: ./SNODEPIN//GOFS
+USAFSI LIS GRIB2 data directory: /discover/nobackup/emkemp/AFWA/data/LIS_GRIB2
+USAFSI LIS GRIB2 security class: U
+USAFSI LIS GRIB2 data category:  C
+USAFSI LIS GRIB2 data resolution: C0P09DEG
+USAFSI LIS GRIB2 area of data: GLOBAL
 ....
 
 `LIS OPT/UE output file:` name of the OPT/UE output file generated from a LIS simulation

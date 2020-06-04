@@ -68,7 +68,7 @@ contains
 ! \label{RDHMparms_init}
 ! 
 ! !INTERFACE:
-  subroutine RDHMparms_init
+  subroutine RDHMparms_init(flag)
 
 ! !USES:
    use LDT_logMod,    only : LDT_verify, LDT_endrun, &
@@ -90,6 +90,7 @@ contains
 !
 !EOP
    implicit none
+   integer  :: flag
    integer  :: n
    integer  :: c,r,m,k
    integer  :: rc
@@ -115,8 +116,8 @@ contains
    if( rdhm_select ) then
      write(LDT_logunit,*)" - - - - - - - - - - RDHM LSM Parameters - - - - - - - - - - - - -"
 
-     call SACHTETParms_init( )
-     call Snow17Parms_init( )
+     call SACHTETParms_init( flag )
+     call Snow17Parms_init( flag )
 
 #if 0
    !- Load RDHM CONSTANTS input table file (filepath read-in from ldt.config file)

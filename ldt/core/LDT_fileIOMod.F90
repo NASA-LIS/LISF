@@ -248,7 +248,7 @@ subroutine LDT_create_output_directory(mname,dir_name)
 subroutine LDT_create_output_filename(n, fname, model_name, odir, writeint)
 ! !USES:
    use LDT_coreMod,  only : LDT_rc
-   use LDT_logMod,   only : LDT_log_msg, LDT_endrun
+   use LDT_logMod,   only : LDT_log_msg, LDT_logunit, LDT_endrun
 
    implicit none 
 ! !ARGUMENTS:
@@ -453,7 +453,7 @@ subroutine LDT_create_output_filename(n, fname, model_name, odir, writeint)
       
       if(LDT_rc%lis_map_proj.eq."polar") then 
          fproj = 'P'
-         print *,"fres ",LDT_rc%gridDesc(n, 9)
+         write(LDT_logunit,*) "[INFO] fres ",LDT_rc%gridDesc(n, 9)
          if (LDT_rc%gridDesc(n, 9) .ge. 10.) then
             write(unit=fres, fmt='(i2)') nint(LDT_rc%gridDesc(n, 9))
          else
@@ -462,7 +462,7 @@ subroutine LDT_create_output_filename(n, fname, model_name, odir, writeint)
          fres2 = trim(fres)//'KM'
       elseif(LDT_rc%lis_map_proj.eq."lambert") then 
          fproj = 'L'
-         print *,"fres ",LDT_rc%gridDesc(n, 9)
+         write(LDT_logunit,*)"[INFO] fres ",LDT_rc%gridDesc(n, 9)
 !         write(unit=fres, fmt='(f2.0)') LDT_rc%gridDesc(n, 9)
          write(unit=fres, fmt='(f3.0)') LDT_rc%gridDesc(n, 9)
          if (LDT_rc%gridDesc(n, 9) .ge. 10.) then
@@ -764,8 +764,8 @@ subroutine LDT_create_daobs_filename(n, fname)
 
 ! ---
     case ( "polar" )  
-      print*, 'not supported currently'
-      stop
+      write(LDT_logunit,*) '[ERR] Polar stereographic case not supported currently'
+      call LDT_endrun
 #if 0       
       call ESMF_ConfigFindLabel(LDT_config,trim(segment_name)//" lower left lat:",rc=rc)
       do i=1,LDT_rc%nnest
@@ -907,10 +907,11 @@ subroutine LDT_create_daobs_filename(n, fname)
 
 !- Non-supported projections (at this time):
     case default 
-      print*, "This type of run domain or parameter projection:  ",trim(param_proj)
-      print*, " is not supported.  Please change to one of these:"
-      print*, " -- latlon, lambert, polar, gaussian, mercator, hrap."
-      print*, "Program stopping ...."
+      write(LDT_logunit,*) "[ERR] This type of run domain or parameter projection: ",&
+          trim(param_proj)
+      write(LDT_logunit,*) " is not supported.  Please change to one of these:"
+      write(LDT_logunit,*) " -- latlon, lambert, polar, gaussian, mercator, hrap."
+      write(LDT_logunit,*) " Program stopping ..."
       call LDT_endrun
   end select
 
@@ -953,7 +954,7 @@ subroutine LDT_create_daobs_filename(n, fname)
    integer :: iret
 
 !- Grid transform arrays:
-   integer, allocatable :: n11(:)     ! Map array for aggregating methods
+   integer, allocatable     :: n11(:)     ! Map array for aggregating methods
 
    integer, allocatable     :: n113(:)    ! Map array for nearest neighbor interp
 
@@ -1049,13 +1050,13 @@ subroutine LDT_create_daobs_filename(n, fname)
 
    !- When no transform is performed:
       case ( "none" )
-         write(LDT_logunit,*) " No aggregation applied for parameter file ... "
+         write(LDT_logunit,*) "[INFO] No aggregation applied for parameter file ... "
          array_out(:,1) = array_in(:)
 
       case default
-         write(*,*) "This spatial transformation option ("//trim(gridtransform_opt)//") "
-         write(*,*) " is not currently supported."
-         write(*,*) "Program stopping ...."
+         write(LDT_logunit,*) "[ERR] This spatial transformation option ("//trim(gridtransform_opt)//") "
+         write(LDT_logunit,*) " is not currently supported."
+         write(LDT_logunit,*) " Program stopping ..."
          call LDT_endrun
     end select
 
@@ -1248,11 +1249,10 @@ subroutine LDT_create_daobs_filename(n, fname)
          enddo
       enddo
 #endif
-   case default
-      write(*,*) "This parameter projection is not supported ... (in readparam_real_2d)"
-      write(*,*) "Program stopping ...."
-      stop
-
+    case default
+      write(LDT_logunit,*) "[ERR] This parameter projection is not supported (in readparam_real_2d)"
+      write(LDT_logunit,*) " Program stopping ..."
+      call LDT_endrun
    end select 
 
  end subroutine readparam_real_2d
@@ -1430,11 +1430,10 @@ subroutine LDT_create_daobs_filename(n, fname)
          enddo
       enddo
 #endif
-   case default
-      write(*,*) "This parameter projection is not supported ... (in readparam_int_2d)"
-      write(*,*) "Program stopping ...."
-      stop
-
+    case default
+      write(LDT_logunit,*) "[ERR] This parameter projection is not supported (in readparam_int_2d)"
+      write(LDT_logunit,*) " Program stopping ..."
+      call LDT_endrun
    end select 
 
  end subroutine readparam_int_2d
@@ -1522,12 +1521,11 @@ subroutine LDT_create_daobs_filename(n, fname)
           LDT_nss_halo_ind(n,LDT_localPet+1): &
           LDT_nse_halo_ind(n,LDT_localPet+1))
 
-     write(LDT_logunit,*)'Successfully read '//trim(pname)//' map '
+     write(LDT_logunit,*)'[INFO] Successfully read '//trim(pname)//' map '
   else
-     write(LDT_logunit,*) trim(pname)//' map: ',&
-!          trim(LDT_rc%paramfile(n)), ' does not exist'
+     write(LDT_logunit,*)'[ERR] '//trim(pname)//' map: ',&
           trim(LDT_LSMparam_struc(n)%param_filename), ' does not exist'
-     write(LDT_logunit,*) 'program stopping ...'
+     write(LDT_logunit,*) ' Program stopping ...'
      call LDT_endrun
   endif
 
@@ -1581,9 +1579,8 @@ end subroutine readldtparam_real_2d
       (min_lon.lt.data_gridDesc(5)).or.&
       (max_lat.gt.data_gridDesc(7)).or.&
       (max_lon.gt.data_gridDesc(8))) then 
-     write(LDT_logunit,*) "The parameter data grid is specified only for the CONUS ..."
-     write(LDT_logunit,*) "The LIS running domain is outside the input parameter grid boundaries ..."
-     write(LDT_logunit,*) "Stopping program ..."
+     write(LDT_logunit,*) "[ERR] The parameter data grid is specified only for the CONUS ..."
+     write(LDT_logunit,*) " The LIS running domain is outside the input parameter grid boundaries ..."
      call LDT_endrun
    endif
    

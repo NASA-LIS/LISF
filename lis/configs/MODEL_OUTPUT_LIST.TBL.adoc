@@ -350,6 +350,7 @@ snow17_liqw:     0  kg/m2    -   0 0 0 1 256 10  # LIQW
 snow17_accmax:   0  mm       -   0 0 0 1 256 10  # ACCMAX
 snow17_rmlt:     0  kg/m2    -   0 0 0 1 256 10  # RMLT
 
+#Lake output
 Lake_Tsnow:      0  K        -   0 0 0 1 256 10  # Lake temperature at the air snow interface
 Lake_Tice:       0  K        -   0 0 0 1 256 10  # Lake temperature at the snow snow interface
 Lake_Tmnw:       0  K        -   0 0 0 1 256 10  # Mean temperature of the water column
@@ -368,22 +369,33 @@ Lake_UFRw:       0  -        -   0 0 0 1 256 10  # Lake friction velocity in sur
 Lake_WConv:      0  -        -   0 0 0 1 256 10  # Lake convective velocity scale
 Lake_IW:         0  -        -   0 0 0 1 256 10  # Lake radiation flux at the interface
 Lake_Qbot:       0  -        -   0 0 0 1 256 10  # Lake heat flux across water sediment boundary
+
+#HyMAP routing output
 RiverStor:       0  m3       -   0 0 0 1 256 10  # River water storage
 RiverDepth:      0  m        -   0 0 0 1 256 10  # River depth
 RiverVelocity:   0  m/s      -   0 0 0 1 256 10  # River flow velocity
 FloodQ:          0  m3/s     -   0 0 0 1 256 10  # Floodplain water discharge
-FloodEvap:       0  m3       -   0 0 0 1 256 10  # Floodplain evaporation
+FloodEvap:       0  kg/m2s   -   0 0 0 1 256 10  # Floodplain evaporation
 FloodStor:       0  m3       -   0 0 0 1 256 10  # Floodplain water storage
 FloodDepth:      0  m        -   0 0 0 1 256 10  # Floodplain depth
 FloodVelocity:   0  m/s      -   0 0 0 1 256 10  # Floodplain flow velocity
 FloodedFrac:     0  -        -   0 0 0 1 256 10  # Flooded fraction
 FloodedArea:     0  m2       -   0 0 0 1 256 10  # Flooded area
 SurfElev:        0  m        -   0 0 0 1 256 10  # Surface water elevation
-RunoffStor:      0  m3       -   0 0 0 1 256 10  # Runoff reservoir storage
-BaseflowStor:    0  m3       -   0 0 0 1 256 10  # Baseflow reservoir storage
+RunoffStor:      0  mm       -   0 0 0 1 256 10  # Runoff reservoir storage
+BaseflowStor:    0  mm       -   0 0 0 1 256 10  # Baseflow reservoir storage
+RunoffDWI:       0  mm       -   0 0 0 1 256 10  # Runoff deep water infiltration
+BaseflowDWI:     0  mm       -   0 0 0 1 256 10  # Baseflow deep water infiltration
+SWS:             0  mm       -   0 0 0 1 256 10  # Surface water storage
+EvapWater:       0  kg/m2s   -   0 0 0 1 256 10  # Potential evaporation from open water
+EvapDif:         0  kg/m2s   -   0 0 0 1 256 10  # Differential evaporation (potential evaporation - actual evapotranspiration)
+
+#RTM output
 RTM emissivity:  0  -        -   0 0 0 1 256 10  # RTM emissivity
 RTM Tb:          0  K        -   0 0 0 1 256 10  # RTM brightness temperature
 RTM SoilMoist:   0  m3/m3    -   0 0 0 1 256 10  # RTM soil moisture
+
+#Irrigation output
 Irrigated water: 0  kg/m2s   -   0 0 0 1 256 10  # Irrigated water amount
 ....
 

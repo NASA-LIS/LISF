@@ -55,7 +55,7 @@ subroutine HYMAP2_routing_writerst(n)
         call LIS_create_restart_filename(n,filename,&
              'ROUTING','HYMAP2_router',&
              wformat="netcdf")
-        write(LIS_logunit,*) 'Writing routing restart ',trim(filename)
+        write(LIS_logunit,*) '[INFO] Writing routing restart ',trim(filename)
        
 #if (defined USE_NETCDF4)
         status = nf90_create(path=filename, cmode=nf90_hdf5, ncid = ftn)
