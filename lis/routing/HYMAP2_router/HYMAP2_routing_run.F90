@@ -332,9 +332,16 @@ subroutine HYMAP2_routing_run(n)
         call ESMF_FieldGet(baseflow_field,localDE=0,farrayPtr=baseflow_t,&
              rc=status)
         call LIS_verify(status, "ESMF_FieldGet failed for Subsurface Runoff")
-     
+
+!        print*, 'before '
+!        print*, 'rivout ',HYMAP2_routing_struc(n)%rivout(45,20)
+!        print*, 'rivsto ',HYMAP2_routing_struc(n)%rivsto(45,20)
+!        print*, 'fldsto ',HYMAP2_routing_struc(n)%fldsto(45,20)
+!        print*, 'sfcelv ',HYMAP2_routing_struc(n)%sfcelv(45,20)
+!        print*, 'rivhgt ',HYMAP2_routing_struc(n)%rivelv(45) 
+
         do m=1,LIS_rc%nensem(n)
-        !temporary solution  
+
            call LIS_tile2grid(n,m,tmpr,surface_runoff_t)
            call LIS_tile2grid(n,m,tmpb,baseflow_t)
         
@@ -348,7 +355,7 @@ subroutine HYMAP2_routing_run(n)
                 HYMAP2_routing_struc(n)%imis,&
                 HYMAP2_routing_struc(n)%seqx,&
                 HYMAP2_routing_struc(n)%seqy,tmpb,baseflow)
-        
+
            call HYMAP2_model(n,real(HYMAP2_routing_struc(n)%imis),&
                 LIS_rc%lnc(n),&
                 LIS_rc%lnr(n),&
@@ -365,11 +372,11 @@ subroutine HYMAP2_routing_run(n)
                 HYMAP2_routing_struc(n)%linresflag,&
                 HYMAP2_routing_struc(n)%evapflag,&
                 !ag (19Jan2016)
-                HYMAP2_routing_struc(n)%rivout_pre,&
-                HYMAP2_routing_struc(n)%rivdph_pre,&
-                HYMAP2_routing_struc(n)%fldout_pre,&
-                HYMAP2_routing_struc(n)%flddph_pre,&
-                HYMAP2_routing_struc(n)%fldelv1,&
+                HYMAP2_routing_struc(n)%rivout_pre(:,m),&
+                HYMAP2_routing_struc(n)%rivdph_pre(:,m),&
+                HYMAP2_routing_struc(n)%fldout_pre(:,m),&
+                HYMAP2_routing_struc(n)%flddph_pre(:,m),&
+                HYMAP2_routing_struc(n)%fldelv1(:,m),&
                 HYMAP2_routing_struc(n)%grv,&
                 HYMAP2_routing_struc(n)%cadp,&
                 HYMAP2_routing_struc(n)%steptype,&
@@ -400,7 +407,7 @@ subroutine HYMAP2_routing_run(n)
                 HYMAP2_routing_struc(n)%bsfdwi_ratio,&
                 surface_runoff,&
                 baseflow,&
-                HYMAP2_routing_struc(n)%edif,&
+                HYMAP2_routing_struc(n)%edif(:,m),&
                 HYMAP2_routing_struc(n)%rivsto(:,m),&
                 HYMAP2_routing_struc(n)%rivdph(:,m),&
                 HYMAP2_routing_struc(n)%rivvel(:,m),&
@@ -420,8 +427,6 @@ subroutine HYMAP2_routing_run(n)
                 HYMAP2_routing_struc(n)%surfws(:,m),&
                 HYMAP2_routing_struc(n)%dtaout(:,m))            
         
-
-      
            rnfsto_mm(:,m)=1000*HYMAP2_routing_struc(n)%rnfsto(:,m)/&
                 HYMAP2_routing_struc(n)%grarea
            bsfsto_mm(:,m)=1000*HYMAP2_routing_struc(n)%bsfsto(:,m)/&
@@ -469,6 +474,13 @@ subroutine HYMAP2_routing_run(n)
            call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%edif(:,m),&
                 edif_lvec)
         enddo
+!        print*, 'after '
+!        print*, 'rivout ',HYMAP2_routing_struc(n)%rivout(45,20)
+!        print*, 'rivsto ',HYMAP2_routing_struc(n)%rivsto(45,20)
+!        print*, 'fldsto ',HYMAP2_routing_struc(n)%fldsto(45,20)
+!        print*, 'sfcelv ',HYMAP2_routing_struc(n)%sfcelv(45,20)
+!        print*, 'rivhgt ',HYMAP2_routing_struc(n)%rivelv(45) 
+
      else !single member run
         allocate(tmp_nensem(LIS_rc%lnc(n),LIS_rc%lnr(n),1))
         tmpr=0.
@@ -507,6 +519,14 @@ subroutine HYMAP2_routing_run(n)
              HYMAP2_routing_struc(n)%seqx,&
              HYMAP2_routing_struc(n)%seqy,tmpb,baseflow)
         
+        print*, 'before ',LIS_routing(n)%grid(45)%lat,&
+             LIS_routing(n)%grid(45)%lon
+        print*, 'rivout ',HYMAP2_routing_struc(n)%rivout(45,1)
+        print*, 'rivsto ',HYMAP2_routing_struc(n)%rivsto(45,1)
+        print*, 'fldsto ',HYMAP2_routing_struc(n)%fldsto(45,1)
+        print*, 'sfcelv ',HYMAP2_routing_struc(n)%sfcelv(45,1)
+        print*, 'rivhgt ',HYMAP2_routing_struc(n)%rivelv(45) 
+
         call HYMAP2_model(n,real(HYMAP2_routing_struc(n)%imis),&
              LIS_rc%lnc(n),&
              LIS_rc%lnr(n),&
@@ -523,11 +543,11 @@ subroutine HYMAP2_routing_run(n)
              HYMAP2_routing_struc(n)%linresflag,&
              HYMAP2_routing_struc(n)%evapflag,&
              !ag (19Jan2016)
-             HYMAP2_routing_struc(n)%rivout_pre,&
-             HYMAP2_routing_struc(n)%rivdph_pre,&
-             HYMAP2_routing_struc(n)%fldout_pre,&
-             HYMAP2_routing_struc(n)%flddph_pre,&
-             HYMAP2_routing_struc(n)%fldelv1,&
+             HYMAP2_routing_struc(n)%rivout_pre(:,1),&
+             HYMAP2_routing_struc(n)%rivdph_pre(:,1),&
+             HYMAP2_routing_struc(n)%fldout_pre(:,1),&
+             HYMAP2_routing_struc(n)%flddph_pre(:,1),&
+             HYMAP2_routing_struc(n)%fldelv1(:,1),&
              HYMAP2_routing_struc(n)%grv,&
              HYMAP2_routing_struc(n)%cadp,&
              HYMAP2_routing_struc(n)%steptype,&
@@ -558,26 +578,33 @@ subroutine HYMAP2_routing_run(n)
              HYMAP2_routing_struc(n)%bsfdwi_ratio,&
              surface_runoff,&
              baseflow,&
-             HYMAP2_routing_struc(n)%edif,&
-             HYMAP2_routing_struc(n)%rivsto,&
-             HYMAP2_routing_struc(n)%rivdph,&
-             HYMAP2_routing_struc(n)%rivvel,&
-             HYMAP2_routing_struc(n)%rivout,&
-             HYMAP2_routing_struc(n)%evpout,&
-             HYMAP2_routing_struc(n)%fldout,&
-             HYMAP2_routing_struc(n)%fldsto,&
-             HYMAP2_routing_struc(n)%flddph,&
-             HYMAP2_routing_struc(n)%fldvel,&
-             HYMAP2_routing_struc(n)%fldfrc,&
-             HYMAP2_routing_struc(n)%fldare,&
-             HYMAP2_routing_struc(n)%sfcelv,&
-             HYMAP2_routing_struc(n)%rnfsto,&
-             HYMAP2_routing_struc(n)%bsfsto,&
-             HYMAP2_routing_struc(n)%rnfdwi,&
-             HYMAP2_routing_struc(n)%bsfdwi,&
-             HYMAP2_routing_struc(n)%surfws,&
-             HYMAP2_routing_struc(n)%dtaout)            
+             HYMAP2_routing_struc(n)%edif(:,1),&
+             HYMAP2_routing_struc(n)%rivsto(:,1),&
+             HYMAP2_routing_struc(n)%rivdph(:,1),&
+             HYMAP2_routing_struc(n)%rivvel(:,1),&
+             HYMAP2_routing_struc(n)%rivout(:,1),&
+             HYMAP2_routing_struc(n)%evpout(:,1),&
+             HYMAP2_routing_struc(n)%fldout(:,1),&
+             HYMAP2_routing_struc(n)%fldsto(:,1),&
+             HYMAP2_routing_struc(n)%flddph(:,1),&
+             HYMAP2_routing_struc(n)%fldvel(:,1),&
+             HYMAP2_routing_struc(n)%fldfrc(:,1),&
+             HYMAP2_routing_struc(n)%fldare(:,1),&
+             HYMAP2_routing_struc(n)%sfcelv(:,1),&
+             HYMAP2_routing_struc(n)%rnfsto(:,1),&
+             HYMAP2_routing_struc(n)%bsfsto(:,1),&
+             HYMAP2_routing_struc(n)%rnfdwi(:,1),&
+             HYMAP2_routing_struc(n)%bsfdwi(:,1),&
+             HYMAP2_routing_struc(n)%surfws(:,1),&
+             HYMAP2_routing_struc(n)%dtaout(:,1))            
               
+        print*, 'after '
+        print*, 'rivout ',HYMAP2_routing_struc(n)%rivout(45,1)
+        print*, 'rivsto ',HYMAP2_routing_struc(n)%rivsto(45,1)
+        print*, 'fldsto ',HYMAP2_routing_struc(n)%fldsto(45,1)
+        print*, 'sfcelv ',HYMAP2_routing_struc(n)%sfcelv(45,1)
+        print*, 'rivhgt ',HYMAP2_routing_struc(n)%rivelv(45) 
+
         rnfsto_mm(:,1)=1000*HYMAP2_routing_struc(n)%rnfsto(:,1)/&
              HYMAP2_routing_struc(n)%grarea
         bsfsto_mm(:,1)=1000*HYMAP2_routing_struc(n)%bsfsto(:,1)/&

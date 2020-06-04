@@ -699,17 +699,21 @@ subroutine HYMAP2_dump_restart(n, ftn)
 #endif
     enddo
     if(LIS_masterproc) then
-       do m=1,LIS_rc%nensem(n)  
-          do l=1,LIS_npes
-             do i=1,LIS_routing_gdeltas(n,l-1)
+       do l=1,LIS_npes
+          do i=1,LIS_routing_gdeltas(n,l-1)
+             do m=1,LIS_rc%nensem(n)  
+
                 ix = HYMAP2_routing_struc(n)%seqx_glb(i+&
                      LIS_routing_goffsets(n,l-1))
                 iy = HYMAP2_routing_struc(n)%seqy_glb(i+&
                      LIS_routing_goffsets(n,l-1))
                 ix1 = ix + LIS_ews_halo_ind(n,l) - 1
                 iy1 = iy + LIS_nss_halo_ind(n,l)-1
-                gtmp(HYMAP2_routing_struc(n)%sindex(ix1,iy1)+&
-                     (m-1)*LIS_rc%glbnroutinggrid(n)) = &
+!                gtmp(HYMAP2_routing_struc(n)%sindex(ix1,iy1)+&
+!                     (m-1)*LIS_rc%glbnroutinggrid(n)) = &
+!                     gtmp1(i+LIS_routing_goffsets(n,l-1),m)
+                gtmp(m + (HYMAP2_routing_struc(n)%sindex(ix1,iy1) -1)* &
+                     LIS_rc%nensem(n)) = &
                      gtmp1(i+LIS_routing_goffsets(n,l-1),m)
              enddo
           enddo

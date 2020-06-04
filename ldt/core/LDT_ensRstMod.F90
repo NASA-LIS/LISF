@@ -347,6 +347,9 @@ module LDT_ensRstMod
          deallocate(dimID2)
          deallocate(dims)
          deallocate(dimName)
+         
+         call LDT_verify(nf90_close(ftn))
+         call LDT_verify(nf90_close(ftn2))
 #endif
          
       ! Generate router model ensemble restart file:
@@ -415,79 +418,196 @@ module LDT_ensRstMod
             write(LDT_logunit,*)"[INFO] 'Inflating' ensemble restart for routing model: "&
                   //trim(LDT_rc%routingmodel)
 
-            allocate(var1d(LDT_rc%routing_grid_count))
-            allocate(var(LDT_rc%routing_grid_count,LDT_rc%nens_out))
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
-            ftn = LDT_getNextUnitNumber()
-            ftn2 = LDT_getNextUnitNumber()
+         call LDT_verify(nf90_open(path=LDT_rc%inputrst,&
+              mode=nf90_NOWRITE,ncid=ftn),'failed to open '//trim(LDT_rc%inputrst))
 
-            ! Check if input restart file is present:
-            inquire( file=trim(LDT_rc%inputrst), exist=file_exists )
-            if( file_exists ) then
-               write(LDT_logunit,*) "[INFO] Opening HYMAP input restart file, "
-               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
-               open(ftn,file=LDT_rc%inputrst,status='old',&
-                    form='unformatted',iostat=ios)
-               !open(ftn,file=LDT_rc%inputrst,status='old',&
-               !     form='unformatted',access='sequential',iostat=ios)
+#if (defined USE_NETCDF4)
+         call LDT_verify(nf90_create(path=LDT_rc%outputrst,cmode=nf90_netcdf4,&
+              ncid = ftn2),&
+              'creating netcdf file failed in LDT_ensRstMod')
+#endif
+#if (defined USE_NETCDF3)
+         call LDT_verify(nf90_create(path=LDT_rc%outputrst,cmode=nf90_clobber,&
+              ncid = ftn2),&
+              'creating netcdf file failed in LDT_ensRstMod')
+#endif            
+
+         call LDT_verify(nf90_inquire(ftn,nDims,nVars,nGlobalAtts,unlimdimId),&
+              'nf90_inquire failed in LDT_ensRstMod')
+         
+         allocate(dimID(nDims))
+         allocate(dimID2(nDims))
+         allocate(dims(nDims))
+         allocate(dimName(nDims))
+
+         call LDT_verify(nf90_inq_dimId(ftn,"ntiles",dimId(1)),&
+              'nf90_inq_dimId failed for ntiles in LDT_ensRstMod')
+         call LDT_verify(nf90_inquire_dimension(ftn,dimId(1),len=dims(1)),&
+              'nf90_inquire_dimension failed in LDT_ensRstMod')
+
+         model_name = "HYMAP2"
+         call writeglobalheader(ftn2, model_name, nDims, dims, &
+              LDT_rc%nens_out, dimID2)
+
+         call LDT_verify(nf90_enddef(ftn2))
+         
+         do k=1,nVars
+            call LDT_verify(nf90_inquire_variable(ftn,k,varName,ndims=nvardims),&
+                 'nf90_inquire_variable failed in LDT_ensRstMod')
+            allocate(n_dimids(nvardims))
+            call LDT_verify(nf90_inquire_variable(ftn,k,varName,dimids=n_dimids),&
+                 'nf90_inquire_variable failed in LDT_ensRstMod')
+            
+            call LDT_verify(nf90_get_att(ftn,k,"units",units),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            call LDT_verify(nf90_get_att(ftn,k,"standard_name",standard_name),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            call LDT_verify(nf90_get_att(ftn,k,"scale_factor",scale_factor),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            call LDT_verify(nf90_get_att(ftn,k,"add_offset",offset),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            call LDT_verify(nf90_get_att(ftn,k,"vmin",vmin),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            call LDT_verify(nf90_get_att(ftn,k,"vmax",vmax),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            
+            call writeheader_restart(ftn2,nvardims,&
+                 n_dimIds,&
+                 k,&
+                 standard_name,units,&
+                 scale_factor, offset,&
+                 vmin,vmax)
+            deallocate(n_dimids)
+         enddo
+         
+         do k=1,nVars
+            call LDT_verify(nf90_inquire_variable(ftn,k,ndims=nvardims),&
+                 'nf90_inquire_variable failed in LDT_ensRstMod')
+            allocate(nvardimIds(nvardims))
+            call LDT_verify(nf90_inquire_variable(ftn,k,varName,&
+                 dimIDs=nvardimIDs),&
+                 'nf90_inquire_variable failed in LDT_ensRstMod')
+            
+            if(nvardims.gt.1) then
+               allocate(var(dims(1),dims(nvarDimIDs(2))))
+               allocate(var_new(dims(1)*LDT_rc%nens_out, dims(nvarDimIDs(2))))
             else
-               write(LDT_logunit,*) "[ERR] HYMAP input binary restart file, "
-               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
-               write(LDT_logunit,*) " is missing. Stopping run ..."
-               call LDT_endrun
+               allocate(var(dims(1),1))
+               allocate(var_new(dims(1)*LDT_rc%nens_out,1))
             endif
-
-            ! If output ensemble restart file exists, provide warning...
-            inquire( file=trim(LDT_rc%outputrst), exist=file_exists )
-            if(file_exists) then
-               write(LDT_logunit,*) "[WARN] If the HYMAP2 binary restart file, "
-               write(LDT_logunit,*)  trim(LDT_rc%outputrst)
-               write(LDT_logunit,*) "  already exists! Overwriting the file ..."
-!               call LDT_endrun
-            endif
-
-            !open(ftn2,file=LDT_rc%outputrst,status='new',&
-            !     form='unformatted',access='sequential',iostat=ios)
-            open(ftn2,file=LDT_rc%outputrst,status='new',&
-                 form='unformatted',iostat=ios)
-            numvars = 8  
             
-            do i=1,numvars
-
-               read(ftn) var1d
-
+            call LDT_verify(nf90_get_var(ftn,k,var),&
+                 'nf90_get_var failed in LDT_ensRstMod')
+            
+            do t=1,dims(1)
                do m=1,LDT_rc%nens_out
-                  var(:,m) = var1d(:)
+                  var_new((t-1)*LDT_rc%nens_out+m,:) = var(t,:)
                enddo
-            
-               write(ftn2) var
             enddo
-
-            call LDT_releaseUnitNumber(ftn)
-            call LDT_releaseUnitNumber(ftn2)
-
-            deallocate(var)
-            deallocate(var1d)
+            if(nvardims.gt.1) then
+               call LDT_verify(nf90_put_var(ftn2,k,var_new,(/1,1/),&
+                    (/dims(1)*LDT_rc%nens_out,dims(nvarDimIDs(2))/)),&
+                    'nf90_put_var failed in LDT_ensRstMod for '//&
+                    trim(varName))
+            else
+               call LDT_verify(nf90_put_var(ftn2,k,var_new,(/1,1/),&
+                    (/dims(1)*LDT_rc%nens_out,1/)),&
+                    'nf90_put_var failed in LDT_ensRstMod for '//&
+                    trim(varName))
+            endif
             
-            !stop
+            deallocate(var)
+            deallocate(var_new)
+            deallocate(nvardimIDs)
+         enddo     
+         deallocate(dimID)
+         deallocate(dimID2)
+         deallocate(dims)
+         deallocate(dimName)
+         
+         call LDT_verify(nf90_close(ftn))
+         call LDT_verify(nf90_close(ftn2))
 
+#endif
+#if 0 
+         write(LDT_logunit,*)"[INFO] 'Inflating' ensemble restart for routing model: "&
+              //trim(LDT_rc%routingmodel)
+         
+         allocate(var1d(LDT_rc%routing_grid_count))
+         allocate(var(LDT_rc%routing_grid_count,LDT_rc%nens_out))
+         
+         ftn = LDT_getNextUnitNumber()
+         ftn2 = LDT_getNextUnitNumber()
+         
+         ! Check if input restart file is present:
+         inquire( file=trim(LDT_rc%inputrst), exist=file_exists )
+         if( file_exists ) then
+            write(LDT_logunit,*) "[INFO] Opening HYMAP input restart file, "
+            write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+            open(ftn,file=LDT_rc%inputrst,status='old',&
+                 form='unformatted',iostat=ios)
+            !open(ftn,file=LDT_rc%inputrst,status='old',&
+            !     form='unformatted',access='sequential',iostat=ios)
          else
-            write(LDT_logunit,*) '[ERR] Ensemble restart for '//trim(LDT_rc%routingmodel)
-            write(LDT_logunit,*) '   is not currently supported.'
-            call LDT_endrun()
+            write(LDT_logunit,*) "[ERR] HYMAP input binary restart file, "
+            write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+            write(LDT_logunit,*) " is missing. Stopping run ..."
+            call LDT_endrun
          endif
-
-      ! Other ensemble restart sources are not currently supported
+         
+         ! If output ensemble restart file exists, provide warning...
+         inquire( file=trim(LDT_rc%outputrst), exist=file_exists )
+         if(file_exists) then
+            write(LDT_logunit,*) "[WARN] If the HYMAP2 binary restart file, "
+            write(LDT_logunit,*)  trim(LDT_rc%outputrst)
+            write(LDT_logunit,*) "  already exists! Overwriting the file ..."
+            !               call LDT_endrun
+         endif
+         
+         !open(ftn2,file=LDT_rc%outputrst,status='new',&
+         !     form='unformatted',access='sequential',iostat=ios)
+         open(ftn2,file=LDT_rc%outputrst,status='new',&
+              form='unformatted',iostat=ios)
+         numvars = 8  
+         
+         do i=1,numvars
+            
+            read(ftn) var1d
+            
+            do m=1,LDT_rc%nens_out
+               var(:,m) = var1d(:)
+            enddo
+            
+            write(ftn2) var
+         enddo
+         
+         call LDT_releaseUnitNumber(ftn)
+         call LDT_releaseUnitNumber(ftn2)
+         
+         deallocate(var)
+         deallocate(var1d)
+         
+            !stop
+#endif
       else
-         write(LDT_logunit,*) '[ERR] Ensemble restart source for '//trim(LDT_rc%rstsource)
-         write(LDT_logunit,*) 'is not currently supported.'
+         write(LDT_logunit,*) '[ERR] Ensemble restart for '//trim(LDT_rc%routingmodel)
+         write(LDT_logunit,*) '   is not currently supported.'
          call LDT_endrun()
       endif
 
-      write(LDT_logunit,*) " Successfully generated restart file: ",&
-           trim(LDT_rc%outputrst)
-
-    end subroutine upscale_ensembleRst
+      ! Other ensemble restart sources are not currently supported
+   else
+      write(LDT_logunit,*) '[ERR] Ensemble restart source for '//trim(LDT_rc%rstsource)
+      write(LDT_logunit,*) 'is not currently supported.'
+      call LDT_endrun()
+   endif
+   
+   write(LDT_logunit,*) " Successfully generated restart file: ",&
+        trim(LDT_rc%outputrst)
+   
+ end subroutine upscale_ensembleRst
        
 
     subroutine downscale_ensembleRst()

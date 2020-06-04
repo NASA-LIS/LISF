@@ -161,6 +161,7 @@ module LIS_coreMod
      integer, allocatable :: nextx(:,:)
      integer, allocatable :: gindex(:,:)
      type(tiledec), allocatable :: tile(:)
+     type(griddec), allocatable :: grid(:)
      integer, allocatable       :: ntiles_pergrid(:)
   end type routing_type_dec
   
