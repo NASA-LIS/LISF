@@ -38,23 +38,23 @@ subroutine HYMAP2_scale_WL(n, Routing_State)
 !  \end{description}
 !EOP
 
-  type(ESMF_Field)       :: rivstoField
+  type(ESMF_Field)       :: sfcelvField
   integer                :: t,i,m
   integer                :: status
-  real, pointer          :: rivsto(:)
+  real, pointer          :: sfcelv(:)
   character*100          :: lsm_state_objs(4)
 
 #if 0 
-  call ESMF_StateGet(Routing_State,"River storage",rivstoField,rc=status)
+  call ESMF_StateGet(Routing_State,"River storage",sfcelvField,rc=status)
   call LIS_verify(status,'ESMF_StateGet failed for sm1 in HYMAP2_getWL')
 
-  call ESMF_FieldGet(rivstoField,localDE=0,farrayPtr=rivsto,rc=status)
-  call LIS_verify(status,'ESMF_FieldGet failed for rivsto in HYMAP2_getWL')
+  call ESMF_FieldGet(sfcelvField,localDE=0,farrayPtr=sfcelv,rc=status)
+  call LIS_verify(status,'ESMF_FieldGet failed for sfcelv in HYMAP2_getWL')
 
   do i=1,HYMAP2_routing_struc(n)%nseqall
      do m=1,LIS_rc%nensem(n)
         t = (i-1)*LIS_rc%nensem(n)+m
-        rivsto(t) = HYMAP2_routing_struc(n)%rivsto(i,m)/1000.0
+        sfcelv(t) = HYMAP2_routing_struc(n)%sfcelv(i,m)/1000.0
      enddo
   enddo
 #endif

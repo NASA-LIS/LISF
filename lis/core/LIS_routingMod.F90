@@ -150,6 +150,8 @@ module LIS_routingMod
        call routinginit(trim(LIS_rc%routingmodel)//char(0))
 
        do n=1,LIS_rc%nnest
+          allocate(LIS_routing(n)%grid(LIS_rc%nroutinggrid(n)))
+
           allocate(LIS_routing(n)%tile(LIS_rc%nroutinggrid(n)*&
                LIS_rc%nensem(n)))
 
@@ -166,7 +168,16 @@ module LIS_routingMod
                 cg = c+LIS_ews_halo_ind(n,LIS_localPet+1)-1
                 rg = r+LIS_nss_halo_ind(n,LIS_localPet+1)-1
                 if(LIS_routing(n)%dommask(c,r).gt.0.and.&
-                     LIS_routing(n)%nextx(cg,rg).ne.LIS_rc%udef) then           
+                     LIS_routing(n)%nextx(cg,rg).ne.LIS_rc%udef) then      
+
+                   LIS_routing(n)%grid(kk)%lat = &
+                        LIS_domain(n)%lat(c+(r-1)*LIS_rc%lnc(n))
+                   LIS_routing(n)%grid(kk)%lon = &
+                        LIS_domain(n)%lon(c+(r-1)*LIS_rc%lnc(n))
+
+                   LIS_routing(n)%grid(kk)%col = c
+                   LIS_routing(n)%grid(kk)%row = r
+
                    do m=1,LIS_rc%nensem(n)
                       LIS_routing(n)%tile(k)%ensem = m
                       LIS_routing(n)%tile(k)%row = r
@@ -1104,6 +1115,22 @@ module LIS_routingMod
 
     if(LIS_rc%routingmodel.ne."none") then 
        if(LIS_rc%routing_DAinst_valid(k)) then 
+          
+          c = LIS_routing(n)%tile(tileid)%col
+          r = LIS_routing(n)%tile(tileid)%row
+          
+          gid = -1
+          if(c.ge.1.and.c.le.LIS_rc%obs_lnc(k).and.&
+               r.ge.1.and.r.le.LIS_rc%obs_lnr(k)) then 
+             gid = LIS_obs_domain(n,k)%gindex(c,r)
+             
+          endif
+          call ij_to_latlon(LIS_obs_domain(n,k)%lisproj,real(c),real(r),&
+               lat,lon)
+          st_id = gid
+          en_id = gid
+
+#if 0 
           lat = LIS_domain(n)%grid(LIS_domain(n)%gindex( & 
                LIS_surface(n,LIS_rc%lsm_index)%tile(tileid)%col,&
                LIS_surface(n,LIS_rc%lsm_index)%tile(tileid)%row))%lat
@@ -1126,6 +1153,7 @@ module LIS_routingMod
                lat,lon)
           st_id = gid
           en_id = gid
+#endif
        endif
     endif
 
@@ -1192,27 +1220,22 @@ module LIS_routingMod
 !  \end{description}
 !EOP
 
-    integer             :: i,gid
+    integer             :: i,c,r,gid
 
-!TO FIX LATER
-    lats = 30.0
-    lons = -100.0
-#if 0 
     if(LIS_rc%routingmodel.ne."none") then 
        if(LIS_rc%routing_DAinst_valid(k)) then 
-          do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-             
-             gid = LIS_domain(n)%gindex(&
-                  LIS_surface(n, LIS_rc%lsm_index)%tile(i)%col,&
-                  LIS_surface(n, LIS_rc%lsm_index)%tile(i)%row)
-             
-             lats(i) = LIS_domain(n)%grid(gid)%lat
-             lons(i) = LIS_domain(n)%grid(gid)%lon
+          do i=1,state_size
+             c = LIS_routing(n)%tile(i)%col
+             r = LIS_routing(n)%tile(i)%row
+             gid = LIS_routing(n)%gindex(c,r)
+
+             lats(i) = LIS_routing(n)%grid(gid)%lat
+             lons(i) = LIS_routing(n)%grid(gid)%lon
              
           enddo
        endif
     endif
-#endif
+
   end subroutine LIS_routing_getlatlons
         
   subroutine LIS_routing_DAobsTransform(n,k)

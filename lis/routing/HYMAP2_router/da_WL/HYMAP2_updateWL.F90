@@ -33,31 +33,34 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
 ! 
 !EOP
 
-  type(ESMF_Field)       :: rivstoField
-  type(ESMF_Field)       :: rivstoIncrField
-  real, pointer          :: rivsto(:)
-  real, pointer          :: rivstoIncr(:)
+  type(ESMF_Field)       :: sfcelevField
+  type(ESMF_Field)       :: sfcelevIncrField
+  real, pointer          :: sfcelev(:)
+  real, pointer          :: sfcelevIncr(:)
   integer                :: t,i,m
   integer                :: status
 
-  call ESMF_StateGet(Routing_State,"River storage",rivstoField,rc=status)
+  call ESMF_StateGet(Routing_State,"Surface elevation",sfcelevField,rc=status)
   call LIS_verify(status,&
-       "ESMF_StateGet: River storage failed in HYMAP2_updateWL")
+       "ESMF_StateGet: Surface elevation failed in HYMAP2_updateWL")
 
-  call ESMF_FieldGet(rivstoField,localDE=0,farrayPtr=rivsto,rc=status)
+  call ESMF_FieldGet(sfcelevField,localDE=0,farrayPtr=sfcelev,rc=status)
   call LIS_verify(status,&
-       "ESMF_FieldGet: River storage failed in HYMAP2_updateWL")
+       "ESMF_FieldGet: Surface elevation failed in HYMAP2_updateWL")
 
-  call ESMF_StateGet(Routing_Incr_State,"River storage",rivstoIncrField,rc=status)
+  call ESMF_StateGet(Routing_Incr_State,"Surface elevation",sfcelevIncrField,rc=status)
   call LIS_verify(status,&
-       "ESMF_StateGet: River storage failed in HYMAP2_updateWL")
+       "ESMF_StateGet: Surface elevation failed in HYMAP2_updateWL")
 
-  call ESMF_FieldGet(rivstoIncrField,localDE=0,farrayPtr=rivstoIncr,rc=status)
+  call ESMF_FieldGet(sfcelevIncrField,localDE=0,farrayPtr=sfcelevIncr,rc=status)
   call LIS_verify(status,&
-       "ESMF_FieldGet: River storage failed in HYMAP2_updateWL")
+       "ESMF_FieldGet: Surface elevation failed in HYMAP2_updateWL")
 
   do t=1,HYMAP2_routing_struc(n)%nseqall*LIS_rc%nensem(n)
-     rivsto(t) = rivsto(t) + rivstoIncr(t)
+     sfcelev(t) = sfcelev(t) + sfcelevIncr(t)
+!     if(t.ge.25001.and.t.le.25020) then 
+!        print*,'upd ',t,sfcelev(t),sfcelevIncr(t)
+!     endif
   enddo
 end subroutine HYMAP2_updateWL
 

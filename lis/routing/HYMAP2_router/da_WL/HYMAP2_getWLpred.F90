@@ -48,6 +48,9 @@ subroutine HYMAP2_getWLpred(n, k,obs_pred)
      do m=1,LIS_rc%nensem(n)
         t=(i-1)*LIS_rc%nensem(n)+m
         wl(t) = HYMAP2_routing_struc(n)%sfcelv(i,m)
+        if(i.eq.1251) then 
+           print*, 'obspred ',m, wl(t), HYMAP2_routing_struc(n)%nseqall
+        endif
      enddo
   enddo
 
@@ -166,7 +169,6 @@ end subroutine HYMAP2_getWLpred
              endif
           enddo
        enddo
-
     enddo
  
   end subroutine HYMAP2_convertPatchSpaceToObsEnsSpace

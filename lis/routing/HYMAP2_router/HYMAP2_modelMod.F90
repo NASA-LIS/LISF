@@ -25,7 +25,9 @@ module HYMAP2_modelMod
   public :: HYMAP2_dynstp
   public :: HYMAP2_date2frac
   public :: HYMAP2_calc_evap_fld  
-  
+  public :: HYMAP2_get_elevation_profile
+  public :: HYMAP2_get_volume_profile 
+
 contains
   ! ================================================
   ! ================================================  
@@ -661,4 +663,180 @@ contains
 
   end subroutine HYMAP2_calc_evap_fld 
 
+  !=============================================
+#if 0 
+  subroutine HYMAP2_get_volume_profile(nz,elevtn,fldhgt,fldstomax,grarea,rivstomax,rivelv,rivlen,rivwth,elv,vol)    
+    implicit none
+   
+    integer, intent(in)  :: nz
+    integer,    intent(in)  :: elevtn,fldhgt(nz),elv,rivelv !elevation/height are converted to integers [mm]
+    real*8,    intent(in)  :: fldstomax(nz),grarea,rivstomax,rivlen,rivwth
+    real*8,    intent(out) :: vol
+    integer :: i
+    real*8    :: h1,h2,v1,v2
+    real*8    :: dph(nz)
+    real*8    :: dphtmp
+    real*8 :: vol1,dh1,dh2,dv,dh
+    
+    dph(:)=elevtn+fldhgt(:)   
+    if(elv>elevtn.and.grarea>rivlen*rivwth)then
+      i=1
+      do while(elv>dph(i))
+        i=i+1
+        if(i>nz)then
+          vol=fldstomax(nz)+(elv-dph(nz))*grarea
+          goto 1
+        endif
+      enddo
+      if(i>1)then
+        h1=dph(i-1);v1=fldstomax(i-1)
+        h2=dph(i);v2=fldstomax(i)
+      elseif(i==1)then
+        h1=elevtn;v1=rivstomax
+        h2=dph(1);v2=fldstomax(1)
+        !print*,h1,h2,v1,v2
+      else
+        !print*,'[HYMAP2_get_volume_profile] Please check Reservoir elevation'
+        stop
+      endif
+      vol=v1+(v2-v1)*(elv-h1)/(h2-h1)
+    else
+      vol=max(0.,real(elv-rivelv))*rivlen*rivwth
+    endif
+1   continue
+
+  end subroutine HYMAP2_get_volume_profile 
+  !=============================================
+    !=============================================  
+  subroutine HYMAP2_get_elevation_profile(nz,elevtn,fldhgt,fldstomax,grarea,rivstomax,rivelv,rivlen,rivwth,elv,vol)
+   
+    implicit none
+   
+    integer, intent(in)  :: nz
+    integer, intent(in)  :: elevtn,rivelv,fldhgt(nz)
+    real,    intent(in)  :: fldstomax(nz),grarea,rivstomax,rivlen,rivwth
+    real*8,    intent(in)  :: vol
+    integer, intent(out) :: elv
+    integer              :: i
+    real*8               :: h1,h2,v1,v2
+    real*8               :: dph(nz)
+    real*8               :: dphtmp
+    
+    dph(:)=elevtn+fldhgt(:)
+    
+    if(vol>rivstomax.and.grarea>rivlen*rivwth)then
+      i=1
+      do while(vol>fldstomax(i))
+        i=i+1
+        if(i>nz)then
+          elv=dph(nz)+(vol-fldstomax(nz))/(grarea-rivlen*rivwth)
+          goto 1
+        endif
+      enddo
+      if(i>1)then
+        h1=dph(i-1);v1=fldstomax(i-1)
+        h2=dph(i);v2=fldstomax(i)
+      elseif(i==1)then
+        h1=elevtn;v1=rivstomax
+        h2=dph(1);v2=fldstomax(1)
+        !print*,h1,h2,v1,v2
+      else
+        !print*,'[HYMAP2_get_elevation_profile] Please check Reservoir elevation'
+        stop
+      endif
+      elv=h1+(h2-h1)*(vol-v1)/(v2-v1)
+   
+    else
+      elv=rivelv+(vol/rivlen/rivwth)*1000
+    endif
+1   continue
+  end subroutine HYMAP2_get_elevation_profile
+#endif
+
+  subroutine HYMAP2_get_volume_profile(nz,elevtn,fldhgt,fldstomax,grarea,rivstomax,rivelv,rivlen,rivwth,elv,vol)    
+    implicit none
+   
+    integer, intent(in)  :: nz
+    real*8,     intent(in)  :: elevtn,fldhgt(nz),elv,rivelv !elevation/height are converted to integers [mm]
+    real*8,    intent(in)  :: fldstomax(nz),grarea,rivstomax,rivlen,rivwth
+    real*8,    intent(out) :: vol
+    integer :: i
+    real*8    :: h1,h2,v1,v2
+    real*8    :: dph(nz)
+    real*8    :: dphtmp
+    real*8 :: vol1,dh1,dh2,dv,dh
+    
+    dph(:)=elevtn+fldhgt(:)   
+    if(elv>elevtn.and.grarea>rivlen*rivwth)then
+      i=1
+      do while(elv>dph(i))
+        i=i+1
+        if(i>nz)then
+          vol=fldstomax(nz)+(elv-dph(nz))*grarea
+          goto 1
+        endif
+      enddo
+      if(i>1)then
+        h1=dph(i-1);v1=fldstomax(i-1)
+        h2=dph(i);v2=fldstomax(i)
+      elseif(i==1)then
+        h1=elevtn;v1=rivstomax
+        h2=dph(1);v2=fldstomax(1)
+        !print*,h1,h2,v1,v2
+      else
+        !print*,'[HYMAP2_get_volume_profile] Please check Reservoir elevation'
+        stop
+      endif
+      vol=v1+(v2-v1)*(elv-h1)/(h2-h1)
+    else
+      vol=max(0.,real(elv-rivelv))*rivlen*rivwth
+    endif
+1   continue
+
+  end subroutine HYMAP2_get_volume_profile 
+  !=============================================
+    !=============================================  
+  subroutine HYMAP2_get_elevation_profile(nz,elevtn,fldhgt,fldstomax,grarea,rivstomax,rivelv,rivlen,rivwth,elv,vol)
+   
+    implicit none
+   
+    integer, intent(in)  :: nz
+    real*8, intent(in)  :: elevtn,rivelv,fldhgt(nz)
+    real*8,    intent(in)  :: fldstomax(nz),grarea,rivstomax,rivlen,rivwth
+    real*8,    intent(in)  :: vol
+    real*8, intent(out) :: elv
+    integer              :: i
+    real*8               :: h1,h2,v1,v2
+    real*8               :: dph(nz)
+    real*8               :: dphtmp
+    
+    dph(:)=elevtn+fldhgt(:)
+    
+    if(vol>rivstomax.and.grarea>rivlen*rivwth)then
+      i=1
+      do while(vol>fldstomax(i))
+        i=i+1
+        if(i>nz)then
+          elv=dph(nz)+(vol-fldstomax(nz))/(grarea-rivlen*rivwth)
+          goto 1
+        endif
+      enddo
+      if(i>1)then
+        h1=dph(i-1);v1=fldstomax(i-1)
+        h2=dph(i);v2=fldstomax(i)
+      elseif(i==1)then
+        h1=elevtn;v1=rivstomax
+        h2=dph(1);v2=fldstomax(1)
+        !print*,h1,h2,v1,v2
+      else
+        !print*,'[HYMAP2_get_elevation_profile] Please check Reservoir elevation'
+        stop
+      endif
+      elv=h1+(h2-h1)*(vol-v1)/(v2-v1)
+   
+    else
+      elv=rivelv+(vol/rivlen/rivwth)
+    endif
+1   continue
+  end subroutine HYMAP2_get_elevation_profile
 end module HYMAP2_modelMod

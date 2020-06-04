@@ -270,16 +270,21 @@ end subroutine HYMAP2_routing_readrst
     status = nf90_get_var(ftn,varid,gtmp)
     call LIS_verify(status,'Error in nf90_get_var in HYMAP2_readvar_restart_ens')
 #endif       
-    do m=1,LIS_rc%nensem(n)
-       do i=1,LIS_rc%nroutinggrid(n)
+    do i=1,LIS_rc%nroutinggrid(n)
+       do m=1,LIS_rc%nensem(n)
           ix = HYMAP2_routing_struc(n)%seqx(i)
           iy = HYMAP2_routing_struc(n)%seqy(i)
           ix1 = ix + LIS_ews_halo_ind(n,LIS_localPet+1) -1
           iy1 = iy + LIS_nss_halo_ind(n,LIS_localPet+1) -1
-          var(i,m)  = gtmp(HYMAP2_routing_struc(n)%sindex(ix1,iy1)+&
-               (m-1)*LIS_rc%glbnroutinggrid(n))
+!          var(i,m)  = gtmp(HYMAP2_routing_struc(n)%sindex(ix1,iy1)+&
+!               (m-1)*LIS_rc%glbnroutinggrid(n))
+          var(i,m)  = gtmp(m + &
+               (HYMAP2_routing_struc(n)%sindex(ix1,iy1)-1)*LIS_rc%nensem(n))
+!          print*, i, m, HYMAP2_routing_struc(n)%sindex(ix1,iy1),HYMAP2_routing_struc(n)%sindex(ix1,iy1)+&
+!               (m-1)*LIS_rc%glbnroutinggrid(n)
+!          print*, i, m, HYMAP2_routing_struc(n)%sindex(ix1,iy1),m + &
+!               (HYMAP2_routing_struc(n)%sindex(ix1,iy1)-1)*LIS_rc%nensem(n)
        enddo
     enddo
-
     deallocate(gtmp)   
   end subroutine HYMAP2_readvar_restart_ens
