@@ -515,8 +515,11 @@ This section will outline the steps to follow when two developers need to work t
 
 Say that both Alice and Bob are working together to incorporate Noah 6 into LISF.  Both have already performed <<sec_step1>>, <<sec_step2>>, and <<sec_step3>> to set up their GitHub account forks and local clones of LISF.
 
-
 Alice will initiate the work.  See <<sec_step4a>>.
+
+NOTE: The `git remote add` commands below are one-time operations, meaning you add a remote repository into your working repository only one time.
+
+=== Alice begins and shares her work
 
 .Alice performs:
 ....
@@ -528,7 +531,9 @@ Alice will initiate the work.  See <<sec_step4a>>.
 % git push -u origin <feature/noah6>
 ....
 
-Now a working branch is ready for Bob to work on.
+Alice has now made her working branch available for Bob to see.
+
+=== Bob gets Alice's work
 
 .Bob performs:
 [subs="attributes+,-callouts"]
@@ -540,7 +545,10 @@ Now a working branch is ready for Bob to work on.
 % git push -u origin <feature/noah6>
 ....
 
-Now Alice can see Bob's work.
+Bob now has his own working branch based on Alice's, and he has made his working branch available for Alice to see.
+
+=== Alice gets Bob's updates
+anchor:sec_alice_gets_bobs[Alice gets Bob's updates]
 
 .Alice performs:
 [subs="attributes+,-callouts"]
@@ -554,8 +562,26 @@ Now Alice can see Bob's work.
 % git push origin
 ....
 
-Repeat until done.  Alice should perform the last "fetch-bob/merge-bob/push-to-origin" step.  Now Alice can submit a pull request.  And once accepted and merged, both Alice and Bob can clean up their local repositories.
+Alice now has a copy of Bob's working branch, and she has merged his updates into her own working branch.
 
+=== Bob gets Alice's updates
+
+.Bob performs:
+[subs="attributes+,-callouts"]
+....
+% git fetch alice <feature/noah6>
+% git checkout <feature/noah6>
+% git merge alice/<feature/noah6>
+# Review Alice's work
+# Carry out his work: edit, `git add`, `git commit`, etc.
+% git push origin
+....
+
+Bob has merged Alice's updates into his own working branch.
+
+=== Repeat until done.
+
+Alice and Bob repeat getting each other's updates until the work is done.  Since Alice began the work, she should wrap it up.  First, she should ensure that she has all Bob's updates by performing the steps in <<sec_alice_gets_bobs>> one last time (namely, `git fetch bob <feature/noah6>`, `git checkout bob <feature/noah6>`, `git merge bob/<feature/noah6>`, and `git push origin`).  Now Alice can submit a pull request.  And once accepted and merged, both Alice and Bob can clean up their local repositories.
 
 == Dealing with multiple branches
 

@@ -17,12 +17,9 @@ This directory contains:
 
 To run this test case: 
   (a) Generate the LIS executable. 
-  (b) Download the sample input data from: 
-	http://lis.gsfc.nasa.gov/Source/testcases  
-      the testcase corresponding to History Support TEST
-  (c) Run the LIS executable using the lis.config file and the sample 
+  (b) Run the LIS executable using the lis.config file and the sample 
       input data. 
-  (d) Compare the results against the testcase results contained the OUTPUT
+  (c) Compare the results against the testcase results contained the OUTPUT
       directory or compare the results against the values documented in the
       template_main.F90 file.
 

@@ -560,12 +560,12 @@ contains
        do c=1,LVT_rc%lnc
           LVT_domain%gindex(c,r) = -1
 
-          ! EMK...Bug fix to gridDesc indices
-!          locallat = LVT_rc%gridDesc(4)+(r-1)*LVT_rc%gridDesc(9)
-!          locallon = LVT_rc%gridDesc(5)+(c-1)*LVT_rc%gridDesc(10)
-          locallat = LVT_rc%gridDesc(4)+(r-1)*LVT_rc%gridDesc(10)
-          locallon = LVT_rc%gridDesc(5)+(c-1)*LVT_rc%gridDesc(9)
-          
+!          locallat = LVT_rc%gridDesc(4)+(r-1)*LVT_rc%gridDesc(10)
+!          locallon = LVT_rc%gridDesc(5)+(c-1)*LVT_rc%gridDesc(9)
+
+          call ij_to_latlon(LVT_domain%lvtproj,float(c),float(r),&
+               locallat,locallon)          
+
           if(mask_out(c+(r-1)*LVT_rc%lnc).gt.0.99 .and. & 
                mask_out(c+(r-1)*LVT_rc%lnc).lt.3.01) then
              LVT_domain%grid(count1)%lat = locallat

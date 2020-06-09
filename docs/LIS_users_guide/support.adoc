@@ -10,19 +10,28 @@ anchor:ssec_modelingguru[Modeling Guru]
 
 The NASA Center for Climate Simulation (NCCS) hosts a system called Modeling Guru, https://modelingguru.nasa.gov.  This system is a collection of forums discussing many of NASA's modelling efforts and related topics.  LIS has a "`community`" within Modeling Guru.
 
-This is system is open for reading, but registration is required to post questions.  The front page of Modeling Guru provides informatiog regarding requesting an account.
+This is system is open for reading, but registration is required to post questions.  The front page of Modeling Guru provides information regarding requesting an account.
 
 
 === Requesting help
 
 To request help from the LIS development team, please visit our community within Modeling Guru at https://modelingguru.nasa.gov/community/atmospheric/lis.  Select the "`Discussions`" tab.  Please review the existing posts; your question may already be answered.  If it is not, then please "`Start a discussion`" to post your question there.  Note that posting a question requires a registered account (see Section <<ssec_modelingguru>>).
 
-When reporting a bug or an error running LIS, please provide a description of the problem, including any error messages printed to the screen.  Attach a copy of the _lislog.0000_ file.  Also attach a copy of any relevant supporting files such as
-the _lis.config_ file,
-the _MODEL_OUTPUT_LIST.TBL_ file,
-the _ldt.config_ file,
-//the _param_attrib.txt_ file,
-etc.
+When reporting a bug or an error running LIS, please provide a description of the problem, including any error messages printed to the screen.  Attach a copy of the _lislog.0000_ file.  Also attach a copy of any relevant supporting files such as: +
+
+For LIS: +
+  * lis.config +
+  * lislog.0000 +
+  * MODEL_OUTPUT_LIST.TBL +
+  * configure.lis (in your make directory) +
+For LDT: +
+  * ldt.config +
+  * ldtlog.0000 +
+  * configure.ldt (in your make directory) +
+For LVT: +
+  * lvt.config +
+  * lvtlog.0000 +
+  * configure.lvt (in your make directory)
 
 Please note that the LIS development team does not receive funding to provide community support.  Your questions and issues are important to us, but we can address them only when time permits.
 

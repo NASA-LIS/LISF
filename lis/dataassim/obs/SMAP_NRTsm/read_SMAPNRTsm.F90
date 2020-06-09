@@ -13,6 +13,7 @@
 ! !REVISION HISTORY:
 !  17 Jun 2010: Sujay Kumar; Updated for use with LPRM AMSRE Version 5. 
 !  20 Sep 2012: Sujay Kumar; Updated to the NETCDF version of the data. 
+!  1  Apr 2019: Yonghwan Kwon: Upated for reading monthy CDF for the current month
 !
 ! !INTERFACE: 
 subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
@@ -99,6 +100,9 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
   character*100          :: smap_filename(10),tstring(10)
   character(len=4) :: istring
   character(len=200) :: cmd
+  integer :: rc
+
+  integer, external :: create_filelist ! C function
 
   smap_filename = ""
   tstring       = ""
@@ -181,13 +185,33 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
 !             '/SMAP_L2_*'//trim(yyyymmdd)//'T'//trim(hh)&
 !             //"*.h5 > SMAP_filelist"//&
 !             ".dat"
-        list_files = 'ls '//trim(smobsdir)//&
-             '/SMAP_L2_*'//trim(yyyymmdd)//'T'//trim(hh)&
-             //"*.h5 > SMAP_filelist"//&
-             ".dat"
+        !list_files = 'ls '//trim(smobsdir)//&
+        !     '/SMAP_L2_*'//trim(yyyymmdd)//'T'//trim(hh)&
+        !     //"*.h5 > SMAP_filelist"//&
+        !     ".dat"
+        !!fproc(1)//fproc(2)//fproc(3)//fproc(4)//".dat"
+        !call system(trim(list_files))
 
-        !fproc(1)//fproc(2)//fproc(3)//fproc(4)//".dat"
-        call system(trim(list_files))
+        ! EMK...Avoid use of the 'ls' system command.
+        list_files = trim(smobsdir)//&
+             '/SMAP_L2_*'//trim(yyyymmdd)//'T'//trim(hh)&
+             //"*.h5"
+        write(LIS_logunit,*) &
+             '[INFO] Searching for ',trim(list_files)
+
+        rc = create_filelist(trim(list_files)//char(0), &
+             "SMAP_filelist.dat"//char(0))
+        if (rc .ne. 0) then
+           write(LIS_logunit,*) &
+                '[WARN] Problem encountered when searching for SMAP files'
+           write(LIS_logunit,*) &
+                'Was searching for ',trim(list_files)
+           write(LIS_logunit,*) &
+                'LIS will continue...'
+        endif
+
+        ! EMK TODO...Replace this with C code that uses the POSIX link
+        ! function.
         do i = 0, LIS_npes-1
            write(istring,'(I4.4)') i
            cmd = 'cp SMAP_filelist.dat SMAP_filelist.'//istring//".dat"
@@ -207,7 +231,7 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
 ! if multiple files for the same time and orbits are present, the latest
 ! one will overwrite older ones, though multiple (redundant) reads occur. 
 ! This assumes that the 'ls command' will list the files in that order. 
-     
+ 
      do while(ierr.eq.0) 
         read(ftn,'(a)',iostat=ierr) fname
         if(ierr.ne.0) then 
@@ -283,21 +307,77 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
 !-------------------------------------------------------------------------
 !  Transform data to the LSM climatology using a CDF-scaling approach
 !-------------------------------------------------------------------------     
+  ! Read monthly CDF (only for the current month)
+  if (SMAPNRTsm_struc(n)%ntimes.gt.1.and.SMAPNRTsm_struc(n)%cdf_read_opt.eq.1) then
+     if (.not. SMAPNRTsm_struc(n)%cdf_read_mon.or.LIS_rc%da.eq.1.and.LIS_rc%hr.eq.0.and.LIS_rc%mn.eq.0.and.LIS_rc%ss.eq.0) then
+        call LIS_readMeanSigmaData(n,k,&
+             SMAPNRTsm_struc(n)%ntimes,&
+             LIS_rc%obs_ngrid(k), &
+             SMAPNRTsm_struc(n)%modelcdffile, &
+             "SoilMoist",&
+             SMAPNRTsm_struc(n)%model_mu,&
+             SMAPNRTsm_struc(n)%model_sigma,&
+             LIS_rc%mo)
+
+        call LIS_readMeanSigmaData(n,k,&
+             SMAPNRTsm_struc(n)%ntimes,&
+             LIS_rc%obs_ngrid(k), &
+             SMAPNRTsm_struc(n)%obscdffile, &
+             "SoilMoist",&
+             SMAPNRTsm_struc(n)%obs_mu,&
+             SMAPNRTsm_struc(n)%obs_sigma,&
+             LIS_rc%mo)
+
+        call LIS_readCDFdata(n,k,&
+             SMAPNRTsm_struc(n)%nbins,&
+             SMAPNRTsm_struc(n)%ntimes,&
+             LIS_rc%obs_ngrid(k), &
+             SMAPNRTsm_struc(n)%modelcdffile, &
+             "SoilMoist",&
+             SMAPNRTsm_struc(n)%model_xrange,&
+             SMAPNRTsm_struc(n)%model_cdf,&
+             LIS_rc%mo)
+
+        call LIS_readCDFdata(n,k,&
+             SMAPNRTsm_struc(n)%nbins,&
+             SMAPNRTsm_struc(n)%ntimes,&
+             LIS_rc%obs_ngrid(k), &
+             SMAPNRTsm_struc(n)%obscdffile, &
+             "SoilMoist",&
+             SMAPNRTsm_struc(n)%obs_xrange,&
+             SMAPNRTsm_struc(n)%obs_cdf,&
+             LIS_rc%mo)
+
+        SMAPNRTsm_struc(n)%cdf_read_mon = .true.
+     endif
+  endif
 
   if(LIS_rc%dascaloption(k).eq."CDF matching".and.fnd.ne.0) then
-     
-     call LIS_rescale_with_CDF_matching(     &
-          n,k,                               & 
-          SMAPNRTsm_struc(n)%nbins,         & 
-          SMAPNRTsm_struc(n)%ntimes,        & 
-          MAX_SM_VALUE,                      & 
-          MIN_SM_VALUE,                      & 
-          SMAPNRTsm_struc(n)%model_xrange,  &
-          SMAPNRTsm_struc(n)%obs_xrange,    &
-          SMAPNRTsm_struc(n)%model_cdf,     &
-          SMAPNRTsm_struc(n)%obs_cdf,       &
-          sm_current)
-     
+     if (SMAPNRTsm_struc(n)%ntimes.gt.1.and.SMAPNRTsm_struc(n)%cdf_read_opt.eq.1) then     
+        call LIS_rescale_with_CDF_matching(     &
+             n,k,                               &
+             SMAPNRTsm_struc(n)%nbins,         &
+             1,        &
+             MAX_SM_VALUE,                      &
+             MIN_SM_VALUE,                      &
+             SMAPNRTsm_struc(n)%model_xrange,  &
+             SMAPNRTsm_struc(n)%obs_xrange,    &
+             SMAPNRTsm_struc(n)%model_cdf,     &
+             SMAPNRTsm_struc(n)%obs_cdf,       &
+             sm_current)
+     else
+        call LIS_rescale_with_CDF_matching(     &
+             n,k,                               & 
+             SMAPNRTsm_struc(n)%nbins,         & 
+             SMAPNRTsm_struc(n)%ntimes,        & 
+             MAX_SM_VALUE,                      & 
+             MIN_SM_VALUE,                      & 
+             SMAPNRTsm_struc(n)%model_xrange,  &
+             SMAPNRTsm_struc(n)%obs_xrange,    &
+             SMAPNRTsm_struc(n)%model_cdf,     &
+             SMAPNRTsm_struc(n)%obs_cdf,       &
+             sm_current)                     
+     endif  
   endif
   
   obsl = LIS_rc%udef 
@@ -371,7 +451,9 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
            allocate(ssdev(LIS_rc%obs_ngrid(k)))
            ssdev = SMAPNRTsm_struc(n)%ssdev_inp 
            
-           if(SMAPNRTsm_struc(n)%ntimes.eq.1) then 
+           if (SMAPNRTsm_struc(n)%cdf_read_opt .eq. 1) then
+              jj = 1
+           else if(SMAPNRTsm_struc(n)%ntimes.eq.1) then 
               jj = 1
            else
               jj = LIS_rc%mo

@@ -178,6 +178,10 @@ subroutine LIS_metforcing_plugin
    use geos5fcst_forcingMod
 #endif
 
+#if ( defined MF_GEFS_FORECAST )
+   use gefs_forcingMod
+#endif
+
 #if ( defined MF_GDAS_LSWG )
    use gdasLSWG_forcingMod
 #endif
@@ -320,6 +324,10 @@ subroutine LIS_metforcing_plugin
 
 #if ( defined MF_HIMAT_GMU)
    use HiMATGMU_forcingMod
+#endif
+
+#if ( defined MF_MRMS )
+   use mrms_grib_forcingMod
 #endif
 
 #if ( defined MF_MET_TEMPLATE )
@@ -466,6 +474,13 @@ subroutine LIS_metforcing_plugin
    external timeinterp_geos5fcst
    external finalize_geos5fcst
    external reset_geos5fcst
+#endif
+
+#if ( defined MF_GEFS_FORECAST )
+   external get_gefs
+   external timeinterp_gefs
+   external finalize_gefs
+   external reset_gefs
 #endif
 
 #if ( defined MF_GDAS_LSWG )
@@ -695,6 +710,13 @@ subroutine LIS_metforcing_plugin
    external finalize_HiMATGMU
 #endif
 
+#if ( defined MF_MRMS )
+   external get_mrms_grib
+   external timeinterp_mrms_grib
+   external finalize_mrms_grib
+   external reset_mrms_grib
+#endif
+
 #if ( defined MF_MET_TEMPLATE )
 ! - Meteorological Forcing Template:
    call registerinitmetforc(trim(LIS_metForcTemplateId)//char(0), &
@@ -916,6 +938,16 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_geos5fcst)
    call registerfinalmetforc(trim(LIS_geos5fcstId)//char(0),finalize_geos5fcst)
    call registerresetmetforc(trim(LIS_geos5fcstId)//char(0),reset_geos5fcst)
+#endif
+
+#if ( defined MF_GEFS_FORECAST )
+! - GEFS forecast forcing:
+   call registerinitmetforc(trim(LIS_gefsId)//char(0),init_GEFS)
+   call registerretrievemetforc(trim(LIS_gefsId)//char(0),get_gefs)
+   call registertimeinterpmetforc(trim(LIS_gefsID)//char(0), &
+                                  timeinterp_gefs)
+   call registerfinalmetforc(trim(LIS_gefsId)//char(0),finalize_gefs)
+   call registerresetmetforc(trim(LIS_gefsId)//char(0),reset_gefs)
 #endif
 
 #if ( defined MF_GDAS_LSWG )
@@ -1261,6 +1293,16 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_HiMATGMU)
    call registerresetmetforc(trim(LIS_HiMATGMUforcId)//char(0),reset_HiMATGMU)
    call registerfinalmetforc(trim(LIS_HiMATGMUforcId)//char(0),finalize_HiMATGMU)
+#endif
+
+#if ( defined MF_MRMS )
+! - MRMS operational forcing, 0.1-deg, added by J. Erlingis
+   call registerinitmetforc(trim(LIS_mrmsId)//char(0),init_MRMS_grib)
+   call registerretrievemetforc(trim(LIS_mrmsId)//char(0),get_mrms_grib)
+   call registertimeinterpmetforc(trim(LIS_mrmsId)//char(0), &
+                                  timeinterp_mrms_grib)
+   call registerfinalmetforc(trim(LIS_mrmsId)//char(0),finalize_mrms_grib)
+   call registerresetmetforc(trim(LIS_mrmsId)//char(0),reset_mrms_grib)
 #endif
 end subroutine LIS_metforcing_plugin
 

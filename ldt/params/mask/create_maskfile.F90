@@ -48,11 +48,11 @@
 !   \end{description}
 !
 !EOP      
-  integer :: c, r, t, i
-  real    :: vegsum, totalsum
-!_________________________________________________________________________________
+  integer  :: c, r, t, i
+  real     :: vegsum, totalsum
   real     :: maxv
   integer  :: maxt
+!_________________________________________________________________________________
 
    LDT_rc%nmaskpts = 0.
    localmask = 0.
@@ -104,13 +104,26 @@
           !  (need to retain water points for mask-parm checks later):
              do t = 1, nt
                 if( t /= LDT_rc%waterclass ) then
-                  if( vegcnt(c,r,t) /= LDT_rc%udef) &
+                  if( vegcnt(c,r,t) /= LDT_rc%udef) then
                      vegsum = vegsum + vegcnt(c,r,t)
+                  endif
                 endif
              end do
 
+
              totalsum = sum( vegcnt(c,r,1:nt), &
                         mask=vegcnt(c,r,1:nt).ne.LDT_rc%udef )
+
+             ! Check gridcell veg total sum:
+             if( totalsum == 0. ) then
+                write(LDT_logunit,*) "[WARN] Total vegetation for gridcell, c=",c,", r=",r
+                write(LDT_logunit,*) "   has the sum of: ",totalsum
+                write(LDT_logunit,*) "  This check performed in routine: create_maskfile "
+                ! Set then localmask to 0.0 (water point or undefined)
+                localmask(c,r) = 0.0
+                cycle
+!                call LDT_endrun 
+             endif
 
              if( (vegsum/totalsum) >= LDT_rc%gridcell_water_frac(n) ) then  
                localmask(c,r) = 1.0   ! Designated land points

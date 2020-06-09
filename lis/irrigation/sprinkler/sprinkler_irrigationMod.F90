@@ -16,7 +16,7 @@ module sprinkler_irrigationMod
 ! !REVISION HISTORY:
 !
 !  11 Nov 2012: Sujay Kumar; Initial implementation
-!
+!  25 Feb 2020: Jessica Erlingis; Update irrigation window
 ! !USES: 
   use ESMF
   use LIS_coreMod
@@ -172,6 +172,8 @@ contains
 
     integer             :: tmpval
 
+    real                 :: timestep, shift_otimes, shift_otimee
+
     allocate(irrigAmt(LIS_rc%npatch(n,LIS_rc%lsm_index)))
     call ESMF_StateGet(irrigState,&
          "Irrigation rate",&
@@ -195,6 +197,15 @@ contains
          'ESMF_FieldGet failed for rainf in sprinkler_irrigation')
 
     irrigAmt = 0.0
+
+    timestep = LIS_rc%ts
+
+    ! Adjust bounds by timestep to account for the fact that LIS_rc%hr, etc. will
+    ! represents the END of the integration timestep window
+
+    shift_otimes = otimes + (timestep/3600.)
+    shift_otimee = otimee + (timestep/3600.)
+
     do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
        gid = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index
@@ -207,7 +218,7 @@ contains
        if(lhr.lt.0) lhr = lhr+24
        
        ltime = real(lhr)+real(LIS_rc%mn)/60.0+real(LIS_rc%ss)/3600.0
-       if((ltime.ge.otimes).and.(ltime.lt.otimee)) then           
+       if((ltime.ge.shift_otimes).and.(ltime.lt.shift_otimee)) then           
           tmpval = LIS_domain(n)%tile(t)%index
           prcp(t)=prcp(t)+irrigRate(t)
           irrigAmt(t) = irrigRate(t)

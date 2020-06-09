@@ -164,7 +164,9 @@ Acceptable values are:
 |Noah.3.2    | Noah version 3.2
 |Noah.3.3    | Noah version 3.3
 |Noah.3.6    | Noah version 3.6
-|NoahMP.3.6  | Noah-MP version 3.6
+|Noah.3.9    | Noah version 3.9
+|Noah-MP.3.6 | Noah-MP version 3.6
+|Noah-MP.4.0.1 | Noah-MP version 4.0.1
 |RUC.3.7     | RUC version 3.7
 |CLM.2       | CLM version 2.0
 |VIC.4.1.1   | VIC version 4.1.1
@@ -293,6 +295,7 @@ Acceptable values for the sources are:
 |"`GDAS`"                      | GDAS
 |"`GEOS`"                      | GEOS
 |"`GEOS5 forecast`"            | GEOS5 Forecast
+|"`GEFS forecast`"             | GEFS Forecast
 |"`ECMWF`"                     | ECMWF
 |"`GSWP1`"                     | GSWP1
 |"`GSWP2`"                     | GSWP2
@@ -963,11 +966,12 @@ Halo size along y: 0
 Acceptable values are:
 
 |====
-|Value            | Description
+|Value             | Description
 
-|none             | do not use a routing model
-|"`NLDAS router`" | use the NLDAS router
-|"`HYMAP router`" | use the HyMAP router
+|none              | do not use a routing model
+|"`NLDAS router`"  | use the NLDAS router
+|"`HYMAP router`"  | use the HyMAP router
+|"`HYMAP2 router`" | use the HyMAP2 router
 |====
 
 
@@ -1141,7 +1145,6 @@ endif::devonly[]
 |"`Windsat`"                    | Windsat
 ifdef::devonly[]
 |"`Windsat C-band`"             | Windsat C-band
-|"`SNODEP`"                     | AFWA SNODEP
 |"`ANSA SWE`"                   | ANSA SWE
 endif::devonly[]
 |"`ANSA SCF`"                   | ANSA SCF
@@ -1161,9 +1164,13 @@ endif::devonly[]
 |"`GCOMW AMSR2 L3 snow depth`"  | AMSR2 (GCOMW) L3 snow depth
 |"`GCOMW AMSR2 L3 soil moisture`" | AMSR2 (GCOMW) soil moisture
 |"`SMAP(NASA) soil moisture`"   | NASA SMAP soil moisture
+|"`SMAP(NRT) soil moisture`"    | Near-real time SMAP soil moisture
 |"`PILDAS SM`"                  | PILDAS soil moisture
 |"`SMOS L2 soil moisture`"      | SMOS L2 soil moisture
 |"`SMOS(NESDIS) soil moisture`" | NESDIS SMOS soil moisture
+|"`SNODEP`"                     | AFWA SNODEP
+|"`USAFSI`"                     | USAF Snow and Ice Analysis
+|"`SMAP(NASA) vegetation optical depth`"  | NASA L-band vegetation optical depth 
 |====
 
 .Example _lis.config_ entry
@@ -1979,8 +1986,6 @@ WindSat C-band number of bins in the CDF: 100
 endif::devonly[]
 
 
-ifdef::devonly[]
-
 ==== SNODEP Assimilation
 anchor:sssec_snodepda[SNODEP Assimilation]
 
@@ -2007,8 +2012,23 @@ SNODEP data directory:                  ./FORCING/AFWA1
 SNODEP mesh resolution:                 8
 SNODEP naming convention:               LIS
 ....
-endif::devonly[]
 
+
+==== USAFSI Assimilation
+anchor:sssec_usafsida[USAFSI Assimilation]
+
+`USAFSI data directory:` specifies the directory for the
+USAFSI data.
+
+`USAFSI netcdf filename prefix:` specifies the prefix of 
+the USAFSI dataset. If prefix is "usafsi", file name will 
+be "usafsi_yyyymmddhh.nc."
+
+.Example _lis.config_ entry
+....
+USAFSI data directory:                  ./FORCING/USAFSI
+USAFSI netcdf filename prefix:         usafsi
+....
 
 ifdef::devonly[]
 
@@ -2564,6 +2584,20 @@ name of the observation CDF file.
 `SMOPS ASCAT soil moisture number of bins in the CDF:` specifies the
 number of bins in the CDF.
 
+`SMOPS ASCAT CDF read option:` specifies whether to read all months of
+or to read month by month from a monthly CDF file.
+
+Acceptable values are:
+
+|====
+|Value    | Description
+
+|0 | Read all months
+|1 | Read month by month
+|====
+
+NOTE: Select 0 for yearly CDF data.
+
 `SMOPS ASCAT use realtime data:` specifies whether to use
 the 6 hour data feed instead of the daily data feed.
 Acceptable values are:
@@ -2644,6 +2678,7 @@ then you may specify their version with either '1.3', '2.0', or '3.0'.
 SMOPS ASCAT soil moisture data directory:       'input'
 SMOPS ASCAT model CDF file:                      lsm_cdf.nc
 SMOPS ASCAT observation CDF file:                obs_cdf.nc
+SMOPS ASCAT CDF read option:                     0
 SMOPS ASCAT soil moisture number of bins in the CDF: 100
 SMOPS ASCAT use realtime data: 0
 SMOPS ASCAT soil moisture use scaled standard deviation model: 1
@@ -2955,6 +2990,19 @@ CDF file.
 `SMAP(NASA) soil moisture number of bins in the CDF:` specifies the number of
 bins in the CDF.
 
+`SMAP(NASA) CDF read option:` specifies whether to read all months of
+or to read month by month from a monthly CDF file.
+
+Acceptable values are:
+
+|====
+|Value    | Description
+
+|0 | Read all months
+|1 | Read month by month
+|====
+
+NOTE: Select 0 for yearly CDF data.
 
 .Example _lis.config_ entry
 ....
@@ -2964,8 +3012,104 @@ SMAP(NASA) soil moisture use scaled standard deviation model:
 SMAP(NASA) model CDF file:
 SMAP(NASA) observation CDF file:
 SMAP(NASA) soil moisture number of bins in the CDF:
+SMAP(NASA) CDF read option:
 ....
 
+
+==== SMAP (NRT) soil moisture assimilation
+anchor:sssec_smapnrtsmda[SMAP (NRT) soil moisture assimilation]
+
+`SMAP(NRT) soil moisture data directory:` specifies the SMAP(NRT) soil
+moisture data directory
+
+`SMAP(NRT) soil moisture apply SMAP QC flags:` specifies whether to apply
+SMAP QC flags.
+
+NOTE: This is no longer used.  Set it to 0.
+
+`SMAP(NRT) soil moisture use scaled standard deviation model:` specifies
+whether the observation error standard deviation is to be scaled using model
+and observation standard deviation.
+
+`SMAP(NRT) model CDF file:` specifies the name of the model CDF file
+(observations will be scaled into this climatology).
+
+`SMAP(NRT) observation CDF file:` specifies the name of the observation
+CDF file.
+
+`SMAP(NRT) soil moisture number of bins in the CDF:` specifies the number of
+bins in the CDF.
+
+`SMAP(NRT) CDF read option:` specifies whether to read all months of
+or to read month by month from a monthly CDF file.
+
+Acceptable values are:
+
+|====
+|Value    | Description
+
+|0 | Read all months
+|1 | Read month by month
+|====
+
+NOTE: Select 0 for yearly CDF data.
+
+.Example _lis.config_ entry
+....
+SMAP(NRT) soil moisture data directory:
+SMAP(NRT) soil moisture apply SMAP QC flags:
+SMAP(NRT) soil moisture use scaled standard deviation model:
+SMAP(NRT) model CDF file:
+SMAP(NRT) observation CDF file:
+SMAP(NRT) soil moisture number of bins in the CDF:
+SMAP(NRT) CDF read option:
+....
+
+
+==== SMAP (NASA) vegetation optical depth assimilation
+anchor:sssec_smapnasavodda[SMAP (NASA) vegetation optical depth assimilation]
+
+`SMAP(NASA) vegetation optical depth data directory:` specifies the SMAP(NASA) vegetation 
+optical depth data directory
+
+`SMAP(NASA) vegetation optical depth data designation:`  specifies the 
+designation of the SMAP VOD data 
+
+Acceptable values are:
+
+|====
+|Value    | Description
+
+|SPL2SMP    | Level2 passive VOD data
+|SPL2SMP_E  | Level2 oversampled passive VOD data 
+|====
+
+`SMAP(NASA) vegetation optial depth use scaled standard deviation model:` specifies
+whether the observation error standard deviation is to be scaled using model
+and observation standard deviation.
+
+`SMAP(NASA) vegetation optial depth apply SMAP QC flags:` specifies
+whether to employ the standard SMAP QC flags to screen VOD data 
+
+`SMAP(NASA) reference LAI CDF file:` specifies the name of the reference LAI CDF file
+(observations will be scaled into this climatology).
+
+`SMAP(NASA) vegetation optical depth observation CDF file:` specifies the name of the observation VOD
+CDF file.
+
+`SMAP(NASA) vegetation optical depth number of bins in the CDF:` specifies the number of
+bins in the CDF.
+
+.Example _lis.config_ entry
+....
+SMAP(NASA) vegetation optical depth data directory:    
+SMAP(NASA) vegetation optical depth data designation:  
+SMAP(NASA) vegetation optical depth use scaled standard deviation model: 
+SMAP(NASA) vegetation optical depth apply SMAP QC flags:                 
+SMAP(NASA) reference LAI CDF file:          
+SMAP(NASA) vegetation optical depth observation CDF file:
+SMAP(NASA) vegetation optical depth number of bins in the CDF: 
+....
 
 ==== SMOS (NESDIS) soil moisture assimilation
 anchor:sssec_smosnesdissmda[SMOS (NESDIS) soil moisture assimilation]
@@ -4522,7 +4666,7 @@ MODIS real-time LAI files.
 
 .Example _lis.config_ entry
 ....
-MODIS LAI data directory:
+MODIS RT LAI data directory:
 ....
 
 
@@ -4794,6 +4938,27 @@ Acceptable values are:
 
 |GFS    | use GFS data
 |GALWEM | use UK Unified Model (GALWEM) data
+|====
+
+`AGRMET GALWEM nominal resolution (km):` specifies the nominal horizontal
+resolution of the GALWEM GRIB2 data in kilometers.
+Acceptable values are:
+
+|====
+|Value  | Description
+
+|17     | 17-km (long-time operational resolution at USAF)
+|10     | 10-km (proposed operational resolution upgrade for 2020)
+|====
+
+`AGRMET GFS filename version:` specifies which filename version convention
+is used for the GFS GRIB files.
+Acceptable values are:
+
+|====
+|Value  | Description
+|1      | Example: MT.avn_CY.00_fh.0000_tl.press_gr.0p5deg
+|2      | Example: PS.NCEP_SC.U_DI.A_DC.GRID_GP.GFS_SP.SIMPLE_GR.C0P5DEG_AR.GLOBAL_PA.GFS_DD.20200213_CY.00_FH.000_DF.GR2
 |====
 
 `AGRMET analysis directory:` specifies the location where temporary
@@ -5459,6 +5624,18 @@ Acceptable values are:
 |1     | Use the lowest model level forcing.
 |====
 
+`MERRA2 use 2m wind fields:` specifies whether to use the 
+2m diagnosed wind fields. This option will only work if the 
+lowest model level forcing option is turned off.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use the 2m diagnosed wind speed fields.
+|1     | Use the 2m diagnosed wind speed fields.
+|====
+
 `MERRA2 use corrected total precipitation:` specifies whether
 to use the bias corrected total precipitation.
 Acceptable values are:
@@ -5473,7 +5650,8 @@ Acceptable values are:
 .Example _lis.config_ entry
 ....
 MERRA2 forcing directory:              ./MERRA2/
-MERRA2 use lowest model level forcing:     1 
+MERRA2 use lowest model level forcing:     1
+MERRA2 use 2m wind fields:                 0 
 MERRA2 use corrected total precipitation:  1
 ....
 
@@ -5812,15 +5990,21 @@ anchor:sssec_supp_imerg[IMERG precipitation]
 `IMERG forcing directory:` specifies the location of the
 GPM IMERG precipitation forcing files.
 
-'IMERG version:' specifies the version of the GPM IMERG 
+'IMERG product:' specifies the product of the GPM IMERG 
 precipitation forcing files. The valid options are: early,
 late, and final. If no version is specified, the reader will
-default to the 'final' version of GPM IMERG. 
+default to the 'final' product of GPM IMERG. 
+
+'IMERG version:' specifies the version of the GPM IMERG
+precipitation forcing files. If no version is specified, 
+the reader will default to the latest version of GPM IMERG.
+(Currently V06B).
 
 .Example _lis.config_ entry
 ....
 IMERG forcing directory:     ./FORCING/IMERG
-IMERG version: 'final'
+IMERG product: 'final'
+IMERG version: 'V06B'
 ....
 
 
@@ -6063,6 +6247,43 @@ GEOS5 forecast forcing number of ensemble members:   11
 ....
 
 
+==== GEFS Forecast
+anchor:sssec_gefsforecast[GEFS forecast]
+
+`GEFS forecast directory:` specifies the location
+of the GEFS forecast forcing files.
+
+`GEFS forecast type:` specifies the GEFS forecast
+product type, which can either be Reforecast2 or Operational.
+Currently, only the Reforecast2 product is supported.
+
+`GEFS forecast run mode:` specifies the run mode related
+to the GEFS dataset, which can either be forecast or analysis
+run mode. Currently, only the forecast mode is supported.
+
+`GEFS forecast grid projection:` specifies the GEFS forecast
+product grid projection, which can either be latlon or gaussian.
+Currently only latlon is supported.
+
+`GEFS pressure level field:` specifies the GEFS pressure
+level field, which can either be surface (default setting in LIS)
+or mean sea level (msl) can be selected (which is not supported yet).
+
+`GEFS forecast number of ensemble members:` specifies the number
+of GEFS ensemble members being read in. Reforecast2 currently
+supports up to a 11 members.
+
+.Example _lis.config_ entry
+....
+GEFS forecast directory:        ./MET_FORCING/GEFS/Reforecast/
+GEFS forecast type:              Reforecast2      # Reforecast2 | Operational
+GEFS forecast run mode:          forecast         # forecast | analysis
+GEFS forecast grid projection:   latlon           # latlon | gaussian
+GEFS pressure level field:       surface          # surface | msl
+GEFS forecast number of ensemble members:  11
+....
+
+
 ==== Generic Ensemble Forecast Reader
 anchor:sssec_genensfcst[GenEnsFcst]
 
@@ -6125,9 +6346,22 @@ anchor:sssec_bondville[Bondville]
 `Bondville forcing file:` specifies the location of the
 Bondville forcing file.
 
+`Bondville Noah-MP-4.0.1 forcing:` specifies the version
+of the Bondville forcing to be used.  This option sets the
+formatting read statements for the ASCII forcing file.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Use the Noah-3.X version of the Bondville forcing
+|1     | Use the Noah-MP-4.0.1 version of the Bondville forcing from HRLDAS
+|====
+
 .Example _lis.config_ entry
 ....
-Bondville forcing file:
+Bondville forcing file:              ./bondville.dat
+Bondville Noah-MP-4.0.1 forcing:     1
 ....
 
 
@@ -6430,6 +6664,27 @@ anchor:sssec_gdast1534forcing[GDAS T1534]
 .Example _lis.config_ entry
 ....
 `GDAS T1534 forcing directory:`
+....
+
+==== MRMS
+anchor:sssec_mrmsforcing[MRMS]
+
+`MRMS forcing directory:` specifies the location of the MRMS metforcing data.
+
+`MRMS masking:` specifies whether to use a monthly-varying mask for where MRMS
+data are considered acceptable to the user. (1=Yes 0=No)
+
+`MRMS mask threshold:` specifies Radar Quality Index value (on scale of 0-100)
+above which to use MRMS data and below which to use a different forcing.
+
+`MRMS mask directory:` specifies the location of the MRMS mask files.
+
+.Example _lis.config_ entry
+....
+MRMS forcing directory:
+MRMS masking: 1
+MRMS mask threshold: 60.0
+MRMS mask directory: ./input/MASKS/
 ....
 
 
@@ -7138,6 +7393,11 @@ height in meters of air temperature and specific humidity observations.
 `Noah.3.6 reference height for forcing u and v:` specifies the
 height in meters of u and v wind forcings.
 
+`Noah.3.6 removal of residual snow fix:` specifies whether or not
+a snow fix is used (1 - fix is active, 0 - inactive). The land-surface
+model was found to keep very small amounts of snow in rare cases. This
+fix zeros out snow values that are under a predetermined threshold.
+
 .Example _lis.config_ entry
 ....
 Noah.3.6 model timestep:                  15mn
@@ -7180,6 +7440,205 @@ Noah.3.6 background albedo:   0.18  0.17  0.16  0.15  0.15  0.15  0.15  0.16  0.
 Noah.3.6 background roughness length: 0.020 0.020 0.025 0.030 0.035 0.036 0.035 0.030 0.027 0.025 0.020 0.020
 Noah.3.6 reference height for forcing T and q:   2.0      # (m) - negative=use height from forcing data
 Noah.3.6 reference height for forcing u and v:  10.0      # (m) - negative=use height from forcing data
+Noah.3.6 removal of residual snow fix: 0
+....
+
+
+==== NCAR's Noah-3.9
+anchor:sssec_lsm_noah39[NCAR's Noah-3.9]
+
+`Noah.3.9 model timestep:` specifies the timestep for the run.
+
+`Noah.3.9 restart output interval:` defines the restart
+writing interval for Noah-3.9. The typical value used in the
+LIS runs is 24 hours (1da).
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`Noah.3.9 restart file:` specifies the Noah-3.9 active
+restart file.
+
+`Noah.3.9 restart file format:` specifies the Noah-3.9 active
+restart file format (default = netcdf).
+
+`Noah.3.9 vegetation parameter table:` specifies the
+Noah-3.9 static vegetation parameter table file.
+
+`Noah.3.9 soil parameter table:` specifies the
+Noah-3.9 soil parameter file.
+
+`Noah.3.9 general parameter table:` specifies the
+Noah-3.9 general parameter file.
+
+`Noah.3.9 use PTF for mapping soil properties:` specifies if
+pedotransfer functions are to be used for mapping soil properties
+(0-do not use, 1-use).
+
+`Noah.3.9 soils scheme:` specifies the soil mapping scheme used.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|1     | Zobler
+|2     | STATSGO
+|====
+ 
+`Noah.3.9 number of soil layers:` specifies the number of
+soil layers. The typical value used in Noah is 4.
+
+`Noah.3.9 layer thicknesses:` specifies the thickness (in meters)
+of each of the Noah-3.9 soil layers (top layer to bottom layer).
+If the number of soil layers and thicknesses change from the typical
+4 layers with thicknesses of 0.1, 0.3, 0.6, and 1.0 meters, users
+should change the values of NROOT for each vegetation type to map
+the number of layers with roots for transpiration in their own
+custom VEGPARM.TBL parameter file.
+
+`Noah.3.9 use distributed soil depth map:` specifies whether
+to use a distributed soil depth map. Defaults to 0.
+
+`Noah.3.9 use distributed root depth map:` specifies whether
+to use a distributed root depth map. Defaults to 0.
+
+`Noah.3.9 initial skin temperature:` specifies the initial
+skin temperature in Kelvin used in the cold start runs.
+
+`Noah.3.9 initial soil temperatures:` specifies the initial
+soil temperature (for all layers, top to bottom) in Kelvin
+used in the cold start runs.
+
+`Noah.3.9 initial total soil moistures:` specifies the initial
+total volumetric soil moistures (for all layers, top to bottom)
+used in the cold start runs.  (units stem:[\frac{m^3}{m^3}])
+
+`Noah.3.9 initial liquid soil moistures:` specifies the initial
+liquid volumetric soil moistures (for all layers, top to bottom)
+used in the cold start runs.  (units stem:[\frac{m^3}{m^3}])
+
+`Noah.3.9 initial canopy water:` specifies the initial
+canopy water (m).
+
+`Noah.3.9 initial snow depth:` specifies the initial
+snow depth (m).
+
+`Noah.3.9 initial snow equivalent:` specifies the initial
+snow water equivalent (m).
+
+`Noah.3.9 fixed max snow albedo:` specifies a fixed maximum
+snow albedo (fraction, 0.0 to 1.0) for all grid points.
+This value will only be used if "`fixed`" is chosen for
+`Max snow albedo data source`.
+
+`Noah.3.9 fixed deep soil temperature:` specifies a fixed
+deep soil temperature (Kelvin) for all grid points.  Entering
+a value of 0.0 will have the code use the deep soil temperature
+from the LDT-generated `LIS domain and parameter data file`.
+
+`Noah.3.9 fixed vegetation type:` specifies a fixed
+vegetation type index for all grid points.  Entering a value
+of 0 will not fix the vegetation types, and the code will use
+the `Landcover data source` information instead.
+
+`Noah.3.9 fixed soil type:` specifies a fixed soil
+type index for all grid points.  Entering a value of 0
+will not fix the soil types, and the code will use the
+`Soil texture data source` information instead.
+
+`Noah.3.9 fixed slope type:` specifies a fixed slope
+type index for all grid points.  Entering a value of 0 will
+not fix the slope index types, and the code will use the
+`Slope data source` information instead.
+
+`Noah.3.9 sfcdif option:` specifies whether to use the updated
+SFCDIF routine in Noah-3.9, or to use the previous SFCDIF routine.
+The typical option is to use the updated SFCDIF routine (option = 1).
+
+`Noah.3.9 z0 veg-type dependence option:` specifies whether
+to use the vegetation type dependent roughness height option
+on the CZIL parameter in the SFCDIF routine.  The typical
+option in Noah-3.9 is not use this dependence (option = 0).
+
+`Noah.3.9 Run UA snow-physics option:` specifies whether
+to run the University of Arizona (UA) snow-physics option.
+Either "`.true.`" or "`.false.`" should be selected.  If
+"`.true.`" is given, then the UA snow-physics will be run.
+If "`.false.`" is given, then the standard Noah snow-physics
+will be run instead.
+
+`Noah.3.9 greenness fraction:` specifies a monthly (January
+to December) greenness vegetation fraction for all grid points.
+These values are used only if the `Greenness data source`
+option is set to "`none`".
+
+`Noah.3.9 background albedo:` specifies a monthly background
+(snow-free) albedo for all grid points.  These values are
+only used for an initial condition calculation, and only
+if the `Albedo data source` option is set to "`none`".
+After the first timestep, these values are not used.
+
+`Noah.3.9 background roughness length:` specifies a monthly
+background (snow-free) roughness length.  These values are
+used only for an initial condition calculation and are not
+used after the first timestep.
+
+`Noah.3.9 reference height for forcing T and q:` specifies the
+height in meters of air temperature and specific humidity observations.
+
+`Noah.3.9 reference height for forcing u and v:` specifies the
+height in meters of u and v wind forcings.
+
+`Noah.3.9 thermal conductivity option:` specifies the option
+for the soil thermal conductivity calculation metho for soil
+type 3 (sandy loam) and for soil type 4 (silt loam).  This
+option was added based on the results in Massey et al.
+(2014, JAMC).  1 = original calculation; 2 = new calculation,
+but only for soil texture classes 3 and 4; all other texture
+classes still use the original calculation.
+
+`Noah.3.9 FASDAS option (0 or 1):` specifies the FASDAS
+(Flux Adjusting Surface Data Assimilation System) option.
+0 = do not use; 1 = use.  Option 1 is not currently
+supported in LIS.
+
+.Example _lis.config_ entry
+....
+Noah.3.9 model timestep:                  15mn
+Noah.3.9 restart output interval:         1da
+Noah.3.9 restart file:                    none
+Noah.3.9 restart file format:             netcdf
+Noah.3.9 vegetation parameter table:      ./input/LS_PARAMETERS/noah36_parms/VEGPARM.TBL
+Noah.3.9 soil parameter table:            ./input/LS_PARAMETERS/noah36_parms/SOILPARM.orig
+Noah.3.9 general parameter table:         ./input/LS_PARAMETERS/noah36_parms/GENPARM.TBL
+Noah.3.9 use PTF for mapping soil properties: 0
+Noah.3.9 soils scheme:                    1      # 1-Zobler; 2-STATSGO
+Noah.3.9 number of soil layers:           4
+Noah.3.9 layer thicknesses:               0.1  0.3  0.6  1.0
+Noah.3.9 use distributed soil depth map:  0
+Noah.3.9 use distributed root depth map:  0
+Noah.3.9 initial skin temperature:        290.0000                                 # Kelvin
+Noah.3.9 initial soil temperatures:       290.0000  290.0000  290.0000  290.0000   # Kelvin
+Noah.3.9 initial total soil moistures:    0.2000000 0.2000000 0.2000000 0.2000000  # volumetric (m3 m-3)
+Noah.3.9 initial liquid soil moistures:   0.2000000 0.2000000 0.2000000 0.2000000  # volumetric (m3 m-3)
+Noah.3.9 initial canopy water:            0.0                                      # depth (m)
+Noah.3.9 initial snow depth:              0.0                                      # depth (m)
+Noah.3.9 initial snow equivalent:         0.0                                      # also known swe - depth (m)
+Noah.3.9 fixed max snow albedo:           0.0                                      # fraction; 0.0 - do not fix
+Noah.3.9 fixed deep soil temperature:     0.0                                      # Kelvin; 0.0 - do not fix
+Noah.3.9 fixed vegetation type:           0                                        # 0 - do not fix
+Noah.3.9 fixed soil type:                 0                                        # 0 - do not fix
+Noah.3.9 fixed slope type:                0                                        # 0 - do not fix
+Noah.3.9 sfcdif option:                   1      # 0 - previous SFCDIF; 1 - updated SFCDIF
+Noah.3.9 z0 veg-type dependence option:   0      # 0 - off; 1 - on; dependence of CZIL in SFCDIF
+Noah.3.9 Run UA snow-physics option:   .false.   # ".true." or ".false"
+Noah.3.9 greenness fraction:  0.01  0.02  0.07  0.17  0.27  0.58  0.93  0.96  0.65  0.24  0.11  0.02
+Noah.3.9 background albedo:   0.18  0.17  0.16  0.15  0.15  0.15  0.15  0.16  0.16  0.17  0.17  0.18
+Noah.3.9 background roughness length: 0.020 0.020 0.025 0.030 0.035 0.036 0.035 0.030 0.027 0.025 0.020 0.020
+Noah.3.9 reference height for forcing T and q:   20.0      # (m) - negative=use height from forcing data
+Noah.3.9 reference height for forcing u and v:   20.0      # (m) - negative=use height from forcing data
+Noah.3.9 thermal conductivity option:     1
+Noah.3.9 FASDAS option (0 or 1):          0
 ....
 
 
@@ -7409,7 +7868,7 @@ Noah-MP-3.6 LSM initial wetted or snowed fraction of canopy.
 `Noah-MP.3.6 initial intercepted liquid water:` specifies the
 Noah-MP-3.6 LSM initial intercepted liquid water (mm).
 
-`oah-MP.3.6 initial intercepted ice mass:` specifies the Noah-MP-3.6 LSM
+`Noah-MP.3.6 initial intercepted ice mass:` specifies the Noah-MP-3.6 LSM
 initial intercepted ice mass (mm).
 
 `Noah-MP.3.6 initial vegetation temperature:` specifies the Noah-MP-3.6
@@ -7562,6 +8021,369 @@ Noah-MP.3.6 initial recharge to or from the water table when deep:              
 Noah-MP.3.6 initial recharge to or from the water table when shallow:               0.0
 Noah-MP.3.6 initial reference height of temperature and humidity:                  10.0
 Noah-MP.3.6 soil moisture CDF file:
+....
+
+
+==== Noah-MP-4.0.1
+anchor:sssec_lsm_noahmp401[Noah-MP-4.0.1]
+ 
+`Noah-MP.4.0.1 model timestep:` specifies the timestep for the
+Noah-MP-4.0.1 LSM.
+ 
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`Noah-MP.4.0.1 restart output interval:` specifies the restart output
+interval for the Noah-MP-4.0.1 LSM.
+ 
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+ 
+`Noah-MP.4.0.1 restart file:` specifies the Noah-MP-4.0.1 LSM restart file.
+ 
+`Noah-MP.4.0.1 restart file format:` specifies the Noah-MP-4.0.1 restart
+file format (default = netcdf).
+ 
+`Noah-MP.4.0.1 soil parameter table:` specifies the filename of the
+Noah-MP-4.0.1 soil parameter table.
+ 
+`Noah-MP.4.0.1 general parameter table:` specifies the filename of the
+Noah-MP-4.0.1 general parameter table.
+ 
+`Noah-MP.4.0.1 MP parameter table:` specifies the filename of the
+Noah-MP-4.0.1 multi-physics parameter table.
+ 
+`Noah-MP.4.0.1 number of soil layers:` specifies the number of soil layers
+for Noah-MP-4.0.1 soil moisture/temperature.
+ 
+`Noah-MP.4.0.1 thickness of soil layers:` specifies the thicknesses of the
+individual Noah-MP-4.0.1 LSM layers.  The first number is the thickness
+of the top soil layer, and the following numbers are the thicknesses of
+each soil layer going down.  If the number of soil layers and thicknesses
+change from the typical 4 layers with thicknesses of 0.1, 0.3, 0.6, and
+1.0 meters, users should change the values of NROOT for each vegetation
+type to map the number of layers with roots for transpiration in their
+own custom MPTABLE.TBL parameter file.
+ 
+`Noah-MP.4.0.1 dynamic vegetation option:` specifies the dynamic vegetation
+model option for Noah-MP-4.0.1 LSM.  Options generally recommended for use
+by the model developers are indicated with [**].  Options not yet supported
+in the LIS implementation are indicated with [NS].  Acceptable values are:
+
+|====
+|Value | Note | Description
+ 
+| 1    |      | off (use table LAI; use FVEG = SHDFAC from input)
+| 2    |      | on  (dynamic vegetation; must use Ball-Berry canopy option)
+| 3    |      | off (use table LAI; calculate FVEG)
+| 4    |  **  | off (use table LAI; use maximum vegetation fraction)
+| 5    |  **  | on  (use maximum vegetation fraction)
+| 6    |      | on  (use FVEG = SHDFAC from input)
+| 7    |      | off (use input LAI; use FVEG = SHDFAC from input)
+| 8    |      | off (use input LAI; calculate FVEG)
+| 9    |      | off (use input LAI; use maximum vegetation fraction)
+|10    |  NS  | crop model on (use maximum vegetation fraction)
+|====
+ 
+`Noah-MP.4.0.1 canopy stomatal resistance option:` specifies the canopy
+stomatal resistance option for Noah-MP-4.0.1 LSM.  Options generally
+recommended for use by the model developers are indicated with [**].
+Acceptable values are:
+ 
+|====
+|Value | Note | Description
+ 
+| 1    |  **  | Ball-Berry
+| 2    |      | Jarvis
+|====
+ 
+`Noah-MP.4.0.1 soil moisture factor for stomatal resistance:`
+specifies the soil moisture factor for stomatal resistance option
+for Noah-MP-4.0.1 LSM.  Options generally recommended for use by the
+model developers are indicated with [**].  Acceptable values are:
+ 
+|====
+|Value | Note | Description
+ 
+| 1    |  **  | Noah (soil moisture)
+| 2    |      | CLM  (matric potential)
+| 3    |      | SSiB (matric potential)
+|====
+ 
+`Noah-MP.4.0.1 runoff and groundwater option:` specifies the runoff and
+groundwater option for Noah-MP-4.0.1 LSM.  Options generally recommended
+for use by the model developers are indicated with [**].  Options not yet
+supported in the LIS implementation are indicated with [NS].  Acceptable
+values are:
+ 
+|====
+|Value | Note | Description
+ 
+| 1    |  **  | SIMGM: TOPMODEL with groundwater (Niu et al. 2007 JGR)
+| 2    |      | SIMTOP: TOPMODEL with an equilibrium water table (Niu et al. 2005 JGR)
+| 3    |      | Noah original surface and subsurface runoff (free drainage) (Schaake 1996)
+| 4    |      | BATS surface and subsurface runoff (free drainage)
+| 5    |  NS  | Miguez-Macho&Fan groundwater scheme (Miguez-Macho et al. 2007 JGR; Fan et al. 2007 JGR)
+|====
+ 
+`Noah-MP.4.0.1 surface layer drag coefficient option:` specifies the
+surface layer drag coefficient option for Noah-MP-4.0.1 LSM.  Options
+generally recommended for use by the model developers are indicated
+with [**].  Acceptable values are:
+ 
+|====
+|Value | Note | Description
+
+| 1    |  **  | Monin-Obukhov
+| 2    |  **  | original Noah (Chen 1997)
+|====
+
+`Noah-MP.4.0.1 supercooled liquid water option:` specifies the supercooled
+liquid water option for Noah-MP-4.0.1 LSM.  Options generally recommended
+for use by the model developers are indicated with [**].  Acceptable values
+are:
+
+|====
+|Value | Note | Description
+ 
+| 1    |  **  | no iteration (Niu and Yang, 2006 JHM)
+| 2    |      | Koren's iteration (1999)
+|====
+ 
+`Noah-MP.4.0.1 frozen soil permeability option:` specifies the frozen soil
+permeability option for Noah-MP-4.0.1 LSM.  Options generally recommended
+for use by the model developers are indicated with [**].  Acceptable values
+are:
+ 
+|====
+|Value | Note | Description
+ 
+| 1    |  **  | linear effects, more permeable (Niu and Yang, 2006, JHM)
+| 2    |      | nonlinear effects, less permeable (Koren 1999)
+|====
+ 
+`Noah-MP.4.0.1 radiation transfer option:` specifies the radiation
+transfer option for Noah-MP-4.0.1 LSM.  Options generally recommended
+for use by the model developers are indicated with [**].  Acceptable
+values are:
+ 
+|====
+|Value | Note | Description
+ 
+| 1    |      | modified two-stream (gap = F(solar angle, 3D structure ...)<1-FVEG)
+| 2    |      | two-stream applied to grid-cell (gap = 0)
+| 3    |  **  | two-stream applied to vegetated fraction (gap=1-FVEG)
+|====
+ 
+`Noah-MP.4.0.1 snow surface albedo option:` specifies the snow surface
+albedo option for Noah-MP-4.0.1 LSM.  Options generally recommended
+for use by the model developers are indicated with [**].  Acceptable
+values are:
+
+|====
+|Value | Note | Description
+
+| 1    |      | BATS
+| 2    |  **  | CLASS
+|====
+
+`Noah-MP.4.0.1 rainfall & snowfall option:` specifies the option for
+partitioning precipitation into rainfall and snowfall for Noah-MP-4.0.1
+LSM.  Options generally recommended for use by the model developers are
+indicated with [**].  Options not yet supported in the LIS implementation
+are indicated with [NS].  Acceptable values are:
+
+|====
+|Value | Note | Description
+
+| 1    |  **  | Jordan (1991)
+| 2    |      | BATS: when SFCTMP<TFRZ+2.2
+| 3    |      | Noah: when SFCTMP<TFRZ
+| 4    |  NS  | Use WRF microphysics output
+|====
+
+`Noah-MP.4.0.1 lower boundary of soil temperature option:` specifies
+the lower boundary condition of soil temperature option for Noah-MP-4.0.1
+LSM.  Options generally recommended for use by the model developers are
+indicated with [**].  Acceptable values are:
+
+|====
+|Value | Note | Description
+
+| 1    |      | zero heat flux from bottom (ZBOT and TBOT not used)
+| 2    |  **  | TBOT at ZBOT (8m) read from a file (original Noah)
+|====
+
+`Noah-MP.4.0.1 snow&soil temperature time scheme option:` specifies
+the snow and soil temperature time scheme for Noah-MP-4.0.1 LSM.
+Options generally recommended for use by the model developers are
+indicated with [**].  Acceptable values are:
+
+|====
+|Value | Note | Description
+
+| 1    |  **  | semi-implicit; flux top boundary condition
+| 2    |      | fully implicit (original Noah); temperature top boundary condition
+| 3    |      | same as 1, but FSNO for TS calculation (generally improves snow; v3.7)
+|====
+
+`Noah-MP.4.0.1 glacier option:` specifies the glacier model option
+for Noah-MP-4.0.1 LSM.  Options generally recommended for use by
+the model developers are indicated with [**].  Acceptable values
+are:
+
+|====
+|Value | Note | Description
+
+| 1    |  **  | include phase change of ice
+| 2    |      | simple (ice treatment more like original Noah)
+|====
+
+`Noah-MP.4.0.1 surface resistance option:` specifies the surface
+resistance option for Noah-MP-4.0.1 LSM.  Options generally
+recommended for use by the model developers are indicated with
+[**].  Acceptable values are:
+
+|====
+|Value | Note | Description
+
+| 1    |  **  | Sakaguchi and Zeng, 2009 
+| 2    |      | Sellers (1992)
+| 3    |      | adjusted Sellers to decrease RSURF for wet soil
+| 4    |      | option 1 for non-snow; rsurf = rsurf_snow for snow (set in MPTABLE); AD v3.8
+|====
+
+`Noah-MP.4.0.1 soil configuration option:` specifies soil configuration
+option for defining soil properties for Noah-MP-4.0.1 LSM.  Options
+generally recommended for use by the model developers are indicated
+with [**].  Options not yet supported in the LIS implementation are
+indicated with [NS].  Acceptable values are:
+
+|====
+|Value | Note | Description
+
+| 1    |  **  | input dominant soil texture
+| 2    |  NS  | input soil texture varies that varies with depth
+| 3    |  NS  | use soil composition (sand, clay, orgm) and pedotransfer functions (OPT_PEDO)
+| 4    |  NS  | use input soil properties (BEXP_3D, SMCMAX_3D, etc.)
+|====
+
+`Noah-MP.4.0.1 soil pedotransfer function option:` specifies the soil
+pedotransfer function option for Noah-MP-4.0.1 LSM.  This option is
+only activated when the soil configuration option is set to 3.
+Acceptable values are:
+
+|====
+|Value | Note | Description
+
+| 1    |  **  | Saxton and Rawls (2006)
+|==== 
+
+`Noah-MP.4.0.1 crop model option:` specifies the crop model option
+for Noah-MP-4.0.1 LSM.  Options generally recommended for use by the
+model developers are indicated with [**].  Options not yet supported
+in the LIS implementation are indicated with [NS].  Accepted values
+are:
+
+|====
+|Value | Note | Description
+
+| 0    |  **  | No crop model
+| 1    |  NS  | Liu et al. 2016
+| 2    |  NS  | Gecros crop model; Yin and van Laar, 2005
+|====
+
+`Noah-MP.4.0.1 urban physics option:` specifies the urban physics
+option for Noah-MP-4.0.1 LSM.  Options generally recommended for use
+by the model developers are indicated with [**].   Accepted values
+are:
+
+|====
+|Value | Note | Description
+
+| 0    |  **  | No urban scheme
+| 1    |  NS  | Single-layer 
+| 2    |  NS  | Multi-layer BEP scheme
+| 3    |  NS  | Multi-layer BEM scheme
+|====
+
+`Noah-MP.4.0.1 reference height of temperature and humidity:`
+specifies the Noah-MP-4.0.1 LSM initial reference height of
+temperature and humidity (m).
+
+`Noah-MP.4.0.1 initial surface skin temperature:` specifies
+the Noah-MP-4.0.1 LSM initial surface skin temperature (K). 
+
+`Noah-MP.4.0.1 initial snow water equivalent:` specifies the
+Noah-MP-4.0.1 LSM initial snow water equivalent (mm).
+
+`Noah-MP.4.0.1 initial snow depth:` specifies the Noah-MP-4.0.1
+LSM initial snow depth (m).
+
+`Noah-MP.4.0.1 initial total canopy surface water:` specifies
+the Noah-MP-4.0.1 LSM initial total canopy surface water (mm).
+
+`Noah-MP.4.0.1 initial soil temperatures:` specifies the
+Noah-MP-4.0.1 LSM initial soil temperatures, one for each layer,
+with the first value for the top soil layer, then going down.
+ 
+`Noah-MP.4.0.1 initial total soil moistures:` specifies the
+Noah-MP-4.0.1 LSM initial total soil moistures, one for each layer,
+with the first value for the top soil layer, then going down.
+ 
+`Noah-MP.4.0.1 initial leaf area index:` specifies the
+Noah-MP-4.0.1 LSM initial leaf area index.
+ 
+`Noah-MP.4.0.1 initial water table depth:` specifies the
+Noah-MP-4.0.1 LSM initial depth to water table (m).
+ 
+`Noah-MP.4.0.1 initial water in the aquifer:` specifies the
+Noah-MP-4.0.1 LSM initial water storage in the aquifer (mm).
+ 
+`Noah-MP.4.0.1 initial water in aquifer and saturated soil:`
+specifies the Noah-MP-4.0.1 LSM initial water in the aquifer
+and in the saturated soil (mm).
+ 
+.Example _lis.config_ entry
+....
+Noah-MP.4.0.1 model timestep:                15mn
+Noah-MP.4.0.1 restart output interval:       1mo
+Noah-MP.4.0.1 restart file:                  none
+Noah-MP.4.0.1 restart file format:           netcdf
+Noah-MP.4.0.1 soil parameter table:          ./WRF-4.0.1/run/SOILPARM.TBL
+Noah-MP.4.0.1 general parameter table:       ./WRF-4.0.1/run/GENPARM.TBL
+Noah-MP.4.0.1 MP parameter table:            ./WRF-4.0.1/run/MPTABLE.TBL
+Noah-MP.4.0.1 number of soil layers:         4
+Noah-MP.4.0.1 thickness of soil layers:      0.1  0.3  0.6  1.0
+Noah-MP.4.0.1 dynamic vegetation option:                      4  # Up to 10 different options
+Noah-MP.4.0.1 canopy stomatal resistance option:              1  # 1=Ball-Berry; 2=Jarvis
+Noah-MP.4.0.1 soil moisture factor for stomatal resistance:   1  # 1=Noah; 2=CLM; 3=SSiB
+Noah-MP.4.0.1 runoff and groundwater option:                  3  # 1=SIMGM; 2=SIMTOP; 3=Schaake96; 4=BATS; 5=Miguez-Macho&Fan
+Noah-MP.4.0.1 surface layer drag coefficient option:          1  # 1=M-O; 2=Chen97
+Noah-MP.4.0.1 supercooled liquid water option:                1  # 1=NY06; 2=Koren99
+Noah-MP.4.0.1 frozen soil permeability option:                1  # 1=NY06; 2=Koren99
+Noah-MP.4.0.1 radiation transfer option:                      3  # 1=gap=F(3D;cosz); 2=gap=0; 3=gap=1-Fveg
+Noah-MP.4.0.1 snow surface albedo option:                     2  # 1=BATS; 2=CLASS
+Noah-MP.4.0.1 rainfall & snowfall option:                     1  # 1=Jordan91; 2=BATS; 3=Noah
+Noah-MP.4.0.1 lower boundary of soil temperature option:      2  # 1=zero-flux; 2=Noah
+Noah-MP.4.0.1 snow&soil temperature time scheme option:       1  # 1=semi-implicit; 2=fully implicit; 3=FSNO for TS
+Noah-MP.4.0.1 glacier option:                                 1  # 1=include phase change; 2=slab ice (Noah)
+Noah-MP.4.0.1 surface resistance option:                      1  # 1=Sakaguchi and Zeng 2009; 2=Sellers (1992); 3=adjusted Sellers; 4=option1 for non-snow and rsurf_snow for snow
+Noah-MP.4.0.1 soil configuration option:                      1  # 1=input dominant soil texture; 2=input soil texture varies that varies with depth; 3=soil composition and pedotransfer; 4=input soil properties 
+Noah-MP.4.0.1 soil pedotransfer function option:              1  # 1=Saxton and Rawls (2006) (used when soil_opt=3)
+Noah-MP.4.0.1 crop model option:                              0  # 0=No crop model; 1=Liu et al. 2016; 2=Gecros
+Noah-MP.4.0.1 urban physics option:                           0  # 0=No; 1=Single-layer; 2=Multi-layer BEP scheme; 3=Multi-layer BEM scheme
+Noah-MP.4.0.1 reference height of temperature and humidity: 6.0
+Noah-MP.4.0.1 initial surface skin temperature:           263.7
+Noah-MP.4.0.1 initial snow water equivalent:                1.0
+Noah-MP.4.0.1 initial snow depth:                          0.01
+Noah-MP.4.0.1 initial total canopy surface water:          0.01
+Noah-MP.4.0.1 initial soil temperatures:                  266.1  274.0  276.9  279.9
+Noah-MP.4.0.1 initial total soil moistures:               0.298  0.294  0.271  0.307
+Noah-MP.4.0.1 initial leaf area index:                      2.0
+Noah-MP.4.0.1 initial water table depth:                    2.5
+Noah-MP.4.0.1 initial water in the aquifer:                 4900.0
+Noah-MP.4.0.1 initial water in aquifer and saturated soil:  4900.0
 ....
 
 
@@ -8935,6 +9757,29 @@ location of the max root depth file for flood irrigation.
 `Drip irrigation max root depth file:` specifies the
 location of the max root depth file for drip irrigation.
 
+`Irrigation GVF parameter 1:` specifies growing season for
+irrigation in Noah-MP [set to 0.40 for Ozdogan et al. (2010)
+irrigation]
+
+`Irrigation GVF parameter 2:` specifies growing season for
+irrigation in Noah-MP [set to 0.00 for Ozdogan et al. (2010) 
+irrigation]
+
+In the original GVF threshold in the sprinkler irrigation scheme by Ozdogan et al. (2010), 
+a fraction of 0.4 was applied as part of the max-min seasonality in GVF. Nie et al. (2018) 
+added a dyanmic option. These two parameters and the GVF range allow the user to adjust
+the percentage of the irrigation cut-off so that areas of greater GVF range will have a 
+higher percentage cut-off and areas of lower GVF range will have a lower cut-off. In the 
+code, the irrigation threhold contains the term 
+(GVFparam1 + GVFparam2*(shdmax-shdmin))
+instead of a static value of 0.4. By using this equation, the user may adjust the cut-off 
+percentage as a function of GVF range (shdmax-shdmin).
+
+`Groundwater abstraction for irrigation:` specifies whether
+to withdraw water used for irrigation from the groundwater
+in Noah-MP
+1=Yes 0=No (default=0)
+
 .Example _lis.config_ entry
 ....
 Irrigation scheme:            "none"
@@ -8954,7 +9799,7 @@ anchor:ssec_routing[Routing]
 anchor:sssec_hymaprouting[HYMAP routing]
 
 `HYMAP routing model time step:` specifies the timestep for
-the run.
+the HyMAP router.
 
 See Section <<ssec_timeinterval>> for a description
 of how to specify a time interval.
@@ -8965,8 +9810,8 @@ writing interval for the HyMAP router.
 See Section <<ssec_timeinterval>> for a description
 of how to specify a time interval.
 
-`HYMAP run in ensemble mode:` specifies whether to run in
-ensemble mode.
+`HYMAP run in ensemble mode:` specifies whether to run the
+HyMAP router in ensemble mode.
 Acceptable values are:
 
 |====
@@ -8988,7 +9833,7 @@ Acceptable values are:
 |====
 
 `HYMAP routing model linear reservoir flag:` specifies whether to
-use model linear reservoir.
+use linear reservoirs in the HyMAP router.
 Acceptable values are:
 
 |====
@@ -8999,7 +9844,9 @@ Acceptable values are:
 |====
 
 `HYMAP routing model evaporation option:` specifies whether
-to compute evaporation in flood plains.
+to compute evaporation in flood plains in the HyMAP router.
+Note that the ability to calculate this evaporation is
+currently disabled in the HyMAP router code.
 Acceptable values are:
 
 |====
@@ -9009,15 +9856,15 @@ Acceptable values are:
 |2     | Do not compute evaporation in flood plains
 |====
 
-`HYMAP routing model start mode:` specifies if a restart mode is
-being used.
+`HYMAP routing model start mode:` specifies the restart mode
+to be used for the HyMAP router.
 Acceptable values are:
 
 |====
 |Value     | Description
 
-|restart   | A restart mode is being used
-|coldstart | A cold start mode is being used, no restart file read
+|restart   | A restart mode is being used; read a HyMAP restart file
+|coldstart | A cold start mode is being used; no restart file read
 |====
 
 `HYMAP routing model restart interval:` defines the restart writing
@@ -9040,6 +9887,194 @@ HYMAP routing model evaporation option: 2
 HYMAP routing model start mode: "coldstart"
 HYMAP routing model restart interval: "1mo"
 HYMAP routing model restart file: "./OL/ROUTING/200001/LIS_RST_HYMAP_router_200001312345.d01.bin"
+....
+
+
+==== HYMAP2 routing
+anchor:sssec_hymap2routing[HYMAP2 routing]
+
+`HYMAP2 routing model time step:` specifies the timestep for
+the HyMAP2 router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`HYMAP2 routing model output interval:` defines the output
+writing interval for the HyMAP2 router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`HYMAP2 run in ensemble mode:` specifies whether to run the
+HyMAP2 router in ensemble mode.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not run in ensemble mode
+|1     | Run in ensemble mode
+|====
+
+`HYMAP2 routing method:` specifies the HyMAP2 routing method
+to use.
+Acceptable values are:
+
+|====
+|Value              | Description
+
+|kinematic          | use kinematic method
+|diffusive          | use diffusive method
+|"`local intertia`" | use local intertia method
+|hybrid             | use hybrid method (requires a river flow map from LDT)
+|====
+
+`HYMAP2 routing model time step method:` specifies the HyMAP2
+routing model time step method to use.
+Acceptable values are:
+
+|====
+|Value     | Description
+
+|constant  | use constant timestep
+|adaptive  | use adaptive (time-varying) timesteps (must provide an alfa coefficient value)
+|====
+
+`HYMAP2 routing model adaptive time step alfa coefficient:`
+specifies the adaptive time step alfa coefficent (a real number)
+for the HyMAP2 router.  This coefficient is not needed if using
+the `constant` time step method.
+
+`HYMAP2 floodplain dynamics:` specifies whether simulate
+floodplain dynamics in the HyMAP2 router.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use
+|====
+
+`HYMAP2 reservoir operation option:` specifies whether to use
+reservoir operations in the HyMAP2 router.  This option is still
+in development in the HyMAP2 router within LIS.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use (additional lis.config entries required)
+|====
+
+`HYMAP2 number of reservoirs:` specifies the number of reservoirs
+to use with the HyMAP2 router.  This config entry is only used
+when `HYMAP2 reservoir operation option:` is set to 1.  The number
+of reservoirs should be an integer.
+
+`HYMAP2 reservoir operation input time series size:` specifies the
+time series length (or number of time steps in the inputs files)
+when using reservoir operations with the HyMAP2 router.  This config
+entry is only used when `HYMAP2 reservoir operation option:` is set
+to 1.  The time series size should be an integer.
+
+`HYMAP2 reservoir operation input directory:` specifies the input
+directory for the reservoir operation files to be used when using
+reservoir operations with the HyMAP2 router.  This config entry is
+only used when `HYMAP2 reservoir operation option:` is set to 1.
+
+`HYMAP2 reservoir operation header filename:` specifies the filename
+header for the reservoir operation files to be used when using
+reservoir operations with the HyMAP2 router.  This config entry is
+only used when `HYMAP2 reservoir operation option:` is set to 1.
+
+`HYMAP2 reservoir operation input data type:` specifies the input
+data type for the reservoir operation files to be used when using
+reservoir operations with the HyMAP2 router.  This config entry is
+only used when `HYMAP2 reservoir operation option:` is set to 1.  
+
+|====
+|Value            | Description
+
+|"`water level`"  | Use water level data
+|streamflow       | Use streamflow data
+|====
+
+`HYMAP2 routing model linear reservoir flag:` specifies whether to
+use linear reservoirs in the HyMAP2 router.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use
+|====
+
+`HYMAP2 routing model evaporation option:` specifies whether
+to compute evaporation in flood plains in the HyMAP2 router.
+Acceptable values are:
+
+|====
+|Value   | Description
+
+|none    | Do not compute evaporation in flood plains
+|penman  | Compute evaporation in flood plains using Penman method
+|====
+
+`HYMAP2 routing model dwi flag:` specifies whether
+to use DWI maps from LDT in the HyMAP2 router.
+Acceptable values are:
+
+|====
+|Value   | Description
+|0       | Do not use DWI maps
+|1       | Use DWI maps (requires two DWI fields from LDT)
+
+|====
+
+`HYMAP2 routing model start mode:` specifies the restart mode
+to be used for the HyMAP2 router.
+Acceptable values are:
+
+|====
+|Value     | Description
+
+|restart   | A restart mode is being used; read a HyMAP2 restart file
+|coldstart | A cold start mode is being used; no restart file read
+|====
+
+`HYMAP2 routing model restart interval:` defines the restart writing
+interval for the HyMAP2 router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`HYMAP2 routing model restart file:` specifies the HyMAP2 router
+active restart file.
+
+.Example _lis.config_ entry
+....
+HYMAP2 routing model time step: "30mn"
+HYMAP2 routing model output interval: "1da"
+HYMAP2 run in ensemble mode: 0
+HYMAP2 routing method: "kinematic"
+HYMAP2 routing model time step method: "constant"
+HYMAP2 routing model adaptive time step alfa coefficient: 0.7
+HYMAP2 floodplain dynamics: 1
+HYMAP2 reservoir operation option: 0
+HYMAP2 number of reservoirs: 0
+HYMAP2 reservoir operation input time series size: 1
+HYMAP2 reservoir operation input directory: "./reservoir_data"
+HYMAP2 reservoir operation header filename: "RESDATA"
+HYMAP2 reservoir operation input data type: "streamflow"
+HYMAP2 routing model linear reservoir flag: 1
+HYMAP2 routing model evaporation option: "none"
+HYMAP2 routing model dwi flag: 0
+HYMAP2 routing model start mode: "coldstart"
+HYMAP2 routing model restart interval: "1mo"
+HYMAP2 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP2_router_197901030000.d01.nc
 ....
 
 

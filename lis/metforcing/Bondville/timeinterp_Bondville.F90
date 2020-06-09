@@ -46,6 +46,7 @@ subroutine timeinterp_Bondville(n,findex)
   real,pointer       :: swdown(:),lwdown(:),psurf(:),pcp(:),cpcp(:)
   real, parameter    :: eps = 0.622
   real               :: svp,qs,E,EsFuncT
+  integer, save      :: count
 
   !      write(LIS_logunit,*) 'starting timeinterp_Bondville'
 
@@ -121,14 +122,26 @@ subroutine timeinterp_Bondville(n,findex)
   call ESMF_FieldGet(cpcpField,localDE=0,farrayPtr=cpcp,rc=status)
   call LIS_verify(status)
 
-  !      write(LIS_logunit,*) 'Btime1: ',Bondville_struc(n)%Bondvilletime1
-  !      write(LIS_logunit,*) 'Btime2: ',Bondville_struc(n)%Bondvilletime2
-  !      write(LIS_logunit,*) 'realtime: ',LIS_rc%time
+!  write(LIS_logunit,*) 'Btime1: ',Bondville_struc(n)%Bondvilletime1
+!  write(LIS_logunit,*) 'Btime2: ',Bondville_struc(n)%Bondvilletime2
+!  write(LIS_logunit,*) 'realtime: ',LIS_rc%time
   wt1 = (Bondville_struc(n)%Bondvilletime2-LIS_rc%time) /        &
-       (Bondville_struc(n)%Bondvilletime2-                      &
-       Bondville_struc(n)%Bondvilletime1)
+        (Bondville_struc(n)%Bondvilletime2-                      &
+         Bondville_struc(n)%Bondvilletime1)
   wt2 = 1.0 - wt1
   !      write(LIS_logunit,*) wt1,wt2
+
+  if (LIS_rc%startcode.eq."restart") then
+     count = count + 1
+     if (wt1.gt.1.5) then
+        wt1 = 1.0
+        wt2 = 0.0
+     endif
+     if (count.eq.2) then
+        wt1 = 0.5
+        wt2 = 0.5
+     endif
+  endif
 
   do t = 1,LIS_rc%ntiles(n)
      index1 = LIS_domain(n)%tile(t)%index
@@ -148,26 +161,36 @@ subroutine timeinterp_Bondville(n,findex)
           (Bondville_struc(n)%metdata2(3,t).ne.Bondville_struc(n)%undef)) then
         qair(t) = wt1 * Bondville_struc(n)%metdata1(3,index1) +                      &
              wt2 * Bondville_struc(n)%metdata2(3,index1)
-        ! Conversion of psurf, winds, and specific humidity are from the
+        if (Bondville_struc(n)%MP.eq.0) then
+        ! Conversion of psurf and specific humidity are from the
         ! module_ascii_io.F code included in the Noah3.1 release package.
-        psurf(t) = psurf(t) * 100.0
+           psurf(t) = psurf(t) * 100.0
         ! Convert RH [ % ] to Specific Humidity [ kg kg{-1} ]
         ! This computation from NCEP's Noah v2.7.1 driver.
-        qair(t) = qair(t) * 1.E-2
-        svp = EsFuncT(tair(t))
-        !            print *,'SFCTMP: ',tair(t)
-        !            print *,'SVP: ',SVP
-        !            print *,'EPS: ',EPS
-        !            print *,'SFCPRS: ',psurf(t)
-        qs = eps * svp / (psurf(t) - (1.-eps) * svp)
-        !            print *,'QS: ',QS
-        !            print *,'RHF: ',qair(t)
-        E = (psurf(t)*svp*qair(t))/(psurf(t) - svp*(1. - qair(t)))
-        !            print *,'E: ',E
-        qair(t) = (eps*E)/(psurf(t)-(1.0-eps)*E)
-        !            print *,'SPECHUMD: ',qair(t)
-        if (qair(t).lt.0.1E-5) qair(t) = 0.1E-5
-        if (qair(t).ge.qs)     qair(t) = qs*0.99
+           qair(t) = qair(t) * 1.E-2
+           svp = EsFuncT(tair(t))
+!           print *,'SFCTMP: ',tair(t)
+!           print *,'SVP: ',SVP
+!           print *,'EPS: ',EPS
+!           print *,'SFCPRS: ',psurf(t)
+           qs = eps * svp / (psurf(t) - (1.-eps) * svp)
+!           print *,'QS: ',QS
+!           print *,'RHF: ',qair(t)
+           E = (psurf(t)*svp*qair(t))/(psurf(t) - svp*(1. - qair(t)))
+!           print *,'E: ',E
+           qair(t) = (eps*E)/(psurf(t)-(1.0-eps)*E)
+!           print *,'SPECHUMD: ',qair(t)
+           if (qair(t).lt.0.1E-5) qair(t) = 0.1E-5
+           if (qair(t).ge.qs)     qair(t) = qs*0.99
+        else
+        ! Conversion of psurf and specific humidity are from the
+        ! HRLDAS_forcing/run/examples/single_point/create_point_data.f90
+        ! code included in the HRLDAS Noah-MP.4.0.1 release package.
+           psurf(t) = psurf(t) * 100.0
+           svp = 611.2*exp(17.67*(tair(t)-273.15)/(tair(t)-29.65)) ! [Pa]
+           e   = qair(t)/100.0 * svp                               ! [Pa]
+           qair(t) = (0.622*e)/(psurf(t)-(1.0-0.622)*e)            ! now it is specific humidity
+        endif
         !            write(LIS_logunit,*) Bondville_struc(n)%metdata1(3,index1),Bondville_struc(n)%metdata2(3,index1)
      endif
      if ((Bondville_struc(n)%metdata1(4,t).ne.Bondville_struc(n)%undef).and.        &

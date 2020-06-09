@@ -34,6 +34,9 @@ module LDT_PRIV_rcMod
      character*100, allocatable :: paramAttribsFile(:)
      character*50           :: lis_map_proj
      real                   :: lis_map_resfactor
+     integer                :: add_buffer   ! KA
+     integer                :: x_buffer
+     integer                :: y_buffer
 
 ! -- Land surface input parameters:
      integer                :: max_model_types 

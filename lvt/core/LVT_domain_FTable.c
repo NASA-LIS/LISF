@@ -55,13 +55,14 @@ void FTN(registerinput)(char *j,void (*func)(), int len)
 //  \end{description}
 //EOP
 { 
-
+  int len1;
   struct domaininputnode* pnode;
   struct domaininputnode* current;
 
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct domaininputnode*) malloc(sizeof(struct domaininputnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -129,12 +130,14 @@ void FTN(registerdomain)(char *j,void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct domainmakenode* pnode;
   struct domainmakenode* current;
 
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct domainmakenode*) malloc(sizeof(struct domainmakenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

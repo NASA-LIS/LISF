@@ -46,15 +46,16 @@ subroutine read_HYMAP_runoff_delaym(n, array)
 
   ftn = LDT_getNextUnitNumber()
 
-  inquire(file=trim(HYMAP_struc(n)%runoffdelaymFile), exist=file_exists)
+  inquire(file=trim(HYMAP_struc(n)%runoffdelaymfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Runoffdelaym map ',trim(HYMAP_struc(n)%runoffdelaymFile),' not found'
+     write(LDT_logunit,*) '[ERR] Runoff delaym map, ',&
+           trim(HYMAP_struc(n)%runoffdelaymfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif
 
-  open(ftn, file=trim(HYMAP_struc(n)%runoffdelaymFile), access='direct',&
-       status='old', form="unformatted", recl=4)
+  open(ftn, file=trim(HYMAP_struc(n)%runoffdelaymfile), access='direct',&
+       status='old', form="unformatted", convert="big_endian", recl=4)
   
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &

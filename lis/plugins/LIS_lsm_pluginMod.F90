@@ -137,8 +137,16 @@ subroutine LIS_lsm_plugin
    use noah36_lsmMod, only : noah36_lsm_ini
 #endif
 
+#if ( defined SM_NOAH_3_9 )
+   use noah39_lsmMod, only : noah39_lsm_ini
+#endif
+
 #if ( defined SM_NOAHMP_3_6 )
    use NoahMP36_lsmMod, only : noahmp36_ini
+#endif
+
+#if ( defined SM_NOAHMP_4_0_1 )
+   use NoahMP401_lsmMod, only : noahmp401_ini
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -151,6 +159,26 @@ subroutine LIS_lsm_plugin
 
 #if ( defined SM_JULES_5_0 )
    use jules50_lsmMod, only : jules50_ini
+#endif
+
+#if ( defined SM_JULES_5_1 )
+   use jules51_lsmMod, only : jules51_ini
+#endif
+
+#if ( defined SM_JULES_5_2 )
+   use jules52_lsmMod, only : jules52_ini
+#endif
+
+#if ( defined SM_JULES_5_3 )
+   use jules53_lsmMod, only : jules53_ini
+#endif
+
+#if ( defined SM_JULES_5_4 )
+   use jules54_lsmMod, only : jules54_ini
+#endif
+
+#if ( defined SM_JULES_5_X )
+   use jules5x_lsmMod, only : jules5x_ini
 #endif
 
 #if ( defined SM_CLM_2 )
@@ -233,6 +261,56 @@ subroutine LIS_lsm_plugin
    external jules50_finalize
 #endif
 
+#if ( defined SM_JULES_5_1 )
+   external jules51_main
+   external jules51_setup
+   external jules51_readrst
+   external jules51_f2t
+   external jules51_dynsetup
+   external jules51_writerst
+   external jules51_finalize
+#endif
+
+#if ( defined SM_JULES_5_2 )
+   external jules52_main
+   external jules52_setup
+   external jules52_readrst
+   external jules52_f2t
+   external jules52_dynsetup
+   external jules52_writerst
+   external jules52_finalize
+#endif
+
+#if ( defined SM_JULES_5_3 )
+   external jules53_main
+   external jules53_setup
+   external jules53_readrst
+   external jules53_f2t
+   external jules53_dynsetup
+   external jules53_writerst
+   external jules53_finalize
+#endif
+
+#if ( defined SM_JULES_5_4 )
+   external jules54_main
+   external jules54_setup
+   external jules54_readrst
+   external jules54_f2t
+   external jules54_dynsetup
+   external jules54_writerst
+   external jules54_finalize
+#endif
+
+#if ( defined SM_JULES_5_X )
+   external jules5x_main
+   external jules5x_setup
+   external jules5x_readrst
+   external jules5x_f2t
+   external jules5x_dynsetup
+   external jules5x_writerst
+   external jules5x_finalize
+#endif
+
 #if ( defined SM_MOSAIC )
    external mos_main
    external mos_setup
@@ -264,6 +342,17 @@ subroutine LIS_lsm_plugin
    external noah36_reset
 #endif
 
+#if ( defined SM_NOAH_3_9 )
+   external noah39_main
+   external noah39_setup
+   external noah39_readrst
+   external noah39_dynsetup
+   external noah39_f2t
+   external noah39_writerst
+   external noah39_finalize
+   external noah39_reset
+#endif
+
 #if ( defined SM_NOAHMP_3_6 )
    external noahmp36_main
    external noahmp36_setup
@@ -273,6 +362,17 @@ subroutine LIS_lsm_plugin
    external noahmp36_writerst
    external noahmp36_finalize
    external noahmp36_reset
+#endif
+
+#if ( defined SM_NOAHMP_4_0_1 )
+   external noahmp401_main
+   external noahmp401_setup
+   external noahmp401_readrst
+   external noahmp401_dynsetup
+   external noahmp401_f2t
+   external noahmp401_writerst
+   external noahmp401_finalize
+   external noahmp401_reset
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -450,6 +550,76 @@ subroutine LIS_lsm_plugin
    call registerlsmfinalize(trim(LIS_jules50Id)//char(0),jules50_finalize)
 #endif
 
+#if ( defined SM_JULES_5_1 )
+   call registerlsminit(trim(LIS_jules51Id)//char(0),jules51_ini)
+   call registerlsmsetup(trim(LIS_jules51Id)//char(0),jules51_setup)
+   call registerlsmf2t(trim(LIS_jules51Id)//"+"//&
+        trim(LIS_retroId)//char(0),jules51_f2t)
+   call registerlsmf2t(trim(LIS_jules51Id)//"+"//&
+        trim(LIS_agrmetrunId)//char(0),jules51_f2t)
+   call registerlsmrun(trim(LIS_jules51Id)//char(0),jules51_main)
+   call registerlsmrestart(trim(LIS_jules51Id)//char(0),jules51_readrst)
+   call registerlsmdynsetup(trim(LIS_jules51Id)//char(0),jules51_dynsetup)
+   call registerlsmwrst(trim(LIS_jules51Id)//char(0),jules51_writerst)
+   call registerlsmfinalize(trim(LIS_jules51Id)//char(0),jules51_finalize)
+#endif
+
+#if ( defined SM_JULES_5_2 )
+   call registerlsminit(trim(LIS_jules52Id)//char(0),jules52_ini)
+   call registerlsmsetup(trim(LIS_jules52Id)//char(0),jules52_setup)
+   call registerlsmf2t(trim(LIS_jules52Id)//"+"//&
+        trim(LIS_retroId)//char(0),jules52_f2t)
+   call registerlsmf2t(trim(LIS_jules52Id)//"+"//&
+        trim(LIS_agrmetrunId)//char(0),jules52_f2t)
+   call registerlsmrun(trim(LIS_jules52Id)//char(0),jules52_main)
+   call registerlsmrestart(trim(LIS_jules52Id)//char(0),jules52_readrst)
+   call registerlsmdynsetup(trim(LIS_jules52Id)//char(0),jules52_dynsetup)
+   call registerlsmwrst(trim(LIS_jules52Id)//char(0),jules52_writerst)
+   call registerlsmfinalize(trim(LIS_jules52Id)//char(0),jules52_finalize)
+#endif
+
+#if ( defined SM_JULES_5_3 )
+   call registerlsminit(trim(LIS_jules53Id)//char(0),jules53_ini)
+   call registerlsmsetup(trim(LIS_jules53Id)//char(0),jules53_setup)
+   call registerlsmf2t(trim(LIS_jules53Id)//"+"//&
+        trim(LIS_retroId)//char(0),jules53_f2t)
+   call registerlsmf2t(trim(LIS_jules53Id)//"+"//&
+        trim(LIS_agrmetrunId)//char(0),jules53_f2t)
+   call registerlsmrun(trim(LIS_jules53Id)//char(0),jules53_main)
+   call registerlsmrestart(trim(LIS_jules53Id)//char(0),jules53_readrst)
+   call registerlsmdynsetup(trim(LIS_jules53Id)//char(0),jules53_dynsetup)
+   call registerlsmwrst(trim(LIS_jules53Id)//char(0),jules53_writerst)
+   call registerlsmfinalize(trim(LIS_jules53Id)//char(0),jules53_finalize)
+#endif
+
+#if ( defined SM_JULES_5_4 )
+   call registerlsminit(trim(LIS_jules54Id)//char(0),jules54_ini)
+   call registerlsmsetup(trim(LIS_jules54Id)//char(0),jules54_setup)
+   call registerlsmf2t(trim(LIS_jules54Id)//"+"//&
+        trim(LIS_retroId)//char(0),jules54_f2t)
+   call registerlsmf2t(trim(LIS_jules54Id)//"+"//&
+        trim(LIS_agrmetrunId)//char(0),jules54_f2t)
+   call registerlsmrun(trim(LIS_jules54Id)//char(0),jules54_main)
+   call registerlsmrestart(trim(LIS_jules54Id)//char(0),jules54_readrst)
+   call registerlsmdynsetup(trim(LIS_jules54Id)//char(0),jules54_dynsetup)
+   call registerlsmwrst(trim(LIS_jules54Id)//char(0),jules54_writerst)
+   call registerlsmfinalize(trim(LIS_jules54Id)//char(0),jules54_finalize)
+#endif
+
+#if ( defined SM_JULES_5_X )
+   call registerlsminit(trim(LIS_jules5xId)//char(0),jules5x_ini)
+   call registerlsmsetup(trim(LIS_jules5xId)//char(0),jules5x_setup)
+   call registerlsmf2t(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_retroId)//char(0),jules5x_f2t)
+   call registerlsmf2t(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_agrmetrunId)//char(0),jules5x_f2t)
+   call registerlsmrun(trim(LIS_jules5xId)//char(0),jules5x_main)
+   call registerlsmrestart(trim(LIS_jules5xId)//char(0),jules5x_readrst)
+   call registerlsmdynsetup(trim(LIS_jules5xId)//char(0),jules5x_dynsetup)
+   call registerlsmwrst(trim(LIS_jules5xId)//char(0),jules5x_writerst)
+   call registerlsmfinalize(trim(LIS_jules5xId)//char(0),jules5x_finalize)
+#endif
+
 #if ( defined SM_NOAH_3_6 )
    call registerlsminit(trim(LIS_noah36Id)//char(0),noah36_lsm_ini)
    call registerlsmsetup(trim(LIS_noah36Id)//char(0),noah36_setup)
@@ -463,6 +633,21 @@ subroutine LIS_lsm_plugin
    call registerlsmwrst(trim(LIS_noah36Id)//char(0),noah36_writerst)
    call registerlsmfinalize(trim(LIS_noah36Id)//char(0),noah36_finalize)
    call registerlsmreset(trim(LIS_noah36Id)//char(0),noah36_reset)
+#endif
+
+#if ( defined SM_NOAH_3_9 )
+   call registerlsminit(trim(LIS_noah39Id)//char(0),noah39_lsm_ini)
+   call registerlsmsetup(trim(LIS_noah39Id)//char(0),noah39_setup)
+   call registerlsmf2t(trim(LIS_noah39Id)//"+"&
+        //trim(LIS_retroId)//char(0),noah39_f2t)
+   call registerlsmf2t(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_agrmetrunId)//char(0),noah39_f2t)
+   call registerlsmrun(trim(LIS_noah39Id)//char(0),noah39_main)
+   call registerlsmrestart(trim(LIS_noah39Id)//char(0),noah39_readrst)
+   call registerlsmdynsetup(trim(LIS_noah39Id)//char(0),noah39_dynsetup)
+   call registerlsmwrst(trim(LIS_noah39Id)//char(0),noah39_writerst)
+   call registerlsmfinalize(trim(LIS_noah39Id)//char(0),noah39_finalize)
+   call registerlsmreset(trim(LIS_noah39Id)//char(0),noah39_reset)
 #endif
 
 #if ( defined SM_NOAHMP_3_6 )
@@ -484,6 +669,21 @@ subroutine LIS_lsm_plugin
    call registerlsmwrst(trim(LIS_noahmp36Id)//char(0),noahmp36_writerst)
    call registerlsmfinalize(trim(LIS_noahmp36Id)//char(0),noahmp36_finalize)
    call registerlsmreset(trim(LIS_noahmp36Id)//char(0),noahmp36_reset)
+#endif
+
+#if ( defined SM_NOAHMP_4_0_1 )
+   call registerlsminit(trim(LIS_noahmp401Id)//char(0),noahmp401_ini)
+   call registerlsmsetup(trim(LIS_noahmp401Id)//char(0),noahmp401_setup)
+   call registerlsmf2t(trim(LIS_noahmp401Id)//"+"&
+        //trim(LIS_retroId)//char(0),noahmp401_f2t)
+   call registerlsmf2t(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_agrmetrunId)//char(0),noahmp401_f2t)
+   call registerlsmrun(trim(LIS_noahmp401Id)//char(0),noahmp401_main)
+   call registerlsmrestart(trim(LIS_noahmp401Id)//char(0),noahmp401_readrst)
+   call registerlsmdynsetup(trim(LIS_noahmp401Id)//char(0),noahmp401_dynsetup)
+   call registerlsmwrst(trim(LIS_noahmp401Id)//char(0),noahmp401_writerst)
+   call registerlsmfinalize(trim(LIS_noahmp401Id)//char(0),noahmp401_finalize)
+   call registerlsmreset(trim(LIS_noahmp401Id)//char(0),noahmp401_reset)
 #endif
 
 #if ( defined SM_RUC_3_7 )

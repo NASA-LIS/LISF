@@ -15,6 +15,7 @@
 ! 
 ! !REVISION HISTORY: 
 !  22 Aug 2016    Sujay Kumar; initial specification
+!  1  Apr 2019  Yonghwan Kwon: Upated for reading monthy CDF for the current month
 ! 
 module SMAPNRTsm_Mod
 ! !USES: 
@@ -60,7 +61,13 @@ module SMAPNRTsm_Mod
 
      integer                :: nbins
      integer                :: ntimes
-
+     logical                :: cdf_read_mon  !(for reading monthly CDF when
+                                             !LIS_rc%da > 1 but the first model time step,
+                                             !e.g., 4/29 13:00:00)
+     integer                :: cdf_read_opt  ! 0: read all months at one time
+                                             ! 1: read only the current month
+     character*100          :: modelcdffile
+     character*100          :: obscdffile
   end type SMAPNRTsm_dec
   
   type(SMAPNRTsm_dec),allocatable :: SMAPNRTsm_struc(:)
@@ -121,8 +128,6 @@ contains
     type(pert_dec_type)    ::  obs_pert
     real, pointer          ::  obs_temp(:,:)
     real                   :: gridDesci(50)
-    character*100          :: modelcdffile(LIS_rc%nnest)
-    character*100          :: obscdffile(LIS_rc%nnest)
     real, allocatable          :: ssdev(:)
 
     real, allocatable          ::  obserr(:,:)
@@ -178,14 +183,14 @@ contains
     call ESMF_ConfigFindLabel(LIS_config,"SMAP(NRT) model CDF file:",&
          rc=status)
     do n=1,LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,modelcdffile(n),rc=status)
+       call ESMF_ConfigGetAttribute(LIS_config,SMAPNRTsm_struc(n)%modelcdffile,rc=status)   
        call LIS_verify(status, 'SMAP(NRT) model CDF file: not defined')
     enddo
 
     call ESMF_ConfigFindLabel(LIS_config,"SMAP(NRT) observation CDF file:",&
          rc=status)
     do n=1,LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,obscdffile(n),rc=status)
+       call ESMF_ConfigGetAttribute(LIS_config,SMAPNRTsm_struc(n)%obscdffile,rc=status)     
        call LIS_verify(status, 'SMAP(NRT) observation CDF file: not defined')
     enddo
     
@@ -194,6 +199,15 @@ contains
        call ESMF_ConfigGetAttribute(LIS_config,SMAPNRTsm_struc(n)%nbins, rc=status)
        call LIS_verify(status, "SMAP(NRT) soil moisture number of bins in the CDF: not defined")
     enddo
+
+   do n=1, LIS_rc%nnest
+      SMAPNRTsm_struc(n)%cdf_read_mon = .false.
+
+      call ESMF_ConfigFindLabel(LIS_config, "SMAP(NRT) CDF read option:", rc=status)    ! 0: read CDF for all months/year
+                                                                                         ! 1: read CDF for current month
+      call ESMF_ConfigGetAttribute(LIS_config, SMAPNRTsm_struc(n)%cdf_read_opt, rc=status)
+      call LIS_verify(status, "SMAP(NRT) CDF read option: not defined")
+   enddo
 
    do n=1,LIS_rc%nnest
        call ESMF_AttributeSet(OBS_State(n),"Data Update Status",&
@@ -342,68 +356,86 @@ contains
        ssdev = obs_pert%ssdev(1)
        
        if(LIS_rc%dascaloption(k).eq."CDF matching") then 
-
-          call LIS_getCDFattributes(k,modelcdffile(n),&
-               SMAPNRTsm_struc(n)%ntimes,ngrid)
-          
-          allocate(SMAPNRTsm_struc(n)%model_xrange(&
-               LIS_rc%obs_ngrid(k), SMAPNRTsm_struc(n)%ntimes, &
-               SMAPNRTsm_struc(n)%nbins))
-          allocate(SMAPNRTsm_struc(n)%obs_xrange(&
-               LIS_rc%obs_ngrid(k), SMAPNRTsm_struc(n)%ntimes, &
-               SMAPNRTsm_struc(n)%nbins))
-          allocate(SMAPNRTsm_struc(n)%model_cdf(&
-               LIS_rc%obs_ngrid(k), SMAPNRTsm_struc(n)%ntimes, &
-               SMAPNRTsm_struc(n)%nbins))
-          allocate(SMAPNRTsm_struc(n)%obs_cdf(&
-               LIS_rc%obs_ngrid(k), SMAPNRTsm_struc(n)%ntimes, &
-               SMAPNRTsm_struc(n)%nbins))
-          allocate(SMAPNRTsm_struc(n)%model_mu(LIS_rc%obs_ngrid(k),&
-               SMAPNRTsm_struc(n)%ntimes))
-          allocate(SMAPNRTsm_struc(n)%model_sigma(LIS_rc%obs_ngrid(k),&
-               SMAPNRTsm_struc(n)%ntimes))
-          allocate(SMAPNRTsm_struc(n)%obs_mu(LIS_rc%obs_ngrid(k),&
-               SMAPNRTsm_struc(n)%ntimes))
-          allocate(SMAPNRTsm_struc(n)%obs_sigma(LIS_rc%obs_ngrid(k),&
-               SMAPNRTsm_struc(n)%ntimes))
+          call LIS_getCDFattributes(k,SMAPNRTsm_struc(n)%modelcdffile,&
+               SMAPNRTsm_struc(n)%ntimes,ngrid)          
+         
+          if (SMAPNRTsm_struc(n)%cdf_read_opt.eq.0) then   
+             allocate(SMAPNRTsm_struc(n)%model_xrange(&
+                  LIS_rc%obs_ngrid(k), SMAPNRTsm_struc(n)%ntimes, &
+                  SMAPNRTsm_struc(n)%nbins))
+             allocate(SMAPNRTsm_struc(n)%obs_xrange(&
+                  LIS_rc%obs_ngrid(k), SMAPNRTsm_struc(n)%ntimes, &
+                  SMAPNRTsm_struc(n)%nbins))
+             allocate(SMAPNRTsm_struc(n)%model_cdf(&
+                  LIS_rc%obs_ngrid(k), SMAPNRTsm_struc(n)%ntimes, &
+                  SMAPNRTsm_struc(n)%nbins))
+             allocate(SMAPNRTsm_struc(n)%obs_cdf(&
+                  LIS_rc%obs_ngrid(k), SMAPNRTsm_struc(n)%ntimes, &
+                  SMAPNRTsm_struc(n)%nbins))
+             allocate(SMAPNRTsm_struc(n)%model_mu(LIS_rc%obs_ngrid(k),&
+                  SMAPNRTsm_struc(n)%ntimes))
+             allocate(SMAPNRTsm_struc(n)%model_sigma(LIS_rc%obs_ngrid(k),&
+                  SMAPNRTsm_struc(n)%ntimes))
+             allocate(SMAPNRTsm_struc(n)%obs_mu(LIS_rc%obs_ngrid(k),&
+                  SMAPNRTsm_struc(n)%ntimes))
+             allocate(SMAPNRTsm_struc(n)%obs_sigma(LIS_rc%obs_ngrid(k),&
+                  SMAPNRTsm_struc(n)%ntimes))
+          else
+             allocate(SMAPNRTsm_struc(n)%model_xrange(&
+                  LIS_rc%obs_ngrid(k), 1, &
+                  SMAPNRTsm_struc(n)%nbins))
+             allocate(SMAPNRTsm_struc(n)%obs_xrange(&
+                  LIS_rc%obs_ngrid(k), 1, &
+                  SMAPNRTsm_struc(n)%nbins))
+             allocate(SMAPNRTsm_struc(n)%model_cdf(&
+                  LIS_rc%obs_ngrid(k), 1, &
+                  SMAPNRTsm_struc(n)%nbins))
+             allocate(SMAPNRTsm_struc(n)%obs_cdf(&
+                  LIS_rc%obs_ngrid(k), 1, &
+                  SMAPNRTsm_struc(n)%nbins))
+             allocate(SMAPNRTsm_struc(n)%model_mu(LIS_rc%obs_ngrid(k),1))
+             allocate(SMAPNRTsm_struc(n)%model_sigma(LIS_rc%obs_ngrid(k),1))
+             allocate(SMAPNRTsm_struc(n)%obs_mu(LIS_rc%obs_ngrid(k),1))
+             allocate(SMAPNRTsm_struc(n)%obs_sigma(LIS_rc%obs_ngrid(k),1))
+          endif
 
 !----------------------------------------------------------------------------
 ! Read the model and observation CDF data
 !----------------------------------------------------------------------------
+         if (SMAPNRTsm_struc(n)%cdf_read_opt.eq.0) then  
           call LIS_readMeanSigmaData(n,k,&
                SMAPNRTsm_struc(n)%ntimes,&
                LIS_rc%obs_ngrid(k), &
-               modelcdffile(n), &
+               SMAPNRTsm_struc(n)%modelcdffile, &
                "SoilMoist",&
                SMAPNRTsm_struc(n)%model_mu,&
-               SMAPNRTsm_struc(n)%model_sigma)
+               SMAPNRTsm_struc(n)%model_sigma)  
           
           call LIS_readMeanSigmaData(n,k,&
                SMAPNRTsm_struc(n)%ntimes,&
                LIS_rc%obs_ngrid(k), &
-               obscdffile(n), &
+               SMAPNRTsm_struc(n)%obscdffile, &
                "SoilMoist",&
                SMAPNRTsm_struc(n)%obs_mu,&
-               SMAPNRTsm_struc(n)%obs_sigma)
+               SMAPNRTsm_struc(n)%obs_sigma)      
           
           call LIS_readCDFdata(n,k,&
                SMAPNRTsm_struc(n)%nbins,&
                SMAPNRTsm_struc(n)%ntimes,&
                LIS_rc%obs_ngrid(k), &
-               modelcdffile(n), &
+               SMAPNRTsm_struc(n)%modelcdffile, &
                "SoilMoist",&
                SMAPNRTsm_struc(n)%model_xrange,&
-               SMAPNRTsm_struc(n)%model_cdf)
+               SMAPNRTsm_struc(n)%model_cdf)      
           
           call LIS_readCDFdata(n,k,&
                SMAPNRTsm_struc(n)%nbins,&
                SMAPNRTsm_struc(n)%ntimes,&
                LIS_rc%obs_ngrid(k), &
-               obscdffile(n), &
+               SMAPNRTsm_struc(n)%obscdffile, &
                "SoilMoist",&
                SMAPNRTsm_struc(n)%obs_xrange,&
-               SMAPNRTsm_struc(n)%obs_cdf)
-          
+               SMAPNRTsm_struc(n)%obs_cdf)    
           
           if(SMAPNRTsm_struc(n)%useSsdevScal.eq.1) then 
              if(SMAPNRTsm_struc(n)%ntimes.eq.1) then 
@@ -429,7 +461,7 @@ contains
 !          close(100)
 !          stop
           endif
-
+         endif   
 #if 0           
           allocate(obserr(LIS_rc%gnc(n),LIS_rc%gnr(n)))
           allocate(lobserr(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)))

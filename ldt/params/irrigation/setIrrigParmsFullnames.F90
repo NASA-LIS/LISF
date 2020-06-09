@@ -64,6 +64,9 @@ subroutine setIrrigParmsFullnames(n,datatype,source)
         case( "GIA" )
           LDT_irrig_struc(n)%irrigfrac%standard_name =&
               "GIA (Meier et al, 2018) Irrig gridcell fraction"
+        case( "UserDerived" )
+          LDT_irrig_struc(n)%irrigfrac%standard_name =&
+              "User Derived Irrig gridcell fraction"
       end select
 
     case default

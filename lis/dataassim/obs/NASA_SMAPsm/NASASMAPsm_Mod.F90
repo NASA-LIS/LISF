@@ -15,7 +15,10 @@
 ! 
 ! !REVISION HISTORY: 
 !  22 Aug 2016    Sujay Kumar; initial specification
-! 
+!  1  Apr 2019  Yonghwan Kwon: Upated for reading monthy CDF for the current month
+!  31 July 2019 Mahdi Navari : SMAP Composite Release ID was added (this option asks a user to 
+!         enter the part of Composite Release ID a three-character string like R16 )
+!
 module NASASMAPsm_Mod
 ! !USES: 
   use ESMF
@@ -58,9 +61,17 @@ module NASASMAPsm_Mod
      real,    allocatable       :: model_sigma(:,:)
      real,    allocatable       :: obs_sigma(:,:)
      character*20           :: data_designation
-
+     character*3             :: release_number
      integer                :: nbins
      integer                :: ntimes
+
+     logical                :: cdf_read_mon  !(for reading monthly CDF when
+                                             !LIS_rc%da > 1 but the first model time step,
+                                             !e.g., 4/29 13:00:00)
+     integer                :: cdf_read_opt  ! 0: read all months at one time
+                                             ! 1: read only the current month
+     character*100          :: modelcdffile
+     character*100          :: obscdffile
 
   end type NASASMAPsm_dec
   
@@ -122,8 +133,6 @@ contains
     type(pert_dec_type)    ::  obs_pert
     real, pointer          ::  obs_temp(:,:)
     real                   :: gridDesci(50)
-    character*100          :: modelcdffile(LIS_rc%nnest)
-    character*100          :: obscdffile(LIS_rc%nnest)
     real, allocatable          :: ssdev(:)
 
     real, allocatable          ::  obserr(:,:)
@@ -131,6 +140,9 @@ contains
     integer                :: c,r
     real, allocatable          :: ssdev_grid(:,:)
     integer                :: ngrid
+
+
+
 
     allocate(NASASMAPsm_struc(LIS_rc%nnest))
 
@@ -165,7 +177,15 @@ contains
             NASASMAPsm_struc(n)%data_designation,&
             rc=status)
        call LIS_verify(status, 'SMAP(NASA) soil moisture data designation: is missing')
+    enddo
 
+    call ESMF_ConfigFindLabel(LIS_config,"SMAP(NASA) soil moisture Composite Release ID (e.g., R16):",&
+         rc=status)
+    do n=1,LIS_rc%nnest
+       call ESMF_ConfigGetAttribute(LIS_config,&
+            NASASMAPsm_struc(n)%release_number,&
+            rc=status)
+       call LIS_verify(status, 'SMAP(NASA) soil moisture Composite Release ID: is missing')
     enddo
 
     call ESMF_ConfigFindLabel(LIS_config,"SMAP(NASA) soil moisture use scaled standard deviation model:",&
@@ -188,14 +208,14 @@ contains
     call ESMF_ConfigFindLabel(LIS_config,"SMAP(NASA) model CDF file:",&
          rc=status)
     do n=1,LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,modelcdffile(n),rc=status)
+       call ESMF_ConfigGetAttribute(LIS_config,NASASMAPsm_struc(n)%modelcdffile,rc=status)
        call LIS_verify(status, 'SMAP(NASA) model CDF file: not defined')
     enddo
 
     call ESMF_ConfigFindLabel(LIS_config,"SMAP(NASA) observation CDF file:",&
          rc=status)
     do n=1,LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,obscdffile(n),rc=status)
+       call ESMF_ConfigGetAttribute(LIS_config,NASASMAPsm_struc(n)%obscdffile,rc=status)   
        call LIS_verify(status, 'SMAP(NASA) observation CDF file: not defined')
     enddo
     
@@ -204,6 +224,15 @@ contains
        call ESMF_ConfigGetAttribute(LIS_config,NASASMAPsm_struc(n)%nbins, rc=status)
        call LIS_verify(status, "SMAP(NASA) soil moisture number of bins in the CDF: not defined")
     enddo
+
+   do n=1, LIS_rc%nnest
+      NASASMAPsm_struc(n)%cdf_read_mon = .false.   
+
+      call ESMF_ConfigFindLabel(LIS_config, "SMAP(NASA) CDF read option:", rc=status)    ! 0: read CDF for all months/year 
+                                                                                         ! 1: read CDF for current month
+      call ESMF_ConfigGetAttribute(LIS_config, NASASMAPsm_struc(n)%cdf_read_opt, rc=status)
+      call LIS_verify(status, "SMAP(NASA) CDF read option: not defined")
+   enddo
 
    do n=1,LIS_rc%nnest
        call ESMF_AttributeSet(OBS_State(n),"Data Update Status",&
@@ -351,74 +380,92 @@ contains
        NASASMAPsm_struc(n)%smtime = -1
       
     enddo
-    
+
     do n=1,LIS_rc%nnest
        allocate(ssdev(LIS_rc%obs_ngrid(k)))
        ssdev = obs_pert%ssdev(1)
        
        if(LIS_rc%dascaloption(k).eq."CDF matching") then 
 
-          call LIS_getCDFattributes(k,modelcdffile(n),&
-               NASASMAPsm_struc(n)%ntimes,ngrid)
-          
-          allocate(NASASMAPsm_struc(n)%model_xrange(&
-               LIS_rc%obs_ngrid(k), NASASMAPsm_struc(n)%ntimes, &
-               NASASMAPsm_struc(n)%nbins))
-          allocate(NASASMAPsm_struc(n)%obs_xrange(&
-               LIS_rc%obs_ngrid(k), NASASMAPsm_struc(n)%ntimes, &
-               NASASMAPsm_struc(n)%nbins))
-          allocate(NASASMAPsm_struc(n)%model_cdf(&
-               LIS_rc%obs_ngrid(k), NASASMAPsm_struc(n)%ntimes, &
-               NASASMAPsm_struc(n)%nbins))
-          allocate(NASASMAPsm_struc(n)%obs_cdf(&
-               LIS_rc%obs_ngrid(k), NASASMAPsm_struc(n)%ntimes, &
-               NASASMAPsm_struc(n)%nbins))
-          allocate(NASASMAPsm_struc(n)%model_mu(LIS_rc%obs_ngrid(k),&
-               NASASMAPsm_struc(n)%ntimes))
-          allocate(NASASMAPsm_struc(n)%model_sigma(LIS_rc%obs_ngrid(k),&
-               NASASMAPsm_struc(n)%ntimes))
-          allocate(NASASMAPsm_struc(n)%obs_mu(LIS_rc%obs_ngrid(k),&
-               NASASMAPsm_struc(n)%ntimes))
-          allocate(NASASMAPsm_struc(n)%obs_sigma(LIS_rc%obs_ngrid(k),&
-               NASASMAPsm_struc(n)%ntimes))
-
+          call LIS_getCDFattributes(k,NASASMAPsm_struc(n)%modelcdffile,&
+               NASASMAPsm_struc(n)%ntimes,ngrid)                 
+         
+          if (NASASMAPsm_struc(n)%cdf_read_opt.eq.0) then    
+             allocate(NASASMAPsm_struc(n)%model_xrange(&
+                  LIS_rc%obs_ngrid(k), NASASMAPsm_struc(n)%ntimes, &
+                  NASASMAPsm_struc(n)%nbins))
+             allocate(NASASMAPsm_struc(n)%obs_xrange(&
+                  LIS_rc%obs_ngrid(k), NASASMAPsm_struc(n)%ntimes, &
+                  NASASMAPsm_struc(n)%nbins))
+             allocate(NASASMAPsm_struc(n)%model_cdf(&
+                  LIS_rc%obs_ngrid(k), NASASMAPsm_struc(n)%ntimes, &
+                  NASASMAPsm_struc(n)%nbins))
+             allocate(NASASMAPsm_struc(n)%obs_cdf(&
+                  LIS_rc%obs_ngrid(k), NASASMAPsm_struc(n)%ntimes, &
+                  NASASMAPsm_struc(n)%nbins))
+             allocate(NASASMAPsm_struc(n)%model_mu(LIS_rc%obs_ngrid(k),&
+                  NASASMAPsm_struc(n)%ntimes))
+             allocate(NASASMAPsm_struc(n)%model_sigma(LIS_rc%obs_ngrid(k),&
+                  NASASMAPsm_struc(n)%ntimes))
+             allocate(NASASMAPsm_struc(n)%obs_mu(LIS_rc%obs_ngrid(k),&
+                  NASASMAPsm_struc(n)%ntimes))
+             allocate(NASASMAPsm_struc(n)%obs_sigma(LIS_rc%obs_ngrid(k),&
+                  NASASMAPsm_struc(n)%ntimes))
+          else  
+             allocate(NASASMAPsm_struc(n)%model_xrange(&
+                  LIS_rc%obs_ngrid(k), 1, &
+                  NASASMAPsm_struc(n)%nbins))
+             allocate(NASASMAPsm_struc(n)%obs_xrange(&
+                  LIS_rc%obs_ngrid(k), 1, &
+                  NASASMAPsm_struc(n)%nbins))
+             allocate(NASASMAPsm_struc(n)%model_cdf(&
+                  LIS_rc%obs_ngrid(k), 1, &
+                  NASASMAPsm_struc(n)%nbins))
+             allocate(NASASMAPsm_struc(n)%obs_cdf(&
+                  LIS_rc%obs_ngrid(k), 1, &
+                  NASASMAPsm_struc(n)%nbins))
+             allocate(NASASMAPsm_struc(n)%model_mu(LIS_rc%obs_ngrid(k),1))
+             allocate(NASASMAPsm_struc(n)%model_sigma(LIS_rc%obs_ngrid(k),1))
+             allocate(NASASMAPsm_struc(n)%obs_mu(LIS_rc%obs_ngrid(k),1))
+             allocate(NASASMAPsm_struc(n)%obs_sigma(LIS_rc%obs_ngrid(k),1)) 
+          endif 
 !----------------------------------------------------------------------------
 ! Read the model and observation CDF data
 !----------------------------------------------------------------------------
+         if (NASASMAPsm_struc(n)%cdf_read_opt.eq.0) then   
           call LIS_readMeanSigmaData(n,k,&
                NASASMAPsm_struc(n)%ntimes,&
                LIS_rc%obs_ngrid(k), &
-               modelcdffile(n), &
+               NASASMAPsm_struc(n)%modelcdffile, &
                "SoilMoist",&
                NASASMAPsm_struc(n)%model_mu,&
-               NASASMAPsm_struc(n)%model_sigma)
-          
+               NASASMAPsm_struc(n)%model_sigma) 
+
           call LIS_readMeanSigmaData(n,k,&
                NASASMAPsm_struc(n)%ntimes,&
                LIS_rc%obs_ngrid(k), &
-               obscdffile(n), &
+               NASASMAPsm_struc(n)%obscdffile, &
                "SoilMoist",&
                NASASMAPsm_struc(n)%obs_mu,&
-               NASASMAPsm_struc(n)%obs_sigma)
+               NASASMAPsm_struc(n)%obs_sigma)   
           
           call LIS_readCDFdata(n,k,&
                NASASMAPsm_struc(n)%nbins,&
                NASASMAPsm_struc(n)%ntimes,&
                LIS_rc%obs_ngrid(k), &
-               modelcdffile(n), &
+               NASASMAPsm_struc(n)%modelcdffile, &
                "SoilMoist",&
                NASASMAPsm_struc(n)%model_xrange,&
-               NASASMAPsm_struc(n)%model_cdf)
+               NASASMAPsm_struc(n)%model_cdf)    
           
           call LIS_readCDFdata(n,k,&
                NASASMAPsm_struc(n)%nbins,&
                NASASMAPsm_struc(n)%ntimes,&
                LIS_rc%obs_ngrid(k), &
-               obscdffile(n), &
+               NASASMAPsm_struc(n)%obscdffile, &
                "SoilMoist",&
                NASASMAPsm_struc(n)%obs_xrange,&
-               NASASMAPsm_struc(n)%obs_cdf)
-          
+               NASASMAPsm_struc(n)%obs_cdf)      
           
           if(NASASMAPsm_struc(n)%useSsdevScal.eq.1) then 
              if(NASASMAPsm_struc(n)%ntimes.eq.1) then 
@@ -449,7 +496,7 @@ contains
 !          close(100)
 !          stop
           endif
-
+         endif     
 #if 0           
           allocate(obserr(LIS_rc%obs_gnc(k),LIS_rc%obs_gnr(k)))
           obserr = -9999.0

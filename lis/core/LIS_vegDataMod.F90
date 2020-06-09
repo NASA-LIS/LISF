@@ -449,7 +449,9 @@ contains
         (LIS_rc%lsm.ne."Noah.3.2")           .and.    &
         (LIS_rc%lsm.ne."Noah.3.3")           .and.    &
         (LIS_rc%lsm.ne."Noah.3.6")           .and.    &
-        (LIS_rc%lsm.ne."NoahMP.3.6")) then
+        (LIS_rc%lsm.ne."Noah.3.9")           .and.    &
+        (LIS_rc%lsm.ne."Noah-MP.3.6")        .and.    &
+        (LIS_rc%lsm.ne."Noah-MP.4.0.1")) then
        temp = LIS_rc%udef
        do t=1,LIS_rc%ntiles(n)
           if(LIS_domain(n)%tile(t)%index.ne.-1) then 

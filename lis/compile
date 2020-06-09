@@ -48,7 +48,7 @@ done
 dashes="-------------------------------------------------------------------"
 
 echo $dashes
-echo "Compiling LIS version 7.2r..."
+echo "Compiling LIS"
 echo ""
 
 if cd ./make

@@ -107,11 +107,12 @@ subroutine get_gdas(n, findex)
   nstep = LDT_get_nstep(LDT_rc,n)
   nforce = gdas_struc(n)%nmif
   
-  if ( LDT_rc%tscount(n).eq.1 .or. LDT_rc%rstflag(n)== 1) then
+  if ( LDT_rc%tscount(n).eq.1 .or. LDT_rc%rstflag(n)== 1 .or. gdas_struc(n)%reset_flag ) then
      gdas_struc(n)%findtime1=1
      gdas_struc(n)%findtime2=1
      movetime=0        ! movetime is not properly set at time-step = 1
      LDT_rc%rstflag(n) = 0
+     gdas_struc(n)%reset_flag = .false.
   endif
   
   !-----------------------------------------------------------------

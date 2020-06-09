@@ -1,31 +1,20 @@
 
 Focus:  NLDAS-2 Forcing Dataset Processing
 
-Description:  This test case involves the processing
+Description:  This case involves the processing
       of NLDAS-2 forcing data obtained from the 
       NASA GES-DISC and generated onto domain over
       Mid-Atlantic U.S.
 
 This test case uses the following files:
   (a) this README file
-  (b) the wget data download scripts: 
-     wget_gesdisc_nldas2.sh
-     wget_nldas2forc_output.sh
-  (c) the ldt.config input file used with LDT for this testcase;
-  (d) test_output.xdf GrADS control file to view the LDT-generated output;
-  (e) and to compare with output data, download the original output
-       tar-zipped file, unpack and compare with those given files.
+  (b) the ldt.config input file used with LDT for this testcase
+  (c) test_output.xdf GrADS control file to view the LDT-generated output
 
-To run this test case: 
+To run this case: 
  
-  (a) Run the download scriptsin a working directory where you want 
-       to place the NLDAS-2 input data:
-
-       sh wget_nldasparms_portal.sh
-
-      and output files from the original NLDAS2 files to compare with:
-
-       sh wget_nldas2forc_output.sh
+  (a) Modify the ldt.config file provided here for your local file 
+       directory setup.
 
   (b) Generate the LDT executable and copy to local working directory. 
 
@@ -36,14 +25,6 @@ To run this test case:
 
   (d) View the NetCDF (*.nc) output using the sample grads file or
        the ncview executable (if you have it installed).
-
-  (e) Download and unpack the LDT test case output data by running the script
-       and untar/unpack using the command:
-
-     tar -xzvf Public-LDT_NLDAS2_Metforc_output_v71.tar.gz
- 
-     To view the original output, a grads xdf control file has been provided
-      in this directory:  orig_output.xdf
 
 
 Caveats: 

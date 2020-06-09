@@ -914,6 +914,8 @@ contains
     external read_GIA_irrigfrac
     external read_AQUASTAT_irrigtype
 
+    external read_UserDerived_irrigfrac
+
     call registerreadirrigfrac(trim(LDT_modOGirrigId)//char(0),&
          read_OzdoganGutman_irrigfrac)
 
@@ -923,6 +925,8 @@ contains
     call registerreadirrigfrac(trim(LDT_giairrigId)//char(0),read_GIA_irrigfrac)
 
     call registerreadirrigtype(trim(LDT_aquairrigId)//char(0),read_AQUASTAT_irrigtype)
+    ! Added user-derived irrigation fraction input option:
+    call registerreadirrigfrac(trim(LDT_userinputirrigId)//char(0),read_UserDerived_irrigfrac)
 
   end subroutine LDT_irrigation_plugin
 

@@ -87,13 +87,15 @@ void FTN(registerinitstatdscale)(char *j,void (*func)(), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct statdscaleinitnode* current;
   struct statdscaleinitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct statdscaleinitnode*) malloc(sizeof(struct statdscaleinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -159,13 +161,15 @@ void FTN(registerdiagnosestatdscale)(char *j,void (*func)(int*, int*), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct statdscalediagnode* current;
   struct statdscalediagnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct statdscalediagnode*) malloc(sizeof(struct statdscalediagnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -232,13 +236,15 @@ void FTN(registercomputestatdscale)(char *j,void (*func)(int*), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct statdscalecomputenode* current;
   struct statdscalecomputenode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct statdscalecomputenode*) malloc(sizeof(struct statdscalecomputenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -305,13 +311,15 @@ void FTN(registeroutputstatdscale)(char *j,void (*func)(int*), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct statdscaleoutputnode* current;
   struct statdscaleoutputnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct statdscaleoutputnode*) malloc(sizeof(struct statdscaleoutputnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
