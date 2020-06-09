@@ -27,8 +27,8 @@ module LIS_perturbMod
 ! !REVISION HISTORY:
 !
 !  25 Jun 2006: Sujay Kumar; Initial implementation
-!  24Nov10    Sujay Kumar; Added support for time varying 
-!                          perturbations
+!  24 Nov 2010: Sujay Kumar; Added support for time varying perturbations
+!   9 Jun 2020: David Mocko; Write restart file at end of the LIS run
 !
 !EOP
   use ESMF
@@ -187,7 +187,7 @@ contains
 
        alarmCheck = LIS_isAlarmRinging(LIS_rc, "LIS pert restart alarm")
 
-       if(alarmCheck) then 
+       if (alarmCheck.or.(LIS_rc%endtime==1)) then
 !  NOTE: 
 !  A single restart file will be written for forcing, state and observation
 !  perturbations. Here we assume that the same perturbation algorithm will be 
