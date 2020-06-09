@@ -343,8 +343,8 @@ contains
           do n = 1, LDT_rc%nnest
 
              write(LDT_logunit,*)"[INFO] CURRENT LSM-Crop Tile Module accounts for"
-             write(LDT_logunit,*)"[INFO]  single LANDCOVER crop type for now. Will"
-             write(LDT_logunit,*)"[INFO]  expand to include other CROP/IRRIG classes ..."
+             write(LDT_logunit,*)"[INFO]  single and multiple crop types. "
+             write(LDT_logunit,*)"[INFO]  But output varies by the crop sources"
 
           !- Determine which landcover classification "crop" index:
              select case ( LDT_rc%lc_type(n) )
@@ -371,19 +371,24 @@ contains
                 !    case default ! non-supported options
              end select
 
+!HKB: warn for USGS four crop classes not utilized
+             if ( LDT_rc%lc_type(n) .eq. "USGS" ) then
+               write(LDT_logunit,*) "[WARN] USGS LANDCOVER HAS FOUR CROP CLASSES"
+               write(LDT_logunit,*) "[WARN] CURRENTLY ONLY TWO CROP CLASSES ARE SUPPORTED HERE"
+             endif
+
           !- Read in Cropmap file or assign "Constant" crop information:
              if( croptype_select ) then
 
                 if( LDT_LSMCrop_struc(n)%crop_gridtransform == "tile" ) then
-                   print *, "[WARN] CURRENTLY CROPTILE IS NOT SUPPORTED IN LIS"
+                   write(LDT_logunit,*) "[WARN] CURRENTLY CROPTILE IS NOT SUPPORTED IN LIS"
                    LDT_LSMCrop_struc(n)%croptype%vlevels = &
                         LDT_LSMCrop_struc(n)%croptype%num_bins
                 elseif( LDT_LSMCrop_struc(n)%crop_gridtransform == "mode" ) then
-                   print *, "[WARN] NEED TO TRANSFORM THE MODE TO WRITING OUT"
-                   print *, "[WARN] DOMINANT CROP TYPE IN A CROP TILE ..."
+                   write(LDT_logunit,*) "[WARN] MODE WRITING OUT DOMINANT CROP TYPE IN A CROP TILE ..."
                    LDT_LSMCrop_struc(n)%croptype%vlevels = 1
                 elseif( LDT_LSMCrop_struc(n)%crop_gridtransform == "average" ) then
-                   print *, "[WARN] CURRENTLY LIS IS SETUP FOR DOMINANT CROPTYPE"
+                   write(LDT_logunit,*) "[WARN] CURRENTLY LIS IS SETUP FOR DOMINANT CROPTYPE"
                    LDT_LSMCrop_struc(n)%croptype%vlevels = 1
                 endif
 
@@ -466,7 +471,6 @@ contains
 
                        ! Re-normalize the crop fraction totals (user option):
                        if( croptypes_sumfrac > 1.00001 ) then
-                         !print*,'ERR! croptype_sumfrac>1',croptypes_sumfrac,c,r
                          ratio = 1.0 / croptypes_sumfrac
                          do i = 1, LDT_rc%numcrop(n)
                             if( LDT_LSMCrop_struc(n)%croptype%value(c,r,i).ne.LDT_rc%udef ) then
@@ -487,7 +491,6 @@ contains
 
                        ! If croptypes not present, but vegetation class crop present:
                        if( croptypes_sumfrac == 0. .and. vegtype_cropfrac1 > 0. ) then
-!HKB                         write(500,*) "SNB here:",c, r, vegtype_cropfrac1, LDT_LSMparam_struc(n)%landcover%value(c,r,1:LDT_rc%nt)
 
                           LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%cropclass1) = 0.
                           LDT_LSMparam_struc(n)%sfctype%value(c,r,LDT_rc%cropclass1) = 0.
@@ -495,7 +498,7 @@ contains
                           LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%cropclass2) = 0.
                           LDT_LSMparam_struc(n)%sfctype%value(c,r,LDT_rc%cropclass2) = 0.
                           endif
-                          ! realign the rest??
+                          ! realign the rest of land cover classes
                           if ( vegtype_cropfrac1 == 1.0 ) then
                            ! 100% cropland -> move to grassland
                            LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%grassclass) = vegtype_cropfrac1
@@ -514,12 +517,10 @@ contains
                              endif
                            enddo
                           endif
-!HKB                          write(500,*) "SNB reset to:", LDT_LSMparam_struc(n)%landcover%value(c,r,1:LDT_rc%nt),sum(LDT_LSMparam_struc(n)%landcover%value(c,r,:))
 
                        ! If croptypes present, but vegetation class crop not:
                        ! Replace vegetation classes with crop fractions
                        elseif( croptypes_sumfrac > 0. .and. vegtype_cropfrac1 == 0. ) then
-!HKB                         write(500,*) "reseting:",c, r, croptypes_sumfrac, LDT_LSMparam_struc(n)%landcover%value(c,r,:)
                          LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%cropclass1) = &
                                  croptypes_sumfrac
                          ratio = 1.0 - croptypes_sumfrac
@@ -542,18 +543,23 @@ contains
                            LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%cropclass2) = 0.
                            LDT_LSMparam_struc(n)%sfctype%value(c,r,LDT_rc%cropclass2) = 0.
                          endif
-!HKB                         write(500,*) "reset to:",LDT_LSMparam_struc(n)%landcover%value(c,r,:),&
-!HKB                             sum(LDT_LSMparam_struc(n)%landcover%value(c,r,:), &
-!HKB                             mask=LDT_LSMparam_struc(n)%landcover%value(c,r,:).ne.LDT_rc%udef)
-
      
                        ! Both croptypes and veg-crop class present:
                        elseif( croptypes_sumfrac > 0. .and. vegtype_cropfrac1 > 0. ) then
-                        ! HKB Note: Adjust croptypes_sum to cropland land cover
-                        ! if cropland > irrigation b/c irrigation=irrigcrop so
-                        ! cropland includes rainfed where rainfedcrop is not
-                        ! reliable (maybe too high due to GRIPC rainfed scale)
-                        ! else adjust landcover to croptypes
+                        ! Replace vegetation classes with croptypes only if 
+                        ! veg-crop class is smaller than the sum of irrigation
+                        ! crop types, otherwise 
+                        ! (i.e. vegtype_cropfrac1 > irrigcrops_sumfrac block 
+                        ! below) adjust croptypes to veg-crop class.  
+                        ! The reason behind is that croptypes is a sum of 
+                        ! irrig-crops and rainfed-crops where we trust 
+                        ! irrig-crops but less for rainfed-crops because the 
+                        ! former is merged with more data sources.  A test that
+                        ! replaces vegetation classes with croptypes regardless
+                        ! of comparing to irrig-crops suggestes that the 
+                        ! blended vegetation classes overestimate cropland. 
+                        ! This approach should be revisited when using 
+                        ! different set of merging datasets.
                         if ( vegtype_cropfrac1 > irrigcrops_sumfrac ) then
 
                          ratio = vegtype_cropfrac1 / croptypes_sumfrac 
@@ -721,11 +727,11 @@ contains
 
 !HKB: output croptype fractions in 3D if source is MIRCA 
                  if ( LDT_LSMCrop_struc(n)%croptype%source .eq. "MIRCA" ) then  
-                    print *, "[WARN] OUTPUT CROPTILE for num_bins..."
+                    write(LDT_logunit,*) "[WARN] CHANGING OUTPUT CROPTILE to num_bins for MIRCA"
                     LDT_LSMCrop_struc(n)%croptype%vlevels = &
                         LDT_LSMCrop_struc(n)%croptype%num_bins
                  else  
-                    print *, "[WARN] DOMINANT CROP TYPE IN A CROP TILE ..."
+                    write(LDT_logunit,*) "[WARN] DOMINANT CROP TYPE IN A CROP TILE ..."
                    ! Convert CROPTYPE to single dominant type for now, LIS - required!
                    !  This is for testing purposes; will be replaced with the vegtiles in LIS ...
                     allocate(croparray(LDT_LSMCrop_struc(n)%croptype%num_bins))
@@ -813,12 +819,12 @@ contains
                    else
                      crop_index = crop_index + LDT_rc%nt
                    endif
-                   print *, "Crop_index:: ",crop_index
 
                    !- Assign the crop layer for landcover-based crop class:
                       do r = 1, LDT_rc%lnr(n) 
                          do c = 1, LDT_rc%lnc(n)
-!HKB use the old code to accomodate more than two cropland classes 
+!HKB added back the old code to accomodate more than two cropland classes 
+!    renamed landcover_fgrd to vegtype_cropfrac1 to be consistent
 !                               landcover_fgrd = &
 !                                    LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%cropclass1)
 !                               if( landcover_fgrd > 0. ) then
@@ -826,31 +832,31 @@ contains
 !                               endif
                            ! Landcover map crop(s') gridcell fractions:
                            if( LDT_rc%cropclass1 .ne. LDT_rc%cropclass2 ) then  ! Account for two croptypes
-                             landcover_fgrd = &   
+                             vegtype_cropfrac1 = &   
                                  LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%cropclass1) &
                                + LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%cropclass2)
                            else   ! Account only for one croptype
-                             landcover_fgrd = &   
+                             vegtype_cropfrac1 = &   
                                  LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%cropclass1) 
                            endif                       
 
                            ! Crop map gridcell fraction:
                            crop_fgrd = LDT_LSMCrop_struc(n)%croptype%value(c,r,1)
 
-                           ! If landcover indicates crop, but cropmap does not: Assign to maize type
-                           if( landcover_fgrd > 0. .and. crop_fgrd <= 0. ) then
+                           ! If landcover indicates crop, but cropmap does not: Assign to Default crop type in ldt.config
+                           if( vegtype_cropfrac1 > 0. .and. crop_fgrd <= 0. ) then
                               LDT_LSMCrop_struc(n)%croptype%value(c,r,1) = float(crop_index)
                       
                            ! If landcover has no crop, but cropmap does: Assign as undefined
-                           elseif( landcover_fgrd == 0. .and. crop_fgrd > 0. ) then
+                           elseif( vegtype_cropfrac1 == 0. .and. crop_fgrd > 0. ) then
                               LDT_LSMCrop_struc(n)%croptype%value(c,r,1) = LDT_rc%udef
                            endif
                          enddo
                       enddo
 
                   else
-                      print *, "[WARN] You've selected CONSTANT, so you need to select "
-                      print*,  "'single' crop value assignment for this case. "
+                      write(LDT_logunit,*) "[WARN] With CONSTANT, single crop "
+                      write(LDT_logunit,*) "[WARN] value must be assigned."
                   endif
                 endif  ! End Crop Type Map or Assignment Condition
 

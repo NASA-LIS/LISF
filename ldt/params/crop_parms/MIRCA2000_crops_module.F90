@@ -139,7 +139,6 @@ subroutine read_MIRCA2000_croptype(n,num_types,fgrd)
       call LDT_endrun
    endif
    write(LDT_logunit,*)"[INFO] Reading MIRCA2000 crop file: ",trim(LDT_LSMCrop_struc(n)%croptfile)
-   write(LDT_logunit,*)" * Note: These crop files are continuous fields of crop areas (ha), as in fractions." 
 
 !- Retrieve the croptype array for user-selected classification:
    allocate( croptype_array(LDT_rc%numcrop(n)), STAT=err )
@@ -178,7 +177,8 @@ subroutine read_MIRCA2000_croptype(n,num_types,fgrd)
             croptype_frac(c,r,i) = LDT_rc%udef
             irrig_frac(c,r,i) = LDT_rc%udef
             rainfed_frac(c,r,i) = LDT_rc%udef
-            print*,'WARN check:',c,r,irrigated(c,r),rainfed(c,r)  ! both should be missing
+            write(LDT_logunit,*) "[WARN] The MIRCA2000 irrigated and rainfed ",&
+                                 " both should be missing at "c,r,irrigated(c,r),rainfed(c,r)  
             ! save rainfed plant/harvest days in case of later use
             if ( cropcaflag ) then  
              if ( rainfed(c,r).ne.LDT_rc%udef ) then
@@ -277,12 +277,10 @@ subroutine read_MIRCA2000_croptype(n,num_types,fgrd)
               if ( LDT_LSMCrop_struc(n)%plantday%value4d(c,r,i,mc) == 998. ) then
                 LDT_LSMCrop_struc(n)%plantday%value4d(c,r,i,mc) = LDT_rc%udef
               elseif ( LDT_LSMCrop_struc(n)%plantday%value4d(c,r,i,mc) == 999. ) then
-                print*,'plantday needs to be filled at ',c,r,i,mc
               endif
               if ( LDT_LSMCrop_struc(n)%harvestday%value4d(c,r,i,mc) == 998. ) then
                 LDT_LSMCrop_struc(n)%harvestday%value4d(c,r,i,mc) = LDT_rc%udef
               elseif ( LDT_LSMCrop_struc(n)%harvestday%value4d(c,r,i,mc) == 999. ) then
-                print*,'harvestday needs to be filled at ',c,r,i,mc
               endif
              enddo
            enddo
@@ -533,7 +531,7 @@ end subroutine read_MIRCA2000_croptype
       deallocate(gi1p, li1p)
 
      case default
-       write(*,*)"[WARN] Other spatial grid transformations are not currently supported"
+       write(*,*)"[ERR] Other spatial grid transformations are not currently supported"
        write(*,*)"   for the tiled 'MIRCA2000' crop type maps. Please select either:"
        write(*,*)"  -- neighbor, bilinear, budget-bilinear (to downscale)"
        write(*,*)"  -- average (to upscale) or none"

@@ -44,17 +44,17 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
 !  the crop and irrigation datasets. 
 !  Originally designed for merging GIA, GRIPC, and MIRCA datasets.
 !  In this case, 
-!    1. GIA provides the primary irrigation fraction (intensity), 
-!    2. GRIPC provides fraction of paddy irrigation, irrigation and rainfed
-!    3. MIRCA provides irrigated crop fraction to be aligned with 1 & 2.
-!  Note rainfed croptypes are aligned with GRIPC but contributes to landcover
-!  fraction only when number of croptypes are set to 52 (irrig & rainfed tile)
-!  By default (croptypes=26), irrig crop fraction reflects GIA and GRIPC 
-!  and will replace landcover "croptype" composition in the main 
-!  LDT_LSMCropModifier_Mod routine.
+!    1. GIA provides the primary irrigation fraction (intensity). 
+!    2. GRIPC provides fraction of paddy irrigation, irrigation and rainfed.
+!    3. MIRCA provides irrigated crop and rainfed fractions.
+!  The grid fraction returned from this routine for "MIRCA" and "MIRCA52" 
+!  crop type source options are as follows:
+!    1. num_types = 26, fgrd is a sum of irrigated and rainfed crops, or
+!       rainfed crops where no irrigated crops.
+!    2. num_types = 52, fgrd(1:26)= irrigated and fgrd(27:52)=rainfed
 !
-!  If cropcalender option is true, it adjust planting/hearvesting dates where
-!  we plant wheat due to mismatch b/w MIRCA and GIA/GRIPC.
+!  If cropcalender option is true, this routine adjusts the planting/hearvesting
+!  dates where we plant wheat due to mismatch b/w MIRCA and GIA/GRIPC.
 !  
 !  The arguments are:
 !  \begin{description}
@@ -139,15 +139,18 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
 ! ----------------------------------------------------------------------
 ! irrigcrop(I,J,CROPS) : irrigated crop fractions with rice is the 3rd slice
 ! rainfedcrop(I,J,CROPS) : rainfed crop fractions with rice is the 3rd slice
-! 1. Merge LDT_irrig_struc(n)%irrigfrac (irrigation fraction derived in 
+! 1. GIA-GRIPC 
+!    Merge LDT_irrig_struc(n)%irrigfrac (irrigation fraction derived in 
 !    LDT_irrigationMod, i.e. GIA) with the second irrigation dataset (i.e.GRIPC)
 !    to separate into IRRIGFRAC and PADDYFRAC 
 !     GIA yes -> scale by GRIPC IFRAC and PFRAC 
 !         no  -> IFRAC = PFRAC = 0
-! 2. Adjust irrigation crop fractions of MIRCA to match
+! 2. GIA-GRIPC-MIRCA irrigated non-rice(a) and rice(b) CROPS
+!    Adjust irrigation crop fractions of MIRCA to match
 !     IFRAC = sum of irrigated crops except for rice
 !     PFRAC = irrigated rice, scaled by GIA
-! 3. Adjust rainfed crop fractions of MIRCA to match
+! 3. GIA-GRIPC-MIRCA Rainfed CROPS
+!    Adjust rainfed crop fractions of MIRCA to match
 !     RFRAC = sum of all rainfed crops including rice
 ! 4. Align and fill in CROP CALENDAR dates for adjusted crop fractions accordingly 
 ! ----------------------------------------------------------------------
@@ -157,7 +160,6 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
 !          IF(LDT_LSMparam_struc(nest)%landmask%value(I,J,1) > 0.) THEN
              IF((maxval(LDT_LSMCrop_struc(nest)%irrigcrop%value (I,J,:)) > 0.).OR. &
                 (maxval(LDT_LSMCrop_struc(nest)%rainfedcrop%value (I,J,:)) > 0.).OR. &
-!HKB                (IFRAC (I,J) > 0.).OR.(PFRAC (I,J) > 0.)) THEN
                 (IFRAC (I,J) > 0.).OR.(PFRAC (I,J) > 0.).OR.(RFRAC (I,J) > 0.)) THEN
 
                 MICROP = 0.
@@ -183,7 +185,7 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
                 IF(MICROPA < MICROP) MICROPA = MICROP !sum of icrops no rice
                 IF(MRCROPA < MRCROP) MRCROPA = MRCROP !sum of rcrops no rice
 
-                ! GIA-GRIPC
+                ! 1. GIA-GRIPC
                 ! .........
 
                 IF(GIA <= 0 ) THEN
@@ -198,13 +200,10 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
                       PFRAC (I,J)  = 0.
                       IFRAC (I,J)  = GIA
                    ELSE
-                      ! GRIPC HAVE DATA
-                      MICROP = PFRAC (I,J) + IFRAC (I,J) !  RFRAC (I,J)
-!HKB                      IF (LDT_irrig_struc(n)%irrigfrac%value(I,J,1) > MICROP) THEN
-!                         ! RFRAC (I,J)  = RFRAC (I,J) * GIA (I,J) / MICROP
+                      ! GRIPC has data
+                      MICROP = PFRAC (I,J) + IFRAC (I,J) 
                          PFRAC (I,J)  = PFRAC (I,J) * GIA / MICROP
                          IFRAC (I,J)  = IFRAC (I,J) * GIA / MICROP
-!                      ENDIF
                    ENDIF
                 ENDIF
 !HKB            reset RFRAC and NONCROP in GRIPC according to new IFRAC/PFRAC
@@ -214,39 +213,46 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
                   NONCROP (I,J) = NONCROP(I,J) / GRIPCTOT
                 endif
 
-                ! GIA-GRIPC-MIRCA IRRIGATED CROPS
+                ! 2a. GIA-GRIPC-MIRCA IRRIGATED CROPS
                 ! ...............................
 
                 IF (IFRAC(I,J)  == 0) THEN
                    DO N = 1, NCROPS
-                      IF(N /= 3) LDT_LSMCrop_struc(nest)%irrigcrop%value(I,J,N) = 0.
+                      IF(N /= 3) &
+                       LDT_LSMCrop_struc(nest)%irrigcrop%value(I,J,N) = 0.
                    END DO
                 ELSE
 
                    IF(MICROPA > 0.) THEN
 
-                      ! MIRCA has data too, thus scale crop fractions to match GIA-GRIPC (i.e. GIA)
+                      ! MIRCA irrigation crop area is present, thus scale 
+                      ! crop fractions to match GIA-GRIPC (i.e. GIA)
                       DO N = 1, NCROPS
-                         IF(N /= 3) LDT_LSMCrop_struc(nest)%irrigcrop%value(I,J,N) = LDT_LSMCrop_struc(nest)%irrigcrop%value(I,J,N) * IFRAC (I,J) /  MICROPA
+                         IF(N /= 3) &
+                          LDT_LSMCrop_struc(nest)%irrigcrop%value(I,J,N) = &
+                           LDT_LSMCrop_struc(nest)%irrigcrop%value(I,J,N) * &
+                           IFRAC (I,J) /  MICROPA
                       END DO
 
                    ELSE
 
-                      ! MIRCA does not have data but GRIPC has
+                      ! MIRCA irrigation crop area is not present, but GRIPC 
+                      ! irrigation area is present
                       IF(MRCROPA > 0.) THEN
 
-                         ! Looks like MIRCA rainfed frac has data
+                         ! MIRCA rainfed area is present
                          DO N = 1, NCROPS
                             IF(N /= 3) THEN
-                               LDT_LSMCrop_struc(nest)%irrigcrop%value(I,J,N)= &
-                                 LDT_LSMCrop_struc(nest)%rainfedcrop%value(I,J,N) * IFRAC (I,J) /  MRCROPA
+                              LDT_LSMCrop_struc(nest)%irrigcrop%value(I,J,N)= &
+                               LDT_LSMCrop_struc(nest)%rainfedcrop%value(I,J,N) * IFRAC (I,J) /  MRCROPA
                                LDT_LSMCrop_struc(nest)%rainfedcrop%value (I,J,N) = 0.
                             ENDIF
                          END DO
                          MRCROPA = 0.
                       ELSE
 
-                         ! MIRCA irrigated and rainfed do not have data plant some wheat
+                         ! MIRCA irrigated and rainfed do not have data, thus
+                         ! plant some wheat
                          LDT_LSMCrop_struc(nest)%irrigcrop%value (I,J,1) =  IFRAC (I,J)
                          ! Reset Planting/Harvesting dates to be filled later
                          if ( cropcaflag .and.  &
@@ -261,30 +267,35 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
                 ENDIF
 
 
-                ! GIA-GRIPC-MIRCA PADDY
+                ! 2b. GIA-GRIPC-MIRCA PADDY
                 ! .....................
                 IF(PFRAC (I,J) == 0.) THEN
                    LDT_LSMCrop_struc(nest)%irrigcrop%value (I,J,3) = 0.
                 ELSE
                    IF(MIRICEA > 0.) THEN
 
-                      ! MIRCA has data too, thus scale crop fractions to match GRIPC
+                      ! MIRCA irrigated rice is present too, thus scale 
+                      ! crop fractions to match GRIPC
                       LDT_LSMCrop_struc(nest)%irrigcrop%value (I,J,3) = &
-                        LDT_LSMCrop_struc(nest)%irrigcrop%value (I,J,3) * PFRAC (I,J) /  MIRICEA
+                        LDT_LSMCrop_struc(nest)%irrigcrop%value (I,J,3) * &
+                        PFRAC (I,J) /  MIRICEA
 
                    ELSE
 
-                      ! MIRCA does not have data but GRIPC has
+                      ! MIRCA irrigated rice area is not present, but GRIPC has
+                      ! paddy area present
                       IF(MRRICEA > 0.) THEN
 
-                         ! Looks like MIRCA rainfed frac has rice
+                         ! Looks like MIRCA rainfed rice
                          LDT_LSMCrop_struc(nest)%irrigcrop%value (I,J,3) =  &
-                          LDT_LSMCrop_struc(nest)%rainfedcrop%value (I,J,3) * PFRAC (I,J) /  MRRICEA
+                          LDT_LSMCrop_struc(nest)%rainfedcrop%value (I,J,3) * &
+                          PFRAC (I,J) /  MRRICEA
                          LDT_LSMCrop_struc(nest)%rainfedcrop%value (I,J,3) = 0.
                          MRRICEA = 0.
                       ELSE
 
-                         ! MIRCA irrigated and rainfed do not have data plant rice to PFRAC
+                         ! MIRCA irrigated and rainfed do not have rice, thus
+                         ! plant rice for PFRAC
                          LDT_LSMCrop_struc(nest)%irrigcrop%value (I,J,3) =  PFRAC (I,J)
                          ! Reset Planting/Harvesting dates to be filled later
                          if ( cropcaflag .and.  &
@@ -298,7 +309,7 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
                    ENDIF
                 ENDIF
 
-                ! GIA-GRIPC-MIRCA Rainfed CROPS
+                ! 3. GIA-GRIPC-MIRCA Rainfed CROPS
                 ! .............................
 
                 IF( RFRAC (I,J) == 0.) THEN
@@ -307,18 +318,24 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
 
                    IF(MRCROPA + MRRICEA > 0.) THEN
 
-                      ! MIRCA has data too, thus scale crop fractions to match GRIPC to be used for aligning land cover crop types
+                      ! MIRCA rainfed crop area is present too, thus scale crop
+                      ! fractions to match GRIPC to be used for aligning land cover crop types
                       DO N = 1, NCROPS
-                        IF(N /= 3) LDT_LSMCrop_struc(nest)%rainfedcrop%value (I,J,N) = &
-                          LDT_LSMCrop_struc(nest)%rainfedcrop%value (I,J,N) * RFRAC (I,J) / (MRCROPA + MRRICEA)
+                        IF(N /= 3) &
+                         LDT_LSMCrop_struc(nest)%rainfedcrop%value (I,J,N) = &
+                          LDT_LSMCrop_struc(nest)%rainfedcrop%value (I,J,N) * &
+                          RFRAC (I,J) / (MRCROPA + MRRICEA)
                       END DO
 
-                      IF (MRRICEA > 0.) LDT_LSMCrop_struc(nest)%rainfedcrop%value (I,J,3) = LDT_LSMCrop_struc(nest)%rainfedcrop%value (I,J,3)  * RFRAC (I,J) / (MRCROPA + MRRICEA)
+                      IF (MRRICEA > 0.) &
+                       LDT_LSMCrop_struc(nest)%rainfedcrop%value (I,J,3) = &
+                        LDT_LSMCrop_struc(nest)%rainfedcrop%value (I,J,3) * &
+                        RFRAC (I,J) / (MRCROPA + MRRICEA)
 
                    ELSE
 
-                      ! MIRCA does not have data but GRIPC has
-                      ! MIRCA rainfed do not have data plant some wheat
+                      ! MIRCA rainfed crop area is not present but GRIPC has
+                      ! rainfed area, thus plant some wheat
                       LDT_LSMCrop_struc(nest)%rainfedcrop%value (I,J,1) =  RFRAC (I,J)
                       if ( cropcaflag .and.  &
                           LDT_LSMCrop_struc(nest)%multicroppingmax.eq.2 ) then
@@ -331,8 +348,8 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
                 ENDIF
 
 ! Reset croptype fractions
-! num_types=26: croptype fraction is sum of irrigcrop + rainfedcrop, but 
-!               sum of irrigcrop maybe zero if GIA=0, then we still need
+! num_types=26: croptype fraction is a sum of irrigcrop + rainfedcrop, but 
+!               the sum of irrigcrop maybe zero if GIA=0, then we still need
 !               croptype fraction to fill cropland land cover if it exists
 !               in this case, croptype is set to rainfedcrop
                 DO N = 1, NCROPS
@@ -359,7 +376,8 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
        END DO  ! I
     END DO  ! J
 
-! Fill in CROP CALENDAR dates for newly planted wheat and rice (N=1, 3)
+! 4. Fill in CROP CALENDAR dates for newly planted wheat and rice (N=1, 3)
+! .............................
     if ( cropcaflag ) then
      allocate(frac_gridp(LDT_rc%lnc(nest),LDT_rc%lnr(nest)))
      allocate(frac_gridh(LDT_rc%lnc(nest),LDT_rc%lnr(nest)))
@@ -374,10 +392,8 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
                ! rainfed crops
                ! .......................................................
                IF(plantday(I,J,N,1) == 999) THEN
-!                  print*,'Need to fill ',N,I,J,fgrd(I,J,N)
  
                 IF(fgrd(I,J,N) > 0.) THEN
-!                 print*,'Try to fill in ',N,I,J
                  l = 1
                  foundPt = .false.
                  do while (.not. foundPt)
@@ -392,15 +408,12 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
                           plantday(I,J,N,1) = frac_gridp(c,r)
                           harvestday(I,J,N,1) = frac_gridh(c,r)
                           foundPt = .true.
-!                          print*,'Found ',l,c,r
                           exit
                        endif
                        end do
                     end do
                     l = l + 1
-!                    print*,'try ',l,imn,imx,jmn,jmx
                  end do
-!                 print*,'Final ',N,I,J,plantday(I,J,N,1),harvestday(I,J,N,1)
                 ELSE   ! fgrd = 0
                  plantday(I,J,N,1) = 998.
                  harvestday(I,J,N,1) = 998.
@@ -420,7 +433,6 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
               if ( plantday(I,J,N,mc) == 998. ) then
                 LDT_LSMCrop_struc(nest)%plantday%value4d(I,J,N,mc) = LDT_rc%udef
               elseif ( LDT_LSMCrop_struc(nest)%plantday%value4d(I,J,N,mc) == 999. ) then
-!                print*,'WARN: plantday needs to be filled at ',I,J,N,mc
                 LDT_LSMCrop_struc(nest)%plantday%value4d(I,J,N,mc) = plantday(I,J,N,mc)
               else
                 LDT_LSMCrop_struc(nest)%plantday%value4d(I,J,N,mc) = plantday(I,J,N,mc)
@@ -428,7 +440,6 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
               if ( harvestday(I,J,N,mc) == 998. ) then
                 LDT_LSMCrop_struc(nest)%harvestday%value4d(I,J,N,mc) = LDT_rc%udef
               elseif ( harvestday(I,J,N,mc) == 999. ) then
-!                print*,'WARN: harvestday needs to be filled at ',I,J,N,mc
                 LDT_LSMCrop_struc(nest)%harvestday%value4d(I,J,N,mc) = harvestday(I,J,N,mc)
               else
                 LDT_LSMCrop_struc(nest)%harvestday%value4d(I,J,N,mc) = harvestday(I,J,N,mc)
