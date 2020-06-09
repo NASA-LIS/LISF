@@ -18,6 +18,7 @@ module LDT_pluginIndices
 ! !REVISION HISTORY:
 !  23 Oct 2008: Sujay Kumar  -- Initial Specification
 !  17 Jul 2012: KR Arsenault -- Updated entries with capitalization rules
+!  01 Mar 2020: Yeosang Yoon -- Added MERIT DEM
 !
 !EOP
   PRIVATE
@@ -234,6 +235,7 @@ module LDT_pluginIndices
    character*50, public, parameter :: LDT_gtopoNATId = "GTOPO30_Native"
    character*50, public, parameter :: LDT_srtmLISId  = "SRTM_LIS"
    character*50, public, parameter :: LDT_srtmNATId  = "SRTM_Native"
+   character*50, public, parameter :: LDT_merit1KId  = "MERIT_1K"
 
 !-------------------------------------------------------------------------
 ! Soils sources
