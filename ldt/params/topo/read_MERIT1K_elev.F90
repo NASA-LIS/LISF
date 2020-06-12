@@ -230,16 +230,6 @@ subroutine read_MERIT1K_elev( n, num_bins, fgrd, elevave )
                 form="unformatted", access="direct", status="old", &
                 convert='big_endian',recl=tile_nc_antarc*tile_nr_antarc*2)
              read(ftn, rec=1) read_elevtile_antarc(:, :, k)
-
-             !! EMK....Make sure GTOPO30 ocean points are set to same
-             !! zero elevation value used with SRTM30 ocean points.
-             !do r = 1,tile_nr_antarc
-             !   do c = 1,tile_nc_antarc
-             !      if (read_elevtile_antarc(c,r,k) .eq. -9999.) then
-             !         read_elevtile_antarc(c,r,k) = 0
-             !      end if
-             !   end do ! c
-             !end do ! r
            endif
 
            ! Mosaic all elevation tiles together:
