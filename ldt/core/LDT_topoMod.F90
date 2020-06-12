@@ -345,7 +345,8 @@ contains
 
        ! Don't need to read in "Native" grid extents/resolution, just for LIS inputs
          if( index(LDT_LSMparam_struc(n)%elevation%source,"Native").eq.0 .and. &
-             index(LDT_LSMparam_struc(n)%elevation%source,"CONSTANT").eq.0 ) then
+             index(LDT_LSMparam_struc(n)%elevation%source,"CONSTANT").eq.0 .and. &
+             index(LDT_LSMparam_struc(n)%elevation%source,"1K").eq.0 ) then  ! add for MERIT_1K (Native file format)
             call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%topo_proj,&
                  label="Topography map projection:",rc=rc)
             call LDT_verify(rc,'Topography map projection: option not specified in the config file')
