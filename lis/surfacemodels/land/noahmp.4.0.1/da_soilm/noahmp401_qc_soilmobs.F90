@@ -134,8 +134,8 @@ subroutine NoahMP401_qc_soilmobs(n,k,OBS_State)
      !SMCMAX(t)  =  parameters%SMCMAX(SOILTYP)  !  SMCMAX(t)  = MAXSMC (SOILTYP) 
      !SMCWLT(t)  =  parameters%SMCWLT(SOILTYP)   ! SMCWLT(t) = WLTSMC (SOILTYP)
      SOILTYP = NOAHMP401_struc(n)%noahmp401(t)%soiltype
-     SMCMAX  = SMCMAX_TABLE(SOILTYP)
-     SMCWLT  = SMCWLT_TABLE(SOILTYP)
+     SMCMAX(t)  = SMCMAX_TABLE(SOILTYP)
+     SMCWLT(t)  = SMCWLT_TABLE(SOILTYP)
      
   enddo
 
