@@ -317,7 +317,6 @@ subroutine read_MERIT1K_aspect( n, num_bins, fgrd, aspectave )
       i = 0
       do r = 1, LDT_rc%lnr(n)
          do c = 1, LDT_rc%lnc(n); i = i + 1
-!            if( go1(i) < -1. ) go1(i) = LDT_rc%udef
          !- Single elevation layer, write to first bin:
             fgrd(c,r,1) = 1.0
             aspectave(c,r,1) = go1(i)
