@@ -64,7 +64,7 @@ subroutine get_cmorph(n, findex)
   real*8  :: datatime, breaktime, fnametime                    ! Times used in HUFFMAN to determine data and filename boundaries (see below)
   integer :: order
   real    :: gmt1,gmt4,ts1,ts4
-  character(len=99) :: filename ! Filename variables for precip data sources
+  character(len=140) :: filename ! Filename variables for precip data sources
   integer :: kk
 
 !=== End Variable Definition =======================
