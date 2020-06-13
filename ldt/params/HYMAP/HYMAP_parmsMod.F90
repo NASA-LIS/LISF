@@ -16,6 +16,7 @@ module HYMAP_parmsMod
 !  29 Mar 2013: Sujay Kumar; Initial implementation
 !   2 Dec 2015: Augusto Getirana: Included drainage area and basin maps
 !   1 Nov 2017: Augusto Getirana: Included flow type maps, baseflow and surface runoff dwi maps
+!   9 Jun 2020: Yeosang Yoon: Support flexible grid setting (dx~=dy)
 !
   use ESMF
   use LDT_coreMod
@@ -584,20 +585,22 @@ contains
        nextx = nint(HYMAP_struc(n)%hymap_flow_dir_x%value(:,:,1))
        nexty = nint(HYMAP_struc(n)%hymap_flow_dir_y%value(:,:,1))
        mask = nint(HYMAP_struc(n)%hymap_mask%value(:,:,1))
-       
+
+       ! Yeosang Yoon: support flexible grid setting
        call adjust_nextxy(&
             LDT_rc%gnc(n),&
             LDT_rc%gnr(n),&
             -9999, &
-            nextx, & 
-            nexty, & 
-            mask, & 
-            LDT_rc%gridDesc(n,5),&
-            LDT_rc%gridDesc(n,4),&
-            hymapparms_gridDesc(n,5),&
-            hymapparms_gridDesc(n,4),&
-            hymapparms_gridDesc(n,9))
-       
+            nextx, &
+            nexty, &
+            mask, &
+            LDT_rc%gridDesc(n,5),&   ! lon min of smaller domain
+            LDT_rc%gridDesc(n,4),&   ! lat min of smaller domain
+            hymapparms_gridDesc(n,5),&   ! lon min of larger domain
+            hymapparms_gridDesc(n,4),&   ! lat min of larger domain
+            hymapparms_gridDesc(n,9),&   ! dx spatial resolution
+            hymapparms_gridDesc(n,10))   ! dy spatial resolution
+ 
        HYMAP_struc(n)%hymap_flow_dir_x%value(:,:,1) = real(nextx(:,:))
        HYMAP_struc(n)%hymap_flow_dir_y%value(:,:,1) = real(nexty(:,:))
        
@@ -719,7 +722,7 @@ contains
 
   end subroutine HYMAPparms_writeData
 
-  subroutine adjust_nextxy(nx,ny,imis,i2nextx,i2nexty,i2mask,zgx,zgy,zpx,zpy,zres)
+  subroutine adjust_nextxy(nx,ny,imis,i2nextx,i2nexty,i2mask,zgx,zgy,zpx,zpy,xres,yres)
     ! ================================================
     ! to adjust flow direction matrixes for smaller domain
     ! by Augusto GETIRANA
@@ -739,18 +742,17 @@ contains
     real*4,  intent(in)    :: zgy                 ! lat min of smaller domain
     real*4,  intent(in)    :: zpx                 ! lon min of larger domain
     real*4,  intent(in)    :: zpy                 ! lat min of larger domain
-    real*4,  intent(in)    :: zres                ! spatial resolution
+    real*4,  intent(in)    :: xres,yres           ! spatial resolution
     
     integer, parameter :: ibound = -9
     
     integer             ::  idx,idy
-    
-    idx=int((zgx-zpx)/zres)
-    idy=int((zgy-zpy)/zres)
+
+    idx=int((zgx-zpx)/xres)
+    idy=int((zgy-zpy)/yres)
     
     where(i2nextx>0)i2nextx=i2nextx-idx
     where(i2nexty>0)i2nexty=i2nexty-idy
-    
 
     i2nexty(1,:)=imis
     i2nexty(nx,:)=imis
