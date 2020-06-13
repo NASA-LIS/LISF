@@ -70,11 +70,12 @@ subroutine read_HYMAP_fld_height(n, array)
              rlat(c,r),rlon(c,r))
      enddo
   enddo
-  
+
+  ! Yeosang Yoon: fix typo
   nc_dom = nint((HYMAP_struc(n)%hymapparms_gridDesc(8)-&
-       HYMAP_struc(n)%hymapparms_gridDesc(5))/(HYMAP_struc(n)%hymapparms_gridDesc(10)))+1
+       HYMAP_struc(n)%hymapparms_gridDesc(5))/(HYMAP_struc(n)%hymapparms_gridDesc(9)))+1
   nr_dom = nint((HYMAP_struc(n)%hymapparms_gridDesc(7)-&
-       HYMAP_struc(n)%hymapparms_gridDesc(4))/(HYMAP_struc(n)%hymapparms_gridDesc(9)))+1
+       HYMAP_struc(n)%hymapparms_gridDesc(4))/(HYMAP_struc(n)%hymapparms_gridDesc(10)))+1
 
   do k=1,HYMAP_struc(n)%hymap_fld_height%vlevels
 !     call readLISdata(n, ftn, LDT_rc%hymap_proj, &
@@ -83,14 +84,14 @@ subroutine read_HYMAP_fld_height(n, array)
      do r=1,LDT_rc%lnr(n)
         do c=1,LDT_rc%lnc(n)
            line1 = nint((rlat(c,r)-HYMAP_struc(n)%hymapparms_gridDesc(4))/&
-                HYMAP_struc(n)%hymapparms_gridDesc(9))+1
-           line2 = nint((rlon(c,r)-HYMAP_struc(n)%hymapparms_gridDesc(5))/&
                 HYMAP_struc(n)%hymapparms_gridDesc(10))+1
+           line2 = nint((rlon(c,r)-HYMAP_struc(n)%hymapparms_gridDesc(5))/&
+                HYMAP_struc(n)%hymapparms_gridDesc(9))+1
            line = (k-1)*nc_dom*nr_dom + (line1-1)*nc_dom + line2
            read(ftn,rec=line) array(c,r,k)
         enddo
      enddo
-     
+
      do r=1,LDT_rc%lnr(n)
         do c=1,LDT_rc%lnc(n)
            if(array(c,r,k).lt.0) then
