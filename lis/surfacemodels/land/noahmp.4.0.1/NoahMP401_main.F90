@@ -27,7 +27,6 @@ subroutine NoahMP401_main(n)
     use LIS_logMod, only     : LIS_logunit, LIS_endrun
     use LIS_FORC_AttributesMod
     use NoahMP401_lsmMod
-    use module_sf_noahmplsm_401, only: calhum, noahmp_parameters
 
     implicit none
 ! !ARGUMENTS:
@@ -233,8 +232,7 @@ subroutine NoahMP401_main(n)
     real                 :: startsm, startswe, startint, startgw, endsm
 
     ! EMK for 557WW
-    real :: tmp_q2sat, tmp_dqstd2
-    type(noahmp_parameters) :: tmp_parameters
+    real :: tmp_q2sat, tmp_es
     character*3 :: fnest
 
     allocate( tmp_sldpth( NOAHMP401_struc(n)%nsoil ) )
@@ -655,7 +653,8 @@ subroutine NoahMP401_main(n)
                                    tmp_chuc              , & ! out   - under canopy exchange coefficient [-]
                                    tmp_chv2              , & ! out   - veg 2m exchange coefficient [-]
                                    tmp_chb2              , & ! out   - bare 2m exchange coefficient [-]
-                                   tmp_relsmc            )   ! out   - relative soil moisture [-]
+                                   tmp_relsmc            , &
+                                   NOAHMP401_struc(n)%noahmp401(t)%param)   ! out   - relative soil moisture [-]
 
             ! save state variables from local variables to global variables
             NOAHMP401_struc(n)%noahmp401(t)%sfcrunoff       = tmp_sfcrunoff
@@ -772,8 +771,10 @@ subroutine NoahMP401_main(n)
             if (tmp_tair .lt. &
                  noahmp401_struc(n)%noahmp401(t)%tair_agl_min) then
                noahmp401_struc(n)%noahmp401(t)%tair_agl_min = tmp_tair
-               call calhum(tmp_parameters, tmp_tair, tmp_psurf, tmp_q2sat, &
-                    tmp_dqstd2)
+               ! Use formulation based on Noah.3.6 code, which treats
+               ! q2sat as saturated specific humidity
+               tmp_es = 611.0*exp(2.501E6/461.0*(1./273.15 - 1./tmp_tair))
+               tmp_q2sat = 0.622*tmp_es/(tmp_psurf-(1.-0.622)*tmp_es)
                noahmp401_struc(n)%noahmp401(t)%rhmin = tmp_qair / tmp_q2sat
             endif
 

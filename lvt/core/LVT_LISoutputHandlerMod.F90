@@ -405,6 +405,8 @@ module LVT_LISoutputHandlerMod
    integer :: LVT_LIS_MOC_TAIRFORC_MIN(3)  = -9999 ! EMK Initialize
    integer :: LVT_LIS_MOC_TAIRFORC_MAX(3)  = -9999 ! EMK Initialize
 
+   integer :: LVT_LIS_MOC_ESI(3) = -9999
+
    integer :: LVT_LIS_MOC_LSM_COUNT(3)
    integer :: LVT_LIS_MOC_ROUTING_COUNT(3)
    integer :: LVT_LIS_MOC_RTM_COUNT(3)
@@ -3151,11 +3153,15 @@ contains
                "relative_soil_moisture",&
                "relative soil moisture", "F",rc)
           if(rc.eq.1) then 
-             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_RELSMC(kk),&
+             !EMK...Add support for "-"
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_RELSMC(kk),&
                   LVT_LISoutput(kk)%head_lsm_list,&
-                  2,nsize,nensem,(/"%    ","m3/m3"/),1,(/"-"/),&
-                  valid_min=(/0.0,0.0/),valid_max=(/1.0,1.0/),gribSFC=grib_depthlvl,gribLvl=0)     
-!                  valid_min=(/0.0/),valid_max=(/1.0/),gribSFC=1,gribLvl=1)    
+                  3, nsize, nensem, (/"%    ", "m3/m3", "-    "/), &
+                  1, (/"-"/),&
+                  valid_min=(/0.0, 0.0, 0.0/), &
+                  valid_max=(/100.0, 1.0, 1.0/), &
+                  gribSFC=grib_depthlvl, gribLvl=0)     
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig,"TotalPrecip:",rc=rc)
@@ -3632,6 +3638,21 @@ contains
                   LVT_LISoutput(kk)%head_lsm_list,&
                   1,nsize,nensem,(/"K"/),1,(/"-"/),&
                   valid_min=(/-9999.0/),valid_max=(/-9999.0/),gribSFC=103,gribLvl=2)
+          endif
+
+          call ESMF_ConfigFindLabel(modelSpecConfig,"ESI:",rc=rc)
+          call get_moc_attributes(modelSpecConfig,LVT_LISoutput(kk)%head_lsm_list,&
+               "ESI",&
+               "ESI",&
+               "ESI","F",rc)  
+
+          if(rc.eq.1) then 
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),&
+                  LVT_LIS_MOC_ESI(kk),&
+                  LVT_LISoutput(kk)%head_lsm_list,&
+                  1,nsize,nensem,(/"-"/),1,(/"-"/),&
+                  valid_min=(/-9999.0/),valid_max=(/-9999.0/),&
+                  gribSFC=103,gribLvl=2)
           endif
 
           call ESMF_ConfigDestroy(modelSpecConfig,rc=rc)
@@ -4391,9 +4412,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
 
     integer      :: gid, nl, k,v,m
     type(LVT_metadataEntry),    pointer :: ebal,wbal, runoff, rnet,dS
-    type(LVT_LISmetadataEntry), pointer :: swnet,lwnet,qle,qh,qg
+    type(LVT_LISmetadataEntry), pointer :: swnet,lwnet,qle,qh,qg,pet
     type(LVT_LISmetadataEntry), pointer :: qf,qa,qv,delsurfheat
-    type(LVT_metadataEntry),    pointer :: wrsi,br, ef,totalprecip
+    type(LVT_metadataEntry),    pointer :: wrsi,br, ef,totalprecip,esi
     type(LVT_LISmetadataEntry), pointer :: rainf,snowf,qs,qsb, prcp
     type(LVT_LISmetadataEntry), pointer :: delswe,delintercept,delsoilmoist
     type(LVT_LISmetadataEntry), pointer :: delcoldcont, delsurfstor
@@ -4534,9 +4555,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                    swe_calc%value(gid,m,1) = &
                         swe%value(gid,m,1)
                    swe_calc%count(gid,m,1) = swe%count(gid,m,1)
-                   if(swe_calc%value(gid,m,1).gt.2000) then 
-                      swe_calc%value(gid,m,1) = 2000.0
-                   endif
+!                   if(swe_calc%value(gid,m,1).gt.2000) then 
+!                      swe_calc%value(gid,m,1) = 2000.0
+!                   endif
                 enddo
              enddo
           endif
@@ -4819,6 +4840,46 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                            qle%count(gid,m,1)
                    else
                       br%value(gid,m,1) = LVT_rc%udef
+                   endif
+                enddo
+             enddo
+          endif
+       endif
+       !ESI is defined as ET/PET
+       !currently the derived calculation requires both QLE and POTEVAP (in W/m2)
+       if(LVT_MOC_ESI(source).gt.0.and.&
+            LVT_LIS_MOC_ESI(source).lt.0) then 
+          if(source.eq.1) then 
+             esi => LVT_histData%ptr_into_ds1_list(&
+                  LVT_MOC_ESI(source))%dataEntryPtr
+          else
+             esi => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_ESI(source))%dataEntryPtr             
+          endif
+
+          if(esi%selectNlevs.ge.1) then 
+             if(LVT_LIS_MOC_QLE(source).gt.0.and.LVT_LIS_MOC_POTEVAP(source).gt.0) then 
+                qle => LVT_LISoutput(source)%ptr_into_lsm_list(&
+                     LVT_LIS_MOC_QLE(source))%dataEntryPtr
+                pet => LVT_LISoutput(source)%ptr_into_lsm_list(&
+                     LVT_LIS_MOC_POTEVAP(source))%dataEntryPtr
+             else
+                write(LVT_logunit,*)& 
+                     '[ERR] Please enable both Qle and PotEvap'
+                write(LVT_logunit,*)& 
+                     '[ERR] in the LIS output to compute ESI'
+                call LVT_endrun()
+             endif             
+             do gid=1,LVT_rc%npts
+                do m=1,LVT_rc%nensem
+                   if(pet%value(gid,m,1).ne.0) then 
+                      esi%value(gid,m,1) =&
+                           qle%value(gid,m,1)/&
+                           pet%value(gid,m,1)
+                      esi%count(gid,m,1) = &
+                           qle%count(gid,m,1)
+                   else
+                      esi%value(gid,m,1) = LVT_rc%udef
                    endif
                 enddo
              enddo
@@ -7352,7 +7413,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           endif
        enddo    
        if(unit_id.eq.-1) then 
-          write(LVT_logunit,*) '[ERR] routine to diagnose ',trim(dataEntry%standard_name),&
+          write(LVT_logunit,*) &
+               '[ERR] LVT_readSingleBinaryVar: routine to diagnose ', &
+               trim(dataEntry%standard_name),&
                ' in units of ',trim(dataEntry%units),' is not defined'
           write(LVT_logunit,*) '[ERR] for diagnostic output...'
           call LVT_endrun()
@@ -7642,7 +7705,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           endif
        enddo    
        if(unit_id.eq.-1) then 
-          write(LVT_logunit,*) '[ERR] routine to diagnose ',trim(dataEntry%standard_name),&
+          write(LVT_logunit,*) &
+               '[ERR] LVT_readSingleGrib1Var: routine to diagnose ', &
+               trim(dataEntry%standard_name),&
                ' in units of ',trim(dataEntry%units),' is not defined'
           write(LVT_logunit,*) '[ERR] for diagnostic output...'
           call LVT_endrun()
@@ -7899,7 +7964,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           endif
        enddo    
        if(unit_id.eq.-1) then 
-          write(LVT_logunit,*) '[ERR] routine to diagnose ',trim(dataEntry%standard_name),&
+          write(LVT_logunit,*) &
+               '[ERR] LVT_readSingleNETCDFVar: routine to diagnose ', &
+               trim(dataEntry%standard_name),&
                ' in units of ',trim(dataEntry%units),' is not defined'
           write(LVT_logunit,*) '[ERR] for diagnostic output...'
           call LVT_endrun()
@@ -8844,7 +8911,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           endif
        enddo    
        if(unit_id.eq.-1) then 
-          write(LVT_logunit,*) '[ERR] routine to diagnose ',trim(dataEntry%standard_name),&
+          write(LVT_logunit,*) &
+               '[ERR] LVT_readSingleNETCDFVar_batch: routine to diagnose ', &
+               trim(dataEntry%standard_name),&
                ' in units of ',trim(dataEntry%units),' is not defined'
           write(LVT_logunit,*) '[ERR] for diagnostic output...'
           call LVT_endrun()

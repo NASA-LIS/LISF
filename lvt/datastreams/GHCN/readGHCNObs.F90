@@ -73,7 +73,7 @@ subroutine readGHCNObs(source)
 
      ghcnobs(source)%prcp = LVT_rc%udef
      
-     call ESMF_TimeSet(ghcnobs(source)%startTime,  yy=LVT_rc%yr, &
+     call ESMF_TimeSet(ghcnobs(source)%startTime,  yy=LVT_rc%dyr(source), &
           mm = 1, &
           dd = 1, &
           h = 0, &

@@ -63,7 +63,7 @@ subroutine read_ISA_maskfile(n, fgrd, localmask )
       write(LDT_logunit,*)"[INFO] ISA mask -- Reading ",trim(LDT_rc%mfile(n)), & 
                           " (",LDT_localPet,")"
    else
-      write(LDT_logunit,*) "ISA Landmask map: ",trim(LDT_rc%mfile(n))," does not exist."
+      write(LDT_logunit,*) "[ERR] ISA Landmask map: ",trim(LDT_rc%mfile(n))," does not exist."
       write(LDT_logunit,*) "Program stopping ..."
       call LDT_endrun
    endif

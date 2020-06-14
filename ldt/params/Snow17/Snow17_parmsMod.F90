@@ -96,7 +96,7 @@ contains
 ! \label{Snow17Parms_init}
 ! 
 ! !INTERFACE:
-  subroutine Snow17Parms_init
+  subroutine Snow17Parms_init(flag)
 
 ! !USES:
 !   use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
@@ -119,6 +119,7 @@ contains
 !
 !EOP
    implicit none
+   integer  :: flag
    integer  :: n
    integer  :: c,r,m,k
    integer  :: rc

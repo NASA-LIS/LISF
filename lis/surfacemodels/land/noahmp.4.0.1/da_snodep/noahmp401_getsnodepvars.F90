@@ -60,7 +60,7 @@ subroutine noahmp401_getsnodepvars(n, LSM_State)
   call LIS_verify(status)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     swe(t) = noahmp401_struc(n)%noahmp401(t)%sneqv/1000.0 !to m
+     swe(t) = noahmp401_struc(n)%noahmp401(t)%sneqv
      snod(t) = noahmp401_struc(n)%noahmp401(t)%snowh
   enddo
 end subroutine noahmp401_getsnodepvars

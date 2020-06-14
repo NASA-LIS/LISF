@@ -77,8 +77,11 @@ module LIS_pluginIndices
    !character*50, public,  parameter :: LIS_tessId      = "HTESSEL"
    character*50, public,  parameter :: LIS_jules43Id     = "JULES.4.3"
    character*50, public,  parameter :: LIS_jules50Id     = "JULES.5.0"
+   character*50, public,  parameter :: LIS_jules51Id     = "JULES.5.1"
    character*50, public,  parameter :: LIS_jules52Id     = "JULES.5.2"
    character*50, public,  parameter :: LIS_jules53Id     = "JULES.5.3"
+   character*50, public,  parameter :: LIS_jules54Id     = "JULES.5.4"
+   character*50, public,  parameter :: LIS_jules5xId     = "JULES"
    character*50, public,  parameter :: LIS_cableId     = "CABLE"
    character*50, public,  parameter :: LIS_fasstId     = "FASST"
    !character*50, public,  parameter :: LIS_sheelsId    = "SHEELS"
@@ -235,7 +238,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_WindSatsmobsId      = "Windsat"
    character*50, public,  parameter :: LIS_WindSatCsmobsId     = "Windsat C-band"
    character*50, public,  parameter :: LIS_snodepobsId         = "SNODEP"
-   character*50, public,  parameter :: LIS_ldtsiobsId          = "LDTSI"
+   character*50, public,  parameter :: LIS_usafsiobsId         = "USAFSI"
    character*50, public,  parameter :: LIS_ANSASWEsnowobsId    = "ANSA SWE"
    character*50, public,  parameter :: LIS_ANSASCFsnowobsId    = "ANSA SCF"
    character*50, public,  parameter :: LIS_ANSASNWDsnowobsId   = "ANSA snow depth"
@@ -315,6 +318,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_ARSsmobsId = "ARS sm" ! SY
    character*50, public,  parameter :: LIS_ISMNsmobsId = "ISMN sm" 
    character*50, public,  parameter :: LIS_SMAPsmobsId = "SMAP sm"
+   character*50, public,  parameter :: LIS_UAsnowobsId = "UA snow"
 !-------------------------------------------------------------------------
 ! Objective Function Evaluation Criteria
 !-------------------------------------------------------------------------

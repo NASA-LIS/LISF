@@ -44,11 +44,12 @@ subroutine read_HYMAP_flow_dir_x(n, array)
   integer :: ftn
   integer :: c,r
   logical :: file_exists
-  integer :: iarray(LDT_rc%lnc(n),LDT_rc%lnr(n),1)
+  real    :: iarray(LDT_rc%lnc(n),LDT_rc%lnr(n),1)
 
   inquire(file=trim(HYMAP_struc(n)%flowdirxfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Flowdirx map ',trim(HYMAP_struc(n)%flowdirxfile),' not found'
+     write(LDT_logunit,*) '[ERR] Flowdirx map, ',&
+           trim(HYMAP_struc(n)%flowdirxfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif

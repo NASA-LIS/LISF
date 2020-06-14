@@ -48,7 +48,8 @@ subroutine read_HYMAP_runoff_delay(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%runoffdelayfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Runoffdelay map ',trim(HYMAP_struc(n)%runoffdelayfile),' not found'
+     write(LDT_logunit,*) '[ERR] Runoff delay map, ',&
+           trim(HYMAP_struc(n)%runoffdelayfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif

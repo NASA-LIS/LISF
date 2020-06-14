@@ -49,7 +49,8 @@ subroutine read_HYMAP_river_z(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%riverzfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Riverz map ',trim(HYMAP_struc(n)%riverzfile),' not found'
+     write(LDT_logunit,*) '[ERR] Riverz map, ',&
+           trim(HYMAP_struc(n)%riverzfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif

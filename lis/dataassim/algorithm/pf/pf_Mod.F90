@@ -14,18 +14,16 @@ module pf_Mod
 ! !DESCRIPTION:
 !   This module contains interfaces and subroutines that control
 !   the incorporation of a data set using the particle filter
-!   (PF) method, into a land surface model. 
+!   (Pf) method
 !
-!  NOTES: Data assimilation is currently only supported for land surface
-!  models (and not across different surface model types)
-!  
 ! !REVISION HISTORY:
-!   10 Aug 2017: Sujay Kumar; Initial Specification
+! Abolafia-Rosenzweig, August 2019 - Initial implementation
 ! 
 ! !USES: 
   use ESMF
-  use pf_general
+  
   use pf_types
+  use pf_general
   use my_matrix_functions
   use LIS_coreMod
   use LIS_logMod
@@ -63,6 +61,7 @@ module pf_Mod
      real, allocatable :: anlys_res(:) 
      real, allocatable :: anlys_incr(:,:) 
      real, allocatable :: norm_innov(:)
+     real, allocatable :: k_gain(:,:)
   end type pf_dec
 !EOP  
 
@@ -134,6 +133,8 @@ contains
           allocate(pf_struc(n,k)%innov(Nobjs*N_obs_size))
           allocate(pf_struc(n,k)%anlys_res(Nobjs*N_obs_size))
           allocate(pf_struc(n,k)%forecast_var(Nobjs*N_obs_size))
+          allocate(pf_struc(n,k)%k_gain(LIS_rc%npatch(n,LIS_rc%lsm_index), &
+               LIS_rc%nstvars(k)))
        endif
        allocate(pf_struc(n,k)%anlys_incr(LIS_rc%nstvars(k),&
             LIS_rc%npatch(n,LIS_rc%lsm_index)))          
@@ -157,6 +158,54 @@ contains
 !  This routine computes the analysis increments for Pf. The state variable
 !  increments are computed and stored int the Increment State. 
 ! 
+!  The arguments and variables are: 
+!  \begin{description}
+!   \item[n]         index of the nest 
+!   \item[data\_status]  flag indicating if the observations are new    
+!   \item[N\_state]       Number of state prognostic variables
+!   \item[N\_ens]         Number of ensembles
+!   \item[N\_obs\_size]   total number of observations   
+!   \item[N\_selected\_obs] number of selected observations   
+!   \item[st\_id,en\_id]  indices of the selected observations  
+!   \item[stvar]          state prognostic variables
+!   \item[Obs\_pert]      observation perturbations     
+!   \item[Obs\_cov]       observations error covariances   
+!   \item[Observations]    observations object used in the GMAO routines
+!  \end{description}
+! 
+!
+!  The methods invoked are: 
+!  \begin{description}
+!   \item[generateObservations]\ref{generateObservations_pf} \newline
+!    obtain the observations
+!   \item[lsmdagetobspred](\ref{lsmdagetobspred}) \newline
+!    obtain model's estimate of the observations
+!   \item[getObsPert](\ref{getObsPert_pf}) \newline
+!    obtain the observation perturbations
+!   \item[generateObsparam](\ref{generateObsparam_pf}) \newline
+!    generate the 'obsparam' (metadata for observations) \newline
+!   \item[lsmdagetstatevar]\ref{lsmdagetstatevar}
+!    obtain the specified LSM prognostic variables. 
+!   \item[assemble\_obs\_cov](\ref{assemble_obs_cov_pf})
+!    assembles the observation error covariance
+!   \item{getSelectedObsNumber}(\ref{getselectedobsnumber}) \newline
+!    obtain the number of selected observations for each 
+!    modeling point.
+!   \item[pf\_analysis](\ref{pf_analysis}) \newline
+!    apply the Pf filter to obtain the prognostic variable
+!    increments. 
+!   \item[row\_variance](\ref{row_variance_pf}) \newline
+!    computes the row variance HPH' 
+!   \item[lsmdasetstatevar](\ref{lsmdasetstatevar}) \newline
+!    assigns the specified LSM state prognostic variables
+!   \item[scaleLSMstatVar](\ref{lsmdascalestatevar}) \newline
+!    scales the state variables for computational stability \newline
+!   \item[descaleLSMstatVar](\ref{lsmdadescalestatevar}) \newline
+!    descales the state variables to the original state \newline
+!   \item[lsmdaqcstate]\ref{lsmdaqcstate}
+!    QC the updated LSM state
+!  \end{description}
+! 
 !EOP
     logical                           :: data_status
     integer                           :: status
@@ -166,9 +215,9 @@ contains
     integer                           :: N_selected_obs
     integer                           :: N_ens
     integer                           :: N_state
-    type(pf_obs_type), allocatable       :: Observations(:)
-    type(pf_obs_type), allocatable       :: obs_da(:)
-    type(pf_obs_param_type), allocatable :: obs_param(:)
+    type(obs_type), allocatable       :: Observations(:)
+    type(obs_type), allocatable       :: obs_da(:)
+    type(obs_param_type), allocatable :: obs_param(:)
     real,         allocatable         :: Obs_pred(:,:)
     real,         allocatable         :: obspred_da(:,:)
     real,         allocatable         :: Obs_pert(:,:)
@@ -185,9 +234,15 @@ contains
     real,         allocatable         :: state_incr(:,:)
     real                              :: innov,std_innov(1)
     integer                           :: kk,m,p
-    logical                           :: assim
+    logical                           :: assim, obspred_flag
     integer                           :: gid, t
-
+    
+    integer                           :: jj, mm
+    real,         allocatable         :: state_tmp(:,:)
+    real                              :: dx,dy,xcompact,ycompact
+    real,         allocatable         :: lons(:), lats(:)
+    real,         allocatable         :: state_lat(:), state_lon(:)
+    
 !----------------------------------------------------------------------------
 !  Check if the observation state is updated or not. If it is updated,
 !  the data is then assimilated. 
@@ -206,7 +261,12 @@ contains
     pf_struc(n,k)%anlys_incr = 0.0
 
     if(data_status) then  
-       write(LIS_logunit,*) '[INFO] Assimilating Observations using Pf for DA instance',k
+       write(LIS_logunit,*) &
+            '[INFO] Assimilating Observations using Pf for DA instance',k
+
+       call LIS_getDomainResolutions(n,dx,dy)
+       xcompact = dx*10.0
+       ycompact = dy*10.0
 
        N_state = LIS_rc%nstvars(k)
        N_ens = LIS_rc%nensem(n)
@@ -237,20 +297,13 @@ contains
        allocate(Obs_pred(Nobs,N_ens))      
        call lsmdagetobspred(trim(LIS_rc%lsm)//"+"//&
             trim(LIS_rc%daset(k))//char(0),n, k, Obs_pred)
+
 !----------------------------------------------------------------------------
 !  Retrieve Obs_pert : observation perturbations
 !---------------------------------------------------------------------------- 
        allocate(Obs_pert(Nobs,N_ens))
        call getObsPert(LIS_OBS_Pert_State(n,k),N_obs_size,&
             Nobs, N_ens, Obs_pert)
-
-!     Implemented Ryu et al(2009) Ens_Pert Bias Removal Approach: 
-      if(LIS_rc%pert_bias_corr == 1 ) then
-!     !-- Remove perturbation to observation for N-ensemble member ... 
-         do p=1,Nobs
-            Obs_pert(p,N_ens) = 0.
-         end do
-      endif
 
 !----------------------------------------------------------------------------
 !  Assemble observation covariances. 
@@ -263,10 +316,16 @@ contains
 !----------------------------------------------------------------------------
        allocate(stvar(N_state,LIS_rc%npatch(n,LIS_rc%lsm_index)))
        allocate(state_incr(N_state,LIS_rc%npatch(n,LIS_rc%lsm_index)))
+       allocate(state_tmp(N_state,LIS_rc%npatch(n,LIS_rc%lsm_index)))
+
+       allocate(state_lat(N_state))
+       allocate(state_lon(N_state))
+       allocate(lats(LIS_rc%npatch(n,LIS_rc%lsm_index)))
+       allocate(lons(LIS_rc%npatch(n,LIS_rc%lsm_index)))
 
        call lsmdagetstatevar(trim(LIS_rc%lsm)//"+"//&
             trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k))
-      
+
        call lsmdascalestatevar(trim(LIS_rc%lsm)//"+"//&
             trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k))
 
@@ -300,20 +359,30 @@ contains
           do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
              stvar(v,t) = stdata(t)     
              state_incr(v,t) = stdata(t)
+             state_tmp(v,t) = stdata(t)
           enddo
        enddo
 
        do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)/LIS_rc%nensem(n)
+
+          obspred_flag = .true. 
           tileid = (i-1)*LIS_rc%nensem(n)+1
           
+          gid = LIS_domain(n)%gindex(&
+               LIS_surface(n, LIS_rc%lsm_index)%tile(tileid)%col,&
+               LIS_surface(n, LIS_rc%lsm_index)%tile(tileid)%row)
+
           call LIS_mapTileSpaceToObsSpace(n, k, LIS_rc%lsm_index, &
                tileid, st_id, en_id)
-!          call getSelectedObsNumber(trim(LIS_rc%daset(k))//char(0),n,&
-!               LIS_surface(n,LIS_rc%lsm_index)%tile(tileid)%index,st_id,en_id)
 
           if(st_id.lt.0.or.en_id.lt.0) then 
              assim = .false. 
           else
+             lats(tileid) = LIS_domain(n)%grid(gid)%lat
+             lons(tileid) = LIS_domain(n)%grid(gid)%lon
+             state_lat(:) = lats(tileid)
+             state_lon(:) = lons(tileid)
+
              N_selected_obs = (en_id-st_id+1)*Nobjs
              
              assim = .true.
@@ -331,21 +400,31 @@ contains
                 sid = st_id + (kk-1)*N_obs_size
                 eid = en_id + (kk-1)*N_obs_size
                 obs_da(kk:kk+(en_id-st_id))       = Observations(sid:eid)
-                obspred_da(kk:kk+(en_id-st_id),:) = Obs_pred(sid:en_id,:)
-                obspert_da(kk:kk+(en_id-st_id),:) = Obs_pert(sid:en_id,:)
+                obspred_da(kk:kk+(en_id-st_id),:) = Obs_pred(sid:eid,:)
+                obspert_da(kk:kk+(en_id-st_id),:) = Obs_pert(sid:eid,:)
+
+                do jj = kk,kk+(en_id-st_id)
+                   do mm=1,N_ens
+                      if(obspred_da(jj,mm).eq.LIS_rc%udef) then 
+                         obspred_flag = .false. 
+                      endif
+                   enddo
+                enddo
+                
                 kk = kk+(en_id-st_id+1)
              enddo
-             
+
              call assemble_obs_cov(LIS_rc%nobtypes(k), N_selected_obs, &
                   obs_param,obs_da,Obs_cov)
           endif
-          if(assim) then   
+          if(assim.and.obspred_flag) then   
              call pf_analysis(gid,N_state,N_selected_obs, N_ens, &
                   obs_da,                                        & 
                   obspred_da,                       &
                   obspert_da,                       &
-                  Obs_cov,              &
-                  state_incr(:, ((i-1)*N_ens+1):((i-1)*N_ens+N_ens))) 
+                  Obs_cov,                          &
+                  state_incr(:, ((i-1)*N_ens+1):((i-1)*N_ens+N_ens)),&
+                  state_lon, state_lat,xcompact,ycompact)
           else
              state_incr(:,(i-1)*N_ens+1:(i-1)*N_ens+N_ens) = 0.0            
           endif
@@ -361,7 +440,6 @@ contains
           endif
           
        enddo
-       
        call ESMF_AttributeSet(LIS_LSM_Incr_State(n,k),&
             "Fresh Increments Status", .true., rc=status)
        call LIS_verify(status, &
@@ -403,16 +481,7 @@ contains
           do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
              stdata(t) =  stvar(v,t)
              stincrdata(t) = state_incr(v,t)
-
-!TBD: SVK
-#if 0 
-             call LIS_mapTileSpaceToObsSpace(n, k, LIS_rc%lsm_index, t, st_id, en_id)
-                         
-             gid = st_id
-
-#endif
           enddo
-
        enddo
 
        call lsmdadescalestatevar(trim(LIS_rc%lsm)//"+"//&
@@ -425,9 +494,14 @@ contains
        deallocate(obs_param)
        deallocate(stvar)
        deallocate(State_incr)
+       deallocate(state_tmp)
        deallocate(Observations)
        deallocate(Obs_pred)
        deallocate(Obs_pert)
+       deallocate(state_lat)
+       deallocate(state_lon)
+       deallocate(lats)
+       deallocate(lons)
     end if
     
   end subroutine pf_increments
@@ -454,7 +528,7 @@ contains
     character*100,    allocatable     :: lsm_state_objs(:)
     integer                       :: status
     logical                       :: fresh_incr
-    type(pf_obs_type), allocatable       :: Observations(:)
+    type(obs_type), allocatable       :: Observations(:)
     integer                       :: i
     integer                       :: N_ens
     integer                       :: Nobjs, Nobs, N_obs_size
@@ -890,6 +964,11 @@ end subroutine pf_update
           call LIS_verify(nf90_enddef(ftn),&
                'nf90_enddef failed in pf_mod')
        endif
+       do v=1,LIS_rc%nstvars(k)
+          call LIS_writevar_restart(ftn,n,LIS_rc%lsm_index,&
+               pf_struc(n,k)%k_gain(:,v),kgain_id, &                  
+               dim=v,wformat="netcdf")
+       enddo
        if(LIS_masterproc) then 
           call LIS_verify(nf90_close(ftn),&
                'nf90_close failed in pf_mod')
@@ -1229,8 +1308,8 @@ end subroutine pf_update
     implicit none
 ! !ARGUMENTS:    
     integer, intent(in)                              :: nob, N_obs
-    type(pf_obs_param_type), dimension(nob), intent(in) :: obs_param
-    type(pf_obs_type), dimension(N_obs), intent(in)     :: Observations  
+    type(obs_param_type), dimension(nob), intent(in) :: obs_param
+    type(obs_type), dimension(N_obs), intent(in)     :: Observations  
     real, intent(out), dimension(N_obs,N_obs)        :: Obs_cov
 ! 
 ! !DESCRIPTION:
@@ -1441,7 +1520,7 @@ end subroutine pf_update
     integer,     intent(IN)        :: N_obs_size
     type(ESMF_State)               :: LIS_OBS_State
     type(ESMF_State)               :: LIS_OBS_Pert_State
-    type(pf_obs_type)                 :: Observations(N_obs_size)
+    type(obs_type)                 :: Observations(N_obs_size)
 ! 
 ! !DESCRIPTION: 
 !   This subroutine unpacks the Observation state and packages them into the
@@ -1565,8 +1644,8 @@ end subroutine pf_update
        Observations(t)%species = species(t)
        Observations(t)%catnum = gid(t)
 
-       col = LIS_obs_domain(n,k)%col(t)
-       row = LIS_obs_domain(n,k)%row(t)
+       col = LIS_obs_domain(n,k)%col(gval)
+       row = LIS_obs_domain(n,k)%row(gval)
        Observations(t)%lon = LIS_obs_domain(n,k)%lon(&
             col+(row-1)*LIS_rc%obs_lnc(k))
        Observations(t)%lat = LIS_obs_domain(n,k)%lat(&
@@ -1596,7 +1675,7 @@ end subroutine pf_update
 ! !ARGUMENTS: 
     integer                       :: Nobjs
     type(ESMF_State)              :: OBS_Pert_State
-    type(pf_obs_param_type)          :: obs_param(Nobjs)
+    type(obs_param_type)          :: obs_param(Nobjs)
 !
 ! !DESCRIPTION: 
 !   This routine obtains the metadata information associated with 

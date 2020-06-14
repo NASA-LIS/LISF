@@ -14,7 +14,7 @@
 !                          differs from the previous versions)
 !  31 Aug 2018: Mahdi Navari, Edited to read SPL3SMP.005 & SPL3SMP_E.002
 !  04 Jun 2019: Sujay Kumar, Updated to support SMAP L2 retrievals
-! 15 Aug 2019: Mahdi Navari, There are several version of SMAP sm data available in each directory
+!  15 Aug 2019: Mahdi Navari, There are several version of SMAP sm data available in each directory
 !                  with different Release number and different CRID Version Number. The reader was
 !                  modified to read the latest version of data (the reader no longer reads the symbolic
 !                  link to the SMAP sm data)
