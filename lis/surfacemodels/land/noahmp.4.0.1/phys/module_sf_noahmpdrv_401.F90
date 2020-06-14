@@ -6,6 +6,7 @@ MODULE module_sf_noahmpdrv_401
 !-------------------------------
 implicit none 
 public noahmplsm_401
+!public TRANSFER_MP_PARAMETERS
 !
 CONTAINS
 ! The subroutine name has been modifed for LIS implemenation Oct 22 2018
@@ -43,6 +44,7 @@ CONTAINS
 		 SHGXY,    SHCXY,    SHBXY,     EVGXY,    EVBXY,     GHVXY, & ! OUT Noah MP only
 		 GHBXY,    IRGXY,    IRCXY,     IRBXY,     TRXY,     EVCXY, & ! OUT Noah MP only
               CHLEAFXY,   CHUCXY,   CHV2XY,    CHB2XY, RS, FPICE,           & ! OUT Noah MP only
+              parameters, &
 !                 BEXP_3D,SMCDRY_3D,SMCWLT_3D,SMCREF_3D,SMCMAX_3D,          & ! placeholders to activate 3D soil
 !		 DKSAT_3D,DWSAT_3D,PSISAT_3D,QUARTZ_3D,                     &
 !		 REFDK_2D,REFKDT_2D,                                        &
@@ -701,7 +703,7 @@ CONTAINS
 !       parameters%refdk  = REFDK_2D (I,J)         ! Reference Soil Conductivity
 !       parameters%refkdt = REFKDT_2D(I,J)         ! Soil Infiltration Parameter
 
-       CALL TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,parameters)
+!       CALL TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,parameters)
        
        if(iopt_soil == 3 .and. .not. parameters%urban_flag) then
           sand = 0.01 * soilcomp(i,1:4,j)
@@ -1055,6 +1057,7 @@ CONTAINS
   END SUBROUTINE noahmplsm_401
 !------------------------------------------------------
 
+#if 0 
 SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,parameters)
 
   USE NOAHMP_TABLES_401
@@ -1264,7 +1267,7 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
     END IF
 
  END SUBROUTINE TRANSFER_MP_PARAMETERS
-
+#endif
 SUBROUTINE PEDOTRANSFER_SR2006(nsoil,sand,clay,orgm,parameters)
 
   use module_sf_noahmplsm_401

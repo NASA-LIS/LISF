@@ -70,7 +70,7 @@
 #latex:  ``OPTUE output processing'' & parameter estimation/uncertainty output analysis   \\
 #latex:  ``RTM output processing'' & radiative transfer model output analysis   \\
 #latex:  ``557 post'' & LIS postprocessing mode for 557WW operations \\
-#latex:  ``LDTSI post`` & special postprocessing mode for LDTSI \\
+#latex:  ``USAFSI post`` & special postprocessing mode for USAFSI \\
 #latex: \end{tabular}
 #latex: 
 #latex: END_DESCRIPTION
@@ -226,6 +226,7 @@ LVT output methodology:                 "2d gridspace"
 #latex: ``LPRM vegetation optical depth'' & LPRM vegetation optical depthx\\
 #latex: ``UA SNOW'' & University of Arizona SWE/Snow depth data\\
 #latex: ``SMAP L3 Tb'' & SMAP L3 brightness temperature\\  
+#latex: ``OzFlux'' & OzFlux land surface flux measurements \\
 #latex: \end{tabular}
 #latex: 
 #latex: END_DESCRIPTION
@@ -1838,8 +1839,31 @@ ISMN observation directory:             ./ISMN
 #latex: BEGIN_DESCRIPTION
 #latex: \var{LPRM AMSR-E soil moisture observation directory:}  specifies the location of the LPRM AMSR-E soil moisture retrievals
 #latex: 
+#latex: \var{LPRM AMSR-E data version:}  specifies the version of LPRM 
+#latex: soil moisture data to be used
+#latex: Acceptable values are:
+#latex: 
+#latex: \begin{tabular}{ll}
+#latex: Value & Description \\
+#latex: GES-DISC     & NASA GES-DISC version  \\
+#latex: V5     & version 5 data (from VU)         \\
+#latex: \end{tabular}
+#latex: 
+#latex: \var{LPRM AMSR-E data channel:}  specifies the frequency 
+#latex: channel of the soil moisture retrieval (This option is 
+#latex: only needed for the GES-DISC data version)
+#latex:
+#latex: Acceptable values are:
+#latex: 
+#latex: \begin{tabular}{ll}
+#latex: Value & Description \\
+#latex: X-band    & X-band retrieval \\ 
+#latex: C-band    & C-band retrieval \\
+#latex: \end{tabular}
+#latex: 
 #latex: \var{LPRM AMSR-E use raw data:}  specifies whether to use
-#latex: the LPRM AMSR-E raw data.
+#latex: the LPRM AMSR-E raw data (This option is only used for 
+#latex: V5 data)
 #latex: Acceptable values are:
 #latex: 
 #latex: \begin{tabular}{ll}
@@ -1847,11 +1871,14 @@ ISMN observation directory:             ./ISMN
 #latex: 0     & Do not use  \\
 #latex: 1     & Use         \\
 #latex: \end{tabular}
+
 #latex: 
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
 LPRM AMSR-E soil moisture observation directory: ./LPRM-AMSRE
+LPRM AMSR-E soil moisture data version:  GES-DISC
+LPRM AMSR-E soil moisture data channel: X-band
 LPRM AMSR-E use raw data:                        0
 #latex: END_CONFIG
 
@@ -2955,6 +2982,25 @@ UA SNOW observation directory:             ./UA_SNOW
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
+#latex: \subsubsection{OzFlux}
+#latex: END_DESCRIPTION
+
+#latex: BEGIN_DESCRIPTION
+#latex: \var{OzFlux observation directory:} specifies
+#latex: the location of the OzFlux data files
+#latex: 
+#latex: \var{OzFlux station list file:} specifies
+#latex: the list of OzFlux stations and their coordinates
+#latex: 
+#latex: 
+#latex: END_DESCRIPTION
+
+#latex: BEGIN_CONFIG
+OzFlux observation directory: ./OzFlux
+OzFlux station list file:     ./OzFlux/OzFlux_stnlist.dat
+#latex: END_CONFIG
+
+#latex: BEGIN_DESCRIPTION
 #latex: \subsection{OptUE processing options} \label{ssec:optue}
 #latex: This section of the config file specifies the details of the 
 #latex: optimization and uncertainty estimation processing options,
@@ -3274,8 +3320,8 @@ Smoothing filter type:        "gaussian filter"
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
-#latex: \subsection{LDTSI post} \label{ssec:ldtsipostrunmode}
-#latex: This runmode is used to postprocess LDTSI (snow and ice) analyses,
+#latex: \subsection{USAFSI post} \label{ssec:usafsipostrunmode}
+#latex: This runmode is used to postprocess USAFSI (snow and ice) analyses,
 #latex: which are originally produced in netCDF format.  LVT will optionally
 #latex: convert the fields to GRIB2 format and output on the LDT grid (no
 #latex: interpolations).  In addition, three options are provided for GRIB1
@@ -3284,7 +3330,7 @@ Smoothing filter type:        "gaussian filter"
 #latex: and (3) interpolate to Air Force Southern Hemisphere 16th mesh polar
 #latex: stereographic grid.  These GRIB1 products are intended as look-alike
 #latex: replacements for the legacy Air Force SNODEP product.  These 
-#latex: options are activated for runmode=``LDTSI post''
+#latex: options are activated for runmode=``USAFSI post''
 #latex: 
 #latex: When run in this mode, LVT will interpret the starting year, month,
 #latex: etc as the valid date/time to process, and will ignore the ending
@@ -3304,7 +3350,7 @@ Smoothing filter type:        "gaussian filter"
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_DESCRIPTION
-#latex: \var{LDTSI output GRIB2 native grid:} Specifies if LDTSI 
+#latex: \var{USAFSI output GRIB2 native grid:} Specifies if USAFSI 
 #latex: should be output in GRIB2 (no interpolation).
 #latex:
 #latex: Acceptable values are:
@@ -3317,11 +3363,11 @@ Smoothing filter type:        "gaussian filter"
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
-LDTSI output GRIB2 native grid: .true.
+USAFSI output GRIB2 native grid: .true.
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
-#latex: \var{LDTSI output GRIB1 global 0.25deg lat/lon:} Specifies if LDTSI 
+#latex: \var{USAFSI output GRIB1 global 0.25deg lat/lon:} Specifies if USAFSI 
 #latex: should be interpolated to 0.25 deg lat/lon grid and output in GRIB1.
 #latex:
 #latex: Acceptable values are:
@@ -3334,12 +3380,12 @@ LDTSI output GRIB2 native grid: .true.
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
-LDTSI output GRIB1 global 0.25deg lat/lon: .true.
+USAFSI output GRIB1 global 0.25deg lat/lon: .true.
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
-#latex: \var{LDTSI output GRIB1 NH 16th mesh polar stereographic:} Specifies 
-#latex: if LDTSI should be interpolated to Northern Hemispheric 16th mesh polar
+#latex: \var{USAFSI output GRIB1 NH 16th mesh polar stereographic:} Specifies 
+#latex: if USAFSI should be interpolated to Northern Hemispheric 16th mesh polar
 #latex: stereographic grid and output in GRIB1.
 #latex:
 #latex: Acceptable values are:
@@ -3352,12 +3398,12 @@ LDTSI output GRIB1 global 0.25deg lat/lon: .true.
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
-LDTSI output GRIB1 NH 16th mesh polar stereographic: .true.
+USAFSI output GRIB1 NH 16th mesh polar stereographic: .true.
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
-#latex: \var{LDTSI output GRIB 1 SH 16th mesh polar stereographic:} Specifies 
-#latex: if LDTSI should be interpolated to Southern Hemispheric 16th mesh polar
+#latex: \var{USAFSI output GRIB 1 SH 16th mesh polar stereographic:} Specifies 
+#latex: if USAFSI should be interpolated to Southern Hemispheric 16th mesh polar
 #latex: stereographic grid and output in GRIB1.
 #latex:
 #latex: Acceptable values are:
@@ -3370,23 +3416,23 @@ LDTSI output GRIB1 NH 16th mesh polar stereographic: .true.
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
-LDTSI output GRIB1 SH 16th mesh polar stereographic: .true.
+USAFSI output GRIB1 SH 16th mesh polar stereographic: .true.
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
-#latex: \var{LDTSI input netcdf directory:} Specifies path of directory 
-#latex: containing LDTSI netcdf files to process.  
+#latex: \var{USAFSI input netcdf directory:} Specifies path of directory 
+#latex: containing USAFSI netcdf files to process.  
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
-LDTSI input netcdf directory: ./LDTSI
+USAFSI input netcdf directory: ./USAFSI
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
-#latex: \var{LDTSI output grib directory:} Specifies path of directory 
+#latex: \var{USAFSI output grib directory:} Specifies path of directory 
 #latex: to write GRIB2 and/or GRIB1 files.
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
-LDTSI output grib directory: ./grib
+USAFSI output grib directory: ./grib
 #latex: END_CONFIG

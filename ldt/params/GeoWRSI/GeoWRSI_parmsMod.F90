@@ -80,7 +80,7 @@ contains
 ! \label{GeoWRSIparms_init}
 ! 
 ! !INTERFACE:
-  subroutine GeoWRSIparms_init
+  subroutine GeoWRSIparms_init(flag)
 ! !USES:
     use LDT_logMod,    only : LDT_verify
 !
@@ -97,6 +97,7 @@ contains
 !
 !EOP
     implicit none
+    integer   :: flag
     integer   :: n
     integer   :: rc
     character*50           :: wrsiparms_proj

@@ -80,9 +80,9 @@ subroutine readLPRMvodobs(source)
      call create_LPRM_vodfilename(&
           LPRM_vodobs(source)%odir,&
           LPRM_vodobs(source)%data_designation,&
-          LVT_rc%yr,&
-          LVT_rc%mo,&
-          LVT_rc%da,&
+          LVT_rc%dyr(source),&
+          LVT_rc%dmo(source),&
+          LVT_rc%dda(source),&
           lprm_filename)
 
      inquire(file=lprm_filename,exist=file_exists)

@@ -47,7 +47,7 @@ module LDT_irrigationMod
 
      character*140    :: irrigtypefile
      character*140    :: irrigfracfile
-     real, allocatable    :: irrig_gridDesc(:)
+     real, allocatable :: irrig_gridDesc(:)
      character*50     :: irrig_proj
 
      character*50     :: irrigtype_gridtransform
@@ -106,9 +106,9 @@ contains
 
 ! !USES:
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
+    use LDT_paramOptCheckMod, only: LDT_gridOptChecks !,&
+!           LDT_irrigationOptChecks
 !    use LDT_logMod,    only : LDT_verify
-!    use LDT_paramOptCheckMod, only: LDT_irrigationOptChecks, &
-!                       LDT_gridOptChecks
 
 ! !DESCRIPTION:
 !
@@ -150,6 +150,7 @@ contains
    endif
 
    do n=1,LDT_rc%nnest
+   
       if( irrigtype_select ) then 
 
          call set_irrigation_attribs( n, LDT_irrig_struc(n)%irrigtype%source )
@@ -191,6 +192,7 @@ contains
     end if
   ! Irrigation fraction ldt.config entries:
     if( irrigfrac_select ) then
+
        call ESMF_ConfigFindLabel(LDT_config,"Irrigation fraction map:",rc=rc)
        do n=1,LDT_rc%nnest
           call ESMF_ConfigGetAttribute(LDT_config,&
@@ -211,8 +213,34 @@ contains
                   LDT_irrig_struc(n)%irrigfrac%source )
        enddo
 
-    end if
+       ! Read in lat/lon extents and res for sources that are binary:
+       LDT_irrig_struc(:)%irrig_proj = "none"
+       do n=1, LDT_rc%nnest
+        if( index(LDT_irrig_struc(n)%irrigfrac%source,"UserDerived").eq.1 ) then
 
+          call ESMF_ConfigGetAttribute(LDT_config,LDT_irrig_struc(n)%irrig_proj,&
+               label="Irrigation fraction map projection:",rc=rc)
+          call LDT_verify(rc,'Irrigation fraction map projection: option not specified in the config file')
+
+          call LDT_readDomainConfigSpecs("Irrigation fraction", &
+                    LDT_irrig_struc(n)%irrig_proj, &
+                    LDT_irrig_struc(n)%irrig_gridDesc)
+
+          if( LDT_irrig_struc(n)%irrig_proj == "latlon" ) then
+
+            call LDT_gridOptChecks( n,"Irrigation fraction", &
+                     LDT_irrig_struc(n)%irrigfrac_gridtransform, &
+                     LDT_irrig_struc(n)%irrig_proj, &
+                     LDT_irrig_struc(n)%irrig_gridDesc(9) )
+          else
+             !EMK...Handle unsupported map projection.
+             write(LDT_logunit,*) &
+                  '[ERR] Irrigation fraction map projection only supports latlont'
+             call LDT_endrun()
+          endif
+        endif
+       enddo
+    end if
 
 !-- Read Irrigation maps:
     do n = 1,LDT_rc%nnest

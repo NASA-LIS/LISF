@@ -107,6 +107,7 @@ module noah36_lsmMod
      real                       :: albedo_monthly(12)
      real                       :: z0brd_monthly(12)
      integer                    :: iz0tlnd
+     integer                    :: snowfix
      integer                    :: sfcdifoption
      logical                    :: ua_phys
      real                       :: rstInterval

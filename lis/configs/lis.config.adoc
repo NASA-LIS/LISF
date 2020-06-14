@@ -1170,7 +1170,8 @@ endif::devonly[]
 |"`SMOS L2 soil moisture`"      | SMOS L2 soil moisture
 |"`SMOS(NESDIS) soil moisture`" | NESDIS SMOS soil moisture
 |"`SNODEP`"                     | AFWA SNODEP
-|"`LDTSI`"                      | LDT Snow and Ice Analysis
+|"`USAFSI`"                     | USAF Snow and Ice Analysis
+|"`SMAP(NASA) vegetation optical depth`"  | NASA L-band vegetation optical depth 
 |====
 
 .Example _lis.config_ entry
@@ -2014,15 +2015,20 @@ SNODEP naming convention:               LIS
 ....
 
 
-==== LDTSI Assimilation
-anchor:sssec_ldtsida[LDTSI Assimilation]
+==== USAFSI Assimilation
+anchor:sssec_usafsida[USAFSI Assimilation]
 
-`LDTSI data directory:` specifies the directory for the
-LDTSI data.
+`USAFSI data directory:` specifies the directory for the
+USAFSI data.
+
+`USAFSI netcdf filename prefix:` specifies the prefix of 
+the USAFSI dataset. If prefix is "usafsi", file name will 
+be "usafsi_yyyymmddhh.nc."
 
 .Example _lis.config_ entry
 ....
-LDTSI data directory:                  ./FORCING/LDTSI
+USAFSI data directory:                  ./FORCING/USAFSI
+USAFSI netcdf filename prefix:         usafsi
 ....
 
 ifdef::devonly[]
@@ -3060,6 +3066,51 @@ SMAP(NRT) soil moisture number of bins in the CDF:
 SMAP(NRT) CDF read option:
 ....
 
+
+==== SMAP (NASA) vegetation optical depth assimilation
+anchor:sssec_smapnasavodda[SMAP (NASA) vegetation optical depth assimilation]
+
+`SMAP(NASA) vegetation optical depth data directory:` specifies the SMAP(NASA) vegetation 
+optical depth data directory
+
+`SMAP(NASA) vegetation optical depth data designation:`  specifies the 
+designation of the SMAP VOD data 
+
+Acceptable values are:
+
+|====
+|Value    | Description
+
+|SPL2SMP    | Level2 passive VOD data
+|SPL2SMP_E  | Level2 oversampled passive VOD data 
+|====
+
+`SMAP(NASA) vegetation optial depth use scaled standard deviation model:` specifies
+whether the observation error standard deviation is to be scaled using model
+and observation standard deviation.
+
+`SMAP(NASA) vegetation optial depth apply SMAP QC flags:` specifies
+whether to employ the standard SMAP QC flags to screen VOD data 
+
+`SMAP(NASA) reference LAI CDF file:` specifies the name of the reference LAI CDF file
+(observations will be scaled into this climatology).
+
+`SMAP(NASA) vegetation optical depth observation CDF file:` specifies the name of the observation VOD
+CDF file.
+
+`SMAP(NASA) vegetation optical depth number of bins in the CDF:` specifies the number of
+bins in the CDF.
+
+.Example _lis.config_ entry
+....
+SMAP(NASA) vegetation optical depth data directory:    
+SMAP(NASA) vegetation optical depth data designation:  
+SMAP(NASA) vegetation optical depth use scaled standard deviation model: 
+SMAP(NASA) vegetation optical depth apply SMAP QC flags:                 
+SMAP(NASA) reference LAI CDF file:          
+SMAP(NASA) vegetation optical depth observation CDF file:
+SMAP(NASA) vegetation optical depth number of bins in the CDF: 
+....
 
 ==== SMOS (NESDIS) soil moisture assimilation
 anchor:sssec_smosnesdissmda[SMOS (NESDIS) soil moisture assimilation]
@@ -4888,6 +4939,27 @@ Acceptable values are:
 
 |GFS    | use GFS data
 |GALWEM | use UK Unified Model (GALWEM) data
+|====
+
+`AGRMET GALWEM nominal resolution (km):` specifies the nominal horizontal
+resolution of the GALWEM GRIB2 data in kilometers.
+Acceptable values are:
+
+|====
+|Value  | Description
+
+|17     | 17-km (long-time operational resolution at USAF)
+|10     | 10-km (proposed operational resolution upgrade for 2020)
+|====
+
+`AGRMET GFS filename version:` specifies which filename version convention
+is used for the GFS GRIB files.
+Acceptable values are:
+
+|====
+|Value  | Description
+|1      | Example: MT.avn_CY.00_fh.0000_tl.press_gr.0p5deg
+|2      | Example: PS.NCEP_SC.U_DI.A_DC.GRID_GP.GFS_SP.SIMPLE_GR.C0P5DEG_AR.GLOBAL_PA.GFS_DD.20200213_CY.00_FH.000_DF.GR2
 |====
 
 `AGRMET analysis directory:` specifies the location where temporary
@@ -7338,6 +7410,11 @@ height in meters of air temperature and specific humidity observations.
 `Noah.3.6 reference height for forcing u and v:` specifies the
 height in meters of u and v wind forcings.
 
+`Noah.3.6 removal of residual snow fix:` specifies whether or not
+a snow fix is used (1 - fix is active, 0 - inactive). The land-surface
+model was found to keep very small amounts of snow in rare cases. This
+fix zeros out snow values that are under a predetermined threshold.
+
 .Example _lis.config_ entry
 ....
 Noah.3.6 model timestep:                  15mn
@@ -7380,6 +7457,7 @@ Noah.3.6 background albedo:   0.18  0.17  0.16  0.15  0.15  0.15  0.15  0.16  0.
 Noah.3.6 background roughness length: 0.020 0.020 0.025 0.030 0.035 0.036 0.035 0.030 0.027 0.025 0.020 0.020
 Noah.3.6 reference height for forcing T and q:   2.0      # (m) - negative=use height from forcing data
 Noah.3.6 reference height for forcing u and v:  10.0      # (m) - negative=use height from forcing data
+Noah.3.6 removal of residual snow fix: 0
 ....
 
 
@@ -8241,9 +8319,9 @@ are:
 |Value | Note | Description
 
 | 0    |  **  | No urban scheme
-| 1    |      | Single-layer 
-| 2    |      | Multi-layer BEP scheme
-| 3    |      | Multi-layer BEM scheme
+| 1    |  NS  | Single-layer 
+| 2    |  NS  | Multi-layer BEP scheme
+| 3    |  NS  | Multi-layer BEM scheme
 |====
 
 `Noah-MP.4.0.1 reference height of temperature and humidity:`
@@ -9697,14 +9775,26 @@ location of the max root depth file for flood irrigation.
 location of the max root depth file for drip irrigation.
 
 `Irrigation GVF parameter 1:` specifies growing season for
-irrigation in Noah-MP (set to 0.40 for Noah 3.3 irrigation)
+irrigation in Noah-MP [set to 0.40 for Ozdogan et al. (2010)
+irrigation]
 
 `Irrigation GVF parameter 2:` specifies growing season for
-irrigation in Noah-MP (set to 0.00 for Noah 3.3 irrigation)
+irrigation in Noah-MP [set to 0.00 for Ozdogan et al. (2010) 
+irrigation]
+
+In the original GVF threshold in the sprinkler irrigation scheme by Ozdogan et al. (2010), 
+a fraction of 0.4 was applied as part of the max-min seasonality in GVF. Nie et al. (2018) 
+added a dyanmic option. These two parameters and the GVF range allow the user to adjust
+the percentage of the irrigation cut-off so that areas of greater GVF range will have a 
+higher percentage cut-off and areas of lower GVF range will have a lower cut-off. In the 
+code, the irrigation threhold contains the term 
+(GVFparam1 + GVFparam2*(shdmax-shdmin))
+instead of a static value of 0.4. By using this equation, the user may adjust the cut-off 
+percentage as a function of GVF range (shdmax-shdmin).
 
 `Groundwater abstraction for irrigation:` specifies whether
 to withdraw water used for irrigation from the groundwater
-in Noah-MP.
+in Noah-MP
 1=Yes 0=No (default=0)
 
 .Example _lis.config_ entry

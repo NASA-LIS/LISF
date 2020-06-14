@@ -43,11 +43,12 @@ subroutine read_HYMAP_basin(n, array)
   integer :: ftn
   integer :: c,r
   logical :: file_exists
-  integer :: iarray(LDT_rc%lnc(n),LDT_rc%lnr(n),1)
+  real    :: iarray(LDT_rc%lnc(n),LDT_rc%lnr(n),1)
 
   inquire(file=trim(HYMAP_struc(n)%basinfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Basin map ',trim(HYMAP_struc(n)%basinfile),' not found'
+     write(LDT_logunit,*) '[ERR] Basin map, ',&
+           trim(HYMAP_struc(n)%basinfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif
