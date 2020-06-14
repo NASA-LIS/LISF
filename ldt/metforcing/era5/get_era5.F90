@@ -179,14 +179,14 @@ subroutine get_era5(n, findex)
         call era5files(n,kk,findex,era5_struc(n)%era5dir, yr1, mo1, da1, &
              fname)
         write(unit=LDT_logunit,fmt=*)'[INFO] getting file.. ',trim(fname)
-        call read_era5(n, kk,order, mo1, &
+        call read_era5(n, kk,order, yr1,mo1, da1,hr1,&
              findex, fname, ferror)
 
         if(ferror.ge.1) era5_struc(n)%era5time1=time1
         call LDT_tick(dtime1,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
         if(try.gt.11)then
-           write(*,*)'error: ERA5 data gap exceeds 10 days on file 1'
-           stop
+           write(LDT_logunit,*)'[ERR] ERA5 data gap exceeds 10 days on file 1'
+           call LDT_endrun()
         endif
      enddo
 !=== end of data search
@@ -204,10 +204,10 @@ subroutine get_era5(n, findex)
      !- Obtaining ERA5 File:
         kk=1
         order = 2
-        call era5files(n,kk,findex,era5_struc(n)%era5dir, yr1, mo1, da1, &
+        call era5files(n,kk,findex,era5_struc(n)%era5dir, yr2, mo2, da2, &
              fname)
         write(unit=LDT_logunit,fmt=*)'[INFO] getting file.. ',trim(fname)
-        call read_era5(n, kk,order, mo1, &
+        call read_era5(n, kk,order, yr2,mo2,da2,hr2, &
              findex, fname, ferror)
 
         if(ferror.ge.1) then

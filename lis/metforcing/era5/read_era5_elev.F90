@@ -60,7 +60,7 @@ subroutine read_era5_elev(n,findex)
    inquire(file=LIS_rc%paramfile(n), exist=file_exists)
    if(file_exists) then 
 
-      write(LIS_logunit,*) "[INFO] Reading ERA5 elevation data ... "
+      write(LIS_logunit,*) " Reading ERA5 elevation data ... "
 
       call LIS_verify(nf90_open(path=LIS_rc%paramfile(n),&
            mode=NF90_NOWRITE,ncid=nid),&
