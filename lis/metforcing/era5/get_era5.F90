@@ -186,8 +186,8 @@ subroutine get_era5(n, findex)
         if(ferror.ge.1) era5_struc(n)%era5time1=time1
         call LIS_tick(dtime1,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
         if(try.gt.11)then
-           write(*,*)'error: ERA5 data gap exceeds 10 days on file 1'
-           stop
+           write(LIS_logunit,*)'[ERR] ERA5 data gap exceeds 10 days on file 1'
+           call LISrun()
         endif
      enddo
 !=== end of data search
@@ -217,8 +217,8 @@ subroutine get_era5(n, findex)
         endif
         call LIS_tick(dtime2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
         if(try.gt.11)then
-           write(*,*)'error: ERA5 data gap exceeds 10 days on file 2'
-           stop
+           write(LIS_logunit,*)'[ERR] ERA5 data gap exceeds 10 days on file 2'
+           call LIS_endrun()
         endif
      enddo
   endif 
@@ -248,7 +248,8 @@ subroutine era5files(n, kk, findex, era5dir, yr, mo, da, fname)
   character(len=*), intent(out) :: fname
 
 ! !DESCRIPTION:
-!   This subroutine generates the timestamped ERA5 file names
+!   This subroutine puts together ERA5 file names for
+!   daily netcdf files
 !
 !  The arguments are:
 !  \begin{description}

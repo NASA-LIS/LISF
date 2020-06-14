@@ -81,6 +81,8 @@ module era5_forcingMod
      character*40 :: era5hgt_file
      real*8       :: era5time1,era5time2
      logical      :: reset_flag
+     integer      :: mo1,mo2
+
      real :: gridDesc(50)
      integer, allocatable :: G2P(:,:)
      integer                :: mi
@@ -107,6 +109,28 @@ module era5_forcingMod
      real*8             :: ringtime
      
      integer            :: nIter, st_iterid,en_iterid
+
+     real, allocatable      :: tair1(:,:)
+     real, allocatable      :: qair1(:,:)
+     real, allocatable      :: wind1(:,:)
+     real, allocatable      :: ps1(:,:)
+     real, allocatable      :: rainf1(:,:)
+     real, allocatable      :: snowf1(:,:)
+     real, allocatable      :: dirswd1(:,:)
+     real, allocatable      :: difswd1(:,:)
+     real, allocatable      :: swd1(:,:)
+     real, allocatable      :: lwd1(:,:)
+
+     real, allocatable      :: tair2(:,:)
+     real, allocatable      :: qair2(:,:)
+     real, allocatable      :: wind2(:,:)
+     real, allocatable      :: ps2(:,:)
+     real, allocatable      :: rainf2(:,:)
+     real, allocatable      :: snowf2(:,:)
+     real, allocatable      :: dirswd2(:,:)
+     real, allocatable      :: difswd2(:,:)
+     real, allocatable      :: swd2(:,:)
+     real, allocatable      :: lwd2(:,:)
 
      real, allocatable :: metdata1(:,:) 
      real, allocatable :: metdata2(:,:) 
@@ -171,10 +195,28 @@ contains
        era5_struc(n)%ncold = 1440
        era5_struc(n)%nrold = 720
        era5_struc(n)%npts = 340819
+       era5_struc(n)%mo1 = -1
+       era5_struc(n)%mo2 = -1
 
        LDT_rc%met_nc(findex) = era5_struc(n)%ncold
        LDT_rc%met_nr(findex) = era5_struc(n)%nrold
     
+       allocate(era5_struc(n)%tair1(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5_struc(n)%qair1(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5_struc(n)%wind1(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5_struc(n)%ps1(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5_struc(n)%rainf1(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5_struc(n)%swd1(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5_struc(n)%lwd1(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+
+       allocate(era5_struc(n)%tair2(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5_struc(n)%qair2(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5_struc(n)%wind2(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5_struc(n)%ps2(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5_struc(n)%rainf2(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5_struc(n)%swd2(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5_struc(n)%lwd2(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+
     enddo
 
     call readcrd_era5()

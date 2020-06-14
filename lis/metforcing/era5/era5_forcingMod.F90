@@ -13,11 +13,48 @@ module era5_forcingMod
 ! !DESCRIPTION:
 !  This module contains variables and data structures that are used
 !  for the implementation of the ERA5 forcing data.
-!  The data is global 1/4 degree dataset in latlon
+!  The data is global 1 degree dataset in latlon
 !  projection, and at 1 hourly intervals. The derived
 !  data type {\tt era5\_struc}
 !  includes the variables that specify the runtime options, and the
 !  weights and neighbor information to be used for spatial interpolation.
+!  They are described below:
+!  \begin{description}
+!  \item[ncold]
+!    Number of columns (along the east west dimension) for the input data
+!  \item[nrold]
+!    Number of rows (along the north south dimension) for the input data
+!  \item[nmif]
+!    Number of forcing variables in the ECMWF data
+!  \item[era5time1]
+!    The nearest, previous 1 hour instance of the incoming
+!    data (as a real time).
+!  \item[era5time2]
+!    The nearest, next 1 hour instance of the incoming
+!    data (as a real time).
+!  \item[era5dir]
+!    Directory containing the input data
+!  \item[mi]
+!    Number of points in the input grid
+!  \item[n111,n121,n211,n221]
+!    Arrays containing the neighbor information of the input grid
+!    for each grid point in LIS, for bilinear interpolation.
+!  \item[w111,w121,w211,w221]
+!    Arrays containing the weights of the input grid
+!    for each grid point in LIS, for bilinear interpolation.
+!  \item[n122,n122,n212,n222]
+!    Arrays containing the neighbor information of the input grid
+!    for each grid point in LIS, for conservative interpolation.
+!  \item[w112,w122,w212,w222]
+!    Arrays containing the weights of the input grid
+!    for each grid point in LIS, for conservative interpolation.
+!  \item[n113]
+!    Arrays containing the neighbor information of the input grid
+!    for each grid point in LIS, for n. neighbor interpolation.
+!  \item[findtime1, findtime2]
+!   boolean flags to indicate which time is to be read for
+!   temporal interpolation.
+!  \end{description}
 !
 ! !USES:
   implicit none
@@ -63,6 +100,28 @@ module era5_forcingMod
      integer, allocatable   :: n113(:)
      integer                :: findtime1, findtime2
      logical                :: startFlag, dayFlag
+
+     real, allocatable      :: tair1(:,:)
+     real, allocatable      :: qair1(:,:)
+     real, allocatable      :: wind1(:,:)
+     real, allocatable      :: ps1(:,:)
+     real, allocatable      :: rainf1(:,:)
+     real, allocatable      :: snowf1(:,:)
+     real, allocatable      :: dirswd1(:,:)
+     real, allocatable      :: difswd1(:,:)
+     real, allocatable      :: swd1(:,:)
+     real, allocatable      :: lwd1(:,:)
+
+     real, allocatable      :: tair2(:,:)
+     real, allocatable      :: qair2(:,:)
+     real, allocatable      :: wind2(:,:)
+     real, allocatable      :: ps2(:,:)
+     real, allocatable      :: rainf2(:,:)
+     real, allocatable      :: snowf2(:,:)
+     real, allocatable      :: dirswd2(:,:)
+     real, allocatable      :: difswd2(:,:)
+     real, allocatable      :: swd2(:,:)
+     real, allocatable      :: lwd2(:,:)
 
      integer            :: nvars
      integer            :: uselml
@@ -138,6 +197,23 @@ contains
        era5_struc(n)%npts = 340819
        era5_struc(n)%mo1 = -1
        era5_struc(n)%mo2 = -1
+
+         
+       allocate(era5_struc(n)%tair1(LIS_rc%lnc(n)*LIS_rc%lnr(n),745))
+       allocate(era5_struc(n)%qair1(LIS_rc%lnc(n)*LIS_rc%lnr(n),745))
+       allocate(era5_struc(n)%wind1(LIS_rc%lnc(n)*LIS_rc%lnr(n),745))
+       allocate(era5_struc(n)%ps1(LIS_rc%lnc(n)*LIS_rc%lnr(n),745))
+       allocate(era5_struc(n)%rainf1(LIS_rc%lnc(n)*LIS_rc%lnr(n),745))
+       allocate(era5_struc(n)%swd1(LIS_rc%lnc(n)*LIS_rc%lnr(n),745))
+       allocate(era5_struc(n)%lwd1(LIS_rc%lnc(n)*LIS_rc%lnr(n),745))
+
+       allocate(era5_struc(n)%tair2(LIS_rc%lnc(n)*LIS_rc%lnr(n),745))
+       allocate(era5_struc(n)%qair2(LIS_rc%lnc(n)*LIS_rc%lnr(n),745))
+       allocate(era5_struc(n)%wind2(LIS_rc%lnc(n)*LIS_rc%lnr(n),745))
+       allocate(era5_struc(n)%ps2(LIS_rc%lnc(n)*LIS_rc%lnr(n),745))
+       allocate(era5_struc(n)%rainf2(LIS_rc%lnc(n)*LIS_rc%lnr(n),745))
+       allocate(era5_struc(n)%swd2(LIS_rc%lnc(n)*LIS_rc%lnr(n),745))
+       allocate(era5_struc(n)%lwd2(LIS_rc%lnc(n)*LIS_rc%lnr(n),745))
 
     enddo
 

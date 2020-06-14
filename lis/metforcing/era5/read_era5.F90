@@ -63,6 +63,28 @@ subroutine read_era5(n, kk,order, year, month, day, hour, findex,          &
 !  CO2air: near surface CO2 concentration (kg/m3)
 !   
 !
+!  The arguments are: 
+!  \begin{description}
+!  \item[order]
+!    flag indicating which data to be read (order=1, read the previous 
+!    1 hourly instance, order=2, read the next 1 hourly instance)
+!  \item[n]
+!    index of the nest
+!  \item[name]
+!    name of the 1 hour ERA5 analysis file
+!  \item[tscount]
+!    time step count
+!  \item[ferror]
+!    return error code (0 indicates success)
+!  \end{description}
+! 
+!  The routines invoked are: 
+!  \begin{description}
+!  \item[bilinear\_interp](\ref{bilinear_interp}) \newline
+!    spatially interpolate the forcing data using bilinear interpolation
+!  \item[conserv\_interp](\ref{conserv_interp}) \newline
+!    spatially interpolate the forcing data using conservative interpolation
+!  \end{description}
 !EOP
   
   integer   :: ftn
@@ -74,186 +96,274 @@ subroutine read_era5(n, kk,order, year, month, day, hour, findex,          &
   logical   :: read_lnd
   logical   :: read_flag
   
-  real      :: ps(era5_struc(n)%npts)
-  real      :: tair(era5_struc(n)%npts)
-  real      :: qair(era5_struc(n)%npts)
-  real      :: swd(era5_struc(n)%npts)
-  real      :: lwd(era5_struc(n)%npts)
-  real      :: wind(era5_struc(n)%npts)
-  real      :: rainf(era5_struc(n)%npts)
-  real      :: snowf(era5_struc(n)%npts)
-  real      :: dirsw(era5_struc(n)%npts)
-  real      :: difsw(era5_struc(n)%npts)
+  real, allocatable      :: tair(:,:)
+  real, allocatable      :: qair(:,:)
+  real, allocatable      :: swd(:,:)
+  real, allocatable      :: lwd(:,:)
+  real, allocatable      :: wind(:,:)
+  real, allocatable      :: ps(:,:)
+  real, allocatable      :: rainf(:,:)
+  real, allocatable      :: snowf(:,:)
+  real, allocatable      :: dirsw(:,:)
+  real, allocatable      :: difsw(:,:)
 
-  real      :: varfield(LIS_rc%lnc(n)*LIS_rc%lnr(n))
-
+  integer :: days(12)
+  data days /31,28,31,30,31,30,31,31,30,31,30,31/
 ! __________________________________________________________________________
 
+  read_flag = .false.
+  ! Check if it is the switch of a month
+  if(order.eq.1) then
+     if(era5_struc(n)%mo1.ne.month) then
+        era5_struc(n)%mo1 = month
+        read_flag = .true.
+     endif
+  else
+     if(era5_struc(n)%mo2.ne.month) then
+        era5_struc(n)%mo2 = month
+        read_flag = .true.
+     endif
+  endif
   ferror = 1
 
+  if(read_flag) then 
 #if (defined USE_NETCDF4) 
 
-  mo = LIS_rc%lnc(n)*LIS_rc%lnr(n)
-
-  inquire(file=fname,exist=file_exists) 
-  if(file_exists) then 
-     
-     write(LIS_logunit,*)'[INFO] Reading ERA5 file ',trim(fname)
-
-     tindex = (day - 1)*24 + hour + 1
-
-     call LIS_verify(nf90_open(path=trim(fname), mode=NF90_NOWRITE, &
-          ncid=ftn), 'nf90_open failed in read_era5')
-     
-     call LIS_verify(nf90_inq_varid(ftn,'PSurf',psId), &
-          'nf90_inq_varid failed for psurf in read_era5')
-     call LIS_verify(nf90_get_var(ftn,psId, ps,&
-          start=(/1,tindex/),count=(/era5_struc(n)%npts,1/)),&
-          'nf90_get_var failed for ps in read_era5') 
-     
-     if(order.eq.1) then 
-        call interp_era5_var(n,findex,month,ps, .false.,&
-             varfield)
-     else
-        call interp_era5_var(n,findex,month,ps, .false.,&
-             varfield)
+     if((mod(year,4) .eq. 0 .and. mod(year, 100).ne.0) &!leap year
+          .or.(mod(year,400) .eq.0)) then 
+        days(2) = 29
+     else 
+        days(2) = 28
      endif
-     call assign_processed_era5forc(n,kk,order,6,&
-          varfield)
-
-     call LIS_verify(nf90_inq_varid(ftn,'Tair',tmpId), &
-          'nf90_inq_varid failed for Tair in read_era5')
-     call LIS_verify(nf90_get_var(ftn,tmpId, tair,&
-          start=(/1,tindex/),count=(/era5_struc(n)%npts,1/)),&
-          'nf90_get_var failed for tair in read_era5') 
      
-     if(order.eq.1) then 
-        call interp_era5_var(n,findex,month,tair, .false.,&
-             varfield)
-     else
-        call interp_era5_var(n,findex,month,tair,  .false.,&
-             varfield)
-     endif
-     call assign_processed_era5forc(n,kk,order,1,&
-          varfield)
+     mo = LIS_rc%lnc(n)*LIS_rc%lnr(n)
 
-     call LIS_verify(nf90_inq_varid(ftn,'Qair',qId), &
-          'nf90_inq_varid failed for Qair in read_era5')
-     call LIS_verify(nf90_get_var(ftn,qId, qair,&
-          start=(/1,tindex/),count=(/era5_struc(n)%npts,1/)),&
-          'nf90_get_var failed for qair in read_era5') 
-     
-     if(order.eq.1) then 
-        call interp_era5_var(n,findex,month,qair, .false.,&
-             varfield)
-     else
-        call interp_era5_var(n,findex,month,qair,  .false.,&
-             varfield)
-     endif
-     call assign_processed_era5forc(n,kk,order,2,&
-          varfield)
-
-     call LIS_verify(nf90_inq_varid(ftn,'Wind',windId), &
-          'nf90_inq_varid failed for Wind in read_era5')
-     call LIS_verify(nf90_get_var(ftn,windId, wind,&
-          start=(/1,tindex/),count=(/era5_struc(n)%npts,1/)),&
-          'nf90_get_var failed for wind in read_era5') 
-     if(order.eq.1) then 
-        call interp_era5_var(n,findex,month,wind, .false.,&
-             varfield)
-     else
-        call interp_era5_var(n,findex,month,wind,  .false.,&
-             varfield)
-     endif
-     call assign_processed_era5forc(n,kk,order,5,&
-          varfield)
-
-     call LIS_verify(nf90_inq_varid(ftn,'Rainf',rainfId), &
-          'nf90_inq_varid failed for Rainf in read_era5')
-     call LIS_verify(nf90_get_var(ftn,rainfId, rainf,&
-          start=(/1,tindex/),count=(/era5_struc(n)%npts,1/)),&
-          'nf90_get_var failed for rainf in read_era5') 
-     call LIS_verify(nf90_inq_varid(ftn,'Snowf',snowfId), &
-          'nf90_inq_varid failed for Snowf in read_era5')
-     call LIS_verify(nf90_get_var(ftn,snowfId, snowf,&
-          start=(/1,tindex/),count=(/era5_struc(n)%npts,1/)),&
-          'nf90_get_var failed for snowf in read_era5') 
-
-     do t=1,era5_struc(n)%npts
-        if(rainf(t).ne.LIS_rc%udef.and.&
-             snowf(t).ne.LIS_rc%udef) then 
-           rainf(t) = rainf(t) + snowf(t)
+! Read single layer file (*slv) fields:
+     inquire(file=fname,exist=file_exists) 
+     if(file_exists) then 
+        if(order.eq.1) then
+           era5_struc(n)%ps1     = LIS_rc%udef
+           era5_struc(n)%tair1   = LIS_rc%udef
+           era5_struc(n)%qair1   = LIS_rc%udef
+           era5_struc(n)%wind1   = LIS_rc%udef
+           era5_struc(n)%rainf1  = LIS_rc%udef
+           era5_struc(n)%swd1    = LIS_rc%udef
+           era5_struc(n)%lwd1    = LIS_rc%udef
         else
-           rainf(t) = LIS_rc%udef
+           era5_struc(n)%ps2     = LIS_rc%udef
+           era5_struc(n)%tair2   = LIS_rc%udef
+           era5_struc(n)%qair2   = LIS_rc%udef
+           era5_struc(n)%wind2   = LIS_rc%udef
+           era5_struc(n)%rainf2  = LIS_rc%udef
+           era5_struc(n)%swd2    = LIS_rc%udef
+           era5_struc(n)%lwd2    = LIS_rc%udef
         endif
-     enddo
 
-     if(order.eq.1) then 
-        call interp_era5_var(n,findex,month,rainf,.true.,&
-             varfield)
-     else
-        call interp_era5_var(n,findex,month,rainf, .true.,&
-             varfield)
-     endif
+        write(LIS_logunit,*)'[INFO] Reading ERA5 file (bookend,', order,' -',trim(fname), ')'
 
-     call assign_processed_era5forc(n,kk,order,7,&
-          varfield)
+        rec_size = days(month)*24 + 1
 
-     call LIS_verify(nf90_inq_varid(ftn,'DIR_SWdown',dirSWId), &
-          'nf90_inq_varid failed for DIR_SWdown in read_era5')
-     call LIS_verify(nf90_get_var(ftn,dirSWId, swd,&
-          start=(/1,tindex/),count=(/era5_struc(n)%npts,1/)),&
-          'nf90_get_var failed for dirSW in read_era5') 
-     call LIS_verify(nf90_inq_varid(ftn,'SCA_SWdown',difSWId), &
-          'nf90_inq_varid failed for SCA_SWdown in read_era5')
-     call LIS_verify(nf90_get_var(ftn,difSWId, difsw,&
-          start=(/1,tindex/),count=(/era5_struc(n)%npts,1/)),&
-          'nf90_get_var failed for difSW in read_era5') 
-     
-     do t=1,era5_struc(n)%npts
-        if(swd(t).ne.LIS_rc%udef.and.&
-             difsw(t).ne.LIS_rc%udef) then 
-           swd(t) = swd(t) + difsw(t)
-        else
-           swd(t) = LIS_rc%udef
-        endif
-     enddo
+        call LIS_verify(nf90_open(path=trim(fname), mode=NF90_NOWRITE, &
+             ncid=ftn), 'nf90_open failed in read_era5')
 
-     if(order.eq.1) then 
-        call interp_era5_var(n,findex,month,swd,  .false.,&
-             varfield)
-     else
-        call interp_era5_var(n,findex,month,swd,   .false.,&
-             varfield)
-     endif
-
-     call assign_processed_era5forc(n,kk,order,3,&
-          varfield)
-
-     call LIS_verify(nf90_inq_varid(ftn,'LWdown',lwdId), &
-          'nf90_inq_varid failed for LWdown in read_era5')
-     call LIS_verify(nf90_get_var(ftn,lwdId, lwd,&
-          start=(/1,tindex/),count=(/era5_struc(n)%npts,1/)),&
-          'nf90_get_var failed for lwd in read_era5')
-     
-     if(order.eq.1) then 
-        call interp_era5_var(n,findex,month,lwd,  .false.,&
-             varfield)
-     else
-        call interp_era5_var(n,findex,month,lwd,   .false.,&
-             varfield)
-     endif
-
-     call assign_processed_era5forc(n,kk,order,4,&
-          varfield)
+        allocate(ps(era5_struc(n)%npts,rec_size))
         
-     call LIS_verify(nf90_close(ftn), &
-          'failed to close file in read_era5')
+        call LIS_verify(nf90_inq_varid(ftn,'PSurf',psId), &
+             'nf90_inq_varid failed for psurf in read_era5')
+        call LIS_verify(nf90_get_var(ftn,psId, ps),&
+             'nf90_get_var failed for ps in read_era5') 
+
+        if(order.eq.1) then 
+           do l=1,rec_size
+              call interp_era5_var(n,findex,month,ps(:,l),   .false.,&
+                   era5_struc(n)%ps1(:,l))              
+           enddo
+        else
+           do l=1,rec_size
+              call interp_era5_var(n,findex,month,ps(:,l),    .false.,&
+                   era5_struc(n)%ps2(:,l))
+           enddo
+        endif
+        deallocate(ps)
+
+        allocate(tair(era5_struc(n)%npts,rec_size))
+        call LIS_verify(nf90_inq_varid(ftn,'Tair',tmpId), &
+             'nf90_inq_varid failed for Tair in read_era5')
+        call LIS_verify(nf90_get_var(ftn,tmpId, tair),&
+             'nf90_get_var failed for tair in read_era5') 
+
+        if(order.eq.1) then 
+           do l=1,rec_size
+              call interp_era5_var(n,findex,month,tair(:,l), .false.,&
+                   era5_struc(n)%tair1(:,l))
+           enddo
+        else
+           do l=1,rec_size
+              call interp_era5_var(n,findex,month,tair(:,l),  .false.,&
+                   era5_struc(n)%tair2(:,l))
+           enddo
+        endif
+        deallocate(tair)
+
+        allocate(qair(era5_struc(n)%npts,rec_size))
+        call LIS_verify(nf90_inq_varid(ftn,'Qair',qId), &
+             'nf90_inq_varid failed for Qair in read_era5')
+        call LIS_verify(nf90_get_var(ftn,qId, qair),&
+             'nf90_get_var failed for qair in read_era5') 
+
+        if(order.eq.1) then 
+           do l=1,rec_size
+              call interp_era5_var(n,findex,month,qair(:,l), .false.,&
+                   era5_struc(n)%qair1(:,l))
+           enddo
+        else
+           do l=1,rec_size
+              call interp_era5_var(n,findex,month,qair(:,l),  .false.,&
+                   era5_struc(n)%qair2(:,l))
+           enddo
+        endif
+        deallocate(qair)
+
+        allocate(wind(era5_struc(n)%npts,rec_size))
+        call LIS_verify(nf90_inq_varid(ftn,'Wind',windId), &
+             'nf90_inq_varid failed for Wind in read_era5')
+        call LIS_verify(nf90_get_var(ftn,windId, wind),&
+             'nf90_get_var failed for wind in read_era5') 
+        if(order.eq.1) then 
+           do l=1,rec_size
+              call interp_era5_var(n,findex,month,wind(:,l), .false.,&
+                   era5_struc(n)%wind1(:,l))
+           enddo
+        else
+           do l=1,rec_size
+              call interp_era5_var(n,findex,month,wind(:,l),  .false.,&
+                   era5_struc(n)%wind2(:,l))
+           enddo
+        endif
+        deallocate(wind)
+        
+        allocate(rainf(era5_struc(n)%npts,rec_size))
+        allocate(snowf(era5_struc(n)%npts,rec_size))
+        call LIS_verify(nf90_inq_varid(ftn,'Rainf',rainfId), &
+             'nf90_inq_varid failed for Rainf in read_era5')
+        call LIS_verify(nf90_get_var(ftn,rainfId, rainf),&
+             'nf90_get_var failed for rainf in read_era5') 
+        call LIS_verify(nf90_inq_varid(ftn,'Snowf',snowfId), &
+             'nf90_inq_varid failed for Snowf in read_era5')
+        call LIS_verify(nf90_get_var(ftn,snowfId, snowf),&
+             'nf90_get_var failed for snowf in read_era5') 
+
+        do t=1,era5_struc(n)%npts
+           do l=1,rec_size
+              if(rainf(t,l).ne.LIS_rc%udef.and.&
+                   snowf(t,l).ne.LIS_rc%udef) then 
+                 rainf(t,l) = rainf(t,l) + snowf(t,l)
+              else
+                 rainf(t,l) = LIS_rc%udef
+              endif
+           enddo
+        enddo
+        deallocate(snowf)
+        if(order.eq.1) then 
+           do l=1,rec_size
+              call interp_era5_var(n,findex,month,rainf(:,l),.true.,&
+                   era5_struc(n)%rainf1(:,l))
+           enddo
+        else
+           do l=1,rec_size
+              call interp_era5_var(n,findex,month,rainf(:,l), .true.,&
+                   era5_struc(n)%rainf2(:,l))
+           enddo
+        endif
+        deallocate(rainf)
+
+        allocate(difSW(era5_struc(n)%npts,rec_size))
+        allocate(swd(era5_struc(n)%npts,rec_size))
+
+        call LIS_verify(nf90_inq_varid(ftn,'DIR_SWdown',dirSWId), &
+             'nf90_inq_varid failed for DIR_SWdown in read_era5')
+        call LIS_verify(nf90_get_var(ftn,dirSWId, swd),&
+             'nf90_get_var failed for dirSW in read_era5') 
+        iret = nf90_inq_varid(ftn,'SCA_SWdown',difSWId)
+        !Assumes that diffuse field doesn't exist
+        if(iret.ne.0) then 
+           difsw = 0 
+        endif
+
+        do t=1,era5_struc(n)%npts
+           do l=1,rec_size
+              if(swd(t,l).ne.LIS_rc%udef.and.&
+                   difsw(t,l).ne.LIS_rc%udef) then 
+                 swd(t,l) = swd(t,l) + difsw(t,l)
+              else
+                 swd(t,l) = LIS_rc%udef
+              endif
+           enddo
+        enddo
+        deallocate(difsw)
+
+        if(order.eq.1) then 
+           do l=1,rec_size
+              call interp_era5_var(n,findex,month,swd(:,l),  .false.,&
+                   era5_struc(n)%swd1(:,l))
+           enddo
+        else
+           do l=1,rec_size
+              call interp_era5_var(n,findex,month,swd(:,l),   .false.,&
+                   era5_struc(n)%swd2(:,l))
+           enddo
+        endif
+        deallocate(swd)
+
+        allocate(lwd(era5_struc(n)%npts,rec_size))
+        call LIS_verify(nf90_inq_varid(ftn,'LWdown',lwdId), &
+             'nf90_inq_varid failed for LWdown in read_era5')
+        call LIS_verify(nf90_get_var(ftn,lwdId, lwd),&
+             'nf90_get_var failed for lwd in read_era5')
+
+        if(order.eq.1) then 
+           do l=1,rec_size
+              call interp_era5_var(n,findex,month,lwd(:,l),  .false.,&
+                   era5_struc(n)%lwd1(:,l))
+           enddo
+        else
+           do l=1,rec_size
+              call interp_era5_var(n,findex,month,lwd(:,l),   .false.,&
+                   era5_struc(n)%lwd2(:,l))
+           enddo
+        endif
+        deallocate(lwd)
+        
+        call LIS_verify(nf90_close(ftn), &
+             'failed to close file in read_era5')
                 
-  else
-     write(LIS_logunit,*) '[ERR] ',trim(fname)//' does not exist'
-     call LIS_endrun()        
+     else
+        write(LIS_logunit,*) '[ERR] ',trim(fname)//' does not exist'
+        call LIS_endrun()
+        
+     endif
   endif
+
+  tindex = (day - 1)*24 + hour + 1
+  
+  if(order.eq.1) then 
+     call assign_processed_era5forc(n,kk,order,1,era5_struc(n)%tair1(:,tindex))
+     call assign_processed_era5forc(n,kk,order,2,era5_struc(n)%qair1(:,tindex))
+     call assign_processed_era5forc(n,kk,order,3,era5_struc(n)%swd1(:,tindex))
+     call assign_processed_era5forc(n,kk,order,4,era5_struc(n)%lwd1(:,tindex))
+     call assign_processed_era5forc(n,kk,order,5,era5_struc(n)%wind1(:,tindex))
+     call assign_processed_era5forc(n,kk,order,6,era5_struc(n)%ps1(:,tindex))
+     call assign_processed_era5forc(n,kk,order,7,era5_struc(n)%rainf1(:,tindex))
+  else
+     call assign_processed_era5forc(n,kk,order,1,era5_struc(n)%tair2(:,tindex))
+     call assign_processed_era5forc(n,kk,order,2,era5_struc(n)%qair2(:,tindex))
+     call assign_processed_era5forc(n,kk,order,3,era5_struc(n)%swd2(:,tindex))
+     call assign_processed_era5forc(n,kk,order,4,era5_struc(n)%lwd2(:,tindex))
+     call assign_processed_era5forc(n,kk,order,5,era5_struc(n)%wind2(:,tindex))
+     call assign_processed_era5forc(n,kk,order,6,era5_struc(n)%ps2(:,tindex))
+     call assign_processed_era5forc(n,kk,order,7,era5_struc(n)%rainf2(:,tindex))
+  endif
+
 #endif
 
 end subroutine read_era5
@@ -288,7 +398,7 @@ subroutine interp_era5_var(n,findex, month, input_var, &
 
 !
 ! !DESCRIPTION: 
-!  This subroutine spatially interpolates a single ERA5 field
+!  This subroutine spatially interpolates a ERA5 field
 !  to the LIS running domain
 ! 
 !EOP
@@ -394,11 +504,11 @@ subroutine assign_processed_era5forc(n,kk,order,var_index,era5forc)
 ! !USES: 
   use LIS_coreMod
   use era5_forcingMod, only : era5_struc
-! 
+!
 ! !DESCRIPTION: 
-! 
-!  This subroutine assigns the processed ERA5 forcing variables to 
-!  the module datastructures (for use in temporal interpolation)
+!  This routine assigns the interpolated ERA5 forcing data
+!  to the module data structures to be used later for 
+!  time interpolation 
 !
 !EOP
   implicit none
@@ -428,3 +538,6 @@ subroutine assign_processed_era5forc(n,kk,order,var_index,era5forc)
      enddo
   enddo
 end subroutine assign_processed_era5forc
+
+
+

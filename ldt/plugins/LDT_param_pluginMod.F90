@@ -1235,7 +1235,7 @@ contains
     call registerreadforcelev(trim(LDT_merra2Id)//char(0),&
          read_merra2_elev)
 
-!- MERRA2 forcing:
+!- ERA5 forcing:
     call registerreadforcelev(trim(LDT_era5Id)//char(0),&
          read_era5_elev)
 
