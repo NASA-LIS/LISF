@@ -327,6 +327,13 @@ contains
          LVT_writerestart_ConditionalEntropy, &
          LVT_readrestart_ConditionalEntropy
 
+    use LVT_RelativeEntropyMod, only : LVT_initRelativeEntropy, &
+         LVT_diagnoseRelativeEntropy, LVT_computeRelativeEntropy,&
+         LVT_writeMetric_RelativeEntropy, &
+         LVT_resetMetric_RelativeEntropy, &
+         LVT_writerestart_RelativeEntropy, &
+         LVT_readrestart_RelativeEntropy
+
     use LVT_MutualInformationMod, only : LVT_initMutualInformation, &
          LVT_diagnoseMutualInformation, LVT_computeMutualInformation,&
          LVT_writeMetric_MutualInformation, LVT_resetMetric_MutualInformation,&
@@ -955,6 +962,16 @@ contains
     call registermetricreset(LVT_CEid,LVT_resetMetric_ConditionalEntropy)
     call registermetricwriterestart(LVT_CEid,LVT_writerestart_ConditionalEntropy)
     call registermetricreadrestart(LVT_CEid,LVT_readrestart_ConditionalEntropy)
+
+
+    call registermetricinit(LVT_REid,LVT_initRelativeEntropy)
+    call registermetricdiagnose(LVT_REid, LVT_diagnoseRelativeEntropy)
+    call registermetriccompute(LVT_REid, LVT_computeRelativeEntropy)
+    call registermetricwriteentry(LVT_REid,&
+         LVT_writeMetric_RelativeEntropy)
+    call registermetricreset(LVT_REid,LVT_resetMetric_RelativeEntropy)
+    call registermetricwriterestart(LVT_REid,LVT_writerestart_RelativeEntropy)
+    call registermetricreadrestart(LVT_REid,LVT_readrestart_RelativeEntropy)
 
     call registermetricinit(LVT_miid,LVT_initMutualInformation)
     call registermetricdiagnose(LVT_miid, LVT_diagnoseMutualInformation)
