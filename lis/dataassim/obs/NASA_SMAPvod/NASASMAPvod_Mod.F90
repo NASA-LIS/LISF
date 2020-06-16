@@ -43,7 +43,7 @@ module NASASMAPvod_Mod
      integer                :: nc
      integer                :: nr
      real,     allocatable      :: vodobs(:,:)
-     real,     allocatable      :: vodtime(:,:)
+     real*8,   allocatable      :: vodtime(:,:)
 
      real                       :: ssdev_inp
      integer, allocatable       :: n11(:)
@@ -202,11 +202,11 @@ contains
        call LIS_verify(status, 'SMAP(NASA) reference LAI CDF file: not defined')
     enddo
 
-    call ESMF_ConfigFindLabel(LIS_config,"SMAP(NASA) observation CDF file:",&
+    call ESMF_ConfigFindLabel(LIS_config,"SMAP(NASA) vegetation optical depth observation CDF file:",&
          rc=status)
     do n=1,LIS_rc%nnest
        call ESMF_ConfigGetAttribute(LIS_config,obscdffile(n),rc=status)
-       call LIS_verify(status, 'SMAP(NASA) observation CDF file: not defined')
+       call LIS_verify(status, 'SMAP(NASA) vegetation optical depth observation CDF file: not defined')
     enddo
     
     call ESMF_ConfigFindLabel(LIS_config, &
@@ -352,7 +352,13 @@ contains
        if(NASASMAPvod_struc(n)%data_designation.eq."SPL3SMP") then 
           NASASMAPvod_struc(n)%nc = 964
           NASASMAPvod_struc(n)%nr = 406
+       elseif(NASASMAPvod_struc(n)%data_designation.eq."SPL2SMP") then 
+          NASASMAPvod_struc(n)%nc = 964
+          NASASMAPvod_struc(n)%nr = 406
        elseif(NASASMAPvod_struc(n)%data_designation.eq."SPL3SMP_E") then 
+          NASASMAPvod_struc(n)%nc = 3856
+          NASASMAPvod_struc(n)%nr = 1624
+       elseif(NASASMAPvod_struc(n)%data_designation.eq."SPL2SMP_E") then 
           NASASMAPvod_struc(n)%nc = 3856
           NASASMAPvod_struc(n)%nr = 1624
        endif
@@ -536,7 +542,8 @@ contains
     enddo
     
     do n=1,LIS_rc%nnest
-       if(NASASMAPvod_struc(n)%data_designation.eq."SPL3SMP") then 
+       if((NASASMAPvod_struc(n)%data_designation.eq."SPL3SMP").or.&
+            (NASASMAPvod_struc(n)%data_designation.eq."SPL2SMP")) then 
           gridDesci = 0
           gridDesci(1) = 9
           gridDesci(2) = 964
@@ -545,7 +552,8 @@ contains
           gridDesci(20) = 64
           gridDesci(10) = 0.36 
           gridDesci(11) = 1 !for the global switch
-       elseif(NASASMAPvod_struc(n)%data_designation.eq."SPL3SMP_E") then 
+       elseif((NASASMAPvod_struc(n)%data_designation.eq."SPL3SMP_E").or.&
+            (NASASMAPvod_struc(n)%data_designation.eq."SPL2SMP_E")) then 
           gridDesci = 0
           gridDesci(1) = 9
           gridDesci(2) = 3856
@@ -570,8 +578,14 @@ contains
             NASASMAPvod_struc(n)%rlon, &
             NASASMAPvod_struc(n)%n11)
        
-       call LIS_registerAlarm("NASASMAP read alarm",&
-            86400.0, 86400.0)
+       if((NASASMAPvod_struc(n)%data_designation.eq."SPL3SMP").or.&
+            (NASASMAPvod_struc(n)%data_designation.eq."SPL2SMP")) then 
+          call LIS_registerAlarm("NASASMAP VOD read alarm",&
+               86400.0, 86400.0)
+       else
+           call LIS_registerAlarm("NASASMAP VOD read alarm",&
+                3600.0, 3600.0)
+       endif
 
        NASASMAPvod_struc(n)%startMode = .true. 
 

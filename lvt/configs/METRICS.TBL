@@ -177,5 +177,6 @@ Resilience:                            0    0       0         0       -9999.0  -
 Vulnerability:                         0    0       0         0       -9999.0  -9999.0    0    0  #VUL
 Information entropy:                   0    0       0         0       -9999.0  -9999.0    0    0  #IE
 Conditional entropy:                   0    0       0         0       -9999.0  -9999.0    0    0  #CE
+Joint entropy:                         0    0       0         0       -9999.0  -9999.0    0    0  #JE
 Mutual information:                    0    0       0         0       -9999.0  -9999.0    0    0  #MI
 #latex: \end{verbatim}

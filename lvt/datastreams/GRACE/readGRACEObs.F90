@@ -157,8 +157,8 @@ subroutine readGRACEObs(source)
   endif
   
   ! Estimate available time point (accounting for missing data)
-  call LVT_get_julhr(LVT_rc%yr,LVT_rc%mo,LVT_rc%da,&
-       LVT_rc%hr,LVT_rc%mn,LVT_rc%ss,currTime)
+  call LVT_get_julhr(LVT_rc%dyr(source),LVT_rc%dmo(source),LVT_rc%dda(source),&
+       LVT_rc%dhr(source),LVT_rc%dmn(source),LVT_rc%dss(source),currTime)
   
   dt =  float((currTime-GRACEobs(source)%refTime))/24.0
   
