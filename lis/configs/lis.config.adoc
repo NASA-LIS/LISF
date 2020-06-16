@@ -1170,6 +1170,7 @@ endif::devonly[]
 |"`SMOS(NESDIS) soil moisture`" | NESDIS SMOS soil moisture
 |"`SNODEP`"                     | AFWA SNODEP
 |"`USAFSI`"                     | USAF Snow and Ice Analysis
+|"`SMAP(NASA) vegetation optical depth`"  | NASA L-band vegetation optical depth 
 |====
 
 .Example _lis.config_ entry
@@ -3064,6 +3065,51 @@ SMAP(NRT) soil moisture number of bins in the CDF:
 SMAP(NRT) CDF read option:
 ....
 
+
+==== SMAP (NASA) vegetation optical depth assimilation
+anchor:sssec_smapnasavodda[SMAP (NASA) vegetation optical depth assimilation]
+
+`SMAP(NASA) vegetation optical depth data directory:` specifies the SMAP(NASA) vegetation 
+optical depth data directory
+
+`SMAP(NASA) vegetation optical depth data designation:`  specifies the 
+designation of the SMAP VOD data 
+
+Acceptable values are:
+
+|====
+|Value    | Description
+
+|SPL2SMP    | Level2 passive VOD data
+|SPL2SMP_E  | Level2 oversampled passive VOD data 
+|====
+
+`SMAP(NASA) vegetation optial depth use scaled standard deviation model:` specifies
+whether the observation error standard deviation is to be scaled using model
+and observation standard deviation.
+
+`SMAP(NASA) vegetation optial depth apply SMAP QC flags:` specifies
+whether to employ the standard SMAP QC flags to screen VOD data 
+
+`SMAP(NASA) reference LAI CDF file:` specifies the name of the reference LAI CDF file
+(observations will be scaled into this climatology).
+
+`SMAP(NASA) vegetation optical depth observation CDF file:` specifies the name of the observation VOD
+CDF file.
+
+`SMAP(NASA) vegetation optical depth number of bins in the CDF:` specifies the number of
+bins in the CDF.
+
+.Example _lis.config_ entry
+....
+SMAP(NASA) vegetation optical depth data directory:    
+SMAP(NASA) vegetation optical depth data designation:  
+SMAP(NASA) vegetation optical depth use scaled standard deviation model: 
+SMAP(NASA) vegetation optical depth apply SMAP QC flags:                 
+SMAP(NASA) reference LAI CDF file:          
+SMAP(NASA) vegetation optical depth observation CDF file:
+SMAP(NASA) vegetation optical depth number of bins in the CDF: 
+....
 
 ==== SMOS (NESDIS) soil moisture assimilation
 anchor:sssec_smosnesdissmda[SMOS (NESDIS) soil moisture assimilation]
@@ -8256,9 +8302,9 @@ are:
 |Value | Note | Description
 
 | 0    |  **  | No urban scheme
-| 1    |      | Single-layer 
-| 2    |      | Multi-layer BEP scheme
-| 3    |      | Multi-layer BEM scheme
+| 1    |  NS  | Single-layer 
+| 2    |  NS  | Multi-layer BEP scheme
+| 3    |  NS  | Multi-layer BEM scheme
 |====
 
 `Noah-MP.4.0.1 reference height of temperature and humidity:`

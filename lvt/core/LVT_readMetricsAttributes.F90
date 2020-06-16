@@ -243,6 +243,10 @@ subroutine LVT_readMetricsAttributes(attribFile)
   call get_metric_attributes(attribConfig, LVT_metrics%re, &
        "RE",rc)
 
+  call ESMF_ConfigFindLabel(attribConfig,"Joint entropy:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%je, &
+       "JE",rc)
+
   call ESMF_ConfigFindLabel(attribConfig,"Mutual information:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%mi, &
        "MI",rc)
