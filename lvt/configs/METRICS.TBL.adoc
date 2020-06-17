@@ -128,6 +128,7 @@ Vulnerability:                         0    0       0         0       -9999.0  -
 Information entropy:                   0    0       0         0       -9999.0  -9999.0    0    0  #IE
 Conditional entropy:                   0    0       0         0       -9999.0  -9999.0    0    0  #CE
 Joint entropy:                         0    0       0         0       -9999.0  -9999.0    0    0  #JE
+Relative entropy:                      0    0       0         0       -9999.0  -9999.0    0    0  #RE
 Mutual information:                    0    0       0         0       -9999.0  -9999.0    0    0  #MI
 ....
 
