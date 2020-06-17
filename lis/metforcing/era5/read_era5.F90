@@ -517,7 +517,7 @@ subroutine assign_processed_era5forc(n,kk,order,var_index,era5forc)
   integer :: kk
   integer :: order
   integer :: var_index
-  real    :: era5forc(LIS_rc%lnc(n)*LIS_rc%lnc(n))
+  real    :: era5forc(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   
 
   integer :: c,r
