@@ -134,14 +134,9 @@ subroutine NoahMP401_qc_soilmobs(n,k,OBS_State)
      !SOILTYP = noahmp401_struc(n)%noahmp401(t)%soiltype        
      !SMCMAX(t)  =  parameters%SMCMAX(SOILTYP)  !  SMCMAX(t)  = MAXSMC (SOILTYP) 
      !SMCWLT(t)  =  parameters%SMCWLT(SOILTYP)   ! SMCWLT(t) = WLTSMC (SOILTYP)
-     !SOILTYP = NOAHMP401_struc(n)%noahmp401(t)%soiltype
-     !SMCMAX  = SMCMAX_TABLE(SOILTYP)
-     !SMCWLT  = SMCWLT_TABLE(SOILTYP)
-    
-     SOILTYP = NOAHMP401_struc(n)%noahmp401(t)%soiltype  !Yonghwan Kwon
+     SOILTYP = NOAHMP401_struc(n)%noahmp401(t)%soiltype
      SMCMAX(t)  = SMCMAX_TABLE(SOILTYP)
      SMCWLT(t)  = SMCWLT_TABLE(SOILTYP)
- 
   enddo
 
   call LIS_convertPatchSpaceToObsSpace(n,k,&       
