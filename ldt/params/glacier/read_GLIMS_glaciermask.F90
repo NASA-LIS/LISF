@@ -177,13 +177,13 @@ subroutine read_GLIMS_glaciermask(n, localmask, glacier_frac )
                              LDT_rc%gridDesc(n,:), mi, mo, n11 )                                                     
     
   !- Calculate total counts of fine grid cells in each coarse gridcell: 
-     call upscaleByCnt( mi, mo, num_bins, LDT_rc%udef, n11, li, gi, &
+     call upscaleByCnt( mi, mo, num_bins, LDT_rc%udef, n11, li1, gi1, &
                       lo2, go2 )
 
   !- Estimate number of pixels per gridcell (coarse domain):    
    do i = 1, mi
-      if(li(i)) then
-         if( n11(i) .ne. 0 .and. gi(i) .ne. LDT_rc%udef ) then
+      if(li1(i)) then
+         if( n11(i) .ne. 0 .and. gi1(i) .ne. LDT_rc%udef ) then
               pixels_pergrid(n11(i)) = pixels_pergrid(n11(i)) + 1.0
          endif
       endif
