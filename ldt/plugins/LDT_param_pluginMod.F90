@@ -68,6 +68,7 @@ contains
     use Mosaic_parmsMod
     use RUC_parmsMod
     use JULES50_parmsMod
+    use Crocus_parmsMod    
 
   ! Noah 2.7.1 LSM:
     call registerlsmparamprocinit(trim(LDT_noah271Id)//char(0),&
@@ -229,6 +230,14 @@ contains
          JULES50Parms_writeHeader)
     call registerlsmparamprocwritedata(trim(LDT_jules50Id)//char(0),&
          JULES50Parms_writeData)
+
+ !Crocus 8.1 :
+    call registerlsmparamprocinit(trim(LDT_Crocus81Id)//char(0),&
+        CrocusParms_init)
+    call registerlsmparamprocwriteheader(trim(LDT_Crocus81Id)//char(0),&
+         CrocusParms_writeHeader)
+    call registerlsmparamprocwritedata(trim(LDT_Crocus81Id)//char(0),&
+         CrocusParms_writeData)
 
   end subroutine LDT_LSMparam_plugin
 
