@@ -5664,7 +5664,7 @@ the ERA5 forcing files.
 
 
 `ERA5 forcing tile to grid mapping file:` specifies the file
-the maps the 1-d forcing to a 2-d format
+that maps the 1-d forcing to a 2-d format
 
 .Example _lis.config_ entry
 ....

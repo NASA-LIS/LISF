@@ -215,8 +215,8 @@ subroutine get_era5(n, findex)
         endif
         call LDT_tick(dtime2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
         if(try.gt.11)then
-           write(*,*)'error: ERA5 data gap exceeds 10 days on file 2'
-           stop
+           write(LDT_logunit,*)'[ERR] ERA5 data gap exceeds 10 days on file 2'
+           call LDT_endrun()
         endif
      enddo
   endif 
