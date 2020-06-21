@@ -178,7 +178,6 @@ subroutine get_era5(n, findex)
            order = 1
            call era5files(n,kk,findex,era5_struc(n)%era5dir, yr1, mo1, da1, &
                 fname)
-!           write(unit=LIS_logunit,fmt=*)'[INFO] getting file.. ',trim(fname)
            call read_era5(n, kk,order, yr1,mo1, da1, hr1, &
                 findex, fname, ferror)
         enddo
@@ -207,7 +206,6 @@ subroutine get_era5(n, findex)
           order = 2
           call era5files(n,kk,findex,era5_struc(n)%era5dir, yr2, mo2, da2, &
                fname)
-!          write(unit=LIS_logunit,fmt=*)'[INFO] getting file.. ',trim(fname)
           call read_era5(n, kk,order, yr2,mo2, da2, hr2, &
                findex, fname, ferror)
         end do
