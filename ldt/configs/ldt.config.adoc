@@ -179,6 +179,7 @@ endif::devonly[]
 |"`TRMM 3B42RTV7`" |TRMM-based 3B42 real-time rainfall
 |"`TRMM 3B42V6`" |TRMM-based 3B42 V6 rainfall
 |"`TRMM 3B42V7`" |TRMM-based 3B42 V7 rainfall
+!"`ER5`" |ERA5 reanalysis
 |===
 
 .Example _ldt.config_ entry
@@ -3010,6 +3011,23 @@ ECMWF Reanalysis elevation map: ./metforcing_parms/ECMWFRean/elev_ECMWF-reanalys
 ECMWF Reanalysis elevation spatial transform:   "average"
 ECMWF Reanalysis maskfile:
 ....
+
+==== ERA5 Reanalysis Forcing based parameter inputs
+
+`ERA5 forcing directory:` specifies the location of the ERA5 Reanalysis forcing data files.
+
+`ERA5 forcing tile to grid mapping file:` specifies the file
+that maps the 1-d forcing to a 2-d format
+
+`ERA5 forcing terrain height file:` specifies the ERA5 reanalysis elevation file
+
+.Example _ldt.config_ entry
+....
+ERA5 forcing directory:              ./ERA5/
+ERA5 forcing tile to grid mapping file: ../ERA5/mapping.nc
+ERA5 forcing terrain height file: ../ERA5/era5_elev.nc
+....
+
 
 ==== MERRA-2 Forcing based parameter inputs
 
