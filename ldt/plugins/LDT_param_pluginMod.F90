@@ -1212,6 +1212,7 @@ contains
     external read_ecmwf_elev
     external read_ecmwfreanal_elev
     external read_merra2_elev
+    external read_era5_elev
 !    external read_geos5_elev
 !    external read_merraland_elev
 
@@ -1248,6 +1249,10 @@ contains
 !- MERRA2 forcing:
     call registerreadforcelev(trim(LDT_merra2Id)//char(0),&
          read_merra2_elev)
+
+!- ERA5 forcing:
+    call registerreadforcelev(trim(LDT_era5Id)//char(0),&
+         read_era5_elev)
 
 !- GEOS5 forcing:
 !    call registerreadforcelev(trim(LDT_geos5Id)//char(0),&
