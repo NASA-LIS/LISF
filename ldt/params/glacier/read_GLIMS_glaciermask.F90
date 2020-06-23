@@ -9,10 +9,9 @@
 !
 ! !REVISION HISTORY:
 !  30 Mar 2018: Sujay Kumar; Initial Specification
-!  1 Oct 2019: Mahdi Navari; Computing glacier fraction added
 !
 ! !INTERFACE:
-subroutine read_GLIMS_glaciermask(n, localmask, glacier_frac )
+subroutine read_GLIMS_glaciermask(n, localmask )
 
 ! !USES:
   use LDT_coreMod,   only : LDT_rc, LDT_localPet
@@ -64,17 +63,6 @@ subroutine read_GLIMS_glaciermask(n, localmask, glacier_frac )
   real                 :: go1(LDT_rc%lnc(n)*LDT_rc%lnr(n))  ! Output lis 1d grid
   logical*1            :: lo1(LDT_rc%lnc(n)*LDT_rc%lnr(n))  ! Output logical mask (to match go)
   real      :: param_gridDesc(20)       ! Input parameter grid desc array
-
-! MN                                                                                                                
-  real, intent(out)     :: glacier_frac(LDT_rc%lnc(n),LDT_rc%lnr(n),1)                                        
-  integer, allocatable  :: n11(:)     ! Array that maps the location of each input grid                             
-                                                      ! point in the output grid.                                 
-  integer, allocatable  :: pixels_pergrid(:)                                                                        
-  integer               :: num_bins  
-  real                  :: go2(LDT_rc%lnc(n)*LDT_rc%lnr(n))  ! Output lis 1d grid
-  logical*1             :: lo2(LDT_rc%lnc(n)*LDT_rc%lnr(n))  ! Output logical mask (to match go)                                                  
-
-
 
 !- Check for and open landmask file:
    inquire(file=trim(LDT_rc%glaciermask(n)), exist=file_exists)
@@ -166,64 +154,8 @@ subroutine read_GLIMS_glaciermask(n, localmask, glacier_frac )
         else
            localmask(c,LDT_rc%lnr(n)-r+1,1) = 1.0
         end if
-      enddo                                                                                                         
-   enddo                                                                                                            
-                                                                                                                     
-                                                                                                                     
-  ! Compute glacier fraction ! MN                                                                                    
-                                                                                                                     
-  !- Create mapping between parameter domain and LIS grid domain: --> n11                                                  
-     call upscaleByAveraging_input( subparam_gridDesc, &                                                             
-                             LDT_rc%gridDesc(n,:), mi, mo, n11 )                                                     
-    
-  !- Calculate total counts of fine grid cells in each coarse gridcell: 
-     call upscaleByCnt( mi, mo, num_bins, LDT_rc%udef, n11, li1, gi1, &
-                      lo2, go2 )
-
-  !- Estimate number of pixels per gridcell (coarse domain):    
-   do i = 1, mi
-      if(li1(i)) then
-         if( n11(i) .ne. 0 .and. gi1(i) .ne. LDT_rc%udef ) then
-              pixels_pergrid(n11(i)) = pixels_pergrid(n11(i)) + 1.0
-         endif
-      endif
-   enddo
-
-     i = 0
-     do r = 1, LDT_rc%lnr(n)
-        do c = 1, LDT_rc%lnc(n);
-            i = i + 1
-            if( go2(i) > 0 ) then                                                     
-             glacier_frac(c,LDT_rc%lnr(n)-r+1,1) = go2(i) / pixels_pergrid(i)
-            else                                                                                                      
-             glacier_frac(c,LDT_rc%lnr(n)-r+1,1) = 0.0                                                                 
-            end if                                                                  
-        enddo
-     enddo
-
-
-
-
-#if 0                                                                                                                
-  !- Estimate number of pixels per gridcell (coarse domain):                                                         
-     do i = 1,  mi ! inpts                                                                                           
-        if( n11(i) .ne. 0 ) then                                                                                     
-           pixels_pergrid(n11(i)) = pixels_pergrid(n11(i)) + 1                                                       
-        endif                                                                                                        
-     enddo                                                                                                           
-                                                                                                                     
-     i = 0                                                                                                           
-     do r = 1, LDT_rc%lnr(n)                                                                                         
-        do c = 1, LDT_rc%lnc(n);                                                                                     
-            i = i + 1                                                                                                
-  !         if( go1(i) <=  LDT_rc%gridcell_glacier_frac(n)) then                                                     
-             glacier_frac(c,LDT_rc%lnr(n)-r+1,1) = go1(i) / pixels_pergrid(n11(i))                                   
-  !        else                                                                                                      
-  !           localmask(c,LDT_rc%lnr(n)-r+1,1) = 1.0                                                                 
-  !        end if                                                                  
      enddo
   enddo
-#endif
 
   deallocate( li1, gi1 )
 
