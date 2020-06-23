@@ -179,7 +179,7 @@ endif::devonly[]
 |"`TRMM 3B42RTV7`" |TRMM-based 3B42 real-time rainfall
 |"`TRMM 3B42V6`" |TRMM-based 3B42 V6 rainfall
 |"`TRMM 3B42V7`" |TRMM-based 3B42 V7 rainfall
-!"`ER5`" |ERA5 reanalysis
+|"`ERA5`" |ERA5 reanalysis
 |===
 
 .Example _ldt.config_ entry
