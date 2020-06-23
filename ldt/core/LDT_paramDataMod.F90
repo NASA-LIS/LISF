@@ -12,7 +12,6 @@ module LDT_paramDataMod
 !
 ! !REVISION HISTORY: 
 !  02 Apr 2012:  Sujay Kumar;  Initial Specification
-!  3 Oct 2019: Mahdi Navari; variable for computing glacier fraction added
 ! 
 
   implicit none
@@ -68,7 +67,6 @@ module LDT_paramDataMod
      type(LDT_paramEntry) :: sfctype     ! Surface model type
      type(LDT_paramEntry) :: regmask     ! Regional/basin based mask
      type(LDT_paramEntry) :: glaciermask
-     type(LDT_paramEntry) :: glacierfrac ! MN 
      type(LDT_paramEntry) :: luindex     ! dominent landcover
 
    ! Soil texture

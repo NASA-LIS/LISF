@@ -28,7 +28,7 @@ module Crocus_parmsMod
   use LDT_paramDataMod
   use LDT_logMod
   use LDT_paramMaskCheckMod
-
+  use LDT_glacierMod ! MN added for glacier fraction
   implicit none
 
   PRIVATE
@@ -172,17 +172,28 @@ contains
     ! Read in glacier fraction file config entries:
       call ESMF_ConfigFindLabel(LDT_config,"Glacier fraction map:",rc=rc)
       do n=1,LDT_rc%nnest
-         call ESMF_ConfigGetAttribute(LDT_config,Crocus_struc(n)%glacierfracfile,rc=rc)
+!         call ESMF_ConfigGetAttribute(LDT_config,Crocus_struc(n)%glacierfracfile,rc=rc)
+         call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%glaciermask(n),rc=rc)
          call LDT_verify(rc,'Glacier fraction map: not specified')
       enddo
-      call ESMF_ConfigGetAttribute(LDT_config,glacierfrac_proj,&
-           label="Glacier fraction map projection:",rc=rc)
-      call LDT_verify(rc,'Glacier fraction map projection: option not specified in the config file')
-      Crocus_struc(:)%glacierfrac_proj = glacierfrac_proj
+
+      call ESMF_ConfigFindLabel(LDT_config,"Glacier fraction map projection:",rc=rc)
+      do n=1,LDT_rc%nnest
+         call ESMF_ConfigGetAttribute(LDT_config,LDT_glacier_struc(n)%mask_proj,rc=rc)
+         call LDT_verify(rc,'Glacier fraction map projection: option not specified in the config file')
+      enddo
+
+!      call ESMF_ConfigGetAttribute(LDT_config,LDT_glacier_struc(n)%mask_proj,&
+!           label="Glacier fraction map projection:",rc=rc)
+!      call LDT_verify(rc,'Glacier fraction map projection: option not specified in the config file')
+!      Crocus_struc(:)%glacierfrac_proj = glacierfrac_proj
+!      LDT_glacier_struc(n)%mask_proj = glacierfrac_proj
 
       call ESMF_ConfigFindLabel(LDT_config,"Glacier fraction spatial transform:",rc=rc)
       do n=1,LDT_rc%nnest
-         call ESMF_ConfigGetAttribute(LDT_config,Crocus_struc(n)%glacierfrac_gridtransform,&
+!         call ESMF_ConfigGetAttribute(LDT_config,Crocus_struc(n)%glacierfrac_gridtransform,&
+!              rc=rc)
+         call ESMF_ConfigGetAttribute(LDT_config,LDT_glacier_struc(n)%mask_gridtransform,&
               rc=rc)
          call LDT_verify(rc,'Glacier fraction spatial transform: option not specified in the config file')
       enddo
@@ -315,7 +326,7 @@ contains
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,Crocus_struc(n)%tbot_gridtransform,&
               rc=rc)
-         call LDT_verify(rc,'Bottom temperature transform: option not specified in the config file')
+         call LDT_verify(rc,'Bottom temperature spatial transform: option not specified in the config file')
       enddo
 
       Crocus_struc(:)%tbot_topocorr = "none"
