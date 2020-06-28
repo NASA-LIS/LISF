@@ -221,7 +221,7 @@ module LVT_PRIV_rcMod
      integer                :: wtsout
      integer                :: extractts
      integer                :: tavgInterval
-     integer                :: tlag
+     integer, allocatable   :: tlag(:)
 
      integer                :: wrst
      character*500          :: outputSpecFile

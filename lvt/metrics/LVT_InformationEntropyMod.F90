@@ -546,7 +546,8 @@ contains
              enddo
           enddo
        endif
-       if(stats%selectOpt.eq.1.and.obs%selectNlevs.ge.1) then 
+       if(stats%selectOpt.eq.1.and.obs%selectNlevs.ge.1.and.&
+            LVT_rc%obssource(2).ne."none") then 
           do t=1,LVT_rc%ngrid
              do m=1,LVT_rc%nensem
                 do k=1,obs%selectNlevs
@@ -664,7 +665,8 @@ contains
           enddo
        endif
 
-       if(stats%selectOpt.eq.1.and.obs%selectNlevs.ge.1) then 
+       if(stats%selectOpt.eq.1.and.obs%selectNlevs.ge.1.and.&
+            LVT_rc%obssource(2).ne."none") then 
           do t=1,LVT_rc%ngrid
              do m=1,LVT_rc%nensem
                 do k=1,obs%selectNlevs
