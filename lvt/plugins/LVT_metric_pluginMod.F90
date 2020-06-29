@@ -327,12 +327,21 @@ contains
          LVT_writerestart_ConditionalEntropy, &
          LVT_readrestart_ConditionalEntropy
 
+
+    use LVT_RelativeEntropyMod, only : LVT_initRelativeEntropy, &
+         LVT_diagnoseRelativeEntropy, LVT_computeRelativeEntropy,&
+         LVT_writeMetric_RelativeEntropy, &
+         LVT_resetMetric_RelativeEntropy, &
+         LVT_writerestart_RelativeEntropy, &
+         LVT_readrestart_RelativeEntropy
+
     use LVT_JointEntropyMod, only : LVT_initJointEntropy, &
          LVT_diagnoseJointEntropy, LVT_computeJointEntropy,&
          LVT_writeMetric_JointEntropy, &
          LVT_resetMetric_JointEntropy, &
          LVT_writerestart_JointEntropy, &
          LVT_readrestart_JointEntropy
+
 
     use LVT_MutualInformationMod, only : LVT_initMutualInformation, &
          LVT_diagnoseMutualInformation, LVT_computeMutualInformation,&
@@ -963,6 +972,16 @@ contains
     call registermetricwriterestart(LVT_CEid,LVT_writerestart_ConditionalEntropy)
     call registermetricreadrestart(LVT_CEid,LVT_readrestart_ConditionalEntropy)
 
+
+    call registermetricinit(LVT_REid,LVT_initRelativeEntropy)
+    call registermetricdiagnose(LVT_REid, LVT_diagnoseRelativeEntropy)
+    call registermetriccompute(LVT_REid, LVT_computeRelativeEntropy)
+    call registermetricwriteentry(LVT_REid,&
+         LVT_writeMetric_RelativeEntropy)
+    call registermetricreset(LVT_REid,LVT_resetMetric_RelativeEntropy)
+    call registermetricwriterestart(LVT_REid,LVT_writerestart_RelativeEntropy)
+    call registermetricreadrestart(LVT_REid,LVT_readrestart_RelativeEntropy)
+
     call registermetricinit(LVT_JEid,LVT_initJointEntropy)
     call registermetricdiagnose(LVT_JEid, LVT_diagnoseJointEntropy)
     call registermetriccompute(LVT_JEid, LVT_computeJointEntropy)
@@ -971,6 +990,7 @@ contains
     call registermetricreset(LVT_JEid,LVT_resetMetric_JointEntropy)
     call registermetricwriterestart(LVT_JEid,LVT_writerestart_JointEntropy)
     call registermetricreadrestart(LVT_JEid,LVT_readrestart_JointEntropy)
+
 
     call registermetricinit(LVT_miid,LVT_initMutualInformation)
     call registermetricdiagnose(LVT_miid, LVT_diagnoseMutualInformation)

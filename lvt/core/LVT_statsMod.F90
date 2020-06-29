@@ -324,6 +324,7 @@ contains
        call registerMetricEntry(LVT_TFBId,LVT_metrics%tfb)
        call registerMetricEntry(LVT_IEId,LVT_metrics%ie)
        call registerMetricEntry(LVT_CEId,LVT_metrics%ce)
+       call registerMetricEntry(LVT_REId,LVT_metrics%re)
        call registerMetricEntry(LVT_JEId,LVT_metrics%je)
        call registerMetricEntry(LVT_miId,LVT_metrics%mi)
 

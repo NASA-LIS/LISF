@@ -179,6 +179,7 @@ endif::devonly[]
 |"`TRMM 3B42RTV7`" |TRMM-based 3B42 real-time rainfall
 |"`TRMM 3B42V6`" |TRMM-based 3B42 V6 rainfall
 |"`TRMM 3B42V7`" |TRMM-based 3B42 V7 rainfall
+|"`ERA5`" |ERA5 reanalysis
 |===
 
 .Example _ldt.config_ entry
@@ -1660,6 +1661,7 @@ Current options include:
 |SRTM_Native |The SRTM elevation map native source. See: http://dds.cr.usgs.gov/srtm/version2_1/SRTM30
 |SRTM_LIS |Similar dataset as to the above one but processed by LIS-team.
 |CONSTANT |User can set a constant elevation, slope or aspect class.
+|MERIT_1K |The MERIT elevation map, but processed by LIS-team to have a resolution '0.008333'. See: http://hydro.iis.u-tokyo.ac.jp/~yamadai/MERIT_DEM/index.html
 |===
 
 .Example _ldt.config_ entry
@@ -3009,6 +3011,23 @@ ECMWF Reanalysis elevation map: ./metforcing_parms/ECMWFRean/elev_ECMWF-reanalys
 ECMWF Reanalysis elevation spatial transform:   "average"
 ECMWF Reanalysis maskfile:
 ....
+
+==== ERA5 Reanalysis Forcing based parameter inputs
+
+`ERA5 forcing directory:` specifies the location of the ERA5 Reanalysis forcing data files.
+
+`ERA5 forcing tile to grid mapping file:` specifies the file
+that maps the 1-d forcing to a 2-d format
+
+`ERA5 forcing terrain height file:` specifies the ERA5 reanalysis elevation file
+
+.Example _ldt.config_ entry
+....
+ERA5 forcing directory:              ./ERA5/
+ERA5 forcing tile to grid mapping file: ../ERA5/mapping.nc
+ERA5 forcing terrain height file: ../ERA5/era5_elev.nc
+....
+
 
 ==== MERRA-2 Forcing based parameter inputs
 
