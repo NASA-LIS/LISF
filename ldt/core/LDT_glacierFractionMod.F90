@@ -17,7 +17,7 @@ module LDT_glacierFractionMod
 ! !REVISION HISTORY:
 !
 !  08 Aug 2005: Sujay Kumar; Initial implementation
-!  23 Jun 2020: Mahdi Navari: Modified for glzcier datasets.
+!  23 Jun 2020: Mahdi Navari: Modified for computing glacier fraction
 !
   use ESMF
   use LDT_coreMod
