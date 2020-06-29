@@ -5578,3 +5578,72 @@ USAFSI LIS GRIB2 area of data: GLOBAL
 #latex: BEGIN_CONFIG
 LIS OPT/UE output file: ./GA.0059.1gd4r
 #latex: END_CONFIG
+
+
+
+#latex: BEGIN_DESCRIPTION
+#latex:
+Glacier fraction data source: "GLIMS"
+Glacier fraction map:   ../LS_PARAMETERS/GLIMS/glims_global.d01.nc
+Glacier fraction spatial transform: "average" # this entry and related code need to be eliminated
+Glacier fraction map projection: "latlon"
+Glacier fraction lower left lat: -89.995
+Glacier fraction lower left lon: -179.995
+Glacier fraction upper right lat: 89.995
+Glacier fraction upper right lon: 179.995
+Glacier fraction resolution (dx): 0.01
+Glacier fraction resolution (dy): 0.01
+#latex: END_CONFIG
+
+
+Glacier fraction data source: "GLIMS"
+Glacier fraction map:   ../LS_PARAMETERS/GLIMS/glims_global.d01.nc
+Glacier fraction spatial transform: "average" 
+Glacier fraction map projection: "latlon"
+Glacier fraction lower left lat: -89.995
+Glacier fraction lower left lon: -179.995
+Glacier fraction upper right lat: 89.995
+Glacier fraction upper right lon: 179.995
+Glacier fraction resolution (dx): 0.01
+Glacier fraction resolution (dy): 0.01
+
+
+#latex: BEGIN_CONFIG
+Glacier fraction data source:   "GLIMS"
+#latex: END_CONFIG
+
+#latex: BEGIN_DESCRIPTION
+#latex: \var{Glacier fraction map:} specifies the location of an
+#latex: glacier fraction map file.
+#latex: This file contains glacier mask (gridcell-based) that
+#latex: can be used to compute glacier fraction.
+#latex: END_DESCRIPTION
+
+#latex: BEGIN_CONFIG
+Glacier fraction map:   ../LS_PARAMETERS/GLIMS/glims_global.d01.nc
+#latex: END_CONFIG
+
+#latex: BEGIN_DESCRIPTION
+#latex: \var{Glacier fraction spatial transform:} indicates which spatial transform
+#latex: (i.e., upscale or downscale) type is to be applied to
+#latex: glacier-related maps.  Options include:
+#latex:
+#latex: \begin{tabular}{ll}
+#latex: Value   & Description                                   \\
+#latex: none    & Data is on same grid as LIS output domain     \\
+#latex: average & Upscale by averaging values for each gridcell \\
+#latex: \end{tabular}
+#latex: END_DESCRIPTION
+
+#latex: BEGIN_CONFIG
+Glacier fraction spatial transform: "average" 
+#latex: END_CONFIG
+
+
+
+
+
+
+
+
+

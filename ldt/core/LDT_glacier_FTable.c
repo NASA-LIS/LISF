@@ -46,6 +46,16 @@ struct glaciermasknode
 
 struct glaciermasknode* glaciermask_table = NULL; 
 
+//MN added to support glacier fraction
+struct glacierfracnode
+{
+  char *name;
+  void (*func)(int*, float*);
+
+  struct glacierfracnode* next;
+} ;
+
+struct glacierfracnode* glacierfrac_table = NULL;
 
 //BOP
 // !ROUTINE: registerreadglaciermask
@@ -133,4 +143,87 @@ void FTN(readglaciermask)(char *j, int *n, float *array, int len)
 }
 
 
+//BOP
+// !ROUTINE: registerreadglacierfrac
+// \label{registerreadglacierfrac}
+//
+// !INTERFACE:
+void FTN(registerreadglacierfrac)(char *j, void (*func)(int*, float*), int len)
+//  
+// !DESCRIPTION:
+//  Makes an entry in the registry for the routine to read
+//  glacierfrac data
+// 
+//  The arguments are: 
+//  \begin{description}
+//   \item[j] 
+//    index of the glacierfrac source
+//   \item[n]
+//    index of the nest
+//   \item[array]
+//    pointer to the glacier fraction array
+//  \end{description}
+  //EOP
+{
+  int len1;
+  struct glacierfracnode* current;
+  struct glacierfracnode* pnode;
+  // create node
 
+  len1 = len + 1; // ensure that there is space for terminating null
+  pnode=(struct glacierfracnode*) malloc(sizeof(struct glacierfracnode));
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
+  pnode->func = func;
+  pnode->next = NULL;
+
+  if(glacierfrac_table == NULL){
+    glacierfrac_table = pnode;
+  }
+  else{
+    current = glacierfrac_table;
+    while(current->next!=NULL){
+      current = current->next;
+    }
+    current->next = pnode;
+  }
+}
+
+//BOP
+// !ROUTINE: readglacierfrac
+// \label{readglacierfrac}
+// 
+// !INTERFACE:
+void FTN(readglacierfrac)(char *j, int *n, float *array, int len)
+//  
+// !DESCRIPTION: 
+//  Invokes the routine from the registry to read the 
+//  glacierfrac data
+//
+//  The arguments are: 
+//  \begin{description}
+//   \item[j] 
+//    index of the glacier fraction source
+//   \item[n]
+//    index of the nest
+//   \item[array]
+//    pointer to the glacier fraction array
+//  \end{description}
+//EOP
+{
+  struct glacierfracnode* current;
+
+  current = glacierfrac_table;
+  while(strcmp(current->name,j)!=0){
+    current = current->next;
+    if(current==NULL) {
+      printf("****************Error****************************\n");
+      printf("Glacier fraction reading routine for source %s is not defined\n",j);
+      printf("Please refer to configs/ldt.config_master or LDT User's Guide for options.\n");
+      printf("program will seg fault.....\n");
+      printf("****************Error****************************\n");
+    }
+  }
+
+  current->func(n,array);
+}

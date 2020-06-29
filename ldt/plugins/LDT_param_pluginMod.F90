@@ -1264,9 +1264,18 @@ contains
   subroutine LDT_glacier_plugin
 !EOP
     external read_GLIMS_glaciermask
+    external read_GLIMS_glacierfraction
+
+
+!   In the LDT code, the above calls are typically invoked in the
+!   following manner.
+!   \begin{verbatim}
+!    call readglacierfrac(ldt%domain,ldtglacierfracsrc)
 
     call registerreadglaciermask(trim(LDT_GLIMSId)//char(0),&
          read_GLIMS_glaciermask)
+    call registerreadglacierfrac(trim(LDT_GLIMSId)//char(0),&
+         read_GLIMS_glacierfraction)
 
   end subroutine LDT_glacier_plugin
 
