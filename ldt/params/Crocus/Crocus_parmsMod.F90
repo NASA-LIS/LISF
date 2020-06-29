@@ -66,13 +66,13 @@ module Crocus_parmsMod
 !     character*50   :: slopetype_proj
      character*50       :: glacierfrac_proj
 
-     real           :: soil_temp_value
-     real           :: soil_cond_value
+!     real           :: soil_temp_value
+!     real           :: soil_cond_value
 
      ! -  Crocus SM-specific:
      type(LDT_paramEntry) :: tbot        ! Bottom temperature (Crocus)
-     type(LDT_paramEntry) :: soil_temp        ! Soil temp
-     type(LDT_paramEntry) :: soil_cond        ! soil thermal conductivity
+!     type(LDT_paramEntry) :: soil_temp        ! Soil temp
+!     type(LDT_paramEntry) :: soil_cond        ! soil thermal conductivity
 !     type(LDT_paramEntry) :: slopetype   ! Slope type index (Crocus)
      type(LDT_paramEntry) :: glacierfrac
  
@@ -135,12 +135,12 @@ contains
             units="-", &
             full_name="Crocus LSM Glacier Fraction")
 
-      call set_param_attribs(Crocus_struc(n)%soil_temp,"Crocus_TG",& 
-            units="K", &
-            full_name="Surface soil temperature")
-      call set_param_attribs(Crocus_struc(n)%soil_cond,"Crocus_SOILCOND",& 
-            units="W m-1 K-1", &
-            full_name="Soil thermal conductivity")
+!      call set_param_attribs(Crocus_struc(n)%soil_temp,"Crocus_TG",& 
+!            units="K", &
+!            full_name="Surface soil temperature")
+!      call set_param_attribs(Crocus_struc(n)%soil_cond,"Crocus_SOILCOND",& 
+!            units="W m-1 K-1", &
+!            full_name="Soil thermal conductivity")
    enddo
 
 
@@ -289,6 +289,7 @@ contains
 
 #endif
 ! MN end remove this block of code 
+
 
 
 !-- Bottom soil temperature (K) field:
@@ -453,33 +454,33 @@ contains
 
 
 ! MN : For now set the soil temperature to a constant value (e.g., 0)
-     call ESMF_ConfigFindLabel(LDT_config,"Surface soil temperature:",rc=rc)
-     do n=1,LDT_rc%nnest
-        call ESMF_ConfigGetAttribute(LDT_config,Crocus_struc(n)%soil_temp_value,rc=rc)
-        call LDT_verify(rc,"Surface soil temperature: not defined")
+!     call ESMF_ConfigFindLabel(LDT_config,"Surface soil temperature:",rc=rc)
+!     do n=1,LDT_rc%nnest
+!        call ESMF_ConfigGetAttribute(LDT_config,Crocus_struc(n)%soil_temp_value,rc=rc)
+!        call LDT_verify(rc,"Surface soil temperature: not defined")
 
-        Crocus_struc(n)%soil_temp%selectOpt = 1
+!        Crocus_struc(n)%soil_temp%selectOpt = 1
 
-        allocate(Crocus_struc(n)%soil_temp%value(&
-                 LDT_rc%lnc(n),LDT_rc%lnr(n),&
-                 Crocus_struc(n)%soil_temp%num_bins))
+!        allocate(Crocus_struc(n)%soil_temp%value(&
+!                 LDT_rc%lnc(n),LDT_rc%lnr(n),&
+!                 Crocus_struc(n)%soil_temp%num_bins))
 
-        Crocus_struc(n)%soil_temp%value = Crocus_struc(n)%soil_temp_value
-     enddo
+!        Crocus_struc(n)%soil_temp%value = Crocus_struc(n)%soil_temp_value
+!     enddo
 ! MN : For now set the soil thermal conductivity to a constant value (e.g., ??)
-     call ESMF_ConfigFindLabel(LDT_config,"Soil thermal conductivity:",rc=rc)
-     do n=1,LDT_rc%nnest
-        call ESMF_ConfigGetAttribute(LDT_config,Crocus_struc(n)%soil_cond_value,rc=rc)
-        call LDT_verify(rc,"Soil thermal conductivity: not defined")
+!     call ESMF_ConfigFindLabel(LDT_config,"Soil thermal conductivity:",rc=rc)
+!     do n=1,LDT_rc%nnest
+!        call ESMF_ConfigGetAttribute(LDT_config,Crocus_struc(n)%soil_cond_value,rc=rc)
+!        call LDT_verify(rc,"Soil thermal conductivity: not defined")
 
-        Crocus_struc(n)%soil_cond%selectOpt = 1
+!        Crocus_struc(n)%soil_cond%selectOpt = 1
 
-        allocate(Crocus_struc(n)%soil_cond%value(&
-                 LDT_rc%lnc(n),LDT_rc%lnr(n),&
-                 Crocus_struc(n)%soil_cond%num_bins))
+!        allocate(Crocus_struc(n)%soil_cond%value(&
+!                 LDT_rc%lnc(n),LDT_rc%lnr(n),&
+!                 Crocus_struc(n)%soil_cond%num_bins))
 
-        Crocus_struc(n)%soil_cond%value = Crocus_struc(n)%soil_cond_value
-   enddo
+!        Crocus_struc(n)%soil_cond%value = Crocus_struc(n)%soil_cond_value
+!   enddo
 
 ! ------------------------------------MN
 #if 0 
@@ -522,10 +523,10 @@ contains
 
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
              Crocus_struc(n)%tbot)
-    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
-             Crocus_struc(n)%soil_temp)
-    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
-             Crocus_struc(n)%soil_cond)    
+!    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+!             Crocus_struc(n)%soil_temp)
+!    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+!             Crocus_struc(n)%soil_cond)    
 !    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
 !             Crocus_struc(n)%slopetype)
 !    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
@@ -546,8 +547,8 @@ contains
     integer   :: ftn
 
     call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%tbot)
-    call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%soil_temp)
-    call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%soil_cond)
+!    call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%soil_temp)
+!    call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%soil_cond)
 !    call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%slopetype)
 !    call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%glacierfrac)
 
