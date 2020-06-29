@@ -52,7 +52,7 @@ module Crocus_parmsMod
      character*50   :: tbot_topocorr
 
 
-     real           :: glacierfrac_gridDesc(20)
+     !real           :: glacierfrac_gridDesc(20)
      character*140  :: glacierfracfile
      character*50   :: glacierfrac_gridtransform
 
@@ -145,6 +145,8 @@ contains
 
 
 
+! MN remove this block of code 
+# if 0 
    
 ! -- Glacier fraction: --
 
@@ -285,7 +287,8 @@ contains
 
    end if  ! Glacierfrac selection check
 
-
+#endif
+! MN end remove this block of code 
 
 
 !-- Bottom soil temperature (K) field:
@@ -525,8 +528,8 @@ contains
              Crocus_struc(n)%soil_cond)    
 !    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
 !             Crocus_struc(n)%slopetype)
-    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
-             Crocus_struc(n)%glacierfrac)
+!    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+!             Crocus_struc(n)%glacierfrac)
 
 !#if 0 ! MN 
 !    if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.                        &
@@ -546,7 +549,7 @@ contains
     call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%soil_temp)
     call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%soil_cond)
 !    call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%slopetype)
-    call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%glacierfrac)
+!    call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%glacierfrac)
 
 !#if 0 ! MN 
 !    if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.                        &
