@@ -9,6 +9,7 @@
 !
 ! !REVISION HISTORY:
 !  19 Sep 2014: K. Arsenault; Initial Specificationi
+!  26 Jun 2020: Mahdi Navari; Modified for glacier fraction
 !
 ! !INTERFACE:
 subroutine setGlacierFracParmsFullnames(n,datatype,source)

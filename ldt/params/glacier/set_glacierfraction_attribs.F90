@@ -9,6 +9,7 @@
 !
 ! !REVISION HISTORY:
 !  19 Aug 2014: Sujay Kumar; Initial Specification
+!  26 Jun 2020: Mahdi Navari; Modified for glacier fraction
 !
 ! !INTERFACE:
 subroutine set_glacierfraction_attribs( n, source )

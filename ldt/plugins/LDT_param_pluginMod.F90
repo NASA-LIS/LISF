@@ -17,7 +17,8 @@ module LDT_param_pluginMod
 !  11 Dec 2003:  Sujay Kumar  - Initial Specification
 !  11 Feb 2013:  KR Arsenault - Updated to accommodate new parameter types and options
 !  01 Mar 2020:  Yeosang Yoon - Added MERIT DEM
-!
+!  29 Jun 2020:  Mahdi Navari - Glacier fraction added 
+!  
 !EOP
 
   use LDT_pluginIndices
