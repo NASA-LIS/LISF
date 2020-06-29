@@ -357,6 +357,7 @@ endif::devonly[]
 |"`GenEnsFcst`"                | Generic ensemble forecast
 |"`AWAP`"                      | AWAP precipitation data
 |"`GDAS T1534`"                | NCEP-specific GDAS T1534 forcing data
+|"`ERA5`"                      | ERA5 reanalysis meteorology
 |====
 
 .Example _lis.config_ entry
@@ -5653,6 +5654,22 @@ MERRA2 forcing directory:              ./MERRA2/
 MERRA2 use lowest model level forcing:     1
 MERRA2 use 2m wind fields:                 0 
 MERRA2 use corrected total precipitation:  1
+....
+
+==== ERA5
+anchor:sssec_forcings_MERRA2[ERA5]
+
+`ERA5 forcing directory:` specifies the location of
+the ERA5 forcing files.
+
+
+`ERA5 forcing tile to grid mapping file:` specifies the file
+that maps the 1-d forcing to a 2-d format
+
+.Example _lis.config_ entry
+....
+ERA5 forcing directory:              ./ERA5/
+ERA5 forcing tile to grid mapping file: ../ERA5/mapping.nc
 ....
 
 
