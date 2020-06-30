@@ -216,7 +216,7 @@ subroutine read_GLIMS_glacierfraction(n, glacier_frac )
    i = 0
    do r = 1, LDT_rc%lnr(n)
       do c = 1, LDT_rc%lnc(n); i = i + 1
-         if( go2(i) <=  LDT_rc%gridcell_glacier_frac(n)) then  ! LDT_rc%gridcell_glacier_frac(n) this is cutoff value   
+         if( go2(i) <=  0.0001) then  ! LDT_rc%gridcell_glacier_frac(n) this is cutoff value   
            glacier_frac(c,LDT_rc%lnr(n)-r+1,1) = 0
         else
           ! print *, 'i, go2(i)' , i, go2(i)
