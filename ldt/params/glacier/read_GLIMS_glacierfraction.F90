@@ -75,6 +75,7 @@ subroutine read_GLIMS_glacierfraction(n, glacier_frac )
   integer               :: num_bins
   real                  :: go2(LDT_rc%lnc(n)*LDT_rc%lnr(n))  ! Output lis 1d grid
   logical*1             :: lo2(LDT_rc%lnc(n)*LDT_rc%lnr(n))  ! Output logical mask (to match go)                                                  
+  character(50)         :: gridtransform_opt
 !  real      :: glacierfrac_cnt(LDT_rc%lnc(n),LDT_rc%lnr(n), num_bins)
 !  real      :: isum
 ! ______________________________________________________________
@@ -172,6 +173,8 @@ subroutine read_GLIMS_glacierfraction(n, glacier_frac )
 #endif
    deallocate( lat_line, lon_line )
 
+
+# if 0 
 !- Transform parameter from original grid to LIS output grid:
    call LDT_transform_paramgrid(n, LDT_glacierfrac_struc(n)%glacierfrac_gridtransform, &
         param_gridDesc, mi, 1, gi1, li1, mo, go1, lo1 )
@@ -188,7 +191,74 @@ subroutine read_GLIMS_glacierfraction(n, glacier_frac )
       enddo                                                                                                         
    enddo                                                                                                            
                                                                                                                      
-                                                                                                                     
+# endif
+
+!-------------------------------------------------------------------------------  
+! Third method 
+!-------------------------------------------------------------------------------
+  ! Compute glacier fraction ! MN                                                                                    
+
+ gridtransform_opt = LDT_glacierfrac_struc(n)%glacierfrac_gridtransform
+
+ if( gridtransform_opt == "average" )  then
+
+
+  !- Create mapping between parameter domain and LIS grid domain: --> n11                                                  
+     call upscaleByAveraging_input( subparam_gridDesc, &
+                             LDT_rc%gridDesc(n,:), mi, mo, n11 )
+
+
+     call upscaleByAveraging( mi, mo, LDT_rc%udef, n11,  &
+                                 li1, gi1, lo2, go2 )
+
+
+  ! Compute glacier fraction ! MN        
+   i = 0
+   do r = 1, LDT_rc%lnr(n)
+      do c = 1, LDT_rc%lnc(n); i = i + 1
+         if( go2(i) <=  LDT_rc%gridcell_glacier_frac(n)) then  ! LDT_rc%gridcell_glacier_frac(n) this is cutoff value   
+           glacier_frac(c,LDT_rc%lnr(n)-r+1,1) = 0
+        else
+          ! print *, 'i, go2(i)' , i, go2(i)
+           glacier_frac(c,LDT_rc%lnr(n)-r+1,1) = go2(i)
+        end if
+      enddo
+   enddo
+ else 
+         write(LDT_logunit,*) "[ERR] This spatial transformation option ("//trim(gridtransform_opt)//") "
+         write(LDT_logunit,*) " is not currently supported."
+         write(LDT_logunit,*) " Program stopping ..."
+         call LDT_endrun
+endif
+!-------------------------------------------------------------------------------- 
+
+
+
+# if 0 
+!-------------------------------------------------------------------------------
+! Secod method 
+! NOTE: this more likely to work if we add this to the readGlaciermask.F90
+!-------------------------------------------------------------------------------
+  ! Compute glacier fraction ! MN        
+   i = 0
+   do r = 1, LDT_rc%lnr(n)
+      do c = 1, LDT_rc%lnc(n); i = i + 1
+         if( go1(i) <=  LDT_rc%gridcell_glacier_frac(n)) then  ! LDT_rc%gridcell_glacier_frac(n) this is cutoff value   
+           glacier_frac(c,LDT_rc%lnr(n)-r+1,1) = 0
+        else
+!print *, 'i, go1(i)' , i, go1(i)
+           glacier_frac(c,LDT_rc%lnr(n)-r+1,1) = go1(i)
+        end if
+      enddo
+   enddo
+
+!-------------------------------------------------------------------------------
+# endif 
+
+# if 0
+!------------------------------------------------------------------------------- 
+! First method  , this works but need to be verified
+!-------------------------------------------------------------------------------
   ! Compute glacier fraction ! MN                                                                                    
                                                                                                                      
   !- Create mapping between parameter domain and LIS grid domain: --> n11                                                  
@@ -224,8 +294,8 @@ subroutine read_GLIMS_glacierfraction(n, glacier_frac )
             end if                                                                  
         enddo
      enddo
-
-
+!-------------------------------------------------------------------------------- 
+# endif
 
 ! this method results in 0 ,1 
 # if 0 
