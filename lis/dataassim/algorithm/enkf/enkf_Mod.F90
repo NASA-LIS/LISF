@@ -344,9 +344,6 @@ contains
           call LIS_surfaceModel_DAmapTileSpaceToObsSpace(&
                n, k, &
                tileid, st_id, en_id)
-!          if(i.eq.1251) then 
-!             print*, 'tile to grid ',tileid, st_id, en_id
-!          endif
 
           if(st_id.lt.0.or.en_id.lt.0) then 
              assim = .false. 
@@ -370,10 +367,7 @@ contains
              do while(kk.le.N_selected_obs)
                 sid = st_id + (kk-1)*N_obs_size
                 eid = en_id + (kk-1)*N_obs_size
-!                if(st_id.eq.1251) then 
-                if(st_id.eq.45) then 
-                   print*, 'obsmap ',kk, kk+(en_Id-st_id)
-                endif
+
                 obs_da(kk:kk+(en_id-st_id))       = Observations(sid:eid)
                 obspred_da(kk:kk+(en_id-st_id),:) = Obs_pred(sid:eid,:)
                 obspert_da(kk:kk+(en_id-st_id),:) = Obs_pert(sid:eid,:)
@@ -393,18 +387,6 @@ contains
                   obs_param,obs_da,Obs_cov)
           endif
           if(assim.and.obspred_flag) then   
-!             if(sum(obspred_da(1,:)).gt.0.and.i.eq.1251) then 
-             if(sum(obspred_da(1,:)).gt.0.and.i.eq.45) then 
-                print*, 'gid',i
-                print*, 'mo da hr', LIS_rc%mo, LIS_rc%da, LIS_rc%hr
-                print*, 'ran ', ((i-1)*N_ens+1),((i-1)*N_ens+N_ens)
-                print*, 'obs ',obs_da(1)%value
-                print*, 'obspred ',obspred_da(1,:)
-                print*, 'obspert ',obspert_da(1,1)
-                print*, 'obscov ',obs_cov
-                print*, 'stbf ',state_incr(1,((i-1)*N_ens+1):((i-1)*N_ens+N_ens))
-                print*, 'stincr bf',sum(state_incr(1, ((i-1)*N_ens+1):((i-1)*N_ens+N_ens)))/N_ens
-             endif
 
              call enkf_analysis(gid,N_state,N_selected_obs, N_ens, &
                   obs_da,                                        & 
@@ -422,16 +404,6 @@ contains
 !                  state_incr(:, ((i-1)*N_ens+1):((i-1)*N_ens+N_ens)),&
 !                  state_lon, state_lat,xcompact,ycompact)
              
-!             if(sum(obspred_da(1,:)).gt.0.and.i.eq.1251) then 
-             if(sum(obspred_da(1,:)).gt.0.and.i.eq.45) then 
-                state_tmp(:,(i-1)*N_ens+1:(i-1)*N_ens+N_ens) = &
-                    state_tmp(:,(i-1)*N_ens+1:(i-1)*N_ens+N_ens) + &
-                     state_incr(:,(i-1)*N_ens+1:(i-1)*N_ens+N_ens)
-                print*, 'incr ',state_incr(1,((i-1)*N_ens+1):((i-1)*N_ens+N_ens))
-                print*, 'stincr af',sum(state_tmp(1, ((i-1)*N_ens+1):((i-1)*N_ens+N_ens)))/N_ens
-                print*, ''
-!                stop
-             endif
           else
              state_incr(:,(i-1)*N_ens+1:(i-1)*N_ens+N_ens) = 0.0            
           endif

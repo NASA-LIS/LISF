@@ -78,9 +78,6 @@ subroutine HYMAP2_setWL(n, Routing_State)
         if(sfcelv(t).ne.sfcelv(i*LIS_rc%nensem(n))) then 
            diffCheck(i) = .true. 
         endif
-!        HYMAP2_routing_struc(n)%sfcelv(i,m) = sfcelv(t) + &
-!             HYMAP2_routing_struc(n)%rivelv(i)                        
-!        if(i.eq.1251) then 
      enddo
      if(.not.ensCheck(i).and.diffCheck(i)) then 
         call reorderEnsForOutliers(&
@@ -95,9 +92,6 @@ subroutine HYMAP2_setWL(n, Routing_State)
         t = (i-1)*LIS_rc%nensem(n)+m
         HYMAP2_routing_struc(n)%sfcelv(i,m) = & 
              sfcelv(t)  
-        if(i.eq.45) then 
-           print*, 'set ',i,m,sfcelv(t),HYMAP2_routing_struc(n)%sfcelv(i,m)
-        endif
      enddo
   enddo
   
@@ -132,19 +126,7 @@ subroutine HYMAP2_setWL(n, Routing_State)
              vol) 
         HYMAP2_routing_struc(n)%rivsto(i,m) = real(vol)
         HYMAP2_routing_struc(n)%fldsto(i,m) = 0.0
-!        if(i.eq.100) then 
-!           print*, 'set ',m, elv, &
-!                HYMAP2_routing_struc(n)%rivsto(i,m)+ &
-!                HYMAP2_routing_struc(n)%fldsto(i,m)
-!                HYMAP2_routing_struc(n)%sfcelv(i,m), &
-
-!        endif        
      enddo
-     if(i.eq.1251) then 
-        print*, 'set mean',sum(HYMAP2_routing_struc(n)%sfcelv(i,:))/20.0, &
-             sum(HYMAP2_routing_struc(n)%rivsto(i,:)+ & 
-             HYMAP2_routing_struc(n)%fldsto(i,:))/20.0
-     endif
   enddo
 
 

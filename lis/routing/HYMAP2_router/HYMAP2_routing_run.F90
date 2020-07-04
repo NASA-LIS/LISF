@@ -333,12 +333,13 @@ subroutine HYMAP2_routing_run(n)
              rc=status)
         call LIS_verify(status, "ESMF_FieldGet failed for Subsurface Runoff")
 
+
 !        print*, 'before '
-!        print*, 'rivout ',HYMAP2_routing_struc(n)%rivout(45,20)
-!        print*, 'rivsto ',HYMAP2_routing_struc(n)%rivsto(45,20)
-!        print*, 'fldsto ',HYMAP2_routing_struc(n)%fldsto(45,20)
-!        print*, 'sfcelv ',HYMAP2_routing_struc(n)%sfcelv(45,20)
-!        print*, 'rivhgt ',HYMAP2_routing_struc(n)%rivelv(45) 
+!        print*, 'rivout ',HYMAP2_routing_struc(n)%rivout(948,20)
+!        print*, 'rivsto ',HYMAP2_routing_struc(n)%rivsto(948,20)
+!        print*, 'fldsto ',HYMAP2_routing_struc(n)%fldsto(948,20)
+!        print*, 'sfcelv ',HYMAP2_routing_struc(n)%sfcelv(948,20)
+!        print*, 'rivhgt ',HYMAP2_routing_struc(n)%rivelv(948) 
 
         do m=1,LIS_rc%nensem(n)
 
@@ -475,11 +476,11 @@ subroutine HYMAP2_routing_run(n)
                 edif_lvec)
         enddo
 !        print*, 'after '
-!        print*, 'rivout ',HYMAP2_routing_struc(n)%rivout(45,20)
-!        print*, 'rivsto ',HYMAP2_routing_struc(n)%rivsto(45,20)
-!        print*, 'fldsto ',HYMAP2_routing_struc(n)%fldsto(45,20)
-!        print*, 'sfcelv ',HYMAP2_routing_struc(n)%sfcelv(45,20)
-!        print*, 'rivhgt ',HYMAP2_routing_struc(n)%rivelv(45) 
+!        print*, 'rivout ',HYMAP2_routing_struc(n)%rivout(948,20)
+!        print*, 'rivsto ',HYMAP2_routing_struc(n)%rivsto(948,20)
+!        print*, 'fldsto ',HYMAP2_routing_struc(n)%fldsto(948,20)
+!        print*, 'sfcelv ',HYMAP2_routing_struc(n)%sfcelv(948,20)
+!        print*, 'rivhgt ',HYMAP2_routing_struc(n)%rivelv(948) 
 
      else !single member run
         allocate(tmp_nensem(LIS_rc%lnc(n),LIS_rc%lnr(n),1))

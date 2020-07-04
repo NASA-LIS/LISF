@@ -100,20 +100,7 @@ subroutine HYMAP2_getWL(n, Routing_State)
         rivwth = dble(HYMAP2_routing_struc(n)%rivwth(i))
         vol = dble(HYMAP2_routing_struc(n)%rivsto(i,m)+&
              HYMAP2_routing_struc(n)%fldsto(i,m))
-#if 0 
-        print*, 'before calling hymap2_get_elevation_profile'
-        print*, 'ielevtn ',elevtn
-        print*, 'ifldhgt ',fldhgt
-        print*, 'fldstomax',fldstomax
-        print*, 'irivelv ',rivelv
-        print*, 'grarea ',grarea
-        print*, 'rivstomax ',rivstomax
-        print*, 'rivlen',rivlen
-        print*, 'rivwth',rivwth
-        print*, 'vol ',vol
-!        print*, 'rivsto ',HYMAP2_routing_struc(n)%rivsto(i,m)
-!        print*, 'fldsto ',HYMAP2_routing_struc(n)%fldsto(i,m)
-#endif
+
         call HYMAP2_get_elevation_profile(&
              HYMAP2_routing_struc(n)%nz,&
              elevtn,&
@@ -127,21 +114,7 @@ subroutine HYMAP2_getWL(n, Routing_State)
              elv,&
              vol)
         sfcelev(t) = real(elv) - HYMAP2_routing_struc(n)%rivelv(i)
-!        if(i.eq.100) then 
-!           print*, 'get ',t,m, elv, vol
-!                HYMAP2_routing_struc(n)%sfcelv(i,m), &
-!                HYMAP2_routing_struc(n)%rivsto(i,m), &
-!                HYMAP2_routing_struc(n)%fldsto(i,m)!
-!        endif
      enddo
-!     if(i.eq.1251) then 
-     if(i.eq.45) then 
-        print*, 'get mean',&
-             sum(sfcelev(1981:2000))/20.0, &
-             sum(HYMAP2_routing_struc(n)%sfcelv(i,:))/20.0, &
-             sum(HYMAP2_routing_struc(n)%rivsto(i,:)+ & 
-             HYMAP2_routing_struc(n)%fldsto(i,:))/20.0
-     endif
      
   enddo
 
