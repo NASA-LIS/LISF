@@ -70,16 +70,17 @@ subroutine readSMAPvwcobs(source)
 !----------------------------------------------------------------------------------------------------------------
 ! create filename for 9 km product
 !----------------------------------------------------------------------------------------------------------------
-         write (yyyy, '(i4.4)') LVT_rc%yr
-         write (mm, '(i2.2)') LVT_rc%mo
-         write (dd, '(i2.2)') LVT_rc%da
+         write (yyyy, '(i4.4)') LVT_rc%dyr(source)
+         write (mm, '(i2.2)') LVT_rc%dmo(source)
+         write (dd, '(i2.2)') LVT_rc%dda(source)
          write (CRID, '(a)') SMAP_vwcobs(source)%release_number
 
-         list_files = 'ls '//trim(SMAP_vwcobs(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
-                      trim(dd)//'/SMAP_L3_SM_P_E_' &
-                      //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
-                         trim(CRID)//'*.h5> SMAP_filelist'// &
-                         '.dat'
+         list_files = 'ls '//trim(SMAP_vwcobs(source)%odir)//'/'&
+              //trim(yyyy)//'.'//trim(mm)//'.'// &
+              trim(dd)//'/SMAP_L3_SM_P_E_' &
+              //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+              trim(CRID)//'*.h5> SMAP_filelist'// &
+              '.dat'
 
          call system(trim(list_files))
          ftn = LVT_getNextUnitNumber()
@@ -104,17 +105,18 @@ subroutine readSMAPvwcobs(source)
 !----------------------------------------------------------------------------------------------------------------
 ! create filename for 36 km product
 !----------------------------------------------------------------------------------------------------------------
-         write (yyyy, '(i4.4)') LVT_rc%yr
-         write (mm, '(i2.2)') LVT_rc%mo
-         write (dd, '(i2.2)') LVT_rc%da
+         write (yyyy, '(i4.4)') LVT_rc%dyr(source)
+         write (mm, '(i2.2)') LVT_rc%dmo(source)
+         write (dd, '(i2.2)') LVT_rc%dda(source)
          write (CRID, '(a)') SMAP_vwcobs(source)%release_number
 
-         list_files = 'ls '//trim(SMAP_vwcobs(source)%odir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'// &
-                      trim(dd)//'/SMAP_L3_SM_P_' &
-                      //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
-                         trim(CRID)//'*.h5> SMAP_filelist'// &
-                         '.dat'
-
+         list_files = 'ls '//trim(SMAP_vwcobs(source)%odir)//'/'&
+              //trim(yyyy)//'.'//trim(mm)//'.'// &
+              trim(dd)//'/SMAP_L3_SM_P_' &
+              //trim(yyyy)//trim(mm)//trim(dd)//'_'// &
+              trim(CRID)//'*.h5> SMAP_filelist'// &
+              '.dat'
+         
          call system(trim(list_files))
          ftn = LVT_getNextUnitNumber()
          open (ftn, file="./SMAP_filelist.dat", &

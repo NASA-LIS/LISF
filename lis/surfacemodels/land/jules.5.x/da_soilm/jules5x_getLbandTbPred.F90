@@ -12,6 +12,7 @@
 ! !REVISION HISTORY:
 ! 13 Sept 2012: Sujay Kumar; Initial Specification
 ! 21 Dec 2018: Mahdi Navari; Modified for JULES 5.3
+! 12 Feb 2020: Shugong Wang; Modifed for JULES 5.5 and later version
 !
 ! !INTERFACE:
 subroutine jules5x_getLbandTbPred(n, obs_pred)

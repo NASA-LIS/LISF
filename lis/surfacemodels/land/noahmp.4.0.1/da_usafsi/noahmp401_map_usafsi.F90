@@ -37,7 +37,7 @@ subroutine noahmp401_map_usafsi(n,k,OBS_State,LSM_Incr_State)
 ! !DESCRIPTION:
 !
 !  This subroutine directly maps the observation state to the corresponding 
-!  variables in the LSM state for SNODEP data assimilation.
+!  variables in the LSM state for USAFSI data assimilation.
 !  
 !  The arguments are: 
 !  \begin{description}
@@ -112,7 +112,7 @@ subroutine noahmp401_map_usafsi(n,k,OBS_State,LSM_Incr_State)
 
         snod(t) = usafsiobs(st_id)
 
-! Based on SNODEP, we manually update SWE
+! Based on USAFSI, we manually update SWE
         if(snod(t).lt.2.54E-3) tmpsneqv = 0.0
         if(snod(t).ge.2.54E-3.and.tmpsneqv.lt.0.001) then 
            tmpsneqv = 0.20
@@ -124,7 +124,7 @@ subroutine noahmp401_map_usafsi(n,k,OBS_State,LSM_Incr_State)
         snodincr(t) = 0 
      endif
   enddo
-!  stop
+  
   deallocate(obs_state_objs)
   deallocate(noahmp401_swe)
   deallocate(noahmp401_snod)

@@ -64,21 +64,12 @@ subroutine noahmp401_setusafsivars(n, LSM_State)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
-     dsneqv = swe(t)*1000.0 - noahmp401_struc(n)%noahmp401(t)%sneqv !in mm
+     dsneqv = swe(t) - noahmp401_struc(n)%noahmp401(t)%sneqv   !in mm
      dsnowh = snod(t) - noahmp401_struc(n)%noahmp401(t)%snowh  !in m
 
-!NOTE: if snow becomes unphysical after applying the deltas, then 
-! the update is rejected. This may cause inconsistent ensemble 
-! updates. TBD
-
+     ! update
      call noahmp401_usafsi_update(n, t, dsneqv, dsnowh)
 
-     if(noahmp401_struc(n)%noahmp401(t)%sneqv.lt.0.or.&
-          noahmp401_struc(n)%noahmp401(t)%snowh.lt.0) then
-        write(LIS_logunit,*) '[ERR] DA update error'
-        write(LIS_logunit,*) 'dsneqv, dsnowh, swe(t), snod(t)', dsneqv, dsnowh, swe(t), snod(t) 
-        call LIS_endrun()
-     endif
   enddo
 end subroutine noahmp401_setusafsivars
 

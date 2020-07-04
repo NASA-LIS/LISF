@@ -177,6 +177,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_AWAPforcId        = "AWAP"
    character*50, public,  parameter :: LIS_HiMATGMUforcId    = "HiMAT GMU"
    character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
+   character*50, public,  parameter :: LIS_era5Id            = "ERA5"
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------
@@ -319,6 +320,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_ARSsmobsId = "ARS sm" ! SY
    character*50, public,  parameter :: LIS_ISMNsmobsId = "ISMN sm" 
    character*50, public,  parameter :: LIS_SMAPsmobsId = "SMAP sm"
+   character*50, public,  parameter :: LIS_UAsnowobsId = "UA snow"
 !-------------------------------------------------------------------------
 ! Objective Function Evaluation Criteria
 !-------------------------------------------------------------------------
