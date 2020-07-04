@@ -76,17 +76,17 @@ contains
 ! !DESCRIPTION: 
 !  This method computes the analysis increments from direct insertion.
 !  The direct insertion method simply retrieves 
-!  the LSM state, prompts the land surface model to transform 
-!  the OBS state to an LSM state. The transformed LSM state is then 
-!  used to overwrite the current LSM state. 
+!  the state vector, prompts the model to transform 
+!  the OBS state to a model state vector. The transformed state is then 
+!  used to overwrite the current model state. 
 ! 
 !  The methods invoked are: 
 !  \begin{description}
-!   \item[lsmdagetstatevar](\ref{lsmdagetstatevar}) \newline
-!    obtain the specified LSM state prognostic variables
-!   \item[Lsmdaobstransform](\ref{lsmdaobstransform}) \newline
-!    transform the observation state into an LSM space
-!   \item[lsmdamapobstolsm](\ref{lsmdamapobstolsm}) \newline
+!   \item[LIS\_surfaceModel_DAgetstatevar]\ref{LIS_surfaceModel_DAgetstatevar}
+!    obtain the specified prognostic variables. 
+!   \item[LIS\_surfaceModel_DAobsTransform](\ref{LIS_surfacemodel_DAobsTransform}) \newline
+!    transform the observation state into a model space
+!   \item[LIS\_surfaceModel\_DAmapobsToModel](\ref{LIS_surfaceModel_DAmapObsToModel}) \newline
 !    map the observation state to generate the analysis increments
 !  \end{description} 
 !
@@ -109,7 +109,7 @@ contains
        call LIS_surfaceModel_DAGetStateVar(n,k)
 
        call LIS_surfaceModel_DAobsTransform(n,k)
-       call LIS_surfaceModel_DAmapObsToLSM(n,k)
+       call LIS_surfaceModel_DAmapObsToModel(n,k)
 
        call LIS_surfaceModel_DASetFreshIncrementsStatus(n,k,.true.)
     endif
@@ -137,8 +137,10 @@ contains
 ! 
 !  The methods invoked are: 
 !  \begin{description}
-!   \item[lsmdasetstatevar](\ref{lsmdasetstatevar}) \newline
-!    set the specified LSM state prognostic variables
+!   \item[LIS_surfaceModel\_DAqcstate]\ref{LIS_surfaceModel_DAqcstate}
+!    QC the updated state state
+!   \item[LIS\_surfaceModel_DAsetstatevar](\ref{LIS_surfaceModel_DAsetstatevar}) \newline
+!    assigns the specified state prognostic variablse
 !   \end{description}
 !EOP
 
@@ -154,7 +156,7 @@ contains
 !-----------------------------------------------------------------
        call LIS_surfaceModel_DAUpdateState(n,k)
 !----------------------------------------------------------------------
-!  Update the LSM's state variables
+!  Update the state variables
 !----------------------------------------------------------------------       
        call LIS_surfaceModel_DAQCstate(n,k)
        

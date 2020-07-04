@@ -61,7 +61,7 @@ module LIS_surfaceModelMod
   public :: LIS_surfaceModel_DAmapTileSpaceToObsSpace
   public :: LIS_surfaceModel_DAgetStateVarNames
   public :: LIS_surfaceModel_DAobsTransform
-  public :: LIS_surfaceModel_DAmapObsToLSM
+  public :: LIS_surfaceModel_DAmapObsToModel
   public :: LIS_surfaceModel_DAqcObsState
   public :: LIS_surfaceModel_getlatlons
 
@@ -832,7 +832,7 @@ contains
 
   end subroutine LIS_surfaceModel_DAobsTransform
 
-  subroutine LIS_surfaceModel_DAmapObsToLSM(n,k)
+  subroutine LIS_surfaceModel_DAmapObsToModel(n,k)
 
     integer                :: n 
     integer                :: k
@@ -849,7 +849,7 @@ contains
 
        endif
     enddo
-  end subroutine LIS_surfaceModel_DAmapObsToLSM
+  end subroutine LIS_surfaceModel_DAmapObsToModel
 
 
   subroutine LIS_surfaceModel_DAqcObsState(n,k)
