@@ -18,7 +18,9 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
   use ESMF
   use LIS_coreMod
   use LIS_logMod
+  use LIS_routingMod
   use HYMAP2_routingMod
+  use HYMAP2_daWL_Mod
 
   implicit none
 ! !ARGUMENTS: 
@@ -37,8 +39,13 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
   type(ESMF_Field)       :: sfcelevIncrField
   real, pointer          :: sfcelev(:)
   real, pointer          :: sfcelevIncr(:)
-  integer                :: t,i,m
+  integer                :: t,i,i1,m
+  integer                :: ix,iy
+  integer                :: c,r,c1,c2,r1,r2,t1
+  integer                :: siteid
   integer                :: status
+  real                   :: maxdistance, weight
+  real                   :: localWeight(LIS_rc%lnc(n),LIS_rc%lnr(n))
 
   call ESMF_StateGet(Routing_State,"Surface elevation",sfcelevField,rc=status)
   call LIS_verify(status,&
@@ -56,11 +63,61 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
   call LIS_verify(status,&
        "ESMF_FieldGet: Surface elevation failed in HYMAP2_updateWL")
 
-  do t=1,HYMAP2_routing_struc(n)%nseqall*LIS_rc%nensem(n)
-     sfcelev(t) = sfcelev(t) + sfcelevIncr(t)
-!     if(t.ge.25001.and.t.le.25020) then 
-!        print*,'upd ',t,sfcelev(t),sfcelevIncr(t)
-!     endif
+  do i=1,HYMAP2_routing_struc(n)%nseqall
+     do m=1,LIS_rc%nensem(n)
+        t = (i-1)*LIS_rc%nensem(n)+m
+        if (HYMAP2_daWL_struc(n)%useLocalUpd.eq.1) then 
+           if(sfcelevIncr(t).gt.0) then 
+              localweight = -9999.0
+              call HYMAP2_map_l2g_index(n,i,siteid)
+              localweight(:,:) = &
+                   HYMAP2_daWL_struc(n)%localWeight(&
+                   LIS_ews_halo_ind(n,LIS_localPet+1):&
+                   LIS_ewe_halo_ind(n,LIS_localPet+1), &
+                   LIS_nss_halo_ind(n,LIS_localPet+1):&
+                   LIS_nse_halo_ind(n,LIS_localPet+1), &
+                   siteid)
+              
+              ix = HYMAP2_routing_struc(n)%seqx(i)
+              iy = HYMAP2_routing_struc(n)%seqy(i)
+              
+              c1=max(1,ix-HYMAP2_daWL_struc(n)%localupdDX)
+              c2=min(LIS_rc%lnc(n),ix+HYMAP2_daWL_struc(n)%localupdDX)
+              r1=max(1,iy-HYMAP2_daWL_struc(n)%localupdDX)
+              r2=min(LIS_rc%lnr(n),iy+HYMAP2_daWL_struc(n)%localupdDX) 
+
+              maxdistance = 0.0
+              do r=r1,r2
+                 do c=c1,c2
+                    if(localweight(c,r).gt.maxdistance) then
+                       maxdistance = localweight(c,r)
+                    endif
+                 enddo
+              enddo
+              
+              
+              do r=r1,r2
+                 do c=c1,c2
+                    i1 = LIS_routing(n)%gindex(c,r)
+                    if(i1.gt.0) then 
+                       t1 = (i1-1)*LIS_rc%nensem(n)+m
+                       if(sfcelev(t1).ne.-9999.0.and.&
+                            localweight(c,r).ne.-9999.0.and.&
+                            localweight(ix,iy).ne.-9999.0) then 
+                          weight = exp(-localweight(c,r)**2/&
+                               (2*maxdistance**2))
+                          sfcelev(t1) = sfcelev(t1) + &
+                               sfcelevIncr(t)*weight
+                       endif
+                    endif
+                 enddo
+              enddo
+
+           endif
+        else
+           sfcelev(t) = sfcelev(t) + sfcelevIncr(t)
+        endif
+     enddo
   enddo
 end subroutine HYMAP2_updateWL
 
