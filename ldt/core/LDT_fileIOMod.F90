@@ -1579,9 +1579,8 @@ end subroutine readldtparam_real_2d
       (min_lon.lt.data_gridDesc(5)).or.&
       (max_lat.gt.data_gridDesc(7)).or.&
       (max_lon.gt.data_gridDesc(8))) then 
-     write(LDT_logunit,*) "The parameter data grid is specified only for the CONUS ..."
-     write(LDT_logunit,*) "The LIS running domain is outside the input parameter grid boundaries ..."
-     write(LDT_logunit,*) "Stopping program ..."
+     write(LDT_logunit,*) "[ERR] The parameter data grid is specified only for the CONUS ..."
+     write(LDT_logunit,*) " The LIS running domain is outside the input parameter grid boundaries ..."
      call LDT_endrun
    endif
    

@@ -17,6 +17,7 @@ module jules5x_dasoilm_Mod
 !
 ! Sujay Kumar; Initial Code
 ! 21 Dec 2018: Mahdi Navari; Modified for JULES 5.3
+! 12 Feb 2020: Shugong Wang; Modified for JULES 5.5 and later versions
 !
 ! !USES:        
   use ESMF

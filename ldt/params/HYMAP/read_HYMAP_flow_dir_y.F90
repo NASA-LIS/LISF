@@ -44,7 +44,7 @@ subroutine read_HYMAP_flow_dir_y(n, array)
   integer :: ftn
   integer :: c,r
   logical :: file_exists
-  integer :: iarray(LDT_rc%lnc(n),LDT_rc%lnr(n),1)
+  integer :: iarray(LDT_rc%lnc(n),LDT_rc%lnr(n),1) ! precision of binary file is int32
 ! __________________________________________________
 
   inquire(file=trim(HYMAP_struc(n)%flowdiryfile), exist=file_exists)

@@ -78,6 +78,7 @@ subroutine readGOME2_SIFObs(source)
      GOME2sifobs(source)%mo = LVT_rc%d_nmo(source)
 
      call create_GOME2sif_filename(GOME2sifobs(Source)%odir, &
+          GOME2sifobs(source)%version,&
           LVT_rc%dyr(source),LVT_rc%dmo(source),&
           fname)
      
@@ -217,7 +218,7 @@ end subroutine readGOME2_SIFObs
 ! \label{create_GOME2sif_filename}
 !
 ! !INTERFACE: 
-subroutine create_GOME2sif_filename(odir,yr,mo,filename)
+subroutine create_GOME2sif_filename(odir,version,yr,mo,filename)
 ! 
 ! !USES:   
   implicit none
@@ -245,6 +246,7 @@ subroutine create_GOME2sif_filename(odir,yr,mo,filename)
 !BOP
 ! !ARGUMENTS: 
   character(len=*)             :: odir
+  character(len=*)             :: version
   integer                      :: yr
   integer                      :: mo
   character(len=*)             :: filename
@@ -262,7 +264,7 @@ subroutine create_GOME2sif_filename(odir,yr,mo,filename)
 !       '/ret_f_nr5_nsvd12_v26_waves734_nolog.grid_SIF__v20_1x1_'//&
 !       trim(fyr)//trim(fmo)//'01_31.nc'
   filename = trim(odir)//'/'//trim(fyr)//&
-       '/ret_f_nr5_nsvd12_v26_waves734_nolog.grid_SIF_v27_'//&
+       '/ret_f_nr5_nsvd12_v26_waves734_nolog.grid_SIF_'//trim(version)//'_'//&
        trim(fyr)//trim(fmo)//'01_31.nc'
   
 end subroutine create_GOME2sif_filename
