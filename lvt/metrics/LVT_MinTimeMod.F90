@@ -299,8 +299,8 @@ contains
 !----------------------------------------------------------------
 !It is assumed temporal lag is not chosen in this setup
 !----------------------------------------------------------------
-    do k=1,LVT_rc%nDataStreams
-       if(LVT_rc%tlag(1).gt.0) then 
+    do kk=1,LVT_rc%nDataStreams
+       if(LVT_rc%tlag(kk).gt.0) then 
           write(LVT_logunit,*) "[ERR] "
           write(LVT_logunit,*) "[ERR] Non-zero temporal lag specification is not "
           write(LVT_logunit,*) "[ERR] supported for MinTime metric"
