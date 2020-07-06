@@ -336,7 +336,7 @@ subroutine LVT_readConfig(configfile)
   do i=1,LVT_rc%nDataStreams
      call ESMF_ConfigGetAttribute(LVT_config,time,default="0ss",rc=rc)
      if(time.eq."dekad") then 
-        print*, 'dekad option is not supported for temporal lag '
+        write(LVT_logunit,*) '[WARN] dekad option is not supported for temporal lag '
      else
         call LVT_parseTimeString(time,LVT_rc%tlag(i))
      endif
