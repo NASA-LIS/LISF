@@ -55,7 +55,7 @@ module LVT_LMLCMod
      real, allocatable :: surfacetype(:,:,:)
   end type lmlc_type_dec
   
-  type(lmlc_type_dec) :: LVT_LMLC(2)
+  type(lmlc_type_dec) :: LVT_LMLC(3)
 contains
 
 !BOP

@@ -330,16 +330,18 @@ subroutine LVT_readConfig(configfile)
      call LVT_parseTimeString(time,LVT_rc%tavgInterval)
   endif
 
-  call ESMF_ConfigGetAttribute(LVT_config,time, &
-       label="Temporal lag in metrics computations:",&
-       default="0ss", rc=rc)
-  call LVT_verify(rc,'Temporal lag in metrics computations: not defined')
+  allocate(LVT_rc%tlag(LVT_rc%nDataStreams))
 
-  if(time.eq."dekad") then 
-     print*, 'dekad option is not supported for temporal lag '
-  else
-     call LVT_parseTimeString(time,LVT_rc%tlag)
-  endif
+  call ESMF_ConfigFindLabel(LVT_config,"Temporal lag in metrics computations:",rc=rc)
+  do i=1,LVT_rc%nDataStreams
+     call ESMF_ConfigGetAttribute(LVT_config,time,default="0ss",rc=rc)
+     if(time.eq."dekad") then 
+        write(LVT_logunit,*) '[WARN] dekad option is not supported for temporal lag '
+     else
+        call LVT_parseTimeString(time,LVT_rc%tlag(i))
+     endif
+
+  enddo
      
   call ESMF_ConfigGetAttribute(LVT_config,time, &
        label="Metrics output frequency:",&
