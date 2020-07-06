@@ -982,6 +982,11 @@ contains
 
     if(LVT_rc%obs_duplicate) then 
        source =2 
+       if(LVT_rc%nDataStreams.eq.3) then 
+          if(LVT_rc%obssource(3).eq."LIS output") then 
+             source = 3
+          endif
+       endif
     else
        source = 1
     endif
