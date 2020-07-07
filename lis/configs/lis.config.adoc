@@ -3085,11 +3085,11 @@ Acceptable values are:
 |SPL2SMP_E  | Level2 oversampled passive VOD data 
 |====
 
-`SMAP(NASA) vegetation optial depth use scaled standard deviation model:` specifies
+`SMAP(NASA) vegetation optical depth use scaled standard deviation model:` specifies
 whether the observation error standard deviation is to be scaled using model
 and observation standard deviation.
 
-`SMAP(NASA) vegetation optial depth apply SMAP QC flags:` specifies
+`SMAP(NASA) vegetation optical depth apply SMAP QC flags:` specifies
 whether to employ the standard SMAP QC flags to screen VOD data 
 
 `SMAP(NASA) reference LAI CDF file:` specifies the name of the reference LAI CDF file
