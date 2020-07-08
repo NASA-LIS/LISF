@@ -255,6 +255,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_ASOSWEdataId = "ASO SWE"
    character*50, public,  parameter :: LVT_IMERGdataId = "GPM IMERG"
    character*50, public,  parameter :: LVT_ozFluxdataId = "OzFlux"
+   character*50, public,  parameter :: LVT_JASMINsmobsId = "JASMIN soil moisture"
 
 !-------------------------------------------------------------------------
 ! Training algorithms
