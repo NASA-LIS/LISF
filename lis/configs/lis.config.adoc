@@ -3008,6 +3008,7 @@ NOTE: Select 0 for yearly CDF data.
 ....
 SMAP(NASA) soil moisture data directory:
 SMAP(NASA) soil moisture data designation:
+SMAP(NASA) soil moisture Composite Release ID:
 SMAP(NASA) soil moisture use scaled standard deviation model:
 SMAP(NASA) model CDF file:
 SMAP(NASA) observation CDF file:
