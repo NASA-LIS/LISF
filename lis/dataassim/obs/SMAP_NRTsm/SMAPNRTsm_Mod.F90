@@ -38,7 +38,6 @@ module SMAPNRTsm_Mod
   type, public:: SMAPNRTsm_dec
      
      integer                :: useSsdevScal
-     !integer                :: qcFlag
      logical                :: startMode
      integer                :: nc
      integer                :: nr
@@ -171,15 +170,6 @@ contains
        call LIS_verify(status, 'SMAP(NRT) soil moisture use scaled standard deviation model: is missing')
        
     enddo
-
-    !call ESMF_ConfigFindLabel(LIS_config,"SMAP(NRT) soil moisture apply SMAP QC flags:",&
-    !     rc=status)
-    !do n=1,LIS_rc%nnest
-    !   call ESMF_ConfigGetAttribute(LIS_config,SMAPNRTsm_struc(n)%qcFlag,&
-    !        rc=status)
-    !   call LIS_verify(status, 'SMAP(NRT) soil moisture apply SMAP QC flags: is missing')
-    !   
-    !enddo
 
     call ESMF_ConfigFindLabel(LIS_config,"SMAP(NRT) model CDF file:",&
          rc=status)
