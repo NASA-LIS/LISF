@@ -19,7 +19,9 @@
 ! 11 July 2019: Mahdi Navari, There are several version of SMAP sm data available in each directory
 !                  with different Release number and different CRID Version Number. The reader was
 !                  modified to read the latest version of data (the reader no longer reads the symbolic
-!                  link to the SMAP sm data)
+!                  link to the SMAP sm data).
+!  8 July 2020: David Mocko: Removed config entry to toggle the QC check.
+!                            The QC is now always ON for NASA SMAP SM DA.
 !
 ! !INTERFACE:
 subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
@@ -169,10 +171,10 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
                exit
             endif
 
-            write (LIS_logunit, *) '[INFO] reading ', trim(fname)
+            write (LIS_logunit, *) '[INFO] Reading descending pass ', trim(fname)
             call read_NASASMAP_E_data(n, k, 'D', fname, smobs_D)
 
-            write (LIS_logunit, *) '[INFO] reading ', trim(fname)
+            write (LIS_logunit, *) '[INFO] Reading ascending pass ', trim(fname)
             call read_NASASMAP_E_data(n, k, 'A', fname, smobs_A)
          enddo
 
@@ -262,10 +264,10 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
                exit
             endif
 
-            write (LIS_logunit, *) '[INFO] reading ', trim(fname)
+            write (LIS_logunit, *) '[INFO] Reading descending pass ', trim(fname)
             call read_NASASMAP_data(n, k, 'D', fname, smobs_D)
 
-            write (LIS_logunit, *) '[INFO] reading ', trim(fname)
+            write (LIS_logunit, *) '[INFO] Reading ascending pass ', trim(fname)
             call read_NASASMAP_data(n, k, 'A', fname, smobs_A)
          enddo
 
@@ -782,8 +784,7 @@ subroutine read_NASASMAP_E_data(n, k, pass, fname, smobs_ip)
 ! that indicate whether retrieval is performed or not at a given grid cell. 
 ! When retrieval is performed, it contains additional bits to further 
 ! indicate the exit status and quality of the retrieval. The first bit 
-! indicates the recommended quality (0-means retrieval has recommended quality
-!
+! indicates the recommended quality (0-means retrieval has recommended quality).
 
   do r=1,NASASMAPsm_struc(n)%nr
      do c=1,NASASMAPsm_struc(n)%nc        
@@ -794,14 +795,10 @@ subroutine read_NASASMAP_E_data(n, k, pass, fname, smobs_ip)
 	 else 
 
            if(sm_data(t).ne.-9999.0) then 
-              if(NASASMAPsm_struc(n)%qcFlag.eq.1) then 
-                 if(ibits(sm_qa(c,r),0,1).eq.0) then 
-                    sm_data_b(t) = .true.
-                 else
-                    sm_data(t) = -9999.0
-                 endif
-              else
+              if(ibits(sm_qa(c,r),0,1).eq.0) then 
                  sm_data_b(t) = .true.
+              else
+                 sm_data(t) = -9999.0
               endif
            endif
         endif
@@ -1059,8 +1056,7 @@ subroutine read_NASASMAP_data(n, k, pass, fname, smobs_ip)
 ! that indicate whether retrieval is performed or not at a given grid cell. 
 ! When retrieval is performed, it contains additional bits to further 
 ! indicate the exit status and quality of the retrieval. The first bit 
-! indicates the recommended quality (0-means retrieval has recommended quality
-!
+! indicates the recommended quality (0-means retrieval has recommended quality).
 
   do r=1,NASASMAPsm_struc(n)%nr
      do c=1,NASASMAPsm_struc(n)%nc        
@@ -1071,14 +1067,10 @@ subroutine read_NASASMAP_data(n, k, pass, fname, smobs_ip)
 	 else 
 
            if(sm_data(t).ne.-9999.0) then 
-              if(NASASMAPsm_struc(n)%qcFlag.eq.1) then 
-                 if(ibits(sm_qa(c,r),0,1).eq.0) then 
-                    sm_data_b(t) = .true.
-                 else
-                    sm_data(t) = -9999.0
-                 endif
-              else
+              if(ibits(sm_qa(c,r),0,1).eq.0) then 
                  sm_data_b(t) = .true.
+              else
+                 sm_data(t) = -9999.0
               endif
            endif
         endif
