@@ -147,8 +147,10 @@ LVT output methodology:                 "2d gridspace"
 | "`GLEAM`"                         | GLEAM data
 | "`FLUXNET2015 dataset`"           | Measurements from FLUXNET2015 dataset
 | "`USCRN soil moisture`"           | USCRN soil moisture data
-| "`SMAP soil moistu`"              | SMAP soil moisture data
+| "`SMAP soil moisture`"            | SMAP soil moisture data
 | "`SMAP vegetation water content`" | SMAP vegetation water content
+! "`OzFlux`"                        | OzFlux ground measurements
+! "`JASMIN soil moisture`"          | JASMIN soil moisture analysis 
 |===
 
 .Example _lvt.config_ entry
@@ -2106,6 +2108,46 @@ USCRN soil moisture station file:            ./USCRN/USCRN_stations.txt
 ....
 SMAP soil moisture observation directory: ../SPL3SMP
 SMAP soil moisture data designation:      SPL3SMP
+....
+
+==== soil moisture
+
+`OzFlux observation directory:` specifies the location of the OzFlux data directory.
+
+`OzFlux station list file:` specifies the location of the OzFlux stations. 
+
+A sample file is shown below: 
+
+....
+
+#Nstns
+9
+#names
+CapeTribulation; -16.103219; 145.446922
+CumberlandPlainMelaleuca; -33.613996; 150.726418
+Longreach ; -23.5232657644973; 144.310415719645
+Riggs; -36.656; 145.576
+Robson; -17.11746943; 145.6301375
+Tumbarumba; -35.6566; 148.1516
+Whroo; -36.6732; 145.0294
+WombatStateForest; -37.4222; 144.0944
+Yanco; -34.9878; 146.2908
+
+....
+
+.Example _lvt.config_ entry
+....
+OzFlux observation directory: ../OzFlux
+OzFlux station list file:     ../OzFlux/stnlist.dat
+....
+
+==== JASMIN soil moisture
+
+`JASMIN soil moisture data directory:` specifies the location of the JASMIN soil moisture data directory.
+
+.Example _lvt.config_ entry
+....
+JASMIN soil moisture data directory: ../JASMIN
 ....
 
 ==== WG SWRC
