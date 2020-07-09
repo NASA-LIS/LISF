@@ -2964,19 +2964,22 @@ AMSR2(GCOMW) snow depth input mask file:
 anchor:sssec_smapnasasmda[SMAP (NASA) soil moisture assimilation]
 
 `SMAP(NASA) soil moisture data directory:` specifies the SMAP(NASA) soil
-moisture data directory
+moisture data directory.
 
 `SMAP(NASA) soil moisture data designation:`  specifies the 
-designation of the SMAP data 
+designation of the SMAP data.
 
 Acceptable values are:
 
 |====
 |Value    | Description
 
-|SPL3SMAP | Level3 active passive SMAP data
-|SPL3SMP  | Level3 passive SMAP data 
+|SPL3SMAP | Level 3 active passive SMAP data
+|SPL3SMP  | Level 3 passive SMAP data 
 |====
+
+`SMAP(NASA) soil moisture Composite Release ID:` specifies the SMAP NASA
+composite release ID included within the filename (e.g., R16).
 
 `SMAP(NASA) soil moisture use scaled standard deviation model:` specifies
 whether the observation error standard deviation is to be scaled using model
@@ -3009,6 +3012,7 @@ NOTE: Select 0 for yearly CDF data.
 ....
 SMAP(NASA) soil moisture data directory:
 SMAP(NASA) soil moisture data designation:
+SMAP(NASA) soil moisture Composite Release ID:
 SMAP(NASA) soil moisture use scaled standard deviation model:
 SMAP(NASA) model CDF file:
 SMAP(NASA) observation CDF file:
@@ -3022,11 +3026,6 @@ anchor:sssec_smapnrtsmda[SMAP (NRT) soil moisture assimilation]
 
 `SMAP(NRT) soil moisture data directory:` specifies the SMAP(NRT) soil
 moisture data directory
-
-`SMAP(NRT) soil moisture apply SMAP QC flags:` specifies whether to apply
-SMAP QC flags.
-
-NOTE: This is no longer used.  Set it to 0.
 
 `SMAP(NRT) soil moisture use scaled standard deviation model:` specifies
 whether the observation error standard deviation is to be scaled using model
@@ -3058,7 +3057,6 @@ NOTE: Select 0 for yearly CDF data.
 .Example _lis.config_ entry
 ....
 SMAP(NRT) soil moisture data directory:
-SMAP(NRT) soil moisture apply SMAP QC flags:
 SMAP(NRT) soil moisture use scaled standard deviation model:
 SMAP(NRT) model CDF file:
 SMAP(NRT) observation CDF file:
