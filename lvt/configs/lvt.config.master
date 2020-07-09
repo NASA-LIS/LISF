@@ -222,6 +222,7 @@ LVT output methodology:                 "2d gridspace"
 #latex: ``USCRN soil moisture'' & USCRN soil moisture data\\
 #latex: ``SMAP soil moistu'' & SMAP soil moisture data\\
 #latex: ``SMAP vegetation water content'' & SMAP vegetation water content\\
+#latex: ``OzFlux'' & OzFlux land surface flux measurements \\
 #latex: \end{tabular}
 #latex: 
 #latex: END_DESCRIPTION
@@ -2853,6 +2854,25 @@ SMAP soil moisture data designation:      SPL3SMP
 #latex: BEGIN_CONFIG
 WG SWRC observation directory:
 WG SWRC station list file:
+#latex: END_CONFIG
+
+#latex: BEGIN_DESCRIPTION
+#latex: \subsubsection{OzFlux}
+#latex: END_DESCRIPTION
+
+#latex: BEGIN_DESCRIPTION
+#latex: \var{OzFlux observation directory:} specifies
+#latex: the location of the OzFlux data files
+#latex: 
+#latex: \var{OzFlux station list file:} specifies
+#latex: the list of OzFlux stations and their coordinates
+#latex: 
+#latex: 
+#latex: END_DESCRIPTION
+
+#latex: BEGIN_CONFIG
+OzFlux observation directory: ./OzFlux
+OzFlux station list file:     ./OzFlux/OzFlux_stnlist.dat
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
