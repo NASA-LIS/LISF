@@ -28,13 +28,13 @@ subroutine HYMAP2_write_WL(ftn,n, Routing_State)
 !
 ! !DESCRIPTION:
 !
-!  Returns the soilmoisture related state prognostic variables for
-!  data assimilation
+!  Writes the water level prognostic variables to an external file
+!  (currently empty). 
 ! 
 !  The arguments are: 
 !  \begin{description}
 !  \item[n] index of the nest \newline
-!  \item[LSM\_State] ESMF State container for LSM state variables \newline
+!  \item[Routing\_State] ESMF State container for Routing state variables \newline
 !  \end{description}
 !EOP
 

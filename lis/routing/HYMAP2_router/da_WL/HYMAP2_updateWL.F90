@@ -30,9 +30,15 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
 !
 ! !DESCRIPTION:
 !  
-!  This routine assigns the soil moisture prognostic variables to noah's
-!  model space. 
+!  This routine updates the water level prognostic variables 
 ! 
+!  The arguments are: 
+!  \begin{description}
+!  \item[n] index of the nest \newline
+!  \item[Routing\_State] ESMF State container for Routing state variables \newline
+!  \item[Routing\_Incr\_State] ESMF State container for Routing increment state variables \newline
+!  \end{description}
+!
 !EOP
 
   type(ESMF_Field)       :: sfcelevField

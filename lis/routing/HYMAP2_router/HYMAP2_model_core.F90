@@ -227,7 +227,7 @@ subroutine HYMAP2_model_core(n,it,mis,nseqall,nz,time,dt,  &
  enddo
   elseif(HYMAP2_routing_struc(n)%enable2waycpl/=1) then
        write(LIS_logunit,*)"Please check 2-way coupling option"
-       stop
+       call LIS_endrun()
   endif
  ! ================================================
  do ic=1,nseqall 
@@ -291,15 +291,6 @@ subroutine HYMAP2_model_core(n,it,mis,nseqall,nz,time,dt,  &
        upfldout_down=upfldout_glb(ic_down)
  
     elseif(outlet(ic)==1)then
-       !temporarily defining outlet's downstream pixel dynamics as:
-       !rivelv_down=rivelv(ic)
-       !rivsto_down=rivsto(ic)
-       !rivdph_down=-rivelv(ic)
-       !rivdph_pre_down=-rivelv(ic)
-       !fldelv1_down=fldelv1(ic)
-       !fldsto_down=fldsto(ic)
-       !flddph1_down=-fldelv1(ic)
-       !flddph_pre_down=-fldelv1(ic)
 
        rivelv_down=rivelv(ic)
        rivsto_down=rivsto(ic)
@@ -319,7 +310,7 @@ subroutine HYMAP2_model_core(n,it,mis,nseqall,nz,time,dt,  &
 
     else
        write(LIS_logunit,*)"[ERR] Wrong outlet id"
-       stop
+       call LIS_endrun()
     endif
     if(flowmap(ic)==1)then
        !Calculate river flow based on the kinematic wave equation
@@ -366,7 +357,7 @@ subroutine HYMAP2_model_core(n,it,mis,nseqall,nz,time,dt,  &
        endif
     else
        write(LIS_logunit,*)"HYMAP routing method: unknown value",ic,flowmap(ic)
-       stop
+       call LIS_endrun()
     endif
     
     !set the updated variable back into the global one
@@ -426,7 +417,7 @@ subroutine HYMAP2_model_core(n,it,mis,nseqall,nz,time,dt,  &
            fldsto_down=1e20 !fldsto(ic)
         else
            write(LIS_logunit,*)"Wrong outlet id"
-           stop
+           call LIS_endrun()
         endif
 
         !Update water storage in river and floodplain reservoirs

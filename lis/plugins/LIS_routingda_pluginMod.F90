@@ -36,9 +36,7 @@ contains
 ! This is a custom-defined plugin point for introducing a new routing scheme
 ! in a data assimilation mode. The interface mandates that
 ! a number of routines be implemented and registered for
-! each of the LSM that is used in a data assimilation setup.
-! Currently two algorithms are supported, Direct Insertion (DI),
-! and Ensemble Kalman Filter (EnKF).
+! each of the routing model that is used in a data assimilation setup.
 !
 !  For use with EnKF, the following routines need to be implemented.
 !   \begin{description}
@@ -54,29 +52,29 @@ contains
 !      Routine that retrieves the model's estimate of observations.
 !      (to be registered using {\tt registerroutingdagetobspred} and later
 !      called through {\tt routingdagetobspred} method)
-!     \item[QC the LSM state]
-!      Routine that QCs the given LSM state for physical consistency.
+!     \item[QC the Routing state]
+!      Routine that QCs the given Routing state for physical consistency.
 !      (to be registered using {\tt registerroutingdaqcstate} and later
 !      called through {\tt routingdaqcstate} method)
 !     \item[QC the OBS state]
-!      Routine that QCs the given OBS state based on land model states
+!      Routine that QCs the given OBS state based on routing model states
 !      (e.g. filter out observations when dense vegetation is present)
 !      (to be registered using {\tt registerroutingdaqcobsstate} and later
 !      called through {\tt routingdaqcobsstate} method)
-!     \item[Scale LSM state]
-!      Scale the LSM state variables in order to change the variables
+!     \item[Scale Routing state]
+!      Scale the Routing state variables in order to change the variables
 !      to similar scales so that the matrices are well-conditioned
-!      (to be registered using {\tt registerscalelsmstate} and later
-!      called through {\tt scalelsmstate} method)
-!     \item[Descale LSM state]
-!      Descale the LSM state variables from the scaled state.
+!      (to be registered using {\tt registerscaleroutingstate} and later
+!      called through {\tt scaleroutingstate} method)
+!     \item[Descale Routing state]
+!      Descale the Routing state variables from the scaled state.
 !      (to be registered using \newline
-!      {\tt registerdescalelsmstate} and later
-!      called through {\tt descalelsmstate} method)
-!     \item[Update LSM state]
+!      {\tt registerdescaleroutingstate} and later
+!      called through {\tt descaleroutingstate} method)
+!     \item[Update routing state]
 !      updates the state variables using the values of the Increment
 !      object (note that the set method actually sets the variables to the
-!      lsm state, whereas the update method simply changes the LSM\_State
+!      routing state, whereas the update method simply changes the Routing\_State
 !      object).
 !      (to be registered using {\tt registerroutingdaupdatestate} and later
 !      called through {\tt routingdaupdatestate} method)
@@ -93,47 +91,16 @@ contains
 !      (to be registered using {\tt registerroutingdasetstatevar} and later called
 !       through {\tt routingdasetstatevar} method)
 !     \item[Transform Observations]
-!      Routine that transforms observations to the LSM state space
+!      Routine that transforms observations to the Routing state space
 !      (could be as simple as a unit conversion).
 !      (to be registered using {\tt registerroutingdaobstransform} and later
 !      called through {\tt routingdaobstransform} method)
-!     \item[Map observations to LSM space]
-!      Routine that maps observations to the LSM state variables.
-!      (to be registered using {\tt registerroutingdamapobstolsm} and later
-!      called through {\tt routingdamapobstolsm} method)
+!     \item[Map observations to routing space]
+!      Routine that maps observations to the routing state variables.
+!      (to be registered using {\tt registerroutingdamapobstorouting} and later
+!      called through {\tt routingdamapobstorouting} method)
 !     \end{description}
 !
-!  The user-defined functions are included in the registry using a
-!  user-selected indices. For example, consider the Noah LSM is
-!  incorporated in the registry by the following calls. In case of
-!  registry functions defined with two indices, the first index
-!  refers to Noah LSM and the second index refers to the ``assimilation
-!  set'' (in the following example, soil moisture assimilation using
-!  synthetic soil moisture). For the definition of plugin indices,
-!  please see LIS\_pluginIndices.F90
-!
-!  \begin{verbatim}
-!    call registerroutingdagetstatevar(1,1,noah271_getsoilm)
-!    call registerroutingdasetstatevar(1,1,noah271_setsoilm)
-!  \end{verbatim}
-!
-!   The functions registered above are invoked using generic calls as
-!   follows:
-!
-!  \begin{verbatim}
-!    call routingdagetstatevar(1,1) - calls noah271_getsoilm
-!    call routingdasetstatevar(1,1) - calls noah271_setsoilm
-!  \end{verbatim}
-!
-!   In the LIS code, the above calls are typically invoked in the
-!   following manner.
-!   \begin{verbatim}
-!    call routingdagetstatevar(LIS_rc%lsm, LIS_rc%daset)
-!    call routingdasetstatevar(LIS_rc%lsm, LIS_rc%daset)
-!    call routingdaobstransform(LIS_rc%lsm, LIS_rc%daset)
-!   \end{verbatim}
-!   where $LIS\_rc\%lsm$ and $LIS\_rc\%daset$ are set through the configuration
-!   utility, enabling the user make a selection at runtime.
 !
 ! !INTERFACE:
 subroutine LIS_routingda_plugin

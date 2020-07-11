@@ -316,7 +316,6 @@ subroutine HYMAP2_routing_run(n)
         tmpb=0.
         
         !import surface runoff and baseflow
-        !     if(LIS_rc%lsm.ne."none") then !from current lsm run
         call ESMF_StateGet(LIS_runoff_state(n),"Surface Runoff",sf_runoff_field,&
              rc=status)
         call LIS_verify(status, "ESMF_StateGet failed for Surface Runoff")
@@ -333,13 +332,6 @@ subroutine HYMAP2_routing_run(n)
              rc=status)
         call LIS_verify(status, "ESMF_FieldGet failed for Subsurface Runoff")
 
-
-!        print*, 'before '
-!        print*, 'rivout ',HYMAP2_routing_struc(n)%rivout(948,20)
-!        print*, 'rivsto ',HYMAP2_routing_struc(n)%rivsto(948,20)
-!        print*, 'fldsto ',HYMAP2_routing_struc(n)%fldsto(948,20)
-!        print*, 'sfcelv ',HYMAP2_routing_struc(n)%sfcelv(948,20)
-!        print*, 'rivhgt ',HYMAP2_routing_struc(n)%rivelv(948) 
 
         do m=1,LIS_rc%nensem(n)
 
@@ -475,12 +467,6 @@ subroutine HYMAP2_routing_run(n)
            call HYMAP2_grid2tile(n,m,HYMAP2_routing_struc(n)%edif(:,m),&
                 edif_lvec)
         enddo
-!        print*, 'after '
-!        print*, 'rivout ',HYMAP2_routing_struc(n)%rivout(948,20)
-!        print*, 'rivsto ',HYMAP2_routing_struc(n)%rivsto(948,20)
-!        print*, 'fldsto ',HYMAP2_routing_struc(n)%fldsto(948,20)
-!        print*, 'sfcelv ',HYMAP2_routing_struc(n)%sfcelv(948,20)
-!        print*, 'rivhgt ',HYMAP2_routing_struc(n)%rivelv(948) 
 
      else !single member run
         allocate(tmp_nensem(LIS_rc%lnc(n),LIS_rc%lnr(n),1))
@@ -488,7 +474,6 @@ subroutine HYMAP2_routing_run(n)
         tmpb=0.
         
         !import surface runoff and baseflow
-        !     if(LIS_rc%lsm.ne."none") then !from current lsm run
         call ESMF_StateGet(LIS_runoff_state(n),"Surface Runoff",sf_runoff_field,&
              rc=status)
         call LIS_verify(status, "ESMF_StateGet failed for Surface Runoff")
@@ -520,13 +505,6 @@ subroutine HYMAP2_routing_run(n)
              HYMAP2_routing_struc(n)%seqx,&
              HYMAP2_routing_struc(n)%seqy,tmpb,baseflow)
         
-        print*, 'before ',LIS_routing(n)%grid(45)%lat,&
-             LIS_routing(n)%grid(45)%lon
-        print*, 'rivout ',HYMAP2_routing_struc(n)%rivout(45,1)
-        print*, 'rivsto ',HYMAP2_routing_struc(n)%rivsto(45,1)
-        print*, 'fldsto ',HYMAP2_routing_struc(n)%fldsto(45,1)
-        print*, 'sfcelv ',HYMAP2_routing_struc(n)%sfcelv(45,1)
-        print*, 'rivhgt ',HYMAP2_routing_struc(n)%rivelv(45) 
 
         call HYMAP2_model(n,real(HYMAP2_routing_struc(n)%imis),&
              LIS_rc%lnc(n),&
@@ -599,12 +577,6 @@ subroutine HYMAP2_routing_run(n)
              HYMAP2_routing_struc(n)%surfws(:,1),&
              HYMAP2_routing_struc(n)%dtaout(:,1))            
               
-        print*, 'after '
-        print*, 'rivout ',HYMAP2_routing_struc(n)%rivout(45,1)
-        print*, 'rivsto ',HYMAP2_routing_struc(n)%rivsto(45,1)
-        print*, 'fldsto ',HYMAP2_routing_struc(n)%fldsto(45,1)
-        print*, 'sfcelv ',HYMAP2_routing_struc(n)%sfcelv(45,1)
-        print*, 'rivhgt ',HYMAP2_routing_struc(n)%rivelv(45) 
 
         rnfsto_mm(:,1)=1000*HYMAP2_routing_struc(n)%rnfsto(:,1)/&
              HYMAP2_routing_struc(n)%grarea
@@ -693,7 +665,6 @@ subroutine HYMAP2_routing_run(n)
                   HYMAP2_routing_struc(n)%grarea(i)
           enddo
 
-          !HYMAP2_routing_struc(n)%fldstotmp=HYMAP2_routing_struc(n)%fldsto
 
           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
                HYMAP2_routing_struc(n)%nseqall,&
@@ -702,7 +673,6 @@ subroutine HYMAP2_routing_run(n)
                HYMAP2_routing_struc(n)%fldstotmp)
 
           call LIS_grid2tile(n,tmp_nensem(:,:,1),fldstotmp_lvec)
-          !write(LIS_logunit,*) 'fldsto from Routing', fldstotmp_lvec
 
           ! Flooded Fraction
           call ESMF_StateGet(LIS_runoff_state(n),"Flooded Fraction",fldfrc_field, rc=status)
@@ -711,12 +681,7 @@ subroutine HYMAP2_routing_run(n)
           call ESMF_FieldGet(fldfrc_field,localDE=0,farrayPtr=fldfrctmp_lvec,rc=status)
           call LIS_verify(status)
           
-          !create flooded fraction flags
-!          where(fldfrc_lvec>=HYMAP2_routing_struc(n)%fldfrc2waycpl)
-!            fldfrctmp_lvec=1.
-!          else where
-!            fldfrctmp_lvec=0.
-!          end where
+
           call HYMAP2_vector2grid(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
                HYMAP2_routing_struc(n)%nseqall,&
                HYMAP2_routing_struc(n)%imis,HYMAP2_routing_struc(n)%seqx,&

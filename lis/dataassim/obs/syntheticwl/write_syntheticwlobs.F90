@@ -99,6 +99,8 @@ subroutine synthetic_wlobsname(n,k,obsname)
   character(len=*)      :: obsname
 ! 
 ! !DESCRIPTION: 
+!  This subroutine creates the name of the synthetic observation
+!  data file
 ! 
 !EOP
 

@@ -251,12 +251,10 @@ contains
       flddph=rdphpre+fldgrd(i)*rwthnow
 1000  continue
       !ag (24Feb2020)
-      !rivsto=rivstomax+rivlen*rivwth*flddph
       rivsto=rivstomax+rivare*flddph
       rivdph=rivsto/rivlen/rivwth
       fldsto=max(rstoall-rivsto,0.)
       !ag (20Feb2020)
-      !fldfrc=((-rivwth+rwthpre+rwthnow)/(rwthinc*10.))+rivare/grarea
       fldfrc=((-rivwth+rwthpre+rwthnow)/(rwthinc*nz))+rivare/grarea
       fldfrc=max(fldfrc,0.)
       fldfrc=min(fldfrc,1.)
@@ -292,6 +290,7 @@ contains
                          rivsto,fldsto,rivdph,flddph,flddph1,&
                          fldelv1,fldwth,fldfrc,fldare,       &
                          rivelv,rivare)
+    use LIS_logMod
     ! ================================================
     ! to   calculate river and floodplain staging
     ! by   Augusto Getirana
@@ -341,8 +340,8 @@ contains
         h1=0.;v1=rivstomax
         h2=fldhgt(1);v2=fldstomax(1)
       else
-        print*,'Please check [HYMAP2_calc_fldstg] '
-        stop
+        write(LIS_logunit,*) '[ERR] Please check [HYMAP2_calc_fldstg] '
+        call LIS_endrun()
       endif        
       flddph=h1+(h2-h1)*(rstoall-v1)/(v2-v1)
       fldfrc=min(max((rivare/grarea)+real(i-1)/real(nz)+(1./real(nz))*(rstoall-v1)/(v2-v1),0.),1.)
@@ -375,6 +374,7 @@ contains
   subroutine HYMAP2_calc_rivout_kine(outlet,dt,rivelv,rivelv_down,nxtdst,&
                               rivwth,sfcelv,rivlen,manval,slpmin,&
                               rivsto,rivdph,rivout,rivvel)
+    use LIS_logMod
     ! ================================================
     ! Calculate discharge, kinematic wave
     ! Augusto Getirana
@@ -419,8 +419,8 @@ contains
       rivout=rarea*rvel
       rivout=min(rivout,rivsto/dt)
     else
-     write(LIS_logunit,*)"Wrong outlet id"
-     stop
+     write(LIS_logunit,*)"[ERR] Wrong outlet id"
+     call LIS_endrun()
     endif
 
   end subroutine HYMAP2_calc_rivout_kine
@@ -430,6 +430,7 @@ contains
                               rivwth,rivsto,rivsto_down,rivdph,rivdph_down,rivlen,manval,    &
                               grv,rivout,rivvel,sfcelv,&
                               rivout_pre,rivdph_pre,rivdph_pre_down)
+    use LIS_logMod
     ! ================================================
     ! Calculate discharge, local inertia 
     ! Augusto Getirana
@@ -501,7 +502,6 @@ contains
       
     elseif(outlet==1)then
       !ag (20Feb2020)
-      !dslope=(sfcelv-elevtn)/nxtdst
       dslope=max(0.,(sfcelv-elevtn)/nxtdst)
       dflw=rivdph
       darea=rivwth*dflw
@@ -526,8 +526,8 @@ contains
       rivdph_pre=rivdph
       
     else
-     write(LIS_logunit,*)"Wrong outlet id"
-     stop
+     write(LIS_logunit,*)"[ERR] Wrong outlet id"
+     call LIS_endrun()
     endif
     
   end subroutine HYMAP2_calc_rivout_iner
@@ -694,10 +694,8 @@ contains
       elseif(i==1)then
         h1=elevtn;v1=rivstomax
         h2=dph(1);v2=fldstomax(1)
-        !print*,h1,h2,v1,v2
       else
-        !print*,'[HYMAP2_get_volume_profile] Please check Reservoir elevation'
-        stop
+        call LIS_endrun()
       endif
       vol=v1+(v2-v1)*(elv-h1)/(h2-h1)
     else
@@ -739,10 +737,8 @@ contains
       elseif(i==1)then
         h1=elevtn;v1=rivstomax
         h2=dph(1);v2=fldstomax(1)
-        !print*,h1,h2,v1,v2
       else
-        !print*,'[HYMAP2_get_elevation_profile] Please check Reservoir elevation'
-        stop
+         call LIS_endrun()
       endif
       elv=h1+(h2-h1)*(vol-v1)/(v2-v1)
    
@@ -754,6 +750,7 @@ contains
 #endif
 
   subroutine HYMAP2_get_volume_profile(nz,elevtn,fldhgt,fldstomax,grarea,rivstomax,rivelv,rivlen,rivwth,elv,vol)    
+    use LIS_logMod
     implicit none
    
     integer, intent(in)  :: nz
@@ -782,10 +779,8 @@ contains
       elseif(i==1)then
         h1=elevtn;v1=rivstomax
         h2=dph(1);v2=fldstomax(1)
-        !print*,h1,h2,v1,v2
       else
-        !print*,'[HYMAP2_get_volume_profile] Please check Reservoir elevation'
-        stop
+         call LIS_endrun()
       endif
       vol=v1+(v2-v1)*(elv-h1)/(h2-h1)
     else
@@ -797,7 +792,8 @@ contains
   !=============================================
     !=============================================  
   subroutine HYMAP2_get_elevation_profile(nz,elevtn,fldhgt,fldstomax,grarea,rivstomax,rivelv,rivlen,rivwth,elv,vol)
-   
+
+    use LIS_logMod
     implicit none
    
     integer, intent(in)  :: nz
@@ -827,10 +823,8 @@ contains
       elseif(i==1)then
         h1=elevtn;v1=rivstomax
         h2=dph(1);v2=fldstomax(1)
-        !print*,h1,h2,v1,v2
       else
-        !print*,'[HYMAP2_get_elevation_profile] Please check Reservoir elevation'
-        stop
+        call LIS_endrun()
       endif
       elv=h1+(h2-h1)*(vol-v1)/(v2-v1)
    

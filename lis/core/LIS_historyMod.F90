@@ -569,15 +569,15 @@ contains
 ! \label{LIS_writeRoutingModelOutput}
 ! 
 ! !INTERFACE: 
-  subroutine LIS_writeRoutingModelOutput(n, lsmoutfile, lsmstatsfile, &
+  subroutine LIS_writeRoutingModelOutput(n, routingoutfile, routingstatsfile, &
        sopen, nsoillayers, outInterval, lyrthk, &
        nsoillayers2, group, model_name, lyrthk2)
 ! !USES:
 
 ! !ARGUMENTS: 
     integer,   intent(in)   :: n 
-    character(len=*),   intent(in)   :: lsmoutfile
-    character(len=*),   intent(in)   :: lsmstatsfile
+    character(len=*),   intent(in)   :: routingoutfile
+    character(len=*),   intent(in)   :: routingstatsfile
     logical,   intent(in)   :: sopen
     real,      intent(in)   :: outInterval
     integer,   intent(in)   :: nsoillayers
@@ -588,7 +588,7 @@ contains
     real,      intent(in),optional   :: lyrthk2(nsoillayers2)
 ! 
 ! !DESCRIPTION: 
-!   This subroutine invokes the routine to write LSM output in the selected
+!   This subroutine invokes the routine to write routing output in the selected
 !    data format (binary/grib1/netcdf) and using the selected list of variables. 
 !    Further, the variables are also written as instantaneous, time averaged,
 !    or accumulated based on the user specifications. 
@@ -596,8 +596,8 @@ contains
 !   The arguments are: 
 !   \begin{description}
 !    \item[n]  index of the nest \newline
-!    \item[lsmoutfile]  name of the LSM history file \newline
-!    \item[lsmstatsfile] name of the LSM history stats file  \newline
+!    \item[routingoutfile]  name of the ROUTING history file \newline
+!    \item[routingstatsfile] name of the ROUTING history stats file  \newline
 !    \item[sopen] flag determining whether to open the LIS history stats file \newline
 !    \item[outInterval]   history output frequency \newline
 !    \item[nsoillayers]  Number of soil layers \newline
@@ -638,17 +638,17 @@ contains
        if ( LIS_rc%sout ) then
           if ( sopen ) then
              if(LIS_rc%startcode.eq."restart") then 
-                open(65+n+10*group_temp,file=lsmstatsfile,&
+                open(65+n+10*group_temp,file=routingstatsfile,&
                    form='formatted', position='append')
              else
-                open(65+n+10*group_temp,file=lsmstatsfile,&
+                open(65+n+10*group_temp,file=routingstatsfile,&
                    form='formatted')
              endif
           endif
 
           write(65+n+10*group_temp,*)              
           write(65+n+10*group_temp,996)&
-             '       Statistical Summary of LSM output for:  ', & 
+             '       Statistical Summary of ROUTING output for:  ', & 
              LIS_rc%mo,'/',LIS_rc%da,'/',LIS_rc%yr,LIS_rc%hr,':',&
              LIS_rc%mn,':',LIS_rc%ss
           996    format(a47,i2,a1,i2,a1,i4,1x,i2,a1,i2,a1,i2)
@@ -663,7 +663,7 @@ contains
     call LIS_rescaleCount(n,group_temp)
 
     write(LIS_logunit,*)'[INFO] Writing routing model output to:  ', &
-         trim(lsmoutfile) ! EMK
+         trim(routingoutfile) ! EMK
 
     if(LIS_rc%wout.eq."binary") then 
        write(LIS_logunit,*)'[ERR] binary routing model outputs are not supported'
@@ -682,12 +682,12 @@ contains
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
        if(LIS_masterproc) then 
 #if (defined USE_NETCDF4)
-          iret = nf90_create(path=lsmoutfile,cmode=nf90_hdf5,&
+          iret = nf90_create(path=routingoutfile,cmode=nf90_hdf5,&
                ncid = ftn)
           call LIS_verify(iret,'creating netcdf file failed in LIS_historyMod')
 #endif
 #if (defined USE_NETCDF3)
-          iret = nf90_create(path=lsmoutfile,cmode=nf90_clobber,&
+          iret = nf90_create(path=routingoutfile,cmode=nf90_clobber,&
                ncid = ftn)
           call LIS_verify(iret,'creating netcdf file failed in LIS_historyMod')
 #endif
@@ -3550,7 +3550,7 @@ contains
 !
 !   The routines invoked are: 
 !   \begin{description}
-!   \item[LIS\_writevar\_netcdf](\ref{LIS_writevar_netcdf})
+!   \item[writeroutingvar\_netcdf\_real](\ref{writeroutingvar_netcdf_real})
 !     writes a variable into a netcdf formatted file. 
 !   \end{description}
 !EOP    
@@ -5906,7 +5906,6 @@ contains
           enddo
 
           write(ftn) gtmp2
-!          call write_stats(gtmp2, LIS_rc%gnc(n)*LIS_rc%gnr(n), mvar, ftn_stats, form)
           call write_stats(gtmp2, LIS_rc%glbngrid_red(n), mvar, ftn_stats, form)
           deallocate(gtmp)
           deallocate(gtmp2)

@@ -28,9 +28,14 @@ subroutine HYMAP2_setWL(n, Routing_State)
 !
 ! !DESCRIPTION:
 !  
-!  This routine assigns the soil moisture prognostic variables to noah's
+!  This routine assigns the water level prognostic variables to the HyMAP2
 !  model space. 
 ! 
+!  The arguments are: 
+!  \begin{description}
+!  \item[n] index of the nest \newline
+!  \item[Routing\_State] ESMF State container for Routing state variables \newline
+!  \end{description}
 !EOP
   type(ESMF_Field)       :: sfcelvField
   integer                :: t,i,m
@@ -96,7 +101,6 @@ subroutine HYMAP2_setWL(n, Routing_State)
   enddo
   
 !update surface level and then update the storage. 
-!HYMAP2_get_volume_profile
 
   do i=1,HYMAP2_routing_struc(n)%nseqall
      do m=1,LIS_rc%nensem(n)
@@ -170,8 +174,6 @@ subroutine reorderEnsForOutliers(nensem, statevec, minvalue)
   enddo
   
   if(minvG.eq.1E10.and.maxvG.eq.-1E10) then 
-! all ensemble members are unphysical (is this possible?)
-! i=45 
      statevec = minvalue
   else
      spread_total = (maxvT - minvT)

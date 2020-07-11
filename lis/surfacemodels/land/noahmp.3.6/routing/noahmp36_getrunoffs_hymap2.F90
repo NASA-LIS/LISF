@@ -29,7 +29,7 @@ subroutine noahmp36_getrunoffs_hymap2(n)
 !
 ! !DESCRIPTION:
 !  
-!
+! This routing defines the export variables from NoahMP3.6 to HYMAP2
 ! 
 !EOP
   type(ESMF_Field)       :: sfrunoff_field
@@ -57,9 +57,6 @@ subroutine noahmp36_getrunoffs_hymap2(n)
   allocate(runoff1_t(LIS_rc%ntiles(n)))
   allocate(runoff2_t(LIS_rc%ntiles(n)))
 
-  !runoff1_t = -9999.0
-  !runoff2_t = -9999.0
-
   call ESMF_AttributeGet(LIS_runoff_state(n),"Routing model evaporation option",&
        evapflag, rc=status)
 !if option is not defined, then assume that no evap calculations will be done
@@ -85,9 +82,6 @@ subroutine noahmp36_getrunoffs_hymap2(n)
      runoff1(t) = NOAHMP36_struc(n)%noahmp36(t)%runsrf
      runoff2(t) = NOAHMP36_struc(n)%noahmp36(t)%runsub
   enddo
-
-  !runoff1_t = LIS_rc%udef
-  !runoff2_t = LIS_rc%udef
 
   call LIS_patch2tile(n,1,runoff1_t, runoff1)
   call LIS_patch2tile(n,1,runoff2_t, runoff2)

@@ -525,9 +525,19 @@ contains
 
   end subroutine LIS_surfaceModel_diagnoseVarsforDA
 
-
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DAGetObsPred
+! \label{LIS_surfaceModel_DAGetObsPred}
+! 
+! !INTERFACE:
   subroutine LIS_surfaceModel_DAGetObsPred(n,k,Obs_Pred)
-    
+! 
+! !DESCRIPTION:
+!   This routine computes the obspred for a given data assimilation 
+!   scheme. Obspred is the model's estimate of the observation 
+!   used in data assimilation. 
+!EOP
     integer                :: n
     integer                :: k
     real                   :: obs_pred(LIS_rc%obs_ngrid(k),LIS_rc%nensem(n))
@@ -548,8 +558,20 @@ contains
     enddo
   end subroutine LIS_surfaceModel_DAGetObsPred
 
-
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DAGetStateVar
+! \label{LIS_surfaceModel_DAGetStateVar}
+! 
+! !INTERFACE:
   subroutine LIS_surfaceModel_DAGetStateVar(n,k)
+! 
+! !DESCRIPTION:
+! 
+!  This routine retrieves the state variables used in data assimilation
+!  from the model
+!
+!EOP
     integer                :: n
     integer                :: k
     
@@ -567,7 +589,20 @@ contains
     enddo
   end subroutine LIS_surfaceModel_DAGetStateVar
 
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DASetStateVar
+! \label{LIS_surfaceModel_DASetStateVar}
+! 
+! !INTERFACE:
   subroutine LIS_surfaceModel_DASetStateVar(n,k)
+! 
+! !DESCRIPTION:
+! 
+!  This routine sets the state variables used in data assimilation
+!  from the model
+!
+!EOP
     integer                :: n
     integer                :: k
     
@@ -585,7 +620,21 @@ contains
     enddo
   end subroutine LIS_surfaceModel_DASetStateVar
 
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DAScaleStateVar
+! \label{LIS_surfaceModel_DAScaleStateVar}
+! 
+! !INTERFACE:
   subroutine LIS_surfaceModel_DAScaleStateVar(n,k)
+! 
+! !DESCRIPTION:
+! 
+!  This routine scales the state vector used in data assimilation. 
+!  Scaling and descaling is done to enhance the numerical stability of 
+!  matrix calculations. 
+!
+!EOP
     integer                :: n
     integer                :: k
     
@@ -603,7 +652,21 @@ contains
     enddo
   end subroutine LIS_surfaceModel_DAScaleStateVar
 
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DADescaleStateVar
+! \label{LIS_surfaceModel_DADescaleStateVar}
+! 
+! !INTERFACE:
   subroutine LIS_surfaceModel_DADescaleStateVar(n,k)
+! 
+! !DESCRIPTION:
+! 
+!  This routine descales the state vector used in data assimilation. 
+!  Scaling and descaling is done to enhance the numerical stability of 
+!  matrix calculations. 
+!
+!EOP
     integer                :: n
     integer                :: k
     
@@ -621,7 +684,20 @@ contains
     enddo
   end subroutine LIS_surfaceModel_DADescaleStateVar
 
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DAUpdateState
+! \label{LIS_surfaceModel_DAUpdateState}
+! 
+! !INTERFACE:
   subroutine LIS_surfaceModel_DAUpdateState(n,k)
+! 
+! !DESCRIPTION:
+! 
+!  This routine updates the model state in response to
+!  analysis increments from data assimilation
+!
+!EOP
     integer                :: n
     integer                :: k
     
@@ -639,7 +715,20 @@ contains
     enddo
   end subroutine LIS_surfaceModel_DAUpdateState
 
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DAQCState
+! \label{LIS_surfaceModel_DAQCState}
+! 
+! !INTERFACE:
   subroutine LIS_surfaceModel_DAQCState(n,k)
+! 
+! !DESCRIPTION:
+! 
+!  This routine allows the screening and masking of the model state vector
+!  used in data assimilation. 
+!
+!EOP
     integer                :: n
     integer                :: k
     
@@ -657,7 +746,21 @@ contains
     enddo
   end subroutine LIS_surfaceModel_DAQCState
 
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DAgetStateSpaceSize
+! \label{LIS_surfaceModel_DAgetStateSpaceSize}
+! 
+! !INTERFACE:
   function LIS_surfaceModel_DAgetStateSpaceSize(n,k) result(size)
+! 
+! !DESCRIPTION:
+! 
+!  This routine returns the size of the state vector space used 
+!  in data assimilation
+!
+!EOP
+
     integer                :: n
     integer                :: k
     integer                :: size
@@ -677,7 +780,21 @@ contains
 
   end function LIS_surfaceModel_DAgetStateSpaceSize
 
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DAextractStateVector
+! \label{LIS_surfaceModel_DAextractStateVector}
+! 
+! !INTERFACE:
   subroutine LIS_surfaceModel_DAextractStateVector(n,k,Nstate,state_size,stvar)
+
+! 
+! !DESCRIPTION:
+! 
+!  This routine extracts the state vector variables from the 
+!  ESMF state object.
+!
+!EOP
 
     integer                :: n
     integer                :: k
@@ -700,8 +817,21 @@ contains
 
   end subroutine LIS_surfaceModel_DAextractStateVector
 
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DASetFreshIncrementsStatus
+! \label{LIS_surfaceModel_DASetFreshIncrementsStatus}
+! 
+! !INTERFACE:
   subroutine LIS_surfaceModel_DASetFreshIncrementsStatus(n,k,setStatus)
     
+! !DESCRIPTION: 
+! 
+! This routine sets the fresh increments status flag (true or false)
+! based on whether assimilation occurred or not
+!
+!EOP
+
     integer                :: n
     integer                :: k
     logical                :: setStatus
@@ -720,8 +850,19 @@ contains
     enddo
   end subroutine LIS_surfaceModel_DASetFreshIncrementsStatus
 
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DAGetFreshIncrementsStatus
+! \label{LIS_surfaceModel_DAGetFreshIncrementsStatus}
+! 
+! !INTERFACE:
   subroutine LIS_surfaceModel_DAGetFreshIncrementsStatus(n,k,setStatus)
     
+! !DESCRIPTION: 
+! 
+! This routine returns the fresh increments status flag (true or false)
+!
+!EOP
     integer                :: n
     integer                :: k
     logical                :: setStatus
@@ -740,9 +881,20 @@ contains
     enddo
   end subroutine LIS_surfaceModel_DAGetFreshIncrementsStatus
 
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DAsetAnlysisUpdates
+! \label{LIS_surfaceModel_DAsetAnlysisUpdates}
+! 
+! !INTERFACE:
   subroutine LIS_surfaceModel_DAsetAnlysisUpdates(n,k,Nstate,state_size,&
        stvar,stincr)
-
+! 
+! !DESCRIPTION: 
+!  This routine sets the variables the state vector
+!  and state increments vector objects after assimilation
+!
+!EOP
     integer                :: n
     integer                :: k
     integer                :: Nstate
@@ -765,16 +917,25 @@ contains
 
   end subroutine LIS_surfaceModel_DAsetAnlysisUpdates
 
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DAmapTileSpaceToObsSpace
+! \label{LIS_surfaceModel_DAmapTileSpaceToObsSpace}
+!
+! !INTERFACE: 
   subroutine LIS_surfaceModel_DAmapTileSpaceToObsSpace(&
        n,k,tileid,st_id,en_id)
-
+!
+! !DESCRIPTION: 
+!  This routine computes the mapping of the input tile space
+!  index in the observation space. 
+! 
+!EOP
     integer                :: n 
     integer                :: k
     integer                :: tileid
     integer                :: st_id
     integer                :: en_id
-
-
     integer                :: m
 
     do m=1,LIS_rc%nsf_model_types
@@ -790,8 +951,18 @@ contains
 
   end subroutine LIS_surfaceModel_DAmapTileSpaceToObsSpace
 
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DAgetStateVarNames
+! \label{LIS_surfaceModel_DAgetStateVarNames}
+!
+! !INTERFACE: 
   subroutine LIS_surfaceModel_DAgetStateVarNames(n,k,stateNames)
-
+!
+! !DESCRIPTION: 
+! 
+! This routine returns the variable names used in the state vector
+!EOP
     integer                :: n 
     integer                :: k
     character(len=*)       :: stateNames(LIS_rc%nstVars(k))
@@ -811,8 +982,18 @@ contains
 
   end subroutine LIS_surfaceModel_DAgetStateVarNames
 
-
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DAobsTransform
+! \label{LIS_surfaceModel_DAobsTransform}
+!
+! !INTERFACE: 
   subroutine LIS_surfaceModel_DAobsTransform(n,k)
+!
+! !DESCRIPTION: 
+!  This routine transforms the observations to be consistent with
+!  the model state space. 
+!EOP 
 
     integer                :: n 
     integer                :: k
@@ -832,7 +1013,18 @@ contains
 
   end subroutine LIS_surfaceModel_DAobsTransform
 
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DAmapObsToModel
+! \label{LIS_surfaceModel_DAmapObsToModel}
+!
+! !INTERFACE: 
   subroutine LIS_surfaceModel_DAmapObsToModel(n,k)
+!
+! !DESCRIPTION: 
+!  This routine maps the observations into the model state
+!  (Typically used in direct insertion). 
+!EOP 
 
     integer                :: n 
     integer                :: k
@@ -851,8 +1043,18 @@ contains
     enddo
   end subroutine LIS_surfaceModel_DAmapObsToModel
 
-
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_DAqcObsState
+! \label{LIS_surfaceModel_DAqcObsState}
+!
+! !INTERFACE: 
   subroutine LIS_surfaceModel_DAqcObsState(n,k)
+!
+! !DESCRIPTION: 
+!  This routine allows the screening and masking of the observation state
+!  used in data assimilation. 
+!EOP 
 
     integer                :: n 
     integer                :: k
@@ -871,8 +1073,19 @@ contains
     enddo
   end subroutine LIS_surfaceModel_DAqcObsState
 
-  subroutine LIS_surfaceModel_getlatlons(n,k,state_size,lats,lons)
-    
+!BOP
+! 
+! !ROUTINE: LIS_surfaceModel_getlatlons
+! \label{LIS_surfaceModel_getlatlons}
+!
+! !INTERFACE:
+  subroutine LIS_surfaceModel_getlatlons(n,k,state_size,lats,lons)    
+!
+! !DESCRIPTION: 
+!  This routine returns the lat/lon values corresponding to the state
+!  vector
+!EOP 
+
     integer                :: n
     integer                :: k
     integer                :: state_size
