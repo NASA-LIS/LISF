@@ -5582,7 +5582,7 @@ end subroutine get_moc_attributes
 !
 !  See LIS\_diagnoseOutputVar for more details.
 !EOP    
-!index 1 is hardcoded since we know that routing models are only over land. 
+
     real    :: vmin, vmax
     integer :: gindex
     type(LIS_metadataEntry), pointer :: dataEntry
@@ -5610,10 +5610,6 @@ end subroutine get_moc_attributes
 
        call diagnoseRoutingDataEntry(n,dataEntry,                             &
             t,vlevel,value,unit,direction,vmin,vmax)
-!    call LIS_diagnoseOutputVar(LIS_histData(n)%head_routing_list, &
-!         LIS_MOC_ROUTING_COUNT, LIS_histData(n)%ptr_into_routing_list,&
-!         n, t, index, vlevel, value, unit,  &
-!         direction,valid_min,valid_max,model_patch)
 
     endif
 

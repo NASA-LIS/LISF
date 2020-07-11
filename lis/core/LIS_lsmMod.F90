@@ -1516,8 +1516,8 @@ contains
 !
 ! !DESCRIPTION:
 ! 
-!  This interface extracts the variables from the state vector
-!  and state increments vector objects. 
+!  This interface sets the variables the state vector
+!  and state increments vector objects after assimilation
 ! 
 !  The arguments are: 
 !  \begin{description}

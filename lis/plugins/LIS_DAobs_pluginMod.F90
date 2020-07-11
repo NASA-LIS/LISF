@@ -64,6 +64,9 @@ contains
 ! 
 !  The following interfaces should be implemented in this routine. 
 !  \begin{description}
+!  \item[Define DAobs class]
+!      Define the "class" of DAobservation (LSM/Routing), which helps to
+!      setup the appropriate surface model for data assimilation
 !  \item[Setup]
 !      Initialization of data and memory structures
 !      (to be registered using {\tt registerreaddaobssetup} and later called 
@@ -845,8 +848,20 @@ subroutine LIS_DAobs_plugin
    
  end subroutine registerdaobsclass
  
+!BOP
+!
+! !ROUTINE: LIS_isDAinstanceValid
+! \label{LIS_isDAinstanceValid}
+!
+! !INTERFACE: 
  subroutine LIS_isDAinstanceValid(funcName, funcClass,flag)
-   
+!
+! !DESCRIPTION: 
+!  
+!  This subroutine checks if the DA class instance is among
+!  the supported list of DA class types. 
+! 
+!EOP
    implicit none
    
    character(len=*) :: funcName

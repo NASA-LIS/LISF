@@ -100,16 +100,13 @@ module gmaopert_Mod
       if(index.eq.1) then          
          allocate(forcPert(LIS_rc%nnest, 1))            
          f_xycorr = .false. 
-      elseif(index.eq.2) then 
+      elseif(index.eq.2.or.index.eq.4) then 
          allocate(progPert(LIS_rc%nnest, LIS_rc%nperts))
          p_xycorr = .false. 
       elseif(index.eq.3) then 
          allocate(obspert(LIS_rc%nnest, LIS_rc%ndas))
          allocate(nobs(LIS_rc%nnest,LIS_rc%ndas))
          o_xycorr = .false. 
-      elseif(index.eq.4) then 
-         allocate(progPert(LIS_rc%nnest, LIS_rc%nperts))
-         p_xycorr = .false. 
       endif
 
     end subroutine gmaoPert_init
@@ -1796,10 +1793,6 @@ module gmaopert_Mod
                write(LIS_logunit,*) '[ERR] Force stop in gmaoperturb'
                call LIS_endrun()
 
-! SVK: The ltmp is not setup correctly for this call. Force quit for now
-               call routingDAsetPertStates(trim(LIS_rc%routingModel)//"+"//&
-                        trim(LIS_rc%daset(k))//char(0),n,objcount,pert_State, &
-                        ltmp)
             enddo
 
          endif

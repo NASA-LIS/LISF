@@ -590,7 +590,9 @@ subroutine HYMAP2_dump_restart(n, ftn)
 !   \item [ftn]
 !     unit number of the binary output file
 !   \item [var]
-!     variables being written, dimensioned in the tile space
+!     variable being written, dimensioned in the tile space
+!   \item [varid]
+!     index of the variable being written
 !  \end{description}
 !EOP
     real, allocatable :: gtmp(:)
@@ -671,7 +673,9 @@ subroutine HYMAP2_dump_restart(n, ftn)
 !   \item [ftn]
 !     unit number of the binary output file
 !   \item [var]
-!     variables being written, dimensioned in the tile space
+!     variable being written, dimensioned in the tile space
+!   \item [varid]
+!     index of the variable being written
 !  \end{description}
 !EOP
     real, allocatable :: gtmp(:)
@@ -709,9 +713,7 @@ subroutine HYMAP2_dump_restart(n, ftn)
                      LIS_routing_goffsets(n,l-1))
                 ix1 = ix + LIS_ews_halo_ind(n,l) - 1
                 iy1 = iy + LIS_nss_halo_ind(n,l)-1
-!                gtmp(HYMAP2_routing_struc(n)%sindex(ix1,iy1)+&
-!                     (m-1)*LIS_rc%glbnroutinggrid(n)) = &
-!                     gtmp1(i+LIS_routing_goffsets(n,l-1),m)
+
                 gtmp(m + (HYMAP2_routing_struc(n)%sindex(ix1,iy1) -1)* &
                      LIS_rc%nensem(n)) = &
                      gtmp1(i+LIS_routing_goffsets(n,l-1),m)

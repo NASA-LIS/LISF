@@ -276,14 +276,10 @@ end subroutine HYMAP2_routing_readrst
           iy = HYMAP2_routing_struc(n)%seqy(i)
           ix1 = ix + LIS_ews_halo_ind(n,LIS_localPet+1) -1
           iy1 = iy + LIS_nss_halo_ind(n,LIS_localPet+1) -1
-!          var(i,m)  = gtmp(HYMAP2_routing_struc(n)%sindex(ix1,iy1)+&
-!               (m-1)*LIS_rc%glbnroutinggrid(n))
+
           var(i,m)  = gtmp(m + &
                (HYMAP2_routing_struc(n)%sindex(ix1,iy1)-1)*LIS_rc%nensem(n))
-!          print*, i, m, HYMAP2_routing_struc(n)%sindex(ix1,iy1),HYMAP2_routing_struc(n)%sindex(ix1,iy1)+&
-!               (m-1)*LIS_rc%glbnroutinggrid(n)
-!          print*, i, m, HYMAP2_routing_struc(n)%sindex(ix1,iy1),m + &
-!               (HYMAP2_routing_struc(n)%sindex(ix1,iy1)-1)*LIS_rc%nensem(n)
+
        enddo
     enddo
     deallocate(gtmp)   

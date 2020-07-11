@@ -67,7 +67,6 @@ module HYMAP2_routingMod
   integer, allocatable :: seqy_glb(:)
   !integer              :: nseqriv       !length of 1D sequnece for river
   integer              :: nseqall       !length of 1D sequnece for river and mouth  
-!  integer              :: nseqall_glb   !global length of 1D sequnece for river and mouth  
 ! === Map ===============================================
   integer, allocatable :: sindex(:,:)     !2-D sequence index
   integer, allocatable :: outlet(:)       !outlet flag: 0 - river; 1 - ocean
@@ -150,7 +149,6 @@ module HYMAP2_routingMod
   real,    allocatable  :: flddph_pre(:,:)
   real,    allocatable  :: fldelv1(:,:)
   real                  :: cadp
-!  real                  :: dstend
   real                  :: grv
   
   real,    allocatable  :: dtaout(:,:)
@@ -590,9 +588,7 @@ contains
        allocate(HYMAP2_routing_struc(n)%outlet_glb(LIS_rc%glbnroutinggrid(n)))
        allocate(HYMAP2_routing_struc(n)%next(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%next_glb(LIS_rc%glbnroutinggrid(n)))
-       !allocate(HYMAP2_routing_struc(n)%nextx(HYMAP2_routing_struc(n)%nseqall))
-       !allocate(HYMAP2_routing_struc(n)%nexty(HYMAP2_routing_struc(n)%nseqall)) 
-       !allocate(HYMAP2_routing_struc(n)%mask(HYMAP2_routing_struc(n)%nseqall))
+
        allocate(HYMAP2_routing_struc(n)%elevtn(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%nxtdst(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%grarea(HYMAP2_routing_struc(n)%nseqall))
@@ -983,8 +979,7 @@ contains
             HYMAP2_routing_struc(n)%seqx,&
             HYMAP2_routing_struc(n)%seqy,&
             tmp_real,HYMAP2_routing_struc(n)%nxtdst)
-       !ag (10Feb2020)
-       !where(HYMAP2_routing_struc(n)%outlet==1)HYMAP2_routing_struc(n)%nxtdst=HYMAP2_routing_struc(n)%dstend
+
     enddo
 
     ctitle = 'HYMAP_grid_area'
@@ -1124,11 +1119,7 @@ contains
        write(LIS_logunit,*)'[INFO] Calculate maximum river storage'
        HYMAP2_routing_struc(n)%rivstomax = HYMAP2_routing_struc(n)%rivlen* &
             HYMAP2_routing_struc(n)%rivwth * HYMAP2_routing_struc(n)%rivhgt
-!ic=10592
-!dd = HYMAP2_routing_struc(n)%rivlen(ic)* &
-!HYMAP2_routing_struc(n)%rivwth(ic) * HYMAP2_routing_struc(n)%rivhgt(ic)
-!write(12,'(10f15.4)')HYMAP2_routing_struc(n)%rivstomax(ic),HYMAP2_routing_struc(n)%rivlen(ic), &
-!HYMAP2_routing_struc(n)%rivwth(ic),HYMAP2_routing_struc(n)%rivhgt(ic),dd
+
        write(LIS_logunit,*)'[INFO] Calculate river bed elevation'
        HYMAP2_routing_struc(n)%rivelv = HYMAP2_routing_struc(n)%elevtn -&
             HYMAP2_routing_struc(n)%rivhgt
@@ -1147,11 +1138,6 @@ contains
             HYMAP2_routing_struc(n)%fldstomax,&
             HYMAP2_routing_struc(n)%fldgrd,&
             HYMAP2_routing_struc(n)%rivare)		   
-       !!Start storages
-       !HYMAP2_routing_struc(n)%rivsto=0.0
-       !HYMAP2_routing_struc(n)%fldsto=0.0
-       !HYMAP2_routing_struc(n)%rnfsto=0.0
-       !HYMAP2_routing_struc(n)%bsfsto=0.0
     enddo
 
     !ag (4Feb2016) - read reservoir operation data

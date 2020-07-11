@@ -37,33 +37,7 @@ subroutine HYMAP2_qcWL(n, Routing_State)
 !  \item[Routing\_State] ESMF State container for Routing state variables \newline
 !  \end{description}
 !EOP
-  type(ESMF_Field)       :: sfcelvField
-  integer                :: i,t,m
-  integer                :: status
-  real, pointer          :: sfcelv(:)
-  real                   :: sfcelvmax
-  real                   :: sfcelvmin
-
-
-  call ESMF_StateGet(Routing_State,"Surface elevation",sfcelvField,rc=status)
-  call LIS_verify(status,&
-       "ESMF_StateGet for Surface elevation failed in HYMAP2_qcWL")
  
-  call ESMF_FieldGet(sfcelvField,localDE=0,farrayPtr=sfcelv,rc=status)
-  call LIS_verify(status,&
-       "ESMF_FieldGet for Surface elevation failed in HYMAP2_qcWL")
-
-  do i=1,HYMAP2_routing_struc(n)%nseqall
-     do m=1,LIS_rc%nensem(n)
-        t = (i-1)*LIS_rc%nensem(n)+m
-! make sure that the surface elevations are never below the river bed
-! elevatiion
-        if(sfcelv(t).lt.0) then 
-!           print*, 'qc issue ',i,m, sfcelv(t)
-        endif
-     enddo
-  enddo
-
 
 end subroutine HYMAP2_qcWL
 

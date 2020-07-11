@@ -222,16 +222,6 @@ contains
     integer            :: iloc(1),ipre,ipos
     real*8             :: ztpre,ztpos,ztime
 
-!    iloc(:)=minloc(abs(tvar-time),tvar<=time.and.var/=mis)
-!    ipre=iloc(1) 
-  
-!    iloc(:)=minloc(abs(tvar-time),tvar>time.and.var/=mis)
-!    ipos=iloc(1)
-
-!     if(ipre==0.and.ipos>0)then
-!      varout=var(ipos)    
-!    elseif(ipos==0.and.ipre>0)then
-!      varout=var(ipre)
    
     if(time<minval(tvar,var/=mis))then
       ipre=0

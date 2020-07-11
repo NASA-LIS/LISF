@@ -560,11 +560,11 @@ void FTN(registerroutingdainit)(char *j, void (*func)(int*),int len)
 //  
 // !DESCRIPTION: 
 //  Makes an entry in the registry for the routine 
-//  for initializing DA related ROUTING settings
+//  for initializing DA related routing model settings
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \end{description}
 //EOP
 { 
@@ -598,10 +598,11 @@ void FTN(routingdainit)(char *j, int *k, int len)
 //  
 // !DESCRIPTION: 
 //  Invokes the routine from the registry for initializing
-//  DA related ROUTING settings. 
+//  DA related routing model settings. 
+//
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \end{description}
 //EOP
 { 
@@ -612,7 +613,7 @@ void FTN(routingdainit)(char *j, int *k, int len)
     current = current->next;
     if(current==NULL) {
       printf("****************Error****************************\n"); 
-      printf("init routine for ROUTING + DA instance %s is not defined\n",j); 
+      printf("init routine for routing model + DA instance %s is not defined\n",j); 
       printf("program will seg fault.....\n"); 
       printf("****************Error****************************\n"); 
     }
@@ -634,7 +635,7 @@ void FTN(registerroutingdagetstatevar)(char *j, void (*func)(int*, void*),int le
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \end{description}
 //EOP
 { 
@@ -668,12 +669,12 @@ void FTN(routingdagetstatevar)(char *j, int *n, void *state, int len)
 //  
 // !DESCRIPTION: 
 //  Invokes the routine from the registry for obtaining
-//  the specified prognostic variables from the land surface model
+//  the specified prognostic variables from the routing model
 //  (for data assimilation)
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \item[n]
 //   index of the nest
 //  \item[state]
@@ -688,7 +689,7 @@ void FTN(routingdagetstatevar)(char *j, int *n, void *state, int len)
     current = current->next;
     if(current==NULL) {
       printf("****************Error****************************\n"); 
-      printf("get ROUTING variable routine for ROUTING + DA instance %s is not defined\n",j); 
+      printf("getstatevar variable routine for routing model + DA instance %s is not defined\n",j); 
       printf("program will seg fault.....\n"); 
       printf("****************Error****************************\n"); 
     }
@@ -705,12 +706,12 @@ void FTN(registerroutingdasetstatevar)(char *j, void (*func)(int*, void*),int le
 //  
 // !DESCRIPTION:
 //  Makes an entry in the registry for updating the specified
-//  state variable in a land surface model 
+//  state variable in a routing model 
 //  (for data assimilation)
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \end{description}
 //EOP
 { 
@@ -744,15 +745,15 @@ void FTN(routingdasetstatevar)(char *j,int *n, void *statevar, int len)
 //  
 // !DESCRIPTION: 
 //  Invokes the routine from the registry for updating
-//  the specified state variable in a land surface model 
+//  the specified state variable in a routing model 
 //  (for data assimilation)
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \item[n]
 //   index of the nest
-//  \item[statevars]
+//  \item[statevar]
 //   pointer to the prognostic variable state
 //  \end{description}
 //EOP
@@ -765,7 +766,7 @@ void FTN(routingdasetstatevar)(char *j,int *n, void *statevar, int len)
 
     if(current==NULL) {
       printf("****************Error****************************\n"); 
-      printf("set ROUTING variable routine for ROUTING + DA instance %s is not defined\n",j); 
+      printf("set state variable routine for routing model + DA instance %s is not defined\n",j); 
       printf("program will seg fault.....\n"); 
       printf("****************Error****************************\n"); 
     }
@@ -788,7 +789,7 @@ void FTN(registerroutingdaobstransform)(char *j, void (*func)(int*, void*),int l
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \item[k]
 //   index of the observation data
 //  \end{description}
@@ -831,7 +832,7 @@ void FTN(routingdaobstransform)(char *j, int *n, void *obs, int len)
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \item[n]
 //   index of the nest
 //   \item[obs]
@@ -846,7 +847,7 @@ void FTN(routingdaobstransform)(char *j, int *n, void *obs, int len)
     current = current->next;
     if(current==NULL) {
       printf("****************Error****************************\n"); 
-      printf("obs transform routine for ROUTING + DA instance %s is not defined\n",j); 
+      printf("obs transform routine for routing model + DA instance %s is not defined\n",j); 
       printf("program will seg fault.....\n"); 
       printf("****************Error****************************\n"); 
     }
@@ -863,12 +864,12 @@ void FTN(registerroutingdagetobspred)(char *j, void (*func)(int*,int*,float*),in
 //  
 // !DESCRIPTION: 
 //  Makes an entry in the registry for the routine 
-//  that provides an ROUTING's estimate of the observations.
+//  that provides an routing model's estimate of the observations.
 //  (for data assimilation)
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \end{description}
 //EOP
 { 
@@ -909,9 +910,11 @@ void FTN(routingdagetobspred)(char *j, int *n, int *k,float *pred, int len)
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING
+//   name of the routing model
 //  \item[n]
 //   index of the nest
+//  \item[k]
+//   index of the data assimilation instance
 //  \item[pred]
 //   model's estimated observation prediction
 //  \end{description}
@@ -925,7 +928,7 @@ void FTN(routingdagetobspred)(char *j, int *n, int *k,float *pred, int len)
 
     if(current==NULL) {
       printf("****************Error****************************\n"); 
-      printf("obspred routine for ROUTING + DA instance %s is not defined\n",j); 
+      printf("obspred routine for routing model + DA instance %s is not defined\n",j); 
       printf("program will seg fault.....\n"); 
       printf("****************Error****************************\n"); 
     }
@@ -942,11 +945,11 @@ void FTN(registerroutingdadiagnosevars)(char *j, void (*func)(int*),int len)
 //  
 // !DESCRIPTION:
 //  Makes an entry in the registry for the routine to 
-//  perform land surface model output
+//  log variables from a routing model 
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING
+//   name of the routing model
 //  \end{description}
 //EOP
 { 
@@ -981,12 +984,12 @@ void FTN(registerroutingdadiagnosevars)(char *j, void (*func)(int*),int len)
 void FTN(routingdadiagnosevars)(char *j, int *n, int len)
 //  
 // !DESCRIPTION:
-//  Invokes the routine from the registry to perform
-//  land surface model output
+//  Invokes the routine from the registry to log
+//  DA variables from a routing model
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING
+//   name of the routing model
 //  \item[n]
 //   index of the nest
 //  \end{description}
@@ -1000,7 +1003,7 @@ void FTN(routingdadiagnosevars)(char *j, int *n, int len)
     current = current->next;
     if(current==NULL) {
       printf("****************Error****************************\n"); 
-      printf("diagnose for DA routine for ROUTING +DAset %s is not defined\n",j); 
+      printf("diagnose for DA routine for routing model +DAset %s is not defined\n",j); 
       printf("program will seg fault.....\n"); 
       printf("****************Error****************************\n"); 
     }
@@ -1023,7 +1026,7 @@ void FTN(registerroutingdamapobstorouting)(char *j, void (*func)(int*, int*, voi
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \end{description}
 //EOP
 { 
@@ -1064,9 +1067,11 @@ void FTN(routingdamapobstorouting)(char *j, int *n, int *k, void *obs, void *rou
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \item[n]
 //   index of the nest
+//  \item[k]
+//   index of the data assimilation instance
 //  \item[obs]
 //   observations to be mapped
 //  \item[routing]
@@ -1081,7 +1086,7 @@ void FTN(routingdamapobstorouting)(char *j, int *n, int *k, void *obs, void *rou
     current = current->next;
     if(current==NULL) {
       printf("****************Error****************************\n"); 
-      printf("map obs to ROUTING routine for ROUTING + DA instance %s is not defined\n",j); 
+      printf("map obs to routing model routine for routing model + DA instance %s is not defined\n",j); 
       printf("program will seg fault.....\n"); 
       printf("****************Error****************************\n"); 
     }
@@ -1098,12 +1103,12 @@ void FTN(registerroutingdaqcstate)(char *j, void (*func)(int*, void*),int len)
 //  
 // !DESCRIPTION: 
 //  Makes an entry in the registry for the routine to 
-//  QC the updated ROUTING state
+//  QC the updated routing model state
 //  (for data assimilation)
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \end{description}
 //EOP
 { 
@@ -1138,12 +1143,12 @@ void FTN(routingdaqcstate)(char *j,int *n, void *ROUTING_State, int len)
 //  
 // !DESCRIPTION: 
 //  Invokes the routine from the registry to set the 
-//  QC the updated ROUTING variables
+//  QC the updated routing model variables
 //  (for data assimilation)
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING
+//   name of the routing model
 //  \item[n]
 //   index of the nest
 //  \item[ROUTING\_State]
@@ -1158,7 +1163,7 @@ void FTN(routingdaqcstate)(char *j,int *n, void *ROUTING_State, int len)
     current = current->next;
     if(current==NULL) {
       printf("****************Error****************************\n"); 
-      printf("map obs to ROUTING routine for ROUTING + DA instance %s is not defined\n",j); 
+      printf("map obs to routing model routine for routing model + DA instance %s is not defined\n",j); 
       printf("program will seg fault.....\n"); 
       printf("****************Error****************************\n"); 
     }
@@ -1180,7 +1185,7 @@ void FTN(registerroutingdascalestatevar)(char *j, void (*func)(int*, void*),int 
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \item[j]
 //   index of the assimilated variable
 //  \end{description}
@@ -1222,7 +1227,7 @@ void FTN(routingdascalestatevar)(char *j, int *n, void *ROUTING_State, int len)
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \item[n]
 //   index of the nest
 //  \item[ROUTING\_State]
@@ -1237,7 +1242,7 @@ void FTN(routingdascalestatevar)(char *j, int *n, void *ROUTING_State, int len)
     current = current->next;
     if(current==NULL) {
       printf("****************Error****************************\n"); 
-      printf("scale variable routine for ROUTING + DA instance %s is not defined\n",j); 
+      printf("scale variable routine for routing model + DA instance %s is not defined\n",j); 
       printf("program will seg fault.....\n"); 
       printf("****************Error****************************\n"); 
     }
@@ -1260,7 +1265,7 @@ void FTN(registerroutingdadescalestatevar)(char *j, void (*func)(int*, void*, vo
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING
+//   name of the routing model
 //  \item[j]
 //   index of the assimilated variable
 //  \end{description}
@@ -1302,11 +1307,13 @@ void FTN(routingdadescalestatevar)(char *j,int *n, void *ROUTING_State, void *RO
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING
+//   name of the routing model
 //  \item[n]
 //   index of the nest
 //  \item[ROUTING\_State]
 //   The ROUTING state being descaled
+//  \item[ROUTING\_Incr\_State]
+//   The ROUTING increments state being descaled
 //  \end{description}
 //EOP
 { 
@@ -1317,7 +1324,7 @@ void FTN(routingdadescalestatevar)(char *j,int *n, void *ROUTING_State, void *RO
     current = current->next;
     if(current==NULL) {
       printf("****************Error****************************\n"); 
-      printf("descale variables routine for ROUTING + DA instance %s is not defined\n",j); 
+      printf("descale variables routine for routing model + DA instance %s is not defined\n",j); 
       printf("program will seg fault.....\n"); 
       printf("****************Error****************************\n"); 
     }
@@ -1339,7 +1346,7 @@ void FTN(registerroutingdaupdatestate)(char *j, void (*func)(int*, void*, void*)
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \end{description}
 //EOP
 { 
@@ -1379,7 +1386,7 @@ void FTN(routingdaupdatestate)(char *j, int *n, void *ROUTING_State, void *ROUTI
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \item[n]
 //   index of the nest
 //  \item[ROUTING\_State]
@@ -1396,7 +1403,7 @@ void FTN(routingdaupdatestate)(char *j, int *n, void *ROUTING_State, void *ROUTI
     current = current->next;
     if(current==NULL) {
       printf("****************Error****************************\n"); 
-      printf("update state routine for ROUTING + DA instance %s is not defined\n",j); 
+      printf("update state routine for routing model + DA instance %s is not defined\n",j); 
       printf("program will seg fault.....\n"); 
       printf("****************Error****************************\n"); 
     }
@@ -1413,12 +1420,12 @@ void FTN(registerroutingdaqcobsstate)(char *j, void (*func)(int*, int*, void*),i
 //  
 // !DESCRIPTION: 
 //  Makes an entry in the registry for the routine to 
-//  QC the OBS state based on ROUTING variables and states
+//  QC the OBS state based on routing model variables and states
 //  (for data assimilation).
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \end{description}
 //EOP
 { 
@@ -1453,12 +1460,12 @@ void FTN(routingdaqcobsstate)(char *j, int *n, int *k, void *ROUTING_State, int 
 //  
 // !DESCRIPTION: 
 //  Invokes the routine from the registry to set the 
-//  QC the observation state based on ROUTING variables and states
+//  QC the observation state based on routing model variables and states
 //  (for data assimilation).
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING
+//   name of the routing model
 //  \item[n]
 //   index of the nest
 //  \item[ROUTING\_State]
@@ -1473,7 +1480,7 @@ void FTN(routingdaqcobsstate)(char *j, int *n, int *k, void *ROUTING_State, int 
     current = current->next;
     if(current==NULL) {
       printf("****************Error****************************\n"); 
-      printf("qc obs state routine for ROUTING + DA instance %s is not defined\n",j); 
+      printf("qc obs state routine for routing model + DA instance %s is not defined\n",j); 
       printf("program will seg fault.....\n"); 
       printf("****************Error****************************\n"); 
     }
@@ -1490,12 +1497,12 @@ void FTN(registerroutingdagetstatespacesize)(char *j, void (*func)(int*, int*),i
 //  
 // !DESCRIPTION: 
 //  Makes an entry in the registry for the routine to 
-//  QC the OBS state based on ROUTING variables and states
+//  QC the OBS state based on routing model variables and states
 //  (for data assimilation).
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \end{description}
 //EOP
 { 
@@ -1531,12 +1538,12 @@ void FTN(routingdagetstatespacesize)(char *j, int *n, int *size, int len)
 //  
 // !DESCRIPTION: 
 //  Invokes the routine from the registry to set the 
-//  QC the observation state based on ROUTING variables and states
+//  QC the observation state based on routing model variables and states
 //  (for data assimilation).
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING
+//   name of the routing model
 //  \item[n]
 //   index of the nest
 //  \item[ROUTING\_State]
@@ -1551,7 +1558,7 @@ void FTN(routingdagetstatespacesize)(char *j, int *n, int *size, int len)
     current = current->next;
     if(current==NULL) {
       printf("****************Error****************************\n"); 
-      printf("getstatespacesize for ROUTING + DA instance %s is not defined\n",j); 
+      printf("getstatespacesize for routing model + DA instance %s is not defined\n",j); 
       printf("program will seg fault.....\n"); 
       printf("****************Error****************************\n"); 
     }
@@ -1569,12 +1576,12 @@ void FTN(registerroutingdasetpertstates)(char *j, void (*func)(int*, int*, void*
 //  
 // !DESCRIPTION: 
 //  Makes an entry in the registry for the routine to 
-//  QC the OBS state based on ROUTING variables and states
+//  QC the OBS state based on routing model variables and states
 //  (for data assimilation).
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING + DA instance
+//   name of the routing model + DA instance
 //  \end{description}
 //EOP
 { 
@@ -1610,12 +1617,12 @@ void FTN(routingdasetpertstates)(char *j, int *n, int *Nstate, void *pstate, voi
 //  
 // !DESCRIPTION: 
 //  Invokes the routine from the registry to set the 
-//  QC the observation state based on ROUTING variables and states
+//  QC the observation state based on routing model variables and states
 //  (for data assimilation).
 // 
 //  \begin{description}
 //  \item[j]
-//   name of the ROUTING
+//   name of the routing model
 //  \item[n]
 //   index of the nest
 //  \item[ROUTING\_State]
@@ -1630,7 +1637,7 @@ void FTN(routingdasetpertstates)(char *j, int *n, int *Nstate, void *pstate, voi
     current = current->next;
     if(current==NULL) {
       printf("****************Error****************************\n"); 
-      printf("setpertstates for ROUTING + DA instance %s is not defined\n",j); 
+      printf("setpertstates for routing model + DA instance %s is not defined\n",j); 
       printf("program will seg fault.....\n"); 
       printf("****************Error****************************\n"); 
     }

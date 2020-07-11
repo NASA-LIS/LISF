@@ -59,14 +59,19 @@ contains
 ! !INTERFACE:
   subroutine HYMAP2_daWL_init(k)
 ! !USES:
-! !DESCRIPTION:        
-!
-!EOP
     use HYMAP2_routingMod
     use HYMAP2_initMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
 #endif
+!
+! !DESCRIPTION:        
+!
+!  This routine initializes the DA related data structures in HYMAP2
+!  and the runtime DA configuration options
+!  
+!EOP
+
     implicit none
 
     integer                :: k

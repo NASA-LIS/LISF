@@ -28,8 +28,8 @@ subroutine HYMAP2_scale_WL(n, Routing_State)
 !
 ! !DESCRIPTION:
 !
-!  Scales soilmoisture related state prognostic variables for
-!  data assimilation
+!  Scales the water level state prognostic variables for
+!  data assimilation (currently empty)
 ! 
 !  The arguments are: 
 !  \begin{description}
@@ -38,25 +38,7 @@ subroutine HYMAP2_scale_WL(n, Routing_State)
 !  \end{description}
 !EOP
 
-  type(ESMF_Field)       :: sfcelvField
-  integer                :: t,i,m
-  integer                :: status
-  real, pointer          :: sfcelv(:)
-  character*100          :: lsm_state_objs(4)
 
-#if 0 
-  call ESMF_StateGet(Routing_State,"River storage",sfcelvField,rc=status)
-  call LIS_verify(status,'ESMF_StateGet failed for sm1 in HYMAP2_getWL')
 
-  call ESMF_FieldGet(sfcelvField,localDE=0,farrayPtr=sfcelv,rc=status)
-  call LIS_verify(status,'ESMF_FieldGet failed for sfcelv in HYMAP2_getWL')
-
-  do i=1,HYMAP2_routing_struc(n)%nseqall
-     do m=1,LIS_rc%nensem(n)
-        t = (i-1)*LIS_rc%nensem(n)+m
-        sfcelv(t) = HYMAP2_routing_struc(n)%sfcelv(i,m)/1000.0
-     enddo
-  enddo
-#endif
 end subroutine HYMAP2_scale_WL
 

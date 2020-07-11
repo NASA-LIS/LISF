@@ -31,11 +31,16 @@ subroutine HYMAP2_setPertStates(n,Nstate,pert_State,progpert)
 !
 ! !DESCRIPTION:
 !
+!   This routine sets the perturbation object with values
+!   from the corresponding ESMF data structure. 
 ! 
 !  The arguments are: 
 !  \begin{description}
-!  \item[n] index of the nest \newline
-!  \item[Routing\_State] ESMF State container for Routing state variables \newline
+!  \item[n]           index of the nest \newline
+!  \item[Nstate]      number of state variables
+!  \item[pert\_State] ESMF state perturbation object
+!  \item[progpert]    prognostic state perturbation state object used
+!                     in the perturbation algorithm
 !  \end{description}
 !EOP
   

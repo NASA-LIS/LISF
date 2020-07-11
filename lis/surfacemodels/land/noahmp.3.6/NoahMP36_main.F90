@@ -305,18 +305,9 @@ subroutine NoahMP36_main(n)
     real                 :: tmp_fldfrc         !     MNB ADD LATER
 
     !ag (18Sep2019)
-    integer                    :: enable2waycpl
-    type(ESMF_Field)      :: rivsto_field  
-    type(ESMF_Field)      :: fldsto_field
-    type(ESMF_Field)      :: fldfrc_field
-!    real,   pointer         :: rivsto_t(:)
-!    real,   pointer         :: fldsto_t(:)
     real,   allocatable   :: rivsto(:)
     real,   allocatable   :: fldsto(:)
     real,   allocatable   :: fldfrc(:)
-!    real,   allocatable   :: tmp_rivsto(:,:),tmp_fldsto(:,:)
-  
-!    real,   allocatable   :: rivsto_mm(:,:),fldsto_mm(:,:)
     real,   allocatable   :: tmp_nensem(:,:,:)
 
     integer               :: status
@@ -338,28 +329,6 @@ subroutine NoahMP36_main(n)
     ! check NoahMP36 alarm. If alarm is ring, run model. 
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP36 model alarm")
     if (alarmCheck) Then
-    
-      !ag (18Sep2019)
-      !get surface water storage variables for 2-way coupling
-!      call ESMF_AttributeGet(LIS_runoff_state(n),"2 way coupling",enable2waycpl, rc=status)
-      !call LIS_verify(status)
-!      if(enable2waycpl==1) then 
-        !River Storage
-!        call ESMF_StateGet(LIS_runoff_state(n),"River Storage",rivsto_field,rc=status)
-        !call LIS_verify(status,'NoahMP36_main: ESMF_StateGet failed for River Storage')
-!        call ESMF_FieldGet(rivsto_field,localDE=0,farrayPtr=rivsto_t,rc=status)
-        !call ESMF_FieldGet(rivsto_field,localDE=0,farrayPtr=NOAHMP36_struc(n)%noahmp36(:)%rivsto,rc=status)
-!        call LIS_verify(status,'NoahMP36_main: ESMF_FieldGet failed for River Storage')
-!        call LIS_tile2grid(n,NOAHMP36_struc(n)%noahmp36(:)%rivsto,rivsto_t)
-
-        !Flood Storage
-!        call ESMF_StateGet(LIS_runoff_state(n),"Flood Storage",fldsto_field,rc=status)
-        !call LIS_verify(status,'NoahMP36_main: ESMF_StateGet failed for Flood Storage')
-!        call ESMF_FieldGet(fldsto_field,localDE=0,farrayPtr=fldsto_t,rc=status)
-        !call ESMF_FieldGet(fldsto_field,localDE=0,farrayPtr=NOAHMP36_struc(n)%noahmp36(:)%fldsto,rc=status)
-!        call LIS_verify(status,'NoahMP36_main: ESMF_FieldGet failed for Flood Storage')
-!        call LIS_tile2grid(n,NOAHMP36_struc(n)%noahmp36(:)%fldsto,fldsto_t)
-!      endif
 
        do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
           dt = LIS_rc%ts
@@ -632,9 +601,6 @@ subroutine NoahMP36_main(n)
             tmp_MRP         = NOAHMP36_struc(n)%noahmp36(t)%MRP
             ! SY: End corresponding to read_mp_veg_parameters
             ! SY: End for enabling OPTUE: get calibratable parameters
-!if(t==467)then
-!  write(31,'(100f12.7)')
-!endif
             call noahmp_driver_36(LIS_localPet, t,tmp_landuse_tbl_name  , & ! in    - Noah model landuse parameter table [-]
                                   tmp_soil_tbl_name     , & ! in    - Noah model soil parameter table [-]
                                   tmp_gen_tbl_name      , & ! in    - Noah model general parameter table [-]
@@ -856,33 +822,6 @@ subroutine NoahMP36_main(n)
                                   
                                   tmp_sfcheadrt         )   ! out   - extra output for WRF-HYDRO [m]
             
-!if(t==467)write(30,'(100f12.7)')(tmp_rivsto+tmp_fldsto)*1000, &
-!                                        tmp_prcp*tmp_dt, &
-!                                        (tmp_runsrf+tmp_runsub)*tmp_dt, &
-!                                        (tmp_ecan+tmp_etran+tmp_edir)*tmp_dt, &
-!                                        tmp_runsrf*tmp_dt, &
-!                                        tmp_runsub*tmp_dt, &
-!                                        tmp_ecan*tmp_dt, &
-!                                        tmp_etran*tmp_dt, &
-!                                        tmp_edir*tmp_dt !,sum(tmp_sh2o*tmp_zss),tmp_smcwtd*tmp_zwt
-
-!            !ag (24Sep2019)
-!            !update surface runoff if 2-way coupling 
-!            call ESMF_AttributeGet(LIS_runoff_state(n),"2 way coupling",enable2waycpl, rc=status)
-!            if(enable2waycpl==1)then
-!              tmp_runsrf=tmp_runsrf+tmp_runsub-(tmp_rivsto+tmp_fldsto)*0.001
-!            endif
-
-! if(t==467)write(31,'(100f12.7)')(tmp_rivsto+tmp_fldsto)*1000, &
-!                                        tmp_prcp*tmp_dt, &
-!                                        (tmp_runsrf+tmp_runsub)*tmp_dt, &
-!                                        (tmp_ecan+tmp_etran+tmp_edir)*tmp_dt, &
-!                                        tmp_runsrf*tmp_dt, &
-!                                        tmp_runsub*tmp_dt, &
-!                                        tmp_ecan*tmp_dt, &
-!                                        tmp_etran*tmp_dt, &
-!                                        tmp_edir*tmp_dt !,sum(tmp_sh2o*tmp_zss),tmp_smcwtd*tmp_zwt
-
            ! save state variables from local variables to global variables
             NOAHMP36_struc(n)%noahmp36(t)%albold      = tmp_albold
             NOAHMP36_struc(n)%noahmp36(t)%sneqvo      = tmp_sneqvo

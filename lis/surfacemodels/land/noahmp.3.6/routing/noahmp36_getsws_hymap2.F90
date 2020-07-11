@@ -27,7 +27,9 @@ subroutine noahmp36_getsws_hymap2(n)
   integer,  intent(in)   :: n 
 !
 ! !DESCRIPTION:
-!
+!   This routine defines the surface water storage variables in NoahMP
+!   to be updated based on feedback from HYMAP2
+!  
 !EOP
   type(ESMF_Field)       :: rivsto_field
   type(ESMF_Field)       :: fldsto_field
@@ -39,8 +41,6 @@ subroutine noahmp36_getsws_hymap2(n)
   integer                :: c,r
   integer                :: status
   integer                :: enable2waycpl
-!  real                     :: tmp(LIS_rc%lnc(n),LIS_rc%lnr(n))
-!  logical :: dummy
   
   call ESMF_AttributeGet(LIS_runoff_state(n),"2 way coupling",&
        enable2waycpl, rc=status)

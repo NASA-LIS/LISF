@@ -538,16 +538,6 @@ module LIS_routingMod
        enddo
     else
 
-!    do t=1,stateSize
-!      do j=1,LIS_rc%nstvars(k)
-!         if(typ(j).eq.0) then 
-!            stvar(j,t) = stvar(j,t) + pert(j,t)
-!         elseif(typ(j).eq.1) then 
-!            stvar(j,t) = stvar(j,t) * pert(j,t)
-!         endif
-!      enddo
-!   enddo
-
 ! If perturbation bias correction scheme is turned on, then 
 ! apply the perturbations to (nensem-1) ensemble members. Keep 
 ! the last ensemble member for each tile unperturbed. 
