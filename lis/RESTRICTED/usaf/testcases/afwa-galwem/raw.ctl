@@ -1,0 +1,98 @@
+dset ^../input/AFWA/20160411/GALWEM/PS.557WW_SC.U_DI.F_GP.GALWEM-GD_GR.C17KM_AR.GLOBAL_DD.20160411_CY.%h2_FH.000_DF.GR2
+index ^raw.idx
+options template
+undef 9.999E+20
+title input/AFWA/20160411/GALWEM/PS.557WW_SC.U_DI.F_GP.GALWEM-GD_GR.C17KM_AR.GLOBAL_DD.20160411_CY.00_FH.000_DF.GR2
+* produced by g2ctl v0.1.2
+* command line options: input/AFWA/20160411/GALWEM/PS.557WW_SC.U_DI.F_GP.GALWEM-GD_GR.C17KM_AR.GLOBAL_DD.20160411_CY.00_FH.000_DF.GR2
+* griddef=1:0:(1536 x 1152):grid_template=0:winds(N/S): lat-lon grid:(1536 x 1152) units 1e-06 input WE:SN output WE:SN res 48 lat -89.921875 to 89.921875 by 0.156250 lon 0.117187 to 359.886650 by 0.234378 #points=1769472:winds(N/S)
+
+dtype grib2
+ydef 1152 linear -89.921875 0.15625
+xdef 1536 linear 0.117187 0.234378
+tdef 4 linear 00Z11apr2016 6hr
+* PROFILE hPa
+zdef 40 levels 101300 100000 97500 95000 92500 90000 87500 85000 82500 80000 77500 75000 72500 70000 67500 65000 62500 60000 57500 55000 52500 50000 45000 40000 35000 32500 30000 27500 25000 22500 20000 17500 15000 12500 10000 7000 5000 3000 2000 1000
+options pascals
+vars 80
+t    40,100  0,0,0 ** (1013 1000 975 950 925.. 70 50 30 20 10) desc [unit]
+var0002m   0,103,2   0,0,0 ** 2 m above ground desc [unit]
+var000mwl  0,6   0,0,0 ** max wind desc [unit]
+var000trop  0,7   0,0,0 ** tropopause desc [unit]
+var0010sfc  0,1   0,0,10 ** surface desc [unit]
+var0011sfc  0,1   0,0,11 ** surface desc [unit]
+var0017sfc  0,1   0,0,17 ** surface desc [unit]
+var001920C  0,4   0,0,192 ** 0C isotherm desc [unit]
+var002prs    40,100  0,0,2 ** (1013 1000 975 950 925.. 70 50 30 20 10) desc [unit]
+var0062m   0,103,2   0,0,6 ** 2 m above ground desc [unit]
+var01902m   0,103,2   0,19,0 ** 2 m above ground desc [unit]
+var0192112m   0,103,2   0,19,211 ** 2 m above ground desc [unit]
+var010prs    40,100  0,1,0 ** (1013 1000 975 950 925.. 70 50 30 20 10) desc [unit]
+var0102m   0,103,2   0,1,0 ** 2 m above ground desc [unit]
+r    40,100  0,1,1 ** (1013 1000 975 950 925.. 70 50 30 20 10) desc [unit]
+var0112m   0,103,2   0,1,1 ** 2 m above ground desc [unit]
+var0113sfc  0,1   0,1,13 ** surface desc [unit]
+var01192sfc  0,1   0,1,192 ** surface desc [unit]
+var012prs    40,100  0,1,2 ** (1013 1000 975 950 925.. 70 50 30 20 10) desc [unit]
+var013l10   0,10,0   0,1,3 ** entire atmosphere desc [unit]
+var0133sfc  0,1   0,1,33 ** surface desc [unit]
+var0134sfc  0,1   0,1,34 ** surface desc [unit]
+var0136sfc  0,1   0,1,36 ** surface desc [unit]
+var0137sfc  0,1   0,1,37 ** surface desc [unit]
+var0141sfc  0,1   0,1,41 ** surface desc [unit]
+var0152sfc  0,1   0,1,52 ** surface desc [unit]
+var0154sfc  0,1   0,1,54 ** surface desc [unit]
+var0155sfc  0,1   0,1,55 ** surface desc [unit]
+var0156sfc  0,1   0,1,56 ** surface desc [unit]
+var0183prs    40,100  0,1,83 ** (1013 1000 950 900 850.. 70 50 30 20 10) desc [unit]
+var0212prs    40,100  0,2,12 ** (1013 1000 975 950 925.. 70 50 30 20 10) desc [unit]
+var0213prs    40,100  0,2,13 ** (1013 1000 975 950 925.. 70 50 30 20 10) desc [unit]
+var0214310K   0,107,310   0,2,14 ** 310 K isentropic level desc [unit]
+var0214320K   0,107,320   0,2,14 ** 320 K isentropic level desc [unit]
+var0214330K   0,107,330   0,2,14 ** 330 K isentropic level desc [unit]
+var022prs    40,100  0,2,2 ** (1013 1000 975 950 925.. 70 50 30 20 10) desc [unit]
+u10   0,103,10   0,2,2 ** 10 m above ground desc [unit]
+var022mwl  0,6   0,2,2 ** max wind desc [unit]
+var022210m   0,103,10   0,2,22 ** 10 m above ground desc [unit]
+var023prs    40,100  0,2,3 ** (1013 1000 975 950 925.. 70 50 30 20 10) desc [unit]
+v10   0,103,10   0,2,3 ** 10 m above ground desc [unit]
+var023mwl  0,6   0,2,3 ** max wind desc [unit]
+var0230sfc   0,1,0   0,2,30 ** surface desc [unit]
+var028prs    40,100  0,2,8 ** (1013 1000 975 950 925.. 70 50 30 20 10) desc [unit]
+var029prs    40,100  0,2,9 ** (1013 1000 975 950 925.. 70 50 30 20 10) desc [unit]
+sp  0,1   0,3,0 ** surface desc [unit]
+var030mwl  0,6   0,3,0 ** max wind desc [unit]
+var030trop  0,7   0,3,0 ** tropopause desc [unit]
+var031msl  0,101   0,3,1 ** mean sea level desc [unit]
+var0312l100_100  0,100,100000,50000   0,3,12 ** 1000-500 mb desc [unit]
+var0318sfc  0,1   0,3,18 ** surface desc [unit]
+gh    40,100  0,3,5 ** (1013 1000 975 950 925.. 70 50 30 20 10) desc [unit]
+var035mwl  0,6   0,3,5 ** max wind desc [unit]
+var035trop  0,7   0,3,5 ** tropopause desc [unit]
+var047sfc  0,1   0,4,7 ** surface desc [unit]
+var048sfc  0,1   0,4,8 ** surface desc [unit]
+var053sfc  0,1   0,5,3 ** surface desc [unit]
+var054sfc  0,1   0,5,4 ** surface desc [unit]
+var061l10   0,10,0   0,6,1 ** entire atmosphere desc [unit]
+var0611clb  0,2   0,6,11 ** cloud base desc [unit]
+var0612clt  0,3   0,6,12 ** cloud top desc [unit]
+var0613clb  0,2   0,6,13 ** cloud base desc [unit]
+var063l10   0,10,0   0,6,3 ** entire atmosphere desc [unit]
+var064l10   0,10,0   0,6,4 ** entire atmosphere desc [unit]
+var065l10   0,10,0   0,6,5 ** entire atmosphere desc [unit]
+var071920C  0,4   0,7,192 ** 0C isotherm desc [unit]
+var1020sfc  0,1   10,2,0 ** surface desc [unit]
+var200sfc  0,1   2,0,0 ** surface desc [unit]
+var201sfc  0,1   2,0,1 ** surface desc [unit]
+var2013sfc  0,1   2,0,13 ** surface desc [unit]
+var20192sfc  0,1   2,0,192 ** surface desc [unit]
+var207sfc  0,1   2,0,7 ** surface desc [unit]
+var231810cm   0,106,0.1   2,3,18 ** 0.1 m underground desc [unit]
+var231835cm   0,106,0.35   2,3,18 ** 0.35 m underground desc [unit]
+var2318100cm   0,106,1   2,3,18 ** 1 m underground desc [unit]
+var2318300cm   0,106,3   2,3,18 ** 3 m underground desc [unit]
+var232010cm   0,106,0.1   2,3,20 ** 0.1 m underground desc [unit]
+var232035cm   0,106,0.35   2,3,20 ** 0.35 m underground desc [unit]
+var2320100cm   0,106,1   2,3,20 ** 1 m underground desc [unit]
+var2320300cm   0,106,3   2,3,20 ** 3 m underground desc [unit]
+ENDVARS
