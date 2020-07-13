@@ -1,0 +1,44 @@
+= USAF metforcing processing code
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+IMPORTANT: Distribution of the files in this repository is *restricted!*
+
+== Repository
+
+This repository contains source code and supplemental files for supporting the 557th Weather Wing's metforcing processing.
+
+This repository contains:
+
+usaf::
+metforcing source code, formerly named afwa, referred to as the AGRMET code
+
+557WW-7.2-FOC::
+final operations configuration files for LIS-557WW-7.2 release
+
+testcases::
+configuration files for testcases
+
+== Usage
+
+First fork this repository into your GitHub account.  This is one-time step.  Then:
+
+. Clone the appropriate LISF branch
+
+. Go into the LISF/lis/RESTRICTED directory
+
+. Clone this repository as usaf
++
+....
+git clone https://github.com/<your_fork>/restricted-lisf-usaf.git usaf
+....
++
+NOTE: For development, the upstream of this repository is https://github.com/NASA-LIS/restricted-lisf-usaf.git
+
+. Ensure that AGRMET is enabled for compiling; for example, copy LISF/lis/make/user_557ww.cfg to LISF/lis/make/user.cfg (Note that this file also enables JULES lsm.)
