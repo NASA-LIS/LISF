@@ -651,7 +651,7 @@ contains
              '       Statistical Summary of ROUTING output for:  ', & 
              LIS_rc%mo,'/',LIS_rc%da,'/',LIS_rc%yr,LIS_rc%hr,':',&
              LIS_rc%mn,':',LIS_rc%ss
-          996    format(a47,i2,a1,i2,a1,i4,1x,i2,a1,i2,a1,i2)
+          996    format(a51,i2,a1,i2,a1,i4,1x,i2,a1,i2,a1,i2)
           write(65+n+10*group_temp,*)
           write(65+n+10*group_temp,997)
           997    format(t27,'Mean',t41,'Stdev',t56,'Min',t70,'Max')
