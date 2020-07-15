@@ -16,7 +16,7 @@
 ! !INTERFACE:
 subroutine get_WRFout(n, findex)
 ! !USES:
-  use LIS_coreMod,       only : LIS_rc, LIS_domain
+  use LIS_coreMod,       only : LIS_rc, LIS_domain, LIS_PATH_LEN
   use LIS_metforcingMod, only : LIS_forc
   use LIS_timeMgrMod,    only : LIS_tick
   use LIS_logMod,        only : LIS_logunit, LIS_endrun
@@ -54,7 +54,7 @@ subroutine get_WRFout(n, findex)
   integer      :: yr1,mo1,da1,hr1,mn1,ss1,doy1
   integer      :: yr2,mo2,da2,hr2,mn2,ss2,doy2
   real         :: ts1, ts2
-  character*140 :: fname
+  character(len=LIS_PATH_LEN) :: fname
   real         :: gmt1,gmt2
   integer      :: movetime     ! 1=move time 2 data into time 1
 
@@ -211,9 +211,12 @@ end subroutine get_WRFout
 ! !INTERFACE:
  subroutine WRFoutfile(filename,wrfdir,nest,yr,mo,da,hr,mn,ss)
 
+! !USES:
+   use LIS_coreMod, only : LIS_PATH_LEN
+
    implicit none
 ! !ARGUMENTS: 
-   character*140, intent(out):: filename
+   character*LIS_PATH_LEN, intent(out):: filename
    character*40, intent(in)  :: wrfdir
    integer, intent(in)       :: nest
    integer, intent(in)       :: yr,mo,da,hr,mn,ss

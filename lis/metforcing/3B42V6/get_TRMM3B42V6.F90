@@ -20,7 +20,7 @@
 ! !INTERFACE:
 subroutine get_TRMM3B42V6(n, findex)
 ! !USES:
-  use LIS_coreMod, only           : LIS_rc, LIS_masterproc
+  use LIS_coreMod, only           : LIS_rc, LIS_masterproc, LIS_PATH_LEN
   use LIS_timeMgrMod, only        : LIS_time2date, LIS_tick, LIS_get_nstep, &
                                     LIS_isAlarmRinging ! SY
   use LIS_logMod, only            : LIS_logunit, LIS_endrun
@@ -63,7 +63,7 @@ subroutine get_TRMM3B42V6(n, findex)
   integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2, ts2               ! SY: Time parameters for TRMM data time nearest to start of model time step
   integer :: doy3, yr3, mo3, da3, hr3, mn3, ss3, ts3               ! SY: Time parameters for TRMM data time nearest to end of model time step
   real    :: gmt1, gmt2, gmt3 ! SY ,kgmt3, mgmt3
-  character(len=140) :: name ! Filename variables for precip data sources
+  character(len=LIS_PATH_LEN) :: name ! Filename variables for precip data sources
   real*8 :: LIS_timeAtTStepStart_add90min ! SY
   real*8 :: LIS_timeAtTStepEnd_add90min ! SY
   integer :: order
@@ -263,7 +263,7 @@ end subroutine get_TRMM3B42V6
 !
 ! !INTERFACE:
 subroutine TRMM3B42V6file( name, n, yr, mo, da, hr)
-
+  use LIS_coreMod, only : LIS_PATH_LEN
   use TRMM3B42V6_forcingMod, only : TRMM3B42V6_struc
 
 !EOP
@@ -273,7 +273,7 @@ subroutine TRMM3B42V6file( name, n, yr, mo, da, hr)
 
 !==== Local Variables=======================
 
-  character(len=140) :: name
+  character(len=LIS_PATH_LEN) :: name
   character(len=80) ::TRMM3B42V6dir
   character*160 temp
   integer :: yr, mo, da, hr

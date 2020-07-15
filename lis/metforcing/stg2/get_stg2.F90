@@ -17,7 +17,7 @@
 subroutine get_stg2(n, findex)
 
 ! !USES:
-  use LIS_coreMod, only : LIS_rc, LIS_domain
+  use LIS_coreMod, only : LIS_rc, LIS_domain, LIS_PATH_LEN
   use LIS_timeMgrMod, only : LIS_tick, LIS_get_nstep
   use LIS_logMod, only : LIS_logunit, LIS_endrun
   use stg2_forcingMod, only : stg2_struc
@@ -67,7 +67,7 @@ subroutine get_stg2(n, findex)
 !    integer :: endtime_stg2         ! 1=get a new file 
     real*8  :: stg2_file_time1      ! Current LIS Time and end boundary time for STAGEII file
     real*8  :: stg2_file_time2      ! Current LIS Time and end boundary time for STAGEII file
-    character(140) :: file_name     ! Filename variables for precip data sources
+    character(LIS_PATH_LEN) :: file_name     ! Filename variables for precip data sources
 
     integer :: doy1, yr1, mo1, da1, hr1, mn1, ss1
     integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2

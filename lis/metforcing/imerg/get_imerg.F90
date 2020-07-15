@@ -18,7 +18,7 @@
 ! !INTERFACE:
 subroutine get_imerg(n, findex)
 ! !USES:
-  use LIS_coreMod, only : LIS_rc, LIS_masterproc
+  use LIS_coreMod, only : LIS_rc, LIS_masterproc, LIS_PATH_LEN
   use LIS_timeMgrMod, only : LIS_tick, LIS_get_nstep
   use imerg_forcingMod, only :imerg_struc
   use LIS_logMod, only : LIS_logunit, LIS_endrun
@@ -61,7 +61,7 @@ subroutine get_imerg(n, findex)
   real*8  :: ctime,ftime_imerg       ! Current LIS time and end boundary times for precip data sources 
   integer :: order
   real    :: gmt1,gmt4,ts1,ts4
-  character(len=140) :: filename ! Filename variables for precip data sources
+  character(len=LIS_PATH_LEN) :: filename ! Filename variables for precip data sources
 
 !=== End Variable Definition =======================
 
