@@ -152,7 +152,9 @@ module LIS_coreMod
   public :: LIS_vecPatch
   public :: LIS_vecGrid
 
-
+! Define filepath length constant for use throughout LIS
+! 255 char is the max. guaranteed path limit specified by the POSIX standard
+  integer, parameter, public :: LIS_PATH_LEN = 255
 
 !EOP
   type, public :: lis_domain_type
