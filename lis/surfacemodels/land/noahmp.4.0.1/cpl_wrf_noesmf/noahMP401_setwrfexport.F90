@@ -77,19 +77,19 @@ subroutine noahMP401_setwrfexport(n)
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%smc4_t,&
        temp)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NOAHMP401_struc(n)%noahmp401(i)%tslb(NOAHMP401_struc(n)%nsnow+1)
+     temp(i) = NOAHMP401_struc(n)%noahmp401(i)%tslb(1)
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%stc1_t,temp)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NOAHMP401_struc(n)%noahmp401(i)%tslb(NOAHMP401_struc(n)%nsnow+2)
+     temp(i) = NOAHMP401_struc(n)%noahmp401(i)%tslb(2)
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%stc2_t,temp)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NOAHMP401_struc(n)%noahmp401(i)%tslb(NOAHMP401_struc(n)%nsnow+3)
+     temp(i) = NOAHMP401_struc(n)%noahmp401(i)%tslb(3)
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%stc3_t,temp)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NOAHMP401_struc(n)%noahmp401(i)%tslb(NOAHMP401_struc(n)%nsnow+4)
+     temp(i) = NOAHMP401_struc(n)%noahmp401(i)%tslb(4)
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%stc4_t,temp)
 

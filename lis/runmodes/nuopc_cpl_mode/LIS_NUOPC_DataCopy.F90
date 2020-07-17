@@ -1354,25 +1354,25 @@ contains
           do tile=1,LIS_rc%ntiles(nest)
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+1) = farray(col,row)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(1) = farray(col,row)
           enddo
         case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+2) = farray(col,row)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(2) = farray(col,row)
           enddo
         case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+3) = farray(col,row)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(3) = farray(col,row)
           enddo
         case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+4) = farray(col,row)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(4) = farray(col,row)
           enddo
 #ifdef WRF_HYDRO
         case ('surface_water_depth')
@@ -1674,25 +1674,25 @@ contains
           do tile=1,LIS_rc%ntiles(nest)
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+1) = farray(col,row)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(1) = farray(col,row)
           enddo
         case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+2) = farray(col,row)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(2) = farray(col,row)
           enddo
         case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+3) = farray(col,row)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(3) = farray(col,row)
           enddo
         case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+4) = farray(col,row)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(4) = farray(col,row)
           enddo
 #ifdef WRF_HYDRO
         case ('surface_water_depth')
@@ -2392,28 +2392,28 @@ contains
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
             ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+1) = farray(col,row,ens)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(1) = farray(col,row,ens)
           enddo
         case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
             ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+2) = farray(col,row,ens)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(2) = farray(col,row,ens)
           enddo
         case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
             ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+3) = farray(col,row,ens)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(3) = farray(col,row,ens)
           enddo
         case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
             ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+4) = farray(col,row,ens)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(4) = farray(col,row,ens)
           enddo
 #ifdef WRF_HYDRO
         case ('surface_water_depth')
@@ -2751,28 +2751,28 @@ contains
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
             ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+1) = farray(col,row,ens)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(1) = farray(col,row,ens)
           enddo
         case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
             ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+2) = farray(col,row,ens)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(2) = farray(col,row,ens)
           enddo
         case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
             ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+3) = farray(col,row,ens)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(3) = farray(col,row,ens)
           enddo
         case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
             col = LIS_domain(nest)%tile(tile)%col
             row = LIS_domain(nest)%tile(tile)%row
             ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(NOAHMP401_struc(nest)%nsnow+4) = farray(col,row,ens)
+            Noahmp401_struc(nest)%noahmp401(tile)%tslb(4) = farray(col,row,ens)
           enddo
 #ifdef WRF_HYDRO
         case ('surface_water_depth')
