@@ -19,6 +19,8 @@ module LIS_fileIOMod
 !   
 ! !REVISION HISTORY: 
 !  08 Apr 2004    James Geiger Initial Specification
+!  11 Oct 2018    Nargess Memarsadeghi, cleaned up and corrected LIS_create_output_directory
+!  18 Oct 2019    David Mocko, corrected creation of sub-directories for "WMO convention"
 ! 
 ! !USES: 
   use ESMF
@@ -177,14 +179,14 @@ contains
 ! \label{LIS_create_output_directory}
 !
 ! !INTERFACE:
-subroutine LIS_create_output_directory(mname,dir_name)
+subroutine LIS_create_output_directory(mname)
 ! !USES:
    use LIS_coreMod, only : LIS_rc
    use LIS_logMod,  only : LIS_log_msg, LIS_logunit
    implicit none 
 ! !ARGUMENTS:
    character(len=*)  :: mname
-   character(len=*), optional   :: dir_name
+
 !
 ! !DESCRIPTION:  
 !  Create the output directory for the output data files. The call creates
@@ -211,8 +213,6 @@ subroutine LIS_create_output_directory(mname,dir_name)
 !  \begin{description}
 !   \item [mname]
 !     a string describing the name of the model
-!   \item [dir\_name]
-!     name of the directory to override the above format
 !  \end{description}
 !
 !EOP
@@ -228,114 +228,59 @@ subroutine LIS_create_output_directory(mname,dir_name)
    ! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
    ! standard POSIX function. This requires defining the C wrapper function,
    ! and specifying new variables to pass to said C function.
-   integer, external :: LIS_create_subdirs 
-   character(len=201) :: c_string  
+   integer, external :: LIS_create_subdirs
+   character(len=201) :: c_string
 
-   if(LIS_rc%wstyle.eq."4 level hierarchy") then 
-
+   if(LIS_rc%wstyle.eq."4 level hierarchy") then
       out_dname = trim(LIS_rc%odir)//'/'
-      
       out_dname = trim(out_dname)//trim(mname)//'/'
-      
       write(unit=cdate, fmt='(i4.4)') LIS_rc%yr
       out_dname = trim(out_dname)//trim(cdate)//'/'
-    
       write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') LIS_rc%yr, LIS_rc%mo, LIS_rc%da
       out_dname = trim(out_dname)//trim(cdate1)
-
-      if ( present(dir_name) ) then
-         dir_name = out_dname
-      else
-#if ( defined AIX )
-         call system('mkdir -p '//trim(out_dname),ios)
-#else
-! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
-! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
-! standard POSIX function. 
-!            ios = system('mkdir -p '//trim(out_dname))
-            c_string = trim(out_dname)
-            ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
-#endif
-            if (ios .ne. 0) then
-               write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
-               flush(LIS_logunit)
-            end if
-      endif
    elseif(LIS_rc%wstyle.eq."3 level hierarchy") then 
       out_dname = trim(LIS_rc%odir)//'/'
-      
       out_dname = trim(out_dname)//trim(mname)//'/'
-
       write(unit=cdate1, fmt='(i4.4, i2.2)') LIS_rc%yr, LIS_rc%mo
       out_dname = trim(out_dname)//trim(cdate1)
-
-      if ( present(dir_name) ) then
-         dir_name = out_dname
-      else
-#if ( defined AIX )
-         call system('mkdir -p '//trim(out_dname),ios)
-#else
-! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
-! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
-! standard POSIX function. 
-!         ios = system('mkdir -p '//trim(out_dname))
-         c_string = trim(out_dname)
-         ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
-#endif
-         if (ios .ne. 0) then
-            write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
-            flush(LIS_logunit)
-         end if
-      endif      
    elseif(LIS_rc%wstyle.eq."2 level hierarchy") then 
       out_dname = trim(LIS_rc%odir)//'/'
-      
       out_dname = trim(out_dname)//trim(mname)//'/'
-
-      if ( present(dir_name) ) then
-         dir_name = out_dname
-      else
-#if ( defined AIX )
-         call system('mkdir -p '//trim(out_dname),ios)
-#else
-! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
-! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
-! standard POSIX function. 
-!         ios = system('mkdir -p '//trim(out_dname))
-         c_string = trim(out_dname)
-         ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
-#endif
-         if (ios .ne. 0) then
-            write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
-            flush(LIS_logunit)
-         end if
-      endif      
-   elseif(LIS_rc%wstyle.eq."WMO convention") then 
+   elseif(LIS_rc%wstyle.eq."WMO convention") then
+! If output style is "WMO convention", ensure that the below
+! sub-directories are created before other parts of LIS will
+! try to write datasets into those sub-directories. - Mocko
       out_dname = trim(LIS_rc%odir)
-
-      if ( present(dir_name) ) then
-         dir_name = out_dname
-      else
-#if ( defined AIX )
-         call system('mkdir -p '//trim(out_dname))
-#else
-! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
-! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
-! standard POSIX function. 
-!         ios = system('mkdir -p '//trim(out_dname))
-         c_string = trim(out_dname)
-         ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
-#endif
-
-         if (ios .ne. 0) then
-            write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
-            flush(LIS_logunit)
-         end if
-
-      endif      
+      if (trim(mname).eq."SURFACEMODEL") then
+         continue
+      elseif (trim(mname).eq."DAPERT") then
+         out_dname = trim(LIS_rc%odir)//'/'
+         out_dname = trim(out_dname)//trim(mname)//'/'
+      elseif (trim(mname).eq."DAOBS") then
+         out_dname = trim(LIS_rc%odir)//'/'
+         out_dname = trim(out_dname)//trim(mname)//'/'
+         write(unit=cdate1, fmt='(i4.4, i2.2)') LIS_rc%yr, LIS_rc%mo
+         out_dname = trim(out_dname)//trim(cdate1)
+      endif
    endif
 
- end subroutine LIS_create_output_directory
+#if ( defined AIX )
+   call system('mkdir -p '//trim(out_dname))
+#else
+   ! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
+   ! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
+   ! standard POSIX function. 
+   !         ios = system('mkdir -p '//trim(out_dname))
+   c_string = trim(out_dname)
+   ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
+#endif
+
+   if (ios .ne. 0) then
+     write(LIS_logunit,*)'ERR creating directory ',trim(out_dname)
+     flush(LIS_logunit)
+   end if
+
+end subroutine LIS_create_output_directory
 
 
 !BOP
@@ -3494,6 +3439,8 @@ end subroutine readgparam_real_2d
 !    name of the parameter field
 !   \item[array]
 !    retrieved parameter value
+!   \item[rc]
+!    file read return code
 !   \end{description}
 !
 !EOP      
@@ -3511,29 +3458,29 @@ end subroutine readgparam_real_2d
 
      ios = nf90_open(path=trim(LIS_rc%paramfile(n)),&
           mode=NF90_NOWRITE,ncid=nid)
-     call LIS_verify(ios,'Error in nf90_open in readparam_real_2d')
+     call LIS_verify(ios,'Error in nf90_open in readparam_real_2d_rc')
      
      ios = nf90_inq_dimid(nid,"east_west",ncId)
-     call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d')
+     call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d_rc')
 
      ios = nf90_inq_dimid(nid,"north_south",nrId)
-     call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d')
+     call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d_rc')
 
      ios = nf90_inquire_dimension(nid,ncId, len=nc)
-     call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d')
+     call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d_rc')
 
      ios = nf90_inquire_dimension(nid,nrId, len=nr)
-     call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d')
+     call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d_rc')
 
      ios = nf90_inq_varid(nid,trim(pname),paramid)
      if(ios.ne.0) then 
         rc = 1
      else
         ios = nf90_get_var(nid,paramid,param)
-        call LIS_verify(ios,'Error in nf90_get_var in readparam_real_2d')
+        call LIS_verify(ios,'Error in nf90_get_var in readparam_real_2d_rc')
         
         ios = nf90_close(nid)
-        call LIS_verify(ios,'Error in nf90_close in readparam_real_2d')
+        call LIS_verify(ios,'Error in nf90_close in readparam_real_2d_rc')
         
         array(:,:) = param(:,:)
         rc = 0

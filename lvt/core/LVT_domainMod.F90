@@ -560,12 +560,12 @@ contains
        do c=1,LVT_rc%lnc
           LVT_domain%gindex(c,r) = -1
 
-          ! EMK...Bug fix to gridDesc indices
-!          locallat = LVT_rc%gridDesc(4)+(r-1)*LVT_rc%gridDesc(9)
-!          locallon = LVT_rc%gridDesc(5)+(c-1)*LVT_rc%gridDesc(10)
-          locallat = LVT_rc%gridDesc(4)+(r-1)*LVT_rc%gridDesc(10)
-          locallon = LVT_rc%gridDesc(5)+(c-1)*LVT_rc%gridDesc(9)
-          
+!          locallat = LVT_rc%gridDesc(4)+(r-1)*LVT_rc%gridDesc(10)
+!          locallon = LVT_rc%gridDesc(5)+(c-1)*LVT_rc%gridDesc(9)
+
+          call ij_to_latlon(LVT_domain%lvtproj,float(c),float(r),&
+               locallat,locallon)          
+
           if(mask_out(c+(r-1)*LVT_rc%lnc).gt.0.99 .and. & 
                mask_out(c+(r-1)*LVT_rc%lnc).lt.3.01) then
              LVT_domain%grid(count1)%lat = locallat
@@ -982,6 +982,11 @@ contains
 
     if(LVT_rc%obs_duplicate) then 
        source =2 
+       if(LVT_rc%nDataStreams.eq.3) then 
+          if(LVT_rc%obssource(3).eq."LIS output") then 
+             source = 3
+          endif
+       endif
     else
        source = 1
     endif
@@ -1203,9 +1208,24 @@ contains
              LVT_LIS_rc(k)%gridDesc(20) = 64
              
              if(LVT_LIS_rc(k)%gridDesc(10).gt.LVT_rc%gridDesc(10)) then !interpolate. 
-                print*, 'downscaling for LISlsmObs not yet supported '
-                print*, 'stopping in LISlsm_obsMod'
-                stop
+                allocate(LVT_LIS_rc(k)%rlat_dn(LVT_rc%lnc*LVT_rc%lnr))
+                allocate(LVT_LIS_rc(k)%rlon_dn(LVT_rc%lnc*LVT_rc%lnr))
+                allocate(LVT_LIS_rc(k)%n11_dn(LVT_rc%lnc*LVT_rc%lnr))
+                allocate(LVT_LIS_rc(k)%n12_dn(LVT_rc%lnc*LVT_rc%lnr))
+                allocate(LVT_LIS_rc(k)%n21_dn(LVT_rc%lnc*LVT_rc%lnr))
+                allocate(LVT_LIS_rc(k)%n22_dn(LVT_rc%lnc*LVT_rc%lnr))
+                allocate(LVT_LIS_rc(k)%w11_dn(LVT_rc%lnc*LVT_rc%lnr))
+                allocate(LVT_LIS_rc(k)%w12_dn(LVT_rc%lnc*LVT_rc%lnr))
+                allocate(LVT_LIS_rc(k)%w21_dn(LVT_rc%lnc*LVT_rc%lnr))
+                allocate(LVT_LIS_rc(k)%w22_dn(LVT_rc%lnc*LVT_rc%lnr))
+                
+                call bilinear_interp_input(LVT_LIS_rc(k)%gridDesc(:),&
+                     LVT_rc%gridDesc,LVT_rc%lnc*LVT_rc%lnr,&
+                     LVT_LIS_rc(k)%rlat_dn,LVT_LIS_rc(k)%rlon_dn, &
+                     LVT_LIS_rc(k)%n11_dn, LVT_LIS_rc(k)%n12_dn, &
+                     LVT_LIS_rc(k)%n21_dn, LVT_LIS_rc(k)%n22_dn, &
+                     LVT_LIS_rc(k)%w11_dn, LVT_LIS_rc(k)%w12_dn, &
+                     LVT_LIS_rc(k)%w21_dn, LVT_LIS_rc(k)%w22_dn)
              else
                 allocate(LVT_LIS_rc(k)%n11_up(&
                      LVT_LIS_rc(k)%lnc*LVT_LIS_rc(k)%lnr))
@@ -2623,7 +2643,7 @@ contains
                                           kk_sf(sf_index))%fgrd = & 
                                           LVT_surface(source,sf_index)%lis_tile(&
                                           kk_sf(sf_index))%fgrd * & 
-                                          LVT_topo(source)%aspectfgrd(c,r,slope_index)
+                                          LVT_topo(source)%aspectfgrd(c,r,aspect_index)
                                   endif                                  
                                endif
 
@@ -3243,7 +3263,7 @@ contains
 !BOP
 ! !ROUTINE: LVT_readDataMask
 ! \label{LVT_readDataMask}
-! 
+! r
 ! !INTERFACE: 
   subroutine LVT_readDataMask
 ! !USES:     

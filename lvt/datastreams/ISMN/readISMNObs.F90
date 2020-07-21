@@ -214,8 +214,12 @@ subroutine readISMNObs(source)
                     rzsm = rzsm + rz_wt(v)*ISMNobs(source)%stn(k)%sm(tind,v)
                  endif
               enddo
-              ISMNobs(source)%stn(k)%sfsm(tind) = sfsm
-              ISMNobs(source)%stn(k)%rzsm(tind) = rzsm
+              if(sfsm.gt.0.001) then 
+                 ISMNobs(source)%stn(k)%sfsm(tind) = sfsm
+              endif
+              if(rzsm.gt.0.001) then 
+                 ISMNobs(source)%stn(k)%rzsm(tind) = rzsm
+              endif
            endif
         enddo
         deallocate(depth)

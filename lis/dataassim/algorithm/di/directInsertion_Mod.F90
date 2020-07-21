@@ -72,7 +72,7 @@ contains
 !  This method computes the analysis increments from direct insertion.
 !  The direct insertion method simply retrieves 
 !  the LSM state, prompts the land surface model to transform 
-!  the OBS state to an LSM state. The tranformed LSM state is then 
+!  the OBS state to an LSM state. The transformed LSM state is then 
 !  used to overwrite the current LSM state. 
 ! 
 !  The methods invoked are: 

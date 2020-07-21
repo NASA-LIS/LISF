@@ -114,7 +114,7 @@ contains
 ! \label{catchmentParms_init}
 ! 
 ! !INTERFACE:
-  subroutine catchmentParms_init
+  subroutine catchmentParms_init(flag)
 ! !USES:
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
     use LDT_logMod,    only : LDT_verify
@@ -133,6 +133,7 @@ contains
 !
 !EOP
     implicit none
+    integer      :: flag
     integer      :: n
     integer      :: rc
     character*50 :: catchparms_proj
@@ -448,7 +449,7 @@ contains
        call ESMF_ConfigGetAttribute(LDT_config,&
             CLSMF25_struc(n)%catchparms_gridtransform,&
             rc=rc)
-       call LDT_verify(rc,'CLSMF25 tranform: option not specified in the config file')
+       call LDT_verify(rc,'CLSMF25 transform: option not specified in the config file')
     enddo
     
     call LDT_readDomainConfigSpecs("CLSMF25",catchparms_proj,&

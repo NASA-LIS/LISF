@@ -58,29 +58,152 @@ contains
   end subroutine HYMAP2_vector2grid
   ! ================================================          
   ! ================================================              
-  subroutine HYMAP2_get_vector_size(nx,ny,imis,nextx,mask,nseqall)
+  subroutine HYMAP2_get_vector_size(nx,ny,nxg,nyg,offx,offy,imis,nextx,mask,nseqall)
     implicit none
     integer, intent(in)  ::  nx                !number of grids in horizontal
     integer, intent(in)  ::  ny                !number of grids in vertical
+    integer, intent(in)  ::  nxg                
+    integer, intent(in)  ::  nyg                
+    integer, intent(in)  ::  offx                
+    integer, intent(in)  ::  offy               
     integer, intent(in)  ::  imis              !integer undefined value
-    integer, intent(in)  ::  nextx(nx,ny)      !point downstream horizontal
+    integer, intent(in)  ::  nextx(nxg,nyg)      !point downstream horizontal
     integer, intent(in)  ::  mask(nx,ny)       !mask limiting modeled region (0: out; >=1: in)
     integer, intent(out) ::  nseqall           !length of 1D sequnece for river and mouth
     integer              ::  ix,iy
+    integer              ::  ix1,iy1
     
     nseqall=0
     do ix=1,nx
       do iy=1,ny
-          if(nextx(ix,iy)/=imis.and.mask(ix,iy)>0)nseqall=nseqall+1
-       enddo
-    enddo  
-    write(LIS_logunit,*)'[get_vector_size] number of cells',nseqall
-    return
-  
+         ix1 = ix + offx - 1
+         iy1 = iy + offy -1
+         if(nextx(ix1,iy1)/=imis.and.mask(ix,iy)>0)nseqall=nseqall+1
+      enddo
+   enddo
+   write(LIS_logunit,*)'[get_vector_size] number of cells',nseqall
+   return
+   
   end subroutine HYMAP2_get_vector_size
-  ! ================================================          
+  ! ================================================   
+!#if 0        
   ! ================================================              
-  subroutine HYMAP2_get_seq(nx,ny,nseqall,imis,nextx,nexty,mask,sindex,outlet,seqx,seqy,next)
+  subroutine HYMAP2_get_seq(nx,ny,nxg,nyg,offx,offy,nseqall,&
+       imis,nextx,nexty,mask,sindex,outlet,seqx,seqy,next)
+    use LIS_coreMod
+    implicit none
+    integer, intent(in)   :: nx             !number of grids in horizontal
+    integer, intent(in)   :: ny             !number of grids in vertical
+    integer, intent(in)   :: nxg
+    integer, intent(in)   :: nyg
+    integer, intent(in)   :: offx
+    integer, intent(in)   :: offy
+    integer, intent(in)   :: nseqall        !length of 1D sequnece for river and mouth
+    integer, intent(in)   :: imis           !integer undefined value
+    integer, intent(in)   :: nextx(nxg,nyg)   !point downstream horizontal
+    integer, intent(in)   :: nexty(nxg,nyg)   !point downstream vertical
+    !real,    intent(in)   :: uparea(nx,ny)  !upstream area
+    integer, intent(in)   :: mask(nxg,nyg)    !mask limiting modeled region (0: out; >=1: in)
+
+    integer, intent(in)  :: sindex(nxg,nyg)    !2-D sequence index 
+    integer, intent(out)  :: outlet(nseqall) !outlet flag: 0 - river; 1 - ocean
+    integer, intent(out)  :: seqx(nseqall)   !1D sequence horizontal
+    integer, intent(out)  :: seqy(nseqall)   !1D sequence vertical
+    integer, intent(out)  :: next(nseqall)   !downstream grid cell
+
+    !integer               :: tmp(nx,ny)   
+    integer               :: i,j,ix,iy,jx,jy,iloc(2)
+    integer               :: ix1, iy1
+    i=0
+
+    do ix=1,nx
+       do iy=1,ny
+         ix1 = ix + offx - 1
+         iy1 = iy + offy -1
+         if(nextx(ix1,iy1)/=imis.and.mask(ix1,iy1)>0)then
+            i=i+1
+            seqx(i)=ix
+            seqy(i)=iy
+            if(nextx(ix1,iy1)>0)then
+               outlet(i)=0
+            else
+               outlet(i)=1
+            endif
+         endif
+      enddo
+   enddo
+    do i=1,nseqall
+      if(outlet(i)==0)then
+        ix=seqx(i)
+        iy=seqy(i)
+        ix1 = ix + offx - 1
+        iy1 = iy + offy -1        
+        jx=nextx(ix1,iy1)
+        jy=nexty(ix1,iy1)
+!        if(jx.gt.nx.or.jy.gt.ny) then 
+!           print*, 'H2:out of bounds ',ix,iy,sindex(jx,jy),LIS_localPet
+!        endif
+        next(i)=sindex(jx,jy) 
+     else
+        next(i)=imis
+      endif
+    enddo    
+  end subroutine HYMAP2_get_seq
+  ! ================================================              
+  subroutine HYMAP2_get_sindex(nxg,nyg,nseqall,imis,nextx,nexty,mask,&
+       sindex,outlet,next)
+    use LIS_coreMod
+    implicit none
+    integer, intent(in)   :: nxg
+    integer, intent(in)   :: nyg
+    integer, intent(in)   :: nseqall
+    integer, intent(in)   :: imis           !integer undefined value
+    integer, intent(in)   :: nextx(nxg,nyg)   !point downstream horizontal
+    integer, intent(in)   :: nexty(nxg,nyg)   !point downstream vertical
+    integer, intent(in)   :: mask(nxg,nyg)    !mask limiting modeled region (0: out; >=1: in)
+
+    integer, intent(out)  :: sindex(nxg,nyg)    !2-D sequence index 
+    integer, intent(out)  :: outlet(nseqall) !outlet flag: 0 - river; 1 - ocean
+    integer, intent(out)  :: next(nseqall)   !downstream grid cell
+
+    integer               :: seqx(nseqall)
+    integer               :: seqy(nseqall)
+    
+    integer               :: i,j,ix,iy,jx,jy,iloc(2)
+    integer               :: ix1, iy1
+    i=0
+
+    sindex=imis
+    do ix=1,nxg
+       do iy=1,nyg
+         if(nextx(ix,iy)/=imis.and.mask(ix,iy)>0)then
+            i=i+1
+            seqx(i) = ix
+            seqy(i) = iy
+            sindex(ix,iy)=i
+            if(nextx(ix,iy)>0)then
+               outlet(i)=0
+            else
+               outlet(i)=1
+            endif
+         endif
+      enddo
+   enddo
+   do i=1,nseqall
+      if(outlet(i)==0) then 
+         ix = seqx(i)
+         iy = seqy(i)
+         jx = nextx(ix,iy)
+         jy = nexty(ix,iy)
+         next(i) = sindex(jx,jy)
+      endif
+   enddo
+
+ end subroutine HYMAP2_get_sindex
+
+#if 0
+  ! ================================================
+  subroutine HYMAP2_get_seq_glb(nx,ny,nseqall,imis,nextx,nexty,mask,sindex,outlet,seqx,seqy,next)
     implicit none
     integer, intent(in)   :: nx             !number of grids in horizontal
     integer, intent(in)   :: ny             !number of grids in vertical
@@ -91,13 +214,13 @@ contains
     !real,    intent(in)   :: uparea(nx,ny)  !upstream area
     integer, intent(in)   :: mask(nx,ny)    !mask limiting modeled region (0: out; >=1: in)
 
-    integer, intent(out)  :: sindex(nx,ny)    !2-D sequence index 
+    integer, intent(out)  :: sindex(nx,ny)    !2-D sequence index
     integer, intent(out)  :: outlet(nseqall) !outlet flag: 0 - river; 1 - ocean
     integer, intent(out)  :: seqx(nseqall)   !1D sequence horizontal
     integer, intent(out)  :: seqy(nseqall)   !1D sequence vertical
     integer, intent(out)  :: next(nseqall)   !downstream grid cell
 
-    !integer               :: tmp(nx,ny)   
+    !integer               :: tmp(nx,ny)
     integer               :: i,j,ix,iy,jx,jy,iloc(2)
     i=0
     sindex=imis
@@ -122,12 +245,13 @@ contains
         iy=seqy(i)
         jx=nextx(ix,iy)
         jy=nexty(ix,iy)
-        next(i)=sindex(jx,jy) 
+        next(i)=sindex(jx,jy)
       else
         next(i)=imis
       endif
-    enddo    
-  end subroutine HYMAP2_get_seq
+    enddo
+  end subroutine HYMAP2_get_seq_glb
+#endif
   ! ================================================          
   ! ================================================              
   !No longer used

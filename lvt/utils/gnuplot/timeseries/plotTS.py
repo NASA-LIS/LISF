@@ -1,76 +1,77 @@
 #!/usr/bin/python
 
-# currently assumes eps files - need to modify for ESMPy to read config 
+# currently assumes eps files - need to modify for ESMPy to read config
 # options
 
-print "Generating the gnuplot script for time series plots ..."
+print("Generating the gnuplot script for time series plots ...")
 
-infile=open('ts.config','r')
+infile = open('ts.config', 'r')
 for line in infile:
     try:
-        (option,out_img_format)=line.split("Output format for images:")
-    except ValueError:
-        pass
+        (option, out_img_format) = line.split("Output format for images:")
+    except ValueError as e:
+        print(e)
     try:
-        (option,lvt_config)=line.split("LVT config file:")
-    except ValueError:
-        pass
+        (option, lvt_config) = line.split("LVT config file:")
+    except ValueError as e:
+        print(e)
     try:
-        (option,lvt_ts_file)=line.split("LVT time series locations file:")
-    except ValueError:
-        pass
+        (option, lvt_ts_file) = line.split("LVT time series locations file:")
+    except ValueError as e:
+        print(e)
     try:
-        (option,outfilename)=line.split("gnuplot output filename:")
-    except ValueError:
-        pass
+        (option, outfilename) = line.split("gnuplot output filename:")
+    except ValueError as e:
+        print(e)
 
     try:
-        (option,plt_summ_stats)=line.split("Plot summary stats in the image:")
-    except ValueError:
-        pass
+        (option, plt_summ_stats) = line.split(
+            "Plot summary stats in the image:")
+    except ValueError as e:
+        print(e)
     try:
-        (option,n_plt_vars)=line.split("Number of variables to plot:")
-    except ValueError:
-        pass
+        (option, n_plt_vars) = line.split("Number of variables to plot:")
+    except ValueError as e:
+        print(e)
     try:
-        (option,d1_label)=line.split("data series 1 label:")
-    except ValueError:
-        pass
+        (option, d1_label) = line.split("data series 1 label:")
+    except ValueError as e:
+        print(e)
     try:
-        (option,d1_style)=line.split("data series 1 style:")
-    except ValueError:
-        pass
+        (option, d1_style) = line.split("data series 1 style:")
+    except ValueError as e:
+        print(e)
     try:
-        (option,d2_label)=line.split("data series 2 label:")
-    except ValueError:
-        pass
+        (option, d2_label) = line.split("data series 2 label:")
+    except ValueError as e:
+        print(e)
     try:
-        (option,d2_style)=line.split("data series 2 style:")
-    except ValueError:
-        pass
+        (option, d2_style) = line.split("data series 2 style:")
+    except ValueError as e:
+        print(e)
     try:
-        (option,n_x_tics)=line.split("Number of xtics:")
-    except ValueError:
-        pass    
+        (option, n_x_tics) = line.split("Number of xtics:")
+    except ValueError as e:
+        print(e)
     try:
-        (option,vnames)=line.split("Variable names:")
-    except ValueError:
-        pass
+        (option, vnames) = line.split("Variable names:")
+    except ValueError as e:
+        print(e)
     try:
-        (option,vunits)=line.split("Variable units:")
-    except ValueError:
-        pass
+        (option, vunits) = line.split("Variable units:")
+    except ValueError as e:
+        print(e)
 
 
-#open lvt.config file and read entries. 
-lvtfile=open(lvt_config.strip(),'r')
+# open lvt.config file and read entries.
+lvtfile = open(lvt_config.strip(), 'r')
 for line in lvtfile:
     try:
-        (option,statsodir)=line.split("Stats output directory:")
-    except ValueError:
-        pass
+        (option, statsodir) = line.split("Stats output directory:")
+    except ValueError as e:
+        print(e)
 
-outfile = open(outfilename.strip(),'w')
+outfile = open(outfilename.strip(), 'w')
 #outfile = open('ts.plt','w')
 
 if out_img_format.strip() == "gif":
@@ -82,29 +83,28 @@ elif out_img_format.strip() == "eps":
 else:
     exit
 
-#'set output "'//trim(stnname(i))//'_'//&
+# 'set output "'//trim(stnname(i))//'_'//&
 #                      trim(varname(j))//'_ts.eps"'
 cline = 'set size 2,1\n'
 outfile.writelines(cline)
 
-cline= 'set datafile missing "-0.999900E+04"\n'
+cline = 'set datafile missing "-0.999900E+04"\n'
 outfile.writelines(cline)
 
-#cline= 'set title "'//trim(stnname(i))//'-'//&
-#trim(varname(j))//'('//trim(vunits(j))//')"'
+# cline= 'set title "'//trim(stnname(i))//'-'//&
+# trim(varname(j))//'('//trim(vunits(j))//')"'
 
-cline= 'set xdata time\n'
+cline = 'set xdata time\n'
 outfile.writelines(cline)
-cline= 'set timefmt "%Y %m %d %H %M"\n'
+cline = 'set timefmt "%Y %m %d %H %M"\n'
 outfile.writelines(cline)
-cline= 'set format x "%Y/%m"\n'
+cline = 'set format x "%Y/%m"\n'
 outfile.writelines(cline)
 
 plt_summ_stats = int(plt_summ_stats)
 if plt_summ_stats == 1:
     rmsefile = statsodir.strip() + '/RMSE_SUMMARY_STATS.dat'
-    print rmsefile
+    print(rmsefile)
 outfile.close()
 
-print 'Sucessfully generated the gnuplot script '+outfilename
-
+print('Sucessfully generated the gnuplot script '+outfilename)

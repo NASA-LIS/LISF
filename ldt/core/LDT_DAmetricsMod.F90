@@ -86,6 +86,10 @@ contains
          LDT_DAobsData(n)%soilmoist_obs,LDT_DAmetrics%soilmoist)
     call registerMetricsEntry(LDT_DA_MOC_TWS,nsize,&
          LDT_DAobsData(n)%tws_obs,LDT_DAmetrics%tws)
+    call registerMetricsEntry(LDT_DA_MOC_VOD,nsize,&
+         LDT_DAobsData(n)%vod_obs,LDT_DAmetrics%vod)
+    call registerMetricsEntry(LDT_DA_MOC_LAI,nsize,&
+         LDT_DAobsData(n)%lai_obs,LDT_DAmetrics%lai)
 !------------------------------------------------------------------------
 ! the generation of the obsgrid only doesn't require a pass through the
 ! data
@@ -262,7 +266,7 @@ contains
             "created on date: "//date(1:4)//"-"//date(5:6)//"-"//&
             date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)))
        call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,"references", &
-            "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"))
+            "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"))
        call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,"comment", &
             "website: http://lis.gsfc.nasa.gov/"))
        
@@ -808,7 +812,7 @@ contains
          "created on date: "//date(1:4)//"-"//date(5:6)//"-"//&
          date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)))
     call LDT_verify(nf90_put_att(LDT_rc%ftn_cdf,NF90_GLOBAL,"references", &
-         "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"))
+         "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"))
     call LDT_verify(nf90_put_att(LDT_rc%ftn_cdf,NF90_GLOBAL,"comment", &
          "website: http://lis.gsfc.nasa.gov/"))
 #endif
@@ -967,7 +971,7 @@ contains
          "created on date: "//date(1:4)//"-"//date(5:6)//"-"//&
          date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)))
     call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,"references", &
-         "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"))
+         "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"))
     call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,"comment", &
          "website: http://lis.gsfc.nasa.gov/"))
 

@@ -1,0 +1,132 @@
+#short_name select? units signconv timeavg? min/max? std? vert.levels grib_id grib_scalefactor longname
+
+#Energy balance components
+Swnet:         0  W/m2    DN   1 0 0 1 111 10      # Net Shortwave Radiation (W/m2)
+Lwnet:         0  W/m2    DN   1 0 0 1 112 10      # Net Longwave Radiation (W/m2)
+Qle:           0  W/m2    UP   1 0 0 1 121 10      # Latent Heat Flux (W/m2)
+Qh:            0  W/m2    UP   1 0 0 1 122 10      # Sensible Heat Flux (W/m2)
+Qg:            0  W/m2    DN   1 0 0 1 155 10      # Ground Heat Flux (W/m2)
+Qf:            0  W/m2    S2L  1 0 0 1 229 10      # Energy of fusion (W/m2)
+Qv:            0  W/m2    S2V  1 0 0 1 134 10      # Energy of sublimation (W/m2)
+Qa:            0  W/m2    DN   1 0 0 1 136 10      # Advective Energy (W/m2)
+Qtau:          0  N/m2    DN   1 0 0 1 135 10      # Momentum flux (N/m2)
+DelSurfHeat:   0  J/m2    INC  1 0 0 1 137 10      # Change in surface heat storage (J/m2)
+DelColdCont:   0  J/m2    INC  1 0 0 1 138 10      # Change in snow cold content (J/m2)
+BR:            0  -       -    1 0 1 1 256 10      # Bowen ratio
+EF:            0  -       -    1 0 1 1 256 10      # Evaporative fraction
+
+#Water balance components
+Snowf:         0  kg/m2s  DN   1 0 0 1 161 10000   # Snowfall rate (kg/m2s) #NCA includes this
+Rainf:         0  kg/m2s  DN   1 0 0 1 162 10000   # Rainfall rate (kg/m2s)
+RainfConv:     0  kg/m2s  DN   1 0 0 1 163 10000   # Convective Rainfall rate (kg/m2s)
+TotalPrecip:   0  kg/m2s  DN   1 0 0 1 164 10000   # Total Precipitation rate (kg/m2s) #NCA includes this
+Evap:          0  kg/m2s  UP   1 0 0 1  57 10000   # Total Evapotranspiration (kg/m2s)
+Qs:            0  kg/m2s  OUT  1 0 0 1 235 10000   # Surface runoff (kg/m2s)
+Qsb:           0  kg/m2s  OUT  1 0 0 1 254 10000   # Subsurface runoff (kg/m2s)
+Qrec:          0  kg/m2s  IN   1 0 0 1 143 10000   # Recharge (kg/m2s)
+Qsm:           0  kg/m2s  S2L  1 0 0 1  99 10000   # Snowmelt (kg/m2s) #NCA incl
+Qfz:           0  kg/m2s  L2S  1 0 0 1 146 10000   # Refreezing of water in the snowpack (kg/m2s)
+Qst:           0  kg/m2s  -    1 0 0 1 147 10000   # Snow throughfall (kg/m2s)
+DelSoilMoist:  0  kg/m2   INC  0 0 0 1 148 10000   # Change in soil moisture (kg/m2)
+DelSWE:        0  kg/m2   INC  0 0 0 1 149 1000    # Change in snow water equivalent (kg/m2)
+DelSurfStor:   0  kg/m2   INC  1 0 0 1 150 1000    # Change in surface water storage (kg/m2)
+DelIntercept:  0  kg/m2   INC  1 0 0 1 151 1000    # Change in interception storage (kg/m2)
+RHMin:         0   -      -    0 0 0 1  51 10      # Minimum 2 meter relative humidity (-)
+
+#Surface state variables
+SnowT:         0  K       -    1 0 0 1 152 10      # Snow surface temperature (K)
+VegT:          0  K       -    1 0 0 1 153 10      # Vegetation canopy temperature (K)
+BareSoilT:     0  K       -    1 0 0 1 154 10      # Temperature of bare soil (K)
+AvgSurfT:      0  K       -    0 0 0 1 148 10      # Average surface temperature (K) #not in NCA
+RadT:          0  K       -    1 0 0 1 156 10      # Surface Radiative Temperature (K) #NCA incl
+Albedo:        0  -       -    0 0 0 1  84 100     # Surface Albedo (-)
+SWE:           0  kg/m2   -    0 0 0 1  65 1000    # Snow Water Equivalent (kg/m2) #NCA incl
+SWEVeg:        0  kg/m2   -    1 0 0 1 159 1000    # SWE intercepted by vegetation (kg/m2)
+SurfStor:      0  kg/m2   -    1 0 0 1 160 1000    # Surface water storage (kg/m2)
+
+#Subsurface state variables
+SoilMoist:     0  m3/m3   -    1 0 0 4  86 1000    # Average layer soil moisture (kg/m2)
+SoilTemp:      0  K       -    1 0 0 4  85 1000    # Average layer soil temperature (K) #time averaged in NCA
+SmLiqFrac:     0  -       -    1 0 0 4  85 100     # Average layer fraction of liquid moisture (-)
+SmFrozFrac:    0  -       -    1 0 0 4  85 100     # Average layer fraction of frozen moisture (-)
+SoilWet:       0  -       -    0 0 0 1  85 100     # Total soil wetness (-)
+RelSMC:        0  m3/m3   -    0 0 0 1  86 1000    # Relative soil moisture
+RootTemp:      0  K       -    0 0 0 1  85 1000    # Rootzone temperature (K)
+
+#Evaporation components
+PotEvap:       0  kg/m2s  UP   3 0 0 1 166 1       # Potential Evapotranspiration (kg/m2s) #NCA incl
+TVeg:          0  kg/m2s  UP   1 0 0 1 210 1       # Vegetation transpiration (kg/m2s)     #NCA incl
+ECanop:        0  kg/m2s  UP   1 0 0 1 200 1       # Interception evaporation (kg/m2s)     #NCA incl
+ESoil:         0  kg/m2s  UP   1 0 0 1 199 1       # Bare soil evaporation (kg/m2s)        #NCA incl
+EWater:        0  kg/m2s  UP   1 0 0 1 170 1       # Open water evaporation (kg/m2s)
+RootMoist:     0  kg/m2   -    0 0 0 1 171 1       # Root zone soil moisture (kg/m2)
+CanopInt:      0  kg/m2   -    1 0 0 1 223 1000    # Total canopy water storage (kg/m2)    #NCA time average
+EvapSnow:      0  kg/m2s  -    1 0 0 1 173 1000    # Snow evaporation (kg/m2s)
+SubSnow:       0  kg/m2s  -    1 0 0 1 198 1000    # Snow sublimation (kg/m2s)             #NCA incl
+SubSurf:       0  kg/m2s  -    1 0 0 1 175 1000    # Sublimation of the snow free area (kg/m2s)
+ACond:         0  m/s     -    1 0 0 1 179 100000  # Aerodynamic conductance
+CCond:         0  m/s     -    1 0 0 1 179 1000000 # Canopy conductance
+
+#Cold season processes
+Snowcover:     0  -       -    0 0 0 1  66 100     # Snow Cover (-)
+SnowDepth:     0  m       -    0 0 0 1  66 1000    # Snow Depth (m)
+SLiqFrac:      0  -       -    0 0 0 1  65 1000    # Fraction of SWE in the liquid phase
+
+#Forcings ALL time avg in NCA!!
+Wind_f:        1  m/s     -    1 0 0 1 177 10      # Near Surface Wind (m/s) #NCA time avg
+Rainf_f:       0  kg/m2s  DN   1 0 0 1 162 1000    # Average rainfall rate   #NCA time avg
+Snowf_f:       0  kg/m2s  DN   0 0 0 1 161 1000    # Average snowfall rate   #NCA time avg
+Tair_f:        1  K       -    1 0 0 1  11 10      # Near surface air temperature
+Qair_f:        1  kg/kg   -    1 0 0 1  51 1000    # Near surface specific humidity
+Psurf_f:       1  Pa      -    1 0 0 1   1 10      # Surface pressure
+SWdown_f:      1  W/m2    DN   1 0 0 1 204 10      # Surface incident shortwave radiation
+LWdown_f:      1  W/m2    DN   1 0 0 1 205 10      # Surface incident longwave radiation
+
+#Additional forcings
+DirectSW_f:    0  W/m2    -    0 0 0 1 256 10      # Surface direct incident shortwave radiation
+DiffuseSW_f:   0  W/m2    -    0 0 0 1 256 10      # Surface diffuse incident shortwave radiation
+NWind_f:       0  m/s     N    0 0 0 1 256 10      # Northward wind
+EWind_f:       0  m/s     E    0 0 0 1 256 10      # Eastward wind
+FHeight_f:     0  m       -    0 0 0 1 256 10      # Height of forcing variables
+CH_f:          0  -       -    0 0 0 1 256 10      # Surface exchange coefficient for heat
+CM_f:          0  -       -    0 0 0 1 256 10      # Surface Exchange Coefficient for momentum
+Emiss_f:       0  -       -    0 0 0 1 256 10      # Surface emissivity
+MixRatio_f:    0  kg/kg   -    0 0 0 1 256 10      # Surface mixing ration
+CosZenith_f:   0  -       -    0 0 0 1 256 10      # Cosine of zenith angle
+Albedo_f:      0  -       -    0 0 0 1 256 10      # Surface albedo
+TotalPrecip_f: 0  kg/m2   -    0 0 0 1 0   10      # PPT
+RefET_f:       0  kg/m2   -    0 0 0 1 0   10      # RefET
+PET_f:         0  kg/m2s  -    0 0 0 1 0   10      # PET
+
+#Parameters
+Landmask:      0  -       -    0 0 0 1  81 1       # Land Mask (0 - Water, 1- Land)
+Landcover:     0  -       -    0 0 0 1 186 1       # Land cover
+Soiltype:      0  -       -    0 0 0 1 187 1       # Soil type
+SandFrac:      0  -       -    0 0 0 1 999 1       # Sand fraction
+ClayFrac:      0  -       -    0 0 0 1 999 1       # Clay fraction
+SiltFrac:      0  -       -    0 0 0 1 999 1       # Silt fraction
+Porosity:      0  -       -    3 0 0 1 999 1       # Porosity
+Soilcolor:     0  -       -    0 0 0 1 188 1       # Soil color
+Elevation:     1  m       -    0 0 0 1 189 10      # Elevation
+Slope:         0  -       -    0 0 0 1 999 10      # Slope
+LAI:           0  -       -    0 0 0 1 190 100     # LAI
+SAI:           0  -       -    0 0 0 1 191 100     # SAI
+Snfralbedo:    0  -       -    0 0 0 1 192 100     # Snow fraction albedo
+Mxsnalbedo:    0  -       -    0 0 0 1 192 100     # Maximum snow albedo
+Greenness:     0  -       -    0 0 0 1  87 100     # Greenness
+Tempbot:       0  K       -    0 0 0 1 194 10      # Bottom soil temperature
+
+#FLDAS-WRSI components
+WR_TimeStep:              0  kg/m2 - 0 0 0 1 0 10 # Water requirement per timestep(dekad) [mm]
+AET_TimeStep:             0  kg/m2 - 0 0 0 1 0 10 # Actual ET per timestep [mm]
+WRSI_TimeStep:            0      - - 0 0 0 1 0 10 # WRSI per timestep [-]
+SurplusWater_TimeStep:    0  kg/m2 - 0 0 0 1 0 10 # Surplus water per timestep [mm]
+SWI:                      0      % - 0 0 0 1 0 10 # Soil Water Index [%]
+
+#Additional FEWSNET Forcings
+PET_f:                    0 kg/m2s - 0 0 0 1 228 1000 # Average PET rate
+RefET_f:                  0 kg/m2s - 0 0 0 1 256 1000 # Average RefET rate
+TotalPrecip_f:            0 kg/m2 DN 0 0 0 1 256 1000 # Total precipitation
+
+#Irrigation add routing at some point
+Irrigated water:   0 kg/m2s    -     1 0 0 1 333 10      #Irrigation amount

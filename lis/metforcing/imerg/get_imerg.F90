@@ -21,7 +21,7 @@ subroutine get_imerg(n, findex)
   use LIS_coreMod, only : LIS_rc, LIS_masterproc
   use LIS_timeMgrMod, only : LIS_tick, LIS_get_nstep
   use imerg_forcingMod, only :imerg_struc
-  use LIS_logMod, only : LIS_logunit
+  use LIS_logMod, only : LIS_logunit, LIS_endrun
 
   implicit none
 ! !ARGUMENTS: 
@@ -124,7 +124,8 @@ subroutine imergfile(n, kk, findex, imergdir, &
 
   use LIS_coreMod
   use LIS_forecastMod
-
+  use LIS_logMod, only : LIS_logunit, LIS_endrun
+  use imerg_forcingMod, only : imerg_struc
   implicit none
 
 ! !ARGUMENTS: 
@@ -161,8 +162,8 @@ subroutine imergfile(n, kk, findex, imergdir, &
   integer :: i, c
   integer :: uyr, umo, uda, uhr, umn, umnadd, umnday, uss !, ts1
 
-  character*100 :: fbase, ftimedir, fstem 
-  character*4   :: cyr, cmnday
+  character*100 :: fbase, ftimedir, fstem, fext
+  character*4   :: cyr, cmnday, imVer
   character*2   :: cmo, cda, chr, cmn, cmnadd 
 
 !=== End Variable Definition ===============
@@ -192,9 +193,23 @@ subroutine imergfile(n, kk, findex, imergdir, &
     write(cmnadd, '(I2.2)') umnadd 
     write(cmnday, '(I4.4)') umnday
 
-    fstem = '/3B-HHR.MS.MRG.3IMERG.'
+    if(imerg_struc(n)%imergprd == 'early') then
+       fstem = '/3B-HHR-E.MS.MRG.3IMERG.'
+       fext  = '.RT-H5'
+    elseif(imerg_struc(n)%imergprd == 'late') then
+       fstem = '/3B-HHR-L.MS.MRG.3IMERG.'
+       fext  = '.RT-H5'
+    elseif(imerg_struc(n)%imergprd == 'final') then
+       fstem = '/3B-HHR.MS.MRG.3IMERG.'
+       fext  = '.HDF5'
+    else
+       write(LIS_logunit,*) "[ERR] Invalid IMERG product option was chosen."
+       write(LIS_logunit,*) "[ERR] Please choose either 'early', 'late', or 'final'."
+       call LIS_endrun()
+    endif
+    imVer = trim(imerg_struc(n)%imergver)
     filename = trim(imergdir)//"/"//cyr//cmo//trim(fstem)// &
-          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//".V03D.HDF5" 
+          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//"."//imVer//fext
 
 ! Forecast mode (e.g., ESP):
   else
@@ -220,9 +235,23 @@ subroutine imergfile(n, kk, findex, imergdir, &
     write(cmnadd, '(I2.2)') umnadd
     write(cmnday, '(I4.4)') umnday
 
-    fstem = '/3B-HHR.MS.MRG.3IMERG.'
+    if(imerg_struc(n)%imergprd == 'early') then
+       fstem = '/3B-HHR-E.MS.MRG.3IMERG.'
+       fext  = '.RT-H5'
+    elseif(imerg_struc(n)%imergprd == 'late') then
+       fstem = '/3B-HHR-L.MS.MRG.3IMERG.'
+       fext  = '.RT-H5'
+    elseif(imerg_struc(n)%imergprd == 'final') then
+       fstem = '/3B-HHR.MS.MRG.3IMERG.'
+       fext  = '.HDF5'
+    else
+       write(LIS_logunit,*) "[ERR] Invalid IMERG product option was chosen."
+       write(LIS_logunit,*) "[ERR] Please choose either 'early', 'late', or 'final'."
+       call LIS_endrun()
+    endif
+    imVer = trim(imerg_struc(n)%imergver)
     filename = trim(imergdir)//"/"//cyr//cmo//trim(fstem)// &
-          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//".V03D.HDF5"
+          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//"."//imVer//fext
   endif
 
 end subroutine imergfile

@@ -29,6 +29,8 @@ module SMAP_smobsMod
 !
 ! !REVISION HISTORY: 
 !  21 July 2016: Sujay Kumar, Initial Specification
+!  31 July 2019 Mahdi Navari : SMAP Composite Release ID was added (this option asks a user to 
+!         enter the part of Composite Release ID a three-character string like R16 )
 ! 
 !EOP
 
@@ -45,7 +47,7 @@ module SMAP_smobsMod
 
      character*100        :: odir
      character*20         :: data_designation
-
+     character*3           :: release_number
      integer              :: nc
      integer              :: nr
      integer              :: mo
@@ -118,7 +120,10 @@ contains
     call LVT_verify(status, &
          'SMAP soil moisture data designation: not defined')
 
-    call LVT_update_timestep(LVT_rc, 86400)
+    call ESMF_ConfigGetAttribute(LVT_Config, SMAP_smobs(i)%release_number, &
+         label='SMAP(NASA) soil moisture Composite Release ID (e.g., R16):', rc=status)
+    call LVT_verify(status, &
+         'SMAP(NASA) soil moisture Composite Release ID (e.g., R16): not defined')
 
     if(SMAP_smobs(i)%data_designation.eq."SPL3SMAP") then 
        !SMAP L3 radar/radiometer daily 9km
@@ -141,7 +146,10 @@ contains
        SMAP_smobs(i)%gridDesci(3) = ease_nr  !ny
 
        SMAP_smobs(i)%nc=ease_nc
-       SMAP_smobs(i)%nr=ease_nr       
+       SMAP_smobs(i)%nr=ease_nr    
+
+       call LVT_update_timestep(LVT_rc, 86400)
+   
     elseif(SMAP_smobs(i)%data_designation.eq."SPL3SMP") then 
        !SMAP L3 radiometer daily 36km 
     !filling the items needed by the interpolation library
@@ -158,6 +166,9 @@ contains
 
        SMAP_smobs(i)%nc=ease_nc
        SMAP_smobs(i)%nr=ease_nr       
+       
+       call LVT_update_timestep(LVT_rc, 86400)
+       
     elseif(SMAP_smobs(i)%data_designation.eq."SPL3SMP_E") then 
        ease_nc=3856       
        ease_nr=1624
@@ -171,7 +182,45 @@ contains
        SMAP_smobs(i)%gridDesci(11) = 1
 
        SMAP_smobs(i)%nc=ease_nc
-       SMAP_smobs(i)%nr=ease_nr       
+       SMAP_smobs(i)%nr=ease_nr   
+
+       call LVT_update_timestep(LVT_rc, 86400)
+
+    elseif(SMAP_smobs(i)%data_designation.eq."SPL2SMP") then 
+       ease_nc=964       
+       ease_nr=406
+       SMAP_smobs(i)%gridDesci = 0
+       SMAP_smobs(i)%gridDesci(1) = 9  !input is EASE grid
+       SMAP_smobs(i)%gridDesci(2) = ease_nc  !nx
+       SMAP_smobs(i)%gridDesci(3) = ease_nr  !ny
+       SMAP_smobs(i)%gridDesci(9) = 4 !M36 grid
+       SMAP_smobs(i)%gridDesci(20) = 64
+       SMAP_smobs(i)%gridDesci(10) = 0.36
+       SMAP_smobs(i)%gridDesci(11) = 1
+
+       SMAP_smobs(i)%nc=ease_nc
+       SMAP_smobs(i)%nr=ease_nr
+       
+       call LVT_update_timestep(LVT_rc, 3600)
+    
+    elseif(SMAP_smobs(i)%data_designation.eq."SPL2SMP_E") then 
+
+       ease_nc=3856       
+       ease_nr=1624
+       SMAP_smobs(i)%gridDesci = 0
+       SMAP_smobs(i)%gridDesci(1) = 9  
+       SMAP_smobs(i)%gridDesci(2) = ease_nc  !nx
+       SMAP_smobs(i)%gridDesci(3) = ease_nr  !ny
+       SMAP_smobs(i)%gridDesci(9) = 5 !M09 grid
+       SMAP_smobs(i)%gridDesci(20) = 64
+       SMAP_smobs(i)%gridDesci(10) = 0.09
+       SMAP_smobs(i)%gridDesci(11) = 1
+
+       SMAP_smobs(i)%nc=ease_nc
+       SMAP_smobs(i)%nr=ease_nr   
+       
+       call LVT_update_timestep(LVT_rc, 3600)
+
     endif
 
     npts= LVT_rc%lnc*LVT_rc%lnr
@@ -193,12 +242,10 @@ contains
     SMAP_smobs(i)%startflag = .true. 
 
     allocate(SMAP_smobs(i)%smobs(LVT_rc%lnc*LVT_rc%lnr,2))
-    allocate(SMAP_smobs(i)%smtime(LVT_rc%lnc*LVT_rc%lnr,2))
+    allocate(SMAP_smobs(i)%smtime(LVT_rc%lnc,LVT_rc%lnr))
     allocate(SMAP_smobs(i)%smqc(LVT_rc%lnc*LVT_rc%lnr,2))
 
-!-------------------------------------------------------------------------
-!  AMSRE data contains the a top soil soil moisture data
-!-------------------------------------------------------------------------
+    call system("mkdir -p "//trim('SMAPsm'))
 
   end subroutine SMAP_smobsinit
 

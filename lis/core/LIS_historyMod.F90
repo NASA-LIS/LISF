@@ -61,7 +61,9 @@ module LIS_historyMod
 !   1 Apr 2015: Hiroko Beaudoing; Added GRIB-2 routines
 !  15 May 2015: Hiroko Beaudoing; Added nsoillayers2, lyrthk2 for when soil
 !                   moisture and temperature having different number of layers
-!                   used in GRIB1 & GRIB2 format             
+!                   used in GRIB1 & GRIB2 format
+!  18 Oct 2018: David Mocko: Check lis.config entry for option to turn off
+!                   writing ASCII stats files with netCDF output format
 !
 ! !USES: 
   use LIS_coreMod
@@ -97,6 +99,7 @@ module LIS_historyMod
   public :: LIS_readvar_gridded  ! read a variable from a gridded file
   public :: LIS_writevar_gridded ! write a variable in grid space to a file
   public :: LIS_tile2grid        ! convert a tilespace variable to gridspace
+  public :: LIS_grid2tile        ! convert gridspace to tilespace
   public :: LIS_patch2tile       ! convert a patchspace variable to tilespace
   public :: LIS_grid2patch       ! convert a gridspace variable to patchspace
   public :: LIS_writevar_spread  ! writes ensemble spared to a gridded file
@@ -308,6 +311,7 @@ module LIS_historyMod
   interface LIS_grid2patch
 ! !PRIVATE MEMBER FUNCTIONS: 
 !     module procedure grid2patch
+     module procedure grid2patch_local
      module procedure grid2patch_global
      module procedure grid2patch_global_ens
 !
@@ -486,6 +490,10 @@ contains
     call LIS_rescaleCount(n,group_temp)
 
     if ( .NOT. LIS_histSend ) then
+
+    write(LIS_logunit,*)'[INFO] Writing surface model output to:  ', &
+         trim(lsmoutfile) ! EMK
+
     if(LIS_rc%wout.eq."binary") then 
        if(LIS_masterproc) then 
           open(ftn,file=lsmoutfile,form='unformatted')
@@ -654,15 +662,14 @@ contains
              if(dataEntry%count(t,k).gt.0) then 
                 if(dataEntry%timeAvgOpt.eq.3) then  !do nothing
                    continue       
-                elseif(dataEntry%timeAvgOpt.eq.2) then 
-                   dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/&
-                        dataEntry%count(t,k)
-                elseif(dataEntry%timeAvgOpt.eq.1) then 
+                elseif(dataEntry%timeAvgOpt.eq.2.or.dataEntry%timeAvgOpt.eq.1) then
                    dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/&
                         dataEntry%count(t,k)
                 else !do nothing
-
+                   continue
                 endif
+             else
+                dataEntry%modelOutput(1,t,k) = LIS_rc%udef
              endif
           enddo
        enddo
@@ -4613,6 +4620,7 @@ contains
     integer :: varid
     integer :: status
     integer :: count1 ,c,r,npatch,t,gid,stid,tid
+    integer :: glbnpatch_size
     character*20 :: wform
 
     if(present(wformat)) then 
@@ -4620,7 +4628,8 @@ contains
     else
        wform = "binary"
     endif
-    allocate(gtmp(LIS_rc%glbnpatch_red(n,m)))
+    glbnpatch_size = LIS_rc%glbnpatch_red(n,m)
+    allocate(gtmp(glbnpatch_size))
     if(wform.eq."binary") then 
        read(ftn) gtmp
     elseif(wform.eq."netcdf") then 
@@ -4629,10 +4638,16 @@ contains
        call LIS_verify(status,'Error in nf90_inq_varid in LIS_readvar_restart')
 
        if(present(dim).and.present(vlevels)) then 
-          allocate(gtmp_v(LIS_rc%glbnpatch_red(n,m),vlevels))
-          status = nf90_get_var(ftn,varid,gtmp_v)
+          if ( dim > vlevels ) then
+             write(LIS_logunit,*) '[ERR] LIS_readvar_restart: ' // &
+                'requested level greater than total number of levels'
+             call LIS_endrun
+          endif
+          allocate(gtmp_v(glbnpatch_size,1))
+          status = nf90_get_var(ftn,varid,gtmp_v,&
+             start=(/1,dim/),count=(/glbnpatch_size,1/))
           call LIS_verify(status,'Error in nf90_get_var in LIS_readvar_restart')
-          gtmp = gtmp_v(:,dim)
+          gtmp = gtmp_v(:,1)
           deallocate(gtmp_v)
        else
           status = nf90_get_var(ftn,varid,gtmp)
@@ -5371,14 +5386,16 @@ contains
              call LIS_verify(iret,'nf90_put_var failed in LIS_historyMod')
           endif
           if(ftn_stats.ne.-1) then
-             call stats(gtmp1,LIS_rc%udef,LIS_rc%glbntiles_red(n),vmean, & 
-                        vstdev,vmin,vmax)
-             if(form==1) then 
-                write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
-             elseif(form==2) then 
-                write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+             if ( LIS_rc%sout ) then
+                call stats(gtmp1,LIS_rc%udef,LIS_rc%glbntiles_red(n), &
+                           vmean,vstdev,vmin,vmax)
+                if(form==1) then
+                   write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
+                elseif(form==2) then
+                   write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+                endif
+                call lis_flush(ftn_stats)
              endif
-             call lis_flush(ftn_stats)
           endif
           deallocate(gtmp1)
        endif
@@ -5446,15 +5463,17 @@ contains
              iret = nf90_put_var(ftn,varid,gtmp,(/1,1/),&
                                  (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
           endif 
-          if(ftn_stats.ne.-1) then 
-             call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),vmean, & 
-                        vstdev,vmin, vmax)
-             if(form==1) then 
-                write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
-             elseif(form==2) then 
-                write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+          if(ftn_stats.ne.-1) then
+             if ( LIS_rc%sout ) then
+                call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),&
+                           vmean,vstdev,vmin,vmax)
+                if(form==1) then
+                   write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
+                elseif(form==2) then
+                   write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+                endif
+                call lis_flush(ftn_stats)
              endif
-             call lis_flush(ftn_stats)
           endif
           deallocate(gtmp)
        endif
@@ -5526,15 +5545,17 @@ contains
                 iret = nf90_put_var(ftn,varid,gtmp,(/1,1/),&
                      (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
              endif
-             if(ftn_stats.ne.-1) then 
-                call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),vmean, & 
-                     vstdev,vmin, vmax)
-                if(form==1) then 
-                   write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
-                elseif(form==2) then 
-                   write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+             if(ftn_stats.ne.-1) then
+                if ( LIS_rc%sout ) then
+                   call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),&
+                              vmean,vstdev,vmin,vmax)
+                   if(form==1) then
+                      write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
+                   elseif(form==2) then
+                      write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+                   endif
+                   call lis_flush(ftn_stats)
                 endif
-                call lis_flush(ftn_stats)
              endif
              deallocate(gtmp)
           endif
@@ -5625,16 +5646,18 @@ contains
                         (/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
                 endif
              enddo
-             if(ftn_stats.ne.-1) then 
-                call stats_ens(gtmp_ens,LIS_rc%udef,&
-                     LIS_rc%gnc(n), LIS_rc%gnr(n),LIS_rc%nensem(n),vmean, & 
-                     vstdev,vmin, vmax)
-                if(form==1) then 
-                   write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
-                elseif(form==2) then 
-                   write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+             if(ftn_stats.ne.-1) then
+                if ( LIS_rc%sout ) then
+                   call stats_ens(gtmp_ens,LIS_rc%udef,               &
+                        LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nensem(n), &
+                        vmean,vstdev,vmin,vmax)
+                   if(form==1) then
+                      write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
+                   elseif(form==2) then
+                      write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+                   endif
+                   call lis_flush(ftn_stats)
                 endif
-                call lis_flush(ftn_stats)
              endif
              deallocate(gtmp_ens)
           endif
@@ -6429,6 +6452,44 @@ subroutine writevar_grib2_withstats_real(ftn, ftn_stats, n,   &
           
 end subroutine writevar_grib2_withstats_real
 
+!BOP
+! !ROUTINE: LIS_grid2tile
+! \label{LIS_grid2tile}
+!
+! !INTERFACE:
+  subroutine LIS_grid2tile(n,gvar,tvar)
+! !USES:
+
+    implicit none
+! !ARGUMENTS:     
+    integer, intent(in) :: n
+    real                :: tvar(LIS_rc%ntiles(n))
+    real                :: gvar(LIS_rc%lnc(n),LIS_rc%lnr(n))
+! !DESCRIPTION:
+!  This routine converts a tile space variable to the corresponding
+!  grid space. The aggregation involves weighted average of each tile
+!  in a grid cell based on the vegetation distribution. 
+!
+!  The arguments are: 
+!  \begin{description}
+!   \item [n]
+!     index of the domain or nest.
+!   \item [tvar]
+!     variable dimensioned in the tile space. 
+!   \item [gvar]
+!     variable after converstion to the grid space
+!  \end{description}
+!
+!EOP
+    integer           :: t,c,r
+
+    do t=1,LIS_rc%ntiles(n)
+       r = LIS_domain(n)%tile(t)%row
+       c = LIS_domain(n)%tile(t)%col
+       tvar(t) = gvar(c,r)
+    enddo
+  end subroutine LIS_grid2tile
+
 
 !BOP
 ! !ROUTINE: tile2grid_local
@@ -6577,7 +6638,25 @@ end subroutine writevar_grib2_withstats_real
     
   end subroutine LIS_patch2tile
 
-  subroutine grid2patch_global(n,m,gvar,tvar)
+  subroutine grid2patch_local(n,m,gvar,tvar)
+
+    implicit none
+    
+    integer, intent(in) :: n 
+    integer, intent(in) :: m
+    real                :: gvar(LIS_rc%lnc(n), LIS_rc%lnr(n))
+    real                :: tvar(LIS_rc%npatch(n,m))
+    integer             :: t,r,c
+
+    do t=1,LIS_rc%npatch(n,m)
+       r = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row
+       c = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col
+       tvar(t) = gvar(c,r)
+    enddo
+
+  end subroutine grid2patch_local
+
+  subroutine grid2patch_global(n,m,gvar,tvar,dummy)
 
     implicit none
     
@@ -6589,6 +6668,7 @@ end subroutine writevar_grib2_withstats_real
     
     integer             :: count1
     integer             :: l,r,c,gid,stid,t,npatch, tid
+    logical             :: dummy
     integer             :: ierr
 
 !    if(LIS_masterproc) then        

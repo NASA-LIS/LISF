@@ -162,7 +162,7 @@ contains
 ! \label{CLM45parms_init}
 ! 
 ! !INTERFACE:
-  subroutine CLM45parms_init
+  subroutine CLM45parms_init(flag)
 
 ! !USES:
    use LDT_logMod,  only : LDT_verify, LDT_endrun, &
@@ -182,6 +182,7 @@ contains
 !
 !EOP
    implicit none
+   integer  :: flag
    integer  :: n
    integer  :: c,r,m,k
    integer  :: rc

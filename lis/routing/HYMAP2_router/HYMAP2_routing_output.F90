@@ -18,6 +18,7 @@ subroutine HYMAP2_routing_output(n)
   use LIS_fileIOMod
   use HYMAP2_routingMod
 
+  use LIS_mpiMod
   implicit none
   
   integer, intent(in)   :: n 
@@ -30,6 +31,7 @@ subroutine HYMAP2_routing_output(n)
   integer               :: mo, da
   logical               :: open_stats
   logical               :: alarmCheck
+  integer               :: status
 
   alarmCheck = .false. 
   if ( LIS_rc%time >= LIS_histData(n)%time ) then
@@ -89,12 +91,10 @@ subroutine HYMAP2_routing_output(n)
 !-----------------------------------------------------------------------
            ! Grib expects soil layers to be in cm.
            ! lyrthk = (/100.0,300.0,600.0,1000.0/) mm.
-
            call LIS_writeModelOutput(n,filename, name, open_stats,  &
                 outInterval=HYMAP2_routing_struc(n)%outInterval,     &
                 nsoillayers = 1,lyrthk = (/1.0/), nsoillayers2 = 1, &
                 group=2)
-                         
         endif
      endif
   endif

@@ -1,0 +1,32 @@
+Noah-3.9.1 LSM Testcase
+
+This is a testcase that uses:
+  (a) The GDAS forcing
+  (b) Bilinear Interpolation
+  (c) Lapse-rate based elevation correction using GTOPO30 elevation data
+  (d) The Noah version 3.9.1 land surface model
+  (e) North American domain at 1/4 degree spatial resolution
+  (f) A time period from 00:00Z 1 Oct 2002 to 01:00Z 1 Oct 2003
+
+This directory contains:
+  (a) This README file
+  (b) The "ldt.config" file to generate the parameters using LDT
+  (c) The "lis.config" file used for this testcase
+  (d) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+      to select the output variables
+
+Note that the "ldt.config" and "lis.config" files should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+To run this testcase:
+  (a) Generate the LDT and the LIS executables
+  (b) Run the LDT executable using the "ldt.config" file 
+      with the testcase input data
+  (c) Run the LIS executable using the "lis.config" file with the
+      testcase input data
+
+Caveats:
+  (a) Please note that this is a simple functional test and the output
+      from the testcase is not expected to be used for any scientific
+      evaluation.

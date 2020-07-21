@@ -1,0 +1,4274 @@
+
+[[sec-ldtconfigfile]]
+== LDT Config File
+
+This section describes the options in the _ldt.config_ file.
+
+Not all options described here are available in the public version of LDT.
+
+[[ssec-driveropts]]
+=== Overall driver options
+
+`LDT running mode:` specifies the running mode used in LDT. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`LSM parameter processing`" |LSM Parameter Processing Option
+|"`DA preprocessing`" |Data Assimilation Preprocessing Option
+|"`Ensemble restart processing`" |Deriving an ensemble restart file Option
+|"`Restart preprocessing`" |LSM Restart File Preprocessing Option
+|"`Metforce processing`" |Meteorological forcing processing Option (similar to LIS)
+|"`Metforce temporal downscaling`" |Meteorological forcing temporal downscaling
+|"`Statistical downscaling of met forcing`" |Statistical options to downscale or generate forcing climatologies
+|"`OPTUE parameter processing`" |Process the OPT/UE output to generate optimized parameters
+|"`USAFSI analysis`" |USAF Snow and Ice analysis
+|===
+
+.Example _ldt.config_ entry
+....
+LDT running mode:             "LSM parameter processing"
+....
+
+`Processed LSM parameter filename:` specifies the output filename (with netcdf extension) of the LSM parameters processed in LDT to go into LIS.  See a sample _lis_input.d01.nc_ (Appendix <<sec-ldt_output_format>>) file for a complete specification description.
+
+.Example _ldt.config_ entry
+....
+Processed LSM parameter filename:    ./lis_input.d01.nc
+....
+
+`LIS number of nests:` specifies the number of nests used for the run.  Values 1 or higher are acceptable. The maximum number of nests is limited by the amount of available memory on the system. The specifications for different nests are done using white spaces as the delimiter. Please see below for further explanations. Note that all nested domains should run on the same projection and same land surface model.
+
+.Example _ldt.config_ entry
+....
+LIS number of nests:            1
+....
+
+`Number of surface model types:` specifies the number of surface model types selected for the LIS simulation. Acceptable values are 1 or higher.
+
+.Example _ldt.config_ entry
+....
+Number of surface model types:   1 
+....
+
+`Surface model types:` specifies the names of the surface model types.  Options include (but to be expanded later):
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|LSM |Land surface model type
+ifdef::devonly[]
+|Lake |Lake model type
+endif::devonly[]
+|Openwater |Openwater surface type
+|===
+
+.Example _ldt.config_ entry
+....
+Surface model types:  "LSM"
+....
+
+`Land surface model:` specifies the land surface model to be run. Need to select the model you want to run in LIS-7, so the appropriate model parameters are included in the output netcdf file for LIS. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Template LSM
+|Noah.2.7.1 |Noah 2.7.1
+|Noah.3.2 |Noah 3.2
+|Noah.3.3 |Noah 3.3
+|Noah.3.6 |Noah 3.6
+|Noah.3.9 |Noah 3.9
+|Noah-MP.3.6 |Noah-MP 3.6
+|Noah-MP.4.0.1 |Noah-MP 4.0.1
+|CLM.2 |CLM version 2.0
+|CLM.4.5 |CLM version 4.5
+|VIC.4.1.1 |VIC 4.1.1
+|VIC.4.1.2 |VIC 4.1.2
+|Mosaic |Mosaic
+|HySSIB |HySSIB
+|CLSMF2.5 |Catchment, Fortuna 2.5
+|SAC.3.5.6 |Sacramento
+|SNOW17 |Snow17
+|RDHM.3.5.6 |Sacramento+snow17
+|GeoWRSI.2 |GeoWRSI, v2.0
+ifdef::devonly[]
+|SiB2 |SiB v2
+|FASST |FASST
+|CABLE |CABLE
+|HTESSEL |HTESSEL
+|JULES.4.3 |JULES.4.3
+endif::devonly[]
+|===
+
+.Example _ldt.config_ entry
+....
+Land surface model:       Noah.3.3
+....
+
+`Lake model:` specifies the lake model type used in a LIS run.  Currently, only the FLake lake model is incorporated in LIS, and both LDT and LIS are set up for additional support of lake model installation and development. For now, the option "`none`" is recommended.
+
+.Example _ldt.config_ entry
+....
+Lake model:               none
+....
+
+`Routing model:` specifies the river routing model used in a LIS run.  Currently, only the HYMAP routing scheme parameters are supported in LDT.
+
+.Example _ldt.config_ entry
+....
+Routing model:             HYMAP
+....
+
+`Water fraction cutoff value:` specifies what gridcell fraction is to be represented by water (e.g., 0.6 would be 60% covered by water pixels).  This value acts as a threshold in determining which gridcell will be included as a water or land point (used also in deriving the land/water mask).
+
+.Example _ldt.config_ entry
+....
+Water fraction cutoff value:     0.5
+....
+
+`Number of met forcing sources:` specifies the number of met forcing datasets to be used. Acceptable values are 0 or higher.
+
+.Example _ldt.config_ entry
+....
+Number of met forcing sources:  1
+....
+
+`Met forcing sources:` specifies the meteorological forcing data sources used for a LIS run.
+
+For more information about LIS's meteorological forcing data reader options, please see the "`Land Information System (LIS) Users`' Guide`" for more information.  Acceptable values for the sources are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`NONE`" |none
+ifdef::devonly[]
+|"`AGRMET`" |AGRMET (AFWA-0.25 deg)
+|"`AGRMET radiation (polar stereographic)`" |AGRMET radiation fields
+endif::devonly[]
+|"`CMAP`" |CMAP precipitation fields
+|"`CPC CMORPH`" |CMORPH precipitation fields
+|"`ECMWF`" |ECMWF near-realtime analysis
+|"`ECMWF reanalysis`" |ECMWF reanalysis(II), based on Berg et al.(2003)
+|"`GDAS`" |GDAS near-realtime analysis
+ifdef::devonly[]
+|"`GDAS(3d)`" |GDAS full-atmosphere fields
+endif::devonly[]
+|"`GEOS`" |NASA-GEOS (v3-5) forcing analysis
+|"`GEOS5 forecast`" |GEOS v5 forecast fields
+|"`GFS`" |NCEP-GFS forecast fields
+|"`GLDAS`" |Coarse-scale GLDAS-1 forcing
+|"`GSWP1`" |GSWP1 forcing
+|"`GSWP2`" |GSWP2 forcing
+|"`MERRALand`" |NASA's MERRA-Land reanalysis
+|"`MERRA2`" |NASA's GMAO MERRA2 reanalysis
+|"`NAM242`" |NCEP-NAM 242 resolution (Alaska)
+|"`NARR`" |North American Regional Reanalysis
+|"`NLDAS1`" |NLDAS1 analysis fields
+|"`NLDAS2`" |NLDAS2 analysis fields
+|"`PRINCETON`" |Global Princeton long-term forcing records
+|"`RFE2(daily)`" |CPC Daily Rainfall estimator fields
+|"`RFE2(gdas)`" |CPC RFE2 rainfall adjusted with GDAS/CMAP precipitation
+|"`CHIRPS2`" |UCSB CHIRPS v2.0 precipitation dataset
+|"`CPC STAGEII`" |CPC Stage II radar-based rainfall
+|"`CPC STAGEIV`" |CPC Stage IV radar-based rainfall
+|"`TRMM 3B42RTV7`" |TRMM-based 3B42 real-time rainfall
+|"`TRMM 3B42V6`" |TRMM-based 3B42 V6 rainfall
+|"`TRMM 3B42V7`" |TRMM-based 3B42 V7 rainfall
+|"`ERA5`" |ERA5 reanalysis
+|===
+
+.Example _ldt.config_ entry
+....
+Met forcing sources:       "NLDAS2"
+....
+
+`Blending method for forcings:` specifies the blending method to combine forcings if more than one forcing dataset is used. User-entry activated only when the "`Metforce processing`" run mode is selected.  Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|overlay |datasets are overlaid on top of each other in the order they are specified
+|ensemble |each forcing dataset is assigned to a separate ensemble member (option not available yet in LDT).
+|===
+
+.Example _ldt.config_ entry
+....
+Blending method for forcings: overlay
+....
+
+`Met spatial transform methods:` specifies the type of spatial transform or interpolation scheme to apply to the forcing dataset(s) selected.  Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`average`" |Upscale via averaging
+|"`neighbor`" |Nearest neighbor scheme
+|"`bilinear`" |Bilinear interpolation scheme
+|"`budget-bilinear`" |Conservative interpolation scheme ("`conserves`" quantities)
+|===
+
+Bilinear interpolation uses 4 neighboring points to compute the interpolation weights. The conservative approach uses 25 neighboring points. This option is designed to conserve water, like for precipitation. Also, nearest neighbor can be used, which may better preserve large pixels (e.g., 1x1 deg), if needed. "`Average`" can also be selected if upscaling from finer-scale meteorological fields (e.g., going from 4 KM to 0.25 deg).
+
+.Example _ldt.config_ entry
+....
+Met spatial transform methods:     bilinear
+....
+
+`Topographic correction method (met forcing):` specifies whether to use elevation correction on select forcing fields. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`none`" |Do not apply topographic correction for forcing
+|"`lapse-rate`" |Use lapse rate correction for forcing
+|===
+
+Current meteorological forcing datasets supported for applying this lapse-rate adjustment to the temperature, humidity, pressure and downward longwave fields, include: NLDAS1, NLDAS2, NAM242, GDAS, PRINCETON, and ECMWF Future forcing dataset options will include: GEOS, GLDAS, GFS, ECMWF_reanalysis, and possible others.
+
+ECMWF and GDAS forcing types include several terrain height maps and not just one overall, either due to change in versions or gridcell size, respective.
+
+.Example _ldt.config_ entry
+....
+Topographic correction method (met forcing):  "lapse-rate"
+....
+
+`Temporal interpolation method (met forcing):` specifies the type of temporal interpolation scheme to apply to the met forcing data.  Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|linear |linear scheme
+|trilinear |uber next scheme
+|===
+
+The linear temporal interpolation method computes the temporal weights based on two points. Ubernext computes weights based on three points.  Currently the ubernext option is implemented only for the GSWP forcing.
+
+.Example _ldt.config_ entry
+....
+Temporal interpolation method (met forcing): linear
+....
+
+`Enable new zterp correction (met forcing):` specifies whether to enable the new zterp correction. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|`.false.` |do not enable
+|`.true.` |enable
+|===
+
+Defaults to .false..
+
+This is a scalar option, not per nest.
+
+This new zterp correction addresses an issue that occurs at sunrise/sunset for some forcing data-sets when running at small time-steps (like 15mn). In these cases, swdown has a large unrealistic spike. This correction removes the spike. It also can affect swdown around sunrise/sunset by up 200 W/m2. Users are advised to run their own tests and review swdown to determine which setting is best for them.
+
+For comparision against older LIS runs, set this option to `.false.`.
+
+.Example _ldt.config_ entry
+....
+Enable new zterp correction (met forcing): .false.
+....
+
+`Temporal downscaling method:` specifies the temporal downscaling method to disaggregate a coarser forcing dataset into finer timesteps (e.g., go from daily to hourly).
+
+User-entry activated only when the "`Metforce temporal downscaling`" run mode is selected.  Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`Simple weighting`" |Use finer timescale forcing dataset to estimate weights and downscale coarser forcing dataset. The finer timescale forcing dataset should defined first in the _ldt.config_ file.
+|===
+
+.Example _ldt.config_ entry
+....
+Temporal downscaling method:    "Simple weighting"
+....
+
+`Processed metforcing output interval:` specifies the output interval for the processed meteorological forcing files. Entries are character-based names, like 6hr or 1da.
+
+.Example _ldt.config_ entry
+....
+Processed metforcing output interval:   "6hr"
+....
+
+`Metforcing processing interval:` specifies the processing temporal interval for which meteorological forcing files are commonly and temporally aggregated (or downscaled) to when temporally downscaling a dataset.
+
+.Example _ldt.config_ entry
+....
+Metforcing processing interval:     "1da"
+....
+
+`Statistical downscaling mode:` specifies the type of statistical downscaling method to be applied.
+
+User-entry activated only when the "`Statistical downscaling of met forcing`" run mode is selected.  Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`downscale`" |The downscale option is for bringing a coarser climate model or reanalysis dataset to a finer scale using statistical techniques (beyond interpolation).
+|===
+
+.Example _ldt.config_ entry
+....
+Statistical downscaling mode:       "downscale"
+....
+
+`Statistical downscaling method:` specifies the method for downscaling or for climatology forcing generation.  Current acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`Climatology`" |This option supports the generation of meteorological climatology files, for different forcing data.
+|"`Bayesian merging`" |[red]#specifies what?#
+|===
+
+.Example _ldt.config_ entry
+....
+Statistical downscaling method:     "Climatology"
+....
+
+`Forcing climatology temporal frequency of data:` specifies the output time interval to which the forcing climatology will be calculated on and written to.
+
+.Example _ldt.config_ entry
+....
+Forcing climatology temporal frequency of data:   "6hr"
+....
+
+`Bayesian merging seasonal stratification type:` [red]#specifies what?#
+
+.Example _ldt.config_ entry
+....
+Bayesian merging seasonal stratification type:
+....
+
+`Forcing variables list file:` specifies the file containing the list of forcing variables to be used. Please refer to the sample forcing_variables.txt (Section <<sec-forcingvars>>) file for a complete specification description.
+
+.Example _ldt.config_ entry
+....
+Forcing variables list file:     ./input/forcing_variables.txt
+....
+
+`LDT diagnostic file:` specifies the name of run time LDT diagnostic file.
+
+.Example _ldt.config_ entry
+....
+LDT diagnostic file:           ldtlog
+....
+
+`Mask-parameter fill diagnostic file:` specifies the name of the output diagnostic file for wherever mask-parameter points have forced agreement for a given landmask and parameter.
+
+.Example _ldt.config_ entry
+....
+Mask-parameter fill diagnostic file:  LDTOUTPUT_temp/MPFilltest.log
+....
+
+`LDT output directory:` specifies the directory name for outputs from LDT.  Acceptable values are any 40 character string. The default value is set to OUTPUT.
+
+.Example _ldt.config_ entry
+....
+LDT output directory:       OUTPUT
+....
+
+`Undefined value:` specifies the undefined value. The default is set to -9999.
+
+.Example _ldt.config_ entry
+....
+Undefined value:             -9999.0
+....
+
+`Add buffer to parameter grid domain:` adds a set buffer around a parameter file target domain. 
+Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"0" |No buffer added
+|"1" |Buffer included
+|===
+
+The default value is 0.
+
+.Example _ldt.config_ entry
+....
+Add buffer to parameter grid domain:     0
+....
+
+`Buffer count in x-direction:` adds a set number of pixels that buffer 
+around a parameter file target domain, both in the x- and y-directions.
+Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"0" |No buffer added
+|"1 (or greater)" |Buffer points included
+|===
+
+The default value is 5, and only activated if buffer option is selected.
+
+.Example _ldt.config_ entry
+....
+Buffer count in x-direction:   10 
+Buffer count in y-direction:   10
+....
+
+
+
+`Number of ensembles per tile:` specifies the number of ensembles of tiles to be used. The value should be greater than or equal to 1.
+
+.Example _ldt.config_ entry
+....
+Number of ensembles per tile:      1
+....
+
+The following options are used for subgrid tiling based on vegetation or other parameter types (e.g., soil type, elevation, etc.), and are required for generating an ensemble restart file or downscaling to a single-member restart file from an ensemble one. See the section on ensemble restart files for more information.
+
+`Maximum number of surface type tiles per grid:` defines the maximum surface type tiles per grid (this can be as many as the total number of vegetation types). Note: Allowable values are greater than or equal to 1. Note that the entry here should exactly match the entry used in the _lis.config_ file.
+
+.Example _ldt.config_ entry
+....
+Maximum number of surface type tiles per grid: 1
+....
+
+`Minimum cutoff percentage (surface type tiles):` defines the smallest percentage of a cell for which to create a tile. The percentage value is expressed as a fraction. Allowable values are greater than or equal to 0. Note that the entry here should exactly match the entry used in the _lis.config_ file.
+
+.Example _ldt.config_ entry
+....
+Minimum cutoff percentage (surface type tiles): 0.05
+....
+
+`Maximum number of soil texture tiles per grid:` defines the maximum soil texture tiles per grid (this can be as many as the total number of soil texture types). Allowable values are greater than or equal to 1.  Note that the entry here should exactly match the entry used in the _lis.config_ file.
+
+.Example _ldt.config_ entry
+....
+Maximum number of soil texture tiles per grid: 1
+....
+
+`Minimum cutoff percentage (soil texture tiles):` defines the smallest percentage of a cell for which to create a tile. The percentage value is expressed as a fraction. Allowable values are greater than or equal to 0. Note that the entry here should exactly match the entry used in the _lis.config_ file.
+
+.Example _ldt.config_ entry
+....
+Minimum cutoff percentage (soil texture tiles): 0.05
+....
+
+`Maximum number of soil fraction tiles per grid:` defines the maximum soil fraction tiles per grid (this can be as many as the total number of soil fraction types). Allowable values are greater than or equal to 1.  Note that the entry here should exactly match the entry used in the _lis.config_ file.
+
+.Example _ldt.config_ entry
+....
+Maximum number of soil fraction tiles per grid: 1
+....
+
+`Minimum cutoff percentage (soil fraction tiles):` defines the smallest percentage of a cell for which to create a tile. The percentage value is expressed as a fraction. Allowable values are greater than or equal to 0. Note that the entry here should exactly match the entry used in the _lis.config_ file.
+
+.Example _ldt.config_ entry
+....
+Minimum cutoff percentage (soil fraction tiles): 0.05
+....
+
+`Maximum number of elevation bands per grid:` defines the maximum elevation bands per grid (this can be as many as the total number of elevation band types). Allowable values are greater than or equal to 1.  Note that the entry here should exactly match the entry used in the _lis.config_ file.
+
+.Example _ldt.config_ entry
+....
+Maximum number of elevation bands per grid: 1
+....
+
+`Minimum cutoff percentage (elevation bands):` defines the smallest percentage of a cell for which to create a tile. The percentage value is expressed as a fraction. Allowable values are greater than or equal to 0. Note that the entry here should exactly match the entry used in the _lis.config_ file.
+
+.Example _ldt.config_ entry
+....
+Minimum cutoff percentage (elevation bands): 0.05
+....
+
+`Maximum number of slope bands per grid:` defines the maximum slope bands per grid (this can be as many as the total number of slope band types). Allowable values are greater than or equal to 1. Note that the entry here should exactly match the entry used in the _lis.config_ file.
+
+.Example _ldt.config_ entry
+....
+Maximum number of slope bands per grid: 1
+....
+
+`Minimum cutoff percentage (slope bands):` defines the smallest percentage of a cell for which to create a tile. The percentage value is expressed as a fraction. Allowable values are greater than or equal to 0. Note that the entry here should exactly match the entry used in the _lis.config_ file.
+
+.Example _ldt.config_ entry
+....
+Minimum cutoff percentage (slope bands): 0.05
+....
+
+`Maximum number of aspect bands per grid:` defines the maximum aspect bands per grid (this can be as many as the total number of aspect band types). Allowable values are greater than or equal to 1. Note that the entry here should exactly match the entry used in the _lis.config_ file.
+
+.Example _ldt.config_ entry
+....
+Maximum number of aspect bands per grid: 1
+....
+
+`Minimum cutoff percentage (aspect bands):` defines the smallest percentage of a cell for which to create a tile. The percentage value is expressed as a fraction. Allowable values are greater than or equal to 0. Note that the entry here should exactly match the entry used in the _lis.config_ file.
+
+.Example _ldt.config_ entry
+....
+Minimum cutoff percentage (aspect bands): 0.05
+....
+
+This section specifies the 2-d layout of the processors in a parallel processing environment.
+
+#This is a new feature within LDT.#
+
+The user can specify the number of processors along the east-west dimension and north-south dimension using `Number of processors along x:` and `Number of processors along y:`, respectively. Note that the layout of processors should match the total number of processors used. For example, if 8 processors are used, the layout can be specified as 1x8, 2x4, 4x2, or 8x1.
+
+.Example _ldt.config_ entry
+....
+Number of processors along x:       2
+Number of processors along y:       2
+....
+
+`Output methodology:` specifies whether to write output as a 1-D array containing only land points or as a 2-D array containing both land and water points. 1-d tile space includes the subgrid tiles and ensembles.  1-d grid space includes a vectorized, land-only grid-averaged set of values. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`none`" |Do not write output
+|"`1d tilespace`" |Write output in a 1-D tile domain
+|"`2d gridspace`" |Write output in a 2-D grid domain
+|"`1d gridspace`" |Write output in a 1-D grid domain
+|===
+
+The default value is "2d gridspace".
+
+.Example _ldt.config_ entry
+....
+Output methodology: "2d gridspace"
+....
+
+`Output data format:` specifies the format of the model output data.  Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`binary`" |Write output in binary format
+|"`grib1`" |Write output in GRIB-1 format
+|"`netcdf`" |Write output in netCDF format
+|===
+
+The default value is "netcdf".
+
+.Example _ldt.config_ entry
+....
+Output data format: netcdf
+....
+
+`Output naming style:` specifies the style of the model output names and their organization. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`2 level hierarchy`" |2 levels of hierarchy
+|"`3 level hierarchy`" |3 levels of hierarchy
+|"`4 level hierarchy`" |4 levels of hierarchy
+|"`WMO convention`" |WMO convention for weather codes
+|===
+
+The default value is "3 level hierarchy".
+
+.Example _ldt.config_ entry
+....
+Output naming style: "3 level hierarchy"
+....
+
+[[ssec-domainspec]]
+=== Domain specification
+
+This section of the config file specifies the LIS running domain (domain over which the simulation is carried out). The specification of the LIS Run domain section depends on the type of LIS domain and projection used. Section <<ssec-driveropts>> lists the projections that LIS supports.
+
+`Map projection of the LIS domain:` specifies the output LIS domain grid
+to be used with LIS. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|latlon |Lat/Lon projection with SW to NE data ordering
+|lambert |Lambert conformal projection with SW to NE data ordering
+|gaussian |Gaussian domain
+|polar |Polar stereographic projection with SW to NE data ordering
+|hrap |HRAP domain (based on polar stereographic projection)
+|mercator |Mercator projection with SW to NE data ordering
+ifdef::devonly[]
+|UTM |UTM domain
+endif::devonly[]
+|===
+
+.Example _ldt.config_ entry
+....
+Map projection of the LIS domain:      latlon
+....
+
+[[sssec-run_latlon]]
+==== Cylindrical lat/lon
+
+This section describes how to specify a cylindrical latitude/longitude projection. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Run domain lower left lat:           25.625
+Run domain lower left lon:         -124.125
+Run domain upper right lat:          52.875
+Run domain upper right lon:         -67.875
+Run domain resolution (dx):           0.25
+Run domain resolution (dy):           0.25
+....
+
+[[sssec-run_lambert]]
+==== Lambert conformal
+
+This section describes how to specify a Lambert conformal projection.  See Appendix <<sec-d_lambert_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Run domain lower left lat:           32.875
+Run domain lower left lon:         -104.875
+Run domain true lat1:                36.875
+Run domain true lat2:                36.875
+Run domain standard lon:            -98.875
+Run domain resolution:               25.0
+Run domain x-dimension size:          40
+Run domain y-dimension size:          30
+....
+
+[[sssec-run_gaussian]]
+==== Gaussian
+
+This section describes how to specify a Gaussian projection. See Appendix <<sec-d_gaussian_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Run domain first grid point lat:     -89.27665
+Run domain first grid point lon:       0.0
+Run domain last grid point lat:       89.27665
+Run domain last grid point lon:      -0.9375
+Run domain resolution dlon:           0.9375
+Run domain number of lat circles:       95
+....
+
+[[sssec-run_ps]]
+==== Polar stereographic
+
+This section describes how to specify a polar stereographic projection.  See Appendix <<sec-d_ps_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Run domain lower left lat:           32.875
+Run domain lower left lon:         -104.875
+Run domain true lat:                 36.875
+Run domain standard lon:            -98.875
+Run domain orientation:               0.0
+Run domain resolution:               25.0
+Run domain x-dimension size:          40
+Run domain y-dimension size:          30
+....
+
+[[sssec-run_hrap]]
+==== HRAP
+
+This section describes how to specify a HRAP projection. See Appendix <<sec-d_hrap_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Run domain lower left hrap y:          48
+Run domain lower left hrap x:          17
+Run domain hrap resolution:            1
+Run domain x-dimension size:          1043
+Run domain y-dimension size:          774
+....
+
+[[sssec-run_mercator]]
+==== Mercator
+
+This section describes how to specify a Mercator projection. See Appendix <<sec-d_mercator_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Run domain lower left lat:          32.875
+Run domain lower left lon:        -104.875
+Run domain true lat1:               36.875
+Run domain standard lon:           -98.875
+Run domain resolution:              25.0
+Run domain x-dimension size:         40
+Run domain y-dimension size:         30
+....
+
+ifdef::devonly[]
+[[sssec-run_utm]]
+==== UTM
+
+This section describes how to specify a UTM projection. See Appendix <<sec-d_utm_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Run domain UTM zone:                  12
+Run domain northing of SW corner:     3507393.0
+Run domain easting of SW corner:      586018.0
+Run domain x-dimension size:          660
+Run domain y-dimension size:          333
+Run domain resolution:                40
+....
+endif::devonly[]
+
+[[ssec-parameters]]
+=== Parameters
+
+`Landcover data source:` specifies the land cover dataset source to be read in. Current landcover source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|AVHRR |Univ. of Maryland 1992-93 AVHRR landcover map.  Please see: http://glcf.umd.edu/data/landcover/
+|AVHRR_GFS |Similar to "`AVHRR`" option above but on a GFS grid.
+|MODIS_Native |Terra-MODIS sensor-based IGBP land classification map, modified by NCEP. For more info, please see: http://www.ral.ucar.edu/research/land/technology/noahmp_lsm.php
+|MODIS_LIS |Similar dataset as "`MODIS_Native`" above but processed by LIS-team.
+|USGS_Native |The 24-category USGS native landcover map. See: http://www.ral.ucar.edu/research/land/technology/noahmp_lsm.php
+|USGS_LIS |Similar dataset as "`USGS_Native`" but processed by LIS-team.
+|ALMIPII |AMMA/ALMIP Phase-2 landcover input option. For more info: http://www.cnrm.meteo.fr/amma-moana/amma_surf/almip2/input.html
+|CLSMF2.5 |CLSM Fortuna 2.5 landcover dataset.
+|VIC412 |Variable Infiltration Capacity model, v4.1.2, UMD land cover.
+|ISA |Impervious Surface Area (ISA) landcover dataset.
+|CLM45 |CLM-4.5 landcover dataset.
+|CONSTANT |Ability to set a constant landcover type for a set classification.
+|===
+
+.Example _ldt.config_ entry
+....
+Landcover data source:    "MODIS_Native"
+....
+
+`Landcover classification:` specifies the land cover classification type. Land cover or use classification types have been developed over the years by various organizations (e.g., USGS, IGBP) and research groups (e.g., satellite missions associated with groups, like UMD, BU, etc.). For more information on some of these different land classifications and their characteristics, please refer to: http://edc2.usgs.gov/glcc/globdoc2_0.php Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|UMD |14 Landcover types
+|IGBP |16 Landcover types
+|USGS |24 Landcover types
+|IGBPNCEP |20 Landcover types
+|MOSAIC |7 Landcover types
+|ISA |13 Landcover types
+|CLM45 |36 Landcover types
+|Bondville |Only for the Bondville metforcing benchmark testcase
+|CONSTANT |2 Landcover types (water, plus one constant type over all land)
+|===
+
+.Example _ldt.config_ entry
+....
+Landcover classification:     "UMD"  
+....
+
+`Landcover file:` specifies the location of the vegetation classification file.
+
+`Landcover map projection:` specifies the projection of the landcover map data.
+
+`Landcover spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to the landcover map.  Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|mode |Upscale by selecting dominant type for each gridcell
+|neighbor |Use nearest neighbor to select closest value
+|tile |Read in tiled data or upscale by estimating gridcell fractions
+|===
+
+Note: "`tile`" is a special case for landcover, which allows for reading in landcover data already in tiled form, or creating tiles from finer resolution landcover data.
+
+.Example _ldt.config_ entry
+....
+Landcover file:               ../input/1KM/landcover_UMD.1gd4r
+Landcover spatial transform:     tile
+....
+
+`Landcover fill option:` specifies the landcover classification data fill option. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Do not apply missing value fill routines
+|neighbor |Use nearest neighbor to fill missing value
+|===
+
+`Landcover fill value:` indicates which landcover value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing landcover point, a value of 5 could be assigned if no nearest neighbor values exists to fill).
+
+`Landcover fill radius:` specifies the radius with which to search for nearby value(s) to help fill the missing value.
+
+.Example _ldt.config_ entry
+....
+Landcover fill option:   neighbor    # none, neighbor
+Landcover fill radius:     3.        # Number of pixels to search for neighbor
+Landcover fill value:      5.        # Static value to fill where missing
+....
+
+This section also outlines the domain specifications of the landcover (and for now landmask) data. If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying landcover data. Note: The Landcover grid domain inputs below are really only required for the "`_LIS`" data source options and that do not include "`_Native`" in the data source entries. All native parameters do not require the below inputs for LDT. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Landcover map projection:        latlon
+Landcover lower left lat:       -59.995
+Landcover lower left lon:      -179.995
+Landcover upper right lat:       89.995
+Landcover upper right lon:      179.995
+Landcover resolution (dx):        0.01
+Landcover resolution (dy):        0.01
+....
+
+`Create or readin landmask:` offers the user the option to create or read in land/water mask file information. Options include the ability to impose the mask on landcover and also the other parameter fields.
+
+.Example _ldt.config_ entry
+....
+Create or readin landmask:      "readin"
+....
+
+`Landmask data source:` specifies the land mask dataset source to be read in. If the user is interested in only using the selected landcover data source, then the user can select the same option for the landmask data source.
+
+Other current landmask source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|MOD44W |The MODIS 44W land-water mask was developed and provided by: http://glcf.umd.edu/data/watermask/
+|HYMAP |The HYMAP basin area mask option.
+|===
+
+.Example _ldt.config_ entry
+....
+Landmask data source:   "MODIS_Native"
+....
+
+`Landmask file:` specifies the location of land/water mask file.  Note: If reading in the MOD44W land-water mask, make sure to enter "`MOD44W`" Landmask data source entry.
+
+.Example _ldt.config_ entry
+....
+Landmask file:        ../input/1KM/landmask_UMD.1gd4r
+....
+
+`Landmask spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to the landmask map. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|mode |Upscale by selecting dominant type for each gridcell
+|neighbor |Use nearest neighbor when downscaling (or upscaling, if needed)
+|===
+
+.Example _ldt.config_ entry
+....
+Landmask spatial transform:    none     
+....
+
+`Landmask map projection:` specifies the projection of the landmask map data.
+
+.Example _ldt.config_ entry
+....
+Landmask map projection:       latlon
+....
+
+This section also outlines the domain specifications of the land water/mask data. The landmask map projection and extents are only needed if you specify "`readin`" for mask type and if the landmask data source is "`MOD44W`" or "`_LIS`".
+
+If the map projection of parameter data is specified to be "`latlon`", the following extents and resolution configuration should be used for specifying landmask data. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+Future landmask data sets will have the projection, grid extents and resolution on the data reader side and not needed to be specified in the ldt config file, depending on the data source.
+
+.Example _ldt.config_ entry
+....
+Landmask map projection:        latlon
+Landmask lower left lat:       -59.995
+Landmask lower left lon:      -179.995
+Landmask upper right lat:       89.995
+Landmask upper right lon:      179.995
+Landmask resolution (dx):        0.01
+Landmask resolution (dy):        0.01
+....
+
+ifdef::devonly[]
+`Lakecover data source:` specifies the data source for lake depth and/or fraction for lake models, like FLake.
+
+.Example _ldt.config_ entry
+....
+Lakecover data source:       GLDBv1
+....
+
+`Lake depth map:` specifies the location of the lake depth file (in meters), which is also used to derive the lake gridcell fraction for lake models, like FLake.
+
+.Example _ldt.config_ entry
+....
+Lake depth map:        ./flake_inputs/GlobalLakeDepth.dat  
+....
+
+`Lake depth QC map:` is a file that specifies the location of the QC flag for the origin of the lake depth values, which is an optional field specified. This file can be used by lake models, like FLake, if needed.
+
+.Example _ldt.config_ entry
+....
+Lake depth QC map:     ./flake_inputs/GlobalLakeStatus.dat   
+....
+
+`Lake params spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to the lake depth maps. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|average |Upscale by averaging values for each gridcell
+|tile |Upscale by selecting lake tiles for each gridcell (not fully implemented)
+|===
+
+.Example _ldt.config_ entry
+....
+Lake params spatial transform:    average
+....
+
+`Lake wind fetch value:` is the user-specified input value for lake-based wind-fetch (in meters) in association with lake models like FLake. This value is constant (or global) for now until 2-D fields become available.
+
+.Example _ldt.config_ entry
+....
+Lake wind fetch value:         10000.                
+....
+
+`Lake bottom sediments depth value:` is the user-specified input value for the thermally active layer depth of bottom sediments (m) in association with lake models like FLake. This value is constant (or global) for now until 2-D fields become available.
+
+.Example _ldt.config_ entry
+....
+Lake bottom sediments depth value:  10.                  
+....
+
+`Lake bottom sediments temperature value:` is the user-specified input value for the outer edge temperature (K) of the thermally active layer of the bottom sediments in association with lake models like FLake. This value is constant (or global) for now until 2-D fields become available.
+
+.Example _ldt.config_ entry
+....
+Lake bottom sediments temperature value:   277.13
+....
+
+`Inland waterbody data source:` specifies the inland water body (e.g., lake types) dataset source to be read in. Current option is only:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|GLWD |Global Lake and Wetland Database inland water type map
+|===
+
+.Example _ldt.config_ entry
+....
+Inland waterbody data source:      GLWD
+....
+
+`Inland waterbody type map:` specifies the inland water body map file and path.
+
+.Example _ldt.config_ entry
+....
+Inland waterbody type map:  ./inlandwater_parms/GLWD/rastert_glwd_31.flt
+....
+
+`Inland waterbody spatial transform:` specifies the inland waterbody spatial transform. Current options are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |No spatial transform selected
+|tile |Tile the inland waterbody types
+|mode |Locate the dominant inland waterbody types
+|===
+
+.Example _ldt.config_ entry
+....
+Inland waterbody spatial transform:    tile
+....
+endif::devonly[]
+
+`Regional mask data source:` specifies a regional land mask dataset source to be read in. Should either match grid domain or be smaller to the LIS run domain.
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|file |Binary file type mask.
+|ESRI |Binary file type mask produced in ESRI-GIS software.
+|WRSI |A BIL-format (binary) mask file associated with WRSI model.
+|===
+
+.Example _ldt.config_ entry
+....
+Regional mask data source:   "none"
+....
+
+`Regional mask file:` specifies the location of a regional mask file.  This file can be either an index-based state, country, basin, catchment, etc. map used to mask further beyond the main water/land mask.
+
+.Example _ldt.config_ entry
+....
+Regional mask file:    ../input/1KM/regional_statemask.1gd4r
+....
+
+`Regional mask map projection:` specifies the projection of the regional mask albedo map data.
+
+.Example _ldt.config_ entry
+....
+Regional mask map projection:   latlon
+....
+
+`Clip landmask with regional mask:` A logical-based option that uses the regional mask to `clip' the original landmask that is read-in or created. .true. turns on the "clipping" option.
+
+.Example _ldt.config_ entry
+....
+Clip landmask with regional mask:  .true.
+....
+
+`Regional mask spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to a regional mask map. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|neighbor |Use nearest neighbor to select closest value
+|mode |Upscale by selecting dominant type for each gridcell
+|===
+
+.Example _ldt.config_ entry
+....
+Regional mask spatial transform:   mode
+....
+
+This section also outlines the domain specifications of the regional-based land mask data. If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying regional mask data.
+
+See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Regional mask lower left lat:       -59.995
+Regional mask lower left lon:      -179.995
+Regional mask upper right lat:       89.995
+Regional mask upper right lon:      179.995
+Regional mask resolution (dx):        0.01
+Regional mask resolution (dy):        0.01
+....
+
+`Rootdepth data source:` specifies the source of the vegetation root depth dataset. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |No data
+|ALMIPII |ALMIP II root depth field
+|===
+
+.Example _ldt.config_ entry
+....
+Rootdepth data source:    none
+....
+
+`Root depth file:` specifies the path and name of the root depth file.  Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |No data
+|ALMIPII |ALMIP II root depth field
+|===
+
+.Example _ldt.config_ entry
+....
+Root depth file:      none
+....
+
+[[ssec-cropirrigparams]]
+=== Crop-Irrigation Parameters
+
+`Incorporate crop information:` specifies the logical flag with which to turn on the inclusion of crop information and also to allow the user to enter additional options that can ensure crop, landcover, and irrigation features are agreement.
+
+.Example _ldt.config_ entry
+....
+Incorporate crop information:   .false.
+....
+
+`Crop type data source:` specifies the crop type map dataset source to be read in. Current landcover source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|UMDCROPMAP |UMD+CROPMAP crop type map. For more info, please refer to Ozdogan et al. (2010; JHM).
+|Monfreda08 |FAOSTAT05 crop type maps. For more info, please refer to Monfreda et al. (2008).
+|CONSTANT |Ability to set a constant crop type for a set classification.
+|===
+
+.Example _ldt.config_ entry
+....
+Crop type data source:  "none" 
+....
+
+`Crop classification:` specifies the crop classification system used to determine the range of crops indexed for a particular crop library source.
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|CROPMAP |19 classes; named by Ozdogan et al.(2010), used Leff et al.(2004)
+|FAOSTAT01 |19 classes; Used by Leff et al.(2004), considered obsolete
+|FAOSTAT05 |175 classes; Used by Monfreda et al. (2008)
+|===
+
+.Example _ldt.config_ entry
+....
+Crop classification:       "FAOSTAT01"  
+....
+
+`Crop library directory:` specifies the source of the crop library and inventory of crop classes, related to the "`Crop classification:`" entry (see above).
+
+.Example _ldt.config_ entry
+....
+Crop library directory:  "../LS_PARAMETERS/crop_params/Crop.Library.Files/"
+....
+
+`Assign crop value type:` specifies the type of crop presence, such as a "`single`" crop or "`multiple`" crops given within a gridcell.  Currently, only the "`single`" option is supported.
+
+.Example _ldt.config_ entry
+....
+Assign crop value type:    "none"
+....
+
+`Assign single crop value:` specifies whether to assign a single crop value from an actual crop library inventory, such as FAOSTAT01, which is also known as the CROPMAP classification used in Ozdogan et al. (2010).  By turning on this option (.true.), you can they specify what type of crop you want to assign, like "`maize`" to the user-specified option, `Default crop type:`. If "`maize`" was entered, then wherever the landcover map indicated a generic "`cropland`", the crop type field would be given a dominant "`maize`" type.
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|.false. |Do not assign a single crop class to the crop type field.
+|.true. |Assign a single crop type, like "`maize`" to the crop type field.
+|===
+
+.Example _ldt.config_ entry
+....
+Assign single crop value:     .true.    
+....
+
+`Default crop type:` specifies the default crop type that the user can enter and can be used in conjunction with assigning a single crop type value (see above).
+
+.Example _ldt.config_ entry
+....
+Default crop type:           "maize"   
+....
+
+`Crop type file:` specifies the location of a crop type file. This file contains different crop types that can be used in in conjunction with a selected land cover map (as above).
+
+.Example _ldt.config_ entry
+....
+Crop type file:  ./irrigation/conus_modis/UMD_N125C19.1gd4r
+....
+
+`Crop map spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to a crop type map. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|mode |Upscale by selecting dominant type for each gridcell
+|tile |Read in tiled data or upscale by estimating gridcell fractions
+|===
+
+NOTE: LIS-7 will be expecting "`mode`" or dominant crop type per
+gridcell at this time. Future versions will include landcover-crop tile
+options.
+
+.Example _ldt.config_ entry
+....
+Crop map spatial transform:   mode
+....
+
+`Irrigation type data source:` specifies the irrigation method type dataset source to be read in. Current source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|GRIPC |Irrigation map, by Salmon (2013).
+|===
+
+.Example _ldt.config_ entry
+....
+Irrigation type data source:  "none"
+....
+
+`Irrigation type map:` specifies the location of an irrigation type file. This file contains different irrigation categories (types) that can be used in conjunction with an irrigation fraction map.
+
+A special land-use/irrigation-related map, known as the Global Rain-Fed, Irrigated, and Paddy Croplands (GRIPC) Dataset (Salmon, 2013), has also been implemented as an option to LDT. Currently, no models in LIS utilize this map but opportunities exist for the user community to utilize for their landcover and irrigation modeling needs.
+
+.Example _ldt.config_ entry
+....
+Irrigation type map: ../LS_PARAMETERS/irrigation/irrigtype_map.bin
+....
+
+`Irrigation type spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to irrigation-related maps. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|mode |Upscale by selecting dominant type for each gridcell
+|neighbor |Use nearest neighbor to select closest value
+|tile |Read in tiled data or upscale by estimating gridcell fractions
+|===
+
+.Example _ldt.config_ entry
+....
+Irrigation type spatial transform:    mode
+....
+
+`Irrigation fraction data source:` specifies the irrigation method type dataset source to be read in. Current source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|MODIS_OG |Irrigation area fraction map by Ozdogan and Gutman (2008)
+|GRIPC |Irrigation area fraction map by Salmon (2013)
+!UserDerived |User derived irrigation fraction map
+|===
+
+.Example _ldt.config_ entry
+....
+Irrigation fraction data source:  "none"
+....
+
+`Irrigation fraction map:` specifies the location of an irrigation fraction map file. This file contains irrigation fraction (gridcell-based) that can be used in conjunction with an irrigation type map.
+
+.Example _ldt.config_ entry
+....
+Irrigation fraction map:  ../irrigation/irrig.percent.eighth.1gd4r
+....
+
+`Irrigation fraction spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to irrigation-related maps. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|average |Upscale by averaging values for each gridcell
+|neighbor |Upscale or downscale using nearest neighbor values
+|===
+
+.Example _ldt.config_ entry
+....
+Irrigation fraction map projection:   laton 
+....
+
+`Irrigation fraction map projection:` indicates the grid projection defines an input irrigation maps. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|latlon |Lat/Lon projection with SW to NE data ordering
+|===
+
+.Example _ldt.config_ entry
+....
+Irrigation fraction map projection:    latlon
+....
+
+
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying irrigation data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Irrigation fraction lower left lat:      -59.87500
+Irrigation fraction lower left lon:     -179.87500
+Irrigation fraction upper right lat:      89.87500
+Irrigation fraction upper right lon:     179.87500
+Irrigation fraction resolution (dx):       0.2500
+Irrigation fraction resolution (dy):       0.2500
+....
+
+
+[[ssec-soilspecparams]]
+=== Soil Parameters
+
+Soils maps
+
+`Sand fraction map:` specifies the sand fraction map file.
+
+`Clay fraction map:` specifies the clay fraction map file.
+
+`Silt fraction map:` specifies the silt map file.
+
+ifdef::devonly[]
+`Gravel fraction map:` specifies the gravel map file.
+endif::devonly[]
+
+`Porosity data source:` specifies the soil porosity dataset source to be read in. Current source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|FAO |LIS-team produced soil porosity data source.
+|CLSMF2.5 |Similar to the above option but for CLSM F2.5 model.
+|CONSTANT |User can select a constant value.
+|===
+
+`Porosity map:` specifies porosity map file.
+
+`Soildepth data source:` specifies the soildepth dataset source to be read in. Current source option is:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|ALMIPII |ALMIPII soil depth data source.
+|===
+
+`Soil depth map:` specifies the soil depth map file.
+
+`Saturated matric potential map:` specifies saturated matric potential map file.
+
+`Saturated hydraulic conductivity map:` specifies saturated hydraulic conductivity map file.
+
+`b parameter map:` specifies b parameter map file.
+
+ifdef::devonly[]
+`Quartz map:` specifies quartz data map file.
+endif::devonly[]
+
+.Example _ldt.config_ entry
+....
+Sand fraction map:        ../input/25KM/sand_FAO.1gd4r
+Clay fraction map:        ../input/25KM/clay_FAO.1gd4r
+Silt fraction map:        ../input/25KM/silt_FAO.1gd4r
+ifdef::devonly[]
+Gravel fraction map:      ../input/25KM/gravel_Special.1gd4r
+endif::devonly[]
+Porosity data source:        none
+Porosity map:                  
+Saturated matric potential map:       
+Saturated hydraulic conductivity map: 
+b parameter map:                      
+ifdef::devonly[]
+Quartz map:                           
+endif::devonly[]
+....
+
+`Soil fraction data source:` specifies the source of the soil fraction dataset. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |No soil fraction data source
+|FAO |FAO soil fraction percentage fields
+|STATSGO_LIS |LIS-team derived STATSGO v1 soil fraction fields
+|ALMIPII |ALMIP II soil fraction percentage fields
+|CONSTANT |If user wants to set a constant soil fraction values
+|===
+
+.Example _ldt.config_ entry
+....
+Soil fraction data source:     FAO
+....
+
+`Soil fraction number of bands:` specifies the number of soil fraction bins to turn on soil fraction tiling capability.
+
+.Example _ldt.config_ entry
+....
+Soil fraction number of bands:     1
+....
+
+`Soils spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to the soils maps. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|average |Upscale by averaging values for each gridcell
+|neighbor |Reinterpolate by selecting nearest gridcell neighbor
+|bilinear |Reinterpolate by using bilinear interpolation
+|budget-bilinear |Reinterpolate by using conservative, budget-bilinear
+|tile |Read in tiled data or upscale by estimating gridcell fractions
+|===
+
+.Example _ldt.config_ entry
+....
+Soils spatial transform:     average 
+....
+
+`Soils map projection:` specifies the projection of the soils map data.
+
+`Soils fill option:` specifies the general soil data (e.g., fractions) fill option. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Do not apply missing value fill routines
+|neighbor |Use nearest neighbor to fill missing value
+|===
+
+By selecting the soils fill option, neighbor, this activates the need to enter values for the Soils fill radius and fill value, as shown below.  If a porosity map is read in and the soils fill option is set to neighbor, the user can then enter a fill value for porosity to ensure mask-parameter agreement.
+
+`Soils fill radius:` specifies the radius with which to search for nearby value(s) to help fill the missing value.
+
+`Soils fill value:` indicates which soils value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing soils value, a value of 0.33 could be assigned if no nearest neighbor values exists to fill).
+
+`Porosity fill value:` indicates which porosity value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing porosity value, a value of 0.30 could be assigned if no nearest neighbor values exists to fill).
+
+.Example _ldt.config_ entry
+....
+Soils fill option:   neighbor 
+Soils fill radius:   3
+Soils fill value:    0.33
+Porosity fill value: 0.30
+....
+
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying soils data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Soils map projection:        latlon
+Soils lower left lat:      -59.87500
+Soils lower left lon:     -179.87500
+Soils upper right lat:      89.87500
+Soils upper right lon:     179.87500
+Soils resolution (dx):       0.2500
+Soils resolution (dy):       0.2500
+....
+
+`Hydrologic soil group source:` specifies the hydrological soil group (HSG) data source. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |No HSG data source
+|STATSGOv1 |STATSGO v1 HSG data source
+|===
+
+.Example _ldt.config_ entry
+....
+Hydrologic soil group source:        STATSGOv1
+....
+
+`Hydrologic soil group map:` specifies the path and filename for the HSG input file.
+
+.Example _ldt.config_ entry
+....
+Hydrologic soil group map:  ./input/STATSGO_v1/hsgpct.bsq
+....
+
+`Bulk density data source:` specifies the source of the soil bulk density data type. Currently no options supported at this time.
+
+.Example _ldt.config_ entry
+....
+Bulk density data source:     none
+....
+
+`Water capacity data source:` specifies the source of the water holding capacity data type. Currently no options supported at this time.
+
+.Example _ldt.config_ entry
+....
+Water capacity data source:   none
+....
+
+`Rock volume data source:` specifies the source of the amount of rock volume data type. Currently no options supported at this time.
+
+.Example _ldt.config_ entry
+....
+Rock volume data source:   none
+....
+
+`Rock frag class data source:` specifies the source of the rock fragment classification type. Currently no options supported at this time.
+
+.Example _ldt.config_ entry
+....
+Rock frag class data source:  none
+....
+
+`Permeability data source:` specifies the source of the permeability data type. Currently no options supported at this time.
+
+.Example _ldt.config_ entry
+....
+Permeability data source:   none
+....
+
+`Soil texture data source:` specifies the soil texture dataset source to be read in.  Current soil texture source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|STATSGOFAO_Native |The blended STATSGOv1 and FAO soil texture map. See: http://www.ral.ucar.edu/research/land/technology/lsm.php
+|STATSGOFAO_LIS |Similar dataset as to the above one but processed by LIS-team.
+|FAO |FAO or Reynolds et al. (1999) soil texture map.
+|ISRIC |ISRIC soil texture data source.
+|ZOBLER_GFS |Similar to above but on a GFS run domain.
+|STATSGOv1 |The STATSGOv1-only soil texture map.
+|CONSTANT |User can set a constant soil texture class.
+|===
+
+.Example _ldt.config_ entry
+....
+Soil texture data source:   "STATSGOFAO_Native"
+....
+
+`Soil texture map:` specifies the soil texture file.
+
+`Soil texture spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to the soil texture map. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|mode |Upscale by selecting dominant type for each gridcell
+|neighbor |Upscale by using nearest valid value for each gridcell
+|tile |Read in tiled data or upscale by estimating gridcell fractions
+|===
+
+.Example _ldt.config_ entry
+....
+Soil texture map:  ../input/25KM/soiltexture_STATSGO-FAO.1gd4r 
+Soil texture spatial transform:     none
+....
+
+`Soil texture map projection:` specifies the projection of the soil texture map data.
+
+`Soil texture fill option:` specifies the soil texture data fill option.  Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Do not apply missing value fill routines
+|neighbor |Use nearest neighbor to fill missing value
+|===
+
+`Soil texture fill value:` indicates which soil texture value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing soil texture value, a value of 6 could be assigned if no nearest neighbor values exists to fill).
+
+`Soil texture fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+.Example _ldt.config_ entry
+....
+Soil texture fill option:      neighbor
+Soil texture fill radius:         3.
+Soil texture fill value:          6.
+....
+
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying soil texture data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Soil texture map projection:        latlon
+Soil texture lower left lat:       -59.87500
+Soil texture lower left lon:      -179.87500
+Soil texture upper right lat:       89.87500
+Soil texture upper right lon:      179.87500
+Soil texture resolution (dx):        0.2500
+Soil texture resolution (dy):        0.2500
+....
+
+`Soil color map projection:` specifies the projection of the soil color map data.
+
+`Soil color data source:` specifies the soil color data source. Current option is: FAO
+
+`Soil color map:` specifies the soil color map file. This soil map is mainly used by the Community Land Model (version 2).
+
+`Soil color spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to the soil color map.  Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|mode |Upscale by selecting dominant type for each gridcell
+|neighbor |Reinterpolate by selecting nearest gridcell neighbor
+|===
+
+.Example _ldt.config_ entry
+....
+Soil color data source:        none
+Soil color map:         
+Soil color spatial transform:     none
+....
+
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying soil color data, data source option "`FAO`" or has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Soil color map projection:         latlon
+Soil color lower left lat:       -59.87500
+Soil color lower left lon:      -179.87500
+Soil color upper right lat:       89.87500
+Soil color upper right lon:      179.87500
+Soil color resolution (dx):        0.2500
+Soil color resolution (dy):        0.2500
+....
+
+[[ssec-topoparams]]
+=== Topography Parameters
+
+`Elevation data source:` specifies the elevation dataset source to be read in.
+
+`Slope data source:` specifies the slope dataset source to be read in.
+
+`Aspect data source:` specifies the aspect dataset source to be read in.
+
+`Curvature data source:` specifies the curvature dataset source to be read in.
+
+Current options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|GTOPO30_Native |The GTOPO30 elevation map native source. See: http://edcftp.cr.usgs.gov/pub/data/gtopo30/global
+|GTOPO30_LIS |Similar dataset as to the above one but processed by LIS-team.
+|GTOPO30_GFS |Similar dataset as to the above but on GFS grid.
+|SRTM_Native |The SRTM elevation map native source. See: http://dds.cr.usgs.gov/srtm/version2_1/SRTM30
+|SRTM_LIS |Similar dataset as to the above one but processed by LIS-team.
+|CONSTANT |User can set a constant elevation, slope or aspect class.
+|MERIT_1K |The MERIT elevation map, but processed by LIS-team to have a resolution '0.008333'. See: http://hydro.iis.u-tokyo.ac.jp/~yamadai/MERIT_DEM/index.html
+|===
+
+.Example _ldt.config_ entry
+....
+Elevation data source:  "SRTM_Native"
+Slope data source:      "SRTM_Native"
+Aspect data source:     "SRTM_Native"
+Curvature data source:  "SRTM_Native"
+....
+
+`Elevation number of bands:` specifies the number of elevation bands or bins to turn on elevation tiling capability.
+
+`Slope number of bands:` specifies the number of slope bands or bins to turn on slope tiling capability.
+
+`Aspect number of bands:` specifies the number of aspect bands or bins to turn on aspect tiling capability.
+
+`Curvature number of bands:` specifies the number of curvature bands or bins to turn on curvature tiling capability.
+
+.Example _ldt.config_ entry
+....
+Elevation number of bands:     1
+Slope number of bands:         1
+Aspect number of bands:        1
+Curvature number of bands:     1
+....
+
+Topography maps
+
+`Elevation map:` specifies the elevation of the LIS grid. If the elevation map type selected is SRTM_Native, then the elevation file entry is actually just the directory path, which contains the tiled SRTM elevation files.
+
+`Slope map:` specifies the slope of the LIS grid. If the slope map type selected is SRTM_Native, then the file entry is actually just the directory path, which contains the tiled SRTM elevation files.  
+
+`Aspect map:` specifies the aspect of the LIS grid. If the aspect map type selected is SRTM_Native, then the file entry is actually just the directory path, which contains the tiled SRTM elevation files.
+
+`Curvature map:` specifies the curvature of the LIS grid.
+
+.Example _ldt.config_ entry
+....
+Elevation map:     ../input/25KM/elev_GTOPO30.1gd4r
+Slope map:         ../input/25KM/slope_GTOPO30.1gd4r
+Aspect map:        ../input/25KM/aspect_GTOPO30.1gd4r
+Curvature map:     ../input/25KM/curv_GTOPO30.1gd4r
+....
+
+`Elevation fill option:` specifies the elevation data fill option.  Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Do not apply missing value fill routines
+|neighbor |Use nearest neighbor to fill missing value
+|===
+
+`Elevation fill value:` indicates which elevation value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing elevation value, a value of 100(m) could be assigned if no nearest neighbor values exists to fill).
+
+`Elevation fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+.Example _ldt.config_ entry
+....
+Elevation fill option:          neighbor
+Elevation fill radius:           2.
+Elevation fill value:           100.
+....
+
+`Slope fill option:` specifies the slope data fill option. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Do not apply missing value fill routines
+|neighbor |Use nearest neighbor to fill missing value
+|===
+
+`Slope fill value:` indicates which slope value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing slope value, an value of 0.1 could be assigned if no nearest neighbor values exists to fill).
+
+`Slope fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+.Example _ldt.config_ entry
+....
+Slope fill option:         neighbor
+Slope fill radius:           2.
+Slope fill value:           0.1
+....
+
+`Aspect fill option:` specifies the aspect data fill option. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Do not apply missing value fill routines
+|neighbor |Use nearest neighbor to fill missing value
+|===
+
+`Aspect fill value:` indicates which aspect value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing aspect value, an value of 2.0 could be assigned if no nearest neighbor values exists to fill).
+
+`Aspect fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+.Example _ldt.config_ entry
+....
+Aspect fill option:        neighbor
+Aspect fill radius:           2.
+Aspect fill value:           2.0
+....
+
+`Topography map projection:` specifies the projection of the topography map data.
+
+`Topography spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to the topographic map.  Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|average |Upscale by averaging values for each gridcell
+|neighbor |Reinterpolate by selecting nearest gridcell neighbor
+|bilinear |Reinterpolate by using bilinear interpolation
+|budget-bilinear |Reinterpolate by using conservative, budget-bilinear
+|tile |Read in tiled data or upscale by estimating gridcell fractions
+|===
+
+.Example _ldt.config_ entry
+....
+Topography spatial transform:     tile
+....
+
+This section should also specify the domain specifications of the topography data. If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying topography data, especially if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Topography map projection:         latlon
+Topography lower left lat:       -59.87500
+Topography lower left lon:      -179.87500
+Topography upper right lat:       89.87500
+Topography upper right lon:      179.87500
+Topography resolution (dx):        0.2500
+Topography resolution (dy):        0.2500
+....
+
+[[ssec-lsmspecparams]]
+=== LSM-specific Parameters
+
+Albedo maps
+
+`Albedo data source:` specifies the albedo climatology map dataset source to be read in. Current source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|NCEP_Native |Native monthly NCEP albedo files.
+|NCEP_LIS |Similar to the above option but LIS-team processed.
+|CONSTANT |User can select a constant value.
+|===
+
+`Albedo map:` specifies the path of the climatology based albedo files.  The climatology albedo data files have the following naming convention: <directory>/<file header>.<tag>.1gd4r The tag should be either sum, win, spr, or aut depending on the season, or the tag should represent the month (such as jan, feb, mar, etc.). The file header can be anything (such as alb1KM). The albedo field is used by Noah LSM versions.
+
+`Albedo map projection:` specifies the projection of the albedo map data.
+
+`Albedo climatology interval:` specifies the frequency of the albedo climatology in months.
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|monthly |Monthly interval for albedo files
+|quarterly |Seasonal interval for albedo files
+|===
+
+`Albedo spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to the albedo maps. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|average |Upscale by averaging values for each gridcell
+|neighbor |Reinterpolate by selecting nearest gridcell neighbor
+|bilinear |Reinterpolate by using bilinear interpolation
+|budget-bilinear |Reinterpolate by using conservative, budget-bilinear
+|===
+
+.Example _ldt.config_ entry
+....
+Albedo data source:           NCEP_LIS
+Albedo map:                ../input/25KM/albedo_NCEP 
+Albedo climatology interval:  monthly  
+Albedo spatial transform:     none
+....
+
+If selecting the Catchment LSM (F2.5 version), the model requires the near infrared (NIR) and visible (VIS) albedo factor files, as shown below for example. This particular albedo parameter set is currently only available for the Catchment LSM Fortuna 2.5 (CLSMF2.5).
+
+`Albedo NIR factor file:` specifies the NIR albedo factor file.
+
+`Albedo VIS factor file:` specifies the VIS albedo factor file.
+
+These albedo parameter subroutines can be found in the albedo directory.
+
+.Example _ldt.config_ entry
+....
+Albedo NIR factor file: ./GLDAS_1.0-deg/modis_scale_factor.albnf.clim
+Albedo VIS factor file: ./GLDAS_1.0-deg/modis_scale_factor.albvf.clim
+....
+
+`Albedo fill option:` specifies the albedo data fill option. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Do not apply missing value fill routines
+|average |Use average to fill missing value
+|===
+
+`Albedo fill value:` indicates which albedo value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing albedo value, a value of 0.12 could be assigned if no nearest neighbor values exists to fill).
+
+`Albedo fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+.Example _ldt.config_ entry
+....
+Albedo fill option:            average
+Albedo fill radius:               2.
+Albedo fill value:               0.12
+....
+
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying albedo data where the albedo data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Albedo map projection:       latlon
+Albedo lower left lat:      -59.87500
+Albedo lower left lon:     -179.87500
+Albedo upper right lat:      89.87500
+Albedo upper right lon:     179.87500
+Albedo resolution (dx):       0.2500
+Albedo resolution (dy):       0.2500
+....
+
+`Max snow albedo data source:` specifies the maximum snow albedo dataset source to be read in. Current source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|NCEP_Native |Native NCEP maximum snow albedo source.
+|NCEP_LIS |Similar to the above option but LIS-team processed.
+|NCEP_GFS |Similar to the above option but on GFS grid.
+|SACHTET.3.5.6 |Max snow albedo specific to the SAC-HTET model.
+|CONSTANT |User can select a constant value.
+|===
+
+`Max snow albedo map:` specifies the map file containing data with the static upper bound of the snow albedo. The albedo field is used by all Noah LSM and RDHM-SAC LSM versions.
+
+`Max snow albedo map projection:` specifies the projection of the max snow albedo map data.
+
+`Max snow albedo spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to the maximum snow albedo map. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|average |Upscale by averaging values for each gridcell
+|neighbor |Reinterpolate by selecting nearest gridcell neighbor
+|bilinear |Reinterpolate by using bilinear interpolation
+|budget-bilinear |Reinterpolate by using conservative, budget-bilinear
+|===
+
+.Example _ldt.config_ entry
+....
+Max snow albedo data source:       NCEP_LIS
+Max snow albedo map:   ../input/25KM/mxsnoalb_MODIS.1gd4r
+Max snow albedo spatial transform:  none
+....
+
+`Max snow albedo fill option:` specifies the max snow albedo data fill option. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Do not apply missing value fill routines
+|average |Use average to fill missing value
+|===
+
+`Max snow albedo fill value:` indicates which max snow albedo value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing snow albedo value, an value of 0.42 could be assigned if no nearest neighbor values exists to fill).
+
+`Max snow albedo fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+.Example _ldt.config_ entry
+....
+Max snow albedo fill option:          average
+Max snow albedo fill radius:             3.
+Max snow albedo fill value:             0.42
+....
+
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying max snow albedo data, where the max snow albedo albedo data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Max snow albedo map projection:      latlon
+Max snow albedo lower left lat:    -59.87500
+Max snow albedo lower left lon:   -179.87500
+Max snow albedo upper right lat:    89.87500
+Max snow albedo upper right lon:   179.87500
+Max snow albedo resolution (dx):     0.2500
+Max snow albedo resolution (dy):     0.2500
+....
+
+Greenness fraction maps
+
+Greenness vegetation fraction is considered the horizontal greenness fraction represented for a model gridcell. This parameter is used in the LSMs: all Noah LSMs, RDHM-SAC, Catchment F2.5.
+
+`Greenness data source:` specifies the greenness fraction climatology dataset source to be read in. Current source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|NCEP_Native |Native NCEP monthly greenness climatology source.
+|NCEP_LIS |Similar to the above option but LIS-team processed.
+|CLSMF2.5 |Similar to the above option but for CLSM F2.5 model.
+|SACHTET.3.5.6 |Similar to the above option but for SAC-HTET model.
+|CONSTANT |User can select a constant value.
+|===
+
+`Greenness map projection:` specifies the projection of the greenness map data.
+
+`Greenness fraction map:` specifies the source of the climatology based gfrac files. The climatology greenness data files have the following naming convention: <directory>/<file header>.<tag>.1gd4r. The tag should represent the month (such as jan, feb, mar, etc.). The file header can be anything (such as green1KM).
+
+`Greenness climatology interval:` specifies the frequency of the greenness climatology in months. Only current option is: "`monthly`".
+
+`Calculate min-max greenness fraction:` specifies a logical flag option to offer the user the ability to calculate minimum and maximum greenness fraction values from a given climatology (e.g., monthly). Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|.false. |Read in min and max greenness fraction value maps
+|.true. |Calculate greenness fraction from greenness climatology maps
+|===
+
+`Greenness maximum map:` specifies the file of the climatological maximum greenness data from the monthly greenness files.
+
+`Greenness minimum map:` specifies the file of the climatological minimum greenness data from the monthly greenness files.
+
+`Greenness spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to the greenness maps.  Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|average |Upscale by averaging values for each gridcell
+|neighbor |Reinterpolate by selecting nearest gridcell neighbor
+|bilinear |Reinterpolate by using bilinear interpolation
+|budget-bilinear |Reinterpolate by using conservative, budget-bilinear
+|===
+
+.Example _ldt.config_ entry
+....
+Greenness data source:         NCEP_LIS
+Greenness fraction map:     ../input/25KM/gvf_NCEP
+Greenness climatology interval:   monthly
+Calculate min-max greenness fraction:  .true.
+Greenness maximum map:      ../input/25KM/gvf_NCEP.MAX.1gd4r
+Greenness minimum map:      ../input/25KM/gvf_NCEP.MIN.1gd4r
+Greenness spatial transform:     none
+....
+
+`Greenness fill option:` specifies the greenness fraction data fill option. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Do not apply missing value fill routines
+|average |Use average to fill missing value
+|===
+
+`Greenness fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+`Greenness fill value:` indicates which greenness fraction value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing greenness value, a value of 0.2 could be assigned if exists to fill).
+
+`Greenness maximum fill value:` indicates which maximum greenness fraction value to be used if an arbitrary value fill is needed.
+
+`Greenness minimum fill value:` indicates which minimum greenness fraction value to be used if an arbitrary value fill is needed.
+
+.Example _ldt.config_ entry
+....
+Greenness fill option:        average
+Greenness fill radius:           3
+Greenness fill value:           0.20
+Greenness maximum fill value:   0.80
+Greenness minimum fill value:   0.05
+....
+
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying greenness data source, if the option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Greenness map projection:        latlon
+Greenness lower left lat:      -59.87500
+Greenness lower left lon:     -179.87500
+Greenness upper right lat:      89.87500
+Greenness upper right lon:     179.87500
+Greenness resolution (dx):       0.2500
+Greenness resolution (dy):       0.2500
+....
+
+LAI/SAI maps Leaf area index and stem area index maps are used to describe the vertical representation of leafy vegetation and the woody-branch areas within a given gridecell (respectively). LAI/SAI are used in the Community Land Model (CLM), Mosaic LSM, and Catchment LSM, version F2.5.
+
+`LAI/SAI map projection:` specifies the projection of the LAI/SAI map data.
+
+`LAI data source:` specifies the leaf area index (LAI) climatology dataset source to be read in. Current source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|AVHRR |LIS-team produced monthly LAI climatology source.
+|CLSMF2.5 |Similar to the above option but for CLSM F2.5 model.
+|CONSTANT |User can select a constant value.
+|===
+
+`SAI data source:` specifies the stem area index (SAI) climatology dataset source to be read in. Current source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|AVHRR |LIS-team produced monthly SAI climatology source.
+|CONSTANT |User can select a constant value.
+|===
+
+`LAI map:` specifies the source of the climatology based LAI files. The climatology data files have the following naming convention: <directory>/<file header>.<tag>.1gd4r. The tag should be represent the month (such as jan, feb, mar, etc.). The file header can be anything (such as avhrr_lai_1KM).
+
+`SAI map:` specifies the source of the climatology based SAI files. The climatology data files have the following naming convention: <directory>/<file header>.<tag>.1gd4r. The tag should be represent the month (such as jan, feb, mar, etc.). The file header can be anything (such as avhrr_sai_1KM).
+
+`LAI/SAI climatology interval:` specifies the frequency of the LAI or SAI climatology in months. Current option is: "`monthly`".
+
+`Calculate min-max LAI:` specifies a logical flag option to offer the user the ability to calculate minimum and maximum LAI values from a given climatology (e.g., monthly). Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|.false. |Read in min and max LAI value maps
+|.true. |Calculate LAI from LAI climatology maps
+|===
+
+`LAI maximum map:` specifies the file of the climatological maximum LAI data from the monthly LAI files.
+
+`LAI minimum map:` specifies the file of the climatological minimum LAI data from the monthly LAI files.
+
+`LAI/SAI spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to the LAI and SAI maps.  Only "`none`" option works for the "`AVHRR`" or "`CLSMF2.5`" LAI data source entries. Other spatial options for the include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|average |Upscale by averaging values for each gridcell
+|neighbor |Reinterpolate by selecting nearest gridcell neighbor
+|bilinear |Reinterpolate by using bilinear interpolation
+|budget-bilinear |Reinterpolate by using conservative, budget-bilinear
+|===
+
+.Example _ldt.config_ entry
+....
+LAI data source:            CLSMF2.5
+LAI map:          ../input/25KM/avhrr_lai_nldas               
+SAI map:          ../input/25KM/avhrr_sai_nldas           
+Calculate min-max LAI:      .false.
+LAI maximum map:  ../input/CLSMF2.5/clsmf2.5_maxlai.1gd4r
+LAI minimum map:  ../input/CLSMF2.5/clsmf2.5_minlai.1gd4r
+LAI/SAI climatology interval:  monthly 
+LAI/SAI spatial transform:     none
+....
+
+`LAI/SAI fill option:` specifies the LAI/SAI data fill option. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Do not apply missing value fill routines
+|average |Use average to fill missing value
+|===
+
+`LAI/SAI fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+`LAI fill value:` indicates which LAI value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing LAI value, a value of 1 could be assigned if exists to fill).
+
+`LAI maximum fill value:` indicates which maximum LAI value to be used if an arbitrary value fill is needed.
+
+`LAI minimum fill value:` indicates which minimum LAI value to be used if an arbitrary value fill is needed.
+
+`SAI fill value:` indicates which SAI value to be used if an arbitrary value fill is needed.
+
+.Example _ldt.config_ entry
+....
+LAI/SAI fill option:     average
+LAI/SAI fill radius:        3 
+LAI fill value:             1
+SAI fill value:            0.5
+LAI maximum fill value:     4
+LAI minimum fill value:     1
+....
+
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying LAI/SAI data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+LAI/SAI map projection:        latlon
+LAI/SAI lower left lat:      -59.87500
+LAI/SAI lower left lon:     -179.87500
+LAI/SAI upper right lat:      89.87500
+LAI/SAI upper right lon:     179.87500
+LAI/SAI resolution (dx):       0.2500
+LAI/SAI resolution (dy):       0.2500
+....
+
+`Slope type data source:` specifies the slope type index dataset source to be read in. Current source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|NCEP_Native |Native NCEP slope type derived map source.
+|NCEP_LIS |Similar to the above option but LIS-team processed.
+|NCEP_GFS |Similar to the above option but on a GFS grid type.
+|CONSTANT |User can select a constant value.
+|===
+
+`Slope type map:` specifies the slope type index as used in all Noah LSM versions.
+
+`Slope type map projection:` specifies the projection of the slope type map data.
+
+`Slope type spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to the soils maps. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|mode |Upscale by selecting dominant type for each gridcell
+|neighbor |Use nearest neightbor to select nearest gridcell neighbor
+|===
+
+.Example _ldt.config_ entry
+....
+Slope type data source:        NCEP_LIS
+Slope type map:         ../input/25KM/slopetype_NCEP.1gd4r
+Slope type spatial transform:   none
+....
+
+`Slope type fill option:` specifies the slope type data fill option.  Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Do not apply missing value fill routines
+|neighbor |Use nearest neighbor to fill missing value
+|===
+
+`Slope type fill value:` indicates which slope type value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing slope type value, an index value of 1 could be assigned if no nearest neighbor values exists to fill).
+
+`Slope type fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+.Example _ldt.config_ entry
+....
+Slope type fill option:        neighbor
+Slope type fill radius:         2.
+Slope type fill value:          1.
+....
+
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying slope type data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Slope type map projection:       latlon
+Slope type lower left lat:      -59.87500
+Slope type lower left lon:     -179.87500
+Slope type upper right lat:      89.87500
+Slope type upper right lon:     179.87500
+Slope type resolution (dx):       0.2500
+Slope type resolution (dy):       0.2500
+....
+
+`Bottom temperature data source:` specifies the bottom temperature dataset source to be read in. Current source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|ISLSCP1 |Native (NCEP) ISLSCP1 temperature derived map.
+|NCEP_LIS |Similar to the above option but LIS-team processed.
+|NCEP_GFS |Similar to the above option but on a GFS grid type.
+|CONSTANT |User can select a constant value.
+|===
+
+`Bottom temperature map:` specifies the bottom boundary temperature data. This parameter is currently required by the Noah LSM versions and the recently added RDHM-SAC/Snow-17 models.
+
+`Bottom temperature map projection:` specifies the projection of the bottom temperature map data.
+
+`Bottom temperature spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to the bottom temperature map. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|average |Upscale by averaging values for each gridcell
+|neighbor |Nearest neighbor scheme
+|bilinear |bilinear scheme
+|budget-bilinear |conservative scheme
+|===
+
+.Example _ldt.config_ entry
+....
+Bottom temperature data source:       NCEP_LIS
+Bottom temperature map:  ../input/25KM/tbot_GDAS_6YR_CLIM.1gd4r
+Bottom temperature spatial transform:   none
+....
+
+`Bottom temperature fill option:` specifies the bottom boundary temperature data fill option. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Do not apply missing value fill routines
+|average |Averaging values for each missing value
+|neighbor |Use nearest neighbor to fill missing value
+|===
+
+`Bottom temperature fill value:` indicates which bottom soil temperature value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing bottom temperature field, a value of 287 K could be assigned if no nearest neighbor values exists to fill).
+
+`Bottom temperature fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+.Example _ldt.config_ entry
+....
+Bottom temperature fill option:   neighbor    
+Bottom temperature fill radius:     3.      
+Bottom temperature fill value:     287.0      
+....
+
+`Bottom temperature topographic downscaling:` specifies the option with which to adjust bottom temperature field due to topographic impacts.
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |No topographic/elevation adjustment made to parameter data
+|lapse-rate |Adjust (or downscale) bottom temperature using lapse-rate correction.
+|===
+
+.Example _ldt.config_ entry
+....
+Bottom temperature topographic downscaling:    none
+....
+
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying bottom temperature parameter data, if the data source option has a "`_LIS`" in the name.  See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Bottom temperature map projection:      latlon 
+Bottom temperature lower left lat:     -59.87500
+Bottom temperature lower left lon:    -179.87500
+Bottom temperature upper right lat:     89.87500
+Bottom temperature upper right lon:    179.87500
+Bottom temperature resolution (dx):      0.2500
+Bottom temperature resolution (dy):      0.2500
+....
+
+`Noah-MP PBL Height Value:` specifies the option which to set the planetary boundary layer height (PBLH) value for the Noah-MP model.
+
+.Example _ldt.config_ entry
+....
+Noah-MP PBL Height Value:     900.    # in meters
+....
+
+If selecting the Community Land Model (4.5 version), the following config entires are also required.
+
+`CLM45 parameter mode:` specifies whether to "`readin`" the CLM-4.5 parameters from pre-processed files. Currently, only the "`readin`" option is available.
+
+`CLM45 domain file:` specifies the CLM-4.5 domain file. The domain file is used to define the grid and the landmask.
+
+`CLM45 surface file:` specifies the CLM-4.5 surface data parameter file.
+
+`CLM45 param spatial transform:` indicates which spatial transform type is to be applied to the CLM-4.5 surface file. Currently, only "`none`" is supported, as it is assumed that the domain and surface files are on the same grid as the desired LDT output domain.
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LDT output domain
+|===
+
+`CLM45 param map projection:` indicates the projection of the CLM-4.5 domain and surface files.
+
+`CLM45 lower left lat:` specifies the lower left latitude of the CLM-4.5 domain and surface files.
+
+`CLM45 lower left lon:` specifies the lower left longitude of the CLM-4.5 domain and surface files.
+
+`CLM45 upper right lat:` specifies the upper right latitude of the CLM-4.5 domain and surface files.
+
+`CLM45 upper right lon:` specifies the upper right longitude of the CLM-4.5 domain and surface files.
+
+`CLM45 resolution (dx):` specifies the grid spacing in degrees in the x-direction (longitudinal) of the CLM-4.5 domain and surface files.
+
+`CLM45 resolution (dy):` specifies the grid spacing in degrees in the y-direction (latitudinal) of the CLM-4.5 domain and surface files.
+
+.Example _ldt.config_ entry
+....
+CLM45 parameter mode:                   "readin"
+CLM45 domain file:
+CLM45 surface file:
+CLM45 param spatial transform:          none
+CLM45 param map projection:             latlon
+CLM45 lower left lat:                    -90.0
+CLM45 lower left lon:                      0.625
+CLM45 upper right lat:                    90.0
+CLM45 upper right lon:                   359.375
+CLM45 resolution (dx):                     1.25
+CLM45 resolution (dy):                     0.9424060
+....
+
+Potential Evapotranspiration (PET) maps
+
+`PET directory:` specifies the source of the monthly climatology based PET files. The climatology data files have the following naming convention: <directory>/<file header>.<tag>.1gd4r. The tag should be represent the month (such as JAN, FEB, MAR, etc.). The file header can be anything (such as avhrr_pet_1KM). Currently, this parameter is used only with the RDHM-SAC model.
+
+`PET map projection:` specifies the projection of the PET map data.
+
+`PET adjustment factor directory:` specifies the source of the m monthly climatology-based PET adjustment factor files. The climatology data files have the following naming convention: <directory>/<file header>.<tag>.1gd4r. The tag should be represent the month (such as JAN, FEB, MAR, etc.). The file header can be anything (such as avhrr_petadj_1KM).
+
+`PET climatology interval:` specifies the frequency of the PET climatology in months. Current option is: "`monthly`".
+
+`PET spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to the PET maps. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain (only option for now)
+|===
+
+.Example _ldt.config_ entry
+....
+PET directory:             ../input/25KM/sachtet_pet
+PET adjustment factor directory:  ../input/25KM/sachtet_petadj
+PET climatology interval:    monthly
+PET spatial transform:        none
+....
+
+`PET fill option:` specifies the PET climatology data fill option.  Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Do not apply missing value fill routines
+|average |Use average to fill missing value
+|===
+
+`PET fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+`PET fill value:` indicates which PET value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing PET value, a value of 1 could be assigned if exists to fill. 10 pt
+
+.Example _ldt.config_ entry
+....
+PET fill option:         average
+PET fill radius:            3
+PET fill value:            10.
+....
+
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying PET data. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+PET map projection:        latlon
+PET lower left lat:      -59.87500
+PET lower left lon:     -179.87500
+PET upper right lat:      89.87500
+PET upper right lon:     179.87500
+PET resolution (dx):       0.2500
+PET resolution (dy):       0.2500
+....
+
+`CLSMF25 map projection:` specifies the projection of the CLSMF25 map data.
+
+`CLSMF25 tile coord file:` specifies the location of a CLSM F2.5 coordinate file. This file contains catchment tile coordinate information that can be used in Catchment LSM (CLSM) Fortuna 2.5 version model run.
+
+.Example _ldt.config_ entry
+....
+CLSMF25 tile coord file:  ./cat_parms/PE_2880x1440_DE_464x224.file
+....
+
+`CLSMF25 soil param file:` specifies the location of a CLSM F2.5 soils file. This file contains catchment soil parameter information that can be used in Catchment LSM (CLSM) Fortuna 2.5 version model run.
+
+.Example _ldt.config_ entry
+....
+CLSMF25 soil param file:  ./cat_parms/soil_param.dat
+....
+
+`CLSMF25 topo files:` specifies the locations of a CLSM F2.5 topo parameter files. These files contain catchment topographic parameter information that can be used in a Catchment LSM (CLSM) Fortuna 2.5 version model run.
+
+`CLSMF25 topo ar file:` specifies the table file containing topographic shape parameters for the CLSM F2.5 model.
+
+`CLSMF25 topo bf file:` specifies the table file containing topographic baseflow paramters for the CLSM F2.5 model.
+
+`CLSMF25 topo ts file:` specifies the table file containing water transfer timescale parameters for the CLSM F2.5 model.
+
+.Example _ldt.config_ entry
+....
+CLSMF25 topo ar file:  ../cat_parms/ar.new
+CLSMF25 topo bf file:  ../cat_parms/bf.dat
+CLSMF25 topo ts file:  ../cat_parms/ts.dat
+....
+
+`CLSMF25 surf layer ts file:` specifies the location of a CLSM F2.5 tau parameter file. This file contain catchment surface layer timescale (ts), tau, parameter information that can be used in Catchment LSM (CLSM) Fortuna 2.5 version model runs.
+
+.Example _ldt.config_ entry
+....
+CLSMF25 surf layer ts file:  ../cat_parms/tau_param.dat
+....
+
+`CLSMF25 top soil layer depth:` specifies the top soil layer depth. This parameter value specifies the depth of the top soil layer depth (unit: meters) and is needed in processing other parameters for a Catchment LSM (CLSM) Fortuna 2.5 version model run.
+
+.Example _ldt.config_ entry
+....
+CLSMF25 top soil layer depth:   0.02 
+....
+
+`CLSMF25 spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to CLSM F2.5 parameters.  Options include (only "`none`" works at this time):
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|===
+
+.Example _ldt.config_ entry
+....
+CLSMF25 spatial transform:     none
+....
+
+This section also outlines the domain specifications of the Catchment LSM Fortuna 2.5 data. If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying CLSM data. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+CLSMF25 map projection:       latlon
+CLSMF25 lower left lat:       25.0625
+CLSMF25 lower left lon:     -124.9375
+CLSMF25 upper right lat:      52.9375
+CLSMF25 upper right lon:     -67.0625
+CLSMF25 resolution (dx):       0.125
+CLSMF25 resolution (dy):       0.125
+....
+
+`RDHM356 constants table:` specifies the location of the constants table required by the Research Distributed Hydrologic Model (RDHM) version 3.5.6 models, SAC-HTET and SNOW-17. This table file contains constant values for any listed SAC-HTET or SNOW-17 parameter types. If a constant value is >= 0., then the constant value is assigned for all gridcells for a parameter entry. If the value is negative, a 2-D gridded a priori map is read in. Also, the negative constant value can be used as a scaling factor of the 2-D grid by taking its absolute value and multiplying the entire field by it, if the value is other than -1.
+
+`RDHM356 universal undefined value:` specifies an universal undefined value that can be used by either the SAC-HTET or SNOW-17 models for run-time purposes.
+
+.Example _ldt.config_ entry
+....
+RDHM356 constants table:   ./rdhm_singlevalueinputs.txt
+RDHM356 universal undefined value:  -1.
+....
+
+`Create or readin soil parameters:` specifies how the soil parameter files are either generated or brought in to the SAC-HTET model. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |do not readin or create soil parameters
+|readin |read in existing SAC soil parameter files
+|create |generate SAC soil parameter fields in LDT (currently only available at native STATSGOv1 grid at the lat-lon grid and 0.00833 deg resolution).
+|===
+
+.Example _ldt.config_ entry
+....
+Create or readin soil parameters:     "readin"   
+....
+
+`SACHTET soil parameter method:` specifies the method that can generate the SAC soil parameters. Options include (for now):
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |do not readin or create soil parameters
+|Koren_v1 |Based on Victor Koren (NOAA/OHD) original code developed to generate SAC soil parameters.
+|===
+
+.Example _ldt.config_ entry
+....
+SACHTET soil parameter method:        "Koren_v1"   # none | Koren_v1
+....
+
+`SACHTET Cosby soil parameter table:` specifies the path of the Cosby soil parameter table needed for the SAC-HTET soil parameters, especially for the generation of the parameters.
+
+.Example _ldt.config_ entry
+....
+SACHTET Cosby soil parameter table:  ./rdhm_parms/cosby_eq_newzperc.txt
+....
+
+`SACHTET parameter files:` specifies the locations of SACHTET 3.5.6 parameter files. These files contain soil-based and other model parameter information that can be used in SAC-HTET model runs. Most parameter files will come in the HRAP domain and XMRG-binary format found commonly in NOAA NWS/OHD/RFC applications. For the soil parameters, LZ indicates "`lower zone`" and UZ refers to "`upper zone`".
+
+`SACHTET soiltype parameter table:` specifies the dominant soiltype parameter table file.
+
+`SACHTET vegetation parameter table:` specifies the vegetation parameter table file.
+
+`SACHTET parameter spatial transform:` specifies generally the SAC-HTET grid spatial transform. Current option is "`none`", and future options will be supported.
+
+`SACHTET parameter fill option:` specifies generally the SAC-HTET parameter fill option. This option is not currently supported but can be in the future.
+
+`SACHTET parameter fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+`SACHTET parameter fill value:` indicates which SACHTET parameter value to be used if an arbitrary value fill is needed.
+
+`SACHTET map projection:` specifies the general SAC-HTET parameter grid projection. Currently, "`hrap`" is supported and soon other projections, like "`latlon`" will be.
+
+`SACHTET LZFPM map:` specifies the lower zone primary free water (slow) maximum storage [mm]
+
+`SACHTET LZFSM map:` specifies the lower zone supplemental free water (fast) maximum storage [mm]
+
+`SACHTET LZPK map:` specifies the lower zone primary free water depletion rate [daystem:[^{-1}]]
+
+`SACHTET LZSK map:` specifies the lower zone supplemental free water depletion rate [day stem:[^{-1}]]
+
+`SACHTET LZTWM map:` specifies the lower zone tension water maximum storage [mm]
+
+`SACHTET UZFWM map:` specifies the upper zone free water maximum storage [mm]
+
+`SACHTET UZTWM map:` specifies the upper zone tension water maximum storage [mm]
+
+`SACHTET UZK map:` specifies the upper zone free water latent depletion rate [day stem:[^{-1}]]
+
+`SACHTET PFREE map:` specifies the fraction percolation from upper to lower free water storage [day stem:[^{-1}]]
+
+`SACHTET REXP map:` specifies the exponent of the percolation equation (percolation parameter) [-]
+
+`SACHTET ZPERC map:` specifies the maximum percolation rate [-]
+
+`SACHTET EFC map:` specifies the fraction of forest cover [-]
+
+`SACHTET PCTIM map:` specifies the impervious fraction of the watershad area [-]
+
+`SACHTET ADIMP map:` specifies the additional impervious area [-]
+
+`SACHTET SIDE map:` specifies the ratio of deep recharge to channel base flow [-]
+
+`SACHTET RIVA map:` specifies the riparian vegetation area [-]
+
+`SACHTET RSERV map:` specifies the fraction of lower zone free water not transferable to tension water [-]
+
+`SACHTET TBOT map:` specifies the bottom boundary soil temperature [C]
+
+`SACHTET STXT map:` specifies the SAC-HTET domain soil texture map file.
+
+`SACHTET CKSL map:` specifies the ratio of frozen to non-frozen surface (increase in frozen ground contact, usually = 8 s/m) [s/m]
+
+`SACHTET RSMAX map:` specifies the maximum residual porosity (usually = 0.58) [-]
+
+`SACHTET ZBOT map:` specifies the lower boundary depth (negative value, usually = -2.5 m) [m]
+
+`SACHTET offset time map:` specifies the path to the time offset map.
+
+`SACHTET soil albedo map:` specifies the soil albed map.
+
+.Example _ldt.config_ entry
+....
+SACHTET soiltype parameter table:    ./testcase/sachtet_soilparms.txt
+SACHTET vegetation parameter table:  ./testcase/sachtet_vegparms.txt
+SACHTET LZFPM map:          ./testcase/sac_LZFPM.gz
+SACHTET LZFSM map:          ./testcase/sac_LZFSM.gz
+SACHTET LZPK map:           ./testcase/sac_LZPK.gz
+SACHTET LZSK map:           ./testcase/sac_LZSK.gz
+SACHTET LZTWM map:          ./testcase/sac_LZTWM.gz
+SACHTET UZFWM map:          ./testcase/sac_UZFWM.gz
+SACHTET UZTWM map:          ./testcase/sac_UZTWM.gz
+SACHTET UZK map:            ./testcase/sac_UZK.gz
+SACHTET PFREE map:          ./testcase/sac_PFREE.gz
+SACHTET REXP map:           ./testcase/sac_REXP.gz
+SACHTET ZPERC map:          ./testcase/sac_ZPERC.gz
+SACHTET EFC map:            ./testcase/sac_EFC.gz
+SACHTET PCTIM map:          ./testcase/sac_PCTIM.gz
+SACHTET soil albedo map:    ./testcase/sachtet_soilAlbedo.gz
+SACHTET offset time map:    ./testcase/sachtet_offsetTime.gz
+SACHTET STXT map:           ./testcase/frz_STXT.gz
+SACHTET TBOT map:           ./testcase/frz_TBOT.gz
+SACHTET CKSL map:                     none
+SACHTET RSMAX map:                    none
+SACHTET ZBOT map:                     none
+SACHTET parameter spatial transform:  none
+SACHTET parameter fill option:        none
+SACHTET parameter fill radius:
+SACHTET parameter fill value:
+SACHTET map projection:               hrap
+SACHTET offset time map:
+....
+
+`SNOW17 parameter files:` specifies the locations of SNOW-17 parameter files. These files contain snow and soil-based parameter information that can be used in the SNOW-17 model run.
+
+`SNOW17 ADC directory:` specifies the location of the multiband Snow-17 curve coordinates.
+
+`SNOW17 ADC number of points:` specifies the number of areal depletion curve (ADC) points along the curve defining snow depletion rates.
+
+`SNOW17 PGM map:` specifies the ground melt (in mm) input map.
+
+`SNOW17 parameter spatial transform:` specifies the general grid spatial transform option for SNOW-17. Only current option for now is "`none`".
+
+`SNOW17 parameter fill option:` specifies the general SNOW-17 parameter fill option. This option is not currently supported but can be in the future.
+
+`SNOW17 parameter fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+`SNOW17 parameter fill value:` indicates which SNOW17 parameter value to be used if an arbitrary value fill is needed.
+
+`SNOW17 map projection:` specfies the general SNOW-17 parameter map projection. Currently only "`hrap`" is supported. Others like, "`latlon`", will be supported in the future.
+
+`SNOW17 MFMAX map:` specifies the maximum melt factor [mm/(6hrC)]
+
+`SNOW17 MFMIN map:` specifies the minimum melt factor [mm/(6hrC)]
+
+`SNOW17 UADJ map:` specifies the the average wind function during rain-on-snow periods [mm/mb]
+
+`SNOW17 ALAT map:` specifies the latitude [-]
+
+`SNOW17 ELEV map:` specifies the elevation [m]
+
+`SNOW17 SCF map:` specifies the snow fall correction factor [-]
+
+`SNOW17 NMF map:` specifies the maximum negative melt factor [mm/(6hrC)]
+
+`SNOW17 SI map:` specifies the areal water-equivalent above which 100 percent areal snow cover [mm]
+
+`SNOW17 MBASE map:` specifies the base temperature for non-rain melt factor [C]
+
+`SNOW17 PXTEMP map:` specifies the temperature which spereates rain from snow [C]
+
+`SNOW17 PLWHC map:` specifies the maximum amount of liquid-water held against gravity drainage [-]
+
+`SNOW17 TIPM map:` specifies the antecedent snow temperature index parameter [-]
+
+`SNOW17 LAEC map:` specifies the snow-rain split temperature [C]
+
+.Example _ldt.config_ entry
+....
+SNOW17 MFMAX map:       ./testcase/snow_MFMAX.gz
+SNOW17 MFMIN map:       ./testcase/snow_MFMIN.gz
+SNOW17 UADJ map:        ./testcase/snow_UADJ.gz
+SNOW17 ALAT map:        ./testcase/snow_ALAT.gz
+SNOW17 ELEV map:        ./testcase/snow_ELEV.gz
+SNOW17 SCF map:                 none
+SNOW17 NMF map:                 none
+SNOW17 SI map:                  none
+SNOW17 MBASE map:               none
+SNOW17 PXTEMP map:              none
+SNOW17 PLWHC map:               none
+SNOW17 TIPM map:                none
+SNOW17 PGM map:                 none
+SNOW17 ELEV map:                none
+SNOW17 LAEC map:                none
+SNOW17 ADC directory:           none
+SNOW17 ADC number of points:     11
+SNOW17 parameter spatial transform:  none
+SNOW17 parameter fill option:        none
+SNOW17 parameter fill radius:
+SNOW17 parameter fill value:
+SNOW17 map projection:               hrap
+....
+
+ifdef::devonly[]
+`SiB2 static parameter directory:` specifies the location of Simple Biospheric v2 (SiB2) Model parameter files. These files contain vegetation- and soil-based parameter information that can be used in the SiB2 model run.
+
+`SiB2 parameter spatial transform:` specifies the general grid spatial transform option for SiB2. Only current option for now is "`none`".
+
+`SiB2 map projection:` specfies the general SiB2 parameter map projection.  [red]#What projections are available?#
+
+`SiB2 parameter fill option:` specifies the general SiB2 parameter fill option.
+
+`SiB2 parameter fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+`SiB2 parameter fill value:` indicates which SiB2 parameter value to be used if an arbitrary value fill is needed.
+
+.Example _ldt.config_ entry
+....
+SiB2 static parameter directory:  ./testdata/
+SiB2 parameter spatial transform:   none
+SiB2 parameter fill option:         none
+SiB2 map projection:               latlon
+SiB2 lower left lat:               25.025
+SiB2 lower left lon:             -124.975
+SiB2 upper right lat:              49.475
+SiB2 upper right lon:             -67.025
+SiB2 resolution (dx):               0.05
+SiB2 resolution (dy):               0.05
+....
+endif::devonly[]
+
+==== WRSI model parameter files
+
+`WRSI landmask file:` specifies the location of the GeoWRSI 2.0 land mask file (default file is in *BIL format).
+
+`WRSI length of growing period file:` specifies the location of the GeoWRSI 2.0 length of growing period file (default file is in *BIL format).
+
+`WRSI water holding capacity file:` specifies the location of the GeoWRSI 2.0 water holding capacity file (default file is in *BIL format).
+
+`WRSI WRSI climatology file:` specifies the location of the GeoWRSI 2.0 WRSI climatology file (default file is in *BIL format).
+
+`WRSI SOS climatology file:` specifies the location of the GeoWRSI 2.0 SOS climatology file (default file is in *BIL format).
+
+`WRSI SOS file:` specifies the location of an (optional) current start-of-season (SOS) file (default file is in *BIL format).
+
+`WRSI SOS anomaly file:` specifies the location of an (optional) current (SOS) anomaly file (default file is in *BIL format).
+
+.Example _ldt.config_ entry
+....
+WRSI landmask file:                 ./data/Africa/Static/sawmask
+WRSI length of growing period file: ./data/Africa/Static/lgp_south
+WRSI water holding capacity file:   ./data/Africa/Static/whc3
+WRSI WRSI climatology file:         ./data/Africa/Static/wsimedn_edc_s
+WRSI SOS climatology file:          ./data/Africa/SOS/sosmedn_edc_s
+WRSI SOS file:                       none
+WRSI SOS anomaly file:               none
+....
+
+[[ssec-climparams]]
+=== Climate Parameters
+
+Climatology parameter maps
+
+`PPT climatology data source:` specifies the monthly precipitation (PPT) climatology fields. Current source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|PRISM |PRISM US-only climate downscaled fields. For more info, see: http://www.prism.oregonstate.edu/
+|WORLDCLIM |Global climate layers downscaled. For more info, see: http://www.worldclim.org/
+|===
+
+`PPT climatology maps:` specifies the source of the climatology based precipitation files. The climatology precipitation data files can have the following naming conventions, depending on the data source:
+
+PRISM: <directory>/<file header>.<tag>.txt
+
+* The file header can be anything (such as ppt_1931_2010).
+* The tag should represent the month (such as jan, feb, mar, etc.).
+
+WORLDCLIM: <directory>/<file header>.<tag>.1gd4r
+
+* The file header can be prec_
+* The tag should represent the month (such as 1, 2,..., 12).
+
+`PPT climatology interval:` specifies the frequency of the precipitation climatology in months. Current option is: "`monthly`"
+
+.Example _ldt.config_ entry
+....
+PPT climatology data source:  PRISM
+PPT climatology maps:  ../LS_PARAMETERS/climate_maps/ppt_1981_2010
+PPT climatology interval:     monthly
+....
+
+ifdef::devonly[]
+`TMIN climatology maps:` specifies the source of the climatology based minimum temperature files.
+
+`TMAX climatology maps:` specifies the source of the climatology based maximum temperature files.
+
+.Example _ldt.config_ entry
+....
+TMIN climatology maps:
+TMAX climatology maps:
+....
+endif::devonly[]
+
+`Climate params spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to climate parameters. Only "`average`" spatial transform works currently for the "`WORLDCLIM`" climatology files. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|average |Upscale by averaging values for each gridcell
+|neighbor |Reinterpolate by selecting nearest gridcell neighbor
+|bilinear |Reinterpolate by using bilinear interpolation
+|budget-bilinear |Reinterpolate by using conservative, budget-bilinear
+|===
+
+.Example _ldt.config_ entry
+....
+Climate params spatial transform:   average
+....
+
+This section also outlines the domain specifications of climatology-based parameters, like higher scaled monthly precipitation or min/max temperatures. If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying climatology data. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Climate params map projection:     latlon
+....
+
+[[ssec-forcings]]
+=== Forcing Parameters
+
+==== NLDAS-2 Forcing based parameter inputs
+
+`NLDAS2 elevation difference map:` specifies the NLDAS-2 elevation difference file used to remove built-in elevation correction.
+
+`NARR terrain height map:` specifies the terrain height map for the NLDAS-2 base forcing of the North American Regional Reanalysis (NARR).
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+.Example _ldt.config_ entry
+....
+NLDAS2 elevation difference map: ../NARR_elev-diff.1gd4r
+NARR terrain height map:         ../NARR_elevation.1gd4r
+....
+
+==== NLDAS-1 Forcing based parameter inputs
+
+`NLDAS1 elevation difference map:` specifies the NLDAS-1 elevation difference file used to remove built-in elevation correction.
+
+`EDAS terrain height map:` specifies the terrain height map for the NLDAS-1 base forcing of the Eta Data Assimilation System (EDAS).
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+.Example _ldt.config_ entry
+....
+NLDAS1 elevation difference map: ../NLDAS1/EDAS_elev-diff.1gd4r
+EDAS terrain height map:         ../NLDAS1/EDAS_elevation.1gd4r
+....
+
+==== PRINCETON Forcing based parameter inputs
+
+`PRINCETON elevation map:` specifies the terrain height map for the Princeton University global forcing dataset.
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+.Example _ldt.config_ entry
+....
+PRINCETON elevation map:     ../PRINCETON/hydro1k_elev_mean_1d.asc
+....
+
+==== NAM242 Forcing based parameter inputs
+
+`NAM242 elevation map:` specifies the terrain height map for the North American Mesoscale (NAM) NOAA grid 242 forcing dataset.
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+.Example _ldt.config_ entry
+....
+NAM242 elevation map:     ../NAM/terrain.242.grb
+....
+
+[[sssec-forcings_gdas]]
+==== GDAS
+
+GDAS parameter inputs: GDAS elevation maps specify lowest boundary layer information which can be used to downscale or lapse rate adjust GDAS meteorological variables, if given a higher resolution elevation height map. Original files are given in Grib-1 format and on their original Gaussian grids (from NCEP), so the GDAS elevation file reader is set up to support these files.
+
+`GDAS forcing directory:` specifies the location of the GDAS forcing data files.
+
+`GDAS T126 elevation map:` specifies the GDAS T126 elevation definition.
+
+`GDAS T170 elevation map:` specifies the GDAS T170 elevation definition.
+
+`GDAS T254 elevation map:` specifies the GDAS T254 elevation definition.
+
+`GDAS T382 elevation map:` specifies the GDAS T382 elevation definition.
+
+`GDAS T574 elevation map:` specifies the GDAS T574 elevation definition.
+
+`GDAS T1534 elevation map:` specifies the GDAS T1534 elevation definition.
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+.Example _ldt.config_ entry
+....
+GDAS forcing directory:
+GDAS T126 elevation map:  ./GDAS/global_orography.t126.grb
+GDAS T170 elevation map:  ./GDAS/global_orography.t170.grb
+GDAS T254 elevation map:  ./GDAS/global_orography.t254.grb
+GDAS T382 elevation map:  ./GDAS/global_orography.t382.grb
+GDAS T574 elevation map:  ./GDAS/global_orography.t574.grb
+GDAS T1534 elevation map: ./GDAS/global_orography_uf.t1534.3072.1536.grb
+....
+
+[[sssec-forcings_ecmwf]]
+==== ECMWF
+
+ECMWF parameter inputs: ECMWF elevation maps specify lowest boundary layer information which can be used to downscale or lapse rate adjust ECMWF meteorological variables, if given a higher resolution elevation height map. Original files are given in Grib-1 format and on their original lat-lon grids (from ECMWF), so the ECMWF elevation file reader is set up to support these files.
+
+`ECMWF forcing directory:` specifies the location of the ECMWF forcing data files.
+
+`ECMWF IFS23R4 elevation map:` specifies the ECMWF IFS23R4 terrain height map file path.
+
+`ECMWF IFS25R1 elevation map:` specifies the ECMWF IFS25R1 terrain height map file path.
+
+`ECMWF IFS30R1 elevation map:` specifies the ECMWF IFS30R1 terrain height map file path.
+
+`ECMWF IFS33R1 elevation map:` specifies the ECMWF IFS33R1 terrain height map file path.
+
+`ECMWF IFS35R2 elevation map:` specifies the ECMWF IFS35R2 terrain height map file path.
+
+`ECMWF IFS35R3 elevation map:` specifies the ECMWF IFS35R3 terrain height map file path.
+
+`ECMWF IFS36R1 elevation map:` specifies the ECMWF IFS36R1 terrain height map file path.
+
+`ECMWF IFS37R2 elevation map:` specifies the ECMWF IFS37R2 terrain height map file path.
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+.Example _ldt.config_ entry
+....
+ECMWF forcing directory:
+ECMWF IFS23R4 elevation map:  ./ECMWF/ecmwf.2001092006.092006.elev_1_4
+ECMWF IFS25R1 elevation map:  ./ECMWF/ecmwf.2003010806.010806.elev_1_4
+ECMWF IFS30R1 elevation map:  ./ECMWF/ecmwf.2006020106.020106.elev_1_4
+ECMWF IFS33R1 elevation map:  ./ECMWF/ecmwf.2008060306.060306.elev_1_4
+ECMWF IFS35R2 elevation map:  ./ECMWF/ecmwf.2009031006.031006.elev_1_4
+ECMWF IFS35R3 elevation map:  ./ECMWF/ecmwf.2009090806.090806.elev_1_4
+ECMWF IFS36R1 elevation map:  ./ECMWF/ecmwf.2010012606.012606.elev_1_4
+ECMWF IFS37R2 elevation map:  ./ECMWF/ecmwf.2011051806.051806.elev_1_4
+....
+
+==== ECMWF Reanalysis Forcing based parameter inputs
+
+`ECMWF Reanalysis forcing directory:` specifies the location of the ECMWF Reanalysis forcing data files.
+
+`ECMWF Reanalysis maskfile:` specifies the ECMWF Reanalysis mask file.
+
+`ECMWF Reanalysis elevation map:` specifies the ECMWF Reanalysis elevation file.
+
+`ECMWF Reanalysis elevation spatial transform:` specifies the terrain height map spatial grid transform option (e.g., average).
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+.Example _ldt.config_ entry
+....
+ECMWF Reanalysis forcing directory:
+ECMWF Reanalysis elevation map: ./metforcing_parms/ECMWFRean/elev_ECMWF-reanalysis.1gd4r
+ECMWF Reanalysis elevation spatial transform:   "average"
+ECMWF Reanalysis maskfile:
+....
+
+==== ERA5 Reanalysis Forcing based parameter inputs
+
+`ERA5 forcing directory:` specifies the location of the ERA5 Reanalysis forcing data files.
+
+`ERA5 forcing tile to grid mapping file:` specifies the file
+that maps the 1-d forcing to a 2-d format
+
+`ERA5 forcing terrain height file:` specifies the ERA5 reanalysis elevation file
+
+.Example _ldt.config_ entry
+....
+ERA5 forcing directory:              ./ERA5/
+ERA5 forcing tile to grid mapping file: ../ERA5/mapping.nc
+ERA5 forcing terrain height file: ../ERA5/era5_elev.nc
+....
+
+
+==== MERRA-2 Forcing based parameter inputs
+
+`MERRA2 geopotential terrain height file:` specifies the MERRA-2 geopotential height file, which gets converted to terrain height (in meters) in LDT.
+
+.Example _ldt.config_ entry
+....
+MERRA2 geopotential terrain height file: ./MERRA2_100/MERRA2_101.const_2d_asm_Nx.00000000.nc4
+....
+
+==== TRMM 3B42RTV7 precipitation
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+==== TRMM 3B42V6 precipitation
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+==== TRMM 3B42V7 precipitation
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+==== CMAP precipitation
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+==== CMORPH precipitation
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+==== MERRA-Land forcing
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+==== MERRA2 forcing
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+==== RDHM356 forcing
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+==== RFE2Daily precipitation
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+==== RFE2gdas precipitation
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+==== CHIRPSv2 precipitation
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+==== Stage II precipitation
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+==== Stage IV precipitation
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+ifdef::devonly[]
+==== AGRMET
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+endif::devonly[]
+
+==== GEOS5 forecast
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+==== GFS
+
+If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
+
+[[ssec-rstopts]]
+=== LIS restart preprocessing options
+
+`Input restart file directory:` specifies the LIS output directory containing the restart files. It should be the same path as listed in "`Output directory:`" in the _lis.config_ file used to generate the restart files.
+
+`Input restart file naming style:` specifies the style of the LIS model and restart output names and their organization. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`2 level hierarchy`" |2 levels of hierarchy
+|"`3 level hierarchy`" |3 levels of hierarchy
+|"`4 level hierarchy`" |4 levels of hierarchy
+|"`WMO convention`" |WMO convention for weather codes
+|===
+
+`Input restart file output interval:` specifies the output interval of the restart files from the LIS output.
+
+`Input restart model timestep used:` specifies the timestep of the LSM or Routing model from the LIS output used to generate the restart files.
+
+`Input restart file format:` specifies the file format of the LIS restart files. Can be "`netcdf`" or "`binary`". If config entry is not present, LDT defaults to "`netcdf`". Note that the "`binary`" option is only supported for processing restart files from the VIC.4.1.2 LSM.
+
+`Output restart file generation mode:` specifies the method of generation of the LDT output restart preprocessing files. The only current option is "`climatological average`".
+
+`Output restart file averaging interval type:` specified the averaging interval of the LDT output restart preprocessing files. The only current option is "`monthly`".
+
+[NOTE]
+====
+If the VIC.4.1.2 LSM is used with binary restarts, the following VIC-specific options are also required in _ldt.config_:
+
+`VIC412 veg tiling scheme:` specifies whether VIC or LIS will perform vegetation-based sub-grid tiling.
+
+For LIS sub-grid tiling, tiling is based on vegetation fractions from the "`landcover file:`" file, set this config entry to 1.
+
+For VIC sub-grid tiling, tiling is based on vegetation fractions from the "`VEGPARAM`" file, set this config entry to 0.
+
+See the LIS Users`' Guide and/or VIC's documentation at:
+http://www.hydro.washington.edu/Lettenmaier/Models/VIC/index.shtml
+for more information about configuring these VIC options.
+
+`VIC412_NLAYER:`
+
+`VIC412_NODES:`
+
+`VIC412_DIST_PRCP:`
+
+`VIC412_SNOW_BAND:`
+
+The above 5 config entries should all be the same values as specified in the _lis.config_ file used to generate the VIC.4.1.2 LSM restart files.
+====
+
+.Example _ldt.config_ entry
+....
+Input restart file directory:                   ./path_to_lis_output_directory
+Input restart file naming style:                "3 level hierarchy"
+Input restart file output interval:             1mo
+Input restart model timestep used:              15mn
+Input restart file format:                      netcdf
+Output restart file generation mode:            "climatology average"
+Output restart file averaging interval type:    "monthly"
+....
+
+[[ssec-ensrstopts]]
+=== Ensemble restart model options
+
+`LIS restart source:` specifies the surface model restart file source.  Options are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|LSM |LSM restart file type
+|Routing |river or streamflow routing model restart file type
+|===
+
+.Example _ldt.config_ entry
+....
+LIS restart source:   "LSM"
+....
+
+`Ensemble restart generation mode:` specifies the mode of ensemble restart generation. Options are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|upscale |convert from a single member restart to a multi-member restart
+|downscale |convert from a multi-member restart to a single member restart
+|===
+
+.Example _ldt.config_ entry
+....
+Ensemble restart generation mode:   "upscale"
+....
+
+`Input restart filename:` specifies the name of the input restart file.
+
+.Example _ldt.config_ entry
+....
+Input restart filename: ../OL/LIS_RST_NOAH33_201001010000.d01.nc
+....
+
+`Output restart filename:` specifies the name of the output restart file.
+
+.Example _ldt.config_ entry
+....
+Output restart filename: ./LIS_RST_NOAH33_201001010000.d01.nc
+....
+
+`Number of ensembles per tile (input restart):` specifies the number of ensemble members used in the input restart file.
+
+.Example _ldt.config_ entry
+....
+Number of ensembles per tile (input restart): 1
+....
+
+`Number of ensembles per tile (output restart):` specifies the number of ensemble members to be used in the output restart file.
+
+.Example _ldt.config_ entry
+....
+Number of ensembles per tile (output restart): 12
+....
+
+Note: Make sure to specify the surface type, veg, soil, etc., subgrid tiling entries.  For upscaling or downscaling of restart files, maximum number of tiles and minimum cutoff percentage entries for subgrid tiling based on vegetation or other parameter types (e.g., soil type, elevation, etc.) are required as entries.
+
+For example, must include, Maximum number of surface type tiles per grid:
+
+[[ssec-nuwrfrealopts]]
+=== NUWRF preprocessing for real options
+
+The section describes some of the LDT-based NUWRF real input processing options.
+
+`LIS history file for land state initialization:` specifies the file name of the LIS history file to use to initialize the land state.
+
+`Processed NUWRF file for input to real:` specifies the file name of the generated file that is then used as input to the real.exe program in NUWRF.
+
+.Example _ldt.config_ entry
+....
+LIS history file for land state initialization:   EXAMPLE
+Processed NUWRF file for input to real:     EXAMPLE
+....
+
+[[ssec-dapreprocopts]]
+=== Data Assimilation preprocessing options
+
+The start time is specified in the following format:
+
+[cols="<,<,<",]
+|===
+|Variable |Value |Description
+
+|`Starting year:` |integer 2001 – present |specifying starting year
+|`Starting month:` |integer 1 – 12 |specifying starting month
+|`Starting day:` |integer 1 – 31 |specifying starting day
+|`Starting hour:` |integer 0 – 23 |specifying starting hour
+|`Starting minute:` |integer 0 – 59 |specifying starting minute
+|`Starting second:` |integer 0 – 59 |specifying starting second
+|===
+
+.Example _ldt.config_ entry
+....
+Starting year:                2002
+Starting month:                1
+Starting day:                  2
+Starting hour:                 0
+Starting minute:               0
+Starting second:               0
+....
+
+The end time is specified in the following format:
+
+[cols="<,<,<",]
+|===
+|Variable |Value |Description
+
+|`Ending year:` |integer 2001 – present |specifying ending year
+|`Ending month:` |integer 1 – 12 |specifying ending month
+|`Ending day:` |integer 1 – 31 |specifying ending day
+|`Ending hour:` |integer 0 – 23 |specifying ending hour
+|`Ending minute:` |integer 0 – 59 |specifying ending minute
+|`Ending second:` |integer 0 – 59 |specifying ending second
+|===
+
+.Example _ldt.config_ entry
+....
+Ending year:                  2010
+Ending month:                  1
+Ending day:                    1
+Ending hour:                   0
+Ending minute:                 0
+Ending second:                 0
+....
+
+`LIS output timestep:` specifies the LIS output time-step.
+
+.Example _ldt.config_ entry
+....
+LIS output timestep:          1da
+....
+
+`DA observation source:` specifies the source of the observation data on which preprocessing is performed. Options are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|LIS LSM soil moisture |soil moisture output from a LIS run
+|Synthetic soil moisture |synethtic soil moisture observations created from a LIS run
+|AMSR-E(LPRM) soil moisture |Land Parameter Retrieval Model (LPRM) retrievals of AMSR-E soil moisture
+|AMSR-E(NASA) soil moisture |NASA AMSR-E soil moisture
+|ESA CCI soil moisture |Essential Climate Variable (ECV) soil moisture retrievals
+|WindSat soil moisture |WindSat retrievals of soil moisture
+|SMOPS soil moisture |NESDIS Soil Moisture Operational Processing System (SMOPS) based soil moisture retrievals
+|ASCAT TUW soil moisture |ASCAT soil moisture retrievals from TU Wein
+|GRACE TWS |Terrestrial water storage observations from GRACE
+|Simulated GRACE |Simulated water storage observations from GRACE
+|===
+
+.Example _ldt.config_ entry
+....
+DA observation source:   "AMSR-E(LPRM) soil moisture"
+....
+
+`DA preprocessing method:` specifies which preprocessing method should be used. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"Obs grid generation" |Create the observation space grid only
+|"CDF generation" |Create CDFs for the given data source
+|"Anomaly correction" |Create updated observations for DA by applying anomaly correction (Used for GRACE DA)
+|===
+
+.Example _ldt.config_ entry
+....
+DA preprocessing method:  "CDF generation"
+....
+
+`Name of the preprocessed DA file:` specifies the name of the preprocessed DA file from LDT.
+
+.Example _ldt.config_ entry
+....
+Name of the preprocessed DA file: "lprm_cdf"
+....
+
+`Number of bins to use in the CDF:` specifies the number of bins to use while computing the CDF.
+
+.Example _ldt.config_ entry
+....
+Number of bins to use in the CDF: 100 
+....
+
+`Temporal resolution of CDFs:` specifies whether to generate lumped (considering all years and all seasons) CDFs or to stratify CDFs for each calendar month. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|monthly |stratify for each calendar month
+|yearly |lump (considering all years and all seasons)
+|===
+
+.Example _ldt.config_ entry
+....
+Temporal resolution of CDFs:     monthly
+....
+
+`Enable spatial sampling for CDF calculations:` Normally CDFs are calculated (for a given grid cell) by using the data values available at that grid point only. If this option is enabled, then values around a specified radius will be used in the CDF calculations, effectively improving the sampling density at the risk of reduced geographic specificity.
+
+.Example _ldt.config_ entry
+....
+Enable spatial sampling for CDF calculations: 1
+....
+
+`Spatial sampling window radius for CDF calculations:` specifies the radius with which to search for nearby value(s) in the CDF calculations.
+
+.Example _ldt.config_ entry
+....
+Spatial sampling window radius for CDF calculations: 2
+....
+
+`Group CDFs by external data:` specifies whether to group CDFs for each pixel by an externally specified categorical map; for example, by landcover. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|0 |do not group by external data
+|1 |group by external data
+|===
+
+.Example _ldt.config_ entry
+....
+Group CDFs by external data:     0
+....
+
+`CDF grouping attributes file:` specifies the name of an ASCII file that specifies the attributes of the CDF grouping, if enabled. A sample file is shown below. The first line is a description. The second line is the name of the file containing the external data for grouping. The third line is a descrition. The fourth line is the minimum value of the categorical data, followed by the maximum value of the categorical data, followed by the number of bins of the categorical data.
+
+#category file +
+landcover.1gd4r +
+#min max nbins +
+1 19 18 +
+
+.Example _ldt.config_ entry
+....
+CDF grouping attributes file:     cdf_grouping.txt
+....
+
+`Temporal averaging interval:` specifies temporal averaging interval to be used while computing the CDF.
+
+.Example _ldt.config_ entry
+....
+Temporal averaging interval:  "1da"
+....
+
+`Apply external mask:` specifies if an external mask (time varying) is to be applied while computing the CDF.
+
+.Example _ldt.config_ entry
+....
+Apply external mask:   0 
+....
+
+`External mask directory:` specifies the location of the external mask.
+
+.Example _ldt.config_ entry
+....
+External mask directory:  none
+....
+
+`Observation count threshold:` specifies the minimum number of observations to be used for generating valid CDF data.
+
+.Example _ldt.config_ entry
+....
+Observation count threshold:  500
+....
+
+`LIS soil moisture output format:` specifies the output format of the LIS model output. (binary/netcdf/grib1)
+
+`LIS soil moisture output methodology:` specifies the output methodology used in the LIS model output (1d tilespace/1d gridspace/2d gridspace).
+
+`LIS soil moisture output naming style:` specifies the output naming style used in the LIS model output (3 level hierarchy/4 level hierarchy, etc.).
+
+`LIS soil moisture output nest index:` specifies the index of the nest used in the LIS model output.
+
+`LIS soil moisture output directory:` specifies the location of the LIS model output.
+
+`LIS soil moisture output timestep:` specifies the output timestep of the LIS soil moisture.
+
+`LIS soil moisture output map projection:` specifies the map projection used in the LIS model output.
+
+For Lat/Lon projections:
+
+`LIS soil moisture domain lower left lat:` specifies the lower left latitude of the LIS model output.
+
+`LIS soil moisture domain lower left lon:` specifies the lower left longitude of the LIS model output.
+
+`LIS soil moisture domain upper right lat:` specifies the upper right latitude of the LIS model output.
+
+`LIS soil moisture domain upper right lon:` specifies the upper right longitude of the LIS model output.
+
+`LIS soil moisture domain resolution (dx):` specifies the resolution (in degrees) along the latitude of the LIS model output.
+
+`LIS soil moisture domain resolution (dy):` specifies the resolution (in degrees) along the longitude of the LIS model output.
+
+For Lambert and polar projections:
+
+`LIS soil moisture domain lower left lat:` specifies the lower left latitude of the LIS model output
+
+`LIS soil moisture domain lower left lon:` specifies the lower left longitude of the LIS model output
+
+`LIS soil moisture domain true lat1:` specifies the true lat1 of the LIS model output
+
+`LIS soil moisture domain true lat2:` specifies the true lat2 of the LIS model output
+
+`LIS soil moisture domain standard lon:` specifies the standard longitude of the LIS model output
+
+`LIS soil moisture domain resolution:` specifies the resolution of the LIS model output
+
+`LIS soil moisture domain x-dimension size:` specifies the x-dimension size of the LIS model output
+
+`LIS soil moisture domain y-dimension size:` specifies the y-dimension size of the LIS model output
+
+For "WMO convention" style output
+
+`LIS soil moisture security class:` specifies the security classification for the LIS model output file, used only for WMO-convention output.
+
+`LIS soil moisture distribution class:` specifies the distribution classification for the LIS model output file, used only for WMO-convention output.
+
+`LIS soil moisture data category:` specifies the data category for the LIS model output file, used only for WMO-convention output.
+
+`LIS soil moisture area of data:` specifies the area of data for the LIS model output file, used only for WMO-convention output.
+
+`LIS soil moisture write interval:` specifies the write interval for the LIS model output file, used only for WMO-convention output.
+
+.Example _ldt.config_ entry
+....
+LIS soil moisture output format:            "netcdf"
+LIS soil moisture output methodology:       "2d gridspace"
+LIS soil moisture output naming style:      "3 level hierarchy"
+LIS soil moisture output map projection:    "latlon"
+LIS soil moisture output nest index:        1
+LIS soil moisture output timestep:          EXAMPLE
+LIS soil moisture output directory:         ../OL/OUTPUT
+LIS soil moisture domain lower left lat:    18.375
+LIS soil moisture domain lower left lon:    -111.375
+LIS soil moisture domain upper right lat:   41.375
+LIS soil moisture domain upper right lon:   -85.875
+LIS soil moisture domain resolution (dx):   0.25
+LIS soil moisture domain resolution (dy):   0.25
+LIS soil moisture security class:
+LIS soil moisture distribution class:
+LIS soil moisture data category:
+LIS soil moisture area of data:
+LIS soil moisture write interval:
+....
+
+`Synthetic soil moisture observation directory:` specifies the location of the data directory containing the synthetic soil moisture data.
+
+`Synthetic soil moisture observation timestep:` specifies the timestep of the synthetic soil moisture observations.
+
+.Example _ldt.config_ entry
+....
+Synthetic soil moisture observation directory:  ./SYN_SM
+Synthetic soil moisture observation timestep:   EXAMPLE
+....
+
+`AMSR-E(LPRM) soil moisture observation directory:` specifies the location of the data directory containing the LPRM AMSR-E data.
+
+`AMSR-E(LPRM) use raw data:` specifies if raw data (instead of the retrievals CDF-matched to the GLDAS Noah climatology).
+
+.Example _ldt.config_ entry
+....
+AMSR-E(LPRM) soil moisture observation directory:  ./LPRM.v5
+AMSR-E(LPRM) use raw data:           1
+....
+
+`NASA AMSRE soil moisture observation directory:` specifies the location of the data directory containing the NASA AMSR-E data.
+
+.Example _ldt.config_ entry
+....
+NASA AMSRE soil moisture observation directory: ./NASA_AMSRE
+....
+
+`ESA CCI soil moisture observation directory:` specifies the location of the data directory containing the ESA CCI soil moisture data.
+
+`ESA CCI soil moisture version of data:` specifies the version of the ESA CCI soil moisture dataset.
+
+.Example _ldt.config_ entry
+....
+ESA CCI soil moisture observation directory:  ./ECV
+ESA CCI soil moisture version of data:        EXAMPLE
+....
+
+`GCOMW AMSR2 L3 soil moisture observation directory:` specifies the location of the data directory containing the GCOMW AMSR v2 L3 soil moisture data.
+
+.Example _ldt.config_ entry
+....
+GCOMW AMSR2 L3 soil moisture observation directory:  ./GCOMW_AMSR2
+....
+
+`WindSat soil moisture observation directory:` specifies the location of the data directory containing the WindSat soil moisture data.
+
+.Example _ldt.config_ entry
+....
+WindSat soil moisture observation directory:  ./WindSat
+....
+
+`Aquarius L2 soil moisture observation directory:` specifies the location of the data directory containing the Aquarius soil moisture data.
+
+.Example _ldt.config_ entry
+....
+Aquarius L2 soil moisture observation directory:  ./Aquarias_SM/
+....
+
+`SMOS L2 soil moisture observation directory:` specifies the location of the data directory containing the SMOS soil moisture data.
+
+.Example _ldt.config_ entry
+....
+SMOS L2 soil moisture observation directory:  ./SMOS_SM/
+....
+
+`SMOPS soil moisture observation directory:` specifies the location of the data directory containing the real time SMOPS soil moisture data.
+
+`SMOPS soil moisture use ASCAT data:` specifies if the ASCAT layer of SMOPS is to be used.
+
+`SMOPS soil moisture use SMOS data:` specifies if the SMOS layer of SMOPS is to be used.
+
+`SMOPS soil moisture use AMSR2 data:` specifies if the AMSR2 layer of SMOPS is to be used.
+
+`SMOPS soil moisture use SMAP data:` specifies if the SMAP layer of SMOPS is to be used.
+
+`SMOPS soil moisture version:` specifies the version of the SMOPS soil moisture datasets. Defaults to "`date-based`". Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`date-based`" |Assume the version of the dataset based on date.  (default)
+|"`1.3`" |Treat the dataset as version 1.3.
+|"`2.0`" |Treat the dataset as version 2.0.
+|"`3.0`" |Treat the dataset as version 3.0.
+|"`NESDIS V3.0 REGEN`" |Assume the version of the dataset based on the NESDIS version 3.0 regeneration date.
+|===
+
+There are three versions of the SMOPS datasets. According to the use by the 557th Weather Wing:
+
+....
+                          version_1.3 <  2016-10-31T12:00:00
+   2016-10-31T12:00:00 <= version_2.0 <  2017-08-24T12:00:00
+                          version_3.0 >= 2017-08-24T12:00:00
+ 
+....
+
+Also, NESDIS has regenerated SMOPS version 3.0 datasets starting from 2012-08-01.
+
+The value "`date-based`" will use the dates 2016-10-31 and 2017-08-24 to determine the version of the SMOPS datasets.
+
+The value "`NESDIS V3.0 REGEN`" will use the date 2012-08-01 to determine the version of the SMOPS datasets.
+
+Should you need to explicitly state the version of the SMOPS datasets, then you may specify their version with either "`1.3`", "`2.0`", or "`3.0`".
+
+`SMOPS search radius for openwater proximity detection:` specifies the radius in which LDT search to detect open water. Then removes all pixels within the radius in the CDF calculations.
+
+.Example _ldt.config_ entry
+....
+SMOPS soil moisture observation directory:  ./RTSMOPS
+SMOPS soil moisture use ASCAT data:       1
+SMOPS soil moisture use SMOS data:        0
+SMOPS soil moisture use AMSR2 data:       0
+SMOPS soil moisture use SMAP data:        0
+SMOPS soil moisture version:              "date-based"
+SMOPS search radius for openwater proximity detection: 3
+....
+
+`ASCAT (TUW) soil moisture observation directory:` specifies the location of the data directory containing the TU Wein retrievals of ASCAT soil moisture data.
+
+.Example _ldt.config_ entry
+....
+ASCAT (TUW) soil moisture observation directory:  ./TUW_ASCAT
+....
+
+`GRACE raw data filename:` specifies the name of the GRACE raw data.
+
+`GRACE baseline starting year:` specifies the baseline starting year from which to establish the TWS climatology.
+
+`GRACE baseline ending year:` specifies the baseline ending year from which to establish the TWS climatology.
+
+`GRACE scale factor filename:` specifies the name of the file containing the GRACE scale factor. This is NetCDF file provided by JPL.
+
+`GRACE measurement error filename:` specifies the name of the file containing the GRACE measurement error. This is a NetCDF file provided by JPL.
+
+`GRACE process basin averaged observations:` specifies whether to process basin averaged observations. Default value is 0. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|0 |do not process
+|1 |process
+|===
+
+`GRACE basin map file:` specifies the file name of the basin map data.
+
+`LIS TWS output format:` specifies the output format of the LIS model output (binary/netcdf/grib1).
+
+`LIS TWS output methodology:` specifies the output methodology used in the LIS model output (1d tilespace/1d gridspace/2d gridspace).
+
+`LIS TWS output naming style:` specifies the output naming style used in the LIS model output (3 level hierarchy/4 level hierarchy, etc.).
+
+`LIS TWS output nest index:` specifies the index of the nest used in the LIS model output.
+
+`LIS TWS output directory:` specifies the location of the LIS model output.
+
+`LIS TWS output map projection:` specifies the map projection used in the LIS model output.
+
+For lat/lon projection:
+
+`LIS TWS output domain lower left lat:` specifies the lower left latitude of the LIS model output (if map projection is latlon).
+
+`LIS TWS output domain lower left lon:` specifies the lower left longitude of the LIS model output (if map projection is latlon).
+
+`LIS TWS output domain upper right lat:` specifies the upper right latitude of the LIS model output (if map projection is latlon).
+
+`LIS TWS output domain upper right lon:` specifies the upper right longitude of the LIS model output (if map projection is latlon).
+
+`LIS TWS output domain resolution (dx):` specifies the resolution (in degrees) along the latitude of the LIS model output (if map projection is latlon).
+
+`LIS TWS output domain resolution (dy):` specifies the resolution (in degrees) along the longitude of the LIS model output (if map projection is latlon).
+
+For Lambert and polar projections:
+
+`LIS TWS output domain lower left lat:` specifies the lower left latitude of the LIS model output
+
+`LIS TWS output domain lower left lon:` specifies the lower left longitude of the LIS model output
+
+`LIS TWS output domain true lat1:` specifies the true lat1 of the LIS model output
+
+`LIS TWS output domain true lat2:` specifies the true lat2 of the LIS model output
+
+`LIS TWS output domain standard lon:` specifies the standard longitude of the LIS model output
+
+`LIS TWS output domain resolution:` specifies the resolution of the LIS model output
+
+`LIS TWS output domain x-dimension size:` specifies the x-dimension size of the LIS model output
+
+`LIS TWS output domain y-dimension size:` specifies the y-dimension size of the LIS model output
+
+.Example _ldt.config_ entry
+....
+GRACE raw data filename:    ../GRACE_tws/GRACE.CSR.LAND.RL05.DS.G200KM.nc
+GRACE baseline starting year:      2004
+GRACE baseline ending year:        2009
+GRACE scale factor filename:       EXAMPLE
+GRACE measurement error filename:  EXAMPLE
+LIS TWS output format:                  "netcdf"
+LIS TWS output methodology:             "2d gridspace"
+LIS TWS output naming style:            "3 level hierarchy"
+LIS TWS output map projection:          "latlon"
+LIS TWS output nest index:              1
+LIS TWS output directory:               ../OL_NLDAS/OUTPUT
+LIS TWS output domain lower left lat:         25.0625
+LIS TWS output domain lower left lon:        -124.9375
+LIS TWS output domain upper right lat:        52.9375
+LIS TWS output domain upper right lon:        -67.0625
+LIS TWS output domain resolution (dx):          0.125
+LIS TWS output domain resolution (dy):          0.125
+....
+
+`Simulated GRACE data directory:` specifies the directory containing the simulated GRACE observations.
+
+`Simulated GRACE configuration:` specifies the simulated GRACE configuration. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`default`" |default
+|"`follow-on`" |follow on
+|"`GRACE-2`" |GRACE-2
+|===
+
+`Simulated GRACE baseline starting year:` specifies the baseline starting year from which to establish the simulated TWS climatology.
+
+`Simulated GRACE baseline ending year:` specifies the baseline ending year from which to establish the simulated TWS climatology.
+
+`LIS TWS output format:` specifies the output format of the LIS model output (binary/netcdf/grib1).
+
+`LIS TWS output methodology:` specifies the output methodology used in the LIS model output (1d tilespace/1d gridspace/2d gridspace).
+
+`LIS TWS output naming style:` specifies the output naming style used in the LIS model output (3 level hierarchy/4 level hierarchy, etc.).
+
+`LIS TWS output nest index:` specifies the index of the nest used in the LIS model output.
+
+`LIS TWS output directory:` specifies the location of the LIS model output.
+
+`LIS TWS output map projection:` specifies the map projection used in the LIS model output.
+
+For lat/lon projection:
+
+`LIS TWS output domain lower left lat:` specifies the lower left latitude of the LIS model output (if map projection is latlon).
+
+`LIS TWS output domain lower left lon:` specifies the lower left longitude of the LIS model output (if map projection is latlon).
+
+`LIS TWS output domain upper right lat:` specifies the upper right latitude of the LIS model output (if map projection is latlon).
+
+`LIS TWS output domain upper right lon:` specifies the upper right longitude of the LIS model output (if map projection is latlon).
+
+`LIS TWS output domain resolution (dx):` specifies the resolution (in degrees) along the latitude of the LIS model output (if map projection is latlon).
+
+`LIS TWS output domain resolution (dy):` specifies the resolution (in degrees) along the longitude of the LIS model output (if map projection is latlon).
+
+For Lambert and polar projections:
+
+`LIS TWS output domain lower left lat:` specifies the lower left latitude of the LIS model output
+
+`LIS TWS output domain lower left lon:` specifies the lower left longitude of the LIS model output
+
+`LIS TWS output domain true lat1:` specifies the true lat1 of the LIS model output
+
+`LIS TWS output domain true lat2:` specifies the true lat2 of the LIS model output
+
+`LIS TWS output domain standard lon:` specifies the standard longitude of the LIS model output
+
+`LIS TWS output domain resolution:` specifies the resolution of the LIS model output
+
+`LIS TWS output domain x-dimension size:` specifies the x-dimension size of the LIS model output
+
+`LIS TWS output domain y-dimension size:` specifies the y-dimension size of the LIS model output
+
+.Example _ldt.config_ entry
+....
+Simulated GRACE data directory:         sim_grace
+Simulated GRACE configuration:          default
+Simulated GRACE baseline starting year: 2004
+Simulated GRACE baseline ending year:   2009
+LIS TWS output format:                  "netcdf"
+LIS TWS output methodology:             "2d gridspace"
+LIS TWS output naming style:            "3 level hierarchy"
+LIS TWS output map projection:          "latlon"
+LIS TWS output nest index:              1
+LIS TWS output directory:               ../OL_NLDAS/OUTPUT
+LIS TWS output domain lower left lat:         25.0625
+LIS TWS output domain lower left lon:        -124.9375
+LIS TWS output domain upper right lat:        52.9375
+LIS TWS output domain upper right lon:        -67.0625
+LIS TWS output domain resolution (dx):          0.125
+LIS TWS output domain resolution (dy):          0.125
+....
+
+`NASA SMAP soil moisture data designation:`
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`SPL2SMP`" |employ level2 36km radiometer only product
+|"`SPL2SMP_E`" |employ level2 9km enhanced/oversampled product
+|"`SPL3SMP`" |employ level3 36km radiometer only product
+|"`SPL3SMP_E`" |employ level3 9km enhanced/oversampled product
+|===
+
+`NASA SMAP soil moisture observation directory:` specifies the location of the data directory containing the NASA SMAP data.
+
+.Example _ldt.config_ entry
+....
+NASA SMAP soil moisture data designation:
+NASA SMAP soil moisture observation directory:
+....
+
+`NASA SMAP vegetation optical depth observation directory:` specifies the location of the data directory containing the L2 SMAP vegetation optical depth retrievals.
+
+`NASA SMAP vegetation optical depth data designation:` specifies the type/source of VOD retrievals. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`SPL2SMP`" |employ level2 36km radiometer only product
+|"`SPL2SMP_E`" |employ level2 9km enhanced/oversampled product
+|===
+
+.Example _ldt.config_ entry
+....
+NASA SMAP vegetation optical depth observation directory: ../SPL2SMP_E.002
+NASA SMAP vegetation optical depth data designation:      'SPL2SMP_E'
+....
+
+`SMAP(NASA) soil moisture Composite Release ID (e.g., R16):` specifies first three characters of the Composite Release ID (CRID) (e.g., R16)
+
+.Example _ldt.config_ entry
+....
+SMAP(NASA) soil moisture Composite Release ID (e.g., R16):
+....
+
+`SMOS NESDIS soil moisture observation directory:` specifies the location of the data directory containing the SMOS soil moisture retrievals from NOAA NESDIS.
+
+.Example _ldt.config_ entry
+....
+SMOS NESDIS soil moisture observation directory:
+....
+
+`LPRM vegetation optical depth observation directory:` specifies the location of the data directory containing the LPRM vegetation optical depth retrievals from LPRM.
+
+`LPRM vegetation optical depth data designation:` specifies the type/source of VOD retrievals. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`X-band`" |employ X-band based VOD
+|"`C-band`" |employ C-band based VOD
+|===
+
+.Example _ldt.config_ entry
+....
+LPRM vegetation optical depth observation directory: ../LPRM_VOD
+LPRM vegetation optical depth data designation:      'X-band'
+....
+
+`HYMAP river width map:` specifies the name of the HYMAP river width data file.
+
+`HYMAP river height map:` specifies the name of the HYMAP river height data file.
+
+`HYMAP river roughness map:` specifies the name of the HYMAP river roughness data file.
+
+`HYMAP floodplain height map:` specifies the name of the HYMAP floodplain height data file.
+
+`HYMAP floodplain height levels:` specifies the number of the HYMAP floodplain height levels.
+
+`HYMAP flow direction x map:` specifies the name of the x-flow direction data file.
+
+`HYMAP flow direction y map:` specifies the name of the y-flow direction data file.
+
+`HYMAP grid elevation map:` specifies the name of the grid elevation data file.
+
+`HYMAP grid distance map:` specifies the name of the grid distance data file.
+
+`HYMAP grid area map:` specifies the name of the grid area data file.
+
+`HYMAP drainage area map:` [red]#specifies what?#
+
+`HYMAP basin map:` [red]#specifies what?#
+
+`HYMAP runoff time delay map:` specifies the name of the runoff time delay data file.
+
+`HYMAP runoff time delay multiplier map:` specifies the name of the runoff time delay multiplier data file.
+
+`HYMAP baseflow time delay map:` specifies the name of the baseflow time delay data file.
+
+`HYMAP reference discharge map:` specifies the name of the reference discharge data file.
+
+`HYMAP basin mask map:` specifies the name of the basin mask data file.
+
+`HYMAP params map projection:` [red]#specifies what?#
+
+`HYMAP params spatial transform:` [red]#specifies what?#
+
+`HYMAP river length map:` specifies the name of the river length data file.
+
+`HYMAP floodplain roughness map:` specifies the name of floodplain roughness map file.
+
+.Example _ldt.config_ entry
+....
+HYMAP river width map:              ../HYMAP_parms/rivwth_Getirana_Dutra.bin
+HYMAP river height map:             ../HYMAP_parms/rivhgt_Getirana_Dutra.bin 
+HYMAP river roughness map:          ../HYMAP_parms/rivman_Getirana_Dutra.bin 
+HYMAP floodplain roughness map:     ../HYMAP_parms/fldman.bin
+HYMAP river length map:             ../HYMAP_parms/rivlen.bin
+HYMAP floodplain height map:        ../HYMAP_parms/fldhgt.bin
+HYMAP floodplain height levels:     10
+HYMAP flow direction x map:         ../HYMAP_parms/nextx.bin
+HYMAP flow direction y map:         ../HYMAP_parms/nexty.bin
+HYMAP grid elevation map:           ../HYMAP_parms/elevtn.bin
+HYMAP grid distance map:            ../HYMAP_parms/nxtdst.bin
+HYMAP grid area map:                ../HYMAP_parms/grarea.bin
+HYMAP drainage area map:
+HYMAP basin map:
+HYMAP runoff time delay map:        ../HYMAP_parms/kirpich.bin
+HYMAP runoff time delay multiplier map: ../HYMAP_parms/trunoff.bin
+HYMAP baseflow time delay map:      ../HYMAP_parms/tbasflw_45_amazon.bin
+HYMAP reference discharge map:      ../HYMAP_parms/qrefer.bin
+HYMAP basin mask map:               ../HYMAP_parms/mask_all.bin 
+HYMAP params map projection:
+HYMAP params spatial transform:
+....
+
+This section also outlines the domain specifications of the HYMAP parameter data. For the HYMAP parameters spatial transform option, only "`none`" is supported at this time, and the user is required to input the HYMAP parameters at the grid and resolution of interest.
+
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying HYMAP data See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+HYMAP params spatial transform:      none
+HYMAP params map projection:        latlon
+HYMAP params lower left lat:        -59.9375
+HYMAP params lower left lon:        -179.9375
+HYMAP params upper right lat:        89.9375
+HYMAP params upper right lon:       179.9375
+HYMAP params resolution (dx):         0.125
+HYMAP params resolution (dy):         0.125
+....
+
+[[ssec-ann]]
+=== Artificial neural networks
+
+`ANN input data sources:` [red]#specifies what?#
+
+`ANN mode (training/validation):` [red]#specifies what?#
+
+`ANN number of hidden neurons:` [red]#specifies what?#
+
+`ANN number of input data sources:` [red]#specifies what?#
+
+`ANN number of iterations:` [red]#specifies what?#
+
+`ANN number of parameters in each input source:` [red]#specifies what?#
+
+`ANN output data source:` [red]#specifies what?#
+
+`ANN training output file:` [red]#specifies what?#
+
+.Example _ldt.config_ entry
+....
+ANN input data sources:
+ANN mode (training/validation):
+ANN number of hidden neurons:
+ANN number of input data sources:
+ANN number of iterations:
+ANN number of parameters in each input source:
+ANN output data source:
+ANN training output file:
+....
+
+==== GHCN
+
+`GHCN data directory:` [red]#specifies what?#
+
+`GHCN station file:` [red]#specifies what?#
+
+.Example _ldt.config_ entry
+....
+GHCN data directory:
+GHCN station file:
+....
+
+==== LIS soil moisture output
+
+`LIS soil moisture output timestep:` [red]#specifies what?#
+
+`LIS soil moisture output format:` [red]#specifies what?#
+
+`LIS soil moisture output methodology:` [red]#specifies what?#
+
+`LIS soil moisture output naming style:` [red]#specifies what?#
+
+`LIS soil moisture output map projection:` [red]#specifies what?#
+
+`LIS soil moisture output nest index:` [red]#specifies what?#
+
+`LIS soil moisture output directory:` [red]#specifies what?#
+
+For Lat/Lon projections:
+
+`LIS soil moisture domain lower left lat:` specifies the lower left latitude of the LIS model output
+
+`LIS soil moisture domain lower left lon:` specifies the lower left longitude of the LIS model output
+
+`LIS soil moisture domain upper right lat:` specifies the upper right latitude of the LIS model output
+
+`LIS soil moisture domain upper right lon:` specifies the upper right longitude of the LIS model output
+
+`LIS soil moisture domain resolution (dx):` specifies the resolution (in degrees) along the latitude of the LIS model output
+
+`LIS soil moisture domain resolution (dy):` specifies the resolution (in degrees) along the longitude of the LIS model output
+
+For Lambert and polar projections:
+
+`LIS soil moisture domain lower left lat:` specifies the lower left latitude of the LIS model output
+
+`LIS soil moisture domain lower left lon:` specifies the lower left longitude of the LIS model output
+
+`LIS soil moisture domain true lat1:` specifies the true lat1 of the LIS model output
+
+`LIS soil moisture domain true lat2:` specifies the true lat2 of the LIS model output
+
+`LIS soil moisture domain standard lon:` specifies the standard longitude of the LIS model output
+
+`LIS soil moisture domain resolution:` specifies the resolution of the LIS model output
+
+`LIS soil moisture domain x-dimension size:` specifies the x-dimension size of the LIS model output
+
+`LIS soil moisture domain y-dimension size:` specifies the y-dimension size of the LIS model output
+
+.Example _ldt.config_ entry
+....
+LIS soil moisture output timestep:
+LIS soil moisture output format:
+LIS soil moisture output methodology:
+LIS soil moisture output naming style:
+LIS soil moisture output map projection:
+LIS soil moisture output nest index:
+LIS soil moisture output directory:
+LIS soil moisture domain lower left lat:
+LIS soil moisture domain lower left lon:
+LIS soil moisture domain upper right lat:
+LIS soil moisture domain upper right lon:
+LIS soil moisture domain resolution (dx):
+LIS soil moisture domain resolution (dy):
+....
+
+==== MOD10A1
+
+`MOD10A1 data directory:` [red]#specifies what?#
+
+.Example _ldt.config_ entry
+....
+MOD10A1 data directory:
+....
+
+==== MODIS LST
+
+`MODIS LST data directory:` [red]#specifies what?#
+
+.Example _ldt.config_ entry
+....
+MODIS LST data directory:
+....
+
+`Search radius for openwater proximity detection:` specifies the radius in which LDT search to detect open water Then removes all pixels within the radius in the CDF calculations.
+
+.Example _ldt.config_ entry
+....
+Search radius for openwater proximity detection: 
+....
+
+[[ssec-usafsi]]
+=== USAF Snow and Ice Analysis
+
+`USAFSI netcdf filename prefix:` prefix used in constructing USAFSI netcdf filenames
+
+`USAFSI valid date (YYYYMMDDHH):` valid date and hour (UTC) of analysis
+
+`USAFSI fractional snow data directory:` directory with CDFS-II fractional snow data
+
+`USAFSI modified data directory:` directory with legacy SNODEP "`modified`" data
+
+`USAFSI surface obs data directory:` directory with surface snow reports
+
+`USAFSI SSMIS data directory:` directory with SSMIS snow depth retrievals
+
+`USAFSI surface temperature data directory:` directory with legacy 0.25 deg LIS ungribbed surface temperatures
+
+`USAFSI static data directory:` directory with legacy SNODEP static data
+
+`USAFSI unmodified data directory:` directory with legacy SNODEP "`unmodified`" data
+
+`USAFSI VIIRS data directory:` directory with VIIRS TIFF files
+
+`USAFSI SSMIS raw data directory:` directory with SSMIS BUFR files
+
+`USAFSI SSMIS snow depth retrieval algorithm:` version of SSMIS retrieval algorithm. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|1 |Hollinger (1991)
+|2 |Chang et al (1987)
+|3 |Foster et al (1997), recommended
+|===
+
+`USAFSI SSMIS forest fraction file:` path to netCDF forest fraction file (for Foster et al (1997) algorithm)
+
+.Example _ldt.config_ entry
+....
+USAFSI netcdf filename prefix:  usafsi
+USAFSI valid date (YYYYMMDDHH):  2018120618
+USAFSI fractional snow data directory:     ./SNODEPIN/snofrac/
+USAFSI modified data directory:            ./SNODEPIN/modified/
+USAFSI surface obs data directory:         ./SNODEPIN/sfcobs/
+USAFSI SSMIS data directory:               ./SNODEPIN/SSMIS/algorithm03/
+USAFSI surface temperature data directory: ./SNODEPIN/sfctmps/
+USAFSI static data directory:              ./SNODEPIN/static/
+USAFSI unmodified data directory:          ./PREVDIR/algorithm03/
+USAFSI VIIRS data directory:               ./SNODEPIN/viirs/
+USAFSI SSMIS raw data directory:           ./SNODEPIN/OBSI_SSMISUPP/
+USAFSI SSMIS snow depth retrieval algorithm option:   3
+USAFSI SSMIS forest fraction file:     ./SNODEPIN/ForestFraction_0p25deg.nc
+....
+
+`USAFSI decimal fraction adjustment of snow depth towards climo):` controls drift to climo in data void region
+
+`USAFSI default snow depth (m) when actual depth unknown:` bogus value for when snow detected but depth unknown
+
+`USAFSI minimum snow depth (m) for which to print a diagnostic:` threshold for printing surface ob report
+
+`USAFSI maximum number of surface observations allowed:` self-explanatory
+
+`USAFSI SSMIS shallow snow depth threshold (m):` minimum SSMIS snow depth considered reasonable
+
+`USAFSI latitudes (deg * 100) for summer climo check:` three latitude bands used for sanity checking snow reports
+
+`USAFSI elevations (m) for summer climo check:` four elevations used for sanity checking snow reports
+
+`USAFSI temperature (deg K * 10) above which no snow is allowed:` used to adjust snow analysis
+
+`USAFSI minimum ice concentration (%) needed to set ice flag:` used when constructing binary sea ice field
+
+`USAFSI high latitude thresholds (deg) for sea ice::` 24 latitudes, each row defining a hemisphere (NH, then SH), each column defining a month (J F M A M J J A S O N D). Used to define "high latitudes" in SSMIS-based sea ice analysis.
+
+`USAFSI low latitude thresholds (deg) for sea ice:` 24 latitudes, each row defining a hemisphere (NH, then SH), each column defining a month (J F M A M J J A S O N D). Used to define "low latitudes" in SSMIS-based sea ice analysis.
+
+`USAFSI max age of VIIRS pixels to use:` used to ignore old VIIRS data
+
+`USAFSI min VIIRS fraction to mark point as bare ground:` fraction of no-snow VIIRS pixels in LDT grid box required to mark as "`no-snow`"
+
+`USAFSI min VIIRS/CDFS-II fraction to mark point as snow:` fraction of snowy VIIRS pixels or CDFS-II in LDT grid box required to mark as "`snow`"
+
+`USAFSI use CDFS-II fractional snow data:` self-explanatory
+
+`USAFSI use VIIRS snow mask:` self-explanatory
+
+.Example _ldt.config_ entry
+....
+USAFSI decimal fraction adjustment of snow depth towards climo: 0.1
+USAFSI default snow depth (m) when actual depth unknown: 0.1
+USAFSI minimum snow depth (m) for which to print a diagnostic: 0.025
+USAFSI maximum number of surface observations allowed: 200000
+USAFSI SSMIS shallow snow depth threshold (m): 0.15
+USAFSI latitudes (deg * 100) for summer climo check: 4000 3000 2000
+USAFSI elevations (m) for summer climo check: 1000 1500 1000 1000
+USAFSI temperature (deg K * 10) above which no snow is allowed: 2820
+USAFSI max reported temperature (deg K * 10) allowed around poles: 3030
+USAFSI minimum ice concentration (%) needed to set ice flag: 15
+USAFSI high latitude thresholds (deg) for sea ice::
+       81.0 81.0 81.0 81.0 81.0 81.0 81.0 82.0 82.0 82.0 81.0 81.0
+       90.0 90.0 78.0 78.0 68.0 68.0 67.0 67.0 66.0 66.0 68.0 70.0
+::
+USAFSI low latitude thresholds (deg) for sea ice::
+       45.0 44.0 44.0 45.0 51.0 52.0 55.0 65.0 65.0 62.0 53.0 50.0
+       60.0 62.0 62.0 60.0 58.0 56.0 55.0 55.0 53.0 54.0 55.0 57.0
+::
+USAFSI max age of VIIRS pixels to use: 3
+USAFSI min VIIRS fraction to mark point as bare ground: 0.6
+USAFSI min VIIRS/CDFS-II fraction to mark point as snow: 0.4
+USAFSI use CDFS-II fractional snow data: .true.
+USAFSI use VIIRS snow mask: .true.
+....
+
+`USAFSI observation error variance (m^2):` error variance assigned to surface snow reports
+
+`USAFSI background error variance (m^2):` error variance assigned to first-guess field
+
+`USAFSI background error horizontal correlation length (m):` correlation length for spreading snow depth corrections horizontally
+
+`USAFSI background error vertical correlation length (m):` correlation length for spreading snow depth corrections vertically
+
+`USAFSI elevQC difference threshold (m):` threshold for sanity checking snow report elevation against LDT
+
+`USAFSI skewed backQC snow depth threshold (m):` threshold for rejecting abnormally small snow depth reports
+
+.Example _ldt.config_ entry
+....
+USAFSI observation error variance (m^2):  0.0006
+USAFSI background error variance (m^2):   0.0010
+USAFSI background error horizontal correlation length (m):  55555.
+USAFSI background error vertical correlation length (m):      800.
+USAFSI elevQC difference threshold (m): 400.
+USAFSI skewed backQC snow depth threshold (m):  0.4
+....
+
+`USAFSI bogus climatology snow depth value (m):` bogus value for climatology if not available
+
+`USAFSI GOFS SST data directory:` directory with GOFS sea surface temperature netCDF files
+
+`USAFSI GOFS CICE data directory:` directory with GOFS sea ice netCDF files
+
+`USAFSI LIS GRIB2 data directory:` directory with LIS GRIB2 2-m temperature analyses
+
+`USAFSI LIS GRIB2 security class:` used for constructing LIS GRIB2 filename
+
+`USAFSI LIS GRIB2 data category:` used for constructing LIS GRIB2 filename
+
+`USAFSI LIS GRIB2 data resolution:` used for constructing LIS GRIB2 filename
+
+`USAFSI LIS GRIB2 area of data:` used for constructing LIS GRIB2 filename
+
+.Example _ldt.config_ entry
+....
+USAFSI bogus climatology snow depth value (m): 0.2
+USAFSI GOFS SST data directory: ./SNODEPIN//GOFS
+USAFSI GOFS CICE data directory: ./SNODEPIN//GOFS
+USAFSI LIS GRIB2 data directory: /discover/nobackup/emkemp/AFWA/data/LIS_GRIB2
+USAFSI LIS GRIB2 security class: U
+USAFSI LIS GRIB2 data category:  C
+USAFSI LIS GRIB2 data resolution: C0P09DEG
+USAFSI LIS GRIB2 area of data: GLOBAL
+....
+
+`LIS OPT/UE output file:` name of the OPT/UE output file generated from a LIS simulation
+
+.Example _ldt.config_ entry
+....
+LIS OPT/UE output file: ./GA.0059.1gd4r
+....
+

@@ -48,9 +48,10 @@ subroutine readLPRM_AMSREsmObs(source)
   logical           :: alarmCheck
   logical           :: file_exists
   integer           :: c,r,i,j
-  character*100     :: fname_A, fname_D
+  character*100     :: fname_A, fname_D,fname
   real              :: smobs_A(LVT_rc%lnc*LVT_rc%lnr)
   real              :: smobs_D(LVT_rc%lnc*LVT_rc%lnr)
+  real              :: smobs(LVT_rc%lnc*LVT_rc%lnr)
   real              :: lat,lon
 !-----------------------------------------------------------------------
 ! It is assumed that CDF is computed using daily observations. 
@@ -59,51 +60,85 @@ subroutine readLPRM_AMSREsmObs(source)
   timenow = float(LVT_rc%dhr(source))*3600 + 60*LVT_rc%dmn(source) + &
        LVT_rc%dss(source)
   alarmcheck = (mod(timenow, 86400.0).eq.0)
-
-  LPRM_AMSREsmobs(source)%smobs = LVT_rc%udef
-  smobs_A= LVT_rc%udef
-  smobs_D= LVT_rc%udef
-        
-  if(LPRM_AMSREsmobs(source)%startmode.or.alarmCheck.or.&
-       LVT_rc%resetFlag(source)) then 
+  smobs  = LVT_rc%udef
+  if(LPRM_AMSREsmobs(source)%version.eq."V05") then 
+     LPRM_AMSREsmobs(source)%smobs = LVT_rc%udef
+     smobs_A= LVT_rc%udef
+     smobs_D= LVT_rc%udef
      
-     LVT_rc%resetFlag(source) = .false. 
-     LPRM_AMSREsmobs(source)%startmode = .false. 
-
-     call create_LPRM_AMSREsm_filename(LPRM_AMSREsmobs(source)%odir, &
-          'A',LVT_rc%dyr(source), LVT_rc%dmo(source), &
-          LVT_rc%dda(source), fname_A)
-
-     inquire(file=trim(fname_A),exist=file_exists)
-
-     if(file_exists) then
-
-        write(LVT_logunit,*) '[INFO] Reading ..',trim(fname_A)
-        call read_LPRM_data(source, fname_A,smobs_A)
-     endif
-
-     call create_LPRM_AMSREsm_filename(LPRM_AMSREsmobs(source)%odir, &
-          'D',LVT_rc%dyr(source), LVT_rc%dmo(source), &
-          LVT_rc%dda(source), fname_D)
-
-     inquire(file=trim(fname_D),exist=file_exists)
-     if(file_exists) then
-
-        write(LVT_logunit,*) '[INFO] Reading ..',trim(fname_D)
-        call read_LPRM_data(source, fname_D,smobs_D)
-     endif
-     do r=1,LVT_rc%lnr
-        do c=1,LVT_rc%lnc
-           if(smobs_A(c+(r-1)*LVT_rc%lnc).ne.-9999.0) then 
-              LPRM_AMSREsmobs(source)%smobs(c,r) = smobs_A(c+(r-1)*LVT_rc%lnc)
-           endif
-           if(smobs_D(c+(r-1)*LVT_rc%lnc).ne.-9999.0) then 
-              LPRM_AMSREsmobs(source)%smobs(c,r) = smobs_D(c+(r-1)*LVT_rc%lnc)
-           endif
-
+     if(LPRM_AMSREsmobs(source)%startmode.or.alarmCheck.or.&
+          LVT_rc%resetFlag(source)) then 
+        
+        LVT_rc%resetFlag(source) = .false. 
+        LPRM_AMSREsmobs(source)%startmode = .false. 
+        
+        call create_LPRM_AMSREsm_filename(LPRM_AMSREsmobs(source)%odir, &
+             'A',LVT_rc%dyr(source), LVT_rc%dmo(source), &
+             LVT_rc%dda(source), fname_A)
+        
+        inquire(file=trim(fname_A),exist=file_exists)
+        
+        if(file_exists) then
+           
+           write(LVT_logunit,*) '[INFO] Reading ..',trim(fname_A)
+           call read_LPRM_data(source, fname_A,smobs_A)
+        endif
+        
+        call create_LPRM_AMSREsm_filename(LPRM_AMSREsmobs(source)%odir, &
+             'D',LVT_rc%dyr(source), LVT_rc%dmo(source), &
+             LVT_rc%dda(source), fname_D)
+        
+        inquire(file=trim(fname_D),exist=file_exists)
+        if(file_exists) then
+           
+           write(LVT_logunit,*) '[INFO] Reading ..',trim(fname_D)
+           call read_LPRM_data(source, fname_D,smobs_D)
+        endif
+        do r=1,LVT_rc%lnr
+           do c=1,LVT_rc%lnc
+              if(smobs_A(c+(r-1)*LVT_rc%lnc).ne.-9999.0) then 
+                 LPRM_AMSREsmobs(source)%smobs(c,r) = smobs_A(c+(r-1)*LVT_rc%lnc)
+              endif
+              if(smobs_D(c+(r-1)*LVT_rc%lnc).ne.-9999.0) then 
+                 LPRM_AMSREsmobs(source)%smobs(c,r) = smobs_D(c+(r-1)*LVT_rc%lnc)
+              endif
+              
+           enddo
         enddo
-     enddo
+     endif
+  elseif(LPRM_AMSREsmobs(source)%version.eq."GES-DISC") then 
+     LPRM_AMSREsmobs(source)%smobs = LVT_rc%udef
+     
+     if(LPRM_AMSREsmobs(source)%startmode.or.alarmCheck.or.&
+          LVT_rc%resetFlag(source)) then 
+        
+        LVT_rc%resetFlag(source) = .false. 
+        LPRM_AMSREsmobs(source)%startmode = .false. 
+        
+        call create_LPRM_AMSREsm_GESDISC_filename(&
+             LPRM_AMSREsmobs(source)%odir, &
+             LVT_rc%dyr(source), LVT_rc%dmo(source), &
+             LVT_rc%dda(source), fname)
+        
+        inquire(file=trim(fname),exist=file_exists)
+        
+        if(file_exists) then
+           
+           write(LVT_logunit,*) '[INFO] Reading ..',trim(fname)
+           call read_LPRM_GESDISC_data(source, fname,smobs)
+        endif
+        
+        do r=1,LVT_rc%lnr
+           do c=1,LVT_rc%lnc
+              if(smobs(c+(r-1)*LVT_rc%lnc).ne.-9999.0) then 
+                 LPRM_AMSREsmobs(source)%smobs(c,r) = smobs(c+(r-1)*LVT_rc%lnc)
+              endif
+           enddo
+        enddo
+     endif
+
   endif
+
   call LVT_logSingleDataStreamVar(LVT_MOC_soilmoist, source, &
        LPRM_AMSREsmobs(source)%smobs,vlevel=1,units="m3/m3")
 
@@ -397,6 +432,188 @@ subroutine read_LPRM_data(source, fname, smobs_ip)
 end subroutine read_LPRM_data
 
 !BOP
+! 
+! !ROUTINE: read_LPRM_GESDISC_data
+! \label(read_LPRM_GESDISC_data)
+!
+! !INTERFACE:
+subroutine read_LPRM_GESDISC_data(source, fname, smobs_ip)
+! 
+! !USES:   
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+  use netcdf
+#endif
+  use LVT_coreMod,  only : LVT_rc
+  use LVT_logMod,   only : LVT_verify
+  use map_utils,    only : latlon_to_ij
+  use LPRM_AMSREsm_obsMod, only : LPRM_AMSREsmobs
+
+  implicit none
+!
+! !INPUT PARAMETERS: 
+! 
+  integer                       :: source
+  character (len=*)             :: fname
+  real                          :: smobs_ip(LVT_rc%lnc*LVT_rc%lnr)
+
+
+! !OUTPUT PARAMETERS:
+!
+! !DESCRIPTION: 
+!  This subroutine reads the LPRM NETCDF file and applies the data
+!  quality flags to filter the data. The retrievals are rejected when 
+!  land surface temperature is below freezing, if rain is present, if 
+!  RFI is present, if residual error is above 0.5 or if optical depth
+!  is above 0.8. Finally the routine combines both the C-band and X-band
+!  retrievals. 
+! 
+!  The arguments are: 
+!  \begin{description}
+!  \item[n]            index of the nest
+!  \item[fname]        name of the LPRM AMSR-E file
+!  \item[smobs\_ip]    soil moisture data processed to the LVT domain
+! \end{description}
+!
+! !FILES USED:
+!
+! !REVISION HISTORY: 
+! 
+!EOP
+  real                        :: smerrc(LPRM_AMSREsmobs(source)%lprmnr,&
+       LPRM_AMSREsmobs(source)%lprmnc)
+  real                        :: smerrx(LPRM_AMSREsmobs(source)%lprmnr,&
+       LPRM_AMSREsmobs(source)%lprmnc)
+  real                        :: smc(LPRM_AMSREsmobs(source)%lprmnr,&
+       LPRM_AMSREsmobs(source)%lprmnc)
+  real                        :: smx(LPRM_AMSREsmobs(source)%lprmnr,&
+       LPRM_AMSREsmobs(source)%lprmnc)
+  real                        :: sm_combined(LPRM_AMSREsmobs(source)%lprmnc,&
+       LPRM_AMSREsmobs(source)%lprmnr)
+
+  real                        :: sm_data(LPRM_AMSREsmobs(source)%lprmnc* & 
+       LPRM_AMSREsmobs(source)%lprmnr)
+  logical*1                   :: sm_data_b(LPRM_AMSREsmobs(source)%lprmnc* & 
+       LPRM_AMSREsmobs(source)%lprmnr)
+  logical*1                   :: smobs_b_ip(LVT_rc%lnc*LVT_rc%lnr)
+
+  integer                     :: c,r,i,j
+  real                        :: rlat,rlon,ri,rj
+  integer                     :: nid
+  integer                     :: smcombId
+  integer                     :: tskinId
+  integer                     :: smerrCid, smerrXid, smcId, smXId
+  integer                     :: ios
+
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+
+  if(LPRM_AMSREsmobs(source)%channel.eq."C-band") then 
+     ios = nf90_open(path=trim(fname),mode=NF90_NOWRITE,ncid=nid)
+     call LVT_verify(ios,'Error opening file '//trim(fname))
+
+     ios = nf90_inq_varid(nid, 'sm_c_error',smerrCid)
+     call LVT_verify(ios, &
+          'Error nf90_inq_varid: sm_c_error')
+     ios = nf90_get_var(nid, smerrcid, smerrc)
+     call LVT_verify(ios, 'Error nf90_get_var: sm_c_error')
+     
+     ios = nf90_inq_varid(nid, 'soil_moisture_c',smcid)
+     call LVT_verify(ios, 'Error nf90_inq_varid: soil_moisture_c')
+     
+     ios = nf90_get_var(nid, smcid, smc)
+     call LVT_verify(ios, 'Error nf90_get_var: soil_moisture_c')
+
+     ios = nf90_close(ncid=nid)
+     call LVT_verify(ios,'Error closing file '//trim(fname))
+     
+     sm_combined = LVT_rc%udef
+
+     do r=1, LPRM_AMSREsmobs(source)%lprmnr
+        do c=1, LPRM_AMSREsmobs(source)%lprmnc
+!--------------------------------------------------------------------------
+! Reject retrievals when residual error is large (> 0.2)
+!-------------------------------------------------------------------------- 
+           if(smerrc(r,c)*0.01.gt.0.2.or.smerrc(r,c)*0.01.lt.0) smc(r,c) = -1
+!--------------------------------------------------------------------------
+! Apply the QC flags 
+!-------------------------------------------------------------------------- 
+           if(smc(r,c).gt.0) then 
+              sm_combined(c,LPRM_AMSREsmobs(source)%lprmnr-r+1)  = &
+                   smc(r,c)/100.0
+           else
+              sm_combined(c,LPRM_AMSREsmobs(source)%lprmnr-r+1) =LVT_rc%udef
+           endif
+        enddo
+     enddo
+  elseif(LPRM_AMSREsmobs(source)%channel.eq."X-band") then 
+     ios = nf90_open(path=trim(fname),mode=NF90_NOWRITE,ncid=nid)
+     call LVT_verify(ios,'Error opening file '//trim(fname))
+
+     ios = nf90_inq_varid(nid, 'sm_x_error',smerrXid)
+     call LVT_verify(ios, &
+          'Error nf90_inq_varid: sm_x_error')
+     ios = nf90_get_var(nid, smerrxid,smerrx)
+     call LVT_verify(ios, 'Error nf90_get_var: sm_x_error')
+
+     ios = nf90_inq_varid(nid, 'soil_moisture_x',smxid)
+     call LVT_verify(ios, 'Error nf90_inq_varid: soil_moisture_x')
+     
+     ios = nf90_get_var(nid, smxid, smx)
+     call LVT_verify(ios, 'Error nf90_get_var: soil_moisture_x')
+
+     ios = nf90_close(ncid=nid)
+     call LVT_verify(ios,'Error closing file '//trim(fname))
+     
+     sm_combined = LVT_rc%udef
+
+     do r=1, LPRM_AMSREsmobs(source)%lprmnr
+        do c=1, LPRM_AMSREsmobs(source)%lprmnc
+!--------------------------------------------------------------------------
+! Reject retrievals when residual error is large (> 0.2)
+!-------------------------------------------------------------------------- 
+           if(smerrx(r,c)*0.01.gt.0.2.or.smerrx(r,c)*0.01.lt.0) smx(r,c) = -1
+!--------------------------------------------------------------------------
+! Apply the QC flags 
+!-------------------------------------------------------------------------- 
+           if(smx(r,c).gt.0) then 
+              sm_combined(c,LPRM_AMSREsmobs(source)%lprmnr-r+1)  = &
+                   smx(r,c)/100.0
+           else
+              sm_combined(c,LPRM_AMSREsmobs(source)%lprmnr-r+1) =LVT_rc%udef
+           endif
+        enddo
+     enddo
+  endif
+
+  do r=1, LPRM_AMSREsmobs(source)%lprmnr
+     do c=1, LPRM_AMSREsmobs(source)%lprmnc
+        sm_data(c+(r-1)*LPRM_AMSREsmobs(source)%lprmnc) = sm_combined(c,r)
+        if(sm_combined(c,r).ne.LVT_rc%udef) then 
+           sm_data_b(c+(r-1)*LPRM_AMSREsmobs(source)%lprmnc) = .true. 
+        else
+           sm_data_b(c+(r-1)*LPRM_AMSREsmobs(source)%lprmnc) = .false.
+        endif
+     enddo
+  enddo
+  
+!--------------------------------------------------------------------------
+! Interpolate to the LVT running domain
+!-------------------------------------------------------------------------- 
+  call bilinear_interp(LVT_rc%gridDesc(:),&
+       sm_data_b, sm_data, smobs_b_ip, smobs_ip, &
+       LPRM_AMSREsmobs(source)%lprmnc*LPRM_AMSREsmobs(source)%lprmnr, &
+       LVT_rc%lnc*LVT_rc%lnr, &
+       LPRM_AMSREsmobs(source)%rlat, LPRM_AMSREsmobs(source)%rlon, &
+       LPRM_AMSREsmobs(source)%w11, LPRM_AMSREsmobs(source)%w12, &
+       LPRM_AMSREsmobs(source)%w21, LPRM_AMSREsmobs(source)%w22, &
+       LPRM_AMSREsmobs(source)%n11, LPRM_AMSREsmobs(source)%n12, &
+       LPRM_AMSREsmobs(source)%n21, LPRM_AMSREsmobs(source)%n22, &
+       LVT_rc%udef, ios)
+
+#endif
+  
+end subroutine read_LPRM_GESDISC_data
+
+!BOP
 ! !ROUTINE: create_LPRM_AMSREsm_filename
 ! \label{create_LPRM_AMSREsm_filename}
 ! 
@@ -438,3 +655,45 @@ subroutine create_LPRM_AMSREsm_filename(ndir, path,yr, mo,da, filename)
        //trim(fyr)//trim(fmo)//trim(fda)//'T235959D.v05.nc'
   
 end subroutine create_LPRM_AMSREsm_filename
+
+
+!BOP
+! !ROUTINE: create_LPRM_AMSREsm_GESDISC_filename
+! \label{create_LPRM_AMSREsm_GESDISC_filename}
+! 
+! !INTERFACE: 
+subroutine create_LPRM_AMSREsm_GESDISC_filename(ndir, yr, mo,da, filename)
+! !USES:   
+
+  implicit none
+! !ARGUMENTS: 
+  character(len=*)  :: filename
+  integer           :: yr, mo, da
+  character (len=*) :: ndir
+! 
+! !DESCRIPTION: 
+!  This subroutine creates the LPRM AMSRE filename based on the time and date 
+! 
+!  The arguments are: 
+!  \begin{description}
+!  \item[ndir] name of the LPRM AMSRE soil moisture directory
+!  \item[path] name of the sensor path (A-ascending, D-descending)
+!  \item[yr]  current year
+!  \item[mo]  current month
+!  \item[da]  current day
+!  \item[filename] Generated LPRM filename
+! \end{description}
+!EOP
+
+  character (len=4) :: fyr
+  character (len=2) :: fmo,fda
+  
+  write(unit=fyr, fmt='(i4.4)') yr
+  write(unit=fmo, fmt='(i2.2)') mo
+  write(unit=fda, fmt='(i2.2)') da
+ 
+  filename = trim(ndir)//'/'//trim(fyr)//'/'//&
+       '/LPRM-AMSR_E_L3_A_SOILM3_V002_' &
+       //trim(fyr)//trim(fmo)//trim(fda)//'.nc'
+  
+end subroutine create_LPRM_AMSREsm_GESDISC_filename

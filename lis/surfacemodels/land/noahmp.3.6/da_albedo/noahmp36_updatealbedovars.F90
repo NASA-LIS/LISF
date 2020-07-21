@@ -181,7 +181,6 @@ subroutine noahmp36_updatealbedovars(n, LSM_State, LSM_Incr_State)
      gid = LIS_domain(n)%gindex(&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
-
      albitmp =  albi(t) + albiincr(t)
 
 

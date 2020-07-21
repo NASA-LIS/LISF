@@ -73,7 +73,7 @@ contains
 ! \label{RUCParms_init}
 ! 
 ! !INTERFACE:
-  subroutine RUCParms_init
+  subroutine RUCParms_init(flag)
 ! !USES:
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
     use LDT_logMod,    only : LDT_verify
@@ -93,6 +93,7 @@ contains
 !
 !EOP
    implicit none
+   integer  :: flag
    integer  :: n,i,c,r,m
    integer  :: rc
    real     :: temp
@@ -153,7 +154,7 @@ contains
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,RUC_struc(n)%slopetype_gridtransform,&
               rc=rc)
-         call LDT_verify(rc,'Slope type spatial tranform: option not specified in the config file')
+         call LDT_verify(rc,'Slope type spatial transform: option not specified in the config file')
       enddo
       
     ! Read in Slope type "fill" options:
@@ -270,7 +271,7 @@ contains
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,RUC_struc(n)%tbot_gridtransform,&
               rc=rc)
-         call LDT_verify(rc,'Bottom temperature tranform: option not specified in the config file')
+         call LDT_verify(rc,'Bottom temperature transform: option not specified in the config file')
       enddo
 
       RUC_struc(:)%tbot_topocorr = "none"

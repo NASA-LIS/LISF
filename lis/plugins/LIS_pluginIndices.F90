@@ -65,7 +65,9 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_noah32Id    = "Noah.3.2"
    character*50, public,  parameter :: LIS_noah33Id    = "Noah.3.3"
    character*50, public,  parameter :: LIS_noah36Id    = "Noah.3.6"
+   character*50, public,  parameter :: LIS_noah39Id    = "Noah.3.9"
    character*50, public,  parameter :: LIS_noahmp36Id  = "NoahMP.3.6"
+   character*50, public,  parameter :: LIS_noahmp401Id = "Noah-MP.4.0.1"
    character*50, public,  parameter :: LIS_ruc37Id     = "RUC.3.7"
    character*50, public,  parameter :: LIS_clm2Id      = "CLM.2"
    character*50, public,  parameter :: LIS_vic411Id    = "VIC.4.1.1"
@@ -76,6 +78,11 @@ module LIS_pluginIndices
    !character*50, public,  parameter :: LIS_tessId      = "HTESSEL"
    character*50, public,  parameter :: LIS_jules43Id     = "JULES.4.3"
    character*50, public,  parameter :: LIS_jules50Id     = "JULES.5.0"
+   character*50, public,  parameter :: LIS_jules51Id     = "JULES.5.1"
+   character*50, public,  parameter :: LIS_jules52Id     = "JULES.5.2"
+   character*50, public,  parameter :: LIS_jules53Id     = "JULES.5.3"
+   character*50, public,  parameter :: LIS_jules54Id     = "JULES.5.4"
+   character*50, public,  parameter :: LIS_jules5xId     = "JULES"
    character*50, public,  parameter :: LIS_cableId     = "CABLE"
    character*50, public,  parameter :: LIS_fasstId     = "FASST"
    !character*50, public,  parameter :: LIS_sheelsId    = "SHEELS"
@@ -113,6 +120,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_gdasT1534Id       = "GDAS T1534"
    character*50, public,  parameter :: LIS_geosId            = "GEOS"
    character*50, public,  parameter :: LIS_geos5fcstId       = "GEOS5 forecast"
+   character*50, public,  parameter :: LIS_gefsId            = "GEFS forecast"
    character*50, public,  parameter :: LIS_ecmwfId           = "ECMWF"
    character*50, public,  parameter :: LIS_gswp1Id           = "GSWP1"
    character*50, public,  parameter :: LIS_gswp2Id           = "GSWP2"
@@ -169,6 +177,8 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_WRFoutId          = "WRFout"
    character*50, public,  parameter :: LIS_AWAPforcId        = "AWAP"
    character*50, public,  parameter :: LIS_HiMATGMUforcId    = "HiMAT GMU"
+   character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
+   character*50, public,  parameter :: LIS_era5Id            = "ERA5"
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------
@@ -229,6 +239,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_WindSatsmobsId      = "Windsat"
    character*50, public,  parameter :: LIS_WindSatCsmobsId     = "Windsat C-band"
    character*50, public,  parameter :: LIS_snodepobsId         = "SNODEP"
+   character*50, public,  parameter :: LIS_usafsiobsId         = "USAFSI"
    character*50, public,  parameter :: LIS_ANSASWEsnowobsId    = "ANSA SWE"
    character*50, public,  parameter :: LIS_ANSASCFsnowobsId    = "ANSA SCF"
    character*50, public,  parameter :: LIS_ANSASNWDsnowobsId   = "ANSA snow depth"
@@ -248,17 +259,30 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_SMOPS_SMAPsmobsId   = "SMOPS-SMAP soil moisture"  ! MN
    character*50, public,  parameter :: LIS_ASCAT_TUWsmobsId    = "ASCAT (TUW) soil moisture"
    character*50, public,  parameter :: LIS_IMSscaobsId         = "IMS snow cover"
-   character*50, public,  parameter :: LIS_GCOMW_AMSR2L3smobsId = "GCOMW AMSR2 L3 soil moisture"
-   character*50, public,  parameter :: LIS_GCOMW_AMSR2L3sndobsId = "GCOMW AMSR2 L3 snow depth"
-   character*50, public,  parameter :: LIS_SMOSL2smobsId       = "SMOS L2 soil moisture"
-   character*50, public,  parameter :: LIS_pildassmobsId             = "PILDAS SM"
-   character*50, public,  parameter :: LIS_SMOSNESDISsmobsId   = "SMOS(NESDIS) soil moisture"
-   character*50, public,  parameter :: LIS_NASASMAPsmobsId   = "SMAP(NASA) soil moisture"
-   character*50, public,  parameter :: LIS_GLASSlaiobsId   = "GLASS LAI"
-   character*50, public,  parameter :: LIS_MODISsportLAIobsId   = "MODIS SPoRT LAI"
-   character*50, public,  parameter :: LIS_GLASSalbedoobsId   = "GLASS Albedo"
-   character*50, public,  parameter :: LIS_SMAPNRTsmobsId   = "SMAP(NRT) soil moisture"
-   character*50, public,  parameter :: LIS_ASOsweobsId   = "ASO SWE"
+   character*50, public,  parameter :: LIS_GCOMW_AMSR2L3smobsId = &
+        "GCOMW AMSR2 L3 soil moisture"
+   character*50, public,  parameter :: LIS_GCOMW_AMSR2L3sndobsId = &
+        "GCOMW AMSR2 L3 snow depth"
+   character*50, public,  parameter :: LIS_SMOSL2smobsId         = &
+        "SMOS L2 soil moisture"
+   character*50, public,  parameter :: LIS_pildassmobsId         = &
+        "PILDAS SM"
+   character*50, public,  parameter :: LIS_SMOSNESDISsmobsId     = &
+        "SMOS(NESDIS) soil moisture"
+   character*50, public,  parameter :: LIS_NASASMAPsmobsId       = &
+        "SMAP(NASA) soil moisture"
+   character*50, public,  parameter :: LIS_NASASMAPvodobsId      = &
+        "SMAP(NASA) vegetation optical depth"
+   character*50, public,  parameter :: LIS_GLASSlaiobsId         = &
+        "GLASS LAI"
+   character*50, public,  parameter :: LIS_MODISsportLAIobsId    = &
+        "MODIS SPoRT LAI"
+   character*50, public,  parameter :: LIS_GLASSalbedoobsId      = &
+        "GLASS Albedo"
+   character*50, public,  parameter :: LIS_SMAPNRTsmobsId        = &
+        "SMAP(NRT) soil moisture"
+   character*50, public,  parameter :: LIS_ASOsweobsId           = &
+        "ASO SWE"
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms
 !-------------------------------------------------------------------------
@@ -294,6 +318,8 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_USDA_ARSsmpeObsId = "USDA ARSsm"
    character*50, public,  parameter :: LIS_ARSsmobsId = "ARS sm" ! SY
    character*50, public,  parameter :: LIS_ISMNsmobsId = "ISMN sm" 
+   character*50, public,  parameter :: LIS_SMAPsmobsId = "SMAP sm"
+   character*50, public,  parameter :: LIS_UAsnowobsId = "UA snow"
 !-------------------------------------------------------------------------
 ! Objective Function Evaluation Criteria
 !-------------------------------------------------------------------------

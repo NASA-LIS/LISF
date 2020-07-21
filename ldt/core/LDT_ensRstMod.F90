@@ -365,19 +365,27 @@ module LDT_ensRstMod
             ftn = LDT_getNextUnitNumber()
             ftn2 = LDT_getNextUnitNumber()
 
-            open(ftn,file=LDT_rc%inputrst,status='old',&
-                 form='unformatted',access='sequential',iostat=ios)
+            ! Check if input restart file is present:
+            inquire( file=trim(LDT_rc%inputrst), exist=file_exists )
+            if( file_exists ) then
+               write(LDT_logunit,*) "[INFO] Opening HYMAP input restart file, "
+               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+               open(ftn,file=LDT_rc%inputrst,status='old',&
+                    form='unformatted',access='sequential',iostat=ios)
+            else
+               write(LDT_logunit,*) "[ERR] HYMAP input binary restart file, "
+               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+               write(LDT_logunit,*) " is missing. Stopping run ..."
+               call LDT_endrun
+            endif
 
- 
-            ! If output ensemble restart file exists, don't overwrite ...
+            ! If output ensemble restart file exists, provide warning ...
             inquire( file=trim(LDT_rc%outputrst), exist=file_exists )
             if(file_exists) then
-               write(LDT_logunit,*) "[WARN] If the HYMAP binary restart file, "
+               write(LDT_logunit,*) "[WARN] HYMAP binary restart file, "
                write(LDT_logunit,*)  trim(LDT_rc%outputrst)
-               write(LDT_logunit,*) "  already exists, then remove or rename it and run LDT again." 
-               write(LDT_logunit,*) "  Otherwise intended ensemble HYMAP restart file will not be"
-               write(LDT_logunit,*) "  generated.  Stopping program ..."
-               call LDT_endrun
+               write(LDT_logunit,*) "  already exists! Overwriting the file ..." 
+!               call LDT_endrun
             endif
 
             open(ftn2,file=LDT_rc%outputrst,status='new',&
@@ -413,21 +421,29 @@ module LDT_ensRstMod
             ftn = LDT_getNextUnitNumber()
             ftn2 = LDT_getNextUnitNumber()
 
-            !open(ftn,file=LDT_rc%inputrst,status='old',&
-            !     form='unformatted',access='sequential',iostat=ios)
-            open(ftn,file=LDT_rc%inputrst,status='old',&
-                 form='unformatted',iostat=ios)
+            ! Check if input restart file is present:
+            inquire( file=trim(LDT_rc%inputrst), exist=file_exists )
+            if( file_exists ) then
+               write(LDT_logunit,*) "[INFO] Opening HYMAP input restart file, "
+               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+               open(ftn,file=LDT_rc%inputrst,status='old',&
+                    form='unformatted',iostat=ios)
+               !open(ftn,file=LDT_rc%inputrst,status='old',&
+               !     form='unformatted',access='sequential',iostat=ios)
+            else
+               write(LDT_logunit,*) "[ERR] HYMAP input binary restart file, "
+               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+               write(LDT_logunit,*) " is missing. Stopping run ..."
+               call LDT_endrun
+            endif
 
- 
-            ! If output ensemble restart file exists, don't overwrite ...
+            ! If output ensemble restart file exists, provide warning...
             inquire( file=trim(LDT_rc%outputrst), exist=file_exists )
             if(file_exists) then
                write(LDT_logunit,*) "[WARN] If the HYMAP2 binary restart file, "
                write(LDT_logunit,*)  trim(LDT_rc%outputrst)
-               write(LDT_logunit,*) "  already exists, then remove or rename it and run LDT again." 
-               write(LDT_logunit,*) "  Otherwise intended ensemble HYMAP restart file will not be"
-               write(LDT_logunit,*) "  generated.  Stopping program ..."
-               call LDT_endrun
+               write(LDT_logunit,*) "  already exists! Overwriting the file ..."
+!               call LDT_endrun
             endif
 
             !open(ftn2,file=LDT_rc%outputrst,status='new',&
@@ -712,18 +728,28 @@ module LDT_ensRstMod
 
             ! Open input binary file:
             ftn = LDT_getNextUnitNumber()
-            open(ftn,file=LDT_rc%inputrst,status='old',&
-                 form='unformatted',access='sequential',iostat=ios)
 
-            ! If output ensemble restart file exists, don't overwrite ...
+            ! Check if input restart file is present:
+            inquire( file=trim(LDT_rc%inputrst), exist=file_exists )
+            if( file_exists ) then
+               write(LDT_logunit,*) "[INFO] Opening HYMAP input restart file, "
+               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+               open(ftn,file=LDT_rc%inputrst,status='old',&
+                    form='unformatted',access='sequential',iostat=ios)
+            else
+               write(LDT_logunit,*) "[ERR] HYMAP input binary restart file, "
+               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+               write(LDT_logunit,*) " is missing. Stopping run ..."
+               call LDT_endrun
+            endif
+
+            ! If output ensemble restart file exists, provide warning ...
             inquire( file=trim(LDT_rc%outputrst), exist=file_exists )
             if(file_exists) then
-               write(LDT_logunit,*) "[WARN] If the HYMAP binary restart file, "
+               write(LDT_logunit,*) "[WARN] HYMAP binary restart file, "
                write(LDT_logunit,*)  trim(LDT_rc%outputrst)
-               write(LDT_logunit,*) "  already exists, then remove or rename it and run LDT again."
-               write(LDT_logunit,*) "  Otherwise intended ensemble HYMAP restart file will not be"
-               write(LDT_logunit,*) "  generated.  Stopping program ..."
-               call LDT_endrun
+               write(LDT_logunit,*) "  already exists! Overwriting the file ..."
+!               call LDT_endrun
             endif
 
             ! Create output binary file:
@@ -777,20 +803,30 @@ module LDT_ensRstMod
 
             ! Open input binary file:
             ftn = LDT_getNextUnitNumber()
-            !open(ftn,file=LDT_rc%inputrst,status='old',&
-            !     form='unformatted',access='sequential',iostat=ios)
-            open(ftn,file=LDT_rc%inputrst,status='old',&
-                 form='unformatted',iostat=ios)
 
-            ! If output ensemble restart file exists, don't overwrite ...
+            ! Check if input restart file is present:
+            inquire( file=trim(LDT_rc%inputrst), exist=file_exists )
+            if( file_exists ) then
+               write(LDT_logunit,*) "[INFO] Opening HYMAP input restart file, "
+               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+               open(ftn,file=LDT_rc%inputrst,status='old',&
+                    form='unformatted',iostat=ios)
+               !open(ftn,file=LDT_rc%inputrst,status='old',&
+               !     form='unformatted',access='sequential',iostat=ios)
+            else
+               write(LDT_logunit,*) "[ERR] HYMAP input binary restart file, "
+               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+               write(LDT_logunit,*) " is missing. Stopping run ..."
+               call LDT_endrun
+            endif
+
+            ! If output ensemble restart file exists, provide warning ...
             inquire( file=trim(LDT_rc%outputrst), exist=file_exists )
             if(file_exists) then
-               write(LDT_logunit,*) "[WARN] If the HYMAP binary restart file, "
+               write(LDT_logunit,*) "[WARN] HYMAP binary restart file, "
                write(LDT_logunit,*)  trim(LDT_rc%outputrst)
-               write(LDT_logunit,*) "  already exists, then remove or rename it and run LDT again."
-               write(LDT_logunit,*) "  Otherwise intended ensemble HYMAP restart file will not be"
-               write(LDT_logunit,*) "  generated.  Stopping program ..."
-               call LDT_endrun
+               write(LDT_logunit,*) "  already exists! Overwriting the file ..."
+!               call LDT_endrun
             endif
 
             ! Create output binary file:
@@ -913,7 +949,7 @@ module LDT_ensRstMod
            date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)),&
            'nf90_put_att failed for history')
       call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"references", &
-           "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"),&
+           "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"),&
            'nf90_put_att failed for references')
       call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"conventions", &
            "CF-1.6"),'nf90_put_att failed for conventions') !CF version 1.6

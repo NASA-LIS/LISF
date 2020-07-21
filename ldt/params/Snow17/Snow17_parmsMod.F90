@@ -96,7 +96,7 @@ contains
 ! \label{Snow17Parms_init}
 ! 
 ! !INTERFACE:
-  subroutine Snow17Parms_init
+  subroutine Snow17Parms_init(flag)
 
 ! !USES:
 !   use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
@@ -119,6 +119,7 @@ contains
 !
 !EOP
    implicit none
+   integer  :: flag
    integer  :: n
    integer  :: c,r,m,k
    integer  :: rc
@@ -524,7 +525,7 @@ contains
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,Snow17_struc(n)%snow17parms_gridtransform,&
               rc=rc)
-         call LDT_verify(rc,'SNOW17 parameter spatial tranform: option not specified in the config file')
+         call LDT_verify(rc,'SNOW17 parameter spatial transform: option not specified in the config file')
       enddo
 
       snow17%filltype = "none"

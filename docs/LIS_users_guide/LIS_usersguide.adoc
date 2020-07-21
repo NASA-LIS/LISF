@@ -1,6 +1,7 @@
-= Land Information System (LIS): LIS 7.2 Users' Guide
-:revnumber: 1.10
-:revdate: 2 Feb 2018
+= Land Information System (LIS): LIS {lisrevision} Users' Guide
+:revnumber: 1.11
+:revdate: 28 Aug 2019
+:doctype: book
 :sectnums:
 :toc:
 :math:
@@ -8,9 +9,11 @@
 :imagesoutdir: images
 :stem: latexmath
 :devonly!:
-:lisrevision: 7.2
+:lisrevision: 7.3
 :lisurl: http://lis.gsfc.nasa.gov
 :svnurl: http://subversion.apache.org
+:nasalisf: https://github.com/NASA-LIS/LISF
+:githuburl: https://github.com
 :listarball: LIS_public_release_7.2r.tar.gz
 :lispublicna: Not available in the {listarball} public release of LIS 7.2.
 :emdash: —

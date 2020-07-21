@@ -71,6 +71,9 @@ subroutine LIS_lsmoptue_plugin
 #if ( defined SM_NOAHMP_3_6 )
    use NoahMP36_peMod, only : NoahMP36_setup_pedecvars
 #endif
+#if ( defined SM_NOAHMP_4_0_1 )
+   use NoahMP401_peMod, only : NoahMP401_setup_pedecvars
+#endif
 
 !    external noah271_f2t
 !    external noah271_set_pedecvars
@@ -119,6 +122,19 @@ subroutine LIS_lsmoptue_plugin
 
    external NoahMP36_getpeobspred_ISMNsmobs
    external NoahMP36_setupobspred_ISMNsmobs
+
+   external NoahMP36_getpeobspred_SMAPsmobs
+   external NoahMP36_setupobspred_SMAPsmobs
+
+#endif
+
+#if ( defined SM_NOAHMP_4_0_1)
+
+   external NoahMP401_f2t
+   external NoahMP401_set_pedecvars
+
+   external NoahMP401_getpeobspred_UAsnowobs
+   external NoahMP401_setupobspred_UAsnowobs
 
 #endif
 
@@ -269,8 +285,30 @@ subroutine LIS_lsmoptue_plugin
    call registerlsmpegetobspred(trim(LIS_noahmp36Id)//"+"//      &
                                 trim(LIS_ISMNsmobsId)//char(0), &
                                 NoahMP36_getpeobspred_ISMNsmobs)
+
+   call registerlsmpesetupobspred(trim(LIS_noahmp36Id)//"+"//      &
+                                  trim(LIS_SMAPsmobsId)//char(0), &
+                                  NoahMP36_setupobspred_SMAPsmobs)
+   call registerlsmpegetobspred(trim(LIS_noahmp36Id)//"+"//      &
+                                trim(LIS_SMAPsmobsId)//char(0), &
+                                NoahMP36_getpeobspred_SMAPsmobs)
 #endif
 
+#if ( defined SM_NOAHMP_4_0_1 )
+   call registerlsmf2t(trim(LIS_noahmp401Id)//"+"// &
+                       trim(LIS_paramEstimRunId)//char(0),NoahMP401_f2t)
+   call registerlsmpesetupdecisionspace(trim(LIS_noahmp401Id)//char(0), &
+                                        NoahMP401_setup_pedecvars)
+   call registerlsmpesetdecisionspace(trim(LIS_noahmp401Id)//char(0), &
+                                      NoahMP401_set_pedecvars)
+
+   call registerlsmpesetupobspred(trim(LIS_noahmp401Id)//"+"//      &
+                                  trim(LIS_UAsnowobsId)//char(0), &
+                                  NoahMP401_setupobspred_UAsnowobs)
+   call registerlsmpegetobspred(trim(LIS_noahmp401Id)//"+"//      &
+                                trim(LIS_UAsnowobsId)//char(0), &
+                                NoahMP401_getpeobspred_UAsnowobs)
+#endif
 #endif
 end subroutine LIS_lsmoptue_plugin
 end module LIS_lsmoptue_pluginMod

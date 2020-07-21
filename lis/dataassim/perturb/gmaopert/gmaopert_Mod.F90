@@ -215,7 +215,9 @@ module gmaopert_Mod
                   do c=1,forcPert(nest,k)%N_x
                      domain_id = gindex(c,r)
                      call get_init_Pert_rseed(LIS_rc%nensem(nest), &
-                          N_domain, ens_id, domain_id, &
+                          N_domain, LIS_rc%gnc(nest), &
+                          LIS_rc%gnr(nest),  &
+                          ens_id, domain_id, &
                           init_Pert_rseed (:,c,r,:))
                   enddo
                enddo
@@ -356,7 +358,9 @@ module gmaopert_Mod
                      do c=1,forcPert(nest,k)%N_x
                         domain_id = gindex(c,r)
                         call get_init_Pert_rseed(LIS_rc%nensem(nest), &
-                             N_domain, ens_id, domain_id, &
+                             N_domain, LIS_rc%gnc(nest), &
+                             LIS_rc%gnr(nest), &
+                             ens_id, domain_id, &
                              init_Pert_rseed (:,c,r,:))
                      enddo
                   enddo
@@ -496,7 +500,9 @@ module gmaopert_Mod
                   do c=1,progPert(nest,k)%N_x
                      domain_id = gindex(c,r)
                      call get_init_Pert_rseed(LIS_rc%nensem(nest), &
-                          N_domain, ens_id, domain_id, &
+                          N_domain, LIS_rc%gnc(nest), &
+                          LIS_rc%gnr(nest), &
+                          ens_id, domain_id, &
                           init_Pert_rseed (:,c,r,:))
                   enddo
                enddo
@@ -630,7 +636,9 @@ module gmaopert_Mod
                      do c=1,progPert(nest,k)%N_x
                         domain_id = gindex(c,r)
                         call get_init_Pert_rseed(LIS_rc%nensem(nest), &
-                             N_domain, ens_id, domain_id, &
+                             N_domain, LIS_rc%gnc(nest), &
+                             LIS_rc%gnr(nest), &
+                             ens_id, domain_id, &
                              init_Pert_rseed (:,c,r,:))
                      enddo
                   enddo
@@ -779,7 +787,9 @@ module gmaopert_Mod
                   do c=1,obsPert(nest,k)%N_x
                      domain_id = gindex(c,r)
                      call get_init_Pert_rseed(LIS_rc%nensem(nest), &
-                          N_domain, ens_id, domain_id, &
+                          N_domain, LIS_rc%gnc(nest), &
+                          LIS_rc%gnr(nest),  &
+                          ens_id, domain_id, &
                           init_Pert_rseed (:,c,r,:))
                   enddo
                enddo
@@ -908,7 +918,9 @@ module gmaopert_Mod
                      do c=1,obsPert(nest,k)%N_x
                         domain_id = gindex(c,r)
                         call get_init_Pert_rseed(LIS_rc%nensem(nest), &
-                             N_domain, ens_id, domain_id, &
+                             N_domain, LIS_rc%gnc(nest), &
+                             LIS_rc%gnr(nest),  &
+                             ens_id, domain_id, &
                              init_Pert_rseed (:,c,r,:))
                      enddo
                   enddo

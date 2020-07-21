@@ -484,6 +484,9 @@ contains
        cmem3_struc(n)%tveg(t)      = land_temperature(t)
        cmem3_struc(n)%h_veg(t)     =  10.0           ! not used yet
 !       cmem3_struc(n)%veg_frac(t)  = vegetation_fraction(t)
+       IF (leaf_area_index(t) .eq. 0.00) THEN
+           leaf_area_index(t) = 0.01
+       END IF
        cmem3_struc(n)%bgf_v(t)      =  1.0*exp(-1.0*cmem3_struc(n)%k_lai2vgf(t)*(leaf_area_index(t)/(1.0-cmem3_struc(n)%bgf_fixed(t))))
        cmem3_struc(n)%bgf_total(t)  =  cmem3_struc(n)%bgf_fixed(t) + cmem3_struc(n)%bgf_v(t)*(1.0-cmem3_struc(n)%bgf_fixed(t))
        cmem3_struc(n)%lai(t)       =  leaf_area_index(t)/(1.0-cmem3_struc(n)%bgf_total(t))

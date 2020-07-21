@@ -82,14 +82,14 @@ function get_fieldpos(i,j,gridDesc) result(field_pos)
      dlon = gridDesc(8)
   elseif(gridDesc(1).eq.4) then 
      dlon = gridDesc(9)
-  elseif(gridDesc(1).eq.9) then  ! From LDT version
-     dlon = gridDesc(10)
+!  elseif(gridDesc(1).eq.9) then  ! From LDT version
+!     dlon = gridDesc(10)
   endif
 
   if(gridDesc(1).eq.0.or. &
        gridDesc(1).eq.1.or. &
-       gridDesc(1).eq.4.or. &
-       gridDesc(1).eq.9) then
+       gridDesc(1).eq.4) then 
+!       gridDesc(1).eq.9) then
      rlon1=gridDesc(5)
      rlon2=gridDesc(8)
      iscan=mod(nint(gridDesc(20))/128,2)

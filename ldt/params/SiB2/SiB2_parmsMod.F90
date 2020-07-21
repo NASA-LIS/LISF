@@ -105,7 +105,7 @@ contains
 ! \label{SiB2Parms_init}
 ! 
 ! !INTERFACE:
-  subroutine SiB2Parms_init
+  subroutine SiB2Parms_init(flag)
 ! !USES:
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
     use LDT_logMod,    only : LDT_verify, LDT_endrun
@@ -132,7 +132,7 @@ contains
 !
 !EOP
     implicit none
-
+    integer                              :: flag
      real, allocatable                   :: sib2parms_gridDesc(:,:)
      character*50                    :: sib2parms_proj
      character*50, allocatable           :: sib2parms_gridtransform(:)
@@ -575,7 +575,7 @@ contains
           do n=1,LDT_rc%nnest
              call ESMF_ConfigGetAttribute(LDT_config,sib2parms_gridtransform(n),&
                   rc=rc)
-             call LDT_verify(rc,'SiB2 parameter spatial tranform: option not specified in the config file')
+             call LDT_verify(rc,'SiB2 parameter spatial transform: option not specified in the config file')
           enddo
 
           sib2%filltype = "none"

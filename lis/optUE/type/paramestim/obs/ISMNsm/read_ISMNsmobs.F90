@@ -225,8 +225,12 @@ subroutine read_ISMNsmobs(Obj_Space)
                     rzsm = rzsm + rz_wt(v)*ISMNsm_obs_struc(n)%stn(k)%sm(tind,v)
                  endif
               enddo
-              ISMNsm_obs_struc(n)%stn(k)%sfsm(tind) = sfsm
-              ISMNsm_obs_struc(n)%stn(k)%rzsm(tind) = rzsm
+              if(sfsm.gt.0.001) then 
+                 ISMNsm_obs_struc(n)%stn(k)%sfsm(tind) = sfsm
+              endif
+              if(rzsm.gt.0.001) then 
+                 ISMNsm_obs_struc(n)%stn(k)%rzsm(tind) = rzsm
+              endif
            endif
         enddo
         deallocate(depth)

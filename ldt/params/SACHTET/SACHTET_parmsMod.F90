@@ -174,7 +174,7 @@ contains
 ! \label{SACHTETparms_init}
 ! 
 ! !INTERFACE:
-  subroutine SACHTETparms_init
+  subroutine SACHTETparms_init(flag)
 
 ! !USES:
    use LDT_logMod,    only : LDT_verify, LDT_endrun, &
@@ -198,6 +198,7 @@ contains
 !
 !EOP
    implicit none
+   integer  :: flag
    integer  :: n
    integer  :: c,r,m,k
    integer  :: numveg
@@ -1168,7 +1169,7 @@ contains
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,SACHTET_struc(n)%sachtetparms_gridtransform,&
               rc=rc)
-         call LDT_verify(rc,'SACHTET parameter spatial tranform: option not specified in the config file')
+         call LDT_verify(rc,'SACHTET parameter spatial transform: option not specified in the config file')
       enddo
 
       sachtet%filltype = "none"
@@ -1650,7 +1651,7 @@ contains
    do n=1,LDT_rc%nnest
       call ESMF_ConfigGetAttribute(LDT_config,&
                 SACHTET_struc(n)%pet_gridtransform, rc=rc)
-      call LDT_verify(rc,'PET spatial tranform: option not specified in the config file')
+      call LDT_verify(rc,'PET spatial transform: option not specified in the config file')
    enddo
 
 !- Read in files:

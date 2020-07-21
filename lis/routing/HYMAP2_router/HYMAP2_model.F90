@@ -11,6 +11,7 @@
 ! 13 Apr 2016: Augusto Getirana, Inclusion of option for hybrid runs with a 
 !                                river flow map. 
 !
+#include "LIS_misc.h"
 subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
      nseqall,nz,dt,flowmap,linres,evapflag,  &
      rivout_pre,rivdph_pre,                  &
@@ -31,6 +32,8 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
                    
   use HYMAP2_modelMod
   use HYMAP2_routingMod
+  use LIS_mpiMod
+  use LIS_coreMod
   
   implicit none
 
@@ -140,12 +143,18 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
   integer                :: ic,ic_down,i,iloc(1)
 
   !ag (29Jan2016)
+  integer                :: nt_local
+  real                   :: dta_local
   integer                :: counti, countf, count_rate
-
+  integer                :: maxi
+  real                   :: mindt
   real                   :: tmp
   real*8                 :: dt1
+  integer                :: status
 
+#if 0 
   call system_clock(counti,count_rate)
+#endif
 
 ! ================================================
   !ag 3 Apr 2014 
@@ -163,7 +172,7 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
 ! ================================================
 
   if(steptype==1)then
-    dta(:)=dt
+    dta=dt
     nt(:)=1
   elseif(steptype==2)then
     do ic=1,nseqall
@@ -179,6 +188,25 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
   iloc(:)=minloc(dta)
   i=iloc(1)
 
+  if(nseqall.gt.0) then 
+     nt_local = nt(i)
+     dta_local = dta(i)
+  else
+     nt_local = 1
+     dta_local = dt
+  endif
+
+!find the maximum of i and minimum dt across all processors
+#if (defined SPMD)
+  call MPI_ALLREDUCE(nt_local,maxi, 1, MPI_INTEGER, MPI_MAX, &
+       LIS_mpi_comm,status)
+
+  call MPI_ALLREDUCE(dta_local,mindt, 1, MPI_REAL, MPI_MIN, &
+       LIS_mpi_comm,status)
+#else 
+  maxi = nt_local
+  mindt = dta_local
+#endif
   rivout0=rivout
   rivvel0=rivvel
   fldout0=fldout
@@ -190,14 +218,16 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
   fldvel=0. 
   evpout=0. 
 
-!    dta(:)=dt
-!    nt(:)=1
-  do it=1,nt(i)
+  do it=1,maxi
     !call HYMAP2_date2frac(yr,mo,da,hr,mn,ss,real(dta(i)*(it-1)-dt),time)
 
-    dt1=real(dta(i)*it-dt)
-    time=dble(yr*10000+mo*100+da) + (dble(hr)+(dble(mn)+(dble(ss)+dt1)/60.)/60.)/24.
-    call HYMAP2_model_core(n,mis,nseqall,nz,time,dta(i),flowmap,linres,evapflag, &
+    dt1=real(mindt*it-dt)
+
+    time=dble(yr*10000+mo*100+da) +&
+         (dble(hr)+(dble(mn)+(dble(ss)+dt1)/60.)/60.)/24.
+
+    call HYMAP2_model_core(n,mis,nseqall,nz,time,&
+         mindt,flowmap,linres,evapflag, &
          resopflag,floodflag,dwiflag,                               &
          rivout_pre,rivdph_pre,grv,                 &
          fldout_pre,flddph_pre,fldelv1,                &
@@ -213,11 +243,17 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
         
     do ic=1,nseqall 
       rivout0(ic)=rivout0(ic)+fldout0(ic)
-      rivout(ic)=rivout(ic)+rivout0(ic)/real(nt(i))
-      rivvel(ic)=rivvel(ic)+rivvel0(ic)/real(nt(i))
-      fldout(ic)=fldout(ic)+fldout0(ic)/real(nt(i))
-      fldvel(ic)=fldvel(ic)+fldvel0(ic)/real(nt(i))
-      evpout(ic)=evpout(ic)+evpout0(ic)/real(nt(i))
+!      rivout(ic)=rivout(ic)+rivout0(ic)/real(nt(i))
+!      rivvel(ic)=rivvel(ic)+rivvel0(ic)/real(nt(i))
+!      fldout(ic)=fldout(ic)+fldout0(ic)/real(nt(i))
+!      fldvel(ic)=fldvel(ic)+fldvel0(ic)/real(nt(i))
+!      evpout(ic)=evpout(ic)+evpout0(ic)/real(nt(i))
+
+      rivout(ic)=rivout(ic)+rivout0(ic)/real(maxi)
+      rivvel(ic)=rivvel(ic)+rivvel0(ic)/real(maxi)
+      fldout(ic)=fldout(ic)+fldout0(ic)/real(maxi)
+      fldvel(ic)=fldvel(ic)+fldvel0(ic)/real(maxi)
+      evpout(ic)=evpout(ic)+evpout0(ic)/real(maxi)
     enddo
 
   enddo
@@ -230,9 +266,10 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
   !  evpout(ic)=evpout0(ic)
   !enddo
 
+#if 0 
   call system_clock(countf)
   HYMAP2_routing_struc(n)%dt_proc=HYMAP2_routing_struc(n)%dt_proc+real(countf-counti)/real(count_rate)
-  
+#endif
   tmp=minval(dtaout)
   !write(unit=HYMAP2_logunit,fmt='(8i5,10f15.4)')n,yr,mo,da,hr,mn,ss,nt(i),dta(i),sum(HYMAP2_routing_struc(:)%dt_proc),minval(dtaout,dtaout>tmp),maxval(dtaout),real(count(dtaout==minval(dtaout)))
 !  write(unit=LIS_logunit,fmt='(a,i5,f10.2,f10.4,3f10.2)')'[INFO] HYMAP2_log: ',nt(i),dta(i),sum(HYMAP2_routing_struc(:)%dt_proc),minval(dtaout,dtaout>tmp),maxval(dtaout),real(count(dtaout==minval(dtaout)))

@@ -45,15 +45,16 @@ subroutine read_HYMAP_river_width(n, array)
 
   ftn = LDT_getNextUnitNumber()
 
-  inquire(file=trim(HYMAP_struc(n)%riverwidthFile), exist=file_exists)
+  inquire(file=trim(HYMAP_struc(n)%riverwidthfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Riverwidth map ',trim(HYMAP_struc(n)%riverwidthFile),' not found'
+     write(LDT_logunit,*) '[ERR] River width map, ',&
+           trim(HYMAP_struc(n)%riverwidthfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif
 
-  open(ftn, file=trim(HYMAP_struc(n)%riverwidthFile), access='direct',&
-       status='old', form="unformatted", recl=4)
+  open(ftn, file=trim(HYMAP_struc(n)%riverwidthfile), access='direct',&
+       status='old', form="unformatted", convert="big_endian", recl=4)
   
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &

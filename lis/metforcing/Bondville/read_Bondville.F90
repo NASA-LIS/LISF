@@ -12,6 +12,7 @@
 ! 
 ! !REVISION HISTORY:
 ! 06 Oct 2010: David Mocko, Updated for Bondville test case
+! 26 Oct 2018: David Mocko, Updated for Noah-MP-4.0.1 HRLDAS test case
 !
 ! !INTERFACE:
 subroutine read_Bondville(n,ftn,findex,order,itime)
@@ -75,7 +76,7 @@ subroutine read_Bondville(n,ftn,findex,order,itime)
   character*80       :: Bondville_filename
   character(len=500) :: line
 
-  !      write(LIS_logunit,*) 'starting read_Bondville'
+  ! write(LIS_logunit,*) 'starting read_Bondville'
   do i = 1,Bondville_struc(n)%nstns
      ! Generate the Bondville filename and see if it exists
      Bondville_filename = trim(Bondville_struc(n)%Bondvillefile)
@@ -83,24 +84,46 @@ subroutine read_Bondville(n,ftn,findex,order,itime)
           trim(Bondville_filename)
      inquire(file=Bondville_filename,exist=file_exists)
      if (file_exists) then
-        !            write(LIS_logunit,*) 'File is open!!'
+        ! write(LIS_logunit,*) 'File is open!!'
         open(ftn,file=Bondville_filename,form='formatted',        &
              status='old')
-        ! segment to skip the header
+
+! If MP=0, use the older "bondville.dat" forcing file.
+!    This option is to support older testcases.
+! If MP.ne.0, use the new Noah-MP-4.0.1 HRLDAS "bondville.dat" file.
+!
+! Segment to skip the header
+        if (Bondville_struc(n)%MP.eq.0) then
+           do
+              read(ftn,'(a)') line
+              if (line(1:9).eq.'<Forcing>') exit
+           enddo
+        else
+           do
+              read(ftn,'(a)') line
+              if (line(1:4).eq.'yyyy') exit
+           enddo
+           read(ftn,'(a)') line
+        endif
+! Actual data reading section
         do
            read(ftn,'(a)') line
-           !               write(LIS_logunit,*) line(1:30)
-           if (line(1:9).eq.'<Forcing>') exit
-        enddo
-        ! Actual data reading section
-        do
-           read(ftn,'(a)') line
-           read(line,40) bonyr,bonmon,bonday,bonhr,bonmin,         &
-                u(i),v(i),tair(i),qair(i),psurf(i),       &
-                swdown(i),lwdown(i),pcp(i)
-           !               write(LIS_logunit,*) bonyr,bonmon,bonday,bonhr,bonmin,  &
-           !                             u(i),v(i),tair(i),qair(i),psurf(i),       &
-           !                             swdown(i),lwdown(i),pcp(i)
+           if (Bondville_struc(n)%MP.eq.0) then
+              read(line,40) bonyr,bonmon,bonday,bonhr,bonmin,         &
+                   u(i),v(i),tair(i),qair(i),psurf(i),                &
+                   swdown(i),lwdown(i),pcp(i)
+           else
+              read(line,50) bonyr,bonmon,bonday,bonhr,bonmin,         &
+                            u(i),tair(i),qair(i),psurf(i),            &
+                            swdown(i),lwdown(i),pcp(i)
+! Convert data into expected units
+              v(i) = 0.0
+              tair(i) = tair(i) + 273.15
+              pcp(i) = pcp(i) / 1800.0 * 25.4
+           endif
+           ! write(LIS_logunit,*) bonyr,bonmon,bonday,bonhr,bonmin,      &
+           !                      u(i),v(i),tair(i),qair(i),psurf(i),    &
+           !                      swdown(i),lwdown(i),pcp(i)
            bonsec = 0
            bontick = 21600
            call LIS_date2time(bontime,bondoy,bongmt,bonyr,bonmon,  &
@@ -114,11 +137,11 @@ subroutine read_Bondville(n,ftn,findex,order,itime)
            ! we are interpolating between half-hourly data), then stop reading
            ! the Bondville data and use that line as forcing at the LIS time.
            call LIS_tick(bontime,bondoy,bongmt,bonyr,bonmon,       &
-                bonday,bonhr,bonmin,bonsec,bontick)
-           !               write(LIS_logunit,*) 'read_time: ',bontime,bonyr,bonmon,&
-           !                                                   bonday,bonhr,bonmin
-           !               write(LIS_logunit,*) 'LIS_time: ',listime,LIS_rc%yr,    &
-           !                               LIS_rc%mo,LIS_rc%da,LIS_rc%hr,LIS_rc%mn
+                         bonday,bonhr,bonmin,bonsec,bontick)
+           ! write(LIS_logunit,*) 'read_time: ',bontime,bonyr,bonmon,&
+           !                                    bonday,bonhr,bonmin
+           ! write(LIS_logunit,*) 'LIS_time: ',listime,LIS_rc%yr,    &
+           !                LIS_rc%mo,LIS_rc%da,LIS_rc%hr,LIS_rc%mn
            if ((bontime.ge.listime).and.(itime.eq.1)) exit
            if ((bontime.gt.listime).and.(itime.eq.2)) exit
         enddo
@@ -130,6 +153,7 @@ subroutine read_Bondville(n,ftn,findex,order,itime)
   enddo
 
 40 format(i4,4i3,8f17.10)
+50 format(i4,4i3,f6.2,2f6.1,2f6.0,f5.0,f6.2)
 
   call normalize_stnwts(psurf,Bondville_struc(n)%nstns,           &
        LIS_rc%lnc(n)*LIS_rc%lnr(n),Bondville_struc(n)%undef,  &

@@ -19,6 +19,7 @@
 !                                 correct individual fields.
 !  15 May 2017: Bailing Li; Added changes for reading in version 2.2 data
 !                           that is in 3D array (4D in version 1 & 2).
+!  22 Oct 2018: Daniel Sarmiento; Added changes to support version 3 data
 !
 ! !INTERFACE:
 subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
@@ -134,6 +135,7 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
   real    :: gridDesco(50)         ! Input,output grid info arrays
 
   integer :: kk                    ! forecast index
+  integer :: num_met               ! number of fields, V3 will have 6, 2 and 2.2 have 7 (precip)
 
   real,allocatable :: datain(:,:)  ! input data (longitude,latitude)
   real,allocatable :: temp2princeton(:,:,:)
@@ -152,6 +154,7 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
    ! If a problem, ferror is set to zero
    ferror = 1
    mo = LIS_rc%lnc(n)*LIS_rc%lnr(n)
+   num_met = 7
 
    ! Allocate memory
    allocate(datain(princeton_struc(n)%ncold,princeton_struc(n)%nrold))
@@ -188,6 +191,13 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
 
 !=== Open PRINCETON forcing files ===
 
+! If version 3 is being used, set num_met to six because
+!    the 3-hr precip fields are not available. Turn off
+!    if future versions include 3-hr precip fields.
+  if(princeton_struc(n)%version == "3") then
+    num_met = 6
+  endif
+
   ! Loop over forecast index:
   do kk= princeton_struc(n)%st_iterid, princeton_struc(n)%en_iterid
 
@@ -202,7 +212,7 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
      endif
 
      ! Forcing variable loop:
-     do v = 1, 7  ! N_PF
+     do v = 1, num_met  ! Number of met fields in Princeton data
 
        ! File name for data year/variable(v)_3hourly_year-year.nc
        infile=trim(princeton_struc(n)%princetondir)//'/'//cyr//'/'//&
@@ -223,7 +233,7 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
          if(LIS_masterproc) write(LIS_logunit,*)'[INFO] Opened file: ',infile
        end if
 
-      if (princeton_struc(n)%version=="2.2")then
+      if (princeton_struc(n)%version=="2.2" .OR. princeton_struc(n)%version=="3")then
        status = nf90_get_var(ncid, varid, datain, &
                                      start=(/1,1,timestep/), &
        count=(/princeton_struc(n)%ncold,princeton_struc(n)%nrold,1/))
@@ -389,8 +399,17 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
            do i = 1, LIS_rc%lnc(n)
               if(LIS_domain(n)%gindex(i,j).ne.-1) then 
                 if ((tg(i,j) .lt. 0) .and. (tg(i,j) .ne. LIS_rc%udef)) then
-                   write(LIS_logunit,*)'[ERR] No nearest neighbors, v, i, j',v,i,j,tg(i,j)
-                   stop
+                   !For version 3, replace the value with an undefined value instead of ending the run.
+                   !For all other versions, keep old call to end the program.
+                   if(princeton_struc(n)%version == "3") then
+                      write(LIS_logunit,*)'[WARN] No nearest neighbors, v, i, j',v,i,j,tg(i,j)
+                      write(LIS_logunit,*)'[WARN] Check output to make sure the missing neighbor'
+                      write(LIS_logunit,*)'is isolated and does not distort the output.'      
+                      tg(i,j) = LIS_rc%udef ! New code to change data to undefined
+                   else
+                      write(LIS_logunit,*)'[WARN] No nearest neighbors, v, i, j',v,i,j,tg(i,j)
+                      call LIS_endrun()  ! Old code to call a fatal error
+                   endif
                 endif
                 templdas(i,j,v) = tg(i,j)
               endif
@@ -445,6 +464,7 @@ end subroutine read_princeton
 !
 ! !INTERFACE:
 subroutine princetongrid_2_lisgrid( nx, ny, grid_data )
+  use LIS_logMod,           only : LIS_logunit, LIS_endrun
 
   implicit none
 ! !ARGUMENTS:   
@@ -471,17 +491,18 @@ subroutine princetongrid_2_lisgrid( nx, ny, grid_data )
   ! ------------------------------------------------------------------
   ! Some checks
   ! ------------------------------------------------------------------
-  if ((nx /= 360) .or. (ny /= 180)) then
-     write (*,*) '[ERR] Rprincetongrid_2_gldasgrid(): This routine has only been'
-     write (*,*) '  checked for nx=360 and ny=180. Make sure you know'
-     write (*,*) '  what you are doing. STOPPING.'
-     stop
+  if( ((nx /= 360) .or. (ny /= 180)) .and. ((nx /= 1440) .or. (ny /= 600)) ) then
+     write(LIS_logunit,*) '[ERR] Rprincetongrid_2_gldasgrid(): This routine has only been'
+     write(LIS_logunit,*) '  checked for nx=360 and ny=180 (version 2 and 2.2) and for '
+     write(LIS_logunit,*) '  nx=1440 and ny=600 (version 3). ' 
+     write(LIS_logunit,*) '  Make sure you know what you are doing. STOPPING.'
+     call LIS_endrun()
   end if  
   if ((mod(nx,2) /= 0) .or. (mod(ny,2) /= 0)) then
-     write (*,*) '[ERR] Rprincetongrid_2_gldasgrid(): This routine can only work'
-     write (*,*) '  for even nx and ny. Make sure you know'
-     write (*,*) '  what you are doing. STOPPING.'
-     stop
+     write(LIS_logunit,*) '[ERR] Rprincetongrid_2_gldasgrid(): This routine can only work'
+     write(LIS_logunit,*) '  for even nx and ny. Make sure you know'
+     write(LIS_logunit,*) '  what you are doing. STOPPING.'
+     call LIS_endrun()
   end if
   
   !-------------------------------------------------------------------

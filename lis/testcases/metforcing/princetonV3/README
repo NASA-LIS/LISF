@@ -1,0 +1,30 @@
+PrincetonV3 Grid - Southeast US Reader Test Case
+
+This test-case performs a 1/4 degree simulation over the southeast US with the
+TEMPLATE lsm option from 2012-01-01 to 2012-01-05 to test the processing
+of the Princeton V3 forcing data.
+
+This directory contains: 
+
+* this README file.
+* the lis.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.) 
+* the MODEL_OUTPUT_LIST.TBL file used to specify the output variables.
+* a sample grads control file that can be used to visualize the 
+  output. (output.ctl)
+* a sample grads control file that can be used to visualize the 
+  test case output. (testcase.ctl)
+
+To run this test case: 
+
+* Generate the LIS executable. 
+* Run the LIS executable using the lis.config file and your sample 
+  input data. 
+* View the binary output using the sample grads file. 
+
+Notes:
+
+See http://hydrology.princeton.edu/data.pgf.php
+
+Global Meteorological Forcing Dataset for land surface modeling - Princeton University

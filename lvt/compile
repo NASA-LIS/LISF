@@ -48,7 +48,7 @@ done
 dashes="-------------------------------------------------------------------"
 
 echo $dashes
-echo "Compiling LVT version 7.2r..."
+echo "Compiling LVT"
 echo ""
 
 if cd ./make

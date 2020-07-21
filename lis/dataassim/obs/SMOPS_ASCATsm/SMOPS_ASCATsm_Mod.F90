@@ -34,6 +34,7 @@
 ! !REVISION HISTORY: 
 !  8 May 2013    Sujay Kumar; initial specification
 !  28 Sep 2017: Mahdi Navari; Updated to read ASCAT from SMOPS V3
+!  1  Apr 2019  Yonghwan Kwon: Upated for reading monthy CDF for the current month
 ! 
 module SMOPS_ASCATsm_Mod
 ! !USES: 
@@ -82,6 +83,15 @@ module SMOPS_ASCATsm_Mod
      real*8                 :: version2_time, version3_time
      character(len=17)      :: version
      character(len=10)      :: conv
+
+     logical                :: cdf_read_mon  !(for reading monthly CDF when
+                                             !LIS_rc%da > 1 but the first model time step,
+                                             !e.g., 4/29 13:00:00)
+     integer                :: cdf_read_opt  ! 0: read all months at one time
+                                             ! 1: read only the current month
+     character*100          :: modelcdffile
+     character*100          :: obscdffile
+
   end type SMOPS_ASCATsm_dec
   
   type(SMOPS_ASCATsm_dec),allocatable :: SMOPS_ASCATsm_struc(:)
@@ -142,8 +152,6 @@ contains
     type(pert_dec_type)    ::  obs_pert
     real, pointer          ::  obs_temp(:,:)
     real                   :: gridDesci(50)
-    character*100          :: modelcdffile(LIS_rc%nnest)
-    character*100          :: obscdffile(LIS_rc%nnest)
     real, allocatable          :: ssdev(:)
 
     real, allocatable          ::  obserr(:,:)
@@ -200,14 +208,14 @@ contains
     call ESMF_ConfigFindLabel(LIS_config,"SMOPS ASCAT model CDF file:",&
          rc=status)
     do n=1,LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,modelcdffile(n),rc=status)
+       call ESMF_ConfigGetAttribute(LIS_config,SMOPS_ASCATsm_struc(n)%modelcdffile,rc=status)   
        call LIS_verify(status, 'SMOPS ASCAT model CDF file: not defined')
     enddo
 
     call ESMF_ConfigFindLabel(LIS_config,"SMOPS ASCAT observation CDF file:",&
          rc=status)
     do n=1,LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,obscdffile(n),rc=status)
+       call ESMF_ConfigGetAttribute(LIS_config,SMOPS_ASCATsm_struc(n)%obscdffile,rc=status)   
        call LIS_verify(status, 'SMOPS ASCAT observation CDF file: not defined')
     enddo
     
@@ -228,6 +236,15 @@ contains
        call ESMF_ConfigGetAttribute(LIS_config,SMOPS_ASCATsm_struc(n)%version,&
           default='date-based', rc=status)
     enddo
+
+   do n=1, LIS_rc%nnest
+      SMOPS_ASCATsm_struc(n)%cdf_read_mon = .false.
+
+      call ESMF_ConfigFindLabel(LIS_config, "SMOPS ASCAT CDF read option:", rc=status)    ! 0: read CDF for all months/year
+                                                                                         ! 1: read CDF for current month
+      call ESMF_ConfigGetAttribute(LIS_config, SMOPS_ASCATsm_struc(n)%cdf_read_opt, rc=status)
+      call LIS_verify(status, "SMOPS ASCAT CDF read option: not defined")
+   enddo
 
    do n=1,LIS_rc%nnest
        call ESMF_AttributeSet(OBS_State(n),"Data Update Status",&
@@ -371,67 +388,86 @@ contains
        allocate(ssdev(LIS_rc%obs_ngrid(k)))
        ssdev = obs_pert%ssdev(1)
        
-       call LIS_getCDFattributes(k,modelcdffile(n),&
-            SMOPS_ASCATsm_struc(n)%ntimes,ngrid)
+       call LIS_getCDFattributes(k,SMOPS_ASCATsm_struc(n)%modelcdffile,&
+            SMOPS_ASCATsm_struc(n)%ntimes,ngrid)                       
        
-       allocate(SMOPS_ASCATsm_struc(n)%model_xrange(&
-            LIS_rc%obs_ngrid(k), SMOPS_ASCATsm_struc(n)%ntimes, &
-            SMOPS_ASCATsm_struc(n)%nbins))
-       allocate(SMOPS_ASCATsm_struc(n)%obs_xrange(&
-            LIS_rc%obs_ngrid(k), SMOPS_ASCATsm_struc(n)%ntimes, &
-            SMOPS_ASCATsm_struc(n)%nbins))
-       allocate(SMOPS_ASCATsm_struc(n)%model_cdf(&
-            LIS_rc%obs_ngrid(k), SMOPS_ASCATsm_struc(n)%ntimes, &
-            SMOPS_ASCATsm_struc(n)%nbins))
-       allocate(SMOPS_ASCATsm_struc(n)%obs_cdf(&
-            LIS_rc%obs_ngrid(k), SMOPS_ASCATsm_struc(n)%ntimes, &
-            SMOPS_ASCATsm_struc(n)%nbins))
-       allocate(SMOPS_ASCATsm_struc(n)%model_mu(LIS_rc%obs_ngrid(k),&
-            SMOPS_ASCATsm_struc(n)%ntimes))
-       allocate(SMOPS_ASCATsm_struc(n)%model_sigma(LIS_rc%obs_ngrid(k),&
-            SMOPS_ASCATsm_struc(n)%ntimes))
-       allocate(SMOPS_ASCATsm_struc(n)%obs_mu(LIS_rc%obs_ngrid(k),&
-            SMOPS_ASCATsm_struc(n)%ntimes))
-       allocate(SMOPS_ASCATsm_struc(n)%obs_sigma(LIS_rc%obs_ngrid(k),&
-            SMOPS_ASCATsm_struc(n)%ntimes))
+       if (SMOPS_ASCATsm_struc(n)%cdf_read_opt.eq.0) then   
+          allocate(SMOPS_ASCATsm_struc(n)%model_xrange(&
+               LIS_rc%obs_ngrid(k), SMOPS_ASCATsm_struc(n)%ntimes, &
+               SMOPS_ASCATsm_struc(n)%nbins))
+          allocate(SMOPS_ASCATsm_struc(n)%obs_xrange(&
+               LIS_rc%obs_ngrid(k), SMOPS_ASCATsm_struc(n)%ntimes, &
+               SMOPS_ASCATsm_struc(n)%nbins))
+          allocate(SMOPS_ASCATsm_struc(n)%model_cdf(&
+               LIS_rc%obs_ngrid(k), SMOPS_ASCATsm_struc(n)%ntimes, &
+               SMOPS_ASCATsm_struc(n)%nbins))
+          allocate(SMOPS_ASCATsm_struc(n)%obs_cdf(&
+               LIS_rc%obs_ngrid(k), SMOPS_ASCATsm_struc(n)%ntimes, &
+               SMOPS_ASCATsm_struc(n)%nbins))
+          allocate(SMOPS_ASCATsm_struc(n)%model_mu(LIS_rc%obs_ngrid(k),&
+               SMOPS_ASCATsm_struc(n)%ntimes))
+          allocate(SMOPS_ASCATsm_struc(n)%model_sigma(LIS_rc%obs_ngrid(k),&
+               SMOPS_ASCATsm_struc(n)%ntimes))
+          allocate(SMOPS_ASCATsm_struc(n)%obs_mu(LIS_rc%obs_ngrid(k),&
+               SMOPS_ASCATsm_struc(n)%ntimes))
+          allocate(SMOPS_ASCATsm_struc(n)%obs_sigma(LIS_rc%obs_ngrid(k),&
+               SMOPS_ASCATsm_struc(n)%ntimes))
+       else
+          allocate(SMOPS_ASCATsm_struc(n)%model_xrange(&
+               LIS_rc%obs_ngrid(k), 1, &
+               SMOPS_ASCATsm_struc(n)%nbins))
+          allocate(SMOPS_ASCATsm_struc(n)%obs_xrange(&
+               LIS_rc%obs_ngrid(k), 1, &
+               SMOPS_ASCATsm_struc(n)%nbins))
+          allocate(SMOPS_ASCATsm_struc(n)%model_cdf(&
+               LIS_rc%obs_ngrid(k), 1, &
+               SMOPS_ASCATsm_struc(n)%nbins))
+          allocate(SMOPS_ASCATsm_struc(n)%obs_cdf(&
+               LIS_rc%obs_ngrid(k), 1, &
+               SMOPS_ASCATsm_struc(n)%nbins))
+          allocate(SMOPS_ASCATsm_struc(n)%model_mu(LIS_rc%obs_ngrid(k),1))
+          allocate(SMOPS_ASCATsm_struc(n)%model_sigma(LIS_rc%obs_ngrid(k),1))
+          allocate(SMOPS_ASCATsm_struc(n)%obs_mu(LIS_rc%obs_ngrid(k),1))
+          allocate(SMOPS_ASCATsm_struc(n)%obs_sigma(LIS_rc%obs_ngrid(k),1))
+       endif
 
 !----------------------------------------------------------------------------
 ! Read the model and observation CDF data
 !----------------------------------------------------------------------------
+      if (SMOPS_ASCATsm_struc(n)%cdf_read_opt.eq.0) then  
        call LIS_readMeanSigmaData(n,k,&
             SMOPS_ASCATsm_struc(n)%ntimes,&
             LIS_rc%obs_ngrid(k), &
-            modelcdffile(n), &
+            SMOPS_ASCATsm_struc(n)%modelcdffile, &
             "SoilMoist",&
             SMOPS_ASCATsm_struc(n)%model_mu,&
-            SMOPS_ASCATsm_struc(n)%model_sigma)
-       
+            SMOPS_ASCATsm_struc(n)%model_sigma)    
+
        call LIS_readMeanSigmaData(n,k,&
             SMOPS_ASCATsm_struc(n)%ntimes,&
             LIS_rc%obs_ngrid(k), &
-            obscdffile(n), &
+            SMOPS_ASCATsm_struc(n)%obscdffile, &
             "SoilMoist",&
             SMOPS_ASCATsm_struc(n)%obs_mu,&
-            SMOPS_ASCATsm_struc(n)%obs_sigma)
+            SMOPS_ASCATsm_struc(n)%obs_sigma)  
        
        call LIS_readCDFdata(n,k,&
             SMOPS_ASCATsm_struc(n)%nbins,&
             SMOPS_ASCATsm_struc(n)%ntimes,&
             LIS_rc%obs_ngrid(k), &
-            modelcdffile(n), &
+            SMOPS_ASCATsm_struc(n)%modelcdffile, &
             "SoilMoist",&
             SMOPS_ASCATsm_struc(n)%model_xrange,&
-            SMOPS_ASCATsm_struc(n)%model_cdf)
+            SMOPS_ASCATsm_struc(n)%model_cdf)      
        
        call LIS_readCDFdata(n,k,&
             SMOPS_ASCATsm_struc(n)%nbins,&
             SMOPS_ASCATsm_struc(n)%ntimes,&
             LIS_rc%obs_ngrid(k), &
-            obscdffile(n), &
+            SMOPS_ASCATsm_struc(n)%obscdffile, &
             "SoilMoist",&
             SMOPS_ASCATsm_struc(n)%obs_xrange,&
-            SMOPS_ASCATsm_struc(n)%obs_cdf)
-       
+            SMOPS_ASCATsm_struc(n)%obs_cdf)         
 
        if(SMOPS_ASCATsm_struc(n)%useSsdevScal.eq.1) then 
           if(SMOPS_ASCATsm_struc(n)%ntimes.eq.1) then 
@@ -460,7 +496,7 @@ contains
 !          close(100)
 !          stop
        endif
-
+      endif   
 #if 0           
           allocate(obserr(LIS_rc%obs_gnc(n),LIS_rc%obs_gnr(n)))
           obserr = -9999.0
