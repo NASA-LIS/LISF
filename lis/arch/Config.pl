@@ -801,7 +801,8 @@ if ($ENV{WRF_HYDRO} eq '1') {
 
 # MPDECOMP2 does not prompt user
 if ($ENV{MPDECOMP2} eq '1') {
-   $use_mpdecomp2 = 1;
+    $use_mpdecomp2 = 1;
+}
 
 if(defined($ENV{LIS_JPEG})){
    $libjpeg = "-L".$ENV{LIS_JPEG}."/lib"." -ljpeg";
