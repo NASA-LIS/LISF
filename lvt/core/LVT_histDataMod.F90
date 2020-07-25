@@ -204,6 +204,7 @@ module LVT_histDataMod
   public :: LVT_MOC_TEMPBOT  
 
   public :: LVT_MOC_CCOND
+  public :: LVT_MOC_VPD
   public :: LVT_MOC_RELSMC
   public :: LVT_MOC_RHMIN
   public :: LVT_MOC_TOTALPRECIP     
@@ -566,6 +567,7 @@ module LVT_histDataMod
 
    ! NLDAS OUTPUT
    integer :: LVT_MOC_CCOND(3)    = -9999
+   integer :: LVT_MOC_VPD(3)    = -9999
 
    ! ADDITIONAL AFWA VARIABLES
    integer :: LVT_MOC_RELSMC(3)       = -9999
@@ -2534,6 +2536,22 @@ contains
          allocate(dataEntry%valid_min(dataEntry%nunits))
          allocate(dataEntry%valid_max(dataEntry%nunits))
          dataEntry%unittypes = (/"s/m"/)
+         dataEntry%valid_min = (/-9999.0/)
+         dataEntry%valid_max = (/9999.0/)
+         dataEntry%ndirs = 1
+         allocate(dataEntry%dirtypes(dataEntry%ndirs))
+         dataEntry%dirtypes = (/"-"/)
+      endif
+   elseif(name.eq."VPD") then 
+      if(LVT_MOC_VPD(source).eq.LVT_rc%udef) then 
+         LVT_MOC_VPD(source) = var_count
+         dataEntry%standard_name = "vapor_pressure_deficit"
+         dataEntry%long_name = "vapor pressure deficit"
+         dataEntry%nunits = 1
+         allocate(dataEntry%unittypes(dataEntry%nunits))
+         allocate(dataEntry%valid_min(dataEntry%nunits))
+         allocate(dataEntry%valid_max(dataEntry%nunits))
+         dataEntry%unittypes = (/"Pa"/)
          dataEntry%valid_min = (/-9999.0/)
          dataEntry%valid_max = (/9999.0/)
          dataEntry%ndirs = 1
