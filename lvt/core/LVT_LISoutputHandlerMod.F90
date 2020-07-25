@@ -156,6 +156,7 @@ module LVT_LISoutputHandlerMod
 
    ! NLDAS OUTPUT
    integer :: LVT_LIS_MOC_CCOND(3)    = -9999
+   integer :: LVT_LIS_MOC_VPD(3)    = -9999
 
    ! ADDITIONAL AFWA VARIABLES
    integer :: LVT_LIS_MOC_RELSMC(3)       = -9999
@@ -1385,6 +1386,16 @@ contains
              call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_CCOND(kk),&
                   LVT_LISoutput(kk)%head_lsm_list,&
                   1,nsize,nensem,(/"m/s"/),1,(/"-"/),&
+                  valid_min=(/-9999.0/),valid_max=(/-9999.0/),gribSFC=1,gribLvl=1)
+          endif
+
+          call ESMF_ConfigFindLabel(modelSpecConfig,"VPD:",rc=rc)
+          call get_moc_attributes(modelSpecConfig, LVT_LISoutput(kk)%head_lsm_list,&
+               "VPD","vapor_pressure_deficit","vapor pressure deficit","F",rc)
+          if(rc.eq.1) then 
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_VPD(kk),&
+                  LVT_LISoutput(kk)%head_lsm_list,&
+                  1,nsize,nensem,(/"Pa"/),1,(/"-"/),&
                   valid_min=(/-9999.0/),valid_max=(/-9999.0/),gribSFC=1,gribLvl=1)
           endif
 
