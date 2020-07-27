@@ -87,7 +87,7 @@ subroutine noahmp401_getrunoffs_mm(n)
   endif
 
   do t=1, LIS_rc%npatch(n,LIS_rc%lsm_index)
-     runoff1(t) = NOAHMP401_struc(n)%noahmp401(t)%runsf 
+     runoff1(t) = NOAHMP401_struc(n)%noahmp401(t)%runsf
      runoff2(t) = NOAHMP401_struc(n)%noahmp401(t)%runsb
   enddo
 

@@ -126,13 +126,11 @@ module LIS_DAobservationsMod
      integer                    :: max_obsngrid
   end type lis_obs_domain_type
 
-
   type(lis_obs_domain_type), allocatable :: LIS_obs_domain(:,:)
 !EOP
 
 
 contains
-
 
 !BOP
 ! 
