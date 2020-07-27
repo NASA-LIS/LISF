@@ -2565,13 +2565,15 @@ void FTN(registerlsmroutinggetsws)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 {
+  int len1;
   struct lsmroutinggetswsnode* current;
   struct lsmroutinggetswsnode* pnode;
   // create node
 
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmroutinggetswsnode*) malloc(sizeof(struct lsmroutinggetswsnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL;
 
@@ -2585,7 +2587,6 @@ void FTN(registerlsmroutinggetsws)(char *j, void (*func)(int*),int len)
     }
     current->next = pnode;
   }
-
 }
 
 //BOP
