@@ -212,7 +212,7 @@ module LIS_coreMod
   integer, allocatable           :: LIS_nss_b_ind(:,:),LIS_nse_b_ind(:,:)
   integer, allocatable           :: LIS_deltas(:,:),LIS_offsets(:,:)
   integer, allocatable           :: LIS_tdeltas(:,:),LIS_toffsets(:,:)
-  integer, allocatable           :: LIS_gdeltas(:,:),LIS_goffsets(:,:)  
+  integer, allocatable           :: LIS_gdeltas(:,:),LIS_goffsets(:,:)
   integer, allocatable           :: LIS_ntiless(:,:),LIS_ngrids(:,:)
   integer, allocatable           :: LIS_npatches(:,:,:)
   integer, allocatable           :: LIS_patch_deltas(:,:,:),LIS_patch_offsets(:,:,:)

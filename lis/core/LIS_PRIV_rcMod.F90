@@ -650,7 +650,6 @@ module LIS_PRIV_rcMod
      integer, allocatable       :: obs_glbngrid_red(:)
      integer, allocatable       :: glbngrid_red(:)
 
-
      integer, allocatable       :: gnc(:)
      integer, allocatable       :: gnr(:)
      integer, allocatable       :: gnc_b(:)

@@ -350,7 +350,7 @@ contains
           call LIS_verify(status)
        enddo
        
-       call LIS_histDataInit(n,LIS_rc%ntiles(n))      
+       call LIS_histDataInit(n,LIS_rc%ntiles(n))
 
     enddo
     TRACE_EXIT("dom_init")
