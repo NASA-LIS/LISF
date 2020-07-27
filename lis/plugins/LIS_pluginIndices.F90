@@ -370,5 +370,4 @@ module LIS_pluginIndices
    character*50, public, parameter :: LIS_ESPconvId = "ESP conventional"
 
 !EOC
-   contains
  end module LIS_pluginIndices
