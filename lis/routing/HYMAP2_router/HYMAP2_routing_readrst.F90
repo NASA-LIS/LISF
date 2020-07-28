@@ -87,7 +87,7 @@ subroutine HYMAP2_routing_readrst
      endif
      
      if(read_restart) then 
-        write(LIS_logunit,*) 'HYMAP2 restart file used: ', &
+        write(LIS_logunit,*) '[INFO] HYMAP2 restart file used: ', &
              trim(HYMAP2_routing_struc(n)%rstfile)
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -96,33 +96,65 @@ subroutine HYMAP2_routing_readrst
         call LIS_verify(status, "Error opening file "//&
              trim(HYMAP2_routing_struc(n)%rstfile))
 #endif
-        call HYMAP2_readvar_restart(ftn,n,&
-             HYMAP2_routing_struc(n)%rivsto,&
-             "RIVSTO")
-        call HYMAP2_readvar_restart(ftn,n,&
-             HYMAP2_routing_struc(n)%fldsto,&
-             "FLDSTO")
-        call HYMAP2_readvar_restart(ftn,n,&
-             HYMAP2_routing_struc(n)%rnfsto,&
-             "RNFSTO")
-        call HYMAP2_readvar_restart(ftn,n,&
-             HYMAP2_routing_struc(n)%bsfsto,&
-             "BSFSTO")
+        if(HYMAP2_routing_struc(n)%useens.eq.0) then 
+           call HYMAP2_readvar_restart(ftn,n,&
+                HYMAP2_routing_struc(n)%rivsto,&
+                "RIVSTO")
+           call HYMAP2_readvar_restart(ftn,n,&
+                HYMAP2_routing_struc(n)%fldsto,&
+                "FLDSTO")
+           call HYMAP2_readvar_restart(ftn,n,&
+                HYMAP2_routing_struc(n)%rnfsto,&
+                "RNFSTO")
+           call HYMAP2_readvar_restart(ftn,n,&
+                HYMAP2_routing_struc(n)%bsfsto,&
+                "BSFSTO")
+           
+           if(HYMAP2_routing_struc(n)%flowtype==3)then
+              call HYMAP2_readvar_restart(ftn,n,&
+                   HYMAP2_routing_struc(n)%rivout_pre,&
+                   "RIVOUT_PRE")
+              call HYMAP2_readvar_restart(ftn,n,&
+                   HYMAP2_routing_struc(n)%rivdph_pre,&
+                   "RIVDPH_PRE")
+              call HYMAP2_readvar_restart(ftn,n,&
+                   HYMAP2_routing_struc(n)%fldout_pre,&
+                   "FLDOUT_PRE")
+              call HYMAP2_readvar_restart(ftn,n,&
+                   HYMAP2_routing_struc(n)%flddph_pre,&
+                   "FLDDPH_PRE")
+           endif
+        else
+           call HYMAP2_readvar_restart_ens(ftn,n,&
+                HYMAP2_routing_struc(n)%rivsto,&
+                "RIVSTO")
+           call HYMAP2_readvar_restart_ens(ftn,n,&
+                HYMAP2_routing_struc(n)%fldsto,&
+                "FLDSTO")
+           call HYMAP2_readvar_restart_ens(ftn,n,&
+                HYMAP2_routing_struc(n)%rnfsto,&
+                "RNFSTO")
+           call HYMAP2_readvar_restart_ens(ftn,n,&
+                HYMAP2_routing_struc(n)%bsfsto,&
+                "BSFSTO")
+           
+           if(HYMAP2_routing_struc(n)%flowtype==3)then
+              call HYMAP2_readvar_restart_ens(ftn,n,&
+                   HYMAP2_routing_struc(n)%rivout_pre,&
+                   "RIVOUT_PRE")
+              call HYMAP2_readvar_restart_ens(ftn,n,&
+                   HYMAP2_routing_struc(n)%rivdph_pre,&
+                   "RIVDPH_PRE")
+              call HYMAP2_readvar_restart_ens(ftn,n,&
+                   HYMAP2_routing_struc(n)%fldout_pre,&
+                   "FLDOUT_PRE")
+              call HYMAP2_readvar_restart_ens(ftn,n,&
+                   HYMAP2_routing_struc(n)%flddph_pre,&
+                   "FLDDPH_PRE")
+           endif
 
-        if(HYMAP2_routing_struc(n)%flowtype==3)then
-           call HYMAP2_readvar_restart(ftn,n,&
-                HYMAP2_routing_struc(n)%rivout_pre,&
-                "RIVOUT_PRE")
-           call HYMAP2_readvar_restart(ftn,n,&
-                HYMAP2_routing_struc(n)%rivdph_pre,&
-                "RIVDPH_PRE")
-           call HYMAP2_readvar_restart(ftn,n,&
-                HYMAP2_routing_struc(n)%fldout_pre,&
-                "FLDOUT_PRE")
-           call HYMAP2_readvar_restart(ftn,n,&
-                HYMAP2_routing_struc(n)%flddph_pre,&
-                "FLDDPH_PRE")
         endif
+
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
         status = nf90_close(ftn)
         call LIS_verify(status, "Error in nf90_close in HYMAP2_routing_readrst")
@@ -150,7 +182,7 @@ end subroutine HYMAP2_routing_readrst
 ! !ARGUMENTS: 
     integer, intent(in)   :: ftn
     integer, intent(in)   :: n
-    real, intent(inout)   :: var(HYMAP2_routing_struc(n)%nseqall)
+    real, intent(inout)   :: var(LIS_rc%nroutinggrid(n))
     character(len=*)      :: varname
     
 ! !DESCRIPTION:
@@ -171,7 +203,7 @@ end subroutine HYMAP2_routing_readrst
     integer           :: i,ix,iy,ix1,iy1
     integer           :: status
 
-    allocate(gtmp(HYMAP2_routing_struc(n)%nseqall_glb))
+    allocate(gtmp(LIS_rc%glbnroutinggrid(n)))
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
     status = nf90_inq_varid(ftn,trim(varname),varid)
     call LIS_verify(status,'Error in nf90_inq_varid in HYMAP2_readvar_restart')
@@ -179,7 +211,7 @@ end subroutine HYMAP2_routing_readrst
     call LIS_verify(status,'Error in nf90_get_var in HYMAP2_readvar_restart')
 #endif       
 
-    do i=1,HYMAP2_routing_struc(n)%nseqall
+    do i=1,LIS_rc%nroutinggrid(n)
        ix = HYMAP2_routing_struc(n)%seqx(i)
        iy = HYMAP2_routing_struc(n)%seqy(i)
        ix1 = ix + LIS_ews_halo_ind(n,LIS_localPet+1) -1
@@ -189,3 +221,66 @@ end subroutine HYMAP2_routing_readrst
      
     deallocate(gtmp)   
   end subroutine HYMAP2_readvar_restart
+
+
+!BOP
+! !ROUTINE: HYMAP2_readvar_restart_ens
+! \label{HYMAP2_readvar_restart_ens}
+! 
+! !INTERFACE:
+  subroutine HYMAP2_readvar_restart_ens(ftn, n, var, varname)
+! !USES:
+    use LIS_coreMod
+    use LIS_logMod
+    use HYMAP2_routingMod
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+  use netcdf
+#endif
+
+    implicit none
+! !ARGUMENTS: 
+    integer, intent(in)   :: ftn
+    integer, intent(in)   :: n
+    real, intent(inout)   :: var(LIS_rc%nroutinggrid(n),&
+         LIS_rc%nensem(n))
+    character(len=*)      :: varname
+    
+! !DESCRIPTION:
+!  Reads a real variable from a NetCDF restart file. 
+!
+!  The arguments are: 
+!  \begin{description}
+!   \item [n]
+!     index of the domain or nest.
+!   \item [ftn]
+!     unit number of the binary output file
+!   \item [var]
+!     variables being written, dimensioned in the tile space
+!  \end{description}
+!EOP
+    real, allocatable :: gtmp(:)
+    integer           :: varid
+    integer           :: i,m,ix,iy,ix1,iy1
+    integer           :: status
+
+    allocate(gtmp(LIS_rc%glbnroutinggrid(n)*LIS_rc%nensem(n)))
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+    status = nf90_inq_varid(ftn,trim(varname),varid)
+    call LIS_verify(status,'Error in nf90_inq_varid in HYMAP2_readvar_restart_ens')
+    status = nf90_get_var(ftn,varid,gtmp)
+    call LIS_verify(status,'Error in nf90_get_var in HYMAP2_readvar_restart_ens')
+#endif       
+    do i=1,LIS_rc%nroutinggrid(n)
+       do m=1,LIS_rc%nensem(n)
+          ix = HYMAP2_routing_struc(n)%seqx(i)
+          iy = HYMAP2_routing_struc(n)%seqy(i)
+          ix1 = ix + LIS_ews_halo_ind(n,LIS_localPet+1) -1
+          iy1 = iy + LIS_nss_halo_ind(n,LIS_localPet+1) -1
+
+          var(i,m)  = gtmp(m + &
+               (HYMAP2_routing_struc(n)%sindex(ix1,iy1)-1)*LIS_rc%nensem(n))
+
+       enddo
+    enddo
+    deallocate(gtmp)   
+  end subroutine HYMAP2_readvar_restart_ens

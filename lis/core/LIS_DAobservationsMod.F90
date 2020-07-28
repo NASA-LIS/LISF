@@ -47,7 +47,6 @@ module LIS_DAobservationsMod
   public ::  LIS_perturb_DAobservations
   public ::  LIS_convertPatchSpaceToObsSpace
   public ::  LIS_convertPatchSpaceToObsEnsSpace
-  public ::  LIS_mapTileSpaceToObsSpace
   public ::  LIS_gather_1dgrid_to_2dgrid_obs
   public ::  LIS_scatter_global_to_local_grid_obs
   public ::  LIS_getObsDomainResolutions
@@ -1781,68 +1780,6 @@ contains
     enddo
  
   end subroutine LIS_convertPatchSpaceToObsEnsSpace
-
-!BOP
-! !ROUTINE: LIS_mapTileSpaceToObsSpace
-! \label{LIS_mapTileSpaceToObsSpace}
-! 
-! !INTERFACE:
-  subroutine LIS_mapTileSpaceToObsSpace(n, k, patch_index, tileid, st_id, en_id)
-! !ARGUMENTS:    
-    integer,           intent(in)     :: n 
-    integer,           intent(in)     :: k
-    integer,           intent(in)     :: patch_index
-    integer,           intent(in)     :: tileid
-    integer                           :: st_id
-    integer                           :: en_id
-! 
-! !DESCRIPTION: 
-! This routine derives the observation space location that maps to the
-! input tile space of a given patch space
-!
-! The arguments are:
-!  \begin{description}
-!   \item [n]
-!     index of the current nest
-!   \item [k]
-!     index of the DA instance
-!   \item [patch\_index]
-!     index of the patch to which the variable belong to
-!   \item [tileid]
-!     location in the tile space 
-!   \item [st\_id]
-!     starting index of the observation space location
-!   \item [en\_id]
-!     ending index of the observation space location
-!  \end{description} 
-!EOP
-    real                              :: lat, lon, col,row
-    integer                           :: gid,c,r
-
-    lat = LIS_domain(n)%grid(LIS_domain(n)%gindex( & 
-         LIS_surface(n,patch_index)%tile(tileid)%col,&
-         LIS_surface(n,patch_index)%tile(tileid)%row))%lat
-    lon = LIS_domain(n)%grid(LIS_domain(n)%gindex( & 
-         LIS_surface(n,patch_index)%tile(tileid)%col,&
-         LIS_surface(n,patch_index)%tile(tileid)%row))%lon
-        
-    call latlon_to_ij(LIS_obs_domain(n,k)%lisproj,lat,lon,&
-         col,row)
-    c = nint(col)
-    r = nint(row)
-
-    gid = -1
-    if(c.ge.1.and.c.le.LIS_rc%obs_lnc(k).and.&
-         r.ge.1.and.r.le.LIS_rc%obs_lnr(k)) then 
-       gid = LIS_obs_domain(n,k)%gindex(c,r)
-      
-    endif
-    call ij_to_latlon(LIS_obs_domain(n,k)%lisproj,real(c),real(r),&
-         lat,lon)
-    st_id = gid
-    en_id = gid
-    
-  end subroutine LIS_mapTileSpaceToObsSpace
 
 !BOP
 !

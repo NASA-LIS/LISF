@@ -11,8 +11,11 @@
 ! 13 Apr 2016: Augusto Getirana, Inclusion of option for hybrid runs with a 
 !                                river flow map. 
 !
+! 13 May 2019: Augusto Getirana, Fixed reservoir operation module and replaced 
+!                                routine calc_fldstg with calc_fldstg 
+!                                
 #include "LIS_misc.h"
-subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
+subroutine HYMAP2_model_core(n,it,mis,nseqall,nz,time,dt,  &
      flowmap,linres,evapflag,resopflag,floodflag,dwiflag, &
      rivout_pre,rivdph_pre,grv,                         &
      fldout_pre,flddph_pre,fldelv1,                     &
@@ -47,13 +50,14 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
   real*8,  intent(in)  :: time         !current time [year]
   real,    intent(in)  :: dt           !time step length [s]
   integer, intent(in)  :: n
+  integer, intent(in)  :: it           !sub time step
   integer, intent(in)  :: nseqall               !length of 1D sequnece for river and mouth  
   integer, intent(in)  :: nz           !number of stages in the sub-grid discretization
 
   integer, intent(in)  :: linres       !linear reservoir flag: 1 - use linear reservoirs; or 0 - do not use
-  integer, intent(in)  :: evapflag !evaporation flag: 1 - compute evaporation in floodplains; 0 - do not compute
+  integer, intent(in)  :: evapflag     !evaporation flag: 1 - do not compute ; or 2 - compute evapotation in floodplains
   integer, intent(in)  :: resopflag    !reservoir operation flag: 1 - simulate reservoirs (it requires additional data)
-  integer, intent(in)  :: floodflag    !floodplain dynamics flag: 1 - simulate floodplain dynamics; or 0 - do not simulate floodplain dynamics
+  integer, intent(in)  :: floodflag    !floodplain dynamics flag: 1 - simulate floodplain dynamics; or 2 - do not simulate floodplain dynamics
   integer, intent(in)  :: dwiflag      !deep water infiltration flag
   real,    intent(in)  :: mis         !real undefined value
   real,    intent(in)  :: grv
@@ -115,6 +119,7 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
   real                 :: runoff(nseqall)     !runoff+baseflow after linear reservoirs [m3/s]
   real                 :: runoff1(nseqall)    !input runoff [mm.dt-1]
   real                 :: basflw1(nseqall)    !input baseflow [mm.dt-1]
+  real                 :: inflow              !inflow from upstream grid cells [m3/s]
   
   real                 :: sfcelv0(nseqall)    !averaged floodplain surface elevation [m]
   integer              :: ic,ic_down,icg
@@ -127,6 +132,13 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
   real                 :: fldsto_down
   real                 :: flddph1_down
   real                 :: flddph_pre_down
+
+  real                 :: uprivout
+  real                 :: upfldout
+  real                 :: uprivout_down
+  real                 :: upfldout_down
+  real                 :: rivout_down
+  real                 :: fldout_down
   
   real, allocatable    :: rivelv_glb(:)
   real, allocatable    :: rivsto_glb(:)
@@ -138,14 +150,32 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
   real, allocatable    :: flddph_pre_glb(:)
   real, allocatable    :: rivout_glb(:)
   real, allocatable    :: fldout_glb(:)
+  real, allocatable    :: next_glb(:)
+
+  real, allocatable    :: uprivout_glb(:)
+  real, allocatable    :: upfldout_glb(:)
 
 
   integer              :: ic1,ic2
+  integer              :: iloc(1)
   integer              :: status
   real                 :: tmp_value
 
   integer              :: ix,iy,ix1,iy1
 ! ================================================
+  !If 2-way coupling, update river/floodplain water storage with LSM outputs at the first sub time step (i.e. it==1)
+  if (HYMAP2_routing_struc(n)%enable2waycpl==1.and.it==1) then
+    do ic=1,nseqall 
+      if(outlet(ic)==mis)cycle
+      if(runoff0(ic)/=mis.and.basflw0(ic)/=mis.and.grarea(ic)/=mis)then
+        !convert unit from [kg m-2] to [m3]
+        rivsto(ic)=(runoff0(ic)+basflw0(ic))*grarea(ic)/1e3
+        fldsto(ic)=0.
+      endif
+    enddo
+
+  !If 1-way coupled, allow to compute deep water infiltration, evaporation from open waters and delay
+  elseif(HYMAP2_routing_struc(n)%enable2waycpl==0) then
   !23 Nov 2016
   !Deep water infiltration
   do ic=1,nseqall 
@@ -157,8 +187,8 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
        runoff1(ic)=runoff0(ic)
        basflw1(ic)=basflw0(ic)
     endif
- enddo
- ! ================================================
+  enddo
+
  !convert units [kg m-2 sec-1] to [m3 sec-1]
  where(runoff0/=mis.and.grarea/=mis)
     runoff1=runoff1*grarea/1e3
@@ -167,9 +197,8 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
     runoff1=0.
     basflw1=0.
  end where
- ! ================================================
+
  !Store runoff and baseflow in linear reservoirs
- 
  do ic=1,nseqall 
     if(outlet(ic)==mis)cycle
     if(linres==1)then
@@ -184,7 +213,7 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
        call LIS_endrun()
     endif
  enddo
-! ================================================
+
  do ic=1,nseqall 
     if(outlet(ic)==mis)cycle
     if(evapflag.ne.0)then
@@ -196,27 +225,34 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
        evpout(ic)=0.
     endif
  enddo
+  elseif(HYMAP2_routing_struc(n)%enable2waycpl/=1) then
+       write(LIS_logunit,*)"Please check 2-way coupling option"
+       call LIS_endrun()
+  endif
  ! ================================================
  do ic=1,nseqall 
     if(outlet(ic)==mis)cycle
-    !Calculate floodplain and river storage
-    call HYMAP2_calc_fldstg(nz,grarea(ic),rivlen(ic),rivwth(ic),       &
-         rivstomax(ic),fldstomax(ic,:),fldgrd(ic,:),            &
+    call HYMAP2_calc_fldstg_1(nz,grarea(ic),rivlen(ic),rivwth(ic),       &
+         rivstomax(ic),fldstomax(ic,:),fldhgt(ic,:),            &
          rivsto(ic),fldsto(ic),rivdph(ic),flddph(ic),flddph1(ic),   &
          fldelv1(ic),fldwth(ic),fldfrc(ic),fldare(ic),          &
-         rivelv(ic),nxtdst(ic),rivare(ic))
+         rivelv(ic),rivare(ic)) 
  enddo
- 
 
- allocate(rivelv_glb(HYMAP2_routing_struc(n)%nseqall_glb))
- allocate(rivsto_glb(HYMAP2_routing_struc(n)%nseqall_glb))
- allocate(rivdph_glb(HYMAP2_routing_struc(n)%nseqall_glb))
- allocate(rivdph_pre_glb(HYMAP2_routing_struc(n)%nseqall_glb))
- allocate(fldelv1_glb(HYMAP2_routing_struc(n)%nseqall_glb))
- allocate(fldsto_glb(HYMAP2_routing_struc(n)%nseqall_glb))
- allocate(flddph1_glb(HYMAP2_routing_struc(n)%nseqall_glb))
- allocate(flddph_pre_glb(HYMAP2_routing_struc(n)%nseqall_glb))
- 
+ allocate(rivelv_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(rivsto_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(rivdph_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(rivdph_pre_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(fldelv1_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(fldsto_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(flddph1_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(flddph_pre_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(next_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(rivout_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(fldout_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(uprivout_glb(LIS_rc%glbnroutinggrid(n)))
+ allocate(upfldout_glb(LIS_rc%glbnroutinggrid(n)))
+
  call HYMAP2_gather_tiles(n,rivelv,rivelv_glb)
  call HYMAP2_gather_tiles(n,rivsto,rivsto_glb)
  call HYMAP2_gather_tiles(n,rivdph,rivdph_glb)
@@ -225,10 +261,14 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
  call HYMAP2_gather_tiles(n,fldsto,fldsto_glb)
  call HYMAP2_gather_tiles(n,flddph1,flddph1_glb)
  call HYMAP2_gather_tiles(n,flddph_pre,flddph_pre_glb)
- 
- ! ================================================
+ call HYMAP2_gather_tiles(n,real(next),next_glb)
   
-
+ rivout_glb=0.
+ fldout_glb=0.
+ uprivout_glb=0.
+ upfldout_glb=0.
+  
+ ! ================================================
  do ic=1,nseqall 
     if(outlet(ic)==mis)cycle
     
@@ -242,19 +282,35 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
        fldsto_down=fldsto_glb(ic_down)
        flddph1_down=flddph1_glb(ic_down)
        flddph_pre_down=flddph_pre_glb(ic_down)
+
+       rivout_down=rivout_glb(ic_down)
+       fldout_down=fldout_glb(ic_down)
+       uprivout=uprivout_glb(ic)
+       upfldout=upfldout_glb(ic)
+       uprivout_down=uprivout_glb(ic_down)
+       upfldout_down=upfldout_glb(ic_down)
+ 
     elseif(outlet(ic)==1)then
-       !temporarily defining outlet's downstream pixel dynamics as:
+
        rivelv_down=rivelv(ic)
        rivsto_down=rivsto(ic)
-       rivdph_down=-rivelv(ic)
-       rivdph_pre_down=-rivelv(ic)
+       rivdph_down=rivhgt(ic)
+       rivdph_pre_down=rivhgt(ic)
        fldelv1_down=fldelv1(ic)
        fldsto_down=fldsto(ic)
-       flddph1_down=-fldelv1(ic)
-       flddph_pre_down=-fldelv1(ic)
+       flddph1_down=fldelv1(ic)
+       flddph_pre_down=fldelv1(ic)
+
+       rivout_down=0.
+       fldout_down=0.
+       uprivout=uprivout_glb(ic)
+       upfldout=upfldout_glb(ic)
+       uprivout_down=0.
+       upfldout_down=0.
+
     else
-       write(LIS_logunit,*)"Wrong outlet id"
-       stop
+       write(LIS_logunit,*)"[ERR] Wrong outlet id"
+       call LIS_endrun()
     endif
     if(flowmap(ic)==1)then
        !Calculate river flow based on the kinematic wave equation
@@ -280,17 +336,18 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
             elevtn(ic),nxtdst(ic), rivwth(ic),rivsto(ic),rivsto_down,&
             rivdph(ic),rivdph_down,rivlen(ic),rivman(ic),&
             grv,rivout(ic),rivvel(ic),sfcelv(ic), &
-            rivout_pre(ic),rivdph_pre(ic),rivdph_pre_down)
+            rivout_pre(ic),rivdph_pre(ic),rivdph_pre_down)!,&
+            !uprivout,uprivout_down,rivout_down)
 
         !Calculate floodplain
        if(floodflag==1)then
-
           !Calculate floodplain flow based on the local inertia wave equation
           call HYMAP2_calc_rivout_iner(outlet(ic),dt,fldelv1(ic),fldelv1_down,&
                elevtn(ic),nxtdst(ic),fldwth(ic),fldsto(ic),fldsto_down,&
                flddph1(ic),flddph1_down,rivlen(ic),fldman(ic),&
                grv,fldout(ic),fldvel(ic),sfcelv0(ic),  &
-               fldout_pre(ic),flddph_pre(ic),flddph_pre_down)
+               fldout_pre(ic),flddph_pre(ic),flddph_pre_down)!,&
+               !upfldout,upfldout_down,fldout_down)
        elseif(floodflag==0)then
           !No floodplain dynamics
           call HYMAP2_no_floodplain_flow(fldelv1(ic),flddph1(ic),&
@@ -300,13 +357,12 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
        endif
     else
        write(LIS_logunit,*)"HYMAP routing method: unknown value",ic,flowmap(ic)
-       stop
+       call LIS_endrun()
     endif
     
     !set the updated variable back into the global one
     call HYMAP2_map_l2g_index(n, ic,icg)
     rivdph_pre_glb(icg) = rivdph_pre(ic)
-    
     rivelv_glb(icg) = rivelv(ic)
     rivsto_glb(icg) = rivsto(ic)
     rivdph_glb(icg) = rivdph(ic)
@@ -315,46 +371,55 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
     fldsto_glb(icg) = fldsto(ic)
     flddph1_glb(icg) = flddph1(ic)
     flddph_pre_glb(icg) = flddph_pre(ic)
+    rivout_glb(icg) = rivout(ic)
+    fldout_glb(icg) = fldout(ic)
 
+    if(outlet(ic)==0)then
+      uprivout_glb(ic_down)=uprivout_glb(ic_down)+uprivout_down
+      upfldout_glb(ic_down)=upfldout_glb(ic_down)+upfldout_down
+    endif
+    
   enddo
-
-  deallocate(rivelv_glb)
-  deallocate(rivdph_glb)
-  deallocate(rivdph_pre_glb)
-  deallocate(fldelv1_glb)
-  deallocate(flddph1_glb)
-  deallocate(flddph_pre_glb)
-
 ! ================================================
   !reservoir simulation
-  if(resopflag==1)call HYMAP2_resop_run(n,mis,nseqall,nz,time,dt,next,&
-       rivsto,fldsto,rivout,fldout,rivvel,fldvel,&
-       elevtn,fldhgt,fldstomax,grarea,rivstomax,rivelv,rivlen,rivwth)
+  if(resopflag==1)then
+    do ic=1,nseqall 
+      call HYMAP2_map_l2g_index(n, ic,icg)
+      if(minval(abs(HYMAP2_routing_struc(n)%resopaltloc-icg))==0)then
+        iloc=minloc(abs(HYMAP2_routing_struc(n)%resopaltloc-icg))
+
+        inflow=sum(rivout_glb+fldout_glb,next_glb==icg)
+        call HYMAP2_resop_main_1(mis,nseqall,nz,time,dt,next(ic),rivsto(ic),fldsto(ic),runoff(ic),&
+                        rivout(ic),fldout(ic),rivvel(ic),fldvel(ic),&
+                        elevtn(ic),fldhgt(ic,:),fldstomax(ic,:),grarea(ic),rivstomax(ic),rivelv(ic),rivlen(ic),rivwth(ic),inflow,&
+                        HYMAP2_routing_struc(n)%ntresop,iloc(1),HYMAP2_routing_struc(n)%tresopalt(iloc(1),:),HYMAP2_routing_struc(n)%resopalt(iloc(1),:),&
+                        HYMAP2_routing_struc(n)%resopoutmin(iloc(1)))
+      endif
+    enddo
+  endif
   ! ================================================
 
-  allocate(rivout_glb(HYMAP2_routing_struc(n)%nseqall_glb))
-  allocate(fldout_glb(HYMAP2_routing_struc(n)%nseqall_glb))
-  
   call HYMAP2_gather_tiles(n,rivout,rivout_glb)
   call HYMAP2_gather_tiles(n,fldout,fldout_glb)
   call HYMAP2_gather_tiles(n,rivsto,rivsto_glb)
   call HYMAP2_gather_tiles(n,fldsto,fldsto_glb)
 
   if(LIS_masterproc) then 
-     do ic=1,HYMAP2_routing_struc(n)%nseqall_glb 
+     do ic=1,LIS_rc%glbnroutinggrid(n) 
         if(HYMAP2_routing_struc(n)%outlet_glb(ic)==mis)cycle
+        
         if(HYMAP2_routing_struc(n)%outlet_glb(ic)==0)then
            ic_down=HYMAP2_routing_struc(n)%next_glb(ic)
            rivsto_down=rivsto_glb(ic_down)
            fldsto_down=fldsto_glb(ic_down)          
-           
         elseif(HYMAP2_routing_struc(n)%outlet_glb(ic)==1)then
            rivsto_down=1e20 !rivsto(ic)
            fldsto_down=1e20 !fldsto(ic)
         else
            write(LIS_logunit,*)"Wrong outlet id"
-           stop
+           call LIS_endrun()
         endif
+
         !Update water storage in river and floodplain reservoirs
         call HYMAP2_calc_stonxt(HYMAP2_routing_struc(n)%outlet_glb(ic),&
              dt,rivout_glb(ic),fldout_glb(ic),&
@@ -363,27 +428,27 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
            rivsto_glb(ic_down)=rivsto_down
            fldsto_glb(ic_down)=fldsto_down
         endif
-     enddo
+     enddo 
   endif
 
 #if (defined SPMD)
   call MPI_BCAST(rivout_glb, &
-       HYMAP2_routing_struc(n)%nseqall_glb, &
+       LIS_rc%glbnroutinggrid(n), &
        MPI_REAL,0, &
        LIS_mpi_comm, status)
   
   call MPI_BCAST(fldout_glb, &
-       HYMAP2_routing_struc(n)%nseqall_glb, &
+       LIS_rc%glbnroutinggrid(n), &
        MPI_REAL,0, &
        LIS_mpi_comm, status)
 
   call MPI_BCAST(rivsto_glb, &
-       HYMAP2_routing_struc(n)%nseqall_glb, &
+       LIS_rc%glbnroutinggrid(n), &
        MPI_REAL,0, &
        LIS_mpi_comm, status)
 
   call MPI_BCAST(fldsto_glb, &
-       HYMAP2_routing_struc(n)%nseqall_glb, &
+       LIS_rc%glbnroutinggrid(n), &
        MPI_REAL,0, &
        LIS_mpi_comm, status)
 
@@ -395,12 +460,14 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
   call HYMAP2_map_g2l(n, fldsto_glb,fldsto)
 
 ! ================================================
-! Calculate runoff in the river network for the current time step
-  do ic=1,nseqall 
-     if(outlet(ic)==mis)cycle
-     call HYMAP2_calc_runoff(dt,fldfrc(ic),runoff(ic),rivsto(ic),fldsto(ic))
-  enddo
-
+  !If 1-way coupled, add LSM outputs (surface runoff and baseflow) at the end of the time step
+  if (HYMAP2_routing_struc(n)%enable2waycpl==0) then
+    !Calculate runoff in the river network for the current time step
+    do ic=1,nseqall 
+       if(outlet(ic)==mis)cycle
+       call HYMAP2_calc_runoff(dt,fldfrc(ic),runoff(ic),rivsto(ic),fldsto(ic))
+     enddo
+  endif
   ! ================================================
   ! Calculate surface water storage [mm]
   do ic=1,nseqall 
@@ -408,13 +475,21 @@ subroutine HYMAP2_model_core(n,mis,nseqall,nz,time,dt,  &
      surfws(ic)=1e3*(rivsto(ic)+fldsto(ic))/grarea(ic)
   enddo
 
+  deallocate(rivelv_glb)
+  deallocate(rivdph_glb)
+  deallocate(rivdph_pre_glb)
+  deallocate(fldelv1_glb)
+  deallocate(flddph1_glb)
+  deallocate(flddph_pre_glb)
+  deallocate(next_glb)
   deallocate(rivout_glb)
   deallocate(rivsto_glb)
   deallocate(fldsto_glb)
   deallocate(fldout_glb)
 
 end subroutine HYMAP2_model_core
-
+! ================================================
+! ================================================
 !BOP
 !
 ! !ROUTINE: HYMAP2_gather_tiles
@@ -424,6 +499,7 @@ end subroutine HYMAP2_model_core
 subroutine HYMAP2_gather_tiles(n,var,var_glb)
 ! !USES:
   use LIS_coreMod
+  use LIS_routingMod
   use LIS_mpiMod
   use HYMAP2_routingMod
 !
@@ -435,32 +511,32 @@ subroutine HYMAP2_gather_tiles(n,var,var_glb)
   implicit none
 
   integer        :: n 
-  real           :: var(HYMAP2_routing_struc(n)%nseqall)
-  real           :: var_glb(HYMAP2_routing_struc(n)%nseqall_glb)
+  real           :: var(LIS_rc%nroutinggrid(n))
+  real           :: var_glb(LIS_rc%glbnroutinggrid(n))
 
-  real           :: tmpvar(HYMAP2_routing_struc(n)%nseqall_glb)
+  real           :: tmpvar(LIS_rc%glbnroutinggrid(n))
   integer        :: i,l,ix,iy,ix1,iy1
   integer        :: status
 
 #if (defined SPMD)
   call MPI_ALLGATHERV(var,&
-       HYMAP2_routing_struc(n)%nseqall,&
+       LIS_rc%nroutinggrid(n),&
        MPI_REAL,tmpvar,&
-       HYMAP2_routing_struc(n)%gdeltas(:),&
-       HYMAP2_routing_struc(n)%goffsets(:),&
+       LIS_routing_gdeltas(n,:),&
+       LIS_routing_goffsets(n,:),&
        MPI_REAL,LIS_mpi_comm,status)
 #endif
   !rearrange them to be in correct order.
   do l=1,LIS_npes
-     do i=1,HYMAP2_routing_struc(n)%gdeltas(l-1)
+     do i=1,LIS_routing_gdeltas(n,l-1)
         ix = HYMAP2_routing_struc(n)%seqx_glb(i+&
-             HYMAP2_routing_struc(n)%goffsets(l-1))
+             LIS_routing_goffsets(n,l-1))
         iy = HYMAP2_routing_struc(n)%seqy_glb(i+&
-             HYMAP2_routing_struc(n)%goffsets(l-1))
+             LIS_routing_goffsets(n,l-1))
         ix1 = ix + LIS_ews_halo_ind(n,l) - 1
         iy1 = iy + LIS_nss_halo_ind(n,l)-1
         var_glb(HYMAP2_routing_struc(n)%sindex(ix1,iy1)) = &
-             tmpvar(i+HYMAP2_routing_struc(n)%goffsets(l-1))
+             tmpvar(i+LIS_routing_goffsets(n,l-1))
      enddo
   enddo
 
@@ -484,12 +560,12 @@ subroutine HYMAP2_map_g2l(n, var_glb,var_local)
   implicit none
 
   integer             :: n 
-  real                :: var_glb(HYMAP2_routing_struc(n)%nseqall_glb)
-  real                :: var_local(HYMAP2_routing_struc(n)%nseqall)
+  real                :: var_glb(LIS_rc%glbnroutinggrid(n))
+  real                :: var_local(LIS_rc%nroutinggrid(n))
 
   integer             :: i, ix,iy,ix1,iy1,jx,jy
 
-  do i=1,HYMAP2_routing_struc(n)%nseqall
+  do i=1,LIS_rc%nroutinggrid(n)
      ix = HYMAP2_routing_struc(n)%seqx(i)
      iy = HYMAP2_routing_struc(n)%seqy(i)
      ix1 = ix + LIS_ews_halo_ind(n,LIS_localPet+1) -1
