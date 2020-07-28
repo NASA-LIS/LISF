@@ -1,0 +1,19 @@
+!BOP
+!\section{AGRMET}
+!The Agricultural Meteorological Modeling System (AGRMET) developed
+!at the United States Air Force Weather Agency (AFWA) is a near
+!real-time operational system that generates land surface conditions
+!for agricultural applications.  AGRMET generates the shortwave
+!radiation budget at the surface using the algorithm of~\cite{shapiro}.
+!The effects of cloud and snow cover are incorporated using the AFWA
+!RTNEPH 3-hourly global cloud analysis~\cite{hamill}. The satellite
+!images from the polar orbiting satellites of the Defense Meteorological
+!Satellite Program (DMSP) and NOAA satellites systems are used to
+!generate the RTNEPH products.  The AGRMET analysis are available
+!on two polar stereographic grids (one for each hemisphere) at 48km
+!resolution. Starting late June 2002, RTNEPH was replaced by a new
+!integrated product called the World Wide Merged Cloud Analysis
+!(WWMCA). In addition to the RTNEPH, the WWMCA product incorporates
+!geostationary satellite images as well, at a higher spatial resolution
+!of 24km.
+!EOP
