@@ -280,6 +280,7 @@ contains
     integer                           :: gid, t,mm
     real,         allocatable         :: state_tmp(:,:)
 
+#if 0 
 !----------------------------------------------------------------------------
 !  Check if the observation state is updated or not. If it is updated,
 !  the data is then assimilated. 
@@ -588,6 +589,7 @@ contains
        deallocate(Obs_pert)
     end if
     
+#endif
   end subroutine ekf_increments
 
 !BOP
