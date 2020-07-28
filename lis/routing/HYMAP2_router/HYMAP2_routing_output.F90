@@ -91,7 +91,7 @@ subroutine HYMAP2_routing_output(n)
 !-----------------------------------------------------------------------
            ! Grib expects soil layers to be in cm.
            ! lyrthk = (/100.0,300.0,600.0,1000.0/) mm.
-           call LIS_writeModelOutput(n,filename, name, open_stats,  &
+           call LIS_writeRoutingModelOutput(n,filename, name, open_stats,  &
                 outInterval=HYMAP2_routing_struc(n)%outInterval,     &
                 nsoillayers = 1,lyrthk = (/1.0/), nsoillayers2 = 1, &
                 group=2)

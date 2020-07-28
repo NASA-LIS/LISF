@@ -100,7 +100,7 @@ module gmaopert_Mod
       if(index.eq.1) then          
          allocate(forcPert(LIS_rc%nnest, 1))            
          f_xycorr = .false. 
-      elseif(index.eq.2) then 
+      elseif(index.eq.2.or.index.eq.4) then 
          allocate(progPert(LIS_rc%nnest, LIS_rc%nperts))
          p_xycorr = .false. 
       elseif(index.eq.3) then 
@@ -996,6 +996,283 @@ module gmaopert_Mod
                deallocate(std1)
             endif
          enddo
+      elseif(index.eq.4) then !routing
+         
+         do nest=1,LIS_rc%nnest
+            if(.not.isXYcorrEnabled(Pert_State(nest))) then 
+               allocate(ens_id(LIS_rc%nensem(nest)))
+               
+               call LIS_getDomainResolutions(nest,dx,dy)
+               dtstep = LIS_rc%ts
+               
+               nullify(progPert(nest,k)%progpert_param)
+               call assemble_pert_param(Pert_State(nest), &
+                    LIS_rc%lnc(nest),LIS_rc%lnr(nest),&
+                    LIS_rc%nstvars(k),progPert(nest,k)%progpert_param)
+               
+               allocate(progPert(nest,k)%progpert_ntrmdt(LIS_rc%nstvars(k),&
+                    LIS_rc%lnc(nest),LIS_rc%lnr(nest),LIS_rc%nensem(nest)))
+               allocate(progPert(nest,k)%Progpert(LIS_rc%nstvars(k),&
+                    LIS_rc%lnc(nest),&
+                    LIS_rc%lnr(nest),LIS_rc%nensem(nest)))
+               ! initialize just in case (should not be needed)      
+               progPert(nest,k)%progpert_ntrmdt = 0.    
+               progPert(nest,k)%progpert        = 0.   
+               
+               do n=1,LIS_rc%nensem(nest)
+                  ens_id(n) = n-1
+               end do
+               
+               progPert(nest,k)%N_x = LIS_rc%lnc(nest)
+               progPert(nest,k)%N_y = LIS_rc%lnr(nest)
+               
+               allocate(progPert(nest,k)%progpert_rseed(NRANDSEED,&
+                    progPert(nest,k)%N_x, progPert(nest,k)%N_y,LIS_rc%nensem(nest)))
+               
+               allocate(init_Pert_rseed(LIS_rc%nensem(nest),&
+                    progPert(nest,k)%N_x, progPert(nest,k)%N_y,&
+                    N_domain))
+               allocate(gindex(progPert(nest,k)%N_x, progPert(nest,k)%N_y))
+               gindex = -1
+               
+               do r=1,progPert(nest,k)%N_y
+                  do c=1,progPert(nest,k)%N_x
+                     if(r.le.LIS_rc%lnr(nest)) then 
+                        row = r + LIS_nss_halo_ind(nest,LIS_localPet+1)-1
+                     else
+                        row = r - LIS_rc%lnr(nest)
+                     endif
+                     if(c.le.LIS_rc%lnc(nest)) then 
+                        col = c + LIS_ews_halo_ind(nest,LIS_localPet+1)-1
+                     else
+                        col = c -  LIS_rc%lnc(nest)
+                     endif
+                     gindex(c,r) = col + (row-1)*LIS_rc%gnc(nest)
+                  enddo
+               enddo
+               
+               
+            ! get different negative integer for each ensemble member and
+            ! each domain
+                  
+               do r=1,progPert(nest,k)%N_y
+                  do c=1,progPert(nest,k)%N_x
+                     domain_id = gindex(c,r)
+                     call get_init_Pert_rseed(LIS_rc%nensem(nest), &
+                          N_domain, LIS_rc%gnc(nest), &
+                          LIS_rc%gnr(nest), &
+                          ens_id, domain_id, &
+                          init_Pert_rseed (:,c,r,:))
+                  enddo
+               enddo
+               deallocate(gindex)
+               
+               ! initialize first row of Forcepert_rseed (for first domain)
+               do n=1,LIS_rc%nensem(nest)
+                  progPert(nest,k)%progpert_rseed(1,:,:,n) = &
+                       init_Pert_rseed( n, :,:,1)
+               enddo
+               
+               ! initial call to get_pert  (for first domain)
+               !
+               ! this initializes progpert_ntrmdt and the rest of progpert_rseed 
+               !
+               ! NOTE: after initial call to get_pert use restart files 
+               !       for progpert_rseed and progpert_ntrmdt to continue
+               !       the perturbation time series whenever the land model
+               !       integration is interrupted
+               
+               call ESMF_StateGet(Pert_State(nest), itemCount=objcount,rc=status)
+               call LIS_verify(status)
+               
+               allocate(pertobjs(objcount))
+               allocate(pertField(objcount))
+               
+               call ESMF_StateGet(Pert_State(nest), itemNameList=pertobjs, rc=status)
+               call LIS_verify(status)
+               
+               allocate(std(objcount,LIS_rc%lnc(nest), LIS_rc%lnr(nest)))
+               allocate(std1(LIS_rc%ngrid(nest)))
+               
+               do i=1,objcount
+                  call ESMF_StateGet(Pert_State(nest), pertobjs(i),pertField(i),&
+                       rc=status)
+                  call LIS_verify(status)
+                  
+                  if(LIS_rc%ngrid(nest).gt.0) then 
+                     call ESMF_AttributeGet(pertField(i),"Standard Deviation",&
+                          std1,rc=status)
+                     call LIS_verify(status)
+                  endif
+                  
+
+                  std(i,:,:) = 0.0 
+                  do t=1,LIS_rc%ngrid(nest)
+                     col = LIS_domain(nest)%grid(t)%col
+                     row = LIS_domain(nest)%grid(t)%row
+                     std(i,col,row) = std1(t)
+                  enddo
+               enddo
+               
+               call get_pert(                                           &
+                    LIS_rc%nstvars(k), LIS_rc%nensem(nest),&
+                    LIS_rc%lnc(nest),LIS_rc%lnr(nest),  &
+                    progPert(nest,k)%N_x, progPert(nest,k)%N_y, &
+                    dx, dy, dtstep,                                     &
+                    std,                              & 
+                    progPert(nest,k)%progpert_param, &
+                    progPert(nest,k)%Progpert_rseed, &
+                    progPert(nest,k)%Progpert_ntrmdt, &
+                    progPert(nest,k)%Progpert,   &                
+                    initialize_rseed=.true.,    &
+                    initialize_ntrmdt=.true.            )
+               deallocate(init_Pert_rseed)
+               deallocate(ens_id)
+               deallocate(std)
+               deallocate(std1)
+            else ! xy corrs enabled
+               p_xyCorr = .true. 
+               call LIS_getDomainResolutions(nest,dx,dy)
+               dtstep = LIS_rc%ts
+               
+               nullify(progPert(nest,k)%progpert_param)
+               call assemble_pert_param(Pert_State(nest), &
+                    LIS_rc%gnc(nest),LIS_rc%gnr(nest),&
+                    LIS_rc%nstvars(k),progPert(nest,k)%progpert_param,&
+                    global_flag)
+               
+               if(LIS_masterproc) then
+                  allocate(ens_id(LIS_rc%nensem(nest)))              
+                  allocate(progPert(nest,k)%progpert_ntrmdt(LIS_rc%nstvars(k),&
+                       LIS_rc%gnc(nest),LIS_rc%gnr(nest),LIS_rc%nensem(nest)))
+                  allocate(progPert(nest,k)%Progpert(LIS_rc%nstvars(k),&
+                       LIS_rc%gnc(nest),&
+                       LIS_rc%gnr(nest),LIS_rc%nensem(nest)))
+               ! initialize just in case (should not be needed)      
+                  progPert(nest,k)%progpert_ntrmdt = 0.    
+                  progPert(nest,k)%progpert        = 0.   
+                  
+                  do n=1,LIS_rc%nensem(nest)
+                     ens_id(n) = n-1
+                  end do
+               
+                  call get_fft_grid( LIS_rc%gnc(nest), LIS_rc%gnr(nest), &
+                       dx, dy, &
+                       progPert(nest,k)%progpert_param(1)%xcorr, &
+                       progPert(nest,k)%progpert_param(1)%ycorr, &
+                       progPert(nest,k)%N_x, progPert(nest,k)%N_y)
+                  
+                  allocate(progPert(nest,k)%progpert_rseed(NRANDSEED,&
+                       progPert(nest,k)%N_x, progPert(nest,k)%N_y,&
+                       LIS_rc%nensem(nest)))
+               
+                  allocate(init_Pert_rseed(LIS_rc%nensem(nest),&
+                       progPert(nest,k)%N_x, progPert(nest,k)%N_y,&
+                       N_domain))
+                  allocate(gindex(progPert(nest,k)%N_x, progPert(nest,k)%N_y))
+                  gindex = -1
+               
+                  do r=1,progPert(nest,k)%N_y
+                     do c=1,progPert(nest,k)%N_x
+                        row = r 
+                        col = c 
+                        gindex(c,r) = col + (row-1)*LIS_rc%gnc(nest)                        
+                     enddo
+                  enddo
+                  
+               
+                  ! get different negative integer for each ensemble member and
+                  ! each domain
+                  
+                  do r=1,progPert(nest,k)%N_y
+                     do c=1,progPert(nest,k)%N_x
+                        domain_id = gindex(c,r)
+                        call get_init_Pert_rseed(LIS_rc%nensem(nest), &
+                             N_domain, LIS_rc%gnc(nest), &
+                             LIS_rc%gnr(nest), &
+                             ens_id, domain_id, &
+                             init_Pert_rseed (:,c,r,:))
+                     enddo
+                  enddo
+                  deallocate(gindex)
+               
+               ! initialize first row of Forcepert_rseed (for first domain)
+                  do n=1,LIS_rc%nensem(nest)
+                     progPert(nest,k)%progpert_rseed(1,:,:,n) = &
+                          init_Pert_rseed( n, :,:,1)
+                  enddo
+               else
+                  allocate(progPert(nest,k)%Progpert(LIS_rc%nstvars(k),&
+                       1, 1, LIS_rc%nensem(nest)))
+               endif
+               ! initial call to get_pert  (for first domain)
+               !
+               ! this initializes progpert_ntrmdt and the rest of progpert_rseed 
+               !
+               ! NOTE: after initial call to get_pert use restart files 
+               !       for progpert_rseed and progpert_ntrmdt to continue
+               !       the perturbation time series whenever the land model
+               !       integration is interrupted
+               
+               call ESMF_StateGet(Pert_State(nest), itemCount=objcount,rc=status)
+               call LIS_verify(status)
+               
+               allocate(pertobjs(objcount))
+               allocate(pertField(objcount))
+               
+               call ESMF_StateGet(Pert_State(nest), itemNameList=pertobjs, rc=status)
+               call LIS_verify(status)
+               
+               if(LIS_masterproc) then 
+                  allocate(std(objcount,LIS_rc%gnc(nest), LIS_rc%gnr(nest)))
+                  allocate(std1(LIS_rc%ngrid(nest)))
+               else
+                  allocate(std(1,1,1))
+                  allocate(std1(LIS_rc%ngrid(nest)))
+               endif
+
+               do i=1,objcount
+                  call ESMF_StateGet(Pert_State(nest), pertobjs(i),pertField(i),&
+                       rc=status)
+                  call LIS_verify(status)
+                  
+                  if(LIS_rc%ngrid(nest).gt.0) then 
+                     call ESMF_AttributeGet(pertField(i),"Standard Deviation",&
+                          std1,rc=status)
+                     call LIS_verify(status)
+                  endif
+                  
+                  call LIS_gather_1dgrid_to_2dgrid(nest, global_std, std1)
+                  
+                  if(LIS_masterproc) then 
+                     std(i,:,:) = global_std(:,:)
+                  endif
+
+                  deallocate(global_std)
+
+               enddo
+               
+               if(LIS_masterproc) then 
+                  call get_pert(                                           &
+                       LIS_rc%nstvars(k), LIS_rc%nensem(nest),&
+                       LIS_rc%gnc(nest),LIS_rc%gnr(nest),  &
+                       progPert(nest,k)%N_x, progPert(nest,k)%N_y, &
+                       dx, dy, dtstep,                                     &
+                       std,                              & 
+                       progPert(nest,k)%progpert_param, &
+                       progPert(nest,k)%Progpert_rseed, &
+                       progPert(nest,k)%Progpert_ntrmdt, &
+                       progPert(nest,k)%Progpert,   &                
+                       initialize_rseed=.true.,    &
+                       initialize_ntrmdt=.true.            )
+                  
+                  deallocate(init_Pert_rseed)
+                  deallocate(ens_id)
+               endif
+               deallocate(std)
+               deallocate(std1)
+            endif
+         enddo
       endif
 
     end subroutine gmaoPert_setup
@@ -1161,6 +1438,17 @@ module gmaopert_Mod
                   row = LIS_obs_domain(n,k)%row(t)
                   std(i,col,row) = std1(t)
                enddo
+            elseif(id.eq.4) then !routing state space
+               std(i,:,:) = 0.0 
+               do t=1,LIS_rc%ngrid(n)
+                  do m=1, LIS_rc%nensem(n)
+                     col = LIS_domain(n)%grid(t)%col
+                     row = LIS_domain(n)%grid(t)%row
+
+                     std(i,col,row) = std(i,col,row) + &
+                          std1(t)
+                  enddo
+               enddo
             endif
          enddo
          
@@ -1259,6 +1547,26 @@ module gmaopert_Mod
                   enddo
                enddo
             enddo
+         elseif(id.eq.4) then !routing
+
+            call LIS_getDomainResolutions(n,dx,dy)
+            dtstep = LIS_rc%ts
+            call get_pert(                                           &
+                 objcount, LIS_rc%nensem(n), LIS_rc%lnc(n), LIS_rc%lnr(n), &
+                 progPert(n,k)%N_x, progPert(n,k)%N_y, &
+                 dx, dy, dtstep,                  &
+                 std,                           & 
+                 progPert(n,k)%progpert_param,  &
+                 progPert(n,k)%progpert_rseed,  &
+                 progPert(n,k)%progpert_ntrmdt, &
+                 progPert(n,k)%progpert)
+
+!This separate call is needed because the routing code works with different
+!tile dimensions. 
+            
+            call routingDAsetPertStates(trim(LIS_rc%routingModel)//"+"//&
+                        trim(LIS_rc%daset(k))//char(0),&
+                        n,objcount,pert_State, progpert(n,k)%progpert)
          endif
          
          deallocate(pertobjs)
@@ -1461,6 +1769,32 @@ module gmaopert_Mod
                   enddo
                enddo
             enddo
+         elseif(id.eq.4) then 
+            if(LIS_masterproc) then 
+               call LIS_getDomainResolutions(n,dx,dy)
+               dtstep = LIS_rc%ts
+               call get_pert(                                           &
+                    objcount, LIS_rc%nensem(n), LIS_rc%gnc(n), LIS_rc%gnr(n), &
+                    progPert(n,k)%N_x, progPert(n,k)%N_y, &
+                    dx, dy, dtstep,                  &
+                    std,                           & 
+                    progPert(n,k)%progpert_param,  &
+                    progPert(n,k)%progpert_rseed,  &
+                    progPert(n,k)%progpert_ntrmdt, &
+                    progPert(n,k)%progpert)
+            endif
+            do i=1,objcount
+               do m=1,LIS_rc%nensem(n)
+
+                  call LIS_scatter_global_to_local_grid(n, &
+                       progPert(n,k)%progPert(i,:,:,m),ltmp(:,:,m))
+               enddo
+
+               write(LIS_logunit,*) '[ERR] Force stop in gmaoperturb'
+               call LIS_endrun()
+
+            enddo
+
          endif
          
          deallocate(pertobjs)

@@ -21,14 +21,13 @@ module pf_Mod
 ! 
 ! !USES: 
   use ESMF
-  
   use pf_types
   use pf_general
   use my_matrix_functions
   use LIS_coreMod
   use LIS_logMod
   use LIS_DAobservationsMod
-  use LIS_lsmMod
+  use LIS_surfaceModelMod
   use LIS_fileIOMod
   use LIS_historyMod
   use LIS_timeMgrMod
@@ -133,11 +132,11 @@ contains
           allocate(pf_struc(n,k)%innov(Nobjs*N_obs_size))
           allocate(pf_struc(n,k)%anlys_res(Nobjs*N_obs_size))
           allocate(pf_struc(n,k)%forecast_var(Nobjs*N_obs_size))
-          allocate(pf_struc(n,k)%k_gain(LIS_rc%npatch(n,LIS_rc%lsm_index), &
-               LIS_rc%nstvars(k)))
+!          allocate(pf_struc(n,k)%k_gain(LIS_rc%npatch(n,LIS_rc%lsm_index), &
+!               LIS_rc%nstvars(k)))
        endif
        allocate(pf_struc(n,k)%anlys_incr(LIS_rc%nstvars(k),&
-            LIS_rc%npatch(n,LIS_rc%lsm_index)))          
+            LIS_surfaceModel_DAgetStateSpaceSize(n,k)))       
     enddo
   end subroutine pf_setup
 
@@ -178,15 +177,15 @@ contains
 !  \begin{description}
 !   \item[generateObservations]\ref{generateObservations_pf} \newline
 !    obtain the observations
-!   \item[lsmdagetobspred](\ref{lsmdagetobspred}) \newline
+!   \item[LIS\_surfaceModel\_DAgetobspred](\ref{LIS_surfaceModel_DAgetobspred}) \newline
 !    obtain model's estimate of the observations
-!   \item[getObsPert](\ref{getObsPert_pf}) \newline
+!   \item[getObsPert](\ref{getObsPert_enkf}) \newline
 !    obtain the observation perturbations
-!   \item[generateObsparam](\ref{generateObsparam_pf}) \newline
+!   \item[generateObsparam](\ref{generateObsparam_enkf}) \newline
 !    generate the 'obsparam' (metadata for observations) \newline
-!   \item[lsmdagetstatevar]\ref{lsmdagetstatevar}
-!    obtain the specified LSM prognostic variables. 
-!   \item[assemble\_obs\_cov](\ref{assemble_obs_cov_pf})
+!   \item[LIS\_surfaceModel_DAgetstatevar]\ref{LIS_surfaceModel_DAgetstatevar}
+!    obtain the specified prognostic variables. 
+!   \item[assemble\_obs\_cov](\ref{assemble_obs_cov_enkf})
 !    assembles the observation error covariance
 !   \item{getSelectedObsNumber}(\ref{getselectedobsnumber}) \newline
 !    obtain the number of selected observations for each 
@@ -196,20 +195,21 @@ contains
 !    increments. 
 !   \item[row\_variance](\ref{row_variance_pf}) \newline
 !    computes the row variance HPH' 
-!   \item[lsmdasetstatevar](\ref{lsmdasetstatevar}) \newline
-!    assigns the specified LSM state prognostic variables
-!   \item[scaleLSMstatVar](\ref{lsmdascalestatevar}) \newline
+!   \item[LIS\_surfaceModel_DAsetstatevar](\ref{LIS_surfaceModel_DAsetstatevar}) \newline
+!    assigns the specified state prognostic variables
+!   \item[LIS\_surfaceModel\_DAscalestateVar](\ref{LIS_surfaceModel_DAscalestatevar}) \newline
 !    scales the state variables for computational stability \newline
-!   \item[descaleLSMstatVar](\ref{lsmdadescalestatevar}) \newline
+!   \item[LIS\_surfaceModel\_DAdescalestatVar](\ref{LIS_surfaceModel_DAdescalestatevar}) \newline
 !    descales the state variables to the original state \newline
-!   \item[lsmdaqcstate]\ref{lsmdaqcstate}
-!    QC the updated LSM state
+!   \item[LIS_surfaceModel\_DAqcstate]\ref{LIS_surfaceModel_DAqcstate}
+!    QC the updated state state
 !  \end{description}
 ! 
 !EOP
     logical                           :: data_status
     integer                           :: status
     integer                           :: Nobjs
+    integer                           :: state_size
     integer                           :: Nobs
     integer                           :: N_obs_size
     integer                           :: N_selected_obs
@@ -225,9 +225,6 @@ contains
     real,         allocatable         :: Obs_cov(:,:)
     integer                           :: i,v,tileid
     integer                           :: st_id, en_id, sid,eid
-    character*100,    allocatable     :: lsm_state_objs(:)
-    type(ESMF_Field)                  :: lsm_field(LIS_rc%nstvars(k))
-    type(ESMF_Field)                  :: lsm_incr_field(LIS_rc%nstvars(k))
     real,         allocatable         :: stvar(:,:)
     real,         pointer             :: stdata(:)
     real,         pointer             :: stincrdata(:)
@@ -253,10 +250,7 @@ contains
     call LIS_verify(status, &
          'ESMF_AttributeGet: Data Update Status failed in pf_increments')
 
-    call ESMF_AttributeSet(LIS_LSM_Incr_State(n,k),&
-         "Fresh Increments Status", .false., rc=status)
-    call LIS_verify(status,&
-         'ESMF_AttributeSet: Fresh Increments Status failed in pf_increments')   
+    call LIS_surfaceModel_DASetFreshIncrementsStatus(n,k,.false.)
 
     pf_struc(n,k)%anlys_incr = 0.0
 
@@ -265,6 +259,8 @@ contains
             '[INFO] Assimilating Observations using Pf for DA instance',k
 
        call LIS_getDomainResolutions(n,dx,dy)
+       state_size = LIS_surfaceModel_DAgetStateSpaceSize(n,k)
+
        xcompact = dx*10.0
        ycompact = dy*10.0
 
@@ -295,8 +291,7 @@ contains
 !----------------------------------------------------------------------------
 
        allocate(Obs_pred(Nobs,N_ens))      
-       call lsmdagetobspred(trim(LIS_rc%lsm)//"+"//&
-            trim(LIS_rc%daset(k))//char(0),n, k, Obs_pred)
+       call LIS_surfaceModel_DAGetObsPred(n,k,Obs_pred)
 
 !----------------------------------------------------------------------------
 !  Retrieve Obs_pert : observation perturbations
@@ -314,73 +309,38 @@ contains
 !----------------------------------------------------------------------------
 ! retrieve the state variables
 !----------------------------------------------------------------------------
-       allocate(stvar(N_state,LIS_rc%npatch(n,LIS_rc%lsm_index)))
-       allocate(state_incr(N_state,LIS_rc%npatch(n,LIS_rc%lsm_index)))
-       allocate(state_tmp(N_state,LIS_rc%npatch(n,LIS_rc%lsm_index)))
+       allocate(stvar(N_state,state_size))
+       allocate(state_incr(N_state,state_size))
+       allocate(state_tmp(N_state,state_size))
 
        allocate(state_lat(N_state))
        allocate(state_lon(N_state))
-       allocate(lats(LIS_rc%npatch(n,LIS_rc%lsm_index)))
-       allocate(lons(LIS_rc%npatch(n,LIS_rc%lsm_index)))
+       allocate(lats(state_size))
+       allocate(lons(state_size))      
 
-       call lsmdagetstatevar(trim(LIS_rc%lsm)//"+"//&
-            trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k))
+       call LIS_surfaceModel_DAGetStateVar(n,k)
+       call LIS_surfaceModel_DAScaleStateVar(n,k)
 
-       call lsmdascalestatevar(trim(LIS_rc%lsm)//"+"//&
-            trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k))
+       call LIS_surfaceModel_DAextractStateVector(n,k,N_state,state_size,stvar)
 
-       allocate(lsm_state_objs(LIS_rc%nstvars(k)))
+       call LIS_surfaceModel_getlatlons(n,k,state_size,lats,lons)
 
-       call ESMF_StateGet(LIS_LSM_State(n,k),itemNameList=lsm_state_objs,&
-            rc=status)
-       call LIS_verify(status, &
-            "ESMF_StateGet failed in pf_increments")
+       state_incr = stvar
+       state_tmp  = stvar     
 
-       do v=1,LIS_rc%nstvars(k)
-          call ESMF_StateGet(LIS_LSM_State(n,k),trim(lsm_state_objs(v)),&
-               lsm_field(v),rc=status)
-          call LIS_verify(status, &
-               "ESMF_StateGet failed in pf_increments")
-
-          call ESMF_StateGet(LIS_LSM_Incr_State(n,k),trim(lsm_state_objs(v)),&
-               lsm_incr_field(v),rc=status)
-          call LIS_verify(status, &
-               "ESMF_StateGet failed in pf_increments")
-
-          call ESMF_FieldGet(lsm_field(v),localDE=0, farrayPtr=stdata,rc=status)
-          call LIS_verify(status,&
-               "ESMF_FieldGet failed in pf_increments")
-
-          call ESMF_FieldGet(lsm_incr_field(v),localDE=0, farrayPtr=stincrdata,&
-               rc=status)
-          call LIS_verify(status,&
-               "ESMF_FieldGet failed in pf_increments")
-
-          do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-             stvar(v,t) = stdata(t)     
-             state_incr(v,t) = stdata(t)
-             state_tmp(v,t) = stdata(t)
-          enddo
-       enddo
-
-       do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)/LIS_rc%nensem(n)
+       do i=1,state_size/LIS_rc%nensem(n)
 
           obspred_flag = .true. 
           tileid = (i-1)*LIS_rc%nensem(n)+1
           
-          gid = LIS_domain(n)%gindex(&
-               LIS_surface(n, LIS_rc%lsm_index)%tile(tileid)%col,&
-               LIS_surface(n, LIS_rc%lsm_index)%tile(tileid)%row)
-
-          call LIS_mapTileSpaceToObsSpace(n, k, LIS_rc%lsm_index, &
+          call LIS_surfaceModel_DAmapTileSpaceToObsSpace(&
+               n, k, &
                tileid, st_id, en_id)
 
           if(st_id.lt.0.or.en_id.lt.0) then 
              assim = .false. 
           else
-             lats(tileid) = LIS_domain(n)%grid(gid)%lat
-             lons(tileid) = LIS_domain(n)%grid(gid)%lon
-             state_lat(:) = lats(tileid)
+            state_lat(:) = lats(tileid)
              state_lon(:) = lons(tileid)
 
              N_selected_obs = (en_id-st_id+1)*Nobjs
@@ -440,10 +400,7 @@ contains
           endif
           
        enddo
-       call ESMF_AttributeSet(LIS_LSM_Incr_State(n,k),&
-            "Fresh Increments Status", .true., rc=status)
-       call LIS_verify(status, &
-            'ESMF_AttributeSet: Fresh Increments Status failed in pf_increments')
+       call LIS_surfaceModel_DASetFreshIncrementsStatus(n,k,.true.)
        
        if(LIS_rc%winnov(k).eq.1) then 
           do i=1,Nobs
@@ -466,31 +423,15 @@ contains
           enddo
        endif
 !----------------------------------------------------------------------------
-! Updating LIS_LSM_State and LSM_Incr_State
+! Updating State vector and increments state
 !----------------------------------------------------------------------------
-       do v=1,LIS_rc%nstvars(k)
-          call ESMF_FieldGet(lsm_field(v),localDE=0,farrayPtr=stdata,rc=status)
-          call LIS_verify(status, &
-               'ESMF_FieldGet failed in pf_increments')
-          
-          call ESMF_FieldGet(lsm_incr_field(v),localDE=0,farrayPtr=stincrdata,&
-               rc=status)
-          call LIS_verify(status, &
-               'ESMF_FieldGet failed in pf_increments')
+       call LIS_surfaceModel_DAsetAnlysisUpdates(n,k,N_state,state_size,&
+            stvar,state_incr)
 
-          do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-             stdata(t) =  stvar(v,t)
-             stincrdata(t) = state_incr(v,t)
-          enddo
-       enddo
-
-       call lsmdadescalestatevar(trim(LIS_rc%lsm)//"+"//&
-            trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k), &
-            LIS_LSM_Incr_State(n,k))
+       call LIS_surfaceModel_DADescaleStatevar(n,k)
 !----------------------------------------------------------------------------
 ! Cleanup
 !----------------------------------------------------------------------------
-       deallocate(lsm_state_objs)
        deallocate(obs_param)
        deallocate(stvar)
        deallocate(State_incr)
@@ -525,37 +466,26 @@ contains
 !  increments computed earlier. 
 !
 !EOP
-    character*100,    allocatable     :: lsm_state_objs(:)
     integer                       :: status
     logical                       :: fresh_incr
-    type(obs_type), allocatable       :: Observations(:)
+    type(obs_type), allocatable   :: Observations(:)
     integer                       :: i
     integer                       :: N_ens
     integer                       :: Nobjs, Nobs, N_obs_size
     real,     allocatable         :: Obs_pred(:,:)
 
-    allocate(lsm_state_objs(LIS_rc%nstvars(k)))
-    
-    call ESMF_StateGet(LIS_LSM_State(n,k),itemNameList=lsm_state_objs,&
-         rc=status)
-    call LIS_verify(status, &
-         'ESMF_StateGet failed in pf_update')
-    
-    call ESMF_AttributeGet(LIS_LSM_Incr_State(n,k), "Fresh Increments Status",&
-         value = fresh_incr, rc=status) 
+    call LIS_surfaceModel_DAGetFreshIncrementsStatus(n,k,fresh_incr)
 
-   if(fresh_incr) then 
+    if(fresh_incr) then 
       if(LIS_rc%incroption(k).eq.0) then !include analysis increments
-         call lsmdaupdatestate(trim(LIS_rc%lsm)//"+"//&
-              trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k), &
-              LIS_LSM_Incr_State(n,k))
+          call LIS_surfaceModel_DAUpdateState(n,k)
 !----------------------------------------------------------------------
-!  Update the LSM's state variables
+!  Update the state variables
 !----------------------------------------------------------------------       
-         call lsmdaqcstate(trim(LIS_rc%lsm)//"+"//&
-              trim(LIS_rc%daset(k))//char(0),n,LIS_LSM_State(n,k))
-         call lsmdasetstatevar(trim(LIS_rc%lsm)//"+"//&
-              trim(LIS_rc%daset(k))//char(0),n, LIS_LSM_State(n,k))
+          call LIS_surfaceModel_DAQCstate(n,k)
+
+          call LIS_surfaceModel_DASetStateVar(n,k)
+
 !----------------------------------------------------------------------
 !  compute analysis residuals
 !---------------------------------------------------------------------
@@ -577,9 +507,8 @@ contains
             call generateObservations(n, k,Nobjs, Nobs, LIS_OBS_State(n,k), &
                  LIS_OBS_Pert_State(n,k),Observations)
             
-            allocate(Obs_pred(Nobs,N_ens))               
-            call lsmdagetobspred(trim(LIS_rc%lsm)//"+"//&
-                 trim(LIS_rc%daset(k))//char(0),n,k, Obs_pred)
+            allocate(Obs_pred(Nobs,N_ens))          
+            call LIS_surfaceModel_DAGetObsPred(n,k,Obs_pred)     
             
             do i=1,Nobs
                if(Observations(i)%assim) then
@@ -637,18 +566,16 @@ end subroutine pf_update
 !  \begin{description}
 !   \item[LIS\_create\_output\_directory](\ref{LIS_create_output_directory}) \newline
 !    call to create output directory for DA statistics
-!   \item[getLSMvarnames](\ref{getLSMvarnames_pf}) \newline
-!    retrieve the names of the LSM prognostic variables
 !   \item[pruneVarname](\ref{pruneVarname_pf}) \newline
 !    trims the variable name, eliminating white spaces
 !   \item[LIS\_create\_stats\_filename](\ref{LIS_create_stats_filename}) \newline
 !    creates the filename for statistics 
 !   \item[LIS\_create\_innov\_filename](\ref{LIS_create_innov_filename}) \newline
 !    creates the name of the innovations file
-!   \item[lsmdagetstatevar](\ref{lsmdagetstatevar}) \newline
-!    retrieve the lsm state variables
-!   \item[getLSMdata](\ref{getLSMData_pf}) \newline
-!    unpack the LSM state and retrive the data
+!   \item[LIS\_surfaceModel_DAgetstatevar]\ref{LIS_surfaceModel_DAgetstatevar}
+!    obtain the specified prognostic variables. 
+!   \item[LIS\_surfaceModel\_DAextractStateVector](\ref{LIS_surfaceModel_DAextractStateVector}) \newline
+!    unpack the state and retrive the data
 !  \end{description}
 !EOP
 
@@ -898,82 +825,6 @@ end subroutine pf_update
           call LIS_verify(nf90_close(ftn),&
                'nf90_close failed in pf_mod')
        endif
-
-!--------------------------------------------------------------------------
-! Write gain file with the following entries, for all state variables 
-! in each data assimilation instance. 
-!
-! 1. Kalman gain
-!--------------------------------------------------------------------------
-
-#if 0 
-       if(LIS_masterproc) then 
-          call LIS_create_gain_filename(n,gainfile,&
-               'Pf')
-          
-#if (defined USE_NETCDF4)
-          status = nf90_create(path=gainfile,cmode=nf90_hdf5,&
-               ncid = ftn)
-          call LIS_verify(status,&
-               'creating netcdf file '//trim(gainfile)//&
-               ' failed in pf_Mod')
-#endif
-#if (defined USE_NETCDF3)
-          status = nf90_create(path=gainfile,cmode=nf90_clobber,&
-               ncid = ftn)
-          call LIS_verify(status,&
-               'creating netcdf file '//trim(gainfile)//&
-               ' failed in pf_Mod')
-#endif
-          
-          call LIS_verify(nf90_def_dim(ftn,'ntiles',&
-               LIS_rc%glbnpatch(n,LIS_rc%lsm_index),&
-               dimID(1)),&
-               'nf90_def_dim for ntiles failed in pf_mod')
-          call LIS_verify(nf90_put_att(ftn,&
-               NF90_GLOBAL,"missing_value", LIS_rc%udef),&
-               'nf90_put_att for missing_value failed in pf_mod')
-          
-!--------------------------------------------------------------------------
-!  Kalman gain -meta data
-!--------------------------------------------------------------------------
-          write(unit=finst, fmt='(i2.2)') k
-          varname = "kgain_"//trim(finst)
-          vardimname = "kgain_"//trim(finst)//"_levels"
-          standard_name = "Kalman_gain_for_DA_instance_"//&
-               trim(finst)
-          
-          call LIS_verify(nf90_def_dim(ftn,&
-               vardimname,LIS_rc%nstvars(k),dimId(2)),&
-               'nf90_def_dim failed for kgain_'//trim(finst))
-          
-          call LIS_verify(nf90_def_var(ftn,varname,&
-               nf90_float,&
-               dimids = dimID(1:2), varID=kgain_Id),&
-               'nf90_def_var for kgain failed in pf_mod')
-          
-#if(defined USE_NETCDF4)
-          call LIS_verify(nf90_def_var_deflate(ftn,&
-               kgain_Id,&
-               shuffle, deflate, deflate_level),&
-               'nf90_def_var_deflate for kgain failed in pf_mod')             
-#endif
-          call LIS_verify(nf90_put_att(ftn,kgain_Id,&
-               "standard_name",standard_name),&
-               'nf90_put_att for kgain failed in pf_mod')
-          call LIS_verify(nf90_enddef(ftn),&
-               'nf90_enddef failed in pf_mod')
-       endif
-       do v=1,LIS_rc%nstvars(k)
-          call LIS_writevar_restart(ftn,n,LIS_rc%lsm_index,&
-               pf_struc(n,k)%k_gain(:,v),kgain_id, &                  
-               dim=v,wformat="netcdf")
-       enddo
-       if(LIS_masterproc) then 
-          call LIS_verify(nf90_close(ftn),&
-               'nf90_close failed in pf_mod')
-       endif
-#endif
     endif
   end subroutine writeInnovationOutput
 
@@ -1009,8 +860,11 @@ end subroutine pf_update
     character*100          :: varname, vardimname, standard_name
     character*2            :: finst
     integer                :: status
+    integer                :: state_size
     real, allocatable      :: stvar(:,:)
-    character*100,    allocatable     :: lsm_state_objs(:)
+    character*100,    allocatable     :: state_objs(:)
+
+    state_size = LIS_surfaceModel_DAgetStateSpaceSize(n,k)
 
     if(LIS_rc%wensems(k).eq.1) then 
 
@@ -1055,17 +909,16 @@ end subroutine pf_update
 !--------------------------------------------------------------------------
 !  Ensemble spread -meta data
 !--------------------------------------------------------------------------
-          allocate(lsm_state_objs(LIS_rc%nstvars(k)))          
-          call ESMF_StateGet(LIS_LSM_State(n,k),itemNameList=lsm_state_objs,&
-               rc=status)
+          allocate(state_objs(LIS_rc%nstvars(k)))          
+          call LIS_surfaceModel_DAgetStateVarNames(n,k,state_objs)
 
           do v = 1, LIS_rc%nstvars(k)
              write(unit=finst, fmt='(i2.2)') k
-             varname = "ensspread_"//trim(lsm_state_objs(v))//"_"//trim(finst)
-             vardimname = "ensspread_"//trim(lsm_state_objs(v))//&
+             varname = "ensspread_"//trim(state_objs(v))//"_"//trim(finst)
+             vardimname = "ensspread_"//trim(state_objs(v))//&
                   "_"//trim(finst)//"_levels"
              standard_name = "Ensemble_spread_for_DA_instance_"//&
-                  trim(lsm_state_objs(v))//"_"//&
+                  trim(state_objs(v))//"_"//&
                   trim(finst)
 
              if(LIS_rc%wopt.eq."1d gridspace") then           
@@ -1093,17 +946,16 @@ end subroutine pf_update
              call LIS_verify(nf90_enddef(ftn),&
                   'nf90_enddef failed in pf_mod')
           end do
-          deallocate(lsm_state_objs)          
+          deallocate(state_objs)          
        endif
        
        allocate(stvar(LIS_rc%nstvars(k),&
-            LIS_rc%npatch(n,LIS_rc%lsm_index)))
+            state_size))
        
-       
-       call lsmdagetstatevar(trim(LIS_rc%lsm)//"+"//&
-            trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k))
-       call getLSMdata(LIS_LSM_State(n,k), LIS_rc%nstvars(k), &
-            LIS_rc%npatch(n,LIS_rc%lsm_index), stvar)
+       call LIS_surfaceModel_DAGetStateVar(n,k)
+
+       call LIS_surfaceModel_DAextractStateVector(n,k,&
+            LIS_rc%nstvars(k),state_size, stvar)
        
        do v=1,LIS_rc%nstvars(k)
           call LIS_writevar_spread(ftn,n,k,ensspread_id(v), &
@@ -1152,7 +1004,7 @@ end subroutine pf_update
     character*2            :: finst
     integer                :: status
     real, allocatable      :: stvar(:,:)
-    character*100,    allocatable     :: lsm_state_objs(:)
+    character*100,    allocatable     :: state_objs(:)
 
     if(LIS_rc%wensems(k).eq.1) then 
 
@@ -1197,17 +1049,16 @@ end subroutine pf_update
 !--------------------------------------------------------------------------
 !  Ensemble incr -meta data
 !--------------------------------------------------------------------------
-          allocate(lsm_state_objs(LIS_rc%nstvars(k)))          
-          call ESMF_StateGet(LIS_LSM_State(n,k),itemNameList=lsm_state_objs,&
-               rc=status)
+          allocate(state_objs(LIS_rc%nstvars(k)))          
+          call LIS_surfaceModel_DAgetStateVarNames(n,k,state_objs)
 
           do v = 1, LIS_rc%nstvars(k)
              write(unit=finst, fmt='(i2.2)') k
-             varname = "anlys_incr_"//trim(lsm_state_objs(v))//"_"//trim(finst)
-             vardimname = "anlys_incr_"//trim(lsm_state_objs(v))//&
+             varname = "anlys_incr_"//trim(state_objs(v))//"_"//trim(finst)
+             vardimname = "anlys_incr_"//trim(state_objs(v))//&
                   "_"//trim(finst)//"_levels"
              standard_name = "Analysis_incr_for_DA_instance_"//&
-                  trim(lsm_state_objs(v))//"_"//&
+                  trim(state_objs(v))//"_"//&
                   trim(finst)
 
              if(LIS_rc%wopt.eq."1d gridspace") then           
@@ -1235,7 +1086,7 @@ end subroutine pf_update
              call LIS_verify(nf90_enddef(ftn),&
                   'nf90_enddef failed in pf_mod')
           end do
-          deallocate(lsm_state_objs)          
+          deallocate(state_objs)          
        endif
        
        do v=1,LIS_rc%nstvars(k)
@@ -1415,32 +1266,7 @@ end subroutine pf_update
     deallocate(pf_struc)
   end subroutine pf_final
 
-!BOP
-! 
-! !ROUTINE: getLSMvarnames
-! \label{getLSMvarnames_pf}
-! 
-! !INTERFACE: 
-  subroutine getLSMvarnames(LIS_LSM_State, dim1, varname)
-! !USES:
 
-! !ARGUMENTS:         
-    type(ESMF_State)      :: LIS_LSM_State
-    integer               :: dim1
-    character(len=*)      :: varname(dim1)
-!
-! !DESCRIPTION:
-! 
-!  This routine retrieves the names of the state prognostic variables
-!  from the LSM state. 
-!EOP    
-    integer               :: status
-
-    call ESMF_StateGet(LIS_LSM_State,itemNameList=varname,rc=status)
-    call LIS_verify(status, &
-         'ESMF_StateGet failed in getLSMvarnames')        
-
-  end subroutine getLSMvarnames
 
 !BOP
 ! 
@@ -1731,64 +1557,4 @@ end subroutine pf_update
        obs_param(i)%ycorr = ycorr(i)
     enddo
   end subroutine generateObsparam
-!BOP
-! 
-! !ROUTINE: getLSMData
-! \label{getLSMData}
-!
-! !INTERFACE:
-  subroutine getLSMData(LIS_LSM_State, dim1, dim2, lsmdata)
-! !USES: 
-
-! !ARGUMENTS:         
-    type(ESMF_State)      :: LIS_LSM_State
-    integer               :: dim1, dim2
-    real                  :: lsmdata(dim1, dim2)
-! 
-! !DESCRIPTION:
-! 
-! This routine retrives the LSM state prognostic variables from the 
-! LSM state. 
-!
-! The arguments are:
-! 
-! \begin{description} 
-!  \item[LSM\_State]  LSM State containing prognostic variables
-!  \item[dim1,dim2]   dimensions of the prognostic variable array
-!  \item[lsmdata]     prognostic variable array
-! \end{description}
-!EOP
-    real, pointer         :: lsm_temp(:)
-    integer               :: i 
-    integer               :: lsm_state_count
-    integer               :: status
-    character*100,allocatable     :: lsm_state_objs(:)
-    type(ESMF_Field), allocatable :: lsm_field(:)
-
-    
-    call ESMF_StateGet(LIS_LSM_State,itemCount=lsm_state_count,rc=status)
-    call LIS_verify(status, &
-         'ESMF_StateGet failed in getLSMdata')
-    
-    allocate(lsm_state_objs(lsm_state_count))
-    allocate(lsm_field(lsm_state_count))
-    
-    call ESMF_StateGet(LIS_LSM_State,itemNameList=lsm_state_objs,rc=status)
-    call LIS_verify(status,&
-         'ESMF_StateGet failed in getLSMdata')        
-    
-    do i=1,lsm_state_count
-       call ESMF_StateGet(LIS_LSM_State,lsm_state_objs(i),lsm_field(i),&
-            rc=status)
-       call LIS_verify(status, &
-            'ESMF_StateGet failed in getLSMdata')
-       call ESMF_FieldGet(lsm_field(i),localDE=0,farrayPtr=lsm_temp,rc=status)
-       call LIS_verify(status, &
-            'ESMF_FieldGet failed in getLSMdata')
-       lsmdata(i,:) = lsm_temp(:)
-    enddo
-    deallocate(lsm_state_objs)
-    deallocate(lsm_field)
-
-  end subroutine getLSMData
 end module pf_Mod

@@ -22,7 +22,7 @@ subroutine noahmp36_map_snodep(n,k,OBS_State,LSM_Incr_State)
   use LIS_coreMod, only : LIS_rc, LIS_surface
   use LIS_constantsMod, only  : LIS_CONST_TKFRZ
   use LIS_logMod,   only  : LIS_logunit, LIS_verify
-  use LIS_DAobservationsMod
+  use LIS_lsmMod
   use noahmp36_lsmMod
 
   implicit none
@@ -96,8 +96,7 @@ subroutine noahmp36_map_snodep(n,k,OBS_State,LSM_Incr_State)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
-     call LIS_mapTileSpaceToObsSpace(n, k, LIS_rc%lsm_index, &
-          t, st_id, en_id)
+     call LIS_lsm_DAmapTileSpaceToObsSpace(n,k,t,st_id,en_id)
 
 ! Assume here that st_id and en_id are the same and that we are
 ! working with an model grid finer than the observation grid

@@ -283,6 +283,8 @@ module LIS_pluginIndices
         "SMAP(NRT) soil moisture"
    character*50, public,  parameter :: LIS_ASOsweobsId           = &
         "ASO SWE"
+   character*50, public,  parameter :: LIS_synwlId             = &
+        "Synthetic water level"
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms
 !-------------------------------------------------------------------------
