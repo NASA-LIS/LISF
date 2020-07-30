@@ -1,28 +1,30 @@
 #!/usr/bin/env python
-''' 
+'''
 Created on Apr 2, 2018
 
 @author: Shugong Wang
 @email: shugong.wang@nasa.gov
 
-2018 Apr 06, a index bug has been fixed. Shugong Wang 
-2020 Jul 24, add dump2nc file for checking 
+2018 Apr 06, a index bug has been fixed. Shugong Wang
+2020 Jul 24, add dump2nc file for checking
 '''
 
-import os
-import sys
-import mule
 import configparser
+import os
+import shutil as shell
+import sys
+import netCDF4 as nc4
 import numpy as np
 import numpy.ma as ma
-import netCDF4 as nc4
-import shutil as shell
+import mule
 
 
-class dump2lis(object):
+
+#class Dump2Lis(object):
+class Dump2Lis:
     '''
-    dump2lis: taking JULES state variables from UM dump file
-    and insert into LIS restart file 
+    Dump2Lis: taking JULES state variables from UM dump file
+    and insert into LIS restart file
     JULES STATE VARIABLES
 
 
@@ -30,7 +32,7 @@ class dump2lis(object):
 
     def __init__(self, config_file_name):
         self.config_file = config_file_name
-        if os.path.isfile(self.config_file) == False:
+        if not os.path.isfile(self.config_file):
             print("The configuration file {0} not exist".format(
                 self.config_file))
             sys.exit(0)
@@ -45,6 +47,7 @@ class dump2lis(object):
         self.dump_var = np.zeros((self.nrow, self.ncol))
 
     def read_config_file(self):
+        """Reads config file entries and stores in object"""
         config = configparser.ConfigParser()
         config.read(self.config_file)
         self.dump_file = config.get("UM", "UM dump file")
@@ -55,13 +58,14 @@ class dump2lis(object):
         self.lis_ldt_file = config.get("LIS", "LIS domain and parameter file")
 
     def prepare(self):
+        """Prepares netCDF4 output file for writing variables"""
         print("reading STASH master file {0}".format(self.stashmaster))
-        sm = mule.stashmaster.STASHmaster.from_file(self.stashmaster)
+        s_m = mule.stashmaster.STASHmaster.from_file(self.stashmaster)
         print("reading UM dump file {0}".format(self.dump_file))
         self.dump = mule.DumpFile.from_file(self.dump_file)
         print("attaching the STASH master file {0} to the dump file {1}".format(
             self.stashmaster, self.dump_file))
-        self.dump.attach_stashmaster_info(sm)
+        self.dump.attach_stashmaster_info(s_m)
         print("creating new LIS restart file {0}".format(self.lis_rst_file1))
         shell.copy(self.lis_rst_file0, self.lis_rst_file1)
         # open the new NetCDF restart file for updating
@@ -70,7 +74,7 @@ class dump2lis(object):
         self.land_mask = self.lis_ldt["LANDMASK"][:, :]
         self.lis_var = np.zeros((int(self.land_mask.sum()), 1))
         #
-        if os.path.isfile(self.dump2nc) == True:
+        if os.path.isfile(self.dump2nc):
             os.remove(self.dump2nc)
             print("File %s has been deleted. A new file will be created." %
                   self.dump2nc)
@@ -80,19 +84,26 @@ class dump2lis(object):
         self.time = self.rootgrp.createDimension("time", 1)
 
     def read_dump_variable(self, section, item, lblev=-1, lbuser5=-1):
+        """Read requested DUMP variable, store in object"""
         if lblev >= 0 and lbuser5 == -1:
             for field in self.dump.fields:
-                if field.stash.section == section and field.stash.item == item and field.lblev == lblev:
+                if field.stash.section == section and \
+                   field.stash.item == item \
+                   and field.lblev == lblev:
                     info = "section=%03d item=%03d lblev=%02d %s" % (
-                        field.stash.section, field.stash.item, field.lblev, field.stash.name)
+                        field.stash.section, field.stash.item, field.lblev,
+                        field.stash.name)
                     print(info)
                     self.dump_var[:, :] = field.get_data()[:, :]
                     break
         elif lblev == -1 and lbuser5 >= 0:
             for field in self.dump.fields:
-                if field.stash.section == section and field.stash.item == item and field.lbuser5 == lbuser5:
+                if field.stash.section == section and \
+                   field.stash.item == item and \
+                   field.lbuser5 == lbuser5:
                     info = "section=%03d item=%03d lbuser5=%02d %s" % (
-                        field.stash.section, field.stash.item, field.lbuser5, field.stash.name)
+                        field.stash.section, field.stash.item, field.lbuser5,
+                        field.stash.name)
                     print(info)
                     self.dump_var[:, :] = field.get_data()[:, :]
                     break
@@ -100,12 +111,14 @@ class dump2lis(object):
             for field in self.dump.fields:
                 if field.stash.section == section and field.stash.item == item:
                     info = "section=%03d item=%03d %s" % (
-                        field.stash.section, field.stash.item,  field.stash.name)
+                        field.stash.section, field.stash.item,
+                        field.stash.name)
                     print(info)
                     self.dump_var[:, :] = field.get_data()[:, :]
                     break
 
     def shift_um2lis(self):
+        """Shift longitude from UM convention to LIS"""
         data = self.dump_var
         col1 = self.ncol//2
         col2 = self.ncol
@@ -116,16 +129,18 @@ class dump2lis(object):
         data[:, col1:col2] = tmp[:, 0:col1]
 
     def convert_map2tile(self):
+        """Convert from 2D grid space to 1D tile space"""
         data2d = self.dump_var
         data1d = self.lis_var
-        k = 0
+        i = 0
         for row in range(0, self.nrow):
             for col in range(0, self.ncol):
                 if self.land_mask[row, col] == 1:
-                    data1d[k] = data2d[row, col]
-                    k = k + 1
+                    data1d[i] = data2d[row, col]
+                    i = i + 1
 
     def update_lis_variable(self, var_name, lev=-1):
+        """Prepare netCDF4 variable for LIS"""
         self.shift_um2lis()
         if lev > -1:
             ncvar = var_name + str(lev)
@@ -142,16 +157,19 @@ class dump2lis(object):
         if lev == -1:
             self.nc_rst[var_name][:] = self.lis_var[:]
             print("data range: %12.6f %12.6f" % (
-                self.nc_rst[var_name][:].min(), self.nc_rst[var_name][:].max()))
+                self.nc_rst[var_name][:].min(),
+                self.nc_rst[var_name][:].max()))
         else:
             self.nc_rst[var_name][lev, :] = self.lis_var.transpose()
             print("data range: %12.6f %12.6f" % (
-                self.nc_rst[var_name][lev, :].min(), self.nc_rst[var_name][lev, :].max()))
+                self.nc_rst[var_name][lev, :].min(),
+                self.nc_rst[var_name][lev, :].max()))
 
         print("--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*--")
         print("")
 
     def finalize(self):
+        """Close the netCDF file"""
         self.nc_rst.close()
 
 
@@ -161,10 +179,10 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: dump2lis config_file_name")
         sys.exit()
-    if os.path.isfile(sys.argv[1]) != True:
+    if not os.path.isfile(sys.argv[1]):
         print("The configuation file {0} does not exist. Please double check.".format(
             sys.argv[1]))
-    d2l = dump2lis(sys.argv[1])
+    d2l = Dump2Lis(sys.argv[1])
     d2l.read_config_file()
     d2l.prepare()
     # 1. NSNOW: all 0, keep LIS values
@@ -175,7 +193,8 @@ if __name__ == "__main__":
     # 6. N_INORG_AVAIL_PFT, all 0, keep LIS values
     # 7. TRIFFID_CO2_GB, all 0, keep LIS values
 
-    # 8. CANOPY_GB, read section=000 item=022 lblev=00 CANOPY WATER AFTER TIMESTEP    KG/M2
+    # 8. CANOPY_GB, read section=000 item=022 lblev=00
+    # CANOPY WATER AFTER TIMESTEP    KG/M2
     print("LIS RST VAR: CANOPY_GB")
     d2l.read_dump_variable(0, 22, lblev=0)
     d2l.update_lis_variable("CANOPY_GB")
@@ -185,7 +204,8 @@ if __name__ == "__main__":
     d2l.read_dump_variable(0, 22, lblev=0)
     d2l.update_lis_variable("CANOPY")
 
-    # 9 SNOW_MASS_IJ, section=000 item=023 lblev=9999 lbuser4=0023 SNOW AMOUNT OVER LAND AFT TSTP KG/M2
+    # 9 SNOW_MASS_IJ, section=000 item=023 lblev=9999 lbuser4=0023
+    # SNOW AMOUNT OVER LAND AFT TSTP KG/M2
     print("LIS RST VAR: SNOW_MASS_IJ")
     d2l.read_dump_variable(0, 23)
     d2l.update_lis_variable("SNOW_MASS_IJ")
@@ -203,7 +223,8 @@ if __name__ == "__main__":
     # 15 FRAC_AGR, all 0
     # 16 N_INORG
     # 17 CANHT_FT
-    # section=000 item=218 lblev=9999 lbuser5=0001 CANOPY HEIGHT OF PLANT FUNC TYPES M
+    # section=000 item=218 lblev=9999 lbuser5=0001
+    # CANOPY HEIGHT OF PLANT FUNC TYPES M
     print("LIS RST VAR: CANHT_FT")
     for k in range(0, 5):
         d2l.read_dump_variable(0, 218, lbuser5=k+1)
@@ -212,7 +233,8 @@ if __name__ == "__main__":
     # 19 NS, organic soil nitrogen, all 0.001
     # 20 CS, grid box soil carbon in each pool, all 12.1
     # 21 GC, Tile surface conductance to evaporation for land tiles
-    # section=000 item=213 lblev=00 lbuser4=0213 CANOPY CONDUCTANCE AFTER TIMESTEP
+    # section=000 item=213 lblev=00 lbuser4=0213
+    # CANOPY CONDUCTANCE AFTER TIMESTEP
     print("LIS RST VAR: GC")
     d2l.read_dump_variable(0, 213, lblev=0)
     d2l.update_lis_variable("GC")
@@ -233,7 +255,8 @@ if __name__ == "__main__":
 
     # 25 SMC, should not be a state variable
     # 26 SMCL
-    # section=000 item=009 lblev=01 lbuser4=0009 SOIL MOISTURE CONTENT IN A LAYER
+    # section=000 item=009 lblev=01 lbuser4=0009
+    # SOIL MOISTURE CONTENT IN A LAYER
     print("LIS RST VAR: SMCL")
     for k in range(0, 4):
         d2l.read_dump_variable(0, 9, lblev=k+1)
@@ -252,7 +275,8 @@ if __name__ == "__main__":
         d2l.update_lis_variable("T_SOIL", k)
 
     # 31 TSTAR_TILE
-    # section=000 item=024 lblev=9999 lbuser4=0024 SURFACE TEMPERATURE AFTER TIMESTEP
+    # section=000 item=024 lblev=9999 lbuser4=0024
+    # SURFACE TEMPERATURE AFTER TIMESTEP
     print("LIS RST VAR: TSTAR_TILE")
     d2l.read_dump_variable(0, 24)
     d2l.update_lis_variable("TSTAR_TILE")
@@ -272,13 +296,15 @@ if __name__ == "__main__":
     # 38 TI_SIG, parameter
 
     # 39 ZW
-    # section=000 item=278 lblev=9999 lbuser4=0278 MEAN WATER TABLE DEPTH            M
+    # section=000 item=278 lblev=9999 lbuser4=0278
+    # MEAN WATER TABLE DEPTH            M
     print("LIS RST VAR: ZW")
     d2l.read_dump_variable(0, 278)
     d2l.update_lis_variable("ZW")
 
     # 40 STHZW
-    # section=000 item=281 lblev=9999 lbuser4=0281 SATURATION FRAC IN DEEP LAYER
+    # section=000 item=281 lblev=9999 lbuser4=0281
+    # SATURATION FRAC IN DEEP LAYER
     print("LIS RST VAR: STHZW")
     d2l.read_dump_variable(0, 281)
     d2l.update_lis_variable("STHZW")
@@ -296,14 +322,16 @@ if __name__ == "__main__":
     d2l.update_lis_variable("FSAT")
 
     # 43 STHU
-    # section=000 item=214 lblev=01 lbuser4=0214 UNFROZEN SOIL MOISTURE FRAC AFTER TS
+    # section=000 item=214 lblev=01 lbuser4=0214
+    # UNFROZEN SOIL MOISTURE FRAC AFTER TS
     print("LIS RST VAR: STHU")
     for k in range(0, 4):
         d2l.read_dump_variable(0, 214, k+1)
         d2l.update_lis_variable("STHU", k)
 
     # 44 STHF
-    # section=000 item=215 lblev=01 lbuser4=0215 FROZEN SOIL MOISTURE FRAC AFTER TS
+    # section=000 item=215 lblev=01 lbuser4=0215
+    # FROZEN SOIL MOISTURE FRAC AFTER TS
     print("LIS RST VAR: STHF")
     for k in range(0, 4):
         d2l.read_dump_variable(0, 215, k+1)
