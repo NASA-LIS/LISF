@@ -1,0 +1,2460 @@
+
+[[sec-lvtconfigfile]]
+== LVT config File
+
+This section describes the options in the _lvt.config_ file.
+
+[[ssec-driveropts]]
+=== Overall driver options
+
+`LVT running mode:` specifies the running mode to be used. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value                         | Description
+
+| "`Data intercomparison`"      | standard analysis mode where a particular data is compared against another
+| "`Benchmarking`"              | A benchmarking output is generated based on the input training datasets
+| "`DA statistics processing`"  | data assimilation diagnostics analysis
+| "`DA observation processing`" | data assimilation observation analysis
+| "`OPTUE output processing`"   | parameter estimation/uncertainty output analysis
+| "`RTM output processing`"     | radiative transfer model output analysis
+| "`557 post`"                  | LIS postprocessing mode for 557WW operations
+| "`USAFSI post`"                | special postprocessing mode for USAFSI
+|===
+
+.Example _lvt.config_ entry
+....
+LVT running mode:                       "Data intercomparison"
+....
+
+`Map projection of the LVT analysis:` specifies the map projection used in the LVT analysis. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value    | Description
+
+| latlon   | Lat/Lon projection with SW to NE data ordering
+| mercator | Mercator projection with SW to NE data ordering
+| lambert  | Lambert conformal projection with SW to NE data ordering
+| gaussian | Gaussian domain
+| polar    | Polar stereographic projection with SW to NE data ordering
+| UTM      | UTM domain
+|===
+
+.Example _lvt.config_ entry
+....
+Map projection of the LVT analysis:          "latlon"
+....
+
+`LVT output format:` specifies the format of the LVT output. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value  | Description
+
+| binary | Write output in binary format
+| grib1  | Write output in Grib format (not supported yet)
+| netcdf | Write output in NETCDF format
+|===
+
+See Appendix <<sec-lvt_output_format>> for more details about the structure of the LVT output files.
+
+.Example _lvt.config_ entry
+....
+LVT output format:                      "netcdf"
+....
+
+`LVT output methodology:` specifies the output methodology used in LVT.  The LVT output is written as a 1-D array containing only land points or as a 2-D array containing both land and water points. 1-d tile space includes the subgrid tiles and ensembles. 1-d grid space includes a vectorized, land-only grid-averaged set of values. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value            | Description
+
+| "`1d tilespace`" | LVT output in a 1-D tile domain
+| "`2d gridspace`" | LVT output in a 2-D grid domain
+| "`1d gridspace`" | LVT output in a 1-D grid domain
+|===
+
+.Example _lvt.config_ entry
+....
+LVT output methodology:                 "2d gridspace"
+....
+
+`Analysis data sources:` specifies the two sources of data to be used in an LVT comparison. The user must always choose two sources specified in adjacent columns. The second column entry will be taken as the reference data and the first column will be used as the data being evaluated (against the reference data). If the comparison LIS output against a non-LIS data, it is recommended to specify the first source as "LIS output" and then the other data as the second data source.  Acceptable values for each column are:
+
+[cols="<,<",]
+|===
+| Value                             | Description
+
+| "`none`"                          | template
+| "`LIS output`"                    | output from another LIS run
+| "`LIS DAOBS`"                     | processed observations from a LIS DA run
+| "`ISCCP LST`"                     | ISCCP skin temperature observations
+| "`MODIS LST`"                     | MODIS (Terra/Aqua) land surface temperature observations
+| "`SCAN`"                          | SCAN soil moisture station observations
+| "`NASMD`"                         | North American Soil Moisture Database soil moisture station observations
+| "`ISMN`"                          | ISMN soil moisture station observations
+| "`SURFRAD`"                       | SURFRAD observations
+| "`SNOTEL`"                        | SNOTEL snow water equivalent observations
+| "`LSWG Tb`"                       | Tb brightness temperature observations at the LSWG sites
+| "`FMI SWE`"                       | Finnish Meteorological Institute (FMI) snow course data
+| "`CMC`"                           | Canadian Meteorological Center (CMC) snow depth analysis
+| "`SNODAS`"                        | NOHRSC SNow Data Assimilation (SNODAS) product
+| "`AMSR-E NASA soil moisture`"     | NASA (NSIDC) retrival of AMSR-E soil moisture
+| "`AMSR-E LPRM soil moisture`"     | LPRM (VU) retrival of AMSR-E soil moisture
+| "`AMMA`"                          | AMMA station observations
+| "`Ameriflux`"                     | Ameriflux station observations
+| "`ARM`"                           | ARM station observations
+| "`SMOSREX`"                       | SMOSREX station observations
+| "`AGRMET`"                        | AGRMET land surface analysis
+| "`Globsnow`"                      | GlobSnow SWE analysis
+| "`SNODEP metobs`"                 | WMO snow depth station observations
+| "`MOD10A1`"                       | MOD10A1 fractional snow cover data from MODIS
+| "`MOD10A1V6`"                     | MOD10A1.006 Normalized Difference from MODIS
+| "`ANSA snowdepth`"                | ANSA snow depth retrievals
+| "`ANSA SWE`"                      | ANSA SWE retrievals
+| "`CPC precipitation`"             | CPC unified precipitation product
+| "`GPM IMERG`"                     | IMERG precipitation data product
+| "`USGS streamflow`"               | USGS streamflow observations
+| "`Naturalized streamflow`"        | Naturalized streamflow estimates
+| "`FLUXNET MTE`"                   | Gridded FLUXNET MTE data from MPI
+| "`MOD16A2`"                       | MOD16A2 ET products from MODIS
+| "`UW ET`"                         | University of Washington ET products from MODIS
+| "`ALEXI`"                         | ALEXI model ET estimates from USDA
+| "`USDA ARS soil moisture`"        | soil moisture measurements from USDA ARS watersheds
+| "`GHCN`"                          | Global Historical Climatology Network data
+| "`ALEXI`"                         | Atmosphere Land Exchange Inverse model outputs of ET
+| "`NLDAS2`"                        | North American Land Data Assimilation System Phase-2 data
+| "`GRACE`"                         | processed GRACE data used in a LIS-DA instance
+| "`PBO H2O`"                       | plate boundary observatory data
+| "`USGS ground water well data`"   | USGS ground water well data
+| "`SMOS L2 soil moisture`"         | SMOS level 2 soil moisture
+| "`SMOS L1 TB`"                    | SMOS level 1 brightness temperature
+| "`GCOMW AMSR2 L3 soil moisture`"  | GCOMW AMSR2 level 3 soil moisture
+| "`SMOPS soil moisture`"           | Soil Moisture Operational Product System data
+| "`ESA CCI soil moisture`"         | ESA CCI soil moisture
+| "`GIMMS NDVI`"                    | GIMMS NDVI data
+| "`GIMMS AVHRR NDVI`"              | GIMMS AVHRR NDVI data
+| "`GIMMS MODIS NDVI`"              | GIMMS MODIS NDVI data
+| "`GLDAS2`"                        | NASA Global Land Data Assimilation System version 2 data
+| "`MERRA2`"                        | MERRA version 2 data
+| "`ERA interim land`"              | ERA Interim Land data
+| "`SSEB`"                          | USGS SSEB operational ET and ET anomaly data
+| "`GRDC`"                          | Global Runoff Data Center data
+| "`GLERL hydro data`"              | Great Lakes hydrology data
+| "`GL6 JULES data`"                | GL6 JULES data
+| "`GLEAM`"                         | GLEAM data
+| "`FLUXNET2015 dataset`"           | Measurements from FLUXNET2015 dataset
+| "`USCRN soil moisture`"           | USCRN soil moisture data
+| "`SMAP soil moisture`"            | SMAP soil moisture data
+| "`SMAP vegetation water content`" | SMAP vegetation water content
+! "`OzFlux`"                        | OzFlux ground measurements
+! "`JASMIN soil moisture`"          | JASMIN soil moisture analysis 
+|===
+
+.Example _lvt.config_ entry
+....
+Analysis data sources:     "LIS output"  "SURFRAD"
+....
+
+`Experiment code:` LIS-6 experiment code number.
+
+Note — Only needed when using LVT on LIS 6 output.
+
+.Example _lvt.config_ entry
+....
+Experiment code:                        111
+....
+
+`Start mode:` specifies if the LVT analysis is to be restarted from a previous (unfinished) analysis. Note that if "`restart`" option is selected, then the starting time (below) must be changed appropriately.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value     | Description
+
+| coldstart | Fresh analysis
+| restart   | Restart from a previous analysis
+|===
+
+.Example _lvt.config_ entry
+....
+Start mode:                             "coldstart"
+....
+
+`LVT output restart files:` a flag to specify if LVT restart files should be written out. The default is to turn off writing these restart files. To enable writing of LVT restart files, change this option to "`1`".
+
+.Example _lvt.config_ entry
+....
+LVT output restart files:               0
+....
+
+`LVT restart output interval:` specifies the frequency at which the restart files must be written during a LVT analysis. The time interval is specified with a number followed by a 2 character suffix that indicates the units. For example, a restart interval of 1 hour can be specified as "`1hr`", "`60mn`", or "`3600ss`".  Acceptable values for the 2 character suffix are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| ss    | second
+| mn    | minute
+| hr    | hour
+| da    | day
+| mo    | month
+| yr    | year
+|===
+
+.Example _lvt.config_ entry
+....
+LVT restart output interval:            "1mo"
+....
+
+`LVT restart filename:` specifies the name of the LVT restart file
+
+.Example _lvt.config_ entry
+....
+LVT restart filename:                   "none"
+....
+
+The start time of the evaluation period is specified in the following format:
+
+[cols="<,<,<",]
+|===
+| Variable           | Value                  | Description
+
+| `Starting year:`   | integer 2001 – present | specifying starting year
+| `Starting month:`  | integer 1 – 12         | specifying starting month
+| `Starting day:`    | integer 1 – 31         | specifying starting day
+| `Starting hour:`   | integer 0 – 23         | specifying starting hour
+| `Starting minute:` | integer 0 – 59         | specifying starting minute
+| `Starting second:` | integer 0 – 59         | specifying starting second
+|===
+
+.Example _lvt.config_ entry
+....
+Starting year:                          2007
+Starting month:                           11
+Starting day:                              1
+Starting hour:                             0
+Starting minute:                           0
+Starting second:                           0
+....
+
+The end time of the evaluation period is specified in the following format:
+
+[cols="<,<,<",]
+|===
+| Variable         | Value                  | Description
+
+| `Ending year:`   | integer 2001 – present | specifying ending year
+| `Ending month:`  | integer 1 – 12         | specifying ending month
+| `Ending day:`    | integer 1 – 31         | specifying ending day
+| `Ending hour:`   | integer 0 – 23         | specifying ending hour
+| `Ending minute:` | integer 0 – 59         | specifying ending minute
+| `Ending second:` | integer 0 – 59         | specifying ending second
+|===
+
+.Example _lvt.config_ entry
+....
+Ending year:                            2008
+Ending month:                              5
+Ending day:                               31
+Ending hour:                               0
+Ending minute:                             0
+Ending second:                             0
+....
+
+`LVT clock timestep:` specifies the timestep to be used in the LVT analysis. It is recommended to use a timestep consistent with the output frequency of the first data stream.
+
+.Example _lvt.config_ entry
+....
+LVT clock timestep:                    "1da"
+....
+
+`Undefined value:` specifies the undefined value. The default is set to -9999.
+
+.Example _lvt.config_ entry
+....
+Undefined value:                        -9999
+....
+
+`LVT diagnostic file:` specifies the name of run time diagnostic file.  Acceptable values are any 40 character string.
+
+.Example _lvt.config_ entry
+....
+LVT diagnostic file:                    lvtlog
+....
+
+[[ssec-domainspec]]
+=== Domain specification
+
+LVT expects three sets of domain specification. (1) the domain over which the LVT analysis needs to be carried out (2) the domain in which LIS simulation was carried out (LIS run domain). Section <<ssec-driveropts>> lists the projections that LIS supports.
+
+[[sssec-run_latlon]]
+==== LVT run domain
+
+This section describes how to specify the run domain over which LVT will perform its analysis. See the LDT Users`' Guide for more details about setting these values.
+
+.Example _lvt.config_ entry
+....
+Run domain lower left lat:            30.125
+Run domain lower left lon:          -124.875
+Run domain upper right lat:           50.125
+Run domain upper right lon:          -69.875
+Run domain resolution (dx):            0.25
+Run domain resolution (dy):            0.25
+....
+
+`Input domain and mask data file:` specifies the name of the parameter input file to be used for the definition of domain and parameters in LVT. This file should be in NetCDF format and must include details about the map projection (as global attributes) and must include a landmask field. LVT uses the landmask specified in this file to derive the landmask for the LVT run domain. The extents of the run domain should be inclusive of the landmask specified in this file (but it doesn't have to match exactly).
+
+.Example _lvt.config_ entry
+....
+Input domain and mask data file:                ./lis_input.d01.nc
+....
+
+`LVT datastream attributes table::` specifies the variables being analyzed and their attributes. The list of variables are to be specified in a table form with each line representing the variable specification from datastream 1 and datastream 2. In the example below, latent heat flux variable from datastream 1 is compared against the sensible heat flux from datastream 2. In addition, the root zone soil moisture from datastream 1 is compared against the root zone soil moisture from datastream 2. Each variable specification consists of 7 columns representing the short name, starting index of the level of the variable (0 indicates that variable is not selected), ending index of the level of the variable, units, direction type, time-averaging option (0 = instantaneous, 1 = time-averaged) and total number of vertical levels.
+
+NOTE: This line must end with two colons after the word table (e.g., "`table::`"), and the final line of the table is a line with only two colons (e.g., "`::`"). The table information is contained on the lines in-between these beginning and end lines. For example, if the soil moisture variable has 4 levels and the user choses levels 2 to 3, then they can be entered as (for a datastream.
+
+SoilMoist 2 3 m3/m3 - 1 4
+
+.Example _lvt.config_ entry
+....
+LVT datastream attributes table::
+Qle         1 1 W/m2   DN   1   1 Qh        1 1 W/m2    DN    1  1
+RootMoist   1 1 m3/m3   -   1   1 RootMoist 1 1 m3/m3   -     1  1
+::
+....
+
+`LVT surface soil layer thickness:` specifies the thickness (in m) of the surface soil layer to be considered in the LVT analysis
+
+.Example _lvt.config_ entry
+....
+LVT surface soil layer thickness:       0.1
+....
+
+`LVT root zone soil layer thickness:` specifies the thickness (in m) of the root zone soil layer to be considered in the LVT analysis.
+
+.Example _lvt.config_ entry
+....
+LVT root zone soil layer thickness:     1.0
+....
+
+[[ssec-statsspec]]
+=== Analysis options specification
+
+This section of the config file specifies the type of analysis to be conducted during the verification/evaluation. Note that some options are only available in certain running modes.
+
+`Apply external mask:` Specifies whether to apply an external mask in limiting the analysis to a selected set of data points. Note that undefined value is considered to be the value used for omitting grid points. All values other than "`undefined values`" (e.g. -9999.0) are considered as valid.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | Do not apply external mask
+| 1     | Apply external, temporally varying mask
+| 2     | Apply fixed mask
+| 3     | Apply temporal monthly mask
+|===
+
+.Example _lvt.config_ entry
+....
+Apply external mask:                    0
+....
+
+`Temporal (monthly) mask flags:` specifies the temporal (monthly) mask flags (specified as 0/1 for each calendar month). This option is only read when the "`Apply external mask`" option is set to 3.
+
+.Example _lvt.config_ entry
+....
+Temporal (monthly) mask flags: 0 0 0 0 0 1 1 1 0 0 0 0
+....
+
+`External mask directory:` Specifies the name of the data mask file/directory. If the mask varies temporally, then this option specifies the top-level directory containing data mask. Note that the mask files are expected to be in binary, sequential access format.
+
+.Example _lvt.config_ entry
+....
+External mask directory:                "none"
+....
+
+`Compute ensemble metrics:` specifies whether to compute ensemble-based metrics or not. If this option is turned on, then all the traditional (non-ensemble) metrics will be turned off.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | Do not compute
+| 1     | compute ensemble metrics
+|===
+
+.Example _lvt.config_ entry
+....
+Compute ensemble metrics:               0
+....
+
+`Compute information theory metrics:` specifies whether to compute information theory-based metrics or not. If this option is turned on, then the ensemble and traditional metrics will be turned off.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | Do not compute
+| 1     | compute information theory metrics
+|===
+
+.Example _lvt.config_ entry
+....
+Compute information theory metrics:     0
+....
+
+`Metrics attributes file:` specifies the attributes of the metrics that are used in the LVT analysis.  Section <<sec-metricslisttable>> describes the format of the metrics attributes file.
+
+.Example _lvt.config_ entry
+....
+Metrics attributes file:                ./METRICS.TBL
+....
+
+`Observation count threshold:` Specifies the number of observations to be used as the minimum threshold for computing statistics. Grid points with observation count less than this value will be ignored.  Acceptable values are 0 or higher
+
+.Example _lvt.config_ entry
+....
+Observation count threshold:            50
+....
+
+`Metric computation frequency:` Specifies the temporal averaging interval of the LIS output and observation data.
+
+[NOTE]
+====
+The ending time and the `Metric computation frequency:` must be consistent. For example, for a `Metric computation frequency:` of 1da, you must have an ending time of:
+
+....
+Ending hour: 0
+Ending minute: 0
+Ending second: 0
+....
+====
+
+.Example _lvt.config_ entry
+....
+Metric computation frequency:            "1da"
+....
+
+`Temporal lag in metrics computations:` Specifies the temporal lag in metric computations. The values can be positive or negative (e.g.  "`+1da`" or "`-1da`")
+
+.Example _lvt.config_ entry
+....
+Temporal lag in metrics computations:    0
+....
+
+`Spatial averaging mode:` Specifies the spatial averaging mode to be used.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value          | Description
+
+| pixel-by-pixel | each pixel is treated separately
+| region-based   | stats are computed for on a region by region basis
+|===
+
+.Example _lvt.config_ entry
+....
+Spatial averaging mode:     "pixel-by-pixel"
+....
+
+`Regional mask file for spatial averaging:` Specifies the name of the regional mask file to be used for determining the (sub) regions, if region-based spatial averaging mode is selected.
+
+This file must be in big-endian, sequential access format and must correspond exactly to the LVT run domain.
+
+.Example _lvt.config_ entry
+....
+Regional mask file for spatial averaging: none
+....
+
+`Metric output directory:` Specifies the top-level directory where the output from the analysis is to be written.
+
+.Example _lvt.config_ entry
+....
+Metric output directory:                 ./STATS
+....
+
+`Metric output frequency:` Specifies the frequency (in seconds) of the analysis output.
+
+NOTE: The `Metric output frequency:` is simply a setting for specifying the frequency of LVT outputs. If the `Metric output frequency:` is different from (greater than) the time averaging interval, no additional averaging will be performed between the time averaging intervals.
+
+.Example _lvt.config_ entry
+....
+Metric output frequency:                  "1da"
+....
+
+`Apply temporal smoothing to obs:` specifies whether to temporal smoothing to the observations. If enabled,the code will compute an average value across the specified time window, instead of only using the value that corresponds to the current time.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 1     | apply temporal smoothing to obs
+| 0     | do not apply temporal smoothing to obs
+|===
+
+.Example _lvt.config_ entry
+....
+Apply temporal smoothing to obs: 0
+....
+
+`Obs temporal smoothing window half length:` specifies the observation temporal smoothing window half length. The smoothing window is then defined as (current time +/- half length).
+
+.Example _lvt.config_ entry
+....
+Obs temporal smoothing window half length: "2da"
+....
+
+`Obs temporal smoothing window interval:` specifies the observation temporal smoothing window interval. This will be used as the increment length across the smoothing window. For e.g., if the window half length is specified as 2 days the smoothing window will be of 5 days. If the smoothing window interval is 1 day, then number of points in the smoothing window will be 5 (-2 da, -1da, current day, +1da, +2da).
+
+.Example _lvt.config_ entry
+....
+Obs temporal smoothing window interval: "1da"
+....
+
+`Time series location file:` specifies the name of the file which lists the locations and regions in the domain where ASCII time series data are to be derived.
+
+The locations can be specified in five different formats: (1) using the lat/lon values; (2) using the column/row indices; (3) using the tile indices; (4) specifying lat/lon values to draw a polygon around a region; and (5) using a categorical from which to define subregions.
+
+Note that LVT has been updated so the format of the time series locations file uses a minimum fraction of the domain before the temporal calculations will occur. Previously, the time series locations file used a minimum number of observations. A value for this "`min frac`" of 0.1 (for example) implies that at least 10 percent of the total number of points in the domain location must be available for the temporal calculations to occur.
+
+A sample file with location style 1 is shown below:
+
+....
+  #Number of locations
+  2
+  #Location style (1-lat/lon, 2-col/row, 3-tile, 4-polygon, 5-map)
+  1
+  #Name (then, next line), SW-lat, SW-lon, NE-lat, NE-lon, min frac
+  WEST_US
+  40.0 -130.0 50.0 -110.0 0.0
+  HIGH_PLAINS_US
+  43.0 -110.0 49.0 -100.0 0.0
+....
+
+If the location style is 2, the user specifies the column and row indices for the bounding boxes, instead of the corner lat/lon values. A sample file with location style 2 is shown below:
+
+....
+  #Number of locations
+  2
+  #Location style (1-lat/lon, 2-col/row, 3-tile, 4-polygon, 5-map)
+  2
+  #Name (then, next line), SW-col, SW-row, NE-col, NE-row, min frac
+  WEST_US
+   1 1 20 30 0.0
+  EAST_US
+  21 1 40 30 0.0
+....
+
+If the location style is 3, the user specifies the tile indices for specifying the bounds (starting tile index and ending tile index). A sample file with location style 3 is shown below:
+
+....
+  #Number of locations
+  2
+  #Location style (1-lat/lon, 2-col/row, 3-tile, 4-polygon, 5-map)
+  3
+  #Name (then, next line), Start index, End index, min frac
+  WEST_US
+   1 20 0.0
+  EAST_US
+  21 40 0.0
+....
+
+If the location style is 4, the user explicitly specifies the lat/lons of each grid point to be used to specify a region in the shape of a polygon. Users should be careful with this location style option, as they cannot specify a minimum fraction of the domain that must have valid observations. A sample file with location style 4 is shown below:
+
+....
+  #Number of locations
+  2
+  #Location style (1-lat/lon, 2-col/row, 3-tile, 4-polygon, 5-map)
+  4
+  #Number of points followed by lat/lon of each point
+  REGION1
+  3
+  34.4 -103.2
+  33.4 -100.2
+  32.1  -99.3
+  REGION2
+  2
+  40.2 -103.3
+  42.2 -104.2
+....
+
+If the location style is 5, the user explicitly specifies a categorical map from which to define subregions. In the map, the categories must be in numerically increasing order from 1. The map must be a binary direct-access file, with point (1,1) in the southwest corner of the domain. A sample file with location style 5 is shown below:
+
+....
+  #Number of stations
+  3
+  #Location style (1-lat/lon, 2-col/row, 3-tile, 4-polygon, 5-map)
+  5
+  #Name (then, next line), min frac
+  NEWENGLAND
+  0.0
+  MIDATLANTIC
+  0.0
+  SOUTHATLANTIC
+  0.0
+  #categorical map
+  ../huc02_conus_0.125dg.1gd4r
+....
+
+Please see the sample TS_LOCATIONS.TXT file for an example in location format (1).
+
+.Example _lvt.config_ entry
+....
+Time series location file:              ./TS_LOCATIONS.TXT
+....
+
+`Variable-based stratification:` Specifies if the errors are to be stratified using one of the model output variables. The errors will be stratified into two levels (1) where the values of the stratification variable falls above the specified threshold and (2) where the values of the stratification variable falls below the specified threshold.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | Do not stratify
+| 1     | Stratify errors
+|===
+
+.Example _lvt.config_ entry
+....
+Variable-based stratification:          0
+....
+
+`Stratification variable:` Specifies the name of the variable to be used in the stratification
+
+.Example _lvt.config_ entry
+....
+Stratification variable:                SWdown_f
+....
+
+`Stratification threshold:` Specifies the minimum value to be used as the stratification threshold.
+
+.Example _lvt.config_ entry
+....
+Stratification threshold:               1.0
+....
+
+`Confidence interval (%):` Specifies the confidence interval threshold (in percentage) of the computed statistics
+
+.Example _lvt.config_ entry
+....
+Confidence interval (%):                95
+....
+
+`External data-based stratification:` Specifies if the errors are to be stratified based on an external (static) dataset (e.g. landcover, elevation,etc.) The associated attributes file specifies the stratification details Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | Do not stratify
+| 1     | Stratify errors
+|===
+
+.Example _lvt.config_ entry
+....
+External data-based stratification:     0
+....
+
+`Stratification attributes file:` Specifies the name of the file which lists the details of the stratification. The format of the time series location file is as follows:
+
+....
+   #Number of stratification data sources
+   3
+   #Stratification data files
+   srtm_elev1km.1gd4r
+   srtm_slope1km.1gd4r
+   srtm_aspect1km.1gd4r
+   #stratifcation variable name
+   ELEV
+   SLOPE
+   ASPECT
+   #Max (row 1) min (row2) values for each category
+   7000 1.0 6
+   500  0.0 0
+   #number of bins
+   12 12 12
+....
+
+.Example _lvt.config_ entry
+....
+Stratification attributes file:         ./strat_attribs.txt
+....
+
+`Seasonal cycle interval type:` Specifies the interval type for average seasonal cycle computations (when enabled in the METRICS.TBL file) Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value     | Description
+
+| monthly   | monthly seasonal cycles
+| 3 monthly | 3-monthly seasonal cycles (DJF,MAM,JJA,SON)
+| 6 monthly | 6-monthly seasonal cycles
+| yearly    | yearly seasonal cycles
+|===
+
+.Example _lvt.config_ entry
+....
+Seasonal cycle interval type:           "monthly"
+....
+
+`Seasonal cycle minimum count threshold:` Specifies minimum number of points to be used in computing the average seasonal cycle computations.
+
+.Example _lvt.config_ entry
+....
+Seasonal cycle minimum count threshold:           10
+....
+
+`Average diurnal cycle minimum count threshold:` Specifies minimum number of points to be used in computing the average diurnal cycle computations.
+
+.Example _lvt.config_ entry
+....
+Average diurnal cycle minimum count threshold:    10
+....
+
+`Averaging window for computing mean values in anomaly calculations:` Specifies the time window to use for computing mean values to be used in anomaly calculations. This option only applies to the Anomaly metrics (Anomaly, Anomaly R, Anomaly RMSE). Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value   | Description
+
+| monthly | use monthly means
+| yearly  | use annual means
+|===
+
+.Example _lvt.config_ entry
+....
+Averaging window for computing mean values in anomaly calculations: monthly
+....
+
+`Compute only the climatology for percentiles:` If set to 1, then LVT will only calculate the climatology when calculating percentiles. After the percentiles have been calculated, then LVT can be run in restart mode using these climatology files without having to calculate the climatology every time. If set to any value other than 1, LVT will first calculate percentiles climatology, and then calculate the percentiles.
+
+.Example _lvt.config_ entry
+....
+Compute only the climatology for percentiles:     0
+....
+
+`Scale model data prior to computing percentiles:` specifies whether to scale model data prior to computing percentiles. The standard normal deviate based scaling is employed. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | do not scale
+| 1     | scale
+|===
+
+`Percentile scaling mean (input data) filename:` specifies the name of the file containing the input data mean.
+
+`Percentile scaling standard deviation (input data) filename:` specifies the name of the file containing the input data standard deviation.
+
+`Percentile scaling mean (scaled data) filename:` specifies the name of the file containing the scaled data mean.
+
+`Percentile scaling standard deviation (scaled data) filename:` specifies the name of the file containing the scaled data standard deviation
+
+`Percentile scaling start time for scaling:` specifies the time to start scaling.
+
+`Percentile scaling end time for scaling:` specifies the time to end scaling.
+
+.Example _lvt.config_ entry
+....
+Scale model data prior to computing percentiles: 0
+Percentile scaling mean (input data) filename:
+Percentile scaling standard deviation (input data) filename:
+Percentile scaling mean (scaled data) filename:
+Percentile scaling standard deviation (scaled data) filename:
+Percentile scaling start time for scaling:
+Percentile scaling end time for scaling:
+....
+
+`Compute only the climatology for SGWI:` If set to 1, then LVT will only calculate the climatology for SGWI.
+
+.Example _lvt.config_ entry
+....
+Compute only the climatology for SGWI:     0
+....
+
+`Compute only the climatology for SPI:` If set to 1, then LVT will only calculate the climatology for SPI.
+
+.Example _lvt.config_ entry
+....
+Compute only the climatology for SPI:     0
+....
+
+`Compute only the climatology for SRI:` If set to 1, then LVT will only calculate the climatology for SRI.
+
+.Example _lvt.config_ entry
+....
+Compute only the climatology for SRI:     0
+....
+
+`SPI timescale of computation:` Set to 1,3,6,...for SPI (or SRI, SSWI) agregations
+
+`Compute only the climatology for SSWI:` If set to 1, then LVT will only calculate the climatology for SSWI.
+
+.Example _lvt.config_ entry
+....
+Compute only the climatology for SSWI:     0
+....
+
+`Starting month if a shifted year definition is used in temporal averaging:` The starting month (integer from 1 to 12) if doing a yearly average or outputting the stats in yearly intervals. Setting this value to 10, for example, represents the start of a hydrologic water year.
+
+.Example _lvt.config_ entry
+....
+Starting month if a shifted year definition is used in temporal averaging: 10
+....
+
+`Time specification option for MinTime metric:` The "`MinTime`" metric computes the time at which the minimum value occcurs within the stats writing time window. This particular option specifies the nature of the time value saved. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| doy   | day of year
+| mo    | month
+| da    | day
+| hr    | hour
+| mn    | minute
+| ss    | second
+|===
+
+If doy is chosen, for example, then the day of the year at which the minimum value occurs will be saved.
+
+.Example _lvt.config_ entry
+....
+Time specification option for Mintime metric: doy
+....
+
+`Time specification option for MaxTime metric:` The "`Maxtime`" metric computes the time at which the maximum value occcurs within the stats writing time window. This particular option specifies the nature of the time value saved. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| doy   | day of year
+| mo    | month
+| da    | day
+| hr    | hour
+| mn    | minute
+| ss    | second
+|===
+
+If doy is chosen, for example, then the day of the year at which the maximum value occurs will be saved.
+
+.Example _lvt.config_ entry
+....
+Time specification option for MaxTime metric: doy
+....
+
+'Calculate reference ET without energy balance:' allows for the reference evapotranspiration to be calculated without
+using surface energy flux variables that are generated by the land-surface model. The calculation follows the methodology
+in Hobbins, M. et al. 2016.
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | use default Reference ET calculation
+| 1     | use Reference ET without LSM output
+|===
+
+This option is only valid for Template LSM runs.
+
+.Example _lvt.config_ entry
+...
+Calculate reference ET without energy balance: 1
+...
+
+[[ssec-obssrc]]
+=== Data stream sources
+
+This section of the config file specifies the details of the sources of data streams.
+
+==== LIS output
+
+`LIS output analysis data class:` specifies the type of land surface data that is being analyzed. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value      | Description
+
+| LSM        | LSM variables
+| Routing    | Routing variables
+| RTM        | Radiative transfer model variables
+| Irrigation | Irrigation model output
+|===
+
+`LIS output number of surface model types:` specifies the number of surface model types used in the LIS simulation
+
+`LIS output surface model types:` specifies the surface model types used in the LIS simulation, in consecutive columns. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| LSM   | land surface model types
+| Lake  | Lake model types
+|===
+
+`LIS output model name:` specifies the name of the model used that generated the output.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value          | Description
+
+| "`CLSM`"       | Catchment land surface model
+| "`CLM`"        | CLM 2.0
+| "`CLSM F2.5`"  | Catchment Fortuna 2.5
+| "`HYSSIB`"     | HySSiB
+| "`MOS`"        | Mosaic
+| "`Noah.2.7.1`" | Noah 2.7.1
+| "`Noah.3.2`"   | Noah 3.2
+| "`Noah.3.3`"   | Noah 3.3
+| "`SiB2`"       | SiB2
+| "`TEMPLATE`"   | template (no model)
+| "`VIC411`"     | VIC 4.1.1
+| "`WRSI`"       | GeoWRSI 2.0
+|===
+
+`LIS output domain and parameter file:` specifies the name of the parameter input file used in the LIS simulation This file is generated by the Land Data Toolkit (LDT).
+
+`LIS output directory:` specifies the LIS output directory
+
+`LIS output naming style:` specifies the style of the LIS output.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value                        | Description
+
+| "`5 level hierarchy`"        | 5 levels of hierarchy
+| "`3 level hierarchy`"        | 3 levels of hierarchy
+| "`2 level hierarchy`"        | 2 levels of hierarchy
+| "`WMO convention`"           | WMO convention for weather codes (written by LIS)
+| "`WMO convention (AFW OPS)`" | WMO convention for weather codes (for AFW production use)
+|===
+
+`LIS output methodology:` specifies the output methodology used for generating the output. The LIS output is written as a 1-D array containing only land points or as a 2-D array containing both land and water points. 1-d tile space includes the subgrid tiles and ensembles.  1-d grid space includes a vectorized, land-only grid-averaged set of values. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value            | Description
+
+| "`1d tilespace`" | LIS output in a 1-D tile domain
+| "`2d gridspace`" | LIS output in a 2-D grid domain
+| "`1d gridspace`" | LIS output in a 1-D grid domain
+|===
+
+`LIS output format:` specifies the format of the LIS output. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value  | Description
+
+| binary | Write output in binary format
+| grib1  | Write output in Grib format (not supported yet)
+| netcdf | Write output in NETCDF format
+|===
+
+`LIS output interval:` specifies the frequency at which the LIS output was written. The time interval is specified with a number followed by a 2 character suffix that indicates the units. For example, an output interval of 1 hour can be specified as "`1hr`", "`60mn`", or "`3600ss`".  Acceptable values for the 2 character suffix are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| ss    | second
+| mn    | minute
+| hr    | hour
+| da    | day
+| mo    | month
+| yr    | year
+|===
+
+`LIS output attributes file:` specifies the model output attribute file used for generating the LIS output
+
+`LIS output maximum number of surface type tiles per grid:` defines the maximum surface type tiles per grid (this can be as many as the total number of vegetation/landcover types) used in the LIS simulation.
+
+`lIS output minimum cutoff percentage (surface type tiles):` defines the smallest percentage (among the surface type distributions within a grid cell) for which to create a tile, used in the LIS simulation. The percentage value is expressed as a fraction.
+
+`LIS output maximum number of soil texture tiles per grid:` defines the maximum soil texture type tiles per grid (this can be as many as the total number of soil texture types) used in the LIS simulation.
+
+`LIS output minimum cutoff percentage (soil texture tiles):` defines the smallest percentage (among the soil texture distributions within a grid cell) for which to create a tile, used in the LIS simulation. The percentage value is expressed as a fraction.
+
+`LIS output maximum number of soil fraction tiles per grid:` defines the maximum soil fraction tiles per grid used in the LIS simulation.
+
+`LIS output minimum cutoff percentage (soil fraction tiles):` defines the smallest percentage (among the soil fraction distributions within a grid cell) for which to create a tile, used in the LIS simulation. The percentage value is expressed as a fraction.
+
+`LIS output maximum number of elevation bands per grid:` defines the maximum elevation bands per grid used in the LIS simulation.
+
+`LIS output minimum cutoff percentage (elevation bands):` defines the smallest percentage (among the elevation distributions within a grid cell) for which to create a tile, used in the LIS simulation. The percentage value is expressed as a fraction.
+
+`LIS output maximum number of slope bands per grid:` defines the maximum slope bands per grid used in the LIS simulation.
+
+`LIS output minimum cutoff percentage (slope bands):` defines the smallest percentage (among the slope distributions within a grid cell) for which to create a tile, used in the LIS simulation. The percentage value is expressed as a fraction.
+
+`LIS output maximum number of aspect bands per grid:` defines the maximum aspect bands per grid used in the LIS simulation.
+
+`LIS output minimum cutoff percentage (aspect bands):` defines the smallest percentage (among the aspect distributions within a grid cell) for which to create a tile, used in the LIS simulation. The percentage value is expressed as a fraction.
+
+`LIS output nest index:` specifies the nest index of the domain.
+
+`LIS output elevation data source:` specifies the name of the topographical elevation data source used in the LIS run (This information is used to replicate the domain creation that was done in the LIS run).
+
+`LIS output slope data source:` specifies the name of the topographical slope data source used in the LIS run (This information is used to replicate the domain creation that was done in the LIS run).
+
+`LIS output aspect data source:` specifies the name of the topographical aspect data source used in the LIS run (This information is used to replicate the domain creation that was done in the LIS run).
+
+`LIS output soil texture data source:` specifies the name of the soil texture data source used in the LIS run (This information is used to replicate the domain creation that was done in the LIS run).
+
+`LIS output soil fraction data source:` specifies the name of the soil fraction data source used in the LIS run (This information is used to replicate the domain creation that was done in the LIS run).
+
+`LIS output number of soil moisture layers:` specifies the number of soil moisture layers used in the LIS output.
+
+`LIS output number of soil temperature layers:` specifies the number of soil temperature layers used in the LIS output.
+
+`LIS output soil moisture layer thickness:` specifies the thicknesses of soil moisture layers in the LIS output.
+
+`LIS output soil temperature layer thickness:` specifies the thicknesses of soil temperature layers in the LIS output.
+
+.Example _lvt.config_ entry
+....
+LIS output analysis data class:                      "LSM"
+LIS output number of surface model types:           1
+LIS output surface model types:                    "LSM"
+LIS output model name:                             "Noah.3.3"
+LIS output domain and parameter file:              "lis_input.d01.nc"
+LIS output directory:                            ./CLSM/OUTPUT
+LIS output naming style:            "3 level hierarchy"
+LIS output methodology:            "2d gridspace"
+LIS output format:                  "netcdf"
+LIS output interval:                "1da"
+LIS output attributes file:    ../Data/Noah33_CONUS/NOAH33_OUTPUT_LIST.TBL
+LIS output maximum number of surface type tiles per grid:     1
+LIS output minimum cutoff percentage (surface type tiles):    0.10
+LIS output maximum number of soil texture tiles per grid:     1
+LIS output minimum cutoff percentage (soil texture tiles):    0.10
+LIS output maximum number of soil fraction tiles per grid:    1
+LIS output minimum cutoff percentage (soil fraction tiles):   0.10
+LIS output maximum number of elevation bands per grid:        1
+LIS output minimum cutoff percentage (elevation bands):       0.10
+LIS output maximum number of slope bands per grid:            1
+LIS output minimum cutoff percentage (slope bands):           0.10
+LIS output maximum number of aspect bands per grid:           1
+LIS output minimum cutoff percentage (aspect bands):          0.10
+LIS output number of ensembles per tile:  1
+LIS output nest index:     1
+LIS output elevation data source: none
+LIS output slope data source:     none
+LIS output aspect data source:     none
+LIS output soil texture data source: none
+LIS output soil fraction data source: none
+LIS output number of soil moisture layers:  4
+LIS output number of soil temperature layers:  4
+LIS output soil moisture layer thickness: 0.1 0.3 0.6 1.0
+LIS output soil temperature layer thickness:  0.1 0.3 0.6 1.0
+....
+
+==== AGRMET data
+
+`AGRMET data directory:` specifies the location of the AGRMET data.
+
+`AGRMET data security class name:` specifies the security level classification of the data (U for unclassified)
+
+`AGRMET data distribution class name:` specifies the distribution classification of AGRMET data
+
+`AGRMET data category name:` specifies category name for AGRMET data.
+
+`AGRMET data area of data:` specifies geographical extent of AGRMET data
+
+.Example _lvt.config_ entry
+....
+AGRMET data directory:                  ./AGRMET_data
+AGRMET data security class name:      U
+AGRMET data distribution class name:  C
+AGRMET data category name:            ANLYS
+AGRMET data area of data:             GLOBAL
+....
+
+==== ALEXI data
+
+`ALEXI data directory:` specifies the location of the ALEXI ET data.
+
+`ALEXI data resolution (in km):` specifies the resolution of the ALEXI ET data in km. Acceptable values are 4 or 10.
+
+.Example _lvt.config_ entry
+....
+ALEXI data directory:                   ./ALEXI
+ALEXI data resolution (in km):  4
+....
+
+==== Ameriflux station observations
+
+`Ameriflux observation directory:` specifies the location of the Ameriflux datasets.Under this directory, the Ameriflux data is expected to be organized by the station names and then under each station name directory, the Level3 Ameriflux files are expected to be staged.
+
+`Ameriflux data level:` specifies the level of Ameriflux data (Note that only level 3 data is currently supported)
+
+`Ameriflux station list file:` specifies the file that lists the location of the Ameriflux stations. The format of the station list is as follows:
+
+[subs=attributes]
+....
+ #nstns
+ 76
+ #stnname; location name; lat; lon; SWC1 depth; SWC2 depth; TS1 depth; TS2 depth
+ ARM_SGP_Burn; USARb; 35.5497; -98.0402; 10; 30; 5; 15
+ ARM_SGP_Control; USARc; 35.5465; -98.0401; 10; 30; 5; 15
+ ARM_SGP_Main; USARM; 36.6058; -97.4888; 5; 25; 5; 15
+ Atqasuk; USAtq; 70.4696; -157.4089; -1; -1; 0; 5
+ Audubon_Grasslands; USAud; 31.5907; -110.5092; 10; 20; 2; 4
+ Austin_Cary; USSP1; 29.7381; -82.2188; -1; -1; 0; 5
+ Barrow; USBrw; 71.3225; -156.6259; -1; -1; 0; 5
+ Bartlett_Experimental_Forest; USBar; 44.0645; -71.2881; 10; -1; 5; -1
+ Blodgett_Forest; USBlo; 38.8953; -120.6328; 10; 20; 5; 10
+ Bondville; USBo1; 40.0062; -88.2904; 5; 20; 2; 4
+ {vertellipsis}
+....
+
+.Example _lvt.config_ entry
+....
+Ameriflux observation directory:        ./AmeriFlux
+Ameriflux data level:                    Level3
+Ameriflux station list file:            ./AmeriFlux/Ameriflux_stns.txt
+....
+
+==== ANSA snow depth data
+
+`ANSA snow depth observation directory:` specifies the location of the ANSA snow depth observation data (Note that this plugin handles the raw observations that go into the generation of the AFWA ANSA snow depth product)
+
+.Example _lvt.config_ entry
+....
+ANSA snow depth observation directory:  ./SNODEP
+ANSA snow depth lower left lat:      -89.875
+ANSA snow depth lower left lon:     -179.875
+ANSA snow depth upper right lat:      89.875
+ANSA snow depth upper right on:      179.875
+ANSA snow depth resolution (dx):       0.25
+ANSA snow depth resolution (dy):       0.25
+....
+
+==== ANSA SWE data
+
+`ANSA SWE observation directory:` specifies the location of the ANSA snow water equivalent observation data (Note that this plugin handles the raw observations that go into the generation of the AFWA ANSA snow swe product)
+
+.Example _lvt.config_ entry
+....
+ANSA SWE observation directory:  ./ANSA_SWE
+ANSA SWE lower left lat:      -89.875
+ANSA SWE lower left lon:     -179.875
+ANSA SWE upper right lat:      89.875
+ANSA SWE upper right on:      179.875
+ANSA SWE resolution (dx):       0.25
+ANSA SWE resolution (dy):       0.25
+....
+
+==== ARM station observations
+
+`ARM observation directory:` specifies the location of the ARM datasets
+
+`ARM site identifier name:` specifies the text identifier (e.g. sgp, twp, nsa, etc.)
+
+`ARM station list file:` specifies the file that lists the location of the ARM stations. The format of the station list is as follows:
+
+`ARM use BAEBBR data:` specifies if to use the BAEBBR data or not
+
+`ARM use EBBR data:` specifies if to use the EBBR data or not
+
+`ARM use ECOR flux data:` specifies if to use the ECOR data or not
+
+`ARM use SWATS data:` specifies if to use the SWATS data or not
+
+`ARM use SMOS data:` specifies if to use the SMOS data or not
+
+[subs=attributes]
+....
+ #nstns
+ 22
+ #stnname; lat; lon
+ E1; 38.202; -99.316
+ E2; 38.306; -97.301
+ E3; 38.201; -95.597
+ E4; 37.953; -98.329
+ E5; 38.114; -97.513
+ E6; 37.842; -97.020
+ E7; 37.383; -96.180
+ E8; 37.333; -99.309
+ E9; 37.133; -97.266
+ {vertellipsis}
+....
+
+.Example _lvt.config_ entry
+....
+ARM observation directory:              ./ARM_SGP
+ARM site identifier name:               sgp
+ARM station list file:                  ./ARM_SGP/sgp_stns.txt
+ARM use BAEBBR data:                    1
+ARM use EBBR data:                      1
+ARM use ECOR flux data:                 1
+ARM use SWATS data:                     1
+ARM use SMOS data:                      1
+....
+
+==== USDA ARS soil moisture observations
+
+`ARS soil moisture observation directory:` specifies the location of the ARS soil moisture observation data
+
+`ARS soil moisture station list file:` specifies the file that lists the location of the ARS stations. The format of the file is as follows: ARS station name, station lat, station lon
+
+....
+ #nstns
+ 4
+ #stns
+ wg 31.73 -110.05
+ lr 31.50 -83.550
+ lw 34.95 -97.983
+ rc 43.07 -116.75
+....
+
+.Example _lvt.config_ entry
+....
+ARS soil moisture observation directory: ./ARS_Watersheds
+ARS soil moisture station list file:     ./ARS_Watersheds/stnlist.dat
+....
+
+==== SNODAS snow analysis data
+
+`SNODAS observation directory:` specifies the location of the SNODAS data
+
+.Example _lvt.config_ entry
+....
+SNODAS observation directory:           ./SNODAS
+....
+
+==== CPC precipitation data
+
+`CPC PCP observation directory:` specifies the location of the CPC unified precipitation data
+
+`CPC PCP domain type (CONUS or GLOBAL):` specifies the version of the CPC unified precipitation data
+
+`CPC PCP use real time data:` specifies whether to use the real time version of the CPC unified precipitation data
+
+.Example _lvt.config_ entry
+....
+CPC PCP observation directory:            ../CPC_CONUS
+CPC PCP domain type (CONUS or GLOBAL):    CONUS
+CPC PCP use real time data:               0
+....
+
+==== GPM IMERG precipitation data
+
+`IMERG data directory:` specifies the location of the GPM IMERG precipitation product
+
+`IMERG version:` specifies the version of the GPM IMERG precipitation product. The valid options are: early, late, or final
+
+.Example _lvt.config_ entry
+....
+IMERG data directory:            ../IMERG
+IMERG version:                   final
+....
+
+==== ESA CCI soil moisture data
+
+`ESA CCI soil moisture data directory:` specifies the location of the ESA CCI soil moisture data
+
+`ESA CCI soil moisture data version:` specifies the version of the ESA CCI data (1 or 2)
+
+.Example _lvt.config_ entry
+....
+ESA CCI soil moisture data directory: ../ECV_sm_v2.0/
+ESA CCI soil moisture data version:    2
+....
+
+==== Gridded FLUXNET MTE data
+
+`FLUXNET data directory:` specifies the location of the gridded FLUXNET MTE data
+
+.Example _lvt.config_ entry
+....
+FLUXNETmte data directory:           ./FLUXNET
+....
+
+==== Global Change Observation Mission - Water (GCOMW)
+
+`GCOMW AMSR2 L3 soil moisture observation directory:` specifies the location of the GCOMW AMSR2 L3 soil moisture observations.
+
+.Example _lvt.config_ entry
+....
+GCOMW AMSR2 L3 soil moisture observation directory:
+....
+
+==== Global Historic Climatology Network (GHCN) data
+
+`GHCN observation directory:` specifies the location of the GHCN data
+
+`GHCN station file:` specifies the file that lists the GHCN stations in the following format (station id, latitude, longitude, elevation)
+
+[subs=attributes]
+....
+ USC00020170   33.63920      -109.3278       2792.000
+ USC00020678   35.23000      -111.8214       2179.900
+ USC00020750   36.67780      -110.5411       2220.800
+ USC00021001   36.21470      -112.0620       2438.400
+ USC00023009   35.16110      -111.7311       2171.700
+ USC00023828   34.74330      -111.4139       2279.900
+ USC00025412   34.11420      -109.8589       2237.200
+ {vertellipsis}
+....
+
+.Example _lvt.config_ entry
+....
+GHCN observation directory:             ./GHCN
+GHCN station file:                      ./GHCN/ghcnd-qc-stations.txt
+....
+
+==== GlobSnow data
+
+`GlobSnow data directory:` specifies the location of the GlobSnow data.
+
+.Example _lvt.config_ entry
+....
+GlobSnow data directory:                ./GlobSnow
+....
+
+==== ISMN soil moisture observations
+
+`ISMN observation directory:` specifies the location of the ISMN (International Soil Moisture Network) soil moisture observation data
+
+.Example _lvt.config_ entry
+....
+ISMN observation directory:             ./ISMN
+....
+
+==== LPRM AMSR-E soil moisture retrievals
+
+`LPRM AMSR-E soil moisture observation directory:` specifies the location of the LPRM AMSR-E soil moisture retrievals
+
+`LPRM AMSR-E use raw data:` specifies whether to use the LPRM AMSR-E raw data. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | Do not use
+| 1     | Use
+|===
+
+.Example _lvt.config_ entry
+....
+LPRM AMSR-E soil moisture observation directory: ./LPRM-AMSRE
+LPRM AMSR-E use raw data:                        0
+....
+
+==== MOD16A2 data
+
+`MOD16A2 data directory:` specifies the location of the MOD16A2 - MODIS based ET data.
+
+.Example _lvt.config_ entry
+....
+MOD16A2 data directory:                 ./MOD16
+....
+
+==== MODIS LST
+
+`MODIS LST data directory:` specifies the location of the MODIS LST data.
+
+.Example _lvt.config_ entry
+....
+MODIS LST data directory:
+....
+
+==== North American Soil Moisture Database (NASMD)
+
+`NASMD observation directory:` specifies the location of the NASMD observation directory.
+
+`NASMD coord file:` specifies the name of the NASMD coordinates file.
+
+`NASMD number of stations:` specifies the number of NASMD stations.
+
+.Example _lvt.config_ entry
+....
+NASMD observation directory:   ../TAMU_NASMD
+NASMD coord file:              ../TAMU_NASMD/nasmd_stations.txt
+NASMD number of stations:      1289
+....
+
+==== Naturalized monthly streamflow data
+
+`Naturalized streamflow observation directory:` specifies the location of the naturalized monthly streamflow observation data
+
+`Naturalized streamflow station list file:` lists the locations of the streamflow stations in the following format (total number of stations followed by each usgs station id, latitude, longitude,data coverage begin year, data coverage end year).
+
+[subs=attributes]
+....
+ #nstns
+ 23
+ #name, lat, lon
+ ala 31.55  -87.51 1950 1993
+ apa 29.95  -85.02 1950 1993
+ del 39.69  -75.69 1948 1987
+ ftp 48.04 -106.36 1950 2009
+ gar 47.39 -101.39 1950 2009
+ gre 40.91 -109.42 1905 2006
+ {vertellipsis}
+....
+
+.Example _lvt.config_ entry
+....
+Naturalized streamflow observation directory: ./Naturalized_StreamFlow
+Naturalized streamflow station list file:     ./Naturalized_StreamFlow/Naturalized_stnlist.txt
+....
+
+==== NLDAS2
+
+`NLDAS2 data directory:` specifies the location of the NLDAS-2 data directory.
+
+`NLDAS2 hourly or monthly:` specifies if the NLDAS-2 files to be read in are hourly or are monthly-averaged.
+
+`NLDAS2 land surface model:` specifies the NLDAS-2 forcing or land-surface model dataset. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value    | Description
+
+| FORCINGA | NLDAS-2 primary forcing
+| FORCINGB | NLDAS-2 secondary forcing
+| NOAH     | NLDAS-2 Noah LSM
+| MOS      | NLDAS-2 Mosaic LSM
+| VIC      | NLDAS-2 VIC LSM
+| SAC      | NLDAS-2 SAC LSM (hourly only)
+| SACSM    | NLDAS-2 SAC LSM soil moisture variables (hourly only)
+| NOAHST   | NLDAS-2 Noah LSM streamflow variables (hourly only)
+| MOSST    | NLDAS-2 Mosaic LSM streamflow variables (hourly only)
+| VICST    | NLDAS-2 VIC LSM streamflow variables (hourly only)
+| SACST    | NLDAS-2 SAC LSM streamflow variables (hourly only)
+|===
+
+`NLDAS2 analysis data class:` specifies the type of NLDAS-2 data that is being analyzed. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value   | Description
+
+| LSM     | LSM variables
+| Routing | Routing variables
+|===
+
+`NLDAS2 soil moisture volumetric:` specifies if LVT should convert the NLDAS-2 soil moisture values in amounts (kg m-2) to volumetric (m3 m-3), when `LVT running mode` is set to "`Observation processing`". If `NLDAS2 soil moisture volumetric` is set to "`.true.`", then the values will be converted.
+
+`NLDAS2 VIC soil depth1 file:` specifies the name of the VIC soil depth 1 binary file.
+
+`NLDAS2 VIC soil depth2 file:` specifies the name of the VIC soil depth 2 binary file.
+
+`NLDAS2 VIC soil depth3 file:` specifies the name of the VIC soil depth 3 binary file.
+
+.Example _lvt.config_ entry
+....
+NLDAS2 data directory:             ./NLDAS2.VIC
+NLDAS2 hourly or monthly:          hourly
+NLDAS2 land surface model:         VIC
+NLDAS2 analysis data class:        LSM
+NLDAS2 soil moisture volumetric:   .true.
+NLDAS2 VIC soil depth1 file:       ./vic_depth1.1gd4r
+NLDAS2 VIC soil depth2 file:       ./vic_depth2.1gd4r
+NLDAS2 VIC soil depth3 file:       ./vic_depth3.1gd4r
+....
+
+==== Soil Moisture Operational Processing System (SMOPS)
+
+`SMOPS soil moisture observation directory:` specifies the location of the SMOPS soil moisture observation directory.
+
+`SMOPS soil moisture use ASCAT data:` specifies whether to use the ASCAT data. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | do not use
+| 1     | use
+|===
+
+`SMOPS soil moisture use WindSat data:` specifies whether to use the WindSat data. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | do not use
+| 1     | use
+|===
+
+`SMOPS soil moisture use SMOS data:` specifies whether to use the SMOS data. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | do not use
+| 1     | use
+|===
+
+.Example _lvt.config_ entry
+....
+SMOPS soil moisture observation directory: ./SMOPS
+SMOPS soil moisture use ASCAT data:        1
+SMOPS soil moisture use WindSat data:      0
+SMOPS soil moisture use SMOS data:         0
+....
+
+==== SMOS L1 TB
+
+`SMOS L1 TB observation directory:` specifies the location of the SMOS L1 TB observation directory.
+
+.Example _lvt.config_ entry
+....
+SMOS L1 TB observation directory:
+....
+
+==== SMOS L2 soil moisture
+
+`SMOS L2 soil moisture observation directory:` specifies the location of the SMOS L2 soil moisture observation directory.
+
+.Example _lvt.config_ entry
+....
+SMOS L2 soil moisture observation directory:
+....
+
+==== SNODEP metobs snow depth data
+
+`SNODEP metobs directory:` specifies the location of the SNODEP observation data (Note that this plugin handles the raw observations that go into the generation of the AFWA SNODEP product)
+
+.Example _lvt.config_ entry
+....
+SNODEP metobs directory:           ./SNODEP
+....
+
+==== SNOTEL SWE observations
+
+`SNOTEL observation directory:` specifies the location of the SNOTEL SWE observation data
+
+`SNOTEL coord file:` specifies the file that lists the location of the SNOTEL stations. The format of the station list is as follows:
+
+[subs=attributes]
+....
+ AZ        BAKER BUTTE                      11R06S           308    34.450  -111.400
+ AZ        BAKER BUTTE SMT                  11R07S          1140    34.450  -111.367
+ AZ        BALDY                            09S01S           310    33.967  -109.500
+ AZ        BEAVER HEAD                      09S06S           902    33.683  -109.200
+ {vertellipsis}
+....
+
+.Example _lvt.config_ entry
+....
+SNOTEL observation directory:           ./SNOTEL
+SNOTEL coord file:                      ./SNOTEL/SNOTEL_CONUS_list.txt
+....
+
+==== SURFRAD observations (radiation, wind speed, pressure)
+
+`SURFRAD observation directory:` specifies the location of the SURFRAD radiation data
+
+.Example _lvt.config_ entry
+....
+SURFRAD observation directory:          ./SURFRAD
+....
+
+==== SCAN soil moisture observations
+
+`SCAN observation directory:` specifies the location of the SCAN soil moisture observation data (Note that the plugin handles the "`reprocessed`" SCAN data from NASA GMAO.
+
+`SCAN number of stations:` specifies the number of SCAN stations used in the analysis
+
+`SCAN coord file:` specifies the file that lists the location of the SCAN stations. The format of the metadata file is as follows: station id, station lat, station lon, elevation, SCAN state
+
+[subs=attributes]
+....
+  2058  34.43   -87     633 AL
+  2030  34.85   -91.88      250 AR
+  2091  34.28   -91.35      197 AR
+  2026  31.73   -110.05     4500    AZ
+  2013  33.88   -83.43      770 GA
+  2027  31.5    -83.55      350 GA
+  {vertellipsis}
+....
+
+.Example _lvt.config_ entry
+....
+SCAN observation directory:             ./SCAN
+SCAN number of stations:                37
+SCAN coord file:                        ./SCAN_coord.txt
+....
+
+==== USGS ground water
+
+`USGS ground water (well data) observation directory:` specifies the location of the USGS ground water (well data) observation directory.
+
+`USGS ground water (well data) coord file:` specifies the name of the USGS ground water (well data) coordinates file.
+
+.Example _lvt.config_ entry
+....
+USGS ground water (well data) observation directory: ./USGS_GW_welldata
+USGS ground water (well data) coord file:            ./USGS_GW_welldata/Well_mdata.txt
+....
+
+==== USGS daily streamflow data
+
+`USGS streamflow observation directory:` specifies the location of the USGS daily streamflow observation data
+
+`USGS streamflow station list file:` lists the locations of the streamflow stations in the following format (total number of stations followed by each usgs station id, latitude, longitude).
+
+[subs=attributes]
+....
+ #nstns
+ 961
+ #name, lat, lon
+ 01010000   46.70060      -69.71560
+ 01010500   47.11310      -69.08810
+ 01011000   47.06970      -69.07940
+ 01013500   47.23750      -68.58280
+ 01022500   44.60810      -67.93530
+ 01030500   45.50110      -68.30580
+ 01031500   45.17500      -69.31470
+ 01038000   44.22280      -69.59390
+ 01047000   44.86920      -69.95500
+ 01052500   44.87750      -71.05750
+ 01054200   44.39060      -70.97970
+ {vertellipsis}
+....
+
+.Example _lvt.config_ entry
+....
+USGS streamflow observation directory:  ./USGS_StreamFlow
+USGS streamflow station list file:      ./USGS_StreamFlow/USGS_stnlist_nldas.txt
+....
+
+==== University of Washington ET data
+
+`UW ET data directory:` specifies the location of the UWET ET data.
+
+.Example _lvt.config_ entry
+....
+UW ET data directory:                   ./UW_ET_MODIS-SRB_Monthly
+....
+
+==== GIMMS AVHRR NDVI data
+
+`GIMMS AVHRR NDVI data directory:` specifies the location of the GIMMS NDVI data.
+
+.Example _lvt.config_ entry
+....
+GIMMS AVHRR NDVI data directory:                   ./GIMMS-3g/
+....
+
+==== GIMMS MODIS NDVI data
+
+`GIMMS MODIS NDVI data directory:` specifies the location of the GIMMS MODIS NDVI data.
+
+.Example _lvt.config_ entry
+....
+GIMMS MODIS NDVI data directory:                   ./GIMMS_MODIS_NDVI
+....
+
+==== GLDAS version 2 data
+
+`GLDAS2 data directory:` specifies the location of the GLDAS2 data.
+
+`GLDAS2 data model name:` specifies the name of the land surface model used in the GLDAS2 data.
+
+.Example _lvt.config_ entry
+....
+GLDAS2 data directory:                   ./GLDAS2/
+GLDAS2 data model name:                  NOAH
+....
+
+==== MERRA version 2 data
+
+`MERRA2 data directory:` specifies the location of the MERRA2 data.
+
+.Example _lvt.config_ entry
+....
+MERRA2 data directory:                   ./MERRA2/
+....
+
+==== ERA Interim Land data
+
+`ERA interim land data directory:` specifies the location of the ERA Interim Land data.
+
+.Example _lvt.config_ entry
+....
+ERA interim land data directory:                   ./ERA_Interim_Land/
+....
+
+==== SSEB operational data
+
+`SSEBop data directory:` specifies the location of the SSEB data.
+
+`SSEBop process anomaly data:` specifies whether to process the ET anomaly data or the raw ET data.
+
+.Example _lvt.config_ entry
+....
+SSEBop data directory:                   ./SSEB/ETA/
+SSEBop process anomaly data:             1
+....
+
+==== GRDC data
+
+`GRDC data directory:` specifies the location of the GRDC data.
+
+`GRDC station list file:` specifies the file that contains the listing of the GRDC stations
+
+`GRDC frequency of data:` specifies the frequency of the GRDC data (monthly/daily)
+
+`GRDC file version:` specifies the version of the GRDC data (1 or 2)
+
+.Example _lvt.config_ entry
+....
+GRDC data directory:    ../GRDC_data
+GRDC station list file: ../GRDC_data/GRDC_stations.txt
+GRDC frequency of data:  monthly
+GRDC file version:       1
+....
+
+==== LIS DAOBS output as the observation
+
+`LIS DAOBS output directory:` specifies the LIS DAOBS output directory
+
+.Example _lvt.config_ entry
+....
+LIS DAOBS output directory:             ./DAOBS
+....
+
+`LIS DAOBS use scaled obs:` specifies whether to use scaled obs.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | Do not use scaled obs
+| 1     | Use scaled obs
+|===
+
+.Example _lvt.config_ entry
+....
+LIS DAOBS use scaled obs: 0
+....
+
+==== ISCCP land surface temperature observations
+
+`ISCCP Tskin data directory:` specifies the location of the ISCCP land surface temperature data
+
+.Example _lvt.config_ entry
+....
+ISCCP Tskin data directory:             ./ISCCP
+....
+
+==== LSWG Tb observations
+
+`LSWG Tb observation filename:` specifies the name of the LSWG filename containing Brightness Temperature (Tb) observations
+
+`LSWG Tb satellite name:` specifies the name of satellite — same as what's used in CRTM
+
+`LSWG Tb data format:` 0 for AMSR-E, 1-for AMSU
+
+`LSWG Tb metadata file:` specifies the file that lists the metadata for LSWG Tb observations. The format of the metadata file is as follows:
+
+....
+ #nstns, undef, starting time, ending time, timestep (mins)
+ 1 -1 2006 07 01 10 00 2007 06 30 17 00 3600
+ #LIS channel  data index in  file
+ 1   1
+ 2   2
+ 3   3
+ 4   4
+ 5   5
+ 6   6
+ 7   7
+ 8   8
+ 9   9
+ 10  10
+ 11  11
+ 12  12
+ 13  13
+ 14  14
+ 15  15
+....
+
+`LSWG Tb include cloud masking:` specifies if data is to be ignored in the presence of clouds (0-do not ignore, 1-ignore)
+
+`LSWG Tb cloud mask file:` specifies the name of the cloud mask file
+
+`LSWG Tb cloud mask column:` ??
+
+`LSWG Tb cloud mask threshold(%):` specifies the threshold below which clouds can be ignored (used only if cloud masking is enabled).
+
+.Example _lvt.config_ entry
+....
+LSWG Tb observation filename:           ./_LSWG/C3VP.txt
+LSWG Tb satellite name:                 "N18_"
+LSWG Tb data format:                    1
+LSWG Tb metadata file:                  ./C3VP_mdata
+LSWG Tb include cloud masking:          1
+LSWG Tb cloud mask file:                ./cloud_mask.txt
+LSWG Tb cloud mask column:              ??
+LSWG Tb cloud mask threshold(%):        75
+....
+
+==== FMI SWE observations
+
+`FMISWE observation directory:` specifies the location of the FMI snow course data
+
+.Example _lvt.config_ entry
+....
+FMISWE observation directory:           ./FMI_SWE
+....
+
+==== CMC daily snow depth observations
+
+`CMC snow depth observation directory:` specifies the location of the CMC snow depth observation data
+
+.Example _lvt.config_ entry
+....
+CMC snow depth observation directory:   ./CMC_data
+....
+
+==== NASA AMSR-E soil moisture retrievals
+
+`NASA AMSR-E soil moisture observation directory:` specifies the location of the standard (NASA) AMSR-E soil moisture retrievals
+
+.Example _lvt.config_ entry
+....
+NASA AMSR-E soil moisture observation directory: ./NASA_AMSRE
+....
+
+==== AMMA station observations
+
+`AMMA observation directory:` specifies the location of the AMMA in-situ observations.
+
+`AMMA static txt file list:` specifies the file with the station file names in text format (.txt)
+
+A sample static txt file list is shown below:
+
+....
+ 12
+ 201006140332132535.csv
+ 201006140337342536.csv
+ 201006140347082537.csv
+ 201006140348592538.csv
+ 201006140351382539.csv
+ 201006140358582540.csv
+ 201006140400532541.csv
+ 201006140402202542.csv
+ 201006140640302543.csv
+ 201006140641442544.csv
+ 201006140642422545.csv
+ 201006140643372546.csv
+....
+
+`AMMA static netcdf file list:` specifies the file with the station file names in netcdf format
+
+A sample static txt file list is shown below:
+
+....
+ 10
+ ceh-aws_agoufou_20050414.nc
+ ceh-aws_bamba_20050426.nc
+ ceh-aws_banizoumbou_20051115.nc
+ ceh-aws_belifoungou_20051111.nc
+ ceh-aws_bira_20051113.nc
+ ceh-aws_hedgerit_20050415.nc
+ ceh-aws_kelema_20050416.nc
+ ceh-aws_nalohou_20051111.nc
+ ceh-aws_pobe_20050220.nc
+ ceh-aws_wankama_20051117.nc
+....
+
+`AMMA soil moisture layer weights:` normalized weights to be applied for root zone computations of soil moisture
+
+`AMMA soil temperature layer weights:` normalized weights to be applied for root zone computations of soil temperature
+
+.Example _lvt.config_ entry
+....
+AMMA observation directory:             ./AMMA
+AMMA static txt file list:              amma_static_txtfiles.txt
+AMMA static netcdf file list:           amma_static_ncfiles.txt
+AMMA soil moisture layer weights:       0.1875 0.1875 0.625 0.0 0.0
+AMMA soil temperature layer weights:    0.1875 0.1875 0.625 0.0 0.0
+....
+
+==== SMOSREX in-situ soil moisture observations
+
+`SMOSREX observation filename:` specifies the name of the SMOSREX observation filename. Currently this plugin only handles a single observation location.
+
+.Example _lvt.config_ entry
+....
+SMOSREX observation filename:           ./SMOSREX/Toulouse_SMOSREX.dat
+....
+
+==== MOD10A1 snow cover data
+
+`MOD10A1 observation directory:` specifies the location of the 1km resolution MOD10A1 fractional snow cover data
+
+.Example _lvt.config_ entry
+....
+MOD10A1 observation directory:          ./MOD10A1
+....
+
+==== MOD10A1V6 snow cover data
+
+`MOD10A1V6 observation directory:` specifies the location of the 1km resolution MOD10A1V6 fractional snow cover data
+
+.Example _lvt.config_ entry
+....
+MOD10A1V6 observation directory:          ./MOD10A1V6
+....
+
+==== GRACE (processed from LDT) data
+
+`GRACE data directory:` specifies the location of the GRACE data (note that this plugin handles the "`processed`" GRACE data, where the GRACE TWS anomalies have been added to the LIS model TWS).
+
+`GRACE configuration:` specifies the GRACE configuration. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value     | Description
+
+| default   | GRACE
+| follow-on | GRACE follow-on
+| GRACE-2   | GRACE 2
+|===
+
+.Example _lvt.config_ entry
+....
+GRACE data directory:  ./GRACE
+GRACE configuration:   default
+....
+
+==== CEOP
+
+`CEOP data directory:` specifies the location of the CEOP data.
+
+`CEOP station list file:` specifies the location of the CEOP station list file.
+
+`CEOP read surface meteorology data:` specifies whether to read the CEOP surface meteorology data. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | do not read
+| 1     | read
+|===
+
+`CEOP read flux data:` specifies whether to read the CEOP flux data.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | do not read
+| 1     | read
+|===
+
+`CEOP read soil moisture and temperature data:` specifies whether to read the CEOP soil moisture and temperature data. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | do not read
+| 1     | read
+|===
+
+.Example _lvt.config_ entry
+....
+CEOP data directory:                          ./CEOP
+CEOP station list file:
+CEOP read surface meteorology data:           1
+CEOP read flux data:                          1
+CEOP read soil moisture and temperature data: 1
+....
+
+==== COOP
+
+`COOP data directory:` specifies the location of the COOP data.
+
+`COOP coord file:` specifies the name of the COOP coordinates file.
+
+`COOP metadata file:` specifies the name of the COOP metadate file.
+
+.Example _lvt.config_ entry
+....
+COOP data directory:
+COOP coord file:
+COOP metadata file:
+....
+
+==== Great Lakes Environmental Research Lab (GLERL)
+
+`GLERL hydro data directory:` specifies the location of the GLERL hydro data.
+
+`GLERL hydro lake locations file:` specifies the name of the GLERL hydro lake locations file.
+
+.Example _lvt.config_ entry
+....
+GLERL hydro data directory:
+GLERL hydro lake locations file:
+....
+
+==== GSOD
+
+`GSOD observation directory:` specifies the location of the GSOD observation data.
+
+`GSOD coord file:` specifies the name of the GSOD coordinates file.
+
+`GSOD metadata file:` specifies the name of the GSOD metadate file.
+
+.Example _lvt.config_ entry
+....
+GSOD observation directory:
+GSOD coord file:
+GSOD metadata file:
+....
+
+==== Plate Boundary Observatory H2O (PBOH2O)
+
+`PBOH2O observation directory:` specifies the location of the PBOH2O observation directory.
+
+`PBOH2O station list file:` specifies the name of the PBOH2O station list file.
+
+.Example _lvt.config_ entry
+....
+PBOH2O observation directory:
+PBOH2O station list file:
+....
+
+==== WG PBMR
+
+`WG PBMR observation directory:` specifies the location of the WG PBMR observation directory.
+
+`WG PBMR site index:` specifies the location of the WG PBMR site index.
+
+.Example _lvt.config_ entry
+....
+WG PBMR observation directory:
+WG PBMR site index:
+....
+
+==== GLEAM
+
+`GLEAM data directory:` specifies the location of the GLEAM data directory.
+
+`GLEAM data version:` specifies the version of the GLEAM data Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 3.2a  | version 3.2a
+| 3.2b  | version 3.2b
+| 3.1a  | version 3.1a
+| 3.1b  | version 3.1b
+| 3.1c  | version 3.1c
+| 3.0a  | version 3.0a
+| 3.0b  | version 3.0b
+| 3.0c  | version 3.0c
+|===
+
+.Example _lvt.config_ entry
+....
+GLEAM data directory:          ./GLEAM/
+GLEAM data version:            "3.2a"
+....
+
+==== FLUXNET2015
+
+`FLUXNET2015 observation directory:` specifies the location of the FLUXNET2015 data
+
+`FLUXNET2015 station list file:` specifies the list of stations in the FLUXNET2015 data.
+
+.Example _lvt.config_ entry
+....
+FLUXNET2015 observation directory: ./FLUXNET2015_STN/
+FLUXNET2015 station list file:     ./FLUXNET2015_STN/STN_list.dat
+....
+
+==== USCRN soil moisture
+
+`USCRN soil moisture observation directory:` specifies the location of the USCRN soil moisture data
+
+`USCRN soil moisture station file:` specifies the list of stations in the USCRN data.
+
+.Example _lvt.config_ entry
+....
+USCRN soil moisture observation directory:   ./USCRN
+USCRN soil moisture station file:            ./USCRN/USCRN_stations.txt
+....
+
+==== SMAP soil moisture
+
+`SMAP soil moisture observation directory:` specifies the location of the SMAP soil moisture observation directory.
+
+`SMAP soil moisture data designation:` specifies the designation of the SMAP data.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value     | Description
+
+| SPL3SMP   | SMAP L3 Radiometer Global Daily 36 km EASE-Grid Soil Moisture
+| SPL3SMP_E | SMAP Enhanced L3 Radiometer Global Daily 9 km EASE-Grid Soil Moisture
+|===
+
+.Example _lvt.config_ entry
+....
+SMAP soil moisture observation directory: ../SPL3SMP
+SMAP soil moisture data designation:      SPL3SMP
+....
+
+==== soil moisture
+
+`OzFlux observation directory:` specifies the location of the OzFlux data directory.
+
+`OzFlux station list file:` specifies the location of the OzFlux stations. 
+
+A sample file is shown below: 
+
+....
+
+#Nstns
+9
+#names
+CapeTribulation; -16.103219; 145.446922
+CumberlandPlainMelaleuca; -33.613996; 150.726418
+Longreach ; -23.5232657644973; 144.310415719645
+Riggs; -36.656; 145.576
+Robson; -17.11746943; 145.6301375
+Tumbarumba; -35.6566; 148.1516
+Whroo; -36.6732; 145.0294
+WombatStateForest; -37.4222; 144.0944
+Yanco; -34.9878; 146.2908
+
+....
+
+.Example _lvt.config_ entry
+....
+OzFlux observation directory: ../OzFlux
+OzFlux station list file:     ../OzFlux/stnlist.dat
+....
+
+==== JASMIN soil moisture
+
+`JASMIN soil moisture data directory:` specifies the location of the JASMIN soil moisture data directory.
+
+.Example _lvt.config_ entry
+....
+JASMIN soil moisture data directory: ../JASMIN
+....
+
+==== WG SWRC
+
+`WG SWRC observation directory:` specifies the location of the WG SWRC observation directory.
+
+`WG SWRC station list file:` specifies the name of the WG SWRC station list file.
+
+.Example _lvt.config_ entry
+....
+WG SWRC observation directory:
+WG SWRC station list file:
+....
+
+[[ssec-optue]]
+=== OptUE processing options
+
+This section of the config file specifies the details of the optimization and uncertainty estimation processing options, and the specicialized options to analyze outputs from the Optimization/Uncertainy Estimation algorithms.
+
+`LIS OptUE restart file:` the name of the file that specifies the parameter distributions LVT expects this information to be provided through the uncertainty estimation algorithm restart file. Note that this option needs to be specified only if ensemble cross correlation metric is enabled.
+
+.Example _lvt.config_ entry
+....
+LIS OptUE restart file:                 MCSIM.001.MCSIMrst
+....
+
+`LIS OptUE number of model parameters:` specifies the number of model parameters in the uncertainty estimation algorithm restart file. Note that this option needs to be specified only if ensemble cross correlation metric is enabled.
+
+.Example _lvt.config_ entry
+....
+LIS OptUE number of model parameters:   4
+....
+
+`OptUE algorithm used:` specifies the index of the optimization/uncertainty estimation algorithm used Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 1     | Levenberg- Marquardt
+| 2     | Genetic Algorithm
+| 3     | SCE-UA
+| 4     | MCSIM
+| 5     | MCMC
+| 6     | DEMC
+|===
+
+.Example _lvt.config_ entry
+....
+OptUE algorithm used:                   2
+....
+
+`OptUE decision space attributes file:` lists the decision space attributes file used in the LIS optimization/uncertainty estimation integration.
+
+.Example _lvt.config_ entry
+....
+OptUE decision space attributes file:   ./GArun/noah_sm_decspace.txt
+....
+
+`OptUE number of iterations:` Number of generations used in the optimization/uncertainty estimation algorithm.
+
+.Example _lvt.config_ entry
+....
+OptUE number of iterations:             20
+....
+
+`OptUE compute time series:` specifies if a time series of OptUE run output data is to be generated (0-no, 1-yes)
+
+.Example _lvt.config_ entry
+....
+OptUE compute time series:              1
+....
+
+`OptUE time series location file:` specifies the file which lists the locations in the domain where the time series data are to be extracted.  The format of the time series location file is as follows:
+
+....
+    #Number of locations
+    1
+    #Location style (1-lat/lon, 2-col/row, 3-tile)
+    2
+    #mask filename
+    none
+    #site name
+    Site1
+    244  236
+....
+
+.Example _lvt.config_ entry
+....
+OptUE time series location file:        ./STN_LOCATIONS.DAT
+....
+
+`OptUE total number of parameters:` specifies the total number of parameters.
+
+.Example _lvt.config_ entry
+....
+OptUE total number of parameters:              2
+....
+
+`OptUE total number of selected parameters:` specifies the total number of selected parameters.
+
+.Example _lvt.config_ entry
+....
+OptUE total number of selected parameters:              1
+....
+
+[[ssec-dastatrunmode]]
+=== DA diagnostics analysis
+
+This section of the config file specifies the specialized options to analyze the data assimilation diagnostics. These options are employed for runmode="`DA statistics processing`"
+
+`Compute innovation distribution:` Specifies if innovation distribution analysis (computing mean and variance) is to be computed.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | Do not compute
+| 1     | Compute
+|===
+
+`Compute analysis gain:` specifies if analysis gain is to be computed.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | Do not compute
+| 1     | Compute
+|===
+
+`Number of state variables in the DA update` specifies the number of state variables in the DA update.
+
+.Example _lvt.config_ entry
+....
+Compute Innovation Distribution:            1
+Compute analysis gain:                      0
+Number of state variables in the DA update: 4
+....
+
+[[ssec-daobsrunmode]]
+=== DA observation analysis
+
+This runmode is used to conduct analysis of observations used in the DA assimilation instance. LIS DA subsystem generates processed (interpolated, QC'd) estimates of input observations. This runmode enables analysis of such data.
+
+No specialized options are necessary, except specifying the "`LIS output attributes file:`" option to correspond to the DA output. For example, if the DA instance generates estimates of a single variable (say SWE) then specify the LIS output attributes file such that (only) SWE is present in the (LIS) output file. In other words, column number 2 should indicate 1 for SWE variable and 0 for every other varialble. If multiple observation types are present in the DA output, then column number 2 should be appropriately modified.
+
+[[ssec-557postrunmode]]
+=== 557 post
+
+This runmode is used to postprocess LIS data and generate netCDF or GRIB2 output files for use by 557WW. Specific capabilities include:
+
+* Calculate ensemble means and standard deviations (spreads).
+* Optionally apply a Gaussian filter to the ensemble products (recommended).
+* Postprocess over 3 or 24 hour periods.
+* Interpolate US Navy GOFS (HYCOM) sea ice and sea surface temperature data to the LIS grid.
+* Output in GRIB2 or netCDF.
+
+Due to memory constraints, only a few (typically one) LIS variable can be processed by a single invocation of LVT in this mode. However, this provides an opportunity to divide a set of LIS variables into a number of independent jobs that can be run in parallel, thus reducing the overall runtime. For GRIB2 output, the files can then be combined using the standard Unix `cat` command. For netCDF, it is necessary to use the NCO tool `ncks` to merge the postprocessed fields together into a single file.
+
+These capabilities are activated by setting LVT running mode to "`557 post`"
+
+When using this runmode:
+
+* The LVT output format must be set to either "`netcdf`" or "`grib2`".
+* The LVT output methodology should be "`2d ensemble gridspace`".
+* The first analysis data source must be "`LIS output`".
+* The process HYCOM data setting should only be turned on for a single LVT invocation — otherwise, multiple copies of the HYCOM data may be appended afterwards into a single GRIB2 or netCDF file.
+* It is recommended that the LIS output data be in "`1d tilespace`" to reduce the time required to read and map the data to LVT's internal structures.
+* It is recommended that each LVT invocation have it's own specified metrics output directory, to prevent file overwrites from different LVT invocations running in parallel.
+
+It is recommended that scripts be used to customize lvt.config files for each LVT invocation, and then run LVT in individual batch modes. Example scripts are provided in lvt/util/afwa/templates, along with customized MODEL_OUTPUT_LIST.TBL files for use by 557WW. Sample scripts to automate merging of GRIB2 or netCDF output files are given in lvt/utils/afwa.
+
+`Process HYCOM data:` Specifies if HYCOM (US Navy GOFS) data are processed in addition to LIS data.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | Do not process
+| 1     | Process
+|===
+
+.Example _lvt.config_ entry
+....
+Process HYCOM data: 1
+....
+
+`HYCOM data directory:` Specifies directory path to HYCOM (US Navy GOFS) data
+
+.Example _lvt.config_ entry
+....
+HYCOM data directory: HYCOM
+....
+
+`Apply noise reduction filter:` Specifies whether to smooth the postprocessed fields before writing to file.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| 0     | Do not smooth
+| 1     | Smooth
+|===
+
+.Example _lvt.config_ entry
+....
+Apply noise reduction filter: 1
+....
+
+`Smoothing filter type:` Specifies which smoothing filter to use, provided smoothing is activated.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value               | Description
+
+| "`box filter`"      | Box linear filter (or box blur)
+| "`gaussian filter`" | Gaussian filter (recommended)
+|===
+
+.Example _lvt.config_ entry
+....
+Smoothing filter type:        "gaussian filter"
+....
+
+[[ssec-usafsipostrunmode]]
+=== USAFSI post
+
+This runmode is used to postprocess USAFSI (snow and ice) analyses, which are originally produced in netCDF format. LVT will optionally convert the fields to GRIB2 format and output on the LDT grid (no interpolations). In addition, three options are provided for GRIB1 output: (1) interpolate to 0.25 deg lat/lon domain; (2) interpolate to Air Force Northern Hemisphere 16th mesh polar stereographic grid; and (3) interpolate to Air Force Southern Hemisphere 16th mesh polar stereographic grid. These GRIB1 products are intended as look-alike replacements for the legacy Air Force SNODEP product. These options are activated for runmode="`USAFSI post`"
+
+When run in this mode, LVT will interpret the starting year, month, etc as the valid date/time to process, and will ignore the ending date and time information. (In other words, only a single date and time will be processed.)
+
+LVT will also use the diagnostic file and undefined value entries.
+
+Other entries that are required but not actually used in this runmode include the map projection, analysis sources, output format, output GRIB settings, the output methodology, start mode, clock timestep, metrics computation and output frequencies, option to apply temporal smoothing to obs, option to apply external mask, option for stratifying by external data and/or variable, and an observation count threshold. These other entries are required by the LVT config initialization routine, which is called by the LVT driver for all runmodes.
+
+`USAFSI output GRIB2 native grid:` Specifies if USAFSI should be output in GRIB2 (no interpolation).  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value   | Description
+
+| .true.  | Output in GRIB2
+| .false. | Do not output in GRIB2
+|===
+
+.Example _lvt.config_ entry
+....
+USAFSI output GRIB2 native grid: .true.
+....
+
+`USAFSI output GRIB1 global 0.25deg lat/lon:` Specifies if USAFSI should be interpolated to 0.25 deg lat/lon grid and output in GRIB1.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value   | Description
+
+| .true.  | Interpolate and output in GRIB1
+| .false. | Do not interpolate or output
+|===
+
+.Example _lvt.config_ entry
+....
+USAFSI output GRIB1 global 0.25deg lat/lon: .true.
+....
+
+`USAFSI output GRIB1 NH 16th mesh polar stereographic:` Specifies if USAFSI should be interpolated to Northern Hemispheric 16th mesh polar stereographic grid and output in GRIB1.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value   | Description
+
+| .true.  | Interpolate and output in GRIB1
+| .false. | Do not interpolate or output
+|===
+
+.Example _lvt.config_ entry
+....
+USAFSI output GRIB1 NH 16th mesh polar stereographic: .true.
+....
+
+`USAFSI output GRIB 1 SH 16th mesh polar stereographic:` Specifies if USAFSI should be interpolated to Southern Hemispheric 16th mesh polar stereographic grid and output in GRIB1.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value   | Description
+
+| .true.  | Interpolate and output in GRIB1
+| .false. | Do not interpolate or output
+|===
+
+.Example _lvt.config_ entry
+....
+USAFSI output GRIB1 SH 16th mesh polar stereographic: .true.
+....
+
+`USAFSI input netcdf directory:` Specifies path of directory containing USAFSI netcdf files to process.
+
+.Example _lvt.config_ entry
+....
+USAFSI input netcdf directory: ./USAFSI
+....
+
+`USAFSI output grib directory:` Specifies path of directory to write GRIB2 and/or GRIB1 files.
+
+.Example _lvt.config_ entry
+....
+USAFSI output grib directory: ./grib
+....
+

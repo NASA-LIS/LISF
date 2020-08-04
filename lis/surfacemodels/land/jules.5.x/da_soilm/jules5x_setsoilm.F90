@@ -12,7 +12,13 @@
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
 ! 25Jun2006: Sujay Kumar: Updated for the ESMF design
+<<<<<<< HEAD
 ! 21 Dec 2018: Mahdi Navari; Modified for JULES 5.3
+=======
+! 23Apr2018: Mahdi Navari: Modified for JULES 5.0 
+! 25Oct2019: Yonghwan Kwon: Modified to fix a bug for glacier grid
+! 24Feb2020: Shugong Wang: Modified for JULES 5.x 
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
 !
 ! There are 3 cases 
 ! 1- If all the ensemble members met the update conditions --> apply the update
@@ -31,6 +37,10 @@ subroutine jules5x_setsoilm(n, LSM_State)
  !MN: added to use LIS_sfmodel_struc
   !use LIS_surfaceModelDataMod, only : LIS_sfmodel_struc
   use jules_soil_mod, only:  dzsoil !
+<<<<<<< HEAD
+=======
+  use jules_surface_mod,      only: l_aggregate    
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
   implicit none
 ! !ARGUMENTS: 
   integer, intent(in)    :: n
@@ -130,6 +140,15 @@ subroutine jules5x_setsoilm(n, LSM_State)
      
      ! MN: check MIN_THRESHOLD < volumetric liquid soil moisture < threshold 
      ! unit conversion -->   ..%p_s_sthu(1)  *  ..%p_s_smvcst(1)-->   [-] * [m3/m3] 
+<<<<<<< HEAD
+=======
+
+    if (jules5x_struc(n)%jules5x(t)%p_s_smvcst(1) == 0) then     !Yonghwan Kwon: set update_flag to false for glacier land 
+       update_flag(gid) = update_flag(gid).and.(.false.)
+       update_flag_tile(t) = update_flag_tile(t).and.(.false.)
+    else  
+    
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
      if(jules5x_struc(n)%jules5x(t)%p_s_sthu(1)*jules5x_struc(n)%jules5x(t)%p_s_smvcst(1)&
 	+ delta1.gt.MIN_THRESHOLD .and.&
         jules5x_struc(n)%jules5x(t)%p_s_sthu(1)*jules5x_struc(n)%jules5x(t)%p_s_smvcst(1)&
@@ -171,6 +190,10 @@ subroutine jules5x_setsoilm(n, LSM_State)
         update_flag(gid) = update_flag(gid).and.(.false.)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
      endif
+<<<<<<< HEAD
+=======
+    endif
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
    enddo
 
 !-----------------------------------------------------------------------------------------
@@ -384,7 +407,11 @@ subroutine jules5x_setsoilm(n, LSM_State)
                  do m=1,LIS_rc%nensem(n)-1
                     t = i+m-1
                     !t = (i-1)*LIS_rc%nensem(n)+m
+<<<<<<< HEAD
                     
+=======
+   
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
                     if(m.ne.LIS_rc%nensem(n)) then 
 		! NOTE: be careful with the unit. do not change the unit of delta in the loop
               ! [m3w/m3s]  + ([-] - [-])*[m3/m3] 
@@ -408,6 +435,7 @@ subroutine jules5x_setsoilm(n, LSM_State)
                     sm_threshold  = MAX_THRESHOLD-MIN_THRESHOLD
                     
                     tmpval = jules5x_struc(n)%jules5x(t)%p_s_sthu(j) * &
+<<<<<<< HEAD
 			        jules5x_struc(n)%jules5x(t)%p_s_smvcst(j) - &
                              delta(j) !* 1/dzsoil(j)*1/1000 ! [-][m3/m3]-[m3/m3] --> [m3/m3]  
                     if(tmpval.le.MIN_THRESHOLD) then 
@@ -417,6 +445,22 @@ subroutine jules5x_setsoilm(n, LSM_State)
 				*jules5x_struc(n)%jules5x(t)%p_s_smvcst(j),&
                             	 MIN_THRESHOLD)) / jules5x_struc(n)%jules5x(t)%p_s_smvcst(j)! max( [-][m3/m3] , [m3/m3] ) / [m3/m3] --> fraction
 
+=======
+		    	        jules5x_struc(n)%jules5x(t)%p_s_smvcst(j) - &
+                             delta(j) !* 1/dzsoil(j)*1/1000 ! [-][m3/m3]-[m3/m3] --> [m3/m3] 
+
+                    if(tmpval.le.MIN_THRESHOLD) then 
+
+                       if (jules5x_struc(n)%jules5x(t)%p_s_smvcst(j) == 0) then
+                          jules5x_struc(n)%jules5x(t)%p_s_sthu(j) = 0
+                       else
+                          jules5x_struc(n)%jules5x(t)%p_s_sthu(j) = &
+                               (max(jules5x_struc(n)%jules5x(t_unpert)%p_s_sthu(j)&
+                                   *jules5x_struc(n)%jules5x(t)%p_s_smvcst(j),&
+                                    MIN_THRESHOLD)) / jules5x_struc(n)%jules5x(t)%p_s_smvcst(j)! max( [-][m3/m3] , [m3/m3] ) / [m3/m3] --> fraction
+                       endif
+                      
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
                        jules5x_struc(n)%jules5x(t)%smcl_soilt(j) = & 
                             (max(jules5x_struc(n)%jules5x(t_unpert)%smcl_soilt(j)&
 			        *1/dzsoil(j)*1/1000,&
@@ -426,10 +470,21 @@ subroutine jules5x_setsoilm(n, LSM_State)
 
                     elseif(tmpval.ge.sm_threshold) then
 
+<<<<<<< HEAD
                        jules5x_struc(n)%jules5x(t)%p_s_sthu(j) = &
                             (min(jules5x_struc(n)%jules5x(t_unpert)%p_s_sthu(j)&
 				*jules5x_struc(n)%jules5x(t)%p_s_smvcst(j),&
                             	 sm_threshold)) / jules5x_struc(n)%jules5x(t)%p_s_smvcst(j) ! min( [-][m3/m3] , [m3/m3] ) / [m3/m3] --> fraction
+=======
+                       if (jules5x_struc(n)%jules5x(t)%p_s_smvcst(j) == 0) then
+                          jules5x_struc(n)%jules5x(t)%p_s_sthu(j) = 0
+                       else
+                          jules5x_struc(n)%jules5x(t)%p_s_sthu(j) = &
+                               (min(jules5x_struc(n)%jules5x(t_unpert)%p_s_sthu(j)&
+                                   *jules5x_struc(n)%jules5x(t)%p_s_smvcst(j),&
+                                   sm_threshold)) / jules5x_struc(n)%jules5x(t)%p_s_smvcst(j) ! min( [-][m3/m3] , [m3/m3] ) / [m3/m3] --> fraction
+                       endif
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
 
                        jules5x_struc(n)%jules5x(t)%smcl_soilt(j) = &
                             (min(jules5x_struc(n)%jules5x(t_unpert)%smcl_soilt(j)&
@@ -469,8 +524,13 @@ subroutine jules5x_setsoilm(n, LSM_State)
                     
                     if(ens_flag(m)) then 
                        tmpval = jules5x_struc(n)%jules5x(t)%p_s_sthu(j) * &
+<<<<<<< HEAD
 			           jules5x_struc(n)%jules5x(t)%p_s_smvcst(j) - &
                                 delta(j) !* 1/dzsoil(j)*1/1000 !! [-][m3/m3]-[m3/m3] --> [m3/m3]
+=======
+		       	           jules5x_struc(n)%jules5x(t)%p_s_smvcst(j) - &
+                                delta(j) !* 1/dzsoil(j)*1/1000 !! [-][m3/m3]-[m3/m3] --> [m3/m3] 
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
 
 		         MAX_THRESHOLD = jules5x_struc(n)%jules5x(t)%p_s_smvcst(1)
                        if(.not.(tmpval.le.0.0 .or.&
@@ -496,6 +556,7 @@ subroutine jules5x_setsoilm(n, LSM_State)
 		      MAX_THRESHOLD = jules5x_struc(n)%jules5x(t)%p_s_smvcst(1)                   
                     if(tmpval.le.0.0 .or.&
                          tmpval.gt.(MAX_THRESHOLD)) then 
+<<<<<<< HEAD
                        bounds_violation = .true. 
                     else
                        bounds_violation = .false.
@@ -504,6 +565,23 @@ subroutine jules5x_setsoilm(n, LSM_State)
               enddo
               
               if(nIter.gt.10.and.bounds_violation) then 
+=======
+                       bounds_violation = .true.
+                    else
+                       bounds_violation = .false.
+                    endif
+
+                    if (jules5x_struc(n)%jules5x(t)%p_s_smvcst(j) == 0) then
+                       bounds_violation = .false.
+                       !glacier grid -> does not conduct assimilation
+                    endif
+
+                 enddo
+              enddo
+              
+              if(nIter.gt.10.and.bounds_violation) then
+ 
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
 !--------------------------------------------------------------------------
 ! All else fails, set to the bounds
 !--------------------------------------------------------------------------
@@ -522,7 +600,12 @@ subroutine jules5x_setsoilm(n, LSM_State)
 			     1/dzsoil(j)*1/1000.gt.MAX_THRESHOLD) then 
                        
                           jules5x_struc(n)%jules5x(t)%p_s_sthu(j) = MAX_THRESHOLD / &
+<<<<<<< HEAD
 			     jules5x_struc(n)%jules5x(t)%p_s_smvcst(j) ! [m3/m3]/[m3/m3] --> [-]
+=======
+			     jules5x_struc(n)%jules5x(t)%p_s_smvcst(j) ! [m3/m3]/[m3/m3] --> [-]  
+
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
                           jules5x_struc(n)%jules5x(t)%smcl_soilt(j) = MAX_THRESHOLD / & 
 			     (1/dzsoil(j)*1/1000)   ! [m3w/m3s] / ([1/m1s][m3w/kg]) --> kg/m2s
                        endif
@@ -534,6 +617,7 @@ subroutine jules5x_setsoilm(n, LSM_State)
                      
                           jules5x_struc(n)%jules5x(t)%p_s_sthu(j) = MIN_THRESHOLD / &
 			     jules5x_struc(n)%jules5x(t)%p_s_smvcst(j) ! [m3/m3]/[m3/m3] --> [-] 
+<<<<<<< HEAD
                           jules5x_struc(n)%jules5x(t)%smcl_soilt(j) = MIN_THRESHOLD / & 
 			     (1/dzsoil(j)*1/1000)   ! [m3w/m3s] / ([1/m1s][m3w/kg]) --> kg/m2s
                        endif
@@ -541,6 +625,16 @@ subroutine jules5x_setsoilm(n, LSM_State)
                     print*, '2smc',t, jules5x_struc(n)%jules5x(t)%smcl_soilt(:)
                     print*, '2p_s_sthu ',t,jules5x_struc(n)%jules5x(t)%p_s_sthu(:)
                     print*, '2max ',t,MAX_THRESHOLD !jules5x_struc(n)%jules5x(t)%smcmax
+=======
+
+                          jules5x_struc(n)%jules5x(t)%smcl_soilt(j) = MIN_THRESHOLD / & 
+			     (1/dzsoil(j)*1/1000)   ! [m3w/m3s] / ([1/m1s][m3w/kg]) --> kg/m2s
+                       endif
+                    !print*, i, m
+                    !print*, '2smc',t, jules5x_struc(n)%jules5x(t)%smcl_soilt(:)
+                    !print*, '2p_s_sthu ',t,jules5x_struc(n)%jules5x(t)%p_s_sthu(:)
+                    !print*, '2max ',t,MAX_THRESHOLD !jules5x_struc(n)%jules5x(t)%smcmax
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
                     enddo
 !                 call LIS_endrun()
                  enddo

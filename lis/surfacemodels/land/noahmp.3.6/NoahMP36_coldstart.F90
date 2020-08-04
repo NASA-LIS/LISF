@@ -152,7 +152,13 @@ subroutine NoahMP36_coldstart(mtype)
                 NOAHMP36_struc(n)%noahmp36(t)%snowliq(1:NOAHMP36_struc(n)%nsnow) = snliq(-NOAHMP36_struc(n)%nsnow+1:0)
                 NOAHMP36_struc(n)%noahmp36(t)%zss(1:NOAHMP36_struc(n)%nsnow+NOAHMP36_struc(n)%nsoil) = zsnso(-NOAHMP36_struc(n)%nsnow+1:NOAHMP36_struc(n)%nsoil) 
                 NOAHMP36_struc(n)%noahmp36(t)%sstc(NOAHMP36_struc(n)%nsnow+isnow+1:NOAHMP36_struc(n)%nsnow) = tsno(isnow+1:0) 
-                NOAHMP36_struc(n)%noahmp36(t)%isnow = isnow
+                NOAHMP36_struc(n)%noahmp36(t)%isnow = isnow                
+
+                !ag (12Sep2019)
+                NOAHMP36_struc(n)%noahmp36(t)%rivsto = 0.0
+                NOAHMP36_struc(n)%noahmp36(t)%fldsto = 0.0
+                NOAHMP36_struc(n)%noahmp36(t)%fldfrc = 0.0
+                
                 ! end add
             enddo
         endif

@@ -115,6 +115,8 @@ module LDT_historyMod
      module procedure writeNETCDFdata_default
      module procedure writeNETCDFdata_givendomain
      module procedure writeNETCDFdata_giventype
+     module procedure writeNETCDFdata_LISHydro
+
 !
 ! !DESCRIPTION:
 ! This interface provides routines for writing data variables 
@@ -255,6 +257,26 @@ module LDT_historyMod
      module procedure readLISSingleNetcdfVar_LDTgrid
      module procedure readLISSingleNetcdfVar_LDTgrid_withunits
      module procedure readLISSingleNetcdfVar_Inputgrid
+! 
+! !DESCRIPTION:
+!  This interface provides routines for reading a variable 
+!  from a LIS netcdf file. The routines allow the specification
+!  of an input grid or assumes that the field to be read
+!  is in the LDT grid space. 
+!
+!EOP 
+  end interface
+
+!BOP 
+! 
+! !ROUTINE: LDT_writeNETCDFdataHeader
+! \label{LDT_writeNETCDFdataHeader}
+! 
+! !INTERFACE:
+  interface LDT_writeNETCDFdataHeader
+! !PRIVATE MEMBER FUNCTIONS: 
+     module procedure writeNETCDFdataHeader_LIS
+     module procedure writeNETCDFdataHeader_LISHydro
 ! 
 ! !DESCRIPTION:
 !  This interface provides routines for reading a variable 
@@ -1970,8 +1992,19 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
   
  end subroutine gather_gridded_vector_output
 
- subroutine LDT_writeNETCDFdataHeader(n,ftn,dimID, paramEntry, wtype, fdimID)
-   
+!BOP
+!
+! !ROUTINE: writeNETCDFdataHeader_LIS
+! \label{writeNETCDFdataHeader_LIS}
+! 
+! !INTERFACE: 
+ subroutine writeNETCDFdataHeader_LIS(n,ftn,dimID, paramEntry, wtype, fdimID)
+! 
+! !DESCRIPTION: 
+!  This subroutine writes the NetCDF data headers in the 
+!  standard preprocessing mode for LIS
+!EOP
+ 
    integer               :: n 
    integer               :: ftn
    integer               :: dimID(3)
@@ -2020,7 +2053,52 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
 #endif
     endif
 #endif
-  end subroutine LDT_writeNETCDFdataHeader
+  end subroutine WriteNETCDFdataHeader_LIS
+
+!BOP
+!
+! !ROUTINE: writeNETCDFdataHeader_LISHydro
+! \label{writeNETCDFdataHeader_LISHydro}
+! 
+! !INTERFACE: 
+ subroutine writeNETCDFdataHeader_LISHydro(n,ftn,dimID, paramEntry, flag)
+   
+! !DESCRIPTION: 
+!  This subroutine writes the NetCDF data headers in the 
+!  preprocessing mode for LISHydro
+!EOP
+
+   integer               :: n 
+   integer               :: ftn
+   integer               :: dimID(4)
+   integer               :: shuffle, deflate, deflate_level
+   type(LDT_paramEntry)  :: paramEntry
+   integer               :: flag
+    
+   shuffle = NETCDF_shuffle
+   deflate = NETCDF_deflate
+   deflate_level =NETCDF_deflate_level
+   
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+    if(paramEntry%selectOpt.gt.0) then 
+       if(paramEntry%vlevels.gt.1) then 
+          call LDT_verify(nf90_def_var(ftn,trim(paramEntry%short_name),&
+               nf90_float, dimids = dimID, varID=paramEntry%vid))
+       else if (dimID(3) == 3 ) then
+          call LDT_verify(nf90_def_var(ftn,trim(paramEntry%short_name),&
+               nf90_float, dimids = dimID(1:3), varID=paramEntry%vid))
+       else
+          call LDT_verify(nf90_def_var(ftn,trim(paramEntry%short_name),&
+               nf90_float, dimids = dimID(1:2), varID=paramEntry%vid))
+       endif
+
+#if (defined USE_NETCDF4) 
+       call LDT_verify(nf90_def_var_deflate(ftn,&
+            paramEntry%vid, shuffle, deflate, deflate_level))
+#endif
+    endif
+#endif
+  end subroutine writeNETCDFdataHeader_LISHydro
   
   subroutine writeNETCDFdata_default( n, ftn, paramEntry )
     
@@ -2060,7 +2138,7 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
 #endif
       enddo
       if(LDT_masterproc) then 
-!         print*, 'writing att ',trim(paramEntry%short_name), LDT_localPet
+
          count =1 
          do l=1,LDT_npes
             do r=LDT_nss_ind(n,l), LDT_nse_ind(n,l)
@@ -2167,8 +2245,8 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
 
  end subroutine writeNETCDFdata_givendomain
 
-  subroutine writeNETCDFdata_giventype( n, ftn, paramEntry, wtype )
-    
+ subroutine writeNETCDFdata_giventype( n, ftn, paramEntry, wtype )
+   
    integer              :: n 
    integer              :: ftn
    type(LDT_paramEntry) :: paramEntry    
@@ -2367,6 +2445,106 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
 #endif
 
  end subroutine writeNETCDFdata_giventype
+
+!BOP
+! !ROUTINE: writeNETCDFdata_LISHydro
+!  \label{writeNETCDFdata_LISHydro}
+! 
+! !INTERFACE: 
+ subroutine writeNETCDFdata_LISHydro( n, ftn, paramEntry,flag )
+! 
+! !DESCRIPTION: 
+!  This routine writes the data for a given parameter entry 
+!  to the NetCDF file, in the preprocessing mode for LISHydro
+!
+!EOP    
+   integer              :: n 
+   integer              :: ftn
+   type(LDT_paramEntry) :: paramEntry    
+   
+   integer           :: c,r,k,l,count,ierr
+   real, allocatable :: ltmp(:,:)
+   real, allocatable :: gtmp1(:,:),gtmp2(:,:,:)
+   integer           :: flag
+!SVK edit
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)   
+   if(paramEntry%selectOpt.gt.0) then 
+      
+      allocate(ltmp(LDT_rc%lnc(n)*LDT_rc%lnr(n),paramEntry%vlevels))
+      
+      do r=1,LDT_rc%lnr(n)
+         do c=1,LDT_rc%lnc(n)
+            ltmp(c+(r-1)*LDT_rc%lnc(n),:) = paramEntry%value(c,r,:)
+         enddo
+      enddo
+      if(LDT_masterproc) then 
+         allocate(gtmp1(LDT_rc%gnc(n)*LDT_rc%gnr(n),paramEntry%vlevels))
+         allocate(gtmp2(LDT_rc%gnc(n),LDT_rc%gnr(n),paramEntry%vlevels))
+      else
+         allocate(gtmp1(1,paramEntry%vlevels))
+         allocate(gtmp2(1,1,paramEntry%vlevels))
+      endif
+      
+      do k=1,paramEntry%vlevels
+#if (defined SPMD) 
+         call MPI_GATHERV(ltmp(:,k),LDT_deltas(n,LDT_localPet),MPI_REAL,gtmp1(:,k),&
+              LDT_deltas(n,:),LDT_offsets(n,:),MPI_REAL,0,MPI_COMM_WORLD,ierr)
+#else
+         gtmp1(:,k) = ltmp(:,k)
+#endif
+      enddo
+      if(LDT_masterproc) then 
+         count =1 
+         do l=1,LDT_npes
+            do r=LDT_nss_ind(n,l), LDT_nse_ind(n,l)
+                do c=LDT_ews_ind(n,l), LDT_ewe_ind(n,l)
+                   gtmp2(c,r,:) = gtmp1(count,:)
+                   count = count+1
+                enddo
+             enddo
+          enddo
+         if(paramEntry%vlevels.gt.1) then 
+            call LDT_verify(nf90_put_var(ftn, paramEntry%vid,gtmp2,&
+                 (/1,1,1/),(/LDT_rc%gnc(n),LDT_rc%gnr(n),&
+                 paramEntry%vlevels/)), &
+                 'error in nf90_put_var in LDT_writeNETCDFdata (writeNETCDFdata_LISHydro)')
+         else
+            call LDT_verify(nf90_put_var(ftn, paramEntry%vid,gtmp2(:,:,1),&
+                 (/1,1/),(/LDT_rc%gnc(n),LDT_rc%gnr(n)/)),&
+                 'nf90_put_var failed in LDT_writeNETCDFdata (writeNETCDFdata_LISHydro)')
+         endif
+
+#if ( defined USE_NETCDF3 )
+         call LDT_verify(nf90_redef(ftn))
+#endif
+         call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "standard_name",trim(paramEntry%standard_name)))
+         call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "units",trim(paramEntry%units)))
+         call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "scale_factor",1.0))
+         call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "add_offset",0.0))
+         call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "vmin",paramEntry%valid_min))
+         call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "vmax",paramEntry%valid_max))
+         call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "num_bins",paramEntry%num_bins))
+           call LDT_verify(nf90_put_att(ftn,paramEntry%vid,&
+              "stagger", "M" ))
+
+#if ( defined USE_NETCDF3 )
+         call LDT_verify(nf90_enddef(ftn))
+#endif
+      endif
+      deallocate(ltmp)
+      deallocate(gtmp1)
+      deallocate(gtmp2)
+   endif
+#endif
+
+ end subroutine writeNETCDFdata_LISHydro
 
 !BOP
 ! 

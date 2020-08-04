@@ -248,6 +248,7 @@ contains
     real,         allocatable         :: lons(:), lats(:)
     real,         allocatable         :: state_lat(:), state_lon(:)
 
+#if 0 
 !----------------------------------------------------------------------------
 !  Check if the observation state is updated or not. If it is updated,
 !  the data is then assimilated. 
@@ -559,7 +560,7 @@ contains
        deallocate(lons)
 
     end if
-    
+#endif    
   end subroutine ensrf_increments
 
 !BOP

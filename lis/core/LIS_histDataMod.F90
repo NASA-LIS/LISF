@@ -51,6 +51,7 @@ module LIS_histDataMod
   PRIVATE 
 
   public :: LIS_histDataInit
+  public :: LIS_routingHistDataInit
   public :: LIS_diagnoseSurfaceOutputVar
   public :: LIS_diagnoseRoutingOutputVar
   public :: LIS_diagnoseRTMOutputVar
@@ -1032,12 +1033,10 @@ contains
     endif
 
     LIS_histData(n)%head_lsm_list     => null()
-    LIS_histData(n)%head_routing_list => null()
     LIS_histData(n)%head_rtm_list     => null()
     LIS_histData(n)%head_irrig_list   => null()
 
     LIS_MOC_LSM_COUNT     = 0
-    LIS_MOC_ROUTING_COUNT = 0
     LIS_MOC_RTM_COUNT     = 0
     LIS_MOC_IRRIG_COUNT   = 0 
 
@@ -4114,215 +4113,6 @@ contains
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"Streamflow:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "Streamflow",&
-         "streamflow",&
-         "streamflow",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_STREAMFLOW,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"m3/s"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"RiverStor:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "RiverStor",&
-         "River_Water_Storage",&
-         "River Water Storage",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_RIVSTO,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"m3"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"RiverDepth:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "RiverDepth",&
-         "River_Depth",&
-         "River Depth",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_RIVDPH,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"m"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"RiverVelocity:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "RiverFlowVelocity",&
-         "River_Flow_Velocity",&
-         "River Flow Velocity",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_RIVVEL,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"m/s"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"FloodQ:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "FloodQ",&
-         "Floodplain_Water_Discharge",&
-         "Floodplain Water Discharge",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_fldout,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"m3/s"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"FloodEvap:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "FloodEvap",&
-         "Floodplain_evaporation",&
-         "Floodplain evaporation",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_fldevap,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"kg/m2s"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"FloodStor:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "FloodStor",&
-         "Floodplain_Water_Storage",&
-         "Floodplain Water Storage",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_fldsto,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"m3"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"FloodDepth:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "FloodDepth",&
-         "Floodplain_Depth",&
-         "Floodplain Depth",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_flddph,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"m"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"FloodVelocity:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "FloodVelocity",&
-         "Floodplain Flow Velocity",&
-         "Floodplain_Flow_Velocity",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_fldvel,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"m/s"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"FloodedFrac:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "FloodedFrac",&
-         "Flooded Fraction",&
-         "Flooded_Fraction",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_fldfrc,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"FloodedArea:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "FloodedArea",&
-         "Flooded Area",&
-         "Flooded_Area",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_fldare,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"m2"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"SurfElev:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "SurfElev",&
-         "Surface Water Elevation",&
-         "Surface_Water_Elevation",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_sfcelv,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"m"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"RunoffStor:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "RunoffStor",&
-         "Runoff Reservoir Storage",&
-         "Runoff_Reservoir_Storage",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_rnfsto,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"BaseflowStor:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "BaseflowStor",&
-         "Baseflow Reservoir Storage",&
-         "Baseflow_Reservoir_Storage",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_bsfsto,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"RunoffDWI:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "RunoffDWI",&
-         "Runoff Deep Water Infiltration",&
-         "Runoff_Deep_Water_Infiltration",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_RNFDWI,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"BaseflowDWI:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "BaseflowDWI",&
-         "Baseflow Deep Water Infiltration",&
-         "Baseflow_Deep_Water_Infiltration",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_BSFDWI,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"SWS:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "SWS",&
-         "Surface Water Storage",&
-         "Surface_Water_Storage",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_SURFWS,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"EvapWater:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "EvapWater",&
-         "Evaporation_open_water",&
-         "Evaporation_open_water",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_ewat,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"kg/m2s"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"EvapDif:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
-         "EvapDif",&
-         "Differential_evaporation",&
-         "Differential_evaporation",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_edif,&
-            LIS_histData(n)%head_routing_list,&
-            n,1,ntiles,(/"kg/m2s"/),1,(/"-"/),1,1,1,model_patch=.true.)
-    endif
 
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"RTM emissivity:",rc=rc)
@@ -5211,17 +5001,12 @@ contains
     call ESMF_ConfigDestroy(modelSpecConfig,rc=rc)
 
     allocate(LIS_histData(n)%ptr_into_lsm_list(LIS_MOC_LSM_COUNT))
-    allocate(LIS_histData(n)%ptr_into_routing_list(LIS_MOC_ROUTING_COUNT))
     allocate(LIS_histData(n)%ptr_into_rtm_list(LIS_MOC_RTM_COUNT))
     allocate(LIS_histData(n)%ptr_into_irrig_list(LIS_MOC_IRRIG_COUNT))
 
     call set_ptr_into_list(LIS_MOC_LSM_COUNT, &
          LIS_histData(n)%head_lsm_list, &
          LIS_histData(n)%ptr_into_lsm_list)
-
-    call set_ptr_into_list(LIS_MOC_ROUTING_COUNT, &
-         LIS_histData(n)%head_routing_list, &
-         LIS_histData(n)%ptr_into_routing_list)
 
     call set_ptr_into_list(LIS_MOC_RTM_COUNT, &
          LIS_histData(n)%head_rtm_list, &
@@ -5232,13 +5017,303 @@ contains
          LIS_histData(n)%ptr_into_irrig_list)
 
     call LIS_resetOutputVars(n,1) !for LSM
-    call LIS_resetOutputVars(n,2) !for ROUTING
     call LIS_resetOutputVars(n,3) !for RTM
     call LIS_resetOutputVars(n,4) !for Irrigation
 
 
 end subroutine LIS_histDataInit
 
+
+!BOP
+!  !ROUTINE: LIS_routingHistDataInit
+! \label{LIS_routingHistDataInit}
+! 
+! !INTERFACE: 
+  subroutine LIS_routingHistDataInit(n, ntiles)
+! !USES: 
+
+    implicit none
+
+! !ARGUMENTS: 
+    integer,  intent(IN)   :: n 
+    integer,  intent(IN)   :: ntiles
+! 
+! !DESCRIPTION: 
+!  This routine initializes the required linked lists to hold the selected
+!  list of LSM variables
+!
+!   The arguments are: 
+!   \begin{description}
+!    \item[n]  index of the nest \newline
+!    \item[ntiles]  size of the tilespace \newline
+!   \end{description}
+!
+!   The routines invoked are: 
+!   \begin{description}
+!    \item[get\_moc\_attributes] (\ref{get_moc_attributes}) \newline
+!      adds history output objects to the linked lists and sets the
+!      user-definable elements
+!    \item[register\_dataEntry] (\ref{register_dataEntry}) \newline
+!      completes the setting of the elements in the history output objects
+!      and allocates the data structures related to the variable being output
+!    \item[LIS\_resetOutputVars] (\ref{LIS_resetOutputVars}) \newline
+!      resets the arrays storing the variable values. 
+!   \end{description}
+!EOP
+    type(ESMF_Config) :: modelSpecConfig
+    logical           :: file_exists
+    integer           :: rc
+
+    integer           :: grib_depthlvl
+    integer           :: grib_snowlvl
+
+    !hkb--GRIB2 specific Depth below land surface = 106
+    !hkb--GRIB2 specific Snow level = 114
+    if (LIS_rc%wout == "grib2") then
+       grib_depthlvl = 106
+       grib_snowlvl  = 114
+    else
+       grib_depthlvl = 112
+       grib_snowlvl  = 112
+    endif
+
+    LIS_histData(n)%head_routing_list => null()
+
+    LIS_MOC_ROUTING_COUNT = 0
+
+    inquire(file=LIS_rc%outputSpecFile(n),exist=file_exists)
+    if(.not.file_exists) then 
+       write(LIS_logunit,*) '[ERR] Model output attributes file does not exist...'
+       write(LIS_logunit,*) '[ERR] Program stopping... '
+       call LIS_endrun()
+    endif
+
+    modelSpecConfig = ESMF_ConfigCreate(rc=rc)
+    call ESMF_ConfigLoadFile(modelSpecConfig,trim(LIS_rc%outputSpecFile(n)), &
+         rc=rc)     
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Streamflow:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "Streamflow",&
+         "streamflow",&
+         "streamflow",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_STREAMFLOW,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"m3/s"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"RiverStor:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "RiverStor",&
+         "River_Water_Storage",&
+         "River Water Storage",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_RIVSTO,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"m3"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"RiverDepth:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "RiverDepth",&
+         "River_Depth",&
+         "River Depth",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_RIVDPH,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"m"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"RiverVelocity:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "RiverFlowVelocity",&
+         "River_Flow_Velocity",&
+         "River Flow Velocity",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_RIVVEL,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"m/s"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"FloodQ:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "FloodQ",&
+         "Floodplain_Water_Discharge",&
+         "Floodplain Water Discharge",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_fldout,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"m3/s"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"FloodEvap:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "FloodEvap",&
+         "Floodplain_evaporation",&
+         "Floodplain evaporation",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_fldevap,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"kg/m2s"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"FloodStor:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "FloodStor",&
+         "Floodplain_Water_Storage",&
+         "Floodplain Water Storage",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_fldsto,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"m3"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"FloodDepth:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "FloodDepth",&
+         "Floodplain_Depth",&
+         "Floodplain Depth",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_flddph,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"m"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"FloodVelocity:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "FloodVelocity",&
+         "Floodplain Flow Velocity",&
+         "Floodplain_Flow_Velocity",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_fldvel,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"m/s"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"FloodedFrac:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "FloodedFrac",&
+         "Flooded Fraction",&
+         "Flooded_Fraction",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_fldfrc,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"FloodedArea:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "FloodedArea",&
+         "Flooded Area",&
+         "Flooded_Area",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_fldare,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"m2"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"SurfElev:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "SurfElev",&
+         "Surface Water Elevation",&
+         "Surface_Water_Elevation",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_sfcelv,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"m"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"RunoffStor:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "RunoffStor",&
+         "Runoff Reservoir Storage",&
+         "Runoff_Reservoir_Storage",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_rnfsto,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"BaseflowStor:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "BaseflowStor",&
+         "Baseflow Reservoir Storage",&
+         "Baseflow_Reservoir_Storage",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_bsfsto,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"RunoffDWI:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "RunoffDWI",&
+         "Runoff Deep Water Infiltration",&
+         "Runoff_Deep_Water_Infiltration",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_RNFDWI,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"BaseflowDWI:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "BaseflowDWI",&
+         "Baseflow Deep Water Infiltration",&
+         "Baseflow_Deep_Water_Infiltration",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_BSFDWI,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"SWS:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "SWS",&
+         "Surface Water Storage",&
+         "Surface_Water_Storage",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_SURFWS,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"EvapWater:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "EvapWater",&
+         "Evaporation_open_water",&
+         "Evaporation_open_water",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_ewat,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"kg/m2s"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"EvapDif:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "EvapDif",&
+         "Differential_evaporation",&
+         "Differential_evaporation",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_edif,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"kg/m2s"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+    
+    call ESMF_ConfigDestroy(modelSpecConfig,rc=rc)
+
+    allocate(LIS_histData(n)%ptr_into_routing_list(LIS_MOC_ROUTING_COUNT))
+
+    call set_ptr_into_list(LIS_MOC_ROUTING_COUNT, &
+         LIS_histData(n)%head_routing_list, &
+         LIS_histData(n)%ptr_into_routing_list)
+
+    call LIS_resetOutputVars(n,2) !for ROUTING
+
+
+  end subroutine LIS_routingHistDataInit
 !BOP
 !
 ! !ROUTINE: get_moc_attributes
@@ -5548,17 +5623,37 @@ end subroutine get_moc_attributes
 !
 !  See LIS\_diagnoseOutputVar for more details.
 !EOP    
-!index 1 is hardcoded since we know that routing models are only over land. 
-    integer         :: tid
-    logical         :: model_patch
 
-!    tid = LIS_surface(n,1)%tile(t)%tile_id
+    real    :: vmin, vmax
+    integer :: gindex
+    type(LIS_metadataEntry), pointer :: dataEntry
+    logical :: model_patch
+    integer         :: tid
+
     model_patch = .true.
-    call LIS_diagnoseOutputVar(LIS_histData(n)%head_routing_list, &
-         LIS_MOC_ROUTING_COUNT, LIS_histData(n)%ptr_into_routing_list,&
-         n, t, index, vlevel, value, unit,  &
-         direction,valid_min,valid_max,model_patch)
-    
+   
+    if ( index /= -9999 ) then
+
+       if(PRESENT(valid_min)) then 
+          vmin = valid_min
+       else
+          vmin = -1.0E+15
+       endif
+       
+       if(PRESENT(valid_max)) then 
+          vmax = valid_max
+       else
+          vmax = 1.0E+15
+       endif
+       
+       dataEntry => LIS_histData(n)%ptr_into_routing_list(index)%dataEntryPtr
+       gindex = LIS_routing(n)%tile(t)%index
+
+       call diagnoseRoutingDataEntry(n,dataEntry,                             &
+            t,vlevel,value,unit,direction,vmin,vmax)
+
+    endif
+
   end subroutine LIS_diagnoseRoutingOutputVar
 
 !BOP
@@ -5767,10 +5862,6 @@ end subroutine LIS_diagnoseIrrigationOutputVar
     logical                 :: dir_status
     real                    :: mfactor
     real                    :: value
-    integer                 :: sftype
-!    character(len=20)            :: cfunit
-    
-    sftype = LIS_domain(n)%tile(t)%sftype
        
     unit_status = .false.
     do i=1,dataEntry%nunits
@@ -5872,6 +5963,128 @@ end subroutine LIS_diagnoseIrrigationOutputVar
        call LIS_endrun()       
     endif
   end subroutine diagnoseDataEntry
+
+!BOP
+! 
+! !ROUTINE: diagnoseRoutingDataEntry
+! \label{diagnoseRoutingDataEntry}
+! 
+! !INTERFACE:
+  subroutine diagnoseRoutingDataEntry(n,dataentry, t, vlevel,in_value, unit, &
+                               direction, vmin, vmax)
+! !USES: 
+
+    implicit none
+! !ARGUMENTS:     
+    integer                 :: n 
+    type(LIS_metadataEntry) :: dataEntry
+    integer                 :: t
+    integer                 :: vlevel
+    real, intent(in)        :: in_value
+    character(len=*)        :: unit
+    character(len=*)        :: direction
+    real                    :: vmin
+    real                    :: vmax
+
+! 
+! !DESCRIPTION: 
+!  This routine maps a single output variable to the appropriate variable 
+!  in the generic list of the LIS history writer. 
+!EOP
+    integer                 :: i
+    logical                 :: unit_status
+    logical                 :: dir_status
+    real                    :: mfactor
+    real                    :: value
+       
+    unit_status = .false.
+    do i=1,dataEntry%nunits
+       if(unit.eq.dataEntry%unittypes(i)) then 
+          unit_status = .true. 
+          exit
+       endif
+    enddo
+    
+    dir_status = .false. 
+    do i=1,dataEntry%ndirs
+       if(direction.eq.dataEntry%dirtypes(i)) then 
+          dir_status = .true. 
+          exit
+       endif
+    enddo
+    
+    if(unit_status.and.dir_status) then 
+       if(unit.eq.dataEntry%units) then
+          ! it is assumed that there will be only two 
+          ! directions. 
+          if(direction.eq.dataEntry%dir) then 
+             mfactor = 1.0
+          else
+             mfactor = -1.0
+          endif
+          
+          if(in_value.ne.LIS_rc%udef) then 
+             ! Correct the direction of value
+             value = in_value * mfactor
+          else
+             value = in_value
+          endif
+          
+          if(mfactor.eq.1) then 
+             dataEntry%valid_min = vmin
+             dataEntry%valid_max = vmax
+          else
+             dataEntry%valid_min = vmax
+             dataEntry%valid_max = vmin
+          endif
+          if(value.ne.LIS_rc%udef) then 
+             ! accumulate values and record instantaneous values
+             if(dataEntry%timeAvgOpt.eq.2) then 
+                dataEntry%modelOutput(1,t,vlevel) = &
+                     dataEntry%modelOutput(1,t,vlevel) + value
+                dataEntry%modelOutput(2,t,vlevel) = value
+                !$OMP CRITICAL 
+                dataEntry%count(t,vlevel) = &
+                     dataEntry%count(t,vlevel)+1
+                !$OMP END CRITICAL 
+                ! accumulate values
+             elseif(dataEntry%timeAvgOpt.eq.1 .or. &
+                  dataEntry%timeAvgOpt.eq.3) then 
+                dataEntry%modelOutput(1,t,vlevel) = &
+                     dataEntry%modelOutput(1,t,vlevel) + value
+                !$OMP CRITICAL 
+                dataEntry%count(t,vlevel) = &
+                     dataEntry%count(t,vlevel)+1
+                !$OMP END CRITICAL 
+                ! record instantaneous values
+             else 
+                dataEntry%modelOutput(1,t,vlevel) = value
+                dataEntry%count(t,vlevel) = 1
+             endif
+             
+          endif
+          dataEntry%diagflag = 1 
+          
+       endif
+    endif
+    if(.not.unit_status) then 
+       write(LIS_logunit,*) '[ERR] ',trim(dataEntry%units),&
+            ' for field ',trim(dataEntry%standard_name),' is not defined '
+       write(LIS_logunit,*) '[ERR] for diagnostic output...'
+       write(LIS_logunit,*) '[ERR] supported unit types: ',dataEntry%unittypes
+       write(LIS_logunit,*) '[ERR] Program stopping ..'
+       call LIS_endrun()       
+    endif
+    if(.not.dir_status) then 
+       write(LIS_logunit,*) '[ERR] ',trim(dataEntry%dir),&
+            ' for field ',trim(dataEntry%standard_name),' is not defined '
+       write(LIS_logunit,*) '[ERR] for diagnostic output...'
+       write(LIS_logunit,*) '[ERR] supported direction types: ',&
+            dataEntry%dir
+       write(LIS_logunit,*) '[ERR] Program stopping ..'
+       call LIS_endrun()       
+    endif
+  end subroutine diagnoseRoutingDataEntry
 !BOP
 ! !ROUTINE: LIS_resetOutputVars
 ! \label{LIS_resetOutputVars}

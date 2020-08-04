@@ -42,7 +42,7 @@ module LVT_topoMod
      real, allocatable :: curvature(:,:,:)
   end type topo_type_dec
   
-  type(topo_type_dec) :: LVT_topo(2)
+  type(topo_type_dec) :: LVT_topo(3)
 !EOP
 
 contains

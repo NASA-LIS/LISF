@@ -6,6 +6,7 @@ MODULE module_sf_noahmpdrv_401
 !-------------------------------
 implicit none 
 public noahmplsm_401
+!public TRANSFER_MP_PARAMETERS
 !
 CONTAINS
 ! The subroutine name has been modifed for LIS implemenation Oct 22 2018
@@ -35,7 +36,7 @@ CONTAINS
 	        WOODXY, STBLCPXY, FASTCPXY,    XLAIXY,   XSAIXY,   TAUSSXY, & ! IN/OUT Noah MP only
 	       SMOISEQ, SMCWTDXY,DEEPRECHXY,   RECHXY,  GRAINXY,    GDDXY,PGSXY,  & ! IN/OUT Noah MP only
                GECROS_STATE,                                                & ! IN/OUT gecros model
-	        T2MVXY,   T2MBXY,    Q2MVXY,   Q2MBXY,                      & ! OUT Noah MP only
+	        T2MVXY,   T2MBXY,    Q2MVXY,   Q2MBXY, RELSMCXY,            & ! OUT Noah MP only
 	        TRADXY,    NEEXY,    GPPXY,     NPPXY,   FVEGXY,   RUNSFXY, & ! OUT Noah MP only
 	       RUNSBXY,   ECANXY,   EDIRXY,   ETRANXY,    FSAXY,    FIRAXY, & ! OUT Noah MP only
 	        APARXY,    PSNXY,    SAVXY,     SAGXY,  RSSUNXY,   RSSHAXY, & ! OUT Noah MP only
@@ -43,6 +44,7 @@ CONTAINS
 		 SHGXY,    SHCXY,    SHBXY,     EVGXY,    EVBXY,     GHVXY, & ! OUT Noah MP only
 		 GHBXY,    IRGXY,    IRCXY,     IRBXY,     TRXY,     EVCXY, & ! OUT Noah MP only
               CHLEAFXY,   CHUCXY,   CHV2XY,    CHB2XY, RS, FPICE,           & ! OUT Noah MP only
+              parameters, &
 !                 BEXP_3D,SMCDRY_3D,SMCWLT_3D,SMCREF_3D,SMCMAX_3D,          & ! placeholders to activate 3D soil
 !		 DKSAT_3D,DWSAT_3D,PSISAT_3D,QUARTZ_3D,                     &
 !		 REFDK_2D,REFKDT_2D,                                        &
@@ -267,6 +269,7 @@ CONTAINS
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  CHUCXY    ! under canopy exchange coefficient 
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  CHV2XY    ! veg 2m exchange coefficient 
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  CHB2XY    ! bare 2m exchange coefficient 
+    REAL,    DIMENSION( ims:ime, 1:nsoil, jms:jme ), INTENT(OUT  ) ::  RELSMCXY  ! relative soil moisture [-]
     REAL,    INTENT(OUT) :: FPICE                                                ! snow fraction of precip
     INTEGER,  INTENT(IN   )   ::     ids,ide, jds,jde, kds,kde,  &  ! d -> domain
          &                           ims,ime, jms,jme, kms,kme,  &  ! m -> memory
@@ -406,6 +409,7 @@ CONTAINS
     REAL                                :: CHUC         ! under canopy exchange coefficient 
     REAL                                :: CHV2         ! veg 2m exchange coefficient 
     REAL                                :: CHB2         ! bare 2m exchange coefficient 
+    REAL,   DIMENSION( 1:NSOIL)         :: RELSMC       ! relative soil moisture [-]
   REAL   :: PAHV    !precipitation advected heat - vegetation net (W/m2)
   REAL   :: PAHG    !precipitation advected heat - under canopy net (W/m2)
   REAL   :: PAHB    !precipitation advected heat - bare ground net (W/m2)
@@ -699,7 +703,7 @@ CONTAINS
 !       parameters%refdk  = REFDK_2D (I,J)         ! Reference Soil Conductivity
 !       parameters%refkdt = REFKDT_2D(I,J)         ! Soil Infiltration Parameter
 
-       CALL TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,parameters)
+!       CALL TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,parameters)
        
        if(iopt_soil == 3 .and. .not. parameters%urban_flag) then
           sand = 0.01 * soilcomp(i,1:4,j)
@@ -844,6 +848,7 @@ CONTAINS
          Z0WRF  = 0.002
          QFX(I,J) = ESOIL
          LH (I,J) = FGEV
+         RELSMC = 1.0
 
         ELSE
 
@@ -870,7 +875,7 @@ CONTAINS
             Z0WRF   ,                                                   &
             FSA     , FSR     , FIRA    , FSH     , SSOIL   , FCEV    , & ! OUT : 
             FGEV    , FCTR    , ECAN    , ETRAN   , ESOIL   , TRAD    , & ! OUT : 
-            SUBSNOW ,                                                   & ! OUT : 
+            SUBSNOW , RELSMC  ,                                       & ! OUT : 
             TGB     , TGV     , T2MV    , T2MB    , Q2MV    , Q2MB    , & ! OUT : 
             RUNSF   , RUNSB   , APAR    , PSN     , SAV     , SAG     , & ! OUT : 
             FSNO    , NEE     , GPP     , NPP     , FVEGMP  , SALB    , & ! OUT : 
@@ -1020,6 +1025,7 @@ CONTAINS
              CHUCXY   (I,J)                = CHUC
              CHV2XY   (I,J)                = CHV2
              CHB2XY   (I,J)                = CHB2
+             RELSMCXY (I,      1:NSOIL,J)  = RELSMC   (      1:NSOIL)
              RECHXY   (I,J)                = RECHXY(I,J) + RECH*1.E3 !RECHARGE TO THE WATER TABLE
              DEEPRECHXY(I,J)               = DEEPRECHXY(I,J) + DEEPRECH
              SMCWTDXY(I,J)                 = SMCWTD
@@ -1051,6 +1057,7 @@ CONTAINS
   END SUBROUTINE noahmplsm_401
 !------------------------------------------------------
 
+#if 0 
 SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,parameters)
 
   USE NOAHMP_TABLES_401
@@ -1260,7 +1267,7 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
     END IF
 
  END SUBROUTINE TRANSFER_MP_PARAMETERS
-
+#endif
 SUBROUTINE PEDOTRANSFER_SR2006(nsoil,sand,clay,orgm,parameters)
 
   use module_sf_noahmplsm_401

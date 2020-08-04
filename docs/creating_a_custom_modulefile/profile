@@ -1,0 +1,38 @@
+
+.Sample _.profile_ file
+----
+# This file is read each time a login shell is started.
+
+#
+# Set LD_LIBRARY_PATH
+#
+# non LDT_*, non LIS_*, non LVT_* paths go here
+#export LD_LIBRARY_PATH=$ADDITIONAL_PATHS:$LD_LIBRARY_PATH
+
+
+#
+# Set environment
+#
+export EDITOR=vim
+export SVN_EDITOR=vim
+export TVDSVRLAUNCHCMD=ssh
+
+
+#
+# Set PATH
+#
+# non LDT_*, non LIS_*, non LVT_* paths go here
+#export PATH=$ADDITIONAL_PATHS:$PATH
+
+
+#
+# Set modules
+#
+# load modules manually from the command line
+# to keep your login environment clean
+module use --append $HOME/privatemodules
+
+
+ulimit -s unlimited
+----
+

@@ -5,6 +5,8 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
+#include "LIS_misc.h"
+#include "LIS_NetCDF_inc.h"
 !BOP
 ! !ROUTINE: read_syntheticsmobs
 ! \label{read_syntheticsmobs}
@@ -24,6 +26,9 @@ subroutine read_syntheticsmobs(n, k, OBS_State, OBS_Pert_state)
   use LIS_pluginIndices
   use LIS_DAobservationsMod
   use syntheticsmobs_module
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+  use netcdf
+#endif
 
   implicit none
 ! !ARGUMENTS: 
@@ -60,6 +65,7 @@ subroutine read_syntheticsmobs(n, k, OBS_State, OBS_Pert_state)
   logical             :: file_exists
   character*80        :: name
   integer             :: fnd
+  integer             :: smid
   integer             :: ftn,p
   logical             :: readflag
   integer             :: status
@@ -67,6 +73,7 @@ subroutine read_syntheticsmobs(n, k, OBS_State, OBS_Pert_state)
   logical             :: data_upd_flag_local
   logical             :: data_upd
   real                :: sm_current(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k))
+  real                :: smobs(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k))
   integer             :: t,c,r
 
 
@@ -99,12 +106,32 @@ subroutine read_syntheticsmobs(n, k, OBS_State, OBS_Pert_state)
      call ESMF_FieldGet(smfield,localDE=0,farrayPtr=obsl,rc=status)
      call LIS_verify(status)
      obsl = -1
-     ftn = LIS_getNextUnitNumber()
 
-     open(ftn,file=name,form='unformatted')
-     call readobsvar_1dgridded(ftn,n,k,obsl)
-     call LIS_releaseUnitNumber(ftn)
+!     open(ftn,file=name,form='unformatted')
+!     call readobsvar_1dgridded(ftn,n,k,obsl)
+!     call LIS_releaseUnitNumber(ftn)
 
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+     call LIS_verify(nf90_open(path=trim(name),mode=NF90_NOWRITE,ncid=ftn),&
+          'Error opening file '//trim(name))
+     call LIS_verify(nf90_inq_varid(ftn,'SoilMoist_tavg',smid),&
+          'Error nf90_inq_varid: SoilMoist_tavg')
+     
+     call LIS_verify(nf90_get_var(ftn,smid,smobs),&
+          'Error in nf90_get_var')
+     call LIS_verify(nf90_close(ftn))
+     
+     do r =1,LIS_rc%obs_lnr(k)
+        do c =1,LIS_rc%obs_lnc(k)
+           if (LIS_obs_domain(n,k)%gindex(c,r) .ne. -1)then
+              obsl(LIS_obs_domain(n,k)%gindex(c,r)) = &
+                   smobs(c,r)
+           end if
+        end do
+     end do
+
+#endif
+     
 !-------------------------------------------------------------------------
 !  Transform data to the LSM climatology using a CDF-scaling approach
 !-------------------------------------------------------------------------     
@@ -255,8 +282,12 @@ subroutine synsm_filename(name, ndir, yr, mo,da,hr,mn)
   write(unit=fhr, fmt='(i2.2)') hr
   write(unit=fmn, fmt='(i2.2)') mn  
   
-  name = trim(ndir)//'/SOILM_'//trim(fyr)//trim(fmo)//trim(fda)//trim(fhr)//&
-       trim(fmn)//'.bin'
+!  name = trim(ndir)//'/SOILM_'//trim(fyr)//trim(fmo)//trim(fda)//trim(fhr)//&
+!       trim(fmn)//'.bin'
+
+  name = trim(ndir)//'/'//trim(fyr)//trim(fmo)//'/SimObs_'//&
+       trim(fyr)//trim(fmo)//trim(fda)//trim(fhr)//&
+       trim(fmn)//'.nc'
 
 end subroutine synsm_filename
 

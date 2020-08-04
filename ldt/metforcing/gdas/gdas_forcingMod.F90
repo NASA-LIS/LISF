@@ -208,7 +208,7 @@ contains
     LDT_rc%met_proj(findex) = "gaussian"
 
  != T126:
-    write(LDT_logunit,*)"MSG: Initializing GDAS grid-1 for: 1991-2000 grid (T126)"
+    write(LDT_logunit,*)"[INFO] Initializing GDAS grid-1 for: 1991-2000 grid (T126)"
     gdas_struc(:)%nc = 384
     gdas_struc(:)%nr = 190
     gridDesci = 0
@@ -229,7 +229,7 @@ contains
     LDT_rc%met_gridDesc(findex,1:20) = gridDesci(1:20)
    
  != T170:
-    write(LDT_logunit,*)"MSG: Initializing GDAS grid-2 for: 2000-2002 grid (T170)"
+    write(LDT_logunit,*)"[INFO] Initializing GDAS grid-2 for: 2000-2002 grid (T170)"
     LDT_rc%met_nc(findex+1) = 512
     LDT_rc%met_nr(findex+1) = 256
     LDT_rc%met_proj(findex+1)  = "gaussian"
@@ -246,7 +246,7 @@ contains
     LDT_rc%met_gridDesc(findex+1,20) = 0
 
  != T254:
-    write(LDT_logunit,*)"MSG: Initializing GDAS grid-3 for: 2002-2005 grid (T254)"
+    write(LDT_logunit,*)"[INFO] Initializing GDAS grid-3 for: 2002-2005 grid (T254)"
     LDT_rc%met_nc(findex+2) = 768
     LDT_rc%met_nr(findex+2) = 384
     LDT_rc%met_proj(findex+2)  = "gaussian"
@@ -263,7 +263,7 @@ contains
     LDT_rc%met_gridDesc(findex+2,20) = 0
 
  != T382:
-    write(LDT_logunit,*)"MSG: Initializing GDAS grid-4 for: 2005-2010 grid (T382)"
+    write(LDT_logunit,*)"[INFO] Initializing GDAS grid-4 for: 2005-2010 grid (T382)"
     LDT_rc%met_nc(findex+3) = 1152
     LDT_rc%met_nr(findex+3) = 576
     LDT_rc%met_proj(findex+3)  = "gaussian"
@@ -280,7 +280,7 @@ contains
     LDT_rc%met_gridDesc(findex+3,20) = 0
 
  != T574:
-    write(LDT_logunit,*)"MSG: Initializing GDAS grid-5 for: 2010-2015 grid (T574)"
+    write(LDT_logunit,*)"[INFO] Initializing GDAS grid-5 for: 2010-2015 grid (T574)"
     LDT_rc%met_nc(findex+4) = 1760
     LDT_rc%met_nr(findex+4) = 880
     LDT_rc%met_proj(findex+4)  = "gaussian"
@@ -297,7 +297,7 @@ contains
     LDT_rc%met_gridDesc(findex+4,20) = 0
 
  != T1534:
-    write(LDT_logunit,*)"MSG: Initializing GDAS grid-6 for: 2015-present grid (T1534)"
+    write(LDT_logunit,*)"[INFO] Initializing GDAS grid-6 for: 2015-present grid (T1534)"
     LDT_rc%met_nc(findex+5) = 3072
     LDT_rc%met_nr(findex+5) = 1536
     LDT_rc%met_proj(findex+5)  = "gaussian"

@@ -152,10 +152,19 @@ subroutine jules5x_main(n)
             snow_tile(:, :)     = 0.0
             snow_grnd(:, :)     = 0.0
             tstar_tile(:, :)    = 0.0
+<<<<<<< HEAD
             dt = LIS_rc%ts
             lat = LIS_domain(n)%grid(cur_grid)%lat
             lon = LIS_domain(n)%grid(cur_grid)%lon
 
+=======
+            ! Make sure JULES calcuate Qle
+            sf_diag%slh         = .True.
+            dt = LIS_rc%ts
+            lat = LIS_domain(n)%grid(cur_grid)%lat
+            lon = LIS_domain(n)%grid(cur_grid)%lon
+  
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
             ! compute gridbox average for tstar
             tstar_box=0.0
             do t=start_k, end_k
@@ -355,11 +364,19 @@ subroutine jules5x_main(n)
                      vlevel=1,unit="kg m-2 s-1",direction="UP", &
                      surface_type=LIS_rc%lsm_index)
                   
+<<<<<<< HEAD
                   call LIS_diagnoseSurfaceOutputVar(n,t,        &
                      LIS_MOC_EVAP,                              &
                      value=jules5x_struc(n)%jules5x(t)%fqw_1*dt,&
                      vlevel=1,unit="kg m-2",    direction="UP", &
                      surface_type=LIS_rc%lsm_index)
+=======
+                  !call LIS_diagnoseSurfaceOutputVar(n,t,        &
+                  !   LIS_MOC_EVAP,                              &
+                  !   value=jules5x_struc(n)%jules5x(t)%fqw_1*dt,&
+                  !   vlevel=1,unit="kg m-2",    direction="UP", &
+                  !   surface_type=LIS_rc%lsm_index)
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
 
                   call LIS_diagnoseSurfaceOutputVar(n, t,     &
                      LIS_MOC_QH,                              &
@@ -379,11 +396,19 @@ subroutine jules5x_main(n)
                      vlevel=1,unit="kg m-2 s-1", direction="UP", &
                      surface_type=LIS_rc%lsm_index)
                   ! added by Shugong Wang 03/15/2019
+<<<<<<< HEAD
                   call LIS_diagnoseSurfaceOutputVar(n,t,         &
                      LIS_MOC_ECANOP,                             &
                      value=jules5x_struc(n)%jules5x(t)%ecan*dt,  &
                      vlevel=1,unit="kg m-2", direction="UP",     &
                      surface_type=LIS_rc%lsm_index)
+=======
+                  !call LIS_diagnoseSurfaceOutputVar(n,t,         &
+                  !   LIS_MOC_ECANOP,                             &
+                  !   value=jules5x_struc(n)%jules5x(t)%ecan*dt,  &
+                  !   vlevel=1,unit="kg m-2", direction="UP",     &
+                  !   surface_type=LIS_rc%lsm_index)
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
                   
                   call LIS_diagnoseSurfaceOutputVar(n,t,         &
                      LIS_MOC_JULES_ESOIL,                             &
@@ -409,11 +434,19 @@ subroutine jules5x_main(n)
                      vlevel=1,unit="mm",direction="-",         &
                      surface_type=LIS_rc%lsm_index)
                   
+<<<<<<< HEAD
                   call LIS_diagnoseSurfaceOutputVar(n,t,       &
                      LIS_MOC_SUBSNOW,                          &
                      value=jules5x_struc(n)%jules5x(t)%ei*dt,  &
                      vlevel=1,unit="kg m-2",direction="-",     &
                      surface_type=LIS_rc%lsm_index)
+=======
+                  !call LIS_diagnoseSurfaceOutputVar(n,t,       &
+                  !   LIS_MOC_SUBSNOW,                          &
+                  !   value=jules5x_struc(n)%jules5x(t)%ei*dt,  &
+                  !   vlevel=1,unit="kg m-2",direction="-",     &
+                  !   surface_type=LIS_rc%lsm_index)
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
 
                   do i=1, jules5x_struc(n)%sm_levels
                      call LIS_diagnoseSurfaceOutputVar(n,t,             &
@@ -546,6 +579,7 @@ subroutine jules5x_main(n)
                      vlevel=1, unit="kg m-2", direction="S2L", surface_type = LIS_rc%lsm_index)
                 
                   ! total precipitation reaching to ground, including throughfall and direct fall  
+<<<<<<< HEAD
                   call LIS_diagnoseSurfaceOutputVar(n, t,                     &
                      LIS_MOC_SFCWATER,                                           &
                      value = jules5x_struc(n)%jules5x(t)%tot_tfall,           &
@@ -555,6 +589,17 @@ subroutine jules5x_main(n)
                      LIS_MOC_SFCWATER,                                           &
                      value = jules5x_struc(n)%jules5x(t)%tot_tfall * dt,      &
                      vlevel=1, unit="kg m-2", direction="-", surface_type = LIS_rc%lsm_index)
+=======
+                  !call LIS_diagnoseSurfaceOutputVar(n, t,                     &
+                  !   LIS_MOC_SFCWATER,                                           &
+                  !   value = jules5x_struc(n)%jules5x(t)%tot_tfall,           &
+                  !   vlevel=1, unit="kg m-2 s-1", direction="-", surface_type = LIS_rc%lsm_index)
+                  
+                  !call LIS_diagnoseSurfaceOutputVar(n, t,                     &
+                  !   LIS_MOC_SFCWATER,                                           &
+                  !   value = jules5x_struc(n)%jules5x(t)%tot_tfall * dt,      &
+                   !  vlevel=1, unit="kg m-2", direction="-", surface_type = LIS_rc%lsm_index)
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
                   
                   ! infiltration of every surface type, for experimental purpose, Shugong Wang 
                   !call LIS_diagnoseSurfaceOutputVar(n,t,                      &
@@ -724,6 +769,13 @@ subroutine jules5x_main(n)
                     value = snow_frac,                                                   &
                     vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
 
+<<<<<<< HEAD
+=======
+                  call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWCOVER,             &
+                    value = (snow_frac*100.0),                                           &
+                    vlevel=1, unit="%", direction="-", surface_type = LIS_rc%lsm_index)
+
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
                   prcp = jules5x_struc(n)%jules5x(t)%rainf/jules5x_struc(n)%forc_count
                   
                   if (jules5x_struc(n)%jules5x(t)%tair  .lt. 273.16) then 

@@ -77,8 +77,13 @@ module LIS_pluginIndices
    !character*50, public,  parameter :: LIS_tessId      = "HTESSEL"
    character*50, public,  parameter :: LIS_jules43Id     = "JULES.4.3"
    character*50, public,  parameter :: LIS_jules50Id     = "JULES.5.0"
+   character*50, public,  parameter :: LIS_jules51Id     = "JULES.5.1"
    character*50, public,  parameter :: LIS_jules52Id     = "JULES.5.2"
    character*50, public,  parameter :: LIS_jules53Id     = "JULES.5.3"
+<<<<<<< HEAD
+=======
+   character*50, public,  parameter :: LIS_jules54Id     = "JULES.5.4"
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
    character*50, public,  parameter :: LIS_jules5xId     = "JULES"
    character*50, public,  parameter :: LIS_cableId     = "CABLE"
    character*50, public,  parameter :: LIS_fasstId     = "FASST"
@@ -117,6 +122,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_gdasT1534Id       = "GDAS T1534"
    character*50, public,  parameter :: LIS_geosId            = "GEOS"
    character*50, public,  parameter :: LIS_geos5fcstId       = "GEOS5 forecast"
+   character*50, public,  parameter :: LIS_gefsId            = "GEFS forecast"
    character*50, public,  parameter :: LIS_ecmwfId           = "ECMWF"
    character*50, public,  parameter :: LIS_gswp1Id           = "GSWP1"
    character*50, public,  parameter :: LIS_gswp2Id           = "GSWP2"
@@ -174,6 +180,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_AWAPforcId        = "AWAP"
    character*50, public,  parameter :: LIS_HiMATGMUforcId    = "HiMAT GMU"
    character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
+   character*50, public,  parameter :: LIS_era5Id            = "ERA5"
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------
@@ -234,7 +241,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_WindSatsmobsId      = "Windsat"
    character*50, public,  parameter :: LIS_WindSatCsmobsId     = "Windsat C-band"
    character*50, public,  parameter :: LIS_snodepobsId         = "SNODEP"
-   character*50, public,  parameter :: LIS_ldtsiobsId          = "LDTSI"
+   character*50, public,  parameter :: LIS_usafsiobsId         = "USAFSI"
    character*50, public,  parameter :: LIS_ANSASWEsnowobsId    = "ANSA SWE"
    character*50, public,  parameter :: LIS_ANSASCFsnowobsId    = "ANSA SCF"
    character*50, public,  parameter :: LIS_ANSASNWDsnowobsId   = "ANSA snow depth"
@@ -278,6 +285,8 @@ module LIS_pluginIndices
         "SMAP(NRT) soil moisture"
    character*50, public,  parameter :: LIS_ASOsweobsId           = &
         "ASO SWE"
+   character*50, public,  parameter :: LIS_synwlId             = &
+        "Synthetic water level"
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms
 !-------------------------------------------------------------------------
@@ -314,6 +323,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_ARSsmobsId = "ARS sm" ! SY
    character*50, public,  parameter :: LIS_ISMNsmobsId = "ISMN sm" 
    character*50, public,  parameter :: LIS_SMAPsmobsId = "SMAP sm"
+   character*50, public,  parameter :: LIS_UAsnowobsId = "UA snow"
 !-------------------------------------------------------------------------
 ! Objective Function Evaluation Criteria
 !-------------------------------------------------------------------------

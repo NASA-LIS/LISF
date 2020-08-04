@@ -9,7 +9,8 @@
 !
 ! !REVISION HISTORY: 
 !   04-10-96 Mark Iredell;  Initial Specification
-!   05-27-04 Sujay Kumar; Modified verision with floating point arithmetic. 
+!   05-27-04 Sujay Kumar;   Modified verision with floating point arithmetic. 
+!   11-25-19 K. Arsenault;  Ensure longitude orientation (W->E)
 !
 ! !INTERFACE:
 subroutine compute_earth_coord_latlon(gridDesc,npts,fill,xpts,ypts,& 
@@ -28,8 +29,9 @@ subroutine compute_earth_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
 ! !DESCRIPTION:
 !  This subroutine computes the earth coordinates of 
 !  the specified domain for an equidistant cylindrical projection.
-!  This routine is based on the grid
-!  decoding routines in the NCEP interoplation package. 
+!
+!  This routine is based on the grid decoding routines
+!  in the NCEP interoplation package. 
 !  
 !  \begin{description}
 !    \item[gridDesc]
@@ -61,30 +63,45 @@ subroutine compute_earth_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
      rlon1=gridDesc(5)
      rlat2=gridDesc(7)
      rlon2=gridDesc(8)
+     ! Lat. orientation:
      if(rlat1.gt.rlat2) then 
-        dlat=-gridDesc(10)
+        dlat=-gridDesc(10)   ! N-S
      else
-        dlat=gridDesc(10)
+        dlat=gridDesc(10)    ! S-N
      endif
-     if(rlon1.gt.rlon2) then 
-        dlon=-gridDesc(9)
-     else
-        dlon = gridDesc(9)
-     endif
+     ! Original long. orientation code:
+!     if(rlon1.gt.rlon2) then 
+!        dlon=-gridDesc(9)    ! E-W
+!     else
+!        dlon = gridDesc(9)   ! W-E
+!     endif
+     ! Updated code (KRA):
+     dlon = gridDesc(9)      ! W-E orientation
+
      xmin=0
      xmax=im+1
-     if(im.eq.nint(360/abs(dlon))) xmax=im+2
+     if(im.eq.nint(360/abs(dlon))) then
+        xmax=im+2
+     endif
      ymin=0
      ymax=jm+1
      nret=0
-
-!  translate grid coordinates to earth coordinates
+     if( rlon1 < 0 ) then
+       rlon1 = 360+rlon1
+     endif
+     ! translate grid coordinates to earth coordinates
      do n=1,npts
-        if(xpts(n).ge.xmin.and.xpts(n).le.xmax.and. & 
-             ypts(n).ge.ymin.and.ypts(n).le.ymax) then
-           rlon(n)=rlon1+dlon*(xpts(n)-1)
-           if(rlon(n).lt.0) then 
-              rlon(n) = 360+rlon(n)
+        if( xpts(n).ge.xmin.and.xpts(n).le.xmax.and. & 
+            ypts(n).ge.ymin.and.ypts(n).le.ymax ) then
+!  original code 
+!           rlon(n)=rlon1+dlon*(xpts(n)-1)
+!           if(rlon(n).lt.0) then 
+!              rlon(n) = 360+rlon(n)
+!           endif
+!  new code (KRA)
+           rlon(n) = rlon1+dlon*(xpts(n)-1)
+           if( rlon(n) > 360. ) then
+             rlon(n) = rlon(n)-360. 
            endif
            rlat(n)=rlat1+dlat*(ypts(n)-1)
            nret=nret+1
@@ -94,7 +111,7 @@ subroutine compute_earth_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
         endif
      enddo
 
-!  projection unrecognized
+  ! projection unrecognized
   else
      iret=-1
      do n=1,npts
@@ -102,4 +119,5 @@ subroutine compute_earth_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
         rlat(n)=fill
      enddo
   endif
+
 end subroutine compute_earth_coord_latlon

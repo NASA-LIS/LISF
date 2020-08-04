@@ -1,0 +1,48 @@
+= Land surface Verification Toolkit (LVT): LVT {lisrevision} Users' Guide
+:revnumber: 1.4
+:revdate: 28 Aug 2019
+:doctype: book
+:sectnums:
+:toc:
+:math:
+:mathematical-format: svg
+:imagesoutdir: images
+:stem: latexmath
+:devonly:
+:lisrevision: 7.3
+:lisurl: http://lis.gsfc.nasa.gov
+:svnurl: http://subversion.apache.org
+:lvturl: http://lis.gsfc.nasa.gov/LVT
+:nasalisf: https://github.com/NASA-LIS/LISF
+:githuburl: https://github.com
+:lispublicrelease: Initial version - for LDT
+:lvttarball: LVT_public_release_7.2r.tar.gz
+:emdash: —
+:endash: –
+:vertellipsis: ⋮
+
+include::revision_table.adoc[]
+
+include::intro.adoc[]
+include::backgrd.adoc[]
+include::prelim.adoc[]
+include::obtain-source.adoc[]
+include::build.adoc[]
+include::run.adoc[]
+include::../../lvt/configs/lvt.config.adoc[]
+include::../../lvt/configs/METRICS.TBL.adoc[]
+include::../../lvt/configs/MODEL_OUTPUT_LIST_LVT.TBL.adoc[]
+//[appendix]
+// NO include::common_errors.adoc[]
+[appendix]
+include::lvt_runmode0.adoc[]
+[appendix]
+include::lvt_output_format.adoc[]
+// NO include::d_latlon_example.adoc[]
+// NO include::d_ps_example.adoc[]
+// NO include::d_gaussian_example.adoc[]
+// NO include::d_lambert_example.adoc[]
+// NO include::d_mercator_example.adoc[]
+// NO include::d_utm_example.adoc[]
+// NO include::configure.lvt.adoc[]
+include::lis_refs.bib.adoc[]

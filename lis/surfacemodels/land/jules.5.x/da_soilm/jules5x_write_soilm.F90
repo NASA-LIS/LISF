@@ -13,6 +13,10 @@
 ! 27Feb2005: Sujay Kumar; Initial Specification
 ! 25Jun2006: Sujay Kumar: Updated for the ESMF design
 ! 21 Dec 2018: Mahdi Navari; Modified for JULES 5.3
+<<<<<<< HEAD
+=======
+! 12 Feb 2020: Shugong Wang; Modifed for JULES 5.5 and later version
+>>>>>>> 03d136c068484928128423575b2e2cb5ad9abec3
 !
 ! !INTERFACE:
 subroutine jules5x_write_soilm(ftn,n, LSM_State)
