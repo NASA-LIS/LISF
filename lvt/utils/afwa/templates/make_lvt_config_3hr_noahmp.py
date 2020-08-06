@@ -105,7 +105,7 @@ var_attributes_special = {
 smooth_vars = ["AvgSurfT_inst", "AvgSurfT_tavg",
                "Albedo_tavg", "CanopInt_inst",
                "Evap_tavg", "LWdown_f_inst",
-               "LWdown_f_tavg", 
+               "LWdown_f_tavg",
                "Qg_tavg",
                "Qh_tavg", "Qle_tavg",
                "Qs_acc", "Qsb_acc", "RelSMC_inst",

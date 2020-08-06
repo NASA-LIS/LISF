@@ -44,9 +44,9 @@ var_attributes_special = {
 
 # Smooth variables that are perturbed, derived from perturbed variables,
 # or are LSM outputs that are affected by perturbed variables via physics.
-smooth_vars = ["Evap_tavg", "LWdown_f_tavg", "SoilMoist_tavg", 
-               "SoilTemp_tavg", "SWdown_f_tavg", 
-               "Tair_f_max", "Tair_f_tavg", 
+smooth_vars = ["Evap_tavg", "LWdown_f_tavg", "SoilMoist_tavg",
+               "SoilTemp_tavg", "SWdown_f_tavg",
+               "Tair_f_max", "Tair_f_tavg",
                "TotalPrecip_acc", "Tair_f_min", "RHMin_inst"]
 
 lines = open(template, 'r').readlines()

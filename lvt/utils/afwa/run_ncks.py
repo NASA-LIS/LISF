@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #
 # SCRIPT: run_ncks.py
 #
@@ -32,7 +32,7 @@
 # 09 Jan 2020:  Eric Kemp (SSAI), added Tair_f_min for JULES for 3hr.
 # 05 Aug 2020:  Eric Kemp (SSAI), added Albedo_tavg and SmLiqFrac_inst.
 #
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # Standard modules
 import datetime
@@ -40,10 +40,10 @@ import os
 import subprocess
 import sys
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # Path to NCO ncks program
-#_NCKS_PATH = "/app/nco/4.5.2-gnu/bin/ncks" # On Conrad
+# _NCKS_PATH = "/app/nco/4.5.2-gnu/bin/ncks" # On Conrad
 _NCKS_PATH = "/usr/local/other/SLES11.1/nco/4.4.4/intel-12.1.0.233/bin/ncks"
 
 # Supported LIS LSMs
@@ -206,7 +206,7 @@ for var in _LVT_NOAHMP_INVOCATIONS_24HR_LATEST:
 _LIS_JULES_VARIABLES_3HR = {}
 for var in _LVT_JULES_INVOCATIONS_3HR:
     if var == "RHMin_inst":
-        _LIS_JULES_VARIABLES_3HR[var] = [var,"Tair_f_min"]
+        _LIS_JULES_VARIABLES_3HR[var] = [var, "Tair_f_min"]
     else:
         _LIS_JULES_VARIABLES_3HR[var] = [var]
 
