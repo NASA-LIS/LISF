@@ -9,8 +9,8 @@ template = "lvt.config.template"
 startdt = datetime.datetime(2018, 9, 13, 12)
 enddt = datetime.datetime(2018, 9, 14, 12)
 
-#output = "netcdf"
-output = "grib2"
+output = "netcdf"
+#output = "grib2"
 
 # Most variables are processed independently, and are listed below.
 var_attributes = {
@@ -43,6 +43,15 @@ var_attributes_special = {
     "RHMin_inst":
         "RHMin       1  1  %      -  0  1 RHMin       1  1  %      -  0  1",
 }
+
+# Smooth variables that are perturbed, derived from perturbed variables,
+# or are LSM outputs that are affected by perturbed variables via physics.
+smooth_vars = ["Evap_tavg", "LWdown_f_tavg", "PotEvap_tavg",
+               "SoilMoist_tavg",
+               "SoilTemp_tavg", "SWdown_f_tavg",
+               "Tair_f_max", "Tair_f_tavg",
+               "TotalPrecip_acc", "Tair_f_min", "RHMin_inst"]
+
 lines = open(template, 'r').readlines()
 
 vars = list(var_attributes.keys())
@@ -55,6 +64,11 @@ for var in vars:
             line = "LVT output format: %s\n" % (output)
         elif "Process HYCOM data:" in line:
             line = "Process HYCOM data: 0\n"
+        elif "Apply noise reduction filter:" in line:
+            if var in smooth_vars:
+                line = "Apply noise reduction filter: 1\n"
+            else:
+                line = "Apply noise reduction filter: 0\n"
         elif "Starting year:" in line:
             line = "Starting year: %s\n" % (startdt.year)
         elif "Starting month:" in line:
