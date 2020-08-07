@@ -1,0 +1,10 @@
+JULES namelist collections.
+
+ps41_nml_15min/ is for running JULES in PS41 configuration, with 3 snow layers.
+THIS IS THE CONFIGURATION RECOMMENDED FOR USE IN OPERATIONS BY USAF.
+
+single_snow_layer/ is for running JULES in a similar configuration, but with
+only 1 snow layer.  These were used for running LIS7.3-JULES5.0
+"warm-started" from UM Dump files in 2017 and 2018, which used a single
+snow layer.
+
