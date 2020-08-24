@@ -2091,7 +2091,7 @@ SMAP soil moisture observation directory: ../SPL3SMP
 SMAP soil moisture data designation:      SPL3SMP
 ....
 
-==== soil moisture
+==== OzFlux soil moisture
 
 `OzFlux observation directory:` specifies the location of the OzFlux data directory.
 
@@ -2410,7 +2410,7 @@ USAFSI output GRIB1 global 0.25deg lat/lon: .true.
 USAFSI output GRIB1 NH 16th mesh polar stereographic: .true.
 ....
 
-`USAFSI output GRIB 1 SH 16th mesh polar stereographic:` Specifies if USAFSI should be interpolated to Southern Hemispheric 16th mesh polar stereographic grid and output in GRIB1.  Acceptable values are:
+`USAFSI output GRIB1 SH 16th mesh polar stereographic:` Specifies if USAFSI should be interpolated to Southern Hemispheric 16th mesh polar stereographic grid and output in GRIB1.  Acceptable values are:
 
 [cols="<,<",]
 |===
