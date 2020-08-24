@@ -8,6 +8,7 @@
 :mathematical-format: svg
 :imagesoutdir: images
 :stem: latexmath
+:data-uri:
 :devonly:
 :lisrevision: 7.3
 :lisurl: http://lis.gsfc.nasa.gov/LDT
