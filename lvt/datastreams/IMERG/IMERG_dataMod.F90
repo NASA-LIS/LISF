@@ -76,7 +76,7 @@ contains
       call ESMF_ConfigFindLabel(LVT_config,"IMERG product:",rc=status)
       if(status /= 0) then
          write(LVT_logunit,*) "[WARN] --------------------------------------------------------------"
-         write(LVT_logunit,*) "[WARN] IMERG product not specified. Defauling to 'final' version."
+         write(LVT_logunit,*) "[WARN] IMERG product not specified. Defaulting to 'final' version."
          write(LVT_logunit,*) "[WARN] --------------------------------------------------------------"
          imergdata(i)%imergprd = 'final'
       else
@@ -86,7 +86,7 @@ contains
       call ESMF_ConfigFindLabel(LVT_config,"IMERG version:",rc=status)
       if(status /= 0) then
          write(LVT_logunit,*) "[WARN] --------------------------------------------------------------"
-         write(LVT_logunit,*) "[WARN] IMERG version not specified. Defauling to 'V06B' version."
+         write(LVT_logunit,*) "[WARN] IMERG version not specified. Defaulting to 'V06B' version."
          write(LVT_logunit,*) "[WARN] --------------------------------------------------------------"
          imergdata(i)%imergver = 'V06B'
       else
