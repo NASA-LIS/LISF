@@ -181,7 +181,7 @@ lislog.0000  SURFACEMODEL  SURFACEMODEL.d01.stats
 
 . Create a `testcase.ctl` GrADS descriptor file for viewing the _target_ output data in the `TARGET_OUTPUT` directory. A copy of this file will be saved in the LISF source code repostiory in the appropriate testcases sub-directory.
 
-. Create the _output_ tar file, then gzip it (replacing `nam242forcintest` with the name of your testcase):
+. Create the _output_ tar file, then gzip it (replacing `nam242forcingtest` with the name of your testcase):
 +
 ....
 % tar cf nam242forcingtest_output_v72.tar TARGET_OUTPUT
