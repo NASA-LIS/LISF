@@ -12,7 +12,7 @@ The testcase for the NAM 242 forcing reader will be used in this guide as an exa
 
 The rest of this document will guide the reader through the creation of the following files:
 
-[cols="0h,2,8"]
+[cols="5h,40,55",frame=topbot,stripes=odd]
 |===
 |1 | `README` |Provides a a high-level description of the testcase (i.e., LSMs used, new features, domain) as well as  description of the configuration and instructions describing how to run the testcase
 |2 | `ldt.config`   | The configuration file used to run LDT to produce the input domain and parameter file for LIS (e.g. `lis_input.d01.nc`).
@@ -86,7 +86,7 @@ IMPORTANT: To reduce the filesize of the tar file we will be creating in this st
 
 . Create an `input.ctl` GrADS descriptor file for viewing the input paramter file. A copy of this file will be saved in the LISF source code repository in the appropriate testcases sub-directory.
 
-. Copy the input domain and parameter file to `lis_input_testcase.d01.nc` and Rename the log file created by the LDT run to `ldtlog_testcase.0000`. 
+. Copy the input domain and parameter file to `lis_input_testcase.d01.nc` and rename the log file created by the LDT run to `ldtlog_testcase.0000`. 
 
 . Create the LDT tar file, then gzip it (replacing `nam242forcingtest` with the name of your testcase):
 +
