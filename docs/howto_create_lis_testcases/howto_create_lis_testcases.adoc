@@ -12,7 +12,7 @@ The rest of this document will guide the reader through the creation of the foll
 
 [cols="5h,40,55",frame=topbot,stripes=odd]
 |===
-|1 | `README` |Provides a a high-level description of the testcase (i.e., LSMs used, new features, domain) as well as  description of the configuration and instructions describing how to run the testcase
+|1 | `README` |Provides a a high-level description of the testcase itself as well as instructions for running the testcase.
 |2 | `ldt.config`   | The configuration file used to run LDT to produce the input domain and parameter file for LIS (e.g. `lis_input.d01.nc`).
 |3 | `input.ctl`   | A GrADS descriptor file used to display the input paramter file (e.g. `lis_input.d01.nc`).
 |4 | `lis.config`   | The configuration file used to run LIS.
@@ -40,7 +40,7 @@ A testcase is created in four steps:
 
 [NOTE]
 ====
-These testcases may be run on systems other than _discover_ so the files that you create must be self-contained. For example, the config files should *not* refer to `/discover/nobackup/...` (or to a symbolic link that points to data elsewhere on _discover_). Please use files and results generated in previous steps (see, for example, Step 4.3), to ensure that your testcase is both complete and self-contained.
+These testcases may be run on systems other than _discover_ so it must be self-contained. For example, the config files should *not* refer to `/discover/nobackup/...` (or to a symbolic link to data elsewhere on _discover_). Please use files and results generated in previous steps (see, for example, Step 4.3), to ensure that your testcase is both complete and self-contained.
 ====
 
 [WARNING]
@@ -52,9 +52,7 @@ Before continuing with Step 1, create a clean working directory in which to buil
 
 === Step 1: Create the `README` file
 
-Create a file named `README` and add a high-level description of the testcase (i.e., features tested, spatial and temporal domain) and a list of instructions for running the testcase. See the `README` file in link:https://github.com/NASA-LIS/LISF/tree/master/lis/testcases/metforcing/nam242[`lis/testcases/metforcing/nam242`] for an example.
-
-This file will be saved in the LISF source code repository in the appropriate testcases sub-directory.
+Create a file named `README` and add a high-level description of the testcase, instructions for running the testcase, and any additional notes (i.e., citations, links, data format information). This file will be saved in the LISF source code repository in the appropriate testcases sub-directory. See the link:https://github.com/NASA-LIS/LISF/tree/master/lis/testcases/metforcing/nam242/README[NAM 242 testcase `README`,window=_blank] for an example.
 
 === Step 2: Create the LDT tar file
 
@@ -76,7 +74,7 @@ input/LS_PARAMETERS/UMD/25KM/elev_GTOPO30.1gd4r
 input/LS_PARAMETERS/metforcing_parms/NAM/terrain.242.grb
 ....
 +
-IMPORTANT: To reduce the filesize of the tar file we will be creating in this step, the `input` directory should contain *_only_* the files necessary for the LDT run. Do not include files associated with options that are disabled in the `ldt.config` file. For large forcing datasets, only include the subset of files necessary for the temporal domain of the testcase.
+IMPORTANT: To reduce the filesize of the tar file created in this step, the `input` directory should contain *_only_* the files necessary for the LDT run. Do not include files associated with options that are disabled in the `ldt.config` file. For large forcing datasets, only include the subset of files necessary for the temporal domain of the testcase.
 
 . Verify that the filepaths listed in your `ldt.config` file match the file locations in the new `input` directory. Update the filepaths if necessary.
 
@@ -131,7 +129,7 @@ input/MET_FORCING/NAM242/20120903/18/fh.0009_tl.press_gr.awp242
 input/MET_FORCING/NAM242/20120903/18/fh.0012_tl.press_gr.awp242
 ....
 +
-IMPORTANT: To reduce the filesize of the tar file we will be creating in this step, the `input` directory should contain *_only_* the files necessary for the LIS run. For large forcing datasets, only include the subset of files necessary for the temporal domain of the testcase.
+IMPORTANT: To reduce the filesize of the tar file created in this step, the `input` directory should contain *_only_* the files necessary for the LIS run. For large forcing datasets, only include the subset of files necessary for the temporal domain of the testcase.
 
 . Create the _input_ tar file, then gzip it (replacing `nam242forcingtest` with the name of your testcase):
 +
@@ -164,7 +162,7 @@ In this step you will organize the target output files that the output of test r
 % gzip -dc nam242forcingtest_input_v72.tar.gz | tar xf -
 ....
 
-. Run LIS and verify that the output is as expected.
+. Run LIS and verify that the output is as expected. If the run halts due to missing data, revisit Step 3.
 
 . Create an `output.ctl` or `output.xdf` GrADS descriptor file for viewing the output data. A copy of this file will be saved in the LISF source code repository in the appropriate testcases sub-directory.
 
