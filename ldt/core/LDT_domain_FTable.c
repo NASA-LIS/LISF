@@ -38,7 +38,7 @@
 struct domaininputnode
 { 
   char *name;
-  void (*func)();
+  void (*func)(int*);
 
   struct domaininputnode* next;
 } ;
@@ -58,7 +58,7 @@ struct domainmakenode* domainmake_table = NULL;
 // \label{registerinput}
 //
 // !INTERFACE:
-void FTN(registerinput)(char *j,void (*func)(), int len)
+void FTN(registerinput)(char *j,void (*func)(int*), int len)
 //  
 // !DESCRIPTION: 
 // Makes an entry in the registry for the routine to 
@@ -100,7 +100,7 @@ void FTN(registerinput)(char *j,void (*func)(), int len)
 // \label{readinput}
 //
 // !INTERFACE:
-void FTN(readinput)(char *j, int len)
+void FTN(readinput)(char *j, int *n, int len)
 // !DESCRIPTION: 
 //  Calls the routine from the registry to read the
 //  the runtime domain specifics
@@ -126,7 +126,7 @@ void FTN(readinput)(char *j, int len)
       printf("****************Error****************************\n"); 
     }
   }
-  current->func(); 
+  current->func(n); 
 }
 
 //BOP

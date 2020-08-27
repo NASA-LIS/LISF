@@ -174,7 +174,7 @@ subroutine read_MODISNative_lc(n, num_types, fgrd, maskarray )
 !- Map Parameter Grid Info to LIS Target Grid/Projection Info -- 
    subparam_gridDesc = 0.
    call LDT_RunDomainPts( n, LDT_rc%lc_proj, param_gridDesc(:), &
-            glpnc, glpnr, subpnc, subpnr, subparam_gridDesc, lat_line, lon_line )
+        glpnc, glpnr, subpnc, subpnr, subparam_gridDesc, lat_line, lon_line )
 
    allocate( subset_veg(subpnc, subpnr) )
    subset_veg = LDT_rc%waterclass
@@ -268,7 +268,7 @@ subroutine read_MODISNative_lc(n, num_types, fgrd, maskarray )
 
 !- Estimate fraction of grid (fgrid) represented by vegetation type::
    call param_index_fgrdcalc( n, LDT_rc%lc_proj, LDT_rc%lc_gridtransform(n), &
-                              LDT_rc%waterclass, LDT_rc%nt, vegcnt, fgrd )
+        LDT_rc%waterclass, LDT_rc%nt, vegcnt, fgrd )
 
 ! -------------------------------------------------------------------
 !    CREATE OR READ-IN (OR IMPOSE) LAND MASK FILE AND CREATE

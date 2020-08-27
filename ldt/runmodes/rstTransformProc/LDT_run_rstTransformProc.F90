@@ -1,21 +1,16 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA GSFC Land Data Toolkit (LDT) V1.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-subroutine LDT_run_Rstproc
+subroutine LDT_run_rstTransformProc
 
   use LDT_coreMod
   use LDT_logMod
-  use LDT_rstProcMod 
 
   implicit none
   
   integer       :: n 
   
   do n=1,LDT_rc%nnest
-     do while (.NOT. LDT_endofrun())
-        call LDT_ticktime
-        call LDT_diagnoseRstData(n)
-     enddo
   enddo
 !  call LDT_output_rstProc
 
@@ -25,5 +20,5 @@ subroutine LDT_run_Rstproc
 
   
 
-end subroutine LDT_run_Rstproc
+end subroutine LDT_run_rstTransformProc
   

@@ -3,10 +3,10 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
-module LDT_rstProcMod
+module LDT_climoRstProcMod
 !BOP
 !
-! !MODULE: LDT_rstProcMod
+! !MODULE: LDT_climoRstProcMod
 ! 
 ! !DESCRIPTION: 
 !   The code in this file provides interfaces to manage 
@@ -35,8 +35,8 @@ module LDT_rstProcMod
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !-----------------------------------------------------------------------------
-  public :: LDT_rstProcInit
-  public :: LDT_diagnoseRstData
+  public :: LDT_climoRstProcInit
+  public :: LDT_diagnoseClimoRstData
   
 !-----------------------------------------------------------------------------
 ! !PUBLIC TYPES:
@@ -73,11 +73,11 @@ module LDT_rstProcMod
   contains
 
 !BOP
-! !ROUTINE: LDT_rstProcInit
-! label{LDT_rstProcInit}
+! !ROUTINE: LDT_climoRstProcInit
+! label{LDT_climoRstProcInit}
 ! 
 ! !INTERFACE: 
-    subroutine LDT_rstProcInit
+    subroutine LDT_climoRstProcInit
 ! 
 ! !DESCRIPTION: 
 ! 
@@ -215,13 +215,13 @@ module LDT_rstProcMod
                   call LDT_verify(nf90_create(path=LDT_rst_struc%outfname(i),&
                        cmode=nf90_netcdf4,&
                        ncid = LDT_rst_struc%ftn(i)),&
-                       'creating netcdf file failed in LDT_rstProcMod')
+                       'creating netcdf file failed in LDT_climoRstProcMod')
 #endif
 #if (defined USE_NETCDF3)
                   call LDT_verify(nf90_create(path=LDT_rst_struc%outfname(i),&
                        cmode=nf90_clobber,&
                        ncid = LDT_rst_struc%ftn(i)),&
-                       'creating netcdf file failed in LDT_rstProcMod')
+                       'creating netcdf file failed in LDT_climoRstProcMod')
 #endif
 #endif
                  elseif (LDT_rst_struc%wformat.eq."binary") then
@@ -287,15 +287,15 @@ module LDT_rstProcMod
 
       LDT_rst_struc%startFlag = .true. 
 
-    end subroutine LDT_rstProcInit
+    end subroutine LDT_climoRstProcInit
 
 !BOP
 ! 
-! !ROUTINE: LDT_diagnoseRstData
-!  \label{LDT_diagnoseRstData}
+! !ROUTINE: LDT_diagnoseClimoRstData
+!  \label{LDT_diagnoseClimoRstData}
 ! 
 ! !ROUTINE: 
-    subroutine LDT_diagnoseRstData(n)
+    subroutine LDT_diagnoseClimoRstData(n)
 !
 ! !DESCRIPTION: 
 ! 
@@ -439,7 +439,7 @@ module LDT_rstProcMod
                  'failed to open '//trim(fname))
             
             call LDT_verify(nf90_inquire(ftn,nDims,nVars,nGlobalAtts,unlimdimId),&
-                 'nf90_inquire failed in LDT_rstProcMod')
+                 'nf90_inquire failed in LDT_climoRstProcMod')
             
             LDT_rst_struc%nVars = nVars
 
@@ -448,30 +448,30 @@ module LDT_rstProcMod
             allocate(dimName(nDims))
             
             call LDT_verify(nf90_inq_dimId(ftn,"ntiles",dimId(1)),&
-                 'nf90_inq_dimId 1 failed in LDT_rstProcMod')
+                 'nf90_inq_dimId 1 failed in LDT_climoRstProcMod')
             call LDT_verify(nf90_inquire_dimension(ftn,dimId(1),len=dims(1)),&
-                 'nf90_inquire_dimension failed in LDT_rstProcMod')
+                 'nf90_inquire_dimension failed in LDT_climoRstProcMod')
 
             if ( nDims .gt. 2 ) then
              do k=2,nDims - 1
                 write(unit=fd,fmt='(I1)') k-1
                 dimName(k) = 'dim'//trim(fd)
                 call LDT_verify(nf90_inq_dimId(ftn,dimName(k),dimId(k)),&
-                     'nf90_inq_dimId 2 failed in LDT_rstProcMod')
+                     'nf90_inq_dimId 2 failed in LDT_climoRstProcMod')
                 call LDT_verify(nf90_inquire_dimension(ftn,dimID(k),len=dims(k)),&
-                     'nf90_inquire failed in LDT_rstProcMod')
+                     'nf90_inquire failed in LDT_climoRstProcMod')
              enddo
 
              call LDT_verify(nf90_inq_dimId(ftn,"time",tdimId),&
-                  'nf90_inq_dimId 3 failed for LDT_rstProcMod')
+                  'nf90_inq_dimId 3 failed for LDT_climoRstProcMod')
             else  ! nDims = 2 
              do k=2,nDims 
                 write(unit=fd,fmt='(I1)') k-1
                 dimName(k) = 'dim'//trim(fd)
                 call LDT_verify(nf90_inq_dimId(ftn,dimName(k),dimId(k)),&
-                     'nf90_inq_dimId 2 failed in LDT_rstProcMod')
+                     'nf90_inq_dimId 2 failed in LDT_climoRstProcMod')
                 call LDT_verify(nf90_inquire_dimension(ftn,dimID(k),len=dims(k)),&
-                     'nf90_inquire failed in LDT_rstProcMod')
+                     'nf90_inquire failed in LDT_climoRstProcMod')
              enddo
             endif
 
@@ -493,32 +493,32 @@ module LDT_rstProcMod
             
             do k=1,nVars
                call LDT_verify(nf90_inquire_variable(ftn,k,varName,nDims=nvardims),&
-                 'nf90_inquire_variable failed in LDT_rstProcMod')
+                 'nf90_inquire_variable failed in LDT_climoRstProcMod')
                allocate(n_dimids(nvardims))
                call LDT_verify(nf90_inquire_variable(ftn,k,varName,dimids=n_dimids),&
-                    'nf90_inquire_variable failed in LDT_rstProcMod')
+                    'nf90_inquire_variable failed in LDT_climoRstProcMod')
                if(varname.eq."time") then 
                   call LDT_verify(nf90_get_att(ftn,k,"units",units),&
-                       'nf90_get_att failed for time in LDT_rstProcMod')
+                       'nf90_get_att failed for time in LDT_climoRstProcMod')
                   call LDT_verify(nf90_get_att(ftn,k,"time_increment",tincr),&
-                       'nf90_get_att failed for time_increment in LDT_rstProcMod')
+                       'nf90_get_att failed for time_increment in LDT_climoRstProcMod')
                   call LDT_verify(nf90_get_att(ftn,k,"begin_date",beg_date),&
-                       'nf90_get_att failed for begin_date in LDT_rstProcMod')
+                       'nf90_get_att failed for begin_date in LDT_climoRstProcMod')
                   call LDT_verify(nf90_get_att(ftn,k,"begin_time",beg_time),&
-                       'nf90_get_att failed for begin_time in LDT_rstProcMod')
+                       'nf90_get_att failed for begin_time in LDT_climoRstProcMod')
                else
                   call LDT_verify(nf90_get_att(ftn,k,"units",units),&
-                       'nf90_get_att failed in LDT_rstProcMod')
+                       'nf90_get_att failed in LDT_climoRstProcMod')
                   call LDT_verify(nf90_get_att(ftn,k,"standard_name",standard_name),&
-                       'nf90_get_att failed in LDT_rstProcMod')
+                       'nf90_get_att failed in LDT_climoRstProcMod')
                   call LDT_verify(nf90_get_att(ftn,k,"scale_factor",scale_factor),&
-                       'nf90_get_att failed in LDT_rstProcMod')
+                       'nf90_get_att failed in LDT_climoRstProcMod')
                   call LDT_verify(nf90_get_att(ftn,k,"add_offset",offset),&
-                       'nf90_get_att failed in LDT_rstProcMod')
+                       'nf90_get_att failed in LDT_climoRstProcMod')
                   call LDT_verify(nf90_get_att(ftn,k,"vmin",vmin),&
-                       'nf90_get_att failed in LDT_rstProcMod')
+                       'nf90_get_att failed in LDT_climoRstProcMod')
                   call LDT_verify(nf90_get_att(ftn,k,"vmax",vmax),&
-                       'nf90_get_att failed in LDT_rstProcMod')
+                       'nf90_get_att failed in LDT_climoRstProcMod')
 
                   if(LDT_rst_struc%startFlag) then 
                      if(nvardims.gt.1) then 
@@ -569,7 +569,7 @@ module LDT_rstProcMod
 
                      allocate(var(dims(1),dims(n_dimids(2))))
                      call LDT_verify(nf90_get_var(ftn,k,var),&
-                          'nf90_get_var failed in LDT_rstProcMod')
+                          'nf90_get_var failed in LDT_climoRstProcMod')
 
 !hkb vic needs unpacking and accumulate here !!!
                     if(LDT_rc%lsm.eq."VIC.4.1.2") then
@@ -595,7 +595,7 @@ module LDT_rstProcMod
 
                      allocate(var(dims(1),1))
                      call LDT_verify(nf90_get_var(ftn,k,var),&
-                          'nf90_get_var failed in LDT_rstProcMod')
+                          'nf90_get_var failed in LDT_climoRstProcMod')
 
                      do t=1,dims(1)
                         LDT_rst_struc%rstOut(k)%outVar(t,1,tindex) = & 
@@ -812,7 +812,7 @@ module LDT_rstProcMod
       end if
       
 
-    end subroutine LDT_diagnoseRstData
+    end subroutine LDT_diagnoseClimoRstData
 
 !BOP
 ! !ROUTINE: writeRstData
@@ -904,14 +904,14 @@ module LDT_rstProcMod
                        LDT_rst_struc%rstOut(k)%outVar(:,:,l),&
                        (/1,1/),&
                        (/LDT_rst_struc%rstOut(k)%dims(1),LDT_rst_struc%rstOut(k)%dims(2)/)),&
-                       'nf90_put_var failed in LDT_rstProcMod ')
+                       'nf90_put_var failed in LDT_climoRstProcMod ')
                else
                   call LDT_verify(nf90_put_var(LDT_rst_struc%ftn(l),&
                        k,&
                        LDT_rst_struc%rstOut(k)%outVar(:,:,l),&
                        (/1,1/),&
                        (/LDT_rst_struc%rstOut(k)%dims(1),1/)),&
-                       'nf90_put_var failed in LDT_rstProcMod ')
+                       'nf90_put_var failed in LDT_climoRstProcMod ')
                endif
             enddo
             call LDT_verify(nf90_close(LDT_rst_struc%ftn(l)))
@@ -995,7 +995,7 @@ module LDT_rstProcMod
       call date_and_time(date,time,zone,values)
       call LDT_verify(nf90_def_dim(ftn,'ntiles',dims(1),&
            dimID(1)),&
-           'nf90_def_dim failed for ntiles in LDT_rstProcMod')
+           'nf90_def_dim failed for ntiles in LDT_climoRstProcMod')
 
       if ( nDims .gt. 2 ) then
        do k=2,nDims-1 
@@ -1003,18 +1003,18 @@ module LDT_rstProcMod
          dimName = 'dim'//trim(fd)
          call LDT_verify(nf90_def_dim(ftn,dimName,dims(k),&
               dimID(k)),&
-              'nf90_def_dim failed for ntiles in LDT_rstProcMod')
+              'nf90_def_dim failed for ntiles in LDT_climoRstProcMod')
        enddo
        call LDT_verify(nf90_def_dim(ftn,'time',1,&
             dimID(nDims)),&
-            'nf90_def_dim failed for ntiles in LDT_rstProcMod')
+            'nf90_def_dim failed for ntiles in LDT_climoRstProcMod')
       else   ! nDims = 2
        do k=2,nDims
          write(unit=fd,fmt='(I1)') k-1
          dimName = 'dim'//trim(fd)
          call LDT_verify(nf90_def_dim(ftn,dimName,dims(k),&
               dimID(k)),&
-              'nf90_def_dim failed for ntiles in LDT_rstProcMod')
+              'nf90_def_dim failed for ntiles in LDT_climoRstProcMod')
        enddo
       endif
 
@@ -1045,7 +1045,7 @@ module LDT_rstProcMod
            'nf90_put_att failed for comment')
       
 !grid information
-      if(LDT_rc%lis_map_proj.eq."latlon") then !latlon
+      if(LDT_rc%lis_map_proj(n).eq."latlon") then !latlon
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
               "EQUIDISTANT CYLINDRICAL"),&
               'nf90_put_att failed for MAP_PROJECTION')
@@ -1064,7 +1064,7 @@ module LDT_rstProcMod
               LDT_rc%gridDesc(n,10)),&
                   'nf90_put_att failed for DY')
 
-      elseif(LDT_rc%lis_map_proj.eq."mercator") then 
+      elseif(LDT_rc%lis_map_proj(n).eq."mercator") then 
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
               "MERCATOR"),&
               'nf90_put_att failed for MAP_PROJECTION')
@@ -1089,7 +1089,7 @@ module LDT_rstProcMod
               LDT_rc%gridDesc(n,9)),&
               'nf90_put_att failed for DY')
 
-      elseif(LDT_rc%lis_map_proj.eq."lambert") then !lambert conformal
+      elseif(LDT_rc%lis_map_proj(n).eq."lambert") then !lambert conformal
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
               "LAMBERT CONFORMAL"),&
               'nf90_put_att failed for MAP_PROJECTION')
@@ -1117,7 +1117,7 @@ module LDT_rstProcMod
               LDT_rc%gridDesc(n,9)),&
               'nf90_put_att failed for DY')
          
-      elseif(LDT_rc%lis_map_proj.eq."polar") then ! polar stereographic
+      elseif(LDT_rc%lis_map_proj(n).eq."polar") then ! polar stereographic
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
               "POLAR STEREOGRAPHIC"),&
               'nf90_put_att failed for MAP_PROJECTION')
@@ -1261,4 +1261,4 @@ module LDT_rstProcMod
            'nf90_put_att failed for vmax')
     end subroutine writeheader_restart
 
-  end module LDT_rstProcMod
+  end module LDT_climoRstProcMod

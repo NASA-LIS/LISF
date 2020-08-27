@@ -195,7 +195,7 @@ subroutine read_USGSNative_lc(n, num_types, fgrd, maskarray)
 
  !- No spatial transform applied:
     if( LDT_rc%lc_gridtransform(n) == "none" .and. &
-        LDT_rc%lis_map_proj == "latlon" ) then
+        LDT_rc%lis_map_proj(n) == "latlon" ) then
 
        write(LDT_logunit,*) " No aggregation applied for parameter file ... "
        vegtype(:,:) = read_inputparm(:,:)

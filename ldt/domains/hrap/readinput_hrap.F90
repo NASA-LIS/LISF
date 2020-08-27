@@ -31,7 +31,7 @@
 !  28 Jan 2014: Shugong Wang; Replace run domain specifications from lat-lon
 !
 ! !INTERFACE:
-subroutine readinput_hrap
+subroutine readinput_hrap(nest)
 
 ! !USES:
   use ESMF
@@ -46,6 +46,8 @@ subroutine readinput_hrap
   use map_utils
 
   implicit none
+
+  integer, intent(in) :: nest
 
 ! !DESCRIPTION: 
 !
@@ -103,21 +105,21 @@ subroutine readinput_hrap
   allocate(ll_hrapx(LDT_rc%nnest))
   allocate(ll_hrapy(LDT_rc%nnest))
 
-  LDT_rc%lis_map_resfactor = 100.
+  LDT_rc%lis_map_resfactor(nest) = 100.
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left hrap y:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config, ll_hrapy(n), rc=rc)
      call LDT_verify(rc, 'Run domain lower left hrap y: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left hrap x:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config, ll_hrapx(n), rc=rc)
      call LDT_verify(rc, 'Run domain lower left hrap x: not defined')
   enddo
 
-  do n=1, LDT_rc%nnest
+  do n=1, nest
      call hrap_to_latlon(ll_hrapx(n), ll_hrapy(n), ll_lon, ll_lat)
      run_dd(n, 1) = ll_lat
      run_dd(n, 2) = ll_lon
@@ -125,38 +127,38 @@ subroutine readinput_hrap
 
   !HRAP true lat = 60 N
   !Run domain true lat
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      run_dd(n, 3) = 60.0
   enddo
 
   !HRAP standard lon = 105.0 West
   !Run domain standard lon
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      run_dd(n, 4) = -105.0
   enddo
 
   ! HRAP orientiation: 0.0
   ! Run domain orientation
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      run_dd(n, 5) = 0.0
   enddo
 
   ! HRAP resolution at true lat: 4.7625 KM when resolution is 1.0 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain hrap resolution:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config, hrap_res,rc=rc)
      run_dd(n, 6) = hrap_res * 4.7625
      call LDT_verify(rc, 'Run domain hrap resolution: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain x-dimension size:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,7),rc=rc)
      call LDT_verify(rc, 'Run domain x-dimension size: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain y-dimension size:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,8),rc=rc)
      call LDT_verify(rc, 'Run domain y-dimension size: not defined')
   enddo
@@ -174,7 +176,7 @@ subroutine readinput_hrap
      call LDT_endrun()
   endif
   
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      stlat   = run_dd(n,1)
      stlon   = run_dd(n,2)
      truelat = run_dd(n,3)
