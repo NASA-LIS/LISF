@@ -13,9 +13,9 @@ The rest of this document will guide the reader through the creation of the foll
 
 [cols="5h,40,55",frame=topbot,stripes=odd]
 |===
-|1 | `README` |Provides a a high-level description of the testcase itself as well as instructions for running the testcase.
-|2 | `ldt.config`   | The configuration file used to run LDT to produce the input domain and parameter file for LIS (e.g. `lis_input.d01.nc`).
-|3 | `input.ctl`   | A GrADS descriptor file used to display the input paramter file (e.g. `lis_input.d01.nc`).
+|1 | `README` |Provides a high-level description of the testcase itself as well as instructions for running the testcase.
+|2 | `ldt.config`   | The configuration file used to run LDT to produce the input domain and parameter file for LIS (e.g., `lis_input.d01.nc`).
+|3 | `input.ctl`   | A GrADS descriptor file used to display the input paramter file (e.g., `lis_input.d01.nc`).
 |4 | `lis.config`   | The configuration file used to run LIS.
 |5 | `MODEL_OUTPUT_LIST.TBL`   | A configuration file used by LIS to set the output for the test-case.
 |6 | `output.ctl` | A GrADS descriptor file used to display the output from the LIS run.
