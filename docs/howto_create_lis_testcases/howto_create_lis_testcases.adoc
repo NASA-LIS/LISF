@@ -2,6 +2,7 @@
 James Geiger; Brendan McAndrew
 :revnumber: 5
 :revdate: 25 Aug 2020
+:icons: font
 //:sectnums:
 
 == Introduction
