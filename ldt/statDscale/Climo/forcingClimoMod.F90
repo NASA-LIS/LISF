@@ -421,7 +421,7 @@ contains
             'nf90_put_att for comment failed in LDT_metforcingMod')
 
      ! -- Grid information --
-       select case ( LDT_rc%lis_map_proj )
+       select case ( LDT_rc%lis_map_proj(n) )
 
         case( "latlon" )
           call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
