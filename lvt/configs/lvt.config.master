@@ -1718,14 +1718,18 @@ CPC PCP use real time data:               0
 #latex: GPM IMERG precipitation product
 #latex:
 #latex: \var{IMERG version:} specifies the version of the GPM
-#latex: IMERG precipitation product. The valid options are:
-#latex: early, late, or final
+#latex: IMERG precipitation product. Most current version is:
+#latex: V06B
 #latex:
+#latex: \var{IMERG product:} specifies the product of the GPM
+#latex: IMERG precipitation product. Current options are:
+#latex: early, late, final
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
 IMERG data directory:            ../IMERG
-IMERG version:                   final
+IMERG version:                   V06B
+IMERG product:                   final
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION

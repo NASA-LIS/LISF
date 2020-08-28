@@ -67,9 +67,6 @@ module HYMAP2_routingMod
   integer, allocatable :: seqy_glb(:)
   !integer              :: nseqriv       !length of 1D sequnece for river
   integer              :: nseqall       !length of 1D sequnece for river and mouth  
-  integer              :: nseqall_glb   !global length of 1D sequnece for river and mouth  
-  integer, allocatable :: gdeltas(:)
-  integer, allocatable :: goffsets(:)
 ! === Map ===============================================
   integer, allocatable :: sindex(:,:)     !2-D sequence index
   integer, allocatable :: outlet(:)       !outlet flag: 0 - river; 1 - ocean
@@ -152,7 +149,6 @@ module HYMAP2_routingMod
   real,    allocatable  :: flddph_pre(:,:)
   real,    allocatable  :: fldelv1(:,:)
   real                  :: cadp
-  real                  :: dstend
   real                  :: grv
   
   real,    allocatable  :: dtaout(:,:)
@@ -175,6 +171,14 @@ module HYMAP2_routingMod
   !ag (29Jun2016)
   integer              :: floodflag
   character*100        :: HYMAP_dfile      
+  type(ESMF_Grid)      :: vecPatch
+
+! === 2-way coupling variables/parameters ===
+  real,   allocatable  :: rivstotmp(:,:)     !River Storage [m3]
+  real,   allocatable  :: fldstotmp(:,:)     !Flood Storage [m3]
+  real,   allocatable  :: fldfrctmp(:,:)     !Flooded Fraction [m3]
+  integer                   :: enable2waycpl
+  real                        :: fldfrc2waycpl
 
   end type HYMAP2_routing_dec
 
@@ -196,6 +200,7 @@ contains
     use LIS_logMod
     use LIS_routingMod    
     use HYMAP2_initMod
+    use LIS_perturbMod
     use LIS_mpiMod
     
     integer              :: n 
@@ -242,6 +247,37 @@ contains
     !character*20 :: pevap_comp_method
     integer       :: ic, c,r,ic_down
     integer       :: gdeltas
+
+    !ag (12Sep2019)
+    type(ESMF_Field)     :: rivsto_field
+    type(ESMF_Field)     :: fldsto_field
+    type(ESMF_Field)     :: fldfrc_field
+    real, pointer        :: rivstotmp(:)
+    real, pointer        :: fldstotmp(:)
+    real, pointer        :: fldfrctmp(:)
+
+    type(ESMF_DistGrid)  :: patchDG
+    integer, allocatable :: deblklist(:,:,:)
+    integer              :: stid,enid
+    character*1   :: caseid(3)
+    character*40, allocatable:: vname(:)
+    character*40, allocatable:: pertobjs(:)
+    integer     , allocatable:: order(:)
+    real        ,allocatable :: ccorr(:,:)
+    real        ,allocatable :: stmin(:)
+    real        ,allocatable :: stmax(:)
+    real        ,allocatable :: ssdev(:)
+    type(ESMF_ArraySpec) :: arrspec1, arrspec2
+    type(ESMF_Field)     :: varField
+    type(ESMF_Field)     :: varIncrField
+    type(ESMF_Field)     :: pertField
+    type(pert_dec_type)  :: routing_pert
+    character*100        :: temp
+    character*1          :: nestid(2)
+    integer              :: max_index
+    logical              :: name_found
+    character*20         :: alglist(10)
+    logical              :: Routing_DAvalid
     
     allocate(HYMAP2_routing_struc(LIS_rc%nnest))
     
@@ -252,13 +288,34 @@ contains
        HYMAP2_routing_struc(n)%nz      = 10    !number of stages in the sub-grid discretization
        HYMAP2_routing_struc(n)%imis     = -9999 !undefined integer value
        !HYMAP2_routing_struc(n)%cadp     = 0.7   !alfa coefficient for adaptative time step as described in Bates et al., (2010) [-]
-       HYMAP2_routing_struc(n)%dstend   = 25000 !river length to the ocean [m]
+       !HYMAP2_routing_struc(n)%dstend   = 25000 !river length to the ocean [m]
        HYMAP2_routing_struc(n)%grv      = 9.81  !gravity accerelation [m/s2]
        HYMAP2_routing_struc(n)%numout   = 0 
        HYMAP2_routing_struc(n)%fileopen = 0 
        HYMAP2_routing_struc(n)%dt_proc  = 0.
     enddo
        
+    !ag (12Sep2019)
+    call ESMF_ConfigFindLabel(LIS_config,&
+         "HYMAP2 enable 2-way coupling:",rc=status)
+    do n=1, LIS_rc%nnest
+       call ESMF_ConfigGetAttribute(LIS_config,HYMAP2_routing_struc(n)%enable2waycpl,rc=status)
+       call LIS_verify(status,&
+            "HYMAP2 enable 2-way coupling: not defined")
+
+       if (HYMAP2_routing_struc(n)%enable2waycpl==1) then
+         write(LIS_logunit,*) '[INFO] HYMAP2 2-way coupling: activated'
+         call ESMF_ConfigFindLabel(LIS_config,&
+              "HYMAP2 2-way coupling flooded fraction threshold:",rc=status)
+         call ESMF_ConfigGetAttribute(LIS_config,HYMAP2_routing_struc(n)%fldfrc2waycpl,rc=status)
+         call LIS_verify(status,&
+              "HYMAP2 2-way coupling flooded fraction threshold: not defined")
+       else
+          write(LIS_logunit,*) '[INFO] HYMAP2 2-way coupling: deactivated'
+       endif
+    enddo
+
+
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP2 routing model time step:",rc=status)
     do n=1, LIS_rc%nnest
@@ -451,7 +508,7 @@ contains
        allocate(HYMAP2_routing_struc(n)%nextx(LIS_rc%gnc(n),LIS_rc%gnr(n)))
        ctitle = 'HYMAP_flow_direction_x'
        call HYMAP2_read_param_int_2d_global(ctitle,n,HYMAP2_routing_struc(n)%nextx)
-       
+
        allocate(HYMAP2_routing_struc(n)%nexty(LIS_rc%gnc(n),LIS_rc%gnr(n)))
        ctitle = 'HYMAP_flow_direction_y'
        call HYMAP2_read_param_int_2d_global(ctitle,n,HYMAP2_routing_struc(n)%nexty)
@@ -476,7 +533,10 @@ contains
        ctitle = 'HYMAP_basin_mask'
        call HYMAP2_read_param_int_2d_global(ctitle,n,maskg)	  
       
-       
+       !Assign the mask to the routing data structure
+       LIS_routing(n)%dommask = mask
+       LIS_routing(n)%nextx = HYMAP2_routing_struc(n)%nextx
+
        write(LIS_logunit,*) '[INFO] Get number of HYMAP2 grid cells'
        call HYMAP2_get_vector_size(LIS_rc%lnc(n),LIS_rc%lnr(n),&
             LIS_rc%gnc(n),LIS_rc%gnr(n),&
@@ -486,52 +546,49 @@ contains
             HYMAP2_routing_struc(n)%nextx,&
             mask,HYMAP2_routing_struc(n)%nseqall)
 
-       allocate(HYMAP2_routing_struc(n)%gdeltas(0:LIS_npes-1))
-       allocate(HYMAP2_routing_struc(n)%goffsets(0:LIS_npes-1))
+       LIS_rc%nroutinggrid(n) = HYMAP2_routing_struc(n)%nseqall
 
-       gdeltas = HYMAP2_routing_struc(n)%nseqall      
+       gdeltas = HYMAP2_routing_struc(n)%nseqall
        
 #if (defined SPMD)
-       call MPI_ALLREDUCE(HYMAP2_routing_struc(n)%nseqall,&
-            HYMAP2_routing_struc(n)%nseqall_glb,1,&
+       call MPI_ALLREDUCE(LIS_rc%nroutinggrid(n),&
+            LIS_rc%glbnroutinggrid(n),1,&
             MPI_INTEGER,MPI_SUM,&
             LIS_mpi_comm,status)
 
        call MPI_ALLGATHER(gdeltas,1,MPI_INTEGER,&
-            HYMAP2_routing_struc(n)%gdeltas(:),1,MPI_INTEGER,&
+            LIS_routing_gdeltas(n,:),1,MPI_INTEGER,&
             LIS_mpi_comm,status)
 
 #else
-       HYMAP2_routing_struc(n)%nseqall_glb = HYMAP2_routing_struc(n)%nseqall
+       LIS_rc%glbnroutinggrid(n) = LIS_rc%nroutinggrid(n)
 #endif
 
        if(LIS_masterproc) then 
-          HYMAP2_routing_struc(n)%goffsets = 0 
+          LIS_routing_goffsets(n,:) = 0 
           do i=1,LIS_npes-1
-             HYMAP2_routing_struc(n)%goffsets(i) = &
-                  HYMAP2_routing_struc(n)%goffsets(i-1) +& 
-                  HYMAP2_routing_struc(n)%gdeltas(i-1)
+             LIS_routing_goffsets(n,i) = &
+                  LIS_routing_goffsets(n,i-1) +& 
+                  LIS_routing_gdeltas(n,i-1)
           enddo
        endif
 #if (defined SPMD)
-       call MPI_BCAST(HYMAP2_routing_struc(n)%goffsets, &
+       call MPI_BCAST(LIS_routing_goffsets(n,:), &
             LIS_npes, MPI_INTEGER,0, &
             LIS_mpi_comm, status)
 #endif
        allocate(HYMAP2_routing_struc(n)%seqx(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%seqy(HYMAP2_routing_struc(n)%nseqall))
 
-       allocate(HYMAP2_routing_struc(n)%seqx_glb(HYMAP2_routing_struc(n)%nseqall_glb))
-       allocate(HYMAP2_routing_struc(n)%seqy_glb(HYMAP2_routing_struc(n)%nseqall_glb))
+       allocate(HYMAP2_routing_struc(n)%seqx_glb(LIS_rc%glbnroutinggrid(n)))
+       allocate(HYMAP2_routing_struc(n)%seqy_glb(LIS_rc%glbnroutinggrid(n)))
 
        allocate(HYMAP2_routing_struc(n)%sindex(LIS_rc%gnc(n),LIS_rc%gnr(n)))
        allocate(HYMAP2_routing_struc(n)%outlet(HYMAP2_routing_struc(n)%nseqall))
-       allocate(HYMAP2_routing_struc(n)%outlet_glb(HYMAP2_routing_struc(n)%nseqall_glb))
+       allocate(HYMAP2_routing_struc(n)%outlet_glb(LIS_rc%glbnroutinggrid(n)))
        allocate(HYMAP2_routing_struc(n)%next(HYMAP2_routing_struc(n)%nseqall))
-       allocate(HYMAP2_routing_struc(n)%next_glb(HYMAP2_routing_struc(n)%nseqall_glb))
-       !allocate(HYMAP2_routing_struc(n)%nextx(HYMAP2_routing_struc(n)%nseqall))
-       !allocate(HYMAP2_routing_struc(n)%nexty(HYMAP2_routing_struc(n)%nseqall)) 
-       !allocate(HYMAP2_routing_struc(n)%mask(HYMAP2_routing_struc(n)%nseqall))
+       allocate(HYMAP2_routing_struc(n)%next_glb(LIS_rc%glbnroutinggrid(n)))
+
        allocate(HYMAP2_routing_struc(n)%elevtn(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%nxtdst(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%grarea(HYMAP2_routing_struc(n)%nseqall))
@@ -619,6 +676,13 @@ contains
                1))
           allocate(HYMAP2_routing_struc(n)%edif(HYMAP2_routing_struc(n)%nseqall,&
                1))
+          !ag (12Sep2019)
+          allocate(HYMAP2_routing_struc(n)%rivstotmp(HYMAP2_routing_struc(n)%nseqall,&
+               1))
+          allocate(HYMAP2_routing_struc(n)%fldstotmp(HYMAP2_routing_struc(n)%nseqall,&
+               1))
+          allocate(HYMAP2_routing_struc(n)%fldfrctmp(HYMAP2_routing_struc(n)%nseqall,&
+               1))
        else
           allocate(HYMAP2_routing_struc(n)%rivsto(HYMAP2_routing_struc(n)%nseqall,&
                LIS_rc%nensem(n)))
@@ -674,6 +738,14 @@ contains
           allocate(HYMAP2_routing_struc(n)%ewat(HYMAP2_routing_struc(n)%nseqall,&
                LIS_rc%nensem(n)))
           allocate(HYMAP2_routing_struc(n)%edif(HYMAP2_routing_struc(n)%nseqall,&
+               LIS_rc%nensem(n)))
+
+          !ag (12Sep2019)
+          allocate(HYMAP2_routing_struc(n)%rivstotmp(HYMAP2_routing_struc(n)%nseqall,&
+               LIS_rc%nensem(n)))
+          allocate(HYMAP2_routing_struc(n)%fldstotmp(HYMAP2_routing_struc(n)%nseqall,&
+               LIS_rc%nensem(n)))
+          allocate(HYMAP2_routing_struc(n)%fldfrctmp(HYMAP2_routing_struc(n)%nseqall,&
                LIS_rc%nensem(n)))
        endif
 
@@ -761,7 +833,7 @@ contains
     do n=1, LIS_rc%nnest
        call HYMAP2_get_sindex(LIS_rc%gnc(n),&
             LIS_rc%gnr(n),&
-            HYMAP2_routing_struc(n)%nseqall_glb,&
+            LIS_rc%glbnroutinggrid(n),&
             HYMAP2_routing_struc(n)%imis,&
             HYMAP2_routing_struc(n)%nextx,&
             HYMAP2_routing_struc(n)%nexty,maskg,&
@@ -800,18 +872,18 @@ contains
 #if (defined SPMD)
     do n=1,LIS_rc%nnest    
        call MPI_ALLGATHERV(HYMAP2_routing_struc(n)%seqx,&
-            HYMAP2_routing_struc(n)%nseqall,MPI_INTEGER,&
+            LIS_rc%nroutinggrid(n),MPI_INTEGER,&
             HYMAP2_routing_struc(n)%seqx_glb,&
-            HYMAP2_routing_struc(n)%gdeltas(:),&
-            HYMAP2_routing_struc(n)%goffsets(:),&
+            LIS_routing_gdeltas(n,:),&
+            LIS_routing_goffsets(n,:),&
             MPI_INTEGER,&
             LIS_mpi_comm,status)
 
        call MPI_ALLGATHERV(HYMAP2_routing_struc(n)%seqy,&
-            HYMAP2_routing_struc(n)%nseqall,MPI_INTEGER,&
+            LIS_rc%nroutinggrid(n),MPI_INTEGER,&
             HYMAP2_routing_struc(n)%seqy_glb,&
-            HYMAP2_routing_struc(n)%gdeltas(:),&
-            HYMAP2_routing_struc(n)%goffsets(:),&
+            LIS_routing_gdeltas(n,:),&
+            LIS_routing_goffsets(n,:),&
             MPI_INTEGER,&
             LIS_mpi_comm,status)
     enddo
@@ -907,7 +979,7 @@ contains
             HYMAP2_routing_struc(n)%seqx,&
             HYMAP2_routing_struc(n)%seqy,&
             tmp_real,HYMAP2_routing_struc(n)%nxtdst)
-       where(HYMAP2_routing_struc(n)%outlet==1)HYMAP2_routing_struc(n)%nxtdst=HYMAP2_routing_struc(n)%dstend
+
     enddo
 
     ctitle = 'HYMAP_grid_area'
@@ -1047,6 +1119,7 @@ contains
        write(LIS_logunit,*)'[INFO] Calculate maximum river storage'
        HYMAP2_routing_struc(n)%rivstomax = HYMAP2_routing_struc(n)%rivlen* &
             HYMAP2_routing_struc(n)%rivwth * HYMAP2_routing_struc(n)%rivhgt
+
        write(LIS_logunit,*)'[INFO] Calculate river bed elevation'
        HYMAP2_routing_struc(n)%rivelv = HYMAP2_routing_struc(n)%elevtn -&
             HYMAP2_routing_struc(n)%rivhgt
@@ -1065,11 +1138,6 @@ contains
             HYMAP2_routing_struc(n)%fldstomax,&
             HYMAP2_routing_struc(n)%fldgrd,&
             HYMAP2_routing_struc(n)%rivare)		   
-       !Start storages
-       HYMAP2_routing_struc(n)%rivsto=0.0
-       HYMAP2_routing_struc(n)%fldsto=0.0
-       HYMAP2_routing_struc(n)%rnfsto=0.0
-       HYMAP2_routing_struc(n)%bsfsto=0.0
     enddo
 
     !ag (4Feb2016) - read reservoir operation data
@@ -1197,7 +1265,66 @@ contains
 
        HYMAP2_routing_struc(n)%mo = -1
 
+       !ag (12Sep2019)
+       call ESMF_AttributeSet(LIS_runoff_state(n),"2 way coupling",&
+            0, rc=status)
+       call LIS_verify(status)
+
+       if (HYMAP2_routing_struc(n)%enable2waycpl==1) then
+           ! River Storage
+           rivsto_field =ESMF_FieldCreate(arrayspec=realarrspec,&
+                grid=LIS_vecTile(n), name="River Storage",rc=status)
+           call LIS_verify(status, 'ESMF_FieldCreate failed')
+
+           call ESMF_FieldGet(rivsto_field,localDE=0,farrayPtr=rivstotmp,&
+                rc=status)
+           call LIS_verify(status)
+           rivstotmp = 0.0
+
+           call ESMF_AttributeSet(LIS_runoff_state(n),"2 way coupling",&
+                HYMAP2_routing_struc(n)%enable2waycpl, rc=status)
+           call LIS_verify(status)
+
+           call ESMF_stateAdd(LIS_runoff_state(n),(/rivsto_field/),rc=status)
+           call LIS_verify(status, 'ESMF_StateAdd failed for River Storage')
+
+           ! Flood Storage
+           fldsto_field =ESMF_FieldCreate(arrayspec=realarrspec,&
+                grid=LIS_vecTile(n), name="Flood Storage",rc=status)
+           call LIS_verify(status, 'ESMF_FieldCreate failed')
+
+           call ESMF_FieldGet(fldsto_field,localDE=0,farrayPtr=fldstotmp,&
+                rc=status)
+           call LIS_verify(status)
+           fldstotmp = 0.0
+
+           call ESMF_AttributeSet(LIS_runoff_state(n),"2 way coupling",&
+                HYMAP2_routing_struc(n)%enable2waycpl, rc=status)
+           call LIS_verify(status)
+
+           call ESMF_stateAdd(LIS_runoff_state(n),(/fldsto_field/),rc=status)
+           call LIS_verify(status, 'ESMF_StateAdd failed for Flood Storage')
+
+           ! Flooded fraction
+           fldfrc_field =ESMF_FieldCreate(arrayspec=realarrspec,&
+                grid=LIS_vecTile(n), name="Flooded Fraction",rc=status)
+           call LIS_verify(status, 'ESMF_FieldCreate failed')
+
+           call ESMF_FieldGet(fldfrc_field,localDE=0,farrayPtr=fldfrctmp,&
+                rc=status)
+           call LIS_verify(status)
+           fldfrctmp = 0.0
+
+           call ESMF_AttributeSet(LIS_runoff_state(n),"2 way coupling",&
+                HYMAP2_routing_struc(n)%enable2waycpl, rc=status)
+           call LIS_verify(status)
+
+           call ESMF_stateAdd(LIS_runoff_state(n),(/fldfrc_field/),rc=status)
+           call LIS_verify(status, 'ESMF_StateAdd failed for Flooded Fraction')
+       endif
+
     enddo 
+
     do n=1,LIS_rc%nnest
        call ESMF_AttributeSet(LIS_runoff_state(n),"Routing model evaporation option",&
             HYMAP2_routing_struc(n)%evapflag, rc=status)
@@ -1226,7 +1353,326 @@ contains
        enddo
     enddo
 #endif
+    do n=1,LIS_rc%nnest
+       allocate(deblklist(1,2,LIS_npes))
+       do i=0,LIS_npes-1
+          stid = LIS_routing_goffsets(n,i)*LIS_rc%nensem(n)+1
+          enid = stid + LIS_routing_gdeltas(n,i)*LIS_rc%nensem(n)-1
+          
+          deblklist(:,1,i+1) = (/stid/)
+          deblklist(:,2,i+1) = (/enid/)
+       enddo
 
+       patchDG = ESMF_DistGridCreate(minIndex=(/1/),&
+            maxIndex=(/LIS_rc%glbnroutinggrid(n)*LIS_rc%nensem(n)/),&
+            deBlockList=deblklist,rc=status)
+       call LIS_verify(status)
+       
+       HYMAP2_routing_struc(n)%vecPatch = &
+            ESMF_GridCreate(name="HYMAP2 Patch Space",&
+            coordTypeKind=ESMF_TYPEKIND_R4, distGrid = patchDG,&
+            gridEdgeLWidth=(/0/), gridEdgeUWidth=(/0/),rc=status)
+       call LIS_verify(status,'ESMF_GridCreate failed in HYMAP2_routing_init')
+       deallocate(deblklist)
+    enddo
+
+!---------------------------------------------------------------------
+!  create the Routing state if data assimilation is being done, 
+!  create the Routing perturbation state only if perturbation
+!  option is turned on. 
+!---------------------------------------------------------------------
+    Routing_DAvalid = .false. 
+
+    if(LIS_rc%ndas.gt.0.or.LIS_rc%nperts.gt.0) then 
+       
+       Routing_DAvalid = .true. 
+       
+       do i=1,LIS_rc%ndas
+          Routing_DAvalid = Routing_DAvalid.and.LIS_rc%Routing_DAinst_valid(i)
+       enddo
+
+       allocate(LIS_Routing_State(LIS_rc%nnest, LIS_rc%nperts))
+       allocate(LIS_Routing_Incr_State(LIS_rc%nnest, LIS_rc%nperts))
+       
+       do n=1,LIS_rc%nnest
+          do k=1,LIS_rc%nperts
+             write(LIS_logunit,*) &
+                  '[INFO] Opening constraints for prognostic state variables ',&
+                  LIS_rc%progattribFile(k)
+             ftn = LIS_getNextUnitNumber()
+             open(ftn, file = LIS_rc%progattribFile(k),status='old')
+             read(ftn,*)
+             read(ftn,*) LIS_rc%nstvars(k)
+             read(ftn,*)
+             
+             allocate(vname(LIS_rc%nstvars(k)))
+             allocate(stmin(LIS_rc%nstvars(k)))
+             allocate(stmax(LIS_rc%nstvars(k)))
+             
+             call ESMF_ArraySpecSet(arrspec1,rank=1,typekind=ESMF_TYPEKIND_R4,&
+                  rc=status)
+             call LIS_verify(status, &
+                  "ESMF_ArraySpecSet failed in LIS_routing_init")
+             
+             write(unit=temp,fmt='(i2.2)') n
+             read(unit=temp,fmt='(2a1)') nestid
+             
+             write(unit=temp,fmt='(i3.3)') k
+             read(unit=temp,fmt='(3a1)') caseid
+
+             LIS_Routing_State(n,k) = ESMF_StateCreate(name="Routing State"//&
+                  nestid(1)//nestid(2)&
+                  //'_'//caseid(1)//caseid(2)//caseid(3), rc=status)
+             call LIS_verify(status, &
+                  "ESMF_StateCreate failed in LIS_routing_init")
+
+             LIS_Routing_Incr_State(n,k) = ESMF_StateCreate(name="Routing Incr State"//&
+                  nestid(1)//nestid(2)// &
+                  '_'//caseid(1)//caseid(2)//caseid(3), rc=status)
+             call LIS_verify(status,&
+                  "ESMF_StateCreate failed in LIS_routing_init")
+
+             do i=1,LIS_rc%nstvars(k)
+                read(ftn,fmt='(a40)') vname(i)
+                read(ftn,*) stmin(i),stmax(i)
+                write(LIS_logunit,*) '[INFO] ',vname(i),stmin(i),stmax(i)
+
+                varField = ESMF_FieldCreate(&
+                     grid=HYMAP2_routing_struc(n)%vecPatch,&
+                     arrayspec=arrspec1,name=trim(vname(i)), rc=status)
+                call LIS_verify(status, &
+                     "ESMF_FieldCreate failed in LIS_routing_init")
+
+                varIncrField = ESMF_FieldCreate(&
+                     grid=HYMAP2_routing_struc(n)%vecPatch,&
+                     arrayspec=arrspec1,name=trim(vname(i)), rc=status)
+                call LIS_verify(status,&
+                     "ESMF_FieldCreate failed in LIS_routing_init")
+
+                call ESMF_AttributeSet(varField,"Max Value",stmax(i),rc=status)
+                call LIS_verify(status,&
+                     "ESMF_AttribteSet failed in LIS_routing_init")
+
+                call ESMF_AttributeSet(varField,"Min Value",stmin(i),rc=status)
+                call LIS_verify(status,&
+                     "ESMF_AttributeSet failed in LIS_routing_init")
+
+
+                call ESMF_AttributeSet(VarIncrField,"Max Value",stmax(i),rc=status)
+                call LIS_verify(status,&
+                     "ESMF_AttributeSet failed in LIS_routing_init")
+
+                call ESMF_AttributeSet(VarIncrField,"Min Value",stmin(i),rc=status)
+                call LIS_verify(status,&
+                     "ESMF_AttributeSet failed in LIS_routing_init")
+
+                call ESMF_StateAdd(LIS_Routing_State(n,k),(/varField/),rc=status)
+                call LIS_verify(status,&
+                     "ESMF_StateAdd failed in LIS_routing_init")
+
+                call ESMF_StateAdd(LIS_Routing_Incr_State(n,k), &
+                     (/VarIncrField/), rc=status)
+                call LIS_verify(status,&
+                     "ESMF_StateAdd failed in LIS_routing_init")
+!----------------------------------------------------------------------------
+! Initially set the fresh increments available status to false. 
+!----------------------------------------------------------------------------
+                call ESMF_AttributeSet(LIS_Routing_Incr_State(n,k), &
+                     name="Fresh Increments Status", value=.false., &
+                     rc=status)
+                call LIS_verify(status,&
+                     "ESMF_AttributeSet failed in LIS_routing_init")
+             enddo
+             deallocate(vname)
+             deallocate(stmin)
+             deallocate(stmax)
+             call LIS_releaseUnitNumber(ftn)
+          enddo
+       enddo
+    endif
+    
+    if(LIS_rc%nperts.gt.0) then 
+       allocate(LIS_Routing_Pert_State(LIS_rc%nnest, LIS_rc%nperts))
+       
+       call ESMF_ArraySpecSet(arrspec2,rank=1,typekind=ESMF_TYPEKIND_R4,&
+            rc=status)
+       call LIS_verify(status,&
+            "ESMF_ArraySpecSet failed in LIS_routing_init")
+
+       do n=1,LIS_rc%nnest
+          allocate(ssdev(LIS_rc%ngrid(n)))
+          do k=1,LIS_rc%nperts
+             if(LIS_rc%perturb_state(k).ne."none") then 
+                allocate(routing_pert%vname(LIS_rc%nstvars(k)))
+                allocate(routing_pert%perttype(LIS_rc%nstvars(k)))
+                allocate(routing_pert%ssdev(LIS_rc%nstvars(k)))
+                allocate(routing_pert%stdmax(LIS_rc%nstvars(k)))
+                allocate(routing_pert%zeromean(LIS_rc%nstvars(k)))
+                allocate(routing_pert%tcorr(LIS_rc%nstvars(k)))
+                allocate(routing_pert%xcorr(LIS_rc%nstvars(k)))
+                allocate(routing_pert%ycorr(LIS_rc%nstvars(k)))
+                allocate(routing_pert%ccorr(LIS_rc%nstvars(k),LIS_rc%nstvars(k)))
+
+                write(unit=temp,fmt='(i2.2)') n
+                read(unit=temp,fmt='(2a1)') nestid
+
+                LIS_Routing_Pert_State(n,k) = ESMF_StateCreate(&
+                     name="Routing_Pert_State"//&
+                     nestid(1)//nestid(2),&
+                     rc=status)
+                call LIS_verify(status,&
+                     "ESMF_StateCreate: Routing_Pert_State failed in LIS_routing_init")
+
+                call LIS_readPertAttributes(LIS_rc%nstvars(k),&
+                     LIS_rc%progpertAttribfile(k),&
+                     routing_pert)
+
+                do i=1,LIS_rc%nstvars(k)
+                   pertField = ESMF_FieldCreate(&
+                        grid=HYMAP2_routing_struc(n)%vecPatch,&
+                        arrayspec=arrspec2,name=trim(routing_pert%vname(i)),&
+                        rc=status)
+
+                   call ESMF_StateAdd(LIS_Routing_Pert_State(n,k),(/pertField/),&
+                        rc=status)
+                   call LIS_verify(status,&
+                        "ESMF_StateAdd failed in LIS_routing_init")
+                enddo
+
+                allocate(pertobjs(LIS_rc%nstvars(k)))
+                allocate(order(LIS_rc%nstvars(k)))
+                allocate(ccorr(LIS_rc%nstvars(k),LIS_rc%nstvars(k)))
+                order = -1
+
+                call ESMF_StateGet(LIS_Routing_Pert_State(n,k),&
+                     itemNameList=pertobjs,rc=status)
+                call LIS_verify(status,&
+                     "ESMF_StateGet failed in LIS_routing_init")
+
+                do i=1,LIS_rc%nstvars(k)
+                   do j=1,LIS_rc%nstvars(k)
+                      if(routing_pert%vname(j).eq.pertobjs(i)) then 
+                         order(i) = j
+                         exit;
+                      endif
+                   enddo
+                enddo
+
+                do i=1,LIS_rc%nstvars(k)
+                   do j=1,LIS_rc%nstvars(k)
+                      ccorr(i,j) = routing_pert%ccorr(order(i),order(j))
+                   enddo
+                enddo
+
+                do i=1,LIS_rc%nstvars(k)
+                   call ESMF_StateGet(LIS_Routing_Pert_State(n,k),&
+                        pertobjs(i),pertField,rc=status)
+                   call LIS_verify(status,&
+                        "ESMF_StateGet failed in LIS_routing_init")
+
+                   call ESMF_AttributeSet(pertField,"Perturbation Type",&
+                        routing_pert%perttype(order(i)),&
+                        rc=status)
+                   call LIS_verify(status,&
+                        "ESMF_AttributeSet: Perturbation Type failed in LIS_routing_init")
+
+                   if(LIS_rc%ngrid(n).gt.0) then 
+                      ssdev = routing_pert%ssdev(order(i))
+
+                      call ESMF_AttributeSet(pertField,"Standard Deviation",&
+                           ssdev,itemCount=LIS_rc%ngrid(n),&
+                           rc=status)
+                      call LIS_verify(status,&
+                           "ESMF_AttributeSet: Standard Deviation failed in LIS_routing_init")
+                   endif
+                   call ESMF_AttributeSet(pertField,"Std Normal Max",&
+                        routing_pert%stdmax(order(i)),&
+                        rc=status)
+                   call LIS_verify(status,&
+                        "ESMF_AttributeSet: Std Normal Max failed in LIS_routing_init")
+
+                   call ESMF_AttributeSet(pertField,"Ensure Zero Mean",&
+                        routing_pert%zeromean(order(i)),&
+                        rc=status)
+                   call LIS_verify(status,&
+                        "ESMF_AttributeSet: Ensure Zero Mean failed in LIS_routing_init")
+
+                   call ESMF_AttributeSet(pertField,&
+                        "Temporal Correlation Scale",&
+                        routing_pert%tcorr(order(i)), rc=status)
+                   call LIS_verify(status,&
+                        "ESMF_AttributeSet: Temporal Correlation Scale failed in LIS_routing_init")
+
+                   call ESMF_AttributeSet(pertField,"X Correlation Scale",&
+                        routing_pert%xcorr(order(i)), rc=status)
+                   call LIS_verify(status,&
+                        "ESMF_AttributeSet: X Correlation Scale failed in LIS_routing_init")
+
+                   call ESMF_AttributeSet(pertField,"Y Correlation Scale",&
+                        routing_pert%ycorr(order(i)), rc=status)
+                   call LIS_verify(status,&
+                        "ESMF_AttributeSet: Y Correlation Scale failed in LIS_routing_init")
+
+                   call ESMF_AttributeSet(pertField,&
+                        "Cross Correlation Strength",&
+                        ccorr(i,:), itemCount=LIS_rc%nstvars(k),&
+                        rc=status)
+                   call LIS_verify(status,&
+                        "ESMF_AttributeSet: Cross Correlation Strength failed in LIS_routing_init")
+
+                enddo
+                deallocate(pertobjs)
+                deallocate(order)
+                deallocate(ccorr)
+                deallocate(routing_pert%vname)
+                deallocate(routing_pert%perttype)
+                deallocate(routing_pert%ssdev)
+                deallocate(routing_pert%stdmax)
+                deallocate(routing_pert%zeromean)
+                deallocate(routing_pert%tcorr)
+                deallocate(routing_pert%xcorr)
+                deallocate(routing_pert%ycorr)
+                deallocate(routing_pert%ccorr)
+             endif
+          enddo
+          deallocate(ssdev)          
+       enddo
+    endif
+    if(Routing_DAvalid) then 
+       max_index = -1
+       do i=1,LIS_rc%nperts
+          if(max_index.eq.-1.and.LIS_rc%perturb_state(i).ne."none") then 
+             max_index = 1
+             alglist(max_index) = LIS_rc%perturb_state(i)
+          else
+             name_found = .false. 
+             do k=1,max_index
+                if(LIS_rc%perturb_state(i).ne."none".and.&
+                     LIS_rc%perturb_state(i).eq.alglist(k)) then
+                   name_found = .true. 
+                endif
+             enddo
+             if(.not.name_found.and.max_index.ne.-1) then 
+                max_index = max_index + 1
+                alglist(max_index) = LIS_rc%perturb_state(i)
+             endif
+          endif
+       enddo
+
+       if(max_index.gt.0) then 
+          do i=1,max_index
+             !Call this only once for all instances of the algorithm
+             call perturbinit(trim(alglist(i))//char(0), 4)
+          enddo
+       endif
+
+       do i=1,LIS_rc%nperts   
+          if(LIS_rc%perturb_state(i).ne."none") then 
+             call perturbsetup(trim(LIS_rc%perturb_state(i))//char(0), 4, i, &
+                  LIS_Routing_State(:,i), LIS_Routing_Pert_State(:,i))
+          endif
+       enddo
+    end if
   end subroutine HYMAP2_routingInit
   !=============================================
   !=============================================

@@ -299,6 +299,15 @@ struct lsmroutinggetrunoffnode
 } ;
 struct lsmroutinggetrunoffnode* lsmroutinggetrunoff_table = NULL;
 
+struct lsmroutinggetswsnode
+{
+  char *name;
+  void (*func)(int*);
+
+  struct lsmroutinggetswsnode* next;
+} ;
+struct lsmroutinggetswsnode* lsmroutinggetsws_table = NULL;
+
 struct lsm2rtmnode
 { 
   char *name;
@@ -2538,6 +2547,82 @@ void FTN(lsmroutinggetrunoff)(char *j, int *n, int len)
   current->func(n); 
 }
 
+//BOP
+// !ROUTINE: registerlsmroutinggetsws
+// \label{registerlsmroutinggetsws}
+//
+// !INTERFACE:
+void FTN(registerlsmroutinggetsws)(char *j, void (*func)(int*),int len)
+//
+// !DESCRIPTION:
+//  creates an entry in the registry for the routine to
+//  set the surface water storage fields from the routing
+//  model within the LSM
+//
+//  \begin{description}
+//  \item[j]
+//   name of the LSM + routing instance
+//  \end{description}
+//EOP
+{
+  int len1;
+  struct lsmroutinggetswsnode* current;
+  struct lsmroutinggetswsnode* pnode;
+  // create node
+
+  len1 = len + 1; // ensure that there is space for terminating null
+  pnode=(struct lsmroutinggetswsnode*) malloc(sizeof(struct lsmroutinggetswsnode));
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
+  pnode->func = func;
+  pnode->next = NULL;
+
+  if(lsmroutinggetsws_table == NULL){
+    lsmroutinggetsws_table = pnode;
+  }
+  else{
+    current = lsmroutinggetsws_table;
+    while(current->next!=NULL){
+      current = current->next;
+    }
+    current->next = pnode;
+  }
+}
+
+//BOP
+// !ROUTINE: lsmroutinggetsws
+// \label{lsmroutinggetsws}
+//
+// !INTERFACE:
+void FTN(lsmroutinggetsws)(char *j, int *n, int len)
+//
+// !DESCRIPTION:
+//  Invokes the registered routine that sets the
+//  surface water storage fields from the routing model
+//  within the LSM
+//
+//  \begin{description}
+//  \item[j]
+//   name of the LSM + routing instance
+//  \item[n]
+//   index of the nest
+//  \end{description}
+//EOP
+{
+  struct lsmroutinggetswsnode* current;
+
+  current = lsmroutinggetsws_table;
+  while(strcmp(current->name,j)!=0){
+    current = current->next;
+    if(current==NULL) {
+      printf("****************Error****************************\n");
+      printf("set sws routine for LSM + routing instance %s is not defined\n",j);
+      printf("program will seg fault.....\n");
+      printf("****************Error****************************\n");
+    }
+  }
+  current->func(n);
+}
 
 //BOP
 // !ROUTINE: registerlsm2rtm
