@@ -78,7 +78,9 @@ contains
       do iy=1,ny
          ix1 = ix + offx - 1
          iy1 = iy + offy -1
-         if(nextx(ix1,iy1)/=imis.and.mask(ix,iy)>0)nseqall=nseqall+1
+         if(nextx(ix1,iy1)/=imis.and.mask(ix,iy)>0) then 
+            nseqall=nseqall+1
+         endif
       enddo
    enddo
    write(LIS_logunit,*)'[get_vector_size] number of cells',nseqall
@@ -377,19 +379,16 @@ contains
     use LIS_logMod,     only : LIS_logunit
     
     implicit none
-    !integer, intent(in)   :: nx                  !number of grids in horizontal
-    !integer, intent(in)   :: ny                  !number of grids in vertical
     integer, intent(in)   :: nz                  !number of stages in the sub-grid discretization
-    !integer, intent(in)   :: seqx(nx*ny)         !1D sequence horizontal
-    !integer, intent(in)   :: seqy(nx*ny)         !1D sequence vertical
     integer, intent(in)  :: nseqall               !length of 1D sequnece for river and mouth
     real,    intent(in)  :: areamat(nseqall)      !area of the grid [m^2]
     real,    intent(in)  :: rivlen(nseqall)       !channel length [m]
     real,    intent(in)  :: rivwth(nseqall)       !river width [m]
-    real,    intent(out) :: fldhgt(nseqall,nz)    !floodplain height
+    real,    intent(in) :: fldhgt(nseqall,nz)    !floodplain height
     real,    intent(in)  :: rivstomax(nseqall)    !maximum river storage [m3]
     real,    intent(out) :: fldstomax(nseqall,nz) !maximum floodplain storage [m3]
     real,    intent(out) :: fldgrd(nseqall,nz)    !floodplain gradient [-]
+    real,    intent(out) :: rivare(nseqall)
 
     integer              :: iseq, i
     real                 :: stonow
@@ -397,29 +396,31 @@ contains
     real                 :: hgtpre
     real                 :: wthinc
     integer              :: i1,i2
-    real                 :: rivare(nseqall)
     real                 :: rivfrc                !fraction of river surface area [-]
     real                 :: hgtprv(nseqall)
     ! ================================================
-    do iseq=1,nseqall
-       !ix=seqx(iseq)
-       !iy=seqy(iseq)
-       rivfrc=rivare(iseq)/areamat(iseq)
-       i1=max(1,int(rivfrc*nz))
-       i2=min(nz,i1+1)
-       hgtprv(iseq)=fldhgt(iseq,i1)+(fldhgt(iseq,i2)-fldhgt(iseq,i1))*(rivfrc*nz-i1)
-       fldhgt(iseq,:)=fldhgt(iseq,:)-hgtprv(iseq)
-       where(fldhgt(iseq,:)<0)fldhgt(iseq,:)=0.
-    enddo
+!ag (24Feb2020)
+!    do iseq=1,nseqall
+!       !ix=seqx(iseq)
+!       !iy=seqy(iseq)
+!       rivfrc=rivare(iseq)/areamat(iseq)
+!       i1=max(1,int(rivfrc*nz))
+!       i2=min(nz,i1+1)
+!       hgtprv(iseq)=fldhgt(iseq,i1)+(fldhgt(iseq,i2)-fldhgt(iseq,i1))*(rivfrc*nz-i1)
+!       fldhgt(iseq,:)=fldhgt(iseq,:)-hgtprv(iseq)
+!       where(fldhgt(iseq,:)<0)fldhgt(iseq,:)=0.
+!    enddo
 
     fldstomax=0.
     fldgrd=0.   
     do iseq=1,nseqall
-        !ix=seqx(iseq)
-        !iy=seqy(iseq)
+        !ag (24Feb2020)
+        rivare(iseq)=rivwth(iseq)*rivlen(iseq)
         stopre=rivstomax(iseq)
         hgtpre=0.
-        wthinc=areamat(iseq)/rivlen(iseq)*0.1
+        !ag (12Feb2020)
+        !wthinc=areamat(iseq)/rivlen(iseq)*0.1
+        wthinc=(areamat(iseq)-rivare(iseq))/rivlen(iseq)/nz
         do i=1,nz
            stonow=rivlen(iseq)*(rivwth(iseq)+wthinc*(real(i)-0.5))*(fldhgt(iseq,i)-hgtpre)
            fldstomax(iseq,i)=stopre+stonow
