@@ -379,6 +379,8 @@ subroutine read_SMAPvod(source, fname, vodobs)
 
   implicit none
 
+  integer                        :: source 
+  character(len=*)               :: fname
   real                           :: vodobs(LVT_rc%lnc,LVT_rc%lnr)
   
 !
@@ -397,8 +399,7 @@ subroutine read_SMAPvod(source, fname, vodobs)
 
 #if (defined USE_HDF5)
 
-  integer                       :: source 
-  character(len=*)              :: fname
+ 
   character*100,   parameter    :: vod_gr_name = "Soil_Moisture_Retrieval_Data"
   character*100,   parameter    :: vod_field_name = "vegetation_opacity"
 
