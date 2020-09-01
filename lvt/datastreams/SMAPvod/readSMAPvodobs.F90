@@ -398,7 +398,6 @@ subroutine read_SMAPvod(source, fname, vodobs)
 !BOP
 
 #if (defined USE_HDF5)
-
  
   character*100,   parameter    :: vod_gr_name = "Soil_Moisture_Retrieval_Data"
   character*100,   parameter    :: vod_field_name = "vegetation_opacity"
