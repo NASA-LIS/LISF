@@ -1246,12 +1246,15 @@ CPC PCP use real time data:               0
 
 `IMERG data directory:` specifies the location of the GPM IMERG precipitation product
 
-`IMERG version:` specifies the version of the GPM IMERG precipitation product. The valid options are: early, late, or final
+`IMERG version:` specifies the version of the GPM IMERG precipitation product. Most current version is V06B.
+
+`IMERG product:` specifies the GPM IMERG precipitation product. Current options are: early, late, or final.
 
 .Example _lvt.config_ entry
 ....
 IMERG data directory:            ../IMERG
-IMERG version:                   final
+IMERG version:                   V06B
+IMERG product:                   final
 ....
 
 ==== ESA CCI soil moisture data
