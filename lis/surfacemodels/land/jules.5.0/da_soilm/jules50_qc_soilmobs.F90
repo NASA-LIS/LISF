@@ -405,10 +405,6 @@ sneqv = 0
            smobs(t) = LIS_rc%udef
         elseif(vegt_obs(t).eq.9) then !Land-ice
            smobs(t) = LIS_rc%udef
-        elseif(l_aggregate) then
-           if (smcmax_obs(t) == 0) then !glacier grid !Yonghwan Kwon
-              smobs(t) = LIS_rc%udef
-           endif
         elseif(sneqv_obs(t).gt.0.001) then 
            smobs(t) = LIS_rc%udef
         elseif(fsno_obs(t).gt.0) then   
@@ -425,6 +421,10 @@ sneqv = 0
         !elseif(smobs(t) - smcwlt_obs(t).lt.0.02) then  ! changed from 0.02 to ... 
         !    smobs(t) = LIS_rc%udef                           !Yonghwan Kwon: Temporary commented out
 
+        elseif(l_aggregate) then
+           if (smcmax_obs(t) == 0) then !glacier grid !Yonghwan Kwon
+              smobs(t) = LIS_rc%udef
+           endif
         endif
      endif
   enddo

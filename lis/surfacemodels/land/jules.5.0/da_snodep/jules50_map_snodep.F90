@@ -114,10 +114,9 @@ subroutine jules50_map_snodep(n,k,OBS_State,LSM_Incr_State)
         snod(t) = snodepobs(st_id)
 
 ! Based on SNODEP, we manually update SWE
-! Units: Snow depth (m), SWE (kg/m2), Density (kg/m3)
-        if(snod(t).lt.1e-6) snoden = 0.0
-        if(snod(t).ge.1e-6.and.snoden.lt.100.0) then
-           snoden = 100.0
+        if(snod(t).lt.2.54E-3) snoden = 0.0
+        if(snod(t).ge.2.54E-3.and.snoden.lt.0.001) then
+           snoden = 0.20
         endif
         sweincr(t)  = snod(t)*snoden - jules50_swe(t)
         snodincr(t) = snod(t) - jules50_snod(t)

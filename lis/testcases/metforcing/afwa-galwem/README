@@ -1,0 +1,46 @@
+GALWEM Forcing Testcase (based on step3b)
+
+This is a test case that uses: 
+  (a) the AGRMET Ops forcing
+  (b) using the bilinear Interpolation
+  (c) uses no elevation correction
+  (d) the Noah 3.3 LSM option 
+  (e) global 1/4 deg. domain
+  (f) a time period from 6z Apr 11 2016 to 18z Apr 11 2016.
+
+This directory contains: 
+  (a) This README file
+  (b) The "ldt.config" file to generate the parameters using LDT
+  (c) the lis.config file used for this test case.
+  (d) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+      to select the output variables
+  (e) An "output.ctl" file used to display the output in GrADS from
+      the LIS run
+  (f) A "testcase.ctl" file used to display the packaged output in
+      GrADS from the OUTPUT tar file provided by the testcase
+  (g) Additional GrADS descriptor files, forcing.ctl and raw.ctl,
+      used to visualize the forcing data at intermidiate stages of LIS
+      processing.
+
+Note that the "ldt.config" and "lis.config" files should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+To run this test case: 
+  (a) Generate the LDT and the LIS executables
+      *NOTE* LIS must be compiled for little_endian I/O
+      *NOTE* LIS must be compiled with the AFWA-specific grib
+             configuration settings
+  (b) Download the sample input data from: 
+	http://lis.gsfc.nasa.gov/Source/testcases  
+      the testcase corresponding to GALWEM FORCING TEST
+  (c) Run the LDT executable using the "ldt.config" file
+      with the testcase input data
+  (d) Run the LIS executable using the "lis.config" file with the
+      testcase input data
+  (e) View the binary output using the sample grads file. 
+
+Caveats:
+  (a) Please note that this is a simple functional test and the output
+      from the testcase is not expected to be used for any scientific
+      evaluation.

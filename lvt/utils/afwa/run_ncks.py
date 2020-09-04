@@ -30,6 +30,7 @@
 # 03 Dec 2019:  Eric Kemp (SSAI), added Greenness_inst for Noah and NoahMP.
 #               Not included for JULES since that LSM doesn't use it.
 # 09 Jan 2020:  Eric Kemp (SSAI), added Tair_f_min for JULES for 3hr.
+# 05 Aug 2020:  Eric Kemp (SSAI), added Albedo_tavg and SmLiqFrac_inst.
 #
 # ------------------------------------------------------------------------------
 
@@ -117,7 +118,8 @@ _LVT_NOAHMP_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
 _LVT_NOAHMP_INVOCATIONS_24HR_LATEST = ['SnowDepth_inst', 'SWE_inst']
 
 # The LVT invocations for JULES LSM output.
-_LVT_JULES_INVOCATIONS_3HR = ['AvgSurfT_inst', 'AvgSurfT_tavg',
+_LVT_JULES_INVOCATIONS_3HR = ['Albedo_tavg',
+                              'AvgSurfT_inst', 'AvgSurfT_tavg',
                               'CanopInt_inst',
                               'Elevation_inst', 'Evap_tavg',
                               'LWdown_f_inst', 'LWdown_f_tavg',
@@ -130,6 +132,7 @@ _LVT_JULES_INVOCATIONS_3HR = ['AvgSurfT_inst', 'AvgSurfT_tavg',
                               'SWE_inst',
                               'SWdown_f_inst', 'SWdown_f_tavg',
                               'SnowDepth_inst',
+                              'SmLiqFrac_inst',
                               'SoilMoist_inst', 'SoilMoist_tavg',
                               'SoilTemp_inst', 'SoilTemp_tavg',
                               'Tair_f_inst', 'Tair_f_max',
