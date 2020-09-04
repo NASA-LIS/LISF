@@ -140,13 +140,15 @@ void FTN(registerrtminit)(char *j, void (*func)(int*), int len)
 //. \end{description}
 //EOP
 { 
+  int len1;
   struct rtminitnode* current;
   struct rtminitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct rtminitnode*) malloc(sizeof(struct rtminitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -212,13 +214,15 @@ void FTN(registerrtmf2t)(char *j, void (*func)(int*), int len)
 //. \end{description}
 //EOP
 { 
+  int len1;
   struct rtmf2tnode* current;
   struct rtmf2tnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct rtmf2tnode*) malloc(sizeof(struct rtmf2tnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -286,13 +290,15 @@ void FTN(registergeometry2rtm)(char *j, void (*func)(int*), int len)
 //. \end{description}
 //EOP
 { 
+  int len1;
   struct geo2rtmnode* current;
   struct geo2rtmnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct geo2rtmnode*) malloc(sizeof(struct geo2rtmnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -360,13 +366,15 @@ void FTN(registerrtmrun)(char *j, void (*func)(int*), int len)
 //. \end{description}
 //EOP
 { 
+  int len1;
   struct rtmrunnode* current;
   struct rtmrunnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct rtmrunnode*) malloc(sizeof(struct rtmrunnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -433,13 +441,15 @@ void FTN(registerrtmpesetdecisionspace)(char *j, void (*func)(void*,void*),int l
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct rtmpesetdecnode* current;
   struct rtmpesetdecnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct rtmpesetdecnode*) malloc(sizeof(struct rtmpesetdecnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -507,13 +517,15 @@ void FTN(registerrtmpegetdecisionspace)(char *j, void (*func)(void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct rtmpegetdecnode* current;
   struct rtmpegetdecnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct rtmpegetdecnode*) malloc(sizeof(struct rtmpegetdecnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -580,13 +592,15 @@ void FTN(registerrtmpesetupdecisionspace)(char *j, void (*func)(void*, void*),in
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct rtmpesetupdecnode* current;
   struct rtmpesetupdecnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct rtmpesetupdecnode*) malloc(sizeof(struct rtmpesetupdecnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -654,13 +668,15 @@ void FTN(registerrtmpesetupobspred)(char *j, void (*func)(void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct rtmpesetupobsprednode* current;
   struct rtmpesetupobsprednode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct rtmpesetupobsprednode*) malloc(sizeof(struct rtmpesetupobsprednode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -727,13 +743,15 @@ void FTN(registerrtmpegetobspred)(char *j, void (*func)(void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct rtmpeobsprednode* current;
   struct rtmpeobsprednode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct rtmpeobsprednode*) malloc(sizeof(struct rtmpeobsprednode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -797,13 +815,15 @@ void FTN(registerrtmreset)(char *j, void (*func)(), int len)
 // 
 //EOP
 { 
+  int len1;
   struct rtmresetnode* current;
   struct rtmresetnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct rtmresetnode*) malloc(sizeof(struct rtmresetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

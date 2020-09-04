@@ -89,9 +89,6 @@ subroutine read_mrms_grib( n, fname, findex, order, yr, mo, da, ferror_mrms_grib
      mrms_grib_struc(n)%metdata2 = LIS_rc%udef
   endif
 
-!-- Set necessary parameters for call to interp_mrms_grib   
-  precip_regrid = LIS_rc%udef
-
 !-- Check initially if file exists:
   inquire (file=fname, exist=file_exists ) ! Check if file exists
   if (.not. file_exists)  then 

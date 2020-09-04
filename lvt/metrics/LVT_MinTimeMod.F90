@@ -293,19 +293,21 @@ contains
     type(LVT_statsEntry)    :: stats
     type(LVT_metricEntry)   :: metric
 !EOP
-    integer    :: t,k,m,m_k,o_k,tind
+    integer    :: t,k,m,m_k,o_k,tind,kk
     integer    :: time
 
 !----------------------------------------------------------------
 !It is assumed temporal lag is not chosen in this setup
 !----------------------------------------------------------------
-    if(LVT_rc%tlag.gt.0) then 
-       write(LVT_logunit,*) "[ERR] "
-       write(LVT_logunit,*) "[ERR] Non-zero temporal lag specification is not "
-       write(LVT_logunit,*) "[ERR] supported for MinTime metric"
-       call LVT_endrun()
-    endif
-
+    do kk=1,LVT_rc%nDataStreams
+       if(LVT_rc%tlag(kk).gt.0) then 
+          write(LVT_logunit,*) "[ERR] "
+          write(LVT_logunit,*) "[ERR] Non-zero temporal lag specification is not "
+          write(LVT_logunit,*) "[ERR] supported for MinTime metric"
+          call LVT_endrun()
+       endif
+    enddo
+    
     if(stats%selectOpt.eq.1.and.&
          model%selectNlevs.ge.1) then        
        if(LVT_mintime_struc%time_option.eq."doy") then 

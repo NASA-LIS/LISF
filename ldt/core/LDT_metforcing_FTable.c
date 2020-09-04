@@ -100,13 +100,15 @@ void FTN(registerinitmetforc)(char *j, void (*func)(int*), int len)
 // \end{description}
 //EOP
 { 
+  int len1;
   struct forcinginputnode* current;
   struct forcinginputnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct forcinginputnode*) malloc(sizeof(struct forcinginputnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -179,14 +181,15 @@ void FTN(registerretrievemetforc)(char *j,void (*func)(int*, int*), int len)
 // \end{description}
 //EOP
 { 
-
+  int len1;
   struct forcinggetnode* current;
   struct forcinggetnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct forcinggetnode*) malloc(sizeof(struct forcinggetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -257,13 +260,15 @@ void FTN(registertimeinterpmetforc)(char *j,void (*func)(int*, int*), int len)
 // \end{description}
 //EOP
 { 
+  int len1;
   struct forcingtinterpnode* current;
   struct forcingtinterpnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct forcingtinterpnode*) malloc(sizeof(struct forcingtinterpnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -336,13 +341,15 @@ void FTN(registerfinalmetforc)(char *j,void (*func)(int*), int len)
 // \end{description}
 //EOP
 { 
+  int len1;
   struct forcingfinalnode* current;
   struct forcingfinalnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct forcingfinalnode*) malloc(sizeof(struct forcingfinalnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -413,13 +420,15 @@ void FTN(registerresetmetforc)(char *j,void (*func)(int*), int len)
 // \end{description}
 //EOP
 { 
+  int len1;
   struct forcingresetnode* current;
   struct forcingresetnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct forcingresetnode*) malloc(sizeof(struct forcingresetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

@@ -1,0 +1,30 @@
+
+.Sample _.bashrc_ file
+----
+# This file is for interactive shells.
+# On some systems, it is loaded in some non-interactive cases.
+# Return if this is not an interactive shell.
+[ "$PS1" ] || return
+
+
+#
+# Set aliases
+#
+unalias -a
+alias ls="ls --color=auto"
+
+
+#
+# Set prompt
+#
+export PS1="\[\e[36m\]\h\[\e[00m\][\!]\$ "
+
+
+#
+# Set environment
+#
+export LS_COLORS='no=00:fi=00:di=33:ln=36:pi=40;33:so=01;35:bd=40;33;01:cd=40;33;01:or=01;05;37;41:mi=01;05;37;41:ex=32:*.cmd=32:*.exe=32:*.com=32:*.btm=32:*.bat=32:*.sh=32:*.csh=32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.gz=01;31:*.bz2=01;31:*.bz=01;31:*.tz=01;31:*.rpm=01;31:*.cpio=01;31:*.jpg=01;35:*.gif=01;35:*.bmp=01;35:*.xbm=01;35:*.xpm=01;35:*.png=01;35:*.tif=01;35'
+
+export MANPATH=$MANPATH:/usr/slurm/share/man
+----
+

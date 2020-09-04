@@ -44,10 +44,15 @@ module LIS_lsmMod
   use LIS_coreMod
   use LIS_perturbMod
   use LIS_logMod
+  use LIS_DAobservationsMod
+  use LIS_DAobs_pluginMod
+  use LIS_routingMod
+  use map_utils
 
   implicit none
 
   PRIVATE
+
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !-----------------------------------------------------------------------------
@@ -64,6 +69,24 @@ module LIS_lsmMod
   public :: LIS_lsm_finalize   ! cleanup allocated structures
   public :: LIS_lsm_reset      ! reset structures
   public :: LIS_lsm_diagnoseVarsForDA  ! DA related updates to variables LSM
+  public :: LIS_lsm_DAGetObsPred
+  public :: LIS_lsm_DAGetStateVar
+  public :: LIS_lsm_DASetStateVar
+  public :: LIS_lsm_DAScaleStateVar
+  public :: LIS_lsm_DADescaleStateVar
+  public :: LIS_lsm_DAUpdateState
+  public :: LIS_lsm_DAQCState
+  public :: LIS_lsm_DAgetStateSpaceSize
+  public :: LIS_lsm_DAextractStateVector
+  public :: LIS_lsm_DAsetFreshIncrementsStatus
+  public :: LIS_lsm_DAgetFreshIncrementsStatus
+  public :: LIS_lsm_DAsetAnlysisUpdates
+  public :: LIS_lsm_DAmapTileSpaceToObsSpace
+  public :: LIS_lsm_DAgetStateVarNames
+  public :: LIS_lsm_DAobsTransform
+  public :: LIS_lsm_DAmapObsToLSM
+  public :: LIS_lsm_DAqcObsState
+  public :: LIS_lsm_getlatlons
 !-----------------------------------------------------------------------------
 ! !PUBLIC TYPES:
 !-----------------------------------------------------------------------------  
@@ -147,6 +170,7 @@ contains
     integer              :: max_index
     logical              :: name_found
     character*20         :: alglist(10)
+    logical              :: LSM_DAvalid
     integer              :: rc
 
     TRACE_ENTER("lsm_init")
@@ -154,298 +178,318 @@ contains
          label="Land surface model:",rc=rc)
     call LIS_verify(rc,'Land surface model: option not specified in the config file')
     
+    allocate(LIS_rc%LSM_DAinst_valid(LIS_rc%ndas))
+
+    do i=1,LIS_rc%ndas
+       call LIS_isDAinstanceValid(LIS_rc%daset(i),&
+            "LSM",LIS_rc%LSM_DAinst_valid(i))
+    enddo
+    
 !---------------------------------------------------------------------
 !  create the LSM state if data assimilation is being done, 
 !  create the LSM perturbation state only if perturbation
 !  option is turned on. 
 !---------------------------------------------------------------------
+    LSM_DAvalid = .false. 
+
     if(LIS_rc%ndas.gt.0.or.LIS_rc%nperts.gt.0) then 
 
-       allocate(LIS_LSM_State(LIS_rc%nnest, LIS_rc%nperts))
-       allocate(LIS_LSM_Incr_State(LIS_rc%nnest, LIS_rc%nperts))
+       LSM_DAvalid = .true. 
 
-       do n=1,LIS_rc%nnest
-          do k=1,LIS_rc%nperts
-             write(LIS_logunit,*) &
-                  '[INFO] Opening constraints for prognostic state variables ',&
-                  LIS_rc%progattribFile(k)
-             ftn = LIS_getNextUnitNumber()
-             open(ftn, file = LIS_rc%progattribFile(k),status='old')
-             read(ftn,*)
-             read(ftn,*) LIS_rc%nstvars(k)
-             read(ftn,*)
-
-             allocate(vname(LIS_rc%nstvars(k)))
-             allocate(stmin(LIS_rc%nstvars(k)))
-             allocate(stmax(LIS_rc%nstvars(k)))
-
-             call ESMF_ArraySpecSet(arrspec1,rank=1,typekind=ESMF_TYPEKIND_R4,&
-                  rc=status)
-             call LIS_verify(status, &
-                  "ESMF_ArraySpecSet failed in LIS_lsm_init")
-
-             write(unit=temp,fmt='(i2.2)') n
-             read(unit=temp,fmt='(2a1)') nestid
-
-             write(unit=temp,fmt='(i3.3)') k
-             read(unit=temp,fmt='(3a1)') caseid
-          
-             LIS_LSM_State(n,k) = ESMF_StateCreate(name="LSM State"//&
-                  nestid(1)//nestid(2)&
-                  //'_'//caseid(1)//caseid(2)//caseid(3), rc=status)
-             call LIS_verify(status, &
-                  "ESMF_StateCreate failed in LIS_lsm_init")
-
-             LIS_LSM_Incr_State(n,k) = ESMF_StateCreate(name="LSM Incr State"//&
-                  nestid(1)//nestid(2)// &
-                  '_'//caseid(1)//caseid(2)//caseid(3), rc=status)
-             call LIS_verify(status,&
-                  "ESMF_StateCreate failed in LIS_lsm_init")
-       
-             do i=1,LIS_rc%nstvars(k)
-                read(ftn,fmt='(a40)') vname(i)
-                read(ftn,*) stmin(i),stmax(i)
-                write(LIS_logunit,*) '[INFO] ',vname(i),stmin(i),stmax(i)
-             
-                varField = ESMF_FieldCreate(grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
-                     arrayspec=arrspec1,name=trim(vname(i)), rc=status)
-                call LIS_verify(status, &
-                     "ESMF_FieldCreate failed in LIS_lsm_init")
-             
-                varIncrField = ESMF_FieldCreate(grid=&
-                     LIS_vecPatch(n,LIS_rc%lsm_index),&
-                     arrayspec=arrspec1,name=trim(vname(i)), rc=status)
-                call LIS_verify(status,&
-                     "ESMF_FieldCreate failed in LIS_lsm_init")
-
-                call ESMF_AttributeSet(varField,"Max Value",stmax(i),rc=status)
-                call LIS_verify(status,&
-                     "ESMF_AttribteSet failed in LIS_lsm_init")
-             
-                call ESMF_AttributeSet(varField,"Min Value",stmin(i),rc=status)
-                call LIS_verify(status,&
-                     "ESMF_AttributeSet failed in LIS_lsm_init")
-
-
-                call ESMF_AttributeSet(VarIncrField,"Max Value",stmax(i),rc=status)
-                call LIS_verify(status,&
-                     "ESMF_AttributeSet failed in LIS_lsm_init")
-                
-                call ESMF_AttributeSet(VarIncrField,"Min Value",stmin(i),rc=status)
-                call LIS_verify(status,&
-                     "ESMF_AttributeSet failed in LIS_lsm_init")
-
-                call ESMF_StateAdd(LIS_LSM_State(n,k),(/varField/),rc=status)
-                call LIS_verify(status,&
-                     "ESMF_StateAdd failed in LIS_lsm_init")
-
-                call ESMF_StateAdd(LIS_LSM_Incr_State(n,k), &
-                     (/VarIncrField/), rc=status)
-                call LIS_verify(status,&
-                     "ESMF_StateAdd failed in LIS_lsm_init")
-!----------------------------------------------------------------------------
-! Initially set the fresh increments available status to false. 
-!----------------------------------------------------------------------------
-                call ESMF_AttributeSet(LIS_LSM_Incr_State(n,k), &
-                     name="Fresh Increments Status", value=.false., &
-                     rc=status)
-                call LIS_verify(status,&
-                     "ESMF_AttributeSet failed in LIS_lsm_init")
-             enddo
-             deallocate(vname)
-             deallocate(stmin)
-             deallocate(stmax)
-             call LIS_releaseUnitNumber(ftn)
-          enddo
-          LIS_sfmodel_struc(n)%models_used = &
-               trim(LIS_sfmodel_struc(n)%models_used)//&
-               trim(LIS_rc%lsm)
+       do i=1,LIS_rc%ndas
+          LSM_DAvalid = LSM_DAvalid.and.LIS_rc%LSM_DAinst_valid(i)
        enddo
-    endif
-    
-    if(LIS_rc%nperts.gt.0) then 
-       allocate(LIS_LSM_Pert_State(LIS_rc%nnest, LIS_rc%nperts))
-       
-       call ESMF_ArraySpecSet(arrspec2,rank=1,typekind=ESMF_TYPEKIND_R4,&
-            rc=status)
-       call LIS_verify(status,&
-            "ESMF_ArraySpecSet failed in LIS_lsm_init")
-       
-       do n=1,LIS_rc%nnest
-          allocate(ssdev(LIS_rc%ngrid(n)))
-          do k=1,LIS_rc%nperts
-             if(LIS_rc%perturb_state(k).ne."none") then 
-                allocate(lsm_pert%vname(LIS_rc%nstvars(k)))
-                allocate(lsm_pert%perttype(LIS_rc%nstvars(k)))
-                allocate(lsm_pert%ssdev(LIS_rc%nstvars(k)))
-                allocate(lsm_pert%stdmax(LIS_rc%nstvars(k)))
-                allocate(lsm_pert%zeromean(LIS_rc%nstvars(k)))
-                allocate(lsm_pert%tcorr(LIS_rc%nstvars(k)))
-                allocate(lsm_pert%xcorr(LIS_rc%nstvars(k)))
-                allocate(lsm_pert%ycorr(LIS_rc%nstvars(k)))
-                allocate(lsm_pert%ccorr(LIS_rc%nstvars(k),LIS_rc%nstvars(k)))
 
+       if(LSM_DAvalid) then 
+          allocate(LIS_LSM_State(LIS_rc%nnest, LIS_rc%nperts))
+          allocate(LIS_LSM_Incr_State(LIS_rc%nnest, LIS_rc%nperts))
+          
+          do n=1,LIS_rc%nnest
+             do k=1,LIS_rc%nperts
+                write(LIS_logunit,*) &
+                     '[INFO] Opening constraints for prognostic state variables ',&
+                     LIS_rc%progattribFile(k)
+                ftn = LIS_getNextUnitNumber()
+                open(ftn, file = LIS_rc%progattribFile(k),status='old')
+                read(ftn,*)
+                read(ftn,*) LIS_rc%nstvars(k)
+                read(ftn,*)
+                
+                allocate(vname(LIS_rc%nstvars(k)))
+                allocate(stmin(LIS_rc%nstvars(k)))
+                allocate(stmax(LIS_rc%nstvars(k)))
+                
+                call ESMF_ArraySpecSet(arrspec1,rank=1,typekind=ESMF_TYPEKIND_R4,&
+                     rc=status)
+                call LIS_verify(status, &
+                     "ESMF_ArraySpecSet failed in LIS_lsm_init")
+                
                 write(unit=temp,fmt='(i2.2)') n
                 read(unit=temp,fmt='(2a1)') nestid
                 
-                LIS_LSM_Pert_State(n,k) = ESMF_StateCreate(&
-                     name="LSM_Pert_State"//&
-                     nestid(1)//nestid(2),&
-                     rc=status)
-                call LIS_verify(status,&
-                     "ESMF_StateCreate: LSM_Pert_State failed in LIS_lsm_init")
+                write(unit=temp,fmt='(i3.3)') k
+                read(unit=temp,fmt='(3a1)') caseid
                 
-                call LIS_readPertAttributes(LIS_rc%nstvars(k),&
-                     LIS_rc%progpertAttribfile(k),&
-                     lsm_pert)
-                   
+                LIS_LSM_State(n,k) = ESMF_StateCreate(name="LSM State"//&
+                     nestid(1)//nestid(2)&
+                     //'_'//caseid(1)//caseid(2)//caseid(3), rc=status)
+                call LIS_verify(status, &
+                     "ESMF_StateCreate failed in LIS_lsm_init")
+                
+                LIS_LSM_Incr_State(n,k) = ESMF_StateCreate(name="LSM Incr State"//&
+                     nestid(1)//nestid(2)// &
+                     '_'//caseid(1)//caseid(2)//caseid(3), rc=status)
+                call LIS_verify(status,&
+                     "ESMF_StateCreate failed in LIS_lsm_init")
+                
                 do i=1,LIS_rc%nstvars(k)
-                   pertField = ESMF_FieldCreate(grid=&
-                        LIS_vecPatch(n,LIS_rc%lsm_index),&
-                        arrayspec=arrspec2,name=trim(lsm_pert%vname(i)),&
-                        rc=status)
+                   read(ftn,fmt='(a40)') vname(i)
+                   read(ftn,*) stmin(i),stmax(i)
+                   write(LIS_logunit,*) '[INFO] ',vname(i),stmin(i),stmax(i)
                    
-                   call ESMF_StateAdd(LIS_LSM_Pert_State(n,k),(/pertField/),&
-                        rc=status)
+                   varField = ESMF_FieldCreate(grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
+                        arrayspec=arrspec1,name=trim(vname(i)), rc=status)
+                   call LIS_verify(status, &
+                        "ESMF_FieldCreate failed in LIS_lsm_init")
+                   
+                   varIncrField = ESMF_FieldCreate(grid=&
+                        LIS_vecPatch(n,LIS_rc%lsm_index),&
+                        arrayspec=arrspec1,name=trim(vname(i)), rc=status)
+                   call LIS_verify(status,&
+                        "ESMF_FieldCreate failed in LIS_lsm_init")
+                   
+                   call ESMF_AttributeSet(varField,"Max Value",stmax(i),rc=status)
+                   call LIS_verify(status,&
+                        "ESMF_AttribteSet failed in LIS_lsm_init")
+                   
+                   call ESMF_AttributeSet(varField,"Min Value",stmin(i),rc=status)
+                   call LIS_verify(status,&
+                        "ESMF_AttributeSet failed in LIS_lsm_init")
+                   
+                   
+                   call ESMF_AttributeSet(VarIncrField,"Max Value",stmax(i),rc=status)
+                   call LIS_verify(status,&
+                        "ESMF_AttributeSet failed in LIS_lsm_init")
+                   
+                   call ESMF_AttributeSet(VarIncrField,"Min Value",stmin(i),rc=status)
+                   call LIS_verify(status,&
+                        "ESMF_AttributeSet failed in LIS_lsm_init")
+                   
+                   call ESMF_StateAdd(LIS_LSM_State(n,k),(/varField/),rc=status)
                    call LIS_verify(status,&
                         "ESMF_StateAdd failed in LIS_lsm_init")
-                enddo
-
-                allocate(pertobjs(LIS_rc%nstvars(k)))
-                allocate(order(LIS_rc%nstvars(k)))
-                allocate(ccorr(LIS_rc%nstvars(k),LIS_rc%nstvars(k)))
-                order = -1
-
-                call ESMF_StateGet(LIS_LSM_Pert_State(n,k),&
-                     itemNameList=pertobjs,rc=status)
-                call LIS_verify(status,&
-                     "ESMF_StateGet failed in LIS_lsm_init")
-                
-                do i=1,LIS_rc%nstvars(k)
-                   do j=1,LIS_rc%nstvars(k)
-                      if(lsm_pert%vname(j).eq.pertobjs(i)) then 
-                         order(i) = j
-                         exit;
-                      endif
-                   enddo
-                enddo
-                
-                do i=1,LIS_rc%nstvars(k)
-                   do j=1,LIS_rc%nstvars(k)
-                      ccorr(i,j) = lsm_pert%ccorr(order(i),order(j))
-                   enddo
-                enddo
-                
-                do i=1,LIS_rc%nstvars(k)
-                   call ESMF_StateGet(LIS_LSM_Pert_State(n,k),&
-                        pertobjs(i),pertField,rc=status)
-                   call LIS_verify(status,&
-                        "ESMF_StateGet failed in LIS_lsm_init")
                    
-                   call ESMF_AttributeSet(pertField,"Perturbation Type",&
-                        lsm_pert%perttype(order(i)),&
+                   call ESMF_StateAdd(LIS_LSM_Incr_State(n,k), &
+                        (/VarIncrField/), rc=status)
+                   call LIS_verify(status,&
+                        "ESMF_StateAdd failed in LIS_lsm_init")
+!----------------------------------------------------------------------------
+! Initially set the fresh increments available status to false. 
+!----------------------------------------------------------------------------
+                   call ESMF_AttributeSet(LIS_LSM_Incr_State(n,k), &
+                        name="Fresh Increments Status", value=.false., &
                         rc=status)
                    call LIS_verify(status,&
-                        "ESMF_AttributeSet: Perturbation Type failed in LIS_lsm_init")
-
-                   if(LIS_rc%ngrid(n).gt.0) then 
-                      ssdev = lsm_pert%ssdev(order(i))
+                        "ESMF_AttributeSet failed in LIS_lsm_init")
+                enddo
+                deallocate(vname)
+                deallocate(stmin)
+                deallocate(stmax)
+                call LIS_releaseUnitNumber(ftn)
+             enddo
+             LIS_sfmodel_struc(n)%models_used = &
+                  trim(LIS_sfmodel_struc(n)%models_used)//&
+                  trim(LIS_rc%lsm)
+          enddo
+       
+          if(LIS_rc%nperts.gt.0) then 
+             allocate(LIS_LSM_Pert_State(LIS_rc%nnest, LIS_rc%nperts))
+             
+             call ESMF_ArraySpecSet(arrspec2,rank=1,typekind=ESMF_TYPEKIND_R4,&
+                  rc=status)
+             call LIS_verify(status,&
+                  "ESMF_ArraySpecSet failed in LIS_lsm_init")
+             
+             do n=1,LIS_rc%nnest
+                allocate(ssdev(LIS_rc%ngrid(n)))
+                do k=1,LIS_rc%nperts
+                   if(LIS_rc%perturb_state(k).ne."none") then 
+                      allocate(lsm_pert%vname(LIS_rc%nstvars(k)))
+                      allocate(lsm_pert%perttype(LIS_rc%nstvars(k)))
+                      allocate(lsm_pert%ssdev(LIS_rc%nstvars(k)))
+                      allocate(lsm_pert%stdmax(LIS_rc%nstvars(k)))
+                      allocate(lsm_pert%zeromean(LIS_rc%nstvars(k)))
+                      allocate(lsm_pert%tcorr(LIS_rc%nstvars(k)))
+                      allocate(lsm_pert%xcorr(LIS_rc%nstvars(k)))
+                      allocate(lsm_pert%ycorr(LIS_rc%nstvars(k)))
+                      allocate(lsm_pert%ccorr(LIS_rc%nstvars(k),LIS_rc%nstvars(k)))
                       
-                      call ESMF_AttributeSet(pertField,"Standard Deviation",&
-                           ssdev,itemCount=LIS_rc%ngrid(n),&
+                      write(unit=temp,fmt='(i2.2)') n
+                      read(unit=temp,fmt='(2a1)') nestid
+                      
+                      LIS_LSM_Pert_State(n,k) = ESMF_StateCreate(&
+                           name="LSM_Pert_State"//&
+                           nestid(1)//nestid(2),&
                            rc=status)
                       call LIS_verify(status,&
-                           "ESMF_AttributeSet: Standard Deviation failed in LIS_lsm_init")
+                           "ESMF_StateCreate: LSM_Pert_State failed in LIS_lsm_init")
+                      
+                      call LIS_readPertAttributes(LIS_rc%nstvars(k),&
+                           LIS_rc%progpertAttribfile(k),&
+                           lsm_pert)
+                      
+                      do i=1,LIS_rc%nstvars(k)
+                         pertField = ESMF_FieldCreate(grid=&
+                              LIS_vecPatch(n,LIS_rc%lsm_index),&
+                              arrayspec=arrspec2,name=trim(lsm_pert%vname(i)),&
+                              rc=status)
+                         
+                         call ESMF_StateAdd(LIS_LSM_Pert_State(n,k),(/pertField/),&
+                              rc=status)
+                         call LIS_verify(status,&
+                              "ESMF_StateAdd failed in LIS_lsm_init")
+                      enddo
+                      
+                      allocate(pertobjs(LIS_rc%nstvars(k)))
+                      allocate(order(LIS_rc%nstvars(k)))
+                      allocate(ccorr(LIS_rc%nstvars(k),LIS_rc%nstvars(k)))
+                      order = -1
+                      
+                      call ESMF_StateGet(LIS_LSM_Pert_State(n,k),&
+                           itemNameList=pertobjs,rc=status)
+                      call LIS_verify(status,&
+                           "ESMF_StateGet failed in LIS_lsm_init")
+                      
+                      do i=1,LIS_rc%nstvars(k)
+                         do j=1,LIS_rc%nstvars(k)
+                            if(lsm_pert%vname(j).eq.pertobjs(i)) then 
+                               order(i) = j
+                               exit;
+                            endif
+                         enddo
+                      enddo
+                      
+                      do i=1,LIS_rc%nstvars(k)
+                         do j=1,LIS_rc%nstvars(k)
+                            ccorr(i,j) = lsm_pert%ccorr(order(i),order(j))
+                         enddo
+                      enddo
+                      
+                      do i=1,LIS_rc%nstvars(k)
+                         call ESMF_StateGet(LIS_LSM_Pert_State(n,k),&
+                              pertobjs(i),pertField,rc=status)
+                         call LIS_verify(status,&
+                              "ESMF_StateGet failed in LIS_lsm_init")
+                         
+                         call ESMF_AttributeSet(pertField,"Perturbation Type",&
+                              lsm_pert%perttype(order(i)),&
+                              rc=status)
+                         call LIS_verify(status,&
+                              "ESMF_AttributeSet: Perturbation Type failed in LIS_lsm_init")
+                         
+                         if(LIS_rc%ngrid(n).gt.0) then 
+                            ssdev = lsm_pert%ssdev(order(i))
+                            
+                            call ESMF_AttributeSet(pertField,"Standard Deviation",&
+                                 ssdev,itemCount=LIS_rc%ngrid(n),&
+                                 rc=status)
+                            call LIS_verify(status,&
+                                 "ESMF_AttributeSet: Standard Deviation failed in LIS_lsm_init")
+                         endif
+                         call ESMF_AttributeSet(pertField,"Std Normal Max",&
+                              lsm_pert%stdmax(order(i)),&
+                              rc=status)
+                         call LIS_verify(status,&
+                              "ESMF_AttributeSet: Std Normal Max failed in LIS_lsm_init")
+                         
+                         call ESMF_AttributeSet(pertField,"Ensure Zero Mean",&
+                              lsm_pert%zeromean(order(i)),&
+                              rc=status)
+                         call LIS_verify(status,&
+                              "ESMF_AttributeSet: Ensure Zero Mean failed in LIS_lsm_init")
+                         
+                         call ESMF_AttributeSet(pertField,&
+                              "Temporal Correlation Scale",&
+                              lsm_pert%tcorr(order(i)), rc=status)
+                         call LIS_verify(status,&
+                              "ESMF_AttributeSet: Temporal Correlation Scale failed in LIS_lsm_init")
+                         
+                         call ESMF_AttributeSet(pertField,"X Correlation Scale",&
+                              lsm_pert%xcorr(order(i)), rc=status)
+                         call LIS_verify(status,&
+                              "ESMF_AttributeSet: X Correlation Scale failed in LIS_lsm_init")
+                         
+                         call ESMF_AttributeSet(pertField,"Y Correlation Scale",&
+                              lsm_pert%ycorr(order(i)), rc=status)
+                         call LIS_verify(status,&
+                              "ESMF_AttributeSet: Y Correlation Scale failed in LIS_lsm_init")
+                         
+                         call ESMF_AttributeSet(pertField,&
+                              "Cross Correlation Strength",&
+                              ccorr(i,:), itemCount=LIS_rc%nstvars(k),&
+                              rc=status)
+                         call LIS_verify(status,&
+                              "ESMF_AttributeSet: Cross Correlation Strength failed in LIS_lsm_init")
+                         
+                      enddo
+                      deallocate(pertobjs)
+                      deallocate(order)
+                      deallocate(ccorr)
+                      deallocate(lsm_pert%vname)
+                      deallocate(lsm_pert%perttype)
+                      deallocate(lsm_pert%ssdev)
+                      deallocate(lsm_pert%stdmax)
+                      deallocate(lsm_pert%zeromean)
+                      deallocate(lsm_pert%tcorr)
+                      deallocate(lsm_pert%xcorr)
+                      deallocate(lsm_pert%ycorr)
+                      deallocate(lsm_pert%ccorr)
                    endif
-                   call ESMF_AttributeSet(pertField,"Std Normal Max",&
-                        lsm_pert%stdmax(order(i)),&
-                        rc=status)
-                   call LIS_verify(status,&
-                        "ESMF_AttributeSet: Std Normal Max failed in LIS_lsm_init")
-                   
-                   call ESMF_AttributeSet(pertField,"Ensure Zero Mean",&
-                        lsm_pert%zeromean(order(i)),&
-                        rc=status)
-                   call LIS_verify(status,&
-                        "ESMF_AttributeSet: Ensure Zero Mean failed in LIS_lsm_init")
-                   
-                   call ESMF_AttributeSet(pertField,&
-                        "Temporal Correlation Scale",&
-                        lsm_pert%tcorr(order(i)), rc=status)
-                   call LIS_verify(status,&
-                        "ESMF_AttributeSet: Temporal Correlation Scale failed in LIS_lsm_init")
-                   
-                   call ESMF_AttributeSet(pertField,"X Correlation Scale",&
-                        lsm_pert%xcorr(order(i)), rc=status)
-                   call LIS_verify(status,&
-                        "ESMF_AttributeSet: X Correlation Scale failed in LIS_lsm_init")
-                   
-                   call ESMF_AttributeSet(pertField,"Y Correlation Scale",&
-                        lsm_pert%ycorr(order(i)), rc=status)
-                   call LIS_verify(status,&
-                        "ESMF_AttributeSet: Y Correlation Scale failed in LIS_lsm_init")
-                   
-                   call ESMF_AttributeSet(pertField,&
-                        "Cross Correlation Strength",&
-                        ccorr(i,:), itemCount=LIS_rc%nstvars(k),&
-                        rc=status)
-                   call LIS_verify(status,&
-                        "ESMF_AttributeSet: Cross Correlation Strength failed in LIS_lsm_init")
-                                     
                 enddo
-                deallocate(pertobjs)
-                deallocate(order)
-                deallocate(ccorr)
-                deallocate(lsm_pert%vname)
-                deallocate(lsm_pert%perttype)
-                deallocate(lsm_pert%ssdev)
-                deallocate(lsm_pert%stdmax)
-                deallocate(lsm_pert%zeromean)
-                deallocate(lsm_pert%tcorr)
-                deallocate(lsm_pert%xcorr)
-                deallocate(lsm_pert%ycorr)
-                deallocate(lsm_pert%ccorr)
-             endif
-          enddo
-          deallocate(ssdev)          
-       enddo
-    endif
+                deallocate(ssdev)          
+             enddo
+          endif
+       endif
+    end if
 
     call lsminit(trim(LIS_rc%lsm)//char(0))
     
-    max_index = -1
-    do i=1,LIS_rc%nperts
-       if(max_index.eq.-1.and.LIS_rc%perturb_state(i).ne."none") then 
-          max_index = 1
-          alglist(max_index) = LIS_rc%perturb_state(i)
-       else
-          name_found = .false. 
-          do k=1,max_index
-             if(LIS_rc%perturb_state(i).ne."none".and.&
-                  LIS_rc%perturb_state(i).eq.alglist(k)) then
-                name_found = .true. 
-             endif
-          enddo
-          if(.not.name_found.and.max_index.ne.-1) then 
-             max_index = max_index + 1
+    if(LSM_DAvalid) then 
+       max_index = -1
+       do i=1,LIS_rc%nperts
+          if(max_index.eq.-1.and.LIS_rc%perturb_state(i).ne."none") then 
+             max_index = 1
              alglist(max_index) = LIS_rc%perturb_state(i)
+          else
+             name_found = .false. 
+             do k=1,max_index
+                if(LIS_rc%perturb_state(i).ne."none".and.&
+                     LIS_rc%perturb_state(i).eq.alglist(k)) then
+                   name_found = .true. 
+                endif
+             enddo
+             if(.not.name_found.and.max_index.ne.-1) then 
+                max_index = max_index + 1
+                alglist(max_index) = LIS_rc%perturb_state(i)
+             endif
           endif
-       endif
-    enddo
-    
-    if(max_index.gt.0) then 
-       do i=1,max_index
-          !Call this only once for all instances of the algorithm
-          call perturbinit(trim(alglist(i))//char(0), 2)
        enddo
-    endif       
-
-    do i=1,LIS_rc%nperts   
-       if(LIS_rc%perturb_state(i).ne."none") then 
-          call perturbsetup(trim(LIS_rc%perturb_state(i))//char(0), 2, i, &
-               LIS_LSM_State(:,i), LIS_LSM_Pert_State(:,i))
+       
+       if(max_index.gt.0) then 
+          do i=1,max_index
+          !Call this only once for all instances of the algorithm
+             call perturbinit(trim(alglist(i))//char(0), 2)
+          enddo
        endif
-    enddo
+       
+       do i=1,LIS_rc%nperts   
+          if(LIS_rc%perturb_state(i).ne."none") then 
+             call perturbsetup(trim(LIS_rc%perturb_state(i))//char(0), 2, i, &
+                  LIS_LSM_State(:,i), LIS_LSM_Pert_State(:,i))
+          endif
+       enddo
+    endif
+
     TRACE_EXIT("lsm_init")
 
   end subroutine LIS_lsm_init
@@ -553,30 +597,32 @@ contains
 
     TRACE_ENTER("lsm_perturb")
     do k=1, LIS_rc%nperts
-       if(LIS_rc%perturb_state(k).ne."none") then 
-          curr_time = float(LIS_rc%hr)*3600+60*float(LIS_rc%mn)+float(LIS_rc%ss)
-          if(mod(curr_time,real(LIS_rc%pertstateInterval(k))).eq.0) then
+       if(LIS_rc%LSM_DAinst_valid(k)) then
+          if(LIS_rc%perturb_state(k).ne."none") then 
+             curr_time = float(LIS_rc%hr)*3600+60*float(LIS_rc%mn)+float(LIS_rc%ss)
+             if(mod(curr_time,real(LIS_rc%pertstateInterval(k))).eq.0) then
 !------------------------------------------------------------------------
 !   Returns the perturbed state based on the chosen algorithm
 !------------------------------------------------------------------------
-             call perturbmethod(trim(LIS_rc%perturb_state(k))//char(0),2, n,k,&
-                  LIS_LSM_State(n,k),LIS_LSM_Pert_State(n,k))
+                call perturbmethod(trim(LIS_rc%perturb_state(k))//char(0),2, n,k,&
+                     LIS_LSM_State(n,k),LIS_LSM_Pert_State(n,k))
 !------------------------------------------------------------------------
 !   Propagate step or applying the perturbations to prognostic states
 !------------------------------------------------------------------------
 !------------------------------------------------------------------------
 !   apply the lsm perturbations to the the LSM state
 !------------------------------------------------------------------------
-             call lsmdagetstatevar(trim(LIS_rc%lsm)//"+"//&
-                  trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k))
-             call applyLSMPert(n, k, LIS_LSM_State(n,k),LIS_LSM_Pert_State(n,k))
+                call lsmdagetstatevar(trim(LIS_rc%lsm)//"+"//&
+                     trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k))
+                call applyLSMPert(n, k, LIS_LSM_State(n,k),LIS_LSM_Pert_State(n,k))
 !------------------------------------------------------------------------
 !   Diagnose the perturbed state (updates the model prognostic states)
 !------------------------------------------------------------------------
-             call lsmdaqcstate(trim(LIS_rc%lsm)//"+"//&
-                  trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k))
-             call lsmdasetstatevar(trim(LIS_rc%lsm)//"+"//&
-                  trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k)) 
+                call lsmdaqcstate(trim(LIS_rc%lsm)//"+"//&
+                     trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k))
+                call lsmdasetstatevar(trim(LIS_rc%lsm)//"+"//&
+                     trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k)) 
+             endif
           endif
        endif
     enddo
@@ -1036,11 +1082,26 @@ contains
 
  end subroutine applyLSMPert
 
+!BOP
+!
+!ROUTINE: LIS_lsm_diagnoseVarsForDA
+! \label{LIS_lsm_diagnoseVarsForDA}
+!
+! !INTERFACE:
  subroutine LIS_lsm_diagnoseVarsForDA(n)
-
-
+! !ARGUMENTS:
    integer, intent(in) :: n 
-   
+
+! !DESCRIPTION:
+! This routine diagnoses variables needed for obspred
+! calculations for data assimilation from the LSM
+!
+!  The arguments are: 
+!  \begin{description}
+!   \item[n]
+!     index of the nest
+!  \end{description}
+!EOP   
    integer     :: k 
 
    TRACE_ENTER("lsm_diagDA")
@@ -1053,5 +1114,641 @@ contains
    TRACE_EXIT("lsm_diagDA")
 
  end subroutine LIS_lsm_diagnoseVarsForDA
+
+
+
+!BOP
+!
+!ROUTINE: LIS_lsm_DAGetObsPred
+! \label{LIS_lsm_DAGetObsPred}
+!
+! !INTERFACE:
+  subroutine LIS_lsm_DAGetObsPred(n,k,Obs_Pred)
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+    real                   :: obs_pred(LIS_rc%obs_ngrid(k),LIS_rc%nensem(n))
+!
+! !DESCRIPTION:
+! 
+!  This interface is used to compute the "obspred" from the land surface model
+!  obspred represents the model's estimate of the observation. 
+! 
+!  The arguments are: 
+!  \begin{description}
+!   \item[n]    index of the nest
+!   \item[k]    index of the data assimilation instance   
+!   \item[Obs_Pred]   Obs pred object from the model. 
+!  \end{description}
+!EOP
+
+
+    integer                :: m
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then
+       call lsmdagetobspred(trim(LIS_rc%lsm)//"+"//&
+            trim(LIS_rc%daset(k))//char(0),n, k, Obs_pred)
+    endif
+  end subroutine LIS_lsm_DAGetObsPred
+
+
+!BOP
+!
+!ROUTINE: LIS_lsm_DAGetStateVar
+! \label{LIS_lsm_DAGetStateVar}
+!
+! !INTERFACE:
+  subroutine LIS_lsm_DAGetStateVar(n,k)
+
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+
+!
+! !DESCRIPTION:
+! 
+!  This interface invokes the land model to return the state vector
+!  used in data assimilation. 
+! 
+!  The arguments are: 
+!  \begin{description}
+!   \item[n]    index of the nest
+!   \item[k]    index of the data assimilation instance   
+!  \end{description}
+!EOP
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then
+       call lsmdagetstatevar(trim(LIS_rc%lsm)//"+"//&
+            trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k))
+    endif
+  end subroutine LIS_lsm_DAGetStateVar
+
+!BOP
+!
+!ROUTINE: LIS_lsm_DASetStateVar
+! \label{LIS_lsm_DASetStateVar}
+!
+! !INTERFACE:
+  subroutine LIS_lsm_DASetStateVar(n,k)
+
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+
+!
+! !DESCRIPTION:
+! 
+!  This interface invokes the land model to set the state vector
+!  used in data assimilation. 
+! 
+!  The arguments are: 
+!  \begin{description}
+!   \item[n]    index of the nest
+!   \item[k]    index of the data assimilation instance   
+!  \end{description}
+!EOP
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+       call lsmdasetstatevar(trim(LIS_rc%lsm)//"+"//&
+            trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k))
+    endif
+
+  end subroutine LIS_lsm_DASetStateVar
+
+!BOP
+!
+!ROUTINE: LIS_lsm_DAScaleStateVar
+! \label{LIS_lsm_DAScaleStateVar}
+!
+! !INTERFACE:
+  subroutine LIS_lsm_DAScaleStateVar(n,k)
+
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+!
+! !DESCRIPTION:
+! 
+!  This interface invokes the land model to allow the scaling
+!  of the state vector variables
+! 
+!  The arguments are: 
+!  \begin{description}
+!   \item[n]    index of the nest
+!   \item[k]    index of the data assimilation instance   
+!  \end{description}
+!EOP
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+       call lsmdascalestatevar(trim(LIS_rc%lsm)//"+"//&
+            trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k))
+    endif
+  end subroutine LIS_lsm_DAScaleStateVar
+
+!BOP
+!
+!ROUTINE: LIS_lsm_DAScaleStateVar
+! \label{LIS_lsm_DAScaleStateVar}
+!
+! !INTERFACE:
+  subroutine LIS_lsm_DADescaleStateVar(n,k)
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+!
+! !DESCRIPTION:
+! 
+!  This interface invokes the land model to allow the descaling
+!  of the state vector variables
+! 
+!  The arguments are: 
+!  \begin{description}
+!   \item[n]    index of the nest
+!   \item[k]    index of the data assimilation instance   
+!  \end{description}
+!EOP
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+       call lsmdadescalestatevar(trim(LIS_rc%lsm)//"+"//&
+            trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k), &
+            LIS_LSM_Incr_State(n,k))
+    endif
+
+  end subroutine LIS_lsm_DADescaleStateVar
+
+!BOP
+!
+!ROUTINE: LIS_lsm_DAUpdateState
+! \label{LIS_lsm_DAUpdateState}
+!
+! !INTERFACE:
+  subroutine LIS_lsm_DAUpdateState(n,k)
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+!
+! !DESCRIPTION:
+! 
+!  This interface invokes the land model to enable the update of 
+!  of the state vector variables based on the increments from the
+!  DA algorithm. 
+! 
+!  The arguments are: 
+!  \begin{description}
+!   \item[n]    index of the nest
+!   \item[k]    index of the data assimilation instance   
+!  \end{description}
+!EOP
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+       call lsmdaupdatestate(trim(LIS_rc%lsm)//"+"//&
+            trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k), &
+            LIS_LSM_Incr_State(n,k))
+    endif
+  
+  end subroutine LIS_lsm_DAUpdateState
+
+!BOP
+!
+!ROUTINE: LIS_lsm_DAQCState
+! \label{LIS_lsm_DAQCState}
+!
+! !INTERFACE:
+  subroutine LIS_lsm_DAQCState(n,k)
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k    
+!
+! !DESCRIPTION:
+! 
+!  This interface invokes the land model to enable the QC of
+!  state vector used in DA
+! 
+!  The arguments are: 
+!  \begin{description}
+!   \item[n]    index of the nest
+!   \item[k]    index of the data assimilation instance   
+!  \end{description}
+!EOP
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+       call lsmdaqcstate(trim(LIS_rc%lsm)//"+"//&
+            trim(LIS_rc%daset(k))//char(0),n,LIS_LSM_State(n,k))
+    endif
+  end subroutine LIS_lsm_DAQCState
+
+!BOP
+!
+!ROUTINE: LIS_lsm_DAgetStateSpaceSize
+! \label{LIS_lsm_DAgetStateSpaceSize}
+!
+! !INTERFACE:
+  subroutine LIS_lsm_DAgetStateSpaceSize(n,k,size)
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+    integer                :: size
+!
+! !DESCRIPTION:
+! 
+!  This routine returns the spatial size of the state vector
+!  used in DA
+! 
+!  The arguments are: 
+!  \begin{description}
+!   \item[n]    index of the nest
+!  \end{description}
+!EOP
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+       size = LIS_rc%npatch(n,LIS_rc%lsm_index)
+    endif
+
+  end subroutine LIS_lsm_DAgetStateSpaceSize
+
+!BOP
+!
+!ROUTINE: LIS_lsm_DAextractStateVector
+! \label{LIS_lsm_DAextractStateVector}
+!
+! !INTERFACE:
+  subroutine LIS_lsm_DAextractStateVector(n,k,state_size,stvar)
+
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+    integer                :: state_size
+    real                   :: stvar(LIS_rc%nstvars(k),&
+         LIS_rc%npatch(n,LIS_rc%lsm_index))
+!
+! !DESCRIPTION:
+! 
+!  This interface extracts the state vector variables from the 
+!  ESMF state object. 
+! 
+!  The arguments are: 
+!  \begin{description}
+!   \item[n]     index of the nest
+!   \item[k]     index of the data assimilation instance   
+!   \item[stvar] state vector from the LSM state
+!  \end{description}
+!EOP
+    integer                :: status
+    integer                :: v,t
+    character*100,    allocatable     :: lsm_state_objs(:)
+    type(ESMF_Field)                  :: lsm_field(LIS_rc%nstvars(k))
+    real,         pointer             :: stdata(:)
+    real,         pointer             :: stincrdata(:)
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+       allocate(lsm_state_objs(LIS_rc%nstvars(k)))
+       
+       call ESMF_StateGet(LIS_LSM_State(n,k),itemNameList=lsm_state_objs,&
+            rc=status)
+       call LIS_verify(status, &
+            "ESMF_StateGet failed in enkf_increments")
+    
+       do v=1,LIS_rc%nstvars(k)
+          call ESMF_StateGet(LIS_LSM_State(n,k),trim(lsm_state_objs(v)),&
+               lsm_field(v),rc=status)
+          call LIS_verify(status, &
+               "ESMF_StateGet failed in enkf_increments")
+          
+          call ESMF_FieldGet(lsm_field(v),localDE=0, farrayPtr=stdata,rc=status)
+          call LIS_verify(status,&
+               "ESMF_FieldGet failed in enkf_increments")
+          
+          
+          do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+             
+             stvar(v,t) = stdata(t)     
+          enddo
+       enddo
+       deallocate(lsm_state_objs)
+    endif
+  end subroutine LIS_lsm_DAextractStateVector
+   
+!BOP
+!
+!ROUTINE: LIS_lsm_DAgetFreshIncrementsStatus
+! \label{LIS_lsm_DAgetFreshIncrementsStatus}
+!
+! !INTERFACE: 
+  subroutine  LIS_lsm_DAgetFreshIncrementsStatus(n,k,setStatus)
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+    logical                :: setStatus
+!
+! !DESCRIPTION:
+! 
+!  This interface gets the 'fresh increments status' attribute of
+!  the LSM increments object. 
+! 
+!  The arguments are: 
+!  \begin{description}
+!   \item[n]     index of the nest
+!   \item[k]     index of the data assimilation instance   
+!   \item[setStatus] fresh increments status attribute
+!  \end{description}
+!EOP
+    integer                :: status
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+       call ESMF_AttributeGet(LIS_LSM_Incr_State(n,k),&
+            "Fresh Increments Status", setstatus, rc=status)
+       call LIS_verify(status,&
+            'ESMF_AttributeSet: Fresh Increments Status failed in enkf_increments')   
+    endif
+
+  end subroutine LIS_lsm_DAgetFreshIncrementsStatus
+
+!BOP
+!
+!ROUTINE: LIS_lsm_DAsetFreshIncrementsStatus
+! \label{LIS_lsm_DAsetFreshIncrementsStatus}
+!
+! !INTERFACE:  
+  subroutine  LIS_lsm_DAsetFreshIncrementsStatus(n,k,setStatus)
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+    logical                :: setStatus
+!
+! !DESCRIPTION:
+! 
+!  This interface sets the 'fresh increments status' attribute in
+!  the LSM increments object. 
+! 
+!  The arguments are: 
+!  \begin{description}
+!   \item[n]     index of the nest
+!   \item[k]     index of the data assimilation instance   
+!   \item[setStatus] fresh increments status attribute
+!  \end{description}
+!EOP
+    integer                :: status
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+       call ESMF_AttributeSet(LIS_LSM_Incr_State(n,k),&
+            "Fresh Increments Status", setstatus, rc=status)
+       call LIS_verify(status,&
+            'ESMF_AttributeSet: Fresh Increments Status failed in enkf_increments')   
+    endif
+  end subroutine LIS_lsm_DAsetFreshIncrementsStatus
+
+!BOP
+!
+!ROUTINE: LIS_lsm_DAsetAnlysisUpdates
+! \label{LIS_lsm_DAsetAnlysisUpdates}
+!
+! !INTERFACE: 
+  subroutine LIS_lsm_DAsetAnlysisUpdates(n,k,state_size,stvar,stincr)
+
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+    integer                :: state_size
+    real                   :: stvar(LIS_rc%nstvars(k),&
+         LIS_rc%npatch(n,LIS_rc%lsm_index))
+    real                   :: stincr(LIS_rc%nstvars(k),&
+         LIS_rc%npatch(n,LIS_rc%lsm_index))
+
+!
+! !DESCRIPTION:
+! 
+!  This interface sets the variables the state vector
+!  and state increments vector objects after assimilation
+! 
+!  The arguments are: 
+!  \begin{description}
+!   \item[n]      index of the nest
+!   \item[k]      index of the data assimilation instance   
+!   \item[stvar]  state vector variables
+!   \item[stincr] state increments vector variables
+!  \end{description}
+!EOP
+
+    integer                :: status
+    integer                :: v,t
+    character*100,    allocatable     :: lsm_state_objs(:)
+    type(ESMF_Field)                  :: lsm_field(LIS_rc%nstvars(k))
+    type(ESMF_Field)                  :: lsm_incr_field(LIS_rc%nstvars(k))
+    real,         pointer             :: stdata(:)
+    real,         pointer             :: stincrdata(:)
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+       allocate(lsm_state_objs(LIS_rc%nstvars(k)))
+       
+       call ESMF_StateGet(LIS_LSM_State(n,k),itemNameList=lsm_state_objs,&
+            rc=status)
+       call LIS_verify(status, &
+            "ESMF_StateGet failed in enkf_increments")
+       
+       do v=1,LIS_rc%nstvars(k)
+          call ESMF_StateGet(LIS_LSM_State(n,k),trim(lsm_state_objs(v)),&
+               lsm_field(v),rc=status)
+          call LIS_verify(status, &
+               "ESMF_StateGet failed in enkf_increments")
+       
+          call ESMF_StateGet(LIS_LSM_Incr_State(n,k),trim(lsm_state_objs(v)),&
+               lsm_incr_field(v),rc=status)
+          call LIS_verify(status, &
+               "ESMF_StateGet failed in enkf_increments")
+          
+          call ESMF_FieldGet(lsm_field(v),localDE=0, farrayPtr=stdata,rc=status)
+          call LIS_verify(status,&
+               "ESMF_FieldGet failed in enkf_increments")
+          
+          call ESMF_FieldGet(lsm_incr_field(v),localDE=0,farrayPtr=stincrdata,&
+               rc=status)
+          call LIS_verify(status, &
+               'ESMF_FieldGet failed in enkf_increments')
+          
+          do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+             stdata(t) =  stvar(v,t)
+             stincrdata(t) = stincr(v,t)
+          enddo
+          
+       enddo
+
+       deallocate(lsm_state_objs)
+    endif
+  end subroutine LIS_lsm_DAsetAnlysisUpdates
+
+  subroutine LIS_lsm_DAobsTransform(n,k)
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+       call Lsmdaobstransform(trim(LIS_rc%lsm)//"+"//&
+            trim(LIS_rc%daset(k))//char(0), n, LIS_OBS_State(n,k))       
+    endif
+  end subroutine LIS_lsm_DAobsTransform
+
+
+  subroutine LIS_lsm_DAmapObsToLSM(n,k)
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+       call lsmdamapobstolsm(trim(LIS_rc%lsm)//"+"//&
+            trim(LIS_rc%daset(k))//char(0), n, k, LIS_OBS_State(n,k),&
+            LIS_LSM_Incr_State(n,k))
+       
+    endif
+  end subroutine LIS_lsm_DAmapObsToLSM
+
+
+  subroutine LIS_lsm_DAqcObsState(n,k)
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+
+       call lsmdaqcobsstate(trim(LIS_rc%lsm)//"+"&
+            //trim(LIS_rc%daset(k))//char(0),n, k, LIS_OBS_State(n,k))
+       
+    endif
+  end subroutine LIS_lsm_DAqcObsState
+
+!BOP
+!
+!ROUTINE: LIS_lsm_DAmapTileSpaceToObsSpace
+! \label{LIS_lsm_DAmapTileSpaceToObsSpace}
+!
+! !INTERFACE:
+  subroutine LIS_lsm_DAmapTileSpaceToObsSpace(n,k,tileid,st_id,en_id)
+
+! !DESCRIPTION: 
+! This routine derives the observation space location that maps to the
+! input tile space of a given patch space
+!
+! The arguments are:
+!  \begin{description}
+!   \item [n]
+!     index of the current nest
+!   \item [k]
+!     index of the DA instance
+!   \item [tileid]
+!     location in the tile space 
+!   \item [st\_id]
+!     starting index of the observation space location
+!   \item [en\_id]
+!     ending index of the observation space location
+!  \end{description} 
+!EOP
+
+    integer                         :: n
+    integer                         :: k
+    integer                         :: tileid
+    integer                         :: st_id
+    integer                         :: en_id
+
+    real                            :: lat, lon, col,row
+    integer                         :: gid,c,r
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+       lat = LIS_domain(n)%grid(LIS_domain(n)%gindex( & 
+            LIS_surface(n,LIS_rc%lsm_index)%tile(tileid)%col,&
+            LIS_surface(n,LIS_rc%lsm_index)%tile(tileid)%row))%lat
+       lon = LIS_domain(n)%grid(LIS_domain(n)%gindex( & 
+            LIS_surface(n,LIS_rc%lsm_index)%tile(tileid)%col,&
+            LIS_surface(n,LIS_rc%lsm_index)%tile(tileid)%row))%lon
+       
+       call latlon_to_ij(LIS_obs_domain(n,k)%lisproj,lat,lon,&
+            col,row)
+       c = nint(col)
+       r = nint(row)
+       
+       gid = -1
+       if(c.ge.1.and.c.le.LIS_rc%obs_lnc(k).and.&
+            r.ge.1.and.r.le.LIS_rc%obs_lnr(k)) then 
+          gid = LIS_obs_domain(n,k)%gindex(c,r)
+          
+       endif
+       call ij_to_latlon(LIS_obs_domain(n,k)%lisproj,real(c),real(r),&
+            lat,lon)
+       st_id = gid
+       en_id = gid
+    endif
+
+  end subroutine LIS_lsm_DAmapTileSpaceToObsSpace
+
+!BOP
+!
+!ROUTINE: LIS_lsm_DAgetStateVarNames
+! \label{LIS_lsm_DAgetStateVarNames}
+!
+! !INTERFACE:
+  subroutine LIS_lsm_DAgetStateVarNames(n,k,stateNames)
+! !ARGUMENTS:
+    integer            :: n
+    integer            :: k
+    character(len=*)   :: stateNames(LIS_rc%nstVars(k))
+! 
+! !DESCRIPTION:
+! 
+!  This interface extracts the variable names from the state vector object
+! 
+!  The arguments are: 
+!  \begin{description}
+!   \item[n]      index of the nest
+!   \item[k]      index of the data assimilation instance   
+!   \item[stateNames  state vector names
+!  \end{description}
+!EOP
+    integer            :: status
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+       call ESMF_StateGet(LIS_LSM_State(n,k),itemNameList=stateNames,&
+            rc=status)
+    endif
+  end subroutine LIS_lsm_DAgetStateVarNames
+
+!BOP
+!
+!ROUTINE: LIS_lsm_getlatlons
+! \label{LIS_lsm_getlatlons}
+!
+! !INTERFACE:
+  subroutine LIS_lsm_getlatlons(n,k,state_size,lats,lons)
+! !ARGUMENTS:
+    integer             :: n    
+    integer             :: k
+    integer             :: state_size
+    real                :: lats(LIS_rc%npatch(n,LIS_rc%lsm_index))
+    real                :: lons(LIS_rc%npatch(n,LIS_rc%lsm_index))
+! 
+! !DESCRIPTION:
+! 
+!  This routine extracts the lat/lon values corresponding to the
+!  state vector space used by the LSM. 
+! 
+!  The arguments are: 
+!  \begin{description}
+!   \item[n]      index of the nest
+!   \item[k]      index of the data assimilation instance   
+!   \item[stateNames  state vector names
+!  \end{description}
+!EOP
+
+    integer             :: i,gid
+    if(LIS_rc%LSM_DAinst_valid(k)) then 
+       do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+          
+          gid = LIS_domain(n)%gindex(&
+               LIS_surface(n, LIS_rc%lsm_index)%tile(i)%col,&
+               LIS_surface(n, LIS_rc%lsm_index)%tile(i)%row)
+          
+          lats(i) = LIS_domain(n)%grid(gid)%lat
+          lons(i) = LIS_domain(n)%grid(gid)%lon
+          
+       enddo
+    endif
+    
+  end subroutine LIS_lsm_getlatlons
 
 end module LIS_lsmMod

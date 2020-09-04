@@ -345,7 +345,6 @@ subroutine read_SMAPTB(source, filename, TBobs)
   deallocate(tbv_a_field)
   deallocate(tbh_f_field)
   deallocate(tbv_f_field)
-#endif
 
   do r=1,LVT_rc%lnr
      do c=1,LVT_rc%lnc
@@ -357,6 +356,7 @@ subroutine read_SMAPTB(source, filename, TBobs)
         endif
      enddo
   enddo
+#endif
 
 end subroutine read_SMAPTB
 

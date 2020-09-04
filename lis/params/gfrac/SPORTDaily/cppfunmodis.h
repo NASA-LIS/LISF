@@ -8,6 +8,6 @@
 
 #include "ftn_drv.h"
   extern "C" {
-  int FTN(readgvfmodis)(char * infile, int * nx, int * ny, char * flag, float data_1D[]);
+  int FTN(readgvfmodis)(char * infile, int * nx, int * ny, char * flag, float data_1D[], int len);
   }
 

@@ -92,7 +92,7 @@ subroutine readNASMDObs(source)
           rc=status)
      call LVT_verify(status, 'error in setting nasmd start time')
 
-     nasmdobs(source)%yr = LVT_rc%yr
+     nasmdobs(source)%yr = LVT_rc%dyr(source)
      nasmdobs(source)%sfsm = LVT_rc%udef
      nasmdobs(source)%rzsm = LVT_rc%udef
 

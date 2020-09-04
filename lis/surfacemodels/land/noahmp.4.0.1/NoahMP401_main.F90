@@ -14,6 +14,8 @@
 !
 !   10/25/18: Shugong Wang, Zhuo Wang; initial implementation for NoahMP401 with LIS-7
 !   05/15/19: Yeosang Yoon; code added for snow DA to work
+!   10/29/19: David Mocko; Added RELSMC to output, and an option
+!                          for different units for Qs/Qsb/Albedo
 !
 ! !INTERFACE:
 subroutine NoahMP401_main(n)
@@ -33,6 +35,7 @@ subroutine NoahMP401_main(n)
     integer              :: i
     real                 :: dt
     real                 :: lat, lon
+    real                 :: tempval
     integer              :: row, col
     integer              :: year, month, day, hour, minute, second
     logical              :: alarmCheck
@@ -220,6 +223,7 @@ subroutine NoahMP401_main(n)
     real                 :: tmp_qsnbot             ! melting water out of snow bottom [kg m-2 s-1]
     real                 :: tmp_subsnow            ! snow sublimation rate [kg m-2 s-1]
     real                 :: tmp_pah                ! precipitation advected heat - total (W/m2)
+    real, allocatable    :: tmp_relsmc(:)          ! relative soil moisture [-]
 
     ! Code added by Zhuo Wang 02/28/2019
     real                 :: AvgSurfT_out           ! average surface temperature [K]
@@ -227,12 +231,17 @@ subroutine NoahMP401_main(n)
     ! Code added by David Mocko 04/25/2019
     real                 :: startsm, startswe, startint, startgw, endsm
 
+    ! EMK for 557WW
+    real :: tmp_q2sat, tmp_es
+    character*3 :: fnest
+
     allocate( tmp_sldpth( NOAHMP401_struc(n)%nsoil ) )
     allocate( tmp_shdfac_monthly( 12 ) )
     allocate( tmp_soilcomp( 8 ) )
     allocate( tmp_smc( NOAHMP401_struc(n)%nsoil ) )
     allocate( tmp_sh2o( NOAHMP401_struc(n)%nsoil ) )
     allocate( tmp_tslb( NOAHMP401_struc(n)%nsoil ) )
+    allocate( tmp_relsmc( NOAHMP401_struc(n)%nsoil ) )
     allocate( tmp_tsno( NOAHMP401_struc(n)%nsnow ) )
     allocate( tmp_zss( NOAHMP401_struc(n)%nsnow+NOAHMP401_struc(n)%nsoil) )
     allocate( tmp_snowice( NOAHMP401_struc(n)%nsnow ) )
@@ -643,7 +652,9 @@ subroutine NoahMP401_main(n)
                                    tmp_chleaf            , & ! out   - leaf exchange coefficient [-]
                                    tmp_chuc              , & ! out   - under canopy exchange coefficient [-]
                                    tmp_chv2              , & ! out   - veg 2m exchange coefficient [-]
-                                   tmp_chb2              )   ! out   - bare 2m exchange coefficient [-]
+                                   tmp_chb2              , & ! out   - bare 2m exchange coefficient [-]
+                                   tmp_relsmc            , &
+                                   NOAHMP401_struc(n)%noahmp401(t)%param)   ! out   - relative soil moisture [-]
 
             ! save state variables from local variables to global variables
             NOAHMP401_struc(n)%noahmp401(t)%sfcrunoff       = tmp_sfcrunoff
@@ -756,6 +767,26 @@ subroutine NoahMP401_main(n)
             NOAHMP401_struc(n)%noahmp401(t)%chv2      = tmp_chv2
             NOAHMP401_struc(n)%noahmp401(t)%chb2      = tmp_chb2
 
+            ! EMK Update RHMin for 557WW
+            if (tmp_tair .lt. &
+                 noahmp401_struc(n)%noahmp401(t)%tair_agl_min) then
+               noahmp401_struc(n)%noahmp401(t)%tair_agl_min = tmp_tair
+               ! Use formulation based on Noah.3.6 code, which treats
+               ! q2sat as saturated specific humidity
+               tmp_es = 611.0*exp(2.501E6/461.0*(1./273.15 - 1./tmp_tair))
+               tmp_q2sat = 0.622*tmp_es/(tmp_psurf-(1.-0.622)*tmp_es)
+               noahmp401_struc(n)%noahmp401(t)%rhmin = tmp_qair / tmp_q2sat
+            endif
+
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RHMIN, &
+             value=noahmp401_struc(n)%noahmp401(t)%rhmin, &
+             vlevel=1, unit="-", direction="-",&
+             surface_type=LIS_rc%lsm_index)
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RHMIN, &
+             value=(100.*noahmp401_struc(n)%noahmp401(t)%rhmin), &
+             vlevel=1, unit="%", direction="-",&
+             surface_type=LIS_rc%lsm_index)
+
             ![ 1] output variable: tsk (unit=K  ). ***  surface radiative temperature
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RADT, value = NOAHMP401_struc(n)%noahmp401(t)%tsk, &
                                               vlevel=1, unit="K", direction="-", surface_type = LIS_rc%lsm_index)
@@ -780,9 +811,17 @@ subroutine NoahMP401_main(n)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ALBEDO, value = NOAHMP401_struc(n)%noahmp401(t)%albedo, &
                                               vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
 
+            if (tmp_albedo.ne.LIS_rc%udef) tmp_albedo = tmp_albedo * 100.0
+
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ALBEDO, value = tmp_albedo, &
+                                              vlevel=1, unit="%", direction="-", surface_type = LIS_rc%lsm_index)
+
             ![ 6] output variable: snowc (unit=-). ***  snow cover fraction
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWCOVER, value = NOAHMP401_struc(n)%noahmp401(t)%snowc, &
                                               vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWCOVER, value = (NOAHMP401_struc(n)%noahmp401(t)%snowc*100.0), &
+                                              vlevel=1, unit="%", direction="-", surface_type = LIS_rc%lsm_index)
 
             ![ 7] output variable: smc (unit=m3/m3). ***  volumetric soil moisture
             do i=1, NOAHMP401_struc(n)%nsoil
@@ -991,9 +1030,15 @@ subroutine NoahMP401_main(n)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QS, value = NOAHMP401_struc(n)%noahmp401(t)%runsf, &
                                               vlevel=1, unit="kg m-2 s-1", direction="OUT", surface_type = LIS_rc%lsm_index)
 
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QS, value = NOAHMP401_struc(n)%noahmp401(t)%runsf*dt, &
+                                              vlevel=1, unit="kg m-2", direction="OUT", surface_type = LIS_rc%lsm_index)
+
             ![ 54] output variable: runsb (unit=mm/s ). ***  baseflow (saturation excess)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QSB, value = NOAHMP401_struc(n)%noahmp401(t)%runsb, &
                                               vlevel=1, unit="kg m-2 s-1", direction="OUT", surface_type = LIS_rc%lsm_index)
+
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QSB, value = NOAHMP401_struc(n)%noahmp401(t)%runsb*dt, &
+                                              vlevel=1, unit="kg m-2", direction="OUT", surface_type = LIS_rc%lsm_index)
 
             ![ 55] output variable: ecan (unit=mm/s ). ***  evaporation of intercepted water
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ECANOP, value = NOAHMP401_struc(n)%noahmp401(t)%ecan, &
@@ -1214,6 +1259,31 @@ subroutine NoahMP401_main(n)
                      vlevel=1,unit="kg m-2",direction="INC",           &
                      surface_type=LIS_rc%lsm_index)
 
+! David Mocko (10/29/2019) - Copy RELSMC calculation from Noah-3.X
+           do i = 1,tmp_nsoil
+              if (tmp_relsmc(i).gt.1.0) then
+                 tmp_relsmc(i) = 1.0
+              endif
+              if (tmp_relsmc(i).lt.0.01) then
+                 tmp_relsmc(i) = 0.01
+              endif
+
+! J.Case (9/11/2014) -- Set relative soil moisture to missing (LIS_rc%udef)
+! if the vegetation type is urban class.
+              if (tmp_vegetype.eq.tmp_urban_vegetype) then
+                 tmp_relsmc(i) = LIS_rc%udef
+              endif
+              call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_RELSMC,vlevel=i, &
+                       value=tmp_relsmc(i),unit='-',direction="-",surface_type=LIS_rc%lsm_index)
+              if (tmp_relsmc(i).eq.LIS_rc%udef) then
+                 tempval = tmp_relsmc(i)
+              else
+                 tempval = tmp_relsmc(i)*100.0
+              endif
+              call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_RELSMC,vlevel=i, &
+                       value=tempval,unit='%',direction="-",surface_type=LIS_rc%lsm_index)
+            enddo
+
             ! reset forcing variables to zeros
             NOAHMP401_struc(n)%noahmp401(t)%tair = 0.0
             NOAHMP401_struc(n)%noahmp401(t)%psurf = 0.0
@@ -1242,5 +1312,18 @@ subroutine NoahMP401_main(n)
     deallocate( tmp_snowliq )
     deallocate( tmp_smoiseq )
     deallocate( tmp_gecros_state )
+
+    ! EMK...See if noahmp401_struc(n)%noahmp401(t)%tair_agl_min needs to be 
+    ! reset for calculating RHMin.  
+    write(fnest,'(i3.3)') n
+    alarmCheck = LIS_isAlarmRinging(LIS_rc, &
+         "NoahMP401 RHMin alarm "//trim(fnest))
+    if (alarmCheck) then
+       write(LIS_logunit,*) &
+            '[INFO] Resetting tair_agl_min for RHMin calculation'
+       do t = 1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+          noahmp401_struc(n)%noahmp401(t)%tair_agl_min = 999.
+       end do
+    end if
 
 end subroutine NoahMP401_main

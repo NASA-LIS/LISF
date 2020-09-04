@@ -188,7 +188,7 @@ contains
     
     allocate(nldas1_struc(LDT_rc%nnest))
 
-    write(LDT_logunit,fmt=*)"MSG: Initializing NLDAS-1 forcing grid ... "
+    write(LDT_logunit,fmt=*)"[INFO] Initializing NLDAS-1 forcing grid ... "
 
 ! - Read LDT config NLDAS-1 entries:
     call readcrd_nldas1( findex )

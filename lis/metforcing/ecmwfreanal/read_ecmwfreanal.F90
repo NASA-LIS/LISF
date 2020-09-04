@@ -162,7 +162,8 @@ subroutine read_ecmwfreanal(order, n, findex, yr, mon, da, hr, ferror)
         ! File name for data variable(v)/year/yearmo
         infile=trim(ecmwfreanal_struc(n)%ecmwfreanaldir)//trim(ecmwf_fv(v))//'/'//cyr//'/'//cyr//cmo
 
-        open(fnum(v), file=trim(infile), form='unformatted', iostat=istat)
+        open(fnum(v), file=trim(infile), form='unformatted', &
+                      convert='big_endian', iostat=istat)
         inquire(unit=fnum(v), exist=file_exists)
         
         if (.not.file_exists) then
@@ -195,7 +196,8 @@ subroutine read_ecmwfreanal(order, n, findex, yr, mon, da, hr, ferror)
         close(fnum(v))
         ! New file name for data variable(v)/year/yearmo
         infile=trim(ecmwfreanal_struc(n)%ecmwfreanaldir)//trim(ecmwf_fv(v))//'/'//cyr//'/'//cyr//cmo
-        open(fnum(v), file=trim(infile), form='unformatted', iostat=istat)
+        open(fnum(v), file=trim(infile), form='unformatted', &
+                      convert='big_endian', iostat=istat)
         inquire(unit=fnum(v), exist=file_exists)
         if (.not.file_exists) then
            write(*,*) 'READ_ECMWFREANAL(2): unit ', fnum(v), '= ', infile

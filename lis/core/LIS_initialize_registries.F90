@@ -46,6 +46,7 @@ subroutine LIS_initialize_registries()
   use LIS_glacierrouting_pluginMod
   use LIS_lsmcpl_pluginMod
   use LIS_lsmda_pluginMod
+  use LIS_routingda_pluginMod
   use LIS_perturb_pluginMod
 
 !
@@ -102,6 +103,7 @@ subroutine LIS_initialize_registries()
   call LIS_lsm_plugin
   call LIS_lsmcpl_plugin
   call LIS_lsmda_plugin
+  call LIS_routingda_plugin
   call LIS_lsmrtm_plugin
   call LIS_landslidemodel_plugin
   call LIS_routing_plugin
