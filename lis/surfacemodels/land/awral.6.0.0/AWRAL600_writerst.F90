@@ -47,7 +47,7 @@ subroutine AWRAL600_writerst(n)
 ! \end{description}
 !EOP
 
-    character*100 :: filen
+    character*255 :: filen
     character*20  :: wformat
     logical       :: alarmCheck
     integer       :: ftn
@@ -87,10 +87,10 @@ subroutine AWRAL600_writerst(n)
             elseif(wformat .eq. "netcdf") then
 #if (defined USE_NETCDF3 .OR. defined USE_NETCDF4)
                 status = nf90_close(ftn)
-                call LIS_verify(status, "Error in nf90_close in AWRAL600_writerst")
+                call LIS_verify(status, "[ERR] Error in nf90_close in AWRAL600_writerst")
 #endif
             endif
-            write(LIS_logunit, *) "AWRAL600 archive restart written: ", filen
+            write(LIS_logunit, *) "[INFO] AWRAL600 archive restart written: ", filen
         endif
     endif
 end subroutine AWRAL600_writerst
@@ -178,47 +178,37 @@ subroutine AWRAL600_dump_restart(n, ftn, wformat)
                                        output_format = trim(wformat))
 
     ! write the header for state variable sr
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, sr_ID, "SR", &
                                  "volume of water in the surface water store", &
                                  "mm", vlevels=1, valid_min=0.0, valid_max=999.0)
     ! write the header for state variable sg
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, sg_ID, "SG", &
                                  "groundwater storage in the unconfined aquifer", &
                                  "mm", vlevels=1, valid_min=0.0, valid_max=999.0)
     ! write the header for state variable s0
-    !TODO: check dimension of the state variable following "vlevels="
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, s0_ID, "S0", &
                                  "water storage in the surface soil layer for each hru", &
                                  "mm", vlevels=AWRAL600_struc(n)%nhru , valid_min=0.0, valid_max=999.0, &
-				 var_flag = "dim1") !TODO: replace "xxxx" with correct "dimx"
+				 var_flag = "dim1")
 
  
     ! write the header for state variable ss
-    !TODO: check dimension of the state variable following "vlevels="
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, ss_ID, "SS", &
                                  "water content of the shallow soil store for each hru", &
                                  "mm", vlevels=AWRAL600_struc(n)%nhru , valid_min=0.0, valid_max=999.0, &
-				 var_flag = "dim1") !TODO: replace "xxxx" with correct "dimx"
+				 var_flag = "dim1")
  
     ! write the header for state variable sd
-    !TODO: check dimension of the state variable following "vlevels="
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, sd_ID, "SD", &
                                  "water content of the deep soil store for each hru", &
                                  "mm", vlevels=AWRAL600_struc(n)%nhru , valid_min=0.0, valid_max=999.0, &
-				 var_flag = "dim1") !TODO: replace "xxxx" with correct "dimx"
+				 var_flag = "dim1")
  
     ! write the header for state variable mleaf
-    !TODO: check dimension of the state variable following "vlevels="
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, mleaf_ID, "MLEAF", &
                                  "leaf biomass", &
                                  "kg/m2", vlevels=AWRAL600_struc(n)%nhru , valid_min=0.0, valid_max=999.0, &
-				 var_flag = "dim1") !TODO: replace "xxxx" with correct "dimx"
+				 var_flag = "dim1")
  
     ! close header of restart file
     call LIS_closeHeader_restart(ftn, n, LIS_rc%lsm_index, dimID, AWRAL600_struc(n)%rstInterval)
@@ -233,7 +223,7 @@ subroutine AWRAL600_dump_restart(n, ftn, wformat)
                               varid=sg_ID, dim=1, wformat=wformat)
 
     ! water storage in the surface soil layer for each hru
-    do l=1, AWRAL600_struc(n)%nhru   ! TODO: check loop
+    do l=1, AWRAL600_struc(n)%nhru
         tmptilen = 0
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             tmptilen(t) = AWRAL600_struc(n)%awral600(t)%s0(l)
@@ -242,7 +232,7 @@ subroutine AWRAL600_dump_restart(n, ftn, wformat)
                                   varid=s0_ID, dim=l, wformat=wformat)
     enddo
     ! water content of the shallow soil store for each hru
-    do l=1, AWRAL600_struc(n)%nhru   ! TODO: check loop
+    do l=1, AWRAL600_struc(n)%nhru
         tmptilen = 0
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             tmptilen(t) = AWRAL600_struc(n)%awral600(t)%ss(l)
@@ -251,7 +241,7 @@ subroutine AWRAL600_dump_restart(n, ftn, wformat)
                                   varid=ss_ID, dim=l, wformat=wformat)
     enddo
     ! water content of the deep soil store for each hru
-    do l=1, AWRAL600_struc(n)%nhru   ! TODO: check loop
+    do l=1, AWRAL600_struc(n)%nhru
         tmptilen = 0
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             tmptilen(t) = AWRAL600_struc(n)%awral600(t)%sd(l)
@@ -260,7 +250,7 @@ subroutine AWRAL600_dump_restart(n, ftn, wformat)
                                   varid=sd_ID, dim=l, wformat=wformat)
     enddo
     ! leaf biomass
-    do l=1, AWRAL600_struc(n)%nhru   ! TODO: check loop
+    do l=1, AWRAL600_struc(n)%nhru
         tmptilen = 0
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             tmptilen(t) = AWRAL600_struc(n)%awral600(t)%mleaf(l)

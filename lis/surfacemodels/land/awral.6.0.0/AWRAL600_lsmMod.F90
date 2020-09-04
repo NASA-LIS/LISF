@@ -132,7 +132,7 @@ module AWRAL600_lsmMod
     public :: AWRAL600_struc
 !EOP
     type, public :: AWRAL600_type_dec
-        character*256      :: rfile
+        character*255      :: rfile
         character*256      :: rformat
         !-------------------------------------------------------------------------
         ! Parameter file names
@@ -247,7 +247,6 @@ contains
             allocate(AWRAL600_struc(n)%awral600(LIS_rc%npatch(n, LIS_rc%lsm_index)))
             !------------------------------------------------------------------------
             ! allocate memory for vector variables passed to model interfaces        
-            ! TODO: check the following allocation statements carefully!
             !------------------------------------------------------------------------
             ! allocate memory for multilevel spatial parameter
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -278,11 +277,11 @@ contains
                                    AWRAL600_struc(n)%ts,&
                                    AWRAL600_struc(n)%rstInterval)
             !------------------------------------------------------------------------
-            ! TODO: setup number of soil moisture/temperature layers and depth here  
+            ! setup number of soil moisture/temperature layers and depth here  
             !------------------------------------------------------------------------
-            ! TODO: set number of soil moisture layers in surface model
+            ! set number of soil moisture layers in surface model
             LIS_sfmodel_struc(n)%nsm_layers = 1
-            ! TODO: set number of soil temperature layers in surface model
+            ! set number of soil temperature layers in surface model
             LIS_sfmodel_struc(n)%nst_layers = 1
             allocate(LIS_sfmodel_struc(n)%lyrthk(1))
             LIS_sfmodel_struc(n)%ts = AWRAL600_struc(n)%ts

@@ -3,8 +3,8 @@ TEMPLATE LSM forcing Testcase
 This is a testcase that uses:
   (a) The AWRAL forcing over the Australian domain at 0.05 degree spatial resolution
   (b) The awral.6.0.0 LSM option
-  (c) The Australian domain at 0.05 degree spatial resoluion
-  (c) A time period from 00:00Z 30 Jun 2010 to 00:00Z 5 July 2010 with a restart file from 00:00Z 30 June 2010
+  (c) The Australian domain at 0.05 degree spatial resolution
+  (d) A time period from 00:00Z 30 Jun 2010 to 00:00Z 5 July 2010 with a restart file from 00:00Z 30 June 2010
 
 This directory contains:
   (a) This README file

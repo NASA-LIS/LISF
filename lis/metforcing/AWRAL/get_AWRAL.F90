@@ -21,6 +21,7 @@ subroutine get_AWRAL(n, findex)
   use LIS_timeMgrMod, only  : LIS_tick, LIS_get_nstep
   use LIS_logMod,      only : LIS_logunit, LIS_endrun
   use AWRAL_forcingMod, only : AWRAL_struc
+  use LIS_constantsMod, only : LIS_CONST_DAY
 
   implicit none
 ! !ARGUMENTS: 
@@ -54,7 +55,6 @@ subroutine get_AWRAL(n, findex)
    
 !== Local Variables =======================
     integer :: ferror_AWRAL           ! Error flags for precip data sources
-!    integer :: endtime_AWRAL         ! 1=get a new file 
     integer :: order
 
     real*8  :: timenext
@@ -77,7 +77,7 @@ subroutine get_AWRAL(n, findex)
     hrn = 0
     mnn = 0
     ssn = 0
-    tsn = 86400
+    tsn = LIS_CONST_DAY
     call LIS_tick( timenext, doyn, gmtn, yrn, mon, dan, hrn, mnn, ssn, tsn )
 
 !-- Determine LIS's current time and the time of the AWRAL file:
@@ -87,7 +87,7 @@ subroutine get_AWRAL(n, findex)
     hrp = 0
     mnp = 0
     ssp = 0
-    tsp = -86400
+    tsp = -LIS_CONST_DAY
     call LIS_tick( AWRAL_file_timep, doyp, gmtp, yrp, mop, dap, hrp, mnp, ssp, tsp )
 
 !-- AWRAL product time; end accumulation time data
@@ -102,7 +102,6 @@ subroutine get_AWRAL(n, findex)
 
 !-- Ensure that data is found during first time step
     if ( LIS_get_nstep(LIS_rc,n) == 1 .or. LIS_rc%rstflag(n) == 1) then 
-!         endtime_AWRAL = 1
          LIS_rc%rstflag(n) = 0
     endif
 

@@ -121,16 +121,16 @@ Tempbot:      0  -       -    0 0 0 1 194 10      # Bottom soil temperature
 Streamflow:   0  m3/s    -    1 0 0 1 333 1       # Streamflow
 
 #AWRAL600
-e0:                       1  mm    - 0 0 0 1 0 1 # potential evaporation
-etot:                     1  mm    - 0 0 0 1 0 1 # actual evapotranspiration
-qtot:                     1  mm    - 0 0 0 1 0 1 # total discharge to stream
-sr:			  1  mm    - 0 0 0 1 0 1 # volume of water in the surface water store
-sg:                       1  mm    - 0 0 0 1 0 1 # groundwater storage in the unconfined aquifer
-dd:                       1  mm    - 0 0 0 1 0 1 # vertical drainage from the bottom of the deep soil layer
-s0:                       1  mm    - 0 0 0 2 0 1 # water storage in the surface soil layer for each hru
-ss:                       1  mm    - 0 0 0 2 0 1 # water content of the shallow soil store for each hru
-sd:                       1  mm    - 0 0 0 2 0 1 # water content of the deep soil store for each hru
-mleaf:                    1  kg/m2 - 0 0 0 2 0 1 # leaf biomass for each hru
-s0_avg:                   1  mm    - 0 0 0 1 0 1 # water storage in the surface soil layer
-ss_avg:                   1  mm    - 0 0 0 1 0 1 # water content of the shallow soil store
-sd_avg:                   1  mm    - 0 0 0 1 0 1 # water content of the deep soil store
+e0:           1  mm      -    0 0 0 1 0 1 # potential evaporation
+etot:         1  mm      -    0 0 0 1 0 1 # actual evapotranspiration
+qtot:         1  mm      -    0 0 0 1 0 1 # total discharge to stream
+sr:           1  mm      -    0 0 0 1 0 1 # volume of water in the surface water store
+sg:           1  mm      -    0 0 0 1 0 1 # groundwater storage in the unconfined aquifer
+dd:           1  mm      -    0 0 0 1 0 1 # vertical drainage from the bottom of the deep soil layer
+s0:           1  mm      -    0 0 0 2 0 1 # water storage in the surface soil layer for each hru
+ss:           1  mm      -    0 0 0 2 0 1 # water content of the shallow soil store for each hru
+sd:           1  mm      -    0 0 0 2 0 1 # water content of the deep soil store for each hru
+mleaf:        1  kg/m2   -    0 0 0 2 0 1 # leaf biomass for each hru
+s0_avg:       1  mm      -    0 0 0 1 0 1 # water storage in the surface soil layer
+ss_avg:       1  mm      -    0 0 0 1 0 1 # water content of the shallow soil store
+sd_avg:       1  mm      -    0 0 0 1 0 1 # water content of the deep soil store

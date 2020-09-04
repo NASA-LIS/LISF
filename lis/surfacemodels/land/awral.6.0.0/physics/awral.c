@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 /* Overall comment: wrapping means that some changes to the code were necessary */
-const int HYPS_LEN = 20; // +++ Should be supplied as input value; 20 hardcoded in other places
+const int HYPS_LEN = 20; // +++ Could be supplied as input value
 const int NUM_CELLS = 1; // +++ LIS can only take one tile at a time
 
 void copycells(const double *in, double *out, int len) {
@@ -89,10 +89,6 @@ __inline__ void calc_soil_flows(double *s, double *i, double *e, double *drain, 
 
 /* New declaration for LIS - NOTE that LIS passes in one cell at at time- need cell number for building hypsometric curves */
 void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, double *u2t, double *radcskyt, double *e0, double *etot, double *dd, double *s0_avg, double *ss_avg, double *sd_avg, double *qtot, double *sr, double *sg, double *s0, double * ss, double * sd, double * mleaf, double *slope_coeff, double *pair, double *kr_coeff, double *k_rout, double *kssat, double *prefr, double *s0max, double *slope, double *ssmax, double *k_gw, double *kr_sd, double *kr_0s, double *k0sat, double *sdmax, double *kdsat, double *ne, double * height, double * hypsperc, double * alb_dry, double * alb_wet, double * cgsmax, double * er_frac_ref, double * fsoilemax, double * lairef, double * rd, double * s_sls, double * sla, double * tgrow, double * tsenc, double * ud0, double * us0, double * vc, double * w0lime, double * w0ref_alb, double * wdlimu, double * wslimu, double * fhru, double * hveg, double * laimax, int *timesteps) {    
-    // +++ These could use the final_states arrays and avoid the extra mallocs...
-    // More generally, could have user supplied arrays for all mallocs...
-    // Declare States
-    // Even though we are passing in one cell I can't be bothered refactoring too much as we need to refactor for tiling etc anyways
 
     // HRU States
     // 1D arrays
@@ -217,11 +213,6 @@ void awral_driver_600_(double *tat, double *rgt, double *pt, double *avpt, doubl
                 double u2t_idx = *u2t;
                 double pt_idx = *pt;
                 double radcskyt_idx = *radcskyt;
-
-                // +++ 
-                // Hideous alias stuff due to variable names not matching
-                // Need to decide on new standard symbols/abbreviations for forcing/climate data
-                // I guess this is due to templating but it would be nice not to have to set everything
 
                 double ta = tat_idx;
                 double pg = pt_idx;
