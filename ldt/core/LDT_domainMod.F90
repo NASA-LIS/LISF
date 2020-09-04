@@ -1269,7 +1269,7 @@ end subroutine LDT_timeInit
      ! Locals
      integer :: c, r, t, m, mm, tt
      real    :: maxv
-     real :: model_type_fractions(LDT_rc%max_model_types)
+     real    :: model_type_fractions(LDT_rc%max_model_types)
 
      ! Sanity check
      if (maxt > 1) then
@@ -1520,7 +1520,6 @@ end subroutine LDT_timeInit
              if(rsum.lt.0.9999.or.rsum.gt.1.0001)then  !check renormalization
                 write(LDT_logunit,*) &
                      'Renormalization failed in calculate_domdistribution'
-!                print*, c,r,fgrd(c,r,:)
                 call LDT_endrun()
              endif
           endif

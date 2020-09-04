@@ -56,6 +56,10 @@ subroutine setIrrigParmsFullnames(n,datatype,source)
         case( "MODIS_OG" )
           LDT_irrig_struc(n)%irrigfrac%standard_name =&
               "MODIS (Ozdogan+Gutman,2008) Irrig gridcell fraction"
+
+        case( "UserDerived" )
+          LDT_irrig_struc(n)%irrigfrac%standard_name =&
+              "User Derived Irrig gridcell fraction"
       end select
 
     case default

@@ -17,6 +17,7 @@ module LDT_LSMparamProcMod
 ! 
   use ESMF
   use LDT_coreMod
+  use LDT_logMod
 
   implicit none
   PRIVATE
@@ -27,18 +28,69 @@ module LDT_LSMparamProcMod
   public :: LDT_LSMparams_writeHeader
   public :: LDT_LSMparams_writeData
 
-contains  
-!BOP
+!BOP 
+! 
 ! !ROUTINE: LDT_LSMparams_init
 ! \label{LDT_LSMparams_init}
+! 
+! !INTERFACE:
+  interface LDT_LSMparams_init
+! !PRIVATE MEMBER FUNCTIONS: 
+     module procedure LSMparams_init_LIS
+     module procedure LSMparams_init_LISHydro
+! 
+! !DESCRIPTION:
+! This interface provides routines for writing LSM parameters in both 
+! in the preprocessing mode for LIS as well as in the LISHydro(WRFHydro) 
+! preprocessing mode. 
+!EOP 
+  end interface
+
+contains  
+!BOP
+! !ROUTINE: LSMparams_init_LIS
+! \label{LSMparams_init_LIS}
 !
 ! !INTERFACE: 
-  subroutine LDT_LSMparams_init()
-    
+  subroutine LSMparams_init_LIS()
+    integer :: flag
+    flag = 0
+
     if(LDT_rc%lsm.ne."none") then 
-       call lsmparamprocinit(trim(LDT_rc%lsm)//char(0))
+       call lsmparamprocinit(trim(LDT_rc%lsm)//char(0),flag)
     endif
-  end subroutine LDT_LSMparams_init
+  end subroutine LSMparams_init_LIS
+
+
+!BOP
+! !ROUTINE: LSMparams_init_LISHydro
+! \label{LSMparams_init_LISHydro}
+!
+! !INTERFACE: 
+  subroutine LSMparams_init_LISHydro(flag)
+    
+    integer   :: flag
+
+    flag = 1
+
+    if(LDT_rc%lsm.ne."none") then 
+       if(LDT_rc%lsm.ne."Noah.2.7.1".or.&
+            LDT_rc%lsm.ne."Noah.3.2".or.&
+            LDT_rc%lsm.ne."Noah.3.3".or.&
+            LDT_rc%lsm.ne."Noah.3.6".or.&
+            LDT_rc%lsm.ne."Noah.3.9".or.&
+            LDT_rc%lsm.ne."Noah-MP.3.6".or.&
+            LDT_rc%lsm.ne."Noah-MP.4.0.1") then 
+
+          call lsmparamprocinit(trim(LDT_rc%lsm)//char(0),flag)
+       else
+          write(LDT_logunit,*)'[ERR] Support for this LSM in the LISHydro preprocessing mode'
+          write(LDT_logunit,*)'[ERR] is not supported'
+          call LDT_endrun()
+       endif
+    endif
+  end subroutine LSMparams_init_LISHydro
+
 
 
 !BOP

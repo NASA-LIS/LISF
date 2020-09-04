@@ -96,6 +96,7 @@ contains
     use gfs_forcingMod
     use merraland_forcingMod
     use merra2_forcingMod
+    use era5_forcingMod
     use gswp1_forcingMod
     use gswp2_forcingMod
 #if ( defined MF_AGRMET )
@@ -196,6 +197,11 @@ contains
     external timeinterp_merra2
     external finalize_merra2
     external reset_merra2
+
+    external get_era5
+    external timeinterp_era5
+    external finalize_era5
+    external reset_era5
 
     external get_agrradps
     external timeinterp_agrradps
@@ -416,6 +422,13 @@ contains
     call registertimeinterpmetforc(trim(LDT_merra2Id)//char(0),timeinterp_merra2)
     call registerresetmetforc(trim(LDT_merra2Id)//char(0),reset_merra2)
     call registerfinalmetforc(trim(LDT_merra2Id)//char(0),finalize_merra2)
+
+! - ERA5 Reanalysis Forcing:
+    call registerinitmetforc(trim(LDT_ERA5Id)//char(0),init_ERA5)
+    call registerretrievemetforc(trim(LDT_ERA5Id)//char(0),get_ERA5)
+    call registertimeinterpmetforc(trim(LDT_ERA5Id)//char(0),timeinterp_ERA5)
+    call registerresetmetforc(trim(LDT_ERA5Id)//char(0),reset_ERA5)
+    call registerfinalmetforc(trim(LDT_ERA5Id)//char(0),finalize_ERA5)
 
 ! - GSWP2 Forcing:
     call registerinitmetforc(trim(LDT_gswp2Id)//char(0),init_GSWP2)

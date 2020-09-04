@@ -130,11 +130,10 @@ subroutine readinput_latlon
           LDT_rc%gridDesc(n,4),LDT_rc%gridDesc(n,7),&
           LDT_rc%gridDesc(n,5),LDT_rc%gridDesc(n,8)
      
-     LDT_rc%gridDesc(n,1) = 0
-     LDT_rc%gridDesc(n,9) = run_dd(n,5)
-     
+     LDT_rc%gridDesc(n,1) = 0                ! latlon grid
+     LDT_rc%gridDesc(n,9) = run_dd(n,5)      ! dx
      if(LDT_rc%gridDesc(n,1).eq.0) then 
-        LDT_rc%gridDesc(n,10) = run_dd(n,6)
+        LDT_rc%gridDesc(n,10) = run_dd(n,6)  ! dy
         LDT_rc%gridDesc(n,6)  = 128
         LDT_rc%gridDesc(n,11) = 64
         LDT_rc%gridDesc(n,20) = 64
@@ -148,15 +147,15 @@ subroutine readinput_latlon
         call LDT_endrun
      endif
      if(LDT_rc%gridDesc(n,8).lt.LDT_rc%gridDesc(n,5)) then
-        write(LDT_logunit,*) '[ERR] lon2 should  be greater than lon1 ...'
-        write(LDT_logunit,*) LDT_rc%gridDesc(n,8),LDT_rc%gridDesc(n,5)
+        write(LDT_logunit,*) '[INFO] lon2 < lon1 ... ', &
+                             LDT_rc%gridDesc(n,8),LDT_rc%gridDesc(n,5)
      endif
      
-     ! Difference in number of longitudes (dx):
+     ! Difference in number of longitudes (nx):
      LDT_rc%gridDesc(n,2) = nint(diff_lon(LDT_rc%gridDesc(n,8),LDT_rc%gridDesc(n,5))&
                           / LDT_rc%gridDesc(n,9)) + 1   
 
-     ! Difference in number of latitudes (dy):
+     ! Difference in number of latitudes (ny):
      LDT_rc%gridDesc(n,3) = nint((LDT_rc%gridDesc(n,7)-LDT_rc%gridDesc(n,4))&
                           / LDT_rc%gridDesc(n,10)) + 1    
 

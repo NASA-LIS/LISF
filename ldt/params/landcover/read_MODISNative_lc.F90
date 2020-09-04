@@ -88,7 +88,7 @@ subroutine read_MODISNative_lc(n, num_types, fgrd, maskarray )
    inquire( file=trim(LDT_rc%vfile(n)), exist=file_exists )
    if(.not. file_exists) then
       write(LDT_logunit,*)"[ERR] The landcover map: ",trim(LDT_rc%vfile(n))," does not exist."
-      write(LDT_logunit,*)"Program stopping ..."
+      write(LDT_logunit,*)" Program stopping ..."
       call LDT_endrun
    endif
 

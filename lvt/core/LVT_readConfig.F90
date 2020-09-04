@@ -330,16 +330,18 @@ subroutine LVT_readConfig(configfile)
      call LVT_parseTimeString(time,LVT_rc%tavgInterval)
   endif
 
-  call ESMF_ConfigGetAttribute(LVT_config,time, &
-       label="Temporal lag in metrics computations:",&
-       default="0ss", rc=rc)
-  call LVT_verify(rc,'Temporal lag in metrics computations: not defined')
+  allocate(LVT_rc%tlag(LVT_rc%nDataStreams))
 
-  if(time.eq."dekad") then 
-     print*, 'dekad option is not supported for temporal lag '
-  else
-     call LVT_parseTimeString(time,LVT_rc%tlag)
-  endif
+  call ESMF_ConfigFindLabel(LVT_config,"Temporal lag in metrics computations:",rc=rc)
+  do i=1,LVT_rc%nDataStreams
+     call ESMF_ConfigGetAttribute(LVT_config,time,default="0ss",rc=rc)
+     if(time.eq."dekad") then 
+        write(LVT_logunit,*) '[WARN] dekad option is not supported for temporal lag '
+     else
+        call LVT_parseTimeString(time,LVT_rc%tlag(i))
+     endif
+
+  enddo
      
   call ESMF_ConfigGetAttribute(LVT_config,time, &
        label="Metrics output frequency:",&
@@ -440,14 +442,7 @@ subroutine LVT_readConfig(configfile)
   call ESMF_ConfigGetAttribute(LVT_config,LVT_rc%statsodir,&
        label="Metrics output directory:",&
        rc=rc)
-
-  call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%nensem,&
-       label="Number of ensembles in the LVT analysis:", default=1, rc=rc)
-  
-  call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%noebal_refet,&
-       label="Calculate reference ET without energy balance:", default=0, rc=rc)
-
-  if(rc.ne.0) then 
+  if(rc.ne.0) then
      write(LVT_logunit,*) "[INFO] Please note that the option 'Stats output directory:' is"
      write(LVT_logunit,*) "[INFO] now deprecated. It should be replaced with the"
      write(LVT_logunit,*) "[INFO] entry - 'Metrics output directory:' in the lvt.config file"
@@ -455,6 +450,11 @@ subroutine LVT_readConfig(configfile)
   endif
   call LVT_verify(rc,'Metrics output directory: not defined')
 
+  call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%nensem,&
+       label="Number of ensembles in the LVT analysis:", default=1, rc=rc)
+  
+  call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%noebal_refet,&
+       label="Calculate reference ET without energy balance:", default=0, rc=rc)
 
   if(LVT_rc%runmode.eq.LVT_DataCompId) then 
 

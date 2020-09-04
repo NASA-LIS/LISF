@@ -53,6 +53,9 @@ int FTN(xmrg_read_data_c)(char *in_file_name, float *data1d, float *nodata_defau
     float nodata_value; 
     void *buf4byte = malloc(4);
 
+    onerow_short = NULL;
+    onerow_float = NULL;
+
     /* set the default no-data value */
     nodata_value = *nodata_default; 
 
@@ -62,6 +65,7 @@ int FTN(xmrg_read_data_c)(char *in_file_name, float *data1d, float *nodata_defau
     if (in_file_ptr == NULL)
     {
         printf("xmrg_read_data_c_: can not open file %s for input.\n", in_file_name);
+        free(buf4byte);
         return(1) ;
     }
 
@@ -233,6 +237,7 @@ int FTN(xmrg_read_data_c)(char *in_file_name, float *data1d, float *nodata_defau
     {
         /*printf("numbytes %d\n",numbytes);*/
         printf("Error! Header file is in a nonstandard format. Data NOT READ!\n");
+        free(buf4byte);
         return(1);
     }
 
@@ -295,14 +300,8 @@ int FTN(xmrg_read_data_c)(char *in_file_name, float *data1d, float *nodata_defau
     } 
 
     /*free allocated memory*/
-    if(numbytes_cell == 2)
-    {
-        free(onerow_short);
-    }
-    else
-    {
-        free(onerow_float); 
-    }
+    free(onerow_short);
+    free(onerow_float);
     free(buf4byte);
     gzclose(in_file_ptr);
     return(0);

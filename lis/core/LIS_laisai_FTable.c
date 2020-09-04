@@ -74,13 +74,15 @@ void FTN(registerlaisetup)(char *j,void (*func)(int*), int len)
 //  \end{description}
 //EOP
 {
+  int len1;
   struct laisetnode* current;
   struct laisetnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct laisetnode*) malloc(sizeof(struct laisetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -151,13 +153,15 @@ void FTN(registersaisetup)(char *j,void (*func)(int*), int len)
 //  \end{description}
 //EOP
 {
+  int len1;
   struct saisetnode* current;
   struct saisetnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct saisetnode*) malloc(sizeof(struct saisetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -229,13 +233,15 @@ void FTN(registerreadlai)(char *j, void (*func)(int*, void*, void*, float*, floa
 //
 //EOP
 { 
+  int len1;
   struct laireadnode* current;
   struct laireadnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct laireadnode*) malloc(sizeof(struct laireadnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -308,13 +314,15 @@ void FTN(registerreadsai)(char *j, void (*func)(int*, void*, float*), int len)
 //   \end{description}
 //EOP
 { 
+  int len1;
   struct saireadnode* current;
   struct saireadnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct saireadnode*) malloc(sizeof(struct saireadnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

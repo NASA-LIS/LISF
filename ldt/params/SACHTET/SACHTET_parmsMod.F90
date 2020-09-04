@@ -174,7 +174,7 @@ contains
 ! \label{SACHTETparms_init}
 ! 
 ! !INTERFACE:
-  subroutine SACHTETparms_init
+  subroutine SACHTETparms_init(flag)
 
 ! !USES:
    use LDT_logMod,    only : LDT_verify, LDT_endrun, &
@@ -198,6 +198,7 @@ contains
 !
 !EOP
    implicit none
+   integer  :: flag
    integer  :: n
    integer  :: c,r,m,k
    integer  :: numveg

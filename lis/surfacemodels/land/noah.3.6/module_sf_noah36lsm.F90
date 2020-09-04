@@ -10,7 +10,6 @@
 MODULE module_sf_noah36lsm
 
   USE module_model_constants_36
-
 !   REAL, PARAMETER    :: CP = 1004.5
   REAL, PARAMETER      :: RD = 287.04, SIGMA = 5.67E-8,                 &
                           CPH2O = 4.218E+3,CPICE = 2.106E+3,            &
@@ -101,7 +100,7 @@ CONTAINS
 ! Save soil surface temperature for output - D. Mocko
                        LVCOEF,TSOIL,                                    &
                        SFHEAD1RT,                                       &    !I
-                       INFXS1RT,ETPND1)                                      !P
+                       INFXS1RT,ETPND1,RESSNOWFIX)                           !P,P,C
 ! ----------------------------------------------------------------------
 ! SUBROUTINE SFLX - UNIFIED NOAHLSM VERSION 1.0 JULY 2007
 ! ----------------------------------------------------------------------
@@ -145,6 +144,7 @@ CONTAINS
 !                    roughness length) will be defined by three tables
 !   LLANDUSE  (=USGS, using USGS landuse classification)
 !   LSOIL     (=STAS, using FAO/STATSGO soil texture classification)
+!   RESSNOWFIX Flag to use fix that removes residual snow from model points
 ! ----------------------------------------------------------------------
 ! 3. FORCING DATA (F):
 ! ----------------------------------------------------------------------
@@ -307,7 +307,7 @@ CONTAINS
 ! ----------------------------------------------------------------------
 ! 1. CONFIGURATION INFORMATION (C):
 ! ----------------------------------------------------------------------
-      INTEGER, INTENT(IN) :: NSOIL,SOILTYP,VEGTYP
+      INTEGER, INTENT(IN) :: NSOIL,SOILTYP,VEGTYP,RESSNOWFIX
       REAL,    INTENT(IN) :: SLOPE
       INTEGER, INTENT(IN) :: ISURBAN
       INTEGER             :: NROOT
@@ -394,7 +394,6 @@ CONTAINS
           FBUR = 0.0
           FGSN = 0.0
       ENDIF
-
 ! ----------------------------------------------------------------------
 ! CALCULATE DEPTH (NEGATIVE) BELOW GROUND FROM TOP SKIN SFC TO BOTTOM OF
 !   EACH SOIL LAYER.  NOTE:  SIGN OF ZSOIL IS NEGATIVE (DENOTING BELOW
@@ -900,6 +899,18 @@ CONTAINS
            SOILM  = 0.0
          ELSE
            SOILW = SOILWW / SOILWM
+         END IF
+! ----------------------------------------------------------------------
+! Noah 3.6 Snow fix: Added this similar to NOAH-MP to fix low SWE values at Southern US. 
+! Jossy Jacob (April 19, 2018) recommended by David Mocko
+! ----------------------------------------------------------------------
+         IF (RESSNOWFIX == 1) THEN
+           IF (T1 >= TFREEZ + 2.0) THEN
+             IF (SNOWH <= 1.E-6 .OR. SNEQV <= 1.E-3) THEN
+               SNOWH = 0.0
+               SNEQV = 0.0
+             END IF
+           END IF
          END IF
 
 ! ----------------------------------------------------------------------
