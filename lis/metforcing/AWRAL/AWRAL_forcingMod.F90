@@ -106,6 +106,7 @@ contains
    use LIS_coreMod
    use LIS_timeMgrMod
    use LIS_logMod, only : LIS_logunit, LIS_endrun
+   use LIS_constantsMod, only : LIS_CONST_DAY
 
    implicit none
    integer,   intent(in) :: findex
@@ -149,7 +150,7 @@ contains
     call readcrd_AWRAL()
 	
     do n=1, LIS_rc%nnest
-       AWRAL_struc(n)%ts = 86400
+       AWRAL_struc(n)%ts = LIS_CONST_DAY
        call LIS_update_timestep(LIS_rc, n, AWRAL_struc(n)%ts)
     enddo
 
@@ -171,13 +172,12 @@ contains
        AWRAL_struc(n)%gridDesci(1) = 0      ! indicates lat/lon projection
        AWRAL_struc(n)%gridDesci(2) = AWRAL_struc(n)%ncol  ! number of columns in the domain
        AWRAL_struc(n)%gridDesci(3) = AWRAL_struc(n)%nrow  ! number of rows in the domain
-       AWRAL_struc(n)%gridDesci(4) = -44.00  ! latitude of the lower left corner CELL CENTER of the domain?
-       AWRAL_struc(n)%gridDesci(5) = 112.00  ! longitude of the lower left corner CELL CENTER of the domain?
-       AWRAL_struc(n)%gridDesci(6) = -10.00   ! latitude of the upper right corner CELL CENTER of the domain?
-       AWRAL_struc(n)%gridDesci(7) = 154.00   ! latitude of the upper right corner CELL CENTER of the domain?
-       AWRAL_struc(n)%gridDesci(8) = 154.00 ! No idea?
+       AWRAL_struc(n)%gridDesci(4) = -44.00 ! latitude of the lower left corner CELL CENTER of the domain
+       AWRAL_struc(n)%gridDesci(5) = 112.00 ! longitude of the lower left corner CELL CENTER of the domain
+       AWRAL_struc(n)%gridDesci(7) = -10.00 ! latitude of the upper right corner CELL CENTER of the domain
+       AWRAL_struc(n)%gridDesci(8) = 154.00 ! longitude of the upper right corner CELL CENTER of the domain
        AWRAL_struc(n)%gridDesci(9) = 0.05   ! spatial resolution (in degrees) along the E-W dimension
-       AWRAL_struc(n)%gridDesci(10) = 0.05    ! spatial resolution (in degrees) along the N-S dimension
+       AWRAL_struc(n)%gridDesci(10) = 0.05  ! spatial resolution (in degrees) along the N-S dimension
        AWRAL_struc(n)%gridDesci(20) = 64.0  ! used to specify the ordering of data
        ! (Non-divisible by 32 indicates E-W ordering, else N-S ordering)
        !  Set now to 255 per interp/get_fieldpos explanation:

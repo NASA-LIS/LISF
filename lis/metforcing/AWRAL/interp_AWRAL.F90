@@ -78,7 +78,6 @@ subroutine interp_AWRAL (n, findex, nAWRAL, ppt_field, lb, lis_gds, &
   mo = nc * nr   ! LIS Grid
 
   lo = .true.    !-Initialize output bitmap
-  !lb = .true.   ! Set in read_AWRAL
 
   if(AWRAL_struc(n)%interp_flag) then 
 

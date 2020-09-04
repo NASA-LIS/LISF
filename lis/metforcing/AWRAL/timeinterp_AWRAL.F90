@@ -26,7 +26,7 @@
 
 ! !ARGUMENTS: 
     integer, intent(in) :: n
-    integer, intent(in) :: findex
+    integer, intent(in) :: findex ! AF index
 
 !
 ! !DESCRIPTION:

@@ -186,41 +186,40 @@ subroutine AWRAL600_main(n)
 
             ! check validity of Tair
             if(tmp_Tair .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable Tair in AWRAL600"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable Tair in AWRAL600"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of Swdown
             if(tmp_Swdown .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable Swdown in AWRAL600"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable Swdown in AWRAL600"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of Rainf
             if(tmp_Rainf .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable Rainf in AWRAL600"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable Rainf in AWRAL600"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of Qair
             if(tmp_Qair .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable Qair in AWRAL600"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable Qair in AWRAL600"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of Wind_E
             if(tmp_Wind_E .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable Wind_E in AWRAL600"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable Wind_E in AWRAL600"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of Swdirect
             if(tmp_Swdirect .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable Swdirect in AWRAL600"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable Swdirect in AWRAL600"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
-            ! 
             
             tmp_latitude  = lat
             tmp_longitude = lon

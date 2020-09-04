@@ -35,7 +35,7 @@ subroutine AWRAL600_coldstart(mtype)
     integer :: c, r
     do n=1, LIS_rc%nnest
         if (trim(LIS_rc%startcode) .eq. "coldstart") then
-            write(LIS_logunit,*) "MSG: AWRAL600_coldstart -- cold-starting AWRAL600"
+            write(LIS_logunit,*) "[INFO]: AWRAL600_coldstart -- cold-starting AWRAL600"
             do t=1, LIS_rc%npatch(n,mtype)
                 AWRAL600_struc(n)%awral600(t)%sr = AWRAL600_struc(n)%init_sr
                 AWRAL600_struc(n)%awral600(t)%sg = AWRAL600_struc(n)%init_sg
@@ -63,7 +63,7 @@ subroutine AWRAL600_coldstart(mtype)
         
         call LIS_date2time(LIS_rc%time, LIS_rc%doy, LIS_rc%gmt, LIS_rc%yr,      &
                            LIS_rc%mo, LIS_rc%da, LIS_rc%hr, LIS_rc%mn, LIS_rc%ss)
-        write(LIS_logunit,*) "MSG: AWRAL600_coldstart -- ",     &
+        write(LIS_logunit,*) "[INFO]: AWRAL600_coldstart -- ",     &
                              "Using the specified start time ", LIS_rc%time
     enddo
 end subroutine AWRAL600_coldstart

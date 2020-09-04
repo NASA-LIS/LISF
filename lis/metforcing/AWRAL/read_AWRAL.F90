@@ -33,7 +33,7 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
   integer, intent(in)    :: order     ! lower(1) or upper(2) time interval bdry
   integer, intent(in)    :: n         ! nest
   integer, intent(in)    :: findex    ! forcing index
-  character(len=80)   :: fname          
+  character(len=255)   :: fname          
   integer, intent(in) :: year,doy
   character(4) :: cyear
   integer             :: ferror_AWRAL
@@ -73,7 +73,7 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
        'pt'     /)
 
 
-  character*100 :: var_fname
+  character*255 :: var_fname
   real,allocatable  :: datain(:,:) ! input data (lat,lon)
   logical            :: file_exists            
 ! netcdf variables
@@ -145,8 +145,8 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
     endif
 
     status = nf90_get_var(ncid, varid, datain, &
-                                     start=(/1,1,timestep/), &
-    count=(/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
+             start=(/1,1,timestep/), &
+             count=(/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
  
     status=nf90_close(ncid)
     do j=1,AWRAL_struc(n)%nrow
@@ -164,7 +164,8 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
            if(index1 .ne. -1) then
              latt = LIS_domain(n)%grid(index1)%lat
              lont = LIS_domain(n)%grid(index1)%lon
-             call awrallatlon_2_globalgrid(latt, lont, AWRAL_struc(n)%gridDesci(4), AWRAL_struc(n)%gridDesci(5), AWRAL_struc(n)%gridDesci(9), AWRAL_struc(n)%gridDesci(10), rowt, colt)
+             call awrallatlon_2_globalgrid(latt, lont, AWRAL_struc(n)%gridDesci(4), AWRAL_struc(n)%gridDesci(5), &
+                                          AWRAL_struc(n)%gridDesci(9), AWRAL_struc(n)%gridDesci(10), rowt, colt)
              if ( temp2awral(colt,rowt,v) .ne. LIS_rc%udef ) then
                if(order.eq.1) then 
                  AWRAL_struc(n)%metdata1(1,v,index1) = temp2awral(colt,rowt,v)

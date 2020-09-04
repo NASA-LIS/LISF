@@ -17,7 +17,7 @@
 subroutine AWRAL600_setup()
 ! !USES:
     use LIS_logMod,    only: LIS_logunit, LIS_verify, LIS_endrun
-    use LIS_fileIOMod, only: LIS_read_param !, NOT USED? LIS_convertParamDataToLocalDomain
+    use LIS_fileIOMod, only: LIS_read_param
     use LIS_coreMod,   only: LIS_rc, LIS_surface
     use AWRAL600_lsmMod
 
@@ -70,7 +70,7 @@ subroutine AWRAL600_setup()
         ! reading spatial spatial parameters !
         !------------------------------------!
         ! read: k_rout
-        write(LIS_logunit,*) "AWRAL600: reading parameter K_ROUT from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter K_ROUT from ", trim(LIS_rc%paramfile(n))
         call LIS_read_param(n, trim(AWRAL600_struc(n)%LDT_ncvar_k_rout), placeholder)
         do t = 1, LIS_rc%npatch(n, mtype)
             col = LIS_surface(n, mtype)%tile(t)%col
@@ -79,7 +79,7 @@ subroutine AWRAL600_setup()
         enddo 
 
         ! read: kssat
-        write(LIS_logunit,*) "AWRAL600: reading parameter KSSAT from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter KSSAT from ", trim(LIS_rc%paramfile(n))
         call LIS_read_param(n, trim(AWRAL600_struc(n)%LDT_ncvar_kssat), placeholder)
         do t = 1, LIS_rc%npatch(n, mtype)
             col = LIS_surface(n, mtype)%tile(t)%col
@@ -88,7 +88,7 @@ subroutine AWRAL600_setup()
         enddo 
 
         ! read: prefr
-        write(LIS_logunit,*) "AWRAL600: reading parameter PREFR from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter PREFR from ", trim(LIS_rc%paramfile(n))
         call LIS_read_param(n, trim(AWRAL600_struc(n)%LDT_ncvar_prefr), placeholder)
         do t = 1, LIS_rc%npatch(n, mtype)
             col = LIS_surface(n, mtype)%tile(t)%col
@@ -97,7 +97,7 @@ subroutine AWRAL600_setup()
         enddo 
 
         ! read: s0max
-        write(LIS_logunit,*) "AWRAL600: reading parameter S0MAX from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter S0MAX from ", trim(LIS_rc%paramfile(n))
         call LIS_read_param(n, trim(AWRAL600_struc(n)%LDT_ncvar_s0max), placeholder)
         do t = 1, LIS_rc%npatch(n, mtype)
             col = LIS_surface(n, mtype)%tile(t)%col
@@ -106,7 +106,7 @@ subroutine AWRAL600_setup()
         enddo 
 
         ! read: slope
-        write(LIS_logunit,*) "AWRAL600: reading parameter SLOPE from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter SLOPE from ", trim(LIS_rc%paramfile(n))
         call LIS_read_param(n, trim(AWRAL600_struc(n)%LDT_ncvar_slope), placeholder)
         do t = 1, LIS_rc%npatch(n, mtype)
             col = LIS_surface(n, mtype)%tile(t)%col
@@ -115,7 +115,7 @@ subroutine AWRAL600_setup()
         enddo 
 
         ! read: ssmax
-        write(LIS_logunit,*) "AWRAL600: reading parameter SSMAX from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter SSMAX from ", trim(LIS_rc%paramfile(n))
         call LIS_read_param(n, trim(AWRAL600_struc(n)%LDT_ncvar_ssmax), placeholder)
         do t = 1, LIS_rc%npatch(n, mtype)
             col = LIS_surface(n, mtype)%tile(t)%col
@@ -124,7 +124,7 @@ subroutine AWRAL600_setup()
         enddo 
 
         ! read: k_gw
-        write(LIS_logunit,*) "AWRAL600: reading parameter K_GW from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter K_GW from ", trim(LIS_rc%paramfile(n))
         call LIS_read_param(n, trim(AWRAL600_struc(n)%LDT_ncvar_k_gw), placeholder)
         do t = 1, LIS_rc%npatch(n, mtype)
             col = LIS_surface(n, mtype)%tile(t)%col
@@ -133,7 +133,7 @@ subroutine AWRAL600_setup()
         enddo 
 
         ! read: kr_sd
-        write(LIS_logunit,*) "AWRAL600: reading parameter KR_SD from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter KR_SD from ", trim(LIS_rc%paramfile(n))
         call LIS_read_param(n, trim(AWRAL600_struc(n)%LDT_ncvar_kr_sd), placeholder)
         do t = 1, LIS_rc%npatch(n, mtype)
             col = LIS_surface(n, mtype)%tile(t)%col
@@ -142,7 +142,7 @@ subroutine AWRAL600_setup()
         enddo 
 
         ! read: kr_0s
-        write(LIS_logunit,*) "AWRAL600: reading parameter KR_0S from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter KR_0S from ", trim(LIS_rc%paramfile(n))
         call LIS_read_param(n, trim(AWRAL600_struc(n)%LDT_ncvar_kr_0s), placeholder)
         do t = 1, LIS_rc%npatch(n, mtype)
             col = LIS_surface(n, mtype)%tile(t)%col
@@ -151,7 +151,7 @@ subroutine AWRAL600_setup()
         enddo 
 
         ! read: k0sat
-        write(LIS_logunit,*) "AWRAL600: reading parameter K0SAT from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter K0SAT from ", trim(LIS_rc%paramfile(n))
         call LIS_read_param(n, trim(AWRAL600_struc(n)%LDT_ncvar_k0sat), placeholder)
         do t = 1, LIS_rc%npatch(n, mtype)
             col = LIS_surface(n, mtype)%tile(t)%col
@@ -160,7 +160,7 @@ subroutine AWRAL600_setup()
         enddo 
 
         ! read: sdmax
-        write(LIS_logunit,*) "AWRAL600: reading parameter SDMAX from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter SDMAX from ", trim(LIS_rc%paramfile(n))
         call LIS_read_param(n, trim(AWRAL600_struc(n)%LDT_ncvar_sdmax), placeholder)
         do t = 1, LIS_rc%npatch(n, mtype)
             col = LIS_surface(n, mtype)%tile(t)%col
@@ -169,7 +169,7 @@ subroutine AWRAL600_setup()
         enddo 
 
         ! read: kdsat
-        write(LIS_logunit,*) "AWRAL600: reading parameter KDSAT from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter KDSAT from ", trim(LIS_rc%paramfile(n))
         call LIS_read_param(n, trim(AWRAL600_struc(n)%LDT_ncvar_kdsat), placeholder)
         do t = 1, LIS_rc%npatch(n, mtype)
             col = LIS_surface(n, mtype)%tile(t)%col
@@ -178,7 +178,7 @@ subroutine AWRAL600_setup()
         enddo 
 
         ! read: ne
-        write(LIS_logunit,*) "AWRAL600: reading parameter NE from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter NE from ", trim(LIS_rc%paramfile(n))
         call LIS_read_param(n, trim(AWRAL600_struc(n)%LDT_ncvar_ne), placeholder)
         do t = 1, LIS_rc%npatch(n, mtype)
             col = LIS_surface(n, mtype)%tile(t)%col
@@ -190,7 +190,7 @@ subroutine AWRAL600_setup()
         ! MULTILEVEL reading spatial spatial parameters !
         !----------------------------------------------!
         ! read: height
-        write(LIS_logunit,*) "AWRAL600: reading parameter HEIGHT from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter HEIGHT from ", trim(LIS_rc%paramfile(n))
         do k = 1, AWRAL600_struc(n)%nhypsbins
             call AWRAL600_read_MULTILEVEL_param(n, AWRAL600_struc(n)%LDT_ncvar_height, k, placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -201,7 +201,7 @@ subroutine AWRAL600_setup()
         enddo 
 
         ! read: fhru
-        write(LIS_logunit,*) "AWRAL600: reading parameter FHRU from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter FHRU from ", trim(LIS_rc%paramfile(n))
         do k = 1, AWRAL600_struc(n)%nhru
             call AWRAL600_read_MULTILEVEL_param(n, AWRAL600_struc(n)%LDT_ncvar_fhru, k, placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -212,7 +212,7 @@ subroutine AWRAL600_setup()
         enddo 
 
         ! read: hveg
-        write(LIS_logunit,*) "AWRAL600: reading parameter HVEG from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter HVEG from ", trim(LIS_rc%paramfile(n))
         do k = 1, AWRAL600_struc(n)%nhru
             call AWRAL600_read_MULTILEVEL_param(n, AWRAL600_struc(n)%LDT_ncvar_hveg, k, placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -223,7 +223,7 @@ subroutine AWRAL600_setup()
         enddo 
 
         ! read: laimax
-        write(LIS_logunit,*) "AWRAL600: reading parameter LAIMAX from ", trim(LIS_rc%paramfile(n))
+        write(LIS_logunit,*) "[INFO] AWRAL600: reading parameter LAIMAX from ", trim(LIS_rc%paramfile(n))
         do k = 1, AWRAL600_struc(n)%nhru
             call AWRAL600_read_MULTILEVEL_param(n, AWRAL600_struc(n)%LDT_ncvar_laimax, k, placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -244,10 +244,6 @@ end subroutine AWRAL600_setup
 ! !ROUTINE: AWRAL600_read_MULTILEVEL_param
 !  \label{read_MULTILEVEL_param}
 !
-! !REVISION HISTORY:
-!  03 Sept 2004: Sujay Kumar; Initial Specification for read_laiclimo
-!  30 Oct  2013: Shugong Wang; Generalization for reading MULTILEVEL spatial parameter
-!
 ! !INTERFACE:
 subroutine AWRAL600_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 ! !USES:
@@ -256,7 +252,7 @@ subroutine AWRAL600_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
                             LIS_ews_halo_ind, LIS_ewe_halo_ind, &
                             LIS_nss_halo_ind, LIS_nse_halo_ind   
     use LIS_logMod,  only : LIS_logunit, LIS_verify, LIS_endrun
-    use LIS_fileIOMod, only: LIS_read_param !NOT USED, LIS_convertParamDataToLocalDomain
+    use LIS_fileIOMod, only: LIS_read_param
     implicit none
 ! !ARGUMENTS: 
     integer, intent(in)          :: n
@@ -288,54 +284,54 @@ subroutine AWRAL600_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 
     inquire(file=LIS_rc%paramfile(n), exist=file_exists)
     if(file_exists) then
-        write(LIS_logunit, *) 'Reading '//trim(ncvar_name)//' map for level ', level
+        write(LIS_logunit, *) '[INFO] Reading '//trim(ncvar_name)//' map for level ', level
 
         ! open NetCDF parameter file
         ios = nf90_open(path=trim(LIS_rc%paramfile(n)), mode=NF90_NOWRITE, ncid=nid)
-        call LIS_verify(ios, 'Error in nf90_open in AWRAL600_read_MULTILEVEL_param')
+        call LIS_verify(ios, '[ERR] Error in nf90_open in AWRAL600_read_MULTILEVEL_param')
 
         ! inquire the ID of east-west dimension
         ios = nf90_inq_dimid(nid, 'east_west', nc_ID)
-        call LIS_verify(ios, 'Error in nf90_inq_dimid in AWRAL600_read_MULTILEVEL_param')
+        call LIS_verify(ios, '[ERR] Error in nf90_inq_dimid in AWRAL600_read_MULTILEVEL_param')
 
         ! inquire the ID of north-south dimension
         ios = nf90_inq_dimid(nid, 'north_south', nr_ID)
-        call LIS_verify(ios, 'Error in nf90_inq_dimid in AWRAL600_read_MULTILEVEL_param')
+        call LIS_verify(ios, '[ERR] Error in nf90_inq_dimid in AWRAL600_read_MULTILEVEL_param')
 
         ! inquire the length of east-west dimension
         ios = nf90_inquire_dimension(nid, nc_ID, len=nc)
-        call LIS_verify(ios, 'Error in nf90_inquire_dimension in AWRAL600_read_MULTILEVEL_param')
+        call LIS_verify(ios, '[ERR] Error in nf90_inquire_dimension in AWRAL600_read_MULTILEVEL_param')
 
         ! inquire the length of north-south dimension
         ios = nf90_inquire_dimension(nid, nr_ID, len=nr)
-        call LIS_verify(ios, 'Error in nf90_inquire_dimension in AWRAL600_read_MULTILEVEL_param')
+        call LIS_verify(ios, '[ERR] Error in nf90_inquire_dimension in AWRAL600_read_MULTILEVEL_param')
 
         ! inquire the ID of parameter. 
         ios = nf90_inq_varid(nid, Trim(ncvar_name), param_ID)
-        call LIS_verify(ios, trim(ncvar_name)//' field not found in the LIS param file')
+        call LIS_verify(ios, trim(ncvar_name)//'[ERR] field not found in the LIS param file')
 
         ! inquire the IDs of all dimensions. The third dimension is the level dimension
         ios = nf90_inquire_variable(nid, param_ID, dimids = dimids)
-        call LIS_verify(ios, trim(ncvar_name)//' failed to inquire dimensions')
+        call LIS_verify(ios, trim(ncvar_name)//'[ERR] failed to inquire dimensions')
 
         ! inquire the length of the level dimension
         ios = nf90_inquire_dimension(nid, dimids(3), len=nlevel)
-        call LIS_verify(ios, trim(ncvar_name)//' failed to inquire the length of the 3rd dimension')
+        call LIS_verify(ios, trim(ncvar_name)//'[ERR] failed to inquire the length of the 3rd dimension')
 
         ! allocate memory
         allocate(level_data (LIS_rc%gnc(n), LIS_rc%gnr(n), nlevel))
 
         ! inquire the variable ID of parameter 
         ios = nf90_inq_varid(nid, trim(ncvar_name), param_ID)
-        call LIS_verify(ios, trim(ncvar_name)//' field not found in the LIS param file')
+        call LIS_verify(ios, trim(ncvar_name)//'[ERR] field not found in the LIS param file')
 
         ! read parameter 
         ios = nf90_get_var(nid, param_ID, level_data)
-        call LIS_verify(ios, 'Error in nf90_get_var in AWRAL600_read_MULTILEVEL_param')
+        call LIS_verify(ios, '[ERR] Error in nf90_get_var in AWRAL600_read_MULTILEVEL_param')
 
         ! close netcdf file 
         ios = nf90_close(nid)
-        call LIS_verify(ios, 'Error in nf90_close in AWRAL600_read_MULTILEVEL_param')
+        call LIS_verify(ios, '[ERR] Error in nf90_close in AWRAL600_read_MULTILEVEL_param')
 
         ! grab parameter at specific level
         placeholder(:, :) = & 
@@ -346,8 +342,8 @@ subroutine AWRAL600_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
         deallocate(level_data)
 
     else
-        write(LIS_logunit, *) 'MULTILEVEL parameter data file: ', LIS_rc%paramfile(n), ' does not exist'
-        write(LIS_logunit, *) 'program stopping ...'
+        write(LIS_logunit, *) '[ERR] MULTILEVEL parameter data file: ', LIS_rc%paramfile(n), ' does not exist'
+        write(LIS_logunit, *) '[ERR] program stopping ...'
         call LIS_endrun
     endif
  end subroutine AWRAL600_read_MULTILEVEL_param

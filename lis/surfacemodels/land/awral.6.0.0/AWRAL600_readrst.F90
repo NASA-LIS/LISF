@@ -75,11 +75,11 @@ subroutine AWRAL600_readrst()
             ! check the existance of restart file
             inquire(file=AWRAL600_struc(n)%rfile, exist=file_exists)
             If (.not. file_exists) then 
-                write(LIS_logunit,*) "AWRAL600 restart file ", AWRAL600_struc(n)%rfile," does not exist "
-                write(LIS_logunit,*) "Program stopping ..."
+                write(LIS_logunit,*) "[ERR] AWRAL600 restart file ", AWRAL600_struc(n)%rfile," does not exist "
+                write(LIS_logunit,*) "[ERR] Program stopping ..."
                 call LIS_endrun
             endif
-            write(LIS_logunit,*) "AWRAL600 restart file used: ", AWRAL600_struc(n)%rfile
+            write(LIS_logunit,*) "[INFO] AWRAL600 restart file used: ", AWRAL600_struc(n)%rfile
         
             ! open restart file
             if(wformat .eq. "binary") then
@@ -89,19 +89,19 @@ subroutine AWRAL600_readrst()
  
                 ! check for grid space conflict
                 if((nc .ne. LIS_rc%gnc(n)) .or. (nr .ne. LIS_rc%gnr(n))) then
-                    write(LIS_logunit,*) AWRAL600_struc(n)%rfile, "grid space mismatch - AWRAL600 halted"
+                    write(LIS_logunit,*) AWRAL600_struc(n)%rfile, "[ERR] grid space mismatch - AWRAL600 halted"
                     call LIS_endrun
                 endif
             
                 if(npatch .ne. LIS_rc%glbnpatch_red(n, LIS_rc%lsm_index)) then
-                    write(LIS_logunit,*) "restart tile space mismatch, halting..."
+                    write(LIS_logunit,*) "[ERR] restart tile space mismatch, halting..."
                     call LIS_endrun
                 endif
             elseif(wformat .eq. "netcdf") then
 #if (defined USE_NETCDF3 .OR. defined USE_NETCDF4)
                 status = nf90_open(path=AWRAL600_struc(n)%rfile, &
                                    mode=NF90_NOWRITE, ncid=ftn)
-                call LIS_verify(status, "Error opening file "//AWRAL600_struc(n)%rfile)
+                call LIS_verify(status, "[ERR] Error opening file "//AWRAL600_struc(n)%rfile)
 #endif            
             endif
  
@@ -114,7 +114,7 @@ subroutine AWRAL600_readrst()
                                      varname="SG", wformat=wformat)
  
             ! read: water storage in the surface soil layer for each hru
-            do l=1, AWRAL600_struc(n)%nhru ! TODO: check loop
+            do l=1, AWRAL600_struc(n)%nhru
                 call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="S0", &
                                          dim=l, vlevels = AWRAL600_struc(n)%nhru, wformat=wformat)
                 do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -123,7 +123,7 @@ subroutine AWRAL600_readrst()
             enddo
  
             ! read: water content of the shallow soil store for each hru
-            do l=1, AWRAL600_struc(n)%nhru ! TODO: check loop
+            do l=1, AWRAL600_struc(n)%nhru
                 call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="SS", &
                                          dim=l, vlevels = AWRAL600_struc(n)%nhru, wformat=wformat)
                 do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -132,7 +132,7 @@ subroutine AWRAL600_readrst()
             enddo
  
             ! read: water content of the deep soil store for each hru
-            do l=1, AWRAL600_struc(n)%nhru ! TODO: check loop
+            do l=1, AWRAL600_struc(n)%nhru
                 call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="SD", &
                                          dim=l, vlevels = AWRAL600_struc(n)%nhru, wformat=wformat)
                 do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -141,7 +141,7 @@ subroutine AWRAL600_readrst()
             enddo
  
             ! read: leaf biomass
-            do l=1, AWRAL600_struc(n)%nhru ! TODO: check loop
+            do l=1, AWRAL600_struc(n)%nhru
                 call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="MLEAF", &
                                          dim=l, vlevels = AWRAL600_struc(n)%nhru, wformat=wformat)
                 do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
