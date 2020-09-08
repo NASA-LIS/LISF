@@ -504,68 +504,68 @@ contains
          trim(lsmoutfile) ! EMK
 
     if ( .NOT. LIS_histSend ) then
-    if(LIS_rc%wout.eq."binary") then 
-       if(LIS_masterproc) then 
-          open(ftn,file=lsmoutfile,form='unformatted')
-       endif
-       call writeBinaryOutput(n,group_temp,ftn,ftn_stats)
-       if(LIS_masterproc) then 
-          close(ftn)
-       endif
-    elseif(LIS_rc%wout.eq."grib1") then 
+       if(LIS_rc%wout.eq."binary") then 
+          if(LIS_masterproc) then 
+             open(ftn,file=lsmoutfile,form='unformatted')
+          endif
+          call writeBinaryOutput(n,group_temp,ftn,ftn_stats)
+          if(LIS_masterproc) then 
+             close(ftn)
+          endif
+       elseif(LIS_rc%wout.eq."grib1") then 
 #if(defined USE_GRIBAPI)
-       if(LIS_masterproc) then 
-          call grib_open_file(ftn,lsmoutfile,'w',iret)
-          call LIS_verify(iret, 'failed to open grib file '//lsmoutfile)
+          if(LIS_masterproc) then 
+             call grib_open_file(ftn,lsmoutfile,'w',iret)
+             call LIS_verify(iret, 'failed to open grib file '//lsmoutfile)
 
-       endif
-       call writeGribOutput(n,group_temp,ftn,ftn_stats,outInterval,&
+          endif
+          call writeGribOutput(n,group_temp,ftn,ftn_stats,outInterval,&
                              nsoillayers,lyrthk,nsoillayers2)
-       if(LIS_masterproc) then 
-          call grib_close_file(ftn,iret)
-          call LIS_verify(iret, 'failed to close grib file'//lsmoutfile)
-       endif
+          if(LIS_masterproc) then 
+             call grib_close_file(ftn,iret)
+             call LIS_verify(iret, 'failed to close grib file'//lsmoutfile)
+          endif
 #endif          
-    elseif(LIS_rc%wout.eq."grib2") then 
+       elseif(LIS_rc%wout.eq."grib2") then 
 #if(defined USE_GRIBAPI)
-       if(LIS_masterproc) then 
-          call grib_open_file(ftn,lsmoutfile,'w',iret)
-          call LIS_verify(iret, 'failed to open grib2 file '//lsmoutfile)
+          if(LIS_masterproc) then 
+             call grib_open_file(ftn,lsmoutfile,'w',iret)
+             call LIS_verify(iret, 'failed to open grib2 file '//lsmoutfile)
 
-       endif
-       if(.NOT.PRESENT(lyrthk2)) then 
-       call writeGribOutput(n,group_temp,ftn,ftn_stats,outInterval,&
+          endif
+          if(.NOT.PRESENT(lyrthk2)) then 
+             call writeGribOutput(n,group_temp,ftn,ftn_stats,outInterval,&
                              nsoillayers,lyrthk,nsoillayers2)
-       else
-       call writeGribOutput(n,group_temp,ftn,ftn_stats,outInterval,&
+          else
+             call writeGribOutput(n,group_temp,ftn,ftn_stats,outInterval,&
                              nsoillayers,lyrthk,nsoillayers2,lyrthk2)
-       endif
-       if(LIS_masterproc) then 
-          call grib_close_file(ftn,iret)
-          call LIS_verify(iret, 'failed to close grib2file'//lsmoutfile)
-       endif
+          endif
+          if(LIS_masterproc) then 
+             call grib_close_file(ftn,iret)
+             call LIS_verify(iret, 'failed to close grib2file'//lsmoutfile)
+          endif
 #endif          
-    elseif(LIS_rc%wout.eq."netcdf") then 
+       elseif(LIS_rc%wout.eq."netcdf") then 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
-       if(LIS_masterproc) then 
+          if(LIS_masterproc) then 
 #if (defined USE_NETCDF4)
-          iret = nf90_create(path=lsmoutfile,cmode=nf90_hdf5,&
+             iret = nf90_create(path=lsmoutfile,cmode=nf90_hdf5,&
                ncid = ftn)
-          call LIS_verify(iret,'creating netcdf file failed in LIS_historyMod')
+             call LIS_verify(iret,'creating netcdf file failed in LIS_historyMod')
 #endif
 #if (defined USE_NETCDF3)
-          iret = nf90_create(path=lsmoutfile,cmode=nf90_clobber,&
+             iret = nf90_create(path=lsmoutfile,cmode=nf90_clobber,&
                ncid = ftn)
-          call LIS_verify(iret,'creating netcdf file failed in LIS_historyMod')
+             call LIS_verify(iret,'creating netcdf file failed in LIS_historyMod')
 #endif
-       endif
-       call writeNetcdfOutput(n,group_temp,ftn,ftn_stats, outInterval, &
+          endif
+          call writeNetcdfOutput(n,group_temp,ftn,ftn_stats, outInterval, &
             nsoillayers, lyrthk, mname_temp)
-       if(LIS_masterproc) then 
-          iret = nf90_close(ftn)
-       endif
+          if(LIS_masterproc) then 
+             iret = nf90_close(ftn)
+          endif
 #endif
-    endif
+       endif
     endif ! Skip running on LIS_histSend
     ! After writing reset the variables
     call LIS_resetOutputVars(n,group_temp)
