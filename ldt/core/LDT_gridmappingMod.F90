@@ -179,11 +179,6 @@ contains
      select case ( LDT_rc%lis_map_proj(n) )
 
        case( "latlon" )
-          print*, n, param_grid(9), LDT_rc%gridDesc(n,9), &
-               LDT_rc%lis_map_resfactor(n)
-          print*, param_grid(9) == (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n)), &
-               param_grid(9) < (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n)), &
-               param_grid(9) > (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n))
           ! Parameter grid resolution SAME as LIS run grid resolution:
           if( param_grid(9) == (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n))) then
              subparm_lllat_ext = lisdom_min_lat 

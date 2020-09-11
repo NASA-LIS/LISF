@@ -132,6 +132,7 @@ contains
     integer               :: nGlobalAtts
     integer               :: unlimdimID
     integer               :: nvardims
+    integer               :: nLoop
     character*50          :: varName
     integer, allocatable  :: n_dimids(:)
     character*50          :: tIncr
@@ -158,9 +159,9 @@ contains
     real   ,     allocatable  :: var3d(:,:,:)
     integer,     allocatable  :: dims(:)
     integer,     allocatable  :: dimID(:),dimID2(:)
-    real   ,     allocatable  :: var1_2d(:,:)
+    real   ,     allocatable  :: var1_2d(:)
     logical*1,   allocatable  :: var1_b_2d(:)
-    real   ,     allocatable  :: var2_2d(:,:)
+    real   ,     allocatable  :: var2_2d(:)
     logical*1,   allocatable  :: var2_b_2d(:)
     real   ,     allocatable  :: rlat(:)
     real   ,     allocatable  :: rlon(:)
@@ -215,9 +216,13 @@ contains
        allocate(w21(LDT_rc%lnc(2)*LDT_rc%lnr(2)))
        allocate(w22(LDT_rc%lnc(2)*LDT_rc%lnr(2)))
 
-       call bilinear_interp_input_withgrid (LDT_rc%gridDesc(1,:),&
+!       call bilinear_interp_input_withgrid (LDT_rc%gridDesc(1,:),&
+!            LDT_rc%gridDesc(2,:), LDT_rc%lnc(2)*LDT_rc%lnr(2),&
+!            rlat,rlon,n11,n12,n21,n22,w11,w12,w21,w22)
+
+       call neighbor_interp_input_withgrid (LDT_rc%gridDesc(1,:),&
             LDT_rc%gridDesc(2,:), LDT_rc%lnc(2)*LDT_rc%lnr(2),&
-            rlat,rlon,n11,n12,n21,n22,w11,w12,w21,w22)
+            rlat,rlon,n11)
 
        if(dims(1).ne.LDT_rc%npatch(1,1)) then 
           write(LDT_logunit,*) "[ERR] The tile dimension in the input restart file"
@@ -348,19 +353,25 @@ contains
              call LDT_verify(nf90_get_var(ftn,k,var),&
                   'nf90_get_var failed in LDT_ensRstMod')
 
-             allocate(var1_2d(LDT_rc%lnc(1)*LDT_rc%lnr(1),nvardims))
+             allocate(var1_2d(LDT_rc%lnc(1)*LDT_rc%lnr(1)))
              allocate(var1_b_2d(LDT_rc%lnc(1)*LDT_rc%lnr(1)))
              
-             allocate(var2_2d(LDT_rc%lnc(2)*LDT_rc%lnr(2),nvardims))
+             allocate(var2_2d(LDT_rc%lnc(2)*LDT_rc%lnr(2)))
              allocate(var2_b_2d(LDT_rc%lnc(2)*LDT_rc%lnr(2)))
 
-             do kk=1,nvardims
-                var1_2d(:,kk) = -9999.0
+
+             nLoop = 1
+             if(nvardims.gt.1) then 
+                nLoop = dims(nvarDimIDs(2))
+             endif
+             do kk=1,nLoop
+
+                var1_2d(:) = -9999.0
                 var1_b_2d(:) = .false. 
                 do t=1,LDT_rc%npatch(1,1)
                    r = LDT_surface(1,1)%tile(t)%row
                    c = LDT_surface(1,1)%tile(t)%col
-                   var1_2d(c+(r-1)*LDT_rc%lnc(1),kk) = var(t,kk)
+                   var1_2d(c+(r-1)*LDT_rc%lnc(1)) = var(t,kk)
                    var1_b_2d(c+(r-1)*LDT_rc%lnc(1)) = .true.
                 enddo
 
@@ -368,11 +379,18 @@ contains
 !                write(100) var1_2d
 !                close(100)
                 
-                call bilinear_interp(LDT_rc%gridDesc(2,:),&
-                     var1_b_2d,var1_2d(:,kk),var2_b_2d,var2_2d(:,kk),&
+!                call bilinear_interp(LDT_rc%gridDesc(2,:),&
+!                     var1_b_2d,var1_2d(:),var2_b_2d,var2_2d(:),&
+!                     LDT_rc%lnc(1)*LDT_rc%lnr(1),&
+!                     LDT_rc%lnc(2)*LDT_rc%lnr(2),&
+!                     rlat,rlon,w11,w12,w21,w22,n11,n12,n21,n22,&
+!                     LDT_rc%udef,iret)
+
+                call neighbor_interp(LDT_rc%gridDesc(2,:),&
+                     var1_b_2d,var1_2d(:),var2_b_2d,var2_2d(:),&
                      LDT_rc%lnc(1)*LDT_rc%lnr(1),&
                      LDT_rc%lnc(2)*LDT_rc%lnr(2),&
-                     rlat,rlon,w11,w12,w21,w22,n11,n12,n21,n22,&
+                     rlat,rlon,n11,&
                      LDT_rc%udef,iret)
 
 !                open(100,file='test_out.bin',form='unformatted')
@@ -384,7 +402,7 @@ contains
                 do r=1,LDT_rc%lnr(2)
                    do c=1,LDT_rc%lnc(2)
                       if(LDT_LSMparam_struc(2)%landmask%value(c,r,1).gt.0.and.&
-                           var2_2d(c+(r-1)*LDT_rc%lnc(2),kk).eq.LDT_rc%udef) then 
+                           var2_2d(c+(r-1)*LDT_rc%lnc(2)).eq.LDT_rc%udef) then 
                          
                          found = .false. 
                          maxrad = 50
@@ -397,10 +415,10 @@ contains
                             
                             do rr=r1,r2
                                do cc=c1,c2
-                                  if(var2_2d(cc+(rr-1)*LDT_rc%lnc(2),kk).ne.&
+                                  if(var2_2d(cc+(rr-1)*LDT_rc%lnc(2)).ne.&
                                        LDT_rc%udef) then 
-                                     var2_2d(c+(r-1)*LDT_rc%lnc(2),kk) = &
-                                          var2_2d(cc+(rr-1)*LDT_rc%lnc(2),kk)
+                                     var2_2d(c+(r-1)*LDT_rc%lnc(2)) = &
+                                          var2_2d(cc+(rr-1)*LDT_rc%lnc(2))
                                      found = .true. 
                                      exit;
                                   endif
@@ -420,7 +438,7 @@ contains
                 do t=1,LDT_rc%npatch(2,1)
                    r = LDT_surface(2,1)%tile(t)%row
                    c = LDT_surface(2,1)%tile(t)%col
-                   var_new(t,kk) = var2_2d(c+(r-1)*LDT_rc%lnc(2),kk) 
+                   var_new(t,kk) = var2_2d(c+(r-1)*LDT_rc%lnc(2)) 
                    if(var_new(t,kk).eq.-9999.0) then 
                       print*, 'problem'
                       stop
