@@ -21,7 +21,7 @@ subroutine get_AWRAL(n, findex)
   use LIS_timeMgrMod, only  : LIS_tick, LIS_get_nstep
   use LIS_logMod,      only : LIS_logunit, LIS_endrun
   use AWRAL_forcingMod, only : AWRAL_struc
-  use LIS_constantsMod, only : LIS_CONST_DAY
+  use LIS_constantsMod, only : LIS_CONST_CDAY
 
   implicit none
 ! !ARGUMENTS: 
@@ -77,7 +77,7 @@ subroutine get_AWRAL(n, findex)
     hrn = 0
     mnn = 0
     ssn = 0
-    tsn = LIS_CONST_DAY
+    tsn = LIS_CONST_CDAY
     call LIS_tick( timenext, doyn, gmtn, yrn, mon, dan, hrn, mnn, ssn, tsn )
 
 !-- Determine LIS's current time and the time of the AWRAL file:
@@ -87,7 +87,7 @@ subroutine get_AWRAL(n, findex)
     hrp = 0
     mnp = 0
     ssp = 0
-    tsp = -LIS_CONST_DAY
+    tsp = -LIS_CONST_CDAY
     call LIS_tick( AWRAL_file_timep, doyp, gmtp, yrp, mop, dap, hrp, mnp, ssp, tsp )
 
 !-- AWRAL product time; end accumulation time data

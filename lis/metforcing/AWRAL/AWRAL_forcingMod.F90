@@ -106,7 +106,7 @@ contains
    use LIS_coreMod
    use LIS_timeMgrMod
    use LIS_logMod, only : LIS_logunit, LIS_endrun
-   use LIS_constantsMod, only : LIS_CONST_DAY
+   use LIS_constantsMod, only : LIS_CONST_CDAY
 
    implicit none
    integer,   intent(in) :: findex
@@ -150,7 +150,7 @@ contains
     call readcrd_AWRAL()
 	
     do n=1, LIS_rc%nnest
-       AWRAL_struc(n)%ts = LIS_CONST_DAY
+       AWRAL_struc(n)%ts = LIS_CONST_CDAY
        call LIS_update_timestep(LIS_rc, n, AWRAL_struc(n)%ts)
     enddo
 
