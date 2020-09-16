@@ -90,8 +90,8 @@ typedef struct {
 } Outputs;
 */
 
-/* NOTE: Wendy Sharples Dec 2018: ALL the outputs need to be passed into the C program in order to use LIS io. Also took out the separate unnecessary initial and final states. Got rid of the extra ne which is not used in spatial params struct. 
-NB: LIS ONLY PASSES IN 1 CELL AT A TIME!!!!! So needed to refactor based on this
+/* NOTE: Wendy Sharples Dec 2018: ALL the outputs need to be passed into the C program in order to use LIS io. 
+NB: LIS passes in 1 cell at a time so needed to refactor based on this; cells is always 1 in LIS
 */
 
 /* OLD declaration: void awral(Forcing inputs, Outputs outputs, States initial_states, States final_states, 
