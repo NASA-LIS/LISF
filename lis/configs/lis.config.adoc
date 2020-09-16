@@ -6708,7 +6708,9 @@ MRMS mask directory: ./input/MASKS/
 anchor:sssec_awral600forcing[AWRA-L 6.0.0]
 
 `AWRAL forcing directory:` specifies the location of the AWRA-L metforcing data.
+
 `AWRAL domain x-dimension size:` specifies the number of columns of the native domain parameters of the AWRA-L forcing data.
+
 `AWRAL domain y-dimension size:` specifies the number of rows of the native domain parameters of the AWRA-L forcing data.
 
 .Example _lis.config_ entry
@@ -9560,7 +9562,7 @@ endif::devonly[]
 
 ==== AWRA-L 6.0.0
 
-`AWRAL600 model timestep: ` specifies the model timestep for the AWRA-L 6.0.0 LSM.
+`AWRAL600 model timestep:` specifies the model timestep for the AWRA-L 6.0.0 LSM.
 
 See Section <<ssec_timeinterval>> for a description
 of how to specify a time interval.
@@ -9636,7 +9638,7 @@ The following constant parameter options accept values for each HRU specified in
 
 `AWRAL600 initial sd:` specifies the water content of the deep soil store for each HRU.
 
-`AWRAL600 initial mleaf:` specifies the leaf biomass. #example config shows 2 values. Are these per HRU?#
+`AWRAL600 initial mleaf:` specifies the leaf biomass.
 
 .Example _lis.config_ entry:
 ....
@@ -9645,46 +9647,42 @@ AWRAL600 restart output interval: 1mo
 AWRAL600 restart file:            none
 AWRAL600 restart file format: "netcdf"
 
-###
-### CONSTANT PARAMETERS FOR AWRAL600
-###
-AWRAL600 nhru:          2             # nhru: number of hydrological response units
-AWRAL600 nhypsbins:     20            # nhypsbins: number of hypsometric curve distribution percentile bins
-AWRAL600 slope_coeff:   0.43879647    # slope_coeff: scaling factor for slope
-AWRAL600 pair:          97500.0       # pair: air pressure
-AWRAL600 kr_coeff:      0.66159026    # kr_coeff: scaling factor for ratio of saturated hydraulic conductivity
-AWRAL600 hypsperc:      0.0 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1 0.15 0.2 0.3 0.4 0.5 0.6 0.75 0.9 1.0   # hypsperc: hypsometric curve distribution percentile bins
+AWRAL600 nhru:          2
+AWRAL600 nhypsbins:     20
+AWRAL600 slope_coeff:   0.43879647
+AWRAL600 pair:          97500.0
+AWRAL600 kr_coeff:      0.66159026
+AWRAL600 hypsperc:      0.0 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1 0.15 0.2 0.3 0.4 0.5 0.6 0.75 0.9 1.0
+
 # hru params (1st = shallow, 2nd = deep)
-AWRAL600 alb_dry:       0.26 0.26     # alb_dry: dry soil albedo for each hru
-AWRAL600 alb_wet:       0.16 0.16     # alb_wet: wet soil albedo for each hru
-AWRAL600 cgsmax:        0.03209419 0.02124781     # cgsmax: coefficient relating vegetation photosynthetic capacity to maximum stomatal conductance for each hru
-AWRAL600 er_frac_ref:   0.032129 0.06425805       # er_frac_ref: specific ratio of the mean evaporation rate and the mean rainfall intensity during storms for each hru
-AWRAL600 fsoilemax:     0.58500527 0.99960822     # fsoilemax: soil evaporation scaling factor corresponding to unlimited soil water supply for each hru
-AWRAL600 lairef:        1.4 2.5       # lairef: reference leaf area index (at which fv = 0.63) for each hru
-AWRAL600 rd:            1.0 6.0       # rd: rooting depth for each hru
-AWRAL600 s_sls:         0.29277 0.067438    # s_sls: specific canopy rainfall storage per unit leaf area for each hru
-AWRAL600 sla:           10.0 3.0      # sla: specific leaf area for each hru
-AWRAL600 tgrow:         150.0 1000.0  # tgrow: characteristic time scale for vegetation growth towards equilibrium for each hru
-AWRAL600 tsenc:         10.0 60.0     # tsenc: characteristic time scale for vegetation senescence towards equilibrium for each hru
-AWRAL600 ud0:           0.0 11.56989  # ud0: maximum possible root water uptake from the deep soil store for each hru
-AWRAL600 us0:           6.0 6.0       # us0: maximum possible root water uptake from the shallow soil store for each hru
-AWRAL600 vc:            0.65 0.35     # vc: vegetation photosynthetic capacity index per unit canopy cover for each hru
-AWRAL600 w0lime:        0.85 0.85     # w0lime: limiting the value of the relative soil moisture content of the top soil layer at which evaporation is reduced for each hru
-AWRAL600 w0ref_alb:     0.3 0.3       # w0ref_alb: Reference value of w0 that determines the rate of albedo decrease with wetness for each hru
-AWRAL600 wdlimu:        0.3 0.3       # wdlimu: water-limiting relative water content of the deep soil store for each hru
-AWRAL600 wslimu:        0.3 0.3       # wslimu: water-limiting relative water content of the shallow soil store for each hru
-AWRAL600 timesteps:     1             # timesteps: number of daily timesteps
-###
-### INITIAL CONDITION OF AWRAL600
-###
+AWRAL600 alb_dry:       0.26 0.26
+AWRAL600 alb_wet:       0.16 0.16
+AWRAL600 cgsmax:        0.03209419 0.02124781
+AWRAL600 er_frac_ref:   0.032129 0.06425805
+AWRAL600 fsoilemax:     0.58500527 0.99960822
+AWRAL600 lairef:        1.4 2.5
+AWRAL600 rd:            1.0 6.0
+AWRAL600 s_sls:         0.29277 0.067438
+AWRAL600 sla:           10.0 3.0
+AWRAL600 tgrow:         150.0 1000.0
+AWRAL600 tsenc:         10.0 60.0
+AWRAL600 ud0:           0.0 11.56989
+AWRAL600 us0:           6.0 6.0
+AWRAL600 vc:            0.65 0.35
+AWRAL600 w0lime:        0.85 0.85
+AWRAL600 w0ref_alb:     0.3 0.3
+AWRAL600 wdlimu:        0.3 0.3
+AWRAL600 wslimu:        0.3 0.3
+AWRAL600 timesteps:     1
+
 # hru params (1st = shallow, 2nd = deep)
-AWRAL600 initial sr: 0.0        # sr: volume of water in the surface water store
-AWRAL600 initial sg: 100.0      # sg: groundwater storage in the unconfined aquifer
-AWRAL600 initial s0: 0.5 0.5    # s0: water storage in the surface soil layer for each hru
-AWRAL600 initial ss: 0.5 0.5    # ss: water content of the shallow soil store for each hru
-AWRAL600 initial sd: 0.5 0.5    # sd: water content of the deep soil store for each hru
+AWRAL600 initial sr: 0.0
+AWRAL600 initial sg: 100.0
+AWRAL600 initial s0: 0.5 0.5
+AWRAL600 initial ss: 0.5 0.5
+AWRAL600 initial sd: 0.5 0.5
 ### 2/sla
-AWRAL600 initial mleaf: 0.67 0.2  # mleaf: leaf biomass
+AWRAL600 initial mleaf: 0.67 0.2
 ....
 
 ifdef::devonly[]
