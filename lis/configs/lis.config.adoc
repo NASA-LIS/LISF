@@ -8359,6 +8359,10 @@ Noah-MP-4.0.1 LSM initial water storage in the aquifer (mm).
 specifies the Noah-MP-4.0.1 LSM initial water in the aquifer
 and in the saturated soil (mm).
  
+'Noah-MP.4.0.1 snow depth glacier model option:' specifies the
+maximum snow depth that is used in the Noah-MP-4.0.1 glacier model (mm).
+The default is set to 2000 mm.
+
 .Example _lis.config_ entry
 ....
 Noah-MP.4.0.1 model timestep:                15mn
@@ -8399,6 +8403,7 @@ Noah-MP.4.0.1 initial leaf area index:                      2.0
 Noah-MP.4.0.1 initial water table depth:                    2.5
 Noah-MP.4.0.1 initial water in the aquifer:                 4900.0
 Noah-MP.4.0.1 initial water in aquifer and saturated soil:  4900.0
+Noah-MP.4.0.1 snow depth glacier model option:              2000
 ....
 
 
