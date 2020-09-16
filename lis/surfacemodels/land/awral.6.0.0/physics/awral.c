@@ -24,7 +24,7 @@ void build_hypso(double * sgtemp, double * height, double ne, int cells) {
     }
 }
 
-__inline__ double hyps_fsat(double * sgtemp, double * hypsfsat, double sg, double offset) {
+double hyps_fsat(double * sgtemp, double * hypsfsat, double sg, double offset) {
 
     double sgmin = sgtemp[0] + offset;
     double sg_eff = sgmin + sg;
@@ -54,11 +54,11 @@ __inline__ double hyps_fsat(double * sgtemp, double * hypsfsat, double sg, doubl
 
 #define HRU_SUM(HRUVAL) hru_sum((double *)HRUVAL,fhru_hru,hidx);
 
-__inline__ double hru_sum(double *hru_data,double fhru[2],int hidx[2]) {
+double hru_sum(double *hru_data,double fhru[2],int hidx[2]) {
     return (fhru[0]*hru_data[hidx[0]]+fhru[1]*hru_data[hidx[1]]);
 }
 
-__inline__ void calc_soil_flows(double *s, double *i, double *e, double *drain, double *iflow, const double smax, const double ksat, const double rh, const double km) {
+void calc_soil_flows(double *s, double *i, double *e, double *drain, double *iflow, const double smax, const double ksat, const double rh, const double km) {
     if ((*s + *i) <= *e) {
         *e = *s + *i;
         *s = 0.0;
