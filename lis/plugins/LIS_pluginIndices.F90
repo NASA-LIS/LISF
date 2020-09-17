@@ -71,6 +71,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_clm2Id      = "CLM.2"
    character*50, public,  parameter :: LIS_vic411Id    = "VIC.4.1.1"
    character*50, public,  parameter :: LIS_vic412Id    = "VIC.4.1.2"
+   character*50, public,  parameter :: LIS_AWRAL600Id    = "AWRAL.6.0.0"
    character*50, public,  parameter :: LIS_mosaicId    = "Mosaic"
    character*50, public,  parameter :: LIS_hyssibId    = "HySSIB"
    !character*50, public,  parameter :: LIS_sib2Id      = "SiB2"
@@ -176,6 +177,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_WRFoutId          = "WRFout"
    character*50, public,  parameter :: LIS_AWAPforcId        = "AWAP"
    character*50, public,  parameter :: LIS_HiMATGMUforcId    = "HiMAT GMU"
+   character*50, public,  parameter :: LIS_AWRALforcId    = "AWRAL processed forcing"
    character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
    character*50, public,  parameter :: LIS_era5Id            = "ERA5"
 !-------------------------------------------------------------------------
