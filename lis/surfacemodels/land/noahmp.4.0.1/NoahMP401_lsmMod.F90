@@ -196,6 +196,7 @@ module NoahMP401_lsmMod
         integer            :: tbot_opt
         integer            :: stc_opt
         integer            :: gla_opt
+        integer            :: sndpth_gla_opt
         integer            :: rsf_opt
         integer            :: soil_opt
         integer            :: pedo_opt
