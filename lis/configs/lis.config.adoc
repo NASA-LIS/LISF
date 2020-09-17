@@ -183,6 +183,7 @@ ifdef::devonly[]
 endif::devonly[]
 |"`CLSM F2.5`"  | Catchment Fortuna-2_5
 |RDHM.3.5.6  | RDHM 3.5.6 (SAC-HTET and SNOW-17)
+|AWRAL.6.0.0 | AWRA-L version 6.0.0
 |====
 
 .Example _lis.config_ entry
@@ -358,6 +359,7 @@ endif::devonly[]
 |"`AWAP`"                      | AWAP precipitation data
 |"`GDAS T1534`"                | NCEP-specific GDAS T1534 forcing data
 |"`ERA5`"                      | ERA5 reanalysis meteorology
+|"AWRAL processed forcing"     | AWRA-L processed forcing
 |====
 
 .Example _lis.config_ entry
@@ -6702,6 +6704,21 @@ MRMS mask threshold: 60.0
 MRMS mask directory: ./input/MASKS/
 ....
 
+==== AWRA-L 6.0.0
+anchor:sssec_awral600forcing[AWRA-L 6.0.0]
+
+`AWRAL forcing directory:` specifies the location of the AWRA-L metforcing data.
+
+`AWRAL domain x-dimension size:` specifies the number of columns of the native domain parameters of the AWRA-L forcing data.
+
+`AWRAL domain y-dimension size:` specifies the number of rows of the native domain parameters of the AWRA-L forcing data.
+
+.Example _lis.config_ entry
+....
+AWRAL forcing directory:               ./INPUT/AWRAL.FORCING
+AWRAL domain x-dimension size:         841
+AWRAL domain y-dimension size:         681
+....
 
 === Land surface models
 anchor:ssec_lsm[Land surface models]
@@ -9548,6 +9565,130 @@ SUMMA.1.0 model timestep:
 ....
 endif::devonly[]
 
+==== AWRA-L 6.0.0
+
+`AWRAL600 model timestep:` specifies the model timestep for the AWRA-L 6.0.0 LSM.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`AWRAL600 restart output interval:` specifies the model timestep for the AWRA-L 6.0.0 LSM.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`AWRAL600 restart file:` specifies the AWRA-L 6.0.0 restart file.
+
+`AWRAL600 restart file format:` specifies the AWRA-L 6.0.0 restart file format, netcdf or binary (default=netcdf).
+
+`AWRAL600 nhru:` specifies the number of hydrological response units (HRUs).
+
+`AWRAL600 nhypsbins:` specifies the number of hypsometric curve distribution percentile bins.
+
+`AWRAL600 slope_coeff:` specifies the scaling factor for slope.
+
+`AWRAL600 pair:` specifies the air pressure.
+
+`AWRAL600 kr_coeff:` specifies the scaling factor for ratio of saturated hydraulic conductivity.
+
+`AWRAL600 hypsperc:` specifies the hypsometric curve distribution percentile bins.
+
+The following constant parameter options accept values for each HRU specified in `AWRAL600 nhru` above, from shallow to deep.
+
+`AWRAL600 alb_dry:` specifies the dry soil albedo for each HRU.
+
+`AWRAL600 alb_wet:` specifies the wet soil albedo for each HRU.
+
+`AWRAL600 cgsmax:` specifies the coefficient relating vegetation photosynthetic capacity to maximum stomatal conductance for each HRU.
+
+`AWRAL600 er_frac_ref:` specifies the specific ratio of the mean evaporation rate and the mean rainfall intensity during storms for each HRU.
+
+`AWRAL600 fsoilemax:` specifies the soil evaporation scaling factor corresponding to unlimited soil water supply for each HRU.
+
+`AWRAL600 lairef:` specifies the reference leaf area index (at which fv = 0.63) for each HRU.
+
+`AWRAL600 rd:` specifies the rooting depth for each HRU.
+
+`AWRAL600 s_sls:` specifies the specific canopy rainfall storage per unit leaf area for each HRU.
+
+`AWRAL600 sla:` specifies the specific leaf area for each HRU.
+
+`AWRAL600 tgrow:` specifies the characteristic time scale for vegetation growth towards equilibrium for each HRU.
+
+`AWRAL600 tsenc:` specifies the characteristic time scale for vegetation senescence towards equilibrium for each HRU.
+
+`AWRAL600 ud0:` specifies the maximum possible root water uptake from the deep soil store for each HRU.
+
+`AWRAL600 us0:` specifies the maximum possible root water uptake from the shallow soil store for each HRU.
+
+`AWRAL600 vc:` specifies the vegetation photosynthetic capacity index per unit canopy cover for each HRU.
+
+`AWRAL600 w0lime:` specifies the limiting the value of the relative soil moisture content of the top soil layer at which evaporation is reduced for each HRU.
+
+`AWRAL600 w0ref_alb:` specifies the reference value of w0 that determines the rate of albedo decrease with wetness for each HRU.
+
+`AWRAL600 wdlimu:` specifies the water-limiting relative water content of the deep soil store for each HRU.
+
+`AWRAL600 wslimu:` specifies the water-limiting relative water content of the shallow soil store for each HRU.
+
+`AWRAL600 timesteps:` specifies the number of daily timesteps.
+
+`AWRAL600 initial sr:` specifies the volume of water in the surface water store.
+
+`AWRAL600 initial sg:` specifies the  groundwater storage in the unconfined aquifer.
+
+`AWRAL600 initial s0:` specifies the water storage in the surface soil layer for each HRU.
+
+`AWRAL600 initial ss:` specifies the water content of the shallow soil store for each HRU.
+
+`AWRAL600 initial sd:` specifies the water content of the deep soil store for each HRU.
+
+`AWRAL600 initial mleaf:` specifies the leaf biomass.
+
+.Example _lis.config_ entry:
+....
+AWRAL600 model timestep:          1da
+AWRAL600 restart output interval: 1mo
+AWRAL600 restart file:            none
+AWRAL600 restart file format: "netcdf"
+
+AWRAL600 nhru:          2
+AWRAL600 nhypsbins:     20
+AWRAL600 slope_coeff:   0.43879647
+AWRAL600 pair:          97500.0
+AWRAL600 kr_coeff:      0.66159026
+AWRAL600 hypsperc:      0.0 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1 0.15 0.2 0.3 0.4 0.5 0.6 0.75 0.9 1.0
+
+# hru params (1st = shallow, 2nd = deep)
+AWRAL600 alb_dry:       0.26 0.26
+AWRAL600 alb_wet:       0.16 0.16
+AWRAL600 cgsmax:        0.03209419 0.02124781
+AWRAL600 er_frac_ref:   0.032129 0.06425805
+AWRAL600 fsoilemax:     0.58500527 0.99960822
+AWRAL600 lairef:        1.4 2.5
+AWRAL600 rd:            1.0 6.0
+AWRAL600 s_sls:         0.29277 0.067438
+AWRAL600 sla:           10.0 3.0
+AWRAL600 tgrow:         150.0 1000.0
+AWRAL600 tsenc:         10.0 60.0
+AWRAL600 ud0:           0.0 11.56989
+AWRAL600 us0:           6.0 6.0
+AWRAL600 vc:            0.65 0.35
+AWRAL600 w0lime:        0.85 0.85
+AWRAL600 w0ref_alb:     0.3 0.3
+AWRAL600 wdlimu:        0.3 0.3
+AWRAL600 wslimu:        0.3 0.3
+AWRAL600 timesteps:     1
+
+# hru params (1st = shallow, 2nd = deep)
+AWRAL600 initial sr: 0.0
+AWRAL600 initial sg: 100.0
+AWRAL600 initial s0: 0.5 0.5
+AWRAL600 initial ss: 0.5 0.5
+AWRAL600 initial sd: 0.5 0.5
+### 2/sla
+AWRAL600 initial mleaf: 0.67 0.2
+....
 
 ifdef::devonly[]
 

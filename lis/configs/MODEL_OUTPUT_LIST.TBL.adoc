@@ -202,6 +202,7 @@ SAlbedo:      0  -       -    0 0 0 1 184 1000    # Albedo of the snow-covered a
 SnowTProf:    0  K       -    0 0 0 1 239 1000    # Temperature of the snow pack (K)
 SnowDepth:    0  m       -    0 0 0 1  66 1000    # Snow depth (m)
 SLiqFrac:     0  -       -    0 0 0 1 185 1000    # Fraction of SWE in the liquid phase
+SnowThresh:   0  -       -    0 0 0 1  66 1000    # Snow depth threshold (m)
 
 #Variables to compared against remote sensed data
 LWup:         0  W/m2    UP   1 0 0 1 212 1       # Longwave radiation up from the surface (W/m2)
@@ -397,5 +398,20 @@ RTM SoilMoist:   0  m3/m3    -   0 0 0 1 256 10  # RTM soil moisture
 
 #Irrigation output
 Irrigated water: 0  kg/m2s   -   0 0 0 1 256 10  # Irrigated water amount
+
+#AWRAL600 output
+e0:           1  mm      -    0 0 0 1 0 1 # potential evaporation
+etot:         1  mm      -    0 0 0 1 0 1 # actual evapotranspiration
+qtot:         1  mm      -    0 0 0 1 0 1 # total discharge to stream
+sr:           1  mm      -    0 0 0 1 0 1 # volume of water in the surface water store
+sg:           1  mm      -    0 0 0 1 0 1 # groundwater storage in the unconfined aquifer
+dd:           1  mm      -    0 0 0 1 0 1 # vertical drainage from the bottom of the deep soil layer
+s0:           1  mm      -    0 0 0 2 0 1 # water storage in the surface soil layer for each hru
+ss:           1  mm      -    0 0 0 2 0 1 # water content of the shallow soil store for each hru
+sd:           1  mm      -    0 0 0 2 0 1 # water content of the deep soil store for each hru
+mleaf:        1  kg/m2   -    0 0 0 2 0 1 # leaf biomass for each hru
+s0_avg:       1  mm      -    0 0 0 1 0 1 # water storage in the surface soil layer
+ss_avg:       1  mm      -    0 0 0 1 0 1 # water content of the shallow soil store
+sd_avg:       1  mm      -    0 0 0 1 0 1 # water content of the deep soil store
 ....
 
