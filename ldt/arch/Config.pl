@@ -683,9 +683,20 @@ if($enable_geotiff== 1){
 
 # EMK...Added LIGBEOTIFF for Air Force
 if($enable_libgeotiff== 1){
-    $cflags = $cflags." -I\$(INC_LIBGEOTIFF)";
+    # Kluge for koehr; locally installed the tiff library.
+    if(defined($ENV{LDT_TIFF})){
+       $INC_LIBTIFF = $ENV{LDT_TIFF}."/include";
+       $cflags = $cflags." -I".$INC_LIBTIFF." -I\$(INC_LIBGEOTIFF)";
+    }
+    else {
+       $cflags = $cflags." -I\$(INC_LIBGEOTIFF)";
+    }
     $tiffpath = "";
     $tiffdeps = "";
+    # Kluge for koehr; locally installed the tiff library.
+    if(defined($ENV{LDT_TIFF})){
+       $tiffpath = " -L".$ENV{LDT_TIFF}."/lib";
+    }
     if ( $cray_modifications == 1 ) {
        $tiffpath = " -L".$sys_libtiff_path;
        $tiffdeps = " -L".$sys_libjbig_path." -ljbig "." -L".$sys_liblzma_path." -llzma ";
