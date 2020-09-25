@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 ''' 
 Created on June 10, 2019
 @author: Shugong Wang
