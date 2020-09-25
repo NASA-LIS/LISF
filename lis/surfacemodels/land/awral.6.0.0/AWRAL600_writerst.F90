@@ -87,7 +87,7 @@ subroutine AWRAL600_writerst(n)
             elseif(wformat .eq. "netcdf") then
 #if (defined USE_NETCDF3 .OR. defined USE_NETCDF4)
                 status = nf90_close(ftn)
-                call LIS_verify(status, "[ERR] Error in nf90_close in AWRAL600_writerst")
+                call LIS_verify(status, "Error in nf90_close in AWRAL600_writerst")
 #endif
             endif
             write(LIS_logunit, *) "[INFO] AWRAL600 archive restart written: ", filen
