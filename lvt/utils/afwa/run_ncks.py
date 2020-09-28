@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 #
 # SCRIPT: run_ncks.py
 #
@@ -11,7 +11,7 @@
 # required variables.
 #
 # REQUIREMENTS:
-# * Python 2.6 or 2.7
+# * Python 3
 # * NetCDF Operator (NCO) utilities
 #
 # REVISION HISTORY:
@@ -31,8 +31,10 @@
 #               Not included for JULES since that LSM doesn't use it.
 # 09 Jan 2020:  Eric Kemp (SSAI), added Tair_f_min for JULES for 3hr.
 # 05 Aug 2020:  Eric Kemp (SSAI), added Albedo_tavg and SmLiqFrac_inst.
+# 25 Sep 2020:  Eric Kemp (SSAI), tweaked comments for Python version. Also
+#               added path for NCKS on Koehr.
 #
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 # Standard modules
 import datetime
@@ -40,10 +42,11 @@ import os
 import subprocess
 import sys
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 # Path to NCO ncks program
 # _NCKS_PATH = "/app/nco/4.5.2-gnu/bin/ncks" # On Conrad
+# _NCKS_PATH = "/app/nco/4.7.7-gnu/bin/ncks" # On Koehr
 _NCKS_PATH = "/usr/local/other/SLES11.1/nco/4.4.4/intel-12.1.0.233/bin/ncks"
 
 # Supported LIS LSMs
@@ -240,7 +243,7 @@ _LIS_VARIABLES = {
 _OTHER_VARIABLES = ["latitude", "longitude",
                     "time", "water_temp", "aice", "hi"]
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Print command line usage
 
 
@@ -252,9 +255,8 @@ def usage():
     print("           period is processing time length in hours (3 or 24)")
     print("           --nospread is optional flag to skip ensemble spread")
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Read command line arguments
-
 
 def read_cmd_args():
 
@@ -329,9 +331,8 @@ def read_cmd_args():
 
     return validdt, lsm, ncks, period, skip_ens_spread
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Collect netCDF mean files
-
 
 def get_nc_mean_files(validdt, lsm, period):
 
@@ -385,9 +386,8 @@ def get_nc_mean_files(validdt, lsm, period):
     # All done
     return mean_nc_infiles, mean_nc_outfile
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Collect netCDF ssdev files
-
 
 def get_nc_ssdev_files(validdt, lsm, period):
 
@@ -441,9 +441,8 @@ def get_nc_ssdev_files(validdt, lsm, period):
     # All done
     return ssdev_nc_infiles, ssdev_nc_outfile
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Collect netCDF latest files
-
 
 def get_nc_latest_files(validdt, lsm):
 
@@ -475,9 +474,8 @@ def get_nc_latest_files(validdt, lsm):
     # All done
     return latest_nc_infiles
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Use ncks to merge netCDF fields together
-
 
 def merge_nc_files(lsm, ncks, period, nc_infiles,
                    nc_outfile, latest_nc_infiles=None):
@@ -521,9 +519,8 @@ def merge_nc_files(lsm, ncks, period, nc_infiles,
                     print("[ERR] Problem with ncks!")
                     sys.exit(1)
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Main Driver.
-
 
 if __name__ == "__main__":
 
