@@ -61,7 +61,7 @@ for var in vars:
 
 module purge
 module use --append ~jim/README
-module load lisf_73_intel_2919_5_281
+module load lisf_73_intel_2019_5_281
 ulimit -c unlimited
 ulimit -m unlimited
 ulimit -s unlimited
