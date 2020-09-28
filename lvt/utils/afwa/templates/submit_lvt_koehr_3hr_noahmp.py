@@ -54,7 +54,7 @@ for var in vars:
 #PBS -A %s\n""" % (project_code)
     line += """#PBS -j oe
 #PBS -l walltime=0:15:00
-#PBS -l select=1:ncpus=32
+#PBS -l select=1:ncpus=48
 #PBS -N %s.3hr\n""" % (var)
     line += """#PBS -q %s\n""" % (reservation)
     line += """#PBS -W sandbox=PRIVATE
