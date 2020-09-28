@@ -53,12 +53,13 @@ for var in vars:
 #PBS -A %s\n""" % (project_code)
     line += """#PBS -j oe
 #PBS -l walltime=0:15:00
-#PBS -l select=1:ncpus=48
+#PBS -l select=1:ncpus=48:mpiprocs=1
 #PBS -N %s.3hr\n""" % (var)
     line += """#PBS -q %s\n""" % (reservation)
     line += """#PBS -W sandbox=PRIVATE
 #PBS -V
 
+module load
 module use --append ~jim/README
 module load lisf_73_intel_2919_5_281
 ulimit -c unlimited
@@ -76,7 +77,7 @@ if [ ! -e lvt.config.%s.3hr ] ; then
    echo "ERROR, lvt.config.%s.3hr does not exist!" && exit 1
 fi
 
-aprun -n 1 -j 1 ./LVT lvt.config.%s.3hr || exit 1
+mpirun ./LVT lvt.config.%s.3hr || exit 1
 
 exit 0
 """ % (var, var, var)
