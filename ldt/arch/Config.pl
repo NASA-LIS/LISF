@@ -111,11 +111,11 @@ elsif($opt_lev == 3) {
    $sys_opt = "-O3 ";
    $sys_c_opt = "";
 }
-print "Assume little/big_endian data format (1-little, 2-big, default=2): ";
+print "Assume little/big_endian data format (1-little, 2-big, default=1): ";
 $use_endian=<stdin>;
 chomp($use_endian);
 if($use_endian eq "") {
-   $use_endian=2
+    $use_endian=1;
 }
 
 
@@ -134,11 +134,11 @@ else{
 }
 
 
-print "Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=1): ";
+print "Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=2): ";
 $use_gribapi=<stdin>;
 chomp($use_gribapi);
 if($use_gribapi eq ""){
-   $use_gribapi=1;
+    $use_gribapi=2;
 }
 
 if($use_gribapi == 1) {
@@ -296,10 +296,10 @@ if($use_netcdf == 1) {
    if($netcdf_deflate eq "\n"){
       $netcdf_deflate=1;
    }
-   print "NETCDF use deflate level? (1 to 9-yes, 0-no, default = 9): ";
+   print "NETCDF use deflate level? (1 to 9-yes, 0-no, default = 1): ";
    $netcdf_deflate_level=<stdin>;
    if($netcdf_deflate_level eq "\n"){
-      $netcdf_deflate_level=9;
+      $netcdf_deflate_level=1;
    }
 }
 
