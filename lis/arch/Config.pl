@@ -261,7 +261,7 @@ print "Assume little/big_endian data format (1-little, 2-big, default=1): ";
 $use_endian=<stdin>;
 chomp($use_endian);
 if($use_endian eq "") {
-    $use_endian=1;
+    $use_endian=1; # For AGRMET
 }
 
 my $end_table = ();

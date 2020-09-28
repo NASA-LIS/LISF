@@ -111,11 +111,11 @@ elsif($opt_lev == 3) {
    $sys_opt = "-O3 ";
    $sys_c_opt = "";
 }
-print "Assume little/big_endian data format (1-little, 2-big, default=1): ";
+print "Assume little/big_endian data format (1-little, 2-big, default=2): ";
 $use_endian=<stdin>;
 chomp($use_endian);
 if($use_endian eq "") {
-    $use_endian=1;
+    $use_endian=2; # For many LDT input datasets
 }
 
 
