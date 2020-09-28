@@ -11,7 +11,7 @@
 # required variables.
 #
 # REQUIREMENTS:
-# * Python 2.6 or 2.7
+# * Python 3
 # * NetCDF Operator (NCO) utilities
 #
 # REVISION HISTORY:
