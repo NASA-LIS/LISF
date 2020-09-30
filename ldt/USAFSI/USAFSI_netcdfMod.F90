@@ -685,7 +685,7 @@ contains
       nr = LDT_rc%lnr(1)
 
       ! See if file exists
-      infilename = trim(usafsi_settings%netcdf_prefix)//date10//".nc"
+      infilename = trim(usafsi_settings%netcdf_prefix)//"_"//date10//".nc"
       inquire(file=trim(infilename), exist=file_exists)
       if (.not. file_exists) return
 
