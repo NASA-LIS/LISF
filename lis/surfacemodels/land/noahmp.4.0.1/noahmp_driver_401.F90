@@ -21,8 +21,8 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
      cropcat,  planting, harvest ,season_gdd,                    & ! in : Vegetation/Soil characteristics
      dveg_opt, crs_opt, btr_opt, run_opt, sfc_opt, frz_opt,      & ! in : User options
      inf_opt, rad_opt, alb_opt , snf_opt, tbot_opt, stc_opt,     & ! in : User options
-     gla_opt, rsf_opt, soil_opt, pedo_opt, crop_opt, iz0tlnd   , & ! in : new options
-     urban_opt,                                                  & ! in : new options
+     gla_opt, sndpth_gla_opt, rsf_opt, soil_opt, pedo_opt,       & ! in : new options
+     crop_opt, iz0tlnd, urban_opt,                               & ! in : new options
      soilcomp, soilcL1, soilcL2, soilcL3, soilcL4,               & ! in : new options
      tair    , psurf   , wind_e   , wind_n   , qair    ,         & ! in : forcing
      swdown  , lwdown  , prcp    ,                               & ! in : forcing
@@ -112,6 +112,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
 
   ! Added by Zhuo Wang and Shugong Wang
   integer, intent(in) :: gla_opt              ! glacier option (1->phase change; 2->simple)
+  integer, intent(in) :: sndpth_gla_opt       ! snow depth max for glacier model [mm]
   integer, intent(in) :: rsf_opt              ! surface resistance (1->Sakaguchi/Zeng; 2->Seller; 3->mod Sellers; 4->1+snow)
   integer, intent(in) :: soil_opt             ! soil configuration option
   integer, intent(in) :: pedo_opt             ! soil pedotransfer function option
@@ -716,7 +717,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
        cropcatin , plantingin, harvestin ,season_gddin,                    &
        dveg_opt, crs_opt , btr_opt ,run_opt  , sfc_opt , frz_opt,  & ! in : user options
        inf_opt , rad_opt , alb_opt ,snf_opt  , tbot_opt, stc_opt,  & ! in : user options
-       gla_opt , rsf_opt , soil_opt,pedo_opt , crop_opt,           & ! in : user options
+       gla_opt , sndpth_gla_opt, rsf_opt , soil_opt,pedo_opt , crop_opt,           & ! in : user options
        iz0tlnd , urban_opt,                                        & ! in : user options
        soilcompin, soilcL1in, soilcL2in, soilcL3in, soilcL4in,               & ! in : user options
        sfctmp(1)  , q2(1)  , uu(1)    , vv(1) , soldnin , lwdnin  , & ! in : forcing 

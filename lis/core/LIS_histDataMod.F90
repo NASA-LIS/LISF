@@ -462,6 +462,22 @@ module LIS_histDataMod
   integer :: LIS_MOC_JULES_FWETL = -9999 
   integer :: LIS_MOC_JULES_ESOIL = -9999 
 
+  ! AWRAL
+  public :: LIS_MOC_SR
+  public :: LIS_MOC_SG
+  public :: LIS_MOC_S0_HRU
+  public :: LIS_MOC_SS_HRU
+  public :: LIS_MOC_SD_HRU
+  public :: LIS_MOC_MLEAF_HRU
+  public :: LIS_MOC_E0
+  public :: LIS_MOC_ETOT
+  public :: LIS_MOC_DD
+  public :: LIS_MOC_S0
+  public :: LIS_MOC_SS
+  public :: LIS_MOC_SD
+  public :: LIS_MOC_QTOT
+  ! end AWRAL
+
    ! ALMA ENERGY BALANCE COMPONENTS
   integer :: LIS_MOC_SWNET      = -9999
   integer :: LIS_MOC_LWNET      = -9999
@@ -872,6 +888,21 @@ module LIS_histDataMod
     ! <- JULES -> 
     integer :: LIS_MOC_GS = -9999
     integer :: LIS_MOC_GC = -9999 
+
+!   <- AWRAL ->
+    integer :: LIS_MOC_SR = -9999
+    integer :: LIS_MOC_SG = -9999
+    integer :: LIS_MOC_S0_HRU = -9999
+    integer :: LIS_MOC_SS_HRU = -9999
+    integer :: LIS_MOC_SD_HRU = -9999
+    integer :: LIS_MOC_MLEAF_HRU = -9999
+    integer :: LIS_MOC_E0 = -9999
+    integer :: LIS_MOC_ETOT = -9999
+    integer :: LIS_MOC_DD = -9999
+    integer :: LIS_MOC_S0 = -9999
+    integer :: LIS_MOC_SS = -9999
+    integer :: LIS_MOC_SD = -9999
+    integer :: LIS_MOC_QTOT = -9999
 
 #if 0
    ! SPECIAL CASE INDICES
@@ -4955,7 +4986,165 @@ contains
     endif
     
     !<- end of RUC addition -> 
-    
+
+!   <- AWRAL ->
+    call ESMF_ConfigFindLabel(modelSpecConfig,"sr:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "sr",&
+         "volume_of_water_in_the_surface_water_store",&
+         "volume of water in the surface water store",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SR, &
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
+            model_patch=.true.)
+    endif
+     
+    call ESMF_ConfigFindLabel(modelSpecConfig,"sg:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "sg",&
+         "groundwater_storage_in_the_unconfined_aquifer",&
+         "groundwater storage in the unconfined aquifer",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SG, &
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"s0:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "s0",&
+         "water_storage_in_the_surface_soil_layer_for_each_hru",&
+         "water storage in the surface soil layer for each hru",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_S0_HRU, &
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"ss:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "ss",&
+         "water_content_of_the_shallow_soil_store_for_each_hru",&
+         "water content of the shallow soil store for each hru",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SS_HRU, &
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"sd:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "sd",&
+         "water_content_of_the_deep_soil_store_for_each_hru",&
+         "water content of the deep soil store for each hru",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SD_HRU, &
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"mleaf:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "mleaf",&
+         "leaf_biomass_for_each_hru",&
+         "leaf biomass for each hru",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_MLEAF_HRU, &
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"kg/m2"/),1,("-"),2,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"e0:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "e0",&
+         "potential_evaporation",&
+         "potential evaporation",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_E0, &
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"etot:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "etot",&
+         "actual_evapotranspiration",&
+         "actual evapotranspiration",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_ETOT, &
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"dd:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "dd",&
+         "vertical_drainage_from_the_bottom_of_the_deep_soil_layer",&
+         "vertical drainage from the bottom of the deep soil layer",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_DD, &
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"s0_avg:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "s0_avg",&
+         "water_storage_in_the_surface_soil_layer",&
+         "water storage in the surface soil layer",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_S0, &
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"ss_avg:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "ss_avg",&
+         "water_content_of_the_shallow_soil_store",&
+         "water content of the shallow soil store",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SS, &
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"sd_avg:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "sd_avg",&
+         "water_content_of_the_deep_soil_store",&
+         "water content of the deep soil store",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SD, &
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
+            model_patch=.true.)
+    endif
+   
+    call ESMF_ConfigFindLabel(modelSpecConfig,"qtot:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "qtot",&
+         "total_discharge_to_stream",&
+         "total discharge to stream",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_QTOT, &
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
+            model_patch=.true.)
+    endif
+!   <- end of AWRAL addition -> 
+   
     call ESMF_ConfigDestroy(modelSpecConfig,rc=rc)
 
     allocate(LIS_histData(n)%ptr_into_lsm_list(LIS_MOC_LSM_COUNT))

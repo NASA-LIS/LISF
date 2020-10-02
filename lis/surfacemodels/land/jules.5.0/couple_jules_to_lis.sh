@@ -27,6 +27,8 @@ sed -i 's/CALL\ init_ic(nml_dir)/!\ CALL\ init_ic(nml_dir)/g' \
   ./src/initialisation/standalone/init.F90
 sed -i 's/CALL\ init_dump()/!\ CALL\ init_dump()/g' \
   ./src/initialisation/standalone/init.F90
+sed -i 's/CALL\ write_dump()/!\ CALL\ write_dump()/g' \
+  ./src/initialisation/standalone/init.F90
 
 ### Step 3: disable MPI in JULES 
 ### and rename mpi module to lis_mpi_dummy
