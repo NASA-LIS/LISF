@@ -708,6 +708,30 @@ if($use_lapack == 1) {
    }
 }
 
+print "Use LIS-MKL-LAPACK? (1-yes, 0-no, default=0): ";
+$use_mkllapack=<stdin>;
+chomp($use_mkllapack);
+if($use_mkllapack eq ""){
+   $use_mkllapck=0;
+}
+
+if($use_mkllapack == 1) {
+   if(defined($ENV{LIS_MKL_LAPACK})){
+      $sys_lapack_path = $ENV{LIS_MKL_LAPACK};
+      $lib = "/";
+      $lib_lapack=$sys_lapack_path.$lib;
+   }
+   else {
+      print "--------------ERROR---------------------\n";
+      print "Please specify the MKL-LAPACK path using\n";
+      print "the LIS_MKL_LAPACK variable.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+}
+
+
 if(defined($ENV{LIS_JPEG})){
    $libjpeg = "-L".$ENV{LIS_JPEG}."/lib"." -ljpeg";
 }
@@ -827,6 +851,11 @@ if($use_minpack == 1){
 
 if($use_lapack == 1){
    $ldflags = $ldflags." -L\$(LIB_LAPACK) -llapack -lblas";
+}
+
+if($use_mkllapack == 1){
+   #Changed to be able to use mkl Wendy Sharples
+   $ldflags = $ldflags." -L\$(LIB_LAPACK) -lmkl_rt";
 }
 
 if($use_esmf_trace == 1){
@@ -956,6 +985,14 @@ if($use_lapack == 1) {
 else{
    printf misc_file "%s\n","#undef LAPACK ";
 }
+
+if($use_mkllapack == 1) {
+   printf misc_file "%s\n","#define MKL_LAPACK ";
+}
+else{
+   printf misc_file "%s\n","#undef MKL_LAPACK ";
+}
+
 
 printf misc_file "%s\n","#undef INC_WATER_PTS";
 printf misc_file "%s\n","#undef COUPLED";

@@ -10,15 +10,15 @@ public noahmplsm_401
 !
 CONTAINS
 ! The subroutine name has been modifed for LIS implemenation Oct 22 2018
-  SUBROUTINE noahmplsm_401(LIS_undef_value,                                 & ! IN : LIS undefined value
-             ITIMESTEP,        YR,   JULIAN,   COSZIN,XLAT,XLONG,           & ! IN : Time/Space-related
-                  DZ8W,       DT,       DZS,    NSOIL,       DX,            & ! IN : Model configuration 
-	        IVGTYP,   ISLTYP,    VEGFRA,   VEGMAX,      TMN,            & ! IN : Vegetation/Soil characteristics
-		 XLAND,     XICE,XICE_THRES,  CROPCAT,                      & ! IN : Vegetation/Soil characteristics
-	       PLANTING,  HARVEST,SEASON_GDD,                               &
-                 IDVEG, IOPT_CRS,  IOPT_BTR, IOPT_RUN, IOPT_SFC, IOPT_FRZ,  & ! IN : User options
-              IOPT_INF, IOPT_RAD,  IOPT_ALB, IOPT_SNF,IOPT_TBOT, IOPT_STC,  & ! IN : User options
-              IOPT_GLA, IOPT_RSF, IOPT_SOIL,IOPT_PEDO,IOPT_CROP,            & ! IN : User options
+  SUBROUTINE noahmplsm_401(LIS_undef_value,                                       & ! IN : LIS undefined value
+             ITIMESTEP,        YR,   JULIAN,   COSZIN,XLAT,XLONG,                 & ! IN : Time/Space-related
+                  DZ8W,       DT,       DZS,    NSOIL,       DX,                  & ! IN : Model configuration 
+	        IVGTYP,   ISLTYP,    VEGFRA,   VEGMAX,      TMN,                  & ! IN : Vegetation/Soil characteristics
+		 XLAND,     XICE,XICE_THRES,  CROPCAT,                            & ! IN : Vegetation/Soil characteristics
+	       PLANTING,  HARVEST,SEASON_GDD,                                     &
+                 IDVEG, IOPT_CRS,  IOPT_BTR, IOPT_RUN, IOPT_SFC, IOPT_FRZ,        & ! IN : User options
+              IOPT_INF, IOPT_RAD,  IOPT_ALB, IOPT_SNF,IOPT_TBOT, IOPT_STC,        & ! IN : User options
+              IOPT_GLA, IOPT_SNDPTH, IOPT_RSF, IOPT_SOIL,IOPT_PEDO,IOPT_CROP, & ! IN : User options
               IZ0TLND, SF_URBAN_PHYSICS,                                    & ! IN : User options
 	      SOILCOMP,  SOILCL1,  SOILCL2,   SOILCL3,  SOILCL4,            & ! IN : User options
                    T3D,     QV3D,     U_PHY,    V_PHY,   SWDOWN,      GLW,  & ! IN : Forcing
@@ -103,6 +103,7 @@ CONTAINS
     INTEGER,                                         INTENT(IN   ) ::  IOPT_TBOT ! lower boundary of soil temperature (1->zero-flux; 2->Noah)
     INTEGER,                                         INTENT(IN   ) ::  IOPT_STC  ! snow/soil temperature time scheme
     INTEGER,                                         INTENT(IN   ) ::  IOPT_GLA  ! glacier option (1->phase change; 2->simple)
+    INTEGER,                                         INTENT(IN   ) ::  IOPT_SNDPTH !snow depth max for glacier model [mm]
     INTEGER,                                         INTENT(IN   ) ::  IOPT_RSF  ! surface resistance (1->Sakaguchi/Zeng; 2->Seller; 3->mod Sellers; 4->1+snow)
     INTEGER,                                         INTENT(IN   ) ::  IOPT_SOIL ! soil configuration option
     INTEGER,                                         INTENT(IN   ) ::  IOPT_PEDO ! soil pedotransfer function option
@@ -765,12 +766,13 @@ CONTAINS
 
        IF ( VEGTYP == ISICE_TABLE ) THEN
          ICE = -1                           ! Land-ice point
-         CALL NOAHMP_OPTIONS_GLACIER(IOPT_ALB  ,IOPT_SNF  ,IOPT_TBOT, IOPT_STC, IOPT_GLA )
+         CALL NOAHMP_OPTIONS_GLACIER(IOPT_ALB  ,IOPT_SNF  ,IOPT_TBOT, IOPT_STC, IOPT_GLA , IOPT_SNDPTH)
       
          TBOT = MIN(TBOT,263.15)                      ! set deep temp to at most -10C
          CALL NOAHMP_GLACIER(     I,       J,    COSZ,   NSNOW,   NSOIL,      DT, & ! IN : Time/Space/Model-related
                                T_ML,    P_ML,    U_ML,    V_ML,    Q_ML,    SWDN, & ! IN : Forcing
                                PRCP,    LWDN,    TBOT,    Z_ML, FICEOLD,   ZSOIL, & ! IN : Forcing
+                               IOPT_SNDPTH,                                        & ! IN : User Option
                               QSNOW,  SNEQVO,  ALBOLD,      CM,      CH,   ISNOW, & ! IN/OUT :
                                 SWE,     SMC,   ZSNSO,  SNDPTH,   SNICE,   SNLIQ, & ! IN/OUT :
                                  TG,     STC,   SMH2O,   TAUSS,  QSFC1D,          & ! IN/OUT :

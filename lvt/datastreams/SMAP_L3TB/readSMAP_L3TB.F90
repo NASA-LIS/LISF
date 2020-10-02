@@ -191,6 +191,8 @@ subroutine read_SMAP_L3Tb(source, fname, L3TB)
 
   implicit none
 
+  integer                        :: source 
+  character(len=*)               :: fname
   real                           :: L3TB(LVT_rc%lnc,LVT_rc%lnr,4)
   
 !
@@ -209,8 +211,6 @@ subroutine read_SMAP_L3Tb(source, fname, L3TB)
 
 #if (defined USE_HDF5)
 
-  integer                       :: source 
-  character(len=*)              :: fname
   character*100,   parameter    :: Tb_gr_name = "Soil_Moisture_Retrieval_Data"
   character*100,   parameter    :: Tbv_field_name = "soil_moisture"
 
