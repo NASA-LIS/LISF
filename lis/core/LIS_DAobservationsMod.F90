@@ -595,9 +595,12 @@ contains
                 LIS_obs_domain(n,k)%gridtype = "none"
              endif
 
+             !call LIS_quilt_obs_domain(n, k, map_proj, gnc, gnr,&
+             !     lat(1,1), lon(1,1), lat(gnc,gnr), lon(gnc,gnr),&
+             !     LIS_obs_domain(n,k)%dx, LIS_obs_domain(n,k)%dy,&
+             !     LIS_obs_domain(n,k)%gridtype)
+
              call LIS_quilt_obs_domain(n, k, map_proj, gnc, gnr,&
-                  lat(1,1), lon(1,1), lat(gnc,gnr), lon(gnc,gnr),&
-                  LIS_obs_domain(n,k)%dx, LIS_obs_domain(n,k)%dy,&
                   LIS_obs_domain(n,k)%gridtype)
 
              allocate(locallat(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)))
@@ -1211,6 +1214,117 @@ contains
 ! !ROUTINE: LIS_quilt_obs_domain
 ! \label{LIS_quilt_obs_domain}
 ! 
+! !INTERFACE:
+  subroutine LIS_quilt_obs_domain(n,k, map_proj, nc, nr, &
+       gridtype)
+! !USES:     
+    use easeV2_utils
+! !ARGUMENTS: 
+    integer,          intent(in)  :: n
+    integer,          intent(in)  :: k
+    character(len=*), intent(in)  :: map_proj
+    integer,          intent(in)  :: nc
+    integer,          intent(in)  :: nr
+    character(len=*), intent(in)  :: gridtype
+! 
+! !DESCRIPTION: 
+! This routine generates the quilted domain extents and sizes based on the 
+! processor layout and the size of the specified halos for the 
+! DA observation domain 
+! 
+!EOP
+
+   integer :: ips, ipe, jps, jpe
+   integer :: i, j,ierr
+   integer :: deltas
+   integer :: ews_halo_ind
+   integer :: ewe_halo_ind
+   integer :: nss_halo_ind
+   integer :: nse_halo_ind
+   integer :: ews_ind
+   integer :: ewe_ind
+   integer :: nss_ind
+   integer :: nse_ind
+
+   if ( LIS_rc%decompose_by_processes ) then
+      call decompose_npes(n, nc, nr, ips, ipe, jps, jpe)
+   else
+      call decompose_nx_ny(nc, nr, ips, ipe, jps, jpe)
+   endif
+
+   ews_halo_ind = max(ips-LIS_rc%halox, 1)
+   ewe_halo_ind = min(ipe+LIS_rc%halox, nc)
+   nss_halo_ind = max(jps-LIS_rc%haloy, 1)
+   nse_halo_ind = min(jpe+LIS_rc%haloy, nr)
+
+   ews_ind = ips
+   ewe_ind = min(ipe, nc)
+   nss_ind = jps
+   nse_ind = min(jpe, nr)
+
+   LIS_rc%obs_lnc(k) = ewe_halo_ind - ews_halo_ind + 1
+   LIS_rc%obs_lnr(k) = nse_halo_ind - nss_halo_ind + 1
+
+   LIS_rc%obs_lnc_red(k)= ewe_ind - ews_ind + 1
+   LIS_rc%obs_lnr_red(k)= nse_ind - nss_ind + 1
+
+   write(unit=LIS_logunit,fmt=*)'[INFO] local obs domain',':(', &
+                                LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k),')'
+   write(unit=LIS_logunit,fmt=*)'[INFO] local obs domain without halo',':(', &
+                                LIS_rc%obs_lnc_red(k),LIS_rc%obs_lnr_red(k),')'
+   write(unit=LIS_logunit,fmt=*)'[INFO] running obs domain',':(',nc,nr,')'
+
+   deltas = LIS_rc%obs_lnc_red(k)*LIS_rc%obs_lnr_red(k)
+
+#if (defined SPMD)
+   call MPI_ALLGATHER(deltas,1,MPI_INTEGER,LIS_obs_deltas(k,:),1,MPI_INTEGER,   &
+                      LIS_mpi_comm,ierr)
+   call MPI_ALLGATHER(ews_ind,1,MPI_INTEGER,LIS_ews_obs_ind(k,:),1,MPI_INTEGER, &
+                      LIS_mpi_comm,ierr)
+   call MPI_ALLGATHER(nss_ind,1,MPI_INTEGER,LIS_nss_obs_ind(k,:),1,MPI_INTEGER, &
+                      LIS_mpi_comm,ierr)
+   call MPI_ALLGATHER(ewe_ind,1,MPI_INTEGER,LIS_ewe_obs_ind(k,:),1,MPI_INTEGER, &
+                      LIS_mpi_comm,ierr)
+   call MPI_ALLGATHER(nse_ind,1,MPI_INTEGER,LIS_nse_obs_ind(k,:),1,MPI_INTEGER, &
+                      LIS_mpi_comm,ierr)
+
+   call MPI_ALLGATHER(ews_halo_ind,1,MPI_INTEGER,LIS_ews_obs_halo_ind(k,:),1, &
+                      MPI_INTEGER,LIS_mpi_comm,ierr)
+   call MPI_ALLGATHER(nss_halo_ind,1,MPI_INTEGER,LIS_nss_obs_halo_ind(k,:),1, &
+                      MPI_INTEGER,LIS_mpi_comm,ierr)
+   call MPI_ALLGATHER(ewe_halo_ind,1,MPI_INTEGER,LIS_ewe_obs_halo_ind(k,:),1, &
+                      MPI_INTEGER,LIS_mpi_comm,ierr)
+   call MPI_ALLGATHER(nse_halo_ind,1,MPI_INTEGER,LIS_nse_obs_halo_ind(k,:),1, &
+                      MPI_INTEGER,LIS_mpi_comm,ierr)
+#else
+   LIS_obs_deltas(k,:)  = deltas
+   LIS_ews_obs_ind(k,:) = ews_ind
+   LIS_nss_obs_ind(k,:) = nss_ind
+   LIS_ewe_obs_ind(k,:) = ewe_ind
+   LIS_nse_obs_ind(k,:) = nse_ind
+
+   LIS_ews_obs_halo_ind(k,:) = ews_halo_ind
+   LIS_nss_obs_halo_ind(k,:) = nss_halo_ind
+   LIS_ewe_obs_halo_ind(k,:) = ewe_halo_ind
+   LIS_nse_obs_halo_ind(k,:) = nse_halo_ind
+#endif   
+   if(LIS_masterproc) then
+      LIS_obs_offsets(k,0) = 0
+      do i=1,LIS_npes-1
+         LIS_obs_offsets(k,i) = LIS_obs_offsets(k,i-1)+LIS_obs_deltas(k,i-1)
+      enddo
+   end if
+#if (defined SPMD)
+   call MPI_BCAST(LIS_obs_offsets(k,:), LIS_npes, MPI_INTEGER,0, LIS_mpi_comm, ierr)
+#endif
+
+   end subroutine LIS_quilt_obs_domain
+
+#if 0
+!BOP
+! !ROUTINE: LIS_quilt_obs_domain
+! \label{LIS_quilt_obs_domain}
+! 
 ! !INTERFACE: 
   subroutine LIS_quilt_obs_domain(n,k, map_proj, nc, nr, &
        minlat, minlon, maxLat, maxLon, dx, dy,gridtype)
@@ -1445,7 +1559,7 @@ contains
 #endif
 
    end subroutine LIS_quilt_obs_domain
-
+#endif
 
 !BOP
 ! 
@@ -2368,5 +2482,738 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
     TRACE_EXIT("daobs_checkObs")
 
   end subroutine LIS_checkForValidObs
+
+!BOP
+! !ROUTINE: decompose_nx_ny
+! \label{decompose_nx_ny}
+!
+! !INTERFACE:
+subroutine decompose_nx_ny(nc, nr, ips, ipe, jps, jpe)
+! !USES:
+!  none
+
+! !ARGUMENTS:
+   integer, intent(in)  :: nc, nr
+   integer, intent(out) :: ips, ipe, jps, jpe
+!
+! !DESCRIPTION:
+! This routine decomposes a domain based on the specified
+! processor layout (for example 4x3).
+!
+! The arguments are:
+! \begin{description}
+! \item[nc] number of columns of the domain
+! \item[nr] number of columns of the domain
+! \item[ips] starting column for the process
+! \item[ipe] ending column for the process
+! \item[jps] starting row for the process
+! \item[jpe] ending row for the process
+! \end{description}
+!
+!EOP
+
+   integer :: mytask_x, mytask_y
+   integer :: Px, Py, P
+   integer :: i, j
+
+   mytask_x = mod(LIS_localPet, LIS_rc%npesx)
+   mytask_y = LIS_localPet / LIS_rc%npesx
+
+   j = 1
+   ips = -1
+   do i = 1, nc+1
+      call LIS_mpDecomp(i,j,1,nc+1,1,nr+1,LIS_rc%npesx,LIS_rc%npesy,Px,Py,P)
+
+      if ( Px .eq. mytask_x ) then
+         ipe = i
+         if ( ips .eq. -1 ) then
+            ips = i
+         endif
+      endif
+   enddo
+
+   i = 1
+   jps = -1
+   do j = 1, nr+1
+      call LIS_mpDecomp(i,j,1,nc+1,1,nr+1,LIS_rc%npesx,LIS_rc%npesy,Px,Py,P)
+      if ( Py .eq. mytask_y ) then
+         jpe = j
+         if ( jps .eq. -1 ) then
+            jps = j
+         endif
+      endif
+   enddo
+end subroutine decompose_nx_ny
+
+!BOP
+! !ROUTINE: decompose_npes
+! \label{decompose_npes}
+!
+! !INTERFACE:
+subroutine decompose_npes(n, gnc, gnr, ips, ipe, jps, jpe)
+! !USES:
+!  none
+
+! !ARGUMENTS:
+   integer, intent(in)  :: n, gnc, gnr
+   integer, intent(out) :: ips, ipe, jps, jpe
+
+! !DESCRIPTION:
+! This routine decomposes a domain based on the number of
+! processing elements.
+!
+! The arguments are:
+! \begin{description}
+! \item[n] nest index
+! \item[gnc] number of columns of the domain
+! \item[gnr] number of columns of the domain
+! \item[ips] starting column for the process
+! \item[ipe] ending column for the process
+! \item[jps] starting row for the process
+! \item[jpe] ending row for the process
+! \end{description}
+!
+! The local variables are:
+! \item[file_exists]
+!    logical indicating whether the LIS domain and parameter file
+!    containing the dommask exists
+! \item[ios]
+!    return code from various routine calls
+! \item[nid]
+!    NetCDF handle to the LIS domain and parameter file
+! \item[dommaskid]
+!    NetCDF handle to the dommask field in the LIS domain and parameter file
+! \item[sc, ec, sr, er]
+!    starting column, ending column, starting row, and ending row
+!    indicies used to sub-set into the landmask for counting the number
+!    of land-based grid-cells
+! \item[f1, f2]
+!    the factors of LIS_npes used to create the layout of the running domain
+! \item[Pc, Pr]
+!    the number of processor columns and of processor rows, respectively
+! \item[firstP, secondP]
+!    The running domain is decomposed into a Pc-by-Pr layout in two passes,
+!    either by Pc then by Pr or by Pr the by Pc, depending on the shape
+!    of the running domain.  firstP is Pc (or Pr) and secondP is Pr (or Pc).
+! \item[first\_size, second\_size]
+!    first\_size is either gnc or gnr and second\_size is either gnr or gnc
+!    depending on the order in which the processor layout is being processed.
+! \item[pe]
+!    a processor element
+! \item[LP]
+!    the total number of land-based grid-cells
+! \item[T]
+!    the per-process target for land-based grid-cells
+! \item[gross\_target]
+!    the target for land-based grid-cells for the first pass
+! \item[i, j]
+!    looping indicies
+! \item[columnwise]
+!    logical indicating whether a pass is along the Pc direction or the Pr.
+!    columnwise == .true. is in the Pc (or column) direction.
+! \item[lcount]
+!    array containing either per-column or per-row counts of the land-based
+!    grid-cells
+! \item[s\_array, e\_array]
+!    arrays containing the starting and ending indicies into the running
+!    domain where processor cuts are to be made
+! \item[ips\_array, ipe\_array]
+!    arrays contains the starting and ending indicies into the running
+!    domain in the column direction where processor cuts are to be made.
+!    used to set ips and ipe.
+! \item[jps\_array, jpe\_array]
+!    arrays contains the starting and ending indicies into the running
+!    domain in the row direction where processor cuts are to be made.
+!    used to set jps and jpe.
+! \item[istat]
+!    return code from various MPI routine calls
+!
+!EOP
+
+! == Overview of the load balancing decomposition scheme
+!
+! We know the number of requested processes, LIS_npes.  So find the factors
+! of LIS_npes and choose the middle ones to create a squarish layout.
+! Call these factors Pc and Pr, where Pc is the number of processors in
+! the x or column direction and where Pr is the number of processors in
+! the y or row direction.  We will create a Pc by Pr layout.
+!
+! Note that this decomposition scheme is *not* recommended for running
+! domains where the ratio of gnc to gnr is very large (likewise where gnr to
+! gnc is very large).  For running domains of this shape, use a specified
+! layout; for example,
+!
+!    Decompose by processes:          .false.
+!    Number of processors along x:    64
+!    Number of processors along y:    1
+!
+! Note that this decomposition scheme balances with respect to the number
+! of land-based grid-cells per process.  It does not take tiling or other
+! considerations into account.
+!
+! Note that this decomposition scheme does *not* yet support nesting.
+!
+! Let's assume that we will decompose the running domain first in the
+! column direction and then in the row direction.
+!
+!
+! == First gross cut
+!
+! Determine number of land-based grid-cells per column, L_c_i, of the
+! running domain.  Summing these values gives the total number of land-based
+! grid-cells, LP.
+!
+! The target number of land-based grid-cells per process, T, is given by
+!    T = LP / LIS_npes.
+!
+! Since we are decomposing in the column direction first, determine how
+! many columns from the land mask satisfies
+!    Sum L_c_i = Pr * T
+!
+! This gives the starting and ending indicies for cutting the running domain
+! along the x or column direction.
+!
+!
+! == Second finer cut
+!
+! There are Pc processor columns in the layout.  Refer to each processor
+! column as Pc_i.
+!
+! For each processor column, Pc_i, determine the number of land-based
+! grid-cells per row, L_r_j, given the number of actual columns in Pc_i.
+! Determine how many rows from the land mask satisfies
+!    Sum L_r_j = T
+!
+! This gives the starting and ending indicies for cutting the running domain
+! along the y or row direction for each Pc_i.
+!
+! == Example
+!
+! For this example, we will assume that we will decompose in the x or column
+! direction first.  Say that 12 processes are requested.  This will be
+! factored into a Pc=4 by Pr=3 layout.
+!
+! The figure below represents both the gridded landmask, with dimensions
+! gnc by gnr, and the load-balanced decomposition.  Dots ('.') represent
+! the grid-cells (no distinction between land or water).  Dashes ('-'
+! and '|') represent the boundaries or cuts between the processing
+! elements, denoted P0, P1, ..., P11.  c_N and r_M denote columns and
+! rows of the landmask.
+!
+! Since we are decomposing in the column direction first, we want to
+! count the number of land-points in each column of the landmask for
+! columns c_1 through c_{gnc}.  With these per-column counts we now know
+! the total number of land-points in the landmask.  Call this total LP.
+! Thus we want a per-process target, T, of T = LP / 12.
+!
+! Now let's consider the first gross cut.  Since we have a 4x3 layout,
+! there are four processor columns, denoted Pc_1, Pc_2, Pc_3, and Pc_4.
+! Pc_1 contains processes P0, P4, and P8.  Pc_2 contains P1, P5, and P9.
+! Pc_3 contains P2, P6, and P10.  Pc_4 contains P3, P7, and P11.  Each
+! Pc_i contains three processes, so when we start cutting in the column
+! direction, we want each Pc_i to have 3 times the per-process target;
+! i.e., we want Pr*T.  So we start counting how many columns into the
+! landmask we must go to get Pr*T land-points.  Here that is column c_m.
+! Then staring from c_{m+1}, we count how many columns into the landmask
+! we must go to get another Pr*T land-points.  Here that is c_n.  Then
+! staring from c_{n+1}, we count through column c_o.  And the last
+! processor column is simply c_{o+1} through c_gnc.  Thus, Pc_1 spans
+! landmask columns c_1 through c_m; Pc_2 spans columns c_{m+1} through
+! c_n; Pc_3 spans columns c_{n+1} through c_o; Pc_4 spans columns
+! c_{o+1} through c_{gnc}.
+!
+! The second finer cut loops over the processor columns, cutting each
+! processor column into three processor rows.  So for each processor
+! column, we count the number of land-points in each row of the landmask
+! for rows r_1 through r_gnr constrained to the columns of that
+! processor column.  For processor column 1, Pc_1, we count the number
+! of land-points in each row of the landmask constrained to columns c_1
+! through c_m.  With these values,  we count how many rows into the
+! landmask we must go to get T land-points, where T is the per-process
+! target.  Here that is row r_j.  Then starting from r_{j+1} we count
+! how many rows into the landmask we must go to get another T
+! land-points.  Here that is row r_k.  The final cut is simply from
+! r_{k+1} through r_gnr.  This is repeated for Pc_2 through Pc_4.
+!
+!
+!       <--   Pc_1  --><--    Pc_2    --><-- Pc_3 --><--    Pc_4    -->
+!
+! r_gnr +-------------++----------------++----------++----------------+
+!       |.............||................||..........||................|
+!       |.............||................||..........||................|
+!       |.... P8 .....||...... P9 ......||.. P10 ...||................|
+!       |.............|+----------------+|..........||................|
+!       |.............|+----------------+|..........||.... P11 .......|
+!       +-------------+|................||..........||................|
+! r_k   +-------------+|................|+----------+|................|
+!       |.............||................|+----------+|................|
+!       |.............||................||..........|+----------------+
+!       |.............||................||..........|+----------------+
+!       |.... P4 .....||...... P5 ......||... P6 ...||................|
+!       |.............||................||..........||................|
+!       |.............|+----------------+|..........||................|
+!       |.............|+----------------+|..........||..... P7 .......|
+!       |.............||................||..........||................|
+!       |.............||................|+----------+|................|
+!       |.............||................|+----------+|................|
+! r_j+1 +-------------+|................||..........||................|
+! r_j   +-------------+|................||..........||................|
+!       |.............||................||..........|+----------------+
+!       |.............||................||..........|+----------------+
+! .     |.............||................||..........||................|
+! .     |..... P0 ....||...... P1 ......||... P2 ...||..... P3 .......|
+! .     |.............||................||..........||................|
+!       |.............||................||..........||................|
+! r_2   |.............||................||..........||................|
+! r_1   +-------------++----------------++----------++----------------+
+!
+!
+!       cc  ...       cc                c           c                 c
+!       12            mm                n           o               gnc
+!                      +
+!                      1
+!
+!-----------------------------------------------------------------------
+
+   logical :: file_exists
+   integer :: ios, nid, landmaskid
+   integer :: sc, ec, sr, er
+   integer :: f1, f2
+   integer :: Pc, Pr, firstP, secondP, first_size, second_size, pe
+   integer :: LP, T, gross_target, i, j, l1, l2
+   logical :: columnwise
+   !integer :: ncId, nrId, nc, nr
+   integer, allocatable, dimension(:) :: lcount, s_array, e_array
+   integer, allocatable, dimension(:) :: ips_array, ipe_array, &
+                                         jps_array, jpe_array
+#if ( defined SPMD )
+   integer :: istat(MPI_STATUS_SIZE)
+#endif
+
+   ips = -9999
+   ipe = -9999
+   jps = -9999
+   jpe = -9999
+
+   if ( LIS_masterproc ) then
+
+      inquire(file=trim(LIS_rc%paramfile(n)), exist=file_exists)
+
+      if ( .not. file_exists ) then
+         write(LIS_logunit,*) '[ERR] '//trim(LIS_rc%paramfile(n)), &
+            ' does not exist'
+         write(LIS_logunit,*) '[ERR] program stopping'
+         call LIS_endrun
+      endif
+
+      ios = nf90_open(path=trim(LIS_rc%paramfile(n)), &
+                      mode=NF90_NOWRITE,ncid=nid)
+      call LIS_verify(ios,'Error in nf90_open in decompose_npes')
+
+      !ios = nf90_inq_dimid(nid,"east_west",ncId)
+      !call LIS_verify(ios,'Error in nf90_inq_dimid in decompose_npes')
+
+      !ios = nf90_inq_dimid(nid,"north_south",nrId)
+      !call LIS_verify(ios,'Error in nf90_inq_dimid in decompose_npes')
+
+      !ios = nf90_inquire_dimension(nid,ncId,len=nc)
+      !call LIS_verify(ios,'Error in nf90_inquire_dimension in decompose_npes')
+
+      !ios = nf90_inquire_dimension(nid,nrId,len=nr)
+      !call LIS_verify(ios,'Error in nf90_inquire_dimension in decompose_npes')
+
+      ios = nf90_inq_varid(nid,'LANDMASK',landmaskid)
+      call LIS_verify(ios,'landmask field not found in the LIS param file')
+
+      allocate(ips_array(0:LIS_npes-1))
+      allocate(ipe_array(0:LIS_npes-1))
+      allocate(jps_array(0:LIS_npes-1))
+      allocate(jpe_array(0:LIS_npes-1))
+
+      ! Initialize for use by the first gross cut
+      ips_array = 1
+      ipe_array = gnc
+      jps_array = 1
+      jpe_array = gnr
+
+
+      ! Determine layout
+      call inner_factors(LIS_npes, f1, f2)
+      if ( gnc >= gnr ) then
+         Pc = f1
+         Pr = f2
+         firstP = Pc
+         secondP = Pr
+         first_size = gnc
+         second_size = gnr
+         columnwise = .true.
+      else
+         Pc = f2
+         Pr = f1
+         firstP = Pr
+         secondP = Pc
+         first_size = gnr
+         second_size = gnc
+         columnwise = .false.
+      endif
+
+      write(LIS_logunit,*) '[INFO] producing a ', Pc, ' by ', Pr, ' layout'
+
+      ! Count global number of land-based grid-cells
+      allocate(lcount(first_size))
+      do i = 1, first_size
+         if ( columnwise ) then
+            call set_count_indicies(c=i, r=1)
+         else
+            call set_count_indicies(c=1, r=i)
+         endif
+         lcount(i) = count_mask(nid, landmaskid, sc, ec, sr, er)
+      enddo
+      LP = sum(lcount)
+      T = nint(real(LP) / real(LIS_npes))
+      if ( LP < 1 ) then
+         write(LIS_logunit, *) '[ERR] cannot divide number of land ' // &
+            'grid-cells over requested number of processes.'
+         call LIS_endrun
+      endif
+
+      ! Perform first gross cut of the domain
+      gross_target = secondP*T
+      allocate(s_array(firstP))
+      allocate(e_array(firstP))
+      call cut(firstP, first_size, s_array, e_array, lcount, gross_target)
+      do j = 1, Pr
+         do i = 1, Pc
+            pe = proc_element(c=i, r=j)
+            if ( columnwise ) then
+               ips_array(pe) = s_array(i)
+               ipe_array(pe) = e_array(i)
+            else
+               jps_array(pe) = s_array(j)
+               jpe_array(pe) = e_array(j)
+            endif
+         enddo
+      enddo
+      deallocate(s_array)
+      deallocate(e_array)
+      deallocate(lcount)
+
+      ! Perform second finer cut of the domain
+      allocate(lcount(second_size))
+      allocate(s_array(secondP))
+      allocate(e_array(secondP))
+
+
+      ! Toggle value of columnwise
+      columnwise = .not. columnwise
+
+      do l1 = 1, firstP         ! layout loop
+         do i = 1, second_size  ! domain loop
+            if ( columnwise ) then
+               call set_count_indicies(c=i, r=l1)
+            else
+               call set_count_indicies(c=l1, r=i)
+            endif
+            lcount(i) = count_mask(nid, landmaskid, sc, ec, sr, er)
+         enddo
+         call cut(secondP, second_size, s_array, e_array, lcount, T)
+         do l2 = 1, secondP
+            if ( columnwise ) then
+               ! now count columnwise / l2 represents column index
+               pe = proc_element(c=l2, r=l1)
+               ips_array(pe) = s_array(l2)
+               ipe_array(pe) = e_array(l2)
+            else
+               ! now count rowwise / l2 represents row index
+               pe = proc_element(c=l1, r=l2)
+               jps_array(pe) = s_array(l2)
+               jpe_array(pe) = e_array(l2)
+            endif
+         enddo
+      enddo
+      deallocate(s_array)
+      deallocate(e_array)
+      deallocate(lcount)
+#if ( defined SPMD )
+      do i = 1, LIS_npes-1
+         call MPI_SEND(ips_array(i), 1, MPI_INTEGER, i, 0, LIS_mpi_comm, ios)
+         call MPI_SEND(ipe_array(i), 1, MPI_INTEGER, i, 0, LIS_mpi_comm, ios)
+         call MPI_SEND(jps_array(i), 1, MPI_INTEGER, i, 0, LIS_mpi_comm, ios)
+         call MPI_SEND(jpe_array(i), 1, MPI_INTEGER, i, 0, LIS_mpi_comm, ios)
+      enddo
+#endif
+      ips = ips_array(0)
+      ipe = ipe_array(0)
+      jps = jps_array(0)
+      jpe = jpe_array(0)
+#if ( defined SPMD )
+   else
+      allocate(ips_array(1))
+      allocate(ipe_array(1))
+      allocate(jps_array(1))
+      allocate(jpe_array(1))
+
+      call MPI_RECV(ips_array, 1, MPI_INTEGER, 0, 0, LIS_mpi_comm, istat, ios)
+      call MPI_RECV(ipe_array, 1, MPI_INTEGER, 0, 0, LIS_mpi_comm, istat, ios)
+      call MPI_RECV(jps_array, 1, MPI_INTEGER, 0, 0, LIS_mpi_comm, istat, ios)
+      call MPI_RECV(jpe_array, 1, MPI_INTEGER, 0, 0, LIS_mpi_comm, istat, ios)
+
+      ips = ips_array(1)
+      ipe = ipe_array(1)
+      jps = jps_array(1)
+      jpe = jpe_array(1)
+
+      deallocate(ips_array)
+      deallocate(ipe_array)
+      deallocate(jps_array)
+      deallocate(jpe_array)
+#endif
+   endif
+
+
+   if ( LIS_masterproc ) then
+      deallocate(ips_array)
+      deallocate(ipe_array)
+      deallocate(jps_array)
+      deallocate(jpe_array)
+
+      ios = nf90_close(nid)
+      call LIS_verify(ios,'Error in nf90_close in decompose_npes')
+   endif
+
+   if ( ips == ipe .or. jps == jpe ) then
+      write(LIS_logunit, *) '[ERR] decomposition for process ', LIS_localPet, &
+                            ' is not at least 2x2'
+      write(LIS_logunit, *) 'Stopping'
+      call LIS_endrun
+   endif
+
+   contains
+
+   integer function proc_element(c, r)
+      implicit none
+      integer, intent(in) :: c, r
+      proc_element = Pc*(r-1)+c-1
+   end function proc_element
+
+
+   subroutine set_count_indicies(c, r)
+      implicit none
+      integer, intent(in) :: c, r
+      integer :: pe
+
+      ! When processing columnwise, c represents an index into the domain
+      ! grid (1 through gnc); r represents an index into the processor
+      ! layout (1 through Pr).
+      ! When processing rowwise, c represents an index into the processor
+      ! layout (1 through Pc); r represnets an index into the domain
+      ! grid (1 through gnr).
+
+      ! pe represents the processing element.  Usually you need both
+      ! the column and row indices in the processor layout to determine
+      ! the processing element, but due to the way the values in the
+      ! ips_array, ipe_array, jps_array, and jpe_array arrays repeat,
+      ! you only need a representative processing element not the
+      ! actual one.  Hence the unusual equation for determining pe.
+
+      if ( columnwise ) then
+         pe = Pc*(r-1)
+         sc = c; ec = c; sr = jps_array(pe); er = jpe_array(pe)
+      else
+         pe = c-1
+         sc = ips_array(pe); ec = ipe_array(pe); sr = r; er = r
+      endif
+   end subroutine set_count_indicies
+end subroutine decompose_npes
+
+!BOP
+! !ROUTINE: cut
+! \label{cut}
+!
+! !INTERFACE:
+subroutine cut(NP, asize, s_array, e_array, lcount, cut_target)
+! !USES:
+!  none
+   implicit none
+
+! !ARGUMENTS:
+   integer, intent(in) :: NP, asize
+   integer, intent(in), dimension(asize) :: lcount
+   integer, intent(in) :: cut_target
+   integer, intent(out), dimension(NP) :: s_array, e_array
+
+! !DESCRIPTION:
+! This routine determines the starting and ending indices for each process.
+!
+! This routine will be first called to perform a gross cut of the domain,
+! where it determines the starting and ending indices for each processor
+! column (or row depending on how called).  Then this routine will be called
+! to determine the starting and ending row (column) indices for each process
+! within a given processor column (row).
+!
+! The arguments are:
+! \begin{description}
+! \item[NP] number of processors, either Pc or Pr, where the domain
+!    is laid out as Pc processes in x-direction by Pr processes
+!    in the y-direction
+! \item[asize] size of dimension, either gnc or gnr, where gnc is
+!    the number of columns in the domain and gnr is the number of rows.
+! \item[lcount] array of land-based grid-cell counts
+! \item[cut\_target] target number of land-based grid-cells per cut.
+! \item[s\_array] array of starting indices
+! \item[e\_array] array of ending indices
+! \end{description}
+!
+!EOP
+   integer :: p, i
+   integer :: slice_count, before, after
+
+   s_array(1) = 1
+   e_array(NP) = asize
+   do p = 1, NP-1
+      slice_count = 0
+      do i = s_array(p), asize
+         slice_count = slice_count + lcount(i)
+         if ( slice_count >= cut_target ) then
+            before = (slice_count - lcount(i))
+            after = slice_count
+            if ( abs(before-cut_target) < abs(after-cut_target) ) then
+               e_array(p) = i - 1
+               s_array(p+1) = i
+            else
+               e_array(p) = i
+               s_array(p+1) = i + 1
+            endif
+            exit
+         endif
+      enddo
+   enddo
+end subroutine cut
+
+
+!BOP
+! !ROUTINE: inner_factors
+! \label{inner_factors}
+!
+! !INTERFACE:
+subroutine inner_factors(N, f1, f2)
+! !USES:
+!  none
+
+   implicit none
+
+! !ARGUMENTS:
+   integer, intent(in)  :: N
+   integer, intent(out) :: f1, f2
+
+! !DESCRIPTION:
+! This routine finds the inner-most factors of the input N.
+! For example, the factors of N=255 are 1, 3, 5, 15, 17, 51, 85, 255.
+! This routine finds f1=17 and f2=15.  This routine always returns f1 >= f2.
+!
+! The arguments are:
+! \begin{description}
+! \item[N] number to factor
+! \item[f1] one factor
+! \item[f2] corresponding other factor
+! \end{description}
+!
+!EOP
+
+   real :: rN
+   real :: x
+   integer :: ix
+   integer :: i
+
+   rN = real(N)
+    x = sqrt(rN)
+   ix = int(x)
+
+   if ( ix**2 == N ) then
+      ! N is square
+      f1 = ix
+      f2 = ix
+   else
+      do i = ix+1, N
+         if ( mod(N, i) == 0 ) then
+            ! found a factor
+            f1 = i
+            f2 = N / f1
+            exit
+         endif
+      enddo
+   endif
+end subroutine inner_factors
+
+
+!BOP
+!
+! !ROUTINE: count_mask
+! \label{count_mask}
+!
+! !INTERFACE:
+integer function count_mask(nid, landmaskid, sc, ec, sr, er) result(l_count)
+! !USES:
+#if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
+   use netcdf
+#endif
+
+   implicit none
+
+! !ARGUMENTS:
+   integer, intent(in)  :: nid, landmaskid, sc, ec, sr, er
+!
+! !DESCRIPTION:
+!  Reads a column or row from the landmask and counts the number of land
+!  grid-cells.
+!
+!  The arguments are:
+!  \begin{description}
+!  \item[nid]
+!     handle of the LIS domain and parameter file (file containing the
+!     landmask)
+!  \item[landmaskid]
+!     handle to the landmask field
+!  \item[sc]
+!     starting column
+!  \item[ec]
+!     ending column
+!  \item[sr]
+!     starting row
+!  \item[er]
+!     ending row
+!  \item[l_count]
+!     number of land grid-cells in the requested slice
+!  \end{description}
+!
+!EOP
+
+   integer :: ios, c_count, r_count, asize, i
+   real, allocatable, dimension(:) :: array
+
+   c_count = ec - sc + 1
+   r_count = er - sr + 1
+
+   if ( sc == ec ) then
+      asize = r_count
+   else
+      asize = c_count
+   endif
+   allocate(array(asize))
+
+   ios = nf90_get_var(nid, landmaskid, array,     &
+                      start=(/sc,sr/),            &
+                      count=(/c_count,r_count/))
+   call LIS_verify(ios,'Error in nf90_get_var in count_mask')
+
+   l_count = 0
+   do i = 1, asize
+      if ( array(i) > 0 ) then
+         l_count = l_count + 1
+      endif
+   enddo
+   deallocate(array)
+end function count_mask
+
 
 end module LIS_DAobservationsMod
