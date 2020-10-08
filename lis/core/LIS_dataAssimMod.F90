@@ -445,9 +445,11 @@ contains
              endif
           enddo
           do i=1,LIS_rc%ndas
-             if(LIS_rc%Routing_DAinst_valid(i)) then
-                call routingdainit(trim(LIS_rc%routingmodel)//"+"//&
-                     trim(LIS_rc%daset(i))//char(0),i)
+             if(LIS_rc%routingmodel.ne."none") then
+                if(LIS_rc%Routing_DAinst_valid(i)) then
+                   call routingdainit(trim(LIS_rc%routingmodel)//"+"//&
+                        trim(LIS_rc%daset(i))//char(0),i)
+                endif
              endif
           enddo
        endif
