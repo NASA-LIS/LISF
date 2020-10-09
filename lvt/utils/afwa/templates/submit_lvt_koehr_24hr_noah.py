@@ -7,14 +7,13 @@ import time
 
 vars = ["SoilMoist_tavg", "SoilTemp_tavg",
         "RHMin_inst",
-        "Evap_tavg", "LWdown_f_tavg",
+        "Evap_tavg", "LWdown_f_tavg", "PotEvap_tavg",
         "SWdown_f_tavg",
         "Tair_f_max",
         "Tair_f_tavg",
         "TotalPrecip_acc", "Wind_f_tavg"]
 
 # Handle command line
-
 
 def usage():
     print("Usage:  %s chargecode queue" % (sys.argv[0]))
@@ -43,14 +42,15 @@ for var in vars:
 #PBS -A %s\n""" % (project_code)
     line += """#PBS -j oe
 #PBS -l walltime=0:15:00
-#PBS -l select=1:ncpus=32
+#PBS -l select=1:ncpus=48:mpiprocs=1
 #PBS -N %s.24hr\n""" % (var)
     line += """#PBS -q %s\n""" % (reservation)
-    line += """$PBS -W sandbox=PRIVATE
+    line += """#PBS -W sandbox=PRIVATE
 #PBS -V
 
+module purge
 module use --append ~jim/README
-module load lis_7_intel_17_0_2_174
+module load lisf_73_intel_2019_5_281
 ulimit -c unlimited
 ulimit -m unlimited
 ulimit -s unlimited
@@ -66,7 +66,7 @@ if [ ! -e lvt.config.%s.24hr ] ; then
    echo "ERROR, lvt.config.%s.24hr does not exist!" && exit 1
 fi
 
-aprun -n 1 -j 1 ./LVT lvt.config.%s.24hr || exit 1
+mpirun ./LVT lvt.config.%s.24hr || exit 1
 
 exit 0
 """ % (var, var, var)
