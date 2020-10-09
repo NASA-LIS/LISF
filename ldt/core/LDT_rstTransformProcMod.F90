@@ -429,7 +429,7 @@ contains
                             enddo
                             rad = rad+1
                             if(rad.gt.maxrad) then 
-                               write(LDT_logunit,*) "neighbor search failed at c,r "  ,c,' ',r  
+                               write(LDT_logunit,*) "[ERR] neighbor search failed at c,r "  ,c,' ',r  
                                call LDT_endrun()
                             endif
                             
@@ -443,7 +443,7 @@ contains
                    c = LDT_surface(2,1)%tile(t)%col
                    var_new(t,kk) = var2_2d(c+(r-1)*LDT_rc%lnc(2)) 
                    if(var_new(t,kk).eq.-9999.0) then
-                      write(LDT_logunit,*) "problem at c,r "  ,c,' ',r      
+                      write(LDT_logunit,*) "[ERR] problem at c,r "  ,c,' ',r      
                       call LDT_endrun()
                    endif
                 enddo
