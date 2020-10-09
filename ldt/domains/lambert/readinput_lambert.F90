@@ -60,7 +60,6 @@ subroutine readinput_lambert(nest)
   allocate(run_dd(LDT_rc%nnest,20))
 
   newFormatCheck = .false. 
-! The following is not a full proof test of duplicates
   checkDuplicate = .false. 
   nDupl = 1
   do n=2,LDT_rc%nnest

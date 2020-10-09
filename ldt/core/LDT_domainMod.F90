@@ -227,7 +227,6 @@ contains
 !-- Temporary addition needed for writing output diagnostics(LDT_diagnoseOutputVar):
     do n=1,LDT_rc%nnest
        do k = 1, LDT_rc%ngrid(n)
-!TODO: clean this up with ntiles_pergrid array instead of maximum 
           allocate(LDT_domain(n)%grid(k)%subgrid_tiles(&
                LDT_rc%surface_maxt(n)*&
                LDT_rc%soilt_maxt(n)*&

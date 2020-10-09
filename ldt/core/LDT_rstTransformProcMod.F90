@@ -56,7 +56,16 @@ contains
 ! 
 ! !DESCRIPTION: 
 ! 
-
+!  This routine performs initialization in the Restart transformation processing mode by 
+!  reading the relevant config file entries. 
+!  
+!  Example entries in the config file are as follows: 
+!
+! \begin{verabtim}
+! LIS restart source:        "LSM"
+! Input restart filename:    LIS_RST_NOAHMP401_201907010000.d01.coarse.nc
+! Output restart filename:   LIS_RST_NOAHMP401_201503312345.d01.fine.nc
+!  \end{verbatim}
 !
 !EOP  
   
@@ -105,6 +114,8 @@ contains
           model_name = "VIC411"
        elseif(LDT_rc%lsm.eq."VIC.4.1.2") then 
           model_name = "VIC412"
+       elseif(LDT_rc%lsm .eq. "JULES.5.0") then
+          model_name = "JULES50"
        else
           write(LDT_logunit,*) "[INFO] Restart File transform - LSMs supported: "
           write(LDT_logunit,*) "  -- CLSMF2.5, Noah.3.2, Noah.3.3, Noah.3.6, Noah.3.9, "
@@ -113,6 +124,13 @@ contains
           write(LDT_logunit,*) "[ERR] No other LSMs supported at this time ... stopping."
           call LDT_endrun() 
        endif
+    else
+       write(LDT_logunit,*) "[INFO] Restart File transform - Only support the following LSM: "
+       write(LDT_logunit,*) "  -- CLSMF2.5, Noah.3.2, Noah.3.3, Noah.3.6, Noah.3.9, "
+       write(LDT_logunit,*) "  -- Noah-MP.3.6, Noah-MP.4.0.1, "
+       write(LDT_logunit,*) "     Noah.2.7.1, RUC.3.7, VIC.4.1.1, VIC.4.1.2 "
+       write(LDT_logunit,*) "[ERR] No other surface models supported at this time ... stopping."
+       call LDT_endrun()
     endif
     
     call convertCoarseRSTtoFineRST()
@@ -216,10 +234,6 @@ contains
        allocate(w21(LDT_rc%lnc(2)*LDT_rc%lnr(2)))
        allocate(w22(LDT_rc%lnc(2)*LDT_rc%lnr(2)))
 
-!       call bilinear_interp_input_withgrid (LDT_rc%gridDesc(1,:),&
-!            LDT_rc%gridDesc(2,:), LDT_rc%lnc(2)*LDT_rc%lnr(2),&
-!            rlat,rlon,n11,n12,n21,n22,w11,w12,w21,w22)
-
        call neighbor_interp_input_withgrid (LDT_rc%gridDesc(1,:),&
             LDT_rc%gridDesc(2,:), LDT_rc%lnc(2)*LDT_rc%lnr(2),&
             rlat,rlon,n11)
@@ -256,6 +270,8 @@ contains
           model_name = "Catchment"
        elseif(LDT_rc%lsm .eq. "NoahMP.3.6") then
           model_name = "NOAHMP36"
+       elseif(LDT_rc%lsm .eq. "NoahMP.3.9") then
+          model_name = "NOAHMP39"       
        elseif(LDT_rc%lsm .eq. "JULES.5.0") then 
           model_name = "JULES50"
        endif
@@ -375,16 +391,6 @@ contains
                    var1_b_2d(c+(r-1)*LDT_rc%lnc(1)) = .true.
                 enddo
 
-!                open(100,file='test_inp.bin',form='unformatted')
-!                write(100) var1_2d
-!                close(100)
-                
-!                call bilinear_interp(LDT_rc%gridDesc(2,:),&
-!                     var1_b_2d,var1_2d(:),var2_b_2d,var2_2d(:),&
-!                     LDT_rc%lnc(1)*LDT_rc%lnr(1),&
-!                     LDT_rc%lnc(2)*LDT_rc%lnr(2),&
-!                     rlat,rlon,w11,w12,w21,w22,n11,n12,n21,n22,&
-!                     LDT_rc%udef,iret)
 
                 call neighbor_interp(LDT_rc%gridDesc(2,:),&
                      var1_b_2d,var1_2d(:),var2_b_2d,var2_2d(:),&
@@ -393,9 +399,6 @@ contains
                      rlat,rlon,n11,&
                      LDT_rc%udef,iret)
 
-!                open(100,file='test_out.bin',form='unformatted')
-!                write(100) var2_2d
-!                close(100)
 
                 !gapfilling
              
@@ -426,8 +429,8 @@ contains
                             enddo
                             rad = rad+1
                             if(rad.gt.maxrad) then 
-                               print*, 'neighbor search failed',c,r
-                               stop
+                               write(LDT_logunit,*) "neighbor search failed at c,r "  ,c,' ',r  
+                               call LDT_endrun()
                             endif
                             
                          enddo
@@ -439,9 +442,9 @@ contains
                    r = LDT_surface(2,1)%tile(t)%row
                    c = LDT_surface(2,1)%tile(t)%col
                    var_new(t,kk) = var2_2d(c+(r-1)*LDT_rc%lnc(2)) 
-                   if(var_new(t,kk).eq.-9999.0) then 
-                      print*, 'problem'
-                      stop
+                   if(var_new(t,kk).eq.-9999.0) then
+                      write(LDT_logunit,*) "problem at c,r "  ,c,' ',r      
+                      call LDT_endrun()
                    endif
                 enddo
              enddo
@@ -561,7 +564,6 @@ contains
               "SOUTH_WEST_CORNER_LON", &
               LDT_rc%gridDesc(2,5)),&
               'nf90_put_att failed for SOUTH_WEST_CORNER_LON')
-!  Add NORTH_EAST CORNER POINTS??
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"DX", &
               LDT_rc%gridDesc(2,9)),&
               'nf90_put_att failed for DX')
