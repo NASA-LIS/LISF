@@ -3186,9 +3186,9 @@ Output restart file averaging interval type:    "monthly"
 
 .Example _ldt.config_ entry
 ....
-LIS restart source: "LSM"
-Input restart filename: LIS_RST_NOAHMP401_201907010000.d01.coarse.nc
-Output restart filename: LIS_RST_NOAHMP401_201503312345.d01.fine.nc
+LIS restart source:      "LSM"
+Input restart filename:  LIS_RST_NOAHMP401_201907010000.d01.coarse.nc
+Output restart filename: LIS_RST_NOAHMP401_201907010000.d01.fine.nc
 ....
 
 [[ssec-ensrstopts]]
