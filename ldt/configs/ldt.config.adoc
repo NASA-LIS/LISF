@@ -19,6 +19,7 @@ Not all options described here are available in the public version of LDT.
 |"`DA preprocessing`" |Data Assimilation Preprocessing Option
 |"`Ensemble restart processing`" |Deriving an ensemble restart file Option
 |"`Restart preprocessing`" |LSM Restart File Preprocessing Option
+|"`Restart transformation processing`" | LSM restart file transformation option
 |"`Metforce processing`" |Meteorological forcing processing Option (similar to LIS)
 |"`Metforce temporal downscaling`" |Meteorological forcing temporal downscaling
 |"`Statistical downscaling of met forcing`" |Statistical options to downscale or generate forcing climatologies
@@ -3165,6 +3166,29 @@ Input restart model timestep used:              15mn
 Input restart file format:                      netcdf
 Output restart file generation mode:            "climatology average"
 Output restart file averaging interval type:    "monthly"
+....
+
+[[ssec-rsttransformopts]]
+=== LIS restart transformation processing options
+
+`LIS restart source:` specifices the land surface model restart file. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|LSM   |LSM restart file type
+|===
+
+`Input restart filename:` specifies the name of the input restart file.
+
+`Output restart filename:` specifies the name of the output restart file.
+
+.Example _ldt.config_ entry
+....
+LIS restart source:      "LSM"
+Input restart filename:  LIS_RST_NOAHMP401_201907010000.d01.coarse.nc
+Output restart filename: LIS_RST_NOAHMP401_201907010000.d01.fine.nc
 ....
 
 [[ssec-ensrstopts]]

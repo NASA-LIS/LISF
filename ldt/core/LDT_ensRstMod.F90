@@ -1078,7 +1078,7 @@ module LDT_ensRstMod
            'nf90_put_att failed for comment')
       
 !grid information
-      if(LDT_rc%lis_map_proj.eq."latlon") then !latlon
+      if(LDT_rc%lis_map_proj(n).eq."latlon") then !latlon
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
               "EQUIDISTANT CYLINDRICAL"),&
               'nf90_put_att failed for MAP_PROJECTION')
@@ -1097,7 +1097,7 @@ module LDT_ensRstMod
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"DY", &
               LDT_rc%gridDesc(n,10)),&
                   'nf90_put_att failed for DY')
-      elseif(LDT_rc%lis_map_proj.eq."mercator") then 
+      elseif(LDT_rc%lis_map_proj(n).eq."mercator") then 
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
               "MERCATOR"),&
               'nf90_put_att failed for MAP_PROJECTION')
@@ -1121,7 +1121,7 @@ module LDT_ensRstMod
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"DY", &
               LDT_rc%gridDesc(n,9)),&
               'nf90_put_att failed for DY')
-      elseif(LDT_rc%lis_map_proj.eq."lambert") then !lambert conformal
+      elseif(LDT_rc%lis_map_proj(n).eq."lambert") then !lambert conformal
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
               "LAMBERT CONFORMAL"),&
               'nf90_put_att failed for MAP_PROJECTION')
@@ -1149,7 +1149,7 @@ module LDT_ensRstMod
               LDT_rc%gridDesc(n,9)),&
               'nf90_put_att failed for DY')
          
-      elseif(LDT_rc%lis_map_proj.eq."polar") then ! polar stereographic
+      elseif(LDT_rc%lis_map_proj(n).eq."polar") then ! polar stereographic
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
               "POLAR STEREOGRAPHIC"),&
               'nf90_put_att failed for MAP_PROJECTION')

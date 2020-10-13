@@ -160,6 +160,7 @@ module LDT_coreMod
      type(tiledec), allocatable :: tile(:)
      integer, allocatable       :: ntiles_pergrid(:)
      integer, allocatable       :: str_tind(:) !starting tile id for each grid
+     integer, allocatable       :: datamask(:,:)
      real                       :: minLat, maxLat, minLon, maxLon
      real                       :: stlat, stlon, truelat1
      real                       :: truelat2, truelon, orient

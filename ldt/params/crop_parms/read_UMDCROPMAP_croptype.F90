@@ -130,7 +130,7 @@ subroutine read_UMDCROPMAP_croptype(n, num_types, fgrd)
    end if
 
    if( file_dim == 3 .and. LDT_LSMCrop_struc(n)%crop_gridtransform == "mode" ) then  
-     if( subparam_gridDesc(9) .ne. (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor) ) then
+     if( subparam_gridDesc(9) .ne. (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n)) ) then
        write(*,*) "[WARN] IF 3-D TILED CROP MAP DOES NOT HAVE THE SAME RESOLUTION "
        write(*,*) "  AS THE LIS RUN-DOMAIN, THEN 'MODE' OPTION CANNOT BE SELECTED,"
        write(*,*) "  OR YOU NEED TO SELECT 'TILE' AS YOUR OPTION."

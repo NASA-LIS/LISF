@@ -29,7 +29,7 @@
 ! 
 !  28 Jun 2009: Sujay Kumar; Initial Specification
 ! !INTERFACE:
-subroutine readinput_UTM
+subroutine readinput_UTM(nest)
 
 ! !USES:
   use ESMF
@@ -41,6 +41,7 @@ subroutine readinput_UTM
   use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
   use map_utils
 
+  integer, intent(in) :: nest
 
 ! !DESCRIPTION: 
 !
@@ -70,41 +71,41 @@ subroutine readinput_UTM
 
   allocate(run_dd(LDT_rc%nnest,20))
 
-  LDT_rc%lis_map_resfactor = 100000.   ! if in meters
+  LDT_rc%lis_map_resfactor(nest) = 100000.   ! if in meters
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain UTM zone:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,1),rc=rc)
      call LDT_verify(rc,'Run domain UTM zone: not defined')
   enddo  
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain northing of SW corner:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,2),rc=rc)
      call LDT_verify(rc,'Run domain northing of SW corner: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain easting of SW corner:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,3),rc=rc)
      call LDT_verify(rc,'Run domain easting of SW corner: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain x-dimension size:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,4),rc=rc)
      call LDT_verify(rc,'Run domain x-dimension size: not defined')
   enddo
   
   call ESMF_ConfigFindLabel(LDT_config,"Run domain y-dimension size:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,5),rc=rc)
      call LDT_verify(rc,'Run domain y-dimension size: not defined')
   enddo  
 
 ! Resolution:  in meters?
   call ESMF_ConfigFindLabel(LDT_config,"Run domain resolution:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,6),rc=rc)
      call LDT_verify(rc,'Run domain resolution: not defined')
   enddo  
@@ -118,7 +119,7 @@ subroutine readinput_UTM
      call LDT_endrun()
   endif
 
-  do n=1,LDT_rc%nnest
+  do n=1,nest
 
      stnorthing = run_dd(n,2)
      steasting  = run_dd(n,3)
