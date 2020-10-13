@@ -115,10 +115,10 @@ subroutine read_AVHRR_GFS_lc(n, num_types, fgrd, maskarray)
         call LDT_endrun
    endif
 
-   if(LDT_rc%lis_map_proj.ne."gaussian") then
+   if(LDT_rc%lis_map_proj(n).ne."gaussian") then
      write(LDT_logunit,*) "[ERR] Reading in GFS UMD 3D tiled veg file"   
      write(LDT_logunit,*) "[ERR] only gaussian LIS grids are supported"
-     write(LDT_logunit,*) "     projection: ",trim(LDT_rc%lis_map_proj)
+     write(LDT_logunit,*) "     projection: ",trim(LDT_rc%lis_map_proj(n))
      write(LDT_logunit,*) " Stopping run ..."
      call LDT_endrun
    endif

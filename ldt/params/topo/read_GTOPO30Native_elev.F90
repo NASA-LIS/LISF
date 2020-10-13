@@ -158,10 +158,10 @@ subroutine read_GTOPO30Native_elev( n, num_bins, fgrd, elevave )
 
 ! ------------
 
-   if( LDT_rc%lis_map_proj == "latlon"   .or. &
-       LDT_rc%lis_map_proj == "mercator" .or. &
-       LDT_rc%lis_map_proj == "lambert" ) then
-     if( param_gridDesc(10) .ne. (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor) .and.&
+   if( LDT_rc%lis_map_proj(n) == "latlon"   .or. &
+       LDT_rc%lis_map_proj(n) == "mercator" .or. &
+       LDT_rc%lis_map_proj(n) == "lambert" ) then
+     if( param_gridDesc(10) .ne. (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n)) .and.&
          LDT_rc%topo_gridtransform(n) .eq. "none" ) then
         write(LDT_logunit,*) "[ERR] GTOPO30 'Native' has been selected which has a resolution"
         write(LDT_logunit,*) "    (0.00833deg), but the LIS run domain resolution"

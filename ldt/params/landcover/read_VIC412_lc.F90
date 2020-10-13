@@ -141,7 +141,7 @@ subroutine read_VIC412_lc(n, num_types, fgrd, maskarray)
 
 !- Double-check tiled landcover if it is a tiled file:
    if( file_dim == 2 .and. LDT_rc%lc_gridtransform(n)=="tile" .and. &
-       subparam_gridDesc(9) == (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor) ) then
+       subparam_gridDesc(9) == (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n)) ) then
       write(LDT_logunit,*) "[ERR] in read_VIC412_lc :: The 'tile' spatial transform option " 
       write(LDT_logunit,*) "   has been selected, but the landcover file being read in"
       write(LDT_logunit,*) "   is not in vegetation tile-format order, and both your "
@@ -159,7 +159,7 @@ subroutine read_VIC412_lc(n, num_types, fgrd, maskarray)
    if ( LDT_rc%lc_gridtransform(n) == "tile" ) then
 
    !- Input parameter grid RES == LIS target grid RES:
-      if( subparam_gridDesc(9) == (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor) ) then
+      if( subparam_gridDesc(9) == (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n)) ) then
          line = 0
          do t = 1, LDT_rc%nt
          !- Dealing with UMD tiled classes -- current solution (KRA):

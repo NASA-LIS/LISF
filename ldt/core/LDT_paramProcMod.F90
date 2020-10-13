@@ -993,7 +993,7 @@ contains
             varID=LDT_LSMparam_struc(n)%xtimeID))
        
  !- LIS-Domain Grid file attributes:
-       select case ( LDT_rc%lis_map_proj )
+       select case ( LDT_rc%lis_map_proj(n) )
           
        case ( "latlon" )
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION", &
@@ -1576,7 +1576,7 @@ contains
             varID=LDT_LSMparam_struc(n)%xtimeID))
        
  !- LIS-Domain Grid file attributes:
-       select case ( LDT_rc%lis_map_proj )
+       select case ( LDT_rc%lis_map_proj(n) )
           
        case ( "latlon" )
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION", &
