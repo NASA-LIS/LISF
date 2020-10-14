@@ -35,30 +35,28 @@ for var in vars:
     f = open(scriptname, "w")
     line = """#!/bin/sh
 #SBATCH --job-name=%s.3hr
-#SBATCH --time=0:15:00
-#SBATCH --account s0942
+#SBATCH --time=1:00:00
+#SBATCH --account s1189
 #SBATCH --output %s.3hr.slurm.out
 #Adjust node, core, and hardware constraints here
 #SBATCH --ntasks=1 --constraint=hasw
-#Set quality of service, if needed.
-#SBATCH --qos=high
 
 if [ ! -z $SLURM_SUBMIT_DIR ] ; then
     cd $SLURM_SUBMIT_DIR || exit 1
 fi
 
-#source /discover/nobackup/emkemp/AFWA/modules.sh
 module purge
-module load ~jvgeiger/privatemodules/lis_7_intel_18_0_3_222
+module use --append ~/privatemodules
+module load lisf_7_intel_19_1_0_166
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1
 fi
 
-if [ ! -e lvt.config.%s.3hr ] ; then
-   echo "ERROR, lvt.config.%s.3hr does not exist!" && exit 1
+if [ ! -e configs/lvt.config.%s.3hr ] ; then
+   echo "ERROR, configs/lvt.config.%s.3hr does not exist!" && exit 1
 fi
-time ./LVT lvt.config.%s.3hr || exit 1
+time mpirun -np 1 ./LVT configs/lvt.config.%s.3hr || exit 1
 
 exit 0
 """ % (var, var, var, var, var)
