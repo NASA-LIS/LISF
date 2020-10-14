@@ -4,10 +4,10 @@ import datetime
 import os
 import sys
 
-template = "lvt.config.template"
+template = "template/lvt.config.template.noahmp401"
 
-startdt = datetime.datetime(2018, 9, 13, 12)
-enddt = datetime.datetime(2018, 9, 14, 12)
+startdt = datetime.datetime(2007, 12, 1, 0)
+enddt = datetime.datetime(2007, 12, 2, 0)
 
 output = "netcdf"
 #output = "grib2"
@@ -86,7 +86,7 @@ for var in vars:
         elif "LVT clock timestep:" in line:
             line = 'LVT clock timestep: "24hr"\n'
         elif "LVT diagnostic file:" in line:
-            line = "LVT diagnostic file: lvtlog.%s.24hr" % (var)
+            line = "LVT diagnostic file: logs/lvtlog.%s.24hr" % (var)
         elif "LVT datastream attributes table::" in line:
             line = "LVT datastream attributes table::\n"
             # Special handling for RHMin_inst, which must be processed with
@@ -99,20 +99,20 @@ for var in vars:
             else:
                 line += "%s\n" % (var_attributes[var])
         elif "Metrics attributes file:" in line:
-            line = 'Metrics attributes file: "METRICS.TBL"\n'
+            line = 'Metrics attributes file: "tables/METRICS.TBL"\n'
         elif "Metrics computation frequency:" in line:
             line = 'Metrics computation frequency: "24hr"\n'
         elif "Metrics output directory:" in line:
-            line = "Metrics output directory: STATS.%s.24hr\n" % (var)
+            line = "Metrics output directory: OUTPUT/STATS.%s.24hr\n" % (var)
         elif "Metrics output frequency:" in line:
             line = 'Metrics output frequency: "24hr"\n'
         elif "LIS output attributes file:" in line:
             line = "LIS output attributes file:"
-            line += " ./MODEL_OUTPUT_LIST.TBL.lvt_557post.%s.24hr\n" % (var)
+            line += " ./tables/MODEL_OUTPUT_LIST.TBL.lvt_557post.%s.24hr\n" % (var)
 
         newlines.append(line)
 
-    newfile = "lvt.config.%s.24hr" % (var)
+    newfile = "configs/lvt.config.%s.24hr" % (var)
     print("Writing %s" % (newfile))
     f = open(newfile, "w")
     for line in newlines:
