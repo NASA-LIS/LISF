@@ -4,10 +4,10 @@ import datetime
 import os
 import sys
 
-template = "lvt.config.template"
+template = "template/lvt.config.template.jules50"
 
-startdt = datetime.datetime(2018,  7, 29,  0)
-enddt = datetime.datetime(2018,  7, 31,  0)
+startdt = datetime.datetime(2007, 12, 1,  0)
+enddt = datetime.datetime(2007, 12, 2,  0)
 
 output = "netcdf"
 #output = "grib2"
@@ -148,7 +148,7 @@ for var in vars:
         elif "Ending hour:" in line:
             line = "Ending hour: %s\n" % (enddt.hour)
         elif "LVT diagnostic file:" in line:
-            line = "LVT diagnostic file: lvtlog.%s.3hr" % (var)
+            line = "LVT diagnostic file: logs/lvtlog.%s.3hr" % (var)
         elif "LVT datastream attributes table::" in line:
             line = "LVT datastream attributes table::\n"
             # Special handling for RHMin_inst, which must be processed with
@@ -161,15 +161,15 @@ for var in vars:
             else:
                 line += "%s\n" % (var_attributes[var])
         elif "Metrics output directory:" in line:
-            line = "Metrics output directory: STATS.%s.3hr\n" % (var)
+            line = "Metrics output directory: OUTPUT/STATS.%s.3hr\n" % (var)
         elif "LIS output attributes file:" in line:
             line = "LIS output attributes file:"
-            line += " ./MODEL_OUTPUT_LIST.TBL.lvt_557post.%s.3hr\n" % (var)
+            line += " ./tables/MODEL_OUTPUT_LIST.TBL.lvt_557post.%s.3hr\n" % (var)
 
         newlines.append(line)
 
     firstVar = False
-    newfile = "lvt.config.%s.3hr" % (var)
+    newfile = "configs/lvt.config.%s.3hr" % (var)
     print("Writing %s" % (newfile))
     f = open(newfile, "w")
     for line in newlines:
