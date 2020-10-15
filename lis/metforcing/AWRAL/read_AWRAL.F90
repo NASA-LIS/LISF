@@ -114,7 +114,7 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
   timestep = doy
 
 !-- Check forcing is on the same grid as the model --!
-  if((AWRAL_struc(n)%ncol .neqv. LIS_rc%gnr(n)) .or. (AWRAL_struc(n)%ncol .neqv. LIS_rc%gnc(n))) then
+  if((AWRAL_struc(n)%nrow .ne. LIS_rc%gnr(n)) .or. (AWRAL_struc(n)%ncol .ne. LIS_rc%gnc(n))) then
      if(LIS_masterproc) then
           write(LIS_logunit,*)'[ERR] Problem using AWRAL forcing: Forcing must be on the same grid as the model'
           write(LIS_logunit,*)'[ERR] Remapping not implemented. Stopping...'
