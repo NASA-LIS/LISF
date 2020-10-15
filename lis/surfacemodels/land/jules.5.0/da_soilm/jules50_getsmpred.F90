@@ -54,11 +54,14 @@ subroutine jules50_getsmpred(n, k,obs_pred)
   real                   :: tmp1(LIS_rc%nensem(n)),tmp2(LIS_rc%nensem(n)),tmp3(LIS_rc%nensem(n))
 
   do t=1, LIS_rc%npatch(n,LIS_rc%lsm_index)
-! apply the unit conversion. ! In the EnKF equation X(+) = X(-) + K(y-Hx), Units of the terms y and 
-! Hx must be the same. we just need to change the unit of Hx. The Unit of Hx 
+! apply the unit conversion.
+! In the EnKF equation X(+) = X(-) + K(y-Hx), Units of the terms y and
+! Hx must be the same. we just need to change the unit of Hx. The Unit of Hx
 ! from JULES is [kg/m2] therefore we need to change the unit to
-! be consistent with that of y [m3/m3]. ! for the unit conversion FROM [kg/m2] to [M3/M3] we need layer thickness.  ! Here the thickness of the first layer. (which is 10 cm in both PILDAS and JULES) has been used  
-!     smc1(t) = jules50_struc(n)%jules50(t)%smcl_soilt(1) * 1/LIS_sfmodel_struc(n)%lyrthk(1)*1/1000  ! [kg/m2]*1/m*1/(kg/m3) --> [m3/m3] 
+! be consistent with that of y [m3/m3].
+! for the unit conversion FROM [kg/m2] to [M3/M3] we need layer thickness.
+! Here the thickness of the first layer. (which is 10 cm in both PILDAS and JULES) has been used
+!     smc1(t) = jules50_struc(n)%jules50(t)%smcl_soilt(1) * 1/LIS_sfmodel_struc(n)%lyrthk(1)*1/1000  ! [kg/m2]*1/m*1/(kg/m3) --> [m3/m3]
 
 !MN: Eric changed the unit of LIS_sfmodel_struc%lyrthk so LIS_sfmodel_struc%lyrthk is in cm, we
 !use dzsoil instead.

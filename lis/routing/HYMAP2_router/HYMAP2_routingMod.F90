@@ -22,7 +22,8 @@ module HYMAP2_routingMod
 !             Basin.  Journal of Hydrometeorology, 13, 1641-1665.
 !             doi: http://dx.doi.org/10.1175/JHM-D-12-021.1
 !             Augusto C.V. Getirana, and Rodrigo C.D. Paiva, 2013: Mapping 
-!             large-scale river flow hydraulics in the Amazon Basin, Water!             Resour. Res., 49, doi:10.1002/wrcr.20212
+!             large-scale river flow hydraulics in the Amazon Basin, Water
+!             Resour. Res., 49, doi:10.1002/wrcr.20212
 !
 ! !REVISION HISTORY: 
 ! 08 Nov 2011: Augusto Getirana, Initial implementation in LIS based on the 
