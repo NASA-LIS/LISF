@@ -279,7 +279,7 @@ subroutine AWRAL600_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
     integer       :: ios, nid, param_ID, nc_ID, nr_ID, dimids(3)
     integer       :: nc, nr, t, k
     integer       :: nlevel
-    real, pointer :: level_data(:, :, :)
+    real, allocatable :: level_data(:, :, :)
     logical       :: file_exists
 
     inquire(file=LIS_rc%paramfile(n), exist=file_exists)

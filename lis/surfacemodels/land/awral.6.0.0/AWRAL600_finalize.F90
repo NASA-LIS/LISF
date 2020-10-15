@@ -66,16 +66,16 @@ subroutine AWRAL600_finalize(n)
         deallocate(AWRAL600_struc(n)%wslimu)
 
         ! free momory for initial state variable
-        if ( ASSOCIATED(AWRAL600_struc(n)%init_s0)) then        
+        if ( allocated(AWRAL600_struc(n)%init_s0)) then
           deallocate(AWRAL600_struc(n)%init_s0)
         end if
-        if ( ASSOCIATED(AWRAL600_struc(n)%init_ss)) then
+        if ( allocated(AWRAL600_struc(n)%init_ss)) then
           deallocate(AWRAL600_struc(n)%init_ss)
         end if
-        if ( ASSOCIATED(AWRAL600_struc(n)%init_s0)) then
+        if ( allocated(AWRAL600_struc(n)%init_s0)) then
           deallocate(AWRAL600_struc(n)%init_sd)
         end if
-        if ( ASSOCIATED(AWRAL600_struc(n)%init_s0)) then
+        if ( allocated(AWRAL600_struc(n)%init_s0)) then
           deallocate(AWRAL600_struc(n)%init_mleaf)
         end if
     end do ! nest loop
