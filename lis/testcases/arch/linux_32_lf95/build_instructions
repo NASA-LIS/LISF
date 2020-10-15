@@ -38,7 +38,9 @@ At this stage, you want to return to your working LIS 5.0 directory and cd into 
 
 1)  Using a text editor, open the misc.h file and "undef" or undefine any variables that you will not be compiling with (e.g., NetCDF libraries).
 
-2)  Next, cd back one to the directory, arch, (which is short-hand for "architecture") and look for the LIS configuration text file that matches the Lahey compiler ("lf95").  You want to select and modify this file:  configure.lis.linux_lf95.In this file, you want to make sure you modify any information for the following flags that match the directories on your local machine, especially for the ESMF libraries and modules (LIB_ESMF and MOD_ESMF, respectively):
+2)  Next, cd back one to the directory, arch, (which is short-hand for "architecture") and look for the LIS configuration text file that matches the Lahey compiler ("lf95").  You want to select and modify this file:  configure.lis.linux_lf95.
+
+In this file, you want to make sure you modify any information for the following flags that match the directories on your local machine, especially for the ESMF libraries and modules (LIB_ESMF and MOD_ESMF, respectively):
 	FC              = lf95
 	LD              = lf95
 	CC              = gcc
