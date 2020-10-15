@@ -65,12 +65,12 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
   integer            :: ftn, ndata, index1,v
   integer, parameter :: N_AF = 6 ! # of AWRAL forcing variables
   character(10), dimension(N_AF), parameter :: awral_fv = (/  &
-       'tat',    &
-       'avpt',    &
-       'rgt',    &
-       'radcskyt',    &
-       'u2t',    &
-       'pt'     /)
+       'tat       ',    &
+       'avpt      ',    &
+       'rgt       ',    &
+       'radcskyt  ',    &
+       'u2t       ',    &
+       'pt        '     /)
 
 
   character*255 :: var_fname
