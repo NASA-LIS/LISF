@@ -7,24 +7,35 @@ subroutine LVT_run_USAFSIpost()
    ! Imports
    use LVT_USAFSIpostMod
    use LVT_logMod
+   use LVT_coreMod, only: LVT_rc
 
    ! Defaults
    implicit none
 
    ! Local variables
    type(LVT_USAFSIpost_t) :: USAFSIpost
-   character(len=15) :: grids(3)
    integer :: i
 
-   grids(1) = GLOBAL_LL0P25
-   grids(2) = NH_PS16
-   grids(3) = SH_PS16
    call USAFSIpost%new()
    call USAFSIpost%read_usafsi_ncfile()
-   call USAFSIpost%output_grib2()
-   do i = 1, 3
-      call USAFSIpost%interp_and_output_grib1(grids(i))
-   end do
+
+   if (LVT_rc%output_native) then
+      call USAFSIpost%output_grib2()
+   end if
+
+   if (LVT_rc%output_global_ll0p25) then
+      call USAFSIpost%interp_and_output_grib1(GLOBAL_LL0P25)
+   end if
+
+   if (LVT_rc%output_nh_ps16 .or. LVT_rc%output_nh_ps16_snodep) then
+      call USAFSIpost%interp_and_output_grib1(NH_PS16)
+   end if
+
+   if (LVT_rc%output_sh_ps16 .or. LVT_rc%output_sh_ps16_snodep) then
+      call USAFSIpost%interp_and_output_grib1(SH_PS16)
+   end if
+
+   ! Clean up
    call USAFSIpost%delete()
    call LVT_endrun()
 end subroutine LVT_run_USAFSIpost

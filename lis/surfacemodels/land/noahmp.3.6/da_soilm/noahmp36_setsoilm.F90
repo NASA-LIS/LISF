@@ -215,7 +215,8 @@ subroutine noahmp36_setsoilm(n, LSM_State)
        ! 1-2- if update flag for tile is FALSE --> resample the states  
        ! 2- adjust the states
 !-----------------------------------------------------------------------------------------
-        ! store update value for  cases that update_flag_tile & update_flag_new are TRUE        ! update_flag_tile = TRUE --> means met the both min and max threshold 
+        ! store update value for  cases that update_flag_tile & update_flag_new are TRUE
+        ! update_flag_tile = TRUE --> means met the both min and max threshold
       
         tmp1 = LIS_rc%udef
         tmp2 = LIS_rc%udef

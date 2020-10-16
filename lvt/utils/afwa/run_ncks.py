@@ -33,6 +33,7 @@
 # 05 Aug 2020:  Eric Kemp (SSAI), added Albedo_tavg and SmLiqFrac_inst.
 # 25 Sep 2020:  Eric Kemp (SSAI), tweaked comments for Python version. Also
 #               added path for NCKS on Koehr.
+# 14 Oct 2020:  Eric Kemp (SSAI), updated NCKS path on Discover.
 #
 #------------------------------------------------------------------------------
 
@@ -47,7 +48,7 @@ import sys
 # Path to NCO ncks program
 # _NCKS_PATH = "/app/nco/4.5.2-gnu/bin/ncks" # On Conrad
 # _NCKS_PATH = "/app/nco/4.7.7-gnu/bin/ncks" # On Koehr
-_NCKS_PATH = "/usr/local/other/SLES11.1/nco/4.4.4/intel-12.1.0.233/bin/ncks"
+_NCKS_PATH = "/usr/local/other/nco/4.8.1/bin/ncks" # On Discover
 
 # Supported LIS LSMs
 _LIS_LSMS = ["NOAH", "NOAHMP", "JULES"]
@@ -141,6 +142,10 @@ _LVT_JULES_INVOCATIONS_3HR = ['Albedo_tavg',
                               'Tair_f_inst', 'Tair_f_max',
                               'Tair_f_tavg',
                               'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
+
+# EMK for RECON
+#_LVT_JULES_INVOCATIONS_3HR = ["SWE_inst", "SnowDepth_inst", "SoilMoist_inst",
+#        "SoilTemp_inst", "AvgSurfT_inst"]
 
 _LVT_JULES_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
                                'RHMin_inst',

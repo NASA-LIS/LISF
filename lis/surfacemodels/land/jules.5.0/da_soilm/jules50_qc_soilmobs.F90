@@ -168,7 +168,7 @@ sneqv = 0
       !! IF(SNOWH.GT.0.)  THEN
       !!   BDSNO    = SNEQV / SNOWH ! SNOWH[mm], SNEQV[mm]
       !!   FMELT    = (BDSNO/100.)**M
-      !!   FSNO     = TANH( SNOWH /(2.5* Z0 * FMELT)) 
+      !!   FSNO     = TANH( SNOWH /(2.5* Z0 * FMELT))
       !! ENDIF
       !if (jules50_struc(n)%jules50(t)%snowdepth(pft).GT.0.) then ! m
       !   BDSNO(t)    = sneqv(t) / jules50_struc(n)%jules50(t)%snowdepth(pft) * 100 !kg/m2(=mm)/(m*100) 
@@ -193,14 +193,14 @@ sneqv = 0
 
 
       !MN:fveg is used for 12-month green vegetation fraction (i.e., noah33_struc(n)%noah(:)%shdfac)  
-      !print*,'l_aggregate', l_aggregate       
+      !print*,'l_aggregate', l_aggregate
       if(.NOT. l_aggregate) then   
          print*,'Please set the l_aggregate to .true. in the jules_surface.nml ' 
          stop         
       else
        do l=1,5 !Broadleaf trees, Needleleaf trees, C3 (temperate) grass, C4 (tropical) grass, Shrubs
          fveg(t) = fveg(t) + jules50_struc(n)%jules50(t)%surft_frac(l)   
-         !print*,'t, l',t, l,jules50_struc(n)%jules50(t)%surft_frac(l),fveg(t)         
+         !print*,'t, l',t, l,jules50_struc(n)%jules50(t)%surft_frac(l),fveg(t)
        enddo 
       endif          
       !print*,'t, l',t, l,jules50_struc(n)%jules50(t)%surft_frac(l),fveg(t)  
@@ -215,7 +215,7 @@ sneqv = 0
 !         !fveg(t) = fveg(t) + jules50_struc(n)%jules50(t)%frac(l)  
 !         !print*,'frac', jules50_struc(n)%jules50(t)%frac(l) 
 !         fveg(t) = fveg(t) + jules50_struc(n)%jules50(t)%surft_frac(l)   
-!         print*,'t, l',t, l,jules50_struc(n)%jules50(t)%surft_frac(l),fveg(t)   
+!         print*,'t, l',t, l,jules50_struc(n)%jules50(t)%surft_frac(l),fveg(t)
 !       enddo         
 #endif 
 
