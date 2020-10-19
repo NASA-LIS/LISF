@@ -74,8 +74,9 @@ module LIS_NUOPC_Gluecode
     LIS_readDAobservations, &
     LIS_perturb_DAobservations
   use LIS_perturbMod, only: &
-    LIS_perturb_init, &     ! initialization for perturbation routines
-    LIS_perturb_readrestart ! read perturbation restart files
+    LIS_perturb_init, &        ! initialization for perturbation routines
+    LIS_perturb_readrestart, & ! read perturbation restart files
+    LIS_perturb_writerestart
   use LIS_dataAssimMod, only: &
     LIS_dataassim_init, &   !initialize data assimilation routines
     LIS_dataassim_run, &    !invoke data assimilation algorithms
@@ -83,6 +84,24 @@ module LIS_NUOPC_Gluecode
   use LIS_paramsMod, only: &
     LIS_param_init, &  !initializes structures, read static data
     LIS_setDynParams !read time dependent data
+  use LIS_routingMod, only: &
+    LIS_routing_init, &
+    LIS_routing_readrestart, &
+    LIS_routing_run, &
+    LIS_routing_writeoutput, &
+    LIS_routing_writerestart
+  use LIS_irrigationMod, only: &
+    LIS_irrigation_init, &
+    LIS_irrigation_run, &
+    LIS_irrigation_output
+  use LIS_appMod, only: &
+    LIS_appModel_init, &
+    LIS_runAppModel, &
+    LIS_outputAppModel
+  use LIS_RTMMod, only: &
+    LIS_RTM_init, &
+    LIS_RTM_run, &
+    LIS_RTM_output
   use LISWRFGridCompMod, only: &
     LISWRF_alloc_states, &
     LISWRF_reset_states, &
@@ -601,11 +620,17 @@ contains
 
        ! call LIS_metforcing_init(coupled) ! "WRF coupling", "NUOPC coupling"
        call LIS_metforcing_init            ! "retrospective"
+       call LIS_irrigation_init
        call LIS_initDAObservations
+       call LIS_routing_init
+       call LIS_routing_readrestart
        call LIS_dataassim_init
        call LIS_surfaceModel_setup
        call LIS_surfaceModel_readrestart
        call LIS_perturb_readrestart
+       call LIS_perturb_readrestart
+       call LIS_RTM_init
+       call LIS_appModel_init
 
        call LISWRF_alloc_states
        call LISWRF_reset_states
@@ -732,6 +757,11 @@ contains
     call LIS_ImportFieldsCopy(nest,importState,rc=rc)
     T_EXIT("datacopy")
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
+
+    T_ENTER("dynparms")
+    call LIS_setDynparams(nest)
+    T_EXIT("dynparms")
+
     select case (mode)
       case (LIS_Offline)
         ! Read in data from Met forcing sources listed in lis.config
@@ -752,49 +782,81 @@ contains
         return  ! bail out
     end select
 
-    T_ENTER("dynparms")
-    call LIS_setDynparams(nest)
-    T_EXIT("dynparms")
-
     T_ENTER("pertforc")
     call LIS_perturb_forcing(nest)
     T_EXIT("pertforc")
 
-    T_ENTER("f2t")	
-    call LIS_surfaceModel_f2t(nest)
-    T_EXIT("f2t")		
+    T_ENTER("irrrun")
+    call LIS_irrigation_run(nest)
+    T_EXIT("irrrun")
 
-    T_ENTER("smrun")	
+    T_ENTER("f2t")
+    call LIS_surfaceModel_f2t(nest)
+    T_EXIT("f2t")
+
+    T_ENTER("smrun")
     call LIS_surfaceModel_run(nest)
     T_EXIT("smrun")
 
-    T_ENTER("pertstat")	
+    T_ENTER("smpert")
     call LIS_surfaceModel_perturb_states(nest)
-    T_EXIT("pertstat")
+    T_EXIT("smpert")
 
-    T_ENTER("readda")		
+    T_ENTER("daread")
     call LIS_readDAobservations(nest)
-    T_EXIT("readda")
+    T_EXIT("daread")
 
-    T_ENTER("pertda")		
+    T_ENTER("pertda")
     call LIS_perturb_DAobservations(nest)
-    T_EXIT("pertda")		
+    T_EXIT("pertda")
 
-    T_ENTER("darun")	
+    T_ENTER("pertrest")
+    call LIS_perturb_writerestart(nest)
+    T_EXIT("pertrest")
+
+    T_ENTER("darun")
     call LIS_dataassim_run(nest)
     T_EXIT("darun")
 
-    T_ENTER("daout")		
+    T_ENTER("daout")
     call LIS_dataassim_output(nest)
     T_EXIT("daout")
 
-    T_ENTER("smout")	
+    T_ENTER("smout")
     call LIS_surfaceModel_output(nest)
-    T_EXIT("smout")		
+    T_EXIT("smout")
 
-    T_ENTER("smrest")	
+    T_ENTER("smrest")
     call LIS_surfaceModel_writerestart(nest)
     T_EXIT("smrest")
+
+    T_ENTER("rtrun")
+    call LIS_routing_run(nest)
+    T_EXIT("rtrun")
+
+    T_ENTER("rtout")
+    call LIS_routing_writeoutput(nest)
+    T_EXIT("rtout")
+
+    T_ENTER("rtrest")
+    call LIS_routing_writerestart(nest)
+    T_EXIT("rtrest")
+
+    T_ENTER("rtmrun")
+    call LIS_RTM_run(nest)
+    T_EXIT("rtmrun")
+
+    T_ENTER("rtmout")
+    call LIS_RTM_output(nest)
+    T_EXIT("rtmout")
+
+    T_ENTER("apprun")
+    call LIS_runAppModel(nest)
+    T_EXIT("apprun")
+
+    T_ENTER("appout")
+    call LIS_outputAppModel(nest)
+    T_EXIT("appout")
 
     ! =========================================================
     ! Write LIS output data to export state
