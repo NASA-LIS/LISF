@@ -955,6 +955,9 @@ module LIS_PRIV_rcMod
 
      logical, allocatable       :: LSM_DAinst_valid(:)
      logical, allocatable       :: Routing_DAinst_valid(:)
+
+     integer                   :: nSubLSMs
+     character*50, allocatable :: subLSM(:)
   end type lisrcdec
   
 end module LIS_PRIV_rcMod

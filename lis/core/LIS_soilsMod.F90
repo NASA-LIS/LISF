@@ -123,22 +123,21 @@ contains
     allocate(LIS_soils(LIS_rc%nnest))
 
     do n=1,LIS_rc%nnest
-       if(LIS_rc%usetexturemap(n).ne."none".and.&
-            LIS_rc%usesoilfractionmap(n).ne."none") then 
-
-          write(LIS_logunit,*) '[ERR] Please select either the soil texture or the soil '
-          write(LIS_logunit,*) '[ERR] fraction dataset. Both should not be enabled '
-          write(LIS_logunit,*) '[ERR] simultaneously ...'
-          call LIS_endrun()
-
-       endif
+!       if(LIS_rc%usetexturemap(n).ne."none".and.&
+!            LIS_rc%usesoilfractionmap(n).ne."none") then 
+!
+!          write(LIS_logunit,*) '[ERR] Please select either the soil texture or the soil '
+!          write(LIS_logunit,*) '[ERR] fraction dataset. Both should not be enabled '
+!          write(LIS_logunit,*) '[ERR] simultaneously ...'
+!          call LIS_endrun()
+!
+!       endif
 
        if(LIS_rc%usetexturemap(n).ne."none") then           
           call read_soiltexture(n)
-       else
-          if(LIS_rc%usesoilfractionmap(n).ne."none") then 
-             call read_soilfraction(n)
-          endif
+       endif
+       if(LIS_rc%usesoilfractionmap(n).ne."none") then 
+          call read_soilfraction(n)
        endif
        if(LIS_rc%usesoilcolormap(n).ne."none") then 
           allocate(LIS_soils(n)%color(LIS_rc%lnc(n),LIS_rc%lnr(n)))
@@ -221,35 +220,34 @@ contains
           call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_SOILTYPE,vlevel=1,&
                                            value=temp(t),unit="-",direction="-")
        enddo
-    else
-       if(LIS_rc%usesoilfractionmap(n).ne."none") then 
-          temp = LIS_rc%udef
-          do t=1,LIS_rc%ntiles(n)
-             if(LIS_domain(n)%tile(t)%index.ne.-1) then 
-                temp(t) = LIS_domain(n)%tile(t)%sand
-             endif
-             call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_SANDFRAC,vlevel=1,&
-                                           value=temp(t),unit="-",direction="-")
-          enddo
-
-          temp = LIS_rc%udef
-          do t=1,LIS_rc%ntiles(n)
-             if(LIS_domain(n)%tile(t)%index.ne.-1) then 
-                temp(t) =LIS_domain(n)%tile(t)%clay
-             endif
-             call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_CLAYFRAC,vlevel=1,&
-                                           value=temp(t),unit="-",direction="-")
-          enddo
-
-          temp = LIS_rc%udef
-          do t=1,LIS_rc%ntiles(n)
-             if(LIS_domain(n)%tile(t)%index.ne.-1) then 
-                temp(t) = LIS_domain(n)%tile(t)%silt
-             endif
-             call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_SILTFRAC,vlevel=1,&
-                                           value=temp(t),unit="-",direction="-")
-          enddo
-       endif
+    endif
+    if(LIS_rc%usesoilfractionmap(n).ne."none") then 
+       temp = LIS_rc%udef
+       do t=1,LIS_rc%ntiles(n)
+          if(LIS_domain(n)%tile(t)%index.ne.-1) then 
+             temp(t) = LIS_domain(n)%tile(t)%sand
+          endif
+          call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_SANDFRAC,vlevel=1,&
+               value=temp(t),unit="-",direction="-")
+       enddo
+       
+       temp = LIS_rc%udef
+       do t=1,LIS_rc%ntiles(n)
+          if(LIS_domain(n)%tile(t)%index.ne.-1) then 
+             temp(t) =LIS_domain(n)%tile(t)%clay
+          endif
+          call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_CLAYFRAC,vlevel=1,&
+               value=temp(t),unit="-",direction="-")
+       enddo
+       
+       temp = LIS_rc%udef
+       do t=1,LIS_rc%ntiles(n)
+          if(LIS_domain(n)%tile(t)%index.ne.-1) then 
+             temp(t) = LIS_domain(n)%tile(t)%silt
+          endif
+          call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_SILTFRAC,vlevel=1,&
+               value=temp(t),unit="-",direction="-")
+       enddo
     endif
 
     if(LIS_rc%usesoilcolormap(n).ne."none") then 
@@ -305,13 +303,11 @@ contains
     do n=1,LIS_rc%nnest
        if(LIS_rc%usetexturemap(n).ne."none") then !read soil texture
           deallocate(LIS_soils(n)%texture)
-       else
-          if(LIS_rc%usesoilfractionmap(n).ne."none") then 
-             deallocate(LIS_soils(n)%sand)
-             deallocate(LIS_soils(n)%clay)
-             deallocate(LIS_soils(n)%silt)
-          endif
-          deallocate(LIS_soils(n)%texture)
+       endif
+       if(LIS_rc%usesoilfractionmap(n).ne."none") then 
+          deallocate(LIS_soils(n)%sand)
+          deallocate(LIS_soils(n)%clay)
+          deallocate(LIS_soils(n)%silt)
        endif
        if(LIS_rc%usesoilcolormap(n).ne."none") then 
           deallocate(LIS_soils(n)%color)
