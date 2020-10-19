@@ -42,6 +42,7 @@ subroutine LIS_initialize_registries()
   use LIS_lakemodel_pluginMod,       only : LIS_lakemodel_plugin
   use LIS_forecastAlg_pluginMod
   use LIS_lsm_pluginMod
+  use LIS_sublsm_pluginMod
   use LIS_glaciermodel_pluginMod
   use LIS_glacierrouting_pluginMod
   use LIS_lsmcpl_pluginMod
@@ -101,6 +102,7 @@ subroutine LIS_initialize_registries()
 
   call LIS_RTM_plugin
   call LIS_lsm_plugin
+  call LIS_sublsm_plugin
   call LIS_lsmcpl_plugin
   call LIS_lsmda_plugin
   call LIS_routingda_plugin

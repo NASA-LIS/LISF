@@ -1,0 +1,52 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+! !ROUTINE: Crocus81_setLSMimport
+! \label{Crocus81_setLSMimport}
+!
+! !REVISION HISTORY:
+! 19 Sep 2020: Sujay Kumar; Initial Specification
+!
+! !INTERFACE:
+subroutine Crocus81_setLSMimport(n, LSM2SubLSM_State)
+! !USES:
+
+  use ESMF
+  use LIS_coreMod
+  use LIS_logMod
+  use Crocus81_lsmMod
+
+  implicit none
+! !ARGUMENTS: 
+  integer, intent(in)    :: n
+  type(ESMF_State)       :: LSM2SubLSM_State
+! 
+! !DESCRIPTION:
+! 
+! 
+!EOP
+
+  type(ESMF_Field)   :: gtField
+  real, pointer      :: gt(:)
+  integer            :: t
+  integer            :: status
+
+  call ESMF_StateGet(LSM2SubLSM_State,"Ground temperature",gtField,rc=status)
+  call LIS_verify(status)
+
+  call ESMF_FieldGet(gtField,localDE=0,farrayPtr=gt,rc=status)
+  call LIS_verify(status)
+
+
+  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     CROCUS81_struc(n)%crocus81(t)%TG = gt(t)
+  enddo
+
+end subroutine Crocus81_setLSMimport
+
+

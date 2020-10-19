@@ -93,6 +93,9 @@ module LIS_lsmMod
   public :: LIS_LSM_State
   public :: LIS_LSM_Pert_State
   public :: LIS_LSM_Incr_State
+
+  public :: LIS_LSM2SUBLSM_State
+  public :: LIS_SUBLSM2LSM_State
 !EOP
 
   type(ESMF_State), allocatable :: LIS_LSM_State(:,:) !ESMF state of prognostic
@@ -103,6 +106,9 @@ module LIS_lsmMod
   type(ESMF_State), allocatable :: LIS_LSM_Incr_State(:,:)!ESMF State of LSM state
                                                  !increments
 
+
+  type(ESMF_State), allocatable :: LIS_LSM2SUBLSM_State(:,:)
+  type(ESMF_State), allocatable :: LIS_SUBLSM2LSM_State(:,:)
 
 !BOP
 ! !ROUTINE: LIS_lsm_setexport
@@ -177,6 +183,51 @@ contains
     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%lsm,&
          label="Land surface model:",rc=rc)
     call LIS_verify(rc,'Land surface model: option not specified in the config file')
+    
+
+    call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%nSubLSMs,&
+         label="Number of subLSMs:",default=0,rc=rc)
+    call LIS_verify(rc,'Number of subLSMs: option not specified in the config file')
+
+    allocate(LIS_rc%subLSM(LIS_rc%nSubLSMs))
+
+    if(LIS_rc%nSubLSMs.ge.1) then        
+       
+       call ESMF_ConfigFindLabel(LIS_config,"subLSM models:",rc=rc)
+       do i=1,LIS_rc%nSubLSMs
+          call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%subLSM(i),rc=rc)
+          call LIS_verify(rc,"subLSM models: not defined")
+       enddo
+       
+       allocate(LIS_LSM2SUBLSM_State(LIS_rc%nnest, LIS_rc%nsubLSMs))
+       allocate(LIS_SUBLSM2LSM_State(LIS_rc%nnest, LIS_rc%nsubLSMs))
+
+       do n=1,LIS_rc%nnest
+          write(unit=temp,fmt='(i2.2)') n
+          read(unit=temp,fmt='(2a1)') nestid
+          
+          do i=1,LIS_rc%nSubLSMs
+             
+             write(unit=temp,fmt='(i3.3)') i
+             read(unit=temp,fmt='(3a1)') caseid
+             
+             LIS_LSM2SUBLSM_State(n,i) = ESMF_StateCreate(&
+                  name="LSM2SUBLSM State"//&
+                  nestid(1)//nestid(2)&
+                  //'_'//caseid(1)//caseid(2)//caseid(3), rc=status)
+             call LIS_verify(status, &
+                  "ESMF_StateCreate failed for LSM2SUBLSM in LIS_lsm_init")
+             
+             LIS_SUBLSM2LSM_State(n,i) = ESMF_StateCreate(&
+                  name="SUBLSM2LSM State"//&
+                  nestid(1)//nestid(2)&
+                  //'_'//caseid(1)//caseid(2)//caseid(3), rc=status)
+             call LIS_verify(status, &
+                  "ESMF_StateCreate failed for SUBLSM2LSM in LIS_lsm_init")
+             
+          enddo
+       enddo
+    endif
     
     allocate(LIS_rc%LSM_DAinst_valid(LIS_rc%ndas))
 
@@ -490,6 +541,10 @@ contains
        enddo
     endif
 
+    do i=1,LIS_rc%nSubLSMs
+       call sublsminit(trim(LIS_rc%subLSM(i))//char(0),i)
+    enddo
+
     TRACE_EXIT("lsm_init")
 
   end subroutine LIS_lsm_init
@@ -515,8 +570,16 @@ contains
 !    land surface model
 ! \end{description}
 !EOP
+    
+    integer              :: i 
+
     TRACE_ENTER("lsm_setup")
     call lsmsetup(trim(LIS_rc%lsm)//char(0))
+
+    do i=1,LIS_rc%nSubLSMs
+       call sublsmsetup(trim(LIS_rc%subLSM(i))//char(0))
+    enddo
+
     TRACE_EXIT("lsm_setup")
   end subroutine LIS_setuplsm
 
@@ -548,8 +611,41 @@ contains
 !    land surface model
 ! \end{description}
 !EOP
+    integer              :: i 
+
     TRACE_ENTER("lsm_run")
     call lsmrun(trim(LIS_rc%lsm)//char(0), n)
+
+    do i=1,LIS_rc%nSubLSMs    
+       if(LIS_rc%lsm.ne."none") then 
+          
+          !Get the export states from the LSM
+          call lsm2sublsmgetexport(trim(LIS_rc%lsm)//"+"&
+               //trim(LIS_rc%subLSM(i))//char(0), n,&
+                LIS_LSM2SUBLSM_State(n,i))
+       
+          !Assign the LSM export states within the subLSM
+          call sublsmsetlsmimport(&
+               trim(LIS_rc%subLSM(i))//char(0), n,&
+               LIS_LSM2SUBLSM_State(n,i))
+       endif
+
+       !Run the subLSM
+       call sublsmrun(trim(LIS_rc%subLSM(i))//char(0), n)
+
+       if(LIS_rc%lsm.ne."none") then 
+          !Get the export states from the subLSM
+          call sublsm2lsmgetexport(trim(LIS_rc%lsm)//"+"&
+               //trim(LIS_rc%subLSM(i))//char(0), n,&
+               LIS_SUBLSM2LSM_State(n,i))
+          
+          !Assign the subLSM export states within the LSM
+          call lsmsetsublsmimport(trim(LIS_rc%lsm)//char(0), n,&
+               LIS_SUBLSM2LSM_State(n,i))
+       endif
+    enddo
+
+
     TRACE_EXIT("lsm_run")
 
   end subroutine LIS_lsm_run
@@ -648,8 +744,14 @@ contains
 !    restart files for the land surface model 
 ! \end{description}
 !EOP
+    integer              :: i 
+
     TRACE_ENTER("lsm_readrst")
     call lsmrestart(trim(LIS_rc%lsm)//char(0))
+
+    do i=1,LIS_rc%nSubLSMs
+       call sublsmrestart(trim(LIS_rc%subLSM(i))//char(0))
+    enddo
     TRACE_EXIT("lsm_readrst")
   end subroutine LIS_lsm_readrestart
 
@@ -683,8 +785,14 @@ contains
 !    time dependent parameters for the land surface model 
 ! \end{description}
 !EOP
+    integer              :: i 
+
     TRACE_ENTER("lsm_dynsetup")
     call lsmdynsetup(trim(LIS_rc%lsm)//char(0),n)
+
+    do i=1,LIS_rc%nSubLSMs
+       call sublsmdynsetup(trim(LIS_rc%subLSM(i))//char(0),n)
+    enddo
     TRACE_EXIT("lsm_dynsetup")
   end subroutine LIS_setLSMDynparams
 
@@ -718,9 +826,16 @@ contains
 !    forcing to the land surface model tiles
 ! \end{description}
 !EOP
+    integer              :: i 
+
     TRACE_ENTER("lsm_f2t")
     call lsmf2t(trim(LIS_rc%lsm)//"+"//trim(LIS_rc%runmode)//char(0),&
          n)
+
+    do i=1,LIS_rc%nSubLSMs
+       call sublsmf2t(trim(LIS_rc%subLSM(i))//"+"//&
+            trim(LIS_rc%runmode)//char(0), n)
+    enddo
     TRACE_EXIT("lsm_f2t")
 
   end subroutine LIS_lsm_f2t
@@ -753,12 +868,48 @@ contains
 !    restart files for the land surface model 
 ! \end{description}
 !EOP
+
+    integer              :: i 
+
     TRACE_ENTER("lsm_writerst")
     call lsmwrst(trim(LIS_rc%lsm)//char(0),n)
+
+    do i=1,LIS_rc%nSubLSMs
+       call sublsmwrst(trim(LIS_rc%subLSM(i))//char(0),n)
+    enddo
     TRACE_EXIT("lsm_writerst")
   end subroutine LIS_lsm_writerestart
 
+!BOP
+! !ROUTINE: LIS_lsm_finalize
+! \label{LIS_lsm_finalize}
+!
+! !INTERFACE:
+  subroutine LIS_lsm_finalize()
+! !USES:
 
+!
+! !DESCRIPTION:
+!  This routine issues the invocation to deallocate and cleanup
+!  any allocated data structures in the specific instance of a 
+!  land surface model 
+!
+! The calling sequence is: 
+! \begin{description}
+!  \item[lsmfinalize] (\ref{lsmfinalize}) \newline
+!    invokes the generic method in the registry to cleanup the 
+!    LSM related datastructures    
+! \end{description}
+!EOP
+
+    integer              :: i 
+
+    call lsmfinalize(trim(LIS_rc%lsm)//char(0))
+
+    do i=1,LIS_rc%nSubLSMs
+       call sublsmfinalize(trim(LIS_rc%subLSM(i))//char(0))
+    enddo
+  end subroutine LIS_lsm_finalize
 
 !BOP
 ! !ROUTINE: lsm_setexport_noesmf
@@ -798,29 +949,7 @@ contains
   end subroutine lsm_setexport_noesmf
 
 
-!BOP
-! !ROUTINE: LIS_lsm_finalize
-! \label{LIS_lsm_finalize}
-!
-! !INTERFACE:
-  subroutine LIS_lsm_finalize()
-! !USES:
 
-!
-! !DESCRIPTION:
-!  This routine issues the invocation to deallocate and cleanup
-!  any allocated data structures in the specific instance of a 
-!  land surface model 
-!
-! The calling sequence is: 
-! \begin{description}
-!  \item[lsmfinalize] (\ref{lsmfinalize}) \newline
-!    invokes the generic method in the registry to cleanup the 
-!    LSM related datastructures    
-! \end{description}
-!EOP
-    call lsmfinalize(trim(LIS_rc%lsm)//char(0))
-  end subroutine LIS_lsm_finalize
 
 !BOP
 ! !ROUTINE: LIS_lsm_reset
