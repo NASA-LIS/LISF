@@ -189,19 +189,19 @@ module AWRAL600_module
         !-------------------------------------------------------------------------
         ! multilevel spatial parameter
         !-------------------------------------------------------------------------
-        real, pointer      :: height(:)
-        real, pointer      :: fhru(:)
-        real, pointer      :: hveg(:)
-        real, pointer      :: laimax(:)
+        real, allocatable      :: height(:)
+        real, allocatable      :: fhru(:)
+        real, allocatable      :: hveg(:)
+        real, allocatable      :: laimax(:)
         !-------------------------------------------------------------------------
         ! state
         !-------------------------------------------------------------------------
-        real               :: sr
-        real               :: sg
-        real, pointer      :: s0(:)
-        real, pointer      :: ss(:)
-        real, pointer      :: sd(:)
-        real, pointer      :: mleaf(:)
+        real                   :: sr
+        real                   :: sg
+        real, allocatable      :: s0(:)
+        real, allocatable      :: ss(:)
+        real, allocatable      :: sd(:)
+        real, allocatable      :: mleaf(:)
         !-------------------------------------------------------------------------
         ! output
         !-------------------------------------------------------------------------
