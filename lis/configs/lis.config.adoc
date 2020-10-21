@@ -272,10 +272,22 @@ Acceptable values are:
 |====
 |Value    | Description
 
-|overlay  | datasets are overlaid on top of each other
-            in the order they are specified.
+|overlay  | Datasets are overlaid on top of each other in the order they are specified.
+            For example, the forcing dataset in the second column is overlaid on top of
+            the forcing dataset in the first column.  In other words, the forcing data
+            specified in the second column will be used in place of forcing data that
+            is specified in the first column, for locations within the spatial extent
+            of the second column`'s forcing data.  As an example, a user could specify
+            a forcing dataset with a global extent in the first column and a forcing
+            dataset with a regional extent in the second column.  All locations within
+            the regional extent of the second column`'s forcing data will use that data
+            as forcing, while locations outside of this regional extent will use data
+            from the global extent of the first column`'s forcing data.  This continues
+            for the number of met forcing sources specified, with the right-most column
+            having the higher priority to be used as forcing, given its spatial extent.
             #Choose this method when using just one forcing dataset.#
-|ensemble | each forcing dataset is assigned to a separate ensemble member.
+
+|ensemble | Each forcing dataset is assigned to a separate ensemble member.
 |====
 
 .Example _lis.config_ entry
