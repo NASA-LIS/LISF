@@ -192,10 +192,23 @@ Met forcing sources:       "NLDAS2"
 
 [cols="<,<",]
 |===
-|Value |Description
+|Value    | Description
 
-|overlay |datasets are overlaid on top of each other in the order they are specified
-|ensemble |each forcing dataset is assigned to a separate ensemble member (option not available yet in LDT).
+|overlay  | Datasets are overlaid on top of each other in the order they are specified.
+            For example, the forcing dataset in the second column is overlaid on top of
+            the forcing dataset in the first column.  In other words, the forcing data
+            specified in the second column will be used in place of forcing data that
+            is specified in the first column, for locations within the spatial extent
+            of the second column`'s forcing data.  As an example, a user could specify
+            a forcing dataset with a global extent in the first column and a forcing
+            dataset with a regional extent in the second column.  All locations within
+            the regional extent of the second column`'s forcing data will use that data
+            as forcing, while locations outside of this regional extent will use data
+            from the global extent of the first column`'s forcing data.  This continues
+            for the number of met forcing sources specified, with the right-most column
+            having the higher priority to be used as forcing, given its spatial extent.
+
+|ensemble | Each forcing dataset is assigned to a separate ensemble member (option not available yet in LDT).
 |===
 
 .Example _ldt.config_ entry
