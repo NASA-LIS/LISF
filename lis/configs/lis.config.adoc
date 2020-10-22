@@ -5669,7 +5669,7 @@ MERRA2 use corrected total precipitation:  1
 ....
 
 ==== ERA5
-anchor:sssec_forcings_MERRA2[ERA5]
+anchor:sssec_forcings_ERA5[ERA5]
 
 `ERA5 forcing directory:` specifies the location of
 the ERA5 forcing files.
