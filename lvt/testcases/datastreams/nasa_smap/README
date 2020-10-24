@@ -1,0 +1,16 @@
+
+NASA SMAP Soil Moisture Reader Test Case
+
+This test-case performs a LVT run over CONUS to test the
+reading of the NASA SMAP soil moisture and to test data
+intercomparsion between NASA SMAP and USDA ARS soil moisture data.
+
+This directory contains:
+
+- This README file.
+- The lvt.config file used for this test case.
+
+To run this test case:
+
+* Generate the LVT executable.
+* Run the LVT executable using the lvt.config file.
