@@ -15,34 +15,34 @@ include ../../../../make/configure.lis
 
 all: procOBA_NWP procOBA_Sat
 
-procOBA_NWP: procOBA_NWP.o EMK_GridHashMod.o EMK_ReportsMod.o \
-             EMK_StationsMod.o sharedMod.o
+procOBA_NWP: procOBA_NWP.o USAF_GridHashMod.o USAF_ReportsMod.o \
+             USAF_StationsMod.o USAF_sharedMod.o
 	$(FC) $^ -o procOBA_NWP -L$(LIB_ESMF) -lesmf \
                                 -L$(LIB_NETCDF) -lnetcdff -lnetcdf
 
-procOBA_Sat: procOBA_Sat.o EMK_GridHashMod.o EMK_ReportsMod.o \
-             EMK_StationsMod.o sharedMod.o
+procOBA_Sat: procOBA_Sat.o USAF_GridHashMod.o USAF_ReportsMod.o \
+             USAF_StationsMod.o USAF_sharedMod.o
 	$(FC) $^ -o procOBA_Sat -L$(LIB_ESMF) -lesmf \
                                 -L$(LIB_NETCDF) -lnetcdff -lnetcdf
 
-procOBA_NWP.o: procOBA_NWP.F90 EMK_GridHashMod.o EMK_ReportsMod.o \
-                     EMK_StationsMod.o sharedMod.o
+procOBA_NWP.o: procOBA_NWP.F90 USAF_GridHashMod.o USAF_ReportsMod.o \
+                     USAF_StationsMod.o USAF_sharedMod.o
 	$(FC) -c $(FFLAGS) $< -I$(MOD_ESMF)
 
-procOBA_Sat.o: procOBA_Sat.F90 EMK_GridHashMod.o EMK_ReportsMod.o \
-                     EMK_StationsMod.o sharedMod.o
+procOBA_Sat.o: procOBA_Sat.F90 USAF_GridHashMod.o USAF_ReportsMod.o \
+                     USAF_StationsMod.o USAF_sharedMod.o
 	$(FC) -c $(FFLAGS) $< -I$(MOD_ESMF)
 
-EMK_GridHashMod.o : EMK_GridHashMod.F90
+USAF_GridHashMod.o : USAF_GridHashMod.F90
 	$(FC) -c $(FFLAGS) $<
 
-EMK_ReportsMod.o: EMK_ReportsMod.F90
+USAF_ReportsMod.o: USAF_ReportsMod.F90
 	$(FC) -c $(FFLAGS) $<
 
-EMK_StationsMod.o: EMK_StationsMod.F90
+USAF_StationsMod.o: USAF_StationsMod.F90
 	$(FC) -c $(FFLAGS) $<
 
-sharedMod.o: sharedMod.F90
+USAF_sharedMod.o: USAF_sharedMod.F90
 	$(FC) -c $(FFLAGS) $< -I$(MOD_ESMF)
 
 

@@ -1,16 +1,16 @@
 ! Generate semivariogram of gage-satellite differences with distance.
-! 
+!
 program main
 
    ! Imports
-   use ESMF
+   use esmf
    use mpi
-   use sharedMod
+   use USAF_sharedMod
 
    ! Defaults
    implicit none
 
-   ! Local variables   
+   ! Local variables
    character(len=255) :: outfile
    integer :: iunit_input, istat, iunit_out_vario
    integer :: j, i
@@ -64,7 +64,7 @@ program main
    character(len=maxlen_sattype), parameter :: GEOPRECIP = "GEOPRECIP"
    character(len=maxlen_sattype), parameter :: IMERG     = "IMERG"
    sattypes = (/SSMI, CMORPH, GEOPRECIP, IMERG/)
-   
+
    ! Initialize ESMF.  Must happen first.  This calls MPI_Init under the hood.
    call esmf_initialize(vm=vm, defaultCalKind=ESMF_CALKIND_GREGORIAN, rc=rc)
    if (rc .ne. ESMF_SUCCESS) then
@@ -72,7 +72,7 @@ program main
       call endrun(1)
    end if
 
-   ! Get some MPI information   
+   ! Get some MPI information
    call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       print*, "[ERR] Problem calling mpi_comm_rank"
@@ -616,7 +616,7 @@ program main
    ! Count the number of possible files
    curtime = starttime
    icount = 0
-   do 
+   do
       if (curtime > endtime) exit
       icount = icount + 1
       curtime = curtime + deltatime
@@ -712,14 +712,14 @@ contains
         use_blacklist, nstns, blacklist_stns)
 
       ! Imports
-      use EMK_GridHashMod, only: GridHash, newGridHash, destroyGridHash, &
-           insertIntoGridHash, getObindexVectorFromGridHash, &
-           createIJForGridHash
-      use EMK_ReportsMod, only: Reports, newReports, getNobs, getReport, &
-           destroyReports, appendToReports, bcast_reports
-      use EMK_StationsMod, only: great_circle_distance
       use esmf
       use mpi
+      use USAF_GridHashMod, only: GridHash, newGridHash, destroyGridHash, &
+           insertIntoGridHash, getObindexVectorFromGridHash, &
+           createIJForGridHash
+      use USAF_ReportsMod, only: Reports, newReports, getNobs, getReport, &
+           destroyReports, appendToReports, bcast_reports
+      use USAF_StationsMod, only: great_circle_distance
 
       ! Defaults
       implicit none
@@ -789,10 +789,10 @@ contains
       iunit_input = 10
       sampleSize = 0
 
-      ! We will loop through each file.  After reading the file, we will 
+      ! We will loop through each file.  After reading the file, we will
       ! create semivariogram contributions.
       curtime = starttime
-      do 
+      do
          if (curtime .ge. endtime) exit
          call esmf_timeget(curtime, &
               yy=yyyy, mm=mm, dd=dd, h=hh, rc=rc)
@@ -800,14 +800,14 @@ contains
             print*, "[ERR] Cannot get current time!"
             call endrun(1)
          end if
-         
+
          ! Advance curtime to next time so we can cycle if a problem occurs
          curtime = curtime + deltatime
 
          if (myid .eq. 0) then
             write(yyyymmddhh, '(I4.4,I2.2,I2.2,I2.2)') yyyy, mm, dd, hh
             write(infile, 1000) 'oba_', yyyy, mm, dd, hh, '_12.txt'
-1000        format(A,I4.4,I2.2,I2.2,I2.2,A)         
+1000        format(A,I4.4,I2.2,I2.2,I2.2,A)
             fullpath = trim(datadir) // '/' // trim(infile)
             open(unit=iunit_input, &
                  file=trim(fullpath), &
@@ -832,7 +832,7 @@ contains
             print*, '[INFO] Reading file ', trim(infile)
          end if
 
-         ! First, get all the gages and specified satellite obs in the 
+         ! First, get all the gages and specified satellite obs in the
          ! current file.
          count_skips = 0
          R_gages_sat = newReports(max_stations+max_sat_reports)
@@ -840,12 +840,12 @@ contains
             icount_gages = 0
             icount_sat = 0
             do
-               read(iunit_input, '(A)', iostat=istat) line               
+               read(iunit_input, '(A)', iostat=istat) line
                if (istat .ne. 0) exit
-               if (line(2:2) .eq. '#') cycle                           
+               if (line(2:2) .eq. '#') cycle
                read(line, &
                     '(A10,1x,A10,1x,F8.3,1x,F8.3,1x,F8.3,1x,F8.3,1x,F8.3)') &
-                    network, platform, latitude, longitude, O, B, A   
+                    network, platform, latitude, longitude, O, B, A
                if (is_gage(adjustl(network))) then
 
                   ! Apply blacklist
@@ -875,7 +875,7 @@ contains
                        latitude, longitude, O, B, A)
                else
                   cycle
-               end if               
+               end if
             end do
             close(unit=iunit_input)
             print*, "[INFO] Skipped ", count_skips, " blacklisted stations"
@@ -893,7 +893,7 @@ contains
          end if
 
          ! Create geographic lookup tables for all data.  We do this here
-         ! since the hash tables use linked lists under the hood, which 
+         ! since the hash tables use linked lists under the hood, which
          ! are difficult to pass via MPI.
          call mpi_barrier(mpi_comm_world, ierr)
          nobs = getNobs(R_gages_sat)
@@ -910,7 +910,7 @@ contains
                call insertIntoGridHash(sat2d, ii, jj, k)
             end if
          end do ! k
-         
+
          ! Now we try to match each gage to the nearest sat ob
          call mpi_barrier(mpi_comm_world, ierr)
          R_matches = newReports(MAX_STATIONS)
@@ -922,13 +922,13 @@ contains
                if (nobs_gages .eq. 0) cycle
 
                do k = 1, nobs_gages
-                  
+
                   call getReport(R_gages_sat, gage_obindexVector(k), &
                        network=network_k, &
                        platform=platform_k, yyyymmddhh=yyyymmddhh_k,&
                        latitude=lat_k, longitude=lon_k, O=O_k, B=B_k)
                   min_dist_k_kk = 9999999999999999.
-                  ! Now search 3x3 boxes for nearest sat ob 
+                  ! Now search 3x3 boxes for nearest sat ob
                   do jdelta_lat = -1, 1
                      jj = j + jdelta_lat
                      if (jj .lt. 1) cycle
@@ -940,12 +940,12 @@ contains
                         else if (ii .gt. IMAX_LON) then
                            ii = ii - IMAX_LON
                         end if
-                        
+
                         ! Get list of sat report in this box
                         call getObindexVectorFromGridHash(sat2d, ii, jj, &
                              nobs_sat, sat_obindexVector)
                         if (nobs_sat .eq. 0) cycle
-                        
+
                         do kk = 1, nobs_sat
                            call getReport(R_gages_sat, &
                                 sat_obindexVector(kk), network=network_kk, &
@@ -959,13 +959,13 @@ contains
                               min_dist_k_kk = dist_k_kk
                               B_new = O_kk ! Use sat retrieval as background
                            end if
-                        end do ! kk                          
+                        end do ! kk
                         if (allocated(sat_obindexVector)) then
                            deallocate(sat_obindexVector)
                         end if
                      end do ! idelta_lon
                   end do ! idelta_lat
-                    
+
                   ! See if nearest sat is close enough to gage
                   if (min_dist_k_kk .lt. dist_thresh) then
                      network_new = "SATGAGE"
@@ -999,7 +999,7 @@ contains
          end if
          t0 = mpi_wtime()
          do k = 1, nobs
-            
+
             allocate(vario_proc(max_vario_bins))
             vario_proc(:) = 0
             allocate(icounts_vario_proc_i4(max_vario_bins))
@@ -1007,17 +1007,17 @@ contains
             id = -1
             id_incr = 1
             sample_size_proc_i4 = 0
-         
+
             call getReport(R_matches, k, platform=platform_k,&
                  latitude=lat_k, longitude=lon_k, &
                  O=O_k, B=B_k)
-         
+
             OMB_k = O_k - B_k
 
             t1 = mpi_wtime()
 
             do kk = k+1, nobs
-               
+
                ! See if current processor is responsible for this j ob.
                call pick_proc(id, id_incr, numprocs)
                if (id .ne. myid) cycle
@@ -1025,16 +1025,16 @@ contains
                call getReport(R_matches, kk, platform=platform_kk,&
                     latitude=lat_kk, longitude=lon_kk, &
                     O=O_kk, B=B_kk)
-               
+
                OMB_kk = O_kk - B_kk
 
                !! Make sure at least one gage has rain.
                !if (.not. (O_i > -3) .or. .not. (O_j > -3)) cycle
-            
+
                dist_k_kk = great_circle_distance(lat_k, lon_k, lat_kk, lon_kk)
                index = int(dist_k_kk*0.001/vario_bin_dist) + 1
                if (index .gt. max_vario_bins) cycle
-            
+
                vario_proc(index) = vario_proc(index) + &
                     ((OMB_k-OMB_kk)*(OMB_k-OMB_kk))
                icounts_vario_proc_i4(index) = icounts_vario_proc_i4(index) + 1
@@ -1078,7 +1078,7 @@ contains
 
          ! Clean up for next file
          call destroyReports(R_matches)
-         
+
          if (myid .eq. 0) then
             print*, '[INFO] Semivariogram sample size now ', sampleSize
          end if

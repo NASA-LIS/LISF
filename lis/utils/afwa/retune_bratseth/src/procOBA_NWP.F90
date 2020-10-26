@@ -1,19 +1,19 @@
 ! Generate semivariogram of observation-NWP differences with distance.
-! 
+!
 program main
 
    ! Imports
-   use ESMF
+   use esmf
    use mpi
-   use sharedMod
+   use USAF_sharedMod
 
    ! Defaults
    implicit none
 
-   ! Local variables   
+   ! Local variables
    character(len=255) :: outfile
    integer :: iunit_input, istat, iunit_out_vario
-   integer :: j,i
+   integer :: j, i
    integer*8, allocatable :: icounts_vario(:)
    double precision, allocatable :: vario(:)
    character(ESMF_MAXPATHLEN) :: cfgfile
@@ -52,7 +52,7 @@ program main
    logical :: is_precip
    integer :: num_args
    logical :: use_blacklist
-   character(len=255) :: blacklist_file   
+   character(len=255) :: blacklist_file
    character(len=9), allocatable :: blacklist_stns(:)
    integer :: nstns
 
@@ -70,7 +70,7 @@ program main
       call endrun(1)
    end if
 
-   ! Get some MPI information   
+   ! Get some MPI information
    call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       print*, "[ERR] Problem calling mpi_comm_rank"
@@ -492,7 +492,7 @@ program main
    ! Count the number of possible files
    curtime = starttime
    icount = 0
-   do 
+   do
       if (curtime > endtime) exit
       icount = icount + 1
       curtime = curtime + deltatime
@@ -575,11 +575,11 @@ contains
         use_blacklist, nstns, blacklist_stns)
 
       ! Imports
-      use EMK_ReportsMod, only: Reports, newReports, getNobs, getReport, &
-           destroyReports, appendToReports, bcast_reports
-      use EMK_StationsMod, only: great_circle_distance
       use esmf
       use mpi
+      use USAF_ReportsMod, only: Reports, newReports, getNobs, getReport, &
+           destroyReports, appendToReports, bcast_reports
+      use USAF_StationsMod, only: great_circle_distance
 
       ! Defaults
       implicit none
@@ -636,12 +636,12 @@ contains
       iunit_input = 10
       sampleSize = 0
 
-      ! We will loop through each file.  After reading the file, we will 
-      ! create semivariogram contributions.  By doing this for each file, we 
-      ! will hopefully reduce the number of obs that must be compared for a 
+      ! We will loop through each file.  After reading the file, we will
+      ! create semivariogram contributions.  By doing this for each file, we
+      ! will hopefully reduce the number of obs that must be compared for a
       ! particular date and time.
       curtime = starttime
-      do 
+      do
          if (curtime .ge. endtime) exit
          call esmf_timeget(curtime, &
               yy=yyyy, mm=mm, dd=dd, h=hh, rc=rc)
@@ -652,7 +652,7 @@ contains
 
          ! Advance curtime to next time so we can cycle if a problem occurs
          curtime = curtime + deltatime
-      
+
          if (myid .eq. 0) then
             write(yyyymmddhh, '(I4.4,I2.2,I2.2,I2.2)') yyyy, mm, dd, hh
             if (is_precip) then
@@ -660,7 +660,7 @@ contains
             else
                write(infile,1000) 'oba_', yyyy, mm, dd, hh, '_01.txt'
             end if
-1000        format(A, I4.4, I2.2, I2.2, I2.2, A)         
+1000        format(A, I4.4, I2.2, I2.2, I2.2, A)
             fullpath = trim(datadir) // '/' // trim(infile)
             open(unit=iunit_input, &
                  file=trim(fullpath), &
@@ -684,21 +684,21 @@ contains
          if (myid .eq. 0) then
             print*, '[INFO] Reading file ', trim(infile)
          end if
-         
+
          ! First, get all the data in the current file.
          count_skips = 0
          R_obs = newReports(max_stations)
          if (myid .eq. 0) then
-            do 
-               read(iunit_input, '(A)', iostat=istat) line               
+            do
+               read(iunit_input, '(A)', iostat=istat) line
                if (istat .ne. 0) exit
-               if (line(2:2) .eq. '#') cycle                           
+               if (line(2:2) .eq. '#') cycle
                read(line, &
                     '(A10,1x,A10,1x,F8.3,1x,F8.3,1x,F8.3,1x,F8.3,1x,F8.3)') &
                     network, platform, latitude, longitude, O, B, A
 
                ! Only save requested obtype
-               if (.not. is_obtype(adjustl(network))) cycle               
+               if (.not. is_obtype(adjustl(network))) cycle
 
                ! Apply blacklist if requested
                skip = .false.
@@ -719,13 +719,12 @@ contains
                if (skip) cycle
 
                call appendToReports(R_obs, network, platform, yyyymmddhh, &
-                    latitude, longitude, O, B, A)               
+                    latitude, longitude, O, B, A)
             end do ! loop through file
             close(unit=iunit_input)
          end if
 
          print*, "[INFO] Skipped ", count_skips, " blacklisted stations"
-               
 
          ! Share reports across processors
          call mpi_barrier(mpi_comm_world, ierr)
@@ -743,7 +742,7 @@ contains
          end if
          t0 = mpi_wtime()
          do j = 1,nobs
-            
+
             allocate(vario_proc(max_vario_bins))
             vario_proc(:) = 0
             allocate(icounts_vario_proc_i4(max_vario_bins))
@@ -751,17 +750,17 @@ contains
             id = -1
             id_incr = 1
             sample_size_proc_i4 = 0
-         
+
             call getReport(R_obs, j, platform=platform_j,&
                  latitude=lat_j, longitude=lon_j, &
                  O=O_j, B=B_j)
-         
+
             OMB_j = O_j - B_j
 
             t1 = mpi_wtime()
 
             do i = j+1,nobs
-               
+
                ! See if current processor is responsible for this j ob.
                call pick_proc(id,id_incr, numprocs)
                if (id .ne. myid) cycle
@@ -769,16 +768,16 @@ contains
                call getReport(R_obs,i, platform=platform_i,&
                     latitude=lat_i, longitude=lon_i, &
                     O=O_i, B=B_i)
-               
+
                OMB_i = O_i - B_i
 
                !! Make sure at least one gage has rain.
                !if (.not. (O_i > -3) .or. .not. (O_j > -3)) cycle
-            
+
                dist_ij = great_circle_distance(lat_i, lon_i, lat_j, lon_j)
                index = int(dist_ij*0.001/vario_bin_dist) + 1
                if (index .gt. max_vario_bins) cycle
-            
+
                vario_proc(index) = vario_proc(index) + &
                     ((OMB_i-OMB_j)*(OMB_i-OMB_j))
                icounts_vario_proc_i4(index) = icounts_vario_proc_i4(index) + 1
@@ -822,7 +821,7 @@ contains
 
          ! Clean up for next file
          call destroyReports(R_obs)
-         
+
          if (myid .eq. 0) then
             print*, '[INFO] Semivariogram sample size now ', sampleSize
          end if
