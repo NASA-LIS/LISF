@@ -1,4 +1,24 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+"""
+SCRIPT: biasOB.py
+
+This script is responsible for creating a polynomial fit to observation
+increments (observations minus background) as a function of the mean
+of observation and background value.  Inspired by Lopez (2013).
+
+NOTE:  THIS CODE ISN'T FINISHED YET, AND CURRENTLY ASSUMES CUBIC BOX-COX
+TRANSFORM IS USED FOR ANALYSIS VARIABLE (NEED TO REPLACE WITH JUST PHYSICAL
+PRECIPITATION).
+
+REVISION HISTORY:
+26 Oct 2020:  Eric Kemp:  Initial specification
+
+REFERENCES:
+Lopez, P., 2013:  Experimental 4D-Var assimilation of SYNOP rain gauge data
+   at ECMWF. Mon. Wea. Rev., 141, 1527-1544,
+   https://doi.org/10.1175/MWR-D-12-00024.1
+
+"""
 
 # Standard libraries
 import configparser
