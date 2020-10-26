@@ -1,13 +1,14 @@
-#!/usr/bin/env python
-"""Script for creating a blacklist.
+#!/usr/bin/env python3
+"""
+SCRIPT: create_blacklist.py
 
-Will flag stations with unacceptably high or low mean innovations 
-(observation-minus-background values).  Will also flag stations with
-too few reports, and stations that have more than one reported network.
+Script for creating a blacklist.  Will flag stations with unacceptably high or
+low mean innovations (observation-minus-background values).  Will also flag
+stations with too few reports, and stations that have more than one reported
+network.  Satellite observations are ignored.
 
-NOTE:  Satellite observations are ignored.
-
-Eric Kemp, SSAI/NASA GSFC
+REVISION HISTORY:
+26 Oct 2020: Eric Kemp. Initial Specification.
 """
 
 # Standard modules
@@ -22,12 +23,12 @@ def usage():
     print("Usage: %s config.cfg" %(sys.argv[0]))
 
 #------------------------------------------------------------------------------
-def is_sat(platform):
+def is_sat(my_platform):
     """Check if platform is satellite-based"""
-    if platform in ["SSMI", "GEOPRECIP", "CMORPH", "IMERG"]:
-        return True
-    else:
-        return False
+    test = False
+    if my_platform in ["SSMI", "GEOPRECIP", "CMORPH", "IMERG"]:
+        test = True
+    return test
 
 #------------------------------------------------------------------------------
 
@@ -44,7 +45,7 @@ if not os.path.exists(cfgfile):
     sys.exit(1)
 config = configparser.ConfigParser()
 config.read(cfgfile)
-          
+
 # Process the threshold settings
 network_thresh = config.get('Input', 'network_thresh')
 count_thresh = config.get('Input', 'count_thresh')
