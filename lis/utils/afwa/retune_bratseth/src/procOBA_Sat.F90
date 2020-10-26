@@ -1,4 +1,13 @@
-! Generate semivariogram of gage-satellite differences with distance.
+!
+! ROUTINE: procOBA_Sat
+!
+! DESCRIPTION:
+! Main program for generating semivariogram of gage-satellite differences
+! with distance.
+!
+! REVISION HISTORY:
+! 26 0ct 2020:  Eric Kemp.  Initial Specification.  Multi-process
+! MPI doesn't work yet, just use single process.
 !
 program main
 

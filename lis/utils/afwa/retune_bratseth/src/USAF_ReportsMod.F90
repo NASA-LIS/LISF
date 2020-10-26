@@ -1,3 +1,13 @@
+!
+!
+! MODULE: USAF_ReportsMod
+!
+! This contains code for storing select observation information and
+! corresponding (interpolated) background and analysis values.
+!
+! REVISION HISTORY:
+! 26 Oct 2020:  Eric Kemp.  Initial specification.
+!
 module USAF_ReportsMod
 
   ! Defaults

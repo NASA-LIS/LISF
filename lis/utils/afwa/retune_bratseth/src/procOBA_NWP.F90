@@ -1,5 +1,14 @@
-! Generate semivariogram of observation-NWP differences with distance.
 !
+! ROUTINE: procOBA_NWP
+!
+! DESCRIPTION:
+! Main program for generating semivariogram of observation-NWP differences
+! with distance.
+!
+! REVISION HISTORY:
+! 26 0ct 2020:  Eric Kemp.  Initial Specification. Multi-process
+! MPI doesn't work yet, just use single process.
+
 program main
 
    ! Imports
@@ -42,7 +51,6 @@ program main
    integer :: icount
    integer, parameter :: maxlen_obtype = 6
    character(len=maxlen_obtype) :: obtype
-   !integer, parameter :: max_obtypes = 6
    integer, parameter :: max_obtypes = 4
    character(len=maxlen_obtype) :: obtypes(max_obtypes)
    logical :: found_obtype
