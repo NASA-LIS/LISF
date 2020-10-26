@@ -1,8 +1,17 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+"""
+SCRIPT: fit_semivariogram.py
+
+Script for creating a fit to an empirical semivariogram.  Input data are
+from the procOBA_NWP or procOBA_Sat programs.  Blacklist file is from
+create_blacklist.py.
+
+REVISION HISTORY:
+26 Oct 2020: Eric Kemp. Initial Specification.
+"""
 
 # Standard library
 import configparser
-import math
 import os
 import sys
 
@@ -13,10 +22,16 @@ from scipy.optimize import curve_fit
 
 #------------------------------------------------------------------------------
 def usage():
+    """Print usage statement to standard out"""
     print("Usage: %s config.cfg" %(sys.argv[0]))
 
 #------------------------------------------------------------------------------
+# NOTE: Pylint complains about the single-character variable names not
+# conforming to snake_case convention.  For sanity, we disable this test
+# here.
+# pylint: disable=invalid-name
 def fit_func_gaussian(x, a, b, c):
+    """Fits a Gaussian function to the semivariogram."""
     if a < 0:
         return -9999
     if b < 0:
@@ -25,9 +40,15 @@ def fit_func_gaussian(x, a, b, c):
         return -9999
     # Here a is sigma2_o, b is sigma2_b, and c is L_b
     return a  + b*(1. - np.exp(-1*x*x/c/c))
+# pylint: enable=invalid-name
 
 #------------------------------------------------------------------------------
+# NOTE: Pylint complains about the single-character variable names not
+# conforming to snake_case convention.  For sanity, we disable this test
+# here.
+# pylint: disable=invalid-name
 def fit_func_soar(x, a, b, c):
+    """Fits a second-order auto-regressive function to the semivariogram."""
     if a < 0:
         return -9999
     if b < 0:
@@ -36,9 +57,15 @@ def fit_func_soar(x, a, b, c):
         return -9999
     # Here a is sigma2_o, b is sigma2_b, and c is L_b
     return a  + b*(1. - ((1. + x/c)*np.exp(-1*x/c)))
+# pylint: enable=invalid-name
 
 #------------------------------------------------------------------------------
+# NOTE: Pylint complains about the single-character variable names not
+# conforming to snake_case convention.  For sanity, we disable this test
+# here.
+# pylint: disable=invalid-name
 def fit_func_invexp(x, a, b, c):
+    """Fits an inverse exponential function to the semivariogram."""
     if a < 0:
         return -9999
     if b < 0:
@@ -47,6 +74,7 @@ def fit_func_invexp(x, a, b, c):
         return -9999
     # Here a is sigma2_o, b is sigma2_b, and c is L_b
     return a  + b*(1. - np.exp(-1*x/c))
+# pylint: enable=invalid-name
 
 #------------------------------------------------------------------------------
 fit_func_dict = {
@@ -57,11 +85,12 @@ fit_func_dict = {
 
 #------------------------------------------------------------------------------
 def readdata(filename, maxdist):
-    distvector = []
-    variovector = []
-    countvector = []
+    """Reads semivariogram data from file, and returns in lists."""
+    dist_vector = []
+    vario_vector = []
+    count_vector = []
     lines = open(filename,"r").readlines()
-    samplesize = 0
+    sample_size = 0
     for line in lines:
         if "#" in line:
             continue
@@ -74,16 +103,16 @@ def readdata(filename, maxdist):
         if dist > maxdist:
             continue
 
-        samplesize += count
+        sample_size += count
 
-        distvector.append(dist)
-        variovector.append(vario)
-        countvector.append(count)
+        dist_vector.append(dist)
+        vario_vector.append(vario)
+        count_vector.append(count)
 
     # Convert to numpy arrays
-    distvector = np.array(distvector)
-    variovector = np.array(variovector)
-    return distvector, variovector, samplesize
+    dist_vector = np.array(dist_vector)
+    vario_vector = np.array(vario_vector)
+    return dist_vector, vario_vector, sample_size
 
 #------------------------------------------------------------------------------
 # Check command line
@@ -111,7 +140,7 @@ except:
 if not os.path.exists(vario_filename):
     print("[ERR] %s does not exist!" %(vario_filename))
     sys.exit(1)
-if not max_distance > 0:
+if max_distance <= 0:
     print("[ERR] Maximum distance must be positive!")
     sys.exit(1)
 
@@ -128,8 +157,8 @@ function_types.sort()
 if function_type not in function_types:
     print('[ERR] function type %s is not supported!' %(function_type))
     print("Currently only the following functions can be fit:")
-    for type in function_types:
-        print("  %s" %(type))
+    for function_type in function_types:
+        print("  %s" %(function_type))
     sys.exit(1)
 
 # Handle the Plot section
@@ -159,11 +188,16 @@ sigma2_back_min = 0.1*sigma2_gage_guess
 sigma2_back_max = np.amax(variovector)
 L_back_min = L_back_guess
 L_back_max = distvector[-1]
+
+# NOTE: Pylint gives a false-positive warning about unbalanced tuple unpacking
+# for the values returned from curve_fit. For sanity, we disable the test here.
+# pylint: disable=unbalanced-tuple-unpacking
 popt, pconv = \
              curve_fit(fit_func, distvector, variovector,
                        p0=(sigma2_gage_guess, sigma2_back_guess, L_back_guess),
                        bounds=([sigma2_gage_min, sigma2_back_min, L_back_min],
                                [sigma2_gage_max, sigma2_back_max, L_back_max]))
+# pylint: enable=unbalanced-tuple-unpacking
 
 sigma2_gage = popt[0]
 sigma2_back = popt[1]
