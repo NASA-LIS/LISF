@@ -1,3 +1,14 @@
+!
+!
+! MODULE: USAF_GridHashMod
+!
+! This contains code for storing and retrieving observation data in a
+! "gridded hash table," a 2d array of linked lists storing the observations
+! in each grid box.
+!
+! REVISION HISTORY:
+! 26 Oct 2020:  Eric Kemp.  Initial specification.
+!
 module USAF_GridHashMod
 
   ! Defaults

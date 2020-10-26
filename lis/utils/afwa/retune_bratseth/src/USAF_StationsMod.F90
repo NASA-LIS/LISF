@@ -1,3 +1,12 @@
+!
+!
+! MODULE: USAF_stationsMod
+!
+! This contains code for storing station latitudes, longitudes, and platforms.
+!
+! REVISION HISTORY:
+! 26 Oct 2020:  Eric Kemp.  Initial specification.
+!
 module USAF_stationsMod
 
   ! Defaults

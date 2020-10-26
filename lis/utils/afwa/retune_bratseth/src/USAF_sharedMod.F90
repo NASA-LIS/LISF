@@ -1,3 +1,12 @@
+!
+!
+! MODULE: USAF_sharedMod
+!
+! This contains miscellaneous routines shared by procOBA_NWP and procOBA_Sat.
+!
+! REVISION HISTORY:
+! 26 Oct 2020:  Eric Kemp.  Initial specification.
+!
 module USAF_sharedMod
 
   implicit none
