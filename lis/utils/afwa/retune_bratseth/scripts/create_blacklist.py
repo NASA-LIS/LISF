@@ -20,7 +20,7 @@ import sys
 #------------------------------------------------------------------------------
 def usage():
     """Print usage statement to standard out"""
-    print("Usage: %s config.cfg" %(sys.argv[0]))
+    print("Usage: %s CFGFILENAME BLACKLISTFILENAME " %(sys.argv[0]))
 
 #------------------------------------------------------------------------------
 def is_sat(my_platform):
@@ -33,7 +33,7 @@ def is_sat(my_platform):
 #------------------------------------------------------------------------------
 
 # Check command line
-if len(sys.argv) != 2:
+if len(sys.argv) != 3:
     print("[ERR] Bad command line arguments!")
     usage()
     sys.exit(1)
@@ -61,6 +61,9 @@ data_hour_list = data_hours.split(",")
 
 data = {}
 
+blacklistfilename = sys.argv[2]
+fd = open(blacklistfilename, "w")
+
 # Build list of files
 files = glob.glob("%s/oba_*_%s.txt" %(data_directory,
                                       data_frequency))
@@ -85,10 +88,11 @@ for file in files:
 
 # Now, loop through each station and calculate the mean OMB.  Create
 # a blacklist
-print("# Creating blacklist")
-print("# Rejecting stations with more than %s network" %(network_thresh))
-print("# Rejecting stations with less than %s observations" %(count_thresh))
-print("# Rejecting stations with absolute mean OMB beyond %s" %(omb_thresh))
+fd.write("# Rejecting stations with more than %s network\n" %(network_thresh))
+fd.write("# Rejecting stations with less than %s observations\n"
+         %(count_thresh))
+fd.write("# Rejecting stations with absolute mean OMB beyond %s\n"
+         %(omb_thresh))
 
 platforms = list(data.keys())
 platforms.sort()
@@ -109,13 +113,14 @@ for platform in platforms:
         OMB[network] += (ob - back)
     length = len(OMB.keys())
     if length > int(network_thresh):
-        print("%s # Found in %s networks" %(platform, length))
+        fd.write("%s # Found in %s networks\n" %(platform, length))
         continue
     for network in OMB:
         if n[network] < int(count_thresh):
-            print("%s # Only have %s observation(s)" %(platform, n[network]))
+            fd.write("%s # Only have %s observation(s)\n"
+                     %(platform, n[network]))
             continue
         OMB[network] = OMB[network] / float(n[network])
         if abs(OMB[network]) > float(omb_thresh):
-            print("%s # Mean OMB is %s" %(platform, OMB[network]))
+            fd.write("%s # Mean OMB is %s\n" %(platform, OMB[network]))
             continue
