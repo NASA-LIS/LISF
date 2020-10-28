@@ -69,7 +69,11 @@ module LDT_usafsiMod
       character*20 :: data_category
       character*20 :: data_res
       character*20 :: area_of_data
-     
+      character*255 :: agrmetdir
+      character*255 :: galwemdir
+      integer :: use_timestamp
+      integer :: galwem_res
+
       ! Output file name (prefix)
       character*20 :: netcdf_prefix
 
