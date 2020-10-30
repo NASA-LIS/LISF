@@ -47,7 +47,7 @@ contains
 
     ! Local variables
     character(255) :: gribfilename
-    integer :: gridDesci_glb(50)
+    real :: gridDesci_glb(50)
     logical :: file_exists
     logical :: found
     logical :: roll_back
@@ -88,7 +88,6 @@ contains
     call LDT_julhr_date(file_julhr, yr1, mo1, da1, hr1)
     found = .false.
     roll_back = .false.
-    found = .false.
     do while (.not. found)
 
        ! If necessary, roll back to a previous GALWEM cycle
@@ -99,6 +98,7 @@ contains
           file_julhr = file_julhr - 6
           call LDT_julhr_date(file_julhr, yr1, mo1, da1, hr1)
        end if
+       roll_back = .true.
 
        call get_galwem_filename(gribfilename, &
             usafsi_settings%galwem_root_dir, &
@@ -109,16 +109,18 @@ contains
        inquire(file=trim(gribfilename), exist=found_inq)
        if (.not. found_inq) then
           write(LDT_logunit,*) '[WARN] Cannot find file ' // trim(gribfilename)
-          roll_back = .true.
           cycle
        end if
 
 #if (defined USE_GRIBAPI)
        ! Open the GRIB file
+       ierr = 0
        call grib_open_file(ftn, trim(gribfilename), 'r', ierr)
        if ( ierr .ne. 0 ) then
+          call grib_close_file(ftn)
           write(LDT_logunit,*) '[WARN] Failed to open ' // trim(gribfilename)
-          roll_back = .true.
+          write(LDT_logunit,*) '[WARN] ierr = ', ierr
+          flush(LDT_logunit)
           cycle
        end if
 
@@ -128,11 +130,12 @@ contains
           write(LDT_logunit,*) '[WARN] in grib_count_in_file: ' // &
                'dataTime in USAFSI_get_galwem_t2m'
           call grib_close_file(ftn)
-          roll_back = .true.
           cycle
        endif
 
        ! Start searching through the messages
+       write(LDT_logunit,*)'[INFO] Reading ', trim(gribfilename)
+
        do k = 1, nvars
 
           call grib_new_from_file(ftn, igrib, ierr)
@@ -140,7 +143,6 @@ contains
              write(LDT_logunit,*) &
                   '[WARN] failed to read message from' // trim(gribfilename)
              call grib_close_file(ftn)
-             roll_back = .true.
              exit
           endif
 
@@ -153,6 +155,8 @@ contains
              call grib_release(igrib, ierr)
              cycle
           end if
+          ! We want analysis or forecast at a horizontal level or in a
+          ! horizontal layer at a point in time.
           if (prod_def_tmpl_num .ne. 0) then
              call grib_release(igrib, ierr)
              cycle
@@ -166,6 +170,7 @@ contains
              call grib_release(igrib, ierr)
              cycle
           end if
+          ! We want a meteorological product.
           if (param_disc_val .ne. 0) then
              call grib_release(igrib, ierr)
              cycle
@@ -179,6 +184,7 @@ contains
              call grib_release(igrib, ierr)
              cycle
           end if
+          ! We want the temperature category.
           if (param_cat_val .ne. 0) then
              call grib_release(igrib, ierr)
              cycle
@@ -192,6 +198,7 @@ contains
              call grib_release(igrib, ierr)
              cycle
           end if
+          ! We want temperature
           if (param_num_val .ne. 0) then
              call grib_release(igrib, ierr)
              cycle
@@ -205,6 +212,7 @@ contains
              call grib_release(igrib, ierr)
              cycle
           end if
+          ! We want specified height above ground (m)
           if (surface_val .ne. 103) then
              call grib_release(igrib, ierr)
              cycle
@@ -218,12 +226,14 @@ contains
              call grib_release(igrib, ierr)
              cycle
           end if
+          ! We want the second surface type to be missing, meaning the data
+          ! is for a level and not a layer.
           if (surface_val_2 .ne. 255) then
              call grib_release(igrib, ierr)
              cycle
           end if
 
-          ! Check the level
+          ! Check the surface level
           call grib_get(igrib, 'level', level_val, ierr)
           if (ierr .ne. 0) then
              write(LDT_logunit,*) '[WARN] in grib_get: ' // &
@@ -231,7 +241,8 @@ contains
              call grib_release(igrib, ierr)
              cycle
           end if
-          if (surface_val .ne. 2) then
+          ! Surface level should be 2 meters
+          if (level_val .ne. 2) then
              call grib_release(igrib, ierr)
              cycle
           end if
@@ -336,7 +347,7 @@ contains
           endif
 
           write(LDT_logunit,*) &
-               '[INFO] FOUND 2-M AIR TEMPERTURE FROM UK UM (GALWEM) MODEL'
+               '[INFO] FOUND 2-M AIR TEMPERATURE FROM UK UM (GALWEM) MODEL'
           write(LDT_logunit,*)'[INFO] GALWEM DELTA LAT IS ', &
                gridres_dlat,' DEGREES'
           write(LDT_logunit,*)'[INFO] GALWEM DELTA LON IS ', &
@@ -455,6 +466,7 @@ contains
 
     ! Imports
     use LDT_coreMod, only: LDT_rc, LDT_domain
+    use LDT_logMod, only: LDT_logunit
     use LDT_usafsiMod, only: usafsi_settings
 
     ! Defaults
@@ -462,7 +474,7 @@ contains
 
     ! Arguments
     integer, intent(in) :: n
-    integer, intent(in) :: gridDesci_glb(50)
+    real, intent(in) :: gridDesci_glb(50)
     integer, intent(in) :: ifguess
     integer, intent(in) :: jfguess
     real, intent(in) :: fg_field(ifguess, jfguess)
@@ -512,6 +524,7 @@ contains
     allocate(w12(nc*nr))
     allocate(w21(nc*nr))
     allocate(w22(nc*nr))
+
     call bilinear_interp_input(n, gridDesci_glb,        &
          n11, n12, n21, n22, &
          w11, w12, w21, w22)
@@ -549,7 +562,7 @@ contains
     implicit none
 
     ! Arguments
-    integer, intent(inout) :: gridDesci_glb(50)
+    real, intent(inout) :: gridDesci_glb(50)
 
     ! Set the weights for the interpolation.  This varies by GALWEM resolution
     if (usafsi_settings%galwem_res == 17) then
