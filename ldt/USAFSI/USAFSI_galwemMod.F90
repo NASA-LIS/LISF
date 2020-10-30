@@ -100,8 +100,9 @@ contains
           call LDT_julhr_date(file_julhr, yr1, mo1, da1, hr1)
        end if
 
-       call get_galwem_filename(gribfilename, usafsi_settings%agrmetdir, &
-            usafsi_settings%galwemdir, usafsi_settings%use_timestamp, &
+       call get_galwem_filename(gribfilename, &
+            usafsi_settings%galwem_root_dir, &
+            usafsi_settings%galwem_sub_dir, usafsi_settings%use_timestamp, &
             usafsi_settings%galwem_res, yr1, mo1, da1, hr1, fc_hr)
 
        ! Before using ECCODE/GRIB_API, see if the GRIB file exists.

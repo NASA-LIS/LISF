@@ -69,8 +69,8 @@ module LDT_usafsiMod
      character*20 :: data_category
      character*20 :: data_res
      character*20 :: area_of_data
-     character*255 :: agrmetdir
-     character*255 :: galwemdir
+     character*255 :: galwem_root_dir
+     character*255 :: galwem_sub_dir
      integer :: use_timestamp
      integer :: galwem_res
 
@@ -472,6 +472,42 @@ contains
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
          usafsi_settings%area_of_data, &
+         rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    ! Get GALWEM root directory
+    cfg_entry = "USAFSI GALWEM root directory:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, &
+         usafsi_settings%galwem_root_dir, &
+         rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    ! Get GALWEM subdirectory
+    cfg_entry = "USAFSI GALWEM subdirectory:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, &
+         usafsi_settings%galwem_sub_dir, &
+         rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    ! See if directory timestamp used for GALWEM
+    cfg_entry = "USAFSI GALWEM use timestamp directories:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, &
+         usafsi_settings%use_timestamp, &
+         rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    ! Get GALWEM nominal resolution
+    cfg_entry = "USAFSI GALWEM nominal resolution (km):"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, &
+         usafsi_settings%galwem_res, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
