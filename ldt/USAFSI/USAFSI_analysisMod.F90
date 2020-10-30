@@ -2844,7 +2844,7 @@ contains
             if (skip_grid_points(c,r)) cycle
             if (snomask(c,r) .eq. 0 .and. &
                  USAFSI_arrays%snoanl(c,r) > 0) then
-               USAFSI_arrays%snoanl(c,r) = 0 
+               USAFSI_arrays%snoanl(c,r) = 0
                USAFSI_arrays%snoage(c,r) = 0
             end if
             if (USAFSI_arrays%snoanl(c,r) .ne. USAFSI_arrays%olddep(c,r)) then
@@ -2987,8 +2987,15 @@ contains
       do r = 1,nr
          do c = 1,nc
             if (skip_grid_points(c,r)) cycle
+            ! EMK...Clear out snow depth inserted where snow cover is zero.
+            if (snomask(c,r) == 0) then
+               USAFSI_arrays%snoanl(c,r) = 0
+               USAFSI_arrays%snoage(c,r) = 0
+            end if
             if (USAFSI_arrays%snoanl(c,r) < 0.01) then
                USAFSI_arrays%snoanl(c,r) = 0
+               ! Leave snoage alone here, since a climatological adjustment
+               ! is possible further down if snomask is positive.
             end if
             if (USAFSI_arrays%snoanl(c,r) .ne. USAFSI_arrays%olddep(c,r)) then
                updated(c,r) = .true.
