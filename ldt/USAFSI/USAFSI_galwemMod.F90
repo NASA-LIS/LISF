@@ -374,7 +374,11 @@ contains
 #endif
 
     end do
-    if (.not. found) return
+    if (.not. found) then
+       if (allocated(dum1d)) deallocate(dum1d)
+       if (allocated(fg_t2m)) deallocate(fg_t2m)
+       return
+    end if
 
     ! Now we interpolate the field to the LDT grid
     call interp_galwem_t2m(n, gridDesci_glb, ifguess, jfguess, fg_t2m, &
