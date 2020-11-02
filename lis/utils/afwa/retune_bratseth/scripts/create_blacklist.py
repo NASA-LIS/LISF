@@ -9,10 +9,12 @@ network.  Satellite observations are ignored.
 
 REVISION HISTORY:
 26 Oct 2020: Eric Kemp. Initial Specification.
+02 Nov 2020: Eric Kemp. Added datetime constraints.
 """
 
 # Standard modules
 import configparser
+import datetime
 import glob
 import os
 import sys
@@ -20,7 +22,8 @@ import sys
 #------------------------------------------------------------------------------
 def usage():
     """Print usage statement to standard out"""
-    print("Usage: %s CFGFILENAME BLACKLISTFILENAME " %(sys.argv[0]))
+    print("Usage: %s CFGFILENAME BLACKLISTFILENAME ENDDATETIME DAYRANGE "
+          %(sys.argv[0]))
 
 #------------------------------------------------------------------------------
 def is_sat(my_platform):
@@ -33,13 +36,18 @@ def is_sat(my_platform):
 #------------------------------------------------------------------------------
 
 # Check command line
-if len(sys.argv) != 3:
+if len(sys.argv) != 5:
     print("[ERR] Bad command line arguments!")
     usage()
     sys.exit(1)
 
-# Read config file
+# Get command line args
 cfgfile = sys.argv[1]
+blacklistfilename = sys.argv[2]
+yyyymmddhh = sys.argv[3]
+dayrange = sys.argv[4]
+
+# Read config file
 if not os.path.exists(cfgfile):
     print("[ERR] Config file %s does not exist!" %(cfgfile))
     sys.exit(1)
@@ -61,19 +69,50 @@ data_hour_list = data_hours.split(",")
 
 data = {}
 
-blacklistfilename = sys.argv[2]
+# Set start and end datetimes
+year = int(yyyymmddhh[0:4])
+month = int(yyyymmddhh[4:6])
+day = int(yyyymmddhh[6:8])
+hour = int(yyyymmddhh[8:10])
+enddt = datetime.datetime(year=year,
+                          month=month,
+                          day=day,
+                          hour=hour)
+delta = datetime.timedelta(days=int(dayrange))
+startdt = enddt - delta
+
+# Open the new blacklist file
 fd = open(blacklistfilename, "w")
 
-# Build list of files
+# Build list of OBA files
 files = glob.glob("%s/oba_*_%s.txt" %(data_directory,
                                       data_frequency))
 files.sort()
 
 # Loop through each file, and store the O and B for each platform
 for file in files:
+
+    # Check the valid hour to see if we want to use it.
     chunk = file.split("/")[1][12:14]
     if chunk not in data_hour_list:
         continue
+
+    # Make sure the valid datetime is in the desired range
+    yyyymmddhh = file.split("/")[1][4:14]
+    year = int(yyyymmddhh[0:4])
+    month = int(yyyymmddhh[4:6])
+    day = int(yyyymmddhh[6:8])
+    hour = int(yyyymmddhh[8:10])
+    curdt = datetime.datetime(year=year,
+                              month=month,
+                              day=day,
+                              hour=hour)
+    if curdt <= startdt:
+        continue
+    if curdt >= enddt:
+        continue
+
+    # At this point, we trust the file.  Read it.
     lines = open(file, "r").readlines()
     for line in lines[1:]:
         network = line.split()[0]
