@@ -27,7 +27,8 @@ class AutomateTuning:
         self._process_cfg_file()
 
         varname = sys.argv[2]
-        if varname not in ["gage", "imerg", "rh2m", "t2m", "spd10m"]:
+        if varname not in ["gage", "rh2m", "t2m", "spd10m", \
+                           "cmorph", "geoprecip", "imerg", "ssmi"]:
             print("[ERR] Invalid varname %s provided!" %(varname))
             sys.exit(1)
         self.varname = varname
