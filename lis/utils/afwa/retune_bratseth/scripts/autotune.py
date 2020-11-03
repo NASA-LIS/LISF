@@ -6,7 +6,7 @@ Automates tuning of LIS Bratseth scheme based on prior runs, using
 OBA (Observation, Background, Analaysis) files.
 
 REVISION HISTORY:
-27 Oct 2020:  Eric Kemp.  Initial specification.
+03 Nov 2020:  Eric Kemp.  Initial specification.
 """
 
 import configparser
@@ -17,6 +17,16 @@ import sys
 
 class AutomateTuning:
     """Class to automate tuning of Bratseth covariances."""
+
+    def __init__(self):
+        """Initializes object"""
+        self._process_cmd_line()
+        self.use_blacklist = False
+        self.sigma2b = {}
+        self.Lb = {}
+        self.sigma2o = {}
+        self.Lo = {}
+        self.newlines = []
 
     def _process_cmd_line(self):
         """Processes command line arguments."""
@@ -61,11 +71,8 @@ class AutomateTuning:
         self.scriptdir = config.get('Input', 'scriptdir')
         self.cfgdir = config.get('Input', 'cfgdir')
         self.bindir = config.get('Input', 'bindir')
+        self.lis_cfg_template = config.get('Input', 'lis_cfg_template')
 
-    def __init__(self):
-        """Initializes object"""
-        self._process_cmd_line()
-        self.use_blacklist = False
 
     def usage(self):
         """Print usage message for this script."""
@@ -188,4 +195,202 @@ class AutomateTuning:
                 line = "blacklist_file: blacklist_gage.txt"
             fd.write(line)
 
+    def get_bratseth_err_settings(self, varname):
+        """Fetches Bratseth error settings from files."""
+        if varname in ["gage", "rh2m", "spd10m", "t2m"]:
+            if varname == "gage":
+                paramfile = "%s_nwp.param" %(varname)
+            else:
+                paramfile = "%s.param" %(varname)
+            if not os.path.exists(paramfile):
+                print("[WARN] Cannot find param file %s" %(paramfile))
+                self.sigma2o[varname] = -9999
+                self.sigma2b[varname] = -9999
+                self.Lb[varname] = -9999
+                return
+            lines = open(paramfile, "r").readlines()
+            for line in lines:
+                # Here sfc reports are "obs", NWP is "background"
+                if "SIGMA2_obs:" in line:
+                    sigma2 = float(line.split()[-1])
+                    self.sigma2o[varname] = sigma2
+                    continue
+                if "SIGMA2_back:" in line:
+                    sigma2 = float(line.split()[-1])
+                    self.sigma2b[varname] = sigma2
+                    continue
+                if "L_back:" in line:
+                    Lb = float(line.split()[-1])*1000 # km to m
+                    self.Lb[varname] = Lb
+                    continue
+        elif varname in ["cmorph", "geoprecip", "imerg", "ssmi"]:
+            paramfile = "gage_%s_rescaled.param" %(varname)
+            if not os.path.exists(paramfile):
+                print("[WARN] Cannot find param file %s" %(paramfile))
+                self.sigma2o[varname] = -9999
+                self.Lo[varname] = -9999
+                return
+            lines = open(paramfile, "r").readlines()
+            for line in lines:
+                # NOTE:  Here the satellite obs data are the "background"
+                # We now store them as obs since Bratseth will use NWP as
+                # the background.
+                if "SIGMA2_back:" in line:
+                    sigma2 = float(line.split()[-1])
+                    self.sigma2o[varname] = sigma2
+                    continue
+                if "L_back:" in line:
+                    Lo = float(line.split()[-1])*1000 # km to m
+                    self.Lo[varname] = Lo
+                    continue
+
+    def assemble_new_lines(self):
+        """Assemble new lines for lis.config file."""
+        lines = []
+
+        if self.Lb["gage"] > 0:
+            line = "AGRMET GALWEM Precip background error scale length (m):"
+            line += " %s\n" %(self.Lb["gage"])
+            lines.append(line)
+
+        if self.sigma2b["gage"] > 0:
+            line = "AGRMET GALWEM Precip background error variance:"
+            line += " %s\n" %(self.sigma2b["gage"])
+            lines.append(line)
+
+        if self.sigma2o["gage"] > 0:
+            line = "AGRMET GALWEM Precip Gauge observation error variance:"
+            line += " %s\n" %(self.sigma2o["gage"])
+            lines.append(line)
+
+        if self.Lo["geoprecip"] > 0:
+            line = \
+        "AGRMET GALWEM Precip GEOPRECIP observation error scale length (m):"
+            line += " %s\n" %(self.Lo["geoprecip"])
+            lines.append(line)
+
+        if self.sigma2o["geoprecip"] > 0:
+            line = "AGRMET GALWEM Precip GEOPRECIP observation error variance:"
+            line += " %s\n" %(self.sigma2o["geoprecip"])
+            lines.append(line)
+
+        if self.Lo["ssmi"] > 0:
+            line = \
+                "AGRMET GALWEM Precip SSMI observation error scale length (m):"
+            line += " %s\n" %(self.Lo["ssmi"])
+            lines.append(line)
+
+        if self.sigma2o["ssmi"] > 0:
+            line = "AGRMET GALWEM Precip SSMI observation error variance:"
+            line += " %s\n" %(self.sigma2o["ssmi"])
+            lines.append(line)
+
+        if self.Lo["cmorph"] > 0:
+            line = \
+            "AGRMET GALWEM Precip CMORPH observation error scale length (m):"
+            line += " %s\n" %(self.Lo["cmorph"])
+            lines.append(line)
+
+        if self.sigma2o["cmorph"] > 0:
+            line = "AGRMET GALWEM Precip CMORPH observation error variance:"
+            line += " %s\n" %(self.sigma2o["cmorph"])
+            lines.append(line)
+
+        if self.Lo["imerg"] > 0:
+            line = \
+                "AGRMET GALWEM Precip IMERG observation error scale length (m)"
+            line += " %s\n" %(self.Lo["imerg"])
+            lines.append(line)
+
+        if self.sigma2o["imerg"] > 0:
+            line = "AGRMET GALWEM Precip IMERG observation error variance:"
+            line += " %s\n" %(self.sigma2o["imerg"])
+            lines.append(line)
+
+        if self.Lb["t2m"] > 0:
+            line = "AGRMET GALWEM T2M background error scale length (m):"
+            line += " %s\n" %(self.Lb["t2m"])
+            lines.append(line)
+
+        if self.sigma2b["t2m"] > 0:
+            line = "AGRMET GALWEM T2M background error variance:"
+            line += " %s\n" %(self.sigma2b["t2m"])
+            lines.append(line)
+
+        if self.sigma2o["t2m"] > 0:
+            line = "AGRMET GALWEM T2M station observation error variance:"
+            line += " %s\n" %(self.sigma2o["t2m"])
+            lines.append(line)
+
+        if self.Lb["rh2m"] > 0:
+            line = "AGRMET GALWEM RH2M background error scale length (m):"
+            line += " %s\n" %(self.Lb["rh2m"])
+            lines.append(line)
+
+        if self.sigma2b["rh2m"] > 0:
+            line = "AGRMET GALWEM RH2M background error variance:"
+            line += " %s\n" %(self.sigma2b["rh2m"])
+            lines.append(line)
+
+        if self.sigma2o["rh2m"] > 0:
+            line = "AGRMET GALWEM RH2M station observation error variance:"
+            line += " %s\n" %(self.sigma2o["rh2m"])
+            lines.append(line)
+
+        if self.Lb["spd10m"] > 0:
+            line = "AGRMET GALWEM SPD10M background error scale length (m):"
+            line += " %s\n" %(self.Lb["spd10m"])
+            lines.append(line)
+
+        if self.sigma2b["spd10m"] > 0:
+            line = "AGRMET GALWEM SPD10M background error variance:"
+            line += " %s\n" %(self.sigma2b["spd10m"])
+            lines.append(line)
+
+        if self.sigma2o["spd10m"] > 0:
+            line = "AGRMET GALWEM SPD10M station observation error variance:"
+            line += " %s\n" %(self.sigma2o["spd10m"])
+            lines.append(line)
+
+        self.newlines = lines
+
+    def customize_lis_config(self):
+        """Customize a lis.config file with latest error settings."""
+        tmpl = self.lis_cfg_template
+        if not os.path.exists(tmpl):
+            print("[ERR] Cannot find LIS config template file %s" %(tmpl))
+            sys.exit(1)
+        lines = open(tmpl, "r").readlines()
+        newfile = "%s/lis.config" %(self.workdir)
+        fd = open(newfile, "w")
+        for line in lines:
+            # Pass through lines that don't specify error covariance settings
+            if "AGRMET GALWEM" not in line:
+                fd.write(line)
+                continue
+            if "error" not in line:
+                fd.write(line)
+                continue
+            if "background" not in line and "observation" not in line:
+                fd.write(line)
+                continue
+            if "variance" not in line and "scale length" not in line:
+                fd.write(line)
+                continue
+            # At this point we have a Bratseth error covariance setting.
+            # See if we replaced it.  If not, pass it through.
+            string = line.split(":")[0]
+            found = False
+            for newline in self.newlines:
+                if string in newline:
+                    found = True
+                    break
+            if not found:
+                fd.write(line)
+
+        # Now append the new Bratseth settings at the end.
+        fd.write("# NEW AUTOTUNED ERROR COVARIANCE SETTINGS\n")
+        for line in self.newlines:
+            fd.write(line)
+        fd.close()
 
