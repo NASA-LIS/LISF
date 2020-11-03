@@ -67,7 +67,8 @@ dayrange=$2
 
 
 # Next, handle gages versus satellite data
-for varname in imerg cmorph geoprecip ssmi ; do
+#for varname in cmorph geoprecip imerg ssmi ; do
+for varname in imerg ; do
 
     $SCRIPTDIR/customize_procoba_sat.py $CFGDIR/autotune.cfg \
                                         $varname $enddt $dayrange || exit 1
@@ -78,6 +79,14 @@ for varname in imerg cmorph geoprecip ssmi ; do
     $SCRIPTDIR/fit_semivariogram.py $CFGDIR/gage_$varname.cfg \
                                     gage_$varname.param || exit 1
 
+    # Rescale the satellite error variance to compare with NWP.
+    $SCRIPTDIR/rescale_sat_sigma2.py $varname || exit 1
 done
+
+# Update the lis.config error settings
+
+$SCRIPTDIR/customize_lis_config.py $CFGDIR/autotune.cfg \
+    imerg $enddt $dayrange || exit 1
+
 
 exit 0
