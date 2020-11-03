@@ -143,86 +143,12 @@ class AutomateTuning:
             fd.write(line)
         fd.close()
 
-    # def run_procoba_nwp(self, varname):
-    #     """Automate procOBA_NWP"""
-
-    #     # Sanity check varname
-    #     if varname not in ["precip", "rh2m", "spd10m", "t2m"]:
-    #         print("[ERR] Unrecognized procOBA_NWP variable %" %(varname))
-    #         print("Cannot continue")
-    #         sys.exit(1)
-
-    #     self.tune[varname] = True
-
-    #     binfile = "%s/procOBA_NWP" %(self.bindir)
-    #     if not os.path.exists(binfile):
-    #         print("[WARN] Cannot find %s" %(binfile))
-    #         print("Will skip tuning for %s" %(varname))
-    #         self.tune[varname] = False
-    #         return
-
-    #     cfgfile = "%s/procOBA_NWP.%s.config" %(self.cfgdir, varname)
-    #     if not os.path.exists(cfgfile):
-    #         print("[WARN] Cannot find %s" %(cfgfile))
-    #         print("Will skip tuning for %s" %(varname))
-    #         self.tune[varname] = False
-    #         return
-
-    #     # Copy and customize cfg file
-    #     lines = open("%s" %(cfgfile), "r").readlines()
-    #     cfgfile = "%s/procOBA_NWP.%s.config" %(self.workdir, varname)
-    #     fd = open(cfgfile, "w")
-    #     for line in lines:
-    #         if "startyear:" in line:
-    #             line = "startyear: %4.4d\n" %(self.startdt.year)
-    #         elif "startmonth: " in line:
-    #             line = "startmonth: %2.2d\n" %(self.startdt.month)
-    #         elif "startday: " in line:
-    #             line = "startday: %2.2d\n" %(self.startdt.day)
-    #         elif "starthour: " in line:
-    #             line = "starthour: %2.2d\n" %(self.startdt.hour)
-    #         elif "endyear:" in line:
-    #             line = "endyear: %4.4d\n" %(self.enddt.year)
-    #         elif "endmonth: " in line:
-    #             line = "endmonth: %2.2d\n" %(self.enddt.month)
-    #         elif "endday: " in line:
-    #             line = "endday: %2.2d\n" %(self.enddt.day)
-    #         elif "endhour: " in line:
-    #             line = "endhour: %2.2d\n" %(self.enddt.hour)
-    #         elif "use_blacklist:" in line:
-    #             option = "false\n"
-    #             if self.use_blacklist[varname]:
-    #                 option = "true\n"
-    #             line = "use_blacklist: " + option
-    #         elif "blacklist_file:" in line:
-    #             line = "blacklist_file: blacklist_%s.txt" %(varname)
-    #         fd.write(line)
-    #     fd.close()
-
-    #     # Now run the program
-    #     cmd = "mpirun -np 1 %s %s" %(binfile, cfgfile)
-    #     print(cmd)
-    #     try:
-    #         subprocess.check_call(cmd, shell=True)
-    #     except:
-    #         print("[WARN] Problem running procOBA_NWP")
-    #         print("Will skip tuning for %s" %(varname))
-    #         self.tune[varname] = False
-    #     return
-
 if __name__ == "__main__":
     AUTOMATOR = AutomateTuning()
-
-    # Process precip
-    #AUTOMATOR.create_blacklist('precip')
 
     # Process 2-meter relative humidity
     AUTOMATOR.create_blacklist()
     AUTOMATOR.run_procoba_nwp()
 
-    # Process 10-meter wind speed
-    #AUTOMATOR.create_blacklist('spd10m')
 
-    # Process 2-meter air temperature
-    #AUTOMATOR.create_blacklist('t2m')
 
