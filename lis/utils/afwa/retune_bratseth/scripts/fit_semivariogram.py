@@ -8,6 +8,8 @@ create_blacklist.py.
 
 REVISION HISTORY:
 26 Oct 2020: Eric Kemp. Initial Specification.
+03 Nov 2020: Eric Kemp. Removed plotting.  Fitted parameters are now saved
+               to file.
 """
 
 # Standard library
@@ -16,14 +18,15 @@ import os
 import sys
 
 # Other libraries
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
 
 #------------------------------------------------------------------------------
 def usage():
     """Print usage statement to standard out"""
-    print("Usage: %s config.cfg" %(sys.argv[0]))
+    print("Usage: %s CONFIGFILE PARAMFILE" %(sys.argv[0]))
+    print("  CONFIGFILE is config file for this script")
+    print("  PARAMFILE is output file storing best-fit parameters")
 
 #------------------------------------------------------------------------------
 # NOTE: Pylint complains about the single-character variable names not
@@ -116,7 +119,7 @@ def readdata(filename, maxdist):
 
 #------------------------------------------------------------------------------
 # Check command line
-if len(sys.argv) != 2:
+if len(sys.argv) != 3:
     print("[ERR] Bad command line arguments!")
     usage()
     sys.exit(1)
@@ -172,6 +175,10 @@ except:
     print("[ERR] Problem reading from config file!")
     raise
 
+
+# Get the output files
+paramfile = sys.argv[2]
+
 # Read the datafile
 distvector, variovector, samplesize = \
     readdata(vario_filename, max_distance)
@@ -203,29 +210,10 @@ sigma2_gage = popt[0]
 sigma2_back = popt[1]
 L_back      = popt[2]
 
-# Plot the semivariogram
-distvector_tmp = np.array([0])
-distvector     = np.concatenate((distvector_tmp, distvector))
-print(distvector)
+# Write this to the param file
+fd = open(paramfile, "w")
+fd.write("SIGMA2_obs: %s\n" %(sigma2_gage))
+fd.write("SIGMA2_back: %s\n" %(sigma2_back))
+fd.write("L_back: %s\n" %(L_back))
+fd.close()
 
-variovector_tmp = np.array([np.nan])
-variovector = np.concatenate((variovector_tmp, variovector))
-print(variovector)
-
-plt.plot(distvector, variovector, "b+",
-         distvector, fit_func(distvector, *popt), "r")
-
-# Annotate
-fulltitle  = "%s\n"%(title)
-fulltitle += "Based on %s comparisons of innovations\n" %(samplesize)
-plt.title(fulltitle)
-plt.xlabel(r"%s" %(xlabel))
-plt.ylabel(r"%s"%(ylabel))
-plt.legend(["Data", "%s" %(function_type)],
-           loc='lower right')
-
-params = r"$\sigma_{%s}^2 = %f, \sigma_{%s}^2=%f, L_{%s} = %f$" \
-         %(oblabel, sigma2_gage, bglabel, sigma2_back, bglabel, L_back)
-plt.figtext(0.2, 0.9, params)
-plt.grid(True)
-plt.show()
