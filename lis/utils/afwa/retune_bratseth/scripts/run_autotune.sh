@@ -40,14 +40,15 @@ fi
 enddt=$1
 dayrange=$2
 
-# First, handle RH2M
-$SCRIPTDIR/customize_procoba_nwp.py $CFGDIR/autotune.cfg \
-                                    rh2m $enddt $dayrange || exit 1
-mpirun -np $SLURM_NTASKS $BINDIR/procOBA_NWP procOBA_NWP.rh2m.config || exit 1
-$SCRIPTDIR/fit_semivariogram.py $CFGDIR/rh2m.cfg rh2m.param || exit 1
+# First, handle non-precipitation
+for varname in rh2m spd10m t2m ; do
+    $SCRIPTDIR/customize_procoba_nwp.py $CFGDIR/autotune.cfg \
+                                        $varname $enddt $dayrange || exit 1
+    mpirun -np $SLURM_NTASKS $BINDIR/procOBA_NWP \
+           procOBA_NWP.$varname.config || exit 1
+    $SCRIPTDIR/fit_semivariogram.py $CFGDIR/$varname.cfg \
+                                    $varname.param || exit 1
+done
 
-
-#$SCRIPTDIR/autotune.py $CFGDIR/autotune.cfg 2020030700 30 || exit 1
-#mpirun -np $SLURM_NTASKS $BINDIR/procOBA_NWP procOBA_NWP.rh2m.config || exit 1
 
 exit 0
