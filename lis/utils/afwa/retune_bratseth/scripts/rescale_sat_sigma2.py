@@ -78,6 +78,6 @@ if __name__ == "__main__":
     # Now write the new param file
     fd = open("gage_%s_rescaled.param" %(satdata), "w")
     fd.write("SIGMA2_obs: %s\n" %(sigma2_gage_nwp))
-    fd.write("SIGMA2_back: %s\n" %(sigma_sat))
+    fd.write("SIGMA2_back: %s\n" %(sigma2_sat))
     fd.write("L_back: %s\n" %(L_sat))
     fd.close()
