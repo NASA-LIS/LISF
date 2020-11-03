@@ -27,7 +27,7 @@ class AutomateTuning:
         self._process_cfg_file()
 
         varname = sys.argv[2]
-        if varname not in ["rh2m", "t2m", "spd10m"]:
+        if varname not in ["gage", "imerg", "rh2m", "t2m", "spd10m"]:
             print("[ERR] Invalid varname %s provided!" %(varname))
             sys.exit(1)
         self.varname = varname
@@ -104,6 +104,12 @@ class AutomateTuning:
             self.use_blacklist  = False
         return
 
+    def check_gage_blacklist(self):
+        """Checks to see if gage blacklist file exists."""
+        filename = "blacklist_gage.txt"
+        if os.path.exists(filename):
+            self.use_blacklist = True
+
     def customize_procoba_nwp(self):
         """Customizes config file for procOBA_NWP program."""
         cfgfile = "%s/procOBA_NWP.%s.config" %(self.cfgdir, self.varname)
@@ -143,12 +149,42 @@ class AutomateTuning:
             fd.write(line)
         fd.close()
 
-if __name__ == "__main__":
-    AUTOMATOR = AutomateTuning()
+    def customize_procoba_sat(self):
+        """Customizes config file for procOBA_Sat."""
+        cfgfile = "%s/procOBA_Sat.%s.config" %(self.cfgdir, self.varname)
+        if not os.path.exists(cfgfile):
+            print("[ERR] Cannot find %s" %(cfgfile))
+            sys.exit(1)
+            return
 
-    # Process 2-meter relative humidity
-    AUTOMATOR.create_blacklist()
-    AUTOMATOR.run_procoba_nwp()
-
+        # Copy and customize cfg file
+        lines = open("%s" %(cfgfile), "r").readlines()
+        cfgfile = "%s/procOBA_Sat.%s.config" %(self.workdir, self.varname)
+        fd = open(cfgfile, "w")
+        for line in lines:
+            if "startyear:" in line:
+                line = "startyear: %4.4d\n" %(self.startdt.year)
+            elif "startmonth: " in line:
+                line = "startmonth: %2.2d\n" %(self.startdt.month)
+            elif "startday: " in line:
+                line = "startday: %2.2d\n" %(self.startdt.day)
+            elif "starthour: " in line:
+                line = "starthour: %2.2d\n" %(self.startdt.hour)
+            elif "endyear:" in line:
+                line = "endyear: %4.4d\n" %(self.enddt.year)
+            elif "endmonth: " in line:
+                line = "endmonth: %2.2d\n" %(self.enddt.month)
+            elif "endday: " in line:
+                line = "endday: %2.2d\n" %(self.enddt.day)
+            elif "endhour: " in line:
+                line = "endhour: %2.2d\n" %(self.enddt.hour)
+            elif "use_blacklist:" in line:
+                option = "false\n"
+                if self.use_blacklist:
+                    option = "true\n"
+                line = "use_blacklist: " + option
+            elif "blacklist_file:" in line:
+                line = "blacklist_file: blacklist_gage.txt"
+            fd.write(line)
 
 
