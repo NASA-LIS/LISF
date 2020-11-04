@@ -1,6 +1,7 @@
 #!/bin/sh
 #SBATCH --job-name=autotune
-#SBATCH --time=1:00:00
+##SBATCH --time=1:00:00
+#SBATCH --time=3:00:00
 #SBATCH --account s1189
 #SBATCH --output autotune.slurm.out
 #Adjust node, core, and hardware constraints here
@@ -9,7 +10,7 @@
 #SBATCH --mail-user=eric.kemp@nasa.gov
 #SBATCH --mail-type=ALL
 #Set quality of service, if needed.
-#SBATCH --qos=debug
+##SBATCH --qos=debug
 
 ulimit -s unlimited
 
@@ -40,35 +41,28 @@ fi
 enddt=$1
 dayrange=$2
 
-# First, handle non-precipitation
-# for varname in rh2m spd10m t2m ; do
-#
-#     $SCRIPTDIR/customize_procoba_nwp.py $CFGDIR/autotune.cfg \
-#                                         $varname $enddt $dayrange || exit 1
-#
-#     mpirun -np $SLURM_NTASKS $BINDIR/procOBA_NWP \
-#            procOBA_NWP.$varname.config || exit 1
-#
-#     $SCRIPTDIR/fit_semivariogram.py $CFGDIR/$varname.cfg \
-#                                     $varname.param || exit 1
-#
-# done
+# First, handle NWP semivariographic analyses
+for varname in gage rh2m spd10m t2m ; do
 
-# # Next, handle gages versus NWP
-#
-# $SCRIPTDIR/customize_procoba_nwp.py $CFGDIR/autotune.cfg \
-#                                     gage $enddt $dayrange || exit 1
-#
-# mpirun -np $SLURM_NTASKS $BINDIR/procOBA_NWP \
-#        procOBA_NWP.gage.config || exit 1
-#
-# $SCRIPTDIR/fit_semivariogram.py $CFGDIR/gage_nwp.cfg \
-#                                 gage_nwp.param || exit 1
+    $SCRIPTDIR/customize_procoba_nwp.py $CFGDIR/autotune.cfg \
+                                        $varname $enddt $dayrange || exit 1
+
+    mpirun -np $SLURM_NTASKS $BINDIR/procOBA_NWP \
+           procOBA_NWP.$varname.config || exit 1
+
+    if [ $varname = gage ] ; then
+        $SCRIPTDIR/fit_semivariogram.py $CFGDIR/${varname}_nwp.cfg \
+                                        ${varname}_nwp.param || exit 1
+    else
+        $SCRIPTDIR/fit_semivariogram.py $CFGDIR/$varname.cfg \
+                                        $varname.param || exit 1
+    fi
+
+done
 
 
-# Next, handle gages versus satellite data
-#for varname in cmorph geoprecip imerg ssmi ; do
-for varname in imerg ; do
+# Next, handle satellite variographic analyses
+for varname in cmorph geoprecip imerg ssmi ; do
 
     $SCRIPTDIR/customize_procoba_sat.py $CFGDIR/autotune.cfg \
                                         $varname $enddt $dayrange || exit 1
