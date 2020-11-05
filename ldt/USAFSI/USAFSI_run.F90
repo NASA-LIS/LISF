@@ -56,6 +56,7 @@ subroutine USAFSI_run()
    !**  25 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
    !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
    !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+   !**  02 Nov 20  Removed blacklist logic...Eric Kemp, NASA GSFC/SSAI
    !**
    !*****************************************************************************************
    !*****************************************************************************************
@@ -117,10 +118,7 @@ subroutine USAFSI_run()
    real, allocatable :: elevations(:,:)
    real, allocatable :: landice(:,:)
    integer :: j
-   character*20, allocatable :: blacklist_stns(:)
    character*120 :: line
-   integer :: num_blacklist_stns
-   logical :: found_blacklist_file
    integer :: icount
    integer :: c, r
    real :: arctlatr
@@ -168,33 +166,6 @@ subroutine USAFSI_run()
       
       ! for SSMIS snow depth, Yeosang Yoon
       ssmis_raw_dir = trim(usafsi_settings%ssmis_raw_dir)
-
-      ! FIXME Specify blacklist filename in ldt.config
-      ! EMK Read blacklist file.
-      inquire(file='USAFSI_blacklist.cfg',exist=found_blacklist_file)
-      num_blacklist_stns = 0
-      if (found_blacklist_file) then
-         open(2, file='USAFSI_blacklist.cfg')
-         ! First, count the number of lines in the file
-         icount = 0
-         do
-            read(2,*,end=10)
-            icount = icount + 1
-         end do
-10       continue
-         rewind(2)
-         num_blacklist_stns = icount - 2 ! Skip first and last line
-         if (num_blacklist_stns > 0) then
-            allocate(blacklist_stns(num_blacklist_stns))
-            ! Now, read each line, other than the first and last
-            read(2,*)
-            do j = 1, num_blacklist_stns
-               read(2,*) line
-               blacklist_stns(j) = line(1:len_trim(line))
-            end do
-         end if
-         close(2)
-      end if
 
       ! EXTRACT MONTH FROM DATE-TIME GROUP.      
       read (date10(5:6), '(i2)', err=4200) month
@@ -419,9 +390,7 @@ subroutine USAFSI_run()
          write(LDT_logunit,*) &
               '[INFO] CALLING RUN_SNOW_ANALYSIS_NOGLACIER'
          call run_snow_analysis_noglacier(runcycle,nc,nr,landmask, landice,  &
-              elevations, sfctmp_found, sfctmp_lis, &
-              num_blacklist_stns, blacklist_stns, bratseth)
-         if (allocated(blacklist_stns)) deallocate(blacklist_stns)
+              elevations, sfctmp_found, sfctmp_lis, bratseth)
 
          write(LDT_logunit,*) &
               '[INFO] CALLING RUN_SNOW_ANALYSIS_GLACIER'

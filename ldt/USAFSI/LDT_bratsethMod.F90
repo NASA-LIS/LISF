@@ -12,6 +12,7 @@
 !                         Also, removed support for correlated observation
 !                         errors.  Plus, added two new QC tests based on
 !                         Brasnett.  Plus, other bug fixes.
+! 02 Nov 2020  Eric Kemp  Removed blacklist at request of 557WW.
 !
 ! DESCRIPTION:
 ! Source code for snow depth analysis using the Bratseth objective analysis
@@ -22,7 +23,7 @@
 !   prediction.  J Appl Meteor, 38, 726-740.
 ! Bratseth, A M, 1986:  Statistical interpolation by means of successive
 !   corrections.  Tellus, 38A, 439-447.
-! Cressie, N A C, 1993:  Statistics for Spatial Data.  Revised Edition, 
+! Cressie, N A C, 1993:  Statistics for Spatial Data.  Revised Edition,
 !   Wiley, New York, 928 pp.
 ! Daley, R, 1991:  Atmospheric Data Analysis.  Cambridge University Press,
 !   Cambridge, UK, 457 pp.
@@ -30,7 +31,7 @@
 !   successive corrections.  Collection of papers presented at WMO/IUGG
 !   numerical weather prediction symposium.  Tokyo, 4-8 August 1986.  J
 !   Meteor Soc Japan, 64A, 61-74.
-! Kalnay, E, 2003:  Atmospheric Modeling, Data Assimilation and 
+! Kalnay, E, 2003:  Atmospheric Modeling, Data Assimilation and
 !   Predictability.  Cambridge University Press, Cambridge, UK, 341pp.
 ! Lespinas, F, V Fortin, G Roy, P Rasmussen, and T Stadnyk, 2015:  Performance
 !   evaluation of the Canadian Precipitation Analysis (CaPA).  J Hydrometeor,
@@ -38,7 +39,7 @@
 ! Lopez, P, 2013: Experimental 4D-Var assimilation of SYNOP rain gauge data at
 !   ECMWF.  Mon Wea Rev, 141, 1527-1544.
 ! Mahfouf, J-F, B Brasnett, and S Gagnon, 2007:  A Canadian precipitation
-!   analysis (CaPA) project:  Description and preliminary results.  
+!   analysis (CaPA) project:  Description and preliminary results.
 !   Atmos-Ocean, 45, 1-17.
 ! Myrick, D T, and J D Horel, 2006: Verification of surface temperature
 !   forecasts from the National Digital Forecast Database over the western
@@ -101,18 +102,17 @@ module LDT_bratsethMod
       procedure :: run_skewed_back_qc => LDT_bratseth_run_skewed_back_qc
       procedure :: run_elev_qc => LDT_bratseth_run_elev_qc
       procedure :: get_lat_lon => LDT_bratseth_get_lat_lon
-      procedure :: set_back => LDT_bratseth_set_back      
+      procedure :: set_back => LDT_bratseth_set_back
       procedure :: reject_ob => LDT_bratseth_reject_ob
       procedure :: resort_bad_obs => LDT_bratseth_resort_bad_obs
       procedure :: get_ob_value => LDT_bratseth_get_ob_value
-      procedure :: run_blacklist_qc => LDT_bratseth_run_blacklist_qc
       procedure :: run_nosnow_qc => LDT_bratseth_run_nosnow_qc
       procedure :: run_missing_elev_qc => LDT_bratseth_run_missing_elev_qc
       procedure :: sort_obs_by_id => LDT_bratseth_sort_obs_by_id
       procedure :: print_snowdepths => LDT_bratseth_print_snowdepths
       procedure :: count_all_obs => LDT_bratseth_count_all_obs
       procedure :: mark_good_obs => LDT_bratseth_mark_good_obs
-   end type LDT_bratseth_t   
+   end type LDT_bratseth_t
 
    ! Private constants
    real, parameter :: MISSING = -9999
@@ -128,7 +128,7 @@ contains
    ! Constructor for LDT_bratseth_t object
    subroutine LDT_bratseth_new(this,maxobs,back_err_var, &
         back_err_h_corr_len, back_err_v_corr_len)
-      
+
       ! Defaults
       implicit none
 
@@ -138,7 +138,7 @@ contains
       real, intent(in) :: back_err_var
       real, intent(in) :: back_err_h_corr_len
       real, intent(in) :: back_err_v_corr_len
-      
+
       ! Allocate memory
       allocate(this%networks(maxobs))
       allocate(this%platforms(maxobs))
@@ -153,7 +153,7 @@ contains
       allocate(this%inv_data_dens(maxobs))
       allocate(this%sum_ob_ests(maxobs))
       allocate(this%anas(maxobs))
-      
+
       ! Initialize
       this%back_err_var = back_err_var
       this%back_err_h_corr_len = back_err_h_corr_len
@@ -221,14 +221,14 @@ contains
    end function LDT_bratseth_count_good_obs
 
    ! Append a single observation into a LDT_bratseth_t object.  Value of
-   ! interpolated background value is optional (useful for adding 
+   ! interpolated background value is optional (useful for adding
    ! "superobservations")
    subroutine LDT_bratseth_append_ob(this, network, platform, ob, lat, lon, &
         elev, ob_err_var, back)
 
       ! Imports
       use LDT_logmod, only : LDT_logunit
-      
+
       ! Defaults
       implicit none
 
@@ -257,7 +257,7 @@ contains
          return
       end if
 
-      ! Assign the value. 
+      ! Assign the value.
       nobs = nobs + 1
       this%networks(nobs) = network
       this%platforms(nobs) = platform
@@ -266,18 +266,18 @@ contains
       ! Make sure -180 to 180 convention is used
       if (lon .gt. 180) then
          this%lons(nobs) = lon - 360.
-      else         
+      else
          this%lons(nobs) = lon
       end if
       this%elevs(nobs) = elev
       this%ob_err_vars(nobs) = ob_err_var
-      this%qcs(nobs) = QC_UNKNOWN  
+      this%qcs(nobs) = QC_UNKNOWN
       this%reject_reasons(nobs) = "NONE"
       this%nobs = nobs
       if (present(back)) then
          this%backs(nobs) = back
       end if
-      
+
    end subroutine LDT_bratseth_append_ob
 
    ! Checks if observation network is recognized as surface snow report.
@@ -292,17 +292,17 @@ contains
       if (trim(net) .eq. "FAA") answer = .true.
       if (trim(net) .eq. "HADS") answer = .true.
       if (trim(net) .eq. "ICAO") answer = .true.
-      if (trim(net) .eq. "MSWT") answer = .true. ! From blacklist file
+      if (trim(net) .eq. "MSWT") answer = .true. ! From old blacklist file
       if (trim(net) .eq. "MOBL") answer = .true.
       if (trim(net) .eq. "NWSLI") answer = .true.
-      if (trim(net) .eq. "WMO") answer = .true.            
+      if (trim(net) .eq. "WMO") answer = .true.
       if (trim(net) .eq. "SUPEROB") answer = .true.
       LDT_bratseth_is_snow_stn = answer
    end function LDT_bratseth_is_snow_stn
 
    ! Calculate inverse data densities for Bratseth scheme.
    ! Since this is for LDT, no parallelization is used.
-   ! NOTE:  Assumes all observations have passed QC and neighboring 
+   ! NOTE:  Assumes all observations have passed QC and neighboring
    ! observations have non-correlated errors.
    subroutine LDT_bratseth_calc_inv_data_dens(this, silent)
 
@@ -379,7 +379,7 @@ contains
 
             ! NOTE:  This is data density, not inverted yet
             this%inv_data_dens(j) = this%inv_data_dens(j) + (num/denom)
-                 
+
          end do ! i
       end do ! j
 
@@ -481,7 +481,7 @@ contains
    ! the grid points.  Note that the analysis is also run at the observation
    ! points because in practice the analysis converges before the iterative
    ! "observation estimates" do (see Sashegyi et al 1993).
-   ! NOTE:  Assumes all observations have passed QC checks, and that 
+   ! NOTE:  Assumes all observations have passed QC checks, and that
    ! observation errors are uncorrelated.
    subroutine LDT_bratseth_calc_ob_anas(this, converg_thresh, silent)
 
@@ -530,10 +530,10 @@ contains
       ! Sashegyi et al (1993).
       !
       ! In each iteration, we calculate both an updated observation estimate
-      ! and an updated analysis.  The previous observation estimate vector 
+      ! and an updated analysis.  The previous observation estimate vector
       ! is used in both calculations, but the interpolation weights differ
       ! which cause the observation estimates and analysis values to drift
-      ! apart with each iteration.  We use the change in analysis values to 
+      ! apart with each iteration.  We use the change in analysis values to
       ! see if the analysis has converged; if so, we terminate the iterations.
       !
       ! The output we need are the summed observation estimates and the number
@@ -543,7 +543,7 @@ contains
       allocate(new_anas(num_good_obs))
       allocate(new_ests(num_good_obs))
       allocate(prev_anas(num_good_obs))
-      allocate(prev_ests(num_good_obs))      
+      allocate(prev_ests(num_good_obs))
 
       prev_ests(:) = this%backs(1:num_good_obs) ! First guess
       prev_anas(:) = this%backs(1:num_good_obs) ! First guess
@@ -583,12 +583,12 @@ contains
                weight = weight * this%inv_data_dens(i)
                new_ests(j) = new_ests(j) + &
                     (weight*(this%obs(i) - prev_ests(i)))
-               
+
                ! Second, update the analysis at the observation point j
                weight = b * this%inv_data_dens(i)
                new_anas(j) = new_anas(j) + &
                     (weight*(this%obs(i) - prev_ests(i)))
-               
+
             end do ! i
          end do ! j
 
@@ -609,7 +609,7 @@ contains
          maxrmsd = 0
          imaxrmsd = 0
          do j = 1, num_good_obs
-            
+
             ! Check for convergence
             y_prev = prev_anas(j)
             y_new = new_anas(j)
@@ -625,7 +625,7 @@ contains
             ! Overwrite previous values
             prev_ests(j) = new_ests(j)
             prev_anas(j) = new_anas(j)
-            
+
          end do ! j
 
          if (done) exit ! Analysis has converged
@@ -665,9 +665,9 @@ contains
             write(LDT_logunit,*) &
                  '[WARN] Will stop iterating'
             call LDT_flush(LDT_logunit)
-            exit 
+            exit
          end if
-         
+
       end do ! Iterate until convergence or too many passes
 
       ! Save the local analysis values
@@ -711,9 +711,9 @@ contains
    ! Perform Bratseth analysis at grid points.  Assumes Bratseth scheme
    ! was already run at the observation points.
    !
-   ! The interpolation from observation points to grid points is done in 
+   ! The interpolation from observation points to grid points is done in
    ! a single pass, similar to Daley (1991) or Kalnay (2003).  This greatly
-   ! saves time compared to the original Bratseth (1986) or Sashegyi et al 
+   ! saves time compared to the original Bratseth (1986) or Sashegyi et al
    ! (1993) approaches, where ob-to-grid interpolation was done as each
    ! analysis pass was performed at the observation points.
    !
@@ -762,13 +762,13 @@ contains
             if (skip_grid_points(c,r)) cycle
 
             tmp_ana = gbacks(c,r)
-            
+
             ! Find lat/lon of tile
             lat = LDT_domain(n)%lat(c+(r-1)*ncols)
             lon = LDT_domain(n)%lon(c+(r-1)*ncols)
 
             do j = 1, num_good_obs
-               
+
                ! See if observation is close enough for background error
                ! to be correlated.
                ! First, horizontal distance.
@@ -780,7 +780,7 @@ contains
 
                weight = &
                     back_err_cov(this%back_err_var, h_dist, v_dist, &
-                    this%back_err_h_corr_len, this%back_err_v_corr_len) 
+                    this%back_err_h_corr_len, this%back_err_v_corr_len)
                weight = weight * this%inv_data_dens(j)
 
                tmp_ana = tmp_ana + &
@@ -788,7 +788,7 @@ contains
                                 (this%sum_ob_ests(j)     ) ))
 
             end do ! j
-            
+
             ganas(c,r) = tmp_ana
 
          end do ! c
@@ -799,13 +799,13 @@ contains
            t2 - t1,' seconds'
 
    end subroutine LDT_bratseth_calc_grid_anas
-   
+
    ! QC checks for duplicate gage reports.  Based on Mahfouf et al (2007).
    !
-   ! If duplicates are found for a particular station but all are identical, 
+   ! If duplicates are found for a particular station but all are identical,
    ! only one report is preserved and the rest are rejected.  Otherwise,
-   ! if two different reports from the same station are found, a superob will 
-   ! be created if the spread is smaller than the observation error variance 
+   ! if two different reports from the same station are found, a superob will
+   ! be created if the spread is smaller than the observation error variance
    ! and both original reports will be rejected.  If more than two
    ! unique reports exist for the same station, all will be rejected.
    subroutine LDT_bratseth_run_dup_qc(this)
@@ -864,7 +864,7 @@ contains
             if (this%qcs(i) .eq. QC_REJECT) cycle
             if (trim(this%networks(i)) .ne. trim(this%networks(j))) cycle
             if (trim(this%platforms(i)) .ne. trim(this%platforms(j))) cycle
-            
+
             ! Duplicate found.  Store in linked list.
             count_dups = count_dups + 1
             allocate(new)
@@ -890,7 +890,7 @@ contains
 
             ! First pass
             ptr => head
-            do i = 1, count_dups               
+            do i = 1, count_dups
                diff = this%lats(ptr%ob_index) - this%lats(i)
                if (diff .ne. 0) location_issue = .true.
                diff = this%lons(ptr%ob_index) - this%lons(i)
@@ -898,11 +898,11 @@ contains
                if (location_issue) exit ! Get out of loop
                ptr => ptr%next
             end do ! i
-                        
+
             if (location_issue) then
                ! Toss all duplicate reports, just save the first one.
                ptr => head
-               do i = 1, count_dups               
+               do i = 1, count_dups
                   this%qcs(ptr%ob_index) = QC_REJECT
                   this%reject_reasons(ptr%ob_index) = "DUP_QC REJECT"
                   total_reject_count = total_reject_count + 1
@@ -919,7 +919,7 @@ contains
 !                   write(LDT_logunit,*) &
 !                        '------------------------------------------------------'
                   ptr => ptr%next
-               end do ! i               
+               end do ! i
             end if
          end if
 
@@ -953,10 +953,10 @@ contains
                end if
                ptr => ptr%next
             end do ! i
-            
+
             if (reject_all) then
                ! We will reject all reports from this platform.
-               ! Start with the "j" report, which is not stored in the linked 
+               ! Start with the "j" report, which is not stored in the linked
                ! list.
                this%qcs(j) = QC_REJECT
                this%reject_reasons(j) = "DUP_QC REJECT"
@@ -971,7 +971,7 @@ contains
 !                     ' elev: ',this%elevs(j), &
 !                     ' obs: ',this%obs(j), &
 !                     ' back: ',this%backs(j)
-               
+
                ! Now reject the duplicate reports in the linked list.
                ptr => head
                do i = 1, count_dups
@@ -988,15 +988,15 @@ contains
 !                        ' elev: ',this%elevs(ptr%ob_index), &
 !                        ' obs: ',this%obs(ptr%ob_index), &
 !                        ' back: ',this%backs(ptr%ob_index)
-                  
+
                   ptr => ptr%next
                end do ! i
                !write(LDT_logunit,*) &
                !     '------------------------------------------------------'
             end if ! reject_all
          end if ! count_dups .gt. 1 .and. .not. location_issue
-         
-         ! If we have exactly one duplicate: reject duplicate       
+
+         ! If we have exactly one duplicate: reject duplicate
          ! if it is an exact copy; otherwise, attempt superob.
          if (count_dups .eq. 1) then
             ptr => head
@@ -1017,7 +1017,7 @@ contains
 !                     ' back: ',this%backs(ptr%ob_index)
 !                write(LDT_logunit,*) &
 !                     '------------------------------------------------------'
-               
+
             else if (diff*diff .gt. this%ob_err_vars(j)) then
                ! Obs are too different.  Reject both of them.
                this%qcs(j) = QC_REJECT
@@ -1033,11 +1033,11 @@ contains
 !                     ' elev: ',this%elevs(j), &
 !                     ' obs: ',this%obs(j), &
 !                     ' back: ',this%backs(j)
-               
+
                this%qcs(ptr%ob_index) = QC_REJECT
                this%reject_reasons(j) = "DUP_QC REJECT"
                total_reject_count = total_reject_count + 1
-               
+
 !                write(LDT_logunit,*) &
 !                     '[INFO] dupQC rejecting2 ob j: ', &
 !                     ptr%ob_index, &
@@ -1048,14 +1048,14 @@ contains
 !                     ' elev: ',this%elevs(ptr%ob_index), &
 !                     ' obs: ',this%obs(ptr%ob_index), &
 !                     ' back: ',this%backs(ptr%ob_index)
-               
+
                write(LDT_logunit,*) &
                     '------------------------------------------------------'
-               
+
             else
                ! Create superob.
                mean = 0.5 * (this%obs(ptr%ob_index) + this%obs(j))
-               
+
 !                write(LDT_logunit,*) &
 !                     '[INFO] dupQC will create superob from j: ', &
 !                     j, &
@@ -1066,7 +1066,7 @@ contains
 !                     ' elev: ',this%elevs(j), &
 !                     ' obs: ',this%obs(j), &
 !                     ' back: ',this%backs(j)
-               
+
 !                write(LDT_logunit,*) &
 !                     '[INFO] dupQC will create superob from i: ', &
 !                     ptr%ob_index, &
@@ -1085,7 +1085,7 @@ contains
                newlon = this%lons(j)
                newelev = this%elevs(j)
                ob_err_var = this%ob_err_vars(j)
-               
+
                ! write(LDT_logunit,*) &
 !                     '[INFO] dupQC new superob is : ', &
 !                     ' network: ',trim(this%networks(j)), &
@@ -1093,12 +1093,12 @@ contains
 !                     ' obs: ',mean
 !                write(LDT_logunit,*) &
 !                     '------------------------------------------------------'
-               
+
                call this%append_ob(network, platform, mean, newlat, newlon,&
                     newelev, ob_err_var, back=back)
-               
+
                total_create_count = total_create_count + 1
-               
+
                ! Reject originals
                this%qcs(j) = QC_REJECT
                this%reject_reasons(j) = "DUP_QC MERGED"
@@ -1107,9 +1107,9 @@ contains
                total_merge_count = total_merge_count + 2
             end if
          end if ! count_dups .eq. 1 .and. .not. location_issue
-         
-         ! Clean up linked list and move on         
-         do 
+
+         ! Clean up linked list and move on
+         do
             ptr => head
             if (associated(head%next)) then
                head => head%next
@@ -1121,9 +1121,9 @@ contains
                exit ! Done with linked list
             end if
          end do
-         
+
       end do ! j
-      
+
       write(LDT_logunit,*) &
            '[INFO] dupQC rejected ',total_reject_count,' obs and merged ', &
            total_merge_count
@@ -1137,9 +1137,9 @@ contains
       call cpu_time(t2)
       write(LDT_logunit,*) &
            '[INFO] Elapsed time in dupQC is ',t2-t1,' seconds'
-      
+
    end subroutine LDT_bratseth_run_dup_qc
-   
+
    ! Reject observations over water
    subroutine LDT_bratseth_run_water_qc(this,n,ncols,nrows,landmask, &
         silent_rejects)
@@ -1217,7 +1217,7 @@ contains
 
       write(LDT_logunit,*)&
            '[INFO] waterQC rejected ',reject_count,' observations'
-      
+
       if (reject_count > 0) then
          call this%resort_bad_obs()
       end if
@@ -1243,7 +1243,7 @@ contains
 
       ! Defaults
       implicit none
-      
+
       ! Arguments
       class(LDT_bratseth_t), intent(inout) :: this
       integer, intent(in) :: n
@@ -1285,7 +1285,7 @@ contains
       ! Determine which type of observations will be "superobbed"
       network_new = trim(new_name)
       platform_new = trim(new_name)
-      
+
       call cpu_time(t1)
 
       allocate(actions(num_good_obs))
@@ -1308,10 +1308,10 @@ contains
       allocate(super_counts(ncols,nrows))
       super_counts(:,:) = 0
 
-      ! Find all acceptable obs in each LDT grid box, and calculate mean 
-      ! values per box.  
+      ! Find all acceptable obs in each LDT grid box, and calculate mean
+      ! values per box.
       do j = 1,num_good_obs
- 
+
          ! Find the column,row of this ob in the LDT domain
          call latlon_to_ij(LDT_domain(n)%ldtproj, &
               this%lats(j),this%lons(j), &
@@ -1323,7 +1323,7 @@ contains
             c = c + ncols
          end if
          r = min(nrows,max(1,nint(ypt)))
-            
+
          ! Add contribution to local mean.
          means(c,r) = means(c,r) + this%obs(j)
          super_counts(c,r) = super_counts(c,r) + 1
@@ -1359,7 +1359,7 @@ contains
          icount = super_counts(c,r)
          threshold = 3 * this%ob_err_vars(j) * &
               sqrt(real(icount) / real(icount - 1))
-         
+
          if (abs(means(c,r) - this%obs(j)) .gt. threshold) then
             actions(j) = -1 ! Reject
          else
@@ -1373,7 +1373,7 @@ contains
       do j = 1,num_good_obs
 
          ! Only use the obs that passed the test above.
-         if (actions(j) .ne. 1) cycle 
+         if (actions(j) .ne. 1) cycle
 
          ! Find the column,row of this ob in the LDT domain
          call latlon_to_ij(LDT_domain(n)%ldtproj, &
@@ -1396,10 +1396,10 @@ contains
          superob_err_vars(c,r) = superob_err_vars(c,r) + this%ob_err_vars(j)
 
       end do ! j
-      
+
       do r = 1, LDT_rc%lnr(n)
          do c = 1, LDT_rc%lnc(n)
-            
+
             ! Need at least two obs to merge
             if (super_counts(c,r) .lt. 2) cycle
 
@@ -1493,11 +1493,11 @@ contains
                  superelevs(c,r), &
                  superob_err_vars(c,r), &
                  superbacks(c,r))
-                 
+
             num_superobs = num_superobs + 1
          end do ! c
       end do ! r
-                
+
       write(LDT_logunit,*) &
            '[INFO] superstatQC created ',num_superobs,' super obs'
 
@@ -1567,13 +1567,13 @@ contains
 
          threshold = 5*sqrt(back_err_var + this%ob_err_vars(j))
          abs_diff = abs(this%obs(j) - this%backs(j))
-         
+
          if (abs_diff .gt. threshold) then
             this%qcs(j) = QC_REJECT
             this%reject_reasons(j) = "BACK_QC REJECT"
-            
+
             reject_count = reject_count + 1
-            
+
 !             if (.not. silent_rejects_local) then
 !                write(LDT_logunit,*) &
 !                     '[INFO] backQC rejecting observation j: ',j, &
@@ -1601,14 +1601,14 @@ contains
       call cpu_time(t2)
       write(LDT_logunit,*) &
            '[INFO] Elapsed time in backQC is ',t2-t1,' seconds'
-      
+
    end subroutine LDT_bratseth_run_back_qc
 
    ! Skewed error check against the background.  If the observation indicates
    ! snow depth at least X less than the background, reject the observation.
    ! From Brasnett (1999), where X is usually 40 cm.
    subroutine LDT_bratseth_run_skewed_back_qc(this,threshold)
-      
+
       ! Imports
       use LDT_logMod, only: LDT_logunit
 
@@ -1641,7 +1641,7 @@ contains
       ! Compare each good ob to the background, rejecting those that are
       ! grossly too small
       do j = 1, num_good_obs
-         
+
          diff = this%backs(j) - this%obs(j)
          if (diff .gt. threshold) then
             this%qcs(j) = QC_REJECT
@@ -1671,7 +1671,7 @@ contains
       call cpu_time(t2)
       write(LDT_logunit,*) &
            '[INFO] Elapsed time in skewedBackQC is ',t2-t1,' seconds'
-      
+
    end subroutine LDT_bratseth_run_skewed_back_qc
 
    ! Compare reported station elevation to interpolated LDT value, and
@@ -1694,7 +1694,7 @@ contains
       real, intent(in) :: elevations(ncols,nrows)
       real, intent(in) :: threshold
 
-      ! Local variables      
+      ! Local variables
       integer :: num_good_obs
       real :: absdiff
       integer :: c,r,j
@@ -1717,7 +1717,7 @@ contains
       ! Compare elevation of each good ob to the interpolated terrain value,
       ! rejecting those that differ too much.
       do j = 1,num_good_obs
-         
+
          ! Find the LDT grid box containing the observation.
          call latlon_to_ij(LDT_domain(n)%ldtproj, &
               this%lats(j),this%lons(j), &
@@ -1729,7 +1729,7 @@ contains
             c = c + ncols
          end if
          r = min(nrows,max(1,nint(ypt)))
-         
+
          absdiff = abs(elevations(c,r) - this%elevs(j))
          if (absdiff .gt. threshold) then
             this%qcs(j) = QC_REJECT
@@ -1796,7 +1796,7 @@ contains
 
    ! Moves rejected obs towards end of Bratseth arrays
    subroutine LDT_bratseth_resort_bad_obs(this)
-      
+
       ! Imports
       use LDT_logMod, only: LDT_logunit, LDT_endrun
 
@@ -1836,7 +1836,7 @@ contains
                   ob = this%obs(job)
                   lat = this%lats(job)
                   lon = this%lons(job)
-                  elev = this%elevs(job) 
+                  elev = this%elevs(job)
                   ob_err_var = this%ob_err_vars(job)
                   back = this%backs(job)
                   qc = this%qcs(job)
@@ -1872,7 +1872,7 @@ contains
             if (.not. found_replacement) then
                exit
             end if
-            
+
          end if
       end do ! job
 
@@ -1886,91 +1886,6 @@ contains
       real, intent(out) :: ob_value
       ob_value = this%obs(job)
    end subroutine LDT_bratseth_get_ob_value
-
-   ! Reject observations on blacklist
-   subroutine LDT_bratseth_run_blacklist_qc(this,num_blacklist_stns, &
-        blacklist_stns)
-
-      ! Imports
-      use LDT_logMod, only: LDT_logunit
-
-      ! Defaults
-      implicit none
-
-      ! Arguments
-      class(LDT_bratseth_t), intent(inout) :: this
-      integer, intent(in) :: num_blacklist_stns
-      character*20, intent(in) :: blacklist_stns(num_blacklist_stns)
-
-      ! Local variables
-      character*20 :: stn_network_id
-      character*10 :: network, platform
-      integer :: num_good_obs, icount, reject_count
-      real :: t1, t2
-      integer :: i,j
-
-      ! Sanity checks
-      num_good_obs = this%count_good_obs()
-      if (num_good_obs .eq. 0) then
-         write(LDT_logunit,*)&
-              '[INFO] blacklistQC found no good observations to test'
-         return
-      end if
-      if (num_blacklist_stns .eq. 0) then 
-         write(LDT_logunit,*)'[INFO] blacklistQC found an empty blacklist'
-         return
-      end if
-
-      call cpu_time(t1)
-
-      reject_count = 0
-      do j = 1, num_good_obs
-         network = this%networks(j)
-         platform = this%platforms(j)
-         if (trim(adjustl(network)) == "WMO") then
-            ! Blacklist file only uses 5 digits for WMO stations,         
-            ! so we need to use the last 5 digits from the ob report.     
-            stn_network_id = &
-                 trim(adjustl(network))//"-"
-            icount = len_trim(platform)
-            stn_network_id = &
-                 trim(stn_network_id)//platform((icount-4):icount)
-         else
-            stn_network_id = &
-                 trim(adjustl(network))//"-"// &
-                 trim(adjustl(platform))
-         end if
-
-         do i = 1, num_blacklist_stns
-            if (trim(stn_network_id) == trim(blacklist_stns(i))) then
-               !write(LDT_logunit,*) &
-               !     '[INFO] REJECTING OB FOUND ON BLACKLIST:  ', &
-               !     ' network: ',trim(this%networks(j)), &
-               !     ' platform: ',trim(this%platforms(j)), &
-               !     ' lat: ',this%lats(j), &
-               !     ' lon: ',this%lons(j), &
-               !     ' elev: ',this%elevs(j), &
-               !     ' obs: ',this%obs(j)
-               reject_count = &
-                    reject_count + 1
-               this%qcs(j) = QC_REJECT
-               this%reject_reasons = "BLACKLIST_QC REJECT"
-               exit
-            end if
-         end do ! i
-      end do ! j
-
-      write(LDT_logunit,*) &
-           '[INFO] blacklistQC rejected ',reject_count,' observations'
-      if (reject_count > 0) then
-         call this%resort_bad_obs()
-      end if
-
-      call cpu_time(t2)
-      write(LDT_logunit,*) &
-           '[INFO] Elapsed time in blacklistQC is ',t2-t1,' seconds'
-
-   end subroutine LDT_bratseth_run_blacklist_qc
 
    ! Reject obs where snow is not permitted
    subroutine LDT_bratseth_run_nosnow_qc(this,nc,nr,snow_poss)
@@ -2021,7 +1936,7 @@ contains
               this%lons(j), &
               rc, &
               rr)
-         
+
          c = nint(rc)
          if (c < 1) then
             c = c + LDT_rc%lnc(1)
@@ -2044,7 +1959,7 @@ contains
                  reject_count + 1
          end if
       end do ! j
-      
+
       write(LDT_logunit,*)&
            '[INFO] nosnowQC rejected ',reject_count,' observations'
 
@@ -2120,7 +2035,7 @@ contains
    ! Sort observations by ID.  Based on legacy SNODEP subroutine COMBSORT
    ! See https://en.wikipedia.org/wiki/Comb_sort
    subroutine LDT_bratseth_sort_obs_by_id(this)
-      
+
       ! Defaults
       implicit none
 
@@ -2140,71 +2055,71 @@ contains
       if (this%nobs == 0) return
 
       ! Initializations
-      gap = this%nobs      
+      gap = this%nobs
 
       do
          switch = 0
-         gap = max(int(float(gap) / 1.3), 1)         
+         gap = max(int(float(gap) / 1.3), 1)
          if ( (gap == 9) .or. (gap == 10)) then
             gap = 11
          end if
-         
+
          do i = 1, this%nobs - gap
             j = i + gap
             if (this%platforms(i) > this%platforms(j)) then
-               
+
                ctemp10 = this%networks(i)
                this%networks(i) = this%networks(j)
                this%networks(j) = ctemp10
-               
+
                ctemp10 = this%platforms(i)
                this%platforms(i) = this%platforms(j)
                this%platforms(j) = ctemp10
-               
+
                rtemp = this%obs(i)
                this%obs(i) = this%obs(j)
                this%obs(j) = rtemp
-               
+
                rtemp = this%lats(i)
                this%lats(i) = this%lats(j)
                this%lats(j) = rtemp
-               
+
                rtemp = this%lons(i)
                this%lons(i) = this%lons(j)
                this%lons(j) = rtemp
-               
+
                rtemp = this%elevs(i)
                this%elevs(i) = this%elevs(j)
                this%elevs(j) = rtemp
-               
+
                rtemp = this%ob_err_vars(i)
                this%ob_err_vars(i) = this%ob_err_vars(j)
                this%ob_err_vars(j) = rtemp
-               
+
                rtemp = this%backs(i)
                this%backs(i) = this%backs(j)
                this%backs(j) = rtemp
-               
+
                itemp = this%qcs(i)
                this%qcs(i) = this%qcs(j)
                this%qcs(j) = itemp
-               
+
                ctemp80 = this%reject_reasons(i)
                this%reject_reasons(i) = this%reject_reasons(j)
                this%reject_reasons(j) = ctemp80
-               
+
                rtemp = this%inv_data_dens(i)
                this%inv_data_dens(i) = this%inv_data_dens(j)
                this%inv_data_dens(j) = rtemp
-               
+
                rtemp = this%sum_ob_ests(i)
                this%sum_ob_ests(i) = this%sum_ob_ests(j)
                this%sum_ob_ests(j) = rtemp
-               
+
                rtemp = this%anas(i)
                this%anas(i) = this%anas(j)
                this%anas(j) = rtemp
-               
+
                switch = switch + 1
             end if
          end do ! i
@@ -2215,7 +2130,7 @@ contains
       end do
 
    end subroutine LDT_bratseth_sort_obs_by_id
-   
+
    ! Print out any station with a snow depth
    subroutine LDT_bratseth_print_snowdepths(this,minprt)
       use LDT_logMod, only: LDT_logunit
@@ -2244,7 +2159,7 @@ contains
       integer :: count
       count = this%nobs
    end function LDT_bratseth_count_all_obs
-   
+
    ! Mark good obs
    subroutine LDT_bratseth_mark_good_obs(this)
       implicit none
@@ -2256,4 +2171,4 @@ contains
       end do ! i
    end subroutine LDT_bratseth_mark_good_obs
 end module LDT_bratsethMod
- 
+
