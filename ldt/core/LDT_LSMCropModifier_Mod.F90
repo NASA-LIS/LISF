@@ -968,7 +968,8 @@ contains
      end if
  
      call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"CROPCLASS_SCHEME", &
-          LDT_LSMCrop_struc(n)%crop_classification))
+!HKB          LDT_LSMCrop_struc(n)%crop_classification))
+          LDT_rc%crop_classification(n)))
  
      call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"CROPCLASS_NUMBER", &
           LDT_rc%numcrop(n)))
