@@ -5481,6 +5481,14 @@ USAFSI skewed backQC snow depth threshold (m):  0.4
 #latex: \var{USAFSI LIS GRIB2 data resolution:} used for constructing LIS GRIB2 filename
 #latex:
 #latex: \var{USAFSI LIS GRIB2 area of data:} used for constructing LIS GRIB2 filename
+#latex:
+#latex: \var{USAFSI GALWEM root directory:} root directory for GALWEM data
+#latex:
+#latex: \var{USAFSI GALWEM subdirectory:} subdirectory for GALWEM data
+#latex:
+#latex: \var{USAFSI GALWEM use timestamp directories:} option to use YYYYMMDD in constructing full GALWEM directory; 1 is yes, 0 is no
+#latex:
+#latex: \var{USAFSI GALWEM nominal resolution (km):} 17 or 10 (17 currently used in operations)
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
@@ -5492,4 +5500,8 @@ USAFSI LIS GRIB2 security class: U
 USAFSI LIS GRIB2 data category:  C
 USAFSI LIS GRIB2 data resolution: C0P09DEG
 USAFSI LIS GRIB2 area of data: GLOBAL
+USAFSI GALWEM root directory: USAF_FORCING
+USAFSI GALWEM subdirectory: GALWEM
+USAFSI GALWEM use timestamp directories: 1
+USAFSI GALWEM nominal resolution (km): 17
 #latex: END_CONFIG
