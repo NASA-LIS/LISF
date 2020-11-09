@@ -399,7 +399,6 @@ contains
     ! Clean up and exit
     deallocate(fg_t2m)
     rc = 0
-    return
 
   end subroutine USAFSI_get_galwem_t2m
 
