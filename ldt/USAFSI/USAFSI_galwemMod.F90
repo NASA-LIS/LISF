@@ -127,8 +127,8 @@ contains
        ! Count number of messages
        call grib_count_in_file(ftn, nvars, ierr)
        if ( ierr .ne. 0 ) then
-          write(LDT_logunit,*) '[WARN] in grib_count_in_file: ' // &
-               'dataTime in USAFSI_get_galwem_t2m'
+          write(LDT_logunit,*) '[WARN] in grib_count_in_file ' // &
+               'in USAFSI_get_galwem_t2m'
           call grib_close_file(ftn)
           cycle
        endif
