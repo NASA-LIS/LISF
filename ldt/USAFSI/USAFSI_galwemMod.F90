@@ -381,7 +381,6 @@ contains
           exit
 
        end do
-       if (found) exit
 
 #endif
 
