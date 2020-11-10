@@ -76,42 +76,22 @@ subroutine jules50_setsnodepvars(n, LSM_State)
      LIS_snow_struc(n)%snowdepth = 0.0 ! Mean snow depth by grid id
      LIS_snow_struc(n)%sneqv = 0.0     ! SWE by tile
 
-     ! Logic below follows jules50_main
-     do m = 1, LIS_rc%nensem(n)
-        k = 1
-        do
-           if ( k > LIS_rc%npatch(n, LIS_rc%lsm_index) ) then
-              exit
-           end if
+     ! Store SWE by tile
+     do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tid = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%tile_id
+        LIS_snow_struc(n)%sneqv(tid) = LIS_snow_struc(n)%sneqv(tid) + &
+             jules50_struc(n)%jules50(t)%snow_mass_ij
+     end do
 
-           ! Find all tiles in current grid
-           gid = LIS_surface(n, LIS_rc%lsm_index)%tile(k)%index
-           start_k = k
-           end_k = jules50_struc(n)%jules50(start_k)%end_k
-           k = end_k + 1
-
-           do t = start_k, end_k
-              if ( LIS_surface(n, LIS_rc%lsm_index)%tile(t)%ensem == m ) then
-
-                 ! Store mean snow depth per grid box
-                 pft = jules50_struc(n)%jules50(t)%pft
-                 LIS_snow_struc(n)%snowdepth(gid) = &
-                      LIS_snow_struc(n)%snowdepth(gid) + &
-                      jules50_struc(n)%jules50(t)%snowdepth(pft)
-                 ncount(gid) = ncount(gid) + 1
-
-                 ! Store SWE by tile
-                 tid = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%tile_id
-                 LIS_snow_struc(n)%sneqv(tid) = &
-                      LIS_snow_struc(n)%sneqv(tid) + &
-                      jules50_struc(n)%jules50(t)%snow_mass_ij
-
-              end if
-           end do ! k
-        end do ! Open do loop
-     end do ! m
-
-     ! Normalize the snow depth
+     ! Store mean snow depth per grid box
+     do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        pft = jules50_struc(n)%jules50(t)%pft
+        gid = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%index
+        LIS_snow_struc(n)%snowdepth(gid) = &
+             LIS_snow_struc(n)%snowdepth(gid) + &
+             jules50_struc(n)%jules50(t)%snowdepth(pft)
+        ncount(gid) = ncount(gid) + 1
+     end do
      do t = 1, LIS_rc%ngrid(n)
         if (ncount(t) .gt. 0) then
            LIS_snow_struc(n)%snowdepth(t) = &
@@ -120,6 +100,52 @@ subroutine jules50_setsnodepvars(n, LSM_State)
            LIS_snow_struc(n)%snowdepth(t) = 0.0
         endif
      end do
+
+     ! ! Logic below follows jules50_main
+     ! do m = 1, LIS_rc%nensem(n)
+     !    k = 1
+     !    do
+     !       if ( k > LIS_rc%npatch(n, LIS_rc%lsm_index) ) then
+     !          exit
+     !       end if
+
+     !       ! Find all tiles in current grid
+     !       gid = LIS_surface(n, LIS_rc%lsm_index)%tile(k)%index
+     !       start_k = k
+     !       end_k = jules50_struc(n)%jules50(start_k)%end_k
+     !       k = end_k + 1
+
+     !       do t = start_k, end_k
+     !          if ( LIS_surface(n, LIS_rc%lsm_index)%tile(t)%ensem == m ) then
+
+     !             ! Store mean snow depth per grid box
+     !             pft = jules50_struc(n)%jules50(t)%pft
+     !             LIS_snow_struc(n)%snowdepth(gid) = &
+     !                  LIS_snow_struc(n)%snowdepth(gid) + &
+     !                  jules50_struc(n)%jules50(t)%snowdepth(pft)
+     !             ncount(gid) = ncount(gid) + 1
+
+     !             ! Store SWE by tile
+     !             tid = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%tile_id
+     !             LIS_snow_struc(n)%sneqv(tid) = &
+     !                  LIS_snow_struc(n)%sneqv(tid) + &
+     !                  jules50_struc(n)%jules50(t)%snow_mass_ij
+
+     !          end if
+     !       end do ! k
+     !    end do ! Open do loop
+     ! end do ! m
+
+     ! ! Normalize the snow depth
+     ! do t = 1, LIS_rc%ngrid(n)
+     !    if (ncount(t) .gt. 0) then
+     !       LIS_snow_struc(n)%snowdepth(t) = &
+     !            LIS_snow_struc(n)%snowdepth(t) / ncount(t)
+     !    else
+     !       LIS_snow_struc(n)%snowdepth(t) = 0.0
+     !    endif
+     ! end do
+
   end if
 
 end subroutine jules50_setsnodepvars
