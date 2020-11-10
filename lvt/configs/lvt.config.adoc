@@ -419,11 +419,11 @@ Metrics attributes file:                ./METRICS.TBL
 Observation count threshold:            50
 ....
 
-`Metric computation frequency:` Specifies the temporal averaging interval of the LIS output and observation data.
+`Metrics computation frequency:` Specifies the temporal averaging interval of the LIS output and observation data.
 
 [NOTE]
 ====
-The ending time and the `Metric computation frequency:` must be consistent. For example, for a `Metric computation frequency:` of 1da, you must have an ending time of:
+The ending time and the `Metrics computation frequency:` must be consistent. For example, for a `Metrics computation frequency:` of 1da, you must have an ending time of:
 
 ....
 Ending hour: 0
@@ -434,7 +434,7 @@ Ending second: 0
 
 .Example _lvt.config_ entry
 ....
-Metric computation frequency:            "1da"
+Metrics computation frequency:            "1da"
 ....
 
 `Temporal lag in metrics computations:` Specifies the temporal lag in metric computations. The values can be positive or negative (e.g.  "`+1da`" or "`-1da`")
@@ -468,20 +468,20 @@ This file must be in big-endian, sequential access format and must correspond ex
 Regional mask file for spatial averaging: none
 ....
 
-`Metric output directory:` Specifies the top-level directory where the output from the analysis is to be written.
+`Metrics output directory:` Specifies the top-level directory where the output from the analysis is to be written.
 
 .Example _lvt.config_ entry
 ....
-Metric output directory:                 ./STATS
+Metrics output directory:                 ./STATS
 ....
 
-`Metric output frequency:` Specifies the frequency (in seconds) of the analysis output.
+`Metrics output frequency:` Specifies the frequency (in seconds) of the analysis output.
 
-NOTE: The `Metric output frequency:` is simply a setting for specifying the frequency of LVT outputs. If the `Metric output frequency:` is different from (greater than) the time averaging interval, no additional averaging will be performed between the time averaging intervals.
+NOTE: The `Metrics output frequency:` is simply a setting for specifying the frequency of LVT outputs. If the `Metrics output frequency:` is different from (greater than) the time averaging interval, no additional averaging will be performed between the time averaging intervals.
 
 .Example _lvt.config_ entry
 ....
-Metric output frequency:                  "1da"
+Metrics output frequency:                  "1da"
 ....
 
 `Apply temporal smoothing to obs:` specifies whether to temporal smoothing to the observations. If enabled,the code will compute an average value across the specified time window, instead of only using the value that corresponds to the current time.  Acceptable values are:
