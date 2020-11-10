@@ -615,12 +615,12 @@ Observation count threshold:            50
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
-#latex: \var{Metric computation frequency:} Specifies the temporal 
+#latex: \var{Metrics computation frequency:} Specifies the temporal 
 #latex: averaging interval of the LIS output and observation data. 
 #latex: 
-#latex: Note that the ending time and the \var{Metric computation frequency}
+#latex: Note that the ending time and the \var{Metrics computation frequency}
 #latex: must be consistent.  For example, for a 
-#latex: \var{Metric computation frequency} of 1da, you must have an ending
+#latex: \var{Metrics computation frequency} of 1da, you must have an ending
 #latex: time of:
 #latex:
 #latex: \var{Ending hour:}   0 \\
@@ -629,7 +629,7 @@ Observation count threshold:            50
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
-Metric computation frequency:            "1da"
+Metrics computation frequency:            "1da"
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
@@ -675,21 +675,21 @@ Regional mask file for spatial averaging: none
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
-#latex: \var{Metric output directory:} Specifies the top-level directory 
+#latex: \var{Metrics output directory:} Specifies the top-level directory 
 #latex: where the output from the analysis is to be written. 
 #latex: 
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
-Metric output directory:                 ./STATS
+Metrics output directory:                 ./STATS
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
-#latex: \var{Metric output frequency:} Specifies the frequency (in seconds) 
+#latex: \var{Metrics output frequency:} Specifies the frequency (in seconds) 
 #latex: of the analysis output.
 #latex: 
-#latex: Note that the \var{Metric output frequency} is simply a setting for 
-#latex: specifying the frequency of LVT outputs. If the \var{Metric output frequency}
+#latex: Note that the \var{Metrics output frequency} is simply a setting for 
+#latex: specifying the frequency of LVT outputs. If the \var{Metrics output frequency}
 #latex: is different from (greater than) the time averaging interval, 
 #latex: no additional averaging will be performed between the time
 #latex: averaging intervals.
@@ -697,7 +697,7 @@ Metric output directory:                 ./STATS
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
-Metric output frequency:                  "1da"
+Metrics output frequency:                  "1da"
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION
