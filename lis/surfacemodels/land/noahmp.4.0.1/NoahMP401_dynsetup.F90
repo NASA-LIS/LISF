@@ -37,7 +37,7 @@ subroutine NoahMP401_dynsetup(n)
     real*8    :: loctime
     real      :: interp_fraction
     real      :: locgmt
-    integer   :: col, row, ncount(LIS_rc%npatch(n, LIS_rc%lsm_index))
+    integer   :: col, row, ncount(LIS_rc%grid(n))
 
     if (LIS_rc%snowsrc(n) .gt. 0) then
 
