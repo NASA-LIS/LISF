@@ -1,0 +1,24 @@
+
+UA SNOW Reader Test Case
+
+This test-case performs a LVT run over CONUS to test the
+reading of the UA (Univ. of Arizona) SWE and SnowDepth
+data from 2013-09-01 to 2013-10-30.
+
+This directory contains:
+
+- This README file.
+- The lvt.config file used for this test case.
+- The ldt.config file used for this test case.
+- Sample GrADS data descriptor files that can be used to
+  visualize the output. (output.ctl, testcase.ctl).
+
+To run this test case:
+
+* Generate the LVT executable.
+* Run the LVT executable using the lvt.config file.
+* View the output using the sample GrADS ctl files.
+
+Notes:
+   https://nsidc.org/data/nsidc-0719
+

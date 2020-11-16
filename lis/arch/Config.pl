@@ -298,11 +298,11 @@ else{
 }
 
 
-print "Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=1): ";
+print "Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=2): ";
 $use_gribapi=<stdin>;
 chomp($use_gribapi);
 if($use_gribapi eq ""){
-   $use_gribapi=1;
+   $use_gribapi=2;
 }
 
 if($use_gribapi == 1) {
@@ -321,17 +321,36 @@ if($use_gribapi == 1) {
       print "--------------ERROR---------------------\n";
       exit 1;
    }
-   if(defined($ENV{LIS_JASPER})){
-      $sys_jasper_path = $ENV{LIS_JASPER};
+   if(defined($ENV{LIS_JASPER}) && defined($ENV{LIS_OPENJPEG})){
+      print "--------------ERROR---------------------\n";
+      print "Please specify the JPEG2000 library path using\n";
+      print "either the LIS_JASPER variable\n";
+      print "or the LIS_OPENJPEG variable, not both.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+   elsif(defined($ENV{LIS_JASPER})){
+      $sys_jpeg2000_path = $ENV{LIS_JASPER};
       $inc = "/include/";
       $lib = "/lib/";
-      $inc_jasper=$sys_jasper_path.$inc;
-      $lib_jasper=$sys_jasper_path.$lib;
+      $inc_jpeg2000=$sys_jpeg2000_path.$inc;
+      $lib_jpeg2000=$sys_jpeg2000_path.$lib;
+      $ljpeg2000="-ljasper";
+   }
+   elsif(defined($ENV{LIS_OPENJPEG})){
+      $sys_jpeg2000_path = $ENV{LIS_OPENJPEG};
+      $inc = "/include/";
+      $lib = "/lib/";
+      $inc_jpeg2000=$sys_jpeg2000_path.$inc;
+      $lib_jpeg2000=$sys_jpeg2000_path.$lib;
+      $ljpeg2000="-lopenjp2";
    }
    else {
       print "--------------ERROR---------------------\n";
-      print "Please specify the JASPER library path using\n";
-      print "the LIS_JASPER variable.\n";
+      print "Please specify the JPEG2000 library path using\n";
+      print "either the LIS_JASPER variable\n";
+      print "or the LIS_OPENJPEG variable.\n";
       print "Configuration exiting ....\n";
       print "--------------ERROR---------------------\n";
       exit 1;
@@ -353,8 +372,17 @@ elsif($use_gribapi == 2) {
       print "--------------ERROR---------------------\n";
       exit 1;
    }
+   if(defined($ENV{LIS_JASPER}) && defined($ENV{LIS_OPENJPEG})){
+      print "--------------ERROR---------------------\n";
+      print "Please specify the JPEG2000 library path using\n";
+      print "either the LIS_JASPER variable\n";
+      print "or the LIS_OPENJPEG variable, not both.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
    if(defined($ENV{LIS_JASPER})){
-      $sys_jasper_path = $ENV{LIS_JASPER};
+      $sys_jpeg2000_path = $ENV{LIS_JASPER};
       $inc = "/include/";
       if ($cray_modifications == 1) {
          $lib = "/lib/";
@@ -362,13 +390,23 @@ elsif($use_gribapi == 2) {
       else {
          $lib = "/lib64/";
       }
-      $inc_jasper=$sys_jasper_path.$inc;
-      $lib_jasper=$sys_jasper_path.$lib;
+      $inc_jpeg2000=$sys_jpeg2000_path.$inc;
+      $lib_jpeg2000=$sys_jpeg2000_path.$lib;
+      $ljpeg2000="-ljasper";
+   }
+   elsif(defined($ENV{LIS_OPENJPEG})){
+      $sys_jpeg2000_path = $ENV{LIS_OPENJPEG};
+      $inc = "/include/";
+      $lib = "/lib/";
+      $inc_jpeg2000=$sys_jpeg2000_path.$inc;
+      $lib_jpeg2000=$sys_jpeg2000_path.$lib;
+      $ljpeg2000="-lopenjp2";
    }
    else {
       print "--------------ERROR---------------------\n";
-      print "Please specify the JASPER library path using\n";
-      print "the LIS_JASPER variable.\n";
+      print "Please specify the JPEG2000 library path using\n";
+      print "either the LIS_JASPER variable\n";
+      print "or the LIS_OPENJPEG variable.\n";
       print "Configuration exiting ....\n";
       print "--------------ERROR---------------------\n";
       exit 1;
@@ -670,6 +708,37 @@ if($use_lapack == 1) {
    }
 }
 
+print "Use LIS-MKL-LAPACK? (1-yes, 0-no, default=0): ";
+$use_mkllapack=<stdin>;
+chomp($use_mkllapack);
+if($use_mkllapack eq ""){
+   $use_mkllapck=0;
+}
+
+if($use_mkllapack == 1) {
+   if(defined($ENV{LIS_MKL_LAPACK})){
+      $sys_lapack_path = $ENV{LIS_MKL_LAPACK};
+      $lib = "/";
+      $lib_lapack=$sys_lapack_path.$lib;
+   }
+   else {
+      print "--------------ERROR---------------------\n";
+      print "Please specify the MKL-LAPACK path using\n";
+      print "the LIS_MKL_LAPACK variable.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+}
+
+
+if(defined($ENV{LIS_JPEG})){
+   $libjpeg = "-L".$ENV{LIS_JPEG}."/lib"." -ljpeg";
+}
+else{
+   $libjpeg = "-ljpeg";
+}
+
 if($ENV{ESMF_TRACE} > 0){
    $use_esmf_trace = 1 
 }
@@ -729,12 +798,12 @@ if($par_lev == 1) {
 if($use_gribapi == 1) {
    $fflags77 = $fflags77." -I\$(INC_GRIBAPI)";
    $fflags = $fflags." -I\$(INC_GRIBAPI)";
-   $ldflags = $ldflags." -L\$(LIB_GRIBAPI) -lgrib_api_f90 -lgrib_api -L\$(LIB_JASPER) -ljasper";
+   $ldflags = $ldflags." -L\$(LIB_GRIBAPI) -lgrib_api_f90 -lgrib_api -L\$(LIB_JPEG2000) ".$ljpeg2000;
 }
 elsif($use_gribapi == 2) {
    $fflags77 = $fflags77." -I\$(INC_ECCODES)";
    $fflags = $fflags." -I\$(INC_ECCODES)";
-   $ldflags = $ldflags." -L\$(LIB_ECCODES) -leccodes_f90 -leccodes -L\$(LIB_JASPER) -ljasper";
+   $ldflags = $ldflags." -L\$(LIB_ECCODES) -leccodes_f90 -leccodes -L\$(LIB_JPEG2000) ".$ljpeg2000;
 }
 if($use_netcdf == 1) {
    $fflags77 = $fflags77." -I\$(INC_NETCDF)";
@@ -754,7 +823,7 @@ if($use_hdfeos == 1){
 if($use_hdf4 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF4)";
    $fflags = $fflags." -I\$(INC_HDF4)";
-   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf -ljpeg -lz";
+   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz";
 }
 if($use_hdf5 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF5)";
@@ -784,6 +853,11 @@ if($use_lapack == 1){
    $ldflags = $ldflags." -L\$(LIB_LAPACK) -llapack -lblas";
 }
 
+if($use_mkllapack == 1){
+   #Changed to be able to use mkl Wendy Sharples
+   $ldflags = $ldflags." -L\$(LIB_LAPACK) -lmkl_rt";
+}
+
 if($use_esmf_trace == 1){
    $fflags = $fflags." -DESMF_TRACE";
 }
@@ -808,8 +882,8 @@ printf conf_file "%s%s\n","CC              = $sys_cc";
 printf conf_file "%s%s\n","AR              = ar";
 printf conf_file "%s%s\n","MOD_ESMF        = $sys_esmfmod_path";
 printf conf_file "%s%s\n","LIB_ESMF        = $sys_esmflib_path";
-printf conf_file "%s%s\n","INC_JASPER      = $inc_jasper";
-printf conf_file "%s%s\n","LIB_JASPER      = $lib_jasper";
+printf conf_file "%s%s\n","INC_JPEG2000      = $inc_jpeg2000";
+printf conf_file "%s%s\n","LIB_JPEG2000      = $lib_jpeg2000";
 if($use_gribapi == 2) {
 printf conf_file "%s%s\n","INC_ECCODES     = $inc_gribapi";
 printf conf_file "%s%s\n","LIB_ECCODES     = $lib_gribapi";
@@ -911,6 +985,14 @@ if($use_lapack == 1) {
 else{
    printf misc_file "%s\n","#undef LAPACK ";
 }
+
+if($use_mkllapack == 1) {
+   printf misc_file "%s\n","#define MKL_LAPACK ";
+}
+else{
+   printf misc_file "%s\n","#undef MKL_LAPACK ";
+}
+
 
 printf misc_file "%s\n","#undef INC_WATER_PTS";
 printf misc_file "%s\n","#undef COUPLED";

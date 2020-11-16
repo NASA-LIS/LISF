@@ -62,6 +62,11 @@ subroutine readLISoutOSSEmask(n)
   
   inquire(file=trim(fname),exist=file_exists)
 
+  iret1 = 1
+  iret2 = 1
+  iret3 = 1
+  iret4 = 1
+
   if(file_exists) then 
      write(LDT_logunit,*) '[INFO] reading LSM output ',trim(fname)
      if(LISoutOSSEmaskData%format.eq."binary") then 
@@ -160,22 +165,22 @@ subroutine readLISoutOSSEmask(n)
            do c=1, LISoutOSSEmaskData%nc
               if(iret1.eq.0) then 
                  if(pcp(c,r,1).gt.2E-6) then
-                    mask1d(c+(r-1)*LISoutOSSEmaskData%nc) = -9999.0
+                    mask1d(c+(r-1)*LISoutOSSEmaskData%nc) = 0.0
                  endif
               endif
               if(iret2.eq.0) then 
                  if(gvf(c,r,1).gt.0.7) then
-                    mask1d(c+(r-1)*LISoutOSSEmaskData%nc) = -9999.0
+                    mask1d(c+(r-1)*LISoutOSSEmaskData%nc) = 0.0
                  endif
               endif
               if(iret3.eq.0) then 
-                 if(st(c,r,1).le.273.15) then
-                    mask1d(c+(r-1)*LISoutOSSEmaskData%nc) = -9999.0
+                 if(st(c,r,1).le.274) then
+                    mask1d(c+(r-1)*LISoutOSSEmaskData%nc) = 0.0
                  endif
               endif
               if(iret4.eq.0) then 
                  if(snd(c,r,1).gt.0.00001) then
-                    mask1d(c+(r-1)*LISoutOSSEmaskData%nc) = -9999.0
+                    mask1d(c+(r-1)*LISoutOSSEmaskData%nc) = 0.0
                  endif
               endif
            enddo

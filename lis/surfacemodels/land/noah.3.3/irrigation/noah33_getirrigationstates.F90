@@ -51,6 +51,7 @@ subroutine noah33_getirrigationstates(n,irrigState)
 ! Aug 2008: Hiroko Kato; Initial code
 ! Nov 2012: Sujay Kumar, Incorporated into LIS
 ! Jun 2014: Ben Zaitchik; Added flood scheme
+! Feb 2020: Jessica Erlingis; Fix sprinkler irrigation winodw 
 !EOP
   implicit none
   ! Sprinkler parameters
@@ -90,6 +91,7 @@ subroutine noah33_getirrigationstates(n,irrigState)
   integer              :: lroot,veg_index1,veg_index2
   real                 :: gsthresh, ltime
   logical              :: irrig_check_frozen_soil
+  real                 :: timestep, shift_otimes, shift_otimee
 ! _______________________________________________________
 
   call ESMF_StateGet(irrigState, "Irrigation rate",irrigRateField,rc=rc)
@@ -118,7 +120,7 @@ subroutine noah33_getirrigationstates(n,irrigState)
        farrayPtr=irrigScale,rc=rc)
   call LIS_verify(rc,'ESMF_FieldGet failed for Irrigation scale')  
 
-  irrigRate = 0.0  
+!JE  irrigRate = 0.0  
 
 !----------------------------------------------------------------------
 ! Set start and end times for selected irrigation type
@@ -139,7 +141,15 @@ subroutine noah33_getirrigationstates(n,irrigState)
   
  
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     
+
+     timestep = LIS_rc%ts
+
+     ! Adjust bounds by timestep to account for the fact that LIS_rc%hr, etc.
+     ! will represents the END of the integration timestep window
+
+     shift_otimes = otimes + (timestep/3600.)
+     shift_otimee = otimee + (timestep/3600.)
+
      irrig_check_frozen_soil = .false.
      
      if((noah33_struc(n)%noah(t)%smc(1) - &
@@ -201,12 +211,17 @@ subroutine noah33_getirrigationstates(n,irrigState)
      if(lhr.lt.0) lhr = lhr+24
                 
      ltime = real(lhr)+real(LIS_rc%mn)/60.0+real(LIS_rc%ss)/3600.0
-      
+
      shdfac =  noah33_struc(n)%noah(t)%shdfac
        
 ! Calculate vegetation and root depth parameters
+
+   ! If we are outside of the irrigation window, set rate to 0
+     if ((ltime.ge.shift_otimee).or.(ltime.lt.shift_otimes)) then
+       irrigRate(t) = 0.0
+     endif
    
-     if((ltime.ge.otimes).and.(ltime.lt.otimee)) then 
+     if((ltime.ge.shift_otimes).and.(ltime.lt.shift_otimee)) then 
         vegt = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%vegt
        !----------------------------------------------------------------------       
        !    Proceed if it is non-forest, non-baresoil, non-urban
@@ -272,7 +287,7 @@ subroutine noah33_getirrigationstates(n,irrigState)
 !    If local time at the tile fall in the irrigation check
 !    hour then check the root zone average soil moisture
 !----------------------------------------------------------------------       
-                       if(ltime.eq.otimes) then 
+                       if(ltime.eq.shift_otimes) then 
                           irrigRate(t) = 0.0
 !-------------------------------------------------------------
 !     Compute the root zone accumlative soil moisture [mm], 
@@ -316,6 +331,8 @@ subroutine noah33_getirrigationstates(n,irrigState)
 !     Compute irrigation rate
 !-----------------------------------------------------------------------------
                                 irrigRate(t) = twater/(irrhr*3600.0)
+                                write(LIS_logunit,*) '[INFO] Irrigating', &
+                                     ltime, twater
                              endif
                           endif
                        endif

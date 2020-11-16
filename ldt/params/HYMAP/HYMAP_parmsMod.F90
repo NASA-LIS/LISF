@@ -15,7 +15,8 @@ module HYMAP_parmsMod
 !
 !  29 Mar 2013: Sujay Kumar; Initial implementation
 !   2 Dec 2015: Augusto Getirana: Included drainage area and basin maps
-!   1 Nov 2017: Augusto Getirana: Included flow type maps and, baseflow and and surface runoff dwi maps
+!   1 Nov 2017: Augusto Getirana: Included flow type maps, baseflow and surface runoff dwi maps
+!   9 Jun 2020: Yeosang Yoon: Support flexible grid setting (dx~=dy)
 !
   use ESMF
   use LDT_coreMod
@@ -42,6 +43,8 @@ module HYMAP_parmsMod
      real          :: hymapparms_gridDesc(20)
      character*50  :: hymap_proj
      character*50  :: hymap_gridtransform
+
+     integer       :: bfdwicode, rundwicode, rivflocode
 
      character*100 :: riverwidthfile
      character*100 :: riverheightfile
@@ -81,7 +84,6 @@ module HYMAP_parmsMod
      type(LDT_paramEntry) :: hymap_runoff_delay
      type(LDT_paramEntry) :: hymap_runoff_delay_m
      type(LDT_paramEntry) :: hymap_baseflow_delay
-     type(LDT_paramEntry) :: hymap_ref_q
      type(LDT_paramEntry) :: hymap_mask
      type(LDT_paramEntry) :: hymap_flow_type
      type(LDT_paramEntry) :: hymap_baseflow_dwi_ratio
@@ -120,6 +122,7 @@ contains
    implicit none
    integer       :: n
    integer       :: rc
+   integer       :: bfdwicode, rundwicode, rivflocode
    integer, allocatable :: nextx(:,:)
    integer, allocatable :: nexty(:,:)
    integer, allocatable :: mask(:,:)
@@ -351,14 +354,6 @@ contains
       call ESMF_ConfigGetAttribute(LDT_config,HYMAP_struc(n)%baseflowdelayfile,rc=rc)
       call LDT_verify(rc,'HYMAP baseflow time delay map: not specified')
    enddo
-!   if( HYMAP_struc(1)%hymap_ref_q%selectOpt == 1 ) then 
-!      hymap_params_selected = .true. 
-!      call ESMF_ConfigFindLabel(LDT_config,"HYMAP reference discharge map:",rc=rc)
-!      do n=1,LDT_rc%nnest
-!         call ESMF_ConfigGetAttribute(LDT_config,HYMAP_struc(n)%refqfile,rc=rc)
-!         call LDT_verify(rc,'HYMAP reference discharge map: not specified')
-!      enddo
-!   endif
 
    call ESMF_ConfigFindLabel(LDT_config,"HYMAP basin mask map:",rc=rc)
    do n=1,LDT_rc%nnest
@@ -366,22 +361,31 @@ contains
       call LDT_verify(rc,'HYMAP basin mask map: not specified')
    enddo
 
-   call ESMF_ConfigFindLabel(LDT_config,"HYMAP river flow type map:",rc=rc)
+   call ESMF_ConfigFindLabel(LDT_config,"HYMAP river flow type map:",rc=rivflocode)
    do n=1,LDT_rc%nnest
-      call ESMF_ConfigGetAttribute(LDT_config,HYMAP_struc(n)%flowtypefile,rc=rc) 
-      call LDT_verify(rc,'HYMAP river flow type map: not specified')
+      call ESMF_ConfigGetAttribute(LDT_config,HYMAP_struc(n)%flowtypefile,rc=rc)
+      if (rivflocode.eq.0) then
+         call LDT_verify(rc,'HYMAP river flow type map: not specified')
+      endif
+      HYMAP_struc(n)%rivflocode = rivflocode
    enddo
 
-   call ESMF_ConfigFindLabel(LDT_config,"HYMAP baseflow dwi ratio map:",rc=rc)
+   call ESMF_ConfigFindLabel(LDT_config,"HYMAP baseflow dwi ratio map:",rc=bfdwicode)
    do n=1,LDT_rc%nnest
       call ESMF_ConfigGetAttribute(LDT_config,HYMAP_struc(n)%baseflowdwiratiofile,rc=rc) 
-      call LDT_verify(rc,'HYMAP baseflow dwi ratio map: not specified')
+      if (bfdwicode.eq.0) then
+         call LDT_verify(rc,'HYMAP baseflow dwi ratio map: not specified')
+      endif
+      HYMAP_struc(n)%bfdwicode = bfdwicode
    enddo
 
-   call ESMF_ConfigFindLabel(LDT_config,"HYMAP runoff dwi ratio map:",rc=rc)
+   call ESMF_ConfigFindLabel(LDT_config,"HYMAP runoff dwi ratio map:",rc=rundwicode)
    do n=1,LDT_rc%nnest
       call ESMF_ConfigGetAttribute(LDT_config,HYMAP_struc(n)%runoffdwiratiofile,rc=rc) 
-      call LDT_verify(rc,'HYMAP runoff dwi ratio map: not specified')
+      if (rundwicode.eq.0) then
+         call LDT_verify(rc,'HYMAP runoff dwi ratio map: not specified')
+      endif
+      HYMAP_struc(n)%rundwicode = rundwicode
    enddo
 
    write(LDT_logunit,*)" - - - - - - - - HYMAP Router Parameters - - - - - - - - - -"
@@ -404,21 +408,18 @@ contains
    
     do n=1,LDT_rc%nnest
        HYMAP_struc(n)%hymapparms_gridDesc(:) = hymapparms_gridDesc(n,:)
+
        call LDT_gridOptChecks( n, "HYMAP river width", &
             HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
             hymapparms_gridDesc(n,9) )
-       
        write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%riverwidthfile)
-       
        call read_HYMAP_river_width(n, &
             HYMAP_struc(n)%hymap_river_width%value(:,:,1))
-       
        write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%riverwidthfile)
        
        call LDT_gridOptChecks( n, "HYMAP river height", &
             HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
             hymapparms_gridDesc(n,9) )
-       
        write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%riverheightfile)
        call read_HYMAP_river_height(n,&
             HYMAP_struc(n)%hymap_river_height%value(:,:,1))
@@ -427,7 +428,6 @@ contains
        call LDT_gridOptChecks( n, "HYMAP river length", &
             HYMAP_struc(n)%hymap_gridtransform, hymap_proj, & 
               hymapparms_gridDesc(n,9) )
-         
        write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%riverlengthfile)
        call read_HYMAP_river_length(n,&
             HYMAP_struc(n)%hymap_river_length%value(:,:,1))
@@ -436,7 +436,6 @@ contains
        call LDT_gridOptChecks( n, "HYMAP river roughness", &
             HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
             hymapparms_gridDesc(n,9) )
-       
        write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%riverzfile)
        call read_HYMAP_river_z(n,&
             HYMAP_struc(n)%hymap_river_z%value(:,:,1))
@@ -445,7 +444,6 @@ contains
        call LDT_gridOptChecks( n, "HYMAP floodplain roughness", &
             HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
             hymapparms_gridDesc(n,9) )
-       
        write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%fldzfile)
        call read_HYMAP_fld_z(n,&
             HYMAP_struc(n)%hymap_fld_z%value(:,:,1))
@@ -454,7 +452,6 @@ contains
        call LDT_gridOptChecks( n, "HYMAP floodplain height", &
             HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
             hymapparms_gridDesc(n,9) )
-       
        write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%fldheightfile)
        call read_HYMAP_fld_height(n,&
             HYMAP_struc(n)%hymap_fld_height%value(:,:,:))
@@ -463,7 +460,6 @@ contains
        call LDT_gridOptChecks( n, "HYMAP flow direction x", &
               HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
               hymapparms_gridDesc(n,9) )
-       
        write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%flowdirxfile)
        call read_HYMAP_flow_dir_x(n,&
             HYMAP_struc(n)%hymap_flow_dir_x%value(:,:,1))
@@ -472,7 +468,6 @@ contains
        call LDT_gridOptChecks( n, "HYMAP flow direction y", &
             HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
             hymapparms_gridDesc(n,9) )
-       
        write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%flowdiryfile)
        call read_HYMAP_flow_dir_y(n,&
             HYMAP_struc(n)%hymap_flow_dir_y%value(:,:,1))
@@ -481,7 +476,6 @@ contains
        call LDT_gridOptChecks( n, "HYMAP grid elevation", &
             HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
             hymapparms_gridDesc(n,9) )
-       
        write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%gridelevfile)
        call read_HYMAP_grid_elev(n,&
             HYMAP_struc(n)%hymap_grid_elev%value(:,:,1))
@@ -490,7 +484,6 @@ contains
        call LDT_gridOptChecks( n, "HYMAP grid distance", &
             HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
               hymapparms_gridDesc(n,9) )
-        
        write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%griddistfile)
        call read_HYMAP_grid_dist(n,&
             HYMAP_struc(n)%hymap_grid_dist%value(:,:,1))
@@ -527,10 +520,10 @@ contains
        call read_HYMAP_runoff_delay(n,&
             HYMAP_struc(n)%hymap_runoff_delay%value(:,:,1))
        write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%runoffdelayfile)
+
        call LDT_gridOptChecks( n, "HYMAP runoff delay multiplier", &
             HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
             hymapparms_gridDesc(n,9) )
-       
        write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%runoffdelaymfile)
        call read_HYMAP_runoff_delaym(n,&
             HYMAP_struc(n)%hymap_runoff_delay_m%value(:,:,1))
@@ -539,57 +532,52 @@ contains
        call LDT_gridOptChecks( n, "HYMAP baseflow delay", &
             HYMAP_struc(n)%hymap_gridtransform, hymap_proj,  &
             hymapparms_gridDesc(n,9) )
-       
        write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%baseflowdelayfile)
        call read_HYMAP_baseflow_delay(&
             n,HYMAP_struc(n)%hymap_baseflow_delay%value(:,:,1))
        write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%baseflowdelayfile)
        
-       call LDT_gridOptChecks( n, "HYMAP reference discharge", &
-            HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
-            hymapparms_gridDesc(n,9) )
-       
-!       write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%refqfile)
-!       call read_HYMAP_refq(&
-!            n,HYMAP_struc(n)%hymap_ref_q%value(:,:,1))
-!       write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%refqfile)
-       
        call LDT_gridOptChecks( n, "HYMAP basin mask", &
             HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
             hymapparms_gridDesc(n,9) )
-       
        write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%basinmaskfile)
        call read_HYMAP_basin_mask(&
             n,HYMAP_struc(n)%hymap_mask%value(:,:,1))
        write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%basinmaskfile)
        
-       call LDT_gridOptChecks( n, "HYMAP river flow type map", &
-            HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
-            hymapparms_gridDesc(n,9) )
-       
-       write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%flowtypefile)
-       call read_HYMAP_flow_type(&
-            n,HYMAP_struc(n)%hymap_flow_type%value(:,:,1))
-       write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%flowtypefile)
+       if (HYMAP_struc(n)%rivflocode.eq.0) then
+          call LDT_gridOptChecks( n, "HYMAP river flow type map", &
+               HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
+               hymapparms_gridDesc(n,9) )
 
-       call LDT_gridOptChecks( n, "HYMAP baseflow DWI ratio map", &
-            HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
-            hymapparms_gridDesc(n,9) )
-       
-       write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%baseflowdwiratiofile)
-       call read_HYMAP_baseflow_dwi_ratio(&
-            n,HYMAP_struc(n)%hymap_baseflow_dwi_ratio%value(:,:,1))
-       write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%baseflowdwiratiofile)
+          write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%flowtypefile)
+          call read_HYMAP_flow_type(&
+               n,HYMAP_struc(n)%hymap_flow_type%value(:,:,1))
+          write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%flowtypefile)
+       endif
 
-       call LDT_gridOptChecks( n, "HYMAP runoff DWI ratio map", &
-            HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
-            hymapparms_gridDesc(n,9) )
-       
-       write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%runoffdwiratiofile)
-       call read_HYMAP_runoff_dwi_ratio(&
-            n,HYMAP_struc(n)%hymap_runoff_dwi_ratio%value(:,:,1))
-       write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%runoffdwiratiofile)
-       
+       if (HYMAP_struc(n)%bfdwicode.eq.0) then
+          call LDT_gridOptChecks( n, "HYMAP baseflow DWI ratio map", &
+               HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
+               hymapparms_gridDesc(n,9) )
+
+          write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%baseflowdwiratiofile)
+          call read_HYMAP_baseflow_dwi_ratio(&
+               n,HYMAP_struc(n)%hymap_baseflow_dwi_ratio%value(:,:,1))
+          write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%baseflowdwiratiofile)
+       endif
+
+       if (HYMAP_struc(n)%rundwicode.eq.0) then
+          call LDT_gridOptChecks( n, "HYMAP runoff DWI ratio map", &
+               HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
+               hymapparms_gridDesc(n,9) )
+
+          write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%runoffdwiratiofile)
+          call read_HYMAP_runoff_dwi_ratio(&
+               n,HYMAP_struc(n)%hymap_runoff_dwi_ratio%value(:,:,1))
+          write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%runoffdwiratiofile)
+       endif
+
        allocate(nextx(LDT_rc%lnc(n),LDT_rc%lnr(n)))
        allocate(nexty(LDT_rc%lnc(n),LDT_rc%lnr(n)))
        allocate(mask(LDT_rc%lnc(n),LDT_rc%lnr(n)))
@@ -597,20 +585,22 @@ contains
        nextx = nint(HYMAP_struc(n)%hymap_flow_dir_x%value(:,:,1))
        nexty = nint(HYMAP_struc(n)%hymap_flow_dir_y%value(:,:,1))
        mask = nint(HYMAP_struc(n)%hymap_mask%value(:,:,1))
-       
+
+       ! Yeosang Yoon: support flexible grid setting
        call adjust_nextxy(&
             LDT_rc%gnc(n),&
             LDT_rc%gnr(n),&
             -9999, &
-            nextx, & 
-            nexty, & 
-            mask, & 
-            LDT_rc%gridDesc(n,5),&
-            LDT_rc%gridDesc(n,4),&
-            hymapparms_gridDesc(n,5),&
-            hymapparms_gridDesc(n,4),&
-            hymapparms_gridDesc(n,9))
-       
+            nextx, &
+            nexty, &
+            mask, &
+            LDT_rc%gridDesc(n,5),&   ! lon min of smaller domain
+            LDT_rc%gridDesc(n,4),&   ! lat min of smaller domain
+            hymapparms_gridDesc(n,5),&   ! lon min of larger domain
+            hymapparms_gridDesc(n,4),&   ! lat min of larger domain
+            hymapparms_gridDesc(n,9),&   ! dx spatial resolution
+            hymapparms_gridDesc(n,10))   ! dy spatial resolution
+ 
        HYMAP_struc(n)%hymap_flow_dir_x%value(:,:,1) = real(nextx(:,:))
        HYMAP_struc(n)%hymap_flow_dir_y%value(:,:,1) = real(nexty(:,:))
        
@@ -681,12 +671,18 @@ contains
 !         HYMAP_struc(n)%hymap_ref_q)
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
          HYMAP_struc(n)%hymap_mask)
-    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
-         HYMAP_struc(n)%hymap_flow_type)
-    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
-         HYMAP_struc(n)%hymap_baseflow_dwi_ratio)
-    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
-         HYMAP_struc(n)%hymap_runoff_dwi_ratio)
+    if (HYMAP_struc(n)%rivflocode.eq.0) then
+       call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+            HYMAP_struc(n)%hymap_flow_type)
+    endif
+    if (HYMAP_struc(n)%bfdwicode.eq.0) then
+       call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+            HYMAP_struc(n)%hymap_baseflow_dwi_ratio)
+    endif
+    if (HYMAP_struc(n)%rundwicode.eq.0) then
+       call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+            HYMAP_struc(n)%hymap_runoff_dwi_ratio)
+    endif
   end subroutine HYMAPparms_writeHeader
   
   subroutine HYMAPparms_writeData(n,ftn)
@@ -714,13 +710,19 @@ contains
     call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_baseflow_delay)
 !    call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_ref_q)
     call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_mask)
-    call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_flow_type)
-    call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_baseflow_dwi_ratio)
-    call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_runoff_dwi_ratio)
+    if (HYMAP_struc(n)%rivflocode.eq.0) then
+       call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_flow_type)
+    endif
+    if (HYMAP_struc(n)%bfdwicode.eq.0) then
+       call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_baseflow_dwi_ratio)
+    endif
+    if (HYMAP_struc(n)%rundwicode.eq.0) then
+       call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_runoff_dwi_ratio)
+    endif
 
   end subroutine HYMAPparms_writeData
 
-  subroutine adjust_nextxy(nx,ny,imis,i2nextx,i2nexty,i2mask,zgx,zgy,zpx,zpy,zres)
+  subroutine adjust_nextxy(nx,ny,imis,i2nextx,i2nexty,i2mask,zgx,zgy,zpx,zpy,xres,yres)
     ! ================================================
     ! to adjust flow direction matrixes for smaller domain
     ! by Augusto GETIRANA
@@ -740,18 +742,17 @@ contains
     real*4,  intent(in)    :: zgy                 ! lat min of smaller domain
     real*4,  intent(in)    :: zpx                 ! lon min of larger domain
     real*4,  intent(in)    :: zpy                 ! lat min of larger domain
-    real*4,  intent(in)    :: zres                ! spatial resolution
+    real*4,  intent(in)    :: xres,yres           ! spatial resolution
     
     integer, parameter :: ibound = -9
     
     integer             ::  idx,idy
-    
-    idx=int((zgx-zpx)/zres)
-    idy=int((zgy-zpy)/zres)
+
+    idx=int((zgx-zpx)/xres)
+    idy=int((zgy-zpy)/yres)
     
     where(i2nextx>0)i2nextx=i2nextx-idx
     where(i2nexty>0)i2nexty=i2nexty-idy
-    
 
     i2nexty(1,:)=imis
     i2nexty(nx,:)=imis

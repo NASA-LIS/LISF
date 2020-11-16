@@ -36,6 +36,7 @@ module LISoutNatureRun_Mod
      real          :: datares
      real          :: run_dd(8)
      character*50  :: map_proj
+     character*50  :: mclass
      character*50  :: format
      character*50  :: wstyle
      character*50  :: wopt
@@ -86,6 +87,10 @@ contains
     n = 1
 
     LISoutNatureRunData%run_dd             = LDT_rc%udef
+
+    call ESMF_ConfigGetAttribute(LDT_config,LISoutNatureRunData%mClass, &
+         label="LIS Nature run output model class:",rc=rc)
+    call LDT_verify(rc,'LIS Nature run output model class: not defined')
 
     call ESMF_ConfigGetAttribute(LDT_config,LISoutNatureRunData%format, &
          label="LIS Nature run output format:",rc=rc)

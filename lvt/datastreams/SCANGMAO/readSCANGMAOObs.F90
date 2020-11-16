@@ -106,7 +106,7 @@ subroutine readSCANGMAOObs(source)
           rc=status)
      call LVT_verify(status, 'error in setting scan start time')
 
-     scangmaoobs(source)%yr = LVT_rc%yr
+     scangmaoobs(source)%yr = LVT_rc%dyr(source)
      scangmaoobs(source)%sm = LVT_rc%udef
      scangmaoobs(source)%rootsm = LVT_rc%udef
      scangmaoobs(source)%soilt = LVT_rc%udef

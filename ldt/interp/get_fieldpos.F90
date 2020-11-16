@@ -27,6 +27,7 @@ function get_fieldpos(i,j,gridDesc) result(field_pos)
 ! !DESCRIPTION: 
 !  This subprogram returns the field position for a given grid point
 !  based on the input grid definition.
+!
 !  The arguments are: 
 !  \begin{description}
 !    \item[i]
@@ -39,7 +40,6 @@ function get_fieldpos(i,j,gridDesc) result(field_pos)
 !     integer position in grid field to locate grid point
 !    \end{description}
 !EOP
-
  
   integer :: im, jm
   integer :: kscan
@@ -123,4 +123,5 @@ function get_fieldpos(i,j,gridDesc) result(field_pos)
   else
      field_pos=0
   endif
+
 end function get_fieldpos

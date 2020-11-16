@@ -29,7 +29,7 @@ subroutine noahmp36_getrunoffs_hymap2(n)
 !
 ! !DESCRIPTION:
 !  
-!
+! This routing defines the export variables from NoahMP3.6 to HYMAP2
 ! 
 !EOP
   type(ESMF_Field)       :: sfrunoff_field
@@ -46,18 +46,16 @@ subroutine noahmp36_getrunoffs_hymap2(n)
   
   !ag (25Apr2017)
   type(ESMF_Field)       :: evapotranspiration_Field
-  real,pointer           :: evapotranspiration(:)
+  real,pointer             :: evapotranspiration(:)
   real, allocatable      :: evapotranspiration1(:)
   real, allocatable      :: evapotranspiration1_t(:)
-  integer                :: evapflag
-
+  integer                     :: evapflag
+  integer                     :: enable2waycpl
+  
   allocate(runoff1(LIS_rc%npatch(n,LIS_rc%lsm_index)))
   allocate(runoff2(LIS_rc%npatch(n,LIS_rc%lsm_index)))
   allocate(runoff1_t(LIS_rc%ntiles(n)))
   allocate(runoff2_t(LIS_rc%ntiles(n)))
-
-  runoff1_t = -9999.0
-  runoff2_t = -9999.0
 
   call ESMF_AttributeGet(LIS_runoff_state(n),"Routing model evaporation option",&
        evapflag, rc=status)
@@ -85,9 +83,6 @@ subroutine noahmp36_getrunoffs_hymap2(n)
      runoff2(t) = NOAHMP36_struc(n)%noahmp36(t)%runsub
   enddo
 
-  runoff1_t = LIS_rc%udef
-  runoff2_t = LIS_rc%udef
-
   call LIS_patch2tile(n,1,runoff1_t, runoff1)
   call LIS_patch2tile(n,1,runoff2_t, runoff2)
 
@@ -98,7 +93,15 @@ subroutine noahmp36_getrunoffs_hymap2(n)
   deallocate(runoff2)
   deallocate(runoff1_t)
   deallocate(runoff2_t)
- 
+  
+  !if 2-way coupling, convert units of surface runoff and baseflow from mm/s to mm
+  call ESMF_AttributeGet(LIS_runoff_state(n),"2 way coupling",enable2waycpl, rc=status)
+  call LIS_verify(status)
+  if(enable2waycpl==1) then 
+    where(sfrunoff/=LIS_rc%udef)sfrunoff=sfrunoff*NOAHMP36_struc(n)%dt
+    where(baseflow/=LIS_rc%udef)baseflow=baseflow*NOAHMP36_struc(n)%dt
+  endif
+   
   !ag (05Jun2017)
   !Including meteorological forcings + evapotranspiration for computing evaporation from open waters in HyMAP2)
   if(evapflag.ne.0)then
@@ -108,7 +111,7 @@ subroutine noahmp36_getrunoffs_hymap2(n)
     call ESMF_StateGet(LIS_runoff_state(n),"Total Evapotranspiration",&
          evapotranspiration_Field, rc=status)
     call LIS_verify(status, "noahmp36_getrunoffs_hymap2: ESMF_StateGet failed for Total Evapotranspiration")
-        
+
     call ESMF_FieldGet(evapotranspiration_Field,localDE=0,&
          farrayPtr=evapotranspiration,rc=status)
     call LIS_verify(status, "noahmp36_getrunoffs_hymap2: ESMF_FieldGet failed for Total Evapotranspiration")

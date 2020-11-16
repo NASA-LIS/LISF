@@ -162,7 +162,7 @@ subroutine imergfile(n, kk, findex, imergdir, &
   integer :: i, c
   integer :: uyr, umo, uda, uhr, umn, umnadd, umnday, uss !, ts1
 
-  character*100 :: fbase, ftimedir, fstem 
+  character*100 :: fbase, ftimedir, fstem, fext
   character*4   :: cyr, cmnday, imVer
   character*2   :: cmo, cda, chr, cmn, cmnadd 
 
@@ -195,10 +195,13 @@ subroutine imergfile(n, kk, findex, imergdir, &
 
     if(imerg_struc(n)%imergprd == 'early') then
        fstem = '/3B-HHR-E.MS.MRG.3IMERG.'
+       fext  = '.RT-H5'
     elseif(imerg_struc(n)%imergprd == 'late') then
        fstem = '/3B-HHR-L.MS.MRG.3IMERG.'
+       fext  = '.RT-H5'
     elseif(imerg_struc(n)%imergprd == 'final') then
        fstem = '/3B-HHR.MS.MRG.3IMERG.'
+       fext  = '.HDF5'
     else
        write(LIS_logunit,*) "[ERR] Invalid IMERG product option was chosen."
        write(LIS_logunit,*) "[ERR] Please choose either 'early', 'late', or 'final'."
@@ -206,7 +209,7 @@ subroutine imergfile(n, kk, findex, imergdir, &
     endif
     imVer = trim(imerg_struc(n)%imergver)
     filename = trim(imergdir)//"/"//cyr//cmo//trim(fstem)// &
-          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//"."//imVer//".HDF5" 
+          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//"."//imVer//fext
 
 ! Forecast mode (e.g., ESP):
   else
@@ -234,10 +237,13 @@ subroutine imergfile(n, kk, findex, imergdir, &
 
     if(imerg_struc(n)%imergprd == 'early') then
        fstem = '/3B-HHR-E.MS.MRG.3IMERG.'
+       fext  = '.RT-H5'
     elseif(imerg_struc(n)%imergprd == 'late') then
        fstem = '/3B-HHR-L.MS.MRG.3IMERG.'
+       fext  = '.RT-H5'
     elseif(imerg_struc(n)%imergprd == 'final') then
        fstem = '/3B-HHR.MS.MRG.3IMERG.'
+       fext  = '.HDF5'
     else
        write(LIS_logunit,*) "[ERR] Invalid IMERG product option was chosen."
        write(LIS_logunit,*) "[ERR] Please choose either 'early', 'late', or 'final'."
@@ -245,7 +251,7 @@ subroutine imergfile(n, kk, findex, imergdir, &
     endif
     imVer = trim(imerg_struc(n)%imergver)
     filename = trim(imergdir)//"/"//cyr//cmo//trim(fstem)// &
-          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//"."//imVer//".HDF5"
+          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//"."//imVer//fext
   endif
 
 end subroutine imergfile

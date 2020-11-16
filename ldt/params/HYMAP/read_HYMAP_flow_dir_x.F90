@@ -44,18 +44,19 @@ subroutine read_HYMAP_flow_dir_x(n, array)
   integer :: ftn
   integer :: c,r
   logical :: file_exists
-  integer :: iarray(LDT_rc%lnc(n),LDT_rc%lnr(n),1)
+  integer :: iarray(LDT_rc%lnc(n),LDT_rc%lnr(n),1) ! precision of binary file is int32
 
-  inquire(file=trim(HYMAP_struc(n)%flowdirxFile), exist=file_exists)
+  inquire(file=trim(HYMAP_struc(n)%flowdirxfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Flowdirx map ',trim(HYMAP_struc(n)%flowdirxFile),' not found'
+     write(LDT_logunit,*) '[ERR] Flowdirx map, ',&
+           trim(HYMAP_struc(n)%flowdirxfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif
 
   ftn = LDT_getNextUnitNumber()
-  open(ftn, file=trim(HYMAP_struc(n)%flowdirxFile), access='direct',&
-       status='old', form="unformatted", recl=4)
+  open(ftn, file=trim(HYMAP_struc(n)%flowdirxfile), access='direct',&
+       status='old', form="unformatted", convert="big_endian", recl=4)
   
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &

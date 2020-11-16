@@ -428,11 +428,11 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
    elseif ( SMOPSsmobs(source)%version == '3.0' ) then
       timenow = SMOPSsmobs(source)%version3_time
    else
-      yr1 = LVT_rc%yr
-      mo1 = LVT_rc%mo
-      da1 = LVT_rc%da
-      hr1 = LVT_rc%hr
-      mn1 = LVT_rc%mn
+      yr1 = LVT_rc%dyr(source)
+      mo1 = LVT_rc%dmo(source)
+      da1 = LVT_rc%dda(source)
+      hr1 = LVT_rc%dhr(source)
+      mn1 = LVT_rc%dmn(source)
       ss1 = 0
       call LVT_date2time(timenow,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1)
    endif

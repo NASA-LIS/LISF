@@ -133,53 +133,92 @@ contains
        
     allocate(LDT_rc%npatch(LDT_rc%nnest, LDT_rc%max_model_types))
     
-    call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%surface_maxt,&
-         label="Maximum number of surface type tiles per grid:",rc=status)
-    call LDT_verify(status,'Maximum number of surface type tiles per grid: not defined')
-    call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%surface_minp,&
-         label="Minimum cutoff percentage (surface type tiles):",rc=status)
-    call LDT_verify(status,&
-         'Minimum cutoff percentage (surface type tiles): not defined')
+    allocate(LDT_rc%surface_maxt(LDT_rc%nnest))
+    allocate(LDT_rc%surface_minp(LDT_rc%nnest))
+    allocate(LDT_rc%soilt_maxt(LDT_rc%nnest))
+    allocate(LDT_rc%soilt_minp(LDT_rc%nnest))
+    allocate(LDT_rc%soilf_maxt(LDT_rc%nnest))
+    allocate(LDT_rc%soilf_minp(LDT_rc%nnest))
+    allocate(LDT_rc%elev_maxt(LDT_rc%nnest))
+    allocate(LDT_rc%elev_minp(LDT_rc%nnest))
+    allocate(LDT_rc%slope_maxt(LDT_rc%nnest))
+    allocate(LDT_rc%slope_minp(LDT_rc%nnest))
+    allocate(LDT_rc%aspect_maxt(LDT_rc%nnest))
+    allocate(LDT_rc%aspect_minp(LDT_rc%nnest))
     
-    call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%soilt_maxt,&
-         label="Maximum number of soil texture tiles per grid:",rc=status)
-    call LDT_verify(status,'Maximum number of soil texture tiles per grid: not defined')
-    call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%soilt_minp,&
-         label="Minimum cutoff percentage (soil texture tiles):",rc=status)
-    call LDT_verify(status,&
-         'Minimum cutoff percentage (soil texture tiles): not defined')
-    
-    call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%soilf_maxt,&
-         label="Maximum number of soil fraction tiles per grid:",rc=status)
-    call LDT_verify(status,'Maximum number of soil fraction tiles per grid: not defined')
-    call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%soilf_minp,&
-         label="Minimum cutoff percentage (soil fraction tiles):",rc=status)
-    call LDT_verify(status,&
-         'Minimum cutoff percentage (soil fraction tiles): not defined')
+    call ESMF_ConfigFindLabel(LDT_config,"Maximum number of surface type tiles per grid:",rc=status)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%surface_maxt(n),rc=status)
+       call LDT_verify(status,'Maximum number of surface type tiles per grid: not defined')
+    enddo
 
-    call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%elev_maxt,&
-         label="Maximum number of elevation bands per grid:",rc=status)
-    call LDT_verify(status,'Maximum number of elevation bands per grid: not defined')
-    call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%elev_minp,&
-         label="Minimum cutoff percentage (elevation bands):",rc=status)
-    call LDT_verify(status,&
-         'Minimum cutoff percentage (elevation bands): not defined')
+    call ESMF_ConfigFindLabel(LDT_config, "Minimum cutoff percentage (surface type tiles):",rc=status)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%surface_minp(n),rc=status)
+       call LDT_verify(status,'Minimum cutoff percentage (surface type tiles): not defined')
+    enddo
 
-    call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%slope_maxt,&
-         label="Maximum number of slope bands per grid:",rc=status)
-    call LDT_verify(status,'Maximum number of slope bands per grid: not defined')
-    call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%slope_minp,&
-         label="Minimum cutoff percentage (slope bands):",rc=status)
-    call LDT_verify(status,&
-         'Minimum cutoff percentage (slope bands): not defined')
+    call ESMF_ConfigFindLabel(LDT_config, "Maximum number of soil texture tiles per grid:",rc=status)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%soilt_maxt(n),rc=status)
+       call LDT_verify(status,'Maximum number of soil texture tiles per grid: not defined')
+    enddo
+
+    call ESMF_ConfigFindLabel(LDT_config, "Minimum cutoff percentage (soil texture tiles):",rc=status)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%soilt_minp(n),rc=status)
+       call LDT_verify(status,'Minimum cutoff percentage (soil texture tiles): not defined')
+    enddo
+
+    call ESMF_ConfigFindLabel(LDT_config, "Maximum number of soil fraction tiles per grid:",rc=status)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%soilf_maxt(n),rc=status)
+       call LDT_verify(status,'Maximum number of soil fraction tiles per grid: not defined')
+    enddo
     
-    call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%aspect_maxt,&
-         label="Maximum number of aspect bands per grid:",rc=status)
-    call LDT_verify(status,'Maximum number of aspect bands per grid: not defined')
-    call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%aspect_minp,&
-         label="Minimum cutoff percentage (aspect bands):",rc=status)
-    call LDT_verify(status,&
-         'Minimum cutoff percentage (aspect bands): not defined')
+    call ESMF_ConfigFindLabel(LDT_config, "Minimum cutoff percentage (soil fraction tiles):",rc=status)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%soilf_minp(n),rc=status)
+       call LDT_verify(status,'Minimum cutoff percentage (soil fraction tiles): not defined')
+    enddo
+
+    call ESMF_ConfigFindLabel(LDT_config, "Maximum number of elevation bands per grid:",rc=status)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%elev_maxt(n),rc=status)
+       call LDT_verify(status,'Maximum number of elevation bands per grid: not defined')
+    enddo
+
+    call ESMF_ConfigFindLabel(LDT_config, "Minimum cutoff percentage (elevation bands):",rc=status)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%elev_minp(n),rc=status)
+       call LDT_verify(status,'Minimum cutoff percentage (elevation bands): not defined')
+    enddo
+
+    call ESMF_ConfigFindLabel(LDT_config, "Maximum number of slope bands per grid:",rc=status)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%slope_maxt(n),rc=status)
+       call LDT_verify(status,'Maximum number of slope bands per grid: not defined')
+    enddo
+
+    call ESMF_ConfigFindLabel(LDT_config, "Minimum cutoff percentage (slope bands):",rc=status)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%slope_minp(n),rc=status)
+       call LDT_verify(status,'Minimum cutoff percentage (slope bands): not defined')
+    enddo
+
+
+    call ESMF_ConfigFindLabel(LDT_config, "Maximum number of aspect bands per grid:",rc=status)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%aspect_maxt(n),rc=status)
+       call LDT_verify(status,'Maximum number of aspect bands per grid: not defined')
+    enddo
+    
+    call ESMF_ConfigFindLabel(LDT_config, "Minimum cutoff percentage (aspect bands):",rc=status)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%aspect_minp(n),rc=status)
+       call LDT_verify(status,'Minimum cutoff percentage (aspect bands): not defined')
+    enddo
+
     
 !-- Create vegetation tile and grid space:
     call make_domain()
@@ -188,13 +227,12 @@ contains
 !-- Temporary addition needed for writing output diagnostics(LDT_diagnoseOutputVar):
     do n=1,LDT_rc%nnest
        do k = 1, LDT_rc%ngrid(n)
-!TODO: clean this up with ntiles_pergrid array instead of maximum 
           allocate(LDT_domain(n)%grid(k)%subgrid_tiles(&
-               LDT_rc%surface_maxt*&
-               LDT_rc%soilt_maxt*&
-               LDT_rc%elev_maxt*&
-               LDT_rc%slope_maxt*&
-               LDT_rc%aspect_maxt*&
+               LDT_rc%surface_maxt(n)*&
+               LDT_rc%soilt_maxt(n)*&
+               LDT_rc%elev_maxt(n)*&
+               LDT_rc%slope_maxt(n)*&
+               LDT_rc%aspect_maxt(n)*&
                LDT_rc%nensem(n)))
           LDT_domain(n)%grid(k)%ntiles = 0
        enddo
@@ -378,8 +416,8 @@ contains
        enddo
        deallocate(deblklist)
 
-       allocate(LDT_rc%datamask(LDT_rc%lnc(n), LDT_rc%lnr(n)))
-       LDT_rc%datamask = 1
+       allocate(LDT_domain(n)%datamask(LDT_rc%lnc(n), LDT_rc%lnr(n)))
+       LDT_domain(n)%datamask = 1
 
     enddo
 
@@ -505,12 +543,14 @@ end subroutine LDT_timeInit
     integer   :: n, c,r,gindex
     integer   :: bufsize
 
+
     call LDT_domain_plugin
 
-    ! Read in the domain's config file entries:
-    call readinput(trim(LDT_rc%lis_map_proj)//char(0))
-
     do n=1,LDT_rc%nnest
+
+       ! Read in the domain's config file entries:
+       call readinput(trim(LDT_rc%lis_map_proj(n))//char(0),n)
+
        allocate(LDT_domain(n)%lat(LDT_rc%lnc(n)*LDT_rc%lnr(n)))
        allocate(LDT_domain(n)%lon(LDT_rc%lnc(n)*LDT_rc%lnr(n)))
        
@@ -860,7 +900,7 @@ end subroutine LDT_timeInit
 ! \label{LDT_quilt_domain}
 ! 
 ! !INTERFACE: 
-  subroutine LDT_quilt_domain(n, nc, nr )
+  subroutine LDT_quilt_domain( n, nc, nr )
 
 ! !USES:     
 
@@ -890,29 +930,33 @@ end subroutine LDT_timeInit
     integer    :: nss_ind
     integer    :: nse_ind
 
-     mytask_x = mod( LDT_localPet, LDT_rc%npesx )
-     mytask_y = LDT_localPet / LDT_rc%npesx
 
-     j = 1
-     ips = -1
-     do i=1, nc+1
-        call LDT_mpDecomp(i,j,1,nc+1,1,nr+1,LDT_rc%npesx, LDT_rc%npesy,Px,Py,P)
-        
-        if(Px.eq. mytask_x) then 
-           ipe = i 
-           if(ips.eq.-1) ips = i 
-        endif
-     enddo
+    mytask_x = mod( LDT_localPet, LDT_rc%npesx )
+    mytask_y = LDT_localPet / LDT_rc%npesx
+
+    j = 1
+    ips = -1
+    do i=1, nc+1
+       call LDT_mpDecomp(i,j,1,nc+1,1,nr+1,LDT_rc%npesx, LDT_rc%npesy,Px,Py,P)
+       if(Px.eq.mytask_x) then 
+          ipe = i 
+          if(ips.eq.-1) then
+            ips = i 
+          endif
+       endif
+    enddo
      
-     i = 1
-     jps = -1
-     do j=1, nr+1
-        call LDT_mpDecomp(i,j,1,nc+1,1,nr+1,LDT_rc%npesx,LDT_rc%npesy, Px, Py, P)
-        if(Py.eq.mytask_y) then 
-           jpe = j
-           if(jps.eq.-1) jps = j 
-        endif
-     enddo
+    i = 1
+    jps = -1
+    do j=1, nr+1
+       call LDT_mpDecomp(i,j,1,nc+1,1,nr+1,LDT_rc%npesx,LDT_rc%npesy, Px, Py, P)
+       if(Py.eq.mytask_y) then 
+          jpe = j
+          if(jps.eq.-1) then 
+            jps = j 
+          endif
+       endif
+    enddo
 
 ! Original LDT code:
 #if 0
@@ -1184,52 +1228,52 @@ end subroutine LDT_timeInit
        ! EMK...Special handling of single surface tile case.  First find
        ! dominant surface model type in each grid point (LSM, Openwater, etc),
        ! then find the dominant tile for that model type.
-       if (LDT_rc%surface_maxt == 1) then          
+       if (LDT_rc%surface_maxt(n) == 1) then          
           call calculate_dominant_sfctile(n, &
                LDT_LSMparam_struc(n)%dommask%value, &
                LDT_LSMparam_struc(n)%sfctype%num_bins, &
-               LDT_rc%surface_minp, LDT_rc%surface_maxt, &
+               LDT_rc%surface_minp(n), LDT_rc%surface_maxt(n), &
                LDT_LSMparam_struc(n)%sfctype%value, &
                LDT_LSMparam_struc(n)%landcover%value)
        else
           call calculate_domdistribution(n, &
                LDT_LSMparam_struc(n)%sfctype%num_bins,  &
-               LDT_rc%surface_minp, LDT_rc%surface_maxt, &
+               LDT_rc%surface_minp(n), LDT_rc%surface_maxt(n), &
                LDT_LSMparam_struc(n)%landcover%value)
        endif
 
        if(soilt_selected) then 
           call calculate_domdistribution(n, &
                LDT_LSMparam_struc(n)%texture%num_bins,&
-               LDT_rc%soilt_minp, LDT_rc%soilt_maxt, &
+               LDT_rc%soilt_minp(n), LDT_rc%soilt_maxt(n), &
                LDT_LSMparam_struc(n)%texture%value)
        endif
 
        if(soilf_selected) then 
           call calculate_domdistribution(n, &
                LDT_LSMparam_struc(n)%sand%num_bins,&
-               LDT_rc%soilf_minp, LDT_rc%soilf_maxt, &
+               LDT_rc%soilf_minp(n), LDT_rc%soilf_maxt(n), &
                LDT_LSMparam_struc(n)%sand%value )
        endif
 
        if(elev_selected) then 
           call calculate_domdistribution(n, &
                LDT_LSMparam_struc(n)%elevation%num_bins,&
-               LDT_rc%elev_minp, LDT_rc%elev_maxt, &
+               LDT_rc%elev_minp(n), LDT_rc%elev_maxt(n), &
                LDT_LSMparam_struc(n)%elevfgrd%value)
        endif
 
        if(slope_selected) then 
           call calculate_domdistribution(n, &
                LDT_LSMparam_struc(n)%slope%num_bins,&
-               LDT_rc%slope_minp, LDT_rc%slope_maxt, &
+               LDT_rc%slope_minp(n), LDT_rc%slope_maxt(n), &
                LDT_LSMparam_struc(n)%slopefgrd%value)
        endif
 
        if(aspect_selected) then 
           call calculate_domdistribution(n, &
                LDT_LSMparam_struc(n)%aspect%num_bins, &
-               LDT_rc%aspect_minp, LDT_rc%aspect_maxt,&
+               LDT_rc%aspect_minp(n), LDT_rc%aspect_maxt(n),&
                LDT_LSMparam_struc(n)%aspectfgrd%value)
        endif
 
@@ -1264,7 +1308,7 @@ end subroutine LDT_timeInit
      ! Locals
      integer :: c, r, t, m, mm, tt
      real    :: maxv
-     real :: model_type_fractions(LDT_rc%max_model_types)
+     real    :: model_type_fractions(LDT_rc%max_model_types)
 
      ! Sanity check
      if (maxt > 1) then
@@ -1515,7 +1559,6 @@ end subroutine LDT_timeInit
              if(rsum.lt.0.9999.or.rsum.gt.1.0001)then  !check renormalization
                 write(LDT_logunit,*) &
                      'Renormalization failed in calculate_domdistribution'
-!                print*, c,r,fgrd(c,r,:)
                 call LDT_endrun()
              endif
           endif

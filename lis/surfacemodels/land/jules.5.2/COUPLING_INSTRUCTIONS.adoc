@@ -1,0 +1,73 @@
+= Instructions to Incorporate JULES into LISF
+
+
+== Step 0: Prepare working directory
+
+Create a working directory for the LISF and JULES code, and then go into that directory.  E.g.;
+
+....
+$ mkdir SRC
+$ cd SRC
+....
+
+
+== Step 1: Check out JULES 5.2 code
+
+Inside of _SRC_, run:
+
+....
+$ fcm co https://code.metoffice.gov.uk/svn/jules/main/trunk@12251 jules.5.2
+....
+
+Please note this location.  It is referred to as <path_to_jules> in Step 3.
+
+NOTE: You must have access to the UK MetOffice's repository.  If you do not, then you must contact the UK MetOffice to request access.
+
+
+== Step 2: Check out LISF code
+
+Inside of _SRC_, run:
+
+....
+$ git clone https://github.com/<username>/LISF.git LISF
+....
+
+NOTE: Here <username> should be your GitHub account username to work with your fork of LISF.  Otherwise, it should be NASA-LIS to work with the official master branch.
+
+
+== Step 3: Put the code together
+
+....
+$ cd LISF/lis/surfacemodels/land/jules.5.2/
+$ cp -r <path_to_jules>/jules.5.2/src .
+$ cp -r <path_to_jules>/jules.5.2/utils .
+$ ./couple_jules_to_lis.sh
+....
+
+IMPORTANT: Do *not* commit the LISF/lis/surfacemodels/land/jules.5.2/src and LISF/lis/surfacemodels/land/jules.5.2/utils sub-directories into git.  These do not belong to NASA-LIS.
+
+== Step 4: Configure and compile LIS
+
+Go to the top of the LIS code in the _lis_ directory:
+
+....
+$ cd ../../../
+....
+
+Then create and/or modify the _make/user.cfg_ file, adding this line to the file:
+
+....
+JULES.5.2: On
+....
+
+NOTE: Any other versions of JULES enabled in this file must be disabled by changing "On" to "Off".
+
+Finally configure and compile:
+
+....
+$ ./configure
+$ ./compile
+....
+
+Please see the LIS User's Guide for more information regarding configuring and compiling LIS.
+

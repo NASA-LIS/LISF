@@ -2738,7 +2738,7 @@ contains
             date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)),&
             'nf90_put_att for history failed in LDT_metforcingMod')
        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"references", &
-            "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"),&
+            "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"),&
             'nf90_put_att for references failed in LDT_metforcingMod')
        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"conventions", &
             "CF-1.6"),'nf90_put_att for conventions failed in LDT_metforcingMod')
@@ -2747,7 +2747,7 @@ contains
             'nf90_put_att for comment failed in LDT_metforcingMod')
 
      ! -- Grid information --
-       select case ( LDT_rc%lis_map_proj )
+       select case ( LDT_rc%lis_map_proj(n) )
 
         case( "latlon" )
           call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &

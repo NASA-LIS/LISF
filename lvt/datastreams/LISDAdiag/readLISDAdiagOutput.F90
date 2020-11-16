@@ -63,10 +63,11 @@ subroutine readLISDAdiagOutput(source)
   
   if(lisdadiagoutput(source)%computeSpread.eq.1) then 
      write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
-          LVT_rc%yr, LVT_rc%mo, LVT_rc%da, LVT_rc%hr, LVT_rc%mn
+          LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source), &
+          LVT_rc%dhr(source), LVT_rc%dmn(source)
      
      write(unit=cdate, fmt='(i4.4, i2.2)') &
-          LVT_rc%yr, LVT_rc%mo
+          LVT_rc%dyr(source), LVT_rc%dmo(source)
      
      fname = trim(lisdadiagoutput(source)%odir)//'/EnKF/'//trim(cdate)//'/'&
           //'LIS_DA_EnKF_'//trim(cdate1)//'_spread.a'//trim(cda)//'.d01.nc'
@@ -105,10 +106,11 @@ subroutine readLISDAdiagOutput(source)
 
   if(lisdadiagoutput(source)%computeAnlIncr.eq.1) then 
      write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
-          LVT_rc%yr, LVT_rc%mo, LVT_rc%da, LVT_rc%hr, LVT_rc%mn
+          LVT_rc%dyr(source), LVT_rc%dmo(source), &
+          LVT_rc%dda(source), LVT_rc%dhr(source), LVT_rc%dmn(source)
      
      write(unit=cdate, fmt='(i4.4, i2.2)') &
-          LVT_rc%yr, LVT_rc%mo
+          LVT_rc%dyr(source), LVT_rc%dmo(source)
      
      fname = trim(lisdadiagoutput(source)%odir)//'/EnKF/'//trim(cdate)//'/'&
           //'LIS_DA_EnKF_'//trim(cdate1)//'_incr.a'//trim(cda)//'.d01.nc'
@@ -151,10 +153,11 @@ subroutine readLISDAdiagOutput(source)
 
   if(lisdadiagoutput(source)%computeInnovDist.eq.1) then 
      write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
-          LVT_rc%yr, LVT_rc%mo, LVT_rc%da, LVT_rc%hr, LVT_rc%mn
+          LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source), &
+          LVT_rc%dhr(source), LVT_rc%dmn(source)
      
      write(unit=cdate, fmt='(i4.4, i2.2)') &
-          LVT_rc%yr, LVT_rc%mo
+          LVT_rc%dyr(source), LVT_rc%dmo(source)
      
      fname = trim(lisdadiagoutput(source)%odir)//'/EnKF/'//trim(cdate)//'/'&
           //'LIS_DA_EnKF_'//trim(cdate1)//'_innov.a'//trim(cda)//'.d01.nc'

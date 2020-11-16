@@ -52,6 +52,7 @@ module LDT_obsSimMod
      character*50              :: ttransform
      character*50              :: masktype
      character*50              :: maskdir
+     character*50              :: errModelType
      character*50              :: errDist
      real                      :: errStdev
      integer                   :: seed(NRANDSEED)
@@ -139,6 +140,17 @@ contains
        call LDT_endrun()
     endif
 
+    call ESMF_ConfigGetAttribute(LDT_config,LDT_obsSim_struc%errModelType,&
+         label="Observation simulator error model type:", &
+         rc=rc)
+    if(rc.ne.0) then
+       write(LDT_logunit,*) "[ERR] Observation simulator error model type:' not specified"
+       write(LDT_logunit,*) "[ERR] Supported options are "
+       write(LDT_logunit,*) "[ERR] 'additive' or 'multiplicative'"
+       write(LDT_logunit,*) "[ERR] Program stopping .."
+       call LDT_endrun()
+    endif
+
     call ESMF_ConfigGetAttribute(LDT_config,LDT_obsSim_struc%errStdev,&
          label="Observation simulator error standard deviation:", &
          rc=rc)
@@ -191,7 +203,9 @@ contains
 
     call setupnaturerunsource(trim(LDT_obsSim_struc%natRunSource)//char(0))
 
-    call setupossemasksource(trim(LDT_obsSim_struc%OSSEmasksource)//char(0))
+    if(LDT_obsSim_struc%OSSEmasksource.ne."none") then 
+       call setupossemasksource(trim(LDT_obsSim_struc%OSSEmasksource)//char(0))
+    endif
 
     allocate(LDT_obsSim_struc%value(LDT_rc%lnc(n),LDT_rc%lnr(n),&
          LDT_obsSim_struc%nVars))
@@ -201,7 +215,7 @@ contains
     LDT_obsSim_struc%value = 0 
     LDT_obsSim_struc%count = 0 
 
-    LDT_obsSim_struc%seed = -99
+    LDT_obsSim_struc%seed = -1000
     
   end subroutine LDT_obsSimInit
 
@@ -319,6 +333,14 @@ contains
           call readOSSEmasksource(trim(LDT_obsSim_struc%natRunSource)//char(0),&
                n)
 
+          do r=1,LDT_rc%lnr(n)
+             do c=1,LDT_rc%lnc(n)
+                if(LDT_obsSim_struc%datamask(c,r).eq.0.0) then
+                   LDT_obsSim_struc%value(c,r,:) = -9999.0
+                endif
+             enddo
+          enddo
+          
        endif
     endif
 
@@ -346,28 +368,58 @@ contains
 !EOP
     integer              :: c,r,k
     real                 :: tmp_val
-    real                 :: rand
-
-
+    real                 :: rand(2)
 
     if(LDT_obsSim_struc%errDist.eq."gaussian") then 
-       do r=1,LDT_rc%lnr(n)
-          do c=1,LDT_rc%lnc(n)
-             do k=1,LDT_obsSim_struc%nVars
-                if(LDT_obsSim_struc%value(c,r,k).ne.-9999.0) then 
-                   call nr_ran2(LDT_obsSim_struc%seed, rand)
-                   tmp_val = rand*LDT_obsSim_struc%errStdev
-!TBD: need a more formal check on the physical limits
-                   if (LDT_obsSim_struc%value(c,r,k) + tmp_val.gt.0) then 
-                      LDT_obsSim_struc%value(c,r,k) = & 
-                           LDT_obsSim_struc%value(c,r,k) + tmp_val
-                   endif                   
-                endif
+       if(LDT_obsSim_struc%errModelType.eq."additive") then 
+!          open(100,file='test.bin',form ='unformatted')
+!          write(100) LDT_obsSim_struc%value
+
+
+          do r=1,LDT_rc%lnr(n)
+             do c=1,LDT_rc%lnc(n)
+                do k=1,LDT_obsSim_struc%nVars
+                   if(LDT_obsSim_struc%value(c,r,k).ne.-9999.0) then 
+                      call nr_gasdev(LDT_obsSim_struc%seed, rand)
+                      tmp_val = rand(1)*LDT_obsSim_struc%errStdev
+                      !TBD: need a more formal check on the physical limits
+!                      print*, c,r,tmp_val,rand(1)
+                      if (LDT_obsSim_struc%value(c,r,k).gt.0.and.&
+                           LDT_obsSim_struc%value(c,r,k) + tmp_val.gt.0) then 
+                         if(c.eq.3.and.r.eq.8) then 
+                            print*, LDT_obsSim_struc%value(c,r,k), &
+                                 LDT_obsSim_struc%value(c,r,k)+tmp_val
+                         endif
+                         LDT_obsSim_struc%value(c,r,k) = & 
+                              LDT_obsSim_struc%value(c,r,k) + tmp_val
+                      endif
+                   endif
+                enddo
              enddo
           enddo
-       enddo       
-    endif
+!          write(100) LDT_obsSim_struc%value
+!          close(100)
+!          stop
 
+       elseif(LDT_obsSim_struc%errModelType.eq."multiplicative") then 
+          do r=1,LDT_rc%lnr(n)
+             do c=1,LDT_rc%lnc(n)
+                do k=1,LDT_obsSim_struc%nVars
+                   if(LDT_obsSim_struc%value(c,r,k).ne.-9999.0) then 
+                      call nr_gasdev(LDT_obsSim_struc%seed, rand)
+                      tmp_val = rand(1)*LDT_obsSim_struc%errStdev
+                      !TBD: need a more formal check on the physical limits
+                      if (LDT_obsSim_struc%value(c,r,k)*tmp_val.gt.0) then 
+                         LDT_obsSim_struc%value(c,r,k) = & 
+                              LDT_obsSim_struc%value(c,r,k)*tmp_val
+                      endif
+                   endif
+                enddo
+             enddo
+          enddo
+
+       endif
+    endif
   end subroutine LDT_applyObsSimErrorModel
 
 
@@ -452,6 +504,7 @@ contains
        call LDT_verify(nf90_put_var(ftn,varid(k),&
             LDT_obsSim_struc%value(:,:,k)),&
             'nf90_put_var failed for '//trim(LDT_obsSim_struc%varNames(k)))
+       print*, 'writing ',LDT_obsSim_struc%value(3,8,k)
     enddo
 
     call LDT_verify(nf90_close(ftn),&

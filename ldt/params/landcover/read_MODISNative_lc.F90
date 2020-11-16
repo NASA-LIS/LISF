@@ -83,11 +83,12 @@ subroutine read_MODISNative_lc(n, num_types, fgrd, maskarray )
 !__________________________________________________________________
 
    num_types = 20 
+
 !- Check if land cover file exists:
    inquire( file=trim(LDT_rc%vfile(n)), exist=file_exists )
    if(.not. file_exists) then
       write(LDT_logunit,*)"[ERR] The landcover map: ",trim(LDT_rc%vfile(n))," does not exist."
-      write(LDT_logunit,*)"Program stopping ..."
+      write(LDT_logunit,*)" Program stopping ..."
       call LDT_endrun
    endif
 
@@ -150,10 +151,10 @@ subroutine read_MODISNative_lc(n, num_types, fgrd, maskarray )
 
 !- Other landcover classifications associated with MODIS landcover:
     case default  ! Non-supported options
-      write(LDT_logunit,*) " The native MODIS map with land classification: ",&
+      write(LDT_logunit,*) "[ERR] The native MODIS map with land classification: ",&
                              trim(LDT_rc%lc_type(n)),", is not yet supported."
       write(LDT_logunit,*) " -- Please select: IGBPNCEP "
-      write(LDT_logunit,*) "Program stopping ..."
+      write(LDT_logunit,*) " Program stopping ..."
       call LDT_endrun
 
    end select
@@ -173,7 +174,7 @@ subroutine read_MODISNative_lc(n, num_types, fgrd, maskarray )
 !- Map Parameter Grid Info to LIS Target Grid/Projection Info -- 
    subparam_gridDesc = 0.
    call LDT_RunDomainPts( n, LDT_rc%lc_proj, param_gridDesc(:), &
-            glpnc, glpnr, subpnc, subpnr, subparam_gridDesc, lat_line, lon_line )
+        glpnc, glpnr, subpnc, subpnr, subparam_gridDesc, lat_line, lon_line )
 
    allocate( subset_veg(subpnc, subpnr) )
    subset_veg = LDT_rc%waterclass
@@ -267,7 +268,7 @@ subroutine read_MODISNative_lc(n, num_types, fgrd, maskarray )
 
 !- Estimate fraction of grid (fgrid) represented by vegetation type::
    call param_index_fgrdcalc( n, LDT_rc%lc_proj, LDT_rc%lc_gridtransform(n), &
-                              LDT_rc%waterclass, LDT_rc%nt, vegcnt, fgrd )
+        LDT_rc%waterclass, LDT_rc%nt, vegcnt, fgrd )
 
 ! -------------------------------------------------------------------
 !    CREATE OR READ-IN (OR IMPOSE) LAND MASK FILE AND CREATE

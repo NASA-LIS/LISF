@@ -5,7 +5,7 @@ undef -9999
 xdef 2871 linear -179.325 0.125
 ydef 1433 linear  -89.500 0.125
 zdef 1 linear 1 1
-TDEF 1 LINEAR 00z30may2019 03hr
+TDEF 1 LINEAR 00z10feb2014 03hr
 vars 33
 LANDMASK=>LANDMASK 1 y,x description
 SURFACETYPE=>SURFACETYPE1 0 0,y,x description

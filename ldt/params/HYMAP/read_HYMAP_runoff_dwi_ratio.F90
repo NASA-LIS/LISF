@@ -47,15 +47,16 @@ subroutine read_HYMAP_runoff_dwi_ratio(n, array)
 
   ftn = LDT_getNextUnitNumber()
 
-  inquire(file=trim(HYMAP_struc(n)%runoffdwiratioFile), exist=file_exists)
+  inquire(file=trim(HYMAP_struc(n)%runoffdwiratiofile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'runoff DWI ratio map ',trim(HYMAP_struc(n)%runoffdwiratioFile),' not found'
+     write(LDT_logunit,*) '[ERR] runoff DWI ratio map, ',&
+           trim(HYMAP_struc(n)%runoffdwiratiofile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif
 
-  open(ftn, file=trim(HYMAP_struc(n)%runoffdwiratioFile), access='direct',&
-       status='old', form="unformatted", recl=4)
+  open(ftn, file=trim(HYMAP_struc(n)%runoffdwiratiofile), access='direct',&
+       status='old', form="unformatted", convert="big_endian", recl=4)
   
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &

@@ -45,6 +45,7 @@ subroutine readLISoutNatureRun(n)
 
 ! create LIS filename
   call create_lisout_naturerun_filename(n, &
+       LISoutNatureRunData%mClass,&
        LISoutNatureRunData%format,&
        fname, &
        LISoutNatureRunData%odir,&
@@ -58,7 +59,7 @@ subroutine readLISoutNatureRun(n)
   inquire(file=trim(fname),exist=file_exists)
 
   if(file_exists) then 
-     write(LDT_logunit,*) '[INFO] reading LSM output ',trim(fname)
+     write(LDT_logunit,*) '[INFO] reading LIS output ',trim(fname)
      if(LISoutNatureRunData%format.eq."binary") then 
         write(LDT_logunit,*) '[ERR] observation simulator in binary format is not '
         write(LDT_logunit,*) '[ERR] currently supported. Program stopping....'
@@ -126,7 +127,7 @@ end subroutine readLISoutNatureRun
 !
 ! !INTERFACE:
 subroutine create_lisout_naturerun_filename(n, &
-     form, fname, odir, wstyle, wopt, &
+     mclass,form, fname, odir, wstyle, wopt, &
      run_dd, map_proj)
 ! !USES:
    use LDT_coreMod,  only : LDT_rc
@@ -135,6 +136,7 @@ subroutine create_lisout_naturerun_filename(n, &
    implicit none 
 ! !ARGUMENTS:
    integer,   intent(IN)        :: n
+   character(len=*)             :: mClass
    character(len=*)             :: fname
    character(len=*)             :: form
    character(len=*)             :: odir
@@ -200,7 +202,6 @@ subroutine create_lisout_naturerun_filename(n, &
    character(len=10)       :: time
    character(len=5)        :: zone
    integer, dimension(8)   :: values
-   character(len=20)       :: mname 
    character(len=10)       :: cdate
    character(len=14)       :: cdate1
    character(len=2)        :: fint
@@ -214,14 +215,13 @@ subroutine create_lisout_naturerun_filename(n, &
    character(len=200), save :: out_fname
    integer                  :: i, c
 
-   mname = 'SURFACEMODEL'
    if(wstyle.eq."4 level hierarchy") then 
       write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
            LDT_rc%yr, LDT_rc%mo, &
            LDT_rc%da, LDT_rc%hr,LDT_rc%mn
       
       dname = trim(odir)//'/'
-      dname = trim(dname)//trim(mname)//'/'
+      dname = trim(dname)//trim(mClass)//'/'
       
       write(unit=cdate, fmt='(i4.4)') LDT_rc%yr
       dname = trim(dname)//trim(cdate)//'/'
@@ -260,7 +260,7 @@ subroutine create_lisout_naturerun_filename(n, &
            LDT_rc%da, LDT_rc%hr,LDT_rc%mn
       
       dname = trim(odir)//'/'
-      dname = trim(dname)//trim(mname)//'/'
+      dname = trim(dname)//trim(mClass)//'/'
       
       write(unit=cdate, fmt='(i4.4, i2.2)') LDT_rc%yr, LDT_rc%mo
       dname = trim(dname)//trim(cdate)//'/'
@@ -296,7 +296,7 @@ subroutine create_lisout_naturerun_filename(n, &
            LDT_rc%da, LDT_rc%hr,LDT_rc%mn
       
       dname = trim(odir)//'/'
-      dname = trim(dname)//trim(mname)//'/'
+      dname = trim(dname)//trim(mClass)//'/'
       
       out_fname = trim(dname)//'LIS_HIST_'//trim(cdate1)
       

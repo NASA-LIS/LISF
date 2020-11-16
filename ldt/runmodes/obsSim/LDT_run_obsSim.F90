@@ -6,10 +6,6 @@ subroutine LDT_run_obsSim
   use LDT_coreMod,           only : LDT_rc, LDT_endofrun, LDT_ticktime
   use LDT_timeMgrMod,        only : LDT_resetClock
   use LDT_obsSimMod
-!  use LDT_DAobservationsMod, only : LDT_readDAobsData
-!  use LDT_DAobsDataMod,      only : LDT_tavgDAobsData
-!  use LDT_DAmetricsMod,      only : LDT_readDAdataMask, LDT_diagnoseDAobsMetrics, &
-!       LDT_computeDAobsMetrics
   use LDT_logMod
 
   implicit none

@@ -6,18 +6,19 @@ MODULE module_sf_noahmpdrv_401
 !-------------------------------
 implicit none 
 public noahmplsm_401
+!public TRANSFER_MP_PARAMETERS
 !
 CONTAINS
 ! The subroutine name has been modifed for LIS implemenation Oct 22 2018
-  SUBROUTINE noahmplsm_401(LIS_undef_value,                                 & ! IN : LIS undefined value
-             ITIMESTEP,        YR,   JULIAN,   COSZIN,XLAT,XLONG,           & ! IN : Time/Space-related
-                  DZ8W,       DT,       DZS,    NSOIL,       DX,            & ! IN : Model configuration 
-	        IVGTYP,   ISLTYP,    VEGFRA,   VEGMAX,      TMN,            & ! IN : Vegetation/Soil characteristics
-		 XLAND,     XICE,XICE_THRES,  CROPCAT,                      & ! IN : Vegetation/Soil characteristics
-	       PLANTING,  HARVEST,SEASON_GDD,                               &
-                 IDVEG, IOPT_CRS,  IOPT_BTR, IOPT_RUN, IOPT_SFC, IOPT_FRZ,  & ! IN : User options
-              IOPT_INF, IOPT_RAD,  IOPT_ALB, IOPT_SNF,IOPT_TBOT, IOPT_STC,  & ! IN : User options
-              IOPT_GLA, IOPT_RSF, IOPT_SOIL,IOPT_PEDO,IOPT_CROP,            & ! IN : User options
+  SUBROUTINE noahmplsm_401(LIS_undef_value,                                       & ! IN : LIS undefined value
+             ITIMESTEP,        YR,   JULIAN,   COSZIN,XLAT,XLONG,                 & ! IN : Time/Space-related
+                  DZ8W,       DT,       DZS,    NSOIL,       DX,                  & ! IN : Model configuration 
+	        IVGTYP,   ISLTYP,    VEGFRA,   VEGMAX,      TMN,                  & ! IN : Vegetation/Soil characteristics
+		 XLAND,     XICE,XICE_THRES,  CROPCAT,                            & ! IN : Vegetation/Soil characteristics
+	       PLANTING,  HARVEST,SEASON_GDD,                                     &
+                 IDVEG, IOPT_CRS,  IOPT_BTR, IOPT_RUN, IOPT_SFC, IOPT_FRZ,        & ! IN : User options
+              IOPT_INF, IOPT_RAD,  IOPT_ALB, IOPT_SNF,IOPT_TBOT, IOPT_STC,        & ! IN : User options
+              IOPT_GLA, IOPT_SNDPTH, IOPT_RSF, IOPT_SOIL,IOPT_PEDO,IOPT_CROP, & ! IN : User options
               IZ0TLND, SF_URBAN_PHYSICS,                                    & ! IN : User options
 	      SOILCOMP,  SOILCL1,  SOILCL2,   SOILCL3,  SOILCL4,            & ! IN : User options
                    T3D,     QV3D,     U_PHY,    V_PHY,   SWDOWN,      GLW,  & ! IN : Forcing
@@ -35,7 +36,7 @@ CONTAINS
 	        WOODXY, STBLCPXY, FASTCPXY,    XLAIXY,   XSAIXY,   TAUSSXY, & ! IN/OUT Noah MP only
 	       SMOISEQ, SMCWTDXY,DEEPRECHXY,   RECHXY,  GRAINXY,    GDDXY,PGSXY,  & ! IN/OUT Noah MP only
                GECROS_STATE,                                                & ! IN/OUT gecros model
-	        T2MVXY,   T2MBXY,    Q2MVXY,   Q2MBXY,                      & ! OUT Noah MP only
+	        T2MVXY,   T2MBXY,    Q2MVXY,   Q2MBXY, RELSMCXY,            & ! OUT Noah MP only
 	        TRADXY,    NEEXY,    GPPXY,     NPPXY,   FVEGXY,   RUNSFXY, & ! OUT Noah MP only
 	       RUNSBXY,   ECANXY,   EDIRXY,   ETRANXY,    FSAXY,    FIRAXY, & ! OUT Noah MP only
 	        APARXY,    PSNXY,    SAVXY,     SAGXY,  RSSUNXY,   RSSHAXY, & ! OUT Noah MP only
@@ -43,6 +44,7 @@ CONTAINS
 		 SHGXY,    SHCXY,    SHBXY,     EVGXY,    EVBXY,     GHVXY, & ! OUT Noah MP only
 		 GHBXY,    IRGXY,    IRCXY,     IRBXY,     TRXY,     EVCXY, & ! OUT Noah MP only
               CHLEAFXY,   CHUCXY,   CHV2XY,    CHB2XY, RS, FPICE,           & ! OUT Noah MP only
+              parameters, &
 !                 BEXP_3D,SMCDRY_3D,SMCWLT_3D,SMCREF_3D,SMCMAX_3D,          & ! placeholders to activate 3D soil
 !		 DKSAT_3D,DWSAT_3D,PSISAT_3D,QUARTZ_3D,                     &
 !		 REFDK_2D,REFKDT_2D,                                        &
@@ -101,6 +103,7 @@ CONTAINS
     INTEGER,                                         INTENT(IN   ) ::  IOPT_TBOT ! lower boundary of soil temperature (1->zero-flux; 2->Noah)
     INTEGER,                                         INTENT(IN   ) ::  IOPT_STC  ! snow/soil temperature time scheme
     INTEGER,                                         INTENT(IN   ) ::  IOPT_GLA  ! glacier option (1->phase change; 2->simple)
+    INTEGER,                                         INTENT(IN   ) ::  IOPT_SNDPTH !snow depth max for glacier model [mm]
     INTEGER,                                         INTENT(IN   ) ::  IOPT_RSF  ! surface resistance (1->Sakaguchi/Zeng; 2->Seller; 3->mod Sellers; 4->1+snow)
     INTEGER,                                         INTENT(IN   ) ::  IOPT_SOIL ! soil configuration option
     INTEGER,                                         INTENT(IN   ) ::  IOPT_PEDO ! soil pedotransfer function option
@@ -267,6 +270,7 @@ CONTAINS
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  CHUCXY    ! under canopy exchange coefficient 
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  CHV2XY    ! veg 2m exchange coefficient 
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  CHB2XY    ! bare 2m exchange coefficient 
+    REAL,    DIMENSION( ims:ime, 1:nsoil, jms:jme ), INTENT(OUT  ) ::  RELSMCXY  ! relative soil moisture [-]
     REAL,    INTENT(OUT) :: FPICE                                                ! snow fraction of precip
     INTEGER,  INTENT(IN   )   ::     ids,ide, jds,jde, kds,kde,  &  ! d -> domain
          &                           ims,ime, jms,jme, kms,kme,  &  ! m -> memory
@@ -406,6 +410,7 @@ CONTAINS
     REAL                                :: CHUC         ! under canopy exchange coefficient 
     REAL                                :: CHV2         ! veg 2m exchange coefficient 
     REAL                                :: CHB2         ! bare 2m exchange coefficient 
+    REAL,   DIMENSION( 1:NSOIL)         :: RELSMC       ! relative soil moisture [-]
   REAL   :: PAHV    !precipitation advected heat - vegetation net (W/m2)
   REAL   :: PAHG    !precipitation advected heat - under canopy net (W/m2)
   REAL   :: PAHB    !precipitation advected heat - bare ground net (W/m2)
@@ -699,7 +704,7 @@ CONTAINS
 !       parameters%refdk  = REFDK_2D (I,J)         ! Reference Soil Conductivity
 !       parameters%refkdt = REFKDT_2D(I,J)         ! Soil Infiltration Parameter
 
-       CALL TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,parameters)
+!       CALL TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,parameters)
        
        if(iopt_soil == 3 .and. .not. parameters%urban_flag) then
           sand = 0.01 * soilcomp(i,1:4,j)
@@ -761,12 +766,13 @@ CONTAINS
 
        IF ( VEGTYP == ISICE_TABLE ) THEN
          ICE = -1                           ! Land-ice point
-         CALL NOAHMP_OPTIONS_GLACIER(IOPT_ALB  ,IOPT_SNF  ,IOPT_TBOT, IOPT_STC, IOPT_GLA )
+         CALL NOAHMP_OPTIONS_GLACIER(IOPT_ALB  ,IOPT_SNF  ,IOPT_TBOT, IOPT_STC, IOPT_GLA , IOPT_SNDPTH)
       
          TBOT = MIN(TBOT,263.15)                      ! set deep temp to at most -10C
          CALL NOAHMP_GLACIER(     I,       J,    COSZ,   NSNOW,   NSOIL,      DT, & ! IN : Time/Space/Model-related
                                T_ML,    P_ML,    U_ML,    V_ML,    Q_ML,    SWDN, & ! IN : Forcing
                                PRCP,    LWDN,    TBOT,    Z_ML, FICEOLD,   ZSOIL, & ! IN : Forcing
+                               IOPT_SNDPTH,                                        & ! IN : User Option
                               QSNOW,  SNEQVO,  ALBOLD,      CM,      CH,   ISNOW, & ! IN/OUT :
                                 SWE,     SMC,   ZSNSO,  SNDPTH,   SNICE,   SNLIQ, & ! IN/OUT :
                                  TG,     STC,   SMH2O,   TAUSS,  QSFC1D,          & ! IN/OUT :
@@ -844,6 +850,7 @@ CONTAINS
          Z0WRF  = 0.002
          QFX(I,J) = ESOIL
          LH (I,J) = FGEV
+         RELSMC = 1.0
 
         ELSE
 
@@ -870,7 +877,7 @@ CONTAINS
             Z0WRF   ,                                                   &
             FSA     , FSR     , FIRA    , FSH     , SSOIL   , FCEV    , & ! OUT : 
             FGEV    , FCTR    , ECAN    , ETRAN   , ESOIL   , TRAD    , & ! OUT : 
-            SUBSNOW ,                                                   & ! OUT : 
+            SUBSNOW , RELSMC  ,                                       & ! OUT : 
             TGB     , TGV     , T2MV    , T2MB    , Q2MV    , Q2MB    , & ! OUT : 
             RUNSF   , RUNSB   , APAR    , PSN     , SAV     , SAG     , & ! OUT : 
             FSNO    , NEE     , GPP     , NPP     , FVEGMP  , SALB    , & ! OUT : 
@@ -1020,6 +1027,7 @@ CONTAINS
              CHUCXY   (I,J)                = CHUC
              CHV2XY   (I,J)                = CHV2
              CHB2XY   (I,J)                = CHB2
+             RELSMCXY (I,      1:NSOIL,J)  = RELSMC   (      1:NSOIL)
              RECHXY   (I,J)                = RECHXY(I,J) + RECH*1.E3 !RECHARGE TO THE WATER TABLE
              DEEPRECHXY(I,J)               = DEEPRECHXY(I,J) + DEEPRECH
              SMCWTDXY(I,J)                 = SMCWTD
@@ -1051,6 +1059,7 @@ CONTAINS
   END SUBROUTINE noahmplsm_401
 !------------------------------------------------------
 
+#if 0 
 SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,parameters)
 
   USE NOAHMP_TABLES_401
@@ -1260,7 +1269,7 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
     END IF
 
  END SUBROUTINE TRANSFER_MP_PARAMETERS
-
+#endif
 SUBROUTINE PEDOTRANSFER_SR2006(nsoil,sand,clay,orgm,parameters)
 
   use module_sf_noahmplsm_401

@@ -65,7 +65,7 @@ subroutine read_nldas1_elev(n, findex, edaselev, elevdiff)
    elevdiff = LDT_rc%udef
    nldas1 = nldas1_struc(n)%nc * nldas1_struc(n)%nr
 
-   if( LDT_rc%lis_map_proj.eq."latlon" ) then
+   if( LDT_rc%lis_map_proj(n).eq."latlon" ) then
     if( LDT_rc%gridDesc(n,4) < LDT_rc%met_gridDesc(findex,4) .or.  & ! LL Lat
         LDT_rc%gridDesc(n,5) < LDT_rc%met_gridDesc(findex,5) .or.  & ! LL Lon
         LDT_rc%gridDesc(n,7) > LDT_rc%met_gridDesc(findex,7) .or.  & ! UR Lat

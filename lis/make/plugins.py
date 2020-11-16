@@ -1,7 +1,15 @@
 #!/usr/bin/env python
 from __future__ import print_function
-import StringIO
-import ConfigParser
+import sys
+
+if sys.version_info.major == 2:
+    import StringIO as io
+    import ConfigParser
+    configparser = ConfigParser.SafeConfigParser
+else:
+    import io
+    import configparser
+    configparser = configparser.ConfigParser
 
 '''
    This program processes the default configuration file, default.cfg,
@@ -44,7 +52,7 @@ See the LIS Users' Guide for more informaion.
 #
 # Define the required components
 #
-required_filepath='''\
+required_filepath = '''\
 core
 plugins
 interp
@@ -54,69 +62,70 @@ interp
 #
 # Process sections and enable/disable table
 #
-config = ConfigParser.SafeConfigParser()
+#config = configparser.ConfigParser()
+config = configparser()
 config.read('default.cfg')
 
 try:
-   for line in open('user.cfg', 'r'):
-      if '#' in line:
-         line = line[0:line.find('#')]
-      if line.strip():
-         sect, enabled = (l.strip() for l in line.split(':'))
-         config.set(sect, 'enabled', enabled)
+    for line in open('user.cfg', 'r'):
+        if '#' in line:
+            line = line[0:line.find('#')]
+        if line.strip():
+            sect, enabled = (l.strip() for l in line.split(':'))
+            config.set(sect, 'enabled', enabled)
 except IOError:
-   print('No user.cfg file found.  Using defaults.')
+    print('No user.cfg file found.  Using defaults.')
 
 # Create virtual sections
 config.add_section('virtual_irrigation')
 config.set('virtual_irrigation', 'enabled', 'false')
 config.set('virtual_irrigation', 'virtual', 'true')
-if ( config.getboolean('Sprinkler', 'enabled') or
-     config.getboolean('Flood', 'enabled') or
-     config.getboolean('Drip', 'enabled') ):
-      config.set('virtual_irrigation', 'enabled', 'true')
+if (config.getboolean('Sprinkler', 'enabled') or
+    config.getboolean('Flood', 'enabled') or
+        config.getboolean('Drip', 'enabled')):
+    config.set('virtual_irrigation', 'enabled', 'true')
 
 config.add_section('virtual_routing')
 config.set('virtual_routing', 'enabled', 'false')
 config.set('virtual_routing', 'virtual', 'true')
-if ( config.getboolean('NLDAS router', 'enabled') or
-     config.getboolean('HYMAP router', 'enabled') ):
-      config.set('virtual_routing', 'enabled', 'true')
+if (config.getboolean('NLDAS router', 'enabled') or
+        config.getboolean('HYMAP router', 'enabled')):
+    config.set('virtual_routing', 'enabled', 'true')
 
 config.add_section('virtual_da')
 config.set('virtual_da', 'enabled', 'false')
 config.set('virtual_da', 'virtual', 'true')
-if ( config.getboolean('Direct insertion', 'enabled') or
-     config.getboolean('EnKF', 'enabled') or
-     config.getboolean('EnKS', 'enabled') ):
-      config.set('virtual_da', 'enabled', 'true')
+if (config.getboolean('Direct insertion', 'enabled') or
+    config.getboolean('EnKF', 'enabled') or
+        config.getboolean('EnKS', 'enabled')):
+    config.set('virtual_da', 'enabled', 'true')
 
 config.add_section('virtual_optue')
 config.set('virtual_optue', 'enabled', 'false')
 config.set('virtual_optue', 'virtual', 'true')
-if ( config.getboolean('OPTUE ES', 'enabled') or
-     config.getboolean('OPTUE LM', 'enabled') or
-     config.getboolean('OPTUE GA', 'enabled') or
-     config.getboolean('OPTUE SCEUA', 'enabled') or
-     config.getboolean('OPTUE MCSIM', 'enabled') or
-     config.getboolean('OPTUE RWMCMC', 'enabled') or
-     config.getboolean('OPTUE DEMC', 'enabled') or
-     config.getboolean('OPTUE DEMCz', 'enabled') ):
-      config.set('virtual_optue', 'enabled', 'true')
+if (config.getboolean('OPTUE ES', 'enabled') or
+    config.getboolean('OPTUE LM', 'enabled') or
+    config.getboolean('OPTUE GA', 'enabled') or
+    config.getboolean('OPTUE SCEUA', 'enabled') or
+    config.getboolean('OPTUE MCSIM', 'enabled') or
+    config.getboolean('OPTUE RWMCMC', 'enabled') or
+    config.getboolean('OPTUE DEMC', 'enabled') or
+        config.getboolean('OPTUE DEMCz', 'enabled')):
+    config.set('virtual_optue', 'enabled', 'true')
 
 config.add_section('virtual_da_obs_snodep')
 config.set('virtual_da_obs_snodep', 'enabled', 'false')
 config.set('virtual_da_obs_snodep', 'virtual', 'true')
-if ( config.getboolean('virtual_da', 'enabled') and
-     config.getboolean('DA OBS SNODEP', 'enabled') ):
-      config.set('virtual_da_obs_snodep', 'enabled', 'true')
+if (config.getboolean('virtual_da', 'enabled') and
+        config.getboolean('DA OBS SNODEP', 'enabled')):
+    config.set('virtual_da_obs_snodep', 'enabled', 'true')
 
-config.add_section('virtual_da_obs_ldtsi')
-config.set('virtual_da_obs_ldtsi', 'enabled', 'false')
-config.set('virtual_da_obs_ldtsi', 'virtual', 'true')
-if ( config.getboolean('virtual_da', 'enabled') and
-     config.getboolean('DA OBS LDTSI', 'enabled') ):
-      config.set('virtual_da_obs_ldtsi', 'enabled', 'true')
+config.add_section('virtual_da_obs_usafsi')
+config.set('virtual_da_obs_usafsi', 'enabled', 'false')
+config.set('virtual_da_obs_usafsi', 'virtual', 'true')
+if (config.getboolean('virtual_da', 'enabled') and
+        config.getboolean('DA OBS USAFSI', 'enabled')):
+    config.set('virtual_da_obs_usafsi', 'enabled', 'true')
 
 #
 # Write Filepath and LIS_plugins.h
@@ -131,27 +140,27 @@ fpath = ' ../{0}'
 dentry = '#{0} {1}\n'
 
 filepath.write('dirs := .')
-paths = StringIO.StringIO(required_filepath)
+paths = io.StringIO(required_filepath)
 for line in paths:
-   filepath.write(fpath.format(line.strip()))
+    filepath.write(fpath.format(line.strip()))
 
 for sect in config.sections():
-   if not config.has_option(sect, 'virtual'):
-      if config.getboolean(sect, 'enabled'):
-         defineh.write(dentry.format('define', config.get(sect, 'macro')))
-         for p in config.get(sect, 'path').split(','):
-            filepath.write(fpath.format(p.strip()))
-         if config.has_option(sect, 'dependent_comps'):
-            dcomps = config.get(sect, 'dependent_comps')
-            if dcomps:
-               for d in dcomps.split(','):
-                  d = d.strip()
-                  if config.getboolean(d, 'enabled'):
-                     d_path = d+' path'
-                     for p in config.get(sect, d_path).split(','):
-                        filepath.write(fpath.format(p.strip()))
-      else:
-         defineh.write(dentry.format('undef', config.get(sect, 'macro')))
+    if not config.has_option(sect, 'virtual'):
+        if config.getboolean(sect, 'enabled'):
+            defineh.write(dentry.format('define', config.get(sect, 'macro')))
+            for p in config.get(sect, 'path').split(','):
+                filepath.write(fpath.format(p.strip()))
+            if config.has_option(sect, 'dependent_comps'):
+                dcomps = config.get(sect, 'dependent_comps')
+                if dcomps:
+                    for d in dcomps.split(','):
+                        d = d.strip()
+                        if config.getboolean(d, 'enabled'):
+                            d_path = d+' path'
+                            for p in config.get(sect, d_path).split(','):
+                                filepath.write(fpath.format(p.strip()))
+        else:
+            defineh.write(dentry.format('undef', config.get(sect, 'macro')))
 
 filepath.close()
 defineh.close()
