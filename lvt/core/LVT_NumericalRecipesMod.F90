@@ -33,6 +33,7 @@ module LVT_NumericalRecipesMod
 ! !PUBLIC MEMBER FUNCTIONS:
 !-----------------------------------------------------------------------------
   PUBLIC :: ks2d2s
+  PUBLIC :: log2
 
 contains
 
@@ -272,5 +273,19 @@ contains
 1   betacf=h
     return 
   END FUNCTION betacf
+
+!BOP 
+! 
+! !INTERFACE: 
+  function log2(x)
+! !DESCRIPTION: 
+!  computes log with a base of 2
+!EOP
+    real  :: log2
+    real  :: x
+
+    log2= log(x)/log(2.0)
+
+  end function log2
 
 end module LVT_NumericalRecipesMod

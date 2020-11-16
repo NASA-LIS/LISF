@@ -89,12 +89,12 @@ contains
     call LIS_metforcing_init
     call LIS_irrigation_init
     call LIS_initDAObservations
+    call LIS_routing_init
+    call LIS_routing_readrestart
     call LIS_dataassim_init
     call LIS_surfaceModel_setup
     call LIS_surfaceModel_readrestart
     call LIS_perturb_readrestart
-    call LIS_routing_init
-    call LIS_routing_readrestart
     call LIS_RTM_init
     call LIS_appModel_init
     call LIS_core_init

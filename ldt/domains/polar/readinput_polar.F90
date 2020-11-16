@@ -11,7 +11,7 @@
 !  15 Jul 2005: Sujay Kumar; Initial Specification
 !
 ! !INTERFACE:
-subroutine readinput_polar
+subroutine readinput_polar(nest)
 
 ! !USES:
   use ESMF 
@@ -25,6 +25,7 @@ subroutine readinput_polar
 
   implicit none
 
+  integer, intent(in) :: nest
 ! !DESCRIPTION: 
 !
 !  This routine reads the options specified in the LDT configuration 
@@ -63,52 +64,52 @@ subroutine readinput_polar
 
   allocate(run_dd(LDT_rc%nnest,20))
 
-  LDT_rc%lis_map_resfactor = 100.
+  LDT_rc%lis_map_resfactor(nest) = 100.
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lat:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,1),rc=rc)
      call LDT_verify(rc,'Run domain lower left lat: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lon:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,2),rc=rc)
      call LDT_verify(rc,'Run domain lower left lon: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain true lat:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,3),rc=rc)
      call LDT_verify(rc,'Run domain true lat: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain standard lon:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,4),rc=rc)
      call LDT_verify(rc,'Run domain standard lon: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain orientation:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,5),rc=rc)
      call LDT_verify(rc,'Run domain orientation: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain resolution:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,6),rc=rc)
      call LDT_verify(rc,'Run domain resolution: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain x-dimension size:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,7),rc=rc)
      call LDT_verify(rc,'Run domain x-dimension size: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain y-dimension size:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,8),rc=rc)
      call LDT_verify(rc,'Run domain y-dimension size: not defined')
   enddo
@@ -126,7 +127,7 @@ subroutine readinput_polar
      call LDT_endrun()
   endif
 
-  do n = 1,LDT_rc%nnest
+  do n = 1,nest
      stlat   = run_dd(n,1)
      stlon   = run_dd(n,2)
      truelat = run_dd(n,3)

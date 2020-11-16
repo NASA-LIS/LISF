@@ -184,7 +184,7 @@ contains
     use LIS_surfaceModelDataMod, only : LIS_sfmodel_struc
     use LIS_timeMgrMod,   only : LIS_clock, LIS_calendar, &
          LIS_update_timestep, LIS_registerAlarm
-    use LIS_logMod,       only : LIS_verify
+    use LIS_logMod,       only : LIS_verify, LIS_logunit
 ! !DESCRIPTION:
 !
 !  This routine creates the datatypes and allocates memory for
@@ -245,8 +245,21 @@ contains
             noah39_struc(n)%ts,&
             noah39_struc(n)%rstInterval)
 
+       ! EMK Add alarm to reset tair_agl_min for RHMin.  This should match the 
+       ! output interval, since that is used for calculating Tair_F_min.
+       call LIS_registerAlarm("Noah39 RHMin alarm "//trim(fnest), &
+            noah39_struc(n)%ts, &
+            LIS_sfmodel_struc(n)%outInterval)
+       if (LIS_sfmodel_struc(n)%outInterval .gt. 86400 .or. &
+            trim(LIS_sfmodel_struc(n)%outIntervalType) .eq. "dekad") then
+          write(LIS_logunit,*) &
+               '[WARN] If RHMin is selected for output, please reset ', &
+               'surface model output interval to no more than 24 hours.'
+       end if
+
        ! Initialize min/max values to implausible values.
        noah39_struc(n)%noah(:)%tair_agl_min = 999.0
+       noah39_struc(n)%noah(:)%rhmin = 999.0
 
 
        noah39_struc(n)%z0brd_upd = 0 

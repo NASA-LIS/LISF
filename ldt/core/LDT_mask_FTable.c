@@ -72,13 +72,15 @@ void FTN(registerreadmask)(char *j, void (*func)(int*, float*),int len)
 //   \end{description}
 //EOP
 { 
+  int len1;
   struct mnode* current;
   struct mnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct mnode*) malloc(sizeof(struct mnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -152,13 +154,15 @@ void FTN(registerreadregmask)(char *j, void (*func)(int*, float*),int len)
 //   \end{description}
 //EOP
 {
+  int len1;
   struct rgmnode* current;
   struct rgmnode* pnode;
   // create node
 
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct rgmnode*) malloc(sizeof(struct rgmnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL;
 

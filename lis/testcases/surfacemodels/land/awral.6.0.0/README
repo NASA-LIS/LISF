@@ -1,0 +1,34 @@
+TEMPLATE LSM forcing Testcase
+
+This is a testcase that uses:
+  (a) The AWRAL forcing over the Australian domain at 0.05 degree spatial resolution
+  (b) The awral.6.0.0 LSM option
+  (c) The Australian domain at 0.05 degree spatial resolution
+  (d) A time period from 00:00Z 30 Jun 2010 to 00:00Z 5 July 2010 with a restart file from 00:00Z 30 June 2010
+
+This directory contains:
+  (a) This README file
+  (b) The "AWRAL600.rst.lis.config" file used for this testcase
+  (c) The "AWRAL600_OUTPUT_LIST.TBL" file used by the AWRAL600.rst.lis.config file
+      to select the output variables
+
+Note that the "AWRAL600.rst.lis.config" files should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+To run this testcase:
+  (a) Generate the LIS executable
+  (b) Download the testcase input and output data from:
+         http://lis.gsfc.nasa.gov/Source/testcases
+      the testcase corresponding to AWRAL 6.0 LSM TEST
+  (c) Run the LIS executable using the "AWRAL600lis.rst.config" file with the
+      testcase input data (E.g. mpirun -np 4 ./LIS -f AWRAL600lis.rst.config)
+
+Caveats:
+  (a) Please note that this is a simple functional test and the output
+      from the testcase is not expected to be used for any scientific
+      evaluation.
+  (b) The forcing and model domain must match and be at the same resolution
+  (c) The user can compare their netcdf outputs against the netcdf outputs supplied using standard climate data operator tools (E.g. cdo)
+
+

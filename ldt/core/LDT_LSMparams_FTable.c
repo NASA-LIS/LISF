@@ -38,7 +38,7 @@
 struct lsmparamprocinitnode
 { 
   char *name;
-  void (*func)();
+  void (*func)(int*);
 
   struct lsmparamprocinitnode* next;
 } ;
@@ -69,7 +69,7 @@ struct lsmparamprocwdatanode* lsmparamprocwdata_table = NULL;
 // \label{registerlsmparamprocinit}
 //
 // !INTERFACE:
-void FTN(registerlsmparamprocinit)(char *j,void (*func)(), int len)
+void FTN(registerlsmparamprocinit)(char *j,void (*func)(int*), int len)
 //  
 // !DESCRIPTION: 
 // Makes an entry in the registry for the routine to 
@@ -82,13 +82,15 @@ void FTN(registerlsmparamprocinit)(char *j,void (*func)(), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmparamprocinitnode* current;
   struct lsmparamprocinitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmparamprocinitnode*) malloc(sizeof(struct lsmparamprocinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -109,7 +111,7 @@ void FTN(registerlsmparamprocinit)(char *j,void (*func)(), int len)
 // \label{lsmparamprocinit}
 //
 // !INTERFACE:
-void FTN(lsmparamprocinit)(char *j, int len)
+void FTN(lsmparamprocinit)(char *j, int *flag,int len)
 // !DESCRIPTION: 
 //  Calls the routine from the registry to initialize the 
 //  the LSM parameter processing init routine
@@ -134,7 +136,7 @@ void FTN(lsmparamprocinit)(char *j, int len)
       printf("****************Error****************************\n"); 
     }
   }
-  current->func(); 
+  current->func(flag); 
 }
 
 
@@ -157,13 +159,15 @@ void FTN(registerlsmparamprocwriteheader)(char *j,void (*func)(int*, int*, int*,
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmparamprocwheadernode* current;
   struct lsmparamprocwheadernode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmparamprocwheadernode*) malloc(sizeof(struct lsmparamprocwheadernode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -234,13 +238,15 @@ void FTN(registerlsmparamprocwritedata)(char *j,void (*func)(int*, int*), int le
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lsmparamprocwdatanode* current;
   struct lsmparamprocwdatanode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lsmparamprocwdatanode*) malloc(sizeof(struct lsmparamprocwdatanode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

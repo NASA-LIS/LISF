@@ -243,6 +243,7 @@ subroutine noah39_main(n)
   write(fnest,'(i3.3)') n
   alarmCheck = LIS_isAlarmRinging(LIS_rc,"Noah39 model alarm "//trim(fnest))
   if(alarmCheck) then
+
      ! Get Julian day of year
      call LIS_tbotTimeUtil(julian_in,yr)
      Bondvillecheck = .false.
@@ -1505,6 +1506,18 @@ subroutine noah39_main(n)
 !$OMP END PARALLEL 
      noah39_struc(n)%forc_count = 0 
   endif
+
+  ! EMK...See if noah39_struc(n)%noah(t)%tair_agl_min needs to be reset
+  ! for calculating RHMin.  
+  write(fnest,'(i3.3)') n
+  alarmCheck = LIS_isAlarmRinging(LIS_rc,"Noah39 RHMin alarm "//trim(fnest))
+  if (alarmCheck) then
+     write(LIS_logunit,*)'[INFO] Resetting tair_agl_min for RHMin calculation'
+     do t = 1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+        noah39_struc(n)%noah(t)%tair_agl_min = 999.
+     end do
+  end if
+
 end subroutine noah39_main
 
 !

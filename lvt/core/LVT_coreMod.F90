@@ -216,17 +216,17 @@ contains
     call spmd_setup()
     call LVT_timemgr_init(LVT_rc)
 
-    allocate(LVT_surface(2,LVT_rc%max_model_types))
-    do k=1,2
+    allocate(LVT_surface(3,LVT_rc%max_model_types))
+    do k=1,3
        allocate(LVT_LIS_rc(k)%glbnpatch(LVT_rc%max_model_types))
        allocate(LVT_LIS_rc(k)%glbnpatch_red(LVT_rc%max_model_types))
     enddo
 
-    allocate(LVT_lis_npatches(2,LVT_rc%max_model_types,0:LVT_npes-1))
-    allocate(LVT_lis_patch_offsets(2,LVT_rc%max_model_types,0:LVT_npes-1))
-    allocate(LVT_lis_patch_deltas(2,LVT_rc%max_model_types,0:LVT_npes-1))
+    allocate(LVT_lis_npatches(3,LVT_rc%max_model_types,0:LVT_npes-1))
+    allocate(LVT_lis_patch_offsets(3,LVT_rc%max_model_types,0:LVT_npes-1))
+    allocate(LVT_lis_patch_deltas(3,LVT_rc%max_model_types,0:LVT_npes-1))
 
-    allocate(LVT_vecPatch(2,LVT_rc%max_model_types))
+    allocate(LVT_vecPatch(3,LVT_rc%max_model_types))
 
     LVT_rc%endtime = 0
     LVT_rc%gridDesc = 0 
@@ -294,6 +294,7 @@ contains
     integer*4, parameter    :: gDEKAD_TIME_SCHEMA = 10
     integer*4               :: dekOy
     integer                 :: days(12)
+    integer                 :: k
     integer                 :: tfact
     data days /31,28,31,30,31,30,31,31,30,31,30,31/
 
@@ -332,124 +333,91 @@ contains
             rc=status)
        call LVT_verify(status, 'error in LIS_ticktime')       
        
-       
-       if(mod(LVT_rc%tlag,2592000).ne.0) then 
-          call ESMF_TimeIntervalSet(lagTS,s=LVT_rc%tlag,rc=status)
-          call LVT_verify(status, 'error in LIS_ticktime')
-          lagTime = currTime1 + lagTS
-       else
-          tfact = LVT_rc%tlag/2592000
-          LVT_rc%lmo = LVT_rc%mo + tfact
-          LVT_rc%lyr = LVT_rc%yr
+       do k=1,LVT_rc%nDataStreams
+          if(mod(LVT_rc%tlag(k),2592000).ne.0) then 
+             call ESMF_TimeIntervalSet(lagTS,s=LVT_rc%tlag(k),rc=status)
+             call LVT_verify(status, 'error in LIS_ticktime')
+             lagTime = currTime1 + lagTS
+          else
+             tfact = LVT_rc%tlag(k)/2592000
+             LVT_rc%lmo = LVT_rc%mo + tfact
+             LVT_rc%lyr = LVT_rc%yr
 !-------------------------------------------------------------------------
 ! Assuming here that the month interval will not span more than 12 months
 !-------------------------------------------------------------------------
-          if(LVT_rc%lmo.gt.12) then 
-             LVT_rc%lyr = LVT_rc%lyr + 1
-             LVT_rc%lmo = LVT_rc%lmo -12
-          endif
-          if(LVT_rc%lmo.lt.1) then 
-             LVT_rc%lyr = LVT_rc%lyr - 1
-             LVT_rc%lmo = 12 - LVT_rc%lmo 
-          endif
-          if(LVT_rc%lmo.eq.2) then 
-             if((mod(LVT_rc%lyr,4) .eq. 0 .and. &
-                  mod(LVT_rc%lyr, 100).ne.0) &!leap year
-                  .or.(mod(LVT_rc%lyr,400) .eq.0)) then 
-                if(LVT_rc%da.gt.29) then 
-                   LVT_rc%lda = 29
-                else
-                   LVT_rc%lda = LVT_rc%da
-                endif
-             else 
-                if(LVT_rc%da.gt.28) then 
-                   LVT_rc%lda = 28
-                else
-                   LVT_rc%lda = LVT_rc%da
-                endif
+             if(LVT_rc%lmo.gt.12) then 
+                LVT_rc%lyr = LVT_rc%lyr + 1
+                LVT_rc%lmo = LVT_rc%lmo -12
              endif
-          else
-             LVT_rc%lda = LVT_rc%da
+             if(LVT_rc%lmo.lt.1) then 
+                LVT_rc%lyr = LVT_rc%lyr - 1
+                LVT_rc%lmo = 12 - LVT_rc%lmo 
+             endif
+             if(LVT_rc%lmo.eq.2) then 
+                if((mod(LVT_rc%lyr,4) .eq. 0 .and. &
+                     mod(LVT_rc%lyr, 100).ne.0) &!leap year
+                     .or.(mod(LVT_rc%lyr,400) .eq.0)) then 
+                   if(LVT_rc%da.gt.29) then 
+                      LVT_rc%lda = 29
+                   else
+                      LVT_rc%lda = LVT_rc%da
+                   endif
+                else 
+                   if(LVT_rc%da.gt.28) then 
+                      LVT_rc%lda = 28
+                   else
+                      LVT_rc%lda = LVT_rc%da
+                   endif
+                endif
+             else
+                LVT_rc%lda = LVT_rc%da
+             endif
+             
+             LVT_rc%lhr = LVT_rc%hr
+             LVT_rc%lmn = LVT_rc%mn 
+             LVT_rc%lss = LVT_rc%ss 
           endif
+          
+          call ESMF_TimeGet(lagTime,  yy=LVT_rc%lyr, &
+               mm = LVT_rc%lmo, &
+               dd = LVT_rc%lda, &
+               h = LVT_rc%lhr, &
+               m = LVT_rc%lmn, &
+               s = LVT_rc%lss,&
+               calendar = LVT_calendar, &
+               rc=status)
+          call LVT_date2time(LVT_rc%ltime,LVT_rc%ldoy,LVT_rc%lgmt,&
+               LVT_rc%lyr,LVT_rc%lmo,LVT_rc%lda,LVT_rc%lhr,LVT_rc%lmn,LVT_rc%lss)
+          
 
-          LVT_rc%lhr = LVT_rc%hr
-          LVT_rc%lmn = LVT_rc%mn 
-          LVT_rc%lss = LVT_rc%ss 
-       endif
+          lagTime = lagTime + ts
+          call ESMF_TimeGet(currTime,  yy=LVT_rc%l_nyr, &
+               mm = LVT_rc%l_nmo, &
+               dd = LVT_rc%l_nda, &
+               h = LVT_rc%l_nhr, &
+               m = LVT_rc%l_nmn, &
+               s = LVT_rc%l_nss,&
+               calendar = LVT_calendar, &
+               rc=status)
+          call LVT_verify(status, 'error in LIS_ticktime')  
 
-       call ESMF_TimeGet(lagTime,  yy=LVT_rc%lyr, &
-            mm = LVT_rc%lmo, &
-            dd = LVT_rc%lda, &
-            h = LVT_rc%lhr, &
-            m = LVT_rc%lmn, &
-            s = LVT_rc%lss,&
-            calendar = LVT_calendar, &
-            rc=status)
-       call LVT_date2time(LVT_rc%ltime,LVT_rc%ldoy,LVT_rc%lgmt,&
-            LVT_rc%lyr,LVT_rc%lmo,LVT_rc%lda,LVT_rc%lhr,LVT_rc%lmn,LVT_rc%lss)
-
-
-       lagTime = lagTime + ts
-       call ESMF_TimeGet(currTime,  yy=LVT_rc%l_nyr, &
-            mm = LVT_rc%l_nmo, &
-            dd = LVT_rc%l_nda, &
-            h = LVT_rc%l_nhr, &
-            m = LVT_rc%l_nmn, &
-            s = LVT_rc%l_nss,&
-            calendar = LVT_calendar, &
-            rc=status)
-       call LVT_verify(status, 'error in LIS_ticktime')  
-       
-       LVT_rc%dyr(1)   = LVT_rc%yr
-       LVT_rc%dmo(1)   = LVT_rc%mo
-       LVT_rc%dda(1)   = LVT_rc%da
-       LVT_rc%dhr(1)   = LVT_rc%hr
-       LVT_rc%dmn(1)   = LVT_rc%mn
-       LVT_rc%dss(1)   = LVT_rc%ss
-       LVT_rc%ddoy(1)  = LVT_rc%doy
-       LVT_rc%dgmt(1)  = LVT_rc%gmt
-       LVT_rc%dtime(1) = LVT_rc%time
-
-       LVT_rc%d_nyr(1)   = LVT_rc%yr
-       LVT_rc%d_nmo(1)   = LVT_rc%mo
-       LVT_rc%d_nda(1)   = LVT_rc%da
-       LVT_rc%d_nhr(1)   = LVT_rc%hr
-       LVT_rc%d_nmn(1)   = LVT_rc%mn
-       LVT_rc%d_nss(1)   = LVT_rc%ss
-
-       LVT_rc%dyr(2)   = LVT_rc%lyr
-       LVT_rc%dmo(2)   = LVT_rc%lmo
-       LVT_rc%dda(2)   = LVT_rc%lda
-       LVT_rc%dhr(2)   = LVT_rc%lhr
-       LVT_rc%dmn(2)   = LVT_rc%lmn
-       LVT_rc%dss(2)   = LVT_rc%lss
-       LVT_rc%ddoy(2)  = LVT_rc%ldoy
-       LVT_rc%dgmt(2)  = LVT_rc%lgmt
-       LVT_rc%dtime(2) = LVT_rc%ltime
-
-       LVT_rc%d_nyr(2)   = LVT_rc%l_nyr
-       LVT_rc%d_nmo(2)   = LVT_rc%l_nmo
-       LVT_rc%d_nda(2)   = LVT_rc%l_nda
-       LVT_rc%d_nhr(2)   = LVT_rc%l_nhr
-       LVT_rc%d_nmn(2)   = LVT_rc%l_nmn
-       LVT_rc%d_nss(2)   = LVT_rc%l_nss
-
-       LVT_rc%dyr(3)   = LVT_rc%lyr
-       LVT_rc%dmo(3)   = LVT_rc%lmo
-       LVT_rc%dda(3)   = LVT_rc%lda
-       LVT_rc%dhr(3)   = LVT_rc%lhr
-       LVT_rc%dmn(3)   = LVT_rc%lmn
-       LVT_rc%dss(3)   = LVT_rc%lss
-       LVT_rc%ddoy(3)  = LVT_rc%ldoy
-       LVT_rc%dgmt(3)  = LVT_rc%lgmt
-       LVT_rc%dtime(3) = LVT_rc%ltime
-
-       LVT_rc%d_nyr(3)   = LVT_rc%l_nyr
-       LVT_rc%d_nmo(3)   = LVT_rc%l_nmo
-       LVT_rc%d_nda(3)   = LVT_rc%l_nda
-       LVT_rc%d_nhr(3)   = LVT_rc%l_nhr
-       LVT_rc%d_nmn(3)   = LVT_rc%l_nmn
-       LVT_rc%d_nss(3)   = LVT_rc%l_nss
+          LVT_rc%dyr(k)   = LVT_rc%lyr
+          LVT_rc%dmo(k)   = LVT_rc%lmo
+          LVT_rc%dda(k)   = LVT_rc%lda
+          LVT_rc%dhr(k)   = LVT_rc%lhr
+          LVT_rc%dmn(k)   = LVT_rc%lmn
+          LVT_rc%dss(k)   = LVT_rc%lss
+          LVT_rc%ddoy(k)  = LVT_rc%ldoy
+          LVT_rc%dgmt(k)  = LVT_rc%lgmt
+          LVT_rc%dtime(k) = LVT_rc%ltime
+          
+          LVT_rc%d_nyr(k)   = LVT_rc%l_nyr
+          LVT_rc%d_nmo(k)   = LVT_rc%l_nmo
+          LVT_rc%d_nda(k)   = LVT_rc%l_nda
+          LVT_rc%d_nhr(k)   = LVT_rc%l_nhr
+          LVT_rc%d_nmn(k)   = LVT_rc%l_nmn
+          LVT_rc%d_nss(k)   = LVT_rc%l_nss
+       enddo
 
        if(LVT_rc%timeAvgOpt.eq.0) then !instantaneous variable 
           if(mod(LVT_rc%tavgInterval,31536000).eq.0)then 
@@ -1068,39 +1036,39 @@ end function checkTS
     allocate(LVT_nss_ind(LVT_npes))
     allocate(LVT_nse_ind(LVT_npes))
 
-    allocate(LVT_lis_ews_ind(2,LVT_npes))
-    allocate(LVT_lis_ewe_ind(2,LVT_npes))
-    allocate(LVT_lis_nss_ind(2,LVT_npes))
-    allocate(LVT_lis_nse_ind(2,LVT_npes))
+    allocate(LVT_lis_ews_ind(3,LVT_npes))
+    allocate(LVT_lis_ewe_ind(3,LVT_npes))
+    allocate(LVT_lis_nss_ind(3,LVT_npes))
+    allocate(LVT_lis_nse_ind(3,LVT_npes))
 
     allocate(LVT_ews_halo_ind(LVT_npes))
     allocate(LVT_ewe_halo_ind(LVT_npes))
     allocate(LVT_nss_halo_ind(LVT_npes))
     allocate(LVT_nse_halo_ind(LVT_npes))
 
-    allocate(LVT_lis_ews_halo_ind(2,LVT_npes))
-    allocate(LVT_lis_ewe_halo_ind(2,LVT_npes))
-    allocate(LVT_lis_nss_halo_ind(2,LVT_npes))
-    allocate(LVT_lis_nse_halo_ind(2,LVT_npes))
+    allocate(LVT_lis_ews_halo_ind(3,LVT_npes))
+    allocate(LVT_lis_ewe_halo_ind(3,LVT_npes))
+    allocate(LVT_lis_nss_halo_ind(3,LVT_npes))
+    allocate(LVT_lis_nse_halo_ind(3,LVT_npes))
 
     allocate(LVT_deltas(0:LVT_npes-1))
     allocate(LVT_offsets(0:LVT_npes-1))
-    allocate(LVT_lis_deltas(2,0:LVT_npes-1))
-    allocate(LVT_lis_offsets(2,0:LVT_npes-1))
+    allocate(LVT_lis_deltas(3,0:LVT_npes-1))
+    allocate(LVT_lis_offsets(3,0:LVT_npes-1))
     allocate(LVT_tdeltas(0:LVT_npes-1))
     allocate(LVT_toffsets(0:LVT_npes-1))
-    allocate(LVT_lis_tdeltas(2,0:LVT_npes-1))
-    allocate(LVT_lis_toffsets(2,0:LVT_npes-1))
+    allocate(LVT_lis_tdeltas(3,0:LVT_npes-1))
+    allocate(LVT_lis_toffsets(3,0:LVT_npes-1))
     allocate(LVT_gdeltas(0:LVT_npes-1))
     allocate(LVT_goffsets(0:LVT_npes-1))
-    allocate(LVT_lis_gdeltas(2,0:LVT_npes-1))
-    allocate(LVT_lis_goffsets(2,0:LVT_npes-1))
+    allocate(LVT_lis_gdeltas(3,0:LVT_npes-1))
+    allocate(LVT_lis_goffsets(3,0:LVT_npes-1))
     allocate(LVT_odeltas(0:LVT_npes-1))
     allocate(LVT_ooffsets(0:LVT_npes-1))
     allocate(LVT_ntiless(0:LVT_npes-1))
     allocate(LVT_ngrids(0:LVT_npes-1))
-    allocate(LVT_lis_ntiless(2,0:LVT_npes-1))
-    allocate(LVT_lis_ngrids(2,0:LVT_npes-1))
+    allocate(LVT_lis_ntiless(3,0:LVT_npes-1))
+    allocate(LVT_lis_ngrids(3,0:LVT_npes-1))
     
     LVT_ews_ind = 0
     LVT_ewe_ind = 0

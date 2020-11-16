@@ -150,6 +150,10 @@ subroutine LIS_metforcing_plugin
    use merra2_forcingMod
 #endif
 
+#if ( defined MF_ERA5 )
+   use era5_forcingMod
+#endif
+
 #if ( defined MF_GSWP1 )
    use gswp1_forcingMod
 #endif
@@ -176,6 +180,10 @@ subroutine LIS_metforcing_plugin
 
 #if ( defined MF_GEOS5_FORECAST )
    use geos5fcst_forcingMod
+#endif
+
+#if ( defined MF_GEFS_FORECAST )
+   use gefs_forcingMod
 #endif
 
 #if ( defined MF_GDAS_LSWG )
@@ -318,6 +326,10 @@ subroutine LIS_metforcing_plugin
    use AWAP_forcingMod
 #endif
 
+#if ( defined MF_AWRAL)
+   use AWRAL_forcingMod
+#endif
+
 #if ( defined MF_HIMAT_GMU)
    use HiMATGMU_forcingMod
 #endif
@@ -428,6 +440,13 @@ subroutine LIS_metforcing_plugin
    external reset_merra2
 #endif
 
+#if ( defined MF_ERA5 )
+   external get_era5
+   external timeinterp_era5
+   external finalize_era5
+   external reset_era5
+#endif
+
 #if ( defined MF_GSWP1 )
    external get_gswp1
    external timeinterp_gswp1
@@ -470,6 +489,13 @@ subroutine LIS_metforcing_plugin
    external timeinterp_geos5fcst
    external finalize_geos5fcst
    external reset_geos5fcst
+#endif
+
+#if ( defined MF_GEFS_FORECAST )
+   external get_gefs
+   external timeinterp_gefs
+   external finalize_gefs
+   external reset_gefs
 #endif
 
 #if ( defined MF_GDAS_LSWG )
@@ -692,6 +718,13 @@ subroutine LIS_metforcing_plugin
    external finalize_AWAP
 #endif
 
+#if ( defined MF_AWRAL )
+   external get_AWRAL
+   external timeinterp_AWRAL
+   external reset_AWRAL
+   external finalize_AWRAL
+#endif
+
 #if ( defined MF_HIMAT_GMU )
    external get_HiMATGMU
    external timeinterp_HiMATGMU
@@ -864,6 +897,16 @@ subroutine LIS_metforcing_plugin
    call registerfinalmetforc(trim(LIS_merra2Id)//char(0),finalize_merra2)
 #endif
 
+#if ( defined MF_ERA5)
+! - ERA5 Reanalysis Forcing:
+   call registerinitmetforc(trim(LIS_era5Id)//char(0),init_ERA5)
+   call registerretrievemetforc(trim(LIS_era5Id)//char(0),get_era5)
+   call registertimeinterpmetforc(trim(LIS_era5Id)//char(0), &
+                                  timeinterp_era5)
+   call registerresetmetforc(trim(LIS_era5Id)//char(0),reset_era5)
+   call registerfinalmetforc(trim(LIS_era5Id)//char(0),finalize_era5)
+#endif
+
 #if ( defined MF_GSWP1 )
 ! - GWSP1 Forcing:
    call registerinitmetforc(trim(LIS_gswp1Id)//char(0),init_GSWP1)
@@ -927,6 +970,16 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_geos5fcst)
    call registerfinalmetforc(trim(LIS_geos5fcstId)//char(0),finalize_geos5fcst)
    call registerresetmetforc(trim(LIS_geos5fcstId)//char(0),reset_geos5fcst)
+#endif
+
+#if ( defined MF_GEFS_FORECAST )
+! - GEFS forecast forcing:
+   call registerinitmetforc(trim(LIS_gefsId)//char(0),init_GEFS)
+   call registerretrievemetforc(trim(LIS_gefsId)//char(0),get_gefs)
+   call registertimeinterpmetforc(trim(LIS_gefsID)//char(0), &
+                                  timeinterp_gefs)
+   call registerfinalmetforc(trim(LIS_gefsId)//char(0),finalize_gefs)
+   call registerresetmetforc(trim(LIS_gefsId)//char(0),reset_gefs)
 #endif
 
 #if ( defined MF_GDAS_LSWG )
@@ -1263,6 +1316,15 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_AWAP)
    call registerresetmetforc(trim(LIS_AWAPforcId)//char(0),reset_AWAP)
    call registerfinalmetforc(trim(LIS_AWAPforcId)//char(0),finalize_AWAP)
+#endif
+
+#if ( defined MF_AWRAL)
+   call registerinitmetforc(trim(LIS_AWRALforcId)//char(0),init_AWRAL)
+   call registerretrievemetforc(trim(LIS_AWRALforcId)//char(0),get_AWRAL)
+   call registertimeinterpmetforc(trim(LIS_AWRALforcId)//char(0), &
+                                  timeinterp_AWRAL)
+   call registerresetmetforc(trim(LIS_AWRALforcId)//char(0),reset_AWRAL)
+   call registerfinalmetforc(trim(LIS_AWRALforcId)//char(0),finalize_AWRAL)
 #endif
 
 #if ( defined MF_HIMAT_GMU)
