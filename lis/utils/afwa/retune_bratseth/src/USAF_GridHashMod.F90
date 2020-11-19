@@ -246,8 +246,8 @@ contains
     j = int(tmp_lat / this%dlat) + 1
 
     if (j .lt. 1 .or. i .lt. 1) then
-       print*, 'lon, tmp_lon, j: ', lon, tmp_lon, j
-       print*, 'lat, tmp_lat, i: ', lat, tmp_lat, i
+       !print*, 'lon, tmp_lon, j: ', lon, tmp_lon, j
+       !print*, 'lat, tmp_lat, i: ', lat, tmp_lat, i
     end if
 
   end subroutine createIJForGridHash

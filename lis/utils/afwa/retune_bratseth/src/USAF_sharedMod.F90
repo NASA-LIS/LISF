@@ -107,6 +107,8 @@ contains
   ! Construct list of stations to blacklist
   subroutine fetch_blacklist(blacklist_file, blacklist_stns, nstns)
 
+    use esmf
+    
     ! Defaults
     implicit none
 
@@ -124,7 +126,9 @@ contains
     ! Check if file exists
     inquire(file=trim(blacklist_file), exist=ex)
     if (.not. ex) then
-       print*, '[ERR] Cannot find blacklist file ', trim(blacklist_file)
+       call ESMF_LogWrite( &
+            '[ERR] Cannot find blacklist file '//trim(blacklist_file), &
+            ESMF_LOGMSG_ERROR)
        call endrun(1)
     end if
 
