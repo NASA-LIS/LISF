@@ -127,7 +127,7 @@ contains
     inquire(file=trim(blacklist_file), exist=ex)
     if (.not. ex) then
        call ESMF_LogWrite( &
-            '[ERR] Cannot find blacklist file '//trim(blacklist_file), &
+            'Cannot find blacklist file '//trim(blacklist_file), &
             ESMF_LOGMSG_ERROR)
        call endrun(1)
     end if
