@@ -74,20 +74,20 @@ program main
    ! Initialize ESMF.  Must happen first.  This calls MPI_Init under the hood.
    call esmf_initialize(vm=vm, defaultCalKind=ESMF_CALKIND_GREGORIAN, rc=rc)
    if (rc .ne. ESMF_SUCCESS) then
-      call ESMF_LogWrite("[ERR] Cannot initialize ESMF!", ESMF_LOGMSG_ERROR)
+      call ESMF_LogWrite("Cannot initialize ESMF!", ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
 
    ! Get some MPI information
    call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
    if (ierr .ne. MPI_SUCCESS) then
-      call ESMF_LogWrite("[ERR] Problem calling mpi_comm_rank", &
+      call ESMF_LogWrite("Problem calling mpi_comm_rank", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
    call mpi_comm_size(MPI_COMM_WORLD, numprocs, ierr)
    if (ierr .ne. MPI_SUCCESS) then
-      call ESMF_LogWrite("[ERR] Problem calling mpi_comm_size", &
+      call ESMF_LogWrite("Problem calling mpi_comm_size", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -95,7 +95,7 @@ program main
    if (myid .eq. 0) then
       num_args = command_argument_count()
       if (num_args .ne. 1) then
-         call ESMF_LogWrite("[ERR] Improper program invocation", &
+         call ESMF_LogWrite("Improper program invocation", &
               ESMF_LOGMSG_ERROR)
          call ESMF_LogWrite("USAGE: procOBA_NWP <configfile> ", &
               ESMF_LOGMSG_ERROR)
@@ -110,7 +110,7 @@ program main
       cf = ESMF_ConfigCreate(rc=rc)
       call esmf_ConfigLoadFile(cf, cfgfile, rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
-         call ESMF_LogWrite("[ERR] cannot open "//trim(cfgfile), &
+         call ESMF_LogWrite("Cannot open "//trim(cfgfile), &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -122,7 +122,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS .or. max_stations .lt. 1) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify positive max_stations in config file!", &
+              "Must specify positive max_stations in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -131,7 +131,7 @@ program main
    call mpi_bcast(max_stations, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -143,7 +143,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS .or. max_vario_bins .lt. 1) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify positive max_vario_bins in config file!", &
+              "Must specify positive max_vario_bins in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -152,7 +152,7 @@ program main
    call mpi_bcast(max_vario_bins, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -164,7 +164,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS .or. vario_bin_dist .lt. 1) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify positive vario_bin_dist in config file!", &
+              "Must specify positive vario_bin_dist in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -173,7 +173,7 @@ program main
    call mpi_bcast(vario_bin_dist, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -185,7 +185,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify datadir in config file!", &
+              "Must specify datadir in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -195,7 +195,7 @@ program main
         ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -207,7 +207,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify startyear in config file!", &
+              "Must specify startyear in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -216,7 +216,7 @@ program main
    call mpi_bcast(startyear, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -228,7 +228,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify startmonth in config file!", &
+              "Must specify startmonth in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -237,7 +237,7 @@ program main
    call mpi_bcast(startmonth, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -249,7 +249,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify startday in config file!", &
+              "Must specify startday in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -258,7 +258,7 @@ program main
    call mpi_bcast(startday, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -270,7 +270,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify starthour in config file!", &
+              "Must specify starthour in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -279,7 +279,7 @@ program main
    call mpi_bcast(starthour, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -291,7 +291,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify endyear in config file!", &
+              "Must specify endyear in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -300,7 +300,7 @@ program main
    call mpi_bcast(endyear, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -312,7 +312,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify endmonth in config file!", &
+              "Must specify endmonth in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -321,7 +321,7 @@ program main
    call mpi_bcast(endmonth, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -333,7 +333,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify endday in config file!", &
+              "Must specify endday in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -342,7 +342,7 @@ program main
    call mpi_bcast(endday, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -354,7 +354,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify endhour in config file!", &
+              "Must specify endhour in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -363,7 +363,7 @@ program main
    call mpi_bcast(endhour, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -375,7 +375,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify intervalyear in config file!", &
+              "Must specify intervalyear in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -384,7 +384,7 @@ program main
    call mpi_bcast(intervalyear, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -396,7 +396,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify intervalmonth in config file!", &
+              "Must specify intervalmonth in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -405,7 +405,7 @@ program main
    call mpi_bcast(intervalmonth, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -417,7 +417,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify intervalday in config file!", &
+              "Must specify intervalday in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -426,7 +426,7 @@ program main
    call mpi_bcast(intervalday, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -438,7 +438,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify intervalhour in config file!", &
+              "Must specify intervalhour in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -447,7 +447,7 @@ program main
    call mpi_bcast(intervalhour, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -459,7 +459,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify outfile in config file!", &
+              "Must specify outfile in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -469,7 +469,7 @@ program main
         ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -481,7 +481,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify obtype in config file!", &
+              "Must specify obtype in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -494,10 +494,10 @@ program main
       end do
       if (.not. found_obtype) then
          call ESMF_LogWrite( &
-              "[ERR] obtype not supported!", &
+              "obtype not supported!", &
               ESMF_LOGMSG_ERROR)
          call ESMF_LogWrite( &
-              "[ERR] obtype must be one of:", &
+              "obtype must be one of:", &
               ESMF_LOGMSG_ERROR)
          do i = 1, max_obtypes
             call ESMF_LogWrite( &
@@ -511,7 +511,7 @@ program main
    call mpi_bcast(obtype, len(obtype), MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -523,7 +523,7 @@ program main
            rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Must specify use_blacklist in config file!", &
+              "Must specify use_blacklist in config file!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -533,7 +533,7 @@ program main
         ierr)
    if (ierr .ne. MPI_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Problem calling mpi_bcast!", &
+           "Problem calling mpi_bcast!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -546,7 +546,7 @@ program main
               rc=rc)
          if (rc .ne. ESMF_SUCCESS) then
             call ESMF_LogWrite( &
-                 "[ERR] Must specify blacklist_file in config file!", &
+                 "Must specify blacklist_file in config file!", &
                  ESMF_LOGMSG_ERROR)
             call endrun(1)
          end if
@@ -556,7 +556,7 @@ program main
            MPI_COMM_WORLD, ierr)
       if (ierr .ne. MPI_SUCCESS) then
          call ESMF_LogWrite( &
-              "[ERR] Problem calling mpi_bcast!", &
+              "Problem calling mpi_bcast!", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -571,7 +571,7 @@ program main
         h=starthour, m=0, s=0, rc=rc)
    if (rc .ne. ESMF_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Cannot set starttime object!", &
+           "Cannot set starttime object!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -579,7 +579,7 @@ program main
         h=endhour, m=0, s=0, rc=rc)
    if (rc .ne. ESMF_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Cannot set endtime object!", &
+           "Cannot set endtime object!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -589,7 +589,7 @@ program main
         m=0, s=0, rc=rc)
    if (rc .ne. ESMF_SUCCESS) then
       call ESMF_LogWrite( &
-           "[ERR] Cannot set deltatime object!", &
+           "Cannot set deltatime object!", &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
@@ -632,14 +632,14 @@ program main
            use_blacklist, nstns, blacklist_stns)
    else
       call ESMF_LogWrite( &
-           "[ERR] Internal error, cannot search for "//adjustl(obtype), &
+           "Internal error, cannot search for "//adjustl(obtype), &
            ESMF_LOGMSG_ERROR)
       call endrun(1)
    end if
 
    if (myid .eq. 0) then
       call ESMF_LogWrite( &
-           "[INFO] Finished reading files", &
+           "Finished reading files", &
            ESMF_LOGMSG_INFO)
    end if
 
@@ -660,12 +660,12 @@ program main
            iostat=istat)
       if (istat .ne. 0) then
          call ESMF_LogWrite( &
-              "[WARN] Problem opening output file "//trim(outfile), &
+              "Problem opening output file "//trim(outfile), &
               ESMF_LOGMSG_WARNING)
          close(unit=iunit_out_vario)
       end if
       call ESMF_LogWrite( &
-           "[INFO] Writing to output file "//trim(outfile), &
+           "Writing to output file "//trim(outfile), &
            ESMF_LOGMSG_WARNING)
       do j = 1, max_vario_bins
          if (icounts_vario(j) .eq. 0) cycle
@@ -760,7 +760,7 @@ contains
               yy=yyyy, mm=mm, dd=dd, h=hh, rc=rc)
          if (rc .ne. ESMF_SUCCESS) then
             call ESMF_LogWrite( &
-                 "[ERR] Cannot get current time!", &
+                 "Cannot get current time!", &
                  ESMF_LOGMSG_ERROR)
             call endrun(1)
          end if
@@ -785,7 +785,7 @@ contains
          call mpi_bcast(istat, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
          if (ierr .ne. MPI_SUCCESS) then
             call ESMF_LogWrite( &
-                 "[ERR] Problem calling mpi_bcast!", &
+                 "Problem calling mpi_bcast!", &
                  ESMF_LOGMSG_ERROR)
             call endrun(1)
          end if
@@ -793,7 +793,7 @@ contains
          if (istat .ne. 0) then
             if (myid .eq. 0) then
             call ESMF_LogWrite( &
-                 "[WARN] Problem opening "//trim(fullpath), &
+                 "Problem opening "//trim(fullpath), &
                  ESMF_LOGMSG_WARNING)
                close(unit=iunit_input)
             end if
@@ -802,7 +802,7 @@ contains
 
          if (myid .eq. 0) then
             call ESMF_LogWrite( &
-                 "[INFO] Reading file "//trim(infile), &
+                 "Reading file "//trim(infile), &
                  ESMF_LOGMSG_INFO)
          end if
 
@@ -852,7 +852,7 @@ contains
          call bcast_reports(R_obs, myid, ierr)
          if (ierr .ne. MPI_SUCCESS) then
             call ESMF_LogWrite( &
-                 "[ERR] Cannot share reports across processors!", &
+                 "Cannot share reports across processors!", &
                  ESMF_LOGMSG_ERROR)
             call endrun(1)
          end if
