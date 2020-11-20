@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 SCRIPT: rescale_sat_sigma2.py
 
