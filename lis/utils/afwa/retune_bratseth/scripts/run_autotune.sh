@@ -1,7 +1,7 @@
 #!/bin/sh
 #SBATCH --job-name=autotune
-##SBATCH --time=1:00:00
-#SBATCH --time=3:00:00
+#SBATCH --time=1:00:00
+##SBATCH --time=3:00:00
 #SBATCH --account s1189
 #SBATCH --output autotune.slurm.out
 #Adjust node, core, and hardware constraints here
@@ -10,7 +10,7 @@
 #SBATCH --mail-user=eric.kemp@nasa.gov
 #SBATCH --mail-type=ALL
 #Set quality of service, if needed.
-##SBATCH --qos=debug
+#SBATCH --qos=debug
 
 ulimit -s unlimited
 
@@ -24,7 +24,7 @@ fi
 module purge
 unset LD_LIBRARY_PATH
 module use --append /home/emkemp/privatemodules
-module load lisf_7_intel_19_1_0_166
+module load lisf_7_intel_19_1_3_304_traceback-work-around
 
 SCRIPTDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/afwa/retune_bratseth/scripts
 CFGDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/afwa/retune_bratseth/cfgs
@@ -44,12 +44,15 @@ dayrange=$2
 # First, handle NWP semivariographic analyses
 for varname in gage rh2m spd10m t2m ; do
 
+    echo "Calling customize_procoba_nwp.py for $varname"
     $SCRIPTDIR/customize_procoba_nwp.py $CFGDIR/autotune.cfg \
-                                        $varname $enddt $dayrange || exit 1
+                                        $enddt $dayrange $varname || exit 1
 
+    echo "Calling procOBA_NWP for $varname"
     mpirun -np $SLURM_NTASKS $BINDIR/procOBA_NWP \
            procOBA_NWP.$varname.config || exit 1
 
+    echo "Calling fit_semivariogram.py for $varname"
     if [ $varname = gage ] ; then
         $SCRIPTDIR/fit_semivariogram.py $CFGDIR/${varname}_nwp.cfg \
                                         ${varname}_nwp.param || exit 1
@@ -64,23 +67,27 @@ done
 # Next, handle satellite variographic analyses
 for varname in cmorph geoprecip imerg ssmi ; do
 
+    echo "Calling customize_procoba_sat.py for $varname"
     $SCRIPTDIR/customize_procoba_sat.py $CFGDIR/autotune.cfg \
-                                        $varname $enddt $dayrange || exit 1
+                                        $enddt $dayrange $varname || exit 1
 
+    echo "Calling procOBA_Sat for $varname"
     mpirun -np $SLURM_NTASKS $BINDIR/procOBA_Sat \
            procOBA_Sat.$varname.config || exit 1
 
+    echo "Calling fit_semivariogram.py for $varname"
     $SCRIPTDIR/fit_semivariogram.py $CFGDIR/gage_$varname.cfg \
                                     gage_$varname.param || exit 1
 
     # Rescale the satellite error variance to compare with NWP.
+    echo "Calling rescale_sat_sigma2.py for $varname"
     $SCRIPTDIR/rescale_sat_sigma2.py $varname || exit 1
 done
 
 # Update the lis.config error settings
-
+echo "Calling customize_lis_config.py"
 $SCRIPTDIR/customize_lis_config.py $CFGDIR/autotune.cfg \
-    imerg $enddt $dayrange || exit 1
+    $enddt $dayrange || exit 1
 
-
+# The end
 exit 0
