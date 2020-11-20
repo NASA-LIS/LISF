@@ -30,20 +30,13 @@ class AutomateTuning:
 
     def _process_cmd_line(self):
         """Processes command line arguments."""
-        if len(sys.argv) != 5:
+        if len(sys.argv) not in [4, 5]:
             self.usage()
             sys.exit(1)
 
         self._process_cfg_file()
 
-        varname = sys.argv[2]
-        if varname not in ["gage", "rh2m", "t2m", "spd10m", \
-                           "cmorph", "geoprecip", "imerg", "ssmi"]:
-            print("[ERR] Invalid varname %s provided!" %(varname))
-            sys.exit(1)
-        self.varname = varname
-
-        self.yyyymmddhh = sys.argv[3]
+        self.yyyymmddhh = sys.argv[2]
         year = int(self.yyyymmddhh[0:4])
         month = int(self.yyyymmddhh[4:6])
         day = int(self.yyyymmddhh[6:8])
@@ -51,10 +44,21 @@ class AutomateTuning:
         self.enddt = \
             datetime.datetime(year=year, month=month, day=day, hour=hour)
 
-        self.dd = sys.argv[4]
+        self.dd = sys.argv[3]
         days = int(self.dd)
         delta = datetime.timedelta(days=days)
         self.startdt = self.enddt - delta
+
+
+        if len(sys.argv) == 5:
+            varname = sys.argv[4]
+            if varname not in ["gage", "rh2m", "t2m", "spd10m", \
+                               "cmorph", "geoprecip", "imerg", "ssmi"]:
+                print("[ERR] Invalid varname %s provided!" %(varname))
+                sys.exit(1)
+            self.varname = varname
+        else:
+            self.varname = None
 
     def _process_cfg_file(self):
         """Processes config file for this script."""
@@ -76,14 +80,18 @@ class AutomateTuning:
 
     def usage(self):
         """Print usage message for this script."""
-        print("Usage: %s CFGFILE VARNAME YYYYMMDDHH DD" %(sys.argv[0]))
+        print("Usage: %s CFGFILE YYYYMMDDHH DD [VARNAME]" %(sys.argv[0]))
         print("   CFGFILE is name of config file")
-        print("   VARNAME is name of variable to tune")
         print("   YYYYMMDDHH is end of training period")
-        print("   DD is number of days in training period.")
+        print("   DD is number of days in training period")
+        print("   VARNAME is name of variable to tune (if applicable)")
 
     def create_blacklist(self):
         """High-level driver for creating blacklist for selected variable."""
+
+        if self.varname is None:
+            print("[ERR] Variable not specified on command line!")
+            sys.exit(1)
 
         self.use_blacklist = True
 
@@ -120,6 +128,11 @@ class AutomateTuning:
 
     def customize_procoba_nwp(self):
         """Customizes config file for procOBA_NWP program."""
+
+        if self.varname is None:
+            print("[ERR] Variable not specified on command line!")
+            sys.exit(1)
+
         cfgfile = "%s/procOBA_NWP.%s.config" %(self.cfgdir, self.varname)
         if not os.path.exists(cfgfile):
             print("[ERR] Cannot find %s" %(cfgfile))
@@ -159,6 +172,11 @@ class AutomateTuning:
 
     def customize_procoba_sat(self):
         """Customizes config file for procOBA_Sat."""
+
+        if self.varname is None:
+            print("[ERR] Variable not specified on command line!")
+            sys.exit(1)
+
         cfgfile = "%s/procOBA_Sat.%s.config" %(self.cfgdir, self.varname)
         if not os.path.exists(cfgfile):
             print("[ERR] Cannot find %s" %(cfgfile))
