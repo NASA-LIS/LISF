@@ -14,6 +14,9 @@ import configparser
 import os
 import sys
 
+# Other libraries
+import numpy as np
+
 #------------------------------------------------------------------------------
 # NOTE: Pylint complains about the single-character variable names not
 # conforming to snake_case convention.  For sanity, we disable this test
