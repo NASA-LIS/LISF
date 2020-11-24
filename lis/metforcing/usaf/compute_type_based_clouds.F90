@@ -96,9 +96,9 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
             call wwmca_grib1%destroy()
             try = 1
             do while (try .lt. 10)
-               write(LIS_logunit) &
+               write(LIS_logunit,*) &
                     '[WARN] Problem reading ', trim(filename)
-               write(LIS_logunit)'[WARN] shifting to previous hour'
+               write(LIS_logunit,*)'[WARN] shifting to previous hour'
                ts1 = -60*60
                call LIS_tick(backtime1, doy1, gmt1, yr1, mo1, da1, &
                     hr1, mn1, ss1, ts1)
@@ -124,8 +124,9 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
             end do ! try loop
 
             if (try .ge. 10) then
-               write(LIS_logunit)'[WARN] Missing WWMCA GRIB1 file'
-               write(LIS_logunit)'[WARN] Will fall back on WWMCA binary files.'
+               write(LIS_logunit,*)'[WARN] Missing WWMCA GRIB1 file'
+               write(LIS_logunit,*) &
+                    '[WARN] Will fall back on WWMCA binary files.'
                exit
             end if
          end if
@@ -146,17 +147,36 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
          ! Populate the legacy binary arrays.
          call wwmca_grib1%return_binary_fields(amounts, types, tops, times)
 
+         write(LIS_logunit,*)'EMK: maxval(amounts) = ', &
+              maxval(amounts)
+         write(LIS_logunit,*)'EMK: minval(amounts) = ', &
+              minval(amounts)
+         
          if (hemi .eq. 1) then
             call AGRMET_loadcloud(hemi, agrmet_struc(n)%land(:,:,hemi), &
                  thres, times, amounts, tops, types,   &
                  cldtyp_nh, cldamt_nh, fog_nh,                &
                  julhr, agrmet_struc(n)%imax, agrmet_struc(n)%jmax)
+
+            write(LIS_logunit,*)'EMK: maxval(cldamt_nh) = ', &
+                 maxval(cldamt_nh)
+            write(LIS_logunit,*)'EMK: minval(cldamt_nh) = ', &
+                 minval(cldamt_nh)
+
          else
             call AGRMET_loadcloud(hemi, agrmet_struc(n)%land(:,:,hemi), &
                  thres, times, amounts, tops, types,   &
                  cldtyp_sh, cldamt_sh, fog_sh,                &
                  julhr, agrmet_struc(n)%imax, agrmet_struc(n)%jmax)
+
+            write(LIS_logunit,*)'EMK: maxval(cldamt_sh) = ', &
+                 maxval(cldamt_sh)
+            write(LIS_logunit,*)'EMK: minval(cldamt_sh) = ', &
+                 minval(cldamt_sh)
+
          end if
+
+         call wwmca_grib1%destroy()
 
       end do ! hemi
 
@@ -416,6 +436,11 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
    cldamt3(1,:,:) = real(cldamt_nh(3,:,:))
    cldamt3(2,:,:) = real(cldamt_sh(3,:,:))
 
+   write(LIS_logunit,*)'EMK: maxval(cldamt1(1,:,:)) = ', &
+        maxval(cldamt1(1,:,:))
+   write(LIS_logunit,*)'EMK: minval(cldamt1(1,:,:)) = ', &
+        minval(cldamt1(1,:,:))
+
    ip =1
    udef = -1.0
 
@@ -434,5 +459,7 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
    deallocate(cldamt1)
    deallocate(cldamt2)
    deallocate(cldamt3)
+
+   call wwmca_grib1%destroy()
 
 end subroutine compute_type_based_clouds

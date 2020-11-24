@@ -85,10 +85,10 @@ contains
     implicit none
     class(wwmca_grib1_t), intent(inout) :: this
     this%full_grib_path = "NULL"
-    deallocate(this%cldamt)
-    deallocate(this%cldtyp)
-    deallocate(this%cldtop)
-    deallocate(this%pixtim)
+    if (allocated(this%cldamt)) deallocate(this%cldamt)
+    if (allocated(this%cldtyp)) deallocate(this%cldtyp)
+    if (allocated(this%cldtop)) deallocate(this%cldtop)
+    if (allocated(this%pixtim)) deallocate(this%pixtim)
   end subroutine destroy
 
   ! Read the data from the GRIB file
@@ -138,7 +138,7 @@ contains
     ! See if file exists
     inquire(file=trim(this%full_grib_path), exist=file_exists)
     if (.not. file_exists) then
-       write(LIS_logunit)'[WARN] ', trim(this%full_grib_path), &
+       write(LIS_logunit,*) '[WARN] ', trim(this%full_grib_path), &
             ' does not exist!'
        rc = 1
        return
@@ -149,7 +149,7 @@ contains
     ! Open the file through GRIB_API
     call grib_open_file(ftn, trim(this%full_grib_path), 'r', rc)
     if (rc .ne. 0) then
-       write(LIS_logunit)'[WARN] Cannot open ', trim(this%full_grib_path)
+       write(LIS_logunit,*)'[WARN] Cannot open ', trim(this%full_grib_path)
        rc = 1
        return
     end if
@@ -157,7 +157,7 @@ contains
     ! Check total number of messages in this file.
     call grib_count_in_file(ftn, nmsgs, rc)
     if (rc .ne. 0) then
-       write(LIS_logunit)'[WARN] Cannot count messages in ', &
+       write(LIS_logunit,*)'[WARN] Cannot count messages in ', &
             trim(this%full_grib_path)
        call grib_close_file(ftn)
        rc = 1
@@ -167,6 +167,8 @@ contains
     allocate(dum1d(NX*NY))
     counter = 0
 
+    write(LIS_logunit,*)'[Info] Reading ', trim(this%full_grib_path)
+
     ! Loop through the GRIB file until all fields are found, or we reach
     ! end of file
     do k = 1, nmsgs
@@ -174,7 +176,7 @@ contains
        ! Find next message
        call grib_new_from_file(ftn, igrib, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit)'[WARN] Cannot read from ', &
+          write(LIS_logunit,*)'[WARN] Cannot read from ', &
                trim(this%full_grib_path)
           call grib_close_file(ftn)
           deallocate(dum1d)
@@ -185,7 +187,7 @@ contains
        ! Check edition number of this message
        call grib_get(igrib, 'editionNumber', edition, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit)'[WARN] Cannot read editionNumber from ', &
+          write(LIS_logunit,*)'[WARN] Cannot read editionNumber from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
           call grib_close_file(ftn)
@@ -194,7 +196,7 @@ contains
           return
        end if
        if (edition .ne. 1) then
-          write(LIS_logunit)'[WARN] Did not find GRIB1 message in ', &
+          write(LIS_logunit,*)'[WARN] Did not find GRIB1 message in ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
           cycle
@@ -204,7 +206,7 @@ contains
        ! or southern hemisphere
        call grib_get(igrib, 'gridDefinition', grid, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit)'[WARN] Cannot read gridDefinition from ', &
+          write(LIS_logunit,*)'[WARN] Cannot read gridDefinition from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
           call grib_close_file(ftn)
@@ -213,7 +215,7 @@ contains
           return
        end if
        if (grid .ne. 212 .and. grid .ne. 213) then
-          write(LIS_logunit)'[WARN] Did not find 16th mesh data from ', &
+          write(LIS_logunit,*)'[WARN] Did not find 16th mesh data from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
           cycle
@@ -222,7 +224,7 @@ contains
        ! Check the nx dimension
        call grib_get(igrib, 'Nx', inx, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit)'[WARN] Cannot read Nx from ', &
+          write(LIS_logunit,*)'[WARN] Cannot read Nx from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
           call grib_close_file(ftn)
@@ -231,7 +233,7 @@ contains
           return
        end if
        if (inx .ne. NX) then
-          write(LIS_logunit)'[WARN] Found wrong Nx dimension in ', &
+          write(LIS_logunit,*)'[WARN] Found wrong Nx dimension in ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
           cycle
@@ -240,7 +242,7 @@ contains
        ! Check the ny dimension
        call grib_get(igrib, 'Ny', iny, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit)'[WARN] Cannot read Ny from ', &
+          write(LIS_logunit,*)'[WARN] Cannot read Ny from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
           call grib_close_file(ftn)
@@ -249,7 +251,7 @@ contains
           return
        end if
        if (iny .ne. NY) then
-          write(LIS_logunit)'[WARN] Found wrong Ny dimension in ', &
+          write(LIS_logunit,*)'[WARN] Found wrong Ny dimension in ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
           cycle
@@ -258,7 +260,7 @@ contains
        ! Check the first latitude
        call grib_get(igrib, 'latitudeOfFirstGridPoint', firstlat, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Cannot read latitudeOfFirstGridPoint from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -269,7 +271,7 @@ contains
        end if
        if (.not. (grid .eq. 212 .and. firstlat .eq. -20826) .and. &
             .not. (grid .eq. 213 .and. firstlat .eq. 20826)) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Found wrong latitudeOfFirstGridPoint in ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -279,7 +281,7 @@ contains
        ! Check the first longitude
        call grib_get(igrib, 'longitudeOfFirstGridPoint', firstlon, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Cannot read longitudeOfFirstGridPoint from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -290,7 +292,7 @@ contains
        end if
        if (.not. (grid .eq. 212 .and. firstlon .eq. 145000) .and. &
             .not. (grid .eq. 213 .and. firstlon .eq. -125000)) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Found wrong longitudeOfFirstGridPoint in ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -300,7 +302,7 @@ contains
        ! Check the grid orientation
        call grib_get(igrib, 'orientationOfTheGrid', orient, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Cannot read orientationOfTheGrid from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -310,7 +312,7 @@ contains
           return
        end if
        if (orient .ne. 100000) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Found wrong orientationOfTheGrid in ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -320,7 +322,7 @@ contains
        ! Check the grid resolution
        call grib_get(igrib, 'DxInMetres', dx, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Cannot read DxInMetres from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -330,7 +332,7 @@ contains
           return
        end if
        if (dx .ne. 23813) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Found wrong DxInMetres in ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -340,7 +342,7 @@ contains
        ! Check the grid resolution
        call grib_get(igrib, 'DyInMetres', dy, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Cannot read DyInMetres from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -350,7 +352,7 @@ contains
           return
        end if
        if (dy .ne. 23813) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Found wrong DyInMetres in ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -361,7 +363,7 @@ contains
        call grib_get(igrib, 'resolutionAndComponentFlags', &
             res_component_flags, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Cannot read resolutionAndComponentFlags from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -371,7 +373,7 @@ contains
           return
        end if
        if (res_component_flags .ne. 128) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Found wrong resolutionAndComponentFlags in ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -381,7 +383,7 @@ contains
        ! Check the valid date
        call grib_get(igrib, 'dataDate', datadate, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Cannot read dataDate from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -391,7 +393,7 @@ contains
           return
        end if
        if ((year*10000 + month*100 + day) .ne. datadate) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Found wrong datadate in ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -401,7 +403,7 @@ contains
        ! Check the valid time
        call grib_get(igrib, 'dataTime', datatime, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Cannot read dataTime from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -411,9 +413,9 @@ contains
           return
        end if
        if ((hour*100) .ne. datatime) then
-          write(LIS_logunit) &
-               '[WARN] Found wrong datatime in ', &
-               trim(this%full_grib_path)
+          !write(LIS_logunit,*) &
+          !     '[WARN] Found wrong dataTime in ', &
+          !     trim(this%full_grib_path)
           call grib_release(igrib, rc)
           cycle
        end if
@@ -422,7 +424,7 @@ contains
        ! information.
        call grib_get(igrib, 'indicatorOfParameter', param, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Cannot read indicatorOfParameter from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -434,7 +436,7 @@ contains
 
        call grib_get(igrib, 'indicatorOfTypeOfLevel', leveltype, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Cannot read indicatorOfTypeOfLevel from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -446,7 +448,7 @@ contains
 
        call grib_get(igrib, 'level', level, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit) &
+          write(LIS_logunit,*) &
                '[WARN] Cannot read level from ', &
                trim(this%full_grib_path)
           call grib_release(igrib, rc)
@@ -463,6 +465,12 @@ contains
           ! Cloud amount (%)
           call fetch_values(this%full_grib_path, igrib, inx, iny, dum1d, &
                this%cldamt(:, :, level), counter, rc)
+          write(LIS_logunit,*) &
+               'EMK: level, maxval(this%cldamt(:, :, level)) = ', &
+               level, maxval(this%cldamt(:, :, level))
+          write(LIS_logunit,*) &
+               'EMK: level, minval(this%cldamt(:, :, level)) = ', &
+               level, minval(this%cldamt(:, :, level))
        else if (param .eq. 164 .and. leveltype .eq. 109 .and. &
             level .gt. 0 .and. level .lt. 5) then
           ! Cloud type [code]
@@ -481,7 +489,7 @@ contains
        end if
 
        if (rc .ne. 0) then
-          write(LIS_logunit)'[WARN] Problem reading values in ', &
+          write(LIS_logunit,*)'[WARN] Problem reading values in ', &
                trim(this%full_grib_path)
           call grib_close_file(ftn)
           deallocate(dum1d)
@@ -492,7 +500,7 @@ contains
        ! Close the GRIB message
        call grib_release(igrib, rc)
        if (rc .ne. 0) then
-          write(LIS_logunit)'[WARN] Problem releasing message in ', &
+          write(LIS_logunit,*)'[WARN] Problem releasing message in ', &
                trim(this%full_grib_path)
           call grib_close_file(ftn)
           deallocate(dum1d)
@@ -510,12 +518,13 @@ contains
 
     ! Print warning message if we found less than what we wanted.
     if (counter .ne. (3*NZ + 1)) then
-       write(LIS_logunit) 'Missing WWMCA data in ', &
+       write(LIS_logunit,*) 'Missing WWMCA data in ', &
             trim(this%full_grib_path)
     end if
 
     ! Clean up
     deallocate(dum1d)
+    rc = 0
 
   contains
 
@@ -550,7 +559,7 @@ contains
 
       call grib_get(igrib, 'values', data1d, rc)
       if (rc .ne. 0) then
-         write(LIS_logunit)'[WARN] Failed to read values from ', &
+         write(LIS_logunit,*)'[WARN] Failed to read values from ', &
               trim(full_grib_path)
          rc = 1
          return
@@ -558,7 +567,7 @@ contains
 
       do j = 1, iny
          do i = 1, inx
-            data2d(i, j) = data1d(1 + (j-1)*inx)
+            data2d(i, j) = data1d(i + (j-1)*inx)
          end do ! i
       end do ! j
 
@@ -634,17 +643,17 @@ contains
     integer, intent(in) :: yr, mo, da, hr
 
     ! Locals
-    character(2), parameter :: FHEMI(2) = (/'N_', 'S_'/)
+    character(1), parameter :: FHEMI(2) = (/'N', 'S'/)
     character(10) :: ftime1, ftime2
 
     write(unit=ftime2, fmt='(i4, i2.2, i2.2, i2.2)') yr, mo, da, hr
 
     if (use_timestamp .eq. 1) then
        write(unit=ftime1, fmt='(a1, i4, i2.2, i2.2, a1)') '/', yr, mo, da, '/'
-       fname = trim(rootdir) // ftime1 // trim(dir) // 'WWMCA_' // &
+       fname = trim(rootdir) // ftime1 // trim(dir) // '/WWMCA_' // &
             ftime2 // '_' // fhemi(hemi) // '_16_M.GR1'
     else
-       fname = trim(rootdir) // trim(dir) // 'WWMCA_' // &
+       fname = trim(rootdir) // trim(dir) // '/WWMCA_' // &
             ftime2 // '_' // fhemi(hemi) // '_16_M.GR1'
     end if
   end subroutine USAF_wwmca_grib1_filename
