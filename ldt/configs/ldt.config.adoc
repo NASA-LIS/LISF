@@ -117,7 +117,7 @@ Land surface model:       Noah.3.3
 Lake model:               none
 ....
 
-`Routing model:` specifies the river routing model used in a LIS run.  Currently, only the HYMAP routing scheme parameters are supported in LDT.
+`Routing model:` specifies the river routing model used in a LIS run.  Both HYMAP and HYMAP2 routing scheme parameters are supported in LDT.
 
 .Example _ldt.config_ entry
 ....
@@ -3922,15 +3922,21 @@ LPRM vegetation optical depth observation directory: ../LPRM_VOD
 LPRM vegetation optical depth data designation:      'X-band'
 ....
 
+This section describes the parameters needed for the HYMAP and the HYMAP2 routing models.  The config entries only have "`HYMAP`" within them, as they apply to both HYMAP versions.
+
 `HYMAP river width map:` specifies the name of the HYMAP river width data file.
 
 `HYMAP river height map:` specifies the name of the HYMAP river height data file.
+
+`HYMAP river length map:` specifies the name of the river length data file.
 
 `HYMAP river roughness map:` specifies the name of the HYMAP river roughness data file.
 
 `HYMAP floodplain height map:` specifies the name of the HYMAP floodplain height data file.
 
 `HYMAP floodplain height levels:` specifies the number of the HYMAP floodplain height levels.
+
+`HYMAP floodplain roughness map:` specifies the name of floodplain roughness data file.
 
 `HYMAP flow direction x map:` specifies the name of the x-flow direction data file.
 
@@ -3942,9 +3948,11 @@ LPRM vegetation optical depth data designation:      'X-band'
 
 `HYMAP grid area map:` specifies the name of the grid area data file.
 
-`HYMAP drainage area map:` [red]#specifies what?#
+`HYMAP drainage area map:` specifies the name of the drainage area data file.
 
-`HYMAP basin map:` [red]#specifies what?#
+`HYMAP basin map:` specifies the name of the basin map data file.
+
+`HYMAP basin mask map:` specifies the name of the basin mask data file.
 
 `HYMAP runoff time delay map:` specifies the name of the runoff time delay data file.
 
@@ -3952,53 +3960,47 @@ LPRM vegetation optical depth data designation:      'X-band'
 
 `HYMAP baseflow time delay map:` specifies the name of the baseflow time delay data file.
 
-`HYMAP reference discharge map:` specifies the name of the reference discharge data file.
+`HYMAP baseflow dwi ratio map:` specifies the name of the baseflow dwi ratio data file.  This is an optional parameter that is required only when "`HYMAP2 routing model dwi flag`" is set to 1 (turned on) in LIS in the lis.config file.  If this flag is set to 0 in the lis.config file, the baseflow dwi ratio map is not required.
 
-`HYMAP basin mask map:` specifies the name of the basin mask data file.
+`HYMAP runoff dwi ratio map:` specifies the name of the runoff dwi ratio data file.  This is an optional parameter that is required only when "`HYMAP2 routing model dwi flag`" is set to 1 (turned on) in LIS in the lis.config file.  If this flag is set to 0 in the lis.config file, the runoff dwi ratio map is not required.
 
-`HYMAP params map projection:` [red]#specifies what?#
-
-`HYMAP params spatial transform:` [red]#specifies what?#
-
-`HYMAP river length map:` specifies the name of the river length data file.
-
-`HYMAP floodplain roughness map:` specifies the name of floodplain roughness map file.
+`HYMAP river flow type map:` specifies the name of the river flow type data file.  This is an optional parameter that is required only when "`HYMAP2 routing method`" is set to "`hybrid`" in LIS in the lis.config file.  If the routing method is set to a different option, the river flow type map is not required.
 
 .Example _ldt.config_ entry
 ....
-HYMAP river width map:              ../HYMAP_parms/rivwth_Getirana_Dutra.bin
-HYMAP river height map:             ../HYMAP_parms/rivhgt_Getirana_Dutra.bin 
-HYMAP river roughness map:          ../HYMAP_parms/rivman_Getirana_Dutra.bin 
-HYMAP floodplain roughness map:     ../HYMAP_parms/fldman.bin
-HYMAP river length map:             ../HYMAP_parms/rivlen.bin
-HYMAP floodplain height map:        ../HYMAP_parms/fldhgt.bin
-HYMAP floodplain height levels:     10
-HYMAP flow direction x map:         ../HYMAP_parms/nextx.bin
-HYMAP flow direction y map:         ../HYMAP_parms/nexty.bin
-HYMAP grid elevation map:           ../HYMAP_parms/elevtn.bin
-HYMAP grid distance map:            ../HYMAP_parms/nxtdst.bin
-HYMAP grid area map:                ../HYMAP_parms/grarea.bin
-HYMAP drainage area map:
-HYMAP basin map:
-HYMAP runoff time delay map:        ../HYMAP_parms/kirpich.bin
-HYMAP runoff time delay multiplier map: ../HYMAP_parms/trunoff.bin
-HYMAP baseflow time delay map:      ../HYMAP_parms/tbasflw_45_amazon.bin
-HYMAP reference discharge map:      ../HYMAP_parms/qrefer.bin
-HYMAP basin mask map:               ../HYMAP_parms/mask_all.bin 
-HYMAP params map projection:
-HYMAP params spatial transform:
+HYMAP river width map:                   ../HYMAP_parms/lis_rivwth_0125.bin
+HYMAP river height map:                  ../HYMAP_parms/lis_rivhgt_0125.bin
+HYMAP river length map:                  ../HYMAP_parms/lis_rivlen_0125.bin
+HYMAP river roughness map:               ../HYMAP_parms/lis_rivman_0125.bin
+HYMAP floodplain height map:             ../HYMAP_parms/lis_fldhgt_0125.bin
+HYMAP floodplain height levels:          10
+HYMAP floodplain roughness map:          ../HYMAP_parms/lis_fldman_0125.bin
+HYMAP flow direction x map:              ../HYMAP_parms/lis_nextx_0125.bin
+HYMAP flow direction y map:              ../HYMAP_parms/lis_nexty_0125.bin
+HYMAP grid elevation map:                ../HYMAP_parms/lis_elevtn_0125.bin
+HYMAP grid distance map:                 ../HYMAP_parms/lis_nxtdst_0125.bin
+HYMAP grid area map:                     ../HYMAP_parms/lis_grarea_0125.bin
+HYMAP drainage area map:                 ../HYMAP_parms/lis_uparea_0125.bin
+HYMAP basin map:                         ../HYMAP_parms/lis_basin_0125.bin
+HYMAP basin mask map:                    ../HYMAP_parms/lis_mask_0125.bin
+HYMAP runoff time delay map:             ../HYMAP_parms/lis_getirana_paiva_0125.bin
+HYMAP runoff time delay multiplier map:  ../HYMAP_parms/lis_trunoff_0125.bin
+HYMAP baseflow time delay map:           ../HYMAP_parms/lis_tbasflw_0125.bin
+HYMAP baseflow dwi ratio map:            ../HYMAP_parms/lis_basdwi_0125.bin
+HYMAP runoff dwi ratio map:              ../HYMAP_parms/lis_rundwi_0125.bin
+HYMAP river flow type map:               ../HYMAP_parms/lis_rivflw_0125.bin
 ....
 
 This section also outlines the domain specifications of the HYMAP parameter data. For the HYMAP parameters spatial transform option, only "`none`" is supported at this time, and the user is required to input the HYMAP parameters at the grid and resolution of interest.
 
-If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying HYMAP data See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+If the map projection of parameter data is specified to be "`latlon`", the following configuration should be used for specifying HYMAP parameters.  See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
-HYMAP params spatial transform:      none
+HYMAP params spatial transform:     none
 HYMAP params map projection:        latlon
 HYMAP params lower left lat:        -59.9375
-HYMAP params lower left lon:        -179.9375
+HYMAP params lower left lon:       -179.9375
 HYMAP params upper right lat:        89.9375
 HYMAP params upper right lon:       179.9375
 HYMAP params resolution (dx):         0.125
