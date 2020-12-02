@@ -11,6 +11,7 @@
 :devonly!:
 :lisrevision: 7.3
 :lisurl: http://lis.gsfc.nasa.gov
+:listesturl: https://lis.gsfc.nasa.gov/tests/lis
 :svnurl: http://subversion.apache.org
 :nasalisf: https://github.com/NASA-LIS/LISF
 :githuburl: https://github.com
