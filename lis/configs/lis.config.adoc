@@ -8390,7 +8390,7 @@ Noah-MP-4.0.1 LSM initial water storage in the aquifer (mm).
 specifies the Noah-MP-4.0.1 LSM initial water in the aquifer
 and in the saturated soil (mm).
  
-`Noah-MP.4.0.1 snow depth glacier model option:' specifies the
+`Noah-MP.4.0.1 snow depth glacier model option:` specifies the
 maximum snow water equivalent that is used in the Noah-MP-4.0.1
 glacier model (mm).  This config entry is optional; if is not in
 the _lis.config_ file, the default value of 2000.0 mm is used.
