@@ -2649,7 +2649,7 @@ smops_dYYYYMMDD_sHH0000_cness.gr2 naming convention;
 dates on or after 2017-10-05 use the NPR_SMOPS_CMAP_DYYYYMMDDHH.gr2 naming
 convention.
 
-NOTE:: When reading the daily data feed, the naming convention is "`LIS`".
+NOTE: When reading the daily data feed, the naming convention is "`LIS`".
 
 `SMOPS ASCAT version:` specifies the version of the SMOPS datasets.
 Defaults to "`date-based`".
