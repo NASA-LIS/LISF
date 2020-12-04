@@ -279,7 +279,7 @@ subroutine AWRAL600_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
     integer       :: ios, nid, param_ID, nc_ID, nr_ID, dimids(3)
     integer       :: nc, nr, t, k
     integer       :: nlevel
-    real, pointer :: level_data(:, :, :)
+    real, allocatable :: level_data(:, :, :)
     logical       :: file_exists
 
     inquire(file=LIS_rc%paramfile(n), exist=file_exists)
@@ -288,50 +288,50 @@ subroutine AWRAL600_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 
         ! open NetCDF parameter file
         ios = nf90_open(path=trim(LIS_rc%paramfile(n)), mode=NF90_NOWRITE, ncid=nid)
-        call LIS_verify(ios, '[ERR] Error in nf90_open in AWRAL600_read_MULTILEVEL_param')
+        call LIS_verify(ios, 'Error in nf90_open in AWRAL600_read_MULTILEVEL_param')
 
         ! inquire the ID of east-west dimension
         ios = nf90_inq_dimid(nid, 'east_west', nc_ID)
-        call LIS_verify(ios, '[ERR] Error in nf90_inq_dimid in AWRAL600_read_MULTILEVEL_param')
+        call LIS_verify(ios, 'Error in nf90_inq_dimid in AWRAL600_read_MULTILEVEL_param')
 
         ! inquire the ID of north-south dimension
         ios = nf90_inq_dimid(nid, 'north_south', nr_ID)
-        call LIS_verify(ios, '[ERR] Error in nf90_inq_dimid in AWRAL600_read_MULTILEVEL_param')
+        call LIS_verify(ios, 'Error in nf90_inq_dimid in AWRAL600_read_MULTILEVEL_param')
 
         ! inquire the length of east-west dimension
         ios = nf90_inquire_dimension(nid, nc_ID, len=nc)
-        call LIS_verify(ios, '[ERR] Error in nf90_inquire_dimension in AWRAL600_read_MULTILEVEL_param')
+        call LIS_verify(ios, 'Error in nf90_inquire_dimension in AWRAL600_read_MULTILEVEL_param')
 
         ! inquire the length of north-south dimension
         ios = nf90_inquire_dimension(nid, nr_ID, len=nr)
-        call LIS_verify(ios, '[ERR] Error in nf90_inquire_dimension in AWRAL600_read_MULTILEVEL_param')
+        call LIS_verify(ios, 'Error in nf90_inquire_dimension in AWRAL600_read_MULTILEVEL_param')
 
         ! inquire the ID of parameter. 
         ios = nf90_inq_varid(nid, Trim(ncvar_name), param_ID)
-        call LIS_verify(ios, trim(ncvar_name)//'[ERR] field not found in the LIS param file')
+        call LIS_verify(ios, trim(ncvar_name)//'field not found in the LIS param file')
 
         ! inquire the IDs of all dimensions. The third dimension is the level dimension
         ios = nf90_inquire_variable(nid, param_ID, dimids = dimids)
-        call LIS_verify(ios, trim(ncvar_name)//'[ERR] failed to inquire dimensions')
+        call LIS_verify(ios, trim(ncvar_name)//'failed to inquire dimensions')
 
         ! inquire the length of the level dimension
         ios = nf90_inquire_dimension(nid, dimids(3), len=nlevel)
-        call LIS_verify(ios, trim(ncvar_name)//'[ERR] failed to inquire the length of the 3rd dimension')
+        call LIS_verify(ios, trim(ncvar_name)//'failed to inquire the length of the 3rd dimension')
 
         ! allocate memory
         allocate(level_data (LIS_rc%gnc(n), LIS_rc%gnr(n), nlevel))
 
         ! inquire the variable ID of parameter 
         ios = nf90_inq_varid(nid, trim(ncvar_name), param_ID)
-        call LIS_verify(ios, trim(ncvar_name)//'[ERR] field not found in the LIS param file')
+        call LIS_verify(ios, trim(ncvar_name)//'field not found in the LIS param file')
 
         ! read parameter 
         ios = nf90_get_var(nid, param_ID, level_data)
-        call LIS_verify(ios, '[ERR] Error in nf90_get_var in AWRAL600_read_MULTILEVEL_param')
+        call LIS_verify(ios, 'Error in nf90_get_var in AWRAL600_read_MULTILEVEL_param')
 
         ! close netcdf file 
         ios = nf90_close(nid)
-        call LIS_verify(ios, '[ERR] Error in nf90_close in AWRAL600_read_MULTILEVEL_param')
+        call LIS_verify(ios, 'Error in nf90_close in AWRAL600_read_MULTILEVEL_param')
 
         ! grab parameter at specific level
         placeholder(:, :) = & 

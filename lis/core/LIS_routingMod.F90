@@ -651,9 +651,11 @@ module LIS_routingMod
 
     integer                :: m
 
-    if(LIS_rc%Routing_DAinst_valid(k)) then
-       call routingdagetobspred(trim(LIS_rc%routingmodel)//"+"//&
-            trim(LIS_rc%daset(k))//char(0),n, k, Obs_pred)
+    if(LIS_rc%routingmodel.ne."none") then
+       if(LIS_rc%Routing_DAinst_valid(k)) then
+          call routingdagetobspred(trim(LIS_rc%routingmodel)//"+"//&
+               trim(LIS_rc%daset(k))//char(0),n, k, Obs_pred)
+       endif
     endif
   end subroutine LIS_routing_DAGetObsPred
 
@@ -1233,9 +1235,11 @@ module LIS_routingMod
     integer                :: n
     integer                :: k
 
-    if(LIS_rc%Routing_DAinst_valid(k)) then 
-       call routingdaobstransform(trim(LIS_rc%routingmodel)//"+"//&
-            trim(LIS_rc%daset(k))//char(0), n, LIS_OBS_State(n,k))       
+    if(LIS_rc%routingmodel.ne."none") then
+       if(LIS_rc%Routing_DAinst_valid(k)) then
+          call routingdaobstransform(trim(LIS_rc%routingmodel)//"+"//&
+               trim(LIS_rc%daset(k))//char(0), n, LIS_OBS_State(n,k))
+       endif
     endif
   end subroutine LIS_routing_DAobsTransform
 
@@ -1244,11 +1248,13 @@ module LIS_routingMod
     integer                :: n
     integer                :: k
 
-    if(LIS_rc%Routing_DAinst_valid(k)) then 
-       call routingdamapobstorouting(trim(LIS_rc%routingmodel)//"+"//&
-            trim(LIS_rc%daset(k))//char(0), n, k, LIS_OBS_State(n,k),&
-            LIS_Routing_Incr_State(n,k))
-       
+    if(LIS_rc%routingmodel.ne."none") then
+       if(LIS_rc%Routing_DAinst_valid(k)) then
+          call routingdamapobstorouting(trim(LIS_rc%routingmodel)//"+"//&
+               trim(LIS_rc%daset(k))//char(0), n, k, LIS_OBS_State(n,k),&
+               LIS_Routing_Incr_State(n,k))
+
+       endif
     endif
   end subroutine LIS_routing_DAmapObsToRouting
 
@@ -1257,11 +1263,13 @@ module LIS_routingMod
     integer                :: n
     integer                :: k
 
-    if(LIS_rc%Routing_DAinst_valid(k)) then 
+    if(LIS_rc%routingmodel.ne."none") then
+       if(LIS_rc%Routing_DAinst_valid(k)) then
 
-       call routingdaqcobsstate(trim(LIS_rc%routingmodel)//"+"&
-            //trim(LIS_rc%daset(k))//char(0),n, k, LIS_OBS_State(n,k))
-       
+          call routingdaqcobsstate(trim(LIS_rc%routingmodel)//"+"&
+               //trim(LIS_rc%daset(k))//char(0),n, k, LIS_OBS_State(n,k))
+
+       endif
     endif
   end subroutine LIS_routing_DAqcObsState
 
@@ -1287,9 +1295,11 @@ module LIS_routingMod
 !   \item[n]    index of the nest
 !  \end{description}
 !EOP
-    if(LIS_rc%Routing_DAinst_valid(k)) then 
-       call routingdagetstatespacesize(trim(LIS_rc%routingmodel)//"+"//&
-            trim(LIS_rc%daset(k))//char(0), n, size)
+    if(LIS_rc%routingmodel.ne."none") then
+       if(LIS_rc%Routing_DAinst_valid(k)) then
+          call routingdagetstatespacesize(trim(LIS_rc%routingmodel)//"+"//&
+               trim(LIS_rc%daset(k))//char(0), n, size)
+       endif
     endif
   end subroutine LIS_routing_DAgetStateSpaceSize
 

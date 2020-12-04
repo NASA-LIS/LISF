@@ -3,11 +3,12 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 ! MODULE: USAFSI_analysisMod
-! 
+!
 ! REVISION HISTORY:
 ! 08 Feb 2019  Eric Kemp  First ported to LDT.
 ! 09 May 2019  Eric Kemp  Renamed LDTSI
 ! 13 Dec 2019  Eric Kemp  Renamed USAFSI
+! 02 Nov 2020  Eric Kemp  Removed blacklist code at request of 557WW.
 !
 ! DESCRIPTION:
 ! Source code for Air Force snow depth analysis.
@@ -2671,8 +2672,7 @@ contains
    ! EMK New snow analysis excluding glaciers
    subroutine run_snow_analysis_noglacier(runcycle, nc, nr, landmask, &
         landice, &
-        elevations, sfctmp_found, sfctmp_lis, &
-        num_blacklist_stns, blacklist_stns, bratseth)
+        elevations, sfctmp_found, sfctmp_lis, bratseth)
 
       ! Imports
       use LDT_bratsethMod
@@ -2682,7 +2682,7 @@ contains
       use map_utils
       use USAFSI_arraysMod, only: USAFSI_arrays
       use USAFSI_paramsMod
-      
+
       ! Defaults
       implicit none
 
@@ -2694,9 +2694,7 @@ contains
       real, intent(in) :: landice(nc,nr)
       real, intent(in) :: elevations(nc,nr)
       logical, intent(in) :: sfctmp_found
-      real, intent(in) :: sfctmp_lis(:,:) 
-      integer, intent(in) :: num_blacklist_stns
-      character*20, allocatable, intent(in) :: blacklist_stns(:)
+      real, intent(in) :: sfctmp_lis(:,:)
       type(LDT_bratseth_t), intent(inout) :: bratseth
 
       ! Local variables
@@ -2844,7 +2842,7 @@ contains
             if (skip_grid_points(c,r)) cycle
             if (snomask(c,r) .eq. 0 .and. &
                  USAFSI_arrays%snoanl(c,r) > 0) then
-               USAFSI_arrays%snoanl(c,r) = 0 
+               USAFSI_arrays%snoanl(c,r) = 0
                USAFSI_arrays%snoage(c,r) = 0
             end if
             if (USAFSI_arrays%snoanl(c,r) .ne. USAFSI_arrays%olddep(c,r)) then
@@ -2853,12 +2851,8 @@ contains
          end do ! c
       end do ! r
 
-      ! At this point, we have our background field and snow mask.  
+      ! At this point, we have our background field and snow mask.
       ! Start QC of surface observations.
-      if (num_blacklist_stns .gt. 0 .and. allocated(blacklist_stns)) then
-         write(LDT_logunit,*)'[INFO] Checking station blacklist'
-         call bratseth%run_blacklist_qc(num_blacklist_stns, blacklist_stns)
-      end if
 
       write(LDT_logunit,*) &
            '[INFO] Reject obs that are missing elevations'
@@ -2987,8 +2981,15 @@ contains
       do r = 1,nr
          do c = 1,nc
             if (skip_grid_points(c,r)) cycle
+            ! EMK...Clear out snow depth inserted where snow cover is zero.
+            if (snomask(c,r) == 0) then
+               USAFSI_arrays%snoanl(c,r) = 0
+               USAFSI_arrays%snoage(c,r) = 0
+            end if
             if (USAFSI_arrays%snoanl(c,r) < 0.01) then
                USAFSI_arrays%snoanl(c,r) = 0
+               ! Leave snoage alone here, since a climatological adjustment
+               ! is possible further down if snomask is positive.
             end if
             if (USAFSI_arrays%snoanl(c,r) .ne. USAFSI_arrays%olddep(c,r)) then
                updated(c,r) = .true.

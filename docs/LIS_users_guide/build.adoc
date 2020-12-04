@@ -420,30 +420,14 @@ The following tables provide some specific examples of the compiler and library 
 |====
 | Library        | Version
 
-| Intel compiler | 18.0.3 20180410
-| HDF 5          | 1.10.1
-| NetCDF         | 4.6.3
-| NetCDF-Fortran | 4.4.5
-| JasPer         | 2.0.14
-| ECCODES        | 2.12.0
-| Intel MPI      | 18.0.3.222
-| ESMF           | 7.1.0r
-| HDF 4          | 4.2.14
-| HDF-EOS2       | 2.20v.1.00
-|====
-
-// conrad
-.Cray XC40
-|====
-| Library        | Version
-
-| Intel compiler | 18.0.3 20180410
+| GNU compiler   | 7.3.0
+| Intel compiler | 18.0.3 20180410 (18.0.3.222)
 | HDF 5          | 1.10.5
 | NetCDF         | 4.6.3
 | NetCDF-Fortran | 4.4.5
 | JasPer         | 2.0.14
 | ECCODES        | 2.12.0
-| Intel MPI      | 18.0.3.222
+| Cray MPICH     | 7.5.3
 | ESMF           | 7.1.0r
 | HDF 4          | 4.2.14
 | HDF-EOS2       | 2.20v.1.00
@@ -453,6 +437,48 @@ The following tables provide some specific examples of the compiler and library 
 | libtiff        | 4.0.6
 | libjbig        | 2.1
 | liblzma        | 5.2.2
+|====
+
+// gaffney
+.Red Hat Enterprise Linux Server 7.8
+|====
+| Library        | Version
+
+| GNU compiler   | 7.3.0
+| Intel compiler | 2019.2.057
+| HDF 5          | 1.10.5
+| NetCDF         | 4.6.3
+| NetCDF-Fortran | 4.4.5
+| JasPer         | 2.0.14
+| ECCODES        | 2.12.0
+| Intel MPI      | 2019.2.057
+| ESMF           | 7.1.0r
+| HDF 4          | 4.2.14
+| HDF-EOS2       | 2.20v.1.00
+| GDAL           | 2.4.1
+| FortranGIS     | 2.4
+| libgeotiff     | 1.4.3
+|====
+
+// gaffney
+.Red Hat Enterprise Linux Server 7.8
+|====
+| Library        | Version
+
+| GNU compiler   | 7.3.0
+| Intel compiler | 19.0.4.243 20190416 (2019.4.243)
+| HDF 5          | 1.10.5
+| NetCDF         | 4.6.3
+| NetCDF-Fortran | 4.4.5
+| JasPer         | 2.0.14
+| ECCODES        | 2.12.0
+| Intel MPI      | 2019.4.243
+| ESMF           | 7.1.0r
+| HDF 4          | 4.2.14
+| HDF-EOS2       | 2.20v.1.00
+| GDAL           | 2.4.1
+| FortranGIS     | 2.4
+| libgeotiff     | 1.4.3
 |====
 
 === Build Instructions

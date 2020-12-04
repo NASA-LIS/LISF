@@ -5032,9 +5032,9 @@ LIS TWS output domain resolution (dy):          0.125
 #latex: \begin{tabular}{ll}
 #latex: Value & Description  \\
 #latex: ``SPL2SMP''    & employ level2 36km radiometer only product\\
-#latex: ``SPL2SMP_E''    & employ level2 9km enhanced/oversampled product \\
+#latex: ``SPL2SMP\_E''    & employ level2 9km enhanced/oversampled product \\
 #latex: ``SPL3SMP''    & employ level3 36km radiometer only product\\
-#latex: ``SPL3SMP_E''    & employ level3 9km enhanced/oversampled product \\
+#latex: ``SPL3SMP\_E''    & employ level3 9km enhanced/oversampled product \\
 #latex: \end{tabular}
 #latex:
 #latex: \var{NASA SMAP soil moisture observation directory:}
@@ -5069,7 +5069,7 @@ SMOS NESDIS soil moisture observation directory:
 #latex: \begin{tabular}{ll}
 #latex: Value & Description  \\
 #latex: ``SPL2SMP''    & employ level2 36km radiometer only product\\
-#latex: ``SPL2SMP_E''    & employ level2 9km enhanced/oversampled product \\
+#latex: ``SPL2SMP\_E''    & employ level2 9km enhanced/oversampled product \\
 #latex: \end{tabular}
 #latex:
 #latex: END_DESCRIPTION
@@ -5471,7 +5471,7 @@ USAFSI SSMIS forest fraction file:     ./SNODEPIN/ForestFraction_0p25deg.nc
 #latex:
 #latex: \var{USAFSI temperature (deg K * 10) above which no snow is allowed:} used to adjust snow analysis
 #latex:
-#latex: \var{USAFSI minimum ice concentration (%) needed to set ice flag:} used when constructing binary sea ice field
+#latex: \var{USAFSI minimum ice concentration (\%) needed to set ice flag:} used when constructing binary sea ice field
 #latex:
 #latex: \var{USAFSI USAFSI high latitude thresholds (deg) for sea ice::} 24 latitudes, each row defining a hemisphere (NH, then SH), each column defining a month (J F M A M J J A S O N D).  Used to define "high latitudes" in SSMIS-based sea ice analysis.
 #latex:
@@ -5516,9 +5516,9 @@ USAFSI use VIIRS snow mask: .true.
 
 #latex: BEGIN_DESCRIPTION
 #latex:
-#latex: \var{USAFSI observation error variance (m^2):} error variance assigned to surface snow reports
+#latex: \var{USAFSI observation error variance ($m^2$):} error variance assigned to surface snow reports
 #latex:
-#latex: \var{USAFSI background error variance (m^2):} error variance assigned to first-guess field
+#latex: \var{USAFSI background error variance ($m^2$):} error variance assigned to first-guess field
 #latex:
 #latex: \var{USAFSI background error horizontal correlation length (m):} correlation length for spreading snow depth corrections horizontally
 #latex:
@@ -5555,6 +5555,14 @@ USAFSI skewed backQC snow depth threshold (m):  0.4
 #latex: \var{USAFSI LIS GRIB2 data resolution:} used for constructing LIS GRIB2 filename
 #latex:
 #latex: \var{USAFSI LIS GRIB2 area of data:} used for constructing LIS GRIB2 filename
+#latex:
+#latex: \var{USAFSI GALWEM root directory:} root directory for GALWEM data
+#latex:
+#latex: \var{USAFSI GALWEM subdirectory:} subdirectory for GALWEM data
+#latex:
+#latex: \var{USAFSI GALWEM use timestamp directories:} option to use YYYYMMDD in constructing full GALWEM directory; 1 is yes, 0 is no
+#latex:
+#latex: \var{USAFSI GALWEM nominal resolution (km):} 17 or 10 (17 currently used in operations)
 #latex: END_DESCRIPTION
 
 #latex: BEGIN_CONFIG
@@ -5566,6 +5574,10 @@ USAFSI LIS GRIB2 security class: U
 USAFSI LIS GRIB2 data category:  C
 USAFSI LIS GRIB2 data resolution: C0P09DEG
 USAFSI LIS GRIB2 area of data: GLOBAL
+USAFSI GALWEM root directory: USAF_FORCING
+USAFSI GALWEM subdirectory: GALWEM
+USAFSI GALWEM use timestamp directories: 1
+USAFSI GALWEM nominal resolution (km): 17
 #latex: END_CONFIG
 
 #latex: BEGIN_DESCRIPTION

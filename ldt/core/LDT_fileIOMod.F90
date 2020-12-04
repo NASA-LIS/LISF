@@ -451,7 +451,7 @@ subroutine LDT_create_output_filename(n, fname, model_name, odir, writeint)
       
       write(unit=cdate, fmt='(i2.2, i2.2)') LDT_rc%hr, LDT_rc%mn
       
-      if(LDT_rc%lis_map_proj.eq."polar") then 
+      if(LDT_rc%lis_map_proj(n).eq."polar") then 
          fproj = 'P'
          write(LDT_logunit,*) "[INFO] fres ",LDT_rc%gridDesc(n, 9)
          if (LDT_rc%gridDesc(n, 9) .ge. 10.) then
@@ -460,7 +460,7 @@ subroutine LDT_create_output_filename(n, fname, model_name, odir, writeint)
             write(unit=fres, fmt='(i1)') nint(LDT_rc%gridDesc(n, 9))
          endif
          fres2 = trim(fres)//'KM'
-      elseif(LDT_rc%lis_map_proj.eq."lambert") then 
+      elseif(LDT_rc%lis_map_proj(n).eq."lambert") then 
          fproj = 'L'
          write(LDT_logunit,*)"[INFO] fres ",LDT_rc%gridDesc(n, 9)
 !         write(unit=fres, fmt='(f2.0)') LDT_rc%gridDesc(n, 9)
@@ -471,11 +471,11 @@ subroutine LDT_create_output_filename(n, fname, model_name, odir, writeint)
             write(unit=fres, fmt='(i1)') nint(LDT_rc%gridDesc(n, 9))
          endif
          fres2 = trim(fres)//'KM'
-      elseif(LDT_rc%lis_map_proj.eq."mercator") then 
+      elseif(LDT_rc%lis_map_proj(n).eq."mercator") then 
          fproj = 'M'
          write(unit=fres, fmt='(i2.2)') LDT_rc%gridDesc(n, 9)
          fres = trim(fres)//'KM'
-      elseif(LDT_rc%lis_map_proj.eq."gaussian") then 
+      elseif(LDT_rc%lis_map_proj(n).eq."gaussian") then 
          fproj = 'G'
          write(unit=fres, fmt='(i2.2)') LDT_rc%gridDesc(n, 9)*100        
          fres = '0P'//trim(fres)//'DEG'
@@ -925,8 +925,8 @@ subroutine LDT_create_daobs_filename(n, fname)
 ! !INTERFACE: 
 !
  subroutine LDT_transform_paramgrid(n, gridtransform_opt, param_gridDesc, &
-                          numinpts, numtiles, array_in, li,               &
-                          numoutpts, array_out, lo )
+      numinpts, numtiles, array_in, li,               &
+      numoutpts, array_out, lo )
 !
 ! !USES: 
    use LDT_coreMod,  only : LDT_rc, LDT_domain, LDT_localPet

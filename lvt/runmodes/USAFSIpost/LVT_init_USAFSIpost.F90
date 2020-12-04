@@ -57,11 +57,26 @@ contains
       call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%output_sh_ps16, &
            label=trim(cfgline), rc=rc)
       call LVT_verify(rc, trim(cfgline)//" not defined")
+
+      cfgline = &
+           "USAFSI output GRIB1 SNODEP NH 16th mesh polar stereographic:"
+      call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%output_nh_ps16_snodep, &
+           label=trim(cfgline), rc=rc)
+      call LVT_verify(rc, trim(cfgline)//" not defined")
+      
+      cfgline = &
+           "USAFSI output GRIB1 SNODEP SH 16th mesh polar stereographic:"
+      call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%output_sh_ps16_snodep, &
+           label=trim(cfgline), rc=rc)
+      call LVT_verify(rc, trim(cfgline)//" not defined")
+
       
       if ( .not. LVT_rc%output_native .and. &
            .not. LVT_rc%output_global_ll0p25 .and. &
            .not. LVT_rc%output_nh_ps16 .and. &
-           .not. LVT_rc%output_sh_ps16) then
+           .not. LVT_rc%output_sh_ps16 .and. &
+           .not. LVT_rc%output_nh_ps16_snodep .and. &
+           .not. LVT_rc%output_sh_ps16_snodep) then
          write(LVT_logunit,*) "[ERR] No output selected for USAFpost mode!"
          write(LVT_logunit,*) "[ERR] Check the lvt.config file settings!"
          write(LVT_logunit,*) "[ERR] LVT will exit gracefully."
