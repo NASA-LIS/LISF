@@ -7992,9 +7992,9 @@ specifies the Noah-MP-3.6 LSM initial recharge to or from the water
 table when shallow (m).
 
 `Noah-MP.3.6 initial reference height of temperature and humidity:`
-specifies the Noah-MP-3.6 LSM initial reference height of temperature,
-humidity, and winds (m).  If the reference height is different, best
-to choose the height of the winds.
+specifies the Noah-MP-3.6 LSM initial reference height (in meters)
+of the forcing temperature, humidity, and winds.  If the reference
+heights are different, best to choose the height of the winds.
 
 `Noah-MP.3.6 soil moisture CDF file:` specifies the Noah-MP-3.6 LSM
 soil moisture CDF file.
@@ -8352,8 +8352,10 @@ are:
 |====
 
 `Noah-MP.4.0.1 reference height of temperature and humidity:`
-specifies the Noah-MP-4.0.1 LSM initial reference height of
-temperature and humidity (m).
+specifies the Noah-MP-4.0.1 LSM reference height (in meters)
+of the forcing temperature, humidity, and winds.  If the
+reference heights are different, best to choose the height
+of the winds.
 
 `Noah-MP.4.0.1 initial surface skin temperature:` specifies
 the Noah-MP-4.0.1 LSM initial surface skin temperature (K). 
@@ -8388,9 +8390,12 @@ Noah-MP-4.0.1 LSM initial water storage in the aquifer (mm).
 specifies the Noah-MP-4.0.1 LSM initial water in the aquifer
 and in the saturated soil (mm).
  
-'Noah-MP.4.0.1 snow depth glacier model option:' specifies the
-maximum snow depth that is used in the Noah-MP-4.0.1 glacier model (mm).
-The default is set to 2000 mm.
+`Noah-MP.4.0.1 snow depth glacier model option:' specifies the
+maximum snow water equivalent that is used in the Noah-MP-4.0.1
+glacier model (mm).  This config entry is optional; if is not in
+the _lis.config_ file, the default value of 2000.0 mm is used.
+This maximum only applies to tiles identified as glacier in the
+landcover classification.
 
 .Example _lis.config_ entry
 ....
