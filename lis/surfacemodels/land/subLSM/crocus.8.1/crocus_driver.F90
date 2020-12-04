@@ -134,6 +134,8 @@ SUBROUTINE crocus_driver(n, &
                          SILT              , & ! IN    - Soil silt fraction (-) [-]
                          CLAY              , & ! IN    - Soil clay fraction (-) [-]
                          POROSITY          , & ! IN    - Soil porosity (m3 m-3) [m3/m3]
+                         XWGI              ,&  ! IN    - soil volumetric frozen water content
+                         XWG               ,&  ! IN    - soil volumetric liquid water content
                          usemonalb )
                          !tmp_ZENITH, &  ! added to read surfex parameter
                          !tmp_ANGL_ILLUM, &  ! added to read surfex parameter
@@ -278,6 +280,8 @@ SUBROUTINE crocus_driver(n, &
    REAL*8 , INTENT(IN) :: SILT ! Soil SILT fraction [-]
    REAL*8 , INTENT(IN) :: CLAY ! Soil CLAY fraction [-]
    REAL*8 , INTENT(IN) :: POROSITY ! Soil porosity (m3 m-3) [m3/m3]
+   REAL*8 , INTENT(IN) :: XWGI ! soil volumetric frozen water content (m3/m3)
+   REAL*8 , INTENT(IN) :: XWG  ! soil volumetric liquid water content (m3/m3)
    REAL*8, INTENT(INOUT)  :: SNOWLIQ(nsnow) !  SNOWLIQ  = Snow layer(s) liquid water content (m)
    REAL*8, INTENT(INOUT)  :: SNOWTEMP(nsnow)!  SNOWTEMP = Snow layer(s) temperature (m)
    REAL*8, INTENT(INOUT)  :: SNOWDZ(nsnow)  !  SNOWDZ = Snow layer(s) thickness (m)
@@ -685,8 +689,8 @@ CONTAINS
       REAL*8 :: XCONDI !    = 2.22
       REAL*8 :: XCONDWTR ! = 0.57   ! W/(m K)  Water thermal conductivity
       ! local variables for thermal conductivity
-      REAL*8 :: XWGI          ! soil liquid water equivalent volumetric
-      REAL*8 :: XWG           ! soil volumetric water content profile   (m3/m3)
+      REAL*8 :: XWGI          ! soil volumetric frozen water content (m3/m3)
+      REAL*8 :: XWG           ! soil volumetric liquid water content (m3/m3)
       REAL*8 :: XWGMIN  ! = 0.001   ! (m3 m-3)
       REAL*8 :: ZFROZEN2DF
       REAL*8 :: ZUNFROZEN2DF
@@ -1119,16 +1123,18 @@ ZCONDDRYZ = PCONDDRY !
 XCONDI    = 2.22
 XCONDWTR  = 0.57   ! W/(m K)  Water thermal conductivity
 
-!XWGI          ! soil liquid water equivalent volumetric
-!XWG           ! soil volumetric water content profile   (m3/m3)
+!XWGI          ! soil liquid water equivalent volumetric ice content profile (m3/m3)
+!XWG           ! soil volumetric water content profile (m3/m3)
 XWGMIN   = 0.001   ! (m3 m-3)
 !POROSITY (XWSAT)          ! porosity profile                        (m3/m3)
 
 ZLOG_CONDI   = LOG(XCONDI)
 ZLOG_CONDWTR = LOG(XCONDWTR)
 ! 
-      XWGI = 0.0 ! MN set to zero 
-      XWG = POROSITY * 0.8 ! MN assume volumetric soil water content of the snow covered ground is 80% of POROSITY (For Col de Porte it is between 72-85)
+!      XWGI = 0.0 ! MN set to zero 
+!      XWG = POROSITY * 0.8 ! MN assume volumetric soil water content of the snow covered ground is 80% of POROSITY (For Col de Porte it is between 72-85)
+! print*, 'XWGI, XWG', XWGI, XWG
+
       ZFROZEN2DF   = XWGI/( XWGI + MAX(XWG,XWGMIN))
       ZUNFROZEN2DF = (1.0-ZFROZEN2DF)* POROSITY
 !
@@ -1157,7 +1163,42 @@ ZLOG_CONDWTR = LOG(XCONDWTR)
       SOILCONDin = SOILCOND
       ZP_PSN3Lin(1) = 1   !TODO  assume fraction is 1  (In SURFEX-Crocus is start from zero and in several time step it became 1.  I was not able to find out where is it computed)
 
+# if 0 
+WRITE (*, '( A5 , 1x ,I4, 1x, I2, 1x,  I3 , 1x, 18(F10.6,1x) )') 'Input',  &
+                               TPTIME%TDATE%YEAR, &
+                               TPTIME%TDATE%MONTH, TPTIME%TDATE%DAY, TPTIME%TIME/3600.,  &
+                                ZP_EXNSin, ZP_EXNAin,&
+                                SNDRIFTout, RI_nout, EMISNOWout, CDSNOWout, USTARSNOWout,         &
+                                TGin, SOILCONDin, ZP_PSN3Lin, ZP_RHOAin, ZP_RNSNOWout, ZP_HSNOWout, &
+                                ZP_GFLUXSNOWout, ZP_HPSNOWout, CHSNOWout,ZP_ZENITHin, ZP_ANGL_ILLUMin  !
+print *, 'ZP_HPSNOWout', ZP_HPSNOWout
+WRITE (*, '( A3 , 1x ,I4, 1x, I2, 1x,  I3 , 1x, F6.2, 2x,  9(A3, 1x) , 11(L1, 1x))') 'MN1',  &
+                               TPTIME%TDATE%YEAR, &
+                               TPTIME%TDATE%MONTH, TPTIME%TDATE%DAY, TPTIME%TIME/3600.,  &
+                               SNOWRES_opt, HIMPLICIT_WIND_opt, SNOWMETAMO_opt, SNOWRAD_opt, SNOWFALL_opt, &
+                               SNOWCOND_opt, SNOWHOLD_opt, SNOWCOMP_opt, SNOWZREF_opt, &
+                               OMEB_BOOL, GLACIER_BOOL, SNOWDRIFT_SUBLIM_BOOL,SNOWCOMPACT_BOOL,&
+                               SNOWMAK_BOOL, SNOWTILLER_BOOL, SELF_PROD_BOOL, SNOWMAK_PROP_BOOL,   &
+                           PRODSNOWMAK_BOOLinout, SNOW_ABS_ZENITH_BOOL, ATMORAD_BOOL 
+WRITE (*, '( A25 , 1x ,I4, 1x, I2, 1x,  I3 , 1x, 3(F10.6,1x) )') 'SNOWALBinout, ALBin, D_Gin',  &
+                               TPTIME%TDATE%YEAR, &
+                               TPTIME%TDATE%MONTH, TPTIME%TDATE%DAY, TPTIME%TIME/3600.,  &
+                               SNOWALBinout, D_Gin
 
+print*, 'ALBin', ALBin
+print*, 'PSNOWDZ',SNOWDZout(1,1:5) ! MN
+print*, 'SNOWLIQout',SNOWLIQout(1,1:5) ! MN
+print*, 'SNOWSWEinout',SNOWSWEinout(1,1:5) ! MN
+print*, 'SNOWRHOinout',SNOWRHOinout(1,1:5) ! MN
+print*, 'SNOWHEATinout',SNOWHEATinout(1,1:5) ! MN
+
+!print*, 'snow depth'  , sum(SNOWDZout)
+print*, 'snowfall', SRSNOWin
+print*, 'rainfall', RRSNOWin
+print*, 'runoff ' , THRUFALout
+print *, '+++++++++++++++++++++++++++++++++++++++++'
+
+# endif
 ! ---------------------------------------------------------------------
 ! ---------------------------------------------------------------------
 ! call model physics here

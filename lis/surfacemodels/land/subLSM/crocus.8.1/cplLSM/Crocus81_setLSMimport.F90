@@ -33,6 +33,10 @@ subroutine Crocus81_setLSMimport(n, LSM2SubLSM_State)
 
   type(ESMF_Field)   :: gtField
   real, pointer      :: gt(:)
+  type(ESMF_Field)   :: XWGIField
+  real, pointer      :: XWGI(:)
+  type(ESMF_Field)   :: XWGField
+  real, pointer      :: XWG(:)
   integer            :: t
   integer            :: status
 
@@ -42,9 +46,23 @@ subroutine Crocus81_setLSMimport(n, LSM2SubLSM_State)
   call ESMF_FieldGet(gtField,localDE=0,farrayPtr=gt,rc=status)
   call LIS_verify(status)
 
+  call ESMF_StateGet(LSM2SUBLSM_State,"soil volumetric frozen water content",XWGIField,rc=status)
+  call LIS_verify(status)
+
+  call ESMF_FieldGet(XWGIField,localDE=0,farrayPtr=XWGI,rc=status)
+  call LIS_verify(status)
+
+  call ESMF_StateGet(LSM2SUBLSM_State,"soil volumetric liquid water content",XWGField,rc=status)
+  call LIS_verify(status)
+
+  call ESMF_FieldGet(XWGField,localDE=0,farrayPtr=XWG,rc=status)
+  call LIS_verify(status)
+
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      CROCUS81_struc(n)%crocus81(t)%TG = gt(t)
+     CROCUS81_struc(n)%crocus81(t)%XWGI = XWGI(t)
+     CROCUS81_struc(n)%crocus81(t)%XWG  = XWG(t)
   enddo
 
 end subroutine Crocus81_setLSMimport

@@ -996,6 +996,8 @@ else{
 
 printf misc_file "%s\n","#undef INC_WATER_PTS";
 printf misc_file "%s\n","#undef COUPLED";
+printf misc_file "%s\n","#undef SFX_MNH";
+printf misc_file "%s\n","#define MNH_MPI_DOUBLE_PRECISION";
 close(misc_file);
 
 open(netcdf_file,">LIS_NetCDF_inc.h");
