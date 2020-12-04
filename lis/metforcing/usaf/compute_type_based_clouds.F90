@@ -38,6 +38,7 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
    integer*2,allocatable :: tops      (:,:,:)
    integer*4,allocatable :: times     (:,:)
    integer               :: doy1,yr1,mo1,da1,hr1,mn1,ss1,try
+   integer :: mn1_tmp
    character*200         :: filename
    logical               :: file_exists
    integer               :: istat
@@ -52,7 +53,7 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
    real,allocatable      :: cldamt2(:,:,:)
    real,allocatable      :: cldamt3(:,:,:)
    integer :: rc
-   
+
    data THRES /12600, 12300, 12000, 11700, 11400/
 
    allocate(amounts(4,1024,1024))
@@ -89,21 +90,26 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
 
          call wwmca_grib1%new(filename)
 
-         call wwmca_grib1%read_grib(yr1, mo1, da1, hr1, rc)
+         ! WWMCA is only available at :00 and :30 past the hour, so
+         ! this should be reflected in the requested minute.
+         if (mn1 < 30) then
+            mn1_tmp = 00
+         else
+            mn1_tmp = 30
+         end if
+         call wwmca_grib1%read_grib(yr1, mo1, da1, hr1, mn1_tmp, rc)
 
          if (rc .ne. 0) then
-            ! Rolling back 1 hour at a time
+            ! Rolling back to earlier time
             call wwmca_grib1%destroy()
             try = 1
-            do while (try .lt. 10)
+            do while (try .lt. 20)
                write(LIS_logunit,*) &
                     '[WARN] Problem reading ', trim(filename)
-               write(LIS_logunit,*)'[WARN] shifting to previous hour'
-               ts1 = -60*60
+               write(LIS_logunit,*)'[WARN] shifting back 30 minutes'
+               ts1 = -1800
                call LIS_tick(backtime1, doy1, gmt1, yr1, mo1, da1, &
                     hr1, mn1, ss1, ts1)
-               call LIS_time2date(backtime1, doy1, gmt1, yr1, mo1, da1, &
-                    hr1, mn1)
 
                call USAF_wwmca_grib1_filename(filename, &
                     agrmet_struc(n)%agrmetdir, &
@@ -113,7 +119,14 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
 
                call wwmca_grib1%new(filename)
 
-               call wwmca_grib1%read_grib(yr1, mo1, da1, hr1, rc)
+               ! WWMCA is only available at :00 and :30 past the hour, so
+               ! this should be reflected in the requested minute.
+               if (mn1 < 30) then
+                  mn1_tmp = 00
+               else
+                  mn1_tmp = 30
+               end if
+               call wwmca_grib1%read_grib(yr1, mo1, da1, hr1, mn1_tmp, rc)
 
                if (rc .eq. 0) then
                   exit
@@ -123,7 +136,7 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
                end if
             end do ! try loop
 
-            if (try .ge. 10) then
+            if (try .ge. 20) then
                write(LIS_logunit,*)'[WARN] Missing WWMCA GRIB1 file'
                write(LIS_logunit,*) &
                     '[WARN] Will fall back on WWMCA binary files.'
@@ -131,7 +144,10 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
             end if
          end if
 
-         ! We have the WWMCA data from the GRIB file.
+         ! We have the WWMCA data from the GRIB file. Populate the legacy
+         ! binary arrays.
+         call wwmca_grib1%return_binary_fields(amounts, types, tops, times)
+
          yr1 = LIS_rc%yr
          mo1 = LIS_rc%mo
          da1 = LIS_rc%da
@@ -144,36 +160,16 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
          call LIS_get_julhr(yr1, mo1, da1, hr1, &
               0, 0, julhr)
 
-         ! Populate the legacy binary arrays.
-         call wwmca_grib1%return_binary_fields(amounts, types, tops, times)
-
-         write(LIS_logunit,*)'EMK: maxval(amounts) = ', &
-              maxval(amounts)
-         write(LIS_logunit,*)'EMK: minval(amounts) = ', &
-              minval(amounts)
-         
          if (hemi .eq. 1) then
             call AGRMET_loadcloud(hemi, agrmet_struc(n)%land(:,:,hemi), &
                  thres, times, amounts, tops, types,   &
                  cldtyp_nh, cldamt_nh, fog_nh,                &
                  julhr, agrmet_struc(n)%imax, agrmet_struc(n)%jmax)
-
-            write(LIS_logunit,*)'EMK: maxval(cldamt_nh) = ', &
-                 maxval(cldamt_nh)
-            write(LIS_logunit,*)'EMK: minval(cldamt_nh) = ', &
-                 minval(cldamt_nh)
-
          else
             call AGRMET_loadcloud(hemi, agrmet_struc(n)%land(:,:,hemi), &
                  thres, times, amounts, tops, types,   &
                  cldtyp_sh, cldamt_sh, fog_sh,                &
                  julhr, agrmet_struc(n)%imax, agrmet_struc(n)%jmax)
-
-            write(LIS_logunit,*)'EMK: maxval(cldamt_sh) = ', &
-                 maxval(cldamt_sh)
-            write(LIS_logunit,*)'EMK: minval(cldamt_sh) = ', &
-                 minval(cldamt_sh)
-
          end if
 
          call wwmca_grib1%destroy()
@@ -435,11 +431,6 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
    cldamt2(2,:,:) = real(cldamt_sh(2,:,:))
    cldamt3(1,:,:) = real(cldamt_nh(3,:,:))
    cldamt3(2,:,:) = real(cldamt_sh(3,:,:))
-
-   write(LIS_logunit,*)'EMK: maxval(cldamt1(1,:,:)) = ', &
-        maxval(cldamt1(1,:,:))
-   write(LIS_logunit,*)'EMK: minval(cldamt1(1,:,:)) = ', &
-        minval(cldamt1(1,:,:))
 
    ip =1
    udef = -1.0
