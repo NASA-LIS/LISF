@@ -227,6 +227,8 @@ module Crocus81_module
         real               :: SILT
         real               :: CLAY
         real               :: POROSITY
+        real               :: XWGI
+        real               :: XWG
         !-------------------------------------------------------------------------
         ! multilevel spatial parameter
         !-------------------------------------------------------------------------

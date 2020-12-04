@@ -146,6 +146,8 @@ subroutine Crocus81_main(n)
     REAL*8                 :: tmp_SILT               ! Soil silt fraction (-) [-]
     REAL*8                 :: tmp_CLAY               ! Soil clay fraction (-) [-]
     REAL*8                 :: tmp_POROSITY           ! Soil porosity (m3 m-3) [m3/m3]
+    REAL*8                 :: tmp_XWGI               ! soil volumetric frozen water content
+    REAL*8                 :: tmp_XWG                ! soil volumetric liquid water content
     LOGICAL              :: tmp_Partition_total_precip_BOOL ! Boolean option to partition total precipitation into snowfall and rainfall using Jordan 1991 [-]
     REAL                 :: tmp_SD_1D              ! Total snow depth, temporally added [m]  
     REAL                 :: tmp_SWE_1D             ! Total SWE, temporally added [kg/m2] 
@@ -344,6 +346,8 @@ subroutine Crocus81_main(n)
             tmp_CLAY                                = CROCUS81_struc(n)%crocus81(t)%CLAY                            
             tmp_POROSITY                            = CROCUS81_struc(n)%crocus81(t)%POROSITY            
 
+            tmp_XWGI                                = CROCUS81_struc(n)%crocus81(t)%XWGI
+            tmp_XWG                                 = CROCUS81_struc(n)%crocus81(t)%XWG
             ! get state variables
             tmp_SNOWSWE(:)    = CROCUS81_struc(n)%crocus81(t)%SNOWSWE(:)   
             tmp_SNOWRHO(:)    = CROCUS81_struc(n)%crocus81(t)%SNOWRHO(:)   
@@ -373,6 +377,49 @@ if (tmp_PERMSNOWFRAC.gt.0.2)then
       tmp_GLACIER_BOOL = .True.
 endif
 
+# if 0
+if (row == 217) then 
+if (col == 276) then
+
+print *, '====================================================='
+print *, 'row', row
+print *, 'col', col
+
+
+WRITE (*, '( A50 , 1x ,I4, 1x, I2, 1x,  I3 , 1x, I3, 1x, I3,  1x, 5(F10.6,1x) )') 'Crocus81_main.F90 SAND,CLAY,SILT,POROSITY,SOILCOND',  &
+                               tmp_year, &
+                               tmp_month, tmp_day, tmp_hour, tmp_minute,  &
+                               tmp_SAND, tmp_CLAY, tmp_SILT, tmp_POROSITY, tmp_SOILCOND
+
+WRITE (*, '( A50,1x, 5(F10.6,1x) )') '1main tmp_SRSNOW tmp_RRSNOW tmp_TA tmp_TG tmp_SW_RAD ', tmp_SRSNOW, tmp_RRSNOW, tmp_TA, tmp_TG, tmp_SW_RAD 
+                               
+WRITE (*, '( A55,1x, 5(F10.6,1x) )') '2main tmp_QA tmp_Wind_E tmp_Wind_N tmp_UREF tmp_SLOPE',tmp_QA, tmp_Wind_E, tmp_Wind_N, tmp_UREF, tmp_SLOPE 
+
+WRITE (*, '( A50,1x, 5(F10.6,1x) )') '3main tmp_ZREF tmp_Z0NAT tmp_Z0EFF tmp_D_G',tmp_ZREF , tmp_Z0NAT, tmp_Z0EFF, tmp_Z0HNAT, tmp_D_G
+
+print*,'tmp_ALB', tmp_ALB
+print*,'tmp_SNOWLIQ', tmp_SNOWLIQ(1:5)
+!WRITE (*, '( A50,1x, 5(F10.6,1x) )') ' ', (1:5)
+print*,'tmp_SNOWRHO',tmp_SNOWRHO(1:5) 
+print*,'tmp_SNOWHEAT',tmp_SNOWHEAT(1:5)
+WRITE (*, '( A10,1x, 5(F10.6,1x) )') 'tmp_SNOWTEMP ',tmp_SNOWTEMP (1:5)
+WRITE (*, '( A10,1x, 5(F10.6,1x) )') 'tmp_SNOWDZ   ',tmp_SNOWDZ   (1:5) 
+WRITE (*, '( A50,1x, 5(F10.6,1x) )') 'tmp_THRUFAL,tmp_GRNDFLUX,tmp_EMISNOW ,tmp_CDSNOW ',tmp_THRUFAL,tmp_GRNDFLUX,tmp_EMISNOW, tmp_CDSNOW
+print*,'tmp_RI_n',tmp_RI_n
+WRITE (*, '( A60,1x, 5(F10.6,1x) )') 'tmp_USTARSNOW,tmp_CHSNOW,tmp_PERMSNOWFRAC,tmp_SD_1D,tmp_SWE_1D ',tmp_USTARSNOW,tmp_CHSNOW,tmp_PERMSNOWFRAC,tmp_SD_1D,tmp_SWE_1D  
+print*,'tmp_SNOWHMASS',tmp_SNOWHMASS
+print*,'tmp_QS', tmp_QS
+!WRITE (*, '( A10,1x, 5(F10.6,1x) )') '   ',
+!WRITE (*, '( A10,1x, 5(F10.6,1x) )') '   ',
+
+
+!WRITE (*, '( A10 , 1x , 1(F12.6, 1x))')  ' tmp_TG', tmp_TG 
+!print *, 'main , tmp_RRSNOW,  tmp_SRSNOW' , tmp_RRSNOW , tmp_SRSNOW ! MN
+            ! call model physics 
+
+endif
+endif
+# endif
 
 !------------------------------------------------------------------------------------ 
 ! call model physics 
@@ -470,6 +517,8 @@ endif
                                tmp_SILT              , & ! IN    - Soil silt fraction (-) [-]
                                tmp_CLAY              , & ! IN    - Soil clay fraction (-) [-]
                                tmp_POROSITY          ,&  ! IN    - Soil porosity (m3 m-3) [m3/m3]
+                               tmp_XWGI              ,&  ! IN    - soil volumetric frozen water content
+                               tmp_XWG                ,&  ! IN    - soil volumetric liquid water content
                                tmp_use_monthly_albedo_map)! ,& ! IN    - Boolean option to partition total precipitation into snowfall and rainfall using Jordan 1991 
     
             ! save state variables from local variables to global variables

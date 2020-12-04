@@ -221,7 +221,7 @@ contains
     integer  :: status   
     
     type(ESMF_ArraySpec) :: arrspec1
-    type(ESMF_Field)     :: gtField, sweField, snwdField
+    type(ESMF_Field)     :: gtField, XWGIField, XWGField, sweField, snwdField
     
     
     ! allocate memory for nest 
@@ -301,6 +301,32 @@ contains
             
             call ESMF_StateAdd(LIS_LSM2SUBLSM_State(n,kk),&
                  (/gtField/),rc=status)
+            call LIS_verify(status,&
+                 'ESMF_StateAdd failed in Crocus81_ini')
+
+            XWGIField = ESMF_FieldCreate(&
+                 grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
+                 arrayspec=arrspec1, &
+                 name="soil volumetric frozen water content",&
+                 rc=status)
+            call LIS_verify(status,&
+                 'ESMF_FieldCreate failed in Crocus81_ini')
+
+            call ESMF_StateAdd(LIS_LSM2SUBLSM_State(n,kk),&
+                 (/XWGIField/),rc=status)
+            call LIS_verify(status,&
+                 'ESMF_StateAdd failed in Crocus81_ini')
+
+            XWGField = ESMF_FieldCreate(&
+                 grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
+                 arrayspec=arrspec1, &
+                 name="soil volumetric liquid water content",&
+                 rc=status)
+            call LIS_verify(status,&
+                 'ESMF_FieldCreate failed in Crocus81_ini')
+
+            call ESMF_StateAdd(LIS_LSM2SUBLSM_State(n,kk),&
+                 (/XWGField/),rc=status)
             call LIS_verify(status,&
                  'ESMF_StateAdd failed in Crocus81_ini')
 
