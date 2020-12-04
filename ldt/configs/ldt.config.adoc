@@ -71,7 +71,7 @@ endif::devonly[]
 Surface model types:  "LSM"
 ....
 
-`Land surface model:` specifies the land surface model to be run. Need to select the model you want to run in LIS-7, so the appropriate model parameters are included in the output netcdf file for LIS. Acceptable values are:
+`Land surface model:` specifies the land surface model to be run. Need to select the model you want to run in LIS, so the appropriate model parameters are included in the output netcdf file for LIS. Acceptable values are:
 
 [cols="<,<",]
 |===
@@ -140,7 +140,7 @@ Number of met forcing sources:  1
 
 `Met forcing sources:` specifies the meteorological forcing data sources used for a LIS run.
 
-For more information about LIS's meteorological forcing data reader options, please see the "`Land Information System (LIS) Users`' Guide`" for more information.  Acceptable values for the sources are:
+For more information about LIS`'s meteorological forcing data reader options, please see the "`Land Information System (LIS) Users`' Guide`" for more information.  Acceptable values for the sources are:
 
 [cols="<,<",]
 |===
@@ -165,8 +165,8 @@ endif::devonly[]
 |"`GLDAS`" |Coarse-scale GLDAS-1 forcing
 |"`GSWP1`" |GSWP1 forcing
 |"`GSWP2`" |GSWP2 forcing
-|"`MERRALand`" |NASA's MERRA-Land reanalysis
-|"`MERRA2`" |NASA's GMAO MERRA2 reanalysis
+|"`MERRALand`" |NASA`'s MERRA-Land reanalysis
+|"`MERRA2`" |NASA`'s GMAO MERRA2 reanalysis
 |"`NAM242`" |NCEP-NAM 242 resolution (Alaska)
 |"`NARR`" |North American Regional Reanalysis
 |"`NLDAS1`" |NLDAS1 analysis fields
@@ -228,7 +228,7 @@ Blending method for forcings: overlay
 |"`budget-bilinear`" |Conservative interpolation scheme ("`conserves`" quantities)
 |===
 
-Bilinear interpolation uses 4 neighboring points to compute the interpolation weights. The conservative approach uses 25 neighboring points. This option is designed to conserve water, like for precipitation. Also, nearest neighbor can be used, which may better preserve large pixels (e.g., 1x1 deg), if needed. "`Average`" can also be selected if upscaling from finer-scale meteorological fields (e.g., going from 4 KM to 0.25 deg).
+Bilinear interpolation uses 4 neighboring points to compute the interpolation weights. The conservative approach uses 25 neighboring points. This option is designed to conserve water, like for precipitation. Also, nearest neighbor can be used, which may better preserve large pixels (e.g., 1x1 deg), if needed. "`Average`" can also be selected if upscaling from finer-scale meteorological fields (e.g., going from 4 km to 0.25 deg).
 
 .Example _ldt.config_ entry
 ....
@@ -245,7 +245,7 @@ Met spatial transform methods:     bilinear
 |"`lapse-rate`" |Use lapse rate correction for forcing
 |===
 
-Current meteorological forcing datasets supported for applying this lapse-rate adjustment to the temperature, humidity, pressure and downward longwave fields, include: NLDAS1, NLDAS2, NAM242, GDAS, PRINCETON, and ECMWF Future forcing dataset options will include: GEOS, GLDAS, GFS, ECMWF_reanalysis, and possible others.
+Current meteorological forcing datasets supported for applying this lapse-rate adjustment to the temperature, humidity, pressure and downward longwave fields, include: NLDAS1, NLDAS2, NAM242, GDAS, PRINCETON, and ECMWF.  Future forcing dataset options will include: GEOS, GLDAS, GFS, ECMWF_reanalysis, and possible others.
 
 ECMWF and GDAS forcing types include several terrain height maps and not just one overall, either due to change in versions or gridcell size, respective.
 
@@ -277,11 +277,11 @@ Temporal interpolation method (met forcing): linear
 |===
 |Value |Description
 
-|`.false.` |do not enable
-|`.true.` |enable
+|.false. |do not enable
+|.true. |enable
 |===
 
-Defaults to .false..
+Defaults to `.false.`.
 
 This is a scalar option, not per nest.
 
@@ -411,8 +411,8 @@ Acceptable values are:
 |===
 |Value |Description
 
-|"0" |No buffer added
-|"1" |Buffer included
+|"`0`" |No buffer added
+|"`1`" |Buffer included
 |===
 
 The default value is 0.
@@ -430,8 +430,8 @@ Acceptable values are:
 |===
 |Value |Description
 
-|"0" |No buffer added
-|"1 (or greater)" |Buffer points included
+|"`0`" |No buffer added
+|"`1`" (or greater) |Buffer points included
 |===
 
 The default value is 5, and only activated if buffer option is selected.
@@ -441,8 +441,6 @@ The default value is 5, and only activated if buffer option is selected.
 Buffer count in x-direction:   10 
 Buffer count in y-direction:   10
 ....
-
-
 
 `Number of ensembles per tile:` specifies the number of ensembles of tiles to be used. The value should be greater than or equal to 1.
 
@@ -561,7 +559,7 @@ Number of processors along y:       2
 |"`1d gridspace`" |Write output in a 1-D grid domain
 |===
 
-The default value is "2d gridspace".
+The default value is "`2d gridspace`".
 
 .Example _ldt.config_ entry
 ....
@@ -579,7 +577,7 @@ Output methodology: "2d gridspace"
 |"`netcdf`" |Write output in netCDF format
 |===
 
-The default value is "netcdf".
+The default value is "`netcdf`".
 
 .Example _ldt.config_ entry
 ....
@@ -598,7 +596,7 @@ Output data format: netcdf
 |"`WMO convention`" |WMO convention for weather codes
 |===
 
-The default value is "3 level hierarchy".
+The default value is "`3 level hierarchy`".
 
 .Example _ldt.config_ entry
 ....
@@ -772,7 +770,7 @@ endif::devonly[]
 Landcover data source:    "MODIS_Native"
 ....
 
-`Landcover classification:` specifies the land cover classification type. Land cover or use classification types have been developed over the years by various organizations (e.g., USGS, IGBP) and research groups (e.g., satellite missions associated with groups, like UMD, BU, etc.). For more information on some of these different land classifications and their characteristics, please refer to: http://edc2.usgs.gov/glcc/globdoc2_0.php Acceptable values are:
+`Landcover classification:` specifies the land cover classification type. Land cover or use classification types have been developed over the years by various organizations (e.g., USGS, IGBP) and research groups (e.g., satellite missions associated with groups, like UMD, BU, etc.). For more information on some of these different land classifications and their characteristics, please refer to: http://edc2.usgs.gov/glcc/globdoc2_0.php.  Acceptable values are:
 
 [cols="<,<",]
 |===
@@ -910,7 +908,7 @@ This section also outlines the domain specifications of the land water/mask data
 
 If the map projection of parameter data is specified to be "`latlon`", the following extents and resolution configuration should be used for specifying landmask data. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
-Future landmask data sets will have the projection, grid extents and resolution on the data reader side and not needed to be specified in the ldt config file, depending on the data source.
+Future landmask data sets will have the projection, grid extents and resolution on the data reader side and not needed to be specified in the _ldt.config_ file, depending on the data source.
 
 .Example _ldt.config_ entry
 ....
@@ -1050,7 +1048,7 @@ Regional mask file:    ../input/1KM/regional_statemask.1gd4r
 Regional mask map projection:   latlon
 ....
 
-`Clip landmask with regional mask:` A logical-based option that uses the regional mask to `clip' the original landmask that is read-in or created. .true. turns on the "clipping" option.
+`Clip landmask with regional mask:` A logical-based option that uses the regional mask to "`clip`" the original landmask that is read-in or created. `.true.` turns on the "`clipping`" option.
 
 .Example _ldt.config_ entry
 ....
@@ -1160,7 +1158,7 @@ Crop type data source:  "none"
 Crop classification:       "FAOSTAT01"  
 ....
 
-`Crop library directory:` specifies the source of the crop library and inventory of crop classes, related to the "`Crop classification:`" entry (see above).
+`Crop library directory:` specifies the source of the crop library and inventory of crop classes, related to the `Crop classification:` entry (see above).
 
 .Example _ldt.config_ entry
 ....
@@ -1214,7 +1212,7 @@ Crop type file:  ./irrigation/conus_modis/UMD_N125C19.1gd4r
 |tile |Read in tiled data or upscale by estimating gridcell fractions
 |===
 
-NOTE: LIS-7 will be expecting "`mode`" or dominant crop type per
+NOTE: LIS will be expecting "`mode`" or dominant crop type per
 gridcell at this time. Future versions will include landcover-crop tile
 options.
 
@@ -1675,7 +1673,7 @@ Current options include:
 |SRTM_Native |The SRTM elevation map native source. See: http://dds.cr.usgs.gov/srtm/version2_1/SRTM30
 |SRTM_LIS |Similar dataset as to the above one but processed by LIS-team.
 |CONSTANT |User can set a constant elevation, slope or aspect class.
-|MERIT_1K |The MERIT elevation map, but processed by LIS-team to have a resolution '0.008333'. See: http://hydro.iis.u-tokyo.ac.jp/~yamadai/MERIT_DEM/index.html
+|MERIT_1K |The MERIT elevation map, but processed by LIS-team to have a resolution '`0.008333`'. See: http://hydro.iis.u-tokyo.ac.jp/~yamadai/MERIT_DEM/index.html
 |===
 
 .Example _ldt.config_ entry
@@ -3155,7 +3153,7 @@ For LIS sub-grid tiling, tiling is based on vegetation fractions from the "`land
 
 For VIC sub-grid tiling, tiling is based on vegetation fractions from the "`VEGPARAM`" file, set this config entry to 0.
 
-See the LIS Users`' Guide and/or VIC's documentation at:
+See the LIS Users`' Guide and/or VIC`'s documentation at:
 http://www.hydro.washington.edu/Lettenmaier/Models/VIC/index.shtml
 for more information about configuring these VIC options.
 
@@ -3265,9 +3263,12 @@ Number of ensembles per tile (input restart): 1
 Number of ensembles per tile (output restart): 12
 ....
 
-Note: Make sure to specify the surface type, veg, soil, etc., subgrid tiling entries.  For upscaling or downscaling of restart files, maximum number of tiles and minimum cutoff percentage entries for subgrid tiling based on vegetation or other parameter types (e.g., soil type, elevation, etc.) are required as entries.
+[NOTE]
+====
+Make sure to specify the surface type, veg, soil, etc., subgrid tiling entries.  For upscaling or downscaling of restart files, maximum number of tiles and minimum cutoff percentage entries for subgrid tiling based on vegetation or other parameter types (e.g., soil type, elevation, etc.) are required as entries.
 
-For example, must include, Maximum number of surface type tiles per grid:
+For example, must include, `Maximum number of surface type tiles per grid:`
+====
 
 [[ssec-nuwrfrealopts]]
 === NUWRF preprocessing for real options
@@ -3348,16 +3349,16 @@ LIS output timestep:          1da
 |===
 |Value |Description
 
-|LIS LSM soil moisture |soil moisture output from a LIS run
-|Synthetic soil moisture |synethtic soil moisture observations created from a LIS run
-|AMSR-E(LPRM) soil moisture |Land Parameter Retrieval Model (LPRM) retrievals of AMSR-E soil moisture
-|AMSR-E(NASA) soil moisture |NASA AMSR-E soil moisture
-|ESA CCI soil moisture |Essential Climate Variable (ECV) soil moisture retrievals
-|WindSat soil moisture |WindSat retrievals of soil moisture
-|SMOPS soil moisture |NESDIS Soil Moisture Operational Processing System (SMOPS) based soil moisture retrievals
-|ASCAT TUW soil moisture |ASCAT soil moisture retrievals from TU Wein
-|GRACE TWS |Terrestrial water storage observations from GRACE
-|Simulated GRACE |Simulated water storage observations from GRACE
+|"`LIS LSM soil moisture`" |soil moisture output from a LIS run
+|"`Synthetic soil moisture`" |synethtic soil moisture observations created from a LIS run
+|"`AMSR-E(LPRM) soil moisture`" |Land Parameter Retrieval Model (LPRM) retrievals of AMSR-E soil moisture
+|"`AMSR-E(NASA) soil moisture`" |NASA AMSR-E soil moisture
+|"`ESA CCI soil moisture`" |Essential Climate Variable (ECV) soil moisture retrievals
+|"`WindSat soil moisture`" |WindSat retrievals of soil moisture
+|"`SMOPS soil moisture`" |NESDIS Soil Moisture Operational Processing System (SMOPS) based soil moisture retrievals
+|"`ASCAT TUW soil moisture`" |ASCAT soil moisture retrievals from TU Wein
+|"`GRACE TWS`" |Terrestrial water storage observations from GRACE
+|"`Simulated GRACE`" |Simulated water storage observations from GRACE
 |===
 
 .Example _ldt.config_ entry
@@ -3371,9 +3372,9 @@ DA observation source:   "AMSR-E(LPRM) soil moisture"
 |===
 |Value |Description
 
-|"Obs grid generation" |Create the observation space grid only
-|"CDF generation" |Create CDFs for the given data source
-|"Anomaly correction" |Create updated observations for DA by applying anomaly correction (Used for GRACE DA)
+|"`Obs grid generation`" |Create the observation space grid only
+|"`CDF generation`" |Create CDFs for the given data source
+|"`Anomaly correction`" |Create updated observations for DA by applying anomaly correction (Used for GRACE DA)
 |===
 
 .Example _ldt.config_ entry
@@ -3525,7 +3526,7 @@ For Lambert and polar projections:
 
 `LIS soil moisture domain y-dimension size:` specifies the y-dimension size of the LIS model output
 
-For "WMO convention" style output
+For "`WMO convention`" style output
 
 `LIS soil moisture security class:` specifies the security classification for the LIS model output file, used only for WMO-convention output.
 
@@ -3960,11 +3961,11 @@ This section describes the parameters needed for the HYMAP and the HYMAP2 routin
 
 `HYMAP baseflow time delay map:` specifies the name of the baseflow time delay data file.
 
-`HYMAP baseflow dwi ratio map:` specifies the name of the baseflow dwi ratio data file.  This is an optional parameter that is required only when "`HYMAP2 routing model dwi flag`" is set to 1 (turned on) in LIS in the lis.config file.  If this flag is set to 0 in the lis.config file, the baseflow dwi ratio map is not required.
+`HYMAP baseflow dwi ratio map:` specifies the name of the baseflow dwi ratio data file.  This is an optional parameter that is required only when "`HYMAP2 routing model dwi flag`" is set to 1 (turned on) in LIS in the _lis.config_ file.  If this flag is set to 0 in the _lis.config_ file, the baseflow dwi ratio map is not required.
 
-`HYMAP runoff dwi ratio map:` specifies the name of the runoff dwi ratio data file.  This is an optional parameter that is required only when "`HYMAP2 routing model dwi flag`" is set to 1 (turned on) in LIS in the lis.config file.  If this flag is set to 0 in the lis.config file, the runoff dwi ratio map is not required.
+`HYMAP runoff dwi ratio map:` specifies the name of the runoff dwi ratio data file.  This is an optional parameter that is required only when "`HYMAP2 routing model dwi flag`" is set to 1 (turned on) in LIS in the _lis.config_ file.  If this flag is set to 0 in the _lis.config_ file, the runoff dwi ratio map is not required.
 
-`HYMAP river flow type map:` specifies the name of the river flow type data file.  This is an optional parameter that is required only when "`HYMAP2 routing method`" is set to "`hybrid`" in LIS in the lis.config file.  If the routing method is set to a different option, the river flow type map is not required.
+`HYMAP river flow type map:` specifies the name of the river flow type data file.  This is an optional parameter that is required only when "`HYMAP2 routing method`" is set to "`hybrid`" in LIS in the _lis.config_ file.  If the routing method is set to a different option, the river flow type map is not required.
 
 .Example _ldt.config_ entry
 ....
@@ -4213,9 +4214,9 @@ USAFSI SSMIS forest fraction file:     ./SNODEPIN/ForestFraction_0p25deg.nc
 
 `USAFSI minimum ice concentration (%) needed to set ice flag:` used when constructing binary sea ice field
 
-`USAFSI high latitude thresholds (deg) for sea ice::` 24 latitudes, each row defining a hemisphere (NH, then SH), each column defining a month (J F M A M J J A S O N D). Used to define "high latitudes" in SSMIS-based sea ice analysis.
+`USAFSI high latitude thresholds (deg) for sea ice::` 24 latitudes, each row defining a hemisphere (NH, then SH), each column defining a month (J F M A M J J A S O N D). Used to define "`high latitudes`" in SSMIS-based sea ice analysis.
 
-`USAFSI low latitude thresholds (deg) for sea ice:` 24 latitudes, each row defining a hemisphere (NH, then SH), each column defining a month (J F M A M J J A S O N D). Used to define "low latitudes" in SSMIS-based sea ice analysis.
+`USAFSI low latitude thresholds (deg) for sea ice:` 24 latitudes, each row defining a hemisphere (NH, then SH), each column defining a month (J F M A M J J A S O N D). Used to define "`low latitudes`" in SSMIS-based sea ice analysis.
 
 `USAFSI max age of VIIRS pixels to use:` used to ignore old VIIRS data
 
@@ -4292,13 +4293,13 @@ USAFSI skewed backQC snow depth threshold (m):  0.4
 
 `USAFSI LIS GRIB2 area of data:` used for constructing LIS GRIB2 filename
 
-'USAFSI GALWEM root directory:` root directory for GALWEM data
+`USAFSI GALWEM root directory:` root directory for GALWEM data
 
-'USAFSI GALWEM subdirectory:` subdirectory for GALWEM data
+`USAFSI GALWEM subdirectory:` subdirectory for GALWEM data
 
-'USAFSI GALWEM use timestamp directories:` option to use YYYYMMDD in constructing full GALWEM directory; 1 is yes, 0 is no
+`USAFSI GALWEM use timestamp directories:` option to use YYYYMMDD in constructing full GALWEM directory; 1 is yes, 0 is no
 
-'USAFSI GALWEM nominal resolution (km):` 17 or 10 (17 currently used in operations)
+`USAFSI GALWEM nominal resolution (km):` 17 or 10 (17 currently used in operations)
 
 .Example _ldt.config_ entry
 ....
