@@ -1,7 +1,7 @@
 
 # Overall driver options
 LDT running mode:                   "USAFSI analysis"
-Processed LSM parameter filename:   LDTOUT/lis_input.10km_noah_juleslandmask.cap.nc 
+Processed LSM parameter filename:   LDTOUT/lis_input.10km_noah_juleslandmask.cap.nc
 LIS number of nests:                 1
 Number of surface model types:       0
 Number of met forcing sources: 0
@@ -40,7 +40,7 @@ USAFSI SSMIS raw data directory:           ./USAFSIIN/OBSI_SSMISUPP/
 # Retrievals 1: Hollinger,1991, 2: Chang et al.,1987, 3:Foster et al.,1997
 USAFSI SSMIS snow depth retrieval algorithm option:   3
 # Forest fraction only for algorithm 3
-USAFSI SSMIS forest fraction file:         ./USAFSIIN/ForestFraction_0p25deg.nc 
+USAFSI SSMIS forest fraction file:         ./USAFSIIN/ForestFraction_0p25deg.nc
 
 # *** Former Namelist Variables ***
 USAFSI decimal fraction adjustment of snow depth towards climo: 0.1
@@ -60,20 +60,20 @@ USAFSI temperature (deg K * 10) above which no snow is allowed: 2820
 USAFSI max reported temperature (deg K * 10) allowed around poles: 3030
 USAFSI minimum ice concentration (%) needed to set ice flag: 15
 # There should 24 latitudes defined below, each row definining a hemisphere
-# (NH first row, SH second row), and each column defining a month 
+# (NH first row, SH second row), and each column defining a month
 # (J F M A M J J A S O N D).  These are used to define "high latitudes"
 # in the SSMIS-based sea ice analysis.
 USAFSI high latitude thresholds (deg) for sea ice::
-       81.0 81.0 81.0 81.0 81.0 81.0 81.0 82.0 82.0 82.0 81.0 81.0 
-       90.0 90.0 78.0 78.0 68.0 68.0 67.0 67.0 66.0 66.0 68.0 70.0 
+       81.0 81.0 81.0 81.0 81.0 81.0 81.0 82.0 82.0 82.0 81.0 81.0
+       90.0 90.0 78.0 78.0 68.0 68.0 67.0 67.0 66.0 66.0 68.0 70.0
 ::
 # There should 24 latitudes defined below, each row definining a hemisphere
-# (NH first row, SH second row), and each column defining a month 
+# (NH first row, SH second row), and each column defining a month
 # (J F M A M J J A S O N D).  These are used to define "low latitudes"
 # in the SSMIS-based sea ice analysis.
 USAFSI low latitude thresholds (deg) for sea ice::
-       45.0 44.0 44.0 45.0 51.0 52.0 55.0 65.0 65.0 62.0 53.0 50.0 
-       60.0 62.0 62.0 60.0 58.0 56.0 55.0 55.0 53.0 54.0 55.0 57.0 
+       45.0 44.0 44.0 45.0 51.0 52.0 55.0 65.0 65.0 62.0 53.0 50.0
+       60.0 62.0 62.0 60.0 58.0 56.0 55.0 55.0 53.0 54.0 55.0 57.0
 ::
 USAFSI max age of VIIRS pixels to use: 3
 USAFSI min VIIRS fraction to mark point as bare ground:  0.6
@@ -96,9 +96,13 @@ USAFSI LIS GRIB2 security class:  U
 USAFSI LIS GRIB2 data category:   C
 USAFSI LIS GRIB2 data resolution: C0P09DEG
 USAFSI LIS GRIB2 area of data:    GLOBAL
+USAFSI GALWEM root directory: USAF_FORCING
+USAFSI GALWEM subdirectory: GALWEM
+USAFSI GALWEM use timestamp directories: 1
+USAFSI GALWEM nominal resolution (km): 17
 
 # Define USAFSI outputfile name prefix (e.g., usafsi)
 # Output file name will be "prefix_+USAFSI valid date(yyyymmddhh)+.nc"
-# e.g., usafsi_2018121112.nc  
-USAFSI output filename (prefix):  "usafsi" 
+# e.g., usafsi_2018121112.nc
+USAFSI output filename (prefix):  "usafsi"
 

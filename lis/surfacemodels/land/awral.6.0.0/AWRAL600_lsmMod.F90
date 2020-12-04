@@ -167,10 +167,10 @@ module AWRAL600_lsmMod
         !-------------------------------------------------------------------------
         real               :: init_sr
         real               :: init_sg
-        real, pointer      :: init_s0(:)
-        real, pointer      :: init_ss(:)
-        real, pointer      :: init_sd(:)
-        real, pointer      :: init_mleaf(:)
+        real, allocatable  :: init_s0(:)
+        real, allocatable  :: init_ss(:)
+        real, allocatable  :: init_sd(:)
+        real, allocatable  :: init_mleaf(:)
         !-------------------------------------------------------------------------
         ! Constant Parameter
         !-------------------------------------------------------------------------
@@ -179,31 +179,31 @@ module AWRAL600_lsmMod
         real               :: kr_coeff
         integer            :: nhru
         integer            :: nhypsbins
-        real, pointer      :: hypsperc(:)
-        real, pointer      :: alb_dry(:)
-        real, pointer      :: alb_wet(:)
-        real, pointer      :: cgsmax(:)
-        real, pointer      :: er_frac_ref(:)
-        real, pointer      :: fsoilemax(:)
-        real, pointer      :: lairef(:)
-        real, pointer      :: rd(:)
-        real, pointer      :: s_sls(:)
-        real, pointer      :: sla(:)
-        real, pointer      :: tgrow(:)
-        real, pointer      :: tsenc(:)
-        real, pointer      :: ud0(:)
-        real, pointer      :: us0(:)
-        real, pointer      :: vc(:)
-        real, pointer      :: w0lime(:)
-        real, pointer      :: w0ref_alb(:)
-        real, pointer      :: wdlimu(:)
-        real, pointer      :: wslimu(:)
-        real, pointer      :: hy
+        real, allocatable  :: hypsperc(:)
+        real, allocatable  :: alb_dry(:)
+        real, allocatable  :: alb_wet(:)
+        real, allocatable  :: cgsmax(:)
+        real, allocatable  :: er_frac_ref(:)
+        real, allocatable  :: fsoilemax(:)
+        real, allocatable  :: lairef(:)
+        real, allocatable  :: rd(:)
+        real, allocatable  :: s_sls(:)
+        real, allocatable  :: sla(:)
+        real, allocatable  :: tgrow(:)
+        real, allocatable  :: tsenc(:)
+        real, allocatable  :: ud0(:)
+        real, allocatable  :: us0(:)
+        real, allocatable  :: vc(:)
+        real, allocatable  :: w0lime(:)
+        real, allocatable  :: w0ref_alb(:)
+        real, allocatable  :: wdlimu(:)
+        real, allocatable  :: wslimu(:)
+        real, allocatable  :: hy
         integer            :: timesteps
-        type(AWRAL600dec), pointer :: awral600(:)
+        type(AWRAL600dec), allocatable :: awral600(:)
     end type AWRAL600_type_dec
 
-    type(AWRAL600_type_dec), pointer :: AWRAL600_struc(:)
+    type(AWRAL600_type_dec), allocatable :: AWRAL600_struc(:)
  
 contains 
 

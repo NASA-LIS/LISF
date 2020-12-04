@@ -20,7 +20,7 @@ This section describes the options in the _lvt.config_ file.
 | "`OPTUE output processing`"   | parameter estimation/uncertainty output analysis
 | "`RTM output processing`"     | radiative transfer model output analysis
 | "`557 post`"                  | LIS postprocessing mode for 557WW operations
-| "`USAFSI post`"                | special postprocessing mode for USAFSI
+| "`USAFSI post`"               | special postprocessing mode for USAFSI
 |===
 
 .Example _lvt.config_ entry
@@ -149,8 +149,13 @@ LVT output methodology:                 "2d gridspace"
 | "`USCRN soil moisture`"           | USCRN soil moisture data
 | "`SMAP soil moisture`"            | SMAP soil moisture data
 | "`SMAP vegetation water content`" | SMAP vegetation water content
-! "`OzFlux`"                        | OzFlux ground measurements
-! "`JASMIN soil moisture`"          | JASMIN soil moisture analysis 
+| "`SMAP vegetation optical depth`" | SMAP vegetation optical depth
+| "`LPRM vegetation optical depth`" | LPRM vegetation optical depth
+| "`WG SWRC`"                       | ?
+| "`UA SNOW`"                       | University of Arizona SWE/Snow depth data
+| "`SMAP L3 Tb`"                    | SMAP L3 brightness temperature
+| "`OzFlux`"                        | OzFlux ground measurements
+| "`JASMIN soil moisture`"          | JASMIN soil moisture analysis
 |===
 
 .Example _lvt.config_ entry
@@ -160,7 +165,7 @@ Analysis data sources:     "LIS output"  "SURFRAD"
 
 `Experiment code:` LIS-6 experiment code number.
 
-Note — Only needed when using LVT on LIS 6 output.
+NOTE: Only needed when using LVT on LIS 6 output.
 
 .Example _lvt.config_ entry
 ....
@@ -325,7 +330,23 @@ RootMoist   1 1 m3/m3   -   1   1 RootMoist 1 1 m3/m3   -     1  1
 ::
 ....
 
-`LVT surface soil layer thickness:` specifies the thickness (in m) of the surface soil layer to be considered in the LVT analysis
+IMPORTANT: Review this!
+
+.Example _lvt.config_ entry
+....
+LVT datastream attributes table::
+Qle         1 1 W/m2   DN   1   1 Qh        1 1 W/m2    DN    1  1
+RootMoist   1 1 m3/m3   -   1   1 RootMoist 1 1 m3/m3   -     1  1
+none     VWC   1  1  kg/m2  -   1   1
+!none     SMAPL3TB  1  1 K  -   1  4
+none     SMAPL3TBv_D  1  1 K  -   1   1
+none     SMAPL3TBv_A  1  1 K  -   1   1
+none     SMAPL3TBh_D  1  1 K  -   1   1
+none     SMAPL3TBh_A  1  1 K  -   1   1
+::
+....
+
+`LVT surface soil layer thickness:` specifies the thickness (in m) of the surface soil layer to be considered in the LVT analysis.
 
 .Example _lvt.config_ entry
 ....
@@ -361,7 +382,7 @@ This section of the config file specifies the type of analysis to be conducted d
 Apply external mask:                    0
 ....
 
-`Temporal (monthly) mask flags:` specifies the temporal (monthly) mask flags (specified as 0/1 for each calendar month). This option is only read when the "`Apply external mask`" option is set to 3.
+`Temporal (monthly) mask flags:` specifies the temporal (monthly) mask flags (specified as 0/1 for each calendar month). This option is only read when the `Apply external mask:` option is set to 3.
 
 .Example _lvt.config_ entry
 ....
@@ -419,11 +440,11 @@ Metrics attributes file:                ./METRICS.TBL
 Observation count threshold:            50
 ....
 
-`Metric computation frequency:` Specifies the temporal averaging interval of the LIS output and observation data.
+`Metrics computation frequency:` Specifies the temporal averaging interval of the LIS output and observation data.
 
 [NOTE]
 ====
-The ending time and the `Metric computation frequency:` must be consistent. For example, for a `Metric computation frequency:` of 1da, you must have an ending time of:
+The ending time and the `Metrics computation frequency:` must be consistent. For example, for a `Metrics computation frequency:` of 1da, you must have an ending time of:
 
 ....
 Ending hour: 0
@@ -434,7 +455,7 @@ Ending second: 0
 
 .Example _lvt.config_ entry
 ....
-Metric computation frequency:            "1da"
+Metrics computation frequency:            "1da"
 ....
 
 `Temporal lag in metrics computations:` Specifies the temporal lag in metric computations. The values can be positive or negative (e.g.  "`+1da`" or "`-1da`")
@@ -468,20 +489,20 @@ This file must be in big-endian, sequential access format and must correspond ex
 Regional mask file for spatial averaging: none
 ....
 
-`Metric output directory:` Specifies the top-level directory where the output from the analysis is to be written.
+`Metrics output directory:` Specifies the top-level directory where the output from the analysis is to be written.
 
 .Example _lvt.config_ entry
 ....
-Metric output directory:                 ./STATS
+Metrics output directory:                 ./STATS
 ....
 
-`Metric output frequency:` Specifies the frequency (in seconds) of the analysis output.
+`Metrics output frequency:` Specifies the frequency (in seconds) of the analysis output.
 
-NOTE: The `Metric output frequency:` is simply a setting for specifying the frequency of LVT outputs. If the `Metric output frequency:` is different from (greater than) the time averaging interval, no additional averaging will be performed between the time averaging intervals.
+NOTE: The `Metrics output frequency:` is simply a setting for specifying the frequency of LVT outputs. If the `Metrics output frequency:` is different from (greater than) the time averaging interval, no additional averaging will be performed between the time averaging intervals.
 
 .Example _lvt.config_ entry
 ....
-Metric output frequency:                  "1da"
+Metrics output frequency:                  "1da"
 ....
 
 `Apply temporal smoothing to obs:` specifies whether to temporal smoothing to the observations. If enabled,the code will compute an average value across the specified time window, instead of only using the value that corresponds to the current time.  Acceptable values are:
@@ -788,7 +809,7 @@ Compute only the climatology for SPI:     0
 Compute only the climatology for SRI:     0
 ....
 
-`SPI timescale of computation:` Set to 1,3,6,...for SPI (or SRI, SSWI) agregations
+`SPI timescale of computation:` Set to 1,3,6,...for SPI (or SRI, SSWI) agregations.
 
 `Compute only the climatology for SSWI:` If set to 1, then LVT will only calculate the climatology for SSWI.
 
@@ -846,7 +867,7 @@ If doy is chosen, for example, then the day of the year at which the maximum val
 Time specification option for MaxTime metric: doy
 ....
 
-'Calculate reference ET without energy balance:' allows for the reference evapotranspiration to be calculated without
+`Calculate reference ET without energy balance:` allows for the reference evapotranspiration to be calculated without
 using surface energy flux variables that are generated by the land-surface model. The calculation follows the methodology
 in Hobbins, M. et al. 2016.
 
@@ -861,9 +882,9 @@ in Hobbins, M. et al. 2016.
 This option is only valid for Template LSM runs.
 
 .Example _lvt.config_ entry
-...
+....
 Calculate reference ET without energy balance: 1
-...
+....
 
 [[ssec-obssrc]]
 === Data stream sources
@@ -1157,16 +1178,6 @@ ANSA SWE resolution (dy):       0.25
 
 `ARM station list file:` specifies the file that lists the location of the ARM stations. The format of the station list is as follows:
 
-`ARM use BAEBBR data:` specifies if to use the BAEBBR data or not
-
-`ARM use EBBR data:` specifies if to use the EBBR data or not
-
-`ARM use ECOR flux data:` specifies if to use the ECOR data or not
-
-`ARM use SWATS data:` specifies if to use the SWATS data or not
-
-`ARM use SMOS data:` specifies if to use the SMOS data or not
-
 [subs=attributes]
 ....
  #nstns
@@ -1183,6 +1194,16 @@ ANSA SWE resolution (dy):       0.25
  E9; 37.133; -97.266
  {vertellipsis}
 ....
+
+`ARM use BAEBBR data:` specifies if to use the BAEBBR data or not
+
+`ARM use EBBR data:` specifies if to use the EBBR data or not
+
+`ARM use ECOR flux data:` specifies if to use the ECOR data or not
+
+`ARM use SWATS data:` specifies if to use the SWATS data or not
+
+`ARM use SMOS data:` specifies if to use the SMOS data or not
 
 .Example _lvt.config_ entry
 ....
@@ -1331,9 +1352,29 @@ ISMN observation directory:             ./ISMN
 
 ==== LPRM AMSR-E soil moisture retrievals
 
-`LPRM AMSR-E soil moisture observation directory:` specifies the location of the LPRM AMSR-E soil moisture retrievals
+`LPRM AMSR-E soil moisture observation directory:` specifies the location of the LPRM AMSR-E soil moisture retrievals.
 
-`LPRM AMSR-E use raw data:` specifies whether to use the LPRM AMSR-E raw data. Acceptable values are:
+`LPRM AMSR-E data version:` specifies the version of LPRM soil moisture data to be used. Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value    | Description
+
+| GES-DISC | NASA GES-DISC version
+| V5       | version 5 data (from VU)
+|===
+
+`LPRM AMSR-E data channel:` specifies the frequency channel of the soil moisture retrieval. (This option is only needed for the GES-DISC data version.)  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value  | Description
+
+| X-band | X-band retrieval
+| C-band | C-band retrieval
+|===
+
+`LPRM AMSR-E use raw data:` specifies whether to use the LPRM AMSR-E raw data.  (This option is only used for V5 data.)  Acceptable values are:
 
 [cols="<,<",]
 |===
@@ -1346,6 +1387,8 @@ ISMN observation directory:             ./ISMN
 .Example _lvt.config_ entry
 ....
 LPRM AMSR-E soil moisture observation directory: ./LPRM-AMSRE
+LPRM AMSR-E soil moisture data version:  GES-DISC
+LPRM AMSR-E soil moisture data channel: X-band
 LPRM AMSR-E use raw data:                        0
 ....
 
@@ -1443,7 +1486,7 @@ Naturalized streamflow station list file:     ./Naturalized_StreamFlow/Naturaliz
 | Routing | Routing variables
 |===
 
-`NLDAS2 soil moisture volumetric:` specifies if LVT should convert the NLDAS-2 soil moisture values in amounts (kg m-2) to volumetric (m3 m-3), when `LVT running mode` is set to "`Observation processing`". If `NLDAS2 soil moisture volumetric` is set to "`.true.`", then the values will be converted.
+`NLDAS2 soil moisture volumetric:` specifies if LVT should convert the NLDAS-2 soil moisture values in amounts (kg m-2) to volumetric (m3 m-3), when `LVT running mode:` is set to "`Observation processing`". If `NLDAS2 soil moisture volumetric:` is set to "`.true.`", then the values will be converted.
 
 `NLDAS2 VIC soil depth1 file:` specifies the name of the VIC soil depth 1 binary file.
 
@@ -2105,12 +2148,76 @@ USCRN soil moisture station file:            ./USCRN/USCRN_stations.txt
 
 | SPL3SMP   | SMAP L3 Radiometer Global Daily 36 km EASE-Grid Soil Moisture
 | SPL3SMP_E | SMAP Enhanced L3 Radiometer Global Daily 9 km EASE-Grid Soil Moisture
+| SPL2SMP   | SMAP L2 Radiometer Global Daily 36 km EASE-Grid Soil Moisture
+| SPL2SMP_E | SMAP Enhanced L2 Radiometer Global Daily 9 km EASE-Grid Soil Moisture
 |===
 
 .Example _lvt.config_ entry
 ....
-SMAP soil moisture observation directory: ../SPL3SMP
+SMAP soil moisture observation directory: ../SPL3SMP.005
 SMAP soil moisture data designation:      SPL3SMP
+....
+
+==== SMAP vegetation optical depth
+
+`SMAP vegetation optical depth observation directory:` specifies the location of the SMAP vegetation optical depth (VOD) observation directory.
+
+`SMAP vegetation optical depth data designation:` specifies the designation of the SMAP data.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value     | Description
+
+| SPL3SMP   | SMAP L3 Radiometer Global Daily 36 km EASE-Grid VOD
+| SPL3SMP_E | SMAP Enhanced L3 Radiometer Global Daily 9 km EASE-Grid VOD
+|===
+
+.Example _lvt.config_ entry
+....
+SMAP vegetation optical depth observation directory: ../SPL3SMP.005
+SMAP vegetation optical depth data designation:      SPL3SMP
+....
+
+==== LPRM vegetation optical depth
+
+`LPRM vegetation optical depth observation directory:` specifies the location of the LPRM vegetation optical depth (VOD) observation directory.
+
+`LPRM vegetation optical depth data designation:` specifies the designation of the LPRM data.  Acceptable values are:
+
+[cols="<,<",]
+|===
+| Value  | Description
+
+| X-band | X-band retrievals of VOD
+| C-band | C-band retrievals of VOD
+|===
+
+.Example _lvt.config_ entry
+....
+LPRM vegetation optical depth observation directory: ../LPRM_VOD
+LPRM vegetation optical depth data designation:      X-band
+....
+
+==== WG SWRC
+
+`WG SWRC observation directory:` specifies the location of the WG SWRC observation directory.
+
+`WG SWRC station list file:` specifies the name of the WG SWRC station list file.
+
+.Example _lvt.config_ entry
+....
+WG SWRC observation directory:
+WG SWRC station list file:
+....
+
+==== UA SNOW observations
+
+`UA SNOW observation directory:` specifies the location of the University of Arizona SWE data.
+
+
+.Example _lvt.config_ entry
+....
+UA SNOW observation directory:             ./UA_SNOW
 ....
 
 ==== OzFlux soil moisture
@@ -2153,18 +2260,6 @@ OzFlux station list file:     ../OzFlux/stnlist.dat
 JASMIN soil moisture data directory: ../JASMIN
 ....
 
-==== WG SWRC
-
-`WG SWRC observation directory:` specifies the location of the WG SWRC observation directory.
-
-`WG SWRC station list file:` specifies the name of the WG SWRC station list file.
-
-.Example _lvt.config_ entry
-....
-WG SWRC observation directory:
-WG SWRC station list file:
-....
-
 [[ssec-optue]]
 === OptUE processing options
 
@@ -2184,6 +2279,13 @@ LIS OptUE restart file:                 MCSIM.001.MCSIMrst
 LIS OptUE number of model parameters:   4
 ....
 
+`OptUE output data directory:` specifies the location of the root directory containing OptUE outputs.
+
+.Example _lvt.config_ entry
+....
+OptUE output data directory:  '../OUTPUT'
+....
+
 `OptUE algorithm used:` specifies the index of the optimization/uncertainty estimation algorithm used Acceptable values are:
 
 [cols="<,<",]
@@ -2196,6 +2298,19 @@ LIS OptUE number of model parameters:   4
 | 4     | MCSIM
 | 5     | MCMC
 | 6     | DEMC
+|===
+
+IMPORTANT: Review this!
+
+[cols="<,<",]
+|===
+| Value | Description
+
+| ?     | Levenberg- Marquardt
+| ?     | Genetic Algorithm
+| ?     | Monte carlo sampling
+| ?     | Random walk markov chain monte carlo
+| ?     | Differential evolution monte carlo
 |===
 
 .Example _lvt.config_ entry
@@ -2282,7 +2397,7 @@ This section of the config file specifies the specialized options to analyze the
 | 1     | Compute
 |===
 
-`Number of state variables in the DA update` specifies the number of state variables in the DA update.
+`Number of state variables in the DA update:` specifies the number of state variables in the DA update.
 
 .Example _lvt.config_ entry
 ....

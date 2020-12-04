@@ -176,19 +176,18 @@ contains
 
   !- LIS RUN DOMAIN GRID INFORMATION: 
   !  Used to determine parameter domain to be read in
-     select case ( LDT_rc%lis_map_proj )
+     select case ( LDT_rc%lis_map_proj(n) )
 
        case( "latlon" )
-          
           ! Parameter grid resolution SAME as LIS run grid resolution:
-          if( param_grid(9) == (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor)) then
+          if( param_grid(9) == (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n))) then
              subparm_lllat_ext = lisdom_min_lat 
              subparm_lllon_ext = lisdom_min_lon 
              subparm_urlat_ext = lisdom_max_lat 
              subparm_urlon_ext = lisdom_max_lon 
 
           ! Parameter grid resolution < as LIS run grid resolution:
-          elseif( param_grid(9) < (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor)) then
+          elseif( param_grid(9) < (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n))) then
              subparm_lllat_ext = lisdom_min_lat - (lisdom_yres_ll/2.) + &
                   (param_grid(10)/2.0)
              subparm_urlat_ext = lisdom_max_lat + (lisdom_yres_ur/2.) - &
@@ -200,7 +199,7 @@ contains
                   (param_grid(9)/2.0)
 
           ! Parameter grid resolution > as LIS run grid resolution:
-          elseif( param_grid(9) > (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor)) then
+          elseif( param_grid(9) > (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n))) then
              subparm_lllat_ext = param_grid(4)
              subparm_urlat_ext = param_grid(7)
              subparm_lllon_ext = param_grid(5)
@@ -212,7 +211,7 @@ contains
       case( "lambert" )
          
          ! Parameter grid resolution <= as LIS run grid resolution:
-         if( param_grid(9) <= (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor)) then
+         if( param_grid(9) <= (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n))) then
 
            ! Locate parameter longitude extents:
             do i = 1, nint(param_grid(2))
@@ -240,7 +239,7 @@ contains
             end do
 
          ! Parameter grid resolution > as LIS run grid resolution:
-         elseif( param_grid(9) > (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor)) then
+         elseif( param_grid(9) > (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n))) then
             
             ! Locate parameter longitude extents:
             do i = 1, nint(param_grid(2))
@@ -275,7 +274,7 @@ contains
    !- Mercator LIS run domain:
       case( "mercator" )
         ! Parameter grid resolution <= as LIS run grid resolution:
-         if( param_grid(9) <= (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor)) then
+         if( param_grid(9) <= (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n))) then
             
             ! Locate parameter longitude extents:
             do i = 1, nint(param_grid(2))
@@ -303,7 +302,7 @@ contains
             end do
             
       ! Parameter grid resolution > as LIS run grid resolution:
-         elseif( param_grid(9) > (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor)) then
+         elseif( param_grid(9) > (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n))) then
 
             ! Locate parameter longitude extents:
             do i = 1, nint(param_grid(2))

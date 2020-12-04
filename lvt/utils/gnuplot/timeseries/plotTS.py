@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 # currently assumes eps files - need to modify for ESMPy to read config
 # options

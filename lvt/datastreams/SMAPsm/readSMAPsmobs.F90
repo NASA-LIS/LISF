@@ -187,7 +187,7 @@ subroutine readSMAPsmobs(source)
          
          call system(trim(list_files))
          ftn = LVT_getNextUnitNumber()
-         open (ftn, file="./SMAP_filelist.dat", &
+         open (ftn, file="./SMAPsm/SMAP_filelist.dat", &
                status='old', iostat=ierr)
 
 ! if multiple files for the same time and orbits are present, the latest

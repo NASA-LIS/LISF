@@ -59,7 +59,7 @@ subroutine read_nldas2_elev( n, findex, narrelev, elevdiff )
    narrelev = LDT_rc%udef
    elevdiff = LDT_rc%udef
 
-   if( LDT_rc%lis_map_proj.eq."latlon" ) then
+   if( LDT_rc%lis_map_proj(n).eq."latlon" ) then
     if( LDT_rc%gridDesc(n,4) < (LDT_rc%met_gridDesc(findex,4)-0.0625) .or.  & ! LL Lat
         LDT_rc%gridDesc(n,5) < (LDT_rc%met_gridDesc(findex,5)-0.0625) .or.  & ! LL Lon
         LDT_rc%gridDesc(n,7) > (LDT_rc%met_gridDesc(findex,7)+0.0625) .or.  & ! UR Lat

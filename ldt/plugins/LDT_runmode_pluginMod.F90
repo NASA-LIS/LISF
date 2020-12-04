@@ -49,8 +49,11 @@ contains
     external LDT_init_EnsRstpreproc
     external LDT_run_EnsRstpreproc
 
-    external LDT_init_Rstproc
-    external LDT_run_Rstproc
+    external LDT_init_climoRstproc
+    external LDT_run_climoRstproc
+
+    external LDT_init_rstTransformProc
+    external LDT_run_rstTransformProc
 
     external LDT_init_MetforcProc
     external LDT_run_MetforcProc
@@ -94,11 +97,17 @@ contains
     call registerldtrun(trim(LDT_EnsRstpreprocId)//char(0), &
          LDT_run_EnsRstpreproc)
 
-  ! Restart processing:
-    call registerldtinit(trim(LDT_rstProcId)//char(0), &
-         LDT_init_Rstproc)
-    call registerldtrun(trim(LDT_rstProcId)//char(0), &
-         LDT_run_Rstproc)
+  ! climatological Restart processing:
+    call registerldtinit(trim(LDT_climoRstProcId)//char(0), &
+         LDT_init_climoRstproc)
+    call registerldtrun(trim(LDT_climorstProcId)//char(0), &
+         LDT_run_climoRstproc)
+
+  ! Restart transformation processing:
+    call registerldtinit(trim(LDT_rstTransformProcId)//char(0), &
+         LDT_init_rstTransformproc)
+    call registerldtrun(trim(LDT_rstTransformProcId)//char(0), &
+         LDT_run_rstTransformproc)
 
   ! Meteorological Forcing Processing Only:
     call registerldtinit(trim(LDT_MetForcprocId)//char(0), &

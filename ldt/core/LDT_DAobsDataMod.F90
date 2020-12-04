@@ -466,7 +466,7 @@ contains
 !             if(trim(dataEntry%standard_name).eq."SoilMoist") then                
 !                if(c.eq.61.and.r.eq.91) print*, value(c,r), dataEntry%value(c,r,k)
 !             endif
-             if(LDT_rc%datamask(c,r).eq.1) then 
+             if(LDT_domain(n)%datamask(c,r).eq.1) then 
                 if(value(c,r).ne.LDT_rc%udef) then 
                    if(LDT_domain(n)%gindex(c,r).ne.-1) then 
                       gid = LDT_domain(n)%gindex(c,r)

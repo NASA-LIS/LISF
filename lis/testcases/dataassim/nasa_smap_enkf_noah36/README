@@ -1,0 +1,29 @@
+Noah-3.6 NASA SMAP EnKF Assimilation Testcase
+
+This case demonstrates the EnKF-based assimilation of NASA SMAP data into the Noah.3.6 LSM.
+It uses:
+  (a) The NLDAS2 foring
+  (b) retrospective running mode
+  (c) The Noah version 3.6 land surface model
+  (d) Regional domain at 1/4 degree spatial resolution
+  (e) A time period from 00Z 31 Mar 2015 to 00Z 1 Sep 2017
+
+This directory contains:
+  (a) This README file
+  (b) The "lis.config" file used for this testcase
+  (c) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+      to select the output variables
+  (d) An "output.ctl" file used to display the output in GrADS from
+      the LIS run
+
+Note that the "lis.config" file should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+To run this testcase:
+  (a) Run the LIS executable using the "lis.config" file with the
+      testcase input data
+  (b) View the binary output using the testcase GrADS files
+
+
+

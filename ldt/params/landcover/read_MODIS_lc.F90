@@ -154,9 +154,9 @@ subroutine read_MODIS_lc(n, num_types, fgrd, maskarray)
    end if
 
 !- Exceptions for Latlon/Lambert/Mercator projections:
-   if( LDT_rc%lis_map_proj == "latlon"   .or. &
-       LDT_rc%lis_map_proj == "mercator" .or. &
-       LDT_rc%lis_map_proj == "lambert" ) then
+   if( LDT_rc%lis_map_proj(n) == "latlon"   .or. &
+       LDT_rc%lis_map_proj(n) == "mercator" .or. &
+       LDT_rc%lis_map_proj(n) == "lambert" ) then
 
   !- File-size check for 2KM and 3KM global files:
      if( (subparam_gridDesc(9) < 0.04  .and. &
@@ -176,7 +176,7 @@ subroutine read_MODIS_lc(n, num_types, fgrd, maskarray)
      endif
   !- Tiling is not supported when input and output resolutions are the same:
      if( file_dim == 2 .and. LDT_rc%lc_gridtransform(n)=="tile" ) then
-       if( subparam_gridDesc(9) == (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor) ) then
+       if( subparam_gridDesc(9) == (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n)) ) then
         write(LDT_logunit,*) "[ERR] in read_MODIS_lc :: The 'tile' spatial transform option "
         write(LDT_logunit,*) "          has been selected, but the landcover file being read in"
         write(LDT_logunit,*) "          is not in vegetation tile-format order, and both your "
@@ -188,8 +188,8 @@ subroutine read_MODIS_lc(n, num_types, fgrd, maskarray)
      endif
   !- Lat-lon Landcover files cannot have "none" for spatial transform if
   !   LIS run domain projection is different:
-     if( (LDT_rc%lis_map_proj == "mercator" .or.  &
-          LDT_rc%lis_map_proj == "lambert") .and. &
+     if( (LDT_rc%lis_map_proj(n) == "mercator" .or.  &
+          LDT_rc%lis_map_proj(n) == "lambert") .and. &
          LDT_rc%lc_gridtransform(n) == "none" ) then
         write(LDT_logunit,*) "[ERR] Landcover file has lat-lon grid coordinate system and"
         write(LDT_logunit,*) "  being translated to different output grid and projection."
@@ -242,7 +242,7 @@ subroutine read_MODIS_lc(n, num_types, fgrd, maskarray)
 
  !- No spatial transform applied:
     if( LDT_rc%lc_gridtransform(n) == "none" .and. &
-        LDT_rc%lis_map_proj == "latlon" ) then
+        LDT_rc%lis_map_proj(n) == "latlon" ) then
 
        write(LDT_logunit,*) " No aggregation applied for parameter file ... "
        vegtype(:,:) = read_inputparm(:,:)
