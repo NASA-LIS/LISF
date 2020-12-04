@@ -92,7 +92,7 @@ contains
   end subroutine destroy
 
   ! Read the data from the GRIB file
-  subroutine read_grib(this, year, month, day, hour, rc)
+  subroutine read_grib(this, year, month, day, hour, minute, rc)
 
     ! Imports
 #if (defined USE_GRIBAPI)
@@ -109,6 +109,7 @@ contains
     integer, intent(in) :: month
     integer, intent(in) :: day
     integer, intent(in) :: hour
+    integer, intent(in) :: minute
     integer, intent(inout) :: rc
 
     ! Locals
@@ -167,7 +168,10 @@ contains
     allocate(dum1d(NX*NY))
     counter = 0
 
-    write(LIS_logunit,*)'[Info] Reading ', trim(this%full_grib_path)
+    write(LIS_logunit,*)'[INFO] Reading ', trim(this%full_grib_path)
+    write(LIS_logunit,'(1X, A, I8.8, A, I4.4)') &
+         '[INFO] Searching for data valid ', &
+         (year*10000 + month*100 + day), '/', (hour*100 + minute)
 
     ! Loop through the GRIB file until all fields are found, or we reach
     ! end of file
@@ -412,10 +416,14 @@ contains
           rc = 1
           return
        end if
-       if ((hour*100) .ne. datatime) then
-          !write(LIS_logunit,*) &
-          !     '[WARN] Found wrong dataTime in ', &
-          !     trim(this%full_grib_path)
+       if ((hour*100 + minute) .ne. datatime) then
+          ! write(LIS_logunit,*) &
+          !      '[WARN] Found wrong dataTime in ', &
+          !      trim(this%full_grib_path)
+          ! write(LIS_logunit,*) &
+          !      '[WARN] dataTime = ', datatime
+          ! write(LIS_logunit,*) &
+          !      '[WARN] Wanted ', hour*100 + minute
           call grib_release(igrib, rc)
           cycle
        end if
@@ -465,12 +473,6 @@ contains
           ! Cloud amount (%)
           call fetch_values(this%full_grib_path, igrib, inx, iny, dum1d, &
                this%cldamt(:, :, level), counter, rc)
-          write(LIS_logunit,*) &
-               'EMK: level, maxval(this%cldamt(:, :, level)) = ', &
-               level, maxval(this%cldamt(:, :, level))
-          write(LIS_logunit,*) &
-               'EMK: level, minval(this%cldamt(:, :, level)) = ', &
-               level, minval(this%cldamt(:, :, level))
        else if (param .eq. 164 .and. leveltype .eq. 109 .and. &
             level .gt. 0 .and. level .lt. 5) then
           ! Cloud type [code]
@@ -516,15 +518,16 @@ contains
     call grib_close_file(ftn)
 #endif
 
-    ! Print warning message if we found less than what we wanted.
+    ! Make sure we found all the fields we were looking for.
+    rc = 0
     if (counter .ne. (3*NZ + 1)) then
        write(LIS_logunit,*) 'Missing WWMCA data in ', &
             trim(this%full_grib_path)
+       rc = 1
     end if
 
     ! Clean up
     deallocate(dum1d)
-    rc = 0
 
   contains
 
