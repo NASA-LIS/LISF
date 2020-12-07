@@ -330,6 +330,8 @@ AGRMET GFS SPD10M station observation error variance:                2.48
 # 20071101 to 2012032700, use NONE from 2012032700 to 2012040912,
 # use WWMCA beginning 2012040912.
 AGRMET cloud data directory:               WWMCA           # WWMCA_LE, NONE, or WWMCA
+# Use WWMCA GRIB1 files beginning 12Z 4 Jul 2020
+AGRMET WWMCA GRIB1 read option: 1
 AGRMET snow distribution shape parameter:  2.6
 
 # Legacy AGRMET settings.  Eventually these will be removed,
