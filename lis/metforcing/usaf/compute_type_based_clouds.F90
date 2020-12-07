@@ -48,7 +48,8 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
    integer               :: thres(5) !needs to be read in.
    integer               :: ip
    real                  :: udef
-
+   logical :: found_nh_grib
+   logical :: found_sh_grib
    real,allocatable      :: cldamt1(:,:,:)
    real,allocatable      :: cldamt2(:,:,:)
    real,allocatable      :: cldamt3(:,:,:)
@@ -64,6 +65,9 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
    allocate(cldamt1(2,agrmet_struc(n)%imax,agrmet_struc(n)%jmax))
    allocate(cldamt2(2,agrmet_struc(n)%imax,agrmet_struc(n)%jmax))
    allocate(cldamt3(2,agrmet_struc(n)%imax,agrmet_struc(n)%jmax))
+
+   found_nh_grib = .false.
+   found_sh_grib = .false.
 
    if (agrmet_struc(n)%read_wwmca_grib1 .eq. 1) then
       do hemi = 1, 2
@@ -98,6 +102,11 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
             mn1_tmp = 30
          end if
          call wwmca_grib1%read_grib(yr1, mo1, da1, hr1, mn1_tmp, rc)
+         if (rc .eq. 0 .and. hemi .eq. 1) then
+            found_nh_grib = .true.
+         else if (rc .eq. 0 .and. hemi .eq. 2) then
+            found_sh_grib = .true.
+         end if
 
          if (rc .ne. 0) then
             ! Rolling back to earlier time
@@ -128,7 +137,11 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
                end if
                call wwmca_grib1%read_grib(yr1, mo1, da1, hr1, mn1_tmp, rc)
 
-               if (rc .eq. 0) then
+               if (rc .eq. 0 .and. hemi .eq. 1) then
+                  found_nh_grib = .true.
+                  exit
+               else if (rc .eq. 0 .and. hemi .eq. 2) then
+                  found_sh_grib = .true.
                   exit
                else
                   call wwmca_grib1%destroy()
@@ -140,7 +153,7 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
                write(LIS_logunit,*)'[WARN] Missing WWMCA GRIB1 file'
                write(LIS_logunit,*) &
                     '[WARN] Will fall back on WWMCA binary files.'
-               exit
+               cycle
             end if
          end if
 
@@ -179,10 +192,21 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
    end if ! WWMCA GRIB1 option
 
    ! Handle legacy binary files
-   if (agrmet_struc(n)%read_wwmca_grib1 .ne. 1 .or. &
-        try .ge. 10) then
+   if (agrmet_struc(n)%read_wwmca_grib1 .eq. 0 .or. &
+        .not. found_nh_grib .or. .not. found_sh_grib) then
 
       do hemi = 1,2
+
+         ! If GRIB1 was requested and found in a particular hemisphere,
+         ! preserve it.
+         if (agrmet_struc(n)%read_wwmca_grib1 .eq. 1) then
+            if (hemi .eq. 1 .and. found_nh_grib) then
+               cycle
+            else if (hemi .eq. 2 .and. found_sh_grib) then
+               cycle
+            end if
+         end if
+
          types   = 25
          amounts = 0
          tops    = 0
@@ -421,7 +445,7 @@ subroutine compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
                  cldtyp_sh,cldamt_sh,fog_sh,          &
                  julhr, agrmet_struc(n)%imax,agrmet_struc(n)%jmax)
          endif
-      end do
+      end do ! hemi
 
    end if ! Legacy binary files
 
