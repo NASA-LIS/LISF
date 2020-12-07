@@ -140,6 +140,7 @@ LVT output methodology:                 "2d gridspace"
 | "`GLDAS2`"                        | NASA Global Land Data Assimilation System version 2 data
 | "`MERRA2`"                        | MERRA version 2 data
 | "`ERA interim land`"              | ERA Interim Land data
+| "`ERA5`"                          | ERA5 data (currently only precipitation and near surface air temperature variables are supported)
 | "`SSEB`"                          | USGS SSEB operational ET and ET anomaly data
 | "`GRDC`"                          | Global Runoff Data Center data
 | "`GLERL hydro data`"              | Great Lakes hydrology data
@@ -1729,6 +1730,18 @@ MERRA2 data directory:                   ./MERRA2/
 .Example _lvt.config_ entry
 ....
 ERA interim land data directory:                   ./ERA_Interim_Land/
+....
+
+==== ERA5 data
+
+`ERA5 data directory:` specifies the location of the ERA5 data.
+
+`ERA5 forcing tile to grid mapping file:` specifies the location of the ERA5 forcing tile to grid mapping file.
+
+.Example _lvt.config_ entry
+....
+ERA5 data directory:                        ./ERA5/
+ERA5 forcing tile to grid mapping file:     ./ERA5/mapping.nc
 ....
 
 ==== SSEB operational data
