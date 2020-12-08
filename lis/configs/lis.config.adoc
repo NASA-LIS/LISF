@@ -4923,6 +4923,11 @@ processed precip obs (__presav_*__).
 `AGRMET cloud data directory:` specifies the location of the
 WWMCA data (_WWMCA*_).
 
+`AGRMET WWMCA GRIB1 read option:` specifies whether to try reading
+WWMCA GRIB1 files, or try directly to read binary. (_0 = binary, 1 = GRIB1_).
+Note that if GRIB1 files cannot be found, the code will search for binary
+as a backup.
+
 `AGRMET GFS data directory:` specifies the location of the
 GFS data (_MT.avn*_).
 
@@ -5325,6 +5330,7 @@ AGRMET analysis directory:              ./Analysis
 AGRMET surface fields directory:        SFCALC
 AGRMET merged precip directory:         PRECIP
 AGRMET cloud data directory:            WWMCA
+AGRMET WWMCA GRIB1 read option:         0
 AGRMET GFS data directory:              GFS
 AGRMET GALWEM data directory:           GALWEM
 AGRMET SSMI data directory:             SSMI

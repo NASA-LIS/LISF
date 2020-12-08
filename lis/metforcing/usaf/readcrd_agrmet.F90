@@ -1061,7 +1061,20 @@ subroutine readcrd_agrmet()
      call LIS_verify(rc, &
           "[ERR] AGRMET GFS filename version: not specified in config file")
   enddo ! n
-  
+
+  ! EMK Add WWMCA GRIB1 option
+  call ESMF_ConfigFindLabel(LIS_config, &
+       "AGRMET WWMCA GRIB1 read option:",rc=rc)
+  call LIS_verify(rc, &
+       "[ERR] AGRMET WWMCA GRIB1 read option: not specified in config file")
+  do n = 1, LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%read_wwmca_grib1, rc=rc)
+     call LIS_verify(rc, &
+          "[ERR] AGRMET WWMCA GRIB1 read option: not specified in config file")
+  enddo ! n
+
+
   do n=1,LIS_rc%nnest
      agrmet_struc(n)%radProcessInterval = 1
      agrmet_struc(n)%radProcessAlarmTime = 0.0

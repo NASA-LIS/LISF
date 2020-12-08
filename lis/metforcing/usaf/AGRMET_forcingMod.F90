@@ -704,6 +704,10 @@ integer, allocatable   :: n112_sh4(:)
      integer :: oba_switch
      integer :: skip_backqc
      integer :: skip_superstatqc
+
+     ! EMK Add WWMCA GRIB1 option
+     integer :: read_wwmca_grib1
+     
   end type agrmet_type_dec
 
   type(agrmet_type_dec), allocatable :: agrmet_struc(:)
