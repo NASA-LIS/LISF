@@ -162,7 +162,7 @@ If you choose to have HDF version 4 support, please download the HDF source for 
 
 Note that HDF4 contains its own embedded version of NetCDF. You must disable this support by adding the `--disable-netcdf` option to the `configure` command.
 
-IMPORTANT: When compiling LIS with HDF 4 support, you must also download and compile HDF-EOS2 version 2.19v1.00 or higher from http://hdfeos.org/.
+IMPORTANT: When compiling LVT with HDF 4 support, you must also download and compile HDF-EOS2 version 2.19v1.00 or higher from http://hdfeos.org/.
 
 ===== HDF 5
 
