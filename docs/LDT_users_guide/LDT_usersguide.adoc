@@ -15,8 +15,9 @@
 :svnurl: http://subversion.apache.org
 :nasalisf: https://github.com/NASA-LIS/LISF
 :githuburl: https://github.com
+:apachelicense: https://www.apache.org/licenses/LICENSE-2.0
 :lispublicrelease: Initial version - for LDT
-:ldttarball: LDT_public_release_7.2r.tar.gz
+:ldttarball: LISF_public_release_7.3r.tar.gz
 :emdash: —
 :endash: –
 :vertellipsis: ⋮
