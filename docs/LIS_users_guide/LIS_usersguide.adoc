@@ -15,8 +15,9 @@
 :svnurl: http://subversion.apache.org
 :nasalisf: https://github.com/NASA-LIS/LISF
 :githuburl: https://github.com
-:listarball: LIS_public_release_7.2r.tar.gz
-:lispublicna: Not available in the {listarball} public release of LIS 7.2.
+:apachelicense: https://www.apache.org/licenses/LICENSE-2.0
+:listarball: LISF_public_release_7.3r.tar.gz
+:lispublicna: Not available in the {listarball} public release of LIS 7.3.
 :emdash: —
 :endash: –
 
