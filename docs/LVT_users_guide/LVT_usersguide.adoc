@@ -15,8 +15,9 @@
 :lvturl: http://lis.gsfc.nasa.gov/LVT
 :nasalisf: https://github.com/NASA-LIS/LISF
 :githuburl: https://github.com
+:apachelicense: https://www.apache.org/licenses/LICENSE-2.0
 :lispublicrelease: Initial version - for LDT
-:lvttarball: LVT_public_release_7.2r.tar.gz
+:lvttarball: LISF_public_release_7.3r.tar.gz
 :emdash: —
 :endash: –
 :vertellipsis: ⋮
