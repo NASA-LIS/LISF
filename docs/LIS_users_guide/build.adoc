@@ -484,7 +484,7 @@ This script will compile the libraries provided with LIS, the dependency generat
 
 ==== Step 6
 
-Finally, copy the _LIS_ executable into your running directory, _$RUNNING_.
+Finally, copy the _LIS_ executable into your running directory, _$RUNNING_.  (See Section <<sec_run>>.)
 
 :sectnums: // re-enable section numbers
 
