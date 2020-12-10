@@ -1,12 +1,12 @@
 
+[[sec_usersupport,User Support]]
 == User Support
-anchor:sec_usersupport[User Support]
 
 This section describes how to request help from and provide feedback to the LIS development team.
 
 
+[[ssec_modelingguru,Modeling Guru]]
 === Modeling Guru
-anchor:ssec_modelingguru[Modeling Guru]
 
 The NASA Center for Climate Simulation (NCCS) hosts a system called Modeling Guru, https://modelingguru.nasa.gov.  This system is a collection of forums discussing many of NASA's modelling efforts and related topics.  LIS has a "`community`" within Modeling Guru.
 

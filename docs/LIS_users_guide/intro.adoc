@@ -1,6 +1,6 @@
 
+[[sec_intro,Introduction]]
 == Introduction
-anchor:sec_intro[Introduction]
 
 This is the Land Information System (LIS) User's Guide.  This document describes how to download and install the code and data needed to run the LIS executable for LIS revision {lisrevision}.  It describes how to build and run the code, and finally this document also describes how to download output data-sets to use for validation.
 

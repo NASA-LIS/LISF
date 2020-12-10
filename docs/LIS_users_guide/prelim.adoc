@@ -1,6 +1,6 @@
 
+[[sec_prelim,Preliminary Information]]
 == Preliminary Information
-anchor:sec_prelim[Preliminary Information]
 
 This section provides some preliminary information to make reading this guide easier.
 

@@ -1,6 +1,6 @@
 
+[[sec_run,Running the Executable]]
 == Running the Executable
-anchor:sec_run[Running the Executable]
 
 This section describes how to run the LIS executable.
 
