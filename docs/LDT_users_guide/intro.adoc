@@ -4,13 +4,28 @@
 
 This is the User's Guide for the Land surface Data Toolkit (LDT). This document describes how to download and install the LDT software and instructions on building an executable.
 
-This document consists of several sections, described as follows:
+This document consists of 7 sections, described as follows:
 
-* *Introduction*: the section you are currently reading
-* *Background*: general information about the LDT
-* *Preliminary Information*: general information, steps, instructions, and definitions used throughout the rest of this document
-* *Obtaining the Source Code*: the steps needed to download the source code
-* *Building the Executable*: the steps needed to build the LDT executable
+. *<<sec-intro>>*:
+   the section you are currently reading.
+
+. *<<sec-backgrd>>*:
+   general information about LDT.
+
+. *<<sec-prelim>>*:
+   general information, steps, instructions, and definitions used throughout the rest of this document.
+
+. *<<sec-obtain-src>>*:
+   the steps needed to download the source code.
+
+. *<<sec-build>>*:
+   the steps needed to build the LDT executable.
+
+. *<<sec-run>>*:
+   the steps needed to prepare and submit a run.
+
+. *<<sec-ldtconfigfile>>*:
+   describes the various run-time configurations.
 
 === What's New
 //\attention{See \file{RELEASE\_NOTES} found in the \file{source.tar.gz} file for more
