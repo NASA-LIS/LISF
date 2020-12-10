@@ -244,14 +244,16 @@ contains
           if(LIS_rc%wopt.ne."none") then 
              if(LIS_masterproc) then 
                 call LIS_create_output_directory('IRRIGATION')
-                call LIS_create_output_filename(n,outfile,&
-                     model_name ="IRRIGATION")
-                if(LIS_irrig_struc(n)%stats_file_open) then 
+                if (LIS_irrig_struc(n)%stats_file_open) then
                    call LIS_create_stats_filename(n,statsfile,"IRRIGATION")
-                   LIS_irrig_struc(n)%stats_file_open = .false. 
-                   open_stats = .true. 
+                   LIS_irrig_struc(n)%stats_file_open = .false.
+                   open_stats = .true.
                 endif
              endif
+
+             call LIS_create_output_filename(n,outfile,&
+                  model_name ="IRRIGATION")
+
              call LIS_writeModelOutput(n,outfile,statsfile,              &
                   open_stats,outInterval=LIS_irrig_struc(n)%outInterval, &
                   nsoillayers=1, lyrthk = (/1.0/),                       &
