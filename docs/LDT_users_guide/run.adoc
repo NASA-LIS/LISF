@@ -13,14 +13,16 @@ First you should create a directory to run LDT in. It is suggested that you run 
 The single-process version of `LDT` is executed by the following command issued in the _$RUNNING_ directory.
 
 ....
-% ./LDT
+% ./LDT <configfile>
 ....
 
-Note that when using the Lahey Fortran compiler, you must issue this command to run the single-process version of LDT:
+where `<configfile>` represents the file containing the run time configuration options for LDT. Currently LDT only supports a serial mode.
 
-....
-% ./LDT -Wl,T
-....
+//Note that when using the Lahey Fortran compiler, you must issue this command to run the single-process version of LDT:
+//
+//....
+//% ./LDT -Wl,T
+//....
 
 Some systems require that you submit your job into a batch queue. Please consult with your system adminstrator for instructions on how to do this.
 
