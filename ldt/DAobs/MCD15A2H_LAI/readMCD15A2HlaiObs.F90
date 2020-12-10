@@ -239,8 +239,8 @@ subroutine read_MCD15A2Hlai_data(n, fname, climofile,laiobs_ip)
 
      call LDT_verify(ios,'Error opening file '//trim(climofile))
 
-     ios = nf90_inq_varid(nid, 'LAI_500m',laiid)
-     call LDT_verify(ios, 'Error nf90_inq_varid: LAI_500m')
+     ios = nf90_inq_varid(nid, 'Lai_500m',laiid)
+     call LDT_verify(ios, 'Error nf90_inq_varid: Lai_500m')
 
 
      cornerlat(1)=MCD15A2Hlaiobs(n)%gridDesci(4)
@@ -258,7 +258,7 @@ subroutine read_MCD15A2Hlai_data(n, fname, climofile,laiobs_ip)
           count=(/MCD15A2Hlaiobs(n)%nc,MCD15A2Hlaiobs(n)%nr/))
 
 
-     call LDT_verify(ios, 'Error nf90_get_var: LAI_500m')
+     call LDT_verify(ios, 'Error nf90_get_var: Lai_500m')
 
      ios = nf90_close(ncid=nid)
      call LDT_verify(ios,'Error closing file '//trim(fname))
@@ -266,9 +266,8 @@ subroutine read_MCD15A2Hlai_data(n, fname, climofile,laiobs_ip)
      do r=1, MCD15A2Hlaiobs(n)%nr
         do c=1, MCD15A2Hlaiobs(n)%nc
 
-           if(lai(c,r).gt.0.and.lai(c,r).le.10) then
-  !note climo range between 0 -10, no scale factor, may need to change depending on the final version
-              lai_flagged(c,r) = lai(c,r)
+           if(lai(c,r).gt.0.and.lai(c,r).le.100) then
+              lai_flagged(c,r) = lai(c,r)*0.1
            else
               lai_flagged(c,r) = LDT_rc%udef
            endif
@@ -363,14 +362,11 @@ subroutine create_MCD15A2Hlai_filename(ndir, version, yr, doy, filename, climofi
   write(unit=fdoy, fmt='(i3.3)') doy
 
   if(version.eq."006") then
-! Here the filename also depend on the data structure, TBD
-     filename = trim(ndir)//'/'//'/MCD15A2H.006_LAI_'//&
+     filename = trim(ndir)//'/'//trim(fyr)//'/MCD15A2H.006_LAI_'//&
           trim(fyr)//trim(fdoy)//'.nc4'
-  ! (placeholder for future MODSI LAI dataset of other versions)
   endif
-! Here the file format may change to nc4 in the future
   climofile = trim(ndir)//'/MCD15A2H.006_LAI_YYYY'//&
-       trim(fdoy)//'.nc'
+       trim(fdoy)//'.nc4'
 
 end subroutine create_MCD15A2Hlai_filename
 
