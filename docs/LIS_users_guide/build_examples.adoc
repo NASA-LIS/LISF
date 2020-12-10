@@ -1,6 +1,6 @@
 
+[[sec_more_specific_examples,More specific examples]]
 == More specific examples
-anchor:sec_more_specific_examples[More specific examples]
 
 // discover
 .SUSE Linux Enterprise Server 11.3

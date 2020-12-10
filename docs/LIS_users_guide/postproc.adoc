@@ -1,6 +1,6 @@
 
+[[sec_postproc,Output Data Processing]]
 == Output Data Processing
-anchor:sec_postproc[Output Data Processing]
 
 This section describes how to process the generated output in various formats.  The generated output can be written in a Fortran binary, GRIB, or NetCDF format.  See Section <<ssec_runtimeopts>> for more details.
 
