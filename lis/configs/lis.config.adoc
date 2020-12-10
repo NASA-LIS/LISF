@@ -653,7 +653,7 @@ Acceptable values are:
 |====
 
 Though untested, there are more packingType available as listed at
-https://software.ecmwf.int/wiki/display/GRIB/Grib+API+keys
+https://confluence.ecmwf.int/display/ECC/GRIB+Keys
 
 .Example _lis.config_ entry
 ....
@@ -3246,8 +3246,8 @@ ifdef::devonly[]
 
 This section specifies the specifications to enable a CRTM2 instance.
 For more information regarding CRTM2, please read the CRTM2 User`'s
-Guide, _REL-2.1.CRTM_User_Guide.pdf_, found at
-ftp://ftp.emc.ncep.noaa.gov/jcsda/CRTM/REL-2.1/
+Guide, _REL-2.1.3.CRTM_User_Guide.pdf_, found at
+ftp://ftp.emc.ncep.noaa.gov/jcsda/CRTM/REL-2.1.3/
 
 `CRTM number of sensors:` specifies the number of sensors
 to be used.

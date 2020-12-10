@@ -6,22 +6,34 @@ This is the User's Guide for Land surface Verification Toolkit (LVT;<<kumar_etal
 This document describes how to download and install LVT codes and
 instructions on building an executable.
 
-This document consists of several sections, described as follows:
+This document consists of 9 sections, described as follows:
 
-* *Introduction*: the section you are currently reading
-* *Background*: general information about the LVT
-* *Preliminary Information*: general information, steps, instructions,
-and definitions used throughout the rest of this document
-* *Obtaining the Source Code*: the steps needed to download the source
-code
-* *Building the Executable*: the steps needed to build the LVT
-executable
-* *Running the Executable*: the steps needed to run the LVT executable
-* *LVT config File*: describes the user-configurable options
-* *Configuration of metrics*: describes the specification of various
-metrics in LVT.
-* *Model Output Specifications*: describes the specification of the
-model output from LIS.
+. *<<sec-intro>>*:
+   the section you are currently reading.
+
+. *<<sec-backgrd>>*:
+   general information about the LVT.
+
+. *<<sec-prelim>>*:
+   general information, steps, instructions, and definitions used throughout the rest of this document.
+
+. *<<sec-obtain-src>>*:
+   the steps needed to download the source code.
+
+. *<<sec-build>>*:
+   the steps needed to build the LVT executable.
+
+. *<<sec-run>>*:
+   the steps needed to run the LVT executable.
+
+. *<<sec-lvtconfigfile>>*:
+   describes the user-configurable options.
+
+. *<<sec-metricslisttable>>*:
+   describes the specification of various metrics in LVT.
+
+. *<<sec-modeloutputlisttable>>*:
+   describes the specification of the model output from LIS.
 
 === What's New
 //\attention{See \file{RELEASE\_NOTES} found in the \file{source.tar.gz} file for more details.  (See Section~\ref{sec-obtain-src}.)}

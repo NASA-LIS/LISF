@@ -369,7 +369,7 @@ Forcing climatology temporal frequency of data:   "6hr"
 Bayesian merging seasonal stratification type:
 ....
 
-`Forcing variables list file:` specifies the file containing the list of forcing variables to be used. Please refer to the sample forcing_variables.txt (Section <<sec-forcingvars>>) file for a complete specification description.
+`Forcing variables list file:` specifies the file containing the list of forcing variables to be used.  (Please refer to Section "`Specification of Input Forcing Variables`" in the _LIS Users' Guide_ for a complete specification description of this file.)
 
 .Example _ldt.config_ entry
 ....
