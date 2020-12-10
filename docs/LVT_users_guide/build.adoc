@@ -366,7 +366,7 @@ This script will compile the libraries provided with LVT, the dependency generat
 
 ==== Step 6
 
-Finally, copy the _LVT_ executable into your running directory, _$RUNNING_.
+Finally, copy the _LVT_ executable into your running directory, _$RUNNING_.  (See Section <<sec-run>>.)
 
 :sectnums: // re-enable section numbers
 
