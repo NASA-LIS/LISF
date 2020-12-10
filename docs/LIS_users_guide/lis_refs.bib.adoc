@@ -1,4 +1,5 @@
-[appendix]
+
+[bibliography]
 == References
 
 - [[[sheffield_etal_2006]]] J. Sheffield, G. Goteti, and E. F. Wood.  Development of a 50-yr high-resolution global dataset of meteorological forcings for land surface modeling.  _Journal of Climate_, 13:3088{endash}3111, 2006.
@@ -125,5 +126,4 @@
 //  title = 	 {\textsc{VIC}},
 //  note = 	 {http://hydrology.princeton.edu/research/lis/index.html}
 //}
-//
 
