@@ -70,9 +70,6 @@ subroutine NLDAS_routing_output(n)
            if(LIS_masterproc) then 
               NLDAS_routing_struc(n)%numout=NLDAS_routing_struc(n)%numout+1    
               call LIS_create_output_directory('ROUTING')
-              call LIS_create_output_filename(n, filename, &
-                   model_name='ROUTING', &
-                   writeint=NLDAS_routing_struc(n)%outInterval)
 
 !-----------------------------------------------------------------------
 ! Open statistical output file
@@ -83,7 +80,11 @@ subroutine NLDAS_routing_output(n)
                  open_stats = .true.
               endif
            endif
-     
+
+           call LIS_create_output_filename(n, filename, &
+                model_name='ROUTING', &
+                writeint=NLDAS_routing_struc(n)%outInterval)
+
 !-----------------------------------------------------------------------
 ! Write Output 
 !-----------------------------------------------------------------------

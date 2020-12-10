@@ -350,15 +350,17 @@ contains
              open_stats = .false.
              if(LIS_masterproc) then 
                 call LIS_create_output_directory('SURFACEMODEL')
-                call LIS_create_output_filename(n,outfile,&
-                     model_name = 'SURFACEMODEL',&
-                     writeint=LIS_sfmodel_struc(n)%outInterval)
-                if(LIS_sfmodel_struc(n)%stats_file_open) then 
+                if (LIS_sfmodel_struc(n)%stats_file_open) then
                    call LIS_create_stats_filename(n,statsfile,'SURFACEMODEL')
                    LIS_sfmodel_struc(n)%stats_file_open = .false.
-                   open_stats = .true. 
+                   open_stats = .true.
                 endif
              endif
+
+             call LIS_create_output_filename(n,outfile,&
+                  model_name = 'SURFACEMODEL',&
+                  writeint=LIS_sfmodel_struc(n)%outInterval)
+
              ! hkb-- added second set of soil layer thickness for CLSM
              if ( LIS_sfmodel_struc(n)%nsm_layers .eq.  &
                   LIS_sfmodel_struc(n)%nst_layers ) then   
