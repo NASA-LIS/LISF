@@ -1,6 +1,6 @@
 
+[[sec_obtain-src,Obtaining the Source Code]]
 == Obtaining the Source Code
-anchor:sec_obtain-src[Obtaining the Source Code]
 
 This section describes how to obtain the source code needed to build the LIS executable.
 
@@ -13,14 +13,14 @@ Due to the history of LIS`' development, versions of the LIS source code prior t
 NOTE: All users are encouraged to go to {lisurl}[LIS`' web-site] to fill in the Registration Form and join the mailing list.
 
 
+[[sec_important_note_fs,Important Note Regarding File Systems]]
 === Important Note Regarding File Systems
-anchor:sec_important_note_fs[Important Note Regarding File Systems]
 
 LIS is developed on Linux/Unix platforms.  Its build process expects a case sensitive file system.  Please make sure that you unpack and/or `git clone` the LIS code into a directory within a case sensitive file system.  In particular, if you are using LIS within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LIS from within a shared folder.  Move the LIS source code into a directory within the virtual machine.
 
 
+[[sec_publicrelease,Public Release Source Code]]
 === Public Release Source Code
-anchor:sec_publicrelease[Public Release Source Code]
 
 The LIS public release {lisrevision} source code is available both on {lisurl}[LIS`' web-site] under the "`Source`" menu and on GitHub under the NASA-LIS organization at {nasalisf} under the "`Releases`" link.
 
@@ -63,8 +63,8 @@ Unzip and untar the tar-file.
 
 :sectnums: // re-enable section numbers
 
+[[sec_checkoutsrc,master branch]]
 === master branch
-anchor:sec_checkoutsrc[master branch]
 
 The LIS source code is maintained in a git repository hosted on GitHub.  If you wish to work with the latest development code (in the master branch), then you must use the `git` client to obtain the LIS source code.  If you need any help regarding `git` or GitHub, please go to {githuburl}.
 
@@ -97,10 +97,10 @@ Clone the master branch.
 :sectnums: // re-enable section numbers
 
 
+[[sec_src_desc,Source files]]
 === Source files
-anchor:sec_src_desc[Source files]
 
-Unpacking or cloning the LISF source code (according the instructions in Section <<sec_obtain-src>>) will create a directory named _LISF_.  The LIS specific source code is in _LISF/lis_.
+Unpacking or cloning the LISF source code (according to the instructions in Section <<sec_obtain-src>>) will create a directory named _LISF_.  The LIS specific source code is in _LISF/lis_.
 
 NOTE: The directory containing the LIS source code, _LISF/lis_, will be referred to as _$WORKING_ throughout the rest of this document.
 

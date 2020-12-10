@@ -1,6 +1,6 @@
 
+[[sec_build,Building the Executable]]
 == Building the Executable
-anchor:sec_build[Building the Executable]
 
 This section describes how to build the source code and create LIS' executable: named LIS.
 
@@ -61,8 +61,8 @@ IMPORTANT: Support for Python 2.7 is now deprecated.  Future releases will depen
 //      ** Intel Fortran Compiler version 12
 //      ** GNU's make, gmake, version 3.77
 
+[[ssec_requiredlibs,Required Software Libraries]]
 === Required Software Libraries
-anchor:ssec_requiredlibs[Required Software Libraries]
 
 In order to build the LIS executable, the following libraries must be installed on your system:
 
