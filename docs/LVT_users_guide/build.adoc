@@ -2,7 +2,7 @@
 [[sec-build]]
 == Building the Executable
 
-This section describes how to build the source code and create LVT's executable: named LVT.
+This section describes how to build the source code and create LVT`'s executable: named LVT.
 
 Please see Section <<sec-important_note_fs>> for information regarding using a case sensitve file system for compiling/running LVT.
 
@@ -68,7 +68,7 @@ In order to build the LVT executable, the following libraries must be installed 
 
 ==== Earth System Modeling Framework (ESMF) version 7.1.0r (or higher)
 
-(http://www.earthsystemmodeling.org/download/releases.shtml)
+(https://earthsystemmodeling.org/)
 
 //
 //         Please read the ESMF User's Guide for details on installing
@@ -111,7 +111,7 @@ Please read the on-line documentation for details on installing NetCDF.
 
 ===== Additional notes for NetCDF 4:
 
-You must also choose whether to compile with compression enabled.  Compiling with compression enabled requires HDF 5 and zlib libraries.  To enable compression, add `--enable-netcdf-4` to the `configure` options. To disable compression, add `--disable-netcdf-4` to the `configure` options.
+You must also choose whether to compile with compression enabled.  Compiling with compression enabled requires HDF 5 and zlib libraries.  To enable compression, add `--enable-netcdf-4` to the `configure` options.  To disable compression, add `--disable-netcdf-4` to the `configure` options.
 
 An example of installing NetCDF 4 without compression:
 
@@ -131,7 +131,7 @@ An example of installing NetCDF 4 with compression:
 % gmake install
 ....
 
-You must also download the _netcdf-fortran-4.4.4.tar.gz_ file.  First install the NetCDF C library, then install the NetCDF Fortran library. Again, please read the on-line documentation for more details.
+You must also download the _netcdf-fortran-4.4.4.tar.gz_ file.  First install the NetCDF C library, then install the NetCDF Fortran library.  Again, please read the on-line documentation for more details.
 
 An example of installing the NetCDF 4 Fortran library:
 
@@ -158,15 +158,15 @@ If you wish to use PMW snow observations, then you need both HDF 4 and HDF 5 sup
 
 ===== HDF 4
 
-If you choose to have HDF version 4 support, please download the HDF source for version 4.2.13 (or higher) from http://www.hdfgroup.org/products/hdf4 and compile the source to generate the HDF library. Make sure that you configure the build process to include the Fortran interfaces by adding the `--enable-fortran` option to the `configure` command.
+If you choose to have HDF version 4 support, please download the HDF source for version 4.2.13 (or higher) from https://portal.hdfgroup.org/display/support/Download+HDF4 and compile the source to generate the HDF library.  Make sure that you configure the build process to include the Fortran interfaces by adding the `--enable-fortran` option to the `configure` command.
 
-Note that HDF4 contains its own embedded version of NetCDF. You must disable this support by adding the `--disable-netcdf` option to the `configure` command.
+Note that HDF4 contains its own embedded version of NetCDF.  You must disable this support by adding the `--disable-netcdf` option to the `configure` command.
 
-IMPORTANT: When compiling LVT with HDF 4 support, you must also download and compile HDF-EOS2 version 2.19v1.00 or higher from http://hdfeos.org/.
+IMPORTANT: When compiling LVT with HDF 4 support, you must also download and compile HDF-EOS2 version 2.19v1.00 or higher from http://hdfeos.org/software/library.php.
 
 ===== HDF 5
 
-If you choose to have HDF version 5 support, please download the HDF source for version 1.10.1 (or higher) from http://www.hdfgroup.org/HDF5/ and compile the source to generate the HDF library. Make sure that you configure the build process to include the Fortran interfaces by adding the `--enable-fortran` option to the `configure` command.
+If you choose to have HDF version 5 support, please download the HDF source for version 1.10.1 (or higher) from http://www.hdfgroup.org/HDF5/ and compile the source to generate the HDF library.  Make sure that you configure the build process to include the Fortran interfaces by adding the `--enable-fortran` option to the `configure` command.
 
 //Note that when compiling LVT with HDF 5 support, you must also
 //download and compile HDF-EOS5 from http://hdfeos.org/.

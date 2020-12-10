@@ -68,7 +68,7 @@ In order to build the LIS executable, the following libraries must be installed 
 
 ==== Earth System Modeling Framework (ESMF) version 7.1.0r (or higher)
 
-(http://www.earthsystemmodeling.org/download/releases.shtml)
+(https://earthsystemmodeling.org/)
 
 Please read the ESMF User's Guide for details on installing ESMF with MPI support and without MPI support ("`mpiuni`").
 
@@ -155,11 +155,11 @@ If you wish to use PMW snow observations, then you need both HDF 4 and HDF 5 sup
 
 ===== HDF 4
 
-If you choose to have HDF version 4 support, please download the HDF source for version 4.2.13 (or higher) from http://www.hdfgroup.org/products/hdf4 and compile the source to generate the HDF library.  Make sure that you configure the build process to include the Fortran interfaces by adding the `--enable-fortran` option to the `configure` command.
+If you choose to have HDF version 4 support, please download the HDF source for version 4.2.13 (or higher) from https://portal.hdfgroup.org/display/support/Download+HDF4 and compile the source to generate the HDF library.  Make sure that you configure the build process to include the Fortran interfaces by adding the `--enable-fortran` option to the `configure` command.
 
 Note that HDF4 contains its own embedded version of NetCDF.  You must disable this support by adding the `--disable-netcdf` option to the `configure` command.
 
-IMPORTANT: When compiling LIS with HDF 4 support, you must also download and compile HDF-EOS2 version 2.19v1.00 or higher from http://hdfeos.org/.
+IMPORTANT: When compiling LIS with HDF 4 support, you must also download and compile HDF-EOS2 version 2.19v1.00 or higher from http://hdfeos.org/software/library.php.
 
 ===== HDF 5
 
