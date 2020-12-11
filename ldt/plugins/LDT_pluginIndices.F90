@@ -104,6 +104,8 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_LPRMvodobsId            &
         = "LPRM vegetation optical depth"
 
+   character*50, public,  parameter :: LDT_MCD15A2HlaiobsId            &
+        = "MCD15A2H LAI"
 !-------------------------------------------------------------------------
 ! Meteorological forcings
 !-------------------------------------------------------------------------

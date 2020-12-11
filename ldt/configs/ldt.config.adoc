@@ -3359,6 +3359,7 @@ LIS output timestep:          1da
 |"`ASCAT TUW soil moisture`" |ASCAT soil moisture retrievals from TU Wein
 |"`GRACE TWS`" |Terrestrial water storage observations from GRACE
 |"`Simulated GRACE`" |Simulated water storage observations from GRACE
+|"`MCD15A2H LAI`" | MODIS MCD15A2H v006 LAI product
 |===
 
 .Example _ldt.config_ entry
@@ -3684,6 +3685,23 @@ SMOPS search radius for openwater proximity detection: 3
 ....
 ASCAT (TUW) soil moisture observation directory:  ./TUW_ASCAT
 ....
+
+`MCD15A2H LAI data directory:` specifies the location of the data directory containing the MODIS MCD15A2H LAI retrievals.
+
+`MCD15A2H LAI data version:` specifies the version of the MCD15A2H LAI retrievals. The default version is "006".
+
+`MCD15A2H LAI apply climatological fill values:` specifies whether to fill in climatological LAI values if there are missing values.
+
+`MCD15A2H LAI apply QC flags:` specifies whether to apply quality control flags for LAI retrievals.
+
+.Example _ldt.config_ entry
+....
+MCD15A2H LAI data directory:           ./MCD15A2H.006
+MCD15A2H LAI data version:              "006"
+MCD15A2H LAI apply climatological fill values: 1
+MCD15A2H LAI apply QC flags: 1
+....
+
 
 `GRACE raw data filename:` specifies the name of the GRACE raw data.
 
