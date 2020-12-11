@@ -5628,7 +5628,7 @@ Please note that MERRA2 forcing data are available via
 NASA`'s Goddard Earth Sciences Data and Information Services
 Center (GES DISC; https://disc.gsfc.nasa.gov/). Also, 
 topographic or elevation correction option is now supported
-with the latest LIS-7 MERRA-2 reader.  Please also see the
+with the latest LIS MERRA-2 reader.  Please also see the
 latest LDT notes for updates on how to use this option.
 
 `MERRA2 use lowest model level forcing:` specifies whether
@@ -6641,7 +6641,7 @@ RDHM constant wind speed:              4.0
 `Generated metforcing directory:` specifies the location of the
 LDT generated meteorological forcing files.  Files generated in LDT
 are in netCDF format, and they are automatically loaded and handled
-by the LIS-7 reader.
+by the LIS reader.
 
 .Example _lis.config_ entry
 ....
