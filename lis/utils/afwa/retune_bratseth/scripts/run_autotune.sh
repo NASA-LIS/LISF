@@ -46,19 +46,19 @@ for varname in gage rh2m spd10m t2m ; do
 
     echo "Calling customize_procoba_nwp.py for $varname"
     $SCRIPTDIR/customize_procoba_nwp.py $CFGDIR/autotune.cfg \
-                                        $enddt $dayrange $varname || exit 1
+        $enddt $dayrange $varname || exit 1
 
     echo "Calling procOBA_NWP for $varname"
     mpirun -np $SLURM_NTASKS $BINDIR/procOBA_NWP \
-           procOBA_NWP.$varname.config || exit 1
+        procOBA_NWP.$varname.config || exit 1
 
     echo "Calling fit_semivariogram.py for $varname"
     if [ $varname = gage ] ; then
         $SCRIPTDIR/fit_semivariogram.py $CFGDIR/${varname}_nwp.cfg \
-                                        ${varname}_nwp.param || exit 1
+            ${varname}_nwp.param || exit 1
     else
         $SCRIPTDIR/fit_semivariogram.py $CFGDIR/$varname.cfg \
-                                        $varname.param || exit 1
+            $varname.param || exit 1
     fi
 
 done
@@ -69,15 +69,15 @@ for varname in cmorph geoprecip imerg ssmi ; do
 
     echo "Calling customize_procoba_sat.py for $varname"
     $SCRIPTDIR/customize_procoba_sat.py $CFGDIR/autotune.cfg \
-                                        $enddt $dayrange $varname || exit 1
+        $enddt $dayrange $varname || exit 1
 
     echo "Calling procOBA_Sat for $varname"
     mpirun -np $SLURM_NTASKS $BINDIR/procOBA_Sat \
-           procOBA_Sat.$varname.config || exit 1
+        procOBA_Sat.$varname.config || exit 1
 
     echo "Calling fit_semivariogram.py for $varname"
     $SCRIPTDIR/fit_semivariogram.py $CFGDIR/gage_$varname.cfg \
-                                    gage_$varname.param || exit 1
+        gage_$varname.param || exit 1
 
     # Rescale the satellite error variance to compare with NWP.
     echo "Calling rescale_sat_sigma2.py for $varname"
