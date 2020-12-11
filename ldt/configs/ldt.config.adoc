@@ -754,9 +754,9 @@ endif::devonly[]
 |AVHRR |Univ. of Maryland 1992-93 AVHRR landcover map.  Please see: http://glcf.umd.edu/data/landcover/
 |AVHRR_GFS |Similar to "`AVHRR`" option above but on a GFS grid.
 |MODIS_Native |Terra-MODIS sensor-based IGBP land classification map, modified by NCEP. For more info, please see: http://www.ral.ucar.edu/research/land/technology/noahmp_lsm.php
-|MODIS_LIS |Similar dataset as "`MODIS_Native`" above but processed by LIS-team.
+|MODIS_LIS |Similar dataset as "`MODIS_Native`" above but processed by LISF-team.
 |USGS_Native |The 24-category USGS native landcover map. See: http://www.ral.ucar.edu/research/land/technology/noahmp_lsm.php
-|USGS_LIS |Similar dataset as "`USGS_Native`" but processed by LIS-team.
+|USGS_LIS |Similar dataset as "`USGS_Native`" but processed by LISF-team.
 |ALMIPII |AMMA/ALMIP Phase-2 landcover input option. For more info: http://www.cnrm.meteo.fr/amma-moana/amma_surf/almip2/input.html
 |CLSMF2.5 |CLSM Fortuna 2.5 landcover dataset.
 |VIC412 |Variable Infiltration Capacity model, v4.1.2, UMD land cover.
@@ -1349,7 +1349,7 @@ endif::devonly[]
 |===
 |Value |Description
 
-|FAO |LIS-team produced soil porosity data source.
+|FAO |LISF-team produced soil porosity data source.
 |CLSMF2.5 |Similar to the above option but for CLSM F2.5 model.
 |CONSTANT |User can select a constant value.
 |===
@@ -1403,7 +1403,7 @@ endif::devonly[]
 
 |none |No soil fraction data source
 |FAO |FAO soil fraction percentage fields
-|STATSGO_LIS |LIS-team derived STATSGO v1 soil fraction fields
+|STATSGO_LIS |LISF-team derived STATSGO v1 soil fraction fields
 |ALMIPII |ALMIP II soil fraction percentage fields
 |CONSTANT |If user wants to set a constant soil fraction values
 |===
@@ -1544,7 +1544,7 @@ Permeability data source:   none
 |Value |Description
 
 |STATSGOFAO_Native |The blended STATSGOv1 and FAO soil texture map. See: http://www.ral.ucar.edu/research/land/technology/lsm.php
-|STATSGOFAO_LIS |Similar dataset as to the above one but processed by LIS-team.
+|STATSGOFAO_LIS |Similar dataset as to the above one but processed by LISF-team.
 |FAO |FAO or Reynolds et al. (1999) soil texture map.
 |ISRIC |ISRIC soil texture data source.
 |ZOBLER_GFS |Similar to above but on a GFS run domain.
@@ -1668,12 +1668,12 @@ Current options include:
 |Value |Description
 
 |GTOPO30_Native |The GTOPO30 elevation map native source. See: http://edcftp.cr.usgs.gov/pub/data/gtopo30/global
-|GTOPO30_LIS |Similar dataset as to the above one but processed by LIS-team.
+|GTOPO30_LIS |Similar dataset as to the above one but processed by LISF-team.
 |GTOPO30_GFS |Similar dataset as to the above but on GFS grid.
 |SRTM_Native |The SRTM elevation map native source. See: http://dds.cr.usgs.gov/srtm/version2_1/SRTM30
-|SRTM_LIS |Similar dataset as to the above one but processed by LIS-team.
+|SRTM_LIS |Similar dataset as to the above one but processed by LISF-team.
 |CONSTANT |User can set a constant elevation, slope or aspect class.
-|MERIT_1K |The MERIT elevation map, but processed by LIS-team to have a resolution '`0.008333`'. See: http://hydro.iis.u-tokyo.ac.jp/~yamadai/MERIT_DEM/index.html
+|MERIT_1K |The MERIT elevation map, but processed by LISF-team to have a resolution '`0.008333`'. See: http://hydro.iis.u-tokyo.ac.jp/~yamadai/MERIT_DEM/index.html
 |===
 
 .Example _ldt.config_ entry
@@ -1827,7 +1827,7 @@ Albedo maps
 |Value |Description
 
 |NCEP_Native |Native monthly NCEP albedo files.
-|NCEP_LIS |Similar to the above option but LIS-team processed.
+|NCEP_LIS |Similar to the above option but LISF-team processed.
 |CONSTANT |User can select a constant value.
 |===
 
@@ -1921,7 +1921,7 @@ Albedo resolution (dy):       0.2500
 |Value |Description
 
 |NCEP_Native |Native NCEP maximum snow albedo source.
-|NCEP_LIS |Similar to the above option but LIS-team processed.
+|NCEP_LIS |Similar to the above option but LISF-team processed.
 |NCEP_GFS |Similar to the above option but on GFS grid.
 |SACHTET.3.5.6 |Max snow albedo specific to the SAC-HTET model.
 |CONSTANT |User can select a constant value.
@@ -1996,7 +1996,7 @@ Greenness vegetation fraction is considered the horizontal greenness fraction re
 |Value |Description
 
 |NCEP_Native |Native NCEP monthly greenness climatology source.
-|NCEP_LIS |Similar to the above option but LIS-team processed.
+|NCEP_LIS |Similar to the above option but LISF-team processed.
 |CLSMF2.5 |Similar to the above option but for CLSM F2.5 model.
 |SACHTET.3.5.6 |Similar to the above option but for SAC-HTET model.
 |CONSTANT |User can select a constant value.
@@ -2096,7 +2096,7 @@ LAI/SAI maps Leaf area index and stem area index maps are used to describe the v
 |===
 |Value |Description
 
-|AVHRR |LIS-team produced monthly LAI climatology source.
+|AVHRR |LISF-team produced monthly LAI climatology source.
 |CLSMF2.5 |Similar to the above option but for CLSM F2.5 model.
 |CONSTANT |User can select a constant value.
 |===
@@ -2107,7 +2107,7 @@ LAI/SAI maps Leaf area index and stem area index maps are used to describe the v
 |===
 |Value |Description
 
-|AVHRR |LIS-team produced monthly SAI climatology source.
+|AVHRR |LISF-team produced monthly SAI climatology source.
 |CONSTANT |User can select a constant value.
 |===
 
@@ -2206,7 +2206,7 @@ LAI/SAI resolution (dy):       0.2500
 |Value |Description
 
 |NCEP_Native |Native NCEP slope type derived map source.
-|NCEP_LIS |Similar to the above option but LIS-team processed.
+|NCEP_LIS |Similar to the above option but LISF-team processed.
 |NCEP_GFS |Similar to the above option but on a GFS grid type.
 |CONSTANT |User can select a constant value.
 |===
@@ -2274,7 +2274,7 @@ Slope type resolution (dy):       0.2500
 |Value |Description
 
 |ISLSCP1 |Native (NCEP) ISLSCP1 temperature derived map.
-|NCEP_LIS |Similar to the above option but LIS-team processed.
+|NCEP_LIS |Similar to the above option but LISF-team processed.
 |NCEP_GFS |Similar to the above option but on a GFS grid type.
 |CONSTANT |User can select a constant value.
 |===
