@@ -278,6 +278,8 @@ module LIS_pluginIndices
         "GLASS LAI"
    character*50, public,  parameter :: LIS_MODISsportLAIobsId    = &
         "MODIS SPoRT LAI"
+   character*50, public,  parameter :: LIS_MCD15A2HlaiobsId      = &
+        "MCD15A2H LAI"
    character*50, public,  parameter :: LIS_GLASSalbedoobsId      = &
         "GLASS Albedo"
    character*50, public,  parameter :: LIS_SMAPNRTsmobsId        = &
