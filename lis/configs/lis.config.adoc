@@ -8584,7 +8584,7 @@ Acceptable values are:
 
 `VIC411 global parameter file:` This is VIC`'s
 configuration file.  Please see VIC`'s documentation at:
-http://www.hydro.washington.edu/Lettenmaier/Models/VIC/index.shtml
+https://vic.readthedocs.io/en/vic.4.2.d/Development/VersionSummaries/
 for more information.
 
 `VIC411 total number of veg types:` specifies the
@@ -8686,7 +8686,7 @@ specified as the following:
 `VIC412_NLAYER: 3`
 
 See VIC`'s documentation at:
-http://www.hydro.washington.edu/Lettenmaier/Models/VIC/index.shtml
+https://vic.readthedocs.io/en/vic.4.2.d/Development/VersionSummaries/
 for more information about configuring VIC.
 
 .Example _lis.config_ entry
