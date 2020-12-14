@@ -749,7 +749,7 @@ endif::devonly[]
 |===
 |Value |Description
 
-|AVHRR |Univ. of Maryland 1992-93 AVHRR landcover map.  Please see: http://glcf.umd.edu/data/landcover/
+|AVHRR |Univ. of Maryland 1992-93 AVHRR landcover map.  Please see: https://doi.org/10.3334/ORNLDAAC/969
 |AVHRR_GFS |Similar to "`AVHRR`" option above but on a GFS grid.
 |MODIS_Native |Terra-MODIS sensor-based IGBP land classification map, modified by NCEP. For more info, please see: http://www.ral.ucar.edu/research/land/technology/noahmp_lsm.php
 |MODIS_LIS |Similar dataset as "`MODIS_Native`" above but processed by LISF-team.
@@ -768,7 +768,9 @@ endif::devonly[]
 Landcover data source:    "MODIS_Native"
 ....
 
-`Landcover classification:` specifies the land cover classification type. Land cover or use classification types have been developed over the years by various organizations (e.g., USGS, IGBP) and research groups (e.g., satellite missions associated with groups, like UMD, BU, etc.). For more information on some of these different land classifications and their characteristics, please refer to: http://edc2.usgs.gov/glcc/globdoc2_0.php.  Acceptable values are:
+`Landcover classification:` specifies the land cover classification type.
+Land cover or use classification types have been developed over the years by various organizations (e.g., USGS, IGBP) and research groups (e.g., satellite missions associated with groups, like UMD, BU, etc.). For more information on some of these different land classifications and their characteristics, please refer to: https://lpdaac.usgs.gov/documents/101/MCD12_User_Guide_V6.pdf and https://www.usgs.gov/media/files/global-land-cover-characteristics-data-base-readme-version2.
+Acceptable values are:
 
 [cols="<,<",]
 |===
@@ -863,7 +865,7 @@ Other current landmask source options include:
 |===
 |Value |Description
 
-|MOD44W |The MODIS 44W land-water mask was developed and provided by: http://glcf.umd.edu/data/watermask/
+|MOD44W |The MODIS 44W land-water mask was developed and provided by: https://doi.org/10.5067/MODIS/MOD44W.006
 |HYMAP |The HYMAP basin area mask option.
 |===
 
@@ -1659,7 +1661,7 @@ Current options include:
 |===
 |Value |Description
 
-|GTOPO30_Native |The GTOPO30 elevation map native source. See: http://edcftp.cr.usgs.gov/pub/data/gtopo30/global
+|GTOPO30_Native |The GTOPO30 elevation map native source. See: https://doi.org/10.5065/A1Z4-EE71
 |GTOPO30_LIS |Similar dataset as to the above one but processed by LISF-team.
 |GTOPO30_GFS |Similar dataset as to the above but on GFS grid.
 |SRTM_Native |The SRTM elevation map native source. See: http://dds.cr.usgs.gov/srtm/version2_1/SRTM30
@@ -3142,7 +3144,7 @@ For LIS sub-grid tiling, tiling is based on vegetation fractions from the "`land
 For VIC sub-grid tiling, tiling is based on vegetation fractions from the "`VEGPARAM`" file, set this config entry to 0.
 
 See the LIS Users`' Guide and/or VIC`'s documentation at:
-http://www.hydro.washington.edu/Lettenmaier/Models/VIC/index.shtml
+https://vic.readthedocs.io/en/vic.4.2.d/Development/VersionSummaries/
 for more information about configuring these VIC options.
 
 `VIC412_NLAYER:`
