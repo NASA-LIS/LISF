@@ -8,7 +8,7 @@
 :mathematical-format: svg
 :imagesoutdir: images
 :stem: latexmath
-:devonly!:
+:devonly:
 :lisfrevision: 7.3
 :lisfurl: http://lis.gsfc.nasa.gov
 :listesturl: https://lis.gsfc.nasa.gov/tests/lis
