@@ -60,9 +60,7 @@ Number of surface model types:   1
 |Value |Description
 
 |LSM |Land surface model type
-ifdef::devonly[]
 |Lake |Lake model type
-endif::devonly[]
 |Openwater |Openwater surface type
 |===
 
@@ -96,13 +94,13 @@ Surface model types:  "LSM"
 |SNOW17 |Snow17
 |RDHM.3.5.6 |Sacramento+snow17
 |GeoWRSI.2 |GeoWRSI, v2.0
-ifdef::devonly[]
 |SiB2 |SiB v2
+ifdef::devonly[]
 |FASST |FASST
 |CABLE |CABLE
 |HTESSEL |HTESSEL
-|JULES.4.3 |JULES.4.3
 endif::devonly[]
+|JULES.5.0 |JULES.5.0
 |===
 
 .Example _ldt.config_ entry
@@ -149,8 +147,8 @@ For more information about LIS`'s meteorological forcing data reader options, pl
 |"`NONE`" |none
 ifdef::devonly[]
 |"`AGRMET`" |AGRMET (AFWA-0.25 deg)
-|"`AGRMET radiation (polar stereographic)`" |AGRMET radiation fields
 endif::devonly[]
+|"`AGRMET radiation (polar stereographic)`" |AGRMET radiation fields
 |"`CMAP`" |CMAP precipitation fields
 |"`CPC CMORPH`" |CMORPH precipitation fields
 |"`ECMWF`" |ECMWF near-realtime analysis
@@ -921,7 +919,6 @@ Landmask resolution (dx):        0.01
 Landmask resolution (dy):        0.01
 ....
 
-ifdef::devonly[]
 `Lakecover data source:` specifies the data source for lake depth and/or fraction for lake models, like FLake.
 
 .Example _ldt.config_ entry
@@ -1016,7 +1013,6 @@ Inland waterbody type map:  ./inlandwater_parms/GLWD/rastert_glwd_31.flt
 ....
 Inland waterbody spatial transform:    tile
 ....
-endif::devonly[]
 
 `Regional mask data source:` specifies a regional land mask dataset source to be read in. Should either match grid domain or be smaller to the LIS run domain.
 
@@ -1339,9 +1335,7 @@ Soils maps
 
 `Silt fraction map:` specifies the silt map file.
 
-ifdef::devonly[]
 `Gravel fraction map:` specifies the gravel map file.
-endif::devonly[]
 
 `Porosity data source:` specifies the soil porosity dataset source to be read in. Current source options include:
 
@@ -1382,9 +1376,7 @@ endif::devonly[]
 Sand fraction map:        ../input/25KM/sand_FAO.1gd4r
 Clay fraction map:        ../input/25KM/clay_FAO.1gd4r
 Silt fraction map:        ../input/25KM/silt_FAO.1gd4r
-ifdef::devonly[]
 Gravel fraction map:      ../input/25KM/gravel_Special.1gd4r
-endif::devonly[]
 Porosity data source:        none
 Porosity map:                  
 Saturated matric potential map:       
@@ -2753,7 +2745,6 @@ SNOW17 parameter fill value:
 SNOW17 map projection:               hrap
 ....
 
-ifdef::devonly[]
 `SiB2 static parameter directory:` specifies the location of Simple Biospheric v2 (SiB2) Model parameter files. These files contain vegetation- and soil-based parameter information that can be used in the SiB2 model run.
 
 `SiB2 parameter spatial transform:` specifies the general grid spatial transform option for SiB2. Only current option for now is "`none`".
@@ -2779,7 +2770,6 @@ SiB2 upper right lon:             -67.025
 SiB2 resolution (dx):               0.05
 SiB2 resolution (dy):               0.05
 ....
-endif::devonly[]
 
 ==== WRSI model parameter files
 
@@ -2844,7 +2834,6 @@ PPT climatology maps:  ../LS_PARAMETERS/climate_maps/ppt_1981_2010
 PPT climatology interval:     monthly
 ....
 
-ifdef::devonly[]
 `TMIN climatology maps:` specifies the source of the climatology based minimum temperature files.
 
 `TMAX climatology maps:` specifies the source of the climatology based maximum temperature files.
@@ -2854,7 +2843,6 @@ ifdef::devonly[]
 TMIN climatology maps:
 TMAX climatology maps:
 ....
-endif::devonly[]
 
 `Climate params spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to climate parameters. Only "`average`" spatial transform works currently for the "`WORLDCLIM`" climatology files. Options include:
 

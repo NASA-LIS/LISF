@@ -111,13 +111,11 @@ The structure of _LISF/lis_ is as follows:
 Directory the NASA Open Source license for LIS along with the licenses of other
 included components
 
-ifdef::devonly[]
-* _RESTRICTED_ footnote:disclaimer[{lispublicna}]
-endif::devonly[]
+* _RESTRICTED_
 
-ifdef::devonly[]
-* _apps_ footnote:disclaimer[]
-endif::devonly[]
+* _apps_
++
+Directory containing applications built on LIS
 
 * _arch_
 +
@@ -175,11 +173,9 @@ NASA GMAO`'s dynamic bias estimation algorithm
 +
 Directory containing the following observation handlers for data assimilation:
 
-ifdef::devonly[]
-*** _AMRE_swe_ footnote:disclaimer[]
+*** _AMRE_swe_
 +
 AMSRE snow water equivalent retrievals in HDF4/HDFEOS format
-endif::devonly[]
 
 *** _ANSA_SCF_
 +
@@ -189,15 +185,13 @@ Blended snow cover fraction from the AFWA NASA snow algorithm
 +
 Snow depth retrievals from the AFWA NASA snow algorithm
 
-ifdef::devonly[]
-*** _ANSA_SWE_ footnote:disclaimer[]
+*** _ANSA_SWE_
 +
 Snow water equivalent retrievals from the AFWA NASA snow algorithm
 
-*** _ASCAT_TUW_ footnote:disclaimer[]
+*** _ASCAT_TUW_
 +
 ASCAT (TU Wein) soil moisture
-endif::devonly[]
 
 *** _ASO_SWE_
 +
@@ -227,15 +221,13 @@ AMSR2 soil moisture retrievals
 +
 GRACE soil moisture
 
-ifdef::devonly[]
-*** _IMS_sca_ footnote:disclaimer[]
+*** _IMS_sca_
 +
 IMS snow cover area
 
-*** _ISCCP_Tskin_ footnote:disclaimer[]
+*** _ISCCP_Tskin_
 +
 ISCCP skin temperature product in binary format
-endif::devonly[]
 
 *** _LPRM_AMSREsm_
 +
@@ -297,31 +289,25 @@ SMOS L2 soil moisture
 +
 SMOS NESDIS soil moisture retrievals
 
-ifdef::devonly[]
-*** _SNODEP_ footnote:disclaimer[]
+*** _SNODEP_
 +
 AFWA snowdepth data in Grib1 format
-endif::devonly[]
 
 *** _SSMI_SNWD_
 +
 SSMI snow depth
 
-ifdef::devonly[]
-*** _SYN_LBAND_TB_ footnote:disclaimer[]
+*** _SYN_LBAND_TB_
 +
 Synthetic L-band brightness temperature
-endif::devonly[]
 
 *** _USAFSI_
 +
-[red]##specifies what?##
+USAF Snow and Ice Analysis
 
-ifdef::devonly[]
-*** _WindSat_Cband_sm_ footnote:disclaimer[]
+*** _WindSat_Cband_sm_
 +
 C-band soil moisture retrievals from WindSat
-endif::devonly[]
 
 *** _WindSat_sm_
 +
@@ -331,48 +317,43 @@ X-band soil moisture retrievals from WindSat
 +
 PILDAS soil moisture observations (such as one generated from a previous LIS LSM run)
 
-ifdef::devonly[]
-*** _simGRACE_JPL_ footnote:disclaimer[]
+*** _simGRACE_JPL_
 +
 Synthetic soil moisture retrievals from GRACE
-endif::devonly[]
-
-ifdef::devonly[]
 
 *** This directory also includes the following synthetic data handler examples:
 
-*** _multisynsmobs_ footnote:disclaimer[]
+*** _multisynsmobs_
 +
 synthetic soil moisture data with multiple observation types
 
-*** _syntheticSnowTb_ footnote:disclaimer[]
+*** _syntheticSnowTb_
 +
 [red]##specifies what?##
 
-*** _syntheticlst_ footnote:disclaimer[]
+*** _syntheticlst_
 +
 synthetic land surface temperature data handler
 
-*** _syntheticsf_ footnote:disclaimer[]
+*** _syntheticsf_
 +
 synthetic streamflow data handler
 
-*** _syntheticsm_ footnote:disclaimer[]
+*** _syntheticsm_
 +
 synthetic soil moisture data handler (produced from a LIS LSM run)
 
-*** _syntheticsnd_ footnote:disclaimer[]
+*** _syntheticsnd_
 +
 synthetic snow depth data handler
 
-*** _syntheticswe_ footnote:disclaimer[]
+*** _syntheticswe_
 +
 synthetic snow water equivalent data handler
 
-*** _syntheticwl_ footnote:disclaimer[]
+*** _syntheticwl_
 +
 [red]##specifies what?##
-endif::devonly[]
 
 ** _perturb_
 +
@@ -394,11 +375,9 @@ Supports forecast capabilities
 +
 Directory containing the following forecasting algorithm implementations
 
-ifdef::devonly[]
-*** ESPboot footnote:disclaimer[]
+*** ESPboot
 +
 Boot ensemble streamflow prediction
-endif::devonly[]
 
 *** ESPconv
 +
@@ -456,11 +435,9 @@ Routines for handling the TRMM 3B42V6 precipitation product
 +
 Routines for handling the TRMM 3B42V7 precipitation product
 
-ifdef::devonly[]
-** _ALMIPII_ footnote:disclaimer[]
+** _ALMIPII_
 +
 Routines for handling the AMMA land surface model intercomparision project phase 2
-endif::devonly[]
 
 ** _AWAP_
 +
@@ -474,14 +451,12 @@ Routines for handling the AWAP precipitation product
 +
 Routines for handling the Bondville forcing products
 
-ifdef::devonly[]
-** _CaPA_ footnote:disclaimer[]
+** _CaPA_
 +
 Canadian Precipitation analysis
-endif::devonly[]
 
 ifdef::devonly[]
-** _FASSTsingle_ footnote:disclaimer[]
+** _FASSTsingle_ footnote:disclaimer[{lispublicna}]
 +
 Routines for handling the single-point FASST product
 endif::devonly[]
@@ -522,11 +497,9 @@ Routines for handling the AGRMET radiation product
 +
 Routines for handling the AGRMET radiation product (polar stereographic prjection)
 
-ifdef::devonly[]
-** _arms_ footnote:disclaimer[]
+** _arms_
 +
 Routines for handling the Walnut Gulch meteorological station data
-endif::devonly[]
 
 ** _ceop_
 +
@@ -568,11 +541,9 @@ ECMWF reanalysis meteorological forcing data based on <<berg_etal_jgr_2003>>.
 +
 NCEP GDAS meteorological forcing data
 
-ifdef::devonly[]
-** _gdas3d_ footnote:disclaimer[]
+** _gdas3d_
 +
 Routines for handling the GDAS 3d (including the atmospheric profile) data
-endif::devonly[]
 
 ** _gdasLSWG_
 +
@@ -719,11 +690,9 @@ differential evolution monte carlo algorithm
 +
 differential evolution monte carlo Z algorithm
 
-ifdef::devonly[]
-*** _ES_ footnote:disclaimer[]
+*** _ES_
 +
 enumerated search
-endif::devonly[]
 
 *** _GA_
 +
@@ -741,11 +710,9 @@ monte carlo simple propagation scheme
 +
 Random walk Markov chain monte carlo algorithm
 
-ifdef::devonly[]
-*** _SCE-UA_ footnote:disclaimer[]
+*** _SCE-UA_
 +
 Shuffled Complex Evolutionary Algorithm
-endif::devonly[]
 
 ** _type_
 
@@ -763,11 +730,9 @@ Directory containing the following objective function evaluation methods
 +
 maximum likelihood
 
-ifdef::devonly[]
-***** _LM_ footnote:disclaimer[]
+***** _LM_
 +
 objective function definition for LM algorithm
-endif::devonly[]
 
 ***** _LS_
 +
@@ -783,41 +748,35 @@ Directory containing the following observation handlers for parameter estimation
 
 ***** _AMSRE_SR_
 
-ifdef::devonly[]
-***** _ARM_ footnote:disclaimer[]
+***** _ARM_
 +
 [red]##specifies what?##
-endif::devonly[]
 
 ***** _ARSsm_
 +
 [red]##specifies what?##
 
-ifdef::devonly[]
-***** _Ameriflux_ footnote:disclaimer[]
+***** _Ameriflux_
 +
 In-situ observations from Ameriflux
 
-***** _CNRS_ footnote:disclaimer[]
+***** _CNRS_
 +
 [red]##specifies what?##
-endif::devonly[]
 
 ***** _EmptyObs_
 
-ifdef::devonly[]
-***** _FLUXNET_ footnote:disclaimer[]
+***** _FLUXNET_
 +
 [red]##specifies what?##
 
-***** _Global_LS_data_ footnote:disclaimer[]
+***** _Global_LS_data_
 +
 Global landslide observational data
 
-***** _ISCCP_Tskin_ footnote:disclaimer[]
+***** _ISCCP_Tskin_
 +
 ISCCP land surface temperature observations
-endif::devonly[]
 
 ***** _ISMNsm_
 +
@@ -827,11 +786,9 @@ endif::devonly[]
 +
 Soil moisture retrievals from AMSRE derived using the land parameter retrieval model (LPRM) from University of Amsterdam
 
-ifdef::devonly[]
-***** _Macon_LS_data_ footnote:disclaimer[]
+***** _Macon_LS_data_
 +
 Macon County North Carolina landslide observational data
-endif::devonly[]
 
 ***** _SMAPsm_
 +
@@ -841,37 +798,31 @@ endif::devonly[]
 +
 [red]##specifies what?##
 
-ifdef::devonly[]
-***** _USDA_ARSsm_ footnote:disclaimer[]
+***** _USDA_ARSsm_
 +
 USDA Agricultural Research Service soil mositure retrievals
 
-***** _pesynsm1_ footnote:disclaimer[]
+***** _pesynsm1_
 +
 synthetic soil moisture observations
-endif::devonly[]
 
 ***** _template_
 
-ifdef::devonly[]
-***** _wgPBMRsm_ footnote:disclaimer[]
+***** _wgPBMRsm_
 +
 PBMR soil moisture data for the Walnut Gulch watershed
-endif::devonly[]
 
 * _params_
 +
 Directory containing implementations of the following land surface model parameters
 
-ifdef::devonly[]
-** _albedo_ footnote:disclaimer[]
+** _albedo_
 +
 Routines for handling albedo data products
 
-** _emissivity_ footnote:disclaimer[]
+** _emissivity_
 +
 Routines for handling emissivity data products
-endif::devonly[]
 
 ** _gfrac_
 +
@@ -881,11 +832,9 @@ Routines for handling green vegetation fraction data products
 +
 Routines for handling Leaf/Stem area index data products
 
-ifdef::devonly[]
-** _roughness_ footnote:disclaimer[]
+** _roughness_
 +
 Routines for handling roughness data products
-endif::devonly[]
 
 * _plugins_
 +
@@ -929,29 +878,25 @@ Routines to handle coupling to the Tau Omega Radiative Transfer Model
 +
 Directory containing the following running modes in LIS
 
-ifdef::devonly[]
-** _RTMforward_ footnote:disclaimer[]
+** _RTMforward_
 +
 Routines to manage the program flow when a forward model integration using a radiative transfer model is employed
 
-** _agrmetmode_ footnote:disclaimer[]
+** _agrmetmode_
 +
 Routines to manage the program flow in the AFWA operational mode
-endif::devonly[]
 
 ** _forecast_
 +
 Routines to manage the forecast simulation mode
 
-ifdef::devonly[]
-** _gce_cpl_mode_ footnote:disclaimer[]
+** _gce_cpl_mode_
 +
 Routines to manage the program flow in the coupled LIS-GCE mode
 
-** _landslide_optUE_ footnote:disclaimer[]
+** _landslide_optUE_
 +
 Routines to manage the program flow in combined use of landslide modelling simulations and optimization
-endif::devonly[]
 
 ** _paramEstimation_
 +
@@ -985,8 +930,7 @@ Directory containing implementations of the following glacier surface models
 +
 An empty template for glacire surface model implementations
 
-ifdef::devonly[]
-** _lake_ footnote:disclaimer[]
+** _lake_
 +
 Directory containing implementations of the following lake surface models
 
@@ -995,7 +939,6 @@ Directory containing implementations of the following lake surface models
 FLake, version 1.0
 +
 #internal use only!#
-endif::devonly[]
 
 ** _land_
 +
@@ -1138,11 +1081,9 @@ Routines for coupling Noah with WRF without ESMF
 //Noah routines related to the assimilation of snow cover
 //fraction observations
 
-ifdef::devonly[]
-**** _da_snodep_ footnote:disclaimer[]
+**** _da_snodep_
 +
 Noah routines related to the assimilation of AFWA SNODEP observations
-endif::devonly[]
 
 **** _da_snow_
 +
