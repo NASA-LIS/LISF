@@ -141,9 +141,9 @@ Directory containing the following data assimilation algorithm implementations:
 +
 direct insertion algorithm for data assimilation
 
-*** _enf_
+*** _ekf_
 +
-[red]##specifies what?##
+NASA GMAO`'s extended Kalman filter algorithm for data assimilation
 
 *** _enkf_
 +
@@ -159,7 +159,7 @@ GRACE Ensemble Kalman Filter algorithm for data assimilation
 
 *** _pf_
 +
-[red]##specifies what?##
+particle filter algorithm for data assimilation
 
 ** _biasEstimation_
 +
@@ -251,7 +251,7 @@ NASA SMAP soil moisture retrievals
 
 *** _NASA_SMAPvod_
 +
-[red]##specifies what?##
+NASA SMAP vegetation optical depth retrievals
 
 *** _PMW_snow_
 +
@@ -259,7 +259,7 @@ PMW snow
 
 *** _SMAP_NRTsm_
 +
-[red]##specifies what?##
+SMAP near-real time soil moisture retrievals
 
 *** _SMMR_SNWD_
 +
@@ -445,7 +445,7 @@ Routines for handling the AWAP precipitation product
 
 ** _AWRAL_
 +
-[red]##specifies what?##
+Australian Water Resource Assessment Landscape (AWRA-L) metforcing data
 
 ** _Bondville_
 +
@@ -463,7 +463,7 @@ endif::devonly[]
 
 ** _HiMAT_GMU_
 +
-[red]##specifies what?##
+downscaled MERRA2 precipitation data over the High Mountain Asia domain from GMU (HiMAT_GMU)
 
 ** _Loobos_
 +
@@ -660,7 +660,7 @@ An empty template for meteorological forcing data implementations
 
 ** _usaf_
 +
-[red]##specifies what?##
+Routines for generating meteorological forcing data in the "`AGRMET ops`" running mode and for handling said data when running in the "`retrospective`" runmode
 
 ** _vicforcing_
 +
@@ -792,11 +792,11 @@ Macon County North Carolina landslide observational data
 
 ***** _SMAPsm_
 +
-[red]##specifies what?##
+SMAP soil moisture observational data
 
 ***** _UAsnow_
 +
-[red]##specifies what?##
+University of Arizona (UA) swe/snow depth observations
 
 ***** _USDA_ARSsm_
 +
@@ -924,7 +924,7 @@ Directory containing implementations of the following glacier surface models
 
 *** _noahmp.3.9.1.1_
 +
-[red]##specifies what?##
+NCAR Noah multiphysics land surface model version 3.9.1.1
 
 *** _template_
 +
@@ -936,9 +936,7 @@ Directory containing implementations of the following lake surface models
 
 *** _FLake.1.0_
 +
-FLake, version 1.0
-+
-#internal use only!#
+FLake, version 1.0.  #For internal use only.#
 
 ** _land_
 +
@@ -946,7 +944,7 @@ Directory containing implementations of the following land surface models
 
 *** _awral.6.0.0_
 +
-[red]##specifies what?##
+Australian Water Resource Assessment Landscape (AWRA-L) land surface model, version 6.0.0
 
 *** _cable_
 +
@@ -1035,7 +1033,7 @@ NOAA Rapid Update Cycle model version 3.7.1
 ifdef::devonly[]
 *** _summa.1.0_ footnote:disclaimer[]
 +
-[red]##specifies what?##
+First attempt to incorporate the Structure for Unifying Multiple Modeling Alternatives (SUMMA) into LIS.  #For internal use only.#
 endif::devonly[]
 
 *** _template_

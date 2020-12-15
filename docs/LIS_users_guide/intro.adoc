@@ -71,7 +71,7 @@ This document consists of 12 sections, described as follows:
 . Includes GLS landslide application
 . Includes TRIGRS landslide application
 . Includes additional data assimilation algorithms
-* ensemble Kalman filter algorithm
+* extended Kalman filter algorithm
 * ensrf algorithm
 * particle filter algorithm
 . Includes additional optimization and uncertainty alogrithms
