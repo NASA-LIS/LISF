@@ -121,10 +121,10 @@ LVT output methodology:                 "2d gridspace"
 | "`FLUXNET MTE`"                   | Gridded FLUXNET MTE data from MPI
 | "`MOD16A2`"                       | MOD16A2 ET products from MODIS
 | "`UW ET`"                         | University of Washington ET products from MODIS
-| "`ALEXI`"                         | ALEXI model ET estimates from USDA
+| "`ALEXI`"                         | Atmosphere Land Exchange Inverse (ALEXI) model ET estimates from USDA
 | "`USDA ARS soil moisture`"        | soil moisture measurements from USDA ARS watersheds
 | "`GHCN`"                          | Global Historical Climatology Network data
-| "`ALEXI`"                         | Atmosphere Land Exchange Inverse model outputs of ET
+| "`ALEXI ESI`"                     | Atmosphere Land Exchange Inverse (ALEXI) model Evaporative Stress Index (ESI) estimates
 | "`NLDAS2`"                        | North American Land Data Assimilation System Phase-2 data
 | "`GRACE`"                         | processed GRACE data used in a LIS-DA instance
 | "`PBO H2O`"                       | plate boundary observatory data
@@ -328,22 +328,6 @@ SoilMoist 2 3 m3/m3 - 1 4
 LVT datastream attributes table::
 Qle         1 1 W/m2   DN   1   1 Qh        1 1 W/m2    DN    1  1
 RootMoist   1 1 m3/m3   -   1   1 RootMoist 1 1 m3/m3   -     1  1
-::
-....
-
-IMPORTANT: Review this!
-
-.Example _lvt.config_ entry
-....
-LVT datastream attributes table::
-Qle         1 1 W/m2   DN   1   1 Qh        1 1 W/m2    DN    1  1
-RootMoist   1 1 m3/m3   -   1   1 RootMoist 1 1 m3/m3   -     1  1
-none     VWC   1  1  kg/m2  -   1   1
-!none     SMAPL3TB  1  1 K  -   1  4
-none     SMAPL3TBv_D  1  1 K  -   1   1
-none     SMAPL3TBv_A  1  1 K  -   1   1
-none     SMAPL3TBh_D  1  1 K  -   1   1
-none     SMAPL3TBh_A  1  1 K  -   1   1
 ::
 ....
 
@@ -2305,25 +2289,11 @@ OptUE output data directory:  '../OUTPUT'
 |===
 | Value | Description
 
-| 1     | Levenberg- Marquardt
-| 2     | Genetic Algorithm
-| 3     | SCE-UA
-| 4     | MCSIM
-| 5     | MCMC
-| 6     | DEMC
-|===
-
-IMPORTANT: Review this!
-
-[cols="<,<",]
-|===
-| Value | Description
-
-| ?     | Levenberg- Marquardt
-| ?     | Genetic Algorithm
-| ?     | Monte carlo sampling
-| ?     | Random walk markov chain monte carlo
-| ?     | Differential evolution monte carlo
+//| ?                                        | Levenberg-Marquardt
+| "`Genetic algorithm`"                    | Genetic Algorithm
+| "`Monte carlo sampling`"                 | Monte carlo sampling
+| "`Random walk markov chain monte carlo`" | Random walk markov chain monte carlo
+| "`Differential evolution monte carlo`"   | Differential evolution monte carlo
 |===
 
 .Example _lvt.config_ entry
