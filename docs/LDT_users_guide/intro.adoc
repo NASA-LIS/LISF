@@ -31,6 +31,35 @@ This document consists of 7 sections, described as follows:
 //\attention{See \file{RELEASE\_NOTES} found in the \file{source.tar.gz} file for more
 //details.  (See Section~\ref{sec:obtain-src}.)}
 
+==== Version 7.3
+
+. Includes new runmodes
+* USAF snow and ice analysis (USAFSI) runmode
+* optimization and uncertainty estimation procecssing runmode
+* LIS Hydro preprocessing runmode
+* climatological restart processing runmode
+. Supports additional data assimilation observations
+* GLASS LAI observations
+* GRACE QL tws observations
+* Land Parameter Retrieval Model (LPRM) vegetation optical depth observations
+* NASA SMAP vegetation optical depth observations
+. Supports additional parameters
+* CLM45 parameters
+* glacier parameters
+* JULES 5.0 parameters
+* MERIT1K aspect, slope, and elevation parameters
+* HYMAP flow type, baseflow dwi ratio, and runoff dwi ratio parameters
+* Barlage native max snow albebdo parameter
+* MODIS native PFT landcover data
+* UKMO IGBP PFT landcover data
+* UM ancillary landcover data
+* NLDAS climatological precipitation data
+* UKMO IGBP native PFT landmask data
+* UKMO CAP landmask data
+* ISRIC texture and soil fraction parameter data
+. Supports GCOMW AMSR2 TB data in artificial neural network processing running mode
+. Supports ERA5 metforcing data in Metforcing processing running mode
+
 ==== Version 7.2
 
 . Includes artificial neural network processing runmode
