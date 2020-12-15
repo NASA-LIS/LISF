@@ -8,6 +8,7 @@
 ! REVISION HISTORY:
 ! 26 0ct 2020:  Eric Kemp.  Initial Specification. Multi-process
 !   MPI doesn't work yet, just use single process.
+! 15 Dec 2020:  Eric Kemp.  Added user-defined logfile name.
 
 program main
 
@@ -63,6 +64,7 @@ program main
    character(len=255) :: blacklist_file
    character(len=9), allocatable :: blacklist_stns(:)
    integer :: nstns
+   character(len=255) :: logname
 
    ! TODO:  Add other ob types.
    character(len=maxlen_obtype), parameter :: T2M     = "T2M"
@@ -71,8 +73,16 @@ program main
    character(len=maxlen_obtype), parameter :: GAGE   =  "Gage"
    obtypes = (/T2M, RH2M, SPD10M, GAGE/)
 
+   ! Set logfile name
+   logname = 'procOBA_NWP.log'
+   num_args = command_argument_count()
+   if (num_args .eq. 2) then
+      call get_command_argument(2, logname)
+   end if
+
    ! Initialize ESMF.  Must happen first.  This calls MPI_Init under the hood.
-   call esmf_initialize(vm=vm, defaultCalKind=ESMF_CALKIND_GREGORIAN, rc=rc)
+   call esmf_initialize(vm=vm, defaultCalKind=ESMF_CALKIND_GREGORIAN, &
+        defaultLogFileName=trim(logname), rc=rc)
    if (rc .ne. ESMF_SUCCESS) then
       call ESMF_LogWrite("Cannot initialize ESMF!", ESMF_LOGMSG_ERROR)
       call endrun(1)
@@ -94,10 +104,10 @@ program main
 
    if (myid .eq. 0) then
       num_args = command_argument_count()
-      if (num_args .ne. 1) then
+      if (num_args .ne. 2) then
          call ESMF_LogWrite("Improper program invocation", &
               ESMF_LOGMSG_ERROR)
-         call ESMF_LogWrite("USAGE: procOBA_NWP <configfile> ", &
+         call ESMF_LogWrite("USAGE: procOBA_NWP <configfile> <logfile>", &
               ESMF_LOGMSG_ERROR)
          call endrun(1)
       end if
@@ -106,7 +116,6 @@ program main
 
    if (myid .eq. 0) then
       ! Read config file
-      !cfgfile = "procOBA.config"
       cf = ESMF_ConfigCreate(rc=rc)
       call esmf_ConfigLoadFile(cf, cfgfile, rc=rc)
       if (rc .ne. ESMF_SUCCESS) then
