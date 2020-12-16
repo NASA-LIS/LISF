@@ -13,6 +13,7 @@
 !  specification of the subroutine is defined by Sujay Kumar. 
 !
 !   10/18/19: Mahdi Navari, Shugong Wang; initial implementation for Crocus81 with LIS-7
+!  9 Dec 2020: Mahdi Navari; edited to take into account the Crocus slope correction
 !
 ! !INTERFACE:
 subroutine Crocus81_main(n)
@@ -210,6 +211,33 @@ subroutine Crocus81_main(n)
             ! LW_RAD: atmospheric infrared radiation (W/m2)
             tmp_LW_RAD     = CROCUS81_struc(n)%crocus81(t)%LW_RAD / CROCUS81_struc(n)%forc_count
 
+            ! Slope correction 
+            ! As a convention, only vertical incoming and outgoing fluxes are 
+            ! provided to and from the model; the correction of these terms
+            ! according to the local slope is carried out within SURFEX.
+            ! Similarly, variables such as total snow depth, total snow water
+            ! equivalent, and the corresponding variables for each layer
+            ! are output by the model in terms of their vertical component,
+            ! i.e. projected vertically. (Vionnet et al 2012)
+            
+            ! For simplicity, we will use the cosine of the slope to edit the fluxes. 
+            ! In the SIRFEX code, they have used sky view factor (1+cos(slope))/2 
+            ! to correct the component of SW and LW radiation.
+            ! See coupling_isba_orographyn.F90 in the SURFEX code
+            tmp_SLOPE = CROCUS81_struc(n)%crocus81(t)%SLOPE
+
+if (tmp_SRSNOW .NE. LIS_rc%udef) then
+            tmp_SRSNOW = tmp_SRSNOW * COS(tmp_SLOPE)
+endif
+if (tmp_RRSNOW .NE. LIS_rc%udef) then
+            tmp_RRSNOW = tmp_RRSNOW * COS(tmp_SLOPE)
+endif
+if (tmp_SW_RAD .NE. LIS_rc%udef) then
+            tmp_SW_RAD = tmp_SW_RAD * COS(tmp_SLOPE)
+endif
+if (tmp_LW_RAD .NE. LIS_rc%udef) then
+            tmp_LW_RAD = tmp_LW_RAD * COS(tmp_SLOPE)
+endif
 
         ! Added lis.config option to determine whether to partition total precipitation into snowfall and rainfall 
        
@@ -553,7 +581,17 @@ endif
             tmp = 0.0
             tmp = sum(tmp_SNOWSWE)
             CROCUS81_struc(n)%crocus81(t)%SWE_1D       = tmp
-            
+           
+
+! TODO   ! Slope correction --> NOTE: the correction should be apply when we write the output
+            ! As a convention, only vertical incoming and outgoing fluxes are 
+            ! provided to and from the Crcous model; the correction of these terms
+            ! according to the local slope is carried out here.
+            ! Similarly, variables such as total snow depth, total snow water
+            ! equivalent, and the corresponding variables for each layer
+            ! are output by the model in terms of their vertical component,
+            ! i.e. projected vertically 
+ 
             ![ 1] output variable: SNOWSWE (unit=kg/m2). *** Snow layer(s) liquid Water Equivalent (SWE:kg m-2)
             do i=1, CROCUS81_struc(n)%nsnow
                 call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWLIQPROF, value = CROCUS81_struc(n)%crocus81(t)%SNOWSWE(i), &

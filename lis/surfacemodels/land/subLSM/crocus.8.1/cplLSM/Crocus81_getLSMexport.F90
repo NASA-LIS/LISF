@@ -11,6 +11,7 @@
 !
 ! !REVISION HISTORY:
 ! 19 Sep 2020: Sujay Kumar; Initial Specification
+!  9 Dec 2020: Mahdi Navari; edited to take into account the Crocus slope correction 
 !
 ! !INTERFACE:
 subroutine Crocus81_getLSMexport(n, SubLSM2LSM_State)
@@ -35,7 +36,9 @@ subroutine Crocus81_getLSMexport(n, SubLSM2LSM_State)
   real, pointer      :: swe(:), snwd(:)
   integer            :: t
   integer            :: status
+  real               :: tmp_SLOPE
 
+ 
   call ESMF_StateGet(SubLSM2LSM_State,"Total SWE",sweField,rc=status)
   call LIS_verify(status)
   call ESMF_StateGet(SubLSM2LSM_State,"Total snowdepth",snwdField,rc=status)
@@ -47,8 +50,9 @@ subroutine Crocus81_getLSMexport(n, SubLSM2LSM_State)
   call LIS_verify(status)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     swe(t) = CROCUS81_struc(n)%crocus81(t)%SWE_1D 
-     snwd(t) = CROCUS81_struc(n)%crocus81(t)%SD_1D 
+     tmp_SLOPE = CROCUS81_struc(n)%crocus81(t)%SLOPE
+     swe(t) = CROCUS81_struc(n)%crocus81(t)%SWE_1D / COS(tmp_SLOPE)
+     snwd(t) = CROCUS81_struc(n)%crocus81(t)%SD_1D / COS(tmp_SLOPE)
   enddo
 
 end subroutine Crocus81_getLSMexport

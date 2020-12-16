@@ -11,6 +11,7 @@
 !
 ! !REVISION HISTORY:
 ! 19 Sep 2020: Sujay Kumar; Initial Specification
+!  2 Dec 2020: Mahdi Navari; Edited to add soil volumetric liquid and frozen water content
 !
 ! !INTERFACE:
 subroutine Crocus81_setLSMimport(n, LSM2SubLSM_State)
