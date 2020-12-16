@@ -67,7 +67,7 @@ contains
     integer :: dataTime
     integer :: ifguess
     integer :: jfguess
-    integer :: found_inq
+    logical :: found_inq
     integer :: k
     integer :: prod_def_tmpl_num
     integer :: param_disc_val

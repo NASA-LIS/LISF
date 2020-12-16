@@ -6,5 +6,5 @@ This section describes how to compute the values for the run domain and param do
 
 Note that this projection is often used for a coupled run with the Weather Research and Forecasting (WRF) model. As such, Mercator domains are first generated when configuring WRF via WRF's preprocessing system (WPS). The domain information is then copied into LIS`' _lis.config_ file.
 
-Please see WRF's User's Guide found at http://www.mmm.ucar.edu/wrf/users/pub-doc.html for more information.
+Please see WRF's User's Guide found at http://www.mmm.ucar.edu/wrf/users/ for more information.
 
