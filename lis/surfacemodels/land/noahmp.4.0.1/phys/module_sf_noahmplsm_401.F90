@@ -7747,7 +7747,10 @@ ENDIF   ! CROPTYPE == 0
          END DO
 
          DO IZ = 1, NSOIL           ! Removing subsurface runoff
-         MLIQ(IZ) = MLIQ(IZ) - QDIS*DT*HK(IZ)*DZMM(IZ)/WTSUB
+! Prevent divide-by-zero when soils are frozen. - DMM
+            if (WTSUB.ne.0.0) then
+               MLIQ(IZ) = MLIQ(IZ) - QDIS*DT*HK(IZ)*DZMM(IZ)/WTSUB
+            endif
          END DO
       END IF
 
