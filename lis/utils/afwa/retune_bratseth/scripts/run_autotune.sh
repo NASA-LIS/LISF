@@ -9,7 +9,7 @@
 #SBATCH --mail-user=eric.kemp@nasa.gov
 #SBATCH --mail-type=ALL
 #Set quality of service, if needed.
-##SBATCH --qos=debug
+#SBATCH --qos=debug
 
 ulimit -s unlimited
 
@@ -41,10 +41,16 @@ enddt=$1
 dayrange=$2
 
 # Customize config files for procOBA_NWP, including blacklist creation
+if [ ! -e $SCRIPTDIR/customize_procoba_nwp.py ] ; then
+    echo "ERROR, $SCRIPTDIR/customize_procoba_nwp.py does not exist!" && exit 1
+fi
+if [ ! -e $CFGDIR/autotune.cfg ] ; then
+    echo "ERROR, $CFGDIR/autotune.cfg does not exist!" && exit 1
+fi
 for varname in gage rh2m spd10m t2m ; do
     echo `date`
     echo "Calling customize_procoba_nwp.py for $varname"
-    srun --ntasks=1 \
+    srun --label --ntasks=1 --kill-on-bad-exit=1 \
          $SCRIPTDIR/customize_procoba_nwp.py $CFGDIR/autotune.cfg \
          $enddt $dayrange $varname &
     sleep 1
@@ -52,10 +58,16 @@ done
 wait
 
 # Next, construct empirical semivariograms
+if [ ! -e $BINDIR/procOBA_NWP ] ; then
+    echo "ERROR, $BINDIR/procOBA_NWP does not exist!" && exit 1
+fi
 for varname in gage rh2m spd10m t2m ; do
     echo `date`
     echo "Calling procOBA_NWP for $varname"
-    srun --ntasks=1  \
+    if [ ! -e procOBA_NWP.$varname.config ] ; then
+        echo "ERROR, procOBA_NWP.$varname.config does not exist!" && exit 1
+    fi
+    srun --label --ntasks=1 --kill-on-bad-exit=1 \
          $BINDIR/procOBA_NWP procOBA_NWP.$varname.config \
          procOBA_NWP.$varname.log &
     sleep 1
@@ -63,15 +75,24 @@ done
 wait
 
 # Now fit the semivariogram functions
+if [ ! -e $SCRIPTDIR/fit_semivariogram.py ] ; then
+    echo "ERROR, $SCRIPTDIR/fit_semivariogram.py does not exist!" && exit 1
+fi
 for varname in gage rh2m spd10m t2m ; do
     echo `date`
     echo "Calling fit_semivariogram.py for $varname"
     if [ $varname = gage ] ; then
-        srun --ntasks=1 \
+        if [ ! -e $CFGDIR/${varname}_nwp.cfg ] ; then
+            echo "ERROR, $CFGDIR/${varname}_nwp.cfg does not exist!" && exit 1
+        fi
+        srun --label --ntasks=1 --kill-on-bad-exit=1 \
              $SCRIPTDIR/fit_semivariogram.py $CFGDIR/${varname}_nwp.cfg \
             ${varname}_nwp.param &
     else
-        srun --ntasks=1 \
+        if [ ! -e $CFGDIR/${varname}.cfg ] ; then
+            echo "ERROR, $CFGDIR/${varname}.cfg does not exist!" && exit 1
+        fi
+        srun --label --ntasks=1 --kill-on-bad-exit=1 \
              $SCRIPTDIR/fit_semivariogram.py $CFGDIR/$varname.cfg \
             $varname.param &
     fi
@@ -80,10 +101,13 @@ done
 wait
 
 # Next, customize config files for procOBA_Sat
+if [ ! -e $SCRIPTDIR/customize_procoba_sat.py ] ; then
+    echo "ERROR, $SCRIPTDIR/customize_procoba_sat.py does not exist!" && exit 1
+fi
 for varname in cmorph geoprecip imerg ssmi ; do
     echo `date`
     echo "Calling customize_procoba_sat.py for $varname"
-    srun --ntasks=1 \
+    srun --label --ntasks=1 --kill-on-bad-exit=1 \
          $SCRIPTDIR/customize_procoba_sat.py $CFGDIR/autotune.cfg \
          $enddt $dayrange $varname &
     sleep 1
@@ -91,12 +115,16 @@ done
 wait
 
 # Next, construct empirical semivariograms
+if [ ! -e $BINDIR/procOBA_Sat ] ; then
+    echo "ERROR, $BINDIR/procOBA_Sat does not exist!" && exit 1
+fi
 for varname in cmorph geoprecip imerg ssmi ; do
     echo `date`
     echo "Calling procOBA_Sat for $varname"
-    #mpirun -np $SLURM_NTASKS $BINDIR/procOBA_Sat \
-    #    procOBA_Sat.$varname.config || exit 1
-    srun --ntasks=1 \
+    if [ ! -e procOBA_Sat.$varname.config ] ; then
+        echo "ERROR, procOBA_Sat.$varname.config does not exist!" && exit 1
+    fi
+    srun --label --ntasks=1 --kill-on-bad-exit=1 \
          $BINDIR/procOBA_Sat procOBA_Sat.$varname.config \
          procOBA_Sat.$varname.log &
     sleep 1
@@ -107,7 +135,10 @@ wait
 for varname in cmorph geoprecip imerg ssmi ; do
     echo `date`
     echo "Calling fit_semivariogram.py for $varname"
-    srun --ntasks=1 \
+    if [ ! -e $CFGDIR/gage_$varname.cfg ] ; then
+        echo "ERROR, $CFGDIR/gage_$varname.cfg does not exist!" && exit 1
+    fi
+    srun --label --ntasks=1 --kill-on-bad-exit=1 \
          $SCRIPTDIR/fit_semivariogram.py $CFGDIR/gage_$varname.cfg \
          gage_$varname.param &
     sleep 1
@@ -115,10 +146,13 @@ done
 wait
 
 # Next, rescale the satellite error variance to compare with NWP.
+if [ ! -e $SCRIPTDIR/rescale_sat_sigma2.py ] ; then
+    echo "ERROR, $SCRIPTDIR/rescale_sat_sigma2.py does not exist!" && exit 1
+fi
 for varname in cmorph geoprecip imerg ssmi ; do
     echo `date`
     echo "Calling rescale_sat_sigma2.py for $varname"
-    srun --ntasks=1 \
+    srun --label --ntasks=1 --kill-on-bad-exit=1 \
          $SCRIPTDIR/rescale_sat_sigma2.py $varname &
     sleep 1
 done
@@ -127,8 +161,12 @@ wait
 # Update the lis.config error settings
 echo `date`
 echo "Calling customize_lis_config.py"
+if [ ! -e $SCRIPTDIR/customize_lis_config.py ] ; then
+    echo "ERROR, $SCRIPTDIR/customize_lis_config.py does not exist!" && exit 1
+fi
 $SCRIPTDIR/customize_lis_config.py $CFGDIR/autotune.cfg \
-    $enddt $dayrange || exit 1
+                                   $enddt $dayrange || exit 1
 
 # The end
+echo "INFO, Completed autotuning!"
 exit 0
