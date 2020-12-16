@@ -15,6 +15,8 @@ import os
 import subprocess
 import sys
 
+import create_blacklist
+
 class AutomateTuning:
     """Class to automate tuning of Bratseth covariances."""
 
@@ -95,13 +97,6 @@ class AutomateTuning:
 
         self.use_blacklist = True
 
-        scriptfile = "%s/create_blacklist.py" %(self.scriptdir)
-        if not os.path.exists(scriptfile):
-            print("[WARN] Cannot find %s" %(scriptfile))
-            print("Will skip blacklist for %s" %(self.varname))
-            self.use_blacklist = False
-            return
-
         cfgfile = "%s/blacklist_%s.cfg" %(self.cfgdir, self.varname)
         if not os.path.exists(cfgfile):
             print("[WARN] Cannot find %s" %(cfgfile))
@@ -109,15 +104,9 @@ class AutomateTuning:
             self.use_blacklist = False
             return
 
-        cmd = "%s %s blacklist_%s.txt" %(scriptfile, cfgfile, self.varname)
-        cmd += " %s %s" %(self.yyyymmddhh, self.dd)
-        print(cmd)
-        try:
-            subprocess.check_call(cmd, shell=True)
-        except:
-            print("[WARN] Problem running create_blacklist.py")
-            print("Will skip blacklist for %s" %(varname))
-            self.use_blacklist  = False
+        blacklistfilename = "blacklist_%s.txt" %(self.varname)
+        create_blacklist.create_blacklist(cfgfile, blacklistfilename, \
+                                          self.yyyymmddhh, self.dd)
         return
 
     def check_gage_blacklist(self):
