@@ -25,6 +25,9 @@ unset LD_LIBRARY_PATH
 module use --append /home/emkemp/privatemodules
 module load lisf_7_intel_19_1_3_304_traceback-work-around
 
+NWPVARS=(gage rh2m spd10m t2m)
+SATVARS=(cmorph geoprecip imerg ssmi)
+
 SCRIPTDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/afwa/retune_bratseth/scripts
 CFGDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/afwa/retune_bratseth/cfgs
 BINDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/afwa/retune_bratseth/src
@@ -47,7 +50,7 @@ fi
 if [ ! -e $CFGDIR/autotune.cfg ] ; then
     echo "ERROR, $CFGDIR/autotune.cfg does not exist!" && exit 1
 fi
-for varname in gage rh2m spd10m t2m ; do
+for varname in "${NWPVARS[@]}" ; do
     echo `date`
     echo "Calling customize_procoba_nwp.py for $varname"
     srun --label --ntasks=1 --kill-on-bad-exit=1 \
@@ -61,7 +64,7 @@ wait
 if [ ! -e $BINDIR/procOBA_NWP ] ; then
     echo "ERROR, $BINDIR/procOBA_NWP does not exist!" && exit 1
 fi
-for varname in gage rh2m spd10m t2m ; do
+for varname in "${NWPVARS[@]}" ; do
     echo `date`
     echo "Calling procOBA_NWP for $varname"
     if [ ! -e procOBA_NWP.$varname.config ] ; then
@@ -78,7 +81,7 @@ wait
 if [ ! -e $SCRIPTDIR/fit_semivariogram.py ] ; then
     echo "ERROR, $SCRIPTDIR/fit_semivariogram.py does not exist!" && exit 1
 fi
-for varname in gage rh2m spd10m t2m ; do
+for varname in "${NWPVARS[@]}" ; do
     echo `date`
     echo "Calling fit_semivariogram.py for $varname"
     if [ $varname = gage ] ; then
@@ -104,7 +107,7 @@ wait
 if [ ! -e $SCRIPTDIR/customize_procoba_sat.py ] ; then
     echo "ERROR, $SCRIPTDIR/customize_procoba_sat.py does not exist!" && exit 1
 fi
-for varname in cmorph geoprecip imerg ssmi ; do
+for varname in "${SATVARS[@]}" ; do
     echo `date`
     echo "Calling customize_procoba_sat.py for $varname"
     srun --label --ntasks=1 --kill-on-bad-exit=1 \
@@ -118,7 +121,7 @@ wait
 if [ ! -e $BINDIR/procOBA_Sat ] ; then
     echo "ERROR, $BINDIR/procOBA_Sat does not exist!" && exit 1
 fi
-for varname in cmorph geoprecip imerg ssmi ; do
+for varname in "${SATVARS[@]}" ; do
     echo `date`
     echo "Calling procOBA_Sat for $varname"
     if [ ! -e procOBA_Sat.$varname.config ] ; then
@@ -132,7 +135,7 @@ done
 wait
 
 # Next, fit semivariograms for satellite data
-for varname in cmorph geoprecip imerg ssmi ; do
+for varname in "${SATVARS[@]}" ; do
     echo `date`
     echo "Calling fit_semivariogram.py for $varname"
     if [ ! -e $CFGDIR/gage_$varname.cfg ] ; then
@@ -149,7 +152,7 @@ wait
 if [ ! -e $SCRIPTDIR/rescale_sat_sigma2.py ] ; then
     echo "ERROR, $SCRIPTDIR/rescale_sat_sigma2.py does not exist!" && exit 1
 fi
-for varname in cmorph geoprecip imerg ssmi ; do
+for varname in "${SATVARS[@]}" ; do
     echo `date`
     echo "Calling rescale_sat_sigma2.py for $varname"
     srun --label --ntasks=1 --kill-on-bad-exit=1 \
