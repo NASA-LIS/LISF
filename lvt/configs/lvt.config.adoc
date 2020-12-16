@@ -81,7 +81,7 @@ LVT output format:                      "netcdf"
 LVT output methodology:                 "2d gridspace"
 ....
 
-`Analysis data sources:` specifies the two sources of data to be used in an LVT comparison. The user must always choose two sources specified in adjacent columns. The second column entry will be taken as the reference data and the first column will be used as the data being evaluated (against the reference data). If the comparison LIS output against a non-LIS data, it is recommended to specify the first source as "LIS output" and then the other data as the second data source.  Acceptable values for each column are:
+`Analysis data sources:` specifies the two sources of data to be used in an LVT comparison. The user must always choose two sources specified in adjacent columns. The second column entry will be taken as the reference data and the first column will be used as the data being evaluated (against the reference data). If the comparison LIS output against a non-LIS data, it is recommended to specify the first source as "`LIS output`" and then the other data as the second data source.  Acceptable values for each column are:
 
 [cols="<,<",]
 |===
@@ -121,10 +121,10 @@ LVT output methodology:                 "2d gridspace"
 | "`FLUXNET MTE`"                   | Gridded FLUXNET MTE data from MPI
 | "`MOD16A2`"                       | MOD16A2 ET products from MODIS
 | "`UW ET`"                         | University of Washington ET products from MODIS
-| "`ALEXI`"                         | ALEXI model ET estimates from USDA
+| "`ALEXI`"                         | Atmosphere Land Exchange Inverse (ALEXI) model ET estimates from USDA
 | "`USDA ARS soil moisture`"        | soil moisture measurements from USDA ARS watersheds
 | "`GHCN`"                          | Global Historical Climatology Network data
-| "`ALEXI`"                         | Atmosphere Land Exchange Inverse model outputs of ET
+| "`ALEXI ESI`"                     | Atmosphere Land Exchange Inverse (ALEXI) model Evaporative Stress Index (ESI) estimates
 | "`NLDAS2`"                        | North American Land Data Assimilation System Phase-2 data
 | "`GRACE`"                         | processed GRACE data used in a LIS-DA instance
 | "`PBO H2O`"                       | plate boundary observatory data
@@ -140,6 +140,7 @@ LVT output methodology:                 "2d gridspace"
 | "`GLDAS2`"                        | NASA Global Land Data Assimilation System version 2 data
 | "`MERRA2`"                        | MERRA version 2 data
 | "`ERA interim land`"              | ERA Interim Land data
+| "`ERA5`"                          | ERA5 data (currently only precipitation and near surface air temperature variables are supported)
 | "`SSEB`"                          | USGS SSEB operational ET and ET anomaly data
 | "`GRDC`"                          | Global Runoff Data Center data
 | "`GLERL hydro data`"              | Great Lakes hydrology data
@@ -151,7 +152,7 @@ LVT output methodology:                 "2d gridspace"
 | "`SMAP vegetation water content`" | SMAP vegetation water content
 | "`SMAP vegetation optical depth`" | SMAP vegetation optical depth
 | "`LPRM vegetation optical depth`" | LPRM vegetation optical depth
-| "`WG SWRC`"                       | ?
+| "`WG SWRC`"                       | [red]#specifies what?#
 | "`UA SNOW`"                       | University of Arizona SWE/Snow depth data
 | "`SMAP L3 Tb`"                    | SMAP L3 brightness temperature
 | "`OzFlux`"                        | OzFlux ground measurements
@@ -309,7 +310,7 @@ Run domain resolution (dx):            0.25
 Run domain resolution (dy):            0.25
 ....
 
-`Input domain and mask data file:` specifies the name of the parameter input file to be used for the definition of domain and parameters in LVT. This file should be in NetCDF format and must include details about the map projection (as global attributes) and must include a landmask field. LVT uses the landmask specified in this file to derive the landmask for the LVT run domain. The extents of the run domain should be inclusive of the landmask specified in this file (but it doesn't have to match exactly).
+`Input domain and mask data file:` specifies the name of the parameter input file to be used for the definition of domain and parameters in LVT. This file should be in NetCDF format and must include details about the map projection (as global attributes) and must include a landmask field. LVT uses the landmask specified in this file to derive the landmask for the LVT run domain. The extents of the run domain should be inclusive of the landmask specified in this file (but it doesn`'t have to match exactly).
 
 .Example _lvt.config_ entry
 ....
@@ -327,22 +328,6 @@ SoilMoist 2 3 m3/m3 - 1 4
 LVT datastream attributes table::
 Qle         1 1 W/m2   DN   1   1 Qh        1 1 W/m2    DN    1  1
 RootMoist   1 1 m3/m3   -   1   1 RootMoist 1 1 m3/m3   -     1  1
-::
-....
-
-IMPORTANT: Review this!
-
-.Example _lvt.config_ entry
-....
-LVT datastream attributes table::
-Qle         1 1 W/m2   DN   1   1 Qh        1 1 W/m2    DN    1  1
-RootMoist   1 1 m3/m3   -   1   1 RootMoist 1 1 m3/m3   -     1  1
-none     VWC   1  1  kg/m2  -   1   1
-!none     SMAPL3TB  1  1 K  -   1  4
-none     SMAPL3TBv_D  1  1 K  -   1   1
-none     SMAPL3TBv_A  1  1 K  -   1   1
-none     SMAPL3TBh_D  1  1 K  -   1   1
-none     SMAPL3TBh_A  1  1 K  -   1   1
 ::
 ....
 
@@ -662,7 +647,7 @@ Stratification threshold:               1.0
 Confidence interval (%):                95
 ....
 
-`External data-based stratification:` Specifies if the errors are to be stratified based on an external (static) dataset (e.g. landcover, elevation,etc.) The associated attributes file specifies the stratification details Acceptable values are:
+`External data-based stratification:` Specifies if the errors are to be stratified based on an external (static) dataset (e.g. landcover, elevation,etc.) The associated attributes file specifies the stratification details.  Acceptable values are:
 
 [cols="<,<",]
 |===
@@ -1731,6 +1716,18 @@ MERRA2 data directory:                   ./MERRA2/
 ERA interim land data directory:                   ./ERA_Interim_Land/
 ....
 
+==== ERA5 data
+
+`ERA5 data directory:` specifies the location of the ERA5 data.
+
+`ERA5 forcing tile to grid mapping file:` specifies the location of the ERA5 forcing tile to grid mapping file.
+
+.Example _lvt.config_ entry
+....
+ERA5 data directory:                        ./ERA5/
+ERA5 forcing tile to grid mapping file:     ./ERA5/mapping.nc
+....
+
 ==== SSEB operational data
 
 `SSEBop data directory:` specifies the location of the SSEB data.
@@ -1798,7 +1795,7 @@ ISCCP Tskin data directory:             ./ISCCP
 
 `LSWG Tb observation filename:` specifies the name of the LSWG filename containing Brightness Temperature (Tb) observations
 
-`LSWG Tb satellite name:` specifies the name of satellite — same as what's used in CRTM
+`LSWG Tb satellite name:` specifies the name of satellite — same as what`'s used in CRTM
 
 `LSWG Tb data format:` 0 for AMSR-E, 1-for AMSU
 
@@ -1829,7 +1826,7 @@ ISCCP Tskin data directory:             ./ISCCP
 
 `LSWG Tb cloud mask file:` specifies the name of the cloud mask file
 
-`LSWG Tb cloud mask column:` ??
+`LSWG Tb cloud mask column:` [red]#specifies what?#
 
 `LSWG Tb cloud mask threshold(%):` specifies the threshold below which clouds can be ignored (used only if cloud masking is enabled).
 
@@ -2090,7 +2087,7 @@ WG PBMR site index:
 
 `GLEAM data directory:` specifies the location of the GLEAM data directory.
 
-`GLEAM data version:` specifies the version of the GLEAM data Acceptable values are:
+`GLEAM data version:` specifies the version of the GLEAM data.  Acceptable values are:
 
 [cols="<,<",]
 |===
@@ -2286,31 +2283,17 @@ LIS OptUE number of model parameters:   4
 OptUE output data directory:  '../OUTPUT'
 ....
 
-`OptUE algorithm used:` specifies the index of the optimization/uncertainty estimation algorithm used Acceptable values are:
+`OptUE algorithm used:` specifies the index of the optimization/uncertainty estimation algorithm used.  Acceptable values are:
 
 [cols="<,<",]
 |===
 | Value | Description
 
-| 1     | Levenberg- Marquardt
-| 2     | Genetic Algorithm
-| 3     | SCE-UA
-| 4     | MCSIM
-| 5     | MCMC
-| 6     | DEMC
-|===
-
-IMPORTANT: Review this!
-
-[cols="<,<",]
-|===
-| Value | Description
-
-| ?     | Levenberg- Marquardt
-| ?     | Genetic Algorithm
-| ?     | Monte carlo sampling
-| ?     | Random walk markov chain monte carlo
-| ?     | Differential evolution monte carlo
+//| ?                                        | Levenberg-Marquardt
+| "`Genetic algorithm`"                    | Genetic Algorithm
+| "`Monte carlo sampling`"                 | Monte carlo sampling
+| "`Random walk markov chain monte carlo`" | Random walk markov chain monte carlo
+| "`Differential evolution monte carlo`"   | Differential evolution monte carlo
 |===
 
 .Example _lvt.config_ entry
@@ -2409,7 +2392,7 @@ Number of state variables in the DA update: 4
 [[ssec-daobsrunmode]]
 === DA observation analysis
 
-This runmode is used to conduct analysis of observations used in the DA assimilation instance. LIS DA subsystem generates processed (interpolated, QC'd) estimates of input observations. This runmode enables analysis of such data.
+This runmode is used to conduct analysis of observations used in the DA assimilation instance. LIS DA subsystem generates processed (interpolated, QC`'d) estimates of input observations. This runmode enables analysis of such data.
 
 No specialized options are necessary, except specifying the "`LIS output attributes file:`" option to correspond to the DA output. For example, if the DA instance generates estimates of a single variable (say SWE) then specify the LIS output attributes file such that (only) SWE is present in the (LIS) output file. In other words, column number 2 should indicate 1 for SWE variable and 0 for every other varialble. If multiple observation types are present in the DA output, then column number 2 should be appropriately modified.
 
@@ -2434,10 +2417,10 @@ When using this runmode:
 * The LVT output methodology should be "`2d ensemble gridspace`".
 * The first analysis data source must be "`LIS output`".
 * The process HYCOM data setting should only be turned on for a single LVT invocation — otherwise, multiple copies of the HYCOM data may be appended afterwards into a single GRIB2 or netCDF file.
-* It is recommended that the LIS output data be in "`1d tilespace`" to reduce the time required to read and map the data to LVT's internal structures.
-* It is recommended that each LVT invocation have it's own specified metrics output directory, to prevent file overwrites from different LVT invocations running in parallel.
+* It is recommended that the LIS output data be in "`1d tilespace`" to reduce the time required to read and map the data to LVT`'s internal structures.
+* It is recommended that each LVT invocation have it`'s own specified metrics output directory, to prevent file overwrites from different LVT invocations running in parallel.
 
-It is recommended that scripts be used to customize lvt.config files for each LVT invocation, and then run LVT in individual batch modes. Example scripts are provided in lvt/util/afwa/templates, along with customized MODEL_OUTPUT_LIST.TBL files for use by 557WW. Sample scripts to automate merging of GRIB2 or netCDF output files are given in lvt/utils/afwa.
+It is recommended that scripts be used to customize _lvt.config_ files for each LVT invocation, and then run LVT in individual batch modes. Example scripts are provided in lvt/util/afwa/templates, along with customized MODEL_OUTPUT_LIST.TBL files for use by 557WW. Sample scripts to automate merging of GRIB2 or netCDF output files are given in lvt/utils/afwa.
 
 `Process HYCOM data:` Specifies if HYCOM (US Navy GOFS) data are processed in addition to LIS data.  Acceptable values are:
 

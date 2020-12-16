@@ -1,36 +1,34 @@
 
+[[sec_intro,Introduction]]
 == Introduction
-anchor:sec_intro[Introduction]
 
-This is the Land Information System (LIS) User's Guide.  This document describes how to download and install the code and data needed to run the LIS executable for LIS revision {lisrevision}.  It describes how to build and run the code, and finally this document also describes how to download output data-sets to use for validation.
+This is the Land Information System (LIS) User's Guide.  This document describes how to download and install the code and data needed to run the LIS executable for LIS revision {lisfrevision}.  It describes how to build and run the code, and finally this document also describes how to download output data-sets to use for validation.
 
 This document consists of 12 sections, described as follows:
 
 . *<<sec_intro>>*:
-   the section you are currently reading
+   the section you are currently reading.
 
 . *<<sec_backgrd>>*:
-   general information about the LIS project
+   general information about the LIS project.
 
 . *<<sec_prelim>>*:
-   general information, steps, instructions, and definitions used throughout
-   the rest of this document
+   general information, steps, instructions, and definitions used throughout the rest of this document.
 
 . *<<sec_obtain-src>>*:
-   the steps needed to download the source code
+   the steps needed to download the source code.
 
 . *<<sec_build>>*:
-   the steps needed to build the LIS executable
+   the steps needed to build the LIS executable.
 
 . *<<sec_run>>*:
-   the steps needed to prepare and submit a run, also describes the various
-   run-time configurations
+   the steps needed to prepare and submit a run, also describes the various run-time configurations.
 
 . *<<sec_testcases>>*:
    describes the LIS test cases.
 
 . *<<sec_postproc>>*:
-   the steps needed to post-process generated output for visualization
+   the steps needed to post-process generated output for visualization.
 
 . *<<sec_lisconfigfile>>*:
    describes the user-configurable options.
@@ -42,13 +40,108 @@ This document consists of 12 sections, described as follows:
    describes the user-configurable output variable options.
 
 . *<<sec_usersupport>>*:
-   describes how to request help from and provide feedback
-   to the LIS development team.
+   describes how to request help from and provide feedback to the LIS development team.
 
 
 === What's New
 //\attention{See _RELEASE_NOTES_ found in the _source.tar.gz_ file for more details.  (See Section <<sec_obtain-src>>.)}
 
+==== LIS 7.3
+
+. Includes new runmodes
+* RTMforward runmode
+* AGRMET ops runmode
+* GCE-coupled runmode
+* landslide optUE runmode
+. Includes additional surface models
+* NoahMP 3.9.1.1 glacier model
+* template glacier model
+* FLake 1.0 lake model
+* AWRA-L 6.0.0 land model
+* Jules 5.0 land model
+//* Jules 5.1 land model
+//* Jules 5.2 land model
+//* Jules 5.3 land model
+//* Jules 5.4 land model
+//* Jules 5.x land model
+* Noah 3.9 land model
+* NoahMP 4.0.1 model
+. Includes HYMAP2 router
+. Includes ESPboot forecasting algorithm
+. Includes GLS landslide application
+. Includes TRIGRS landslide application
+. Includes additional data assimilation algorithms
+* extended Kalman filter algorithm
+* ensrf algorithm
+* particle filter algorithm
+. Includes additional optimization and uncertainty alogrithms
+* Enumerated Search algorithm
+* Shuffled Complex Evolution - University of Arizona (SCEUA) algorithm
+. Includes Levenberg-Marquadt (LM) parameter estimation objective function
+//. Includes CRTM?
+//. Includes CRTM2?
+. Supports additional real-time parameters
+* albedo parameters
+* emissivity parameters
+* roughness parameters
+. Supports additional metforcing datasets
+* AMMA land surface model intercomparision project phase 2 (ALMIPII) metforcing data
+* Australian Water Resource Assessment Landscape (AWRA-L) metforcing data
+* Canadian Precipitation Analysis (CaPA) data
+* FASSTsingle metforcing data
+* downscaled MERRA2 precipitation data over the High Mountain Asia domain from GMU (HiMAT_GMU)
+* Loobos metforcing data
+* arms metforcing data
+* era5 metforcing data
+* gdas3d metforcing data
+* gefs metforcing data
+* mrms metforcing data
+* pptEnsFcst metforcing data
+* usaf metforcing data
+. Supports additional data assimilation observation datasets
+* simGRACE_JPL observations
+* syntheticSnowTb observations
+* syntheticlst observations
+* syntheticsf observations
+* syntheticsm observations
+* syntheticsnd observations
+* syntheticswe observations
+* syntheticwl observations
+* AMSRE SWE observations
+* AFWA NASA snow algorithm (ANSA) SWE retrievals
+* ASCAT_TUW observations
+* ASO_SWE observations
+* GLASS Albedo observations
+* GLASS LAI observations
+* IMS_sca observations
+* International Satellite Cloud Climatology Project (ISCCP) skin temperature observations
+* MODIS SPoRT LAI observations
+* NASA SMAP vegetation optical depth retrievals
+* SMAP near-real time (NRT) soil moisture observations
+* SMOPS AMSR2 soil moisture observations
+* SMOPS ASCAT soil moisture observations
+* SMOPS SMAP soil moisture observations
+* SMOPS SMOS soil moisture observations
+* SNODEP observations
+* SYN_LBAND_TB observations
+* USAFSI observations
+* WindSat_Cband_sm observations
+* multisynsmobs observations
+. Supports additional parameter estimation observation datasets
+* Walnut Gulch (WG) PBMR soil moisture observations
+* ARM observations
+* ARSsm observations
+* Ameriflux observations
+* CNRS observations
+* FLUXNET observations
+* Global_LS_data observations
+* ISCCP_Tskin observations
+* ISMNsm observations
+* Macon_LS_data observations
+* SMAP soil moisture observations
+* University of Arizona (UA) swe/snow depth observations
+* USDA ARS soil moisture observations
+* pesynsm1 observations
 
 ==== LIS 7.2
 

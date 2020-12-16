@@ -257,7 +257,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_UASNOWdataId = "UA SNOW"
    character*50, public,  parameter :: LVT_ozFluxdataId = "OzFlux"
    character*50, public,  parameter :: LVT_JASMINsmobsId = "JASMIN soil moisture"
-
+   character*50, public,  parameter :: LVT_ERA5obsId      = "ERA5"
 !-------------------------------------------------------------------------
 ! Training algorithms
 !------------------------------------------------------------------------- 
