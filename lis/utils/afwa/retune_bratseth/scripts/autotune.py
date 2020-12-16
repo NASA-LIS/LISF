@@ -7,6 +7,7 @@ OBA (Observation, Background, Analaysis) files.
 
 REVISION HISTORY:
 03 Nov 2020:  Eric Kemp.  Initial specification.
+16 Dec 2020:  Eric Kemp.  Now calls create_blacklist via function call.
 """
 
 import configparser

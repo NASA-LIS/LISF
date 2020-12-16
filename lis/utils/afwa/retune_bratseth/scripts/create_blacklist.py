@@ -10,6 +10,9 @@ network.  Satellite observations are ignored.
 REVISION HISTORY:
 26 Oct 2020: Eric Kemp. Initial Specification.
 02 Nov 2020: Eric Kemp. Added datetime constraints.
+16 Dec 2020: Eric Kemp. Reorganized most driver code into new function that
+             can be called directly (via Python module import) instead of
+             via shell call.
 """
 
 # Standard modules
