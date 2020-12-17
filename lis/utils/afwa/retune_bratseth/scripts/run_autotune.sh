@@ -10,6 +10,7 @@
 #SBATCH --mail-type=ALL
 #Set quality of service, if needed.
 #SBATCH --qos=debug
+#------------------------------------------------------------------------------
 
 ulimit -s unlimited
 
@@ -25,13 +26,16 @@ unset LD_LIBRARY_PATH
 module use --append /home/emkemp/privatemodules
 module load lisf_7_intel_19_1_3_304_traceback-work-around
 
+# Define the variables to be processed
 NWPVARS=(gage rh2m spd10m t2m)
 SATVARS=(cmorph geoprecip imerg ssmi)
 
+# Paths on local system
 SCRIPTDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/afwa/retune_bratseth/scripts
 CFGDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/afwa/retune_bratseth/cfgs
 BINDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/afwa/retune_bratseth/src
 
+# Get the command line arguments to specify the training period.
 if [ -z "$1" ] ; then
     echo "Missing end date time for autotune software!"
     exit 1
@@ -43,7 +47,8 @@ fi
 enddt=$1
 dayrange=$2
 
-# Customize config files for procOBA_NWP, including blacklist creation
+# Customize config files for procOBA_NWP, including blacklist creation.
+# These will be run in the background to parallelize the work.
 if [ ! -e $SCRIPTDIR/customize_procoba_nwp.py ] ; then
     echo "ERROR, $SCRIPTDIR/customize_procoba_nwp.py does not exist!" && exit 1
 fi
@@ -53,7 +58,7 @@ fi
 i=0
 for varname in "${NWPVARS[@]}" ; do
     echo "Task $i:  Calling customize_procoba_nwp.py for $varname at `date`"
-    srun --label --ntasks=1 --kill-on-bad-exit=1 \
+    srun --ntasks=1 \
          $SCRIPTDIR/customize_procoba_nwp.py $CFGDIR/autotune.cfg \
          $enddt $dayrange $varname &
     PIDS+=($!)
@@ -74,7 +79,8 @@ for pid in "${PIDS[@]}"; do
 done
 unset PIDS
 
-# Next, construct empirical semivariograms
+# Construct empirical semivariograms.
+# These will be run in the background to parallelize the work.
 if [ ! -e $BINDIR/procOBA_NWP ] ; then
     echo "ERROR, $BINDIR/procOBA_NWP does not exist!" && exit 1
 fi
@@ -84,7 +90,7 @@ for varname in "${NWPVARS[@]}" ; do
     if [ ! -e procOBA_NWP.$varname.config ] ; then
         echo "ERROR, procOBA_NWP.$varname.config does not exist!" && exit 1
     fi
-    srun --label --ntasks=1 --kill-on-bad-exit=1 \
+    srun --ntasks=1 \
          $BINDIR/procOBA_NWP procOBA_NWP.$varname.config \
          procOBA_NWP.$varname.log &
         pid=$!
@@ -106,7 +112,8 @@ for pid in "${PIDS[@]}"; do
 done
 unset PIDS
 
-# Now fit the semivariogram functions
+# Create best-fits to the empirical semivariograms.
+# These will be run in the background to parallelize the work.
 if [ ! -e $SCRIPTDIR/fit_semivariogram.py ] ; then
     echo "ERROR, $SCRIPTDIR/fit_semivariogram.py does not exist!" && exit 1
 fi
@@ -117,14 +124,14 @@ for varname in "${NWPVARS[@]}" ; do
         if [ ! -e $CFGDIR/${varname}_nwp.cfg ] ; then
             echo "ERROR, $CFGDIR/${varname}_nwp.cfg does not exist!" && exit 1
         fi
-        srun --label --ntasks=1 --kill-on-bad-exit=1 \
+        srun --ntasks=1 \
              $SCRIPTDIR/fit_semivariogram.py $CFGDIR/${varname}_nwp.cfg \
             ${varname}_nwp.param &
     else
         if [ ! -e $CFGDIR/${varname}.cfg ] ; then
             echo "ERROR, $CFGDIR/${varname}.cfg does not exist!" && exit 1
         fi
-        srun --label --ntasks=1 --kill-on-bad-exit=1 \
+        srun --ntasks=1 \
              $SCRIPTDIR/fit_semivariogram.py $CFGDIR/$varname.cfg \
             $varname.param &
     fi
@@ -146,15 +153,15 @@ for pid in "${PIDS[@]}"; do
 done
 unset PIDS
 
-
-# Next, customize config files for procOBA_Sat
+# Customize config files for procOBA_Sat.
+# These will be run in the background to parallelize the work.
 if [ ! -e $SCRIPTDIR/customize_procoba_sat.py ] ; then
     echo "ERROR, $SCRIPTDIR/customize_procoba_sat.py does not exist!" && exit 1
 fi
 i=0
 for varname in "${SATVARS[@]}" ; do
     echo "Task $i:  Calling customize_procoba_sat.py for $varname at `date`"
-    srun --label --ntasks=1 --kill-on-bad-exit=1 \
+    srun --ntasks=1 \
          $SCRIPTDIR/customize_procoba_sat.py $CFGDIR/autotune.cfg \
          $enddt $dayrange $varname &
     PIDS+=($!)
@@ -176,7 +183,8 @@ done
 unset PIDS
 
 
-# Next, construct empirical semivariograms
+# Construct empirical semivariograms for the satellite data w/r/t gages.
+# These will be run in the background to parallelize the work.
 if [ ! -e $BINDIR/procOBA_Sat ] ; then
     echo "ERROR, $BINDIR/procOBA_Sat does not exist!" && exit 1
 fi
@@ -186,7 +194,7 @@ for varname in "${SATVARS[@]}" ; do
     if [ ! -e procOBA_Sat.$varname.config ] ; then
         echo "ERROR, procOBA_Sat.$varname.config does not exist!" && exit 1
     fi
-    srun --label --ntasks=1 --kill-on-bad-exit=1 \
+    srun --ntasks=1 \
          $BINDIR/procOBA_Sat procOBA_Sat.$varname.config \
          procOBA_Sat.$varname.log &
     PIDS+=($!)
@@ -207,14 +215,15 @@ for pid in "${PIDS[@]}"; do
 done
 unset PIDS
 
-# Next, fit semivariograms for satellite data
+# Create best fits to the satellite semivariograms w/r/t gages.
+# These will be run in the background to parallelize the work.
 i=0
 for varname in "${SATVARS[@]}" ; do
     echo "Task $i:  Calling fit_semivariogram.py for $varname at `date`"
     if [ ! -e $CFGDIR/gage_$varname.cfg ] ; then
         echo "ERROR, $CFGDIR/gage_$varname.cfg does not exist!" && exit 1
     fi
-    srun --label --ntasks=1 --kill-on-bad-exit=1 \
+    srun --ntasks=1 \
          $SCRIPTDIR/fit_semivariogram.py $CFGDIR/gage_$varname.cfg \
          gage_$varname.param &
     PIDS+=($!)
@@ -235,14 +244,15 @@ for pid in "${PIDS[@]}"; do
 done
 unset PIDS
 
-# Next, rescale the satellite error variance to compare with NWP.
+# Rescale the satellite error variances to be w/r/t NWP.
+# These will be run in the background to parallelize the work.
 if [ ! -e $SCRIPTDIR/rescale_sat_sigma2.py ] ; then
     echo "ERROR, $SCRIPTDIR/rescale_sat_sigma2.py does not exist!" && exit 1
 fi
 i=0
 for varname in "${SATVARS[@]}" ; do
     echo "Task $i:  Calling rescale_sat_sigma2.py for $varname at `date`"
-    srun --label --ntasks=1 --kill-on-bad-exit=1 \
+    srun --ntasks=1 \
          $SCRIPTDIR/rescale_sat_sigma2.py $varname &
     PIDS+=($!)
     ((i+=1))
@@ -262,12 +272,13 @@ for pid in "${PIDS[@]}"; do
 done
 unset PIDS
 
-# Update the lis.config error settings
+# Update the lis.config error settings.
+# Single task, no need to parallelize.
 echo "Calling customize_lis_config.py at `date`"
 if [ ! -e $SCRIPTDIR/customize_lis_config.py ] ; then
     echo "ERROR, $SCRIPTDIR/customize_lis_config.py does not exist!" && exit 1
 fi
-srun --label --ntasks=1 --kill-on-bad-exit=1 \
+srun --ntasks=1 --kill-on-bad-exit=1 \
      $SCRIPTDIR/customize_lis_config.py $CFGDIR/autotune.cfg \
      $enddt $dayrange || exit 1
 
