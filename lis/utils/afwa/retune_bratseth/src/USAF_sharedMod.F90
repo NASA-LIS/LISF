@@ -69,8 +69,10 @@ contains
     if (trim(net) .eq. "FAA") answer = .true.
     if (trim(net) .eq. "ICAO") answer = .true.
     if (trim(net) .eq. "WMO") answer = .true.
-    if (trim(net) .eq. "MOBL") answer = .true.
-    if (trim(net) .eq. "SUPERGAGE") answer = .true.
+    !Skip MOBL and SUPERGAGE. MOBL may move around with time, while
+    !SUPERGAGE may include MOBL data.
+    !if (trim(net) .eq. "MOBL") answer = .true.
+    !if (trim(net) .eq. "SUPERGAGE") answer = .true.
     ! Handle reformatted CDMS data that are missing the network type.
     if (trim(net) .eq. "CDMS") answer = .true.
     is_gage = answer
