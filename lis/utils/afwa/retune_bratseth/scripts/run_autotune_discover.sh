@@ -11,6 +11,17 @@
 #Set quality of service, if needed.
 #SBATCH --qos=debug
 #------------------------------------------------------------------------------
+#
+# SCRIPT: run_autotune_discover.sh
+#
+# Batch script for running autotune software to update error covariance
+# settings for LIS Air Force Bratseth scheme.  Customized for NASA Discover
+# supercomputer running SLURM batch queueing system.
+#
+# REVISION HISTORY:
+# 17 Dec 2020:  Eric Kemp.  Initial specification.
+#
+#------------------------------------------------------------------------------
 
 ulimit -s unlimited
 
