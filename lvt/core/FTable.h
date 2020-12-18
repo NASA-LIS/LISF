@@ -1,22 +1,11 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Information System (LIS) V5.0 BETA
-// Released January 2008
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// See SOFTWARE DISTRIBUTION POLICY for software distribution policies
-//
-// The LIS source code and documentation are in the public domain,
-// available without fee for educational, research, non-commercial and
-// commercial purposes.  Users may distribute the binary or source
-// code to third parties provided this statement appears on all copies and
-// that no charge is made for such copies.
-//
-// NASA GSFC MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THE
-// SOFTWARE FOR ANY PURPOSE.  IT IS PROVIDED AS IS WITHOUT EXPRESS OR
-// IMPLIED WARRANTY.  NEITHER NASA GSFC NOR THE US GOVERNMENT SHALL BE
-// LIABLE FOR ANY DAMAGES SUFFERED BY THE USER OF THIS SOFTWARE.
-//
-// See COPYRIGHT.TXT for copyright details.
-//
+// Copyright (c) 2020 United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration.
+// All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
 // These values define the indices used for creating the function pointer
 // tables.  E.g., FT_NUM_DOMAIN is the number of domains supported by LIS.
