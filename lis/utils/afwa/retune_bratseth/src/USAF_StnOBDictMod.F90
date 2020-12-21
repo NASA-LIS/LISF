@@ -38,17 +38,17 @@ module USAF_StnOBDictMod
   type StnOBDict_t
      private
      logical :: empty
-     type(KeyOBNode_t), pointer :: firstKeyNode
+     type(KeyNode_t), pointer :: firstKeyNode
    contains
      procedure :: new => USAF_stnOBDict_new
-     procedure :: delete => USAF_stnOBDict_delete
+     procedure :: destroy => USAF_stnOBDict_destroy
      procedure :: insert => USAF_stnOBDict_insert
   end type StnOBDict_t
   public :: StnOBDict_t
 
   ! Public methods
   public :: USAF_stnOBDict_new
-  public :: USAF_stnOBDict_delete
+  public :: USAF_stnOBDict_destroy
   public :: USAF_stnOBDict_insert
 
 contains
@@ -59,7 +59,7 @@ contains
     class(StnOBDict_t), intent(inout) :: this
     this%empty = .true.
     nullify(this%firstKeyNode)
-  end function USAF_stnOBDict_new
+  end subroutine USAF_stnOBDict_new
 
   ! Destructor
   subroutine USAF_stnOBDict_destroy(this)
@@ -71,7 +71,7 @@ contains
     class(stnOBDict_t), intent(inout) :: this
 
     ! Locals
-    type(KeyNode_t), pointer :: keyNode, nextKeyNode
+    type(KeyNode_t), pointer :: firstKeyNode, keyNode, nextKeyNode
 
     if (this%empty) then
        ! This should only occur if the stnOBDict_t was created but never
@@ -117,29 +117,29 @@ contains
     type(KeyNode_t), pointer, intent(inout) :: keyNode
 
     ! Locals
-    type(OBNode_t), pointer :: OBfirst, OBnode, OBnext
+    type(OBNode_t), pointer :: firstOBNode, OBnode, nextOBNode
 
-    nullify(OBfirst, OBnode, OBnext)
+    nullify(firstOBNode, OBnode, nextOBNode)
 
     ! Loop through all OBNode_t linked list members
-    OBfirst => keyNode%OBnode
-    if (associated(OBfirst%nextOBNode)) then
-       OBnode => OBfirst%nextOBNode
-       nullify(OBfirst%nextOBNode)
+    firstOBNode => keyNode%firstOBnode
+    if (associated(firstOBnode%nextOBNode)) then
+       OBnode => firstOBnode%nextOBNode
+       nullify(firstOBNode%nextOBNode)
        do
           if (associated(OBnode%nextOBNode)) then
-             OBnext => OBnode%nextOBNode
+             nextOBnode => OBnode%nextOBNode
              deallocate(OBnode)
-             OBnode => OBnextNode
+             OBnode => nextOBNode
           else ! Last OBNode in list
              deallocate(OBnode)
              nullify(OBnode)
-             nullify(OBnext)
+             nullify(nextOBnode)
              exit
           end if
        end do
     end if
-    deallocate(OBfirst)
+    deallocate(firstOBnode)
 
   end subroutine delete_obnode_list
 
@@ -233,6 +233,6 @@ contains
           end if
        end do
     end if
-  end subroutine insert_to_ob_list
+  end subroutine append_to_ob_list
 
 end module USAF_StnOBDictMod
