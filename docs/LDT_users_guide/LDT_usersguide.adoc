@@ -17,7 +17,7 @@
 :githuburl: https://github.com
 :apachelicense: https://www.apache.org/licenses/LICENSE-2.0
 :lispublicrelease: Initial version - for LDT
-:ldttarball: LISF_public_release_7.3r.tar.gz
+:ldttarball: LISF_public_release_7.3.0.tar.gz
 :emdash: —
 :endash: –
 :vertellipsis: ⋮
