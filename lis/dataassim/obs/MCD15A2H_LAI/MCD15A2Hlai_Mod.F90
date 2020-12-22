@@ -11,7 +11,7 @@
 ! 
 ! !DESCRIPTION: 
 !   This module contains interfaces and subroutines to
-!   handle 
+!   handle the MODIS MCD15A2H LAI data.
 ! 
 ! !REVISION HISTORY: 
 !  16 Jun 2020    Wanshu Nie; initial specification
