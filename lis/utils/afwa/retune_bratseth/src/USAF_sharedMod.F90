@@ -82,12 +82,13 @@ contains
     use esmf
     implicit none
     integer,intent(in) :: status
+    call ESMF_LogFlush()
     if (status .ne. 0) then
        call esmf_finalize(endflag=ESMF_END_ABORT)
-       stop 1
+       stop
     else
        call esmf_finalize()
-       stop 0
+       stop
     endif
   end subroutine endrun
 
