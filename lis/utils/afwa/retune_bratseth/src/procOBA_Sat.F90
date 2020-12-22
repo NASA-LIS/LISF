@@ -15,7 +15,6 @@ program main
    use esmf
    use mpi
    use USAF_sharedMod
-   use USAF_readFilesMod, only: readfiles2 => readfiles
 
    ! Defaults
    implicit none
@@ -781,28 +780,28 @@ program main
    icounts_vario(:) = 0
 
    if (adjustl(sattype) == adjustl(SSMI)) then
-      call readfiles2(myid, numprocs, starttime, endtime, deltatime, datadir, &
+      call readfiles(myid, numprocs, starttime, endtime, deltatime, datadir, &
            max_stations, max_sat_reports, &
            max_vario_bins, vario_bin_dist, vario, icounts_vario, &
            imax_lon, jmax_lat, dlon, dlat, dist_thresh,&
            is_ssmi, &
            use_blacklist, nstns, blacklist_stns)
    elseif (adjustl(sattype) == adjustl(CMORPH)) then
-      call readfiles2(myid, numprocs, starttime, endtime, deltatime, datadir, &
+      call readfiles(myid, numprocs, starttime, endtime, deltatime, datadir, &
            max_stations, max_sat_reports, &
            max_vario_bins, vario_bin_dist, vario, icounts_vario, &
            imax_lon, jmax_lat, dlon, dlat, dist_thresh, &
            is_cmorph, &
            use_blacklist, nstns, blacklist_stns)
    elseif (adjustl(sattype) == adjustl(GEOPRECIP)) then
-      call readfiles2(myid, numprocs, starttime, endtime, deltatime, datadir, &
+      call readfiles(myid, numprocs, starttime, endtime, deltatime, datadir, &
            max_stations, max_sat_reports, &
            max_vario_bins, vario_bin_dist, vario, icounts_vario, &
            imax_lon, jmax_lat, dlon, dlat, dist_thresh, &
            is_geoprecip, &
            use_blacklist, nstns, blacklist_stns)
    elseif (adjustl(sattype) == adjustl(IMERG)) then
-      call readfiles2(myid, numprocs, starttime, endtime, deltatime, datadir, &
+      call readfiles(myid, numprocs, starttime, endtime, deltatime, datadir, &
            max_stations, max_sat_reports, &
            max_vario_bins, vario_bin_dist, vario, icounts_vario, &
            imax_lon, jmax_lat, dlon, dlat, dist_thresh, &
@@ -876,8 +875,7 @@ contains
       use USAF_ReportsMod, only: Reports, newReports, getNobs, getReport, &
            destroyReports, appendToReports, bcast_reports
       use USAF_StationsMod, only: great_circle_distance
-      use USAF_StnOBDictMod
-      
+
       ! Defaults
       implicit none
 

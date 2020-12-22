@@ -85,7 +85,7 @@ contains
     call ESMF_LogFlush()
     if (status .ne. 0) then
        call esmf_finalize(endflag=ESMF_END_ABORT)
-       stop
+       stop 1
     else
        call esmf_finalize()
        stop
