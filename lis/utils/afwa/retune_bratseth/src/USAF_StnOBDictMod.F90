@@ -43,6 +43,8 @@ module USAF_StnOBDictMod
      procedure :: new => USAF_stnOBDict_new
      procedure :: destroy => USAF_stnOBDict_destroy
      procedure :: insert => USAF_stnOBDict_insert
+     procedure :: getNumKeys => USAF_stnOBDict_getNumKeys
+     procedure :: getMeanOMBs => USAF_stnOBDict_getMeanOMBs
   end type StnOBDict_t
   public :: StnOBDict_t
 
@@ -50,6 +52,8 @@ module USAF_StnOBDictMod
   public :: USAF_stnOBDict_new
   public :: USAF_stnOBDict_destroy
   public :: USAF_stnOBDict_insert
+  public :: USAF_stnOBDict_getNumKeys
+  public :: USAF_stnOBDict_getMeanOMBs
 
 contains
 
@@ -146,6 +150,8 @@ contains
   ! Insert new O-B pair into the tnOBDict_t object
   subroutine USAF_stnOBDict_insert(this, key, O, B)
 
+    use esmf
+
     ! Defaults
     implicit none
 
@@ -169,6 +175,9 @@ contains
        keyNode => this%firstKeyNode
        do
           if (trim(keyNode%key) .eq. trim(key)) then
+             !call ESMF_LogWrite("Adding new OB pair for "//trim(key), &
+             !     ESMF_LOGMSG_INFO)
+             !call ESMF_LogFlush()
              call append_to_ob_list(keyNode, O, B)
              exit
           else if (associated(keyNode%nextKeyNode)) then
@@ -230,9 +239,93 @@ contains
              OBNode%nextOBNode%O = O
              OBNode%nextOBNode%B = B
              nullify(OBNode%nextOBNode%nextOBNode)
+             exit
           end if
        end do
     end if
   end subroutine append_to_ob_list
 
+  ! Public method.  Return total number of keys (gage names)
+  function USAF_StnOBDict_getNumKeys(this) result(numKeys)
+    implicit none
+    class(StnOBDict_t), intent(in) :: this
+    integer :: numKeys
+    class(KeyNode_t), pointer :: keyNode
+    numKeys = 0
+    if (this%empty) return
+    keyNode => this%firstKeyNode
+    numKeys = 1
+    do
+       if (associated(keyNode%nextKeyNode)) then
+          keyNode => keyNode%nextKeyNode
+          numKeys = numKeys + 1
+       else
+          exit
+       end if
+    end do
+  end function USAF_StnOBDict_getNumKeys
+
+  ! Public method.  Calculate and return mean OMBs for each station, along
+  ! with list of stations.
+  subroutine USAF_StnOBDict_getMeanOMBs(this, nstns, stationNames, meanOMBs)
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    class(StnOBDict_t), intent(in) :: this
+    integer, intent(out) :: nstns
+    character(len=10), allocatable, intent(out) :: stationNames(:)
+    real, allocatable, intent(out) :: meanOMBs(:)
+
+    ! Locals
+    real, allocatable :: O_values(:)
+    real, allocatable :: B_values(:)
+    integer, allocatable :: counts(:)
+    type(KeyNode_t), pointer :: keyNode
+    type(obNode_t), pointer :: obNode
+    integer :: k
+
+    nullify(keyNode, obNode)
+
+    nstns = this%getNumKeys()
+    allocate(stationNames(nstns))
+    stationNames = "NULL"
+    allocate(meanOMBs(nstns))
+    meanOMBs = 0
+    allocate(O_values(nstns))
+    O_values = 0
+    allocate(B_values(nstns))
+    B_values = 0
+    allocate(counts(nstns))
+    counts = 0
+
+    keyNode => this%firstKeyNode
+    k = 1
+    do
+       stationNames(k) = keyNode%key
+       obNode => keyNode%firstOBNode
+       do
+          O_values(k) = O_values(k) + obNode%O
+          B_values(k) = B_values(k) + obNode%B
+          counts(k) = counts(k) + 1
+          if (.not. associated(obNode%nextOBNode)) exit
+          obNode => obNode%nextOBNode
+       end do
+       if (.not. associated(keyNode%nextKeyNode)) exit
+       keyNode => keyNode%nextKeyNode
+       k = k + 1
+    end do
+
+    do k = 1, nstns
+       if (counts(k) > 0) then
+          meanOMBs(k) = (O_values(k) - B_values(k)) / real(counts(k))
+       end if
+    end do
+
+    deallocate(O_values)
+    deallocate(B_values)
+    deallocate(counts)
+
+  end subroutine USAF_StnOBDict_getMeanOMBs
 end module USAF_StnOBDictMod

@@ -21,7 +21,8 @@ procOBA_NWP: procOBA_NWP.o USAF_GridHashMod.o USAF_ReportsMod.o \
                                 -L$(LIB_NETCDF) -lnetcdff -lnetcdf
 
 procOBA_Sat: procOBA_Sat.o USAF_GridHashMod.o USAF_ReportsMod.o \
-             USAF_StationsMod.o USAF_sharedMod.o
+             USAF_StationsMod.o USAF_sharedMod.o USAF_StnOBDictMod.o \
+             USAF_readFilesMod.o
 	$(FC) $^ -o procOBA_Sat -L$(LIB_ESMF) -lesmf \
                                 -L$(LIB_NETCDF) -lnetcdff -lnetcdf
 
@@ -30,11 +31,17 @@ procOBA_NWP.o: procOBA_NWP.F90 USAF_GridHashMod.o USAF_ReportsMod.o \
 	$(FC) -c $(FFLAGS) $< -I$(MOD_ESMF)
 
 procOBA_Sat.o: procOBA_Sat.F90 USAF_GridHashMod.o USAF_ReportsMod.o \
-                     USAF_StationsMod.o USAF_sharedMod.o
+                     USAF_StationsMod.o USAF_sharedMod.o USAF_StnOBDictMod.o \
+                     USAF_readFilesMod.o
 	$(FC) -c $(FFLAGS) $< -I$(MOD_ESMF)
 
 USAF_GridHashMod.o : USAF_GridHashMod.F90
 	$(FC) -c $(FFLAGS) $<
+
+USAF_readFilesMod.o: USAF_readFilesMod.F90 USAF_GridHashMod.o \
+                     USAF_ReportsMod.o USAF_StationsMod.o USAF_StnOBDictMod.o \
+                     USAF_sharedMod.o
+	$(FC) -c $(FFLAGS) $< -I$(MOD_ESMF)
 
 USAF_ReportsMod.o: USAF_ReportsMod.F90
 	$(FC) -c $(FFLAGS) $<
@@ -45,6 +52,8 @@ USAF_StationsMod.o: USAF_StationsMod.F90
 USAF_sharedMod.o: USAF_sharedMod.F90
 	$(FC) -c $(FFLAGS) $< -I$(MOD_ESMF)
 
+USAF_StnOBDictMod.o: USAF_StnOBDictMod.F90
+	$(FC) -c $(FFLAGS) $< -I$(MOD_ESMF)
 
 .PHONY: clean
 clean:
