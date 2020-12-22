@@ -97,6 +97,7 @@ contains
 !  
 !   The arguments are: 
 !   \begin{description}
+!    \item[k] number of observation state 
 !    \item[OBS\_State]   observation state 
 !    \item[OBS\_Pert\_State] observation perturbations state
 !   \end{description}
