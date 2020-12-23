@@ -1,0 +1,84 @@
+
+  FEWS-NET Land Data Assimilation System (FLDAS) Testcase Documentation
+
+This test-case performs a GeoWRSI v2.0 model simulation over Eastern Africa
+for one growing season (October-February timeframe), using CPC RFE2 
+precipitation and USGS-based PET forcing fields.  Information about the GeoWRSI
+model can be found here:  http://chg.geog.ucsb.edu/tools/geowrsi/index.html
+
+This is a test case that uses:
+
+  (a) the GeoWRSI 2.0 crop land surface model
+  (b) using CPC RFE2 precipitation and USGS PET forcing
+  (c) runs over specific Easter Africa region domain
+  (d) The domain is on a lat-lon grid with 0.10 deg resolution
+  (e) The simulation is from 1 Jun, 2009 (00Z), to 30 Jun, 2010 (00Z), with dekad timestep
+  (f) The crop type is maize.
+
+This directory contains: 
+
+  (a) This README file
+  (b) The "ldt.config" file to generate the parameters using LDT
+  (c) An "input.xdf" file used to open the LDT parameters in GrADS
+  (d) The "lis.config_sos" file used for Start-of-Season (SOS) run testcase
+  (e) The "lis.config_wrsi" file used for WRSI run testcase
+  (f) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+      to select the output variables
+  (g) A wget download script of necessary input and output files to run
+      this LDT and LIS-7 testcase:  wget_testcasefiles_portal.sh
+  (h) Files: output_sos.ctl, output_sosa.ctl, and output_wrsi.ctl, are
+      used to display the output in GrADS from the LIS runs
+  (i) Files: testcase_sos.ctl, testcase_sosa.ctl, and testcase_wrsi.ctl, are
+      used to display the packaged output in GrADS from the OUTPUT tar
+      file provided for the testcase.
+
+To run this test case: 
+
+* Generate the LIS executable. 
+* Run the wget download script to obtain the input and output files
+  needed to run this FEWSNET - GeoWRSI2.0 LSM test case:
+  sh wget_testcasefiles_portal.sh
+* Run the LDT executable using the ldt.config
+  files and the sample input data. 
+* Run the LIS executable using the lis.config file and the sample 
+  input data.  Two LIS run-time steps are required:
+  1) Run the SOS mode.  This mode is run first to process the forcing data to
+   determine the start of season (SOS) and start of season anomaly
+   (SOSa).
+  2) Run the WRSI mode.  This mode models the crop of interest to compute the water
+   requirement satisfaction index (WRSI).
+* View the binary output using the sample GrADS control file. 
+
+----
+
+To run the CalcSOS mode step:
+
+* Run the LIS executable using the lis.config_sos and MODEL_OUTPUT_LIST.TBL
+  files.
+* View the binary output using the sample grads file.  Compare against
+  the sample output corresponding to "GeoWRSI2.0 LSM TEST".
+
+To run the WRSI mode step:
+
+* Run the LIS executable using the lis.config_wrsi and MODEL_OUTPUT_LIST.TBL
+  files.
+* View the binary output using the sample grads file.  Compare against
+  the sample output corresponding to "GeoWRSI2.0 LSM TEST".
+
+----
+
+Notes:
+
+* It is preferable to remove the SURFACEMODEL output files generated during
+  the SOS run mode before running the WRSI one. 
+
+* The 2D parameter files for the GeoWRSI 2.0 model are originally found in
+ the Windows version available from:  
+  http://chg.geog.ucsb.edu/tools/geowrsi/index.html
+
+Caveats:
+
+* Please note that this is a simple functional test and the output
+  from this test case should not be used for any scientific evaluation.
+
+
