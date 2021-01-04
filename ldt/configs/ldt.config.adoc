@@ -3715,6 +3715,16 @@ MCD15A2H LAI apply QC flags: 1
 
 `GRACE basin map file:` specifies the file name of the basin map data.
 
+`GRACE data source:` specifies the GRACE TWS dataset source to be read in. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`GRACE TWS Mascon 0.5 deg`" |GRACE terrestrial water storage mass concentration blocks (mascons) at 0.5 degree resolution
+|"`GRACE TWS Original 1 deg`" |GRACE terrestrial water storage at 1 degree resolution
+|===
+
 `LIS TWS output format:` specifies the output format of the LIS model output (binary/netcdf/grib1).
 
 `LIS TWS output methodology:` specifies the output methodology used in the LIS model output (1d tilespace/1d gridspace/2d gridspace).
@@ -3726,6 +3736,16 @@ MCD15A2H LAI apply QC flags: 1
 `LIS TWS output directory:` specifies the location of the LIS model output.
 
 `LIS TWS output map projection:` specifies the map projection used in the LIS model output.
+
+`LIS SWS output processing:` specifies whether to take surface water storage (SWS) computed by LIS with the HyMAP2 routing model into account when processing GRACE data. For more information about generating SWS inputs, please refer to Sections "`HYMAP2 Routing`" and "`Model Output Specifications`" in the _LIS Users' Guide_. When this setting is enabled, LDT looks for the LIS-generated SWS data in `./OUTPUT/ROUTING`. For more information about this feature, please refer to https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2017GL074684 and https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2019WR026259. Default value is 0. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|0 |do not process
+|1 |process
+|===
 
 For lat/lon projection:
 
@@ -3766,6 +3786,7 @@ GRACE baseline starting year:      2004
 GRACE baseline ending year:        2009
 GRACE scale factor filename:       EXAMPLE
 GRACE measurement error filename:  EXAMPLE
+GRACE data source:                 "GRACE TWS Mascon 0.5 deg"
 LIS TWS output format:                  "netcdf"
 LIS TWS output methodology:             "2d gridspace"
 LIS TWS output naming style:            "3 level hierarchy"
