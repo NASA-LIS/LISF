@@ -2721,11 +2721,6 @@ ASCAT (TUW) observation CDF file:                obs_cdf.nc
 ASCAT (TUW) soil moisture number of bins in the CDF: 100
 ....
 
-....
-
-
-ifdef::devonly[]
-
 [[sssec_mcd15a2hlaida,MODIS MCD15A2H LAI assimilation]]
 ==== MODIS MCD15A2H LAI assimilation
 
@@ -2741,14 +2736,11 @@ ifdef::devonly[]
 
 .Example _lis.config_ entry
 ....
-MCD15A2H LAI data directory:           ./MCD15A2H.006
-MCD15A2H LAI data version:              "006"
+MCD15A2H LAI data directory:                                  ./MCD15A2H.006
+MCD15A2H LAI data version:                                    "006"
 MCD15A2H LAI apply temporal smoother between 8-day intervals: 1
-MCD15A2H LAI apply climatological fill values: 1
-MCD15A2H LAI apply QC flags: 1
-....
-endif::devonly[]
-
+MCD15A2H LAI apply climatological fill values:                1
+MCD15A2H LAI apply QC flags:                                  1
 ....
 
 [[sssec_simgraceda,Simulated GRACE]]
