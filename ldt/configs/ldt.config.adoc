@@ -3737,7 +3737,7 @@ MCD15A2H LAI apply QC flags: 1
 
 `LIS TWS output map projection:` specifies the map projection used in the LIS model output.
 
-`LIS SWS output processing:` specifies whether to take surface water storage (SWS) computed by LIS with the HyMAP2 routing model into account when processing GRACE data. For more information about generating SWS inputs, please refer to Sections "`HYMAP2 Routing`" and "`Model Output Specifications`" in the _LIS Users' Guide_. When this setting is enabled, LDT looks for the LIS-generated SWS data in `./OUTPUT/ROUTING`. For more information about this feature, please refer to https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2017GL074684 and https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2019WR026259. Default value is 0. Acceptable values are:
+`LIS SWS output processing:` specifies whether to take surface water storage (SWS) computed by LIS with the HyMAP2 routing model into account when processing GRACE data. For more information about generating SWS inputs, please refer to Sections "`HYMAP2 Routing`" and "`Model Output Specifications`" in the _LIS Users' Guide_. When this setting is enabled, LDT looks for the LIS-generated SWS data in `./OUTPUT/ROUTING`. For more information about this feature, please refer to https://doi.org/10.1002/2017GL074684 and https://doi.org/10.1029/2019WR026259. Default value is 0. Acceptable values are:
 
 [cols="<,<",]
 |===
