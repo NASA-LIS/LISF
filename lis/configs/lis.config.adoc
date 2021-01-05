@@ -1162,6 +1162,7 @@ Acceptable values are:
 |"`SNODEP`"                     | AFWA SNODEP
 |"`USAFSI`"                     | USAF Snow and Ice Analysis
 |"`SMAP(NASA) vegetation optical depth`"  | NASA L-band vegetation optical depth 
+|"`MCD15A2H LAI`"               | MODIS MCD15A2H v006 LAI product
 |====
 
 .Example _lis.config_ entry
@@ -2720,6 +2721,27 @@ ASCAT (TUW) observation CDF file:                obs_cdf.nc
 ASCAT (TUW) soil moisture number of bins in the CDF: 100
 ....
 
+[[sssec_mcd15a2hlaida,MODIS MCD15A2H LAI assimilation]]
+==== MODIS MCD15A2H LAI assimilation
+
+`MCD15A2H LAI data directory:` specifies the location of the data directory containing the MODIS MCD15A2H LAI retrievals.
+
+`MCD15A2H LAI data version:` specifies the version of the MCD15A2H LAI retrievals. The default version is "006".
+
+`MCD15A2H LAI apply temporal smoother between 8-day intervals:` specifies whether to apply temporal smoother between 8-day intervals of the LAI product
+
+`MCD15A2H LAI apply climatological fill values:` specifies whether to fill in climatological LAI values if there are missing values.
+
+`MCD15A2H LAI apply QC flags:` specifies whether to apply quality control flags for LAI retrievals.
+
+.Example _lis.config_ entry
+....
+MCD15A2H LAI data directory:                                  ./MCD15A2H.006
+MCD15A2H LAI data version:                                    "006"
+MCD15A2H LAI apply temporal smoother between 8-day intervals: 1
+MCD15A2H LAI apply climatological fill values:                1
+MCD15A2H LAI apply QC flags:                                  1
+....
 
 [[sssec_simgraceda,Simulated GRACE]]
 ==== Simulated GRACE
