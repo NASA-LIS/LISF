@@ -48,3 +48,7 @@ USAF_sharedMod.o: USAF_sharedMod.F90
 .PHONY: clean
 clean:
 	rm -f *.o *.mod procOBA_NWP procOBA_Sat
+
+.PHONY: realclean
+realclean:
+	rm -f *.o *.mod procOBA_NWP procOBA_Sat
