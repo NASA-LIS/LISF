@@ -18,6 +18,11 @@
 # settings for LIS Air Force Bratseth scheme.  Customized for NASA Discover
 # supercomputer running SLURM batch queueing system.
 #
+# USAGE:  sbatch run_autotune_discover.sh $YYYYMMDDHH $DD
+#           where $YYYYMMDDHH is the end date/time of the OBA training period
+#           and $DD is the length (in days) of the OBA training period.
+#
+#
 # REVISION HISTORY:
 # 17 Dec 2020:  Eric Kemp.  Initial specification.
 #
