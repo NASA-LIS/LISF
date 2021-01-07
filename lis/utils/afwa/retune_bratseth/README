@@ -69,6 +69,13 @@ It is intended to serve as an example for writing similar scripts on other
 systems, with porting changes (queuing system, queue names, local enviroment
 modules) being limited to the batch script itself.
 
+The batch script is run by:
+
+    sbatch run_autotune_discover.sh $YYYYMMDDHH $DD
+
+where $YYYYMMDDHH is the end date/time of the OBA training period, and
+$DD is the length (in days) of the OBA training period.
+
 The script performs several major steps:
 
 (1) Customize config files for procOBA_NWP, a Fortran program that creates
