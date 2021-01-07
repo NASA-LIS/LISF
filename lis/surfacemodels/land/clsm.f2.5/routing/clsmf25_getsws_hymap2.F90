@@ -36,6 +36,11 @@ subroutine clsmf25_getsws_hymap2(n)
   integer                :: status
   integer                :: enable2waycpl
   
-  enable2waycpl = 0 
+  enable2waycpl = 0
+  if(enable2waycpl==1) then
+     write(LIS_logunit,*) '[ERR] Two-way coupling between Noah36 and HYMAP2'
+     write(LIS_logunit,*) '[ERR] is not currently supported'
+     call LIS_endrun()
+  endif
 
 end subroutine clsmf25_getsws_hymap2
