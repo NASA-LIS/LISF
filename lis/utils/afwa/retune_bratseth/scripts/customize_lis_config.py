@@ -17,9 +17,7 @@ if __name__ == "__main__":
     AUTOMATOR = autotune.AutomateTuning()
 
     # Get the covariance settings
-    for var in ["rh2m", "spd10m", "t2m", \
-                "gage",
-                "cmorph", "geoprecip", "imerg", "ssmi"]:
+    for var in AUTOMATOR.varlist:
         AUTOMATOR.get_bratseth_err_settings(var)
 
     # Assemble new lines for lis.config file

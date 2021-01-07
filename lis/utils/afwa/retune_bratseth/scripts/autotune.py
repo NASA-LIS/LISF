@@ -79,7 +79,7 @@ class AutomateTuning:
         self.cfgdir = config.get('Input', 'cfgdir')
         self.bindir = config.get('Input', 'bindir')
         self.lis_cfg_template = config.get('Input', 'lis_cfg_template')
-
+        self.varlist =  config.get('Input', 'varlist').split(",")
 
     def usage(self):
         """Print usage message for this script."""
