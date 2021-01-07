@@ -44,10 +44,6 @@ subroutine noahmp401_getsws_hymap2(n)
   
   enable2waycpl = 0 
 
-  if(enable2waycpl==1) then 
-     print*, 'The noahmp401_getsws_hymap2 is not implemented'
-     stop
-  endif
 #if 0 
   call ESMF_AttributeGet(LIS_runoff_state(n),"2 way coupling",&
        enable2waycpl, rc=status)
