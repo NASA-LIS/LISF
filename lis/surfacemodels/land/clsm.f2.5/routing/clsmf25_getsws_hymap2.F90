@@ -27,7 +27,7 @@ subroutine clsmf25_getsws_hymap2(n)
   integer,  intent(in)   :: n 
 !
 ! !DESCRIPTION:
-!   This routine defines the surface water storage variables in NoahMP
+!   This routine defines the surface water storage variables in the LSM
 !   to be updated based on feedback from HYMAP2
 !  
 !EOP
@@ -38,7 +38,7 @@ subroutine clsmf25_getsws_hymap2(n)
   
   enable2waycpl = 0
   if(enable2waycpl==1) then
-     write(LIS_logunit,*) '[ERR] Two-way coupling between Noah36 and HYMAP2'
+     write(LIS_logunit,*) '[ERR] Two-way coupling between CLSM and HYMAP2'
      write(LIS_logunit,*) '[ERR] is not currently supported'
      call LIS_endrun()
   endif
