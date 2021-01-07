@@ -38,9 +38,4 @@ subroutine clsmf25_getsws_hymap2(n)
   
   enable2waycpl = 0 
 
-  if(enable2waycpl==1) then 
-     write(LIS_logunit,*) '[ERR] The clsmf25_getsws_hymap2 is not implemented'
-     call LIS_endrun()
-  endif
-
 end subroutine clsmf25_getsws_hymap2
