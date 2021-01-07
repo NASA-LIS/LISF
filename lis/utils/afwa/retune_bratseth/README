@@ -135,6 +135,12 @@ Specifies the path for the work directory where programs are run; the path to
 the scripts used in the package; the path to the config templates; the path
 to compiled Fortran binaries; and the path to lis.config file to be updated.
 
+Also, a list of variable keys is included for use by customize_lis_config.py.
+This is used to identify which variables or data sources (gage vs satellite
+data) are to be updated.  Possible values are rh2m, spd10m, t2m, gage,
+cmorph, geoprecip, imerg, and ssmi.  NOTE:  NO SPACES SHOULD BE USED FOR
+THE VALUES LISTED IN THE varlist: ENTRY.
+
 (*) blacklist_gage.cfg: A Python config file used by customize_procoba_nwp.py.
 This specifies the maximum number of networks a gage platform (ID) is allowed
 to have before being blacklisted; the minimum gage reports required to
