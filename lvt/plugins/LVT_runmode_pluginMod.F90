@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !MODULE: LVT_runmode_pluginMod
@@ -70,8 +76,8 @@ contains
     external LVT_init_557post
     external LVT_run_557post
 
-    external LVT_init_LDTSIpost
-    external LVT_run_LDTSIpost
+    external LVT_init_USAFSIpost
+    external LVT_run_USAFSIpost
 
     call registerlvtinit(trim(LVT_DataCompId)//char(0),LVT_init_DataComp) 
     call registerlvtrun(trim(LVT_DataCompId)//char(0),LVT_run_DataComp)
@@ -91,8 +97,8 @@ contains
     call registerlvtinit(trim(LVT_557postId)//char(0),LVT_init_557post)
     call registerlvtrun(trim(LVT_557postId)//char(0),LVT_run_557post)
 
-    call registerlvtinit(trim(LVT_LDTSIpostId)//char(0),LVT_init_LDTSIpost)
-    call registerlvtrun(trim(LVT_LDTSIpostId)//char(0),LVT_run_LDTSIpost)
+    call registerlvtinit(trim(LVT_USAFSIpostId)//char(0),LVT_init_USAFSIpost)
+    call registerlvtrun(trim(LVT_USAFSIpostId)//char(0),LVT_run_USAFSIpost)
 
   end subroutine LVT_runmode_plugin
 end module LVT_runmode_pluginMod

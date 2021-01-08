@@ -1,7 +1,9 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// Copyright (c) 2015 United States Government as represented by the
+// Copyright (c) 2020 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration.
 // All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -128,13 +130,15 @@ struct glacierroutinggetrunoffnode* glacierroutinggetrunoff_table = NULL;
 void FTN(registerglaciermodelinit)(char *j, void (*func)(int*),int len)
 //EOP
 { 
+  int len1;
   struct glaciermodelinitnode* current;
   struct glaciermodelinitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct glaciermodelinitnode*) malloc(sizeof(struct glaciermodelinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -199,13 +203,15 @@ void FTN(registerglaciermodelrun)(char *j, void (*func)(int*, int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct glaciermodelrunnode* current;
   struct glaciermodelrunnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct glaciermodelrunnode*) malloc(sizeof(struct glaciermodelrunnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -274,13 +280,15 @@ void FTN(registerglaciermodelfinalize)(char *j, void (*func)(),int len)
 // 
 //EOP
 { 
+  int len1;
   struct glaciermodelfinalnode* current;
   struct glaciermodelfinalnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct glaciermodelfinalnode*) malloc(sizeof(struct glaciermodelfinalnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -345,13 +353,15 @@ void FTN(registerglaciermodelsetup)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct glaciermodelsetupnode* current;
   struct glaciermodelsetupnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct glaciermodelsetupnode*) malloc(sizeof(struct glaciermodelsetupnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -417,14 +427,15 @@ void FTN(registerglaciermodelrestart)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
-
+  int len1;
   struct glaciermodelrestartnode* current;
   struct glaciermodelrestartnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct glaciermodelrestartnode*) malloc(sizeof(struct glaciermodelrestartnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -490,13 +501,15 @@ void FTN(registerglaciermodeldynsetup)(char *j, void (*func)(int*, int*),int len
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct glaciermodeldynsetnode* current;
   struct glaciermodeldynsetnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct glaciermodeldynsetnode*) malloc(sizeof(struct glaciermodeldynsetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -563,14 +576,15 @@ void FTN(registerglaciermodeloutput)(char *j, void (*func)(int*, int*),int len)
 //  \end{description}
 //EOP
 { 
-
+  int len1;
   struct glaciermodeloutputnode* current;
   struct glaciermodeloutputnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct glaciermodeloutputnode*) malloc(sizeof(struct glaciermodeloutputnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -640,13 +654,15 @@ void FTN(registerglaciermodelf2t)(char *j, void (*func)(int*, int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct glaciermodelf2tnode* current;
   struct glaciermodelf2tnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct glaciermodelf2tnode*) malloc(sizeof(struct glaciermodelf2tnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -715,13 +731,15 @@ void FTN(registerglaciermodelwrst)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct glaciermodelwriterstnode* current;
   struct glaciermodelwriterstnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct glaciermodelwriterstnode*) malloc(sizeof(struct glaciermodelwriterstnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -788,13 +806,15 @@ void FTN(registerglacierroutinggetrunoff)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct glacierroutinggetrunoffnode* current;
   struct glacierroutinggetrunoffnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct glacierroutinggetrunoffnode*) malloc(sizeof(struct glacierroutinggetrunoffnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

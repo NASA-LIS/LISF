@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !MODULE: SMAP_L3TBMod
@@ -29,6 +35,8 @@ module SMAP_L3TBMod
 !
 ! !REVISION HISTORY: 
 !  19 Nov 2018: Mahdi Navari , Sujay Kumar, Initial Specification
+!  31 July 2019 Mahdi Navari : SMAP Composite Release ID was added (this option asks a user to 
+!         enter the part of Composite Release ID a three-character string like R16 )
 ! 
 !EOP
 
@@ -45,7 +53,7 @@ module SMAP_L3TBMod
 
      character*100        :: odir
      character*20         :: data_designation
-
+     character*3           :: release_number
      integer              :: nc
      integer              :: nr
      integer              :: mo
@@ -117,6 +125,11 @@ contains
          label='SMAP soil moisture data designation:', rc=status)
     call LVT_verify(status, &
          'SMAP soil moisture data designation: not defined')
+
+    call ESMF_ConfigGetAttribute(LVT_Config, SMAP_L3TB(i)%release_number, &
+         label='SMAP(NASA) soil moisture Composite Release ID (e.g., R16):', rc=status)
+    call LVT_verify(status, &
+         'SMAP(NASA) soil moisture Composite Release ID (e.g., R16): not defined')
 
     call LVT_update_timestep(LVT_rc, 86400)
 

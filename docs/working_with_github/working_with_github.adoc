@@ -418,7 +418,7 @@ NOTE: Submitting a pull request causes GitHub to jump to the NASA-LIS/LISF page.
 
 Your pull request will be reviewed for code quality, proper documentation, and relevant testcase.
 
-Sujay, Eric, Carlos, or Jim will review code and documentation.  Bob will perform testing.  (Reviewers please do not merge your own pull requests.)  This process may require some additional commits from you to resolve any issues that arise from the pull request review.
+Sujay, Eric, David, Jim, or Brendan will review code and documentation.  Brendan will perform testing.  (Reviewers please do not merge your own pull requests.)  This process may require some additional commits from you to resolve any issues that arise from the pull request review.
 
 When addressing issues raised by a reviewer, simply push your new updates back to origin:
 

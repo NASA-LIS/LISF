@@ -1,7 +1,9 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// Copyright (c) 2015 United States Government as represented by the
+// Copyright (c) 2020 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration.
 // All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -60,13 +62,15 @@ void FTN(registergfracsetup)(char *j,void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct gfracsetnode* current;
   struct gfracsetnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct gfracsetnode*) malloc(sizeof(struct gfracsetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -137,13 +141,15 @@ void FTN(registerreadgfrac)(char *j,void (*func)(int*, void*, void*, float*, flo
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct gfracreadnode* current;
   struct gfracreadnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct gfracreadnode*) malloc(sizeof(struct gfracreadnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

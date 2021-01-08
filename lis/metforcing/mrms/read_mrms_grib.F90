@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
 !BOP
@@ -88,9 +94,6 @@ subroutine read_mrms_grib( n, fname, findex, order, yr, mo, da, ferror_mrms_grib
   elseif(order.eq.2) then 
      mrms_grib_struc(n)%metdata2 = LIS_rc%udef
   endif
-
-!-- Set necessary parameters for call to interp_mrms_grib   
-  precip_regrid = LIS_rc%udef
 
 !-- Check initially if file exists:
   inquire (file=fname, exist=file_exists ) ! Check if file exists

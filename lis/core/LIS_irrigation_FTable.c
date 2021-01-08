@@ -1,7 +1,9 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// Copyright (c) 2015 United States Government as represented by the
+// Copyright (c) 2020 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration.
 // All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -64,13 +66,15 @@ struct irrigationfinalnode* irrigationfinal_table = NULL;
 void FTN(registerirrigationschemeinit)(char *j, void (*func)(void*),int len)
 //EOP
 { 
+  int len1;
   struct irrigationinitnode* current;
   struct irrigationinitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct irrigationinitnode*) malloc(sizeof(struct irrigationinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -136,13 +140,15 @@ void FTN(registerirrigationupdate)(char *j, void (*func)(int*, void*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct irrigationapplyupdatenode* current;
   struct irrigationapplyupdatenode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct irrigationapplyupdatenode*) malloc(sizeof(struct irrigationapplyupdatenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

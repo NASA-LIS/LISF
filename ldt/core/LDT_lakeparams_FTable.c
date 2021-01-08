@@ -1,22 +1,11 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Information System (LDT) V5.0 BETA
-// Released January 2008
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// See SOFTWARE DISTRIBUTION POLICY for software distribution policies
-//
-// The LDT source code and documentation are in the public domain,
-// available without fee for educational, research, non-commercial and
-// commercial purposes.  Users may distribute the binary or source
-// code to third parties provided this statement appears on all copies and
-// that no charge is made for such copies.
-//
-// NASA GSFC MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THE
-// SOFTWARE FOR ANY PURPOSE.  IT IS PROVIDED AS IS WITHOUT EXPRESS OR
-// IMPLIED WARRANTY.  NEITHER NASA GSFC NOR THE US GOVERNMENT SHALL BE
-// LIABLE FOR ANY DAMAGES SUFFERED BY THE USER OF THIS SOFTWARE.
-//
-// See COPYRIGHT.TXT for copyright details.
-//
+// Copyright (c) 2020 United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration.
+// All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
 //BOP
 //
@@ -82,13 +71,15 @@ void FTN(registerlakeparamprocinit)(char *j,void (*func)(), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lakeparamprocinitnode* current;
   struct lakeparamprocinitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lakeparamprocinitnode*) malloc(sizeof(struct lakeparamprocinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -157,13 +148,15 @@ void FTN(registerlakeparamprocwriteheader)(char *j,void (*func)(int*, int*, int*
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lakeparamprocwheadernode* current;
   struct lakeparamprocwheadernode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lakeparamprocwheadernode*) malloc(sizeof(struct lakeparamprocwheadernode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -234,13 +227,15 @@ void FTN(registerlakeparamprocwritedata)(char *j,void (*func)(int*, int*), int l
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct lakeparamprocwdatanode* current;
   struct lakeparamprocwdatanode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lakeparamprocwdatanode*) malloc(sizeof(struct lakeparamprocwdatanode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

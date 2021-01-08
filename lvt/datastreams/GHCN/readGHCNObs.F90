@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !ROUTINE: readGHCNObs
@@ -73,7 +79,7 @@ subroutine readGHCNObs(source)
 
      ghcnobs(source)%prcp = LVT_rc%udef
      
-     call ESMF_TimeSet(ghcnobs(source)%startTime,  yy=LVT_rc%yr, &
+     call ESMF_TimeSet(ghcnobs(source)%startTime,  yy=LVT_rc%dyr(source), &
           mm = 1, &
           dd = 1, &
           h = 0, &

@@ -1,7 +1,9 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// Copyright (c) 2015 United States Government as represented by the
+// Copyright (c) 2020 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration.
 // All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -95,13 +97,15 @@ void FTN(registerbiasestimationinit)(char *j, void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct biasinitnode* current;
   struct biasinitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct biasinitnode*) malloc(sizeof(struct biasinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -172,13 +176,15 @@ void FTN(registerbiasestimationsetup)(char *j, void (*func)(int*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct biassetupnode* current;
   struct biassetupnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct biassetupnode*) malloc(sizeof(struct biassetupnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -251,13 +257,15 @@ void FTN(registerbiasestimationcompute)(char *j, void (*func)(int*, int*),int le
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct biascompnode* current;
   struct biascompnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct biascompnode*) malloc(sizeof(struct biascompnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -331,13 +339,15 @@ void FTN(registerbiasestimationupdate)(char *j, void (*func)(int*, int*),int len
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct biasupdnode* current;
   struct biasupdnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct biasupdnode*) malloc(sizeof(struct biasupdnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -410,13 +420,15 @@ void FTN(registerbiasestimationrestart)(char *j, void (*func)(int*, int*),int le
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct biasoutnode* current;
   struct biasoutnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct biasoutnode*) malloc(sizeof(struct biasoutnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -490,13 +502,15 @@ void FTN(registerbiasestimationfinalize)(char *j, void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct biasfinalnode* current;
   struct biasfinalnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct biasfinalnode*) malloc(sizeof(struct biasfinalnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

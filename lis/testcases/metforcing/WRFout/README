@@ -13,16 +13,11 @@ This directory contains:
 * the MODEL_OUTPUT_LIST.TBL file used to specify the output variables.
 * a sample grads control files that can be used to visualize the 
   output. (output.d01.ctl, output.d02.ctl, output.d03.ctl)
-* a sample grads control file that can be used to visualize the 
-  test case output. (testcase.d01.ctl, testcase.d02.ctl, testcase.d03.ctl)
 
 To run this test case: 
 
 * Generate the LIS executable. 
-* Download the sample input data from: 
-  http://lis.gsfc.nasa.gov/Source/testcases  
-  the testcase corresponding to WRFout FORCING TEST
-* Run the LIS executable using the lis.config file and the sample 
+* Run the LIS executable using the lis.config file and your sample 
   input data. 
 * View the binary output using the sample grads file. 
 

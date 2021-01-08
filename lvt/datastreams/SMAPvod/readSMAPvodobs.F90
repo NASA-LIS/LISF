@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !BOP
 ! 
@@ -80,22 +86,23 @@ subroutine readSMAPvodobs(source)
      if((SMAP_vodobs(source)%data_designation.eq."SPL2SMP_E").or.&
           (SMAP_vodobs(source)%data_designation.eq."SPL2SMP")) then 
         
-        write(yyyymmdd,'(i4.4,2i2.2)') LVT_rc%yr, LVT_rc%mo, LVT_rc%da
-        write(yyyy,'(i4.4)') LVT_rc%yr
-        write(mm,'(i2.2)') LVT_rc%mo
-        write(dd,'(i2.2)') LVT_rc%da
-        write(hh,'(i2.2)') LVT_rc%hr
+        write(yyyymmdd,'(i4.4,2i2.2)') LVT_rc%dyr(source), &
+             LVT_rc%dmo(source), LVT_rc%dda(source)
+        write(yyyy,'(i4.4)') LVT_rc%dyr(source)
+        write(mm,'(i2.2)') LVT_rc%dmo(source)
+        write(dd,'(i2.2)') LVT_rc%dda(source)
+        write(hh,'(i2.2)') LVT_rc%dhr(source)
 
         list_files = 'ls '//trim(SMAP_vodobs(source)%odir)//&
              '/'//trim(yyyy)//'.'//trim(mm)//'.'//dd//&
              '/SMAP_L2_*'//trim(yyyymmdd)//'T'//trim(hh)&
-             //"*.h5 > SMAP_filelist.dat"
+             //"*.h5 > SMAPvod/SMAP_filelist.dat"
         
         call system(trim(list_files))
 
         i =1
         ftn = LVT_getNextUnitNumber()
-        open(ftn,file="./SMAP_filelist.dat",&
+        open(ftn,file="./SMAPvod/SMAP_filelist.dat",&
              status='old',iostat=ierr)
         
         do while(ierr.eq.0) 
@@ -108,8 +115,9 @@ subroutine readSMAPvodobs(source)
            mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))+11        
            read(fname(mn_ind:mn_ind+1),'(i2.2)') mn
            ss=0
-           call LVT_tick(timenow,doy,gmt,LVT_rc%yr, LVT_rc%mo, LVT_rc%da, &
-                LVT_rc%hr, mn, ss, 0)
+           call LVT_tick(timenow,doy,gmt,LVT_rc%dyr(source), &
+                LVT_rc%dmo(source), LVT_rc%dda(source), &
+                LVT_rc%dhr(source), mn, ss, 0)
         
            smap_filename(i) = fname
            
@@ -377,6 +385,8 @@ subroutine read_SMAPvod(source, fname, vodobs)
 
   implicit none
 
+  integer                        :: source 
+  character(len=*)               :: fname
   real                           :: vodobs(LVT_rc%lnc,LVT_rc%lnr)
   
 !
@@ -394,9 +404,7 @@ subroutine read_SMAPvod(source, fname, vodobs)
 !BOP
 
 #if (defined USE_HDF5)
-
-  integer                       :: source 
-  character(len=*)              :: fname
+ 
   character*100,   parameter    :: vod_gr_name = "Soil_Moisture_Retrieval_Data"
   character*100,   parameter    :: vod_field_name = "vegetation_opacity"
 

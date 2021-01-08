@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -193,7 +195,7 @@ subroutine get_SPORTgfrac(n,filename, array)
     gvf = 0.0
     flag = '1'
     write (LIS_logunit,*) "Before readgvfmodis; gvf_nc / gvf_nr / npts = ",gvf_nc,gvf_nr,npts
-    iretgz = readgvfmodis( zname, gvf_nc, gvf_nr, flag, gvf )
+    iretgz = readgvfmodis( trim(zname)//char(0), gvf_nc, gvf_nr, flag, gvf )
     if ( iretgz > 0) then       ! FAILED TO READ
       write (LIS_logunit,*) "** Failed to read GVF gzipped file: ", zname
       deallocate(gvf)

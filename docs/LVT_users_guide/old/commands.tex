@@ -1,0 +1,19 @@
+
+%\renewcommand{\theenumi}{\arabic{section}.\arabic{enumi}}
+%\renewcommand{\theenumii}{.\arabic{enumii}}
+%\renewcommand{\theenumiii}{.\arabic{enumiii}}
+%\renewcommand{\theenumiv}{.\arabic{enumiv}}
+
+%\renewcommand{\labelenumi}{\theenumi}
+%\renewcommand{\labelenumii}{\theenumi\theenumii}
+%\renewcommand{\labelenumiii}{\theenumi\theenumii\theenumiii}
+%\renewcommand{\labelenumiv}{\theenumi\theenumii\theenumiii\theenumiv}
+
+\newcommand{\nextpar}{\vskip 10 pt}
+
+%requires \usepackage{color}
+\newcommand{\highlight}[1]{\colorbox{yellow}{#1}}
+\newcommand{\attention}[1]{\colorbox{red}{#1}}
+\newcommand{\comment}[1]{}
+
+\newcommand{\figureimage}[3][1.0]{\makebox[\linewidth][#2]{\includegraphics[scale=#1]{#3}}}

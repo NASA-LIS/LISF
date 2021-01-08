@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -161,6 +163,11 @@ contains
 #else
        c_string = trim(out_dname)
        ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
+       if (ios .ne. 0) then
+          write(LIS_logunit,*)'[ERR] problem creating directory ', &
+               trim(c_string)
+          call LIS_flush(LIS_logunit)
+       end if
 #endif
        rst_fname = trim(LIS_rc%odir)//'/FCST/LIS_RST_FCST_'
        write(unit=fiter,fmt='(i4.4)')  LIS_forecast_struc(n)%iterId

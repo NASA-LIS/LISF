@@ -1,9 +1,11 @@
 #!/usr/bin/perl
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-# NASA Goddard Space Flight Center Land Data Toolkit (LDT) v7.2
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.3
 #
-# Copyright (c) 2015 United States Government as represented by the
+# Copyright (c) 2020 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -75,15 +77,71 @@ else {
    $sys_par = "";
 }
 
-print "Optimization level (-2=strict checks, -1=debug, 0,1,2,3, default=2): ";
+print "Optimization level (-3=strict checks with warnings, -2=strict checks, -1=debug, 0,1,2,3, default=2): ";
 $opt_lev=<stdin>;
 chomp($opt_lev);
 if($opt_lev eq ""){
    $opt_lev=2;
 }
+if($opt_lev == -3) {
+   # Default flags for C.
+    $sys_c_opt = "-g";
+    if($sys_arch eq "linux_ifc"){
+	$sys_opt = "-g -warn";
+	$sys_opt .= 
+	    " -check bounds,format,output_conversion,pointers,stack,uninit";
+	$sys_opt .= " -fp-stack-check -ftrapuv ";
+	
+	$sys_c_opt = "-g -Wall -Wcast-qual -Wcheck -Wdeprecated";
+	$sys_c_opt .= " -Wextra-tokens -Wformat";
+	$sys_c_opt .= " -Wformat-security -Wmissing-declarations";
+	$sys_c_opt .= " -Wmissing-prototypes -Wpointer-arith -Wremarks";
+	$sys_c_opt .= " -Wreturn-type -Wshadow -Wsign-compare";
+	$sys_c_opt .= " -Wstrict-prototypes -Wtrigraphs -Wuninitialized";
+	$sys_c_opt .= " -Wunused-function -Wunused-parameter";
+	$sys_c_opt .= " -Wunused-variable -Wwrite-strings";
+	# Run-time flags
+	$sys_c_opt .= " -check=conversions,stack,uninit";
+	$sys_c_opt .= " -fp-stack-check -fp-trap=common -fp-trap-all=common";
+	$sys_c_opt .= " -ftrapuv";
+    }
+    elsif($sys_arch eq "linux_pgi") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+	$sys_opt = "-g ";
+    }
+    elsif($sys_arch eq "linux_absoft") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+	$sys_opt = "-g ";
+    }
+    elsif($sys_arch eq "linux_lf95") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+    }
+    elsif($sys_arch eq "Darwin_gfortran" || $sys_arch eq "linux_gfortran") {
+	$sys_opt = "-g -Wall -Wcharacter-truncation";
+	$sys_opt .= " -Wconversion-extra -Wextra -Wpedantic -Wrealloc-lhs";
+	$sys_opt .= " -Wrealloc-lhs-all";
+	# Run-time options
+	$sys_opt .= " -ffpe-trap=invalid,zero,overflow";
+	$sys_opt .= " -fcheck=all,no-array-temps ";
+
+	$sys_c_opt = "-g -Wall -Wextra -Wpedantic -Wformat -Wtraditional";
+	$sys_c_opt .= " -Wconversion";
+	# Run-time flags
+	$sys_c_opt .= " -fstack-protector-all -fstack-check -ftrapv";
+    }
+    elsif($sys_arch eq "AIX") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+	$sys_opt = "-g ";
+    }
+}
+
 if($opt_lev == -2) {
    if($sys_arch eq "linux_ifc") {
-      $sys_opt = "-g -check bounds,format,output_conversion,pointers,stack,uninit  ";
+      $sys_opt = "-g -check bounds,format,output_conversion,pointers,stack,uninit ";
       $sys_c_opt = "-g ";
    }
    elsif($sys_arch eq "linux_gfortran") {
@@ -134,11 +192,11 @@ else{
 }
 
 
-print "Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=1): ";
+print "Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=2): ";
 $use_gribapi=<stdin>;
 chomp($use_gribapi);
 if($use_gribapi eq ""){
-   $use_gribapi=1;
+   $use_gribapi=2;
 }
 
 if($use_gribapi == 1) {
@@ -157,17 +215,36 @@ if($use_gribapi == 1) {
       print "--------------ERROR---------------------\n";
       exit 1;
    }
-   if(defined($ENV{LDT_JASPER})){
-      $sys_jasper_path = $ENV{LDT_JASPER};
+   if(defined($ENV{LDT_JASPER}) && defined($ENV{LDT_OPENJPEG})){
+      print "--------------ERROR---------------------\n";
+      print "Please specify the JPEG2000 library path using\n";
+      print "either the LDT_JASPER variable\n";
+      print "or the LDT_OPENJPEG variable, not both.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+   elsif(defined($ENV{LDT_JASPER})){
+      $sys_jpeg2000_path = $ENV{LDT_JASPER};
       $inc = "/include/";
       $lib = "/lib/";
-      $inc_jasper=$sys_jasper_path.$inc;
-      $lib_jasper=$sys_jasper_path.$lib;
+      $inc_jpeg2000=$sys_jpeg2000_path.$inc;
+      $lib_jpeg2000=$sys_jpeg2000_path.$lib;
+      $ljpeg2000="-ljasper";
+   }
+   elsif(defined($ENV{LDT_OPENJPEG})){
+      $sys_jpeg2000_path = $ENV{LDT_OPENJPEG};
+      $inc = "/include/";
+      $lib = "/lib/";
+      $inc_jpeg2000=$sys_jpeg2000_path.$inc;
+      $lib_jpeg2000=$sys_jpeg2000_path.$lib;
+      $ljpeg2000="-lopenjp2";
    }
    else {
       print "--------------ERROR---------------------\n";
-      print "Please specify the JASPER library path using\n";
-      print "the LDT_JASPER variable.\n";
+      print "Please specify the JPEG2000 library path using\n";
+      print "either the LDT_JASPER variable\n";
+      print "or the LDT_OPENJPEG variable.\n";
       print "Configuration exiting ....\n";
       print "--------------ERROR---------------------\n";
       exit 1;
@@ -189,8 +266,17 @@ elsif($use_gribapi == 2) {
       print "--------------ERROR---------------------\n";
       exit 1;
    }
-   if(defined($ENV{LDT_JASPER})){
-      $sys_jasper_path = $ENV{LDT_JASPER};
+   if(defined($ENV{LDT_JASPER}) && defined($ENV{LDT_OPENJPEG})){
+      print "--------------ERROR---------------------\n";
+      print "Please specify the JPEG2000 library path using\n";
+      print "either the LDT_JASPER variable\n";
+      print "or the LDT_OPENJPEG variable, not both.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+   elsif(defined($ENV{LDT_JASPER})){
+      $sys_jpeg2000_path = $ENV{LDT_JASPER};
       $inc = "/include/";
       if ($cray_modifications == 1) {
          $lib = "/lib/";
@@ -198,13 +284,23 @@ elsif($use_gribapi == 2) {
       else {
          $lib = "/lib64/";
       }
-      $inc_jasper=$sys_jasper_path.$inc;
-      $lib_jasper=$sys_jasper_path.$lib;
+      $inc_jpeg2000=$sys_jpeg2000_path.$inc;
+      $lib_jpeg2000=$sys_jpeg2000_path.$lib;
+      $ljpeg2000="-ljasper";
+   }
+   elsif(defined($ENV{LDT_OPENJPEG})){
+      $sys_jpeg2000_path = $ENV{LDT_OPENJPEG};
+      $inc = "/include/";
+      $lib = "/lib/";
+      $inc_jpeg2000=$sys_jpeg2000_path.$inc;
+      $lib_jpeg2000=$sys_jpeg2000_path.$lib;
+      $ljpeg2000="-lopenjp2";
    }
    else {
       print "--------------ERROR---------------------\n";
-      print "Please specify the JASPER library path using\n";
-      print "the LDT_JASPER variable.\n";
+      print "Please specify the JPEG2000 library path using\n";
+      print "either the LDT_JASPER variable\n";
+      print "or the LDT_OPENJPEG variable.\n";
       print "Configuration exiting ....\n";
       print "--------------ERROR---------------------\n";
       exit 1;
@@ -458,6 +554,13 @@ if($use_history eq "\n"){
 }
 
 
+if(defined($ENV{LDT_JPEG})){
+   $libjpeg = "-L".$ENV{LDT_JPEG}."/lib"." -ljpeg";
+}
+else{
+   $libjpeg = "-ljpeg";
+}
+
 if($sys_arch eq "linux_ifc") {
    if($use_omp == 1) {
       if($use_endian == 1) {
@@ -536,12 +639,12 @@ if($par_lev == 1) {
 if($use_gribapi == 1) {
    $fflags77 = $fflags77." -I\$(INC_GRIBAPI) ";
    $fflags = $fflags." -I\$(INC_GRIBAPI) ";
-   $ldflags = $ldflags." -L\$(LIB_GRIBAPI) -lgrib_api_f90 -lgrib_api -L\$(LIB_JASPER) -ljasper ";
+   $ldflags = $ldflags." -L\$(LIB_GRIBAPI) -lgrib_api_f90 -lgrib_api -L\$(LIB_JPEG2000) ".$ljpeg2000;
 }
 elsif($use_gribapi == 2) {
    $fflags77 = $fflags77." -I\$(INC_ECCODES)";
    $fflags = $fflags." -I\$(INC_ECCODES)";
-   $ldflags = $ldflags." -L\$(LIB_ECCODES) -leccodes_f90 -leccodes -L\$(LIB_JASPER) -ljasper";
+   $ldflags = $ldflags." -L\$(LIB_ECCODES) -leccodes_f90 -leccodes -L\$(LIB_JPEG2000) ".$ljpeg2000;
 }
 if($use_netcdf == 1) {
    $fflags77 = $fflags77." -I\$(INC_NETCDF) ";
@@ -561,7 +664,7 @@ if($use_hdfeos == 1){
 if($use_hdf4 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF4) ";
    $fflags = $fflags." -I\$(INC_HDF4) ";
-   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf -ljpeg -lz ";
+   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz ";
 }
 if($use_hdf5 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF5) ";
@@ -576,20 +679,31 @@ if($enable_geotiff== 1){
    $fflags = $fflags." -I\$(INC_FORTRANGIS1) -I\$(INC_FORTRANGIS2)";
    $ldflags = $ldflags." -L\$(LIB_FORTRANGIS) -lfortrangis -lfortranc -L\$(LIB_GDAL) -lgdal";
    if ( $cray_modifications == 1 ) {
-      $ldflags = $ldflags." -ljasper -ljpeg -lz -lstdc++";
+      $ldflags = $ldflags." ".$ljpeg2000." ".$libjpeg." -lz -lstdc++";
    }
 }
 
 # EMK...Added LIGBEOTIFF for Air Force
 if($enable_libgeotiff== 1){
-    $cflags = $cflags." -I\$(INC_LIBGEOTIFF)";
+    # Kluge for koehr; locally installed the tiff library.
+    if(defined($ENV{LDT_TIFF})){
+       $INC_LIBTIFF = $ENV{LDT_TIFF}."/include";
+       $cflags = $cflags." -I".$INC_LIBTIFF." -I\$(INC_LIBGEOTIFF)";
+    }
+    else {
+       $cflags = $cflags." -I\$(INC_LIBGEOTIFF)";
+    }
     $tiffpath = "";
     $tiffdeps = "";
+    # Kluge for koehr; locally installed the tiff library.
+    if(defined($ENV{LDT_TIFF})){
+       $tiffpath = " -L".$ENV{LDT_TIFF}."/lib";
+    }
     if ( $cray_modifications == 1 ) {
        $tiffpath = " -L".$sys_libtiff_path;
        $tiffdeps = " -L".$sys_libjbig_path." -ljbig "." -L".$sys_liblzma_path." -llzma ";
     }
-    $ldflags = $ldflags." -L\$(LIB_LIBGEOTIFF) ".$tiffpath." -ltiff -lgeotiff -lm -lz -ljpeg ".$tiffdeps;
+    $ldflags = $ldflags." -L\$(LIB_LIBGEOTIFF) ".$tiffpath." -ltiff -lgeotiff -lm -lz ".$libjpeg." ".$tiffdeps;
 }
 
 
@@ -601,8 +715,8 @@ printf conf_file "%s%s\n","CC              = $sys_cc";
 printf conf_file "%s%s\n","AR              = ar";
 printf conf_file "%s%s\n","MOD_ESMF        = $sys_esmfmod_path";
 printf conf_file "%s%s\n","LIB_ESMF        = $sys_esmflib_path";
-printf conf_file "%s%s\n","INC_JASPER      = $inc_jasper";
-printf conf_file "%s%s\n","LIB_JASPER      = $lib_jasper";
+printf conf_file "%s%s\n","INC_JPEG2000      = $inc_jpeg2000";
+printf conf_file "%s%s\n","LIB_JPEG2000      = $lib_jpeg2000";
 if($use_gribapi == 2) {
 printf conf_file "%s%s\n","INC_ECCODES     = $inc_gribapi";
 printf conf_file "%s%s\n","LIB_ECCODES     = $lib_gribapi";

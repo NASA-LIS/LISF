@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 module LDT_ANNMod
@@ -816,7 +822,7 @@ contains
     call LDT_verify(ios, "nf90_def_var failed for "//trim(LDT_ANNoutput%varName(1)))
     ios = nf90_put_att(ftn,NF90_GLOBAL,"missing_value",-9999.0)
     
-    if(trim(LDT_rc%lis_map_proj).eq."latlon") then !latlon
+    if(trim(LDT_rc%lis_map_proj(n)).eq."latlon") then !latlon
        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
             "EQUIDISTANT CYLINDRICAL"))
        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_EAST_CORNER_LAT", &
@@ -828,7 +834,7 @@ contains
        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"DY", &
             LDT_rc%gridDesc(n,10)))       
        
-    elseif(trim(LDT_rc%lis_map_proj).eq."mercator") then 
+    elseif(trim(LDT_rc%lis_map_proj(n)).eq."mercator") then 
        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
             "MERCATOR"))
        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_EAST_CORNER_LAT", &
@@ -844,7 +850,7 @@ contains
        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"DY", &
             LDT_rc%gridDesc(n,9)))
        
-    elseif(trim(LDT_rc%lis_map_proj).eq."lambert") then !lambert conformal
+    elseif(trim(LDT_rc%lis_map_proj(n)).eq."lambert") then !lambert conformal
        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
             "LAMBERT CONFORMAL"))
        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_EAST_CORNER_LAT", &
@@ -862,7 +868,7 @@ contains
        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"DY", &
             LDT_rc%gridDesc(n,9)))
        
-    elseif(trim(LDT_rc%lis_map_proj).eq."polar") then ! polar stereographic
+    elseif(trim(LDT_rc%lis_map_proj(n)).eq."polar") then ! polar stereographic
        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
             "POLAR STEREOGRAPHIC"))
        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_EAST_CORNER_LAT", &
@@ -1132,7 +1138,7 @@ contains
          "created on date: "//date(1:4)//"-"//date(5:6)//"-"//&
          date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)))
     call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"references", &
-         "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"))
+         "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"))
     call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"comment", &
          "website: http://lis.gsfc.nasa.gov/"))
 
@@ -1347,7 +1353,7 @@ contains
          "created on date: "//date(1:4)//"-"//date(5:6)//"-"//&
          date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)))
     call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"references", &
-         "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"))
+         "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"))
     call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"comment", &
          "website: http://lis.gsfc.nasa.gov/"))
 

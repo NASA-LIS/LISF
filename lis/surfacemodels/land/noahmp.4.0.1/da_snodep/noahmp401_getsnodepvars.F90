@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -60,7 +62,7 @@ subroutine noahmp401_getsnodepvars(n, LSM_State)
   call LIS_verify(status)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     swe(t) = noahmp401_struc(n)%noahmp401(t)%sneqv/1000.0 !to m
+     swe(t) = noahmp401_struc(n)%noahmp401(t)%sneqv
      snod(t) = noahmp401_struc(n)%noahmp401(t)%snowh
   enddo
 end subroutine noahmp401_getsnodepvars

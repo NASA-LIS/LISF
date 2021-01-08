@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 module CLM2_parmsMod
@@ -63,7 +69,7 @@ contains
 ! \label{CLM2parms_init}
 ! 
 ! !INTERFACE:
-  subroutine CLM2parms_init
+  subroutine CLM2parms_init(flag)
 
 ! !USES:
    use LDT_logMod,  only : LDT_verify, LDT_endrun, &
@@ -82,6 +88,7 @@ contains
 !EOP
    implicit none
    integer  :: n
+   integer  :: flag
    integer  :: c,r,m,k
    integer  :: rc
    integer  :: file_status

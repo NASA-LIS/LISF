@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 module LDT_SurfaceTypeMod
@@ -46,6 +52,25 @@ module LDT_SurfaceTypeMod
 ! !PUBLIC TYPES:
 !------------------------------------------------------------------------------
 !EOP
+
+!BOP 
+! 
+! !ROUTINE: LDT_surfacetype_writeHeader 
+! \label{LDT_surfacetype_writeHeader}
+! 
+! !INTERFACE:
+  interface LDT_surfacetype_writeHeader
+! !PRIVATE MEMBER FUNCTIONS: 
+     module procedure surfacetype_writeHeader_LIS
+     module procedure surfacetype_writeHeader_LISHydro
+! 
+! !DESCRIPTION:
+! This interface provides routines for writing NETCDF header both 
+! in LIS preprocessing requirements as well as LISHydro(WRFHydro) 
+! preprocessing requiremetns. A dummy argument call "flagX" was added 
+! to overload the LISHydro procedue.
+!EOP 
+  end interface
 contains
 
 !BOP
@@ -556,11 +581,10 @@ contains
    integer :: c, r, t, l, i
 
    if( LDT_rc%waterclass == 0. ) then
-     write(*,*) "No water class for associated landcover ...."
-     write(*,*) " Stopping for now until solution entered."
+     write(LDT_logunit,*) "[ERR] No water class for associated landcover ..."
+     write(LDT_logunit,*) " Stopping for now until solution entered."
      call LDT_endrun
    endif
-
    write(LDT_logunit,fmt=*) '[INFO] SURFACETYPE -- Assigning openwater surface types'
 
    openwaterfgrd = 0.
@@ -596,7 +620,7 @@ contains
 ! ___________________________________________________________
 
 
-  subroutine LDT_surfacetype_writeHeader(n,ftn,dimID)
+  subroutine surfacetype_writeHeader_LIS(n,ftn,dimID)
     
     use LDT_coreMod, only : LDT_rc
 
@@ -623,7 +647,40 @@ contains
          LDT_LSMparam_struc(n)%sfctype%source))
 
 #endif
-  end subroutine LDT_surfacetype_writeHeader
+  end subroutine Surfacetype_writeHeader_LIS
+
+  subroutine surfacetype_writeHeader_LISHydro(n,ftn,dimID,flag)
+    
+    use LDT_coreMod, only : LDT_rc
+
+    integer      :: n 
+    integer      :: ftn
+    integer      :: dimID(4)
+    integer      :: tdimID(4)
+    integer      :: flagn
+    integer      :: flag
+
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+    tdimID(1) = dimID(1)
+    tdimID(2) = dimID(2)
+    tdimID(4) = dimID(4)
+   
+    call LDT_verify(nf90_def_dim(ftn,'land_cat',&
+         LDT_LSMparam_struc(n)%sfctype%vlevels,tdimID(3)))
+
+    call LDT_writeNETCDFdataHeader(n,ftn,tdimID,&
+         LDT_LSMparam_struc(n)%sfctype,flagn)
+
+    call LDT_writeNETCDFdataHeader(n,ftn,tdimID,&
+         LDT_LSMparam_struc(n)%landcover,flagn)
+
+! - Enter surface model types, names:
+    call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"SFCMODELS", &
+         LDT_LSMparam_struc(n)%sfctype%source))
+
+#endif
+  end subroutine surfacetype_writeHeader_LISHydro
+
 
   subroutine LDT_surfacetype_writeData(n,ftn)
 

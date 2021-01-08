@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -128,10 +134,10 @@ subroutine read_Monfredaetal08_croptype(n, num_types, fgrd)
 
 
 !- Perform check on grid and projection choices selected:
-   if( LDT_rc%lis_map_proj == "latlon"   .or. &
-       LDT_rc%lis_map_proj == "mercator" .or. &
-       LDT_rc%lis_map_proj == "lambert" ) then
-     if( param_gridDesc(10) .ne. (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor) .and.&
+   if( LDT_rc%lis_map_proj(n) == "latlon"   .or. &
+       LDT_rc%lis_map_proj(n) == "mercator" .or. &
+       LDT_rc%lis_map_proj(n) == "lambert" ) then
+     if( param_gridDesc(10) .ne. (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n)) .and.&
          LDT_LSMCrop_struc(n)%crop_gridtransform .eq. "none" ) then
         write(LDT_logunit,*) "[ERR] 'Native' Monfreda et. al (2008) crop files have been selected, "
         write(LDT_logunit,*) "    with a resolution (0.0833deg), but the LIS run domain resolution"

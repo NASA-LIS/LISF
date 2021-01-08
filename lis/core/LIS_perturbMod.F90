@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -27,8 +29,8 @@ module LIS_perturbMod
 ! !REVISION HISTORY:
 !
 !  25 Jun 2006: Sujay Kumar; Initial implementation
-!  24Nov10    Sujay Kumar; Added support for time varying 
-!                          perturbations
+!  24 Nov 2010: Sujay Kumar; Added support for time varying perturbations
+!   9 Jun 2020: David Mocko; Write restart file at end of the LIS run
 !
 !EOP
   use ESMF
@@ -187,7 +189,7 @@ contains
 
        alarmCheck = LIS_isAlarmRinging(LIS_rc, "LIS pert restart alarm")
 
-       if(alarmCheck) then 
+       if (alarmCheck.or.(LIS_rc%endtime==1)) then
 !  NOTE: 
 !  A single restart file will be written for forcing, state and observation
 !  perturbations. Here we assume that the same perturbation algorithm will be 

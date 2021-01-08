@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !MODULE: SMAP_smobsMod
@@ -29,6 +35,8 @@ module SMAP_smobsMod
 !
 ! !REVISION HISTORY: 
 !  21 July 2016: Sujay Kumar, Initial Specification
+!  31 July 2019 Mahdi Navari : SMAP Composite Release ID was added (this option asks a user to 
+!         enter the part of Composite Release ID a three-character string like R16 )
 ! 
 !EOP
 
@@ -45,7 +53,7 @@ module SMAP_smobsMod
 
      character*100        :: odir
      character*20         :: data_designation
-
+     character*3           :: release_number
      integer              :: nc
      integer              :: nr
      integer              :: mo
@@ -118,6 +126,10 @@ contains
     call LVT_verify(status, &
          'SMAP soil moisture data designation: not defined')
 
+    call ESMF_ConfigGetAttribute(LVT_Config, SMAP_smobs(i)%release_number, &
+         label='SMAP(NASA) soil moisture Composite Release ID (e.g., R16):', rc=status)
+    call LVT_verify(status, &
+         'SMAP(NASA) soil moisture Composite Release ID (e.g., R16): not defined')
 
     if(SMAP_smobs(i)%data_designation.eq."SPL3SMAP") then 
        !SMAP L3 radar/radiometer daily 9km
@@ -239,9 +251,7 @@ contains
     allocate(SMAP_smobs(i)%smtime(LVT_rc%lnc,LVT_rc%lnr))
     allocate(SMAP_smobs(i)%smqc(LVT_rc%lnc*LVT_rc%lnr,2))
 
-!-------------------------------------------------------------------------
-!  AMSRE data contains the a top soil soil moisture data
-!-------------------------------------------------------------------------
+    call system("mkdir -p "//trim('SMAPsm'))
 
   end subroutine SMAP_smobsinit
 

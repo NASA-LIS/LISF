@@ -1,5 +1,11 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA GSFC Land surface Verification Toolkit (LVT) V1.0
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
+//
+// Copyright (c) 2020 United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration.
+// All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
 //BOP
 //
@@ -55,12 +61,14 @@ void FTN(registertraininginit)(char *j,void (*func)(),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct trainalginitnode* pnode;
   struct trainalginitnode* current;
 
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct trainalginitnode*) malloc(sizeof(struct trainalginitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -126,12 +134,14 @@ void FTN(registertrainingrun)(char *j,void (*func)(int*), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct trainalgrunnode* pnode;
   struct trainalgrunnode* current;
 
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct trainalgrunnode*) malloc(sizeof(struct trainalgrunnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

@@ -1,23 +1,11 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Information System (LIS)
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// See RELEASE.NOTES for more information.
-//
-// See SOFTWARE DISTRIBUTION POLICY for software distribution policies.
-//
-// The LIS source code and documentation are in the public domain,
-// available without fee for educational, research, non-commercial and
-// commercial purposes.  Users may distribute the binary or source
-// code to third parties provided this statement appears on all copies and
-// that no charge is made for such copies.
-//
-// NASA GSFC MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THE
-// SOFTWARE FOR ANY PURPOSE.  IT IS PROVIDED AS IS WITHOUT EXPRESS OR
-// IMPLIED WARRANTY.  NEITHER NASA GSFC NOR THE US GOVERNMENT SHALL BE
-// LIABLE FOR ANY DAMAGES SUFFERED BY THE USER OF THIS SOFTWARE.
-//
-// See COPYRIGHT.TXT for copyright details.
-//
+// Copyright (c) 2020 United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration.
+// All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
 //BOP
 //
@@ -94,13 +82,15 @@ void FTN(registerreadlc)(char *j, void (*func)(int*, int*, float*, float*),int l
 //   \end{description}
 //EOP
 { 
+  int len1;
   struct lcnode* current;
   struct lcnode* pnode; 
   // create node
 
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lcnode*) malloc(sizeof(struct lcnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -177,13 +167,15 @@ void FTN(registerreadcroptype)(char *j, void (*func)(int*, int*, float*),int len
 //  \end{description}
   //EOP
 {
+  int len1;
   struct croplcnode* current;
   struct croplcnode* pnode;
   // create node
 
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct croplcnode*) malloc(sizeof(struct croplcnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL;
 
@@ -256,14 +248,15 @@ void FTN(registerreadrootdepth)(char *j,void (*func)(int*,float*),int len)
 //  \end{description}
   //EOP
 {
-
+  int len1;
   struct drootnode* current;
   struct drootnode* pnode;
   // create node
 
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct drootnode*) malloc(sizeof(struct drootnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL;
 

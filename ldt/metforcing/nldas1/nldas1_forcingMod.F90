@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v7.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module nldas1_forcingMod
 !BOP
@@ -188,7 +194,7 @@ contains
     
     allocate(nldas1_struc(LDT_rc%nnest))
 
-    write(LDT_logunit,fmt=*)"MSG: Initializing NLDAS-1 forcing grid ... "
+    write(LDT_logunit,fmt=*)"[INFO] Initializing NLDAS-1 forcing grid ... "
 
 ! - Read LDT config NLDAS-1 entries:
     call readcrd_nldas1( findex )

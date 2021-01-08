@@ -1,7 +1,9 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// Copyright (c) 2015 United States Government as represented by the
+// Copyright (c) 2020 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration.
 // All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -68,14 +70,15 @@ void FTN(registerlisinit)(char *j, void (*func)(),int len)
 // \end{description}
 //EOP
 { 
-
+  int len1;
   struct rmodeinitnode* current;
   struct rmodeinitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct rmodeinitnode*) malloc(sizeof(struct rmodeinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -143,14 +146,15 @@ void FTN(registerlisrun)(char *j, void (*func)(),int len)
 // \end{description}
 //EOP
 { 
-
+  int len1;
   struct rmoderunnode* current;
   struct rmoderunnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct rmoderunnode*) malloc(sizeof(struct rmoderunnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -217,14 +221,15 @@ void FTN(registerlisfinalize)(char *j, void (*func)(),int len)
 // \end{description}
 //EOP
 { 
-
+  int len1;
   struct rmodefinalnode* current;
   struct rmodefinalnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct rmodefinalnode*) malloc(sizeof(struct rmodefinalnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

@@ -1,7 +1,9 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// Copyright (c) 2015 United States Government as represented by the
+// Copyright (c) 2020 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration.
 // All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -54,7 +56,7 @@ float* gvf_binary_reader_modis(char *vfname, int &nelements, int swap_flag);
 /********************************/
 
 
-int FTN(readgvfmodis)(char * infile, int * nx, int * ny, char * flag, float data_1D[])
+int FTN(readgvfmodis)(char * infile, int * nx, int * ny, char * flag, float data_1D[], int len)
 {
 
     /*---------------------------------------*/
@@ -63,20 +65,6 @@ int FTN(readgvfmodis)(char * infile, int * nx, int * ny, char * flag, float data
 
 /*    cout << infile << endl; */
 /*    cout << flag << endl;   */
-    char input_file[300];
-    char temp_file[300];
-    strcpy(temp_file,infile);
-    int n=0;
-// Remove trailing blanks in the file name and put a null char at the end
-     for(n=0; n < 300; n++){
-       if (temp_file[n] != ' ') {
-         input_file[n]=temp_file[n];
-       }
-       else {
-         input_file[n]='\0';
-      }
-     }
-//
     
 /*    cout << input_file << endl; */
     int swap_flag = atoi(flag);
@@ -97,14 +85,14 @@ int FTN(readgvfmodis)(char * infile, int * nx, int * ny, char * flag, float data
     //Read file
     nelements= *nx * *ny;
 /*    cout << "nelements / nx / ny = "<< nelements<<" / "<< *nx<<" / "<<*ny <<endl; */
-    input_data_1D = gvf_binary_reader_modis(input_file, nelements, swap_flag);
+    input_data_1D = gvf_binary_reader_modis(infile, nelements, swap_flag);
 
 /*    cout<<"back from read"<<endl; */
 
     //Perform some error checking
     if(input_data_1D == 0)
     {
-      cout<<"+++ERROR: Failed to read "<<input_file<<" Exiting!"<<endl;
+      cout<<"+++ERROR: Failed to read "<<infile<<" Exiting!"<<endl;
       return 0;
     }
 /*    cout<<"DONE reading file"<<endl<<endl; */

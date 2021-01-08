@@ -19,9 +19,6 @@ This directory contains:
 To run this test case: 
 
 * Generate the LIS executable. 
-* Download the sample input data from: 
-  http://lis.gsfc.nasa.gov/Source/testcases  
-  the testcase corresponding to NAM 242 FORCING TEST
 * Run the LIS executable using the lis.config file and the sample 
   input data. 
 * View the binary output using the sample grads file. 

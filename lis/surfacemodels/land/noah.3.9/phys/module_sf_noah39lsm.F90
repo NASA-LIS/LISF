@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -3848,7 +3850,13 @@ CONTAINS
 ! FROZEN GROUND VERSION:
 ! REDUCTION OF INFILTRATION BASED ON FROZEN GROUND PARAMETERS
 ! ----------------------------------------------------------------------
-         INFMAX = (PX * (DDT / (PX + DDT)))/ DT
+         ! Prevent divide-by-zero [Yonghwan Kwon 10/16/2019]
+         if ((PX + DDT) == 0) then
+            INFMAX = 0
+         else
+            INFMAX = (PX * (DDT / (PX + DDT)))/ DT
+         endif
+
          FCR = 1.
          IF (DICE >  1.E-2) THEN
             ACRT = CVFRZ * FRZX / DICE

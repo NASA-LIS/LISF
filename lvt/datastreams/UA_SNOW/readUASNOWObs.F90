@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !BOP
 !
@@ -145,13 +151,14 @@ subroutine readUASNOWObs(source)
 
          uasnowobs(source)%swe(:,:)  = swe1(:,:,k) !Jan. to Sep.
          uasnowobs(source)%snwd(:,:) = snwd1(:,:,k) !Jan. to Sep.
+
+         deallocate(swe1)
+         deallocate(snwd1)        
+
       else
          write(LVT_logunit,*) '[WARN] UA file not found: ',&
                                 trim(uafilename)
       endif
-
-      deallocate(swe1)
-      deallocate(snwd1)
 
       lb = .false.
       swe_in = LVT_rc%udef

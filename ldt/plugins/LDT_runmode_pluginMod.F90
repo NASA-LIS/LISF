@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module LDT_runmode_pluginMod
 !BOP
@@ -49,8 +55,11 @@ contains
     external LDT_init_EnsRstpreproc
     external LDT_run_EnsRstpreproc
 
-    external LDT_init_Rstproc
-    external LDT_run_Rstproc
+    external LDT_init_climoRstproc
+    external LDT_run_climoRstproc
+
+    external LDT_init_rstTransformProc
+    external LDT_run_rstTransformProc
 
     external LDT_init_MetforcProc
     external LDT_run_MetforcProc
@@ -69,11 +78,14 @@ contains
     external LDT_init_ANNproc
     external LDT_run_ANNproc
 
-    external LDT_init_ldtsi
-    external LDT_run_ldtsi
+    external LDT_init_usafsi
+    external LDT_run_usafsi
 
     external LDT_init_OPTUEparamproc
     external LDT_run_OPTUEparamproc
+
+    external LDT_init_LISHydropreproc
+    external LDT_run_LISHydropreproc
 
   ! Parameter Preprocessing:
     call registerldtinit(trim(LDT_LSMparamprocId)//char(0), &
@@ -91,11 +103,17 @@ contains
     call registerldtrun(trim(LDT_EnsRstpreprocId)//char(0), &
          LDT_run_EnsRstpreproc)
 
-  ! Restart processing:
-    call registerldtinit(trim(LDT_rstProcId)//char(0), &
-         LDT_init_Rstproc)
-    call registerldtrun(trim(LDT_rstProcId)//char(0), &
-         LDT_run_Rstproc)
+  ! climatological Restart processing:
+    call registerldtinit(trim(LDT_climoRstProcId)//char(0), &
+         LDT_init_climoRstproc)
+    call registerldtrun(trim(LDT_climorstProcId)//char(0), &
+         LDT_run_climoRstproc)
+
+  ! Restart transformation processing:
+    call registerldtinit(trim(LDT_rstTransformProcId)//char(0), &
+         LDT_init_rstTransformproc)
+    call registerldtrun(trim(LDT_rstTransformProcId)//char(0), &
+         LDT_run_rstTransformproc)
 
   ! Meteorological Forcing Processing Only:
     call registerldtinit(trim(LDT_MetForcprocId)//char(0), &
@@ -128,17 +146,24 @@ contains
     call registerldtrun(trim(LDT_ANNprocId)//char(0), &
          LDT_run_ANNproc)
 
-    ! LDTSI analysis
-    call registerldtinit(trim(LDT_ldtsiId)//char(0), &
-         LDT_init_ldtsi)
-    call registerldtrun(trim(LDT_ldtsiId)//char(0), &
-         LDT_run_ldtsi)
+    ! USAFSI analysis
+    call registerldtinit(trim(LDT_usafsiId)//char(0), &
+         LDT_init_usafsi)
+    call registerldtrun(trim(LDT_usafsiId)//char(0), &
+         LDT_run_usafsi)
 
     ! OPTUE processing
     call registerldtinit(trim(LDT_OPTUEparamprocId)//char(0), &
          LDT_init_OPTUEparamproc)
     call registerldtrun(trim(LDT_OPTUEparamprocId)//char(0), &
          LDT_run_OPTUEparamproc)
+
+
+  ! LISHydro Preprocessing for WRFHydro:
+    call registerldtinit(trim(LDT_LISHydropreprocId)//char(0), &
+         LDT_init_LISHydropreproc)
+    call registerldtrun(trim(LDT_LISHydropreprocId)//char(0), &
+         LDT_run_LISHydropreproc)
 
   end subroutine LDT_runmode_plugin
 

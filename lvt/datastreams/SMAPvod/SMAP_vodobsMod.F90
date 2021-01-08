@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !MODULE: SMAP_vodobsMod
@@ -239,6 +245,7 @@ contains
     allocate(SMAP_vodobs(i)%vodtime(LVT_rc%lnc,LVT_rc%lnr))
     allocate(SMAP_vodobs(i)%vodqc(LVT_rc%lnc*LVT_rc%lnr,2))
 
+    call system("mkdir -p "//trim('SMAPvod'))     
 
   end subroutine SMAP_vodobsinit
 

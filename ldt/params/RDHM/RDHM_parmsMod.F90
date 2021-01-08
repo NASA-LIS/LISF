@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 module RDHM_parmsMod
@@ -68,7 +74,7 @@ contains
 ! \label{RDHMparms_init}
 ! 
 ! !INTERFACE:
-  subroutine RDHMparms_init
+  subroutine RDHMparms_init(flag)
 
 ! !USES:
    use LDT_logMod,    only : LDT_verify, LDT_endrun, &
@@ -90,6 +96,7 @@ contains
 !
 !EOP
    implicit none
+   integer  :: flag
    integer  :: n
    integer  :: c,r,m,k
    integer  :: rc
@@ -115,8 +122,8 @@ contains
    if( rdhm_select ) then
      write(LDT_logunit,*)" - - - - - - - - - - RDHM LSM Parameters - - - - - - - - - - - - -"
 
-     call SACHTETParms_init( )
-     call Snow17Parms_init( )
+     call SACHTETParms_init( flag )
+     call Snow17Parms_init( flag )
 
 #if 0
    !- Load RDHM CONSTANTS input table file (filepath read-in from ldt.config file)

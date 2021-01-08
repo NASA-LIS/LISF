@@ -12,18 +12,18 @@ The format of this file is:
 
 component name: On/Off
 
-where the value On indicates to compile the component into the LIS executable, and where Off indicates to exclude the component.  And where possible the component name matches the string found in the plugins/LIS_pluginIndices.F90 file.
+where the value "`On`" indicates to compile the component into the LIS executable, and where "`Off`" indicates to exclude the component.  And where possible the component name matches the string found in the plugins/LIS_pluginIndices.F90 file.
 
 Note that comments may be added to the user.cfg file.  The "`#`" character marks the beginning of the comment.
 
-For example, if you want to compile all components of LIS except for Noah 2.7.1, then create a _user.cfg_ file containing the follow line:
+For example, if you want to compile all default components of LIS except for Noah 2.7.1, then create a _user.cfg_ file containing the follow line:
 
 .Example _user.cfg_ file
 Noah.2.7.1: Off
 
 Below is a list of all optional components that may be enabled/disabled along with their default settings.
 
-NOTE: Not all the optional components listed below are available in public release of LIS.
+NOTE: Not all the optional components listed below are available in the public release of LIS.
 
 
 Please do not copy this whole list into a _user.cfg_ file.  Create a _user.cfg_ file containing only the components that you want to toggle.
@@ -41,5 +41,5 @@ After creating a _user.cfg_ file you must recompile the LIS source code.  First 
 % cd ..
 ....
 
-Then re-run the _configure_ script.  This will process the _user.cfg_ file.  Then run the _compile_ script to compile the LIS source code.
+Re-run the _configure_ script to process your _user.cfg_ file. Then compile the LIS source code accordingly.
 

@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,7 +27,11 @@ module LIS_lsmda_pluginMod
 !  21 Oct 2018: Mahdi Navari, added NoahMP.3.9
 !  Dec 2018: Mahdi Navari: added Noah-MP.4.0.1
 !  13 May 2019: Yeosang Yoon, added SNODEP & LDTSI Assimilation for NoahMP.4.0.1
-!  06 Jun 2019: Yeosang Yoon, added SNODEP Assimilation for Jules 5.0
+!  06 Jun 2019: Yeosang Yoon, added SNODEP & LDTSI  Assimilation for Jules 5.0
+!  05 Nov 2019: David Mocko, removed JULES_5_0_DEV compiler flag and
+!                            enabled the compilation of JULES 5.3 DA
+!  13 Dec 2019: Eric Kemp, replaced LDTSI with USAFSI
+!  17 Feb 2020: Yeosang Yoon, added SNODEP & USAFSI Assimilation for Jules 5.x
 !
 !EOP
   implicit none
@@ -171,7 +177,7 @@ subroutine LIS_lsmda_plugin
 
 #if ( defined SM_NOAH_3_9 )
    use noah39_dasoilm_Mod
-#if ( defined DA_OBS_LDTSI )
+#if ( defined DA_OBS_USAFSI )
    use noah39_dasnow_Mod
 #endif
 #if ( defined DA_OBS_SNODEP )
@@ -191,8 +197,10 @@ subroutine LIS_lsmda_plugin
 
 #if ( defined SM_NOAHMP_4_0_1 )
    use NoahMP401_dasoilm_Mod
+   use NoahMP401_dasnow_Mod
    use noahmp401_dasnodep_Mod
-   use noahmp401_daldtsi_Mod
+   use noahmp401_dausafsi_Mod
+   use noahmp401_daveg_Mod
 #endif
 
 
@@ -212,23 +220,24 @@ subroutine LIS_lsmda_plugin
    use jules43_dasoilm_Mod
 #endif
 
-#if ( defined JULES_5_0_DEV )
-! Disable; JULES.5.0 DA not ready yet.
 #if ( defined SM_JULES_5_0 )
    use jules50_dasoilm_Mod
    use jules50_dasnodep_Mod
+   use jules50_dausafsi_Mod
 #endif
 
 #if ( defined SM_JULES_5_2 )
    use jules52_dasoilm_Mod
 #endif
 
-#if 0
 #if ( defined SM_JULES_5_3 )
    use jules53_dasoilm_Mod
 #endif
-#endif
 
+#if ( defined SM_JULES_5_X )
+   use jules5x_dasoilm_Mod
+   use jules5x_dasnodep_Mod
+   use jules5x_dausafsi_Mod
 #endif
 
 #if ( defined SM_NOAH_2_7_1 )
@@ -355,18 +364,18 @@ subroutine LIS_lsmda_plugin
    external noah39_descale_soilm
    external noah39_updatesoilm
 
-#if ( defined DA_OBS_LDTSI )
+#if ( defined DA_OBS_USAFSI )
 ! Noah-3.9 snow depth
-   external noah39_getldtsivars
-   external noah39_transform_ldtsi
-   external noah39_map_ldtsi
-   external noah39_updateldtsi
-   external noah39_qcldtsi
-   external noah39_setldtsivars
-   external noah39_getldtsipred
-   external noah39_scale_ldtsi
-   external noah39_descale_ldtsi
-   external noah39_qc_ldtsiobs
+   external noah39_getusafsivars
+   external noah39_transform_usafsi
+   external noah39_map_usafsi
+   external noah39_updateusafsi
+   external noah39_qcusafsi
+   external noah39_setusafsivars
+   external noah39_getusafsipred
+   external noah39_scale_usafsi
+   external noah39_descale_usafsi
+   external noah39_qc_usafsiobs
 #endif
 
 #if ( defined DA_OBS_SNODEP )
@@ -459,12 +468,29 @@ subroutine LIS_lsmda_plugin
    external NoahMP401_getsoilm           
    external NoahMP401_setsoilm              
    external NoahMP401_getsmpred
-!   external NoahMP401_getLbandTbPred   !we need this for Lband DA
    external NoahMP401_qcsoilm
    external NoahMP401_qc_soilmobs
    external NoahMP401_scale_soilm
    external NoahMP401_descale_soilm
    external NoahMP401_updatesoilm
+
+   external NoahMP401_getsnowvars         
+   external NoahMP401_setsnowvars              
+   external NoahMP401_getsnowpred
+   external NoahMP401_qcsnow
+   external NoahMP401_qc_snowobs
+   external NoahMP401_scale_snow
+   external NoahMP401_descale_snow
+   external NoahMP401_updatesnowvars
+
+   external noahmp401_getvegvars
+   external noahmp401_setvegvars
+   external noahmp401_updatevegvars
+   external noahmp401_qcveg
+   external noahmp401_getLAIpred
+   external noahmp401_qc_LAIobs
+   external noahmp401_scale_veg
+   external noahmp401_descale_veg
 
 #if ( defined DA_OBS_SNODEP )
 ! NoahMP-4.0.1 SNODEP
@@ -480,18 +506,18 @@ subroutine LIS_lsmda_plugin
    external noahmp401_qc_snodepobs
 #endif
 
-#if ( defined DA_OBS_LDTSI )
-! NoahMP-4.0.1 LDTSI
-   external noahmp401_getldtsivars
-   external noahmp401_transform_ldtsi
-   external noahmp401_map_ldtsi
-   external noahmp401_updateldtsivars
-   external noahmp401_qcldtsi
-   external noahmp401_setldtsivars
-   external noahmp401_getldtsipred
-   external noahmp401_scale_ldtsi
-   external noahmp401_descale_ldtsi
-   external noahmp401_qc_ldtsiobs
+#if ( defined DA_OBS_USAFSI )
+! NoahMP-4.0.1_USAFSI
+   external noahmp401_getusafsivars
+   external noahmp401_transform_usafsi
+   external noahmp401_map_usafsi
+   external noahmp401_updateusafsivars
+   external noahmp401_qcusafsi
+   external noahmp401_setusafsivars
+   external noahmp401_getusafsipred
+   external noahmp401_scale_usafsi
+   external noahmp401_descale_usafsi
+   external noahmp401_qc_usafsiobs
 #endif
 
 #endif
@@ -618,6 +644,20 @@ subroutine LIS_lsmda_plugin
    external jules50_qc_snodepobs
 #endif
 
+! Yeosang Yoon USAFSI DA
+#if ( defined DA_OBS_USAFSI )
+   external jules50_getusafsivars
+   external jules50_transform_usafsi
+   external jules50_map_usafsi
+   external jules50_updateusafsi
+   external jules50_qcusafsi
+   external jules50_setusafsivars
+   external jules50_getusafsipred
+   external jules50_scale_usafsi
+   external jules50_descale_usafsi
+   external jules50_qc_usafsiobs
+#endif
+
 #endif
 
 #if ( defined SM_JULES_5_2 )
@@ -633,7 +673,6 @@ subroutine LIS_lsmda_plugin
    external jules52_updatesoilm
 #endif
 
-#if 0
 #if ( defined SM_JULES_5_3)
 !MN Jules 5.0 soil moisture
    external jules53_getsoilm
@@ -645,6 +684,44 @@ subroutine LIS_lsmda_plugin
    external jules53_scale_soilm
    external jules53_descale_soilm
    external jules53_updatesoilm
+#endif
+
+#if ( defined SM_JULES_5_X)
+!SW Jules 5.5+ soil moisture
+   external jules5x_getsoilm
+   external jules5x_setsoilm
+   external jules5x_getsmpred
+   !external jules5x_getLbandTbPred
+   external jules5x_qcsoilm
+   external jules5x_qc_soilmobs
+   external jules5x_scale_soilm
+   external jules5x_descale_soilm
+   external jules5x_updatesoilm
+
+#if ( defined DA_OBS_SNODEP )
+   external jules5x_getsnodepvars
+   external jules5x_transform_snodep
+   external jules5x_map_snodep
+   external jules5x_updatesnodep
+   external jules5x_qcsnodep
+   external jules5x_setsnodepvars
+   external jules5x_getsnodeppred
+   external jules5x_scale_snodep
+   external jules5x_descale_snodep
+   external jules5x_qc_snodepobs
+#endif
+
+#if ( defined DA_OBS_USAFSI )
+   external jules5x_getusafsivars
+   external jules5x_transform_usafsi
+   external jules5x_map_usafsi
+   external jules5x_updateusafsi
+   external jules5x_qcusafsi
+   external jules5x_setusafsivars
+   external jules5x_getusafsipred
+   external jules5x_scale_usafsi
+   external jules5x_descale_usafsi
+   external jules5x_qc_usafsiobs
 #endif
 #endif
 
@@ -1692,31 +1769,31 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaupdatestate(trim(LIS_noah39Id)//"+"//&
         trim(LIS_NASASMAPsmobsId )//char(0),noah39_updatesoilm)
 
-#if ( defined DA_OBS_LDTSI )
+#if ( defined DA_OBS_USAFSI )
 ! Noah-3.9 snow depth
 ! DA + snodep wirings
    call registerlsmdainit(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_dasnow_init)
+        trim(LIS_usafsiobsId)//char(0),noah39_dasnow_init)
    call registerlsmdagetstatevar(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_getldtsivars)
+        trim(LIS_usafsiobsId)//char(0),noah39_getusafsivars)
    call registerlsmdaobstransform(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_transform_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),noah39_transform_usafsi)
    call registerlsmdamapobstolsm(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_map_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),noah39_map_usafsi)
    call registerlsmdaupdatestate(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_updateldtsi)
+        trim(LIS_usafsiobsId)//char(0),noah39_updateusafsi)
    call registerlsmdaqcstate(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_qcldtsi)
+        trim(LIS_usafsiobsId)//char(0),noah39_qcusafsi)
    call registerlsmdasetstatevar(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_setldtsivars)
+        trim(LIS_usafsiobsId)//char(0),noah39_setusafsivars)
    call registerlsmdagetobspred(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_getldtsipred)
+        trim(LIS_usafsiobsId)//char(0),noah39_getusafsipred)
    call registerlsmdascalestatevar(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_scale_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),noah39_scale_usafsi)
    call registerlsmdadescalestatevar(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_descale_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),noah39_descale_usafsi)
    call registerlsmdaqcobsstate(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noah39_qc_ldtsiobs)
+        trim(LIS_usafsiobsId)//char(0),noah39_qc_usafsiobs)
 #endif
 
 #if ( defined DA_OBS_SNODEP )
@@ -2114,6 +2191,30 @@ subroutine LIS_lsmda_plugin
         trim(LIS_GLASSlaiobsId)//char(0),noahmp36_descale_veg)
 
    call registerlsmdainit(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp36_daveg_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp36_getvegvars)
+   call registerlsmdasetstatevar(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp36_setvegvars)
+   call registerlsmdaobstransform(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp36_transform_veg)
+   call registerlsmdamapobstolsm(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp36_map_veg)
+   call registerlsmdaupdatestate(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp36_updatevegvars)
+   call registerlsmdaqcstate(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp36_qcveg)
+
+   call registerlsmdagetobspred(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp36_getLAIpred)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp36_qc_LAIobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp36_scale_veg)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp36_descale_veg)
+
+   call registerlsmdainit(trim(LIS_noahmp36Id)//"+"//&
         trim(LIS_NASASMAPvodobsId)//char(0),noahmp36_daveg_init)
    call registerlsmdagetstatevar(trim(LIS_noahmp36Id)//"+"//&
         trim(LIS_NASASMAPvodobsId)//char(0),noahmp36_getvegvars)
@@ -2251,6 +2352,69 @@ subroutine LIS_lsmda_plugin
         trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_updatesoilm)
+
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_synsndId)//char(0),noahmp401_dasnow_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_synsndId)//char(0),noahmp401_getsnowvars)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_synsndId)//char(0),noahmp401_setsnowvars)
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_synsndId)//char(0),noahmp401_getsnowpred)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_synsndId)//char(0),noahmp401_qcsnow)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_synsndId)//char(0),noahmp401_qc_snowobs) 
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_synsndId)//char(0),noahmp401_scale_snow)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_synsndId)//char(0),noahmp401_descale_snow)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_synsndId)//char(0),noahmp401_updatesnowvars)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_synsndId)//char(0),noahmp401_qc_snowobs)
+
+! Wanshu Nie, LAI DA
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GLASSlaiobsId)//char(0),noahmp401_daveg_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GLASSlaiobsId)//char(0),noahmp401_getvegvars)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GLASSlaiobsId)//char(0),noahmp401_setvegvars)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GLASSlaiobsId)//char(0),noahmp401_updatevegvars)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GLASSlaiobsId)//char(0),noahmp401_qcveg)
+
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GLASSlaiobsId)//char(0),noahmp401_getLAIpred)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GLASSlaiobsId)//char(0),noahmp401_qc_LAIobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GLASSlaiobsId)//char(0),noahmp401_scale_veg)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GLASSlaiobsId)//char(0),noahmp401_descale_veg)
+
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp401_daveg_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp401_getvegvars)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp401_setvegvars)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp401_updatevegvars)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp401_qcveg)
+
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp401_getLAIpred)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp401_qc_LAIobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp401_scale_veg)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp401_descale_veg)
+
 ! Yeosang Yoon, SNODEP DA
 #if ( defined DA_OBS_SNODEP )
 ! DA + snodep wirings
@@ -2276,29 +2440,29 @@ subroutine LIS_lsmda_plugin
         trim(LIS_snodepobsId)//char(0),noahmp401_descale_snodep)
 #endif
 
-! Yeosang Yoon, LDTSI DA
-#if ( defined DA_OBS_LDTSI )
-! DA + ldtsi wirings
+! Yeosang Yoon, USAFSI DA
+#if ( defined DA_OBS_USAFSI )
+! DA + usafsi wirings
    call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_daldtsi_init)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_dausafsi_init)
    call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_getldtsivars)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_getusafsivars)
    call registerlsmdaobstransform(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_transform_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_transform_usafsi)
    call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_updateldtsivars)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_updateusafsivars)
    call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_setldtsivars)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_setusafsivars)
    call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_getldtsipred)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_getusafsipred)
    call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_qcldtsi)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_qcusafsi)
    call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_qc_ldtsiobs)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_qc_usafsiobs)
    call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_scale_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_scale_usafsi)
    call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_ldtsiobsId)//char(0),noahmp401_descale_ldtsi)
+        trim(LIS_usafsiobsId)//char(0),noahmp401_descale_usafsi)
 #endif
 #endif
 
@@ -2860,10 +3024,8 @@ subroutine LIS_lsmda_plugin
 #endif
 #endif
 
-!MN: Jules 5.0 SMAP(NASA) soil moisture
-#if ( defined JULES_5_0_DEV )
-!Disable JULES.5.0 DA; not ready yet.
 #if ( defined SM_JULES_5_0 )
+!MN: Jules 5.0 SMAP(NASA) soil moisture
    call registerlsmdainit(trim(LIS_jules50Id)//"+"//&
         trim(LIS_NASASMAPsmobsId)//char(0),jules50_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules50Id)//"+"//&
@@ -2882,10 +3044,8 @@ subroutine LIS_lsmda_plugin
         trim(LIS_NASASMAPsmobsId)//char(0),jules50_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules50Id)//"+"//&
         trim(LIS_NASASMAPsmobsId)//char(0),jules50_updatesoilm)
-#endif
 
 ! MN: Jules 5.0 SMAP(NRT) soil moisture
-#if ( defined SM_JULES_5_0 )
    call registerlsmdainit(trim(LIS_jules50Id)//"+"//&
         trim(LIS_SMAPNRTsmobsId)//char(0),jules50_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules50Id)//"+"//&
@@ -2904,11 +3064,8 @@ subroutine LIS_lsmda_plugin
         trim(LIS_SMAPNRTsmobsId)//char(0),jules50_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules50Id)//"+"//&
         trim(LIS_SMAPNRTsmobsId)//char(0),jules50_updatesoilm)
-#endif
 
-! MN 
-! Jules 5.0 SMOPS ASCAT soil moisture
-#if ( defined SM_JULES_5_0 )
+! MN: Jules 5.0 SMOPS ASCAT soil moisture
    call registerlsmdainit(trim(LIS_jules50Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules50_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules50Id)//"+"//&
@@ -2927,7 +3084,6 @@ subroutine LIS_lsmda_plugin
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules50_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules50Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules50_updatesoilm)
-#endif
 
 #if ( defined DA_OBS_SNODEP )
 ! Jules 5.0 snow depth, Yeosang Yoon
@@ -2956,13 +3112,37 @@ subroutine LIS_lsmda_plugin
         trim(LIS_snodepobsId)//char(0),jules50_qc_snodepobs)
 #endif
 
+#if ( defined DA_OBS_USAFSI )
+! Jules 5.0 USAFSI, Yeosang Yoon
+! DA + snodep wirings
+   call registerlsmdainit(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules50_dausafsi_init)
+   call registerlsmdagetstatevar(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules50_getusafsivars)
+   call registerlsmdaobstransform(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules50_transform_usafsi)
+   call registerlsmdamapobstolsm(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules50_map_usafsi)
+   call registerlsmdaupdatestate(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules50_updateusafsi)
+   call registerlsmdaqcstate(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules50_qcusafsi)
+   call registerlsmdasetstatevar(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules50_setusafsivars)
+   call registerlsmdagetobspred(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules50_getusafsipred)
+   call registerlsmdascalestatevar(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules50_scale_usafsi)
+   call registerlsmdadescalestatevar(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules50_descale_usafsi)
+   call registerlsmdaqcobsstate(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules50_qc_usafsiobs)
 #endif
 
+#endif  !endif for SM_JULES_5_0
 
-!MN: Jules 5.2 SMAP(NASA) soil moisture
-#if ( defined JULES_5_0_DEV )
-!Disable JULES.5.2 DA; not ready yet.
 #if ( defined SM_JULES_5_2)
+!MN: Jules 5.2 SMAP(NASA) soil moisture
    call registerlsmdainit(trim(LIS_jules52Id)//"+"//&
         trim(LIS_NASASMAPsmobsId)//char(0),jules52_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules52Id)//"+"//&
@@ -2981,10 +3161,8 @@ subroutine LIS_lsmda_plugin
         trim(LIS_NASASMAPsmobsId)//char(0),jules52_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules52Id)//"+"//&
         trim(LIS_NASASMAPsmobsId)//char(0),jules52_updatesoilm)
-#endif
 
 ! MN: Jules 5.2 SMAP(NRT) soil moisture
-#if ( defined SM_JULES_5_2 )
    call registerlsmdainit(trim(LIS_jules52Id)//"+"//&
         trim(LIS_SMAPNRTsmobsId)//char(0),jules52_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules52Id)//"+"//&
@@ -3003,11 +3181,8 @@ subroutine LIS_lsmda_plugin
         trim(LIS_SMAPNRTsmobsId)//char(0),jules52_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules52Id)//"+"//&
         trim(LIS_SMAPNRTsmobsId)//char(0),jules52_updatesoilm)
-#endif
 
-! MN 
-! Jules 5.2 SMOPS ASCAT soil moisture
-#if ( defined SM_JULES_5_2 )
+! MN: Jules 5.2 SMOPS ASCAT soil moisture
    call registerlsmdainit(trim(LIS_jules52Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules52_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules52Id)//"+"//&
@@ -3026,13 +3201,10 @@ subroutine LIS_lsmda_plugin
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules52_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules52Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules52_updatesoilm)
-#endif
-#endif
+#endif  !endif for SM_JULES_5_2
 
-
-#if 0 
-!MN: Jules 5.3 SMAP(NASA) soil moisture
 #if ( defined SM_JULES_5_3 )
+!MN: Jules 5.3 SMAP(NASA) soil moisture
    call registerlsmdainit(trim(LIS_jules53Id)//"+"//&
         trim(LIS_NASASMAPsmobsId)//char(0),jules53_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules53Id)//"+"//&
@@ -3051,10 +3223,8 @@ subroutine LIS_lsmda_plugin
         trim(LIS_NASASMAPsmobsId)//char(0),jules53_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules53Id)//"+"//&
         trim(LIS_NASASMAPsmobsId)//char(0),jules53_updatesoilm)
-#endif
 
 ! MN: Jules 5.3 SMAP(NRT) soil moisture
-#if ( defined SM_JULES_5_3 )
    call registerlsmdainit(trim(LIS_jules53Id)//"+"//&
         trim(LIS_SMAPNRTsmobsId)//char(0),jules53_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules53Id)//"+"//&
@@ -3073,11 +3243,8 @@ subroutine LIS_lsmda_plugin
         trim(LIS_SMAPNRTsmobsId)//char(0),jules53_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules53Id)//"+"//&
         trim(LIS_SMAPNRTsmobsId)//char(0),jules53_updatesoilm)
-#endif
 
-! MN 
-! Jules 5.3 SMOPS ASCAT soil moisture
-#if ( defined SM_JULES_5_3 )
+! MN: Jules 5.3 SMOPS ASCAT soil moisture
    call registerlsmdainit(trim(LIS_jules53Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules53_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_jules53Id)//"+"//&
@@ -3096,10 +3263,122 @@ subroutine LIS_lsmda_plugin
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules53_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_jules53Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules53_updatesoilm)
+#endif  !endif for SM_JULES_5_3
+
+#if ( defined SM_JULES_5_X )
+!SW: Jules 5.x SMAP(NASA) soil moisture
+   call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_dasoilm_init)
+   call registerlsmdagetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_getsoilm)
+   call registerlsmdasetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_setsoilm)
+   call registerlsmdagetobspred(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_getsmpred)
+   call registerlsmdaqcstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_qcsoilm)
+   call registerlsmdaqcobsstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_qc_soilmobs)
+   call registerlsmdascalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_scale_soilm)
+   call registerlsmdadescalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_descale_soilm)
+   call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_NASASMAPsmobsId)//char(0),jules5x_updatesoilm)
+
+! SW: Jules 5.x SMAP(NRT) soil moisture
+   call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_dasoilm_init)
+   call registerlsmdagetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_getsoilm)
+   call registerlsmdasetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_setsoilm)
+   call registerlsmdagetobspred(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_getsmpred)
+   call registerlsmdaqcstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_qcsoilm)
+   call registerlsmdaqcobsstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_qc_soilmobs)
+   call registerlsmdascalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_scale_soilm)
+   call registerlsmdadescalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_descale_soilm)
+   call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMAPNRTsmobsId)//char(0),jules5x_updatesoilm)
+
+! SW: Jules 5.x SMOPS ASCAT soil moisture
+   call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_dasoilm_init)
+   call registerlsmdagetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_getsoilm)
+   call registerlsmdasetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_setsoilm)
+   call registerlsmdagetobspred(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_getsmpred)
+   call registerlsmdaqcstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_qcsoilm)
+   call registerlsmdaqcobsstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_qc_soilmobs)
+   call registerlsmdascalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_scale_soilm)
+   call registerlsmdadescalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_descale_soilm)
+   call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_updatesoilm)
+
+#if ( defined DA_OBS_SNODEP )
+! Jules 5.x snow depth, Yeosang Yoon
+   call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_dasnodep_init)
+   call registerlsmdagetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_getsnodepvars)
+   call registerlsmdaobstransform(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_transform_snodep)
+   call registerlsmdamapobstolsm(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_map_snodep)
+   call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_updatesnodep)
+   call registerlsmdaqcstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_qcsnodep)
+   call registerlsmdasetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_setsnodepvars)
+   call registerlsmdagetobspred(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_getsnodeppred)
+   call registerlsmdascalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_scale_snodep)
+   call registerlsmdadescalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_descale_snodep)
+   call registerlsmdaqcobsstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_snodepobsId)//char(0),jules5x_qc_snodepobs)
 #endif
 
-#endif ! if 0 for jules53
-
+#if ( defined DA_OBS_USAFSI )
+   call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_dausafsi_init)
+   call registerlsmdagetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_getusafsivars)
+   call registerlsmdaobstransform(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_transform_usafsi)
+   call registerlsmdamapobstolsm(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_map_usafsi)
+   call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_updateusafsi)
+   call registerlsmdaqcstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_qcusafsi)
+   call registerlsmdasetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_setusafsivars)
+   call registerlsmdagetobspred(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_getusafsipred)
+   call registerlsmdascalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_scale_usafsi)
+   call registerlsmdadescalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_descale_usafsi)
+   call registerlsmdaqcobsstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_usafsiobsId)//char(0),jules5x_qc_usafsiobs)
 #endif
+#endif 
+
+#endif  !endif for DA_DIRECT_INSERTION, DA_ENKS, or DA_ENKF
+
 end subroutine LIS_lsmda_plugin
 end module LIS_lsmda_pluginMod

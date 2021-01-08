@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -127,8 +129,8 @@ subroutine HYMAP_routing_run(n)
               surface_runoff = 0.0
               baseflow = 0.0
 
-              call LIS_tile2grid(n,m,surface_runoff,surface_runoff_t)
-              call LIS_tile2grid(n,m,baseflow,baseflow_t)
+              call LIS_tile2grid(n,m,surface_runoff,surface_runoff_t,1)
+              call LIS_tile2grid(n,m,baseflow,baseflow_t,1)
               
               call model(LIS_rc%udef,&
                    LIS_rc%gnc(n),&

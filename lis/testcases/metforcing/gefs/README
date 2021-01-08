@@ -1,0 +1,36 @@
+GEFS Meteorological Forcing Reader
+
+This is a testcase that uses:
+  (a) Latlon grid  
+  (b) Continental U.S. (CONUS) domain
+  (c) The Noah version 3.6 land surface model
+  (d) GEFS forcing files
+  (e) A time period from 00:30Z 1 Jan 2001 to 23:30Z 1 Jan 2001
+  (f) 3-hourly output files, written as binary-formatted (*.gs4r)
+
+This directory contains:
+  (a) This README file
+  (b) The "ldt.config" file to generate the parameters using LDT
+  (c) An "input.ctl" file used to open the LDT parameters in GrADS
+  (d) The "lis.config" file used for this testcase
+  (e) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+      to select the output variables
+  (f) An "output.ctl" file used to display the output in GrADS from
+      the LIS run
+  (g) A "testcase.ctl" file used to display the packaged output in
+      GrADS from the OUTPUT tar file provided by the testcase
+
+To run this testcase:
+  (a) Generate the LDT and the LIS executables and copy to local 
+      working directory
+  (b) Run the LDT executable using the "ldt.config" file and the
+      file with the testcase input data
+  (c) Run the LIS executable using the "lis.config" file with the
+      testcase input data
+  (d) View the netcdf output using the testcase GrADS files
+
+Caveats:
+  (a) Please note that this is a simple functional test and the output
+      from the testcase is not expected to be used for any scientific
+      evaluation.
+

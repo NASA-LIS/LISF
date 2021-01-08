@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -61,7 +63,9 @@ module LIS_historyMod
 !   1 Apr 2015: Hiroko Beaudoing; Added GRIB-2 routines
 !  15 May 2015: Hiroko Beaudoing; Added nsoillayers2, lyrthk2 for when soil
 !                   moisture and temperature having different number of layers
-!                   used in GRIB1 & GRIB2 format             
+!                   used in GRIB1 & GRIB2 format
+!  18 Oct 2018: David Mocko: Check lis.config entry for option to turn off
+!                   writing ASCII stats files with netCDF output format
 !
 ! !USES: 
   use LIS_coreMod
@@ -102,7 +106,7 @@ module LIS_historyMod
   public :: LIS_writevar_spread  ! writes ensemble spared to a gridded file
   public :: LIS_writevar_incr    ! writes analysis increments to a gridded file
   public :: LIS_writeModelOutput ! writes model output based on the selected
-                                           ! format and list of variables
+  public :: LIS_writeRoutingModelOutput                                           ! format and list of variables
   public :: LIS_gather_gridded_output      ! gather the 1d tiled output variable into a 2d gridded array
   public :: LIS_gather_tiled_vector_output ! gather the 1d tiled output variables in tile space
   public :: LIS_gather_gridded_vector_output ! gather the 1d tiled output variable into a 1d gridded array
@@ -163,6 +167,16 @@ module LIS_historyMod
 !EOP
   end interface
 
+!BOP
+! !ROUTINE: LIS_grid2tile
+! \label{LIS_grid2tile}
+!
+! !INTERFACE:
+  interface LIS_grid2tile
+     module procedure grid2tile
+     module procedure grid2tile_ens
+  end interface
+  
 !BOP
 ! 
 ! !ROUTINE: LIS_writevar_reduced_tilespace
@@ -371,6 +385,7 @@ module LIS_historyMod
   interface LIS_tile2grid
 ! !PRIVATE MEMBER FUNCTIONS: 
      module procedure tile2grid_local
+     module procedure tile2grid_local_ens
      module procedure tile2grid_global_ens
      module procedure tile2grid_global_noens
 ! 
@@ -481,6 +496,9 @@ contains
 
     call LIS_rescaleCount(n,group_temp)
 
+    write(LIS_logunit,*)'[INFO] Writing surface model output to:  ', &
+         trim(lsmoutfile) ! EMK
+
     if(LIS_rc%wout.eq."binary") then 
        if(LIS_masterproc) then 
           open(ftn,file=lsmoutfile,form='unformatted')
@@ -546,6 +564,146 @@ contains
     ! After writing reset the variables
     call LIS_resetOutputVars(n,group_temp)
   end subroutine LIS_writeModelOutput
+
+
+!BOP
+! !ROUTINE: LIS_writeRoutingModelOutput
+! \label{LIS_writeRoutingModelOutput}
+! 
+! !INTERFACE: 
+  subroutine LIS_writeRoutingModelOutput(n, routingoutfile, routingstatsfile, &
+       sopen, nsoillayers, outInterval, lyrthk, &
+       nsoillayers2, group, model_name, lyrthk2)
+! !USES:
+
+! !ARGUMENTS: 
+    integer,   intent(in)   :: n 
+    character(len=*),   intent(in)   :: routingoutfile
+    character(len=*),   intent(in)   :: routingstatsfile
+    logical,   intent(in)   :: sopen
+    real,      intent(in)   :: outInterval
+    integer,   intent(in)   :: nsoillayers
+    real,      intent(in)   :: lyrthk(nsoillayers)
+    integer,   intent(in)   :: nsoillayers2
+    integer,   intent(in),optional :: group
+    character(len=*), intent(in),optional :: model_name
+    real,      intent(in),optional   :: lyrthk2(nsoillayers2)
+! 
+! !DESCRIPTION: 
+!   This subroutine invokes the routine to write routing output in the selected
+!    data format (binary/grib1/netcdf) and using the selected list of variables. 
+!    Further, the variables are also written as instantaneous, time averaged,
+!    or accumulated based on the user specifications. 
+!   
+!   The arguments are: 
+!   \begin{description}
+!    \item[n]  index of the nest \newline
+!    \item[routingoutfile]  name of the ROUTING history file \newline
+!    \item[routingstatsfile] name of the ROUTING history stats file  \newline
+!    \item[sopen] flag determining whether to open the LIS history stats file \newline
+!    \item[outInterval]   history output frequency \newline
+!    \item[nsoillayers]  Number of soil layers \newline
+!    \item[lyrthk]   Thickness of soil layers \newline
+!  \end{description}
+! 
+!   The routines invoked are: 
+!   \begin{description}
+!   \item[writeBinaryOutput](\ref{writeBinaryOutput}) \newline
+!     writes the history files in binary format
+!   \item[writeGribOutput](\ref{writeGribOutput})\\
+!     writes the history files in GRIB-1 or GRIB-2 format
+!   \item[writeNetcdfOutput](\ref{writeNetcdfOutput}) \newline
+!     writes the history files in NETCDF format
+!   \item[LIS\_resetOutputVars](\ref{LIS_resetOutputVars}) \newline
+!     resets the time averaged varibles for the next output. 
+!   \end{description}
+!EOP
+
+    integer :: ftn, ftn_stats
+    integer :: iret
+    integer :: group_temp
+    character*100 :: mname_temp
+
+    if(.NOT.PRESENT(group)) then 
+       group_temp = 1
+    else
+       group_temp = group
+    endif
+    
+    if(.NOT.PRESENT(model_name)) then 
+       mname_temp = "model_not_specified"
+    else
+       mname_temp = model_name
+    endif
+
+    if(LIS_masterproc) then 
+       if ( LIS_rc%sout ) then
+          if ( sopen ) then
+             if(LIS_rc%startcode.eq."restart") then 
+                open(65+n+10*group_temp,file=routingstatsfile,&
+                   form='formatted', position='append')
+             else
+                open(65+n+10*group_temp,file=routingstatsfile,&
+                   form='formatted')
+             endif
+          endif
+
+          write(65+n+10*group_temp,*)              
+          write(65+n+10*group_temp,996)&
+             '       Statistical Summary of ROUTING output for:  ', & 
+             LIS_rc%mo,'/',LIS_rc%da,'/',LIS_rc%yr,LIS_rc%hr,':',&
+             LIS_rc%mn,':',LIS_rc%ss
+          996    format(a51,i2,a1,i2,a1,i4,1x,i2,a1,i2,a1,i2)
+          write(65+n+10*group_temp,*)
+          write(65+n+10*group_temp,997)
+          997    format(t27,'Mean',t41,'Stdev',t56,'Min',t70,'Max')
+       endif
+    endif
+    ftn = 12
+    ftn_stats = 65 + n +10*group_temp
+
+    call LIS_rescaleCount(n,group_temp)
+
+    write(LIS_logunit,*)'[INFO] Writing routing model output to:  ', &
+         trim(routingoutfile) ! EMK
+
+    if(LIS_rc%wout.eq."binary") then 
+       write(LIS_logunit,*)'[ERR] binary routing model outputs are not supported'
+       call LIS_endrun()
+    elseif(LIS_rc%wout.eq."grib1") then 
+#if(defined USE_GRIBAPI)
+       write(LIS_logunit,*)'[ERR] grib1 routing model outputs are not supported'
+       call LIS_endrun()
+#endif          
+    elseif(LIS_rc%wout.eq."grib2") then 
+#if(defined USE_GRIBAPI)
+       write(LIS_logunit,*)'[ERR] grib2 routing model outputs are not supported'
+       call LIS_endrun()
+#endif          
+    elseif(LIS_rc%wout.eq."netcdf") then 
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+       if(LIS_masterproc) then 
+#if (defined USE_NETCDF4)
+          iret = nf90_create(path=routingoutfile,cmode=nf90_hdf5,&
+               ncid = ftn)
+          call LIS_verify(iret,'creating netcdf file failed in LIS_historyMod')
+#endif
+#if (defined USE_NETCDF3)
+          iret = nf90_create(path=routingoutfile,cmode=nf90_clobber,&
+               ncid = ftn)
+          call LIS_verify(iret,'creating netcdf file failed in LIS_historyMod')
+#endif
+       endif
+       call writeRoutingNetcdfOutput(n,group_temp,ftn,ftn_stats, outInterval, &
+            nsoillayers, lyrthk, mname_temp)
+       if(LIS_masterproc) then 
+          iret = nf90_close(ftn)
+       endif
+#endif
+    endif
+    ! After writing reset the variables
+    call LIS_resetOutputVars(n,group_temp)
+  end subroutine LIS_writeRoutingModelOutput
 
 !BOP
 ! 
@@ -1801,6 +1959,361 @@ contains
   end subroutine writeNetcdfOutput
 
 !BOP
+! !ROUTINE: writeRoutingNetcdfOutput
+! \label{writeRoutingNetcdfOutput}
+! 
+! !INTERFACE: writeRoutingNetcdfOutput
+  subroutine writeRoutingNetcdfOutput(n, group, ftn, ftn_stats, outInterval, &
+       nsoillayers, lyrthk, model_name)
+! !USES: 
+
+! !ARGUMENTS: 
+    integer,   intent(in)   :: n 
+    integer,   intent(in)   :: group
+    integer,   intent(in)   :: ftn
+    integer,   intent(in)   :: ftn_stats
+    real,      intent(in)   :: outInterval
+    integer,   intent(in)   :: nsoillayers
+    real,      intent(in)   :: lyrthk(nsoillayers)
+    character*100, intent(in) :: model_name
+! 
+! !DESCRIPTION: 
+!  This routine writes an output file in the NETCDF format based on the 
+!  list of selected output variables. 
+!  The arguments are: 
+!  \begin{description}
+!    \item[n] index of the nest
+!    \item[ftn] file unit for the output file
+!    \item[ftn\_stats] file unit for the output statistics file
+!    \item[outInterval]   history output frequency
+!    \item[nsoillayers]  Number of soil layers
+!    \item[lyrthk]   Thickness of soil layers
+!    \item[model\_name] Name of the model that generates the output
+!  \end{description}
+!
+!   The routines invoked are: 
+!   \begin{description}
+!   \item[defineNETCDFheadervar](\ref{defineNETCDFheaderVar})
+!     writes the required headers for a single variable
+!   \item[writeSingleNETCDFvar](\ref{writeSingleNETCDFvar})
+!     writes a single variable into a netcdf formatted file. 
+!   \item[LIS\_verify](\ref{LIS_verify})
+!     call to check if the return value is valid or not.
+!   \end{description}
+!EOP
+
+    integer                 :: dimID(4)
+    integer                 :: tdimID,xtimeID,ensID
+    integer                 :: t,c,r,m,i,index1
+    real, allocatable       :: ensval(:) 
+    type(LIS_metadataEntry), pointer :: xlat, xlong
+    character*8             :: xtime_begin_date
+    character*6             :: xtime_begin_time
+    character*50            :: xtime_units
+    character*50            :: xtime_timeInc
+    integer                 :: iret
+! Note that the fix to add lat/lon to the NETCDF output will output
+! undefined values for the water points. 
+    character(len=8)        :: date
+    character(len=10)       :: time
+    character(len=5)        :: zone
+    integer, dimension(8)   :: values
+    type(LIS_metadataEntry), pointer :: dataEntry
+
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)           
+    call date_and_time(date,time,zone,values)
+    
+    allocate(xlat)
+    allocate(xlong)
+
+    xlat%short_name = "lat"
+    xlat%long_name = "latitude"
+    xlat%standard_name = "latitude"
+    xlat%units = "degree_north"
+    xlat%nunits = 1
+    xlat%format = 'F'
+    xlat%form = 1
+    xlat%vlevels = 1
+    xlat%timeAvgOpt = 0 
+    xlat%selectOpt = 1
+    xlat%minMaxOpt = 0 
+    xlat%stdOpt = 0 
+    allocate(xlat%modelOutput(1,LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n),&
+         xlat%vlevels))
+    allocate(xlat%count(1,xlat%vlevels))
+    xlat%count = 1
+    allocate(xlat%unittypes(1))
+    xlat%unittypes(1) = "degree_north"
+    xlat%valid_min = 0.0
+    xlat%valid_max = 0.0
+
+    xlong%short_name = "lon"
+    xlong%long_name = "longitude"
+    xlong%standard_name = "longitude"
+    xlong%units = "degree_east"
+    xlong%nunits = 1
+    xlong%format = 'F'
+    xlong%form = 1
+    xlong%vlevels = 1
+    xlong%timeAvgOpt = 0 
+    xlong%selectOpt = 1
+    xlong%minMaxOpt = 0 
+    xlong%stdOpt = 0 
+    allocate(xlong%modelOutput(1,LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n),&
+         xlong%vlevels))
+    allocate(xlong%count(1,xlong%vlevels))
+    xlong%count = 1
+    allocate(xlong%unittypes(1))
+    xlong%unittypes(1) = "degree_east"
+    xlong%valid_min = 0.0
+    xlong%valid_max = 0.0
+
+    if(LIS_masterproc) then 
+       if(LIS_rc%wopt.eq."1d tilespace") then 
+          write(LIS_logunit,*) '[ERR] 1d tilespace output for routing models'
+          write(LIS_logunit,*) '[ERR] is not supported currently'
+          call LIS_endrun()
+
+       elseif(LIS_rc%wopt.eq."2d gridspace") then 
+          call LIS_verify(nf90_def_dim(ftn,'east_west',LIS_rc%gnc(n),&
+               dimID(1)),&
+               'nf90_def_dim for east_west failed in LIS_historyMod')
+          call LIS_verify(nf90_def_dim(ftn,'north_south',LIS_rc%gnr(n),&
+               dimID(2)),&
+               'nf90_def_dim for north_south failed in LIS_historyMod')
+
+       elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+          call LIS_verify(nf90_def_dim(ftn,'east_west',LIS_rc%gnc(n),&
+               dimID(1)),&
+               'nf90_def_dim for east_west failed in LIS_historyMod')
+          call LIS_verify(nf90_def_dim(ftn,'north_south',LIS_rc%gnr(n),&
+               dimID(2)),&
+               'nf90_def_dim for north_south failed in LIS_historyMod')
+          call LIS_verify(nf90_def_dim(ftn,'ensemble',LIS_rc%nensem(n),&
+               dimID(3)),&
+               'nf90_def_dim for ensemble failed in LIS_historyMod')
+       endif
+
+       ! LIS output is always writing output for a single time
+       call LIS_verify(nf90_def_dim(ftn,'time',1,tdimID),&
+            'nf90_def_dim for time failed in LIS_historyMod')
+       call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"missing_value", LIS_rc%udef),&
+            'nf90_put_att for missing_value failed in LIS_historyMod')
+       
+       call defineNETCDFheaderVar(n,ftn,dimID, xlat,&
+            non_model_fields = .true. )       
+       call defineNETCDFheaderVar(n,ftn,dimID, xlong, &
+            non_model_fields = .true. )              
+
+       ! defining time field
+       call LIS_verify(nf90_def_var(ftn,'time',&
+            nf90_float,dimids = tdimID, varID=xtimeID),&
+            'nf90_def_var for time failed in LIS_historyMod')
+       
+       write(xtime_units,200) LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
+            LIS_rc%hr, LIS_rc%mn, LIS_rc%ss
+200    format ('minutes since ',I4.4,'-',I2.2,'-',I2.2,' ',I2.2,':', &
+            I2.2,':',I2.2)
+       write(xtime_begin_date, fmt='(I4.4,I2.2,I2.2)') &
+            LIS_rc%yr, LIS_rc%mo, LIS_rc%da
+       write(xtime_begin_time, fmt='(I2.2,I2.2,I2.2)') &
+            LIS_rc%hr, LIS_rc%mn, LIS_rc%ss
+       write(xtime_timeInc, fmt='(I20)') &
+            nint(outInterval)
+       ! time field attributes
+       call LIS_verify(nf90_put_att(ftn,xtimeID,&
+            "units",trim(xtime_units)),&
+            'nf90_put_att for units failed in LIS_historyMod')
+       call LIS_verify(nf90_put_att(ftn,xtimeID,&
+            "long_name","time"),&
+            'nf90_put_att for long_name failed in LIS_historyMod')
+       call LIS_verify(nf90_put_att(ftn,xtimeID,&
+            "time_increment",trim(adjustl(xtime_timeInc))),&
+            'nf90_put_att for time_increment failed in LIS_historyMod')
+       call LIS_verify(nf90_put_att(ftn,xtimeID,&
+            "begin_date",xtime_begin_date),&
+            'nf90_put_att for begin_date failed in LIS_historyMod')
+       call LIS_verify(nf90_put_att(ftn,xtimeID,&
+            "begin_time",xtime_begin_time),&
+            'nf90_put_att for begin_time failed in LIS_historyMod')
+
+       ! Write ensemble information as a variable:
+       if( LIS_rc%wopt.eq."2d ensemble gridspace" ) then
+          call LIS_verify(nf90_def_var(ftn,'ensemble',&
+               nf90_float, dimids=dimID(3), varID=ensID),&
+              'nf90_def_var for ensemble failed in LIS_historyMod')
+          ! ensemble var attributes
+          call LIS_verify(nf90_put_att(ftn,ensID,&
+              "units","ensemble number"),&
+              'nf90_put_att for ensemble units failed in LIS_historyMod')
+          call LIS_verify(nf90_put_att(ftn,ensID,&
+              "long_name","Ensemble numbers"),&
+              'nf90_put_att for ensemble long_name failed in LIS_historyMod')
+          allocate(ensval(LIS_rc%nensem(n)))
+          do i = 1, LIS_rc%nensem(n) 
+             ensval(i) = float(i)
+          end do
+       endif
+
+       ! Pointer to header information
+       dataEntry => LIS_histData(n)%head_routing_list
+
+       do while ( associated(dataEntry) )
+          call defineNETCDFheaderVar(n,ftn,dimId,&
+               dataEntry)
+          dataEntry => dataEntry%next
+       enddo
+
+       ! Global attributes
+       call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUM_SOIL_LAYERS", &
+            nsoillayers),&
+            'nf90_put_att for title failed in LIS_historyMod')
+       call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOIL_LAYER_THICKNESSES", &
+            lyrthk),&
+            'nf90_put_att for title failed in LIS_historyMod')
+       call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"title", &
+            "LIS land surface model output"),&
+            'nf90_put_att for title failed in LIS_historyMod')
+       call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"institution", &
+            trim(LIS_rc%institution)),&
+            'nf90_put_att for institution failed in LIS_historyMod')
+       call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"source",&
+            trim(model_name)),&
+            'nf90_put_att for source failed in LIS_historyMod')
+       call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"history", &
+            "created on date: "//date(1:4)//"-"//date(5:6)//"-"//&
+            date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)),&
+            'nf90_put_att for history failed in LIS_historyMod')
+       call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"references", &
+            "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"),&
+            'nf90_put_att for references failed in LIS_historyMod')
+       call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"conventions", &
+            "CF-1.6"),'nf90_put_att for conventions failed in LIS_historyMod')
+       call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"comment", &
+            "website: http://lis.gsfc.nasa.gov/"),&
+            'nf90_put_att for comment failed in LIS_historyMod')
+
+       ! Grid information
+       if(LIS_rc%lis_map_proj.eq."latlon") then   ! latlon
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
+               "EQUIDISTANT CYLINDRICAL"))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LAT", &
+               LIS_rc%gridDesc(n,4)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LON", &
+               LIS_rc%gridDesc(n,5)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"DX", &
+               LIS_rc%gridDesc(n,9)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"DY", &
+               LIS_rc%gridDesc(n,10)))       
+       elseif(LIS_rc%lis_map_proj.eq."mercator") then 
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
+               "MERCATOR"))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LAT", &
+               LIS_rc%gridDesc(n,4)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LON", &
+               LIS_rc%gridDesc(n,5)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"TRUELAT1", &
+               LIS_rc%gridDesc(n,10)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"STANDARD_LON", &
+               LIS_rc%gridDesc(n,11)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"DX", &
+               LIS_rc%gridDesc(n,8)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"DY", &
+               LIS_rc%gridDesc(n,9)))
+       elseif(LIS_rc%lis_map_proj.eq."lambert") then ! lambert conformal
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
+               "LAMBERT CONFORMAL"))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LAT", &
+               LIS_rc%gridDesc(n,4)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LON", &
+               LIS_rc%gridDesc(n,5)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"TRUELAT1", &
+               LIS_rc%gridDesc(n,10)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"TRUELAT2", &
+               LIS_rc%gridDesc(n,7)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"STANDARD_LON", &
+               LIS_rc%gridDesc(n,11)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"DX", &
+               LIS_rc%gridDesc(n,8)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"DY", &
+               LIS_rc%gridDesc(n,9)))
+
+       elseif(LIS_rc%lis_map_proj.eq."polar") then ! polar stereographic
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
+               "POLAR STEREOGRAPHIC"))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LAT", &
+               LIS_rc%gridDesc(n,4)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LON", &
+               LIS_rc%gridDesc(n,5)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"TRUELAT1", &
+               LIS_rc%gridDesc(n,10)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"ORIENT", &
+               LIS_rc%gridDesc(n,7)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"STANDARD_LON", &
+               LIS_rc%gridDesc(n,11)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"DX", &
+               LIS_rc%gridDesc(n,8)))
+          call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"DY", &
+               LIS_rc%gridDesc(n,9)))
+       endif       
+       call LIS_verify(nf90_enddef(ftn))
+    endif
+
+    ! Write variable data (both non-model and model-based):
+    do i=1,LIS_rc%nroutinggrid(n)
+       do m=1,LIS_rc%nensem(n)
+          t = m+(i-1)*LIS_rc%nensem(n)
+
+          c = LIS_routing(n)%tile(t)%col
+          r = LIS_routing(n)%tile(t)%row
+
+          xlat%modelOutput(1,t,1) = LIS_domain(n)%lat(c+(r-1)*LIS_rc%lnc(n))
+          xlong%modelOutput(1,t,1) = LIS_domain(n)%lon(c+(r-1)*LIS_rc%lnc(n))
+       enddo
+    enddo
+
+    call writeSingleRoutingNETCDFvar(ftn,ftn_stats,n,xlat,&
+         non_model_fields = .true.)
+    call writeSingleRoutingNETCDFvar(ftn,ftn_stats,n,xlong, &
+         non_model_fields = .true.)
+
+    if(LIS_masterproc) then 
+       call LIS_verify(nf90_put_var(ftn,xtimeID,0.0),&
+            'nf90_put_var for xtimeID failed in LIS_historyMod')
+       ! Write ensemble var info:
+       if( LIS_rc%wopt.eq."2d ensemble gridspace" ) then
+         call LIS_verify(nf90_put_var(ftn,ensID,ensval,(/1/),(/LIS_rc%nensem(n)/)),&
+            'nf90_put_var for ensID failed in LIS_historyMod')
+       endif
+    endif
+
+    dataEntry => LIS_histData(n)%head_routing_list
+
+    do while ( associated(dataEntry) )
+       call writeSingleRoutingNETCDFvar(ftn,ftn_stats,n,&
+                                 dataEntry)
+       dataEntry => dataEntry%next
+    enddo
+    deallocate(xlat%modelOutput)
+    deallocate(xlat%count)
+    deallocate(xlat%unittypes)
+    deallocate(xlat)
+
+    deallocate(xlong%modelOutput)
+    deallocate(xlong%count)
+    deallocate(xlong%unittypes)
+    deallocate(xlong)
+    
+    if( LIS_masterproc ) then
+      if( LIS_rc%wopt.eq."2d ensemble gridspace" ) then
+        deallocate(ensval)
+      endif
+    endif
+
+#endif
+  end subroutine writeRoutingNetcdfOutput
+
+!BOP
 ! !ROUTINE: defineNETCDFheaderVar
 ! \label{defineNETCDFheaderVar}
 ! 
@@ -2946,8 +3459,10 @@ contains
                 if(dataEntry%count(t,k).gt.0) then 
                    if(dataEntry%timeAvgOpt.eq.3) then  !do nothing
                       continue   
-                   elseif(dataEntry%timeAvgOpt.eq.2.or.dataEntry%timeAvgOpt.eq.1) then 
-                      dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/&
+                   elseif(dataEntry%timeAvgOpt.eq.2.or.&
+                        dataEntry%timeAvgOpt.eq.1) then 
+                      dataEntry%modelOutput(1,t,k) = &
+                           dataEntry%modelOutput(1,t,k)/&
                            dataEntry%count(t,k)
                    else !do nothing
                       continue   
@@ -3004,6 +3519,120 @@ contains
     endif
 
   end subroutine writeSingleNETCDFvar
+
+!BOP
+! !ROUTINE: writeSingleRoutingNETCDFvar
+! \label{writeSingleRoutingNETCDFvar}
+!
+! !INTERFACE: 
+  subroutine writeSingleRoutingNETCDFvar(ftn,ftn_stats,n,dataEntry,&
+       non_model_fields)
+! !USES: 
+    use LIS_coreMod,   only : LIS_rc
+
+    implicit none
+
+    integer,   intent(in)   :: n 
+    integer,   intent(in)   :: ftn
+    integer,   intent(in)   :: ftn_stats
+    type(LIS_metadataEntry), pointer :: dataEntry
+    logical,   optional     :: non_model_fields
+! 
+! !DESCRIPTION: 
+!  This routine writes a single variable to a NETCDF file
+!  The arguments are: 
+!  \begin{description}
+!    \item[ftn] file unit for the output file
+!    \item[ftn\_stats] file unit for the output statistics file
+!    \item[n] index of the nest
+!   \item[dataEntry]
+!    object containing the values and attributes of the variable to be 
+!    written
+!  \end{description}
+!
+!   The routines invoked are: 
+!   \begin{description}
+!   \item[writeroutingvar\_netcdf\_real](\ref{writeroutingvar_netcdf_real})
+!     writes a variable into a netcdf formatted file. 
+!   \end{description}
+!EOP    
+    integer       :: i,k,t
+    logical       :: nmodel_status
+
+    nmodel_status = .false.
+    if(present(non_model_fields)) then 
+       nmodel_status = non_model_fields
+    endif
+
+    if(dataEntry%selectOpt.eq.1) then
+
+       if(.not.nmodel_status) then
+
+          do t=1,LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)
+             do k=1,dataEntry%vlevels
+                if(dataEntry%count(t,k).gt.0) then 
+                   if(dataEntry%timeAvgOpt.eq.3) then  !do nothing
+                      continue   
+                   elseif(dataEntry%timeAvgOpt.eq.2.or.&
+                        dataEntry%timeAvgOpt.eq.1) then 
+                      dataEntry%modelOutput(1,t,k) =&
+                           dataEntry%modelOutput(1,t,k)/&
+                           dataEntry%count(t,k)
+                   else !do nothing
+                      continue   
+                   endif
+                else
+                   dataEntry%modelOutput(1,t,k) = LIS_rc%udef
+                endif
+             enddo
+          enddo
+       endif
+
+       do k=1,dataEntry%vlevels
+          ! accumulated values
+          ! time-averaged values and instantaneous values
+          if(dataEntry%timeAvgOpt.eq.2) then 
+             call writeroutingvar_netcdf_real(ftn,ftn_stats, n,&
+                  dataEntry%modelOutput(1,:,k),&
+                  dataEntry%varId_def, &
+                  trim(dataEntry%short_name)//'('//&
+                  trim(dataEntry%units)//')',&
+                  dataEntry%form,nmodel_status,dim1=k)
+             call writeroutingvar_netcdf_real(ftn,ftn_stats, n,&
+                  dataEntry%modelOutput(2,:,k),&
+                  dataEntry%varId_opt1, &
+                  trim(dataEntry%short_name)//'('//&
+                  trim(dataEntry%units)//')',&
+                  dataEntry%form,nmodel_status,dim1=k)
+          ! time-averaged values or instantaneous values
+          else
+             call writeroutingvar_netcdf_real(ftn,ftn_stats, n,&
+                  dataEntry%modelOutput(1,:,k),&
+                  dataEntry%varId_def, &
+                  trim(dataEntry%short_name)//'('//&
+                  trim(dataEntry%units)//')',&
+                  dataEntry%form,nmodel_status,dim1=k)
+          end if ! EMK
+          if(dataEntry%minmaxOpt.gt.0) then 
+             call writeroutingvar_netcdf_real(ftn,ftn_stats, n,&
+                  dataEntry%minimum(:,k),&
+                  dataEntry%varId_min, &
+                  trim(dataEntry%short_name)//'_min ('//&
+                  trim(dataEntry%units)//')',&
+                  dataEntry%form,nmodel_status,dim1=k)
+             
+             call writeroutingvar_netcdf_real(ftn,ftn_stats, n,&
+                  dataEntry%maximum(:,k),&
+                  dataEntry%varId_max, &
+                  trim(dataEntry%short_name)//'_max ('//&
+                  trim(dataEntry%units)//')',&
+                  dataEntry%form,nmodel_status,dim1=k)
+             
+          endif
+       enddo
+    endif
+
+  end subroutine writeSingleRoutingNETCDFvar
 
 
 !BOP
@@ -4606,6 +5235,7 @@ contains
     integer :: varid
     integer :: status
     integer :: count1 ,c,r,npatch,t,gid,stid,tid
+    integer :: glbnpatch_size
     character*20 :: wform
 
     if(present(wformat)) then 
@@ -4613,7 +5243,8 @@ contains
     else
        wform = "binary"
     endif
-    allocate(gtmp(LIS_rc%glbnpatch_red(n,m)))
+    glbnpatch_size = LIS_rc%glbnpatch_red(n,m)
+    allocate(gtmp(glbnpatch_size))
     if(wform.eq."binary") then 
        read(ftn) gtmp
     elseif(wform.eq."netcdf") then 
@@ -4622,10 +5253,16 @@ contains
        call LIS_verify(status,'Error in nf90_inq_varid in LIS_readvar_restart')
 
        if(present(dim).and.present(vlevels)) then 
-          allocate(gtmp_v(LIS_rc%glbnpatch_red(n,m),vlevels))
-          status = nf90_get_var(ftn,varid,gtmp_v)
+          if ( dim > vlevels ) then
+             write(LIS_logunit,*) '[ERR] LIS_readvar_restart: ' // &
+                'requested level greater than total number of levels'
+             call LIS_endrun
+          endif
+          allocate(gtmp_v(glbnpatch_size,1))
+          status = nf90_get_var(ftn,varid,gtmp_v,&
+             start=(/1,dim/),count=(/glbnpatch_size,1/))
           call LIS_verify(status,'Error in nf90_get_var in LIS_readvar_restart')
-          gtmp = gtmp_v(:,dim)
+          gtmp = gtmp_v(:,1)
           deallocate(gtmp_v)
        else
           status = nf90_get_var(ftn,varid,gtmp)
@@ -5271,7 +5908,6 @@ contains
           enddo
 
           write(ftn) gtmp2
-!          call write_stats(gtmp2, LIS_rc%gnc(n)*LIS_rc%gnr(n), mvar, ftn_stats, form)
           call write_stats(gtmp2, LIS_rc%glbngrid_red(n), mvar, ftn_stats, form)
           deallocate(gtmp)
           deallocate(gtmp2)
@@ -5364,14 +6000,16 @@ contains
              call LIS_verify(iret,'nf90_put_var failed in LIS_historyMod')
           endif
           if(ftn_stats.ne.-1) then
-             call stats(gtmp1,LIS_rc%udef,LIS_rc%glbntiles_red(n),vmean, & 
-                        vstdev,vmin,vmax)
-             if(form==1) then 
-                write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
-             elseif(form==2) then 
-                write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+             if ( LIS_rc%sout ) then
+                call stats(gtmp1,LIS_rc%udef,LIS_rc%glbntiles_red(n), &
+                           vmean,vstdev,vmin,vmax)
+                if(form==1) then
+                   write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
+                elseif(form==2) then
+                   write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+                endif
+                call lis_flush(ftn_stats)
              endif
-             call lis_flush(ftn_stats)
           endif
           deallocate(gtmp1)
        endif
@@ -5439,15 +6077,17 @@ contains
              iret = nf90_put_var(ftn,varid,gtmp,(/1,1/),&
                                  (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
           endif 
-          if(ftn_stats.ne.-1) then 
-             call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),vmean, & 
-                        vstdev,vmin, vmax)
-             if(form==1) then 
-                write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
-             elseif(form==2) then 
-                write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+          if(ftn_stats.ne.-1) then
+             if ( LIS_rc%sout ) then
+                call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),&
+                           vmean,vstdev,vmin,vmax)
+                if(form==1) then
+                   write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
+                elseif(form==2) then
+                   write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+                endif
+                call lis_flush(ftn_stats)
              endif
-             call lis_flush(ftn_stats)
           endif
           deallocate(gtmp)
        endif
@@ -5519,15 +6159,17 @@ contains
                 iret = nf90_put_var(ftn,varid,gtmp,(/1,1/),&
                      (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
              endif
-             if(ftn_stats.ne.-1) then 
-                call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),vmean, & 
-                     vstdev,vmin, vmax)
-                if(form==1) then 
-                   write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
-                elseif(form==2) then 
-                   write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+             if(ftn_stats.ne.-1) then
+                if ( LIS_rc%sout ) then
+                   call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),&
+                              vmean,vstdev,vmin,vmax)
+                   if(form==1) then
+                      write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
+                   elseif(form==2) then
+                      write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+                   endif
+                   call lis_flush(ftn_stats)
                 endif
-                call lis_flush(ftn_stats)
              endif
              deallocate(gtmp)
           endif
@@ -5618,16 +6260,18 @@ contains
                         (/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
                 endif
              enddo
-             if(ftn_stats.ne.-1) then 
-                call stats_ens(gtmp_ens,LIS_rc%udef,&
-                     LIS_rc%gnc(n), LIS_rc%gnr(n),LIS_rc%nensem(n),vmean, & 
-                     vstdev,vmin, vmax)
-                if(form==1) then 
-                   write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
-                elseif(form==2) then 
-                   write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+             if(ftn_stats.ne.-1) then
+                if ( LIS_rc%sout ) then
+                   call stats_ens(gtmp_ens,LIS_rc%udef,               &
+                        LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nensem(n), &
+                        vmean,vstdev,vmin,vmax)
+                   if(form==1) then
+                      write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
+                   elseif(form==2) then
+                      write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+                   endif
+                   call lis_flush(ftn_stats)
                 endif
-                call lis_flush(ftn_stats)
              endif
              deallocate(gtmp_ens)
           endif
@@ -5638,6 +6282,340 @@ contains
 998 FORMAT(1X,A18,4E14.3)
 999 FORMAT(1X,A18,4F14.3)
   end subroutine writevar_netcdf_withstats_real
+
+!BOP
+! !ROUTINE: writeroutingvar_netcdf_real
+! \label{writeroutingvar_netcdf_real}
+! 
+! !INTERFACE:
+  subroutine writeroutingvar_netcdf_real(ftn,ftn_stats, n, var,varid, mvar,&
+       form, nmodel_status,dim1)
+! !USES: 
+
+    implicit none
+! !ARGUMENTS: 
+    integer, intent(in) :: n
+    integer, intent(in) :: ftn
+    integer, intent(in) :: ftn_stats
+    integer             :: varid
+    real, intent(in)    :: var(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n))
+    character (len=*)   :: mvar
+    integer, intent(in) :: form
+    logical, intent(in) :: nmodel_status
+    integer, intent(in), optional :: dim1
+!
+! !DESCRIPTION:
+!  Write a real variable to a netcdf output file with some diagnostic 
+!  statistics written to a text file. 
+!
+!  The arguments are: 
+!  \begin{description}
+!   \item [n]
+!     index of the domain or nest.
+!   \item [ftn]
+!     unit number of the netcdf output file
+!   \item [ftn\_stats]
+!     unit number of the ASCII text statistics file
+!   \item [var]
+!     variables being written, dimensioned in the tile space
+!   \item[mvar]
+!     name of the variable being written (will be used in the stats file)
+!   \item[form]
+!     format to be used in the stats file (1-decimal format, 
+!     2-scientific format)
+!   \item [flag]
+!    option to determine if the variable needs to be written (1-write, 
+!    0-do not write)
+!  \end{description}
+!
+!  The routines invoked are: 
+!  \begin{description}
+!   \item[stats](\ref{stats}) \newline
+!     call to compute the diagnostic statistics
+!  \end{description}
+!
+!EOP
+    integer             :: l, iret
+    real :: vmean,vstdev,vmin,vmax
+
+    real, allocatable :: var1(:)
+    real, allocatable :: var1_ens(:,:)
+    real, allocatable :: gtmp(:,:)
+    real, allocatable :: gtmp_ens(:,:,:)
+    real, allocatable :: gtmp1(:)
+    real, allocatable :: gtmp1_ens(:,:)
+    integer :: gdeltas
+    integer :: count1 ,c,r,m,gid,ntiles,ierr,i,t
+
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+
+    if(LIS_rc%wopt.eq."2d gridspace") then 
+       allocate(var1(LIS_rc%nroutinggrid(n)))
+       if(LIS_masterproc) then 
+          allocate(gtmp(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+          allocate(gtmp1(LIS_rc%glbnroutinggrid(n)))
+          gtmp = 0.0
+          gtmp1 = 0.0
+       else
+          allocate(gtmp1(1))
+          gtmp1 = 0.0
+       endif
+       var1 = 0 
+
+       do i=1,LIS_rc%nroutinggrid(n)
+          do m=1,LIS_rc%nensem(n)
+             t = m+(i-1)*LIS_rc%nensem(n)
+             if ( var(t) == -9999.0 ) then
+                var1(i) = -9999.0
+             else
+                var1(i) = var1(i) + &
+                     var(t)*LIS_routing(n)%tile(t)%fgrd*&
+                     LIS_routing(n)%tile(t)%pens
+             endif
+          enddo
+       enddo
+#if (defined SPMD)      
+       gdeltas = LIS_routing_gdeltas(n,LIS_localPet)
+       call MPI_GATHERV(var1,gdeltas,&
+            MPI_REAL,gtmp1,LIS_routing_gdeltas(n,:),LIS_routing_goffsets(n,:),&
+            MPI_REAL,0,LIS_mpi_comm,ierr)
+#else 
+       gtmp1 = var1
+#endif
+       deallocate(var1)
+       if(LIS_masterproc) then 
+          gtmp = LIS_rc%udef
+          count1=1
+          do l=1,LIS_npes
+             do c=LIS_ews_halo_ind(n,l),LIS_ewe_halo_ind(n,l)
+                do r=LIS_nss_halo_ind(n,l),LIS_nse_halo_ind(n,l)
+                   gid = r+(c-1)*LIS_rc%gnr(n)
+                   ntiles = LIS_routing(n)%ntiles_pergrid(gid)
+                   if(ntiles.ne.0) then                 
+                      if(r.ge.LIS_nss_ind(n,l).and.&
+                           r.le.LIS_nse_ind(n,l).and.&
+                           c.ge.LIS_ews_ind(n,l).and.&
+                           c.le.LIS_ewe_ind(n,l))then !points not in halo
+                         gtmp(c,r) = gtmp1(count1)
+                      endif
+                      count1 = count1 + 1
+                   endif
+                enddo
+             enddo
+          enddo
+          
+          if(PRESENT(dim1)) then 
+             iret = nf90_put_var(ftn,varid,gtmp,(/1,1,dim1/),&
+                                 (/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
+          else            
+             iret = nf90_put_var(ftn,varid,gtmp,(/1,1/),&
+                                 (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
+          endif 
+          if(ftn_stats.ne.-1) then
+             if ( LIS_rc%sout ) then
+                call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),&
+                           vmean,vstdev,vmin,vmax)
+                if(form==1) then
+                   write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
+                elseif(form==2) then
+                   write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+                endif
+                call lis_flush(ftn_stats)
+             endif
+          endif
+          deallocate(gtmp)
+       endif
+       deallocate(gtmp1)
+
+    ! Write output in 2D ensemble grid space:
+    elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+
+       ! Non-model output field status (T=non-model; F=model-based):
+       if(nmodel_status) then   ! non-model output field status
+          allocate(var1(LIS_rc%nroutinggrid(n)))
+          if(LIS_masterproc) then 
+             allocate(gtmp(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+             allocate(gtmp1(LIS_rc%glbnroutinggrid(n)))
+             gtmp = 0.0
+             gtmp1 = 0.0
+          else
+             allocate(gtmp1(1))
+             gtmp1 = 0.0
+          endif
+          var1 = 0 
+          do i=1,LIS_rc%nroutinggrid(n)
+             do m=1,LIS_rc%nensem(n)
+                t = m + (i-1)*LIS_rc%nensem(n)
+                if ( var(t) == -9999.0 ) then
+                   var1(i) = -9999.0
+                else
+                   var1(i) = var1(i) + &
+                        var(t)*LIS_routing(n)%tile(t)%fgrd*&
+                        LIS_routing(n)%tile(t)%pens
+                endif
+             enddo
+          enddo
+          
+#if (defined SPMD)      
+          gdeltas = LIS_routing_gdeltas(n,LIS_localPet)
+          call MPI_GATHERV(var1,gdeltas,&
+               MPI_REAL,gtmp1,LIS_routing_gdeltas(n,:),&
+               LIS_routing_goffsets(n,:),&
+               MPI_REAL,0,LIS_mpi_comm,ierr)
+#else 
+          gtmp1 = var1
+#endif
+          deallocate(var1)
+          if(LIS_masterproc) then 
+             gtmp = LIS_rc%udef
+             count1=1
+             do l=1,LIS_npes
+                do c=LIS_ews_halo_ind(n,l),LIS_ewe_halo_ind(n,l)
+                   do r=LIS_nss_halo_ind(n,l),LIS_nse_halo_ind(n,l)
+                      gid = r+(c-1)*LIS_rc%gnr(n)
+                      ntiles = LIS_routing(n)%ntiles_pergrid(gid)
+                      if(ntiles.ne.0) then                 
+                         if(r.ge.LIS_nss_ind(n,l).and.&
+                              r.le.LIS_nse_ind(n,l).and.&
+                              c.ge.LIS_ews_ind(n,l).and.&
+                              c.le.LIS_ewe_ind(n,l))then !points not in halo
+                            gtmp(c,r) = gtmp1(count1)
+                         endif
+                         count1 = count1 + 1
+                      endif
+                   enddo
+                enddo
+             enddo
+             if(PRESENT(dim1)) then 
+                iret = nf90_put_var(ftn,varid,gtmp,(/1,1,dim1/),&
+                     (/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
+             else            
+                iret = nf90_put_var(ftn,varid,gtmp,(/1,1/),&
+                     (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
+             endif
+             if(ftn_stats.ne.-1) then
+                if ( LIS_rc%sout ) then
+                   call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),&
+                              vmean,vstdev,vmin,vmax)
+                   if(form==1) then
+                      write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
+                   elseif(form==2) then
+                      write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+                   endif
+                   call lis_flush(ftn_stats)
+                endif
+             endif
+             deallocate(gtmp)
+          endif
+          deallocate(gtmp1)
+          
+       ! Model-based field output:
+       else
+
+          allocate(var1_ens(LIS_rc%nroutinggrid(n), LIS_rc%nensem(n)))
+          allocate(var1(LIS_rc%nroutinggrid(n)))
+          if(LIS_masterproc) then 
+             allocate(gtmp_ens(LIS_rc%gnc(n),LIS_rc%gnr(n), LIS_rc%nensem(n)))
+             allocate(gtmp1_ens(LIS_rc%glbnroutinggrid(n),LIS_rc%nensem(n)))
+             gtmp_ens = 0.0
+             gtmp1_ens = 0.0
+          else
+             allocate(gtmp1_ens(1,LIS_rc%nensem(n)))
+             gtmp1_ens = 0.0
+          endif
+
+          var1_ens = 0 
+          do i=1,LIS_rc%nroutinggrid(n)
+             do m=1,LIS_rc%nensem(n)
+                t = m + (i-1)*LIS_rc%nensem(n)
+                if ( var(t) == -9999.0 ) then
+                   var1_ens(i,m) = -9999.0
+                else
+                   var1_ens(i,m) = &
+                        var(t)*LIS_domain(n)%tile(t)%fgrd
+                endif
+             enddo
+          enddo
+       
+#if (defined SPMD)      
+          gdeltas = LIS_routing_gdeltas(n,LIS_localPet)
+          do m=1,LIS_rc%nensem(n)
+             ! EMK: It is possible that the first dimension of var1_ens is 0 
+             ! (no grid points with tiles in the PET).  Unfortunately, slicing
+             ! such an array [e.g., var1_ens(:,m)] will cause an array bounds 
+             ! error.  So, we add some defensive code here to (a) copy a 
+             ! slice to a 1-d array only if the dimension is > 0; and (b) 
+             ! always pass the 1d array to MPI_GATHERV.  Note that no memory 
+             ! access error will occur in MPI_GATHERV for the zero-grid count 
+             ! case as long as gdeltas is also zero.
+             if (LIS_rc%nroutinggrid(n) > 0) then
+                var1(:) = var1_ens(:,m)
+             end if
+             call MPI_GATHERV(var1,gdeltas,&
+                  MPI_REAL,gtmp1_ens(:,m),LIS_routing_gdeltas(n,:),&
+                  LIS_routing_goffsets(n,:),&
+                  MPI_REAL,0,LIS_mpi_comm,ierr)
+          enddo
+#else 
+          do m=1,LIS_rc%nensem(n)
+             gtmp1_ens(:,m) = var1_ens(:,m)
+          enddo
+#endif
+
+          deallocate(var1)     ! EMK...Avoid memory leak
+          deallocate(var1_ens) ! EMK...Avoid memory leak
+
+          if(LIS_masterproc) then
+             gtmp_ens = LIS_rc%udef
+             do m=1,LIS_rc%nensem(n)
+                count1=1
+                do l=1,LIS_npes
+                   do c=LIS_ews_halo_ind(n,l),LIS_ewe_halo_ind(n,l)
+                      do r=LIS_nss_halo_ind(n,l),LIS_nse_halo_ind(n,l)
+                         gid = r+(c-1)*LIS_rc%gnr(n)
+                         ntiles = LIS_routing(n)%ntiles_pergrid(gid)
+                         if(ntiles.ne.0) then                 
+                            if(r.ge.LIS_nss_ind(n,l).and.&
+                                 r.le.LIS_nse_ind(n,l).and.&
+                                 c.ge.LIS_ews_ind(n,l).and.&
+                                 c.le.LIS_ewe_ind(n,l))then !points not in halo
+                               gtmp_ens(c,r,m) = gtmp1_ens(count1,m)
+                            endif
+                            count1 = count1 + 1
+                         endif
+                      enddo
+                   enddo
+                enddo
+                if(PRESENT(dim1)) then 
+                   iret = nf90_put_var(ftn,varid,gtmp_ens(:,:,m),(/1,1,m,dim1/),&
+                        (/LIS_rc%gnc(n),LIS_rc%gnr(n),1,1/))
+                else            
+                   iret = nf90_put_var(ftn,varid,gtmp_ens(:,:,m),(/1,1,m/),&
+                        (/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
+                endif
+             enddo
+             if(ftn_stats.ne.-1) then
+                if ( LIS_rc%sout ) then
+                   call stats_ens(gtmp_ens,LIS_rc%udef,               &
+                        LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nensem(n), &
+                        vmean,vstdev,vmin,vmax)
+                   if(form==1) then
+                      write(ftn_stats,999) mvar,vmean,vstdev,vmin,vmax
+                   elseif(form==2) then
+                      write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
+                   endif
+                   call lis_flush(ftn_stats)
+                endif
+             endif
+             deallocate(gtmp_ens)
+          endif
+          deallocate(gtmp1_ens)
+       endif
+    endif
+#endif
+998 FORMAT(1X,A18,4E14.3)
+999 FORMAT(1X,A18,4F14.3)
+  end subroutine writeroutingvar_netcdf_real
 
 !BOP
 ! !ROUTINE: writevar_grib1_withstats_real
@@ -6422,12 +7400,99 @@ subroutine writevar_grib2_withstats_real(ftn, ftn_stats, n,   &
           
 end subroutine writevar_grib2_withstats_real
 
+#if 0 
 !BOP
-! !ROUTINE: LIS_grid2tile
-! \label{LIS_grid2tile}
+! !ROUTINE: grid2tile_ens
+! \label{grid2tile_ens}
 !
 ! !INTERFACE:
-  subroutine LIS_grid2tile(n,gvar,tvar)
+  subroutine grid2tile_ens(n,m,gvar,tvar)
+! !USES:
+
+    implicit none
+! !ARGUMENTS:     
+    integer, intent(in) :: n
+    integer, intent(in) :: m
+    real                :: gvar(LIS_rc%lnc(n),LIS_rc%lnr(n))
+    real                :: tvar(LIS_rc%ntiles(n))
+
+! !DESCRIPTION:
+!  This routine converts a tile space variable to the corresponding
+!  grid space. The aggregation involves weighted average of each tile
+!  in a grid cell based on the vegetation distribution. 
+!
+!  The arguments are: 
+!  \begin{description}
+!   \item [n]
+!     index of the domain or nest.
+!   \item [tvar]
+!     variable dimensioned in the tile space. 
+!   \item [gvar]
+!     variable after converstion to the grid space
+!  \end{description}
+!
+!EOP
+    integer           :: i,t,c,r
+
+    do i=1,LIS_rc%ntiles(n),LIS_rc%nensem(n)
+       r = LIS_domain(n)%tile(i)%row
+       c = LIS_domain(n)%tile(i)%col
+       t = i+m-1
+       tvar(t) = gvar(c,r)
+    enddo
+
+  end subroutine grid2tile_ens
+#endif
+!BOP
+! !ROUTINE: grid2tile
+! \label{grid2tile}
+!
+! !INTERFACE:
+!
+! !INTERFACE:
+  subroutine grid2tile_ens(n,m,gvar,tvar)
+! !USES:
+
+    implicit none
+! !ARGUMENTS:     
+    integer, intent(in) :: n
+    integer, intent(in) :: m
+    real                :: gvar(LIS_rc%lnc(n),LIS_rc%lnr(n))
+    real                :: tvar(LIS_rc%ntiles(n))
+
+! !DESCRIPTION:
+!  This routine converts a tile space variable to the corresponding
+!  grid space. The aggregation involves weighted average of each tile
+!  in a grid cell based on the vegetation distribution. 
+!
+!  The arguments are: 
+!  \begin{description}
+!   \item [n]
+!     index of the domain or nest.
+!   \item [tvar]
+!     variable dimensioned in the tile space. 
+!   \item [gvar]
+!     variable after converstion to the grid space
+!  \end{description}
+!
+!EOP
+    integer           :: i,t,c,r
+
+    do i=1,LIS_rc%ntiles(n),LIS_rc%nensem(n)
+       r = LIS_domain(n)%tile(i)%row
+       c = LIS_domain(n)%tile(i)%col
+       t = i+m-1
+       tvar(t) = gvar(c,r)
+    enddo
+
+  end subroutine grid2tile_ens
+
+!BOP
+! !ROUTINE: grid2tile
+! \label{grid2tile}
+!
+! !INTERFACE:
+  subroutine grid2tile(n,gvar,tvar)
 ! !USES:
 
     implicit none
@@ -6458,7 +7523,7 @@ end subroutine writevar_grib2_withstats_real
        c = LIS_domain(n)%tile(t)%col
        tvar(t) = gvar(c,r)
     enddo
-  end subroutine LIS_grid2tile
+  end subroutine grid2tile
 
 
 !BOP
@@ -6507,7 +7572,49 @@ end subroutine writevar_grib2_withstats_real
     
   end subroutine tile2grid_local
 
-  subroutine tile2grid_global_ens(n,ensid,gvar,gvar_tile)
+!BOP
+! !ROUTINE: tile2grid_local_ens
+! \label{tile2grid_local_ens}
+!
+! !INTERFACE:
+  subroutine tile2grid_local_ens(n,m,gvar,tvar)
+! !USES:
+
+    implicit none
+! !ARGUMENTS:     
+    integer, intent(in) :: n
+    integer, intent(in) :: m
+    real              :: gvar(LIS_rc%lnc(n),LIS_rc%lnr(n))
+    real, intent(in)  :: tvar(LIS_rc%ntiles(n))
+! !DESCRIPTION:
+!  This routine converts a tile space variable to the corresponding
+!  grid space. The aggregation involves weighted average of each tile
+!  in a grid cell based on the vegetation distribution. 
+!
+!  The arguments are: 
+!  \begin{description}
+!   \item [n]
+!     index of the domain or nest.
+!   \item [tvar]
+!     variable dimensioned in the tile space. 
+!   \item [gvar]
+!     variable after converstion to the grid space
+!  \end{description}
+!
+!EOP
+    integer           :: i,c,r,t
+
+    gvar = 0.0
+    do i=1,LIS_rc%ntiles(n),LIS_rc%nensem(n)
+       c = LIS_domain(n)%tile(i)%col
+       r = LIS_domain(n)%tile(i)%row
+       t = i+m-1
+       gvar(c,r) = tvar(t)          
+    enddo
+    
+  end subroutine tile2grid_local_ens
+
+  subroutine tile2grid_global_ens(n,ensid,gvar,gvar_tile,global)
 
     implicit none
     

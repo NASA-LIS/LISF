@@ -1,22 +1,11 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Data Toolkit (LDT) V7.0 BETA
-// Released January 2008
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// See SOFTWARE DISTRIBUTION POLICY for software distribution policies
-//
-// The LDT source code and documentation are in the public domain,
-// available without fee for educational, research, non-commercial and
-// commercial purposes.  Users may distribute the binary or source
-// code to third parties provided this statement appears on all copies and
-// that no charge is made for such copies.
-//
-// NASA GSFC MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THE
-// SOFTWARE FOR ANY PURPOSE.  IT IS PROVIDED AS IS WITHOUT EXPRESS OR
-// IMPLIED WARRANTY.  NEITHER NASA GSFC NOR THE US GOVERNMENT SHALL BE
-// LIABLE FOR ANY DAMAGES SUFFERED BY THE USER OF THIS SOFTWARE.
-//
-// See COPYRIGHT.TXT for copyright details.
-//
+// Copyright (c) 2020 United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration.
+// All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
 //BOP
 //
@@ -87,13 +76,15 @@ void FTN(registerinitstatdscale)(char *j,void (*func)(), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct statdscaleinitnode* current;
   struct statdscaleinitnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct statdscaleinitnode*) malloc(sizeof(struct statdscaleinitnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -159,13 +150,15 @@ void FTN(registerdiagnosestatdscale)(char *j,void (*func)(int*, int*), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct statdscalediagnode* current;
   struct statdscalediagnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct statdscalediagnode*) malloc(sizeof(struct statdscalediagnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -232,13 +225,15 @@ void FTN(registercomputestatdscale)(char *j,void (*func)(int*), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct statdscalecomputenode* current;
   struct statdscalecomputenode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct statdscalecomputenode*) malloc(sizeof(struct statdscalecomputenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -305,13 +300,15 @@ void FTN(registeroutputstatdscale)(char *j,void (*func)(int*), int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct statdscaleoutputnode* current;
   struct statdscaleoutputnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct statdscaleoutputnode*) malloc(sizeof(struct statdscaleoutputnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

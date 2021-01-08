@@ -1,6 +1,13 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.0     
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 module NoahMP401_module
 !BOP
 !
@@ -345,12 +352,17 @@ module NoahMP401_module
 !  10/25/18: Shugong Wang, Zhuo Wang Initial implementation for LIS 7 and NoahMP401
 !
 !EOP
+   USE MODULE_SF_NOAHMPLSM_401
     implicit none
-    private
+
+    INTEGER, PRIVATE, PARAMETER :: MBAND = 2
+    INTEGER, PRIVATE, PARAMETER :: NSOIL = 4
+    INTEGER, PRIVATE, PARAMETER :: NSTAGE = 8
+
     type, public :: noahmp401dec
-        !-------------------------------------------------------------------------
+        !------------------------------------------------------
         ! forcing
-        !-------------------------------------------------------------------------
+        !------------------------------------------------------
         real               :: tair
         real               :: sfctmp    ! Yeosang Yoon for snow DA
         real               :: psurf
@@ -360,9 +372,9 @@ module NoahMP401_module
         real               :: swdown
         real               :: lwdown
         real               :: prcp
-        !-------------------------------------------------------------------------
+        !--------------------------------------------------------
         ! spatial parameter
-        !-------------------------------------------------------------------------
+        !--------------------------------------------------------
         integer            :: vegetype
         integer            :: soiltype
         real               :: tbot
@@ -373,14 +385,14 @@ module NoahMP401_module
         real               :: soilcL2
         real               :: soilcL3
         real               :: soilcL4
-        !-------------------------------------------------------------------------
+        !----------------------------------------------------------
         ! multilevel spatial parameter
-        !-------------------------------------------------------------------------
+        !----------------------------------------------------------
         real, pointer      :: shdfac_monthly(:)
         real, pointer      :: soilcomp(:)
-        !-------------------------------------------------------------------------
+        !----------------------------------------------------------
         ! state
-        !-------------------------------------------------------------------------
+        !----------------------------------------------------------
         real               :: sfcrunoff
         real               :: udrrunoff
         real, pointer      :: smc(:)
@@ -429,9 +441,9 @@ module NoahMP401_module
         real               :: gdd
         integer            :: pgs
         real, pointer      :: gecros_state(:)
-        !-------------------------------------------------------------------------
+        !-------------------------------------------------------
         ! output
-        !-------------------------------------------------------------------------
+        !-------------------------------------------------------
         real               :: tsk
 !       real               :: fsh
         real               :: hfx
@@ -489,5 +501,11 @@ module NoahMP401_module
         real               :: chv2
         real               :: chb2
 
+        !EMK for 557WW
+        real :: tair_agl_min
+        real :: rhmin
+
+        type(noahmp_parameters) :: param
     end type noahmp401dec
+
 end module NoahMP401_module

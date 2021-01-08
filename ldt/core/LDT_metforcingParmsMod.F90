@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 module LDT_metforcingParmsMod
@@ -195,7 +201,6 @@ contains
                  LDT_force_struc(n,m)%forcelevdiff%vlevels))       
              LDT_force_struc(n,m)%forcelevdiff%value = LDT_rc%udef
 
-
           !- Account for GDAS fields:
              gdas_check  = LDT_rc%metforc_parms(m)
              ecmwf_check = LDT_rc%metforc_parms(m)
@@ -220,6 +225,13 @@ contains
              endif
  
              write(LDT_logunit,*) "Done reading forcing elevation field. "
+
+          else
+             write(LDT_logunit,*) "[WARN] "//trim(LDT_rc%metforc_parms(m))//&
+                " forcing elevation is turned on, but the "
+             write(LDT_logunit,*) " 'Topographic correction method' is set to 'none'."
+             write(LDT_logunit,*) " Change this option to 'lapse-rate' to write out "       
+             write(LDT_logunit,*) " the metforcing elevation field. "
 
           end if ! End elevation check
         end do   ! end nest loop

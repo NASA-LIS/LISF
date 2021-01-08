@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -151,8 +153,21 @@ module LIS_coreMod
   public :: LIS_vecTile
   public :: LIS_vecPatch
   public :: LIS_vecGrid
+  public :: LIS_routing
+  public :: LIS_routing_gdeltas, LIS_routing_goffsets
 
+  integer, allocatable  :: LIS_routing_gdeltas(:,:), LIS_routing_goffsets(:,:)
 
+  type, public :: routing_type_dec
+     integer, allocatable :: dommask(:,:)
+     integer, allocatable :: nextx(:,:)
+     integer, allocatable :: gindex(:,:)
+     type(tiledec), allocatable :: tile(:)
+     type(griddec), allocatable :: grid(:)
+     integer, allocatable       :: ntiles_pergrid(:)
+  end type routing_type_dec
+  
+  type(routing_type_dec), allocatable :: LIS_routing(:)
 
 !EOP
   type, public :: lis_domain_type

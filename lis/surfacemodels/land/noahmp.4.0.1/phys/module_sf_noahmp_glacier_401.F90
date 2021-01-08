@@ -53,6 +53,11 @@ MODULE NOAHMP_GLACIER_GLOBALS_401
 
   INTEGER :: OPT_GLA != 1    !(suggested 1)
 
+! options to set max snow depth
+! in mm, default is 2000
+
+  INTEGER :: OPT_SNDPTH_GLA ![mm]
+
 ! adjustable parameters for snow processes
 
   REAL, PARAMETER :: Z0SNO  = 0.002  !snow surface roughness length (m) (0.002)
@@ -106,6 +111,7 @@ contains
                    ILOC    ,JLOC    ,COSZ    ,NSNOW   ,NSOIL   ,DT      , & ! IN : Time/Space/Model-related
                    SFCTMP  ,SFCPRS  ,UU      ,VV      ,Q2      ,SOLDN   , & ! IN : Forcing
                    PRCP    ,LWDN    ,TBOT    ,ZLVL    ,FICEOLD ,ZSOIL   , & ! IN : Forcing
+                   OPT_SNDPTH,                                            & ! IN : Forcing
                    QSNOW   ,SNEQVO  ,ALBOLD  ,CM      ,CH      ,ISNOW   , & ! IN/OUT : 
                    SNEQV   ,SMC     ,ZSNSO   ,SNOWH   ,SNICE   ,SNLIQ   , & ! IN/OUT :
                    TG      ,STC     ,SH2O    ,TAUSS   ,QSFC    ,          & ! IN/OUT : 
@@ -143,6 +149,7 @@ contains
   REAL                           , INTENT(IN)    :: ZLVL   !reference height (m)
   REAL, DIMENSION(-NSNOW+1:    0), INTENT(IN)    :: FICEOLD!ice fraction at last timestep
   REAL, DIMENSION(       1:NSOIL), INTENT(IN)    :: ZSOIL  !layer-bottom depth from soil surf (m)
+  INTEGER                        , INTENT(IN)    :: OPT_SNDPTH !Snow depth max (mm)
 
 #ifdef WRF_HYDRO
   REAL                           , INTENT(INOUT)    :: sfcheadrt
@@ -258,7 +265,7 @@ contains
 ! compute water budgets (water storages, ET components, and runoff)
 
      CALL WATER_GLACIER (NSNOW  ,NSOIL  ,IMELT  ,DT     ,PRCP   ,SFCTMP , & !in
-                         QVAP   ,QDEW   ,FICEOLD,ZSOIL  ,                 & !in
+                         QVAP   ,QDEW   ,FICEOLD,ZSOIL  , OPT_SNDPTH,     & !in
                          ISNOW  ,SNOWH  ,SNEQV  ,SNICE  ,SNLIQ  ,STC    , & !inout
                          DZSNSO ,SH2O   ,SICE   ,PONDING,ZSNSO  ,FSH    , & !inout
                          RUNSRF ,RUNSUB ,QSNOW  ,PONDING1      ,PONDING2, & !out
@@ -1993,7 +2000,7 @@ END IF   ! OPT_GLA == 1
   END SUBROUTINE PHASECHANGE_GLACIER
 ! ==================================================================================================
   SUBROUTINE WATER_GLACIER (NSNOW  ,NSOIL  ,IMELT  ,DT     ,PRCP   ,SFCTMP , & !in
-                            QVAP   ,QDEW   ,FICEOLD,ZSOIL  ,                 & !in
+                            QVAP   ,QDEW   ,FICEOLD,ZSOIL  , OPT_SNDPTH,     & !in
                             ISNOW  ,SNOWH  ,SNEQV  ,SNICE  ,SNLIQ  ,STC    , & !inout
                             DZSNSO ,SH2O   ,SICE   ,PONDING,ZSNSO  ,FSH    , & !inout
                             RUNSRF ,RUNSUB ,QSNOW  ,PONDING1 ,PONDING2,      &   !out
@@ -2019,6 +2026,7 @@ END IF   ! OPT_GLA == 1
   REAL,                            INTENT(INOUT)    :: QDEW    !soil surface dew rate[mm/s]
   REAL, DIMENSION(-NSNOW+1:    0), INTENT(IN)    :: FICEOLD !ice fraction at last timestep
   REAL, DIMENSION(       1:NSOIL), INTENT(IN)    :: ZSOIL  !layer-bottom depth from soil surf (m)
+  INTEGER,                         INTENT(IN)    :: OPT_SNDPTH !Maximum snow depth (mm)
 
 ! input/output
   INTEGER,                         INTENT(INOUT) :: ISNOW   !actual no. of snow layers
@@ -2123,7 +2131,7 @@ END IF   ! OPT_GLA == 1
 
      CALL SNOWWATER_GLACIER (NSNOW  ,NSOIL  ,IMELT  ,DT     ,SFCTMP , & !in
                              SNOWHIN,QSNOW  ,QSNFRO ,QSNSUB ,QRAIN  , & !in
-                             FICEOLD,ZSOIL  ,                         & !in
+                             FICEOLD,ZSOIL  ,OPT_SNDPTH,              & !in
                              ISNOW  ,SNOWH  ,SNEQV  ,SNICE  ,SNLIQ  , & !inout
                              SH2O   ,SICE   ,STC    ,DZSNSO ,ZSNSO  , & !inout
                              FSH    ,                                 & !inout
@@ -2172,7 +2180,7 @@ END IF   ! OPT_GLA == 1
 ! ----------------------------------------------------------------------
   SUBROUTINE SNOWWATER_GLACIER (NSNOW  ,NSOIL  ,IMELT  ,DT     ,SFCTMP , & !in
                                 SNOWHIN,QSNOW  ,QSNFRO ,QSNSUB ,QRAIN  , & !in
-                                FICEOLD,ZSOIL  ,                         & !in
+                                FICEOLD,ZSOIL  , OPT_SNDPTH,             & !in
                                 ISNOW  ,SNOWH  ,SNEQV  ,SNICE  ,SNLIQ  , & !inout
                                 SH2O   ,SICE   ,STC    ,DZSNSO ,ZSNSO  , & !inout
 				FSH    ,                                 & !inout
@@ -2193,6 +2201,7 @@ END IF   ! OPT_GLA == 1
   REAL,                            INTENT(IN)    :: QRAIN  !snow surface rain rate[mm/s]
   REAL, DIMENSION(-NSNOW+1:0)    , INTENT(IN)    :: FICEOLD!ice fraction at last timestep
   REAL, DIMENSION(       1:NSOIL), INTENT(IN)    :: ZSOIL  !layer-bottom depth from soil surf (m)
+  INTEGER,                         INTENT(IN)    :: OPT_SNDPTH !Maximum snow depth (mm)
 
 ! input & output
   INTEGER,                         INTENT(INOUT) :: ISNOW  !actual no. of snow layers
@@ -2258,10 +2267,9 @@ END IF   ! OPT_GLA == 1
                           QSNBOT )                                   !out
 
 !to obtain equilibrium state of snow in glacier region
-       
-   IF(SNEQV > 2000.) THEN   ! 2000 mm -> maximum water depth
+   IF(SNEQV > OPT_SNDPTH) THEN   ! 2000 mm -> maximum water depth
       BDSNOW      = SNICE(0) / DZSNSO(0)
-      SNOFLOW     = (SNEQV - 2000.)
+      SNOFLOW     = (SNEQV - OPT_SNDPTH)
       SNICE(0)    = SNICE(0)  - SNOFLOW 
       DZSNSO(0)   = DZSNSO(0) - SNOFLOW/BDSNOW
       SNOFLOW     = SNOFLOW / DT
@@ -3047,7 +3055,7 @@ END IF   ! OPT_GLA == 1
  END SUBROUTINE ERROR_GLACIER
 ! ==================================================================================================
 
-  SUBROUTINE NOAHMP_OPTIONS_GLACIER(iopt_alb  ,iopt_snf  ,iopt_tbot, iopt_stc, iopt_gla )
+  SUBROUTINE NOAHMP_OPTIONS_GLACIER(iopt_alb  ,iopt_snf  ,iopt_tbot, iopt_stc, iopt_gla, iopt_sndpth_gla )
 
   IMPLICIT NONE
 
@@ -3057,6 +3065,7 @@ END IF   ! OPT_GLA == 1
   INTEGER,  INTENT(IN) :: iopt_stc  !snow/soil temperature time scheme (only layer 1)
                                     ! 1 -> semi-implicit; 2 -> full implicit (original Noah)
   INTEGER,  INTENT(IN) :: IOPT_GLA  ! glacier option (1->phase change; 2->simple)
+  INTEGER,  INTENT(IN) :: IOPT_SNDPTH_GLA ! Maximum snow depth (mm)
 
 ! -------------------------------------------------------------------------------------------------
 
@@ -3065,6 +3074,7 @@ END IF   ! OPT_GLA == 1
   opt_tbot = iopt_tbot 
   opt_stc  = iopt_stc
   opt_gla  = iopt_gla
+  opt_sndpth_gla = iopt_sndpth_gla
   
   end subroutine noahmp_options_glacier
  

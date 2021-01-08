@@ -1,23 +1,11 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Information System (LDT)
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// See RELEASE_NOTES.txt for more information.
-//
-// The LDT source code and documentation are not in the public domain
-// and may not be freely distributed.  Only qualified entities may receive 
-// the source code and documentation. 
-//
-// Qualified entities must be covered by a Software Usage Agreement. 
-// The Software Usage Agreement contains all the terms and conditions
-// regarding the release of the LDT software.
-//
-// NASA GSFC MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THE
-// SOFTWARE FOR ANY PURPOSE.  IT IS PROVIDED AS IS WITHOUT EXPRESS OR
-// IMPLIED WARRANTY.  NEITHER NASA GSFC NOR THE US GOVERNMENT SHALL BE
-// LIABLE FOR ANY DAMAGES SUFFERED BY THE USER OF THIS SOFTWARE.
-//
-// See the Software Usage Agreement for the full disclaimer of warranty.
-//
+// Copyright (c) 2020 United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration.
+// All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
 //BOP
 //
@@ -102,13 +90,15 @@ void FTN(registersetlaiattribs)(char *j, void (*func)(),int len)
 //   \end{description}
 //EOP
 { 
+  int len1;
   struct laisetnode* current;
   struct laisetnode* pnode; 
   // create node
 
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct laisetnode*) malloc(sizeof(struct laisetnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -185,14 +175,15 @@ void FTN(registerreadlai)(char *j,void (*func)(int*,float*,float*), int len)
 //  \end{description}
 //EOP
 { 
-
+  int len1;
   struct lainode* current;
   struct lainode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct lainode*) malloc(sizeof(struct lainode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -269,14 +260,15 @@ void FTN(registerreadsai)(char *j,void (*func)(int*,float*), int len)
 //  \end{description}
 //EOP
 { 
-
+  int len1;
   struct sainode* current;
   struct sainode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct sainode*) malloc(sizeof(struct sainode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -352,13 +344,15 @@ void FTN(registerreadlaimin)(char *j,void (*func)(int*,float*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct laiminnode* current;
   struct laiminnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct laiminnode*) malloc(sizeof(struct laiminnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -432,13 +426,15 @@ void FTN(registerreadlaimax)(char *j,void (*func)(int*,float*),int len)
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct laimaxnode* current;
   struct laimaxnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct laimaxnode*) malloc(sizeof(struct laimaxnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

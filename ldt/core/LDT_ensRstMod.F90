@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
@@ -347,6 +353,9 @@ module LDT_ensRstMod
          deallocate(dimID2)
          deallocate(dims)
          deallocate(dimName)
+         
+         call LDT_verify(nf90_close(ftn))
+         call LDT_verify(nf90_close(ftn2))
 #endif
          
       ! Generate router model ensemble restart file:
@@ -365,19 +374,27 @@ module LDT_ensRstMod
             ftn = LDT_getNextUnitNumber()
             ftn2 = LDT_getNextUnitNumber()
 
-            open(ftn,file=LDT_rc%inputrst,status='old',&
-                 form='unformatted',access='sequential',iostat=ios)
+            ! Check if input restart file is present:
+            inquire( file=trim(LDT_rc%inputrst), exist=file_exists )
+            if( file_exists ) then
+               write(LDT_logunit,*) "[INFO] Opening HYMAP input restart file, "
+               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+               open(ftn,file=LDT_rc%inputrst,status='old',&
+                    form='unformatted',access='sequential',iostat=ios)
+            else
+               write(LDT_logunit,*) "[ERR] HYMAP input binary restart file, "
+               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+               write(LDT_logunit,*) " is missing. Stopping run ..."
+               call LDT_endrun
+            endif
 
- 
-            ! If output ensemble restart file exists, don't overwrite ...
+            ! If output ensemble restart file exists, provide warning ...
             inquire( file=trim(LDT_rc%outputrst), exist=file_exists )
             if(file_exists) then
-               write(LDT_logunit,*) "[WARN] If the HYMAP binary restart file, "
+               write(LDT_logunit,*) "[WARN] HYMAP binary restart file, "
                write(LDT_logunit,*)  trim(LDT_rc%outputrst)
-               write(LDT_logunit,*) "  already exists, then remove or rename it and run LDT again." 
-               write(LDT_logunit,*) "  Otherwise intended ensemble HYMAP restart file will not be"
-               write(LDT_logunit,*) "  generated.  Stopping program ..."
-               call LDT_endrun
+               write(LDT_logunit,*) "  already exists! Overwriting the file ..." 
+!               call LDT_endrun
             endif
 
             open(ftn2,file=LDT_rc%outputrst,status='new',&
@@ -407,71 +424,196 @@ module LDT_ensRstMod
             write(LDT_logunit,*)"[INFO] 'Inflating' ensemble restart for routing model: "&
                   //trim(LDT_rc%routingmodel)
 
-            allocate(var1d(LDT_rc%routing_grid_count))
-            allocate(var(LDT_rc%routing_grid_count,LDT_rc%nens_out))
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
-            ftn = LDT_getNextUnitNumber()
-            ftn2 = LDT_getNextUnitNumber()
+         call LDT_verify(nf90_open(path=LDT_rc%inputrst,&
+              mode=nf90_NOWRITE,ncid=ftn),'failed to open '//trim(LDT_rc%inputrst))
 
-            !open(ftn,file=LDT_rc%inputrst,status='old',&
-            !     form='unformatted',access='sequential',iostat=ios)
+#if (defined USE_NETCDF4)
+         call LDT_verify(nf90_create(path=LDT_rc%outputrst,cmode=nf90_netcdf4,&
+              ncid = ftn2),&
+              'creating netcdf file failed in LDT_ensRstMod')
+#endif
+#if (defined USE_NETCDF3)
+         call LDT_verify(nf90_create(path=LDT_rc%outputrst,cmode=nf90_clobber,&
+              ncid = ftn2),&
+              'creating netcdf file failed in LDT_ensRstMod')
+#endif            
+
+         call LDT_verify(nf90_inquire(ftn,nDims,nVars,nGlobalAtts,unlimdimId),&
+              'nf90_inquire failed in LDT_ensRstMod')
+         
+         allocate(dimID(nDims))
+         allocate(dimID2(nDims))
+         allocate(dims(nDims))
+         allocate(dimName(nDims))
+
+         call LDT_verify(nf90_inq_dimId(ftn,"ntiles",dimId(1)),&
+              'nf90_inq_dimId failed for ntiles in LDT_ensRstMod')
+         call LDT_verify(nf90_inquire_dimension(ftn,dimId(1),len=dims(1)),&
+              'nf90_inquire_dimension failed in LDT_ensRstMod')
+
+         model_name = "HYMAP2"
+         call writeglobalheader(ftn2, model_name, nDims, dims, &
+              LDT_rc%nens_out, dimID2)
+
+         call LDT_verify(nf90_enddef(ftn2))
+         
+         do k=1,nVars
+            call LDT_verify(nf90_inquire_variable(ftn,k,varName,ndims=nvardims),&
+                 'nf90_inquire_variable failed in LDT_ensRstMod')
+            allocate(n_dimids(nvardims))
+            call LDT_verify(nf90_inquire_variable(ftn,k,varName,dimids=n_dimids),&
+                 'nf90_inquire_variable failed in LDT_ensRstMod')
+            
+            call LDT_verify(nf90_get_att(ftn,k,"units",units),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            call LDT_verify(nf90_get_att(ftn,k,"standard_name",standard_name),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            call LDT_verify(nf90_get_att(ftn,k,"scale_factor",scale_factor),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            call LDT_verify(nf90_get_att(ftn,k,"add_offset",offset),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            call LDT_verify(nf90_get_att(ftn,k,"vmin",vmin),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            call LDT_verify(nf90_get_att(ftn,k,"vmax",vmax),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            
+            call writeheader_restart(ftn2,nvardims,&
+                 n_dimIds,&
+                 k,&
+                 standard_name,units,&
+                 scale_factor, offset,&
+                 vmin,vmax)
+            deallocate(n_dimids)
+         enddo
+         
+         do k=1,nVars
+            call LDT_verify(nf90_inquire_variable(ftn,k,ndims=nvardims),&
+                 'nf90_inquire_variable failed in LDT_ensRstMod')
+            allocate(nvardimIds(nvardims))
+            call LDT_verify(nf90_inquire_variable(ftn,k,varName,&
+                 dimIDs=nvardimIDs),&
+                 'nf90_inquire_variable failed in LDT_ensRstMod')
+            
+            if(nvardims.gt.1) then
+               allocate(var(dims(1),dims(nvarDimIDs(2))))
+               allocate(var_new(dims(1)*LDT_rc%nens_out, dims(nvarDimIDs(2))))
+            else
+               allocate(var(dims(1),1))
+               allocate(var_new(dims(1)*LDT_rc%nens_out,1))
+            endif
+            
+            call LDT_verify(nf90_get_var(ftn,k,var),&
+                 'nf90_get_var failed in LDT_ensRstMod')
+            
+            do t=1,dims(1)
+               do m=1,LDT_rc%nens_out
+                  var_new((t-1)*LDT_rc%nens_out+m,:) = var(t,:)
+               enddo
+            enddo
+            if(nvardims.gt.1) then
+               call LDT_verify(nf90_put_var(ftn2,k,var_new,(/1,1/),&
+                    (/dims(1)*LDT_rc%nens_out,dims(nvarDimIDs(2))/)),&
+                    'nf90_put_var failed in LDT_ensRstMod for '//&
+                    trim(varName))
+            else
+               call LDT_verify(nf90_put_var(ftn2,k,var_new,(/1,1/),&
+                    (/dims(1)*LDT_rc%nens_out,1/)),&
+                    'nf90_put_var failed in LDT_ensRstMod for '//&
+                    trim(varName))
+            endif
+            
+            deallocate(var)
+            deallocate(var_new)
+            deallocate(nvardimIDs)
+         enddo     
+         deallocate(dimID)
+         deallocate(dimID2)
+         deallocate(dims)
+         deallocate(dimName)
+         
+         call LDT_verify(nf90_close(ftn))
+         call LDT_verify(nf90_close(ftn2))
+
+#endif
+#if 0 
+         write(LDT_logunit,*)"[INFO] 'Inflating' ensemble restart for routing model: "&
+              //trim(LDT_rc%routingmodel)
+         
+         allocate(var1d(LDT_rc%routing_grid_count))
+         allocate(var(LDT_rc%routing_grid_count,LDT_rc%nens_out))
+         
+         ftn = LDT_getNextUnitNumber()
+         ftn2 = LDT_getNextUnitNumber()
+         
+         ! Check if input restart file is present:
+         inquire( file=trim(LDT_rc%inputrst), exist=file_exists )
+         if( file_exists ) then
+            write(LDT_logunit,*) "[INFO] Opening HYMAP input restart file, "
+            write(LDT_logunit,*)  trim(LDT_rc%inputrst)
             open(ftn,file=LDT_rc%inputrst,status='old',&
                  form='unformatted',iostat=ios)
-
- 
-            ! If output ensemble restart file exists, don't overwrite ...
-            inquire( file=trim(LDT_rc%outputrst), exist=file_exists )
-            if(file_exists) then
-               write(LDT_logunit,*) "[WARN] If the HYMAP2 binary restart file, "
-               write(LDT_logunit,*)  trim(LDT_rc%outputrst)
-               write(LDT_logunit,*) "  already exists, then remove or rename it and run LDT again." 
-               write(LDT_logunit,*) "  Otherwise intended ensemble HYMAP restart file will not be"
-               write(LDT_logunit,*) "  generated.  Stopping program ..."
-               call LDT_endrun
-            endif
-
-            !open(ftn2,file=LDT_rc%outputrst,status='new',&
+            !open(ftn,file=LDT_rc%inputrst,status='old',&
             !     form='unformatted',access='sequential',iostat=ios)
-            open(ftn2,file=LDT_rc%outputrst,status='new',&
-                 form='unformatted',iostat=ios)
-            numvars = 8  
-            
-            do i=1,numvars
-
-               read(ftn) var1d
-
-               do m=1,LDT_rc%nens_out
-                  var(:,m) = var1d(:)
-               enddo
-            
-               write(ftn2) var
-            enddo
-
-            call LDT_releaseUnitNumber(ftn)
-            call LDT_releaseUnitNumber(ftn2)
-
-            deallocate(var)
-            deallocate(var1d)
-            
-            !stop
-
          else
-            write(LDT_logunit,*) '[ERR] Ensemble restart for '//trim(LDT_rc%routingmodel)
-            write(LDT_logunit,*) '   is not currently supported.'
-            call LDT_endrun()
+            write(LDT_logunit,*) "[ERR] HYMAP input binary restart file, "
+            write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+            write(LDT_logunit,*) " is missing. Stopping run ..."
+            call LDT_endrun
          endif
-
-      ! Other ensemble restart sources are not currently supported
+         
+         ! If output ensemble restart file exists, provide warning...
+         inquire( file=trim(LDT_rc%outputrst), exist=file_exists )
+         if(file_exists) then
+            write(LDT_logunit,*) "[WARN] If the HYMAP2 binary restart file, "
+            write(LDT_logunit,*)  trim(LDT_rc%outputrst)
+            write(LDT_logunit,*) "  already exists! Overwriting the file ..."
+            !               call LDT_endrun
+         endif
+         
+         !open(ftn2,file=LDT_rc%outputrst,status='new',&
+         !     form='unformatted',access='sequential',iostat=ios)
+         open(ftn2,file=LDT_rc%outputrst,status='new',&
+              form='unformatted',iostat=ios)
+         numvars = 8  
+         
+         do i=1,numvars
+            
+            read(ftn) var1d
+            
+            do m=1,LDT_rc%nens_out
+               var(:,m) = var1d(:)
+            enddo
+            
+            write(ftn2) var
+         enddo
+         
+         call LDT_releaseUnitNumber(ftn)
+         call LDT_releaseUnitNumber(ftn2)
+         
+         deallocate(var)
+         deallocate(var1d)
+         
+            !stop
+#endif
       else
-         write(LDT_logunit,*) '[ERR] Ensemble restart source for '//trim(LDT_rc%rstsource)
-         write(LDT_logunit,*) 'is not currently supported.'
+         write(LDT_logunit,*) '[ERR] Ensemble restart for '//trim(LDT_rc%routingmodel)
+         write(LDT_logunit,*) '   is not currently supported.'
          call LDT_endrun()
       endif
 
-      write(LDT_logunit,*) " Successfully generated restart file: ",&
-           trim(LDT_rc%outputrst)
-
-    end subroutine upscale_ensembleRst
+      ! Other ensemble restart sources are not currently supported
+   else
+      write(LDT_logunit,*) '[ERR] Ensemble restart source for '//trim(LDT_rc%rstsource)
+      write(LDT_logunit,*) 'is not currently supported.'
+      call LDT_endrun()
+   endif
+   
+   write(LDT_logunit,*) " Successfully generated restart file: ",&
+        trim(LDT_rc%outputrst)
+   
+ end subroutine upscale_ensembleRst
        
 
     subroutine downscale_ensembleRst()
@@ -712,18 +854,28 @@ module LDT_ensRstMod
 
             ! Open input binary file:
             ftn = LDT_getNextUnitNumber()
-            open(ftn,file=LDT_rc%inputrst,status='old',&
-                 form='unformatted',access='sequential',iostat=ios)
 
-            ! If output ensemble restart file exists, don't overwrite ...
+            ! Check if input restart file is present:
+            inquire( file=trim(LDT_rc%inputrst), exist=file_exists )
+            if( file_exists ) then
+               write(LDT_logunit,*) "[INFO] Opening HYMAP input restart file, "
+               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+               open(ftn,file=LDT_rc%inputrst,status='old',&
+                    form='unformatted',access='sequential',iostat=ios)
+            else
+               write(LDT_logunit,*) "[ERR] HYMAP input binary restart file, "
+               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+               write(LDT_logunit,*) " is missing. Stopping run ..."
+               call LDT_endrun
+            endif
+
+            ! If output ensemble restart file exists, provide warning ...
             inquire( file=trim(LDT_rc%outputrst), exist=file_exists )
             if(file_exists) then
-               write(LDT_logunit,*) "[WARN] If the HYMAP binary restart file, "
+               write(LDT_logunit,*) "[WARN] HYMAP binary restart file, "
                write(LDT_logunit,*)  trim(LDT_rc%outputrst)
-               write(LDT_logunit,*) "  already exists, then remove or rename it and run LDT again."
-               write(LDT_logunit,*) "  Otherwise intended ensemble HYMAP restart file will not be"
-               write(LDT_logunit,*) "  generated.  Stopping program ..."
-               call LDT_endrun
+               write(LDT_logunit,*) "  already exists! Overwriting the file ..."
+!               call LDT_endrun
             endif
 
             ! Create output binary file:
@@ -777,20 +929,30 @@ module LDT_ensRstMod
 
             ! Open input binary file:
             ftn = LDT_getNextUnitNumber()
-            !open(ftn,file=LDT_rc%inputrst,status='old',&
-            !     form='unformatted',access='sequential',iostat=ios)
-            open(ftn,file=LDT_rc%inputrst,status='old',&
-                 form='unformatted',iostat=ios)
 
-            ! If output ensemble restart file exists, don't overwrite ...
+            ! Check if input restart file is present:
+            inquire( file=trim(LDT_rc%inputrst), exist=file_exists )
+            if( file_exists ) then
+               write(LDT_logunit,*) "[INFO] Opening HYMAP input restart file, "
+               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+               open(ftn,file=LDT_rc%inputrst,status='old',&
+                    form='unformatted',iostat=ios)
+               !open(ftn,file=LDT_rc%inputrst,status='old',&
+               !     form='unformatted',access='sequential',iostat=ios)
+            else
+               write(LDT_logunit,*) "[ERR] HYMAP input binary restart file, "
+               write(LDT_logunit,*)  trim(LDT_rc%inputrst)
+               write(LDT_logunit,*) " is missing. Stopping run ..."
+               call LDT_endrun
+            endif
+
+            ! If output ensemble restart file exists, provide warning ...
             inquire( file=trim(LDT_rc%outputrst), exist=file_exists )
             if(file_exists) then
-               write(LDT_logunit,*) "[WARN] If the HYMAP binary restart file, "
+               write(LDT_logunit,*) "[WARN] HYMAP binary restart file, "
                write(LDT_logunit,*)  trim(LDT_rc%outputrst)
-               write(LDT_logunit,*) "  already exists, then remove or rename it and run LDT again."
-               write(LDT_logunit,*) "  Otherwise intended ensemble HYMAP restart file will not be"
-               write(LDT_logunit,*) "  generated.  Stopping program ..."
-               call LDT_endrun
+               write(LDT_logunit,*) "  already exists! Overwriting the file ..."
+!               call LDT_endrun
             endif
 
             ! Create output binary file:
@@ -913,7 +1075,7 @@ module LDT_ensRstMod
            date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)),&
            'nf90_put_att failed for history')
       call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"references", &
-           "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"),&
+           "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"),&
            'nf90_put_att failed for references')
       call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"conventions", &
            "CF-1.6"),'nf90_put_att failed for conventions') !CF version 1.6
@@ -922,7 +1084,7 @@ module LDT_ensRstMod
            'nf90_put_att failed for comment')
       
 !grid information
-      if(LDT_rc%lis_map_proj.eq."latlon") then !latlon
+      if(LDT_rc%lis_map_proj(n).eq."latlon") then !latlon
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
               "EQUIDISTANT CYLINDRICAL"),&
               'nf90_put_att failed for MAP_PROJECTION')
@@ -941,7 +1103,7 @@ module LDT_ensRstMod
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"DY", &
               LDT_rc%gridDesc(n,10)),&
                   'nf90_put_att failed for DY')
-      elseif(LDT_rc%lis_map_proj.eq."mercator") then 
+      elseif(LDT_rc%lis_map_proj(n).eq."mercator") then 
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
               "MERCATOR"),&
               'nf90_put_att failed for MAP_PROJECTION')
@@ -965,7 +1127,7 @@ module LDT_ensRstMod
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"DY", &
               LDT_rc%gridDesc(n,9)),&
               'nf90_put_att failed for DY')
-      elseif(LDT_rc%lis_map_proj.eq."lambert") then !lambert conformal
+      elseif(LDT_rc%lis_map_proj(n).eq."lambert") then !lambert conformal
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
               "LAMBERT CONFORMAL"),&
               'nf90_put_att failed for MAP_PROJECTION')
@@ -993,7 +1155,7 @@ module LDT_ensRstMod
               LDT_rc%gridDesc(n,9)),&
               'nf90_put_att failed for DY')
          
-      elseif(LDT_rc%lis_map_proj.eq."polar") then ! polar stereographic
+      elseif(LDT_rc%lis_map_proj(n).eq."polar") then ! polar stereographic
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
               "POLAR STEREOGRAPHIC"),&
               'nf90_put_att failed for MAP_PROJECTION')

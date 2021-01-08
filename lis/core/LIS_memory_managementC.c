@@ -1,7 +1,9 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// Copyright (c) 2015 United States Government as represented by the
+// Copyright (c) 2020 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration.
 // All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -45,7 +47,7 @@ void * lis_calloc(size_t n, size_t size, char * caller)
 
    if ( ptr == NULL )
    {
-      len = 30 + strlen(caller) + 1;
+      len = 31 + strlen(caller) + 1;
       msg = (char *) malloc(len);
       count = sprintf(msg,"ERR: %s -- Cannot allocate memory",caller);
 
@@ -56,6 +58,7 @@ void * lis_calloc(size_t n, size_t size, char * caller)
       }
       
       lis_log_msgC(msg);
+      free(msg);
    }
 
    return ptr;
@@ -85,7 +88,7 @@ void * lis_malloc(size_t size, char * caller)
 
    if ( ptr == NULL )
    {
-      len = 30 + strlen(caller) + 1;
+      len = 31 + strlen(caller) + 1;
       msg = (char *) malloc(len);
       count = sprintf(msg,"ERR: %s -- Cannot allocate memory",caller);
 
@@ -96,6 +99,7 @@ void * lis_malloc(size_t size, char * caller)
       }
       
       lis_log_msgC(msg);
+      free(msg);
    }
 
    return ptr;
