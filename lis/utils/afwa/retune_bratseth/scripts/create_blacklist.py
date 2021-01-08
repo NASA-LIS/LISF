@@ -157,6 +157,7 @@ def create_blacklist(cfgfile, blacklistfilename, yyyymmddhh, dayrange):
             if abs(OMB[network]) > float(omb_thresh):
                 fd.write("%s # Mean OMB is %s\n" %(platform, OMB[network]))
                 continue
+    fd.close()
 
 #------------------------------------------------------------------------------
 if __name__ == "__main__":

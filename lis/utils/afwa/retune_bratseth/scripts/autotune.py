@@ -202,6 +202,7 @@ class AutomateTuning:
             elif "blacklist_file:" in line:
                 line = "blacklist_file: blacklist_gage.txt"
             fd.write(line)
+        fd.close()
 
     def get_bratseth_err_settings(self, varname):
         """Fetches Bratseth error settings from files."""
