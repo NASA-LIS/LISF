@@ -15,6 +15,7 @@ module LIS_lsmirrigation_pluginMod
 !
 ! !REVISION HISTORY:
 !  13 Nov 2012    Sujay Kumar  Initial Specification
+!  18 Mar 2020    Sarith Mahanam  Added concurrent method
 !
   implicit none
 
@@ -56,6 +57,28 @@ subroutine LIS_lsmirrigation_plugin
 
 #if ( defined SM_NOAHMP_4_0_1 )
    external noahmp401_getirrigationstates
+#endif
+
+#if ( defined IRR_CONCURRENT )
+#if ( defined SM_NOAH_3_3 )
+   call registerlsmirrigationgetstates(trim(LIS_noah33Id)//"+"//&
+        trim(LIS_concurrentIrrigationId)//char(0),noah33_getirrigationstates)
+#endif
+
+#if ( defined SM_CLSM_F2_5 )
+   call registerlsmirrigationgetstates(trim(LIS_clsmf25Id)//"+"//&
+        trim(LIS_concurrentIrrigationId)//char(0),clsmf25_getirrigationstates)
+#endif
+
+#if ( defined SM_NOAHMP_3_6 )
+   call registerlsmirrigationgetstates(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_concurrentIrrigationId)//char(0),NoahMP36_getirrigationstates)
+#endif
+
+#if ( defined SM_NOAHMP_4_0_1 )
+   call registerlsmirrigationgetstates(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_concurrentIrrigationId)//char(0),NoahMP401_getirrigationstates)
+#endif
 #endif
 
 #if ( defined IRR_SPRINKLER )

@@ -15,6 +15,8 @@ module LIS_irrigationmodel_pluginMod
 !
 ! !REVISION HISTORY:
 !  11 Nov 2012    Sujay Kumar  Initial Specification
+!  14 Dec 2020    Hiroko Beaudoing  converged routines to one which
+!                                   handles all three irrigation types.
 !
 !EOP
   implicit none
@@ -37,37 +39,32 @@ subroutine LIS_irrigationmodel_plugin
 
    use LIS_pluginIndices
 
-#if ( defined IRR_SPRINKLER )
-   use sprinkler_irrigationMod
-#endif
+   use alltypes_irrigationMod
 
-#if ( defined IRR_FLOOD )
-   use flood_irrigationMod
-#endif
-
-#if ( defined IRR_DRIP )
-   use drip_irrigationMod
-#endif
+   call registerirrigationschemeinit(trim(LIS_concurrentIrrigationId)//char(0),&
+                                     alltypes_irrigation_init)
+   call registerirrigationupdate(trim(LIS_concurrentIrrigationId)//char(0),&
+                                 alltypes_irrigation_updates)
 
 #if ( defined IRR_SPRINKLER )
    call registerirrigationschemeinit(trim(LIS_sprinklerIrrigationId)//char(0),&
-                                     sprinkler_irrigation_init)
+                                     alltypes_irrigation_init)
    call registerirrigationupdate(trim(LIS_sprinklerIrrigationId)//char(0),&
-                                 sprinkler_irrigation_updates)
+                                 alltypes_irrigation_updates)
 #endif
 
 #if ( defined IRR_FLOOD )
    call registerirrigationschemeinit(trim(LIS_floodIrrigationId)//char(0),&
-                                     flood_irrigation_init)
+                                     alltypes_irrigation_init)
    call registerirrigationupdate(trim(LIS_floodIrrigationId)//char(0),&
-                                 flood_irrigation_updates)
+                                 alltypes_irrigation_updates)
 #endif
 
 #if ( defined IRR_DRIP )
    call registerirrigationschemeinit(trim(LIS_dripIrrigationId)//char(0),&
-                                     drip_irrigation_init)
+                                     alltypes_irrigation_init)
    call registerirrigationupdate(trim(LIS_dripIrrigationId)//char(0),&
-                                 drip_irrigation_updates)
+                                 alltypes_irrigation_updates)
 #endif
 
 end subroutine LIS_irrigationmodel_plugin
