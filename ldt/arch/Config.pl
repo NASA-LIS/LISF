@@ -1,9 +1,11 @@
 #!/usr/bin/perl
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-# NASA Goddard Space Flight Center Land Data Toolkit (LDT) v7.2
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.3
 #
-# Copyright (c) 2015 United States Government as represented by the
+# Copyright (c) 2020 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -683,9 +685,20 @@ if($enable_geotiff== 1){
 
 # EMK...Added LIGBEOTIFF for Air Force
 if($enable_libgeotiff== 1){
-    $cflags = $cflags." -I\$(INC_LIBGEOTIFF)";
+    # Kluge for koehr; locally installed the tiff library.
+    if(defined($ENV{LDT_TIFF})){
+       $INC_LIBTIFF = $ENV{LDT_TIFF}."/include";
+       $cflags = $cflags." -I".$INC_LIBTIFF." -I\$(INC_LIBGEOTIFF)";
+    }
+    else {
+       $cflags = $cflags." -I\$(INC_LIBGEOTIFF)";
+    }
     $tiffpath = "";
     $tiffdeps = "";
+    # Kluge for koehr; locally installed the tiff library.
+    if(defined($ENV{LDT_TIFF})){
+       $tiffpath = " -L".$ENV{LDT_TIFF}."/lib";
+    }
     if ( $cray_modifications == 1 ) {
        $tiffpath = " -L".$sys_libtiff_path;
        $tiffdeps = " -L".$sys_libjbig_path." -ljbig "." -L".$sys_liblzma_path." -llzma ";

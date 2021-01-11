@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
@@ -1024,7 +1030,7 @@ contains
             varID=LDT_LSMparam_struc(n)%xtimeID))
        
  !- LIS-Domain Grid file attributes:
-       select case ( LDT_rc%lis_map_proj )
+       select case ( LDT_rc%lis_map_proj(n) )
           
        case ( "latlon" )
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION", &
@@ -1607,7 +1613,7 @@ contains
             varID=LDT_LSMparam_struc(n)%xtimeID))
        
  !- LIS-Domain Grid file attributes:
-       select case ( LDT_rc%lis_map_proj )
+       select case ( LDT_rc%lis_map_proj(n) )
           
        case ( "latlon" )
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION", &

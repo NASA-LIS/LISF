@@ -2,7 +2,7 @@
 [[sec-build]]
 == Building the Executable
 
-This section describes how to build the source code and create LVT's executable: named LVT.
+This section describes how to build the source code and create LVT`'s executable: named LVT.
 
 Please see Section <<sec-important_note_fs>> for information regarding using a case sensitve file system for compiling/running LVT.
 
@@ -19,14 +19,16 @@ These instructions expect that you are using such a system.  In particular you n
 
 ===== Compilers
 
-* Intel Fortran Compiler version 18 with corresponding Intel C Compiler
+* Intel Fortran Compiler versions 18, 19, or 20 with corresponding Intel C Compiler along with GNU's Compiler Collection version 9.2.0
 * or GNU's Compiler Collection version 4.9.2 or 7.3, both gfortran and gcc.
 
 ===== Tools
 
 * GNU's make, gmake, version 3.77 or 3.81
-* perl, version 5.10
-* python, version 2.7
+* Perl, version 5.10
+* Python, version 2.7 or 3.8
+
+IMPORTANT: Support for Python 2.7 is now deprecated.  Future releases will depend on Python 3.
 
 //
 //      *** or Absoft's Pro Fortran Software Developement Kit, version 10.0
@@ -40,13 +42,15 @@ These instructions expect that you are using such a system.  In particular you n
 
 ===== Compilers
 
-* Intel Fortran Compiler version 18 with corresponding Intel C Compiler
+* Intel Fortran Compiler version 18 or 19 with corresponding Intel C Compiler, along with GNU's Compiler Collection version 7.3.0
 
 ===== Tools
 
 * GNU's make, gmake, version 3.77 or 3.81
-* perl, version 5.10
-* python, version 2.7
+* Perl, version 5.10
+* Python, version 2.7 or 3.8
+
+IMPORTANT: Support for Python 2.7 is now deprecated.  Future releases will depend on Python 3.
 
 //
 //   * IBM
@@ -64,18 +68,22 @@ In order to build the LVT executable, the following libraries must be installed 
 
 ==== Earth System Modeling Framework (ESMF) version 7.1.0r (or higher)
 
-(http://www.earthsystemmodeling.org/download/releases.shtml)
+(https://earthsystemmodeling.org/)
 
 //
 //         Please read the ESMF User's Guide for details on installing
 //         ESMF with MPI support and without MPI support (``mpiuni'').
 //
 
-==== JasPer version 2.0.14 (or higher)
+//==== JasPer version 2.0.14 (or higher)
+//
+//(http://www.ece.uvic.ca/{tilde}frodo/jasper/)
+//
+//Note that when running the `configure` command you must include the `--enable-shared` option.
 
-(http://www.ece.uvic.ca/{tilde}frodo/jasper/)
+==== OpenJPEG version 2.3.0 (or higher)
 
-Note that when running the `configure` command you must include the `--enable-shared` option.
+(http://www.openjpeg.org/)
 
 ==== ecCodes version 2.7.0 (or higher)
 
@@ -97,15 +105,16 @@ The following libraries are not required to compile LVT. They are used to extend
 
 ==== NetCDF either version 3.6.3 or version 4.5.0 (or higher)
 
-(http://www.unidata.ucar.edu/software/netcdf/)
+(http://www.unidata.ucar.edu/software/netcdf)
 
 Please read the on-line documentation for details on installing NetCDF.
 
-===== Addtional notes for NetCDF 4:
+===== Additional notes for NetCDF 4:
 
-You must also choose whether to compile with compression enabled.  Compiling with compression enabled requires HDF 5 and zlib libraries. To enable compression, add `--enable-netcdf-4` to the `configure` options. To disable compression, add `--disable-netcdf-4` to the `configure` options.
+You must also choose whether to compile with compression enabled.  Compiling with compression enabled requires HDF 5 and zlib libraries.  To enable compression, add `--enable-netcdf-4` to the `configure` options.  To disable compression, add `--disable-netcdf-4` to the `configure` options.
 
 An example of installing NetCDF 4 without compression:
+
 ....
 % ./configure --prefix=$HOME/local/netcdf-4.5.0 --disable-netcdf-4
 % gmake
@@ -113,6 +122,7 @@ An example of installing NetCDF 4 without compression:
 ....
 
 An example of installing NetCDF 4 with compression:
+
 ....
 % CPPFLAGS=-I$HOME/local/hdf5/1.10.1/include \
 > LDFLAGS=-L$HOME/local/hdf5/1.10.1/lib \
@@ -121,9 +131,10 @@ An example of installing NetCDF 4 with compression:
 % gmake install
 ....
 
-You must also download the _netcdf-fortran-4.4.4.tar.gz_ file. First install the NetCDF C library, then install the NetCDF Fortran library. Again, please read the on-line documentation for more details.
+You must also download the _netcdf-fortran-4.4.4.tar.gz_ file.  First install the NetCDF C library, then install the NetCDF Fortran library.  Again, please read the on-line documentation for more details.
 
 An example of installing the NetCDF 4 Fortran library:
+
 ....
 % LD_LIBRARY_PATH=$HOME/local/netcdf/4.5.0/lib:$LD_LIBRARY_PATH \
 > CPPFLAGS=-I$HOME/local/netcdf/4.5.0/include \
@@ -147,24 +158,24 @@ If you wish to use PMW snow observations, then you need both HDF 4 and HDF 5 sup
 
 ===== HDF 4
 
-If you choose to have HDF version 4 support, please download the HDF source for version 4.2r4 (or later) from (http://www.hdfgroup.org/products/hdf4) and compile the source to generate the HDF library. Make sure that you configure the build process to include the Fortran interfaces by adding the `--enable-fortran` option to the `configure` command.
+If you choose to have HDF version 4 support, please download the HDF source for version 4.2.13 (or higher) from https://portal.hdfgroup.org/display/support/Download+HDF4 and compile the source to generate the HDF library.  Make sure that you configure the build process to include the Fortran interfaces by adding the `--enable-fortran` option to the `configure` command.
 
-Note that HDF4 contains its own embedded version of NetCDF. You must disable this support by adding the `--disable-netcdf` option to the `configure` command.
+Note that HDF4 contains its own embedded version of NetCDF.  You must disable this support by adding the `--disable-netcdf` option to the `configure` command.
 
-Note that when compiling LVT with HDF 4 support, you must also download and compile HDF-EOS2 from http://hdfeos.org/.
+IMPORTANT: When compiling LVT with HDF 4 support, you must also download and compile HDF-EOS2 version 2.19v1.00 or higher from http://hdfeos.org/software/library.php.
 
 ===== HDF 5
 
-If you choose to have HDF version 5 support, please download the HDF source for version 1.8.11 (or later) from (http://www.hdfgroup.org/HDF5/) and compile the source to generate the HDF library. Make sure that you configure the build process to include the Fortran interfaces by adding the `--enable-fortran` option to the `configure` command.
+If you choose to have HDF version 5 support, please download the HDF source for version 1.10.1 (or higher) from http://www.hdfgroup.org/HDF5/ and compile the source to generate the HDF library.  Make sure that you configure the build process to include the Fortran interfaces by adding the `--enable-fortran` option to the `configure` command.
 
 //Note that when compiling LVT with HDF 5 support, you must also
 //download and compile HDF-EOS5 from http://hdfeos.org/.
 
-===== GDAL version 2.4.1 (or higher)
+==== GDAL version 2.4.1 (or higher)
 
 (https://gdal.org)
 
-Note that when compiling LVT with GDAL support, you must also download and compile FortranGIS version 2.4 from http://fortrangis.sourceforge.net.
+IMPORTANT: When compiling LVT with GDAL support, you must also download and compile FortranGIS version 2.4 (or higher) from http://fortrangis.sourceforge.net.
 
 ==== Notes
 
@@ -182,13 +193,13 @@ Please note that your system may have several different compilers installed.  Yo
 
 Note that due to the mix of programing languages (Fortran and C) used by LVT, you may run into linking errors when building the LVT executable.  This is often due to (1) the Fortran compiler and the C compiler using different cases (upper case vs. lower case) for external names, and (2) the Fortran compiler and C compiler using a different number of underscores for external names.
 
-When compiling code using Absoft's Pro Fortran SDK, set the following compiler options:
-
-....
--YEXT_NAMES=LCS -s -YEXT_SFX=_ -YCFRL=1
-....
-
-These must be set for each of the above libraries.
+//When compiling code using Absoft's Pro Fortran SDK, set the following compiler options:
+//
+//....
+//-YEXT_NAMES=LCS -s -YEXT_SFX=_ -YCFRL=1
+//....
+//
+//These must be set for each of the above libraries.
 
 === Build Instructions
 
@@ -200,11 +211,11 @@ Perform the steps described in Section <<sec-obtain-src>> to obtain the source 
 
 ==== Step 2
 
-Goto the _$WORKING/src/_ directory. This directory contains two scripts for building the LVT executable: _configure_ and _compile_.
+Goto the _$WORKING_ directory.  This directory contains two scripts for building the LVT executable: _configure_ and _compile_.
 
 ==== Step 3
 
-Set the LVT_ARCH environment variable based on the system you are using. The following commands are written using Bash shell syntax.
+Set the LVT_ARCH environment variable based on the system you are using.  The following commands are written using Bash shell syntax.
 
 .For a Linux system with the Intel Fortran compiler
 ....
@@ -241,7 +252,7 @@ Run the _configure_ script first by typing:
 % ./configure
 ....
 
-This script will prompt the user with a series of questions regarding support to compile into LVT, requiring the user to specify the locations of the required and optional libraries via several LVT specific environment variables. The following environment variables are used by LVT.
+This script will prompt the user with a series of questions regarding support to compile into LVT, requiring the user to specify the locations of the required and optional libraries via several LVT specific environment variables.  The following environment variables are used by LVT.
 
 [cols="<,<,<",]
 |===
@@ -251,8 +262,8 @@ This script will prompt the user with a series of questions regarding support to
 | `LVT_CC`         | C compiler                 | required
 | `LVT_MODESMF`    | path to ESMF modules files | required
 | `LVT_LIBESMF`    | path to ESMF library files | required
-| `LVT_JASPER`     | path to JasPer library     | required
-| `LVT_ECCODES`    | path to ECCODES library    | required
+| `LVT_OPENJPEG`   | path to openJPEG library   | required
+| `LVT_ECCODES`    | path to ecCodes library    | required
 | `LVT_NETCDF`     | path to NETCDF library     | optional
 | `LVT_HDF4`       | path to HDF4 library       | optional
 | `LVT_HDF5`       | path to HDF5 library       | optional
@@ -266,7 +277,8 @@ Note that the `CC` variable must be set to a C compiler, not a {cpp} compiler.  
 
 It is suggested that you add these definitions to your _.profile_ (or equivalent) startup file.
 
-You may encounter errors either when trying to compile LVT or when trying to run LVT because the compiler or operating system cannot find these libraries. To fix this, you must add these libraries to your `$LD_LIBRARY_PATH` environment variable. For example, say that you are using ESMF, ecCodes, NetCDF, and HDF5. Then you must execute the following command (written using Bash shell syntax):
+You may encounter errors either when trying to compile LVT or when trying to run LVT because the compiler or operating system cannot find these libraries.  To fix this, you must add these libraries to your `$LD_LIBRARY_PATH` environment variable.
+For example, say that you are using ESMF, ecCodes, NetCDF, and HDF5.  Then you must execute the following command (written using Bash shell syntax):
 
 ....
 % export LD_LIBRARY_PATH=$LVT_HDF5/lib:$LVT_LIBESMF:$LVT_NETCDF/lib:$LVT_ECCODES/lib:$LD_LIBRARY_PATH
@@ -282,10 +294,10 @@ An example execution of the configure script is shown below:
 ....
 % ./configure
 ------------------------------------------------------------------------
-Setting up configuration for LVT version 7.2r...
+Setting up configuration for LVT
 Optimization level (-3=strict checks with warnings, -2=strict checks, -1=debug, 0,1,2,3, default=2):
 Assume little/big_endian data format (1-little, 2-big, default=2):
-#Use GRIBAPI/ECCODES? (1-gribapi, 2-eccodes, default=1): 2#
+Use GRIBAPI/ECCODES? (1-gribapi, 2-eccodes, default=2):
 Use NETCDF? (1-yes, 0-no, default=1):
 NETCDF version (3 or 4, default=4):
 NETCDF use shuffle filter? (1-yes, 0-no, default = 1):
@@ -330,15 +342,17 @@ When using the GNU compilers, you should select `0`.
 * for `Assume little/big_endian data format (1-little, 2-big, default=2):`,
 select the default value of 2.  By default, LVT reads and writes binary data in the big endian format.  Only select the value of 1, if you have reformatted all required binary data into the little endian format.
 
-* for `Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=1):`,
-select 2.  Technically, GRIB support is not required by LVT; however, most of the commonly used met forcing data are in GRIB, making GRIB support a practical requirement.  ecCodes is ECMWF's replacement to their GRIB-API library.  GRIB-API is supported only for historical reasons; thus, please use ecCodes.  (2 will become the default setting in a future release of LVT.)
+* for `Use GRIBAPI/ECCODES? (1-gribapi, 2-eccodes, default=2):`,
+select the default value of 2.  Technically, GRIB support is not required by LVT; however, most of the commonly used met forcing data are in GRIB, making GRIB support a practical requirement.  ecCodes is ECMWF's replacement to their GRIB-API library.  GRIB-API is supported only for historical reasons; thus, please use ecCodes.
++
+IMPORTANT: GRIB-API support is now deprecated.  Future releases will support only ecCodes.
 
 * for `Enable GeoTIFF support? (1-yes, 0-no, default=1):`,
 GeoTIFF means the GeoTIFF support provided by the GDAL library.
 
 Note that due to an issue involving multiple definitions within the NetCDF 3 and HDF 4 libraries, you cannot compile LVT with support for both NetCDF 3 and HDF 4 together.
 
-Note that if you compiled NetCDF 4 without compression, then when specifying `NETCDF version (3 or 4, default=4):`, select `3`. Then you must manually append `-lnetcdff` to the `LDFLAGS` variable in the _make/configure.lvt_ file.
+Note that if you compiled NetCDF 4 without compression, then when specifying `NETCDF version (3 or 4, default=4):`, select 3. Then you must manually append `-lnetcdff` to the `LDFLAGS` variable in the _make/configure.lvt_ file.
 
 ==== Step 5
 
@@ -348,19 +362,19 @@ Compile the LVT source code by running the _compile_ script.
 % ./compile
 ....
 
-This script will compile the libraries provided with LVT, the dependency generator and then the LVT source code. The executable _LVT_ will be placed in the _$WORKING/src/_ directory upon successful completion of the _compile_ script.
+This script will compile the libraries provided with LVT, the dependency generator and then the LVT source code. The executable _LVT_ will be placed in the _$WORKING_ directory upon successful completion of the _compile_ script.
 
 ==== Step 6
 
-Finally, copy the _LVT_ executable into your running directory, _$WORKING/run_.
+Finally, copy the _LVT_ executable into your running directory, _$RUNNING_.  (See Section <<sec-run>>.)
 
 :sectnums: // re-enable section numbers
 
-=== Generating documentation
-
-LVT code uses the ProTex (http://gmao.gsfc.nasa.gov/software/protex/) documenting system  <<protex>>.  The documentation in LaTeX format can be produced by using the `doc.csh` in the _$WORKING/src/utils_ directory. This command produces documentation, generating a number of LaTeX files.
-//These files can be easily converted to pdf
-//or html formats using utilites such as \cmdfont{pdflatex} or
-//\cmdfont{latex2html}.
-These files can be easily converted to pdf using utilites such as `pdflatex`.
+//=== Generating documentation
+//
+//LVT code uses the ProTex (http://gmao.gsfc.nasa.gov/software/protex/) documenting system  <<protex>>.  The documentation in LaTeX format can be produced by using the `doc.csh` in the _$WORKING/src/utils_ directory. This command produces documentation, generating a number of LaTeX files.
+// //These files can be easily converted to pdf
+// //or html formats using utilites such as \cmdfont{pdflatex} or
+// //\cmdfont{latex2html}.
+//These files can be easily converted to pdf using utilites such as `pdflatex`.
 

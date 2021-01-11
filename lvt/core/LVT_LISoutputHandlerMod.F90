@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 
 !BOP
@@ -156,6 +162,7 @@ module LVT_LISoutputHandlerMod
 
    ! NLDAS OUTPUT
    integer :: LVT_LIS_MOC_CCOND(3)    = -9999
+   integer :: LVT_LIS_MOC_VPD(3)    = -9999
 
    ! ADDITIONAL AFWA VARIABLES
    integer :: LVT_LIS_MOC_RELSMC(3)       = -9999
@@ -655,7 +662,13 @@ contains
 
     if(LVT_rc%lis_output_obs) then 
        source = 1
-       if((LVT_rc%obssource(1).eq."LIS output").and.&
+       if(LVT_rc%nDataStreams.eq.3) then 
+          if((LVT_rc%obssource(1).eq."LIS output").and.&
+               (LVT_rc%obssource(2).eq."LIS output").and.&
+               (LVT_rc%obssource(3).eq."LIS output")) then 
+             source = 3
+          endif
+       elseif((LVT_rc%obssource(1).eq."LIS output").and.&
             (LVT_rc%obssource(2).eq."LIS output")) then 
           source = 2
        endif
@@ -1379,6 +1392,16 @@ contains
              call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_CCOND(kk),&
                   LVT_LISoutput(kk)%head_lsm_list,&
                   1,nsize,nensem,(/"m/s"/),1,(/"-"/),&
+                  valid_min=(/-9999.0/),valid_max=(/-9999.0/),gribSFC=1,gribLvl=1)
+          endif
+
+          call ESMF_ConfigFindLabel(modelSpecConfig,"VPD:",rc=rc)
+          call get_moc_attributes(modelSpecConfig, LVT_LISoutput(kk)%head_lsm_list,&
+               "VPD","vapor_pressure_deficit","vapor pressure deficit","F",rc)
+          if(rc.eq.1) then 
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_VPD(kk),&
+                  LVT_LISoutput(kk)%head_lsm_list,&
+                  1,nsize,nensem,(/"Pa"/),1,(/"-"/),&
                   valid_min=(/-9999.0/),valid_max=(/-9999.0/),gribSFC=1,gribLvl=1)
           endif
 
@@ -3730,6 +3753,8 @@ contains
              dataEntry => LVT_histData%head_ds1_list
           elseif(source.eq.2) then 
              dataEntry => LVT_histData%head_ds2_list
+          elseif(source.eq.3) then 
+             dataEntry => LVT_histData%head_ds3_list
           endif
        
           do while(associated(dataEntry))
@@ -3766,8 +3791,11 @@ contains
              if(source.eq.1) then 
                 vlevels = LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_RELSMC(source))%dataEntryPtr%vlevels
-             else
+             elseif(source.eq.2) then 
                 vlevels = LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_RELSMC(source))%dataEntryPtr%vlevels
+             elseif(source.eq.3) then 
+                vlevels = LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_RELSMC(source))%dataEntryPtr%vlevels
              endif
              allocate(LVT_temp_maxvEntry%value(nsize,1,vlevels))
@@ -4512,6 +4540,8 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
        dataEntry => LVT_histData%head_ds1_list
     elseif(source.eq.2) then 
        dataEntry => LVT_histData%head_ds2_list
+    elseif(source.eq.3) then 
+       dataEntry => LVT_histData%head_ds3_list
     endif
        
     do while(associated(dataEntry))
@@ -4542,8 +4572,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              swe_calc => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_SWE(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              swe_calc => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_SWE(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             swe_calc => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_SWE(source))%dataEntryPtr             
           endif
           if(swe_calc%selectNlevs.ge.1) then 
@@ -4568,8 +4601,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              ebal => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_EBAL(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              ebal => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_EBAL(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             ebal => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_EBAL(source))%dataEntryPtr
           endif
 
@@ -4661,8 +4697,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              wbal => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_WBAL(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              wbal => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_WBAL(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             wbal => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_WBAL(source))%dataEntryPtr
           endif
 
@@ -4744,8 +4783,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              rnet => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_RNET(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              rnet => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_RNET(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             rnet => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_RNET(source))%dataEntryPtr
           endif
           if(rnet%selectNlevs.ge.1) then 
@@ -4779,8 +4821,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              totalprecip => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_TOTALPRECIP(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then
              totalprecip => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_TOTALPRECIP(source))%dataEntryPtr             
+          elseif(source.eq.3) then
+             totalprecip => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_TOTALPRECIP(source))%dataEntryPtr             
           endif
 
@@ -4812,8 +4857,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              br => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_BR(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              br => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_BR(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             br => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_BR(source))%dataEntryPtr             
           endif
 
@@ -4852,8 +4900,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              esi => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_ESI(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              esi => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_ESI(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             esi => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_ESI(source))%dataEntryPtr             
           endif
 
@@ -4890,8 +4941,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              runoff => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_RUNOFF(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then
              runoff => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_RUNOFF(source))%dataEntryPtr
+          elseif(source.eq.3) then
+             runoff => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_RUNOFF(source))%dataEntryPtr
           endif
           if(runoff%selectNlevs.ge.1) then 
@@ -4923,8 +4977,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              dS => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_dS(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then
              dS => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_dS(source))%dataEntryPtr
+          elseif(source.eq.3) then
+             dS => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_dS(source))%dataEntryPtr
           endif
           if(dS%selectNlevs.ge.1) then 
@@ -4969,8 +5026,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then              
              ef => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_EF(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              ef => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_EF(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             ef => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_EF(source))%dataEntryPtr
           endif
           if(ef%selectNlevs.ge.1) then 
@@ -5008,8 +5068,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              sweoverp => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_SWEOVERP(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              sweoverp => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_SWEOVERP(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             sweoverp => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_SWEOVERP(source))%dataEntryPtr
           endif
           if(sweoverp%selectNlevs.ge.1) then 
@@ -5052,8 +5115,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              etoverp => LVT_histData%ptr_into_ds1_list(&
                LVT_MOC_ETOVERP(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              etoverp => LVT_histData%ptr_into_ds2_list(&
+               LVT_MOC_ETOVERP(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             etoverp => LVT_histData%ptr_into_ds3_list(&
                LVT_MOC_ETOVERP(source))%dataEntryPtr
           endif
           if(etoverp%selectNlevs.ge.1) then 
@@ -5096,8 +5162,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              qsoverp => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_QSOVERP(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              qsoverp => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_QSOVERP(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             qsoverp => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_QSOVERP(source))%dataEntryPtr             
           endif
 
@@ -5141,8 +5210,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              qsboverp => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_QSBOVERP(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              qsboverp => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_QSBOVERP(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             qsboverp => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_QSBOVERP(source))%dataEntryPtr
           endif
           if(qsboverp%selectNlevs.ge.1) then 
@@ -5185,8 +5257,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              ecanopoverqle => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_ECANOPOVERQLE(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              ecanopoverqle => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_ECANOPOVERQLE(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             ecanopoverqle => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_ECANOPOVERQLE(source))%dataEntryPtr             
           endif
 
@@ -5237,8 +5312,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              tvegoverqle => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_TVEGOVERQLE(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              tvegoverqle => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_TVEGOVERQLE(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             tvegoverqle => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_TVEGOVERQLE(source))%dataEntryPtr             
           endif
 
@@ -5290,8 +5368,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              esoiloverqle => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_ESOILOVERQLE(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              esoiloverqle => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_ESOILOVERQLE(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             esoiloverqle => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_ESOILOVERQLE(source))%dataEntryPtr             
           endif
 
@@ -5342,8 +5423,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              refet => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_REFET(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              refet => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_REFET(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             refet => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_REFET(source))%dataEntryPtr
           endif
           
@@ -5499,8 +5583,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              rootmoist => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_ROOTMOIST(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              rootmoist => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_ROOTMOIST(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             rootmoist => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_ROOTMOIST(source))%dataEntryPtr
           endif
 
@@ -5590,8 +5677,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              roottemp => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_ROOTTEMP(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              roottemp => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_ROOTTEMP(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             roottemp => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_ROOTTEMP(source))%dataEntryPtr             
           endif
           if(roottemp%selectNlevs.ge.1) then 
@@ -5633,8 +5723,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              wrsi => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_WRSI(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              wrsi => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_WRSI(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             wrsi => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_WRSI(source))%dataEntryPtr
           endif
           if(wrsi%selectNlevs.ge.1) then 
@@ -5670,8 +5763,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              tws_calc => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_TWS(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              tws_calc => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_TWS(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             tws_calc => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_TWS(source))%dataEntryPtr             
           endif
           if(tws_calc%selectNlevs.ge.1) then 
@@ -5825,8 +5921,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              gwscalc => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_GWS(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              gwscalc => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_GWS(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             gwscalc => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_GWS(source))%dataEntryPtr
           endif
           
@@ -5894,8 +5993,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              relsmc => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_RELSMC(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              relsmc => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_RELSMC(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             relsmc => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_RELSMC(source))%dataEntryPtr
           endif
           if ((LVT_LIS_MOC_SOILMOIST(source).gt.0)) then 
@@ -6062,6 +6164,8 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
        dataEntry => LVT_histData%head_ds1_list
     elseif(source.eq.2) then 
        dataEntry => LVT_histData%head_ds2_list
+    elseif(source.eq.3) then 
+       dataEntry => LVT_histData%head_ds3_list
     endif
        
     do while(associated(dataEntry))
@@ -6092,8 +6196,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              ebal => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_EBAL(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              ebal => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_EBAL(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             ebal => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_EBAL(source))%dataEntryPtr
           endif
 
@@ -6185,8 +6292,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              wbal => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_WBAL(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              wbal => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_WBAL(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             wbal => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_WBAL(source))%dataEntryPtr
           endif
 
@@ -6268,8 +6378,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              rnet => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_RNET(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              rnet => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_RNET(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             rnet => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_RNET(source))%dataEntryPtr
           endif
           if(rnet%selectNlevs.ge.1) then 
@@ -6302,8 +6415,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              br => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_BR(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              br => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_BR(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             br => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_BR(source))%dataEntryPtr             
           endif
 
@@ -6341,8 +6457,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              totalprecip => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_TOTALPRECIP(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              totalprecip => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_TOTALPRECIP(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             totalprecip => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_TOTALPRECIP(source))%dataEntryPtr             
           endif
 
@@ -6375,8 +6494,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              dS => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_dS(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              dS => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_dS(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             dS => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_dS(source))%dataEntryPtr
           endif
           if(dS%selectNlevs.ge.1) then 
@@ -6420,8 +6542,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              runoff => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_RUNOFF(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              runoff => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_RUNOFF(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             runoff => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_RUNOFF(source))%dataEntryPtr
           endif
           if(runoff%selectNlevs.ge.1) then 
@@ -6453,8 +6578,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then              
              ef => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_EF(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              ef => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_EF(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             ef => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_EF(source))%dataEntryPtr
           endif
           if(ef%selectNlevs.ge.1) then 
@@ -6492,8 +6620,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              sweoverp => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_SWEOVERP(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              sweoverp => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_SWEOVERP(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             sweoverp => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_SWEOVERP(source))%dataEntryPtr
           endif
           if(sweoverp%selectNlevs.ge.1) then 
@@ -6536,8 +6667,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              etoverp => LVT_histData%ptr_into_ds1_list(&
                LVT_MOC_ETOVERP(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              etoverp => LVT_histData%ptr_into_ds2_list(&
+               LVT_MOC_ETOVERP(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             etoverp => LVT_histData%ptr_into_ds3_list(&
                LVT_MOC_ETOVERP(source))%dataEntryPtr
           endif
           if(etoverp%selectNlevs.ge.1) then 
@@ -6580,8 +6714,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              qsoverp => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_QSOVERP(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              qsoverp => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_QSOVERP(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             qsoverp => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_QSOVERP(source))%dataEntryPtr             
           endif
 
@@ -6625,8 +6762,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              qsboverp => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_QSBOVERP(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              qsboverp => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_QSBOVERP(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             qsboverp => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_QSBOVERP(source))%dataEntryPtr
           endif
           if(qsboverp%selectNlevs.ge.1) then 
@@ -6669,8 +6809,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              ecanopoverqle => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_ECANOPOVERQLE(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              ecanopoverqle => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_ECANOPOVERQLE(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             ecanopoverqle => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_ECANOPOVERQLE(source))%dataEntryPtr             
           endif
 
@@ -6721,8 +6864,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              tvegoverqle => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_TVEGOVERQLE(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              tvegoverqle => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_TVEGOVERQLE(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             tvegoverqle => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_TVEGOVERQLE(source))%dataEntryPtr             
           endif
 
@@ -6774,8 +6920,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              esoiloverqle => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_ESOILOVERQLE(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              esoiloverqle => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_ESOILOVERQLE(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             esoiloverqle => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_ESOILOVERQLE(source))%dataEntryPtr             
           endif
 
@@ -6826,8 +6975,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              refet => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_REFET(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              refet => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_REFET(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             refet => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_REFET(source))%dataEntryPtr
           endif
           
@@ -6889,8 +7041,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              rootmoist => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_ROOTMOIST(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              rootmoist => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_ROOTMOIST(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             rootmoist => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_ROOTMOIST(source))%dataEntryPtr
           endif
 
@@ -6978,8 +7133,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              roottemp => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_ROOTTEMP(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              roottemp => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_ROOTTEMP(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             roottemp => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_ROOTTEMP(source))%dataEntryPtr             
           endif
           if(roottemp%selectNlevs.ge.1) then 
@@ -7020,8 +7178,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              wrsi => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_WRSI(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              wrsi => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_WRSI(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             wrsi => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_WRSI(source))%dataEntryPtr
           endif
           if(wrsi%selectNlevs.ge.1) then 
@@ -7057,8 +7218,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              tws_calc => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_TWS(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              tws_calc => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_TWS(source))%dataEntryPtr             
+          elseif(source.eq.3) then 
+             tws_calc => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_TWS(source))%dataEntryPtr             
           endif
           if(tws_calc%selectNlevs.ge.1) then 
@@ -7200,8 +7364,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              gwscalc => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_GWS(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              gwscalc => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_GWS(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             gwscalc => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_GWS(source))%dataEntryPtr
           endif
           
@@ -7269,8 +7436,11 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           if(source.eq.1) then 
              relsmc => LVT_histData%ptr_into_ds1_list(&
                   LVT_MOC_RELSMC(source))%dataEntryPtr
-          else
+          elseif(source.eq.2) then 
              relsmc => LVT_histData%ptr_into_ds2_list(&
+                  LVT_MOC_RELSMC(source))%dataEntryPtr
+          elseif(source.eq.3) then 
+             relsmc => LVT_histData%ptr_into_ds3_list(&
                   LVT_MOC_RELSMC(source))%dataEntryPtr
           endif
           if ((LVT_LIS_MOC_SOILMOIST(source).gt.0)) then 

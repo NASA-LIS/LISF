@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
@@ -325,7 +331,7 @@ contains
           call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"missing_value", -9999.0))          
 
           !grid information
-          if(trim(LDT_rc%lis_map_proj).eq."latlon") then !latlon
+          if(trim(LDT_rc%lis_map_proj(n)).eq."latlon") then !latlon
              call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
                   "EQUIDISTANT CYLINDRICAL"))
              call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_EAST_CORNER_LAT", &
@@ -337,7 +343,7 @@ contains
              call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"DY", &
                   LDT_rc%gridDesc(n,10)))       
 
-          elseif(trim(LDT_rc%lis_map_proj).eq."mercator") then 
+          elseif(trim(LDT_rc%lis_map_proj(n)).eq."mercator") then 
              call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
                   "MERCATOR"))
              call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_EAST_CORNER_LAT", &
@@ -353,7 +359,7 @@ contains
              call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"DY", &
                   LDT_rc%gridDesc(n,9)))
 
-          elseif(trim(LDT_rc%lis_map_proj).eq."lambert") then !lambert conformal
+          elseif(trim(LDT_rc%lis_map_proj(n)).eq."lambert") then !lambert conformal
              call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
                   "LAMBERT CONFORMAL"))
              call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_EAST_CORNER_LAT", &
@@ -371,7 +377,7 @@ contains
              call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"DY", &
                   LDT_rc%gridDesc(n,9)))
              
-          elseif(trim(LDT_rc%lis_map_proj).eq."polar") then ! polar stereographic
+          elseif(trim(LDT_rc%lis_map_proj(n)).eq."polar") then ! polar stereographic
              call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"MAP_PROJECTION", &
                   "POLAR STEREOGRAPHIC"))
              call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOUTH_EAST_CORNER_LAT", &
@@ -2700,7 +2706,7 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
        
        do r=1,LDT_rc%lnr(n)
           do c=1,LDT_rc%lnc(n)
-             if(LDT_rc%datamask(c,r).ne.1) then 
+             if(LDT_domain(n)%datamask(c,r).ne.1) then 
                 value2d(c,r) = LDT_rc%udef
              endif
           enddo
@@ -2722,7 +2728,7 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
               
        do r=1,LDT_rc%lnr(n)
           do c=1,LDT_rc%lnc(n)
-             if(LDT_rc%datamask(c,r).ne.1) then 
+             if(LDT_domain(n)%datamask(c,r).ne.1) then 
                 value2d(c,r) = LDT_rc%udef
              else
                 gid = LDT_domain(n)%gindex(c,r)
@@ -2798,7 +2804,7 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
        
        do r=1,LDT_rc%lnr(n)
           do c=1,LDT_rc%lnc(n)
-             if(LDT_rc%datamask(c,r).ne.1) then 
+             if(LDT_domain(n)%datamask(c,r).ne.1) then 
                 value2d(c,r) = LDT_rc%udef
              endif
           enddo
@@ -2820,7 +2826,7 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
               
        do r=1,LDT_rc%lnr(n)
           do c=1,LDT_rc%lnc(n)
-             if(LDT_rc%datamask(c,r).ne.1) then 
+             if(LDT_domain(n)%datamask(c,r).ne.1) then 
                 value2d(c,r) = LDT_rc%udef
              else
                 gid = LDT_domain(n)%gindex(c,r)

@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) v7.1
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 module LDT_coreMod
@@ -160,6 +166,7 @@ module LDT_coreMod
      type(tiledec), allocatable :: tile(:)
      integer, allocatable       :: ntiles_pergrid(:)
      integer, allocatable       :: str_tind(:) !starting tile id for each grid
+     integer, allocatable       :: datamask(:,:)
      real                       :: minLat, maxLat, minLon, maxLon
      real                       :: stlat, stlon, truelat1
      real                       :: truelat2, truelon, orient

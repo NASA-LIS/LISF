@@ -1,23 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT), 1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! See RELEASE_NOTES.txt for more information.
-!
-! The LDT source code and documentation are not in the public domain
-! and may not be freely distributed.  Only qualified entities may receive 
-! the source code and documentation. 
-!
-! Qualified entities must be covered by a Software Usage Agreement. 
-! The Software Usage Agreement contains all the terms and conditions
-! regarding the release of the LDT software.
-!
-! NASA GSFC MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THE
-! SOFTWARE FOR ANY PURPOSE.  IT IS PROVIDED AS IS WITHOUT EXPRESS OR
-! IMPLIED WARRANTY.  NEITHER NASA GSFC NOR THE US GOVERNMENT SHALL BE
-! LIABLE FOR ANY DAMAGES SUFFERED BY THE USER OF THIS SOFTWARE.
-!
-! See the Software Usage Agreement for the full disclaimer of warranty.
-!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -29,7 +17,7 @@
 ! 
 !  28 Jun 2009: Sujay Kumar; Initial Specification
 ! !INTERFACE:
-subroutine readinput_UTM
+subroutine readinput_UTM(nest)
 
 ! !USES:
   use ESMF
@@ -41,6 +29,7 @@ subroutine readinput_UTM
   use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
   use map_utils
 
+  integer, intent(in) :: nest
 
 ! !DESCRIPTION: 
 !
@@ -70,41 +59,41 @@ subroutine readinput_UTM
 
   allocate(run_dd(LDT_rc%nnest,20))
 
-  LDT_rc%lis_map_resfactor = 100000.   ! if in meters
+  LDT_rc%lis_map_resfactor(nest) = 100000.   ! if in meters
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain UTM zone:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,1),rc=rc)
      call LDT_verify(rc,'Run domain UTM zone: not defined')
   enddo  
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain northing of SW corner:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,2),rc=rc)
      call LDT_verify(rc,'Run domain northing of SW corner: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain easting of SW corner:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,3),rc=rc)
      call LDT_verify(rc,'Run domain easting of SW corner: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain x-dimension size:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,4),rc=rc)
      call LDT_verify(rc,'Run domain x-dimension size: not defined')
   enddo
   
   call ESMF_ConfigFindLabel(LDT_config,"Run domain y-dimension size:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,5),rc=rc)
      call LDT_verify(rc,'Run domain y-dimension size: not defined')
   enddo  
 
 ! Resolution:  in meters?
   call ESMF_ConfigFindLabel(LDT_config,"Run domain resolution:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,6),rc=rc)
      call LDT_verify(rc,'Run domain resolution: not defined')
   enddo  
@@ -118,7 +107,7 @@ subroutine readinput_UTM
      call LDT_endrun()
   endif
 
-  do n=1,LDT_rc%nnest
+  do n=1,nest
 
      stnorthing = run_dd(n,2)
      steasting  = run_dd(n,3)

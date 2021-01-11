@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -170,7 +172,6 @@ contains
 
     do n=1,LIS_rc%nnest
        do k = 1, LIS_rc%ngrid(n)
-!TODO: clean this up with ntiles_pergrid array instead of maximum 
           allocate(LIS_domain(n)%grid(k)%subgrid_tiles(&
                LIS_rc%surface_maxt*&
                LIS_rc%soilt_maxt*&

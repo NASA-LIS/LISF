@@ -1,5 +1,16 @@
-#!/usr/bin/env python
-# ------------------------------------------------------------------------------
+#!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.3
+#
+# Copyright (c) 2020 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+#------------------------------------------------------------------------------
 #
 # SCRIPT: run_ncks.py
 #
@@ -11,7 +22,7 @@
 # required variables.
 #
 # REQUIREMENTS:
-# * Python 2.6 or 2.7
+# * Python 3
 # * NetCDF Operator (NCO) utilities
 #
 # REVISION HISTORY:
@@ -30,8 +41,12 @@
 # 03 Dec 2019:  Eric Kemp (SSAI), added Greenness_inst for Noah and NoahMP.
 #               Not included for JULES since that LSM doesn't use it.
 # 09 Jan 2020:  Eric Kemp (SSAI), added Tair_f_min for JULES for 3hr.
+# 05 Aug 2020:  Eric Kemp (SSAI), added Albedo_tavg and SmLiqFrac_inst.
+# 25 Sep 2020:  Eric Kemp (SSAI), tweaked comments for Python version. Also
+#               added path for NCKS on Koehr.
+# 14 Oct 2020:  Eric Kemp (SSAI), updated NCKS path on Discover.
 #
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 # Standard modules
 import datetime
@@ -39,11 +54,12 @@ import os
 import subprocess
 import sys
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 # Path to NCO ncks program
 # _NCKS_PATH = "/app/nco/4.5.2-gnu/bin/ncks" # On Conrad
-_NCKS_PATH = "/usr/local/other/SLES11.1/nco/4.4.4/intel-12.1.0.233/bin/ncks"
+# _NCKS_PATH = "/app/nco/4.7.7-gnu/bin/ncks" # On Koehr
+_NCKS_PATH = "/usr/local/other/nco/4.8.1/bin/ncks" # On Discover
 
 # Supported LIS LSMs
 _LIS_LSMS = ["NOAH", "NOAHMP", "JULES"]
@@ -117,7 +133,8 @@ _LVT_NOAHMP_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
 _LVT_NOAHMP_INVOCATIONS_24HR_LATEST = ['SnowDepth_inst', 'SWE_inst']
 
 # The LVT invocations for JULES LSM output.
-_LVT_JULES_INVOCATIONS_3HR = ['AvgSurfT_inst', 'AvgSurfT_tavg',
+_LVT_JULES_INVOCATIONS_3HR = ['Albedo_tavg',
+                              'AvgSurfT_inst', 'AvgSurfT_tavg',
                               'CanopInt_inst',
                               'Elevation_inst', 'Evap_tavg',
                               'LWdown_f_inst', 'LWdown_f_tavg',
@@ -130,11 +147,16 @@ _LVT_JULES_INVOCATIONS_3HR = ['AvgSurfT_inst', 'AvgSurfT_tavg',
                               'SWE_inst',
                               'SWdown_f_inst', 'SWdown_f_tavg',
                               'SnowDepth_inst',
+                              'SmLiqFrac_inst',
                               'SoilMoist_inst', 'SoilMoist_tavg',
                               'SoilTemp_inst', 'SoilTemp_tavg',
                               'Tair_f_inst', 'Tair_f_max',
                               'Tair_f_tavg',
                               'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
+
+# EMK for RECON
+#_LVT_JULES_INVOCATIONS_3HR = ["SWE_inst", "SnowDepth_inst", "SoilMoist_inst",
+#        "SoilTemp_inst", "AvgSurfT_inst"]
 
 _LVT_JULES_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
                                'RHMin_inst',
@@ -237,7 +259,7 @@ _LIS_VARIABLES = {
 _OTHER_VARIABLES = ["latitude", "longitude",
                     "time", "water_temp", "aice", "hi"]
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Print command line usage
 
 
@@ -249,9 +271,8 @@ def usage():
     print("           period is processing time length in hours (3 or 24)")
     print("           --nospread is optional flag to skip ensemble spread")
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Read command line arguments
-
 
 def read_cmd_args():
 
@@ -326,9 +347,8 @@ def read_cmd_args():
 
     return validdt, lsm, ncks, period, skip_ens_spread
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Collect netCDF mean files
-
 
 def get_nc_mean_files(validdt, lsm, period):
 
@@ -382,9 +402,8 @@ def get_nc_mean_files(validdt, lsm, period):
     # All done
     return mean_nc_infiles, mean_nc_outfile
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Collect netCDF ssdev files
-
 
 def get_nc_ssdev_files(validdt, lsm, period):
 
@@ -438,9 +457,8 @@ def get_nc_ssdev_files(validdt, lsm, period):
     # All done
     return ssdev_nc_infiles, ssdev_nc_outfile
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Collect netCDF latest files
-
 
 def get_nc_latest_files(validdt, lsm):
 
@@ -472,9 +490,8 @@ def get_nc_latest_files(validdt, lsm):
     # All done
     return latest_nc_infiles
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Use ncks to merge netCDF fields together
-
 
 def merge_nc_files(lsm, ncks, period, nc_infiles,
                    nc_outfile, latest_nc_infiles=None):
@@ -518,9 +535,8 @@ def merge_nc_files(lsm, ncks, period, nc_infiles,
                     print("[ERR] Problem with ncks!")
                     sys.exit(1)
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Main Driver.
-
 
 if __name__ == "__main__":
 

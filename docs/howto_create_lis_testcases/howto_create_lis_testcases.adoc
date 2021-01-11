@@ -1,87 +1,71 @@
-= How to create LIS 7 testcases
-:author: James Geiger
-:revnumber: 4
-:revdate: 20 Dec 2018
+= How to Create LIS 7 Testcases
+James Geiger; Brendan McAndrew
+:revnumber: 5
+:revdate: 25 Aug 2020
+:icons: font
 //:sectnums:
 
 == Introduction
 
-This document describes how to create a functional or acceptance testcase for LIS 7.
+This document describes how to create a functional or acceptance testcase for LIS 7. The testcase should contain everything needed to reproduce the testcase output. The testcase for the NAM 242 forcing reader will be used in this guide as an example. When creating your testcase, replace `nam242forcingtest` with the name of your case where applicable.
 
-I will use the testcase for the NAM 242 forcing reader as an example. The goal of this document is to guide the reader into creating the following files:
+The rest of this document will guide the reader through the creation of the following files:
 
-. README
-+
-The README file provides a description of the testcase including a high-level description of the configuration and instructions on how to run the testcase.
+[cols="5h,40,55",frame=topbot,stripes=odd]
+|===
+|1 | `README` |Provides a high-level description of the testcase itself as well as instructions for running the testcase.
+|2 | `ldt.config`   | The configuration file used to run LDT to produce the input domain and parameter file for LIS (e.g., `lis_input.d01.nc`).
+|3 | `input.ctl`   | A GrADS descriptor file used to display the input paramter file (e.g., `lis_input.d01.nc`).
+|4 | `lis.config`   | The configuration file used to run LIS.
+|5 | `MODEL_OUTPUT_LIST.TBL`   | A configuration file used by LIS to set the output for the test-case.
+|6 | `output.ctl` | A GrADS descriptor file used to display the output from the LIS run.
+|7 | `testcase.ctl` | A GrADS descriptor file used to display the _target_ output contained in the output tar file (e.g., `nam242forcingtest_output_v72.tar.gz`).
+|8 | `nam242forcingtest_ldt_v72.tar.gz`   | The _LDT_ tar file contains all the files needed to run LDT to produce the input domain and parameter file for LIS (e.g., `lis_input.d01.nc`).
+|9 | `nam242forcingtest_input_v72.tar.gz`   | The _input_ tar file contains all the files needed to run LIS.
+|10| `nam242forcingtest_output_v72.tar.gz`   | The _output_ tar file contains _target_ output for the testcase (i.e., what LIS _should_ produce when the testcase is run).
+|===
 
-. ldt.config
-+
-The ldt.config file is the configuration file used to run LDT to produce the input domain and parameter file for LIS (e.g.: lis_input.d01.nc).
+NOTE: Files 1 though 7 are stored with the LISF source code repository on GitHub (see link:https://github.com/NASA-LIS/LISF/tree/master/lis/testcases/metforcing/nam242[`lis/testcases/metforcing/nam242`] for example). Files 8, 9, and 10 are stored on our data portal server.
 
-. input.ctl
-+
-The input.ctl file is a GrADS descriptor file used to display the input paramter file (e.g.: lis_input.d01.nc).
+== Creating a Testcase
 
-. lis.config
-+
-The lis.config file is the configuration file used to run LIS.
+A testcase is created in four steps:
 
-. MODEL_OUTPUT_LIST.TBL
-+
-The MODEL_OUTPUT_LIST.TBL file used by the lis.config file is also used to run LIS.
+. Create the `README` file
 
-. output.ctl
-+
-The output.ctl file is a GrADS descriptor file used to display the output from the LIS run.
+. Create the _LDT_ tar file (e.g., `nam242forcingtest_ldt_v72.tar.gz`).
 
-. testcase.ctl
-+
-The testcase.ctl file is a GrADS descriptor file used to display the packaged output from the OUTPUT tar file (e.g.: nam242forcingtest_output_v72.tar.gz).
+. Create the _INPUT_ tar file (e.g., `nam242forcingtest_input_v72.tar.gz`).
 
-. nam242forcingtest_ldt_v72.tar.gz
-+
-This is the LDT tar file. It contains all the data needed to run LDT to produce the input domain and parameter file for LIS (e.g.: lis_input.d01.nc).
-
-. nam242forcingtest_input_v72.tar.gz
-+
-This is the INPUT tar file. It contains all the data needed to run LIS.
-
-. nam242forcingtest_output_v72.tar.gz
-+
-This is the OUTPUT tar file. It contains all the output from the LIS run.
-
-Files 1. though 7. are kept with the LIS source code. See testcases/metforcing/nam242. Files 8., 9., and 10. are stored on our data portal server.
-
-Creating a testcase is done in four steps.
-
-Step 1) focuses on the README file.
-
-Step 2) focuses on the ldt.config file, input.ctl file, and the LDT tar file (e.g.: nam242forcingtest_ldt_v72.tar.gz).
-
-Step 3) focuses on the INPUT tar file (e.g.: nam242forcingtest_input_v72.tar.gz).
-
-Step 4) focuses on the lis.config file, MODEL_OUTPUT_LIST.TBL file, output.ctl file, testcase.ctl file, and the OUTPUT tar file (e.g.: nam242forcingtest_output_v72.tar.gz).
+. Create the _OUTPUT_ tar file (e.g., `nam242forcingtest_output_v72.tar.gz`).
 
 [NOTE]
 ====
-These tests are run on systems other than discover, so the files that you create must be self-contained.  For example, the config files should *not* refer to /discover/nobackup/... .  Please use files and results generated in previous steps (see, for example, Step 4.3), to verify that your testcase is both complete and self-contained.
+These testcases may be run on systems other than _discover_ so it must be self-contained. For example, the config files should *not* refer to `/discover/nobackup/...` (or to a symbolic link to data elsewhere on _discover_). Please use files and results generated in previous steps (see, for example, Step 4.3), to ensure that your testcase is both complete and self-contained.
 ====
 
-[IMPORTANT]
+[WARNING]
 ====
-This should go without saying: please do *not* commit the ldt, input, and output tar.gz files into the repository.  Those files will be transferred to our data portal.
+Please do *NOT* commit the LDT, input, and output tar.gz files into the LISF repository. These files are too large to store in a GitHub repository and will be stored on our data portal instead.
 ====
 
+Before continuing with Step 1, create a clean working directory in which to build the testcase. In the steps that follow, you will create new files and sub-directories within this parent directory.
 
-== Step 1
-. Write the README file. Please see the README file in testcases/metforcing/nam242 for an example. This file should be saved in the LIS source code in the appropriate testcases sub-directory.
+=== Step 1: Create the `README` file
 
-== Step 2
-. Create a clean working directory.
+Create a file named `README` and add a high-level description of the testcase, instructions for running the testcase, and any additional notes (i.e., citations, links, data format information). This file will be saved in the LISF source code repository in the appropriate testcases sub-directory. See the link:https://github.com/NASA-LIS/LISF/tree/master/lis/testcases/metforcing/nam242/README[NAM 242 testcase `README`,window=_blank] for an example.
 
-. Create the ldt.config file as appropriate for your testcase. A copy should be saved in the LIS source code in the appropriate testcases sub-directory.
+=== Step 2: Create the LDT tar file
+
+In this step you will organize all the files needed by LDT to reproduce the `lis_input.d01.nc` domain and parameter file.
+
+. Create a clean working directory for this step and change directories into it.
+
+. Create the `ldt.config` file as appropriate for your testcase. If you have already created your `ldt.config` file, create a copy here.
 +
-Create an input directory and place all necessary input files into it.
+A copy of this `ldt.config` file will be saved in the LISF source code repository in the appropriate testcases sub-directory.
+
+. Create a directory named `input` and place all input files listed in the `ldt.config` file into it. For example:
 +
 ....
 % ls input
@@ -90,14 +74,18 @@ input/LS_PARAMETERS/UMD/25KM/landmask_UMD.1gd4r
 input/LS_PARAMETERS/UMD/25KM/elev_GTOPO30.1gd4r
 input/LS_PARAMETERS/metforcing_parms/NAM/terrain.242.grb
 ....
++
+IMPORTANT: To reduce the filesize of the tar file created in this step, the `input` directory should contain *_only_* the files necessary for the LDT run. Do not include files associated with options that are disabled in the `ldt.config` file. For large forcing datasets, only include the subset of files necessary for the temporal domain of the testcase.
 
-. Run LDT to produce the input domain and parameter file for LIS (e.g.: lis_input.d01.nc).
+. Verify that the filepaths listed in your `ldt.config` file match the file locations in the new `input` directory. Update the filepaths if necessary.
 
-. Create an input.ctl GrADS descriptor file for viewing the input paramter file. A copy should be saved in the LIS source code in the appropriate testcases sub-directory.
+. Run LDT to produce the input domain and parameter file for LIS (e.g., `lis_input.d01.nc`). Verify that the output is as expected.
 
-. Rename the log file from the LDT run to ldtlog_testcase.0000. Copy the input domain and parameter file to lis_input_testcase.d01.nc.
+. Create an `input.ctl` GrADS descriptor file for viewing the input paramter file. A copy of this file will be saved in the LISF source code repository in the appropriate testcases sub-directory.
 
-. Create the LDT tar file.
+. Copy the input domain and parameter file to `lis_input_testcase.d01.nc` and rename the log file created by the LDT run to `ldtlog_testcase.0000`. 
+
+. Create the LDT tar file, then gzip it (replacing `nam242forcingtest` with the name of your testcase):
 +
 ....
 % tar cf nam242forcingtest_ldt_v72.tar ldtlog_testcase.0000 \
@@ -106,14 +94,25 @@ input/LS_PARAMETERS/metforcing_parms/NAM/terrain.242.grb
 % gzip nam242forcingtest_ldt_v72.tar
 ....
 +
-This provides the user with all the files and data needed to rerun the LDT preprocessing step.
+It should now be safe to delete the `input` directory created in this step.
 
-== Step 3
-. Create a clean working directory.
+Your working directory for this step should now contain the following files:
 
-. Copy the input domain and parameter file (e.g.: lis_input.d01.nc) from Step 2.
+* `ldt.config`
+* `input.ctl`
+* `nam242forcingtest_ldt_v72.tar.gz`
 
-. Create an input directory and place all necessary input files (and only necessary files) into it, including any parameter files that are *not* processed by LDT. Note that you must create an input/forcing_variables.txt file that specifies which forcing variables are needed by LIS for this testcase.
+Change into the parent directory and proceed to Step 3.
+
+=== Step 3: Create the input tar file
+
+In this step you will organize the input data used in the LIS run.
+
+. Create a clean working directory for this step and change directories into it.
+
+. Copy the input domain and parameter file (e.g., `lis_input.d01.nc`) from Step 2.
+
+. Create an `input` directory and copy all required input files listed into it, including any parameter files that are *not* processed by LDT. Note that you must create an `input/forcing_variables.txt` file that specifies which forcing variables are needed by LIS for this testcase.
 +
 ....
 % ls input
@@ -130,8 +129,10 @@ input/MET_FORCING/NAM242/20120903/18/fh.0006_tl.press_gr.awp242
 input/MET_FORCING/NAM242/20120903/18/fh.0009_tl.press_gr.awp242
 input/MET_FORCING/NAM242/20120903/18/fh.0012_tl.press_gr.awp242
 ....
++
+IMPORTANT: To reduce the filesize of the tar file created in this step, the `input` directory should contain *_only_* the files necessary for the LIS run. For large forcing datasets, only include the subset of files necessary for the temporal domain of the testcase.
 
-. Create the INPUT tar file.
+. Create the _input_ tar file, then gzip it (replacing `nam242forcingtest` with the name of your testcase):
 +
 ....
 % tar cf nam242forcingtest_input_v72.tar lis_input.d01.nc \
@@ -139,41 +140,59 @@ input/MET_FORCING/NAM242/20120903/18/fh.0012_tl.press_gr.awp242
 % gzip nam242forcingtest_input_v72.tar
 ....
 +
-This provides the user with all the files and data needed to run LIS.
+Don't delete the `input` directory just yet, as you may have to make adjustments in the next step.
 
-== Step 4
+Your working directory for this step should now contain the following files:
 
-. Create a clean working directory.
+* `input/`
+* `nam242forcingtest_input_v72.tar.gz`
 
-. Create the lis.config file and MODEL_OUTPUT_LIST.TBL file as appropriate for your testcase. Copies should be saved in the LIS source code in the appropriate testcases sub-directory.
+Change into the parent directory and proceed to Step 4.
 
-. Copy and unpack the nam242forcingtest_input_v72.tar.gz file from Step 3.
+=== Step 4: Create the output tar file
+
+In this step you will organize the target output files that the output of test runs can be checked against.
+
+. Create a clean working directory for this step and change directories into it.
+
+. Create the `lis.config` file and `MODEL_OUTPUT_LIST.TBL` file as appropriate for your testcase (or copy them here if they already exist). Copies of these two files will be saved in the LISF source code repository in the appropriate testcases sub-directory.
+
+. Copy and unpack the `nam242forcingtest_input_v72.tar.gz` file created in Step 3.
 +
 ....
 % gzip -dc nam242forcingtest_input_v72.tar.gz | tar xf -
 ....
 
-. Run LIS to produce the output data.
+. Run LIS and verify that the output is as expected. If the run halts due to missing data, revisit Step 3.
 
-. Create an output.ctl GrADS descriptor file for viewing the output data. A copy should be saved in the LIS source code in the appropriate testcases sub-directory.
+. Create an `output.ctl` GrADS descriptor file for viewing the output data. A copy of this file will be saved in the LISF source code repository in the appropriate testcases sub-directory.
 
-. Rename the OUTPUT directory to TARGET_OUTPUT.
-
-. Move the lislog.00* files into the TARGET_OUTPUT directory.
+. Rename the `OUTPUT` directory to `TARGET_OUTPUT` and move all `lislog.00*` files into it. `TARGET_OUTPUT` should now contain all files generated by the LIS run. For example:
 +
 ....
 % ls TARGET_OUTPUT
 lislog.0000  SURFACEMODEL  SURFACEMODEL.d01.stats
 ....
 
-. Create a testcase.ctl GrADS descriptor file for viewing the output data in the TARGET_OUTPUT directory. A copy should be saved in the LIS source code in the appropriate testcases sub-directory.
+. Create a `testcase.ctl` GrADS descriptor file for viewing the _target_ output data in the `TARGET_OUTPUT` directory. A copy of this file will be saved in the LISF source code repostiory in the appropriate testcases sub-directory.
 
-. Create the OUTPUT tar file.
+. Create the _output_ tar file, then gzip it (replacing `nam242forcingtest` with the name of your testcase):
 +
 ....
 % tar cf nam242forcingtest_output_v72.tar TARGET_OUTPUT
 % gzip nam242forcingtest_output_v72.tar
 ....
-+
-This provides the user with all the files and data needed to compare the LIS testcase.
+
+Your working directory for this step should now contain the following files:
+
+* `TARGET_OUTPUT/`
+* `output.ctl`
+* `testcase.ctl`
+* `nam242forcingtest_output_v72.tar.gz`
+
+Change directories into the parent directory containing the `README` file.
+
+== Finishing Up
+
+You can now move all the files listed in the table at the top of this document out of their respective sub-directories and into this directory. Change permissions on the files in this directory to enable read access (e.g., `chmod 755 *`). If the testcase files are associated with a Pull Request, include the filepath to this directory in a comment. Otherwise, contact Brendan McAndrew and Jim Geiger about adding the testcase to the internal test suite.
 

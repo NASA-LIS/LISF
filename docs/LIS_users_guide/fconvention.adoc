@@ -1,6 +1,6 @@
 
+[[sec_fconv_appendix,LIS Binary File Convention]]
 == LIS Binary File Convention
-anchor:sec_fconv_appendix[LIS Binary File Convention]
 
 (Draft, 4/23/2003)
 

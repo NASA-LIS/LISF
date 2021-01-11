@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -11,7 +17,7 @@
 !  15 Jul 2005: Sujay Kumar; Initial Specification
 !
 ! !INTERFACE:
-subroutine readinput_merc
+subroutine readinput_merc(nest)
 ! !USES:
   use ESMF 
   use map_utils
@@ -21,6 +27,11 @@ subroutine readinput_merc
   use LDT_domainMod, only : LDT_quilt_domain
   use LDT_fileIOMod, only : LDT_readDomainConfigSpecs       
   use LDT_logMod,    only : LDT_logunit, LDT_endrun, LDT_verify
+
+
+  implicit none 
+
+  integer, intent(in) :: nest
 
 ! !DESCRIPTION: 
 !
@@ -39,7 +50,6 @@ subroutine readinput_merc
 !   routine to perform domain decomposition
 !  \end{description}
 !EOP
-  implicit none
 
   integer           :: i
   integer           :: k
@@ -63,44 +73,44 @@ subroutine readinput_merc
   allocate(gnc(LDT_rc%nnest))
   allocate(gnr(LDT_rc%nnest))
 
-  LDT_rc%lis_map_resfactor = 100.
+  LDT_rc%lis_map_resfactor(nest) = 100.
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lat:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,1),rc=rc)
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lon:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,2),rc=rc)
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain true lat1:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,3),rc=rc)
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain standard lon:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,4),rc=rc)
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain resolution:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,5),rc=rc)
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain x-dimension size:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,6),rc=rc)
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain y-dimension size:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,7),rc=rc)
   enddo
 
-  do n=1,LDT_rc%nnest
+  do n=1,nest
 
      write(LDT_logunit,*) "DOMAIN details: Running in Mercator projection."
      if(LDT_npes.eq.1) then 

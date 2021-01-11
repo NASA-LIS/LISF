@@ -1,0 +1,28 @@
+Land Parameter Retrieval Model (LPRM) Vegetation Optical Depth (VOD) Retrievals Test Case
+
+REPLACE REMAINDER OF README WITH DESCRIPTION OF THIS TEST CASE
+
+This test-case performs a 1/8 degree simulation over CONUS with the
+TEMPLATE lsm option from 2002-01-01 to 2019-01-01 to test the processing
+of vegetation optical depth retrievals from the Land Parameter Retreival
+Model (LPRM).
+
+This directory contains: 
+
+* this README file.
+* the ldt.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.) 
+* the input data needed for this testcase (input/)
+
+To run this test case: 
+
+* Generate the LDT executable. 
+* Run the LDT executable using the ldt.config file and the sample 
+  input data. 
+
+Notes:
+
+This feature was added in Pull Request #174 (https://github.com/NASA-LIS/LISF/pull/174).
+
+The LPRM data was obtained from Dr. Richard de Jeu and vandersat.com
