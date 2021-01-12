@@ -42,17 +42,18 @@ subroutine noahmp401_getsws_hymap2(n)
   integer                :: status
   integer                :: enable2waycpl
   
+  call ESMF_AttributeGet(LIS_runoff_state(n),"2 way coupling",&
+       enable2waycpl, rc=status)
+  call LIS_verify(status)
+  
   if(enable2waycpl==1) then 
 
      write(LIS_logunit,*) '[ERR] Two-way coupling between NoahMP401 and HYMAP2'
      write(LIS_logunit,*) '[ERR] is not currently supported'
      call LIS_endrun()
   endif
+  
 #if 0 
-  call ESMF_AttributeGet(LIS_runoff_state(n),"2 way coupling",&
-       enable2waycpl, rc=status)
-  call LIS_verify(status)
-
   if(enable2waycpl==1) then 
      ! River Storage
      call ESMF_StateGet(LIS_runoff_state(n),"River Storage",rivsto_field,rc=status)
