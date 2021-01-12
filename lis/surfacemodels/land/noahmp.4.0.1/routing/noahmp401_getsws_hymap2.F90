@@ -42,7 +42,6 @@ subroutine noahmp401_getsws_hymap2(n)
   integer                :: status
   integer                :: enable2waycpl
   
-  enable2waycpl = 0 
   if(enable2waycpl==1) then 
 
      write(LIS_logunit,*) '[ERR] Two-way coupling between NoahMP401 and HYMAP2'
