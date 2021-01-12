@@ -36,6 +36,10 @@ subroutine clsmf25_getsws_hymap2(n)
   integer                :: status
   integer                :: enable2waycpl
   
+  call ESMF_AttributeGet(LIS_runoff_state(n),"2 way coupling",&
+       enable2waycpl, rc=status)
+  call LIS_verify(status)
+  
   if(enable2waycpl==1) then
      write(LIS_logunit,*) '[ERR] Two-way coupling between CLSM and HYMAP2'
      write(LIS_logunit,*) '[ERR] is not currently supported'
