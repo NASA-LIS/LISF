@@ -10099,6 +10099,18 @@ of how to specify a time interval.
 `HYMAP2 routing model restart file:` specifies the HyMAP2 router
 active restart file.
 
+`HYMAP2 enable 2-way coupling:` specifies whether to enable 2-way coupling.
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use
+|====
+
+`HYMAP2 2-way coupling flooded fraction threshold:` specifies the flooded fraction
+threshold used in the 2-way coupling mode.
+
 .Example _lis.config_ entry
 ....
 HYMAP2 routing model time step: "30mn"
@@ -10120,6 +10132,8 @@ HYMAP2 routing model dwi flag: 0
 HYMAP2 routing model start mode: "coldstart"
 HYMAP2 routing model restart interval: "1mo"
 HYMAP2 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP2_router_197901030000.d01.nc
+HYMAP2 enable 2-way coupling: 0
+HYMAP2 2-way coupling flooded fraction threshold: 2.0
 ....
 
 
