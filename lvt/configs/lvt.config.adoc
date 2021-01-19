@@ -1696,7 +1696,7 @@ GIMMS MODIS NDVI data directory:                   ./GIMMS_MODIS_NDVI
 .Example _lvt.config_ entry
 ....
 GLASS ALBEDO data directory:                   ./GLASS/Albedo/AVHRR/V4/HDF
-GLASS ALBEDO data source:                       AVHRRF
+GLASS ALBEDO data source:                       AVHRR
 ....
 
 ==== GLDAS version 2 data
