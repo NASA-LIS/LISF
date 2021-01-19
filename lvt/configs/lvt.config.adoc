@@ -1691,7 +1691,7 @@ GIMMS MODIS NDVI data directory:                   ./GIMMS_MODIS_NDVI
 
 `GLASS ALBEDO data directory:` specifies the location of the GLASS albedo data.
 
-`GLASS ALBEDO data source:` specifies the name of the GLASS albedo data.
+`GLASS ALBEDO data source:` specifies the name of the GLASS albedo data. Acceptable GLASS albedo names are MODIS or AVHRR.
 
 .Example _lvt.config_ entry
 ....
