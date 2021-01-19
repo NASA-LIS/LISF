@@ -599,7 +599,6 @@ contains
 !EOP
 !
 ! ! LOCAL VARIABLES
-    integer                                 :: coupled
 
     rc = ESMF_SUCCESS
 
@@ -618,7 +617,6 @@ contains
 
        LIS_rc%met_nf(:) = 9 ! WRFout sets to 17
 
-       ! call LIS_metforcing_init(coupled) ! "WRF coupling", "NUOPC coupling"
        call LIS_metforcing_init            ! "retrospective"
        call LIS_irrigation_init
        call LIS_initDAObservations
@@ -722,7 +720,6 @@ contains
     ! used for field conversions
     type(ESMF_StateItem_Flag)      :: itemType
     type(ESMF_Grid)                :: grid
-    integer(ESMF_KIND_I4), pointer :: mask(:,:)
     type(ESMF_Field)               :: exportField
     real(ESMF_KIND_R4),pointer     :: exportFarray(:,:)
     integer                        :: elb(2), eub(2)
@@ -874,8 +871,6 @@ contains
     call ESMF_TimeIntervalGet(timeStep, s=timeStepSecs, rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return ! bail out
 
-    !print *, "LIS timestep = ", timeStepSecs
-
     ! convert qs field if present
     call ESMF_StateGet(exportState, &
       itemName="qs", itemType=itemType, rc=rc)
@@ -887,22 +882,12 @@ contains
         itemName="qs", field=exportField, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
 
-      !call ESMF_FieldGet(exportField, grid=grid, rc=rc)
-      !if (ESMF_STDERRORCHECK(rc)) return
-
-      !call ESMF_GridGetItem(grid, itemflag=ESMF_GRIDITEM_MASK, &
-      !  localDE=0, &
-      !  staggerloc=ESMF_STAGGERLOC_CENTER, &
-      !  farrayPtr=mask, rc=rc)
-      !if (ESMF_STDERRORCHECK(rc)) return
-
       call ESMF_FieldGet(exportField, farrayPtr=exportFarray, &
         exclusiveLBound=elb, exclusiveUBound=eub, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
 
       do j=elb(2), eub(2)
       do i=elb(1), eub(1)
-        !if (mask(i,j) /= 1) then
         if (exportFarray(i,j) /= MISSINGVALUE) then
           exportFarray(i,j) = exportFarray(i,j) * timeStepSecs
         endif
@@ -2089,13 +2074,11 @@ contains
     integer,allocatable                        :: deBlockList(:,:,:)
     integer,allocatable                        :: petMap(:)
     type(ESMF_DELayout)                        :: deLayout
-!   type(ESMF_DistGridConnection), allocatable :: connectionList(:)
     type(ESMF_DistGrid)                        :: distGrid
     character(len=10)   :: did
     integer             :: petID, deID
     integer             :: istart, jstart
     integer             :: id, col, row
-    integer             :: col_halo, row_halo, gindex
     real                :: lat_cor, lon_cor
     real                :: lat_cen, lon_cen
     integer             :: lbnd(2),ubnd(2)
@@ -2104,8 +2087,6 @@ contains
     real(ESMF_KIND_COORD), pointer    :: coordXcorner(:,:)
     real(ESMF_KIND_COORD), pointer    :: coordYcorner(:,:)
     integer(ESMF_KIND_I4), pointer :: gridmask(:,:)
-    real(ESMF_KIND_R8), pointer    :: gridarea(:,:)
-    integer,dimension(2)           :: halowidth_x(2), halowidth_y(2)
 
     rc = ESMF_SUCCESS
 
@@ -2131,30 +2112,16 @@ contains
     deLayout = ESMF_DELayoutCreate(petMap, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
-!    allocate(connectionList(1),stat=stat)
-!    if (ESMF_LogFoundAllocError(statusToCheck=stat, &
-!      msg='Allocation of connectionList memory failed.', &
-!      line=__LINE__, file=FILENAME, rcToReturn=rc)) return ! bail out
-!    call ESMF_DistGridConnectionSet(LIS_ConnectionList(1), tileIndexA=1, &
-!      tileIndexB=1, positionVector=(/LIS_rc%gnc, 0/), rc=rc)
-!    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
     distGrid = ESMF_DistGridCreate( &
       minIndex=(/1,1/), maxIndex=(/LIS_rc%gnc(nest),LIS_rc%gnr(nest)/), &
       indexflag = ESMF_INDEX_DELOCAL, &
       deBlockList=deBlockList, &
       delayout=deLayout, &
-!     connectionList=LIS_ConnectionList, &
       rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     call LIS_DecompGet(distgrid,istart=istart,jstart=jstart,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
-!    deallocate(LIS_ConnectionList,stat=stat)
-!    if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
-!      msg='Deallocation of connection list memory failed.', &
-!      line=__LINE__,file=FILENAME,rcToReturn=rc)) return ! bail out
 
     deallocate(deBlockList,petMap,stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
@@ -2204,25 +2171,6 @@ contains
       (/istart,jstart/),coordYcenter,rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
-!    ! determine halo widths
-!    halowidth_x(1) = LIS_ews_ind(nest,LIS_localPet+1) - LIS_ews_halo_ind(nest,LIS_localPet+1)
-!    halowidth_x(2) = LIS_ewe_halo_ind(nest,LIS_localPet+1) - LIS_ewe_ind(nest,LIS_localPet+1)
-!    halowidth_y(1) = LIS_nss_ind(nest,LIS_localPet+1) - LIS_nss_halo_ind(nest,LIS_localPet+1)
-!    halowidth_y(2) = LIS_nse_halo_ind(nest,LIS_localPet+1) - LIS_nse_ind(nest,LIS_localPet+1)
-!
-!    ! coordinate indices are local, starting at 1
-!    ! exlude halo region
-!    do row=lbnd(2), ubnd(2)
-!    do col=lbnd(1), ubnd(1)
-!      col_halo = halowidth_x(1) + col ! Map column to grid with halo
-!      row_halo = halowidth_y(1) + row ! Map row to grid with halo
-!      id = col_halo+(row_halo-1)*LIS_rc%lnc(nest)! Map to local 1-D grid array index
-!
-!      coordXCenter(col,row) = LIS_domain(nest)%lon(id)
-!      coordYCenter(col,row) = LIS_domain(nest)%lat(id)
-!    enddo
-!    enddo
-
     ! Add Grid Mask
     call ESMF_GridAddItem(LIS_GridCreate, itemFlag=ESMF_GRIDITEM_MASK, &
       itemTypeKind=ESMF_TYPEKIND_I4, &
@@ -2237,16 +2185,6 @@ contains
     call LIS_ESMF_NetcdfReadIXJX("LANDMASK",trim(LIS_rc%paramfile(nest)), &
       (/istart,jstart/),gridmask,rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-
-!    ! Add Grid Area
-!    call ESMF_GridAddItem(LIS_GridCreate, itemFlag=ESMF_GRIDITEM_AREA, itemTypeKind=ESMF_TYPEKIND_R8, &
-!       staggerLoc=ESMF_STAGGERLOC_CENTER, rc=rc)
-!    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
-!    ! Get pointer to Grid Area array
-!    call ESMF_GridGetItem(LIS_GridCreate, itemflag=ESMF_GRIDITEM_AREA, localDE=0, &
-!      staggerloc=ESMF_STAGGERLOC_CENTER, &
-!      farrayPtr=gridarea, rc=rc)
-!    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
 #ifdef DEBUG
     call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)

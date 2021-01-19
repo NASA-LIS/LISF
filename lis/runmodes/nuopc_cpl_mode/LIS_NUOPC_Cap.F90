@@ -405,8 +405,6 @@ module LIS_NUOPC
     rc = ESMF_SUCCESS
 
     ! Query component for name, verbosity, and diagnostic values
-!    call NUOPC_CompGet(gcomp, name=name, verbosity=verbosity, &
-!      diagnostic=diagnostic, rc=rc)
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
@@ -566,8 +564,6 @@ module LIS_NUOPC
     rc = ESMF_SUCCESS
 
     ! Query component for name, verbosity, and diagnostic values
-!    call NUOPC_CompGet(gcomp, name=name, verbosity=verbosity, &
-!      diagnostic=diagnostic, rc=rc)
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
@@ -778,8 +774,6 @@ module LIS_NUOPC
     rc = ESMF_SUCCESS
 
     ! Query component for name, verbosity, and diagnostic values
-!    call NUOPC_CompGet(gcomp, name=name, verbosity=verbosity, &
-!      diagnostic=diagnostic, rc=rc)
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
@@ -1061,8 +1055,6 @@ module LIS_NUOPC
     rc = ESMF_SUCCESS
 
     ! Query component for name, verbosity, and diagnostic values
-!    call NUOPC_CompGet(gcomp, name=name, verbosity=verbosity, &
-!      diagnostic=diagnostic, rc=rc)
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
@@ -1243,8 +1235,6 @@ module LIS_NUOPC
     rc = ESMF_SUCCESS
 
     ! Query component for name, verbosity, and diagnostic values
-!    call NUOPC_CompGet(gcomp, name=name, verbosity=verbosity, &
-!      diagnostic=diagnostic, rc=rc)
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
@@ -1328,8 +1318,6 @@ subroutine CheckImport(gcomp, rc)
     rc = ESMF_SUCCESS
 
     ! Query component for name, verbosity, and diagnostic values
-!    call NUOPC_CompGet(gcomp, name=name, verbosity=verbosity, &
-!      diagnostic=diagnostic, rc=rc)
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
@@ -1398,8 +1386,6 @@ subroutine CheckImport(gcomp, rc)
     rc = ESMF_SUCCESS
 
     ! Query component for name, verbosity, and diagnostic values
-!    call NUOPC_CompGet(gcomp, name=name, verbosity=verbosity, &
-!      diagnostic=diagnostic, rc=rc)
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
@@ -1579,8 +1565,6 @@ subroutine CheckImport(gcomp, rc)
     rc = ESMF_SUCCESS
 
     ! Query component for name, verbosity, and diagnostic values
-!    call NUOPC_CompGet(gcomp, name=name, verbosity=verbosity, &
-!      diagnostic=diagnostic, rc=rc)
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
