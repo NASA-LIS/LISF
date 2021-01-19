@@ -20,6 +20,12 @@
 ! 08 Dec 2020: Eric Kemp; turn off DA in high snow depth regions
 ! 09 Dec 2020: David Mocko; Use snow density from JULES state;
 !              Only check SWE/snow maximum when doing update
+! 19 Jan 2020: David Mocko; Further tweaks to checking high snow
+!              depth to turn off DA (now using attributes file);
+!              Added consistency checks to setting maximum SWE
+!              and snow depth after DA against the snow density;
+!              Changes recommended after discussion with:
+!                   Yeosang Yoon, Yonghwan Kwon, Eric Kemp
 !
 ! !INTERFACE:
 subroutine jules50_qcsnodep(n, LSM_State)
@@ -88,12 +94,11 @@ subroutine jules50_qcsnodep(n, LSM_State)
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
 
-     if ((snod(t).lt.snodmin) .or. swe(t).lt.swemin) then
+     if ((snod(t).lt.snodmin).or.(swe(t).lt.swemin)) then
         update_flag(gid) = .false.
      endif
 
-!A more strict "deep snow" check, independent of the ancillary data. - EMK
-     if (snod(t).gt.10.0) then
+     if ((snod(t).gt.snodmax).or.(swe(t).gt.swemax)) then
         update_flag(gid) = .false.
      endif
 
@@ -124,11 +129,22 @@ subroutine jules50_qcsnodep(n, LSM_State)
 
         if (swe(t).gt.swemax) then
            swe(t) = swemax
+           snod(t) = swe(t)/sndens
         endif
         if (snod(t).gt.snodmax) then
            snod(t) = snodmax
+           swe(t)  = snod(t)*sndens
         endif
 
+        if (swe(t).lt.swemin) then
+           swe(t) = swemin
+           snod(t) = swe(t)/sndens
+        endif
+        if (snod(t).lt.snodmin) then
+           snod(t) = snodmin
+           swe(t)  = snod(t)*sndens
+        endif
+        
 !If the update is unphysical, do not update
      else
         snod(t) = jules50_struc(n)%jules50(t)%snowdepth(pft)
