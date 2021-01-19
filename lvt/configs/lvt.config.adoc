@@ -137,6 +137,7 @@ LVT output methodology:                 "2d gridspace"
 | "`GIMMS NDVI`"                    | GIMMS NDVI data
 | "`GIMMS AVHRR NDVI`"              | GIMMS AVHRR NDVI data
 | "`GIMMS MODIS NDVI`"              | GIMMS MODIS NDVI data
+| "`GLASS albedo`"		    | GLASS MODIS and AVHRR albedo data
 | "`GLDAS2`"                        | NASA Global Land Data Assimilation System version 2 data
 | "`MERRA2`"                        | MERRA version 2 data
 | "`ERA interim land`"              | ERA Interim Land data
@@ -1684,6 +1685,18 @@ GIMMS AVHRR NDVI data directory:                   ./GIMMS-3g/
 .Example _lvt.config_ entry
 ....
 GIMMS MODIS NDVI data directory:                   ./GIMMS_MODIS_NDVI
+....
+
+==== GLASS MODIS/AVHRR albedo data
+
+`GLASS ALBEDO data directory:` specifies the location of the GLASS albedo data.
+
+`GLASS ALBEDO data source:` specifies the name of the GLASS albedo data.
+
+.Example _lvt.config_ entry
+....
+GLASS ALBEDO data directory:                   ./GLASS/Albedo/AVHRR/V4/HDF
+GLASS ALBEDO data source:                       AVHRRF
 ....
 
 ==== GLDAS version 2 data
