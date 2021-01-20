@@ -111,7 +111,7 @@ contains
 
  ! Determine LIS output grid projection type:
    select case( nint(LIS_rc%gridDesc(n,1)) )
-    case ( 0, 3 )  ! Lat-long; Lambert
+    case ( 0 )  ! Lat-long
       input_nc = input_gridDesc(2)
       input_nr = input_gridDesc(3)
     case default

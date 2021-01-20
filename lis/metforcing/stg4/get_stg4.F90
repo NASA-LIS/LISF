@@ -17,7 +17,7 @@
 subroutine get_stg4(n, findex)
 
 ! !USES:
-  use LIS_coreMod, only     : LIS_rc, LIS_domain, LIS_PATH_LEN
+  use LIS_coreMod, only     : LIS_rc, LIS_domain
   use LIS_timeMgrMod, only  : LIS_tick, LIS_get_nstep
   use LIS_logMod,      only : LIS_logunit, LIS_endrun
   use stg4_forcingMod, only : stg4_struc
@@ -69,7 +69,7 @@ subroutine get_stg4(n, findex)
 
     real*8  :: stg4_file_time1       ! End boundary time for STAGEIV file
     real*8  :: stg4_file_time2       ! End boundary time for STAGEIV file
-    character(LIS_PATH_LEN) :: file_name       ! Filename variables for precip data sources
+    character(80) :: file_name       ! Filename variables for precip data sources
 
     integer :: doy1, yr1, mo1, da1, hr1, mn1, ss1
     integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2

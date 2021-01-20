@@ -21,7 +21,7 @@
 ! !INTERFACE:
 subroutine get_cmap(n,findex)
 ! !USES:
-  use LIS_coreMod,     only : LIS_rc, LIS_domain, LIS_PATH_LEN
+  use LIS_coreMod,     only : LIS_rc, LIS_domain
   use LIS_timeMgrMod,  only : LIS_tick, LIS_get_nstep
   use LIS_logMod,      only : LIS_logunit, LIS_endrun
   use cmap_forcingMod, only : cmap_struc
@@ -74,7 +74,7 @@ subroutine get_cmap(n,findex)
   integer :: order
   real    :: gmt1,gmt5,ts1,ts5   ! GMT times for current LDAS time and end boundary times for precip data sources
   real    :: gridDesci(50)
-  character(len=LIS_PATH_LEN) :: filename ! Filename variables for precip data sources
+  character*80 :: filename ! Filename variables for precip data sources
 !=== End Variable Definition =======================
 
 !------------------------------------------------------------------------
@@ -373,8 +373,7 @@ subroutine cmapfile( filename, cmapdir, yr, mo, da, hr)
                        (fsubs(i), i=1,10),(ftime(i), i=1,10), &
                        (fsubs2(i), i=1,4)
 
-!  read(UNIT=temp, fmt='(a80)') filename
-  read(UNIT=temp, fmt='(a255)') filename
+  read(UNIT=temp, fmt='(a80)') filename
 
   return
 end subroutine cmapfile
@@ -445,8 +444,7 @@ subroutine cmapfile_old( filename, cmapdir, yr, mo, da, hr )
   write(UNIT=temp, fmt='(80a1)') (fbase(i), i=1,c), (fdir(i), i=1,6),  &
                        (ftime(i), i=1,10),(fsubs(i), i=1,11)
 
-!  read(UNIT=temp, fmt='(a80)') filename
-  read(UNIT=temp, fmt='(a255)') filename
+  read(UNIT=temp, fmt='(a80)') filename
 
   return
 end subroutine cmapfile_old
