@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 !
@@ -13,7 +19,7 @@
 !  14 Nov 2003: Sujay Kumar; Modified card file that includes regional
 !               modeling options
 ! !INTERFACE:
-subroutine readinput_gaussian
+subroutine readinput_gaussian(nest)
 
 ! !USES:
   use ESMF
@@ -24,6 +30,7 @@ subroutine readinput_gaussian
 
   implicit none
 
+  integer, intent(in) :: nest
 ! !DESCRIPTION:
 !
 !  This routine reads the options specified in the LIS configuration
@@ -75,42 +82,42 @@ subroutine readinput_gaussian
   allocate(run_dd(LDT_rc%nnest,20))
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lat:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,1),rc=rc)
      call LDT_verify(rc, 'Run domain lower left lat: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lon:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,2),rc=rc)
      call LDT_verify(rc, 'Run domain lower left lon: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain upper right lat:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,3),rc=rc)
      call LDT_verify(rc, 'Run domain upper right lat: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain upper right lon:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,4),rc=rc)
      call LDT_verify(rc, 'Run domain upper right lon: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain resolution dlon:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,5),rc=rc)
      call LDT_verify(rc, 'Run domain resolution dlon: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain number of lat circles:",rc=rc)
-  do i=1,LDT_rc%nnest
+  do i=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(i,6),rc=rc)
      call LDT_verify(rc, 'Run domain number of lat circles: not defined')
   enddo
 
-  do n=1,LDT_rc%nnest
+  do n=1,nest
    ! "NUMBER OF LAT CIRCLES" represents the number of latitudes from
    ! a pole to the equator.
    ! The gausslat routine wants the total number of latitudes.

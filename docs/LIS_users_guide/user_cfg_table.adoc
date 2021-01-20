@@ -26,6 +26,7 @@
 | GDAS T1534                             | On
 | GEOS                                   | On
 | GEOS5 forecast                         | On
+| GEFS forecast                          | On
 | ECMWF                                  | On
 | GSWP1                                  | On
 | GSWP2                                  | On
@@ -38,6 +39,7 @@
 | GFS                                    | On
 | MERRA-Land                             | On
 | MERRA2                                 | On
+| ERA5                                   | On
 | CMAP                                   | On
 | CHIRPS2                                | On
 | TRMM 3B42RT                            | On
@@ -74,6 +76,7 @@
 | NAM242                                 | On
 | WRFout                                 | On
 | AWAP                                   | On
+| AWRAL                                  | On
 | HiMAT GMU                              | On
 | Loobos                                 | On
 | MRMS                                   | On
@@ -140,12 +143,13 @@
 | EnSRF                   | On
 | EKF                     | On
 | EnKS                    | On
-| PF                      | Off
+| PF                      | On
 | DA OBS syntheticsm      | On
+| DA OBS syntheticwl      | On
 | DA OBS syntheticsnd     | On
 | DA OBS syntheticSnowTB  | On
 | DA OBS SNODEP           | On
-| DA OBS LDTSI            | On
+| DA OBS USAFSI           | On
 | DA OBS PMW_snow         | On
 | DA OBS ANSA_SCF         | On
 | DA OBS ESACCI_sm        | On
@@ -174,14 +178,14 @@
 |====
 | Component name  | Default state
 
-| bias estimation |  On
+| bias estimation | On
 |====
 
 .Perturbations
 |====
 | Component name | Default state
 
-| perturbations  |  On
+| perturbations  | On
 |====
 
 .Optimization / Parameter estimation
@@ -213,6 +217,7 @@
 | PE OBS ARSsm          | On
 | PE OBS ISMNsm         | On
 | PE OBS SMAPsm         | On
+| PE OBS UAsnow         | On
 | PE OBJFUNC LS         | On
 | PE OBJFUNC LM         | On
 | PE OBJFUNC LL         | On
@@ -235,13 +240,16 @@
 | CLM.2               | On
 | VIC.4.1.1           | On
 | VIC.4.1.2           | On
+| AWRAL.6.0.0         | On
 | Mosaic              | On
 | HySSIB              | On
 | JULES.4.3           | Off
-| JULES.5.0_DEV       | Off
 | JULES.5.0           | Off
+| JULES.5.1           | Off
 | JULES.5.2           | Off
 | JULES.5.3           | Off
+| JULES.5.4           | Off
+| JULES.5.x           | Off
 | CABLE               | On
 | FASST               | Off
 | CLSM F2.5           | On

@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !ROUTINE: LVT_readMetricsAttributes
@@ -238,6 +244,10 @@ subroutine LVT_readMetricsAttributes(attribFile)
   call ESMF_ConfigFindLabel(attribConfig,"Conditional entropy:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%ce, &
        "CE",rc)
+
+  call ESMF_ConfigFindLabel(attribConfig,"Relative entropy:",rc=rc)
+  call get_metric_attributes(attribConfig, LVT_metrics%re, &
+       "RE",rc)
 
   call ESMF_ConfigFindLabel(attribConfig,"Joint entropy:",rc=rc)
   call get_metric_attributes(attribConfig, LVT_metrics%je, &

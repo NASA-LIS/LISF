@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !BOP
 ! 
@@ -379,6 +385,8 @@ subroutine read_SMAPvod(source, fname, vodobs)
 
   implicit none
 
+  integer                        :: source 
+  character(len=*)               :: fname
   real                           :: vodobs(LVT_rc%lnc,LVT_rc%lnr)
   
 !
@@ -396,9 +404,7 @@ subroutine read_SMAPvod(source, fname, vodobs)
 !BOP
 
 #if (defined USE_HDF5)
-
-  integer                       :: source 
-  character(len=*)              :: fname
+ 
   character*100,   parameter    :: vod_gr_name = "Soil_Moisture_Retrieval_Data"
   character*100,   parameter    :: vod_field_name = "vegetation_opacity"
 

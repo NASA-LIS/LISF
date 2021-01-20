@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 !
@@ -61,7 +67,9 @@ subroutine read_HYMAP_grid_elev(n, array)
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &
        HYMAP_struc(n)%hymapparms_gridDesc(:), 1, array)   ! 1 indicates 2D layer
-  
+
+! Yeosang Yoon: Keep negative value
+#if 0  
   do r=1,LDT_rc%lnr(n)
      do c=1,LDT_rc%lnc(n)
         if(array(c,r,1).lt.0) then
@@ -69,6 +77,8 @@ subroutine read_HYMAP_grid_elev(n, array)
         endif
      enddo
   enddo
+#endif
+
   call LDT_releaseUnitNumber(ftn)
 
 end subroutine read_HYMAP_grid_elev

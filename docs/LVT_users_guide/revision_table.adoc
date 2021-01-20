@@ -2,7 +2,9 @@
 |===
 | Revision | Summary of Changes              | Date
 
-| 1.4      | LVT 7.3 557WW Release           | Aug 28, 2019
+| 1.6      | LISF Public 7.3.0 release       | Dec 21, 2020
+| 1.5      | LVT 557WW 7.3.0 release         | Aug 24, 2020
+| 1.4      | LVT 557WW 7.3 release candidate 4 | Aug 28, 2019
 | 1.3      | LVT 7.2 public release          | May 6, 2015
 | 1.2      | Update lvt.config documentation | May 12, 2015
 | 1.1      | LVT 7.1 AFWA rp2                | May 11, 2015

@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -61,6 +67,9 @@ subroutine setTopoParmsFullnames(n,datatype,source)
         case( "CONSTANT" )
           LDT_LSMparam_struc(n)%elevation%standard_name =&
               "CONSTANT elevation"
+        case( "MERIT_1K" )
+          LDT_LSMparam_struc(n)%elevation%standard_name =&
+              "MERIT '1K' elevation"
       end select
 
     case( "slope" )
@@ -83,6 +92,9 @@ subroutine setTopoParmsFullnames(n,datatype,source)
         case( "CONSTANT" )
           LDT_LSMparam_struc(n)%slope%standard_name =&
               "CONSTANT slope"
+        case( "MERIT_1K" )
+          LDT_LSMparam_struc(n)%slope%standard_name =&
+              "MERIT '1K' slope"
       end select
 
     case( "aspect" )
@@ -105,6 +117,9 @@ subroutine setTopoParmsFullnames(n,datatype,source)
         case( "CONSTANT" )
           LDT_LSMparam_struc(n)%aspect%standard_name =&
               "CONSTANT aspect"
+        case( "MERIT_1K" )
+          LDT_LSMparam_struc(n)%aspect%standard_name =&
+              "MERIT '1K' aspect"
       end select
 
     case( "curvature" )

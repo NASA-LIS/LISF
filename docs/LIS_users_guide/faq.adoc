@@ -1,6 +1,6 @@
 
+[[sec_faq,Frequently Asked Questions]]
 == Frequently Asked Questions
-anchor:sec_faq[Frequently Asked Questions]
 
 This section provides a description of common error messages and a possible few options on how to address them.
 

@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -14,7 +20,7 @@
 !  14 Nov 2003: Sujay Kumar; Modified card file that includes regional 
 !               modeling options
 ! !INTERFACE:
-subroutine readinput_latlon
+subroutine readinput_latlon(nest)
 
 ! !USES:
   use ESMF 
@@ -25,6 +31,8 @@ subroutine readinput_latlon
   use map_utils
 
   implicit none
+
+  integer, intent(in) :: nest
 
 ! !DESCRIPTION: 
 !
@@ -45,7 +53,7 @@ subroutine readinput_latlon
 !  \end{description}
 !EOP
 
-  integer              :: i, j, k, n, count
+  integer              :: i, j, k, n,count
   real, allocatable    :: run_dd(:,:)  ! LIS Target grid/domain
   integer              :: lnc,lnr
   integer              :: nc, nr
@@ -56,48 +64,99 @@ subroutine readinput_latlon
   integer              :: mytask_x, mytask_y
   real(ESMF_KIND_R8)   :: stlat, stlon, dx, dy
   integer              :: status
+  integer              :: nDupl
+  logical              :: checkDuplicate
+  logical              :: newFormatCheck 
 ! __________________________________________________________________________
 
   allocate(run_dd(LDT_rc%nnest,20))
 
-  LDT_rc%lis_map_resfactor = 1.
+  LDT_rc%lis_map_resfactor(nest) = 1.
 
-  call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lat:",rc=rc)
-  do n=1,LDT_rc%nnest
+  newFormatCheck = .false. 
+! The following is not a full proof test of duplicates
+  checkDuplicate = .false. 
+  nDupl = 1
+  do n=2,LDT_rc%nnest
+     if(LDT_rc%lis_map_proj(n).eq.LDT_rc%lis_map_proj(1)) then 
+        checkDuplicate = .true. 
+        nDupl = nDupl + 1
+     endif
+  enddo
+
+  call ESMF_ConfigFindLabel(LDT_config,"LL run domain lower left lat:",rc=rc)
+  do n=1,nDupl
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,1),rc=rc)
-     call LDT_verify(rc, 'Run domain lower left lat: not defined')
+     if(rc.eq.0) newFormatCheck = .true.
   enddo
 
-  call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lon:",rc=rc)
-  do n=1,LDT_rc%nnest
+  call ESMF_ConfigFindLabel(LDT_config,"LL run domain lower left lon:",rc=rc)
+  do n=1,nDupl
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,2),rc=rc)
-     call LDT_verify(rc, 'Run domain lower left lon: not defined')
+     if(rc.eq.0) newFormatCheck = .true.
   enddo
-  call ESMF_ConfigFindLabel(LDT_config,"Run domain upper right lat:",rc=rc)
-  do n=1,LDT_rc%nnest
+  call ESMF_ConfigFindLabel(LDT_config,"LL run domain upper right lat:",rc=rc)
+  do n=1,nDupl
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,3),rc=rc)
-     call LDT_verify(rc, 'Run domain upper right lat: not defined')
+     if(rc.eq.0) newFormatCheck = .true.
   enddo
 
-  call ESMF_ConfigFindLabel(LDT_config,"Run domain upper right lon:",rc=rc)
-  do n=1,LDT_rc%nnest
+  call ESMF_ConfigFindLabel(LDT_config,"LL run domain upper right lon:",rc=rc)
+  do n=1,nDupl
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,4),rc=rc)
-     call LDT_verify(rc, 'Run domain upper right lon: not defined')
+     if(rc.eq.0) newFormatCheck = .true.
   enddo
 
-  call ESMF_ConfigFindLabel(LDT_config,"Run domain resolution (dx):",rc=rc)
-  do n=1,LDT_rc%nnest
+  call ESMF_ConfigFindLabel(LDT_config,"LL run domain resolution (dx):",rc=rc)
+  do n=1,nDupl
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,5),rc=rc)
-     call LDT_verify(rc, 'Run domain resolution (dx): not defined')
+     if(rc.eq.0) newFormatCheck = .true.
   enddo
 
-  call ESMF_ConfigFindLabel(LDT_config,"Run domain resolution (dy):",rc=rc)
-  do n=1,LDT_rc%nnest
+  call ESMF_ConfigFindLabel(LDT_config,"LL run domain resolution (dy):",rc=rc)
+  do n=1,nDupl
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,6),rc=rc)
-     call LDT_verify(rc, 'Run domain resolution (dy): not defined')
+     if(rc.eq.0) newFormatCheck = .true.
   enddo
 
-  do n=1,LDT_rc%nnest
+  if(.not.newFormatCheck) then 
+     call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lat:",rc=rc)
+     do n=1,nDupl
+        call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,1),rc=rc)
+        call LDT_verify(rc, 'Run domain lower left lat: not defined')
+     enddo
+     
+     call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lon:",rc=rc)
+     do n=1,nDupl
+        call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,2),rc=rc)
+        call LDT_verify(rc, 'Run domain lower left lon: not defined')
+     enddo
+     call ESMF_ConfigFindLabel(LDT_config,"Run domain upper right lat:",rc=rc)
+     do n=1,nDupl
+        call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,3),rc=rc)
+        call LDT_verify(rc, 'Run domain upper right lat: not defined')
+     enddo
+     
+     call ESMF_ConfigFindLabel(LDT_config,"Run domain upper right lon:",rc=rc)
+     do n=1,nDupl
+        call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,4),rc=rc)
+        call LDT_verify(rc, 'Run domain upper right lon: not defined')
+     enddo
+     
+     call ESMF_ConfigFindLabel(LDT_config,"Run domain resolution (dx):",rc=rc)
+     do n=1,nDupl
+        call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,5),rc=rc)
+        call LDT_verify(rc, 'Run domain resolution (dx): not defined')
+     enddo
+     
+     call ESMF_ConfigFindLabel(LDT_config,"Run domain resolution (dy):",rc=rc)
+     do n=1,nDupl
+        call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,6),rc=rc)
+        call LDT_verify(rc, 'Run domain resolution (dy): not defined')
+     enddo
+  endif
+
+  do n=1,nDupl
      stlat = run_dd(n,1)
      stlon = run_dd(n,2)
      dx    = run_dd(n,5)
@@ -110,69 +169,69 @@ subroutine readinput_latlon
         nc = (nint((run_dd(n,4)-run_dd(n,2))/run_dd(n,5))) + 1
      endif
      nr = (nint((run_dd(n,3)-run_dd(n,1))/run_dd(n,6))) + 1
-     LDT_rc%gnc(n) = nc
-     LDT_rc%gnr(n) = nr
+     LDT_rc%gnc(nest) = nc
+     LDT_rc%gnr(nest) = nr
      
      ! Quilt domain - decompose global domain:
-     call LDT_quilt_domain(n,nc,nr)
+     call LDT_quilt_domain(nest,nc,nr)
   
      ! Assign LIS domain gridDesc elements, based on decomposed subdomains:
-     LDT_rc%gridDesc(n,4) = stlat + (LDT_nss_halo_ind(n,LDT_localPet+1)-1)*dy
-     LDT_rc%gridDesc(n,5) = stlon + (LDT_ews_halo_ind(n,LDT_localPet+1)-1)*dx
-     LDT_rc%gridDesc(n,7) = stlat + (LDT_nse_halo_ind(n,LDT_localPet+1)-1)*dy
+     LDT_rc%gridDesc(nest,4) = stlat + (LDT_nss_halo_ind(nest,LDT_localPet+1)-1)*dy
+     LDT_rc%gridDesc(nest,5) = stlon + (LDT_ews_halo_ind(nest,LDT_localPet+1)-1)*dx
+     LDT_rc%gridDesc(nest,7) = stlat + (LDT_nse_halo_ind(nest,LDT_localPet+1)-1)*dy
 
-     LDT_rc%gridDesc(n,8) = stlon + (LDT_ewe_halo_ind(n,LDT_localPet+1)-1)*dx
-     if( LDT_rc%gridDesc(n,8) > 180. ) then
-       LDT_rc%gridDesc(n,8) = LDT_rc%gridDesc(n,8) - 360.0 
+     LDT_rc%gridDesc(nest,8) = stlon + (LDT_ewe_halo_ind(nest,LDT_localPet+1)-1)*dx
+     if( LDT_rc%gridDesc(nest,8) > 180. ) then
+       LDT_rc%gridDesc(nest,8) = LDT_rc%gridDesc(nest,8) - 360.0 
      endif 
 
      write(unit=LDT_logunit,fmt=*) 'local domain: ',&
-          LDT_rc%gridDesc(n,4),LDT_rc%gridDesc(n,7),&
-          LDT_rc%gridDesc(n,5),LDT_rc%gridDesc(n,8)
+          LDT_rc%gridDesc(nest,4),LDT_rc%gridDesc(nest,7),&
+          LDT_rc%gridDesc(nest,5),LDT_rc%gridDesc(nest,8)
      
-     LDT_rc%gridDesc(n,1) = 0                ! latlon grid
-     LDT_rc%gridDesc(n,9) = run_dd(n,5)      ! dx
-     if(LDT_rc%gridDesc(n,1).eq.0) then 
-        LDT_rc%gridDesc(n,10) = run_dd(n,6)  ! dy
-        LDT_rc%gridDesc(n,6)  = 128
-        LDT_rc%gridDesc(n,11) = 64
-        LDT_rc%gridDesc(n,20) = 64
+     LDT_rc%gridDesc(nest,1) = 0                ! latlon grid
+     LDT_rc%gridDesc(nest,9) = run_dd(n,5)      ! dx
+     if(LDT_rc%gridDesc(nest,1).eq.0) then 
+        LDT_rc%gridDesc(nest,10) = run_dd(n,6)  ! dy
+        LDT_rc%gridDesc(nest,6)  = 128
+        LDT_rc%gridDesc(nest,11) = 64
+        LDT_rc%gridDesc(nest,20) = 64
      endif
 
      ! Original checks for when LAT2<LAT1; LON2<LON1:
 
-     if(LDT_rc%gridDesc(n,7).lt.LDT_rc%gridDesc(n,4)) then
+     if(LDT_rc%gridDesc(nest,7).lt.LDT_rc%gridDesc(nest,4)) then
         write(LDT_logunit,*) '[ERR] lat2 must be greater than lat1 ...'
-        write(LDT_logunit,*) LDT_rc%gridDesc(n,7),LDT_rc%gridDesc(n,4)
+        write(LDT_logunit,*) LDT_rc%gridDesc(nest,7),LDT_rc%gridDesc(nest,4)
         call LDT_endrun
      endif
-     if(LDT_rc%gridDesc(n,8).lt.LDT_rc%gridDesc(n,5)) then
+     if(LDT_rc%gridDesc(nest,8).lt.LDT_rc%gridDesc(nest,5)) then
         write(LDT_logunit,*) '[INFO] lon2 < lon1 ... ', &
-                             LDT_rc%gridDesc(n,8),LDT_rc%gridDesc(n,5)
+                             LDT_rc%gridDesc(nest,8),LDT_rc%gridDesc(nest,5)
      endif
      
      ! Difference in number of longitudes (nx):
-     LDT_rc%gridDesc(n,2) = nint(diff_lon(LDT_rc%gridDesc(n,8),LDT_rc%gridDesc(n,5))&
-                          / LDT_rc%gridDesc(n,9)) + 1   
+     LDT_rc%gridDesc(nest,2) = nint(diff_lon(LDT_rc%gridDesc(nest,8),LDT_rc%gridDesc(nest,5))&
+                          / LDT_rc%gridDesc(nest,9)) + 1   
 
      ! Difference in number of latitudes (ny):
-     LDT_rc%gridDesc(n,3) = nint((LDT_rc%gridDesc(n,7)-LDT_rc%gridDesc(n,4))&
-                          / LDT_rc%gridDesc(n,10)) + 1    
+     LDT_rc%gridDesc(nest,3) = nint((LDT_rc%gridDesc(nest,7)-LDT_rc%gridDesc(nest,4))&
+                          / LDT_rc%gridDesc(nest,10)) + 1    
 
      write(LDT_logunit,*)'-------------------- LDT/LIS Domain ----------------------'
      do k=1,13
-        write(unit=LDT_logunit,fmt=*) '(',k,',',LDT_rc%gridDesc(n,k),')'
+        write(unit=LDT_logunit,fmt=*) '(',k,',',LDT_rc%gridDesc(nest,k),')'
      enddo
      
    ! local domain of each processor
-     call map_set( PROJ_LATLON, LDT_rc%gridDesc(n,4),LDT_rc%gridDesc(n,5), &
-                   0.0, LDT_rc%gridDesc(n,9),LDT_rc%gridDesc(n,10), 0.0,   &
-                   LDT_rc%lnc(n),LDT_rc%lnr(n),LDT_domain(n)%ldtproj )
+     call map_set( PROJ_LATLON, LDT_rc%gridDesc(nest,4),LDT_rc%gridDesc(nest,5), &
+                   0.0, LDT_rc%gridDesc(nest,9),LDT_rc%gridDesc(nest,10), 0.0,   &
+                   LDT_rc%lnc(nest),LDT_rc%lnr(nest),LDT_domain(nest)%ldtproj )
 
    ! global domain
      call map_set( PROJ_LATLON,real(stlat),real(stlon), &
                    0.0, real(dx),real(dy), 0.0,   &
-                   LDT_rc%gnc(n),LDT_rc%gnr(n),LDT_domain(n)%ldtglbproj )
+                   LDT_rc%gnc(nest),LDT_rc%gnr(nest),LDT_domain(nest)%ldtglbproj )
      
      write(LDT_logunit,*)'----------------------------------------------------------'
 

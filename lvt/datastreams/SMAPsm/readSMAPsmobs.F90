@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !BOP
 ! 
@@ -187,7 +193,7 @@ subroutine readSMAPsmobs(source)
          
          call system(trim(list_files))
          ftn = LVT_getNextUnitNumber()
-         open (ftn, file="./SMAP_filelist.dat", &
+         open (ftn, file="./SMAPsm/SMAP_filelist.dat", &
                status='old', iostat=ierr)
 
 ! if multiple files for the same time and orbits are present, the latest

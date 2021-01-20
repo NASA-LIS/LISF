@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -192,6 +194,10 @@ subroutine LIS_lsm_plugin
 
 #if ( defined SM_VIC_4_1_2 )
    use vic412_lsmMod, only : vic412_lsm_ini
+#endif
+
+#if ( defined SM_AWRAL_6_0_0 )
+   use AWRAL600_lsmMod, only : AWRAL600_lsm_ini
 #endif
 
 #if ( defined SM_MOSAIC )
@@ -444,6 +450,16 @@ subroutine LIS_lsm_plugin
    external vic412_f2t
    external vic412_writerst
    external vic412_finalize
+#endif
+
+#if ( defined SM_AWRAL_6_0_0 )
+   external AWRAL600_main
+   external AWRAL600_setup
+   external AWRAL600_readrst
+   external AWRAL600_dynsetup
+   external AWRAL600_f2t
+   external AWRAL600_writerst
+   external AWRAL600_finalize
 #endif
 
 #if ( defined SM_CLSM_F2_5 )
@@ -781,6 +797,19 @@ subroutine LIS_lsm_plugin
    call registerlsmwrst(trim(LIS_vic412Id)//char(0),vic412_writerst)
    call registerlsmfinalize(trim(LIS_vic412Id)//char(0),vic412_finalize)
 #endif
+
+#if ( defined SM_AWRAL_6_0_0 )
+   call registerlsminit(trim(LIS_AWRAL600Id)//char(0),AWRAL600_lsm_ini)
+   call registerlsmsetup(trim(LIS_AWRAL600Id)//char(0),AWRAL600_setup)
+   call registerlsmf2t(trim(LIS_AWRAL600Id)//"+"//trim(LIS_retroId)//char(0),&
+        AWRAL600_f2t)
+   call registerlsmrun(trim(LIS_AWRAL600Id)//char(0),AWRAL600_main)
+   call registerlsmdynsetup(trim(LIS_AWRAL600Id)//char(0),AWRAL600_dynsetup)
+   call registerlsmrestart(trim(LIS_AWRAL600Id)//char(0),AWRAL600_readrst)
+   call registerlsmwrst(trim(LIS_AWRAL600Id)//char(0),AWRAL600_writerst)
+   call registerlsmfinalize(trim(LIS_AWRAL600Id)//char(0),AWRAL600_finalize)
+#endif
+
 
 #if ( defined SM_MOSAIC )
    call registerlsminit(trim(LIS_mosaicId)//char(0),mos_lsm_ini)

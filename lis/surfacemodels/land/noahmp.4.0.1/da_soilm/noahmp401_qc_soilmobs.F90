@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -12,6 +14,7 @@
 ! !REVISION HISTORY:
 ! 25Feb2008: Sujay Kumar: Initial Specification
 ! 15 Dec 2018: Mahdi Navari; Modified for NoahMP401
+! 15 Jun 2020: Yonghwan Kwon: Modified vegetation fraction threshold 
 !
 ! !INTERFACE:
 subroutine NoahMP401_qc_soilmobs(n,k,OBS_State)
@@ -134,9 +137,8 @@ subroutine NoahMP401_qc_soilmobs(n,k,OBS_State)
      !SMCMAX(t)  =  parameters%SMCMAX(SOILTYP)  !  SMCMAX(t)  = MAXSMC (SOILTYP) 
      !SMCWLT(t)  =  parameters%SMCWLT(SOILTYP)   ! SMCWLT(t) = WLTSMC (SOILTYP)
      SOILTYP = NOAHMP401_struc(n)%noahmp401(t)%soiltype
-     SMCMAX  = SMCMAX_TABLE(SOILTYP)
-     SMCWLT  = SMCWLT_TABLE(SOILTYP)
-     
+     SMCMAX(t)  = SMCMAX_TABLE(SOILTYP)
+     SMCWLT(t)  = SMCWLT_TABLE(SOILTYP)
   enddo
 
   call LIS_convertPatchSpaceToObsSpace(n,k,&       
@@ -254,12 +256,15 @@ subroutine NoahMP401_qc_soilmobs(n,k,OBS_State)
         elseif(vegt_obs(t).le.4) then !forest types ! Var name Noah36 --> vegt
            smobs(t) = LIS_rc%udef
  ! MN: check for snow  
-       elseif(sneqv_obs(t).gt.0.001) then 
+        elseif(sneqv_obs(t).gt.0.001) then 
            smobs(t) = LIS_rc%udef
         elseif(sca_obs(t).gt.0.0001) then  ! Var name sca 
            smobs(t) = LIS_rc%udef
  ! MN: check for green vegetation fraction NOTE: threshold incerased from 0.5 to 0.7 
-       elseif(shdfac_obs(t).gt.0.7) then  ! var name Noah36 shdfac 12-month green veg. frac.  
+        elseif(shdfac_obs(t).gt.0.9) then  ! var name Noah36 shdfac 12-month green veg. frac.  
+                                           ! The threshold has been tuned for spatial coverage
+                                           ! Higher than Noah.3.9 because max greenness is used for shdfac in Noah-MP.4.0.1
+                                           ! while Noah3.9 uses monthly climatological greenness. 
            smobs(t) = LIS_rc%udef        
 !too close to the tails, could be due to scaling, so reject. 
         elseif(smcmax_obs(t)-smobs(t).lt.0.02) then 

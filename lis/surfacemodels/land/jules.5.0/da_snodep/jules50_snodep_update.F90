@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -100,7 +102,7 @@ REAL ::                                                                       &
   nsnow(land_pts,nsurft)         = jules50_struc(n)%jules50(t)%nsnow(nsurft)
   snow_surft(land_pts,nsurft)    = jules50_struc(n)%jules50(t)%snow_tile(nsurft)   ! ntiles, Lying snow on tiles (kg m-2)
   snow_grnd(land_pts,nsurft)     = jules50_struc(n)%jules50(t)%snow_grnd(nsurft)   ! ntiles, Snow on the ground (kg m-2)
-  t_soil1_soilt(land_pts,nsoilt) = jules50_struc(n)%jules50(t)%t_soil(nsurft)      ! sm_levels, Sub-surface temperatures (K)
+  t_soil1_soilt(land_pts,nsoilt) = jules50_struc(n)%jules50(t)%t_soil(nsoilt)      ! sm_levels, Sub-surface temperatures (K)
   rho_snow_grnd(land_pts,nsurft) = jules50_struc(n)%jules50(t)%rho_snow_grnd(nsurft)  
   tstar_surft(land_pts,nsurft)   = jules50_struc(n)%jules50(t)%tstar_tile(nsurft)  ! ntiles, Tile surface temperatures (K)
   rgrain(land_pts,nsurft)        = jules50_struc(n)%jules50(t)%rgrain(nsurft)      ! snow surface grain size
@@ -134,6 +136,8 @@ DO p = 1,nsurft
       sliq(:,p,:)     = 0.0
       rgrain(i,p)     = r0
       rgrainl(:,p,:)  = r0
+      rho_snow(:,p,:) = 0.0
+      tsnow(:,p,:)    = tm
     END IF
  
     IF ( snowdepth(i,p) > 0 ) THEN 
@@ -250,6 +254,8 @@ DO p = 1,nsurft
       sliq(:,p,:)     = 0.0
       rgrain(i,p)     = r0
       rgrainl(:,p,:)  = r0
+      rho_snow(:,p,:) = 0.0
+      tsnow(:,p,:)    = tm
     END IF
 
     jules50_struc(n)%jules50(t)%snowdepth(p)     = snowdepth(i,p)

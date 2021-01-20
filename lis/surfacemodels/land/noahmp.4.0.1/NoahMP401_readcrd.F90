@@ -1,6 +1,13 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.0     
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 !BOP
 !
 ! !ROUTINE: NoahMP401_readcrd
@@ -317,7 +324,24 @@ subroutine NoahMP401_readcrd()
              "Noah-MP.4.0.1 glacier option: not defined")
         write(LIS_logunit,33) "glacier:",NOAHMP401_struc(n)%gla_opt
     enddo
- 
+
+    ! Custom snowpack depth for glacier model (in mm)
+    call ESMF_ConfigFindLabel(LIS_config, &
+         "Noah-MP.4.0.1 snow depth glacier model option:", rc = rc)
+    if(rc /= 0) then
+        write(LIS_logunit,33) "[WARN] Max snow depth not defined."
+        write(LIS_logunit,33) "[WARN] Setting to default value of 2000."
+        do n=1, LIS_rc%nnest
+            NOAHMP401_struc(n)%sndpth_gla_opt = 2000
+            write(LIS_logunit,33) "snow depth for glacier model: ",NOAHMP401_struc(n)%sndpth_gla_opt
+        enddo
+    else
+        do n=1, LIS_rc%nnest
+            call ESMF_ConfigGetAttribute(LIS_config, NOAHMP401_struc(n)%sndpth_gla_opt, rc=rc)
+            write(LIS_logunit,33) "snow depth for glacier model: ",NOAHMP401_struc(n)%sndpth_gla_opt
+        enddo
+    endif
+
     ! surface resistance (1->Sakaguchi/Zeng;2->Seller;3->mod Sellers;4->1+snow)
     call ESMF_ConfigFindLabel(LIS_config, &
          "Noah-MP.4.0.1 surface resistance option:", rc = rc)
