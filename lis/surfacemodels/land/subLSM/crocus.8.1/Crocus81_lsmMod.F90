@@ -71,6 +71,7 @@ module Crocus81_lsmMod
 !  by Shugong Wang for the NASA Land Information System Version 7. The initial 
 !  specification of the module is defined by Sujay Kumar. 
 !  10/18/19: Mahdi Navari, Shugong Wang Initial implementation for LIS 7 and Crocus81
+!  19 Jan 2021: Mahdi Navari, edited to initialize forcing variables to zeros
 !
 ! !USES:
   use Crocus81_module
@@ -253,6 +254,19 @@ contains
                 
                 Crocus81_struc(n)%crocus81(t)%tg = Crocus81_struc(n)%tg
             enddo
+            ! initialize forcing variables to zeros
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                CROCUS81_struc(n)%crocus81(t)%ta = 0.0
+                CROCUS81_struc(n)%crocus81(t)%qa = 0.0
+                CROCUS81_struc(n)%crocus81(t)%wind_e = 0.0
+                CROCUS81_struc(n)%crocus81(t)%wind_n = 0.0
+                CROCUS81_struc(n)%crocus81(t)%rrsnow = 0.0
+                CROCUS81_struc(n)%crocus81(t)%srsnow = 0.0
+                CROCUS81_struc(n)%crocus81(t)%lw_rad = 0.0
+                CROCUS81_struc(n)%crocus81(t)%sw_rad = 0.0
+                CROCUS81_struc(n)%crocus81(t)%pps = 0.0
+            enddo ! end of tile (t) loop
+
             !------------------------------------------------------------------------
             ! Model timestep Alarm
             !------------------------------------------------------------------------

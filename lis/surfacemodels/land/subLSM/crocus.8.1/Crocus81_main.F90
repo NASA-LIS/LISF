@@ -13,7 +13,8 @@
 !  specification of the subroutine is defined by Sujay Kumar. 
 !
 !   10/18/19: Mahdi Navari, Shugong Wang; initial implementation for Crocus81 with LIS-7
-!  9 Dec 2020: Mahdi Navari; edited to take into account the Crocus slope correction
+!   9 Dec 2020: Mahdi Navari; edited to take into account the Crocus slope correction
+!   19 Jan 2021: Mahdi Navari edited to properly initialize precipitation 
 !
 ! !INTERFACE:
 subroutine Crocus81_main(n)
@@ -182,17 +183,22 @@ subroutine Crocus81_main(n)
             col = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col
             lat = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lat
             lon = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lon
-
+           
             ! retrieve forcing data from CROCUS81_struc(n)%crocus81(t) and assign to local variables
             ! PPS: pressure at atmospheric model surface (Pa)
             tmp_PPS        = CROCUS81_struc(n)%crocus81(t)%PPS    / CROCUS81_struc(n)%forc_count
  
             ! SRSNOW: snow rate (SWE) [kg/(m2 s)]
-            tmp_SRSNOW     = CROCUS81_struc(n)%crocus81(t)%SRSNOW / CROCUS81_struc(n)%forc_count
-
+            if (CROCUS81_struc(n)%Partition_total_precip_BOOL) then
+               tmp_SRSNOW     = 0.0
+            else 
+               tmp_SRSNOW     = CROCUS81_struc(n)%crocus81(t)%SRSNOW / CROCUS81_struc(n)%forc_count
+            endif
             ! RRSNOW: rain rate [kg/(m2 s)]
             tmp_RRSNOW     = CROCUS81_struc(n)%crocus81(t)%RRSNOW / CROCUS81_struc(n)%forc_count
-            
+                ! if (lat.eq.41.06250 .and. lon.eq.-74.18750)then
+                !     print*, '1 lat,lon,tmp_SRSNOW,tmp_RRSNOW', lat, lon,tmp_SRSNOW,tmp_RRSNOW
+                ! endif            
             ! TA: atmospheric temperature at level za (K)
             tmp_TA         = CROCUS81_struc(n)%crocus81(t)%TA     / CROCUS81_struc(n)%forc_count
  
@@ -225,20 +231,18 @@ subroutine Crocus81_main(n)
             ! to correct the component of SW and LW radiation.
             ! See coupling_isba_orographyn.F90 in the SURFEX code
             tmp_SLOPE = CROCUS81_struc(n)%crocus81(t)%SLOPE
-
-if (tmp_SRSNOW .NE. LIS_rc%udef) then
-            tmp_SRSNOW = tmp_SRSNOW * COS(tmp_SLOPE)
-endif
-if (tmp_RRSNOW .NE. LIS_rc%udef) then
-            tmp_RRSNOW = tmp_RRSNOW * COS(tmp_SLOPE)
-endif
-if (tmp_SW_RAD .NE. LIS_rc%udef) then
-            tmp_SW_RAD = tmp_SW_RAD * COS(tmp_SLOPE)
-endif
-if (tmp_LW_RAD .NE. LIS_rc%udef) then
-            tmp_LW_RAD = tmp_LW_RAD * COS(tmp_SLOPE)
-endif
-
+            if (tmp_SRSNOW .NE. LIS_rc%udef) then
+               tmp_SRSNOW = tmp_SRSNOW * COS(tmp_SLOPE)
+            endif
+            if (tmp_RRSNOW .NE. LIS_rc%udef) then
+                tmp_RRSNOW = tmp_RRSNOW * COS(tmp_SLOPE)
+            endif
+            if (tmp_SW_RAD .NE. LIS_rc%udef) then
+               tmp_SW_RAD = tmp_SW_RAD * COS(tmp_SLOPE)
+            endif
+            if (tmp_LW_RAD .NE. LIS_rc%udef) then
+               tmp_LW_RAD = tmp_LW_RAD * COS(tmp_SLOPE)
+            endif
         ! Added lis.config option to determine whether to partition total precipitation into snowfall and rainfall 
        
         ! Use Jordan model to partition total precipitation into snowfall and rainfall 
@@ -257,10 +261,11 @@ endif
               ENDIF
               ! snow rate (SWE) [kg/(m2 s)]
               tmp_SRSNOW  = tmp_RRSNOW * FPICE 
+
               ! rain rate (SWE) [kg/(m2 s)]
               tmp_RRSNOW  = tmp_RRSNOW - tmp_SRSNOW
             endif
-            ! 
+            !
             ! check validity of PPS
             if(tmp_PPS .eq. LIS_rc%udef) then
                 write(LIS_logunit, *) "undefined value found for forcing variable PPS in Crocus81"
@@ -376,6 +381,7 @@ endif
 
             tmp_XWGI                                = CROCUS81_struc(n)%crocus81(t)%XWGI
             tmp_XWG                                 = CROCUS81_struc(n)%crocus81(t)%XWG
+!print*,'Main gt XWG XWGI', tmp_TG, tmp_XWG, tmp_XWGI
             ! get state variables
             tmp_SNOWSWE(:)    = CROCUS81_struc(n)%crocus81(t)%SNOWSWE(:)   
             tmp_SNOWRHO(:)    = CROCUS81_struc(n)%crocus81(t)%SNOWRHO(:)   

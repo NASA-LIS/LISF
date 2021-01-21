@@ -461,6 +461,7 @@ SUBROUTINE crocus_driver(n, &
 ! it is not initialized in the SURFEX-Crocus. Initialized to zero here, otherwise the value in the snowcro.F90 would be -9.255963134931783E+061
    ZP_GSFCSNOW = 0
 
+!print*,'driver XWG gt XWGI', XWG, TG, XWGI
 ! ===========================CALL MODEL ====================================
    ZSNOW = 0.
    ZSNOWFALL = 0.0
@@ -689,8 +690,8 @@ CONTAINS
       REAL*8 :: XCONDI !    = 2.22
       REAL*8 :: XCONDWTR ! = 0.57   ! W/(m K)  Water thermal conductivity
       ! local variables for thermal conductivity
-      REAL*8 :: XWGI          ! soil volumetric frozen water content (m3/m3)
-      REAL*8 :: XWG           ! soil volumetric liquid water content (m3/m3)
+      !REAL*8 :: XWGI          ! soil volumetric frozen water content (m3/m3)
+      !REAL*8 :: XWG           ! soil volumetric liquid water content (m3/m3)
       REAL*8 :: XWGMIN  ! = 0.001   ! (m3 m-3)
       REAL*8 :: ZFROZEN2DF
       REAL*8 :: ZUNFROZEN2DF
@@ -944,8 +945,8 @@ CONTAINS
   else
      ALBin(1) = 0.2 ! soil/vegetation albedo (ALB) set to 0.2 in the SURFEX-Crocus
   endif
-
-
+     ! XWGIin = XWGI
+     ! XWGin = XWG
 ! ***************************************************************************
 ! Compute variables
 ! ***************************************************************************
@@ -1134,7 +1135,7 @@ ZLOG_CONDWTR = LOG(XCONDWTR)
 !      XWGI = 0.0 ! MN set to zero 
 !      XWG = POROSITY * 0.8 ! MN assume volumetric soil water content of the snow covered ground is 80% of POROSITY (For Col de Porte it is between 72-85)
 ! print*, 'XWGI, XWG', XWGI, XWG
-
+!print*,'driver2 XWG  XWGI', XWG, XWGI
       ZFROZEN2DF   = XWGI/( XWGI + MAX(XWG,XWGMIN))
       ZUNFROZEN2DF = (1.0-ZFROZEN2DF)* POROSITY
 !
