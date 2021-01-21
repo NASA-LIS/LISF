@@ -35,7 +35,6 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
   integer, intent(in)    :: order     ! lower(1) or upper(2) time interval bdry
   integer, intent(in)    :: n         ! nest
   integer, intent(in)    :: findex    ! forcing index
-  character(len=255)   :: fname          
   integer, intent(in) :: year,doy
   character(4) :: cyear
   integer             :: ferror_AWRAL
@@ -75,7 +74,7 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
        'pt        '     /)
 
 
-  character*255 :: var_fname
+  character*300 :: var_fname
   real,allocatable  :: datain(:,:) ! input data (lat,lon)
   logical            :: file_exists            
 ! netcdf variables

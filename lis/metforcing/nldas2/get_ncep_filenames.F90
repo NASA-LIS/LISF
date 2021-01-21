@@ -32,8 +32,8 @@
    integer, intent(in)        :: n 
    integer, intent(in)        :: kk
    integer, intent(in)        :: findex
-   character*100, intent(out) :: filename
-   character*40, intent(in)   :: nldas2dir
+   character(len=*), intent(out)  :: filename
+   character(len=*), intent(in)   :: nldas2dir
    integer, intent(in)        :: yr,mo,da,hr
 
 ! !DESCRIPTION:
@@ -61,7 +61,7 @@
    integer                  :: i, c
    character*1              :: fbase(40),fsubs(17)
    character*1              :: ftime(10),fdir(15)
-   character*100            :: temp
+   character*300            :: temp
 
    !=== end variable definition =============================================
 
@@ -147,8 +147,8 @@
    integer, intent(in)        :: n
    integer, intent(in)        :: kk
    integer, intent(in)        :: findex
-   character*100, intent(out) :: filename
-   character*40, intent(in)   :: nldas2dir
+   character(len=*), intent(out)  :: filename
+   character(len=*), intent(in)   :: nldas2dir
    integer, intent(in)        :: yr,mo,da,hr
 !
 ! !DESCRIPTION:
@@ -176,7 +176,7 @@
    integer                  :: i, c
    character*1              :: fbase(40),fsubs(17)
    character*1              :: ftime(10),fdir(15)
-   character*100            :: temp
+   character*300            :: temp
 
    !=== end variable definition =============================================
 

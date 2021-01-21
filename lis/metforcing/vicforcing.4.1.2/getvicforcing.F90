@@ -43,7 +43,7 @@ subroutine getvicforcing(n, findex)
 
    integer :: yr1, mo1, da1, hr1
    integer :: ferror
-   character(len=140) :: fname
+   character(len=300) :: fname
 
 
    yr1 = LIS_rc%yr
@@ -67,8 +67,8 @@ subroutine get_vicforcing_filename(filename, dir, year, month, day, hour)
 ! !USES:
   implicit none
 ! !ARGUMENTS: 
-   character(len=140), intent(out) :: filename
-   character(len=100), intent(in) :: dir
+   character(len=*), intent(out) :: filename
+   character(len=*), intent(in) :: dir
    integer, intent(in) :: year
    integer, intent(in) :: month
    integer, intent(in) :: day

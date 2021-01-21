@@ -92,7 +92,7 @@ subroutine get_gdas(n, findex)
   real*8  :: timenow, time1, time2
   real*8  :: dumbtime1, dumbtime2
   real    :: gmt1, gmt2
-  character(len=80) :: name00, name03, name06
+  character(len=300) :: name00, name03, name06
   logical :: file_exists1, file_exists2, file_exists3
   real :: gridDesci(50)
   integer :: nstep

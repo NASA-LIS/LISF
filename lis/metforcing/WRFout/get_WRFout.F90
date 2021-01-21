@@ -56,7 +56,7 @@ subroutine get_WRFout(n, findex)
   integer      :: yr1,mo1,da1,hr1,mn1,ss1,doy1
   integer      :: yr2,mo2,da2,hr2,mn2,ss2,doy2
   real         :: ts1, ts2
-  character*80 :: fname
+  character(len=300) :: fname
   real         :: gmt1,gmt2
   integer      :: movetime     ! 1=move time 2 data into time 1
 
@@ -215,8 +215,8 @@ end subroutine get_WRFout
 
    implicit none
 ! !ARGUMENTS: 
-   character*80, intent(out) :: filename
-   character*40, intent(in)  :: wrfdir
+   character(len=*), intent(out) :: filename
+   character(len=*), intent(in)  :: wrfdir
    integer, intent(in)       :: nest
    integer, intent(in)       :: yr,mo,da,hr,mn,ss
 

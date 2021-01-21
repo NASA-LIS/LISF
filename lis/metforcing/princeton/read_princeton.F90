@@ -118,7 +118,7 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
   integer, dimension(N_PF), parameter :: fnum = (/ &
        31, 33, 34, 35, 36, 37, 38 /) 
 
-  character*100 :: infile
+  character(len=300) :: infile
 
 ! netcdf variables
   integer :: ncid, varid, status

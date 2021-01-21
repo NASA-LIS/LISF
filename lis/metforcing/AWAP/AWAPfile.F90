@@ -38,8 +38,7 @@ subroutine AWAPfile( name, AWAPdir, yr, doy)
 ! !ARGUMENTS: 
   integer :: yr, doy
 
-  character(80) :: name
-  character(40) :: AWAPdir
+  character(len=*) :: name, AWAPdir
   character(4) :: cyear
   character(3) :: cdoy
 

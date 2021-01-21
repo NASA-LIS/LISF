@@ -35,7 +35,7 @@ subroutine read_petusgs (n, kk, findex, pet_filename, ferror_petusgs )
   integer, intent(in) :: n 
   integer, intent(in) :: kk
   integer, intent(in) :: findex
-  character(99), intent(in) :: pet_filename  
+  character(len=*), intent(in) :: pet_filename
   integer,intent(out) :: ferror_petusgs
 !
 ! !DESCRIPTION:

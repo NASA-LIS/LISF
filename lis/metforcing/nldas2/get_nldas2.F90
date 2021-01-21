@@ -73,7 +73,7 @@ subroutine get_nldas2(n,findex)
   real*8  :: dtime1, dtime2
   integer :: yr1,mo1,da1,hr1,mn1,ss1,doy1
   integer :: yr2,mo2,da2,hr2,mn2,ss2,doy2
-  character*100 :: name_a,name_b
+  character*300 :: name_a,name_b
   real    :: gmt1,gmt2,ts1,ts2
   integer :: movetime     ! 1=move time 2 data into time 1  
   integer :: kk           ! Forecast member index

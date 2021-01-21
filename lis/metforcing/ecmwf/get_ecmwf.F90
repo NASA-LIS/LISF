@@ -62,7 +62,7 @@ subroutine get_ecmwf(n,findex)
   integer :: yr1,mo1,da1,hr1,mn1,ss1,doy1
   integer :: yr2,mo2,da2,hr2,mn2,ss2,doy2
   real*8  :: time1,time2,dumbtime1,dumbtime2
-  character*200 :: avgfilename1, instfilename, avgfilename2
+  character(len=300) :: avgfilename1, instfilename, avgfilename2
   real    :: gmt1,gmt2,ts1,ts2
   integer :: movetime      ! 1=move time 2 data into time 1
   integer :: nforce  ! # forcing variables

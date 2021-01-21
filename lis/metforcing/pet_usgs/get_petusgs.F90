@@ -67,7 +67,7 @@ subroutine get_petusgs(n, findex)
   real    :: gmt1, gmt2
   integer :: kk                          ! Forecast index
 
-  character(99) :: filename              ! Filename variables for PET data sources
+  character(len=300) :: filename              ! Filename variables for PET data sources
 
 !=== End Variable Definition =======================
 

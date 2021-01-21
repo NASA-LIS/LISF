@@ -33,8 +33,8 @@
    integer                    :: n
    integer                    :: kk
    integer                    :: findex
-   character*100, intent(out) :: filename
-   character*40, intent(in)   :: nldas2dir
+   character(len=*), intent(out)  :: filename
+   character(len=*), intent(in)   :: nldas2dir
    integer, intent(in)        :: yr,mo,da,doy,hr
 !
 ! !DESCRIPTION:
@@ -148,8 +148,8 @@
    integer                    :: n
    integer                    :: kk
    integer                    :: findex
-   character*100, intent(out) :: filename
-   character*40, intent(in)   :: nldas2dir
+   character(len=*), intent(out)  :: filename
+   character(len=*), intent(in)   :: nldas2dir
    integer, intent(in)        :: yr,mo,da,doy,hr
 !
 ! !DESCRIPTION:

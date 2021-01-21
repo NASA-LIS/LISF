@@ -37,8 +37,8 @@ subroutine read_mrms_grib( n, fname, findex, order, yr, mo, da, ferror_mrms_grib
   implicit none
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  character(len=120)   :: fname
-  character(len=200)  :: maskname          
+  character(len=*)    :: fname
+  character(len=300)  :: maskname
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_mrms_grib
