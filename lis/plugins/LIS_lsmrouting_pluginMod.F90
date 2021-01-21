@@ -86,6 +86,8 @@ subroutine LIS_lsmrouting_plugin
 #if ( defined SM_NOAHMP_4_0_1 )
    external noahmp401_getrunoffs
    external noahmp401_getrunoffs_mm
+   external noahmp401_getrunoffs_hymap2
+   external noahmp401_getsws_hymap2
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -260,7 +262,10 @@ subroutine LIS_lsmrouting_plugin
 #if ( defined SM_NOAHMP_4_0_1 )
    call registerlsmroutinggetrunoff(trim(LIS_noahmp401Id)//"+"//&
                                     trim(LIS_HYMAP2routerId)//char(0), &
-                                    noahmp401_getrunoffs_mm)
+                                    noahmp401_getrunoffs_hymap2)
+   call registerlsmroutinggetsws(trim(LIS_noahmp401Id)//"+"//&
+                                    trim(LIS_HYMAP2routerId)//char(0), &
+                                    noahmp401_getsws_hymap2)
 #endif
 
 #if ( defined SM_RUC_3_7 )
