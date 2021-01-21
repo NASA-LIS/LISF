@@ -7,6 +7,9 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+#include 'LIS_misc.h'
+
 !BOP
 !
 ! !ROUTINE: AGRMET_sfcalc
@@ -173,6 +176,9 @@ subroutine AGRMET_sfcalc(n)
   character(len=10) :: type
   integer :: gdeltas, gid, ntiles
   integer :: count1
+  logical :: found_inq
+  integer :: rc
+  integer, external :: LIS_create_subdirs
 
   data lokspd     / 15, 25, 30, 40, 50 /
   data lokrlh     / 10, 15, 25, 35, 40 /
@@ -183,6 +189,41 @@ subroutine AGRMET_sfcalc(n)
   spd10mPathOBA = "./spd10m_OBA" ! EMK
   type = 'ALL' ! EMK
 
+  ! See if subdirectories exist
+  if (agrmet_struc(n)%oba_switch .eq. 1 .or. &
+       agrmet_struc(n)%oba_switch .eq. 2) then
+     if (LIS_masterproc) then
+        inquire(file=trim(t2mPathOBA), exist=found_inq)
+        if (.not. found_inq) then
+           rc = lis_create_subdirs(len_trim(t2mPathOBA), trim(t2mPathOBA))
+           if (rc .ne. 0) then
+              write(LIS_logunit, *) &
+                   '[WARN] Cannot create directory ', trim(t2mPathOBA)
+           end if
+        end if
+
+        inquire(file=trim(rh2mPathOBA), exist=found_inq)
+        if (.not. found_inq) then
+           rc = lis_create_subdirs(len_trim(rh2mPathOBA), trim(rh2mPathOBA))
+           if (rc .ne. 0) then
+              write(LIS_logunit, *) &
+                   '[WARN] Cannot create directory ', trim(rh2mPathOBA)
+           end if
+        end if
+
+        inquire(file=trim(spd10mPathOBA), exist=found_inq)
+        if (.not. found_inq) then
+           rc = lis_create_subdirs(len_trim(spd10mPathOBA), &
+                trim(spd10mPathOBA))
+           if (rc .ne. 0) then
+              write(LIS_logunit, *) &
+                   '[WARN] Cannot create directory ', trim(spd10mPathOBA)
+           end if
+        end if
+
+     end if
+   end if
+   
   half_degree_ratio=.5/LIS_rc%gridDesc(n,9)
 
   call LIS_get_julhr(LIS_rc%yr,LIS_rc%mo,LIS_rc%da,LIS_rc%hr,&
