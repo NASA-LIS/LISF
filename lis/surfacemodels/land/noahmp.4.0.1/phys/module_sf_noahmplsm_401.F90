@@ -2972,10 +2972,6 @@ ENDIF   ! CROPTYPE == 0
                 (parameters%mxsnalb-ALB)/(parameters%SWEMX/DT)
          ENDIF
 
-!         IF (QSNOW > 0.) then
-!           ALB = ALB + MIN(QSNOW,parameters%SWEMX/DT) * (0.84-ALB)/(parameters%SWEMX/DT)
-!         ENDIF
-
          ALBSNI(1)= ALB         ! vis diffuse
          ALBSNI(2)= ALB         ! nir diffuse
          ALBSND(1)= ALB         ! vis direct
