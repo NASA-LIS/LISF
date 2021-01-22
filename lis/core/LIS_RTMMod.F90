@@ -357,16 +357,17 @@ contains
                 open_stats = .false.
                 if(LIS_masterproc) then 
                    call LIS_create_output_directory('RTM')
-                   call LIS_create_output_filename(n,outfile,&
-                        model_name = 'RTM',&
-                        writeint=LIS_rtm_struc(n)%rtmoutInterval)
-                   if(LIS_rtm_struc(n)%stats_file_open) then 
+                   if (LIS_rtm_struc(n)%stats_file_open) then
                       call LIS_create_stats_filename(n,statsfile,'RTM')
                       LIS_rtm_struc(n)%stats_file_open = .false.
-                      open_stats = .true. 
+                      open_stats = .true.
                    endif
                 endif
-                
+
+                call LIS_create_output_filename(n,outfile,&
+                     model_name = 'RTM',&
+                     writeint=LIS_rtm_struc(n)%rtmoutInterval)
+
                 call LIS_writeModelOutput(n,outfile,statsfile,open_stats, &
                      outInterval = LIS_rtm_struc(n)%rtmoutInterval,       &
                      nsoillayers = 1,                                     &
