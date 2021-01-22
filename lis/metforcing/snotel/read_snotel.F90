@@ -64,7 +64,7 @@ subroutine read_snotel(n,ftn,findex,order)
 !  real :: varfield(npts)
   real :: varfield1(LIS_rc%lnc(n),LIS_rc%lnr(n))
   integer :: npcp(LIS_rc%lnc(n),LIS_rc%lnr(n))
-  character*80 :: snotel_filename
+  character*300 :: snotel_filename
   character(len=500) :: line
   integer :: yr,num,dum,hr,mo,da,mint,sec
   logical :: file_exists, readflag

@@ -55,7 +55,7 @@ subroutine get_climatology(n, findex)
   integer        :: c, r
   integer        :: metforc_hrts
   integer        :: metforc_mnts
-  character(140) :: fullfilename
+  character(300) :: fullfilename
   logical        :: file_exists
 
 ! Date/time parameters for file get/read:

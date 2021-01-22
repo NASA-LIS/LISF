@@ -40,7 +40,7 @@ subroutine get_narr(n, findex)
   real                :: gmt1, gmt2,ts1,ts2
   integer             :: order
   integer             :: nstep
-  character*100       :: narrfile
+  character*300       :: narrfile
 
   narr_struc(n)%findtime1 = 0 
   narr_struc(n)%findtime2 = 0 

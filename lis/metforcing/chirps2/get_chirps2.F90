@@ -64,7 +64,7 @@ subroutine get_chirps2(n,findex)
   real    :: gmt1,gmt2,ts1,ts2
   integer :: kk
 
-  character*120 :: chirps2_filename
+  character*300 :: chirps2_filename
   logical :: file_exists
 
 ! ___________________________________________________________________
