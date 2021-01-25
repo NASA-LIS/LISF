@@ -1,6 +1,6 @@
 = Land Data Toolkit (LDT): LDT {lisrevision} Users' Guide
-:revnumber: 1.9
-:revdate: 24 Aug 2020
+:revnumber: 1.10
+:revdate: 25 Jan 2021
 :doctype: book
 :sectnums:
 :toc:
