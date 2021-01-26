@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -16,6 +18,7 @@
 ! 21 Jul 2011: James Geiger; Modified for Noah 3.2
 ! 01 May 2014: Yuqiong Liu; modified for better QC
 ! 05 Nov 2018: Yeosang Yoon; Modified for Jules 5.0
+! 30 Dec 2019: Yeosang Yoon; Updated QC
 !
 ! !INTERFACE:
 subroutine jules50_updatesnodep(n, LSM_State, LSM_Incr_State)
@@ -81,13 +84,6 @@ subroutine jules50_updatesnodep(n, LSM_State, LSM_Incr_State)
   call ESMF_FieldGet(snodIncrField,localDE=0,farrayPtr=snodincr,rc=status)
   call LIS_verify(status)
 
-#if 0
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     swe(t) = swe(t) + sweincr(t)
-     snod(t) = snod(t) + snodincr(t)
-  enddo
-#endif
-
   update_flag    = .true.
   perc_violation = 0.0
   snodmean       = 0.0
@@ -102,7 +98,7 @@ subroutine jules50_updatesnodep(n, LSM_State, LSM_Incr_State)
      swetmp = swe(t) + sweincr(t)
      snodtmp = snod(t) + snodincr(t)
 
-     if((snodtmp.lt.0)) then
+     if((snodtmp.lt.0 .or. swetmp.lt.0)) then
         update_flag(gid) = .false.
         perc_violation(gid) = perc_violation(gid) +1
      endif
@@ -152,25 +148,30 @@ subroutine jules50_updatesnodep(n, LSM_State, LSM_Incr_State)
      snodtmp = snod(t) + snodincr(t)
      swetmp  = swe(t) + sweincr(t)
 
+!Use the model's snow density from the previous timestep
+     sndens = 0.0
      pft = jules50_struc(n)%jules50(t)%pft
      if(jules50_struc(n)%jules50(t)%snowdepth(pft).gt.0) then
        sndens = jules50_struc(n)%jules50(t)%snow_mass_ij/jules50_struc(n)%jules50(t)%snowdepth(pft)
-     else
-       sndens = 0.0
      endif
 
      if(update_flag(gid)) then
         snod(t) = snodtmp
         swe(t) = swetmp
      elseif(perc_violation(gid).lt.0.2) then
-       if(snodtmp.lt.0) then
+       if(snodtmp.lt.0.0) then  ! average of the good ensemble members
           snod(t) = snodmean(gid)
-          swe(t) = snod(t)*sndens
+          swe(t) =  snodmean(gid)*sndens
        else
           snod(t) = snodtmp
           swe(t) = swetmp
        endif
+     else            ! do not update
+       snod(t) = jules50_struc(n)%jules50(t)%snowdepth(pft)
+       swe(t)  = jules50_struc(n)%jules50(t)%snow_mass_ij
      end if
+
   enddo
+
 end subroutine jules50_updatesnodep
 

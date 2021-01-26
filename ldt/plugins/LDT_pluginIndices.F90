@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module LDT_pluginIndices
 !BOP
@@ -30,7 +36,8 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_LSMparamprocId   = "LSM parameter processing"
    character*50, public,  parameter :: LDT_DApreprocId      = "DA preprocessing"
    character*50, public,  parameter :: LDT_EnsRstpreprocId  = "Ensemble restart processing"
-   character*50, public,  parameter :: LDT_rstProcId        = "Restart processing"
+   character*50, public,  parameter :: LDT_climoRstProcId   = "Climatological restart processing"
+   character*50, public,  parameter :: LDT_rstTransformProcId = "Restart transformation processing"
    character*50, public,  parameter :: LDT_NUWRFpreprocId   = "NUWRF preprocessing for real"
    character*50, public,  parameter :: LDT_ANNprocId        = "ANN processing"
    character*50, public,  parameter :: LDT_MetForcprocId    = "Metforce processing"
@@ -103,6 +110,8 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_LPRMvodobsId            &
         = "LPRM vegetation optical depth"
 
+   character*50, public,  parameter :: LDT_MCD15A2HlaiobsId            &
+        = "MCD15A2H LAI"
 !-------------------------------------------------------------------------
 ! Meteorological forcings
 !-------------------------------------------------------------------------

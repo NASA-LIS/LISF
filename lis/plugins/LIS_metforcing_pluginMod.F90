@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -324,6 +326,10 @@ subroutine LIS_metforcing_plugin
 
 #if ( defined MF_AWAP)
    use AWAP_forcingMod
+#endif
+
+#if ( defined MF_AWRAL)
+   use AWRAL_forcingMod
 #endif
 
 #if ( defined MF_HIMAT_GMU)
@@ -712,6 +718,13 @@ subroutine LIS_metforcing_plugin
    external timeinterp_AWAP
    external reset_AWAP
    external finalize_AWAP
+#endif
+
+#if ( defined MF_AWRAL )
+   external get_AWRAL
+   external timeinterp_AWRAL
+   external reset_AWRAL
+   external finalize_AWRAL
 #endif
 
 #if ( defined MF_HIMAT_GMU )
@@ -1305,6 +1318,15 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_AWAP)
    call registerresetmetforc(trim(LIS_AWAPforcId)//char(0),reset_AWAP)
    call registerfinalmetforc(trim(LIS_AWAPforcId)//char(0),finalize_AWAP)
+#endif
+
+#if ( defined MF_AWRAL)
+   call registerinitmetforc(trim(LIS_AWRALforcId)//char(0),init_AWRAL)
+   call registerretrievemetforc(trim(LIS_AWRALforcId)//char(0),get_AWRAL)
+   call registertimeinterpmetforc(trim(LIS_AWRALforcId)//char(0), &
+                                  timeinterp_AWRAL)
+   call registerresetmetforc(trim(LIS_AWRALforcId)//char(0),reset_AWRAL)
+   call registerfinalmetforc(trim(LIS_AWRALforcId)//char(0),finalize_AWRAL)
 #endif
 
 #if ( defined MF_HIMAT_GMU)

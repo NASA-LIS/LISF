@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 module LVT_soilsMod
@@ -61,7 +67,7 @@ module LVT_soilsMod
      real, allocatable :: quartz(:,:)
   end type soils_type_dec
   
-  type(soils_type_dec) :: LVT_soils(2)
+  type(soils_type_dec) :: LVT_soils(3)
 
 contains
 

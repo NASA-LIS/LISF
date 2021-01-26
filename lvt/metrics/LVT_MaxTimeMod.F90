@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 !BOP
 ! 
@@ -294,19 +300,21 @@ contains
     type(LVT_statsEntry)    :: stats
     type(LVT_metricEntry)   :: metric
 !EOP
-    integer    :: t,k,m,m_k,o_k,tind
+    integer    :: t,k,m,m_k,o_k,tind,kk
     integer    :: time
 
 !----------------------------------------------------------------
 !It is assumed temporal lag is not chosen in this setup
 !----------------------------------------------------------------
-    if(LVT_rc%tlag.gt.0) then 
-       write(LVT_logunit,*) "[ERR] "
-       write(LVT_logunit,*) "[ERR] Non-zero temporal lag specification is not "
-       write(LVT_logunit,*) "[ERR] supported for MaxTime metric"
-       call LVT_endrun()
-    endif
-
+    do kk=1,LVT_rc%nDataStreams
+       if(LVT_rc%tlag(kk).gt.0) then 
+          write(LVT_logunit,*) "[ERR] "
+          write(LVT_logunit,*) "[ERR] Non-zero temporal lag specification is not "
+          write(LVT_logunit,*) "[ERR] supported for MaxTime metric"
+          call LVT_endrun()
+       endif
+    enddo
+    
     if(stats%selectOpt.eq.1.and.&
          model%selectNlevs.ge.1) then        
        if(LVT_maxtime_struc%time_option.eq."doy") then 

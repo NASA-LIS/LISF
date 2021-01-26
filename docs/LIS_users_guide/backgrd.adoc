@@ -1,6 +1,6 @@
 
+[[sec_backgrd,Background]]
 == Background
-anchor:sec_backgrd[Background]
 
 This section provides some general information about the LIS project.
 

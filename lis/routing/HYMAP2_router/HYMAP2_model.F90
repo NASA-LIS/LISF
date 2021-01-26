@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.1
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -161,16 +163,6 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
   !define sub time step
 ! ================================================
 !  !ag 12 Dec 2016: get minimum dta values (dtaout)
-!  do ic=1,nseqall
-!    call HYMAP2_dynstp(dt,nxtdst(ic),rivdph(ic),grv,cadp,dta(ic),nt(ic))
-!    if(dta(ic)>dt)then
-!      dta(ic)=dt
-!      nt(ic)=1
-!    endif
-!  enddo
-!  where(dtaout>dta)dtaout=dta
-! ================================================
-
   if(steptype==1)then
     dta=dt
     nt(:)=1
@@ -226,7 +218,7 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
     time=dble(yr*10000+mo*100+da) +&
          (dble(hr)+(dble(mn)+(dble(ss)+dt1)/60.)/60.)/24.
 
-    call HYMAP2_model_core(n,mis,nseqall,nz,time,&
+    call HYMAP2_model_core(n,it,mis,nseqall,nz,time,&
          mindt,flowmap,linres,evapflag, &
          resopflag,floodflag,dwiflag,                               &
          rivout_pre,rivdph_pre,grv,                 &
@@ -243,28 +235,13 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
         
     do ic=1,nseqall 
       rivout0(ic)=rivout0(ic)+fldout0(ic)
-!      rivout(ic)=rivout(ic)+rivout0(ic)/real(nt(i))
-!      rivvel(ic)=rivvel(ic)+rivvel0(ic)/real(nt(i))
-!      fldout(ic)=fldout(ic)+fldout0(ic)/real(nt(i))
-!      fldvel(ic)=fldvel(ic)+fldvel0(ic)/real(nt(i))
-!      evpout(ic)=evpout(ic)+evpout0(ic)/real(nt(i))
-
       rivout(ic)=rivout(ic)+rivout0(ic)/real(maxi)
       rivvel(ic)=rivvel(ic)+rivvel0(ic)/real(maxi)
       fldout(ic)=fldout(ic)+fldout0(ic)/real(maxi)
       fldvel(ic)=fldvel(ic)+fldvel0(ic)/real(maxi)
       evpout(ic)=evpout(ic)+evpout0(ic)/real(maxi)
     enddo
-
   enddo
-  !do ic=1,nseqall 
-  !  rivout0(ic)=rivout0(ic)+fldout0(ic)
-  !  rivout(ic)=rivout0(ic)
-  !  rivvel(ic)=rivvel0(ic)
-  !  fldout(ic)=fldout0(ic)
-  !  fldvel(ic)=fldvel0(ic)
-  !  evpout(ic)=evpout0(ic)
-  !enddo
 
 #if 0 
   call system_clock(countf)

@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !BOP
 !
@@ -191,6 +197,8 @@ subroutine read_SMAP_L3Tb(source, fname, L3TB)
 
   implicit none
 
+  integer                        :: source 
+  character(len=*)               :: fname
   real                           :: L3TB(LVT_rc%lnc,LVT_rc%lnr,4)
   
 !
@@ -209,8 +217,6 @@ subroutine read_SMAP_L3Tb(source, fname, L3TB)
 
 #if (defined USE_HDF5)
 
-  integer                       :: source 
-  character(len=*)              :: fname
   character*100,   parameter    :: Tb_gr_name = "Soil_Moisture_Retrieval_Data"
   character*100,   parameter    :: Tbv_field_name = "soil_moisture"
 

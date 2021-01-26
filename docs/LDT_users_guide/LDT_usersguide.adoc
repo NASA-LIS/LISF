@@ -1,6 +1,6 @@
-= Land Data Toolkit (LDT): LDT {lisrevision} Users' Guide
-:revnumber: 1.8
-:revdate: 28 Aug 2019
+= Land Data Toolkit (LDT): LDT {lisfrevision} Users' Guide
+:revnumber: 1.11
+:revdate: 25 Jan 2021
 :doctype: book
 :sectnums:
 :toc:
@@ -8,14 +8,16 @@
 :mathematical-format: svg
 :imagesoutdir: images
 :stem: latexmath
+:data-uri:
 :devonly:
-:lisrevision: 7.3
-:lisurl: http://lis.gsfc.nasa.gov/LDT
+:lisfrevision: 7.3
+:lisfurl: http://lis.gsfc.nasa.gov
 :svnurl: http://subversion.apache.org
 :nasalisf: https://github.com/NASA-LIS/LISF
 :githuburl: https://github.com
+:apachelicense: https://www.apache.org/licenses/LICENSE-2.0
 :lispublicrelease: Initial version - for LDT
-:ldttarball: LDT_public_release_7.2r.tar.gz
+:ldttarball: LISF_public_release_7.3.0.tar.gz
 :emdash: —
 :endash: –
 :vertellipsis: ⋮

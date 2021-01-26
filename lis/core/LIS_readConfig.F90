@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -945,6 +947,9 @@ subroutine LIS_readConfig()
      endif
   enddo
   
+  call ESMF_ConfigGetAttribute(LIS_config, LIS_rc%routingmodel, &
+       label="Routing model:",default="none", rc=rc)
+
  LIS_rc%endcode = 1
 
 88 format(a4,25x,a3,5x,16a)

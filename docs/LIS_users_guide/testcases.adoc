@@ -1,6 +1,6 @@
 
+[[sec_testcases,Test-cases]]
 == Test-cases
-anchor:sec_testcases[Test-cases]
 
 This section describes how to obtain and how to use the test cases provided by the LIS team.
 
@@ -24,8 +24,8 @@ The main purpose of these test cases is for the LIS development team to internal
 
 For these test cases, we do not provide any of the input or output datasets, but users are welcome to use the config files in these subdirectory cases as a guide to setting up their own individual experiments and for their own testing purposes.
 
+[[sssec_testcases,The _testcases_ Sub-directory]]
 ==== The _testcases_ Sub-directory
-anchor:sssec_testcases[The _testcases_ Sub-directory]
 
 The layout of the _testcases_ sub-directory matches the layout of the top-level _src_ directory.  For example, LIS contains support for processing GDAS forcing data.  These routines are in _src/metforcing/gdas_.  The test-case for GDAS is in _src/testcases/metforcing/gdas_.
 

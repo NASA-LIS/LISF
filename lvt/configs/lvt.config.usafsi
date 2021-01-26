@@ -14,8 +14,10 @@ USAFSI output GRIB2 native grid: .true.
 USAFSI output GRIB1 global 0.25deg lat/lon: .true.
 USAFSI output GRIB1 NH 16th mesh polar stereographic: .true.
 USAFSI output GRIB1 SH 16th mesh polar stereographic: .true.
-USAFSI input netcdf directory: ./
-USAFSI input netcdf prefix:  usafsi
+USAFSI output GRIB1 SNODEP NH 16th mesh polar stereographic: .true.
+USAFSI output GRIB1 SNODEP SH 16th mesh polar stereographic: .true.
+USAFSI input netcdf directory: ./USAFSI/
+USAFSI input netcdf prefix:  USAFSI_
 USAFSI output grib directory: ./grib
 
 # The remaining settings are required for input by LVT, but not used by the

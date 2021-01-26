@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -195,7 +201,7 @@ subroutine read_USGSNative_lc(n, num_types, fgrd, maskarray)
 
  !- No spatial transform applied:
     if( LDT_rc%lc_gridtransform(n) == "none" .and. &
-        LDT_rc%lis_map_proj == "latlon" ) then
+        LDT_rc%lis_map_proj(n) == "latlon" ) then
 
        write(LDT_logunit,*) " No aggregation applied for parameter file ... "
        vegtype(:,:) = read_inputparm(:,:)

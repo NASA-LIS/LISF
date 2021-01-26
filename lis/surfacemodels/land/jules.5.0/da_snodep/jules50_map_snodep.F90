@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -22,7 +24,7 @@ subroutine jules50_map_snodep(n,k,OBS_State,LSM_Incr_State)
   use ESMF
   use LIS_coreMod, only : LIS_rc
   use LIS_logMod,  only : LIS_verify
-  use LIS_DAobservationsMod
+  use LIS_lsmMod
   use jules50_lsmMod
 
   implicit none
@@ -98,8 +100,7 @@ subroutine jules50_map_snodep(n,k,OBS_State,LSM_Incr_State)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
-     call LIS_mapTileSpaceToObsSpace(n, k, LIS_rc%lsm_index, &
-          t, st_id, en_id)
+     call LIS_lsm_DAmapTileSpaceToObsSpace(n,k,t,st_id,en_id)
 
 ! Assume here that st_id and en_id are the same and that we are
 ! working with an model grid finer than the observation grid
@@ -114,10 +115,9 @@ subroutine jules50_map_snodep(n,k,OBS_State,LSM_Incr_State)
         snod(t) = snodepobs(st_id)
 
 ! Based on SNODEP, we manually update SWE
-! Units: Snow depth (m), SWE (kg/m2), Density (kg/m3)
-        if(snod(t).lt.1e-6) snoden = 0.0
-        if(snod(t).ge.1e-6.and.snoden.lt.100.0) then
-           snoden = 100.0
+        if(snod(t).lt.2.54E-3) snoden = 0.0
+        if(snod(t).ge.2.54E-3.and.snoden.lt.0.001) then
+           snoden = 0.20
         endif
         sweincr(t)  = snod(t)*snoden - jules50_swe(t)
         snodincr(t) = snod(t) - jules50_snod(t)

@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !------------------------------------------------------------------------------
 !NOTE:  Currently only V05B IMERG data are supported.
@@ -83,7 +89,7 @@ subroutine readIMERGdata(source)
 
    if (alarmCheck) then
       call create_IMERG_filename(imergdata(source)%odir, &
-                             yr1,mo1,da1,hr1,mn1,filename)
+                             yr1,mo1,da1,hr1,mn1,filename,imergdata(source)%imergver)
       inquire(file=trim(filename),exist=file_exists)
 
       if(file_exists) then 
@@ -265,7 +271,7 @@ subroutine read_imerghdf(filename, col, row, precipout, ireaderr)
 end subroutine read_imerghdf
 !------------------------------------------------------------------------------
 subroutine create_IMERG_filename(odir, &
-                             yr,mo,da,hr,mn,filename)
+                             yr,mo,da,hr,mn,filename,imVer)
    use IMERG_dataMod
    use LVT_logMod
 
@@ -273,7 +279,7 @@ subroutine create_IMERG_filename(odir, &
    implicit none
 
    ! Arguments
-   character(len=*), intent(in) :: odir
+   character(len=*), intent(in) :: odir, imVer
    integer, intent(in) :: yr, mo, da, hr, mn
    character(len=*), intent(out) :: filename
 
@@ -281,8 +287,8 @@ subroutine create_IMERG_filename(odir, &
    integer :: uyr, umo, uda, uhr, umn, umnadd, umnday, uss
    character*4   :: cyr, cmnday
    character*2   :: cmo, cda, chr, cmn, cmnadd
-   character*100 :: fbase, ftimedir, fstem
-
+   character*100 :: fbase, ftimedir, fstem, fext
+   
    uyr = yr
    umo = mo
    uda = da
@@ -303,17 +309,21 @@ subroutine create_IMERG_filename(odir, &
    write(cmnadd, '(I2.2)') umnadd
    write(cmnday, '(I4.4)')umnday
 
-   if(imergdata(1)%imergver == 'early') then
+   if(imergdata(1)%imergprd == 'early') then
       fstem = '/3B-HHR-E.MS.MRG.3IMERG.'
-   elseif(imergdata(1)%imergver == 'late') then
+      fext = '.RT-H5'
+   elseif(imergdata(1)%imergprd == 'late') then
       fstem = '/3B-HHR-L.MS.MRG.3IMERG.'
-   elseif(imergdata(1)%imergver == 'final') then
+      fext = '.RT-H5'
+   elseif(imergdata(1)%imergprd == 'final') then
       fstem = '/3B-HHR.MS.MRG.3IMERG.'
+      fext = '.HDF5'
    else
-      write(LVT_logunit,*) "[ERR] Invalid IMERG version option was chosen."
+      write(LVT_logunit,*) "[ERR] Invalid IMERG product option was chosen."
       write(LVT_logunit,*) "[ERR] Please choose either 'early', 'late', or 'final'."
       call LVT_endrun()
    endif
+   
    filename = trim(odir)//"/"//cyr//cmo//trim(fstem)// &
-         cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//".V05B.HDF5"
+         cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//"."//trim(imVer)//fext
 end subroutine create_IMERG_filename

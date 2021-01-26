@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 ! NOTE:  Currently only V05B IMERG data are supported
 module IMERG_dataMod
@@ -17,7 +23,7 @@ module IMERG_dataMod
 
    type, public :: imergdatadec
       character*100 :: odir
-      character*5   :: imergver
+      character*10  :: imergver, imergprd
       real          :: datares
       real, allocatable           :: rlat(:)
       real, allocatable           :: rlon(:)
@@ -72,16 +78,27 @@ contains
       call ESMF_ConfigGetAttribute(LVT_Config, imergdata(i)%odir, &
            label='IMERG data directory:', rc=status)
       call LVT_verify(status, 'IMERG data directory: not defined')
+      ! Get IMERG product
+      call ESMF_ConfigFindLabel(LVT_config,"IMERG product:",rc=status)
+      if(status /= 0) then
+         write(LVT_logunit,*) "[WARN] --------------------------------------------------------------"
+         write(LVT_logunit,*) "[WARN] IMERG product not specified. Defaulting to 'final' version."
+         write(LVT_logunit,*) "[WARN] --------------------------------------------------------------"
+         imergdata(i)%imergprd = 'final'
+      else
+         call ESMF_ConfigGetAttribute(LVT_config,imergdata(i)%imergprd,rc=status)
+      endif
       ! Get IMERG version
       call ESMF_ConfigFindLabel(LVT_config,"IMERG version:",rc=status)
       if(status /= 0) then
          write(LVT_logunit,*) "[WARN] --------------------------------------------------------------"
-         write(LVT_logunit,*) "[WARN] IMERG version not specified. Defauling to 'final' version."
+         write(LVT_logunit,*) "[WARN] IMERG version not specified. Defaulting to 'V06B' version."
          write(LVT_logunit,*) "[WARN] --------------------------------------------------------------"
-         imergdata(i)%imergver = 'final'
+         imergdata(i)%imergver = 'V06B'
       else
          call ESMF_ConfigGetAttribute(LVT_config,imergdata(i)%imergver,rc=status)
       endif
+
       ! Allocate arrays on LVT grid
       allocate(imergdata(i)%rlat(LVT_rc%lnc*LVT_rc%lnr))
       allocate(imergdata(i)%rlon(LVT_rc%lnc*LVT_rc%lnr))     

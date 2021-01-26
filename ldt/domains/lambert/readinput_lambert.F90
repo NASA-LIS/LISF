@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -11,7 +17,7 @@
 !  15Jul2005: Sujay Kumar; Initial Specification
 !
 ! !INTERFACE:
-subroutine readinput_lambert
+subroutine readinput_lambert(nest)
 ! !USES:
   use ESMF 
   use LDT_logMod, only : LDT_logunit, LDT_endrun, LDT_verify
@@ -24,6 +30,8 @@ subroutine readinput_lambert
   use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
 
   implicit none
+
+  integer, intent(in) :: nest
 
 ! !DESCRIPTION: 
 !
@@ -50,59 +58,122 @@ subroutine readinput_lambert
   integer           :: nc,nr
   type(proj_info)   :: proj_temp
   integer           :: n, rc
+  integer           :: nDupl
+  logical           :: checkDuplicate
+  logical           :: newFormatCheck 
 ! __________________________________________
 
   allocate(run_dd(LDT_rc%nnest,20))
 
-  LDT_rc%lis_map_resfactor = 100.
-
-  call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lat:",rc=rc)
-  do n=1,LDT_rc%nnest
-     call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,1),rc=rc)
-     call LDT_verify(rc,'Run domain lower left lat: not defined')
+  newFormatCheck = .false. 
+  checkDuplicate = .false. 
+  nDupl = 1
+  do n=2,LDT_rc%nnest
+     if(LDT_rc%lis_map_proj(n).eq.LDT_rc%lis_map_proj(1)) then 
+        checkDuplicate = .true. 
+        nDupl = nDupl + 1
+     endif
   enddo
 
-  call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lon:",rc=rc)
-  do n=1,LDT_rc%nnest
-     call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,2),rc=rc)
-     call LDT_verify(rc,'Run domain lower left lon: not defined')
+  LDT_rc%lis_map_resfactor(nest) = 100.
+
+  call ESMF_ConfigFindLabel(LDT_config,"LM run domain lower left lat:",rc=rc)
+  do n=1,nDupl
+     call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,1),rc=rc)
+     if(rc.eq.0) newFormatCheck = .true. 
   enddo
   
-  call ESMF_ConfigFindLabel(LDT_config,"Run domain true lat1:",rc=rc)
-  do n=1,LDT_rc%nnest
+  call ESMF_ConfigFindLabel(LDT_config,"LM run domain lower left lon:",rc=rc)
+  do n=1,nDupl
+     call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,2),rc=rc)
+     if(rc.eq.0) newFormatCheck = .true. 
+  enddo
+  
+  call ESMF_ConfigFindLabel(LDT_config,"LM run domain true lat1:",rc=rc)
+  do n=1,nDupl
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,3),rc=rc)
-     call LDT_verify(rc,'Run domain true lat1: not defined')
+     if(rc.eq.0) newFormatCheck = .true. 
   enddo
-
-  call ESMF_ConfigFindLabel(LDT_config,"Run domain true lat2:",rc=rc)
-  do n=1,LDT_rc%nnest
+  
+  call ESMF_ConfigFindLabel(LDT_config,"LM run domain true lat2:",rc=rc)
+  do n=1,nDupl
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,4),rc=rc)
-     call LDT_verify(rc,'Run domain true lat2: not defined')
+     if(rc.eq.0) newFormatCheck = .true. 
   enddo
-
-  call ESMF_ConfigFindLabel(LDT_config,"Run domain standard lon:",rc=rc)
-  do n=1,LDT_rc%nnest
+  
+  call ESMF_ConfigFindLabel(LDT_config,"LM run domain standard lon:",rc=rc)
+  do n=1,nDupl
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,5),rc=rc)
-     call LDT_verify(rc,'Run domain standard lon: not defined')
+     if(rc.eq.0) newFormatCheck = .true. 
   enddo
-
-  call ESMF_ConfigFindLabel(LDT_config,"Run domain resolution:",rc=rc)
-  do n=1,LDT_rc%nnest
+  
+  call ESMF_ConfigFindLabel(LDT_config,"LM run domain resolution:",rc=rc)
+  do n=1,nDupl
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,6),rc=rc)
-     call LDT_verify(rc,'Run domain resolution: not defined')
+     if(rc.eq.0) newFormatCheck = .true. 
   enddo
-
-  call ESMF_ConfigFindLabel(LDT_config,"Run domain x-dimension size:",rc=rc)
-  do n=1,LDT_rc%nnest
+  
+  call ESMF_ConfigFindLabel(LDT_config,"LM run domain x-dimension size:",rc=rc)
+  do n=1,nDupl
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,7),rc=rc)
-     call LDT_verify(rc,'Run domain x-dimension size: not defined')
+     if(rc.eq.0) newFormatCheck = .true. 
   enddo
-
-  call ESMF_ConfigFindLabel(LDT_config,"Run domain y-dimension size:",rc=rc)
-  do n=1,LDT_rc%nnest
+  
+  call ESMF_ConfigFindLabel(LDT_config,"LM run domain y-dimension size:",rc=rc)
+  do n=1,nDupl
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,8),rc=rc)
-     call LDT_verify(rc,'Run domain y-dimension size: not defined')
+     if(rc.eq.0) newFormatCheck = .true. 
   enddo
+  
+  if(.not.newFormatCheck) then 
+     call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lat:",rc=rc)
+     do n=1,nDupl
+        call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,1),rc=rc)
+        call LDT_verify(rc,'Run domain lower left lat: not defined')
+     enddo
+     
+     call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lon:",rc=rc)
+     do n=1,nDupl
+        call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,2),rc=rc)
+        call LDT_verify(rc,'Run domain lower left lon: not defined')
+     enddo
+     
+     call ESMF_ConfigFindLabel(LDT_config,"Run domain true lat1:",rc=rc)
+     do n=1,nDupl
+        call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,3),rc=rc)
+        call LDT_verify(rc,'Run domain true lat1: not defined')
+     enddo
+     
+     call ESMF_ConfigFindLabel(LDT_config,"Run domain true lat2:",rc=rc)
+     do n=1,nDupl
+        call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,4),rc=rc)
+        call LDT_verify(rc,'Run domain true lat2: not defined')
+     enddo
+     
+     call ESMF_ConfigFindLabel(LDT_config,"Run domain standard lon:",rc=rc)
+     do n=1,nDupl
+        call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,5),rc=rc)
+        call LDT_verify(rc,'Run domain standard lon: not defined')
+     enddo
+     
+     call ESMF_ConfigFindLabel(LDT_config,"Run domain resolution:",rc=rc)
+     do n=1,nDupl
+        call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,6),rc=rc)
+        call LDT_verify(rc,'Run domain resolution: not defined')
+     enddo
+     
+     call ESMF_ConfigFindLabel(LDT_config,"Run domain x-dimension size:",rc=rc)
+     do n=1,nDupl
+        call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,7),rc=rc)
+        call LDT_verify(rc,'Run domain x-dimension size: not defined')
+     enddo
+     
+     call ESMF_ConfigFindLabel(LDT_config,"Run domain y-dimension size:",rc=rc)
+     do n=1,nDupl
+        call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,8),rc=rc)
+        call LDT_verify(rc,'Run domain y-dimension size: not defined')
+     enddo
+  endif
 
   write(LDT_logunit,*)'DOMAIN details: Running in lambert projection'
   if(LDT_npes.eq.1) then 
@@ -117,7 +188,7 @@ subroutine readinput_lambert
      call LDT_endrun()
   endif
 
-  do n = 1, LDT_rc%nnest
+  do n = 1,nDupl
      stlat    = run_dd(n,1)
      stlon    = run_dd(n,2)
      truelat1 = run_dd(n,3)
@@ -127,7 +198,7 @@ subroutine readinput_lambert
      nc       = nint(run_dd(n,7))
      nr       = nint(run_dd(n,8))
   
-     call LDT_quilt_domain(n,nc,nr)
+     call LDT_quilt_domain(nest,nc,nr)
   
 !call map_set on the overall running domain
 
@@ -135,20 +206,20 @@ subroutine readinput_lambert
               xmesh*1000.0, stdlon, truelat1,&
               truelat2, nc, nr, proj_temp)
 
-     call ij_to_latlon(proj_temp,float(LDT_ews_halo_ind(n,LDT_localPet+1)),&
-          float(LDT_nss_halo_ind(n,LDT_localPet+1)),lat_str,lon_str)     
+     call ij_to_latlon(proj_temp,float(LDT_ews_halo_ind(nest,LDT_localPet+1)),&
+          float(LDT_nss_halo_ind(nest,LDT_localPet+1)),lat_str,lon_str)     
      
-     LDT_rc%gridDesc(n,1) = 3
-     LDT_rc%gridDesc(n,2) = LDT_rc%lnc(n)
-     LDT_rc%gridDesc(n,3) = LDT_rc%lnr(n)
-     LDT_rc%gridDesc(n,4) = lat_str
-     LDT_rc%gridDesc(n,5) = lon_str
-     LDT_rc%gridDesc(n,6) = 8
-     LDT_rc%gridDesc(n,7) = truelat2
-     LDT_rc%gridDesc(n,8) = xmesh
-     LDT_rc%gridDesc(n,9) = xmesh
-     LDT_rc%gridDesc(n,10) = truelat1
-     LDT_rc%gridDesc(n,11) = stdlon
+     LDT_rc%gridDesc(nest,1) = 3
+     LDT_rc%gridDesc(nest,2) = LDT_rc%lnc(nest)
+     LDT_rc%gridDesc(nest,3) = LDT_rc%lnr(nest)
+     LDT_rc%gridDesc(nest,4) = lat_str
+     LDT_rc%gridDesc(nest,5) = lon_str
+     LDT_rc%gridDesc(nest,6) = 8
+     LDT_rc%gridDesc(nest,7) = truelat2
+     LDT_rc%gridDesc(nest,8) = xmesh
+     LDT_rc%gridDesc(nest,9) = xmesh
+     LDT_rc%gridDesc(nest,10) = truelat1
+     LDT_rc%gridDesc(nest,11) = stdlon
      
 !------------------------------------------------------------------------
 ! Read namelist of parameters depending on the domain
@@ -158,23 +229,23 @@ subroutine readinput_lambert
 
      write(LDT_logunit,*)'-------------------- LDT/LIS Domain ----------------------'
      do k=1,13
-        write(LDT_logunit,*)'(',k,',',LDT_rc%gridDesc(n,k),')'
+        write(LDT_logunit,*)'(',k,',',LDT_rc%gridDesc(nest,k),')'
      enddo
      
-     LDT_rc%gnc(n) = nc
-     LDT_rc%gnr(n) = nr
+     LDT_rc%gnc(nest) = nc
+     LDT_rc%gnr(nest) = nr
      
-     call map_set(PROJ_LC, LDT_rc%gridDesc(n,4), LDT_rc%gridDesc(n,5),&
-              LDT_rc%gridDesc(n,8)*1000.0, LDT_rc%gridDesc(n,11),&
-              LDT_rc%gridDesc(n,10), truelat2, &
-              LDT_rc%lnc(n), LDT_rc%lnr(n), LDT_domain(n)%ldtproj)
+     call map_set(PROJ_LC, LDT_rc%gridDesc(nest,4), LDT_rc%gridDesc(nest,5),&
+              LDT_rc%gridDesc(nest,8)*1000.0, LDT_rc%gridDesc(nest,11),&
+              LDT_rc%gridDesc(nest,10), truelat2, &
+              LDT_rc%lnc(nest), LDT_rc%lnr(nest), LDT_domain(nest)%ldtproj)
      write(LDT_logunit,*)'----------------------------------------------------------'
 
      ! EMK: Copy to global structure.
-     LDT_domain(n)%ldtglbproj = LDT_domain(n)%ldtproj
+     LDT_domain(nest)%ldtglbproj = LDT_domain(nest)%ldtproj
 
   enddo
   deallocate(run_dd)
-     
+
  end subroutine readinput_lambert
 

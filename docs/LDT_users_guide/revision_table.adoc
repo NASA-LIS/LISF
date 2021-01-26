@@ -2,7 +2,10 @@
 |====
 | Revision | Summary of Changes             | Date
 
-| 1.8      | LDT 7.3 557WW Release          | Aug 28, 2019
+| 1.11     | LDT 557WW 7.3.3 release        | Jan 25, 2021
+| 1.10     | LISF Public 7.3.0 release      | Dec 21, 2020
+| 1.9      | LDT 557WW 7.3.0 release        | Aug 24, 2020
+| 1.8      | LDT 557WW 7.3 release candidate 4 | Aug 28, 2019
 | 1.7      | LDT 7.2 AFWA Release patch 1   | Feb 9, 2018
 | 1.6      | LDT 7.2 AFWA Release           | Feb 2, 2018
 | 1.5      | LDT 7.2 AFWA Beta Release      | Nov 24, 2017

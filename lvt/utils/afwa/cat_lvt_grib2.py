@@ -1,5 +1,16 @@
-#!/usr/bin/env python
-# ------------------------------------------------------------------------------
+#!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.3
+#
+# Copyright (c) 2020 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+#------------------------------------------------------------------------------
 #
 # SCRIPT: cat_lvt_grib2.py
 #
@@ -19,8 +30,10 @@
 # 19 Nov 2018:  Eric Kemp (SSAI), added Tair_tavg for 24hr.
 # 07 Nov 2019:  Eric Kemp (SSAI), removed Soiltype_inst and Greenness_inst
 #               for JULES.  Added support for NoahMP.
+# 05 Aug 2020:  Eric Kemp (SSAI), added Albedo_tavg and SmLiqFrac_inst for
+#               JULES.
 #
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 # Standard modules
 import datetime
@@ -28,7 +41,7 @@ import os
 import subprocess
 import sys
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 # Supported LIS LSMs
 _LIS_LSMS = ["NOAH", "NOAHMP", "JULES"]
@@ -98,7 +111,8 @@ _LVT_NOAHMP_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
 _LVT_NOAHMP_INVOCATIONS_24HR_LATEST = ['SnowDepth_inst', 'SWE_inst']
 
 # The LVT invocations for JULES LSM output.
-_LVT_JULES_INVOCATIONS_3HR = ['AvgSurfT_inst', 'AvgSurfT_tavg',
+_LVT_JULES_INVOCATIONS_3HR = ['Albedo_tavg',
+                              'AvgSurfT_inst', 'AvgSurfT_tavg',
                               'CanopInt_inst',
                               'Elevation_inst', 'Evap_tavg',
                               'LWdown_f_inst', 'LWdown_f_tavg',
@@ -110,6 +124,7 @@ _LVT_JULES_INVOCATIONS_3HR = ['AvgSurfT_inst', 'AvgSurfT_tavg',
                               'RHMin_inst', 'RelSMC_inst',
                               'SWE_inst',
                               'SWdown_f_inst', 'SWdown_f_tavg',
+                              'SmLiqFrac_inst',
                               'SnowDepth_inst',
                               'SoilMoist_inst', 'SoilMoist_tavg',
                               'SoilTemp_inst', 'SoilTemp_tavg',

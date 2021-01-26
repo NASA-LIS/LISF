@@ -97,7 +97,7 @@ set   def_lis_minpack     /discover/nobackup/projects/lis/libs/minpack/intel_11_
 set   def_lis_crtm        /discover/nobackup/projects/lis/libs/JCSDA_CRTM/REL-2.0.2.Surface-rev_intel_18_0_3_222
 set   def_lis_crtm_prof   /discover/nobackup/projects/lis/libs/CRTM_Profile_Utility/intel_18_0_3_222
 set   def_lis_cmem        /discover/nobackup/projects/lis/libs/LIS-MEM/intel_18_0_3_222
-set   def_lis_lapack      /usr/local/other/SLES11/lapack/3.3.1/intel-12.1.0.233/lib
+set   def_lis_lapack      /discover/nobackup/projects/lis/libs/lapack/3.6.0_intel_14_0_3_174
 set   def_lvt_gdal        /discover/nobackup/projects/lis/libs/gdal/2.4.1_intel-19.1.0.166_sles12.3
 set   def_lvt_fortrangis  /discover/nobackup/projects/lis/libs/fortrangis/2.4_intel-19.1.0.166_sles12.3
 set   def_ldt_libgeotiff  /discover/nobackup/projects/lis/libs/geotiff/1.4.3_intel-19.1.0.166_sles12.3

@@ -1,3 +1,13 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 ! modified by David and Shugong on 07/25/2018 for supporting convective precipitation. 
 ! modified by Shugong on 10/03/2018. Current version only supports total rainfall and total snowfall (io_precip_type=2 for JULES) 
 subroutine tile_to_forcing(n, t)

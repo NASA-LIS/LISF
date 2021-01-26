@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -16,8 +18,10 @@
 ! !REVISION HISTORY: 
 !  22 Aug 2016    Sujay Kumar; initial specification
 !  1  Apr 2019  Yonghwan Kwon: Upated for reading monthy CDF for the current month
-!  31 July 2019 Mahdi Navari : SMAP Composite Release ID was added (this option asks a user to 
-!         enter the part of Composite Release ID a three-character string like R16 )
+! 31 July 2019 Mahdi Navari: SMAP Composite Release ID was added (this option asks a user
+!           to enter the part of Composite Release ID a three-character string like R16).
+!  8 July 2020: David Mocko: Removed config entry to toggle the QC check.
+!                            The QC is now always ON for NASA SMAP SM DA.
 !
 module NASASMAPsm_Mod
 ! !USES: 
@@ -40,7 +44,6 @@ module NASASMAPsm_Mod
   type, public:: NASASMAPsm_dec
      
      integer                :: useSsdevScal
-     integer                :: qcFlag
      logical                :: startMode
      integer                :: nc
      integer                :: nr
@@ -179,7 +182,7 @@ contains
        call LIS_verify(status, 'SMAP(NASA) soil moisture data designation: is missing')
     enddo
 
-    call ESMF_ConfigFindLabel(LIS_config,"SMAP(NASA) soil moisture Composite Release ID (e.g., R16):",&
+    call ESMF_ConfigFindLabel(LIS_config,"SMAP(NASA) soil moisture Composite Release ID:",&
          rc=status)
     do n=1,LIS_rc%nnest
        call ESMF_ConfigGetAttribute(LIS_config,&
@@ -197,14 +200,6 @@ contains
        
     enddo
 
-    call ESMF_ConfigFindLabel(LIS_config,"SMAP(NASA) soil moisture apply SMAP QC flags:",&
-         rc=status)
-    do n=1,LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,NASASMAPsm_struc(n)%qcFlag,&
-            rc=status)
-       call LIS_verify(status, 'SMAP(NASA) soil moisture apply SMAP QC flags: is missing')
-       
-    enddo
     call ESMF_ConfigFindLabel(LIS_config,"SMAP(NASA) model CDF file:",&
          rc=status)
     do n=1,LIS_rc%nnest

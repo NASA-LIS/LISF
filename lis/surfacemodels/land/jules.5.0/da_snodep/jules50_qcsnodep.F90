@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -16,6 +18,16 @@
 ! 21 Jul 2011: James Geiger; Modified for Noah 3.2
 ! 30 Jan 2015: Yuqiong Liu; added additional QC
 ! 05 Nov 2018: Yeosang Yoon; Modified for Jules 5.0
+! 30 Dec 2019: Yeosang Yoon; update QC
+! 08 Dec 2020: Eric Kemp; turn off DA in high snow depth regions
+! 09 Dec 2020: David Mocko; Use snow density from JULES state;
+!              Only check SWE/snow maximum when doing update
+! 19 Jan 2020: David Mocko; Further tweaks to checking high snow
+!              depth to turn off DA (now using attributes file);
+!              Added consistency checks to setting maximum SWE
+!              and snow depth after DA against the snow density;
+!              Changes recommended after discussion with:
+!                   Yeosang Yoon, Yonghwan Kwon, Eric Kemp
 !
 ! !INTERFACE:
 subroutine jules50_qcsnodep(n, LSM_State)
@@ -25,9 +37,11 @@ subroutine jules50_qcsnodep(n, LSM_State)
   use LIS_coreMod
   use jules50_lsmMod
   use LIS_logMod
+  use c_densty,       only: rho_water
+  use jules_snow_mod, only: rho_snow_const, l_snowdep_surf
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
 !
@@ -35,8 +49,8 @@ subroutine jules50_qcsnodep(n, LSM_State)
 !
 !  QC's the related state prognostic variable objects for
 !  SNODEP data assimilation
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[LSM\_State] ESMF State container for LSM state variables \newline
@@ -50,20 +64,16 @@ subroutine jules50_qcsnodep(n, LSM_State)
   real, pointer          :: snod(:)
 
   real                   :: swemax,snodmax
-  real                   :: swemin,snodmin 
+  real                   :: swemin,snodmin
 
   real                   :: sndens
   logical                :: update_flag(LIS_rc%ngrid(n))
-  real                   :: perc_violation(LIS_rc%ngrid(n))
-
-  real                   :: snodmean(LIS_rc%ngrid(n))
-  integer                :: nsnodmean(LIS_rc%ngrid(n))
 
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status)
   call ESMF_StateGet(LSM_State,"Snowdepth",snodField,rc=status)
   call LIS_verify(status)
- 
+
   call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
   call LIS_verify(status)
   call ESMF_FieldGet(snodField,localDE=0,farrayPtr=snod,rc=status)
@@ -79,84 +89,69 @@ subroutine jules50_qcsnodep(n, LSM_State)
   call LIS_verify(status)
 
   update_flag    = .true.
-  perc_violation = 0.0
-  snodmean       = 0.0
-  nsnodmean      = 0
+
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
      gid = LIS_domain(n)%gindex(&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
 
-     if((snod(t).lt.snodmin)) then
+     if ((snod(t).lt.snodmin).or.(swe(t).lt.swemin)) then
         update_flag(gid) = .false.
-        perc_violation(gid) = perc_violation(gid) +1
+     endif
+
+     if ((snod(t).gt.snodmax).or.(swe(t).gt.swemax)) then
+        update_flag(gid) = .false.
      endif
 
   enddo
-
-  do gid=1,LIS_rc%ngrid(n)
-     perc_violation(gid) = perc_violation(gid)/real(LIS_rc%nensem(n))
-  enddo
-
-! For ensembles that are unphysical, compute the
-! ensemble average after excluding them. This
-! is done only if the majority of the ensemble
-! members are good (>80%)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
-     gid = LIS_domain(n)%gindex(&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
-     if(.not.update_flag(gid)) then
-        if(perc_violation(gid).lt.0.2) then
-           if(snod(t).ge.0) then
-              snodmean(gid) = snodmean(gid) + snod(t)
-              nsnodmean(gid) = nsnodmean(gid) + 1
-           endif
-        endif
-     endif
-  enddo
-
-  do gid=1,LIS_rc%ngrid(n)
-     if(nsnodmean(gid).gt.0) then
-        snodmean(gid) = snodmean(gid) / real(nsnodmean(gid))
-     endif
-  enddo
-
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      gid = LIS_domain(n)%gindex(&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
 
 !Use the model's snow density from the previous timestep
      pft = jules50_struc(n)%jules50(t)%pft
-     if(jules50_struc(n)%jules50(t)%snowdepth(pft).gt.0) then
-       sndens = jules50_struc(n)%jules50(t)%snow_mass_ij/jules50_struc(n)%jules50(t)%snowdepth(pft)
+     sndens = jules50_struc(n)%jules50(t)%rho_snow_grnd(pft)
+
+     if (l_snowdep_surf) then
+       sndens = max(rho_snow_const,sndens)
+       sndens = min(rho_water     ,sndens)
      else
-       sndens = 0.0
+       sndens = max(   1.0,sndens)
+       sndens = min(1000.0,sndens)
      endif
 
-! If the update is unphysical, simply set to the average of
-! the good ensemble members. If all else fails, do not
-! update.
-
-     if(update_flag(gid)) then
+!Update SWE and snow depth
+     if (update_flag(gid)) then
         snod(t) = snod(t)
-     elseif(perc_violation(gid).lt.0.2) then
-        if(snod(t).lt.snodmin) then
-           snod(t) = snodmean(gid)
-        else
-           snod(t) = jules50_struc(n)%jules50(t)%snowdepth(pft)
+        swe(t)  = snod(t)*sndens
+
+        if (swe(t).gt.swemax) then
+           swe(t) = swemax
+           snod(t) = swe(t)/sndens
         endif
-     endif
+        if (snod(t).gt.snodmax) then
+           snod(t) = snodmax
+           swe(t)  = snod(t)*sndens
+        endif
 
-     if(snod(t).gt.snodmax) then
-        snod(t) = snodmax
+        if (swe(t).lt.swemin) then
+           swe(t) = swemin
+           snod(t) = swe(t)/sndens
+        endif
+        if (snod(t).lt.snodmin) then
+           snod(t) = snodmin
+           swe(t)  = snod(t)*sndens
+        endif
+        
+!If the update is unphysical, do not update
+     else
+        snod(t) = jules50_struc(n)%jules50(t)%snowdepth(pft)
+        swe(t)  = jules50_struc(n)%jules50(t)%snow_mass_ij
      endif
-
-     swe(t) = snod(t)*sndens
 
   enddo
 
