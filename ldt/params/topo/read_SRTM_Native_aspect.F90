@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -144,10 +150,10 @@ subroutine read_SRTM_Native_aspect( n, num_bins, fgrd, aspectave )
    we_antarc(6)="e120"
 ! __________________________
 
-  if( LDT_rc%lis_map_proj == "latlon"   .or. &
-      LDT_rc%lis_map_proj == "mercator" .or. &
-      LDT_rc%lis_map_proj == "lambert" ) then
-     if( param_gridDesc(10) .ne. (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor) .and.&
+  if( LDT_rc%lis_map_proj(n) == "latlon"   .or. &
+      LDT_rc%lis_map_proj(n) == "mercator" .or. &
+      LDT_rc%lis_map_proj(n) == "lambert" ) then
+     if( param_gridDesc(10) .ne. (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n)) .and.&
          LDT_rc%topo_gridtransform(n) .eq. "none" ) then
         write(LDT_logunit,*) "[ERR] SRTM 'Native' has been selected which has a resolution"
         write(LDT_logunit,*) "    (0.00833deg), but the LIS run domain resolution"

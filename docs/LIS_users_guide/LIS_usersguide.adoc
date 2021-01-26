@@ -1,6 +1,6 @@
-= Land Information System (LIS): LIS {lisrevision} Users' Guide
-:revnumber: 1.11
-:revdate: 28 Aug 2019
+= Land Information System (LIS): LIS {lisfrevision} Users' Guide
+:revnumber: 1.14
+:revdate: 25 Jan 2021
 :doctype: book
 :sectnums:
 :toc:
@@ -8,14 +8,16 @@
 :mathematical-format: svg
 :imagesoutdir: images
 :stem: latexmath
-:devonly!:
-:lisrevision: 7.3
-:lisurl: http://lis.gsfc.nasa.gov
+:devonly:
+:lisfrevision: 7.3
+:lisfurl: http://lis.gsfc.nasa.gov
+:listesturl: https://lis.gsfc.nasa.gov/tests/lis
 :svnurl: http://subversion.apache.org
 :nasalisf: https://github.com/NASA-LIS/LISF
 :githuburl: https://github.com
-:listarball: LIS_public_release_7.2r.tar.gz
-:lispublicna: Not available in the {listarball} public release of LIS 7.2.
+:apachelicense: https://www.apache.org/licenses/LICENSE-2.0
+:listarball: LISF_public_release_7.3.0.tar.gz
+:lispublicna: Not available in the {listarball} public release of LIS 7.3.
 :emdash: —
 :endash: –
 
@@ -61,6 +63,8 @@ include::faq.adoc[]
 //include::gribout.adoc[] // no longer relevant due to move to GRIB_API library
 [appendix]
 include::fconvention.adoc[]
+[appendix]
+include::build_examples.adoc[]
 [appendix]
 include::licenses/CSIRO_BSD_MIT_License_v2.0_CABLE.adoc[]
 [bibliography]

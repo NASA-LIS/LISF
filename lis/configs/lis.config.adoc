@@ -29,8 +29,8 @@
 //:endash: –
 //:devonly!:
 
+[[sec_lisconfigfile,LIS config File]]
 == LIS config File
-anchor:sec_lisconfigfile[LIS config File]
 
 This section describes the options in the _lis.config_ file.
 
@@ -41,8 +41,8 @@ endif::devonly[]
 
 
 
+[[ssec_driveropts,Overall driver options]]
 === Overall driver options
-anchor:ssec_driveropts[Overall driver options]
 
 
 `Running mode:` specifies the running mode used in LIS.
@@ -51,13 +51,11 @@ Acceptable values are:
 |Value                    | Description
 
 |"`retrospective`"        | Retrospective mode
-ifdef::devonly[]
 |"`RTM forward`"          | RTM forward mode
 |"`AGRMET ops`"           | AFWA AGRMET mode
-endif::devonly[]
 |"`WRF coupling`"         | Coupled WRF mode
-ifdef::devonly[]
 |"`GCE coupling`"         | Coupled GCE mode
+ifdef::devonly[]
 |"`GFS coupling`"         | Coupled GFS mode
 endif::devonly[]
 |"`parameter estimation`" | Parameter estimation mode
@@ -74,7 +72,7 @@ Running mode: retrospective
 ifdef::devonly[]
 
 `Map projection of the LIS domain:` specifies the
-map projection of the LIS domain used for the run
+map projection of the LIS domain used for the run.
 Acceptable values are:
 
 |====
@@ -174,15 +172,14 @@ Acceptable values are:
 |Mosaic      | Mosaic
 |HySSiB      | Hy-SSiB
 |GeoWRSI.2   | GeoWRSI version 2.0
-ifdef::devonly[]
-|JULES.4.3   | JULES version 4.3
-endif::devonly[]
+|JULES.5.0   | JULES version 5.0
 |CABLE.1.4b  | CABLE version 1.4b
 ifdef::devonly[]
 |FASST       | FASST
 endif::devonly[]
 |"`CLSM F2.5`"  | Catchment Fortuna-2_5
 |RDHM.3.5.6  | RDHM 3.5.6 (SAC-HTET and SNOW-17)
+|AWRAL.6.0.0 | AWRA-L version 6.0.0
 |====
 
 .Example _lis.config_ entry
@@ -190,8 +187,6 @@ endif::devonly[]
 Land surface model: Noah.2.7.1
 ....
 
-
-ifdef::devonly[]
 
 `Lake model:` specifies the lake model to run.
 Acceptable values are:
@@ -206,7 +201,6 @@ Acceptable values are:
 ....
 Lake model:
 ....
-endif::devonly[]
 
 
 `Open water model:` specifies the open water model to run.
@@ -224,8 +218,6 @@ Open water model:
 ....
 
 
-ifdef::devonly[]
-
 `land slide model:` specifies the land slide model to run.
 Acceptable values are:
 
@@ -240,7 +232,6 @@ Acceptable values are:
 ....
 land slide model:
 ....
-endif::devonly[]
 
 
 `Number of met forcing sources:` specifies the
@@ -271,10 +262,22 @@ Acceptable values are:
 |====
 |Value    | Description
 
-|overlay  | datasets are overlaid on top of each other
-            in the order they are specified.
+|overlay  | Datasets are overlaid on top of each other in the order they are specified.
+            For example, the forcing dataset in the second column is overlaid on top of
+            the forcing dataset in the first column.  In other words, the forcing data
+            specified in the second column will be used in place of forcing data that
+            is specified in the first column, for locations within the spatial extent
+            of the second column`'s forcing data.  As an example, a user could specify
+            a forcing dataset with a global extent in the first column and a forcing
+            dataset with a regional extent in the second column.  All locations within
+            the regional extent of the second column`'s forcing data will use that data
+            as forcing, while locations outside of this regional extent will use data
+            from the global extent of the first column`'s forcing data.  This continues
+            for the number of met forcing sources specified, with the right-most column
+            having the higher priority to be used as forcing, given its spatial extent.
             #Choose this method when using just one forcing dataset.#
-|ensemble | each forcing dataset is assigned to a separate ensemble member.
+
+|ensemble | Each forcing dataset is assigned to a separate ensemble member.
 |====
 
 .Example _lis.config_ entry
@@ -300,9 +303,7 @@ Acceptable values for the sources are:
 |"`GSWP1`"                     | GSWP1
 |"`GSWP2`"                     | GSWP2
 |"`ECMWF reanalysis`"          | ECMWF Reanalysis
-ifdef::devonly[]
 |"`AGRMET`"                    | AGRMET
-endif::devonly[]
 |"`PRINCETON`"                 | Princeton
 |"`NLDAS1`"                    | NLDAS1
 |"`NLDAS2`"                    | NLDAS2
@@ -323,19 +324,15 @@ endif::devonly[]
 |"`RFE2(daily)`"               | Daily rainfall estimator
 |"`RFE2(GDAS bias-corrected)`" | RFE2 data bias corrected to GDAS
 |"`CHIRPS2`"                   | UCSB CHIRPS v2.0 precipitation dataset
-ifdef::devonly[]
 |"`ALMIPII`"                   | ALMIPII
-endif::devonly[]
 |"`CEOP`"                      | CEOP
 |"`SCAN`"                      | SCAN
-ifdef::devonly[]
 |"`ARMS`"                      | ARMS
-endif::devonly[]
 |"`GDAS(LSWG)`"                | GDAS data for LSWG project
 ifdef::devonly[]
 |"`D2PCPOKL`"                  | D2PCPOKL
-|"`GDAS(3d)`"                  | GDAS 3d data
 endif::devonly[]
+|"`GDAS(3d)`"                  | GDAS 3d data
 |"`AGRMET radiation`"          | AGRMET radiation
 |"`Bondville`"                 | Bondville site data
 ifdef::devonly[]
@@ -358,6 +355,7 @@ endif::devonly[]
 |"`AWAP`"                      | AWAP precipitation data
 |"`GDAS T1534`"                | NCEP-specific GDAS T1534 forcing data
 |"`ERA5`"                      | ERA5 reanalysis meteorology
+|"`AWRAL processed forcing`"   | AWRA-L processed forcing
 |====
 
 .Example _lis.config_ entry
@@ -475,11 +473,11 @@ Acceptable values are:
 |====
 |Value         | Description
 
-|`.false.` | do not enable
-|`.true.`  | enable
+|.false. | do not enable
+|.true.  | enable
 |====
 
-Defaults to .false..
+Defaults to `.false.`.
 
 This is a scalar option, not per nest.
 
@@ -500,8 +498,8 @@ Enable new zterp correction (met forcing): .false.
 ....
 
 
+[[ssec_runtimeopts,Runtime options]]
 === Runtime options
-anchor:ssec_runtimeopts[Runtime options]
 
 `Forcing variables list file:` specifies the file containing
 the list of forcing variables to be used. Please refer to the
@@ -606,11 +604,11 @@ Acceptable values are:
 |====
 |Value                 | Description
 
-|`.true.`  | Enable writing of the statistics file
-|`.false.` | Disable writing of the statistics file
+|.true.  | Enable writing of the statistics file
+|.false. | Disable writing of the statistics file
 |====
 
-Defaults to .true..
+Defaults to `.true.`.
 
 .Example _lis.config_ entry
 ....
@@ -639,7 +637,7 @@ Acceptable values are:
 |====
 
 Though untested, there are more packingType available as listed at
-https://software.ecmwf.int/wiki/display/GRIB/Grib+API+keys
+https://confluence.ecmwf.int/display/ECC/GRIB+Keys
 
 .Example _lis.config_ entry
 ....
@@ -947,7 +945,7 @@ Acceptable values for `Decompose by processes` are:
 |.true.  | Do decompose by processes.
 |====
 
-Defaults to .false..
+Defaults to `.false.`.
 
 Further, this section also allows the specification of halos
 around the domains on each processor using `Halo size along x:`
@@ -983,15 +981,15 @@ offline routing.
 Acceptable values are:
 
 |====
-|Value                          | Description
+|Value                            | Description
 
-|"LIS runoff output"            | Use LIS outputs
-|"GLDAS1 runoff data"           | Use the GLDAS1 outputs
-|"GLDAS2 runoff data"           | Use the GLDAS2 outputs
-|"NLDAS2 runoff data"           | Use the NLDAS2 outputs
-|"MERRA2 runoff data"           | Use the MERR2 outputs
-|"ERA interim land runoff data" | Use ERA-Interim-Land outputs
-|"GWB MIP runoff data"          | Use the Global Water Budget (GWB) model intercomparison project outputs
+|"`LIS runoff output`"            | Use LIS outputs
+|"`GLDAS1 runoff data`"           | Use the GLDAS1 outputs
+|"`GLDAS2 runoff data`"           | Use the GLDAS2 outputs
+|"`NLDAS2 runoff data`"           | Use the NLDAS2 outputs
+|"`MERRA2 runoff data`"           | Use the MERR2 outputs
+|"`ERA interim land runoff data`" | Use ERA-Interim-Land outputs
+|"`GWB MIP runoff data`"          | Use the Global Water Budget (GWB) model intercomparison project outputs
 |====
 
 
@@ -1007,8 +1005,8 @@ Number of application models: 0
 ....
 
 
+[[ssec_fcst,Forecast runmode]]
 === Forecast runmode
-anchor:ssec_fcst[Forecast runmode]
 
 This section specifies the choice of forecast options.
 
@@ -1052,13 +1050,13 @@ ESP conventional include targeted forecast year:     1 1
 
 
 `ESP boot sampling time window interval:` specifies the ESP
-bootstrapping ("boot") temporal sampling window. 
+bootstrapping ("`boot`") temporal sampling window.
 
 `ESP boot start time of the forcing archive:` specifies the
-ESP bootstrapping ("boot") forcing start date (YYYY MM DD).
+ESP bootstrapping ("`boot`") forcing start date (YYYY MM DD).
 
 `ESP boot end time of the forcing archive:` specifies the
-ESP bootstrapping ("boot") forcing end date (YYYY MM DD).
+ESP bootstrapping ("`boot`") forcing end date (YYYY MM DD).
   
 
 .Example _lis.config_ entry
@@ -1089,8 +1087,8 @@ Forecast forcing restart filename:     "LIS_RST_CLSMF25_201005050000.d01.nc"
 ....
 
 
+[[ssec_dataassim,Data assimilation]]
 === Data assimilation
-anchor:ssec_dataassim[Data assimilation]
 
 This section specifies the choice of data assimilation options.
 
@@ -1132,36 +1130,28 @@ Acceptable values are:
 |Value                          | Description
 
 |"`none`"                       | none
-ifdef::devonly[]
 |"`Synthetic SM`"               | Synthetic soil moisture
 |"`Synthetic SWE`"              | Synthetic SWE
 |"`Synthetic LST`"              | Synthetic LST
 |"`Synthetic(Multilayer) sm`"   | Synthetic multi-soil moisture observation types
 |"`Synthetic L-band Tb`"        | Synthetic L-band brightness temperature observations
 |"`ISCCP LST`"                  | ISCCP LST
-endif::devonly[]
 |"`AMSR-E(NASA) soil moisture`" | AMSRE L3 soil moisture daily gridded data (HDF format)
 |"`AMSR-E(LPRM) soil moisture`" | AMSRE L3 soil moisture daily gridded data (HDF format)
 |"`ESA CCI soil moisture`"      | ESA CCI soil moisture
 |"`Windsat`"                    | Windsat
-ifdef::devonly[]
 |"`Windsat C-band`"             | Windsat C-band
 |"`ANSA SWE`"                   | ANSA SWE
-endif::devonly[]
 |"`ANSA SCF`"                   | ANSA SCF
 |"`ANSA snow depth`"            | ANSA snow depth
 |"`SMMR snow depth`"            | SMMR snow depth
 |"`SMMI snow depth`"            | SMMI snow depth
-ifdef::devonly[]
 |"`AMSR-E SWE`"                 | AMSR-E SWE
-endif::devonly[]
 |"`PMW snow`"                   | PMW-based SWE or snow depth
 |"`MODIS SCF`"                  | MODIS SCF
 |"`GRACE TWS`"                  | GRACE TWS
 |"`SMOPS-ASCAT soil moisture`"  | SMOPS-ASCAT soil moisture
-ifdef::devonly[]
 |"`ASCAT (TUW) soil moisture`"  | ASCAT (TUW) soil moisture
-endif::devonly[]
 |"`GCOMW AMSR2 L3 snow depth`"  | AMSR2 (GCOMW) L3 snow depth
 |"`GCOMW AMSR2 L3 soil moisture`" | AMSR2 (GCOMW) soil moisture
 |"`SMAP(NASA) soil moisture`"   | NASA SMAP soil moisture
@@ -1172,6 +1162,7 @@ endif::devonly[]
 |"`SNODEP`"                     | AFWA SNODEP
 |"`USAFSI`"                     | USAF Snow and Ice Analysis
 |"`SMAP(NASA) vegetation optical depth`"  | NASA L-band vegetation optical depth 
+|"`MCD15A2H LAI`"               | MODIS MCD15A2H v006 LAI product
 |====
 
 .Example _lis.config_ entry
@@ -1300,11 +1291,11 @@ Data assimilation trained forward model output file: none
 Acceptable values are:
 
 |====
-| Value            | Description
+| Value              | Description
 
-| none             | Do not use any scaling
-| "Linear scaling" | Apply a linear scaling strategy 
-| "CDF matching"   | Scales observations using CDF matching
+| none               | Do not use any scaling
+| "`Linear scaling`" | Apply a linear scaling strategy
+| "`CDF matching`"   | Scales observations using CDF matching
 |====
 
 .Example _lis.config_ entry
@@ -1692,10 +1683,9 @@ Observation perturbation attributes file: none
 IMS data directory:
 ....
 
-ifdef::devonly[]
 
+[[sssec_syntheticsm,Synthetic Soil Moisture Assimilation]]
 ==== Synthetic Soil Moisture Assimilation
-anchor:sssec_syntheticsm[Synthetic Soil Moisture Assimilation]
 
 `Synthetic soil moisture data directory:` specifies the
 directory for the synthetic soil moisture data.
@@ -1717,11 +1707,10 @@ Synthetic soil moisture model CDF file:       lsm.cdf.nc
 Synthetic soil moisture observation CDF file: obs_cdf.nc
 Synthetic soil moisture number of bins in the CDF:
 ....
-endif::devonly[]
 
 
+[[sssec_pildassm,PILDAS Soil Moisture Assimilation]]
 ==== PILDAS Soil Moisture Assimilation
-anchor:sssec_pildassm[PILDAS Soil Moisture Assimilation]
 
 `PILDAS soil moisture data directory:` specifies the
 directory for the PILDAS soil moisture data.
@@ -1750,10 +1739,9 @@ PILDAS soil moisture number of bins in the CDF:
 ....
 
 
-ifdef::devonly[]
 
+[[sssec_syntheticmultism,Synthetic Soil Moisture (multiple observation types) Assimilation]]
 ==== Synthetic Soil Moisture (multiple observation types) Assimilation
-anchor:sssec_syntheticmultism[Synthetic Soil Moisture (multiple observation types) Assimilation]
 
 
 `Synthetic multi-sm data directory:` specifies the
@@ -1763,13 +1751,10 @@ directory for the synthetic soil moisture data (multi-levels).
 ....
 Synthetic multi-sm data directory: ./input/dainput/SynSM/
 ....
-endif::devonly[]
 
 
-ifdef::devonly[]
-
+[[sssec_syntheticswe,Synthetic SWE Assimilation]]
 ==== Synthetic SWE Assimilation
-anchor:sssec_syntheticswe[Synthetic SWE Assimilation]
 
 `Synthetic SWE data directory:` specifies the directory
 for the synthetic snow water equivalent data.
@@ -1778,13 +1763,10 @@ for the synthetic snow water equivalent data.
 ....
 Synthetic SWE data directory:           ./input/dainput/SynSWE/
 ....
-endif::devonly[]
 
 
-ifdef::devonly[]
-
+[[sssec_syntheticlst,Synthetic LST Assimilation]]
 ==== Synthetic LST Assimilation
-anchor:sssec_syntheticlst[Synthetic LST Assimilation]
 
 `Synthetic LST data directory:` specifies the directory
 for the synthetic land surface temperature data
@@ -1793,13 +1775,10 @@ for the synthetic land surface temperature data
 ....
 Synthetic LST data directory:           ./input/dainput/SynLST/
 ....
-endif::devonly[]
 
 
-ifdef::devonly[]
-
+[[sssec_syntheticlbandtb,Synthetic L-band Tb Assimilation]]
 ==== Synthetic L-band Tb Assimilation
-anchor:sssec_syntheticlbandtb[Synthetic L-band Tb Assimilation]
 
 `Synthetic L-band Tb data directory:` specifies the directory
 for the synthetic brightness temperature data
@@ -1808,13 +1787,10 @@ for the synthetic brightness temperature data
 ....
 Synthetic L-band Tb data directory:           ./input/dainput/SynTb/
 ....
-endif::devonly[]
 
 
-ifdef::devonly[]
-
+[[sssec_syntheticsndda,Synthetic SND Assimilation]]
 ==== Synthetic SND Assimilation
-anchor:sssec_syntheticsndda[Synthetic SND Assimilation]
 
 `Synthetic SND data directory:` specifies the directory
 for the synthetic snow depth data.
@@ -1823,13 +1799,10 @@ for the synthetic snow depth data.
 ....
 Synthetic SND data directory:
 ....
-endif::devonly[]
 
 
-ifdef::devonly[]
-
+[[sssec_isccptskinda,ISCCP Tskin Assimilation]]
 ==== ISCCP Tskin Assimilation
-anchor:sssec_isccptskinda[ISCCP Tskin Assimilation]
 
 `ISCCP Tskin data directory:` specifies the directory for the
 International Satellite Cloud Climatology Project (ISCCP) LST data.
@@ -1859,11 +1832,10 @@ ISCCP Tskin model std data file: ../SND_Input/noah_std
 ISCCP Tskin obs mean data file: ../SND_Input/isccp_obs_mean
 ISCCP Tskin obs std data file: ../SND_Input/isccp_obs_std
 ....
-endif::devonly[]
 
 
+[[sssec_nasaamsreda,AMSR-E (NASA) soil moisture assimilation]]
 ==== AMSR-E (NASA) soil moisture assimilation
-anchor:sssec_nasaamsreda[AMSR-E (NASA) soil moisture assimilation]
 
 `NASA AMSR-E soil moisture data directory:` specifies the directory
 for the AMSR-E (NASA/NSIDC) soil moisture data.
@@ -1891,8 +1863,8 @@ NASA AMSR-E soil moisture number of bins in the CDF: 100
 ....
 
 
+[[sssec_lprmamsreda,AMSR-E (LPRM) soil moisture assimilation]]
 ==== AMSR-E (LPRM) soil moisture assimilation
-anchor:sssec_lprmamsreda[AMSR-E (LPRM) soil moisture assimilation]
 
 `AMSR-E(LPRM) soil moisture data directory:` specifies the
 directory for the AMSR-E (LPRM) soil moisture data.
@@ -1926,8 +1898,8 @@ AMSR-E(LPRM) soil moisture number of bins in the CDF: 100
 ....
 
 
+[[sssec_windsatsmda,WindSat soil moisture assimilation]]
 ==== WindSat soil moisture assimilation
-anchor:sssec_windsatsmda[WindSat soil moisture assimilation]
 
 `WindSat soil moisture data directory:` specifies the directory
 for the WindSat soil moisture data.
@@ -1955,10 +1927,8 @@ WindSat number of bins in the CDF:           100
 ....
 
 
-ifdef::devonly[]
-
+[[sssec_windsatcbandsmda,WindSat C-band soil moisture assimilation]]
 ==== WindSat C-band soil moisture assimilation
-anchor:sssec_windsatcbandsmda[WindSat C-band soil moisture assimilation]
 
 `WindSat C-band soil moisture data directory:` specifies the
 directory for the WindSat C-band soil moisture data.
@@ -1984,11 +1954,10 @@ WindSat C-band model CDF file:                      lsm_cdf.nc
 WindSat C-band observation CDF file:                obs_cdf.nc
 WindSat C-band number of bins in the CDF: 100
 ....
-endif::devonly[]
 
 
+[[sssec_snodepda,SNODEP Assimilation]]
 ==== SNODEP Assimilation
-anchor:sssec_snodepda[SNODEP Assimilation]
 
 `SNODEP data directory:` specifies the directory for the
 SNODEP data.
@@ -2015,15 +1984,15 @@ SNODEP naming convention:               LIS
 ....
 
 
+[[sssec_usafsida,USAFSI Assimilation]]
 ==== USAFSI Assimilation
-anchor:sssec_usafsida[USAFSI Assimilation]
 
 `USAFSI data directory:` specifies the directory for the
 USAFSI data.
 
 `USAFSI netcdf filename prefix:` specifies the prefix of 
-the USAFSI dataset. If prefix is "usafsi", file name will 
-be "usafsi_yyyymmddhh.nc."
+the USAFSI dataset. If prefix is "`usafsi`", file name will
+be "`usafsi_yyyymmddhh.nc.`"
 
 .Example _lis.config_ entry
 ....
@@ -2031,10 +2000,8 @@ USAFSI data directory:                  ./FORCING/USAFSI
 USAFSI netcdf filename prefix:         usafsi
 ....
 
-ifdef::devonly[]
-
+[[sssec_ansasweda,ANSA SWE Assimilation]]
 ==== ANSA SWE Assimilation
-anchor:sssec_ansasweda[ANSA SWE Assimilation]
 
 `ANSA SWE data directory:` specifies the directory for the
 ANSA SWE data.
@@ -2067,11 +2034,10 @@ ANSA SWE upper right lon:                 179.875
 ANSA SWE resolution (dx):                  0.25
 ANSA SWE resolution (dy):                  0.25
 ....
-endif::devonly[]
 
 
+[[sssec_ansascfda,ANSA Snow Covered Fraction (SCF) Assimilation]]
 ==== ANSA Snow Covered Fraction (SCF) Assimilation
-anchor:sssec_ansascfda[ANSA Snow Covered Fraction (SCF) Assimilation]
 
 `ANSA SCF data directory:` specifies the directory for the
 ANSA SCA data.
@@ -2180,8 +2146,8 @@ ANSA SCF threshold of observed SCF for non-full snow cover: 0.7
 ....
 
 
+[[sssec_ansasnowdepthda,ANSA snow depth Assimilation]]
 ==== ANSA snow depth Assimilation
-anchor:sssec_ansasnowdepthda[ANSA snow depth Assimilation]
 
 `ANSA snow depth data directory:` specifies the directory for the
 ANSA snow depth data.
@@ -2251,8 +2217,8 @@ ANSA snow depth MOD10C1 data directory:
 ....
 
 
+[[sssec_smmrsnowdepthda,SMMR snow depth Assimilation]]
 ==== SMMR snow depth Assimilation
-anchor:sssec_smmrsnowdepthda[SMMR snow depth Assimilation]
 
 `SMMR snow depth data directory:` specifies the directory for the
 SMMR snow depth data.
@@ -2263,8 +2229,8 @@ SMMR snow depth data directory:                  ./SMMR
 ....
 
 
+[[sssec_ssmisnowdepthda,SSMI snow depth Assimilation]]
 ==== SSMI snow depth Assimilation
-anchor:sssec_ssmisnowdepthda[SSMI snow depth Assimilation]
 
 `SSMI snow depth data directory:` specifies the directory for the
 SSMI snow depth data.
@@ -2307,10 +2273,8 @@ SSMI snow depth MOD10C1 data directory:
 ....
 
 
-ifdef::devonly[]
-
+[[sssec_amsresweda,AMSR-E SWE Assimilation]]
 ==== AMSR-E SWE Assimilation
-anchor:sssec_amsresweda[AMSR-E SWE Assimilation]
 
 `AMSR-E SWE data directory:` specifies the directory for the
 SSMI snow depth data.
@@ -2319,11 +2283,10 @@ SSMI snow depth data.
 ....
 AMSR-E SWE data directory:                  ./AMSRE_SWE
 ....
-endif::devonly[]
 
 
+[[sssec_modisscfda,MODIS snow cover fraction assimilation]]
 ==== MODIS snow cover fraction assimilation
-anchor:sssec_modisscfda[MODIS snow cover fraction assimilation]
 
 `MODIS SCF data directory:` specifies the directory for
 the MODIS snow cover fraction data.
@@ -2346,8 +2309,8 @@ MODIS SCF cloud persistence threshold: 3
 ....
 
 
+[[sssec_pmwsnowdepthda,PMW snow depth or SWE assimilation]]
 ==== PMW snow depth or SWE assimilation
-anchor:sssec_pmwsnowdepthda[PMW snow depth or SWE assimilation]
 
 `PMW snow data directory:` specifies the directory for the
 PMW SWE or snow depth data.
@@ -2544,8 +2507,8 @@ PMW (HDF-EOS) SL snow data flag SDS name:    "Flags_SouthernDaily"
 ....
 
 
+[[sssec_gracetwsda,GRACE TWS Assimilation]]
 ==== GRACE TWS Assimilation
-anchor:sssec_gracetwsda[GRACE TWS Assimilation]
 
 `GRACE data directory:` specifies the directory for the
 GRACE TWS data (processed data from LDT).
@@ -2569,8 +2532,8 @@ GRACE use reported measurement error values:
 ....
 
 
+[[sssec_smops_ascat_smda,SMOPS ASCAT soil moisture assimilation]]
 ==== SMOPS ASCAT soil moisture assimilation
-anchor:sssec_smops_ascat_smda[SMOPS ASCAT soil moisture assimilation]
 
 `SMOPS ASCAT soil moisture data directory:` specifies the directory
 for the SMOPS ASCAT soil moisture data.
@@ -2630,26 +2593,26 @@ Acceptable values are:
                   NPR_SMOPS_CMAP_DYYYYMMDDHH.gr2, depending on date
 |====
 
-For 'AGRMET ops', dates before 2017-10-05 use the
+For "`AGRMET ops`", dates before 2017-10-05 use the
 smops_dYYYYMMDD_sHH0000_cness.gr2 naming convention;
 dates on or after 2017-10-05 use the NPR_SMOPS_CMAP_DYYYYMMDDHH.gr2 naming
 convention.
 
-NOTE:: When reading the daily data feed, the naming convention is 'LIS'.
+NOTE: When reading the daily data feed, the naming convention is "`LIS`".
 
 `SMOPS ASCAT version:` specifies the version of the SMOPS datasets.
-Defaults to "date-based".
+Defaults to "`date-based`".
 Acceptable values are:
 
 
 |====
-| Value        | Description
+| Value          | Description
 
-| "date-based" | Assume the version of the dataset based on date. (default)
-| "`1.3`"      | Treat the dataset as version 1.3.
-| "`2.0`"      | Treat the dataset as version 2.0.
-| "`3.0`"      | Treat the dataset as version 3.0.
-| "NESDIS V3.0 REGEN" | Assume the version of the dataset based on the
+| "`date-based`" | Assume the version of the dataset based on date. (default)
+| "`1.3`"        | Treat the dataset as version 1.3.
+| "`2.0`"        | Treat the dataset as version 2.0.
+| "`3.0`"        | Treat the dataset as version 3.0.
+| "`NESDIS V3.0 REGEN`" | Assume the version of the dataset based on the
                         NESDIS version 3.0 regeneration date.
 |====
 
@@ -2664,14 +2627,14 @@ use by the 557th Weather Wing:
 Also, NESDIS has regenerated SMOPS version 3.0 datasets starting
 from 2012-08-01.
 
-The value 'date-based' will use the dates 2016-10-31 and 2017-08-24
+The value "`date-based`" will use the dates 2016-10-31 and 2017-08-24
 to determine the version of the SMOPS datasets.
 
-The value 'NESDIS V3.0 REGEN' will use the date 2012-08-01
+The value "`NESDIS V3.0 REGEN`" will use the date 2012-08-01
 to determine the version of the SMOPS datasets.
 
 Should you need to explicitly state the version of the SMOPS datasets,
-then you may specify their version with either '1.3', '2.0', or '3.0'.
+then you may specify their version with either "`1.3`", "`2.0`", or "`3.0`".
 
 
 .Example _lis.config_ entry
@@ -2688,8 +2651,8 @@ SMOPS ASCAT version: 'date-based'
 ....
 
 
+[[sssec_smosl2smda,SMOS L2 soil moisture assimilation]]
 ==== SMOS L2 soil moisture assimilation
-anchor:sssec_smosl2smda[SMOS L2 soil moisture assimilation]
 
 `SMOS L2 soil moisture data directory:` specifies the directory
 for the SMOS LS soil moisture data.
@@ -2729,10 +2692,8 @@ SMOS L2 soil moisture number of bins in the CDF:
 ....
 
 
-ifdef::devonly[]
-
+[[sssec_ascattuwsmda,ASCAT (TU Wein) soil moisture assimilation]]
 ==== ASCAT (TU Wein) soil moisture assimilation
-anchor:sssec_ascattuwsmda[ASCAT (TU Wein) soil moisture assimilation]
 
 `ASCAT (TUW) soil moisture data directory:` specifies the directory
 for the ASCAT (TUW) soil moisture data.
@@ -2759,11 +2720,31 @@ ASCAT (TUW) model CDF file:                      lsm_cdf.nc
 ASCAT (TUW) observation CDF file:                obs_cdf.nc
 ASCAT (TUW) soil moisture number of bins in the CDF: 100
 ....
-endif::devonly[]
 
+[[sssec_mcd15a2hlaida,MODIS MCD15A2H LAI assimilation]]
+==== MODIS MCD15A2H LAI assimilation
 
+`MCD15A2H LAI data directory:` specifies the location of the data directory containing the MODIS MCD15A2H LAI retrievals.
+
+`MCD15A2H LAI data version:` specifies the version of the MCD15A2H LAI retrievals. The default version is "006".
+
+`MCD15A2H LAI apply temporal smoother between 8-day intervals:` specifies whether to apply temporal smoother between 8-day intervals of the LAI product
+
+`MCD15A2H LAI apply climatological fill values:` specifies whether to fill in climatological LAI values if there are missing values.
+
+`MCD15A2H LAI apply QC flags:` specifies whether to apply quality control flags for LAI retrievals.
+
+.Example _lis.config_ entry
+....
+MCD15A2H LAI data directory:                                  ./MCD15A2H.006
+MCD15A2H LAI data version:                                    "006"
+MCD15A2H LAI apply temporal smoother between 8-day intervals: 1
+MCD15A2H LAI apply climatological fill values:                1
+MCD15A2H LAI apply QC flags:                                  1
+....
+
+[[sssec_simgraceda,Simulated GRACE]]
 ==== Simulated GRACE
-anchor:sssec_simgraceda[Simulated GRACE]
 
 `Simulated GRACE data directory:` specifies the location
 of the simulated GRACE data.
@@ -2799,10 +2780,8 @@ Simulated GRACE use reported measurement error values:
 ....
 
 
-ifdef::devonly[]
-
+[[sssec_synsfda,Synthetic Streamflow]]
 ==== Synthetic Streamflow
-anchor:sssec_synsfda[Synthetic Streamflow]
 
 `Synthetic streamflow data directory:` specifies the location
 of the synthetic streamflow data.
@@ -2811,11 +2790,10 @@ of the synthetic streamflow data.
 ....
 Synthetic streamflow data directory:
 ....
-endif::devonly[]
 
 
+[[sssec_esaccismda,ESA CCI soil moisture data assimilation]]
 ==== ESA CCI soil moisture data assimilation
-anchor:sssec_esaccismda[ESA CCI soil moisture data assimilation]
 
 `ESA CCI soil moisture data directory:` specifies the location
 of the ESA CCI soil moisture data.
@@ -2846,8 +2824,8 @@ ESA CCI soil moisture number of bins in the CDF:
 ....
 
 
+[[sssec_amsr2gcomwsmda,AMSR2 (GCOMW) soil moisture data assimilation]]
 ==== AMSR2 (GCOMW) soil moisture data assimilation
-anchor:sssec_amsr2gcomwsmda[AMSR2 (GCOMW) soil moisture data assimilation]
 
 `AMSR2(GCOMW) soil moisture data directory:` specifies the AMSR2(GCOMW) soil
 moisture data directory.
@@ -2888,8 +2866,8 @@ AMSR2(GCOMW) soil moisture number of bins in the CDF:
 ....
 
 
+[[sssec_amsr2gcomwsndda,AMSR2 (GCOMW) snow depth data assimilation]]
 ==== AMSR2 (GCOMW) snow depth data assimilation
-anchor:sssec_amsr2gcomwsndda[AMSR2 (GCOMW) snow depth data assimilation]
 
 `AMSR2(GCOMW) snow depth data directory:`
 specifies the directory for the AMSR2(GCOMW) snow depth data.
@@ -2960,23 +2938,26 @@ AMSR2(GCOMW) snow depth input mask file:
 ....
 
 
+[[sssec_smapnasasmda,SMAP (NASA) soil moisture assimilation]]
 ==== SMAP (NASA) soil moisture assimilation
-anchor:sssec_smapnasasmda[SMAP (NASA) soil moisture assimilation]
 
 `SMAP(NASA) soil moisture data directory:` specifies the SMAP(NASA) soil
-moisture data directory
+moisture data directory.
 
 `SMAP(NASA) soil moisture data designation:`  specifies the 
-designation of the SMAP data 
+designation of the SMAP data.
 
 Acceptable values are:
 
 |====
 |Value    | Description
 
-|SPL3SMAP | Level3 active passive SMAP data
-|SPL3SMP  | Level3 passive SMAP data 
+|SPL3SMAP | Level 3 active passive SMAP data
+|SPL3SMP  | Level 3 passive SMAP data 
 |====
+
+`SMAP(NASA) soil moisture Composite Release ID:` specifies the SMAP NASA
+composite release ID included within the filename (e.g., R16).
 
 `SMAP(NASA) soil moisture use scaled standard deviation model:` specifies
 whether the observation error standard deviation is to be scaled using model
@@ -3009,6 +2990,7 @@ NOTE: Select 0 for yearly CDF data.
 ....
 SMAP(NASA) soil moisture data directory:
 SMAP(NASA) soil moisture data designation:
+SMAP(NASA) soil moisture Composite Release ID:
 SMAP(NASA) soil moisture use scaled standard deviation model:
 SMAP(NASA) model CDF file:
 SMAP(NASA) observation CDF file:
@@ -3017,16 +2999,11 @@ SMAP(NASA) CDF read option:
 ....
 
 
+[[sssec_smapnrtsmda,SMAP (NRT) soil moisture assimilation]]
 ==== SMAP (NRT) soil moisture assimilation
-anchor:sssec_smapnrtsmda[SMAP (NRT) soil moisture assimilation]
 
 `SMAP(NRT) soil moisture data directory:` specifies the SMAP(NRT) soil
 moisture data directory
-
-`SMAP(NRT) soil moisture apply SMAP QC flags:` specifies whether to apply
-SMAP QC flags.
-
-NOTE: This is no longer used.  Set it to 0.
 
 `SMAP(NRT) soil moisture use scaled standard deviation model:` specifies
 whether the observation error standard deviation is to be scaled using model
@@ -3058,7 +3035,6 @@ NOTE: Select 0 for yearly CDF data.
 .Example _lis.config_ entry
 ....
 SMAP(NRT) soil moisture data directory:
-SMAP(NRT) soil moisture apply SMAP QC flags:
 SMAP(NRT) soil moisture use scaled standard deviation model:
 SMAP(NRT) model CDF file:
 SMAP(NRT) observation CDF file:
@@ -3067,8 +3043,8 @@ SMAP(NRT) CDF read option:
 ....
 
 
+[[sssec_smapnasavodda,SMAP (NASA) vegetation optical depth assimilation]]
 ==== SMAP (NASA) vegetation optical depth assimilation
-anchor:sssec_smapnasavodda[SMAP (NASA) vegetation optical depth assimilation]
 
 `SMAP(NASA) vegetation optical depth data directory:` specifies the SMAP(NASA) vegetation 
 optical depth data directory
@@ -3085,11 +3061,11 @@ Acceptable values are:
 |SPL2SMP_E  | Level2 oversampled passive VOD data 
 |====
 
-`SMAP(NASA) vegetation optial depth use scaled standard deviation model:` specifies
+`SMAP(NASA) vegetation optical depth use scaled standard deviation model:` specifies
 whether the observation error standard deviation is to be scaled using model
 and observation standard deviation.
 
-`SMAP(NASA) vegetation optial depth apply SMAP QC flags:` specifies
+`SMAP(NASA) vegetation optical depth apply SMAP QC flags:` specifies
 whether to employ the standard SMAP QC flags to screen VOD data 
 
 `SMAP(NASA) reference LAI CDF file:` specifies the name of the reference LAI CDF file
@@ -3112,8 +3088,8 @@ SMAP(NASA) vegetation optical depth observation CDF file:
 SMAP(NASA) vegetation optical depth number of bins in the CDF: 
 ....
 
+[[sssec_smosnesdissmda,SMOS (NESDIS) soil moisture assimilation]]
 ==== SMOS (NESDIS) soil moisture assimilation
-anchor:sssec_smosnesdissmda[SMOS (NESDIS) soil moisture assimilation]
 
 `SMOS(NESDIS) soil moisture data directory:` specifies the SMOS(NESDIS) soil
 moisture data directory
@@ -3142,8 +3118,8 @@ SMOS(NESDIS) soil moisture number of bins in the CDF:
 ....
 
 
+[[ssec_rtms,Radiative Transfer/Forward Models]]
 === Radiative Transfer/Forward Models
-anchor:ssec_rtms[Radiative Transfer/Forward Models]
 
 This section specifies the choice of radiative transfer or forward
 modeling tools.
@@ -3185,8 +3161,8 @@ RTM history output frequency: 3hr
 
 ifdef::devonly[]
 
+[[ssec_crtm,CRTM]]
 ==== CRTM
-anchor:ssec_crtm[CRTM]
 
 This section specifies the specifications to enable a CRTM instance.
 
@@ -3229,13 +3205,13 @@ endif::devonly[]
 
 
 ifdef::devonly[]
+[[ssec_crtm2,CRTM2]]
 ==== CRTM2
-anchor:ssec_crtm2[CRTM2]
 
 This section specifies the specifications to enable a CRTM2 instance.
-For more information regarding CRTM2, please read the CRTM2 User's
-Guide, _REL-2.1.CRTM_User_Guide.pdf_, found at
-ftp://ftp.emc.ncep.noaa.gov/jcsda/CRTM/REL-2.1/
+For more information regarding CRTM2, please read the CRTM2 User`'s
+Guide, _REL-2.1.3.CRTM_User_Guide.pdf_, found at
+ftp://ftp.emc.ncep.noaa.gov/jcsda/CRTM/REL-2.1.3/
 
 `CRTM number of sensors:` specifies the number of sensors
 to be used.
@@ -3275,8 +3251,8 @@ CRTM zenith angle:
 endif::devonly[]
 
 
+[[ssec_crtm2em,CRTM2EM]]
 ==== CRTM2EM
-anchor:ssec_crtm2em[CRTM2EM]
 
 This section specifies the specifications to enable a CRTM2EM instance.
 
@@ -3345,8 +3321,8 @@ RTM input soil moisture correction dst sigma file:
 ....
 
 
+[[ssec_cmem3,CMEM3]]
 ==== CMEM3
-anchor:ssec_cmem3[CMEM3]
 
 This section specifies the specifications to enable a CMEM3 instance.
 For more information regarding CMEM3, please see
@@ -3408,8 +3384,8 @@ RTM input soil moisture correction dst sigma file:
 ....
 
 
+[[ssec_optimization,Optimization and Uncertainty Estimation]]
 === Optimization and Uncertainty Estimation
-anchor:ssec_optimization[Optimization and Uncertainty Estimation]
 
 This section specifies options for carrying out parameter estimation
 and uncertainty estimation.
@@ -3422,14 +3398,10 @@ Acceptable values are:
 |Value                                     | Description
 
 |"`none`"                                  | no optimization
-ifdef::devonly[]
 |"`Enumerated search`"                     | enumerated search
-endif::devonly[]
 |"`Levenberg marquardt`"                   | Levenberg-Marquardt
 |"`Genetic algorithm`"                     | Genetic Algorithm
-ifdef::devonly[]
 |"`Shuffled complex evolution`"            | SCE-UA Algorithm
-endif::devonly[]
 |"`Monte carlo sampling`"                  | MCSIM Algorithm
 |"`Random walk markov chain monte carlo`"  | MCMC Algorithm
 |"`Differential evolution markov chain`"   | DEMC Algorithm
@@ -3447,16 +3419,18 @@ Acceptable values are:
 
 |"`NONE`"                 | template observations
 |"`No obs`"               | no observations
-ifdef::devonly[]
 |"`WG PBMR sm`"           | PBMR soil moisture data for Walnut Gulch
 |"`Synthetic sm1`"        | synthetic soil moisture data
+ifdef::devonly[]
 |"`Synthetic sm2`"        | synthetic soil moisture data
+endif::devonly[]
 |"`Ameriflux obs`"        | flux data from the Ameriflux data network
 |"`ARM obs`"              | fluxes, soil moisture, and soil temperature
                             data from the ARM network
 |"`Macon landslide obs`"  | Macon County landslide observation data
 |"`Global landslide obs`" | Global landslide observation data
 |"`CNRS`"                 | CNRS
+ifdef::devonly[]
 |"`CNRS MPDI`"            | CNRS MPDI
 endif::devonly[]
 |"`AMSRE SR`"             | AMSR-E (Colorado State Univ.)
@@ -3465,10 +3439,8 @@ ifdef::devonly[]
                             Index (Colorado State Univ.)
 endif::devonly[]
 |"`AMSR-E(LPRM) pe soil moisture`" | AMSR-E LPRM soil moisture
-ifdef::devonly[]
 |"`Gridded FLUXNET`"      | FLUXNET
 |"`USDA ARSsm`"           | USDA ARS soil moisture
-endif::devonly[]
 |====
 
 `Objective Function Method:` specifies the objective function
@@ -3478,16 +3450,14 @@ Acceptable values are:
 |====
 |Value             | Description
 
-ifdef::devonly[]
 |"`LM`"            | Least squares (Levenberg-Marquardt)
-endif::devonly[]
 |"`Least squares`" | Least squares
 |"`Likelihood`"    | Maximum likelihood
 |"`Probability`"   | Maximize probability
 |====
 
 `Write PE Observations:` specifies whether to output processed
-observations for parameter estimation
+observations for parameter estimation.
 Acceptable values are:
 
 |====
@@ -3554,8 +3524,8 @@ seconds of the calibration period.
 `RTM Decision space attributes file:` [red]#specifies what?#
 
 
+[[ssec_ls,Least squares]]
 ==== Least squares
-anchor:ssec_ls[Least squares]
 
 This section provides specifications of the LS objective function instance
 
@@ -3577,8 +3547,8 @@ grid cells with fewer obs than specified, least squares parameter
 estimation will not be conducted so as to avoid "`overfitting`" model to the data.
 
 
+[[sssec_probability,Probability]]
 ==== Probability
-anchor:sssec_probability[Probability]
 
 This section provides specifications of the Probability objective function
 instance.
@@ -3587,18 +3557,16 @@ instance.
  prior probability distribution over the parameters
 
 
+[[sssec_likelihood,Likelihood]]
 ==== Likelihood
-anchor:sssec_likelihood[Likelihood]
 
 This section provides specifications of the Likelihood objective function
 instance.  There are no additional specifications needed.  Unlike the Probability
 objective function, Likelihood does not factor in prior probability.
 
 
-ifdef::devonly[]
-
+[[ssec_es,Enumerated search]]
 ==== Enumerated search
-anchor:ssec_es[Enumerated search]
 
 `ES decision space attributes file:` specifies the ES decision space
 attributes file.
@@ -3607,11 +3575,10 @@ attributes file.
 ....
 ES decision space attributes file:
 ....
-endif::devonly[]
 
 
+[[ssec_lm,Levenberg Marquardt]]
 ==== Levenberg Marquardt
-anchor:ssec_lm[Levenberg Marquardt]
 
 `LM start mode:` [red]#specifies what?#
 
@@ -3648,8 +3615,8 @@ LM forward difference step length:
 ....
 
 
+[[ssec_ga,Genetic Algorithm]]
 ==== Genetic Algorithm
-anchor:ssec_ga[Genetic Algorithm]
 
 This section provides specifications of the genetic algorithm instance
 
@@ -3728,9 +3695,8 @@ GA start mode:                                 coldstart
 ....
 
 
-ifdef::devonly[]
+[[ssec_sceua,Shuffled complex evolution]]
 ==== Shuffled complex evolution
-anchor:ssec_sceua[Shuffled complex evolution]
 
 `SCEUA Decision Space Attributes File:` specifies the name of the SCEUA
 decision space attributes file.
@@ -3780,11 +3746,10 @@ SCEUA Number of Points in a Subcomplex:
 SCEUA Num. of Evolution Steps before Shuffle for a Complex:
 SCEUA Whether Include Initial Point in Population:
 ....
-endif::devonly[]
 
 
+[[ssec_rwmcmc,Random walk markov chain monte carlo]]
 ==== Random walk markov chain monte carlo
-anchor:ssec_rwmcmc[Random walk markov chain monte carlo]
 
 `RWMCMC decision space attributes file:` specifies the RWMCMC decision
 space attributes file.
@@ -3818,8 +3783,8 @@ RWMCMC perturbation factor:
 ....
 
 
+[[ssec_demc,Differential Evolution Markov Chain (DEMC) algorithm]]
 ==== Differential Evolution Markov Chain (DEMC) algorithm
-anchor:ssec_demc[Differential Evolution Markov Chain (DEMC) algorithm]
 
 `DEMC decision space attributes file:` specifies the DEMC decision space
 attributes file.
@@ -3860,8 +3825,8 @@ DEMC mode hopping frequency:
 ....
 
 
+[[ssec_demcz,Differential Evolution Markov Chain (DEMCz) algorithm]]
 ==== Differential Evolution Markov Chain (DEMCz) algorithm
-anchor:ssec_demcz[Differential Evolution Markov Chain (DEMCz) algorithm]
 
 This section provides specifications of the DEMCz algorithm instance.
 DEMCz is an instance of Bayesian analysis (Reference: Gelman et al. (1995)) conducted via
@@ -3910,8 +3875,8 @@ DEMCz mode hopping frequency:      0.10
 ....
 
 
+[[ssec_mcsim,Monte Carlo simulation]]
 ==== Monte Carlo simulation
-anchor:ssec_mcsim[Monte Carlo simulation]
 
 This section provides specifications of the MCSIM algorithm instance.
 MCSIM randomly samples from user-specified probability distributions
@@ -3947,16 +3912,14 @@ MCSIM restart file:                 none
 ....
 
 
+[[ssec_peobs,Observations for Parameter Estimation]]
 ==== Observations for Parameter Estimation
-anchor:ssec_peobs[Observations for Parameter Estimation]
 
 This section of the config file includes the observation specifications
 for parameter estimation.
 
-ifdef::devonly[]
-
+[[sssec_wgpbmrsm,Walnut Gulch PBMR soil moisture data]]
 ==== Walnut Gulch PBMR soil moisture data
-anchor:sssec_wgpbmrsm[Walnut Gulch PBMR soil moisture data]
 
 `WG PBMR soil moisture data directory:` specifies the location
 of the Walnut Gulch PBMR soil moisture data.
@@ -3973,13 +3936,9 @@ WG PBMR soil moisture data directory:   ../WG_domain/PBMR/
 WG PBMR observations attributes file:   ./wgPBMRsm_attribs.txt
 WG PBMR site index:                     5
 ....
-endif::devonly[]
 
-
-ifdef::devonly[]
-
+[[sssec_pesynsm1,Synthetic soil moisture1]]
 ==== Synthetic soil moisture1
-anchor:sssec_pesynsm1[Synthetic soil moisture1]
 
 `Syn SM data directory:` specifies the location of the synthetic soil
 moisture data.
@@ -3996,13 +3955,10 @@ Syn SM data directory:
 Syn SM observations attributes file:
 Syn SM number of observation types:
 ....
-endif::devonly[]
 
 
-ifdef::devonly[]
-
+[[sssec_ameriflux,Ameriflux network observations]]
 ==== Ameriflux network observations
-anchor:sssec_ameriflux[Ameriflux network observations]
 
 `Ameriflux data directory:` [red]#specifies what?#
 
@@ -4016,12 +3972,9 @@ Ameriflux data directory:
 Ameriflux station list file:
 Ameriflux observations attributes file:
 ....
-endif::devonly[]
 
-ifdef::devonly[]
-
+[[sssec_armobs,ARM network observations]]
 ==== ARM network observations
-anchor:sssec_armobs[ARM network observations]
 
 `ARM data directory:` [red]#specifies what?#
 
@@ -4041,13 +3994,10 @@ ARM station list file:
 ARM objective space attributes file:
 ARM number of observation types:
 ....
-endif::devonly[]
 
 
-ifdef::devonly[]
-
+[[sssec_mcland,Macon County landslide observation data]]
 ==== Macon County landslide observation data
-anchor:sssec_mcland[Macon County landslide observation data]
 
 `Macon County Landslide Obs data directory:` specifies the location of the
 Macon County landslide observation data.
@@ -4060,12 +4010,10 @@ Macon County landslide observation attributes file.
 Macon County Landslide Obs data directory:
 Macon County Landslide observations attributes file:
 ....
-endif::devonly[]
 
-ifdef::devonly[]
 
+[[sssec_glbland,Global landslide observation data]]
 ==== Global landslide observation data
-anchor:sssec_glbland[Global landslide observation data]
 
 `Global Landslide Obs data directory:` specifies the location of the global
 landslide observation data.
@@ -4078,13 +4026,10 @@ landslide observations attributes file.
 Global Landslide Obs data directory:
 Global Landslide observations attributes file:
 ....
-endif::devonly[]
 
 
-ifdef::devonly[]
-
+[[sssec_cnrs,CNRS]]
 ==== CNRS
-anchor:sssec_cnrs[CNRS]
 
 `CNRS Emissivity Obs data directory:` [red]#specifies what?#
 
@@ -4119,11 +4064,10 @@ Mask hr descending lower:
 Mask hr descending upper:
 Mask cloud threshold:
 ....
-endif::devonly[]
 
 
+[[sssec_amsresremobs,AMSRE_SR Emissivity]]
 ==== AMSRE_SR Emissivity
-anchor:sssec_amsresremobs[AMSRE_SR Emissivity]
 `AMSRE_SR Emissivity Obs data directory:` specifies the location
 of the AMSR-E emissivity retrievals data.
 
@@ -4159,8 +4103,8 @@ Mask hr descending upper:
 ....
 
 
+[[sssec_amsrelprmsm,AMSR-E (LPRM) pe soil moisture]]
 ==== AMSR-E (LPRM) pe soil moisture
-anchor:sssec_amsrelprmsm[AMSR-E (LPRM) pe soil moisture]
 `LPRM AMSRE soil moisture data directory:` specifies the location
 of the AMSR-E LPRM soil moisture data.
 
@@ -4174,10 +4118,8 @@ LPRM AMSRE soil moisture observations attributes file: './LPRM_attribs.txt'
 ....
 
 
-ifdef::devonly[]
-
+[[sssec_usdaarssm,USDA ARS soil moisture]]
 ==== USDA ARS soil moisture
-anchor:sssec_usdaarssm[USDA ARS soil moisture]
 
 `USDA ARS Soilmoisture Obs data directory:` specifies the location of the
 USDA ARS soil moisture observation data.
@@ -4193,13 +4135,10 @@ USDA ARS Soilmoisture Obs data directory:
 USDA ARS Soilmoisture observations attributes file:
 USDA ARS number of observations threshold:
 ....
-endif::devonly[]
 
 
-ifdef::devonly[]
-
+[[sssec_fluxnet,FLUXNET]]
 ==== FLUXNET
-anchor:sssec_fluxnet[FLUXNET]
 
 `FLUXNET data directory:` [red]#specifies what?#
 
@@ -4213,13 +4152,12 @@ FLUXNET data directory:
 FLUXNET objective space attributes file:
 FLUXNET number of observation types:
 ....
-endif::devonly[]
 
 
 //ifdef::devonly[]
 //
+//[[sssec_isccptskin,ISCCP Tskin]]
 //==== ISCCP Tskin
-//anchor:sssec_isccptskin[ISCCP Tskin]
 //
 //`ISCCP Tskin objective space attributes file:` specifies the ISCCP Tskin
 //objective space attributes file.
@@ -4235,15 +4173,15 @@ endif::devonly[]
 //endif::devonly[]
 
 
+[[sssec_noobs,No obs]]
 ==== No obs
-anchor:sssec_noobs[No obs]
 This PE observation option is used when conducting MCSIM as MCSIM
 does not factor in observational datasets
 in the sampling of parameter ensembles.  There are no configuration options.
 
 
+[[ssec_parameters,Parameters]]
 === Parameters
-anchor:ssec_parameters[Parameters]
 
 `LIS domain and parameter data file:` specifies the
 primary input file that contains LIS parameter data.
@@ -4253,7 +4191,7 @@ Land Data Toolkit (LDT).  It reads the raw parameter
 data and processes them to the LIS running domain.
 The `LIS domain and parameter data file:` is the
 result of the LDT pre-processing.  Please read the
-"`Land Data Toolkit (LDT) User's Guide`" for more
+"`Land Data Toolkit (LDT) User`'s Guide`" for more
 information.
 
 .Example _lis.config_ entry
@@ -4262,8 +4200,8 @@ LIS domain and parameter data file: ./lis_input.d01.nc
 ....
 
 
+[[ssec_paramopts,Parameter options]]
 ==== Parameter options
-anchor:ssec_paramopts[Parameter options]
 
 `Landmask data source:` specifies the usage of landmask data
 in the run.
@@ -4471,8 +4409,7 @@ Acceptable values are:
 |Value | Description
 
 |none  | Do not read max snow albedo
-|fixed | Use fixed max snow albedo from the "`lis.config`" file.
-|      |   This option is only available to the Noah-3.x LSMs.
+|fixed | Use fixed max snow albedo from the _lis.config_ file.  This option is only available to the Noah-3.x LSMs.
 |LDT   | Read max snow albedo data from the LDT-generated `LIS domain and parameter data file:`
 |====
 
@@ -4607,12 +4544,12 @@ Emissivity data source: none
 ....
 
 
+[[sssec_tbotlag,TBOT lag]]
 ==== TBOT lag
-anchor:sssec_tbotlag[TBOT lag]
 
 `TBOT lag skin temperature update option:` specifies whether
 to adjust deep soil temperature as a weighted average of
-previous year's annual mean skin temperature and mean of time
+previous year`'s annual mean skin temperature and mean of time
 series of recent daily mean skin temperatures.
 Acceptable values are:
 
@@ -4633,9 +4570,8 @@ TBOT skin temperature lag days:          0
 ....
 
 
-ifdef::devonly[]
+[[sssec_almipiirtalb,ALMIPII real-time albedo]]
 ==== ALMIPII real-time albedo
-anchor:sssec_almipiirtalb[ALMIPII real-time albedo]
 
 `ALMIPII albedo data directory:` specifies the location of the 
 ALMIPII real-time albedo data.
@@ -4644,11 +4580,10 @@ ALMIPII real-time albedo data.
 ....
 ALMIPII albedo data directory:
 ....
-endif::devonly[]
 
 
+//[[sssec_modisclimolai,MODIS monthly climatology LAI]]
 //==== MODIS monthly climatology LAI
-//anchor:sssec_modisclimolai[MODIS monthly climatology LAI]
 //
 //`MODIS LAI data directory:` specifies the location of the
 //MODIS monthly climatology LAI files.
@@ -4659,8 +4594,8 @@ endif::devonly[]
 //....
 
 
+[[sssec_modisrtlai,MODIS real-time LAI]]
 ==== MODIS real-time LAI
-anchor:sssec_modisrtlai[MODIS real-time LAI]
 
 `MODIS RT LAI data directory:` specifies the location of the
 MODIS real-time LAI files.
@@ -4671,9 +4606,8 @@ MODIS RT LAI data directory:
 ....
 
 
-ifdef::devonly[]
+[[sssec_almipiirtlai,ALMIPII real-time LAI]]
 ==== ALMIPII real-time LAI
-anchor:sssec_almipiirtlai[ALMIPII real-time LAI]
 
 `ALMIPII LAI data directory:` specifies the location of the
 ALMIPII real-time LAI files.
@@ -4682,11 +4616,10 @@ ALMIPII real-time LAI files.
 ....
 ALMIPII LAI data directory:
 ....
-endif::devonly[]
 
 
+[[sssec_nesdisgreenness,NESDIS weekly greenness fraction]]
 ==== NESDIS weekly greenness fraction
-anchor:sssec_nesdisgreenness[NESDIS weekly greenness fraction]
 
 `NESDIS greenness data directory:` specifies the location of
 the NESDIS weekly greenness files.
@@ -4697,8 +4630,8 @@ NESDIS greenness data directory:
 ....
 
 
+[[sssec_sportgreenness,SPORT greenness fraction]]
 ==== SPORT greenness fraction
-anchor:sssec_sportgreenness[SPORT greenness fraction]
 
 `SPORT greenness data directory:` specifies the location of
 the SPORT greenness files.
@@ -4752,8 +4685,8 @@ SPORT GVF resolution (dy):         0.03
 ....
 
 
+[[sssec_viirsgreenness,VIIRS greenness fraction]]
 ==== VIIRS greenness fraction
-anchor:sssec_viirsgreenness[VIIRS greenness fraction]
 
 `VIIRS GVF use realtime mode:` specifies whether to use the
 realtime mode.  When not using realtime mode, LIS reads the
@@ -4807,9 +4740,8 @@ VIIRS GVF resolution (dy):         0.036
 ....
 
 
-ifdef::devonly[]
+[[sssec_almipiirtgreenness,ALMIPII real-time greenness fraction]]
 ==== ALMIPII real-time greenness fraction
-anchor:sssec_almipiirtgreenness[ALMIPII real-time greenness fraction]
 
 `ALMIPII greenness data directory:` specifies the location of the ALMIPII
 real-time greenness data.
@@ -4818,12 +4750,10 @@ real-time greenness data.
 ....
 ALMIPII greenness data directory:
 ....
-endif::devonly[]
 
 
-ifdef::devonly[]
+[[sssec_almipiirtemiss,ALMIPII real-time emissivity]]
 ==== ALMIPII real-time emissivity
-anchor:sssec_almipiirtemiss[ALMIPII real-time emissivity]
 
 `ALMIPII emissivity data directory:` specifies the location of the ALMIPII
 real-time emissivity data.
@@ -4832,12 +4762,10 @@ real-time emissivity data.
 ....
 ALMIPII emissivity data directory:
 ....
-endif::devonly[]
 
 
-ifdef::devonly[]
+[[sssec_almipiirtrough,ALMIPII real-time roughness]]
 ==== ALMIPII real-time roughness
-anchor:sssec_almipiirtrough[ALMIPII real-time roughness]
 
 `ALMIPII roughness data directory:` specifies the location of the ALMIPII
 real-time roughness data.
@@ -4846,15 +4774,14 @@ real-time roughness data.
 ....
 ALMIPII roughness data directory:
 ....
-endif::devonly[]
 
 
+[[ssec_forcings,Forcings]]
 === Forcings
-anchor:ssec_forcings[Forcings]
 
 
+[[sssec_forcings_gdas,GDAS]]
 ==== GDAS
-anchor:sssec_forcings_gdas[GDAS]
 
 `GDAS forcing directory:` specifies the location of the GDAS
 forcing files.
@@ -4865,8 +4792,8 @@ GDAS forcing directory:            ./input/FORCING/GDAS/
 ....
 
 
+[[sssec_forcings_geos,GEOS]]
 ==== GEOS
-anchor:sssec_forcings_geos[GEOS]
 
 `GEOS forcing directory:` specifies the location of the GEOS
 forcing files.
@@ -4877,8 +4804,8 @@ GEOS forcing directory:            ./input/FORCING/GEOS/BEST_LK/
 ....
 
 
+[[sssec_forcings_ecmwf,ECMWF]]
 ==== ECMWF
-anchor:sssec_forcings_ecmwf[ECMWF]
 
 `ECMWF forcing directory:` specifies the location of the ECMWF
 forcing files.
@@ -4889,8 +4816,8 @@ ECMWF forcing directory:       ./input/FORCING/ECMWF/
 ....
 
 
+[[sssec_forcings_ecmwf_reanalysis,ECMWF Reanalysis]]
 ==== ECMWF Reanalysis
-anchor:sssec_forcings_ecmwf_reanalysis[ECMWF Reanalysis]
 
 `ECMWF Reanalysis forcing directory:` specifies the location of
 the ECMWF Reanalysis forcing files.
@@ -4915,10 +4842,8 @@ ECMWF Reanalysis domain y-dimension size:     360
 ....
 
 
-ifdef::devonly[]
-
+[[sssec_forcings_afwa,AFWA/AGRMET]]
 ==== AFWA/AGRMET
-anchor:sssec_forcings_afwa[AFWA/AGRMET]
 
 `AGRMET forcing directory:` specifies the location of the root
 directory containing the input files. The AGRMET processing algorithms
@@ -4973,6 +4898,11 @@ processed precip obs (__presav_*__).
 
 `AGRMET cloud data directory:` specifies the location of the
 WWMCA data (_WWMCA*_).
+
+`AGRMET WWMCA GRIB1 read option:` specifies whether to try reading
+WWMCA GRIB1 files, or try directly to read binary. (_0 = binary, 1 = GRIB1_).
+Note that if GRIB1 files cannot be found, the code will search for binary
+as a backup.
 
 `AGRMET GFS data directory:` specifies the location of the
 GFS data (_MT.avn*_).
@@ -5077,7 +5007,7 @@ x direction which is useful for when precip and native grid differ.
 |1024   | 16th mesh polar stereo
 |(4096) | (64th mesh polar stereo reserved for future use)
 |(3600) | (1/10 degree latlon reserved for future use {emdash} note
-          this isn't grid centered)
+          this isn`'t grid centered)
 |====
 
 `AGRMET GEOPRECIP jmax:` specifies the GEOPRECIP grid dimension
@@ -5090,7 +5020,7 @@ y direction which is useful for when precip and native grid differ.
 |1024   | 16th mesh polar stereo
 |(4096) | (64th mesh polar stereo reserved fro future use)
 |(1801) | (1/10 degree latlon reserved for future use {emdash} note
-          this isn't grid centered)
+          this isn`'t grid centered)
 |====
 
 `AGRMET SSMI imax:` specifies the SSMI/S grid dimension x direction
@@ -5185,7 +5115,7 @@ Acceptable values are:
 |0     | do not use
 |1     | use the estimate, do not use the rank {emdash}
          assumes that rank of GEOPRECIP is 1;
-         i.e., uses it when it's available
+         i.e., uses it when it`'s available
 |2     | use the estimate and use the rank
 |====
 
@@ -5376,6 +5306,7 @@ AGRMET analysis directory:              ./Analysis
 AGRMET surface fields directory:        SFCALC
 AGRMET merged precip directory:         PRECIP
 AGRMET cloud data directory:            WWMCA
+AGRMET WWMCA GRIB1 read option:         0
 AGRMET GFS data directory:              GFS
 AGRMET GALWEM data directory:           GALWEM
 AGRMET SSMI data directory:             SSMI
@@ -5440,11 +5371,10 @@ AGRMET use GFS precip:     1
 AGRMET use GALWEM precip:  0
 AGRMET radiation derived from: 'cloud types'
 ....
-endif::devonly[]
 
 
+[[sssec_forcings_princeton,PRINCETON]]
 ==== PRINCETON
-anchor:sssec_forcings_princeton[PRINCETON]
 
 `PRINCETON forcing directory:` specifies the location of the
 PRINCETON forcing files.
@@ -5467,8 +5397,8 @@ PRINCETON forcing version:      2.2
 ....
 
 
+[[sssec_forcings_rhone,Rhone AGG]]
 ==== Rhone AGG
-anchor:sssec_forcings_rhone[Rhone AGG]
 
 `Rhone AGG forcing directory:` specifies the location of the
 Rhone AGG forcing files.
@@ -5491,8 +5421,8 @@ Rhone AGG domain y-dimension size: 6
 ....
 
 
+[[sssec_forcings_gswp2,GSWP2]]
 ==== GSWP2
-anchor:sssec_forcings_gswp2[GSWP2]
 
 `GSWP2 landmask file:` specifies the GSWP2 landmask file.
 
@@ -5537,8 +5467,8 @@ GSWP2 incident longwave radiation map:  ./input/gswp2data/LWdown_srb/LWdown_srb
 ....
 
 
+[[sssec_forcings_gmaogldas,GMAO GLDAS]]
 ==== GMAO GLDAS
-anchor:sssec_forcings_gmaogldas[GMAO GLDAS]
 
 `GLDAS forcing directory:` specifies the location of the
 GMAO GLDAS forcing files.
@@ -5549,8 +5479,8 @@ GLDAS forcing directory:         ../FORCING/GLDAS_GMAO/
 ....
 
 
+[[sssec_forcings_gfs,GFS]]
 ==== GFS
-anchor:sssec_forcings_gfs[GFS]
 
 `GFS forcing directory:` specifies the location of the GFS
 forcing files.
@@ -5577,8 +5507,8 @@ GFS number of forcing variables:  10
 ....
 
 
+[[sssec_forcings_MERRALand,MERRA-Land]]
 ==== MERRA-Land
-anchor:sssec_forcings_MERRALand[MERRA-Land]
 
 `MERRA-Land forcing directory:` specifies the location of
 the MERRA-Land forcing files.
@@ -5601,17 +5531,17 @@ MERRA-Land use lowest model level forcing:
 ....
 
 
+[[sssec_forcings_MERRA2,MERRA2]]
 ==== MERRA2
-anchor:sssec_forcings_MERRA2[MERRA2]
 
 `MERRA2 forcing directory:` specifies the location of
 the MERRA2 forcing files.
 
 Please note that MERRA2 forcing data are available via 
-NASA's Goddard Earth Sciences Data and Information Services
+NASA`'s Goddard Earth Sciences Data and Information Services
 Center (GES DISC; https://disc.gsfc.nasa.gov/). Also, 
 topographic or elevation correction option is now supported
-with the latest LIS-7 MERRA-2 reader.  Please also see the
+with the latest LIS MERRA-2 reader.  Please also see the
 latest LDT notes for updates on how to use this option.
 
 `MERRA2 use lowest model level forcing:` specifies whether
@@ -5656,8 +5586,8 @@ MERRA2 use 2m wind fields:                 0
 MERRA2 use corrected total precipitation:  1
 ....
 
+[[sssec_forcings_ERA5,ERA5]]
 ==== ERA5
-anchor:sssec_forcings_MERRA2[ERA5]
 
 `ERA5 forcing directory:` specifies the location of
 the ERA5 forcing files.
@@ -5673,8 +5603,8 @@ ERA5 forcing tile to grid mapping file: ../ERA5/mapping.nc
 ....
 
 
+[[sssec_forcings_gswp1,GSWP1]]
 ==== GSWP1
-anchor:sssec_forcings_gswp1[GSWP1]
 
 `GSWP1 forcing directory:` specifies the location of the
 GSWP1 forcing files.
@@ -5685,12 +5615,12 @@ GSWP1 forcing directory:       ./input/FORCING/GSWP1
 ....
 
 
+[[ssec_suppforcings,Supplemental forcings]]
 === Supplemental forcings
-anchor:ssec_suppforcings[Supplemental forcings]
 
 
+[[sssec_supp_agrrad,AGRMET radiation (latlon)]]
 ==== AGRMET radiation (latlon)
-anchor:sssec_supp_agrrad[AGRMET radiation (latlon)]
 
 `AGRRAD forcing directory:` specifies the directory containing
 AGRMET radiation data.
@@ -5701,8 +5631,8 @@ AGRRAD forcing directory:             ./input/FORCING/AGRRAD
 ....
 
 
+[[sssec_supp_agrradps,AGRMET radiation (polar stereographic)]]
 ==== AGRMET radiation (polar stereographic)
-anchor:sssec_supp_agrradps[AGRMET radiation (polar stereographic)]
 
 `AGRRADPS forcing directory:` specifies the directory containing
 AGRMET polar stereographic radiation data.
@@ -5713,10 +5643,8 @@ AGRRADPS forcing directory:             ./input/FORCING/AGRRADPS
 ....
 
 
-ifdef::devonly[]
-
+[[sssec_supp_capa,CaPA]]
 ==== CaPA
-anchor:sssec_supp_capa[CaPA]
 
 `CAPA forcing directory:` specifies the directory containing
 CAPA precipitation data.
@@ -5725,11 +5653,10 @@ CAPA precipitation data.
 ....
 CAPA forcing directory:             ./input/FORCING/CAPA
 ....
-endif::devonly[]
 
 
+[[sssec_supp_cmap,CMAP precipitation]]
 ==== CMAP precipitation
-anchor:sssec_supp_cmap[CMAP precipitation]
 
 `CMAP forcing directory:` specifies the location of the
 CMAP forcing files.
@@ -5740,8 +5667,8 @@ CMAP forcing directory:             ./input/FORCING/CMAP
 ....
 
 
+[[sssec_supp_ceop,CEOP station data]]
 ==== CEOP station data
-anchor:sssec_supp_ceop[CEOP station data]
 
 CEOP station forcing {emdash} during EOP1
 
@@ -5762,8 +5689,8 @@ CEOP metadata file:            ./input/FORCING/CEOP/sgp.mdata
 ....
 
 
+[[sssec_supp_scan,SCAN station data]]
 ==== SCAN station data
-anchor:sssec_supp_scan[SCAN station data]
 
 `SCAN forcing directory:` specifies the location of the
 SCAN forcing files.
@@ -5778,8 +5705,8 @@ SCAN metadata file:       ./input/FORCING/SCAN/msu_scan.mdata
 ....
 
 
+[[sssec_forcings_nldas1,NLDAS1]]
 ==== NLDAS1
-anchor:sssec_forcings_nldas1[NLDAS1]
 
 `NLDAS1 forcing directory:` specifies the location of the
 NLDAS-1 forcing files.
@@ -5857,8 +5784,8 @@ NLDAS1 mask resolution (dy):            0.125
 ....
 
 
+[[sssec_forcings_nldas2,NLDAS2]]
 ==== NLDAS2
-anchor:sssec_forcings_nldas2[NLDAS2]
 
 `NLDAS2 forcing directory:` specifies the location of the NLDAS2
 forcing files.
@@ -5944,8 +5871,8 @@ NLDAS2 use model based pressure:        0
 ....
 
 
+[[sssec_supp_3b42rt,TRMM 3B42RT precipitation]]
 ==== TRMM 3B42RT precipitation
-anchor:sssec_supp_3b42rt[TRMM 3B42RT precipitation]
 
 `TRMM 3B42RT forcing directory:` specifies the location of the
 TRMM 3B42RT forcing files.
@@ -5965,8 +5892,8 @@ TRMM 3B42RTV7 forcing directory:  ../MET_FORCING/3B42RT-V7/
 ....
 
 
+[[sssec_supp_3b42v6,TRMM 3B42V6 precipitation]]
 ==== TRMM 3B42V6 precipitation
-anchor:sssec_supp_3b42v6[TRMM 3B42V6 precipitation]
 
 `TRMM 3B42V6 forcing directory:` specifies the location of the
 TRMM 3B42V6 forcing files.
@@ -5977,8 +5904,8 @@ TRMM 3B42V6 forcing directory:       ./input/FORCING/3B42V6/
 ....
 
 
+[[sssec_supp_3b42v7,TRMM 3B42V7 precipitation]]
 ==== TRMM 3B42V7 precipitation
-anchor:sssec_supp_3b42v7[TRMM 3B42V7 precipitation]
 
 `TRMM 3B42V7 forcing directory:` specifies the location of the
 TRMM 3B42V7 forcing files.
@@ -5989,8 +5916,8 @@ TRMM 3B42V7 forcing directory:       ./input/FORCING/3B42V7/
 ....
 
 
+[[sssec_supp_cmorph,CMORPH precipitation]]
 ==== CMORPH precipitation
-anchor:sssec_supp_cmorph[CMORPH precipitation]
 
 `CMORPH forcing directory:` specifies the location of the
 CMORPH precipitation forcing files.
@@ -6001,18 +5928,18 @@ CMORPH forcing directory:     ./input/FORCING/CMORPH/
 ....
 
 
+[[sssec_supp_imerg,IMERG precipitation]]
 ==== IMERG precipitation
-anchor:sssec_supp_imerg[IMERG precipitation]
 
 `IMERG forcing directory:` specifies the location of the
 GPM IMERG precipitation forcing files.
 
-'IMERG product:' specifies the product of the GPM IMERG 
+`IMERG product:` specifies the product of the GPM IMERG
 precipitation forcing files. The valid options are: early,
 late, and final. If no version is specified, the reader will
-default to the 'final' product of GPM IMERG. 
+default to the "`final`" product of GPM IMERG.
 
-'IMERG version:' specifies the version of the GPM IMERG
+`IMERG version:` specifies the version of the GPM IMERG
 precipitation forcing files. If no version is specified, 
 the reader will default to the latest version of GPM IMERG.
 (Currently V06B).
@@ -6025,8 +5952,8 @@ IMERG version: 'V06B'
 ....
 
 
+[[sssec_supp_stageii,Stage II precipitation]]
 ==== Stage II precipitation
-anchor:sssec_supp_stageii[Stage II precipitation]
 
 `STAGE2 forcing directory:` specifies the location of the
 STAGE2 forcing files.
@@ -6037,8 +5964,8 @@ STAGE2 forcing directory:       ./input/FORCING/STII
 ....
 
 
+[[sssec_supp_stageiv,Stage IV precipitation]]
 ==== Stage IV precipitation
-anchor:sssec_supp_stageiv[Stage IV precipitation]
 
 `STAGE4 forcing directory:` specifies the location of the
 STAGE4 forcing files.
@@ -6049,8 +5976,8 @@ STAGE4 forcing directory:       ./input/FORCING/STIV
 ....
 
 
+[[sssec_supp_narr,NARR]]
 ==== NARR
-anchor:sssec_supp_narr[NARR]
 
 `NARR forcing directory:` specifies the location of the
 NARR forcing files.
@@ -6076,10 +6003,8 @@ NARR domain z-dimension size:      30
 ....
 
 
-ifdef::devonly[]
-
+[[sssec_supp_gdas3d,GDAS3D]]
 ==== GDAS3D
-anchor:sssec_supp_gdas3d[GDAS3D]
 
 `GDAS3D forcing directory:` specifies the location of the
 GDAS3D forcing files.
@@ -6103,13 +6028,10 @@ GDAS3D domain x-dimension size:      768
 GDAS3D domain y-dimension size:      386
 GDAS3D domain z-dimension size:      64
 ....
-endif::devonly[]
 
 
-ifdef::devonly[]
-
+[[sssec_supp_arms,ARMS]]
 ==== ARMS
-anchor:sssec_supp_arms[ARMS]
 
 `ARMS forcing file:` specifies the location of the
 ARMS station met forcing file.
@@ -6126,11 +6048,10 @@ ARMS forcing file:        ../WG_domain/1990_forc.txt
 ARMS precip forcing file: ../WG_domain/WGbrk_19900723-19900815.out
 ARMS station metadata file: ../WG_domain/WGbrk_stnlocs_1990.dat
 ....
-endif::devonly[]
 
 
+[[sssec_supp_rfe2daily,RFE2Daily]]
 ==== RFE2Daily
-anchor:sssec_supp_rfe2daily[RFE2Daily]
 
 `RFE2Daily forcing directory:` specifies the location of the
 RFE2Daily forcing files.
@@ -6148,8 +6069,8 @@ RFE2Daily time offset:          0 # for use by GeoWRSI
 ....
 
 
+[[sssec_chirps2,CHIRPS2]]
 ==== CHIRPS2
-anchor:sssec_chirps2[CHIRPS2]
 
 `CHIRPS2.0 forcing directory:` specifies the location of the
 UCSB CHIRPS v2.0 precipitation forcing file directory. User
@@ -6167,10 +6088,8 @@ CHIRPS2.0 forcing resolution:     0.05
 ....
 
 
-ifdef::devonly[]
-
+[[sssec_supp_almipii,ALMIPII]]
 ==== ALMIPII
-anchor:sssec_supp_almipii[ALMIPII]
 
 `ALMIPII forcing directory:` specifies the location of the
 ALMIPII forcing files.
@@ -6183,11 +6102,10 @@ of the ALMIPII forcing data.  The prefix is based on the site name.
 ALMIPII forcing directory:
 ALMIPII filename prefix:
 ....
-endif::devonly[]
 
 
+[[sssec_supp_petusgs,PET_USGS]]
 ==== PET_USGS
-anchor:sssec_supp_petusgs[PET_USGS]
 
 `USGS PET forcing directory:` specifies the location of the
 PET USGS forcing files.
@@ -6209,8 +6127,8 @@ USGS PET forcing directory:       ./PET_USGS
 ....
 
 
+[[sssec_rfe2gdas,RFE2 data bias corrected to GDAS]]
 ==== RFE2 data bias corrected to GDAS
-anchor:sssec_rfe2gdas[RFE2 data bias corrected to GDAS]
 
 `RFE2gdas forcing directory:` specifies the location of the
 RFE2gdas forcing files.
@@ -6221,8 +6139,8 @@ RFE2gdas forcing directory:
 ....
 
 
+[[sssec_supp_nam242,NAM242]]
 ==== NAM242
-anchor:sssec_supp_nam242[NAM242]
 
 `NAM242 forcing directory:` specifies the location of the
 "`NAM 242 AWIPS Grid \-- Over Alaska`" forcing files
@@ -6233,8 +6151,8 @@ NAM242 forcing directory: ./input/MET_FORCING/NAM242
 ....
 
 
+[[sssec_supp_wrfout,WRFout]]
 ==== WRFout
-anchor:sssec_supp_wrfout[WRFout]
 
 `WRF output forcing directory:` specifies the location of the
 WRF output data files.
@@ -6248,8 +6166,8 @@ WRF nest id:                          1
 ....
 
 
+[[sssec_geos5forecast,GEOS5 forecast]]
 ==== GEOS5 Forecast
-anchor:sssec_geos5forecast[GEOS5 forecast]
 
 `GEOS5 forecast forcing directory:` specifies the location
 of the GEOS5 forecast forcing files.
@@ -6264,8 +6182,8 @@ GEOS5 forecast forcing number of ensemble members:   11
 ....
 
 
+[[sssec_gefsforecast,GEFS forecast]]
 ==== GEFS Forecast
-anchor:sssec_gefsforecast[GEFS forecast]
 
 `GEFS forecast directory:` specifies the location
 of the GEFS forecast forcing files.
@@ -6301,8 +6219,8 @@ GEFS forecast number of ensemble members:  11
 ....
 
 
+[[sssec_genensfcst,GenEnsFcst]]
 ==== Generic Ensemble Forecast Reader
-anchor:sssec_genensfcst[GenEnsFcst]
 
 `Generic ensemble forecast directory:` specifies the location
 of the user-generated ensemble forecast forcing files.
@@ -6317,8 +6235,8 @@ Generic ensemble forecast number of ensemble members:  11
 ....
 
 
+[[sssec_gdaslswg,GDAS for LSWG]]
 ==== GDAS for LSWG
-anchor:sssec_gdaslswg[GDAS for LSWG]
 
 `GDASLSWG forcing file:` specifies the location of the
 GDASLSWG forcing file.
@@ -6357,8 +6275,8 @@ GDASLSWG domain resolution (dy):
 ....
 
 
+[[sssec_bondville,Bondville]]
 ==== Bondville
-anchor:sssec_bondville[Bondville]
 
 `Bondville forcing file:` specifies the location of the
 Bondville forcing file.
@@ -6384,8 +6302,8 @@ Bondville Noah-MP-4.0.1 forcing:     1
 
 ifdef::devonly[]
 
+[[sssec_fasstforc,FASST]]
 ==== FASST
-anchor:sssec_fasstforc[FASST]
 
 `FASST forcing file:` specifies the location of the
 FASST forcing file.
@@ -6397,8 +6315,8 @@ FASST forcing file:
 endif::devonly[]
 
 
+[[sssec_snotel,SNOTEL]]
 ==== SNOTEL
-anchor:sssec_snotel[SNOTEL]
 
 `SNOTEL forcing directory:` specifies the location of the
 SNOTEL forcing files.
@@ -6417,8 +6335,8 @@ SNOTEL coord file:
 ....
 
 
+[[sssec_coop,COOP]]
 ==== COOP
-anchor:sssec_coop[COOP]
 
 `COOP forcing directory:` specifies the location of the COOP
 forcing files.
@@ -6437,8 +6355,8 @@ COOP coord file:
 ....
 
 
+[[sssec_vicforcing,VIC processed forcing]]
 ==== VIC processed forcing
-anchor:sssec_vicforcing[VIC processed forcing]
 
 This is used by the LIS development team to support debugging VIC
 within LIS.  One must first run stand-alone VIC, configured to
@@ -6495,8 +6413,8 @@ VIC NR:
 ....
 
 
+[[sssec_pals,PALS station]]
 ==== PALS station
-anchor:sssec_pals[PALS station]
 
 `PALS met forcing directory:` specifies the location of the
 PALS station forcing files.
@@ -6535,8 +6453,8 @@ PALS met forcing data start second:
 ....
 
 
+[[sssec_PILDAS,PILDAS]]
 ==== PILDAS
-anchor:sssec_PILDAS[PILDAS]
 
 `PILDAS forcing directory:` specifies the location of the
 PILDAS forcing files.
@@ -6563,8 +6481,8 @@ PILDAS forcing use lowest model level fields:
 ....
 
 
+[[sssec_rdhm356forcing,RDHM356]]
 ==== RDHM356
-anchor:sssec_rdhm356forcing[RDHM356]
 
 `RDHM precipitation forcing directory:` specifies the location
 of the RDHM precipitation forcing files.
@@ -6618,13 +6536,13 @@ RDHM constant wind speed:              4.0
 ....
 
 
+[[sssec_ldtgen,LDT-generated]]
 ==== LDT-generated
-anchor:sssec_ldtgen[LDT-generated]
 
 `Generated metforcing directory:` specifies the location of the
 LDT generated meteorological forcing files.  Files generated in LDT
 are in netCDF format, and they are automatically loaded and handled
-by the LIS-7 reader.
+by the LIS reader.
 
 .Example _lis.config_ entry
 ....
@@ -6632,8 +6550,8 @@ Generated metforcing directory:   ./LDT_OUTPUT/
 ....
 
 
+[[sssec_climstand,CLIM-Standard]]
 ==== CLIM-Standard
-anchor:sssec_climstand[CLIM-Standard]
 
 `Metforcing climatology directory:` specifies the location of the
 LDT generated forcing climatologies files.  Files generated in LDT
@@ -6646,8 +6564,8 @@ Metforcing climatology directory:   ./Forcing_Climatology/MERRA2Clim/
 ....
 
 
+[[sssec_genensfcstforcing,Generic ensemble forecast]]
 ==== Generic ensemble forecast
-anchor:sssec_genensfcstforcing[Generic ensemble forecast]
 
 `Generic ensemble forecast directory:` specifies the location of the
 generic ensemble forecast data.
@@ -6662,8 +6580,8 @@ Generic ensemble forecast number of ensemble members:
 ....
 
 
+[[sssec_supp_awap,AWAP]]
 ==== AWAP
-anchor:sssec_supp_awap[AWAP]
 
 `AWAP forcing directory:` specifies the location of the AWAP precipitation
 forcing data.
@@ -6673,8 +6591,8 @@ forcing data.
 AWAP forcing directory:
 ....
 
+[[sssec_gdast1534forcing,GDAS T1534]]
 ==== GDAS T1534
-anchor:sssec_gdast1534forcing[GDAS T1534]
 
 `GDAS T1534 forcing directory:` specifies the location of the GDAS T1534 metforcing data.
 
@@ -6683,8 +6601,8 @@ anchor:sssec_gdast1534forcing[GDAS T1534]
 `GDAS T1534 forcing directory:`
 ....
 
+[[sssec_mrmsforcing,MRMS]]
 ==== MRMS
-anchor:sssec_mrmsforcing[MRMS]
 
 `MRMS forcing directory:` specifies the location of the MRMS metforcing data.
 
@@ -6704,13 +6622,28 @@ MRMS mask threshold: 60.0
 MRMS mask directory: ./input/MASKS/
 ....
 
+[[sssec_awral600forcing,AWRA-L 6.0.0]]
+==== AWRA-L 6.0.0
 
+`AWRAL forcing directory:` specifies the location of the AWRA-L metforcing data.
+
+`AWRAL domain x-dimension size:` specifies the number of columns of the native domain parameters of the AWRA-L forcing data.
+
+`AWRAL domain y-dimension size:` specifies the number of rows of the native domain parameters of the AWRA-L forcing data.
+
+.Example _lis.config_ entry
+....
+AWRAL forcing directory:               ./INPUT/AWRAL.FORCING
+AWRAL domain x-dimension size:         841
+AWRAL domain y-dimension size:         681
+....
+
+[[ssec_lsm,Land surface models]]
 === Land surface models
-anchor:ssec_lsm[Land surface models]
 
 
+[[sssec_lsm_template,Forcing only {emdash} Template]]
 ==== Forcing only {emdash} Template
-anchor:sssec_lsm_template[Forcing only {emdash} Template]
 
 `TEMPLATE model timestep:` specifies the timestep for the run.
 The template LSM is not a model;
@@ -6728,8 +6661,8 @@ TEMPLATE model timestep: 1hr
 ....
 
 
+[[sssec_lsm_noah271,NCEP's Noah-2.7.1]]
 ==== NCEP's Noah-2.7.1
-anchor:sssec_lsm_noah271[NCEP's Noah-2.7.1]
 
 `Noah.2.7.1 model timestep:` specifies the timestep for the run.
 
@@ -6867,8 +6800,8 @@ Noah.2.7.1 reference height for forcing u and v:  20.0
 ....
 
 
+[[sssec_lsm_noah32,NCAR's Noah-3.2]]
 ==== NCAR's Noah-3.2
-anchor:sssec_lsm_noah32[NCAR's Noah-3.2]
 
 `Noah.3.2 model timestep:` specifies the timestep for the run.
 
@@ -7059,8 +6992,8 @@ Noah.3.2 reference height for forcing u and v:  20.0      # (m) - negative=use h
 ....
 
 
+[[sssec_lsm_noah33,NCAR's Noah-3.3]]
 ==== NCAR's Noah-3.3
-anchor:sssec_lsm_noah33[NCAR's Noah-3.3]
 
 `Noah.3.3 model timestep:` specifies the timestep for the run.
 
@@ -7255,8 +7188,8 @@ Noah.3.3 soil moisture CDF file:
 ....
 
 
+[[sssec_lsm_noah36,NCAR's Noah-3.6]]
 ==== NCAR's Noah-3.6
-anchor:sssec_lsm_noah36[NCAR's Noah-3.6]
 
 `Noah.3.6 model timestep:` specifies the timestep for the run.
 
@@ -7383,9 +7316,9 @@ in Noah-3.6 is not use this dependence (option = 0).
 
 `Noah.3.6 Run UA snow-physics option:` specifies whether
 to run the University of Arizona (UA) snow-physics option.
-Either "`.true.`" or "`.false.`" should be selected.  If
-"`.true.`" is given, then the UA snow-physics will be run.
-If "`.false.`" is given, then the standard Noah snow-physics
+Either `.true.` or `.false.` should be selected.  If
+`.true.` is given, then the UA snow-physics will be run.
+If `.false.` is given, then the standard Noah snow-physics
 will be run instead.
 
 `Noah.3.6 greenness fraction:` specifies a monthly (January
@@ -7461,8 +7394,8 @@ Noah.3.6 removal of residual snow fix: 0
 ....
 
 
+[[sssec_lsm_noah39,NCAR's Noah-3.9]]
 ==== NCAR's Noah-3.9
-anchor:sssec_lsm_noah39[NCAR's Noah-3.9]
 
 `Noah.3.9 model timestep:` specifies the timestep for the run.
 
@@ -7579,9 +7512,9 @@ option in Noah-3.9 is not use this dependence (option = 0).
 
 `Noah.3.9 Run UA snow-physics option:` specifies whether
 to run the University of Arizona (UA) snow-physics option.
-Either "`.true.`" or "`.false.`" should be selected.  If
-"`.true.`" is given, then the UA snow-physics will be run.
-If "`.false.`" is given, then the standard Noah snow-physics
+Either `.true.` or `.false.` should be selected.  If
+`.true.` is given, then the UA snow-physics will be run.
+If `.false.` is given, then the standard Noah snow-physics
 will be run instead.
 
 `Noah.3.9 greenness fraction:` specifies a monthly (January
@@ -7659,8 +7592,8 @@ Noah.3.9 FASDAS option (0 or 1):          0
 ....
 
 
+[[sssec_lsm_noahmp36,Noah-MP 3.6]]
 ==== Noah-MP 3.6
-anchor:sssec_lsm_noahmp36[Noah-MP 3.6]
 
 `Noah-MP.3.6 model timestep:` specifies the timestep for the
 Noah-MP-3.6 LSM.
@@ -7771,7 +7704,7 @@ liquid water option for Noah-MP-3.6 LSM.  Acceptable values are:
 |Value | Description
 
 | 1    | no iteration (Niu and Yang, 2006 JHM)
-| 2    | Koren's iteration (1999)
+| 2    | Koren`'s iteration (1999)
 |====
 
 `Noah-MP.3.6 frozen soil permeability option:` specifies the frozen soil
@@ -7965,9 +7898,9 @@ specifies the Noah-MP-3.6 LSM initial recharge to or from the water
 table when shallow (m).
 
 `Noah-MP.3.6 initial reference height of temperature and humidity:`
-specifies the Noah-MP-3.6 LSM initial reference height of temperature,
-humidity, and winds (m).  If the reference height is different, best
-to choose the height of the winds.
+specifies the Noah-MP-3.6 LSM initial reference height (in meters)
+of the forcing temperature, humidity, and winds.  If the reference
+heights are different, best to choose the height of the winds.
 
 `Noah-MP.3.6 soil moisture CDF file:` specifies the Noah-MP-3.6 LSM
 soil moisture CDF file.
@@ -8041,8 +7974,8 @@ Noah-MP.3.6 soil moisture CDF file:
 ....
 
 
+[[sssec_lsm_noahmp401,Noah-MP-4.0.1]]
 ==== Noah-MP-4.0.1
-anchor:sssec_lsm_noahmp401[Noah-MP-4.0.1]
  
 `Noah-MP.4.0.1 model timestep:` specifies the timestep for the
 Noah-MP-4.0.1 LSM.
@@ -8164,7 +8097,7 @@ are:
 |Value | Note | Description
  
 | 1    |  **  | no iteration (Niu and Yang, 2006 JHM)
-| 2    |      | Koren's iteration (1999)
+| 2    |      | Koren`'s iteration (1999)
 |====
  
 `Noah-MP.4.0.1 frozen soil permeability option:` specifies the frozen soil
@@ -8325,8 +8258,10 @@ are:
 |====
 
 `Noah-MP.4.0.1 reference height of temperature and humidity:`
-specifies the Noah-MP-4.0.1 LSM initial reference height of
-temperature and humidity (m).
+specifies the Noah-MP-4.0.1 LSM reference height (in meters)
+of the forcing temperature, humidity, and winds.  If the
+reference heights are different, best to choose the height
+of the winds.
 
 `Noah-MP.4.0.1 initial surface skin temperature:` specifies
 the Noah-MP-4.0.1 LSM initial surface skin temperature (K). 
@@ -8361,6 +8296,13 @@ Noah-MP-4.0.1 LSM initial water storage in the aquifer (mm).
 specifies the Noah-MP-4.0.1 LSM initial water in the aquifer
 and in the saturated soil (mm).
  
+`Noah-MP.4.0.1 snow depth glacier model option:` specifies the
+maximum snow water equivalent that is used in the Noah-MP-4.0.1
+glacier model (mm).  This config entry is optional; if is not in
+the _lis.config_ file, the default value of 2000.0 mm is used.
+This maximum only applies to tiles identified as glacier in the
+landcover classification.
+
 .Example _lis.config_ entry
 ....
 Noah-MP.4.0.1 model timestep:                15mn
@@ -8401,11 +8343,12 @@ Noah-MP.4.0.1 initial leaf area index:                      2.0
 Noah-MP.4.0.1 initial water table depth:                    2.5
 Noah-MP.4.0.1 initial water in the aquifer:                 4900.0
 Noah-MP.4.0.1 initial water in aquifer and saturated soil:  4900.0
+Noah-MP.4.0.1 snow depth glacier model option:              2000
 ....
 
 
+[[sssec_lsm_ruc37,RUC 3.7]]
 ==== RUC 3.7
-anchor:sssec_lsm_ruc37[RUC 3.7]
 
 `RUC37 model timestep:` specifies the timestep for RUC.
 
@@ -8423,18 +8366,18 @@ interval for RUC.
 
 `RUC37 zlvl_wind:` reference height of wind (m)
 
-`RUC37 use local parameters:` .true. to use table values for
-albbck, shdfac, and z0brd; .false. to use values for albbck, shdfac,
+`RUC37 use local parameters:` `.true.` to use table values for
+albbck, shdfac, and z0brd; `.false.` to use values for albbck, shdfac,
 and z0brd as set in this driver routine.
 
-`RUC37 use 2D LAI map:` if rdlai2d == .true., then the xlai value
-that we pass to lsmruc will be used. if rdlai2d == .false., then xlai
+`RUC37 use 2D LAI map:` if rdlai2d == `.true.`, then the xlai value
+that we pass to lsmruc will be used. if rdlai2d == `.false.`, then xlai
 will be computed within lsmruc, from table minimum and maximum values
 in vegparm.tbl, and the current green vegetation fraction.
 
-`RUC37 use monthly albedo map:` if usemonalb == .true., then
+`RUC37 use monthly albedo map:` if usemonalb == `.true.`, then
 the alb value passed to lsmruc will be used as the background
-snow-free albedo term.  if usemonalb == .false., then alb will be
+snow-free albedo term.  if usemonalb == `.false.`, then alb will be
 computed within lsmruc from minimum and maximum values in vegparm.tbl,
 and the current green vegetation fraction.
 
@@ -8564,8 +8507,8 @@ RUC37 initial qsfc: 1.6260381E-03          # qsfc: effective mixing ratio at the
 ....
 
 
+[[sssec_lsm_clm2,CLM 2.0]]
 ==== CLM 2.0
-anchor:sssec_lsm_clm2[CLM 2.0]
 
 `CLM model timestep:` specifies the timestep for the run.
 
@@ -8609,8 +8552,8 @@ CLM initial snow mass:                0.0
 ....
 
 
+[[sssec_lsm_vic411,VIC 4.1.1]]
 ==== VIC 4.1.1
-anchor:sssec_lsm_vic411[VIC 4.1.1]
 
 `VIC411 model timestep:` specifies the timestep for the run.
 
@@ -8621,20 +8564,20 @@ of how to specify a time interval.
 for VIC, in seconds.
 
 VIC uses two timestep variables to control its execution.
-`VIC411 model step interval:` corresponds to VIC's
-`TIME_STEP` variable.  VIC's `VIC411 model timestep:`
-corresponds to VIC's `SNOW_STEP` variable.
+`VIC411 model step interval:` corresponds to VIC`'s
+`TIME_STEP` variable.  VIC`'s `VIC411 model timestep:`
+corresponds to VIC`'s `SNOW_STEP` variable.
 
 For water balance mode, `VIC411 model step interval:`
 must be set to 86400.
 
 For energy balance mode, `VIC411 model step interval:`
-must be set to VIC's `VIC411 model timestep:`.
+must be set to VIC`'s `VIC411 model timestep:`.
 
 Note that for both energy balance mode and water balance mode,
-VIC's `VIC411 model timestep:`, in seconds, must be both a
+VIC`'s `VIC411 model timestep:`, in seconds, must be both a
 multiple of 3600 and a factor of 86400.
-Simply stated VIC's `VIC411 model timestep:` must
+Simply stated VIC`'s `VIC411 model timestep:` must
 correspond to 1, 2, 3, 4, 6, 12, or 24 hours.
 
 `VIC411 restart output interval:` defines the restart
@@ -8661,13 +8604,13 @@ Acceptable values are:
 |1     | LIS tiling
 |====
 
-`VIC411 global parameter file:` This is VIC's
-configuration file.  Please see VIC's documentation at:
-http://www.hydro.washington.edu/Lettenmaier/Models/VIC/index.shtml
+`VIC411 global parameter file:` This is VIC`'s
+configuration file.  Please see VIC`'s documentation at:
+https://vic.readthedocs.io/en/vic.4.2.d/Development/VersionSummaries/
 for more information.
 
 `VIC411 total number of veg types:` specifies the
-number of vegetation classes in VIC's landcover dataset
+number of vegetation classes in VIC`'s landcover dataset
 (`VEGPARAM`).
 
 `VIC411 convert units:` Used for testing; set this to 1.
@@ -8684,8 +8627,8 @@ VIC411 convert units:              1
 ....
 
 
+[[sssec_lsm_vic412,VIC 4.1.2]]
 ==== VIC 4.1.2
-anchor:sssec_lsm_vic412[VIC 4.1.2]
 
 `VIC412 model timestep:` specifies the timestep for the run.
 
@@ -8696,20 +8639,20 @@ of how to specify a time interval.
 interval for VIC, in seconds.
 
 VIC uses two timestep variables to control its execution.
-`VIC412 model step interval:` corresponds to VIC's
-`TIME_STEP` variable.  VIC's `VIC412 model timestep:`
-corresponds to VIC's `SNOW_STEP` variable.
+`VIC412 model step interval:` corresponds to VIC`'s
+`TIME_STEP` variable.  VIC`'s `VIC412 model timestep:`
+corresponds to VIC`'s `SNOW_STEP` variable.
 
 For water balance mode, `VIC412 model step interval:`
 must be set to 86400.
 
 For energy balance mode, `VIC412 model step interval:`
-must be set to VIC's `VIC412 model timestep:`.
+must be set to VIC`'s `VIC412 model timestep:`.
 
 Note that for both energy balance mode and water balance mode,
-VIC's `VIC412 model timestep:`, in seconds, must be both a
+VIC`'s `VIC412 model timestep:`, in seconds, must be both a
 multiple of 3600 and a factor of 86400.
-Simply stated VIC's `VIC412 model timestep:` must
+Simply stated VIC`'s `VIC412 model timestep:` must
 correspond to 1, 2, 3, 4, 6, 12, or 24 hours.
 
 `VIC412 restart output interval:` defines the restart
@@ -8750,7 +8693,7 @@ Acceptable values are:
 |====
 
 `VIC412 total number of veg types:` specifies the
-number of vegetation classes in VIC's landcover dataset
+number of vegetation classes in VIC`'s landcover dataset
 (`VEGPARAM`).
 
 `VIC412 convert units:` Used for testing; set this to 1.
@@ -8764,8 +8707,8 @@ specified as the following:
 
 `VIC412_NLAYER: 3`
 
-See VIC's documentation at:
-http://www.hydro.washington.edu/Lettenmaier/Models/VIC/index.shtml
+See VIC`'s documentation at:
+https://vic.readthedocs.io/en/vic.4.2.d/Development/VersionSummaries/
 for more information about configuring VIC.
 
 .Example _lis.config_ entry
@@ -8781,45 +8724,34 @@ VIC412 convert units:              1
 ....
 
 
-ifdef::devonly[]
+[[sssec_lsm_jules43,JULES 5.0]]
+==== JULES 5.0
 
-==== JULES 4.3
-anchor:sssec_lsm_jules43[JULES 4.3]
+`JULES.5.0 model timestep:` specifies the timestep for the run.
 
-`JULES.4.3 model timestep:` specifies the timestep for the run.
+`JULES.5.0 restart file:` specifies the JULES.5.0 active restart file.
 
-`JULES.4.3 restart file:` specifies the JULES.4.3 active restart file.
+`JULES.5.0 namelist directory:` directory containing JULES.5.0 configuration name lists
 
-`JULES.4.3 namelist directory:` directory containing JULES.4.3 configuration name lists
+`JULES.5.0 restart output interval:` JULES.5.0 restart time interval
 
-`JULES.4.3 using 360-day calender:` true or false for using 360-day calender
+`JULES.5.0 reference height for forcing T and q:` reference height for air temperature and humidity
 
-`JULES.4.3 using aggregated surface scheme:` true or false for using aggregated land surface scheme
-
-`JULES.4.3 restart output interval:` JULES.4.3 restart time interval
-
-`JULES.4.3 reference height for forcing T and q:` reference height for air temperature and humidity
-
-`JULES.4.3 reference height for forcing u and v:` reference height for wind speed
-
-//`JULES.4.3 soil moisture CDF file:` specifies the JULES.4.3 soil moisture CDF file.
+`JULES.5.0 reference height for forcing u and v:` reference height for wind speed
 
 .Example _lis.config_ entry
 ....
-JULES.4.3 model timestep:                  15mn
-JULES.4.3 restart file:
-JULES.4.3 namelist directory:              ./
-JULES.4.3 using 360-day calender:          .false.
-JULES.4.3 using aggregated surface scheme: .false.
-JULES.4.3 restart output interval:         1mo
-JULES.4.3 reference height for forcing T and q: 2
-JULES.4.3 reference height for forcing u and v: 10
+JULES.5.0 model timestep:                  15mn
+JULES.5.0 restart file:
+JULES.5.0 namelist directory:              ./
+JULES.5.0 restart output interval:         1mo
+JULES.5.0 reference height for forcing T and q: 2
+JULES.5.0 reference height for forcing u and v: 10
 ....
-endif::devonly[]
 
 
+[[sssec_lsm_mosaic,Mosaic]]
 ==== Mosaic
-anchor:sssec_lsm_mosaic[Mosaic]
 
 `Mosaic model timestep:` specifies the timestep for the run.
 
@@ -8926,8 +8858,8 @@ Mosaic use distributed soil depth map:            0
 ....
 
 
+[[sssec_lsm_hyssib,HySSiB]]
 ==== HySSiB
-anchor:sssec_lsm_hyssib[HySSiB]
 
 `HYSSIB model timestep:` specifies the timestep for the run.
 
@@ -8991,8 +8923,8 @@ HYSSIB initial soil temperature:              290.0
 ....
 
 
+[[sssec_lsm_clsmf25,Catchment Fortuna-2_5]]
 ==== Catchment Fortuna-2_5
-anchor:sssec_lsm_clsmf25[Catchment Fortuna-2_5]
 
 `CLSM F2.5 model timestep:` specifies the timestep for the run.
 
@@ -9055,8 +8987,8 @@ CLSM F2.5 use MODIS albedo flag:      1
 ....
 
 
+[[sssec_geowrsi.2,GeoWRSI 2.0]]
 ==== GeoWRSI 2.0
-anchor:sssec_geowrsi.2[GeoWRSI 2.0]
 
 `WRSI CalcSOS model run mode:` specifies which model run
 mode to run the model in, either "`SOS`" or "`WRSI`".
@@ -9075,11 +9007,11 @@ timestep (in dekads).
 
 `WRSI initial growing season year:` Initial year of the first
 growing season for the LIS-GeoWRSI model run.  For now, should
-match the first year in the lis.config file `Starting year:`.
+match the first year in the _lis.config_ file `Starting year:`.
 
 `WRSI final growing season year:` Final year of the last
 growing season for the LIS-GeoWRSI model run.  For now, should
-match the final year in the lis.config file `Ending year:`.
+match the final year in the _lis.config_ file `Ending year:`.
 
 `WRSI number of growing seasons:` Set the number of growing
 seasons to have GeoWRSI run over (default value is 1).
@@ -9114,8 +9046,8 @@ WRSI restart file:                  "none"
 ....
 
 
+[[sssec_lsm_cable14b,Australia's CABLE-1.4b]]
 ==== Australia's CABLE-1.4b
-anchor:sssec_lsm_cable14b[Australia's CABLE-1.4b]
 
 `CABLE model timestep:` specifies the timestep for the run.
 
@@ -9184,7 +9116,7 @@ in ppmv.
 `CABLE reference height:` specifies the height in meters
 of the forcing variables.
 
-`CABLE maximum verbosity:` set to "`.true.`" to print to
+`CABLE maximum verbosity:` set to `.true.` to print to
 the log details of variables during calculation of the tile.
 
 `CABLE tile to print:` specifies the tile number to print to
@@ -9213,8 +9145,8 @@ CABLE tile to print:                      26784    # tile number to print (0 = p
 ....
 
 
+[[sssec_lsm_rdhm356,RDHM 3.5.6]]
 ==== RDHM 3.5.6
-anchor:sssec_lsm_rdhm356[RDHM 3.5.6]
 
 `RDHM356 model timestep:` specifies the timestep for the run.
 
@@ -9253,7 +9185,7 @@ Acceptable values are:
 
 Note, if set to 1, zero snow depth causes problems.
 
-`RDHM356 SNOW17_OPT:` SNOW-17 option
+`RDHM356 SNOW17_OPT:` SNOW-17 option.
 Acceptable values are:
 
 |====
@@ -9263,7 +9195,7 @@ Acceptable values are:
 |else  | Do not use Snow-17
 |====
 
-`RDHM356 SACHTET_OPT:` SAC-HTET option
+`RDHM356 SACHTET_OPT:` SAC-HTET option.
 Acceptable values are:
 
 |====
@@ -9356,8 +9288,8 @@ Acceptable values are:
 |====
 |Value | Description
 
-|0     | Victor's version
-|1     | Eric's version
+|0     | Victor`'s version
+|1     | Eric`'s version
 |====
 
 `RDHM356 restart file:` specifies the RDHM 3.5.6 active
@@ -9531,8 +9463,8 @@ RDHM356 initial TA_PREV:         0
 
 
 ifdef::devonly[]
+[[sssec_lsm_summa.1.0,SUMMA 1.0]]
 ==== SUMMA 1.0
-anchor:sssec_lsm_summa.1.0[SUMMA 1.0]
 
 `SUMMA.1.0 model timestep:` specifies the timestep for the run.
 
@@ -9545,15 +9477,137 @@ SUMMA.1.0 model timestep:
 ....
 endif::devonly[]
 
+==== AWRA-L 6.0.0
 
-ifdef::devonly[]
+`AWRAL600 model timestep:` specifies the model timestep for the AWRA-L 6.0.0 LSM.
 
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`AWRAL600 restart output interval:` specifies the model timestep for the AWRA-L 6.0.0 LSM.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`AWRAL600 restart file:` specifies the AWRA-L 6.0.0 restart file.
+
+`AWRAL600 restart file format:` specifies the AWRA-L 6.0.0 restart file format, netcdf or binary (default=netcdf).
+
+`AWRAL600 nhru:` specifies the number of hydrological response units (HRUs).
+
+`AWRAL600 nhypsbins:` specifies the number of hypsometric curve distribution percentile bins.
+
+`AWRAL600 slope_coeff:` specifies the scaling factor for slope.
+
+`AWRAL600 pair:` specifies the air pressure.
+
+`AWRAL600 kr_coeff:` specifies the scaling factor for ratio of saturated hydraulic conductivity.
+
+`AWRAL600 hypsperc:` specifies the hypsometric curve distribution percentile bins.
+
+The following constant parameter options accept values for each HRU specified in `AWRAL600 nhru` above, from shallow to deep.
+
+`AWRAL600 alb_dry:` specifies the dry soil albedo for each HRU.
+
+`AWRAL600 alb_wet:` specifies the wet soil albedo for each HRU.
+
+`AWRAL600 cgsmax:` specifies the coefficient relating vegetation photosynthetic capacity to maximum stomatal conductance for each HRU.
+
+`AWRAL600 er_frac_ref:` specifies the specific ratio of the mean evaporation rate and the mean rainfall intensity during storms for each HRU.
+
+`AWRAL600 fsoilemax:` specifies the soil evaporation scaling factor corresponding to unlimited soil water supply for each HRU.
+
+`AWRAL600 lairef:` specifies the reference leaf area index (at which fv = 0.63) for each HRU.
+
+`AWRAL600 rd:` specifies the rooting depth for each HRU.
+
+`AWRAL600 s_sls:` specifies the specific canopy rainfall storage per unit leaf area for each HRU.
+
+`AWRAL600 sla:` specifies the specific leaf area for each HRU.
+
+`AWRAL600 tgrow:` specifies the characteristic time scale for vegetation growth towards equilibrium for each HRU.
+
+`AWRAL600 tsenc:` specifies the characteristic time scale for vegetation senescence towards equilibrium for each HRU.
+
+`AWRAL600 ud0:` specifies the maximum possible root water uptake from the deep soil store for each HRU.
+
+`AWRAL600 us0:` specifies the maximum possible root water uptake from the shallow soil store for each HRU.
+
+`AWRAL600 vc:` specifies the vegetation photosynthetic capacity index per unit canopy cover for each HRU.
+
+`AWRAL600 w0lime:` specifies the limiting the value of the relative soil moisture content of the top soil layer at which evaporation is reduced for each HRU.
+
+`AWRAL600 w0ref_alb:` specifies the reference value of w0 that determines the rate of albedo decrease with wetness for each HRU.
+
+`AWRAL600 wdlimu:` specifies the water-limiting relative water content of the deep soil store for each HRU.
+
+`AWRAL600 wslimu:` specifies the water-limiting relative water content of the shallow soil store for each HRU.
+
+`AWRAL600 timesteps:` specifies the number of daily timesteps.
+
+`AWRAL600 initial sr:` specifies the volume of water in the surface water store.
+
+`AWRAL600 initial sg:` specifies the  groundwater storage in the unconfined aquifer.
+
+`AWRAL600 initial s0:` specifies the water storage in the surface soil layer for each HRU.
+
+`AWRAL600 initial ss:` specifies the water content of the shallow soil store for each HRU.
+
+`AWRAL600 initial sd:` specifies the water content of the deep soil store for each HRU.
+
+`AWRAL600 initial mleaf:` specifies the leaf biomass.
+
+.Example _lis.config_ entry:
+....
+AWRAL600 model timestep:          1da
+AWRAL600 restart output interval: 1mo
+AWRAL600 restart file:            none
+AWRAL600 restart file format: "netcdf"
+
+AWRAL600 nhru:          2
+AWRAL600 nhypsbins:     20
+AWRAL600 slope_coeff:   0.43879647
+AWRAL600 pair:          97500.0
+AWRAL600 kr_coeff:      0.66159026
+AWRAL600 hypsperc:      0.0 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.1 0.15 0.2 0.3 0.4 0.5 0.6 0.75 0.9 1.0
+
+# hru params (1st = shallow, 2nd = deep)
+AWRAL600 alb_dry:       0.26 0.26
+AWRAL600 alb_wet:       0.16 0.16
+AWRAL600 cgsmax:        0.03209419 0.02124781
+AWRAL600 er_frac_ref:   0.032129 0.06425805
+AWRAL600 fsoilemax:     0.58500527 0.99960822
+AWRAL600 lairef:        1.4 2.5
+AWRAL600 rd:            1.0 6.0
+AWRAL600 s_sls:         0.29277 0.067438
+AWRAL600 sla:           10.0 3.0
+AWRAL600 tgrow:         150.0 1000.0
+AWRAL600 tsenc:         10.0 60.0
+AWRAL600 ud0:           0.0 11.56989
+AWRAL600 us0:           6.0 6.0
+AWRAL600 vc:            0.65 0.35
+AWRAL600 w0lime:        0.85 0.85
+AWRAL600 w0ref_alb:     0.3 0.3
+AWRAL600 wdlimu:        0.3 0.3
+AWRAL600 wslimu:        0.3 0.3
+AWRAL600 timesteps:     1
+
+# hru params (1st = shallow, 2nd = deep)
+AWRAL600 initial sr: 0.0
+AWRAL600 initial sg: 100.0
+AWRAL600 initial s0: 0.5 0.5
+AWRAL600 initial ss: 0.5 0.5
+AWRAL600 initial sd: 0.5 0.5
+### 2/sla
+AWRAL600 initial mleaf: 0.67 0.2
+....
+
+[[ssec_lakes,Lake models]]
 === Lake models
-anchor:ssec_lakes[Lake models]
 
 
+[[sssec_flake.1.0,FLAKE.1.0]]
 ==== FLAKE.1.0
-anchor:sssec_flake.1.0[FLAKE.1.0]
 
 `FLAKE1 model timestep:` specifies the timestep for FLAKE1.
 
@@ -9647,15 +9701,14 @@ FLAKE1 initial water surface albedo with respect to solar radiation:
 FLAKE1 initial ice surface albedo with respect to the solar radiation:
 FLAKE1 initial snow surface albedo with respect to the solar radiation:
 ....
-endif::devonly[]
 
 
+[[ssec_openwater,Open water models]]
 === Open water models
-anchor:ssec_openwater[Open water models]
 
 
+[[sssec_templateopenwater,template open water]]
 ==== template open water
-anchor:sssec_templateopenwater[template open water]
 
 `Template open water timestep:` specifies the timestep for the run.
 
@@ -9668,14 +9721,12 @@ Template open water timestep:
 ....
 
 
-ifdef::devonly[]
-
+[[ssec_landslides,Land slide models]]
 === Land slide models
-anchor:ssec_landslides[Land slide models]
 
 
+[[sssec_gls,GLS]]
 ==== GLS
-anchor:sssec_gls[GLS]
 
 `GLS susceptibility index map:` [red]#specifies what?#
 
@@ -9721,8 +9772,8 @@ GLS output interval:
 ....
 
 
+[[sssec_trigrs,TRIGRS]]
 ==== TRIGRS
-anchor:sssec_trigrs[TRIGRS]
 
 `TRIGRS initialization file:` [red]#specifies what?#
 
@@ -9736,11 +9787,10 @@ TRIGRS initialization file:
 TRIGRS app timestep:
 TRIGRS rain input source style:
 ....
-endif::devonly[]
 
 
+[[ssec_irrigation,Irrigation]]
 === Irrigation
-anchor:ssec_irrigation[Irrigation]
 
 `Irrigation scheme:` specifies the name of the irrigation
 scheme to use.
@@ -9808,12 +9858,12 @@ Drip irrigation max root depth file:
 ....
 
 
+[[ssec_routing,Routing]]
 === Routing
-anchor:ssec_routing[Routing]
 
 
+[[sssec_hymaprouting,HYMAP routing]]
 ==== HYMAP routing
-anchor:sssec_hymaprouting[HYMAP routing]
 
 `HYMAP routing model time step:` specifies the timestep for
 the HyMAP router.
@@ -9907,8 +9957,8 @@ HYMAP routing model restart file: "./OL/ROUTING/200001/LIS_RST_HYMAP_router_2000
 ....
 
 
+[[sssec_hymap2routing,HYMAP2 routing]]
 ==== HYMAP2 routing
-anchor:sssec_hymap2routing[HYMAP2 routing]
 
 `HYMAP2 routing model time step:` specifies the timestep for
 the HyMAP2 router.
@@ -9982,7 +10032,7 @@ Acceptable values are:
 |Value | Description
 
 |0     | Do not use
-|1     | Use (additional lis.config entries required)
+|1     | Use (additional _lis.config_ entries required)
 |====
 
 `HYMAP2 number of reservoirs:` specifies the number of reservoirs
@@ -10071,6 +10121,18 @@ of how to specify a time interval.
 `HYMAP2 routing model restart file:` specifies the HyMAP2 router
 active restart file.
 
+`HYMAP2 enable 2-way coupling:` specifies whether to enable 2-way coupling.
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use
+|====
+
+`HYMAP2 2-way coupling flooded fraction threshold:` specifies the flooded fraction
+threshold used in the 2-way coupling mode.
+
 .Example _lis.config_ entry
 ....
 HYMAP2 routing model time step: "30mn"
@@ -10092,11 +10154,13 @@ HYMAP2 routing model dwi flag: 0
 HYMAP2 routing model start mode: "coldstart"
 HYMAP2 routing model restart interval: "1mo"
 HYMAP2 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP2_router_197901030000.d01.nc
+HYMAP2 enable 2-way coupling: 0
+HYMAP2 2-way coupling flooded fraction threshold: 2.0
 ....
 
 
+[[sssec_nldasrouting,NLDAS routing]]
 ==== NLDAS routing
-anchor:sssec_nldasrouting[NLDAS routing]
 
 `NLDAS routing model output interval:` defines the output
 writing interval for the NLDAS router.
@@ -10155,8 +10219,8 @@ NLDAS routing model restart file:
 
 === Runoff
 
+[[sssec_erairunoff,ERA interim land runoff]]
 ==== ERA interim land runoff
-anchor:sssec_erairunoff[ERA interim land runoff]
 
 `ERA interim land runoff data output directory:` specifies directory
 where ERA interim outputs are located. 
@@ -10172,8 +10236,8 @@ ERA interim land runoff data output interval: "1da"
 ....
 
 
+[[sssec_gldas1runoff,GLDAS1 runoff]]
 ==== GLDAS1 runoff
-anchor:sssec_gldas1runoff[GLDAS1 runoff]
 
 `GLDAS1 runoff data output directory:` specifies directory
 where GLDAS1 outputs are located.
@@ -10195,8 +10259,8 @@ GLDAS1 runoff data output interval: "1da"
 ....
 
 
+[[sssec_gldas2runoff,GLDAS2 runoff]]
 ==== GLDAS2 runoff
-anchor:sssec_gldas2runoff[GLDAS2 runoff]
 
 `GLDAS2 runoff data output directory:` specifies directory
 where GLDAS2 outputs are located.
@@ -10218,8 +10282,8 @@ GLDAS2 runoff data output interval: "1da"
 ....
 
 
+[[sssec_gwbmiprunoff,GWBMIP runoff]]
 ==== GWBMIP runoff
-anchor:sssec_gwbmiprunoff[GWBMIP runoff]
 
 `GWBMIP runoff data output directory:` specifies directory
 where GWBMIP outputs are located.
@@ -10238,8 +10302,8 @@ GWBMIP runoff data output interval: "1da"
 ....
 
 
+[[sssec_lisrunoff,LIS runoff]]
 ==== LIS runoff
-anchor:sssec_lisrunoff[LIS runoff]
 
 `LIS runoff output directory:` specifies directory
 where LIS outputs are located.
@@ -10254,8 +10318,8 @@ LIS runoff output interval: "1da"
 ....
 
 
+[[sssec_merra2runoff,MERRA2 runoff]]
 ==== MERRA2 runoff
-anchor:sssec_merra2runoff[MERRA2 runoff]
 
 `MERRA2 runoff data output directory:` specifies directory
 where MERRA2 outputs are located.
@@ -10270,8 +10334,8 @@ MERRA2 runoff data output interval: "1da"
 ....
 
 
+[[sssec_nldas2runoff,NLDAS2 runoff]]
 ==== NLDAS2 runoff
-anchor:sssec_nldas2runoff[NLDAS2 runoff]
 
 `NLDAS2 runoff data output directory:` specifies directory
 where NLDAS2 outputs are located.
@@ -10290,8 +10354,8 @@ NLDAS2 runoff data output interval: "1da"
 ....
 
 
+[[ssec_outputconfig,Model output configuration]]
 === Model output configuration
-anchor:ssec_outputconfig[Model output configuration]
 
 The output start time is used to define when to begin writing
 model output.  Any value not defined will default to the corresponding
@@ -10370,8 +10434,8 @@ Model output attributes file: './MODEL_OUTPUT_LIST.TBL'
 ....
 
 
+[[ssec_timeinterval,Defining a time interval]]
 === Defining a time interval
-anchor:ssec_timeinterval[Defining a time interval]
 
 Time interval values must be entered in a format where the timestep
 value is followed by 2 character string indicating the

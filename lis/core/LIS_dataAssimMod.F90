@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -195,6 +197,8 @@ contains
     real,   allocatable   :: wo_file(:,:),wi_file(:,:,:)
     logical               :: check_flag
     character*1000        :: allunits
+
+    integer               :: m
 
     TRACE_ENTER("DA_init")
     max_index = -1
@@ -433,9 +437,24 @@ contains
        endif
     endif
 
-    do i=1,LIS_rc%ndas
-       call lsmdainit(trim(LIS_rc%lsm)//"+"//&
-            trim(LIS_rc%daset(i))//char(0),i)
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
+          do i=1,LIS_rc%ndas
+             if(LIS_rc%LSM_DAinst_valid(i)) then
+                call lsmdainit(trim(LIS_rc%lsm)//"+"//&
+                     trim(LIS_rc%daset(i))//char(0),i)
+             endif
+          enddo
+          do i=1,LIS_rc%ndas
+             if(LIS_rc%routingmodel.ne."none") then
+                if(LIS_rc%Routing_DAinst_valid(i)) then
+                   call routingdainit(trim(LIS_rc%routingmodel)//"+"//&
+                        trim(LIS_rc%daset(i))//char(0),i)
+                endif
+             endif
+          enddo
+       endif
     enddo
 
 #endif

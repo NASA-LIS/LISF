@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -248,6 +250,7 @@ contains
     real,         allocatable         :: lons(:), lats(:)
     real,         allocatable         :: state_lat(:), state_lon(:)
 
+#if 0 
 !----------------------------------------------------------------------------
 !  Check if the observation state is updated or not. If it is updated,
 !  the data is then assimilated. 
@@ -559,7 +562,7 @@ contains
        deallocate(lons)
 
     end if
-    
+#endif    
   end subroutine ensrf_increments
 
 !BOP

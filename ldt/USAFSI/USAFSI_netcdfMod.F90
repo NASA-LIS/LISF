@@ -1,3 +1,12 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !-----------------------Begin NOTICE -- DO NOT EDIT-----------------------
 ! NASA GSFC Land Data Toolkit (LDT) V1.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -685,7 +694,7 @@ contains
       nr = LDT_rc%lnr(1)
 
       ! See if file exists
-      infilename = trim(usafsi_settings%netcdf_prefix)//date10//".nc"
+      infilename = trim(usafsi_settings%netcdf_prefix)//"_"//date10//".nc"
       inquire(file=trim(infilename), exist=file_exists)
       if (.not. file_exists) return
 

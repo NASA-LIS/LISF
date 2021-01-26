@@ -1,6 +1,6 @@
 
+[[sec_run,Running the Executable]]
 == Running the Executable
-anchor:sec_run[Running the Executable]
 
 This section describes how to run the LIS executable.
 
@@ -16,11 +16,11 @@ The single-process version of `LIS` is executed by the following command issued 
 % ./LIS
 ....
 
-Note that when using the Lahey Fortran compiler, you must issue this command to run the single-process version of LIS:
-
-....
-% ./LIS -Wl,T
-....
+//Note that when using the Lahey Fortran compiler, you must issue this command to run the single-process version of LIS:
+//
+//....
+//% ./LIS -Wl,T
+//....
 
 The parallel version of `LIS` must be run through an `mpirun` script or similar mechanism.  Assuming that MPI is installed correctly, the LIS simulation is carried out by the following command issued from in the _$RUNNING_ directory.
 

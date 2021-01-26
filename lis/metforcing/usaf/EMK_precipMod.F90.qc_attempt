@@ -1,0 +1,4914 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+! Source code for gridded precipitation analysis.  Includes routines for
+! storing observations in data structures, partitioning data into 3-hour
+! values, interpolating data, performing quality control, and running the
+! analysis.
+!
+! USEFUL REFERENCES:
+!
+! Bratseth, A M, 1986:  Statistical interpolation by means of successive
+!   corrections.  Tellus, 38A, 439-447.
+! Cressie, N A C, 1993:  Statistics for Spatial Data.  Revised Edition, 
+!   Wiley, New York, 928 pp.
+! Daley, R, 1991:  Atmospheric Data Analysis.  Cambridge University Press,
+!   Cambridge, UK, 457 pp.
+! Evans, A M, 2013:  Investigation of enhancements to two fundemental 
+!   components of the statistical interpolation method used by the Canadian
+!   Precipitation Analysis (CaPA).  MS Thesis, University of Manitoba, 291 pp.
+! Ferraro, R, and Q Li, 2002:  Detailed analysis of the error associated with
+!   the rainfall retrieved by the NOAA/NESDIS Special Sensor Microwave/Imager
+!   algorithm 2. Rainfall over land.  J Geophys Res, 107, 
+!   doi:10.1029/2001JD001172.
+! Fortin, V, 2007:  Analyse de precipitation CaPA:  Proposition d'installation
+!   d'une passe parallele.  Seminare Recherche en Prevision Numerique, Dorval,
+!   QC, Canada, Environment Canada, 65 pp.  [Available online at 
+!   http://collaboration.cmc.ec.gc.ca/science/rpn/SEM/dossiers/2007/seminaires/
+!   2007-10-26/Fortin2007RPN_CaPA_final.pdf].
+! Fortin, V, G Roy, N Donaldson, and A Majidjiba, 2015:  Assimilation of
+!   radar quantitative precipitation estimations in the Canadian 
+!   Precipitation Analysis (CaPA).  J Hydrol, 531, 296-307.
+! Gronas, S and K H Midtbo, 1986:  Operational multivariate analyzes by
+!   successive corrections.  Collection of papers presented at WMO/IUGG
+!   numerical weather prediction symposium.  Tokyo, 4-8 August 1986.  J
+!   Meteor Soc Japan, 64A, 61-74.
+! Kalnay, E, 2003:  Atmospheric Modeling, Data Assimilation and 
+!   Predictability.  Cambridge University Press, Cambridge, UK, 341pp.
+! Lespinas, F, V Fortin, G Roy, P Rasmussen, and T Stadnyk, 2015:  Performance
+!   evaluation of the Canadian Precipitation Analysis (CaPA).  J Hydrometeor,
+!   16, 2045-2064.
+! Lopez, P, 2013: Experimental 4D-Var assimilation of SYNOP rain gauge data at
+!   ECMWF.  Mon Wea Rev, 141, 1527-1544.
+! Mahfouf, J-F, B Brasnett, and S Gagnon, 2007:  A Canadian precipitation
+!   analysis (CaPA) project:  Description and preliminary results.  
+!   Atmos-Ocean, 45, 1-17.
+! Myrick, D T, and J D Horel, 2006: Verification of surface temperature
+!   forecasts from the National Digital Forecast Database over the western
+!   United States.  Wea Forecasting, 21, 869-892.
+! Pedder, M A, 1993:  Interpolation and filtering of spatial observations
+!   using successive corrections and Gaussian filters.  Mon Wea Rev, 121,
+!   2889-2902.
+! Ruggiero, F H, K D Sashgeyi, A E Lipton, R V Madala, and S Raman, 1999:
+!   Coupled assimilation of geostationary satellite sounder data into a
+!   mesoscale model using the Bratseth approach.  Mon Wea Rev, 127, 802-821.
+! Sashegyi, K D, D E Harms, R V Madala, and S Raman, 1993:  Application of
+!   the Bratseth scheme for the analysis of GALE data using a mesoscale
+!   model.  Mon Wea Rev, 121, 2331-2350.
+!------------------------------------------------------------------------------
+
+#include "LIS_misc.h"
+
+module EMK_precipMod
+
+   ! Defaults
+   implicit none
+   private
+
+   ! Data structure for observed and background precipitation at observation
+   ! points
+   type EMK_obsData
+      private
+      real :: nobs
+      character*10, allocatable :: net(:)
+      character*10, allocatable :: platform(:)
+      real, allocatable :: obs(:) ! Observed variable
+      real, allocatable :: lat(:) ! Latitude of observation (deg N)
+      real, allocatable :: lon(:) ! Longitude of observation (deg E)
+      real, allocatable :: sigmaOSqr(:) ! Error variance of observation
+      real, allocatable :: back(:) ! Background variable
+      integer, allocatable :: qc(:) ! Quality control flag 
+   end type EMK_obsData
+   public :: EMK_obsData
+
+   
+   ! Public methods
+   public :: EMK_createObsData
+   public :: EMK_destroyObsData
+   public :: EMK_initObsData
+   public :: EMK_assignObsData
+   public :: EMK_getBackNWP
+   public :: EMK_split6hrGaugeObsData
+   public :: EMK_split12hrGaugeObsData
+   public :: EMK_getSSMIObsData
+   public :: EMK_getGeoPrecipObsData
+   public :: EMK_interpBackToTypeObsData
+   public :: EMK_analyzePrecip
+   public :: EMK_fg2lis_glb_precip
+   
+   ! Public constants
+   ! This is crudely based on CaPA for summertime/convective cases.
+   real, parameter, public :: EMK_GAUGE_SIGMAOSQR = 1.  ! (mm/6hr)**2
+
+   ! Originally was 7.5, was raised to remove small-amplitude noise in
+   ! analysis when using GEO_PRECIP
+   real, parameter, public :: EMK_NWP_SIGMABSQR   = 15. ! (mm/6hr)**2
+
+   ! From Ferraro and Li, JGR:A, 2002
+   real, parameter, public :: EMK_SSMI_SIGMAOSQR  = 2.25 ! (mm)**2
+
+   ! Was originally 7.5, but was reduced to remove small-amplitude noise
+   ! in analysis.
+   real, parameter, public :: EMK_GEOPRECIP_SIGMAOSQR = 2.25
+
+   ! A simple linked list type that can be used in a hash table.  Intended
+   ! to store indices of arrays in the EMK_obsData type.
+   type hash_list
+      integer :: obindex
+      type(hash_list), pointer :: next
+   end type hash_list
+
+   ! Private constants
+   real, parameter :: MISSING = -9999
+
+   ! Used by Box-Cox transformation routines
+   real, parameter :: LAMBDA_1 = 1. / 3.
+   real, parameter :: LAMBDA_2 = 0.
+   real, parameter :: INV_LAMBDA_1 = 1. / LAMBDA_1
+   real, parameter :: EXPONENT_LAMBDA_1 = 1. - 2.*LAMBDA_1
+
+   ! Scale length of background error correlation.
+   ! Value used by CaPA in summer convective cases.  Presumed to be in 
+   ! ball-park for Tropics.
+   real, parameter :: BACK_ERR_SCALE_LENGTH =  75000. ! meters
+
+   ! Radius of influence around an observation.  Assumes Gaussian function
+   ! used for background error correlation.
+   real, parameter :: MAX_DIST = 2*BACK_ERR_SCALE_LENGTH  ! meters
+
+   ! Quality control flags.  Should these be public?
+   real, parameter :: QC_UNKNOWN = 0
+   real, parameter :: QC_GOOD = 1
+   real, parameter :: QC_SUSPECT = 2
+   real, parameter :: QC_REJECT = 3
+   
+contains
+
+   !---------------------------------------------------------------------------
+   subroutine EMK_createObsData(this,n)
+
+      ! Imports
+      use AGRMET_forcingMod, only : agrmet_struc
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData),intent(inout) :: this
+      integer, intent(in) :: n
+
+      ! Allocate array members of ObsData type
+      this%nobs = 0
+      allocate(this%net(agrmet_struc(n)%max_pcpobs))
+      allocate(this%platform(agrmet_struc(n)%max_pcpobs))
+      allocate(this%obs(agrmet_struc(n)%max_pcpobs))
+      allocate(this%lat(agrmet_struc(n)%max_pcpobs))
+      allocate(this%lon(agrmet_struc(n)%max_pcpobs))
+      allocate(this%sigmaOSqr(agrmet_struc(n)%max_pcpobs))
+      allocate(this%back(agrmet_struc(n)%max_pcpobs))
+      allocate(this%qc(agrmet_struc(n)%max_pcpobs))
+
+   end subroutine EMK_createObsData
+
+   !---------------------------------------------------------------------------
+   subroutine EMK_destroyObsData(this)
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData),intent(inout) :: this
+
+      ! Dellocate array members of ObsData type      
+      this%nobs = 0
+      deallocate(this%net)
+      deallocate(this%platform)
+      deallocate(this%obs)
+      deallocate(this%lat)
+      deallocate(this%lon)
+      deallocate(this%sigmaOSqr)
+      deallocate(this%back)
+      deallocate(this%qc)
+
+   end subroutine EMK_destroyObsData
+
+   !---------------------------------------------------------------------------
+   subroutine EMK_initObsData(this)
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData),intent(inout) :: this
+
+      ! Initialize data members
+      this%nobs = 0
+      this%net(:) = "NULL"
+      this%platform(:) = "NULL"
+      this%obs(:) = MISSING
+      this%lat(:) = MISSING
+      this%lon(:) = MISSING
+      this%sigmaOSqr(:) = MISSING
+      this%back(:) = MISSING
+      this%qc(:) = QC_UNKNOWN
+
+   end subroutine EMK_initObsData
+
+   !---------------------------------------------------------------------------
+   subroutine EMK_assignObsData(this,net,platform,ob,lat,lon,sigmaOSqr, &
+        back)
+
+      ! Imports
+      use LIS_logmod, only : LIS_logunit
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData),intent(inout) :: this
+      character(len=10), intent(in) :: net
+      character(len=10), intent(in) :: platform
+      real, intent(in) :: ob
+      real, intent(in) :: lat
+      real, intent(in) :: lon
+      real, intent(in) :: sigmaOSqr
+      real, optional, intent(in) :: back
+
+      ! Local variables
+      integer :: nobs
+
+      ! Sanity check.  Since this is intended for an operational system,
+      ! just print a warning and return if we see an array bounds problem.
+      nobs = this%nobs
+      if (nobs .eq. size(this%obs,1)) then
+         write(LIS_logunit,*) &
+              '[WARN], not enough memory for assigning observation data!'
+         return
+      end if
+
+      ! Assign the value. 
+      nobs = nobs + 1
+      this%net(nobs) = net
+      this%platform(nobs) = platform
+      this%obs(nobs) = ob
+      this%lat(nobs) = lat
+      ! Make sure -180 to 180 convention is used
+      if (lon .gt. 180) then
+         this%lon(nobs) = lon - 360.
+      else         
+         this%lon(nobs) = lon
+      end if
+      this%sigmaOSqr(nobs) = sigmaOSqr
+      this%qc(nobs) = QC_UNKNOWN
+      this%nobs = nobs
+
+      ! We only assign a background value if this structure is storing a
+      ! 3-hr accumulation.
+      if (present(back)) then
+         this%back(nobs) = back
+      end if
+
+   end subroutine EMK_assignObsData
+
+   !---------------------------------------------------------------------------
+   subroutine EMK_split6hrGaugeObsData(this,nest,imax,jmax,back4,pcap,p3,p6)
+
+      ! Imports
+      use LIS_logMod, only: LIS_logunit
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData),intent(in) :: this
+      integer,intent(in) :: nest
+      integer,intent(in) :: imax
+      integer,intent(in) :: jmax
+      real, intent(in) :: back4(imax,jmax,4)
+      real,intent(in) :: pcap
+      type(EMK_ObsData),intent(out) :: p3
+      type(EMK_ObsData),intent(out) :: p6
+
+      ! Local variables 
+      integer :: nobs6
+      real :: tmp_back2(2)
+      real :: tmp_obs2(2)
+      real :: e6
+      integer :: n,k
+      real, allocatable :: backObsPts(:,:)
+      integer, external :: get_fieldpos
+      real, parameter :: FILL = MISSING
+
+      ! Initialize the 3 and 6 hour precipitation objects
+      call EMK_createObsData(p3,nest)
+      call EMK_initObsData(p3)
+      call EMK_createObsData(p6,nest)
+      call EMK_initObsData(p6)
+
+      ! See if we have any observations to process
+      nobs6 = this%nobs
+      if (nobs6 .eq. 0) return
+
+      ! Interpolate the background field to the observations for each
+      ! time slice.
+      allocate(backObsPts(nobs6,2))
+      call interpBack2ObsPts(this,nest,imax,jmax,back4(:,:,1), &
+           backObsPts(:,1))
+      call interpBack2ObsPts(this,nest,imax,jmax,back4(:,:,2), &
+           backObsPts(:,2))
+
+      ! Divide 6-hr gauge reports into 3-hr increments based on background
+      ! field.
+      do n = 1, nobs6
+
+         ! Skip for missing data
+         if ( this%qc(n) .eq. QC_REJECT .or. &
+              backObsPts(n,1) .eq. MISSING .or. &
+              backObsPts(n,2) .eq. MISSING) then
+            cycle
+         end if
+
+         tmp_back2(1:2) = backObsPts(n,1:2)
+         tmp_obs2(1:2) = MISSING
+
+         ! Get sum of two 3-hr background values
+         e6 = 0.
+         do k = 1,2
+            e6 = e6 + tmp_back2(k)
+         end do ! k
+
+         ! If no 3-hr precip available from background, just divide
+         ! the 6-hr gauge data equally.
+         if (nint(e6) .eq. 0) then
+            tmp_obs2(1:2) = 0.5 * this%obs(n)
+         else
+            ! Use the ratio of 3-hr background values to divide the gauge
+            ! data
+            do k = 1,2
+               tmp_obs2(k) = (tmp_back2(k)/e6) * this%obs(n)
+            end do
+         end if
+
+         ! Filter out bad obs
+         do k = 1,2
+            if (tmp_obs2(k) .gt. pcap) then
+               tmp_obs2(k) = MISSING
+            end if
+         end do
+
+         ! Assign 
+         if (tmp_obs2(1) .ne. MISSING) then
+            call EMK_assignObsData(p3, this%net(n), this%platform(n), &
+                 tmp_obs2(1), this%lat(n), this%lon(n), this%sigmaOSqr(n), &
+                 back=tmp_back2(1))
+         end if
+         if (tmp_obs2(2) .ne. MISSING) then
+            call EMK_assignObsData(p6, this%net(n), this%platform(n), &
+                 tmp_obs2(2), this%lat(n), this%lon(n), this%sigmaOSqr(n), &
+                 back=tmp_back2(2))
+         end if
+
+      end do ! n
+   end subroutine EMK_split6hrGaugeObsData
+
+   !---------------------------------------------------------------------------
+   subroutine EMK_split12hrGaugeObsData(this,nest,imax,jmax,back4,pcap,p3,p6,&
+        p9,p12)
+
+      ! Imports
+      use LIS_logMod, only: LIS_logunit
+      
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData),intent(in) :: this
+      integer,intent(in) :: nest
+      integer,intent(in) :: imax
+      integer,intent(in) :: jmax
+      real, intent(in) :: back4(imax,jmax,4)
+      real,intent(in) :: pcap
+      type(EMK_ObsData),intent(out) :: p3
+      type(EMK_ObsData),intent(out) :: p6
+      type(EMK_ObsData),intent(out) :: p9
+      type(EMK_ObsData),intent(out) :: p12
+
+      ! Local variables 
+      integer :: nobs12
+      real :: tmp_back4(4)
+      real :: tmp_obs4(4)
+      real :: e12
+      integer :: n,k
+      real, allocatable :: backObsPts(:,:)
+      integer, external :: get_fieldpos
+      real, parameter :: FILL = MISSING
+
+      ! Initialize the 3, 6, 9, and 12 hour precipitation objects
+      call EMK_createObsData(p3,nest)
+      call EMK_initObsData(p3)
+      call EMK_createObsData(p6,nest)
+      call EMK_initObsData(p6)
+      call EMK_createObsData(p9,nest)
+      call EMK_initObsData(p9)
+      call EMK_createObsData(p12,nest)
+      call EMK_initObsData(p12)
+
+      ! See if we have any observations to process
+      nobs12 = this%nobs
+      if (nobs12 .eq. 0) return
+
+      ! Interpolate the background field to the observations for each
+      ! time slice.
+      allocate(backObsPts(nobs12,4))
+      call interpBack2ObsPts(this,nest,imax,jmax,back4(:,:,1), &
+           backObsPts(:,1))
+      call interpBack2ObsPts(this,nest,imax,jmax,back4(:,:,2), &
+           backObsPts(:,2))
+      call interpBack2ObsPts(this,nest,imax,jmax,back4(:,:,3), &
+           backObsPts(:,3))
+      call interpBack2ObsPts(this,nest,imax,jmax,back4(:,:,4), &
+           backObsPts(:,4))
+
+      ! Divide 12-hr gauge reports into 3-hr increments based on background
+      ! field.
+      do n = 1, nobs12
+         ! Skip for missing data
+         if ( this%qc(n) .eq. QC_REJECT .or. &
+              backObsPts(n,1) .eq. MISSING .or. &
+              backObsPts(n,2) .eq. MISSING .or. &
+              backObsPts(n,3) .eq. MISSING .or. &
+              backObsPts(n,4) .eq. MISSING) then
+            cycle
+         end if
+
+         tmp_back4(1:4) = backObsPts(n,1:4)
+         tmp_obs4(1:4) = MISSING
+
+         ! Get sum of four 3-hr background values
+         e12 = 0.
+         do k = 1,4
+            e12 = e12 + tmp_back4(k)
+         end do ! k
+
+         ! If no 3-hr precip available from background, just divide
+         ! the 12-hr gauge data equally.
+         if (nint(e12) .eq. 0) then
+            tmp_obs4(1:4) = 0.25 * this%obs(n)
+         else
+            ! Use the ratio of 3-hr background values to divide the gauge
+            ! data
+            do k = 1,4
+               tmp_obs4(k) = (tmp_back4(k)/e12) * this%obs(n)
+            end do
+         end if
+
+         ! Filter out bad obs
+         do k = 1,4
+            if (tmp_obs4(k) .gt. pcap) then
+               tmp_obs4(k) = MISSING
+            end if
+         end do
+
+         ! Assign 
+         if (tmp_obs4(1) .ne. MISSING) then
+            call EMK_assignObsData(p3, this%net(n), this%platform(n), &
+                 tmp_obs4(1), this%lat(n), this%lon(n), this%sigmaOSqr(n), &
+                 back=tmp_back4(1))
+         end if
+         if (tmp_obs4(2) .ne. MISSING) then
+            call EMK_assignObsData(p6, this%net(n), this%platform(n), &
+                 tmp_obs4(2), this%lat(n), this%lon(n), this%sigmaOSqr(n), &
+                 back=tmp_back4(2))
+         end if
+         if (tmp_obs4(3) .ne. MISSING) then
+            call EMK_assignObsData(p9, this%net(n), this%platform(n), &
+                 tmp_obs4(3), this%lat(n), this%lon(n), this%sigmaOSqr(n), &
+                 back=tmp_back4(3))
+         end if
+         if (tmp_obs4(4) .ne. MISSING) then
+            call EMK_assignObsData(p12, this%net(n), this%platform(n), &
+                 tmp_obs4(4), this%lat(n), this%lon(n), this%sigmaOSqr(n), &
+                 back=tmp_back4(4))
+         end if
+
+      end do ! n
+   end subroutine EMK_split12hrGaugeObsData
+
+   !---------------------------------------------------------------------------
+   subroutine EMK_addSSMIObsData(this,imax,jmax,ra_tmp,nest,k)
+
+      ! Imports
+      use AGRMET_forcingMod, only : agrmet_struc
+      use LIS_coreMod, only: LIS_domain, LIS_rc
+      use LIS_LMLCMod, only: LIS_LMLC
+      use LIS_logMod, only: LIS_logunit, LIS_flush, LIS_endrun
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData), intent(inout) :: this
+      integer,intent(in) :: imax
+      integer,intent(in) :: jmax
+      real,intent(in) :: ra_tmp(2,imax,jmax)
+      integer, intent(in) :: nest
+      integer, intent(in) :: k
+
+      ! Local variables
+      integer :: ihemi
+      integer :: npts
+      real :: gridDesci(50)
+      real, allocatable :: xpts(:), ypts(:), rlat(:), rlon(:)
+      integer :: nv, mo
+      real :: sigmaOSqr, ob, alat1, alon1, xi1, xj1
+      real :: xpnmcaf, ypnmcaf, orient, xmesh, xmeshl
+      character(len=10) :: net, platform
+      integer :: icount
+      integer :: i,j
+      integer :: count_good_ssmi
+      real :: ri,rj
+      real, parameter :: FILL = -9999.0
+
+      net = "SSMI"
+      platform = "SSMI"
+      sigmaOSqr = EMK_SSMI_SIGMAOSQR
+
+      ! Allocate memory for map projection calculations
+      npts = imax*jmax
+      allocate(xpts(npts))
+      allocate(ypts(npts))
+      allocate(rlat(npts))
+      allocate(rlon(npts))
+
+      ! Need to assemble SSMI map projection based on hemisphere and number
+      ! of grid points.  Taken from AGRMET_forcingMod.F90
+      ! SSM/I imax is either 512, 1024, or 1440.
+
+      if (imax .eq. 512) then
+         xmeshl = 47.625
+         xpnmcaf = 257
+         ypnmcaf = 257
+      else if (imax .eq. 1024) then
+         xmeshl = 47.625/2
+         xpnmcaf = 513
+         ypnmcaf = 513
+      else if (imax .eq. 1440) then
+         continue
+      else
+         write(LIS_logunit,*)'[ERR] Invalid imax dimension for SSM/I!'
+         write(LIS_logunit,*)'Received ', imax
+         write(LIS_logunit,*)'Only support 512, 1024, or 1400'
+         call LIS_flush(LIS_logunit)
+         call LIS_endrun()         
+      end if
+
+      ! Handle the polar stereographic case first
+      if (imax .eq. 512 .or. imax .eq. 1024) then
+         count_good_ssmi = 0
+         do ihemi = 1, 2
+
+            ! Assemble gridDesc array
+            if(ihemi.eq.1) then
+               xmesh = xmeshl
+               orient = 100.0
+            else
+               xmesh = -xmeshl
+               orient = 280.0
+            endif
+
+            ! Get lat/lon of SSM/I data.
+            icount = 1
+            do j = 1,jmax
+               xj1 = real(j) - ypnmcaf                  
+               do i = 1,imax
+                  xi1 = float(i) - xpnmcaf
+                  call polarToLatLon(xi1,xj1,xmesh,orient,&
+                       rlat(icount),rlon(icount))
+                  icount = icount + 1
+               end do ! i
+            end do ! j
+                                      
+            ! At this point, we have the lat/lon for SSM/I in this hemisphere
+            ! and the LIS global map projection.
+            icount = 0            
+            do j = 1, jmax
+               do i = 1, imax
+
+                  icount = icount + 1
+
+                  ! Screen out water points
+                  if (agrmet_struc(nest)%land(i,j,ihemi) .eq. 0) cycle
+
+                  ! Latitude bounds checks for hemispheric grids
+                  if (ihemi .eq. 1) then
+                     if (rlat(icount) .lt. 0) cycle
+                  else if (ihemi .eq. 2) then
+                     if (rlat(icount) .gt. 0) cycle
+                  end if
+
+                  if (ra_tmp(ihemi,i,j) .lt. 0) cycle
+                  ob = ra_tmp(ihemi,i,j)
+                  count_good_ssmi = count_good_ssmi + 1
+                  call EMK_assignObsData(this,net,platform,ob, rlat(icount), &
+                       rlon(icount),sigmaOSqr)
+               end do ! i
+            end do ! j
+
+         end do ! ihemi         
+      end if  ! Polar stereographic case
+
+      ! Handle Lat/Lon case
+      if (imax .eq. 1440) then
+
+         write(LIS_logunit,*)'[ERR] Lat/lon SSM/I data not supported yet!'
+         write(LIS_logunit,*)'Modify EMK_addSSMIObsData and recompile!'
+         call LIS_flush(LIS_logunit)
+         call LIS_endrun()
+
+      end if ! Lat/Lon case
+
+      ! Clean up
+      deallocate(xpts)
+      deallocate(ypts)
+      deallocate(rlat)
+      deallocate(rlon)
+
+   end subroutine EMK_addSSMIObsData
+
+   !---------------------------------------------------------------------------
+   subroutine EMK_getBackNWP(nest,back4, use_twelve, j6hr, findex)
+
+      ! Imports
+      use AGRMET_forcingMod, only: agrmet_struc
+      use LIS_coreMod, only: LIS_rc
+      use LIS_logMod, only: LIS_abort, LIS_endrun, LIS_getNextUnitNumber, &
+           LIS_releaseUnitNumber, LIS_logunit
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: nest
+      real, intent(inout) :: back4(LIS_rc%gnc(nest), LIS_rc%gnr(nest), 4)
+      logical, intent(in) :: use_twelve
+      integer, intent(in) :: j6hr
+      integer, intent(in) :: findex
+
+      ! Local variables
+      real :: fg_data_glb(LIS_rc%gnc(nest), LIS_rc%gnr(nest))
+      integer :: k, t
+      integer :: j3hr      
+      integer :: fc_hr
+      character(len=6) :: src
+
+      ! For (0, 6Z], k = 1,2.  For (6,12Z], k = 3,4
+      if (use_twelve) then
+         k = 2
+         do t=3,4
+            back4(:,:,t) = LIS_rc%udef ! EMK
+         end do
+      else
+         k = 0
+         do t=1,2
+            back4(:,:,t) = LIS_rc%udef ! EMK
+         end do
+      end if
+
+      fg_data_glb = LIS_rc%udef
+
+      do j3hr = j6hr+3, j6hr+6,3
+         k = k + 1
+
+         ! Get GFS, if requested
+         if (agrmet_struc(nest)%gfsprecswch .eq. 1) then !if using GFS precip
+            src = "GFS"
+            if ((k .eq. 1) .or. (k .eq. 3)) then
+               fc_hr=3
+               call fldbld_precip_nwp(nest,findex,j6hr,src,fc_hr, &
+                    fg_data_glb)
+            else if ((k .eq. 2) .or. (k .eq. 4)) then
+               fc_hr=6
+               call fldbld_precip_nwp(nest,findex,j6hr,src,fc_hr, &
+                    fg_data_glb)
+            end if
+         endif
+
+         ! Get GALWEM, if requested
+         if (agrmet_struc(nest)%galwemprecswch .eq. 1) then 
+            src = "GALWEM"
+            if ((k .eq. 1) .or. (k .eq. 3)) then
+               fc_hr=3
+               call fldbld_precip_nwp(nest,findex,j6hr,src,fc_hr, &
+                    fg_data_glb)
+            else if ((k .eq. 2) .or. (k .eq. 4)) then
+               fc_hr=6
+               call fldbld_precip_nwp(nest,findex,j6hr,src,fc_hr,&
+                    fg_data_glb)
+            end if
+         endif
+         
+         back4(:,:,k) = fg_data_glb(:,:) 
+
+      end do ! j3hr
+
+   end subroutine EMK_getBackNWP
+
+   !---------------------------------------------------------------------------
+   subroutine EMK_getSSMIObsData(nest,j6hr,use_twelve,precip3,precip6, &
+        precip9,precip12)
+
+      ! Imports
+      use AGRMET_forcingMod, only : agrmet_struc
+      use LIS_coreMod, only: LIS_rc, LIS_masterproc
+      use LIS_fileIOMod, only: LIS_putget
+      use LIS_logMod, only: LIS_logunit, LIS_alert
+      use LIS_timeMgrMod, only : LIS_julhr_date
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: nest
+      integer, intent(in) :: j6hr
+      logical, intent(in) :: use_twelve
+      type(EMK_obsData), intent(inout) :: precip3
+      type(EMK_obsData), intent(inout) :: precip6
+      type(EMK_obsData), intent(inout) :: precip9
+      type(EMK_obsData), intent(inout) :: precip12
+
+      ! Local variables
+      real, allocatable :: ra(:,:,:)
+      integer :: k
+      integer :: j3hr
+      integer :: imax,jmax
+      integer :: alert_number
+      integer :: first,last,hemi
+      integer :: yr,mo,da,hr
+      character(len=100) :: ifil
+      logical :: exists
+      character(len=100) :: message(20)
+      character(len=30) :: routine_name
+      logical :: use_zeros
+      integer :: local_global_or_hemi
+      integer :: local_diff_grid
+      routine_name = 'EMK_getSSMIObsData'
+
+      alert_number = 0
+      if (use_twelve) then
+         k = 2
+      else
+         k = 0
+      end if
+
+      ! Loop through time levels
+      do j3hr = j6hr+3, j6hr+6, 3
+         k = k + 1
+         
+         if (agrmet_struc(nest)%raswch .eq. 1) then
+            local_global_or_hemi = agrmet_struc(nest)%global_or_hemi
+            if (agrmet_struc(nest)%imaxsmi .eq. 1440) then
+               local_global_or_hemi=1
+            end if
+            local_diff_grid = agrmet_struc(nest)%diff_grid
+            if ( agrmet_struc(nest)%imaxsmi .ne. &
+                 agrmet_struc(nest)%imax) then
+               local_diff_grid=1
+            end if
+
+            ! Select appropriate SSMI grid dimensions
+            if (local_diff_grid .eq. 1) then
+               imax = agrmet_struc(nest)%imax3
+               jmax = agrmet_struc(nest)%jmax3
+            else
+               imax = agrmet_struc(nest)%imax
+               jmax = agrmet_struc(nest)%jmax
+            end if
+            
+            allocate(ra(2,imax,jmax))
+!            ra = LIS_rc%udef
+            ra = MISSING
+            use_zeros = .false.
+            if (agrmet_struc(nest)%razero .eq. 1) then
+               use_zeros = .true.
+            end if
+
+            ! Get the data
+            if (local_global_or_hemi.eq.0) then
+!               first=agrmet_struc(nest)%shemi
+!               last=agrmet_struc(nest)%nhemi
+               first = 1
+               last = 2
+            else
+               first=1
+               last=1
+            endif
+            do hemi=first,last
+                call LIS_julhr_date( j3hr, yr,mo,da,hr)
+                call agrmet_ssmiprec_filename(ifil,&
+                     agrmet_struc(nest)%agrmetdir,&
+                     agrmet_struc(nest)%ssmidir,&
+                     agrmet_struc(nest)%use_timestamp,&
+                     hemi,yr,mo,da,hr,nest,imax,jmax)
+                
+                inquire(file = trim(ifil), exist = exists)
+                if (.not. exists) then
+                   write(LIS_logunit,*) ' '
+                   write(LIS_logunit,*)'[WARN] precip/smiedr:  error opening file'
+                   write(LIS_logunit,*)'  SSMI data file ', trim(ifil), &
+                        ' does not exist.'
+                   write(LIS_logunit,*)'  SSMI estimates will not be used ',&
+                        'in precip analysis.'
+                   write(LIS_logunit,*) ' '
+                   message   =' '
+                   message(1)='[WARN] program:  LIS'
+                   message(2)='  routine:  AGRMET_smiest'
+                   message(3)='  SSMI data file '//trim(ifil)//&
+                        ' does not exist.'
+                   message(4)='  SSMI estimates will not be used in '//&
+                        'precip analysis.'
+                   alert_number = alert_number + 1
+                   if(LIS_masterproc) & 
+                        call lis_alert('precip              ', alert_number, &
+                        message )
+                   
+                   ra(hemi,:,:) = MISSING
+                else
+                   write(LIS_logunit,*) '- READING ',trim(ifil)
+                   call LIS_putget( ra(hemi,:,:), 'r', ifil, routine_name, &
+                        imax, jmax)
+                end if ! .not. exists
+            end do ! hemi
+
+            ! Honor option to reset SSMI zero precip values to missing
+            if (.not. use_zeros) then
+               write(LIS_logunit,*)'- SSMI ZEROS NOT USED'
+               where ( ra(:,:,:) .eq. 0.0 ) 
+                  ra(:,:,:) = MISSING
+               end where
+            end if
+            where ( ra(:,:,:) .eq. 9999)
+               ra(:,:,:) = MISSING
+            end where
+
+            ! Now append the SSMI values to the appropriate 3-hr precip
+            ! structure.  We will interpolate background values later.
+            if (k .eq. 1) then
+               call EMK_addSSMIObsData(precip3,imax,jmax,ra,nest,k)
+            else if (k .eq. 2) then
+               call EMK_addSSMIObsData(precip6,imax,jmax,ra,nest,k)
+            else if (k .eq. 3) then
+               call EMK_addSSMIObsData(precip9,imax,jmax,ra,nest,k)
+            else
+               call EMK_addSSMIObsData(precip12,imax,jmax,ra,nest,k)
+            end if
+
+            ! Clean up
+            deallocate(ra)
+
+         end if ! raswch
+      end do ! j3hr
+   end subroutine EMK_getSSMIObsData
+
+   !---------------------------------------------------------------------------
+   subroutine EMK_getGeoPrecipObsData(nest,j6hr,use_twelve,precip3,precip6,&
+        precip9,precip12)
+
+      ! Imports
+      use AGRMET_forcingMod, only : agrmet_struc
+      use LIS_coreMod, only     : LIS_rc, LIS_masterproc, LIS_domain
+      use LIS_fileIOMod, only: LIS_putget
+      use LIS_LMLCMod, only: LIS_LMLC
+      use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_alert, LIS_flush
+      use LIS_timeMgrMod, only : LIS_julhr_date
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: nest
+      integer, intent(in) :: j6hr
+      logical, intent(in) :: use_twelve
+      type(EMK_obsData), intent(inout) :: precip3
+      type(EMK_obsData), intent(inout) :: precip6
+      type(EMK_obsData), intent(inout) :: precip9
+      type(EMK_obsData), intent(inout) :: precip12
+
+      ! Local variables
+      real, allocatable :: geoprc(:,:)
+      real, allocatable :: geopr(:,:)
+      integer, allocatable :: geornk(:,:)
+      integer :: local_global_or_hemi
+      integer :: local_diff_grid
+      integer :: j3hr
+      integer :: mesh
+      integer :: imax,jmax
+      integer :: first, last, hemi
+      logical :: gdgeornk, exists
+      integer :: yr,mo,da,hr
+      character(len=100) :: ifil
+      integer :: k
+      integer :: alert_number
+      character(len=100) :: message(20)
+      character(len=30) :: routine_name
+      real, allocatable :: xpts(:), ypts(:), rlat(:), rlon(:)
+      real :: sigmaOSqr, ob, alat1, alon1, xi1, xj1
+      real :: xpnmcaf, ypnmcaf, orient, xmesh, xmeshl
+      character(len=10) :: net, platform
+      integer :: count_good_geo_precip, icount
+      integer :: npts
+      integer :: i,j,jj
+      logical, external :: is_geo_corrupted
+      real, allocatable :: gest_temp(:,:,:)
+      real :: ri,rj
+
+      net = "GEOPRECIP"
+      platform = "GEOPRECIP"
+      sigmaOSqr = EMK_GEOPRECIP_SIGMAOSQR
+
+      routine_name = "EMK_getGeoPrecipObsData"
+      alert_number = 0
+
+      if (use_twelve) then
+         k = 2
+      else
+         k = 0
+      end if
+
+      ! Loop through time levels
+      do j3hr = j6hr+3, j6hr+6, 3
+         k = k + 1
+         
+         if ( (agrmet_struc(nest)%geoswch .eq. 1) .or. &
+              (agrmet_struc(nest)%geoswch .eq. 2)) then
+            local_global_or_hemi = agrmet_struc(nest)%global_or_hemi
+            if (agrmet_struc(nest)%imaxgp == 3600) then
+               local_global_or_hemi = 1
+            end if
+            local_diff_grid = agrmet_struc(nest)%diff_grid
+            if (agrmet_struc(nest)%imaxgp .ne. agrmet_struc(nest)%imax) then
+               local_diff_grid = 1
+            end if
+
+            ! Select mesh number and array sizes
+            mesh = 1 
+            imax = agrmet_struc(nest)%imax
+            jmax = agrmet_struc(nest)%jmax
+            if (local_diff_grid .eq. 1) then
+               imax = agrmet_struc(nest)%imax2
+               jmax = agrmet_struc(nest)%jmax2
+               if (agrmet_struc(nest)%imaxgp .eq. 4096) then
+                  if (agrmet_struc(nest)%imax .eq. 512) then
+                     mesh = 8
+                  else if (agrmet_struc(nest)%imax .eq. 1024) then
+                     mesh = 4
+                  else
+                     write(LIS_logunit,*) &
+                          '[ERR] Invalid dimension for GEO_PRECIP data!'
+                     write(LIS_logunit,*)'Read ', agrmet_struc(nest)%imax
+                     call LIS_endrun()
+                  end if
+               end if
+            end if
+
+            ! Allocate memory for map projection calculations
+            npts = imax*jmax
+            allocate(xpts(npts))
+            allocate(ypts(npts))
+            allocate(rlat(npts))
+            allocate(rlon(npts))
+
+            ! Assemble GEO_PRECIP map projection.  Taken from &
+            ! AGRMET_forcingMod.F90
+            if (imax .eq. 512) then
+               xmeshl = 47.625
+               xpnmcaf = 257
+               ypnmcaf = 257
+            else if (imax .eq. 1024) then
+               xmeshl = 47.625/2
+               xpnmcaf = 513
+               ypnmcaf = 513
+            else if (imax .eq. 4096) then
+               xmeshl = 47.625/8
+               xpnmcaf = 2049  
+               ypnmcaf = 2049
+            else
+               write(LIS_logunit,*) &
+                    '[ERR] Invalid imax dimension for GEO_PRECIP!'
+               write(LIS_logunit,*)'Received ',imax
+               write(LIS_logunit,*)'Only support 512, 1024, or 4096!'
+               call LIS_flush(LIS_logunit)
+               call LIS_endrun()
+            end if
+
+            if (local_global_or_hemi .eq. 0) then
+!               first = agrmet_struc(nest)%shemi  
+!               last  = agrmet_Struc(nest)%nhemi
+               first = 1
+               last = 2
+            else
+               first = 1
+               last  = 1
+            endif
+
+            do hemi = first,last
+               
+               gdgeornk = .false.
+               call LIS_julhr_date( j3hr, yr,mo,da,hr)
+               call agrmet_geoprec_filename(ifil,agrmet_struc(nest)%agrmetdir,&
+                    agrmet_struc(nest)%geodir, &
+                    agrmet_struc(nest)%use_timestamp,&
+                    hemi,yr,mo,da,hr,nest,imax,jmax)
+
+               inquire( file = trim(ifil), exist = exists)
+               if ( .not. exists ) then 
+                  write(LIS_logunit,*) &
+                       'EMK_getGeoPrecipObsData:  error opening file ', &
+                       trim(ifil)
+                  write(LIS_logunit,*) '  file does not exist'
+                  write(LIS_logunit,*) &
+                       '  geo precip estimate will not be performed'
+                  message = ' '
+                  message(1) = 'program:  LIS'
+                  message(2) = '  routine:  EMK_getGeoPrecipObsData'
+                  message(3) = '  error opening file '//trim(ifil)
+                  message(4) = '  file does not exist'
+                  message(5) = '  geo precip estimate will not be performed'
+                  alert_number = alert_number + 1
+                  if(LIS_masterproc) then 
+                     call LIS_alert( 'precip              ', &
+                          alert_number, message )
+                  endif
+                  return
+               endif
+               write(LIS_logunit,*) '- READING ', trim(ifil)
+
+               allocate(geoprc(imax,jmax))
+
+               call LIS_putget( geoprc, 'r', ifil, routine_name, &
+                    imax, jmax )
+               
+               ! Need to shift 10th degree GEO_PRECIP by 180 degrees; the data
+               ! start at 0.05, not at -179.95
+               if (imax .eq. 3600) then
+                  allocate(geopr(imax,jmax))
+                  geopr=cshift(geoprc,1800,dim=1)
+                  geoprc=geopr
+                  deallocate(geopr)
+               end if
+
+               ! Check for anomalous geoprecip files
+               if (is_geo_corrupted(geoprc, imax, jmax, mo, hemi)) then
+                  write(LIS_logunit,*) &
+                       'EMK_getGeoPrecipObsData:  data corrupted - ', &
+                       trim(ifil)
+                  write(LIS_logunit,*) &
+                       '  geo precip estimate will not be performed'
+                  message = ' '
+                  message(1) = 'program:  LIS'
+                  message(2) = '  routine:  EMK_getGeoPrecipObsData'
+                  message(3) = '  data corrupted in file '//trim(ifil)
+                  message(4) = '  ' 
+                  message(5) = '  geo precip estimate will be assigned missing'
+                  alert_number = alert_number + 1
+                  if(LIS_masterproc) then 
+                     call lis_alert( 'precip              ', &
+                          alert_number, message )
+                  endif                                    
+                  geoprc = MISSING
+               end if
+
+               ! Loop through field and reset bad points to MISSING
+               do j = 1, jmax
+                  do i = 1, imax
+                     if (geoprc(i,j) .lt. 0) then
+                        geoprc(i,j)  = MISSING
+                     end if
+                  end do
+               end do
+               if ( local_diff_grid .eq. 1 .and. &
+                    agrmet_struc(nest)%imaxgp .ne. 4096) then
+                  do j = 1, jmax
+                     do i = 1, imax
+                        if (agrmet_struc(nest)%land2(i,j,hemi) .le. 0) then
+                           geoprc(i,j) = MISSING
+                        else
+                           if (geoprc(i,j) .ge. 9990.0) then
+                              geoprc(i,j) = MISSING
+                           end if
+                        end if
+                     end do ! i
+                  end do ! j
+               else
+                  do j = 1, jmax
+                     do i = 1, imax
+                        if (agrmet_struc(nest)%land( &
+                             int(i/mesh),int(j/mesh),hemi) .le. 0) then
+                           geoprc(i,j) = MISSING
+                        else
+                           if (geoprc(i,j) .ge. 9990.0) then
+                              geoprc(i,j) = MISSING
+                           end if
+                        end if
+                     end do ! i
+                  end do ! j
+               end if
+
+               ! Flip the data if necessary
+               if (local_global_or_hemi .eq. 1) then
+                  allocate(gest_temp(1,imax,jmax))
+                  do j = 1, jmax
+                     jj = jmax-(j-1)
+                     do i = 1, imax
+                        gest_temp(1,i,j) = geoprc(i,jj)
+                     end do ! i
+                  end do ! j
+                  geoprc(:,:) = gest_temp(1,:,:)
+                  deallocate(gest_temp)
+               end if
+
+               ! Handle the polar stereographic case first
+               if ( imax .eq. 512 .or. imax .eq. 1024 .or. &
+                    imax .eq. 4096) then
+                  if (hemi .eq. 1) then
+                     xmesh = xmeshl
+                     orient = 100.0
+                  else
+                     xmesh = -xmeshl
+                     orient = 280.0
+                  end if
+
+                  ! Get lat/lon of GEO_PRECIP data.
+                  icount = 1
+                  do j = 1, jmax
+                     xj1 = real(j) - ypnmcaf
+                     do i = 1,imax
+                        xi1 = float(i) - xpnmcaf
+                        call polarToLatLon(xi1,xj1,xmesh,orient, &
+                             rlat(icount),rlon(icount))
+                        icount = icount + 1
+                     end do ! i
+                  end do ! j
+
+                  ! At this point, we have the lat/lon for GEO_PRECIP in this
+                  ! hemisphere, plus the LIS global map projection.
+                  icount = 0
+                  count_good_geo_precip = 0
+                  do j = 1, jmax
+                     do i = 1, imax
+
+                        icount = icount + 1
+
+                        ! Skip GEO_PRECIP if over water
+                        if (agrmet_struc(nest)%land(i,j,hemi) .eq. 0) cycle
+
+                        ! Lat/Lon bounds
+                        if (rlat(icount) .gt.  50.) cycle
+                        if (rlat(icount) .lt. -50.) cycle
+
+                        if (geoprc(i,j) .eq. MISSING) cycle
+                        
+                        ob = geoprc(i,j)
+                        count_good_geo_precip = count_good_geo_precip + 1
+                        if (k .eq. 1) then
+                           call EMK_assignObsData(precip3,net,platform,ob, &
+                                rlat(icount),rlon(icount),sigmaOSqr)
+                        else if (k .eq. 2) then
+                           call EMK_assignObsData(precip6,net,platform,ob, &
+                                rlat(icount),rlon(icount),sigmaOSqr)
+                        else if (k .eq. 3) then
+                           call EMK_assignObsData(precip9,net,platform,ob, &
+                                rlat(icount),rlon(icount),sigmaOSqr)
+                        else if (k .eq. 4) then
+                           call EMK_assignObsData(precip12,net,platform,ob, &
+                                rlat(icount),rlon(icount),sigmaOSqr)
+                        end if
+                     end do ! i
+                  end do ! j
+
+                  write(LIS_logunit,*)'[INFO] count_good_geo_precip = ', &
+                       count_good_geo_precip
+
+               end if ! Polar stereographic cases
+
+               ! Handle lat/lon case
+               if (imax .eq. 3600) then
+
+                  write(LIS_logunit,*)&
+                       '[ERR] Lat/lon GEO_PRECIP data not supported yet!'
+                  write(LIS_logunit,*)&
+                       'Modify EMK_addGeoPrecipObsData and recompile!'
+                  call LIS_flush(LIS_logunit)
+                  call LIS_endrun()
+
+               end if
+
+               ! Clean up
+!               if (allocated(geornk)) deallocate(geornk)
+               deallocate(geoprc)
+
+            end do ! hemi
+
+            deallocate(rlat)
+            deallocate(rlon)
+            deallocate(xpts)
+            deallocate(ypts)
+
+         end if ! geoswch
+      end do ! j3hr
+      
+   end subroutine EMK_getGeoPrecipObsData
+
+   !---------------------------------------------------------------------------
+   subroutine EMK_interpBackToTypeObsData(this,nest,imax,jmax,back,type)
+
+      ! Imports
+      use LIS_logMod, only: LIS_logunit
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData),intent(inout) :: this
+      integer,intent(in) :: nest
+      integer,intent(in) :: imax
+      integer,intent(in) :: jmax
+      real, intent(in) :: back(imax,jmax)
+      character(len=10),intent(in) :: type
+
+      ! Local variables 
+      integer :: nobs
+      integer :: n
+      real, allocatable :: backObsPts(:)
+      integer, external :: get_fieldpos
+      real, parameter :: FILL = MISSING
+      integer :: kstart,kend
+
+      ! See if we have any observations to process
+      nobs = this%nobs
+      if (nobs .eq. 0) return
+
+      ! Interpolate the background field to the observations for the selected
+      ! time slice.
+      allocate(backObsPts(nobs))
+      call interpBack2ObsPts(this,nest,imax,jmax,back, &
+           backObsPts)
+
+      ! Loop through the observations and insert the background values to
+      ! the observation type.  
+      do n = 1, nobs
+
+         if ( trim(this%net(n)) .ne. trim(type) .and. &
+              trim(this%platform(n)) .ne. trim(type)) cycle
+         
+         this%back(n) = backObsPts(n)
+
+      end do ! n
+
+      ! Cleanup
+      deallocate(backObsPts)
+
+   end subroutine EMK_interpBackToTypeObsData
+
+   !---------------------------------------------------------------------------
+   ! Surface precipitation analysis using a background field and irregularly
+   ! positioned observations.
+   !
+   ! (1) Currently supported input data are rain gages, SSMI retrievals,
+   !     and GEO_PRECIP retrievals.  (TODO:  CMORPH)
+   ! (2) A Box-Cox cubic root transform (following Fortin et al 2015) is
+   !     applied to observed and background precipitation before the analysis.
+   !     This has the effect of making error distributions approximately 
+   !     Gaussian.
+   ! (3) The observations are subjected to quality control tests:
+   !     (a) The gage reports are checked for duplicates.  If duplicates
+   !         are found for a particular station but all are identical, only
+   !         one report is preserved and the rest are rejected.  Otherwise,
+   !         if two different reports from the same station are found,
+   !         a superob will be created if the spread is smaller than
+   !         the observation error variance (following Mahfouf et al 2007),
+   !         and both original reports will be rejected.  If more than two
+   !         unique reports exist for the same station, all will be rejected.
+   !     (b) Gages are rejected if surface temperatures are less than 2 C
+   !         (following Lopez 2013), as precipitation is assumed to be snow
+   !         and the recorded values are assumed to be biased low.
+   !     (c) GEO_PRECIP is rejected if the surface temperature is too low
+   !         (usually < 278 K), or if positive snow depth exists at the ground;
+   !         these conditions are associated with biases in the retrieval.
+   !         This is based on the earlier AGRMET precipitation algorithm.
+   !     (d) Reject any observation if it differs from the background field
+   !         more than 4 times the sum of the observation and background
+   !         error variances (following Lopez 2013).
+   !     (e) For each observation type, create superobs from multiple obs
+   !         in the same LIS grid box.  But reject an observation if it 
+   !         differs too much from the initial mean observatation value
+   !         in the LIS grid box (following Lespinas et al 2015).
+   ! (4) The (super-)observations that pass all the quality control tests are 
+   !     merged into a common data structure.
+   ! (5) A Bratseth (1986) scheme is applied to the observations and background
+   !     field.  This successive correction scheme converges to Optimal
+   !     Interpolation without direct matrix inversion, providing significant
+   !     computational savings and allowing a psuedo-global analysis (the
+   !     radius of influence is specified by the background error covariance
+   !     rather than arbitrary limits on the number of observations).
+   !     (a) The scheme currently uses hardwired observation error variances
+   !         for each observation type, a hardwired background error variance,
+   !         and a Gaussian background correlation function with a hardwired
+   !         scale length.
+   !     (b) The scheme calculates "local data density" for each observation,
+   !         which is a function of the error correlations with other 
+   !         observations.
+   !     (c) The scheme performs a successive analysis of "observation 
+   !         estimates" at observation points, as well as the actual analysis 
+   !         at arbitrary points.  Different weight functions are used for the
+   !         "observation estimates" and the analysis.  In this implementation,
+   !         the "observation estimates" from each iteration are summed until 
+   !         the analysis at the observation points converged.
+   !     (d) After the analysis converges, the summed "observation estimates"
+   !         are used to generate the analysis at the LIS grid points in a 
+   !         single pass, similar to the algorithms shown by Daley (1991),
+   !         Pedder (1993), and Kalnay (2003).
+   ! (6) After the analysis, a reverse Box-Cox transformation is performed to
+   !     recover physical rainfall.   
+   ! (7) Spurious negative or near-zero values are reset to zero.
+   !
+   ! NOTES:  
+   ! (1) Observation error is currently assumed to be uncorrelated between
+   !     observations.  This is valid for rain gages but not for satellite 
+   !     data.
+   ! (2) The Box-Cox transformation introduces a bias in the analysis.  While
+   !     a second order bias correction exists (Fortin et al 2015; Cressie
+   !     1993; Evans 2013), it requires an estimated analysis error variance 
+   !     value.  Unfortunately a fast method of calculating these variances 
+   !     has not been found, so currently no bias correction is implemented.
+   ! (3) Experiments with an inverse exponential background error correlation
+   !     function (after Fortin et al 2015) showed light precipitation was
+   !     spread too far around observations.  The Gaussian function appears
+   !     more visually correct.
+   ! (4) Other bias corrections and quality control tests for the input data
+   !     are pending.
+   subroutine EMK_analyzePrecip(precipGage,precipSSMI,precipGEO,&
+        nest,back,sigmaBSqr,hourindex,mrgp)
+
+      ! Imports
+      use AGRMET_forcingMod, only:  agrmet_struc
+      use LIS_coreMod, only: LIS_rc, LIS_ews_halo_ind, LIS_ewe_halo_ind, &
+           LIS_nss_halo_ind, LIS_nse_halo_ind, LIS_localPet
+      use LIS_logMod, only: LIS_logunit
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData),intent(inout) :: precipGage,precipSSMI,precipGEO
+      integer,intent(in) :: nest
+      real, intent(in) :: back(LIS_rc%gnc(nest), LIS_rc%gnr(nest))
+      real, intent(in) :: sigmaBSqr
+      integer, intent(in) :: hourindex
+      real, intent(inout) :: mrgp(LIS_rc%lnc(nest),LIS_rc%lnr(nest))
+
+      ! Local variables
+      type(EMK_ObsData) :: precipAll
+      integer :: nobs
+      real, allocatable :: invDataDensities(:)
+      real, allocatable :: sumObsEstimates(:) 
+      integer :: npasses
+      integer :: r,j
+      real, allocatable :: back_boxcox(:,:)
+      character(len=10) :: type
+      integer :: ifix
+      logical, allocatable :: converged(:)
+      integer :: icount
+      integer :: max_passes
+
+      ! Initialize merged field with the background first guess.  This will be
+      ! changed below as needed.
+      mrgp(:,:) = back(LIS_ews_halo_ind(nest,LIS_localPet+1): &
+           LIS_ewe_halo_ind(nest,LIS_localPet+1), &
+           LIS_nss_halo_ind(nest,LIS_localPet+1): &
+           LIS_nse_halo_ind(nest,LIS_localPet+1))
+
+      ! If no observations, skip the Bratseth analysis
+      if ( precipGage%nobs .eq. 0 .and. &
+           precipSSMI%nobs .eq. 0 .and. &
+           precipGEO%nobs .eq. 0) then
+         call zeroTrace(LIS_rc%lnc(nest),LIS_rc%lnr(nest),mrgp)
+         return
+      end if
+     
+      ! Apply Box-Cox transformation on background and observed values.
+      ! This makes the error distributions approximately Gaussian.
+      call boxcoxTransformObsData(precipGage)
+      call boxcoxTransformObsData(precipSSMI)
+      call boxcoxTransformObsData(precipGEO)
+      allocate(back_boxcox(LIS_rc%gnc(nest),LIS_rc%gnr(nest)))
+      back_boxcox(:,:) = back(:,:)
+      do r = 1, LIS_rc%gnr(nest)
+         call boxcoxTransform(LIS_rc%gnc(nest), back_boxcox(:,r))
+      end do
+
+      ! Handle duplicate reports
+      call dupQC(precipGage)
+
+      ! Reject probable snow cases for gages
+      call snowQC(precipGage,nest,hourindex,threshold=275.)
+
+      ! Reject probable snow cases for GEOPRECIP
+      call snowQC(precipGEO,nest,hourindex, &
+           threshold=real(agrmet_struc(nest)%geomaxthresh), &
+           silent_rejects=.true.)      
+      call snowDepthQC(precipGEO,nest, &
+           silent_rejects=.true.)
+
+      ! Compare with background field
+      call backQC(precipGage,sigmaBSqr)
+      call backQC(precipSSMI,sigmaBSqr)
+      call backQC(precipGEO,sigmaBSqr)
+
+      ! Create "superobservations" from close gauges
+      call superstatQC(precipGage,nest)
+      type = "SUPERGAGE"
+      call EMK_interpBackToTypeObsData(precipGage,nest, &
+           LIS_rc%gnc(nest),LIS_rc%gnr(nest),back_boxcox,type)
+
+      ! Create "superobservations" from close SSMI data
+      call superstatQC(precipSSMI,nest,network="SSMI")
+      type = "SUPERSSMI"
+      call EMK_interpBackToTypeObsData(precipSSMI,nest, &
+           LIS_rc%gnc(nest),LIS_rc%gnr(nest),back_boxcox,type)
+
+      ! Create "superobservations" from close GEO_PRECIP data
+      call superstatQC(precipGeo,nest,network="GEOPRECIP")
+      type = "SUPERGEO"
+      call EMK_interpBackToTypeObsData(precipGeo,nest, &
+           LIS_rc%gnc(nest),LIS_rc%gnr(nest),back_boxcox,type)
+
+      ! Clean up
+      deallocate(back_boxcox)
+
+      ! At this point, QC is done.  Consolidate the good obs into a single
+      ! structure for the analysis.
+      call EMK_createObsData(precipAll,nest)
+      call consolidatePrecipObs(precipAll,precipGage,precipSSMI,precipGEO)
+      nobs = precipAll%nobs
+      if (nobs .eq. 0) then
+         call EMK_destroyObsData(precipAll)
+         call zeroTrace(LIS_rc%lnc(nest),LIS_rc%lnr(nest),mrgp)
+         return
+      end if
+
+      ! Run Box-Cox transform on background field.
+      do r = 1, LIS_rc%lnr(nest)
+         call boxcoxTransform(LIS_rc%lnc(nest), mrgp(:,r))
+      end do ! r
+
+      do ! Possible repeat of analysis after rejecting "problem" obs
+         
+         ! Calculate (inverse) data density around each observation.
+         call calc_invDataDensities(precipAll,sigmaBSqr,nest, &
+              invDataDensities)
+
+         ! Run Bratseth analysis at observation points, and collect the sum of
+         ! the corrections at each observation point (in sumObsEstimates), 
+         ! along with the required number of iterations (npasses)
+         max_passes = 25
+         call calc_obsAnalysis(precipAll,sigmaBSqr,nobs,invDataDensities,nest,&
+              max_passes, converged, sumObsEstimates, npasses)
+
+         ! Make sure convergence achieved at all valid observations.  If
+         ! not the case, reject the problem obs and try again.
+         ! TODO: Put in new subroutine.
+         icount = 0
+         do j = 1, nobs
+            if (.not. converged(j)) then
+               write(LIS_logunit,*) &
+                    '[INFO] Rejecting ob ',j,&
+                    ' network: ',trim(precipAll%net(j)), &
+                    ' platform: ',trim(precipAll%platform(j)), &
+                    ' lat: ', precipAll%lat(j),' lon: ',precipAll%lon(j),&
+                    ' obs: ',boxcoxReverseTransformScalar(precipAll%obs(j)),&
+                    ' back: ',boxcoxReverseTransformScalar(precipAll%back(j)),&
+                    ' dataDensity: ',1./invDataDensities(j)
+
+               precipAll%obs(j) = MISSING
+               precipAll%back(j) = MISSING
+               icount = icount + 1                  
+            end if
+         end do ! j
+
+         if (icount .gt. 0) then
+            write(LIS_logunit,*)'[INFO] Rejected ',icount,' obs'
+            write(LIS_logunit,*) &
+                 '[INFO] Repeating Bratseth analysis at remaining obs'
+            
+            deallocate(converged)
+            deallocate(invDataDensities)
+            deallocate(sumObsEstimates)
+         else
+            exit ! Finished with observation estimates
+         end if
+         
+      end do ! Repeat analysis until convergence finally achieved
+
+      ! Clean up
+      deallocate(converged)
+
+      ! Calculate analysis at grid points, along with estimated analysis
+      ! error variance.
+      call calc_gridAnalysis(precipAll,nest,sigmaBSqr,nobs,invDataDensities,&
+        sumObsEstimates,npasses,back,mrgp)
+
+      ! Clean up
+      deallocate(invDataDensities)
+      deallocate(sumObsEstimates)
+      call EMK_destroyObsData(precipAll)
+
+      ! Reverse Box-Cox transform to return to physical rainfall values.
+      do r = 1, LIS_rc%lnr(nest)
+         call boxcoxReverseTransform(LIS_rc%lnc(nest), mrgp(:,r))
+      end do ! r
+
+      ! Clobber spurious negative or near-zero values.
+      call reset_negative_values(nest,mrgp)
+      call zeroTrace(LIS_rc%lnc(nest),LIS_rc%lnr(nest),mrgp)
+
+   end subroutine EMK_analyzePrecip
+
+   !---------------------------------------------------------------------------
+   ! NOTE:  This arguably should be in a different module, since it is
+   ! not a method of the EMK_ObsData type.
+   subroutine EMK_fg2lis_glb_precip(n, ifguess, jfguess, fg_prec, &
+        agr_prec_glb)
+
+      ! Imports
+      use AGRMET_forcingMod, only : agrmet_struc
+      use LIS_coreMod,       only : LIS_rc, LIS_domain
+      use LIS_logMod,        only : LIS_logunit, LIS_endrun
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer,     intent(in)    :: n
+      integer,     intent(in)    :: ifguess
+      integer,     intent(in)    :: jfguess
+      real,        intent(in)    :: fg_prec  ( ifguess, jfguess )  
+      real,        intent(out)   :: agr_prec_glb ( LIS_rc%gnc(n),LIS_rc%gnr(n))
+
+      ! Local variables
+      integer           :: ibi, ibo
+      integer           :: mi, mo
+      integer           :: k 
+      integer           :: i,j
+      integer           :: iret
+      real, allocatable              :: var(:,:)
+      logical*1, allocatable         :: lb(:) 
+      logical*1, allocatable         :: lo(:)
+      integer, allocatable :: n11_nwp(:)
+      integer, allocatable :: n12_nwp(:)
+      integer, allocatable :: n21_nwp(:)
+      integer, allocatable :: n22_nwp(:)
+      real, allocatable :: w11_nwp(:)
+      real, allocatable :: w12_nwp(:)
+      real, allocatable :: w21_nwp(:)
+      real, allocatable :: w22_nwp(:)
+
+      real :: gridDesc_alllis(50)
+      real :: gridDesc_nwp(50)
+
+      ! Assign weights and points on NWP grid for interpolation to
+      ! LIS global grid.
+      ! HACK Code copied from AGRMET_forcingMod.  This should probably
+      ! be stored in memory in that module.
+      if ( agrmet_struc(n)%first_guess_source == 'GFS' ) then
+         gridDesc_nwp = 0
+         gridDesc_nwp(1) = 0
+         gridDesc_nwp(2) = 720
+         gridDesc_nwp(3) = 361
+         gridDesc_nwp(4) = -90.000
+         gridDesc_nwp(5) = -180.000
+         gridDesc_nwp(6) = 128
+         gridDesc_nwp(7) = 90.000
+         gridDesc_nwp(8) = 180.000
+         gridDesc_nwp(9) = 0.500
+         gridDesc_nwp(10) = 0.5000
+         gridDesc_nwp(20) = 0
+      elseif ( agrmet_struc(n)%first_guess_source == 'GALWEM' ) then
+         gridDesc_nwp = 0
+         gridDesc_nwp(1) = 0
+         gridDesc_nwp(2) = 1536
+         gridDesc_nwp(3) = 1152
+         gridDesc_nwp(4) = -89.9219
+         gridDesc_nwp(5) = -179.882813
+         gridDesc_nwp(6) = 128
+         gridDesc_nwp(7) = 89.9219
+         gridDesc_nwp(8) = 179.887
+         gridDesc_nwp(9) = 0.234378
+         gridDesc_nwp(10) = 0.15625
+         gridDesc_nwp(20) = 0
+      else
+         write(LIS_logunit,*) &
+              '[ERR] First guess source is not correctly defined.'
+         call LIS_endrun()
+      endif
+
+      allocate(n11_nwp(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+      allocate(n12_nwp(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+      allocate(n21_nwp(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+      allocate(n22_nwp(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+      allocate(w11_nwp(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+      allocate(w12_nwp(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+      allocate(w21_nwp(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+      allocate(w22_nwp(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+
+      call bilinear_interp_input_glb(n,gridDesc_nwp, &
+           n11_nwp,n12_nwp,n21_nwp,n22_nwp, &
+           w11_nwp,w12_nwp,w21_nwp,w22_nwp)
+
+      ! Now interpolate NWP data to full LIS domain
+      gridDesc_alllis(:) = LIS_rc%gridDesc(n,:)
+      gridDesc_alllis(2) = gridDesc_alllis(32) ! gnc
+      gridDesc_alllis(3) = gridDesc_alllis(33) ! gnr
+      gridDesc_alllis(4) = gridDesc_alllis(34) ! lat(1,1)
+      gridDesc_alllis(5) = gridDesc_alllis(35) ! lon(1,1)
+      gridDesc_alllis(7) = gridDesc_alllis(37) ! lat(gnc,gnr)
+      gridDesc_alllis(8) = gridDesc_alllis(38) ! lon(gnc,gnr)
+
+      allocate(var(ifguess,jfguess))
+      allocate(lb(ifguess*jfguess))
+      allocate(lo(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+
+      mi = ifguess * jfguess
+      mo = LIS_rc%gnc(n)*LIS_rc%gnr(n)
+      ibi = 1
+      lb = .true. 
+
+      do i=1,ifguess
+         do j=1,jfguess
+            if((i+ifguess/2) < ifguess) then
+               var(i,j) = fg_prec((i+ifguess/2),(jfguess-j)+1)
+            else
+               var(i,j) = fg_prec((i-ifguess/2+1),(jfguess-j)+1)
+            endif
+         enddo
+      enddo
+
+      call bilinear_interp(gridDesc_alllis,lb,&
+           var,lo,agr_prec_glb, mi,mo, & 
+           LIS_domain(n)%glat, LIS_domain(n)%glon, &
+           w11_nwp,w12_nwp,&
+           w21_nwp,w22_nwp,&
+           n11_nwp,n12_nwp,&
+           n21_nwp,n22_nwp, &
+           LIS_rc%udef, iret)
+
+      deallocate(n11_nwp)
+      deallocate(n12_nwp)
+      deallocate(n21_nwp)
+      deallocate(n22_nwp)
+      deallocate(w11_nwp)
+      deallocate(w12_nwp)
+      deallocate(w21_nwp)
+      deallocate(w22_nwp)
+      deallocate(var)
+      deallocate(lb)
+      deallocate(lo)
+
+   end subroutine EMK_fg2lis_glb_precip
+
+   ! **Private routines**
+
+   !---------------------------------------------------------------------------
+   subroutine interpBack2ObsPts(this,nest,imax,jmax,back, &
+        backObsPts)
+
+      ! Imports
+      use LIS_coreMod, only: LIS_rc
+      use LIS_logMod, only: LIS_logunit
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData),intent(in) :: this
+      integer,intent(in) :: nest
+      integer,intent(in) :: imax
+      integer,intent(in) :: jmax
+      real, intent(in) :: back(imax,jmax)
+      real, intent(out) :: backObsPts(this%nobs)
+
+      ! Local variables 
+      integer :: nobs
+      integer, allocatable :: n11(:), n12(:), n21(:), n22(:)
+      real, allocatable :: w11(:), w12(:), w21(:), w22(:)
+      logical*1 :: lb(imax*jmax)
+      logical*1, allocatable :: lo(:)
+      real, allocatable :: xpts(:), ypts(:)
+      integer :: mi,mo,nv
+      integer :: n
+      integer :: i1,i2,j1,j2
+      real ::  xi, xf, yi, yf
+      integer :: iret
+      real :: glbGridDesc(50)
+      integer, external :: get_fieldpos
+      real, parameter :: FILL = MISSING
+
+      ! See if we have any observations available
+      nobs = this%nobs
+      if (nobs .eq. 0) return
+
+      ! Allocate internal arrays
+      allocate(n11(nobs))
+      allocate(n12(nobs))
+      allocate(n21(nobs))
+      allocate(n22(nobs))
+      allocate(w11(nobs))
+      allocate(w12(nobs))
+      allocate(w21(nobs))
+      allocate(w22(nobs))
+      allocate(xpts(nobs))
+      allocate(ypts(nobs))
+      allocate(lo(nobs))
+
+      ! Create a modified gridDesc that is for the entire LIS domain, not just
+      ! the local process region.
+      glbGridDesc(:) = LIS_rc%gridDesc(nest,:)
+      glbGridDesc(2) = glbGridDesc(32) ! gnc
+      glbGridDesc(3) = glbGridDesc(33) ! gnr
+      glbGridDesc(4) = glbGridDesc(34) ! lat(1,1)
+      glbGridDesc(5) = glbGridDesc(35) ! lon(1,1)
+      glbGridDesc(7) = glbGridDesc(37) ! lat(gnc,gnr)
+      glbGridDesc(8) = glbGridDesc(38) ! lon(gnc,gnr)
+
+      ! Recalculate grid coordinates of LIS tile
+      mo = nobs
+      call compute_grid_coord(glbGridDesc,mo,FILL,xpts,ypts, &
+           this%lon,this%lat,nv)
+
+      ! Calculate corners and weights for each observation point.
+      do n = 1,mo
+         xi = xpts(n)
+         yi = ypts(n)
+         w11(n) = 0.
+         w21(n) = 0.
+         w12(n) = 0.
+         w22(n) = 0.
+         if (xi.ne.FILL .and. yi.ne.FILL) then
+            i1=xi
+            i2=i1+1
+            j1=yi
+            j2=j1+1 
+            xf=xi-i1
+            yf=yi-j1
+            n11(n)=get_fieldpos(i1,j1,glbGridDesc)
+            n21(n)=get_fieldpos(i2,j1,glbGridDesc)
+            n12(n)=get_fieldpos(i1,j2,glbGridDesc)
+            n22(n)=get_fieldpos(i2,j2,glbGridDesc)
+            if(min(n11(n),n21(n),n12(n),n22(n)).gt.0) then
+               w11(n)=(1-xf)*(1-yf)
+               w21(n)=xf*(1-yf)
+               w12(n)=(1-xf)*yf
+               w22(n)=xf*yf
+            else
+               n11(n)=0
+               n21(n)=0
+               n12(n)=0
+               n22(n)=0
+            endif
+         else
+            n11(n)=0
+            n21(n)=0
+            n12(n)=0
+            n22(n)=0
+         endif
+      end do ! n
+
+      ! Now interpolate
+      mi = imax*jmax
+      lb = .true.
+      call bilinear_interp(glbGridDesc,lb,&
+              back,lo,backObsPts, mi,mo, & 
+              this%lat, this%lon, w11,w12,w21,w22,n11,n12,n21,n22,&
+              MISSING, iret)
+
+      ! Clean up
+      deallocate(n11)
+      deallocate(n12)
+      deallocate(n21)
+      deallocate(n22)
+      deallocate(w11)
+      deallocate(w12)
+      deallocate(w21)
+      deallocate(w22)
+      deallocate(xpts)
+      deallocate(ypts)
+      deallocate(lo)
+
+   end subroutine interpBack2ObsPts
+
+   !---------------------------------------------------------------------------
+   ! Perform Box-Cox transformation on precipitation data.  Makes distribution
+   ! closer to Gaussian.  Follows CaPA.
+   subroutine boxcoxTransformObsData(this)
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData),intent(inout) :: this      
+
+      ! Local variables
+      integer :: nobs, k
+
+      nobs = this%nobs
+      call boxcoxTransform(nobs, this%obs(1:nobs))
+      call boxcoxTransform(nobs, this%back(1:nobs))
+
+   end subroutine boxcoxTransformObsData
+
+   !---------------------------------------------------------------------------
+   ! Reverse Box-Cox transformation on precipitation data.
+   subroutine boxcoxReverseTransformObsData(this)
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData),intent(inout) :: this      
+
+      ! Local variables
+      integer :: nobs, k
+
+      nobs = this%nobs
+      call boxcoxReverseTransform(nobs, this%obs(1:nobs))
+      call boxcoxReverseTransform(nobs, this%back(1:nobs))
+
+   end subroutine boxcoxReverseTransformObsData
+
+   !---------------------------------------------------------------------------
+   subroutine boxcoxTransform(nobs, data)
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: nobs
+      real, intent(inout) :: data(nobs)
+
+      ! Local variables
+      integer :: i
+      real :: y
+
+      do i = 1, nobs
+         y = data(i)
+         if (y .eq. MISSING) cycle
+         data(i) = INV_LAMBDA_1 * (( (y + LAMBDA_2)**LAMBDA_1) - 1.)
+      end do
+
+   end subroutine boxcoxTransform
+
+   !---------------------------------------------------------------------------
+   subroutine boxcoxReverseTransform(nobs, data)
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: nobs
+      real, intent(inout) :: data(nobs)
+
+      ! Local variables
+      integer :: i
+      real :: x
+
+      do i = 1, nobs
+         x = data(i)
+         if (x .eq. MISSING) cycle
+         data(i) = boxcoxReverseTransformScalar(x)
+      end do
+
+   end subroutine boxcoxReverseTransform
+
+   !---------------------------------------------------------------------------
+   function boxcoxReverseTransformScalar(x) result(y)
+      
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      real, intent(in) :: x
+
+      ! Local variables
+      real :: y
+
+      if (x .eq. MISSING) then
+         y = x
+      else
+         y = ( ( (LAMBDA_1*x) + 1.)**INV_LAMBDA_1) - LAMBDA_2
+      end if
+
+   end function boxcoxReverseTransformScalar
+
+   !---------------------------------------------------------------------------
+   ! Calculate (inverse) data density around each observation.  Part of
+   ! Bratseth scheme.
+   subroutine calc_invDataDensities(this,sigmaBSqr,nest, &
+        invDataDensities,skip, silent)
+
+      ! Imports
+      use LIS_coreMod, only: LIS_npes, LIS_localPet, LIS_rc, LIS_domain
+      use LIS_logMod, only : LIS_logunit, LIS_endrun, LIS_flush, LIS_endrun
+      use LIS_mpiMod
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData), intent(inout) :: this
+      real, intent(in) :: sigmaBSqr
+      integer, intent(in) :: nest
+      real, allocatable, intent(out) :: invDataDensities(:)
+      logical, intent(in), optional :: skip(this%nobs)
+      logical, intent(in), optional :: silent
+      
+      ! Local variables
+      type(hash_list), allocatable, target :: hash2d(:,:)
+      real, allocatable :: dataDensities_pet(:)
+      integer :: nobs
+      integer :: r,c,i,j,ipass,rr,cc, iob, job
+      integer :: lr,ur,lc1,lc2,rc1,rc2,start_cc, end_cc
+      real :: dist
+      real :: b, num, denom
+      real :: dlat, dlon, ctrlat, ctrlon, tmplat, tmplon
+      integer, allocatable :: iobs_neighbors_vector(:), jobs_cr_vector(:)
+      integer :: gindex
+      integer :: nobs_neighbors, nobs_cr
+      double precision :: t0, t1, t2
+      integer :: ierr
+      integer :: pet, pet_incr
+      integer :: imax,jmax
+      logical :: verbose, found
+
+      verbose = .true.
+      if (present(silent)) then
+         if (silent) verbose = .false.
+      end if
+
+      nobs = this%nobs
+      if (nobs .eq. 0) return
+
+      if (verbose) then
+         write(LIS_logunit,*) &
+              '[INFO] Calculating local data densities for ',nobs,' obs...'
+      end if
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t1 = MPI_Wtime()
+#endif
+
+      ! Here we create a 2d hash table storing the index values of each ob
+      ! in linked lists for each LIS grid box.  This can help us screen
+      ! out obviously unnecessary ob comparisons later.
+      call build_hash2d(this,nest,imax,jmax,hash2d)
+
+      allocate(dataDensities_pet(nobs))
+      dataDensities_pet(:) = 0
+
+      ! Now we need to loop through the 2D hash, estimate the influence 
+      ! bounds for considering obs in neighboring grid boxes, and calculate the
+      ! data densities.
+      ! NOTE:  We're assuming LIS is run with a Lat-Lon grid.
+      pet = -1
+      pet_incr = 1
+      do r = 1, LIS_rc%gnr(nest)
+         do c = 1, LIS_rc%gnc(nest)
+
+            ! Make sure obs are actually in this box.
+            if (hash2d(c,r)%obindex .eq. MISSING) cycle
+
+            ! See which PET is responsible for this grid box.
+            call update_pet(pet,pet_incr)
+            if (pet .ne. LIS_localPet) cycle
+
+            ! Find neighbors with positive correlation in background field.
+            call find_gridpt_neighbors(c,r,nest, &
+                 lr,ur,lc1,rc1,lc2,rc2)
+            
+            ! Get list of obs in current grid box
+            call get_hash2d(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d,c,r,&
+                 nobs_cr,jobs_cr_vector)
+            if (nobs_cr .eq. 0) cycle
+
+            ! Get list of obs from neighboring grid boxes
+            call get_neighbor_obs(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d,&
+                 lr,ur,lc1,rc1,lc2,rc2,&
+                 nest, nobs_neighbors, iobs_neighbors_vector)
+
+            ! For each ob in the current grid box, calculate data density
+            ! contributions from neighbors.
+            do j = 1, nobs_cr               
+               job = jobs_cr_vector(j)
+
+               if (this%qc(job) .eq. QC_REJECT) cycle
+
+               do i = 1, nobs_neighbors
+                  iob = iobs_neighbors_vector(i)
+
+                  if (this%qc(iob) .eq. QC_REJECT) cycle
+
+                  if (iob .eq. job) then
+                     dist = 0
+                  else
+                     dist = &
+                          great_circle_distance(this%lat(iob), &
+                          this%lon(iob), this%lat(job), this%lon(job))
+                  end if
+                  if (dist .gt. MAX_DIST) cycle
+                  
+                  b = backErrCov(sigmaBSqr,dist)
+                  num = b
+                  if (iob .eq. job) then
+                     num = num + this%sigmaOSqr(job)
+                  end if
+                  
+                  denom = &
+                       (sigmaBSqr + this%sigmaOSqr(iob)) * &
+                       (sigmaBSqr + this%sigmaOSqr(job))
+                  denom = sqrt(denom)
+                  dataDensities_pet(job) = &
+                       dataDensities_pet(job) + (num/denom)
+                           
+               end do ! i
+            end do ! j
+
+            ! Clean up
+            deallocate(iobs_neighbors_vector)
+            deallocate(jobs_cr_vector)
+
+         end do ! c
+      end do ! r
+
+      ! Clean up
+      call destroy_hash2d(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d)
+      deallocate(hash2d)
+
+      ! Collect the results
+#if (defined SPMD)
+      allocate(invDataDensities(nobs))
+      invDataDensities(:) = 0
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call MPI_ALLREDUCE(dataDensities_pet,invDataDensities,nobs,MPI_REAL, &
+           MPI_SUM, LIS_MPI_COMM, ierr)
+#endif
+
+      ! Clean up
+      deallocate(dataDensities_pet)
+
+      ! Finish data density calculations, including inversion.  This is
+      ! probably fast enough to not warrant parallelization.
+      do j = 1, nobs         
+         ! Skip bad data
+         if ( this%qc(j) .eq. QC_REJECT) cycle
+
+         invDataDensities(j) = &
+              invDataDensities(j)*(sigmaBSqr + this%sigmaOSqr(j))
+         invDataDensities(j) = 1. / invDataDensities(j)
+      end do ! j
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t2 = MPI_Wtime()
+      if (verbose) then
+         write(LIS_logunit,*) &
+              '[INFO] Elapsed time calculating data densities is ',t2 - t1, &
+              ' seconds'
+      end if
+#endif
+
+   end subroutine calc_invDataDensities
+
+   !---------------------------------------------------------------------------
+   ! Perform Bratseth analysis at observation points.  Multiple iterations
+   ! are made until convergence is reached.  Along the way, the observation
+   ! estimates from each iteration are summed for later interpolation to the
+   ! grid points.
+   ! Note that the *analysis* is only run at the observation points because
+   ! in practice the analysis converges before the iterative "observation
+   ! estimates" do (see Sashegyi et al 1993).
+   subroutine calc_obsAnalysis(this,sigmaBSqr,nobs,invDataDensities,nest,&
+        max_passes, converged, sumObsEstimates, npasses, skip, silent)
+
+      ! Imports
+      use LIS_coreMod, only : LIS_localPet, LIS_npes, LIS_rc
+      use LIS_logMod, only : LIS_logunit, LIS_endrun
+      use LIS_mpiMod
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData), intent(inout) :: this
+      real, intent(in) :: sigmaBSqr
+      integer, intent(in) :: nobs
+      real, intent(in) :: invDataDensities(nobs)
+      integer, intent(in) :: nest
+      integer, intent(in) :: max_passes
+      logical, allocatable, intent(out) :: converged(:)
+      real, allocatable, intent(out) :: sumObsEstimates(:)
+      integer, intent(out) :: npasses
+      logical, intent(in), optional :: skip(this%nobs)
+      logical, intent(in), optional :: silent
+
+      ! Local variables
+      real, allocatable :: pprev_est(:)
+      real, allocatable :: pprev_ana(:)
+      real, allocatable :: pnew_ana(:)
+      real, allocatable :: pnew_ana_pet(:)
+      real, allocatable :: pnew_est(:)
+      real, allocatable :: pnew_est_pet(:)
+      real, allocatable :: sumObsEstimates_pet(:)
+      type(hash_list), allocatable, target :: hash2d(:,:)
+      integer :: cmax,rmax
+      integer :: pet, pet_incr
+      real :: dist, b, weight
+      logical :: done
+      integer :: imaxabsdiff
+      real :: maxabsdiff, y_prev, y_new
+      integer :: icount
+      integer :: c,r,i,j,iob,job
+      integer :: ierr
+      double precision :: t0,t1, t2
+      logical :: verbose
+      real :: mad_est, mad_ana, diff
+      real :: y_obs, y_est, y_ana
+      integer :: lr,ur,lc1,rc1,lc2,rc2
+      integer :: nobs_cr, nobs_neighbors
+      integer, allocatable :: jobs_cr_vector(:), iobs_neighbors_vector(:)
+      integer :: iter
+
+      verbose = .true.
+      if (present(silent)) then
+         if (silent) verbose = .false.
+      end if
+
+      if (verbose) then
+         write(LIS_logunit,*) &
+              '[INFO] Running analysis at observation points...'
+      end if
+         
+      ! Sanity checks
+      if (nobs .eq. 0) return
+
+      if (nobs .ne. this%nobs) then
+         write(LIS_logunit,*) &
+              '[ERR] Array size mismatch in calc_obsAnalysis!'
+         write(LIS_logunit,*) &
+              '[ERR] nobs, this%nobs = ',nobs, this%nobs
+         call LIS_endrun()
+      end if
+
+      ! Here we create a 2d hash table storing the index values of each ob
+      ! in linked lists for each LIS grid box.  This can help us screen
+      ! out obviously unnecessary ob comparisons later.
+      call build_hash2d(this,nest,cmax,rmax,hash2d)
+
+      ! Perform analysis at observation points.
+      ! In each iteration, we calculate both an updated observation estimate
+      ! and an updated analysis.  The previous observation estimate vector 
+      ! is used in both calculations, but the interpolation weights differ
+      ! which cause the observation estimates and analysis values to drift
+      ! with each iteration.  We use the change in analysis values to see if 
+      ! the analysis has converged; if so, we terminate the iterations.  The
+      ! output we need are the summed observation estimates and the number
+      ! of iterations (passes) required for convergence.
+      allocate(pnew_ana(nobs))
+      allocate(pnew_ana_pet(nobs))
+      allocate(pnew_est(nobs))
+      allocate(pnew_est_pet(nobs))
+      allocate(sumObsEstimates(nobs))
+      allocate(sumObsEstimates_pet(nobs))
+      allocate(pprev_ana(nobs))
+      allocate(pprev_est(nobs))      
+      allocate(converged(nobs))
+
+      pprev_est(:) = this%back(:) ! First guess
+      pprev_ana(:) = this%back(:) ! First guess      
+      sumObsEstimates(:) = 0
+      sumObsEstimates_pet(:) = 0
+      npasses = 0
+      converged(:) = .false.
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t0 = MPI_Wtime()
+#endif
+
+      do iter = 1, max_passes 
+
+#if (defined SPMD)
+         call MPI_Barrier(LIS_MPI_COMM, ierr)
+         t1 = MPI_Wtime()
+#endif
+         pnew_est_pet(:) = 0
+         pnew_ana_pet(:) = 0
+
+         pet = -1
+         pet_incr = 1
+         
+         ! Now we need to loop through the 2D hash, estimate the influence 
+         ! bounds for considering obs in neighboring grid boxes, and
+         ! calculate analysis updates.
+         do r = 1, LIS_rc%gnr(nest)
+            do c = 1, LIS_rc%gnc(nest)
+
+               ! Make sure obs are actually in this box.
+               if (hash2d(c,r)%obindex .eq. MISSING) cycle
+
+               ! See which PET is responsible for this grid box.
+               call update_pet(pet,pet_incr)
+               if (pet .ne. LIS_localPet) cycle
+
+               ! Find neighbors with positive correlation in background field.
+               call find_gridpt_neighbors(c,r,nest, &
+                    lr,ur,lc1,rc1,lc2,rc2)
+
+               ! Get list of obs in current grid box
+               call get_hash2d(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d,c,r,&
+                    nobs_cr,jobs_cr_vector)
+               if (nobs_cr .eq. 0) cycle
+
+               ! Get list of obs from neighboring grid boxes
+               call get_neighbor_obs(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d,&
+                    lr,ur,lc1,rc1,lc2,rc2,&
+                    nest, nobs_neighbors, iobs_neighbors_vector)
+
+               ! For each ob in the current grid box, calculate analysis update
+               ! contributions from neighbors.
+               do j = 1, nobs_cr
+                  job = jobs_cr_vector(j)
+
+                  if (this%qc(job) .eq. QC_REJECT) then
+                     sumObsEstimates_pet(j) = 0
+                     cycle
+                  endif
+
+                  do i = 1, nobs_neighbors
+                     iob = iobs_neighbors_vector(i)
+
+                     if (this%qc(iob) .eq. QC_REJECT) then
+                        sumObsEstimates_pet(iob) = 0
+                        cycle
+                     endif
+
+                     if (iob .eq. job) then
+                        dist = 0
+                     else
+                        dist = &
+                             great_circle_distance(this%lat(iob), &
+                             this%lon(iob), this%lat(job), this%lon(job))
+                     end if
+                     if (dist .gt. MAX_DIST) cycle
+
+                     b = backErrCov(sigmaBSqr,dist)
+                     
+                     ! First, update the observation estimate
+                     weight = b
+                     if (iob .eq. job) then
+                        weight = weight + this%sigmaOSqr(iob)
+                     end if
+                     weight = weight * invDataDensities(iob)
+                     pnew_est_pet(job) = pnew_est_pet(job) + &
+                          (weight*(this%obs(iob) - pprev_est(iob)))
+
+                     ! Second, update the analysis at the observation point.
+                     weight = b * invDataDensities(iob)
+                     pnew_ana_pet(job) = pnew_ana_pet(job) + &
+                          (weight*(this%obs(iob) - pprev_est(iob)))
+                     
+                  end do ! i
+               end do ! j
+               if (allocated(iobs_neighbors_vector)) &
+                    deallocate(iobs_neighbors_vector)
+               if (allocated(jobs_cr_vector)) & 
+                    deallocate(jobs_cr_vector)
+            end do ! c
+         end do ! r
+
+#if (defined SPMD)
+         ! Share pnew_est and pnew_ana across all processors.
+         pnew_est(:) = 0
+         pnew_ana(:) = 0
+         call MPI_Barrier(LIS_MPI_COMM, ierr)
+         call MPI_ALLREDUCE(pnew_est_pet, pnew_est, nobs, MPI_REAL, &
+              MPI_SUM, LIS_MPI_COMM, ierr)
+         call MPI_Barrier(LIS_MPI_COMM, ierr)
+         call MPI_ALLREDUCE(pnew_ana_pet, pnew_ana, nobs, MPI_REAL, &
+              MPI_SUM, LIS_MPI_COMM, ierr)
+#endif
+
+         ! Finish analysis and observation estimates for this iteration
+         do j = 1, nobs
+            pnew_est(j) = pprev_est(j) + pnew_est(j)
+            pnew_ana(j) = pprev_ana(j) + pnew_ana(j)
+         end do ! r
+
+         ! Update sum of observation estimates
+         pet = -1
+         pet_incr = 1
+         do j = 1, nobs
+            ! See which MPI process is responsible for this row.
+            call update_pet(pet,pet_incr)
+            if (pet .ne. LIS_localPet) cycle
+            sumObsEstimates_pet(j) = sumObsEstimates_pet(j) + pprev_est(j)
+         end do ! j
+         npasses = npasses + 1
+
+#if (defined SPMD)
+         ! Share sumObsEstimates across all processors.
+         sumObsEstimates(:) = 0
+         call MPI_Barrier(LIS_MPI_COMM, ierr)
+         call MPI_ALLREDUCE(sumObsEstimates_pet, sumObsEstimates, nobs, &
+              MPI_REAL, MPI_SUM, LIS_MPI_COMM, ierr)
+#endif
+
+         ! See if analysis has converged by comparing current and prior 
+         ! analysis values.  In practice, the analysis values will converge 
+         ! before the observation estimates do (unless observations are 
+         ! assumed perfect).  Then, overwrite prior values.     
+         done = .true.
+         maxabsdiff = 0
+         imaxabsdiff = 0
+
+         if (verbose) then
+            mad_ana = 0
+            mad_est = 0
+            icount = 0
+         end if
+
+         do j = 1, nobs
+
+            if ( this%obs(j) .eq. MISSING .or. &
+                 this%back(j) .eq. MISSING .or. &
+                 this%qc(j) .eq. QC_REJECT) then
+               converged(j) = .true.
+               cycle
+            end if
+
+            ! Check physical rainfall analysis values for convergence
+            y_prev = boxcoxReverseTransformScalar(pprev_ana(j))
+            y_new = boxcoxReverseTransformScalar(pnew_ana(j))
+
+            ! Trace = < 0.005 inch or < 0.127 mm
+            if (abs(y_prev - y_new) .lt. 0.1) then
+               converged(j) = .true.
+            else
+               converged(j) = .false.
+            end if
+            if (.not. converged(j)) then
+               done = .false.
+               if (abs(y_prev - y_new) .gt. maxabsdiff) then
+                  maxabsdiff = abs(y_prev - y_new)
+                  imaxabsdiff = j
+               end if
+            end if
+
+            ! Updates mean absolute differences against observed values
+            if (verbose) then
+               icount = icount + 1
+               y_est = boxcoxReverseTransformScalar(pnew_est(j))
+               y_ana = boxcoxReverseTransformScalar(pnew_ana(j))
+               y_obs = boxcoxReverseTransformScalar(this%obs(j))
+               diff = y_est - y_obs
+               mad_est = mad_est + abs(diff)
+               diff = y_ana - y_obs
+               mad_ana = mad_ana + abs(diff)
+            end if
+            
+            pprev_est(j) = pnew_est(j)
+            pprev_ana(j) = pnew_ana(j)
+
+         end do ! j
+
+         if (verbose) then
+            if (icount .gt. 0) then
+               mad_est = mad_est / real(icount)
+               mad_ana = mad_ana / real(icount)
+            end if
+         end if
+
+         if (done) exit ! Analysis has converged
+
+         if (verbose) then
+            write(LIS_logunit,*) &
+                 '[INFO] Bratseth scheme not converged yet after ',npasses, &
+                 'iterations'
+            write(LIS_logunit,*) &
+                 '[INFO] Mean absolute difference against obs: ana: ', &
+                 mad_ana,' est: ',mad_est
+            write(LIS_logunit,*) &
+                 '[INFO] Max abs change ',maxabsdiff,' at i = ', imaxabsdiff
+            write(LIS_logunit,*) &
+                 '[INFO] net,platform,obs, back, ana, est, dataDensity: ', &
+                 trim(this%net(imaxabsdiff)), ' ',&
+                 trim(this%platform(imaxabsdiff)), &
+                 ' ',boxcoxReverseTransformScalar(this%obs(imaxabsdiff)),&
+                 ' ',boxcoxReverseTransformScalar(this%back(imaxabsdiff)),&
+                 ' ',boxcoxReverseTransformScalar(pnew_ana(imaxabsdiff)),&
+                 ' ',boxcoxReverseTransformScalar(pnew_est(imaxabsdiff)),&
+                 ' ',1./invDataDensities(imaxabsdiff)
+         end if ! verbose
+
+#if (defined SPMD)
+         call MPI_Barrier(LIS_MPI_COMM, ierr)
+         t2 = MPI_Wtime()
+         if (verbose) then
+            write(LIS_logunit,*) &
+                 '[INFO] Elapsed time for this iteration is ',t2 - t1, &
+                 ' seconds'
+            write(LIS_logunit,*) &
+                 '------------------------------------------------------------'
+         end if
+#endif
+
+      end do ! iter
+
+      if (verbose) then
+         if (done) then
+            write(LIS_logunit,*) &
+                 '[INFO] Bratseth precip analysis converged after ',npasses, &
+                 ' iterations'
+         else
+            write(LIS_logunit,*) &
+              '[INFO] Bratseth precip analysis failed to converge!'
+         end if
+         write(LIS_logunit,*) &
+              '[INFO] Mean absolute difference against obs: ana: ',mad_ana, &
+              ' est: ',mad_est
+
+         if (imaxabsdiff .gt. 0) then
+            write(LIS_logunit,*) &
+                 '[INFO] Max abs change ',maxabsdiff,' at i = ', imaxabsdiff
+            write(LIS_logunit,*) &
+                 '[INFO] net,platform,obs, back, ana, est, dataDensity: ', &
+                 trim(this%net(imaxabsdiff)), ' ',&
+                 trim(this%platform(imaxabsdiff)), &
+                 ' ',boxcoxReverseTransformScalar(this%obs(imaxabsdiff)),&
+                 ' ',boxcoxReverseTransformScalar(this%back(imaxabsdiff)),&
+                 ' ',boxcoxReverseTransformScalar(pnew_ana(imaxabsdiff)),&
+                 ' ',boxcoxReverseTransformScalar(pnew_est(imaxabsdiff)),&
+                 ' ',1./invDataDensities(imaxabsdiff)
+         end if
+      end if
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t2 = MPI_Wtime()
+      if (verbose) then
+         write(LIS_logunit,*) &
+              '[INFO] Elapsed time for final iteration is ',t2 - t1,' seconds'
+         write(LIS_logunit,*) &
+              '[INFO] Total elapsed time for all iterations is ',t2-t0, &
+              'seconds'
+         write(LIS_logunit,*) &
+              '---------------------------------------------------------------'
+      end if
+#endif
+
+      if (verbose) then
+         icount = 0
+         do j = 1, nobs
+            if (this%qc(j) .eq. QC_REJECT) cycle
+            
+            if (present(skip)) then
+               if (skip(j)) cycle
+            end if
+            
+            icount = icount + 1
+         end do
+         write(LIS_logunit,*) '[INFO] ',icount,' obs used in this analysis'
+      end if
+
+      ! Clean up
+      call destroy_hash2d(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d)
+      deallocate(hash2d)
+      deallocate(sumObsEstimates_pet)
+      deallocate(pprev_est)
+      deallocate(pprev_ana)
+      deallocate(pnew_est)
+      deallocate(pnew_est_pet)
+      deallocate(pnew_ana)
+      deallocate(pnew_ana_pet)
+      
+   end subroutine calc_obsAnalysis
+
+   !---------------------------------------------------------------------------
+   ! Perform Bratseth analysis at grid points.  Assumes (1) the mrgp array
+   ! contains the transformed background first guess; (2) the Bratseth scheme 
+   ! was already run at the observation points; and (3) the summed observation
+   ! estimates and number of passes from that operation is provided (as
+   ! sumObsEstimates and npasses, respectively).  
+   subroutine calc_gridAnalysis(this,nest,sigmaBSqr,nobs,invDataDensities,&
+        sumObsEstimates,npasses,back,mrgp)
+
+      ! Imports
+      use LIS_coreMod, only: LIS_rc, LIS_domain, &
+           LIS_ews_halo_ind, LIS_ewe_halo_ind, &
+           LIS_nss_halo_ind, LIS_nse_halo_ind, LIS_localPet
+      use LIS_logMod, only : LIS_logunit, LIS_endrun
+      use LIS_LMLCMod, only: LIS_LMLC
+      use LIS_mpiMod
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData),intent(inout) :: this
+      integer, intent(in) :: nest
+      real, intent(in) :: sigmaBSqr
+      integer, intent(in) :: nobs
+      real, intent(in) :: invDataDensities(nobs)
+      real, intent(in) :: sumObsEstimates(nobs)
+      integer, intent(in) :: npasses
+      real, intent(in) :: back(LIS_rc%gnc(nest), LIS_rc%gnr(nest))
+      real, intent(inout) :: mrgp(LIS_rc%lnc(nest),LIS_rc%lnr(nest))
+
+      ! Local variables
+      type(hash_list), allocatable, target :: hash2d(:,:)
+      integer :: cmax,rmax
+      double precision :: t0, t1, t2
+      real ::  locallat, locallon, tmp_mrgp
+      real :: dist, weight
+      integer :: pet, pet_incr
+      integer :: r, c, j, job, ierr
+      integer :: lr,ur,lc1,rc1,lc2,rc2
+      integer :: nobs_neighbors
+      integer, allocatable :: jobs_neighbors_vector(:)
+      real, allocatable :: mrgp_1d_pet(:), mrgp_1d(:)
+      real :: back1(1)
+      integer :: r_local, c_local
+      integer :: gindex
+
+      ! Sanity checks
+      if (nobs .eq. 0) return
+
+      if (nobs .ne. this%nobs) then
+         write(LIS_logunit,*)'[ERR] Array size mismatch in calc_gridAnalysis!'
+         write(LIS_logunit,*)'nobs, this%nobs = ',nobs, this%nobs         
+         call LIS_endrun()
+      end if
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t1 = MPI_Wtime()
+#endif
+
+      ! Here we create a 2d hash table storing the index values of each ob
+      ! in linked lists for each LIS grid box.  This can help us screen
+      ! out obviously unnecessary ob comparisons later.
+      call build_hash2d(this,nest,cmax,rmax,hash2d)
+
+      write(LIS_logunit,*) &
+           '[INFO] Calculating analysis at grid points...'
+
+      allocate(mrgp_1d_pet(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
+      mrgp_1d_pet(:) = 0
+
+      pet = -1
+      pet_incr = 1
+
+      ! Now calculate the analysis at each grid point.
+      do r = 1,LIS_rc%gnr(nest)
+         do c = 1,LIS_rc%gnc(nest)
+            
+            ! Skip if water point
+            if (LIS_LMLC(nest)%glandmask(c,r) .le. 0) cycle
+
+            ! See which PET is responsible for this grid box.
+            call update_pet(pet,pet_incr)
+            if (pet .ne. LIS_localPet) cycle
+                        
+            gindex = c+(r-1)*LIS_rc%gnc(nest)
+
+            locallat = LIS_domain(nest)%glat(gindex)
+            locallon = LIS_domain(nest)%glon(gindex)
+            
+            ! Find neighbors with positive correlation in background field.
+            call find_gridpt_neighbors(c,r,nest, &
+                 lr,ur,lc1,rc1,lc2,rc2)
+
+            ! Get list of obs from neighboring grid boxes
+            call get_neighbor_obs(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d,&
+                 lr,ur,lc1,rc1,lc2,rc2,&
+                 nest, nobs_neighbors, jobs_neighbors_vector)
+
+            back1(1) = back(c,r)
+            call boxcoxTransform(1,back1)
+            tmp_mrgp = back1(1)
+
+            if (nobs_neighbors .eq. 0) then
+               mrgp_1d_pet(gindex) = tmp_mrgp
+               cycle
+            end if
+
+            do j = 1, nobs_neighbors
+
+               job = jobs_neighbors_vector(j)               
+
+               if (this%qc(job) .eq. QC_REJECT) cycle
+
+               dist = great_circle_distance(locallat,locallon, &
+                    this%lat(job), this%lon(job))
+               if (dist .gt. MAX_DIST) cycle
+
+               weight = backErrCov(sigmaBSqr,dist) * invDataDensities(job)
+
+               tmp_mrgp = tmp_mrgp + &
+                    (weight * ((npasses*this%obs(job)) - sumObsEstimates(job)))
+            end do ! j
+
+            mrgp_1d_pet(gindex) = tmp_mrgp
+
+            deallocate(jobs_neighbors_vector)
+
+         end do ! c
+      end do ! r
+
+      ! Clean up
+      call destroy_hash2d(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d)
+      deallocate(hash2d)
+
+#if (defined SPMD)
+      allocate(mrgp_1d(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
+      mrgp_1d(:) = 0
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call MPI_ALLREDUCE(mrgp_1d_pet,mrgp_1d, &
+           LIS_rc%gnc(nest)*LIS_rc%gnr(nest),MPI_REAL, &
+           MPI_SUM, LIS_MPI_COMM, ierr)
+      deallocate(mrgp_1d_pet)
+#endif
+
+      ! Now copy to local 2D array
+      do r = LIS_nss_halo_ind(nest,LIS_localPet+1), &
+           LIS_nse_halo_ind(nest,LIS_localPet+1)
+         r_local = r - LIS_nss_halo_ind(nest,LIS_localPet+1) + 1
+
+         do c = LIS_ews_halo_ind(nest,LIS_localPet+1), &
+              LIS_ewe_halo_ind(nest,LIS_localPet+1)
+
+            c_local = c - LIS_ews_halo_ind(nest,LIS_localPet+1) + 1
+
+            gindex = c+(r-1)*LIS_rc%gnc(nest)
+
+            mrgp(c_local,r_local) = mrgp_1d(gindex)
+
+         end do ! c
+      end do ! r
+      deallocate(mrgp_1d)
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t2 = MPI_Wtime()
+      write(LIS_logunit,*)'[INFO] Elapsed time for grid analysis is ', &
+           t2 - t1,' seconds'
+#endif
+
+   end subroutine calc_gridAnalysis
+
+   !---------------------------------------------------------------------------
+   ! Background error covariance function.
+   real function backErrCov(sigmaBSqr,dist)
+      implicit none
+      real, intent(in) :: sigmaBSqr
+      real, intent(in) :: dist ! in meters
+      backErrCov = sigmaBSqr*backErrCorr(dist)
+   end function backErrCov
+
+   !---------------------------------------------------------------------------
+   ! Background error correlation function.
+   real function backErrCorr(dist)
+      implicit none
+      real, intent(in) :: dist ! in meters
+      real, parameter :: inv_scale_length = 1./BACK_ERR_SCALE_LENGTH
+      backErrCorr = exp(-1*dist*dist*inv_scale_length*inv_scale_length)
+   end function backErrCorr
+
+   !---------------------------------------------------------------------------
+   subroutine bilinear_interp_input_glb (nest, gridDesci,&
+        n11,n12,n21,n22,w11,w12,w21,w22)
+
+      ! Imports
+      use LIS_coreMod
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: nest
+      real, intent(in)    :: gridDesci(50)
+      integer, intent(inout)  :: n11(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)),&
+           n12(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)),&
+           n21(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)),&
+           n22(LIS_rc%gnc(nest)*LIS_rc%gnr(nest))
+      real, intent(inout) :: w11(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)),&
+           w12(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)),&
+           w21(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)),&
+           w22(LIS_rc%gnc(nest)*LIS_rc%gnr(nest))
+
+      ! Local variables
+      integer             :: nc,nr
+      real, allocatable   :: rlat(:)
+      real, allocatable   :: rlon(:)
+      real, allocatable   :: xpts(:)
+      real, allocatable   :: ypts(:)            
+      integer             :: n
+      integer             :: mo, nv 
+      integer             :: i1, i2, j1, j2
+      real                :: xi, xf, yi, yf
+      real, parameter     :: FILL = -9999.0
+      integer, external   :: get_fieldpos
+
+      allocate(rlat(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
+      allocate(rlon(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
+      allocate(xpts(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
+      allocate(ypts(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
+
+      nc = LIS_rc%gnc(nest)
+      nr = LIS_rc%gnr(nest)
+      rlat = LIS_domain(nest)%glat
+      rlon = LIS_domain(nest)%glon
+      mo = nc*nr
+
+      call compute_grid_coord(gridDesci,mo,fill,xpts,ypts,rlon,rlat,nv)
+      do n=1,mo
+         xi=xpts(n)
+         yi=ypts(n)
+         if(xi.ne.fill.and.yi.ne.fill) then
+            i1=xi
+            i2=i1+1
+            j1=yi
+            j2=j1+1
+            xf=xi-i1
+            yf=yi-j1
+            n11(n)=get_fieldpos(i1,j1,gridDesci)
+            n21(n)=get_fieldpos(i2,j1,gridDesci)
+            n12(n)=get_fieldpos(i1,j2,gridDesci)
+            n22(n)=get_fieldpos(i2,j2,gridDesci)
+            if(min(n11(n),n21(n),n12(n),n22(n)).gt.0) then
+               w11(n)=(1-xf)*(1-yf)
+               w21(n)=xf*(1-yf)
+               w12(n)=(1-xf)*yf
+               w22(n)=xf*yf
+            else
+               n11(n)=0
+               n21(n)=0
+               n12(n)=0
+               n22(n)=0
+            endif
+         else
+            n11(n)=0
+            n21(n)=0
+            n12(n)=0
+            n22(n)=0
+         endif
+      enddo
+
+      deallocate(rlat)
+      deallocate(rlon)
+      deallocate(xpts)
+      deallocate(ypts)
+
+   end subroutine bilinear_interp_input_glb
+
+   !---------------------------------------------------------------------------
+   ! See https://en.wikipedia.org/wiki/Great-circle_distance
+   ! Uses Vincenty formula
+   real function great_circle_distance(lat1,lon1,lat2,lon2)
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      real, intent(in) :: lat1, lon1, lat2, lon2
+
+      ! Local variables
+      double precision :: radlat1, radlon1, radlat2, radlon2
+      double precision :: pi
+      double precision :: deg2rad
+      double precision :: lon_abs_diff
+      double precision :: central_angle
+      double precision :: term1, term2, term3
+
+      pi = 4d0*atan(1d0)
+      deg2rad = pi / 180d0
+      radlat1 = dble(lat1)*deg2rad
+      radlon1 = dble(lon1)*deg2rad
+      radlat2 = dble(lat2)*deg2rad
+      radlon2 = dble(lon2)*deg2rad
+      lon_abs_diff = abs(radlon1 - radlon2)
+      term1 = cos(radlat2)*sin(lon_abs_diff)
+      term1 = term1*term1
+      term2 = (cos(radlat1)*sin(radlat2)) - &
+           (sin(radlat1)*cos(radlat2)*cos(lon_abs_diff))
+      term2 = term2*term2
+      term3 = (sin(radlat1)*sin(radlat2)) + &
+           (cos(radlat1)*cos(radlat2)*cos(lon_abs_diff))
+      central_angle = atan2( sqrt(term1 + term2) , term3 )
+      great_circle_distance = real(6381000d0 * central_angle)
+   end function great_circle_distance
+
+   !---------------------------------------------------------------------------
+   subroutine fldbld_precip_nwp(nest,findex,julhr,src,fc_hr, &
+        nwp_precip_glb)
+
+      ! Imports
+      use AGRMET_forcingMod, only : agrmet_struc
+#if (defined USE_GRIBAPI)
+      use grib_api
+#endif
+      use LIS_coreMod,       only : LIS_rc, LIS_masterproc
+      use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_alert, &
+           LIS_verify, LIS_endrun
+      use LIS_timeMgrMod,    only : LIS_julhr_date
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: nest
+      integer, intent(in) :: findex
+      integer, intent(in) :: julhr
+      character(len=6), intent(in) :: src ! "GFS" or "GALWEM"
+      integer, intent(inout)   :: fc_hr
+      real, intent(out)   :: nwp_precip_glb(LIS_rc%gnc(nest), LIS_rc%gnr(nest))
+
+      ! Local variables
+      integer :: alert_number
+      logical :: found, found2
+      integer :: yr1, mo1, da1, hr1
+      integer :: file_julhr
+      integer :: getsixhr
+      integer :: yr_2d
+      character(len=120) :: gribfile, gribfile2
+      integer :: ftn, ierr, igrib, center
+      real :: gridres
+      integer :: dataDate,dataTime
+      character(len=100) :: message(20)
+      integer :: Ni, Nj, ifguess, jfguess
+      real, allocatable :: fg_prec1(:,:), fg_prec2(:,:), fg_prec(:,:)
+
+      alert_number = 0
+      found = .false.
+      found2 = .false.
+      call LIS_julhr_date(julhr,yr1,mo1,da1,hr1)
+      file_julhr = julhr
+
+      ! Need to process the current and previous 6-hour instances.  Search
+      ! for an analysis of forecast file for up to 24 hours with the needed
+      ! valid time.
+      do while( ((.not.found) .or. (.not.found2)) .and. (fc_hr <= 12))
+         found = .false.
+
+         ! See if we need the 6-hour forecast file
+         if (mod(fc_hr,6) .eq. 0) then
+            getsixhr=1
+            found2=.false.
+         else
+            getsixhr=0
+            found2=.true.
+         endif
+
+         yr_2d = mod(yr1,100)
+         if (yr_2d.eq.0) yr_2d = 100
+         if (trim(src) .eq. "GFS") then
+            call getAVNfilename(gribfile, agrmet_struc(nest)%agrmetdir,&
+                 agrmet_struc(nest)%gfsdir,agrmet_struc(nest)%use_timestamp,&
+                 agrmet_struc(nest)%gfs_timestamp,yr1,mo1,da1,hr1,fc_hr)
+            if (getsixhr.eq.1) then
+               call getAVNfilename(gribfile2, agrmet_struc(nest)%agrmetdir,&
+                    agrmet_struc(nest)%gfsdir,&
+                    agrmet_struc(nest)%use_timestamp,&
+                    agrmet_struc(nest)%gfs_timestamp,yr1,mo1,da1,hr1,fc_hr-3)
+            endif
+         else if (trim(src) .eq. "GALWEM") then
+            call getGALWEMfilename(gribfile, agrmet_struc(nest)%agrmetdir,&
+                 agrmet_struc(nest)%galwemdir,&
+                 agrmet_struc(nest)%use_timestamp,&
+                 yr1,mo1,da1,hr1,fc_hr)
+            if (getsixhr.eq.1) then                    
+               call getGALWEMfilename(gribfile2, agrmet_struc(nest)%agrmetdir,&
+                    agrmet_struc(nest)%galwemdir, &
+                    agrmet_struc(nest)%use_timestamp,&
+                    yr1,mo1,da1,hr1,fc_hr-3)
+            endif
+         end if
+
+         call check_grib_file(gribfile,yr1,mo1,da1,hr1,found, &
+              center, Ni, Nj, gridres)
+
+         ! Repeat steps for six hour forecast file, if needed.
+         if (getsixhr .eq. 1) then
+            call check_grib_file(gribfile2,yr1,mo1,da1,hr1,found2, &
+                 center, Ni, Nj, gridres)
+         end if
+
+         ! If correct valid time is not found:
+         ! Increment forecast hour by 6.
+         ! Decrement file_julhr by 6 and get the new filename elements
+         if ((.not. found).or.(.not. found2)) then
+            fc_hr = fc_hr + 6
+            file_julhr = file_julhr - 6
+            call LIS_julhr_date(file_julhr,yr1,mo1,da1,hr1)
+         endif
+
+      end do ! do while
+
+      ! Handle missing GRIB data
+      if ( (.not. found) .or. (.not. found2) ) then
+         if (trim(src) .eq. "GFS") then
+            write(LIS_logunit,*) &
+                 '[WARN] ** GFS Precipitation data not available **'
+         else if (trim(src) .eq. "GALWEM") then
+            write(LIS_logunit,*) &
+                 '[WARN] ** GALWEM Precipitation data not available **'
+         end if
+         message(1) = '[WARN] Program:  LIS'
+         message(2) = '  Routine:  fldbld_precip_nwp.'
+         message(3) = '  GRIB data not available, ' // &
+              'possible degradation.'
+         alert_number = alert_number + 1
+         if(LIS_masterproc) then
+            call LIS_alert( 'fldbld_precip_nwp          ', alert_number, &
+                 message )
+         endif
+         return
+      end if
+
+      ! Continue processing the GRIB data
+      write(LIS_logunit,*)'- FIRST GUESS DATA IS ON A ', gridres,&
+           ' DEGREE LAT/LON GRID'
+      ifguess = Ni
+      jfguess = Nj
+      if (center .eq. 7) then
+         write(LIS_logunit,*)'- FIRST GUESS DATA IS FROM GFS MODEL'
+      elseif (center .eq. 57) then
+         write(LIS_logunit,*)'- FIRST GUESS DATA IS FROM UK UM (GALWEM) MODEL'
+      elseif (center .eq. 58) then
+         write(LIS_logunit,*)'- FIRST GUESS DATA IS FROM NOGAPS MODEL'
+      end if
+
+      allocate ( fg_prec1 (ifguess, jfguess) )
+      if (getsixhr.eq.1) allocate ( fg_prec2 (ifguess, jfguess) )
+
+      if (trim(src) .eq. 'GFS') then
+         alert_number = 0
+         call AGRMET_fldbld_read_precip_gfs( gribfile, ifguess, jfguess,&
+              fg_prec1, alert_number )
+         if (getsixhr.eq.1) then
+            call AGRMET_fldbld_read_precip_gfs( gribfile2, ifguess, jfguess,&
+                 fg_prec2, alert_number )
+         end if
+      else if (trim(src) .eq. 'GALWEM') then
+         call AGRMET_fldbld_read_precip_galwem(gribfile, ifguess, jfguess,&
+              fg_prec1, alert_number)
+         if (getsixhr.eq.1) then
+            call AGRMET_fldbld_read_precip_galwem(gribfile2, ifguess, &
+                 jfguess,&
+                 fg_prec2, alert_number)
+         end if
+      end if
+
+      allocate ( fg_prec (ifguess, jfguess) )
+      if (getsixhr.eq.1) then
+         fg_prec = fg_prec1 - fg_prec2
+      else
+         fg_prec = fg_prec1
+      endif
+
+      ! Sometimes subtraction of 3-hr precip from 6-hr causes slightly 
+      ! negative values.  Correct this.
+      where (fg_prec .lt. 0)
+         fg_prec=0
+      endwhere
+
+      ! Interpolate to the LIS grid
+      call EMK_fg2lis_glb_precip(nest,ifguess, jfguess, &
+           fg_prec, nwp_precip_glb)
+
+      ! Clean up
+      deallocate ( fg_prec )
+      deallocate ( fg_prec1 )
+      if (getsixhr.eq.1) deallocate ( fg_prec2 )
+
+   end subroutine fldbld_precip_nwp
+
+   !---------------------------------------------------------------------------
+   subroutine check_grib_file(gribfile,yr1,mo1,da1,hr1,found, &
+        center, Ni, Nj, gridres)
+
+      ! Imports
+#if (defined USE_GRIBAPI)
+      use grib_api
+#endif
+      use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_alert, &
+           LIS_verify, LIS_endrun
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      character(len=120), intent(in) :: gribfile
+      integer, intent(in) :: yr1, mo1, da1, hr1
+      logical, intent(out) :: found
+      integer, intent(out) :: center
+      integer, intent(out) :: Ni, Nj
+      real, intent(out) :: gridres
+
+      ! Local variables
+      integer :: ftn, ierr, igrib
+      integer :: dataDate, dataTime
+      character(len=100) :: gtype
+      character(len=100) :: message(20)
+
+      found = .false.
+      ! Dummy values, replaced by GRIB data contents below
+      center = 0
+      Ni = 0
+      Nj = 0
+      gridres = 0
+
+#if (defined USE_GRIBAPI)
+      call grib_open_file(ftn,trim(gribfile),'r',ierr)
+      if ( ierr .ne. 0 ) then
+         write(LIS_logunit,*) '[WARN] Failed to open - ', trim(gribfile)
+         return
+      end if
+
+      call grib_new_from_file(ftn,igrib,ierr)
+      if ( ierr .ne. 0 ) then
+         write(LIS_logunit,*) '[WARN] failed to read - '//trim(gribfile)
+         call grib_release(igrib,ierr)
+         call grib_close_file(ftn)
+         return
+      endif
+
+      call grib_get(igrib,'centre',center,ierr)
+      if ( ierr .ne. 0 ) then
+         write(LIS_logunit,*) '[WARN] error in grib_get: centre in ' // &
+              'check_grib_file'
+         call grib_release(igrib,ierr)
+         call grib_close_file(ftn)
+         return
+      endif
+
+      call grib_get(igrib,'gridType',gtype,ierr)
+      if ( ierr .ne. 0 ) then
+         write(LIS_logunit,*) '[WARN] error in grid_get: gridtype in ' // &
+              'check_grib_file'
+         call grib_release(igrib,ierr)
+         call grib_close_file(ftn)
+         return
+      endif
+
+      call grib_get(igrib,'Ni',Ni,ierr)
+      if ( ierr .ne. 0 ) then
+         write(LIS_logunit,*) '[WARN} error in grid_get:Ni in ' // &
+              'check_grib_file'
+         call grib_release(igrib,ierr)
+         call grib_close_file(ftn)
+         return
+      endif
+
+      call grib_get(igrib,'Nj',Nj,ierr)
+      if ( ierr .ne. 0 ) then
+         write(LIS_logunit,*) '[WARN] error in grid_get:Nj in ' // &
+              'check_grib_file'
+         call grib_release(igrib,ierr)
+         call grib_close_file(ftn)
+         return
+      endif
+
+      call grib_get(igrib,'jDirectionIncrementInDegrees',gridres,ierr)
+      if ( ierr .ne. 0 ) then
+         write(LIS_logunit,*) &
+              '[WARN] error in grid_get:jDirectionIncrementInDegrees in ' // &
+              'check_grib_file'
+         call grib_release(igrib,ierr)
+         call grib_close_file(ftn)
+         return
+      endif
+
+      call grib_get(igrib,'dataDate',dataDate,ierr)
+      if ( ierr .ne. 0 ) then
+         write(LIS_logunit,*) '[WARN] error in grid_get:dataDate in ' // &
+              'check_grib_file'
+         call grib_release(igrib,ierr)
+         call grib_close_file(ftn)
+         return
+      endif
+
+      call grib_get(igrib,'dataTime',dataTime,ierr)
+      if ( ierr .ne. 0 ) then
+         write(LIS_logunit,*) '[WARN] error in grid_get:dataTime in ' // &
+              'check_grib_file'
+         call grib_release(igrib,ierr)
+         call grib_close_file(ftn)
+         return
+      endif
+
+      if ( yr1*10000+mo1*100+da1 == dataDate .and. hr1*100 == dataTime ) then
+         found = .TRUE.
+         if ( gtype .ne. "regular_ll" ) then
+            message(1) = '[ERR] program: LIS'
+            message(2) = '  Subroutine: check_grib_file'
+            message(3) = '  First guess source is not a lat/lon grid'
+            message(4) = '  Requires lat/lon data!'
+            call lis_abort(message)
+         endif
+      endif
+
+      call grib_release(igrib,ierr)
+      call grib_close_file(ftn)
+
+#else
+      write(LIS_logunit,*) '[ERR] check_grib_file requires GRIB-API'
+      write(LIS_logunit,*) '[ERR] please recompile LIS'
+      call LIS_endrun()
+#endif
+
+   end subroutine check_grib_file
+
+   !---------------------------------------------------------------------------
+   ! Creates "superobs" out of close observations.  Each close observation is
+   ! first checked for unacceptable deviation from the mean of the close
+   ! obs, and rejected if deviation is too high.  Superobs are considered
+   ! "close" if they are in the same LIS grid box.  Based on Lespinas et al
+   ! (2015).
+   subroutine superstatQC(this,nest,network)
+      
+      ! Imports
+      use LIS_coreMod, only: LIS_domain, LIS_rc, LIS_localPet
+      use LIS_LMLCMod, only: LIS_LMLC
+      use LIS_logMod, only: LIS_logunit, LIS_endrun
+      use LIS_mpiMod
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData), intent(inout) :: this
+      integer,intent(in) :: nest
+      character(len=*), optional :: network
+
+      ! Local variables
+      integer :: nobs
+      integer :: num_close_obs, num_good_obs
+      integer :: num_rejected_obs, num_merged_obs, num_superobs
+      real :: sum, average, dlat, dlon, diff, sigmaOSqr
+      integer :: c,r,j
+      real :: ctrlat, ctrlon
+      character(len=10) :: net_new, platform_new
+      integer, allocatable :: actions(:), actions_pet(:)
+      real, allocatable :: superobs_pet(:),superlat_pet(:),superlon_pet(:)
+      real, allocatable :: means(:)
+      real, allocatable :: superobs(:),superlat(:),superlon(:)
+      real, allocatable :: superSigmaOSqr(:), superSigmaOSqr_pet(:)
+      integer, allocatable :: superob_count(:), superob_count_pet(:)
+      integer :: pet, pet_incr
+      integer :: glbcr
+      integer :: ierr, ipass, icount
+      integer :: gindex
+      real :: threshold
+      logical :: found
+      double precision :: t1, t2
+
+      ! Sanity check
+      nobs = this%nobs
+      if (nobs .eq. 0) return
+
+      ! Determine which type of observations will be "superobbed"
+      net_new = "SUPERGAGE"
+      platform_new = "SUPERGAGE"
+      if (present(network)) then
+         if (trim(network) .eq. "SSMI") then
+            net_new = "SUPERSSMI"
+            platform_new = "SUPERSSMI"         
+         else if (trim(network) .eq. "GEOPRECIP") then
+            net_new = "SUPERGEO"
+            platform_new = "SUPERGEO"         
+         else
+            write(LIS_logunit,*) &
+                 '[WARN] superstatQC does not support network ',trim(network)
+            return
+         end if
+      end if
+
+      if (present(network)) then         
+         write(LIS_logunit,*)&
+              '[INFO] superstatQC working with ',nobs,' obs from ', &
+              trim(network),'...'
+      else
+         write(LIS_logunit,*)&
+              '[INFO] superstatQC working with ',nobs,' gages...'
+      end if
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t1 = MPI_Wtime()
+#endif
+
+      allocate(actions_pet(nobs))
+      actions_pet(:) = 0
+      allocate(actions(nobs))
+      actions(:) = 0
+
+      glbcr = LIS_rc%gnc(nest)*LIS_rc%gnr(nest)
+      allocate(superobs_pet(glbcr))
+      superobs_pet(:) = 0
+      allocate(superlat_pet(glbcr))
+      superlat_pet(:) = 0
+      allocate(superlon_pet(glbcr))
+      superlon_pet(:) = 0
+      allocate(superSigmaOSqr_pet(glbcr))
+      superSigmaOSqr_pet(:) = 0
+      allocate(superob_count_pet(glbcr))
+      superob_count_pet(:) = 0
+
+      allocate(means(glbcr))
+      means(:) = 0
+      allocate(superobs(glbcr))
+      superobs(:) = 0
+      allocate(superlat(glbcr))
+      superlat(:) = 0
+      allocate(superlon(glbcr))
+      superlon(:) = 0
+      allocate(superSigmaOSqr(glbcr))
+      superSigmaOSqr(:) = 0
+      allocate(superob_count(glbcr))
+      superob_count(:) = 0
+
+      dlat = LIS_domain(nest)%lisproj%dlat
+      dlon = LIS_domain(nest)%lisproj%dlon
+
+      ! First pass: Find all acceptable obs in each LIS grid box, and
+      ! calculate average value.  
+      !
+      ! Second pass:  Reject observations that deviate too much from
+      ! local average.  Calculate superob value, location, and error variance.
+      !
+      ! Third pass:  Make sure obs that could not be merged (due to
+      ! lack of valid neighbors) are marked for preservation.
+
+      do ipass = 1,3
+
+         pet = -1
+         pet_incr = 1
+
+         do j = 1, nobs
+
+            ! See which MPI process is responsible for this ob
+            call update_pet(pet,pet_incr)
+            if (pet .ne. LIS_localPet) cycle
+
+            ! Skip bad data
+            if ( this%qc(j) .eq. QC_REJECT) cycle
+
+            ! Screen by type
+            if (present(network)) then
+               if (trim(network) .eq. "SSMI") then
+                  if (.not. is_ssmi(this%net(j))) cycle
+               else if (trim(network) .eq. "GEOPRECIP") then
+                  if (.not. is_geoprecip(this%net(j))) cycle
+               end if
+            else ! Gauges
+               if (.not. is_gauge(this%net(j))) cycle
+            end if
+
+            ! Now see which LIS grid box this is in.  First, handle latitude.
+            found = .false.
+            do r = 1, LIS_rc%gnr(nest)
+               gindex = 1 + (r-1)*LIS_rc%gnc(nest)
+               ctrlat = LIS_domain(nest)%glat(gindex)
+               if (this%lat(j) .lt. (ctrlat - (0.5*dlat))) cycle
+               if (this%lat(j) .ge. (ctrlat + (0.5*dlat))) cycle
+               found = .true.
+               exit
+            end do ! r
+            if (.not. found) cycle
+
+            ! Now, longitude
+            found = .false.
+            do c = 1, LIS_rc%gnc(nest)
+               gindex = c + (r-1)*LIS_rc%gnc(nest)
+               ctrlon = LIS_domain(nest)%glon(gindex)
+               if (this%lon(j) .lt. (ctrlon - (0.5*dlon))) cycle
+               if (this%lon(j) .ge. (ctrlon + (0.5*dlon))) cycle
+               found = .true.
+               exit
+            end do ! r
+            if (.not. found) cycle
+
+            ! Add contribution to local mean.
+            if (ipass .eq. 1) then
+               superobs_pet(gindex) = &
+                    superobs_pet(gindex) + this%obs(j)
+               superob_count_pet(gindex) = &
+                     superob_count_pet(gindex) + 1
+            end if ! ipass .eq. 1
+
+            ! Reject obs that deviate too much from local mean, and collect
+            ! contributions from the remainder for a superob.
+            if (ipass .eq. 2) then
+               if (means(gindex) .eq. MISSING) cycle
+
+               icount = superob_count(gindex)
+               threshold = 3 * this%sigmaOSqr(j) * &
+                       sqrt(real(icount) / real(icount-1))
+
+               if (abs(means(gindex) - this%obs(j)) .gt. threshold) then
+                  actions_pet(j) = -1 ! Reject
+               else
+                  actions_pet(j) =  1 ! Consider for superob
+                  superobs_pet(gindex) = &
+                       superobs_pet(gindex) + this%obs(j)
+                  superlat_pet(gindex) = &
+                       superlat_pet(gindex) + this%lat(j)
+                  superlon_pet(gindex) = &
+                       superlon_pet(gindex) + this%lon(j)
+                  superSigmaOSqr_pet(gindex) = &                          
+                       superSigmaOSqr_pet(gindex) + this%sigmaOSqr(j)
+                  superob_count_pet(gindex) = &
+                       superob_count_pet(gindex) + 1                  
+               end if ! Threshold check
+            end if ! ipass .eq. 2
+
+            ! If only one good observation is in this grid box, make sure
+            ! it is preserved as is.
+            if (ipass .eq. 3) then
+               if (superobs(gindex) .eq. MISSING) then
+                  if (actions_pet(j) .eq. 1) then
+                     actions_pet(j) = 0 
+                  end if
+               end if
+            end if ! ipass .eq. 3
+
+         end do ! j
+
+         ! Collect contributions to local means
+         if (ipass .eq. 1) then
+            means(:) = 0
+            call MPI_Allreduce(superobs_pet,means,glbcr,MPI_REAL, MPI_SUM, &
+                 LIS_MPI_COMM, ierr)
+            superobs_pet(:) = 0
+            superob_count(:) = 0
+            call MPI_Allreduce(superob_count_pet,superob_count,glbcr,&
+                 MPI_INTEGER, MPI_SUM, LIS_MPI_COMM, ierr)
+            superob_count_pet(:) = 0
+
+            do r = 1, LIS_rc%gnr(nest)
+               do c = 1, LIS_rc%gnc(nest)
+                  gindex = c + (r-1)*LIS_rc%gnc(nest)
+                  if (superob_count(gindex) .gt. 2) then
+                     means(gindex) = means(gindex) / superob_count(gindex)
+                  else ! Superob either not possible or not necessary
+                     means(gindex) = MISSING
+                  end if
+               end do ! c
+            end do ! r
+         end if ! ipass.eq.1
+
+         ! Collect contributions to local superob
+         if (ipass .eq. 2) then
+
+#if (defined SPMD)
+            call MPI_Barrier(LIS_MPI_COMM, ierr)
+            superob_count(:) = 0
+            call MPI_Allreduce(superob_count_pet, superob_count, glbcr,&
+                 MPI_INTEGER, MPI_SUM, LIS_MPI_COMM, ierr)
+            superob_count_pet(:) = 0
+
+            superobs(:) = 0
+            call MPI_Allreduce(superobs_pet, superobs, glbcr, MPI_REAL, &
+                 MPI_SUM, LIS_MPI_COMM, ierr)
+            superobs_pet(:) = 0
+
+            superlat(:) = 0
+            call MPI_Allreduce(superlat_pet, superlat, glbcr, MPI_REAL, &
+                 MPI_SUM, LIS_MPI_COMM, ierr)
+            superlat_pet(:) = 0
+
+            superlon(:) = 0
+            call MPI_Allreduce(superlon_pet, superlon, glbcr, MPI_REAL, &
+                 MPI_SUM, LIS_MPI_COMM, ierr)
+            superlon_pet(:) = 0
+               
+            superSigmaOSqr(:) = 0
+            call MPI_Allreduce(superSigmaOSqr_pet, superSigmaOSqr, glbcr, &
+                 MPI_REAL, MPI_SUM, LIS_MPI_COMM, ierr)
+            superSigmaOSqr_pet(:) = 0
+#endif
+
+            ! Create the superobs
+            do r = 1, LIS_rc%gnr(nest)
+               do c = 1, LIS_rc%gnc(nest)
+                  gindex = c + (r-1)*LIS_rc%gnc(nest)
+                  if (superob_count(gindex) .gt. 2) then
+                     superobs(gindex) = &
+                          superobs(gindex) / superob_count(gindex)
+                     superlat(gindex) = &
+                          superlat(gindex) / superob_count(gindex)
+                     superlon(gindex) = &
+                          superlon(gindex) / superob_count(gindex)
+                     superSigmaOSqr(gindex) = &
+                          superSigmaOSqr(gindex) / superob_count(gindex)
+                  else ! Superob either not possible or not needed
+                     superobs(gindex) = MISSING                    
+                  end if
+               end do ! c
+            end do ! r
+            
+         end if ! ipass .eq. 2
+
+         ! Collect the final list of observations we will either reject or
+         ! merge.
+         if (ipass .eq. 3) then
+
+#if (defined SPMD)
+            call MPI_Barrier(LIS_MPI_COMM, ierr)
+            actions(:) = 0
+            call MPI_Allreduce(actions_pet, actions, nobs,&
+                 MPI_INTEGER, MPI_SUM, LIS_MPI_COMM, ierr)
+            actions_pet(:) = 0
+#endif
+         end if ! ipass .eq. 3
+
+      end do ! ipass
+
+      ! Now update the observation structure with the rejected obs
+      ! and the merged obs.  All processors do this to ensure
+      ! identical modified structures.
+      num_merged_obs = 0
+      num_rejected_obs = 0
+      do j = 1, nobs 
+         if (actions(j) .eq. -1) then
+            this%qc(j) = QC_REJECT
+            write(LIS_logunit,*) &
+                 '[INFO] superstatQC rejection j: ',j, &
+                 ' net: ',trim(this%net(j)), &
+                 ' platform: ',trim(this%platform(j)), &
+                 ' lat: ',this%lat(j), &
+                 ' lon: ',this%lon(j), &
+                 ' obs: ', &
+                 boxcoxReverseTransformScalar(this%obs(j)), &
+                 ' back: ', &
+                 boxcoxReverseTransformScalar(this%back(j))
+            num_rejected_obs = num_rejected_obs + 1
+         else if (actions(j) .eq. 1) then
+            this%qc(j) = QC_REJECT ! Was merged into superob
+            num_merged_obs = num_merged_obs + 1
+         end if
+      end do ! j
+
+      write(LIS_logunit,*) &
+           '[INFO] superstatQC rejected ',num_rejected_obs, &
+           ' obs and merged ',num_merged_obs,' obs'
+
+      ! Finally, add the superobs to the data structure.
+      num_superobs = 0
+      do r = 1, LIS_rc%gnr(nest)
+         do c = 1, LIS_rc%gnc(nest)
+            gindex = c + (r-1)*LIS_rc%gnc(nest)            
+            if (superobs(gindex) .eq. MISSING) cycle
+            
+            call EMK_assignObsData(this,net_new,platform_new, &
+                 superobs(gindex), &
+                 superlat(gindex), &
+                 superlon(gindex), &
+                 superSigmaOSqr(gindex))
+            
+            num_superobs = num_superobs + 1
+         end do ! c
+      end do ! r
+
+      write(LIS_logunit,*) &
+           '[INFO] superstatQC created ',num_superobs,' super obs'
+
+      ! Clean up
+      deallocate(means)
+      deallocate(actions)
+      deallocate(superobs)
+      deallocate(superlat)
+      deallocate(superlon)
+      deallocate(superSigmaOSqr)
+      deallocate(superob_count)
+
+      deallocate(actions_pet)
+      deallocate(superobs_pet)
+      deallocate(superlat_pet)
+      deallocate(superlon_pet)
+      deallocate(superSigmaOSqr_pet)
+      deallocate(superob_count_pet)
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t2 = MPI_Wtime()
+      write(LIS_logunit,*) &
+           '[INFO] Elapsed time in superstatQC is ',t2 - t1,' seconds'
+#endif
+
+   end subroutine superstatQC
+
+   !---------------------------------------------------------------------------
+   ! QC checks for duplicate gage reports.  Based on Mahfouf et al (2007).
+   subroutine dupQC(this)
+
+      ! Imports
+      use LIS_logMod, only: LIS_logunit
+      use LIS_mpiMod
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData), intent(inout) :: this
+
+      ! Local variables
+      type close_obs ! Linked list type
+         integer :: ob_index
+         type(close_obs), pointer :: next
+      end type close_obs
+      type(close_obs), pointer :: head, tail, new, ptr
+      integer :: count_dups
+      real :: mean,back,newlat,newlon,sigmaOSqr
+      character(len=10) :: net,platform
+      real :: diff
+      integer :: r,c,i
+      integer :: nobs
+      logical :: reject_all
+      double precision :: t1, t2
+      integer :: ierr
+
+      write(LIS_logunit,*) &
+           '[INFO] Checking for duplicate obs...'
+
+      nobs = this%nobs
+      if (nobs .eq. 0) return
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t1 = MPI_Wtime()
+#endif
+
+      do r = 1,nobs
+         
+         if (this%qc(r) .eq. QC_REJECT) cycle
+         if (trim(this%net(r)) .eq. "SSMI") cycle
+         if (trim(this%net(r)) .eq. "GEOPRECIP") cycle
+
+         ! Get count of duplicates of ob r
+         count_dups = 0
+         mean = 0
+         nullify(head,tail) ! Initialize linked list
+
+         do c = r+1,nobs
+            if (this%qc(c) .eq. QC_REJECT) cycle
+            if (trim(this%net(r)) .eq. "SSMI") cycle
+            if (trim(this%net(r)) .eq. "GEOPRECIP") cycle
+
+            if ( trim(this%net(c)) .ne. trim(this%net(r))) cycle
+            if ( trim(this%platform(c)) .ne. trim(this%platform(r))) cycle
+            
+            ! Duplicate found.  Store in linked list.
+            count_dups = count_dups + 1
+            
+            ! Add to linked list
+            allocate(new)
+            new%ob_index = c
+            nullify(new%next)
+            if (associated(head)) then
+               tail%next => new
+               tail => new
+            else ! First entry
+               head => new
+               tail => new
+            end if               
+         end do ! c
+
+         ! If we have no duplicates, just move on.
+         if (count_dups .eq. 0) cycle
+
+         ! If we have more than one duplicate, determining a sane procedure
+         ! for handling all the reports becomes difficult.  We'll keep it
+         ! simple and reject all reports if more than one unique measurement
+         ! amount is found; otherwise, we'll just reject the exact duplicates.
+         if (count_dups .gt. 1) then
+            ptr => head
+            reject_all = .false.
+            do i = 1, count_dups
+               diff = this%obs(ptr%ob_index) - this%obs(r)
+               if (diff .eq. 0) then
+                  this%qc(ptr%ob_index) = QC_REJECT
+
+                  write(LIS_logunit,*) &
+                       '[INFO] dupQC rejecting exact duplicate1 ob r: ', &
+                       ptr%ob_index, &
+                       ' net: ',trim(this%net(ptr%ob_index)), &
+                       ' platform: ',trim(this%platform(ptr%ob_index)), &
+                       ' lat: ',this%lat(ptr%ob_index), &
+                       ' lon: ',this%lon(ptr%ob_index), &
+                       ' obs: ', &
+                       boxcoxReverseTransformScalar(this%obs(&
+                       ptr%ob_index)), &
+                       ' back: ', &
+                       boxcoxReverseTransformScalar(this%back(&
+                       ptr%ob_index))
+                  write(LIS_logunit,*) &
+                       '------------------------------------------------------'
+
+               else
+                  reject_all = .true.
+                  exit ! out of i loop
+               end if
+               ptr => ptr%next
+            end do ! i
+
+            if (reject_all) then
+               this%qc(r) = QC_REJECT
+
+               write(LIS_logunit,*) &
+                    '[INFO] dupQC rejecting ob1 r: ', &
+                    r, &
+                    ' net: ',trim(this%net(r)), &
+                    ' platform: ',trim(this%platform(r)), &
+                    ' lat: ',this%lat(r), &
+                    ' lon: ',this%lon(r), &
+                    ' obs: ', &
+                    boxcoxReverseTransformScalar(this%obs(r)), &
+                    ' back: ', &
+                    boxcoxReverseTransformScalar(this%back(r))
+
+               ptr => head
+               do i = 1, count_dups
+                  this%qc(ptr%ob_index) = QC_REJECT
+
+                  write(LIS_logunit,*) &
+                       '[INFO] dupQC rejecting ob1 r: ', &
+                       ptr%ob_index, &
+                       ' net: ',trim(this%net(ptr%ob_index)), &
+                       ' platform: ',trim(this%platform(ptr%ob_index)), &
+                       ' lat: ',this%lat(ptr%ob_index), &
+                       ' lon: ',this%lon(ptr%ob_index), &
+                       ' obs: ', &
+                       boxcoxReverseTransformScalar(this%obs( &
+                       ptr%ob_index)), &
+                       ' back: ', &
+                       boxcoxReverseTransformScalar(this%back( &
+                       ptr%ob_index))
+
+                  ptr => ptr%next
+               end do ! i
+               write(LIS_logunit,*) &
+                    '------------------------------------------------------'
+            end if ! reject_all
+         end if ! count_dups .gt. 1
+
+         ! If we have exactly one duplicate: reject duplicate       
+         ! if it is an exact copy; otherwise, attempt superob.
+         if (count_dups .eq. 1) then
+            ptr => head
+            diff = this%qc(ptr%ob_index) - this%qc(r)
+            if (diff .eq. 0) then
+               this%qc(ptr%ob_index) = QC_REJECT
+
+               write(LIS_logunit,*) &
+                    '[INFO] dupQC rejecting exact duplicate2 ob r: ', &
+                    ptr%ob_index, &
+                    ' net: ',trim(this%net(ptr%ob_index)), &
+                    ' platform: ',trim(this%platform(ptr%ob_index)), &
+                    ' lat: ',this%lat(ptr%ob_index), &
+                    ' lon: ',this%lon(ptr%ob_index), &
+                    ' obs: ', &
+                    boxcoxReverseTransformScalar(this%obs(ptr%ob_index)), &
+                    ' back: ', &
+                    boxcoxReverseTransformScalar(this%back(ptr%ob_index))
+               write(LIS_logunit,*) &
+                    '------------------------------------------------------'
+
+            else if (diff*diff .gt. this%sigmaOSqr(r)) then
+               this%qc(r) = QC_REJECT
+
+               write(LIS_logunit,*) &
+                    '[INFO] dupQC rejecting2 ob r: ', &
+                    r, &
+                    ' net: ',trim(this%net(r)), &
+                    ' platform: ',trim(this%platform(r)), &
+                    ' lat: ',this%lat(r), &
+                    ' lon: ',this%lon(r), &
+                    ' obs: ', &
+                    boxcoxReverseTransformScalar(this%obs(r)), &
+                    ' back: ', &
+                    boxcoxReverseTransformScalar(this%back(r))
+
+               this%qc(ptr%ob_index) = QC_REJECT
+
+               write(LIS_logunit,*) &
+                    '[INFO] dupQC rejecting2 ob r: ', &
+                    ptr%ob_index, &
+                    ' net: ',trim(this%net(ptr%ob_index)), &
+                    ' platform: ',trim(this%platform(ptr%ob_index)), &
+                    ' lat: ',this%lat(ptr%ob_index), &
+                    ' lon: ',this%lon(ptr%ob_index), &
+                    ' obs: ', &
+                    boxcoxReverseTransformScalar(this%obs(ptr%ob_index)), &
+                    ' back: ', &
+                    boxcoxReverseTransformScalar(this%back(ptr%ob_index))
+               write(LIS_logunit,*) &
+                    '------------------------------------------------------'
+
+            else
+               mean = 0.5 * (this%qc(ptr%ob_index) + this%qc(r))
+               write(LIS_logunit,*) &
+                    '[INFO] dupQC will create superob from r: ', &
+                    r, &
+                    ' net: ',trim(this%net(r)), &
+                    ' platform: ',trim(this%platform(r)), &
+                    ' lat: ',this%lat(r), &
+                    ' lon: ',this%lon(r), &
+                    ' obs: ', &
+                    boxcoxReverseTransformScalar(this%obs(r)), &
+                    ' back: ', &
+                    boxcoxReverseTransformScalar(this%back(r))
+
+               write(LIS_logunit,*) &
+                    '[INFO] dupQC will create superob from r: ', &
+                    ptr%ob_index, &
+                    ' net: ',trim(this%net(ptr%ob_index)), &
+                    ' platform: ',trim(this%platform(ptr%ob_index)), &
+                    ' lat: ',this%lat(ptr%ob_index), &
+                    ' lon: ',this%lon(ptr%ob_index), &
+                    ' obs: ', &
+                    boxcoxReverseTransformScalar(&
+                    this%obs(ptr%ob_index)), &
+                    ' back: ', &
+                    boxcoxReverseTransformScalar(this%back(&
+                    ptr%ob_index))
+               
+               mean = mean
+               back = this%back(r)
+               newlat = this%lat(r)
+               newlon = this%lon(r)
+               sigmaOSqr = this%sigmaOSqr(r)
+               
+               write(LIS_logunit,*) &
+                    '[INFO] dupQC new superob is : ', &
+                    ' net: ',trim(this%net(r)), &
+                    ' platform: ',trim(this%platform(r)), &
+                    ' obs: ', &
+                    boxcoxReverseTransformScalar(this%obs(r))
+               write(LIS_logunit,*) &
+                    '------------------------------------------------------'
+               
+               call EMK_assignObsData(this,net,platform,mean,newlat,newlon,&
+                    sigmaOSqr)
+               
+               ! Reject originals
+               this%qc(r) = QC_REJECT
+               this%qc(ptr%ob_index) = QC_REJECT
+            end if
+         end if ! count_dups .eq. 1
+
+         ! Clean up linked list and move on         
+         do 
+            ptr => head
+            if (associated(head%next)) then
+               head => head%next
+               deallocate(ptr)
+            else
+               nullify(head,tail)
+               deallocate(ptr)
+               nullify(ptr)
+               exit ! Done with linked list
+            end if
+         end do
+
+      end do ! r
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t2 = MPI_Wtime()
+      write(LIS_logunit,*) &
+           '[INFO] Elapsed time in dupQC is ',t2 - t1,' seconds'
+#endif
+      
+   end subroutine dupQC
+
+   !---------------------------------------------------------------------------
+   subroutine update_pet(pet,pet_incr)
+      use LIS_coreMod, only: LIS_npes
+      implicit none
+      integer,intent(inout) :: pet
+      integer,intent(inout) :: pet_incr
+      pet = pet + pet_incr
+      if (pet .ge. LIS_npes) then
+         pet = LIS_npes - 1
+         pet_incr = -1
+      else if (pet .lt. 0) then
+         pet = 0
+         pet_incr = 1
+      end if
+   end subroutine update_pet
+
+   !---------------------------------------------------------------------------
+   subroutine reset_negative_values(nest,mrgp)
+
+      ! Imports
+      use LIS_coreMod, only: LIS_rc
+      use LIS_logMod, only: LIS_logunit
+
+      ! Arguments
+      integer, intent(in) :: nest
+      real, intent(inout) :: mrgp(LIS_rc%lnc(nest),LIS_rc%lnr(nest))
+      
+      ! Local variables
+      integer :: ifix
+      integer :: c,r
+
+      ifix = 0
+      do r = 1, LIS_rc%lnr(nest)
+         do c = 1, LIS_rc%lnc(nest)            
+            if (mrgp(c,r) .lt. 0) then
+               mrgp(c,r) = 0
+               ifix = ifix + 1
+            end if
+         end do ! c
+      end do ! r
+      if (ifix > 0) then
+         write(LIS_logunit,6000) ifix
+6000     format (/, 1x, 55('-'), &
+              /, 3x, 'routine reset_negative_values:',&
+              /, 5x, '# of pts to which negative values were set to zero = ', &
+              i6, /, 1x, 55('-'))
+      end if
+
+   end subroutine reset_negative_values
+
+   !---------------------------------------------------------------------------
+   ! Reject obs that differ too much from background field.  From Lopez (2013)
+   subroutine backQC(this,sigmaBSqr)
+
+      ! Imports
+      use LIS_logMod, only: LIS_logunit, LIS_endrun
+      use LIS_mpiMod
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData), intent(inout) :: this
+      real, intent(in) :: sigmaBSqr
+
+      ! Local variables
+      integer :: nobs
+      real :: errorThresh
+      integer :: pet, pet_incr
+      real :: absDiff
+      integer :: r
+      integer :: reject_count
+      integer :: ierr
+      double precision :: t1, t2
+
+      nobs = this%nobs
+      if (nobs .eq. 0) return
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t1 = MPI_Wtime()
+#endif
+
+      reject_count = 0
+      do r = 1,nobs
+
+         ! Skip bad data
+         if ( this%qc(r) .eq. QC_REJECT) cycle
+
+         errorThresh = 4*sqrt(sigmaBSqr + this%sigmaOSqr(r))   
+         absDiff = abs(this%obs(r) - this%back(r))
+
+         if (absDiff .gt. errorThresh) then
+            this%qc(r) = QC_REJECT
+
+            reject_count = reject_count + 1
+
+            write(LIS_logunit,*) &
+                 '[INFO] backQC rejecting observation i: ',r, &
+                 ' net: ',trim(this%net(r)), &
+                 ' platform: ',trim(this%platform(r)), &
+                 ' lat: ',this%lat(r), &
+                 ' lon: ',this%lon(r), &
+                 ' obs: ', &
+                 boxcoxReverseTransformScalar(this%obs(r)), &
+                 ' back: ', &
+                 ' abs diff: ', abs(this%obs(r) - this%back(r)), &
+                 ' errorTresh ', errorThresh
+
+         end if
+
+      end do ! r
+
+      if (reject_count .gt. 0) then
+         write(LIS_logunit,*)'backQC rejected ',reject_count,' observations'
+      end if
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t2 = MPI_Wtime()
+      write(LIS_logunit,*) &
+           '[INFO] Elapsed time in backQC is ',t2 - t1,' seconds'
+#endif
+
+   end subroutine backQC
+
+   !---------------------------------------------------------------------------
+   logical function is_gauge(net)
+      implicit none
+      character(len=10) :: net
+      logical :: answer
+      answer = .false.
+      if (trim(net) .eq. "AMIL") answer = .true.
+      if (trim(net) .eq. "ICAO") answer = .true.
+      if (trim(net) .eq. "WMO") answer = .true.
+      is_gauge = answer
+   end function is_gauge
+   !---------------------------------------------------------------------------
+   logical function is_ssmi(net)
+      implicit none
+      character(len=10) :: net
+      logical :: answer
+      answer = .false.
+      if (trim(net) .eq. "SSMI") answer = .true.
+      is_ssmi = answer
+   end function is_ssmi
+   !---------------------------------------------------------------------------
+   logical function is_geoprecip(net)
+      implicit none
+      character(len=10) :: net
+      logical :: answer
+      answer = .false.
+      if (trim(net) .eq. "GEOPRECIP") answer = .true.
+      is_geoprecip = answer
+   end function is_geoprecip
+   !---------------------------------------------------------------------------
+   subroutine init_hash2d(imax,jmax,hash2d)
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: imax
+      integer, intent(in) :: jmax
+      type(hash_list), allocatable, intent(out) :: hash2d(:,:)
+
+      ! Local variables
+      integer :: i,j
+
+      allocate(hash2d(imax,jmax))
+
+      do j = 1, jmax
+         do i = 1, imax
+            hash2d(i,j)%obindex = MISSING
+            nullify(hash2d(i,j)%next)
+         end do ! i
+      end do ! j
+
+   end subroutine init_hash2d
+
+   !---------------------------------------------------------------------------
+   subroutine insert_hash2d(imax,jmax,hash2d,i,j,obindex)
+
+      ! Imports
+      use LIS_logMod, only: LIS_logunit
+
+      ! Defaults
+      implicit none
+      
+      ! Arguments
+      integer, intent(in) :: imax
+      integer, intent(in) :: jmax
+      type(hash_list), target, intent(inout) :: hash2d(imax,jmax)
+      integer, intent(in) :: i
+      integer, intent(in) :: j
+      integer, intent(in) :: obindex
+
+      ! Local variables
+      type(hash_list), pointer :: new_node
+      type(hash_list), pointer :: node
+
+      nullify(node, new_node)
+
+      node => hash2d(i,j)
+      do
+         if (node%obindex .eq. MISSING) then
+            node%obindex = obindex
+            exit
+         else
+            if (.not. associated(node%next)) then
+               allocate(new_node)
+               new_node%obindex = obindex
+               nullify(new_node%next)
+               node%next => new_node
+               exit
+            else
+               node => node%next
+            end if
+         end if
+      end do
+      
+   end subroutine insert_hash2d
+
+   !---------------------------------------------------------------------------
+   subroutine get_hash2d(imax,jmax,hash2d,i,j,nobs_local,obindex_vector)
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: imax
+      integer, intent(in) :: jmax
+      type(hash_list), target, intent(in) :: hash2d(imax,jmax)
+      integer, intent(in) :: i
+      integer, intent(in) :: j
+      integer, intent(out) :: nobs_local
+      integer, allocatable, intent(out) :: obindex_vector(:)
+      
+      ! Local variables
+      type(hash_list), pointer :: node
+      integer :: k
+
+      nullify(node)
+
+      ! First, find out how many obs are in this grid box
+      nobs_local = 0
+      if (hash2d(i,j)%obindex .eq. MISSING) return
+
+      node => hash2d(i,j)
+      nobs_local = nobs_local + 1
+      do
+         if (.not. associated(node%next)) then
+            exit
+         else
+            node => node%next
+            nobs_local = nobs_local + 1
+         end if
+      end do
+
+      allocate(obindex_vector(nobs_local))
+      
+      ! Second pass:  Get all the ob gindex values
+      node => hash2d(i,j)
+      k = 1
+      obindex_vector(k) = node%obindex
+      do
+         if (.not. associated(node%next)) then
+            exit
+         else
+            node => node%next
+            k = k + 1
+            obindex_vector(k) = node%obindex
+         end if
+      end do
+
+   end subroutine get_hash2d
+
+   !---------------------------------------------------------------------------
+   ! NOTE:  hash2d must be deallocated after this subroutine
+   subroutine destroy_hash2d(imax,jmax,hash2d)
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: imax
+      integer, intent(in) :: jmax
+      type(hash_list), target, intent(inout) :: hash2d(imax,jmax)
+
+      ! Local variables
+      type(hash_list), pointer :: node, next, first
+      integer :: i,j
+
+      nullify(node, next, first)
+
+      do j = 1, jmax
+         do i = 1, imax
+            ! Very first node in list must be preserved until we deallocate 
+            ! hash2d. But all nodes beyond that can be deallocated one by one.
+            first => hash2d(i,j)
+            first%obindex = MISSING
+            if (.not. associated(first%next)) cycle
+            node => first%next
+            nullify(first%next)
+            do
+               if (associated(node%next)) then
+                  next => node%next
+                  deallocate(node)
+                  node => next
+               else ! Last node in list
+                  deallocate(node)
+                  nullify(node)
+                  nullify(next)
+                  exit
+               end if
+            end do
+         end do ! i
+      end do ! j
+
+   end subroutine destroy_hash2d
+
+   !---------------------------------------------------------------------------
+   subroutine build_hash2d(this,nest,imax,jmax,hash2d)
+
+      ! Imports
+      use LIS_coreMod, only: LIS_rc, LIS_domain
+      use LIS_logMod, only: LIS_logunit
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData), intent(inout) :: this
+      integer,intent(in) :: nest
+      integer,intent(out) :: imax
+      integer,intent(out) :: jmax
+      type(hash_list), allocatable, intent(out) :: hash2d(:,:)
+
+      ! Local variables
+      real :: dlat, dlon, ctrlat, ctrlon
+      integer :: nobs
+      logical :: found
+      integer :: j,r,c,gindex
+      
+      nobs = this%nobs
+      if (nobs .eq. 0) return
+
+      ! Here we create a 2d hash table storing the index values of each ob
+      ! in linked lists for each LIS grid box.  This can help us screen
+      ! out obviously unnecessary ob comparisons later.
+      call init_hash2d(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d)
+      imax = LIS_rc%gnc(nest)
+      jmax = LIS_rc%gnr(nest)
+
+      dlat = LIS_domain(nest)%lisproj%dlat
+      dlon = LIS_domain(nest)%lisproj%dlon
+      do j = 1, nobs
+
+         if (this%qc(j) .eq. QC_REJECT) cycle
+
+         ! First, latitude
+         found = .false.
+         do r = 1, LIS_rc%gnr(nest)
+            gindex = 1 + (r-1)*LIS_rc%gnc(nest)
+            ctrlat = LIS_domain(nest)%glat(gindex)
+            if (this%lat(j) .lt. (ctrlat - (0.5*dlat))) cycle
+            if (this%lat(j) .ge. (ctrlat + (0.5*dlat))) cycle
+            found = .true.
+            exit
+         end do ! r
+         if (.not. found) then
+            this%qc(j) = QC_REJECT
+            write(LIS_logunit,*) &
+                 '[INFO] build_hash2d rejecting observation j: ',j,&
+                 ' net: ',trim(this%net(j)), &
+                 ' platform: ',trim(this%platform(j)), &
+                 ' lat: ',this%lat(j), &
+                 ' lon: ',this%lon(j)
+            cycle
+         end if
+
+         ! Then longitude
+         found = .false.
+         do c = 1, LIS_rc%gnc(nest)
+            gindex = c + (r-1)*LIS_rc%gnc(nest)
+            ctrlon = LIS_domain(nest)%glon(gindex)
+            if (this%lon(j) .lt. (ctrlon - (0.5*dlon))) cycle
+            if (this%lon(j) .ge. (ctrlon + (0.5*dlon))) cycle
+            found = .true.
+            exit
+         end do ! c
+         if (.not. found) then
+            this%qc(j) = QC_REJECT
+            write(LIS_logunit,*) &
+                 '[INFO] build_hash2d rejecting observation j: ',j,&
+                 ' net: ',trim(this%net(j)), &
+                 ' platform: ',trim(this%platform(j)), &
+                 ' lat: ',this%lat(j), &
+                 ' lon: ',this%lon(j)
+            cycle
+         end if
+
+         call insert_hash2d(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d,c,r,j)
+
+      end do ! j
+
+   end subroutine build_hash2d
+
+   !---------------------------------------------------------------------------
+   ! Find neighbors around a designated grid point close enough to have
+   ! partial correlation in the background field.  Assumes lat/lon grid.
+   subroutine find_gridpt_neighbors(c,r,nest, &
+        lr,ur,lc1,rc1,lc2,rc2)
+
+      ! Imports
+      use LIS_coreMod, only:  LIS_domain, LIS_rc
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: c
+      integer, intent(in) :: r
+      integer, intent(in) :: nest
+      integer, intent(out) :: lr
+      integer, intent(out) :: ur
+      integer, intent(out) :: lc1
+      integer, intent(out) :: rc1
+      integer, intent(out) :: lc2
+      integer, intent(out) :: rc2
+
+      ! Local variables
+      integer :: gindex
+      real :: ctrlat, ctrlon, tmplat, tmplon
+      real :: ctrlat_lower,ctrlon_lower
+      real :: ctrlat_upper,ctrlon_upper
+      integer :: lc1_upper,rc1_upper,lc2_upper,rc2_upper
+      integer :: lc1_lower,rc1_lower,lc2_lower,rc2_lower
+      real :: dist
+      logical :: found
+
+      ! Find latitude bounds.  Assumes lat/lon domain
+      gindex = 1 + (r-1)*LIS_rc%gnc(nest)
+      ctrlat = LIS_domain(nest)%glat(gindex)
+
+      ! First, lower bound
+      do lr = r, 1, -1
+         gindex = 1 + (lr-1)*LIS_rc%gnc(nest)
+         tmplat = LIS_domain(nest)%glat(gindex)
+         dist = great_circle_distance(ctrlat, 0., tmplat, 0.)
+         if (dist .gt. MAX_DIST) exit
+      end do ! lr
+      lr = max(lr-1,1)
+
+      ! Next, upper bound
+      do ur = r, LIS_rc%gnr(nest), 1
+         gindex = 1 + (ur-1)*LIS_rc%gnc(nest)
+         tmplat = LIS_domain(nest)%glat(gindex)
+         dist = great_circle_distance(ctrlat, 0., tmplat, 0.)
+         if (dist .gt. MAX_DIST) exit
+      end do ! ur
+      ur = min(ur+1,LIS_rc%gnr(nest))
+
+      ! Find longitude bounds.  Assumes lat/lon domain
+      ! First, use lower latitude.
+      gindex = c + (lr-1)*LIS_rc%gnc(nest)
+      ctrlat_lower = LIS_domain(nest)%glat(gindex)
+      ctrlon_lower = LIS_domain(nest)%glon(gindex)
+      call find_gridpt_neighbors_leftlon(c,lr,nest,ctrlat_lower,ctrlon_lower, &
+           lc1_lower,rc2_lower)
+      call find_gridpt_neighbors_rightlon(c,lr,nest,ctrlat_lower,ctrlon_lower,&
+           rc1_lower,lc2_lower)
+
+      ! Next, use upper latitude.
+      gindex = c + (ur-1)*LIS_rc%gnc(nest)
+      ctrlat_upper = LIS_domain(nest)%glat(gindex)
+      ctrlon_upper = LIS_domain(nest)%glon(gindex)
+      call find_gridpt_neighbors_leftlon(c,ur,nest,ctrlat_upper,ctrlon_upper,&
+           lc1_upper,rc2_upper)
+      call find_gridpt_neighbors_rightlon(c,ur,nest,ctrlat_lower,ctrlon_lower,&
+           rc1_upper,lc2_upper)
+      
+      ! Use the larger of the two bounds (associated with poleward latitude)
+      if (abs(ctrlat_upper) .gt. abs(ctrlat_lower)) then
+         lc1 = lc1_upper
+         rc2 = rc2_upper
+         rc1 = rc1_upper
+         lc2 = lc2_upper
+      else
+         lc1 = lc1_lower
+         rc2 = rc2_lower
+         rc1 = rc1_lower
+         lc2 = lc2_lower
+      end if
+      
+   end subroutine find_gridpt_neighbors
+
+   !---------------------------------------------------------------------------
+   subroutine find_gridpt_neighbors_leftlon(c,r,nest,ctrlat,ctrlon,lc1,rc2)
+
+      ! Imports
+      use LIS_coreMod, only: LIS_rc, LIS_domain
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: c
+      integer, intent(in) :: r
+      integer, intent(in) :: nest
+      real, intent(in) :: ctrlat
+      real, intent(in) :: ctrlon
+      integer, intent(out) :: lc1
+      integer, intent(out) :: rc2
+
+      ! Local variables
+      logical :: found
+      integer :: gindex
+      real :: tmplon
+      real :: dist
+      
+      found = .false.
+      do lc1 = c, 1, -1
+         gindex = lc1 + (r-1)*LIS_rc%gnc(nest)
+         tmplon = LIS_domain(nest)%glon(gindex)
+         dist = great_circle_distance(ctrlat, ctrlon, ctrlat, tmplon)
+         if (dist .gt. MAX_DIST) then
+            found = .true.
+            exit
+         end if
+      end do ! lc1
+      if (.not. found) then
+         do rc2 = LIS_rc%gnc(nest), c, -1
+            gindex = rc2 + (r-1)*LIS_rc%gnc(nest)
+            tmplon = LIS_domain(nest)%glon(gindex)
+            dist = great_circle_distance(ctrlat, ctrlon, ctrlat, tmplon)
+            if (dist .gt. MAX_DIST) exit
+         end do ! rc2
+         rc2 = rc2-1
+         lc1 = 1
+      else
+         lc1 = max(lc1-1,1)
+         rc2 = 0
+      end if
+
+   end subroutine find_gridpt_neighbors_leftlon
+
+   !---------------------------------------------------------------------------
+   subroutine find_gridpt_neighbors_rightlon(c,r,nest,ctrlat,ctrlon,rc1,lc2)
+
+      ! Imports
+      use LIS_coreMod, only: LIS_rc, LIS_domain
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: c
+      integer, intent(in) :: r
+      integer, intent(in) :: nest
+      real, intent(in) :: ctrlat
+      real, intent(in) :: ctrlon
+      integer, intent(out) :: rc1
+      integer, intent(out) :: lc2
+
+      ! Local variables
+      logical :: found
+      integer :: gindex
+      real :: tmplon
+      real :: dist
+
+      ! Find right longitude bound.  It may wrap around the grid, so
+      ! two indices may be found.
+      found = .false.
+      do rc1 = c, LIS_rc%gnc(nest)
+         gindex = rc1 + (r-1)*LIS_rc%gnc(nest)
+         tmplon = LIS_domain(nest)%glon(gindex)
+         dist = great_circle_distance(ctrlat, ctrlon, ctrlat, tmplon)
+         if (dist .gt. MAX_DIST) then
+            found = .true.
+            exit
+         end if
+      end do ! rc1
+      if (.not. found) then
+         do lc2 = 1, c
+            gindex = lc2 + (r-1)*LIS_rc%gnc(nest)
+            tmplon = LIS_domain(nest)%glon(gindex)
+            dist = great_circle_distance(ctrlat, ctrlon, ctrlat, tmplon)
+            if (dist .gt. MAX_DIST) exit
+         end do ! rc2
+         lc2 = lc2+1
+         rc1 = LIS_rc%gnc(nest)
+      else
+         rc1 = min(rc1+1,LIS_rc%gnc(nest))
+         lc2 = 0
+      end if
+
+   end subroutine find_gridpt_neighbors_rightlon
+
+   !---------------------------------------------------------------------------
+   subroutine get_neighbor_obs(cmax,rmax,hash2d,lr,ur,lc1,rc1,lc2,rc2,nest, &
+        nobs_neighbors, iobs_neighbors_vector)
+
+      ! Imports
+      use LIS_coreMod, only: LIS_rc
+      use LIS_logMod, only: LIS_logunit, LIS_flush
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer, intent(in) :: cmax
+      integer, intent(in) :: rmax
+      type(hash_list), intent(in) :: hash2d(cmax,rmax)
+      integer, intent(in) :: lr
+      integer, intent(in) :: ur
+      integer, intent(in) :: lc1
+      integer, intent(in) :: rc1
+      integer, intent(in) :: lc2
+      integer, intent(in) :: rc2
+      integer, intent(in) :: nest
+      integer, intent(out) :: nobs_neighbors
+      integer, allocatable, intent(out) :: iobs_neighbors_vector(:)
+
+      ! Local variables
+      integer :: c,r,jpass,ipass
+      integer :: start_c, end_c
+      integer :: obcount_cr
+      integer, allocatable :: iobs_cr_vector(:)
+      integer :: icount
+      integer :: i
+
+      ! jpass=1 is for counting obs, so we can allocate the return vector.
+      ! jpass=2 is for copying data to the return vector.
+      do jpass = 1,2
+         icount = 0
+         do r = lr,ur
+            ! ipass=1 is the normal search for neighbors, from left
+            ! and right longitude bounds.
+            ! ipass=2 and ipass=3 are special cases where the central grid
+            ! point is near the meridian lateral boundary, and neighbors
+            ! may exist on the other side of that boundary.
+            do ipass = 1,3
+               if (ipass .eq. 1) then
+                  start_c = lc1
+                  end_c = rc1
+               else if (ipass .eq. 2) then
+                  if (rc2 .eq. 0) cycle
+                  start_c = rc2
+                  end_c = LIS_rc%gnc(nest)
+               else if (ipass .eq. 3) then
+                  if (lc2 .eq. 0) cycle
+                  start_c = 1
+                  end_c = lc2
+               end if
+
+               do c = start_c, end_c               
+                  call get_hash2d(LIS_rc%gnc(nest),LIS_rc%gnr(nest),&
+                       hash2d,c,r,&
+                       obcount_cr,iobs_cr_vector)
+
+                  if (jpass .eq. 2 .and. obcount_cr .gt. 0) then
+                     do i = 1, obcount_cr
+                        iobs_neighbors_vector(icount+i) = iobs_cr_vector(i)
+                     end do ! i
+                  end if
+                  icount = icount + obcount_cr
+
+                  if (allocated(iobs_cr_vector)) deallocate(iobs_cr_vector)
+
+               end do ! c
+            end do ! ipass
+         end do ! r
+
+         if (jpass .eq. 1) then
+            nobs_neighbors = icount
+            if (nobs_neighbors .eq. 0) exit
+            allocate(iobs_neighbors_vector(nobs_neighbors))
+            icount = 0
+         end if
+
+      end do ! jpass
+
+   end subroutine get_neighbor_obs
+
+   !---------------------------------------------------------------------------
+   ! Temperature check to identify potential snowfall.  Based on Lopez (2013)
+   ! and earlier operational AGRMET algorithm.
+   subroutine snowQC(this,nest,hourindex,threshold,silent_rejects)
+
+      ! Imports
+      use AGRMET_forcingMod, only: agrmet_struc
+      use LIS_coreMod, only: LIS_rc, LIS_ews_halo_ind, LIS_ewe_halo_ind, &
+           LIS_nss_halo_ind, LIS_nse_halo_ind, LIS_localPet, &
+           LIS_ews_ind, LIS_ewe_ind, LIS_nss_ind, LIS_nse_ind
+      use LIS_LMLCMod, only: LIS_LMLC
+      use LIS_logMod, only: LIS_logunit
+      use LIS_mpiMod
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData), intent(inout) :: this
+      integer, intent(in) :: nest
+      integer, intent(in) :: hourindex
+      real,optional,intent(in) :: threshold
+      logical,optional,intent(in) :: silent_rejects
+
+      ! Local variables
+      type(hash_list), allocatable :: hash2d(:,:)
+      real, allocatable :: sfctmp_pet(:,:), sfctmp(:,:)
+      real, allocatable :: sfctmp_1d_pet(:), sfctmp_1d(:)
+      integer :: cmax,rmax
+      integer :: nobs
+      integer :: r,c,j
+      integer :: rstart,rend,cstart,cend
+      integer :: ierr
+      double precision :: t1, t2
+      integer :: nobs_cr,job
+      integer, allocatable :: jobs_cr_vector(:)
+      integer :: reject_count
+      real :: threshold_local
+      logical :: silent_rejects_local
+
+      ! Sanity check
+      nobs = this%nobs
+      if (nobs .eq. 0) return
+      
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t1 = MPI_Wtime()
+#endif
+
+      ! Here we create a 2d hash table storing the index values of each ob
+      ! in linked lists for each LIS grid box.  
+      call build_hash2d(this,nest,cmax,rmax,hash2d)
+
+      ! Find the local (non-halo) bounds in the global grid
+      cstart = 1 - &
+           (LIS_ews_halo_ind(nest,LIS_localPet+1) - &
+            LIS_ews_ind(nest,LIS_localPet+1))
+      cend = LIS_rc%lnc(nest) - &
+           (LIS_ewe_halo_ind(nest,LIS_localPet+1) - &
+            LIS_ewe_ind(nest,LIS_localPet+1))
+      rstart = 1 - &
+           (LIS_nss_halo_ind(nest,LIS_localPet+1) - &
+            LIS_nss_ind(nest,LIS_localPet+1))
+      rend = LIS_rc%lnr(nest) - &
+           (LIS_nse_halo_ind(nest,LIS_localPet+1) - &
+            LIS_nse_ind(nest,LIS_localPet+1))
+
+      ! Collect the global surface temperature analysis
+      allocate(sfctmp_pet(LIS_rc%gnc(nest), LIS_rc%gnr(nest)))
+      sfctmp_pet(:,:) = 0
+      sfctmp_pet( &
+           LIS_ews_ind(nest,LIS_localPet+1):LIS_ewe_ind(nest,LIS_localPet+1), &
+           LIS_nss_ind(nest,LIS_localPet+1):LIS_nse_ind(nest,LIS_localPet+1)) &
+           = &
+           agrmet_struc(nest)%sfctmp(hourindex,cstart:cend,rstart:rend)
+      allocate(sfctmp_1d_pet(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
+      sfctmp_1d_pet(:) = 0
+      do r = 1, LIS_rc%gnr(nest)
+         do c = 1, LIS_rc%gnc(nest)
+            sfctmp_1d_pet(c + (r-1)*LIS_rc%gnc(nest)) = &
+                 sfctmp_pet(c,r)
+         end do ! c
+      end do ! r
+      deallocate(sfctmp_pet)
+
+#if (defined SPMD)
+      allocate(sfctmp_1d(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
+      sfctmp_1d(:) = 0
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call MPI_ALLREDUCE(sfctmp_1d_pet,sfctmp_1d, &
+           LIS_rc%gnc(nest)*LIS_rc%gnr(nest),MPI_REAL, &
+           MPI_SUM, LIS_MPI_COMM, ierr)
+      deallocate(sfctmp_1d_pet)
+#endif
+      allocate(sfctmp(LIS_rc%gnc(nest), LIS_rc%gnr(nest)))
+      sfctmp(:,:) = 0
+      do r = 1, LIS_rc%gnr(nest)
+         do c = 1, LIS_rc%gnc(nest)
+            sfctmp(c,r) = &
+                 sfctmp_1d(c + (r-1)*LIS_rc%gnc(nest))
+         end do ! c
+      end do ! r
+      deallocate(sfctmp_1d)
+
+      ! Now set the temperature threshold
+      threshold_local = 275.
+      if (present(threshold)) then
+         threshold_local = threshold
+      end if
+
+      silent_rejects_local = .false.
+      if (present(silent_rejects)) then
+         silent_rejects_local = silent_rejects
+      end if
+
+      ! Now loop through the global grid, identifying snow points      
+      reject_count = 0
+      do r = 1, LIS_rc%gnr(nest)
+         do c = 1, LIS_rc%gnc(nest)
+            
+            ! Make sure obs are actually in this box.
+            if (hash2d(c,r)%obindex .eq. MISSING) cycle
+
+            ! Skip if land mask is water -- in practice, no analyzed surface
+            ! temperature is available.
+            if (LIS_LMLC(nest)%glandmask(c,r) .le. 0) cycle
+
+            ! See if this is a snowy location
+            if (sfctmp(c,r) .gt. threshold_local) cycle
+            
+            ! Get list of obs in current grid box
+            call get_hash2d(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d,c,r,&
+                 nobs_cr,jobs_cr_vector)
+            if (nobs_cr .eq. 0) cycle
+
+            do j = 1, nobs_cr
+               job = jobs_cr_vector(j)
+               this%qc(job) = QC_REJECT
+               reject_count = reject_count + 1
+
+               if (.not. silent_rejects_local) then
+                  write(LIS_logunit,*) &
+                       '[INFO] snowQC rejecting observation i: ',job, &
+                       ' net: ',trim(this%net(job)), &
+                       ' platform: ',trim(this%platform(job)), &
+                       ' lat: ',this%lat(job), &
+                       ' lon: ',this%lon(job), &
+                       ' obs: ', &
+                       boxcoxReverseTransformScalar(this%obs(job)), &
+                       ' sfcT: ',sfctmp(c,r)
+               end if
+            end do ! j
+
+            deallocate(jobs_cr_vector)
+         end do ! c
+      end do ! r
+
+      ! Clean up
+      call destroy_hash2d(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d)
+      deallocate(hash2d)
+      deallocate(sfctmp)
+
+      if (reject_count .gt. 0) then
+         write(LIS_logunit,*)'snowQC rejected ',reject_count,' observations'
+      end if
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t2 = MPI_Wtime()
+      write(LIS_logunit,*) &
+           '[INFO] Elapsed time in snowQC is ',t2-t1,' seconds'
+      write(LIS_logunit,*) &
+           '---------------------------------------------------------------'
+#endif
+      
+   end subroutine snowQC
+
+   !---------------------------------------------------------------------------
+   ! Checks for snow on ground.  Based on earlier operational AGRMET code.
+   subroutine snowDepthQC(this,nest,silent_rejects)
+
+      ! Imports
+      use LIS_coreMod, only: LIS_domain, LIS_rc, &
+           LIS_ews_halo_ind, LIS_ewe_halo_ind, &
+           LIS_nss_halo_ind, LIS_nse_halo_ind, &
+           LIS_localPet, &                 
+           LIS_ews_ind, LIS_ewe_ind, LIS_nss_ind, LIS_nse_ind
+      use LIS_LMLCMod, only: LIS_LMLC
+      use LIS_logMod, only: LIS_logunit
+      use LIS_snowMod, only: LIS_snow_struc
+      use LIS_mpiMod
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData), intent(inout) :: this
+      integer, intent(in) :: nest
+      logical,optional,intent(in) :: silent_rejects
+
+      ! Local variables
+      type(hash_list), allocatable :: hash2d(:,:)
+      real, allocatable :: snowdepth_pet(:,:), snowdepth(:,:)
+      real, allocatable :: snowdepth_1d_pet(:), snowdepth_1d(:)
+      integer :: cmax,rmax
+      integer :: nobs
+      integer :: r,c,j
+      integer :: rstart,rend,cstart,cend
+      integer :: ierr
+      double precision :: t1, t2
+      integer :: nobs_cr,job
+      integer, allocatable :: jobs_cr_vector(:)
+      integer :: reject_count
+      logical :: silent_rejects_local
+      integer :: rglb,cglb
+      integer :: gid
+
+      ! Sanity check
+      nobs = this%nobs
+      if (nobs .eq. 0) return
+      
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t1 = MPI_Wtime()
+#endif
+
+      ! Here we create a 2d hash table storing the index values of each ob
+      ! in linked lists for each LIS grid box.  
+      call build_hash2d(this,nest,cmax,rmax,hash2d)
+
+      ! Find the local (non-halo) bounds in the global grid
+      cstart = 1 - &
+           (LIS_ews_halo_ind(nest,LIS_localPet+1) - &
+            LIS_ews_ind(nest,LIS_localPet+1))
+      cend = LIS_rc%lnc(nest) - &
+           (LIS_ewe_halo_ind(nest,LIS_localPet+1) - &
+            LIS_ewe_ind(nest,LIS_localPet+1))
+      rstart = 1 - &
+           (LIS_nss_halo_ind(nest,LIS_localPet+1) - &
+            LIS_nss_ind(nest,LIS_localPet+1))
+      rend = LIS_rc%lnr(nest) - &
+           (LIS_nse_halo_ind(nest,LIS_localPet+1) - &
+            LIS_nse_ind(nest,LIS_localPet+1))
+
+      ! Collect the global snow depth field
+      allocate(snowdepth_pet(LIS_rc%gnc(nest), LIS_rc%gnr(nest)))
+      snowdepth_pet(:,:) = 0
+      rglb = LIS_nss_ind(nest,LIS_localPet+1)
+      do r = rstart,rend
+         cglb = LIS_ews_ind(nest,LIS_localPet+1)
+         do c = cstart,cend
+            gid = LIS_domain(nest)%gindex(c,r)
+            if (gid .ne. -1) then
+               snowdepth_pet(cglb,rglb) = LIS_snow_struc(nest)%snowdepth(gid) 
+            end if
+            cglb = cglb + 1
+         end do ! c
+         rglb = rglb + 1
+      end do ! r
+
+      allocate(snowdepth_1d_pet(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
+      snowdepth_1d_pet(:) = 0
+      do r = 1, LIS_rc%gnr(nest)
+         do c = 1, LIS_rc%gnc(nest)
+            snowdepth_1d_pet(c + (r-1)*LIS_rc%gnc(nest)) = &
+                 snowdepth_pet(c,r)
+         end do ! c
+      end do ! r
+      deallocate(snowdepth_pet)
+
+#if (defined SPMD)
+      allocate(snowdepth_1d(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
+      snowdepth_1d(:) = 0
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call MPI_ALLREDUCE(snowdepth_1d_pet,snowdepth_1d, &
+           LIS_rc%gnc(nest)*LIS_rc%gnr(nest),MPI_REAL, &
+           MPI_SUM, LIS_MPI_COMM, ierr)
+      deallocate(snowdepth_1d_pet)
+#endif
+      allocate(snowdepth(LIS_rc%gnc(nest), LIS_rc%gnr(nest)))
+      snowdepth(:,:) = 0
+      do r = 1, LIS_rc%gnr(nest)
+         do c = 1, LIS_rc%gnc(nest)
+            snowdepth(c,r) = &
+                 snowdepth_1d(c + (r-1)*LIS_rc%gnc(nest))
+         end do ! c
+      end do ! r
+      deallocate(snowdepth_1d)
+
+      silent_rejects_local = .false.
+      if (present(silent_rejects)) then
+         silent_rejects_local = silent_rejects
+      end if
+
+      ! Now loop through the global grid, identifying snow points      
+      reject_count = 0
+      do r = 1, LIS_rc%gnr(nest)
+         do c = 1, LIS_rc%gnc(nest)
+            
+            ! Make sure obs are actually in this box.
+            if (hash2d(c,r)%obindex .eq. MISSING) cycle
+
+            ! Skip if land mask is water
+            if (LIS_LMLC(nest)%glandmask(c,r) .le. 0) cycle
+
+            ! See if this is a snowy location
+            if (snowdepth(c,r) .le. 0) cycle
+            
+            ! Get list of obs in current grid box
+            call get_hash2d(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d,c,r,&
+                 nobs_cr,jobs_cr_vector)
+            if (nobs_cr .eq. 0) cycle
+
+            do j = 1, nobs_cr
+               job = jobs_cr_vector(j)
+               this%qc(job) = QC_REJECT
+               reject_count = reject_count + 1
+
+               if (.not. silent_rejects_local) then
+                  write(LIS_logunit,*) &
+                       '[INFO] snowDepthQC rejecting observation i: ',job, &
+                       ' net: ',trim(this%net(job)), &
+                       ' platform: ',trim(this%platform(job)), &
+                       ' lat: ',this%lat(job), &
+                       ' lon: ',this%lon(job), &
+                       ' obs: ', &
+                       boxcoxReverseTransformScalar(this%obs(job)), &
+                       ' snowdepth: ',snowdepth(c,r)
+               end if
+            end do ! j
+
+            deallocate(jobs_cr_vector)
+         end do ! c
+      end do ! r
+
+      ! Clean up
+      call destroy_hash2d(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d)
+      deallocate(hash2d)
+      deallocate(snowdepth)
+
+      if (reject_count .gt. 0) then
+         write(LIS_logunit,*)'snowDepthQC rejected ',reject_count,&
+              ' observations'
+      end if
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      t2 = MPI_Wtime()
+      write(LIS_logunit,*) &
+           '[INFO] Elapsed time in snowDepthQC is ',t2-t1,' seconds'
+      write(LIS_logunit,*) &
+           '---------------------------------------------------------------'
+#endif
+      
+   end subroutine snowDepthQC
+
+   !---------------------------------------------------------------------------
+   subroutine zeroTrace(nr,nc,mrgp)
+      implicit none
+      integer,intent(in) :: nr
+      integer,intent(in) :: nc
+      real, intent(inout) :: mrgp(nc,nr)
+      integer :: r,c
+      do r = 1,nr
+         do c = 1,nc
+            if (mrgp(c,r) .lt. 0.001) then
+               mrgp(c,r) = 0
+            end if
+         end do ! c
+      end do ! r
+   end subroutine zeroTrace
+
+   !---------------------------------------------------------------------------
+   subroutine consolidatePrecipObs(this,precipGage,precipSSMI,precipGEO)
+      
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(EMK_ObsData), intent(inout) :: this
+      type(EMK_ObsData), intent(in) :: precipGage
+      type(EMK_ObsData), intent(in) :: precipSSMI
+      type(EMK_ObsData), intent(in) :: precipGEO
+      
+      ! Local variables
+      integer :: j
+      integer :: nobs
+
+      if ( precipGage%nobs .eq. 0 .and. &
+           precipSSMI%nobs .eq. 0 .and. &
+           precipGEO%nobs  .eq. 0) return
+      
+      call EMK_initObsData(this)
+      do j = 1, precipGage%nobs
+         if (precipGage%qc(j) .eq. QC_REJECT) cycle
+         call EMK_assignObsData(this, &
+              precipGage%net(j),precipGage%platform(j), &
+              precipGage%obs(j),precipGage%lat(j),precipGage%lon(j), &
+              precipGage%sigmaOSqr(j), &
+              back = precipGage%back(j))
+      end do ! j
+      do j = 1, precipSSMI%nobs
+         if (precipSSMI%qc(j) .eq. QC_REJECT) cycle
+         call EMK_assignObsData(this, &
+              precipSSMI%net(j),precipSSMI%platform(j), &
+              precipSSMI%obs(j),precipSSMI%lat(j),precipSSMI%lon(j), &
+              precipSSMI%sigmaOSqr(j), &
+              back = precipSSMI%back(j))
+      end do ! j
+      do j = 1, precipGEO%nobs
+         if (precipGEO%qc(j) .eq. QC_REJECT) cycle
+         call EMK_assignObsData(this, &
+              precipGEO%net(j),precipGEO%platform(j), &
+              precipGEO%obs(j),precipGEO%lat(j),precipGEO%lon(j), &
+              precipGEO%sigmaOSqr(j), &
+              back = precipGEO%back(j))
+      end do ! j
+   end subroutine consolidatePrecipObs
+end module EMK_precipMod

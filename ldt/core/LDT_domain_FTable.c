@@ -1,22 +1,11 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Information System (LDT) V5.0 BETA
-// Released January 2008
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// See SOFTWARE DISTRIBUTION POLICY for software distribution policies
-//
-// The LDT source code and documentation are in the public domain,
-// available without fee for educational, research, non-commercial and
-// commercial purposes.  Users may distribute the binary or source
-// code to third parties provided this statement appears on all copies and
-// that no charge is made for such copies.
-//
-// NASA GSFC MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THE
-// SOFTWARE FOR ANY PURPOSE.  IT IS PROVIDED AS IS WITHOUT EXPRESS OR
-// IMPLIED WARRANTY.  NEITHER NASA GSFC NOR THE US GOVERNMENT SHALL BE
-// LIABLE FOR ANY DAMAGES SUFFERED BY THE USER OF THIS SOFTWARE.
-//
-// See COPYRIGHT.TXT for copyright details.
-//
+// Copyright (c) 2020 United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration.
+// All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
 //BOP
 //
@@ -38,7 +27,7 @@
 struct domaininputnode
 { 
   char *name;
-  void (*func)();
+  void (*func)(int*);
 
   struct domaininputnode* next;
 } ;
@@ -58,7 +47,7 @@ struct domainmakenode* domainmake_table = NULL;
 // \label{registerinput}
 //
 // !INTERFACE:
-void FTN(registerinput)(char *j,void (*func)(), int len)
+void FTN(registerinput)(char *j,void (*func)(int*), int len)
 //  
 // !DESCRIPTION: 
 // Makes an entry in the registry for the routine to 
@@ -100,7 +89,7 @@ void FTN(registerinput)(char *j,void (*func)(), int len)
 // \label{readinput}
 //
 // !INTERFACE:
-void FTN(readinput)(char *j, int len)
+void FTN(readinput)(char *j, int *n, int len)
 // !DESCRIPTION: 
 //  Calls the routine from the registry to read the
 //  the runtime domain specifics
@@ -126,7 +115,7 @@ void FTN(readinput)(char *j, int len)
       printf("****************Error****************************\n"); 
     }
   }
-  current->func(); 
+  current->func(n); 
 }
 
 //BOP
