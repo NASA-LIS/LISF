@@ -5596,18 +5596,6 @@ Glacier fraction resolution (dy): 0.01
 #latex: END_CONFIG
 
 
-Glacier fraction data source: "GLIMS"
-Glacier fraction map:   ../LS_PARAMETERS/GLIMS/glims_global.d01.nc
-Glacier fraction spatial transform: "average" 
-Glacier fraction map projection: "latlon"
-Glacier fraction lower left lat: -89.995
-Glacier fraction lower left lon: -179.995
-Glacier fraction upper right lat: 89.995
-Glacier fraction upper right lon: 179.995
-Glacier fraction resolution (dx): 0.01
-Glacier fraction resolution (dy): 0.01
-
-
 #latex: BEGIN_CONFIG
 Glacier fraction data source:   "GLIMS"
 #latex: END_CONFIG

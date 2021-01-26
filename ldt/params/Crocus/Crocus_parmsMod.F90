@@ -18,9 +18,10 @@ module Crocus_parmsMod
 !
 ! !REVISION HISTORY:
 !
-!  08 Aug 2005: Sujay Kumar; Initial implementation
-!  04 Aug 2012: K. Arsenault: Made updates to Tbot inputs
-!  23 Sep 2019: Mahdi Navari, modiffied for Crocus 
+!  23 Sep 2019: Mahdi Navari; This code is based on the subroutine 
+!               lsm_paramsMod initially implemented by Sujay Kumar and 
+!               modified by K. Arsenault. 
+!  26 Jan 2021: Mahdi Navari; Modified for Crocus implementation
 !
   use ESMF
   use LDT_coreMod
@@ -50,30 +51,14 @@ module Crocus_parmsMod
      character*140  :: tbotfile
      character*50   :: tbot_gridtransform
      character*50   :: tbot_topocorr
-
-
-     !real           :: glacierfrac_gridDesc(20)
      character*140  :: glacierfracfile
      character*50   :: glacierfrac_gridtransform
-
-
-
-!     real           :: slopetype_gridDesc(20)
-!     character*140  :: slopetypefile
-!     character*50   :: slopetype_gridtransform
-
      character*50   :: tbot_proj
-!     character*50   :: slopetype_proj
-     character*50       :: glacierfrac_proj
+     character*50   :: glacierfrac_proj
 
-!     real           :: soil_temp_value
-!     real           :: soil_cond_value
 
      ! -  Crocus SM-specific:
      type(LDT_paramEntry) :: tbot        ! Bottom temperature (Crocus)
-!     type(LDT_paramEntry) :: soil_temp        ! Soil temp
-!     type(LDT_paramEntry) :: soil_cond        ! soil thermal conductivity
-!     type(LDT_paramEntry) :: slopetype   ! Slope type index (Crocus)
      type(LDT_paramEntry) :: glacierfrac
  
   end type Crocus_type_dec
@@ -114,10 +99,8 @@ contains
    logical  :: file_exists
    logical  :: check_data
    type(LDT_fillopts) :: tbot
-!   type(LDT_fillopts) :: slopetype
    real, allocatable  :: force_elev(:,:)
    character*50       :: tbot_proj
-!   character*50       :: slopetype_proj
    character*50       :: glacierfrac_proj
    real, allocatable  :: localmask(:,:)
 ! _____________________________________________________________________
@@ -127,168 +110,11 @@ contains
       call set_param_attribs(Crocus_struc(n)%tbot, "TBOT",&
             units="K", &
             full_name="Crocus LSM bottom temperature")
-!      call set_param_attribs(Noah_struc(n)%slopetype,"SLOPETYPE",&
-!            units="-", &
-!            full_name="Noah LSM slope type")
 
       call set_param_attribs(Crocus_struc(n)%glacierfrac,"GlacierFraction",&
             units="-", &
             full_name="Crocus LSM Glacier Fraction")
-
-!      call set_param_attribs(Crocus_struc(n)%soil_temp,"Crocus_TG",& 
-!            units="K", &
-!            full_name="Surface soil temperature")
-!      call set_param_attribs(Crocus_struc(n)%soil_cond,"Crocus_SOILCOND",& 
-!            units="W m-1 K-1", &
-!            full_name="Soil thermal conductivity")
    enddo
-
-
-
-! MN remove this block of code 
-# if 0 
-   
-! -- Glacier fraction: --
-
-   check_data = .false.
-
-   call ESMF_ConfigFindLabel(LDT_config,"Glacier fraction data source:",rc=rc)
-   do n=1,LDT_rc%nnest
-      call ESMF_ConfigGetAttribute(LDT_config,Crocus_struc(n)%glacierfrac%source,rc=rc)
-      call LDT_verify(rc,"Glacier fraction data source: not defined")
-
-      if( Crocus_struc(n)%glacierfrac%source.eq."none" ) then
-         Crocus_struc(n)%glacierfrac%selectOpt = 0
-      endif
-      if( Crocus_struc(n)%glacierfrac%selectOpt.eq.1 ) then
-         check_data = .true.
-         allocate(Crocus_struc(n)%glacierfrac%value(&
-              LDT_rc%lnc(n),LDT_rc%lnr(n),&
-              Crocus_struc(n)%glacierfrac%num_bins))
-      endif
-   enddo
-
-   if(check_data) then
-        write(LDT_logunit,*)" - - - - - - - - - Glacier fraction Parameter - - - - - - - - - - - -"
-
-    ! Read in glacier fraction file config entries:
-      call ESMF_ConfigFindLabel(LDT_config,"Glacier fraction map:",rc=rc)
-      do n=1,LDT_rc%nnest
-!         call ESMF_ConfigGetAttribute(LDT_config,Crocus_struc(n)%glacierfracfile,rc=rc)
-         call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%glaciermask(n),rc=rc)
-         call LDT_verify(rc,'Glacier fraction map: not specified')
-      enddo
-
-      call ESMF_ConfigFindLabel(LDT_config,"Glacier fraction map projection:",rc=rc)
-      do n=1,LDT_rc%nnest
-         call ESMF_ConfigGetAttribute(LDT_config,LDT_glacier_struc(n)%mask_proj,rc=rc)
-         call LDT_verify(rc,'Glacier fraction map projection: option not specified in the config file')
-      enddo
-
-!      call ESMF_ConfigGetAttribute(LDT_config,LDT_glacier_struc(n)%mask_proj,&
-!           label="Glacier fraction map projection:",rc=rc)
-!      call LDT_verify(rc,'Glacier fraction map projection: option not specified in the config file')
-!      Crocus_struc(:)%glacierfrac_proj = glacierfrac_proj
-!      LDT_glacier_struc(n)%mask_proj = glacierfrac_proj
-
-      call ESMF_ConfigFindLabel(LDT_config,"Glacier fraction spatial transform:",rc=rc)
-      do n=1,LDT_rc%nnest
-!         call ESMF_ConfigGetAttribute(LDT_config,Crocus_struc(n)%glacierfrac_gridtransform,&
-!              rc=rc)
-         call ESMF_ConfigGetAttribute(LDT_config,LDT_glacier_struc(n)%mask_gridtransform,&
-              rc=rc)
-         call LDT_verify(rc,'Glacier fraction spatial transform: option not specified in the config file')
-      enddo
-
-
-! MN TODO : Do we nedd fill option?  what fill option should be used?  
-# if 0 
-    ! Read in Glacier fraction "fill" options:
-      glacierfrac%filltype = "none"
-      call ESMF_ConfigGetAttribute(LDT_config, glacierfrac%filltype, &
-           label="Glacier fraction fill option:",rc=rc)
-      call LDT_verify(rc,"Glacier fraction fill option: option not specified in the config file")
-
-      if( glacierfrac%filltype == "neighbor" ) then
-         call ESMF_ConfigGetAttribute(LDT_config, glacierfrac%fillradius, &
-              label="Glacier fraction fill radius:",rc=rc)
-         call LDT_verify(rc,"Glacier fraction fill radius: option not specified in the config file")
-
-         call ESMF_ConfigGetAttribute(LDT_config, glacierfrac%fillvalue, &
-              label="Glacier fraction fill value:",rc=rc)
-         call LDT_verify(rc,"Glacier fraction fill value: option not specified in the config file")
-         if( glacierfrac%fillvalue > 1. ) then
-            glacierfrac%fillvalue = 1.  ! Set glacierfrac upper limit to 1 
-         end if
-      elseif( glacierfrac%filltype == "none" ) then
-         write(LDT_logunit,*) "[INFO] 'NONE' Parameter-Mask Agreement Option Selected for Glacier fraction"
-      else
-         write(LDT_logunit,*) "[ERR] Fill option for Glacier fraction is not valid: ",trim(glacierfrac%filltype)
-         write(LDT_logunit,*) "  Please select one of these:  none or neighbor "
-         write(LDT_logunit,*) "  Programming stopping ..."
-         call LDT_endrun
-      end if
-# endif
-
-
-
-      do n=1,LDT_rc%nnest
-# if 0 
-         if( index(Crocus_struc(n)%glacierfrac%source,"GLIMS").eq.0) then
-            call LDT_readDomainConfigSpecs("Glacier fraction", &
-                     glacierfrac_proj, Crocus_struc(n)%glacierfrac_gridDesc)
-            if( glacierfrac_proj == "latlon" ) then
-               call LDT_gridOptChecks( n, "Glacier fraction", Crocus_struc(n)%glacierfrac_gridtransform,&
-                    glacierfrac_proj, Crocus_struc(n)%glacierfrac_gridDesc(9) )
-            endif
-         endif
-         call LDT_soilsOptChecks(n, "Glacier fraction", glacierfrac_proj, &
-                                 Crocus_struc(n)%glacierfrac_gridtransform )
-
-# endif 
-
-      !- Read in glacier fraction map (mostly used for Crocus LSM):
-         select case ( Crocus_struc(n)%glacierfrac%source )
-          case ( "GLIMS" )
-            call read_GLIMS_glaciermask (n,&
-                      localmask(:,:), &
-                      Crocus_struc(n)%glacierfrac%value(:,:,1))
-          !case ( " " )
-            !call read_(n,&
-            !          Crocus_struc(n)%glacierfrac%value)
-
-          case default
-            write(LDT_logunit,*) "[WARN] Glacier fraction data source has not been selected."
-            write(LDT_logunit,*) "  Your Crocus LSM will not run without this parameter set."
-            write(LDT_logunit,*) "  Please select one of the following: "
-            write(LDT_logunit,*) " -- GLIMS  "
-            write(LDT_logunit,*) "Program stopping ..."
-            call LDT_endrun
-         end select
-
-! MN : see my comment about fill value
-# if 0 
-       ! Fill where parameter values are missing compared to land/water mask:
-         if( glacierfrac%filltype == "neighbor" ) then
-            write(LDT_logunit,*) "Checking/filling mask values for: ", &
-                 trim(Crocus_struc(n)%glacierfrac%short_name)
-            write(fill_logunit,*) "Checking/filling mask values for: ", &
-                 trim(Crocus_struc(n)%glacierfrac%short_name)
-            glacierfrac%watervalue = 0.
-            call LDT_discreteParam_Fill( n, LDT_rc%lnc(n), LDT_rc%lnr(n), &
-                 Crocus_struc(n)%glacierfrac_gridtransform,                   &
-                 Crocus_struc(n)%glacierfrac%num_bins,                    &
-                 Crocus_struc(n)%glacierfrac%value, glacierfrac%watervalue, &
-                 LDT_LSMparam_struc(n)%landmask2%value,               &
-                 glacierfrac%filltype, glacierfrac%fillvalue, glacierfrac%fillradius )
-         endif
-# endif
-     enddo
-
-   end if  ! Glacierfrac selection check
-
-#endif
-! MN end remove this block of code 
 
 
 
@@ -451,68 +277,6 @@ contains
 
       enddo
     end if
-
-
-! MN : For now set the soil temperature to a constant value (e.g., 0)
-!     call ESMF_ConfigFindLabel(LDT_config,"Surface soil temperature:",rc=rc)
-!     do n=1,LDT_rc%nnest
-!        call ESMF_ConfigGetAttribute(LDT_config,Crocus_struc(n)%soil_temp_value,rc=rc)
-!        call LDT_verify(rc,"Surface soil temperature: not defined")
-
-!        Crocus_struc(n)%soil_temp%selectOpt = 1
-
-!        allocate(Crocus_struc(n)%soil_temp%value(&
-!                 LDT_rc%lnc(n),LDT_rc%lnr(n),&
-!                 Crocus_struc(n)%soil_temp%num_bins))
-
-!        Crocus_struc(n)%soil_temp%value = Crocus_struc(n)%soil_temp_value
-!     enddo
-! MN : For now set the soil thermal conductivity to a constant value (e.g., ??)
-!     call ESMF_ConfigFindLabel(LDT_config,"Soil thermal conductivity:",rc=rc)
-!     do n=1,LDT_rc%nnest
-!        call ESMF_ConfigGetAttribute(LDT_config,Crocus_struc(n)%soil_cond_value,rc=rc)
-!        call LDT_verify(rc,"Soil thermal conductivity: not defined")
-
-!        Crocus_struc(n)%soil_cond%selectOpt = 1
-
-!        allocate(Crocus_struc(n)%soil_cond%value(&
-!                 LDT_rc%lnc(n),LDT_rc%lnr(n),&
-!                 Crocus_struc(n)%soil_cond%num_bins))
-
-!        Crocus_struc(n)%soil_cond%value = Crocus_struc(n)%soil_cond_value
-!   enddo
-
-! ------------------------------------MN
-#if 0 
-!== Other Noah LSM related parameters ==
-
-! -- Noah-MP Planetary Boundary Layer Height: --
-
-   check_data = .false.
-   if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.(LDT_rc%lsm.eq."Noah-MP.4.0.1")) then
-
-!   if(check_data) &! then
-     write(LDT_logunit,*)" - - - - - - - - - Noah-MP Parameters - - - - - - - - - - - -"
-
-     call ESMF_ConfigFindLabel(LDT_config,"Noah-MP PBL Height Value:",rc=rc)
-     do n=1,LDT_rc%nnest
-!        call ESMF_ConfigGetAttribute(LDT_config,Noah_struc(n)%pblh%source,rc=rc)
-        call ESMF_ConfigGetAttribute(LDT_config,Noah_struc(n)%pblh_value,rc=rc)
-        call LDT_verify(rc,"Noah-MP PBL Height Value: not defined")
-
-        Noah_struc(n)%pblh%selectOpt = 1
-
-        allocate(Noah_struc(n)%pblh%value(&
-                 LDT_rc%lnc(n),LDT_rc%lnr(n),&
-                 Noah_struc(n)%pblh%num_bins))
-
-        Noah_struc(n)%pblh%value = Noah_struc(n)%pblh_value
-
-      enddo
-   endif
-#endif 
-! ------------------------------------ MN
-
   end subroutine CrocusParms_init
 
   subroutine CrocusParms_writeHeader(n,ftn,dimID)
@@ -523,22 +287,6 @@ contains
 
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
              Crocus_struc(n)%tbot)
-!    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
-!             Crocus_struc(n)%soil_temp)
-!    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
-!             Crocus_struc(n)%soil_cond)    
-!    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
-!             Crocus_struc(n)%slopetype)
-!    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
-!             Crocus_struc(n)%glacierfrac)
-
-!#if 0 ! MN 
-!    if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.                        &
-!        (LDT_rc%lsm.eq."Noah-MP.4.0.1")) then
-!        call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
-!                 Noah_struc(n)%pblh)
-!    endif
-!#endif ! MN 
   end subroutine CrocusParms_writeHeader
 
   subroutine CrocusParms_writeData(n,ftn)
@@ -547,17 +295,6 @@ contains
     integer   :: ftn
 
     call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%tbot)
-!    call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%soil_temp)
-!    call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%soil_cond)
-!    call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%slopetype)
-!    call LDT_writeNETCDFdata(n,ftn,Crocus_struc(n)%glacierfrac)
-
-!#if 0 ! MN 
-!    if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.                        &
-!        (LDT_rc%lsm.eq."Noah-MP.4.0.1")) then
-!        call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%pblh)
-!    endif
-!# endif ! MN 
   end subroutine CrocusParms_writeData
 
 
