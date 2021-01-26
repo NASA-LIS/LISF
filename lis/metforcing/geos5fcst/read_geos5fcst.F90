@@ -31,7 +31,7 @@ subroutine read_geos5fcst(n, m, findex, order, name, ferror)
   integer, intent(in)       :: n
   integer, intent(in)       :: m
   integer, intent(in)       :: order
-  character*100, intent(in) :: name
+  character(len=*), intent(in) :: name
   integer, intent(out)      :: ferror
 !
 ! !DESCRIPTION:

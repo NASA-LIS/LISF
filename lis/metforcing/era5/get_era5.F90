@@ -63,7 +63,7 @@ subroutine get_era5(n, findex)
 !EOP
   integer           :: order
   integer           :: ferror
-  character*100     :: fname
+  character(len=300) :: fname
   integer           :: c, r,kk,f,try
   integer           :: yr1, mo1, da1, hr1, mn1, ss1, doy1
   integer           :: yr2, mo2, da2, hr2, mn2, ss2, doy2

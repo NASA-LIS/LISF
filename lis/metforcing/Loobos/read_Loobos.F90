@@ -77,7 +77,7 @@ subroutine read_Loobos(n,ftn,findex,order,itime)
   integer :: loobos_yr,loobos_mon,loobos_day,loobos_hr,loobos_min,loobos_sec
   real    :: loobos_tick
   logical :: file_exists
-  character*80       :: Loobos_filename
+  character(len=300) :: Loobos_filename
   character(len=500) :: line
 
   !      write(LIS_logunit,*) 'starting read_Loobos'

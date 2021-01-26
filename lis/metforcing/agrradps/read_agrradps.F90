@@ -63,8 +63,8 @@ subroutine read_agrradps(n,m,order,yr,mo,da,hr)
 !  \end{description}
 !EOP
 
-  character*100            :: agrradpsfileNH
-  character*100            :: agrradpsfileSH
+  character*300            :: agrradpsfileNH
+  character*300            :: agrradpsfileSH
   logical                  :: exists1,exists2,exists3,exists4
   integer                  :: c,r
   integer                  :: t

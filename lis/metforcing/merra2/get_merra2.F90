@@ -162,7 +162,7 @@ subroutine get_merra2(n, findex)
 !EOP
   integer           :: order
   integer           :: ferror
-  character*100     :: slvname, flxname, lfoname, radname
+  character(len=300) :: slvname, flxname, lfoname, radname
   integer           :: c, r,kk
   integer           :: yr1, mo1, da1, hr1, mn1, ss1, doy1
   integer           :: yr2, mo2, da2, hr2, mn2, ss2, doy2

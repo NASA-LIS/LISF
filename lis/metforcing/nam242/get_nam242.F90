@@ -81,7 +81,7 @@ subroutine get_nam242(n, findex)
   real*8  :: timenow, time1, time2
   real*8  :: dumbtime1, dumbtime2
   real    :: gmt1, gmt2
-  character(len=80) :: name00, name03, name06
+  character(len=300) :: name00, name03, name06
   logical :: file_exists, file_exists1, file_exists2
   integer :: option
   real :: gridDesci(50)

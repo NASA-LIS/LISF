@@ -69,7 +69,7 @@ subroutine get_PALSmetdata(n,findex)
 !  \end{description}
 !
 !EOP
-  character*100                 :: name
+  character*300                 :: name
   logical                       :: file_exists
   integer                       :: ftn
   integer                       :: t

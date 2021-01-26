@@ -73,7 +73,7 @@ subroutine get_mrms_grib(n, findex)
   integer :: order
 
   real*8  :: lis_time, mrms_grib_file_time ! Current LIS Time and end boundary time for MRMS file
-  character(150) :: file_name               ! Filename variables for precip data sources
+  character(len=300) :: file_name          ! Filename variables for precip data sources
 
   integer :: doy1, yr1, mo1, da1, hr1, mn1, ss1
   integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2

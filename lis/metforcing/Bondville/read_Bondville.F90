@@ -75,7 +75,7 @@ subroutine read_Bondville(n,ftn,findex,order,itime)
   integer :: bonyr,bonmon,bonday,bonhr,bonmin,bonsec
   real    :: bontick
   logical :: file_exists
-  character*80       :: Bondville_filename
+  character(len=300) :: Bondville_filename
   character(len=500) :: line
 
   ! write(LIS_logunit,*) 'starting read_Bondville'

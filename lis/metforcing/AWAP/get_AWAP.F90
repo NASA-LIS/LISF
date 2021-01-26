@@ -62,7 +62,7 @@ subroutine get_AWAP(n, findex)
     real*8  :: timenext
     real*8  :: AWAP_file_time1       ! End boundary time for STAGEIV file
     real*8  :: AWAP_file_time2       ! End boundary time for STAGEIV file
-    character(80) :: file_name       ! Filename variables for precip data sources
+    character(len=300) :: file_name  ! Filename variables for precip data sources
 
     integer :: doy1, yr1, mo1, da1, hr1, mn1, ss1
     integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2

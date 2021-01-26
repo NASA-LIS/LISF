@@ -77,7 +77,7 @@ subroutine get_RFE2gdas(n, findex)
   real*8  :: ctime,EndTime_RFE2gdas       ! Current LDAS time and end boundary time for precip data source
   real    :: gmtNow,gmt1,gmt2             ! GMT times for current LDAS time and begin and end boundary times for precip data sources
   integer :: ferror_RFE2gdas              ! Error flags for precip data sources
-  character*140:: filename                ! Filename variables for precip data sources
+  character*300 :: filename                ! Filename variables for precip data sources
   integer      :: order,kk
 
 !=== End Variable Definition =======================

@@ -91,7 +91,7 @@ subroutine get_RFE2Daily(n, findex)
   real    :: gmtNow, gmt1, gmt2
 
   integer :: ferror_RFE2Daily ! Error flags for precip data sources
-  character*80 :: filename    ! Filename variables for precip data sources
+  character*300 :: filename    ! Filename variables for precip data sources
   integer      :: order
   integer      :: kk          ! Forecast index
 

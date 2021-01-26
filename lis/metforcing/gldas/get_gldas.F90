@@ -67,7 +67,7 @@ subroutine get_gldas(n,findex)
   real*8  :: timenow, time1, time2
   real*8  :: dumbtime1, dumbtime2
   real    :: gmt1, gmt2,ts1,ts2
-  character(len=80) :: name
+  character(len=300) :: name
   integer :: nstep
 
   gldas_struc(n)%findtime1=0

@@ -32,7 +32,7 @@ subroutine read_stg2( n, fname, findex, order, ferror_stg2 )
   implicit none
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  character(len=80)   :: fname          
+  character(len=*)   :: fname
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_stg2

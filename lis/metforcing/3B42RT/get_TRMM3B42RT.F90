@@ -64,7 +64,7 @@ subroutine get_TRMM3B42RT(n,findex)
   integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2, ts2    ! SY: Time parameters for TRMM data time nearest to start of model time step
   integer :: doy3, yr3, mo3, da3, hr3, mn3, ss3, ts3    ! SY: Time parameters for TRMM data time nearest to end of model time step
   real    :: gmt1, gmt2, gmt3
-  character*120 :: name                    ! Filename variables for precip data sources
+  character*300 :: name                    ! Filename variables for precip data sources
   real*8  :: LIS_timeAtTStepStart_add90min 
   real*8  :: LIS_timeAtTStepEnd_add90min   
   integer :: order
@@ -289,7 +289,6 @@ subroutine TRMM3B42RTfile( name, TRMM3B42RTdir, yr, mo, da, hr)
 !
 !EOP
 
-  character*120 temp
   integer :: i, c
   integer :: uyr, umo, uda, uhr, umn, uss, ts1, udoy
   real    :: ugmt

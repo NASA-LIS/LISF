@@ -69,7 +69,7 @@ subroutine get_TRMM3B42RTV7(n,findex)
   integer :: doy3, yr3, mo3, da3, hr3, mn3, ss3, ts3    
   real    :: gmt1, gmt2, gmt3             
 
-  character*120 :: filename                ! Filename variables for precip data sources
+  character*300 :: filename                ! Filename variables for precip data sources
   real*8  :: LIS_timeAtTStepStart_add90min ! SY
   real*8  :: LIS_timeAtTStepEnd_add90min   ! SY
   logical :: alarmCheck  

@@ -67,7 +67,7 @@ subroutine get_gefs(n,findex)
   integer       :: yr1,mo1,da1,hr1,mn1,ss1,doy1
   integer       :: yr2,mo2,da2,hr2,mn2,ss2,doy2
   integer       :: openfile
-  character*140 :: filename
+  character*300 :: filename
 
 !  character(10), dimension(LIS_rc%met_nf(findex)), parameter :: gefs_vars = (/ &
   character(10), dimension(8), parameter :: gefs_vars = (/ &

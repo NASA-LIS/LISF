@@ -20,8 +20,8 @@
    implicit none
 ! !ARGUMENTS: 
    integer, intent(in)        :: doy             ! File day of year (DOY)
-   character*100, intent(in)  :: directory       ! File directory
-   character*140, intent(out) :: filename  
+   character(len=*), intent(in)  :: directory       ! File directory
+   character(len=*), intent(out) :: filename
 !
 ! !DESCRIPTION:
 !   This subroutine puts together LDT generated forcing
