@@ -83,6 +83,9 @@ module LDT_usafsiMod
      ! Output file name (prefix)
      character*20 :: netcdf_prefix
 
+     ! option for snow climatology
+     integer       :: climo_option
+
   end type usafsi_t
   type(usafsi_t), public :: usafsi_settings
 
@@ -195,6 +198,14 @@ contains
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
     end if
+
+    ! get option for snow climatology
+    cfg_entry = "USAFSI Snow Climatology:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%climo_option,&
+         rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! *** Get former namelist variables ***
 
