@@ -258,6 +258,10 @@ elsif($opt_lev == 3) {
    $sys_c_opt = "";
 }
 
+if(($sys_arch eq "linux_ifc") && ($opt_lev gt 0)) {
+   $sys_opt .= " -fp-model precise";
+   $sys_c_opt .= "-fp-model precise";
+}
 
 print "Assume little/big_endian data format (1-little, 2-big, default=2): ";
 $use_endian=<stdin>;
