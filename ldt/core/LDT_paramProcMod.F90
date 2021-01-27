@@ -2292,7 +2292,7 @@ contains
 ! 
 ! !DESCRIPTION: 
 ! 
-
+! This routine writes the parameter data to file
 !  in the standard preprocessing mode for LIS. 
 !EOP
 

@@ -4352,4 +4352,38 @@ USAFSI GALWEM nominal resolution (km): 17
 ....
 LIS OPT/UE output file: ./GA.0059.1gd4r
 ....
+ (Note: This feature is still under development)
+`Glacier fraction data source:` specifies a glacier fraction map source.
+`Glacier fraction map:` specifies the location of the glacier map file.  
+`Glacier fraction spatial transform:` indicates which spatial transform type is to be applied to glacier-related maps.
+`Glacier fraction map projection:` pecifies the projection of the glacier map data.
+`Glacier fraction lower left lat:` -89.995
+`Glacier fraction lower left lon:` -179.995
+`Glacier fraction upper right lat:` 89.995
+`Glacier fraction upper right lon:` 179.995
+`Glacier fraction resolution (dx):` 0.01
+`Glacier fraction resolution (dy):` 0.01
+
+....
+.Example _ldt.config_ entry
+....
+Glacier fraction data source: "GLIMS"
+Glacier fraction map:   ../LS_PARAMETERS/GLIMS/glims_global.d01.nc
+Glacier fraction spatial transform: "average" # this entry and related code need to be eliminated
+Glacier fraction map projection: "latlon"
+Glacier fraction lower left lat: -89.995
+Glacier fraction lower left lon: -179.995
+Glacier fraction upper right lat: 89.995
+Glacier fraction upper right lon: 179.995
+Glacier fraction resolution (dx): 0.01
+Glacier fraction resolution (dy): 0.01
+....
+
+
+
+
+
+
+
+
 
