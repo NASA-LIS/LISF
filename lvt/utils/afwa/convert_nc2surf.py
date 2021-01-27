@@ -42,6 +42,8 @@
 #               to zero.
 # 31 Mar 2020:  Jim Geiger, Eric Kemp:  Upgraded to Python 3.6.  Also,
 #               upgraded to MULE 2020.01.1.
+# 04 Dec 2020:  Eric Kemp (SSAI): Fixed offset for starting lat/lon.
+# 25 Jan 2021:  Eric Kemp (SSAI): Fixed calculation of bzy and bzx.
 #
 #------------------------------------------------------------------------------
 """
@@ -241,7 +243,8 @@ class Nc2Surf:
         self.grid["nlevs"] = self.ncid_lvt.__dict__['NUM_SOIL_LAYERS']
         self.grid["dx"] = self.ncid_lvt.__dict__['DX']
         self.grid["dy"] = self.ncid_lvt.__dict__['DY']
-        self.grid["start_lat"] = self.ncid_lvt.variables['latitude'][0, 0]
+        self.grid["start_lat"] = \
+            self.ncid_lvt.variables['latitude'][0, 0] - (0.5*self.grid["dy"])
 
         # Convert soil layer depths to meters.  Use fixed precision.
         slt_cm = \
@@ -266,7 +269,7 @@ class Nc2Surf:
         self.grid["start_lon"] = None
         for i, lon in enumerate(lons):
             if not lon < 0:
-                self.grid["start_lon"] = lon
+                self.grid["start_lon"] = lon - (0.5*self.grid["dx"])
                 break
         if self.grid["start_lon"] is None:
             print("[ERR] No starting longitude for LIS grid!")
@@ -505,9 +508,11 @@ class Nc2Surf:
         field.bplon = 0
         # Grid settings
         field.bgor = 0
-        field.bzy = self.grid["start_lat"] - self.grid["dy"]
+        # Fix calculations for bzy and bzx per discussions with Douglas Boyd,
+        # UKMO, 25 Jan 2021.
+        field.bzy = self.grid["start_lat"] - 0.5*self.grid["dy"]
         field.bdy = self.grid["dy"]
-        field.bzx = self.grid["start_lon"] - self.grid["dx"]
+        field.bzx = self.grid["start_lon"] - 0.5*self.grid["dx"]
         field.bdx = self.grid["dx"]
         field.bmdi = _REAL_MDI
         field.bmks = 1.0
