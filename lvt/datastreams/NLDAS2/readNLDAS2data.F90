@@ -575,6 +575,15 @@
               ((LVT_MOC_SWE(source).ge.1).or.                          &
                (LVT_MOC_TWS(source).ge.1))) then
              call retrieve_nldas2data(igrib,nc,nr,nvars,index,swe)
+             if (nldas2data(source)%lsm.eq."SAC") then !SAC has units of m 
+                do r = 1,nr
+                   do c = 1,nc
+                      if (swe(c+(r-1)*nc).ne.9999.0) then
+                         swe(c+(r-1)*nc) = swe(c+(r-1)*nc) * 1000.0
+                      endif
+                   enddo
+                enddo
+             endif
           endif
 
           if ((pid(index).eq.snowdepth_index).and.                     &
