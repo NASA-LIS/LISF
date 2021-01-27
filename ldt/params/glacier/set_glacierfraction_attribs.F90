@@ -8,14 +8,16 @@
 !  \label{set_glacierfraction_attribs}
 !
 ! !REVISION HISTORY:
-!  19 Aug 2014: Sujay Kumar; Initial Specification
-!  26 Jun 2020: Mahdi Navari; Modified for glacier fraction
+!  21 Jun 2020: Mahdi Navari; This code is based on the subroutine 
+!               set_gfrac_attribs.F90 initially implemented by Sujay Kumar.
+!  26 Jan 2021: Mahdi Navari; Modified for glacier fraction
 !
 ! !INTERFACE:
 subroutine set_glacierfraction_attribs( n, source )
 
 ! !USES:
   use LDT_glacierFractionMod
+  use LDT_logMod
 
   implicit none
 
@@ -42,12 +44,10 @@ subroutine set_glacierfraction_attribs( n, source )
       LDT_glacierfrac_struc(n)%glacierfrac%num_times = 1
 
     case default
-      print *, "[ERR] Glacier fraction source not recognized: ",trim(source)
-      print *, " Please select:   GLIMS"
-      print *, " Program stopping ..."
-      stop
-!      call LDT_endrun
-
+      write (LDT_logunit, *) "[ERR] Glacier fraction source not recognized: ",trim(source)
+      write (LDT_logunit, *) " Please select:   GLIMS"
+      call LDT_endrun()
+       
    end select
 
 end subroutine set_glacierfraction_attribs

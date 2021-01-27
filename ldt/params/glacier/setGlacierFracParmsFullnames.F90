@@ -5,11 +5,12 @@
 !BOP
 !
 ! !ROUTINE: setGlacierFracParmsFullnames
-!  \label{setGlacierFracParmsFullnames}
+!  \label{setGlacierFracParmsFullnames}i
 !
 ! !REVISION HISTORY:
-!  19 Sep 2014: K. Arsenault; Initial Specificationi
-!  26 Jun 2020: Mahdi Navari; Modified for glacier fraction
+!  21 Jun 2020: Mahdi Navari; This code is based on the subroutine 
+!                setGfracParmsFullnames.F90 initially implemented by K. Arsenault.
+!  26 Jan 2021: Mahdi Navari; Modified for glacier fraction
 !
 ! !INTERFACE:
 subroutine setGlacierFracParmsFullnames(n,datatype,source)
@@ -52,9 +53,8 @@ subroutine setGlacierFracParmsFullnames(n,datatype,source)
       end select
 
     case default
-      print *, "[ERR] Glacier fraction data type not recognized: ",trim(source)
-      print *, " Program stopping ..."
-      stop
+      write (LDT_logunit, *) "[ERR] Glacier fraction data type not recognized: ",trim(source)
+      call LDT_endrun()
    end select
 
 end subroutine setGlacierFracParmsFullnames
