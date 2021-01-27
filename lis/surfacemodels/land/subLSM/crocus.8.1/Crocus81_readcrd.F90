@@ -11,7 +11,9 @@
 !  by Shugong Wang for the NASA Land Information System Version 7. The initial 
 !  specification of the subroutine is defined by Sujay Kumar. 
 !   10/18/19 : Mahdi Navari, Shugong Wang, initial implementation for LIS 7 and Crocus81
-!
+!   21 Jan 2021: Mahdi Navari, ground temperature removed form the lis.config, 
+!                        for the stand-alone version, the value of TG was set to 273.15 in the Crocus81_main.F90
+!   
 ! !INTERFACE:
 subroutine Crocus81_readcrd()
 ! !USES:
@@ -161,6 +163,7 @@ subroutine Crocus81_readcrd()
         call LIS_verify(rc, "CROCUS81 PTSTEP: not defined")
     enddo
 
+# if 0
     ! MN: For now we assume there is no energy transfer between snow and soil by setting surface 
     !     soil temperature to 273.15 in the lis.config in feature we will use surface soil temperature from an LSM.  
     !     Surface soil temperature (effective temperature the of layer lying below snow) (K)  (for snowcro.F90 
@@ -171,7 +174,7 @@ subroutine Crocus81_readcrd()
         call ESMF_ConfigGetAttribute(LIS_config, CROCUS81_struc(n)%TG, rc=rc)
         call LIS_verify(rc, "CROCUS81 TG: not defined")
     enddo
-
+# endif
     ! reference height of the wind
     call ESMF_ConfigFindLabel(LIS_config, "CROCUS81 UREF:", rc = rc)
     do n=1, LIS_rc%nnest

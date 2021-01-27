@@ -71,7 +71,10 @@ module Crocus81_lsmMod
 !  by Shugong Wang for the NASA Land Information System Version 7. The initial 
 !  specification of the module is defined by Sujay Kumar. 
 !  10/18/19: Mahdi Navari, Shugong Wang Initial implementation for LIS 7 and Crocus81
-!  19 Jan 2021: Mahdi Navari, edited to initialize forcing variables to zeros
+!  19 Jan 2021: Mahdi Navari, Edited to initialize forcing variables to zeros
+!   21 Jan 2021: Mahdi Navari, Ground temperature removed form the lis.config, 
+!                        and this subroutine edited to reflect the edit. For the stand-alone
+!                        version, the value of TG was set to 273.15 in the Crocus81_main.F90
 !
 ! !USES:
   use Crocus81_module
@@ -252,7 +255,7 @@ contains
                 allocate(CROCUS81_struc(n)%crocus81(t)%SNOWDZ(CROCUS81_struc(n)%nsnow))
                 allocate(CROCUS81_struc(n)%crocus81(t)%ALB(12))
                 
-                Crocus81_struc(n)%crocus81(t)%tg = Crocus81_struc(n)%tg
+               ! Crocus81_struc(n)%crocus81(t)%tg = Crocus81_struc(n)%tg
             enddo
             ! initialize forcing variables to zeros
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
