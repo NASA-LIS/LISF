@@ -461,7 +461,7 @@ SUBROUTINE crocus_driver(n, &
 ! it is not initialized in the SURFEX-Crocus. Initialized to zero here, otherwise the value in the snowcro.F90 would be -9.255963134931783E+061
    ZP_GSFCSNOW = 0
 
-!print*,'driver XWG gt XWGI', XWG, TG, XWGI
+!print*,'driver XWG  XWGI', XWG, XWGI
 ! ===========================CALL MODEL ====================================
    ZSNOW = 0.
    ZSNOWFALL = 0.0
@@ -1132,9 +1132,10 @@ XWGMIN   = 0.001   ! (m3 m-3)
 ZLOG_CONDI   = LOG(XCONDI)
 ZLOG_CONDWTR = LOG(XCONDWTR)
 ! 
+! For the stand-alone version, we need to provide some default values for CWGI and XWG
 !      XWGI = 0.0 ! MN set to zero 
 !      XWG = POROSITY * 0.8 ! MN assume volumetric soil water content of the snow covered ground is 80% of POROSITY (For Col de Porte it is between 72-85)
-! print*, 'XWGI, XWG', XWGI, XWG
+! print*, 'driver1 XWG, XWGI', XWG, XWGI
 !print*,'driver2 XWG  XWGI', XWG, XWGI
       ZFROZEN2DF   = XWGI/( XWGI + MAX(XWG,XWGMIN))
       ZUNFROZEN2DF = (1.0-ZFROZEN2DF)* POROSITY

@@ -14,7 +14,8 @@
 !
 !   10/18/19: Mahdi Navari, Shugong Wang; initial implementation for Crocus81 with LIS-7
 !   9 Dec 2020: Mahdi Navari; edited to take into account the Crocus slope correction
-!   19 Jan 2021: Mahdi Navari edited to properly initialize precipitation 
+!   19 Jan 2021: Mahdi Navari, edited to properly initialize precipitation 
+!   21 Jan 2021: Mahdi Navari, edited to properly assign values for TG, XWG, and XWGI for the stand-alone version
 !
 ! !INTERFACE:
 subroutine Crocus81_main(n)
@@ -338,7 +339,7 @@ subroutine Crocus81_main(n)
             tmp_HIMPLICIT_WIND_opt                  = CROCUS81_struc(n)%HIMPLICIT_WIND_opt              
             tmp_PTSTEP                              = CROCUS81_struc(n)%PTSTEP                          
             !tmp_TG(:)                               = CROCUS81_struc(n)%crocus81(t)%TG(:)   
-            tmp_TG                                  = CROCUS81_struc(n)%crocus81(t)%TG                              
+            !tmp_TG                                  = CROCUS81_struc(n)%crocus81(t)%TG                             
             tmp_UREF                                = CROCUS81_struc(n)%UREF                            
             !tmp_SLOPE                               = CROCUS81_struc(n)%SLOPE  !read from lis.config
             tmp_SLOPE                               = CROCUS81_struc(n)%crocus81(t)%SLOPE ! reading from LDT output
@@ -379,9 +380,17 @@ subroutine Crocus81_main(n)
             tmp_CLAY                                = CROCUS81_struc(n)%crocus81(t)%CLAY                            
             tmp_POROSITY                            = CROCUS81_struc(n)%crocus81(t)%POROSITY            
 
-            tmp_XWGI                                = CROCUS81_struc(n)%crocus81(t)%XWGI
-            tmp_XWG                                 = CROCUS81_struc(n)%crocus81(t)%XWG
-!print*,'Main gt XWG XWGI', tmp_TG, tmp_XWG, tmp_XWGI
+            if(LIS_rc%lsm.ne."none") then
+               tmp_TG                                  = CROCUS81_struc(n)%crocus81(t)%TG
+               tmp_XWGI                                = CROCUS81_struc(n)%crocus81(t)%XWGI
+               tmp_XWG                                 = CROCUS81_struc(n)%crocus81(t)%XWG
+            else
+            !! For the stand-alone version, we need to provide some default values for XWGI and XWG
+              tmp_XWGI = 0.0 ! MN set to zero 
+              tmp_XWG  = tmp_POROSITY * 0.8 ! MN assume volumetric soil water content of the snow covered
+                                           !  ground is 80% of POROSITY (For Col de Porte it is between 72-85)
+              tmp_TG   = 273.15 ! no energy exchange between snow and soil
+            endif
             ! get state variables
             tmp_SNOWSWE(:)    = CROCUS81_struc(n)%crocus81(t)%SNOWSWE(:)   
             tmp_SNOWRHO(:)    = CROCUS81_struc(n)%crocus81(t)%SNOWRHO(:)   
