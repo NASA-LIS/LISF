@@ -9992,7 +9992,7 @@ Acceptable values are:
 
 |kinematic          | use kinematic method
 |diffusive          | use diffusive method
-|"`local intertia`" | use local intertia method
+|"`local inertia`"  | use local inertia method
 |hybrid             | use hybrid method (requires a river flow map from LDT)
 |====
 
