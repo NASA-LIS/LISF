@@ -65,6 +65,7 @@ subroutine USAFSI_run(n)
   !**  02 Nov 20  Removed blacklist logic...Eric Kemp, NASA GSFC/SSAI
   !**  06 Nov 20  Added GALWEM 2-m temperature.......Eric Kemp, NASA GSFC/SSAI
   !**  12 Dec 20  Added GMI and AMSR2 capability...............Yonghwan Kwon/NASA GSFC/ESSIC
+  !**  26 Jan 21  Added revised 10-km snow climatology...........Yeosang Yoon/NASA GSFC/SAIC
   !**  28 Jan 21  Updated messages for PMW snow retrievals 
   !**             and cleaned some unused codes..................Yeosang Yoon/NASA GSFC/SAIC
   !*****************************************************************************************

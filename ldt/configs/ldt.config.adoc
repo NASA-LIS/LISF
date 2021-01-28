@@ -4183,7 +4183,24 @@ Search radius for openwater proximity detection:
 
 `USAFSI surface obs data directory:` directory with surface snow reports
 
+`USAFSI brightness temperature data option:` specifies PMW brightness temperature data. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|1 |SSMIS
+|2 |XCAL GMI
+|3 |AMSR2
+|===
+
+`USAFSI XCAL GMI data directory:` directory with XCAL GMI snow depth retrievals
+
+`USAFSI AMSR2 data directory:` directory with AMSR2 snow depth retrievals
+
 `USAFSI SSMIS data directory:` directory with SSMIS snow depth retrievals
+
+`USAFSI SST data directory:` directory with legacy 0.25 deg Navy sea surface temperatures
 
 `USAFSI surface temperature data directory:` directory with legacy 0.25 deg LIS ungribbed surface temperatures
 
@@ -4193,9 +4210,13 @@ Search radius for openwater proximity detection:
 
 `USAFSI VIIRS data directory:` directory with VIIRS TIFF files
 
+`USAFSI XCAL GMI raw data directory:` directory with XCAL GMI HDF5 files
+
+`USAFSI AMSR2 raw data directory:` directory with AMSR2 HDF5 files
+
 `USAFSI SSMIS raw data directory:` directory with SSMIS BUFR files
 
-`USAFSI SSMIS snow depth retrieval algorithm:` version of SSMIS retrieval algorithm. Acceptable values are:
+`USAFSI PMW snow depth retrieval algorithm:` version of PMW retrieval algorithm. Acceptable values are:
 
 [cols="<,<",]
 |===
@@ -4203,26 +4224,38 @@ Search radius for openwater proximity detection:
 
 |1 |Hollinger (1991)
 |2 |Chang et al (1987)
-|3 |Foster et al (1997), recommended
+|3 |Foster et al (1997)
+|4 |Kelly (2009), only for GMI and AMSR2
 |===
 
-`USAFSI SSMIS forest fraction file:` path to netCDF forest fraction file (for Foster et al (1997) algorithm)
+`USAFSI forest fraction file:` path to netCDF forest fraction file (for Foster et al (1997) and Kelly (2009) algorithm)
+
+`USAFSI forest density file:` path to netCDF forest density file (for Kelly (2009) algorithm)
 
 .Example _ldt.config_ entry
 ....
-USAFSI netcdf filename prefix:  usafsi
-USAFSI valid date (YYYYMMDDHH):  2018120618
-USAFSI fractional snow data directory:     ./SNODEPIN/snofrac/
-USAFSI modified data directory:            ./SNODEPIN/modified/
-USAFSI surface obs data directory:         ./SNODEPIN/sfcobs/
-USAFSI SSMIS data directory:               ./SNODEPIN/SSMIS/algorithm03/
-USAFSI surface temperature data directory: ./SNODEPIN/sfctmps/
-USAFSI static data directory:              ./SNODEPIN/static/
-USAFSI unmodified data directory:          ./PREVDIR/algorithm03/
-USAFSI VIIRS data directory:               ./SNODEPIN/viirs/
-USAFSI SSMIS raw data directory:           ./SNODEPIN/OBSI_SSMISUPP/
-USAFSI SSMIS snow depth retrieval algorithm option:   3
-USAFSI SSMIS forest fraction file:     ./SNODEPIN/ForestFraction_0p25deg.nc
+USAFSI netcdf filename prefix:                        USAFSI
+USAFSI valid date (YYYYMMDDHH):                       2020020318
+USAFSI fractional snow data directory:                ./USAFSIIN/snofrac/
+USAFSI modified data directory:                       ./USAFSIIN/modified/
+USAFSI surface obs data directory:                    ./USAFSIIN/sfcobs/
+USAFSI brightness temperature data option:             3
+USAFSI XCAL GMI data directory:                       ./GMI_retrievals/
+USAFSI AMSR2 data directory:                          ./AMSR2_retrievals/
+USAFSI SSMIS data directory:                          ./SSMIS_retrievals/
+USAFSI SST data directory:                            ./USAFSIIN/sfctmps/
+USAFSI surface temperature data directory:            ./USAFSIIN/sfctmps/
+USAFSI static data directory:                         ./USAFSIIN/static/
+USAFSI unmodified data directory:                     ./USAFSIIN/unmodified/
+USAFSI VIIRS data directory:                          ./USAFSIIN/viirs
+
+USAFSI XCAL GMI raw data directory:                   ./GMI_L1CR_web/
+USAFSI AMSR2 raw data directory:                      ./AMSR2_L1R/
+USAFSI SSMIS raw data directory:                      ./USAFSIIN/OBSI_SSMISUPP/
+USAFSI PMW snow depth retrieval algorithm option:     4
+
+USAFSI forest fraction file:                          ./USAFSIIN/ForestFraction_0p25deg.nc
+USAFSI forest density file:                           ./MOD44B/PTC_MOD44B_0p25.nc
 ....
 
 `USAFSI Snow Climatology:` specifies snow climatology data. Acceptable values are:
