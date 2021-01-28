@@ -19,28 +19,32 @@ Run domain resolution (dx):             0.140625
 Run domain resolution (dy):             0.093750
 
 # ------------------------
-# EMK New section for USAFSI
-
-USAFSI netcdf filename prefix:  'usafsi'
+# Section for USAFSI
 
 # *** Former Environment Variables ***
-USAFSI valid date (YYYYMMDDHH):            2018121112
-USAFSI fractional snow data directory:     ./USAFSIIN/snofrac/
-USAFSI modified data directory:            ./USAFSIIN/modified/
-USAFSI surface obs data directory:         ./USAFSIIN/sfcobs/
-#USAFSI SSMIS data directory:               ./USAFSIIN/SSMIS/algorithm03/
-USAFSI SSMIS data directory:               ./SSMIS/
+USAFSI netcdf filename prefix:                        USAFSI
+USAFSI valid date (YYYYMMDDHH):                       2020020318
+USAFSI fractional snow data directory:                ./USAFSIIN/snofrac/
+USAFSI modified data directory:                       ./USAFSIIN/modified/
+USAFSI surface obs data directory:                    ./USAFSIIN/sfcobs/
+USAFSI brightness temperature data option:             2  # 1: SSMIS, 2: XCAL GMI, 3: AMSR2
+USAFSI XCAL GMI data directory:                       ./GMI_retrievals/
+USAFSI AMSR2 data directory:                          ./AMSR2_retrievals/
+USAFSI SSMIS data directory:                          ./SSMIS_retrievals/
+USAFSI SST data directory:                            ./USAFSIIN/sfctmps/
+USAFSI surface temperature data directory:            ./USAFSIIN/sfctmps/
+USAFSI static data directory:                         ./USAFSIIN/static/
+USAFSI unmodified data directory:                     ./USAFSIIN/unmodified/
+USAFSI VIIRS data directory:                          ./USAFSIIN/viirs
 
-USAFSI surface temperature data directory: ./USAFSIIN/sfctmps/
-USAFSI static data directory:              ./USAFSIIN/static/
-#USAFSI unmodified data directory:          ./PREVDIR/algorithm03/
-USAFSI unmodified data directory:          ./USAFSIIN/unmodified/
-USAFSI VIIRS data directory:               ./USAFSIIN/viirs/
-USAFSI SSMIS raw data directory:           ./USAFSIIN/OBSI_SSMISUPP/
-# Retrievals 1: Hollinger,1991, 2: Chang et al.,1987, 3:Foster et al.,1997
-USAFSI SSMIS snow depth retrieval algorithm option:   3
-# Forest fraction only for algorithm 3
-USAFSI SSMIS forest fraction file:         ./USAFSIIN/ForestFraction_0p25deg.nc
+# *** PMW snow depth retrieval algorithm
+USAFSI XCAL GMI raw data directory:                   ./GMI_L1CR_web/
+USAFSI AMSR2 raw data directory:                      ./AMSR2_L1R/
+USAFSI SSMIS raw data directory:                      ./USAFSIIN/OBSI_SSMISUPP/
+USAFSI PMW snow depth retrieval algorithm option:     4  # 1: Hollinger,1991,       2: Chang et al.,1987
+                                                         # 3:Foster et al.,1997,    4: Kelly, 2009
+USAFSI forest fraction file:                          ./USAFSIIN/ForestFraction_0p25deg.nc # for algorithm 3 and 4
+USAFSI forest density file:                           ./MOD44B/PTC_MOD44B_0p25.nc  # for algorithm 4
 
 # *** Snow climatology
 USAFSI Snow Climatology:                              1  # 1: legacy 2: updated 10-km climo
@@ -94,18 +98,14 @@ USAFSI skewed backQC snow depth threshold (m):  0.4
 USAFSI bogus climatology snow depth value (m): 0.2
 USAFSI GOFS SST data directory:   ./USAFSIIN/GOFS
 USAFSI GOFS CICE data directory:  ./USAFSIIN/GOFS
-USAFSI LIS GRIB2 data directory:  /discover/nobackup/emkemp/AFWA/data/LIS_GRIB2
+USAFSI LIS GRIB2 data directory:  ./USAFSIIN/LIS_T2
 USAFSI LIS GRIB2 security class:  U
 USAFSI LIS GRIB2 data category:   C
 USAFSI LIS GRIB2 data resolution: C0P09DEG
 USAFSI LIS GRIB2 area of data:    GLOBAL
-USAFSI GALWEM root directory: USAF_FORCING
+
+USAFSI GALWEM root directory: GALWEM_FOR_USAFSI
 USAFSI GALWEM subdirectory: GALWEM
 USAFSI GALWEM use timestamp directories: 1
 USAFSI GALWEM nominal resolution (km): 17
-
-# Define USAFSI outputfile name prefix (e.g., usafsi)
-# Output file name will be "prefix_+USAFSI valid date(yyyymmddhh)+.nc"
-# e.g., usafsi_2018121112.nc
-USAFSI output filename (prefix):  "usafsi"
 
