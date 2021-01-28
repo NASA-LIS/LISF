@@ -29,6 +29,8 @@ module LDT_usafsiMod
      character*100 :: modif
      character*100 :: sfcobs
      character*100 :: ssmis
+     character*100 :: gmi    !kyh20201118
+     character*100 :: amsr2  !kyh20201217
      character*100 :: stmpdir
      character*100 :: static
      character*100 :: unmod
@@ -53,10 +55,16 @@ module LDT_usafsiMod
      logical :: usefrac
      logical :: useviirs
 
-     ! option for SSMIS snow depth retrieval algorithm
+     ! option for brightness temperature data
+     integer       :: TB_option          !kyh20201118
+
+     ! option for PMW snow depth retrieval algorithms
      integer       :: ssmis_option
      character*100 :: ssmis_raw_dir
+     character*100 :: gmi_raw_dir        !kyh20201118
+     character*100 :: amsr2_raw_dir      !kyh20201217
      character*100 :: ff_file
+     character*100 :: fd_file            !kyh20210113
 
      ! Bratseth settings
      real :: ob_err_var
@@ -134,12 +142,36 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%sfcobs, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    ! Get ssmis.
-    cfg_entry = "USAFSI SSMIS data directory:"
+!------------------------------------------------------------------------------kyh20201118
+    ! Select TB data
+    cfg_entry = "USAFSI brightness temperature data option:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%ssmis, rc=rc)
+    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%TB_option, &
+         rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    ! Get TB data
+    if (usafsi_settings%TB_option == 1) then ! SSMIS
+       cfg_entry = "USAFSI SSMIS data directory:"
+       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%ssmis, rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    elseif (usafsi_settings%TB_option == 2) then ! XCAL GMI
+       cfg_entry = "USAFSI XCAL GMI data directory:"
+       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%gmi, rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    elseif (usafsi_settings%TB_option == 3) then ! AMSR2
+       cfg_entry = "USAFSI AMSR2 data directory:"
+       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%amsr2, rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    end if
+!------------------------------------------------------------------------------kyh20201118
 
     ! Get stmpdir
     cfg_entry = "USAFSI surface temperature data directory:"
@@ -169,29 +201,57 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%viirsdir, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    ! *** for SSMIS now depth retrieval, Yeosang Yoon
-    ! get SSMIS raw datasets
-    cfg_entry = "USAFSI SSMIS raw data directory:"
-    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%ssmis_raw_dir, &
-         rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+!------------------------------------------------------------------------------kyh20201118
+    ! *** for PMW snow depth retrieval, Yeosang Yoon
+    ! get PMW raw datasets
+    if (usafsi_settings%TB_option == 1) then ! SSMIS
+       cfg_entry = "USAFSI SSMIS raw data directory:"
+       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%ssmis_raw_dir, &
+            rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    elseif (usafsi_settings%TB_option == 2) then ! XCAL GMI
+       cfg_entry = "USAFSI XCAL GMI raw data directory:"
+       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%gmi_raw_dir, &
+            rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    elseif (usafsi_settings%TB_option == 3) then ! AMSR2
+       cfg_entry = "USAFSI AMSR2 raw data directory:"
+       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%amsr2_raw_dir, &
+            rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    end if
+!------------------------------------------------------------------------------kyh20201118
 
-    ! get option for SSMIS snow depth retrieval alogrithm
-    cfg_entry = "USAFSI SSMIS snow depth retrieval algorithm option:"
+    ! YY: get option for PMW snow depth retrieval alogrithm
+    cfg_entry = "USAFSI PMW snow depth retrieval algorithm option:"  
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%ssmis_option, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    ! get forest fraction for algorithm 3
-    if (usafsi_settings%ssmis_option==3) then
-       cfg_entry = "USAFSI SSMIS forest fraction file:"
+    ! get forest fraction for algorithm 3 and 4
+    if (usafsi_settings%ssmis_option==3 .or. usafsi_settings%ssmis_option==4) then   !kyh20201212
+       cfg_entry = "USAFSI forest fraction file:"   !YY
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
        call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%ff_file, &
+            rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    end if
+
+    ! get forest density for algorithm 4
+    if (usafsi_settings%ssmis_option==4) then   !kyh20210113
+       cfg_entry = "USAFSI forest density file:"
+       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%fd_file, & 
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
     end if
