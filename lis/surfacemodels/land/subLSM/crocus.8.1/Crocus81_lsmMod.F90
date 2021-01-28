@@ -158,8 +158,6 @@ module Crocus81_lsmMod
      REAL               :: Z0HNAT
      !REAL               :: ALB
      logical            :: use_monthly_albedo_map
-!     REAL               :: SOILCOND ! it is a spatial param. It will be computed 
-     ! for each grid cell in the driver using soil parameters 
      REAL               :: D_G
      !REAL               :: PERMSNOWFRAC          
      CHARACTER(len=4)   :: SNOWDRIFT_opt
@@ -301,8 +299,7 @@ contains
 
             LIS_sfmodel_struc(n)%ts = CROCUS81_struc(n)%ts
 
-!Create fields for LSM2SUBLSM exchanges
-            
+            !Create fields for LSM2SUBLSM exchanges
             call ESMF_ArraySpecSet(arrspec1,rank=1,typekind=ESMF_TYPEKIND_R4,&
                  rc=status)
             call LIS_verify(status, &

@@ -25,12 +25,6 @@ SUBROUTINE crocus_driver(n, &
                          OMEB_BOOL, &
                          GLACIER_BOOL, &
                          HIMPLICIT_WIND_opt, &
-                         !ZP_PEW_A_COEF,          & ! coefficients for atmospheric coupling. In offline mode, they are all equal to 0
-                         !ZP_PEW_B_COEF,          &
-                         !ZP_PET_A_COEF,          &
-                         !ZP_PEQ_A_COEF,          &
-                         !ZP_PET_B_COEF,          &
-                         !ZP_PEQ_B_COEF,          &
                          SNOWSWE, &
                          SNOWRHO, &
                          SNOWHEAT, &
@@ -39,51 +33,30 @@ SUBROUTINE crocus_driver(n, &
                          SNOWGRAN2, &
                          SNOWHIST, &
                          SNOWAGE, &
-                         !ZP_SNOWIMPUR,           &
                          PTSTEP, &
                          PPS, &
                          SRSNOW, &
                          RRSNOW, &
-                         !ZP_PSN3L,               & ! compute this using rainfall and snowfall
                          TA, &
-                         TG, & ! TG(:,1)
+                         TG, & 
                          SW_RAD, &
                          QA, &
-                         !ZP_VMOD,                &  !<<<<<<<<<<<< NOTE:  If LIS provides U and V we have to compute
-                         !  ZP_VMOD = (U^2 + V^2)^0.5 and correct the tool kit to get U and
-                         ! V as forcing >>>>>>>>>>>>>>>>
                          Wind_E, & ! Eastward Wind
                          Wind_N, & ! Northward Wind
                          LW_RAD, &
-                         !ZP_RHOA,                & ! compute this using presure, temp, humidity
                          UREF, &
-                         !ZP_EXNS,                & !compute this using presure at surface
-                         !ZP_EXNA,                & !apporximate this using presure at lowest atmos. level
                          SLOPE, & ! replace ZP_DIRCOSZW with SLOPE and compute the cosine in the driver
                          ZREF, &
                          Z0NAT, &
                          Z0EFF, &
                          Z0HNAT, &
                          ALB, &
-                         !SOILCOND, &
-                         D_G, &! D_G(:,1)
+                         D_G, &
                          SNOWLIQ, &
                          SNOWTEMP, &
                          SNOWDZ, &
                          THRUFAL, &
                          GRNDFLUX, &
-                         !ZP_EVAPCOR,             &
-                         !ZP_GFLXCOR,             &
-                         ! ZP_SWNETSNOW,          &
-                         !ZP_SWNETSNOWS,          &
-                         !ZP_LWNETSNOW,           &
-                         !ZP_RNSNOW,              &
-                         !ZP_HSNOW,               &
-                         !ZP_GFLUXSNOW,           &
-                         !ZP_HPSNOW,              &
-                         !ZP_LES3L,               &
-                         !ZP_LEL3L,               &
-                         !ZP_EVAP,                &
                          SNDRIFT, &! snowdrift only modifies the  surface snow properties
                          !  (density and microstructure) but without any mass change
                          !  unless you use the  SNOWDRIFT_SUBLIM option
@@ -98,8 +71,6 @@ SUBROUTINE crocus_driver(n, &
                          SNOWHMASS, &
                          QS, &
                          PERMSNOWFRAC, & ! ZP_VEGTYPE
-                         !ZP_ZENITH,             & ! compute this here
-                         !ZP_ANGL_ILLUM,         & ! compute this here
                          LAT, &
                          LON, &
                          ! ZP_BLOWSNW,          & ! We can not use snow_sytron it is designed for the
@@ -111,10 +82,6 @@ SUBROUTINE crocus_driver(n, &
                          SNOWMETAMO_opt, & !IO%CSNOWMETAMO
                          SNOWRAD_opt, &! IO%CSNOWRAD
                          ATMORAD_BOOL, &!IO%LATMORAD
-                         !ZP_DIR_SW,             &
-                         !ZP_SCA_SW,             &
-                         !ZP_SPEC_ALB,           &
-                         !ZP_DIFF_RATIO,         &
                          IMPWET, &
                          IMPDRY, &
                          SNOWFALL_opt, &!IO%CSNOWFALL
@@ -137,10 +104,6 @@ SUBROUTINE crocus_driver(n, &
                          XWGI              ,&  ! IN    - soil volumetric frozen water content
                          XWG               ,&  ! IN    - soil volumetric liquid water content
                          usemonalb )
-                         !tmp_ZENITH, &  ! added to read surfex parameter
-                         !tmp_ANGL_ILLUM, &  ! added to read surfex parameter
-                         !tmp_EXNS, &  ! added to read surfex parameter
-                         !tmp_EXNA)                 ! added to read surfex parameter
 
    USE LIS_coreMod, only: LIS_rc
    !USE LIS_logMod,  only  : LIS_logunit, LIS_endrun
@@ -149,32 +112,18 @@ SUBROUTINE crocus_driver(n, &
    USE MODD_CSTS, ONLY: XTT, XPI, XDAY, XLMTT, XLSTT, &
                         XG, XBOLTZ, XAVOGADRO, XMD, &
                         XMV, XRD, XRV, XCPD, XP00 ! need these to compute air density
-   ! XKARMAN, XCI, XLMTT, XLVTT, &
-   ! XLSTT, XRHOLW, XRHOLI, XCONDI , XCL! , &
-   ! XALPW, XBETAW, XGAMW, & ! Constants for saturation vapor
-   ! XCPV, XESTT ! , XSTEFAN, XPLANCK, XLIGHTSPEED
-
    USE modi_surface_cd ! for drag coefficient for momentum
    USE modi_surface_aero_cond  ! for drag coefficient for heat
    USE modd_snow_metamo ! use XVVISC3= 0.023
    USE MODD_SNOW_PAR, ONLY: XRHOSMAX_ES, XSNOWDMIN, XRHOSMIN_ES, XEMISSN, &
       XRHO_SNOWMAK, XPSR_SNOWMAK, XPTA_SEUIL, &
       XPROD_SCHEME, XPROD_COUNT, XTIMESNOWMAK
-   !XZ0ICEZ0SNOW, XVAGING_NOGLACIER,&
-   !XANSMAX, XANSMIN, XPERCENTAGEPORE, X_RI_MAX, &
-   !XALBICE1, XALBICE2, XALBICE3,  XRHOTHRESHOLD_ICE, &
-   !XVAGING_GLACIER, XIMPUR_EFOLD, XIMPUR_COEFF,&
-   !XIMPUR_INIT,XMAXIMPUR, XRHOTHRESHOLD_ICE
    USE MODD_SURF_ATM, ONLY: XRIMAX
    USE MODI_INI_SURF_CSTS
-!USE MODD_PREP_SNOW, ONLY : NIMPUR
    USE MODD_SURF_PAR, ONLY: XUNDEF
-!USE MODD_CONST_TARTES, ONLY:  XPSNOWG0, XPSNOWY0, XPSNOWW0, XPSNOWB0,NPNBANDS
    USE MODD_CONST_ATM, ONLY: JPNBANDS_ATM
-!
    USE MODE_SNOW3L
    USE MODE_TARTES, ONLY: SNOWCRO_TARTES
-!
    USE MODE_THERMOS
    USE MODE_CRODEBUG
    USE MODD_REPROD_OPER
@@ -187,9 +136,6 @@ SUBROUTINE crocus_driver(n, &
    integer, intent(in) :: n                ! nest id
    integer, intent(in) :: nsnow            ! number of snow layers [-]
    integer, intent(in) :: nimpur           ! number of impurities [-]
-!integer, intent(in) :: ttile           ! tile id
-!real, intent(in) :: latitude           ! latitude in decimal degree [-]
-!real, intent(in) :: longitude          ! longitude in decimal degree [-]
    integer, intent(in) :: year             ! year of the current time step [-]
    integer, intent(in) :: month            ! month of the current time step [-]
    integer, intent(in) :: day              ! day of the current time step [-]
@@ -216,15 +162,6 @@ SUBROUTINE crocus_driver(n, &
 !                         wind implicitation option
 !                         'OLD' = direct
 !                         'NEW' = Taylor serie, order 1
-!REAL,  INTENT(IN)              :: ZP_PEW_A_COEF, ZP_PEW_B_COEF, &
-!                                  ZP_PET_A_COEF, ZP_PEQ_A_COEF, ZP_PET_B_COEF, &
-!                                  ZP_PEQ_B_COEF
-!                         PPEW_A_COEF = wind coefficient (m2s/kg)
-!                         PPEW_B_COEF = wind coefficient (m/s)
-!                         PPET_A_COEF = A-air temperature coefficient
-!                         PPET_B_COEF = B-air temperature coefficient
-!                         PPEQ_A_COEF = A-air specific humidity coefficient
-!                         PPEQ_B_COEF = B-air specific humidity coefficient
    REAL*8, INTENT(INOUT)         :: SNOWSWE(nsnow)
 !                         Z_PSNOWSWE  = Snow layer(s) liquid Water Equivalent (SWE:kg m-2)
    REAL*8, INTENT(INOUT)         :: SNOWRHO(nsnow)
@@ -250,22 +187,15 @@ SUBROUTINE crocus_driver(n, &
    REAL*8, INTENT(IN)  :: PPS ! ZP_PS = surface pressure
    REAL*8, INTENT(IN) :: RRSNOW  !  RRSNOW  = rain rate [kg/(m2 s)]
    REAL*8, INTENT(IN) :: SRSNOW  !  SRSNOW = snow rate (SWE) [kg/(m2 s)]
-! REAL,  INTENT(IN)   :: ZP_PSN3L ! ZP_PSN3L  = snow fraction
    REAL*8, INTENT(IN) :: TA      ! TA = atmospheric temperature at level za (K)
    REAL*8, INTENT(IN) :: TG      !  TG = Surface soil temperature (effective
 !                               temperature the of layer lying below snow)
    REAL*8, INTENT(IN) :: SW_RAD!   SW_RAD = incoming solar radiation (W/m2)
    REAL*8, INTENT(IN) :: QA ! QA = atmospheric specific humidity at level za
-!REAL,  INTENT(IN)   :: ZP_VMOD  !ZP_VMOD = modulus of the wind parallel to the orography (m/s)
    REAL*8, INTENT(IN) :: Wind_E   !  Eastward Wind
    REAL*8, INTENT(IN) :: Wind_N   !  Northward Wind
    REAL*8, INTENT(IN) :: LW_RAD   !  LW_RAD = atmospheric infrared radiation (W/m2)!
-!REAL,  INTENT(IN)   :: ZP_RHOA !  ZP_RHOA = air density
    REAL, INTENT(IN)   :: UREF     !  UREF  = reference height of the wind
-!REAL,  INTENT(IN)   :: ZP_EXNS !  ZP_EXNS  = Exner function at surface
-!REAL,  INTENT(IN)   :: ZP_EXNA !  ZP_EXNA = Exner function at lowest atmos level
-!REAL,  INTENT(IN)   :: ZP_DIRCOSZW !  ZP_DIRCOSZW = Cosinus of the angle between the
-!                              normal to the surface and the vertical
    REAL, INTENT(IN)   :: SLOPE    !  SLOPE = Slope
    REAL, INTENT(IN)   :: ZREF     !  ZREF  = reference height of the first
 !                                  atmospheric level
@@ -273,7 +203,6 @@ SUBROUTINE crocus_driver(n, &
    REAL, INTENT(IN)   :: Z0EFF    !  Z0EFF = roughness length for momentum
    REAL, INTENT(IN)   :: Z0HNAT   !  Z0HNAT (PZOH)  = grid box average roughness length for heat
    REAL*8, DIMENSION (12) :: ALB      !  ALB = soil/vegetation albedo
-!   REAL*8, INTENT(IN) :: SOILCOND !  SOILCOND = soil thermal conductivity [W/(m K)] ! MN: moved to local var. for now will be computed using a sand fraction 
    REAL, INTENT(IN)   :: D_G      !  D_G  = Assumed first soil layer thickness (m)
 !                                  Used to calculate ground/snow heat flux
    REAL*8 , INTENT(IN) :: SAND ! Soil SAND fraction [-]
@@ -290,32 +219,6 @@ SUBROUTINE crocus_driver(n, &
 !                                paritioned into soil infiltration/runoff by ISBA [kg/(m2 s)]
    REAL*8, INTENT(INOUT)  :: GRNDFLUX
 !                         GRNDFLUX = soil/snow interface heat flux (W/m2)
-!REAL,  INTENT(OUT)      :: ZP_EVAPCOR
-!                           ZP_EVAPCOR  = evaporation/sublimation correction term:
-!                              extract any evaporation exceeding the
-!                              actual snow cover (as snow vanishes)
-!                               and apply it as a surface soil water
-!                               sink. [kg/(m2 s)]
-!REAL,  INTENT(OUT)      :: ZP_GFLXCOR
-!                           ZP_GFLXCOR  = flux correction to underlying soil for vanishing snowpack
-!                              (to put any energy excess from snow to soil) (W/m2)
-!REAL,  INTENT(INOUT)    :: ZP_SWNETSNOW
-!                           ZP_SWNETSNOW = net shortwave radiation entering top of snowpack
-!                              (W m-2) Imposed if MEB=T, diagnosed herein if MEB=F
-!REAL,  INTENT(INOUT)    :: ZP_SWNETSNOWS
-!                           ZP_SWNETSNOWS= net shortwave radiation in uppermost layer of snowpack
-!                               (W m-2) Imposed if MEB=T, diagnosed herein if MEB=F
-!                               Used for surface energy budget diagnostics
-!REAL,  INTENT(INOUT)    :: ZP_LWNETSNOW
-!                           ZP_LWNETSNOW = net longwave radiation entering top of snowpack
-!                               (W m-2) Imposed if MEB=T, diagnosed herein if MEB=F
-!REAL,  INTENT(INOUT)    :: ZP_RNSNOW !   ZP_RNSNOW = net radiative flux from snow (W/m2)
-!REAL,  INTENT(INOUT)    :: ZP_HSNOW  !   ZP_HSNOW  = sensible heat flux from snow (W/m2)
-!REAL,  INTENT(INOUT)    :: ZP_GFLUXSNOW!ZP_GFLUXSNOW  = net heat flux from snow (W/m2)
-!REAL,  INTENT(INOUT)    :: ZP_HPSNOW !   ZP_HPSNOW = heat release from rainfall (W/m2)
-!REAL,  INTENT(INOUT)    :: ZP_LES3L  !   ZP_LES3L  = evaporation heat flux from snow (W/m2)
-!REAL,  INTENT(INOUT)    :: ZP_LEL3L  !   ZP_LEL3L  = sublimation (W/m2)
-!REAL,  INTENT(INOUT)    :: ZP_EVAP   !   ZP_EVAP = total evaporative flux (kg/m2/s)
    REAL, INTENT(OUT)      :: SNDRIFT    !   SNDRIFT  = blowing snow sublimation (kg/m2/s)
    REAL, INTENT(OUT)      :: RI_n
 !                          RI_n = Ridcharson number (If not OMED initalized to undefined in the snow3L_isba.F90)
@@ -330,10 +233,6 @@ SUBROUTINE crocus_driver(n, &
 !                          QS = surface humidity
    REAL, INTENT(IN)        :: PERMSNOWFRAC
 !                          PPERMSNOWFRAC  = fraction of permanet snow/ice
-!REAL, INTENT(IN)       :: ZP_ZENITH  !   solar zenith angle
-!REAL, INTENT(IN)       :: ZP_ANGL_ILLUM
-!                          Effective illumination angle, Angle between the sun and the
-!                          normal to the ground (=zenith if no slope) used in TARTES
    REAL, INTENT(IN)         :: LAT
    REAL, INTENT(IN)         :: LON
    CHARACTER(4), INTENT(IN):: SNOWDRIFT_opt  ! Snowdrift scheme :
@@ -352,11 +251,6 @@ SUBROUTINE crocus_driver(n, &
 !                               HSNOWRAD=T17 (Tuzet et al. 2017) (Libois et al. 2013)
 !                               TARTES with impurities content scheme
    LOGICAL, INTENT(IN)            :: ATMORAD_BOOL !   activate atmotartes scheme
-!REAL,  INTENT(IN)              :: ZP_DIR_SW
-!REAL,  INTENT(IN)              :: ZP_SCA_SW !   direct and diffuse spectral irradiance (W/m2/um)
-!REAL, INTENT(OUT)              :: ZP_SPEC_ALB
-!REAL,  INTENT(OUT)             :: ZP_DIFF_RATIO
-!                                  spectral albedo and diffuse to total irradiance ratio
    REAL, INTENT(IN)               :: IMPWET(nimpur)
    REAL, INTENT(IN)               :: IMPDRY(nimpur)
 !                                 Dry and wet deposit coefficient from Forcing File(g/m²/s)
@@ -395,16 +289,6 @@ SUBROUTINE crocus_driver(n, &
    LOGICAL, INTENT(IN)          :: SNOWMAK_PROP_BOOL
    LOGICAL, INTENT(INOUT)          :: PRODSNOWMAK_BOOL
    REAL, INTENT(IN)               :: SLOPE_DIR  ! typical slope aspect in the grid
-   !REAL, INTENT(IN)               ::  tmp_ZENITH  ! added to read surfex parameter
-   !REAL, INTENT(IN)               ::  tmp_ANGL_ILLUM  ! added to read surfex parameter
-   !REAL, INTENT(IN)               ::  tmp_EXNS             ! added to read surfex parameter
-   !REAL, INTENT(IN)               ::  tmp_EXNA            ! added to read surfex parameter
-!REAL :: ZP_PEW_A_COEF(1) = 0  ! coefficients for atmospheric coupling. In offline mode, they are all equal to 0!
-!REAL :: ZP_PEW_B_COEF(1) = 0
-!REAL :: ZP_PET_A_COEF(1) = 0
-!REAL :: ZP_PEQ_A_COEF(1) = 0
-!REAL :: ZP_PET_B_COEF(1) = 0
-!REAL :: ZP_PEQ_B_COEF(1) = 0
    REAL*8 :: ZP_SWNETSNOW
    REAL*8 :: ZP_SWNETSNOWS
    REAL*8 :: ZP_LWNETSNOW
@@ -416,9 +300,6 @@ SUBROUTINE crocus_driver(n, &
    REAL*8 :: ZP_LEL3L
    REAL*8 :: ZP_EVAP
    REAL*8 :: ZP_EVAPCOR  ! it has not been initialized  in the CALL_MODEL
-!REAL :: ZP_GFLXCOR  ! it has not been initialized  in the CALL_MODEL
-! REAL, PARAMETER       :: XRHOSMAX_ES = 750.0  ! (kg m-3) ! modd_snow_par
-! REAL, PARAMETER      :: XSNOWDMIN = 0.000001  ! (m)! modd_snow_par
 
 ! ***************************************************************************
 ! Local variable
@@ -427,7 +308,6 @@ SUBROUTINE crocus_driver(n, &
 !                                           snow layers (for energy budget diagnostics) (W/m2)
    REAL*8 :: SOILCOND !  SOILCOND = soil thermal conductivity [W/(m K)]
 
-!KSIZE4 = 1  !SIZE(ZP_DIR_SW,2)
 
 ! === Only call snow model when there is snow on the surface
 !              exceeding a minimum threshold OR if the equivalent
@@ -461,7 +341,6 @@ SUBROUTINE crocus_driver(n, &
 ! it is not initialized in the SURFEX-Crocus. Initialized to zero here, otherwise the value in the snowcro.F90 would be -9.255963134931783E+061
    ZP_GSFCSNOW = 0
 
-!print*,'driver XWG  XWGI', XWG, XWGI
 ! ===========================CALL MODEL ====================================
    ZSNOW = 0.
    ZSNOWFALL = 0.0
@@ -483,7 +362,7 @@ SUBROUTINE crocus_driver(n, &
       ZP_LES3L = 0.0
       ZP_LEL3L = 0.0
       ZP_EVAP = 0.0
-!THRUFAL = 0.0
+      !THRUFAL = 0.0
       THRUFAL = MAX(0.0, sum(SNOWSWE)/PTSTEP + SRSNOW + RRSNOW) ! kg m-2 s-1   ! - PEVAP(:)*ZPSN(:)
       SNOWALB = LIS_rc%udef !XUNDEF
       ZP_GSFCSNOW = 0.0
@@ -500,12 +379,12 @@ SUBROUTINE crocus_driver(n, &
       SNOWTEMP(:) = 273.16 !LIS_rc%udef
       SNOWLIQ(:) = LIS_rc%udef !  XUNDEF ! LIS_rc%udef
       SNOWDZ(:) = 0.0
-!ZP_SNOWIMPUR (:,:,:) = 0
+      !ZP_SNOWIMPUR (:,:,:) = 0
       SNOWGRAN1(:) = LIS_rc%udef ! XUNDEF ! LIS_rc%udef
       SNOWGRAN2(:) = LIS_rc%udef ! XUNDEF ! LIS_rc%udef
       SNOWHIST(:) = LIS_rc%udef !  XUNDEF ! LIS_rc%udef
-! MN added
-!EMISNOW = 0.99 !
+      ! MN added
+      !EMISNOW = 0.99 !
       SNOWHMASS = LIS_rc%udef !  XUNDEF ! LIS_rc%udef
 
    ENDIF
@@ -640,22 +519,9 @@ CONTAINS
 !                          3 : SGRA1 of deposited snow
 !                          4 : SGRA2 of deposited snow
 
-! CHARACTER(4) :: SNOWDRIFT_optin  ! Snowdrift scheme :
-      ! Mechanical transformation of snow grain and compaction + effect of wind
-      ! on falling snow properties
-      !  'NONE': No snowdrift scheme
-      !  'DFLT': falling snow falls as purely dendritic
-      !  'GA01': Gallee et al 2001
-      !  'VI13': Vionnet et al 2013
-!LOGICAL :: SNOWDRIFT_SUBLIM_BOOLin !   activate sublimation during drift
-!LOGICAL :: SNOW_ABS_ZENITH_BOOLin
-!                          activate parametrization of solar absorption for polar regions
-! CHARACTER(3) :: SNOWMETAMO_optin
-! CHARACTER(3) :: SNOWRADin
-!LOGICAL :: ATMORAD_BOOLin !          activate atmotartes scheme
 
 !
-! see # 1599: You should prefer CSNOWRAD='B92' at the moment for the first tests.
+! see SURFEX ticket # 1599: You should prefer CSNOWRAD='B92' at the moment for the first tests.
 ! In that case, the direct-diffuse partition is not used, a 3 band spectral fixed repartition
 !  is used from the global radiation as detailed in Vionnet et al 2012.
 ! 'T17' option comes with a number of other problems (impurities management, memory issues, etc.).
@@ -800,55 +666,8 @@ CONTAINS
       XRIMAX = 0.2 ! in surfex it is defined in the namelist
 
       CALL ini_csts ! routine to initialize the module MODD_CST
-!XP00 = 1013.25E+02 ! see SURFEX/ini_csts.F90
-!XBOLTZ = 1.380658E-23 ! ini_csts.F90
-!XAVOGADRO = 6.0221367E+23 ! ini_csts.F90
-!XMD = 28.9644E-3 ! ini_csts.F90
-!XMV = 18.0153E-3 ! ini_csts.F90
-!XG = 9.80665 ! ini_csts.F90
-!XPI = 2.*ASIN(1.)  ! ini_csts.F90
-!XDAY = 86400.
-!XKARMAN = 0.4 ! ini_csts.F90
-!XTT    = 273.16  ! ini_csts.F90
-!XCI    = 2.106E+3 ! /ini_csts.F90
-!XLSTT  = 2.8345E+6  ! ini_csts.F90
-!XLVTT  = 2.5008E+6  ! /ini_csts.F90
-!XLMTT  = XLSTT - XLVTT
-!XRHOLI = 917. ! ini_csts.F90
-!XRHOLW = 1000. ! SURFEX/ini_csts.F90
-!XCL    = 4.218E+3 ! ini_csts.F90
-!XCONDI = 2.22 ! ini_csts.F90
-!XESTT  = 611.14 ! ini_csts.F90
-!XPLANCK     = 6.6260755E-34  ! ini_csts.F90
-!XLIGHTSPEED = 299792458.  ! light speed   ini_csts.F90
 
       CALL INI_SURF_CSTS_SUB ! routine to initialize all surface parameter
-!#if 0  ! use  INI_SURF_CSTS_SUB
-!EMISNOW = 0.99 ! see ini_surf_csts.F90
-!XVVISC3= 0.023! ini_surf_csts.F90
-!XANSMAX = 0.85 ! ini_surf_csts.F90
-!XANSMIN = 0.50 ! ini_surf_csts.F90
-!!XRIMAX = 0 !  TO DO check the value  user manual 192  defulat value ?
-!XEMISSN =  0.99 ! ini_surf_csts.F90
-!!XPERCENTAGEPORE = 0.05 ! ini_surf_csts.F90
-!X_RI_MAX = 0.2 ! in surfex it is initialized in the ini_surf_csts.F90
-!XIMPUR_COEFF(1)=5.E-9 ! BC deposition at top of snowpack  ! ini_surf_csts.F90:
-!XIMPUR_COEFF(2:5)=10.E-6 ! Dust deposition at top of snowpack ! ini_surf_csts.F90:
-!XIMPUR_INIT(1)=4.E-9 ! BC initial content (g/g) of impurity for fresh snow   ! ini_surf_csts.F90:
-!XIMPUR_INIT(2:5)=5.E-6 ! Dust initial content (g/g) of impurity for fresh snow   ! ini_surf_csts.F90:
-!XRHO_SNOWMAK = 600. ! ini_surf_csts.F90
-!XPSR_SNOWMAK = 0.0012 ! ini_surf_csts.F90
-!XEVERG_RSMIN = 175.  !Rsmin  ini_surf_csts.F90
-!XEVERG_VEG     = 0.99 ! ini_surf_csts.F90
-!! the following also coming from the namelist  https://opensource.umr-cnrm.fr/projects/snowtools_git/repository/revisions/master/entry/DATA/OPTIONS_V8.1_NEW_OUTPUTS_NC.nam   ! I think namelist overwrite this value
-      !XALBICE1=0.38
-      !XALBICE2=0.23
-      !XALBICE3=0.08
-      !XRHOTHRESHOLD_ICE=850.  ! ini_surf_csts.F90
-      !XZ0ICEZ0SNOW=10.  ! ini_surf_csts.F90
-      !XVAGING_GLACIER=900. ! ini_surf_csts.F90
-      !XVAGING_NOGLACIER=60.! ini_surf_csts.F90
-!#endif
 ! ***************************************************************************
 ! Set up local variables for dimension match
 ! ***************************************************************************
@@ -945,8 +764,6 @@ CONTAINS
   else
      ALBin(1) = 0.2 ! soil/vegetation albedo (ALB) set to 0.2 in the SURFEX-Crocus
   endif
-     ! XWGIin = XWGI
-     ! XWGin = XWG
 ! ***************************************************************************
 ! Compute variables
 ! ***************************************************************************
@@ -970,7 +787,6 @@ CONTAINS
       XRD = XAVOGADRO*XBOLTZ/XMD
       XRV = XAVOGADRO*XBOLTZ/XMV
 
-! XRHOA (:) = ZPS(:,1) / (XRD * ZTA(:,1) * ( 1.+((XRV/XRD)-1.)*ZQA(:,1) ) + XG * XZREF )
       ZP_RHOAin(1) = PPSin(1)/(XRD*TAin(1)*(1.+((XRV/XRD) - 1.)*QAin(1)) + XG*ZREFin(1))
 ! specific humidity (conversion from kg/m3 to kg/kg)  ! coupling_isban.F90
 
@@ -980,7 +796,7 @@ CONTAINS
       ZP_EXNSin(1) = (PPSin(1)/XP00)**(XRD/XCPD) ! Exner function at surface
 
 ! For ZP_EXNAin we need pressure at lowest atmos. level
-! Assistance #1599 --> XPA = XPS - XRHOA * XZREF * XG
+! Assistance SURFEX tiket #1599 --> XPA = XPS - XRHOA * XZREF * XG
       ZP_PAin(1) = PPSin(1) - ZP_RHOAin(1)*ZREFin(1)*XG
       ZP_EXNAin(1) = (ZP_PAin(1)/XP00)**(XRD/XCPD) ! Exner function at lowest atmos. level
 
@@ -992,7 +808,6 @@ CONTAINS
 
 ! Compute the effective illumination angle
 ! ----------------------------------------------------------------------------------
-! JJ --> (1,1)
 ! ZP_ZENITH & ZP_AZIMSOL from SUBROUTINE SUNPOS
 ! SLOPE_DIR ! Note: in SURFEX is defined as the direction of S.S.O. (deg from N clockwise) 
 ! Here we use LDT output and ASPECT unit is in radians. So we need to edit the following equation
@@ -1135,8 +950,6 @@ ZLOG_CONDWTR = LOG(XCONDWTR)
 ! For the stand-alone version, we need to provide some default values for CWGI and XWG
 !      XWGI = 0.0 ! MN set to zero 
 !      XWG = POROSITY * 0.8 ! MN assume volumetric soil water content of the snow covered ground is 80% of POROSITY (For Col de Porte it is between 72-85)
-! print*, 'driver1 XWG, XWGI', XWG, XWGI
-!print*,'driver2 XWG  XWGI', XWG, XWGI
       ZFROZEN2DF   = XWGI/( XWGI + MAX(XWG,XWGMIN))
       ZUNFROZEN2DF = (1.0-ZFROZEN2DF)* POROSITY
 !
@@ -1165,42 +978,6 @@ ZLOG_CONDWTR = LOG(XCONDWTR)
       SOILCONDin = SOILCOND
       ZP_PSN3Lin(1) = 1   !TODO  assume fraction is 1  (In SURFEX-Crocus is start from zero and in several time step it became 1.  I was not able to find out where is it computed)
 
-# if 0 
-WRITE (*, '( A5 , 1x ,I4, 1x, I2, 1x,  I3 , 1x, 18(F10.6,1x) )') 'Input',  &
-                               TPTIME%TDATE%YEAR, &
-                               TPTIME%TDATE%MONTH, TPTIME%TDATE%DAY, TPTIME%TIME/3600.,  &
-                                ZP_EXNSin, ZP_EXNAin,&
-                                SNDRIFTout, RI_nout, EMISNOWout, CDSNOWout, USTARSNOWout,         &
-                                TGin, SOILCONDin, ZP_PSN3Lin, ZP_RHOAin, ZP_RNSNOWout, ZP_HSNOWout, &
-                                ZP_GFLUXSNOWout, ZP_HPSNOWout, CHSNOWout,ZP_ZENITHin, ZP_ANGL_ILLUMin  !
-print *, 'ZP_HPSNOWout', ZP_HPSNOWout
-WRITE (*, '( A3 , 1x ,I4, 1x, I2, 1x,  I3 , 1x, F6.2, 2x,  9(A3, 1x) , 11(L1, 1x))') 'MN1',  &
-                               TPTIME%TDATE%YEAR, &
-                               TPTIME%TDATE%MONTH, TPTIME%TDATE%DAY, TPTIME%TIME/3600.,  &
-                               SNOWRES_opt, HIMPLICIT_WIND_opt, SNOWMETAMO_opt, SNOWRAD_opt, SNOWFALL_opt, &
-                               SNOWCOND_opt, SNOWHOLD_opt, SNOWCOMP_opt, SNOWZREF_opt, &
-                               OMEB_BOOL, GLACIER_BOOL, SNOWDRIFT_SUBLIM_BOOL,SNOWCOMPACT_BOOL,&
-                               SNOWMAK_BOOL, SNOWTILLER_BOOL, SELF_PROD_BOOL, SNOWMAK_PROP_BOOL,   &
-                           PRODSNOWMAK_BOOLinout, SNOW_ABS_ZENITH_BOOL, ATMORAD_BOOL 
-WRITE (*, '( A25 , 1x ,I4, 1x, I2, 1x,  I3 , 1x, 3(F10.6,1x) )') 'SNOWALBinout, ALBin, D_Gin',  &
-                               TPTIME%TDATE%YEAR, &
-                               TPTIME%TDATE%MONTH, TPTIME%TDATE%DAY, TPTIME%TIME/3600.,  &
-                               SNOWALBinout, D_Gin
-
-print*, 'ALBin', ALBin
-print*, 'PSNOWDZ',SNOWDZout(1,1:5) ! MN
-print*, 'SNOWLIQout',SNOWLIQout(1,1:5) ! MN
-print*, 'SNOWSWEinout',SNOWSWEinout(1,1:5) ! MN
-print*, 'SNOWRHOinout',SNOWRHOinout(1,1:5) ! MN
-print*, 'SNOWHEATinout',SNOWHEATinout(1,1:5) ! MN
-
-!print*, 'snow depth'  , sum(SNOWDZout)
-print*, 'snowfall', SRSNOWin
-print*, 'rainfall', RRSNOWin
-print*, 'runoff ' , THRUFALout
-print *, '+++++++++++++++++++++++++++++++++++++++++'
-
-# endif
 ! ---------------------------------------------------------------------
 ! ---------------------------------------------------------------------
 ! call model physics here
@@ -1316,17 +1093,17 @@ print *, '+++++++++++++++++++++++++++++++++++++++++'
       SNOWGRAN2(:) = SNOWGRAN2inout(1, :)
       SNOWHIST(:) = SNOWHISTinout(1, :)
       SNOWAGE(:) = SNOWAGEinout(1, :)
-!ZP_SNOWIMPUR   = ZP_SNOWIMPURinout(1,nsnow,nimpur)
-!ZP_PSN3L                = ZP_PSN3Lin(1,1)
-!ZP_RHOA                = ZP_RHOAin(1,1)
-!SOILCOND           = SOILCONDin(1,1)
+      !ZP_SNOWIMPUR   = ZP_SNOWIMPURinout(1,nsnow,nimpur)
+      !ZP_PSN3L                = ZP_PSN3Lin(1,1)
+      !ZP_RHOA                = ZP_RHOAin(1,1)
+      !SOILCOND           = SOILCONDin(1,1)
       SNOWLIQ(:) = SNOWLIQout(1, :)
       SNOWDZ(:) = SNOWDZout(1, :)
       SNOWTEMP(:) = SNOWTEMPinout(1, :)
       THRUFAL = THRUFALout(1)
       ZP_GSFCSNOW = ZP_GSFCSNOWout(1)
       ZP_EVAPCOR = ZP_EVAPCORout(1)
-! ZP_GFLXCOR = ZP_GFLXCORout(1)  ! it is a local variable and set to zero after a CALL to 'snowcro'
+      ! ZP_GFLXCOR = ZP_GFLXCORout(1)  ! it is a local variable and set to zero after a CALL to 'snowcro'
       GRNDFLUX = GRNDFLUXinout(1)
       ZP_SWNETSNOW = ZP_SWNETSNOWout(1)
       ZP_SWNETSNOWS = ZP_SWNETSNOWSout(1)
@@ -1346,21 +1123,6 @@ print *, '+++++++++++++++++++++++++++++++++++++++++'
       CHSNOW = CHSNOWout(1)
       SNOWHMASS = SNOWHMASSout(1)
       QS = QSout(1)
-!PERMSNOWFRAC= PERMSNOWFRACin(1,1)
-!ZP_ZENITH               = ZP_ZENITHin(1,1)
-!ZP_ANGL_ILLUM   = ZP_ANGL_ILLUMin(1,1)
-!LAT                  = LATin(1,1)
-!LON                  = LONin(1,1)
-!ZP_BLOWSNW (1,nsnow,1)   = ZP_BLOWSNWin
-!
-!ZP_DIR_SW               = ZP_DIR_SWin(1,186,1)
-!ZP_SCA_SW               = ZP_SCA_SWin(1,186,1)
-!ZP_SPEC_ALB           = ZP_SPEC_ALBout (1,:,1)
-!ZP_DIFF_RATIO           = ZP_DIFF_RATIOout(1,:,1)
-!                         spectral albedo and diffuse to total irradiance ratio
-!IMPWET           = IMPWETin(1,nimpur)
-!IMPDRY           = IMPDRYin(1,nimpur) ! Dry and wet deposit coefficient from Forcing File(g/m²/s)
-!SNOWMAK_dz           = SNOWMAK_dzin(1,1)
       PRODSNOWMAK_BOOL = PRODSNOWMAK_BOOLinout(1)
 
    END SUBROUTINE CALL_MODEL

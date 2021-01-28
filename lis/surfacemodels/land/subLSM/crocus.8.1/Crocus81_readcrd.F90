@@ -182,15 +182,6 @@ subroutine Crocus81_readcrd()
         call LIS_verify(rc, "CROCUS81 UREF: not defined")
     enddo
  
-    ! Use LDT output for slope 
-    ! angle between the normal to the surface and the vertical  (MN: replaced PDIRCOSZW with slope 
-    ! and computed the cosine in the driver)
-    !    call ESMF_ConfigFindLabel(LIS_config, "CROCUS81 SLOPE:", rc = rc)
-    !    do n=1, LIS_rc%nnest
-    !        call ESMF_ConfigGetAttribute(LIS_config, CROCUS81_struc(n)%SLOPE, rc=rc)
-    !        call LIS_verify(rc, "CROCUS81 SLOPE: not defined")
-    !    enddo
-
     ! Reference height of the first atmospheric level (m)
     call ESMF_ConfigFindLabel(LIS_config, "CROCUS81 ZREF:", rc = rc)
     do n=1, LIS_rc%nnest
@@ -219,13 +210,6 @@ subroutine Crocus81_readcrd()
         call LIS_verify(rc, "CROCUS81 Z0HNAT: not defined")
     enddo
 
-    ! Use LDT output for soil/veg albedo  
-    ! soil/vegetation albedo
-    !    call ESMF_ConfigFindLabel(LIS_config, "CROCUS81 ALB:", rc = rc)
-    !    do n=1, LIS_rc%nnest
-    !        call ESMF_ConfigGetAttribute(LIS_config, CROCUS81_struc(n)%ALB, rc=rc)
-    !        call LIS_verify(rc, "CROCUS81 ALB: not defined")
-    !    enddo
 
     ! if usemonalb == .true., then the alb value passed to lsmcrocus will be used as the background snow-free albedo term.  
     ! if usemonalb == .false., then alb will be set to 0.2 
@@ -235,14 +219,6 @@ subroutine Crocus81_readcrd()
         call LIS_verify(rc, "CROCUS81 use monthly albedo map: not defined")
     enddo
 
-    ! Soil thermal conductivity will be computed in the crocus driver and no need to 
-    !    read that as a constant value from the lis.config  
-    !    soil thermal conductivity (W m-1 K-1)
-    !    call ESMF_ConfigFindLabel(LIS_config, "CROCUS81 SOILCOND:", rc = rc)
-    !    do n=1, LIS_rc%nnest
-    !        call ESMF_ConfigGetAttribute(LIS_config, CROCUS81_struc(n)%SOILCOND, rc=rc)
-    !        call LIS_verify(rc, "CROCUS81 SOILCOND: not defined")
-    !    enddo
 
     ! Assumed first soil layer thickness (m)
     ! Used to calculate ground/snow heat flux   (D_G(:,1))
@@ -252,15 +228,6 @@ subroutine Crocus81_readcrd()
         call LIS_verify(rc, "CROCUS81 D_G: not defined")
     enddo
 
-    ! LIS will use LDT output for fraction of permanet snow/ice, and ne need to 
-    !     read that from the lis.config file  
-    !     Fraction of permanet snow/ice                                                             
-    !      call ESMF_ConfigFindLabel(LIS_config, "CROCUS81 PERMSNOWFRAC:", rc = rc)                          
-    !      do n=1, LIS_rc%nnest                                                                               
-    !          call ESMF_ConfigGetAttribute(LIS_config, CROCUS81_struc(n)%PERMSNOWFRAC, rc=rc)                
-    !          call LIS_verify(rc, "CROCUS81 PERMSNOWFRAC: not defined")                                      
-    !      enddo  
-!print *, "Crocus81_readcrd.F90 CROCUS81_struc(n)%PERMSNOWFRAC", CROCUS81_struc(n)%PERMSNOWFRAC
 
     ! Mechanical transformation of snow grain and compaction + effect of wind on falling snow properties
     !	'NONE': No snowdrift scheme
