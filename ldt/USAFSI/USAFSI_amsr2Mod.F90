@@ -6,6 +6,8 @@
 !
 ! REVISION HISTORY:
 !  17 Dec 2020: Yonghwan Kwon; Initial Implementation 
+!  28 Jan 2021: Yeosang Yoon; Fix bug in calculate_sea_ice_concentration
+!                             subroutine
 !
 ! DESCRIPTION:
 ! Source code for the retrieval of snow depth and sea ice concentration from 
@@ -895,37 +897,33 @@ contains
       real                                         :: pr, gr, d, cf, cm
       logical                                      :: flag
 
-      flag=.true.
+      !flag=.true.
 
+      !TODO: need mask only for ocean tile  
       do i=1,n
+         flag=.true.  !Yeosang Yoon
+
          if (tb19v(i)<-100 .or. tb19h(i)<-100 .or. tb37v(i)<-100 .or. tb37h(i)<-100) then  !check NaN value (-9999)
             flag=.false.
          end if
 
          if (lat(i)>44.5 .or. lat(i)<-52) then
             if (flag .eqv. .true.) then
-               !Get SurfaceFlag (0:Land, 1:Reserved, 2:Near coast, 3:Ice, 4:Possilbe ice, 5:Ocean, 6:Coast,
-               !                  7-14: Reserved, 15: Missing value)
-               !if (surflag(i)==2 .or. surflag(i)==3 .or. surflag(i)==4 .or. surflag(i)==5 .or. surflag(i)==6) then 
-               !if (surflag(i)==3 .or. surflag(i)==4) then   !original
-                  pr=(tb19v(i)-tb19h(i))/(tb19v(i)+tb19h(i))   ! polarization ratio
-                  gr=(tb37v(i)-tb19v(i))/(tb37v(i)+tb19v(i))   ! spectral gradient ratio
-                  d=2035.3+9244.6*pr-5665.8*gr-12875.1*pr*gr
-                  cf=(3290.2-20761.2*pr+23934.0*gr+47985.4*pr*gr)/d   ! first-year ice concentration
-                  cm=(-790.9+13825.3*pr-33155.8*gr-47771.9*pr*gr)/d   ! multiyear ice concentration
-                  ct(i)=(cf+cm)*100                                   ! sea ice concentration [0 100]
-                  if (ct(i) > 100) then
-                     ct(i)=100
-                  end if
-               !else
-               !   ct(i)=-1
-               !end if
+               pr=(tb19v(i)-tb19h(i))/(tb19v(i)+tb19h(i))   ! polarization ratio
+               gr=(tb37v(i)-tb19v(i))/(tb37v(i)+tb19v(i))   ! spectral gradient ratio
+               d=2035.3+9244.6*pr-5665.8*gr-12875.1*pr*gr
+               cf=(3290.2-20761.2*pr+23934.0*gr+47985.4*pr*gr)/d   ! first-year ice concentration
+               cm=(-790.9+13825.3*pr-33155.8*gr-47771.9*pr*gr)/d   ! multiyear ice concentration
+               ct(i)=(cf+cm)*100                                   ! sea ice concentration [0 100]
+               if (ct(i) > 100) then
+                   ct(i)=100
+               end if
             else
                ct(i)=-1
-            end if
+            end if !flag
          else
             ct(i)=-1
-         end if
+         end if !lat
       end do
       
    end subroutine calculate_sea_ice_concentration
