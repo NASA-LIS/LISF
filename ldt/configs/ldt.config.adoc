@@ -4364,7 +4364,7 @@ LIS OPT/UE output file: ./GA.0059.1gd4r
 
 `Glacier fraction spatial transform:` indicates which spatial transform type is to be applied to glacier-related maps.
 
-`Glacier fraction map projection:` pecifies the projection of the glacier map data.
+`Glacier fraction map projection:` specifies the projection of the glacier map data.
 
 `Glacier fraction lower left lat:` specifies the lower left latitude of the LIS model output.
 
