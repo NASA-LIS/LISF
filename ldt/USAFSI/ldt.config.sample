@@ -42,6 +42,9 @@ USAFSI SSMIS snow depth retrieval algorithm option:   3
 # Forest fraction only for algorithm 3
 USAFSI SSMIS forest fraction file:         ./USAFSIIN/ForestFraction_0p25deg.nc
 
+# *** Snow climatology
+USAFSI Snow Climatology:                              1  # 1: legacy 2: updated 10-km climo
+
 # *** Former Namelist Variables ***
 USAFSI decimal fraction adjustment of snow depth towards climo: 0.1
 USAFSI default snow depth (m) when actual depth unknown: 0.1
