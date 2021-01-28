@@ -4227,18 +4227,18 @@ USAFSI SSMIS forest fraction file:     ./SNODEPIN/ForestFraction_0p25deg.nc
 
 `USAFSI Snow Climatology:` specifies snow climatology data. Acceptable values are:
 
-  [cols="<,<",]
- |===
- |Value |Description
+[cols="<,<",]
+|===
+|Value |Description
 
- |1 |legacy
- |2 |updated 10-km climo
- |===
+|1 |legacy
+|2 |updated 10-km climo
+|===
 
-  .Example _ldt.config_ entry
- ....
- USAFSI Snow Climatology:    1
- ....
+.Example _ldt.config_ entry
+....
+USAFSI Snow Climatology:    1
+....
 
 `USAFSI decimal fraction adjustment of snow depth towards climo):` controls drift to climo in data void region
 
