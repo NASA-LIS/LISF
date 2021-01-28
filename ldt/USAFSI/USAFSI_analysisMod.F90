@@ -15,6 +15,7 @@
 ! 09 May 2019  Eric Kemp  Renamed LDTSI
 ! 13 Dec 2019  Eric Kemp  Renamed USAFSI
 ! 02 Nov 2020  Eric Kemp  Removed blacklist code at request of 557WW.
+! 22 Jan 2021  Yeosang Yoon Add subroutine for new 0.1 deg snow climatology
 !
 ! DESCRIPTION:
 ! Source code for Air Force snow depth analysis.
@@ -43,7 +44,8 @@ module USAFSI_analysisMod
    public :: run_snow_analysis_glacier ! EMK
    public :: run_seaice_analysis_ssmis ! EMK
    public :: run_seaice_analysis_gofs  ! EMK
-
+   public :: getclimo                  ! Yeosang Yoon
+ 
    ! Internal constant
    real, parameter :: FILL = -1
 
@@ -3528,5 +3530,46 @@ contains
       return
 
    end subroutine summer
+
+  ! Yeosang Yoon: new 10-km snow climatology
+   subroutine getclimo (month, static)
+
+      ! Imports
+      use LDT_logMod, only: LDT_verify
+      use USAFSI_arraysMod, only: USAFSI_arrays
+      use netcdf
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer,       intent(in)   :: month            ! MONTH OF YEAR (1-12)
+      character*100, intent(in)   :: static           ! STATIC FILE DIRECTORY PATH
+
+      ! Local variables
+      character*4                 :: cmonth  (12)     ! MONTH OF YEAR
+      character*100               :: file_path        ! FULLY-QUALIFIED FILE NAME
+
+      data cmonth        / '_jan', '_feb', '_mar', '_apr', '_may', '_jun', &
+          '_jul', '_aug', '_sep', '_oct', '_nov', '_dec' /
+
+      integer          :: ncid, varid
+
+      ! RETRIEVE THE CLIMATOLOGY FOR THE MONTH.
+      ! THE CLIMO FILE CONTAINS AN ARRAY FOR EACH OF THE 12 MONTHS.
+      ! EACH MONTH IS STORED CONSECUTIVELY STARTING WITH JANUARY.
+      file_path = trim(static) //'/snoclimo_10km/'// 'snoclimo_0p10deg' &
+           //cmonth(month) // '.nc'
+
+      call LDT_verify(nf90_open(path=file_path, mode=nf90_nowrite, ncid=ncid), &
+            '[ERR] Error in nf90_open for '//trim(file_path))
+      call LDT_verify(nf90_inq_varid(ncid=ncid, name="snoclimo", varid=varid), &
+            '[ERR] Error in nf90_inq_varid for snow climatology')
+      call LDT_verify(nf90_get_var(ncid=ncid, varid=varid, values=USAFSI_arrays%climo), &
+            '[ERR] Error in nf90_get_var for snow climatology')
+      call LDT_verify(nf90_close(ncid), &
+            '[ERR] Error in nf90_close for '//trim(file_path))
+
+   end subroutine getclimo
 
 end module USAFSI_analysisMod

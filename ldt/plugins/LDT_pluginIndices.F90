@@ -201,6 +201,11 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_glwdId     = "GLWD"
 
 !-------------------------------------------------------------------------
+! Snow models and data
+!-------------------------------------------------------------------------
+   character*50, public,  parameter :: LDT_Crocus81Id    = "Crocus8.1"  ! this is SURFEX version comes from surf_version.F90
+
+!-------------------------------------------------------------------------
 ! Landcover sources
 !-------------------------------------------------------------------------
    character*50, public,  parameter :: LDT_avhrrlcLISId   = "AVHRR"
