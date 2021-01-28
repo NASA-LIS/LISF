@@ -211,33 +211,39 @@ subroutine USAFSI_run(n)
      ! EMK...Pass LDT elevations to this routine to populate SNODEP elevat
      call getgeo (month, static, nc, nr, elevations)
 
-     ! EMK...Mismatches can occur in landmask between 0.25 deg climo and
-     ! LDT's grid.  In cases where LDT introduces "new" land, use a bogus
-     ! value.
-     arctlatr = float(arctlat) / 100.0
-     allocate(climo_tmp(nc,nr))
-     climo_tmp(:,:) = USAFSI_arrays%climo(:,:)
-     do r = 1, nr
-        do c = 1, nc
-           if (USAFSI_arrays%ptlat(c,r) > -40.0 .and. &
-                USAFSI_arrays%ptlat(c,r) < 40.0) cycle
-           ! See if climo exists for glacier point.  If not, use a fill-in.
-           !if (landmask(c,r) > 0.5 .and. &
-           !     USAFSI_arrays%climo(c,r) .le. 0) then
-           if (landmask(c,r) > 0.5 .and. &
-                USAFSI_arrays%climo(c,r) .le. 0) then
-              if (landice(c,r) > 0.5) then
-                 climo_tmp(c,r) = usafsi_settings%fill_climo
-              else
-                 !climo_tmp(c,r) = usafsi_settings%unkdep
-                 climo_tmp(c,r) = 0
+     ! Yeosang Yoon: retrive the snow climatology for the month
+     if (usafsi_settings%climo_option .eq. 1) then
+        ! EMK...Mismatches can occur in landmask between 0.25 deg climo and
+        ! LDT's grid.  In cases where LDT introduces "new" land, use a bogus
+        ! value.
+        arctlatr = float(arctlat) / 100.0
+        allocate(climo_tmp(nc,nr))
+        climo_tmp(:,:) = USAFSI_arrays%climo(:,:)
+        do r = 1, nr
+           do c = 1, nc
+              if (USAFSI_arrays%ptlat(c,r) > -40.0 .and. &
+                   USAFSI_arrays%ptlat(c,r) < 40.0) cycle
+              ! See if climo exists for glacier point.  If not, use a fill-in.
+              !if (landmask(c,r) > 0.5 .and. &
+              !     USAFSI_arrays%climo(c,r) .le. 0) then
+              if (landmask(c,r) > 0.5 .and. &
+                   USAFSI_arrays%climo(c,r) .le. 0) then
+                 if (landice(c,r) > 0.5) then
+                    climo_tmp(c,r) = usafsi_settings%fill_climo
+                 else
+                    !climo_tmp(c,r) = usafsi_settings%unkdep
+                    climo_tmp(c,r) = 0
+                 end if
               end if
-           end if
-        end do ! c
-     end do ! r
+           end do ! c
+        end do ! r
 
-     USAFSI_arrays%climo(:,:) = climo_tmp(:,:)
-     deallocate(climo_tmp)
+        USAFSI_arrays%climo(:,:) = climo_tmp(:,:)
+        deallocate(climo_tmp)
+     else if (usafsi_settings%climo_option .eq. 2) then
+        ! newly produced 10-km snow climatology using ratio between SNODEP and USAFSI
+        call getclimo (month, static)
+     end if
 
      ! RETRIEVE THE PREVIOUS SNOW ANALYSIS.
      ! First, try reading USAFSI in netCDF format.  If that doesn't work,
