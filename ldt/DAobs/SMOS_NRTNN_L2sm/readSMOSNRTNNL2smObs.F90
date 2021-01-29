@@ -109,13 +109,7 @@ subroutine readSMOSNRTNNL2smObs(n)
       if (ierr .ne. 0) then
          exit
       endif
-      mn_ind = index(fname, trim(yyyymmdd)//trim(hh))
-
-      mn_ind = index(fname, trim(yyyymmdd)//trim(hh)) + 11
-      read (fname(mn_ind:mn_ind + 1), '(i2.2)') mn
       ss = 0
-      call LDT_tick(timenow, doy, gmt, LDT_rc%yr, LDT_rc%mo, LDT_rc%da, &
-                    LDT_rc%hr, mn, ss, 0.0)
 
       smos_filename(i) = fname
 
