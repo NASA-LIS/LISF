@@ -223,33 +223,14 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
                exit
             endif
 
-            !write(*,*) 'fname =', fname
-
-            !mn_ind = index(fname,trim(yyyymmdd)//trim(hh))
-            mn_ind = index(fname,trim(yyyymmdd))
-
-            !mn_ind = index(fname,trim(yyyymmdd)//trim(hh))+11
-            mn_ind = index(fname,trim(yyyymmdd))+11
-
-            !write(*,*) 'fname =', fname
-            !write(*,*) 'yyyymmdd= ', yyyymmdd
-            !write(*,*) 'hh= ', hh
-
-            !write(*,*) 'mn_ind= ', mn_ind
-            
-            !write(*,*) 'fname(mn_ind:mn_ind+1)= ', fname(mn_ind:mn_ind+1)
-
-            read(fname(mn_ind:mn_ind+1),'(i2.2)') mn
             ss=0
-            call LIS_tick(timenow,doy,gmt,LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
-                 LIS_rc%hr, mn, ss, 0.0)
 
             smos_filename(i) = fname
 
             write(LIS_logunit,*) '[INFO] reading ',trim(smos_filename(i))
 
             call read_SMOSNRTNNL2sm_data(n,k,smos_filename(i),&
-                 SMOSNRTNNL2sm_struc(n)%smobs,timenow,chr)
+                 SMOSNRTNNL2sm_struc(n)%smobs,time1,chr)
 
             i = i+1
          enddo
