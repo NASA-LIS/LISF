@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v7.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! !ROUTINE: create_gdasfilename
@@ -182,9 +188,9 @@ subroutine create_gdasfilename(option, name00, name03, name06, &
   F06flag = .false. 
 
   if ( option == 2 ) then !bookend 2
-     if ( .not. is_analysis_hr ) F06flag = .true. ! need to read two files     
+     if ( .not. is_analysis_hr ) F06flag = .true. ! need to read two files
   else
-     if ( is_analysis_hr ) F06flag = .true. ! need to read two files     
+     if ( is_analysis_hr ) F06flag = .true. ! need to read two files
   endif
 
   if ( option == 2 ) then !bookend 2 

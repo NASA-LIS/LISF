@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v7.1
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -152,7 +154,7 @@ contains
     real    :: upgmt
 
     allocate(merra2_struc(LDT_rc%nnest))
-    write(LDT_logunit,fmt=*)"MSG: Initializing MERRA-2 forcing grid ... "
+    write(LDT_logunit,fmt=*)"[INFO] Initializing MERRA-2 forcing grid ... "
 
  !- Read in config file entries:
     call readcrd_merra2()

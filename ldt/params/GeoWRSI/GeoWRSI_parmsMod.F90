@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module GeoWRSI_parmsMod
 !BOP
@@ -80,7 +86,7 @@ contains
 ! \label{GeoWRSIparms_init}
 ! 
 ! !INTERFACE:
-  subroutine GeoWRSIparms_init
+  subroutine GeoWRSIparms_init(flag)
 ! !USES:
     use LDT_logMod,    only : LDT_verify
 !
@@ -97,6 +103,7 @@ contains
 !
 !EOP
     implicit none
+    integer   :: flag
     integer   :: n
     integer   :: rc
     character*50           :: wrsiparms_proj

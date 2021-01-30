@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -204,13 +206,6 @@ subroutine read_GLASSlai(n, k, OBS_State, OBS_Pert_State)
      dataCheck = .false.
   endif
   if(dataCheck) then 
-        
-        !        open(100,file='test_out.bin',form='unformatted')
-        !        write(100) GLASSlai_struc(n)%laiobs1 
-        !        write(100) GLASSlai_struc(n)%laiobs2
-        !        write(100) laiobs
-        !        close(100)
-        !        stop
         
      call ESMF_StateGet(OBS_State,"Observation01",laifield,&
           rc=status)
@@ -425,10 +420,6 @@ subroutine read_GLASS_LAI_data(n, k, fname, laiobs_ip)
 
   endif
 
-!  open(100,file='test_inp.bin',form='unformatted')
-!  write(100) lai_in
-!  close(100)
-
 
   iret=gddetach(grid_id)
   iret=gdclose(file_id)
@@ -453,11 +444,6 @@ subroutine read_GLASS_LAI_data(n, k, fname, laiobs_ip)
           lai_data_b,lai_in, laiobs_b_ip, laiobs_ip)
   endif
   
-!  open(100,file='test_out.bin',form='unformatted')
-!  write(100) laiobs_ip
-!  close(100)
-!  stop
-
 #endif
 
 end subroutine read_GLASS_LAI_data

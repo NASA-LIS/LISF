@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -23,7 +25,7 @@ subroutine noahmp401_map_snodep(n,k,OBS_State,LSM_Incr_State)
   use LIS_coreMod, only : LIS_rc, LIS_surface
   use LIS_constantsMod, only  : LIS_CONST_TKFRZ
   use LIS_logMod,   only  : LIS_logunit, LIS_verify
-  use LIS_DAobservationsMod
+  use LIS_lsmMod
   use noahmp401_lsmMod
 
   implicit none
@@ -97,8 +99,7 @@ subroutine noahmp401_map_snodep(n,k,OBS_State,LSM_Incr_State)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
-     call LIS_mapTileSpaceToObsSpace(n, k, LIS_rc%lsm_index, &
-          t, st_id, en_id)
+     call LIS_lsm_DAmapTileSpaceToObsSpace(n,k,t,st_id,en_id)
 
 ! Assume here that st_id and en_id are the same and that we are
 ! working with an model grid finer than the observation grid

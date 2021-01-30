@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !ROUTINE: readNASMDObs
@@ -92,7 +98,7 @@ subroutine readNASMDObs(source)
           rc=status)
      call LVT_verify(status, 'error in setting nasmd start time')
 
-     nasmdobs(source)%yr = LVT_rc%yr
+     nasmdobs(source)%yr = LVT_rc%dyr(source)
      nasmdobs(source)%sfsm = LVT_rc%udef
      nasmdobs(source)%rzsm = LVT_rc%udef
 

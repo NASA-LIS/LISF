@@ -1,6 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT)
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! !ROUTINE: compute_grid_coord
@@ -12,6 +17,9 @@
 !
 ! !INTERFACE:
 subroutine compute_grid_coord(gridDesc,npts,fill,xpts,ypts,rlon,rlat,nret)
+
+! Use:
+  use LDT_logMod
 
   implicit none
 ! !ARGUMENTS: 
@@ -99,9 +107,9 @@ subroutine compute_grid_coord(gridDesc,npts,fill,xpts,ypts,rlon,rlat,nret)
      call compute_grid_coord_ease(gridDesc,npts,fill,xpts,ypts,&
           rlon,rlat,nret)
   else
-     print*, 'Unrecognized Projection .... '
-     print*, 'Program stopping ..'
-     stop
+     write(LDT_logunit,*) '[ERR] Unrecognized Projection .... '
+     write(LDT_logunit,*) 'Program stopping ..'
+     call LDT_endrun
   endif
 
 end subroutine compute_grid_coord

@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -801,7 +803,7 @@ subroutine noah36_main(n)
                 noah36_struc(n)%noah(t)%frzx,                                      &
                 noah36_struc(n)%noah(t)%sndens, & !added for use in SCF DA, yliu 
                 noah36_struc(n)%noah(t)%lvcoef, tsoil,                           &
-                sfhead1rt, infxs1rt, etpnd1)
+                sfhead1rt, infxs1rt, etpnd1, noah36_struc(n)%snowfix)
 
            noah36_struc(n)%noah(t)%sca = sncovr ! EMK NUWRF
            noah36_struc(n)%noah(t)%z0_old = noah36_struc(n)%noah(t)%z0

@@ -18,11 +18,6 @@ This directory contains:
 
 To run this test case: 
   (a) Generate the LIS executable. 
-  (b) Download the sample input data from: 
-	http://lis.gsfc.nasa.gov/Source/testcases  
-      the testcase corresponding to CMORPH precip FORCING TEST
-  (c) Run the LIS executable using the lis.config file and the sample 
+  (b) Run the LIS executable using the lis.config file and your sample 
       input data. 
-  (d) View the binary output using the sample grads file. 
-  (e) The output can be contrasted with the output from a test 
-      using simply the GDAS forcing
+  (c) View the binary output using the sample grads file. 

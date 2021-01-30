@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -36,13 +38,25 @@ subroutine readcrd_imerg()
      call ESMF_ConfigGetAttribute(LIS_config,imerg_struc(n)%imergdir,rc=rc)
   enddo
 
-  call ESMF_ConfigFindLabel(LIS_config,"IMERG version:",rc=rc)
+  call ESMF_ConfigFindLabel(LIS_config,"IMERG product:",rc=rc)
   if(rc /= 0) then
-     write(LIS_logunit,*) "[WARN] IMERG version not specified. Defauling to 'final' version."
+     write(LIS_logunit,*) "[WARN] IMERG product not specified. Defauling to 'final' product."
      write(LIS_logunit,*) "[WARN] Valid options for IMERG are 'early', 'late', and 'final'."
 
      do n=1, LIS_rc%nnest
-        imerg_struc(n)%imergver = 'final'
+        imerg_struc(n)%imergprd = 'final'
+     enddo
+  else
+     do n=1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config,imerg_struc(n)%imergprd,rc=rc)
+     enddo
+  endif
+
+  call ESMF_ConfigFindLabel(LIS_config,"IMERG version:",rc=rc)
+  if(rc /= 0) then
+     write(LIS_logunit,*) "[WARN] IMERG version not specified. Defauling to latest IMERG version (V06B)."
+     do n=1, LIS_rc%nnest
+        imerg_struc(n)%imergver = 'V06B'
      enddo
   else
      do n=1, LIS_rc%nnest
@@ -63,6 +77,7 @@ subroutine readcrd_imerg()
      write(LIS_logunit,*)'Using IMERG forcing'
      write(LIS_logunit,*)'IMERG forcing directory : ',trim(imerg_struc(n)%IMERGDIR)
      write(LIS_logunit,*)'IMERG version : ',trim(imerg_struc(n)%imergver)
+     write(LIS_logunit,*)'IMERG product : ',trim(imerg_struc(n)%imergprd)
 !------------------------------------------------------------------------
 ! Setting global observed precip times to zero to ensure 
 ! data is read in during first time step

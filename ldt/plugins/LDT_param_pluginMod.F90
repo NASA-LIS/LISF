@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module LDT_param_pluginMod
 !BOP
@@ -16,7 +22,9 @@ module LDT_param_pluginMod
 ! !REVISION HISTORY:
 !  11 Dec 2003:  Sujay Kumar  - Initial Specification
 !  11 Feb 2013:  KR Arsenault - Updated to accommodate new parameter types and options
-!
+!  01 Mar 2020:  Yeosang Yoon - Added MERIT DEM
+!  29 Jun 2020:  Mahdi Navari - Glacier fraction added 
+!  
 !EOP
 
   use LDT_pluginIndices
@@ -68,6 +76,7 @@ contains
     use Mosaic_parmsMod
     use RUC_parmsMod
     use JULES50_parmsMod
+    use Crocus_parmsMod    
 
   ! Noah 2.7.1 LSM:
     call registerlsmparamprocinit(trim(LDT_noah271Id)//char(0),&
@@ -229,6 +238,14 @@ contains
          JULES50Parms_writeHeader)
     call registerlsmparamprocwritedata(trim(LDT_jules50Id)//char(0),&
          JULES50Parms_writeData)
+
+ !Crocus 8.1 :
+    call registerlsmparamprocinit(trim(LDT_Crocus81Id)//char(0),&
+        CrocusParms_init)
+    call registerlsmparamprocwriteheader(trim(LDT_Crocus81Id)//char(0),&
+         CrocusParms_writeHeader)
+    call registerlsmparamprocwritedata(trim(LDT_Crocus81Id)//char(0),&
+         CrocusParms_writeData)
 
   end subroutine LDT_LSMparam_plugin
 
@@ -525,6 +542,10 @@ contains
     external read_CONSTANT_slope
     external read_CONSTANT_aspect
 
+    external read_MERIT1K_elev
+    external read_MERIT1K_slope
+    external read_MERIT1K_aspect
+
  !- GTOPO30:
     call registerreadelev(trim(LDT_gtopoLISId)//char(0),read_GTOPO30_elev)
     call registerreadelev(trim(LDT_gtopoGFSId)//char(0),read_GTOPO30_GFS_elev)
@@ -545,6 +566,11 @@ contains
     call registerreadelev(trim(LDT_constId)//char(0),read_CONSTANT_elev)
     call registerreadslope(trim(LDT_constId)//char(0),read_CONSTANT_slope)
     call registerreadaspect(trim(LDT_constId)//char(0),read_CONSTANT_aspect)
+
+!- MERIT:
+    call registerreadelev(trim(LDT_merit1KId)//char(0),read_MERIT1K_elev)
+    call registerreadslope(trim(LDT_merit1KId)//char(0),read_MERIT1K_slope)
+    call registerreadaspect(trim(LDT_merit1KId)//char(0),read_MERIT1K_aspect)
 
   end subroutine LDT_topo_plugin
 
@@ -910,11 +936,16 @@ contains
     external read_GRIPC_irrigtype
     external read_GRIPC_irrigfrac
 
+    external read_UserDerived_irrigfrac
+
     call registerreadirrigfrac(trim(LDT_modOGirrigId)//char(0),&
          read_OzdoganGutman_irrigfrac)
 
     call registerreadirrigtype(trim(LDT_gripcirrigId)//char(0),read_GRIPC_irrigtype)
     call registerreadirrigfrac(trim(LDT_gripcirrigId)//char(0),read_GRIPC_irrigfrac)
+
+    ! Added user-derived irrigation fraction input option:
+    call registerreadirrigfrac(trim(LDT_userinputirrigId)//char(0),read_UserDerived_irrigfrac)
 
   end subroutine LDT_irrigation_plugin
 
@@ -1197,6 +1228,7 @@ contains
     external read_ecmwf_elev
     external read_ecmwfreanal_elev
     external read_merra2_elev
+    external read_era5_elev
 !    external read_geos5_elev
 !    external read_merraland_elev
 
@@ -1234,6 +1266,10 @@ contains
     call registerreadforcelev(trim(LDT_merra2Id)//char(0),&
          read_merra2_elev)
 
+!- ERA5 forcing:
+    call registerreadforcelev(trim(LDT_era5Id)//char(0),&
+         read_era5_elev)
+
 !- GEOS5 forcing:
 !    call registerreadforcelev(trim(LDT_geos5Id)//char(0),&
 !         read_geos5_elev)
@@ -1250,9 +1286,18 @@ contains
   subroutine LDT_glacier_plugin
 !EOP
     external read_GLIMS_glaciermask
+    external read_GLIMS_glacierfraction
+
+
+!   In the LDT code, the above calls are typically invoked in the
+!   following manner.
+!   \begin{verbatim}
+!    call readglacierfrac(ldt%domain,ldtglacierfracsrc)
 
     call registerreadglaciermask(trim(LDT_GLIMSId)//char(0),&
          read_GLIMS_glaciermask)
+    call registerreadglacierfrac(trim(LDT_GLIMSId)//char(0),&
+         read_GLIMS_glacierfraction)
 
   end subroutine LDT_glacier_plugin
 

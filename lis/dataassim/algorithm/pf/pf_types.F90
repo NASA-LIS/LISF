@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,7 +27,9 @@ module pf_types
   
   private
   
-  public :: pf_obs_type, pf_obs_param_type
+  public :: obs_type, obs_param_type
+  
+  public :: update_region_ind_type, update_region_type
   
   ! -----------------------------------------------------------------------
   
@@ -33,7 +37,7 @@ module pf_types
   ! which contains all observations of all types that are available
   ! at a given update time
   
-  type :: pf_obs_type
+  type :: obs_type
      
      integer          :: species   ! identifier for type of measurement
      integer          :: catnum    ! number of catchment in domain
@@ -43,13 +47,13 @@ module pf_types
      real             :: std       ! obs error std
      logical          :: assim     ! .T. if assimilated, .F. if innov only
      integer          :: pert_type ! 0- additive, 1-multiplicative
-  end type pf_obs_type
+  end type obs_type
   
   ! ----------------------------------------------------------------------
   !
   ! vector obs_param contains information about each species of observations 
   
-  type :: pf_obs_param_type
+  type :: obs_param_type
      
      integer          :: species   ! identifier for type of measurement
      character(40)    :: descr     ! description
@@ -68,8 +72,31 @@ module pf_types
      real             :: xcorr           ! see pert_param_type
      real             :: ycorr           ! see pert_param_type
      
-  end type pf_obs_param_type
-    
+  end type obs_param_type
+  
+  ! ----------------------------------------------------------------------
+  
+  type :: update_region_ind_type
+     
+     integer          :: cat_id       ! ID of catchment
+     integer          :: region_num   ! number of region
+     
+  end type update_region_ind_type
+  
+  ! ----------------------------------------------------------------------
+  
+  type :: update_region_type
+     
+     integer          :: region_num   ! number of region
+     integer          :: n_cats       ! number of catchments in region
+     real             :: min_lon      ! lat/lon bounding box of region
+     real             :: max_lon
+     real             :: min_lat
+     real             :: max_lat
+          
+  end type update_region_type
+
+  
 end module pf_types
 
 ! ================== EOF ===============================================

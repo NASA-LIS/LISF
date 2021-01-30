@@ -1,0 +1,47 @@
+
+.Listing of sample custom modulefile intel_18_0_3_222
+----
+#%Module1.0###################################################################
+
+proc ModulesHelp { } {
+    puts stderr "\t[module-info name] - loads the INTEL_18_0_3_222 env"
+    puts stderr ""
+    puts stderr "\tThe following env variables are set:"
+    puts stderr "\t\tDEV_ENV"
+    puts stderr ""
+    puts stderr "\tThe following modules are loaded:"
+    puts stderr "\t\tcomp/intel-18.0.3.222"
+    puts stderr "\t\tmpi/impi-18.0.3.222"
+    puts stderr "\t\ttool/tview-2017.1.21"
+    puts stderr "\t\tother/git-2.9.3"
+    puts stderr "\t\tother/svn-1.9.5"
+    puts stderr "\t\tother/vim-8.0"
+    puts stderr ""
+    puts stderr "\tPython 2.7 is added to the search PATH."
+}
+
+
+conflict comp mpi
+
+
+module-whatis	"loads the [module-info name] environment"
+
+
+set modname     [module-info name]
+set modmode     [module-info mode]
+
+
+module load comp/intel-18.0.3.222
+module load mpi/impi-18.0.3.222
+
+module load tool/tview-2017.1.21
+module load other/git-2.9.3
+module load other/svn-1.9.5
+module load other/vim-8.0
+
+
+setenv   DEV_ENV         INTEL_18_0_3_222
+
+prepend-path   PATH   /usr/local/other/SLES11.3/python/2.7.11/gcc-4.3.4/bin
+----
+

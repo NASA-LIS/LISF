@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -71,6 +73,9 @@ subroutine LIS_lsmoptue_plugin
 #if ( defined SM_NOAHMP_3_6 )
    use NoahMP36_peMod, only : NoahMP36_setup_pedecvars
 #endif
+#if ( defined SM_NOAHMP_4_0_1 )
+   use NoahMP401_peMod, only : NoahMP401_setup_pedecvars
+#endif
 
 !    external noah271_f2t
 !    external noah271_set_pedecvars
@@ -122,6 +127,16 @@ subroutine LIS_lsmoptue_plugin
 
    external NoahMP36_getpeobspred_SMAPsmobs
    external NoahMP36_setupobspred_SMAPsmobs
+
+#endif
+
+#if ( defined SM_NOAHMP_4_0_1)
+
+   external NoahMP401_f2t
+   external NoahMP401_set_pedecvars
+
+   external NoahMP401_getpeobspred_UAsnowobs
+   external NoahMP401_setupobspred_UAsnowobs
 
 #endif
 
@@ -281,6 +296,21 @@ subroutine LIS_lsmoptue_plugin
                                 NoahMP36_getpeobspred_SMAPsmobs)
 #endif
 
+#if ( defined SM_NOAHMP_4_0_1 )
+   call registerlsmf2t(trim(LIS_noahmp401Id)//"+"// &
+                       trim(LIS_paramEstimRunId)//char(0),NoahMP401_f2t)
+   call registerlsmpesetupdecisionspace(trim(LIS_noahmp401Id)//char(0), &
+                                        NoahMP401_setup_pedecvars)
+   call registerlsmpesetdecisionspace(trim(LIS_noahmp401Id)//char(0), &
+                                      NoahMP401_set_pedecvars)
+
+   call registerlsmpesetupobspred(trim(LIS_noahmp401Id)//"+"//      &
+                                  trim(LIS_UAsnowobsId)//char(0), &
+                                  NoahMP401_setupobspred_UAsnowobs)
+   call registerlsmpegetobspred(trim(LIS_noahmp401Id)//"+"//      &
+                                trim(LIS_UAsnowobsId)//char(0), &
+                                NoahMP401_getpeobspred_UAsnowobs)
+#endif
 #endif
 end subroutine LIS_lsmoptue_plugin
 end module LIS_lsmoptue_pluginMod

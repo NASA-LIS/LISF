@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -14,6 +16,7 @@
 ! !REVISION HISTORY:
 ! 16 May 2016; Shugong Wang; initial implementation for JULES 4.3
 ! 01 Feb 2018; Shugong Wang; updated for JULES 5.0 
+! 27 Feb 2020; Shugong Wang; updated for automated container 
 !
 ! !ROUTINE: jules50_main.F90
 ! 
@@ -153,7 +156,9 @@ subroutine jules50_main(n)
             dt = LIS_rc%nts(n)
             lat = LIS_domain(n)%grid(cur_grid)%lat
             lon = LIS_domain(n)%grid(cur_grid)%lon
-
+            
+            lat_d = lat
+            lon_d = lon
             ! compute gridbox average for tstar
             tstar_box=0.0
             do t=start_k, end_k

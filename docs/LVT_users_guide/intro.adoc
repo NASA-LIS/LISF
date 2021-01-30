@@ -6,25 +6,96 @@ This is the User's Guide for Land surface Verification Toolkit (LVT;<<kumar_etal
 This document describes how to download and install LVT codes and
 instructions on building an executable.
 
-This document consists of several sections, described as follows:
+This document consists of 9 sections, described as follows:
 
-* *Introduction*: the section you are currently reading
-* *Background*: general information about the LVT
-* *Preliminary Information*: general information, steps, instructions,
-and definitions used throughout the rest of this document
-* *Obtaining the Source Code*: the steps needed to download the source
-code
-* *Building the Executable*: the steps needed to build the LVT
-executable
-* *Running the Executable*: the steps needed to run the LVT executable
-* *LVT config File*: describes the user-configurable options
-* *Configuration of metrics*: describes the specification of various
-metrics in LVT.
-* *Model Output Specifications*: describes the specification of the
-model output from LIS.
+. *<<sec-intro>>*:
+   the section you are currently reading.
+
+. *<<sec-backgrd>>*:
+   general information about the LVT.
+
+. *<<sec-prelim>>*:
+   general information, steps, instructions, and definitions used throughout the rest of this document.
+
+. *<<sec-obtain-src>>*:
+   the steps needed to download the source code.
+
+. *<<sec-build>>*:
+   the steps needed to build the LVT executable.
+
+. *<<sec-run>>*:
+   the steps needed to run the LVT executable.
+
+. *<<sec-lvtconfigfile>>*:
+   describes the user-configurable options.
+
+. *<<sec-metricslisttable>>*:
+   describes the specification of various metrics in LVT.
+
+. *<<sec-modeloutputlisttable>>*:
+   describes the specification of the model output from LIS.
 
 === What's New
 //\attention{See \file{RELEASE\_NOTES} found in the \file{source.tar.gz} file for more details.  (See Section~\ref{sec-obtain-src}.)}
+
+==== Version 7.3
+
+. Includes new runmodes
+* 557post runmode
+* USAFSIpost runmode
+. Includes additional metrics
+* Anomaly Rank Correlation metric
+* Clayton Skill Score (CSS) metric
+* Conditional Entropy metric
+* Detection Failure Ratio (DFR) metric
+* Event Frequency (EF) metric
+* Forecast Frequency (FF) metric
+* Heidke Skill Score (HSS) metric
+* Information Entropy metric
+* Joint Entropy metric
+* K-means metric
+* Mutual Information metric
+* Peirce Skill Score (PSS) metric
+* Reliability metric
+* Resiliance metric
+* Relative Entropy metric
+* Standard Precipitation Index (SPI) metric
+* Triple collocation metric
+* Tian False Alarm Bias (TFB) metric
+* Tian Hit Bias (THB) metric
+* Tian Miss Bias (TMB) metric
+* Trends metric
+* Vulnerability metric
+. Supports additional data streams
+* TRMM 3B42V7 data stream
+* Atmospheric Land Exchange Inverse (ALEXI) model Evaporative Stress Index (ESI) data stream
+* APHRODITE (Asian Precipitaton - Highly-Resolved Observational Data Integration Towards Evaluation) daily gridded precipitation data stream
+* NASA Airborne Snow Observatory (ASO) snow water equivalent (SWE) data stream
+* CHIRPSv2 data stream
+* ECMWF forcing data stream
+* ERA5 data stream
+* FLUXCOM data stream
+* FLUXNET2015_NC data stream
+* GDAS forcing data stream
+* GLASS albedo data stream
+* GLASS LAI data stream
+* High Asia Reanalysis (HAR) precipitation data stream
+* Indian Meteorological Department (IMD) unified gauge-based analysis of daily precipitation data stream
+* IMERG data stream
+* JULES2Ddata data stream
+* Land Parameter Retrieval Model (LPRM) vegetation optical depth data stream
+* MERRA2 asm data stream
+* MOD10A1V6 fractional snow cover data stream
+* MODIS SPoRT LAI data stream
+* MODSCAG fractional snow cover data stream
+* OCO-2 Solar Induced Fluorescence (SIF) data stream
+* OzFlux data stream
+* Soil Moisture Active Passive (SMAP) L3 Tb data stream
+* Soil Moisture Active Passive (SMAP) vegetation optical depth data stream
+* Soil Moisture Active Passive (SMAP) vegetation water content data stream
+* University of Arizona (UA) SWE/Snow Depth data stream
+* UCLA SWE reanalysis data stream
+* jasmin data stream
 
 ==== Version 7.2
 

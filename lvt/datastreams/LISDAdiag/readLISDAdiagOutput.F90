@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !BOP
 ! 
@@ -63,10 +69,11 @@ subroutine readLISDAdiagOutput(source)
   
   if(lisdadiagoutput(source)%computeSpread.eq.1) then 
      write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
-          LVT_rc%yr, LVT_rc%mo, LVT_rc%da, LVT_rc%hr, LVT_rc%mn
+          LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source), &
+          LVT_rc%dhr(source), LVT_rc%dmn(source)
      
      write(unit=cdate, fmt='(i4.4, i2.2)') &
-          LVT_rc%yr, LVT_rc%mo
+          LVT_rc%dyr(source), LVT_rc%dmo(source)
      
      fname = trim(lisdadiagoutput(source)%odir)//'/EnKF/'//trim(cdate)//'/'&
           //'LIS_DA_EnKF_'//trim(cdate1)//'_spread.a'//trim(cda)//'.d01.nc'
@@ -105,10 +112,11 @@ subroutine readLISDAdiagOutput(source)
 
   if(lisdadiagoutput(source)%computeAnlIncr.eq.1) then 
      write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
-          LVT_rc%yr, LVT_rc%mo, LVT_rc%da, LVT_rc%hr, LVT_rc%mn
+          LVT_rc%dyr(source), LVT_rc%dmo(source), &
+          LVT_rc%dda(source), LVT_rc%dhr(source), LVT_rc%dmn(source)
      
      write(unit=cdate, fmt='(i4.4, i2.2)') &
-          LVT_rc%yr, LVT_rc%mo
+          LVT_rc%dyr(source), LVT_rc%dmo(source)
      
      fname = trim(lisdadiagoutput(source)%odir)//'/EnKF/'//trim(cdate)//'/'&
           //'LIS_DA_EnKF_'//trim(cdate1)//'_incr.a'//trim(cda)//'.d01.nc'
@@ -151,10 +159,11 @@ subroutine readLISDAdiagOutput(source)
 
   if(lisdadiagoutput(source)%computeInnovDist.eq.1) then 
      write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
-          LVT_rc%yr, LVT_rc%mo, LVT_rc%da, LVT_rc%hr, LVT_rc%mn
+          LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source), &
+          LVT_rc%dhr(source), LVT_rc%dmn(source)
      
      write(unit=cdate, fmt='(i4.4, i2.2)') &
-          LVT_rc%yr, LVT_rc%mo
+          LVT_rc%dyr(source), LVT_rc%dmo(source)
      
      fname = trim(lisdadiagoutput(source)%odir)//'/EnKF/'//trim(cdate)//'/'&
           //'LIS_DA_EnKF_'//trim(cdate1)//'_innov.a'//trim(cda)//'.d01.nc'

@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v7.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module gdas_forcingMod
 !BOP
@@ -20,7 +26,12 @@ module gdas_forcingMod
 !   2005/05/31 - 2010/07/27 :   T382 (1152x576) grid \newline
 !   2010/07/28 - 2015/01/14 :   T574 (1760x880) grid
 !   2015/01/14 - onwards    :  T1534 (1760x880) grid
-
+!
+!  On 2019/06/12 12Z, GDAS removed precipitation fields from the f00 data
+!  files. The data fields in these files are now all instantaneous values.
+!  When the reader is using data files after this time, the subroutine will
+!  skip the precipitation fields and read in instantaneous radiation data 
+!  from the f00 files.
 !
 !  The implementation in LDT has the derived data type {\tt gdas\_struc} that
 !  includes the variables that specify the runtime options, and the 
@@ -51,6 +62,9 @@ module gdas_forcingMod
 !    The time to switch GDAS resolution to T574
 !  \item[griduptime6]
 !    The time to switch GDAS resolution to T1534
+!  \item[datastructime1]
+!    The time to switch to new data structure for f00 files
+!    that removed precipitation fields.
 !  \item[findtime1, findtime2]
 !   boolean flags to indicate which time is to be read for 
 !   temporal interpolation.
@@ -100,8 +114,10 @@ module gdas_forcingMod
      real*8        :: gdastime1, gdastime2
      real*8        :: griduptime1, griduptime2, griduptime3
      real*8        :: griduptime4, griduptime5, griduptime6
+     real*8        :: datastructime1
      logical       :: gridchange1, gridchange2, gridchange3
      logical       :: gridchange4, gridchange5, gridchange6
+     logical       :: dstrucchange1
      integer       :: findtime1, findtime2
      integer       :: mi
 
@@ -121,6 +137,7 @@ module gdas_forcingMod
      real, allocatable      :: w112(:,:),w122(:,:)
      real, allocatable      :: w212(:,:),w222(:,:)
 
+     logical       :: reset_flag
   end type gdas_type_dec
   
   type(gdas_type_dec), allocatable :: gdas_struc(:)
@@ -190,13 +207,14 @@ contains
        call LDT_update_timestep(LDT_rc, n, gdas_struc(n)%ts)
     enddo
 
+    gdas_struc%reset_flag = .false.
     gdas_struc(:)%nmif    = 9 
 
   ! Metforcing and parameter grid info:
     LDT_rc%met_proj(findex) = "gaussian"
 
  != T126:
-    write(LDT_logunit,*)"MSG: Initializing GDAS grid-1 for: 1991-2000 grid (T126)"
+    write(LDT_logunit,*)"[INFO] Initializing GDAS grid-1 for: 1991-2000 grid (T126)"
     gdas_struc(:)%nc = 384
     gdas_struc(:)%nr = 190
     gridDesci = 0
@@ -217,7 +235,7 @@ contains
     LDT_rc%met_gridDesc(findex,1:20) = gridDesci(1:20)
    
  != T170:
-    write(LDT_logunit,*)"MSG: Initializing GDAS grid-2 for: 2000-2002 grid (T170)"
+    write(LDT_logunit,*)"[INFO] Initializing GDAS grid-2 for: 2000-2002 grid (T170)"
     LDT_rc%met_nc(findex+1) = 512
     LDT_rc%met_nr(findex+1) = 256
     LDT_rc%met_proj(findex+1)  = "gaussian"
@@ -234,7 +252,7 @@ contains
     LDT_rc%met_gridDesc(findex+1,20) = 0
 
  != T254:
-    write(LDT_logunit,*)"MSG: Initializing GDAS grid-3 for: 2002-2005 grid (T254)"
+    write(LDT_logunit,*)"[INFO] Initializing GDAS grid-3 for: 2002-2005 grid (T254)"
     LDT_rc%met_nc(findex+2) = 768
     LDT_rc%met_nr(findex+2) = 384
     LDT_rc%met_proj(findex+2)  = "gaussian"
@@ -251,7 +269,7 @@ contains
     LDT_rc%met_gridDesc(findex+2,20) = 0
 
  != T382:
-    write(LDT_logunit,*)"MSG: Initializing GDAS grid-4 for: 2005-2010 grid (T382)"
+    write(LDT_logunit,*)"[INFO] Initializing GDAS grid-4 for: 2005-2010 grid (T382)"
     LDT_rc%met_nc(findex+3) = 1152
     LDT_rc%met_nr(findex+3) = 576
     LDT_rc%met_proj(findex+3)  = "gaussian"
@@ -268,7 +286,7 @@ contains
     LDT_rc%met_gridDesc(findex+3,20) = 0
 
  != T574:
-    write(LDT_logunit,*)"MSG: Initializing GDAS grid-5 for: 2010-2015 grid (T574)"
+    write(LDT_logunit,*)"[INFO] Initializing GDAS grid-5 for: 2010-2015 grid (T574)"
     LDT_rc%met_nc(findex+4) = 1760
     LDT_rc%met_nr(findex+4) = 880
     LDT_rc%met_proj(findex+4)  = "gaussian"
@@ -285,7 +303,7 @@ contains
     LDT_rc%met_gridDesc(findex+4,20) = 0
 
  != T1534:
-    write(LDT_logunit,*)"MSG: Initializing GDAS grid-6 for: 2015-present grid (T1534)"
+    write(LDT_logunit,*)"[INFO] Initializing GDAS grid-6 for: 2015-present grid (T1534)"
     LDT_rc%met_nc(findex+5) = 3072
     LDT_rc%met_nr(findex+5) = 1536
     LDT_rc%met_proj(findex+5)  = "gaussian"
@@ -352,6 +370,14 @@ contains
        mn1 = 0; ss1 = 0
        call LDT_date2time(gdas_struc(n)%griduptime6,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1 )
 
+       ! Set time for f00 data structure change
+       yr1 = 2019
+       mo1 = 06
+       da1 = 12
+       hr1 = 9 !09Z is when the reader reads in the 12Zf00 file
+       mn1 = 0; ss1 = 0
+       call LDT_date2time(gdas_struc(n)%datastructime1,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1)
+       
        gdas_struc(n)%gridchange1 = .true.
        gdas_struc(n)%gridchange2 = .true.
        gdas_struc(n)%gridchange3 = .true.
@@ -359,6 +385,7 @@ contains
        gdas_struc(n)%gridchange5 = .true.
        gdas_struc(n)%gridchange6 = .true.
 
+       gdas_struc(n)%dstrucchange1 = .true.
      ! Setting up weights for Interpolation
       
        select case( LDT_rc%met_gridtransform(findex) ) 

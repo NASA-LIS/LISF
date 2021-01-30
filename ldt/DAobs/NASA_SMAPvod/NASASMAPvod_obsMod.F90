@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 ! !MODULE: NASASMAPvod_obsMod
 ! 
@@ -32,7 +38,6 @@ module NASASMAPvod_obsMod
      character*100          :: odir
      character*20           :: data_designation
      integer                :: mo
-     real,    allocatable   :: vodobs(:,:)
      integer                :: nc, nr
      type(proj_info)        :: proj
      integer, allocatable   :: n11(:)
@@ -95,10 +100,6 @@ contains
 
     do n=1,LDT_rc%nnest
 
-       allocate(NASASMAPvodobs(n)%vodobs(LDT_rc%lnc(n),LDT_rc%lnr(n)))
-
-       NASASMAPvodobs(n)%vodobs = -9999.0
-       
        call LDT_initializeDAobsEntry(LDT_DAobsData(n)%vod_obs, &
             "-",1,1)
        LDT_DAobsData(n)%vod_obs%selectStats = 1
@@ -115,11 +116,7 @@ contains
           gridDesci(20) = 64
           gridDesci(10) = 0.36 
           gridDesci(11) = 1 !for the global switch
-
            
-          allocate(NASASMAPvodobs(n)%n11(LDT_rc%lnc(n)*LDT_rc%lnr(n)))       
-          call neighbor_interp_input (n, gridDesci,&
-               NASASMAPvodobs(n)%n11)
        elseif(NASASMAPvodobs(n)%data_designation.eq."SPL3SMP_E") then 
           NASASMAPvodobs(n)%nc = 3856
           NASASMAPvodobs(n)%nr = 1624
@@ -132,12 +129,39 @@ contains
           gridDesci(20) = 64
           gridDesci(10) = 0.09 
           gridDesci(11) = 1 !for the global switch
-
            
-          allocate(NASASMAPvodobs(n)%n11(LDT_rc%lnc(n)*LDT_rc%lnr(n)))       
-          call neighbor_interp_input (n, gridDesci,&
-               NASASMAPvodobs(n)%n11)
+       elseif(NASASMAPvodobs(n)%data_designation.eq."SPL2SMP") then 
+          NASASMAPvodobs(n)%nc = 964
+          NASASMAPvodobs(n)%nr = 406
+
+          gridDesci = 0 
+          gridDesci(1) = 9
+          gridDesci(2) = 964
+          gridDesci(3) = 406
+          gridDesci(9) = 4 !M36 grid
+          gridDesci(20) = 64
+          gridDesci(10) = 0.36 
+          gridDesci(11) = 1 !for the global switch
+
+       elseif(NASASMAPvodobs(n)%data_designation.eq."SPL2SMP_E") then 
+          NASASMAPvodobs(n)%nc = 3856
+          NASASMAPvodobs(n)%nr = 1624
+
+          gridDesci = 0 
+          gridDesci(1) = 9
+          gridDesci(2) = 3856
+          gridDesci(3) = 1624
+          gridDesci(9) = 5 !M09 grid
+          gridDesci(20) = 64
+          gridDesci(10) = 0.09 
+          gridDesci(11) = 1 !for the global switch
+
        endif
+       
+       allocate(NASASMAPvodobs(n)%n11(LDT_rc%lnc(n)*LDT_rc%lnr(n)))       
+       call neighbor_interp_input (n, gridDesci,&
+            NASASMAPvodobs(n)%n11)
+
     enddo
   end subroutine NASASMAPvod_obsinit
      

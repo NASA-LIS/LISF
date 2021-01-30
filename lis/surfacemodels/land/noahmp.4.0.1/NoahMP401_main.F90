@@ -1,6 +1,13 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.0
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 #include "LIS_misc.h"
 !BOP
 !
@@ -95,6 +102,7 @@ subroutine NoahMP401_main(n)
     integer              :: tmp_tbot_opt           ! lower boundary of soil temperature [-]
     integer              :: tmp_stc_opt            ! snow/soil temperature time scheme [-]
     integer              :: tmp_gla_opt            ! glacier option (1->phase change; 2->simple) [-]
+    integer              :: tmp_sndpth_gla_opt     ! snow depth max for glacier model [mm]
     integer              :: tmp_rsf_opt            ! surface resistance (1->Sakaguchi/Zeng;2->Seller;3->mod Sellers;4->1+snow) [-]
     integer              :: tmp_soil_opt           ! soil configuration option [-]
     integer              :: tmp_pedo_opt           ! soil pedotransfer function option [-]
@@ -379,6 +387,7 @@ subroutine NoahMP401_main(n)
             tmp_tbot_opt          = NOAHMP401_struc(n)%tbot_opt
             tmp_stc_opt           = NOAHMP401_struc(n)%stc_opt
             tmp_gla_opt           = NOAHMP401_struc(n)%gla_opt
+            tmp_sndpth_gla_opt    = NOAHMP401_struc(n)%sndpth_gla_opt
             tmp_rsf_opt           = NOAHMP401_struc(n)%rsf_opt
             tmp_soil_opt          = NOAHMP401_struc(n)%soil_opt
             tmp_pedo_opt          = NOAHMP401_struc(n)%pedo_opt
@@ -526,6 +535,7 @@ subroutine NoahMP401_main(n)
                                    tmp_tbot_opt          , & ! in    - lower boundary of soil temperature [-]
                                    tmp_stc_opt           , & ! in    - snow/soil temperature time scheme [-]
                                    tmp_gla_opt           , & ! in    - glacier option (1->phase change; 2->simple) [-]
+                                   tmp_sndpth_gla_opt    , & ! in    - Snow depth max for glacier model [mm]
                                    tmp_rsf_opt           , & ! in    - surface resistance(1->Sakaguchi/Zeng;2->Seller;3->mod Sellers;4->1+snow) [-]
                                    tmp_soil_opt          , & ! in    - soil configuration option [-]
                                    tmp_pedo_opt          , & ! in    - soil pedotransfer function option [-]
@@ -653,7 +663,8 @@ subroutine NoahMP401_main(n)
                                    tmp_chuc              , & ! out   - under canopy exchange coefficient [-]
                                    tmp_chv2              , & ! out   - veg 2m exchange coefficient [-]
                                    tmp_chb2              , & ! out   - bare 2m exchange coefficient [-]
-                                   tmp_relsmc            )   ! out   - relative soil moisture [-]
+                                   tmp_relsmc            , &
+                                   NOAHMP401_struc(n)%noahmp401(t)%param)   ! out   - relative soil moisture [-]
 
             ! save state variables from local variables to global variables
             NOAHMP401_struc(n)%noahmp401(t)%sfcrunoff       = tmp_sfcrunoff

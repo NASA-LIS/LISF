@@ -1,3 +1,12 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !-----------------------Begin NOTICE -- DO NOT EDIT-----------------------
 ! NASA GSFC Land Data Toolkit (LDT) V1.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -355,7 +364,7 @@ contains
               '[ERR] nf90_put_att failed')
 #endif
          call LDT_verify(nf90_put_att(ncid,nf90_global,"references", &
-              "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"), &
+              "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"),&
               '[ERR] nf90_put_att failed')
          call LDT_verify(nf90_put_att(ncid,nf90_global,"comment", &
               "website: http://lis.gsfc.nasa.gov/"), &

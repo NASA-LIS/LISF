@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v7.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -44,6 +50,7 @@ subroutine reset_gdas
      gridDesci(10) = 47
      gridDesci(20) = 0
      gdas_struc(n)%mi = gdas_struc(n)%nc*gdas_struc(n)%nr
+     gdas_struc(n)%reset_flag = .true.
        
        ! This grid is good for some time in the 1990's.
        ! Look up the exact dates.

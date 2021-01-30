@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 module LVT_topoMod
@@ -42,7 +48,7 @@ module LVT_topoMod
      real, allocatable :: curvature(:,:,:)
   end type topo_type_dec
   
-  type(topo_type_dec) :: LVT_topo(2)
+  type(topo_type_dec) :: LVT_topo(3)
 !EOP
 
 contains
