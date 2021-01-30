@@ -8,6 +8,7 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
  module gefs_forcingMod
+   use ESMF
 !
 !BOP
 ! !MODULE: gefs_forcingMod
@@ -44,13 +45,14 @@
     real               :: ts
     real*8             :: fcsttime1,fcsttime2
 
+    type(ESMF_Time)    :: initTime
     integer            :: init_yr, init_mo, init_da, init_hr
     integer            :: gribrec, fcst_hour
 
     real               :: gridDesc(50)
     integer            :: nc, nr
     integer            :: mi
-
+   
     ! Bilinear weights
     integer, allocatable  :: n111(:)
     integer, allocatable  :: n121(:)
@@ -88,13 +90,14 @@ contains
 ! !REVISION HISTORY: 
 ! 7 Mar 2013: Sujay Kumar, initial specification
 ! 1 Jul 2019: K. Arsenault, expand support for GEFS forecasts
+! 28 Jan 2021: Sujay Kumar; Updated for GEFS operational data
 ! 
 ! !INTERFACE:
   subroutine init_GEFS(findex)
 ! !USES: 
     use LIS_coreMod,    only : LIS_rc
     use LIS_timeMgrMod, only : LIS_update_timestep
-    use LIS_logMod,     only : LIS_logunit,LIS_endrun
+    use LIS_logMod
 
     implicit none
 
@@ -117,6 +120,7 @@ contains
 !EOP
 
     integer :: n
+    integer :: rc
 
     write(LIS_logunit,*) "[INFO] Initializing the GEFS forecast inputs "
 
@@ -127,7 +131,7 @@ contains
        write(LIS_logunit,*) '[ERR]  LIS forecast run-time ending.'
        call LIS_endrun()
     endif
-
+ 
     ! 8 - key met fields:
     LIS_rc%met_nf(findex) = 8
 
@@ -186,7 +190,7 @@ contains
             gefs_struc(n)%init_mo = LIS_rc%smo
             gefs_struc(n)%init_da = LIS_rc%sda
             gefs_struc(n)%init_hr = LIS_rc%shr
-
+            
             gefs_struc(n)%gribrec = 1   ! Record is different per field
             gefs_struc(n)%fcst_hour = 0
 
@@ -221,10 +225,52 @@ contains
             endif
 
           elseif( gefs_struc(n)%gefs_fcsttype .eq. "Operational" ) then
-              write(LIS_logunit,*) "[ERR] GEFS 'Operational' forecast type selected"
-              write(LIS_logunit,*) "[ERR]  is not available at this time. Only "
-              write(LIS_logunit,*) "[ERR]  'Reforecast2' is currently supported. "
-              call LIS_endrun()
+
+             ! Initialize the forecast initial date-time and grib record:
+             gefs_struc(n)%init_yr = LIS_rc%syr
+             gefs_struc(n)%init_mo = LIS_rc%smo
+             gefs_struc(n)%init_da = LIS_rc%sda
+             gefs_struc(n)%init_hr = LIS_rc%shr
+             
+             call ESMF_TimeSet(gefs_struc(n)%initTime, &
+                  yy = gefs_struc(n)%init_yr, &
+                  mm = gefs_struc(n)%init_mo, &
+                  dd = gefs_struc(n)%init_da, &
+                  h  = gefs_struc(n)%init_hr, &
+                  m  = 0,&
+                  s  = 0,&
+                  rc=rc) 
+             call LIS_verify(rc,'ESMF_TimeSet failed in init_gefs')
+             
+             if( gefs_struc(n)%gefs_proj .eq. "latlon" ) then
+                gefs_struc(n)%nc = 720
+                gefs_struc(n)%nr = 361
+                
+                gefs_struc(n)%gridDesc(1) = 0
+                gefs_struc(n)%gridDesc(2) = gefs_struc(n)%nc
+                gefs_struc(n)%gridDesc(3) = gefs_struc(n)%nr
+                gefs_struc(n)%gridDesc(4) = 90.0    ! original GEFS
+                gefs_struc(n)%gridDesc(5) = -180.0
+!              gefs_struc(n)%gridDesc(5) = 0.0     ! original GEFS
+                gefs_struc(n)%gridDesc(6) = 128
+                gefs_struc(n)%gridDesc(7) = -90.0   ! original GEFS
+                gefs_struc(n)%gridDesc(8) = 179.5
+!              gefs_struc(n)%gridDesc(8) = 359.00  ! original GEFS
+                gefs_struc(n)%gridDesc(9) =  0.5
+                gefs_struc(n)%gridDesc(10) = 0.5
+                gefs_struc(n)%gridDesc(20) = 64  ! -180 to 180?
+!              gefs_struc(n)%gridDesc(20) = 0   ! for 0 to 360?
+
+             elseif( gefs_struc(n)%gefs_proj .eq. "gaussian" ) then
+                write(LIS_logunit,*) "[ERR] GEFS Reforecast2 -- 'gaussian' projection"
+                write(LIS_logunit,*) "[ERR]  not currently supported ... "
+                call LIS_endrun()
+             else
+                write(LIS_logunit,*) "[ERR] GEFS Reforecast2 projection selected"
+                write(LIS_logunit,*) "[ERR]  is not available. Only 'latlon' is "
+                write(LIS_logunit,*) "[ERR]  currently supported. "
+                call LIS_endrun()
+             endif
           endif
 
           write(LIS_logunit,*) "[INFO] GEFS number of cols: ", gefs_struc(n)%nc
@@ -295,7 +341,6 @@ contains
           endif
        enddo
     end if
-    write(LIS_logunit,*) ' --- '
 
   end subroutine init_GEFS
 
