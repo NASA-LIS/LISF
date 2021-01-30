@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -12,7 +18,7 @@
 !  14 Sept 2016: Sujay Kumar; Initial specification
 !               
 ! !INTERFACE:
-subroutine readinput_easev2
+subroutine readinput_easev2(nest)
 
 ! !USES:
   use ESMF 
@@ -24,6 +30,8 @@ subroutine readinput_easev2
   use easeV2_utils
 
   implicit none
+
+  integer, intent(in) :: nest
 
 ! !DESCRIPTION: 
 !
@@ -62,38 +70,38 @@ subroutine readinput_easev2
 
   allocate(run_dd(LDT_rc%nnest,20))
 
-  LDT_rc%lis_map_resfactor = 1.
+  LDT_rc%lis_map_resfactor(nest) = 1.
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lat:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,1),rc=rc)
      call LDT_verify(rc, 'Run domain lower left lat: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain lower left lon:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,2),rc=rc)
      call LDT_verify(rc, 'Run domain lower left lon: not defined')
   enddo
   call ESMF_ConfigFindLabel(LDT_config,"Run domain upper right lat:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,3),rc=rc)
      call LDT_verify(rc, 'Run domain upper right lat: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain upper right lon:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd(n,4),rc=rc)
      call LDT_verify(rc, 'Run domain upper right lon: not defined')
   enddo
 
   call ESMF_ConfigFindLabel(LDT_config,"Run domain grid designation:",rc=rc)
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      call ESMF_ConfigGetAttribute(LDT_config,run_dd_grid_desgn,rc=rc)
      call LDT_verify(rc, 'Run domain grid designation: not defined')
   enddo
 
-  do n=1,LDT_rc%nnest
+  do n=1,nest
      stlat = run_dd(n,1)
      stlon = run_dd(n,2)
      enlat = run_dd(n,3)

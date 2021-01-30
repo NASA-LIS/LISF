@@ -1,9 +1,11 @@
 #!/usr/bin/perl
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-# NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.3
 #
-# Copyright (c) 2015 United States Government as represented by the
+# Copyright (c) 2020 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -256,6 +258,10 @@ elsif($opt_lev == 3) {
    $sys_c_opt = "";
 }
 
+if(($sys_arch eq "linux_ifc") && ($opt_lev gt 0)) {
+   $sys_opt .= " -fp-model precise";
+   $sys_c_opt .= "-fp-model precise";
+}
 
 print "Assume little/big_endian data format (1-little, 2-big, default=2): ";
 $use_endian=<stdin>;
@@ -298,11 +304,11 @@ else{
 }
 
 
-print "Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=1): ";
+print "Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=2): ";
 $use_gribapi=<stdin>;
 chomp($use_gribapi);
 if($use_gribapi eq ""){
-   $use_gribapi=1;
+   $use_gribapi=2;
 }
 
 if($use_gribapi == 1) {
@@ -708,6 +714,30 @@ if($use_lapack == 1) {
    }
 }
 
+print "Use LIS-MKL-LAPACK? (1-yes, 0-no, default=0): ";
+$use_mkllapack=<stdin>;
+chomp($use_mkllapack);
+if($use_mkllapack eq ""){
+   $use_mkllapck=0;
+}
+
+if($use_mkllapack == 1) {
+   if(defined($ENV{LIS_MKL_LAPACK})){
+      $sys_lapack_path = $ENV{LIS_MKL_LAPACK};
+      $lib = "/";
+      $lib_lapack=$sys_lapack_path.$lib;
+   }
+   else {
+      print "--------------ERROR---------------------\n";
+      print "Please specify the MKL-LAPACK path using\n";
+      print "the LIS_MKL_LAPACK variable.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+}
+
+
 if(defined($ENV{LIS_JPEG})){
    $libjpeg = "-L".$ENV{LIS_JPEG}."/lib"." -ljpeg";
 }
@@ -827,6 +857,11 @@ if($use_minpack == 1){
 
 if($use_lapack == 1){
    $ldflags = $ldflags." -L\$(LIB_LAPACK) -llapack -lblas";
+}
+
+if($use_mkllapack == 1){
+   #Changed to be able to use mkl Wendy Sharples
+   $ldflags = $ldflags." -L\$(LIB_LAPACK) -lmkl_rt";
 }
 
 if($use_esmf_trace == 1){
@@ -956,6 +991,14 @@ if($use_lapack == 1) {
 else{
    printf misc_file "%s\n","#undef LAPACK ";
 }
+
+if($use_mkllapack == 1) {
+   printf misc_file "%s\n","#define MKL_LAPACK ";
+}
+else{
+   printf misc_file "%s\n","#undef MKL_LAPACK ";
+}
+
 
 printf misc_file "%s\n","#undef INC_WATER_PTS";
 printf misc_file "%s\n","#undef COUPLED";

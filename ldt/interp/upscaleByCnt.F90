@@ -1,7 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !ROUTINE: upscaleByCnt
@@ -33,9 +38,6 @@ subroutine upscaleByCnt( mi, mo, nt, udef, n11,li, gi, lo, go )
 !   by their grid description arrays, which are based on the decoding 
 !   schemes used by NCEP. 
 !  
-!  The grid description arrays are based on the decoding 
-!  schemes used by NCEP. 
-!   
 !  The current code recognizes the following projections: \newline
 !             (gridDesc(1)=0) equidistant cylindrical \newline
 !            

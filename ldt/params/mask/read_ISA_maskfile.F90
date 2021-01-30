@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 !
@@ -63,7 +69,7 @@ subroutine read_ISA_maskfile(n, fgrd, localmask )
       write(LDT_logunit,*)"[INFO] ISA mask -- Reading ",trim(LDT_rc%mfile(n)), & 
                           " (",LDT_localPet,")"
    else
-      write(LDT_logunit,*) "ISA Landmask map: ",trim(LDT_rc%mfile(n))," does not exist."
+      write(LDT_logunit,*) "[ERR] ISA Landmask map: ",trim(LDT_rc%mfile(n))," does not exist."
       write(LDT_logunit,*) "Program stopping ..."
       call LDT_endrun
    endif

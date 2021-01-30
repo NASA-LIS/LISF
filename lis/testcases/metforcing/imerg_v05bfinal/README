@@ -1,0 +1,29 @@
+IMERG Precipitation reader - Global Reader Test Case
+
+This test-case performs a 1/8 degree global simulation with the
+TEMPLATE LSM option from 2014-03-12 to 2013-03-13 to test the processing
+of the IMERG precipitation forcing data set.
+
+This directory contains: 
+
+* this README file.
+* the lis.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.) 
+* the MODEL_OUTPUT_LIST.TBL file used to specify the output variables.
+* a sample grads control file that can be used to visualize the 
+  output. (output.ctl)
+* a sample grads control file that can be used to visualize the 
+  test case output. (testcase.ctl)
+
+To run this test case: 
+
+* Generate the LIS executable. 
+* Run the LIS executable using the lis.config file and your sample 
+  input data. 
+* View the binary output using the sample grads file. 
+
+Notes:
+
+IMERG web page and data access: https://pmm.nasa.gov/data-access/downloads/gpm
+

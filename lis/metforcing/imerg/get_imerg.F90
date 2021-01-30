@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -162,8 +164,8 @@ subroutine imergfile(n, kk, findex, imergdir, &
   integer :: i, c
   integer :: uyr, umo, uda, uhr, umn, umnadd, umnday, uss !, ts1
 
-  character*100 :: fbase, ftimedir, fstem 
-  character*4   :: cyr, cmnday
+  character*100 :: fbase, ftimedir, fstem, fext
+  character*4   :: cyr, cmnday, imVer
   character*2   :: cmo, cda, chr, cmn, cmnadd 
 
 !=== End Variable Definition ===============
@@ -193,20 +195,23 @@ subroutine imergfile(n, kk, findex, imergdir, &
     write(cmnadd, '(I2.2)') umnadd 
     write(cmnday, '(I4.4)') umnday
 
-    if(imerg_struc(n)%imergver == 'early') then
+    if(imerg_struc(n)%imergprd == 'early') then
        fstem = '/3B-HHR-E.MS.MRG.3IMERG.'
-    elseif(imerg_struc(n)%imergver == 'late') then
+       fext  = '.RT-H5'
+    elseif(imerg_struc(n)%imergprd == 'late') then
        fstem = '/3B-HHR-L.MS.MRG.3IMERG.'
-    elseif(imerg_struc(n)%imergver == 'final') then
+       fext  = '.RT-H5'
+    elseif(imerg_struc(n)%imergprd == 'final') then
        fstem = '/3B-HHR.MS.MRG.3IMERG.'
+       fext  = '.HDF5'
     else
-       write(LIS_logunit,*) "[ERR] Invalid IMERG version option was chosen."
+       write(LIS_logunit,*) "[ERR] Invalid IMERG product option was chosen."
        write(LIS_logunit,*) "[ERR] Please choose either 'early', 'late', or 'final'."
        call LIS_endrun()
     endif
-
+    imVer = trim(imerg_struc(n)%imergver)
     filename = trim(imergdir)//"/"//cyr//cmo//trim(fstem)// &
-          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//".V05B.HDF5" 
+          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//"."//imVer//fext
 
 ! Forecast mode (e.g., ESP):
   else
@@ -232,20 +237,23 @@ subroutine imergfile(n, kk, findex, imergdir, &
     write(cmnadd, '(I2.2)') umnadd
     write(cmnday, '(I4.4)') umnday
 
-    if(imerg_struc(n)%imergver == 'early') then
+    if(imerg_struc(n)%imergprd == 'early') then
        fstem = '/3B-HHR-E.MS.MRG.3IMERG.'
-    elseif(imerg_struc(n)%imergver == 'late') then
+       fext  = '.RT-H5'
+    elseif(imerg_struc(n)%imergprd == 'late') then
        fstem = '/3B-HHR-L.MS.MRG.3IMERG.'
-    elseif(imerg_struc(n)%imergver == 'final') then
+       fext  = '.RT-H5'
+    elseif(imerg_struc(n)%imergprd == 'final') then
        fstem = '/3B-HHR.MS.MRG.3IMERG.'
+       fext  = '.HDF5'
     else
-       write(LIS_logunit,*) "[ERR] Invalid IMERG version option was chosen."
+       write(LIS_logunit,*) "[ERR] Invalid IMERG product option was chosen."
        write(LIS_logunit,*) "[ERR] Please choose either 'early', 'late', or 'final'."
        call LIS_endrun()
     endif
-
+    imVer = trim(imerg_struc(n)%imergver)
     filename = trim(imergdir)//"/"//cyr//cmo//trim(fstem)// &
-          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//".V05B.HDF5"
+          cyr//cmo//cda//"-S"//chr//cmn//"00-E"//chr//cmnadd//"59."//cmnday//"."//imVer//fext
   endif
 
 end subroutine imergfile

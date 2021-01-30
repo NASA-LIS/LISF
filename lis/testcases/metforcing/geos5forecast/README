@@ -8,8 +8,7 @@ to test the processing of the GEOS5 forecast forcing data.
 This directory contains: 
 
 * this README file.
-* the ldt.config and param_attribs.txt files used to generate the
-  LIS input parameter file (lis_input.d01.nc).
+* the ldt.config file used to generate the LIS input parameter file (lis_input.d01.nc).
 * the lis.config file used for this test case. (This file should be 
   edited to make sure that the locations of the parameter and 
   forcing files are specified correctly.) 
@@ -19,10 +18,7 @@ This directory contains:
 To run this test case: 
 
 * Generate the LIS executable. 
-* Download the sample input data from: 
-  http://lis.gsfc.nasa.gov/Source/testcases  
-  the testcase corresponding to GEOS5 FORECAST FORCING TEST
-* Run the LIS executable using the lis.config file and the sample 
+* Run the LIS executable using the lis.config file and your sample 
   input data. 
 * Compare output against the provided sample output.
 

@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v7.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 !
@@ -107,11 +113,12 @@ subroutine get_gdas(n, findex)
   nstep = LDT_get_nstep(LDT_rc,n)
   nforce = gdas_struc(n)%nmif
   
-  if ( LDT_rc%tscount(n).eq.1 .or. LDT_rc%rstflag(n)== 1) then
+  if ( LDT_rc%tscount(n).eq.1 .or. LDT_rc%rstflag(n)== 1 .or. gdas_struc(n)%reset_flag ) then
      gdas_struc(n)%findtime1=1
      gdas_struc(n)%findtime2=1
      movetime=0        ! movetime is not properly set at time-step = 1
      LDT_rc%rstflag(n) = 0
+     gdas_struc(n)%reset_flag = .false.
   endif
   
   !-----------------------------------------------------------------

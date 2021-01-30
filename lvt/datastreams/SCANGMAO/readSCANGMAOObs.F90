@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !ROUTINE: readSCANGMAOObs
@@ -106,7 +112,7 @@ subroutine readSCANGMAOObs(source)
           rc=status)
      call LVT_verify(status, 'error in setting scan start time')
 
-     scangmaoobs(source)%yr = LVT_rc%yr
+     scangmaoobs(source)%yr = LVT_rc%dyr(source)
      scangmaoobs(source)%sm = LVT_rc%udef
      scangmaoobs(source)%rootsm = LVT_rc%udef
      scangmaoobs(source)%soilt = LVT_rc%udef

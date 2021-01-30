@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -158,9 +160,7 @@ contains
        allocate(FLUXNETdata_struc(n)%qle(LIS_rc%lnc(n)*LIS_rc%lnr(n),12))
        allocate(FLUXNETdata_struc(n)%qh(LIS_rc%lnc(n)*LIS_rc%lnr(n),12))
 
-       call neighbor_interp_input(gridDesci,&
-            LIS_rc%lnc(n), LIS_rc%lnr(n),&
-            LIS_domain(n)%lat, LIS_domain(n)%lon,&
+       call neighbor_interp_input(n,gridDesci,&
             FLUXNETdata_struc(n)%n11)       
     enddo
     write(LIS_logunit,*) 'Created the States to hold FLUXNET observations'

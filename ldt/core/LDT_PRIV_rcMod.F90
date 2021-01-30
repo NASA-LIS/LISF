@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module LDT_PRIV_rcMod 
 !BOP
@@ -32,8 +38,11 @@ module LDT_PRIV_rcMod
      character*50           :: runmode
      integer                :: nnest
      character*100, allocatable :: paramAttribsFile(:)
-     character*50           :: lis_map_proj
-     real                   :: lis_map_resfactor
+     character*50,  allocatable :: lis_map_proj(:)
+     real, allocatable          :: lis_map_resfactor(:)
+     integer                :: add_buffer   ! KA
+     integer                :: x_buffer
+     integer                :: y_buffer
 
 ! -- Land surface input parameters:
      integer                :: max_model_types 
@@ -104,18 +113,18 @@ module LDT_PRIV_rcMod
      integer                :: nt             ! Number veg types (to be removed)
      integer, allocatable   :: numcrop(:)     ! Number crop types 
 
-     integer                :: surface_maxt
-     real                   :: surface_minp    
-     integer                :: soilt_maxt
-     real                   :: soilt_minp    
-     integer                :: soilf_maxt
-     real                   :: soilf_minp    
-     integer                :: elev_maxt
-     real                   :: elev_minp    
-     integer                :: slope_maxt
-     real                   :: slope_minp    
-     integer                :: aspect_maxt
-     real                   :: aspect_minp    
+     integer, allocatable   :: surface_maxt(:)
+     real, allocatable      :: surface_minp(:) 
+     integer, allocatable   :: soilt_maxt(:)
+     real, allocatable      :: soilt_minp(:)    
+     integer, allocatable   :: soilf_maxt(:)
+     real, allocatable      :: soilf_minp(:)    
+     integer, allocatable   :: elev_maxt(:)
+     real, allocatable      :: elev_minp(:)    
+     integer, allocatable   :: slope_maxt(:)
+     real, allocatable      :: slope_minp(:)    
+     integer, allocatable   :: aspect_maxt(:)
+     real, allocatable      :: aspect_minp(:)    
 
      integer, allocatable   :: ntiles(:)
      integer, allocatable   :: glbntiles(:)
@@ -383,7 +392,6 @@ module LDT_PRIV_rcMod
      character*140          :: outputrst
      integer                :: nens_in
      integer                :: nens_out
-     integer,   allocatable :: datamask(:,:)
 
      !ag (1Nov2017)
      integer                :: routing_grid_count

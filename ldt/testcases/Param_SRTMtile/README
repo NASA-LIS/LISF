@@ -1,27 +1,19 @@
 
 Focus:  Native SRTM-30 Elevation Parameter
 
-Description:  This test case involves the processing
+Description:  This case involves the processing
       of 'Native' SRTM30 elevation parameters obtained from the 
       original USGS institution source website
 
-This test case uses the following files:
+This case uses the following files:
   (a) this README file
-  (b) the wget data download scripts: 
-    wget_mod44wmask_portal.sh, wget_srtm30_native.sh, wget_srtm30_outputfiles.sh 
+  (b) the ldt.config input file to LDT used for this testcase
+  (c) test_output.xdf GrADS control file to view the LDT-generated output
 
-  (c) the ldt.config input file to LDT used for this testcase;
-  (d) test_output.xdf GrADS control file to view the LDT-generated output;
-  (e) and to compare with output data, download the original output
-       tar-zipped file, unpack and compare with those given files.
-
-To run this test case: 
+To run this case: 
  
-  (a) Run the download script in a working directory where you want 
-       to place the SRTM30 tiled elevation input data:
-
-     sh wget_mod44wmask_portal.sh
-     sh wget_srtm30_native.sh
+  (a) Modify the ldt.config provided and point to your local
+       input data directories.
 
   (b) Generate the LDT executable and copy to your working directory.
 
@@ -34,13 +26,6 @@ To run this test case:
        test_output.xdf, or the ncview executable (if you have 
        it installed).
 
-  (e) Download and unpack the LDT test case output data by running
-       the script:
-
-      sh wget_srtm30_outputfiles.sh
-
-     then unpack the output files by:
-      tar -xzvf Public-LDT_SRTM30_output_v71.tar.gz 
 
 Caveats: 
   (a) Please note that this is a more basic functional test for purpose

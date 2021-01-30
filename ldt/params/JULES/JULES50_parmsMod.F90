@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 module JULES50_parmsMod
@@ -94,7 +100,7 @@ contains
 ! \label{JULES50parms_init}
 ! 
 ! !INTERFACE:
-  subroutine JULES50parms_init
+  subroutine JULES50parms_init(flag)
 
 ! !USES:
    use LDT_logMod,    only : LDT_verify, LDT_endrun, &
@@ -113,6 +119,7 @@ contains
 !
 !EOP
    implicit none
+   integer  :: flag
    integer  :: n
    integer  :: c,r,m,k
    integer  :: rc

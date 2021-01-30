@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -46,6 +48,7 @@ subroutine LIS_initialize_registries()
   use LIS_glacierrouting_pluginMod
   use LIS_lsmcpl_pluginMod
   use LIS_lsmda_pluginMod
+  use LIS_routingda_pluginMod
   use LIS_perturb_pluginMod
 
 !
@@ -102,6 +105,7 @@ subroutine LIS_initialize_registries()
   call LIS_lsm_plugin
   call LIS_lsmcpl_plugin
   call LIS_lsmda_plugin
+  call LIS_routingda_plugin
   call LIS_lsmrtm_plugin
   call LIS_landslidemodel_plugin
   call LIS_routing_plugin

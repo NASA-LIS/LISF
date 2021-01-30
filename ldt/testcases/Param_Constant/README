@@ -1,21 +1,18 @@
 
 Focus:  Constant Value Parameters
 
-Description:  This test case involves the processing of 
+Description:  This case involves the processing of 
    user-specified "Constant" parameter value entries.
 
-This test case uses the following files:
+This case uses the following files:
   (a) this README file;
-  (b) the wget script to download the MOD44w mask file:
-       wget_mod44wmask_portal.sh
-  (c) the ldt.config input file to LDT used for this testcase;
-  (d) test_output.xdf GrADS control file to view the LDT-generated output.
+  (b) the ldt.config input file to LDT used for this testcase
+  (c) test_output.xdf GrADS control file to view the LDT-generated output.
 
-To run this test case: 
+To run this case: 
 
-  (a) Run the wget script to obtain the MOD44W mask file:
-
-     sh wget_mod44wmask_portal.sh
+  (a) Modify the ldt.config file provided with this case to point
+       to your input directories.
 
   (b) Generate the LDT executable and copy to your working directory.
 
@@ -26,12 +23,6 @@ To run this test case:
   (d) View the NetCDF (*.nc) output using the sample grads file, test_output.xdf,
       or with the ncview executable (if you have it installed).
   
-  (e) Download and unpack the LDT test case output data with the script:
-
-       sh wget_constant_outputfiles.sh
-       tar -xzvf Public-LDT_Constant_output_v71.tar.gz
-
-      to compare with the output generated with this testcase.
 
 Caveats: 
   (a) Please note that this is a more basic functional test for purpose

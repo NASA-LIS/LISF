@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 #include "LVT_NetCDF_inc.h"
 !BOP
@@ -258,7 +264,9 @@ contains
 ! 
 !EOP
 
-    integer               :: dimID(5),dimID_t(4)
+    !integer               :: dimID(5),dimID_t(4)
+    integer,save          :: dimID(5) ! EMK preserve between calls
+    integer               :: dimID_t(4)
     integer               :: tdimID
     character*8             :: xtime_begin_date
     character*6             :: xtime_begin_time

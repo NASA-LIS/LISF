@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -416,10 +418,8 @@ sneqv = 0
 !MN Note: By the time this routine is called, the obs soil moisture has already been rescaled into the volumetric units.
         elseif(smcmax_obs(t)-smobs(t).lt.0.02) then 
            smobs(t) = LIS_rc%udef
-!#if 0
         elseif(shdfac_obs(t).gt.0.4) then ! vegetation fraction    !Yonghwan Kwon
            smobs(t) = LIS_rc%udef
-!#endif  
 !In some soil types wilting point is very high e.g. 0.237 m3/m3
         !elseif(smobs(t) - smcwlt_obs(t).lt.0.02) then  ! changed from 0.02 to ... 
         !    smobs(t) = LIS_rc%udef                           !Yonghwan Kwon: Temporary commented out

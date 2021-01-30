@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -162,7 +164,8 @@ subroutine read_ecmwfreanal(order, n, findex, yr, mon, da, hr, ferror)
         ! File name for data variable(v)/year/yearmo
         infile=trim(ecmwfreanal_struc(n)%ecmwfreanaldir)//trim(ecmwf_fv(v))//'/'//cyr//'/'//cyr//cmo
 
-        open(fnum(v), file=trim(infile), form='unformatted', iostat=istat)
+        open(fnum(v), file=trim(infile), form='unformatted', &
+                      convert='big_endian', iostat=istat)
         inquire(unit=fnum(v), exist=file_exists)
         
         if (.not.file_exists) then
@@ -195,7 +198,8 @@ subroutine read_ecmwfreanal(order, n, findex, yr, mon, da, hr, ferror)
         close(fnum(v))
         ! New file name for data variable(v)/year/yearmo
         infile=trim(ecmwfreanal_struc(n)%ecmwfreanaldir)//trim(ecmwf_fv(v))//'/'//cyr//'/'//cyr//cmo
-        open(fnum(v), file=trim(infile), form='unformatted', iostat=istat)
+        open(fnum(v), file=trim(infile), form='unformatted', &
+                      convert='big_endian', iostat=istat)
         inquire(unit=fnum(v), exist=file_exists)
         if (.not.file_exists) then
            write(*,*) 'READ_ECMWFREANAL(2): unit ', fnum(v), '= ', infile

@@ -344,6 +344,10 @@ MODULE MODULE_SF_NOAHMPLSM_401
      REAL :: KDT         !used in compute maximum infiltration rate (in INFIL)
      REAL :: FRZX        !used in compute maximum infiltration rate (in INFIL)
 
+     REAL :: sndecayexp
+     REAL :: MXSNALB
+     REAL :: MNSNALB
+
   END TYPE noahmp_parameters
 
 contains
@@ -2955,13 +2959,17 @@ ENDIF   ! CROPTYPE == 0
 
 ! when cosz > 0
 
-         ALB = 0.55 + (ALBOLD-0.55) * EXP(-0.01*DT/3600.)
+!         ALB = 0.55 + (ALBOLD-0.55) * EXP(-0.01*DT/3600.)
+         ALB = parameters%mnsnalb + &
+              (ALBOLD-parameters%mnsnalb) * &
+              EXP(-parameters%sndecayexp*DT/3600.)
 
 ! 1 mm fresh snow(SWE) -- 10mm snow depth, assumed the fresh snow density 100kg/m3
 ! here assume 1cm snow depth will fully cover the old snow
 
          IF (QSNOW > 0.) then
-           ALB = ALB + MIN(QSNOW,parameters%SWEMX/DT) * (0.84-ALB)/(parameters%SWEMX/DT)
+           ALB = ALB + MIN(QSNOW,parameters%SWEMX/DT) * &
+                (parameters%mxsnalb-ALB)/(parameters%SWEMX/DT)
          ENDIF
 
          ALBSNI(1)= ALB         ! vis diffuse
@@ -7747,7 +7755,10 @@ ENDIF   ! CROPTYPE == 0
          END DO
 
          DO IZ = 1, NSOIL           ! Removing subsurface runoff
-         MLIQ(IZ) = MLIQ(IZ) - QDIS*DT*HK(IZ)*DZMM(IZ)/WTSUB
+! Prevent divide-by-zero when soils are frozen. - DMM
+            if (WTSUB.ne.0.0) then
+               MLIQ(IZ) = MLIQ(IZ) - QDIS*DT*HK(IZ)*DZMM(IZ)/WTSUB
+            endif
          END DO
       END IF
 

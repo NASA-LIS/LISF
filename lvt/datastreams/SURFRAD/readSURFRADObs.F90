@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !ROUTINE: readSURFRADObs
@@ -52,8 +58,6 @@ subroutine readSURFRADObs(source)
 
 ! read the data and then use the log-method (see below) to map the relevant variable(s)
 ! to the LVT data structures.
-!  print*, 'reading surfrad', LVT_rc%yr, LVT_rc%mo, LVT_rc%da, LVT_rc%hr, LVT_rc%mn, LVT_rc%ss
-!  call LVT_logSingleVar(LVT_obsData(k)%snowdepth_obs,snowdepth)
 !
     real  		:: time
     integer 		:: yr, mo, da, hr, mn, ss, doy

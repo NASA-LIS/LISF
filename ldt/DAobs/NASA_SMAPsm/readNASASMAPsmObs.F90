@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -14,7 +20,7 @@
 !                          differs from the previous versions)
 !  31 Aug 2018: Mahdi Navari, Edited to read SPL3SMP.005 & SPL3SMP_E.002
 !  04 Jun 2019: Sujay Kumar, Updated to support SMAP L2 retrievals
-! 15 Aug 2019: Mahdi Navari, There are several version of SMAP sm data available in each directory
+!  15 Aug 2019: Mahdi Navari, There are several version of SMAP sm data available in each directory
 !                  with different Release number and different CRID Version Number. The reader was
 !                  modified to read the latest version of data (the reader no longer reads the symbolic
 !                  link to the SMAP sm data)

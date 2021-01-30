@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -16,6 +18,7 @@ module LIS_irrigationMod
 ! !REVISION HISTORY:
 !
 !  11 Nov 2012: Sujay Kumar; Initial implementation
+!  29 May 2019; Jessica Erlingis; Incorporate Wanshu Nie's max/min GVF update
 !
 ! !USES: 
   use ESMF
@@ -109,6 +112,20 @@ contains
        write(LIS_logunit,*) "[INFO] and irrigation threshold:  ",&
                              LIS_rc%irrigation_thresh
 
+     ! Parameters to control the GVF threshold based on the range of GVF
+     ! (shdmax-shdmin) for which sprinkler irrigation is triggered:(WN)
+       call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%irrigation_GVFparam1,&
+            label="Irrigation GVF parameter 1:",rc=rc)
+       call LIS_verify(rc,"Irrigation GVF parameter 1: not defined")
+       write(LIS_logunit,*) "and irrigation GVF parameter 1:  ",&
+                             LIS_rc%irrigation_GVFparam1
+
+       call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%irrigation_GVFparam2,&
+            label="Irrigation GVF parameter 2:",rc=rc)
+       call LIS_verify(rc,"Irrigation GVF parameter 2: not defined")
+       write(LIS_logunit,*) "and irrigation GVF parameter 2:  ",&
+                             LIS_rc%irrigation_GVFparam2
+
      ! Max. soil layer depth for irrigation to reach to (available for flood only):
        LIS_rc%irrigation_mxsoildpth = 1
        if( LIS_rc%irrigation_type == "Flood" ) then
@@ -118,6 +135,15 @@ contains
           write(LIS_logunit,*) "[INFO]and irrigation max soil depth:  ",&
                                 LIS_rc%irrigation_mxsoildpth
        endif
+
+     ! JE Remove irrigated water from groundwater
+       LIS_rc%irrigation_GWabstraction = 0 ! Default is no
+       ! Need to add model sanity check here to make sure model contains GW (?)
+       call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%irrigation_GWabstraction,&
+            label="Groundwater abstraction for irrigation:",default=0,rc=rc)
+       call LIS_verify(rc,"Groundwater abstraction for irrigation: not defined")
+       write(LIS_logunit,*) "[INFO]and irrigation withdrawn from GW:  ",&
+                             LIS_rc%irrigation_GWabstraction
 
      ! Register irrigation output interval:
        do n=1,LIS_rc%nnest
@@ -220,14 +246,16 @@ contains
           if(LIS_rc%wopt.ne."none") then 
              if(LIS_masterproc) then 
                 call LIS_create_output_directory('IRRIGATION')
-                call LIS_create_output_filename(n,outfile,&
-                     model_name ="IRRIGATION")
-                if(LIS_irrig_struc(n)%stats_file_open) then 
+                if (LIS_irrig_struc(n)%stats_file_open) then
                    call LIS_create_stats_filename(n,statsfile,"IRRIGATION")
-                   LIS_irrig_struc(n)%stats_file_open = .false. 
-                   open_stats = .true. 
+                   LIS_irrig_struc(n)%stats_file_open = .false.
+                   open_stats = .true.
                 endif
              endif
+
+             call LIS_create_output_filename(n,outfile,&
+                  model_name ="IRRIGATION")
+
              call LIS_writeModelOutput(n,outfile,statsfile,              &
                   open_stats,outInterval=LIS_irrig_struc(n)%outInterval, &
                   nsoillayers=1, lyrthk = (/1.0/),                       &

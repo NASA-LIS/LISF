@@ -1,4 +1,4 @@
-The USGS PET Reader Test Case for LIS v7.0
+The USGS PET Reader Test Case for LIS v7
 
 This test-case performs a global 0.10 degree simulation with the
 TEMPLATE lsm option from Jan. 31 to Apr. 1, 2004 to test the processing of
@@ -27,10 +27,7 @@ This directory contains the following files and directories:
 To run this test case: 
 
  -- Generate the LIS executable. 
- -- Download the sample input data from: 
-    http://lis.gsfc.nasa.gov/Source/testcases  
-    the testcase corresponding to "USGS PET FORCING" test case.
- -- Run the LIS executable using the lis.config file and the sample 
+ -- Run the LIS executable using the lis.config file and your sample 
     input data. 
  -- View the binary output using the sample grads file.  Compare against
     the sample output corresponding to "USGS PET FORCING" test

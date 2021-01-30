@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 !
@@ -374,13 +380,35 @@ subroutine LDT_readConfig(configfile)
 
 ! ________________________________
 
-  call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%lis_map_proj,&
-       label="Map projection of the LIS domain:",rc=rc)
-  call LDT_verify(rc,'Map projection of the LIS domain: option not specified in the config file')
+  allocate(LDT_rc%lis_map_proj(LDT_rc%nnest))
+  allocate(LDT_rc%lis_map_resfactor(LDT_rc%nnest))
+
+  call ESMF_ConfigFindLabel(LDT_config, &
+       "Map projection of the LIS domain:",rc=rc)
+  do n=1,LDT_rc%nnest     
+     call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%lis_map_proj(n),rc=rc)
+     call LDT_verify(rc,'Map projection of the LIS domain: option not specified in the config file')
+  enddo
 
   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%udef,label="Undefined value:",&
        rc=rc)
   call LDT_verify(rc,'Undefined value: not defined')
+
+! Option to add buffer around parameter grid domain:
+  call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%add_buffer,&
+       label="Add buffer to parameter grid domain:",&
+       default=0,rc=rc)
+  call LDT_verify(rc,'Add buffer to parameter grid domain: not defined')
+
+  call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%x_buffer,&
+       label="Buffer count in x-direction:",&
+       default=5,rc=rc)
+  call LDT_verify(rc,'Buffer count in x-direction: not defined')
+
+  call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%y_buffer,&
+       label="Buffer count in y-direction:",&
+       default=5,rc=rc)
+  call LDT_verify(rc,'Buffer count in y-direction: not defined')
 
 
 ! Set number of processors along x and y directions:

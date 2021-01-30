@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v7.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module nldas2_forcingMod
 !BOP
@@ -164,7 +170,7 @@ contains
     
     allocate(nldas2_struc(LDT_rc%nnest))
 
-    write(unit=LDT_logunit,fmt=*)"MSG: Initializing NLDAS-2 forcing grid ... "
+    write(unit=LDT_logunit,fmt=*)"[INFO] Initializing NLDAS-2 forcing grid ... "
 
 ! - Read LDT config NLDAS-2 entries:
     call readcrd_nldas2(findex)
@@ -214,7 +220,7 @@ contains
            nldas2_struc(n)%gridDesc(10) == LDT_rc%gridDesc(n,10).and. &
            LDT_rc%gridDesc(n,1) == proj_latlon .and. &
            LDT_rc%met_gridtransform(findex) .ne. "neighbor" ) then
-         write(LDT_logunit,*) "WARNING MSG:  The NLDAS-2 0.125 deg grid was selected for the"
+         write(LDT_logunit,*) "[ERR]  The NLDAS-2 0.125 deg grid was selected for the"
          write(LDT_logunit,*) "  LDT run domain; however, 'bilinear', 'budget-bilinear',"
          write(LDT_logunit,*) "  or some other unknown option was selected to spatially"
          write(LDT_logunit,*) "  downscale the grid, which will cause errors during runtime."

@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -56,6 +62,10 @@ subroutine setIrrigParmsFullnames(n,datatype,source)
         case( "MODIS_OG" )
           LDT_irrig_struc(n)%irrigfrac%standard_name =&
               "MODIS (Ozdogan+Gutman,2008) Irrig gridcell fraction"
+
+        case( "UserDerived" )
+          LDT_irrig_struc(n)%irrigfrac%standard_name =&
+              "User Derived Irrig gridcell fraction"
       end select
 
     case default

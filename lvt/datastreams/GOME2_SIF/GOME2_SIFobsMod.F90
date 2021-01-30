@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !MODULE: GOME2_SIFobsMod
@@ -42,6 +48,7 @@ module GOME2_SIFobsMod
 
   type, public :: gome2sifdec
      character*100           :: odir
+     character*20            :: version
      integer                 :: nc, nr
      real,    allocatable    :: rlat(:)
      real,    allocatable    :: rlon(:)
@@ -99,6 +106,13 @@ contains
     call ESMF_ConfigGetAttribute(LVT_Config, GOME2SIFobs(i)%odir, &
          label='GOME2 SIF data directory:',rc=status)
     call LVT_verify(status, 'GOME2 SIF data directory: not defined')
+    call ESMF_ConfigGetAttribute(LVT_Config, GOME2SIFobs(i)%version, &
+         label='GOME2 SIF data version:',rc=status)
+    if(status.ne.0) then 
+       write(LVT_logunit,*) '[ERR] GOME2 SIF data version: not defined'
+       write(LVT_logunit,*) "[ERR] supported options are 'v26', 'v27' or 'v28'"
+       call LVT_endrun()
+    endif
 
     call LVT_update_timestep(LVT_rc, 2592000)
 

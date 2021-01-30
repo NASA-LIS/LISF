@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 !
@@ -107,7 +113,7 @@ subroutine read_ISLSCP1_tbot(n, array)
 
 !- Open 60-minute deep soil temperature data file: 
   open (ftn, file=trim(Noah_struc(n)%tbotFile), form="unformatted", status='old', &
-        access='direct', recl=length )
+        access='direct', convert='big_endian',recl=length )
 
 ! begin_record and end_record may be calculated as follows:
 ! nrec: from north to south (max 1080)

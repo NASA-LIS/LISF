@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -144,10 +150,10 @@ subroutine read_SRTM_Native_aspect( n, num_bins, fgrd, aspectave )
    we_antarc(6)="e120"
 ! __________________________
 
-  if( LDT_rc%lis_map_proj == "latlon"   .or. &
-      LDT_rc%lis_map_proj == "mercator" .or. &
-      LDT_rc%lis_map_proj == "lambert" ) then
-     if( param_gridDesc(10) .ne. (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor) .and.&
+  if( LDT_rc%lis_map_proj(n) == "latlon"   .or. &
+      LDT_rc%lis_map_proj(n) == "mercator" .or. &
+      LDT_rc%lis_map_proj(n) == "lambert" ) then
+     if( param_gridDesc(10) .ne. (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n)) .and.&
          LDT_rc%topo_gridtransform(n) .eq. "none" ) then
         write(LDT_logunit,*) "[ERR] SRTM 'Native' has been selected which has a resolution"
         write(LDT_logunit,*) "    (0.00833deg), but the LIS run domain resolution"
@@ -163,13 +169,13 @@ subroutine read_SRTM_Native_aspect( n, num_bins, fgrd, aspectave )
   tempfile = trim(LDT_rc%elevfile(n))//"/"//we(2)//ns(2)//".DEM"
   inquire(file=tempfile, exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) "[ERR] SRTM-Native elevation map directory, ",&
-                           trim(LDT_rc%elevfile(n))," not found."
+     write(LDT_logunit,*) "[ERR] SRTM-Native elevation map file, ",&
+                           trim(tempfile),", not found."
      write(LDT_logunit,*) "Program stopping ..."
      call LDT_endrun
   endif
-  write(LDT_logunit,*) "[INFO] Reading Native SRTM elevation files, found in directory: ",&
-                        trim(LDT_rc%elevfile(n))
+  write(LDT_logunit,*) "[INFO] Reading Native SRTM elevation files",&
+                       " found in directory: ",trim(LDT_rc%elevfile(n))
 ! --
 !  Open and read in tile files:
 ! --
@@ -199,7 +205,7 @@ subroutine read_SRTM_Native_aspect( n, num_bins, fgrd, aspectave )
          if( l < 4 ) then
          open(ftn, file=trim(LDT_rc%elevfile(n))//"/"//we(k)//ns(l)//".DEM", &
               form="unformatted", access="direct", status="old", &
-              recl=tile_nc*tile_nr*2)
+              convert='big_endian',recl=tile_nc*tile_nr*2)
          read(ftn, rec=1) read_elevtile(:, :, k)
 
       !- Mosaic all elevation tiles together:
@@ -219,7 +225,7 @@ subroutine read_SRTM_Native_aspect( n, num_bins, fgrd, aspectave )
            else
              open(ftn, file=trim(LDT_rc%elevfile(n))//"/gt30"//we_antarc(k)//ns(l)//".dem", &
                 form="unformatted", access="direct", status="old", &
-                recl=tile_nc_antarc*tile_nr_antarc*2)
+                convert='big_endian',recl=tile_nc_antarc*tile_nr_antarc*2)
              read(ftn, rec=1) read_elevtile_antarc(:, :, k)
            endif
 

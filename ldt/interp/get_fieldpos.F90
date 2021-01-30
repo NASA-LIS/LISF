@@ -1,6 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT)
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
@@ -27,6 +32,7 @@ function get_fieldpos(i,j,gridDesc) result(field_pos)
 ! !DESCRIPTION: 
 !  This subprogram returns the field position for a given grid point
 !  based on the input grid definition.
+!
 !  The arguments are: 
 !  \begin{description}
 !    \item[i]
@@ -39,7 +45,6 @@ function get_fieldpos(i,j,gridDesc) result(field_pos)
 !     integer position in grid field to locate grid point
 !    \end{description}
 !EOP
-
  
   integer :: im, jm
   integer :: kscan
@@ -123,4 +128,5 @@ function get_fieldpos(i,j,gridDesc) result(field_pos)
   else
      field_pos=0
   endif
+
 end function get_fieldpos

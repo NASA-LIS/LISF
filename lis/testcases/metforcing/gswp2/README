@@ -21,10 +21,7 @@ To run this test case:
       (edit the misc.h file in the make directory, and make sure 
       that USE_NETCDF is specified as 'defined', before you compile
       the LIS code)
-  (b) Download the sample input data from: 
-	http://lis.gsfc.nasa.gov/Source/testcases 
-      the testcase corresponding to GSWP FORCING TEST
-  (c) Run the LIS executable using the lis.config file and the sample 
+  (b) Run the LIS executable using the lis.config file and the sample 
       input data. 
-  (d) View the binary output using the sample grads file. 
+  (c) View the binary output using the sample grads file. 
        

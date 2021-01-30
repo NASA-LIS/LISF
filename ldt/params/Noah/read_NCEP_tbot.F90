@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 !
@@ -55,7 +61,7 @@ subroutine read_NCEP_tbot(n, array)
 
   ftn = LDT_getNextUnitNumber()
   open(ftn, file=Noah_struc(n)%tbotFile, access='direct',status='old', &
-       form="unformatted", recl=4)
+       form="unformatted",convert='big_endian',recl=4)
   
   call readLISdata(n, ftn, Noah_struc(n)%tbot_proj,  &
                    Noah_struc(n)%tbot_gridtransform, &

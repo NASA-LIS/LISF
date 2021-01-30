@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !BOP
 ! 
@@ -345,7 +351,6 @@ subroutine read_SMAPTB(source, filename, TBobs)
   deallocate(tbv_a_field)
   deallocate(tbh_f_field)
   deallocate(tbv_f_field)
-#endif
 
   do r=1,LVT_rc%lnr
      do c=1,LVT_rc%lnc
@@ -357,6 +362,7 @@ subroutine read_SMAPTB(source, filename, TBobs)
         endif
      enddo
   enddo
+#endif
 
 end subroutine read_SMAPTB
 

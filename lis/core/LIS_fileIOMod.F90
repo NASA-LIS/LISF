@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -3439,6 +3441,8 @@ end subroutine readgparam_real_2d
 !    name of the parameter field
 !   \item[array]
 !    retrieved parameter value
+!   \item[rc]
+!    file read return code
 !   \end{description}
 !
 !EOP      
@@ -3456,29 +3460,29 @@ end subroutine readgparam_real_2d
 
      ios = nf90_open(path=trim(LIS_rc%paramfile(n)),&
           mode=NF90_NOWRITE,ncid=nid)
-     call LIS_verify(ios,'Error in nf90_open in readparam_real_2d')
+     call LIS_verify(ios,'Error in nf90_open in readparam_real_2d_rc')
      
      ios = nf90_inq_dimid(nid,"east_west",ncId)
-     call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d')
+     call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d_rc')
 
      ios = nf90_inq_dimid(nid,"north_south",nrId)
-     call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d')
+     call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d_rc')
 
      ios = nf90_inquire_dimension(nid,ncId, len=nc)
-     call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d')
+     call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d_rc')
 
      ios = nf90_inquire_dimension(nid,nrId, len=nr)
-     call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d')
+     call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d_rc')
 
      ios = nf90_inq_varid(nid,trim(pname),paramid)
      if(ios.ne.0) then 
         rc = 1
      else
         ios = nf90_get_var(nid,paramid,param)
-        call LIS_verify(ios,'Error in nf90_get_var in readparam_real_2d')
+        call LIS_verify(ios,'Error in nf90_get_var in readparam_real_2d_rc')
         
         ios = nf90_close(nid)
-        call LIS_verify(ios,'Error in nf90_close in readparam_real_2d')
+        call LIS_verify(ios,'Error in nf90_close in readparam_real_2d_rc')
         
         array(:,:) = param(:,:)
         rc = 0

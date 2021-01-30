@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module LDT_paramDataMod
 !BOP
@@ -54,6 +60,7 @@ module LDT_paramDataMod
      integer       :: param_file_ftn
      integer       :: xlatid, xlonid, xtimeID
      integer       :: xlatbid, xlonbid
+     integer       :: luindexId, sctdomId   ! Id's for luiindex and sctdom
 
      type(LDT_paramEntry) :: xlat, xlon
      type(LDT_paramEntry) :: xlat_b, xlon_b
@@ -66,6 +73,7 @@ module LDT_paramDataMod
      type(LDT_paramEntry) :: sfctype     ! Surface model type
      type(LDT_paramEntry) :: regmask     ! Regional/basin based mask
      type(LDT_paramEntry) :: glaciermask
+     type(LDT_paramEntry) :: luindex     ! dominent landcover
 
    ! Soil texture
      type(LDT_paramEntry) :: texture     ! Soil texture map
@@ -84,6 +92,7 @@ module LDT_paramDataMod
      type(LDT_paramEntry) :: silt
      type(LDT_paramEntry) :: gravel
      type(LDT_paramEntry) :: soilsfgrd   ! Soils tile gridcell fraction
+     type(LDT_paramEntry) :: sctdom      ! Dominent soil type
 
    ! Topographic parameters
      type(LDT_paramEntry) :: elevation
@@ -178,7 +187,7 @@ CONTAINS
        paramEntry%standard_name =trim(short_name)
     else
        paramEntry%selectOpt = 0
-       paramEntry%short_name =""
+       paramEntry%short_name ="none"
        paramEntry%vlevels = 0
        paramEntry%zlevels = 0
        paramEntry%source = ""

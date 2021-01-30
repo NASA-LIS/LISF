@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -79,8 +85,7 @@ subroutine read_GTOPO30_elev( n, num_bins, fgrd, elevave )
   
   ftn = LDT_getNextUnitNumber()
   open(ftn,file=LDT_rc%elevfile(n),form='unformatted', &
-       access='direct',recl=4,status='old')
-  
+       access='direct',convert='big_endian',recl=4,status='old')
 
 ! -------------------------------------------------------------------
 !     AGGREGATING FINE-SCALE GRIDS TO COARSER LIS OUTPUT GRID

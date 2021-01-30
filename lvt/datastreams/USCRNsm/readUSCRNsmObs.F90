@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !ROUTINE: readUSCRNsmObs
@@ -114,7 +120,7 @@ subroutine readUSCRNsmObs(source)
           rc=status)
      call LVT_verify(status, 'error in setting USCRNsm start time')
 
-     uscrnsmobs(source)%yr = LVT_rc%yr
+     uscrnsmobs(source)%yr = LVT_rc%dyr(source)
      uscrnsmobs(source)%sm = LVT_rc%udef
      uscrnsmobs(source)%rootsm = LVT_rc%udef
      uscrnsmobs(source)%soilt = LVT_rc%udef

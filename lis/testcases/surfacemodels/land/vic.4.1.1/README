@@ -26,11 +26,8 @@ This directory contains:
 To run this test case: 
 
 * Generate the LIS executable. 
-* Download the sample input data from: 
-  http://lis.gsfc.nasa.gov/Source/testcases  
-  the testcase corresponding to VIC 4.1.1 LSM TEST
 * Run the LIS executable using the lis.config file,
-  vic411_global_file_nldas2_testcase file, and the sample input data. 
+  vic411_global_file_nldas2_testcase file, and your sample input data. 
 * View the binary output using the sample grads file. 
 
 

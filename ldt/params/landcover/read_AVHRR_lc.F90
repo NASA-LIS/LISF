@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -145,9 +151,9 @@ subroutine read_AVHRR_lc(n, num_types, fgrd, maskarray)
    end if
 
 !- Exceptions for Latlon/Lambert/Mercator projections:
-   if( LDT_rc%lis_map_proj == "latlon"   .or. &
-       LDT_rc%lis_map_proj == "mercator" .or. &
-       LDT_rc%lis_map_proj == "lambert" ) then
+   if( LDT_rc%lis_map_proj(n) == "latlon"   .or. &
+       LDT_rc%lis_map_proj(n) == "mercator" .or. &
+       LDT_rc%lis_map_proj(n) == "lambert" ) then
 
   !- File-size check for 2KM and 3KM global files:
      if( (subparam_gridDesc(9) < 0.04  .and. &
@@ -158,7 +164,7 @@ subroutine read_AVHRR_lc(n, num_types, fgrd, maskarray)
      endif
   !- Double-check tiled landcover if it is a tiled file:
      if( file_dim == 2 .and. LDT_rc%lc_gridtransform(n)=="tile" ) then
-       if( subparam_gridDesc(9) == (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor) ) then
+       if( subparam_gridDesc(9) == (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n)) ) then
         write(LDT_logunit,*) "[ERR] in read_AVHRR_lc :: The 'tile' spatial transform option " 
         write(LDT_logunit,*) "    has been selected, but the landcover file being read in"
         write(LDT_logunit,*) "    is not in vegetation tile-format order, and both your "
@@ -170,8 +176,8 @@ subroutine read_AVHRR_lc(n, num_types, fgrd, maskarray)
      endif
   !- Lat-lon Landcover files cannot have "none" for spatial transform if
   !   LIS run domain projection is different:
-     if((LDT_rc%lis_map_proj == "mercator" .or.  &
-         LDT_rc%lis_map_proj == "lambert") .and. &
+     if((LDT_rc%lis_map_proj(n) == "mercator" .or.  &
+         LDT_rc%lis_map_proj(n) == "lambert") .and. &
          LDT_rc%lc_gridtransform(n) == "none" ) then
         write(LDT_logunit,*) "[ERR] Landcover file has lat-lon grid coordinate system and"
         write(LDT_logunit,*) "  being translated to different output grid and projection."
@@ -218,14 +224,14 @@ subroutine read_AVHRR_lc(n, num_types, fgrd, maskarray)
       !- (Only works currently for global files derived from the LIS 0.01deg file) -
          if( LDT_rc%lc_type(n) == "UMD" ) then
             write(LDT_logunit,*) " ** Assigning counts for UMD water class tiles **"
-            if( LDT_rc%lis_map_proj == "latlon" )then
+            if( LDT_rc%lis_map_proj(n) == "latlon" )then
                maxtile = (LDT_rc%gridDesc(n,9)*100.)*(LDT_rc%gridDesc(n,10)*100.)
-            elseif( LDT_rc%lis_map_proj == "lambert" )then
+            elseif( LDT_rc%lis_map_proj(n) == "lambert" )then
                maxtile = (LDT_rc%gridDesc(n,8)*LDT_rc%gridDesc(n,9))
             else
                write(LDT_logunit,*) " ERR: Reading in original LIS-generated UMD 3D tiled"   
                write(LDT_logunit,*) " ERR: Lat/Lon vegation files NOT supported for this"
-               write(LDT_logunit,*) "      projection: ",trim(LDT_rc%lis_map_proj)
+               write(LDT_logunit,*) "      projection: ",trim(LDT_rc%lis_map_proj(n))
                write(LDT_logunit,*) " Stopping run ..."
                call LDT_endrun
             endif
@@ -238,7 +244,7 @@ subroutine read_AVHRR_lc(n, num_types, fgrd, maskarray)
          endif
 
       !- Map readin 3-D vegcnt to output 3-D vegcnt:
-         if( LDT_rc%lis_map_proj == "latlon" ) then  ! Latlon only
+         if( LDT_rc%lis_map_proj(n) == "latlon" ) then  ! Latlon only
            vegcnt = read_vegcnt
 
        ! Other projections ....
@@ -284,7 +290,7 @@ subroutine read_AVHRR_lc(n, num_types, fgrd, maskarray)
 
  !- No spatial transform applied:
     if( LDT_rc%lc_gridtransform(n) == "none" .and. &
-        LDT_rc%lis_map_proj == "latlon" ) then
+        LDT_rc%lis_map_proj(n) == "latlon" ) then
 
        write(LDT_logunit,*) " No aggregation applied for parameter file ... "
        vegtype(:,:) = read_inputparm(:,:)

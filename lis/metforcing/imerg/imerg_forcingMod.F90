@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -65,7 +67,8 @@ module imerg_forcingMod
      real    :: ts
      integer :: ncold, nrold     ! IMERG dimensions
      character*100 :: imergdir   ! IMERG Forcing Directory
-     character*5 :: imergver     ! IMERG version (early, late, final)
+     character*5 :: imergver     ! IMERG version (V06B set as default)
+     character*5 :: imergprd     ! IMERG product (early, late, final)
      real*8  :: imergtime
      real*8  :: griduptime1
      logical :: gridchange1

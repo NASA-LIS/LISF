@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module LDT_paramOptCheckMod
 !BOP
@@ -62,7 +68,7 @@ contains
 ! ______________________________________________________________
 
 !- Check for LIS domain projection option support:
-   select case ( LDT_rc%lis_map_proj )
+   select case ( LDT_rc%lis_map_proj(n) )
 
      case ( "latlon" )
      ! supported ...
@@ -83,13 +89,13 @@ contains
      ! supported ...
        lis_gridres = LDT_rc%gridDesc(n,10)
      case ( "mercator" )
-        write(LDT_logunit,*) "Grid_Check for LIS map projection: The ",trim(LDT_rc%lis_map_proj)
+        write(LDT_logunit,*) "Grid_Check for LIS map projection: The ",trim(LDT_rc%lis_map_proj(n))
         write(LDT_logunit,*) "          projection for the targeted LIS run domain has not been"
         write(LDT_logunit,*) "          fully implemented or tested ..."
         write(LDT_logunit,*) " Program stopping ..."
         call LDT_endrun
      case ( "UTM" )
-        write(LDT_logunit,*) "Grid_Check for LIS map projection: The ",trim(LDT_rc%lis_map_proj)
+        write(LDT_logunit,*) "Grid_Check for LIS map projection: The ",trim(LDT_rc%lis_map_proj(n))
         write(LDT_logunit,*) "          projection for the targeted LIS run domain has not been"
         write(LDT_logunit,*) "          fully implemented or tested ..."
         write(LDT_logunit,*) " Program stopping ..."
@@ -144,42 +150,42 @@ contains
    select case( spatial_transform )
 
      case ( "none" )
-        if( param_gridres /= (lis_gridres/LDT_rc%lis_map_resfactor) ) then
+        if( param_gridres /= (lis_gridres/LDT_rc%lis_map_resfactor(n)) ) then
            write(LDT_logunit,*) "Grid_Check for 'none':  The ",trim(param_name)," grid resolution"
            write(LDT_logunit,*) "           differs from the target LIS grid resolution. "
            write(LDT_logunit,*) "[WARN] For this spatial transform option, the parameter and LIS grid"
            write(LDT_logunit,*) "           resolutions must be the same."
         end if
      case ( "mode" )
-        if( param_gridres >= lis_gridres/LDT_rc%lis_map_resfactor ) then
+        if( param_gridres >= lis_gridres/LDT_rc%lis_map_resfactor(n) ) then
            write(LDT_logunit,*) "Grid_Check for 'mode':  The ",trim(param_name)," grid resolution"
            write(LDT_logunit,*) "           equals or is greater than the target LIS grid resolution."
            write(LDT_logunit,*) "[WARN] For this spatial transform option, the parameter resolution "
            write(LDT_logunit,*) "           must be smaller than the LIS grid resolution."
         end if
      case ( "average" )
-        if( param_gridres >= lis_gridres/LDT_rc%lis_map_resfactor ) then
+        if( param_gridres >= lis_gridres/LDT_rc%lis_map_resfactor(n) ) then
            write(LDT_logunit,*) "Grid_Check for 'average':  The ",trim(param_name)," grid resolution"
            write(LDT_logunit,*) "           equals or is greater than the target LIS grid resolution."
            write(LDT_logunit,*) "[WARN] For this spatial transform option, the parameter resolution "
            write(LDT_logunit,*) "           must be smaller than the LIS grid resolution."
         end if
     case ( "neighbor" )
-        if( param_gridres < lis_gridres/LDT_rc%lis_map_resfactor ) then
+        if( param_gridres < lis_gridres/LDT_rc%lis_map_resfactor(n) ) then
            write(LDT_logunit,*) "Grid_Check for 'neighbor':  The ",trim(param_name)," grid resolution"
            write(LDT_logunit,*) "           is less than the target LIS grid resolution."
            write(LDT_logunit,*) "[WARN] For this spatial transform option, the parameter resolution "
            write(LDT_logunit,*) "           should be greater than or equal to the LIS grid resolution."
         end if
     case ( "bilinear" )
-        if( param_gridres < lis_gridres/LDT_rc%lis_map_resfactor ) then
+        if( param_gridres < lis_gridres/LDT_rc%lis_map_resfactor(n) ) then
            write(LDT_logunit,*) "Grid_Check for 'bilinear':  The ",trim(param_name)," grid resolution"
            write(LDT_logunit,*) "           is less than the target LIS grid resolution."
            write(LDT_logunit,*) "[WARN] For this spatial transform option, the parameter resolution "
            write(LDT_logunit,*) "           should be greater than or equal to the LIS grid resolution."
         end if
      case ( "budget-bilinear" )
-        if( param_gridres < lis_gridres/LDT_rc%lis_map_resfactor ) then
+        if( param_gridres < lis_gridres/LDT_rc%lis_map_resfactor(n) ) then
            write(LDT_logunit,*) "Grid_Check for 'budget-bilinear':  The ",trim(param_name)," grid resolution"
            write(LDT_logunit,*) "           is less than the target LIS grid resolution."
            write(LDT_logunit,*) "[WARN] For this spatial transform option, the parameter resolution "
@@ -187,13 +193,13 @@ contains
         end if
      case ( "tile" )
         if( trim(param_name) == "Landcover" ) then
-           if( param_gridres > lis_gridres/LDT_rc%lis_map_resfactor ) then
+           if( param_gridres > lis_gridres/LDT_rc%lis_map_resfactor(n) ) then
              write(LDT_logunit,*) "Grid_Check for 'tile':  The ",trim(param_name)," grid resolution"
              write(LDT_logunit,*) "           is greater than the target LIS grid resolution. "
              write(LDT_logunit,*) "[WARN] For this spatial transform option, the parameter resolution must"
              write(LDT_logunit,*) "           be smaller or equal than the LIS grid resolution."
            endif
-           if( param_gridres == lis_gridres/LDT_rc%lis_map_resfactor .and. &
+           if( param_gridres == lis_gridres/LDT_rc%lis_map_resfactor(n) .and. &
                param_gridres == 0.01 ) then
              write(LDT_logunit,*) "Grid_Check for 'tile':  The ",trim(param_name)," grid resolution"
              write(LDT_logunit,*) "           is 1KM and equal to the target LIS grid resolution. "
@@ -201,7 +207,7 @@ contains
            endif
 
         else
-           if( param_gridres >= lis_gridres/LDT_rc%lis_map_resfactor ) then
+           if( param_gridres >= lis_gridres/LDT_rc%lis_map_resfactor(n) ) then
              write(LDT_logunit,*) "Grid_Check for 'tile':  The ",trim(param_name)," grid resolution"
              write(LDT_logunit,*) "           equals or is greater than the target LIS grid resolution."
              write(LDT_logunit,*) "[WARN] For this spatial transform option, the parameter resolution "
@@ -288,6 +294,13 @@ contains
             write(LDT_logunit,*) " Stopping ..."
             call LDT_endrun
           endif
+        case( "IGBP" )
+          if( nt .lt. 17 .or. nt .ge. 18 ) then
+            write(LDT_logunit,*) "Param_Check: IGBP has a minimum of 17 types (includes water)."
+            write(LDT_logunit,*) "             Value is currently at: ",nt
+            write(LDT_logunit,*) " Stopping ..."
+            call LDT_endrun
+          endif
         case( "Bondville" )
           if( nt .lt. 20 .or. nt .ge. 21 ) then            
             write(LDT_logunit,*) "Param_Check: Bondville has a minimum of 20 types (includes water)."
@@ -337,6 +350,7 @@ contains
           write(LDT_logunit,*) "             supported or not entered correctly. Please try: "
           write(LDT_logunit,*) "          -- UMD "
           write(LDT_logunit,*) "          -- USGS "
+          write(LDT_logunit,*) "          -- IGBP "
           write(LDT_logunit,*) "          -- IGBPNCEP "
           write(LDT_logunit,*) "          -- JULES_PFT "
           write(LDT_logunit,*) "          -- MOSAIC "

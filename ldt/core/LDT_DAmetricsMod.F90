@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
@@ -140,7 +146,7 @@ contains
        call LDT_verify(nf90_def_dim(LDT_rc%ftn_DAobs_domain,'north_south_b',&
             LDT_rc%gnr_buf(n),bdimID(2)))
        
-       if(trim(LDT_rc%lis_map_proj).eq."latlon") then !latlon
+       if(trim(LDT_rc%lis_map_proj(n)).eq."latlon") then !latlon
           call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain, &
                NF90_GLOBAL, "MAP_PROJECTION", "EQUIDISTANT CYLINDRICAL"))
           
@@ -157,7 +163,7 @@ contains
                "DY", &
                LDT_rc%gridDesc(n,10)))       
           
-       elseif(trim(LDT_rc%lis_map_proj).eq."mercator") then 
+       elseif(trim(LDT_rc%lis_map_proj(n)).eq."mercator") then 
           call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,&
                "MAP_PROJECTION", &
                "MERCATOR"))
@@ -180,7 +186,7 @@ contains
                "DY", &
                LDT_rc%gridDesc(n,9)))
           
-       elseif(trim(LDT_rc%lis_map_proj).eq."lambert") then !lambert conformal
+       elseif(trim(LDT_rc%lis_map_proj(n)).eq."lambert") then !lambert conformal
           call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,&
                "MAP_PROJECTION", &
                "LAMBERT CONFORMAL"))
@@ -206,7 +212,7 @@ contains
                "DY", &
                LDT_rc%gridDesc(n,9)))
           
-       elseif(trim(LDT_rc%lis_map_proj).eq."polar") then ! polar stereographic
+       elseif(trim(LDT_rc%lis_map_proj(n)).eq."polar") then ! polar stereographic
           call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,&
                "MAP_PROJECTION", &
                "POLAR STEREOGRAPHIC"))
@@ -231,7 +237,7 @@ contains
           call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,&
                "DY", &
                LDT_rc%gridDesc(n,9)))
-       elseif(trim(LDT_rc%lis_map_proj).eq."ease V2") then ! ease V2
+       elseif(trim(LDT_rc%lis_map_proj(n)).eq."ease V2") then ! ease V2
           call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,&
                "MAP_PROJECTION", &
                "EASE V2"))
@@ -266,7 +272,7 @@ contains
             "created on date: "//date(1:4)//"-"//date(5:6)//"-"//&
             date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)))
        call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,"references", &
-            "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"))
+            "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"))
        call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,"comment", &
             "website: http://lis.gsfc.nasa.gov/"))
        
@@ -812,7 +818,7 @@ contains
          "created on date: "//date(1:4)//"-"//date(5:6)//"-"//&
          date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)))
     call LDT_verify(nf90_put_att(LDT_rc%ftn_cdf,NF90_GLOBAL,"references", &
-         "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"))
+         "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"))
     call LDT_verify(nf90_put_att(LDT_rc%ftn_cdf,NF90_GLOBAL,"comment", &
          "website: http://lis.gsfc.nasa.gov/"))
 #endif
@@ -845,7 +851,7 @@ contains
     call LDT_verify(nf90_def_dim(LDT_rc%ftn_DAobs_domain,'north_south_b',&
          LDT_rc%gnr_buf(n),bdimID(2)))
     
-    if(trim(LDT_rc%lis_map_proj).eq."latlon") then !latlon
+    if(trim(LDT_rc%lis_map_proj(n)).eq."latlon") then !latlon
        call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain, &
             NF90_GLOBAL, "MAP_PROJECTION", "EQUIDISTANT CYLINDRICAL"))
 
@@ -862,7 +868,7 @@ contains
             "DY", &
             LDT_rc%gridDesc(n,10)))       
        
-    elseif(trim(LDT_rc%lis_map_proj).eq."mercator") then 
+    elseif(trim(LDT_rc%lis_map_proj(n)).eq."mercator") then 
        call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,&
             "MAP_PROJECTION", &
             "MERCATOR"))
@@ -885,7 +891,7 @@ contains
             "DY", &
             LDT_rc%gridDesc(n,9)))
        
-    elseif(trim(LDT_rc%lis_map_proj).eq."lambert") then !lambert conformal
+    elseif(trim(LDT_rc%lis_map_proj(n)).eq."lambert") then !lambert conformal
        call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,&
             "MAP_PROJECTION", &
             "LAMBERT CONFORMAL"))
@@ -911,7 +917,7 @@ contains
             "DY", &
             LDT_rc%gridDesc(n,9)))
        
-    elseif(trim(LDT_rc%lis_map_proj).eq."polar") then ! polar stereographic
+    elseif(trim(LDT_rc%lis_map_proj(n)).eq."polar") then ! polar stereographic
        call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,&
             "MAP_PROJECTION", &
             "POLAR STEREOGRAPHIC"))
@@ -936,7 +942,7 @@ contains
        call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,&
             "DY", &
             LDT_rc%gridDesc(n,9)))
-    elseif(trim(LDT_rc%lis_map_proj).eq."ease V2") then ! ease V2
+    elseif(trim(LDT_rc%lis_map_proj(n)).eq."ease V2") then ! ease V2
        call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,&
             "MAP_PROJECTION", &
             "EASE V2"))
@@ -971,7 +977,7 @@ contains
          "created on date: "//date(1:4)//"-"//date(5:6)//"-"//&
          date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)))
     call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,"references", &
-         "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"))
+         "Arsenault_etal_GMD_2018, Kumar_etal_EMS_2006"))
     call LDT_verify(nf90_put_att(LDT_rc%ftn_DAobs_domain,NF90_GLOBAL,"comment", &
          "website: http://lis.gsfc.nasa.gov/"))
 
@@ -1457,7 +1463,7 @@ contains
   subroutine LDT_readDAdataMask(n)
 
 ! !USES:     
-    use LDT_coreMod,    only : LDT_rc
+    use LDT_coreMod,    only : LDT_rc, LDT_domain
     use LDT_historyMod, only : LDT_readvar_gridded
 
     implicit none
@@ -1487,15 +1493,15 @@ contains
           do r=1,LDT_rc%lnr(n)
              do c=1,LDT_rc%lnc(n)
                 if(datamask(c,r).ne.LDT_rc%udef) then 
-                   LDT_rc%datamask(c,r) = 1
+                   LDT_domain(n)%datamask(c,r) = 1
                 else
-                   LDT_rc%datamask(c,r) = 0
+                   LDT_domain(n)%datamask(c,r) = 0
                 endif
              enddo
           enddo
           call LDT_releaseUnitNumber(ftn)          
        else
-          LDT_rc%datamask = 0
+          LDT_domain(n)%datamask = 0
        endif
 
     elseif(LDT_rc%applyMask.eq.2) then  !read the static mask file
@@ -1511,18 +1517,18 @@ contains
           do r=1,LDT_rc%lnr(n)
              do c=1,LDT_rc%lnc(n)
                 if(datamask(c,r).ne.LDT_rc%udef) then 
-                   LDT_rc%datamask(c,r) = 1
+                   LDT_domain(n)%datamask(c,r) = 1
                 else
-                   LDT_rc%datamask(c,r) = 0
+                   LDT_domain(n)%datamask(c,r) = 0
                 endif
              enddo
           enddo
           call LDT_releaseUnitNumber(ftn)          
        else
-          LDT_rc%datamask = 0 
+          LDT_domain(n)%datamask = 0 
        endif
     else
-       LDT_rc%datamask = 1
+       LDT_domain(n)%datamask = 1
     endif
     
   end subroutine LDT_readDAdataMask

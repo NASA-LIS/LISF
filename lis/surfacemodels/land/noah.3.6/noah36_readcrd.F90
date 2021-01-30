@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -39,6 +41,7 @@ subroutine noah36_readcrd()
   integer :: rc
   integer :: n,i
   character*10 :: time
+  character*255 :: msg
 
   call ESMF_ConfigFindLabel(LIS_config,"Noah.3.6 model timestep:",rc=rc)
   do n=1,LIS_rc%nnest
@@ -237,6 +240,32 @@ subroutine noah36_readcrd()
      call LIS_verify(rc,'Noah.3.6 reference height for forcing u and v: not defined')
   enddo
 
+  call ESMF_ConfigFindLabel(LIS_config, &
+       "Noah.3.6 removal of residual snow fix:", rc=rc)
+  call LIS_verify(rc, 'Noah.3.6 removal of residual snow fix: not defined')
+  do n = 1, LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, noah36_struc(n)%snowfix, rc=rc)
+     write(msg,'(1X,A,I1)') &
+          '[ERR] Noah.3.6 removal of residual snow fix: not defined for ' &
+          //'nest ', n
+     call LIS_verify(rc, trim(msg))
+     select case (noah36_struc(n)%snowfix)
+     case (0)
+        write(LIS_logunit,*) &
+             "[INFO] Custom Noah 3.6 snow fix option IS NOT active" &
+             //" for nest ", n
+     case (1)
+        write(LIS_logunit,*) &
+             "[INFO] Custom Noah 3.6 snow fix option is active" &
+             //" for nest ", n
+     case default
+        write(LIS_logunit,*) &
+             "[ERR] Invalid value for nest ",n," for " &
+             //"'Noah.3.6 removal of residual snow fix:'"
+        call LIS_verify(1,'') 
+     end select
+  end do ! n
+  
   write(LIS_logunit,*) '[INFO] Running Noah-3.6 LSM:'
 
 end subroutine noah36_readcrd

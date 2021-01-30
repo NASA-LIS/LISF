@@ -1,13 +1,16 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
 #define WRF_HYDRO 0
 module noahmp_globals_36
+use ESMF
 
   ! Maybe most of these can be moved to a REDPRM use statement?
   use module_sf_noahlsm_36, only: &
@@ -646,7 +649,9 @@ contains
                    BGAP    , WGAP    , CHV     , CHB     , EMISSI  ,           & ! OUT :
                    SHG     , SHC     , SHB     , EVG     , EVB     , GHV     , & ! OUT :
                    GHB     , IRG     , IRC     , IRB     , TR      , EVC     , & ! OUT :
-                   CHLEAF  , CHUC    , CHV2    , CHB2    , FPICE               &
+                   CHLEAF  , CHUC    , CHV2    , CHB2    , FPICE   , &
+                   !ag (12Sep2019)
+                   rivsto  , fldsto, fldfrc             &
 #ifdef WRF_HYDRO
                    ,SFCHEADRT                                                  & ! IN/OUT :
 #endif
@@ -878,6 +883,11 @@ contains
   REAL                                 :: LATHEAG !latent heat vap./sublimation (j/kg)
   LOGICAL                             :: FROZEN_GROUND ! used to define latent heat pathway
   LOGICAL                             :: FROZEN_CANOPY ! used to define latent heat pathway
+  
+  !ag (12Sep2019)
+  REAL                        , INTENT(IN)    :: rivsto  !river storage
+  REAL                        , INTENT(IN)    :: fldsto  !flood storage
+  REAL                        , INTENT(IN)    :: fldfrc  !flooded fraction flag (zero or 1)
 
   ! INTENT (OUT) variables need to be assigned a value.  These normally get assigned values
   ! only if DVEG == 2.
@@ -1004,7 +1014,9 @@ contains
                  SMCWTD ,DEEPRECH,RECH                          , & !inout
                  CMC    ,ECAN   ,ETRAN  ,FWET   ,RUNSRF ,RUNSUB , & !out
                  QIN    ,QDIS   ,QSNOW  ,PONDING1       ,PONDING2,&
-                 ISURBAN,QSNBOT,FPICE,SUBSNOW                     &
+                 ISURBAN,QSNBOT,FPICE,SUBSNOW,&
+                 !ag (12Sep2019)
+                 rivsto,fldsto,fldfrc       &
 #ifdef WRF_HYDRO
                         ,sfcheadrt                     &
 #endif
@@ -6663,7 +6675,9 @@ END SUBROUTINE ALBEDO_UPD
                     SMCWTD ,DEEPRECH,RECH                          , & !inout
                     CMC    ,ECAN   ,ETRAN  ,FWET   ,RUNSRF ,RUNSUB , & !out
                     QIN    ,QDIS   ,QSNOW  ,PONDING1       ,PONDING2,&
-                    ISURBAN,QSNBOT,FPICE,SUBSNOW                     &
+                    ISURBAN,QSNBOT,FPICE,SUBSNOW, &
+                    !ag (12Sep2019)
+                    rivsto,fldsto,fldfrc       &
 #ifdef WRF_HYDRO
                         ,sfcheadrt                     &
 #endif
@@ -6746,6 +6760,10 @@ END SUBROUTINE ALBEDO_UPD
   REAL                              , INTENT(IN)   :: LATHEAG !latent heat vap./sublimation (j/kg)
   LOGICAL                           , INTENT(IN)   :: FROZEN_GROUND ! used to define latent heat pathway
   LOGICAL                           , INTENT(IN)   :: FROZEN_CANOPY ! used to define latent heat pathway
+  !ag (12Sep2019)
+  REAL                              , INTENT(IN)   :: rivsto 
+  REAL                              , INTENT(IN)   :: fldsto 
+  REAL                             , INTENT(IN)   :: fldfrc 
 
   INTEGER,                         INTENT(IN)    :: ISURBAN
 
@@ -6843,6 +6861,12 @@ END SUBROUTINE ALBEDO_UPD
        QINSUR = QINSUR+sfcheadrt/DT*0.001  !sfcheadrt units (m)
 #endif
 
+    !ag (12Sep2019)
+    !if flooded fraction flag is 1, i.e., if flooded fraction is above threshold, add river and flood storages to QINSUR
+    if(fldfrc==1)then
+      QINSUR = QINSUR + (rivsto + fldsto) !surface water storage units are in m/s (See HYMAP2_routing_run.F90 and noahmp36_getsws_hymap2.F90)
+    endif
+    
 ! lake/soil water balances
 
     IF (IST == 2) THEN                                        ! lake
@@ -6850,6 +6874,7 @@ END SUBROUTINE ALBEDO_UPD
        IF(WSLAKE >= WSLMAX) RUNSRF = QINSUR*1000.             !mm/s
        WSLAKE = WSLAKE + (QINSUR-QSEVA)*1000.*DT -RUNSRF*DT   !mm
     ELSE                                                      ! soil
+
        CALL      SOILWATER (NSOIL  ,NSNOW  ,DT     ,ZSOIL  ,DZSNSO , & !in
                             QINSUR ,QSEVA  ,ETRANI ,SICE   ,ILOC   , JLOC , & !in
                             SH2O   ,SMC    ,ZWT    ,VEGTYP ,ISURBAN, & !inout
@@ -6886,6 +6911,13 @@ END SUBROUTINE ALBEDO_UPD
 
     RUNSUB       = RUNSUB + SNOFLOW         !mm/s
 
+    !ag (1Oct2019)
+    !if flooded fraction flag is 0, i.e., if flooded fraction is below threshold, add river and flood storages to RUNSRF after vertical water balance
+    if(fldfrc==0)then
+      RUNSRF = RUNSRF + (rivsto + fldsto)*1000. !surface water storage units are in m/s (See HYMAP2_routing_run.F90 and noahmp36_getsws_hymap2.F90)
+    endif
+
+  
   END SUBROUTINE WATER
 ! ==================================================================================================
   SUBROUTINE CANWATER (VEGTYP ,DT     ,SFCTMP ,UU     ,VV     , & !in
@@ -8872,9 +8904,11 @@ END SUBROUTINE ALBEDO_UPD
            WTSUB = WTSUB + HK(IZ)*DZMM(IZ)
          END DO
 
-         DO IZ = 1, NSOIL           ! Removing subsurface runoff
-         MLIQ(IZ) = MLIQ(IZ) - QDIS*DT*HK(IZ)*DZMM(IZ)/WTSUB
-         END DO
+         if (WTSUB.ne.0.0) then !added by ag (27Sep2019)
+           DO IZ = 1, NSOIL           ! Removing subsurface runoff
+           MLIQ(IZ) = MLIQ(IZ) - QDIS*DT*HK(IZ)*DZMM(IZ)/WTSUB
+           END DO
+         endif
       END IF
 
       ZWT = MAX(1.5,ZWT)

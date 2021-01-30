@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 !
@@ -46,15 +52,16 @@ subroutine read_HYMAP_runoff_delay(n, array)
 
   ftn = LDT_getNextUnitNumber()
 
-  inquire(file=trim(HYMAP_struc(n)%runoffdelayFile), exist=file_exists)
+  inquire(file=trim(HYMAP_struc(n)%runoffdelayfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'Runoffdelay map ',trim(HYMAP_struc(n)%runoffdelayFile),' not found'
+     write(LDT_logunit,*) '[ERR] Runoff delay map, ',&
+           trim(HYMAP_struc(n)%runoffdelayfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
   endif
 
-  open(ftn, file=trim(HYMAP_struc(n)%runoffdelayFile), access='direct',&
-       status='old', form="unformatted", recl=4)
+  open(ftn, file=trim(HYMAP_struc(n)%runoffdelayfile), access='direct',&
+       status='old', form="unformatted", convert="big_endian", recl=4)
   
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &

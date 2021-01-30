@@ -1,0 +1,9 @@
+!BOP
+!\section{MRMS}
+!This section describes the implementation of the operational
+!Multi-Radar Multi-Sensor (MRMS) precipitation product from NOAA/NSSL.
+!This reader has been designed to read the 0.01x0.01 degree hourly 
+!gauge-corrected product as well as an optional user-defined mask defining
+!the quality of the radar precipitation forcing. This mask must also be on
+!the MRMS grid.
+!EOP

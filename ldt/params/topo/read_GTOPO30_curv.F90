@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -51,7 +57,7 @@ subroutine read_GTOPO30_curv(n,curv)
   
   ftn = LDT_getNextUnitNumber()
   open(ftn,file=LDT_rc%curvfile(n),form='unformatted', &
-       access='direct',recl=4,status='old')
+       access='direct',convert='big_endian',recl=4,status='old')
 
   call readLISdata(n, ftn, LDT_rc%topo_proj, LDT_rc%topo_gridtransform(n), &
                    LDT_rc%topo_gridDesc(n,:), 1, curv )

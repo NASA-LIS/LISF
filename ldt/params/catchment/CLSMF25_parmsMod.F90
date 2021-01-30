@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 module CLSMF25_parmsMod
@@ -114,7 +120,7 @@ contains
 ! \label{catchmentParms_init}
 ! 
 ! !INTERFACE:
-  subroutine catchmentParms_init
+  subroutine catchmentParms_init(flag)
 ! !USES:
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
     use LDT_logMod,    only : LDT_verify
@@ -133,6 +139,7 @@ contains
 !
 !EOP
     implicit none
+    integer      :: flag
     integer      :: n
     integer      :: rc
     character*50 :: catchparms_proj

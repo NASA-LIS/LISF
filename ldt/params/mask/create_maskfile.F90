@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -48,11 +54,11 @@
 !   \end{description}
 !
 !EOP      
-  integer :: c, r, t, i
-  real    :: vegsum, totalsum
-!_________________________________________________________________________________
+  integer  :: c, r, t, i
+  real     :: vegsum, totalsum
   real     :: maxv
   integer  :: maxt
+!_________________________________________________________________________________
 
    LDT_rc%nmaskpts = 0.
    localmask = 0.
@@ -104,13 +110,26 @@
           !  (need to retain water points for mask-parm checks later):
              do t = 1, nt
                 if( t /= LDT_rc%waterclass ) then
-                  if( vegcnt(c,r,t) /= LDT_rc%udef) &
+                  if( vegcnt(c,r,t) /= LDT_rc%udef) then
                      vegsum = vegsum + vegcnt(c,r,t)
+                  endif
                 endif
              end do
 
+
              totalsum = sum( vegcnt(c,r,1:nt), &
                         mask=vegcnt(c,r,1:nt).ne.LDT_rc%udef )
+
+             ! Check gridcell veg total sum:
+             if( totalsum == 0. ) then
+                write(LDT_logunit,*) "[WARN] Total vegetation for gridcell, c=",c,", r=",r
+                write(LDT_logunit,*) "   has the sum of: ",totalsum
+                write(LDT_logunit,*) "  This check performed in routine: create_maskfile "
+                ! Set then localmask to 0.0 (water point or undefined)
+                localmask(c,r) = 0.0
+                cycle
+!                call LDT_endrun 
+             endif
 
              if( (vegsum/totalsum) >= LDT_rc%gridcell_water_frac(n) ) then  
                localmask(c,r) = 1.0   ! Designated land points

@@ -2,26 +2,20 @@
 Focus:  Imposing or Filling Native MODIS-IGBP (NCEP) Landcover
          with the MODIS 44w Landmask
 
-Description:  This test case involves the processing
+Description:  This case involves the processing
       of 'Native' MODIS-IGBP landcover parameter obtained from 
       the original NCEP institution source website and imposing the
       LIS-produced MODIS 44w Landmask.
 
-This test case uses the following files:
+This case uses the following files:
   (a) this README file;
-  (b) the wget data download scripts: wget_mod44wmask_portal.sh, wget_modisigbp_ncep.sh
-  (c) the ldt.config input file to LDT used for this testcase;
-  (d) test_output.xdf GrADS control file to view the LDT-generated output; 
-  (e) and to compare with output data, download the original output
-       tar-zipped file, unpack and compare with those given files.
+  (b) the ldt.config input file to LDT used for this testcase
+  (d) test_output.xdf GrADS control file to view the LDT-generated output
 
-To run this test case: 
+To run this case: 
  
-  (a) Run the download scripts in a working directory where you want 
-       to place the MODIS landcover and MOD44w landmask input data:
-
-       sh wget_modisigbp_ncep.sh
-       sh wget_mod44wmask_portal.sh
+  (a) Modify the ldt.config file provided with this case to point to your
+       local data directories.
 
   (b) Generate the LDT executable and copy it to your local working directory.
 
@@ -34,12 +28,6 @@ To run this test case:
   (d) View the NetCDF (*.nc) output using the sample grads file, test_output.xdf, 
        or the ncview executable (if you have it installed).
 
-  (e) Download and unpack the LDT test case output data with the script:
-
-      sh wget_mod44w_outputfiles.sh
-      tar -xzvf Public-LDT_MOD44W_output_v71.tar.gz
-
-      to compare with the files generated in this test case.
 
 Caveats: 
   (a) Please note that this is a more basic functional test for purpose

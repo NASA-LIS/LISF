@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v7.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
@@ -7,12 +13,13 @@
 !  \label{compute_grid_coord_latlon}
 !
 ! !REVISION HISTORY: 
-!   04-10-96 Mark Iredell;  Initial Specification
-!   05-27-04 Sujay Kumar; Modified verision with floating point arithmetic. 
+!   04-10-1996 Mark Iredell; Initial Specification
+!   05-27-2004 Sujay Kumar;  Modified verision with floating point arithmetic. 
+!   11-25-2019 K. Arsenault; Ensure longitude orientation (W->E)
 !
 ! !INTERFACE:
 subroutine compute_grid_coord_latlon(gridDesc,npts,fill,xpts,ypts,& 
-     rlon,rlat,nret)
+              rlon,rlat,nret)
 
   implicit none
 ! !ARGUMENTS: 
@@ -27,8 +34,9 @@ subroutine compute_grid_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
 ! !DESCRIPTION:
 !  This subroutine computes the grid coordinates of 
 !  the specified domain for an equidistant cylindrical rojection.
-!  This routine is based on the grid
-!  decoding routines in the NCEP interoplation package. 
+!
+!  This routine is based on the grid decoding routines
+!  in the NCEP interoplation package. 
 !  
 !  \begin{description}
 !    \item[gridDesc]
@@ -59,27 +67,41 @@ subroutine compute_grid_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
      rlon1=gridDesc(5)
      rlat2=gridDesc(7)
      rlon2=gridDesc(8)
+     ! Lat. orientation:
      if(rlat1.gt.rlat2) then 
-        dlat=-gridDesc(10)
+        dlat=-gridDesc(10)   ! N-S
      else
-        dlat=gridDesc(10)
+        dlat=gridDesc(10)    ! S-N
      endif
-     if(rlon1.gt.rlon2) then 
-        dlon=-gridDesc(9)
-     else
-        dlon = gridDesc(9)
-     endif
+     ! Original long. orientation code:
+!     if(rlon1.gt.rlon2) then 
+!        dlon =-gridDesc(9)  ! E-W
+!     else
+!        dlon = gridDesc(9)  ! W-E
+!     endif
+     ! Updated code (KRA):
+     dlon = gridDesc(9)     ! W-E orientation
+
      xmin=0
      xmax=im+1
-     if(im.eq.nint(360/abs(dlon))) xmax=im+2
+     if(im.eq.nint(360/abs(dlon))) then 
+       xmax=im+2
+     endif
      ymin=0
      ymax=jm+1
      nret=0
 
      do n=1,npts
         if(abs(rlon(n)).le.360.and.abs(rlat(n)).le.90) then
+
+           ! Account for 0-360 domain
            if(rlon(n).gt.180) then 
-              xpts(n)=1+(rlon(n)-360-rlon1)/dlon
+              ! Updated code (KRA):
+              if( rlon1 <= 0. ) then
+                xpts(n) = 1+(rlon(n)-360-rlon1)/dlon
+              elseif( rlon1 > 0. ) then
+                xpts(n) = 1+(rlon(n)-rlon1)/dlon
+              endif
            else
               xpts(n) = 1+(rlon(n)-rlon1)/dlon
            endif
@@ -100,4 +122,5 @@ subroutine compute_grid_coord_latlon(gridDesc,npts,fill,xpts,ypts,&
   else
      iret=-1
   endif
+
 end subroutine compute_grid_coord_latlon
