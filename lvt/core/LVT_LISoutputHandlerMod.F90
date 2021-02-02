@@ -3644,7 +3644,7 @@ contains
                   LVT_LIS_MOC_SURFT_SNOW(kk), &
                   LVT_LISoutput(kk)%head_lsm_list, &
                   1, &
-                  nsize,nensem,(/"kg m-2"/),1,(/"-"/),valid_min=(/0.0/), &
+                  nsize,nensem,(/"kg/m2"/),1,(/"-"/),valid_min=(/0.0/), &
                   valid_max=(/1200.0/),gribSFC=1,gribLvl=1)
           endif
 
@@ -3767,7 +3767,7 @@ contains
                   LVT_LIS_MOC_LAYERSNOWDENSITY(kk), &
                   LVT_LISoutput(kk)%head_lsm_list, &
                   1, &
-                  nsize,nensem,(/"kg/m3"/),1,(/"-"/), &
+                  nsize,nensem,(/"kg m-3"/),1,(/"-"/), &
                   valid_min=(/0./), &
                   valid_max=(/2000.0/),gribSFC=114,gribLvl=1)
           endif
@@ -10722,6 +10722,16 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
        elseif(lvtdataEntry%units.eq."W/m2".and.&
               lisdataEntry%units.eq."kg/m2s") then 
           scale_f = LVT_CONST_LATVAP
+       !EMK HACKS
+       elseif(lvtdataEntry%units.eq."kg/m2".and.&
+            lisdataEntry%units.eq."kg m-2") then
+          scale_f = 1.0
+       elseif(lvtdataEntry%units.eq."kg/m3".and.&
+            lisdataEntry%units.eq."kg m-3") then
+          scale_f = 1.0
+       elseif(lvtdataEntry%units.eq."microns".and.&
+            lisdataEntry%units.eq."micron") then
+          scale_f = 1.0
        else
           write(LVT_logunit,*) '[ERR] The units of the '
           write(LVT_logunit,*) '[ERR] LIS output and the analysis'
