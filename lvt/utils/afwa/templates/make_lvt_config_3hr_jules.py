@@ -16,8 +16,8 @@ import sys
 
 template = "template/lvt.config.template.jules50"
 
-startdt = datetime.datetime(2007, 12, 1,  0)
-enddt = datetime.datetime(2007, 12, 2,  0)
+startdt = datetime.datetime(2018, 12, 1,  9)
+enddt = datetime.datetime(2018, 12, 1,  12)
 
 output = "netcdf"
 #output = "grib2"
@@ -94,6 +94,64 @@ var_attributes = {
         "Wind_f      1  1  m/s    -  0  1 Wind_f      1  1  m/s    -  0  1",
     "Wind_f_tavg":
         "Wind_f      1  1  m/s    -  1  1 Wind_f      1  1  m/s    -  1  1",
+
+    "SurftSnow_inst":
+        "SurftSnow   1  1  kg/m2  -  0  1 SurftSnow   1  1  kg/m2  -  0  1",
+    "GrndSnow_inst":
+        "GrndSnow    1  1  kg/m2  -  0  1 GrndSnow    1  1  kg/m2  -  0  1",
+    "SnowSoot_inst":
+        "SnowSoot   1 1 'kg kg-1' -  0  1 SnowSoot  1  1 'kg kg-1' -  0  1",
+    "SnowGrain_inst":
+        "SnowGrain   1  1 microns -  0  1 SnowGrain   1  1 microns -  0  1",
+    "SnowDensity_inst":
+        "SnowDensity 1  1  kg/m3  -  0  1 SnowDensity 1  1 kg/m3   -  0  1",
+    "ActSnowNL_inst":
+        "ActSnowNL   1  1    -    -  0  1 ActSnowNL   1  1   -     -  0  1",
+    "LayerSnowDepth_inst":
+        "LayerSnowDepth   1 1 m   -  0  3 LayerSnowDepth  1 1 m    -  0  3",
+    "SnowIce_inst":
+        "SnowIce     1  1  kg/m2  -  0  3 SnowIce     1  1 kg/m2   -  0  3",
+    "SnowLiq_inst":
+        "SnowLiq     1  1  kg/m2  -  0  3 SnowLiq     1  1 kg/m2   -  0  3",
+    "SnowTProf_inst":
+        "SnowTProf   1  1    K    -  0  3 SnowTProf   1  1   K     -  0  3",
+    "LayerSnowDensity_inst":
+        "LayerSnowDensity 1 1 kg/m3 - 0 3 LayerSnowDensity 1 1 kg/m3 - 0 3",
+    "LayerSnowGrain_inst":
+        "LayerSnowGrain 1 1 microns - 0 3 LayerSnowGrain 1 1 microns - 0 3",
+
+}
+
+# EMK FOR GALWEM TESTING
+var_attributes = {
+    "ActSnowNL_inst":
+        "ActSnowNL   1  1    -    -  0  1 ActSnowNL   1  1   -     -  0  1",
+    "GrndSnow_inst":
+        "GrndSnow    1  1  kg/m2  -  0  1 GrndSnow    1  1  kg/m2  -  0  1",
+    "LayerSnowDensity_inst":
+        "LayerSnowDensity 1 1 kg/m3 - 0 3 LayerSnowDensity 1 1 kg/m3 - 0 3",
+    "LayerSnowDepth_inst":
+        "LayerSnowDepth   1 1 m   -  0  3 LayerSnowDepth  1 1 m    -  0  3",
+    "LayerSnowGrain_inst":
+        "LayerSnowGrain 1 1 microns - 0 3 LayerSnowGrain 1 1 microns - 0 3",
+    "SnowDepth_inst":
+        "SnowDepth   1  1  m      -  0  1 SnowDepth   1  1  m      -  0  1",
+    "SnowDensity_inst":
+        "SnowDensity 1  1  kg/m3  -  0  1 SnowDensity 1  1 kg/m3   -  0  1",
+    "SnowGrain_inst":
+        "SnowGrain   1  1 microns -  0  1 SnowGrain   1  1 microns -  0  1",
+    "SnowIce_inst":
+        "SnowIce     1  1  kg/m2  -  0  3 SnowIce     1  1 kg/m2   -  0  3",
+    "SnowLiq_inst":
+        "SnowLiq     1  1  kg/m2  -  0  3 SnowLiq     1  1 kg/m2   -  0  3",
+    "SnowSoot_inst":
+        "SnowSoot   1 1 'kg kg-1' -  0  1 SnowSoot  1  1 'kg kg-1' -  0  1",
+    "SnowTProf_inst":
+        "SnowTProf   1  1    K    -  0  3 SnowTProf   1  1   K     -  0  3",
+    "SurftSnow_inst":
+        "SurftSnow   1  1  kg/m2  -  0  1 SurftSnow   1  1  kg/m2  -  0  1",
+    "SWE_inst":
+        "SWE         1  1  kg/m2  -  0  1 SWE         1  1  kg/m2  -  0  1",
 }
 
 # RHMin must be processed with Tair_f_min, so these are listed together
@@ -118,12 +176,20 @@ smooth_vars = ["AvgSurfT_inst", "AvgSurfT_tavg",
                "SWdown_f_tavg", "SWE_inst",
                "Tair_f_inst", "Tair_f_max",
                "Tair_f_tavg", "TotalPrecip_acc",
-               "Tair_f_min", "RHMin_inst"]
+               "Tair_f_min", "RHMin_inst",
+
+               "SurftSnow_inst", "GrndSnow_inst",
+               "SnowSoot_inst", "SnowGrain_inst",
+               "SnowDensity_inst", "ActSnowNL_inst",
+               "LayerSnowDepth_inst", "SnowIce_inst",
+               "SnowLiq_inst", "SnowTProf_inst",
+               "LayerSnowDensity_inst", "LayerSnowGrain_inst" ]
+
 
 lines = open(template, 'r').readlines()
 
 vars = list(var_attributes.keys())
-vars.append("RHMin_inst")  # RHMin will be handled specially below
+#vars.append("RHMin_inst")  # RHMin will be handled specially below
 vars.sort()
 firstVar = True
 for var in vars:
@@ -132,10 +198,11 @@ for var in vars:
         if "LVT output format:" in line:
             line = "LVT output format: %s\n" % (output)
         elif "Process HYCOM data:" in line:
-            if firstVar:
-                line = "Process HYCOM data: 1\n"
-            else:
-                line = "Process HYCOM data: 0\n"
+            #if firstVar:
+            #    line = "Process HYCOM data: 1\n"
+            #else:
+            #    line = "Process HYCOM data: 0\n"
+            line = "Process HYCOM data: 0\n"
         elif "Apply noise reduction filter:" in line:
             if var in smooth_vars:
                 line = "Apply noise reduction filter: 1\n"

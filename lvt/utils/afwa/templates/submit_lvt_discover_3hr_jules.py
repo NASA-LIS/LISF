@@ -32,8 +32,24 @@ vars = ['RelSMC_inst', 'SmLiqFrac_inst',
         'SnowDepth_inst', 'Snowcover_inst',
         'Tair_f_inst', 'Tair_f_max',
         'Tair_f_tavg',
-        'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
+        'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg',
 
+        'ActSnowNL_inst', 'GrndSnow_inst',
+        'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
+        'LayerSnowGrain_inst', 'SnowDensity_inst',
+        'SnowGrain_inst', 'SnowIce_inst',
+        'SnowLiq_inst', 'SnowSoot_inst',
+        'SnowTProf_inst', 'SurftSnow_inst']
+
+# EMK GALWEM TESTING
+vars = ['ActSnowNL_inst', 'GrndSnow_inst',
+        'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
+        'LayerSnowGrain_inst', 'SnowDensity_inst',
+        'SnowDepth_inst',
+        'SnowGrain_inst', 'SnowIce_inst',
+        'SnowLiq_inst', 'SnowSoot_inst',
+        'SnowTProf_inst', 'SurftSnow_inst',
+        'SWE_inst']
 
 if not os.path.exists("LVT"):
     print("ERROR, LVT executable does not exist!")
@@ -48,7 +64,7 @@ for var in vars:
 #SBATCH --account s1189
 #SBATCH --output %s.3hr.slurm.out
 #Adjust node, core, and hardware constraints here
-#SBATCH --ntasks=1 --constraint=hasw
+#SBATCH --ntasks=1
 
 if [ ! -z $SLURM_SUBMIT_DIR ] ; then
     cd $SLURM_SUBMIT_DIR || exit 1
@@ -56,7 +72,7 @@ fi
 
 module purge
 module use --append ~/privatemodules
-module load lisf_7_intel_19_1_0_166
+module load lisf_7_intel_19_1_3_304_traceback-work-around
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1
