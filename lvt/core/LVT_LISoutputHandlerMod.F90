@@ -1138,20 +1138,26 @@ contains
                "liquid_water_content_of_surface_snow",&
                "snow water equivalent","F",rc)
           if(rc.eq.1) then 
-             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_SWE(kk),&
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_SWE(kk),&
                   LVT_LISoutput(kk)%head_lsm_list,2,nsize,nensem,&
                   (/"kg/m2","m    "/),1,(/"-"/),&
-                  valid_min=(/0.0,0.0/),valid_max=(/2000.0,2.0/),gribSFC=1,gribLvl=1)    
+                  valid_min=(/0.0,0.0/),valid_max=(/10000.0,10.0/), &
+                  gribSFC=1,gribLvl=1)
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig,"SnowDepth:",rc=rc)
-          call get_moc_attributes(modelSpecConfig, LVT_LISoutput(kk)%head_lsm_list,&
+          call get_moc_attributes(modelSpecConfig, &
+               LVT_LISoutput(kk)%head_lsm_list,&
                "SnowDepth","snow_depth","snow depth","F",rc)
           if(rc.eq.1) then 
-             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_SNOWDEPTH(kk),&
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_SNOWDEPTH(kk),&
                   LVT_LISoutput(kk)%head_lsm_list,&
                   3,nsize,nensem,(/"m ","cm","mm"/),1,(/"-"/),&
-                  valid_min=(/0.0/),valid_max=(/10.0/),gribSFC=1,gribLvl=1)
+                  valid_min=(/0.0, 0.0, 0.0/), &
+                  valid_max=(/100.0, 10000.0, 100000.0/), &
+                  gribSFC=1,gribLvl=1)
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig,"SnowIce:",rc=rc)
@@ -1163,7 +1169,8 @@ contains
              call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_SNOWICE(kk),&
                   LVT_LISoutput(kk)%head_lsm_list,2,nsize,nensem,&
                   (/"kg/m2","mm   "/),1,(/"-"/),&
-                  valid_min=(/0.0,0.0/),valid_max=(/2000.0,2.0/),gribSFC=1,gribLvl=1)    
+                  valid_min=(/0.0,0.0/),valid_max=(/20000.0, 20000.0/), &
+                  gribSFC=1,gribLvl=1)
           endif
 
 
@@ -1485,7 +1492,8 @@ contains
              call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_SNOWTPROF(kk),&
                   LVT_LISoutput(kk)%head_lsm_list,&
                   1,nsize,nensem,(/"K"/),1,(/"-"/),&
-                  valid_min=(/0.0/),valid_max=(/1.0/),gribSFC=grib_snowlvl,gribLvl=0)
+                  valid_min=(/100.0/),valid_max=(/273.15/),&
+                  gribSFC=grib_snowlvl,gribLvl=0)
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig,"SLiqFrac:",rc=rc)
@@ -3645,7 +3653,7 @@ contains
                   LVT_LISoutput(kk)%head_lsm_list, &
                   1, &
                   nsize,nensem,(/"kg/m2"/),1,(/"-"/),valid_min=(/0.0/), &
-                  valid_max=(/1200.0/),gribSFC=1,gribLvl=1)
+                  valid_max=(/10000.0/),gribSFC=1,gribLvl=1)
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig, "GrndSnow:", rc=rc)
@@ -3660,7 +3668,7 @@ contains
                   LVT_LISoutput(kk)%head_lsm_list, &
                   1, &
                   nsize,nensem,(/"kg m-2"/),1,(/"-"/),valid_min=(/0.0/), &
-                  valid_max=(/1200.0/),gribSFC=1,gribLvl=1)
+                  valid_max=(/1000.0/),gribSFC=1,gribLvl=1)
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig, "SnowSoot:", rc=rc)
@@ -3689,8 +3697,8 @@ contains
                   LVT_LIS_MOC_SNOWGRAIN(kk), &
                   LVT_LISoutput(kk)%head_lsm_list, &
                   1, &
-                  nsize,nensem,(/"micron"/),1,(/"-"/),valid_min=(/0.0/), &
-                  valid_max=(/1200.0/),gribSFC=1,gribLvl=1)
+                  nsize,nensem,(/"micron"/),1,(/"-"/),valid_min=(/50.0/), &
+                  valid_max=(/2000.0/),gribSFC=1,gribLvl=1)
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig, "SnowDensity:", rc=rc)
@@ -3704,8 +3712,8 @@ contains
                   LVT_LIS_MOC_SNOWDENSITY(kk), &
                   LVT_LISoutput(kk)%head_lsm_list, &
                   1, &
-                  nsize,nensem,(/"kg m-3"/),1,(/"-"/),valid_min=(/0.0/), &
-                  valid_max=(/1200.0/),gribSFC=1,gribLvl=1)
+                  nsize,nensem,(/"kg m-3"/),1,(/"-"/),valid_min=(/100.0/), &
+                  valid_max=(/1000.0/),gribSFC=1,gribLvl=1)
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig, "ActSnowNL:", rc=rc)
@@ -3736,7 +3744,7 @@ contains
                   3, &
                   nsize,nensem,(/"m ", "cm", "mm"/),1,(/"-"/), &
                   valid_min=(/0., 0., 0./), &
-                  valid_max=(/3., 300., 3000./),gribSFC=114,gribLvl=1)
+                  valid_max=(/100., 10000., 100000./),gribSFC=114,gribLvl=1)
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig, "SnowLiq:", rc=rc)
@@ -3752,7 +3760,7 @@ contains
                   2, &
                   nsize,nensem,(/"kg/m2", "mm   "/),1,(/"-"/), &
                   valid_min=(/0., 0./), &
-                  valid_max=(/2000.0, 2.0/),gribSFC=114,gribLvl=1)
+                  valid_max=(/20000.0, 20000.0/),gribSFC=114,gribLvl=1)
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig, "LayerSnowDensity:", &
@@ -3769,7 +3777,7 @@ contains
                   1, &
                   nsize,nensem,(/"kg m-3"/),1,(/"-"/), &
                   valid_min=(/0./), &
-                  valid_max=(/2000.0/),gribSFC=114,gribLvl=1)
+                  valid_max=(/1000.0/),gribSFC=114,gribLvl=1)
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig, "LayerSnowGrain:", &
@@ -3785,7 +3793,7 @@ contains
                   LVT_LISoutput(kk)%head_lsm_list, &
                   1, &
                   nsize,nensem,(/"micron"/),1,(/"-"/), &
-                  valid_min=(/0./), &
+                  valid_min=(/50./), &
                   valid_max=(/2000.0/),gribSFC=114,gribLvl=1)
           endif
           !EMK END
@@ -4757,9 +4765,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                    swe_calc%value(gid,m,1) = &
                         swe%value(gid,m,1)
                    swe_calc%count(gid,m,1) = swe%count(gid,m,1)
-!                   if(swe_calc%value(gid,m,1).gt.2000) then 
-!                      swe_calc%value(gid,m,1) = 2000.0
-!                   endif
+                   !if(swe_calc%value(gid,m,1).gt.2000) then 
+                   !   swe_calc%value(gid,m,1) = 2000.0
+                   !endif
                 enddo
              enddo
           endif
