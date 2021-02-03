@@ -6190,7 +6190,6 @@ of the GEFS forecast forcing files.
 
 `GEFS forecast type:` specifies the GEFS forecast
 product type, which can either be Reforecast2 or Operational.
-Currently, only the Reforecast2 product is supported.
 
 `GEFS forecast run mode:` specifies the run mode related
 to the GEFS dataset, which can either be forecast or analysis
