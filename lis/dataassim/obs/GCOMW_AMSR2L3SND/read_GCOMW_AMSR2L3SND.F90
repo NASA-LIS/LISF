@@ -881,7 +881,7 @@ subroutine getMOD10data_AMSR2(n,k,name,tmp_obsl)
 !  to the AMSR2 observation grid
 !EOP
 
-#if (defined USE_HDF4) 
+#if (defined USE_HDFEOS2)
 #include "hdf.f90"
 #endif
   
@@ -890,7 +890,7 @@ subroutine getMOD10data_AMSR2(n,k,name,tmp_obsl)
   character*80         :: name
   real                 :: tmp_obsl(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
 
-#if (defined USE_HDF4)
+#if (defined USE_HDFEOS2)
   integer, parameter   :: modis_nc=7200, modis_nr=3600
   integer              :: local_nc, local_nr
 
