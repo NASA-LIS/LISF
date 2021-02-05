@@ -45,6 +45,7 @@
 # 25 Sep 2020:  Eric Kemp (SSAI), tweaked comments for Python version. Also
 #               added path for NCKS on Koehr.
 # 14 Oct 2020:  Eric Kemp (SSAI), updated NCKS path on Discover.
+# 05 Feb 2021:  Eric Kemp (SSAI), added JULES multi-layer snow variables.
 #
 #------------------------------------------------------------------------------
 
@@ -152,11 +153,26 @@ _LVT_JULES_INVOCATIONS_3HR = ['Albedo_tavg',
                               'SoilTemp_inst', 'SoilTemp_tavg',
                               'Tair_f_inst', 'Tair_f_max',
                               'Tair_f_tavg',
-                              'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
+                              'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg',
+                              'ActSnowNL_inst', 'GrndSnow_inst',
+                              'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
+                              'LayerSnowGrain_inst', 'SnowDensity_inst',
+                              'SnowGrain_inst', 'SnowIce_inst',
+                              'SnowLiq_inst',
+                              'SnowTProf_inst', 'SurftSnow_inst']
 
 # EMK for RECON
 #_LVT_JULES_INVOCATIONS_3HR = ["SWE_inst", "SnowDepth_inst", "SoilMoist_inst",
 #        "SoilTemp_inst", "AvgSurfT_inst"]
+# _LVT_JULES_INVOCATIONS_3HR = ["AvgSurfT_inst",
+#                               "SoilMoist_inst","SoilTemp_inst",
+#                               "SnowDepth_inst", "SWE_inst",
+#                               'ActSnowNL_inst', 'GrndSnow_inst',
+#                               'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
+#                               'LayerSnowGrain_inst', 'SnowDensity_inst',
+#                               'SnowGrain_inst', 'SnowIce_inst',
+#                               'SnowLiq_inst',
+#                               'SnowTProf_inst', 'SurftSnow_inst']
 
 _LVT_JULES_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
                                'RHMin_inst',
