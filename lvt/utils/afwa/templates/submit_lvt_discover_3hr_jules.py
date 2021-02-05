@@ -33,23 +33,23 @@ vars = ['RelSMC_inst', 'SmLiqFrac_inst',
         'Tair_f_inst', 'Tair_f_max',
         'Tair_f_tavg',
         'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg',
+         "ActSnowNL_inst", "GrndSnow_inst",
+         "LayerSnowDensity_inst", "LayerSnowDepth_inst",
+         "LayerSnowGrain_inst", "SnowDensity_inst",
+         "SnowGrain_inst", "SnowIce_inst",
+         "SnowLiq_inst", "SnowTProf_inst",
+         "SurftSnow_inst"]
 
-        'ActSnowNL_inst', 'GrndSnow_inst',
-        'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
-        'LayerSnowGrain_inst', 'SnowDensity_inst',
-        'SnowGrain_inst', 'SnowIce_inst',
-        'SnowLiq_inst', 'SnowSoot_inst',
-        'SnowTProf_inst', 'SurftSnow_inst']
-
-# EMK GALWEM TESTING
-vars = ['ActSnowNL_inst', 'GrndSnow_inst',
-        'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
-        'LayerSnowGrain_inst', 'SnowDensity_inst',
-        'SnowDepth_inst',
-        'SnowGrain_inst', 'SnowIce_inst',
-        'SnowLiq_inst', 'SnowSoot_inst',
-        'SnowTProf_inst', 'SurftSnow_inst',
-        'SWE_inst']
+# # EMK GALWEM TESTING
+# vars = ["SoilMoist_inst", "SoilTemp_inst",
+#         "AvgSurfT_inst",
+#         'SnowDepth_inst', 'SWE_inst',
+#         "ActSnowNL_inst", "GrndSnow_inst",
+#         "LayerSnowDensity_inst", "LayerSnowDepth_inst",
+#         "LayerSnowGrain_inst", "SnowDensity_inst",
+#         "SnowGrain_inst", "SnowIce_inst",
+#         "SnowLiq_inst", "SnowTProf_inst",
+#         "SurftSnow_inst"]
 
 if not os.path.exists("LVT"):
     print("ERROR, LVT executable does not exist!")
