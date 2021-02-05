@@ -873,6 +873,14 @@ $fflags77 = $fflags77." -DLIS_JULES";
 $fflags = $fflags." -DLIS_JULES";
 
 #
+# Kluge for SPORTDaily gfrac and VIIRSDaily gfrac readers
+# These readers require ZLIB, but this requirement is not captured by the
+# above library checks.
+#
+
+$ldflags = $ldflags." -lz";
+
+#
 # Write configure.lis and related files
 #
 
@@ -958,6 +966,13 @@ if($use_hdf4 == 1) {
 }
 else{
    printf misc_file "%s\n","#undef USE_HDF4 ";
+}
+
+if($use_hdfeos == 1) {
+   printf misc_file "%s\n","#define USE_HDFEOS2 ";
+}
+else{
+   printf misc_file "%s\n","#undef USE_HDFEOS2 ";
 }
 
 if($use_hdf5 == 1) {

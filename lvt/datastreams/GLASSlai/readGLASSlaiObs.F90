@@ -97,7 +97,7 @@ subroutine read_GLASS_LAI_data(source, fname, laiobs_ip)
   use GLASSlaiobsMod
 
   implicit none
-#if (defined USE_HDF4) 
+#if (defined USE_HDFEOS2)
 #include "hdf.f90"
 #endif
 !
@@ -124,7 +124,7 @@ subroutine read_GLASS_LAI_data(source, fname, laiobs_ip)
 !
 !EOP
 
-#if (defined USE_HDF4)
+#if (defined USE_HDFEOS2)
   integer                 :: k
   real*8                  :: cornerlat(2), cornerlon(2)
   integer,  parameter     :: nc=7200, nr=3600
