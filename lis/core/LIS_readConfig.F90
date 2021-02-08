@@ -467,7 +467,7 @@ subroutine LIS_readConfig()
        rc=rc)
   call LIS_verify(rc,'Output naming style: not defined')
   call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%sout,&
-       label="Enable output statistics:",default=.true.,&
+       label="Enable output statistics:",default=.false.,&
        rc=rc)
 
   if (LIS_rc%wout.eq."grib1" .or. LIS_rc%wout.eq."grib2") then
