@@ -8,7 +8,7 @@
 !  17 Dec 2020: Yonghwan Kwon; Initial Implementation 
 !  28 Jan 2021: Yeosang Yoon; Fix bug in calculate_sea_ice_concentration
 !                             subroutine
-!  08 Feb 2021: Yeosang Yoon; Remove unsued variable
+!  08 Feb 2021: Yeosang Yoon; Remove unused variable
 !
 ! DESCRIPTION:
 ! Source code for the retrieval of snow depth and sea ice concentration from 
