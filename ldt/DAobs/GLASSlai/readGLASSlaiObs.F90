@@ -91,7 +91,7 @@ subroutine read_GLASSlai_data(n, fname, laiobs_ip)
   use GLASSlai_obsMod
 
   implicit none
-#if (defined USE_HDF4) 
+#if (defined USE_HDFEOS2)
 #include "hdf.f90"
 #endif
 !
@@ -120,7 +120,7 @@ subroutine read_GLASSlai_data(n, fname, laiobs_ip)
 !
 !EOP
 
-#if (defined USE_HDF4)
+#if (defined USE_HDFEOS2)
   integer,  parameter     :: nc=7200, nr=3600
   integer                 :: gdopen,gdattach,gdrdfld
   integer                 :: gddetach,gdclose

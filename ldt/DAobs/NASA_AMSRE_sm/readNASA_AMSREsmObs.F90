@@ -100,7 +100,7 @@ subroutine read_AMSREsm(n, name)
   use NASA_AMSREsm_obsMod, only : NASA_AMSREsmobs
   implicit none
 
-#if (defined USE_HDF4) 
+#if (defined USE_HDFEOS2)
 #include "hdf.f90"
 #endif
 ! !ARGUMENTS:   
@@ -112,7 +112,7 @@ subroutine read_AMSREsm(n, name)
 !EOP
   real               :: sb_rqc(NASA_AMSREsmobs%mo)
 
-#if (defined USE_HDF4)
+#if (defined USE_HDFEOS2)
   !declare the hdf-eos library functions 
   integer              :: gdopen,gdattach,gddefboxreg,gdrdfld
   integer              :: gdgetpix,gdextreg,gddetach,gdclose
