@@ -8,6 +8,7 @@
 !  17 Dec 2020: Yonghwan Kwon; Initial Implementation 
 !  28 Jan 2021: Yeosang Yoon; Fix bug in calculate_sea_ice_concentration
 !                             subroutine
+!  08 Feb 2021: Yeosang Yoon; Remove unsued variable
 !
 ! DESCRIPTION:
 ! Source code for the retrieval of snow depth and sea ice concentration from 
@@ -47,7 +48,7 @@ contains
       ! Local variables
       integer                         :: eof, i, j, n, nArr, nFile, x, y
       character(len=256)              :: filename, nc_filename
-      integer,           dimension(:), allocatable :: surflag0, surflag
+      !integer,           dimension(:), allocatable :: surflag0, surflag
       character(len=10), dimension(:), allocatable :: date0, date10_arr
       real,              dimension(:), allocatable :: lat0, lon0, tb10h0, tb10v0, tb19h0, tb19v0, &
                                                       tb23h0, tb23v0, tb37h0, tb37v0, tb89h0, tb89v0
@@ -119,13 +120,18 @@ contains
       allocate(ct(nArr))
 
       write (LDT_logunit,*) '[INFO] calculate snow depth from amsr2'
-      call calculate_snowdepth(nArr, surflag, tb10h, tb10v, tb19h, tb19v, &
+      !call calculate_snowdepth(nArr, surflag, tb10h, tb10v, tb19h, tb19v, &
+      !     tb23h, tb23v, tb37h, tb37v, tb89h, tb89v, snowdepth, option, lat, lon)
+      ! Yeosang Yoon
+      call calculate_snowdepth(nArr, tb10h, tb10v, tb19h, tb19v, &
            tb23h, tb23v, tb37h, tb37v, tb89h, tb89v, snowdepth, option, lat, lon)
 
       write (LDT_logunit,*) '[INFO] calculate sea ice concentration from amsr2'
-      call calculate_sea_ice_concentration(nArr, surflag, lat, lon, tb19h, &
+      !call calculate_sea_ice_concentration(nArr, surflag, lat, lon, tb19h, &
+      !     tb19v, tb37h, tb37v, ct)
+      ! Yeosang Yoon
+      call calculate_sea_ice_concentration(nArr, lat, lon, tb19h, &
            tb19v, tb37h, tb37v, ct)
-
       ! write file (kept the name of "ssmis" to minimize code changes in other parts)
       filename = trim(amsr2)//'ssmis_snoice_nh.06hr.'//date10//'.txt'
       write (LDT_logunit,*) &
@@ -625,9 +631,10 @@ contains
    end subroutine read_amsr2_attributes
 
 
-   subroutine calculate_snowdepth(n, surflag, tb10h, tb10v, tb19h, tb19v, &
-                tb23h, tb23v, tb37h, tb37v, tb89h, tb89v, snowdepth, option, lat, lon) 
-
+   !subroutine calculate_snowdepth(n, surflag, tb10h, tb10v, tb19h, tb19v, &
+   !             tb23h, tb23v, tb37h, tb37v, tb89h, tb89v, snowdepth, option, lat, lon) 
+   subroutine calculate_snowdepth(n, tb10h, tb10v, tb19h, tb19v, &
+                tb23h, tb23v, tb37h, tb37v, tb89h, tb89v, snowdepth, option, lat, lon)
       ! option == 1: Hollinger, 1991,    SD=4445.0-17.95TB_37V
       ! option == 2: Markus (Chang et al., 1987), SD=1.58(TB_19H-TB_37H)
       ! option == 3; Foster et al., 1997
@@ -641,7 +648,7 @@ contains
 
       ! Arguments
       integer, intent(in)   :: n
-      integer, intent(in)   :: surflag(:)
+      !integer, intent(in)   :: surflag(:)  !YY
       real,    intent(in)   :: tb10h(:)
       real,    intent(in)   :: tb10v(:)
       real,    intent(in)   :: tb19h(:)
@@ -875,15 +882,16 @@ contains
    end subroutine calculate_snowdepth
 
 
-   subroutine calculate_sea_ice_concentration(n, surflag, lat, lon, tb19h, &
+   !subroutine calculate_sea_ice_concentration(n, surflag, lat, lon, tb19h, &
+   !     tb19v, tb37h, tb37v, ct)
+   subroutine calculate_sea_ice_concentration(n, lat, lon, tb19h, &
         tb19v, tb37h, tb37v, ct)
-
       ! Defaults
       implicit none
 
       ! Arguments
       integer, intent(in)   :: n
-      integer, intent(in)   :: surflag(:)
+      !integer, intent(in)   :: surflag(:) !YY
       real,    intent(in)   :: lat(:)
       real,    intent(in)   :: lon(:)
       real,    intent(in)   :: tb19h(:)
