@@ -403,7 +403,7 @@ subroutine read_PMWSnow_HDFEOS(n,name)
   use PMW_snow_Mod, only : PMW_snow_struc
   implicit none
 
-#if (defined USE_HDF4) 
+#if (defined USE_HDFEOS2)
 #include "hdf.f90"
 #endif
 ! !ARGUMENTS:   
@@ -418,7 +418,7 @@ subroutine read_PMWSnow_HDFEOS(n,name)
   real                 :: sb_qc(PMW_snow_struc(n)%mo)
   real                 :: snowobs(PMW_snow_struc(n)%mo)
 
-#if (defined USE_HDF4)
+#if (defined USE_HDFEOS2)
   !declare the hdf-eos library functions 
   integer              :: gdopen,gdattach,gdrdfld
   integer              :: gddetach,gdclose
