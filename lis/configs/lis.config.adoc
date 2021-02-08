@@ -608,7 +608,7 @@ Acceptable values are:
 |.false. | Disable writing of the statistics file
 |====
 
-Defaults to `.true.`.
+Defaults to `.false.`.
 
 .Example _lis.config_ entry
 ....
