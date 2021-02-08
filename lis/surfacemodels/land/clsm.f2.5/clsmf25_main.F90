@@ -1401,7 +1401,7 @@ subroutine clsmf25_main(nid)
                    (clsmf25_struc(nid)%cat_progn(n)%sndz(i)*    &
                     clsmf25_struc(nid)%cat_output(n)%snocovr)
            endif
-           call LIS_diagnoseSurfaceOutputVar(nid,n,LIS_MOC_LAYERSNOWDENSITY,&
+           call LIS_diagnoseSurfaceOutputVar(nid,n,LIS_MOC_SNOWDENPROF,&
                 value=bdsnow,                                          &
                 vlevel=i,unit="kg m-3",direction="-",                  &
                 surface_type=LIS_rc%lsm_index)
@@ -1410,7 +1410,7 @@ subroutine clsmf25_main(nid)
 
 ! Rhae Sung added snow depth, snow ice and snow liquid for each layer
         do i = 1,N_snow
-           call LIS_diagnoseSurfaceOutputVar(nid,n,LIS_MOC_LAYERSNOWDEPTH,value=&
+           call LIS_diagnoseSurfaceOutputVar(nid,n,LIS_MOC_SNOWDEPPROF,value=&
                         (clsmf25_struc(nid)%cat_progn(n)%sndz(i) *     &
                          clsmf25_struc(nid)%cat_output(n)%snocovr),    &
                         vlevel=i,unit="m",direction="-",               &
@@ -1418,7 +1418,7 @@ subroutine clsmf25_main(nid)
         enddo
 
         do i = 1,N_snow
-           call LIS_diagnoseSurfaceOutputVar(nid,n,LIS_MOC_SNOWICE,value=&
+           call LIS_diagnoseSurfaceOutputVar(nid,n,LIS_MOC_SNOWICEPROF,value=&
                         (clsmf25_struc(nid)%cat_progn(n)%sndz(i) *     &
                          clsmf25_struc(nid)%cat_output(n)%snocovr *    &
                          fices(n,i)*1000.0),                           &
@@ -1427,7 +1427,7 @@ subroutine clsmf25_main(nid)
         enddo
 
         do i = 1,N_snow
-           call LIS_diagnoseSurfaceOutputVar(nid,n,LIS_MOC_SNOWLIQ,value=&
+           call LIS_diagnoseSurfaceOutputVar(nid,n,LIS_MOC_SNOWLIQPROF,value=&
                         (clsmf25_struc(nid)%cat_progn(n)%sndz(i) *     &
                          clsmf25_struc(nid)%cat_output(n)%snocovr *    &
                          (1.0-fices(n,i))*1000.0),                     &

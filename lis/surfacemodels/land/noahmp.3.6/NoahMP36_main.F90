@@ -1014,13 +1014,13 @@ subroutine NoahMP36_main(n)
             
             ![ 17] output variable: snowice (unit=mm ). ***  snow-layer ice 
             do i=1, NOAHMP36_struc(n)%nsnow
-                call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWICE, value = NOAHMP36_struc(n)%noahmp36(t)%snowice(i), &
+                call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWICEPROF, value = NOAHMP36_struc(n)%noahmp36(t)%snowice(i), &
                                                   vlevel=i, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             end do
             
             ![ 18] output variable: snowliq (unit=mm ). ***  snow-layer liquid water 
             do i=1, NOAHMP36_struc(n)%nsnow
-                call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWLIQ, value = NOAHMP36_struc(n)%noahmp36(t)%snowliq(i), &
+                call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWLIQPROF, value = NOAHMP36_struc(n)%noahmp36(t)%snowliq(i), &
                                                   vlevel=i, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             end do
             
@@ -1040,7 +1040,7 @@ subroutine NoahMP36_main(n)
                   endif
                endif
 
-               call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_LAYERSNOWDENSITY, value = bdsno,&
+               call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWDENPROF, value = bdsno,&
                     vlevel=i, unit="kg m-3", direction="-", surface_type = LIS_rc%lsm_index)
             enddo
 
@@ -1059,7 +1059,7 @@ subroutine NoahMP36_main(n)
                   endif
                endif
 
-               call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_LAYERSNOWDEPTH, value = layersd,&
+               call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWDEPPROF, value = layersd,&
                     vlevel=i, unit="m", direction="-", surface_type = LIS_rc%lsm_index)
             enddo
 

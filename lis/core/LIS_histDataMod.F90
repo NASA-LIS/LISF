@@ -134,10 +134,14 @@ module LIS_histDataMod
   public :: LIS_MOC_SALBEDO
   public :: LIS_MOC_SNOWTPROF
   public :: LIS_MOC_SNOWDEPTH
-  public :: LIS_MOC_SNOWTHICK
   public :: LIS_MOC_SLIQFRAC
-  public :: LIS_MOC_LAYERSNOWDEPTH
-  public :: LIS_MOC_LAYERSNOWDENSITY
+  ! Shugong Wang 02/06/2020
+! LIS_MOC_LAYERSNOWDEPTH    -> LIS_MOC_SNOWDEPPROF
+! LIS_MOC_LAYERSNOWDENSITY  -> LIS_MOC_SNOWDENPROF
+! LIS_MOC_LAYERSNOWGRAIN    -> LIS_MOC_SNOWGRNPROF
+  public :: LIS_MOC_SNOWDEPPROF 
+  public :: LIS_MOC_SNOWDENPROF
+  public :: LIS_MOC_SNOWGRNPROF
   public :: LIS_MOC_LWUP
   public :: LIS_MOC_GPP
   public :: LIS_MOC_NPP
@@ -367,9 +371,14 @@ module LIS_histDataMod
   public ::   LIS_MOC_GROUNDVEGT   
   public ::   LIS_MOC_SOWN_NLAYER   
   public ::   LIS_MOC_SNOW_LBDFSS   
-  public ::   LIS_MOC_SOIL_LBDFSS   
-  public ::   LIS_MOC_SNOWICE   
-  public ::   LIS_MOC_SNOWLIQ   
+  public ::   LIS_MOC_SOIL_LBDFSS  
+  ! renamed by Shugong Wang 02/06/2021
+!  public ::   LIS_MOC_SNOWICE   
+!  public ::   LIS_MOC_SNOWLIQ   
+  public ::   LIS_MOC_SNOWICEPROF   
+  public ::   LIS_MOC_SNOWLIQPROF   
+  public ::   LIS_MOC_SNOWICEBULK   
+  public ::   LIS_MOC_SNOWLIQBULK   
   public ::   LIS_MOC_WT_AQUI_SATSOIL
   public ::   LIS_MOC_LAKEWATER   
   public ::   LIS_MOC_LEAFMASS    
@@ -452,7 +461,15 @@ module LIS_histDataMod
   PUBLIC :: LIS_MOC_JULES_FSAT
   PUBLIC :: LIS_MOC_JULES_FWETL 
   public :: LIS_MOC_JULES_ESOIL     
+  ! added by Shugong Wang for supporting 557WW 01/27/2021
+  public :: LIS_MOC_SNOW_SOOT
+  public :: LIS_MOC_GRND_SNOW
+  public :: LIS_MOC_SURFT_SNOW
   
+  integer :: LIS_MOC_SNOW_SOOT = -9999
+  integer :: LIS_MOC_GRND_SNOW = -9999
+  integer :: LIS_MOC_SURFT_SNOW = -9999
+  ! end 01/27/2021
   integer :: LIS_MOC_JULES_STHZW = -9999
   integer :: LIS_MOC_JULES_STHU = -9999
   integer :: LIS_MOC_JULES_STHU_MIN = -9999
@@ -556,11 +573,11 @@ module LIS_histDataMod
   integer :: LIS_MOC_SALBEDO    = -9999
   integer :: LIS_MOC_SNOWTPROF  = -9999
   integer :: LIS_MOC_SNOWDEPTH  = -9999
-  integer :: LIS_MOC_SNOWTHICK  = -9999
   integer :: LIS_MOC_SLIQFRAC   = -9999
   integer :: LIS_MOC_SNOWTHRESH = -9999
-  integer :: LIS_MOC_LAYERSNOWDEPTH = -9999
-  integer :: LIS_MOC_LAYERSNOWDENSITY = -9999
+  integer :: LIS_MOC_SNOWDEPPROF = -9999
+  integer :: LIS_MOC_SNOWDENPROF = -9999
+  integer :: LIS_MOC_SNOWGRNPROF = -9999
 
    ! ALMA VARIABLES TO BE COMPARED WITH REMOTE SENSED DATA
    integer :: LIS_MOC_LWUP       = -9999
@@ -816,8 +833,10 @@ module LIS_histDataMod
     integer ::  LIS_MOC_SOWN_NLAYER   = -9999
     integer ::  LIS_MOC_SNOW_LBDFSS   = -9999
     integer ::  LIS_MOC_SOIL_LBDFSS   = -9999
-    integer ::  LIS_MOC_SNOWICE   = -9999
-    integer ::  LIS_MOC_SNOWLIQ   = -9999
+    integer ::  LIS_MOC_SNOWICEPROF   = -9999
+    integer ::  LIS_MOC_SNOWLIQPROF   = -9999
+    integer ::  LIS_MOC_SNOWICEBULK   = -9999
+    integer ::  LIS_MOC_SNOWLIQBULK   = -9999
     integer ::  LIS_MOC_WT_AQUI_SATSOIL    = -9999
     integer ::  LIS_MOC_LAKEWATER   = -9999
     integer ::  LIS_MOC_LEAFMASS    = -9999
@@ -1091,6 +1110,17 @@ contains
 ! read the meta data attributes for each variable
 !-------------------------------------------------------------------------
   !!! JULES
+    call ESMF_ConfigFindLabel(modelSpecConfig,"SnowSoot:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "SnowSoot",&
+         "snow_soot_content",&
+         "snow soot content",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOW_SOOT,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"kg/kg"/),1,(/"-"/),1,112,0,&
+            model_patch=.true.)
+    endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"sthu:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -1736,8 +1766,8 @@ contains
     call ESMF_ConfigFindLabel(modelSpecConfig,"SnowDensity:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SnowDensity",&
-         "snow_density_for_each_layer",&
-         "snow density for each layer",rc)
+         "snowpack_bulk_density",&
+         "snowpack bulk density",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWDENSITY,&
             LIS_histData(n)%head_lsm_list,&
@@ -1746,13 +1776,13 @@ contains
     endif
    
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"LayerSnowDensity:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"SnowDenProf:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "LayerSnowDensity",&
-         "snow_density_for_each_layer",&
-         "snow_density_for_each_layer",rc)
+         "SnowDenProf",&
+         "snow_density_profile",&
+         "snow density profile",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_LAYERSNOWDENSITY,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWDENPROF,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"kg/m3"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
@@ -1761,10 +1791,22 @@ contains
     call ESMF_ConfigFindLabel(modelSpecConfig,"SnowGrain:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SnowGrain",&
-         "snow_grain_size_for_each_layer",&
-         "snow grain size for each layer",rc)
+         "snow_grain_size",&
+         "snow grain size",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWGRAIN,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"micron"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    
+    call ESMF_ConfigFindLabel(modelSpecConfig,"SnowGrnProf:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "SnowGrnProf",&
+         "snow_grain_size_profile",&
+         "snow grain size profile",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWGRNPROF,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"micron"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
@@ -1783,38 +1825,62 @@ contains
        ! cm is added for VIC, Shugong Wang 02/20/2012
     endif
     
-    ! added by Shugong Wang 05/02/2018 for JULES 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"SnowThick:",rc=rc)
+    ! added by Shugong Wang 05/02/2018 for JULES, 01/27/2021
+    call ESMF_ConfigFindLabel(modelSpecConfig,"GrndSnow:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "SnowThick",&
-         "snow_thick",&
-         "thickness of snow layers",rc)
+         "GrndSnow",&
+         "snow_on_grond_beneath_canopy",&
+         "snow on ground (beneath canopy)",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWTHICK,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_GRND_SNOW,&
             LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"m"/),1,(/"-"/),1,1,1,&
+            n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"LayerSnowDepth:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"SurftSnow:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "LayerSnowDepth",&
-         "snow_depth_for_each_layer",&
-         "snow_depth_for_each_layer",rc)
+         "SurftSnow",&
+         "snow_amount_on_tile",&
+         "snow amount on tile",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_LAYERSNOWDEPTH,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SURFT_SNOW,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"SnowDepProf:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "SnowDepProf",&
+         "snow_layer_depth_profile",&
+         "snow layer depth profile",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWDEPPROF,&
             LIS_histData(n)%head_lsm_list,&
             n,3,ntiles,(/"m ", "cm", "mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"SnowIce:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"SnowIceProf:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "SnowIce",&
-         "snow_ice",&
-         "snow ice",rc)
+         "SnowIceProf",&
+         "snow_layer_frozen_water_profile",&
+         "snow layer frozen water profile",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWICE,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWICEPROF,&
+            LIS_histData(n)%head_lsm_list,&
+            n,2,ntiles,(/"kg/m2","mm   "/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    
+    call ESMF_ConfigFindLabel(modelSpecConfig,"BulkSnowIce:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "BulkSnowIce",&
+         "bulk_snow_frozen_water",&
+         "bulk snow frozen water",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWICEBULK,&
             LIS_histData(n)%head_lsm_list,&
             n,2,ntiles,(/"kg/m2","mm   "/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
@@ -4262,13 +4328,25 @@ contains
             model_patch=.true.)
     endif
 
-    Call ESMF_ConfigFindLabel(modelSpecConfig, "SnowLiq:", rc = rc)
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "SnowLiqProf:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "SnowLiq", &
-         "snow-layer_liquid_water",  &
-         "snow-layer liquid water",rc)
+         "SnowLiqProf", &
+         "snow_layer_liquid_water_profile",  &
+         "snow layer liquid water profile",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_SNOWLIQ, &
+        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_SNOWLIQPROF, &
+            LIS_histData(n)%head_lsm_list,&
+            n, 2, ntiles,(/"kg/m2","mm   "/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "BulkSnowLiq:", rc = rc)
+    Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "BulkSnowLiq", &
+         "bulk_snow_liquid_water",  &
+         "bulk snow liquid water",rc)
+    if ( rc == 1 ) then
+        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_SNOWLIQBULK, &
             LIS_histData(n)%head_lsm_list,&
             n, 2, ntiles,(/"kg/m2","mm   "/),1,(/"-"/),1,1,1,&
             model_patch=.true.)

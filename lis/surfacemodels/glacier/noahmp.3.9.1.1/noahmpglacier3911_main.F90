@@ -404,7 +404,7 @@ subroutine noahmpglacier3911_main(n)
         
         ![ 17] output variable: snowice (unit=mm ). ***  snow-layer ice 
         do i=1, noahmpgl3911_struc(n)%nsnow
-           call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWICE, &
+           call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWICEPROF, &
                 value = noahmpgl3911_struc(n)%noahmpgl(t)%snowice(i), &
                 vlevel=i, unit="mm", direction="-", &
                 surface_type = LIS_rc%glacier_index)
@@ -412,7 +412,7 @@ subroutine noahmpglacier3911_main(n)
             
         ![ 18] output variable: snowliq (unit=mm ). ***  snow-layer liquid water 
         do i=1, noahmpgl3911_struc(n)%nsnow
-           call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWLIQ, &
+           call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWLIQPROF, &
                 value = noahmpgl3911_struc(n)%noahmpgl(t)%snowliq(i), &
                 vlevel=i, unit="mm", direction="-", &
                 surface_type = LIS_rc%glacier_index)

@@ -601,16 +601,48 @@ subroutine jules52_main(n)
                   
 
                   ! JULES snow variables
+                  ! snow soot
+                  call LIS_diagnoseSurfaceOutputVar(n,t,        &
+                     LIS_MOC_SNOW_SOOT,                          &
+                     value=jules52_struc(n)%jules52(t)%soot_ij,   &
+                     vlevel=1,unit="kg kg-1",direction="-", &
+                     surface_type=LIS_rc%lsm_index)
+
+                  ! Snow on the ground (kg/m2). This is the snow beneath the canopy and is only used if can_model=4.
+                  call LIS_diagnoseSurfaceOutputVar(n, t,                &
+                      LIS_MOC_GRND_SNOW,                                       &
+                      value =  jules52_struc(n)%jules52(t)%snow_grnd(pft), &
+                      vlevel=1, unit="kg m-2", direction="-",            &
+                      surface_type = LIS_rc%lsm_index)
+                  
+                  ! Lying snow on tiles (kg/m2). If can_model=4, snow_surft is the snow on the canopy snow_grnd is the 
+                  ! snow on the ground beneath canopy If can_model/=4, snow_surft is the total snow.
+                  call LIS_diagnoseSurfaceOutputVar(n, t,                &
+                      LIS_MOC_SURFT_SNOW,                                       &
+                      value =  jules52_struc(n)%jules52(t)%snow_tile(pft), &
+                      vlevel=1, unit="kg m-2", direction="-",            &
+                      surface_type = LIS_rc%lsm_index)
+                  
+                  ! bulk snow density 
+                  call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWDENSITY, &
+                      value =  jules52_struc(n)%jules52(t)%rho_snow_grnd(pft),&
+                      vlevel=1, unit="kg m-3", direction="-", surface_type = LIS_rc%lsm_index)
+                  
+                  ! bulk snow grain size 
+                  call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWGRAIN, &
+                      value =  jules52_struc(n)%jules52(t)%rgrain(pft),&
+                      vlevel=1, unit="micron", direction="-", surface_type = LIS_rc%lsm_index)
+                  !!!! nsmax = 0, single layer snow physics 
                   if(nsmax .eq.0) then
                     ! snow ice 
                     call LIS_diagnoseSurfaceOutputVar(n, t,       &
-                       LIS_MOC_SNOWICE,                         &
+                       LIS_MOC_SNOWICEBULK,                         &
                        value=jules52_struc(n)%jules52(t)%sice(1,1), &
                        vlevel=1, unit="kg m-2", direction="-",    &
                        surface_type=LIS_rc%lsm_index)
                     ! snow liquid water 
                     call LIS_diagnoseSurfaceOutputVar(n, t,       &
-                       LIS_MOC_SNOWLIQ,                         &
+                       LIS_MOC_SNOWLIQBULK,                         &
                        value=jules52_struc(n)%jules52(t)%sliq(1,1), &
                        vlevel=1, unit="kg m-2", direction="-",    &
                        surface_type=LIS_rc%lsm_index)
@@ -620,56 +652,46 @@ subroutine jules52_main(n)
                        value=jules52_struc(n)%jules52(t)%tsnow(1,1), &
                        vlevel=1, unit="K", direction="-",    &
                        surface_type=LIS_rc%lsm_index)
-                    ! bulk snow density 
-                    call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWDENSITY, &
-                        value =  jules52_struc(n)%jules52(t)%rho_snow_grnd(pft),&
-                        vlevel=1, unit="kg m-3", direction="-", surface_type = LIS_rc%lsm_index)
-                    
-                    ! bulk snow grain size 
-                    call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWGRAIN, &
-                        value =  jules52_struc(n)%jules52(t)%rgrain(pft),&
-                        vlevel=1, unit="micron", direction="-", surface_type = LIS_rc%lsm_index)
-
-
-                    call LIS_diagnoseSurfaceOutputVar(n,t,               &
-                       LIS_MOC_SNOWTHICK,                                &
-                       vlevel=1,                                         &
-                       value=jules52_struc(n)%jules52(t)%snowdepth(pft), &
-                       unit="m", direction="-",&
+                  !!! nsmax > 0, multi-layer snow physics
+                  else
+                    ! Number of snow layers on ground on tiles
+                    call LIS_diagnoseSurfaceOutputVar(n, t,       &
+                       LIS_MOC_SOWN_NLAYER,                         &
+                       value=jules52_struc(n)%jules52(t)%nsnow(pft)*1.0, & ! nsnow is integer, -> real by *1.0
+                       vlevel=1, unit="-", direction="-",    &
                        surface_type=LIS_rc%lsm_index)
 
-                  else
                     do i=1, jules52_struc(n)%nsmax
-                      ! snow ice 
+                      ! layer snow ice 
                        call LIS_diagnoseSurfaceOutputVar(n, t,       &
-                          LIS_MOC_SNOWICE,                         &
+                          LIS_MOC_SNOWICEPROF,                         &
                           value=jules52_struc(n)%jules52(t)%sice(pft,i), &
                           vlevel=i, unit="kg m-2", direction="-",    &
                           surface_type=LIS_rc%lsm_index)
-                      ! snow liquid water 
+                      ! layer snow liquid water 
                        call LIS_diagnoseSurfaceOutputVar(n, t,       &
-                          LIS_MOC_SNOWLIQ,                         &
+                          LIS_MOC_SNOWLIQPROF,                         &
                           value=jules52_struc(n)%jules52(t)%sliq(pft,i), &
                           vlevel=i, unit="kg m-2", direction="-",    &
                           surface_type=LIS_rc%lsm_index)
-                      ! snow temperature K 
+                      ! layer snow temperature K 
                        call LIS_diagnoseSurfaceOutputVar(n, t,            &
                           LIS_MOC_SNOWTPROF,                              &
                           value=jules52_struc(n)%jules52(t)%tsnow(pft,i), &
                           vlevel=i, unit="K", direction="-",              &
                           surface_type=LIS_rc%lsm_index)
-                      ! snow density 
-                      call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWDENSITY, &
+                      ! layer snow density 
+                      call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWDENPROF, &
                         value = jules52_struc(n)%jules52(t)%rho_snow(pft,i),&
                         vlevel=i, unit="kg m-3", direction="-", surface_type = LIS_rc%lsm_index)
                       
-                      ! snow grain size 
-                      call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWGRAIN, &
+                      ! layer snow grain size 
+                      call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWGRNPROF, &
                         value =  jules52_struc(n)%jules52(t)%rgrainl(pft,i),&
                         vlevel=i, unit="micron", direction="-", surface_type = LIS_rc%lsm_index)
 
-                      ! thickness of snow layers  
-                      call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWTHICK, &
+                      ! layer thickness of snow layers  
+                      call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWDEPPROF, &
                         value = jules52_struc(n)%jules52(t)%ds(pft,i),& 
                         vlevel=i, unit="m", direction="-", surface_type = LIS_rc%lsm_index)
                     end do
