@@ -1763,9 +1763,9 @@ contains
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"SnowDensity:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"BulkSnowDen:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "SnowDensity",&
+         "BulkSnowDen",&
          "snowpack_bulk_density",&
          "snowpack bulk density",rc)
     if ( rc == 1 ) then
@@ -1788,11 +1788,11 @@ contains
             model_patch=.true.)
     endif
  
-    call ESMF_ConfigFindLabel(modelSpecConfig,"SnowGrain:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"BulkSnowGrn:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "SnowGrain",&
-         "snow_grain_size",&
-         "snow grain size",rc)
+         "BulkSnowGrn",&
+         "bulk_snow_grain_size",&
+         "bulk snow grain size",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWGRAIN,&
             LIS_histData(n)%head_lsm_list,&
