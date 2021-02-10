@@ -4222,15 +4222,15 @@ Search radius for openwater proximity detection:
 |===
 |Value |Description
 
-|1 |Hollinger; Hollinger, J.P., 1991: DMSP Special Sensor Microwave/Imager Calibration/Validation Final Report, vol. 2. Naval Research Laboratory, DMSP SSM/I Cal/Val Team.
-|2 |Chang; Chang, A.T.C., Foster, J.L., and Hall, D.K., 1987: Nimbus-7 derived global snow cover parameters. Annals of Glaciology, 9, 39–44.
-|3 |Foster; Foster, J.L., A.T.C. Chang, and D.K. Hall,1997: Comparison of snow mass estimates from a prototype passive microwave snow algorithm, a revised algorithm and a snow depth climatology, Remote Sensing of Environment, Volume 62, Issue 2, 132-142.
-|4 |Kelly, only for GMI and AMSR2; Kelly, R.E., 2009: The AMSR-E snow depth algorithm description and initial results. J. Remote Sens. Soc. Japan, 29, 307–317, doi:10.11440/rssj.29.307. 
+|1 |Hollinger, 1991; Hollinger, J.P., 1991: DMSP Special Sensor Microwave/Imager Calibration/Validation Final Report, vol. 2. Naval Research Laboratory, DMSP SSM/I Cal/Val Team.
+|2 |Chang et al., 1987; Chang, A.T.C., Foster, J.L., and Hall, D.K., 1987: Nimbus-7 derived global snow cover parameters. Annals of Glaciology, 9, 39–44.
+|3 |Foster et al., 1997; Foster, J.L., A.T.C. Chang, and D.K. Hall,1997: Comparison of snow mass estimates from a prototype passive microwave snow algorithm, a revised algorithm and a snow depth climatology, Remote Sensing of Environment, Volume 62, Issue 2, 132-142.
+|4 |Kelly, 2009, only for GMI and AMSR2; Kelly, R.E., 2009: The AMSR-E snow depth algorithm description and initial results. J. Remote Sens. Soc. Japan, 29, 307–317, doi:10.11440/rssj.29.307. 
 |===
 
-`USAFSI forest fraction file:` path to netCDF forest fraction file (for Foster et al (1997) and Kelly (2009) algorithm)
+`USAFSI forest fraction file:` path to netCDF forest fraction file (for Foster et al.,1997 and Kelly,2009's algorithms)
 
-`USAFSI forest density file:` path to netCDF forest density file (for Kelly (2009) algorithm)
+`USAFSI forest density file:` path to netCDF forest density file (for Kelly,2009 algorithm)
 
 .Example _ldt.config_ entry
 ....
