@@ -103,11 +103,6 @@ void FTN(lis_mpdecomp_2) ( int *i_p , int *j_p , int *ids_p, int *ide_p , int *j
   idim = ide - ids + 1 ;
   jdim = jde - jds + 1 ;
 
-
-//  if ( i == 1 && j == i ) {
-//    printf("npx, npy: %d %d\n", npx, npy) ;
-//  }
-
   i = i >= ids ? i : ids ; i = i <= ide ? i : ide ;
   npx = npx <= 0 ? 1 : npx ;
 
@@ -146,15 +141,6 @@ void FTN(lis_mpdecomp_2) ( int *i_p , int *j_p , int *ids_p, int *ide_p , int *j
   b = a + ( pdima * pcnta ) ;
   c = b + ( pdimr * pcntr ) ;
   d = c + ( pdime * pcnte ) ;
-
-//  if ( i == 1 && j == i ) {
-//    printf("ids, ide, idim, pcntr: %d %d %d %d\n", ids, ide, idim, pcntr) ;
-//  }
-//
-//  if ( i == 1 && j == i ) {
-//    printf("pdims, pdima, pdimr, pdime: %d %d %d %d\n", pdims, pdima, pdimr, pdime) ;
-//    printf("a, b, c, d: %d %d %d %d\n", a, b, c, d) ;
-//  }
 
   if ( i <= a ) {
     Px = 1 ;
@@ -208,15 +194,6 @@ void FTN(lis_mpdecomp_2) ( int *i_p , int *j_p , int *ids_p, int *ide_p , int *j
   c = b + ( pdimr * pcntr ) ;
   d = c + ( pdime * pcnte ) ;
 
-//  if ( i == 1 && j == i ) {
-//    printf("jds, jde, jdim, pcntr: %d %d %d %d\n", jds, jde, jdim, pcntr) ;
-//  }
-//
-//  if ( i == 1 && j == i ) {
-//    printf("pdims, pdima, pdimr, pdime: %d %d %d %d\n", pdims, pdima, pdimr, pdime) ;
-//    printf("a, b, c, d: %d %d %d %d\n", a, b, c, d) ;
-//  }
-
   if ( j <= a ) {
     Py = 1 ;
   }
@@ -229,8 +206,6 @@ void FTN(lis_mpdecomp_2) ( int *i_p , int *j_p , int *ids_p, int *ide_p , int *j
   else {
     Py = 1 + ( ( b - a - 1 + pdima ) / pdima )  + ( ( c - b - 1 + pdimr ) / pdimr ) + ( ( j - c - 1 + pdime ) / pdime ) ;
   }
-
-//  printf("i,j=Px,Py: %d,%d=%d,%d\n", i, j, Px, Py) ;
 
   *Px_p = Px ;
   *Py_p = Py ;

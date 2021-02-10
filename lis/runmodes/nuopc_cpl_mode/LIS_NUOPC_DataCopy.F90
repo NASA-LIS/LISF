@@ -1747,13 +1747,13 @@ contains
       tcount(col,row) = tcount(col,row) + 1
     enddo
     do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-        farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
-      else
-        farray(col,row) = actual_fillVal
-      end if
-    enddo
+      do col=1,LIS_rc%lnc(nest)
+        if(LIS_domain(nest)%gindex(col,row).ne.-1) then
+          farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
+        else
+          farray(col,row) = actual_fillVal
+        end if
+      enddo
     enddo
     deallocate(tcount)
   end subroutine
@@ -1794,13 +1794,13 @@ contains
       tcount(col,row) = tcount(col,row) + 1
     enddo
     do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-        farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
-      else
-        farray(col,row) = actual_fillVal
-      end if
-    enddo
+      do col=1,LIS_rc%lnc(nest)
+        if(LIS_domain(nest)%gindex(col,row).ne.-1) then
+          farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
+        else
+          farray(col,row) = actual_fillVal
+        end if
+      enddo
     enddo
     deallocate(tcount)
 
@@ -1842,13 +1842,13 @@ contains
       tcount(col,row) = tcount(col,row) + 1
     enddo
     do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-        farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
-      else
-        farray(col,row) = actual_fillVal
-      end if
-    enddo
+      do col=1,LIS_rc%lnc(nest)
+        if(LIS_domain(nest)%gindex(col,row).ne.-1) then
+          farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
+        else
+          farray(col,row) = actual_fillVal
+        end if
+      enddo
     enddo
     deallocate(tcount)
 
@@ -1890,13 +1890,13 @@ contains
       tcount(col,row) = tcount(col,row) + 1
     enddo
     do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-        farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
-      else
-        farray(col,row) = actual_fillVal
-      end if
-    enddo
+      do col=1,LIS_rc%lnc(nest)
+        if(LIS_domain(nest)%gindex(col,row).ne.-1) then
+          farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
+        else
+          farray(col,row) = actual_fillVal
+        end if
+      enddo
     enddo
     deallocate(tcount)
 
@@ -1938,13 +1938,13 @@ contains
       tcount(col,row) = tcount(col,row) + 1
     enddo
     do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-        farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
-      else
-        farray(col,row) = actual_fillVal
-      end if
-    enddo
+      do col=1,LIS_rc%lnc(nest)
+        if(LIS_domain(nest)%gindex(col,row).ne.-1) then
+          farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
+        else
+          farray(col,row) = actual_fillVal
+        end if
+      enddo
     enddo
     deallocate(tcount)
   end subroutine
@@ -2824,11 +2824,11 @@ contains
       farray(col,row,ens) = farrayLIS(tile)
     enddo
     do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      if(LIS_domain(nest)%gindex(col,row).eq.-1) then
-        farray(col,row,:) = actual_fillVal
-      end if
-    enddo
+      do col=1,LIS_rc%lnc(nest)
+        if(LIS_domain(nest)%gindex(col,row).eq.-1) then
+          farray(col,row,:) = actual_fillVal
+        end if
+      enddo
     enddo
   end subroutine
 
@@ -2864,11 +2864,11 @@ contains
       farray(col,row,ens) = farrayLIS(tile)
     enddo
     do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      if(LIS_domain(nest)%gindex(col,row).eq.-1) then
-        farray(col,row,:) = actual_fillVal
-      end if
-    enddo
+      do col=1,LIS_rc%lnc(nest)
+        if(LIS_domain(nest)%gindex(col,row).eq.-1) then
+          farray(col,row,:) = actual_fillVal
+        end if
+      enddo
     enddo
   end subroutine
 
@@ -2904,11 +2904,11 @@ contains
       farray(col,row,ens) = farrayLIS(tile)
     enddo
     do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      if(LIS_domain(nest)%gindex(col,row).eq.-1) then
-        farray(col,row,:) = actual_fillVal
-      end if
-    enddo
+      do col=1,LIS_rc%lnc(nest)
+        if(LIS_domain(nest)%gindex(col,row).eq.-1) then
+          farray(col,row,:) = actual_fillVal
+        end if
+      enddo
     enddo
   end subroutine
 
@@ -2944,11 +2944,11 @@ contains
       farray(col,row,ens) = farrayLIS(tile)
     enddo
     do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      if(LIS_domain(nest)%gindex(col,row).eq.-1) then
-        farray(col,row,:) = actual_fillVal
-      end if
-    enddo
+      do col=1,LIS_rc%lnc(nest)
+        if(LIS_domain(nest)%gindex(col,row).eq.-1) then
+          farray(col,row,:) = actual_fillVal
+        end if
+      enddo
     enddo
   end subroutine
 
@@ -2984,11 +2984,11 @@ contains
       farray(col,row,ens) = farrayLIS(tile)
     enddo
     do row=1,LIS_rc%lnr(nest)
-    do col=1,LIS_rc%lnc(nest)
-      if(LIS_domain(nest)%gindex(col,row).eq.-1) then
-        farray(col,row,:) = actual_fillVal
-      end if
-    enddo
+      do col=1,LIS_rc%lnc(nest)
+        if(LIS_domain(nest)%gindex(col,row).eq.-1) then
+          farray(col,row,:) = actual_fillVal
+        end if
+      enddo
     enddo
   end subroutine
 
