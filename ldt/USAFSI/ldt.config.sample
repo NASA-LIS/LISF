@@ -27,7 +27,8 @@ USAFSI valid date (YYYYMMDDHH):                       2020020318
 USAFSI fractional snow data directory:                ./USAFSIIN/snofrac/
 USAFSI modified data directory:                       ./USAFSIIN/modified/
 USAFSI surface obs data directory:                    ./USAFSIIN/sfcobs/
-USAFSI brightness temperature data option:             2  # 1: SSMIS, 2: XCAL GMI, 3: AMSR2
+# note: options for 2: XCAL GMI and 3: AMSR2 are still in development or test state
+USAFSI brightness temperature data option:             1  # 1: SSMIS, 2: XCAL GMI, 3: AMSR2
 USAFSI XCAL GMI data directory:                       ./GMI_retrievals/
 USAFSI AMSR2 data directory:                          ./AMSR2_retrievals/
 USAFSI SSMIS data directory:                          ./SSMIS_retrievals/
@@ -41,7 +42,8 @@ USAFSI VIIRS data directory:                          ./USAFSIIN/viirs
 USAFSI XCAL GMI raw data directory:                   ./GMI_L1CR_web/
 USAFSI AMSR2 raw data directory:                      ./AMSR2_L1R/
 USAFSI SSMIS raw data directory:                      ./USAFSIIN/OBSI_SSMISUPP/
-USAFSI PMW snow depth retrieval algorithm option:     4  # 1: Hollinger,1991,       2: Chang et al.,1987
+# note: 4: Kelly, 2009 algorithm only works for XCAL GMI and AMSR2 datasets
+USAFSI PMW snow depth retrieval algorithm option:     3  # 1: Hollinger,1991,       2: Chang et al.,1987
                                                          # 3:Foster et al.,1997,    4: Kelly, 2009
 USAFSI forest fraction file:                          ./USAFSIIN/ForestFraction_0p25deg.nc # for algorithm 3 and 4
 USAFSI forest density file:                           ./MOD44B/PTC_MOD44B_0p25.nc  # for algorithm 4
