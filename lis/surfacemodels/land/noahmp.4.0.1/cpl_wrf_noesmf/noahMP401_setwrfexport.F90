@@ -13,7 +13,7 @@
 !   snow water equivalent (snow)
 !   snow height (snowh)
 !   volumetric liquid soil moisture (sh2o 1:4)
-!   #ifdef WRF_HYDRO
+!   if WRF_HYDRO
 !    infiltration excess (infxsrt)
 !    soil drainage (soldrain)
 !

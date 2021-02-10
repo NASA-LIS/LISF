@@ -6,7 +6,6 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #define LIS_NoahMP_TEST 0
-!#define WRF_HYDRO 0  
 ! !INTERFACE
 subroutine noahmp_driver_36(iloc, jloc, &
      landuse_tbl_name, soil_tbl_name,  gen_tbl_name,             & 
