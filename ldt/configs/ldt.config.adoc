@@ -4183,7 +4183,7 @@ Search radius for openwater proximity detection:
 
 `USAFSI surface obs data directory:` directory with surface snow reports
 
-`USAFSI brightness temperature data option:` specifies PMW brightness temperature data. Acceptable values are:
+`USAFSI brightness temperature data option:` specifies PMW brightness temperature data. Acceptable values are (note: options for 2: XCAL GMI and 3: AMSR2 are still in development or test state):
 
 [cols="<,<",]
 |===
