@@ -6,7 +6,6 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
-!#define WRF_HYDRO 0
 module noahmp_globals_36
 use ESMF
 

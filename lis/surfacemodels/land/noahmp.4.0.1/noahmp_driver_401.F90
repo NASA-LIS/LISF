@@ -9,7 +9,6 @@
 ! Oct 15 2018 Zhuo Wang modifed for implementing Noah-MP 4.0.1 
 
 #undef LIS_NoahMP_TEST 
-!#undef WRF_HYDRO
 ! !INTERFACE
 subroutine noahmp_driver_401(n, ttile, itimestep, &  
      latitude, longitude,                                        &
