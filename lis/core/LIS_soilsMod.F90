@@ -120,20 +120,22 @@ contains
     implicit none
     integer :: n, i
     integer :: rc
+    logical :: SubModelIsCrocus    
+    
 
     TRACE_ENTER("soils_init")
     allocate(LIS_soils(LIS_rc%nnest))
 
     do n=1,LIS_rc%nnest
-!       if(LIS_rc%usetexturemap(n).ne."none".and.&
-!            LIS_rc%usesoilfractionmap(n).ne."none") then 
-!
-!          write(LIS_logunit,*) '[ERR] Please select either the soil texture or the soil '
-!          write(LIS_logunit,*) '[ERR] fraction dataset. Both should not be enabled '
-!          write(LIS_logunit,*) '[ERR] simultaneously ...'
-!          call LIS_endrun()
-!
-!       endif
+       if(LIS_rc%usetexturemap(n).ne."none".and.&
+            LIS_rc%usesoilfractionmap(n).ne."none") then 
+
+            write(LIS_logunit,*) '[WARN] Both soil texture and soil fraction dataset are selected.'
+            write(LIS_logunit,*) '[WARN] Both should generally not be enabled simultaneously.'
+            write(LIS_logunit,*) '[WARN] For now, the soil texture will be used; the soil fraction'
+            write(LIS_logunit,*) '[WARN] will be ignored. However, users should double-check'
+            write(LIS_logunit,*) '[WARN] the output of "Soiltype:" via the MODEL OUTPUT TBL.'
+       endif
 
        if(LIS_rc%usetexturemap(n).ne."none") then           
           call read_soiltexture(n)
