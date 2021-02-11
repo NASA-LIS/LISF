@@ -87,7 +87,7 @@ subroutine Crocus81_coldstart(mtype)
         
         call LIS_date2time(LIS_rc%time, LIS_rc%doy, LIS_rc%gmt, LIS_rc%yr,      &
                            LIS_rc%mo, LIS_rc%da, LIS_rc%hr, LIS_rc%mn, LIS_rc%ss)
-        write(LIS_logunit,*) "MSG: Crocus81_coldstart -- ",     &
+        write(LIS_logunit,*) "[INFO]: Crocus81_coldstart -- ",     &
                              "Using the specified start time ", LIS_rc%time
     enddo
 end subroutine Crocus81_coldstart
