@@ -132,7 +132,7 @@ subroutine read_GLASS_ALBEDO_data(source, fname, albedoobs_ip, grid_name)
   use GLASSalbedoobsMod
 
   implicit none
-#if (defined USE_HDF4)
+#if (defined USE_HDFEOS2)
 #include "hdf.f90"
 #endif
 !
@@ -159,14 +159,14 @@ subroutine read_GLASS_ALBEDO_data(source, fname, albedoobs_ip, grid_name)
 !
 !EOP
 
-#if (defined USE_HDF4)
+#if (defined USE_HDFEOS2)
   integer                 :: k
   real*8                  :: cornerlat(2), cornerlon(2)
   integer,  parameter     :: nc=7200, nr=3600
   integer                 :: gdopen,gdattach,gdrdfld
   integer                 :: gddetach,gdclose
   integer                 :: file_id,grid_id,region_id,c,r,c1,r1,i
-  integer		  :: iret,iret1,iret2,iret3,iret4,iret5,iret6
+  integer                 :: iret,iret1,iret2,iret3,iret4,iret5,iret6
   character*50            :: albedo_name
   character*50            :: albedo_name_ws_vis,albedo_name_bs_vis,albedo_name_ws_nir
   character*50            :: albedo_name_bs_nir,albedo_name_ws_sw,albedo_name_bs_sw

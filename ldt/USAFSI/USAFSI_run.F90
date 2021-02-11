@@ -64,7 +64,10 @@ subroutine USAFSI_run(n)
   !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
   !**  02 Nov 20  Removed blacklist logic...Eric Kemp, NASA GSFC/SSAI
   !**  06 Nov 20  Added GALWEM 2-m temperature.......Eric Kemp, NASA GSFC/SSAI
-  !**
+  !**  12 Dec 20  Added GMI and AMSR2 capability...............Yonghwan Kwon/NASA GSFC/ESSIC
+  !**  26 Jan 21  Added revised 10-km snow climatology...........Yeosang Yoon/NASA GSFC/SAIC
+  !**  28 Jan 21  Updated messages for PMW snow retrievals 
+  !**             and cleaned some unused codes..................Yeosang Yoon/NASA GSFC/SAIC
   !*****************************************************************************************
   !*****************************************************************************************
 
@@ -87,6 +90,8 @@ subroutine USAFSI_run(n)
   use USAFSI_paramsMod
   use USAFSI_ssmisMod, only: USAFSI_proc_ssmis
   use USAFSI_utilMod
+  use USAFSI_xcalgmiMod, only: USAFSI_proc_xcalgmi  !kyh20201118
+  use USAFSI_amsr2Mod,   only: USAFSI_proc_amsr2    !kyh20201217
 
   ! Defaults
   implicit none
@@ -101,7 +106,7 @@ subroutine USAFSI_run(n)
   character*5,  allocatable  ::  netid      (:)       ! NETWORK ID OF AN OBSERVATION
   character*100              ::  modif                ! PATH TO MODIFIED DATA DIRECTORY
   character*100              ::  sfcobs               ! PATH TO DBPULL SNOW OBS DIRECTORY
-  character*100              ::  ssmis                ! SSMIS FILE DIRECTORY PATH
+  character*100              ::  TB_product_path      ! TB_based retrivals path          !kyh20201118
   character*9,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
   character*100              ::  static               ! STATIC FILE DIRECTORY PATH
   character*100              ::  stmpdir              ! SFC TEMP DIRECTORY PATH
@@ -140,8 +145,8 @@ subroutine USAFSI_run(n)
   logical :: found_gofs_cice
   logical :: just_12z
 
-  ! SSMIS snow depth, Yeosang Yoon
-  character*100              ::  ssmis_raw_dir       ! SSMIS RAW FILE DIRECTORY PATH
+  ! PMW snow depth retrievals, Yeosang Yoon
+  character*100              ::  TB_raw_dir          ! Brightness temperature raw file directory path  !kyh20201118
   integer                    ::  ssmis_option        ! option for snow depth retrieval algorithm
 
   maxsobs = usafsi_settings%maxsobs
@@ -169,14 +174,30 @@ subroutine USAFSI_run(n)
      fracdir = trim(usafsi_settings%fracdir)
      modif = trim(usafsi_settings%modif)
      sfcobs = trim(usafsi_settings%sfcobs)
-     ssmis = trim(usafsi_settings%ssmis)
+!---------------------------------------------------------kyh20201118
+     if (usafsi_settings%TB_option == 1) then             !SSMIS
+        TB_product_path = trim(usafsi_settings%ssmis)
+     elseif (usafsi_settings%TB_option == 2) then         !XCAL GMI
+        TB_product_path = trim(usafsi_settings%gmi)
+     elseif (usafsi_settings%TB_option == 3) then         !AMSR2
+        TB_product_path = trim(usafsi_settings%amsr2)
+     end if
+!---------------------------------------------------------kyh20201118
      stmpdir = trim(usafsi_settings%stmpdir)
      static = trim(usafsi_settings%static)
      unmod = trim(usafsi_settings%unmod)
      viirsdir = trim(usafsi_settings%viirsdir)
 
-     ! for SSMIS snow depth, Yeosang Yoon
-     ssmis_raw_dir = trim(usafsi_settings%ssmis_raw_dir)
+!-------------------------------------------------------------------------kyh20201118
+     ! for Brightness temperature based snow depth
+     if (usafsi_settings%TB_option == 1) then             !SSMIS
+        TB_raw_dir = trim(usafsi_settings%ssmis_raw_dir)
+     elseif (usafsi_settings%TB_option == 2) then         !XCAL GMI
+        TB_raw_dir = trim(usafsi_settings%gmi_raw_dir)
+     elseif (usafsi_settings%TB_option == 3) then         !AMSR2
+        TB_raw_dir = trim(usafsi_settings%amsr2_raw_dir)
+     end if
+!-------------------------------------------------------------------------kyh20201118
 
      ! EXTRACT MONTH FROM DATE-TIME GROUP.
      read (date10(5:6), '(i2)', err=4200) month
@@ -387,17 +408,31 @@ subroutine USAFSI_run(n)
            found_gofs_cice = .false.
         end if
 
-        ! Estimates SSMIS-based snow depth, Yeosang Yoon
-        write (LDT_logunit,*) &
-             '[INFO] CALLING USAFSI_PROC_SSMIS'
-        call USAFSI_proc_ssmis(date10, ssmis_raw_dir, ssmis, &
-             usafsi_settings%ssmis_option)
+!---------------------------------------------------------------------kyh20201118
+        ! Estimates TB-based snow depth
+        if (usafsi_settings%TB_option == 1) then       !SSMIS
+           write (LDT_logunit,*) &
+                '[INFO] CALLING USAFSI_PROC_SSMIS'
+           call USAFSI_proc_ssmis(date10, TB_raw_dir, TB_product_path, &
+                usafsi_settings%ssmis_option)
+        elseif (usafsi_settings%TB_option == 2) then   !XCAL GMI
+           write (LDT_logunit,*) &
+                '[INFO] CALLING USAFSI_PROC_GMI'
+           call USAFSI_proc_xcalgmi(date10, TB_raw_dir, TB_product_path, &
+                usafsi_settings%ssmis_option)
+        elseif (usafsi_settings%TB_option == 3) then   !AMSR2
+           write (LDT_logunit,*) &
+                '[INFO] CALLING USAFSI_PROC_AMSR2'
+           call USAFSI_proc_amsr2(date10, TB_raw_dir, TB_product_path, &
+                usafsi_settings%ssmis_option)
+        end if
+!---------------------------------------------------------------------kyh20201118
 
-        ! RETRIEVE SSMIS DATA.
+        ! RETRIEVE PMW snow depth.
         write (LDT_logunit,*) &
-             '[INFO] CALLING GETSMI TO GET SSMIS EDR VALUES'
-        call getsmi (date10, ssmis)
-
+             '[INFO] CALLING GETSMI TO GET PMW SNOW DEPTH RETRIEVALS'
+        call getsmi (date10, TB_product_path)  !kyh20201118
+        
         ! RETRIEVE VIIRS DATA.
         if (usafsi_settings%useviirs) then
            write (LDT_logunit,*) &

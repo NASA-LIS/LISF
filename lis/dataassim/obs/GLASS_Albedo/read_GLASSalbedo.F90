@@ -269,7 +269,7 @@ subroutine read_GLASS_ALBEDO_data(n, k, fname, source, albedoobs_bs_ip, &
   use GLASSalbedo_Mod, only : GLASSalbedo_struc
 
   implicit none
-#if (defined USE_HDF4) 
+#if (defined USE_HDFEOS2)
 #include "hdf.f90"
 #endif
 !
@@ -303,7 +303,7 @@ subroutine read_GLASS_ALBEDO_data(n, k, fname, source, albedoobs_bs_ip, &
 !
 !EOP
 
-#if (defined USE_HDF4)
+#if (defined USE_HDFEOS2)
   integer,  parameter     :: nc=7200, nr=3600
   integer                 :: gdopen,gdattach,gdrdfld
   integer                 :: gddetach,gdclose
