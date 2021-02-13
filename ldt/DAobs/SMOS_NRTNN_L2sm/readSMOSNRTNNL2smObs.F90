@@ -9,6 +9,8 @@
 !
 ! !REVISION HISTORY:
 !  06 Jan. 2021: Yonghwan Kwon, Initial Specification
+!  21 Feb. 2021: Mahdi Navari, Before the bugfix, code did
+!                not work with optimization level -1 and -2
 !
 ! !INTERFACE:
 subroutine readSMOSNRTNNL2smObs(n)
@@ -115,7 +117,7 @@ subroutine readSMOSNRTNNL2smObs(n)
 
       write (LDT_logunit, *) '[INFO] reading ', trim(smos_filename(i))
 
-      call read_SMOSNRTL2sm_data(n, smos_filename(i), SMOSNRTNNsmobs(n)%smobs(c,r))
+      call read_SMOSNRTL2sm_data(n, smos_filename(i), SMOSNRTNNsmobs(n)%smobs)
 
       i = i + 1
    enddo
