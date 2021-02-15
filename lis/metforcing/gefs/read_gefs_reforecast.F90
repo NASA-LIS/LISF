@@ -213,7 +213,6 @@ subroutine read_gefs_reforecast(n, m, findex, order, filename, varname, ferror)
         endif
       enddo
     endif
-#endif
 
 ! _______________________________________________________
 
@@ -378,6 +377,7 @@ subroutine read_gefs_reforecast(n, m, findex, order, filename, varname, ferror)
        '[ERR] Could not find file: ',trim(filename)
      ferror = 0
   endif
+#endif
 
 end subroutine read_gefs_reforecast
 
