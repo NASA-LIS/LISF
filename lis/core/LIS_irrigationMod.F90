@@ -280,16 +280,16 @@ contains
                LIS_irrig_struc(n)%cropseasons,default=1,rc=rc)
           call LIS_verify(rc,"Crop Calender use: option not specified in the config file")
        enddo
-       if ( LIS_irrig_struc(n)%cropcalendar .ne. "none" ) then
-         do n=1,LIS_rc%nnest
+       do n=1,LIS_rc%nnest
+        if ( LIS_irrig_struc(n)%cropcalendar .ne. "none" ) then
            allocate(LIS_irrig_struc(n)%plantDay( &
               LIS_rc%npatch(n,LIS_rc%lsm_index),LIS_irrig_struc(n)%cropseasons))
            allocate(LIS_irrig_struc(n)%harvestDay( &
               LIS_rc%npatch(n,LIS_rc%lsm_index),LIS_irrig_struc(n)%cropseasons))
            LIS_irrig_struc(n)%plantDay = 0.0
            LIS_irrig_struc(n)%harvestDay = 0.0
-         enddo
-       endif
+        endif
+       enddo
          
      ! Register irrigation output interval:
        do n=1,LIS_rc%nnest
