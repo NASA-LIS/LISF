@@ -26,7 +26,7 @@
 
     call LDT_optue_init
 
-    call LDT_flush(LDT_logunit)
+    flush(LDT_logunit)
 
   end subroutine LDT_init_OPTUEparamproc
   
