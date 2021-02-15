@@ -1781,7 +1781,7 @@ integer function set_plevel(editionNumber,pds9,level)
 
    ! Imports
    use LIS_coreMod, only: LIS_masterproc
-   use LIS_logmod, only: LIS_logunit,LIS_flush,LIS_abort, &
+   use LIS_logmod, only: LIS_logunit,LIS_abort, &
       LIS_alert,LIS_endrun
    use LIS_mpiMod
 
@@ -1807,7 +1807,7 @@ integer function set_plevel(editionNumber,pds9,level)
         '[ERR] Unknown GRIB edition ',editionNumber
       write(LIS_logunit,*) &
         'ABORTING...'
-      call LIS_flush(LIS_logunit)
+      flush(LIS_logunit)
       messages(:) = ''
       messages(1) = '[ERR] Program: LIS'
       messages(2) = '  Routine: set_plevel'

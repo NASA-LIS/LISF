@@ -1026,7 +1026,7 @@ end subroutine LIS_quilt_b_domain
                    '[ERR] No dominant surface model type found!'
               write(LIS_logunit,*) &
                    'c,r,fgrd: ',c,r,fgrd(c,r,:)
-              call LIS_flush(LIS_logunit)
+              flush(LIS_logunit)
               call LIS_endrun()
            end if
 
@@ -1068,7 +1068,7 @@ end subroutine LIS_quilt_b_domain
                 "  Thus, surface tiles set to '0' for gridpoint:"
               write(LIS_logunit,*) &
                    'c,r,fgrd: ',c,r,fgrd(c,r,:)
-              call LIS_flush(LIS_logunit)
+              flush(LIS_logunit)
               call LIS_endrun()
            end if
 

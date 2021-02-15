@@ -508,7 +508,7 @@ contains
       use AGRMET_forcingMod, only : agrmet_struc
       use LIS_coreMod, only: LIS_domain, LIS_rc
       use LIS_LMLCMod, only: LIS_LMLC
-      use LIS_logMod, only: LIS_logunit, LIS_flush, LIS_endrun
+      use LIS_logMod, only: LIS_logunit, LIS_endrun
 
       ! Defaults
       implicit none
@@ -565,7 +565,7 @@ contains
          write(LIS_logunit,*)'[ERR] Invalid imax dimension for SSM/I!'
          write(LIS_logunit,*)'Received ', imax
          write(LIS_logunit,*)'Only support 512, 1024, or 1400'
-         call LIS_flush(LIS_logunit)
+         flush(LIS_logunit)
          call LIS_endrun()         
       end if
 
@@ -629,7 +629,7 @@ contains
 
          write(LIS_logunit,*)'[ERR] Lat/lon SSM/I data not supported yet!'
          write(LIS_logunit,*)'Modify EMK_addSSMIObsData and recompile!'
-         call LIS_flush(LIS_logunit)
+         flush(LIS_logunit)
          call LIS_endrun()
 
       end if ! Lat/Lon case
@@ -885,7 +885,7 @@ contains
       use LIS_coreMod, only     : LIS_rc, LIS_masterproc, LIS_domain
       use LIS_fileIOMod, only: LIS_putget
       use LIS_LMLCMod, only: LIS_LMLC
-      use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_alert, LIS_flush
+      use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_alert
       use LIS_timeMgrMod, only : LIS_julhr_date
 
       ! Defaults
@@ -1003,7 +1003,7 @@ contains
                     '[ERR] Invalid imax dimension for GEO_PRECIP!'
                write(LIS_logunit,*)'Received ',imax
                write(LIS_logunit,*)'Only support 512, 1024, or 4096!'
-               call LIS_flush(LIS_logunit)
+               flush(LIS_logunit)
                call LIS_endrun()
             end if
 
@@ -1204,7 +1204,7 @@ contains
                        '[ERR] Lat/lon GEO_PRECIP data not supported yet!'
                   write(LIS_logunit,*)&
                        'Modify EMK_addGeoPrecipObsData and recompile!'
-                  call LIS_flush(LIS_logunit)
+                  flush(LIS_logunit)
                   call LIS_endrun()
 
                end if
@@ -1923,7 +1923,7 @@ contains
 
       ! Imports
       use LIS_coreMod, only: LIS_npes, LIS_localPet, LIS_rc, LIS_domain
-      use LIS_logMod, only : LIS_logunit, LIS_endrun, LIS_flush, LIS_endrun
+      use LIS_logMod, only : LIS_logunit, LIS_endrun, LIS_endrun
       use LIS_mpiMod
 
       ! Defaults
@@ -4413,7 +4413,7 @@ contains
 
       ! Imports
       use LIS_coreMod, only: LIS_rc
-      use LIS_logMod, only: LIS_logunit, LIS_flush
+      use LIS_logMod, only: LIS_logunit
 
       ! Defaults
       implicit none

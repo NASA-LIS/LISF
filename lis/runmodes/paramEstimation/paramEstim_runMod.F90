@@ -119,12 +119,12 @@ contains
     use LIS_appMod,          only : LIS_appModel_init
     use LIS_paramsMod,       only : LIS_param_reset, LIS_param_init, LIS_param_finalize
     use LIS_timeMgrMod,      only : LIS_resetClock, LIS_timemgr_init
-    use LIS_logMod,          only : LIS_flush, LIS_logunit
+    use LIS_logMod,          only : LIS_logunit
     use LIS_optUEMod
     use LIS_PE_HandlerMod,   only : LIS_readPEobs, LIS_computePEobjectiveFunc,&
          LIS_resetPEObjectiveFunc, LIS_resetPEobs,LIS_updatePEObjectiveFunc,&
          LIS_setPEDecisionSpace
-    use LIS_logMod,          only : LIS_logunit, LIS_flush
+    use LIS_logMod,          only : LIS_logunit
 !
 ! !DESCRIPTION:
 ! 
@@ -180,7 +180,7 @@ contains
     use LIS_routingMod,      only : LIS_routing_run, LIS_routing_writeoutput, &
          LIS_routing_writerestart
     use LIS_RTMMod,          only : LIS_RTM_run,LIS_RTM_output
-    use LIS_logMod,          only : LIS_flush, LIS_logunit
+    use LIS_logMod,          only : LIS_logunit
 
     integer, intent(in) :: n
 
