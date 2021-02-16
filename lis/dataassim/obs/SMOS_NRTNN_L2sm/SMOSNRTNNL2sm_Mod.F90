@@ -16,6 +16,8 @@
 ! !REVISION HISTORY: 
 !  8 May 2013    Sujay Kumar; initial specification
 !  20 Jan 2021    Yonghwan Kwon; Updated to read SMOS NRT NN L2 soil moisture
+! 15 Feb. 2021: Mahdi Navari, code modified to read the DGG 
+!                lookup table from a netCDF file
 
 module SMOSNRTNNL2sm_Mod
 ! !USES: 
@@ -73,8 +75,12 @@ module SMOSNRTNNL2sm_Mod
      character*100              :: modelcdffile
      character*100              :: obscdffile
      integer                    :: start_day, count_day
-
+     integer, allocatable       :: dgg_lookup_1d(:)
+     !integer, allocatable       :: SMOS_lookup_glb(:,:)
+     !integer, allocatable       :: num_dgg_glb(:,:)
+ 
      type(SMOS_in_lis_gridbox), pointer :: SMOS_lookup(:,:)
+     type(SMOS_in_lis_gridbox), pointer :: SMOS_lookup_glb(:,:)
 
   end type SMOSNRTNNL2sm_dec
 
@@ -346,6 +352,7 @@ contains
 
        SMOSNRTNNL2sm_struc(n)%smtime = -1
        SMOSNRTNNL2sm_struc(n)%SMOS_lookup%dgg_assign = .false.
+       SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb%dgg_assign = .false.
        SMOSNRTNNL2sm_struc(n)%start_day = LIS_rc%da
        SMOSNRTNNL2sm_struc(n)%count_day = 0
 

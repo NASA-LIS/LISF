@@ -11,6 +11,8 @@
 !  06 Jan. 2021: Yonghwan Kwon, Initial Specification
 !  21 Feb. 2021: Mahdi Navari, Before the bugfix, code did
 !                not work with optimization level -1 and -2
+!  21 Feb. 2021: Mahdi Navari, code modified to write the DGG 
+!                lookup table into a netCDF file
 !
 ! !INTERFACE:
 subroutine readSMOSNRTNNL2smObs(n)
@@ -212,6 +214,7 @@ subroutine read_SMOSNRTL2sm_data(n, fname, smobs_inp)
   use LDT_logMod
   use LDT_timeMgrMod
   use SMOSNRTNNL2sm_obsMod
+  use write_lookup_table
 
   implicit none
 !
@@ -245,6 +248,9 @@ subroutine read_SMOSNRTL2sm_data(n, fname, smobs_inp)
    integer              :: c,r,i,j
    integer, allocatable :: i_dgg(:)
    real, allocatable    :: sm_dgg(:), smunct_dgg(:)
+   integer              :: total_length
+   real, allocatable    :: dgg_indices_1d(:)
+
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
    ios = nf90_open(path=trim(fname),mode=NF90_NOWRITE,ncid=nid)
@@ -445,6 +451,46 @@ subroutine read_SMOSNRTL2sm_data(n, fname, smobs_inp)
 
    ios = nf90_close(ncid=nid)
    call LDT_verify(ios,'Error closing file '//trim(fname))
+
+
+  ! assume that during 30 days after the simulation start date
+  ! all land grids have assigned dgg_id_number
+   if (SMOSNRTNNsmobs(n)%count_day .eq. 31) then
+      !write(*,*) 'SMOSNRTNNsmobs(n)%count_day= ', SMOSNRTNNsmobs(n)%count_day
+      !SMOSNRTNNsmobs(n)%dgg_lookup_1d = (/1 , 2, 3, 4 /)
+      !      write(*,*) 'SMOSNRTNNsmobs(n)%dgg_lookup_1d= ', SMOSNRTNNsmobs(n)%dgg_lookup_1d
+
+     total_length = 0
+       do r = 1, LDT_rc%lnr(n)
+          do c = 1, LDT_rc%lnc(n)
+             total_length = total_length + 1
+             if (SMOSNRTNNsmobs(n)%SMOS_lookup(c,r)%dgg_assign) then
+               total_length = total_length + size(SMOSNRTNNsmobs(n)%SMOS_lookup(c,r)%dgg_indices)
+             end if
+          enddo
+       enddo
+       ! Allocate memory and store
+       allocate(dgg_indices_1d(total_length))
+       dgg_indices_1d = 0 ! Initialize memory
+       i = 0
+       do r = 1, LDT_rc%lnr(n)
+          do c = 1, LDT_rc%lnc(n)
+             i = i + 1
+             if (SMOSNRTNNsmobs(n)%SMOS_lookup(c,r)%dgg_assign) then
+                dgg_indices_1d(i) = size(SMOSNRTNNsmobs(n)%SMOS_lookup(c,r)%dgg_indices)
+                do j = 1, size(SMOSNRTNNsmobs(n)%SMOS_lookup(c,r)%dgg_indices)
+                   i = i + 1
+                   dgg_indices_1d(i) = SMOSNRTNNsmobs(n)%SMOS_lookup(c,r)%dgg_indices(j)
+                end do
+             end if
+          enddo
+       enddo
+    
+    SMOSNRTNNsmobs(n)%dgg_lookup_1d = dgg_indices_1d
+    deallocate(dgg_indices_1d)
+
+      call LDT_SMOS_DGG_lookup(n)
+   endif
 
 #endif
 
