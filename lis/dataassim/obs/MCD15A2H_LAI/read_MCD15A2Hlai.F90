@@ -42,7 +42,9 @@ subroutine read_MCD15A2Hlai(n, k, OBS_State, OBS_Pert_State)
 !  The arguments are: 
 !  \begin{description}
 !  \item[n] index of the nest
+!  \item[k] number of observation state
 !  \item[OBS\_State] observations state
+!  \item[OBS\_Pert\_State] observation perturbations state
 !  \end{description}
 !
 !EOP
@@ -100,7 +102,7 @@ subroutine read_MCD15A2Hlai(n, k, OBS_State, OBS_Pert_State)
         do while(.not.file_exists.and.count.lt.8) 
            call create_MCD15A2Hlai_filename(laiobsdir, &
                 MCD15A2Hlai_struc(n)%version, cyr, cdoy, fname1,climofile1)
-           
+
            inquire(file=fname1,exist=file_exists)          
            if(file_exists) then 
               exit; 
@@ -113,8 +115,18 @@ subroutine read_MCD15A2Hlai(n, k, OBS_State, OBS_Pert_State)
         enddo
         if(count.ne.8) then 
            !Find the next data location
-           call LIS_tick(MCD15A2Hlai_struc(n)%time2,cdoy,cgmt,cyr,cmo,cda, &
-                chr,cmn,css,(-8.0)*ts)
+           if(cdoy.lt.361) then
+              call LIS_tick(MCD15A2Hlai_struc(n)%time2,cdoy,cgmt,cyr,cmo,cda, &
+                   chr,cmn,css,(-8.0)*ts)
+           else
+             if(mod(cyr,4).ne.0) then
+                call LIS_tick(MCD15A2Hlai_struc(n)%time2,cdoy,cgmt,cyr,cmo,cda, &
+                     chr,cmn,css,(-5.0)*ts)
+             else
+                call LIS_tick(MCD15A2Hlai_struc(n)%time2,cdoy,cgmt,cyr,cmo,cda, &
+                     chr,cmn,css,(-6.0)*ts)
+             endif
+           endif
            call create_MCD15A2Hlai_filename(laiobsdir, &
                 MCD15A2Hlai_struc(n)%version,cyr, cdoy, fname2,climofile2)
            
@@ -313,9 +325,12 @@ subroutine read_MCD15A2H_LAI_data(n, k, fname, climofile, laiobs_ip)
 !  The arguments are: 
 !  \begin{description}
 !  \item[n]            index of the nest
+!  \item[k]            number of observation state
+!  \item[k]            number of observation state
 !  \item[fname]        name of the MCD15A2H LAI file
-!  \item[laiobs\_ip]    MCD15A2H LAI data processed to the LIS domain
-! \end{description}
+!  \item[climofile]    Generated MCD152AH LAI climatology file
+!  \item[laiobs\_ip]   MCD15A2H LAI data processed to the LIS domain
+!  \end{description}
 !
 !
 !EOP
@@ -360,14 +375,6 @@ subroutine read_MCD15A2H_LAI_data(n, k, fname, climofile, laiobs_ip)
   lat_off = nint((cornerlat(1)+89.9979167)/0.00416667)+1
   lon_off = nint((cornerlon(1)+179.9979167)/0.00416667)+1
 
-  write(LIS_logunit,*) '[INFO] cornerlat(1) ',cornerlat(1)
-  write(LIS_logunit,*) '[INFO] cornerlon(1) ',cornerlon(1)
-  write(LIS_logunit,*) '[INFO] cornerlat(2) ',cornerlat(2)
-  write(LIS_logunit,*) '[INFO] cornerlon(2) ',cornerlon(2)
-  write(LIS_logunit,*) '[INFO] lat_off', lat_off
-  write(LIS_logunit,*) '[INFO] lon_off', lon_off
-  write(LIS_logunit,*) '[INFO] MCD15A2Hlai_struc(n)%nc', MCD15A2Hlai_struc(n)%nc
-  write(LIS_logunit,*) '[INFO] MCD15A2Hlai_struc(n)%nr', MCD15A2Hlai_struc(n)%nr
 
   ios = nf90_get_var(nid, laiid, lai, &
        start=(/lon_off,lat_off/), &
@@ -451,8 +458,8 @@ subroutine read_MCD15A2H_LAI_data(n, k, fname, climofile, laiobs_ip)
      ios = nf90_open(path=trim(climofile),mode=NF90_NOWRITE,ncid=nid)
      call LIS_verify(ios,'Error opening file '//trim(climofile))
      
-     ios = nf90_inq_varid(nid, 'LAI_500m',laiid)
-     call LIS_verify(ios, 'Error nf90_inq_varid: LAI_500m')
+     ios = nf90_inq_varid(nid, 'Lai_500m',laiid)
+     call LIS_verify(ios, 'Error nf90_inq_varid: Lai_500m')
      
      cornerlat(1)=MCD15A2Hlai_struc(n)%gridDesci(4)
      cornerlon(1)=MCD15A2Hlai_struc(n)%gridDesci(5)
@@ -468,7 +475,7 @@ subroutine read_MCD15A2H_LAI_data(n, k, fname, climofile, laiobs_ip)
           start=(/lon_off,lat_off/), &
           count=(/MCD15A2Hlai_struc(n)%nc,MCD15A2Hlai_struc(n)%nr/)) 
      
-     call LIS_verify(ios, 'Error nf90_get_var: LAI_500m')
+     call LIS_verify(ios, 'Error nf90_get_var: Lai_500m')
      
      ios = nf90_close(ncid=nid)
      call LIS_verify(ios,'Error closing file '//trim(fname))
@@ -477,7 +484,7 @@ subroutine read_MCD15A2H_LAI_data(n, k, fname, climofile, laiobs_ip)
         do c=1, MCD15A2Hlai_struc(n)%nc
            
            if(lai(c,r).gt.0.and.lai(c,r).le.100) then
-              lai_flagged(c,r) = lai(c,r)
+              lai_flagged(c,r) = lai(c,r)*0.1
            else
               lai_flagged(c,r) = LIS_rc%udef
            endif
@@ -518,11 +525,6 @@ subroutine read_MCD15A2H_LAI_data(n, k, fname, climofile, laiobs_ip)
         
      endif
      
-     open(100,file='test.bin',form='unformatted')
-     write(100) laiobs_climo_ip
-     close(100)
-     stop
-
      do t=1,LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)
         if(laiobs_ip(t).eq.-9999.0.and.laiobs_climo_ip(t).ne.-9999.0) then 
            laiobs_ip(t) = laiobs_climo_ip(t)
@@ -557,10 +559,12 @@ subroutine create_MCD15A2Hlai_filename(ndir, version, yr, doy, filename, climofi
 !  The arguments are: 
 !  \begin{description}
 !  \item[ndir] name of the MCD15A2H LAI data directory
+!  \item[version] version of the MCD15A2H LAI data
 !  \item[yr]  current year
-!  \item[mo]  current doy
+!  \item[doy]  current day of the year
 !  \item[filename] Generated MCD15A2H LAI filename
-! \end{description}
+!  \item[climofile] Generated MCD152AH LAI climatology file
+!  \end{description}
 !EOP
 
   character (len=4) :: fyr
@@ -569,15 +573,14 @@ subroutine create_MCD15A2Hlai_filename(ndir, version, yr, doy, filename, climofi
   write(unit=fyr, fmt='(i4.4)') yr
   write(unit=fdoy, fmt='(i3.3)') doy
 
-  if(version.eq."006") then 
+  if(version.eq."006") then
      filename = trim(ndir)//'/'//trim(fyr)//'/MCD15A2H.006_LAI_'//&
           trim(fyr)//trim(fdoy)//'.nc4'
-  ! (placeholder for future MODSI LAI dataset of other versions)
   endif
 
   climofile = trim(ndir)//'/MCD15A2H.006_LAI_YYYY'//&
        trim(fdoy)//'.nc4'
-  
+
 end subroutine create_MCD15A2Hlai_filename
 
 

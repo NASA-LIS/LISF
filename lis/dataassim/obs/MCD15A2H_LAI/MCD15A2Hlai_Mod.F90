@@ -11,7 +11,7 @@
 ! 
 ! !DESCRIPTION: 
 !   This module contains interfaces and subroutines to
-!   handle 
+!   handle the MODIS MCD15A2H LAI data.
 ! 
 ! !REVISION HISTORY: 
 !  16 Jun 2020    Wanshu Nie; initial specification
@@ -97,6 +97,7 @@ contains
 !  
 !   The arguments are: 
 !   \begin{description}
+!    \item[k] number of observation state 
 !    \item[OBS\_State]   observation state 
 !    \item[OBS\_Pert\_State] observation perturbations state
 !   \end{description}
@@ -146,15 +147,6 @@ contains
             laiobsdir, rc=status)
        call LIS_verify(status)
     enddo
-
-! source = "AVHRR" or "MODIS"
-!    call ESMF_ConfigFindLabel(LIS_config,"GLASS LAI data source:",&
-!         rc=status)
-!    do n=1,LIS_rc%nnest
-!       call ESMF_ConfigGetAttribute(LIS_config,GLASSlai_struc(n)%source,&
-!            rc=status)
-!       call LIS_verify(status, 'GLASS LAI data source: is missing')
-!    enddo
 
     call ESMF_ConfigFindLabel(LIS_config,"MCD15A2H LAI data version:",&
          rc=status)
@@ -323,14 +315,11 @@ contains
           cornerlon1 = max(-179.9979167, nint((LIS_rc%obs_gridDesc(k,5)+179.9979167)/0.00416667)*0.00416667-179.9979167-50*0.00416667)
           cornerlat2 = min(89.9979167, nint((LIS_rc%obs_gridDesc(k,7)+59.9978927)/0.00416667)*0.00416667-59.9978927+50*0.00416667)
           cornerlon2 = min(179.9979167, nint((LIS_rc%obs_gridDesc(k,8)+179.9979167)/0.00416667)*0.00416667-179.9979167+50*0.00416667)
-
        elseif(LIS_rc%lis_obs_map_proj(k).eq."lambert") then
-
           cornerlat1 = max(-59.9978927, nint((LIS_rc%minLat(n)+59.9978927)/0.00416667)*0.00416667-59.9978927-50*0.00416667)
           cornerlon1 = max(-179.9979167, nint((LIS_rc%minLon(n)+179.9979167)/0.00416667)*0.00416667-179.9979167-50*0.00416667)
           cornerlat2 = min(89.9979167, nint((LIS_rc%maxLat(n)+59.9978927)/0.00416667)*0.00416667-59.9978927+50*0.00416667)
           cornerlon2 = min(179.9979167, nint((LIS_rc%maxLon(n)+179.9979167)/0.00416667)*0.00416667-179.9979167+50*0.00416667)
-
        endif
 
        MCD15A2Hlai_struc(n)%nc = nint((cornerlon2-cornerlon1)/0.00416667)+1

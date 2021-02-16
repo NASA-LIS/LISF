@@ -1,12 +1,12 @@
 
+[[sec_usersupport,User Support]]
 == User Support
-anchor:sec_usersupport[User Support]
 
 This section describes how to request help from and provide feedback to the LIS development team.
 
 
+[[ssec_modelingguru,Modeling Guru]]
 === Modeling Guru
-anchor:ssec_modelingguru[Modeling Guru]
 
 The NASA Center for Climate Simulation (NCCS) hosts a system called Modeling Guru, https://modelingguru.nasa.gov.  This system is a collection of forums discussing many of NASA's modelling efforts and related topics.  LIS has a "`community`" within Modeling Guru.
 
@@ -19,19 +19,24 @@ To request help from the LIS development team, please visit our community within
 
 When reporting a bug or an error running LIS, please provide a description of the problem, including any error messages printed to the screen.  Attach a copy of the _lislog.0000_ file.  Also attach a copy of any relevant supporting files such as: +
 
-For LIS: +
-  * lis.config +
-  * lislog.0000 +
-  * MODEL_OUTPUT_LIST.TBL +
-  * configure.lis (in your make directory) +
-For LDT: +
-  * ldt.config +
-  * ldtlog.0000 +
-  * configure.ldt (in your make directory) +
-For LVT: +
-  * lvt.config +
-  * lvtlog.0000 +
-  * configure.lvt (in your make directory)
+For LIS:
+
+* _lis.config_
+* _lislog.0000_
+* _MODEL_OUTPUT_LIST.TBL_
+* _configure.lis_ (in your make directory)
+
+For LDT:
+
+* _ldt.config_
+* _ldtlog.0000_
+* _configure.ldt_ (in your make directory)
+
+For LVT:
+
+* _lvt.config_
+* _lvtlog.0000_
+* _configure.lvt_ (in your make directory)
 
 Please note that the LIS development team does not receive funding to provide community support.  Your questions and issues are important to us, but we can address them only when time permits.
 

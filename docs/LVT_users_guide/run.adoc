@@ -4,13 +4,27 @@
 
 This section describes how to run the LVT executable.
 
-The single-process version of `LVT` is executed by the following command issued in the _$WORKING/run/_ directory.
+First you should create a directory to run LVT in. It is suggested that you run LVT in a directory that is separate from your source code. This running directory shall be referred to as _$RUNNING_. Next, copy the LVT executable into your running directory
+
+....
+% cp $WORKING/LVT $RUNNING
+....
+
+The single-process version of `LVT` is executed by the following command issued in the _$RUNNING_ directory.
 
 ....
 % ./LVT <configfile>
 ....
 
 where `<configfile>` represents the file containing the run time configuration options for LVT. Currently LVT only supports a serial mode.
+
+Some systems require that you submit your job into a batch queue. Please consult with your system adminstrator for instructions on how to do this.
+
+Note that before running LVT, you must set your environment to have an unlimited stack size. For the Bash shell, run
+
+....
+% ulimit -s unlimited
+....
 
 To customize your run, you must specify a LVT runtime configuration file. See Section <<sec-lvtconfigfile>> for more information.
 
