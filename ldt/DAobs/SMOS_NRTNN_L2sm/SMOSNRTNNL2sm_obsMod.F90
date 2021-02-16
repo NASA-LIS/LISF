@@ -11,6 +11,8 @@
 !   
 ! !REVISION HISTORY: 
 !  31 Dec 2020: Yonghwan Kwon, Initial Specification
+!  21 Feb. 2021: Mahdi Navari, code modified to write the DGG 
+!                lookup table into a netCDF file
 !
 module SMOSNRTNNL2sm_obsMod
 ! !USES: 
@@ -44,6 +46,7 @@ module SMOSNRTNNL2sm_obsMod
      type(proj_info)        :: proj
      !integer, allocatable   :: n11(:)
      integer                :: start_day, count_day
+     integer, allocatable   :: dgg_lookup_1d(:)
 
      type(SMOS_in_lis_gridbox), pointer :: SMOS_lookup(:,:)
 
@@ -113,7 +116,7 @@ contains
        SMOSNRTNNsmobs(n)%SMOS_lookup%dgg_assign = .false.
        SMOSNRTNNsmobs(n)%start_day = LDT_rc%da
        SMOSNRTNNsmobs(n)%count_day = 0
-
+       SMOSNRTNNsmobs(n)%dgg_lookup_1d = 0
        call LDT_initializeDAobsEntry(LDT_DAobsData(n)%soilmoist_obs, &
             "m3/m3",1,1)
        LDT_DAobsData(n)%soilmoist_obs%selectStats = 1

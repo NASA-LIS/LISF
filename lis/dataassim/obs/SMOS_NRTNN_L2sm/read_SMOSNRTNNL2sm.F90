@@ -27,6 +27,7 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
    use map_utils
    use LIS_pluginIndices
    use SMOSNRTNNL2sm_Mod, only: SMOSNRTNNL2sm_struc
+   use read_dgg_lookup_table
 
    implicit none
 ! !ARGUMENTS:
@@ -95,6 +96,10 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
    character(len=200)     :: cmd
    character*1            :: fproc(4)
    character*100          :: temp1
+   !real, allocatable    :: sm_dgg(:), smunct_dgg(:), obstime_dgg(:)
+   integer, allocatable   :: num_dgg_glb(:,:)
+   integer                :: Max_length
+   !logical, allocatable   :: SMOS_assign_glb(:,:)
 
    call ESMF_AttributeGet(OBS_State, "Data Directory", &
                           smobsdir, rc=status)
@@ -110,6 +115,88 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
       SMOSNRTNNL2sm_struc(n)%count_day = SMOSNRTNNL2sm_struc(n)%count_day + 1
       SMOSNRTNNL2sm_struc(n)%start_day = LIS_rc%da
    endif
+
+! MN: start edit 
+!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   !read dgg lookup table form LDT output and store that in SMOSNRTNNL2sm_struc(n)%dgg_lookup_1d(:) 
+   if (SMOSNRTNNL2sm_struc(n)%count_day .eq. 1) then
+       If (LIS_masterproc) then 
+          call LIS_SMOS_DGG_lookup(n)
+       endif
+   endif
+
+   ! Create arrays to store global data
+   Allocate(SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb(LIS_rc%gnc(n), LIS_rc%gnr(n)))
+   Allocate(num_dgg_glb(LIS_rc%gnc(n), LIS_rc%gnr(n)))
+
+   If (LIS_masterproc) then
+      i = 0
+      r = 1
+      do
+            c = 1
+         do
+            i = i + 1
+            If (SMOSNRTNNL2sm_struc(n)%dgg_lookup_1d(i) == 0) then ! dgg_indices_1d(i)
+                   Num_dgg_glb(c,r) = 0
+            Else
+               Max_length = SMOSNRTNNL2sm_struc(n)%dgg_lookup_1d(i)! dgg_indices_1d(i)
+               Num_dgg_glb(c,r) = max_length
+               Allocate(SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb(c,r)%dgg_indices(max_length))
+
+               Do j = 1, max_length
+                  i = i + 1
+                  SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb(c,r)%dgg_indices(j) = SMOSNRTNNL2sm_struc(n)%dgg_lookup_1d(i)! dgg_indices_1d(i)
+               Enddo
+            Endif
+            c = c + 1
+               If (c > LIS_rc%gnc(n)) cycle
+          enddo
+            r = r + 1
+          if (r > LIS_rc%gnr(n)) exit
+       enddo
+   !endif
+
+
+      SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb%dgg_assign = .false.
+      !j = 0  
+      do r=1,LIS_rc%gnr(n)
+         do c=1,LIS_rc%gnc(n)
+            !j = j + 1  
+            if (size(SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb(c,r)%dgg_indices) > 0)then
+               SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb(c,r)%dgg_assign = .true.
+            endif
+         enddo
+      enddo
+
+! convert from global domain to the LIS local domain
+!from 
+!     SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb(c,r)%dgg_indices
+!     SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb(c,r)%dgg_assign
+
+!to 
+!     SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices 
+!     SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_assign 
+
+
+!      Call MPI_Scatter(ddg_indices_1,&
+!           size(ddg_indices_1),&
+!           MPI_INTEGER,&
+!           ddg_indices_1d_tmp,&
+!           size(ddg_indices_1d_tmp ),&
+!           MPI_INTEGER,&
+!           0, MPI_COMM_WORLD, ierr)
+
+
+
+
+
+
+   endif
+   deallocate(num_dgg_glb)
+
+! MN: end edit 
+!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
    alarmCheck = LIS_isAlarmRinging(LIS_rc, "SMOSNRTNN read alarm")
 
@@ -472,6 +559,7 @@ subroutine read_SMOSNRTNNL2sm_data(n, k, fname, smobs_inp, time, chr)
   use LIS_timeMgrMod
   use LIS_DAobservationsMod
   use SMOSNRTNNL2sm_Mod, only : SMOSNRTNNL2sm_struc
+  !use read_dgg_lookup_table
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -514,6 +602,7 @@ subroutine read_SMOSNRTNNL2sm_data(n, k, fname, smobs_inp, time, chr)
    real, allocatable    :: sm_dgg(:), smunct_dgg(:), obstime_dgg(:)
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
+
    ios = nf90_open(path=trim(fname),mode=NF90_NOWRITE,ncid=nid)
    call LIS_verify(ios,'Error opening file '//trim(fname))
 
