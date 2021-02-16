@@ -24,7 +24,7 @@ subroutine Crocus81_writerst(n)
                                LIS_create_restart_filename
     use Crocus81_lsmMod
 
-#if (defined USE_NETCDF3 .OR. defined USE_NETCDF4)
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
 #endif
 
@@ -87,7 +87,7 @@ subroutine Crocus81_writerst(n)
             if(wformat .eq. "binary") then
                 call LIS_releaseUnitNumber(ftn)
             elseif(wformat .eq. "netcdf") then
-#if (defined USE_NETCDF3 .OR. defined USE_NETCDF4)
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
                 status = nf90_close(ftn)
                 call LIS_verify(status, "Error in nf90_close in Crocus81_writerst")
 #endif
