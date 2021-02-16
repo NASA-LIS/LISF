@@ -917,13 +917,13 @@ CONTAINS
 	endwhere
 
     where (sum(gswx,2)>0.0)
-		canopy%fevc = canopy%fev - canopy%fevw 
+		canopy%fevc = canopy%fev - canopy%fevw
 	elsewhere
 		canopy%fevc = 0.0
 	endwhere
 	if (any(canopy%fevc<-0.01)) then
 		write (*,*) 'negative trans ', ktau, canopy%fev, canopy%fevc
-	endif 
+	endif
 	where (canopy%fevc<0.0.and.canopy%fevc>-1.e-5)  ! negative values of fevc due to precision
 		canopy%fevc = 0.0
 		canopy%fevw =canopy%fev

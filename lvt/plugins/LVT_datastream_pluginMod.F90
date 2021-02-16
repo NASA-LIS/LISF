@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !MODULE: LVT_datastream_pluginMod
@@ -168,6 +174,7 @@ contains
     use UASNOW_obsMod,          only : UASNOW_obsinit
     use OzFlux_obsMod,          only : OzFlux_obsinit
     use JASMINsm_obsMod,        only : JASMINsm_obsInit
+    use ERA5obsMod,             only : ERA5obsinit
 
     external readtemplateObs
     external readLISoutput
@@ -272,6 +279,7 @@ contains
     external readUASNOWObs
     external readOzFluxObs
     external readJASMINsmobs
+    external readERA5obs
 
     call registerobsread(trim(LVT_LVTbenchmarkobsId)//char(0),&
          readLVTbenchmarkOUTobs)
@@ -689,5 +697,11 @@ contains
          JASMINsm_obsinit)
     call registerobsread(trim(LVT_JASMINsmobsId)//char(0),&
          readJASMINsmobs)
+
+    call registerobssetup(trim(LVT_ERA5obsId)//char(0), &
+         ERA5obsinit)
+    call registerobsread(trim(LVT_ERA5obsId)//char(0),&
+         readERA5obs)
+
   end subroutine LVT_datastream_plugin
 end module LVT_datastream_pluginMod

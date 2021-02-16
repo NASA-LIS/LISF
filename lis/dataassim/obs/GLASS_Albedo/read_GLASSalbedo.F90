@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -267,7 +269,7 @@ subroutine read_GLASS_ALBEDO_data(n, k, fname, source, albedoobs_bs_ip, &
   use GLASSalbedo_Mod, only : GLASSalbedo_struc
 
   implicit none
-#if (defined USE_HDF4) 
+#if (defined USE_HDFEOS2)
 #include "hdf.f90"
 #endif
 !
@@ -301,7 +303,7 @@ subroutine read_GLASS_ALBEDO_data(n, k, fname, source, albedoobs_bs_ip, &
 !
 !EOP
 
-#if (defined USE_HDF4)
+#if (defined USE_HDFEOS2)
   integer,  parameter     :: nc=7200, nr=3600
   integer                 :: gdopen,gdattach,gdrdfld
   integer                 :: gddetach,gdclose

@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -357,16 +359,17 @@ contains
                 open_stats = .false.
                 if(LIS_masterproc) then 
                    call LIS_create_output_directory('RTM')
-                   call LIS_create_output_filename(n,outfile,&
-                        model_name = 'RTM',&
-                        writeint=LIS_rtm_struc(n)%rtmoutInterval)
-                   if(LIS_rtm_struc(n)%stats_file_open) then 
+                   if (LIS_rtm_struc(n)%stats_file_open) then
                       call LIS_create_stats_filename(n,statsfile,'RTM')
                       LIS_rtm_struc(n)%stats_file_open = .false.
-                      open_stats = .true. 
+                      open_stats = .true.
                    endif
                 endif
-                
+
+                call LIS_create_output_filename(n,outfile,&
+                     model_name = 'RTM',&
+                     writeint=LIS_rtm_struc(n)%rtmoutInterval)
+
                 call LIS_writeModelOutput(n,outfile,statsfile,open_stats, &
                      outInterval = LIS_rtm_struc(n)%rtmoutInterval,       &
                      nsoillayers = 1,                                     &

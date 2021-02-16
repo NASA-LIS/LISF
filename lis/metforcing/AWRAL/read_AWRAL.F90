@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -65,12 +67,12 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
   integer            :: ftn, ndata, index1,v
   integer, parameter :: N_AF = 6 ! # of AWRAL forcing variables
   character(10), dimension(N_AF), parameter :: awral_fv = (/  &
-       'tat',    &
-       'avpt',    &
-       'rgt',    &
-       'radcskyt',    &
-       'u2t',    &
-       'pt'     /)
+       'tat       ',    &
+       'avpt      ',    &
+       'rgt       ',    &
+       'radcskyt  ',    &
+       'u2t       ',    &
+       'pt        '     /)
 
 
   character*255 :: var_fname
@@ -114,7 +116,7 @@ subroutine read_AWRAL( order, n, findex, year, doy, ferror_AWRAL )
   timestep = doy
 
 !-- Check forcing is on the same grid as the model --!
-  if((AWRAL_struc(n)%ncol .neqv. LIS_rc%gnr(n)) .or. (AWRAL_struc(n)%ncol .neqv. LIS_rc%gnc(n))) then
+  if((AWRAL_struc(n)%nrow .ne. LIS_rc%gnr(n)) .or. (AWRAL_struc(n)%ncol .ne. LIS_rc%gnc(n))) then
      if(LIS_masterproc) then
           write(LIS_logunit,*)'[ERR] Problem using AWRAL forcing: Forcing must be on the same grid as the model'
           write(LIS_logunit,*)'[ERR] Remapping not implemented. Stopping...'

@@ -1,23 +1,11 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Information System (LDT)
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// See RELEASE_NOTES.txt for more information.
-//
-// The LDT source code and documentation are not in the public domain
-// and may not be freely distributed.  Only qualified entities may receive 
-// the source code and documentation. 
-//
-// Qualified entities must be covered by a Software Usage Agreement. 
-// The Software Usage Agreement contains all the terms and conditions
-// regarding the release of the LDT software.
-//
-// NASA GSFC MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THE
-// SOFTWARE FOR ANY PURPOSE.  IT IS PROVIDED AS IS WITHOUT EXPRESS OR
-// IMPLIED WARRANTY.  NEITHER NASA GSFC NOR THE US GOVERNMENT SHALL BE
-// LIABLE FOR ANY DAMAGES SUFFERED BY THE USER OF THIS SOFTWARE.
-//
-// See the Software Usage Agreement for the full disclaimer of warranty.
-//
+// Copyright (c) 2020 United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration.
+// All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
 //BOP
 //
@@ -46,6 +34,16 @@ struct glaciermasknode
 
 struct glaciermasknode* glaciermask_table = NULL; 
 
+//MN added to support glacier fraction
+struct glacierfracnode
+{
+  char *name;
+  void (*func)(int*, float*);
+
+  struct glacierfracnode* next;
+} ;
+
+struct glacierfracnode* glacierfrac_table = NULL;
 
 //BOP
 // !ROUTINE: registerreadglaciermask
@@ -133,4 +131,87 @@ void FTN(readglaciermask)(char *j, int *n, float *array, int len)
 }
 
 
+//BOP
+// !ROUTINE: registerreadglacierfrac
+// \label{registerreadglacierfrac}
+//
+// !INTERFACE:
+void FTN(registerreadglacierfrac)(char *j, void (*func)(int*, float*), int len)
+//  
+// !DESCRIPTION:
+//  Makes an entry in the registry for the routine to read
+//  glacierfrac data
+// 
+//  The arguments are: 
+//  \begin{description}
+//   \item[j] 
+//    index of the glacierfrac source
+//   \item[n]
+//    index of the nest
+//   \item[array]
+//    pointer to the glacier fraction array
+//  \end{description}
+  //EOP
+{
+  int len1;
+  struct glacierfracnode* current;
+  struct glacierfracnode* pnode;
+  // create node
 
+  len1 = len + 1; // ensure that there is space for terminating null
+  pnode=(struct glacierfracnode*) malloc(sizeof(struct glacierfracnode));
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
+  pnode->func = func;
+  pnode->next = NULL;
+
+  if(glacierfrac_table == NULL){
+    glacierfrac_table = pnode;
+  }
+  else{
+    current = glacierfrac_table;
+    while(current->next!=NULL){
+      current = current->next;
+    }
+    current->next = pnode;
+  }
+}
+
+//BOP
+// !ROUTINE: readglacierfrac
+// \label{readglacierfrac}
+// 
+// !INTERFACE:
+void FTN(readglacierfrac)(char *j, int *n, float *array, int len)
+//  
+// !DESCRIPTION: 
+//  Invokes the routine from the registry to read the 
+//  glacierfrac data
+//
+//  The arguments are: 
+//  \begin{description}
+//   \item[j] 
+//    index of the glacier fraction source
+//   \item[n]
+//    index of the nest
+//   \item[array]
+//    pointer to the glacier fraction array
+//  \end{description}
+//EOP
+{
+  struct glacierfracnode* current;
+
+  current = glacierfrac_table;
+  while(strcmp(current->name,j)!=0){
+    current = current->next;
+    if(current==NULL) {
+      printf("****************Error****************************\n");
+      printf("Glacier fraction reading routine for source %s is not defined\n",j);
+      printf("Please refer to configs/ldt.config_master or LDT User's Guide for options.\n");
+      printf("program will seg fault.....\n");
+      printf("****************Error****************************\n");
+    }
+  }
+
+  current->func(n,array);
+}

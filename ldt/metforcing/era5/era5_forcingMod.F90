@@ -1,10 +1,12 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v7.1
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
-!-------------------------END NOTICE -- DO NOT EDIT----------------------
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 module era5_forcingMod
 !BOP

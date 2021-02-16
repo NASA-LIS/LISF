@@ -4,75 +4,44 @@
 
 This section describes how to obtain the source code needed to build the LVT executable.
 
-Beginning with LIS public release 7.1rp1, the LIS and LVT source code is available as open source under the NASA Open Source Agreement (NOSA).  Please see {lisurl}[LIS`' web-site] for a copy the NOSA.
+Beginning with Land Information System Framework (LISF) public release 7.3, the LVT source code is available as open source under the Apache License, version 2.0.  Please see {apachelicense}[Apache`'s web-site] for a copy of the license.
 
-Due to the history of LVT's development, prior versions of the LVT source code may not be freely distributed. That older source code is available only to U.S. government agencies or entities with a U.S.  government grant/contract. {lisurl}[LIS`' web-site] explains how qualified persons may request a copy of the older source code.
+From LVT public release 7.1rp1 through 7.2, the LVT source code is available as open source under the NASA Open Source Agreement (NOSA).  Please see {lisfurl}[LISF`'s web-site] for a copy of the NOSA.
+
+Due to the history of LVT`'s development, versions of the LVT source code prior to 7.1rp1 may not be freely distributed.  Older source code is available only to U.S. government agencies or entities with a U.S. government grant/contract.  {lisfurl}[LISF`'s web-site] explains how qualified persons may request a copy of older source code.
+
+NOTE: All users are encouraged to go to {lisfurl}[LISF`'s web-site] to fill in the Registration Form and join the mailing list.
 
 [[sec-important_note_fs]]
 === Important Note Regarding File Systems
 
-LVT is developed on Linux/Unix platforms. Its build process expects a case sensitive file system. Please make sure that you unpack and/or "`svn checkout`" the LVT code into a directory within a case sensitive file system. In particular, if you are using LVT within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LVT from within a shared folder. Move the LVT source code into a directory within the virtual machine.
+LVT is developed on Linux/Unix platforms.  Its build process expects a case sensitive file system.  Please make sure that you unpack and/or `git clone` the LVT code into a directory within a case sensitive file system.  In particular, if you are using LVT within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LVT from within a shared folder.  Move the LVT source code into a directory within the virtual machine.
 
-=== GitHub
+[[sec_publicrelease,Public Release Source Code]]
+=== Public Release Source Code
 
-The LVT {lisrevision} source code is available on GitHub under the NASA-LIS organization at {nasalisf}.  Official public releases will be available under the "`Releases`" link.
+The LVT public release {lisfrevision} source code is available both on {lisfurl}[LISF`'s web-site] under the "`Source`" menu and on GitHub under the NASA-LIS organization at {nasalisf} under the "`Releases`" link.
 
-NOTE: All users are encouraged to go to {lisurl}[LIS`' web-site] to fill in the Registration Form and join the mailing list.
-
-// TODO: Revise this section after an official public release has been created.
-// [[sec-releasetarball]]
-// ==== Public Release Source Code Tar File
-// 
-// The LVT {lisrevision} source code is available for download as a tar-file from {lisurl}[LIS`' web-site]. All users are encouraged to fill in the Registration Form and join the mailing list, both also accessible from {lisurl}[LIS`' website]. After downloading the LVT tar-file:
-// 
-// :sectnums!: // disable section numbers
-// 
-// ===== Step 1
-// 
-// Create a directory to unpack the tar-file into. Let's call it _TOPLEVELDIR_.
-// 
-// ===== Step 2
-// 
-// Place the tar-file in this directory.
-// 
-// [subs="attributes"]
-// ....
-// % mv {lvttarball} TOPLEVELDIR
-// ....
-// 
-// ===== Step 3
-// 
-// Go into this directory.
-// 
-// ....
-// % cd TOPLEVELDIR
-// ....
-// 
-// ===== Step 4
-// 
-// Unzip and untar the tar-file.
-// 
-// [subs="attributes"]
-// ....
-// % gzip -dc  {lvttarball} | tar xf -
-// ....
-// 
-// Note that the directory containing the LVT source code will be referred to as _$WORKING_ throughout the rest of this document.
-// 
-// :sectnums: // re-enable section numbers
-
-[[sec-checkoutsrc]]
-==== master branch
-
-The LVT source code is maintained in a git repository hosted on GitHub.  If you wish to work with the latest development code (in the master branch), then you must use the `git` client to obtain the LVT source code.  If you need any help regarding `git` or GitHub, please go to {githuburl}.
+After downloading the LISF tar-file:
 
 :sectnums!: // disable section numbers
 
-===== Step 1
+==== Step 1
 
-Create a directory to clone the code into. Let's call it _TOPLEVELDIR_.
+Create a directory to unpack the tar-file into.  Let`'s call it _TOPLEVELDIR_.
 
-===== Step 2
+
+==== Step 2
+
+Place the tar-file in this directory.
+
+[subs="attributes"]
+....
+% mv {lvttarball} TOPLEVELDIR
+....
+
+
+==== Step 3
 
 Go into this directory.
 
@@ -80,7 +49,38 @@ Go into this directory.
 % cd TOPLEVELDIR
 ....
 
-===== Step 3
+
+==== Step 4
+
+Unzip and untar the tar-file.
+
+[subs="attributes"]
+....
+% gzip -dc {lvttarball} | tar xf -
+....
+
+:sectnums: // re-enable section numbers
+
+[[sec-checkoutsrc]]
+=== master branch
+
+The LVT source code is maintained in a git repository hosted on GitHub.  If you wish to work with the latest development code (in the master branch), then you must use the `git` client to obtain the LVT source code.  If you need any help regarding `git` or GitHub, please go to {githuburl}.
+
+:sectnums!: // disable section numbers
+
+==== Step 1
+
+Create a directory to clone the code into. Let's call it _TOPLEVELDIR_.
+
+==== Step 2
+
+Go into this directory.
+
+....
+% cd TOPLEVELDIR
+....
+
+==== Step 3
 
 Clone the master branch.
 
@@ -89,13 +89,15 @@ Clone the master branch.
 % git clone {nasalisf}
 ....
 
-===== Note
-
-Note that the directory containing the LISF source code will be referred to as _$WORKING_ throughout the rest of this document.
-
-Cloning the LISF source code (according the instructions in Section <<sec-obtain-src>>) will create a directory named _LISF_.  The LVT specific source code is in _LISF/lvt_.
-
 :sectnums: // re-enable section numbers
 
-Processed documentation may be found on {lisurl}[LIS`' web-site] under the "`Docs`" menu.
+=== Source files
+
+Unpacking or cloning the LISF source code (according to the instructions in Section <<sec-obtain-src>>) will create a directory named _LISF_.  The LVT specific source code is in _LISF/lvt_.
+
+NOTE: The directory containing the LVT source code, _LISF/lvt_, will be referred to as _$WORKING_ throughout the rest of this document.
+
+=== Documentation
+
+Processed documentation may be found on {lisfurl}[LISF`'s web-site] under the "`Docs`" menu.
 

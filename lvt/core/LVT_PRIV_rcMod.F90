@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !MODULE: LVT_PRIV_rcMod
@@ -376,6 +382,8 @@ module LVT_PRIV_rcMod
      logical :: output_global_ll0p25
      logical :: output_nh_ps16
      logical :: output_sh_ps16
+     logical :: output_nh_ps16_snodep
+     logical :: output_sh_ps16_snodep
      character(len=255) :: input_dir
      character(len=255) :: input_prefix
      character(len=255) :: output_dir

@@ -1,6 +1,12 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.0     
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module AWRAL600_module
 !BOP
 !
@@ -189,19 +195,19 @@ module AWRAL600_module
         !-------------------------------------------------------------------------
         ! multilevel spatial parameter
         !-------------------------------------------------------------------------
-        real, pointer      :: height(:)
-        real, pointer      :: fhru(:)
-        real, pointer      :: hveg(:)
-        real, pointer      :: laimax(:)
+        real, allocatable      :: height(:)
+        real, allocatable      :: fhru(:)
+        real, allocatable      :: hveg(:)
+        real, allocatable      :: laimax(:)
         !-------------------------------------------------------------------------
         ! state
         !-------------------------------------------------------------------------
-        real               :: sr
-        real               :: sg
-        real, pointer      :: s0(:)
-        real, pointer      :: ss(:)
-        real, pointer      :: sd(:)
-        real, pointer      :: mleaf(:)
+        real                   :: sr
+        real                   :: sg
+        real, allocatable      :: s0(:)
+        real, allocatable      :: ss(:)
+        real, allocatable      :: sd(:)
+        real, allocatable      :: mleaf(:)
         !-------------------------------------------------------------------------
         ! output
         !-------------------------------------------------------------------------

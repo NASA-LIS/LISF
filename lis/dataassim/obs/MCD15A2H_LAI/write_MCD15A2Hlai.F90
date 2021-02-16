@@ -90,7 +90,18 @@ subroutine MCD15A2H_laiobsname(n,k,obsname)
   character(len=*)      :: obsname
 ! 
 ! !DESCRIPTION: 
-! 
+!
+!  writes the assimilated observation to a file.
+
+!
+!  The arguments are:
+!  \begin{description}
+!  \item[n] index of the nest
+!  \item[k] number of observation state
+!  \item[obsname] name of the observation
+!  \end{description}
+!
+ 
 !EOP
 
   character(len=12) :: cdate1

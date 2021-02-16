@@ -1,9 +1,11 @@
 #!/usr/bin/perl
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-# NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.3
 #
-# Copyright (c) 2015 United States Government as represented by the
+# Copyright (c) 2020 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -259,6 +261,10 @@ elsif($opt_lev == 3) {
    $sys_c_opt = "";
 }
 
+if(($sys_arch eq "linux_ifc") && ($opt_lev gt 0)) {
+   $sys_opt .= " -fp-model precise";
+   $sys_c_opt .= "-fp-model precise";
+}
 
 print "Assume little/big_endian data format (1-little, 2-big, default=2): ";
 $use_endian=<stdin>;
@@ -1031,6 +1037,14 @@ $fflags77 = $fflags77." -DLIS_JULES";
 $fflags = $fflags." -DLIS_JULES";
 
 #
+# Kluge for SPORTDaily gfrac and VIIRSDaily gfrac readers
+# These readers require ZLIB, but this requirement is not captured by the
+# above library checks.
+#
+
+$ldflags = $ldflags." -lz";
+
+#
 # Write configure.lis and related files
 #
 
@@ -1124,6 +1138,13 @@ if($use_hdf4 == 1) {
 }
 else{
    printf misc_file "%s\n","#undef USE_HDF4 ";
+}
+
+if($use_hdfeos == 1) {
+   printf misc_file "%s\n","#define USE_HDFEOS2 ";
+}
+else{
+   printf misc_file "%s\n","#undef USE_HDFEOS2 ";
 }
 
 if($use_hdf5 == 1) {

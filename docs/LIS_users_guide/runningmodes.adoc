@@ -1,6 +1,6 @@
 
+[[sec_modes,Computational Modes]]
 == Computational Modes
-anchor:sec_modes[Computational Modes]
 
 The computational and resource requirements increase significantly for global modeling at high resolutions such as 5 km and 1 km. The land surface modeling component in LIS is designed to handle these requirements and perform high-performance, parallel simulation of global, regional, and local land surface processes with a number of land surface models.
 
@@ -11,20 +11,20 @@ The LIS driver also includes the capabillity to perform regional modeling in add
 Note, _both_ parallel running modes require the Message Passing Interface libraries.  If a single-process, i.e. non-parallel, version of LIS is desired, LIS may be compiled without the MPI libraries.
 
 
+[[sec_singlemode,Single-Process-Based Running Mode]]
 === Single-Process-Based Running Mode
-anchor:sec_singlemode[Single-Process-Based Running Mode]
 
 LIS`' default running mode is a non-parallel running mode.  Simply follow the directions in this document to run LIS in this mode.
 
 
+[[sec_mpimode,MPI-Based Running Mode]]
 === MPI-Based Running Mode
-anchor:sec_mpimode[MPI-Based Running Mode]
 
 In order to run LIS using MPI, you must first install the MPI libraries onto your system.  Then follow the extra instructions in Section <<sec_build>> to compile in MPI support.
 
 
+[[sec_gdsmode,GDS-Based Running Mode]]
 === GDS-Based Running Mode
-anchor:sec_gdsmode[GDS-Based Running Mode]
 
 In order to run LIS using the GDS-based running mode, you must first install a GDS and a DODS enabled version of GrADS.  Then you must compile the GDS-based running mode support into LIS' executable.
 

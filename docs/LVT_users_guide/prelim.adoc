@@ -22,5 +22,5 @@ File names are written in italics. E.g.:
 
 _/path/to/LVT/src_
 
-You need to create a working directory on your system to install LVT.  Let's call this directory _/path/to/LVT/_. Throughout the rest of this document, this directory shall be referred to as _$WORKING_. You should create a directory to run LVT in. This directory can be created anywhere on your system, but, in this document, we shall refer to this running directory as _$WORKING/run_.
+//You need to create a working directory on your system to install LVT.  Let's call this directory _/path/to/LVT/_. Throughout the rest of this document, this directory shall be referred to as _$WORKING_. You should create a directory to run LVT in. This directory can be created anywhere on your system, but, in this document, we shall refer to this running directory as _$WORKING/run_.
 

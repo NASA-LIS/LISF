@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -19,8 +21,8 @@ subroutine readcrd_gefs()
 ! !USES:
   use ESMF
   use LIS_coreMod,     only : LIS_rc, LIS_config
-  use LIS_logMod,      only : LIS_logunit, LIS_verify
   use gefs_forcingMod, only : gefs_struc
+  use LIS_logMod
 
 ! !DESCRIPTION:
 !
@@ -42,7 +44,13 @@ subroutine readcrd_gefs()
   enddo
 
   call ESMF_ConfigFindLabel(LIS_config,"GEFS forecast type:",rc=rc)
-  call LIS_verify(rc, 'GEFS forecast type: not defined ')
+  if(rc.ne.0) then 
+     write(LIS_logunit,*) '[ERR] GEFS forecast type: not defined '
+     write(LIS_logunit,*) '[ERR] supported options are ..'
+     write(LIS_logunit,*) "[ERR] 'Operational', 'Reforecast2'"
+     call LIS_endrun()
+  endif
+
   do n=1,LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config,gefs_struc(n)%gefs_fcsttype,rc=rc)
   enddo

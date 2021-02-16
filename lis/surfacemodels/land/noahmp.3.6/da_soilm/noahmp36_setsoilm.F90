@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -215,7 +217,8 @@ subroutine noahmp36_setsoilm(n, LSM_State)
        ! 1-2- if update flag for tile is FALSE --> resample the states  
        ! 2- adjust the states
 !-----------------------------------------------------------------------------------------
-        ! store update value for  cases that update_flag_tile & update_flag_new are TRUE        ! update_flag_tile = TRUE --> means met the both min and max threshold 
+        ! store update value for  cases that update_flag_tile & update_flag_new are TRUE
+        ! update_flag_tile = TRUE --> means met the both min and max threshold
       
         tmp1 = LIS_rc%udef
         tmp2 = LIS_rc%udef
