@@ -1,4 +1,4 @@
-FLAGS_Crocus := -O0 -g -autodouble -noerror_limit -FR -auto -WB -traceback
+FLAGS_Crocus := -O0 -g -autodouble -noerror_limit -FR -auto -WB -traceback -USFX_MNH -DMNH_MPI_DOUBLE_PRECISION
 dummy_hook.o:               dummy_hook.F90
 	$(FC) $(FFLAGS) $(FLAGS_Crocus) $(HEADER_DIRS) $<
 ini_csts.o:                 ini_csts.F90
