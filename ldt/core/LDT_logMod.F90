@@ -456,12 +456,6 @@ contains
 !  Routine to be called to terminate the program. This routine
 !  flushes the output streams and aborts the mpi processes.
 !
-!  The routines invoked are: 
-!  \begin{description}
-!   \item[LDT\_flush](\ref{LDT_flush}) \newline
-!     flushes the output streams
-!  \end{description}
-!
 !EOP
     write(LDT_logunit,*)'endrun is being called'
     flush( LDT_logunit )   ! Flush all output to standard output
