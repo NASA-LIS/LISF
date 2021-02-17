@@ -71,7 +71,7 @@ module SMOSNRTNNL2sm_Mod
                                                  !LIS_rc%da > 1 but the first model time step,
                                                  !e.g., 4/29 13:00:00)
      integer                    :: cdf_read_opt  ! 0: read all months at one time
-                                                 ! 1: read only the current month
+                                                 ! 1: read only the current monTh
      character*100              :: modelcdffile
      character*100              :: obscdffile
      integer                    :: start_day, count_day
@@ -80,8 +80,6 @@ module SMOSNRTNNL2sm_Mod
      !integer, allocatable       :: num_dgg_glb(:,:)
  
      type(SMOS_in_lis_gridbox), pointer :: SMOS_lookup(:,:)
-     type(SMOS_in_lis_gridbox), pointer :: SMOS_lookup_glb(:,:)
-
   end type SMOSNRTNNL2sm_dec
 
   type(SMOSNRTNNL2sm_dec),allocatable :: SMOSNRTNNL2sm_struc(:)
@@ -352,7 +350,7 @@ contains
 
        SMOSNRTNNL2sm_struc(n)%smtime = -1
        SMOSNRTNNL2sm_struc(n)%SMOS_lookup%dgg_assign = .false.
-       SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb%dgg_assign = .false.
+       !SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb%dgg_assign = .false.
        SMOSNRTNNL2sm_struc(n)%start_day = LIS_rc%da
        SMOSNRTNNL2sm_struc(n)%count_day = 0
 

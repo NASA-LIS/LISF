@@ -26,7 +26,7 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
    use LIS_DAobservationsMod
    use map_utils
    use LIS_pluginIndices
-   use SMOSNRTNNL2sm_Mod, only: SMOSNRTNNL2sm_struc
+   use SMOSNRTNNL2sm_Mod, only: SMOSNRTNNL2sm_struc, SMOS_in_lis_gridbox
    use read_dgg_lookup_table
 
    implicit none
@@ -100,7 +100,13 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
    integer, allocatable   :: num_dgg_glb(:,:)
    integer                :: Max_length
    !logical, allocatable   :: SMOS_assign_glb(:,:)
-
+   integer, allocatable :: dgg_lookup_1d(:)
+   integer, allocatable :: dgg_lookup_1d_local(:)
+   type(SMOS_in_lis_gridbox), pointer :: SMOS_lookup_glb_1d(:)
+   integer :: num_indices
+   integer :: gid1
+   integer :: ii
+   
    call ESMF_AttributeGet(OBS_State, "Data Directory", &
                           smobsdir, rc=status)
    call LIS_verify(status)
@@ -116,86 +122,96 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
       SMOSNRTNNL2sm_struc(n)%start_day = LIS_rc%da
    endif
 
-! MN: start edit 
-!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   !read dgg lookup table form LDT output and store that in SMOSNRTNNL2sm_struc(n)%dgg_lookup_1d(:) 
+   ! MN: start edit
+   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   !read dgg lookup table form LDT output and store on local processes
    if (SMOSNRTNNL2sm_struc(n)%count_day .eq. 1) then
-       If (LIS_masterproc) then 
-          call LIS_SMOS_DGG_lookup(n)
-       endif
-   endif
+      if (LIS_masterproc) then
+         call LIS_SMOS_DGG_lookup(n, dgg_lookup_1d)
+      else
+         allocate(dgg_lookup_1d(1)) ! Dummy source array for non-master procs
+      endif
 
-   ! Create arrays to store global data
-   Allocate(SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb(LIS_rc%gnc(n), LIS_rc%gnr(n)))
-   Allocate(num_dgg_glb(LIS_rc%gnc(n), LIS_rc%gnr(n)))
+      ! EMK: Transfer DGG indices to all processes
+      allocate(dgg_lookup_1d_local(size(dgg_lookup_1d)))
+      dgg_lookup_1d_local = 0
+#if (defined SPMD)
+      call MPI_Scatter(dgg_lookup_1d, &
+           size(dgg_lookup_1d), &
+           MPI_INTEGER, &
+           dgg_lookup_1d_local, &
+           size(dgg_lookup_1d_local), &
+           MPI_INTEGER, &
+           0, & ! Master process is the sender
+           LIS_mpi_comm, &
+           ierr)
+#else
+      dgg_lookup_1d_local = dgg_lookup_1d
+#endif
+      deallocate(dgg_lookup_1d)
 
-   If (LIS_masterproc) then
-      i = 0
-      r = 1
-      do
-            c = 1
-         do
-            i = i + 1
-            If (SMOSNRTNNL2sm_struc(n)%dgg_lookup_1d(i) == 0) then ! dgg_indices_1d(i)
-                   Num_dgg_glb(c,r) = 0
-            Else
-               Max_length = SMOSNRTNNL2sm_struc(n)%dgg_lookup_1d(i)! dgg_indices_1d(i)
-               Num_dgg_glb(c,r) = max_length
-               Allocate(SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb(c,r)%dgg_indices(max_length))
+      ! EMK Each process has a complete copy of the DGG array, but it is
+      ! still run-length encoded.  It is convenient to convert to 1-d array
+      ! of structures.
+      allocate(SMOS_lookup_glb_1d(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
 
-               Do j = 1, max_length
-                  i = i + 1
-                  SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb(c,r)%dgg_indices(j) = SMOSNRTNNL2sm_struc(n)%dgg_lookup_1d(i)! dgg_indices_1d(i)
-               Enddo
-            Endif
-            c = c + 1
-               If (c > LIS_rc%gnc(n)) cycle
-          enddo
-            r = r + 1
-          if (r > LIS_rc%gnr(n)) exit
-       enddo
-   !endif
+      i = 1
+      do r = 1, LIS_rc%gnr(n)
+         do c = 1, LIS_rc%gnc(n)
+            ii = c + (r-1)*LIS_rc%gnc(n)
+            num_indices = dgg_lookup_1d_local(i)
+            if (num_indices .eq. 0) then
+               SMOS_lookup_glb_1d(ii)%dgg_assign = .false.
+            else
+               SMOS_lookup_glb_1d(ii)%dgg_assign = .true.
+               allocate( &
+                    SMOS_lookup_glb_1d(ii)%dgg_indices(num_indices))
+               do j = 1, num_indices
+                  SMOS_lookup_glb_1d(ii)%dgg_indices(j) = &
+                       dgg_lookup_1d_local(i+j)
+               end do
+            end if
+            i = i + num_indices
+            if (i .gt. size(dgg_lookup_1d_local)) exit
+         end do
+         if (i .gt. size(dgg_lookup_1d_local)) exit
+      end do
+      deallocate(dgg_lookup_1d_local)
 
+      ! EMK Each process now has a complete copy of the DGG array, with
+      ! DGG indices easily accessible by GID.  We now pull out the values
+      ! relevant to the local process.
+      if (.not. associated(SMOSNRTNNL2sm_struc(n)%SMOS_lookup)) then
+         allocate(SMOSNRTNNL2sm_struc(n)%SMOS_lookup( &
+              LIS_rc%lnc(n), LIS_rc%lnr(n)))
+      end if
+      do r = LIS_nss_ind(n, LIS_localPet+1), LIS_nse_ind(n, LIS_localPet+1)
+         do c = LIS_ews_ind(n, LIS_localPet+1), LIS_ewe_ind(n, LIS_localPet+1)
+            gid1 = LIS_domain(n)%gindex(c,r) ! gid1 is local c,r in global 1d
+            if (gid1 .eq. -1) cycle
 
-      SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb%dgg_assign = .false.
-      !j = 0  
-      do r=1,LIS_rc%gnr(n)
-         do c=1,LIS_rc%gnc(n)
-            !j = j + 1  
-            if (size(SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb(c,r)%dgg_indices) > 0)then
-               SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb(c,r)%dgg_assign = .true.
-            endif
-         enddo
-      enddo
+            SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_assign = &
+                 SMOS_lookup_glb_1d(gid1)%dgg_assign
+            if (SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_assign .eqv. &
+                 .true.) then
+               num_indices = size(SMOS_lookup_glb_1d(gid1)%dgg_indices)
+               allocate(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)% &
+                    dgg_indices(num_indices))
+               SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices = &
+                    SMOS_lookup_glb_1d(gid1)%dgg_indices
+            end if
+         end do
+      end do
+      do i = 1, LIS_rc%gnc(n) * LIS_rc%gnr(n)
+         if (SMOS_lookup_glb_1d(i)%dgg_assign .eqv. .true.) then
+            deallocate(SMOS_lookup_glb_1d(i)%dgg_indices)
+         end if
+      end do
+      deallocate(SMOS_lookup_glb_1d)
+   end if
 
-! convert from global domain to the LIS local domain
-!from 
-!     SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb(c,r)%dgg_indices
-!     SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb(c,r)%dgg_assign
-
-!to 
-!     SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices 
-!     SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_assign 
-
-
-!      Call MPI_Scatter(ddg_indices_1,&
-!           size(ddg_indices_1),&
-!           MPI_INTEGER,&
-!           ddg_indices_1d_tmp,&
-!           size(ddg_indices_1d_tmp ),&
-!           MPI_INTEGER,&
-!           0, MPI_COMM_WORLD, ierr)
-
-
-
-
-
-
-   endif
-   deallocate(num_dgg_glb)
-
-! MN: end edit 
-!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! MN: end edit
+!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
    alarmCheck = LIS_isAlarmRinging(LIS_rc, "SMOSNRTNN read alarm")
