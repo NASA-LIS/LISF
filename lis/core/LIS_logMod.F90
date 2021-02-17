@@ -136,6 +136,8 @@ contains
 !     18 oct 2017 Replaced call to "abort" with call to LIS_endrun.  Also
 !                 all call to LIS_flush.  This helps write all data to
 !                 file and prevent hangs...................Eric Kemp/GSFC
+!     17 feb 2021 Replaced LIS_flush with calls to Fortran's intrinsic
+!                 flush routine.....................Brendan McAndrew/GSFC
 ! !INTERFACE:    
   subroutine LIS_abort( abort_message )
 
@@ -465,12 +467,6 @@ contains
 !  !DESCRIPTION: 
 !  Routine to be called to terminate the program. This routines 
 !  flushes the output streams and aborts the mpi processes.
-!
-!  The routines invoked are: 
-!  \begin{description}
-!   \item[LIS\_flush](\ref{LIS_flush}) \newline
-!     flushes the output streams
-!  \end{description}
 !
 !EOP
     write(LIS_logunit,*)'[ERR] endrun is being called'
