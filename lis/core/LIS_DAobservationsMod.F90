@@ -597,11 +597,6 @@ contains
                 LIS_obs_domain(n,k)%gridtype = "none"
              endif
 
-             !call LIS_quilt_obs_domain(n, k, map_proj, gnc, gnr,&
-             !     lat(1,1), lon(1,1), lat(gnc,gnr), lon(gnc,gnr),&
-             !     LIS_obs_domain(n,k)%dx, LIS_obs_domain(n,k)%dy,&
-             !     LIS_obs_domain(n,k)%gridtype)
-
              call LIS_quilt_obs_domain(n, k, map_proj, gnc, gnr,&
                   LIS_obs_domain(n,k)%gridtype)
 
