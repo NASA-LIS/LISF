@@ -101,11 +101,11 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
    integer                :: Max_length
    !logical, allocatable   :: SMOS_assign_glb(:,:)
    integer, allocatable :: dgg_lookup_1d(:)
-   integer, allocatable :: dgg_lookup_1d_local(:)
    type(SMOS_in_lis_gridbox), pointer :: SMOS_lookup_glb_1d(:)
    integer :: num_indices
    integer :: gid1
    integer :: ii
+   integer :: leng
    
    call ESMF_AttributeGet(OBS_State, "Data Directory", &
                           smobsdir, rc=status)
@@ -126,29 +126,20 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
    !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    !read dgg lookup table form LDT output and store on local processes
    if (SMOSNRTNNL2sm_struc(n)%count_day .eq. 1) then
+      leng = 0
       if (LIS_masterproc) then
          call LIS_SMOS_DGG_lookup(n, dgg_lookup_1d)
-      else
-         allocate(dgg_lookup_1d(1)) ! Dummy source array for non-master procs
-      endif
-
-      ! EMK: Transfer DGG indices to all processes
-      allocate(dgg_lookup_1d_local(size(dgg_lookup_1d)))
-      dgg_lookup_1d_local = 0
+         leng = size(dgg_lookup_1d)
+      end if
 #if (defined SPMD)
-      call MPI_Scatter(dgg_lookup_1d, &
-           size(dgg_lookup_1d), &
-           MPI_INTEGER, &
-           dgg_lookup_1d_local, &
-           size(dgg_lookup_1d_local), &
-           MPI_INTEGER, &
-           0, & ! Master process is the sender
-           LIS_mpi_comm, &
-           ierr)
-#else
-      dgg_lookup_1d_local = dgg_lookup_1d
+      ! For multiple processes, need to forward copy of array from the
+      ! master process.
+      call MPI_Bcast(leng, 1, MPI_INTEGER, 0, LIS_mpi_comm, ierr)
+      if (.not. LIS_masterproc) then
+         allocate(dgg_lookup_1d(leng))
+      end if
+      call MPI_Bcast(dgg_lookup_1d, leng, MPI_INTEGER, 0, LIS_mpi_comm, ierr)
 #endif
-      deallocate(dgg_lookup_1d)
 
       ! EMK Each process has a complete copy of the DGG array, but it is
       ! still run-length encoded.  It is convenient to convert to 1-d array
@@ -159,7 +150,7 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
       do r = 1, LIS_rc%gnr(n)
          do c = 1, LIS_rc%gnc(n)
             ii = c + (r-1)*LIS_rc%gnc(n)
-            num_indices = dgg_lookup_1d_local(i)
+            num_indices = dgg_lookup_1d(i)
             if (num_indices .eq. 0) then
                SMOS_lookup_glb_1d(ii)%dgg_assign = .false.
             else
@@ -168,15 +159,15 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
                     SMOS_lookup_glb_1d(ii)%dgg_indices(num_indices))
                do j = 1, num_indices
                   SMOS_lookup_glb_1d(ii)%dgg_indices(j) = &
-                       dgg_lookup_1d_local(i+j)
+                       dgg_lookup_1d(i+j)
                end do
             end if
             i = i + num_indices
-            if (i .gt. size(dgg_lookup_1d_local)) exit
+            if (i .gt. size(dgg_lookup_1d)) exit
          end do
-         if (i .gt. size(dgg_lookup_1d_local)) exit
+         if (i .gt. size(dgg_lookup_1d)) exit
       end do
-      deallocate(dgg_lookup_1d_local)
+      deallocate(dgg_lookup_1d)
 
       ! EMK Each process now has a complete copy of the DGG array, with
       ! DGG indices easily accessible by GID.  We now pull out the values
