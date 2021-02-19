@@ -103,9 +103,10 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
    integer, allocatable :: dgg_lookup_1d(:)
    type(SMOS_in_lis_gridbox), pointer :: SMOS_lookup_glb_1d(:)
    integer :: num_indices
-   integer :: gid1
+   integer :: gindex
    integer :: ii
    integer :: leng
+   integer :: cstart, cend, rstart, rend, r_local, c_local
    
    call ESMF_AttributeGet(OBS_State, "Data Directory", &
                           smobsdir, rc=status)
@@ -176,20 +177,30 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
          allocate(SMOSNRTNNL2sm_struc(n)%SMOS_lookup( &
               LIS_rc%lnc(n), LIS_rc%lnr(n)))
       end if
-      do r = LIS_nss_ind(n, LIS_localPet+1), LIS_nse_ind(n, LIS_localPet+1)
-         do c = LIS_ews_ind(n, LIS_localPet+1), LIS_ewe_ind(n, LIS_localPet+1)
-            gid1 = LIS_domain(n)%gindex(c,r) ! gid1 is local c,r in global 1d
-            if (gid1 .eq. -1) cycle
 
-            SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_assign = &
-                 SMOS_lookup_glb_1d(gid1)%dgg_assign
-            if (SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_assign .eqv. &
-                 .true.) then
-               num_indices = size(SMOS_lookup_glb_1d(gid1)%dgg_indices)
-               allocate(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)% &
+      ! EMK Find the local (non-halo) bounds in the global grid
+      cstart = LIS_ews_ind(n, LIS_localPet+1)
+      cend = LIS_ewe_ind(n, LIS_localPet+1)
+      rstart = LIS_nss_ind(n, LIS_localPet+1)
+      rend = LIS_nse_ind(n, LIS_localPet+1)
+      do r = rstart, rend
+         r_local = r - rstart + 1
+         do c = cstart, cend
+            c_local = c - cstart + 1
+
+            gindex = LIS_domain(n)%gindex(c,r)
+            if (gindex .eq. -1) cycle
+
+            SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c_local,r_local)%dgg_assign = &
+                 SMOS_lookup_glb_1d(gindex)%dgg_assign
+
+            if (SMOS_lookup_glb_1d(gindex)%dgg_assign .eqv. .true.) then
+               num_indices = size(SMOS_lookup_glb_1d(gindex)%dgg_indices)
+               allocate(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c_local,r_local)% &
                     dgg_indices(num_indices))
-               SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices = &
-                    SMOS_lookup_glb_1d(gid1)%dgg_indices
+               SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c_local,r_local)% &
+                    dgg_indices = &
+                    SMOS_lookup_glb_1d(gindex)%dgg_indices
             end if
          end do
       end do
