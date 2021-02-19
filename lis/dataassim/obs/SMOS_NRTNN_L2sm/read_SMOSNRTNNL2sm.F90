@@ -106,6 +106,7 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
    integer :: gindex
    integer :: ii
    integer :: leng
+   logical, save :: dgg_file_already_read = .false. 
 
    call ESMF_AttributeGet(OBS_State, "Data Directory", &
                           smobsdir, rc=status)
@@ -125,9 +126,10 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
    ! MN: start edit
    !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    !read dgg lookup table form LDT output and store on local processes
-   if (SMOSNRTNNL2sm_struc(n)%count_day .eq. 1) then
+   !if (SMOSNRTNNL2sm_struc(n)%count_day .eq. 1) then
+   if (.not. dgg_file_already_read) then ! EMK 
       leng = 0
-      if (LIS_masterproc) then
+      If (LIS_masterproc) then
          call LIS_SMOS_DGG_lookup(n, dgg_lookup_1d)
          leng = size(dgg_lookup_1d)
       end if
@@ -158,7 +160,7 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
                SMOS_lookup_glb_1d(ii)%dgg_assign = .true.
                allocate( &
                     SMOS_lookup_glb_1d(ii)%dgg_indices(num_indices))
-               do j = 1, num_indices
+               Do j = 1, num_indices
                   SMOS_lookup_glb_1d(ii)%dgg_indices(j) = &
                        dgg_lookup_1d(i+j)
                end do
@@ -179,7 +181,6 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
       end if
 
       ! EMK: Now copy to local structure
-      write(LIS_logunit,*)'EMK: Copying to local structure...'
       do r = 1, LIS_rc%lnr(n)
          do c = 1, LIS_rc%lnc(n)
             gindex = LIS_domain(n)%gindex(c,r)
@@ -190,12 +191,6 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
 
             if (SMOS_lookup_glb_1d(gindex)%dgg_assign .eqv. .true.) then
                num_indices = size(SMOS_lookup_glb_1d(gindex)%dgg_indices)
-               if (allocated(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)% &
-                    dgg_indices(num_indices))) then
-                  write(LIS_logunit,*)&
-                       'EMK: Already allocated: c,r,num_indices = ', &
-                       c, r, num_indices
-               end if
                allocate(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)% &
                     dgg_indices(num_indices))
                SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)% &
@@ -204,12 +199,17 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
             end if
          end do
       end do
+
+      ! EMK Clean up memory
       do i = 1, LIS_rc%gnc(n) * LIS_rc%gnr(n)
          if (SMOS_lookup_glb_1d(i)%dgg_assign .eqv. .true.) then
             deallocate(SMOS_lookup_glb_1d(i)%dgg_indices)
          end if
       end do
       deallocate(SMOS_lookup_glb_1d)
+
+      ! EMK Ensure DGG file not read again
+      dgg_file_already_read = .true.
    end if
 
 ! MN: end edit
