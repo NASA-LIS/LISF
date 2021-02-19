@@ -106,8 +106,7 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
    integer :: gindex
    integer :: ii
    integer :: leng
-   integer :: cstart, cend, rstart, rend, r_local, c_local
-   
+
    call ESMF_AttributeGet(OBS_State, "Data Directory", &
                           smobsdir, rc=status)
    call LIS_verify(status)
@@ -154,6 +153,7 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
             num_indices = dgg_lookup_1d(i)
             if (num_indices .eq. 0) then
                SMOS_lookup_glb_1d(ii)%dgg_assign = .false.
+               i = i + 1
             else
                SMOS_lookup_glb_1d(ii)%dgg_assign = .true.
                allocate( &
@@ -162,8 +162,8 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
                   SMOS_lookup_glb_1d(ii)%dgg_indices(j) = &
                        dgg_lookup_1d(i+j)
                end do
+               i = i + num_indices + 1
             end if
-            i = i + num_indices
             if (i .gt. size(dgg_lookup_1d)) exit
          end do
          if (i .gt. size(dgg_lookup_1d)) exit
@@ -178,27 +178,27 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
               LIS_rc%lnc(n), LIS_rc%lnr(n)))
       end if
 
-      ! EMK Find the local (non-halo) bounds in the global grid
-      cstart = LIS_ews_ind(n, LIS_localPet+1)
-      cend = LIS_ewe_ind(n, LIS_localPet+1)
-      rstart = LIS_nss_ind(n, LIS_localPet+1)
-      rend = LIS_nse_ind(n, LIS_localPet+1)
-      do r = rstart, rend
-         r_local = r - rstart + 1
-         do c = cstart, cend
-            c_local = c - cstart + 1
-
+      ! EMK: Now copy to local structure
+      write(LIS_logunit,*)'EMK: Copying to local structure...'
+      do r = 1, LIS_rc%lnr(n)
+         do c = 1, LIS_rc%lnc(n)
             gindex = LIS_domain(n)%gindex(c,r)
             if (gindex .eq. -1) cycle
 
-            SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c_local,r_local)%dgg_assign = &
+            SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_assign = &
                  SMOS_lookup_glb_1d(gindex)%dgg_assign
 
             if (SMOS_lookup_glb_1d(gindex)%dgg_assign .eqv. .true.) then
                num_indices = size(SMOS_lookup_glb_1d(gindex)%dgg_indices)
-               allocate(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c_local,r_local)% &
+               if (allocated(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)% &
+                    dgg_indices(num_indices))) then
+                  write(LIS_logunit,*)&
+                       'EMK: Already allocated: c,r,num_indices = ', &
+                       c, r, num_indices
+               end if
+               allocate(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)% &
                     dgg_indices(num_indices))
-               SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c_local,r_local)% &
+               SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)% &
                     dgg_indices = &
                     SMOS_lookup_glb_1d(gindex)%dgg_indices
             end if
@@ -723,7 +723,7 @@ subroutine read_SMOSNRTNNL2sm_data(n, k, fname, smobs_inp, time, chr)
                    lon2d(c,r)-dx/2 <= max_lon_dgg.and.&
                    lat2d(c,r)+dy/2 >= min_lat_dgg.and.&
                    lat2d(c,r)-dy/2 <= max_lat_dgg) then
-
+#if 0
                   if (SMOSNRTNNL2sm_struc(n)%count_day <= 30) then
                      ! assume that during 30 days after the simulation start date
                      ! all land grids have assigned dgg_id_number
@@ -737,7 +737,8 @@ subroutine read_SMOSNRTNNL2sm_data(n, k, fname, smobs_inp, time, chr)
                                                      dx, dy, lon2d(c,r), lat2d(c,r))
                      endif
                   endif 
-
+#endif
+                  
                   if (SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_assign) then
                      if (size(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices) > 0) then
                         do i=1,size(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices)
