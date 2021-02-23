@@ -206,25 +206,23 @@ AGRMET use precip observations:            1               # Always set to 1
 AGRMET JMOBS data directory:               CDMS            # JMOBS, NONE, or CDMS
 AGRMET use timestamp on directories:       1
 
-# SSMI rainfall data.  Use SSMI_LE from 2008032612 to 2012032700,
-# use NONE from 2012032700 to 2012040912, use SSMI beginning 2012040912.
-AGRMET use SSMI data:                      1               # Set to 1 beginning 2008032612
+# Do not use SSMI rainfall data -- use IMERG instead.
+AGRMET use SSMI data:                      0               # 0 = Do not use
 AGRMET SSMI zero use switch:               0               # 0 = do not use SSMI zeros
 AGRMET SSMI data directory:                SSMI            # SSMI_LE, NONE, or SSMI
 AGRMET SSMI imax:                          1024            # For 16th mesh polar stereographic
 AGRMET SSMI jmax:                          1024            # For 16th mesh polar stereographic
 
-# GEOPRECIP rainfall data.  Use GEO_LE from 2009012600 to 2012032700,
-# use NONE from 2012032700 to 2012040912, use GEO beginning 2012040912.
-AGRMET use GEOPRECIP estimate:             2               # 0 before 2009012600, 2 afterward
+# Do not use GEOPRECIP rainfall data -- use IMERG instead
+AGRMET use GEOPRECIP estimate:             0               # 0 = Do not use
 AGRMET GEOPRECIP data directory:           GEO             # GEO_LE, NONE, or GEO
 AGRMET GEOPRECIP imax:                     1024            # For 16th mesh polar stereographic
 AGRMET GEOPRECIP jmax:                     1024            # For 16th mesh polar stereographic
 AGRMET GEO_PRECIP maximum temperature threshold:  278
 AGRMET GEO_PRECIP minimum temperature threshold:  273
 
-# CMORPH rainfall data.  Available beginning 2010100415.
-AGRMET use CMORPH data:                    1               # Set to 1 beginning 2010100415
+# Do not use CMORPH rainfall data -- use IMERG instead
+AGRMET use CMORPH data:                    0               # 0 = Do not use
 AGRMET CMORPH data directory:              CMORPH          # Always CMORPH
 AGRMET CMORPH imax:                        4948
 AGRMET CMORPH jmax:                        1649
@@ -237,10 +235,10 @@ AGRMET CMORPH dy:                             0.072756669
 AGRMET CMORPH maximum temperature threshold:      278
 AGRMET CMORPH minimum temperature threshold:      273
 
-#IMERG settings
-AGRMET use IMERG data:                     1               # Recommended for use in 557WW ops
+# Use IMERG rainfall data
+AGRMET use IMERG data:                     1               # 1 = Use
 AGRMET IMERG temperature threshold:        278
-AGRMET IMERG data directory:               ./IMERG_DATA
+AGRMET IMERG data directory:               ./IMERG/Early_V06B
 AGRMET IMERG product:                      3B-HHR-E        # Early Run
 AGRMET IMERG version:                      V06B            # V06B released in 2019
 AGRMET IMERG Probability Liquid Precip Threshold: 100
