@@ -36,7 +36,7 @@ subroutine LDT_run_StatDscaleMetForc
         call LDT_metforcing_reset()               
         call LDT_resetForcingVars()               
      
-        call LDT_flush(LDT_logunit)
+        flush(LDT_logunit)
      enddo
 
   elseif(LDT_rc%statDscaleMode.eq."forecast") then 

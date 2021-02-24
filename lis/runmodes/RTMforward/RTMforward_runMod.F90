@@ -119,7 +119,7 @@ contains
          LIS_routing_writerestart
     use LIS_RTMMod,          only : LIS_RTM_run,LIS_RTM_output
     use LIS_appMod,         only : LIS_runAppModel, LIS_outputAppModel
-    use LIS_logMod,          only : LIS_flush, LIS_logunit
+    use LIS_logMod,          only : LIS_logunit
 !
 ! !DESCRIPTION:
 ! 
@@ -178,7 +178,7 @@ contains
              call LIS_outputAppModel(n)
           endif
        enddo
-       call LIS_flush(LIS_logunit)
+       flush(LIS_logunit)
     enddo
   end subroutine lis_run_RTMforward
 

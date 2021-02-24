@@ -53,7 +53,7 @@ subroutine LVT_run_Benchmarking
         call LVT_runTraining(i)
         call LVT_writeTrainingOutput(i)
         call LVT_resetDataStreams
-        call LVT_flush(LVT_logunit)
+        flush(LVT_logunit)
      enddo    
   enddo
   write(LVT_logunit,*) '[INFO] Finished LVT analysis'

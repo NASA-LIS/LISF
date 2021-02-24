@@ -34,7 +34,6 @@ module LDT_logMod
                              !  to the diagnostic log
   public :: LDT_abort        ! generates a standard abort message
   public :: LDT_alert        ! generates a standard alert message
-  public :: LDT_flush        ! flushes any unwrittend writes to the log
   public :: LDT_endrun       ! ends the program
   public :: LDT_verify       ! checks a return a code for success
   public :: LDT_warning      ! checks a return code and issue a warning
@@ -308,38 +307,7 @@ contains
 8000 format (a)   
       
   end subroutine LDT_alert
-!BOP
-!
-! !ROUTINE: LDT_flush
-! \label{LDT_flush}
-!   
-! !REVISION HISTORY: 
-!  16 Nov 2004    James Geiger Initial Specification
-! 
-  subroutine LDT_flush(unit)
-    
-    implicit none
-    
-    integer :: unit
-! 
-! !DESCRIPTION: 
-!   This routine is a generic interface to the system flush routine.
-!
-!   The arguments are: 
-!   \begin{description}
-!   \item [unit]
-!     unit to be flushed out 
-!   \end{description}
-!
-!EOP
 
-#if ( defined AIX )
-    call flush_(unit)
-#else
-    call flush(unit)
-#endif   
-  end subroutine LDT_flush
-  
 !BOP
 ! !ROUTINE: check_error
 ! 
@@ -488,15 +456,9 @@ contains
 !  Routine to be called to terminate the program. This routine
 !  flushes the output streams and aborts the mpi processes.
 !
-!  The routines invoked are: 
-!  \begin{description}
-!   \item[LDT\_flush](\ref{LDT_flush}) \newline
-!     flushes the output streams
-!  \end{description}
-!
 !EOP
     write(LDT_logunit,*)'endrun is being called'
-    call LDT_flush( LDT_logunit )   ! Flush all output to standard output
+    flush( LDT_logunit )   ! Flush all output to standard output
 
 #if (defined SPMD) 
 !    call mpi_abort (MPI_COMM_WORLD, 1)         ! LDT

@@ -42,6 +42,6 @@
     call LVT_LISModelDataInit()
     call LVT_obsDataInit()
     call LVT_statsInit()
-    call LVT_flush(LVT_logunit)
+    flush(LVT_logunit)
 
   end subroutine LVT_init_DAobs
