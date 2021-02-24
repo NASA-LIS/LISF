@@ -1360,7 +1360,7 @@ end subroutine LDT_timeInit
                    '[ERR] No dominant surface model type found!'
               write(LDT_logunit,*) &
                    'c,r,fgrd: ',c,r,fgrd(c,r,:)
-              call LDT_flush(LDT_logunit)
+              flush(LDT_logunit)
               call LDT_endrun()
            end if
 
@@ -1395,7 +1395,7 @@ end subroutine LDT_timeInit
                    '[ERR] No surface tiles remain!'
               write(LDT_logunit,*) &
                    'c,r,fgrd: ',c,r,fgrd(c,r,:)
-              call LDT_flush(LDT_logunit)
+              flush(LDT_logunit)
               call LDT_endrun()
            end if
 

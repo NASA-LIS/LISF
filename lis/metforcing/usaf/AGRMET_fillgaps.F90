@@ -15,7 +15,7 @@
 subroutine AGRMET_fillgaps(n,ip,varfield)
 ! !USES:
   use LIS_coreMod,       only : LIS_rc, LIS_domain
-  use LIS_logMod,        only : LIS_logunit, LIS_endrun, LIS_abort, LIS_flush
+  use LIS_logMod,        only : LIS_logunit, LIS_endrun, LIS_abort
   use AGRMET_forcingMod, only : agrmet_struc
 
   implicit none
@@ -89,7 +89,7 @@ subroutine AGRMET_fillgaps(n,ip,varfield)
                     ! EMK...Force abort with logging!
                     write(LIS_logunit,*) &
                          '[ERR] AGRMET fillgaps failed, stopping..',kk,c,r
-                    call LIS_flush(LIS_logunit)
+                    flush(LIS_logunit)
                     message(1) = 'program: LIS'
                     message(2) = ' routine: AGRMET_fillgaps'
                     message(3) = ' Cannot fill gap in forcing data!'

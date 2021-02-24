@@ -38,7 +38,7 @@ subroutine readcrd_agrmet()
   use ESMF
   use LIS_coreMod,    only : LIS_rc, LIS_config, LIS_masterproc
   use LIS_logMod,     only : LIS_logunit, LIS_verify, LIS_abort, &
-       LIS_flush, LIS_endrun
+       LIS_endrun
 #if (defined SPMD)
   use LIS_mpiMod, only: LIS_MPI_COMM
 #endif
@@ -293,7 +293,7 @@ subroutine readcrd_agrmet()
         write(LIS_logunit,*) &
              '[ERR] Illegal value for IMERG Probability Liquid Precip Threshold'
         write(LIS_logunit,*)'ABORTING!'
-        call LIS_flush(LIS_logunit)
+        flush(LIS_logunit)
         message(1) = &             
              '[ERR] Illegal value for IMERG Probability Liquid Precip Threshold'           
 #if (defined SPMD)
@@ -1107,7 +1107,7 @@ subroutine readcrd_agrmet()
         if (ios .ne. 0) then
            write(LIS_logunit,*)'ERR creating directory ', &
                 trim(agrmet_struc(n)%analysisdir)
-           call LIS_flush(LIS_logunit)
+           flush(LIS_logunit)
         end if
      end if
 

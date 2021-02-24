@@ -168,7 +168,7 @@ contains
                 call updateIncrementsFlag(n)
              endif
           enddo
-          call LIS_flush(LIS_logunit)
+          flush(LIS_logunit)
        enddo
 
        if(LIS_rc%endtime.ne.1) then 
