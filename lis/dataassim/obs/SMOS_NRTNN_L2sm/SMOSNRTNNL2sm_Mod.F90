@@ -14,10 +14,10 @@
 !   handle 
 ! 
 ! !REVISION HISTORY: 
-!  8 May 2013    Sujay Kumar; initial specification
+!  8 May 2013     Sujay Kumar; initial specification
 !  20 Jan 2021    Yonghwan Kwon; Updated to read SMOS NRT NN L2 soil moisture
-! 15 Feb. 2021: Mahdi Navari, code modified to read the DGG 
-!                lookup table from a netCDF file
+!  19 Feb. 2021   Mahdi Navari and Eric Kemp; updated to read the DGG number
+!                 from the LDT output
 
 module SMOSNRTNNL2sm_Mod
 ! !USES: 

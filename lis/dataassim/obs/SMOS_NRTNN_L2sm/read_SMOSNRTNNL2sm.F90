@@ -13,6 +13,8 @@
 ! !REVISION HISTORY:
 !  8  May 2013: Sujay Kumar; initial specification
 !  20 Jan 2021: Yonghwan Kwon; Updated to read SMOS NRT NN L2 soil moisture
+!  20 Feb 2021: Mahdi Navari and Eric Kemp ; updated to read the DGG number
+!               from the LDT output
 !
 ! !INTERFACE:
 subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
@@ -104,7 +106,7 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
    type(SMOS_in_lis_gridbox), pointer :: SMOS_lookup_glb_1d(:)
    integer :: num_indices
    integer :: gindex
-   integer :: ii
+   integer :: ii , gc, gr
    integer :: leng
    logical, save :: dgg_file_already_read = .false. 
 
@@ -183,7 +185,11 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
       ! EMK: Now copy to local structure
       do r = 1, LIS_rc%lnr(n)
          do c = 1, LIS_rc%lnc(n)
-            gindex = LIS_domain(n)%gindex(c,r)
+            !gindex = LIS_domain(n)%gindex(c,r) ! EMK implementation
+            gr = r + LIS_nss_ind(n,LIS_localPet+1) -1  
+            gc = c + LIS_ews_ind(n,LIS_localPet+1) -1
+            gindex = gc + (gr-1)*LIS_rc%gnc(n)
+
             if (gindex .eq. -1) cycle
 
             SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_assign = &
