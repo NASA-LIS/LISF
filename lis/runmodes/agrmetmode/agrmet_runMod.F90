@@ -115,7 +115,7 @@ contains
     use LIS_DAobservationsMod, only : LIS_readDAobservations, &
                                       LIS_perturb_DAobservations
     use LIS_dataAssimMod,      only : LIS_dataassim_run, LIS_dataassim_output
-    use LIS_logMod,            only : LIS_flush, LIS_logunit
+    use LIS_logMod,            only : LIS_logunit
 !
 ! !DESCRIPTION:
 ! 
@@ -177,7 +177,7 @@ contains
           endif
        enddo
        call LIS_ticktime 
-       call LIS_flush(LIS_logunit)
+       flush(LIS_logunit)
     enddo
   end subroutine lis_run_agrmet
 

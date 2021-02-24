@@ -2051,7 +2051,7 @@ contains
                    '[ERR] No dominant surface model type found!'
               write(LVT_logunit,*) &
                    'c,r,fgrd: ',c,r,fgrd(c,r,:)
-              call LVT_flush(LVT_logunit)
+              flush(LVT_logunit)
               call LVT_endrun()
            end if
 
@@ -2086,7 +2086,7 @@ contains
                    '[ERR] No surface tiles remain!'
               write(LVT_logunit,*) &
                    'c,r,fgrd: ',c,r,fgrd(c,r,:)
-              call LVT_flush(LVT_logunit)
+              flush(LVT_logunit)
               call LVT_endrun()
            end if
 

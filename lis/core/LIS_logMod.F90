@@ -33,7 +33,6 @@ module LIS_logMod
                         ! to the diagnostic log
   public :: LIS_abort  ! generates a standard abort message
   public :: LIS_alert  ! generates a standard alert message
-  public :: LIS_flush ! flushes any unwrittend writes to the log
   public :: LIS_getNextUnitNumber   !get the next available unit number
   public :: LIS_releaseUnitNumber   !release the unit number!
   public :: LIS_endrun  ! Ends the program
@@ -137,6 +136,8 @@ contains
 !     18 oct 2017 Replaced call to "abort" with call to LIS_endrun.  Also
 !                 all call to LIS_flush.  This helps write all data to
 !                 file and prevent hangs...................Eric Kemp/GSFC
+!     17 feb 2021 Replaced LIS_flush with calls to Fortran's intrinsic
+!                 flush routine.....................Brendan McAndrew/GSFC
 ! !INTERFACE:    
   subroutine LIS_abort( abort_message )
 
@@ -190,7 +191,7 @@ contains
     do i = 1, 20
        write (ftn, 6000, err = 9000) abort_message(i)
     enddo
-    call LIS_flush(ftn) ! EMK
+    flush(ftn) ! EMK
     call LIS_releaseUnitNumber(ftn)
 
     ! EMK...Use LIS_endrun. Safer for MPI runs.
@@ -318,38 +319,7 @@ contains
 8000 format (a)   
       
   end subroutine LIS_alert
-!BOP
-!
-! !ROUTINE: LIS_flush
-! \label{LIS_flush}
-!   
-! !REVISION HISTORY: 
-!  16 Nov 2004    James Geiger Initial Specification
-! 
-  subroutine LIS_flush(unit)
-    
-    implicit none
-    
-    integer :: unit
-! 
-! !DESCRIPTION: 
-!   This routine is a generic interface to the system flush routine.
-!
-!   The arguments are: 
-!   \begin{description}
-!   \item [unit]
-!     unit to be flushed out 
-!   \end{description}
-!
-!EOP
-
-#if ( defined AIX )
-    call flush_(unit)
-#else
-    call flush(unit)
-#endif   
-  end subroutine LIS_flush
-  
+ 
 !BOP
 ! !ROUTINE: check_error
 ! 
@@ -498,15 +468,9 @@ contains
 !  Routine to be called to terminate the program. This routines 
 !  flushes the output streams and aborts the mpi processes.
 !
-!  The routines invoked are: 
-!  \begin{description}
-!   \item[LIS\_flush](\ref{LIS_flush}) \newline
-!     flushes the output streams
-!  \end{description}
-!
 !EOP
     write(LIS_logunit,*)'[ERR] endrun is being called'
-    call lis_flush( LIS_logunit )   ! Flush all output to standard output
+    flush( LIS_logunit )   ! Flush all output to standard output
 #if (defined SPMD) 
     call mpi_abort (LIS_mpi_comm, 1, ierr)
 #else

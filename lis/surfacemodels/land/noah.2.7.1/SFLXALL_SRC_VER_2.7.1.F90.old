@@ -489,7 +489,7 @@
       ELSE
         SNDENS = SNEQV/SNOWH
         if(snowh < sneqv) write(logunit,*)'snow ',ntl,sneqv,snowh, sndens
-        call LIS_flush(logunit)
+        flush(logunit)
         SNCOND = CSNOW(SNDENS) 
       ENDIF
 

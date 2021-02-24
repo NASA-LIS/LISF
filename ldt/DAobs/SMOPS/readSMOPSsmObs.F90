@@ -306,7 +306,7 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
       call grib_open_file(ftn,trim(fname),'r',iret)
       if(iret.ne.0) then
          write(LDT_logunit,*) 'Could not open file: ',trim(fname)
-         call LDT_flush(LDT_logunit)
+         flush(LDT_logunit)
          call LDT_endrun()
       endif
       call grib_multi_support_on

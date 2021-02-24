@@ -46,7 +46,7 @@ subroutine LVT_run_DAstats
         call LVT_readDataMask
         call LVT_readLISDAData(i)
         call LVT_computeDAStats(i)
-        call LVT_flush(LVT_logunit)
+        flush(LVT_logunit)
      enddo    
   enddo
 end subroutine LVT_run_DAstats
