@@ -778,6 +778,7 @@ subroutine LIS_DAobs_plugin
 
 !YK
 #if ( defined DA_OBS_SMOS_NRT_NN )
+   call registerdaobsclass(trim(LIS_SMOSNRTNNL2smobsId),"LSM")
    call registerdaobssetup(trim(LIS_SMOSNRTNNL2smobsId)//char(0),&
         SMOSNRTNNL2sm_setup)
    call registerreaddaobs(trim(LIS_SMOSNRTNNL2smobsId)//char(0),&
