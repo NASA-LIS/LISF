@@ -65,8 +65,6 @@ subroutine readSMOSNRTNNL2smObs(n)
 !-----------------------------------------------------------------------
 ! It is assumed that CDF is computed using daily observations.
 !-----------------------------------------------------------------------
-   !write(*,*) 'LDT_rc%lnc(n)= ', LDT_rc%lnc(n)
-   !write(*,*) 'LDT_rc%lnr(n)= ', LDT_rc%lnr(n)
 
    SMOSNRTNNsmobs(n)%smobs = LDT_rc%udef
    smobs = LDT_rc%udef
@@ -83,17 +81,12 @@ subroutine readSMOSNRTNNL2smObs(n)
    write (dd, '(i2.2)') LDT_rc%da
    write (hh, '(i2.2)') LDT_rc%hr
 
-   !write(*,*) 'LDT_rc%da= ', LDT_rc%da
 
    if (SMOSNRTNNsmobs(n)%start_day.ne.LDT_rc%da) then
       SMOSNRTNNsmobs(n)%count_day = SMOSNRTNNsmobs(n)%count_day + 1
       SMOSNRTNNsmobs(n)%start_day = LDT_rc%da
    endif
 
-   !write(*,*) 'SMOSNRTNNsmobs(n)%start_day= ', SMOSNRTNNsmobs(n)%start_day
-   !write(*,*) 'SMOSNRTNNsmobs(n)%count_day= ', SMOSNRTNNsmobs(n)%count_day
-
-   !write(*,*) 'hh= ', hh
 
    list_files = 'ls '//trim(SMOSNRTNNsmobs(n)%odir)// &
                 '/'//trim(yyyy)//'.'//trim(mm)//'.'//dd// &
@@ -124,73 +117,6 @@ subroutine readSMOSNRTNNL2smObs(n)
       i = i + 1
    enddo
    call LDT_releaseUnitNumber(ftn)
-
-!   ! write SMOSNRTNNsmobs(n)%smobs in netcdf file for review
-!   nc_filename = './smos_inp_netcdf/smos_inp_'//yyyymmdd//'_'//hh//'.nc'
-!   
-!   write(*,*) 'nc_filename= ', nc_filename
-!
-!   ios=nf90_create(path=trim(nc_filename),cmode=nf90_netcdf4, ncid=nid)
-!   call LDT_verify(ios, '[ERR] nf90_create failed')
-!
-!   ! Define the dimensions. NetCDF will hand back an ID for each.
-!   call LDT_verify(nf90_def_dim(nid,'lat',LDT_rc%lnr(n),dim_ids(2)), &
-!        '[ERR] nf90_def_dim failed')
-!   call LDT_verify(nf90_def_dim(nid,'lon',LDT_rc%lnc(n),dim_ids(1)), &
-!        '[ERR] nf90_def_dim failed')
-!
-!   ! Define the variable.
-!   ! latitudes
-!   call LDT_verify(nf90_def_var(nid,"lat",nf90_float,dim_ids(2), &
-!        lat_varid),'[ERR] nf90_def_var failed')
-!   call LDT_verify(nf90_put_att(nid,lat_varid, &
-!        "units","degrees_north"), &
-!        '[ERR] nf90_put_att failed')
-!   call LDT_verify(nf90_put_att(nid,lat_varid, &
-!        "long_name","latitude"),&
-!        '[ERR] nf90_put_att failed')
-!   call LDT_verify(nf90_put_att(nid,lat_varid, &
-!        "standard_name","latitude"),&
-!        '[ERR] nf90_put_att failed')
-!
-!   ! longitudes
-!   call LDT_verify(nf90_def_var(nid,"lon",nf90_float,dim_ids(1), &
-!        lon_varid),'[ERR] nf90_def_var failed')
-!   call LDT_verify(nf90_put_att(nid,lon_varid, &
-!        "units","degrees_east"), &
-!        '[ERR] nf90_put_att failed')
-!   call LDT_verify(nf90_put_att(nid,lon_varid, &
-!        "long_name","longitude"),&
-!        '[ERR] nf90_put_att failed')
-!   call LDT_verify(nf90_put_att(nid,lon_varid, &
-!        "standard_name","longitude"),&
-!        '[ERR] nf90_put_att failed')
-!
-!   ! Soil moisutre
-!   call LDT_verify(nf90_def_var(nid,"smobs",nf90_float, &
-!        dimids=dim_ids, varid=sm_varid),'[ERR] nf90_def_var failed')
-!   call LDT_verify(nf90_put_att(nid,sm_varid, &
-!        "units","m3m-3"),'[ERR] nf90_put_att failed')
-!   call LDT_verify(nf90_put_att(nid,sm_varid, &
-!        "long_name","SMOS soil moistutre interpolated"),&
-!        '[ERR] nf90_put_att failed')
-!   call LDT_verify(nf90_put_att(nid,sm_varid, &
-!        "standard_name","SMOS soil moistutre interpolated"),&
-!        '[ERR] nf90_put_att failed')
-!
-!   ! Write the lat/lon data
-!   call LDT_verify(nf90_put_var(nid,lat_varid,lat2d(1,:),&
-!        (/1/),(/LDT_rc%lnr(n)/)),'[ERR] nf90_put_var failed for lat')
-!   call LDT_verify(nf90_put_var(nid,lon_varid,lon2d(:,1),&
-!        (/1/),(/LDT_rc%lnc(n)/)), '[ERR] nf90_put_var failed for lon')
-!
-!   ! Write SMOS interpolated soil moisture
-!   call LDT_verify(nf90_put_var(nid,sm_varid,&
-!        SMOSNRTNNsmobs(n)%smobs(:,:), (/1,1/),(/LDT_rc%lnc(n),LDT_rc%lnr(n)/)), &
-!        '[ERR] nf90_put_var failed for smos soil moisture')
-!
-!   ios = nf90_close(ncid=nid)
-!   call LDT_verify(ios,'[ERR] nf90_close failed!')
 
    call LDT_logSingleDAobs(n, LDT_DAobsData(n)%soilmoist_obs, &
                            SMOSNRTNNsmobs(n)%smobs, vlevel=1)
@@ -345,7 +271,6 @@ subroutine read_SMOSNRTL2sm_data(n, fname, smobs_inp)
                    lat2d(c,r)+dy/2 >= min_lat_dgg.and.&
                    lat2d(c,r)-dy/2 <= max_lat_dgg) then
 
-                  !write(*,*) 'SMOSNRTNNsmobs(n)%count_day= ', SMOSNRTNNsmobs(n)%count_day
 
                   if (SMOSNRTNNsmobs(n)%count_day <= 30) then
                      ! assume that during 30 days after the simulation start date
@@ -371,8 +296,6 @@ subroutine read_SMOSNRTL2sm_data(n, fname, smobs_inp)
                                  if (sm_dgg(SMOSNRTNNsmobs(n)%SMOS_lookup(c,r)%dgg_indices(i)) >= 0) then
                                     smobs_sum(c,r) = smobs_sum(c,r) + sm_dgg(SMOSNRTNNsmobs(n)%SMOS_lookup(c,r)%dgg_indices(i))
                                     count_smobs(c,r) = count_smobs(c,r) + 1
-                                    !write(*,*) 'smobs_sum(c,r)= ', smobs_sum(c,r) 
-                                    !write(*,*) 'count_smobs(c,r)= ', count_smobs(c,r)
                                  endif
                               endif
                            endif
@@ -397,7 +320,6 @@ subroutine read_SMOSNRTL2sm_data(n, fname, smobs_inp)
                   if (count_smobs(c,r) > 0) then
                      smobs_inp(c,r) = smobs_sum(c,r)/count_smobs(c,r)
   
-                     !write(*,*) 'smobs_inp(c,r)= ', smobs_inp(c,r)
                   else ! count_smobs(c,r) == 0
                      if (r > 1) then
                         if (count_smobs(c,r-1) > 0) then
@@ -429,7 +351,6 @@ subroutine read_SMOSNRTL2sm_data(n, fname, smobs_inp)
                      if (count_smobs(c,r) >= 3) then
                         smobs_inp(c,r) = smobs_sum(c,r)/count_smobs(c,r)
     
-                        !write(*,*) 'smobs_inp(c,r)_02= ', smobs_inp(c,r)
                      endif
                   endif
                endif
@@ -456,9 +377,6 @@ subroutine read_SMOSNRTL2sm_data(n, fname, smobs_inp)
   ! assume that during 30 days after the simulation start date
   ! all land grids have assigned dgg_id_number
    if (SMOSNRTNNsmobs(n)%count_day .eq. 31) then
-      !write(*,*) 'SMOSNRTNNsmobs(n)%count_day= ', SMOSNRTNNsmobs(n)%count_day
-      !SMOSNRTNNsmobs(n)%dgg_lookup_1d = (/1 , 2, 3, 4 /)
-      !      write(*,*) 'SMOSNRTNNsmobs(n)%dgg_lookup_1d= ', SMOSNRTNNsmobs(n)%dgg_lookup_1d
 
      total_length = 0
        do r = 1, LDT_rc%lnr(n)
@@ -535,8 +453,6 @@ subroutine find_SMOS_Dgg_id_number(n,c,r, lon_dgg, lat_dgg, &
      SMOSNRTNNsmobs(n)%SMOS_lookup(c,r)%dgg_indices = DGG_id_number(indices)
      SMOSNRTNNsmobs(n)%SMOS_lookup(c,r)%dgg_assign = .true.
 
-     !write(*,*) 'indices= ', indices
-     !write(*,*) 'SMOSNRTNNsmobs(n)%SMOS_lookup(c,r)%dgg_indices= ', SMOSNRTNNsmobs(n)%SMOS_lookup(c,r)%dgg_indices
   endif
 
   deallocate(indices) 
