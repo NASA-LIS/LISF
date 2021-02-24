@@ -270,6 +270,6 @@ subroutine liswrfrun_coupled(n)
 
   call LIS_surfaceModel_setexport(n)
 
-  call LIS_flush(LIS_logunit)
+  flush(LIS_logunit)
 
 end subroutine liswrfrun_coupled

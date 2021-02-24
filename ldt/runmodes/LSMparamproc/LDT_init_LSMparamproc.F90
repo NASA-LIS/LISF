@@ -23,7 +23,7 @@
 
     call LDT_paramProcInit          
 
-    call LDT_flush(LDT_logunit)
+    flush(LDT_logunit)
 
   end subroutine LDT_init_LSMparamproc
   

@@ -35,7 +35,7 @@
     
     call LVT_domainInit()
     call LVT_optUEInit()
-    call LVT_flush(LVT_logunit)
+    flush(LVT_logunit)
 
   end subroutine LVT_init_optUE
   

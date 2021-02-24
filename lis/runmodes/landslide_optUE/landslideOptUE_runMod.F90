@@ -103,7 +103,7 @@ contains
     use LIS_coreMod,         only : LIS_rc
     use LIS_optUEMod, only : LIS_isOptStopCriterionTrue,&
          LIS_runOptUE
-    use LIS_logMod,          only : LIS_logunit, LIS_flush
+    use LIS_logMod,          only : LIS_logunit
 !
 ! !DESCRIPTION:
 ! 
