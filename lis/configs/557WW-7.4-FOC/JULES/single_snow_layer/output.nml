@@ -1,0 +1,21 @@
+&jules_output
+dump_period=1,
+nprofiles=1,
+output_dir='./output',
+run_id='jules',
+/
+&jules_output_profile
+file_period=0,
+nvars=34,
+output_main_run=.true.,
+output_spinup=.false.,
+output_type=34*'S',
+profile_name='all',
+var='fqw_gb','ftl_gb','tstar_gb','latent_heat',
+'surf_ht_flux_gb','snow_mass_gb','smcl','t_soil','smc_tot',
+'fsmc_gb','fsmc','sub_surf_roff','surf_roff','tfall','ls_rain', 'wind',
+'z0', 'z0h', 'tl1', 'ecan_gb', 'ei_gb', 'esoil_gb', 'gc', 'gs', 'cs', 
+'snow_depth', 'ext',  'lai','sw_net', 'snow_melt_gb','sthzw', 'zw',     
+'fwetl', 'fsat', 
+var_name=34*'',
+/
