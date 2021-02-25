@@ -1,4 +1,0 @@
-!BOP
-!\section{GDAS 3d forcing}
-!This section describes the implementation of the GDAS 3d data. 
-!EOP

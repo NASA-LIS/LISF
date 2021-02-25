@@ -168,10 +168,6 @@ subroutine LIS_metforcing_plugin
    use agrradps_forcingMod
 #endif
 
-#if ( defined MF_GDAS_3D )
-   use gdas3d_forcingMod
-#endif
-
 #if ( defined MF_GEOS5_FORECAST )
    use geos5fcst_forcingMod
 #endif
@@ -433,12 +429,6 @@ subroutine LIS_metforcing_plugin
    external get_agrradps
    external timeinterp_agrradps
    external finalize_agrradps
-#endif
-
-#if ( defined MF_GDAS_3D )
-   external get_gdas3d
-   external timeinterp_gdas3d
-   external finalize_gdas3d
 #endif
 
 #if ( defined MF_GEOS5_FORECAST )
@@ -851,15 +841,6 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_agrradpsId)//char(0), &
                                   timeinterp_agrradps)
    call registerfinalmetforc(trim(LIS_agrradpsId)//char(0),finalize_agrradps)
-#endif
-
-#if ( defined MF_GDAS_3D )
-! - GDAS profile data for CRTM 
-   call registerinitmetforc(trim(LIS_gdas3dId)//char(0),init_GDAS3D)
-   call registerretrievemetforc(trim(LIS_gdas3dId)//char(0),get_gdas3d)
-   call registertimeinterpmetforc(trim(LIS_gdas3dId)//char(0), &
-                                  timeinterp_gdas3d)
-   call registerfinalmetforc(trim(LIS_gdas3dId)//char(0),finalize_gdas3d)
 #endif
 
 #if ( defined MF_GEOS5_FORECAST )
