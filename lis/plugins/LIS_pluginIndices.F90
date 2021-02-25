@@ -171,7 +171,6 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_PALSmetforcId     = "PALS station forcing"
    character*50, public,  parameter :: LIS_PILDASmetforcId   = "PILDAS"
    character*50, public,  parameter :: LIS_USGSPETforcId     = "PET USGS"
-   character*50, public,  parameter :: LIS_capaId            = "CaPA"
    character*50, public,  parameter :: LIS_nam242Id          = "NAM242"
    character*50, public,  parameter :: LIS_WRFoutId          = "WRFout"
    character*50, public,  parameter :: LIS_AWAPforcId        = "AWAP"

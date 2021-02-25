@@ -300,10 +300,6 @@ subroutine LIS_metforcing_plugin
    use pildas_forcingMod
 #endif
 
-#if ( defined MF_CAPA )
-   use capa_forcingMod
-#endif
-
 #if ( defined MF_WRFOUT )
    use WRFout_forcingMod
 #endif
@@ -660,12 +656,6 @@ subroutine LIS_metforcing_plugin
    external get_pildas
    external timeinterp_pildas
    external finalize_pildas
-#endif
-
-#if ( defined MF_CAPA )
-   external get_capa
-   external timeinterp_capa
-   external finalize_capa
 #endif
 
 #if ( defined MF_WRFOUT )
@@ -1221,15 +1211,6 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_pildasmetforcId)//char(0), &
                                   timeinterp_pildas)
    call registerfinalmetforc(trim(LIS_pildasmetforcId)//char(0),finalize_pildas)
-#endif
-
-#if ( defined MF_CAPA )
-! - CAPA precipitation
-   call registerinitmetforc(trim(LIS_capaId)//char(0),init_capa)
-   call registerretrievemetforc(trim(LIS_capaId)//char(0),get_capa)
-   call registertimeinterpmetforc(trim(LIS_capaId)//char(0), &
-                                  timeinterp_capa)
-   call registerfinalmetforc(trim(LIS_capaId)//char(0),finalize_capa)
 #endif
 
 #if ( defined MF_WRFOUT )
