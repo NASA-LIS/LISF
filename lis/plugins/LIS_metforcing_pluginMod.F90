@@ -272,10 +272,6 @@ subroutine LIS_metforcing_plugin
    use Loobos_forcingMod
 #endif
 
-#if ( defined MF_FASST_TEST )
-   use FASSTsingle_forcingMod
-#endif
-
 #if ( defined MF_SNOTEL )
    use snotel_forcingMod
 #endif
@@ -600,12 +596,6 @@ subroutine LIS_metforcing_plugin
    external get_Loobos
    external timeinterp_Loobos
    external finalize_Loobos
-#endif
-
-#if ( defined MF_FASST_TEST )
-   external get_FASSTsingle
-   external timeinterp_FASSTsingle
-   external finalize_FASSTsingle
 #endif
 
 #if ( defined MF_SNOTEL )
@@ -1109,17 +1099,6 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_LoobosId)//char(0), &
                                   timeinterp_Loobos)
    call registerfinalmetforc(trim(LIS_LoobosId)//char(0),finalize_Loobos)
-#endif
-
-#if ( defined MF_FASST_TEST )
-! - FASST single point test case
-   call registerinitmetforc(trim(LIS_FASSTsingleId)//char(0),init_FASSTsingle)
-   call registerretrievemetforc(trim(LIS_FASSTsingleId)//char(0), &
-                                get_FASSTsingle)
-   call registertimeinterpmetforc(trim(LIS_FASSTsingleId)//char(0), &
-                                  timeinterp_FASSTsingle)
-   call registerfinalmetforc(trim(LIS_FASSTsingleId)//char(0), &
-                             finalize_FASSTsingle)
 #endif
 
 #if ( defined MF_SNOTEL )
