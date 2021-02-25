@@ -125,10 +125,7 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
       SMOSNRTNNL2sm_struc(n)%start_day = LIS_rc%da
    endif
 
-   ! MN: start edit
-   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    !read dgg lookup table form LDT output and store on local processes
-   !if (SMOSNRTNNL2sm_struc(n)%count_day .eq. 1) then
    if (.not. dgg_file_already_read) then ! EMK 
       leng = 0
       If (LIS_masterproc) then
@@ -218,9 +215,6 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
       dgg_file_already_read = .true.
    end if
 
-! MN: end edit
-!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 
    alarmCheck = LIS_isAlarmRinging(LIS_rc, "SMOSNRTNN read alarm")
 
@@ -271,10 +265,6 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
 
       if(LIS_masterproc) then
 
-         !write(*,*) 'yyyymmdd= ', yyyymmdd
-         !write(*,*) 'hh= ', hh
-         !write(*,*) 'hh0= ', hh0
-         !write(*,*) 'hh1= ', hh1
 
          list_files = trim(smobsdir)// &
               '/'//trim(yyyy)//'.'//trim(mm)//'.'//dd// &
@@ -282,7 +272,6 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
               //trim(yyyymmdd)//trim(hh) &
               //'*.nc 2>/dev/null > file_01.txt'
 
-         !write(*,*) 'list_files_01= ', list_files
 
          cmd = 'ls '//list_files
          call system(cmd)
@@ -294,7 +283,6 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
                  //trim(yyyymmdd)//trim(hh0)//'*_'//trim(yyyymmdd)//(hh1)  &
                  //'*.nc 2>/dev/null > file_02.txt'
 
-            !write(*,*) 'list_files_02= ', list_files
 
             cmd = 'ls '//list_files
             call system(cmd)
@@ -303,14 +291,6 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
          call system ('ls file*.txt | xargs cat > ./SMOS_filelist_sm.dat')
          call system ('find . -type f -name "file*.txt" -print0 | xargs -0 rm -rf')
 
-
-         !list_files = 'ls '//trim(smobsdir)// &
-         !     '/'//trim(yyyy)//'.'//trim(mm)//'.'//dd// &
-         !     '/W_XX-ESA,SMOS,NRTNN_C_LEMM_*_' &
-         !     //trim(yyyymmdd)//trim(hh)//'*_'//trim(yyyy) &
-         !     //"*.nc > SMOS_filelist_sm.dat"
-         !
-         !   call system(trim(list_files))
 
          do i=0,LIS_npes-1
             write(istring,'(I4.4)') i
@@ -369,11 +349,6 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
             dt = (SMOSNRTNNL2sm_struc(n)%smtime(c,r)-time1)
 
             if(dt.ge.0.and.dt.lt.(time3-time1)) then
-
-               !write(*,*) 'SMOSNRTNNL2sm_struc(n)%smtime(c,r)= ', SMOSNRTNNL2sm_struc(n)%smtime(c,r)
-               !write(*,*) 'time1= ', time1
-               !write(*,*) 'dt= ', dt
-               !write(*,*) 'time3= ', time3
 
                sm_current(c,r) = &
                    SMOSNRTNNL2sm_struc(n)%smobs(c,r)
@@ -729,21 +704,6 @@ subroutine read_SMOSNRTNNL2sm_data(n, k, fname, smobs_inp, time, chr)
                    lon2d(c,r)-dx/2 <= max_lon_dgg.and.&
                    lat2d(c,r)+dy/2 >= min_lat_dgg.and.&
                    lat2d(c,r)-dy/2 <= max_lat_dgg) then
-#if 0
-                  if (SMOSNRTNNL2sm_struc(n)%count_day <= 30) then
-                     ! assume that during 30 days after the simulation start date
-                     ! all land grids have assigned dgg_id_number
-                     ! in order to avoid looping over ocean grids for every files
-
-                     if (.not. SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_assign) then
-                        call find_SMOS_Dgg_id_number(n,c,r, lon_dgg, lat_dgg, &
-                                                     dgg_length, i_dgg, DGG_id_number, &
-                                                     min_lon_dgg, max_lon_dgg, &
-                                                     min_lat_dgg, max_lat_dgg, &
-                                                     dx, dy, lon2d(c,r), lat2d(c,r))
-                     endif
-                  endif 
-#endif
                   
                   if (SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_assign) then
                      if (size(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices) > 0) then
@@ -752,12 +712,6 @@ subroutine read_SMOSNRTNNL2sm_data(n, k, fname, smobs_inp, time, chr)
                               obstime_dgg(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices(i)) &
                                    = obstime_dgg(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices(i))/3600
 
-                              !write(*,*) 'chr= ', chr
-                              !write(*,*) 'time= ', time
-                              !write(*,*) 'obstime_dgg(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices(i))= ', &
-                              !           obstime_dgg(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices(i))
-                              !write(*,*) 'int(obstime_dgg(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices(i)))= ', &
-                              !           int(obstime_dgg(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices(i)))
 
                               if (int(obstime_dgg(SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices(i))) &
                                                                                               == chr) then
@@ -795,8 +749,6 @@ subroutine read_SMOSNRTNNL2sm_data(n, k, fname, smobs_inp, time, chr)
 
                      SMOSNRTNNL2sm_struc(n)%smtime(c,r) = time
 
-                     !write(*,*) 'time_kyh= ', time
-                     !write(*,*) 'smobs_inp(c,r)= ', smobs_inp(c,r)
 
                   else ! count_smobs(c,r) == 0
                      ! find neighbor grids that have soil moisture values
@@ -831,7 +783,6 @@ subroutine read_SMOSNRTNNL2sm_data(n, k, fname, smobs_inp, time, chr)
                         smobs_inp(c,r) = smobs_sum(c,r)/count_smobs(c,r)
 
                         SMOSNRTNNL2sm_struc(n)%smtime(c,r) = time
-                        !write(*,*) 'smobs_inp(c,r)_02= ', smobs_inp(c,r)
                      endif
                   endif
                endif
@@ -899,8 +850,6 @@ subroutine find_SMOS_Dgg_id_number(n,c,r, lon_dgg, lat_dgg, &
      SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices = DGG_id_number(indices)
      SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_assign = .true.
 
-     !write(*,*) 'indices= ', indices
-     !write(*,*) 'SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices= ', SMOSNRTNNL2sm_struc(n)%SMOS_lookup(c,r)%dgg_indices
   endif
 
   deallocate(indices)

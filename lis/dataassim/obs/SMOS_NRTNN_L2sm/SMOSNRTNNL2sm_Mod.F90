@@ -350,7 +350,6 @@ contains
 
        SMOSNRTNNL2sm_struc(n)%smtime = -1
        SMOSNRTNNL2sm_struc(n)%SMOS_lookup%dgg_assign = .false.
-       !SMOSNRTNNL2sm_struc(n)%SMOS_lookup_glb%dgg_assign = .false.
        SMOSNRTNNL2sm_struc(n)%start_day = LIS_rc%da
        SMOSNRTNNL2sm_struc(n)%count_day = 0
 
@@ -457,82 +456,14 @@ contains
 
                    ssdev(t) = ssdev(t)*SMOSNRTNNL2sm_struc(n)%model_sigma(t,jj)/&
                         SMOSNRTNNL2sm_struc(n)%obs_sigma(t,jj)
-                   !                c = LIS_domain(n)%grid(t)%col
-                   !                r = LIS_domain(n)%grid(t)%row
-                   !                ssdev_grid(c,r) = ssdev(t) 
                    if(ssdev(t).lt.minssdev) then
                       ssdev(t) = minssdev
                    endif
                 endif
              enddo
 
-!          open(100,file='ssdev.bin',form='unformatted')
-!          write(100) ssdev_grid
-!          close(100)
-!          stop
           endif
          endif
-#if 0
-         allocate(obserr(LIS_rc%obs_gnc(k),LIS_rc%obs_gnr(k)))
-         obserr = -9999.0
-
-         do r=1,LIS_rc%obs_lnr(k)
-            do c=1,LIS_rc%obs_lnc(k)
-               if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then
-                  obserr(c,r)  =  ssdev(LIS_obs_domain(n,k)%gindex(c,r))
-               endif
-            enddo
-         enddo
-         print*, 'SMOS NRT NN L2 ',LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)
-         open(100,file='smos_obs_err.bin',form='unformatted')
-         write(100) obserr
-         close(100)
-         stop
-         deallocate(obserr)
-#endif
-#if 0           
-         allocate(obserr(LIS_rc%gnc(n),LIS_rc%gnr(n)))
-         allocate(lobserr(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)))
-         obserr = -9999.0
-         lobserr = -9999.0
-         open(100,file='ssdev.bin',form='unformatted',access='direct',&
-              recl=LIS_rc%gnc(n)*LIS_rc%gnr(n)*4)
-         read(100,rec=1) obserr
-         close(100)
-!         stop
-         lobserr(:,:) = obserr(&
-              LIS_ews_halo_ind(n,LIS_localPet+1):&
-              LIS_ewe_halo_ind(n,LIS_localPet+1), &
-              LIS_nss_halo_ind(n,LIS_localPet+1): &
-              LIS_nse_halo_ind(n,LIS_localPet+1))
-
-         do r=1,LIS_rc%obs_lnr(k)
-            do c=1,LIS_rc%obs_lnc(k)
-               if(LIS_domain(n)%gindex(c,r).ne.-1) then
-                  if(lobserr(c,r).gt.0.001) then
-                     ssdev(LIS_domain(n)%gindex(c,r))  = &
-                          ssdev(LIS_domain(n)%gindex(c,r)) *2
-                  endif
-               endif
-            enddo
-         enddo
-
-!          do r=1,LIS_rc%obs_lnr(k)
-!             do c=1,LIS_rc%obs_lnc(k)
-!                if(LIS_domain(n)%gindex(c,r).ne.-1) then 
-!                   lobserr(c,r) = ssdev(LIS_domain(n)%gindex(c,r)) 
-!                   
-!                endif
-!             enddo
-!          enddo
-!          open(100,file='obs_err.bin',form='unformatted')
-!          write(100) obserr
-!          close(100)
-!          stop
-          deallocate(obserr)
-          deallocate(lobserr)
-
-#endif
        endif
 
        if(LIS_rc%obs_ngrid(k).gt.0) then
@@ -547,10 +478,6 @@ contains
 
     do n=1,LIS_rc%nnest
 
-       !allocate(SMOSNRTNNL2sm_struc(n)%rlat(&
-       !     LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
-       !allocate(SMOSNRTNNL2sm_struc(n)%rlon(&
-       !     LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
 
        call LIS_registerAlarm("SMOSNRTNN read alarm",&
             3600.0, 3600.0)
