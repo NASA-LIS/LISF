@@ -159,7 +159,6 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_agrradpsId        = "AGRMET radiation (polar stereographic)"
    character*50, public,  parameter :: LIS_BondvilleId       = "Bondville"
    character*50, public,  parameter :: LIS_LoobosId          = "Loobos"
-   character*50, public,  parameter :: LIS_FASSTsingleId     = "FASST test"
    character*50, public,  parameter :: LIS_TRIGRSseattleId   = "TRIGRS test"
    character*50, public,  parameter :: LIS_snotelId          = "SNOTEL"
    character*50, public,  parameter :: LIS_rhoneAGGId        = "Rhone AGG"
