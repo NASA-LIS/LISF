@@ -116,10 +116,6 @@ subroutine LIS_metforcing_plugin
    use gdas_forcingMod
 #endif
 
-#if ( defined MF_GEOS )
-   use geos_forcingMod
-#endif
-
 #if ( defined MF_ECMWF )
    use ecmwf_forcingMod
 #endif
@@ -341,12 +337,6 @@ subroutine LIS_metforcing_plugin
    external timeinterp_gdas
    external reset_gdas
    external finalize_gdas
-#endif
-
-#if ( defined MF_GEOS )
-   external get_geos
-   external timeinterp_geos
-   external finalize_geos
 #endif
 
 #if ( defined MF_ECMWF )
@@ -711,14 +701,6 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_gdasId)//char(0),timeinterp_gdas)
    call registerresetmetforc(trim(LIS_gdasId)//char(0),reset_gdas)
    call registerfinalmetforc(trim(LIS_gdasId)//char(0),finalize_gdas)
-#endif
-
-#if ( defined MF_GEOS )
-! - GEOS Forcing:
-   call registerinitmetforc(trim(LIS_geosId)//char(0),init_GEOS)
-   call registerretrievemetforc(trim(LIS_geosId)//char(0),get_geos)
-   call registertimeinterpmetforc(trim(LIS_geosId)//char(0),timeinterp_geos)
-   call registerfinalmetforc(trim(LIS_geosId)//char(0),finalize_geos)
 #endif
 
 #if ( defined MF_ECMWF )
