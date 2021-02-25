@@ -272,10 +272,6 @@ subroutine LIS_metforcing_plugin
    use ceop_forcingMod
 #endif
 
-#if ( defined MF_ARMS )
-   use arms_forcingMod
-#endif
-
 #if ( defined MF_ALMIPII )
    use ALMIPII_forcingMod
 #endif
@@ -625,13 +621,6 @@ subroutine LIS_metforcing_plugin
    external get_ceop
    external timeinterp_ceop
    external finalize_ceop
-#endif
-
-#if ( defined MF_ARMS )
-   external get_arms
-   external timeinterp_arms
-   external finalize_arms
-   external reset_arms
 #endif
 
 #if ( defined MF_ALMIPII )
@@ -1173,16 +1162,6 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_ceopId)//char(0), &
                                   timeinterp_ceop)
    call registerfinalmetforc(trim(LIS_ceopId)//char(0),finalize_ceop)
-#endif
-
-#if ( defined MF_ARMS )
-! - ARMS station data
-   call registerinitmetforc(trim(LIS_armsId)//char(0),init_ARMS)
-   call registerretrievemetforc(trim(LIS_armsId)//char(0),get_arms)
-   call registertimeinterpmetforc(trim(LIS_armsId)//char(0), &
-                                  timeinterp_arms)
-   call registerfinalmetforc(trim(LIS_armsId)//char(0),finalize_arms)
-   call registerresetmetforc(trim(LIS_armsId)//char(0),reset_arms)
 #endif
 
 #if ( defined MF_ALMIPII )
