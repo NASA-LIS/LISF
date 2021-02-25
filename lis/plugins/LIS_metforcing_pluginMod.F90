@@ -272,10 +272,6 @@ subroutine LIS_metforcing_plugin
    use ceop_forcingMod
 #endif
 
-#if ( defined MF_ALMIPII )
-   use ALMIPII_forcingMod
-#endif
-
 #if ( defined MF_BONDVILLE )
    use Bondville_forcingMod
 #endif
@@ -621,12 +617,6 @@ subroutine LIS_metforcing_plugin
    external get_ceop
    external timeinterp_ceop
    external finalize_ceop
-#endif
-
-#if ( defined MF_ALMIPII )
-   external get_ALMIPII
-   external timeinterp_ALMIPII
-   external finalize_ALMIPII
 #endif
 
 #if ( defined MF_BONDVILLE )
@@ -1162,15 +1152,6 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_ceopId)//char(0), &
                                   timeinterp_ceop)
    call registerfinalmetforc(trim(LIS_ceopId)//char(0),finalize_ceop)
-#endif
-
-#if ( defined MF_ALMIPII )
-! - ALMIPII
-   call registerinitmetforc(trim(LIS_ALMIPIIId)//char(0),init_ALMIPII)
-   call registerretrievemetforc(trim(LIS_ALMIPIIId)//char(0),get_ALMIPII)
-   call registertimeinterpmetforc(trim(LIS_ALMIPIIId)//char(0), &
-                                  timeinterp_ALMIPII)
-   call registerfinalmetforc(trim(LIS_ALMIPIIId)//char(0),finalize_ALMIPII)
 #endif
 
 #if ( defined MF_BONDVILLE )

@@ -150,7 +150,6 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_stg4Id            = "CPC STAGEIV"
 
    character*50, public,  parameter :: LIS_narrId            = "NARR"
-   character*50, public,  parameter :: LIS_ALMIPIIId         = "ALMIPII"
    character*50, public,  parameter :: LIS_RFE2DailyId       = "RFE2(daily)"
    character*50, public,  parameter :: LIS_ceopId            = "CEOP"
    character*50, public,  parameter :: LIS_scanId            = "SCAN"
