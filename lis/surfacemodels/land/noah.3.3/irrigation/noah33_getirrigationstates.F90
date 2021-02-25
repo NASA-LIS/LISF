@@ -394,7 +394,10 @@ subroutine noah33_getirrigationstates(n,irrigState)
                      
 !!!!! FLOOD IRRIGATION
             elseif(irrigType(t).eq.3) then
-!               if(ltime.eq.shift_otimefs) then 
+             ! If we are outside of the irrigation window, set rate to 0
+               if ((ltime.ge.shift_otimefe).or.(ltime.lt.shift_otimefs)) then
+                  irrigRate(t) = 0.0
+               endif
                if((ltime.ge.shift_otimefs).and.(ltime.lt.shift_otimefe)) then 
 !-------------------------------------------------------------
 !     Compute the root zone accumlative soil moisture [mm], 
@@ -410,8 +413,8 @@ subroutine noah33_getirrigationstates(n,irrigState)
 !---------------------------------------------------------------
 !     Get the root zone moisture availability to the plant
 !--------------------------------------------------------------- 
-!                  ma = (asmc-tsmcwlt) /(tsmcref - tsmcwlt)   ! Original
-                   ma = (asmc-tsmcwlt) /(tsmcref - tsmcwlt)/IrrigScale(t) ! BZ added IrrigScale
+                  ma = (asmc-tsmcwlt) /(tsmcref - tsmcwlt)   ! Original
+!                   ma = (asmc-tsmcwlt) /(tsmcref - tsmcwlt)/IrrigScale(t) ! BZ added IrrigScale
                         
                    if( ma .le. LIS_irrig_struc(n)%flood_thresh ) then
                      do l = 1, LIS_rc%irrigation_mxsoildpth
