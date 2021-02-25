@@ -212,10 +212,6 @@ subroutine LIS_metforcing_plugin
    use narr_forcingMod
 #endif
 
-#if ( defined MF_RDHM_3_5_6 )
-   use rdhm356_forcingMod 
-#endif
-
 #if ( defined MF_NAM242 )
    use nam242_forcingMod
 #endif
@@ -478,12 +474,6 @@ subroutine LIS_metforcing_plugin
    external get_narr
    external timeinterp_narr
    external finalize_narr
-#endif
-
-#if ( defined MF_RDHM_3_5_6 )
-   external get_rdhm356 
-   external timeinterp_rdhm356
-   external finalize_rdhm356
 #endif
 
 #if ( defined MF_NAM242 )
@@ -897,15 +887,6 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_narrId)//char(0), &
                                   timeinterp_narr)
    call registerfinalmetforc(trim(LIS_narrId)//char(0),finalize_narr)
-#endif
-
-#if ( defined MF_RDHM_3_5_6 )
-! - RDHM 356 HRAP, added by Shugong Wang
-   call registerinitmetforc(trim(LIS_rdhm356Id)//char(0),init_rdhm356)
-   call registerretrievemetforc(trim(LIS_rdhm356Id)//char(0),get_rdhm356)
-   call registertimeinterpmetforc(trim(LIS_rdhm356Id)//char(0), &
-                                  timeinterp_rdhm356)
-   call registerfinalmetforc(trim(LIS_rdhm356Id)//char(0),finalize_rdhm356)
 #endif
 
 #if ( defined MF_NAM242 )

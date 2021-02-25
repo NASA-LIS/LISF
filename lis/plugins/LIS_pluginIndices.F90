@@ -150,7 +150,6 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_scanId            = "SCAN"
    !character*50, public,  parameter :: LIS_d2pcpcarId        = "D2PCPCAR"
    !character*50, public,  parameter :: LIS_d2pcpoklId        = "D2PCPOKL"
-   character*50, public,  parameter :: LIS_rdhm356Id         = "RDHM.3.5.6"
    character*50, public,  parameter :: LIS_agrradpsId        = "AGRMET radiation (polar stereographic)"
    character*50, public,  parameter :: LIS_BondvilleId       = "Bondville"
    character*50, public,  parameter :: LIS_LoobosId          = "Loobos"
