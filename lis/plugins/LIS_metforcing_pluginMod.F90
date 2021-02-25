@@ -268,10 +268,6 @@ subroutine LIS_metforcing_plugin
    use scan_forcingMod
 #endif
 
-#if ( defined MF_CEOP )
-   use ceop_forcingMod
-#endif
-
 #if ( defined MF_BONDVILLE )
    use Bondville_forcingMod
 #endif
@@ -607,12 +603,6 @@ subroutine LIS_metforcing_plugin
    external get_scan
    external timeinterp_scan
    external finalize_scan
-#endif
-
-#if ( defined MF_CEOP )
-   external get_ceop
-   external timeinterp_ceop
-   external finalize_ceop
 #endif
 
 #if ( defined MF_BONDVILLE )
@@ -1133,15 +1123,6 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_scanId)//char(0), &
                                   timeinterp_scan)
    call registerfinalmetforc(trim(LIS_scanId)//char(0),finalize_scan)
-#endif
-
-#if ( defined MF_CEOP )
-! - CEOP
-   call registerinitmetforc(trim(LIS_ceopId)//char(0),init_CEOP)
-   call registerretrievemetforc(trim(LIS_ceopId)//char(0),get_ceop)
-   call registertimeinterpmetforc(trim(LIS_ceopId)//char(0), &
-                                  timeinterp_ceop)
-   call registerfinalmetforc(trim(LIS_ceopId)//char(0),finalize_ceop)
 #endif
 
 #if ( defined MF_BONDVILLE )
