@@ -132,7 +132,6 @@ module LIS_pluginIndices
 
    character*50, public,  parameter :: LIS_gldasId           = "GLDAS"
    character*50, public,  parameter :: LIS_gfsId             = "GFS"
-   character*50, public,  parameter :: LIS_merralandId       = "MERRA-Land"
    character*50, public,  parameter :: LIS_merra2Id          = "MERRA2"
 
    character*50, public,  parameter :: LIS_cmapId            = "CMAP"
