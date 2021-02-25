@@ -204,10 +204,6 @@ subroutine LIS_metforcing_plugin
    use cmap_forcingMod
 #endif
 
-#if ( defined MF_NLDAS1 )
-   use nldas1_forcingMod
-#endif
-
 #if ( defined MF_NLDAS2 )
    use nldas2_forcingMod
 #endif
@@ -473,13 +469,6 @@ subroutine LIS_metforcing_plugin
    external get_cmap
    external timeinterp_cmap
    external finalize_cmap
-#endif
-
-#if ( defined MF_NLDAS1 )
-   external get_nldas1
-   external timeinterp_nldas1
-   external finalize_nldas1
-   external reset_nldas1
 #endif
 
 #if ( defined MF_NLDAS2 )
@@ -899,16 +888,6 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_cmapId)//char(0), &
                                   timeinterp_cmap)
    call registerfinalmetforc(trim(LIS_cmapId)//char(0),finalize_cmap)
-#endif
-
-#if ( defined MF_NLDAS1 )
-! - NLDAS1 Forcing:
-   call registerinitmetforc(trim(LIS_nldas1Id)//char(0),init_NLDAS1)
-   call registerretrievemetforc(trim(LIS_nldas1Id)//char(0),get_nldas1)
-   call registertimeinterpmetforc(trim(LIS_nldas1Id)//char(0), &
-                                  timeinterp_nldas1)
-   call registerfinalmetforc(trim(LIS_nldas1Id)//char(0),finalize_nldas1)
-   call registerresetmetforc(trim(LIS_nldas1Id)//char(0),reset_nldas1)
 #endif
 
 #if ( defined MF_NLDAS2 )
