@@ -163,7 +163,6 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_FASSTsingleId     = "FASST test"
    character*50, public,  parameter :: LIS_TRIGRSseattleId   = "TRIGRS test"
    character*50, public,  parameter :: LIS_snotelId          = "SNOTEL"
-   character*50, public,  parameter :: LIS_coopId            = "COOP"
    character*50, public,  parameter :: LIS_rhoneAGGId        = "Rhone AGG"
    character*50, public,  parameter :: LIS_RFE2gdasId        = "RFE2(GDAS bias-corrected)"
    character*50, public,  parameter :: LIS_vicforcingId      = "VIC processed forcing"

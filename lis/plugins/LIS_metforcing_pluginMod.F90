@@ -284,10 +284,6 @@ subroutine LIS_metforcing_plugin
    use snotel_forcingMod
 #endif
 
-#if ( defined MF_COOP )
-   use coop_forcingMod
-#endif
-
 #if ( defined MF_PALS_STATION_FORCING )
    use PALSmetdata_forcingMod
 #endif
@@ -627,12 +623,6 @@ subroutine LIS_metforcing_plugin
    external get_snotel
    external timeinterp_snotel
    external finalize_snotel
-#endif
-
-#if ( defined MF_COOP )
-   external get_coop
-   external timeinterp_coop
-   external finalize_coop
 #endif
 
 #if ( defined MF_PALS_STATION_FORCING )
@@ -1161,15 +1151,6 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_snotelId)//char(0), &
                                   timeinterp_snotel)
    call registerfinalmetforc(trim(LIS_snotelId)//char(0),finalize_snotel)
-#endif
-
-#if ( defined MF_COOP )
-! - COOP Precipitation Forcing (added by Yuqiong Liu):
-   call registerinitmetforc(trim(LIS_coopId)//char(0),init_COOP)
-   call registerretrievemetforc(trim(LIS_coopId)//char(0),get_coop)
-   call registertimeinterpmetforc(trim(LIS_coopId)//char(0), &
-                                  timeinterp_coop)
-   call registerfinalmetforc(trim(LIS_coopId)//char(0),finalize_coop)
 #endif
 
 #if ( defined MF_PALS_STATION_FORCING )
