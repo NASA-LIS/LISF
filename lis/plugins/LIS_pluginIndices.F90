@@ -126,7 +126,6 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_ecmwfId           = "ECMWF"
    character*50, public,  parameter :: LIS_gswp1Id           = "GSWP1"
    character*50, public,  parameter :: LIS_gswp2Id           = "GSWP2"
-   character*50, public,  parameter :: LIS_ecmwfreanalId     = "ECMWF reanalysis"
    character*50, public,  parameter :: LIS_agrmetId          = "AGRMET"
    character*50, public,  parameter :: LIS_princetonId       = "PRINCETON"
    character*50, public,  parameter :: LIS_nldas1Id          = "NLDAS1"
