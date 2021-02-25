@@ -260,10 +260,6 @@ subroutine LIS_metforcing_plugin
    use PALSmetdata_forcingMod
 #endif
 
-#if ( defined MF_PILDAS )
-   use pildas_forcingMod
-#endif
-
 #if ( defined MF_WRFOUT )
    use WRFout_forcingMod
 #endif
@@ -557,12 +553,6 @@ subroutine LIS_metforcing_plugin
    external timeinterp_PALSmetdata
    external finalize_PALSmetdata
    external reset_PALSmetdata
-#endif
-
-#if ( defined MF_PILDAS )
-   external get_pildas
-   external timeinterp_pildas
-   external finalize_pildas
 #endif
 
 #if ( defined MF_WRFOUT )
@@ -1023,15 +1013,6 @@ subroutine LIS_metforcing_plugin
                              finalize_PALSmetdata)
    call registerresetmetforc(trim(LIS_PALSmetforcId)//char(0), &
                              reset_PALSmetdata)
-#endif
-
-#if ( defined MF_PILDAS )
-! - PILDAS station data
-   call registerinitmetforc(trim(LIS_pildasmetforcId)//char(0),init_pildas)
-   call registerretrievemetforc(trim(LIS_pildasmetforcId)//char(0),get_pildas)
-   call registertimeinterpmetforc(trim(LIS_pildasmetforcId)//char(0), &
-                                  timeinterp_pildas)
-   call registerfinalmetforc(trim(LIS_pildasmetforcId)//char(0),finalize_pildas)
 #endif
 
 #if ( defined MF_WRFOUT )
