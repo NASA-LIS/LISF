@@ -161,7 +161,6 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_rdhm356Id         = "RDHM.3.5.6"
    character*50, public,  parameter :: LIS_gdas3dId          = "GDAS(3d)"
    character*50, public,  parameter :: LIS_agrradpsId        = "AGRMET radiation (polar stereographic)"
-   character*50, public,  parameter :: LIS_agrradId          = "AGRMET radiation (latlon)"
    character*50, public,  parameter :: LIS_BondvilleId       = "Bondville"
    character*50, public,  parameter :: LIS_LoobosId          = "Loobos"
    character*50, public,  parameter :: LIS_FASSTsingleId     = "FASST test"

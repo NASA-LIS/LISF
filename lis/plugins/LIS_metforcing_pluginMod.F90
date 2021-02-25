@@ -168,10 +168,6 @@ subroutine LIS_metforcing_plugin
    use AGRMET_forcingMod
 #endif
 
-#if ( defined MF_AGRMET_RADIATION_LATLON )
-   use agrrad_forcingMod
-#endif
-
 #if ( defined MF_AGRMET_RADIATION_POLAR_STEREOGRAPHIC )
    use agrradps_forcingMod
 #endif
@@ -466,12 +462,6 @@ subroutine LIS_metforcing_plugin
    external timeinterp_agrmet
    external reset_agrmet
    external finalize_agrmet
-#endif
-
-#if ( defined MF_AGRMET_RADIATION_LATLON )
-   external get_agrrad
-   external timeinterp_agrrad
-   external finalize_agrrad
 #endif
 
 #if ( defined MF_AGRMET_RADIATION_POLAR_STEREOGRAPHIC )
@@ -935,15 +925,6 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_agrmet)
    call registerresetmetforc(trim(LIS_agrmetId)//char(0),reset_agrmet)
    call registerfinalmetforc(trim(LIS_agrmetId)//char(0),finalize_agrmet)
-#endif
-
-#if ( defined MF_AGRMET_RADIATION_LATLON )
-! - AGRMET Radiation:
-   call registerinitmetforc(trim(LIS_agrradId)//char(0),init_AGRRAD)
-   call registerretrievemetforc(trim(LIS_agrradId)//char(0),get_agrrad)
-   call registertimeinterpmetforc(trim(LIS_agrradId)//char(0), &
-                                  timeinterp_agrrad)
-   call registerfinalmetforc(trim(LIS_agrradId)//char(0),finalize_agrrad)
 #endif
 
 #if ( defined MF_AGRMET_RADIATION_POLAR_STEREOGRAPHIC )
