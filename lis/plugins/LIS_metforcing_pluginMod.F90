@@ -124,10 +124,6 @@ subroutine LIS_metforcing_plugin
    use ecmwf_forcingMod
 #endif
 
-#if ( defined MF_ECMWF_REANALYSIS )
-   use ecmwfreanal_forcingMod
-#endif
-
 #if ( defined MF_PRINCETON )
    use princeton_forcingMod
 #endif
@@ -370,13 +366,6 @@ subroutine LIS_metforcing_plugin
    external timeinterp_ecmwf
    external finalize_ecmwf
    external reset_ecmwf
-#endif
-
-#if ( defined MF_ECMWF_REANALYSIS )
-   external get_ecmwfreanal
-   external timeinterp_ecmwfreanal
-   external finalize_ecmwfreanal
-   external reset_ecmwfreanal
 #endif
 
 #if ( defined MF_PRINCETON )
@@ -769,17 +758,6 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_ecmwfId)//char(0),timeinterp_ecmwf)
    call registerfinalmetforc(trim(LIS_ecmwfId)//char(0),finalize_ecmwf)
    call registerresetmetforc(trim(LIS_ecmwfId)//char(0),reset_ecmwf)
-#endif
-
-#if ( defined MF_ECMWF_REANALYSIS )
-! - ECMWF Reanalysis:
-   call registerinitmetforc(trim(LIS_ecmwfreanalId)//char(0),init_ECMWFREANAL)
-   call registerretrievemetforc(trim(LIS_ecmwfreanalId)//char(0), &
-                                get_ecmwfreanal)
-   call registertimeinterpmetforc(trim(LIS_ecmwfreanalId)//char(0), &
-                                  timeinterp_ecmwfreanal)
-   call registerfinalmetforc(trim(LIS_ecmwfreanalId)//char(0), &
-                             finalize_ecmwfreanal)
 #endif
 
 #if ( defined MF_PRINCETON )
