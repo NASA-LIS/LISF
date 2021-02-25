@@ -136,10 +136,6 @@ subroutine LIS_metforcing_plugin
    use gfs_forcingMod
 #endif
 
-#if ( defined MF_MERRA_LAND )
-   use merraland_forcingMod
-#endif
-
 #if ( defined MF_MERRA2 )
    use merra2_forcingMod
 #endif
@@ -369,13 +365,6 @@ subroutine LIS_metforcing_plugin
    external get_gfs
    external timeinterp_gfs
    external finalize_gfs
-#endif
-
-#if ( defined MF_MERRA_LAND )
-   external get_merraland
-   external timeinterp_merraland
-   external finalize_merraland
-   external reset_merraland
 #endif
 
 #if ( defined MF_MERRA2 )
@@ -746,16 +735,6 @@ subroutine LIS_metforcing_plugin
    call registerretrievemetforc(trim(LIS_gfsId)//char(0),get_gfs)
    call registertimeinterpmetforc(trim(LIS_gfsId)//char(0),timeinterp_gfs)
    call registerfinalmetforc(trim(LIS_gfsId)//char(0),finalize_gfs)
-#endif
-
-#if ( defined MF_MERRA_LAND )
-! - MERRA-Land Reanalysis Forcing:
-   call registerinitmetforc(trim(LIS_merralandId)//char(0),init_MERRALAND)
-   call registerretrievemetforc(trim(LIS_merralandId)//char(0),get_merraland)
-   call registertimeinterpmetforc(trim(LIS_merralandId)//char(0), &
-                                  timeinterp_merraland)
-   call registerresetmetforc(trim(LIS_merralandId)//char(0),reset_merraland)
-   call registerfinalmetforc(trim(LIS_merralandId)//char(0),finalize_merraland)
 #endif
 
 #if ( defined MF_MERRA2 )
