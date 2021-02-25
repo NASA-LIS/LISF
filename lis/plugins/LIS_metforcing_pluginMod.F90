@@ -176,10 +176,6 @@ subroutine LIS_metforcing_plugin
    use gefs_forcingMod
 #endif
 
-#if ( defined MF_GDAS_LSWG )
-   use gdasLSWG_forcingMod
-#endif
-
 #if ( defined MF_TRMM_3B42RT )
    use TRMM3B42RT_forcingMod
 #endif
@@ -443,12 +439,6 @@ subroutine LIS_metforcing_plugin
    external timeinterp_gefs
    external finalize_gefs
    external reset_gefs
-#endif
-
-#if ( defined MF_GDAS_LSWG )
-   external get_gdasLSWG
-   external timeinterp_gdasLSWG
-   external finalize_gdasLSWG
 #endif
 
 #if ( defined MF_TRMM_3B42RT )
@@ -861,15 +851,6 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_gefs)
    call registerfinalmetforc(trim(LIS_gefsId)//char(0),finalize_gefs)
    call registerresetmetforc(trim(LIS_gefsId)//char(0),reset_gefs)
-#endif
-
-#if ( defined MF_GDAS_LSWG )
-! - GDAS LSWG profiles
-   call registerinitmetforc(trim(LIS_gdasLSWGId)//char(0),init_gdasLSWG)
-   call registerretrievemetforc(trim(LIS_gdasLSWGId)//char(0),get_gdasLSWG)
-   call registertimeinterpmetforc(trim(LIS_gdasLSWGId)//char(0), &
-                                  timeinterp_gdasLSWG)
-   call registerfinalmetforc(trim(LIS_gdasLSWGId)//char(0),finalize_gdasLSWG)
 #endif
 
 #if ( defined MF_TRMM_3B42RT )

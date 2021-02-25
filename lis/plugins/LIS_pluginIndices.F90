@@ -151,7 +151,6 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_narrId            = "NARR"
    character*50, public,  parameter :: LIS_RFE2DailyId       = "RFE2(daily)"
    character*50, public,  parameter :: LIS_scanId            = "SCAN"
-   character*50, public,  parameter :: LIS_gdasLSWGId        = "GDAS(LSWG)"
    !character*50, public,  parameter :: LIS_d2pcpcarId        = "D2PCPCAR"
    !character*50, public,  parameter :: LIS_d2pcpoklId        = "D2PCPOKL"
    character*50, public,  parameter :: LIS_rdhm356Id         = "RDHM.3.5.6"
