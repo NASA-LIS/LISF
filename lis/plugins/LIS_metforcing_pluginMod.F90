@@ -124,10 +124,6 @@ subroutine LIS_metforcing_plugin
    use princeton_forcingMod
 #endif
 
-#if ( defined MF_RHONE_AGG )
-   use rhoneAGG_forcingMod
-#endif
-
 #if ( defined MF_GLDAS )
    use gldas_forcingMod
 #endif
@@ -335,12 +331,6 @@ subroutine LIS_metforcing_plugin
    external timeinterp_princeton
    external finalize_princeton
    external reset_princeton
-#endif
-
-#if ( defined MF_RHONE_AGG )
-   external get_rhoneAGG
-   external timeinterp_rhoneAGG
-   external finalize_rhoneAGG
 #endif
 
 #if ( defined MF_GLDAS )
@@ -678,15 +668,6 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_princeton)
    call registerfinalmetforc(trim(LIS_princetonId)//char(0),finalize_princeton)
    call registerresetmetforc(trim(LIS_princetonId)//char(0),reset_princeton)
-#endif
-
-#if ( defined MF_RHONE_AGG )
-! - RHONE Forcing:
-   call registerinitmetforc(trim(LIS_rhoneAGGId)//char(0),init_RHONEAGG)
-   call registerretrievemetforc(trim(LIS_rhoneAGGId)//char(0),get_rhoneAGG)
-   call registertimeinterpmetforc(trim(LIS_rhoneAGGId)//char(0), &
-                                  timeinterp_rhoneAGG)
-   call registerfinalmetforc(trim(LIS_rhoneAGGId)//char(0),finalize_rhoneAGG)
 #endif
 
 #if ( defined MF_GLDAS )
