@@ -99,7 +99,6 @@ contains
 !    use rhoneAGG_forcingMod
     use gldas_forcingMod
     use gfs_forcingMod
-    use merraland_forcingMod
     use merra2_forcingMod
     use era5_forcingMod
     use gswp1_forcingMod
@@ -187,11 +186,6 @@ contains
     external get_gfs
     external timeinterp_gfs
     external finalize_gfs
-
-    external get_merraland
-    external timeinterp_merraland
-    external finalize_merraland
-    external reset_merraland
 
     external get_merra2
     external timeinterp_merra2
@@ -398,13 +392,6 @@ contains
 !    call registerretrievemetforc(trim(LDT_gfsId)//char(0),get_gfs)
 !    call registertimeinterpmetforc(trim(LDT_gfsId)//char(0),timeinterp_gfs)
 !    call registerfinalmetforc(trim(LDT_gfsId)//char(0),finalize_gfs)
-
-! - MERRA-Land Reanalysis Forcing:
-    call registerinitmetforc(trim(LDT_merralandId)//char(0),init_MERRALAND)
-    call registerretrievemetforc(trim(LDT_merralandId)//char(0),get_merraland)
-    call registertimeinterpmetforc(trim(LDT_merralandId)//char(0),timeinterp_merraland)
-    call registerresetmetforc(trim(LDT_merralandId)//char(0),reset_merraland)
-    call registerfinalmetforc(trim(LDT_merralandId)//char(0),finalize_merraland)
 
 ! - MERRA-2 Reanalysis Forcing:
     call registerinitmetforc(trim(LDT_merra2Id)//char(0),init_MERRA2)

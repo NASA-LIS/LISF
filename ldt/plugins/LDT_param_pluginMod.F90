@@ -1229,7 +1229,6 @@ contains
     external read_merra2_elev
     external read_era5_elev
 !    external read_geos5_elev
-!    external read_merraland_elev
 
 ! !USES:
 ! - Read forcing parameter: Elevation/terrain height
