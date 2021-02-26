@@ -109,7 +109,6 @@ contains
 #endif
     use agrradps_forcingMod
 !    use agrrad_forcingMod
-    use gdas3d_forcingMod
     use geos5fcst_forcingMod
 !    use gdasLSWG_forcingMod
 
@@ -264,10 +263,6 @@ contains
     external timeinterp_geos5fcst
     external finalize_geos5fcst
     external reset_geos5fcst
-
-    external get_gdas3d
-    external timeinterp_gdas3d
-    external finalize_gdas3d
 
 !    external get_gdasLSWG
 !    external timeinterp_gdasLSWG
@@ -561,11 +556,6 @@ contains
     call registertimeinterpmetforc(trim(LDT_rdhm356Id)//char(0),timeinterp_rdhm356)
     call registerfinalmetforc(trim(LDT_rdhm356Id)//char(0),finalize_rdhm356)
 
-! - GDAS profile data for CRTM 
-    call registerinitmetforc(trim(LDT_gdas3dId)//char(0),init_GDAS3D)
-!    call registerretrievemetforc(trim(LDT_gdas3dId)//char(0),get_gdas3d)
-!    call registertimeinterpmetforc(trim(LDT_gdas3dId)//char(0),timeinterp_gdas3d)
-!    call registerfinalmetforc(trim(LDT_gdas3dId)//char(0),finalize_gdas3d)
 ! - NARR profile data for CRTM 
     call registerinitmetforc(trim(LDT_narrId)//char(0),init_NARR)
 !    call registerretrievemetforc(trim(LDT_narrId)//char(0),get_narr)

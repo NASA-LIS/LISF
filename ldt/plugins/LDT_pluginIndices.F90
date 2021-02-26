@@ -131,7 +131,6 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_nldas1Id       = "NLDAS1"
    character*50, public,  parameter :: LDT_nldas2Id       = "NLDAS2"
    character*50, public,  parameter :: LDT_gldasId        = "GLDAS"
-   character*50, public,  parameter :: LDT_gdas3dId       = "GDAS(3d)"
    character*50, public,  parameter :: LDT_gdasLSWGId     = "GDAS(LSWG)"
    character*50, public,  parameter :: LDT_gfsId          = "GFS"
    character*50, public,  parameter :: LDT_narrId         = "NARR"
