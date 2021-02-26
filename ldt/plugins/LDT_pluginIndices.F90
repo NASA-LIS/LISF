@@ -127,7 +127,6 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_era5Id         = "ERA5"
    character*50, public,  parameter :: LDT_gswp1Id        = "GSWP1"
    character*50, public,  parameter :: LDT_gswp2Id        = "GSWP2"
-   character*50, public,  parameter :: LDT_nldas1Id       = "NLDAS1"
    character*50, public,  parameter :: LDT_nldas2Id       = "NLDAS2"
    character*50, public,  parameter :: LDT_gldasId        = "GLDAS"
    character*50, public,  parameter :: LDT_gdasLSWGId     = "GDAS(LSWG)"
