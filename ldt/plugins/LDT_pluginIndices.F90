@@ -123,7 +123,6 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_geos5fcstId    = "GEOS5 forecast"
    character*50, public,  parameter :: LDT_ecmwfId        = "ECMWF"
    character*50, public,  parameter :: LDT_princetonId    = "PRINCETON"
-   character*50, public,  parameter :: LDT_merralandId    = "MERRA-Land"
    character*50, public,  parameter :: LDT_merra2Id       = "MERRA2"
    character*50, public,  parameter :: LDT_era5Id         = "ERA5"
    character*50, public,  parameter :: LDT_gswp1Id        = "GSWP1"
