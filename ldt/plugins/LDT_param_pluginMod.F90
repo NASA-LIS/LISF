@@ -1221,7 +1221,6 @@ contains
 !EOP
 
     external read_gdas_elev
-    external read_nldas1_elev
     external read_nldas2_elev
     external read_nam242_elev
     external read_princeton_elev
@@ -1238,9 +1237,6 @@ contains
          read_gdas_elev)
 
 !- CONUS-only forcings:
-    call registerreadforcelev(trim(LDT_nldas1Id)//char(0),&
-         read_nldas1_elev)
-
     call registerreadforcelev(trim(LDT_nldas2Id)//char(0),&
          read_nldas2_elev)
 

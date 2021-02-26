@@ -118,7 +118,6 @@ contains
     use stg2_forcingMod
     use stg4_forcingMod
     use cmap_forcingMod
-    use nldas1_forcingMod
     use nldas2_forcingMod
     use narr_forcingMod
     use nam242_forcingMod
@@ -234,11 +233,6 @@ contains
     external timeinterp_stg4
     external finalize_stg4
     external reset_stg4
-
-    external get_nldas1
-    external timeinterp_nldas1
-    external finalize_nldas1
-    external reset_nldas1
 
     external get_nldas2
     external timeinterp_nldas2
@@ -440,13 +434,6 @@ contains
     call registertimeinterpmetforc(trim(LDT_agrradId)//char(0),timeinterp_agrrad)
     call registerfinalmetforc(trim(LDT_agrradId)//char(0),finalize_agrrad)
 #endif
-
-! - NLDAS1 Forcing:
-    call registerinitmetforc(trim(LDT_nldas1Id)//char(0),init_NLDAS1)
-    call registerretrievemetforc(trim(LDT_nldas1Id)//char(0),get_nldas1)
-    call registertimeinterpmetforc(trim(LDT_nldas1Id)//char(0),timeinterp_nldas1)
-    call registerfinalmetforc(trim(LDT_nldas1Id)//char(0),finalize_nldas1)
-    call registerresetmetforc(trim(LDT_nldas1Id)//char(0),reset_nldas1)
 
 ! - NLDAS2 Forcing:
     call registerinitmetforc(trim(LDT_nldas2Id)//char(0),init_NLDAS2)
