@@ -95,7 +95,6 @@ contains
 !    use metForcTemplate_forcingMod
     use gdas_forcingMod
     use ecmwf_forcingMod
-    use ecmwfreanal_forcingMod
     use princeton_forcingMod
 !    use rhoneAGG_forcingMod
     use gldas_forcingMod
@@ -159,10 +158,6 @@ contains
     external timeinterp_ecmwf
     external reset_ecmwf
     external finalize_ecmwf
-
-    external get_ecmwfreanal
-    external timeinterp_ecmwfreanal
-    external finalize_ecmwfreanal
 
     external get_agrmet
     external timeinterp_agrmet
@@ -382,12 +377,6 @@ contains
     call registertimeinterpmetforc(trim(LDT_ecmwfId)//char(0),timeinterp_ecmwf)
     call registerresetmetforc(trim(LDT_ecmwfId)//char(0),reset_ecmwf)
     call registerfinalmetforc(trim(LDT_ecmwfId)//char(0),finalize_ecmwf)
-
-! - ECMWF Reanalysis:
-    call registerinitmetforc(trim(LDT_ecmwfreanalId)//char(0),init_ECMWFREANAL)
-    call registerretrievemetforc(trim(LDT_ecmwfreanalId)//char(0),get_ecmwfreanal)
-    call registertimeinterpmetforc(trim(LDT_ecmwfreanalId)//char(0),timeinterp_ecmwfreanal)
-    call registerfinalmetforc(trim(LDT_ecmwfreanalId)//char(0),finalize_ecmwfreanal)
 
 ! - PRINCETON Reanalysis Forcing:
     call registerinitmetforc(trim(LDT_princetonId)//char(0),init_PRINCETON)
