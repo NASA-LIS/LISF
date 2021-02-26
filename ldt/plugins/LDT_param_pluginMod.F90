@@ -1226,7 +1226,6 @@ contains
     external read_nam242_elev
     external read_princeton_elev
     external read_ecmwf_elev
-    external read_ecmwfreanal_elev
     external read_merra2_elev
     external read_era5_elev
 !    external read_geos5_elev
@@ -1257,10 +1256,6 @@ contains
 !- ECMWF forcing:
     call registerreadforcelev(trim(LDT_ecmwfId)//char(0),&
          read_ecmwf_elev)
-
-!- ECMWF-Reanalysis forcing:
-    call registerreadforcelev(trim(LDT_ecmwfreanalId)//char(0),&
-         read_ecmwfreanal_elev)
 
 !- MERRA2 forcing:
     call registerreadforcelev(trim(LDT_merra2Id)//char(0),&
