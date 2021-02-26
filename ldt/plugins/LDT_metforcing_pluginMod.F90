@@ -121,7 +121,6 @@ contains
     use nldas2_forcingMod
     use narr_forcingMod
     use nam242_forcingMod
-    use rdhm356_forcingMod 
 !    use vic_forcingMod
     use RFE2Daily_forcingMod
     use RFE2gdas_forcingMod
@@ -238,10 +237,6 @@ contains
     external timeinterp_nldas2
     external finalize_nldas2
     external reset_nldas2
-
-    external get_rdhm356 
-    external timeinterp_rdhm356
-    external finalize_rdhm356
 
 !    external getvicforcing
 !    external time_interp_vicforcing
@@ -523,12 +518,6 @@ contains
     call registertimeinterpmetforc(trim(LDT_USGSPETforcId)//char(0),timeinterp_petusgs)
     call registerfinalmetforc(trim(LDT_USGSPETforcId)//char(0),finalize_petusgs)
 #endif
-
-! - RDHM 356 HRAP, added by Shugong Wang
-    call registerinitmetforc(trim(LDT_rdhm356Id)//char(0),init_rdhm356)
-    call registerretrievemetforc(trim(LDT_rdhm356Id)//char(0),get_rdhm356)
-    call registertimeinterpmetforc(trim(LDT_rdhm356Id)//char(0),timeinterp_rdhm356)
-    call registerfinalmetforc(trim(LDT_rdhm356Id)//char(0),finalize_rdhm356)
 
 ! - NARR profile data for CRTM 
     call registerinitmetforc(trim(LDT_narrId)//char(0),init_NARR)
