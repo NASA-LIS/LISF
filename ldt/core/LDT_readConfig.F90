@@ -309,8 +309,6 @@ subroutine LDT_readConfig(configfile)
                LDT_rc%metforc_parmsrc(k) = "AGRMET_radiation_latlon"
              case( "GEOS5 forecast" )
                LDT_rc%metforc_parmsrc(k) = "GEOS5_fcst"
-             case( "GDAS(3d)" )
-               LDT_rc%metforc_parmsrc(k) = "GDAS_3d"
              case( "GDAS(LSWG)" )
                LDT_rc%metforc_parmsrc(k) = "GDAS_LSWG"
              case( "TRMM 3B42V6" )
