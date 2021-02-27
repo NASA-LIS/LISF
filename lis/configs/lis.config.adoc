@@ -302,7 +302,6 @@ Acceptable values for the sources are:
 |"`ECMWF`"                     | ECMWF
 |"`GSWP1`"                     | GSWP1
 |"`GSWP2`"                     | GSWP2
-|"`ECMWF reanalysis`"          | ECMWF Reanalysis
 |"`AGRMET`"                    | AGRMET
 |"`PRINCETON`"                 | Princeton
 |"`NLDAS1`"                    | NLDAS1
@@ -4813,32 +4812,6 @@ forcing files.
 .Example _lis.config_ entry
 ....
 ECMWF forcing directory:       ./input/FORCING/ECMWF/
-....
-
-
-[[sssec_forcings_ecmwf_reanalysis,ECMWF Reanalysis]]
-==== ECMWF Reanalysis
-
-`ECMWF Reanalysis forcing directory:` specifies the location of
-the ECMWF Reanalysis forcing files.
-
-`ECMWF Reanalysis maskfile:` specifies the file containing
-the ECMWF Reanalysis land/sea mask.
-
-`ECMWF Reanalysis domain x-dimension size:` specifies the
-number of columns of the ECMWF Reanalysis domain.
-
-`ECMWF Reanalysis domain y-dimension size:` specifies the
-number of rows of the ECMWF Reanalysis domain.
-
-//`ECMWF Reanalysis elevation map:` specifies the ECMWF Reanalysis elevation map.
-
-.Example _lis.config_ entry
-....
-ECMWF Reanalysis forcing directory:   ./input/FORCING/ECMWF-REANALYSIS/
-ECMWF Reanalysis maskfile:            ./input/FORCING/ECMWF-REANALYSIS/ecmwf_land_sea.05
-ECMWF Reanalysis domain x-dimension size:     720
-ECMWF Reanalysis domain y-dimension size:     360
 ....
 
 

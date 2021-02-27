@@ -30,7 +30,6 @@
 | ECMWF                                  | On
 | GSWP1                                  | On
 | GSWP2                                  | On
-| ECMWF reanalysis                       | On
 | AGRMET                                 | Off
 | PRINCETON                              | On
 | NLDAS1                                 | On

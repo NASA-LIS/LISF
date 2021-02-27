@@ -529,10 +529,6 @@ Routines for handling the COOP precipitation product
 +
 ECMWF meteorological forcing data
 
-** _ecmwfreanal_
-+
-ECMWF reanalysis meteorological forcing data based on <<berg_etal_jgr_2003>>.
-
 ** _era5_
 +
 [red]##specifies what?##
