@@ -91,7 +91,6 @@ This document consists of 12 sections, described as follows:
 * FASSTsingle metforcing data
 * downscaled MERRA2 precipitation data over the High Mountain Asia domain from GMU (HiMAT_GMU)
 * Loobos metforcing data
-* arms metforcing data
 * era5 metforcing data
 * gdas3d metforcing data
 * gefs metforcing data

@@ -326,7 +326,6 @@ Acceptable values for the sources are:
 |"`ALMIPII`"                   | ALMIPII
 |"`CEOP`"                      | CEOP
 |"`SCAN`"                      | SCAN
-|"`ARMS`"                      | ARMS
 |"`GDAS(LSWG)`"                | GDAS data for LSWG project
 ifdef::devonly[]
 |"`D2PCPOKL`"                  | D2PCPOKL
@@ -6000,26 +5999,6 @@ GDAS3D forcing directory:            ./input/FORCING/GDAS3D/
 GDAS3D domain x-dimension size:      768
 GDAS3D domain y-dimension size:      386
 GDAS3D domain z-dimension size:      64
-....
-
-
-[[sssec_supp_arms,ARMS]]
-==== ARMS
-
-`ARMS forcing file:` specifies the location of the
-ARMS station met forcing file.
-
-`ARMS precip forcing file:` specifies the location of the
-ARMS precip station forcing file.
-
-`ARMS station metadata file:` specifies the location of the
-ARMS station metadata file.
-
-.Example _lis.config_ entry
-....
-ARMS forcing file:        ../WG_domain/1990_forc.txt
-ARMS precip forcing file: ../WG_domain/WGbrk_19900723-19900815.out
-ARMS station metadata file: ../WG_domain/WGbrk_stnlocs_1990.dat
 ....
 
 

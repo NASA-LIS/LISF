@@ -497,10 +497,6 @@ Routines for handling the AGRMET radiation product
 +
 Routines for handling the AGRMET radiation product (polar stereographic prjection)
 
-** _arms_
-+
-Routines for handling the Walnut Gulch meteorological station data
-
 ** _ceop_
 +
 Routines for handling the CEOP meteorological station data
