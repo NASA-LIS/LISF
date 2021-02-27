@@ -87,7 +87,6 @@ This document consists of 12 sections, described as follows:
 . Supports additional metforcing datasets
 * AMMA land surface model intercomparision project phase 2 (ALMIPII) metforcing data
 * Australian Water Resource Assessment Landscape (AWRA-L) metforcing data
-* Canadian Precipitation Analysis (CaPA) data
 * FASSTsingle metforcing data
 * downscaled MERRA2 precipitation data over the High Mountain Asia domain from GMU (HiMAT_GMU)
 * Loobos metforcing data

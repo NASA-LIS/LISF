@@ -451,10 +451,6 @@ Australian Water Resource Assessment Landscape (AWRA-L) metforcing data
 +
 Routines for handling the Bondville forcing products
 
-** _CaPA_
-+
-Canadian Precipitation analysis
-
 ifdef::devonly[]
 ** _FASSTsingle_ footnote:disclaimer[{lispublicna}]
 +

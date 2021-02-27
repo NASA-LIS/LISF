@@ -70,7 +70,6 @@
 | PALS station forcing                   | On
 | PILDAS                                 | On
 | PET USGS                               | On
-| CaPA                                   | On
 | NAM242                                 | On
 | WRFout                                 | On
 | AWAP                                   | On
