@@ -5615,18 +5615,6 @@ AGRRADPS forcing directory:             ./input/FORCING/AGRRADPS
 ....
 
 
-[[sssec_supp_capa,CaPA]]
-==== CaPA
-
-`CAPA forcing directory:` specifies the directory containing
-CAPA precipitation data.
-
-.Example _lis.config_ entry
-....
-CAPA forcing directory:             ./input/FORCING/CAPA
-....
-
-
 [[sssec_supp_cmap,CMAP precipitation]]
 ==== CMAP precipitation
 
