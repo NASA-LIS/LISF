@@ -515,10 +515,6 @@ ECMWF meteorological forcing data
 +
 NCEP GDAS meteorological forcing data
 
-** _gdas3d_
-+
-Routines for handling the GDAS 3d (including the atmospheric profile) data
-
 ** _gdasLSWG_
 +
 GDAS profile data from the PMM land surface working group

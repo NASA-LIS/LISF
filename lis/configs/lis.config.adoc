@@ -329,7 +329,6 @@ Acceptable values for the sources are:
 ifdef::devonly[]
 |"`D2PCPOKL`"                  | D2PCPOKL
 endif::devonly[]
-|"`GDAS(3d)`"                  | GDAS 3d data
 |"`AGRMET radiation`"          | AGRMET radiation
 |"`Bondville`"                 | Bondville site data
 ifdef::devonly[]
@@ -5935,33 +5934,6 @@ NARR forcing directory:            ./input/Code/NARR/
 NARR domain x-dimension size:      768
 NARR domain y-dimension size:      386
 NARR domain z-dimension size:      30
-....
-
-
-[[sssec_supp_gdas3d,GDAS3D]]
-==== GDAS3D
-
-`GDAS3D forcing directory:` specifies the location of the
-GDAS3D forcing files.
-
-`GDAS3D domain x-dimension size:` specifies the number of
-columns of the native domain parameters of the GDAS3D forcing data.
-
-`GDAS3D domain y-dimension size:` specifies the number of
-rows of the native domain parameters of the GDAS3D forcing data.
-
-`GDAS3D domain y-dimension size:` specifies the number of
-rows of the native domain parameters of the GDAS3D forcing data.
-
-`GDAS3D domain z-dimension size:` specifies the number of
-atmospheric profiles in the GDAS3D forcing data.
-
-.Example _lis.config_ entry
-....
-GDAS3D forcing directory:            ./input/FORCING/GDAS3D/
-GDAS3D domain x-dimension size:      768
-GDAS3D domain y-dimension size:      386
-GDAS3D domain z-dimension size:      64
 ....
 
 
