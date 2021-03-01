@@ -509,10 +509,6 @@ Routines for handling the CMAP precipitation product
 +
 Routines for handling the CMORPH precipitation product
 
-** _coop_
-+
-Routines for handling the COOP precipitation product
-
 ** _ecmwf_
 +
 ECMWF meteorological forcing data
