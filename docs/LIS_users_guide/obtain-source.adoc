@@ -463,10 +463,6 @@ downscaled MERRA2 precipitation data over the High Mountain Asia domain from GMU
 +
 Routines for handling the PALS station data
 
-** _PILDAS_
-+
-Routines for handling the PILDAS metforcing data
-
 ** _RFE2Daily_
 +
 Routines for handling the RFE2 precipitation product from FEWSNET (diurnally non-disaggregated)

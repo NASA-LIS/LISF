@@ -60,7 +60,6 @@
 | RFE2(GDAS bias-corrected)              | On
 | VIC processed forcing                  | Off
 | PALS station forcing                   | On
-| PILDAS                                 | On
 | PET USGS                               | On
 | NAM242                                 | On
 | WRFout                                 | On
