@@ -451,12 +451,6 @@ Australian Water Resource Assessment Landscape (AWRA-L) metforcing data
 +
 Routines for handling the Bondville forcing products
 
-ifdef::devonly[]
-** _FASSTsingle_ footnote:disclaimer[{lispublicna}]
-+
-Routines for handling the single-point FASST product
-endif::devonly[]
-
 ** _HiMAT_GMU_
 +
 downscaled MERRA2 precipitation data over the High Mountain Asia domain from GMU (HiMAT_GMU)

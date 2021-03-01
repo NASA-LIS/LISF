@@ -333,7 +333,6 @@ endif::devonly[]
 |"`AGRMET radiation`"          | AGRMET radiation
 |"`Bondville`"                 | Bondville site data
 ifdef::devonly[]
-|"`FASST test`"                | test data for FASST LSM
 |"`TRIGRS test`"               | test data for TRIGRS model
 endif::devonly[]
 |"`SNOTEL`"                    | SNOTEL data
@@ -6213,21 +6212,6 @@ Acceptable values are:
 Bondville forcing file:              ./bondville.dat
 Bondville Noah-MP-4.0.1 forcing:     1
 ....
-
-
-ifdef::devonly[]
-
-[[sssec_fasstforc,FASST]]
-==== FASST
-
-`FASST forcing file:` specifies the location of the
-FASST forcing file.
-
-.Example _lis.config_ entry
-....
-FASST forcing file:
-....
-endif::devonly[]
 
 
 [[sssec_snotel,SNOTEL]]

@@ -59,7 +59,6 @@
 | AGRMET radiation (polar stereographic) | On
 | AGRMET radiation (latlon)              | On
 | Bondville                              | On
-| FASST test                             | On
 | TRIGRS test                            | Off
 | SNOTEL                                 | On
 | Rhone AGG                              | On
