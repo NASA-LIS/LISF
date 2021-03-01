@@ -5519,18 +5519,6 @@ GSWP1 forcing directory:       ./input/FORCING/GSWP1
 === Supplemental forcings
 
 
-[[sssec_supp_agrrad,AGRMET radiation (latlon)]]
-==== AGRMET radiation (latlon)
-
-`AGRRAD forcing directory:` specifies the directory containing
-AGRMET radiation data.
-
-.Example _lis.config_ entry
-....
-AGRRAD forcing directory:             ./input/FORCING/AGRRAD
-....
-
-
 [[sssec_supp_agrradps,AGRMET radiation (polar stereographic)]]
 ==== AGRMET radiation (polar stereographic)
 

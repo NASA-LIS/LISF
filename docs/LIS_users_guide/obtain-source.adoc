@@ -471,10 +471,6 @@ Routines for handling the RFE2 precipitation product from FEWSNET bias corrected
 +
 Routines for handling WRF output as forcing input
 
-** _agrrad_
-+
-Routines for handling the AGRMET radiation product
-
 ** _agrradps_
 +
 Routines for handling the AGRMET radiation product (polar stereographic prjection)
