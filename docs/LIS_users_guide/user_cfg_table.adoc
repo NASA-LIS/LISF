@@ -50,7 +50,6 @@
 | RFE2(daily)                            | On
 | SCAN                                   | On
 | AGRMET radiation (polar stereographic) | On
-| AGRMET radiation (latlon)              | On
 | Bondville                              | On
 | TRIGRS test                            | Off
 | SNOTEL                                 | On
