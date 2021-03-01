@@ -493,10 +493,6 @@ Routines for handling the AGRMET radiation product
 +
 Routines for handling the AGRMET radiation product (polar stereographic prjection)
 
-** _ceop_
-+
-Routines for handling the CEOP meteorological station data
-
 ** _chirps2_
 +
 Routines for handling the UCSB CHIRPS v2.0 satellite-gage merged precipitation product
