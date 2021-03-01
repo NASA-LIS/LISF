@@ -555,10 +555,6 @@ Global Soil Wetness Project-2 meteorological forcing data
 +
 Routines for handling the GPM L3 precipitation product
 
-** _merra-land_
-+
-GMAO Modern Era Retrospective-Analysis for Research and Applications data
-
 ** _merra2_
 +
 GMAO Modern Era Retrospective-Analysis for Research and Applications data

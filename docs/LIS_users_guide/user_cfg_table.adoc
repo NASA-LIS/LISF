@@ -35,7 +35,6 @@
 | NLDAS2                                 | On
 | GLDAS                                  | On
 | GFS                                    | On
-| MERRA-Land                             | On
 | MERRA2                                 | On
 | ERA5                                   | On
 | CMAP                                   | On
