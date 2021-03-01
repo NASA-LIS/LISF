@@ -435,10 +435,6 @@ Routines for handling the TRMM 3B42V6 precipitation product
 +
 Routines for handling the TRMM 3B42V7 precipitation product
 
-** _ALMIPII_
-+
-Routines for handling the AMMA land surface model intercomparision project phase 2
-
 ** _AWAP_
 +
 Routines for handling the AWAP precipitation product

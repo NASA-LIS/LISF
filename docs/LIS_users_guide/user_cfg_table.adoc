@@ -47,7 +47,6 @@
 | CPC STAGEII                            | On
 | CPC STAGEIV                            | On
 | NARR                                   | On
-| ALMIPII forcing                        | On
 | RFE2(daily)                            | On
 | SCAN                                   | On
 | AGRMET radiation (polar stereographic) | On
