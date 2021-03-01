@@ -303,7 +303,6 @@ Acceptable values for the sources are:
 |"`GSWP2`"                     | GSWP2
 |"`AGRMET`"                    | AGRMET
 |"`PRINCETON`"                 | Princeton
-|"`NLDAS1`"                    | NLDAS1
 |"`NLDAS2`"                    | NLDAS2
 |"`GLDAS`"                     | GLDAS
 |"`GFS`"                       | GFS
@@ -5597,85 +5596,6 @@ SCAN metadata.
 ....
 SCAN forcing directory:   ./input/FORCING/SCAN
 SCAN metadata file:       ./input/FORCING/SCAN/msu_scan.mdata
-....
-
-
-[[sssec_forcings_nldas1,NLDAS1]]
-==== NLDAS1
-
-`NLDAS1 forcing directory:` specifies the location of the
-NLDAS-1 forcing files.
-
-`NLDAS1 data center source:` specifies the center that produced
-the NLDAS1 files. (This is specified to distinguish the filenames.)
-Acceptable values are:
-
-|====
-|Value | Description
-
-|"`GES-DISC`" | NASA GES-DISC
-|"`NCEP`"     | NCEP
-|====
-
-`NLDAS1 precipitation field:` specifies the field to be used
-for the precipitation.  "`NLDAS1`" will use the standard gauge-
-based precipitation data from NLDAS-1.  "`EDAS`" will use the
-EDAS model precipitation data instead.  "`STAGEII`" will use the
-unbias-corrected STAGE II radar estimated precipitation, and use
-the EDAS model precipitation for times/locations when the data
-from STAGE II is unavailable.
-
-`NLDAS1 shortwave radiation field:` specifies the field to be
-used for the downward shortwave radiation at the surface.  "`NLDAS1`"
-will use GOES SW radiation when/where it is available, and use the
-EDAS SW radiation otherwise.  "`EDAS`" will simply use EDAS radiation
-at all times and locations.
-
-`NLDAS1 apply CONUS mask:` specifies whether to apply the
-CONUS mask.
-Acceptable values are:
-
-|====
-|Value | Description
-
-|0     | Do not apply CONUS mask
-|1     | Apply CONUS mask
-|====
-
-`NLDAS1 CONUS mask file:` specifies the NLDAS1 CONUS mask file.
-
-`NLDAS1 mask lower left lat:` specifies the lower left latitude
-of the NLDAS1 mask domain. (cylindrical latitude/longitude projection)
-
-`NLDAS1 mask lower left lon:` specifies the lower left longitude
-of the NLDAS1 mask domain. (cylindrical latitude/longitude projection)
-
-`NLDAS1 mask upper right lat:` specifies the upper right latitude
-of the NLDAS1 mask domain. (cylindrical latitude/longitude projection)
-
-`NLDAS1 mask upper right lon:` specifies the upper right longitude
-of the NLDAS1 mask domain. (cylindrical latitude/longitude projection)
-
-`NLDAS1 mask resolution (dx):` specifies the resolution of the
-NLDAS1 mask domain along the east-west direction.
-
-`NLDAS1 mask resolution (dy):` specifies the resolution of the
-NLDAS1 mask domain along the north-south direction.
-
-.Example _lis.config_ entry
-....
-NLDAS1 forcing directory:               ./input/FORCING/NLDAS1
-NLDAS1 data center source:              "GES-DISC"
-NLDAS1 precipitation field:             NLDAS1
-NLDAS1 shortwave radiation field:       NLDAS1
-NLDAS1 apply CONUS mask:                0
-NLDAS1 CONUS mask file:
-NLDAS1 mask lower left lat:            25.0625
-NLDAS1 mask lower left lon:           -124.9375
-NLDAS1 mask upper right lat:           52.9375
-NLDAS1 mask upper right lon:          -67.0625
-NLDAS1 mask resolution (dx):            0.125
-NLDAS1 mask resolution (dy):            0.125
 ....
 
 
