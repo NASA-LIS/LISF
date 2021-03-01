@@ -337,7 +337,6 @@ ifdef::devonly[]
 |"`TRIGRS test`"               | test data for TRIGRS model
 endif::devonly[]
 |"`SNOTEL`"                    | SNOTEL data
-|"`COOP`"                      | COOP data
 |"`Rhone AGG`"                 | Rhone AGG forcing data
 |"`VIC processed forcing`"     | VIC processed forcing
 |"`PALS station forcing`"      | PALS station forcing
@@ -6248,26 +6247,6 @@ coordinates file.
 SNOTEL forcing directory:
 SNOTEL metadata file:
 SNOTEL coord file:
-....
-
-
-[[sssec_coop,COOP]]
-==== COOP
-
-`COOP forcing directory:` specifies the location of the COOP
-forcing files.
-
-`COOP metadata file:` specifies the location of the COOP
-metadata file.
-
-`COOP coord file:` specifies the location of the COOP
-coordinate file.
-
-.Example _lis.config_ entry
-....
-COOP forcing directory:
-COOP metadata file:
-COOP coord file:
 ....
 
 

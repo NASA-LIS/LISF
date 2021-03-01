@@ -62,7 +62,6 @@
 | FASST test                             | On
 | TRIGRS test                            | Off
 | SNOTEL                                 | On
-| COOP                                   | On
 | Rhone AGG                              | On
 | RFE2(GDAS bias-corrected)              | On
 | VIC processed forcing                  | Off
