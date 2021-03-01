@@ -3026,10 +3026,6 @@ If the run mode option selected is "`Metforce processing`" or "`Metforce tempora
 
 If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
 
-==== RDHM356 forcing
-
-If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
-
 ==== RFE2Daily precipitation
 
 If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
