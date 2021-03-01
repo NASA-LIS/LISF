@@ -50,7 +50,6 @@
 | ALMIPII forcing                        | On
 | RFE2(daily)                            | On
 | SCAN                                   | On
-| MET RDHM.3.5.6                         | On
 | AGRMET radiation (polar stereographic) | On
 | AGRMET radiation (latlon)              | On
 | Bondville                              | On

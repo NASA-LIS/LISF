@@ -579,10 +579,6 @@ Routines for handling daily potential evapotranspiration data from the USGS FAO-
 +
 Renalaysis product from Princeton University (<<sheffield_etal_2006>>)
 
-** _rdhm356_
-+
-Routines for handling NOAA OHD RDHM 3.5.6 forcing data
-
 ** _rhoneAGG_
 +
 Rhone-AGG meteorological forcing data
