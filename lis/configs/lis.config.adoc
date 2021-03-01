@@ -337,7 +337,6 @@ endif::devonly[]
 |"`PET USGS`"                  | USGS PET 1.0 deg
 |"`NAM242`"                    | NAM 242 AWIPS Grid \-- Over Alaska
 |"`WRFout`"                    | WRF output
-|"`RDHM.3.5.6`"                | RDHM 3.5.6 (SAC-HTET and SNOW-17)
 |"`LDT-generated`"             | LDT-generated forcing files
 |"`CLIM-Standard`"             | Forcing climatologies (LDT-generated)
 |"`GenEnsFcst`"                | Generic ensemble forecast
@@ -6141,61 +6140,6 @@ PALS met forcing data start day:
 PALS met forcing data start hour:
 PALS met forcing data start minute:
 PALS met forcing data start second:
-....
-
-
-[[sssec_rdhm356forcing,RDHM356]]
-==== RDHM356
-
-`RDHM precipitation forcing directory:` specifies the location
-of the RDHM precipitation forcing files.
-
-`RDHM temperature forcing directory:` specifies the location
-of the RDHM temperature forcing files.
-
-`RDHM precipitation scale factor:` specifies the RDHM
-precipitation scale factor, which is used to scale the integer
-type XMRG data into real number representing precipitation amount.
-
-`RDHM precipitation interval:` specifies the frequency of
-the precipitation forcing data, in seconds.
-
-`RDHM temperature interval:` specifies the frequency of the
-temperature forcing data, in seconds.
-
-`RDHM run window lower left hrap y:` lower left HRAP Y coordinate of run domain
-
-`RDHM run window lower left hrap x:` lower left HRAP X coordinate of run domain
-
-`RDHM run window upper right hrap y:` upper right HRAP Y coordinate of run domain
-
-`RDHM run window upper right hrap x:` upper right HRAP X coordinate of run domain
-
-`RDHM run window hrap resolution:` spatial resolution (in HRAP unit) of run domain
-
-`RDHM temperature undefined value:` specifies the undefined
-value for the temperature forcing data.
-
-`RDHM precipitation undefined value:` specifies the
-undefined value for the precipitation forcing data.
-
-`RDHM constant wind speed:` Constant wind speed (m/s) for entire run domain
-
-.Example _lis.config_ entry
-....
-RDHM precipitation forcing directory:  ../testcase/precip
-RDHM temperature forcing directory:    ../testcase/tair
-RDHM precipitation scale factor:       1.0
-RDHM precipitation interval:           3600
-RDHM temperature interval:             3600
-RDHM run window lower left hrap y:    48
-RDHM run window lower left hrap x:    17
-RDHM run window upper right hrap y:   821
-RDHM run window upper right hrap x:   1059
-RDHM run window hrap resolution:      1.0
-RDHM temperature undefined value:      -1.0
-RDHM precipitation undefined value:    -1.0
-RDHM constant wind speed:              4.0
 ....
 
 
