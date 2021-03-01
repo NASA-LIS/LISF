@@ -579,10 +579,6 @@ Routines for handling daily potential evapotranspiration data from the USGS FAO-
 +
 Renalaysis product from Princeton University (<<sheffield_etal_2006>>)
 
-** _rhoneAGG_
-+
-Rhone-AGG meteorological forcing data
-
 ** _scan_
 +
 Routines for handling the Soil Climate Analysis Network precipitation

@@ -55,7 +55,6 @@
 | Bondville                              | On
 | TRIGRS test                            | Off
 | SNOTEL                                 | On
-| Rhone AGG                              | On
 | RFE2(GDAS bias-corrected)              | On
 | VIC processed forcing                  | Off
 | PALS station forcing                   | On

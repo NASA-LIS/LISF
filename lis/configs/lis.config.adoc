@@ -331,7 +331,6 @@ ifdef::devonly[]
 |"`TRIGRS test`"               | test data for TRIGRS model
 endif::devonly[]
 |"`SNOTEL`"                    | SNOTEL data
-|"`Rhone AGG`"                 | Rhone AGG forcing data
 |"`VIC processed forcing`"     | VIC processed forcing
 |"`PALS station forcing`"      | PALS station forcing
 |"`PET USGS`"                  | USGS PET 1.0 deg
@@ -5344,30 +5343,6 @@ Acceptable values are:
 ....
 PRINCETON forcing directory:    ./input/FORCING/PRINCETON
 PRINCETON forcing version:      2.2
-....
-
-
-[[sssec_forcings_rhone,Rhone AGG]]
-==== Rhone AGG
-
-`Rhone AGG forcing directory:` specifies the location of the
-Rhone AGG forcing files.
-
-`Rhone AGG domain x-dimension size:` specifies the number of
-columns of the native domain parameters of the Rhone AGG forcing data.
-The map projection is specified in the driver modules defined for
-the Rhone AGG routines.
-
-`Rhone AGG domain y-dimension size:` specifies the number of
-rows of the native domain parameters of the Rhone AGG forcing data.
-The map projection is specified in the driver modules defined for
-the Rhone AGG routines.
-
-.Example _lis.config_ entry
-....
-Rhone AGG forcing directory:       ./input/FORCING/RHONE
-Rhone AGG domain x-dimension size: 5
-Rhone AGG domain y-dimension size: 6
 ....
 
 
