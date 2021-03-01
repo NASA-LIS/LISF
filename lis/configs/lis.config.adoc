@@ -334,7 +334,6 @@ endif::devonly[]
 |"`Rhone AGG`"                 | Rhone AGG forcing data
 |"`VIC processed forcing`"     | VIC processed forcing
 |"`PALS station forcing`"      | PALS station forcing
-|"`PILDAS`"                    | PILDAS
 |"`PET USGS`"                  | USGS PET 1.0 deg
 |"`NAM242`"                    | NAM 242 AWIPS Grid \-- Over Alaska
 |"`WRFout`"                    | WRF output
@@ -6142,34 +6141,6 @@ PALS met forcing data start day:
 PALS met forcing data start hour:
 PALS met forcing data start minute:
 PALS met forcing data start second:
-....
-
-
-[[sssec_PILDAS,PILDAS]]
-==== PILDAS
-
-`PILDAS forcing directory:` specifies the location of the
-PILDAS forcing files.
-
-`PILDAS forcing version:` specifies the version of the
-PILDAS forcing data.
-
-`PILDAS forcing use lowest model level fields:` specifies
-whether to use the lowest model level fields.
-Acceptable values are:
-
-|====
-|Value | Description
-
-| 0    | Do not use lowest level
-| 1    | Use lowest level
-|====
-
-.Example _lis.config_ entry
-....
-PILDAS forcing directory:
-PILDAS forcing version:
-PILDAS forcing use lowest model level fields:
 ....
 
 
