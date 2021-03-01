@@ -320,7 +320,6 @@ Acceptable values for the sources are:
 |"`RFE2(daily)`"               | Daily rainfall estimator
 |"`RFE2(GDAS bias-corrected)`" | RFE2 data bias corrected to GDAS
 |"`CHIRPS2`"                   | UCSB CHIRPS v2.0 precipitation dataset
-|"`ALMIPII`"                   | ALMIPII
 |"`SCAN`"                      | SCAN
 ifdef::devonly[]
 |"`D2PCPOKL`"                  | D2PCPOKL
@@ -5826,22 +5825,6 @@ of CHIRPS v2.0 forcing dataset.  Two options include 0.05 or 0.25 (deg).
 ....
 CHIRPS2.0 forcing directory:   ./CHIRPSv2/daily_p05/chirps-v2.0
 CHIRPS2.0 forcing resolution:     0.05
-....
-
-
-[[sssec_supp_almipii,ALMIPII]]
-==== ALMIPII
-
-`ALMIPII forcing directory:` specifies the location of the
-ALMIPII forcing files.
-
-`ALMIPII filename prefix:` specifies the prefix for the filenames
-of the ALMIPII forcing data.  The prefix is based on the site name.
-
-.Example _lis.config_ entry
-....
-ALMIPII forcing directory:
-ALMIPII filename prefix:
 ....
 
 
