@@ -153,9 +153,6 @@ endif::devonly[]
 |"`CPC CMORPH`" |CMORPH precipitation fields
 |"`ECMWF`" |ECMWF near-realtime analysis
 |"`GDAS`" |GDAS near-realtime analysis
-ifdef::devonly[]
-|"`GDAS(3d)`" |GDAS full-atmosphere fields
-endif::devonly[]
 |"`GEOS`" |NASA-GEOS (v3-5) forcing analysis
 |"`GEOS5 forecast`" |GEOS v5 forecast fields
 |"`GFS`" |NCEP-GFS forecast fields
