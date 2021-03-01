@@ -515,10 +515,6 @@ ECMWF meteorological forcing data
 +
 NCEP GDAS meteorological forcing data
 
-** _gdasLSWG_
-+
-GDAS profile data from the PMM land surface working group
-
 ** _gdasT1534_
 +
 NCEP GDAS GFS T1534 meteorological forcing data
@@ -534,10 +530,6 @@ Routines for handling user-derived ensemble forecast data
 ** _genMetForc_
 +
 LDT-generated meteorological forcing data
-
-** _geos_
-+
-NASA GEOS meteorological forcing data
 
 ** _geos5fcst_
 +

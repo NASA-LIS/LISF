@@ -24,7 +24,6 @@
 | PPTEnsFcst                             | On
 | GDAS                                   | On
 | GDAS T1534                             | On
-| GEOS                                   | On
 | GEOS5 forecast                         | On
 | GEFS forecast                          | On
 | ECMWF                                  | On
@@ -53,7 +52,6 @@
 | ALMIPII forcing                        | On
 | RFE2(daily)                            | On
 | SCAN                                   | On
-| GDAS(LSWG)                             | On
 | MET RDHM.3.5.6                         | On
 | AGRMET radiation (polar stereographic) | On
 | AGRMET radiation (latlon)              | On
