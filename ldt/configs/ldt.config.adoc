@@ -152,7 +152,6 @@ endif::devonly[]
 |"`CMAP`" |CMAP precipitation fields
 |"`CPC CMORPH`" |CMORPH precipitation fields
 |"`ECMWF`" |ECMWF near-realtime analysis
-|"`ECMWF reanalysis`" |ECMWF reanalysis(II), based on Berg et al.(2003)
 |"`GDAS`" |GDAS near-realtime analysis
 ifdef::devonly[]
 |"`GDAS(3d)`" |GDAS full-atmosphere fields
@@ -243,7 +242,7 @@ Met spatial transform methods:     bilinear
 |"`lapse-rate`" |Use lapse rate correction for forcing
 |===
 
-Current meteorological forcing datasets supported for applying this lapse-rate adjustment to the temperature, humidity, pressure and downward longwave fields, include: NLDAS1, NLDAS2, NAM242, GDAS, PRINCETON, and ECMWF.  Future forcing dataset options will include: GEOS, GLDAS, GFS, ECMWF_reanalysis, and possible others.
+Current meteorological forcing datasets supported for applying this lapse-rate adjustment to the temperature, humidity, pressure and downward longwave fields, include: NLDAS1, NLDAS2, NAM242, GDAS, PRINCETON, and ECMWF.  Future forcing dataset options will include: GEOS, GLDAS, GFS, and possible others.
 
 ECMWF and GDAS forcing types include several terrain height maps and not just one overall, either due to change in versions or gridcell size, respective.
 
@@ -2994,25 +2993,6 @@ ECMWF IFS36R1 elevation map:  ./ECMWF/ecmwf.2010012606.012606.elev_1_4
 ECMWF IFS37R2 elevation map:  ./ECMWF/ecmwf.2011051806.051806.elev_1_4
 ....
 
-==== ECMWF Reanalysis Forcing based parameter inputs
-
-`ECMWF Reanalysis forcing directory:` specifies the location of the ECMWF Reanalysis forcing data files.
-
-`ECMWF Reanalysis maskfile:` specifies the ECMWF Reanalysis mask file.
-
-`ECMWF Reanalysis elevation map:` specifies the ECMWF Reanalysis elevation file.
-
-`ECMWF Reanalysis elevation spatial transform:` specifies the terrain height map spatial grid transform option (e.g., average).
-
-If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
-
-.Example _ldt.config_ entry
-....
-ECMWF Reanalysis forcing directory:
-ECMWF Reanalysis elevation map: ./metforcing_parms/ECMWFRean/elev_ECMWF-reanalysis.1gd4r
-ECMWF Reanalysis elevation spatial transform:   "average"
-ECMWF Reanalysis maskfile:
-....
 
 ==== ERA5 Reanalysis Forcing based parameter inputs
 
