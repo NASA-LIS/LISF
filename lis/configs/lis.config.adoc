@@ -296,7 +296,6 @@ Acceptable values for the sources are:
 
 |"`none`"                      | None
 |"`GDAS`"                      | GDAS
-|"`GEOS`"                      | GEOS
 |"`GEOS5 forecast`"            | GEOS5 Forecast
 |"`GEFS forecast`"             | GEFS Forecast
 |"`ECMWF`"                     | ECMWF
@@ -325,7 +324,6 @@ Acceptable values for the sources are:
 |"`CHIRPS2`"                   | UCSB CHIRPS v2.0 precipitation dataset
 |"`ALMIPII`"                   | ALMIPII
 |"`SCAN`"                      | SCAN
-|"`GDAS(LSWG)`"                | GDAS data for LSWG project
 ifdef::devonly[]
 |"`D2PCPOKL`"                  | D2PCPOKL
 endif::devonly[]
@@ -4786,18 +4784,6 @@ GDAS forcing directory:            ./input/FORCING/GDAS/
 ....
 
 
-[[sssec_forcings_geos,GEOS]]
-==== GEOS
-
-`GEOS forcing directory:` specifies the location of the GEOS
-forcing files.
-
-.Example _lis.config_ entry
-....
-GEOS forcing directory:            ./input/FORCING/GEOS/BEST_LK/
-....
-
-
 [[sssec_forcings_ecmwf,ECMWF]]
 ==== ECMWF
 
@@ -6118,46 +6104,6 @@ ensemble members desired for the user-generated ensemble forecast dataset.
 ....
 Generic ensemble forecast directory:     ./GEOS5_BiasCorrected/
 Generic ensemble forecast number of ensemble members:  11
-....
-
-
-[[sssec_gdaslswg,GDAS for LSWG]]
-==== GDAS for LSWG
-
-`GDASLSWG forcing file:` specifies the location of the
-GDASLSWG forcing file.
-
-`GDASLSWG domain lower left lat:` specifies the lower left
-latitude of the GDASLSWG domain.
-(cylindrical latitude/longitude projection)
-
-`GDASLSWG domain lower left lon:` specifies the lower left
-longitude of the GDASLSWG domain.
-(cylindrical latitude/longitude projection)
-
-`GDASLSWG domain upper right lat:` specifies the upper right
-latitude of the GDASLSWG domain.
-(cylindrical latitude/longitude projection)
-
-`GDASLSWG domain upper right lon:` specifies the upper right
-longitude of the GDASLSWG domain.
-(cylindrical latitude/longitude projection)
-
-`GDASLSWG domain resolution (dx):` specifies the resolution of the
-of the GDASLSWG domain along the east-west direction.
-
-`GDASLSWG domain resolution (dy):` specifies the resolution of the
-of the GDASLSWG domain along the north-south direction.
-
-.Example _lis.config_ entry
-....
-GDASLSWG forcing file:
-GDASLSWG domain lower left lat:
-GDASLSWG domain lower left lon:
-GDASLSWG domain upper right lat:
-GDASLSWG domain upper right lon:
-GDASLSWG domain resolution (dx):
-GDASLSWG domain resolution (dy):
 ....
 
 
