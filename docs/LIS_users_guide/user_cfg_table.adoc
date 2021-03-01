@@ -55,7 +55,6 @@
 | SCAN                                   | On
 | GDAS(LSWG)                             | On
 | MET RDHM.3.5.6                         | On
-| GDAS(3d)                               | On
 | AGRMET radiation (polar stereographic) | On
 | AGRMET radiation (latlon)              | On
 | Bondville                              | On
