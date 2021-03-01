@@ -567,10 +567,6 @@ Routines for handling the North American Mesoscale Forecast System (NAM) 242 AWI
 +
 Routines for handling the North American Regional Reanalysis (3d) data
 
-** _nldas1_
-+
-Routines for handling the North American Land Data Assimilation System forcing product
-
 ** _nldas2_
 +
 Routines for handling the North American Land Data Assimilation System 2 forcing product
