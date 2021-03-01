@@ -307,7 +307,6 @@ Acceptable values for the sources are:
 |"`NLDAS2`"                    | NLDAS2
 |"`GLDAS`"                     | GLDAS
 |"`GFS`"                       | GFS
-|"`MERRA-Land`"                | MERRA-Land
 |"`MERRA2`"                    | MERRA2
 |"`CMAP`"                      | CMAP
 |"`TRMM 3B42RT`"               | TRMM 3B42RT
@@ -5458,30 +5457,6 @@ GFS forcing directory:            ./input/FORCING/GFS/
 GFS domain x-dimension size:      512
 GFS domain y-dimension size:      256
 GFS number of forcing variables:  10
-....
-
-
-[[sssec_forcings_MERRALand,MERRA-Land]]
-==== MERRA-Land
-
-`MERRA-Land forcing directory:` specifies the location of
-the MERRA-Land forcing files.
-
-`MERRA-Land use lowest model level forcing:` specifies whether
-to use the lowest model level forcing.
-Acceptable values are:
-
-|====
-|Value | Description
-
-|0     | Do not use the lowest model level forcing.
-|1     | Use the lowest model level forcing.
-|====
-
-.Example _lis.config_ entry
-....
-MERRA-Land forcing directory:
-MERRA-Land use lowest model level forcing:
 ....
 
 
