@@ -52,7 +52,6 @@
 | NARR                                   | On
 | ALMIPII forcing                        | On
 | RFE2(daily)                            | On
-| CEOP                                   | On
 | SCAN                                   | On
 | GDAS(LSWG)                             | On
 | MET RDHM.3.5.6                         | On

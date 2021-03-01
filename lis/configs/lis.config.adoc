@@ -324,7 +324,6 @@ Acceptable values for the sources are:
 |"`RFE2(GDAS bias-corrected)`" | RFE2 data bias corrected to GDAS
 |"`CHIRPS2`"                   | UCSB CHIRPS v2.0 precipitation dataset
 |"`ALMIPII`"                   | ALMIPII
-|"`CEOP`"                      | CEOP
 |"`SCAN`"                      | SCAN
 |"`GDAS(LSWG)`"                | GDAS data for LSWG project
 ifdef::devonly[]
@@ -5624,28 +5623,6 @@ CMAP forcing files.
 .Example _lis.config_ entry
 ....
 CMAP forcing directory:             ./input/FORCING/CMAP
-....
-
-
-[[sssec_supp_ceop,CEOP station data]]
-==== CEOP station data
-
-CEOP station forcing {emdash} during EOP1
-
-`CEOP location index:` specifies the location of the
-CEOP station.
-
-`CEOP forcing directory:` specifies the location of the
-CEOP forcing files.
-
-`CEOP metadata file:` specifies the file containing
-CEOP metadata.
-
-.Example _lis.config_ entry
-....
-CEOP location index:           3 #SGP location
-CEOP forcing directory:        ./input/FORCING/CEOP/sgp.cfr
-CEOP metadata file:            ./input/FORCING/CEOP/sgp.mdata
 ....
 
 
