@@ -1,8 +1,12 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.0     
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-!#include "LIS_misc.h"
-module Crocus81_lsmMod
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 !
 ! !MODULE: Crocus81_lsmMod
@@ -76,6 +80,8 @@ module Crocus81_lsmMod
 !                        and this subroutine edited to reflect the edit. For the stand-alone
 !                        version, the value of TG was set to 273.15 in the Crocus81_main.F90
 !
+module Crocus81_lsmMod
+
 ! !USES:
   use Crocus81_module
   
