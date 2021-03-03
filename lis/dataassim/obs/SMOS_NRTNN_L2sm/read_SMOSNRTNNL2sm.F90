@@ -95,9 +95,6 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
    integer                :: doy
    integer                :: mn_ind
    integer                :: ftn, ierr
-   character(len=4)       :: istring
-   character*200          :: smos_filename(10)
-   character(len=200)     :: cmd
    character*1            :: fproc(4)
    character*100          :: temp1
    !real, allocatable    :: sm_dgg(:), smunct_dgg(:), obstime_dgg(:)
@@ -111,6 +108,7 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
    integer :: ii , gc, gr
    integer :: leng
    logical, save :: dgg_file_already_read = .false. 
+   integer, external :: create_filelist ! C function
 
    call ESMF_AttributeGet(OBS_State, "Data Directory", &
                           smobsdir, rc=status)
@@ -272,43 +270,49 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
               '/'//trim(yyyy)//'.'//trim(mm)//'.'//dd// &
               '/W_XX-ESA,SMOS,NRTNN_C_LEMM_*_' &
               //trim(yyyymmdd)//trim(hh) &
-              //'*.nc 2>/dev/null > file_01.txt'
+              //'*.nc'
 
-
-         cmd = 'ls '//list_files
-         call system(cmd)
+         status = create_filelist(trim(list_files)//char(0), &
+                                  "file_01.txt"//char(0))
+         if (status .ne. 0) then
+            write(LIS_logunit,*) &
+                 '[WARN] Problem encountered when searching for SMOS NRTNNL2 files'
+            write(LIS_logunit,*) &
+                 'Was searching for ',trim(list_files)
+            write(LIS_logunit,*) &
+                 'LIS will continue...'
+         endif
 
          if (LIS_rc%hr-1 >= 0.and.LIS_rc%hr+1 <= 23) then
             list_files = trim(smobsdir)// &
                  '/'//trim(yyyy)//'.'//trim(mm)//'.'//dd// &
                  '/W_XX-ESA,SMOS,NRTNN_C_LEMM_*_' &
                  //trim(yyyymmdd)//trim(hh0)//'*_'//trim(yyyymmdd)//(hh1)  &
-                 //'*.nc 2>/dev/null > file_02.txt'
+                 //'*.nc'
 
-
-            cmd = 'ls '//list_files
-            call system(cmd)
+            status = create_filelist(trim(list_files)//char(0), &
+                                     "file_02.txt"//char(0))
+            if (status .ne. 0) then
+               write(LIS_logunit,*) &
+                    '[WARN] Problem encountered when searching for SMOS NRTNNL2 files'
+               write(LIS_logunit,*) &
+                    'Was searching for ',trim(list_files)
+               write(LIS_logunit,*) &
+                    'LIS will continue...'
+            endif
          endif
 
-         call system ('ls file*.txt | xargs cat > ./SMOS_filelist_sm.dat')
-         call system ('find . -type f -name "file*.txt" -print0 | xargs -0 rm -rf')
-
-
-         do i=0,LIS_npes-1
-            write(istring,'(I4.4)') i
-            cmd = 'cp SMOS_filelist_sm.dat SMOS_filelist.sm.'//istring//".dat"
-            call system(trim(cmd))
-         end do ! i
+         call system('cat file_01.txt file_02.txt >./SMOS_filelist_sm.dat 2>/dev/null')
+         call system('rm -f file_01.txt file_02.txt')
       end if
+
 #if (defined SPMD)
          call mpi_barrier(lis_mpi_comm,ierr)
 #endif
 
-         i = 1
          ftn = LIS_getNextUnitNumber()
-         open(ftn,file="./SMOS_filelist.sm."//&
-              fproc(1)//fproc(2)//fproc(3)//fproc(4)//".dat",&
-              status='old',iostat=ierr)
+         open(ftn,file="./SMOS_filelist_sm.dat", &
+              action='read', status='old', iostat=ierr)
 
          do while(ierr.eq.0)
             read(ftn,'(a)',iostat=ierr) fname
@@ -318,14 +322,10 @@ subroutine read_SMOSNRTNNL2sm(n, k, OBS_State, OBS_Pert_State)
 
             ss=0
 
-            smos_filename(i) = fname
+            write(LIS_logunit,*) '[INFO] reading ',trim(fname)
 
-            write(LIS_logunit,*) '[INFO] reading ',trim(smos_filename(i))
-
-            call read_SMOSNRTNNL2sm_data(n,k,smos_filename(i),&
+            call read_SMOSNRTNNL2sm_data(n,k,fname,&
                  SMOSNRTNNL2sm_struc(n)%smobs,time1,chr)
-
-            i = i+1
          enddo
          call LIS_releaseUnitNumber(ftn)
 
