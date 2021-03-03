@@ -3496,6 +3496,27 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),jules5x_updatesoilm)
 
+! YK
+! Jules 5.x SMOS NRT NN soil moisture
+   call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOSNRTNNL2smobsId)//char(0),jules5x_dasoilm_init)
+   call registerlsmdagetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOSNRTNNL2smobsId)//char(0),jules5x_getsoilm)
+   call registerlsmdasetstatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOSNRTNNL2smobsId)//char(0),jules5x_setsoilm)
+   call registerlsmdagetobspred(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOSNRTNNL2smobsId)//char(0),jules5x_getsmpred)
+   call registerlsmdaqcstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOSNRTNNL2smobsId)//char(0),jules5x_qcsoilm)
+   call registerlsmdaqcobsstate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOSNRTNNL2smobsId)//char(0),jules5x_qc_soilmobs)
+   call registerlsmdascalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOSNRTNNL2smobsId)//char(0),jules5x_scale_soilm)
+   call registerlsmdadescalestatevar(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOSNRTNNL2smobsId)//char(0),jules5x_descale_soilm)
+   call registerlsmdaupdatestate(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_SMOSNRTNNL2smobsId)//char(0),jules5x_updatesoilm)
+
 #if ( defined DA_OBS_SNODEP )
 ! Jules 5.x snow depth, Yeosang Yoon
    call registerlsmdainit(trim(LIS_jules5xId)//"+"//&
