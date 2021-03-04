@@ -11,7 +11,7 @@
 subroutine LVT_init_USAFSIpost()
 
    ! Imports
-   use LVT_logmod, only: LVT_logunit, LVT_endrun, LVT_flush
+   use LVT_logmod, only: LVT_logunit, LVT_endrun
 
    ! Defaults
    implicit none
@@ -20,7 +20,7 @@ subroutine LVT_init_USAFSIpost()
    call read_usafsipost_settings()
 
    ! Other initialize steps
-   call LVT_flush(LVT_logunit)
+   flush(LVT_logunit)
 
 contains
 

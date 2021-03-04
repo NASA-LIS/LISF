@@ -27,7 +27,7 @@ subroutine LDT_run_ANNproc
            call LDT_readANNoutputData(n)
            call LDT_tavgANNdata(n)
            call LDT_outputANN(n)
-           call LDT_flush(LDT_logunit)
+           flush(LDT_logunit)
         enddo
      enddo
   enddo

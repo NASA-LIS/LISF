@@ -20,7 +20,7 @@ subroutine readagrmetpcpforcinganalysis(n,findex, order)
 ! !USES:
   use LIS_coreMod, only         : LIS_rc,LIS_domain, LIS_masterproc
   use LIS_timeMgrMod, only      : LIS_julhr_date, LIS_get_julhr
-  use LIS_logMod, only          : LIS_logunit, lis_flush, LIS_endrun
+  use LIS_logMod, only          : LIS_logunit, LIS_endrun
   use LIS_fileIOMod, only       : LIS_putget
   use AGRMET_forcingMod, only : agrmet_struc
 

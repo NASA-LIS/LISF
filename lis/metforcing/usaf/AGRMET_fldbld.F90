@@ -24,7 +24,7 @@ subroutine AGRMET_fldbld(n,order,julhr)
 ! !USES: 
   use AGRMET_forcingMod, only : agrmet_struc
   use LIS_coreMod,       only : LIS_masterproc
-  use LIS_logMod,        only : LIS_logunit, LIS_endrun, LIS_abort, LIS_flush,&
+  use LIS_logMod,        only : LIS_logunit, LIS_endrun, LIS_abort,&
        LIS_alert
   use LIS_timeMgrMod,    only : LIS_julhr_date
 
@@ -105,7 +105,7 @@ subroutine AGRMET_fldbld(n,order,julhr)
                 '[ERR] No GFS background found for ',yyyymmddhh
         end if
         write(LIS_logunit,*) ' ABORTING!'
-        call LIS_flush(LIS_logunit)
+        flush(LIS_logunit)
         message(:) = ''
         message(1) = '[ERR] Program:  LIS'
         message(2) = '  Routine:  AGRMET_fldbld.'

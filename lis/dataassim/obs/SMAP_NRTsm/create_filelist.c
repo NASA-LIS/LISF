@@ -68,10 +68,7 @@ int FTN(create_filelist) (const char *regexp,
 	   So write the filenames to an output file. */
 	outfile = fopen(filelist_name,"w");
 	for (i = 0; i < globbuf.gl_pathc; i++) {
-	    fprintf(outfile,"%s", globbuf.gl_pathv[i]);
-	    if (i < (globbuf.gl_pathc-1)) {
-		fprintf(outfile,"\n");
-	    }
+	    fprintf(outfile,"%s\n", globbuf.gl_pathv[i]);
 	}
 	fclose(outfile);
     } else {

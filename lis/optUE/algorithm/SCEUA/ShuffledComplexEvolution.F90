@@ -956,7 +956,7 @@ module ShuffledComplexEvolution
 ! !USES:   
     use LIS_coreMod,         only : LIS_rc
     use LIS_optUEMod,        only : LIS_ObjectiveFunc, LIS_feasibleSpace
-    use LIS_logMod,          only : LIS_flush, LIS_logunit, LIS_verify
+    use LIS_logMod,          only : LIS_logunit, LIS_verify
 ! 
 ! !DESCRIPTION: 
 !   This method computes the objective function values for each parameter set,
