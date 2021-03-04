@@ -16,13 +16,14 @@ import sys
 
 template = "template/lvt.config.template.jules50"
 
-startdt = datetime.datetime(2018, 12, 1,  9)
-enddt = datetime.datetime(2018, 12, 2,  12)
+startdt = datetime.datetime(2018, 12, 2,  9)
+enddt = datetime.datetime(2018, 12, 31,  12)
 
 output = "netcdf"
 #output = "grib2"
 
 # Most variables are processed independently, and are listed below.
+# Updated for PS41 (multi-layer snow physics)
 var_attributes = {
     "AvgSurfT_inst":
     "AvgSurfT    1  1  K      -  0  1 AvgSurfT    1  1  K      -  0  1",
@@ -94,7 +95,6 @@ var_attributes = {
         "Wind_f      1  1  m/s    -  0  1 Wind_f      1  1  m/s    -  0  1",
     "Wind_f_tavg":
         "Wind_f      1  1  m/s    -  1  1 Wind_f      1  1  m/s    -  1  1",
-
     "ActSnowNL_inst":
         "ActSnowNL   1  1    -    -  0  1 ActSnowNL   1  1   -     -  0  1",
     "GrndSnow_inst":
@@ -127,7 +127,6 @@ var_attributes = {
 #         "SoilMoist   1  4  m3/m3  -  0  4 SoilMoist   1  4  m3/m3  -  0  4",
 #     "SoilTemp_inst":
 #         "SoilTemp    1  4  K      -  0  4 SoilTemp    1  4  K      -  0  4",
-
 #     "SnowDepth_inst":
 #         "SnowDepth   1  1  m      -  0  1 SnowDepth   1  1  m      -  0  1",
 #     "SWE_inst":
@@ -166,26 +165,26 @@ var_attributes_special = {
 
 # Smooth variables that are perturbed, derived from perturbed variables,
 # or are LSM outputs that are affected by perturbed variables via physics.
-smooth_vars = ["AvgSurfT_inst", "AvgSurfT_tavg",
-               "Albedo_tavg", "CanopInt_inst",
-               "Evap_tavg", "LWdown_f_inst",
-               "LWdown_f_tavg", "Qh_tavg", "Qle_tavg",
-               "Qs_acc", "Qsb_acc", "RelSMC_inst",
-               "SmLiqFrac_inst", "SnowDepth_inst",
-               "Snowcover_inst", "SoilMoist_inst",
-               "SoilMoist_tavg", "SoilTemp_inst",
-               "SoilTemp_tavg", "SWdown_f_inst",
-               "SWdown_f_tavg", "SWE_inst",
-               "Tair_f_inst", "Tair_f_max",
-               "Tair_f_tavg", "TotalPrecip_acc",
-               "Tair_f_min", "RHMin_inst",
-
-               "GrndSnow_inst", "LayerSnowDensity_inst",
-               "LayerSnowDepth_inst", "LayerSnowGrain_inst",
-               "SnowDensity_inst", "SnowGrain_inst",
-               "SnowIce_inst", "SnowLiq_inst",
-               "SnowTProf_inst", "SurftSnow_inst"]
-
+# EMK...Smoothing turned off to avoid numerical instabilities in GALWEM.
+# smooth_vars = ["AvgSurfT_inst", "AvgSurfT_tavg",
+#                "Albedo_tavg", "CanopInt_inst",
+#                "Evap_tavg", "LWdown_f_inst",
+#                "LWdown_f_tavg", "Qh_tavg", "Qle_tavg",
+#                "Qs_acc", "Qsb_acc", "RelSMC_inst",
+#                "SmLiqFrac_inst", "SnowDepth_inst",
+#                "Snowcover_inst", "SoilMoist_inst",
+#                "SoilMoist_tavg", "SoilTemp_inst",
+#                "SoilTemp_tavg", "SWdown_f_inst",
+#                "SWdown_f_tavg", "SWE_inst",
+#                "Tair_f_inst", "Tair_f_max",
+#                "Tair_f_tavg", "TotalPrecip_acc",
+#                "Tair_f_min", "RHMin_inst",
+#                "GrndSnow_inst", "LayerSnowDensity_inst",
+#                "LayerSnowDepth_inst", "LayerSnowGrain_inst",
+#                "SnowDensity_inst", "SnowGrain_inst",
+#                "SnowIce_inst", "SnowLiq_inst",
+#                "SnowTProf_inst", "SurftSnow_inst"]
+smooth_vars = []
 
 lines = open(template, 'r').readlines()
 
