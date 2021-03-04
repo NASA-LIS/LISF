@@ -158,6 +158,7 @@ LVT output methodology:                 "2d gridspace"
 | "`SMAP L3 Tb`"                    | SMAP L3 brightness temperature
 | "`OzFlux`"                        | OzFlux ground measurements
 | "`JASMIN soil moisture`"          | JASMIN soil moisture analysis
+| "`FluxSAT GPP`"                   | FluxSat GPP data
 |===
 
 .Example _lvt.config_ entry
@@ -2268,6 +2269,15 @@ OzFlux station list file:     ../OzFlux/stnlist.dat
 .Example _lvt.config_ entry
 ....
 JASMIN soil moisture data directory: ../JASMIN
+....
+
+==== FluxSat GPP
+
+`FluxSat data directory:` specifies the location of the FluxSat GPP data directory.
+
+.Example _lvt.config_ entry
+....
+FluxSat data directory: ./FluxSat
 ....
 
 [[ssec-optue]]

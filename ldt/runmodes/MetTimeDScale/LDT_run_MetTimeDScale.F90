@@ -45,7 +45,7 @@ subroutine LDT_run_MetTimeDScale
          call LDT_metforcing_reset()                  ! Reset metforcing variables
          call LDT_resetForcingVars()                  ! Reset variables
       enddo     ! Pass 1,2 loops
-      call LDT_flush(LDT_logunit)
+      flush(LDT_logunit)
    enddo        ! LDT runmode completed running
 
   write(LDT_logunit,*) "--------------------------------"
