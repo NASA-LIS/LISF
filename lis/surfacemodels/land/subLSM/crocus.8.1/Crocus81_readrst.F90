@@ -30,7 +30,7 @@ subroutine Crocus81_readrst()
                                LIS_verify                
     use Crocus81_lsmMod
 
-#if (defined USE_NETCDF3 .OR. defined USE_NETCDF4)
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
 #endif
 
@@ -116,7 +116,7 @@ subroutine Crocus81_readrst()
                     call LIS_endrun
                 endif
             elseif(wformat .eq. "netcdf") then
-#if (defined USE_NETCDF3 .OR. defined USE_NETCDF4)
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
                 status = nf90_open(path=CROCUS81_struc(n)%rfile, &
                                    mode=NF90_NOWRITE, ncid=ftn)
                 call LIS_verify(status, "Error opening file "//CROCUS81_struc(n)%rfile)
@@ -249,7 +249,7 @@ subroutine Crocus81_readrst()
             if(wformat .eq. "binary") then
                 call LIS_releaseUnitNumber(ftn)
             elseif(wformat .eq. "netcdf") then
-#if (defined USE_NETCDF3 .OR. defined USE_NETCDF4)
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
                 status = nf90_close(ftn)
                 call LIS_verify(status, "Error in nf90_close in Crocus81_readrst")
 #endif
