@@ -113,7 +113,8 @@ subroutine jules50_main(n)
    real :: sfctmp, sfcprs, es, q2, q2sat
    real :: relsmc,smc,smcmax,smcwilt
    character*3 :: fnest
-
+   real :: smoist_m3ovrm3
+   
    ! check JULES alarm. If alarm is ring, run model.
    alarmCheck = LIS_isAlarmRinging(LIS_rc, "JULES.5.0 model alarm")
    if (alarmCheck) Then
@@ -228,6 +229,7 @@ subroutine jules50_main(n)
                   call top_pdm_to_tile(n, t)
                   call sf_diag_to_tile(n, t) 
 
+                          
                   ![ 1] output variable: soil_temp (unit=K).
                   ! soil layer temperature
                   do i=1, jules50_struc(n)%sm_levels
@@ -249,14 +251,20 @@ subroutine jules50_main(n)
 
                   ! m3/m3
                   do i=1, jules50_struc(n)%sm_levels
+
+                     ! EMK fix supersaturation induced by m3/m3 conversion
+                     smoist_m3ovrm3 = &
+                          jules50_struc(n)%jules50(t)%smcl_soilt(i)/ &
+                          (1000.0*dzsoil(i))
+                     smoist_m3ovrm3 = min(smoist_m3ovrm3, &
+                          jules50_struc(n)%jules50(t)%p_s_smvcst(i))
                      call LIS_diagnoseSurfaceOutputVar(n, t,       &
-                        LIS_MOC_SOILMOIST,                         &
-                        value=jules50_struc(n)%jules50(t)%smcl_soilt(i)/ &
-                              (1000.0*dzsoil(i)),                  &
-                        vlevel=i, unit="m^3 m-3", direction="-",   &
-                        surface_type=LIS_rc%lsm_index)
+                          LIS_MOC_SOILMOIST,                         &
+                          value=smoist_m3ovrm3, &
+                          vlevel=i, unit="m^3 m-3", direction="-",   &
+                          surface_type=LIS_rc%lsm_index)
                   end do
-                  
+
                   ! m3/m3, unfrozen (liquid) soil moisture 
                   do i=1, jules50_struc(n)%sm_levels
                      ! p_s_sthu: unfrozen moisture content of each soil layer as a fraction of saturation (-)
