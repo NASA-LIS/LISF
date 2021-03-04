@@ -1163,6 +1163,7 @@ Acceptable values are:
 |"`USAFSI`"                     | USAF Snow and Ice Analysis
 |"`SMAP(NASA) vegetation optical depth`"  | NASA L-band vegetation optical depth 
 |"`MCD15A2H LAI`"               | MODIS MCD15A2H v006 LAI product
+|"`SMOS NRT NN soil moisture`"  | SMOS Level 2 Soil Moisture Near Real Time Neural Network
 |====
 
 .Example _lis.config_ entry
@@ -3115,6 +3116,50 @@ SMOS(NESDIS) soil moisture use scaled standard deviation model:
 SMOS(NESDIS) model CDF file:
 SMOS(NESDIS) observation CDF file:
 SMOS(NESDIS) soil moisture number of bins in the CDF:
+....
+
+
+[[sssec_smosnrtnnsmda,SMOS NRT NN soil moisture assimilation]]
+==== SMOS NRT NN soil moisture assimilation
+
+`SMOS NRT NN soil moisture data directory:` specifies the SMOS NRT NN soil
+moisture data directory
+
+`SMOS NRT NN soil moisture use scaled standard deviation model:` specifies
+whether the observation error standard deviation is to be scaled using model
+and observation standard deviation.
+
+`SMOS NRT NN model CDF file:` specifies the name of the model CDF file
+(observations will be scaled into this climatology).
+
+`SMOS NRT NN observation CDF file:` specifies the name of the observation
+CDF file.
+
+`SMOS NRT NN soil moisture number of bins in the CDF:` specifies the number of
+bins in the CDF.
+
+`SMOS NRT NN CDF read option:` specifies whether to read all months of
+or to read month by month from a monthly CDF file.
+
+Acceptable values are:
+
+|====
+|Value    | Description
+
+|0 | Read all months
+|1 | Read month by month
+|====
+
+NOTE: Select 0 for yearly CDF data
+
+.Example _lis.config_ entry
+....
+SMOS NRT NN soil moisture data directory: ./SMOS_NRT_NN
+SMOS NRT NN soil moisture use scaled standard deviation model: 0
+SMOS NRT NN model CDF file:               ../DA_proc_LSM/LDTOUT/noah39_cdf.nc
+SMOS NRT NN observation CDF file:         ../DA_proc_SMOS/LDTOUT/SMOS_cdf.nc
+SMOS NRT NN soil moisture number of bins in the CDF:           100
+SMOS NRT NN CDF read option:       1
 ....
 
 
@@ -10458,51 +10503,4 @@ Acceptable values for the timestep units are:
 Units of months assumes a 30-day month.
 
 Units of years assumes a 365-day year.
-
-
-....
-[[sssec_smosnrtnnsmda,SMOS NRT NN soil moisture assimilation]]
-==== SMOS NRT NN soil moisture assimilation
-
-`SMOS NRT NN soil moisture data directory:` specifies the SMOS NRT NN soil
-moisture data directory
-
-`SMOS NRT NN soil moisture use scaled standard deviation model:` specifies
-whether the observation error standard deviation is to be scaled using model
-and observation standard deviation.
-
-`SMOS NRT NN model CDF file:` specifies the name of the model CDF file
-(observations will be scaled into this climatology).
-
-`SMOS NRT NN observation CDF file:` specifies the name of the observation
-CDF file.
-
-`SMOS NRT NN soil moisture number of bins in the CDF:` specifies the number of
-bins in the CDF.
-
-`SMOS NRT NN CDF read option:` specifies whether to read all months of
-or to read month by month from a monthly CDF file.
-
-Acceptable values are:
-
-|====
-|Value    | Description
-
-|0 | Read all months
-|1 | Read month by month
-|====
-
-NOTE: Select 0 for yearly CDF data
-
-.Example _lis.config_ entry
-....
-SMOS NRT NN soil moisture data directory: ./SMOS_NRT_NN
-SMOS NRT NN soil moisture use scaled standard deviation model: 0
-SMOS NRT NN model CDF file:               ../DA_proc_LSM/LDTOUT/noah39_cdf.nc
-SMOS NRT NN observation CDF file:         ../DA_proc_SMOS/LDTOUT/SMOS_cdf.nc
-SMOS NRT NN soil moisture number of bins in the CDF:           100
-SMOS NRT NN CDF read option:       1
-....
-
-
 
