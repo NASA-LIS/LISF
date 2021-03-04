@@ -75,6 +75,8 @@ module LIS_domainMod
   public :: LIS_domain_setup        !setup domain related structures
   public :: LIS_quilt_domain         !generate quilted domains
   public :: LIS_domain_finalize      !cleanup allocated structures
+  public :: decompose_nx_ny          !decomposes domain based on proc layout
+  public :: decompose_npes           !decomposes domain based on proc elements
 !EOP
 
 contains

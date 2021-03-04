@@ -350,12 +350,6 @@ elsif (defined($ENV{ESMFMKFILE})) {
       exit 0;
    }
 }
-elsif (defined($ENV{LIS_ESMF_DYNAMIC})) {
-   print "ESMFMKFILE will be define during compile using the environment.\n\n";
-   $use_esmf_dynamic = 1;
-   $sys_esmflib_path = "\$(subst lib,mod,\$(ESMF_LIBSDIR))";
-   $sys_esmfmod_path = "\$(ESMF_LIBSDIR)";
-}
 else{
    print "--------------ERROR---------------------\n";
    print "Please specify the ESMF library paths using\n";
@@ -991,12 +985,6 @@ if($use_mkllapack == 1){
 if($use_esmf_trace == 1){
    $fflags77 = $fflags77." -DESMF_TRACE";
    $fflags = $fflags." -DESMF_TRACE";
-   if($use_esmf_dynamic == 1) {
-#      $ldflags= "\$(ESMF_TRACE_STATICLINKOPTS) ".$ldflags;
-#      $ldflags= $ldflags." \$(ESMF_TRACE_STATICLINKLIBS)";
-#      $lib_flags= "\$(ESMF_TRACE_STATICLINKOPTS) ".$lib_flags;
-#      $lib_paths= $lib_paths." \$(ESMF_TRACE_STATICLINKLIBS)";
-   }
    else {
       if (not(open(ESMFMKFILE, $sys_esmfmkfile))) {
          print "--------------ERROR---------------------\n";
@@ -1049,12 +1037,6 @@ $ldflags = $ldflags." -lz";
 #
 
 open(conf_file,">configure.lis");
-if($use_esmf_dynamic == 1) {
-printf conf_file "%s\n","ifneq (\$(origin ESMFMKFILE), environment)";
-printf conf_file "%s\n","\$(error Environment variable ESMFMKFILE required.)";
-printf conf_file "%s\n","endif";
-printf conf_file "%s\n","include \$(ESMFMKFILE)";
-}
 printf conf_file "%s%s\n","FC              = $sys_fc";
 printf conf_file "%s%s\n","FC77            = $sys_fc";
 printf conf_file "%s%s\n","LD              = $sys_fc";
