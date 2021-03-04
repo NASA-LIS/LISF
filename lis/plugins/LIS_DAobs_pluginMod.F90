@@ -251,6 +251,11 @@ subroutine LIS_DAobs_plugin
     use NASASMAPsm_Mod,          only : NASASMAPsm_setup
 #endif
 
+!YK
+#if ( defined DA_OBS_SMOS_NRT_NN )
+    use SMOSNRTNNL2sm_Mod,       only : SMOSNRTNNL2sm_setup
+#endif
+
 #if ( defined DA_OBS_NASA_SMAPVOD )
     use NASASMAPvod_Mod,          only : NASASMAPvod_setup
 #endif
@@ -404,6 +409,11 @@ subroutine LIS_DAobs_plugin
 
 #if ( defined DA_OBS_NASA_SMAPSM )
     external read_NASASMAPsm, write_NASASMAPsmobs
+#endif
+
+!YK
+#if ( defined DA_OBS_SMOS_NRT_NN )
+    external read_SMOSNRTNNL2sm, write_SMOSNRTNNL2smobs
 #endif
 
 #if ( defined DA_OBS_NASA_SMAPVOD)
@@ -764,6 +774,17 @@ subroutine LIS_DAobs_plugin
         read_NASASMAPsm)
    call registerwritedaobs(trim(LIS_NASASMAPsmobsId)//char(0),&
         write_NASASMAPsmobs)
+#endif
+
+!YK
+#if ( defined DA_OBS_SMOS_NRT_NN )
+   call registerdaobsclass(trim(LIS_SMOSNRTNNL2smobsId),"LSM")
+   call registerdaobssetup(trim(LIS_SMOSNRTNNL2smobsId)//char(0),&
+        SMOSNRTNNL2sm_setup)
+   call registerreaddaobs(trim(LIS_SMOSNRTNNL2smobsId)//char(0),&
+        read_SMOSNRTNNL2sm)
+   call registerwritedaobs(trim(LIS_SMOSNRTNNL2smobsId)//char(0),&
+        write_SMOSNRTNNL2smobs)
 #endif
 
 #if ( defined DA_OBS_NASA_SMAPVOD )

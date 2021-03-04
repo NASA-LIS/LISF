@@ -40,6 +40,7 @@ module LVT_statsDataMod
 !
 ! !REVISION HISTORY:
 !  02 Oct 2008: Sujay Kumar; Initial version
+!  05 Feb 2021: David Mocko; Fixed Max and Min metric time series output
 ! 
 !EOP
 
@@ -47,40 +48,54 @@ module LVT_statsDataMod
 
   type min_metric_spec 
      real,    allocatable :: model_value_total(:,:,:)     
+     integer, allocatable :: count_model_value_total(:,:,:)     
      real,    allocatable :: model_value_ci(:,:)
      real,    allocatable :: model_value_ts(:,:,:)        
+     integer, allocatable :: count_model_value_ts(:,:,:)        
      real,    allocatable :: tavg_model_value_ts(:,:,:)        
+     integer, allocatable :: tavg_count_model_value_ts(:,:,:)        
      real,    allocatable :: model_value_asc(:,:,:)
+     integer, allocatable :: count_model_value_asc(:,:,:)
      real,    allocatable :: model_value_adc(:,:,:)
+     integer, allocatable :: count_model_value_adc(:,:,:)
 
      real,    allocatable :: obs_value_total(:,:,:)     
+     integer, allocatable :: count_obs_value_total(:,:,:)     
      real,    allocatable :: obs_value_ci(:,:)
      real,    allocatable :: obs_value_ts(:,:,:)        
+     integer, allocatable :: count_obs_value_ts(:,:,:)        
      real,    allocatable :: tavg_obs_value_ts(:,:,:)        
+     integer, allocatable :: tavg_count_obs_value_ts(:,:,:)        
      real,    allocatable :: obs_value_asc(:,:,:)
+     integer, allocatable :: count_obs_value_asc(:,:,:)
      real,    allocatable :: obs_value_adc(:,:,:)
-
-     integer, allocatable :: tavg_count_model_value_ts(:,:,:)
-     integer, allocatable :: tavg_count_obs_value_ts(:,:,:)
+     integer, allocatable :: count_obs_value_adc(:,:,:)
   end type min_metric_spec
 
   type max_metric_spec
      real,    allocatable :: model_value_total(:,:,:)     
+     integer, allocatable :: count_model_value_total(:,:,:)     
      real,    allocatable :: model_value_ci(:,:)
      real,    allocatable :: model_value_ts(:,:,:)        
+     integer, allocatable :: count_model_value_ts(:,:,:)        
      real,    allocatable :: tavg_model_value_ts(:,:,:)        
+     integer, allocatable :: tavg_count_model_value_ts(:,:,:)        
      real,    allocatable :: model_value_asc(:,:,:)
+     integer, allocatable :: count_model_value_asc(:,:,:)
      real,    allocatable :: model_value_adc(:,:,:)
+     integer, allocatable :: count_model_value_adc(:,:,:)
 
      real,    allocatable :: obs_value_total(:,:,:)     
+     integer, allocatable :: count_obs_value_total(:,:,:)     
      real,    allocatable :: obs_value_ci(:,:)
      real,    allocatable :: obs_value_ts(:,:,:)        
+     integer, allocatable :: count_obs_value_ts(:,:,:)        
      real,    allocatable :: tavg_obs_value_ts(:,:,:)        
+     integer, allocatable :: tavg_count_obs_value_ts(:,:,:)        
      real,    allocatable :: obs_value_asc(:,:,:)
+     integer, allocatable :: count_obs_value_asc(:,:,:)
      real,    allocatable :: obs_value_adc(:,:,:)
-
-     integer, allocatable :: tavg_count_model_value_ts(:,:,:)
-     integer, allocatable :: tavg_count_obs_value_ts(:,:,:)
+     integer, allocatable :: count_obs_value_adc(:,:,:)
   end type max_metric_spec
 
   type mintime_metric_spec

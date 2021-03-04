@@ -425,7 +425,7 @@ module GeneticAlgorithm
 ! !USES:   
       use LIS_coreMod
       use LIS_optUEMod,        only : LIS_ObjectiveFunc, LIS_feasibleSpace
-      use LIS_logMod,          only : LIS_flush, LIS_logunit, LIS_verify, LIS_endrun
+      use LIS_logMod,          only : LIS_logunit, LIS_verify, LIS_endrun
 
 ! 
 ! !DESCRIPTION: 

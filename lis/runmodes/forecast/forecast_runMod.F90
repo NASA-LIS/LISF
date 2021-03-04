@@ -196,7 +196,7 @@ contains
                 call LIS_outputAppModel(n)
              endif
           enddo
-          call LIS_flush(LIS_logunit)
+          flush(LIS_logunit)
        enddo
 
  !      call LIS_forecast_writerestart

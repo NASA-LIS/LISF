@@ -313,7 +313,7 @@ contains
    subroutine LDT_bratseth_calc_inv_data_dens(this, silent)
 
       ! Imports
-      use LDT_logMod, only: LDT_logunit, LDT_flush
+      use LDT_logMod, only: LDT_logunit
 
       ! Defaults
       implicit none
@@ -492,7 +492,7 @@ contains
    subroutine LDT_bratseth_calc_ob_anas(this, converg_thresh, silent)
 
       ! Imports
-      use LDT_logMod, only: LDT_logunit, LDT_flush
+      use LDT_logMod, only: LDT_logunit
 
       ! Defaults
       implicit none
@@ -670,7 +670,7 @@ contains
                  this%npasses, ' iterations!'
             write(LDT_logunit,*) &
                  '[WARN] Will stop iterating'
-            call LDT_flush(LDT_logunit)
+            flush(LDT_logunit)
             exit
          end if
 

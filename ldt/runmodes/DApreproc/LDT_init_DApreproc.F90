@@ -31,7 +31,7 @@
     call LDT_DApreprocInit
     call LDT_DAobsDataInit
     call LDT_DAmetricsInit
-    call LDT_flush(LDT_logunit)
+    flush(LDT_logunit)
 
   end subroutine LDT_init_DApreproc
   

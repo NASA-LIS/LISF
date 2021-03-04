@@ -44,7 +44,7 @@
     call LVT_statsInit()
     call LVT_checkTavgSpecs()
     call LVT_core_init()
-    call LVT_flush(LVT_logunit)
+    flush(LVT_logunit)
 
   end subroutine LVT_init_DataComp
   
