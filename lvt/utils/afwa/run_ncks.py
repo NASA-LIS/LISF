@@ -133,7 +133,7 @@ _LVT_NOAHMP_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
 # The 24-hr postprocessing should include the latest 3-hr snow depth and SWE.
 _LVT_NOAHMP_INVOCATIONS_24HR_LATEST = ['SnowDepth_inst', 'SWE_inst']
 
-# The LVT invocations for JULES LSM output.
+# The LVT invocations for JULES LSM output.  Updated for PS41.
 _LVT_JULES_INVOCATIONS_3HR = ['Albedo_tavg',
                               'AvgSurfT_inst', 'AvgSurfT_tavg',
                               'CanopInt_inst',
@@ -161,9 +161,7 @@ _LVT_JULES_INVOCATIONS_3HR = ['Albedo_tavg',
                               'SnowLiq_inst',
                               'SnowTProf_inst', 'SurftSnow_inst']
 
-# EMK for RECON
-#_LVT_JULES_INVOCATIONS_3HR = ["SWE_inst", "SnowDepth_inst", "SoilMoist_inst",
-#        "SoilTemp_inst", "AvgSurfT_inst"]
+# EMK for RECON...PS41 configuration
 # _LVT_JULES_INVOCATIONS_3HR = ["AvgSurfT_inst",
 #                               "SoilMoist_inst","SoilTemp_inst",
 #                               "SnowDepth_inst", "SWE_inst",
