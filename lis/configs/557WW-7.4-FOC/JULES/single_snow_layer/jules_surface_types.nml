@@ -1,0 +1,13 @@
+&jules_surface_types
+brd_leaf=1
+c3_grass=3
+c4_grass=4
+ice=9
+lake=7
+ndl_leaf=2
+nnvg=4
+npft=5
+shrub=5
+soil=8
+urban=6
+/

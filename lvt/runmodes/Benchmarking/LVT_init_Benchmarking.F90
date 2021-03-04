@@ -43,7 +43,7 @@
     call LVT_DataStreamsinit()
     call LVT_trainingInit()
     call LVT_checkTavgSpecs()
-    call LVT_flush(LVT_logunit)
+    flush(LVT_logunit)
 
   end subroutine LVT_init_Benchmarking
   

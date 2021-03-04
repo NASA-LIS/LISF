@@ -3350,6 +3350,7 @@ LIS output timestep:          1da
 |"`GRACE TWS`" |Terrestrial water storage observations from GRACE
 |"`Simulated GRACE`" |Simulated water storage observations from GRACE
 |"`MCD15A2H LAI`" | MODIS MCD15A2H v006 LAI product
+|"`SMOS NRT NN soil moisture`" | SMOS Level 2 Soil Moisture Near Real Time Neural Network
 |===
 
 .Example _ldt.config_ entry
@@ -4439,3 +4440,21 @@ Glacier fraction upper right lon:   179.995
 Glacier fraction resolution (dx):   0.01
 Glacier fraction resolution (dy):   0.01
 ....
+
+
+`SMOS NRT NN soil moisture observation directory:` specifies the location of the data directory containing the SMOS NRT NN data.
+
+.Example _ldt.config_ entry
+....
+MOS NRT NN soil moisture observation directory: ./SMOS_NRT_NN
+....
+
+
+`SMOS NRT NN search radius for openwater proximity detection:` specifies the radius in which LDT search to detect open water. Then removes all pixels within the radius in the CDF calculations.
+
+.Example _ldt.config_ entry
+....
+SMOS NRT NN search radius for openwater proximity detection: 3
+....
+
+

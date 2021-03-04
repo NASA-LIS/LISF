@@ -175,6 +175,7 @@ contains
     use OzFlux_obsMod,          only : OzFlux_obsinit
     use JASMINsm_obsMod,        only : JASMINsm_obsInit
     use ERA5obsMod,             only : ERA5obsinit
+    use FluxSat_obsMod,         only : FluxSat_obsInit
 
     external readtemplateObs
     external readLISoutput
@@ -280,6 +281,7 @@ contains
     external readOzFluxObs
     external readJASMINsmobs
     external readERA5obs
+    external readFluxSatobs
 
     call registerobsread(trim(LVT_LVTbenchmarkobsId)//char(0),&
          readLVTbenchmarkOUTobs)
@@ -702,6 +704,11 @@ contains
          ERA5obsinit)
     call registerobsread(trim(LVT_ERA5obsId)//char(0),&
          readERA5obs)
+
+    call registerobssetup(trim(LVT_FluxSatobsId)//char(0), &
+         FluxSat_obsinit)
+    call registerobsread(trim(LVT_FluxSatobsId)//char(0),&
+         readFluxSatobs)
 
   end subroutine LVT_datastream_plugin
 end module LVT_datastream_pluginMod

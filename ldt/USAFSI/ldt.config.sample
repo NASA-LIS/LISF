@@ -1,7 +1,7 @@
 
 # Overall driver options
 LDT running mode:                   "USAFSI analysis"
-Processed LSM parameter filename:   LDTOUT/lis_input.10km_noah_juleslandmask.cap.nc
+Processed LSM parameter filename:   LDTOUT/lis_input.global.noah39.nc # When using LIS-Noah
 LIS number of nests:                 1
 Number of surface model types:       0
 Number of met forcing sources: 0
