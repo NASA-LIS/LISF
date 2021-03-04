@@ -1,3 +1,12 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !>
 !! @mainpage NASA's Land Information System (LIS) NUOPC Cap
 !! @author Daniel Rosen (daniel.rosen@noaa.gov)
@@ -185,65 +194,10 @@
 !! configuration file.  LIS output includes LIS history files and LIS restart
 !! files.
 !!
-!! @section Dependencies Dependencies
-!!
-!! Dependencies
-!! - [HDF5 v1.8.11+] (https://support.hdfgroup.org/HDF5/)
-!! - [NetCDF v4.3.0+] (http://www.unidata.ucar.edu/software/netcdf/docs/)
-!! - [NetCDF FORTRAN] (http://www.unidata.ucar.edu/software/netcdf/docs/building_netcdf_fortran.html)
-!! - [JasPer v1.900.1] (https://www.ece.uvic.ca/~frodo/jasper)
-!! - [Grib API v1.12.3+] (https://software.ecmwf.int/wiki/display/GRIB/Home)
-!!
-!! @subsection HDF5 HDF5
-!!
-!! Configure, Build, and Install
-!! $ ./configure --enable-fortran --prefix=HDF5_DIR
-!! $ make
-!! $ make install
-!!
-!! @subsection NetCDF NetCDF
-!!
-!! Add the following environment variables.
-!! - CPPFLAGS '-IHDF5_DIR/include'
-!! - LDFLAGS '-LHDF5_DIR/lib'
-!!
-!! Configure, Build, and Install
-!! $ ./configure --prefix=NETCDF_DIR --enable-netcdf-4 --disable-dap-remote-tests
-!! $ make
-!! $ make install
-!!
-!! @subsection NetCDFFortran NetCDF Fortran
-!!
-!! Add the following environment variables.
-!! - LD_LIBRARY_PATH 'NETCDF_DIR/lib:$LD_LIBRARY_PATH'
-!! - CPPFLAGS '-INETCDF_DIR/include'
-!! - LDFLAGS '-LNETCDF_DIR/lib'
-!!
-!! Configure, Build, and Install
-!! $ ./configure --prefix=NETCDF_DIR
-!! $ make
-!! $ make install
-!!
-!! @subsection JasPer JasPer
-!!
-!! Configure, Build, and Install
-!! $ ./configure --enable-shared --prefix=JASPER_DIR
-!! $ make
-!! $ make install
-!!
-!! @subsection GribAPI Grib API
-!!
-!! Configure, Build, and Install
-!! $ ./configure --with-jasper=JASPER_DIR --with-netcdf=NETCDF_DIR --prefix=GRIB_API_DIR
-!! $ make
-!! $ make install
-!!
 !! @section BuildingAndInstalling Building and Installing
 !!
 !! Environment Variables
 !! - ESMFMKFILE
-!! - JASPER
-!! - GRIB_API
 !!
 !! NUOPC Makefile Targets
 !! - nuopc
