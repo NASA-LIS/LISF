@@ -150,7 +150,8 @@ contains
        deallocate(LIS_LMLC(n)%surfacetype)
        if(LIS_rc%usetexturemap(n).ne."none") then 
           deallocate(LIS_soils(n)%texture)
-       elseif(LIS_rc%usesoilfractionmap(n).ne."none") then 
+       endif
+       if(LIS_rc%usesoilfractionmap(n).ne."none") then 
           deallocate(LIS_soils(n)%sand)
           deallocate(LIS_soils(n)%clay)
           deallocate(LIS_soils(n)%silt)
@@ -890,6 +891,11 @@ end subroutine LIS_quilt_b_domain
           soilf_selected = .true. 
        else
           soilf_selected = .false.
+       endif
+       
+       if(soilt_selected.and.soilf_selected) then 
+          soilt_selected = .true. 
+          soilf_selected = .false. 
        endif
 
        if(LIS_rc%useelevationmap(n).ne."none") then 
