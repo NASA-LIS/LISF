@@ -926,8 +926,8 @@ contains
          QPRECC = PRCPCONV + PRCPSHCV
 	 QPRECL = PRCPNONC
        ELSE
-         QPRECC = 0.10 * PRCP          ! should be from the atmospheric model
-         QPRECL = 0.90 * PRCP          ! should be from the atmospheric model
+       QPRECC = 0.10 * PRCP          ! should be from the atmospheric model
+       QPRECL = 0.90 * PRCP          ! should be from the atmospheric model
        END IF
 
 ! fractional area that receives precipitation (see, Niu et al. 2005)
@@ -1197,6 +1197,9 @@ ENDIF   ! CROPTYPE == 0
 
       IF((ELAI+ ESAI).GT.0.) THEN
          QINTR  = FVEG * RAIN * FP  ! interception capability
+         if (MAXLIQ.le.0.0) then
+            print *,"maxliq",MAXLIQ,parameters%CH2OP,ELAI,ESAI
+         end if
          QINTR  = MIN(QINTR, (MAXLIQ - CANLIQ)/DT * (1.-EXP(-RAIN*DT/MAXLIQ)) )
          QINTR  = MAX(QINTR, 0.)
          QDRIPR = FVEG * RAIN - QINTR
@@ -1424,7 +1427,8 @@ ENDIF   ! CROPTYPE == 0
         ERRWAT = END_WB-BEG_WB-(PRCP-ECAN-ETRAN-EDIR-RUNSRF-RUNSUB)*DT
 
 #ifndef WRF_HYDRO
-        IF(ABS(ERRWAT) > 0.1) THEN
+        !Bailing: the threshold needs to be relaxed for data assimilation
+        IF(ABS(ERRWAT) > 0.01) THEN
            if (ERRWAT > 0) then
 !              call wrf_message ('The model is gaining water (ERRWAT is positive)')
               print *,&
