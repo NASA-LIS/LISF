@@ -3953,6 +3953,23 @@ LPRM vegetation optical depth observation directory: ../LPRM_VOD
 LPRM vegetation optical depth data designation:      'X-band'
 ....
 
+`SMOS NRT NN soil moisture observation directory:` specifies the location of the data directory containing the SMOS NRT NN data.
+
+.Example _ldt.config_ entry
+....
+MOS NRT NN soil moisture observation directory: ./SMOS_NRT_NN
+....
+
+`SMOS NRT NN search radius for openwater proximity detection:` specifies the radius in which LDT search to detect open water. Then removes all pixels within the radius in the CDF calculations.
+
+.Example _ldt.config_ entry
+....
+SMOS NRT NN search radius for openwater proximity detection: 3
+....
+
+[[ssec-hymapopts]]
+=== HYMAP routing options
+
 This section describes the parameters needed for the HYMAP and the HYMAP2 routing models.  The config entries only have "`HYMAP`" within them, as they apply to both HYMAP versions.
 
 `HYMAP river width map:` specifies the name of the HYMAP river width data file.
@@ -4440,21 +4457,4 @@ Glacier fraction upper right lon:   179.995
 Glacier fraction resolution (dx):   0.01
 Glacier fraction resolution (dy):   0.01
 ....
-
-
-`SMOS NRT NN soil moisture observation directory:` specifies the location of the data directory containing the SMOS NRT NN data.
-
-.Example _ldt.config_ entry
-....
-MOS NRT NN soil moisture observation directory: ./SMOS_NRT_NN
-....
-
-
-`SMOS NRT NN search radius for openwater proximity detection:` specifies the radius in which LDT search to detect open water. Then removes all pixels within the radius in the CDF calculations.
-
-.Example _ldt.config_ entry
-....
-SMOS NRT NN search radius for openwater proximity detection: 3
-....
-
 
