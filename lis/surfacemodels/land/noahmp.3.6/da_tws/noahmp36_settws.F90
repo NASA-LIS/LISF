@@ -1,9 +1,7 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center
-! Land Information System Framework (LISF)
-! Version 7.3
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2015 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -39,8 +37,10 @@ subroutine noahmp36_settws(n, LSM_State)
   real, parameter        :: MAX_WA = 7000.0
   real, parameter        :: ZSOIL = 2 !mm
   real, parameter        :: ROUS = 0.2 ! specific yield
+  !Bailing changed this to be WLTSMC
   real, parameter        :: MIN_THRESHOLD = 0.02 
-  real                   :: MAX_threshold
+!  real                   :: MIN_THRESHOLD 
+  real                   :: MAX_THRESHOLD
   real                   :: sm_threshold
   type(ESMF_Field)       :: sm1Field
   type(ESMF_Field)       :: sm2Field
@@ -140,6 +140,7 @@ subroutine noahmp36_settws(n, LSM_State)
  !       can get module variables MAXSMC and WLTSMC from the module_sf_noahlsm_36       
      SOILTYP = NOAHMP36_struc(n)%noahmp36(t)%soiltype        
      MAX_THRESHOLD = MAXSMC (SOILTYP)
+     !MIN_THRESHOLD = WLTSMC (SOILTYP)
      sm_threshold = MAXSMC (SOILTYP) - 0.02
      !sm_threshold = NOAHMP36_struc(n)%noahmp36(t)%smcmax - 0.02
      !MAX_THRESHOLD = NOAHMP36_struc(n)%noahmp36(t)%smcmax
@@ -160,44 +161,42 @@ subroutine noahmp36_settws(n, LSM_State)
 
 
      ! MN: check    MIN_THRESHOLD < volumetric liquid soil moisture < threshold 
-     if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(1)+delta1.gt.MIN_THRESHOLD .and.&
-          NOAHMP36_struc(n)%noahmp36(t)%sh2o(1)+delta1.lt.&
-          sm_threshold) then 
+     if(soilm1(t).ge.MIN_THRESHOLD .and. soilm1(t).lt. sm_threshold) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         ! MN save the flag for each tile (col*row*ens)   (64*44)*20
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
+        write(LIS_logunit,*) 'problem updating sm1 ', soilm1(t),NOAHMP36_struc(n)%noahmp36(t)%smc(1),NOAHMP36_struc(n)%noahmp36(t)%sh2o(1)
         update_flag(gid) = update_flag(gid).and.(.false.)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
      endif
-     if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(2)+delta2.gt.MIN_THRESHOLD .and.&
-          NOAHMP36_struc(n)%noahmp36(t)%sh2o(2)+delta2.lt.sm_threshold) then 
+     if(soilm2(t).ge.MIN_THRESHOLD .and. soilm2(t).lt.sm_threshold) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
         update_flag(gid) = update_flag(gid).and.(.false.)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
+        write(LIS_logunit,*) 'problem updating sm2 ', soilm2(t),NOAHMP36_struc(n)%noahmp36(t)%smc(2),NOAHMP36_struc(n)%noahmp36(t)%sh2o(2),WLTSMC(SOILTYP)
      endif
-     if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(3)+delta3.gt.MIN_THRESHOLD .and.&
-          NOAHMP36_struc(n)%noahmp36(t)%sh2o(3)+delta3.lt.sm_threshold) then 
+     if(soilm3(t).ge.MIN_THRESHOLD .and. soilm3(t).lt.sm_threshold) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
         update_flag(gid) = update_flag(gid).and.(.false.)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
+        write(LIS_logunit,*) 'problem updating sm3 ', soilm3(t),NOAHMP36_struc(n)%noahmp36(t)%smc(3),NOAHMP36_struc(n)%noahmp36(t)%sh2o(3),WLTSMC(SOILTYP)
      endif
-     if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(4)+delta4.gt.MIN_THRESHOLD .and.&
-          NOAHMP36_struc(n)%noahmp36(t)%sh2o(4)+delta4.lt.sm_threshold) then 
+     if(soilm4(t).ge.MIN_THRESHOLD .and. soilm4(t).lt.sm_threshold) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
         update_flag(gid) = update_flag(gid).and.(.false.)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
+        write(LIS_logunit,*) 'problem updating sm4 ', soilm4(t),NOAHMP36_struc(n)%noahmp36(t)%smc(4),NOAHMP36_struc(n)%noahmp36(t)%sh2o(4),WLTSMC(SOILTYP)
      endif
 !     noahmp36_struc(n)%noahmp36(t)%wa = gws(t)
      !Wanshu
-     if(NOAHMP36_struc(n)%noahmp36(t)%wa+delta5.gt.MIN_GWS_THRESHOLD.and.&
-          NOAHMP36_struc(n)%noahmp36(t)%wa+delta5.lt.MAX_GWS_THRESHOLD) then
+     if(gws(t).gt. MIN_GWS_THRESHOLD .and. gws(t).lt.MAX_GWS_THRESHOLD) then
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
@@ -292,6 +291,10 @@ subroutine noahmp36_settws(n, LSM_State)
         ! loop over tile       
         do m=1,LIS_rc%nensem(n)
            t = (i-1)*LIS_rc%nensem(n)+m
+             SOILTYP = NOAHMP36_struc(n)%noahmp36(t)%soiltype        
+             MAX_THRESHOLD = MAXSMC (SOILTYP)
+             !MIN_THRESHOLD = WLTSMC (SOILTYP)
+             sm_threshold = MAXSMC (SOILTYP) - 0.02
            
            ! MN check update status for each tile  
            if(update_flag_tile(t)) then
@@ -310,28 +313,36 @@ subroutine noahmp36_settws(n, LSM_State)
               NOAHMP36_struc(n)%noahmp36(t)%smc(1) = soilm1(t)
               !Wanshu
 !              NOAHMP36_struc(n)%noahmp36(t)%wa = gws(t)
- 
-              if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(2)+delta2.gt.MIN_THRESHOLD .and.&
-                   NOAHMP36_struc(n)%noahmp36(t)%sh2o(2)+delta2.lt.sm_threshold) then 
-                 NOAHMP36_struc(n)%noahmp36(t)%sh2o(2) = NOAHMP36_struc(n)%noahmp36(t)%sh2o(2)+&
-                      soilm2(t)-NOAHMP36_struc(n)%noahmp36(t)%smc(2)
-                 NOAHMP36_struc(n)%noahmp36(t)%smc(2) = soilm2(t)
-              endif
+
+              NOAHMP36_struc(n)%noahmp36(t)%sh2o(2) = NOAHMP36_struc(n)%noahmp36(t)%sh2o(2)+&
+                      delta2 
+              NOAHMP36_struc(n)%noahmp36(t)%smc(2) = soilm2(t)
 ! MN: Test shutdown the update for 4th layer   
-              if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(3)+delta3.gt.MIN_THRESHOLD .and.&
-                   NOAHMP36_struc(n)%noahmp36(t)%sh2o(3)+delta3.lt.sm_threshold) then 
-                 NOAHMP36_struc(n)%noahmp36(t)%sh2o(3) = NOAHMP36_struc(n)%noahmp36(t)%sh2o(3)+&
-                      soilm3(t)-NOAHMP36_struc(n)%noahmp36(t)%smc(3)
-                 NOAHMP36_struc(n)%noahmp36(t)%smc(3) = soilm3(t)
-              endif
+              NOAHMP36_struc(n)%noahmp36(t)%sh2o(3) = NOAHMP36_struc(n)%noahmp36(t)%sh2o(3)+&
+                      delta3 
+              NOAHMP36_struc(n)%noahmp36(t)%smc(3) = soilm3(t)
 
-              if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(4)+delta4.gt.MIN_THRESHOLD .and.&
-                   NOAHMP36_struc(n)%noahmp36(t)%sh2o(4)+delta4.lt.sm_threshold) then 
-                 NOAHMP36_struc(n)%noahmp36(t)%sh2o(4) = NOAHMP36_struc(n)%noahmp36(t)%sh2o(4)+&
-                      soilm4(t)-NOAHMP36_struc(n)%noahmp36(t)%smc(4)
-                 NOAHMP36_struc(n)%noahmp36(t)%smc(4) = soilm4(t)
+              NOAHMP36_struc(n)%noahmp36(t)%sh2o(4) = NOAHMP36_struc(n)%noahmp36(t)%sh2o(4)+&
+                      delta4 
+              NOAHMP36_struc(n)%noahmp36(t)%smc(4) = soilm4(t)
 
-              endif
+              ! Bailing: add this check for liquid smc
+              if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(1)<MIN_THRESHOLD ) & 
+                 NOAHMP36_struc(n)%noahmp36(t)%sh2o(1) = MIN_THRESHOLD
+              if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(1)>MAX_THRESHOLD ) & 
+                 NOAHMP36_struc(n)%noahmp36(t)%sh2o(1) = MAX_THRESHOLD
+              if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(2)<MIN_THRESHOLD ) & 
+                 NOAHMP36_struc(n)%noahmp36(t)%sh2o(2) = MIN_THRESHOLD
+              if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(2)>MAX_THRESHOLD ) & 
+                 NOAHMP36_struc(n)%noahmp36(t)%sh2o(2) = MAX_THRESHOLD
+              if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(3)<MIN_THRESHOLD ) & 
+                 NOAHMP36_struc(n)%noahmp36(t)%sh2o(3) = MIN_THRESHOLD
+              if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(3)>MAX_THRESHOLD ) & 
+                 NOAHMP36_struc(n)%noahmp36(t)%sh2o(3) = MAX_THRESHOLD
+              if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(4)<MIN_THRESHOLD ) & 
+                 NOAHMP36_struc(n)%noahmp36(t)%sh2o(4) = MIN_THRESHOLD
+              if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(4)>MAX_THRESHOLD ) & 
+                 NOAHMP36_struc(n)%noahmp36(t)%sh2o(4) = MAX_THRESHOLD
              !Wanshu
               if(NOAHMP36_struc(n)%noahmp36(t)%wa+delta5.gt.MIN_GWS_THRESHOLD.and.&
                    NOAHMP36_struc(n)%noahmp36(t)%wa+delta5.lt.MAX_GWS_THRESHOLD) then
@@ -391,8 +402,8 @@ subroutine noahmp36_settws(n, LSM_State)
                     
                     if(m.ne.LIS_rc%nensem(n)) then 
                        delta(j) = delta(j) + &
-                            (NOAHMP36_struc(n)%noahmp36(t)%sh2o(j) - &
-                            NOAHMP36_struc(n)%noahmp36(t_unpert)%sh2o(j))
+                            (NOAHMP36_struc(n)%noahmp36(t)%smc(j) - &
+                            NOAHMP36_struc(n)%noahmp36(t_unpert)%smc(j))
                     endif
                     
                  enddo
@@ -416,9 +427,10 @@ subroutine noahmp36_settws(n, LSM_State)
                     t = (i-1)*LIS_rc%nensem(n)+m
                     SOILTYP = NOAHMP36_struc(n)%noahmp36(t)%soiltype  
                     MAX_THRESHOLD = MAXSMC (SOILTYP)
+                    !MIN_THRESHOLD = WLTSMC (SOILTYP)
                     sm_threshold = MAXSMC (SOILTYP) - 0.02
                     
-                    tmpval = NOAHMP36_struc(n)%noahmp36(t)%sh2o(j) - &
+                    tmpval = NOAHMP36_struc(n)%noahmp36(t)%smc(j) - &
                          delta(j)
                     if(tmpval.le.MIN_THRESHOLD) then 
                        NOAHMP36_struc(n)%noahmp36(t)%sh2o(j) = &
@@ -468,8 +480,8 @@ subroutine noahmp36_settws(n, LSM_State)
                     t = (i-1)*LIS_rc%nensem(n)+m
                     if(m.ne.LIS_rc%nensem(n)) then 
                        delta(j) = delta(j) + &
-                            (NOAHMP36_struc(n)%noahmp36(t)%sh2o(j) - &
-                            NOAHMP36_struc(n)%noahmp36(t_unpert)%sh2o(j))
+                            (NOAHMP36_struc(n)%noahmp36(t)%smc(j) - &
+                            NOAHMP36_struc(n)%noahmp36(t_unpert)%smc(j))
                     endif
                  enddo
               enddo
@@ -489,13 +501,14 @@ subroutine noahmp36_settws(n, LSM_State)
                  do m=1,LIS_rc%nensem(n)-1
                     t = (i-1)*LIS_rc%nensem(n)+m
                     
+                    SOILTYP = NOAHMP36_struc(n)%noahmp36(t)%soiltype  
+                    MAX_THRESHOLD = MAXSMC (SOILTYP) 
+                    !MIN_THRESHOLD = WLTSMC (SOILTYP)
                     if(ens_flag(m)) then 
-                       tmpval = NOAHMP36_struc(n)%noahmp36(t)%sh2o(j) - &
+                       tmpval = NOAHMP36_struc(n)%noahmp36(t)%smc(j) - &
                             delta(j)
-                       SOILTYP = NOAHMP36_struc(n)%noahmp36(t)%soiltype  
-                       MAX_THRESHOLD = MAXSMC (SOILTYP) 
                        
-                       if(.not.(tmpval.le.MIN_GWS_THRESHOLD .or.&
+                       if(.not.(tmpval.le.MIN_THRESHOLD .or.&
                             tmpval.gt.(MAX_THRESHOLD))) then 
                           
                           NOAHMP36_struc(n)%noahmp36(t)%smc(j) = &
@@ -506,11 +519,9 @@ subroutine noahmp36_settws(n, LSM_State)
                        endif
                     endif
                     
-                    tmpval = NOAHMP36_struc(n)%noahmp36(t)%sh2o(j)
-                    SOILTYP = NOAHMP36_struc(n)%noahmp36(t)%soiltype  
-                    MAX_THRESHOLD = MAXSMC (SOILTYP) 
+                    tmpval = NOAHMP36_struc(n)%noahmp36(t)%smc(j)
                     
-                    if(tmpval.le.MIN_GWS_THRESHOLD .or.&
+                    if(tmpval.le.MIN_THRESHOLD .or.&
                          tmpval.gt.(MAX_THRESHOLD)) then 
                        bounds_violation = .true. 
                     else
@@ -537,7 +548,7 @@ subroutine noahmp36_settws(n, LSM_State)
                  endif
                  
                  tmpval = NOAHMP36_struc(n)%noahmp36(t)%wa
-                 
+                  
                  if(tmpval.le.MIN_GWS_THRESHOLD .or.&
                       tmpval.gt.MAX_GWS_THRESHOLD) then 
                     bounds_violation = .true. 
@@ -560,6 +571,7 @@ subroutine noahmp36_settws(n, LSM_State)
                        
                        SOILTYP = NOAHMP36_struc(n)%noahmp36(t)%soiltype  
                        MAX_THRESHOLD = MAXSMC (SOILTYP)            
+                       !MIN_THRESHOLD = WLTSMC (SOILTYP)
                        
                        if(NOAHMP36_struc(n)%noahmp36(t)%sh2o(j).gt.MAX_THRESHOLD.or.&
                             NOAHMP36_struc(n)%noahmp36(t)%smc(j).gt.MAX_THRESHOLD) then                        
@@ -594,7 +606,7 @@ subroutine noahmp36_settws(n, LSM_State)
                   t_unpert = i*LIS_rc%nensem(n)
                   
                   if(.not.(NOAHMP36_struc(n)%noahmp36(t_unpert)%wa.le.MIN_GWS_THRESHOLD .or.&
-                       NOAHMP36_struc(n)%noahmp36(t_unpert)%wa.gt.(MAX_THRESHOLD))) then
+                       NOAHMP36_struc(n)%noahmp36(t_unpert)%wa.gt.(MAX_GWS_THRESHOLD))) then
                      
                      NOAHMP36_struc(n)%noahmp36(t)%wa = NOAHMP36_struc(n)%noahmp36(t_unpert)%wa
                      
