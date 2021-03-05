@@ -985,24 +985,22 @@ if($use_mkllapack == 1){
 if($use_esmf_trace == 1){
    $fflags77 = $fflags77." -DESMF_TRACE";
    $fflags = $fflags." -DESMF_TRACE";
-   else {
-      if (not(open(ESMFMKFILE, $sys_esmfmkfile))) {
-         print "--------------ERROR---------------------\n";
-         print "Error opening ESMFMKFILE for read.";
-         print "--------------ERROR---------------------\n";
-         exit 0;
-      }
-      local $/ = undef;
-      $lines = <ESMFMKFILE>;
-      close(ESMFMKFILE);
-      if ($lines =~ /ESMF_TRACE_STATICLINKOPTS=(.+)\n/) {
-#         $ldflags= $1." ".$ldflags;
-#         $lib_flags= $1." ".$lib_flags;
-      }
-      if ($lines =~ /ESMF_TRACE_STATICLINKLIBS=(.+)\n/) {
-#         $ldflags= $ldflags." ".$1;
-#         $lib_paths= $lib_paths." ".$1;
-      }
+   if (not(open(ESMFMKFILE, $sys_esmfmkfile))) {
+      print "--------------ERROR---------------------\n";
+      print "Error opening ESMFMKFILE for read.";
+      print "--------------ERROR---------------------\n";
+      exit 0;
+   }
+   local $/ = undef;
+   $lines = <ESMFMKFILE>;
+   close(ESMFMKFILE);
+   if ($lines =~ /ESMF_TRACE_STATICLINKOPTS=(.+)\n/) {
+#     $ldflags= $1." ".$ldflags;
+#     $lib_flags= $1." ".$lib_flags;
+   }
+   if ($lines =~ /ESMF_TRACE_STATICLINKLIBS=(.+)\n/) {
+#     $ldflags= $ldflags." ".$1;
+#     $lib_paths= $lib_paths." ".$1;
    }
 }
 
