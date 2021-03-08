@@ -42,6 +42,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_RTMforwardId  = "RTM forward"
    character*50, public,  parameter :: LIS_agrmetrunId = "AGRMET ops"
    character*50, public,  parameter :: LIS_wrfcplId    = "WRF coupling"
+   character*50, public,  parameter :: LIS_nuopccplId  = "NUOPC coupling"
    character*50, public,  parameter :: LIS_gcecplId    = "GCE coupling"
    character*50, public,  parameter :: LIS_gfscplId    = "GFS coupling"
    character*50, public,  parameter :: LIS_paramEstimRunId = "parameter estimation"
@@ -293,6 +294,7 @@ module LIS_pluginIndices
         "ASO SWE"
    character*50, public,  parameter :: LIS_synwlId             = &
         "Synthetic water level"
+
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms
 !-------------------------------------------------------------------------

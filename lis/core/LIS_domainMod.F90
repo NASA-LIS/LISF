@@ -75,6 +75,8 @@ module LIS_domainMod
   public :: LIS_domain_setup        !setup domain related structures
   public :: LIS_quilt_domain         !generate quilted domains
   public :: LIS_domain_finalize      !cleanup allocated structures
+  public :: decompose_nx_ny          !decomposes domain based on proc layout
+  public :: decompose_npes           !decomposes domain based on proc elements
 !EOP
 
 contains
@@ -2852,6 +2854,30 @@ subroutine decompose_nx_ny(nc, nr, ips, ipe, jps, jpe)
    integer :: Px, Py, P
    integer :: i, j
 
+#ifdef MPDECOMP2
+    mytask_x = mod( LIS_localPet , LIS_rc%npesx ) + 1
+    mytask_y = ( LIS_localPet / LIS_rc%npesx ) + 1
+
+    j = 1
+    ips = -1
+    do i=1, nc
+      call LIS_mpDecomp_2(i,j,1,nc,1,nr,LIS_rc%npesx, LIS_rc%npesy,Px,Py,P)
+      if(Px.eq. mytask_x) then
+        ipe = i
+        if(ips.eq.-1) ips = i
+      endif
+    enddo
+
+    i = 1
+    jps = -1
+    do j=1, nr
+      call LIS_mpDecomp_2(i,j,1,nc,1,nr,LIS_rc%npesx,LIS_rc%npesy,Px,Py,P)
+      if(Py.eq.mytask_y) then
+        jpe = j
+        if(jps.eq.-1) jps = j
+      endif
+    enddo
+#else
    mytask_x = mod(LIS_localPet, LIS_rc%npesx)
    mytask_y = LIS_localPet / LIS_rc%npesx
 
@@ -2879,6 +2905,7 @@ subroutine decompose_nx_ny(nc, nr, ips, ipe, jps, jpe)
          endif
       endif
    enddo
+#endif
 end subroutine decompose_nx_ny
 
 

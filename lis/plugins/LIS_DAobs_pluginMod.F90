@@ -808,6 +808,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_MCD15A2H_LAI)
+   call registerdaobsclass(trim(LIS_MCD15A2HlaiobsId),"LSM")
    call registerdaobssetup(trim(LIS_MCD15A2HlaiobsId)//char(0),&
         MCD15A2Hlai_setup)
    call registerreaddaobs(trim(LIS_MCD15A2HlaiobsId)//char(0),&

@@ -1,3 +1,5 @@
 *.o
 *.mod
 *.d
+lis/runmodes/nuopc_cpl_mode/VERSION
+lis/runmodes/nuopc_cpl_mode/liblis_nuopc.a

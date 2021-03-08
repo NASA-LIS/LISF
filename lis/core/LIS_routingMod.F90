@@ -246,6 +246,15 @@ module LIS_routingMod
           enddo
 
        end do
+    else
+
+       allocate(LIS_rc%Routing_DAinst_valid(LIS_rc%ndas))
+
+       do i=1,LIS_rc%ndas
+          call LIS_isDAinstanceValid(LIS_rc%daset(i),&
+               "Routing",LIS_rc%Routing_DAinst_valid(i))
+       enddo
+
     end if
 
   end subroutine LIS_routing_init
