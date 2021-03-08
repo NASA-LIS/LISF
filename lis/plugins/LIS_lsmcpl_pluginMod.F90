@@ -21,6 +21,7 @@ module LIS_lsmcpl_pluginMod
 ! !REVISION HISTORY:
 !  09 Oct 07    Sujay Kumar  Initial Specification
 !  14 Dec 15    Eric Kemp    Added Noah 2.7.1, Noah 3.2, Noah 3.6 WRF coupling.
+!  22 Feb 19    Chandana Gangodagamage  Added NoahMP 3.6 for WRFHydro coupling 
 !EOP
   implicit none
   PRIVATE
@@ -98,6 +99,14 @@ subroutine LIS_lsmcpl_plugin
 #if ( defined SM_NOAH_3_6 )
    external noah36_wrf_f2t
    external noah36_setwrfexport
+#endif
+
+#if ( defined SM_NOAHMP_3_6 )
+   external noahMP36_setwrfexport
+#endif
+
+#if ( defined SM_NOAHMP_4_0_1 )
+   external noahMP401_setwrfexport
 #endif
 
 #if 0
@@ -201,6 +210,36 @@ subroutine LIS_lsmcpl_plugin
     call registerlsmcplsetexport(trim(LIS_noah33Id)//"+"//&
                                  trim(LIS_wrfcplId)//char(0), &
                                  noah33_setwrfexport)
+    call registerlsmcplsetexport(trim(LIS_noah33Id)//"+"//&
+                                 trim(LIS_nuopccplId)//char(0), &
+                                 noah33_setwrfexport)
+    call registerlsmcplsetexport(trim(LIS_noah33Id)//"+"//&
+                                 trim(LIS_retroId)//char(0), &
+                                 noah33_setwrfexport)
+#endif
+
+#if ( defined SM_NOAHMP_3_6 )
+   call registerlsmcplsetexport(trim(LIS_noahmp36Id)//"+"//&
+                                 trim(LIS_wrfcplId)//char(0), &
+                                 noahMP36_setwrfexport)
+    call registerlsmcplsetexport(trim(LIS_noahmp36Id)//"+"//&
+                                 trim(LIS_nuopccplId)//char(0), &
+                                 noahMP36_setwrfexport)
+    call registerlsmcplsetexport(trim(LIS_noahmp36Id)//"+"//&
+                                 trim(LIS_retroId)//char(0), &
+                                 noahMP36_setwrfexport)
+#endif
+
+#if ( defined SM_NOAHMP_4_0_1 )
+   call registerlsmcplsetexport(trim(LIS_noahmp401Id)//"+"//&
+                                 trim(LIS_wrfcplId)//char(0), &
+                                 noahMP401_setwrfexport)
+    call registerlsmcplsetexport(trim(LIS_noahmp401Id)//"+"//&
+                                 trim(LIS_nuopccplId)//char(0), &
+                                 noahMP401_setwrfexport)
+    call registerlsmcplsetexport(trim(LIS_noahmp401Id)//"+"//&
+                                 trim(LIS_retroId)//char(0), &
+                                 noahMP401_setwrfexport)
 #endif
 
 #if ( defined SM_NOAH_3_6 )
