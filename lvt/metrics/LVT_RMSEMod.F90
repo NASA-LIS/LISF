@@ -847,31 +847,33 @@ contains
   end subroutine computeSingleRMSE
 
 !BOP
-! 
+!
 ! !ROUTINE: LVT_writeMetric_RMSE
 ! \label{LVT_writeMetric_RMSE}
 !
-! !INTERFACE: 
+! !INTERFACE:
   subroutine LVT_writeMetric_RMSE(pass,final,vlevels,stats,obs)
-! 
+!
 ! !USES:
     use LVT_statsMod, only : LVT_writeSummaryStats
     use LVT_pluginIndices
 !
-! !INPUT PARAMETERS: 
-! 
+! !INPUT PARAMETERS:
+!
 ! !OUTPUT PARAMETERS:
 !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !
-!   This routine writes the computed RMSE values to 
-!   an external file.  
+!   This routine writes the computed RMSE values to
+!   an external file.
 !
-! !REVISION HISTORY: 
-! 
+! !REVISION HISTORY:
+!
+!   8 Mar 2021: Eric Kemp: Fixed bug in copying STDEV counts to output array.
+!
 !EOP
 !BOP
-! !ARGUMENTS: 
+! !ARGUMENTS:
     integer                 :: pass
     integer                 :: final
     integer                 :: vlevels
@@ -894,7 +896,7 @@ contains
 
     if(pass.eq.LVT_metrics%rmse%npass) then
        if(final.ne.1) then
-          if(stats%selectOpt.eq.1) then 
+          if(stats%selectOpt.eq.1) then
 
              allocate(value_ts(LVT_rc%ngrid,LVT_rc%nensem))
              allocate(count_value_ts(LVT_rc%ngrid,LVT_rc%nensem))
@@ -904,10 +906,10 @@ contains
                    do m=1,LVT_rc%nensem
                       value_ts(:,m) = &
                            stats%rmse(m)%tavg_value_ts(:,k,l)
-                      count_value_ts(:,m) = & 
+                      count_value_ts(:,m) = &
                            stats%rmse(m)%tavg_count_value_ts(:,k,l)
                    enddo
-                   if(LVT_metrics%rmse%timeOpt.eq.1) then 
+                   if(LVT_metrics%rmse%timeOpt.eq.1) then
 
                       call LVT_writevar_gridded(LVT_metrics%rmse%ftn_ts, &
                            value_ts(:,:),&
@@ -937,15 +939,15 @@ contains
 
                 allocate(value_ci(LVT_rc%nensem))
 
-                if(LVT_metrics%rmse%computeSC.eq.1) then 
+                if(LVT_metrics%rmse%computeSC.eq.1) then
                    allocate(value_asc(LVT_rc%ngrid,&
                         LVT_rc%nensem,&
                         LVT_rc%nasc))
                 endif
-                if(LVT_metrics%rmse%computeADC.eq.1) then 
+                if(LVT_metrics%rmse%computeADC.eq.1) then
                    allocate(value_adc(LVT_rc%ngrid,&
                         LVT_rc%nensem,&
-                        LVT_rc%nadc))        
+                        LVT_rc%nadc))
 
                 endif
 
@@ -954,30 +956,33 @@ contains
                       do m=1,LVT_rc%nensem
                          value_total(:,m) = &
                               stats%rmse(m)%value_total(:,k,l)
-                         count_value_total(:,m) = & 
+                         count_value_total(:,m) = &
                               stats%rmse(m)%count_value_total(:,k,l)
                          value_ci(m) = stats%rmse(m)%value_ci(k,l)
 
                          value_stdev_total(:,m) = &
                               stats%rmse(m)%value_stdev_total(:,k,l)
-                         count_value_total(:,m) = & 
+                         ! EMK...Fix name of array to copy data to.
+                         !count_value_total(:,m) = &
+                         !     stats%rmse(m)%count_value_stdev_total(:,k,l)
+                         count_value_stdev_total(:,m) = &
                               stats%rmse(m)%count_value_stdev_total(:,k,l)
 
-                         if(LVT_metrics%rmse%computeSC.eq.1) then 
+                         if(LVT_metrics%rmse%computeSC.eq.1) then
                             do tind = 1,LVT_rc%nasc
-                               value_asc(:,m,tind) = & 
+                               value_asc(:,m,tind) = &
                                     stats%rmse(m)%value_asc(:,k,tind)
                             enddo
                          endif
 
-                         if(LVT_metrics%rmse%computeADC.eq.1) then 
+                         if(LVT_metrics%rmse%computeADC.eq.1) then
                             do tind = 1,LVT_rc%nadc
-                               value_adc(:,m,tind) = & 
+                               value_adc(:,m,tind) = &
                                     stats%rmse(m)%value_adc(:,k,tind)
                             enddo
                          endif
                       enddo
-                      if(LVT_metrics%rmse%selectOpt.eq.1) then 
+                      if(LVT_metrics%rmse%selectOpt.eq.1) then
                          call LVT_writevar_gridded(LVT_metrics%rmse%ftn_total, &
                               value_total(:,:),&
                               stats%vid_total(LVT_RMSEid,1),k)
@@ -992,7 +997,7 @@ contains
                               real(count_value_stdev_total(:,:)),&
                               stats%vid_count_stdev_total(LVT_RMSEid,1),k)
 
-                         if(LVT_metrics%rmse%computeSC.eq.1) then 
+                         if(LVT_metrics%rmse%computeSC.eq.1) then
                             do tind = 1,LVT_rc%nasc
                                call LVT_writevar_gridded(&
                                     LVT_metrics%rmse%ftn_total,&
@@ -1000,7 +1005,7 @@ contains
                                     stats%vid_sc_total(tind,LVT_RMSEid,1),k)
                             enddo
                          endif
-                         if(LVT_metrics%rmse%computeADC.eq.1) then 
+                         if(LVT_metrics%rmse%computeADC.eq.1) then
                             do tind = 1,LVT_rc%nadc
                                call LVT_writevar_gridded(&
                                     LVT_metrics%rmse%ftn_total,&
@@ -1027,10 +1032,10 @@ contains
                 deallocate(count_value_stdev_total)
                 deallocate(value_ci)
 
-                if(LVT_metrics%rmse%computeSC.eq.1) then 
+                if(LVT_metrics%rmse%computeSC.eq.1) then
                    deallocate(value_asc)
                 endif
-                if(LVT_metrics%rmse%computeADC.eq.1) then 
+                if(LVT_metrics%rmse%computeADC.eq.1) then
                    deallocate(value_adc)
                 endif
 
