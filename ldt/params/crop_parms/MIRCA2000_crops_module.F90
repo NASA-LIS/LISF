@@ -381,8 +381,8 @@ end subroutine read_MIRCA2000_croptype
 
 
 !- Perform check on grid and projection choices selected:
-   if( LDT_rc%lis_map_proj == "latlon"  ) then 
-     if( param_gridDesc(10) .gt. (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor)) then
+   if( LDT_rc%lis_map_proj(n) == "latlon"  ) then 
+     if( param_gridDesc(10) .gt. (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n))) then
         write(LDT_logunit,*) "[ERR] 'Native' MIRCA2000 crop files have been selected, "
         write(LDT_logunit,*) "    with a resolution (0.0833deg), but the LIS run domain resolution"
         write(LDT_logunit,*) "    selected is finer than that. Downscaling crop type information is "
@@ -602,21 +602,25 @@ end subroutine read_MIRCA2000_croptype
          if(nc == 12) then
          ! year around
 
-          day1 = 366
+          day1 = 1
           dayL = 366
-          day1_2 = 0
-          dayL_2 = 0
+          day1_2 = 998
+          dayL_2 = 998
 
+         ! print '(a20, 2i4)', 'INPUT nc=12 : at ',c,r
+         ! print *, '..................................'
          else
 
           fmonth  = 0
           fmonth2 = 0
-          day1 = 0
-          dayL = 0
-          day1_2 = 0
-          dayL_2 = 0
+          day1 = 998
+          dayL = 998
+          day1_2 = 998
+          dayL_2 = 998
 
           forall (m=1:12) fmonth(m) = ceiling (var_out (c,r,m))
+         ! print '(a15, 12i2, a4, 2i4)', 'INPUT fmonth : ',  fmonth, ' at ',c,r
+         ! print *, '..................................'
 
           fmonth2(1) = 1
           do m = 2,12
@@ -635,51 +639,57 @@ end subroutine read_MIRCA2000_croptype
             found = .false.
 
             if(fmonth(1) == 1) then
-              do m = 1, nc-1
-                 if((crop_mons(m+1) - crop_mons(m)) > 1) then
-                   if(found(4)) then
-                      dayL   = DOY_EndMonth(crop_mons(m))
-                   else
-                      dayL_2 = DOY_EndMonth(crop_mons(m))
-                      found(4) = .true.
-                   endif
+                if(fmonth(12) == 0) then
+                   ! Season begins on Jan 1
+                   day1   = DOY_BegMonth(crop_mons(1))
+                   found(1) = .true.
+                   do m = 1, nc-1
+                      if((crop_mons(m+1) - crop_mons(m)) > 1) then
+                         dayL   = DOY_EndMonth(crop_mons(m))
+                         day1_2   = DOY_BegMonth(crop_mons(m+1))
+                         dayL_2   = DOY_EndMonth(crop_mons(nc))
+                         found(2) = .true.
+                         found(3) = .true.
+                         found(4) = .true.
+                         exit
+                      endif
+                   enddo
 
-                   if(found(1)) then
-                      day1_2 = DOY_BegMonth(crop_mons(m+1))
-                      found(3) = .true.
-                   else
-                      day1 = DOY_BegMonth(crop_mons(m+1))
-                      found(1) = .true.
-                   endif
-                 endif
-              end do
+                else
+
+                   ! season one begins in the fall
+                   do m = 1, nc-1
+                      if((crop_mons(m+1) - crop_mons(m)) > 1) then
+                         if(.not.found(2)) then
+                            dayL   = DOY_EndMonth(crop_mons(m))
+                            day1_2 = DOY_BegMonth(crop_mons(m+1))
+                            found(2) = .true.
+                            found(3) = .true.
+                         elseif (.not.found(4)) then
+                            found(4) = .true.
+                            found(1) = .true.
+                            dayL_2 = DOY_EndMonth(crop_mons(m))
+                            day1   = DOY_BegMonth(crop_mons(m+1))
+                         endif
+                      endif
+                   end do
+                endif
             else
 
-              dayL_2 = DOY_EndMonth(12)
-              do m = 1, nc-1
-                 if((crop_mons(m+1) - crop_mons(m)) == 1) then
-                   if(found(1)) then
-                     if(.not.found(3)) then
-                       day1_2 = DOY_BegMonth(crop_mons(m))
-                       found (3) = .true.
-                     endif
-                   else
-                     day1 = DOY_BegMonth(crop_mons(m))
-                     found(1) = .true.
+                ! season 1 brings in the spring
+                day1   = DOY_BegMonth(crop_mons(1))
+                found(1) = .true.
+                do m = 1, nc-1
+                   if((crop_mons(m+1) - crop_mons(m)) > 1) then
+                      dayL   = DOY_EndMonth(crop_mons(m))
+                      day1_2   = DOY_BegMonth(crop_mons(m+1))
+                      dayL_2   = DOY_EndMonth(crop_mons(nc))
+                      found(2) = .true.
+                      found(3) = .true.
+                      found(4) = .true.
+                      exit
                    endif
-                 endif
-
-                 if((crop_mons(m+1) - crop_mons(m)) > 1) then
-                   if(.not.found(2)) then
-                     dayL = DOY_EndMonth(crop_mons(m))
-                     found(2) = .true.
-                   endif
-                 endif
-
-                 if((crop_mons(m+1) - crop_mons(m)) >= 1) then
-                   if(found(2)) dayL_2 = DOY_EndMonth(crop_mons(m+1))
-                 endif
-              end do
+                end do
 
             endif
             deallocate (crop_mons)
@@ -688,13 +698,24 @@ end subroutine read_MIRCA2000_croptype
           ! Single crop season
           ! ..................
 
-            if(fmonth(1) == 1) then
-              dayL = DOY_EndMonth (minloc(fmonth, 1)-1)
-              day1 = DOY_BegMonth (maxloc(fmonth2, 1))
-            else
-              day1 = DOY_BegMonth (maxloc(fmonth, 1))
-              dayL = DOY_EndMonth (maxloc(fmonth2, 1)-1)
-            endif
+             if((fmonth(1) == 0).and.(fmonth(12) == 0)) then
+                day1 = DOY_BegMonth (maxloc(fmonth, 1))
+                dayL = DOY_EndMonth (maxloc(fmonth2, 1)-1)
+             else
+                if((fmonth(1) == 1).and.(fmonth(12) == 1)) then
+                   day1 = DOY_BegMonth (maxloc(fmonth2, 1,mask=(fmonth2 > 2)))
+                   dayL = DOY_EndMonth (maxloc(fmonth2, 1,mask=(fmonth2 == 2))-1)
+                endif
+                if((fmonth(1) == 0).and.(fmonth(12) == 1)) then
+                   day1 = DOY_BegMonth (maxloc(fmonth2, 1))
+                   dayL = DOY_EndMonth (12)
+                endif
+                if((fmonth(1) == 1).and.(fmonth(12) == 0)) then
+                   day1 = DOY_BegMonth (1)
+                   dayL = DOY_EndMonth (maxloc(fmonth2, 1)-1)
+                endif
+             endif
+
           endif   ! maxval(fmonth2) > 3
          endif   ! nc ==12
 
@@ -702,6 +723,7 @@ end subroutine read_MIRCA2000_croptype
        plantday(c,r,2) = float(day1_2)
        harvestday(c,r,1) = float(dayL)
        harvestday(c,r,2) = float(dayL_2)
+       !print  '(a18, 4i4)', 'Plant & Harvest : ', day1, dayL, day1_2, dayL_2
 
        endif  ! nc > 0
      endif  ! var_in > 0
