@@ -1278,60 +1278,162 @@ contains
   end subroutine LVT_resetMetric_PSS
 
 !BOP
-! 
+!
 ! !ROUTINE: LVT_writerestart_PSS
-! 
+!
 ! !INTERFACE:
   subroutine LVT_writerestart_PSS(ftn,pass)
-! !USES: 
+! !USES:
 
-! 
-! !ARGUMENTS: 
+!
+! !ARGUMENTS:
     integer                 :: ftn
     integer                 :: pass
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !  This routine writes the restart file for PSS metric computations
-! 
-!EOP
-    
 !
-! !DESCRIPTION: 
-! 
 !EOP
-    if(LVT_metrics%pss%selectOpt.eq.1) then 
-       
-       print*, 'The writerestart method is not implemented for PSS'
 
-    end if
-    
+    integer :: k, l, m
+    type(LVT_metaDataEntry), pointer :: model
+    type(LVT_metaDataEntry), pointer :: obs
+    type(LVT_statsEntry),    pointer :: stats
+
+    call LVT_getDataStream1Ptr(model)
+    call LVT_getDataStream2Ptr(obs)
+    call LVT_getstatsEntryPtr(stats)
+
+    do while (associated(model))
+       if (LVT_metrics%pss%selectOpt .eq. 1) then
+          if (stats%selectOpt .eq. 1 .and. obs%selectNlevs .ge. 1) then
+             do m = 1, LVT_rc%nensem
+
+                do k = 1, model%selectNlevs
+                   do l = 1, LVT_rc%strat_nlevels
+                      call LVT_writevar_restart(ftn, &
+                           stats%pss(m)%value_total_a(:,k,l))
+                      call LVT_writevar_restart(ftn, &
+                           stats%pss(m)%value_total_b(:,k,l))
+                      call LVT_writevar_restart(ftn, &
+                           stats%pss(m)%value_total_c(:,k,l))
+                      call LVT_writevar_restart(ftn, &
+                           stats%pss(m)%value_total_d(:,k,l))
+                      call LVT_writevar_restart(ftn, &
+                           stats%pss(m)%count_value_total(:,k,l))
+                   end do ! l
+                end do ! k
+
+                if (LVT_metrics%pss%computeSC .eq. 1) then
+                   do k = 1, model%selectNlevs
+                      do l = 1, LVT_rc%nasc
+                         call LVT_writevar_restart(ftn, &
+                              stats%pss(m)%value_asc(:,k,l))
+                         call LVT_writevar_restart(ftn, &
+                              stats%pss(m)%count_value_asc(:,k,l))
+                      end do ! l
+                   end do ! k
+                end if
+
+                if (LVT_metrics%pss%computeADC .eq. 1) then
+                   do k = 1, model%selectNlevs
+                      do l = 1, LVT_rc%nadc
+                         call LVT_writevar_restart(ftn, &
+                              stats%pss(m)%value_adc(:,k,l))
+                         call LVT_writevar_restart(ftn, &
+                              stats%pss(m)%count_value_adc(:,k,l))
+                      end do ! l
+                   end do ! k
+                end if
+
+             end do ! m
+          end if
+       end if
+
+       model => model%next
+       obs => obs%next
+       stats => stats%next
+
+    end do
+
   end subroutine LVT_writerestart_PSS
 
 !BOP
-! 
+!
 ! !ROUTINE: LVT_readrestart_PSS
-! 
+!
 ! !INTERFACE:
   subroutine LVT_readrestart_PSS(ftn)
-! !USES: 
+! !USES:
 
-! 
-! !ARGUMENTS: 
+!
+! !ARGUMENTS:
     integer                 :: ftn
 
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !  This routine reads the restart file for PSS metric computations
-! 
-!EOP
-    
 !
-! !DESCRIPTION: 
-! 
 !EOP
-    if(LVT_metrics%pss%selectOpt.eq.1) then 
-       
-       print*, 'The readrestart method is not implemented for PSS'
 
-    end if
-    
+    type(LVT_metaDataEntry), pointer :: model
+    type(LVT_metaDataEntry), pointer :: obs
+    type(LVT_statsEntry),    pointer :: stats
+    integer              :: k, l, m
+
+    call LVT_getDataStream1Ptr(model)
+    call LVT_getDataStream2Ptr(obs)
+    call LVT_getstatsEntryPtr(stats)
+
+    do while (associated(model))
+       if (LVT_metrics%pss%selectOpt .eq. 1) then
+          if (stats%selectOpt .eq. 1 .and. obs%selectNlevs .ge. 1) then
+             do m = 1, LVT_rc%nensem
+
+                do k = 1, model%selectNlevs
+                   do l = 1, LVT_rc%strat_nlevels
+                      call LVT_readvar_restart(ftn, &
+                           stats%pss(m)%value_total_a(:,k,l))
+                      call LVT_readvar_restart(ftn, &
+                           stats%pss(m)%value_total_b(:,k,l))
+                      call LVT_readvar_restart(ftn, &
+                           stats%pss(m)%value_total_c(:,k,l))
+                      call LVT_readvar_restart(ftn, &
+                           stats%pss(m)%value_total_d(:,k,l))
+                      call LVT_readvar_restart(ftn, &
+                           stats%pss(m)%count_value_total(:,k,l))
+                   end do ! l
+                end do ! k
+
+                if (LVT_metrics%pss%computeSC .eq. 1) then
+                   do k = 1, model%selectNlevs
+                      do l = 1, LVT_rc%nasc
+                         call LVT_readvar_restart(ftn, &
+                              stats%pss(m)%value_asc(:,k,l))
+                         call LVT_readvar_restart(ftn, &
+                              stats%pss(m)%count_value_asc(:,k,l))
+                      end do ! l
+                   end do ! k
+                end if
+
+                if (LVT_metrics%pss%computeADC .eq. 1) then
+                   do k = 1, model%selectNlevs
+                      do l = 1, LVT_rc%nadc
+                         call LVT_readvar_restart(ftn, &
+                              stats%pss(m)%value_adc(:,k,l))
+                         call LVT_readvar_restart(ftn, &
+                              stats%pss(m)%count_value_adc(:,k,l))
+                      end do ! l
+                   end do ! k
+                end if
+
+             end do ! m
+          end if
+       end if
+
+       model => model%next
+       obs   => obs%next
+       stats => stats%next
+
+    end do
+
   end subroutine LVT_readrestart_PSS
 end module LVT_PSSMod
