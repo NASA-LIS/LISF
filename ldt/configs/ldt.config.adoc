@@ -18,13 +18,16 @@ Not all options described here are available in the public version of LDT.
 |"`LSM parameter processing`" |LSM Parameter Processing Option
 |"`DA preprocessing`" |Data Assimilation Preprocessing Option
 |"`Ensemble restart processing`" |Deriving an ensemble restart file Option
-|"`Restart preprocessing`" |LSM Restart File Preprocessing Option
-|"`Restart transformation processing`" | LSM restart file transformation option
-|"`Metforce processing`" |Meteorological forcing processing Option (similar to LIS)
-|"`Metforce temporal downscaling`" |Meteorological forcing temporal downscaling
+|"`Climatological restart processing`" |LSM Restart File Preprocessing Option
+|"`Restart transformation processing`" | LSM restart file transformation Option
+|"`NUWRF preprocessing for real`" |NUWRF Preprocessing Option
+|"`ANN processing`" |Artificial Neural Networks  Processing Option
+|"`Metforce processing`" |Meteorological Forcing Processing Option (similar to LIS)
+|"`Metforce temporal downscaling`" |Meteorological Forcing Temporal Downscaling
 |"`Statistical downscaling of met forcing`" |Statistical options to downscale or generate forcing climatologies
 |"`OPTUE parameter processing`" |Process the OPT/UE output to generate optimized parameters
 |"`USAFSI analysis`" |USAF Snow and Ice analysis
+|"`LISHydro preprocessing for WRFHydro`" |Preprocessing Option for WRFHydro
 |===
 
 .Example _ldt.config_ entry
