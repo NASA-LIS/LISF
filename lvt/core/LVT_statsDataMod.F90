@@ -1275,190 +1275,194 @@ module LVT_statsDataMod
      integer          :: prev_mo_tavg
      integer          :: prev_yr_tavg
 
-     type(LVT_statsEntry) :: swnet        ! Net shortwave radiation (surface) (W/m2)
-     type(LVT_statsEntry) :: lwnet        ! Net longwave radiation (surface) (W/m2)
-     type(LVT_statsEntry) :: rnet         ! Net absorbed radiation (surface) (W/m2)
-     type(LVT_statsEntry) :: qle          ! Latent Heat Flux (W/m2)
-     type(LVT_statsEntry) :: qh           ! Sensible Heat Flux (W/m2)
-     type(LVT_statsEntry) :: qg           ! Ground Heat Flux (W/m2)
-     type(LVT_statsEntry) :: qf           ! Energy of fusion (W/m2)
-     type(LVT_statsEntry) :: qv           ! Energy of sublimation (W/m2)
-     type(LVT_statsEntry) :: qtau         ! Momentum flux (N/m2)
-     type(LVT_statsEntry) :: qa           ! Advective flux (W/m2)
-     type(LVT_statsEntry) :: delsurfheat  ! Change in surface heat storage (J/m2)
-     type(LVT_statsEntry) :: delcoldcont  ! Change in snow water content (J/m2)
-     type(LVT_statsEntry) :: br           ! Bowen Ratio
-     type(LVT_statsEntry) :: ef           ! Evaporative Fraction
+     ! EMK...Commented out to allow gfortran to compile with optimization.
+     ! The fields in this structure are never actually used; instead,
+     ! individual LVT_statsEntry variables are created and organized as
+     ! a linked list.
+     ! type(LVT_statsEntry) :: swnet        ! Net shortwave radiation (surface) (W/m2)
+     ! type(LVT_statsEntry) :: lwnet        ! Net longwave radiation (surface) (W/m2)
+     ! type(LVT_statsEntry) :: rnet         ! Net absorbed radiation (surface) (W/m2)
+     ! type(LVT_statsEntry) :: qle          ! Latent Heat Flux (W/m2)
+     ! type(LVT_statsEntry) :: qh           ! Sensible Heat Flux (W/m2)
+     ! type(LVT_statsEntry) :: qg           ! Ground Heat Flux (W/m2)
+     ! type(LVT_statsEntry) :: qf           ! Energy of fusion (W/m2)
+     ! type(LVT_statsEntry) :: qv           ! Energy of sublimation (W/m2)
+     ! type(LVT_statsEntry) :: qtau         ! Momentum flux (N/m2)
+     ! type(LVT_statsEntry) :: qa           ! Advective flux (W/m2)
+     ! type(LVT_statsEntry) :: delsurfheat  ! Change in surface heat storage (J/m2)
+     ! type(LVT_statsEntry) :: delcoldcont  ! Change in snow water content (J/m2)
+     ! type(LVT_statsEntry) :: br           ! Bowen Ratio
+     ! type(LVT_statsEntry) :: ef           ! Evaporative Fraction
 
-     type(LVT_statsEntry) :: snowf        ! Snowfall rate (kg/m2s)
-     type(LVT_statsEntry) :: rainf        ! Rainfall rate (kg/m2s)
-     type(LVT_statsEntry) :: evap         ! Evapotranspiration (kg/m2s)
-     type(LVT_statsEntry) :: qs           ! Surface Runoff(kg/m2s)
-     type(LVT_statsEntry) :: qrec         ! Recharge from river to the floodplain (kg/m2s)
-     type(LVT_statsEntry) :: qsb          ! Subsurface Runoff (kg/m2s)
-     type(LVT_statsEntry) :: qsm          ! Snowmelt (kg/m2s)
-     type(LVT_statsEntry) :: qfz          ! Refreezing of water in the snowpack (kg/m2s)
-     type(LVT_statsEntry) :: qst          ! Snow throughfall (kg/m2s)
-     type(LVT_statsEntry) :: delsoilmoist ! DelSoilMoist
-     type(LVT_statsEntry) :: delswe       ! DelSWE
-     type(LVT_statsEntry) :: delsurfstor  ! Change in surface water storage (kg/m2)
-     type(LVT_statsEntry) :: delintercept ! Change in interception storage (kg/m2)
+     ! type(LVT_statsEntry) :: snowf        ! Snowfall rate (kg/m2s)
+     ! type(LVT_statsEntry) :: rainf        ! Rainfall rate (kg/m2s)
+     ! type(LVT_statsEntry) :: evap         ! Evapotranspiration (kg/m2s)
+     ! type(LVT_statsEntry) :: qs           ! Surface Runoff(kg/m2s)
+     ! type(LVT_statsEntry) :: qrec         ! Recharge from river to the floodplain (kg/m2s)
+     ! type(LVT_statsEntry) :: qsb          ! Subsurface Runoff (kg/m2s)
+     ! type(LVT_statsEntry) :: qsm          ! Snowmelt (kg/m2s)
+     ! type(LVT_statsEntry) :: qfz          ! Refreezing of water in the snowpack (kg/m2s)
+     ! type(LVT_statsEntry) :: qst          ! Snow throughfall (kg/m2s)
+     ! type(LVT_statsEntry) :: delsoilmoist ! DelSoilMoist
+     ! type(LVT_statsEntry) :: delswe       ! DelSWE
+     ! type(LVT_statsEntry) :: delsurfstor  ! Change in surface water storage (kg/m2)
+     ! type(LVT_statsEntry) :: delintercept ! Change in interception storage (kg/m2)
      
-     type(LVT_statsEntry) :: snowt        ! Snow surface temperature (K)
-     type(LVT_statsEntry) :: vegt         ! Vegetation canopy temperature (K)
-     type(LVT_statsEntry) :: baresoilt    ! Temperature of bare soil (K)
-     type(LVT_statsEntry) :: avgsurft     ! Average Surface Temperature (K)
-     type(LVT_statsEntry) :: groundavgt     ! Average ground Temperature (K)
-     type(LVT_statsEntry) :: groundvegt     ! Average ground Temperature (K)
-     type(LVT_statsEntry) :: radt         ! Surface Radiative Tempearture (K)
-     type(LVT_statsEntry) :: albedo       ! Surface Albedo (-)
-     type(LVT_statsEntry) :: swe          ! Snow water equivalent (kg/m2)
-     type(LVT_statsEntry) :: snowice
-     type(LVT_statsEntry) :: sweveg       ! SWE intercepted by vegetation (kg/m2)
-     type(LVT_statsEntry) :: snowage
-     type(LVT_statsEntry) :: snowfrac     ! Grid cell snow covered fraction
-     type(LVT_statsEntry) :: snowdepth    ! Snow Depth(m)
-     type(LVT_statsEntry) :: snowcover    ! Snow cover
-     type(LVT_statsEntry) :: surfstor     ! Surface water storage (kg/m2)
+     ! type(LVT_statsEntry) :: snowt        ! Snow surface temperature (K)
+     ! type(LVT_statsEntry) :: vegt         ! Vegetation canopy temperature (K)
+     ! type(LVT_statsEntry) :: baresoilt    ! Temperature of bare soil (K)
+     ! type(LVT_statsEntry) :: avgsurft     ! Average Surface Temperature (K)
+     ! type(LVT_statsEntry) :: groundavgt     ! Average ground Temperature (K)
+     ! type(LVT_statsEntry) :: groundvegt     ! Average ground Temperature (K)
+     ! type(LVT_statsEntry) :: radt         ! Surface Radiative Tempearture (K)
+     ! type(LVT_statsEntry) :: albedo       ! Surface Albedo (-)
+     ! type(LVT_statsEntry) :: swe          ! Snow water equivalent (kg/m2)
+     ! type(LVT_statsEntry) :: snowice
+     ! type(LVT_statsEntry) :: sweveg       ! SWE intercepted by vegetation (kg/m2)
+     ! type(LVT_statsEntry) :: snowage
+     ! type(LVT_statsEntry) :: snowfrac     ! Grid cell snow covered fraction
+     ! type(LVT_statsEntry) :: snowdepth    ! Snow Depth(m)
+     ! type(LVT_statsEntry) :: snowcover    ! Snow cover
+     ! type(LVT_statsEntry) :: surfstor     ! Surface water storage (kg/m2)
 
-     type(LVT_statsEntry) :: soilmoist
-     type(LVT_statsEntry) :: soiltemp
-     type(LVT_statsEntry) :: sliqfrac   ! fraction of SWE which is in the liquid phase
-     type(LVT_statsEntry) :: smliqfrac  ! Average layer fraction of liquid
-                                          ! moisture
-     type(LVT_statsEntry) :: smfrozfrac ! Average layer fraction of liquid
-                                          ! moisture
+     ! type(LVT_statsEntry) :: soilmoist
+     ! type(LVT_statsEntry) :: soiltemp
+     ! type(LVT_statsEntry) :: sliqfrac   ! fraction of SWE which is in the liquid phase
+     ! type(LVT_statsEntry) :: smliqfrac  ! Average layer fraction of liquid
+     !                                      ! moisture
+     ! type(LVT_statsEntry) :: smfrozfrac ! Average layer fraction of liquid
+     !                                      ! moisture
           
-     type(LVT_statsEntry) :: soilwet      ! Total Soil Wetness (-)
-     type(LVT_statsEntry) :: matricpotential      ! soil matric potential
-     type(LVT_statsEntry) :: soilet       ! Plant transpiration from a particular root layer (W/m2)
-     type(LVT_statsEntry) :: z0brd        ! Background (i.e., snow-free) roughness length (m)
-     type(LVT_statsEntry) :: roughness    ! Roughness length (m)
+     ! type(LVT_statsEntry) :: soilwet      ! Total Soil Wetness (-)
+     ! type(LVT_statsEntry) :: matricpotential      ! soil matric potential
+     ! type(LVT_statsEntry) :: soilet       ! Plant transpiration from a particular root layer (W/m2)
+     ! type(LVT_statsEntry) :: z0brd        ! Background (i.e., snow-free) roughness length (m)
+     ! type(LVT_statsEntry) :: roughness    ! Roughness length (m)
 
-     type(LVT_statsEntry) :: potevap      ! Potential Evapotranspiration (kg/m2s)
-     type(LVT_statsEntry) :: ecanop       ! Interception evaporation (kg/m2s)
-     type(LVT_statsEntry) :: tveg         ! Vegetation transpiration (kg/m2s)
-     type(LVT_statsEntry) :: esoil        ! Bare soil evaporation (kg/m2s)
-     type(LVT_statsEntry) :: ewater       ! Open water evaporation (kg/m2s)
-     type(LVT_statsEntry) :: rootmoist    ! Root zone soil moisture (kg/m2)
-     type(LVT_statsEntry) :: canopint     ! Total canopy water storage (kg/m2s)
-     type(LVT_statsEntry) :: evapsnow     ! Snow evaporation (kg/m2s)
-     type(LVT_statsEntry) :: subsnow      ! Snow sublimation (kg/m2s)
-     type(LVT_statsEntry) :: subsurf      ! Sublimation of the snow free area (kg/m2s)
-     type(LVT_statsEntry) :: acond        ! Aerodynamic conductance (m/s)
+     ! type(LVT_statsEntry) :: potevap      ! Potential Evapotranspiration (kg/m2s)
+     ! type(LVT_statsEntry) :: ecanop       ! Interception evaporation (kg/m2s)
+     ! type(LVT_statsEntry) :: tveg         ! Vegetation transpiration (kg/m2s)
+     ! type(LVT_statsEntry) :: esoil        ! Bare soil evaporation (kg/m2s)
+     ! type(LVT_statsEntry) :: ewater       ! Open water evaporation (kg/m2s)
+     ! type(LVT_statsEntry) :: rootmoist    ! Root zone soil moisture (kg/m2)
+     ! type(LVT_statsEntry) :: canopint     ! Total canopy water storage (kg/m2s)
+     ! type(LVT_statsEntry) :: evapsnow     ! Snow evaporation (kg/m2s)
+     ! type(LVT_statsEntry) :: subsnow      ! Snow sublimation (kg/m2s)
+     ! type(LVT_statsEntry) :: subsurf      ! Sublimation of the snow free area (kg/m2s)
+     ! type(LVT_statsEntry) :: acond        ! Aerodynamic conductance (m/s)
 
-     type(LVT_statsEntry) :: totalprecip  ! Total precipitation rate (kg/m2/s)
-     type(LVT_statsEntry) :: rainfconv  ! Convective Rainfall rate (kg/m2/s)
+     ! type(LVT_statsEntry) :: totalprecip  ! Total precipitation rate (kg/m2/s)
+     ! type(LVT_statsEntry) :: rainfconv  ! Convective Rainfall rate (kg/m2/s)
 
-     type(LVT_statsEntry) :: autoresp   ! Autotrophic Respiration
-     type(LVT_statsEntry) :: heteroresp ! Heterotrophic Respiration
-     type(LVT_statsEntry) :: leafresp   ! Leaf Respiration
-     type(LVT_statsEntry) :: npp        ! Net primary productivity in gridbox
-     type(LVT_statsEntry) :: gpp        ! Gross primary productivity in gridbox
-     type(LVT_statsEntry) :: nee        ! Net Ecosystem Exchange
+     ! type(LVT_statsEntry) :: autoresp   ! Autotrophic Respiration
+     ! type(LVT_statsEntry) :: heteroresp ! Heterotrophic Respiration
+     ! type(LVT_statsEntry) :: leafresp   ! Leaf Respiration
+     ! type(LVT_statsEntry) :: npp        ! Net primary productivity in gridbox
+     ! type(LVT_statsEntry) :: gpp        ! Gross primary productivity in gridbox
+     ! type(LVT_statsEntry) :: nee        ! Net Ecosystem Exchange
 
-     type(LVT_statsEntry) :: t2diag
-     type(LVT_statsEntry) :: q2diag
-     type(LVT_statsEntry) :: tws
+     ! type(LVT_statsEntry) :: t2diag
+     ! type(LVT_statsEntry) :: q2diag
+     ! type(LVT_statsEntry) :: tws
 
-     type(LVT_statsEntry) ::  windforc
-     type(LVT_statsEntry) ::  rainfforc
-     type(LVT_statsEntry) ::  snowfforc
-     type(LVT_statsEntry) ::  tairforc
-     type(LVT_statsEntry) ::  qairforc
-     type(LVT_statsEntry) ::  psurfforc
-     type(LVT_statsEntry) ::  swdownforc
-     type(LVT_statsEntry) ::  lwdownforc
-     type(LVT_statsEntry) ::  directswforc 
-     type(LVT_statsEntry) ::  diffuseswforc 
-     type(LVT_statsEntry) ::  nwindforc   
-     type(LVT_statsEntry) ::  ewindforc   
-     type(LVT_statsEntry) ::  fheightforc   
-     type(LVT_statsEntry) ::  chforc   
-     type(LVT_statsEntry) ::  cmforc   
-     type(LVT_statsEntry) ::  emissforc   
-     type(LVT_statsEntry) ::  mixratioforc   
-     type(LVT_statsEntry) ::  coszenforc   
-     type(LVT_statsEntry) ::  albedoforc   
+     ! type(LVT_statsEntry) ::  windforc
+     ! type(LVT_statsEntry) ::  rainfforc
+     ! type(LVT_statsEntry) ::  snowfforc
+     ! type(LVT_statsEntry) ::  tairforc
+     ! type(LVT_statsEntry) ::  qairforc
+     ! type(LVT_statsEntry) ::  psurfforc
+     ! type(LVT_statsEntry) ::  swdownforc
+     ! type(LVT_statsEntry) ::  lwdownforc
+     ! type(LVT_statsEntry) ::  directswforc 
+     ! type(LVT_statsEntry) ::  diffuseswforc 
+     ! type(LVT_statsEntry) ::  nwindforc   
+     ! type(LVT_statsEntry) ::  ewindforc   
+     ! type(LVT_statsEntry) ::  fheightforc   
+     ! type(LVT_statsEntry) ::  chforc   
+     ! type(LVT_statsEntry) ::  cmforc   
+     ! type(LVT_statsEntry) ::  emissforc   
+     ! type(LVT_statsEntry) ::  mixratioforc   
+     ! type(LVT_statsEntry) ::  coszenforc   
+     ! type(LVT_statsEntry) ::  albedoforc   
 
-     type(LVT_statsEntry) :: landmask
-     type(LVT_statsEntry) :: landcover
-     type(LVT_statsEntry) :: soiltype
-     type(LVT_statsEntry) :: sandfrac
-     type(LVT_statsEntry) :: clayfrac
-     type(LVT_statsEntry) :: siltfrac
-     type(LVT_statsEntry) :: porosity
-     type(LVT_statsEntry) :: soilcolor
-     type(LVT_statsEntry) :: elevation
-     type(LVT_statsEntry) :: slope
-     type(LVT_statsEntry) :: lai
-     type(LVT_statsEntry) :: sai
-     type(LVT_statsEntry) :: snfralbedo
-     type(LVT_statsEntry) :: mxsnalbedo
-     type(LVT_statsEntry) :: greenness
-     type(LVT_statsEntry) :: ndvi
-     type(LVT_statsEntry) :: sif
-     type(LVT_statsEntry) :: tempbot
-     type(LVT_statsEntry) :: roottemp
-     type(LVT_statsEntry) :: ccond 
+     ! type(LVT_statsEntry) :: landmask
+     ! type(LVT_statsEntry) :: landcover
+     ! type(LVT_statsEntry) :: soiltype
+     ! type(LVT_statsEntry) :: sandfrac
+     ! type(LVT_statsEntry) :: clayfrac
+     ! type(LVT_statsEntry) :: siltfrac
+     ! type(LVT_statsEntry) :: porosity
+     ! type(LVT_statsEntry) :: soilcolor
+     ! type(LVT_statsEntry) :: elevation
+     ! type(LVT_statsEntry) :: slope
+     ! type(LVT_statsEntry) :: lai
+     ! type(LVT_statsEntry) :: sai
+     ! type(LVT_statsEntry) :: snfralbedo
+     ! type(LVT_statsEntry) :: mxsnalbedo
+     ! type(LVT_statsEntry) :: greenness
+     ! type(LVT_statsEntry) :: ndvi
+     ! type(LVT_statsEntry) :: sif
+     ! type(LVT_statsEntry) :: tempbot
+     ! type(LVT_statsEntry) :: roottemp
+     ! type(LVT_statsEntry) :: ccond 
 
-     type(LVT_statsEntry) :: relsmc 
-     type(LVT_statsEntry) :: rhmin
+     ! type(LVT_statsEntry) :: relsmc 
+     ! type(LVT_statsEntry) :: rhmin
 
-     !fldas 
-     type(LVT_statsEntry) :: petforc
-     type(LVT_statsEntry) :: refetforc
-     type(LVT_statsEntry) :: refet
-     type(LVT_statsEntry) :: sos
-     type(LVT_statsEntry) :: wrsi     
-     type(LVT_statsEntry) :: kf2     
-     type(LVT_statsEntry) :: sumWR     
-     type(LVT_statsEntry) :: sumET     
-     type(LVT_statsEntry) :: SWI   
-     type(LVT_statsEntry) :: SOSa     
-     type(LVT_statsEntry) :: TotalSurplusWater     
-     type(LVT_statsEntry) :: MaxSurplusWater     
-     type(LVT_statsEntry) :: TotalWaterDeficit     
-     type(LVT_statsEntry) :: MaxWaterDeficit     
-     type(LVT_statsEntry) :: TotalAETInitial     
-     type(LVT_statsEntry) :: TotalWRInitial     
-     type(LVT_statsEntry) :: TotalSurplusWaterInitial    
-     type(LVT_statsEntry) :: TotalWaterDeficitInitial     
-     type(LVT_statsEntry) :: TotalAETVeg
-     type(LVT_statsEntry) :: TotalWRVeg
-     type(LVT_statsEntry) :: TotalSurplusWaterVeg
-     type(LVT_statsEntry) :: TotalWaterDeficitVeg
-     type(LVT_statsEntry) :: TotalAETFlower
-     type(LVT_statsEntry) :: TotalWRFlower
-     type(LVT_statsEntry) :: TotalSurplusWaterFlower 
-     type(LVT_statsEntry) :: TotalWaterDeficitFlower
-     type(LVT_statsEntry) :: TotalAETRipe
-     type(LVT_statsEntry) :: TotalWRRipe
-     type(LVT_statsEntry) :: TotalSurplusWaterRipe
-     type(LVT_statsEntry) :: TotalWaterDeficitRipe
-     type(LVT_statsEntry) :: PermWiltDate 
-     type(LVT_statsEntry) :: Wilting1
-     type(LVT_statsEntry) :: Wilting2
-     type(LVT_statsEntry) :: WRSIa
-     type(LVT_statsEntry) :: growing_season
+     ! !fldas 
+     ! type(LVT_statsEntry) :: petforc
+     ! type(LVT_statsEntry) :: refetforc
+     ! type(LVT_statsEntry) :: refet
+     ! type(LVT_statsEntry) :: sos
+     ! type(LVT_statsEntry) :: wrsi     
+     ! type(LVT_statsEntry) :: kf2     
+     ! type(LVT_statsEntry) :: sumWR     
+     ! type(LVT_statsEntry) :: sumET     
+     ! type(LVT_statsEntry) :: SWI   
+     ! type(LVT_statsEntry) :: SOSa     
+     ! type(LVT_statsEntry) :: TotalSurplusWater     
+     ! type(LVT_statsEntry) :: MaxSurplusWater     
+     ! type(LVT_statsEntry) :: TotalWaterDeficit     
+     ! type(LVT_statsEntry) :: MaxWaterDeficit     
+     ! type(LVT_statsEntry) :: TotalAETInitial     
+     ! type(LVT_statsEntry) :: TotalWRInitial     
+     ! type(LVT_statsEntry) :: TotalSurplusWaterInitial    
+     ! type(LVT_statsEntry) :: TotalWaterDeficitInitial     
+     ! type(LVT_statsEntry) :: TotalAETVeg
+     ! type(LVT_statsEntry) :: TotalWRVeg
+     ! type(LVT_statsEntry) :: TotalSurplusWaterVeg
+     ! type(LVT_statsEntry) :: TotalWaterDeficitVeg
+     ! type(LVT_statsEntry) :: TotalAETFlower
+     ! type(LVT_statsEntry) :: TotalWRFlower
+     ! type(LVT_statsEntry) :: TotalSurplusWaterFlower 
+     ! type(LVT_statsEntry) :: TotalWaterDeficitFlower
+     ! type(LVT_statsEntry) :: TotalAETRipe
+     ! type(LVT_statsEntry) :: TotalWRRipe
+     ! type(LVT_statsEntry) :: TotalSurplusWaterRipe
+     ! type(LVT_statsEntry) :: TotalWaterDeficitRipe
+     ! type(LVT_statsEntry) :: PermWiltDate 
+     ! type(LVT_statsEntry) :: Wilting1
+     ! type(LVT_statsEntry) :: Wilting2
+     ! type(LVT_statsEntry) :: WRSIa
+     ! type(LVT_statsEntry) :: growing_season
 
-     type(LVT_statsEntry) :: ebal
-     type(LVT_statsEntry) :: wbal
-     type(LVT_statsEntry) :: evapbal
-     type(LVT_statsEntry) :: sweoverp
-     type(LVT_statsEntry) :: etoverp
-     type(LVT_statsEntry) :: qsoverp
-     type(LVT_statsEntry) :: qsboverp
-     type(LVT_statsEntry) :: runoff
-     type(LVT_statsEntry) :: dS
+     ! type(LVT_statsEntry) :: ebal
+     ! type(LVT_statsEntry) :: wbal
+     ! type(LVT_statsEntry) :: evapbal
+     ! type(LVT_statsEntry) :: sweoverp
+     ! type(LVT_statsEntry) :: etoverp
+     ! type(LVT_statsEntry) :: qsoverp
+     ! type(LVT_statsEntry) :: qsboverp
+     ! type(LVT_statsEntry) :: runoff
+     ! type(LVT_statsEntry) :: dS
 
-     type(LVT_statsEntry) :: tairforc_min
-     type(LVT_statsEntry) :: tairforc_max
+     ! type(LVT_statsEntry) :: tairforc_min
+     ! type(LVT_statsEntry) :: tairforc_max
 
-     type(LVT_statsEntry) :: streamflow
+     ! type(LVT_statsEntry) :: streamflow
      
-     type(LVT_statsEntry) :: rtm_emissivity 
-     type(LVT_statsEntry) :: rtm_tb
+     ! type(LVT_statsEntry) :: rtm_emissivity 
+     ! type(LVT_statsEntry) :: rtm_tb
 
   end type stats_struc
 
