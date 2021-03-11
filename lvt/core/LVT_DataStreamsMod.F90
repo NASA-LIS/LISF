@@ -356,6 +356,7 @@ contains
 ! !USES:   
     use LVT_logMod
     use LVT_coreMod, only: LVT_LIS_rc ! EMK
+    use LVT_557post_ps41_snowMod ! EMK
     
     implicit none
 !
@@ -419,6 +420,10 @@ contains
     ! EMK...For Welford algorithm
     integer :: count
     real :: mean, m2, stddev, new_value
+
+    ! EMK...Keep track of how many JULES PS41 snow variables have been
+    ! prepped for ensemble processing
+    integer :: count_jules_ps41_vars
     
     ! EMK...This is only used when LVT is run in "557 post" mode.
     if (trim(LVT_rc%runmode) .ne. "557 post") return
@@ -1450,7 +1455,74 @@ contains
        endif
        
        dataEntry => LVT_histData%head_ds1_list
+
+       ! EMK...Special handling of JULES PS41 multi-layer snow physics
+       ! when ensembles are processed.
+       if (trim(LVT_LIS_rc(1)%anlys_data_class) .eq. "LSM" .and. &
+            trim(LVT_LIS_rc(1)%model_name) .eq. "JULES.5.0" .and. &
+            LVT_rc%nensem .gt. 1) then
+          write(LVT_logunit,*) &
+               '[INFO] Prepare processing of JULES PS41 ensemble snow...'
+          count_jules_ps41_vars = 0
+          do while(associated(dataEntry))
+
+             if (trim(dataEntry%short_name) .eq. "SnowIce_inst") then
+                write(LVT_logunit,*) &
+                     '[INFO] Preparing SnowIce_inst...'
+                call LVT_prep_ps41_snowIce(dataEntry%value)
+                count_jules_ps41_vars = count_jules_ps41_vars + 1
+             else if (trim(dataEntry%short_name) .eq. "SnowLiq_inst") then
+                write(LVT_logunit,*) &
+                     '[INFO] Preparing SnowLiq_inst...'
+                call LVT_prep_ps41_snowLiq(dataEntry%value)
+                count_jules_ps41_vars = count_jules_ps41_vars + 1
+             else if (trim(dataEntry%short_name) .eq. "SnowTProf_inst") then
+                write(LVT_logunit,*) &
+                     '[INFO] Preparing SnowTProf_inst...'
+                call LVT_prep_ps41_snowTProf(dataEntry%value)
+                count_jules_ps41_vars = count_jules_ps41_vars + 1
+             else if (trim(dataEntry%short_name) .eq. &
+                  "LayerSnowGrain_inst") then
+                write(LVT_logunit,*) &
+                     '[INFO] Preparing LayerSnowGrain_inst...'
+                call LVT_prep_ps41_layerSnowGrain(dataEntry%value)
+                count_jules_ps41_vars = count_jules_ps41_vars + 1
+             else if (trim(dataEntry%short_name) .eq. &
+                  "LayerSnowDepth_inst") then
+                write(LVT_logunit,*) &
+                     '[INFO] Preparing LayerSnowDepth_inst...'
+                call LVT_prep_ps41_layerSnowDepth(dataEntry%value)
+                count_jules_ps41_vars = count_jules_ps41_vars + 1
+             else if (trim(dataEntry%short_name) .eq. "ActSnowNL_inst") then
+                write(LVT_logunit,*) &
+                     '[INFO] Preparing ActSnowNL_inst...'
+                call LVT_prep_ps41_ActSnowNL(dataEntry%value)
+                count_jules_ps41_vars = count_jules_ps41_vars + 1
+             end if
+
+             if (count_jules_ps41_vars .eq. 6) exit
+             dataEntry => dataEntry%next
+          end do
+          if (count_jules_ps41_vars .ne. 6) then
+             write(LVT_logunit,*) &
+                  '[ERR] Cannot process JULES PS41 multi-layer snow'
+             write(LVT_logunit,*) &
+                  '[ERR] Not all variables found for ensemble processing'
+             call LVT_endrun()
+          end if
+
+          ! Go to head of list for later processing
+          dataEntry => LVT_histData%head_ds1_list
+
+          ! We now have all the PS41 snow variables needed for ensemble
+          ! processing.  We invoke the main driver.
+          call LVT_proc_jules_ps41_ens_snow()
           
+       end if
+       ! EMK END JULES PS41 Snow
+
+
+       
        do while(associated(dataEntry))
 !reset the pointers to the head of the linked list
           if(LVT_LIS_rc(1)%anlys_data_class.eq."LSM") then 
@@ -1515,7 +1587,7 @@ contains
                    timeRange = 7                   
                    pdTemplate = 12
                 end if
-                
+
                 ! EMK...Reworked ensemble statistics code.  Allow application
                 ! of noises smoother to each ensemble member *before* 
                 ! calculating ensemble mean and spread.
