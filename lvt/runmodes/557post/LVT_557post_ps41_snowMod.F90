@@ -101,6 +101,21 @@ module LVT_557post_ps41_snowMod
   real, pointer :: layerSnowDepth(:,:,:)
   real, pointer :: ActSnowNL(:,:,:)
 
+  ! Internal arrays for storing processed multi-layer snow
+  real, allocatable :: snowIce_final(:,:)
+  real, allocatable :: snowLiq_final(:,:)
+  real, allocatable :: snowTProf_final(:,:)
+  real, allocatable :: layerSnowGrain_final(:,:)
+  real, allocatable :: layerSnowDepth_final(:,:)
+  real, allocatable :: actSnowNL_final(:)
+  real, allocatable :: layerSnowDensity_final(:,:)
+  real, allocatable :: surftSnow_final(:)
+  real, allocatable :: snowGrain_final(:)
+  !real, allocatable :: new_rho_snow_grnd???
+  real, allocatable :: snowDepth_final(:)
+  !real, allocatable :: new_rho_grnd???
+  real, allocatable :: SWE_final(:)
+  
   ! Public routines
   public :: LVT_prep_ps41_snowIce
   public :: LVT_prep_ps41_snowLiq
@@ -109,21 +124,57 @@ module LVT_557post_ps41_snowMod
   public :: LVT_prep_ps41_layerSnowDepth
   public :: LVT_prep_ps41_ActSnowNL
   public :: LVT_proc_jules_ps41_ens_snow
+  public :: LVT_fetch_final
 contains
 
-  ! Allocate all arrays based on number of ensemble members.
+  ! Allocate all step arrays based on number of ensemble members.
   ! Note that nlayers is hardwired since this targets PS41.
-  subroutine allocate_arrays(nensem)
+  subroutine allocate_step_arrays(nensem)
     implicit none
     integer, intent(in) :: nensem
     allocate(en_sice(nensem, nlayer))
     allocate(en_sliq(nensem, nlayer))
     allocate(en_tsnow(nensem, nlayer))
+    allocate(en_rgrainl(nensem, nlayer))
     allocate(en_ds(nensem, nlayer))
     allocate(en_nsnow(nensem))
     allocate(en_C(nensem, nlayer))
     allocate(en_e(nensem, nlayer))
-  end subroutine allocate_arrays
+  end subroutine allocate_step_arrays
+
+  ! Allocate arrays for final data
+  subroutine allocate_final_arrays(nc, nr)
+    implicit none
+    integer, intent(in) :: nc
+    integer, intent(in) :: nr
+    allocate(snowIce_final(nc*nr, nlayer))
+    allocate(snowLiq_final(nc*nr, nlayer))
+    allocate(snowTProf_final(nc*nr, nlayer))
+    allocate(layerSnowGrain_final(nc*nr, nlayer))
+    allocate(layerSnowDepth_final(nc*nr, nlayer))
+    allocate(actSnowNL_final(nc*nr))
+    allocate(layerSnowDensity_final(nc*nr, nlayer))
+    allocate(surftSnow_final(nc*nr))
+    allocate(snowGrain_final(nc*nr))
+    allocate(snowDepth_final(nc*nr))
+    allocate(SWE_final(nc*nr))
+  end subroutine allocate_final_arrays
+
+    ! Deallocate arrays for final data
+  subroutine deallocate_final_arrays()
+    implicit none
+    if (allocated(snowIce_final)) deallocate(snowIce_final)
+    if (allocated(snowLiq_final)) deallocate(snowLiq_final)
+    if (allocated(snowTProf_final)) deallocate(snowTProf_final)
+    if (allocated(layerSnowGrain_final)) deallocate(layerSnowGrain_final)
+    if (allocated(layerSnowDepth_final)) deallocate(layerSnowDepth_final)
+    if (allocated(actSnowNL_final)) deallocate(actSnowNL_final)
+    if (allocated(layerSnowDensity_final)) deallocate(layerSnowDensity_final)
+    if (allocated(surftSnow_final)) deallocate(surftSnow_final)
+    if (allocated(snowGrain_final)) deallocate(snowGrain_final)
+    if (allocated(snowDepth_final)) deallocate(snowDepth_final)
+    if (allocated(SWE_final)) deallocate(SWE_final)
+  end subroutine deallocate_final_arrays
 
   ! Nullify all pointers
   subroutine nullify_pointers()
@@ -136,8 +187,9 @@ contains
     nullify(ActSnowNL)
   end subroutine nullify_pointers
 
-  ! Deallocate memory
-  subroutine deallocate_arrays()
+  ! Deallocate memory for step routines.  Final arrays are preserved for
+  ! later extraction by LVT.
+  subroutine deallocate_step_arrays()
     implicit none
     if (allocated(en_sice)) deallocate(en_sice)
     if (allocated(en_sliq)) deallocate(en_sliq)
@@ -147,7 +199,7 @@ contains
     if (allocated(en_nsnow)) deallocate(en_nsnow)
     if (allocated(en_C)) deallocate(en_C)
     if (allocated(en_e)) deallocate(en_e)
-  end subroutine deallocate_arrays
+  end subroutine deallocate_step_arrays
 
   ! Calculate mean snow layer depth from ensemble members
   real function layer_mean(nensem, en_var_l, l)
@@ -416,7 +468,7 @@ contains
   end subroutine step_10
 
   !11. Calculate snowmass (sum of ice and liquid water contents)
-  subroutine step_11
+  subroutine step_11()
     implicit none
     integer :: l
     new_snowmass = 0.0
@@ -431,6 +483,7 @@ contains
   subroutine LVT_prep_ps41_snowIce(data)
     implicit none
     real, target, intent(in) :: data(:,:,:)
+    nullify(snowIce)
     snowIce => data
   end subroutine LVT_prep_ps41_snowIce
 
@@ -438,6 +491,7 @@ contains
   subroutine LVT_prep_ps41_snowLiq(data)
     implicit none
     real, target, intent(in) :: data(:,:,:)
+    nullify(snowLiq)
     snowLiq => data
   end subroutine LVT_prep_ps41_snowLiq
 
@@ -445,6 +499,7 @@ contains
   subroutine LVT_prep_ps41_snowTProf(data)
     implicit none
     real, target, intent(in) :: data(:,:,:)
+    nullify(snowTProf)
     snowTProf => data
   end subroutine LVT_prep_ps41_snowTProf
 
@@ -452,6 +507,7 @@ contains
   subroutine LVT_prep_ps41_layerSnowGrain(data)
     implicit none
     real, target, intent(in) :: data(:,:,:)
+    nullify(layerSnowGrain)
     layerSnowGrain => data
   end subroutine LVT_prep_ps41_layerSnowGrain
 
@@ -459,6 +515,7 @@ contains
   subroutine LVT_prep_ps41_layerSnowDepth(data)
     implicit none
     real, target, intent(in) :: data(:,:,:)
+    nullify(layerSnowDepth)
     layerSnowDepth => data
   end subroutine LVT_prep_ps41_layerSnowDepth
 
@@ -466,12 +523,244 @@ contains
   subroutine LVT_prep_ps41_actSnowNL(data)
     implicit none
     real, target, intent(in) :: data(:,:,:)
+    nullify(actSnowNL)
     actSnowNL => data
   end subroutine LVT_prep_ps41_actSnowNL
 
   ! Process the JULES PS41 snow variables
   subroutine LVT_proc_jules_ps41_ens_snow()
+
+    ! Modules
+    use LVT_coreMod, only: LVT_domain, LVT_rc
+
+    ! Defaults
     implicit none
+
+    ! Locals
+    integer :: c, r, m, k, gid
+
+    ! Initializations
+    call allocate_step_arrays(LVT_rc%nensem)
+    call allocate_final_arrays(LVT_rc%lnc, LVT_rc%lnr)
+    snowIce_final = LVT_rc%udef
+    snowLiq_final = LVT_rc%udef
+    snowTProf_final = LVT_rc%udef
+    layerSnowGrain_final = LVT_rc%udef
+    layerSnowDepth_final = LVT_rc%udef
+    actSnowNL_final = LVT_rc%udef
+    layerSnowDensity_final = LVT_rc%udef
+    surftSnow_final = LVT_rc%udef
+    snowGrain_final = LVT_rc%udef
+    snowDepth_final = LVT_rc%udef
+    SWE_final = LVT_rc%udef
+
+    ! For each land point, apply PS41 ensemble post-processing
+    do r = 1, LVT_rc%lnr
+       do c = 1, LVT_rc%lnc
+          gid = LVT_domain%gindex(c,r)
+          if (gid == -1) cycle
+
+          ! Load ensemble members into step arrays
+          do k = 1, nlayer
+             do m = 1, LVT_rc%nensem
+                en_sice(m,k) = snowIce(gid,m,k)
+                en_sliq(m,k) = snowLiq(gid,m,k)
+                en_tsnow(m,k) = snowTProf(gid,m,k)
+                en_rgrainl(m,k) = layerSnowGrain(gid,m,k)
+                en_ds(m,k) = layerSnowDepth(gid,m,k)
+             end do ! m
+          end do ! k
+          do m = 1, LVT_rc%nensem
+             en_nsnow(m) = actSnowNL(gid,m,1)
+          end do ! m
+
+          ! Execute the relayering algorithm
+          call step_1(LVT_rc%nensem)
+          call step_2(LVT_rc%nensem)
+          call step_3(LVT_rc%nensem)
+          call step_4(LVT_rc%nensem)
+          call step_5(LVT_rc%nensem)
+          call step_6(LVT_rc%nensem)
+          call step_7_8(LVT_rc%nensem)
+          call step_9()
+          call step_10()
+          call step_11()
+
+          ! Copy to final arrays
+          do k = 1, nlayer
+             snowIce_final(gid,k) = new_sice(k)
+             snowLiq_final(gid,k) = new_sliq(k)
+             snowTProf_final(gid,k) = new_tsnow(k)
+             layerSnowGrain_final(gid,k) = new_rgrainl(k)
+             layerSnowDepth_final(gid,k) = new_ds(k)
+
+             layerSnowDensity_final(gid,k) = new_rho_snow(k)
+          end do ! k
+          actSnowNL_final(gid) = new_nsnow
+
+          surftSnow_final(gid) = new_snowmass
+          snowGrain_final(gid) = new_rgrain
+          snowDepth_final(gid) = new_snowdepth
+          SWE_final(gid) = new_snowmass ! FIXME...Find liquid equivalent
+
+       end do ! c
+    end do ! r
+
+    ! Cleanup, but keep final arrays for later extraction by LVT
+    call deallocate_step_arrays()
+    call nullify_pointers()
+
   end subroutine LVT_proc_jules_ps41_ens_snow
+
+  subroutine LVT_fetch_final(nc, nr, data, k, short_name, is_ps41_snow_var)
+    implicit none
+    integer, intent(in) :: nc
+    integer, intent(in) :: nr
+    real, intent(inout) :: data(nc*nr)
+    integer, intent(in) :: k
+    character(len=*), intent(in) :: short_name
+    logical, intent(out) :: is_ps41_snow_var
+    is_ps41_snow_var = .false.
+    if (trim(short_name) .eq. "SnowIce_inst") then
+       call LVT_fetch_snowIce_final(nc, nr, data, k)
+       is_ps41_snow_var = .true.
+    else if (trim(short_name) .eq. "SnowLiq_inst") then
+       call LVT_fetch_snowLiq_final(nc, nr, data, k)
+       is_ps41_snow_var = .true.
+    else if (trim(short_name) .eq. "SnowTProf_inst") then
+       call LVT_fetch_snowTProf_final(nc, nr, data, k)
+       is_ps41_snow_var = .true.
+    else if (trim(short_name) .eq. "LayerSnowGrain_inst") then
+       call LVT_fetch_layerSnowGrain_final(nc, nr, data, k)
+       is_ps41_snow_var = .true.
+    else if (trim(short_name) .eq. "LayerSnowDepth_inst") then
+       call LVT_fetch_layerSnowDepth_final(nc, nr, data, k)
+       is_ps41_snow_var = .true.
+    else if (trim(short_name) .eq. "ActSnowNL_inst") then
+       call LVT_fetch_actSnowNL_final(nc, nr, data)
+       is_ps41_snow_var = .true.
+    else if (trim(short_name) .eq. "LayerSnowDensity_inst") then
+       call LVT_fetch_layerSnowDensity_final(nc, nr, data, k)
+       is_ps41_snow_var = .true.
+    else if (trim(short_name) .eq. "SurftSnow_inst") then
+       call LVT_fetch_surftSnow_final(nc, nr, data)
+       is_ps41_snow_var = .true.
+    else if (trim(short_name) .eq. "SnowGrain_inst") then
+       call LVT_fetch_SnowGrain_final(nc, nr, data)
+       is_ps41_snow_var = .true.
+    else if (trim(short_name) .eq. "SnowDepth_inst") then
+       call LVT_fetch_SnowDepth_final(nc, nr, data)
+       is_ps41_snow_var = .true.
+    else if (trim(short_name) .eq. "SWE_inst") then
+       call LVT_fetch_SWE_final(nc, nr, data)
+       is_ps41_snow_var = .true.
+    end if
+  end subroutine LVT_fetch_final
+
+  ! Pass SnowIce back
+  subroutine LVT_fetch_snowIce_final(nc, nr, data, k)
+    implicit none
+    integer, intent(in) :: nc
+    integer, intent(in) :: nr
+    real, intent(inout) :: data(nc*nr)
+    integer, intent(in) :: k
+    data(:) = snowIce_final(:,k)
+  end subroutine LVT_fetch_snowIce_final
+
+  ! Pass SnowLiq back
+  subroutine LVT_fetch_snowLiq_final(nc, nr, data, k)
+    implicit none
+    integer, intent(in) :: nc
+    integer, intent(in) :: nr
+    real, intent(inout) :: data(nc*nr)
+    integer, intent(in) :: k
+    data(:) = snowLiq_final(:,k)
+  end subroutine LVT_fetch_snowLiq_final
+
+  ! Pass SnowtProf back
+  subroutine LVT_fetch_snowtProf_final(nc, nr, data, k)
+    implicit none
+    integer, intent(in) :: nc
+    integer, intent(in) :: nr
+    real, intent(inout) :: data(nc*nr)
+    integer, intent(in) :: k
+    data(:) = snowtProf_final(:,k)
+  end subroutine LVT_fetch_snowtProf_final
+
+  ! Pass layerSnowGrain back
+  subroutine LVT_fetch_layerSnowGrain_final(nc, nr, data, k)
+    implicit none
+    integer, intent(in) :: nc
+    integer, intent(in) :: nr
+    real, intent(inout) :: data(nc*nr)
+    integer, intent(in) :: k
+    data(:) = layerSnowGrain_final(:,k)
+  end subroutine LVT_fetch_layerSnowGrain_final
+
+  ! Pass layerSnowDepth back
+  subroutine LVT_fetch_layerSnowDepth_final(nc, nr, data, k)
+    implicit none
+    integer, intent(in) :: nc
+    integer, intent(in) :: nr
+    real, intent(inout) :: data(nc*nr)
+    integer, intent(in) :: k
+    data(:) = layerSnowDepth_final(:,k)
+  end subroutine LVT_fetch_layerSnowDepth_final
+
+  ! Pass actSnowNL back
+  subroutine LVT_fetch_actSnowNL_final(nc, nr, data)
+    implicit none
+    integer, intent(in) :: nc
+    integer, intent(in) :: nr
+    real, intent(inout) :: data(nc*nr)
+    data(:) = actSnowNL_final(:)
+  end subroutine LVT_fetch_actSnowNL_final
+
+  ! Pass layerSnowDensity back
+  subroutine LVT_fetch_layerSnowDensity_final(nc, nr, data, k)
+    implicit none
+    integer, intent(in) :: nc
+    integer, intent(in) :: nr
+    real, intent(inout) :: data(nc*nr)
+    integer, intent(in) :: k
+    data(:) = layerSnowDensity_final(:,k)
+  end subroutine LVT_fetch_layerSnowDensity_final
+
+  ! Pass surftSnow back
+  subroutine LVT_fetch_surftSnow_final(nc, nr, data)
+    implicit none
+    integer, intent(in) :: nc
+    integer, intent(in) :: nr
+    real, intent(inout) :: data(nc*nr)
+    data(:) = surftSnow_final(:)
+  end subroutine LVT_fetch_surftSnow_final
+
+  ! Pass snowGrain back
+  subroutine LVT_fetch_snowGrain_final(nc, nr, data)
+    implicit none
+    integer, intent(in) :: nc
+    integer, intent(in) :: nr
+    real, intent(inout) :: data(nc*nr)
+    data(:) = snowGrain_final(:)
+  end subroutine LVT_fetch_snowGrain_final
+
+  ! Pass snowDepth back
+  subroutine LVT_fetch_snowDepth_final(nc, nr, data)
+    implicit none
+    integer, intent(in) :: nc
+    integer, intent(in) :: nr
+    real, intent(inout) :: data(nc*nr)
+    data(:) = snowDepth_final(:)
+  end subroutine LVT_fetch_snowDepth_final
+
+  ! Pass SWE back
+  subroutine LVT_fetch_SWE_final(nc, nr, data)
+    implicit none
+    integer, intent(in) :: nc
+    integer, intent(in) :: nr
+    real, intent(inout) :: data(nc*nr)
+    data(:) = SWE_final(:)
+  end subroutine LVT_fetch_SWE_final
+
 end module LVT_557post_ps41_snowMod
 
