@@ -423,7 +423,9 @@ contains
 
     ! EMK...Keep track of how many JULES PS41 snow variables have been
     ! prepped for ensemble processing
-    integer :: count_jules_ps41_vars
+    integer :: count_jules_ps41_ens_vars
+    logical :: jules_ps41_ens_snow
+    logical :: is_ps41_snow_var
     
     ! EMK...This is only used when LVT is run in "557 post" mode.
     if (trim(LVT_rc%runmode) .ne. "557 post") return
@@ -1458,71 +1460,79 @@ contains
 
        ! EMK...Special handling of JULES PS41 multi-layer snow physics
        ! when ensembles are processed.
+       jules_ps41_ens_snow = .false.
        if (trim(LVT_LIS_rc(1)%anlys_data_class) .eq. "LSM" .and. &
             trim(LVT_LIS_rc(1)%model_name) .eq. "JULES.5.0" .and. &
             LVT_rc%nensem .gt. 1) then
           write(LVT_logunit,*) &
                '[INFO] Prepare processing of JULES PS41 ensemble snow...'
-          count_jules_ps41_vars = 0
+          count_jules_ps41_ens_vars = 0
           do while(associated(dataEntry))
 
-             if (trim(dataEntry%short_name) .eq. "SnowIce_inst") then
+             if (trim(dataEntry%short_name) .eq. "SnowIce_inst" .and. &
+                  dataEntry%vlevels .eq. 3) then
                 write(LVT_logunit,*) &
                      '[INFO] Preparing SnowIce_inst...'
                 call LVT_prep_ps41_snowIce(dataEntry%value)
-                count_jules_ps41_vars = count_jules_ps41_vars + 1
-             else if (trim(dataEntry%short_name) .eq. "SnowLiq_inst") then
+                count_jules_ps41_ens_vars = count_jules_ps41_ens_vars + 1
+             else if (trim(dataEntry%short_name) .eq. "SnowLiq_inst" .and. &
+                  dataEntry%vlevels .eq. 3) then
                 write(LVT_logunit,*) &
                      '[INFO] Preparing SnowLiq_inst...'
                 call LVT_prep_ps41_snowLiq(dataEntry%value)
-                count_jules_ps41_vars = count_jules_ps41_vars + 1
-             else if (trim(dataEntry%short_name) .eq. "SnowTProf_inst") then
+                count_jules_ps41_ens_vars = count_jules_ps41_ens_vars + 1
+             else if (trim(dataEntry%short_name) .eq. "SnowTProf_inst" .and. &
+                  dataEntry%vlevels .eq. 3) then
                 write(LVT_logunit,*) &
                      '[INFO] Preparing SnowTProf_inst...'
                 call LVT_prep_ps41_snowTProf(dataEntry%value)
-                count_jules_ps41_vars = count_jules_ps41_vars + 1
+                count_jules_ps41_ens_vars = count_jules_ps41_ens_vars + 1
              else if (trim(dataEntry%short_name) .eq. &
-                  "LayerSnowGrain_inst") then
+                  "LayerSnowGrain_inst" .and. &
+                  dataEntry%vlevels .eq. 3) then
                 write(LVT_logunit,*) &
                      '[INFO] Preparing LayerSnowGrain_inst...'
                 call LVT_prep_ps41_layerSnowGrain(dataEntry%value)
-                count_jules_ps41_vars = count_jules_ps41_vars + 1
+                count_jules_ps41_ens_vars = count_jules_ps41_ens_vars + 1
              else if (trim(dataEntry%short_name) .eq. &
-                  "LayerSnowDepth_inst") then
+                  "LayerSnowDepth_inst" .and. &
+                  dataEntry%vlevels .eq. 3) then
                 write(LVT_logunit,*) &
                      '[INFO] Preparing LayerSnowDepth_inst...'
                 call LVT_prep_ps41_layerSnowDepth(dataEntry%value)
-                count_jules_ps41_vars = count_jules_ps41_vars + 1
+                count_jules_ps41_ens_vars = count_jules_ps41_ens_vars + 1
              else if (trim(dataEntry%short_name) .eq. "ActSnowNL_inst") then
                 write(LVT_logunit,*) &
                      '[INFO] Preparing ActSnowNL_inst...'
                 call LVT_prep_ps41_ActSnowNL(dataEntry%value)
-                count_jules_ps41_vars = count_jules_ps41_vars + 1
+                count_jules_ps41_ens_vars = count_jules_ps41_ens_vars + 1
              end if
 
-             if (count_jules_ps41_vars .eq. 6) exit
+             if (count_jules_ps41_ens_vars .eq. 6) exit
              dataEntry => dataEntry%next
           end do
-          if (count_jules_ps41_vars .ne. 6) then
+
+          if (count_jules_ps41_ens_vars .ne. 6) then
              write(LVT_logunit,*) &
                   '[ERR] Cannot process JULES PS41 multi-layer snow'
              write(LVT_logunit,*) &
                   '[ERR] Not all variables found for ensemble processing'
              call LVT_endrun()
+          else
+             jules_ps41_ens_snow = .true.
           end if
 
           ! Go to head of list for later processing
           dataEntry => LVT_histData%head_ds1_list
 
           ! We now have all the PS41 snow variables needed for ensemble
-          ! processing.  We invoke the main driver.
+          ! processing.  We invoke the main driver.  The output variables
+          ! will be fetched further down.
           call LVT_proc_jules_ps41_ens_snow()
-          
+
        end if
        ! EMK END JULES PS41 Snow
 
-
-       
        do while(associated(dataEntry))
 !reset the pointers to the head of the linked list
           if(LVT_LIS_rc(1)%anlys_data_class.eq."LSM") then 
@@ -1589,12 +1599,28 @@ contains
                 end if
 
                 ! EMK...Reworked ensemble statistics code.  Allow application
-                ! of noises smoother to each ensemble member *before* 
+                ! of noises smoother to each ensemble member *before*
                 ! calculating ensemble mean and spread.
-                do k=1,dataEntry%vlevels
+                do k=1, dataEntry%vlevels
                    gtmp1_1d(:) = 0.0
                    ngtmp1_1d(:) = 0
                    gtmp1_ss(:) = 0.0
+
+                   ! EMK...Special handling for JULES PS41 snow variables.
+                   ! In this case, we do not take raw ensemble means, but
+                   ! instead apply a JULES-based relayering.  This calculation
+                   ! was done higher up; here we pull the requested variable
+                   ! for output to file.
+                   is_ps41_snow_var = .false.
+                   if (jules_ps41_ens_snow) then
+                      call LVT_fetch_final(LVT_rc%lnc, LVT_rc%lnr, gtmp1_1d, &
+                           k, trim(dataEntry%short_name), is_ps41_snow_var)
+                      if (is_ps41_snow_var) then
+                         !...CODE HERE FOR WRITING TO OUTPUT
+                      end if
+                      cycle
+                   end if
+                   
                    do m=1,LVT_rc%nensem
 
                       ! Must initialize ensemble member with "undefined" for
@@ -1688,7 +1714,7 @@ contains
                       enddo ! c
                    enddo ! r
                    ! EMK END...k loop ends further down
-                                     
+
                    if(LVT_rc%lvt_out_format.eq."grib2") then 
 
                       call writeSingleGrib2Var(ftn_mean,&
@@ -1786,7 +1812,7 @@ contains
                       end if
                    endif
                       
-                enddo
+                enddo ! k
                 exit
              endif
              lisdataEntry => lisdataEntry%next
