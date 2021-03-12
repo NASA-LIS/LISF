@@ -117,12 +117,7 @@ module LVT_557post_ps41_snowMod
   real, allocatable :: SWE_final(:)
   
   ! Public routines
-  public :: LVT_prep_ps41_snowIce
-  public :: LVT_prep_ps41_snowLiq
-  public :: LVT_prep_ps41_snowTProf
-  public :: LVT_prep_ps41_layerSnowGrain
-  public :: LVT_prep_ps41_layerSnowDepth
-  public :: LVT_prep_ps41_ActSnowNL
+  public :: LVT_prep_jules_ps41_ens_snow_var
   public :: LVT_proc_jules_ps41_ens_snow
   public :: LVT_fetch_final
 contains
@@ -479,53 +474,52 @@ contains
     new_rho_grnd = new_snowmass / new_snowdepth
   end subroutine step_11
 
-  ! Set pointer to SnowIce_inst
-  subroutine LVT_prep_ps41_snowIce(data)
-    implicit none
-    real, target, intent(in) :: data(:,:,:)
-    nullify(snowIce)
-    snowIce => data
-  end subroutine LVT_prep_ps41_snowIce
+  ! Set pointer to passed array based on variable name
+  subroutine LVT_prep_jules_ps41_ens_snow_var(short_name, vlevels, data, &
+       is_ps41_snow_var)
 
-  ! Set pointer to SnowLiq_inst
-  subroutine LVT_prep_ps41_snowLiq(data)
+    ! Defaults
     implicit none
-    real, target, intent(in) :: data(:,:,:)
-    nullify(snowLiq)
-    snowLiq => data
-  end subroutine LVT_prep_ps41_snowLiq
 
-  ! Set pointer to SnowTProf_inst
-  subroutine LVT_prep_ps41_snowTProf(data)
-    implicit none
+    ! Arguments
+    character(len=*), intent(in) :: short_name
+    integer, intent(in) :: vlevels
     real, target, intent(in) :: data(:,:,:)
-    nullify(snowTProf)
-    snowTProf => data
-  end subroutine LVT_prep_ps41_snowTProf
+    logical, intent(out) :: is_ps41_snow_var
 
-  ! Set pointer to LayerSnowGrain_inst
-  subroutine LVT_prep_ps41_layerSnowGrain(data)
-    implicit none
-    real, target, intent(in) :: data(:,:,:)
-    nullify(layerSnowGrain)
-    layerSnowGrain => data
-  end subroutine LVT_prep_ps41_layerSnowGrain
+    is_ps41_snow_var = .true. ! First guess
 
-  ! Set pointer to LayerSnowDepth_inst
-  subroutine LVT_prep_ps41_layerSnowDepth(data)
-    implicit none
-    real, target, intent(in) :: data(:,:,:)
-    nullify(layerSnowDepth)
-    layerSnowDepth => data
-  end subroutine LVT_prep_ps41_layerSnowDepth
+    ! Preliminary check for 3 vertical levels (used with PS41).
+    ! This doesn't apply for ActSnowNL, since that is a single layer variable.
+    select case(trim(short_name))
+    case ("ActSnowNL_inst")
+       continue
+    case default
+       if (vlevels .ne. 3) then
+          is_ps41_snow_var = .false.
+          return
+       end if
+    end select
 
-  ! Set pointer to ActSnowNL_inst
-  subroutine LVT_prep_ps41_actSnowNL(data)
-    implicit none
-    real, target, intent(in) :: data(:,:,:)
-    nullify(actSnowNL)
-    actSnowNL => data
-  end subroutine LVT_prep_ps41_actSnowNL
+    ! Now update the appropriate pointer
+    select case(trim(short_name))
+    case ("SnowIce_inst")
+       snowIce => data
+    case ("SnowLiq_inst")
+       snowLiq => data
+    case ("SnowTProf_inst")
+       snowTProf => data
+    case ("LayerSnowGrain_inst")
+       layerSnowGrain => data
+    case ("LayerSnowDepth_inst")
+       layerSnowDepth => data
+    case ("ActSnowNL_inst")
+       actSnowNL => data
+    case default
+       is_ps41_snow_var = .false.
+    end select
+
+  end subroutine LVT_prep_jules_ps41_ens_snow_var
 
   ! Process the JULES PS41 snow variables
   subroutine LVT_proc_jules_ps41_ens_snow()
