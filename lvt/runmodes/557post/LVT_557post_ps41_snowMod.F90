@@ -612,155 +612,50 @@ contains
 
   end subroutine LVT_proc_jules_ps41_ens_snow
 
+  ! Fetch appropriate "final" array based on requested variable name.
   subroutine LVT_fetch_final(nc, nr, data, k, short_name, is_ps41_snow_var)
+
+    ! Defaults
     implicit none
+
+    ! Arguments
     integer, intent(in) :: nc
     integer, intent(in) :: nr
     real, intent(inout) :: data(nc*nr)
     integer, intent(in) :: k
     character(len=*), intent(in) :: short_name
     logical, intent(out) :: is_ps41_snow_var
-    is_ps41_snow_var = .false.
-    if (trim(short_name) .eq. "SnowIce_inst") then
-       call LVT_fetch_snowIce_final(nc, nr, data, k)
-       is_ps41_snow_var = .true.
-    else if (trim(short_name) .eq. "SnowLiq_inst") then
-       call LVT_fetch_snowLiq_final(nc, nr, data, k)
-       is_ps41_snow_var = .true.
-    else if (trim(short_name) .eq. "SnowTProf_inst") then
-       call LVT_fetch_snowTProf_final(nc, nr, data, k)
-       is_ps41_snow_var = .true.
-    else if (trim(short_name) .eq. "LayerSnowGrain_inst") then
-       call LVT_fetch_layerSnowGrain_final(nc, nr, data, k)
-       is_ps41_snow_var = .true.
-    else if (trim(short_name) .eq. "LayerSnowDepth_inst") then
-       call LVT_fetch_layerSnowDepth_final(nc, nr, data, k)
-       is_ps41_snow_var = .true.
-    else if (trim(short_name) .eq. "ActSnowNL_inst") then
-       call LVT_fetch_actSnowNL_final(nc, nr, data)
-       is_ps41_snow_var = .true.
-    else if (trim(short_name) .eq. "LayerSnowDensity_inst") then
-       call LVT_fetch_layerSnowDensity_final(nc, nr, data, k)
-       is_ps41_snow_var = .true.
-    else if (trim(short_name) .eq. "SurftSnow_inst") then
-       call LVT_fetch_surftSnow_final(nc, nr, data)
-       is_ps41_snow_var = .true.
-    else if (trim(short_name) .eq. "SnowGrain_inst") then
-       call LVT_fetch_SnowGrain_final(nc, nr, data)
-       is_ps41_snow_var = .true.
-    else if (trim(short_name) .eq. "SnowDepth_inst") then
-       call LVT_fetch_SnowDepth_final(nc, nr, data)
-       is_ps41_snow_var = .true.
-    else if (trim(short_name) .eq. "SWE_inst") then
-       call LVT_fetch_SWE_final(nc, nr, data)
-       is_ps41_snow_var = .true.
-    end if
+
+    is_ps41_snow_var = .true. ! First guess
+
+    select case(trim(short_name))
+    case ("SnowIce_inst")
+       data(:) = snowIce_final(:,k)
+    case ("SnowLiq_inst")
+       data(:) = snowLiq_final(:,k)
+    case ("SnowTProf_inst")
+       data(:) = snowtProf_final(:,k)
+    case ("LayerSnowGrain_inst")
+       data(:) = layerSnowGrain_final(:,k)
+    case ("LayerSnowDepth_inst")
+       data(:) = layerSnowDepth_final(:,k)
+    case ("ActSnowNL_inst")
+       data(:) = actSnowNL_final(:)
+    case ("LayerSnowDensity_inst")
+       data(:) = layerSnowDensity_final(:,k)
+    case ("SurftSnow_inst")
+       data(:) = surftSnow_final(:)
+    case ("SnowGrain_inst")
+       data(:) = snowGrain_final(:)
+    case ("SnowDepth_inst")
+       data(:) = snowDepth_final(:)
+    case ("SWE_inst")
+       data(:) = SWE_final(:)
+    case default
+       is_ps41_snow_var = .false.
+    end select
+
   end subroutine LVT_fetch_final
-
-  ! Pass SnowIce back
-  subroutine LVT_fetch_snowIce_final(nc, nr, data, k)
-    implicit none
-    integer, intent(in) :: nc
-    integer, intent(in) :: nr
-    real, intent(inout) :: data(nc*nr)
-    integer, intent(in) :: k
-    data(:) = snowIce_final(:,k)
-  end subroutine LVT_fetch_snowIce_final
-
-  ! Pass SnowLiq back
-  subroutine LVT_fetch_snowLiq_final(nc, nr, data, k)
-    implicit none
-    integer, intent(in) :: nc
-    integer, intent(in) :: nr
-    real, intent(inout) :: data(nc*nr)
-    integer, intent(in) :: k
-    data(:) = snowLiq_final(:,k)
-  end subroutine LVT_fetch_snowLiq_final
-
-  ! Pass SnowtProf back
-  subroutine LVT_fetch_snowtProf_final(nc, nr, data, k)
-    implicit none
-    integer, intent(in) :: nc
-    integer, intent(in) :: nr
-    real, intent(inout) :: data(nc*nr)
-    integer, intent(in) :: k
-    data(:) = snowtProf_final(:,k)
-  end subroutine LVT_fetch_snowtProf_final
-
-  ! Pass layerSnowGrain back
-  subroutine LVT_fetch_layerSnowGrain_final(nc, nr, data, k)
-    implicit none
-    integer, intent(in) :: nc
-    integer, intent(in) :: nr
-    real, intent(inout) :: data(nc*nr)
-    integer, intent(in) :: k
-    data(:) = layerSnowGrain_final(:,k)
-  end subroutine LVT_fetch_layerSnowGrain_final
-
-  ! Pass layerSnowDepth back
-  subroutine LVT_fetch_layerSnowDepth_final(nc, nr, data, k)
-    implicit none
-    integer, intent(in) :: nc
-    integer, intent(in) :: nr
-    real, intent(inout) :: data(nc*nr)
-    integer, intent(in) :: k
-    data(:) = layerSnowDepth_final(:,k)
-  end subroutine LVT_fetch_layerSnowDepth_final
-
-  ! Pass actSnowNL back
-  subroutine LVT_fetch_actSnowNL_final(nc, nr, data)
-    implicit none
-    integer, intent(in) :: nc
-    integer, intent(in) :: nr
-    real, intent(inout) :: data(nc*nr)
-    data(:) = actSnowNL_final(:)
-  end subroutine LVT_fetch_actSnowNL_final
-
-  ! Pass layerSnowDensity back
-  subroutine LVT_fetch_layerSnowDensity_final(nc, nr, data, k)
-    implicit none
-    integer, intent(in) :: nc
-    integer, intent(in) :: nr
-    real, intent(inout) :: data(nc*nr)
-    integer, intent(in) :: k
-    data(:) = layerSnowDensity_final(:,k)
-  end subroutine LVT_fetch_layerSnowDensity_final
-
-  ! Pass surftSnow back
-  subroutine LVT_fetch_surftSnow_final(nc, nr, data)
-    implicit none
-    integer, intent(in) :: nc
-    integer, intent(in) :: nr
-    real, intent(inout) :: data(nc*nr)
-    data(:) = surftSnow_final(:)
-  end subroutine LVT_fetch_surftSnow_final
-
-  ! Pass snowGrain back
-  subroutine LVT_fetch_snowGrain_final(nc, nr, data)
-    implicit none
-    integer, intent(in) :: nc
-    integer, intent(in) :: nr
-    real, intent(inout) :: data(nc*nr)
-    data(:) = snowGrain_final(:)
-  end subroutine LVT_fetch_snowGrain_final
-
-  ! Pass snowDepth back
-  subroutine LVT_fetch_snowDepth_final(nc, nr, data)
-    implicit none
-    integer, intent(in) :: nc
-    integer, intent(in) :: nr
-    real, intent(inout) :: data(nc*nr)
-    data(:) = snowDepth_final(:)
-  end subroutine LVT_fetch_snowDepth_final
-
-  ! Pass SWE back
-  subroutine LVT_fetch_SWE_final(nc, nr, data)
-    implicit none
-    integer, intent(in) :: nc
-    integer, intent(in) :: nr
-    real, intent(inout) :: data(nc*nr)
-    data(:) = SWE_final(:)
-  end subroutine LVT_fetch_SWE_final
 
 end module LVT_557post_ps41_snowMod
 
