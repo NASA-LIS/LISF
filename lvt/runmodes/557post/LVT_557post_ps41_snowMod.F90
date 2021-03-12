@@ -115,11 +115,14 @@ module LVT_557post_ps41_snowMod
   real, allocatable :: snowDepth_final(:)
   !real, allocatable :: new_rho_grnd???
   real, allocatable :: SWE_final(:)
-  
+
   ! Public routines
+  public :: LVT_init_jules_ps41_ens_snow
   public :: LVT_prep_jules_ps41_ens_snow_var
   public :: LVT_proc_jules_ps41_ens_snow
-  public :: LVT_fetch_final
+  public :: LVT_fetch_jules_ps41_ens_snow_final
+  public :: LVT_cleanup_jules_ps41_ens_snow
+
 contains
 
   ! Allocate all step arrays based on number of ensemble members.
@@ -155,21 +158,11 @@ contains
     allocate(SWE_final(nc*nr))
   end subroutine allocate_final_arrays
 
-    ! Deallocate arrays for final data
-  subroutine deallocate_final_arrays()
+  ! Initialize routine for JULES PS41 ensemble snow
+  subroutine LVT_init_jules_ps41_ens_snow()
     implicit none
-    if (allocated(snowIce_final)) deallocate(snowIce_final)
-    if (allocated(snowLiq_final)) deallocate(snowLiq_final)
-    if (allocated(snowTProf_final)) deallocate(snowTProf_final)
-    if (allocated(layerSnowGrain_final)) deallocate(layerSnowGrain_final)
-    if (allocated(layerSnowDepth_final)) deallocate(layerSnowDepth_final)
-    if (allocated(actSnowNL_final)) deallocate(actSnowNL_final)
-    if (allocated(layerSnowDensity_final)) deallocate(layerSnowDensity_final)
-    if (allocated(surftSnow_final)) deallocate(surftSnow_final)
-    if (allocated(snowGrain_final)) deallocate(snowGrain_final)
-    if (allocated(snowDepth_final)) deallocate(snowDepth_final)
-    if (allocated(SWE_final)) deallocate(SWE_final)
-  end subroutine deallocate_final_arrays
+    call nullify_pointers()
+  end subroutine LVT_init_jules_ps41_ens_snow
 
   ! Nullify all pointers
   subroutine nullify_pointers()
@@ -489,7 +482,7 @@ contains
 
     is_ps41_snow_var = .true. ! First guess
 
-    ! Preliminary check for 3 vertical levels (used with PS41).
+    ! Preliminary check for 3 vertical levels (used with PS41 snow fields).
     ! This doesn't apply for ActSnowNL, since that is a single layer variable.
     select case(trim(short_name))
     case ("ActSnowNL_inst")
@@ -600,14 +593,16 @@ contains
        end do ! c
     end do ! r
 
-    ! Cleanup, but keep final arrays for later extraction by LVT
+    ! Free up internal memory, but keep "final" arrays for subsequent
+    ! copying to external routine.
     call deallocate_step_arrays()
     call nullify_pointers()
 
   end subroutine LVT_proc_jules_ps41_ens_snow
 
   ! Fetch appropriate "final" array based on requested variable name.
-  subroutine LVT_fetch_final(nc, nr, data, k, short_name, is_ps41_snow_var)
+  subroutine LVT_fetch_jules_ps41_ens_snow_final(nc, nr, data, k, short_name, &
+       is_ps41_snow_var)
 
     ! Defaults
     implicit none
@@ -649,7 +644,23 @@ contains
        is_ps41_snow_var = .false.
     end select
 
-  end subroutine LVT_fetch_final
+  end subroutine LVT_fetch_jules_ps41_ens_snow_final
+
+  ! Deallocate arrays for final data
+  subroutine LVT_cleanup_jules_ps41_ens_snow()
+    implicit none
+    if (allocated(snowIce_final)) deallocate(snowIce_final)
+    if (allocated(snowLiq_final)) deallocate(snowLiq_final)
+    if (allocated(snowTProf_final)) deallocate(snowTProf_final)
+    if (allocated(layerSnowGrain_final)) deallocate(layerSnowGrain_final)
+    if (allocated(layerSnowDepth_final)) deallocate(layerSnowDepth_final)
+    if (allocated(actSnowNL_final)) deallocate(actSnowNL_final)
+    if (allocated(layerSnowDensity_final)) deallocate(layerSnowDensity_final)
+    if (allocated(surftSnow_final)) deallocate(surftSnow_final)
+    if (allocated(snowGrain_final)) deallocate(snowGrain_final)
+    if (allocated(snowDepth_final)) deallocate(snowDepth_final)
+    if (allocated(SWE_final)) deallocate(SWE_final)
+  end subroutine LVT_cleanup_jules_ps41_ens_snow
 
 end module LVT_557post_ps41_snowMod
 

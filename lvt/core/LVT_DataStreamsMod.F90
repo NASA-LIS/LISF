@@ -426,7 +426,7 @@ contains
     integer :: count_jules_ps41_ens_snow_vars
     logical :: jules_ps41_ens_snow
     logical :: is_ps41_snow_var
-    
+
     ! EMK...This is only used when LVT is run in "557 post" mode.
     if (trim(LVT_rc%runmode) .ne. "557 post") return
 
@@ -1455,17 +1455,21 @@ contains
                   'nf90_put_var failed for lon')
           end if
        endif
-       
+
        dataEntry => LVT_histData%head_ds1_list
 
        ! EMK...Special handling of JULES PS41 multi-layer snow physics
        ! when ensembles are processed.
+       ! FIXME...Add LVT flag specifying PS41?
        jules_ps41_ens_snow = .false.
        if (trim(LVT_LIS_rc(1)%anlys_data_class) .eq. "LSM" .and. &
             trim(LVT_LIS_rc(1)%model_name) .eq. "JULES.5.0" .and. &
             LVT_rc%nensem .gt. 1) then
+
           write(LVT_logunit,*) &
                '[INFO] Prepare processing of JULES PS41 ensemble snow...'
+          call LVT_init_jules_PS41_ens_snow()
+
           count_jules_ps41_ens_snow_vars = 0
           do while(associated(dataEntry))
 
@@ -1582,22 +1586,81 @@ contains
                    ! for output to file.
                    is_ps41_snow_var = .false.
                    if (jules_ps41_ens_snow) then
-                      call LVT_fetch_final(LVT_rc%lnc, LVT_rc%lnr, gtmp1_1d, &
+
+                      call LVT_fetch_jules_ps41_ens_snow_final( &
+                           LVT_rc%lnc, LVT_rc%lnr, gtmp1_1d, &
                            k, trim(dataEntry%short_name), is_ps41_snow_var)
+
+                      ! Not all PS41 variables involve snow.  Check to
+                      ! see if this did; if it didn't, normal ensemble
+                      ! post-processing will occur later down.
                       if (is_ps41_snow_var) then
-                         !...CODE HERE FOR WRITING TO OUTPUT
-                      end if
-                      cycle
-                   end if
-                   
+
+                         ! Only write ensemble mean for PS41 snow variables
+                         if (LVT_rc%lvt_out_format .eq. "grib2") then
+
+                            call writeSingleGrib2Var(ftn_mean,&
+                                 gtmp1_1d,&
+                                 lisdataentry%varid_def,&
+                                 lisdataentry%gribSF,&
+                                 lisdataentry%gribSfc,&
+                                 lisdataentry%gribLvl,&
+                                 lisdataentry%gribDis,&
+                                 lisdataentry%gribCat,&
+                                 pdTemplate,&
+                                 stepType,&
+                                 time_unit,&
+                                 time_past,&
+                                 time_curr,&
+                                 timeRange,&
+                                 k,&
+                                 toplev(k:k),&
+                                 botlev(k:k),&
+                                 depscale(k:k), &
+                                 typeOfGeneratingProcess=4, &
+                                 typeOfProcessedData=4)
+
+                         elseif(LVT_rc%lvt_out_format.eq."grib1") then
+                            call writeSingleGrib1Var(ftn_mean,&
+                                 gtmp1_1d,&
+                                 lisdataentry%varid_def,&
+                                 lisdataentry%gribSF,&
+                                 lisdataentry%gribSfc,&
+                                 lisdataentry%gribLvl,&
+                                 stepType,&
+                                 time_unit,&
+                                 time_past,&
+                                 time_curr,&
+                                 timeRange,&
+                                 k,&
+                                 toplev(k:k),&
+                                 botlev(k:k))
+
+                         elseif(LVT_rc%lvt_out_format.eq."netcdf") then
+                            call writeSingleNetcdfVar(ftn_mean,&
+                                 gtmp1_1d,&
+                                 lisdataentry%varid_def,&
+                                 k)
+
+                         end if ! output format
+
+                         ! If we processed a PS41 ensemble snow variable, we
+                         ! don't need to continue to normal ensemble
+                         ! processing. Just go to the next vertical level.
+                         cycle
+
+                      end if ! if PS41 snow variable
+                   end if ! If processing JULES PS41 snow ensembles.
+
+                   ! Normal ensemble postprocessing starts here.
                    do m=1,LVT_rc%nensem
 
                       ! Must initialize ensemble member with "undefined" for
                       ! noise smoother
-                      gtmp1_1d_mem(:) = LVT_rc%udef 
+                      gtmp1_1d_mem(:) = LVT_rc%udef
                       do r=1,LVT_rc%lnr
                          do c=1,LVT_rc%lnc
-                            if(LVT_domain%gindex(c,r).ne.-1) then 
+                            if(LVT_domain%gindex(c,r).ne.-1) then
                                gid = LVT_domain%gindex(c,r)
                                gtmp1_1d_mem(c+(r-1)*LVT_rc%lnc) = &
                                     dataEntry%value(gid,m,k) 
@@ -1732,7 +1795,7 @@ contains
                               typeOfProcessedData=4)
                       end if
 
-          elseif(LVT_rc%lvt_out_format.eq."grib1") then 
+                   elseif(LVT_rc%lvt_out_format.eq."grib1") then 
                       call writeSingleGrib1Var(ftn_mean,&
                            gtmp1_1d,&
                            lisdataentry%varid_def,&
@@ -1788,6 +1851,11 @@ contains
           enddo
           dataEntry => dataEntry%next
        enddo
+
+       ! Free up memory for PS41 ensemble snow postprocessing.
+       if (jules_ps41_ens_snow) then
+          call LVT_cleanup_jules_ps41_ens_snow()
+       end if
 
        call LVT_append_HYCOM_fields(ftn_mean,&
             time_unit,&
