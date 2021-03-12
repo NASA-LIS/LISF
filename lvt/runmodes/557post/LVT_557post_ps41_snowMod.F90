@@ -62,7 +62,6 @@ module LVT_557post_ps41_snowMod
   real, dimension(nlayer) :: new_rho_snow
   real :: new_snowmass
   real :: new_rgrain
-  real :: new_rho_snow_grnd
   real :: new_snowdepth
   real :: new_rho_grnd
   integer :: new_nsnow
@@ -102,19 +101,19 @@ module LVT_557post_ps41_snowMod
   real, pointer :: ActSnowNL(:,:,:)
 
   ! Internal arrays for storing processed multi-layer snow
+  real, allocatable :: actSnowNL_final(:)
+  real, allocatable :: grndSnow_final(:)
+  real, allocatable :: layerSnowDensity_final(:,:)
+  real, allocatable :: layerSnowDepth_final(:,:)
+  real, allocatable :: layerSnowGrain_final(:,:)
+  real, allocatable :: SWE_final(:)
+  real, allocatable :: snowDensity_final(:)
+  real, allocatable :: snowDepth_final(:)
+  real, allocatable :: snowGrain_final(:)
   real, allocatable :: snowIce_final(:,:)
   real, allocatable :: snowLiq_final(:,:)
   real, allocatable :: snowTProf_final(:,:)
-  real, allocatable :: layerSnowGrain_final(:,:)
-  real, allocatable :: layerSnowDepth_final(:,:)
-  real, allocatable :: actSnowNL_final(:)
-  real, allocatable :: layerSnowDensity_final(:,:)
   real, allocatable :: surftSnow_final(:)
-  real, allocatable :: snowGrain_final(:)
-  !real, allocatable :: new_rho_snow_grnd???
-  real, allocatable :: snowDepth_final(:)
-  !real, allocatable :: new_rho_grnd???
-  real, allocatable :: SWE_final(:)
 
   ! Public routines
   public :: LVT_init_jules_ps41_ens_snow
@@ -145,17 +144,19 @@ contains
     implicit none
     integer, intent(in) :: nc
     integer, intent(in) :: nr
+    allocate(actSnowNL_final(nc*nr))
+    allocate(grndSnow_final(nc*nr))
+    allocate(layerSnowDensity_final(nc*nr, nlayer))
+    allocate(layerSnowDepth_final(nc*nr, nlayer))
+    allocate(layerSnowGrain_final(nc*nr, nlayer))
+    allocate(SWE_final(nc*nr))
+    allocate(snowDensity_final(nc*nr))
+    allocate(snowDepth_final(nc*nr))
+    allocate(snowGrain_final(nc*nr))
     allocate(snowIce_final(nc*nr, nlayer))
     allocate(snowLiq_final(nc*nr, nlayer))
     allocate(snowTProf_final(nc*nr, nlayer))
-    allocate(layerSnowGrain_final(nc*nr, nlayer))
-    allocate(layerSnowDepth_final(nc*nr, nlayer))
-    allocate(actSnowNL_final(nc*nr))
-    allocate(layerSnowDensity_final(nc*nr, nlayer))
     allocate(surftSnow_final(nc*nr))
-    allocate(snowGrain_final(nc*nr))
-    allocate(snowDepth_final(nc*nr))
-    allocate(SWE_final(nc*nr))
   end subroutine allocate_final_arrays
 
   ! Initialize routine for JULES PS41 ensemble snow
@@ -199,7 +200,7 @@ contains
     real :: s
     s = 0.0
     do n = 1, nensem
-      s = s + en_var_l(n, l)
+      s = s + en_var_l(n,l)
     end do
     layer_mean = s / nensem
   end function layer_mean
@@ -235,9 +236,9 @@ contains
     integer, intent(in) :: nensem
     integer :: l, n
     en_C(:,:) = 0.0
-    do n = 1, nensem
-      do l = 1, nlayer
-        en_C(n,l) = en_sice(n,l)*hcapi + en_sliq(n,l)*hcapw
+    do l = 1, nlayer
+       do n = 1, nensem
+         en_C(n,l) = en_sice(n,l)*hcapi + en_sliq(n,l)*hcapw
       end do
     end do
   end subroutine step_3
@@ -251,9 +252,9 @@ contains
     integer, intent(in) :: nensem
     integer :: l, n
     en_e(:,:) = 0.0
-    do n = 1, nensem
-      do l = 1, nlayer
-        en_e(n,l) = en_C(n,l)*(en_tsnow(n,l) - tm)
+    do l = 1, nlayer
+       do n = 1, nensem
+         en_e(n,l) = en_C(n,l)*(en_tsnow(n,l) - tm)
       end do
     end do
   end subroutine step_4
@@ -266,7 +267,7 @@ contains
     integer :: l
     e0(:) = 0.0
     do l = 1, nlayer
-      e0(l) = layer_mean(nensem, en_e,l)
+      e0(l) = layer_mean(nensem, en_e, l)
     end do
   end subroutine step_5
 
@@ -529,17 +530,19 @@ contains
     ! Initializations
     call allocate_step_arrays(LVT_rc%nensem)
     call allocate_final_arrays(LVT_rc%lnc, LVT_rc%lnr)
+    actSnowNL_final = LVT_rc%udef
+    grndSnow_final = LVT_rc%udef
+    layerSnowDensity_final = LVT_rc%udef
+    layerSnowDepth_final = LVT_rc%udef
+    layerSnowGrain_final = LVT_rc%udef
+    SWE_final = LVT_rc%udef
+    snowDensity_final = LVT_rc%udef
+    snowDepth_final = LVT_rc%udef
+    snowGrain_final = LVT_rc%udef
     snowIce_final = LVT_rc%udef
     snowLiq_final = LVT_rc%udef
     snowTProf_final = LVT_rc%udef
-    layerSnowGrain_final = LVT_rc%udef
-    layerSnowDepth_final = LVT_rc%udef
-    actSnowNL_final = LVT_rc%udef
-    layerSnowDensity_final = LVT_rc%udef
     surftSnow_final = LVT_rc%udef
-    snowGrain_final = LVT_rc%udef
-    snowDepth_final = LVT_rc%udef
-    SWE_final = LVT_rc%udef
 
     ! For each land point, apply PS41 ensemble post-processing
     do r = 1, LVT_rc%lnr
@@ -575,21 +578,20 @@ contains
 
           ! Copy to final arrays
           do k = 1, nlayer
+             layerSnowDensity_final(gid,k) = new_rho_snow(k)
              snowIce_final(gid,k) = new_sice(k)
              snowLiq_final(gid,k) = new_sliq(k)
              snowTProf_final(gid,k) = new_tsnow(k)
              layerSnowGrain_final(gid,k) = new_rgrainl(k)
              layerSnowDepth_final(gid,k) = new_ds(k)
-
-             layerSnowDensity_final(gid,k) = new_rho_snow(k)
           end do ! k
           actSnowNL_final(gid) = new_nsnow
-
-          surftSnow_final(gid) = new_snowmass
-          snowGrain_final(gid) = new_rgrain
+          grndSnow_final(gid) = 0. ! Always zero in PS41
+          SWE_final(gid) = new_snowmass
+          snowDensity_final(gid) = new_rho_grnd
           snowDepth_final(gid) = new_snowdepth
-          SWE_final(gid) = new_snowmass ! FIXME...Find liquid equivalent
-
+          snowGrain_final(gid) = new_rgrain
+          surftSnow_final(gid) = new_snowmass
        end do ! c
     end do ! r
 
@@ -618,28 +620,32 @@ contains
     is_ps41_snow_var = .true. ! First guess
 
     select case(trim(short_name))
+    case ("ActSnowNL_inst")
+       data(:) = actSnowNL_final(:)
+    case ("GrndSnow_inst")
+       data(:) = grndSnow_final(:)
+    case ("LayerSnowDensity_inst")
+       data(:) = layerSnowDensity_final(:,k)
+    case ("LayerSnowDepth_inst")
+       data(:) = layerSnowDepth_final(:,k)
+    case ("LayerSnowGrain_inst")
+       data(:) = layerSnowGrain_final(:,k)
+    case ("SWE_inst")
+       data(:) = SWE_final(:)
+    case ("SnowDensity_inst")
+       data(:) = snowDensity_final(:)
+    case ("SnowDepth_inst")
+       data(:) = snowDepth_final(:)
+    case ("SnowGrain_inst")
+       data(:) = snowGrain_final(:)
     case ("SnowIce_inst")
        data(:) = snowIce_final(:,k)
     case ("SnowLiq_inst")
        data(:) = snowLiq_final(:,k)
     case ("SnowTProf_inst")
        data(:) = snowtProf_final(:,k)
-    case ("LayerSnowGrain_inst")
-       data(:) = layerSnowGrain_final(:,k)
-    case ("LayerSnowDepth_inst")
-       data(:) = layerSnowDepth_final(:,k)
-    case ("ActSnowNL_inst")
-       data(:) = actSnowNL_final(:)
-    case ("LayerSnowDensity_inst")
-       data(:) = layerSnowDensity_final(:,k)
     case ("SurftSnow_inst")
        data(:) = surftSnow_final(:)
-    case ("SnowGrain_inst")
-       data(:) = snowGrain_final(:)
-    case ("SnowDepth_inst")
-       data(:) = snowDepth_final(:)
-    case ("SWE_inst")
-       data(:) = SWE_final(:)
     case default
        is_ps41_snow_var = .false.
     end select
@@ -649,17 +655,19 @@ contains
   ! Deallocate arrays for final data
   subroutine LVT_cleanup_jules_ps41_ens_snow()
     implicit none
+    if (allocated(actSnowNL_final)) deallocate(actSnowNL_final)
+    if (allocated(grndSnow_final)) deallocate(grndSnow_final)
+    if (allocated(layerSnowDensity_final)) deallocate(layerSnowDensity_final)
+    if (allocated(layerSnowDepth_final)) deallocate(layerSnowDepth_final)
+    if (allocated(layerSnowGrain_final)) deallocate(layerSnowGrain_final)
+    if (allocated(SWE_final)) deallocate(SWE_final)
+    if (allocated(snowDensity_final)) deallocate(snowDensity_final)
+    if (allocated(snowDepth_final)) deallocate(snowDepth_final)
+    if (allocated(snowGrain_final)) deallocate(snowGrain_final)
     if (allocated(snowIce_final)) deallocate(snowIce_final)
     if (allocated(snowLiq_final)) deallocate(snowLiq_final)
     if (allocated(snowTProf_final)) deallocate(snowTProf_final)
-    if (allocated(layerSnowGrain_final)) deallocate(layerSnowGrain_final)
-    if (allocated(layerSnowDepth_final)) deallocate(layerSnowDepth_final)
-    if (allocated(actSnowNL_final)) deallocate(actSnowNL_final)
-    if (allocated(layerSnowDensity_final)) deallocate(layerSnowDensity_final)
     if (allocated(surftSnow_final)) deallocate(surftSnow_final)
-    if (allocated(snowGrain_final)) deallocate(snowGrain_final)
-    if (allocated(snowDepth_final)) deallocate(snowDepth_final)
-    if (allocated(SWE_final)) deallocate(SWE_final)
   end subroutine LVT_cleanup_jules_ps41_ens_snow
 
 end module LVT_557post_ps41_snowMod
