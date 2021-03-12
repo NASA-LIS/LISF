@@ -18,13 +18,16 @@ Not all options described here are available in the public version of LDT.
 |"`LSM parameter processing`" |LSM Parameter Processing Option
 |"`DA preprocessing`" |Data Assimilation Preprocessing Option
 |"`Ensemble restart processing`" |Deriving an ensemble restart file Option
-|"`Restart preprocessing`" |LSM Restart File Preprocessing Option
-|"`Restart transformation processing`" | LSM restart file transformation option
-|"`Metforce processing`" |Meteorological forcing processing Option (similar to LIS)
-|"`Metforce temporal downscaling`" |Meteorological forcing temporal downscaling
+|"`Climatological restart processing`" |LSM Restart File Preprocessing Option
+|"`Restart transformation processing`" | LSM restart file transformation Option
+|"`NUWRF preprocessing for real`" |NUWRF Preprocessing Option
+|"`ANN processing`" |Artificial Neural Networks  Processing Option
+|"`Metforce processing`" |Meteorological Forcing Processing Option (similar to LIS)
+|"`Metforce temporal downscaling`" |Meteorological Forcing Temporal Downscaling
 |"`Statistical downscaling of met forcing`" |Statistical options to downscale or generate forcing climatologies
 |"`OPTUE parameter processing`" |Process the OPT/UE output to generate optimized parameters
 |"`USAFSI analysis`" |USAF Snow and Ice analysis
+|"`LISHydro preprocessing for WRFHydro`" |Preprocessing Option for WRFHydro
 |===
 
 .Example _ldt.config_ entry
@@ -3350,6 +3353,7 @@ LIS output timestep:          1da
 |"`GRACE TWS`" |Terrestrial water storage observations from GRACE
 |"`Simulated GRACE`" |Simulated water storage observations from GRACE
 |"`MCD15A2H LAI`" | MODIS MCD15A2H v006 LAI product
+|"`SMOS NRT NN soil moisture`" | SMOS Level 2 Soil Moisture Near Real Time Neural Network
 |===
 
 .Example _ldt.config_ entry
@@ -3952,6 +3956,23 @@ LPRM vegetation optical depth observation directory: ../LPRM_VOD
 LPRM vegetation optical depth data designation:      'X-band'
 ....
 
+`SMOS NRT NN soil moisture observation directory:` specifies the location of the data directory containing the SMOS NRT NN data.
+
+.Example _ldt.config_ entry
+....
+MOS NRT NN soil moisture observation directory: ./SMOS_NRT_NN
+....
+
+`SMOS NRT NN search radius for openwater proximity detection:` specifies the radius in which LDT search to detect open water. Then removes all pixels within the radius in the CDF calculations.
+
+.Example _ldt.config_ entry
+....
+SMOS NRT NN search radius for openwater proximity detection: 3
+....
+
+[[ssec-hymapopts]]
+=== HYMAP routing options
+
 This section describes the parameters needed for the HYMAP and the HYMAP2 routing models.  The config entries only have "`HYMAP`" within them, as they apply to both HYMAP versions.
 
 `HYMAP river width map:` specifies the name of the HYMAP river width data file.
@@ -4183,7 +4204,24 @@ Search radius for openwater proximity detection:
 
 `USAFSI surface obs data directory:` directory with surface snow reports
 
+`USAFSI brightness temperature data option:` specifies PMW brightness temperature data. Acceptable values are (note: options for 2: XCAL GMI and 3: AMSR2 are still in development or test state):
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|1 |SSMIS
+|2 |XCAL GMI
+|3 |AMSR2
+|===
+
+`USAFSI XCAL GMI data directory:` directory with XCAL GMI snow depth retrievals
+
+`USAFSI AMSR2 data directory:` directory with AMSR2 snow depth retrievals
+
 `USAFSI SSMIS data directory:` directory with SSMIS snow depth retrievals
+
+`USAFSI SST data directory:` directory with legacy 0.25 deg Navy sea surface temperatures
 
 `USAFSI surface temperature data directory:` directory with legacy 0.25 deg LIS ungribbed surface temperatures
 
@@ -4193,36 +4231,67 @@ Search radius for openwater proximity detection:
 
 `USAFSI VIIRS data directory:` directory with VIIRS TIFF files
 
+`USAFSI XCAL GMI raw data directory:` directory with XCAL GMI HDF5 files
+
+`USAFSI AMSR2 raw data directory:` directory with AMSR2 HDF5 files
+
 `USAFSI SSMIS raw data directory:` directory with SSMIS BUFR files
 
-`USAFSI SSMIS snow depth retrieval algorithm:` version of SSMIS retrieval algorithm. Acceptable values are:
+`USAFSI PMW snow depth retrieval algorithm:` version of PMW retrieval algorithm. Acceptable values are:
 
 [cols="<,<",]
 |===
 |Value |Description
 
-|1 |Hollinger (1991)
-|2 |Chang et al (1987)
-|3 |Foster et al (1997), recommended
+|1 |Hollinger, 1991; Hollinger, J.P., 1991: DMSP Special Sensor Microwave/Imager Calibration/Validation Final Report, vol. 2. Naval Research Laboratory, DMSP SSM/I Cal/Val Team.
+|2 |Chang et al., 1987; Chang, A.T.C., Foster, J.L., and Hall, D.K., 1987: Nimbus-7 derived global snow cover parameters. Annals of Glaciology, 9, 39–44.
+|3 |Foster et al., 1997; Foster, J.L., A.T.C. Chang, and D.K. Hall,1997: Comparison of snow mass estimates from a prototype passive microwave snow algorithm, a revised algorithm and a snow depth climatology, Remote Sensing of Environment, Volume 62, Issue 2, 132-142.
+|4 |Kelly, 2009, only for GMI and AMSR2; Kelly, R.E., 2009: The AMSR-E snow depth algorithm description and initial results. J. Remote Sens. Soc. Japan, 29, 307–317, doi:10.11440/rssj.29.307. 
 |===
 
-`USAFSI SSMIS forest fraction file:` path to netCDF forest fraction file (for Foster et al (1997) algorithm)
+`USAFSI forest fraction file:` path to netCDF forest fraction file (for Foster et al.,1997 and Kelly,2009's algorithms)
+
+`USAFSI forest density file:` path to netCDF forest density file (for Kelly,2009 algorithm)
 
 .Example _ldt.config_ entry
 ....
-USAFSI netcdf filename prefix:  usafsi
-USAFSI valid date (YYYYMMDDHH):  2018120618
-USAFSI fractional snow data directory:     ./SNODEPIN/snofrac/
-USAFSI modified data directory:            ./SNODEPIN/modified/
-USAFSI surface obs data directory:         ./SNODEPIN/sfcobs/
-USAFSI SSMIS data directory:               ./SNODEPIN/SSMIS/algorithm03/
-USAFSI surface temperature data directory: ./SNODEPIN/sfctmps/
-USAFSI static data directory:              ./SNODEPIN/static/
-USAFSI unmodified data directory:          ./PREVDIR/algorithm03/
-USAFSI VIIRS data directory:               ./SNODEPIN/viirs/
-USAFSI SSMIS raw data directory:           ./SNODEPIN/OBSI_SSMISUPP/
-USAFSI SSMIS snow depth retrieval algorithm option:   3
-USAFSI SSMIS forest fraction file:     ./SNODEPIN/ForestFraction_0p25deg.nc
+USAFSI netcdf filename prefix:                        USAFSI
+USAFSI valid date (YYYYMMDDHH):                       2020020318
+USAFSI fractional snow data directory:                ./USAFSIIN/snofrac/
+USAFSI modified data directory:                       ./USAFSIIN/modified/
+USAFSI surface obs data directory:                    ./USAFSIIN/sfcobs/
+USAFSI brightness temperature data option:             3
+USAFSI XCAL GMI data directory:                       ./GMI_retrievals/
+USAFSI AMSR2 data directory:                          ./AMSR2_retrievals/
+USAFSI SSMIS data directory:                          ./SSMIS_retrievals/
+USAFSI SST data directory:                            ./USAFSIIN/sfctmps/
+USAFSI surface temperature data directory:            ./USAFSIIN/sfctmps/
+USAFSI static data directory:                         ./USAFSIIN/static/
+USAFSI unmodified data directory:                     ./USAFSIIN/unmodified/
+USAFSI VIIRS data directory:                          ./USAFSIIN/viirs
+
+USAFSI XCAL GMI raw data directory:                   ./GMI_L1CR_web/
+USAFSI AMSR2 raw data directory:                      ./AMSR2_L1R/
+USAFSI SSMIS raw data directory:                      ./USAFSIIN/OBSI_SSMISUPP/
+USAFSI PMW snow depth retrieval algorithm option:     4
+
+USAFSI forest fraction file:                          ./USAFSIIN/ForestFraction_0p25deg.nc
+USAFSI forest density file:                           ./MOD44B/PTC_MOD44B_0p25.nc
+....
+
+`USAFSI Snow Climatology:` specifies snow climatology data. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|1 |legacy
+|2 |updated 10-km climo
+|===
+
+.Example _ldt.config_ entry
+....
+USAFSI Snow Climatology:    1
 ....
 
 `USAFSI decimal fraction adjustment of snow depth towards climo):` controls drift to climo in data void region
@@ -4351,5 +4420,44 @@ USAFSI GALWEM nominal resolution (km): 17
 .Example _ldt.config_ entry
 ....
 LIS OPT/UE output file: ./GA.0059.1gd4r
+....
+
+[[ssec-glacier-frac]]
+=== Glacier Fraction
+
+(Note: This feature is still under development)
+
+`Glacier fraction data source:` specifies a glacier fraction map source.
+
+`Glacier fraction map:` specifies the location of the glacier map file.
+
+`Glacier fraction spatial transform:` indicates which spatial transform type is to be applied to glacier-related maps.
+
+`Glacier fraction map projection:` specifies the projection of the glacier map data.
+
+`Glacier fraction lower left lat:` specifies the lower left latitude of the LIS model output.
+
+`Glacier fraction lower left lon:` specifies the lower left longitude of the LIS model output.
+
+`Glacier fraction upper right lat:` specifies the upper right latitude of the LIS model output.
+
+`Glacier fraction upper right lon:` specifies the upper right longitude of the LIS model output.
+
+`Glacier fraction resolution (dx):` specifies the resolution (in degrees) along the latitude of the LIS model output.
+
+`Glacier fraction resolution (dy):` specifies the resolution (in degrees) along the longitude of the LIS model output.
+
+.Example _ldt.config_ entry
+....
+Glacier fraction data source:       "GLIMS"
+Glacier fraction map:               ../LS_PARAMETERS/GLIMS/glims_global.d01.nc
+Glacier fraction spatial transform: "average" # this entry and related code need to be eliminated
+Glacier fraction map projection:    "latlon"
+Glacier fraction lower left lat:    -89.995
+Glacier fraction lower left lon:    -179.995
+Glacier fraction upper right lat:   89.995
+Glacier fraction upper right lon:   179.995
+Glacier fraction resolution (dx):   0.01
+Glacier fraction resolution (dy):   0.01
 ....
 

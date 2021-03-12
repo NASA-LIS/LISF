@@ -125,7 +125,7 @@ contains
     use LIS_irrigationMod,     only : LIS_irrigation_run,LIS_irrigation_output
     use LIS_appMod,            only : LIS_runAppModel, LIS_outputAppModel
     use LIS_RTMMod,            only : LIS_RTM_run, LIS_RTM_output
-    use LIS_logMod,            only : LIS_flush, LIS_logunit
+    use LIS_logMod,            only : LIS_logunit
 !
 ! !DESCRIPTION:
 ! 
@@ -214,7 +214,7 @@ contains
              call LIS_outputAppModel(n)
           endif
        enddo
-       call LIS_flush(LIS_logunit)
+       flush(LIS_logunit)
     enddo
   end subroutine lis_run_retrospective
 
@@ -225,7 +225,7 @@ contains
   subroutine lis_final_retrospective
 ! !USES:
     use LIS_coreMod,         only : LIS_finalize
-    use LIS_logMod,          only : LIS_flush, LIS_logunit
+    use LIS_logMod,          only : LIS_logunit
     use LIS_surfaceModelMod, only : LIS_surfaceModel_finalize
     use LIS_paramsMod,       only : LIS_param_finalize
     use LIS_metforcingMod,   only : LIS_metforcing_finalize

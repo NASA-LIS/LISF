@@ -103,6 +103,8 @@ module LDT_pluginIndices
         = "GCOMW AMSR2 L3 snow depth"
    character*50, public,  parameter :: LDT_NASASMAPsmobsId            &
         = "NASA SMAP soil moisture"
+   character*50, public,  parameter :: LDT_SMOSNRTNNsmobsId            &
+        = "SMOS NRT NN soil moisture"                                        !kyh20210105
    character*50, public,  parameter :: LDT_NASASMAPvodobsId            &
         = "NASA SMAP vegetation optical depth"
    character*50, public,  parameter :: LDT_GLASSlaiobsId            &
@@ -199,6 +201,11 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_gldbv1Id   = "GLDBv1"
    character*50, public,  parameter :: LDT_gldbv2Id   = "GLDBv2"
    character*50, public,  parameter :: LDT_glwdId     = "GLWD"
+
+!-------------------------------------------------------------------------
+! Snow models and data
+!-------------------------------------------------------------------------
+   character*50, public,  parameter :: LDT_Crocus81Id    = "Crocus8.1"  ! this is SURFEX version comes from surf_version.F90
 
 !-------------------------------------------------------------------------
 ! Landcover sources

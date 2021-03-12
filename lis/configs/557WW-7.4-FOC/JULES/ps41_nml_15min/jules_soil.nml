@@ -1,0 +1,18 @@
+&jules_soil
+confrac=0.3,
+!!dzdeep=0.5,
+!!dzsoil_elev=0.,
+dzsoil_io=0.1000,0.2500,0.6500,2.0000,
+!!hcapdeep=2100000.0,
+!!hcondeep=8.6,
+l_bedrock=.false.,
+l_dpsids_dsdz=.true.,
+!l_holdwater=.false.,      !!!! this option is added for jules 5.1, disabled for JULES 5.0 Shugong 
+l_soil_sat_down=.true.,
+l_vg_soil=.true.,
+!!ns_deep=100,
+sm_levels=4,
+soilhc_method=2,
+zsmc=1.0,
+zst=1.0,
+/

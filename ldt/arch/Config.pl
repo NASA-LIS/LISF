@@ -784,6 +784,13 @@ else{
    printf misc_file "%s\n","#undef USE_HDF4 ";
 }
 
+if($use_hdfeos == 1) {
+   printf misc_file "%s\n","#define USE_HDFEOS2 ";
+}
+else{
+   printf misc_file "%s\n","#undef USE_HDFEOS2 ";
+}
+
 if($use_hdf5 == 1) {
    printf misc_file "%s\n","#define USE_HDF5 ";
 }

@@ -63,6 +63,10 @@ module LISWRFexport_module
      real, allocatable :: relsmc2(:,:)
      real, allocatable :: relsmc3(:,:)
      real, allocatable :: relsmc4(:,:)
+#ifdef WRF_HYDRO
+     real, allocatable :: infxsrt(:,:)
+     real, allocatable :: soldrain(:,:)
+#endif
 
      real, allocatable :: avgsurft_t(:)
      real, allocatable :: qh_t(:)
@@ -103,6 +107,10 @@ module LISWRFexport_module
      real, allocatable :: relsmc2_t(:)
      real, allocatable :: relsmc3_t(:)
      real, allocatable :: relsmc4_t(:)
+#ifdef WRF_HYDRO
+     real, allocatable :: infxsrt_t(:)
+     real, allocatable :: soldrain_t(:)
+#endif
   end type liswrfexport
 
 end module LISWRFexport_module

@@ -28,7 +28,7 @@
     call LDT_domainInit
     call LDT_climoRstProcInit
     call LDT_coreinit
-    call LDT_flush(LDT_logunit)
+    flush(LDT_logunit)
 
   end subroutine LDT_init_climoRstproc
   

@@ -241,6 +241,11 @@ module noah33_module
      real :: sigma_sm  !used for optimization/uncertainty analysis
 
      real,allocatable :: relsmc(:)  !used to export relsmc to WRF
+#ifdef WRF_HYDRO
+     real :: sfhead1rt
+     real :: infxs1rt
+     real :: soldrain1rt
+#endif
   end type noah33dec
 
 end module noah33_module

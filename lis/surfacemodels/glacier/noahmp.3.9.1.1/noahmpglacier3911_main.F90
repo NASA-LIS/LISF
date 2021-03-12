@@ -98,6 +98,9 @@ subroutine noahmpglacier3911_main(n)
   real                 :: soil_temp(noahmpgl3911_struc(n)%nsoil)   
   real                 :: snow_temp(noahmpgl3911_struc(n)%nsnow)
   real                 :: sldpth(noahmpgl3911_struc(n)%nsoil)
+#ifdef WRF_HYDRO
+  real                 :: sfcheadrt
+#endif
 
   nsnow = noahmpgl3911_struc(n)%nsnow
   nsoil = noahmpgl3911_struc(n)%nsoil
@@ -250,6 +253,9 @@ subroutine noahmpglacier3911_main(n)
         smh2o = noahmpgl3911_struc(n)%noahmpgl(t)%sh2o
         qsfc1d = q_ml
         stc = noahmpgl3911_struc(n)%noahmpgl(t)%sstc
+#ifdef WRF_HYDRO
+        sfcheadrt = noahmpgl3911_struc(n)%noahmpgl(t)%sfcheadrt
+#endif
 
         call noahmp_glacier(  lis_localpet, t, &
              noahmpgl3911_struc(n)%alb_opt,&
@@ -268,7 +274,7 @@ subroutine noahmpglacier3911_main(n)
              qsnbot,ponding,ponding1,ponding2, t2mb, q2mb, & 
              emissi, fpice,  chb2 &                          
 #ifdef WRF_HYDRO
-        , sfcheadrt(i,j)                                      &
+        , sfcheadrt                                           &
 #endif
         )
 
@@ -314,6 +320,9 @@ subroutine noahmpglacier3911_main(n)
         noahmpgl3911_struc(n)%noahmpgl(t)%fpice = fpice
         noahmpgl3911_struc(n)%noahmpgl(t)%emissi = emissi
         noahmpgl3911_struc(n)%noahmpgl(t)%chb2 = chb2
+#ifdef WRF_HYDRO
+        noahmpgl3911_struc(n)%noahmpgl(t)%sfcheadrt = sfcheadrt
+#endif
 
         ![ 1] output variable: soil_temp (unit=K). ***  soil layer temperature
         soil_temp(1:noahmpgl3911_struc(n)%nsoil) = &

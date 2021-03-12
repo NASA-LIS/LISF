@@ -40,7 +40,7 @@ subroutine LVT_run_optUE
   do i=1,LVT_optuectl%maxIter
      call LVT_readoptUEData(i)
      call LVT_computeoptUEStats(i)
-     call LVT_flush(LVT_logunit)
+     flush(LVT_logunit)
   enddo
 end subroutine LVT_run_optUE
   

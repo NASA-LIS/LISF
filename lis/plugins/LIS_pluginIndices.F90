@@ -43,6 +43,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_RTMforwardId  = "RTM forward"
    character*50, public,  parameter :: LIS_agrmetrunId = "AGRMET ops"
    character*50, public,  parameter :: LIS_wrfcplId    = "WRF coupling"
+   character*50, public,  parameter :: LIS_nuopccplId  = "NUOPC coupling"
    character*50, public,  parameter :: LIS_gcecplId    = "GCE coupling"
    character*50, public,  parameter :: LIS_gfscplId    = "GFS coupling"
    character*50, public,  parameter :: LIS_paramEstimRunId = "parameter estimation"
@@ -93,6 +94,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_geowrsi2Id  = "GeoWRSI.2"
    character*50, public,  parameter :: LIS_rdhm356lsmId = "RDHM.3.5.6"
    character*50, public,  parameter :: LIS_summa1Id     = "SUMMA.1.0"
+   character*50, public,  parameter :: LIS_Crocus81Id     = "Crocus8.1"  
 
 !-------------------------------------------------------------------------
 ! Lake models
@@ -275,6 +277,8 @@ module LIS_pluginIndices
         "SMOS(NESDIS) soil moisture"
    character*50, public,  parameter :: LIS_NASASMAPsmobsId       = &
         "SMAP(NASA) soil moisture"
+   character*50, public,  parameter :: LIS_SMOSNRTNNL2smobsId    = &
+        "SMOS NRT NN soil moisture"                                  !YK
    character*50, public,  parameter :: LIS_NASASMAPvodobsId      = &
         "SMAP(NASA) vegetation optical depth"
    character*50, public,  parameter :: LIS_GLASSlaiobsId         = &
@@ -291,6 +295,7 @@ module LIS_pluginIndices
         "ASO SWE"
    character*50, public,  parameter :: LIS_synwlId             = &
         "Synthetic water level"
+
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms
 !-------------------------------------------------------------------------

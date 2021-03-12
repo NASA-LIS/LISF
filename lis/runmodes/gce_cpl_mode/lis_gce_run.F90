@@ -21,7 +21,7 @@ subroutine lis_gce_run()
   use LIS_DAobservationsMod, only : LIS_readDAobservations, &
        LIS_perturb_DAobservations
   use LIS_dataAssimMod,    only : LIS_dataassim_run, LIS_dataassim_output
-  use LIS_logMod,          only : lis_flush, LIS_logunit, LIS_verify
+  use LIS_logMod,          only : LIS_logunit, LIS_verify
   use lisgceGridCompMod,   only : lisgce_import, lisgce_export
 
   implicit none
@@ -125,7 +125,7 @@ subroutine lis_gce_run()
   call LIS_surfaceModel_run(n)
   call LIS_surfaceModel_output(n)  
   call LIS_surfaceModel_writerestart(n)
-  call LIS_flush(LIS_logunit)
+  flush(LIS_logunit)
 
   call LIS_surfaceModel_setexport(n)
   
