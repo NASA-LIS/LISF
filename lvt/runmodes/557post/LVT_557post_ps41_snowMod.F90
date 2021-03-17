@@ -17,9 +17,6 @@ module LVT_557post_ps41_snowMod
 
   integer, parameter :: nlayer  = 3 ! JULES PS41 uses three-layer snow physics
 
-  ! FIXME...Pass this from LVT for flexibility
-  !integer, parameter :: nensem = 12
-
   real, parameter, dimension(3) :: dzsnow= (/ 0.04, 0.12, 0.34 /)
 
   real, parameter :: hcapi               = 2100.0
@@ -69,8 +66,8 @@ module LVT_557post_ps41_snowMod
   ! Internal variables
   !real, dimension(nensem, nlayer) :: en_C ! heat capacity (J/kg/K)
   !real, dimension(nensem, nlayer) :: en_e ! internal energy (J/m2)
-  real, allocatable :: en_C(:,:)
-  real, allocatable :: en_e(:,:)
+  real, allocatable :: en_C(:,:) ! heat capacity (J/kg/K)
+  real, allocatable :: en_e(:,:) ! internal energy (J/m2)
 
   ! Average ice water content across ensemble for each snow layer
   real, dimension(0:nlayer) :: sice0
@@ -564,7 +561,7 @@ contains
              en_nsnow(m) = actSnowNL(gid,m,1)
           end do ! m
 
-          ! Execute the relayering algorithm
+          ! Execute most of the relayering algorithm
           call step_1(LVT_rc%nensem)
           call step_2(LVT_rc%nensem)
           call step_3(LVT_rc%nensem)
@@ -573,25 +570,46 @@ contains
           call step_6(LVT_rc%nensem)
           call step_7_8(LVT_rc%nensem)
           call step_9()
-          call step_10()
-          call step_11()
 
-          ! Copy to final arrays
-          do k = 1, nlayer
-             layerSnowDensity_final(gid,k) = new_rho_snow(k)
-             snowIce_final(gid,k) = new_sice(k)
-             snowLiq_final(gid,k) = new_sliq(k)
-             snowTProf_final(gid,k) = new_tsnow(k)
-             layerSnowGrain_final(gid,k) = new_rgrainl(k)
-             layerSnowDepth_final(gid,k) = new_ds(k)
-          end do ! k
-          actSnowNL_final(gid) = new_nsnow
-          grndSnow_final(gid) = 0. ! Always zero in PS41
-          SWE_final(gid) = new_snowmass
-          snowDensity_final(gid) = new_rho_grnd
-          snowDepth_final(gid) = new_snowdepth
-          snowGrain_final(gid) = new_rgrain
-          surftSnow_final(gid) = new_snowmass
+          ! Handle no-snow case
+          if (new_snowdepth .eq. 0) then
+             do k = 1, nlayer
+                layerSnowDensity_final(gid,k) = 0.
+                snowIce_final(gid,k) = 0.
+                snowLiq_final(gid,k) = 0.
+                snowTProf_final(gid,k) = tm ! Default in JULES
+                layerSnowGrain_final(gid,k) = 50. ! Default in JULES
+                layerSnowDepth_final(gid,k) = 0.
+             end do
+             actSnowNL_final(gid) = 0
+             grndSnow_final(gid) = 0. ! Always zero in PS41
+             SWE_final(gid) = 0.
+             snowDensity_final(gid) = 109. ! Default in JULES
+             snowDepth_final(gid) = 0.
+             snowGrain_final(gid) = 50. ! Default in JULES
+             surftSnow_final(gid) = 0.
+          else
+
+             ! We have snow, so finish relayering and copy to final arrays
+             call step_10()
+             call step_11()
+             do k = 1, nlayer
+                layerSnowDensity_final(gid,k) = new_rho_snow(k)
+                snowIce_final(gid,k) = new_sice(k)
+                snowLiq_final(gid,k) = new_sliq(k)
+                snowTProf_final(gid,k) = new_tsnow(k)
+                layerSnowGrain_final(gid,k) = new_rgrainl(k)
+                layerSnowDepth_final(gid,k) = new_ds(k)
+             end do ! k
+             actSnowNL_final(gid) = new_nsnow
+             grndSnow_final(gid) = 0. ! Always zero in PS41
+             SWE_final(gid) = new_snowmass
+             snowDensity_final(gid) = new_rho_grnd
+             snowDepth_final(gid) = new_snowdepth
+             snowGrain_final(gid) = new_rgrain
+             surftSnow_final(gid) = new_snowmass
+          end if
+
        end do ! c
     end do ! r
 
