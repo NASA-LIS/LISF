@@ -428,7 +428,16 @@ contains
     logical :: jules_ps41_ens_snow
     logical :: is_ps41_snow_var
     character(len=100) :: short_name
-
+    type(LVT_lismetadataEntry), target :: GrndSnow
+    type(LVT_lismetadataEntry), target :: LayerSnowDensity
+    type(LVT_lismetadataEntry), target :: SWE
+    type(LVT_lismetadataEntry), target :: SnowDepth
+    type(LVT_lismetadataEntry), target :: SnowDensity
+    type(LVT_lismetadataEntry), target :: SnowGrain
+    type(LVT_lismetadataEntry), target :: SurftSnow
+    integer :: GrndSnowID, LayerSnowDensityID, SWEID, SnowDepthID, &
+         SnowDensityID, SnowGrainID, SurftSnowID
+    
     ! EMK...This is only used when LVT is run in "557 post" mode.
     if (trim(LVT_rc%runmode) .ne. "557 post") return
 
@@ -529,10 +538,19 @@ contains
           ! will be fetched further down.
           call LVT_proc_jules_ps41_ens_snow()
 
+          ! Set metadata for new derived snow variables not copied from
+          ! LIS file.
+          call LVT_set_SWE_metadata(SWE)
+          call LVT_set_SnowDensity_metadata(SnowDensity)
+          call LVT_set_LayerSnowDensity_metadata(LayerSnowDensity)
+          call LVT_set_SnowGrain_metadata(SnowGrain)
+          call LVT_set_SnowDepth_metadata(SnowDepth)
+          call LVT_set_GrndSnow_metadata(GrndSnow)
+          call LVT_set_SurftSnow_metadata(SurftSnow)
        end if
        ! EMK END JULES PS41 Snow
 
-       if(LVT_rc%lvt_out_format.eq."grib1") then  
+       if(LVT_rc%lvt_out_format.eq."grib1") then
 
           write(unit=cdate2,fmt='(i4.4,i2.2,i2.2)') &
                LVT_rc%yr, LVT_rc%mo, LVT_rc%da
@@ -588,7 +606,7 @@ contains
                   ! '_PA.03-HR-SUM_DD.'//&
                   '_PA.LIS_DD.'//&
                   trim(cdate2)//'_DT.'//trim(cdate3)//'_DF_SSDEV.GR1'
-             
+
           end if
 
           ! Setup of GRIB-1 and GRIB-2 Metadata Section
@@ -1297,7 +1315,7 @@ contains
              do while(associated(lisdataEntry)) 
                 if(lisdataEntry%short_name.eq.dataEntry%short_name) then
                    
-                   call defineNETCDFheaderVar(ftn_mean,dimID, lisdataEntry)  
+                   call defineNETCDFheaderVar(ftn_mean, dimID, lisdataEntry)  
                    
                    if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
                         LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow) then
@@ -1479,7 +1497,34 @@ contains
                   LVT_histData%hi%varId_def,&
                   "vmax",LVT_rc%udef))
           endif
-          
+
+          ! EMK...Add additional PS41 snow variable headers.
+          if (jules_ps41_ens_snow) then
+
+             lisdataEntry => SWE
+             call defineNETCDFheaderVar(ftn_mean, dimID, lisdataEntry)
+
+             lisdataEntry => SnowDensity
+             call defineNETCDFheaderVar(ftn_mean, dimID, lisdataEntry)
+
+             lisdataEntry => LayerSnowDensity
+             call defineNETCDFheaderVar(ftn_mean, dimID, lisdataEntry)
+
+             lisdataEntry => SnowGrain
+             call defineNETCDFheaderVar(ftn_mean, dimID, lisdataEntry)
+
+             lisdataEntry => SnowDepth
+             call defineNETCDFheaderVar(ftn_mean, dimID, lisdataEntry)
+
+             lisdataEntry => GrndSnow
+             call defineNETCDFheaderVar(ftn_mean, dimID, lisdataEntry)
+
+             lisdataEntry => SurftSnow
+             call defineNETCDFheaderVar(ftn_mean, dimID, lisdataEntry)
+
+          end if
+          ! EMK END PS41 snow headers
+
           call LVT_verify(nf90_enddef(ftn_mean))
           call LVT_verify(nf90_put_var(ftn_mean,xtimeID,0.0))
 
@@ -1512,6 +1557,96 @@ contains
           end if
        endif
 
+       ! EMK Output updated PS41 snow variables not read in from LIS file
+       if (jules_ps41_ens_snow) then
+          if (LVT_rc%lvt_out_format.eq."netcdf") then
+
+             write(LVT_logunit,*)'EMK: LVT_rc%lnc, LVT_rc%gnc = ', &
+                  LVT_rc%lnc, LVT_rc%gnc
+             write(LVT_logunit,*)'EMK: LVT_rc%lnr, LVT_rc%gnr = ', &
+                  LVT_rc%lnr, LVT_rc%gnr
+             
+             gtmp1_1d = 0.0
+             call LVT_fetch_jules_ps41_ens_snow_final( &
+                  LVT_rc%lnc, LVT_rc%lnr, gtmp1_1d, &
+                  1, "SWE_inst", is_ps41_snow_var)
+             call writeSingleNetcdfVar(ftn_mean,&
+                  gtmp1_1d,&
+                  SWE%varid_def,&
+                  1)
+
+             gtmp1_1d = 0.0
+             call LVT_fetch_jules_ps41_ens_snow_final( &
+                  LVT_rc%lnc, LVT_rc%lnr, gtmp1_1d,  &
+                  1, "SnowDensity_inst", is_ps41_snow_var)
+             call writeSingleNetcdfVar(ftn_mean, &
+                  gtmp1_1d, &
+                  SnowDensity%varid_def, &
+                  1)
+
+             do k = 1, 3
+                gtmp1_1d = 0.0
+                call LVT_fetch_jules_ps41_ens_snow_final( &
+                     LVT_rc%lnc, LVT_rc%lnr, gtmp1_1d, &
+                     k, "LayerSnowDensity_inst", is_ps41_snow_var)
+                call writeSingleNetcdfVar(ftn_mean, &
+                     gtmp1_1d, &
+                     LayerSnowDensity%varid_def, &
+                     k)
+             end do
+
+             gtmp1_1d = 0.0
+             call LVT_fetch_jules_ps41_ens_snow_final( &
+                  LVT_rc%lnc, LVT_rc%lnr, gtmp1_1d, &
+                  1, "SnowGrain_inst", is_ps41_snow_var)
+             call writeSingleNetcdfVar(ftn_mean,&
+                  gtmp1_1d, &
+                  SnowGrain%varid_def, &
+                  1)
+
+             gtmp1_1d = 0.0
+             call LVT_fetch_jules_ps41_ens_snow_final( &
+                  LVT_rc%lnc, LVT_rc%lnr, gtmp1_1d, &
+                  1, "SnowDepth_inst", is_ps41_snow_var)
+             write(LVT_logunit,*)'EMK: is_ps41_snow_var = ', is_ps41_snow_var
+             call writeSingleNetcdfVar(ftn_mean, &
+                  gtmp1_1d, &
+                  SnowDepth%varid_def, &
+                  1)
+
+             gtmp1_1d = 0.0
+             call LVT_fetch_jules_ps41_ens_snow_final( &
+                  LVT_rc%lnc, LVT_rc%lnr, gtmp1_1d, &
+                  1, "GrndSnow_inst", is_ps41_snow_var)
+             call writeSingleNetcdfVar(ftn_mean,&
+                  gtmp1_1d, &
+                  GrndSnow%varid_def, &
+                  1)
+
+             gtmp1_1d = 0.0
+             call LVT_fetch_jules_ps41_ens_snow_final( &
+                  LVT_rc%lnc, LVT_rc%lnr, gtmp1_1d, &
+                  1, "SurftSnow_inst", is_ps41_snow_var)
+             call writeSingleNetcdfVar(ftn_mean, &
+                  gtmp1_1d, &
+                  SurftSnow%varid_def, &
+                  1)
+
+             ! Cleanup
+             call LVT_deallocate_metadata(SWE)
+             call LVT_deallocate_metadata(SnowDensity)
+             call LVT_deallocate_metadata(LayerSnowDensity)
+             call LVT_deallocate_metadata(SnowGrain)
+             call LVT_deallocate_metadata(SnowDepth)
+             call LVT_deallocate_metadata(GrndSnow)
+             call LVT_deallocate_metadata(SurftSnow)
+
+          else
+             write(LVT_logunit,*)'EMK: GRIB OUTPUT NOT SUPPORTED YET'
+             stop
+          end if
+       end if
+
        dataEntry => LVT_histData%head_ds1_list
 
        do while(associated(dataEntry))
@@ -1526,9 +1661,9 @@ contains
              lisdataEntry => LVT_LISoutput(1)%head_irrig_list
           endif
           do while(associated(lisdataEntry)) 
-             
+
              if(lisdataEntry%short_name.eq.dataEntry%short_name) then
-                
+
                 ! Set timerange indicator equal to 133 for AFWA's specifications
                 ! for surface runoff, baseflow, and total precipitation
                 ! to make the LIS-7 output match the LIS-6 style. - dmm
@@ -1597,7 +1732,8 @@ contains
 
                       call LVT_fetch_jules_ps41_ens_snow_final( &
                            LVT_rc%lnc, LVT_rc%lnr, gtmp1_1d, &
-                           k, trim(dataEntry%short_name), is_ps41_snow_var)
+                           k, trim(dataEntry%short_name)//"_inst", &
+                           is_ps41_snow_var)
 
                       ! Not all PS41 variables involve snow.  Check to
                       ! see if this did; if it didn't, normal ensemble
@@ -1646,6 +1782,8 @@ contains
 
                          elseif(LVT_rc%lvt_out_format.eq."netcdf") then
 
+                            write(LVT_logunit,*) &
+                                 'EMK: Calling writeSingleNetcdfVar HERE...'
                             call writeSingleNetcdfVar(ftn_mean,&
                                  gtmp1_1d,&
                                  lisdataentry%varid_def,&
@@ -3575,6 +3713,7 @@ contains
                'failed in defineNETCDFheadervar')                     
 #endif                
        endif
+
        
        call LVT_verify(nf90_put_att(ftn,dataEntry%varId_def,&
             "units",trim(dataEntry%units)),&
@@ -3779,6 +3918,7 @@ contains
 
     integer                       :: c,r
     real                          :: gtmp2d(LVT_rc%lnc,LVT_rc%lnr)
+
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
 
     do r=1,LVT_rc%lnr
@@ -3790,7 +3930,6 @@ contains
     call LVT_verify(nf90_put_var(ftn,varID, gtmp2d,(/1,1,k/),&
          (/LVT_rc%gnc,LVT_rc%gnr,1/)),&
          'nf90_put_var failed for in LVT_DataStreamsMod')
-    
 #endif
 
   end subroutine writeSingleNetcdfVar
