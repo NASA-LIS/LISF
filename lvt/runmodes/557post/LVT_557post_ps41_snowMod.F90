@@ -8,9 +8,13 @@
 ! Shugong Wang (shugong.wang@nasa.gov) 03/10/2021
 ! Editorial updates for LVT by Eric Kemp, SSAI, 11 Mar 2021
 !
+#include "LVT_misc.h"
+#include "LVT_NetCDF_inc.h"
 
 module LVT_557post_ps41_snowMod
 
+  use LVT_logMod, only: LVT_logunit
+  
   ! Defaults
   implicit none
   private
@@ -90,27 +94,27 @@ module LVT_557post_ps41_snowMod
 
   ! Internal pointers for referencing PS41 JULES fields in LVT dataEntry
   ! linked list.
-  real, pointer :: snowIce(:,:,:)
-  real, pointer :: snowLiq(:,:,:)
-  real, pointer :: snowTProf(:,:,:)
-  real, pointer :: layerSnowGrain(:,:,:)
-  real, pointer :: layerSnowDepth(:,:,:)
-  real, pointer :: ActSnowNL(:,:,:)
+  real, pointer, save :: snowIce(:,:,:)
+  real, pointer, save :: snowLiq(:,:,:)
+  real, pointer, save :: snowTProf(:,:,:)
+  real, pointer, save :: layerSnowGrain(:,:,:)
+  real, pointer, save :: layerSnowDepth(:,:,:)
+  real, pointer, save :: ActSnowNL(:,:,:)
 
   ! Internal arrays for storing processed multi-layer snow
-  real, allocatable :: actSnowNL_final(:)
-  real, allocatable :: grndSnow_final(:)
-  real, allocatable :: layerSnowDensity_final(:,:)
-  real, allocatable :: layerSnowDepth_final(:,:)
-  real, allocatable :: layerSnowGrain_final(:,:)
-  real, allocatable :: SWE_final(:)
-  real, allocatable :: snowDensity_final(:)
-  real, allocatable :: snowDepth_final(:)
-  real, allocatable :: snowGrain_final(:)
-  real, allocatable :: snowIce_final(:,:)
-  real, allocatable :: snowLiq_final(:,:)
-  real, allocatable :: snowTProf_final(:,:)
-  real, allocatable :: surftSnow_final(:)
+  real, allocatable, save :: actSnowNL_final(:)
+  real, allocatable, save :: grndSnow_final(:)
+  real, allocatable, save :: layerSnowDensity_final(:,:)
+  real, allocatable, save :: layerSnowDepth_final(:,:)
+  real, allocatable, save :: layerSnowGrain_final(:,:)
+  real, allocatable, save :: SWE_final(:)
+  real, allocatable, save :: snowDensity_final(:)
+  real, allocatable, save :: snowDepth_final(:)
+  real, allocatable, save :: snowGrain_final(:)
+  real, allocatable, save :: snowIce_final(:,:)
+  real, allocatable, save :: snowLiq_final(:,:)
+  real, allocatable, save :: snowTProf_final(:,:)
+  real, allocatable, save :: surftSnow_final(:)
 
   ! Public routines
   public :: LVT_init_jules_ps41_ens_snow
@@ -118,7 +122,15 @@ module LVT_557post_ps41_snowMod
   public :: LVT_proc_jules_ps41_ens_snow
   public :: LVT_fetch_jules_ps41_ens_snow_final
   public :: LVT_cleanup_jules_ps41_ens_snow
-
+  public :: LVT_set_SWE_metadata
+  public :: LVT_set_SnowDensity_metadata
+  public :: LVT_set_LayerSnowDensity_metadata
+  public :: LVT_set_SnowGrain_metadata
+  public :: LVT_set_SnowDepth_metadata
+  public :: LVT_set_GrndSnow_metadata
+  public :: LVT_set_SurftSnow_metadata
+  public :: LVT_deallocate_metadata
+  !public :: LVT_set_ps41_netcdf_header
 contains
 
   ! Allocate all step arrays based on number of ensemble members.
@@ -522,7 +534,7 @@ contains
     implicit none
 
     ! Locals
-    integer :: c, r, m, k, gid
+    integer :: c, r, m, k, gid, ij
 
     ! Initializations
     call allocate_step_arrays(LVT_rc%nensem)
@@ -546,6 +558,8 @@ contains
        do c = 1, LVT_rc%lnc
           gid = LVT_domain%gindex(c,r)
           if (gid == -1) cycle
+
+          ij = c + (r-1)*LVT_rc%lnc
 
           ! Load ensemble members into step arrays
           do k = 1, nlayer
@@ -574,40 +588,40 @@ contains
           ! Handle no-snow case
           if (new_snowdepth .eq. 0) then
              do k = 1, nlayer
-                layerSnowDensity_final(gid,k) = 0.
-                snowIce_final(gid,k) = 0.
-                snowLiq_final(gid,k) = 0.
-                snowTProf_final(gid,k) = tm ! Default in JULES
-                layerSnowGrain_final(gid,k) = 50. ! Default in JULES
-                layerSnowDepth_final(gid,k) = 0.
+                layerSnowDensity_final(ij,k) = 0.
+                snowIce_final(ij,k) = 0.
+                snowLiq_final(ij,k) = 0.
+                snowTProf_final(ij,k) = tm ! Default in JULES
+                layerSnowGrain_final(ij,k) = 50. ! Default in JULES
+                layerSnowDepth_final(ij,k) = 0.
              end do
-             actSnowNL_final(gid) = 0
-             grndSnow_final(gid) = 0. ! Always zero in PS41
-             SWE_final(gid) = 0.
-             snowDensity_final(gid) = 109. ! Default in JULES
-             snowDepth_final(gid) = 0.
-             snowGrain_final(gid) = 50. ! Default in JULES
-             surftSnow_final(gid) = 0.
+             actSnowNL_final(ij) = 0
+             grndSnow_final(ij) = 0. ! Always zero in PS41
+             SWE_final(ij) = 0.
+             snowDensity_final(ij) = 109. ! Default in JULES
+             snowDepth_final(ij) = 0.
+             snowGrain_final(ij) = 50. ! Default in JULES
+             surftSnow_final(ij) = 0.
           else
 
              ! We have snow, so finish relayering and copy to final arrays
              call step_10()
              call step_11()
              do k = 1, nlayer
-                layerSnowDensity_final(gid,k) = new_rho_snow(k)
-                snowIce_final(gid,k) = new_sice(k)
-                snowLiq_final(gid,k) = new_sliq(k)
-                snowTProf_final(gid,k) = new_tsnow(k)
-                layerSnowGrain_final(gid,k) = new_rgrainl(k)
-                layerSnowDepth_final(gid,k) = new_ds(k)
+                layerSnowDensity_final(ij,k) = new_rho_snow(k)
+                snowIce_final(ij,k) = new_sice(k)
+                snowLiq_final(ij,k) = new_sliq(k)
+                snowTProf_final(ij,k) = new_tsnow(k)
+                layerSnowGrain_final(ij,k) = new_rgrainl(k)
+                layerSnowDepth_final(ij,k) = new_ds(k)
              end do ! k
-             actSnowNL_final(gid) = new_nsnow
-             grndSnow_final(gid) = 0. ! Always zero in PS41
-             SWE_final(gid) = new_snowmass
-             snowDensity_final(gid) = new_rho_grnd
-             snowDepth_final(gid) = new_snowdepth
-             snowGrain_final(gid) = new_rgrain
-             surftSnow_final(gid) = new_snowmass
+             actSnowNL_final(ij) = new_nsnow
+             grndSnow_final(ij) = 0. ! Always zero in PS41
+             SWE_final(ij) = new_snowmass
+             snowDensity_final(ij) = new_rho_grnd
+             snowDepth_final(ij) = new_snowdepth
+             snowGrain_final(ij) = new_rgrain
+             surftSnow_final(ij) = new_snowmass
           end if
 
        end do ! c
@@ -640,8 +654,10 @@ contains
     select case(trim(short_name))
     case ("ActSnowNL_inst")
        data(:) = actSnowNL_final(:)
+       deallocate(actSnowNL_final)
     case ("GrndSnow_inst")
        data(:) = grndSnow_final(:)
+       deallocate(grndSnow_final)
     case ("LayerSnowDensity_inst")
        data(:) = layerSnowDensity_final(:,k)
     case ("LayerSnowDepth_inst")
@@ -650,12 +666,16 @@ contains
        data(:) = layerSnowGrain_final(:,k)
     case ("SWE_inst")
        data(:) = SWE_final(:)
+       deallocate(SWE_final)
     case ("SnowDensity_inst")
        data(:) = snowDensity_final(:)
+       deallocate(snowDensity_final)
     case ("SnowDepth_inst")
        data(:) = snowDepth_final(:)
+       deallocate(snowDepth_final)
     case ("SnowGrain_inst")
        data(:) = snowGrain_final(:)
+       deallocate(snowGrain_final)
     case ("SnowIce_inst")
        data(:) = snowIce_final(:,k)
     case ("SnowLiq_inst")
@@ -664,6 +684,7 @@ contains
        data(:) = snowtProf_final(:,k)
     case ("SurftSnow_inst")
        data(:) = surftSnow_final(:)
+       deallocate(surftSnow_final)
     case default
        is_ps41_snow_var = .false.
     end select
@@ -688,5 +709,224 @@ contains
     if (allocated(surftSnow_final)) deallocate(surftSnow_final)
   end subroutine LVT_cleanup_jules_ps41_ens_snow
 
+  subroutine LVT_set_SWE_metadata(SWE)
+    use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
+    implicit none
+    type(LVT_lismetadataEntry), intent(inout) :: SWE
+    SWE%short_name = "SWE"
+    SWE%long_name = "snow water equivalent"
+    SWE%standard_name = "liquid_water_content_of_surface_snow"
+    SWE%units = "kg m-2"
+    SWE%nunits = 1
+    SWE%format = 'F'
+    SWE%vlevels = 1
+    SWE%timeAvgOpt = 0
+    allocate(SWE%unittypes(1))
+    SWE%unittypes(1) = "kg m-2"
+    SWE%varid_def = -99
+    SWE%selectOpt = 1
+  end subroutine LVT_set_SWE_metadata
+
+  subroutine LVT_set_SnowDensity_metadata(SnowDensity)
+    use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
+    implicit none
+    type(LVT_lismetadataEntry), intent(inout) :: SnowDensity
+    SnowDensity%short_name = "SnowDensity"
+    SnowDensity%long_name = "snowpack bulk density"
+    SnowDensity%standard_name = "snowpack_bulk_density"
+    SnowDensity%units = "kg m-3"
+    SnowDensity%nunits = 1
+    SnowDensity%format = 'F'
+    SnowDensity%vlevels = 1
+    SnowDensity%timeAvgOpt = 0
+    allocate(SnowDensity%unittypes(1))
+    SnowDensity%unittypes(1) = "kg m-3"
+    SnowDensity%varid_def = -99
+    SnowDensity%selectOpt = 1
+  end subroutine LVT_set_SnowDensity_metadata
+
+  subroutine LVT_set_LayerSnowDensity_metadata(LayerSnowDensity)
+    use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
+    implicit none
+    type(LVT_lismetadataEntry), intent(inout) :: LayerSnowDensity
+    LayerSnowDensity%short_name = "LayerSnowDensity"
+    LayerSnowDensity%long_name = "snow_density_for_each_layer"
+    LayerSnowDensity%standard_name = "snow_density_for_each_layer"
+    LayerSnowDensity%units = "kg m-3"
+    LayerSnowDensity%nunits = 1
+    LayerSnowDensity%format = 'F'
+    LayerSnowDensity%vlevels = 3
+    LayerSnowDensity%timeAvgOpt = 0
+    allocate(LayerSnowDensity%unittypes(1))
+    LayerSnowDensity%unittypes(1) = "kg m-3"
+    LayerSnowDensity%varid_def = -99
+    LayerSnowDensity%selectOpt = 1
+  end subroutine LVT_set_LayerSnowDensity_metadata
+
+  subroutine LVT_set_SnowGrain_metadata(SnowGrain)
+    use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
+    implicit none
+    type(LVT_lismetadataEntry), intent(inout) :: SnowGrain
+    SnowGrain%short_name = "SnowGrain"
+    SnowGrain%long_name = "snow grain size"
+    SnowGrain%standard_name = "snow_grain_size"
+    SnowGrain%units = "micron"
+    SnowGrain%nunits = 1
+    SnowGrain%format = 'F'
+    SnowGrain%vlevels = 1
+    SnowGrain%timeAvgOpt = 0
+    allocate(SnowGrain%unittypes(1))
+    SnowGrain%unittypes(1) = "micron"
+    SnowGrain%varid_def = -99
+    SnowGrain%selectOpt = 1
+  end subroutine LVT_set_SnowGrain_metadata
+
+  subroutine LVT_set_SnowDepth_metadata(SnowDepth)
+    use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
+    implicit none
+    type(LVT_lismetadataEntry), intent(inout) :: SnowDepth
+    SnowDepth%short_name = "SnowDepth"
+    SnowDepth%long_name = "snow depth"
+    SnowDepth%standard_name = "snow_depth"
+    SnowDepth%units = "m"
+    SnowDepth%nunits = 1
+    SnowDepth%format = 'F'
+    SnowDepth%vlevels = 1
+    SnowDepth%timeAvgOpt = 0
+    allocate(SnowDepth%unittypes(1))
+    SnowDepth%unittypes(1) = "m"
+    SnowDepth%varid_def = -99
+    SnowDepth%selectOpt = 1
+  end subroutine LVT_set_SnowDepth_metadata
+
+  subroutine LVT_set_grndsnow_metadata(grndSnow)
+    use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
+    implicit none
+    type(LVT_lismetadataEntry), intent(inout) :: grndSnow
+    grndSnow%short_name = "GrndSnow"
+    grndSnow%long_name = "snow on ground (beneath canopy)"
+    grndSnow%standard_name = "snow_on_ground_beneath_canopy"
+    grndSnow%units = "kg m-2"
+    grndSnow%nunits = 1
+    grndSnow%format = 'F'
+    grndSnow%vlevels = 1
+    grndSnow%timeAvgOpt = 0
+    allocate(grndSnow%unittypes(1))
+    grndSnow%unittypes(1) = "kg m-2"
+    grndSnow%varid_def = -99
+    grndSnow%selectOpt = 1
+  end subroutine LVT_set_grndsnow_metadata
+
+  subroutine LVT_set_surftsnow_metadata(surftSnow)
+    use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
+    implicit none
+    type(LVT_lismetadataEntry), intent(inout) :: surftSnow
+    surftSnow%short_name = "SurftSnow"
+    surftSnow%long_name = "snow amount on tile"
+    surftSnow%standard_name = "snow_amount_on_tile"
+    surftSnow%units = "kg m-2"
+    surftSnow%nunits = 1
+    surftSnow%format = 'F'
+    surftSnow%vlevels = 1
+    surftSnow%timeAvgOpt = 0
+    allocate(surftSnow%unittypes(1))
+    surftSnow%unittypes(1) = "kg m-2"
+    surftSnow%varid_def = -99
+    surftSnow%selectOpt = 1
+  end subroutine LVT_set_surftsnow_metadata
+
+  subroutine LVT_deallocate_metadata(var)
+    use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
+    implicit none
+    type(LVT_lismetadataEntry), intent(inout) :: var
+    if (allocated(var%unittypes)) deallocate(var%unittypes)
+  end subroutine LVT_deallocate_metadata
+
+!   subroutine LVT_set_ps41_netcdf_header(var, ftn, dimID, udef, varID)
+
+!     ! Modules
+!     use LVT_histDataMod, only: LVT_metadataEntry
+!     use LVT_logMod, only: LVT_verify
+! #if (defined USE_NETCDF3 || defined USE_NETCDF4)
+!     use netcdf
+! #endif
+
+!     ! Defaults
+!     implicit none
+
+!     ! Arguments
+!     type(LVT_metadataEntry), intent(in) :: var
+!     integer, intent(in) :: ftn
+!     integer, intent(in) :: dimID(3)
+!     real, intent(in) :: udef
+!     integer, intent(out) :: varID
+
+!     ! Local variables
+!     integer :: num_dims
+
+!     num_dims = 2
+!     if (var%vlevels .eq. 3) then
+!        num_dims = 3
+!     end if
+
+    
+! !     call LVT_verify(nf90_def_var(ftn, &
+! !                   trim(var%short_name), &
+! !                   nf90_float, &
+! !                   dimids = dimID(1:num_dims), &
+! !                   varID=varID), &
+! !                   'nf90_def_var for '// &
+! !                   trim(var%short_name)// &
+! !                   'failed in LVT_set_ps41_netcdf_header')
+
+! ! #if(defined USE_NETCDF4)
+! !     call LVT_verify(nf90_def_var_deflate(ftn, &
+! !          varID, &
+! !          NETCDF_shuffle, NETCDF_deflate, NETCDF_deflate_level), &
+! !          'nf90_def_var_deflate for '// &
+! !          trim(var%short_name)// &
+! !          'failed in LVT_set_ps41_netcdf_header')
+! ! #endif
+
+! !     call LVT_verify(nf90_put_att(ftn, &
+! !          varID, &
+! !          "units",&
+! !          trim(var%units)))
+
+! !     call LVT_verify(nf90_put_att(ftn, &
+! !          varID, &
+! !          "standard_name", &
+! !          trim(var%standard_name)))
+
+! !     call LVT_verify(nf90_put_att(ftn, &
+! !          varID,&
+! !          "long_name",&
+! !          trim(var%long_name)))
+
+! !     call LVT_verify(nf90_put_att(ftn, &
+! !          varID,&
+! !          "scale_factor", 1.0))
+
+! !     call LVT_verify(nf90_put_att(ftn, &
+! !          varID,&
+! !          "add_offset", 0.0))
+
+! !     call LVT_verify(nf90_put_att(ftn, &
+! !          varID,&
+! !          "missing_value", udef))
+
+! !     call LVT_verify(nf90_put_att(ftn, &
+! !          varID, &
+! !          "_FillValue", udef))
+
+! !     call LVT_verify(nf90_put_att(ftn, &
+! !          varID, &
+! !          "vmin", udef))
+
+! !     call LVT_verify(nf90_put_att(ftn,&
+! !          varID, &
+! !          "vmax", udef))
+  !   end subroutine LVT_set_ps41_netcdf_header
+  
 end module LVT_557post_ps41_snowMod
 
