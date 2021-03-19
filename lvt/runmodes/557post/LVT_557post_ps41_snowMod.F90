@@ -13,8 +13,6 @@
 
 module LVT_557post_ps41_snowMod
 
-  use LVT_logMod, only: LVT_logunit
-  
   ! Defaults
   implicit none
   private
@@ -39,13 +37,6 @@ module LVT_557post_ps41_snowMod
 
   ! Input part, populate the following input variables before calling the
   ! step subroutines
-  !real, dimension(nensem, nlayer) :: en_sice
-  !real, dimension(nensem, nlayer) :: en_sliq
-  !real, dimension(nensem, nlayer) :: en_tsnow
-  !real, dimension(nensem, nlayer) :: en_rgrainl
-  !real, dimension(nensem, nlayer) :: en_ds
-  !integer, dimension(nensem)      :: en_nsnow
-
   real, allocatable :: en_sice(:,:)
   real, allocatable :: en_sliq(:,:)
   real, allocatable :: en_tsnow(:,:)
@@ -53,7 +44,7 @@ module LVT_557post_ps41_snowMod
   real, allocatable :: en_ds(:,:)
   integer, allocatable :: en_nsnow(:)
 
-  ! output part, grab values in these variables after calling the step
+  ! Output part, grab values in these variables after calling the step
   ! subroutines
   real, dimension(nlayer) :: new_ds
   real, dimension(nlayer) :: new_sice
@@ -68,8 +59,6 @@ module LVT_557post_ps41_snowMod
   integer :: new_nsnow
 
   ! Internal variables
-  !real, dimension(nensem, nlayer) :: en_C ! heat capacity (J/kg/K)
-  !real, dimension(nensem, nlayer) :: en_e ! internal energy (J/m2)
   real, allocatable :: en_C(:,:) ! heat capacity (J/kg/K)
   real, allocatable :: en_e(:,:) ! internal energy (J/m2)
 
@@ -130,7 +119,7 @@ module LVT_557post_ps41_snowMod
   public :: LVT_set_GrndSnow_metadata
   public :: LVT_set_SurftSnow_metadata
   public :: LVT_deallocate_metadata
-  !public :: LVT_set_ps41_netcdf_header
+
 contains
 
   ! Allocate all step arrays based on number of ensemble members.
@@ -174,7 +163,7 @@ contains
     call nullify_pointers()
   end subroutine LVT_init_jules_ps41_ens_snow
 
-  ! Nullify all pointers
+  ! Nullify all internal pointers
   subroutine nullify_pointers()
     implicit none
     nullify(snowIce)
@@ -635,6 +624,9 @@ contains
   end subroutine LVT_proc_jules_ps41_ens_snow
 
   ! Fetch appropriate "final" array based on requested variable name.
+  ! We also deallocate single-layer "final" array after copying to
+  ! reduce memory usage; the multi-layer arrays must remain allocated,
+  ! since only a single vertical slice is copied back by this routine.
   subroutine LVT_fetch_jules_ps41_ens_snow_final(nc, nr, data, k, short_name, &
        is_ps41_snow_var)
 
@@ -709,6 +701,7 @@ contains
     if (allocated(surftSnow_final)) deallocate(surftSnow_final)
   end subroutine LVT_cleanup_jules_ps41_ens_snow
 
+  ! Set metadata structure for SWE
   subroutine LVT_set_SWE_metadata(SWE)
     use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
     implicit none
@@ -731,6 +724,7 @@ contains
     SWE%selectOpt = 1
   end subroutine LVT_set_SWE_metadata
 
+  ! Set metadata structure for SnowDensity
   subroutine LVT_set_SnowDensity_metadata(SnowDensity)
     use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
     implicit none
@@ -753,6 +747,7 @@ contains
     SnowDensity%selectOpt = 1
   end subroutine LVT_set_SnowDensity_metadata
 
+  ! Set metadata structure for LayerSnowDensity
   subroutine LVT_set_LayerSnowDensity_metadata(LayerSnowDensity)
     use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
     implicit none
@@ -775,6 +770,7 @@ contains
     LayerSnowDensity%selectOpt = 1
   end subroutine LVT_set_LayerSnowDensity_metadata
 
+  ! Set metadata structure for SnowGrain
   subroutine LVT_set_SnowGrain_metadata(SnowGrain)
     use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
     implicit none
@@ -797,6 +793,7 @@ contains
     SnowGrain%selectOpt = 1
   end subroutine LVT_set_SnowGrain_metadata
 
+  ! Set metadata structure for SnowDepth
   subroutine LVT_set_SnowDepth_metadata(SnowDepth)
     use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
     implicit none
@@ -819,6 +816,7 @@ contains
     SnowDepth%selectOpt = 1
   end subroutine LVT_set_SnowDepth_metadata
 
+  ! Set metadata structure for GrndSnow
   subroutine LVT_set_grndsnow_metadata(grndSnow)
     use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
     implicit none
@@ -841,6 +839,7 @@ contains
     grndSnow%selectOpt = 1
   end subroutine LVT_set_grndsnow_metadata
 
+  ! Set metadata structure for SurftSnow
   subroutine LVT_set_surftsnow_metadata(surftSnow)
     use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
     implicit none
@@ -863,6 +862,7 @@ contains
     surftSnow%selectOpt = 1
   end subroutine LVT_set_surftsnow_metadata
 
+  ! Deallocates internal arrays within structure
   subroutine LVT_deallocate_metadata(var)
     use LVT_LISoutputHandlerMod, only: LVT_lismetadataEntry
     implicit none
@@ -872,91 +872,5 @@ contains
     if (allocated(var%valid_max)) deallocate(var%valid_max)
   end subroutine LVT_deallocate_metadata
 
-!   subroutine LVT_set_ps41_netcdf_header(var, ftn, dimID, udef, varID)
-
-!     ! Modules
-!     use LVT_histDataMod, only: LVT_metadataEntry
-!     use LVT_logMod, only: LVT_verify
-! #if (defined USE_NETCDF3 || defined USE_NETCDF4)
-!     use netcdf
-! #endif
-
-!     ! Defaults
-!     implicit none
-
-!     ! Arguments
-!     type(LVT_metadataEntry), intent(in) :: var
-!     integer, intent(in) :: ftn
-!     integer, intent(in) :: dimID(3)
-!     real, intent(in) :: udef
-!     integer, intent(out) :: varID
-
-!     ! Local variables
-!     integer :: num_dims
-
-!     num_dims = 2
-!     if (var%vlevels .eq. 3) then
-!        num_dims = 3
-!     end if
-
-    
-! !     call LVT_verify(nf90_def_var(ftn, &
-! !                   trim(var%short_name), &
-! !                   nf90_float, &
-! !                   dimids = dimID(1:num_dims), &
-! !                   varID=varID), &
-! !                   'nf90_def_var for '// &
-! !                   trim(var%short_name)// &
-! !                   'failed in LVT_set_ps41_netcdf_header')
-
-! ! #if(defined USE_NETCDF4)
-! !     call LVT_verify(nf90_def_var_deflate(ftn, &
-! !          varID, &
-! !          NETCDF_shuffle, NETCDF_deflate, NETCDF_deflate_level), &
-! !          'nf90_def_var_deflate for '// &
-! !          trim(var%short_name)// &
-! !          'failed in LVT_set_ps41_netcdf_header')
-! ! #endif
-
-! !     call LVT_verify(nf90_put_att(ftn, &
-! !          varID, &
-! !          "units",&
-! !          trim(var%units)))
-
-! !     call LVT_verify(nf90_put_att(ftn, &
-! !          varID, &
-! !          "standard_name", &
-! !          trim(var%standard_name)))
-
-! !     call LVT_verify(nf90_put_att(ftn, &
-! !          varID,&
-! !          "long_name",&
-! !          trim(var%long_name)))
-
-! !     call LVT_verify(nf90_put_att(ftn, &
-! !          varID,&
-! !          "scale_factor", 1.0))
-
-! !     call LVT_verify(nf90_put_att(ftn, &
-! !          varID,&
-! !          "add_offset", 0.0))
-
-! !     call LVT_verify(nf90_put_att(ftn, &
-! !          varID,&
-! !          "missing_value", udef))
-
-! !     call LVT_verify(nf90_put_att(ftn, &
-! !          varID, &
-! !          "_FillValue", udef))
-
-! !     call LVT_verify(nf90_put_att(ftn, &
-! !          varID, &
-! !          "vmin", udef))
-
-! !     call LVT_verify(nf90_put_att(ftn,&
-! !          varID, &
-! !          "vmax", udef))
-  !   end subroutine LVT_set_ps41_netcdf_header
-  
 end module LVT_557post_ps41_snowMod
 
