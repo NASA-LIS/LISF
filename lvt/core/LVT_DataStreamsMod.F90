@@ -422,8 +422,7 @@ contains
     integer :: count
     real :: mean, m2, stddev, new_value
 
-    ! EMK...Keep track of how many JULES PS41 snow variables have been
-    ! prepped for ensemble processing
+    ! EMK...Special processing of some JULES PS41 multi-layer snow ensembles.
     integer :: count_jules_ps41_ens_snow_vars
     logical :: jules_ps41_ens_snow
     logical :: is_ps41_snow_var
@@ -435,9 +434,7 @@ contains
     type(LVT_lismetadataEntry), target :: SnowDensity
     type(LVT_lismetadataEntry), target :: SnowGrain
     type(LVT_lismetadataEntry), target :: SurftSnow
-    integer :: GrndSnowID, LayerSnowDensityID, SWEID, SnowDepthID, &
-         SnowDensityID, SnowGrainID, SurftSnowID
-    
+
     ! EMK...This is only used when LVT is run in "557 post" mode.
     if (trim(LVT_rc%runmode) .ne. "557 post") return
 
@@ -1561,11 +1558,6 @@ contains
        if (jules_ps41_ens_snow) then
           if (LVT_rc%lvt_out_format.eq."netcdf") then
 
-             write(LVT_logunit,*)'EMK: LVT_rc%lnc, LVT_rc%gnc = ', &
-                  LVT_rc%lnc, LVT_rc%gnc
-             write(LVT_logunit,*)'EMK: LVT_rc%lnr, LVT_rc%gnr = ', &
-                  LVT_rc%lnr, LVT_rc%gnr
-             
              gtmp1_1d = 0.0
              call LVT_fetch_jules_ps41_ens_snow_final( &
                   LVT_rc%lnc, LVT_rc%lnr, gtmp1_1d, &
@@ -1608,7 +1600,6 @@ contains
              call LVT_fetch_jules_ps41_ens_snow_final( &
                   LVT_rc%lnc, LVT_rc%lnr, gtmp1_1d, &
                   1, "SnowDepth_inst", is_ps41_snow_var)
-             write(LVT_logunit,*)'EMK: is_ps41_snow_var = ', is_ps41_snow_var
              call writeSingleNetcdfVar(ftn_mean, &
                   gtmp1_1d, &
                   SnowDepth%varid_def, &
@@ -1782,8 +1773,6 @@ contains
 
                          elseif(LVT_rc%lvt_out_format.eq."netcdf") then
 
-                            write(LVT_logunit,*) &
-                                 'EMK: Calling writeSingleNetcdfVar HERE...'
                             call writeSingleNetcdfVar(ftn_mean,&
                                  gtmp1_1d,&
                                  lisdataentry%varid_def,&
