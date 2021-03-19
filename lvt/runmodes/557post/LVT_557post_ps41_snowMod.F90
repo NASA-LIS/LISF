@@ -1,15 +1,22 @@
-! Developer note:
-! lis_jules_en_snow module is developed for creating a conceptual snowpack
-! based on LIS-JULES ensemble simulation. The steps are consistent with
-! JULES physics defined in the JULES subroutines "layersnow" and "relayersnow".
-! Consistencies of snow mass and internal energy have been kept between
-! ensemble means and the new snowpack.
+!-----------------------BEGIN NOTICE -- DO NOT EDIT----------------------------
+! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
+!-------------------------END NOTICE -- DO NOT EDIT----------------------------
 !
-! Shugong Wang (shugong.wang@nasa.gov) 03/10/2021
-! Editorial updates for LVT by Eric Kemp, SSAI, 11 Mar 2021
+! MODULE: LVT_557post_ps41_snowMod
 !
-#include "LVT_misc.h"
-#include "LVT_NetCDF_inc.h"
+! PURPOSE:
+!
+! This module was developed to create a conceptual snowpack based on a
+! LIS-JULES ensemble simulation with "PS41" physics, to pass to the GALWEM
+! NWP model which is coupled with JULES. The steps are consistent
+! with JULES physics defined in the JULES subroutines "layersnow" and
+! "relayersnow".  Consistencies of snow mass and internal energy have been
+! kept between ensemble means and the new snowpack.
+!
+! REVISION HISTORY:
+! 10 Mar 2021: Shugong Wang, Initial Specification.
+! 19 Mar 2021: Eric Kemp, Ported to LVT.
+!------------------------------------------------------------------------------
 
 module LVT_557post_ps41_snowMod
 
