@@ -723,6 +723,10 @@ contains
     SWE%timeAvgOpt = 0
     allocate(SWE%unittypes(1))
     SWE%unittypes(1) = "kg m-2"
+    allocate(SWE%valid_min(1))
+    SWE%valid_min = (/ 0.0 /)
+    allocate(SWE%valid_max(1))
+    SWE%valid_max = (/ 2000.0 /)
     SWE%varid_def = -99
     SWE%selectOpt = 1
   end subroutine LVT_set_SWE_metadata
@@ -741,6 +745,10 @@ contains
     SnowDensity%timeAvgOpt = 0
     allocate(SnowDensity%unittypes(1))
     SnowDensity%unittypes(1) = "kg m-3"
+    allocate(SnowDensity%valid_min(1))
+    SnowDensity%valid_min = (/ 100.0 /)
+    allocate( SnowDensity%valid_max(1))
+    SnowDensity%valid_max = (/ 1000.0 /)
     SnowDensity%varid_def = -99
     SnowDensity%selectOpt = 1
   end subroutine LVT_set_SnowDensity_metadata
@@ -759,6 +767,10 @@ contains
     LayerSnowDensity%timeAvgOpt = 0
     allocate(LayerSnowDensity%unittypes(1))
     LayerSnowDensity%unittypes(1) = "kg m-3"
+    allocate(LayerSnowDensity%valid_min(1))
+    LayerSnowDensity%valid_min = (/ 100.0 /)
+    allocate(LayerSnowDensity%valid_max(1))
+    LayerSnowDensity%valid_max = (/ 1000.0 /)
     LayerSnowDensity%varid_def = -99
     LayerSnowDensity%selectOpt = 1
   end subroutine LVT_set_LayerSnowDensity_metadata
@@ -777,6 +789,10 @@ contains
     SnowGrain%timeAvgOpt = 0
     allocate(SnowGrain%unittypes(1))
     SnowGrain%unittypes(1) = "micron"
+    allocate(SnowGrain%valid_min(1))
+    SnowGrain%valid_min = (/ 50.0 /)
+    allocate(SnowGrain%valid_max(1))
+    SnowGrain%valid_max = (/ 2000.0 /)
     SnowGrain%varid_def = -99
     SnowGrain%selectOpt = 1
   end subroutine LVT_set_SnowGrain_metadata
@@ -795,6 +811,10 @@ contains
     SnowDepth%timeAvgOpt = 0
     allocate(SnowDepth%unittypes(1))
     SnowDepth%unittypes(1) = "m"
+    allocate(SnowDepth%valid_min(1))
+    SnowDepth%valid_min = (/ 0.0 /)
+    allocate(SnowDepth%valid_max(1))
+    SnowDepth%valid_max = (/ 100.0 /)
     SnowDepth%varid_def = -99
     SnowDepth%selectOpt = 1
   end subroutine LVT_set_SnowDepth_metadata
@@ -813,6 +833,10 @@ contains
     grndSnow%timeAvgOpt = 0
     allocate(grndSnow%unittypes(1))
     grndSnow%unittypes(1) = "kg m-2"
+    allocate(grndSnow%valid_min(1))
+    grndSnow%valid_min = (/ 0.0 /)
+    allocate(grndSnow%valid_max(1))
+    grndSnow%valid_max = (/ 1000.0 /)
     grndSnow%varid_def = -99
     grndSnow%selectOpt = 1
   end subroutine LVT_set_grndsnow_metadata
@@ -831,6 +855,10 @@ contains
     surftSnow%timeAvgOpt = 0
     allocate(surftSnow%unittypes(1))
     surftSnow%unittypes(1) = "kg m-2"
+    allocate(surftSnow%valid_min(1))
+    surftSnow%valid_min = (/ 0.0 /)
+    allocate(surftSnow%valid_max(1))
+    surftSnow%valid_max = (/ 10000.0 /)
     surftSnow%varid_def = -99
     surftSnow%selectOpt = 1
   end subroutine LVT_set_surftsnow_metadata
@@ -840,6 +868,8 @@ contains
     implicit none
     type(LVT_lismetadataEntry), intent(inout) :: var
     if (allocated(var%unittypes)) deallocate(var%unittypes)
+    if (allocated(var%valid_min)) deallocate(var%valid_min)
+    if (allocated(var%valid_max)) deallocate(var%valid_max)
   end subroutine LVT_deallocate_metadata
 
 !   subroutine LVT_set_ps41_netcdf_header(var, ftn, dimID, udef, varID)
