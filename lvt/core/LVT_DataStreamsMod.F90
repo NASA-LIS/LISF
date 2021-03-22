@@ -490,8 +490,8 @@ contains
             trim(LVT_LIS_rc(1)%model_name) .eq. "JULES.5.0" .and. &
             LVT_rc%nensem .gt. 1) then
 
-          write(LVT_logunit,*) &
-               '[INFO] Prepare processing of JULES PS41 ensemble snow...'
+          ! It's possible JULES PS41 snow variables will be processed.
+          ! Take some preliminary steps.
           call LVT_init_jules_PS41_ens_snow()
 
           count_jules_ps41_ens_snow_vars = 0
@@ -516,11 +516,13 @@ contains
              dataEntry => dataEntry%next
           end do
 
-          if (count_jules_ps41_ens_snow_vars .ne. 6) then
+          if (count_jules_ps41_ens_snow_vars .eq. 0) then
+             jules_ps41_ens_snow = .false.
+          else if (count_jules_ps41_ens_snow_vars .ne. 6) then
              write(LVT_logunit,*) &
                   '[ERR] Cannot process JULES PS41 multi-layer snow'
              write(LVT_logunit,*) &
-                  '[ERR] Not all variables found for ensemble processing'
+                  '[ERR] Missing some snow variables for ensemble processing'
              flush(LVT_logunit)
              call LVT_endrun()
           else
@@ -529,7 +531,9 @@ contains
 
           ! Go to head of list for later processing
           dataEntry => LVT_histData%head_ds1_list
+       end if
 
+       if (jules_ps41_ens_snow) then
           ! We now have all the PS41 snow variables needed for ensemble
           ! processing.  We invoke the relayer algorithm.  The output variables
           ! will be fetched further down.
@@ -1633,7 +1637,9 @@ contains
              call LVT_deallocate_metadata(SurftSnow)
 
           else
-             write(LVT_logunit,*)'EMK: GRIB OUTPUT NOT SUPPORTED YET'
+             write(LVT_logunit,*) &
+                  '[ERR] GRIB OUTPUT NOT SUPPORTED YET FOR PS41 SNOW'
+             flush(LVT_logunit)
              stop
           end if
        end if
