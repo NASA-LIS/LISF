@@ -372,6 +372,10 @@ contains
     new_sliq(:)     = 0.0
     new_rgrainl(:)  = 0.0
 
+    ! EMK...Other initializations
+    new_rho_snow(:) = 0.0
+    new_tsnow(:) = tm
+
     !!! initialize with all new layers empty
     do l = 1, new_nsnow
       newremains(l) = new_ds(l) ! ! snow layer thicknesses (m), new
@@ -448,12 +452,20 @@ contains
       csnow = new_sice(l) * hcapi + new_sliq(l) * hcapw
       new_tsnow(l) = tm + u(l)/csnow
       new_rho_snow(l) = (new_sice(l) + new_sliq(l)) / new_ds(l)
+      !EMK...Add limits to snow density
+      new_rho_snow(l) = max(109., min(917., new_rho_snow(l)))
+
       select case(i_relayer_opt)
       case (ip_relayer_linear)
         new_rgrainl(l) = new_rgrainl(l) / new_ds(l)
       case (ip_relayer_rgrain_inv)
         new_rgrainl(l) = new_ds(l) / new_rgrainl(l)
       end select
+    end do
+
+    ! EMK...Enforce snow grain size limits
+    do l = 1, nlayer
+       new_rgrainl(l) = min(2000., max(new_rgrainl(l), 50.) )
     end do
 
     ! snow surface grain size for radiative calculations
@@ -471,6 +483,8 @@ contains
     end do
     ! diagnose bulk density of snowpack
     new_rho_grnd = new_snowmass / new_snowdepth
+    ! EMK...Add limits to bulk density
+    new_rho_grnd = max(109., min(917., new_rho_grnd))
   end subroutine step_11
 
   ! Set pointer to passed array based on variable name
@@ -618,6 +632,7 @@ contains
              snowDepth_final(ij) = new_snowdepth
              snowGrain_final(ij) = new_rgrain
              surftSnow_final(ij) = new_snowmass
+
           end if
 
        end do ! c
@@ -680,7 +695,7 @@ contains
     case ("SnowLiq_inst")
        data(:) = snowLiq_final(:,k)
     case ("SnowTProf_inst")
-       data(:) = snowtProf_final(:,k)
+       data(:) = SnowTProf_final(:,k)
     case ("SurftSnow_inst")
        data(:) = surftSnow_final(:)
        deallocate(surftSnow_final)
@@ -747,9 +762,9 @@ contains
     allocate(SnowDensity%unittypes(1))
     SnowDensity%unittypes(1) = "kg m-3"
     allocate(SnowDensity%valid_min(1))
-    SnowDensity%valid_min = (/ 100.0 /)
+    SnowDensity%valid_min = (/ 109.0 /)
     allocate( SnowDensity%valid_max(1))
-    SnowDensity%valid_max = (/ 1000.0 /)
+    SnowDensity%valid_max = (/ 917.0 /)
     SnowDensity%varid_def = -99
     SnowDensity%selectOpt = 1
   end subroutine LVT_set_SnowDensity_metadata
@@ -770,9 +785,9 @@ contains
     allocate(LayerSnowDensity%unittypes(1))
     LayerSnowDensity%unittypes(1) = "kg m-3"
     allocate(LayerSnowDensity%valid_min(1))
-    LayerSnowDensity%valid_min = (/ 100.0 /)
+    LayerSnowDensity%valid_min = (/ 109.0 /)
     allocate(LayerSnowDensity%valid_max(1))
-    LayerSnowDensity%valid_max = (/ 1000.0 /)
+    LayerSnowDensity%valid_max = (/ 917.0 /)
     LayerSnowDensity%varid_def = -99
     LayerSnowDensity%selectOpt = 1
   end subroutine LVT_set_LayerSnowDensity_metadata
