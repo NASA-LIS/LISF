@@ -19,6 +19,7 @@ module LIS_lsmrouting_pluginMod
 !  16 Jul 09    Sujay Kumar  Initial Specification
 !  01 Jun 17    Augusto Getirana: Add HyMAP2
 !  12 Sep 19    Augusto Getirana: Add 2-way coupling
+!  17 Mar 21    Yeosang Yoon: Add RAPID
 ! 
   implicit none
   
@@ -90,6 +91,7 @@ subroutine LIS_lsmrouting_plugin
    external noahmp401_getrunoffs_mm
    external noahmp401_getrunoffs_hymap2
    external noahmp401_getsws_hymap2
+   external noahmp401_getrunoffs_rapid   
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -175,6 +177,11 @@ subroutine LIS_lsmrouting_plugin
    call registerlsmroutinggetrunoff(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_HYMAProuterId)//char(0), &
         noahmp401_getrunoffs_mm)
+
+   ! RAPID
+   call registerlsmroutinggetrunoff(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_RAPIDrouterId)//char(0), &
+        noahmp401_getrunoffs_rapid)
 #endif
 
 #if ( defined SM_RUC_3_7 )
