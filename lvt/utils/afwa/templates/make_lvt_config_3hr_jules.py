@@ -23,7 +23,6 @@ output = "netcdf"
 #output = "grib2"
 
 # Most variables are processed independently, and are listed below.
-# Updated for PS41 (multi-layer snow physics)
 var_attributes = {
     "AvgSurfT_inst":
     "AvgSurfT    1  1  K      -  0  1 AvgSurfT    1  1  K      -  0  1",
@@ -95,6 +94,7 @@ var_attributes = {
         "Wind_f      1  1  m/s    -  0  1 Wind_f      1  1  m/s    -  0  1",
     "Wind_f_tavg":
         "Wind_f      1  1  m/s    -  1  1 Wind_f      1  1  m/s    -  1  1",
+
     "ActSnowNL_inst":
         "ActSnowNL   1  1    -    -  0  1 ActSnowNL   1  1   -     -  0  1",
     "GrndSnow_inst":
@@ -119,41 +119,15 @@ var_attributes = {
         "SurftSnow   1  1  kg/m2  -  0  1 SurftSnow   1  1  kg/m2  -  0  1",
 }
 
-# # EMK FOR GALWEM TESTING
-# var_attributes = {
-#     "AvgSurfT_inst":
-#         "AvgSurfT    1  1  K      -  0  1 AvgSurfT    1  1  K      -  0  1",
-#     "SoilMoist_inst":
-#         "SoilMoist   1  4  m3/m3  -  0  4 SoilMoist   1  4  m3/m3  -  0  4",
-#     "SoilTemp_inst":
-#         "SoilTemp    1  4  K      -  0  4 SoilTemp    1  4  K      -  0  4",
-#     "SnowDepth_inst":
-#         "SnowDepth   1  1  m      -  0  1 SnowDepth   1  1  m      -  0  1",
-#     "SWE_inst":
-#         "SWE         1  1  kg/m2  -  0  1 SWE         1  1  kg/m2  -  0  1",
-#     "ActSnowNL_inst":
-#         "ActSnowNL   1  1    -    -  0  1 ActSnowNL   1  1   -     -  0  1",
-#     "GrndSnow_inst":
-#         "GrndSnow    1  1  kg/m2  -  0  1 GrndSnow    1  1  kg/m2  -  0  1",
-#     "LayerSnowDensity_inst":
-#         "LayerSnowDensity 1 1 kg/m3 - 0 3 LayerSnowDensity 1 1 kg/m3 - 0 3",
-#     "LayerSnowDepth_inst":
-#         "LayerSnowDepth   1 1 m   -  0  3 LayerSnowDepth  1 1 m    -  0  3",
-#     "LayerSnowGrain_inst":
-#         "LayerSnowGrain 1 1 microns - 0 3 LayerSnowGrain 1 1 microns - 0 3",
-#     "SnowDensity_inst":
-#         "SnowDensity 1  1  kg/m3  -  0  1 SnowDensity 1  1 kg/m3   -  0  1",
-#     "SnowGrain_inst":
-#         "SnowGrain   1  1 microns -  0  1 SnowGrain   1  1 microns -  0  1",
-#     "SnowIce_inst":
-#         "SnowIce     1  1  kg/m2  -  0  3 SnowIce     1  1 kg/m2   -  0  3",
-#     "SnowLiq_inst":
-#         "SnowLiq     1  1  kg/m2  -  0  3 SnowLiq     1  1 kg/m2   -  0  3",
-#     "SnowTProf_inst":
-#         "SnowTProf   1  1    K    -  0  3 SnowTProf   1  1   K     -  0  3",
-#     "SurftSnow_inst":
-#         "SurftSnow   1  1  kg/m2  -  0  1 SurftSnow   1  1  kg/m2  -  0  1",
-# }
+# EMK FOR GALWEM TESTING
+var_attributes = {
+    "AvgSurfT_inst":
+        "AvgSurfT    1  1  K      -  0  1 AvgSurfT    1  1  K      -  0  1",
+    "SoilMoist_inst":
+        "SoilMoist   1  4  m3/m3  -  0  4 SoilMoist   1  4  m3/m3  -  0  4",
+    "SoilTemp_inst":
+        "SoilTemp    1  4  K      -  0  4 SoilTemp    1  4  K      -  0  4",
+}
 
 # RHMin must be processed with Tair_f_min, so these are listed together
 var_attributes_special = {
@@ -163,33 +137,52 @@ var_attributes_special = {
         "RHMin       1  1  %      -  0  1 RHMin       1  1  %      -  0  1",
 }
 
+# PS41 snow variables must be processed together.
+var_attributes_ps41_snow = {
+    "ActSnowNL_inst":
+        "ActSnowNL   1  1    -    -  0  1 ActSnowNL   1  1   -     -  0  1",
+    "LayerSnowDepth_inst":
+        "LayerSnowDepth   1 1 m   -  0  3 LayerSnowDepth  1 1 m    -  0  3",
+    "LayerSnowGrain_inst":
+        "LayerSnowGrain 1 1 microns - 0 3 LayerSnowGrain 1 1 microns - 0 3",
+    "SnowIce_inst":
+        "SnowIce     1  1  kg/m2  -  0  3 SnowIce     1  1 kg/m2   -  0  3",
+    "SnowLiq_inst":
+        "SnowLiq     1  1  kg/m2  -  0  3 SnowLiq     1  1 kg/m2   -  0  3",
+    "SnowTProf_inst":
+        "SnowTProf   1  1    K    -  0  3 SnowTProf   1  1   K     -  0  3",
+}
+
 # Smooth variables that are perturbed, derived from perturbed variables,
 # or are LSM outputs that are affected by perturbed variables via physics.
-# EMK...Smoothing turned off to avoid numerical instabilities in GALWEM.
-# smooth_vars = ["AvgSurfT_inst", "AvgSurfT_tavg",
-#                "Albedo_tavg", "CanopInt_inst",
-#                "Evap_tavg", "LWdown_f_inst",
-#                "LWdown_f_tavg", "Qh_tavg", "Qle_tavg",
-#                "Qs_acc", "Qsb_acc", "RelSMC_inst",
-#                "SmLiqFrac_inst", "SnowDepth_inst",
-#                "Snowcover_inst", "SoilMoist_inst",
-#                "SoilMoist_tavg", "SoilTemp_inst",
-#                "SoilTemp_tavg", "SWdown_f_inst",
-#                "SWdown_f_tavg", "SWE_inst",
-#                "Tair_f_inst", "Tair_f_max",
-#                "Tair_f_tavg", "TotalPrecip_acc",
-#                "Tair_f_min", "RHMin_inst",
-#                "GrndSnow_inst", "LayerSnowDensity_inst",
-#                "LayerSnowDepth_inst", "LayerSnowGrain_inst",
-#                "SnowDensity_inst", "SnowGrain_inst",
-#                "SnowIce_inst", "SnowLiq_inst",
-#                "SnowTProf_inst", "SurftSnow_inst"]
+smooth_vars = ["AvgSurfT_inst", "AvgSurfT_tavg",
+               "Albedo_tavg", "CanopInt_inst",
+               "Evap_tavg", "LWdown_f_inst",
+               "LWdown_f_tavg", "Qh_tavg", "Qle_tavg",
+               "Qs_acc", "Qsb_acc", "RelSMC_inst",
+               "SmLiqFrac_inst", "SnowDepth_inst",
+               "Snowcover_inst", "SoilMoist_inst",
+               "SoilMoist_tavg", "SoilTemp_inst",
+               "SoilTemp_tavg", "SWdown_f_inst",
+               "SWdown_f_tavg", "SWE_inst",
+               "Tair_f_inst", "Tair_f_max",
+               "Tair_f_tavg", "TotalPrecip_acc",
+               "Tair_f_min", "RHMin_inst",
+
+               "GrndSnow_inst", "LayerSnowDensity_inst",
+               "LayerSnowDepth_inst", "LayerSnowGrain_inst",
+               "SnowDensity_inst", "SnowGrain_inst",
+               "SnowIce_inst", "SnowLiq_inst",
+               "SnowTProf_inst", "SurftSnow_inst"]
+
+# EMK for GALWEM...No smoothing
 smooth_vars = []
 
 lines = open(template, 'r').readlines()
 
 vars = list(var_attributes.keys())
 #vars.append("RHMin_inst")  # RHMin will be handled specially below
+vars.append("PS41Snow_inst") # PS41 snow vars handled specially below
 vars.sort()
 firstVar = True
 for var in vars:
@@ -198,11 +191,10 @@ for var in vars:
         if "LVT output format:" in line:
             line = "LVT output format: %s\n" % (output)
         elif "Process HYCOM data:" in line:
-            #if firstVar:
-            #    line = "Process HYCOM data: 1\n"
-            #else:
-            #    line = "Process HYCOM data: 0\n"
-            line = "Process HYCOM data: 0\n"
+            if firstVar:
+                line = "Process HYCOM data: 1\n"
+            else:
+                line = "Process HYCOM data: 0\n"
         elif "Apply noise reduction filter:" in line:
             if var in smooth_vars:
                 line = "Apply noise reduction filter: 1\n"
@@ -234,6 +226,11 @@ for var in vars:
                 keys = sorted(list(var_attributes_special.keys()))
                 for key in keys:
                     line += "%s\n" % (var_attributes_special[key])
+            # Special handling for PS41 snow physics
+            if var == "PS41Snow_inst":
+                keys = sorted(list(var_attributes_ps41_snow.keys()))
+                for key in keys:
+                    line += "%s\n" % (var_attributes_ps41_snow[key])
             # The general case
             else:
                 line += "%s\n" % (var_attributes[var])
@@ -241,7 +238,8 @@ for var in vars:
             line = "Metrics output directory: OUTPUT/STATS.%s.3hr\n" % (var)
         elif "LIS output attributes file:" in line:
             line = "LIS output attributes file:"
-            line += " ./tables/MODEL_OUTPUT_LIST.TBL.lvt_557post.%s.3hr\n" % (var)
+            line += " ./tables/MODEL_OUTPUT_LIST.TBL.lvt_557post.%s.3hr\n" \
+                % (var)
 
         newlines.append(line)
 
