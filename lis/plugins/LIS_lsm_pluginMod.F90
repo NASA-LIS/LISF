@@ -704,6 +704,8 @@ subroutine LIS_lsm_plugin
         //trim(LIS_retroId)//char(0),noahmp401_f2t)
    call registerlsmf2t(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_agrmetrunId)//char(0),noahmp401_f2t)
+   call registerlsmf2t(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_smootherDAId)//char(0),noahmp401_f2t)
    call registerlsmrun(trim(LIS_noahmp401Id)//char(0),noahmp401_main)
    call registerlsmrestart(trim(LIS_noahmp401Id)//char(0),noahmp401_readrst)
    call registerlsmdynsetup(trim(LIS_noahmp401Id)//char(0),noahmp401_dynsetup)

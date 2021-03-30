@@ -540,6 +540,7 @@ subroutine LIS_metforcing_plugin
    external get_imerg
    external timeinterp_imerg
    external finalize_imerg
+   external reset_imerg
 #endif
 
 #if ( defined MF_CPC_STAGEII )
@@ -1050,6 +1051,7 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_imergId)//char(0), &
                                   timeinterp_imerg)
    call registerfinalmetforc(trim(LIS_imergId)//char(0),finalize_imerg)
+   call registerresetmetforc(trim(LIS_imergId)//char(0),reset_imerg)
 #endif
 
 #if ( defined MF_CPC_STAGEII )
