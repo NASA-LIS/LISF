@@ -1,6 +1,6 @@
 = Land Information System (LIS): LIS {lisfrevision} Users' Guide
-:revnumber: 1.13
-:revdate: 21 Dec 2020
+:revnumber: 1.16
+:revdate: 31 Mar 2021
 :doctype: book
 :sectnums:
 :toc:
@@ -16,7 +16,7 @@
 :nasalisf: https://github.com/NASA-LIS/LISF
 :githuburl: https://github.com
 :apachelicense: https://www.apache.org/licenses/LICENSE-2.0
-:listarball: LISF_public_release_7.3.0.tar.gz
+:listarball: LISF_public_release_7.3.1.tar.gz
 :lispublicna: Not available in the {listarball} public release of LIS 7.3.
 :emdash: —
 :endash: –
