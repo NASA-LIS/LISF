@@ -22,6 +22,7 @@ module LVT_DataStreamsMod
   use LVT_coreMod
   use LVT_logMod
   use LVT_LISoutputHandlerMod
+  use LVT_navgemMod
   use LVT_timeMgrMod
   use map_utils
   use grib_api
