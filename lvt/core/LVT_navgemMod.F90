@@ -21,15 +21,11 @@
 
 module LVT_navgemMod
 
-  ! Modules
-  use LVT_logMod, only: LVT_logunit
-
   ! Defaults
   implicit none
   private
 
   ! Public routines
-  public :: LVT_get_navgem_filename
 
 contains
 
@@ -60,11 +56,12 @@ contains
 
   end subroutine construct_navgem_filename
 
-  subroutine LVT_get_navgem_filename(filename, &
+  subroutine get_navgem_filename(filename, &
        year, month, day, hour, fcst_hr)
 
     ! Modules
     use LVT_coreMod, only: LVT_rc
+    use LVT_logMod, only: LVT_logunit
     use LVT_timeMgrMod, only: LVT_get_julhr, LVT_julhr_date
 
     ! Defaults
@@ -103,5 +100,85 @@ contains
     write(LVT_logunit,*)'[ERR] Cannot find NAVGEM file!'
     stop
 
-  end subroutine LVT_get_navgem_filename
+  end subroutine get_navgem_filename
+
+  subroutine fetch_navgem_fields(sst, cice, lat, lon)
+
+    ! Modules
+#if (defined USE_HDF5)
+    use HDF5
+#endif
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    real, allocatable, intent(out) :: sst(:)
+    real, allocatable, intent(out) :: cice(:)
+    real, allocatable, intent(out) :: lat(:)
+    real, allocatable, intent(out) :: lon(:)
+
+    ! Locals
+    character(len=250) :: filename
+    integer :: year, month, day, hour, fcst_hr
+    logical :: fail
+    integer :: hdferr
+#if (defined USE_HDF5)
+    integer(HID_T) :: file_id, dataset_id, datatype_id
+#endif
+
+    ! Get NAVGEM filename
+    call get_navgem_filename(filename, year, month, day, hour, fcst_hr)
+
+#if (defined USE_HDF5)
+    ! Initialize IDs.  Useful later for error handling.
+    file_id = -1
+    dataset_id = -1
+    datatype_id = -1
+
+    ! Initialize HDF5 Fortran interface
+    call open_hdf5_f_interface(fail)
+    if (fail) goto 100
+
+    ! Cleanup before returning
+100 continue
+    call close_hdf5_f_interface(fail)
+
+#endif
+  end subroutine fetch_navgem_fields
+
+#if (defined USE_HDF5)
+  subroutine open_hdf5_f_interface(fail)
+    use HDF5
+    use LVT_logMod, only: LVT_logunit
+    implicit none
+    logical,intent(out) :: fail
+    integer :: hdferr
+    fail = .false.
+    call h5open_f(hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot initialize HDF5 ', &
+            'Fortran interface!'
+       fail = .true.
+    end if
+  end subroutine open_hdf5_f_interface
+#endif
+
+#if (defined USE_HDF5)
+  subroutine close_hdf5_f_interface(fail)
+    use HDF5
+    use LVT_logMod, only: LVT_logunit
+    implicit none
+    logical, intent(out) :: fail
+    integer :: hdferr
+    fail = .false.
+    call h5close_f(hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot close HDF5 Fortran interface!'
+       fail = .true.
+    end if
+  end subroutine close_hdf5_f_interface
+#endif
 end module LVT_navgemMod
