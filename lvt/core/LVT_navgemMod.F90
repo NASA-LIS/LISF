@@ -140,8 +140,13 @@ contains
     call open_hdf5_f_interface(fail)
     if (fail) goto 100
 
+    ! Open the file
+    call open_navgem_file(filename, file_id, fail)
+    if (fail) goto 100
+
     ! Cleanup before returning
 100 continue
+    if (file_id .gt. -1) call close_navgem_file(filename, file_id, fail)
     call close_hdf5_f_interface(fail)
 
 #endif
@@ -163,6 +168,51 @@ contains
        fail = .true.
     end if
   end subroutine open_hdf5_f_interface
+#endif
+
+#if (defined USE_HDF5)
+  subroutine close_navgem_file(filename, file_id, fail)
+    use HDF5
+    use LVT_logMod, only: LVT_logunit
+    implicit none
+    character(len=*), intent(in) :: filename
+    integer(HID_T), intent(inout) :: file_id
+    logical, intent(out) :: fail
+    integer :: hdferr
+    fail = .false.
+    call h5fclose_f(file_id, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot close file ', trim(filename)
+       fail = .true.
+    else
+       write(LVT_logunit,*) &
+            '[INFO] Closed NAVGEM file ',trim(filename)
+    end if
+    file_id = -1
+  end subroutine close_navgem_file
+#endif
+
+#if (defined USE_HDF5)
+  subroutine open_navgem_file(filename, file_id, fail)
+    use HDF5
+    use LVT_logMod, only: LVT_logunit
+    implicit none
+    character(len=*), intent(in) :: filename
+    integer(HID_T), intent(out) :: file_id
+    logical, intent(out) :: fail
+    integer :: hdferr
+    fail = .false.
+    call h5fopen_f(trim(filename), H5F_ACC_RDONLY_F, file_id, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*)&
+            '[ERR] Cannot open file ', trim(filename)
+       fail = .true.
+    else
+       write(LVT_logunit,*) &
+            '[INFO] Opened NAVGEM file ', trim(filename)
+    end if
+  end subroutine open_navgem_file
 #endif
 
 #if (defined USE_HDF5)
