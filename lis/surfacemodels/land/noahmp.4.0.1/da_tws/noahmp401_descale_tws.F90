@@ -81,29 +81,6 @@ subroutine noahmp401_descale_tws(n, LSM_State, LSM_Incr_State)
   integer                :: SOILTYP           ! soil type index [-]
   real                   :: MAX_THRESHOLD , MIN_THRESHOLD
 
-#if 0 
-  call ESMF_StateGet(LSM_State,"Groundwater Storage",gwField,rc=status)
-  call LIS_verify(status,&
-       "ESMF_StateSet: Groundwater Storage failed in noahmp401_settws")
-
-  call ESMF_FieldGet(gwField,localDE=0,farrayPtr=gws,rc=status)
-  call LIS_verify(status,&
-       "ESMF_FieldGet: Groundwater Storage failed in noahmp401_settws")
-
-  call ESMF_StateGet(LSM_Incr_State, "Groundwater Storage",gwIncrField,rc=status)
-  call LIS_verify(status,&
-       "ESMF_StateSet: Groundwater Storage failed in noahmp401_descale")
-
-  call ESMF_FieldGet(gwIncrField, localDE=0, farrayPtr=gwsIncr,rc=status)
-  call LIS_verify(status,&
-       "ESMF_StateSet: Groundwater Storage failed in noahmp401_descale")
-
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     gws(t)   = gws(t)*10.0
-     gwsIncr(t) = gwsIncr(t)*10.0
-  enddo
-
-#endif
   ! Natt
   ! Descale TWS states
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
