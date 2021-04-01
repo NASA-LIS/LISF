@@ -64,20 +64,6 @@ subroutine noahmp401_scale_tws(n, LSM_State)
   real, pointer          :: snod(:)
 
   
-#if 0 
-  call ESMF_StateGet(LSM_State,"Groundwater Storage",gwField,rc=status)
-  call LIS_verify(status,&
-       "ESMF_StateSet: Groundwater Storage failed in noahmp401_settws")
-
-  call ESMF_FieldGet(gwField,localDE=0,farrayPtr=gws,rc=status)
-  call LIS_verify(status,&
-       "ESMF_FieldGet: Groundwater Storage failed in noahmp401_settws")
-
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     gws(t)   = gws(t)/10.0
-  enddo
-
-#endif
   ! Natt
   ! Scale TWS states to mm (Note, GWS is already in mm)
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)

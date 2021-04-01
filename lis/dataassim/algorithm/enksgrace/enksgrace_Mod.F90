@@ -459,19 +459,6 @@ contains
 
           do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
-#if 0 
-             gid = LIS_domain(n)%gindex(LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-                  LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)        
-             m = t-(gid-1)*LIS_rc%nensem(n)
-
-             if((enksgrace_struc(n,k)%innov(gid).ne.LIS_rc%udef).and.&
-                  enksgrace_struc(n,k)%innov(gid).ne.0) then 
-                enksgrace_struc(n,k)%k_gain(t,v) = state_incr(v,t)/&
-                     enksgrace_struc(n,k)%innov(gid)
-             else
-                enksgrace_struc(n,k)%k_gain(t,v) = LIS_rc%udef
-             endif
-#endif
              stdata(t) =  stvar(v,t)
              !BZ divide by number of days in month
 !             if((mod(LIS_rc%yr,4) .eq. 0 .and. &

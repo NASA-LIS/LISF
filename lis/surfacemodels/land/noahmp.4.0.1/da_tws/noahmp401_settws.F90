@@ -606,19 +606,6 @@ write(LIS_logunit,*) 'smc greater than 0.6'
                   call LIS_endrun()
                enddo
 
-#if 0 
-               do m=1,LIS_rc%nensem(n)
-                  t = (i-1)*LIS_rc%nensem(n)+m
-                  
-                  if(NOAHMP401_struc(n)%noahmp401(t)%wa.gt.MAX_GWS_THRESHOLD) then 
-                     NOAHMP401_struc(n)%noahmp401(t)%wa = MAX_GWS_THRESHOLD
-                  endif
-                  
-                  if(NOAHMP401_struc(n)%noahmp401(t)%wa.lt.MIN_GWS_THRESHOLD) then 
-                     NOAHMP401_struc(n)%noahmp401(t)%wa = MIN_GWS_THRESHOLD
-                  endif
-               enddo
-#endif
                do m=1,LIS_rc%nensem(n)-1
                   t = (i-1)*LIS_rc%nensem(n)+m
                   t_unpert = i*LIS_rc%nensem(n)
@@ -649,16 +636,6 @@ write(LIS_logunit,*) 'smc greater than 0.6'
      dsnowh = snod(t) - noahmp401_struc(n)%noahmp401(t)%snowh  !in m
 
 !alternate option     
-#if 0 
-!only update dshowh, update SWE based on density
-     dsnowh = snod(t) - noahmp401_struc(n)%noahmp401(t)%snowh  !in m
-     snow_dens = noahmp401_struc(n)%noahmp401(t)%sneqv/&
-          noahmp401_struc(n)%noahmp401(t)%snowh
-     swe_new = snow_dens*snod(t)
-     
-     dsneqv = swe_new - noahmp401_struc(n)%noahmp401(t)%sneqv !in mm
-
-#endif
      call noahmp401_snow_update(n, t, dsneqv, dsnowh)
      
      if(noahmp401_struc(n)%noahmp401(t)%sneqv.lt.0.or.&
