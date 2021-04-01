@@ -15,8 +15,10 @@
 ! LVT grid.  Intended to run as part of 557post mode for Air Force operations.
 !
 ! REVISION HISTORY:
-! 01 Apr 2021: Eric Kemp (SSAI), Initial implementation.  Read codes borrow
-!              heavily from sample Python code provided by FNMOC.
+! 01 Apr 2021: Eric Kemp (SSAI), Initial implementation.  Basic logic for
+!              pulling fields and calculating latitudes and longitudes is
+!              based on sample Python code provided by FNMOC.  HDF5 logic
+!              borrows from IMERG reader in LIS.
 !------------------------------------------------------------------------------
 
 module LVT_navgemMod
@@ -126,6 +128,7 @@ contains
 #if (defined USE_HDF5)
     integer(HID_T) :: file_id, dataset_id, datatype_id
 #endif
+    integer :: jm
 
     ! Get NAVGEM filename
     call get_navgem_filename(filename, year, month, day, hour, fcst_hr)
@@ -144,8 +147,19 @@ contains
     call open_navgem_file(filename, file_id, fail)
     if (fail) goto 100
 
+    ! Get the gt ("ground temperature") field
+    call open_navgem_dataset(file_id, "/Grid/gt", dataset_id, fail)
+    if (fail) goto 100
+    call get_navgem_datatype(dataset_id, datatype_id, fail)
+    if (fail) goto 100
+    call check_navgem_type(datatype_id, H5T_IEEE_F32LE, fail)
+    if (fail) goto 100
+
+    !...
     ! Cleanup before returning
 100 continue
+    if (datatype_id .gt. -1) call close_navgem_datatype(datatype_id, fail)
+    if (dataset_id .gt. -1) call close_navgem_dataset(dataset_id, fail)
     if (file_id .gt. -1) call close_navgem_file(filename, file_id, fail)
     call close_hdf5_f_interface(fail)
 
@@ -157,7 +171,7 @@ contains
     use HDF5
     use LVT_logMod, only: LVT_logunit
     implicit none
-    logical,intent(out) :: fail
+    logical, intent(out) :: fail
     integer :: hdferr
     fail = .false.
     call h5open_f(hdferr)
@@ -168,6 +182,107 @@ contains
        fail = .true.
     end if
   end subroutine open_hdf5_f_interface
+#endif
+
+#if (defined USE_HDF5)
+  subroutine open_navgem_dataset(file_id, dataset_name, dataset_id, fail)
+    use HDF5
+    use LVT_logMod, only: LVT_logunit
+    implicit none
+    integer(HID_T), intent(in) :: file_id
+    character(len=*), intent(in) :: dataset_name
+    integer(HID_T), intent(out) :: dataset_id
+    integer :: hdferr
+    logical, intent(out) :: fail
+    fail = .false.
+    call h5dopen_f(file_id, trim(dataset_name), dataset_id, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*)&
+            '[ERR] Cannot open dataset ', trim(dataset_name)
+       fail = .true.
+    end if
+  end subroutine open_navgem_dataset
+#endif
+
+#if (defined USE_HDF5)
+  subroutine get_navgem_datatype(dataset_id, datatype_id, fail)
+    use HDF5
+    use LVT_logMod, only: LVT_logunit
+    implicit none
+    integer(HID_T), intent(in) :: dataset_id
+    integer(HID_T), intent(out) :: datatype_id
+    logical, intent(out) :: fail
+    integer :: hdferr
+    fail = .false.
+    call h5dget_type_f(dataset_id, datatype_id, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*)&
+            '[ERR] Cannot determine datatype'
+       fail = .true.
+    end if
+  end subroutine get_navgem_datatype
+#endif
+
+#if (defined USE_HDF5)
+  subroutine check_navgem_type(datatype_id, datatype, fail)
+    use HDF5
+    use LVT_logMod, only: LVT_logunit
+    integer(HID_T), intent(in) :: datatype_id
+    integer(HID_T), intent(in) :: datatype
+    logical, intent(out) :: fail
+    logical :: flag
+    integer :: hdferr
+    fail = .false.
+    call h5tequal_f(datatype_id, datatype, flag, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot confirm datatype!'
+       fail = .true.
+       return
+    end if
+    if (.not. flag) then
+       write(LVT_logunit,*)&
+            '[ERR] Datatype is wrong type!'
+       fail = .true.
+       return
+    end if
+  end subroutine check_navgem_type
+#endif
+
+#if (defined USE_HDF5)
+  subroutine close_navgem_datatype(datatype_id, fail)
+    use HDF5
+    use LVT_logMod, only: LVT_logunit
+    integer(HID_T), intent(inout) :: datatype_id
+    logical, intent(out) :: fail
+    integer :: hdferr
+    fail = .false.
+    call h5tclose_f(datatype_id, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot close datatype '
+       fail = .true.
+    end if
+    datatype_id = -1
+  end subroutine close_navgem_datatype
+#endif
+
+#if (defined USE_HDF5)
+  subroutine close_navgem_dataset(dataset_id, fail)
+    use HDF5
+    use LVT_logMod, only: LVT_logunit
+    integer(HID_T), intent(inout) :: dataset_id
+    logical, intent(out) :: fail
+    integer :: hdferr
+    fail = .false.
+    call h5dclose_f(dataset_id, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot close dataset '
+       fail = .true.
+    end if
+    dataset_id = -1
+  end subroutine close_navgem_dataset
 #endif
 
 #if (defined USE_HDF5)
