@@ -135,7 +135,15 @@ contains
     real, allocatable :: tmp_latitudes(:,:)
     integer, allocatable :: tmp_points_per_lat(:,:)
     integer :: rank
-    integer :: jm, im, itmp, t_number
+    integer :: im, itmp, t_number
+
+    ! Handle case where LVT was not compiled with HDF5 support
+#if (!defined USE_HDF5)
+    write(LVT_logunit,*)'[ERR] Cannot read NAVGEM HDF5 file!'
+    write(LVT_logunit,*) &
+         '[ERR] Reconfigure with HDF5, recompile, and try again!'
+    stop
+#endif
 
     ! Get NAVGEM filename
     call get_navgem_filename(filename, year, month, day, hour, fcst_hr)
@@ -262,9 +270,8 @@ contains
             '[ERR] Cannot read HDF5 dataset /Geometry/Latitudes!'
        goto 100
     end if
-    jm = dims(1)
 
-    ! Close the /Grid/Latitudes types
+    ! Close the /Geometry/Latitudes types
     if (datatype_id .gt. -1) call close_navgem_datatype(datatype_id, fail)
     if (dataset_id .gt. -1) call close_navgem_dataset(dataset_id, fail)
     deallocate(dims)
@@ -318,13 +325,19 @@ contains
        goto 100
     end if
 
+    ! Now we need to calculate the lat and lon of each sst and cice point.
+    call calc_navgem_latlons(tmp_latitudes, tmp_points_per_lat, size(sst), &
+       lat, lon)
+
     ! Clean up temporary arrays
     deallocate(tmp_latitudes)
     deallocate(tmp_points_per_lat)
 
-    !...
+    write(LVT_logunit,*)'[INFO] Read data from NAVGEM file'
+
     ! Cleanup before returning
 100 continue
+    if (allocated(dims)) deallocate(dims)
     if (allocated(tmp_gt)) deallocate(tmp_gt)
     if (allocated(tmp_conice)) deallocate(tmp_conice)
     if (allocated(tmp_latitudes)) deallocate(tmp_latitudes)
@@ -773,4 +786,57 @@ contains
     t_number = int( 2 * int( int ( int( int(im-1)/3) + 1) / 2 ) )
     t_number = t_number - 1
   end subroutine get_navgem_truncation
+
+  ! Calculate the latitude and longitude of each data point on the reduced
+  ! Gaussian grid.  This logic borrows heavily from Python code provided by
+  ! FNMOC.
+  subroutine calc_navgem_latlons(tmp_latitudes, tmp_points_per_lat, dim, &
+       lats, lons)
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    real, intent(in) :: tmp_latitudes(:,:) ! The latitude of each parallel
+    integer, intent(in) :: tmp_points_per_lat(:,:) ! Points per parallel
+    integer, intent(in) :: dim ! Total number of points
+    real, allocatable, intent(out) :: lats(:)
+    real, allocatable, intent(out) :: lons(:)
+
+    ! Locals
+    integer :: num_lons
+    real :: d_lon
+    integer :: r, c, i, jm
+
+    jm = size(tmp_latitudes, 1) ! Number of parallels
+
+    ! First calculate the latitudes at each point
+    allocate(lats(dim))
+    lats = 0
+    i = 0
+    do r = 1, jm
+       num_lons = tmp_points_per_lat(r,1)
+       do c = 1, num_lons
+          i = i + 1
+          lats(i) = tmp_latitudes(r,1)
+       end do ! c
+    end do ! r
+
+    ! Next, calculate the longitudes at each point
+    allocate(lons(dim))
+    lons = 0
+    i = 0
+    do r = 1, jm
+       num_lons = tmp_points_per_lat(r,1)
+       d_lon = 360. / num_lons
+       do c = 1, num_lons
+          i = i + 1
+          lons(i) = 0.0 + (c-1)*d_lon
+          if (lons(i) .gt. 180.) then
+             lons(i) = lons(i) - 360.
+          end if
+       end do ! c
+    end do ! r
+  end subroutine calc_navgem_latlons
+
 end module LVT_navgemMod
