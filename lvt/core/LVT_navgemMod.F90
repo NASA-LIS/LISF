@@ -105,7 +105,7 @@ contains
 
   end subroutine get_navgem_filename
 
-  subroutine fetch_navgem_fields(sst, cice, lat, lon)
+  subroutine fetch_navgem_fields(sst, cice, gridDesc)
 
     ! Modules
 #if (defined USE_HDF5)
@@ -119,8 +119,7 @@ contains
     ! Arguments
     real, allocatable, intent(out) :: sst(:)
     real, allocatable, intent(out) :: cice(:)
-    real, allocatable, intent(out) :: lat(:)
-    real, allocatable, intent(out) :: lon(:)
+    real, intent(out) :: gridDesc(50)
 
     ! Locals
     character(len=250) :: filename
@@ -131,12 +130,15 @@ contains
     integer(HID_T) :: file_id, dataset_id, datatype_id
     integer(HSIZE_T), allocatable :: dims(:)
 #endif
-    real, allocatable :: tmp_gt(:,:)
-    real, allocatable :: tmp_conice(:,:)
-    real, allocatable :: tmp_latitudes(:,:)
-    integer, allocatable :: tmp_points_per_lat(:,:)
+    real, allocatable :: thin_gt(:,:)
+    real, allocatable :: thin_conice(:,:)
+    real, allocatable :: thin_latitudes(:,:)
+    integer, allocatable :: thin_points_per_lat(:,:)
+    real, allocatable :: regular_longitude_slice(:)
     integer :: rank
-    integer :: im, itmp, t_number
+    integer :: im, jm, itmp, t_number
+    real :: dlon
+    integer :: c, r
 
     ! Handle case where LVT was not compiled with HDF5 support
 #if (!defined USE_HDF5)
@@ -163,84 +165,6 @@ contains
     call open_navgem_file(filename, file_id, fail)
     if (fail) goto 100
 
-    ! Get the gt ("ground temperature") field
-    call open_navgem_dataset(file_id, "/Grid/gt", dataset_id, fail)
-    if (fail) goto 100
-    call get_navgem_datatype(dataset_id, datatype_id, fail)
-    if (fail) goto 100
-    call check_navgem_type(datatype_id, H5T_IEEE_F32LE, fail)
-    if (fail) goto 100
-    call check_navgem_units(dataset_id, "K", fail)
-    if (fail) goto 100
-    call get_navgem_dims(dataset_id, rank, dims, fail)
-    if (fail) goto 100
-    if (rank .ne. 2) then
-       write(LVT_logunit,*)'[ERR] HDF5 dataset /Grid/gt has wrong rank!'
-       write(LVT_logunit,*)'Expected 2, found ', rank
-       goto 100
-    end if
-    if (dims(2) .ne. 1) then
-       write(LVT_logunit,*) &
-            '[ERR] Unexpected first dimension for HDF5 dataset /Grid/gt!'
-       write(LVT_logunit,*) 'Expected 1, found ', dims(2)
-       goto 100
-    end if
-    allocate(tmp_gt(dims(1), dims(2)))
-    tmp_gt = 0
-    call h5dread_f(dataset_id, H5T_IEEE_F32LE, tmp_gt, dims, hdferr)
-    if (hdferr .ne. 0) then
-       write(LVT_logunit,*)'[ERR] Cannot read HDF5 dataset /Grid/gt!'
-       goto 100
-    end if
-
-    ! Close the /Grid/gt types
-    if (datatype_id .gt. -1) call close_navgem_datatype(datatype_id, fail)
-    if (dataset_id .gt. -1) call close_navgem_dataset(dataset_id, fail)
-
-    ! Save the data into the sst array.
-    allocate(sst(dims(2)))
-    sst = tmp_gt(:,1)
-    deallocate(tmp_gt)
-    deallocate(dims)
-
-    ! Get the conice (sea ice area fraction) field
-    call open_navgem_dataset(file_id, "/Grid/conice", dataset_id, fail)
-    if (fail) goto 100
-    call get_navgem_datatype(dataset_id, datatype_id, fail)
-    if (fail) goto 100
-    call check_navgem_type(datatype_id, H5T_IEEE_F32LE, fail)
-    if (fail) goto 100
-    call get_navgem_dims(dataset_id, rank, dims, fail)
-    if (fail) goto 100
-    if (rank .ne. 2) then
-       write(LVT_logunit,*)'[ERR] HDF5 dataset /Grid/conice has wrong rank!'
-       write(LVT_logunit,*)'Expected 2, found ', rank
-       goto 100
-    end if
-    if (dims(2) .ne. 1) then
-       write(LVT_logunit,*) &
-            '[ERR] Unexpected first dimension for HDF5 dataset /Grid/conice!'
-       write(LVT_logunit,*) 'Expected 1, found ', dims(2)
-       goto 100
-    end if
-    allocate(tmp_conice(dims(1), dims(2)))
-    tmp_conice = 0
-    call h5dread_f(dataset_id, H5T_IEEE_F32LE, tmp_conice, dims, hdferr)
-    if (hdferr .ne. 0) then
-       write(LVT_logunit,*)'[ERR] Cannot read HDF5 dataset /Grid/conice!'
-       goto 100
-    end if
-
-    ! Close the /Grid/conice types
-    if (datatype_id .gt. -1) call close_navgem_datatype(datatype_id, fail)
-    if (dataset_id .gt. -1) call close_navgem_dataset(dataset_id, fail)
-
-    ! Save the data into the cice array.
-    allocate(cice(dims(2)))
-    cice = tmp_conice(:,1)
-    deallocate(tmp_conice)
-    deallocate(dims)
-
     ! Get the Gaussian latitudes
     call open_navgem_dataset(file_id, "/Geometry/Latitudes", dataset_id, fail)
     if (fail) goto 100
@@ -263,14 +187,17 @@ contains
        write(LVT_logunit,*) 'Expected 1, found ', dims(2)
        goto 100
     end if
-    allocate(tmp_latitudes(dims(1), dims(2)))
-    tmp_latitudes = 0
-    call h5dread_f(dataset_id, H5T_IEEE_F32LE, tmp_latitudes, dims, hdferr)
+    allocate(thin_latitudes(dims(1), dims(2)))
+    thin_latitudes = 0
+    call h5dread_f(dataset_id, H5T_IEEE_F32LE, thin_latitudes, dims, hdferr)
     if (hdferr .ne. 0) then
        write(LVT_logunit,*) &
             '[ERR] Cannot read HDF5 dataset /Geometry/Latitudes!'
        goto 100
     end if
+
+    ! Save dimension jm
+    jm = dims(1)
 
     ! Close the /Geometry/Latitudes types
     if (datatype_id .gt. -1) call close_navgem_datatype(datatype_id, fail)
@@ -300,9 +227,10 @@ contains
        write(LVT_logunit,*) 'Expected 1, found ', dims(2)
        goto 100
     end if
-    allocate(tmp_points_per_lat(dims(1), dims(2)))
-    tmp_latitudes = 0
-    call h5dread_f(dataset_id, H5T_STD_I32LE, tmp_points_per_lat, dims, hdferr)
+    allocate(thin_points_per_lat(dims(1), dims(2)))
+    thin_points_per_lat = 0
+    call h5dread_f(dataset_id, H5T_STD_I32LE, thin_points_per_lat, dims, &
+         hdferr)
     if (hdferr .ne. 0) then
        write(LVT_logunit,*) &
             '[ERR] Cannot read HDF5 dataset /Geometry/Points_per_lat!'
@@ -315,10 +243,10 @@ contains
 
     ! Calculate dimension im
     itmp = floor(dims(1) / 2.) + 1
-    im = tmp_points_per_lat(itmp,1)
+    im = thin_points_per_lat(itmp,1)
     deallocate(dims)
 
-    ! Calculate t_number
+    ! Calculate and check t_number
     call get_navgem_truncation(im, t_number)
     if (t_number .ne. 681) then
        write(LVT_logunit,*)'[ERR] Unexpected T-number for NAVGEM!'
@@ -326,23 +254,132 @@ contains
        goto 100
     end if
 
-    ! Now we need to calculate the lat and lon of each sst and cice point.
-    call calc_navgem_latlons(tmp_latitudes, tmp_points_per_lat, size(sst), &
-       lat, lon)
+    ! Calculate full number of longitudes across a parallel
+    allocate(regular_longitude_slice(im))
+    regular_longitude_slice = 0
+    dlon = 360. / im
+    do c = 1, im
+       regular_longitude_slice(c) = 0. + (c-1)*dlon
+    end do
+
+    ! Fill gridDesc array for NAVGEM regular grid.  See LIS_PRIV_rcMod.F90
+    ! for description of this array.
+    gridDesc = 0
+    gridDesc(1) = 4 ! Regular Gaussian grid
+    gridDesc(2) = im
+    gridDesc(3) = jm
+    gridDesc(4) = thin_latitudes(1,1)
+    gridDesc(5) = regular_longitude_slice(1)
+    gridDesc(6) = 8
+    gridDesc(7) = thin_latitudes(jm,1)
+    gridDesc(8) = regular_longitude_slice(im)
+    gridDesc(9) = dlon
+    gridDesc(10) = jm ! CHECK
+    gridDesc(11) = 64 ! CHECK
+    gridDesc(20) = 255
+    gridDesc(41) = 4 ! Regular Gaussian grid
+    gridDesc(42) = im
+    gridDesc(43) = jm
+    gridDesc(44) = thin_latitudes(1,1)
+    gridDesc(45) = regular_longitude_slice(1)
+    gridDesc(46) = 128
+    gridDesc(47) = thin_latitudes(jm,1)
+    gridDesc(48) = regular_longitude_slice(im)
+    gridDesc(49) = dlon
+    gridDesc(50) = jm ! CHECK
+
+    deallocate(thin_latitudes)
+
+    ! Get the gt ("ground temperature") field
+    call open_navgem_dataset(file_id, "/Grid/gt", dataset_id, fail)
+    if (fail) goto 100
+    call get_navgem_datatype(dataset_id, datatype_id, fail)
+    if (fail) goto 100
+    call check_navgem_type(datatype_id, H5T_IEEE_F32LE, fail)
+    if (fail) goto 100
+    call check_navgem_units(dataset_id, "K", fail)
+    if (fail) goto 100
+    call get_navgem_dims(dataset_id, rank, dims, fail)
+    if (fail) goto 100
+    if (rank .ne. 2) then
+       write(LVT_logunit,*)'[ERR] HDF5 dataset /Grid/gt has wrong rank!'
+       write(LVT_logunit,*)'Expected 2, found ', rank
+       goto 100
+    end if
+    if (dims(2) .ne. 1) then
+       write(LVT_logunit,*) &
+            '[ERR] Unexpected first dimension for HDF5 dataset /Grid/gt!'
+       write(LVT_logunit,*) 'Expected 1, found ', dims(2)
+       goto 100
+    end if
+    allocate(thin_gt(dims(1), dims(2)))
+    thin_gt = 0
+    call h5dread_f(dataset_id, H5T_IEEE_F32LE, thin_gt, dims, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*)'[ERR] Cannot read HDF5 dataset /Grid/gt!'
+       goto 100
+    end if
+
+    ! Close the /Grid/gt types
+    if (datatype_id .gt. -1) call close_navgem_datatype(datatype_id, fail)
+    if (dataset_id .gt. -1) call close_navgem_dataset(dataset_id, fail)
+    deallocate(dims)
+
+    ! Save the data on the regular grid into the sst array.
+    call interp_thinned_to_regular(im, jm, thin_points_per_lat, &
+       regular_longitude_slice, thin_gt, sst)
+
+    ! Get the conice (sea ice area fraction) field
+    call open_navgem_dataset(file_id, "/Grid/conice", dataset_id, fail)
+    if (fail) goto 100
+    call get_navgem_datatype(dataset_id, datatype_id, fail)
+    if (fail) goto 100
+    call check_navgem_type(datatype_id, H5T_IEEE_F32LE, fail)
+    if (fail) goto 100
+    call get_navgem_dims(dataset_id, rank, dims, fail)
+    if (fail) goto 100
+    if (rank .ne. 2) then
+       write(LVT_logunit,*)'[ERR] HDF5 dataset /Grid/conice has wrong rank!'
+       write(LVT_logunit,*)'Expected 2, found ', rank
+       goto 100
+    end if
+    if (dims(2) .ne. 1) then
+       write(LVT_logunit,*) &
+            '[ERR] Unexpected first dimension for HDF5 dataset /Grid/conice!'
+       write(LVT_logunit,*) 'Expected 1, found ', dims(2)
+       goto 100
+    end if
+    allocate(thin_conice(dims(1), dims(2)))
+    thin_conice = 0
+    call h5dread_f(dataset_id, H5T_IEEE_F32LE, thin_conice, dims, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*)'[ERR] Cannot read HDF5 dataset /Grid/conice!'
+       goto 100
+    end if
+
+    ! Close the /Grid/conice types
+    if (datatype_id .gt. -1) call close_navgem_datatype(datatype_id, fail)
+    if (dataset_id .gt. -1) call close_navgem_dataset(dataset_id, fail)
+    deallocate(dims)
+
+    ! Save the data on the regular grid into the cice array.
+    call interp_thinned_to_regular(im, jm, thin_points_per_lat, &
+       regular_longitude_slice, thin_conice, cice)
 
     ! Clean up temporary arrays
-    deallocate(tmp_latitudes)
-    deallocate(tmp_points_per_lat)
+    deallocate(thin_points_per_lat)
 
     write(LVT_logunit,*)'[INFO] Read data from NAVGEM file'
 
     ! Cleanup before returning
 100 continue
     if (allocated(dims)) deallocate(dims)
-    if (allocated(tmp_gt)) deallocate(tmp_gt)
-    if (allocated(tmp_conice)) deallocate(tmp_conice)
-    if (allocated(tmp_latitudes)) deallocate(tmp_latitudes)
-    if (allocated(tmp_points_per_lat)) deallocate(tmp_points_per_lat)
+    if (allocated(regular_longitude_slice)) &
+         deallocate(regular_longitude_slice)
+    if (allocated(thin_gt)) deallocate(thin_gt)
+    if (allocated(thin_conice)) deallocate(thin_conice)
+    if (allocated(thin_latitudes)) deallocate(thin_latitudes)
+    if (allocated(thin_points_per_lat)) deallocate(thin_points_per_lat)
     if (datatype_id .gt. -1) call close_navgem_datatype(datatype_id, fail)
     if (dataset_id .gt. -1) call close_navgem_dataset(dataset_id, fail)
     if (file_id .gt. -1) call close_navgem_file(filename, file_id, fail)
@@ -791,15 +828,15 @@ contains
   ! Calculate the latitude and longitude of each data point on the reduced
   ! Gaussian grid.  This logic borrows heavily from Python code provided by
   ! FNMOC.
-  subroutine calc_navgem_latlons(tmp_latitudes, tmp_points_per_lat, dim, &
+  subroutine calc_navgem_latlons(thin_latitudes, thin_points_per_lat, dim, &
        lats, lons)
 
     ! Defaults
     implicit none
 
     ! Arguments
-    real, intent(in) :: tmp_latitudes(:,:) ! The latitude of each parallel
-    integer, intent(in) :: tmp_points_per_lat(:,:) ! Points per parallel
+    real, intent(in) :: thin_latitudes(:,:) ! The latitude of each parallel
+    integer, intent(in) :: thin_points_per_lat(:,:) ! Points per parallel
     integer, intent(in) :: dim ! Total number of points
     real, allocatable, intent(out) :: lats(:)
     real, allocatable, intent(out) :: lons(:)
@@ -809,17 +846,17 @@ contains
     real :: d_lon
     integer :: r, c, i, jm
 
-    jm = size(tmp_latitudes, 1) ! Number of parallels
+    jm = size(thin_latitudes, 1) ! Number of parallels
 
     ! First calculate the latitudes at each point
     allocate(lats(dim))
     lats = 0
     i = 0
     do r = 1, jm
-       num_lons = tmp_points_per_lat(r,1)
+       num_lons = thin_points_per_lat(r,1)
        do c = 1, num_lons
           i = i + 1
-          lats(i) = tmp_latitudes(r,1)
+          lats(i) = thin_latitudes(r,1)
        end do ! c
     end do ! r
 
@@ -828,7 +865,7 @@ contains
     lons = 0
     i = 0
     do r = 1, jm
-       num_lons = tmp_points_per_lat(r,1)
+       num_lons = thin_points_per_lat(r,1)
        d_lon = 360. / num_lons
        do c = 1, num_lons
           i = i + 1
@@ -889,4 +926,78 @@ contains
     end do ! n
   end subroutine LVT_upscaleByAveraging_input_navgem
 
+  ! Linearly interpolate thinned grid points on parallel to regular
+  ! grid points.
+  subroutine interp_thinned_to_regular(im, jm, thin_points_per_lat, &
+       regular_longitude_slice, thin_var, var)
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    integer, intent(in) :: im
+    integer, intent(in) :: jm
+    integer, intent(in) :: thin_points_per_lat(:,:)
+    real, intent(in) :: regular_longitude_slice(:)
+    real, intent(in) :: thin_var(:,:)
+    real, allocatable, intent(out) :: var(:)
+
+    ! Locals
+    real, allocatable :: thin_var_slice(:)
+    real, allocatable :: thin_longitude_slice(:)
+    integer :: num_lons
+    real :: dlon, ratio
+    integer :: c, r, i, icount
+
+    ! Save the data on the regular grid into the var array.
+    allocate(var(im*jm))
+    var = -9999.
+    icount = 0
+    do r = 1, jm
+
+       ! Copy the thinned data into a slice
+       num_lons = thin_points_per_lat(r,1)
+       allocate(thin_var_slice(num_lons))
+       do c = 1, num_lons
+          icount = icount + 1
+          thin_var_slice(c) = thin_var(icount,1)
+       end do
+       icount = icount - num_lons ! Rewind
+
+       ! Next, calculate the thinned longitudes on the slice
+       allocate(thin_longitude_slice(num_lons))
+       thin_longitude_slice = 0
+       dlon = 360. / num_lons
+       do c = 1, num_lons
+          thin_longitude_slice(c) = 0.0 + (c-1)*dlon
+       end do ! c
+
+       ! Next, linearly interpolate the thinned var in the slice to
+       ! the regular grid points.
+       do i = 1, im
+          do c = 1, num_lons
+
+             if (thin_longitude_slice(c) .gt. regular_longitude_slice(i)) cycle
+
+             if (c .eq. num_lons) then ! wrap around
+                ratio = (thin_var_slice(1) - thin_var_slice(c)) / &
+                     (360. - thin_longitude_slice(c))
+             else
+                ratio = (thin_var_slice(c+1) - thin_var_slice(c)) / &
+                     (thin_longitude_slice(c+1) - thin_longitude_slice(c))
+             end if
+
+             icount = icount + 1
+             var(icount) = thin_var_slice(c) + &
+                  (ratio * &
+                  (regular_longitude_slice(i) - thin_longitude_slice(c)))
+             exit
+          end do ! c
+       end do ! i
+
+       deallocate(thin_var_slice)
+       deallocate(thin_longitude_slice)
+    end do ! r
+
+  end subroutine interp_thinned_to_regular
 end module LVT_navgemMod
