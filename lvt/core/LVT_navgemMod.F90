@@ -110,6 +110,7 @@ contains
 #if (defined USE_HDF5)
     use HDF5
 #endif
+    use LVT_logMod, only: LVT_logunit
 
     ! Defaults
     implicit none
@@ -127,7 +128,11 @@ contains
     integer :: hdferr
 #if (defined USE_HDF5)
     integer(HID_T) :: file_id, dataset_id, datatype_id
+    integer(HSIZE_T), allocatable :: dims(:)
+    real, allocatable :: tmp_gt(:,:)
+    real, allocatable :: tmp_conice(:,:)
 #endif
+    integer :: rank
     integer :: jm
 
     ! Get NAVGEM filename
@@ -154,10 +159,83 @@ contains
     if (fail) goto 100
     call check_navgem_type(datatype_id, H5T_IEEE_F32LE, fail)
     if (fail) goto 100
+    call check_navgem_units(dataset_id, "K", fail)
+    if (fail) goto 100
+    call get_navgem_dims(dataset_id, rank, dims, fail)
+    if (fail) goto 100
+    if (rank .ne. 2) then
+       write(LVT_logunit,*)'[ERR] HDF5 dataset /Grid/gt has wrong rank!'
+       write(LVT_logunit,*)'Expected 2, found ', rank
+       goto 100
+    end if
+    if (dims(2) .ne. 1) then
+       write(LVT_logunit,*) &
+            '[ERR] Unexpected first dimension for HDF5 dataset /Grid/gt!'
+       write(LVT_logunit,*) 'Expected 1, found ', dims(2)
+       goto 100
+    end if
+    allocate(tmp_gt(dims(1), dims(2)))
+    tmp_gt = 0
+    call h5dread_f(dataset_id, H5T_IEEE_F32LE, tmp_gt, dims, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*)'[ERR] Cannot read HDF5 dataset /Grid/gt!'
+       goto 100
+    end if
 
+    ! Close the /Grid/gt types
+    if (datatype_id .gt. -1) call close_navgem_datatype(datatype_id, fail)
+    if (dataset_id .gt. -1) call close_navgem_dataset(dataset_id, fail)
+
+    ! Save the data into the sst array.
+    allocate(sst(dims(2)))
+    sst = tmp_gt(:,1)
+    deallocate(tmp_gt)
+    deallocate(dims)
+
+    ! Get the conice (sea ice area fraction) field
+    call open_navgem_dataset(file_id, "/Grid/conice", dataset_id, fail)
+    if (fail) goto 100
+    call get_navgem_datatype(dataset_id, datatype_id, fail)
+    if (fail) goto 100
+    call check_navgem_type(datatype_id, H5T_IEEE_F32LE, fail)
+    if (fail) goto 100
+    call get_navgem_dims(dataset_id, rank, dims, fail)
+    if (fail) goto 100
+    if (rank .ne. 2) then
+       write(LVT_logunit,*)'[ERR] HDF5 dataset /Grid/conice has wrong rank!'
+       write(LVT_logunit,*)'Expected 2, found ', rank
+       goto 100
+    end if
+    if (dims(2) .ne. 1) then
+       write(LVT_logunit,*) &
+            '[ERR] Unexpected first dimension for HDF5 dataset /Grid/conice!'
+       write(LVT_logunit,*) 'Expected 1, found ', dims(2)
+       goto 100
+    end if
+    allocate(tmp_conice(dims(1), dims(2)))
+    tmp_conice = 0
+    call h5dread_f(dataset_id, H5T_IEEE_F32LE, tmp_conice, dims, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*)'[ERR] Cannot read HDF5 dataset /Grid/conice!'
+       goto 100
+    end if
+
+    ! Close the /Grid/conice types
+    if (datatype_id .gt. -1) call close_navgem_datatype(datatype_id, fail)
+    if (dataset_id .gt. -1) call close_navgem_dataset(dataset_id, fail)
+
+    ! Save the data into the cice array.
+    allocate(cice(dims(2)))
+    cice = tmp_conice(:,1)
+    deallocate(tmp_conice)
+    deallocate(dims)
+
+    
     !...
     ! Cleanup before returning
 100 continue
+    if (allocated(tmp_gt)) deallocate(tmp_gt)
+    if (allocated(tmp_conice)) deallocate(tmp_conice)
     if (datatype_id .gt. -1) call close_navgem_datatype(datatype_id, fail)
     if (dataset_id .gt. -1) call close_navgem_dataset(dataset_id, fail)
     if (file_id .gt. -1) call close_navgem_file(filename, file_id, fail)
@@ -185,6 +263,28 @@ contains
 #endif
 
 #if (defined USE_HDF5)
+  subroutine open_navgem_file(filename, file_id, fail)
+    use HDF5
+    use LVT_logMod, only: LVT_logunit
+    implicit none
+    character(len=*), intent(in) :: filename
+    integer(HID_T), intent(out) :: file_id
+    logical, intent(out) :: fail
+    integer :: hdferr
+    fail = .false.
+    call h5fopen_f(trim(filename), H5F_ACC_RDONLY_F, file_id, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*)&
+            '[ERR] Cannot open NAVGEM file ', trim(filename)
+       fail = .true.
+    else
+       write(LVT_logunit,*) &
+            '[INFO] Opened NAVGEM file ', trim(filename)
+    end if
+  end subroutine open_navgem_file
+#endif
+
+#if (defined USE_HDF5)
   subroutine open_navgem_dataset(file_id, dataset_name, dataset_id, fail)
     use HDF5
     use LVT_logMod, only: LVT_logunit
@@ -198,7 +298,7 @@ contains
     call h5dopen_f(file_id, trim(dataset_name), dataset_id, hdferr)
     if (hdferr .ne. 0) then
        write(LVT_logunit,*)&
-            '[ERR] Cannot open dataset ', trim(dataset_name)
+            '[ERR] Cannot open HDF5 dataset ', trim(dataset_name)
        fail = .true.
     end if
   end subroutine open_navgem_dataset
@@ -217,7 +317,7 @@ contains
     call h5dget_type_f(dataset_id, datatype_id, hdferr)
     if (hdferr .ne. 0) then
        write(LVT_logunit,*)&
-            '[ERR] Cannot determine datatype'
+            '[ERR] Cannot determine HDF5 datatype'
        fail = .true.
     end if
   end subroutine get_navgem_datatype
@@ -236,17 +336,264 @@ contains
     call h5tequal_f(datatype_id, datatype, flag, hdferr)
     if (hdferr .ne. 0) then
        write(LVT_logunit,*) &
-            '[ERR] Cannot confirm datatype!'
+            '[ERR] Cannot confirm HDF5 datatype!'
        fail = .true.
        return
     end if
     if (.not. flag) then
        write(LVT_logunit,*)&
-            '[ERR] Datatype is wrong type!'
+            '[ERR] HDF5 datatype is wrong type!'
        fail = .true.
        return
     end if
   end subroutine check_navgem_type
+#endif
+
+#if (defined USE_HDF5)
+  subroutine check_navgem_units(dataset_id, units, fail)
+
+    ! Modules
+    use HDF5
+    use ISO_C_BINDING
+    use LVT_logMod, only: LVT_logunit
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    integer(HID_T), intent(in) :: dataset_id
+    character(len=*), intent(in) :: units
+    logical, intent(out) :: fail
+
+    ! Local variables
+    integer(HID_T) :: attr_id, type_id, space_id, memtype_id
+    integer :: hdferr
+    integer(size_t) :: size
+    integer(SIZE_T), parameter :: sdim = 5
+    integer(HSIZE_T), dimension(1:1) :: dims = (/1/)
+    integer(HSIZE_T), dimension(1:1) :: maxdims
+    character(len=sdim), dimension(:), allocatable, target :: rdata
+    type(C_PTR) :: f_ptr
+    integer :: i
+
+    fail = .false.
+
+    ! Open the attribute
+    call h5aopen_f(dataset_id, 'units', attr_id, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot open HDF5 attribute'
+       fail = .true.
+       return
+    end if
+
+    ! Get the attribute datatype
+    call h5aget_type_f(attr_id, type_id, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot get HDF5 attribute datatype'
+       call h5aclose_f(attr_id, hdferr)
+       fail = .true.
+       return
+    end if
+
+    ! Get the size of the attribute datatype, and sanity check.
+    call h5tget_size_f(type_id, size, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot get HDF5 attribute ', &
+            'datatype size'
+       call h5tclose_f(type_id, hdferr)
+       call h5aclose_f(attr_id, hdferr)
+       fail = .true.
+       return
+    end if
+    if (size .gt. sdim+1) then
+       write(LVT_logunit,*) &
+            '[ERR] Expected smaller HDF5 attribute',&
+            'datatype size'
+       write(LVT_logunit,*)'Expected ',sdim+1
+       write(LVT_logunit,*)'Found ',size
+       call h5tclose_f(type_id, hdferr)
+       call h5aclose_f(attr_id, hdferr)
+       fail = .true.
+       return
+    end if
+
+    ! Get the attribute dataspace
+    call h5aget_space_f(attr_id, space_id, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot get HDF5 attribute', &
+            'dataspace'
+       call h5tclose_f(type_id, hdferr)
+       call h5aclose_f(attr_id, hdferr)
+       fail = .true.
+       return
+    end if
+
+    ! Get the dimensions of the dataspace
+    call h5sget_simple_extent_dims_f(space_id, dims, maxdims, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot get HDF5 attribute ', &
+            'dataspace dimensions'
+       call h5sclose_f(space_id, hdferr)
+       call h5tclose_f(type_id, hdferr)
+       call h5aclose_f(attr_id, hdferr)
+       fail = .true.
+       return
+    end if
+
+    ! Create the memory datatype
+    call h5tcopy_f(H5T_FORTRAN_S1, memtype_id, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot copy HDF5 attribute ', &
+            'memory datatype.'
+       call h5sclose_f(space_id, hdferr)
+       call h5tclose_f(type_id, hdferr)
+       call h5aclose_f(attr_id, hdferr)
+       fail = .true.
+       return
+    end if
+    call h5tset_size_f(memtype_id, sdim, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot set HDF5 attribute ', &
+            'memory datatype size.'
+       call h5tclose_f(memtype_id, hdferr)
+       call h5sclose_f(space_id, hdferr)
+       call h5tclose_f(type_id, hdferr)
+       call h5aclose_f(attr_id, hdferr)
+       fail = .true.
+       return
+    end if
+
+    ! Read the attribute
+    allocate(rdata(1:dims(1)))
+    f_ptr = C_LOC(rdata(1)(1:1))
+    call h5aread_f(attr_id, memtype_id, f_ptr, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot read HDF5 attribute.'
+       deallocate(rdata)
+       call h5tclose_f(memtype_id, hdferr)
+       call h5sclose_f(space_id, hdferr)
+       call h5tclose_f(type_id, hdferr)
+       call h5aclose_f(attr_id, hdferr)
+       fail = .true.
+       return
+    end if
+
+    ! Check the units
+    if (trim(rdata(1)) .ne. trim(units)) then
+       write(LVT_logunit,*) &
+            '[ERR] Found wrong HDF5 data', &
+                 'units'
+       write(LVT_logunit,*) 'Expected ', trim(units)
+       write(LVT_logunit,*) 'Found ',trim(rdata(1))
+       deallocate(rdata)
+       call h5tclose_f(memtype_id, hdferr)
+       call h5sclose_f(space_id, hdferr)
+       call h5tclose_f(type_id, hdferr)
+       call h5aclose_f(attr_id, hdferr)
+       fail = .true.
+       return
+    end if
+
+    ! Clean up
+    deallocate(rdata)
+    call h5tclose_f(memtype_id, hdferr)
+    call h5sclose_f(space_id, hdferr)
+    call h5tclose_f(type_id, hdferr)
+    call h5aclose_f(attr_id, hdferr)
+
+  end subroutine check_navgem_units
+#endif
+
+#if (defined USE_HDF5)
+  subroutine get_navgem_dims(dataset_id, rank, dims, fail)
+
+    ! Modules
+    use HDF5
+    use LVT_logMod, only: LVT_logunit
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    integer(HID_T), intent(in) :: dataset_id
+    integer, intent(out) :: rank
+    integer(HSIZE_T), allocatable, intent(out) :: dims(:)
+    logical, intent(out) :: fail
+
+    ! Local variables
+    integer(HID_T) :: dataspace_id
+    integer(HSIZE_T), allocatable :: dataspace_maxdims(:)
+    integer :: hdferr
+    logical :: flag
+    integer :: i
+
+    ! First, get the dataspace for the dataset
+    call h5dget_space_f(dataset_id, dataspace_id, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*)&
+            '[ERR] Could not get HDF5 dataspace'
+       fail = .true.
+       return
+    end if
+
+    ! Sanity check:  Make sure this dataspace is "simple"
+    call h5sis_simple_f(dataspace_id, flag, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot determine if ', &
+            'HDF5 dataspace is simple'
+       fail = .true.
+       return
+    end if
+    if (.not. flag) then
+       write(LVT_logunit,*) &
+            '[ERR] HDF5 dataspace is not simple'
+       fail = .true.
+       return
+    end if
+
+    ! Get the rank (number of dimensions)
+    call h5sget_simple_extent_ndims_f(dataspace_id, rank, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*)&
+            '[ERR] Cannot get rank of HDF5 dataspace '
+       fail = .true.
+       return
+    end if
+
+    ! Get the dimensions
+    allocate(dims(rank))
+    allocate(dataspace_maxdims(rank))
+    call h5sget_simple_extent_dims_f(dataspace_id, dims, &
+         dataspace_maxdims, hdferr)
+    if (hdferr .ne. rank) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot get dims for HDF5 dataspace'
+       deallocate(dims)
+       deallocate(dataspace_maxdims)
+       fail = .true.
+       return
+    end if
+
+    ! Clean up
+    deallocate(dataspace_maxdims)
+    call h5sclose_f(dataspace_id, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot close HDF5 dataspace'
+       fail = .true.
+       return
+    end if
+
+  end subroutine get_navgem_dims
 #endif
 
 #if (defined USE_HDF5)
@@ -260,7 +607,7 @@ contains
     call h5tclose_f(datatype_id, hdferr)
     if (hdferr .ne. 0) then
        write(LVT_logunit,*) &
-            '[ERR] Cannot close datatype '
+            '[ERR] Cannot close HDF5 datatype '
        fail = .true.
     end if
     datatype_id = -1
@@ -278,7 +625,7 @@ contains
     call h5dclose_f(dataset_id, hdferr)
     if (hdferr .ne. 0) then
        write(LVT_logunit,*) &
-            '[ERR] Cannot close dataset '
+            '[ERR] Cannot close HDF5 dataset '
        fail = .true.
     end if
     dataset_id = -1
@@ -298,7 +645,7 @@ contains
     call h5fclose_f(file_id, hdferr)
     if (hdferr .ne. 0) then
        write(LVT_logunit,*) &
-            '[ERR] Cannot close file ', trim(filename)
+            '[ERR] Cannot close NAVGEM file ', trim(filename)
        fail = .true.
     else
        write(LVT_logunit,*) &
@@ -308,27 +655,6 @@ contains
   end subroutine close_navgem_file
 #endif
 
-#if (defined USE_HDF5)
-  subroutine open_navgem_file(filename, file_id, fail)
-    use HDF5
-    use LVT_logMod, only: LVT_logunit
-    implicit none
-    character(len=*), intent(in) :: filename
-    integer(HID_T), intent(out) :: file_id
-    logical, intent(out) :: fail
-    integer :: hdferr
-    fail = .false.
-    call h5fopen_f(trim(filename), H5F_ACC_RDONLY_F, file_id, hdferr)
-    if (hdferr .ne. 0) then
-       write(LVT_logunit,*)&
-            '[ERR] Cannot open file ', trim(filename)
-       fail = .true.
-    else
-       write(LVT_logunit,*) &
-            '[INFO] Opened NAVGEM file ', trim(filename)
-    end if
-  end subroutine open_navgem_file
-#endif
 
 #if (defined USE_HDF5)
   subroutine close_hdf5_f_interface(fail)
