@@ -28,6 +28,7 @@ module LVT_navgemMod
   private
 
   ! Public routines
+  public :: LVT_upscaleByAveraging_input_navgem
 
 contains
 
@@ -838,5 +839,54 @@ contains
        end do ! c
     end do ! r
   end subroutine calc_navgem_latlons
+
+  ! Special version of upscaleByAveraging_input.  This variant skips the
+  ! internal calculation of latitudes and longitudes by compute_earth_coord,
+  ! since that subroutine doesn't support thinned (quasi-regular) Gaussian
+  ! grids.  Instead, the latitudes and longitudes are passed in as additional
+  ! arguments.
+  subroutine LVT_upscaleByAveraging_input_navgem(gridDesco, mi, rlat, rlon, &
+       mo, n11)
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    real, intent(in) :: gridDesco(50)
+    integer, intent(in) :: mi
+    real, intent(in) :: rlat(mi)
+    real, intent(in) :: rlon(mi)
+    integer, intent(in) :: mo
+    integer, intent(out) :: n11(mi)
+
+    ! Locals
+    integer             :: n
+    integer             :: i, j
+    real                :: xi, yi
+    real                :: xpts(mi), ypts(mi)
+    real                :: xpts1(mo), ypts1(mo)
+    real                :: rlat1(mo), rlon1(mo)
+    integer             :: nv
+    real, parameter     :: fill = -9999.0
+
+    ! External functions
+    integer, external   :: get_fieldpos
+
+    ! Find the x,y coordinates of the input points on the output grid
+    call compute_grid_coord(gridDesco, mi,fill, xpts, ypts, rlon, rlat, nv)
+
+    ! Determine which grid box in the outer grid each inner point resides in.
+    do n = 1, mi
+       xi = xpts(n)
+       yi = ypts(n)
+       if (xi.ne.fill .and. yi.ne.fill) then
+          i = nint(xi)
+          j = nint(yi)
+          n11(n) = get_fieldpos(i, j, gridDesco)
+       else
+          n11(n) = 0
+       endif
+    end do ! n
+  end subroutine LVT_upscaleByAveraging_input_navgem
 
 end module LVT_navgemMod
