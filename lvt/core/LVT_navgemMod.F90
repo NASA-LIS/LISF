@@ -129,11 +129,13 @@ contains
 #if (defined USE_HDF5)
     integer(HID_T) :: file_id, dataset_id, datatype_id
     integer(HSIZE_T), allocatable :: dims(:)
+#endif
     real, allocatable :: tmp_gt(:,:)
     real, allocatable :: tmp_conice(:,:)
-#endif
+    real, allocatable :: tmp_latitudes(:,:)
+    integer, allocatable :: tmp_points_per_lat(:,:)
     integer :: rank
-    integer :: jm
+    integer :: jm, im, itmp, t_number
 
     ! Get NAVGEM filename
     call get_navgem_filename(filename, year, month, day, hour, fcst_hr)
@@ -230,12 +232,103 @@ contains
     deallocate(tmp_conice)
     deallocate(dims)
 
-    
+    ! Get the Gaussian latitudes
+    call open_navgem_dataset(file_id, "/Geometry/Latitudes", dataset_id, fail)
+    if (fail) goto 100
+    call get_navgem_datatype(dataset_id, datatype_id, fail)
+    if (fail) goto 100
+    call check_navgem_type(datatype_id, H5T_IEEE_F32LE, fail)
+    if (fail) goto 100
+    call get_navgem_dims(dataset_id, rank, dims, fail)
+    if (fail) goto 100
+    if (rank .ne. 2) then
+       write(LVT_logunit,*) &
+            '[ERR] HDF5 dataset /Geometry/Latitudes has wrong rank!'
+       write(LVT_logunit,*)'Expected 2, found ', rank
+       goto 100
+    end if
+    if (dims(2) .ne. 1) then
+       write(LVT_logunit,*) &
+            '[ERR] Unexpected first dimension for HDF5 dataset ', &
+            '/Geometry/Latitudes!'
+       write(LVT_logunit,*) 'Expected 1, found ', dims(2)
+       goto 100
+    end if
+    allocate(tmp_latitudes(dims(1), dims(2)))
+    tmp_latitudes = 0
+    call h5dread_f(dataset_id, H5T_IEEE_F32LE, tmp_latitudes, dims, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot read HDF5 dataset /Geometry/Latitudes!'
+       goto 100
+    end if
+    jm = dims(1)
+
+    ! Close the /Grid/Latitudes types
+    if (datatype_id .gt. -1) call close_navgem_datatype(datatype_id, fail)
+    if (dataset_id .gt. -1) call close_navgem_dataset(dataset_id, fail)
+    deallocate(dims)
+
+    ! Get the points per latitudes
+    call open_navgem_dataset(file_id, "/Geometry/Points_per_lat", dataset_id, &
+         fail)
+    if (fail) goto 100
+    call get_navgem_datatype(dataset_id, datatype_id, fail)
+    if (fail) goto 100
+    call check_navgem_type(datatype_id, H5T_STD_I32LE, fail)
+    if (fail) goto 100
+    call get_navgem_dims(dataset_id, rank, dims, fail)
+    if (fail) goto 100
+    if (rank .ne. 2) then
+       write(LVT_logunit,*) &
+            '[ERR] HDF5 dataset /Geometry/Points_per_lat has wrong rank!'
+       write(LVT_logunit,*)'Expected 2, found ', rank
+       goto 100
+    end if
+    if (dims(2) .ne. 1) then
+       write(LVT_logunit,*) &
+            '[ERR] Unexpected first dimension for HDF5 dataset ', &
+            '/Geometry/Points_per_lat!'
+       write(LVT_logunit,*) 'Expected 1, found ', dims(2)
+       goto 100
+    end if
+    allocate(tmp_points_per_lat(dims(1), dims(2)))
+    tmp_latitudes = 0
+    call h5dread_f(dataset_id, H5T_STD_I32LE, tmp_points_per_lat, dims, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*) &
+            '[ERR] Cannot read HDF5 dataset /Geometry/Points_per_lat!'
+       goto 100
+    end if
+
+    ! Close the /Geometry/Points_per_lat types
+    if (datatype_id .gt. -1) call close_navgem_datatype(datatype_id, fail)
+    if (dataset_id .gt. -1) call close_navgem_dataset(dataset_id, fail)
+
+    ! Calculate dimension im
+    itmp = floor(dims(1) / 2.) + 1
+    im = tmp_points_per_lat(itmp,1)
+    deallocate(dims)
+
+    ! Calculate t_number
+    call get_navgem_truncation(im, t_number)
+    if (t_number .ne. 681) then
+       write(LVT_logunit,*)'[ERR] Unexpected T-number for NAVGEM!'
+       write(LVT_logunit,*)'Expected T681, found T', t_number
+       goto 100
+    end if
+
+    ! Clean up temporary arrays
+    deallocate(tmp_latitudes)
+    deallocate(tmp_points_per_lat)
+
     !...
     ! Cleanup before returning
 100 continue
     if (allocated(tmp_gt)) deallocate(tmp_gt)
     if (allocated(tmp_conice)) deallocate(tmp_conice)
+    if (allocated(tmp_latitudes)) deallocate(tmp_latitudes)
+    if (allocated(tmp_points_per_lat)) deallocate(tmp_points_per_lat)
     if (datatype_id .gt. -1) call close_navgem_datatype(datatype_id, fail)
     if (dataset_id .gt. -1) call close_navgem_dataset(dataset_id, fail)
     if (file_id .gt. -1) call close_navgem_file(filename, file_id, fail)
@@ -672,4 +765,12 @@ contains
     end if
   end subroutine close_hdf5_f_interface
 #endif
+
+  subroutine get_navgem_truncation(im, t_number)
+    implicit none
+    integer, intent(in) :: im
+    integer, intent(out) :: t_number
+    t_number = int( 2 * int( int ( int( int(im-1)/3) + 1) / 2 ) )
+    t_number = t_number - 1
+  end subroutine get_navgem_truncation
 end module LVT_navgemMod
