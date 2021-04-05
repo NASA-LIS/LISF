@@ -28,6 +28,7 @@ module LVT_navgemMod
   private
 
   ! Public routines
+  public :: LVT_fetch_navgem_fields
   public :: LVT_upscaleByAveraging_input_navgem
 
 contains
@@ -105,7 +106,7 @@ contains
 
   end subroutine get_navgem_filename
 
-  subroutine fetch_navgem_fields(sst, cice, icethick, gridDesc)
+  subroutine LVT_fetch_navgem_fields(sst, cice, icethick, gridDesc)
 
     ! Modules
 #if (defined USE_HDF5)
@@ -438,7 +439,7 @@ contains
     call close_hdf5_f_interface(fail)
 
 #endif
-  end subroutine fetch_navgem_fields
+  end subroutine LVT_fetch_navgem_fields
 
 #if (defined USE_HDF5)
   subroutine open_hdf5_f_interface(fail)
