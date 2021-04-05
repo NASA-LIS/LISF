@@ -105,7 +105,7 @@ contains
 
   end subroutine get_navgem_filename
 
-  subroutine fetch_navgem_fields(sst, cice, gridDesc)
+  subroutine fetch_navgem_fields(sst, cice, icethick, gridDesc)
 
     ! Modules
 #if (defined USE_HDF5)
@@ -119,6 +119,7 @@ contains
     ! Arguments
     real, allocatable, intent(out) :: sst(:)
     real, allocatable, intent(out) :: cice(:)
+    real, allocatable, intent(out) :: icethick(:)
     real, intent(out) :: gridDesc(50)
 
     ! Locals
@@ -132,6 +133,7 @@ contains
 #endif
     real, allocatable :: thin_gt(:,:)
     real, allocatable :: thin_conice(:,:)
+    real, allocatable :: thin_grdice(:,:)
     real, allocatable :: thin_latitudes(:,:)
     integer, allocatable :: thin_points_per_lat(:,:)
     real, allocatable :: regular_longitude_slice(:)
@@ -139,6 +141,7 @@ contains
     integer :: im, jm, itmp, t_number
     real :: dlon
     integer :: c, r
+    real :: ice_density
 
     ! Handle case where LVT was not compiled with HDF5 support
 #if (!defined USE_HDF5)
@@ -147,6 +150,9 @@ contains
          '[ERR] Reconfigure with HDF5, recompile, and try again!'
     stop
 #endif
+
+    ! Calculate ice density in kg m^-3
+    ice_density = 0.9167 * 1000.
 
     ! Get NAVGEM filename
     call get_navgem_filename(filename, year, month, day, hour, fcst_hr)
@@ -328,6 +334,50 @@ contains
     ! Save the data on the regular grid into the sst array.
     call interp_thinned_to_regular(im, jm, thin_points_per_lat, &
        regular_longitude_slice, thin_gt, sst)
+    deallocate(thin_gt)
+
+    ! Get the grdice variable, which (despite the name) is sea ice thickness
+    call open_navgem_dataset(file_id, "/Land/grdice", dataset_id, fail)
+    if (fail) goto 100
+    call get_navgem_datatype(dataset_id, datatype_id, fail)
+    if (fail) goto 100
+    call check_navgem_type(datatype_id, H5T_IEEE_F32LE, fail)
+    if (fail) goto 100
+    call check_navgem_units(dataset_id, "kg m-2", fail)
+    if (fail) goto 100
+    call get_navgem_dims(dataset_id, rank, dims, fail)
+    if (fail) goto 100
+    if (rank .ne. 2) then
+       write(LVT_logunit,*)'[ERR] HDF5 dataset /Land/grdice has wrong rank!'
+       write(LVT_logunit,*)'Expected 2, found ', rank
+       goto 100
+    end if
+    if (dims(2) .ne. 4) then
+       write(LVT_logunit,*) &
+            '[ERR] Unexpected first dimension for HDF5 dataset /Land/grdice!'
+       write(LVT_logunit,*) 'Expected 4, found ', dims(2)
+       goto 100
+    end if
+    allocate(thin_grdice(dims(1), dims(2)))
+    thin_grdice = 0
+    call h5dread_f(dataset_id, H5T_IEEE_F32LE, thin_grdice, dims, hdferr)
+    if (hdferr .ne. 0) then
+       write(LVT_logunit,*)'[ERR] Cannot read HDF5 dataset /Land/grdice!'
+       goto 100
+    end if
+
+    ! Close the /Land/grdice types
+    if (datatype_id .gt. -1) call close_navgem_datatype(datatype_id, fail)
+    if (dataset_id .gt. -1) call close_navgem_dataset(dataset_id, fail)
+    deallocate(dims)
+
+    ! Save the data on the regular grid into the sst array.
+    call interp_thinned_to_regular(im, jm, thin_points_per_lat, &
+       regular_longitude_slice, thin_grdice, icethick)
+    deallocate(thin_grdice)
+
+    ! Convert icethick units from kg m^-2 to m
+    icethick = icethick / ice_density
 
     ! Get the conice (sea ice area fraction) field
     call open_navgem_dataset(file_id, "/Grid/conice", dataset_id, fail)
@@ -365,6 +415,7 @@ contains
     ! Save the data on the regular grid into the cice array.
     call interp_thinned_to_regular(im, jm, thin_points_per_lat, &
        regular_longitude_slice, thin_conice, cice)
+    deallocate(thin_conice)
 
     ! Clean up temporary arrays
     deallocate(thin_points_per_lat)
@@ -377,6 +428,7 @@ contains
     if (allocated(regular_longitude_slice)) &
          deallocate(regular_longitude_slice)
     if (allocated(thin_gt)) deallocate(thin_gt)
+    if (allocated(thin_grdice)) deallocate(thin_grdice)
     if (allocated(thin_conice)) deallocate(thin_conice)
     if (allocated(thin_latitudes)) deallocate(thin_latitudes)
     if (allocated(thin_points_per_lat)) deallocate(thin_points_per_lat)
