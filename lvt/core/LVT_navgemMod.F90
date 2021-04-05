@@ -28,6 +28,7 @@ module LVT_navgemMod
   private
 
   ! Public routines
+  public :: LVT_get_navgem_filename
   public :: LVT_fetch_navgem_fields
   public :: LVT_upscaleByAveraging_input_navgem
 
@@ -60,7 +61,7 @@ contains
 
   end subroutine construct_navgem_filename
 
-  subroutine get_navgem_filename(filename, &
+  subroutine LVT_get_navgem_filename(filename, &
        year, month, day, hour, fcst_hr)
 
     ! Modules
@@ -104,9 +105,9 @@ contains
     write(LVT_logunit,*)'[ERR] Cannot find NAVGEM file!'
     stop
 
-  end subroutine get_navgem_filename
+  end subroutine LVT_get_navgem_filename
 
-  subroutine LVT_fetch_navgem_fields(sst, cice, icethick, gridDesc)
+  subroutine LVT_fetch_navgem_fields(filename, sst, cice, icethick, gridDesc)
 
     ! Modules
 #if (defined USE_HDF5)
@@ -118,13 +119,13 @@ contains
     implicit none
 
     ! Arguments
+    character(len=*), intent(in) :: filename
     real, allocatable, intent(out) :: sst(:)
     real, allocatable, intent(out) :: cice(:)
     real, allocatable, intent(out) :: icethick(:)
     real, intent(out) :: gridDesc(50)
 
     ! Locals
-    character(len=250) :: filename
     integer :: year, month, day, hour, fcst_hr
     logical :: fail
     integer :: hdferr
@@ -154,9 +155,6 @@ contains
 
     ! Calculate ice density in kg m^-3
     ice_density = 0.9167 * 1000.
-
-    ! Get NAVGEM filename
-    call get_navgem_filename(filename, year, month, day, hour, fcst_hr)
 
 #if (defined USE_HDF5)
     ! Initialize IDs.  Useful later for error handling.
