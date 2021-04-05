@@ -2067,6 +2067,207 @@ contains
      return
   end function alarm_is_on
 
+  ! EMK BEGIN
+  subroutine LVT_append_navgem_fields(ftn_mean, time_unit, time_past, &
+       time_curr, timeRange, toplev, botlev)
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    integer, intent(in) :: ftn_mean
+    integer, intent(in) :: time_unit
+    integer, intent(in) :: time_past
+    integer, intent(in) :: time_curr
+    integer, intent(in) :: timeRange
+    real, intent(in) :: toplev(1)
+    real, intent(in) :: botlev(1)
+
+    ! Locals
+    character(250) :: navgem_fname
+    real :: gridDesci(50) ! Full NAVGEM grid
+    character(10) :: cdate
+    logical :: file_exists
+    real, allocatable :: sst(:)
+    real, allocatable :: cice(:)
+    real, allocatable :: icethick(:)
+    integer :: npts
+    real :: rlat(LVT_rc%lnc * LVT_rc%lnr)
+    real :: rlon(LVT_rc%lnc * LVT_rc%lnr)
+    integer :: n11(LVT_rc%lnc * LVT_rc%lnr)
+    integer :: n12(LVT_rc%lnc * LVT_rc%lnr)
+    integer :: n21(LVT_rc%lnc * LVT_rc%lnr)
+    integer :: n22(LVT_rc%lnc * LVT_rc%lnr)
+    real :: w11(LVT_rc%lnc * LVT_rc%lnr)
+    real :: w12(LVT_rc%lnc * LVT_rc%lnr)
+    real :: w21(LVT_rc%lnc * LVT_rc%lnr)
+    real :: w22(LVT_rc%lnc * LVT_rc%lnr)
+    real :: interp_var(LVT_rc%lnc * LVT_rc%lnr)
+    logical*1, allocatable :: li(:)
+    logical*1 :: lo(LVT_rc%lnc * LVT_rc%lnr)
+    integer :: mi, mo
+    integer :: year, month, day, hour, fcst_hr
+    real :: udef
+    integer :: ivar
+    integer :: iret
+    integer :: gribSF, gribSfc, gribLvl, gribCat, gribDis
+    character*10 :: stepType
+    integer :: pdTemplate
+    integer :: varid_def
+    real :: depscale(1)
+
+    call LVT_get_navgem_filename(navgem_fname, &
+         year, month, day, hour, fcst_hr)
+    if (trim(navgem_fname) .eq. "NONE") then
+       file_exists = .false.
+    else
+       file_exists = .true.
+    end if
+
+    if (.not. file_exists) then
+       write(LVT_logunit,*) '[INFO] No NAVGEM fields to append!'
+       return
+    end if
+
+    lo = .true. ! For now, interpolate to all LVT grid points
+
+    ! Fetch the fields from the NAVGEM file, and create lookup table for
+    ! upscale averaging.
+    call LVT_fetch_navgem_fields(navgem_fname, sst, cice, icethick, gridDesci)
+    npts = LVT_rc%lnc*LVT_rc%lnr
+    call bilinear_interp_input(gridDesci, LVT_rc%gridDesc, npts, &
+         rlat, rlon, n11, n12, n21, n22, &
+         w11, w12, w21, w22)
+
+    allocate(li(size(sst)))
+    li = .true.
+    mo = npts
+    udef = -9999.
+
+    do ivar = 1, 3
+       interp_var = udef
+       if (ivar .eq. 1) then
+
+          ! Handle SST first
+          call bilinear_interp(LVT_rc%gridDesc, size(sst), mo, li, lo, &
+               sst, interp_var, rlat, rlon, w11, w12, w21, w22, &
+               n11, n12, n21, n22, udef, iret)
+
+          gribDis   = 10
+          stepType = "instant"
+          pdTemplate = 0
+          gribCat   = 3
+          varid_def = 0
+          gribSfc   = 1
+          gribSF    = 10
+          gribLvl   = 1
+
+       else if (ivar .eq. 2) then
+
+          ! Handle sea ice fraction
+          call bilinear_interp(LVT_rc%gridDesc, size(cice), mo, li, lo, &
+               cice, interp_var, rlat, rlon, w11, w12, w21, w22, &
+               n11, n12, n21, n22, udef, iret)
+
+          gribDis   = 10
+          stepType = "instant"
+          pdTemplate = 0
+          gribCat   = 2
+          varid_def = 0
+          gribSfc   = 1
+          gribSF    = 100
+          gribLvl   = 1
+
+       else if (ivar .eq. 3) then
+
+          ! Handle sea ice thickness
+          call bilinear_interp(LVT_rc%gridDesc, size(icethick), mo, li, lo, &
+               icethick, interp_var, rlat, rlon, w11, w12, w21, w22, &
+               n11, n12, n21, n22, udef, iret)
+
+          gribDis   = 10
+          stepType = "instant"
+          pdTemplate = 0
+          gribCat   = 2
+          varid_def = 1
+          gribSfc   = 1
+          gribSF    = 10
+          gribLvl   = 1
+
+       else
+          write(LVT_logunit,*)'[ERR] INTERNAL ERROR, unknown ivar!'
+          stop
+       end if
+
+       ! Now write the interpolated field to output
+       if (LVT_rc%lvt_out_format .eq. "grib2") then
+          call writeSingleGrib2Var(ftn_mean, &
+               interp_var, &
+               varid_def, &
+               gribSF, &
+               gribSfc, &
+               gribLvl, &
+               gribDis, &
+               gribCat, &
+               pdTemplate, &
+               stepType, &
+               time_unit, &
+               time_past, &
+               time_curr, &
+               timeRange, &
+               1, &
+               toplev(1), &
+               botlev(1), &
+               depscale(1), &
+               typeOfGeneratingProcess=2, &
+               typeOfProcessedData=1, &
+               ref_year=year, & ! FIXME
+               ref_month=month, & ! FIXME
+               ref_day=day, &     ! FIXME
+               ref_hour=hour, &   ! FIXME
+               ref_fcst_hr=fcst_hr) ! FIXME
+       else if (LVT_rc%lvt_out_format .eq. "grib1") then
+          call writeSingleGrib1Var(ftn_mean, &
+               interp_var, &
+               varid_def, &
+               gribSF, &
+               gribSfc, &
+               gribLvl, &
+               stepType, &
+               time_unit, &
+               time_past, &
+               time_curr, &
+               timeRange, &
+               1, &
+               toplev(1), &
+               botlev(1))
+       else if (LVT_rc%lvt_out_format .eq. "netcdf") then
+          if (ivar .eq. 1) then
+             call writeSingleNetcdfVar(ftn_mean, &
+                  interp_var, &
+                  LVT_histData%watertemp%varId_def, &
+                  1)
+          else if (ivar .eq. 2) then
+             call writeSingleNetcdfVar(ftn_mean, &
+                  interp_var, &
+                  LVT_histData%aice%varId_def, &
+                  1)
+          else if (ivar .eq. 3) then
+             call writeSingleNetcdfVar(ftn_mean, &
+                  interp_var, &
+                  LVT_histData%hi%varId_def, &
+                  1)
+          end if
+
+       end if
+
+    end do ! ivar
+
+    ! Clean up
+    if (allocated(li)) deallocate(li)
+  end subroutine LVT_append_navgem_fields
+
+  
 !BOP
 ! 
 ! !ROUTINE: LVT_append_HYCOM_fields
