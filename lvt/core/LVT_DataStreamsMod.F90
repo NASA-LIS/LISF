@@ -145,97 +145,98 @@ contains
 ! temperature fields
 !-------------------------------------------------------------------
     if(LVT_rc%runmode.eq."557 post") then 
+       ! EMK FIXME...Replace HYCOM with NAVGEM
        if(LVT_rc%processHYCOM.eq.1) then 
 
           LVT_rc%HYCOM_proc_start = .true. 
 
-          ! First, handle water_temp
-          LVT_rc%HYCOM_nc = 4500
-          LVT_rc%HYCOM_nr = 2001
+          ! ! First, handle water_temp
+          ! LVT_rc%HYCOM_nc = 4500
+          ! LVT_rc%HYCOM_nr = 2001
 
-          gridDesci = 0 
-          gridDesci(1) = 0 
-          gridDesci(2) = LVT_rc%HYCOM_nc
-          gridDesci(3) = LVT_rc%HYCOM_nr
-          gridDesci(4) = -80.0
-          gridDesci(5) = -180.0
-          gridDesci(7) = 80.0
-          gridDesci(8) = 180.0
-          gridDesci(6) = 128
-          gridDesci(9) = 0.08
-          gridDesci(10) = 0.08
-          gridDesci(20) = 64
+          ! gridDesci = 0 
+          ! gridDesci(1) = 0 
+          ! gridDesci(2) = LVT_rc%HYCOM_nc
+          ! gridDesci(3) = LVT_rc%HYCOM_nr
+          ! gridDesci(4) = -80.0
+          ! gridDesci(5) = -180.0
+          ! gridDesci(7) = 80.0
+          ! gridDesci(8) = 180.0
+          ! gridDesci(6) = 128
+          ! gridDesci(9) = 0.08
+          ! gridDesci(10) = 0.08
+          ! gridDesci(20) = 64
 
-          allocate(LVT_rc%HYCOM_n11(LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr))
+          ! allocate(LVT_rc%HYCOM_n11(LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr))
 
-          call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
-               LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr, &
-               LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_n11)
+          ! call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
+          !      LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr, &
+          !      LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_n11)
 
-          LVT_histData%watertemp%short_name = "water_temp"
-          LVT_histData%watertemp%long_name = "water_temp"
-          LVT_histData%watertemp%standard_name = "water temperature"
-          LVT_histData%watertemp%units = "K"
-          LVT_histData%watertemp%nunits = 1
-          LVT_histData%watertemp%format = 'F'
-          LVT_histData%watertemp%vlevels = 1
-          LVT_histData%watertemp%timeAvgOpt = 0 
-          LVT_histData%watertemp%startNlevs = 1
-          LVT_histData%watertemp%endNlevs = 1
-          allocate(LVT_histData%watertemp%value(LVT_rc%ngrid,&
-               1,LVT_histData%watertemp%vlevels))
-          allocate(LVT_histData%watertemp%unittypes(1))
-          LVT_histData%watertemp%unittypes(1) = "K"
+          ! LVT_histData%watertemp%short_name = "water_temp"
+          ! LVT_histData%watertemp%long_name = "water_temp"
+          ! LVT_histData%watertemp%standard_name = "water temperature"
+          ! LVT_histData%watertemp%units = "K"
+          ! LVT_histData%watertemp%nunits = 1
+          ! LVT_histData%watertemp%format = 'F'
+          ! LVT_histData%watertemp%vlevels = 1
+          ! LVT_histData%watertemp%timeAvgOpt = 0 
+          ! LVT_histData%watertemp%startNlevs = 1
+          ! LVT_histData%watertemp%endNlevs = 1
+          ! allocate(LVT_histData%watertemp%value(LVT_rc%ngrid,&
+          !      1,LVT_histData%watertemp%vlevels))
+          ! allocate(LVT_histData%watertemp%unittypes(1))
+          ! LVT_histData%watertemp%unittypes(1) = "K"
 
-          ! Now handle Arctic sea ice fraction (aice)
-          LVT_rc%HYCOM_aice_arc_nc = 4500
-          LVT_rc%HYCOM_aice_arc_nr = 1251
+          ! ! Now handle Arctic sea ice fraction (aice)
+          ! LVT_rc%HYCOM_aice_arc_nc = 4500
+          ! LVT_rc%HYCOM_aice_arc_nr = 1251
 
-          ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
-          gridDesci = 0 
-          gridDesci(1) = 0 ! Lat/lon projection
-          gridDesci(2) = LVT_rc%HYCOM_aice_arc_nc ! Number of columns
-          gridDesci(3) = LVT_rc%HYCOM_aice_arc_nr ! Number of rows
-          gridDesci(4) = 40.     ! Lower-left latitude (deg N)
-          gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
-          gridDesci(6) = 128     ! Not used
-          gridDesci(7) = 90.0             ! Upper-right latitude (deg N)
-          gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
-          gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
-          gridDesci(10) = 0.040000915527301117 ! delta-lat (deg)
-          gridDesci(20) = 64  ! East-west ordering
+          ! ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
+          ! gridDesci = 0 
+          ! gridDesci(1) = 0 ! Lat/lon projection
+          ! gridDesci(2) = LVT_rc%HYCOM_aice_arc_nc ! Number of columns
+          ! gridDesci(3) = LVT_rc%HYCOM_aice_arc_nr ! Number of rows
+          ! gridDesci(4) = 40.     ! Lower-left latitude (deg N)
+          ! gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
+          ! gridDesci(6) = 128     ! Not used
+          ! gridDesci(7) = 90.0             ! Upper-right latitude (deg N)
+          ! gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
+          ! gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
+          ! gridDesci(10) = 0.040000915527301117 ! delta-lat (deg)
+          ! gridDesci(20) = 64  ! East-west ordering
 
-          allocate(LVT_rc%HYCOM_aice_arc_n11(&
-               LVT_rc%HYCOM_aice_arc_nc*LVT_rc%HYCOM_aice_arc_nr))
+          ! allocate(LVT_rc%HYCOM_aice_arc_n11(&
+          !      LVT_rc%HYCOM_aice_arc_nc*LVT_rc%HYCOM_aice_arc_nr))
 
-          call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
-               LVT_rc%HYCOM_aice_arc_nc*LVT_rc%HYCOM_aice_arc_nr, &
-               LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_aice_arc_n11)
+          ! call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
+          !      LVT_rc%HYCOM_aice_arc_nc*LVT_rc%HYCOM_aice_arc_nr, &
+          !      LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_aice_arc_n11)
 
-          ! Now handle Antarctic sea ice fraction (aice)
-          LVT_rc%HYCOM_aice_ant_nc = 4500
-          LVT_rc%HYCOM_aice_ant_nr = 775
+          ! ! Now handle Antarctic sea ice fraction (aice)
+          ! LVT_rc%HYCOM_aice_ant_nc = 4500
+          ! LVT_rc%HYCOM_aice_ant_nr = 775
 
-          ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
-          gridDesci = 0 
-          gridDesci(1) = 0 ! Lat/lon projection
-          gridDesci(2) = LVT_rc%HYCOM_aice_ant_nc ! Number of columns
-          gridDesci(3) = LVT_rc%HYCOM_aice_ant_nr ! Number of rows
-          gridDesci(4) = -80.4800033569336     ! Lower-left latitude (deg N)
-          gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
-          gridDesci(6) = 128     ! Not used
-          gridDesci(7) = -49.5200004577637 ! Upper-right latitude (deg N)
-          gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
-          gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
-          gridDesci(10) = 0.040000915527400593 ! delta-lat (deg)
-          gridDesci(20) = 64  ! East-west ordering
+          ! ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
+          ! gridDesci = 0 
+          ! gridDesci(1) = 0 ! Lat/lon projection
+          ! gridDesci(2) = LVT_rc%HYCOM_aice_ant_nc ! Number of columns
+          ! gridDesci(3) = LVT_rc%HYCOM_aice_ant_nr ! Number of rows
+          ! gridDesci(4) = -80.4800033569336     ! Lower-left latitude (deg N)
+          ! gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
+          ! gridDesci(6) = 128     ! Not used
+          ! gridDesci(7) = -49.5200004577637 ! Upper-right latitude (deg N)
+          ! gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
+          ! gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
+          ! gridDesci(10) = 0.040000915527400593 ! delta-lat (deg)
+          ! gridDesci(20) = 64  ! East-west ordering
 
-          allocate(LVT_rc%HYCOM_aice_ant_n11(&
-               LVT_rc%HYCOM_aice_ant_nc*LVT_rc%HYCOM_aice_ant_nr))
+          ! allocate(LVT_rc%HYCOM_aice_ant_n11(&
+          !      LVT_rc%HYCOM_aice_ant_nc*LVT_rc%HYCOM_aice_ant_nr))
 
-          call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
-               LVT_rc%HYCOM_aice_ant_nc*LVT_rc%HYCOM_aice_ant_nr, &
-               LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_aice_ant_n11)
+          ! call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
+          !      LVT_rc%HYCOM_aice_ant_nc*LVT_rc%HYCOM_aice_ant_nr, &
+          !      LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_aice_ant_n11)
 
           LVT_histData%aice%short_name = "aice"
           LVT_histData%aice%long_name = "aice"
@@ -252,55 +253,55 @@ contains
           allocate(LVT_histData%aice%unittypes(1))
           LVT_histData%aice%unittypes(1) = ""
 
-          ! Now handle Arctic sea ice thickness (hi)
-          LVT_rc%HYCOM_hi_arc_nc = 4500
-          LVT_rc%HYCOM_hi_arc_nr = 1251
+          ! ! Now handle Arctic sea ice thickness (hi)
+          ! LVT_rc%HYCOM_hi_arc_nc = 4500
+          ! LVT_rc%HYCOM_hi_arc_nr = 1251
 
-          ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
-          gridDesci = 0 
-          gridDesci(1) = 0 ! Lat/lon projection
-          gridDesci(2) = LVT_rc%HYCOM_hi_arc_nc ! Number of columns
-          gridDesci(3) = LVT_rc%HYCOM_hi_arc_nr ! Number of rows
-          gridDesci(4) = 40.     ! Lower-left latitude (deg N)
-          gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
-          gridDesci(6) = 128     ! Not used
-          gridDesci(7) = 90.0             ! Upper-right latitude (deg N)
-          gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
-          gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
-          gridDesci(10) = 0.040000915527301117 ! delta-lat (deg)
-          gridDesci(20) = 64  ! East-west ordering
+          ! ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
+          ! gridDesci = 0 
+          ! gridDesci(1) = 0 ! Lat/lon projection
+          ! gridDesci(2) = LVT_rc%HYCOM_hi_arc_nc ! Number of columns
+          ! gridDesci(3) = LVT_rc%HYCOM_hi_arc_nr ! Number of rows
+          ! gridDesci(4) = 40.     ! Lower-left latitude (deg N)
+          ! gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
+          ! gridDesci(6) = 128     ! Not used
+          ! gridDesci(7) = 90.0             ! Upper-right latitude (deg N)
+          ! gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
+          ! gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
+          ! gridDesci(10) = 0.040000915527301117 ! delta-lat (deg)
+          ! gridDesci(20) = 64  ! East-west ordering
 
-          allocate(LVT_rc%HYCOM_hi_arc_n11(&
-               LVT_rc%HYCOM_hi_arc_nc*LVT_rc%HYCOM_hi_arc_nr))
+          ! allocate(LVT_rc%HYCOM_hi_arc_n11(&
+          !      LVT_rc%HYCOM_hi_arc_nc*LVT_rc%HYCOM_hi_arc_nr))
 
-          call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
-               LVT_rc%HYCOM_hi_arc_nc*LVT_rc%HYCOM_hi_arc_nr, &
-               LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_hi_arc_n11)
+          ! call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
+          !      LVT_rc%HYCOM_hi_arc_nc*LVT_rc%HYCOM_hi_arc_nr, &
+          !      LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_hi_arc_n11)
 
-          ! Now handle Antarctic sea ice thickness (hi)
-          LVT_rc%HYCOM_hi_ant_nc = 4500
-          LVT_rc%HYCOM_hi_ant_nr = 775
+          ! ! Now handle Antarctic sea ice thickness (hi)
+          ! LVT_rc%HYCOM_hi_ant_nc = 4500
+          ! LVT_rc%HYCOM_hi_ant_nr = 775
 
-          ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
-          gridDesci = 0 
-          gridDesci(1) = 0 ! Lat/lon projection
-          gridDesci(2) = LVT_rc%HYCOM_hi_ant_nc ! Number of columns
-          gridDesci(3) = LVT_rc%HYCOM_hi_ant_nr ! Number of rows
-          gridDesci(4) = -80.4800033569336     ! Lower-left latitude (deg N)
-          gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
-          gridDesci(6) = 128     ! Not used
-          gridDesci(7) = -49.5200004577637 ! Upper-right latitude (deg N)
-          gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
-          gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
-          gridDesci(10) = 0.040000915527400593 ! delta-lat (deg)
-          gridDesci(20) = 64  ! East-west ordering
+          ! ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
+          ! gridDesci = 0 
+          ! gridDesci(1) = 0 ! Lat/lon projection
+          ! gridDesci(2) = LVT_rc%HYCOM_hi_ant_nc ! Number of columns
+          ! gridDesci(3) = LVT_rc%HYCOM_hi_ant_nr ! Number of rows
+          ! gridDesci(4) = -80.4800033569336     ! Lower-left latitude (deg N)
+          ! gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
+          ! gridDesci(6) = 128     ! Not used
+          ! gridDesci(7) = -49.5200004577637 ! Upper-right latitude (deg N)
+          ! gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
+          ! gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
+          ! gridDesci(10) = 0.040000915527400593 ! delta-lat (deg)
+          ! gridDesci(20) = 64  ! East-west ordering
 
-          allocate(LVT_rc%HYCOM_hi_ant_n11(&
-               LVT_rc%HYCOM_hi_ant_nc*LVT_rc%HYCOM_hi_ant_nr))
+          ! allocate(LVT_rc%HYCOM_hi_ant_n11(&
+          !      LVT_rc%HYCOM_hi_ant_nc*LVT_rc%HYCOM_hi_ant_nr))
 
-          call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
-               LVT_rc%HYCOM_hi_ant_nc*LVT_rc%HYCOM_hi_ant_nr, &
-               LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_hi_ant_n11)
+          ! call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
+          !      LVT_rc%HYCOM_hi_ant_nc*LVT_rc%HYCOM_hi_ant_nr, &
+          !      LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_hi_ant_n11)
 
           LVT_histData%hi%short_name = "hi"
           LVT_histData%hi%long_name = "hi"
@@ -1352,6 +1353,7 @@ contains
                   'nf90_put_att for title failed in LVT_DataStreamsMod')
           end if
 
+          ! EMK FIXME...Replace HYCOM with NAVGEM
           if(LVT_rc%processHYCOM.eq.1) then 
 
              ! First, handle water_temp
@@ -2003,15 +2005,23 @@ contains
           call LVT_cleanup_jules_ps41_ens_snow()
        end if
 
-       call LVT_append_HYCOM_fields(ftn_mean,&
-            time_unit,&
-            time_past,&
-            time_curr,&
-            timeRange,&
-            toplev(1),&
-            botlev(1),&
-            lat,lon)
-       
+       ! EMK...Replace HYCOM with NAVGEM
+       !call LVT_append_HYCOM_fields(ftn_mean,&
+       !     time_unit,&
+       !     time_past,&
+       !     time_curr,&
+       !     timeRange,&
+       !     toplev(1),&
+       !     botlev(1),&
+       !     lat,lon)
+       call LVT_append_navgem_fields(ftn_mean, &
+            time_unit, &
+            time_past, &
+            time_curr, &
+            timeRange, &
+            toplev(1), &
+            botlev(1))
+
        if(LVT_rc%lvt_out_format.eq."grib1") then  
           call grib_close_file(ftn_mean,iret)
           if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
