@@ -309,7 +309,7 @@ subroutine getMODISsca(n,name,tmp_obsl)
      !Grid and field names
      grid_name ="MOD_CMG_Snow_5km"
      ps_name   ="Day_CMG_Snow_Cover"
-     ci_name   ="Day_CMG_Clear_Index"  !MLW for C6 "Day_CMG_Confidence_Index"
+     ci_name   ="Day_CMG_Confidence_Index"
      pc_name   ="Day_CMG_Cloud_Obscured"
      qa_name   ="Snow_Spatial_QA"
 
