@@ -298,10 +298,11 @@ subroutine read_GCOMW_AMSR2L3SND(n, k, OBS_State, OBS_Pert_State)
 ! Process MODIS data if it exists
 !------------------------------------------------------------------------- 
         if(GCOMW_AMSR2L3SND_struc(n)%useMODIS.eq.1) then 
-           
+           write(LIS_logunit,*) '[MLW] use MODIS'
            call get_MOD10C1_filename_AMSR2(MODISfile,&
                 GCOMW_AMSR2L3SND_struc(n)%MODISdir)
            
+           write(LIS_logunit,*) '[MLW] MODIS file',MODISfile
            inquire(file=MODISfile,exist=file_exists) 
            if(file_exists) then 
               write(LIS_logunit,*) '[INFO] Reading ',trim(MODISfile)
@@ -916,13 +917,15 @@ subroutine getMOD10data_AMSR2(n,k,name,tmp_obsl)
   !Grid and field names
   grid_name ="MOD_CMG_Snow_5km"
   ps_name   ="Day_CMG_Snow_Cover"
-  ci_name   ="Day_CMG_Confidence_Index"
+!  ci_name   ="Day_CMG_Clear_Index"  ! MLW collection 6
+  ci_name   ="Day_CMG_Confidence_Index" ! MLW collection 5
   pc_name   ="Day_CMG_Cloud_Obscured"
   qa_name   ="Snow_Spatial_QA"
   
   !open the hdf file
   
   file_id = gdopen(trim(name),DFACC_READ)
+  write(LIS_logunit,*)"[MLW] Getting modis file id"
   if (file_id.eq.-1)then
      write(LIS_logunit,*)"[ERR] Failed to open hdf file",name
      return
@@ -1148,7 +1151,7 @@ subroutine get_MOD10C1_filename_AMSR2(name, ndir)
   write(unit=fdoy, fmt='(i3.3)') doy
 
   name = trim(ndir)//'/'//trim(fyr)//'/'//'MOD10C1.A'&
-            //trim(fyr)//trim(fdoy)//'.005.hdf'
+            //trim(fyr)//trim(fdoy)//'.005.hdf' ! MLW v6
 end subroutine get_MOD10C1_filename_AMSR2
 
 

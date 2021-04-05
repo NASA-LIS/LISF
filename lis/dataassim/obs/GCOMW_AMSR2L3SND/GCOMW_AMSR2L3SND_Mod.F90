@@ -200,15 +200,19 @@ contains
     call ESMF_ConfigFindLabel(LIS_config,&
          "AMSR2(GCOMW) snow depth use MODIS (MOD10C1) data for snow detection:",&
          rc=status)
+    write(LIS_logunit,*) '[MLW] Getting status of using MOD10C1'
     do n=1,LIS_rc%nnest
        call ESMF_ConfigGetattribute(LIS_config,GCOMW_AMSR2L3SND_struc(n)%useMODIS,&
             rc=status)
        call LIS_verify(status,&
             'AMSR2(GCOMW) snow depth use MODIS (MOD10C1) data for snow detection: not defined')
+       write(LIS_logunit,*) '[MLW] Use MOD10C1?',GCOMW_AMSR2L3SND_struc(n)%useMODIS
        if(GCOMW_AMSR2L3SND_struc(n)%useMODIS.eq.1) then 
+          write(LIS_logunit,*) '[MLW] Inside the if statement for MOD10C1'
           call ESMF_ConfigGetAttribute(LIS_config,&
                GCOMW_AMSR2L3SND_struc(n)%MODISdir,&
                label="AMSR2(GCOMW) snow depth MOD10C1 data directory:",rc=status)
+          write(LIS_logunit,*) '[MLW] MOD10C1 directory',GCOMW_AMSR2L3SND_struc(n)%MODISdir
           call LIS_verify(status,&
                'AMSR2(GCOMW) snow depth MOD10C1 data directory: option not specified')
        endif
