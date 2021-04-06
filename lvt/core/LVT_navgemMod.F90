@@ -564,7 +564,7 @@ contains
     integer(HID_T) :: attr_id, type_id, space_id, memtype_id
     integer :: hdferr
     integer(size_t) :: size
-    integer(SIZE_T), parameter :: sdim = 5
+    integer(SIZE_T), parameter :: sdim = 7
     integer(HSIZE_T), dimension(1:1) :: dims = (/1/)
     integer(HSIZE_T), dimension(1:1) :: maxdims
     character(len=sdim), dimension(:), allocatable, target :: rdata
@@ -998,22 +998,22 @@ contains
     real, allocatable :: thin_longitude_slice(:)
     integer :: num_lons
     real :: dlon, ratio
-    integer :: c, r, i, icount
+    integer :: c, r, i, icount, icount_thin
 
     ! Save the data on the regular grid into the var array.
     allocate(var(im*jm))
     var = -9999.
     icount = 0
+    icount_thin = 0
     do r = 1, jm
 
        ! Copy the thinned data into a slice
        num_lons = thin_points_per_lat(r,1)
        allocate(thin_var_slice(num_lons))
        do c = 1, num_lons
-          icount = icount + 1
-          thin_var_slice(c) = thin_var(icount,1)
+          icount_thin = icount_thin + 1
+          thin_var_slice(c) = thin_var(icount_thin,1)
        end do
-       icount = icount - num_lons ! Rewind
 
        ! Next, calculate the thinned longitudes on the slice
        allocate(thin_longitude_slice(num_lons))
