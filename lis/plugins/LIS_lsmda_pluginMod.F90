@@ -200,6 +200,8 @@ subroutine LIS_lsmda_plugin
    use NoahMP401_dasnow_Mod
    use noahmp401_dasnodep_Mod
    use noahmp401_dausafsi_Mod
+   use noahmp401_tws_DAlogMod, only : noahmp401_tws_DAlog
+   use noahmp401_datws_Mod
    use noahmp401_daveg_Mod
 #endif
 
@@ -492,6 +494,15 @@ subroutine LIS_lsmda_plugin
    external noahmp401_qc_LAIobs
    external noahmp401_scale_veg
    external noahmp401_descale_veg
+
+!BL:NOAHMP4.0.1 TWS
+   external noahmp401_gettws
+   external noahmp401_settws
+   external noahmp401_qctws
+   external noahmp401_gettwspred
+   external noahmp401_scale_tws
+   external noahmp401_descale_tws
+   external noahmp401_updatetws
 
 #if ( defined DA_OBS_SNODEP )
 ! NoahMP-4.0.1 SNODEP
@@ -2479,6 +2490,26 @@ subroutine LIS_lsmda_plugin
         trim(LIS_synsndId)//char(0),noahmp401_updatesnowvars)
    call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_synsndId)//char(0),noahmp401_qc_snowobs)
+
+!BL:Noahmp401 TWS 
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GRACEtwsobsId)//char(0),noahmp401_datws_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GRACEtwsobsId)//char(0),noahmp401_gettws)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GRACEtwsobsId)//char(0),noahmp401_settws)
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GRACEtwsobsId)//char(0),noahmp401_gettwspred)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GRACEtwsobsId)//char(0),noahmp401_qctws)
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GRACEtwsobsId)//char(0),noahmp401_scale_tws)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GRACEtwsobsId)//char(0),noahmp401_descale_tws)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GRACEtwsobsId)//char(0), noahmp401_updatetws)
+   call registerlsmdadiagnosevars(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_GRACEtwsobsId)//char(0),noahmp401_tws_DAlog)
 
 ! Wanshu Nie, LAI DA
    call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
