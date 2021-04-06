@@ -91,7 +91,7 @@ subroutine readTHySMobs(n)
      
      do r=1,THySMobs(n)%nr
         do c=1,THySMobs(n)%nc
-           if(sm_file(c,r).ne.-9999.0) then 
+           if(sm_file(c,r).gt.0) then 
               sm_b_inp(c+(r-1)*THySMobs(n)%nc) = & 
                    .true.
               sm_inp(c+(r-1)*THySMobs(n)%nc) = &
@@ -127,7 +127,7 @@ subroutine readTHySMobs(n)
 
      do r=1,THySMobs(n)%nr
         do c=1,THySMobs(n)%nc
-           if(sm_file(c,r).ne.-9999.0.and.&
+           if(sm_file(c,r).gt.0.and.&
                 sm_inp(c+(r-1)*THySMobs(n)%nc).eq.-9999.0) then 
               sm_b_inp(c+(r-1)*THySMobs(n)%nc) = & 
                    .true.
