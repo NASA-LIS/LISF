@@ -140,7 +140,7 @@ subroutine read_THySM(n, k, OBS_State, OBS_Pert_State)
 
         do r=1,THySM_struc(n)%nr
            do c=1,THySM_struc(n)%nc 
-              if(sm_file(c,r).ne.-9999.0) then 
+              if(.not.isNaN(sm_file(c,r)).and.sm_file(c,r).gt.0) then 
                  sm_inp(c+(r-1)*THySM_struc(n)%nc) = & 
                       sm_file(c,r)
                  sm_b_inp(c+(r-1)*THySM_struc(n)%nc) = & 
@@ -209,7 +209,7 @@ subroutine read_THySM(n, k, OBS_State, OBS_Pert_State)
         
         do r=1,THySM_struc(n)%nr
            do c=1,THySM_struc(n)%nc 
-              if(sm_file(c,r).ne.-9999.0) then 
+              if(.not.isNaN(sm_file(c,r)).and.sm_file(c,r).gt.0) then 
                  sm_inp(c+(r-1)*THySM_struc(n)%nc) = & 
                       sm_file(c,r)
                  sm_b_inp(c+(r-1)*THySM_struc(n)%nc) = & 
