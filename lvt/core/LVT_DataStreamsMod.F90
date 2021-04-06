@@ -173,20 +173,20 @@ contains
           !      LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr, &
           !      LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_n11)
 
-          ! LVT_histData%watertemp%short_name = "water_temp"
-          ! LVT_histData%watertemp%long_name = "water_temp"
-          ! LVT_histData%watertemp%standard_name = "water temperature"
-          ! LVT_histData%watertemp%units = "K"
-          ! LVT_histData%watertemp%nunits = 1
-          ! LVT_histData%watertemp%format = 'F'
-          ! LVT_histData%watertemp%vlevels = 1
-          ! LVT_histData%watertemp%timeAvgOpt = 0 
-          ! LVT_histData%watertemp%startNlevs = 1
-          ! LVT_histData%watertemp%endNlevs = 1
-          ! allocate(LVT_histData%watertemp%value(LVT_rc%ngrid,&
-          !      1,LVT_histData%watertemp%vlevels))
-          ! allocate(LVT_histData%watertemp%unittypes(1))
-          ! LVT_histData%watertemp%unittypes(1) = "K"
+          LVT_histData%watertemp%short_name = "water_temp"
+          LVT_histData%watertemp%long_name = "water_temp"
+          LVT_histData%watertemp%standard_name = "water temperature"
+          LVT_histData%watertemp%units = "K"
+          LVT_histData%watertemp%nunits = 1
+          LVT_histData%watertemp%format = 'F'
+          LVT_histData%watertemp%vlevels = 1
+          LVT_histData%watertemp%timeAvgOpt = 0 
+          LVT_histData%watertemp%startNlevs = 1
+          LVT_histData%watertemp%endNlevs = 1
+          allocate(LVT_histData%watertemp%value(LVT_rc%ngrid,&
+               1,LVT_histData%watertemp%vlevels))
+          allocate(LVT_histData%watertemp%unittypes(1))
+          LVT_histData%watertemp%unittypes(1) = "K"
 
           ! ! Now handle Arctic sea ice fraction (aice)
           ! LVT_rc%HYCOM_aice_arc_nc = 4500
@@ -1365,6 +1365,7 @@ contains
                   'nf90_def_var for '//&
                   trim(LVT_histData%watertemp%short_name)//&
                   'failed in defineNETCDFheadervar')                     
+
 #if(defined USE_NETCDF4)
              call LVT_verify(nf90_def_var_deflate(ftn_mean,&
                   LVT_histData%watertemp%varId_def,&
