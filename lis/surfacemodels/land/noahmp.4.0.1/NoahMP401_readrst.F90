@@ -19,6 +19,7 @@
 !  by Shugong Wang for the NASA Land Information System Version 7. The initial 
 !  specification of the subroutine is defined by Sujay Kumar. 
 !   10/25/18: Shugong Wang, Zhuo Wang; initial implementation for LIS 7 and Noah-MP-4.0.1
+!   01/08/2021 Bailing Li; implemented code for reading GRACE DA restart file
 !
 ! !INTERFACE:
 subroutine NoahMP401_readrst()
@@ -30,6 +31,9 @@ subroutine NoahMP401_readrst()
                                LIS_releaseUnitNumber,   &
                                LIS_verify                
     use NoahMP401_lsmMod
+    use ESMF
+    use LIS_fileIOMod
+    use LIS_timeMgrMod
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
@@ -112,6 +116,12 @@ subroutine NoahMP401_readrst()
     real, allocatable :: tmptilen(:)
     logical           :: file_exists
     character*20      :: wformat
+    character*100     :: filen
+    integer           :: yr,mo,da,hr,mn,ss,doy
+    real*8            :: time
+    real              :: gmt
+    real              :: ts
+
  
     do n=1, LIS_rc%nnest
         wformat = trim(NOAHMP401_struc(n)%rformat)
@@ -120,6 +130,32 @@ subroutine NoahMP401_readrst()
             call NoahMP401_coldstart(LIS_rc%lsm_index)
         ! restart
         elseif(LIS_rc%startcode .eq. "restart") then
+        !---create restart filename based on timewindow for EnKS
+                if(LIS_rc%runmode.eq."ensemble smoother") then
+                  if(LIS_rc%iterationId(n).gt.1) then
+                    if(NOAHMP401_struc(n)%rstInterval.eq.2592000) then
+                     !create the restart filename based on the timewindow start time
+                      call ESMF_TimeGet(LIS_twStartTime,yy=yr,mm=mo,&
+                           dd=da,calendar=LIS_calendar,rc=status)
+                      hr = 0
+                      mn = 0
+                      ss = 0
+                      call LIS_tick(time,doy,gmt,yr,mo,da,hr,mn,ss,(-1)*LIS_rc%ts)
+                    else
+                      call ESMF_TimeGet(LIS_twStartTime,yy=yr,mm=mo,&
+                           dd=da,calendar=LIS_calendar,rc=status)
+                      hr = 0
+                      mn = 0
+                      ss = 0
+                    endif
+
+                    call LIS_create_restart_filename(n,filen,'SURFACEMODEL','NOAHMP401', &
+                         yr,mo,da,hr,mn,ss, wformat=wformat)
+                    NOAHMP401_struc(n)%rfile = filen
+                  endif
+                endif
+
+
             allocate(tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index)))
             ! check the existance of restart file
             inquire(file=NOAHMP401_struc(n)%rfile, exist=file_exists)
