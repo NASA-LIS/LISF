@@ -67,6 +67,8 @@ module LDT_irrigationMod
      type(LDT_paramEntry) :: irrigtype   ! Type of irrigation = 3
      type(LDT_paramEntry) :: irrigfrac   ! Irrigation gridcell fraction
      type(LDT_paramEntry) :: cropwatsrc  ! Type of cropwater source
+     type(LDT_paramEntry) :: county  ! US census boundary for counties
+     type(LDT_paramEntry) :: country   ! GDAM countries
 
   end type irrig_type_dec
 
@@ -139,6 +141,8 @@ contains
     integer  :: rc
     type(LDT_fillopts)  :: irrigtype
     type(LDT_fillopts)  :: irrigfrac
+    type(LDT_fillopts)  :: county
+    type(LDT_fillopts)  :: country
 
     logical  :: irrigfrac_select
     logical  :: irrigtype_select
@@ -178,6 +182,23 @@ contains
            allocate(LDT_irrig_struc(n)%cropwatsrc%value(&
                     LDT_rc%lnc(n),LDT_rc%lnr(n),&
                     LDT_irrig_struc(n)%cropwatsrc%vlevels))       
+         endif
+         if( LDT_irrig_struc(1)%irrigtype%source == "AQUASTAT" )then
+           call LDT_set_param_attribs(0,LDT_irrig_struc(n)%county,&
+                      "COUNTY","US Census Boundary 2015 GEOID")
+           call LDT_set_param_attribs(0,LDT_irrig_struc(n)%country,&
+                      "COUNTRY","GIS political boundary data")
+           LDT_irrig_struc(n)%county%units="-"
+           LDT_irrig_struc(n)%country%units="-"
+
+           LDT_irrig_struc(n)%county%vlevels = 1
+           LDT_irrig_struc(n)%country%vlevels = 1
+           allocate(LDT_irrig_struc(n)%county%value(&
+                    LDT_rc%lnc(n),LDT_rc%lnr(n),&
+                    LDT_irrig_struc(n)%county%vlevels))       
+           allocate(LDT_irrig_struc(n)%country%value(&
+                    LDT_rc%lnc(n),LDT_rc%lnr(n),&
+                    LDT_irrig_struc(n)%country%vlevels))       
          endif
       endif
       if( irrigfrac_select ) then
@@ -330,7 +351,7 @@ contains
         if( LDT_irrig_struc(1)%irrigtype%source == "AQUASTAT" )then
           call readirrigtype( trim(LDT_irrig_struc(n)%irrigtype%source)//char(0),&
                 n, LDT_irrig_struc(n)%irrigtype%value,   &
-                LDT_irrig_struc(n)%irrigtype%num_bins )
+                LDT_irrig_struc(n)%irrigtype%num_bins  )
         else if( LDT_irrig_struc(1)%irrigtype%source == "GRIPC" )then
         ! HKB: Irrigation types are fractions of Sprinkler, Drip, and Flood.
         ! Assign irrigation type, if GRIPC selected: 
@@ -432,6 +453,16 @@ contains
             LDT_irrig_struc(n)%irrigfrac)
     endif
          
+    if( LDT_irrig_struc(n)%county%selectOpt.gt.0 ) then
+       call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+            LDT_irrig_struc(n)%county)
+    endif
+
+    if( LDT_irrig_struc(n)%country%selectOpt.gt.0 ) then
+       call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+            LDT_irrig_struc(n)%country)
+    endif
+
 #endif
   end subroutine LDT_irrigation_writeHeader
 
@@ -446,6 +477,14 @@ contains
 
     if( LDT_irrig_struc(n)%irrigfrac%selectOpt.gt.0 ) then
        call LDT_writeNETCDFdata(n,ftn,LDT_irrig_struc(n)%irrigfrac)
+    endif
+
+    if( LDT_irrig_struc(n)%county%selectOpt.gt.0 ) then
+       call LDT_writeNETCDFdata(n,ftn,LDT_irrig_struc(n)%county)
+    endif
+
+    if( LDT_irrig_struc(n)%country%selectOpt.gt.0 ) then
+       call LDT_writeNETCDFdata(n,ftn,LDT_irrig_struc(n)%country)
     endif
 
   end subroutine LDT_irrigation_writeData

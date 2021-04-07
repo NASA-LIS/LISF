@@ -9,6 +9,9 @@
 ! !REVISION HISTORY:
 !  23 May 2019: H. Beaudoing;  Adopted the routines and dataset compiled by
 !                              Sarith Mahanama.
+!  01 Apr 2021: H. Beaudoing;  Added US county data of USGS to overlay.
+!                              The county data and reading section are provided
+!                              by Sarith.
 !
 ! !INTERFACE:
 #include "LDT_misc.h"
@@ -45,12 +48,16 @@
 !  create a map.  Flood type is assumed to be the most common world-wide and
 !  assigned to countries without report. 
 !  
-!  This routine maps out states or country table values onto geographical 
-!  2D array using the GIS political boundary data (native at 1 km).
+!  This routine maps out country and state/county table values onto geographical
+!  2D array using the GIS political boundary data (native at 1 km) and
+!  US Ceneus Boundary 2015 data, respectively.
 !  The grid trensformation method applies to the handling of the political data,
-!  so only none, mode, or neighbor are supported.
+!  so only none, mode, or neighbor are supported. The country and county index
+!  are included in the output to be used in the distribution of irrigation 
+!  type onto crop tiles in LIS irrigation. 
+!
 !  The irrigation type output contains values over land regardless of the grid
-!  cell being irritated or cropland land cover.
+!  cell being irrigated or cropland land cover.
 !  Note the irrigtype defined with this routine is actual irrigation method,
 !  which is different from those with GRIPC dataset.
 !
@@ -67,6 +74,11 @@
 !  https://doi.org/10.3133/cir1441. [Supersedes USGS Open-File Report 2017–1131
 !
 !  AQUASTAT database - FAO, http://www.fao.org/nr/water/aquastat/data/query/index.html?lang=en 
+!
+!  USGS Water Use Data for each state to obtain county data accessed via 
+!  National Water Information System (NWIS) at https://waterdata.usgs.gov 
+!  US census boundary data was downloaded from
+!  https://www2.census.gov/geo/tiger/GENZ2015/shp/cb_2015_us_county_20m.zip
 !
 !  The arguments are:
 !  \begin{description}
@@ -91,11 +103,24 @@
   integer, parameter :: N_COUNTRIES = N_GADM
   integer*2, allocatable, dimension (:,:,:)      :: cnt_code
   character(len=3), dimension(N_COUNTRIES,3)     :: ABR
-  character(len=48), dimension(N_STATES,48)      :: STATES
+  character(len=48), dimension(N_STATES,48)      :: state_name
   integer*2, dimension(N_COUNTRIES)              :: loc_index
+! USGS county data variables:
+  integer*2, allocatable, dimension(:,:)         :: fid
+  integer*2, allocatable, dimension(:,:)         :: temp
+  integer                                        :: input_rows2
+  integer                                        :: county
+  integer                                        :: states
+  integer                                        :: n_countyUS
+  real, allocatable, dimension(:,:)              :: sprinklerfr
+  real, allocatable, dimension(:,:)              :: dripfr
+  real, allocatable, dimension(:,:)              :: floodfr
+  integer, allocatable, dimension(:)             :: geoid
+  integer                                        :: SS,CCC
 
-  integer                             :: i,j,ii
+  integer                             :: i,j,ii,jj
   integer                             :: ncid,ncstatus,varid
+  integer                             :: countyid,stateid,uscountyid
   integer                             :: cindex
   integer                             :: N_METHOD ! # of avail country data
   character(len=2),dimension(N_STATES):: ST_NAME
@@ -123,14 +148,18 @@
   real      :: go1(LDT_rc%lnc(n)*LDT_rc%lnr(n))           ! Output lis 1d grid
   logical*1 :: lo1(LDT_rc%lnc(n)*LDT_rc%lnr(n))           ! Output logical mask (to match go)
 
-  character(len=120) :: usfile, glbfile, polfile
+  character(len=120) :: usfile, glbfile, polfile, countyfile
 
+! -------------------------------------------------------------------
+! Irrigation type area or fraction inputs
+! -------------------------------------------------------------------
 !- Open report files to be processed::
 !!! irrigtypefile in ldt.config point to the directory where files
 !!! are found---file names are Hard Coded here!!!
    glbfile = trim(LDT_irrig_struc(n)%irrigtypefile)//'Global_IMethod.data'
    usfile = trim(LDT_irrig_struc(n)%irrigtypefile)//'US_IMethod.2015'
    polfile = trim(LDT_irrig_struc(n)%irrigtypefile)//'GADM_Country_and_USStates_codes_1km.nc4'
+   countyfile = 'cb_2015_us_county_30arcsec.nc4'   !hard-coded for now
 
    ftn = LDT_getNextUnitNumber()
    open (ftn, file=trim(glbfile), form = 'formatted', status = 'old')
@@ -164,7 +193,43 @@
    us_drip   = us_drip   / us_tarea
    us_flood  = us_flood  / us_tarea
  
-! _____________________________
+   ncstatus = nf90_open(trim(countyfile), NF90_NOWRITE, ncid)
+   if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] cannot open ", trim(polfile)
+   ncstatus = nf90_inq_dimid(ncid,"county",countyid)
+   ncstatus = nf90_inquire_dimension(ncid,countyid,len=county)
+   if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] failed inqure dimension for county"
+   ncstatus = nf90_inq_dimid(ncid,"states",stateid)
+   ncstatus = nf90_inquire_dimension(ncid,stateid,len=states)
+   if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] failed inqure dimension for states"
+   ncstatus = nf90_inq_dimid(ncid,"n_countyUS",uscountyid)
+   ncstatus = nf90_inquire_dimension(ncid,uscountyid,len=n_countyUS)
+   if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] failed inqure dimension for n_countyUS"
+   print*, "county data dimensions: ",county, states, n_countyUS
+   allocate(sprinklerfr(county,states))
+   allocate(dripfr(county,states))
+   allocate(floodfr(county,states))
+   allocate(geoid(n_countyUS))
+   ncstatus = nf90_inq_varid(ncid, "SPRINKLERFR", varid)
+   if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] dataset SPRINKLERFR not exist in ",  trim(countyfile)
+   ncstatus = nf90_get_var(ncid, varid, sprinklerfr, start=(/1,1/), count=(/county,states/))
+   if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] cannot access SPRINKLERFR in ",  trim(countyfile)
+   ncstatus = nf90_inq_varid(ncid, "DRIPFR", varid)
+   if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] dataset DRIPFR not exist in ",  trim(countyfile)
+   ncstatus = nf90_get_var(ncid, varid, dripfr, start=(/1,1/), count=(/county,states/))
+   if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] cannot access DRIPFR in ",  trim(countyfile)
+   ncstatus = nf90_inq_varid(ncid, "FLOODFR", varid)
+   if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] dataset FLOODFR not exist in ",  trim(countyfile)
+   ncstatus = nf90_get_var(ncid, varid, floodfr, start=(/1,1/), count=(/county,states/))
+   if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] cannot access FLOODFR in ",  trim(countyfile)
+   ncstatus = nf90_inq_varid(ncid, "GEOID", varid)
+   if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] dataset GEOID not exist in ",  trim(countyfile)
+   ncstatus = nf90_get_var(ncid, varid, geoid, start=(/1/), count=(/n_countyUS/))
+   if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] cannot access GEOID in ",  trim(countyfile)
+   ncstatus = nf90_close(ncid)
+
+! -------------------------------------------------------------------
+! Country, State, and County spatial data
+! -------------------------------------------------------------------
    allocate (lis_cnt_mask (LDT_rc%lnc(n),LDT_rc%lnr(n)))
 
 !- Set parameter grid array inputs:
@@ -212,8 +277,35 @@
 
    ncstatus = nf90_inq_varid(ncid, "STATE_NAME", varid)
    if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] dataset STATE_NAME not exist in ",  trim(polfile)
-   ncstatus = nf90_get_var(ncid, varid, states)
+   ncstatus = nf90_get_var(ncid, varid, state_name)
    if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] cannot access STATE_NAME in ",  trim(polfile)
+   ncstatus = nf90_close(ncid)
+
+!- County data to overlay:
+   inquire(file=trim(countyfile), exist=file_exists)
+   if(.not.file_exists) then
+      write(LDT_logunit,*) "Irrigation type US county map ",trim(countyfile)," not found."
+      write(LDT_logunit,*) "Program stopping ..."
+      call LDT_endrun
+   endif
+   write(unit=LDT_logunit,fmt=*) "[INFO] Reading USGS crop-water source map file"
+
+!- Open file to be processed::
+!- County 3220 over US
+   allocate( fid(input_cols,input_rows) )
+   fid = LDT_rc%udef
+   input_rows2 = input_rows / 2  ! 0-90N latitude
+   ncstatus = nf90_open(trim(countyfile), NF90_NOWRITE, ncid)
+   if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] cannot open ", trim(polfile)
+   ncstatus = nf90_inq_varid(ncid, "POLYID", varid)
+   if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] dataset POLYID not exist in ",  trim(countyfile)
+   ! read north-south input 
+   do j = 1, input_rows2
+   ncstatus = nf90_get_var(ncid, varid, fid(:,input_rows-j+1), start=(/1,j/), &
+               count=(/input_cols,1/))
+   if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] cannot access FID in ",  trim(countyfile)
+   end do
+   ncstatus = nf90_close(ncid)
 
 ! -------------------------------------------------------------------
 !    PREPARE SUBSETTED PARAMETER GRID FOR READING IN NEEDED DATA
@@ -226,7 +318,7 @@
 !   print*,'AQUASTAT:',glpnc, glpnr, subpnc, subpnr, LDT_rc%lnc(n), LDT_rc%lnr(n)
 !   print*,'subparam_gridDesc:',subparam_gridDesc
 ! _________
-   allocate( var_in(subpnc,subpnr,2) )
+   allocate( var_in(subpnc,subpnr,3) )
    var_in = float(noncrop)
 
 !- Reverse Y-axis and subset region
@@ -241,6 +333,11 @@
           var_in(nc,nr,1) = float(cnt_code(lon_line(nc,nr),lat_line(nc,nr),1))
          else
           var_in(nc,nr,1) = LDT_rc%udef
+         endif
+         if ( fid(lon_line(nc,nr),lat_line(nc,nr)) .ne. -9999 )then
+          var_in(nc,nr,3) = float(fid(lon_line(nc,nr),lat_line(nc,nr)))
+         else
+          var_in(nc,nr,3) = LDT_rc%udef
          endif
       end do
    end do
@@ -267,10 +364,10 @@
 
    allocate( li(mi), gi(mi), n11(mi) )
 !HKB test output -- need to use single processor run
-!    open (unit=99,file='country.bin',form='unformatted',status='unknown')
+!   open (unit=99,file='county.bin',form='unformatted',status='unknown')
 
-!- Loop over country and state 
-   do j = 1, 2   
+!- Loop over 1=country, 2=state, and 3=county 
+   do j = 1, 3   
 
    gi  = float(noncrop)
    li  = .false.
@@ -313,7 +410,8 @@
  
    end select  ! End grid cnt aggregation method
 !HKB test output
-!    write(99) lis_cnt_mask    ! country
+!   if ( j .eq. 3 ) &
+!    write(99) lis_cnt_mask    ! country, state, or county
 
 ! ____________
 !- Map country_code -> type: flood, drip,sprink, & noncrop
@@ -333,6 +431,7 @@
                  fgrd(nc,nr,3) = flood(i)
                  fgrd(nc,nr,2) = drip (i)
                  fgrd(nc,nr,1) = sprink(i)
+                 LDT_irrig_struc(n)%country%value(nc,nr,1) = float(lis_cnt_mask(nc,nr))
              end if
            enddo
          enddo
@@ -352,7 +451,22 @@
            enddo
          enddo
     end do st_loop
-   endif  ! j == 1 or 2
+   elseif ( j .eq. 3 ) then
+   ! Overlay US County irrig methods
+         do nr = 1, LDT_rc%lnr(n)
+           do nc = 1, LDT_rc%lnc(n)
+             if ((lis_cnt_mask(nc,nr) .ne. LDT_rc%udef).and. &
+                 (LDT_LSMparam_struc(n)%landmask%value(nc,nr,1) > 0.5)) then
+                 SS = geoid(lis_cnt_mask(nc,nr)) / 1000
+                 CCC= geoid(lis_cnt_mask(nc,nr)) - SS*1000
+                 fgrd(nc,nr,1) = sprinklerfr(CCC,SS)
+                 fgrd(nc,nr,2) = dripfr(CCC,SS)
+                 fgrd(nc,nr,3) = floodfr(CCC,SS)
+                 LDT_irrig_struc(n)%county%value(nc,nr,1) = float(geoid(lis_cnt_mask(nc,nr)))
+             end if
+           enddo
+         enddo
+   endif  ! j == 1, 2, or 3
 
    end do   ! j 
 
@@ -367,6 +481,11 @@
    deallocate (drip)
    deallocate (flood)
    deallocate (tarea)
+   deallocate (fid)
+   deallocate (sprinklerfr)
+   deallocate (dripfr)
+   deallocate (floodfr)
+   deallocate (geoid)
 ! __________________________________________________________
 
    write(LDT_logunit,fmt=*) "[INFO] Done reading AQUASTAT crop-water source file"

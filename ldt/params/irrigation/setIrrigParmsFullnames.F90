@@ -57,6 +57,10 @@ subroutine setIrrigParmsFullnames(n,datatype,source)
         case( "AQUASTAT" )
           LDT_irrig_struc(n)%irrigtype%standard_name =&
              "AQUASTAT and USGS reported Irrigation type fraction"
+          LDT_irrig_struc(n)%county%standard_name =&
+             "US Census Boundary 2015 GEOID"
+          LDT_irrig_struc(n)%country%standard_name =&
+             "GIS political boundary data"
       end select
 
     case( "irrigfrac" )
