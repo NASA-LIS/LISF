@@ -67,7 +67,9 @@ subroutine readTHySMobs(source)
   alarmcheck = (mod(timenow, 86400.0).eq.0)
 
   smobs= LVT_rc%udef
-
+  sm_b_inp  = .false. 
+  sm_inp = LVT_rc%udef
+  
   if(alarmCheck) then
 
      !AM is descending and PM is ascending
