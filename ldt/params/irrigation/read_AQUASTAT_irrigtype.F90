@@ -363,8 +363,6 @@
    endif
 
    allocate( li(mi), gi(mi), n11(mi) )
-!HKB test output -- need to use single processor run
-!   open (unit=99,file='county.bin',form='unformatted',status='unknown')
 
 !- Loop over 1=country, 2=state, and 3=county 
    do j = 1, 3   
@@ -409,9 +407,6 @@
       call LDT_endrun
  
    end select  ! End grid cnt aggregation method
-!HKB test output
-!   if ( j .eq. 3 ) &
-!    write(99) lis_cnt_mask    ! country, state, or county
 
 ! ____________
 !- Map country_code -> type: flood, drip,sprink, & noncrop
@@ -431,12 +426,20 @@
                  fgrd(nc,nr,3) = flood(i)
                  fgrd(nc,nr,2) = drip (i)
                  fgrd(nc,nr,1) = sprink(i)
-                 LDT_irrig_struc(n)%country%value(nc,nr,1) = float(lis_cnt_mask(nc,nr))
              end if
            enddo
          enddo
         endif  ! tarea
     end do cnt_loop
+    do nr = 1, LDT_rc%lnr(n)
+       do nc = 1, LDT_rc%lnc(n)
+         if (LDT_LSMparam_struc(n)%landmask%value(nc,nr,1) > 0.5) then
+          LDT_irrig_struc(n)%country%value(nc,nr,1) = float(lis_cnt_mask(nc,nr))
+         else
+          LDT_irrig_struc(n)%country%value(nc,nr,1) = LDT_rc%udef 
+         endif
+       enddo
+    enddo
    elseif ( j .eq. 2 ) then
    ! Overlay USA irrig methods
     st_loop : do i = 1,N_STATES
@@ -470,8 +473,6 @@
 
    end do   ! j 
 
-!HKB test output
-!    close(99)
    deallocate ( gi, li, n11 )
    deallocate ( var_in )
    deallocate (lis_cnt_mask)
