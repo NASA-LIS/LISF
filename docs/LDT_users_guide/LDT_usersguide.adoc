@@ -1,6 +1,6 @@
 = Land Data Toolkit (LDT): LDT {lisfrevision} Users' Guide
-:revnumber: 1.12
-:revdate: 4 Mar 2021
+:revnumber: 1.13
+:revdate: 31 Mar 2021
 :doctype: book
 :sectnums:
 :toc:
@@ -17,7 +17,7 @@
 :githuburl: https://github.com
 :apachelicense: https://www.apache.org/licenses/LICENSE-2.0
 :lispublicrelease: Initial version - for LDT
-:ldttarball: LISF_public_release_7.3.0.tar.gz
+:ldttarball: LISF_public_release_7.3.1.tar.gz
 :emdash: —
 :endash: –
 :vertellipsis: ⋮
