@@ -2571,6 +2571,27 @@ subroutine LIS_lsmda_plugin
    call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp401_descale_veg)
 
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SNODASobsId)//char(0),noahmp401_dasnow_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SNODASobsId)//char(0),NoahMP401_getsnowvars)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SNODASobsId)//char(0),NoahMP401_setsnowvars)
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SNODASobsId)//char(0),NoahMP401_getsnowpred)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SNODASobsId)//char(0),NoahMP401_qcsnow)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SNODASobsId)//char(0),NoahMP401_qc_snowobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SNODASobsId)//char(0),NoahMP401_scale_snow)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SNODASobsId)//char(0),NoahMP401_descale_snow)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SNODASobsId)//char(0),NoahMP401_updatesnowvars)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_SNODASobsId)//char(0),NoahMP401_qc_snowobs)
+
 ! Yeosang Yoon, SNODEP DA
 #if ( defined DA_OBS_SNODEP )
 ! DA + snodep wirings
