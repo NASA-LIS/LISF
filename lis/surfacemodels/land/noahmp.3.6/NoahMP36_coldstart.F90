@@ -157,9 +157,9 @@ subroutine NoahMP36_coldstart(mtype)
                 NOAHMP36_struc(n)%noahmp36(t)%isnow = isnow                
 
                 !ag (12Sep2019)
-                NOAHMP36_struc(n)%noahmp36(t)%rivsto = 0.0
-                NOAHMP36_struc(n)%noahmp36(t)%fldsto = 0.0
-                NOAHMP36_struc(n)%noahmp36(t)%fldfrc = 0.0
+!                NOAHMP36_struc(n)%noahmp36(t)%rivsto = 0.0
+!                NOAHMP36_struc(n)%noahmp36(t)%fldsto = 0.0
+!                NOAHMP36_struc(n)%noahmp36(t)%fldfrc = 0.0
                 
                 ! end add
             enddo

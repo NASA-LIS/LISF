@@ -1,9 +1,7 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center
-! Land Information System Framework (LISF)
-! Version 7.3
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2015 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -78,7 +76,9 @@
                      sfmc, rzmc, prmc, entot, wtot, WCHANGE, ECHANGE, HSNACC,  &
                      EVACC, SHACC,                                             &
                      SH_SNOW, AVET_SNOW, WAT_10CM, TOTWAT_SOIL, TOTICE_SOIL,   &
-                     LHACC, TC1_0, TC2_0, TC4_0, QA1_0, QA2_0, QA4_0, fices_out)
+                     LHACC, TC1_0, TC2_0, TC4_0, QA1_0, QA2_0, QA4_0, fices_out,&
+                     !ag(02Jan2021)
+                     rivsto,fldsto,fldfrc)
         
 !      use  clsmf25_diagn_routines
 
@@ -188,7 +188,12 @@
 !      data     n_outs / 30380 , 64674 , 64676 , 64678 , 64681 , 64795 , 64802 /
       integer  n_outs(1)
       data     n_outs / 828/
-      
+
+      !ag (02Jan2021)
+      real, intent(inout) :: rivsto(nch)               ! river storage
+      real, intent(inout) :: fldsto(nch)               ! flood storage
+      real, intent(inout) :: fldfrc(nch)               ! flooded fraction
+
 !      do n=1,size(n_outs)
       do n=1,0
          n_out =  n_outs(n)
@@ -985,6 +990,22 @@
         WRITE(*,*) 'INTERC OK'
         ENDIF
 
+! ---------------------------------------------------------------------
+!!ag (02Jan2021)
+!!**** TWO-WAY COUPLING WITH ROUTING SCHEME: UPDATE THROUGHFALL RATES WITH SURFACE WATER STORAGE.
+!n=640
+!print*,1,'thru',n,thru(n),count(fldfrc==1),count(fldfrc==0)
+!      do n=1,nch
+!        !if flooded fraction flag is 1, i.e., if flooded fraction is above threshold, add river and flood storages to QINSUR
+!!print*,n,fldfrc(n),rivsto(n),fldsto(n)
+!        if(fldfrc(n)==1)then
+!          thru(n) = thru(n) + (rivsto(n) + fldsto(n))*1000. !surface water storage units are in m/s (See HYMAP2_routing_run.F90 and clsmf25_getsws_hymap2.F90)
+!        endif
+!      enddo
+!n=640 
+!print*,1,'runsrf',n,runsrf(n)
+! ---------------------------------------------------------------------
+
 !**** DETERMINE SURFACE RUNOFF AND INFILTRATION RATES:
 
       CALL SRUNOFF (                                                           &
@@ -996,6 +1017,11 @@
       IF (BUG) THEN
         WRITE(*,*) 'SRUNOFF'
         ENDIF
+!n=670
+!print*,2,'thru',n,thru(n)
+!print*,2,'runsrf',n,runsrf(n)
+!print*,2,'QINFIL',n,QINFIL(n)
+!print*,2,'BFLOW',n,BFLOW(n)
 
 !**** (ADD CHECK TO ENSURE RZEXC KEPT WITHIN BOUNDS IN SRUNOFF)
       
@@ -1064,6 +1090,19 @@
         shflux(n)=shflux(n)-(hnew-hold)/dtstep
 !        SHACC(N)=SHACC(N)-(hnew-hold)/dtstep
         enddo
+ 
+! ---------------------------------------------------------------------
+!!ag (02Jan2021)
+!!**** TWO-WAY COUPLING WITH ROUTING SCHEME: UPDATE THROUGHFALL RATES WITH SURFACE WATER STORAGE.
+!n=670
+!print*,3,'runsrf',n,runsrf(n)
+!print*
+!      do n=1,nch
+!        !if flooded fraction flag is 0, i.e., if flooded fraction is below threshold, add river and flood storages to RUNSRF after vertical water balance
+!        if(fldfrc(n)==0)then
+!          runsrf(n) = runsrf(n) + (rivsto(n) + fldsto(n))*1000. !surface water storage units are in m/s (See HYMAP2_routing_run.F90 and clsmf25_getsws_hymap2.F90)
+!        endif
+!      enddo
 
 !**** ---------------------------------------------------
 !**** PROCESS DATA AS NECESSARY PRIOR TO RETURN:
