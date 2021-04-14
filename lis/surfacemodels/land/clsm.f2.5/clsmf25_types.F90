@@ -1,9 +1,7 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center
-! Land Information System Framework (LISF)
-! Version 7.3
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2015 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -39,7 +37,10 @@ module clsmf25_types
   public :: N_cat_progn
   public :: cat_progn_type, cat_diagn_type, cat_param_type, cat_force_type,&
        cat_output_type
-  
+
+  !ag(01Jan2021)
+  public :: cat_route_type 
+ 
   public :: assignment (=), operator (/), operator (+)
   
   ! -------------------------------------------------------------------------
@@ -339,6 +340,17 @@ module clsmf25_types
   end type cat_output_type
   
   ! ----------------------------------------------------------------
+  !ag(01Jan2021)
+  ! Catchment model 2-way coupling variables
+
+  type :: cat_route_type
+     !surface water storage units are in m/s (See HYMAP2_routing_run.F90 and noahmp36_getsws_hymap2.F90) 
+     real :: rivsto    ! river water storage [m/s]
+     real :: fldsto    ! floodplain water storage [m/s]
+     real :: fldfrc    ! grid flooded fraction [-]
+  end type cat_route_type
+
+  ! ---------------------------------------------------------
   
   interface assignment (=)
      module procedure scalar2cat_diagn

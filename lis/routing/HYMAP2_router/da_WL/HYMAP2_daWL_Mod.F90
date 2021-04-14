@@ -1,9 +1,7 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center
-! Land Information System Framework (LISF)
-! Version 7.3
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2015 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -46,6 +44,7 @@ module HYMAP2_daWL_Mod
      integer                :: nsites
      integer                :: useLocalUpd
      integer                :: localUpdDX
+     real, allocatable      :: sites(:,:)
      real, allocatable      :: localWeight(:,:,:)
 
   end type daWL_dec
@@ -81,7 +80,7 @@ contains
     integer                :: nid
     integer                :: status
     integer                :: ncId, nrId, siteId
-    integer                :: nc,nr,drainid
+    integer                :: nc,nr,drainid,sid
     logical                :: local_upd_flag
     character*100          :: localWeightMap
     logical                :: file_exists
@@ -155,14 +154,33 @@ contains
                 
                 status = nf90_inq_varid(nid,'distance',drainid)
                 call LIS_verify(status,'distance field not found in the localization weight file')
+
+                status = nf90_inq_varid(nid,'sites',sid)
+                call LIS_verify(status,'sites field not found in the localization weight file')
                 
                 allocate(HYMAP2_dawl_struc(n)%localWeight(&
                      LIS_rc%gnc(n), LIS_rc%gnr(n), &
                      HYMAP2_daWL_struc(n)%nsites))
 
+                allocate(HYMAP2_dawl_struc(n)%sites( &
+                     LIS_rc%lnc(n), LIS_rc%lnr(n)))
+
                 status = nf90_get_var(nid,drainid,&
                      HYMAP2_daWL_struc(n)%localWeight)
                 call LIS_verify(status,'Error in nf90_get_var in HYMAP2_daWL_Mod')
+
+
+                status = nf90_get_var(nid,sid,&
+                     HYMAP2_daWL_struc(n)%sites, &
+                     start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+                     LIS_nss_halo_ind(n,LIS_localPet+1)/),&
+                     count = (/LIS_ewe_halo_ind(n,LIS_localPet+1) - &
+                     LIS_ews_halo_ind(n,LIS_localPet+1)+1, &
+                     LIS_nse_halo_ind(n,LIS_localPet+1) - &
+                     LIS_nss_halo_ind(n,LIS_localPet+1)+1/))
+
+                call LIS_verify(status,'Error in nf90_get_var in HYMAP2_daWL_Mod')
+
                 status = nf90_close(nid)
                 call LIS_verify(status,'Error in nf90_close in HYMAP2_daWL_Mod')
                 

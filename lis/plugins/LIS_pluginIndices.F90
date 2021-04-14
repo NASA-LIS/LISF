@@ -296,6 +296,8 @@ module LIS_pluginIndices
         "Synthetic water level"
    character*50, public,  parameter :: LIS_THySMId             = &
            "THySM"
+   character*50, public,  parameter :: LIS_hydrowebwlId        = &
+        "Hydroweb water level"
 
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms
