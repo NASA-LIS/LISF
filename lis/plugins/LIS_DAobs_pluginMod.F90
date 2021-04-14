@@ -286,6 +286,11 @@ subroutine LIS_DAobs_plugin
     use THySM_Mod,    only : THySM_setup
 #endif
 
+#if ( defined DA_OBS_SNODAS )
+   use SNODAS_Mod,    only : SNODAS_setup
+#endif
+
+
 #if ( defined DA_OBS_SYNTHETICSM )
     external read_syntheticsmobs, write_syntheticsmobs
 #endif
@@ -451,6 +456,10 @@ subroutine LIS_DAobs_plugin
 #if ( defined DA_OBS_ASO_SWE)
     external read_ASO_SWE, write_ASO_SWEobs
 #endif
+#if ( defined DA_OBS_SNODAS )
+   external read_SNODAS,  write_SNODAS
+#endif
+    
 
     LIS_DAobsFuncEntry%head_daobsfunc_list => null()
     
@@ -875,6 +884,18 @@ subroutine LIS_DAobs_plugin
    call registerwritedaobs(trim(LIS_THySMid)//char(0),&
         write_THySM)
 #endif
+
+#if ( defined DA_OBS_SNODAS )
+!GCOMW AMSR2 L3 snow depth
+   call registerdaobsclass(trim(LIS_SNODASobsId),"LSM")
+   call registerdaobssetup(trim(LIS_SNODASobsId)//char(0), &
+        SNODAS_setup)
+   call registerreaddaobs(trim(LIS_SNODASobsId)//char(0),  &
+        read_SNODAS)
+   call registerwritedaobs(trim(LIS_SNODASobsId)//char(0), &
+        write_SNODAS)
+#endif
+   
 #endif
  end subroutine LIS_DAobs_plugin
 
