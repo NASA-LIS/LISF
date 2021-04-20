@@ -265,11 +265,11 @@ subroutine create_SNODAS_filename(ndir, yr, mo,da, filename)
 ! 
 !  The arguments are: 
 !  \begin{description}
-!  \item[ndir] name of the AMSR2 soil moisture directory
+!  \item[ndir] name of the SNODAS directory
 !  \item[yr]  current year
 !  \item[mo]  current month
 !  \item[da]  current day
-!  \item[filename] Generated AMSR2 filename
+!  \item[filename] Generated SNODAS filename
 ! \end{description}
 !EOP
 

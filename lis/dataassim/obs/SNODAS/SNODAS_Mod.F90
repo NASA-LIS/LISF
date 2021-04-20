@@ -79,8 +79,8 @@ contains
 ! !DESCRIPTION: 
 !   
 !   This routine completes the runtime initializations and 
-!   creation of data strctures required for handling AMSR2 
-!   AMSR-E soil moisture data. 
+!   creation of data strctures required for handling  
+!   SNODAS data. 
 !  
 !   The arguments are: 
 !   \begin{description}
@@ -163,7 +163,7 @@ contains
 
 !----------------------------------------------------------------------------
 !   Create the array containers that will contain the observations and
-!   the perturbations. amsr-e 
+!   the perturbations. SNODAS 
 !   observations are in the grid space. Since there is only one layer
 !   being assimilated, the array size is LIS_rc%obs_ngrid(k). 
 !   
@@ -269,7 +269,7 @@ contains
 
     enddo
     write(LIS_logunit,*) &
-         '[INFO] Created the States to hold the AMSR2(GCOMW) observations data'
+         '[INFO] Created the States to hold the SNODAS observations data'
     
     do n=1,LIS_rc%nnest
        SNODAS_struc(n)%nc = 6935
