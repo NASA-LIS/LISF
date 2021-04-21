@@ -3354,6 +3354,7 @@ LIS output timestep:          1da
 |"`Simulated GRACE`" |Simulated water storage observations from GRACE
 |"`MCD15A2H LAI`" | MODIS MCD15A2H v006 LAI product
 |"`SMOS NRT NN soil moisture`" | SMOS Level 2 Soil Moisture Near Real Time Neural Network
+|"`THySM soil moisture`" | Thermal Hydraulic disaggregation of Soil Moisture
 |===
 
 .Example _ldt.config_ entry
@@ -3968,6 +3969,13 @@ MOS NRT NN soil moisture observation directory: ./SMOS_NRT_NN
 .Example _ldt.config_ entry
 ....
 SMOS NRT NN search radius for openwater proximity detection: 3
+....
+
+`THySM observation directory:` specifies the location of the data directory containing the THySM data.
+
+.Example _ldt.config_ entry
+....
+THySM observation directory: ../THySM
 ....
 
 [[ssec-hymapopts]]

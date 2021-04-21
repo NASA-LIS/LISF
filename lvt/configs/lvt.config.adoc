@@ -159,6 +159,7 @@ LVT output methodology:                 "2d gridspace"
 | "`OzFlux`"                        | OzFlux ground measurements
 | "`JASMIN soil moisture`"          | JASMIN soil moisture analysis
 | "`FluxSAT GPP`"                   | FluxSat GPP data
+| "`THySM`"                          | Thermal Hydraulic disaggregation of Soil Moisture
 |===
 
 .Example _lvt.config_ entry
@@ -2278,6 +2279,15 @@ JASMIN soil moisture data directory: ../JASMIN
 .Example _lvt.config_ entry
 ....
 FluxSat data directory: ./FluxSat
+....
+
+==== THySM soil moisture
+
+`THySM data directory:` specifies the location of the THySM data directory.
+
+.Example _lvt.config_ entry
+....
+THySM data directory: ../THySM
 ....
 
 [[ssec-optue]]
