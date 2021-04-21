@@ -1,9 +1,7 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center
-! Land Information System Framework (LISF)
-! Version 7.3
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2015 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -93,13 +91,13 @@ subroutine HYMAP2_getWL(n, Routing_State)
         t = (i-1)*LIS_rc%nensem(n)+m
         elevtn=dble(HYMAP2_routing_struc(n)%elevtn(i))
         fldhgt=dble(HYMAP2_routing_struc(n)%fldhgt(i,:))
-        fldstomax = dble(HYMAP2_routing_struc(n)%fldstomax(i,:))
+        fldstomax = dble(HYMAP2_routing_struc(n)%fldstomax(i,:,m))
         rivelv=dble(HYMAP2_routing_struc(n)%rivelv(i))
         grarea = dble(HYMAP2_routing_struc(n)%grarea(i))
-        rivstomax = dble(HYMAP2_routing_struc(n)%rivstomax(i))
+        rivstomax = dble(HYMAP2_routing_struc(n)%rivstomax(i,m))
         rivelv=dble(HYMAP2_routing_struc(n)%rivelv(i))
         rivlen = dble(HYMAP2_routing_struc(n)%rivlen(i))
-        rivwth = dble(HYMAP2_routing_struc(n)%rivwth(i))
+        rivwth = dble(HYMAP2_routing_struc(n)%rivwth(i,m))
         vol = dble(HYMAP2_routing_struc(n)%rivsto(i,m)+&
              HYMAP2_routing_struc(n)%fldsto(i,m))
 
