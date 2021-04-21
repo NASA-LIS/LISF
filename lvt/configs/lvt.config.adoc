@@ -1084,7 +1084,9 @@ AGRMET data area of data:             GLOBAL
 
 `ALEXI data directory:` specifies the location of the ALEXI ET data.
 
-`ALEXI data resolution (in km):` specifies the resolution of the ALEXI ET data in km. Acceptable values are 4 or 10.
+`ALEXI data domain extent:` specifies the domain extent of the ALEXI data. Acceptable values are `"CONUS"` and `"GLOBAL"`.
+
+`ALEXI data resolution (in km):` specifies the resolution of the ALEXI ET data in km. Acceptable values are 4 or 10 (for `"CONUS"`) or 5 (for `"GLOBAL"`).
 
 .Example _lvt.config_ entry
 ....
@@ -1094,7 +1096,7 @@ ALEXI data resolution (in km):  4
 
 ==== Ameriflux station observations
 
-`Ameriflux observation directory:` specifies the location of the Ameriflux datasets.Under this directory, the Ameriflux data is expected to be organized by the station names and then under each station name directory, the Level3 Ameriflux files are expected to be staged.
+`Ameriflux observation directory:` specifies the location of the Ameriflux datasets. Under this directory, the Ameriflux data is expected to be organized by the station names and then under each station name directory, the Level3 Ameriflux files are expected to be staged.
 
 `Ameriflux data level:` specifies the level of Ameriflux data (Note that only level 3 data is currently supported)
 
