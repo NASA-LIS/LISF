@@ -902,6 +902,7 @@ subroutine LIS_DAobs_plugin
         read_SNODAS)
    call registerwritedaobs(trim(LIS_SNODASobsId)//char(0), &
         write_SNODAS)
+#endif
 
 #if ( defined DA_OBS_HYDROWEBWL )
 !synthetic noah soil moisture    
