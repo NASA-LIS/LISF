@@ -1,9 +1,7 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center
-! Land Information System Framework (LISF)
-! Version 7.3
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2015 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -909,7 +907,11 @@ subroutine clsmf25_main(nid)
           clsmf25_struc(nid)%cat_diagn%wtot,  &
           wchange, echange, hsnacc, evacc, shacc, &
           SH_SNOW, AVET_SNOW, WAT_10CM, TOTWAT_SOIL, TOTICE_SOIL,         &
-          lhacc,TC1_0, TC2_0, TC4_0, QA1_0, QA2_0, QA4_0, fices)
+          lhacc,TC1_0, TC2_0, TC4_0, QA1_0, QA2_0, QA4_0, fices,&
+          !ag(02Jan2021)
+          clsmf25_struc(nid)%cat_route%rivsto,&
+          clsmf25_struc(nid)%cat_route%fldsto,&
+          clsmf25_struc(nid)%cat_route%fldfrc)
 
 !    if(LIS_localPet.eq.165) then 
 !       write(LIS_logunit,*) 'tp2 ',clsmf25_struc(nid)%cat_diagn(22527)%tpsn(1),&
