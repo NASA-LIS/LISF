@@ -287,17 +287,26 @@ subroutine LIS_DAobs_plugin
 #endif
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 7d0c6213cb992d1ac36a54d5a513d80c71590331
 #if ( defined DA_OBS_SNODAS )
    use SNODAS_Mod,    only : SNODAS_setup
 #endif
 
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 7d0c6213cb992d1ac36a54d5a513d80c71590331
 #if ( defined DA_OBS_HYDROWEBWL )
    use hydrowebWLobs_module,   only : hydrowebwlobs_setup
 #endif
     
+<<<<<<< HEAD
 >>>>>>> 17b668ae3a62e36040548c7e9b741cf074325094
 
+=======
+>>>>>>> 7d0c6213cb992d1ac36a54d5a513d80c71590331
 #if ( defined DA_OBS_SYNTHETICSM )
     external read_syntheticsmobs, write_syntheticsmobs
 #endif
@@ -906,6 +915,7 @@ subroutine LIS_DAobs_plugin
         read_SNODAS)
    call registerwritedaobs(trim(LIS_SNODASobsId)//char(0), &
         write_SNODAS)
+#endif
 
 #if ( defined DA_OBS_HYDROWEBWL )
 !synthetic noah soil moisture    
