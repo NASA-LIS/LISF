@@ -43,7 +43,6 @@ module RAPID_routingMod
   type, public :: RAPID_routing_dec
      
      real             :: dt
-     integer          :: useens
 ! === Undefined Values ==================================
      integer          :: imis           !! real undefined value
 ! === River sequence ====================================
@@ -52,6 +51,7 @@ module RAPID_routingMod
      real,    allocatable :: basflw0(:,:)     !! input baseflow [mm.dt-1]
  ! === Outputs ==========================================
      real,    allocatable :: rivout(:,:,:)      !! river outflow  [m3/s]
+     real,    allocatable :: streamflow(:,:)
 
      character*100    :: rstfile
      integer          :: numout
@@ -59,6 +59,21 @@ module RAPID_routingMod
      real             :: outInterval 
      real             :: rstInterval
      character*20     :: startMode
+
+
+     integer          :: run_opt      ! run option
+     integer          :: routing_opt  ! routing option        
+     integer          :: phi_opt      ! phi option
+     character*200    :: connectfile  ! river connectivity file
+     integer          :: max_reach    ! max number of upstream reaches
+     character*200    :: weightfile   ! river weight table
+     character*200    :: basinIDfile  ! river basin ID file
+     character*200    :: kfile        ! Muskingum parameter k file
+     character*200    :: xfile        ! Muskingum parameter x file
+
+
+
+     character*200    :: nmlfile     
   end type RAPID_routing_dec
 
   type(RAPID_routing_dec), allocatable :: RAPID_routing_struc(:)
@@ -92,11 +107,16 @@ contains
  
 !TODO: change setting   
     do n=1, LIS_rc%nnest
-!       RAPID_routing_struc(n)%rslpmin  = 1e-5  !! minimum slope
-!       RAPID_routing_struc(n)%inz      = 10    !! number of stages in the sub-grid discretization
+
+       !TODO: need to change; vector size different bewteen LSM and RAPID
+       if(LIS_masterproc) then
+          allocate(RAPID_routing_struc(n)%streamflow(&
+               LIS_rc%gnc(n),LIS_rc%gnr(n)))
+       else
+          allocate(RAPID_routing_struc(n)%streamflow(1,1))
+       endif
+
        RAPID_routing_struc(n)%imis     = -9999 !! undefined integer value
-!       RAPID_routing_struc(n)%numout   = 0 
-!       RAPID_routing_struc(n)%fileopen = 0 
     enddo
     
     call ESMF_ConfigFindLabel(LIS_config,&
@@ -120,7 +140,7 @@ contains
     enddo
      
     if(LIS_masterproc) then 
-       write(LIS_logunit,*) '[INFO] Initializing RAPID....'
+       write(LIS_logunit,*) '[INFO] Initializing the RAPID routing scheme....'
        !allocate matrixes
        !do n=1, LIS_rc%nnest
           !TODO: setting variables
@@ -153,10 +173,80 @@ contains
           call LIS_verify(status,&
                "RAPID routing model restart file: not defined")
        enddo
-       
-!       if(LIS_rc%lsm.eq."none") then 
-!          call initrunoffdata(trim(LIS_rc%runoffdatasource)//char(0))
-!       endif
+    
+       ! set high-level options that govern how the model is to run
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID run option:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%run_opt,rc=status)
+          call LIS_verify(status,"RAPID run option: not defined")
+       enddo
+
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID routing option:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%routing_opt,rc=status)
+          call LIS_verify(status,"RAPID routing option: not defined")
+       enddo
+
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID cost function phi option:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%phi_opt,rc=status)
+          call LIS_verify(status,"RAPID cost function phi option: not defined")
+       enddo
+
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID river connectivity file:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%connectfile,rc=status)
+          call LIS_verify(status,"RAPID river connectivity file: not defined")
+       enddo
+
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID max number of upstream reaches:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%max_reach,rc=status)
+          call LIS_verify(status,"RAPID max number of upstream reaches: not defined")
+       enddo
+
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID river weight table:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%weightfile,rc=status)
+          call LIS_verify(status,"RAPID river weight table: not defined")
+       enddo
+
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID river basin ID file:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%basinIDfile,rc=status)
+          call LIS_verify(status,"RAPID river basin ID file: not defined")
+       enddo
+
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID Muskingum parameter k file:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%kfile,rc=status)
+          call LIS_verify(status,"RAPID Muskingum parameter k file: not defined")
+       enddo
+
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID Muskingum parameter x file:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%xfile,rc=status)
+          call LIS_verify(status,"RAPID Muskingum parameter x file: not defined")
+       enddo
+
+       ! namelist
+       call ESMF_ConfigFindLabel(LIS_config,&
+            "RAPID namelist file:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%nmlfile,rc=status)
+          call LIS_verify(status,&
+               "RAPID namelist file: not defined")
+       enddo
 
        do n=1, LIS_rc%nnest
           call ESMF_ArraySpecSet(realarrspec,rank=1,typekind=ESMF_TYPEKIND_R4,&
