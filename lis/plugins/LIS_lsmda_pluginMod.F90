@@ -2643,7 +2643,6 @@ subroutine LIS_lsmda_plugin
    call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_usafsiobsId)//char(0),noahmp401_descale_usafsi)
 #endif
-#endif
 
 #if ( defined DA_OBS_ASO_SWE)
    call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
@@ -2693,6 +2692,8 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_SNODASobsId)//char(0),NoahMP401_qc_snowobs)
 #endif 
+! end NoahMP.4.0.1
+#endif
 
 
 #if ( defined SM_CLSM_F2_5 )
