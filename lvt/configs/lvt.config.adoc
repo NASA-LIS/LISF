@@ -160,6 +160,7 @@ LVT output methodology:                 "2d gridspace"
 | "`JASMIN soil moisture`"          | JASMIN soil moisture analysis
 | "`FluxSAT GPP`"                   | FluxSat GPP data
 | "`THySM`"                          | Thermal Hydraulic disaggregation of Soil Moisture
+| "`MCD15A2H LAI`"                  | MODIS MCD15A2H LAI data
 |===
 
 .Example _lvt.config_ entry
@@ -2288,6 +2289,15 @@ FluxSat data directory: ./FluxSat
 .Example _lvt.config_ entry
 ....
 THySM data directory: ../THySM
+....
+
+==== MCD15A2H LAI
+
+`MCD15A2H data directory:` specifies the location of the MCD15A2H data directory.
+
+.Example _lvt.config_ entry
+....
+MCD15A2H data directory: ./MCD15A2H.006/2019
 ....
 
 [[ssec-optue]]
