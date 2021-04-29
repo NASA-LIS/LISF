@@ -203,8 +203,8 @@ module LIS_NUOPC_Gluecode
   INTEGER, PARAMETER :: LIS_Hybrid  =  2
 
   type LIS_FieldHookup
-    real,pointer,dimension(:,:) :: exportArray   => null()
-    real,pointer,dimension(:)   :: exportArray_t => null()
+    real,pointer,dimension(:,:) :: exportArray
+    real,pointer,dimension(:)   :: exportArray_t
   end type
 
   type LIS_Field
@@ -1041,136 +1041,99 @@ contains
 
     do nIndex=1, LIS_rc%nnest
     do fIndex=1, size(LIS_FieldList)
+      LIS_FieldList(fIndex)%lisForcVarname="NOTAVAILABLE"
+      LIS_FieldList(fIndex)%adImport=.FALSE.
+      LIS_FieldList(fIndex)%reqImport=.FALSE.
+      LIS_FieldList(fIndex)%adExport=.FALSE.
+      nullify(LIS_FieldList(fIndex)%hookup(nIndex)%exportArray)
+      nullify(LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t)
       select case (trim(LIS_FieldList(fIndex)%stdName))
-        case ('2m_air_temperature')              ! (01)
+        case ('2m_air_temperature')                                       ! (01)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_T2%selectOpt == 1)
           if (allocated(LIS_FORC_T2%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_T2%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_T2%selectOpt == 1)
+        case ('2m_heat_exchange_coefficient')                             ! (02)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('2m_heat_exchange_coefficient')              ! (02)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_CHS2%selectOpt == 1)
           if (allocated(LIS_FORC_CHS2%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_CHS2%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_CHS2%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%chs2
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%chs2_t
-        case ('2m_moisture_exchange_coefficient')              ! (03)
+        case ('2m_moisture_exchange_coefficient')                         ! (03)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_CQS2%selectOpt == 1)
           if (allocated(LIS_FORC_CQS2%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_CQS2%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_CQS2%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%cqs2
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%cqs2_t
-        case ('2m_potential_temperature')              ! (04)
+        case ('2m_potential_temperature')                                 ! (04)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_TH2%selectOpt == 1)
           if (allocated(LIS_FORC_TH2%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_TH2%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_TH2%selectOpt == 1)
+        case ('2m_specific_humidity')                                     ! (05)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('2m_specific_humidity')              ! (05)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Q2%selectOpt == 1)
           if (allocated(LIS_FORC_Q2%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Q2%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Q2%selectOpt == 1)
+        case ('air_temperature')                                          ! (06)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('air_temperature')              ! (06)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Tair%selectOpt == 1)
           if (allocated(LIS_FORC_Tair%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Tair%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Tair%selectOpt == 1)
+        case ('albedo')                                                   ! (07)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('albedo')              ! (07)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Alb%selectOpt == 1)
           if (allocated(LIS_FORC_Alb%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Alb%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Alb%selectOpt == 1)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%albedo
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%albedo_t
+        case ('albedo_w_snow_effect')                                     ! (08)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%albedo
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%albedo_t
+        case ('atmospheric_density')                                      ! (09)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-          LIS_FieldList(fIndex)%adExport=.TRUE.
-          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%albedo
-          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%albedo_t
-        case ('albedo_w_snow_effect')              ! (08)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
-          LIS_FieldList(fIndex)%adExport=.TRUE.
-          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%albedo
-          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%albedo_t
-        case ('atmospheric_density')              ! (09)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_DENSITY%selectOpt == 1)
           if (allocated(LIS_FORC_DENSITY%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_DENSITY%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_DENSITY%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('canopy_moisture')              ! (10)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('canopy_moisture')                                          ! (10)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%cmc
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%cmc_t
-        case ('convective_available_potential_energy')              ! (11)
+        case ('convective_available_potential_energy')                    ! (11)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_CAPE%selectOpt == 1)
           if (allocated(LIS_FORC_CAPE%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_CAPE%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_CAPE%selectOpt == 1)
+        case ('convective_rainfall_flux')                                 ! (12)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('convective_rainfall_flux')              ! (12)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_CRainf%selectOpt == 1)
           if (allocated(LIS_FORC_CRainf%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_CRainf%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_CRainf%selectOpt == 1)
+        case ('cosine_solar_zenith_angle')                                ! (13)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('cosine_solar_zenith_angle')              ! (13)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Cosz%selectOpt == 1)
           if (allocated(LIS_FORC_Cosz%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Cosz%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Cosz%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('downward_heat_flux_in_soil')              ! (14)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('downward_heat_flux_in_soil')                               ! (14)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%qg
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%qg_t
-        case ('eastward_wind')              ! (15)
+        case ('eastward_wind')                                            ! (15)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Wind_E%selectOpt == 1)
           if (allocated(LIS_FORC_Wind_E%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Wind_E%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Wind_E%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('effective_mixing_ratio')              ! (16)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('effective_mixing_ratio')                                   ! (16)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%q1
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%q1_t
-        case ('emissivity')              ! (17)
+        case ('emissivity')                                               ! (17)
           if (allocated(LIS_FORC_Emiss%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Emiss%varname(1)
           LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Emiss%selectOpt == 1)
@@ -1178,516 +1141,328 @@ contains
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%emiss
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%emiss_t
-        case ('forcing_height')              ! (18)
+        case ('forcing_height')                                           ! (18)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Forc_Hgt%selectOpt == 1)
           if (allocated(LIS_FORC_Forc_Hgt%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Forc_Hgt%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Forc_Hgt%selectOpt == 1)
+        case ('green_vegetation_fraction')                                ! (19)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('green_vegetation_fraction')              ! (19)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_GVF%selectOpt == 1)
           if (allocated(LIS_FORC_GVF%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_GVF%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_GVF%selectOpt == 1)
+        case ('heat_exchange_coefficient_in_air')                         ! (20)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('heat_exchange_coefficient_in_air')              ! (20)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Ch%selectOpt == 1)
           if (allocated(LIS_FORC_Ch%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Ch%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Ch%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('latent_heat_flux_kinematic')              ! (21)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('latent_heat_flux_kinematic')                               ! (21)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%eta_kinematic
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%eta_kinematic_t
-        case ('level_pressure')              ! (22)
+        case ('level_pressure')                                           ! (22)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_lpressure%selectOpt == 1)
           if (allocated(LIS_FORC_lpressure%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_lpressure%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_lpressure%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('liquid_fraction_of_soil_moisture_layer_1')              ! (23)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+        case ('liquid_fraction_of_soil_moisture_layer_1')                 ! (23)
           LIS_FieldList(fIndex)%adImport = .TRUE.
           LIS_FieldList(fIndex)%directConn = .TRUE.
           LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%sh2o1
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%sh2o1_t
-        case ('liquid_fraction_of_soil_moisture_layer_2')              ! (24)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+        case ('liquid_fraction_of_soil_moisture_layer_2')                 ! (24)
           LIS_FieldList(fIndex)%adImport=.TRUE.
           LIS_FieldList(fIndex)%directConn = .TRUE.
           LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%sh2o2
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%sh2o2_t
-        case ('liquid_fraction_of_soil_moisture_layer_3')              ! (25)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+        case ('liquid_fraction_of_soil_moisture_layer_3')                 ! (25)
           LIS_FieldList(fIndex)%adImport = .TRUE.
           LIS_FieldList(fIndex)%directConn = .TRUE.
           LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%sh2o3
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%sh2o3_t
-        case ('liquid_fraction_of_soil_moisture_layer_4')              ! (26)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+        case ('liquid_fraction_of_soil_moisture_layer_4')                 ! (26)
           LIS_FieldList(fIndex)%adImport = .TRUE.
           LIS_FieldList(fIndex)%directConn = .TRUE.
           LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%sh2o4
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%sh2o4_t
-        case ('liquid_water_content_of_surface_snow')              ! (27)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('liquid_water_content_of_surface_snow')                     ! (27)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%snow
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%snow_t
-        case ('mixing_ratio')              ! (28)
+        case ('mixing_ratio')                                             ! (28)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Q2sat%selectOpt == 1)
           if (allocated(LIS_FORC_Q2sat%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Q2sat%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Q2sat%selectOpt == 1)
+        case ('momentum_exchange_coefficient_in_air')                     ! (29)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('momentum_exchange_coefficient_in_air')              ! (29)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Cm%selectOpt == 1)
           if (allocated(LIS_FORC_Cm%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Cm%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Cm%selectOpt == 1)
+        case ('northward_wind')                                           ! (30)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('northward_wind')              ! (30)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Wind_N%selectOpt == 1)
           if (allocated(LIS_FORC_Wind_N%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Wind_N%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Wind_N%selectOpt == 1)
+        case ('ozone_concentration')                                      ! (31)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('ozone_concentration')              ! (31)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_o3%selectOpt == 1)
           if (allocated(LIS_FORC_o3%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_o3%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_o3%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('porosity')              ! (32)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
-          LIS_FieldList(fIndex)%adExport=.FALSE.
+        case ('porosity')                                                 ! (32)
+          LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%lispor
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%lispor_t
-        case ('potential_evaporation')              ! (33)
+        case ('potential_evaporation')                                    ! (33)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_PET%selectOpt == 1)
           if (allocated(LIS_FORC_PET%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_PET%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_PET%selectOpt == 1)
+        case ('rainfall_flux')                                            ! (34)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('rainfall_flux')              ! (34)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Rainf%selectOpt == 1)
           if (allocated(LIS_FORC_Rainf%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Rainf%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Rainf%selectOpt == 1)
+        case ('reference_et')                                             ! (35)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('reference_et')              ! (35)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_RefET%selectOpt == 1)
           if (allocated(LIS_FORC_RefET%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_RefET%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_RefET%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('relative_soil_moisture')              ! (36)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('relative_soil_moisture')                                   ! (36)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%relsmc1
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%relsmc1_t
-        case ('root_zone_soil_moisture')              ! (37)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('root_zone_soil_moisture')                                  ! (37)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%rootmoist
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%rootmoist_t
-        case ('seaicemask')              ! (38)
+        case ('seaicemask')                                               ! (38)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_XICE%selectOpt == 1)
           if (allocated(LIS_FORC_XICE%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_XICE%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_XICE%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%xice
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%xice_t
-        case ('snow_depth')              ! (39)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('snow_depth')                                               ! (39)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%snowh
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%snowh_t
-        case ('snowfall_flux')              ! (40)
+        case ('snowfall_flux')                                            ! (40)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Snowf%selectOpt == 1)
           if (allocated(LIS_FORC_Snowf%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Snowf%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Snowf%selectOpt == 1)
+        case ('snowflag')                                                 ! (41)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('snowflag')              ! (41)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_SNOWFLAG%selectOpt == 1)
           if (allocated(LIS_FORC_SNOWFLAG%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_SNOWFLAG%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_SNOWFLAG%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('snowmelt')              ! (42)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('snowmelt')                                                 ! (42)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%qsm
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%qsm_t
-        case ('soil_moisture_content')              ! (43)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('soil_moisture_content')                                    ! (43)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%soilm
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%soilm_t
-        case ('soil_moisture_fraction_layer_1')              ! (44)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+        case ('soil_moisture_fraction_layer_1')                           ! (44)
           LIS_FieldList(fIndex)%adImport = .TRUE.
           LIS_FieldList(fIndex)%directConn = .TRUE.
           LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%smc1
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%smc1_t
-        case ('soil_moisture_fraction_layer_2')              ! (45)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+        case ('soil_moisture_fraction_layer_2')                           ! (45)
           LIS_FieldList(fIndex)%adImport = .TRUE.
           LIS_FieldList(fIndex)%directConn = .TRUE.
           LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%smc2
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%smc2_t
-        case ('soil_moisture_fraction_layer_3')              ! (46)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+        case ('soil_moisture_fraction_layer_3')                           ! (46)
           LIS_FieldList(fIndex)%adImport = .TRUE.
           LIS_FieldList(fIndex)%directConn = .TRUE.
           LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%smc3
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%smc3_t
-        case ('soil_moisture_fraction_layer_4')              ! (47)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+        case ('soil_moisture_fraction_layer_4')                           ! (47)
           LIS_FieldList(fIndex)%adImport = .TRUE.
           LIS_FieldList(fIndex)%directConn = .TRUE.
           LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%smc4
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%smc4_t
-        case ('soil_temperature_layer_1')              ! (48)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+        case ('soil_temperature_layer_1')                                 ! (48)
           LIS_FieldList(fIndex)%adImport = .TRUE.
           LIS_FieldList(fIndex)%directConn = .TRUE.
           LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%stc1
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%stc1_t
-        case ('soil_temperature_layer_2')              ! (49)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+        case ('soil_temperature_layer_2')                                 ! (49)
           LIS_FieldList(fIndex)%adImport = .TRUE.
           LIS_FieldList(fIndex)%directConn = .TRUE.
           LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%stc2
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%stc2_t
-        case ('soil_temperature_layer_3')              ! (50)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+        case ('soil_temperature_layer_3')                                 ! (50)
           LIS_FieldList(fIndex)%adImport = .TRUE.
           LIS_FieldList(fIndex)%directConn = .TRUE.
           LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%stc3
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%stc3_t
-        case ('soil_temperature_layer_4')              ! (51)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+        case ('soil_temperature_layer_4')                                 ! (51)
           LIS_FieldList(fIndex)%adImport=.TRUE.
           LIS_FieldList(fIndex)%directConn = .TRUE.
           LIS_FieldList(fIndex)%sharedMem = .TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%stc4
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%stc4_t
-        case ('soil_temperature_lower_boundary')              ! (52)
+        case ('soil_temperature_lower_boundary')                          ! (52)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_TMN%selectOpt == 1)
           if (allocated(LIS_FORC_TMN%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_TMN%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_TMN%selectOpt == 1)
+        case ('specific_humidity')                                        ! (53)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('specific_humidity')              ! (53)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Qair%selectOpt == 1)
           if (allocated(LIS_FORC_Qair%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Qair%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Qair%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('subsurface_runoff_amount')              ! (54)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('subsurface_runoff_amount')                                 ! (54)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%qsb
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%qsb_t
-        case ('surface_air_pressure')              ! (55)
+        case ('surface_air_pressure')                                     ! (55)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Psurf%selectOpt == 1)
           if (allocated(LIS_FORC_Psurf%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Psurf%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Psurf%selectOpt == 1)
+        case ('surface_diffuse_downwelling_shortwave_flux_in_air')        ! (56)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('surface_diffuse_downwelling_shortwave_flux_in_air')              ! (56)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_SWdiffuse%selectOpt == 1)
           if (allocated(LIS_FORC_SWdiffuse%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_SWdiffuse%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_SWdiffuse%selectOpt == 1)
+        case ('surface_direct_downwelling_shortwave_flux_in_air')         ! (57)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('surface_direct_downwelling_shortwave_flux_in_air')              ! (57)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_SWdirect%selectOpt == 1)
           if (allocated(LIS_FORC_SWdirect%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_SWdirect%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_SWdirect%selectOpt == 1)
+        case ('surface_downward_par_diffuse')                             ! (58)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('surface_downward_par_diffuse')              ! (58)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Pardf%selectOpt == 1)
           if (allocated(LIS_FORC_Pardf%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Pardf%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Pardf%selectOpt == 1)
+        case ('surface_downward_par_direct')                              ! (59)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('surface_downward_par_direct')              ! (59)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Pardr%selectOpt == 1)
           if (allocated(LIS_FORC_Pardr%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Pardr%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Pardr%selectOpt == 1)
+        case ('surface_downwelling_longwave_flux_in_air')                 ! (60)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('surface_downwelling_longwave_flux_in_air')              ! (60)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_LWdown%selectOpt == 1)
           if (allocated(LIS_FORC_LWdown%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_LWdown%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_LWdown%selectOpt == 1)
+        case ('surface_downwelling_shortwave_flux_in_air')                ! (61)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('surface_downwelling_shortwave_flux_in_air')              ! (61)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_SWdown%selectOpt == 1)
           if (allocated(LIS_FORC_SWdown%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_SWdown%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_SWdown%selectOpt == 1)
+        case ('surface_net_downward_shortwave_flux')                      ! (62)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('surface_net_downward_shortwave_flux')              ! (62)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_SWnet%selectOpt == 1)
           if (allocated(LIS_FORC_SWnet%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_SWnet%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_SWnet%selectOpt == 1)
+        case ('surface_roughness_length')                                 ! (63)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('surface_roughness_length')              ! (63)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Z0%selectOpt == 1)
           if (allocated(LIS_FORC_Z0%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_Z0%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_Z0%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%znt
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%znt_t
-        case ('surface_runoff_amount')              ! (64)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('surface_runoff_amount')                                    ! (64)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%qs
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%qs_t
-        case ('surface_snow_area_fraction')              ! (65)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('surface_snow_area_fraction')                               ! (65)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%snocvr
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%snocvr_t
-        case ('surface_specific_humidity')              ! (66)
+        case ('surface_specific_humidity')                                ! (66)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_QSFC%selectOpt == 1)
           if (allocated(LIS_FORC_QSFC%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_QSFC%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_QSFC%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
 #ifdef GSM_EXTLND
-        case ('surface_temperature_land')              ! (67)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('surface_temperature_land')                                 ! (67)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%avgsurft
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%avgsurft_t
 #else
-        case ('surface_temperature')              ! (67)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('surface_temperature')                                      ! (68)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%avgsurft
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%avgsurft_t
 #endif
-        case ('surface_upward_latent_heat_flux')              ! (68)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('surface_upward_latent_heat_flux')                          ! (69)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%qle
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%qle_t
-        case ('surface_upward_sensible_heat_flux')              ! (69)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('surface_upward_sensible_heat_flux')                        ! (70)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%qh
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%qh_t
-        case ('vapor_pressure')              ! (70)
+        case ('vapor_pressure')                                           ! (71)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_VAPORPRESS%selectOpt == 1)
           if (allocated(LIS_FORC_VAPORPRESS%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_VAPORPRESS%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_VAPORPRESS%selectOpt == 1)
+        case ('vapor_pressure_deficit')                                   ! (72)
           LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('vapor_pressure_deficit')              ! (71)
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_VAPORPRESSDEFICIT%selectOpt == 1)
           if (allocated(LIS_FORC_VAPORPRESSDEFICIT%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_VAPORPRESSDEFICIT%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_VAPORPRESSDEFICIT%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('vegetationtype')              ! (72)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('vegetationtype')                                           ! (73)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%xland
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%xland_t
-        case ('wind_speed')              ! (73)
+        case ('wind_speed')                                               ! (74)
+          LIS_FieldList(fIndex)%adImport=.TRUE.
+          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_WIND%selectOpt == 1)
           if (allocated(LIS_FORC_WIND%varname)) &
             LIS_FieldList(fIndex)%lisForcVarname=LIS_FORC_WIND%varname(1)
-          LIS_FieldList(fIndex)%reqImport=(LIS_FORC_WIND%selectOpt == 1)
-          LIS_FieldList(fIndex)%adImport=.TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
 #ifdef WRF_HYDRO
-        case ('surface_water_depth')              ! (74)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+        case ('surface_water_depth')                                      ! (75)
           LIS_FieldList(fIndex)%adImport = .TRUE.
           LIS_FieldList(fIndex)%directConn = .TRUE.
           LIS_FieldList(fIndex)%sharedMem = .TRUE.
-!          LIS_FieldList(fIndex)%adExport=.FALSE.
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%#NOTAVAILABLE#
-!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%#NOTAVAILABLE#_t
-        case ('time_step_infiltration_excess')              ! (75)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('time_step_infiltration_excess')                            ! (76)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%infxsrt
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%infxsrt_t
-        case ('soil_column_drainage')              ! (76)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
-!          LIS_FieldList(fIndex)%adImport=.FALSE.
+        case ('soil_column_drainage')                                     ! (77)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%soldrain
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%soldrain_t
 #endif
 #ifdef GSM_EXTLND
-        case ('accum_plant_transpiration')              ! (77)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+        case ('accum_plant_transpiration')                                ! (78)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%ett
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%ett_t
-        case ('final_potential_evaporation')              ! (78)
-!          if (allocated(#NOTAVAILABLE#%varname)) &
-!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
-!          LIS_FieldList(fIndex)%adImport=(#NOTAVAILABLE#%selectOpt == 1)
+        case ('final_potential_evaporation')                              ! (79)
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%etp
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%etp_t

@@ -834,9 +834,13 @@ if($use_mkllapack == 1) {
 
 if(defined($ENV{LIS_JPEG})){
    $libjpeg = "-L".$ENV{LIS_JPEG}."/lib"." -ljpeg";
+   $libpath_jpeg = "-L".$ENV{LIS_JPEG}."/lib";
+   $libflag_jpeg = "-ljpeg";
 }
 else{
    $libjpeg = "-ljpeg";
+   $libpath_jpeg = "";
+   $libflag_jpeg = "-ljpeg";
 }
 
 # ESMF_TRACE does not prompt user
@@ -969,8 +973,8 @@ if($use_hdf4 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF4)";
    $fflags = $fflags." -I\$(INC_HDF4)";
    $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz";
-   $lib_flags= $lib_flags." -lmfhdf -ldf ".$libjpeg." -lz";
-   $lib_paths= $lib_paths." -L\$(LIB_HDF4)"
+   $lib_flags= $lib_flags." -lmfhdf -ldf ".$libflag_jpeg." -lz";
+   $lib_paths= $lib_paths." -L\$(LIB_HDF4) ".$libpath_jpeg
 }
 if($use_hdf5 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF5)";
