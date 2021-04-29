@@ -297,7 +297,15 @@ subroutine NoahMP401_main(n)
             ! Both NoahMP-3.6.1 and NoahMP-4.0.1 requires total precipitation as forcing input.
             ! In LIS/NoahMP-3.6.1, the input forcing is total precipitation [mm], but in
             ! LIS/NoahMP-4.0.1, the forcing data provides precipitation rate [mm/s] !!!
-            tmp_prcp       = dt * (NOAHMP401_struc(n)%noahmp401(t)%prcp   / NOAHMP401_struc(n)%forc_count)
+
+            ! T. Lahmers: Correct total precip for cases when model time step > forcing timestep. 
+            ! Edit suggested by D. Mocko and K. Arsenault
+            if (NOAHMP401_struc(n)%ts > LIS_rc%ts) then
+                tmp_dt         = NOAHMP401_struc(n)%ts
+                tmp_prcp       = tmp_dt * (NOAHMP401_struc(n)%noahmp401(t)%prcp   / NOAHMP401_struc(n)%forc_count)
+            else
+                tmp_prcp       = dt * (NOAHMP401_struc(n)%noahmp401(t)%prcp   / NOAHMP401_struc(n)%forc_count)
+            endif
 
             ! check validity of tair
             if(tmp_tair .eq. LIS_rc%udef) then
