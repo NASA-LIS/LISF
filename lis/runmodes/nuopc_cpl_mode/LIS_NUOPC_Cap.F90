@@ -365,15 +365,15 @@ module LIS_NUOPC
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     diagnostic = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65535, 65535,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     verbosity = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65281,  8193,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! query Component for its internal State
@@ -524,15 +524,15 @@ module LIS_NUOPC
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     diagnostic = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65535, 65535,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     verbosity = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65281,  8193,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! query Component for its internal State
@@ -734,15 +734,15 @@ module LIS_NUOPC
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     diagnostic = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65535, 65535,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     verbosity = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65281,  8193,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! query Component for its internal State
@@ -1015,15 +1015,15 @@ module LIS_NUOPC
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     diagnostic = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65535, 65535,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     verbosity = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65281,  8193,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! query Component for its internal State
@@ -1195,15 +1195,15 @@ module LIS_NUOPC
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     diagnostic = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65535, 65535,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     verbosity = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65281,  8193,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! query Component for its internal State
@@ -1278,15 +1278,15 @@ subroutine CheckImport(gcomp, rc)
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     diagnostic = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65535, 65535,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     verbosity = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65281,  8193,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! query component for its internal State
@@ -1346,15 +1346,15 @@ subroutine CheckImport(gcomp, rc)
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     diagnostic = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65535, 65535,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     verbosity = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65281,  8193,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! query component for its internal State
@@ -1525,15 +1525,15 @@ subroutine CheckImport(gcomp, rc)
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     diagnostic = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65535, 65535,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     verbosity = ESMF_UtilString2Int(value, &
-      specialStringList=(/"min","max","bit16","maxplus"/), &
-      specialValueList=(/0,65535,65536,131071/), rc=rc)
+      specialStringList=(/"max ","high","low ","off "/), &
+      specialValueList= (/ 65535, 65281,  8193,     0/), rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! query Component for its internal State
