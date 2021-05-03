@@ -47,11 +47,11 @@ subroutine set_irriggwratio_attribs( n, source )
       LDT_irrig_struc(n)%irriggwratio%num_times = 1
 
     case default
-      print *, "[ERR] Groundwater irrigation ratio source not recognized: ",trim(source)
-      print *, " Please select:   USGS_Native"
-      print *, " Program stopping ..."
-      stop
-!      call LDT_endrun
+      write(LDT_logunit,*) '[ERR] Groundwater irrigation ratio source not recognized: ',trim(source)
+      write(LDT_logunit,*) 'Please select:   USGS_Native'
+      write(LDT_logunit,*) 'Program stopping ...'
+      
+      call LDT_endrun
 
    end select
 
