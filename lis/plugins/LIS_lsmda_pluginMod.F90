@@ -479,7 +479,6 @@ subroutine LIS_lsmda_plugin
    external NoahMP401_getsnowvars         
    external NoahMP401_setsnowvars              
    external NoahMP401_getsnowpred
-   external noahmp401_getsnwdpred !MLW add for ANSA snow depth
    external NoahMP401_getswepred
    external NoahMP401_qcsnow
    external NoahMP401_qc_snowobs
