@@ -20,6 +20,7 @@
 subroutine set_irriggwratio_attribs( n, source )
 
 ! !USES:
+  use LDT_logMod, only : LDT_logunit, LDT_endrun
   use LDT_irrigationMod
 
   implicit none
