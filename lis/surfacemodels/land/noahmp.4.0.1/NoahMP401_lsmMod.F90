@@ -326,8 +326,10 @@ contains
             end if
 
             ! Initialize min/max values to implausible values.
-            NOAHMP401_struc(n)%noahmp401(:)%tair_agl_min = 999.0
-            NOAHMP401_struc(n)%noahmp401(:)%rhmin = 999.0
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                NOAHMP401_struc(n)%noahmp401(t)%tair_agl_min = 999.0
+                NOAHMP401_struc(n)%noahmp401(t)%rhmin = 999.0
+            enddo ! end of tile (t) loop
 
             !------------------------------------------------------------------------
             ! TODO: setup number of soil moisture/temperature layers and depth here  
