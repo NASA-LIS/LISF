@@ -19,6 +19,7 @@ module sprinkler_irrigationMod
 !
 !  11 Nov 2012: Sujay Kumar; Initial implementation
 !  25 Feb 2020: Jessica Erlingis; Update irrigation window
+!  14 Apr 2021: Wanshu Nie; Add support for GW/SW irrigation partitioning
 ! !USES: 
   use ESMF
   use LIS_coreMod
@@ -47,6 +48,10 @@ contains
     real,  allocatable   :: irrigScale(:)
     real, pointer        :: frac(:),scale(:),rootdepth(:),irrigrate(:)
     character*100        :: maxrootdepthfile
+
+    type(ESMF_Field)    :: irriggwratioField
+    real,  allocatable  :: irriggwratio(:)
+    real,  pointer      :: gwratio(:)
 ! __________________________________________________________
 
 
@@ -54,11 +59,13 @@ contains
        allocate(irrigFrac(LIS_rc%npatch(n,LIS_rc%lsm_index)))
        allocate(irrigRootDepth(LIS_rc%npatch(n,LIS_rc%lsm_index)))
        allocate(irrigScale(LIS_rc%npatch(n,LIS_rc%lsm_index)))
- 
+       allocate(irriggwratio(LIS_rc%npatch(n,LIS_rc%lsm_index))) 
+
        write(LIS_logunit,*) "[INFO] Running the 'Sprinkler' irrigation method ... "
 
      ! Read irrigation fraction (or "intensity") input:
        call read_irrigFrac(n, irrigFrac)
+       call read_irriggwratio(n,irriggwratio)
 
      ! Read crop type maximum root depth file (combined landcover/crop classifications):
        call ESMF_ConfigGetAttribute(LIS_config,maxrootdepthfile,&
@@ -110,6 +117,24 @@ contains
        call LIS_verify(status,&
             "ESMF_StateAdd for irrigFrac failed in sprinkler_irrigation_init")
        deallocate(irrigFrac)
+
+       irriggwratioField = ESMF_FieldCreate(&
+            grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
+            arrayspec=arrspec1,&
+            name="Groundwater irrigation ratio", rc=status)
+       call LIS_verify(status, &
+            "ESMF_FieldCreate failed in sprinkler_irrigation_init")
+
+       call ESMF_FieldGet(irriggwratioField,localDE=0,&
+            farrayPtr=gwratio,rc=status)
+       call LIS_verify(status,'ESMF_FieldGet failed for irriggwratio')
+
+       gwratio = irriggwratio
+
+       call ESMF_StateAdd(irrigState(n),(/irriggwratioField/),rc=status)
+       call LIS_verify(status,&
+            "ESMF_StateAdd for irriggwratio failed in sprinkler_irrigation_init")
+       deallocate(irriggwratio)
 
        irrigRootdepthField = ESMF_FieldCreate(&
             grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
@@ -304,6 +329,66 @@ contains
 #endif
   end subroutine read_irrigFrac
 
+  subroutine read_irriggwratio(n,gwratio)
+
+    use LIS_fileIOMod
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+    use netcdf
+#endif
+    integer,  intent(in) :: n
+    real                 :: gwratio(LIS_rc%npatch(n,LIS_rc%lsm_index))
+
+    integer              :: t,col,row
+    integer              :: nid,ios,status,gwratioId
+    logical              :: file_exists
+    real,  allocatable   :: l_gwratio(:,:)
+    real,  allocatable   :: glb_gwratio(:,:)
+
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+
+    inquire(file=LIS_rc%paramfile(n), exist=file_exists)
+    if(file_exists) then
+
+       allocate(l_gwratio(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+
+       ios = nf90_open(path=LIS_rc%paramfile(n),&
+            mode=NF90_NOWRITE,ncid=nid)
+       call LIS_verify(ios,'Error in nf90_open in the lis input netcdf file')
+
+       write(LIS_logunit,*) "[INFO] Reading in the groundwater irrigation ratio field ... "
+
+       allocate(glb_gwratio(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+
+       ios = nf90_inq_varid(nid,'irriggwratio',gwratioId)
+       call LIS_verify(ios,'nf90_inq_varid failed for irriggwratio')
+
+       ios = nf90_get_var(nid,gwratioId, glb_gwratio)
+       call LIS_verify(ios,'nf90_get_var failed for in sprinkler_irrigationMod')
+
+       ios = nf90_close(nid)
+       call LIS_verify(ios,'nf90_close failed in sprinkler_irrigationMod')
+       l_gwratio(:,:) = glb_gwratio(&
+            LIS_ews_halo_ind(n,LIS_localPet+1):&
+            LIS_ewe_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1):&
+            LIS_nse_halo_ind(n,LIS_localPet+1))
+       deallocate(glb_gwratio)
+
+       do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+          col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
+          row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+          gwratio(t) = l_gwratio(col,row)
+       enddo
+
+       deallocate(l_gwratio)
+    else
+       write(LIS_logunit,*) "[ERR] Groundwater irrigation ratio map: ",&
+             LIS_rc%paramfile(n),"[ERR] does not exist."
+       write(LIS_logunit,*) "[ERR] Program stopping ..."
+       call LIS_endrun
+    endif
+#endif
+  end subroutine read_irriggwratio
 
   subroutine read_irrigRootdepth(n, rdfile, rootdepth)
 

@@ -953,6 +953,8 @@ module LIS_PRIV_rcMod
 
      real                   :: irrigation_GVFparam1   !WN
      real                   :: irrigation_GVFparam2   !WN
+     integer                :: irrigation_dveg        !WN
+     integer                :: irrigation_SourcePartition  !WN
      integer                :: irrigation_GWabstraction !JE 
 
      logical, allocatable       :: LSM_DAinst_valid(:)
