@@ -322,7 +322,7 @@ subroutine jules50_setsoilm(n, LSM_State)
               jules50_struc(n)%jules50(t)%smcl_soilt(1) = soilm1(t) ![kg/m2]
 
               if(soilm1(t).lt.0) then 
-                 print*, 'setsoilm1 ',t,soilm1(t)
+                 write(LIS_logunit, *) 'setsoilm1 ',t,soilm1(t)
                  call LIS_endrun
               endif
 	      ! I think the following sentence is redundant. 
@@ -339,7 +339,7 @@ subroutine jules50_setsoilm(n, LSM_State)
               jules50_struc(n)%jules50(t)%smcl_soilt(2) = soilm2(t)
 
               if(soilm2(t).lt.0) then 
-                 print*, 'setsoilm2 ',t,soilm2(t)
+                 write(LIS_logunit, *) 'setsoilm2 ',t,soilm2(t)
                    call LIS_endrun
               endif
 
@@ -355,7 +355,7 @@ subroutine jules50_setsoilm(n, LSM_State)
               jules50_struc(n)%jules50(t)%smcl_soilt(3) = soilm3(t)
 
               if(soilm3(t).lt.0) then 
-                 print*, 'setsoilm3 ',t,soilm3(t)
+                 write(LIS_logunit, *) 'setsoilm3 ',t,soilm3(t)
                    call LIS_endrun
               endif
 
@@ -372,7 +372,7 @@ subroutine jules50_setsoilm(n, LSM_State)
               jules50_struc(n)%jules50(t)%smcl_soilt(4) = soilm4(t)
 
               if(soilm4(t).lt.0) then 
-                 print*, 'setsoilm4 ',t,soilm4(t)
+                 write(LIS_logunit, *) 'setsoilm4 ',t,soilm4(t)
                   call LIS_endrun
               endif
               !endif
