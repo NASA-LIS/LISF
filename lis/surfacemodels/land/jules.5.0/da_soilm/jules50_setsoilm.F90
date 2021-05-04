@@ -323,7 +323,7 @@ subroutine jules50_setsoilm(n, LSM_State)
 
               if(soilm1(t).lt.0) then 
                  print*, 'setsoilm1 ',t,soilm1(t)
-                 stop
+                 call LIS_endrun
               endif
 	      ! I think the following sentence is redundant. 
 	      !Because both “update_flag_new” and “update_flag_tile” are TRUE 
@@ -340,7 +340,7 @@ subroutine jules50_setsoilm(n, LSM_State)
 
               if(soilm2(t).lt.0) then 
                  print*, 'setsoilm2 ',t,soilm2(t)
-                   stop
+                   call LIS_endrun
               endif
 
               !endif
@@ -356,7 +356,7 @@ subroutine jules50_setsoilm(n, LSM_State)
 
               if(soilm3(t).lt.0) then 
                  print*, 'setsoilm3 ',t,soilm3(t)
-                   stop
+                   call LIS_endrun
               endif
 
               !endif
@@ -373,7 +373,7 @@ subroutine jules50_setsoilm(n, LSM_State)
 
               if(soilm4(t).lt.0) then 
                  print*, 'setsoilm4 ',t,soilm4(t)
-                  stop
+                  call LIS_endrun
               endif
               !endif
            else 

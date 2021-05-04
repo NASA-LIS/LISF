@@ -23,7 +23,7 @@ subroutine jules50_qc_soilmobs(n,k,OBS_State)
 ! !USES:
   use ESMF
   use LIS_coreMod
-  use LIS_logMod,  only : LIS_verify
+  use LIS_logMod,  only : LIS_verify, LIS_endrun
   use LIS_constantsMod, only : LIS_CONST_TKFRZ
   use LIS_DAobservationsMod
   use jules50_lsmMod
@@ -201,7 +201,7 @@ sneqv = 0
       !print*,'l_aggregate', l_aggregate
       if(.NOT. l_aggregate) then   
          print*,'Please set the l_aggregate to .true. in the jules_surface.nml ' 
-         stop         
+         call LIS_endrun
       else
        do l=1,2 !Broadleaf trees, Needleleaf trees, C3 (temperate) grass, C4 (tropical) grass, Shrubs  !Yonghwan Kwon
          fveg(t) = fveg(t) + jules50_struc(n)%jules50(t)%surft_frac(l)   
