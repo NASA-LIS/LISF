@@ -9908,9 +9908,17 @@ code, the irrigation threhold contains the term
 instead of a static value of 0.4. By using this equation, the user may adjust the cut-off 
 percentage as a function of GVF range (shdmax-shdmin).
 
+`Irrigation scheduling based on dynamic vegetation:` specifies whether to schedu
+le irrigation based on GVF simulated by the DVEG module in Noah-MP. This option
+work together with dynamic vegetation option = 2.
+1=Yes 0=No (default=0)
+
 `Groundwater abstraction for irrigation:` specifies whether
 to withdraw water used for irrigation from the groundwater
 in Noah-MP
+1=Yes 0=No (default=0)
+
+`Irrigation source water partition:` specifies whether to withdraw waater ised from irriagtion from groundwater based on the groundwater irriagtion ratio dataset. This option works only when the irrigation groundwater ratio is set up in lisinput file. Now only support CONUS domain.
 1=Yes 0=No (default=0)
 
 .Example _lis.config_ entry

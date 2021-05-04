@@ -23,7 +23,8 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
   use NoahMP401_lsmMod
   use NOAHMP_TABLES_401, ONLY : SMCMAX_TABLE, SMCWLT_TABLE, SMCREF_TABLE
   use LIS_vegDataMod, only: LIS_read_shdmin, LIS_read_shdmax
- 
+  use MODULE_SF_NOAHMPLSM_401, only: DVEG
+
 ! !DESCRIPTION:        
 !
 ! Calculate water requirement and apply the amount to precipitation.
@@ -61,6 +62,7 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
 ! Feb 2020: Jessica Erlingis; Correct sprinkler scheme so that it checks moisture
 !                             at otimess and applies constant rate for irrhrs
 ! March 2020: Jessica Erlingis; Add to Noah-MP 4.0.1
+! Apr 2021: Wanshu Nie; Add option to interact with DVEG
 !
 !EOP
   implicit none
@@ -103,15 +105,13 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
   real                 :: gsthresh, ltime
   real                 :: shdfac, shdmin, shdmax
   real                 :: timestep, shift_otimes, shift_otimee
-! _______________wanshu  add GW extraction_______________________________
   real                 :: AWS
   real                 :: Dtime
- 
-!---------------wanshu readin shdmax and shdmin from map----------------
-
   real, allocatable    :: placeshdmax(:,:), placeshdmin(:,:)
-!--------------wanshu-----add temp check-------
   real                 :: sfctemp, tempcheck
+
+  type(ESMF_Field)     :: irriggwratioField
+  real,  pointer       :: irriggwratio(:)
 
   call ESMF_StateGet(irrigState, "Irrigation rate",irrigRateField,rc=rc)
   call LIS_verify(rc,'ESMF_StateGet failed for Irrigation rate')    
@@ -139,7 +139,13 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
        farrayPtr=irrigScale,rc=rc)
   call LIS_verify(rc,'ESMF_FieldGet failed for Irrigation scale')  
 
- !-------------wanshu-----call LIS_read_shdmax and min------------
+  call ESMF_StateGet(irrigState, "Groundwater irrigation ratio",&
+       irriggwratioField,rc=rc)
+  call LIS_verify(rc,'ESMF_StateGet failed for Groundwater irrigation ratio')
+  call ESMF_FieldGet(irriggwratioField, localDE=0,&
+       farrayPtr=irriggwratio,rc=rc)
+  call LIS_verify(rc,'ESMF_FieldGet failed for Groundwater irrigation ratio')
+
   allocate(placeshdmax(LIS_rc%lnc(n),LIS_rc%lnr(n)))
   allocate(placeshdmin(LIS_rc%lnc(n),LIS_rc%lnr(n)))
 
@@ -216,7 +222,13 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
                 
      ltime = real(lhr)+real(LIS_rc%mn)/60.0+real(LIS_rc%ss)/3600.0
     
-     shdfac =  NOAHMP401_struc(n)%noahmp401(t)%shdfac_monthly(LIS_rc%mo)
+     if(DVEG == 2 .OR. DVEG == 5 .OR. DVEG == 6 .AND. LIS_rc%irrigation_dveg == 1) then
+        shdfac = NOAHMP401_struc(n)%noahmp401(t)%fveg
+
+     else
+        shdfac =  NOAHMP401_struc(n)%noahmp401(t)%shdfac_monthly(LIS_rc%mo)
+     end if
+
 
    ! If we are outside of the irrigation window, set rate to 0
      if ((ltime.gt.shift_otimee).or.(ltime.lt.shift_otimes)) then
@@ -448,8 +460,15 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
            !JE Add in flag to turn groundwater abstraction on/off
            if (LIS_rc%irrigation_GWabstraction.eq.1) then
               AWS = NOAHMP401_struc(n)%noahmp401(t)%wa
-              Dtime = NOAHMP401_struc(n)%dt
-              NOAHMP401_struc(n)%noahmp401(t)%wa = AWS - irrigRate(t)*Dtime
+              Dtime = NOAHMP401_struc(n)%ts
+              if (LIS_rc%irrigation_SourcePartition.eq.1) then
+                  if(irriggwratio(t).gt.0) then
+                  NOAHMP401_struc(n)%noahmp401(t)%wa = AWS - irrigRate(t)*Dtime*irriggwratio(t)/100
+
+                  end if
+              else
+                 NOAHMP401_struc(n)%noahmp401(t)%wa = AWS - irrigRate(t)*Dtime
+              end if
            end if
        end if
 
