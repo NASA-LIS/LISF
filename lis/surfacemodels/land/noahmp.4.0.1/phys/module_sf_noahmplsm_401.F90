@@ -1432,47 +1432,47 @@ ENDIF   ! CROPTYPE == 0
         ERRWAT = END_WB-BEG_WB-(PRCP-ECAN-ETRAN-EDIR-RUNSRF-RUNSUB)*DT
 
 #ifndef WRF_HYDRO
-        IF(ABS(ERRWAT) > 0.1) THEN
-           if (ERRWAT > 0) then
+!        IF(ABS(ERRWAT) > 0.1) THEN
+!           if (ERRWAT > 0) then
 !              call wrf_message ('The model is gaining water (ERRWAT is positive)')
-              print *,&
-                     'The model is gaining water (ERRWAT is positive)'
-           else
+!              print *,&
+!                     'The model is gaining water (ERRWAT is positive)'
+!           else
 !              call wrf_message('The model is losing water (ERRWAT is negative)')
-              print *,&
-                     'The model is losing water (ERRWAT is negative)'
-           endif
+!              print *,&
+!                     'The model is losing water (ERRWAT is negative)'
+!           endif
 !           write(message, *) 'ERRWAT =',ERRWAT, "kg m{-2} timestep{-1}"
 !           call wrf_message(trim(message))
-           print *,'ERRWAT =',ERRWAT, "kg m{-2} timestep{-1}"
+!           print *,'ERRWAT =',ERRWAT, "kg m{-2} timestep{-1}"
 !           WRITE(message, &
 !           '("    I      J     END_WB     BEG_WB       PRCP       ECAN       EDIR      ETRAN      RUNSRF     RUNSUB")')
 !           call wrf_message(trim(message))
 !           WRITE(message,'(i6,1x,i6,1x,2f15.3,9f11.5)')ILOC,JLOC,END_WB,BEG_WB,PRCP*DT,ECAN*DT,&
 !                EDIR*DT,ETRAN*DT,RUNSRF*DT,RUNSUB*DT,ZWT
 !           call wrf_message(trim(message))
-           print *,'BEG_WB = ',BEG_WB
-           print *,'END_WB = ',END_WB
-           print *,'CANLIQ = ',CANLIQ
-           print *,'CANICE = ',CANICE
-           print *,'SNEQV = ',SNEQV
-           print *,'WA = ',WA
-           print *,'SMC(1) = ',SMC(1) * DZSNSO(1) * -1000.
-           print *,'SMC(2) = ',SMC(2) * DZSNSO(2) * -1000.
-           print *,'SMC(3) = ',SMC(3) * DZSNSO(3) * -1000.
-           print *,'SMC(4) = ',SMC(4) * DZSNSO(4) * -1000.
+!           print *,'BEG_WB = ',BEG_WB
+!           print *,'END_WB = ',END_WB
+!           print *,'CANLIQ = ',CANLIQ
+!           print *,'CANICE = ',CANICE
+!           print *,'SNEQV = ',SNEQV
+!           print *,'WA = ',WA
+!           print *,'SMC(1) = ',SMC(1) * DZSNSO(1) * -1000.
+!           print *,'SMC(2) = ',SMC(2) * DZSNSO(2) * -1000.
+!           print *,'SMC(3) = ',SMC(3) * DZSNSO(3) * -1000.
+!           print *,'SMC(4) = ',SMC(4) * DZSNSO(4) * -1000.
 !           print *,'DZSNSO(1) = ',DZSNSO(1)
 !           print *,'DZSNSO(2) = ',DZSNSO(2)
 !           print *,'DZSNSO(3) = ',DZSNSO(3)
 !           print *,'DZSNSO(4) = ',DZSNSO(4)
-           print *,'PRCP = ',PRCP*DT
-           print *,'ECAN = ',ECAN*DT
-           print *,'ETRAN = ',ETRAN*DT
-           print *,'EDIR = ',EDIR*DT
-           print *,'RUNSRF = ',RUNSRF*DT
-           print *,'RUNSUB = ',RUNSUB*DT
-           call wrf_error_fatal("Water budget problem in NOAHMP LSM")
-        END IF
+!           print *,'PRCP = ',PRCP*DT
+!           print *,'ECAN = ',ECAN*DT
+!           print *,'ETRAN = ',ETRAN*DT
+!           print *,'EDIR = ',EDIR*DT
+!           print *,'RUNSRF = ',RUNSRF*DT
+!           print *,'RUNSUB = ',RUNSUB*DT
+!           call wrf_error_fatal("Water budget problem in NOAHMP LSM")
+!        END IF
 #endif
    ELSE                 !KWM
       ERRWAT = 0.0      !KWM
