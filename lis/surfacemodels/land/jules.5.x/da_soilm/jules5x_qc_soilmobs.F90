@@ -21,7 +21,7 @@ subroutine jules5x_qc_soilmobs(n,k,OBS_State)
 ! !USES:
   use ESMF
   use LIS_coreMod
-  use LIS_logMod,  only : LIS_verify
+  use LIS_logMod,  only : LIS_verify, LIS_logunit, LIS_endrun
   use LIS_constantsMod, only : LIS_CONST_TKFRZ
   use LIS_DAobservationsMod
   use jules5x_lsmMod
@@ -200,8 +200,8 @@ sneqv = 0
       !MN:fveg is used for 12-month green vegetation fraction (i.e., noah33_struc(n)%noah(:)%shdfac)  
       !print*,'l_aggregate', l_aggregate
       if(.NOT. l_aggregate) then   
-         print*,'Please set the l_aggregate to .true. in the jules_surface.nml ' 
-         stop         
+         write(LIS_logunit,*)'Please set the l_aggregate to .true. in the jules_surface.nml ' 
+         call LIS_endrun()
       else
        do l=1,5 !Broadleaf trees, Needleleaf trees, C3 (temperate) grass, C4 (tropical) grass, Shrubs
          fveg(t) = fveg(t) + jules5x_struc(n)%jules5x(t)%surft_frac(l)   
