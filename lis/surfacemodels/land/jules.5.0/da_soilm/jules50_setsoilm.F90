@@ -340,7 +340,7 @@ subroutine jules50_setsoilm(n, LSM_State)
 
               if(soilm2(t).lt.0) then 
                  write(LIS_logunit, *) 'setsoilm2 ',t,soilm2(t)
-                   call LIS_endrun
+                 call LIS_endrun
               endif
 
               !endif
@@ -356,7 +356,7 @@ subroutine jules50_setsoilm(n, LSM_State)
 
               if(soilm3(t).lt.0) then 
                  write(LIS_logunit, *) 'setsoilm3 ',t,soilm3(t)
-                   call LIS_endrun
+                 call LIS_endrun
               endif
 
               !endif
@@ -373,7 +373,7 @@ subroutine jules50_setsoilm(n, LSM_State)
 
               if(soilm4(t).lt.0) then 
                  write(LIS_logunit, *) 'setsoilm4 ',t,soilm4(t)
-                  call LIS_endrun
+                 call LIS_endrun
               endif
               !endif
            else 
