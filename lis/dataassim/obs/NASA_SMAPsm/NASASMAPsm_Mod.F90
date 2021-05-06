@@ -1,9 +1,7 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center
-! Land Information System Framework (LISF)
-! Version 7.3
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2015 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -22,6 +20,7 @@
 !           to enter the part of Composite Release ID a three-character string like R16).
 !  8 July 2020: David Mocko: Removed config entry to toggle the QC check.
 !                            The QC is now always ON for NASA SMAP SM DA.
+!  11 Aug 2020: Yonghwan Kwon: Incorporated Sujay's modifications to support SMAP L2 assimilation
 !
 module NASASMAPsm_Mod
 ! !USES: 
@@ -48,7 +47,7 @@ module NASASMAPsm_Mod
      integer                :: nc
      integer                :: nr
      real,     allocatable      :: smobs(:,:)
-     real,     allocatable      :: smtime(:,:)
+     real*8,     allocatable    :: smtime(:,:)
 
      real                       :: ssdev_inp
      integer, allocatable       :: n11(:)
@@ -364,7 +363,13 @@ contains
        if(NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP") then 
           NASASMAPsm_struc(n)%nc = 964
           NASASMAPsm_struc(n)%nr = 406
+       elseif(NASASMAPsm_struc(n)%data_designation.eq."SPL2SMP") then
+          NASASMAPsm_struc(n)%nc = 964
+          NASASMAPsm_struc(n)%nr = 406
        elseif(NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP_E") then 
+          NASASMAPsm_struc(n)%nc = 3856
+          NASASMAPsm_struc(n)%nr = 1624
+       elseif(NASASMAPsm_struc(n)%data_designation.eq."SPL2SMP_E") then
           NASASMAPsm_struc(n)%nc = 3856
           NASASMAPsm_struc(n)%nr = 1624
        endif
@@ -380,7 +385,10 @@ contains
        allocate(ssdev(LIS_rc%obs_ngrid(k)))
        ssdev = obs_pert%ssdev(1)
        
-       if(LIS_rc%dascaloption(k).eq."CDF matching") then 
+       !if(LIS_rc%dascaloption(k).eq."CDF matching") then  !original
+       if(LIS_rc%dascaloption(k).eq."CDF matching" .or. &
+               LIS_rc%dascaloption(k).eq."Linear scaling" .or. &
+               LIS_rc%dascaloption(k).eq."Anomaly scaling") then     !kyh20210417
 
           call LIS_getCDFattributes(k,NASASMAPsm_struc(n)%modelcdffile,&
                NASASMAPsm_struc(n)%ntimes,ngrid)                 
@@ -566,7 +574,8 @@ contains
     enddo
     
     do n=1,LIS_rc%nnest
-       if(NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP") then 
+       if(NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP".or.&
+            NASASMAPsm_struc(n)%data_designation.eq."SPL2SMP") then
           gridDesci = 0
           gridDesci(1) = 9
           gridDesci(2) = 964
@@ -575,7 +584,8 @@ contains
           gridDesci(20) = 64
           gridDesci(10) = 0.36 
           gridDesci(11) = 1 !for the global switch
-       elseif(NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP_E") then 
+       elseif(NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP_E".or.&
+            NASASMAPsm_struc(n)%data_designation.eq."SPL2SMP_E") then
           gridDesci = 0
           gridDesci(1) = 9
           gridDesci(2) = 3856
@@ -599,9 +609,15 @@ contains
             NASASMAPsm_struc(n)%rlat, &
             NASASMAPsm_struc(n)%rlon, &
             NASASMAPsm_struc(n)%n11)
-       
-       call LIS_registerAlarm("NASASMAP read alarm",&
-            86400.0, 86400.0)
+
+       if(NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP".or.&
+            NASASMAPsm_struc(n)%data_designation.eq."SPL3SMP_E") then
+          call LIS_registerAlarm("NASASMAP read alarm",&
+               86400.0, 86400.0)
+       else
+          call LIS_registerAlarm("NASASMAP read alarm",&
+               3600.0, 3600.0)
+       endif
 
        NASASMAPsm_struc(n)%startMode = .true. 
 
