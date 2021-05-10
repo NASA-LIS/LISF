@@ -2008,20 +2008,20 @@ contains
 
        ! EMK...Replace HYCOM with NAVGEM
        !call LVT_append_HYCOM_fields(ftn_mean,&
-       !     time_unit,&
-       !     time_past,&
-       !     time_curr,&
-       !     timeRange,&
-       !     toplev(1),&
-       !     botlev(1),&
-       !     lat,lon)
-       call LVT_append_navgem_fields(ftn_mean, &
-            time_unit, &
-            time_past, &
-            time_curr, &
-            timeRange, &
-            toplev(1), &
-            botlev(1))
+       !    time_unit,&
+       !    time_past,&
+       !    time_curr,&
+       !    timeRange,&
+       !    toplev(1),&
+       !    botlev(1),&
+       !    lat,lon)
+        call LVT_append_navgem_fields(ftn_mean, &
+             time_unit, &
+             time_past, &
+             time_curr, &
+             timeRange, &
+             toplev(1), &
+             botlev(1))
 
        if(LVT_rc%lvt_out_format.eq."grib1") then  
           call grib_close_file(ftn_mean,iret)
@@ -2078,7 +2078,8 @@ contains
      return
   end function alarm_is_on
 
-  ! EMK BEGIN
+  ! Add NAVGEM fields to output file.
+  ! TODO:  Add sea ice (thickness and areal coverage).
   subroutine LVT_append_navgem_fields(ftn_mean, time_unit, time_past, &
        time_curr, timeRange, toplev, botlev)
 
@@ -2095,7 +2096,7 @@ contains
     real, intent(in) :: botlev(1)
 
     ! Locals
-    character(250) :: navgem_fname
+    character(250) :: navgem_sst_fname
     real :: gridDesci(50) ! Full NAVGEM grid
     character(10) :: cdate
     logical :: file_exists
@@ -2126,156 +2127,107 @@ contains
     integer :: pdTemplate
     integer :: varid_def
     real :: depscale(1)
+    real, allocatable :: thin_latitudes(:,:)
 
-    call LVT_get_navgem_filename(navgem_fname, &
+    ! Check for SST GRIB file.  (This actually contains merged sea surface
+    ! temperature and land surface temperature; we treat as SST for
+    ! simplicity.)
+    call LVT_get_navgem_sst_gr1_filename(navgem_sst_fname, &
          year, month, day, hour, fcst_hr)
-    if (trim(navgem_fname) .eq. "NONE") then
+    if (trim(navgem_sst_fname) .eq. "NONE") then
        file_exists = .false.
     else
        file_exists = .true.
     end if
-
     if (.not. file_exists) then
        write(LVT_logunit,*) '[INFO] No NAVGEM fields to append!'
        return
     end if
 
-    lo = .true. ! For now, interpolate to all LVT grid points
+    ! Fetch SST from the NAVGEM file.
+    call LVT_fetch_navgem_sst_gr1_field(navgem_sst_fname, sst, gridDesci)
 
-    ! Fetch the fields from the NAVGEM file, and create lookup table for
-    ! upscale averaging.
-    call LVT_fetch_navgem_fields(navgem_fname, sst, cice, icethick, gridDesci)
+    ! Prepare to interpolate.
     npts = LVT_rc%lnc*LVT_rc%lnr
     call bilinear_interp_input(gridDesci, LVT_rc%gridDesc, npts, &
          rlat, rlon, n11, n12, n21, n22, &
          w11, w12, w21, w22)
-
     allocate(li(size(sst)))
     li = .true.
     mo = npts
     udef = -9999.
+    interp_var = udef
+    li = .true.
+    lo = .true.
 
-    do ivar = 1, 3
-       interp_var = udef
-       if (ivar .eq. 1) then
+    ! Interpolate the SST
+    call bilinear_interp(LVT_rc%gridDesc, li, sst, lo, interp_var, &
+         size(sst), size(interp_var), rlat, rlon, &
+         w11, w12, w21, w22, &
+         n11, n12, n21, n22, udef, iret)
 
-          ! Handle SST first
-          call bilinear_interp(LVT_rc%gridDesc, size(sst), mo, li, lo, &
-               sst, interp_var, rlat, rlon, w11, w12, w21, w22, &
-               n11, n12, n21, n22, udef, iret)
+    ! Prepare output field settings.
+    gribDis   = 10
+    stepType = "instant"
+    pdTemplate = 0
+    gribCat   = 3
+    varid_def = 0
+    gribSfc   = 1
+    gribSF    = 10
+    gribLvl   = 1
 
-          gribDis   = 10
-          stepType = "instant"
-          pdTemplate = 0
-          gribCat   = 3
-          varid_def = 0
-          gribSfc   = 1
-          gribSF    = 10
-          gribLvl   = 1
-
-       else if (ivar .eq. 2) then
-
-          ! Handle sea ice fraction
-          call bilinear_interp(LVT_rc%gridDesc, size(cice), mo, li, lo, &
-               cice, interp_var, rlat, rlon, w11, w12, w21, w22, &
-               n11, n12, n21, n22, udef, iret)
-
-          gribDis   = 10
-          stepType = "instant"
-          pdTemplate = 0
-          gribCat   = 2
-          varid_def = 0
-          gribSfc   = 1
-          gribSF    = 100
-          gribLvl   = 1
-
-       else if (ivar .eq. 3) then
-
-          ! Handle sea ice thickness
-          call bilinear_interp(LVT_rc%gridDesc, size(icethick), mo, li, lo, &
-               icethick, interp_var, rlat, rlon, w11, w12, w21, w22, &
-               n11, n12, n21, n22, udef, iret)
-
-          gribDis   = 10
-          stepType = "instant"
-          pdTemplate = 0
-          gribCat   = 2
-          varid_def = 1
-          gribSfc   = 1
-          gribSF    = 10
-          gribLvl   = 1
-
-       else
-          write(LVT_logunit,*)'[ERR] INTERNAL ERROR, unknown ivar!'
-          stop
-       end if
-
-       ! Now write the interpolated field to output
-       if (LVT_rc%lvt_out_format .eq. "grib2") then
-          call writeSingleGrib2Var(ftn_mean, &
-               interp_var, &
-               varid_def, &
-               gribSF, &
-               gribSfc, &
-               gribLvl, &
-               gribDis, &
-               gribCat, &
-               pdTemplate, &
-               stepType, &
-               time_unit, &
-               time_past, &
-               time_curr, &
-               timeRange, &
-               1, &
-               toplev(1), &
-               botlev(1), &
-               depscale(1), &
-               typeOfGeneratingProcess=2, &
-               typeOfProcessedData=1, &
-               ref_year=year, & ! FIXME
-               ref_month=month, & ! FIXME
-               ref_day=day, &     ! FIXME
-               ref_hour=hour, &   ! FIXME
-               ref_fcst_hr=fcst_hr) ! FIXME
-       else if (LVT_rc%lvt_out_format .eq. "grib1") then
-          call writeSingleGrib1Var(ftn_mean, &
-               interp_var, &
-               varid_def, &
-               gribSF, &
-               gribSfc, &
-               gribLvl, &
-               stepType, &
-               time_unit, &
-               time_past, &
-               time_curr, &
-               timeRange, &
-               1, &
-               toplev(1), &
-               botlev(1))
-       else if (LVT_rc%lvt_out_format .eq. "netcdf") then
-          if (ivar .eq. 1) then
-             call writeSingleNetcdfVar(ftn_mean, &
-                  interp_var, &
-                  LVT_histData%watertemp%varId_def, &
-                  1)
-          else if (ivar .eq. 2) then
-             call writeSingleNetcdfVar(ftn_mean, &
-                  interp_var, &
-                  LVT_histData%aice%varId_def, &
-                  1)
-          else if (ivar .eq. 3) then
-             call writeSingleNetcdfVar(ftn_mean, &
-                  interp_var, &
-                  LVT_histData%hi%varId_def, &
-                  1)
-          end if
-
-       end if
-
-    end do ! ivar
+    ! Now write the interpolated field to output
+    if (LVT_rc%lvt_out_format .eq. "grib2") then
+       call writeSingleGrib2Var(ftn_mean, &
+            interp_var, &
+            varid_def, &
+            gribSF, &
+            gribSfc, &
+            gribLvl, &
+            gribDis, &
+            gribCat, &
+            pdTemplate, &
+            stepType, &
+            time_unit, &
+            time_past, &
+            time_curr, &
+            timeRange, &
+            1, &
+            toplev(1), &
+            botlev(1), &
+            depscale(1), &
+            typeOfGeneratingProcess=2, &
+            typeOfProcessedData=1, &
+            ref_year=year, & ! FIXME
+            ref_month=month, & ! FIXME
+            ref_day=day, &     ! FIXME
+            ref_hour=hour, &   ! FIXME
+            ref_fcst_hr=fcst_hr) ! FIXME
+    else if (LVT_rc%lvt_out_format .eq. "grib1") then
+       call writeSingleGrib1Var(ftn_mean, &
+            interp_var, &
+            varid_def, &
+            gribSF, &
+            gribSfc, &
+            gribLvl, &
+            stepType, &
+            time_unit, &
+            time_past, &
+            time_curr, &
+            timeRange, &
+            1, &
+            toplev(1), &
+            botlev(1))
+    else if (LVT_rc%lvt_out_format .eq. "netcdf") then
+       call writeSingleNetcdfVar(ftn_mean, &
+            interp_var, &
+            LVT_histData%watertemp%varId_def, &
+            1)
+    end if
 
     ! Clean up
     if (allocated(li)) deallocate(li)
+    if (allocated(sst)) deallocate(sst)
   end subroutine LVT_append_navgem_fields
 
   
