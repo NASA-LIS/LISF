@@ -2135,8 +2135,10 @@ contains
     ! Check for SST GRIB file.  (This actually contains merged sea surface
     ! temperature and land surface temperature; we treat as SST for
     ! simplicity.)
-    call LVT_get_navgem_sst_gr1_filename(navgem_sst_fname, &
-         year, month, day, hour, fcst_hr)
+    !call LVT_get_navgem_sst_gr1_filename(navgem_sst_fname, &
+    !     year, month, day, hour, fcst_hr)
+    call LVT_get_navgem_sst_bin_filename(navgem_sst_fname, &
+         year, month, day, hour)
     if (trim(navgem_sst_fname) .eq. "NONE") then
        file_exists = .false.
     else
@@ -2148,7 +2150,8 @@ contains
     end if
 
     ! Fetch SST from the NAVGEM file.
-    call LVT_fetch_navgem_sst_gr1_field(navgem_sst_fname, sst, gridDesci)
+    !call LVT_fetch_navgem_sst_gr1_field(navgem_sst_fname, sst, gridDesci)
+    call LVT_fetch_navgem_sst_bin_field(navgem_sst_fname, sst, gridDesci)
 
     ! Prepare to interpolate.
     npts = LVT_rc%lnc*LVT_rc%lnr
