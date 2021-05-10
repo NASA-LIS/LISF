@@ -2129,6 +2129,9 @@ contains
     real :: depscale(1)
     real, allocatable :: thin_latitudes(:,:)
 
+    external :: bilinear_interp_input
+    external :: bilinear_interp
+
     ! Check for SST GRIB file.  (This actually contains merged sea surface
     ! temperature and land surface temperature; we treat as SST for
     ! simplicity.)
