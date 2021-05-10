@@ -71,7 +71,6 @@ contains
        year, month, day, hour, fcst_hr)
 
     ! Modules
-    use LVT_coreMod, only: LVT_rc
     use LVT_logMod, only: LVT_logunit
     use LVT_timeMgrMod, only: LVT_get_julhr, LVT_julhr_date
 
