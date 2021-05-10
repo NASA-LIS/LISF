@@ -212,14 +212,15 @@ subroutine HYMAP2_routing_run(n)
      allocate(rnfdwi_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
      allocate(bsfdwi_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
      allocate(surfws_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
-
+     
      allocate(ewat_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
      allocate(edif_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
-
+     
      !ag(27Apr2020)
      allocate(drsto_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
      allocate(drout_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
 
+     
      rivsto_lvec = LIS_rc%udef
      rivdph_lvec = LIS_rc%udef
      rivvel_lvec = LIS_rc%udef
@@ -564,7 +565,7 @@ subroutine HYMAP2_routing_run(n)
         enddo
 
      else !single member run
-        allocate(tmp_nensem(LIS_rc%lnc(n),LIS_rc%lnr(n),1))
+
         tmpr=0.
         tmpb=0.
         
@@ -690,56 +691,55 @@ subroutine HYMAP2_routing_run(n)
         bsfsto_mm(:,1)=1000*HYMAP2_routing_struc(n)%bsfsto(:,1)/&
              HYMAP2_routing_struc(n)%grarea
 
-! The following calls are done because the vector size in LIS and HYMAP are different 
-! (and because the LIS I/O system is being leveraged for output
-
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%rivsto(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%rivsto(:,1),&
              rivsto_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%rivdph(:,1),&
-             rivdph_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%rivvel(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%rivdph(:,1),&
+                rivdph_lvec)
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%rivvel(:,1),&
              rivvel_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%rivout(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%rivout(:,1),&
              rivout_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%evpout(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%evpout(:,1),&
              evpout_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%fldout(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%fldout(:,1),&
              fldout_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%fldsto(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%fldsto(:,1),&
              fldsto_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%flddph(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%flddph(:,1),&
              flddph_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%fldvel(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%fldvel(:,1),&
              fldvel_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%fldfrc(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%fldfrc(:,1),&
              fldfrc_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%fldare(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%fldare(:,1),&
              fldare_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%sfcelv(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%sfcelv(:,1),&
              sfcelv_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%rnfsto(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%rnfsto(:,1),&
              rnfsto_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%bsfsto(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%bsfsto(:,1),&
              bsfsto_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%rnfdwi(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%rnfdwi(:,1),&
              rnfdwi_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%bsfdwi(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%bsfdwi(:,1),&
              bsfdwi_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%surfws(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%surfws(:,1),&
              surfws_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%ewat(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%ewat(:,1),&
              ewat_lvec)
-        call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%edif(:,1),&
+        call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%edif(:,1),&
              edif_lvec)
         !ag(27Apr2020)
         if(HYMAP2_routing_struc(n)%flowtype==4)then
-          call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%drsto(:,1),&
-               drsto_lvec)
-          call HYMAP2_grid2tile(n,1,HYMAP2_routing_struc(n)%drout(:,1),&
-               drout_lvec)
+           call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%drsto(:,1),&
+                drsto_lvec)
+           call HYMAP2_grid2tile_noens(n,HYMAP2_routing_struc(n)%drout(:,1),&
+                drout_lvec)
         endif
+
         !ag (12Sep2019)
         if (HYMAP2_routing_struc(n)%enable2waycpl==1) then
+           allocate(tmp_nensem(LIS_rc%lnc(n),LIS_rc%lnr(n),1))
           ! River Storage
           call ESMF_StateGet(LIS_runoff_state(n),"River Storage",rivsto_field, rc=status)
           call LIS_verify(status, "HYMAP2_routing_run: ESMF_StateGet failed for River Storage")
@@ -808,146 +808,147 @@ subroutine HYMAP2_routing_run(n)
                 fldfrctmp_lvec(t)=0.
              endif
           enddo
+          deallocate(tmp_nensem)
        endif
-       deallocate(tmp_nensem)
+
     endif
 
-     do t=1, LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_RIVSTO,&
-             value=rivsto_lvec(t),vlevel=1,unit="m3",&  
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_RIVDPH,&
-             value=rivdph_lvec(t),vlevel=1,unit="m",&
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_RIVVEL,&
-             value=rivvel_lvec(t),vlevel=1,unit="m s-1",&
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_STREAMFLOW,&
-             value=rivout_lvec(t),vlevel=1,unit="m3 s-1",&
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_FLDEVAP,&
-             value=evpout_lvec(t),vlevel=1,unit="kg m-2 s-1",&   
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_FLDOUT,&
-             value=fldout_lvec(t),vlevel=1,unit="m3 s-1",&
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_FLDSTO,&
-             value=fldsto_lvec(t),vlevel=1,unit="m3",&
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_FLDDPH,&
-             value=flddph_lvec(t),vlevel=1,unit="m",&
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_FLDVEL,&
-             value=fldvel_lvec(t),vlevel=1,unit="m s-1",&
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_FLDFRC,&
-             value=fldfrc_lvec(t),vlevel=1,unit="-",&
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_FLDARE,&
-             value=fldare_lvec(t),vlevel=1,unit="m2",&
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_SFCELV,&
-             value=sfcelv_lvec(t),vlevel=1,unit="m",&
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_RNFSTO,&
-             value=rnfsto_lvec(t),vlevel=1,unit="mm",&
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_BSFSTO,&
-             value=bsfsto_lvec(t),vlevel=1,unit="mm",&
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_RNFDWI,&
-             value=rnfdwi_lvec(t),vlevel=1,unit="mm",&
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_BSFDWI,&
-             value=bsfdwi_lvec(t),vlevel=1,unit="mm",&
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_SURFWS,&
-             value=surfws_lvec(t),vlevel=1,unit="mm",&
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_ewat,&
-             value=ewat_lvec(t),vlevel=1,unit="kg m-2 s-1",&   
-             direction="-")
-        
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_edif,&
-             value=edif_lvec(t),vlevel=1,unit="kg m-2 s-1",&   
-             direction="-")
-
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_DRSTO,&
-             value=drsto_lvec(t),vlevel=1,unit="m3",&  
-             direction="-")
-
-        call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_DROUT,&
-             value=drout_lvec(t),vlevel=1,unit="m3 s-1",&
-             direction="-")
-
-     enddo
-
-     deallocate(rivsto_lvec)
-     deallocate(rivdph_lvec)
-     deallocate(rivvel_lvec)
-     deallocate(rivout_lvec)
-     deallocate(evpout_lvec)
-     deallocate(fldout_lvec)
-     deallocate(fldsto_lvec)
-     deallocate(flddph_lvec)
-     deallocate(fldvel_lvec)
-     deallocate(fldfrc_lvec)
-     deallocate(fldare_lvec)
-     deallocate(sfcelv_lvec)
-     deallocate(rnfsto_lvec)
-     deallocate(bsfsto_lvec)
-     deallocate(rnfdwi_lvec)
-     deallocate(bsfdwi_lvec)
-     deallocate(surfws_lvec)
-     deallocate(ewat_lvec)
-     deallocate(edif_lvec)
-     
-     !ag(27Apr2020)
-     deallocate(drsto_lvec)
-     deallocate(drout_lvec)
-
-     deallocate(surface_runoff)     
-     deallocate(baseflow)
-     deallocate(tmpr)
-     deallocate(tmpb)
-     !deallocate(tmp_nensem)
-     
-     deallocate(rnfsto_mm)
-     deallocate(bsfsto_mm)
-     
-     !ag (22Sep2016)
-     if(HYMAP2_routing_struc(n)%evapflag.ne.0)then
-        deallocate(tmp_tmp)
-        deallocate(tmp_q2)
-        deallocate(tmp_qnet)
-        deallocate(tmp_wind)
-        deallocate(tmp_psurf)
-        deallocate(tair)     
-        deallocate(qair)
-        deallocate(pres)     
-        deallocate(wind)     
-        deallocate(qnet)
-        deallocate(tmpet)
-     endif
-     
-  endif
+    do t=1, LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_RIVSTO,&
+            value=rivsto_lvec(t),vlevel=1,unit="m3",&  
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_RIVDPH,&
+            value=rivdph_lvec(t),vlevel=1,unit="m",&
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_RIVVEL,&
+            value=rivvel_lvec(t),vlevel=1,unit="m s-1",&
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_STREAMFLOW,&
+            value=rivout_lvec(t),vlevel=1,unit="m3 s-1",&
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_FLDEVAP,&
+            value=evpout_lvec(t),vlevel=1,unit="kg m-2 s-1",&   
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_FLDOUT,&
+            value=fldout_lvec(t),vlevel=1,unit="m3 s-1",&
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_FLDSTO,&
+            value=fldsto_lvec(t),vlevel=1,unit="m3",&
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_FLDDPH,&
+            value=flddph_lvec(t),vlevel=1,unit="m",&
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_FLDVEL,&
+            value=fldvel_lvec(t),vlevel=1,unit="m s-1",&
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_FLDFRC,&
+            value=fldfrc_lvec(t),vlevel=1,unit="-",&
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_FLDARE,&
+            value=fldare_lvec(t),vlevel=1,unit="m2",&
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_SFCELV,&
+            value=sfcelv_lvec(t),vlevel=1,unit="m",&
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_RNFSTO,&
+            value=rnfsto_lvec(t),vlevel=1,unit="mm",&
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_BSFSTO,&
+            value=bsfsto_lvec(t),vlevel=1,unit="mm",&
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_RNFDWI,&
+            value=rnfdwi_lvec(t),vlevel=1,unit="mm",&
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_BSFDWI,&
+            value=bsfdwi_lvec(t),vlevel=1,unit="mm",&
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_SURFWS,&
+            value=surfws_lvec(t),vlevel=1,unit="mm",&
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_ewat,&
+            value=ewat_lvec(t),vlevel=1,unit="kg m-2 s-1",&   
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_edif,&
+            value=edif_lvec(t),vlevel=1,unit="kg m-2 s-1",&   
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_DRSTO,&
+            value=drsto_lvec(t),vlevel=1,unit="m3",&  
+            direction="-")
+       
+       call LIS_diagnoseRoutingOutputVar(n, t,LIS_MOC_DROUT,&
+            value=drout_lvec(t),vlevel=1,unit="m3 s-1",&
+            direction="-")
+       
+    enddo
+    
+    deallocate(rivsto_lvec)
+    deallocate(rivdph_lvec)
+    deallocate(rivvel_lvec)
+    deallocate(rivout_lvec)
+    deallocate(evpout_lvec)
+    deallocate(fldout_lvec)
+    deallocate(fldsto_lvec)
+    deallocate(flddph_lvec)
+    deallocate(fldvel_lvec)
+    deallocate(fldfrc_lvec)
+    deallocate(fldare_lvec)
+    deallocate(sfcelv_lvec)
+    deallocate(rnfsto_lvec)
+    deallocate(bsfsto_lvec)
+    deallocate(rnfdwi_lvec)
+    deallocate(bsfdwi_lvec)
+    deallocate(surfws_lvec)
+    deallocate(ewat_lvec)
+    deallocate(edif_lvec)
+    
+    !ag(27Apr2020)
+    deallocate(drsto_lvec)
+    deallocate(drout_lvec)
+    
+    deallocate(surface_runoff)     
+    deallocate(baseflow)
+    deallocate(tmpr)
+    deallocate(tmpb)
+    !deallocate(tmp_nensem)
+    
+    deallocate(rnfsto_mm)
+    deallocate(bsfsto_mm)
+    
+    !ag (22Sep2016)
+    if(HYMAP2_routing_struc(n)%evapflag.ne.0)then
+       deallocate(tmp_tmp)
+       deallocate(tmp_q2)
+       deallocate(tmp_qnet)
+       deallocate(tmp_wind)
+       deallocate(tmp_psurf)
+       deallocate(tair)     
+       deallocate(qair)
+       deallocate(pres)     
+       deallocate(wind)     
+       deallocate(qnet)
+       deallocate(tmpet)
+    endif
+    
+ endif
 end subroutine HYMAP2_routing_run
 
 !BOP
@@ -992,3 +993,47 @@ end subroutine HYMAP2_routing_run
     enddo
 
   end subroutine HYMAP2_grid2tile
+
+  !BOP
+! !ROUTINE: HYMAP2_grid2tile_noens
+! \label{HYMAP2_grid2tile_noens}
+!
+! !INTERFACE:
+!
+! !INTERFACE:
+  subroutine HYMAP2_grid2tile_noens(n,tvar,tvar_ens)
+! !USES:
+    use LIS_coreMod
+
+    implicit none
+! !ARGUMENTS:     
+    integer, intent(in) :: n
+    real                :: tvar(LIS_rc%nroutinggrid(n))
+    real                :: tvar_ens(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n))
+
+! !DESCRIPTION:
+!  This routine converts a tile space variable to the corresponding
+!  grid space. The aggregation involves weighted average of each tile
+!  in a grid cell based on the vegetation distribution. 
+!
+!  The arguments are: 
+!  \begin{description}
+!   \item [n]
+!     index of the domain or nest.
+!   \item [tvar]
+!     variable dimensioned in the tile space. 
+!   \item [gvar]
+!     variable after converstion to the grid space
+!  \end{description}
+!
+!EOP
+    integer           :: i,t,c,r,m
+
+    do i=1,LIS_rc%nroutinggrid(n)
+       do m=1,LIS_rc%nensem(n)
+          t = m + (i-1)*LIS_rc%nensem(n)
+          tvar_ens(t) = tvar(i)
+       enddo
+    enddo
+    
+  end subroutine HYMAP2_grid2tile_noens
