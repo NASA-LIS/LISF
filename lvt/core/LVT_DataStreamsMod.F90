@@ -188,55 +188,55 @@ contains
           allocate(LVT_histData%watertemp%unittypes(1))
           LVT_histData%watertemp%unittypes(1) = "K"
 
-          ! ! Now handle Arctic sea ice fraction (aice)
-          ! LVT_rc%HYCOM_aice_arc_nc = 4500
-          ! LVT_rc%HYCOM_aice_arc_nr = 1251
+          ! Now handle Arctic sea ice fraction (aice)
+          LVT_rc%HYCOM_aice_arc_nc = 4500
+          LVT_rc%HYCOM_aice_arc_nr = 1251
 
-          ! ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
-          ! gridDesci = 0 
-          ! gridDesci(1) = 0 ! Lat/lon projection
-          ! gridDesci(2) = LVT_rc%HYCOM_aice_arc_nc ! Number of columns
-          ! gridDesci(3) = LVT_rc%HYCOM_aice_arc_nr ! Number of rows
-          ! gridDesci(4) = 40.     ! Lower-left latitude (deg N)
-          ! gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
-          ! gridDesci(6) = 128     ! Not used
-          ! gridDesci(7) = 90.0             ! Upper-right latitude (deg N)
-          ! gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
-          ! gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
-          ! gridDesci(10) = 0.040000915527301117 ! delta-lat (deg)
-          ! gridDesci(20) = 64  ! East-west ordering
+          ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
+          gridDesci = 0
+          gridDesci(1) = 0 ! Lat/lon projection
+          gridDesci(2) = LVT_rc%HYCOM_aice_arc_nc ! Number of columns
+          gridDesci(3) = LVT_rc%HYCOM_aice_arc_nr ! Number of rows
+          gridDesci(4) = 40.     ! Lower-left latitude (deg N)
+          gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
+          gridDesci(6) = 128     ! Not used
+          gridDesci(7) = 90.0             ! Upper-right latitude (deg N)
+          gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
+          gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
+          gridDesci(10) = 0.040000915527301117 ! delta-lat (deg)
+          gridDesci(20) = 64  ! East-west ordering
 
-          ! allocate(LVT_rc%HYCOM_aice_arc_n11(&
-          !      LVT_rc%HYCOM_aice_arc_nc*LVT_rc%HYCOM_aice_arc_nr))
+          allocate(LVT_rc%HYCOM_aice_arc_n11(&
+               LVT_rc%HYCOM_aice_arc_nc*LVT_rc%HYCOM_aice_arc_nr))
 
-          ! call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
-          !      LVT_rc%HYCOM_aice_arc_nc*LVT_rc%HYCOM_aice_arc_nr, &
-          !      LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_aice_arc_n11)
+          call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
+               LVT_rc%HYCOM_aice_arc_nc*LVT_rc%HYCOM_aice_arc_nr, &
+               LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_aice_arc_n11)
 
-          ! ! Now handle Antarctic sea ice fraction (aice)
-          ! LVT_rc%HYCOM_aice_ant_nc = 4500
-          ! LVT_rc%HYCOM_aice_ant_nr = 775
+          ! Now handle Antarctic sea ice fraction (aice)
+          LVT_rc%HYCOM_aice_ant_nc = 4500
+          LVT_rc%HYCOM_aice_ant_nr = 775
 
-          ! ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
-          ! gridDesci = 0 
-          ! gridDesci(1) = 0 ! Lat/lon projection
-          ! gridDesci(2) = LVT_rc%HYCOM_aice_ant_nc ! Number of columns
-          ! gridDesci(3) = LVT_rc%HYCOM_aice_ant_nr ! Number of rows
-          ! gridDesci(4) = -80.4800033569336     ! Lower-left latitude (deg N)
-          ! gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
-          ! gridDesci(6) = 128     ! Not used
-          ! gridDesci(7) = -49.5200004577637 ! Upper-right latitude (deg N)
-          ! gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
-          ! gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
-          ! gridDesci(10) = 0.040000915527400593 ! delta-lat (deg)
-          ! gridDesci(20) = 64  ! East-west ordering
+          ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
+          gridDesci = 0
+          gridDesci(1) = 0 ! Lat/lon projection
+          gridDesci(2) = LVT_rc%HYCOM_aice_ant_nc ! Number of columns
+          gridDesci(3) = LVT_rc%HYCOM_aice_ant_nr ! Number of rows
+          gridDesci(4) = -80.4800033569336     ! Lower-left latitude (deg N)
+          gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
+          gridDesci(6) = 128     ! Not used
+          gridDesci(7) = -49.5200004577637 ! Upper-right latitude (deg N)
+          gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
+          gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
+          gridDesci(10) = 0.040000915527400593 ! delta-lat (deg)
+          gridDesci(20) = 64  ! East-west ordering
 
-          ! allocate(LVT_rc%HYCOM_aice_ant_n11(&
-          !      LVT_rc%HYCOM_aice_ant_nc*LVT_rc%HYCOM_aice_ant_nr))
+          allocate(LVT_rc%HYCOM_aice_ant_n11(&
+               LVT_rc%HYCOM_aice_ant_nc*LVT_rc%HYCOM_aice_ant_nr))
 
-          ! call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
-          !      LVT_rc%HYCOM_aice_ant_nc*LVT_rc%HYCOM_aice_ant_nr, &
-          !      LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_aice_ant_n11)
+          call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
+               LVT_rc%HYCOM_aice_ant_nc*LVT_rc%HYCOM_aice_ant_nr, &
+               LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_aice_ant_n11)
 
           LVT_histData%aice%short_name = "aice"
           LVT_histData%aice%long_name = "aice"
@@ -245,7 +245,7 @@ contains
           LVT_histData%aice%nunits = 1
           LVT_histData%aice%format = 'F'
           LVT_histData%aice%vlevels = 1
-          LVT_histData%aice%timeAvgOpt = 0 
+          LVT_histData%aice%timeAvgOpt = 0
           LVT_histData%aice%startNlevs = 1
           LVT_histData%aice%endNlevs = 1
           allocate(LVT_histData%aice%value(LVT_rc%ngrid,&
@@ -253,55 +253,55 @@ contains
           allocate(LVT_histData%aice%unittypes(1))
           LVT_histData%aice%unittypes(1) = ""
 
-          ! ! Now handle Arctic sea ice thickness (hi)
-          ! LVT_rc%HYCOM_hi_arc_nc = 4500
-          ! LVT_rc%HYCOM_hi_arc_nr = 1251
+          ! Now handle Arctic sea ice thickness (hi)
+          LVT_rc%HYCOM_hi_arc_nc = 4500
+          LVT_rc%HYCOM_hi_arc_nr = 1251
 
-          ! ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
-          ! gridDesci = 0 
-          ! gridDesci(1) = 0 ! Lat/lon projection
-          ! gridDesci(2) = LVT_rc%HYCOM_hi_arc_nc ! Number of columns
-          ! gridDesci(3) = LVT_rc%HYCOM_hi_arc_nr ! Number of rows
-          ! gridDesci(4) = 40.     ! Lower-left latitude (deg N)
-          ! gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
-          ! gridDesci(6) = 128     ! Not used
-          ! gridDesci(7) = 90.0             ! Upper-right latitude (deg N)
-          ! gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
-          ! gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
-          ! gridDesci(10) = 0.040000915527301117 ! delta-lat (deg)
-          ! gridDesci(20) = 64  ! East-west ordering
+          ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
+          gridDesci = 0
+          gridDesci(1) = 0 ! Lat/lon projection
+          gridDesci(2) = LVT_rc%HYCOM_hi_arc_nc ! Number of columns
+          gridDesci(3) = LVT_rc%HYCOM_hi_arc_nr ! Number of rows
+          gridDesci(4) = 40.     ! Lower-left latitude (deg N)
+          gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
+          gridDesci(6) = 128     ! Not used
+          gridDesci(7) = 90.0             ! Upper-right latitude (deg N)
+          gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
+          gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
+          gridDesci(10) = 0.040000915527301117 ! delta-lat (deg)
+          gridDesci(20) = 64  ! East-west ordering
 
-          ! allocate(LVT_rc%HYCOM_hi_arc_n11(&
-          !      LVT_rc%HYCOM_hi_arc_nc*LVT_rc%HYCOM_hi_arc_nr))
+          allocate(LVT_rc%HYCOM_hi_arc_n11(&
+               LVT_rc%HYCOM_hi_arc_nc*LVT_rc%HYCOM_hi_arc_nr))
 
-          ! call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
-          !      LVT_rc%HYCOM_hi_arc_nc*LVT_rc%HYCOM_hi_arc_nr, &
-          !      LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_hi_arc_n11)
+          call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
+               LVT_rc%HYCOM_hi_arc_nc*LVT_rc%HYCOM_hi_arc_nr, &
+               LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_hi_arc_n11)
 
-          ! ! Now handle Antarctic sea ice thickness (hi)
-          ! LVT_rc%HYCOM_hi_ant_nc = 4500
-          ! LVT_rc%HYCOM_hi_ant_nr = 775
+          ! Now handle Antarctic sea ice thickness (hi)
+          LVT_rc%HYCOM_hi_ant_nc = 4500
+          LVT_rc%HYCOM_hi_ant_nr = 775
 
-          ! ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
-          ! gridDesci = 0 
-          ! gridDesci(1) = 0 ! Lat/lon projection
-          ! gridDesci(2) = LVT_rc%HYCOM_hi_ant_nc ! Number of columns
-          ! gridDesci(3) = LVT_rc%HYCOM_hi_ant_nr ! Number of rows
-          ! gridDesci(4) = -80.4800033569336     ! Lower-left latitude (deg N)
-          ! gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
-          ! gridDesci(6) = 128     ! Not used
-          ! gridDesci(7) = -49.5200004577637 ! Upper-right latitude (deg N)
-          ! gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
-          ! gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
-          ! gridDesci(10) = 0.040000915527400593 ! delta-lat (deg)
-          ! gridDesci(20) = 64  ! East-west ordering
+          ! See LIS_PRIV_rcMod.F90 for documentation of gridDesc
+          gridDesci = 0
+          gridDesci(1) = 0 ! Lat/lon projection
+          gridDesci(2) = LVT_rc%HYCOM_hi_ant_nc ! Number of columns
+          gridDesci(3) = LVT_rc%HYCOM_hi_ant_nr ! Number of rows
+          gridDesci(4) = -80.4800033569336     ! Lower-left latitude (deg N)
+          gridDesci(5) = -180.0  ! Lower-left longitude (deg E)
+          gridDesci(6) = 128     ! Not used
+          gridDesci(7) = -49.5200004577637 ! Upper-right latitude (deg N)
+          gridDesci(8) = 179.920043945312 ! Upper-right longitude (deg E)
+          gridDesci(9) = 0.080017089844005795  ! delta-lon (deg)
+          gridDesci(10) = 0.040000915527400593 ! delta-lat (deg)
+          gridDesci(20) = 64  ! East-west ordering
 
-          ! allocate(LVT_rc%HYCOM_hi_ant_n11(&
-          !      LVT_rc%HYCOM_hi_ant_nc*LVT_rc%HYCOM_hi_ant_nr))
+          allocate(LVT_rc%HYCOM_hi_ant_n11(&
+               LVT_rc%HYCOM_hi_ant_nc*LVT_rc%HYCOM_hi_ant_nr))
 
-          ! call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
-          !      LVT_rc%HYCOM_hi_ant_nc*LVT_rc%HYCOM_hi_ant_nr, &
-          !      LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_hi_ant_n11)
+          call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
+               LVT_rc%HYCOM_hi_ant_nc*LVT_rc%HYCOM_hi_ant_nr, &
+               LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_hi_ant_n11)
 
           LVT_histData%hi%short_name = "hi"
           LVT_histData%hi%long_name = "hi"
@@ -310,7 +310,7 @@ contains
           LVT_histData%hi%nunits = 1
           LVT_histData%hi%format = 'F'
           LVT_histData%hi%vlevels = 1
-          LVT_histData%hi%timeAvgOpt = 0 
+          LVT_histData%hi%timeAvgOpt = 0
           LVT_histData%hi%startNlevs = 1
           LVT_histData%hi%endNlevs = 1
           allocate(LVT_histData%hi%value(LVT_rc%ngrid,&
@@ -2006,16 +2006,16 @@ contains
           call LVT_cleanup_jules_ps41_ens_snow()
        end if
 
-       ! EMK...Replace HYCOM with NAVGEM
-       !call LVT_append_HYCOM_fields(ftn_mean,&
-       !    time_unit,&
-       !    time_past,&
-       !    time_curr,&
-       !    timeRange,&
-       !    toplev(1),&
-       !    botlev(1),&
-       !    lat,lon)
-        call LVT_append_navgem_fields(ftn_mean, &
+       ! EMK...Use HYCOM for sea ice, and NAVGEM for SST.
+       call LVT_append_HYCOM_cice_fields(ftn_mean,&
+          time_unit,&
+          time_past,&
+          time_curr,&
+          timeRange,&
+          toplev(1),&
+          botlev(1),&
+          lat,lon)
+        call LVT_append_navgem_sst_field(ftn_mean, &
              time_unit, &
              time_past, &
              time_curr, &
@@ -2079,8 +2079,7 @@ contains
   end function alarm_is_on
 
   ! Add NAVGEM fields to output file.
-  ! TODO:  Add sea ice (thickness and areal coverage).
-  subroutine LVT_append_navgem_fields(ftn_mean, time_unit, time_past, &
+  subroutine LVT_append_navgem_sst_field(ftn_mean, time_unit, time_past, &
        time_curr, timeRange, toplev, botlev)
 
     ! Defaults
@@ -2135,10 +2134,10 @@ contains
     ! Check for SST GRIB file.  (This actually contains merged sea surface
     ! temperature and land surface temperature; we treat as SST for
     ! simplicity.)
-    !call LVT_get_navgem_sst_gr1_filename(navgem_sst_fname, &
-    !     year, month, day, hour, fcst_hr)
-    call LVT_get_navgem_sst_bin_filename(navgem_sst_fname, &
-         year, month, day, hour)
+    call LVT_get_navgem_sst_gr1_filename(navgem_sst_fname, &
+         year, month, day, hour, fcst_hr)
+    !call LVT_get_navgem_sst_bin_filename(navgem_sst_fname, &
+    !     year, month, day, hour)
     if (trim(navgem_sst_fname) .eq. "NONE") then
        file_exists = .false.
     else
@@ -2150,8 +2149,8 @@ contains
     end if
 
     ! Fetch SST from the NAVGEM file.
-    !call LVT_fetch_navgem_sst_gr1_field(navgem_sst_fname, sst, gridDesci)
-    call LVT_fetch_navgem_sst_bin_field(navgem_sst_fname, sst, gridDesci)
+    call LVT_fetch_navgem_sst_gr1_field(navgem_sst_fname, sst, gridDesci)
+    !call LVT_fetch_navgem_sst_bin_field(navgem_sst_fname, sst, gridDesci)
 
     ! Prepare to interpolate.
     npts = LVT_rc%lnc*LVT_rc%lnr
@@ -2234,25 +2233,24 @@ contains
     ! Clean up
     if (allocated(li)) deallocate(li)
     if (allocated(sst)) deallocate(sst)
-  end subroutine LVT_append_navgem_fields
+  end subroutine LVT_append_navgem_sst_field
 
-  
 !BOP
-! 
-! !ROUTINE: LVT_append_HYCOM_fields
-! \label{LVT_append_HYCOM_fields}
 !
-! !INTERFACE: 
-  subroutine LVT_append_HYCOM_fields(ftn_mean,time_unit, time_past, time_curr,&
-       timeRange, toplev,botlev,lat,lon)
+! !ROUTINE: LVT_append_HYCOM_cice_fields
+! \label{LVT_append_HYCOM_cice_fields}
+!
+! !INTERFACE:
+  subroutine LVT_append_HYCOM_cice_fields(ftn_mean, time_unit, time_past, &
+       time_curr, timeRange, toplev, botlev, lat, lon)
 
-! 
-! !DESCRIPTION: 
-!  This subroutine read the water temperature fields from the HYCOM output, 
-!  reprojects it to the LVT/LIS grid and appends to the grib1 formatted file. 
+!
+! !DESCRIPTION:
+!  This subroutine read the water temperature fields from the HYCOM output,
+!  reprojects it to the LVT/LIS grid and appends to the grib1 formatted file.
 !
 !EOP
-    
+
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
 #endif
@@ -2272,13 +2270,13 @@ contains
     logical                 :: file_exists
     integer                 :: nid,ios
     integer                 :: c,r,c1,r1,k,cindex,rindex
-    integer                 :: watertid
-    real                    :: watert_ip(LVT_rc%lnc*LVT_rc%lnr)
+    !integer                 :: watertid
+    !real                    :: watert_ip(LVT_rc%lnc*LVT_rc%lnr)
     logical*1               :: lo(LVT_rc%lnc*LVT_rc%lnr)
     logical*1               :: lb(LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr)
-    real                    :: watert(LVT_rc%HYCOM_nc,LVT_rc%HYCOM_nr,1,1)
-    real                    :: watert_1d(LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr)
-    
+    !real                    :: watert(LVT_rc%HYCOM_nc,LVT_rc%HYCOM_nr,1,1)
+    !real                    :: watert_1d(LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr)
+
     ! EMK...Support aice_arc
     integer                 :: aice_arc_id
     real                    :: aice_arc_ip(LVT_rc%lnc*LVT_rc%lnr)
@@ -2328,8 +2326,8 @@ contains
     integer                 :: gribSF, gribSfc,gribLvl,gribCat,gribDis
     real                    :: depscale(1)
     integer                 :: pdTemplate
-    
-    integer :: sst_year,sst_month,sst_day, sst_hour, sst_fcst_hr
+
+    !integer :: sst_year,sst_month,sst_day, sst_hour, sst_fcst_hr
     integer :: cice_arc_year, cice_arc_month, cice_arc_day, &
          cice_arc_hour, cice_arc_fcst_hr
     integer :: cice_ant_year, cice_ant_month, cice_ant_day, &
@@ -2343,7 +2341,7 @@ contains
 
     ! find the filename, open the file, read the field
 
-    if(LVT_rc%processHYCOM.eq.1) then 
+    if(LVT_rc%processHYCOM.eq.1) then
 
        ! *** HANDLE SST ***
 !       write(unit=cdate,fmt='(i4.4,i2.2,i2.2,i2.2)') &
@@ -2351,7 +2349,7 @@ contains
 !       ! FIXME...Update HYCOM file name convention
 !       hycom_fname = trim(LVT_rc%HYCOMdir)//'/'//&
 !           'hycom_glb_928_'//trim(cdate)//'_t000_ts3z.nc'
-           
+
 !       watert  = LVT_rc%udef
 !       inquire(file=hycom_fname,exist=file_exists)
 !
@@ -2359,147 +2357,147 @@ contains
 !          write(LVT_logunit,*)'[WARN], missing file ',trim(hycom_fname)
 !       end if
 
-       watert  = LVT_rc%udef
-       call get_hycom_sst_filename(hycom_fname, &
-            sst_year, sst_month, sst_day, sst_hour, sst_fcst_hr)
-       if (trim(hycom_fname) == "NONE") then
-          file_exists = .false.
-       else
-          file_exists = .true.
-       end if
+!        watert  = LVT_rc%udef
+!        call get_hycom_sst_filename(hycom_fname, &
+!             sst_year, sst_month, sst_day, sst_hour, sst_fcst_hr)
+!        if (trim(hycom_fname) == "NONE") then
+!           file_exists = .false.
+!        else
+!           file_exists = .true.
+!        end if
 
-       if(file_exists) then 
-#if (defined USE_NETCDF3 || defined USE_NETCDF4)
-          write(LVT_logunit,*) '[INFO] Reading HYCOM data ',trim(hycom_fname)
+!        if(file_exists) then
+! #if (defined USE_NETCDF3 || defined USE_NETCDF4)
+!           write(LVT_logunit,*) '[INFO] Reading HYCOM data ',trim(hycom_fname)
 
-          ios = nf90_open(path=trim(hycom_fname),mode=NF90_NOWRITE,ncid=nid)
-          call LVT_verify(ios, 'Error opening file'//trim(hycom_fname))
+!           ios = nf90_open(path=trim(hycom_fname),mode=NF90_NOWRITE,ncid=nid)
+!           call LVT_verify(ios, 'Error opening file'//trim(hycom_fname))
 
-!variable ids
-          ios = nf90_inq_varid(nid, 'water_temp',watertid)
-          call LVT_verify(ios, 'Error nf90_inq_varid: water_temp')
-          
-!values
-          ios = nf90_get_var(nid,watertid, watert,&
-               start=(/1,1,1,1/), count=(/LVT_rc%HYCOM_nc,LVT_rc%HYCOM_nr,1,1/))
-          call LVT_verify(ios, 'Error nf90_get_var: water_temp')
+!           !variable ids
+!           ios = nf90_inq_varid(nid, 'water_temp',watertid)
+!           call LVT_verify(ios, 'Error nf90_inq_varid: water_temp')
 
-          ios = nf90_close(nid)
-          call LVT_verify(ios, 'Error in nf90_close')
-#endif
-          watert_1d = -9999.0
-          lb = .false. 
+!           !values
+!           ios = nf90_get_var(nid,watertid, watert,&
+!                start=(/1,1,1,1/), count=(/LVT_rc%HYCOM_nc,LVT_rc%HYCOM_nr,1,1/))
+!           call LVT_verify(ios, 'Error nf90_get_var: water_temp')
 
-          do r=1,LVT_rc%HYCOM_nr 
-             do c=1,LVT_rc%HYCOM_nc
-                if(watert(c,r,1,1).ne.-30000) then 
-                   if(c.gt.2250) then 
-                      c1 = c-2250
-                      r1 = r
-                   else
-                      c1 = c+2250
-                      r1 = r
-                   endif
-! EMK...Change from Celsius to Kelvin
-!                   watert_1d(c1+(r1-1)*LVT_rc%HYCOM_nc) = watert(c,r,1,1)*0.001+20.0
-                   watert_1d(c1+(r1-1)*LVT_rc%HYCOM_nc) = watert(c,r,1,1)*0.001+20.0+273.15
+!           ios = nf90_close(nid)
+!           call LVT_verify(ios, 'Error in nf90_close')
+! #endif
+!           watert_1d = -9999.0
+!           lb = .false.
 
-                   lb(c1+(r1-1)*LVT_rc%HYCOM_nc) = .true.
-                   
-                endif
-             enddo
-          enddo
-                   
-          call upscaleByAveraging(&
-               LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr, &
-               LVT_rc%lnc*LVT_rc%lnr, LVT_rc%udef, &
-               LVT_rc%HYCOM_n11, lb, &
-               watert_1d, lo, watert_ip)
+!           do r=1,LVT_rc%HYCOM_nr
+!              do c=1,LVT_rc%HYCOM_nc
+!                 if(watert(c,r,1,1).ne.-30000) then
+!                    if(c.gt.2250) then
+!                       c1 = c-2250
+!                       r1 = r
+!                    else
+!                       c1 = c+2250
+!                       r1 = r
+!                    endif
+!                    !EMK...Change from Celsius to Kelvin
+!                    !watert_1d(c1+(r1-1)*LVT_rc%HYCOM_nc) = watert(c,r,1,1)*0.001+20.0
+!                    watert_1d(c1+(r1-1)*LVT_rc%HYCOM_nc) = watert(c,r,1,1)*0.001+20.0+273.15
 
-          ! EMK: Since SST is missing north of 80N, we need to set water points
-          ! in this region to a reasonable value.  We follow the typical
-          ! UKMET SURF value of 271.35K.  
-          do r = 1, LVT_rc%gnr
-             do c = 1, LVT_rc%gnc
-                gid = LVT_domain%gindex(c,r)
+!                    lb(c1+(r1-1)*LVT_rc%HYCOM_nc) = .true.
 
-                if (gid .eq. -1 .and. lat(c,r) >= 80.) then
-                   if (watert_ip(c+(r-1)*LVT_rc%gnc) == -9999) then
-                      watert_ip(c+(r-1)*LVT_rc%gnc) = 271.35
-                   end if
-                end if
-             end do ! c
-          end do ! r
+!                 endif
+!              enddo
+!           enddo
 
-          ! GRIB2 settings...Updated by EMK
-          gribDis   = 10
-          !stepType  = "avg"
-          stepType = "instant" ! EMK
-          pdTemplate = 0
-          gribCat   = 3
-          varid_def = 0
-          gribSfc   = 1
-          gribSF    = 10
-          gribLvl   = 1
+!           call upscaleByAveraging(&
+!                LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr, &
+!                LVT_rc%lnc*LVT_rc%lnr, LVT_rc%udef, &
+!                LVT_rc%HYCOM_n11, lb, &
+!                watert_1d, lo, watert_ip)
 
-          if(LVT_rc%lvt_out_format.eq."grib2") then
-     ! add to the grib file
-             call writeSingleGrib2Var(ftn_mean,&
-                  watert_ip,&
-                  varid_def,&
-                  gribSF,&
-                  gribSfc,&
-                  gribLvl,&
-                  gribDis,&
-                  gribCat,&
-                  pdTemplate,&
-                  stepType,&
-                  time_unit,&
-                  time_past,&
-                  time_curr,&
-                  timeRange,&
-                  1,&
-                  toplev(1),&
-                  botlev(1),&
-                  depscale(1),&
-                  typeOfGeneratingProcess=2, &
-                  typeOfProcessedData=1, &
-                  ref_year=sst_year, &
-                  ref_month=sst_month, &
-                  ref_day=sst_day, &
-                  ref_hour=sst_hour, &
-                  ref_fcst_hr=sst_fcst_hr)
-             
-          elseif(LVT_rc%lvt_out_format.eq."grib1") then 
-             call writeSingleGrib1Var(ftn_mean,&
-                  watert_ip,&
-                  varid_def,&
-                  gribSF,&
-                  gribSfc,&
-                  gribLvl,&
-                  stepType,&
-                  time_unit,&
-                  time_past,&
-                  time_curr,&
-                  timeRange,&
-                  1,&
-                  toplev(1),&
-                  botlev(1))
-          elseif(LVT_rc%lvt_out_format.eq."netcdf") then 
-             call writeSingleNetcdfVar(ftn_mean,&
-                  watert_ip,&
-                  LVT_histData%watertemp%varId_def,&
-                  1)
-             
-          endif
-       endif
+!           EMK: Since SST is missing north of 80N, we need to set water points
+!           in this region to a reasonable value.  We follow the typical
+!           UKMET SURF value of 271.35K.
+!           do r = 1, LVT_rc%gnr
+!              do c = 1, LVT_rc%gnc
+!                 gid = LVT_domain%gindex(c,r)
+
+!                 if (gid .eq. -1 .and. lat(c,r) >= 80.) then
+!                    if (watert_ip(c+(r-1)*LVT_rc%gnc) == -9999) then
+!                       watert_ip(c+(r-1)*LVT_rc%gnc) = 271.35
+!                    end if
+!                 end if
+!              end do c
+!           end do r
+
+!           ! GRIB2 settings...Updated by EMK
+!           gribDis   = 10
+!           stepType  = "avg"
+!           stepType = "instant" EMK
+!           pdTemplate = 0
+!           gribCat   = 3
+!           varid_def = 0
+!           gribSfc   = 1
+!           gribSF    = 10
+!           gribLvl   = 1
+
+!           if(LVT_rc%lvt_out_format.eq."grib2") then
+!              !add to the grib file
+!              call writeSingleGrib2Var(ftn_mean,&
+!                   watert_ip,&
+!                   varid_def,&
+!                   gribSF,&
+!                   gribSfc,&
+!                   gribLvl,&
+!                   gribDis,&
+!                   gribCat,&
+!                   pdTemplate,&
+!                   stepType,&
+!                   time_unit,&
+!                   time_past,&
+!                   time_curr,&
+!                   timeRange,&
+!                   1,&
+!                   toplev(1),&
+!                   botlev(1),&
+!                   depscale(1),&
+!                   typeOfGeneratingProcess=2, &
+!                   typeOfProcessedData=1, &
+!                   ref_year=sst_year, &
+!                   ref_month=sst_month, &
+!                   ref_day=sst_day, &
+!                   ref_hour=sst_hour, &
+!                   ref_fcst_hr=sst_fcst_hr)
+
+!           elseif(LVT_rc%lvt_out_format.eq."grib1") then
+!              call writeSingleGrib1Var(ftn_mean,&
+!                   watert_ip,&
+!                   varid_def,&
+!                   gribSF,&
+!                   gribSfc,&
+!                   gribLvl,&
+!                   stepType,&
+!                   time_unit,&
+!                   time_past,&
+!                   time_curr,&
+!                   timeRange,&
+!                   1,&
+!                   toplev(1),&
+!                   botlev(1))
+!           elseif(LVT_rc%lvt_out_format.eq."netcdf") then
+!              call writeSingleNetcdfVar(ftn_mean,&
+!                   watert_ip,&
+!                   LVT_histData%watertemp%varId_def,&
+!                   1)
+
+!           endif
+!        endif
 
        ! *** HANDLE AICE_ARC ***
 
        ! FIXME...Update HYCOM file name convention
 !       hycom_fname = trim(LVT_rc%HYCOMdir)//'/'//&
 !           'hycom-cice_inst_ARCu0.08_928_'//trim(cdate)//'_t000.nc'
-!           
+!
 !       aice_arc  = LVT_rc%udef
 !       inquire(file=hycom_fname,exist=file_exists)
 !
@@ -2518,7 +2516,7 @@ contains
        aice_arc_1d(:) = -9999
        aice_arc_ip(:) = -9999
 
-       if(file_exists) then 
+       if(file_exists) then
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
           write(LVT_logunit,*) '[INFO] Reading HYCOM data ',trim(hycom_fname)
 
@@ -2528,7 +2526,7 @@ contains
 !variable ids
           ios = nf90_inq_varid(nid, 'aice',aice_arc_id)
           call LVT_verify(ios, 'Error nf90_inq_varid: aice')
-          
+
 !values
           ios = nf90_get_var(nid,aice_arc_id, aice_arc,&
                start=(/1,1,1,1/), &
@@ -2539,18 +2537,18 @@ contains
           call LVT_verify(ios, 'Error in nf90_close')
 #endif
           aice_arc_1d = -9999.0
-          aice_arc_lb = .false. 
+          aice_arc_lb = .false.
 
-          do r=1,LVT_rc%HYCOM_aice_arc_nr 
+          do r=1,LVT_rc%HYCOM_aice_arc_nr
              do c=1,LVT_rc%HYCOM_aice_arc_nc
-                if(aice_arc(c,r,1,1).ne.-30000) then 
+                if(aice_arc(c,r,1,1).ne.-30000) then
                    c1 = c
                    r1 = r
                    aice_arc_1d(c1+(r1-1)*LVT_rc%HYCOM_aice_arc_nc) = &
-                        aice_arc(c,r,1,1)*0.0001 
+                        aice_arc(c,r,1,1)*0.0001
 
                    aice_arc_lb(c1+(r1-1)*LVT_rc%HYCOM_aice_arc_nc) = .true.
-                   
+
                 endif
              enddo
           enddo
@@ -2560,13 +2558,13 @@ contains
                LVT_rc%lnc*LVT_rc%lnr, LVT_rc%udef, &
                LVT_rc%HYCOM_aice_arc_n11, aice_arc_lb, &
                aice_arc_1d, lo, aice_arc_ip)
-          
+
        end if
 
        ! FIXME...Update HYCOM file name convention
 !       hycom_fname = trim(LVT_rc%HYCOMdir)//'/'//&
 !           'hycom-cice_inst_ANTu0.08_928_'//trim(cdate)//'_t000.nc'
-!           
+!
 !       aice_ant  = LVT_rc%udef
 !       inquire(file=hycom_fname,exist=file_exists)
 !
@@ -2587,7 +2585,7 @@ contains
        aice_ant_1d = -9999.0
        aice_ant_ip(:) = -9999
 
-       if(file_exists) then 
+       if(file_exists) then
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
           write(LVT_logunit,*) '[INFO] Reading HYCOM data ',trim(hycom_fname)
 
@@ -2597,7 +2595,7 @@ contains
 !variable ids
           ios = nf90_inq_varid(nid, 'aice',aice_ant_id)
           call LVT_verify(ios, 'Error nf90_inq_varid: aice')
-          
+
 !values
           ios = nf90_get_var(nid,aice_ant_id, aice_ant,&
                start=(/1,1,1,1/), &
@@ -2608,15 +2606,15 @@ contains
           call LVT_verify(ios, 'Error in nf90_close')
 #endif
           aice_ant_1d = -9999.0
-          aice_ant_lb = .false. 
+          aice_ant_lb = .false.
 
-          do r=1,LVT_rc%HYCOM_aice_ant_nr 
+          do r=1,LVT_rc%HYCOM_aice_ant_nr
              do c=1,LVT_rc%HYCOM_aice_ant_nc
-                if(aice_ant(c,r,1,1).ne.-30000) then 
+                if(aice_ant(c,r,1,1).ne.-30000) then
                    c1 = c
                    r1 = r
                    aice_ant_1d(c1+(r1-1)*LVT_rc%HYCOM_aice_ant_nc) = &
-                        aice_ant(c,r,1,1)*0.0001 
+                        aice_ant(c,r,1,1)*0.0001
 
                    aice_ant_lb(c1+(r1-1)*LVT_rc%HYCOM_aice_ant_nc) = .true.
                 endif
@@ -2628,7 +2626,7 @@ contains
                LVT_rc%lnc*LVT_rc%lnr, LVT_rc%udef, &
                LVT_rc%HYCOM_aice_ant_n11, aice_ant_lb, &
                aice_ant_1d, lo, aice_ant_ip)
-          
+
        end if
 
        ! Merge the two interpolated aice fields together.
@@ -2703,8 +2701,8 @@ contains
                ref_day=cice_arc_day,&
                ref_hour=cice_arc_hour,&
                ref_fcst_hr=cice_arc_fcst_hr)
-          
-       elseif(LVT_rc%lvt_out_format.eq."grib1") then 
+
+       elseif(LVT_rc%lvt_out_format.eq."grib1") then
           call writeSingleGrib1Var(ftn_mean,&
                aice_ip,&
                varid_def,&
@@ -2719,12 +2717,12 @@ contains
                1,&
                toplev(1),&
                botlev(1))
-       elseif(LVT_rc%lvt_out_format.eq."netcdf") then 
+       elseif(LVT_rc%lvt_out_format.eq."netcdf") then
           call writeSingleNetcdfVar(ftn_mean,&
                aice_ip,&
                LVT_histData%aice%varId_def,&
                1)
-          
+
        endif
 
        ! *** HANDLE HI_ARC ***
@@ -2732,7 +2730,7 @@ contains
 !        ! FIXME...Update HYCOM file name convention
 !        hycom_fname = trim(LVT_rc%HYCOMdir)//'/'//&
 !            'hycom-cice_inst_ARCu0.08_928_'//trim(cdate)//'_t000.nc'
-           
+
 !        hi_arc  = LVT_rc%udef
 !        inquire(file=hycom_fname,exist=file_exists)
 
@@ -2754,7 +2752,7 @@ contains
        hi_arc_1d(:) = -9999
        hi_arc_ip(:) = -9999
 
-       if(file_exists) then 
+       if(file_exists) then
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
           write(LVT_logunit,*) '[INFO] Reading HYCOM data ',trim(hycom_fname)
 
@@ -2764,7 +2762,7 @@ contains
 !variable ids
           ios = nf90_inq_varid(nid, 'hi',hi_arc_id)
           call LVT_verify(ios, 'Error nf90_inq_varid: hi')
-          
+
 !values
           ios = nf90_get_var(nid,hi_arc_id, hi_arc,&
                start=(/1,1,1,1/), &
@@ -2775,18 +2773,18 @@ contains
           call LVT_verify(ios, 'Error in nf90_close')
 #endif
           hi_arc_1d = -9999.0
-          hi_arc_lb = .false. 
+          hi_arc_lb = .false.
 
-          do r=1,LVT_rc%HYCOM_hi_arc_nr 
+          do r=1,LVT_rc%HYCOM_hi_arc_nr
              do c=1,LVT_rc%HYCOM_hi_arc_nc
-                if(hi_arc(c,r,1,1).ne.-30000) then 
+                if(hi_arc(c,r,1,1).ne.-30000) then
                    c1 = c
                    r1 = r
                    hi_arc_1d(c1+(r1-1)*LVT_rc%HYCOM_hi_arc_nc) = &
-                        hi_arc(c,r,1,1)*0.001 
+                        hi_arc(c,r,1,1)*0.001
 
                    hi_arc_lb(c1+(r1-1)*LVT_rc%HYCOM_hi_arc_nc) = .true.
-                   
+
                 endif
              enddo
           enddo
@@ -2796,13 +2794,13 @@ contains
                LVT_rc%lnc*LVT_rc%lnr, LVT_rc%udef, &
                LVT_rc%HYCOM_hi_arc_n11, hi_arc_lb, &
                hi_arc_1d, lo, hi_arc_ip)
-          
+
        end if
 
        ! FIXME...Update HYCOM file name convention
 !        hycom_fname = trim(LVT_rc%HYCOMdir)//'/'//&
 !            'hycom-cice_inst_ANTu0.08_928_'//trim(cdate)//'_t000.nc'
-           
+
 !        hi_ant  = LVT_rc%udef
 !        inquire(file=hycom_fname,exist=file_exists)
 
@@ -2824,7 +2822,7 @@ contains
        hi_ant_1d = -9999.0
        hi_ant_ip(:) = -9999
 
-       if(file_exists) then 
+       if(file_exists) then
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
           write(LVT_logunit,*) '[INFO] Reading HYCOM data ',trim(hycom_fname)
 
@@ -2834,7 +2832,7 @@ contains
 !variable ids
           ios = nf90_inq_varid(nid, 'hi',hi_ant_id)
           call LVT_verify(ios, 'Error nf90_inq_varid: hi')
-          
+
 !values
           ios = nf90_get_var(nid,hi_ant_id, hi_ant,&
                start=(/1,1,1,1/), &
@@ -2845,15 +2843,15 @@ contains
           call LVT_verify(ios, 'Error in nf90_close')
 #endif
           hi_ant_1d = -9999.0
-          hi_ant_lb = .false. 
+          hi_ant_lb = .false.
 
-          do r=1,LVT_rc%HYCOM_hi_ant_nr 
+          do r=1,LVT_rc%HYCOM_hi_ant_nr
              do c=1,LVT_rc%HYCOM_hi_ant_nc
-                if(hi_ant(c,r,1,1).ne.-30000) then 
+                if(hi_ant(c,r,1,1).ne.-30000) then
                    c1 = c
                    r1 = r
                    hi_ant_1d(c1+(r1-1)*LVT_rc%HYCOM_hi_ant_nc) = &
-                        hi_ant(c,r,1,1)*0.001 
+                        hi_ant(c,r,1,1)*0.001
 
                    hi_ant_lb(c1+(r1-1)*LVT_rc%HYCOM_hi_ant_nc) = .true.
                 endif
@@ -2865,7 +2863,7 @@ contains
                LVT_rc%lnc*LVT_rc%lnr, LVT_rc%udef, &
                LVT_rc%HYCOM_hi_ant_n11, hi_ant_lb, &
                hi_ant_1d, lo, hi_ant_ip)
-          
+
        end if
 
        ! Merge the two interpolated hi fields together.
@@ -2943,8 +2941,8 @@ contains
                ref_day=hi_arc_day, &
                ref_hour=hi_arc_hour, &
                ref_fcst_hr=hi_arc_fcst_hr)
-          
-       elseif(LVT_rc%lvt_out_format.eq."grib1") then 
+
+       elseif(LVT_rc%lvt_out_format.eq."grib1") then
           call writeSingleGrib1Var(ftn_mean,&
                hi_ip,&
                varid_def,&
@@ -2959,17 +2957,17 @@ contains
                1,&
                toplev(1),&
                botlev(1))
-       elseif(LVT_rc%lvt_out_format.eq."netcdf") then 
+       elseif(LVT_rc%lvt_out_format.eq."netcdf") then
           call writeSingleNetcdfVar(ftn_mean,&
                hi_ip,&
                LVT_histData%hi%varId_def,&
                1)
-          
+
        endif
 
     endif
 
-  end subroutine LVT_append_HYCOM_fields
+  end subroutine LVT_append_HYCOM_cice_fields
 
 
   subroutine applyNoiseReductionFilter(gvar)
