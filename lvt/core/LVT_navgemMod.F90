@@ -396,8 +396,8 @@ contains
     ! FIXME...Add dynamic search for nearest NAVGEM file.  The
     ! existing code is hardwired for a sample file.
     year = 2021
-    month = 05
-    day = 05
+    month = 04
+    day = 13
     hour = 12
 
     call construct_navgem_sst_bin_filename('./navgem', &
