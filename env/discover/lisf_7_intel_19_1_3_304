@@ -105,7 +105,7 @@ set   def_ldt_libgeotiff  /discover/nobackup/projects/lis/libs/geotiff/1.4.3_int
 setenv   DEV_ENV         LISF_7_INTEL_19_1_3_304 
 setenv   LIS_ARCH        linux_ifc
 setenv   LIS_SPMD        parallel
-setenv   LIS_FC          mpif90
+setenv   LIS_FC          mpiifort
 setenv   LIS_CC          mpicc
 setenv   LIS_JPEG        $def_lis_jpeg
 setenv   LIS_OPENJPEG    $def_lis_openjpeg
@@ -124,7 +124,7 @@ setenv   LIS_LAPACK      $def_lis_lapack
 
 
 setenv   LDT_ARCH        linux_ifc
-setenv   LDT_FC          mpif90
+setenv   LDT_FC          mpiifort
 setenv   LDT_CC          mpicc
 setenv   LDT_JPEG        $def_lis_jpeg
 setenv   LDT_OPENJPEG    $def_lis_openjpeg
@@ -141,7 +141,7 @@ setenv   LDT_LIBGEOTIFF  $def_ldt_libgeotiff
 
 
 setenv   LVT_ARCH        linux_ifc
-setenv   LVT_FC          mpif90
+setenv   LVT_FC          mpiifort
 setenv   LVT_CC          mpicc
 setenv   LVT_JPEG        $def_lis_jpeg
 setenv   LVT_OPENJPEG    $def_lis_openjpeg
