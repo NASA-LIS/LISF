@@ -73,6 +73,7 @@ contains
        year, month, day, hour, fcst_hr)
 
     ! Modules
+    use LVT_coreMod, only: LVT_rc
     use LVT_logMod, only: LVT_logunit
     use LVT_timeMgrMod, only: LVT_get_julhr, LVT_julhr_date
 
@@ -91,28 +92,85 @@ contains
     integer :: navgem_julhr, lvt_julhr
     logical :: file_exists
 
-    ! FIXME...Add dynamic search for nearest NAVGEM file.  The
-    ! existing code is hardwired for a sample file provided by FNMOC.
-    year = 2021
-    month = 04
-    day = 13
-    hour = 00
-    fcst_hr = 00
+    ! EMK TEST...Hardwired attributes for sample NAVGEM data from FNMOC.
+    ! year = 2021
+    ! month = 04
+    ! day = 13
+    ! hour = 00
+    ! fcst_hr = 00
+
+    ! First guess for NAVGEM run
+    call LVT_get_julhr(LVT_rc%yr, LVT_rc%mo, LVT_rc%da, &
+         LVT_rc%hr, 0, 0, lvt_julhr)
+    select case (LVT_rc%hr)
+    case(21)
+       navgem_julhr = lvt_julhr - 3
+       fcst_hr = 3
+    case (18)
+       navgem_julhr = lvt_julhr
+       fcst_hr = 0
+    case (15)
+       navgem_julhr = lvt_julhr - 3
+       fcst_hr = 3
+    case (12)
+       navgem_julhr = lvt_julhr
+       fcst_hr = 0
+    case (9)
+       navgem_julhr = lvt_julhr - 3
+       fcst_hr = 3
+    case (6)
+       navgem_julhr = lvt_julhr
+       fcst_hr = 0
+    case (3)
+       navgem_julhr = lvt_julhr - 3
+       fcst_hr = 3
+    case (0)
+       navgem_julhr = lvt_julhr
+       fcst_hr = 0
+    case default
+       write(LVT_logunit,*)'[ERR] Invalid hour for LVT postprocessing!'
+       write(LVT_logunit,*)'LVT_rc%hr = ', LVT_rc%hr
+       stop
+    end select
+
+    call LVT_julhr_date(navgem_julhr, year, month, day, hour)
 
     call construct_navgem_sst_gr1_filename('./navgem', &
          year, month, day, hour, fcst_hr, filename)
 
-    write(LVT_logunit,*)'[INFO] *** Searching for NAVGEM file ', &
-         trim(filename)
     inquire(file=trim(filename), exist=file_exists)
     if (file_exists) then
        write(LVT_logunit,*)'[INFO] Will use ', trim(filename)
        return
     end if
 
-    ! FIXME...Add dynamic search for NAVGEM file
-    write(LVT_logunit,*)'[ERR] Cannot find NAVGEM file!'
-    stop
+    ! At this point, we are rolling back to earlier NAVGEM file
+    ! Start looping for earlier files
+    do
+       write(LVT_logunit,*) '[WARN] Cannot find ', trim(filename)
+       navgem_julhr = navgem_julhr - 6
+       fcst_hr = fcst_hr + 6
+
+       ! NAVGEM only produces SST out to 180 hours (as of 12 May 2021).
+       ! So that is a good criteria to give up.
+       if (fcst_hr .gt. 180) then
+          write(LVT_logunit,*) &
+               '[WARN] *** GIVING UP ON NAVGEM SST ***'
+          write(LVT_logunit,*) &
+               '[WARN] *** NO NAVGEM SST DATA AVAILABLE!!!'
+          filename = 'NONE'
+          return
+       end if
+       call LVT_julhr_date(navgem_julhr, year, month, day, hour)
+
+       call construct_navgem_sst_gr1_filename('./navgem', &
+            year, month, day, hour, fcst_hr, filename)
+       inquire(file=trim(filename), exist=file_exists)
+       if (file_exists) then
+          write(LVT_logunit,*)'[INFO] Will use ', trim(filename)
+          return
+       end if
+    end do
 
   end subroutine LVT_get_navgem_sst_gr1_filename
 
