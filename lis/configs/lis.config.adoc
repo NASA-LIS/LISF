@@ -2207,11 +2207,11 @@ of MODIS (MOD10C1) data.
 ....
 ANSA snow depth data directory:                  ./ANSASNWD
 ANSA snow depth lower left lat:                  -89.875
-ANSA snow depth lower left lon:                  -179.875
-ANSA snow depth upper right lat:                  89.875
-ANSA snow depth upper right lon:                 179.875
-ANSA snow depth resolution (dx):                  0.25
-ANSA snow depth resolution (dy):                  0.25
+ANSA snow depth lower left lon:                  -179.975
+ANSA snow depth upper right lat:                  89.975
+ANSA snow depth upper right lon:                 179.975
+ANSA snow depth resolution (dx):                  0.05
+ANSA snow depth resolution (dy):                  0.05
 ANSA snow depth use IMS data for snow detection:
 ANSA snow depth IMS data directory:
 ANSA snow depth use MODIS (MOD10C1) data for snow detection:
