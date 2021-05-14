@@ -294,9 +294,9 @@ subroutine NoahMP401_main(n)
             tmp_lwdown     = NOAHMP401_struc(n)%noahmp401(t)%lwdown / NOAHMP401_struc(n)%forc_count
 
             ! prcp: total precipitation (rainfall+snowfall)
-            ! Both NoahMP-3.6.1 and NoahMP-4.0.1 requires total precipitation as forcing input.
-            ! In LIS/NoahMP-3.6.1, the input forcing is total precipitation [mm], but in
-            ! LIS/NoahMP-4.0.1, the forcing data provides precipitation rate [mm/s] !!!
+            ! Both Noah-MP-3.6 and Noah-MP-4.0.1 require total precipitation as forcing input.
+            ! In Noah-MP-3.6, the forcing is required to be precipitation rate [kg m-2 sec-1].
+            ! In Noah-MP-4.0.1, the forcing is required to be precipitation amount [kg m-2].
 
             ! T. Lahmers: Correct total precip for cases when model time step > forcing timestep. 
             ! Edit suggested by D. Mocko and K. Arsenault
