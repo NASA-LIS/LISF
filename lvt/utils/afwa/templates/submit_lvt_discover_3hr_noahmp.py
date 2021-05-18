@@ -49,7 +49,7 @@ for var in vars:
 #SBATCH --account s1189
 #SBATCH --output %s.3hr.slurm.out
 #Adjust node, core, and hardware constraints here
-#SBATCH --ntasks=1 --constraint=hasw
+#SBATCH --ntasks=1 --constraint="sky|hasw"
 #Set quality of service, if needed.
 
 if [ ! -z $SLURM_SUBMIT_DIR ] ; then
