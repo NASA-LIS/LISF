@@ -2167,6 +2167,8 @@ contains
     external :: bilinear_interp_input
     external :: bilinear_interp
 
+    if (LVT_rc%processHYCOM .ne. 1) return
+
     ! Check for SST GRIB file.  (This actually contains merged sea surface
     ! temperature and land surface temperature; we treat as SST for
     ! simplicity.)
