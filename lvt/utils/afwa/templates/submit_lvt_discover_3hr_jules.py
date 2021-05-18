@@ -65,7 +65,7 @@ fi
 
 module purge
 module use --append ~/privatemodules
-module load lisf_7_intel_19_1_3_304_traceback-work-around
+module load lisf_7_intel_19_1_3_304
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1
