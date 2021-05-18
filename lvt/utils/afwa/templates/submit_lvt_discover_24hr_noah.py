@@ -35,7 +35,7 @@ for var in vars:
 #SBATCH --time=1:00:00
 #SBATCH --account s1189
 #SBATCH --output %s.24hr.slurm.out
-#SBATCH --ntasks=1 --constraint=hasw
+#SBATCH --ntasks=1 --constraint="sky|hasw"
 
 if [ ! -z $SLURM_SUBMIT_DIR ] ; then
     cd $SLURM_SUBMIT_DIR || exit 1
