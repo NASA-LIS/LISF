@@ -53,6 +53,8 @@ subroutine rapid_arrays
 !Author: 
 !Cedric H. David, 2014-2020.
 
+! !REVISION HISTORY:
+! 07 May 2021: Yeosang Yoon: Update log message
 
 !*******************************************************************************
 !Fortran includes, modules, and implicity
@@ -104,6 +106,9 @@ use rapid_var, only :                                                          &
                    IS_obs_bas,JS_obs_bas,                                      &
                    IV_obs_index,IV_obs_loc1,                                   &
                    temp_char,rank,ierr,IS_one,ZS_val
+
+use LIS_logMod
+
 implicit none
 
 
@@ -685,7 +690,10 @@ end if
 !*******************************************************************************
 !End subroutine 
 !*******************************************************************************
-call PetscPrintf(PETSC_COMM_WORLD,'Arrays created'//char(10),ierr)
-call PetscPrintf(PETSC_COMM_WORLD,'--------------------------'//char(10),ierr)
+!call PetscPrintf(PETSC_COMM_WORLD,'Arrays created'//char(10),ierr)
+!call PetscPrintf(PETSC_COMM_WORLD,'--------------------------'//char(10),ierr)
+
+! Yeosang Yoon
+write(LIS_logunit,*) '[INFO] Arrays created'
 
 end subroutine rapid_arrays

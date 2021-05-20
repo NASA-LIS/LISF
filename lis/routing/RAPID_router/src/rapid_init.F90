@@ -29,6 +29,8 @@ subroutine rapid_init
 !Author: 
 !Cedric H. David, 2012-2020.
 
+! !REVISION HISTORY:
+! 07 May 2021: Yeosang Yoon: Update log message
 
 !*******************************************************************************
 !Fortran includes, modules, and implicity
@@ -78,6 +80,9 @@ use rapid_var, only :                                                          &
                    ierr,ksp,rank,IS_one,ZS_one,                                &
                    IS_radius,ZV_riv_tot_cdownQlat,                             &
                    IV_nbrows,IV_lastrow
+
+use LIS_logMod
+
 implicit none
 
 
@@ -107,7 +112,7 @@ end if
 #ifdef RAPID_VERSION
      YV_version=RAPID_VERSION
 #else
-     YV_version='unknown'
+     YV_version='v1.8.0'    !Yeosang Yoon
 #endif
 !Compilation examples: -D RAPID_VERSION="'v1.4.0'"  
 !                      -D RAPID_VERSION="'20131114'" 
@@ -254,63 +259,118 @@ call rapid_create_obj
 !-------------------------------------------------------------------------------
 !Prints information about current model run based on info from namelist
 !-------------------------------------------------------------------------------
-call PetscPrintf(PETSC_COMM_WORLD,'--------------------------'//char(10),ierr)
-if (rank==0)                                               print '(a70)',      &
-       'RAPID: ' // YV_version //       '                                      ' 
-if (rank==0)                                               print '(a70)',      &
-       'Current ISO 8601 time: ' // YV_now //          '                       ' 
-if (rank==0 .and. .not. BS_opt_Qinit)                      print '(a70)',      &
-       'Not reading initial flows from a file                                  '
-if (rank==0 .and. BS_opt_Qinit)                            print '(a70)',      &
-       'Reading initial flows from a file                                      '
-if (rank==0 .and. .not. BS_opt_Qfinal .and. IS_opt_run==1) print '(a70)',      &
-       'Not writing final flows into a file                                    '
-if (rank==0 .and. BS_opt_Qfinal .and. IS_opt_run==1)       print '(a70)',      &
-       'Writing final flows into a file                                        '
-if (rank==0 .and. .not. BS_opt_V .and. IS_opt_run==1)      print '(a70)',      &
-       'Not computing water volumes in river reaches                           '
-if (rank==0 .and. BS_opt_V .and. IS_opt_run==1)            print '(a70)',      &
-       'Computing water volumes in river reaches                               '
-if (rank==0 .and. .not. BS_opt_for)                        print '(a70)',      &
-       'Not using forcing                                                      '
-if (rank==0 .and. BS_opt_for)                              print '(a70)',      &
-       'Using forcing                                                          '
-if (rank==0 .and. .not. BS_opt_hum)                        print '(a70)',      &
-       'Not using human-induced flows                                          '
-if (rank==0 .and. BS_opt_hum)                              print '(a70)',      &
-       'Using human-induced flows                                              '
-if (rank==0 .and. .not. BS_opt_uq .and. IS_opt_run==1)     print '(a70)',      &
-       'Not quantifying uncertainty                                            '
-if (rank==0 .and. BS_opt_uq .and. IS_opt_run==1)           print '(a70)',      &
-       'Quantifying uncertainty                                                '
-if (rank==0 .and. IS_opt_routing==1)                       print '(a70)',      &
-       'Routing with matrix-based Muskingum method                             '
-if (rank==0 .and. IS_opt_routing==2)                       print '(a70)',      &
-       'Routing with traditional Muskingum method                              '
-if (rank==0 .and. IS_opt_routing==3)                       print '(a70)',      &
-       'Routing with matrix-based Muskingum method using transboundary matrix  '
-if (rank==0 .and. IS_opt_routing==4)                       print '(a70)',      &
-       'Routing with matrix-based Muskingum method using Muskingum operator    '
-if (rank==0 .and. IS_opt_run==1)                           print '(a70)',      &
-       'RAPID mode: computing flowrates                                        '
-if (rank==0 .and. IS_opt_run==2 .and. IS_opt_phi==1)       print '(a70)',      &
-       'RAPID mode: optimizing parameters, using phi1                          ' 
-if (rank==0 .and. IS_opt_run==2 .and. IS_opt_phi==2)       print '(a70)',      &
-       'RAPID mode: optimizing parameters, using phi2                          ' 
-if (rank==0 .and. IS_opt_run==3)                           print '(a70)',      &
-       'RAPID mode: data assimilation                                          '
-if (rank==0 .and. IS_opt_run==3)                           print '(a70)',      &
-       'RAPID mode: data assimilation with simplified observation operator     '
-!if (rank==0)                                               print '(a10,a60)',  &
-!       'Using    :', Vlat_file 
-if (rank==0 .and. IS_opt_run==1)                           print '(a10,a60)',  &
-       'Using    :',k_file 
-if (rank==0 .and. IS_opt_run==1)                           print '(a10,a60)',  &
-       'Using    :',x_file 
-if (rank==0 .and. IS_opt_run==2)                           print '(a10,a60)',  &
-       'Using    :',kfac_file 
-call PetscPrintf(PETSC_COMM_WORLD,'--------------------------'//char(10),ierr)
+!call PetscPrintf(PETSC_COMM_WORLD,'--------------------------'//char(10),ierr)
+!if (rank==0)                                               print '(a70)',      &
+!       'RAPID: ' // YV_version //       '                                      ' 
+!if (rank==0)                                               print '(a70)',      &
+!       'Current ISO 8601 time: ' // YV_now //          '                       ' 
+!if (rank==0 .and. .not. BS_opt_Qinit)                      print '(a70)',      &
+!       'Not reading initial flows from a file                                  '
+!if (rank==0 .and. BS_opt_Qinit)                            print '(a70)',      &
+!       'Reading initial flows from a file                                      '
+!if (rank==0 .and. .not. BS_opt_Qfinal .and. IS_opt_run==1) print '(a70)',      &
+!       'Not writing final flows into a file                                    '
+!if (rank==0 .and. BS_opt_Qfinal .and. IS_opt_run==1)       print '(a70)',      &
+!       'Writing final flows into a file                                        '
+!if (rank==0 .and. .not. BS_opt_V .and. IS_opt_run==1)      print '(a70)',      &
+!       'Not computing water volumes in river reaches                           '
+!if (rank==0 .and. BS_opt_V .and. IS_opt_run==1)            print '(a70)',      &
+!       'Computing water volumes in river reaches                               '
+!if (rank==0 .and. .not. BS_opt_for)                        print '(a70)',      &
+!       'Not using forcing                                                      '
+!if (rank==0 .and. BS_opt_for)                              print '(a70)',      &
+!       'Using forcing                                                          '
+!if (rank==0 .and. .not. BS_opt_hum)                        print '(a70)',      &
+!       'Not using human-induced flows                                          '
+!if (rank==0 .and. BS_opt_hum)                              print '(a70)',      &
+!       'Using human-induced flows                                              '
+!if (rank==0 .and. .not. BS_opt_uq .and. IS_opt_run==1)     print '(a70)',      &
+!       'Not quantifying uncertainty                                            '
+!if (rank==0 .and. BS_opt_uq .and. IS_opt_run==1)           print '(a70)',      &
+!       'Quantifying uncertainty                                                '
+!if (rank==0 .and. IS_opt_routing==1)                       print '(a70)',      &
+!       'Routing with matrix-based Muskingum method                             '
+!if (rank==0 .and. IS_opt_routing==2)                       print '(a70)',      &
+!       'Routing with traditional Muskingum method                              '
+!if (rank==0 .and. IS_opt_routing==3)                       print '(a70)',      &
+!       'Routing with matrix-based Muskingum method using transboundary matrix  '
+!if (rank==0 .and. IS_opt_routing==4)                       print '(a70)',      &
+!       'Routing with matrix-based Muskingum method using Muskingum operator    '
+!if (rank==0 .and. IS_opt_run==1)                           print '(a70)',      &
+!       'RAPID mode: computing flowrates                                        '
+!if (rank==0 .and. IS_opt_run==2 .and. IS_opt_phi==1)       print '(a70)',      &
+!       'RAPID mode: optimizing parameters, using phi1                          ' 
+!if (rank==0 .and. IS_opt_run==2 .and. IS_opt_phi==2)       print '(a70)',      &
+!       'RAPID mode: optimizing parameters, using phi2                          ' 
+!if (rank==0 .and. IS_opt_run==3)                           print '(a70)',      &
+!       'RAPID mode: data assimilation                                          '
+!if (rank==0 .and. IS_opt_run==3)                           print '(a70)',      &
+!       'RAPID mode: data assimilation with simplified observation operator     '
+!!if (rank==0)                                               print '(a10,a60)',  &
+!!       'Using    :', Vlat_file 
+!if (rank==0 .and. IS_opt_run==1)                           print '(a10,a60)',  &
+!       'Using    :',k_file 
+!if (rank==0 .and. IS_opt_run==1)                           print '(a10,a60)',  &
+!       'Using    :',x_file 
+!if (rank==0 .and. IS_opt_run==2)                           print '(a10,a60)',  &
+!       'Using    :',kfac_file 
+!call PetscPrintf(PETSC_COMM_WORLD,'--------------------------'//char(10),ierr)
 
+! Yeosang Yoon, update log message to fit LIS 
+if (rank==0)                                                                                            &
+    write(LIS_logunit,*) '[INFO] RAPID: Initializing RAPID runs.........................................'
+if (rank==0)                                                                                            &
+    write(LIS_logunit,*) '[INFO] RAPID: ' // trim(YV_version)
+if (rank==0)                                                                                            &
+    write(LIS_logunit,*) '[INFO] Current ISO 8601 time: ' // YV_now //          '                       '
+if (rank==0 .and. .not. BS_opt_Qinit)                                                                   &
+    write(LIS_logunit,*) '[INFO] Not reading initial flows from a file                                  '
+if (rank==0 .and. BS_opt_Qinit)                                                                         &
+    write(LIS_logunit,*) '[INFO] Reading initial flows from a file                                      '
+if (rank==0 .and. .not. BS_opt_Qfinal .and. IS_opt_run==1)                                              &
+    write(LIS_logunit,*) '[INFO] Not writing final flows into a file                                    '
+if (rank==0 .and. BS_opt_Qfinal .and. IS_opt_run==1)                                                    &
+    write(LIS_logunit,*) '[INFO] Writing final flows into a file                                        '
+if (rank==0 .and. .not. BS_opt_V .and. IS_opt_run==1)                                                   &
+    write(LIS_logunit,*) '[INFO] Not computing water volumes in river reaches                           '
+if (rank==0 .and. BS_opt_V .and. IS_opt_run==1)                                                         &
+    write(LIS_logunit,*) '[INFO] Computing water volumes in river reaches                               '
+if (rank==0 .and. .not. BS_opt_for)                                                                     &
+    write(LIS_logunit,*) '[INFO] Not using forcing                                                      '
+if (rank==0 .and. BS_opt_for)                                                                           &
+    write(LIS_logunit,*) '[INFO] Using forcing                                                          '
+if (rank==0 .and. .not. BS_opt_hum)                                                                     & 
+    write(LIS_logunit,*) '[INFO] Not using human-induced flows                                          '
+if (rank==0 .and. BS_opt_hum)                                                                           &
+    write(LIS_logunit,*) '[INFO] Using human-induced flows                                              '
+if (rank==0 .and. .not. BS_opt_uq .and. IS_opt_run==1)                                                  &
+    write(LIS_logunit,*) '[INFO] Not quantifying uncertainty                                            '
+if (rank==0 .and. BS_opt_uq .and. IS_opt_run==1)                                                        &
+    write(LIS_logunit,*) '[INFO] Quantifying uncertainty                                                '
+if (rank==0 .and. IS_opt_routing==1)                                                                    &
+    write(LIS_logunit,*) '[INFO] Routing with matrix-based Muskingum method                             '
+if (rank==0 .and. IS_opt_routing==2)                                                                    &
+    write(LIS_logunit,*) '[INFO] Routing with traditional Muskingum method                              '
+if (rank==0 .and. IS_opt_routing==3)                                                                    &
+    write(LIS_logunit,*) '[INFO] Routing with matrix-based Muskingum method using transboundary matrix  '
+if (rank==0 .and. IS_opt_routing==4)                                                                    &
+    write(LIS_logunit,*) '[INFO] Routing with matrix-based Muskingum method using Muskingum operator    '
+if (rank==0 .and. IS_opt_run==1)                                                                        &
+    write(LIS_logunit,*) '[INFO] RAPID mode: computing flowrates                                        '
+if (rank==0 .and. IS_opt_run==2 .and. IS_opt_phi==1)                                                    &
+    write(LIS_logunit,*) '[INFO] RAPID mode: optimizing parameters, using phi1                          '
+if (rank==0 .and. IS_opt_run==2 .and. IS_opt_phi==2)                                                    &
+    write(LIS_logunit,*) '[INFO] RAPID mode: optimizing parameters, using phi2                          '
+if (rank==0 .and. IS_opt_run==3)                                                                        &
+    write(LIS_logunit,*) '[INFO] RAPID mode: data assimilation                                          '
+if (rank==0 .and. IS_opt_run==3)                                                                        &
+    write(LIS_logunit,*) '[INFO] RAPID mode: data assimilation with simplified observation operator     '
+if (rank==0 .and. IS_opt_run==1)                                                                        &
+    write(LIS_logunit,*) '[INFO] Using    :',trim(k_file)
+if (rank==0 .and. IS_opt_run==1)                                                                        &
+    write(LIS_logunit,*) '[INFO] Using    :',trim(x_file)
+if (rank==0 .and. IS_opt_run==2)                                                                        &
+    write(LIS_logunit,*) '[INFO] Using    :',trim(kfac_file)
 !-------------------------------------------------------------------------------
 !Calculate helpful arrays
 !-------------------------------------------------------------------------------

@@ -43,23 +43,29 @@ module RAPID_routingMod
   type, public :: RAPID_routing_dec
      
      real             :: dt
-! === Undefined Values ==================================
-     integer          :: imis           !! real undefined value
-! === River sequence ====================================
-! === Map ===============================================
-     real,    allocatable :: runoff0(:,:)     !! input runoff [mm.dt-1]
-     real,    allocatable :: basflw0(:,:)     !! input baseflow [mm.dt-1]
+ ! === Undefined Values ==================================
+     integer          :: imis                   !! real undefined value
  ! === Outputs ==========================================
-     real,    allocatable :: rivout(:,:,:)      !! river outflow  [m3/s]
-     real,    allocatable :: streamflow(:,:)
+     !real,    allocatable :: rivout(:,:,:)      !! river outflow  [m3/s]
+     !real,    allocatable :: streamflow(:,:)
+     real,     allocatable :: rst_Qout(:)      ! instantaneous flow for LIS restart file
 
      character*100    :: rstfile
      integer          :: numout
      integer          :: fileopen
      real             :: outInterval 
      real             :: rstInterval
+     real             :: routingInterval
      character*20     :: startMode
 
+     logical          :: bQinit       ! initial flow
+     logical          :: bQfinal      ! write final flow
+     logical          :: bV           ! compute volume
+     logical          :: bhum         ! human-induced flows
+     logical          :: bfor         ! forcing
+     logical          :: bdam         ! dam model used
+     logical          :: binfluence   ! output influence
+     logical          :: buq          ! uncertainty quantif.
 
      integer          :: run_opt      ! run option
      integer          :: routing_opt  ! routing option        
@@ -71,9 +77,13 @@ module RAPID_routingMod
      character*200    :: kfile        ! Muskingum parameter k file
      character*200    :: xfile        ! Muskingum parameter x file
 
-
-
-     character*200    :: nmlfile     
+     character*200    :: nmlfile
+ 
+     integer          :: n_riv_tot    ! number of river connectivity 
+     integer          :: n_riv_bas    ! number of river basins  
+     integer          :: n_wei_table  ! number of reach in weight table file
+  
+     logical          :: initCheck    ! for rapid_init   
   end type RAPID_routing_dec
 
   type(RAPID_routing_dec), allocatable :: RAPID_routing_struc(:)
@@ -91,7 +101,8 @@ contains
     use LIS_timeMgrMod
     use LIS_logMod
     use LIS_routingMod    
-    
+    use LIS_mpiMod
+        
     integer              :: n 
     integer              :: ftn 
     integer              :: status
@@ -99,23 +110,17 @@ contains
     type(ESMF_ArraySpec) :: realarrspec
     type(ESMF_Field)     :: sf_runoff_field
     type(ESMF_Field)     :: baseflow_field
+    type(ESMF_Field)     :: sf_runoff_count_field
     real, pointer        :: sfrunoff(:)
     real, pointer        :: baseflow(:)
     character*10         :: time
+
+    integer              :: gdeltas
 
     allocate(RAPID_routing_struc(LIS_rc%nnest))
  
 !TODO: change setting   
     do n=1, LIS_rc%nnest
-
-       !TODO: need to change; vector size different bewteen LSM and RAPID
-       if(LIS_masterproc) then
-          allocate(RAPID_routing_struc(n)%streamflow(&
-               LIS_rc%gnc(n),LIS_rc%gnr(n)))
-       else
-          allocate(RAPID_routing_struc(n)%streamflow(1,1))
-       endif
-
        RAPID_routing_struc(n)%imis     = -9999 !! undefined integer value
     enddo
     
@@ -138,14 +143,52 @@ contains
 
        call LIS_parseTimeString(time,RAPID_routing_struc(n)%outInterval)
     enddo
-     
+
+    call ESMF_ConfigFindLabel(LIS_config,&
+         "RAPID river routing time step:",rc=status)
+    do n=1, LIS_rc%nnest
+       call ESMF_ConfigGetAttribute(LIS_config,time,rc=status)
+       call LIS_verify(status,&
+            "RAPID river routing time step: not defined")
+
+       call LIS_parseTimeString(time,RAPID_routing_struc(n)%routingInterval)
+    enddo
+    
     if(LIS_masterproc) then 
        write(LIS_logunit,*) '[INFO] Initializing the RAPID routing scheme....'
-       !allocate matrixes
-       !do n=1, LIS_rc%nnest
-          !TODO: setting variables
-       !enddo
-                                  
+
+       do n=1, LIS_rc%nnest
+          RAPID_routing_struc(n)%initCheck = .true.
+       enddo
+
+!#if (defined SPMD)
+!       call MPI_ALLREDUCE(LIS_rc%nroutinggrid(n),&
+!            LIS_rc%glbnroutinggrid(n),1,&
+!            MPI_INTEGER,MPI_SUM,&
+!            LIS_mpi_comm,status)
+!
+!       call MPI_ALLGATHER(gdeltas,1,MPI_INTEGER,&
+!            LIS_routing_gdeltas(n,:),1,MPI_INTEGER,&
+!            LIS_mpi_comm,status)
+!
+!#else
+!       LIS_rc%glbnroutinggrid(n) = LIS_rc%nroutinggrid(n)
+!#endif
+!
+!       if(LIS_masterproc) then
+!          LIS_routing_goffsets(n,:) = 0
+!          do i=1,LIS_npes-1
+!             LIS_routing_goffsets(n,i) = &
+!                  LIS_routing_goffsets(n,i-1) +&
+!                  LIS_routing_gdeltas(n,i-1)
+!          enddo
+!       endif
+!#if (defined SPMD)
+!       call MPI_BCAST(LIS_routing_goffsets(n,:), &
+!            LIS_npes, MPI_INTEGER,0, &
+!            LIS_mpi_comm, status)
+!#endif
+
        call ESMF_ConfigFindLabel(LIS_config,&
             "RAPID routing model start mode:",rc=status)
        do n=1, LIS_rc%nnest
@@ -154,7 +197,7 @@ contains
           call LIS_verify(status,&
                "RAPID routing model start mode: not defined")
        enddo
-       
+
        call ESMF_ConfigFindLabel(LIS_config,&
             "RAPID routing model restart interval:",rc=status)
        do n=1, LIS_rc%nnest
@@ -164,7 +207,7 @@ contains
 
           call LIS_parseTimeString(time,RAPID_routing_struc(n)%rstInterval)
        enddo
-       
+
        call ESMF_ConfigFindLabel(LIS_config,&
             "RAPID routing model restart file:",rc=status)
        do n=1, LIS_rc%nnest
@@ -173,8 +216,64 @@ contains
           call LIS_verify(status,&
                "RAPID routing model restart file: not defined")
        enddo
-    
+
        ! set high-level options that govern how the model is to run
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID initial flow:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%bQinit,rc=status)
+          call LIS_verify(status,"RAPID initial flow: not defined")
+       enddo
+
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID write final flow:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%bQfinal,rc=status)
+          call LIS_verify(status,"RAPID write final flow: not defined")
+       enddo
+
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID compute volume:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%bV,rc=status)
+          call LIS_verify(status,"RAPID compute volume: not defined")
+       enddo
+
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID human-induced flow:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%bhum,rc=status)
+          call LIS_verify(status,"RAPID human-induced flow: not defined")
+       enddo
+
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID upstream forcing:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%bfor,rc=status)
+          call LIS_verify(status,"RAPID upstream forcing: not defined")
+       enddo
+
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID dam model used:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%bdam,rc=status)
+          call LIS_verify(status,"RAPID dam model used: not defined")
+       enddo
+
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID output influence:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%binfluence,rc=status)
+          call LIS_verify(status,"RAPID output influence: not defined")
+       enddo
+
+       call ESMF_ConfigFindLabel(LIS_config,"RAPID uncertainty quantification:",rc=status)
+       do n=1, LIS_rc%nnest
+          call ESMF_ConfigGetAttribute(LIS_config,&
+               RAPID_routing_struc(n)%buq,rc=status)
+          call LIS_verify(status,"RAPID uncertainty quantification: not defined")
+       enddo
+
        call ESMF_ConfigFindLabel(LIS_config,"RAPID run option:",rc=status)
        do n=1, LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,&
@@ -248,6 +347,17 @@ contains
                "RAPID namelist file: not defined")
        enddo
 
+       ! checks the size of static data for RAPID
+       do n=1, LIS_rc%nnest
+          call RAPID_check_domain_size(n)
+       enddo
+
+       ! for LIS restart
+       do n=1, LIS_rc%nnest
+          allocate(RAPID_routing_struc(n)%rst_Qout(RAPID_routing_struc(n)%n_riv_tot))
+          RAPID_routing_struc(n)%rst_Qout=0
+       enddo
+     
        do n=1, LIS_rc%nnest
           call ESMF_ArraySpecSet(realarrspec,rank=1,typekind=ESMF_TYPEKIND_R4,&
                rc=status)
@@ -265,12 +375,14 @@ contains
 
           call ESMF_FieldGet(sf_runoff_field,localDE=0,farrayPtr=sfrunoff,&
                rc=status)
-          call LIS_verify(status)
+          call LIS_verify(status, &
+               "ESMF_FieldGet failed in RAPID_routingMod")
           sfrunoff = 0.0
 
           call ESMF_FieldGet(baseflow_field,localDE=0,farrayPtr=baseflow,&
                rc=status)
-          call LIS_verify(status)
+          call LIS_verify(status, &
+               "ESMF_FieldGet failed in RAPID_routingMod")
           baseflow = 0.0
 
           call ESMF_stateAdd(LIS_runoff_state(n),(/sf_runoff_field/),rc=status)
@@ -280,7 +392,7 @@ contains
           call LIS_verify(status, 'ESMF_StateAdd failed for base flow')
        enddo
     endif
-
+   
     do n=1,LIS_rc%nnest
        call LIS_registerAlarm("RAPID router model alarm",&
             RAPID_routing_struc(n)%dt,RAPID_routing_struc(n)%dt)
@@ -291,6 +403,7 @@ contains
        call LIS_registerAlarm("RAPID router restart alarm",&
             RAPID_routing_struc(n)%dt,RAPID_routing_struc(n)%rstInterval)          
     enddo
+   
   end subroutine RAPID_routingInit
 
 end module RAPID_routingMod

@@ -29,6 +29,7 @@ subroutine RAPID_routing_run(n)
   use LIS_historyMod
   use LIS_histDataMod
   use LIS_constantsMod
+  use LIS_fileIOMod
   use RAPID_routingMod
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -52,6 +53,13 @@ subroutine RAPID_routing_run(n)
   integer               :: c,r,t
   logical               :: dummy
   integer               :: ios, nid,qsid,qsbid
+
+  character*200         :: qout_filename
+
+
+  integer       :: yr,mo,da,hr,mn,ss,doy
+  real*8        :: time
+  real          :: gmt
 ! _______________________________________________
 
   alarmCheck = LIS_isAlarmRinging(LIS_rc, "RAPID router model alarm")
@@ -82,18 +90,32 @@ subroutine RAPID_routing_run(n)
               
         call LIS_tile2grid(n,surface_runoff,surface_runoff_t,1)
         call LIS_tile2grid(n,baseflow,baseflow_t,1)
-        
-        !TODO               
+         
+        !TODO
+        ! output file name
+        call LIS_create_output_directory('ROUTING')
+        call LIS_create_output_filename(n,qout_filename,model_name='ROUTING', &
+                writeint=RAPID_routing_struc(n)%outInterval)
+
         ! run RAPID
-        call RAPID_model_main (RAPID_routing_struc(n)%run_opt,RAPID_routing_struc(n)%routing_opt,RAPID_routing_struc(n)%phi_opt,&
-                               RAPID_routing_struc(n)%connectfile,RAPID_routing_struc(n)%max_reach,RAPID_routing_struc(n)%weightfile,&
-                               RAPID_routing_struc(n)%basinIDfile,RAPID_routing_struc(n)%kfile,RAPID_routing_struc(n)%xfile,&
-                               RAPID_routing_struc(n)%nmlfile)
-        
+        call RAPID_model_main (RAPID_routing_struc(n)%bQinit,RAPID_routing_struc(n)%bQfinal,RAPID_routing_struc(n)%bV,               &
+                               RAPID_routing_struc(n)%bhum,RAPID_routing_struc(n)%bfor,RAPID_routing_struc(n)%bdam,                  &
+                               RAPID_routing_struc(n)%binfluence,RAPID_routing_struc(n)%buq,                                         &
+                               RAPID_routing_struc(n)%run_opt,RAPID_routing_struc(n)%routing_opt,RAPID_routing_struc(n)%phi_opt,     &
+                               RAPID_routing_struc(n)%connectfile,RAPID_routing_struc(n)%max_reach,RAPID_routing_struc(n)%n_riv_tot, &
+                               RAPID_routing_struc(n)%weightfile,RAPID_routing_struc(n)%n_wei_table,                                 &
+                               RAPID_routing_struc(n)%basinIDfile,RAPID_routing_struc(n)%n_riv_bas,                                  &
+                               RAPID_routing_struc(n)%kfile,RAPID_routing_struc(n)%xfile,                                            &
+                               RAPID_routing_struc(n)%nmlfile,qout_filename,                                                         &
+                               LIS_rc%gnc(n),LIS_rc%gnr(n),surface_runoff,baseflow,RAPID_routing_struc(n)%initCheck,                 &
+                               RAPID_routing_struc(n)%rst_Qout,RAPID_routing_struc(n)%startMode,                                     &
+                               RAPID_routing_struc(n)%dt,RAPID_routing_struc(n)%routingInterval)
+       
         deallocate(surface_runoff)
         deallocate(baseflow)
      endif
 
+#if 0
      !TODO: need to change streamflow format
      call LIS_grid2patch(n,LIS_rc%lsm_index, RAPID_routing_struc(n)%streamflow,&
              streamflow_lvec)
@@ -117,6 +139,7 @@ subroutine RAPID_routing_run(n)
      !if(LIS_masterproc)then
        !if(allocated(rnfsto_mm))deallocate(rnfsto_mm)
      !endif
+#endif
      
   endif
 end subroutine RAPID_routing_run

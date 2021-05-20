@@ -186,7 +186,6 @@ call VecDuplicate(ZV_k,ZV_Qbmean,ierr)
 call VecDuplicate(ZV_k,ZV_dQeb,ierr)
 !all the other vector objects are duplicates of the first one
 
-
 !Vectors of parameters----------------------------------------------------------
 !call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,IS_one*2,ZV_p,ierr)
 call VecCreate(PETSC_COMM_WORLD,ZV_p,ierr)
@@ -207,10 +206,11 @@ call VecScatterCreateToZero(ZV_k,vecscat,ZV_SeqZero,ierr)
 !create scatter context from a distributed vector to a sequential vector on the 
 !zeroth processor.  Also creates the vector ZV_SeqZero
 
-
 !TAO specific-------------------------------------------------------------------
 call TaoCreate(PETSC_COMM_WORLD,tao,ierr)
 call TaoSetType(tao,'nm',ierr)
+CHKERRQ(ierr)
+
 call TaoSetTolerances(tao,                                                     &
                       PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,&
                       ierr)
@@ -229,7 +229,6 @@ call VecSetValues(ZV_2ndIndex,IS_one,IS_one,ZS_one,INSERT_VALUES,ierr)
 call VecAssemblyBegin(ZV_2ndIndex,ierr)
 call VecAssemblyEnd(ZV_2ndIndex,ierr)
 !ZV_2ndindex=[0;1]
-
 
 !*******************************************************************************
 !End subroutine

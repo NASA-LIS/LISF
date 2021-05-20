@@ -39,6 +39,7 @@ subroutine RAPID_routing_output(n)
   logical               :: open_stats
   logical               :: alarmCheck
 
+#if 0
   alarmCheck = .false. 
   if ( LIS_rc%time >= LIS_histData(n)%time ) then
 !------------------------------------------------------------------
@@ -108,5 +109,6 @@ subroutine RAPID_routing_output(n)
      endif
   endif
 endif
+#endif
 
 end subroutine RAPID_routing_output

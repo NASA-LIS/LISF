@@ -113,9 +113,9 @@ character(len=200) :: Qout_file
 character(len=200) :: V_file
 !        - file where the volume of water in each reach are stored
 
-!YY
-character(len=200) :: Runoff_path
-character(len=200) :: weight_table_file
+!Yeosang Yoon
+character(len=200) :: weight_table_file    ! weight factors for calculating boundary inflows
+integer            :: n_weight_table       ! weight table size
 
 !*******************************************************************************
 !Declaration of variables - temporal parameters
@@ -630,10 +630,6 @@ PetscInt :: IS_time, JS_time
 !*******************************************************************************
 !01 Mar 2021, Yeosang Yoon, Add variables
 namelist /NL_namelist/                                                         &
-                       BS_opt_Qinit,BS_opt_Qfinal,BS_opt_V,                    &
-                       BS_opt_hum,BS_opt_for,BS_opt_dam,BS_opt_influence,      &
-                       BS_opt_uq,                                              &
-                       IS_riv_tot,IS_riv_bas,                                  &
                        Qinit_file,Qfinal_file,                                 &
                        Qhum_file,                                              &
                        IS_hum_tot,hum_tot_id_file,                             &
@@ -650,10 +646,9 @@ namelist /NL_namelist/                                                         &
                        kfac_file,xfac_file,ZS_knorm_init,ZS_xnorm_init,        &
                        IS_obs_tot,obs_tot_id_file,IS_obs_use,obs_use_id_file,  &
                        Qobs_file,Qobsbarrec_file,                              &
-                       ZS_TauM,ZS_dtM,ZS_TauO,ZS_dtO,ZS_TauR,ZS_dtR,           &
+                       ZS_TauO,ZS_dtO,                                         &
                        ZS_dtF,ZS_dtH,                                          &
-                       ZS_phifac,IS_strt_opt,                                  &
-                       Runoff_path
+                       ZS_phifac,IS_strt_opt
                         
 character(len=200) :: namelist_file
 !unit 88 - Namelist
