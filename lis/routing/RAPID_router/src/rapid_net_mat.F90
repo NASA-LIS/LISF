@@ -13,6 +13,8 @@ subroutine rapid_net_mat
 !Author: 
 !Cedric H. David, 2008-2020.
 
+! !REVISION HISTORY:
+! 07 May 2021: Yeosang Yoon: Update log message
 
 !*******************************************************************************
 !Fortran includes, modules, and implicity
@@ -28,6 +30,8 @@ use rapid_var, only :                                                          &
                    ierr,rank,ZS_val,                                           &
                    IS_one,ZS_one,temp_char,IV_nz,IV_dnz,IV_onz,                &
                    IS_ownfirst,IS_ownlast,IS_opt_routing
+use LIS_logMod
+
 implicit none
 
 
@@ -121,8 +125,9 @@ call MatMPIAIJSetPreallocation(ZM_TC1,                                         &
                                0*IV_dnz(IS_ownfirst+1:IS_ownlast),             &
                                PETSC_DEFAULT_INTEGER,                          &
                                IV_onz(IS_ownfirst+1:IS_ownlast),ierr)
-call PetscPrintf(PETSC_COMM_WORLD,'Network matrix preallocated'//char(10),ierr)
-
+!call PetscPrintf(PETSC_COMM_WORLD,'Network matrix preallocated'//char(10),ierr)
+! Yeosang Yoon
+write(LIS_logunit,*) '[INFO] Network matrix preallocated'
 
 !*******************************************************************************
 !Creates network matrix
@@ -169,8 +174,9 @@ call MatAssemblyEnd(ZM_Net,MAT_FINAL_ASSEMBLY,ierr)
 call MatAssemblyBegin(ZM_A  ,MAT_FINAL_ASSEMBLY,ierr)
 call MatAssemblyEnd(ZM_A  ,MAT_FINAL_ASSEMBLY,ierr)
 !sparse matrices need be assembled once their elements have been filled
-call PetscPrintf(PETSC_COMM_WORLD,'Network matrix created'//char(10),ierr)
-
+!call PetscPrintf(PETSC_COMM_WORLD,'Network matrix created'//char(10),ierr)
+! Yeosang Yoon
+write(LIS_logunit,*) '[INFO] Network matrix created'
 
 !*******************************************************************************
 !Creates transboundary matrix
@@ -283,9 +289,11 @@ end do
 
      end if
 end do
-call PetscPrintf(PETSC_COMM_WORLD,'Checked for missing connections between '// &
-                 'basin studied and rest of domain'//char(10),ierr)
-
+!call PetscPrintf(PETSC_COMM_WORLD,'Checked for missing connections between '// &
+!                 'basin studied and rest of domain'//char(10),ierr)
+! Yeosang Yoon
+write(LIS_logunit,*) '[INFO] Checked for missing connections between '// &
+                     'basin studied and rest of domain'
 
 !*******************************************************************************
 !Display matrices on stdout
@@ -308,6 +316,6 @@ call PetscPrintf(PETSC_COMM_WORLD,'Checked for missing connections between '// &
 !*******************************************************************************
 !End subroutine
 !*******************************************************************************
-call PetscPrintf(PETSC_COMM_WORLD,'--------------------------'//char(10),ierr)
+!call PetscPrintf(PETSC_COMM_WORLD,'--------------------------'//char(10),ierr)
 
 end subroutine rapid_net_mat

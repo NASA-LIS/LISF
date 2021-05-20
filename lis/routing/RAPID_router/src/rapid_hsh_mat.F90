@@ -19,6 +19,8 @@ subroutine rapid_hsh_mat
 !Author: 
 !Cedric H. David, 2015-2020.
 
+! !REVISION HISTORY:
+! 07 May 2021: Yeosang Yoon: Update log message
 
 !*******************************************************************************
 !Fortran includes, modules, and implicity
@@ -33,6 +35,8 @@ use rapid_var, only :                                                          &
                    ZM_hsh_tot,ZM_hsh_bas,                                      &
                    IS_ownfirst,IS_ownlast,                                     &
                    IS_one,ZS_one,temp_char,temp_char2,ierr,rank,ncore
+use LIS_logMod
+
 implicit none
 
 
@@ -144,8 +148,10 @@ call MatMPIAIJSetPreallocation(ZM_hsh_bas,                                     &
 !-------------------------------------------------------------------------------
 !Done with preallocation
 !-------------------------------------------------------------------------------
-call PetscPrintf(PETSC_COMM_WORLD,'Hashtable-like matrices preallocated'       &
-                 //char(10),ierr)
+!call PetscPrintf(PETSC_COMM_WORLD,'Hashtable-like matrices preallocated'       &
+!                 //char(10),ierr)
+! Yeosang Yoon
+write(LIS_logunit,*) '[INFO] Hashtable-like matrices preallocated'
 
 
 !*******************************************************************************
@@ -196,9 +202,10 @@ call MatAssemblyEnd(ZM_hsh_tot,MAT_FINAL_ASSEMBLY,ierr)
 call MatAssemblyBegin(ZM_hsh_bas,MAT_FINAL_ASSEMBLY,ierr)
 call MatAssemblyEnd(ZM_hsh_bas,MAT_FINAL_ASSEMBLY,ierr)
 !sparse matrices need be assembled once their elements have been filled
-call PetscPrintf(PETSC_COMM_WORLD,'Hashtable-like matrices created'//char(10), &
-                 ierr)
-
+!call PetscPrintf(PETSC_COMM_WORLD,'Hashtable-like matrices created'//char(10), &
+!                 ierr)
+! Yeosang Yoon
+write(LIS_logunit,*) '[INFO] Hashtable-like matrices created'
 
 !*******************************************************************************
 !Display matrices on stdout
@@ -213,6 +220,6 @@ call PetscPrintf(PETSC_COMM_WORLD,'Hashtable-like matrices created'//char(10), &
 !*******************************************************************************
 !End subroutine
 !*******************************************************************************
-call PetscPrintf(PETSC_COMM_WORLD,'--------------------------'//char(10),ierr)
+!call PetscPrintf(PETSC_COMM_WORLD,'--------------------------'//char(10),ierr)
 
 end subroutine rapid_hsh_mat

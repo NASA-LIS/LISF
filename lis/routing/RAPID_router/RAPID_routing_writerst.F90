@@ -48,10 +48,7 @@ subroutine RAPID_routing_writerst(n)
 
         open(ftn,file=trim(filename), form='unformatted')
 
-        !write(ftn) RAPID_routing_struc(n)%rivsto
-        !write(ftn) RAPID_routing_struc(n)%fldsto
-        !write(ftn) RAPID_routing_struc(n)%rnfsto
-        !write(ftn) RAPID_routing_struc(n)%bsfsto
+        write(ftn) RAPID_routing_struc(n)%rst_Qout
 
         call LIS_releaseUnitNumber(ftn)
         

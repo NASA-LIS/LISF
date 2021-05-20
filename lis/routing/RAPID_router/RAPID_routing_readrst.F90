@@ -73,7 +73,7 @@ subroutine RAPID_routing_readrst
               
               RAPID_routing_struc(n)%rstfile = filename
            endif
-        endif
+        endif !if(LIS_rc%runmode.eq."ensemble smoother") then
 
         if(read_restart) then 
            write(LIS_logunit,*) '[INFO] RAPID restart file used: ', &
@@ -88,10 +88,7 @@ subroutine RAPID_routing_readrst
               call LIS_endrun()
            endif
 
-           !read(ftn) RAPID_routing_struc(n)%rivsto
-           !read(ftn) RAPID_routing_struc(n)%fldsto
-           !read(ftn) RAPID_routing_struc(n)%rnfsto
-           !read(ftn) RAPID_routing_struc(n)%bsfsto
+           read(ftn) RAPID_routing_struc(n)%rst_Qout
 
            call LIS_releaseUnitNumber(ftn)     
         endif

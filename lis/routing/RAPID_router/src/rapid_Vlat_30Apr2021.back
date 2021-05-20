@@ -1,7 +1,7 @@
 !*******************************************************************************
 !Subroutine - rapid_Vlat
 !*******************************************************************************
-subroutine rapid_Vlat(nc,nr,runsf,runsb)
+subroutine rapid_Vlat(runoff_nc_file)
 
 !PURPOSE
 !This coupler allows to convert runoff information from a land surface model
@@ -27,12 +27,11 @@ use netcdf
 !                   IV_riv_loc1,IV_riv_index,ZV_read_riv_tot,ZV_Vlat,             &
 !                   Runoff_path,Weight_table_file            
 
-use rapid_var, only :                                              &
-                   rank,ierr,IS_time,JS_time,IS_riv_bas,           &
-                   ZS_TauR,ZS_crs_sma,ZS_crs_iflat,                &
-                   IV_time,IM_time_bnds,IV_riv_loc1,IV_riv_index,  &
-                   ZV_read_riv_tot,ZV_Vlat,                        &
-                   weight_table_file,n_weight_table
+use rapid_var, only :                                                            &
+                   rank,ierr,IS_time,JS_time,IS_riv_bas,                         &
+                   ZS_TauR,ZS_crs_sma,ZS_crs_iflat,                              &
+                   IV_time,IM_time_bnds,IV_riv_loc1,IV_riv_index,                &
+                   ZV_read_riv_tot,ZV_Vlat,Runoff_path,weight_table_file
 
 implicit none
 
@@ -40,7 +39,7 @@ implicit none
 !Declaration of variables
 !*******************************************************************************
 ! Arguments
-!character(len=200), intent(in) :: runoff_nc_file
+character(len=200), intent(in) :: runoff_nc_file
 !character(len=256) :: m3_nc_file
 
 ! Weight table file
@@ -52,13 +51,14 @@ real,    dimension(:),   allocatable :: lat, lon                ! lat, lon of LS
 
 !character(len=256)                   :: weight_table_file
 character(len=200)                   :: buf
-integer                              :: n
+integer                              :: nreach
 integer                              :: ncid, var_runsf, var_runsb ! variables for netcdf
 
 ! Runoff data are in kg/m2 accumulated over a time step
-integer, intent(in)                  :: nc, nr
-real                                 :: runsf(nc,nr)   ! surface runoff
-real                                 :: runsb(nc,nr)   ! subsurface runoff
+real,    dimension(:,:), allocatable :: runsf                   ! surface runoff
+real,    dimension(:,:), allocatable :: runsb                   ! subsurface runoff
+integer                              :: nlon, nlat
+
 
 integer                              :: nreach_new
 integer                              :: col, row                !
@@ -77,42 +77,41 @@ integer            :: i,j,k
 ! Reads weight_table file
 !*******************************************************************************
 ! check number of reach in wieght table file
-!open(45,file=weight_table_file,status='old',action='read')
-!read(45,'(A)',iostat=eof) buf  ! read header in weight table
-!nreach=1;
-!do
-!     read(45,*,iostat=eof) buf
-!     if (eof/=0) exit
-!
-!     nreach=nreach+1
-!end do
-!nreach=nreach-1 ! adjust size
-!close(45)
+open(45,file=weight_table_file,status='old',action='read')
+read(45,'(A)',iostat=eof) buf  ! read header in weight table
+nreach=1;
+do
+     read(45,*,iostat=eof) buf
+     if (eof/=0) exit
+
+     nreach=nreach+1
+end do
+nreach=nreach-1 ! adjust size
+close(45)
 
 ! allocate sizes
-allocate(rivid(n_weight_table))
-allocate(area_sqm(n_weight_table))
-allocate(idx_i(n_weight_table))
-allocate(idx_j(n_weight_table))
-allocate(npt(n_weight_table))
-allocate(lat(n_weight_table))
-allocate(lon(n_weight_table))
+allocate(rivid(nreach))
+allocate(area_sqm(nreach))
+allocate(idx_i(nreach))
+allocate(idx_j(nreach))
+allocate(npt(nreach))
+allocate(lat(nreach))
+allocate(lon(nreach))
 
 ! read weight table file
 open(45,file=weight_table_file,status='old',action='read')
 read(45,'(A)',iostat=eof) buf  ! read header in weight table
 
-n=1
+nreach=1
 do
-     read(45,*,iostat=eof) rivid(n),area_sqm(n),                  &
-                           idx_i(n),idx_j(n),npt(n),lon(n),lat(n)
+     read(45,*,iostat=eof) rivid(nreach),area_sqm(nreach),              &
+                           idx_i(nreach),idx_j(nreach),npt(nreach),lon(nreach),lat(nreach)
      if (eof/=0) exit
-     n=n+1
+     nreach=nreach+1
 end do
-n=n-1
+nreach=nreach-1
 close(45)
 
-#if 0
 !-------------------------------------------------------------------------------
 !Read runoff file
 !-------------------------------------------------------------------------------
@@ -137,7 +136,6 @@ status=nf90_get_var(ncid, var_runsf, runsf)
 status=nf90_get_var(ncid, var_runsb, runsb)
 ! close the file, freeing all resources.
 status=nf90_close(ncid)
-#endif
 
 !-------------------------------------------------------------------------------
 ! Obtain a new subset of data & Calculate water inflows
@@ -148,7 +146,7 @@ k=1
 allocate(m3_riv(IS_riv_bas))
 allocate(rivid_new(IS_riv_bas))
 
-do i=1,n_weight_table
+do i=1,nreach
      m3_riv(k)=0;
 
      ! check if all npoints points correspond to the same streamID
