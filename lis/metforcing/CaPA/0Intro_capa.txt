@@ -1,4 +1,0 @@
-!BOP
-!\section{CaPA forcing}
-!This section describes the implementation of the CaPA data. 
-!EOP
