@@ -125,6 +125,7 @@ subroutine LIS_lsmrouting_plugin
 
 #if ( defined SM_JULES_5_X )
    external jules5x_getrunoffs_mm
+   external jules5x_getrunoffs_rapid
 #endif
 
 #if ( defined ROUTE_HYMAP_ROUTER )
@@ -225,6 +226,11 @@ subroutine LIS_lsmrouting_plugin
    call registerlsmroutinggetrunoff(trim(LIS_jules5xId)//"+"//&
         trim(LIS_HYMAProuterId)//char(0), &
         jules5x_getrunoffs_mm)
+
+   ! RAPID
+   call registerlsmroutinggetrunoff(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_RAPIDrouterId)//char(0), &
+        jules5x_getrunoffs_rapid)
 #endif
 
 #endif
