@@ -41,3 +41,17 @@ LWdown_f:     1  W/m2    DN   2 0 0 1 144 100000   # Surface incident longwave r
 Landmask:     1  -       -    0 0 0 1  81 1        # Land Mask (0 - Water, 1 - Land)
 Landcover:    1  -       -    0 0 0 1 241 1        # Land cover
 Elevation:    1  m       -    0 0 0 1 233 100      # Elevation
+
+# JULES 5.0 PS41 multi-layer snow variables
+ActSnowNL:         1  -       -    0 0 0 1 184 1000    # number of snow layer on tile
+SnowSoot:          0  kg/kg   -    0 0 0 1 184 1000    # Snow soot content (kg/kg)
+SnowGrain:         1  micron  -    0 0 0 1 185 1000    # snow grain size (bulk)
+GrndSnow:          1  kg/m2   -    0 0 0 1  65 10000   # snow on ground (beneath canopy) (kg/m2)
+SnowTProf:         1  K       -    0 0 0 3 239 1000    # Temperature of the snow pack (K)
+SnowLiq:           1  kg/m2   -    0 0 0 3 185 1000    # Fraction of SWE in the liquid phase
+SnowIce:           1  kg/m2   -    0 0 0 3 185 1000    # Fraction of SWE in the solid phase
+SurftSnow:         1  kg/m2   -    0 0 0 1  65 10000   # Snow Water Equivalent (kg/m2)
+SnowDensity:       1  kg/m3   -    0 0 0 1 185 1000    # Snowpack bulk density (kg/m3)
+LayerSnowDepth:    1  m       -    0 0 0 3  66 1000    # thickness (m) of each snow layer
+LayerSnowGrain:    1  micron  -    0 0 0 3 185 1000    # snow grain size for each layer
+LayerSnowDensity:  1  kg/m3   -    0 0 0 3 185 1000    # Snow layer densities (m)

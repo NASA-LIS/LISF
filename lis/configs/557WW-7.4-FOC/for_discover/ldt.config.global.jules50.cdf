@@ -128,7 +128,7 @@ Minimum cutoff percentage (aspect bands):         0.05
 # CDF generation options
 DA preprocessing method:                          "CDF generation"
 DA observation source:                            "LIS LSM soil moisture"
-Name of the preprocessed DA file:                 ./jules50_cdf_200obs
+Name of the preprocessed DA file:                 ./jules50_cdf_200obs.nc
 Apply anomaly correction to obs:                  0
 Temporal resolution of CDFs:                      "monthly"
 Number of bins to use in the CDF:                 100
@@ -158,8 +158,8 @@ Starting day:                                        2
 Starting hour:                                       0
 Starting minute:                                     0
 Starting second:                                     0
-Ending year:                                      2019
-Ending month:                                        6
+Ending year:                                      2020
+Ending month:                                        1
 Ending day:                                          1
 Ending hour:                                         0
 Ending minute:                                       0
