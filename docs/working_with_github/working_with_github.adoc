@@ -1,13 +1,14 @@
 = Working with GitHub
 :author: James Geiger
-:revnumber: 11
-:revdate: 11 Dec 2018
+:revnumber: 12
+:revdate: 20 May 2021
 :sectnums:
 
 :github: https://github.com/
 :github_training: https://www.youtube.com/channel/UCP7RrmoueENv9TZts3HXXtw
 :github_hellowold: https://guides.github.com/activities/hello-world/
 :nasalis: https://github.com/NASA-LIS/
+:nasalis_ssh: github:NASA-LIS/
 :lisf: LISF
 :lisf_git: LISF.git
 //:lisf: lisf-test
@@ -102,8 +103,204 @@ In your home directory on your local system, create a file named .gitconfig cont
         name = <Your Name>
 ....
 
-=== Step 1. Create a clone of the NASA-LIS/LISF repository on GitHub into your GitHub work account
-anchor:sec_step1[Step 1]
+=== Step 1. Set up SSH Access to GitHub
+anchor:sec_step1[Step 1. Set up SSH access to GitHub ]
+
+On link:https://github.blog/2020-12-15-token-authentication-requirements-for-git-operations/[August 13, 2021] GitHub will be disabling password authentication in favor of more secure alternatives: SSH keys and Personal Access Tokens. *All users* must transition to one of these options to continue to connect to GitHub using `git` (i.e., to clone, push, and pull). We recommend using link:https://www.ssh.com/ssh/protocol/#how-does-the-ssh-protocol-work[SSH keys] and describe how to set up and use them with `git` below.
+
+IMPORTANT: This process must be completed on each computer you use to interact with GitHub via the command-line (personal computer, Discover, etc.).
+
+==== Create a GitHub-specific SSH Key
+
+. In the terminal, change directories into _~/.ssh_:
++
+[subs="attributes+,-callouts"]
+....
+% cd ~/.ssh
+....
+
+. Think of a unique link:https://www.ssh.com/ssh/passphrase[passphrase] to pair with this SSH key. This phrase should be 15-20 characters in length and contain a mix of:
++
+* Lowercase letters
+* Uppercase letters
+* Numbers
+* Special characters (!, @, #, $, etc.)
++
+For example: `L&Inform@ti0n$ystem`
++
+To make a long passphrase easier to remember you can use a favorite book/song/movie title, idiom, or quote as the foundation and then modify a few characters to make it unique.
++
+IMPORTANT: Please do not use the example above as your actual passphrase.
+
+[start=3]
+. Generate your unique SSH key:
++
+[subs="attributes+,-callouts"]
+....
+% ssh-keygen -t ed25519 -f id_ed25519-github
+....
++
+Where,
++
+--
+* `-t ed25519` selects the ed25519 encryption algorithm.
+* `-f id_ed25519-github` saves the public and private keys in files named _id_ed25519-github_. *Be sure to use the filename option or you risk overwriting an existing key!*
+--
++
+Enter the passphrase you created above at the two prompts that appear.
++
+If the key was successfully created `ls` should show two new files: __id_ed25519-github__ and __id_ed25519-github.pub__. The file ending with _.pub_ contains your public key and the other file contains your private key.
+
+. Print the contents of the _public_ key file:
++
+[subs="attributes+,-callouts"]
+....
+% cat id_ed25519-github.pub
+> ssh-ed25519 VQfDM9CRk2SjR+H4BJgcUT31qlmW1GoVnHZmcJMszos= userid@discover##
+....
++
+Copy the entire line beginning `ssh-ed25519`. This is your public key. _It will be unique from the example shown above._
+
+. Open a browser window and navigate to link:https://github.com[GitHub]. Log in, if necessary, then navigate to your account Settings by clicking on your user icon in the top right:
++
+image:github-settings-menu.png[]
++
+From the Settings menu, click on "SSH and GPG Keys":
++
+image:github-ssh-menu-item.png[]
++
+Click the green "New SSH Key" button in the top right to open the SSH key form.
++
+In the box labeled "Title", add a descriptive label that indicates what machine uses this key to connect to GitHub (e.g., "discover-ed25519" or "work-laptop").
++
+In the box labeled "Key", paste your public key.
++
+image:github-new-ssh-key.png[]
++
+Click "Add SSH key".
++
+The new key should appear in your list of SSH keys:
++
+image:github-ssh-key-list.png[]
+
+. Tell `ssh` which key to use when connecting to GitHub.
++
+Open _~/.ssh/config_ with a text editor and add the following:
++
+[subs="attributes+,-callouts"]
+....
+Host github
+  Hostname github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519-github
+....
++
+[NOTE]
+====
+If _~/.ssh/config_ is not empty, add a blank line between the previous section and the new text.
+
+If you used a different filename for your SSH key, modify the path after `IdentityFile` to point to your key file.
+====
+
+. Test your SSH key by running the following command:
++
+[subs="attributes+,-callouts"]
+....
+% ssh -T github
+....
++
+GitHub should respond with:
++
+[subs="attributes+,-callouts"]
+....
+> Hi username! You've successfully authenticated, but GitHub does not provide shell access.
+....
+
+If successful, your SSH key is ready for use with GitHub. Remember to repeat the steps above on any other machines you use to connect to GitHub.
+
+==== Set up SSH Agent to temporarily store your passphrase
+
+When using SSH keys, `git` will ask for your passphrase every time you clone, push, or pull from GitHub. To enter your passphrase just once per session, add your private SSH key to the SSH agent. This is useful for sessions where you anticipate having to run `git pull` and `git push` numerous times.
+
+Return to the terminal and start the SSH agent in the background:
+
+[subs="attributes+,-callouts"]
+....
+% eval "$(ssh-agent -s)"
+....
+
+Add your _private_ key to the SSH agent:
+
+[subs="attributes+,-callouts"]
+....
+% ssh-add ~/.ssh/id_ed25519-github
+....
+
+Enter your passphrase at the prompt.
+
+NOTE: Unfortunately, the SSH agent does not store your private key between sessions (i.e., logins to Discover). The two commands above must therefore be run in any session where you want to avoid repeatedly typing your passphrase.
+
+==== SSH URLs
+
+Switching to SSH keys requires a small change in the way you use `git` to interact with GitHub.
+
+Before the change to SSH, GitHub allowed the use of HTTPS URLs when cloning or adding remote repositories:
+
+[subs="attributes+,-callouts"]
+....
+% git clone {nasalis}{lisf_git}
+....
+
+Now you will have to use SSH URLs which take the form `git@github.com:username/repository` by default. However, the additions made to your _~/.ssh/config_ file above allow you to simplify this to `github:username/repository`. For example:
+
+[subs="attributes+,-callouts"]
+....
+# Cloning a repository
+% git clone {nasalis_ssh}{lisf_git}
+...
+# Adding a remote repository
+% git remote add upstream {nasalis_ssh}{lisf_git}
+....
+
+===== Update existing repositories to use SSH URLs
+
+Any existing local repositories must be updated to use SSH URLs before August 13, 2021.
+
+. Change directories into an existing repository.
+
+. View the list of remote repositories being tracked:
++
+[subs="attributes+,-callouts"]
+....
+% git remote -v
+> origin	{github}username/{lisf_git} (fetch)
+> origin	{github}username/{lisf_git} (push)
+> upstream	{nasalis}{lisf_git} (fetch)
+> upstream	{nasalis}{lisf_git} (push)
+....
+
+[start=3]
+. Set the URLs of each remotes to the SSH version:
++
+[subs="attributes+,-callouts"]
+....
+% git remote set-url origin github:username/{lisf_git}
+% git remote set-url upstream {nasalis_ssh}{lisf_git}
+....
+
+. Verify that the URLs have been correctly updated:
++
+[subs="attributes+,-callouts"]
+....
+% git remote -v
+> origin	github:username/{lisf_git} (fetch)
+> origin	github:username/{lisf_git} (push)
+> upstream	{nasalis_ssh}{lisf_git} (fetch)
+> upstream	{nasalis_ssh}{lisf_git} (push)
+....
+
+=== Step 2. Create a clone of the NASA-LIS/LISF repository on GitHub into your GitHub work account
+anchor:sec_step2[Step 2]
 
 Go to {nasalis}{lisf}.  Click on the gray "Fork" button found at the top of the page.
 
@@ -128,8 +325,8 @@ forked from NASA-LIS/LISF
 ....
 ====
 
-=== Step 2. Clone the repository in your GitHub work account onto your local machine
-anchor:sec_step2[Step 2]
+=== Step 3. Clone the repository in your GitHub work account onto your local machine
+anchor:sec_step3[Step 3]
 
 The correct path to use may be obtained by clicking on the green "Clone or download" button.
 
@@ -152,8 +349,8 @@ I would run:
 ....
 ====
 
-=== Step 3. Add the NASA-LIS/LISF repository as a remote called 'upstream'.
-anchor:sec_step3[Step 3]
+=== Step 4. Add the NASA-LIS/LISF repository as a remote called 'upstream'.
+anchor:sec_step4[Step 4]
 
 You will routinely pull commits from the NASA-LIS/LISF repository (pull from upstream) into your local repository.  To set this up, go into your local LISF working directory and run:
 
@@ -164,7 +361,7 @@ You will routinely pull commits from the NASA-LIS/LISF repository (pull from ups
 
 Now your local clone refers to the official NASA-LIS/LISF repository as 'upstream'.
 
-=== Step 4. Carry out your work
+=== Step 5. Carry out your work
 
 This is the step in which you will be developing LISF, either by working on a new feature or by fixing a bug.  But first here is some introductory information, which will become clearer below.
 
@@ -199,15 +396,15 @@ Having a ticket in place before working on and submitting a pull request gives t
 
 ==== Type of work
 
-The details of this step depend on what type of work that you are doing; in particular, adding a new feature (<<sec_step4a>>) or fixing a bug (<<sec_step4b>>).
+The details of this step depend on what type of work that you are doing; in particular, adding a new feature (<<sec_step5a>>) or fixing a bug (<<sec_step5b>>).
 
-IMPORTANT: Steps 4A and 4B assume that you are in your local working directory.
+IMPORTANT: Steps 5A and 5B assume that you are in your local working directory.
 
-==== Step 4A. Adding a new feature
-anchor:sec_step4a[Step 4A. Adding a new feature]
+==== Step 5A. Adding a new feature
+anchor:sec_step5a[Step 5A. Adding a new feature]
 These are the steps for adding a new feature, such as a new obs reader, or for enhancing an existing component, such as adding soil moisture da support to an LSM.
 
-==== Step 4A.1. Branch for feature development
+==== Step 5A.1. Branch for feature development
 
 When beginning new work, always create a new branch off 'master' to work on.
 
@@ -239,8 +436,8 @@ For example, say you are incorporating NoahMP 6.5 into LIS.  You would create a 
 ....
 ====
 
-==== Step 4A.2. Work work work
-anchor:sec_work[Step 4A.2]
+==== Step 5A.2. Work work work
+anchor:sec_work[Step 5A.2]
 You are now working on your own branch in your local working directory to perform your software development, using commands like `git add` and `git commit` to track your changes.
 
 In addition to writing code, please update relevant documentation and prepare a testcase for your work.
@@ -251,7 +448,7 @@ for guidance on writing a good commit message.
 
 Good commit messages supplement documentation and provide context about your work to both the LIS team and the LIS community.
 
-==== Step 4A.3. Push your branch to 'origin'
+==== Step 5A.3. Push your branch to 'origin'
 
 When done, push your branch in your local repository to your GitHub work account (i.e., push to origin).
 
@@ -284,11 +481,11 @@ Continuing with the example, you would execute:
 % git push -u origin <feature/branch>
 ....
 
-==== Step 4B. Fixing a bug
-anchor:sec_step4b[Step 4B. Fixing a bug]
+==== Step 5B. Fixing a bug
+anchor:sec_step5b[Step 5B. Fixing a bug]
 These are the steps for fixing a bug in LISF.
 
-==== Step 4B.1. Branch for fixes
+==== Step 5B.1. Branch for fixes
 
 Bug fixes should occur on the latest supported release branch, upstream/<support/branch>.
 
@@ -342,11 +539,11 @@ If I already have a support/release-7.5 branch tracking upstream, then I would r
 
 NOTE: If the bug exists in the 'master' branch only (i.e., the bug is in code that has not yet been released), then branch off 'master'.
 
-==== Step 4B.2. Work work work
+==== Step 5B.2. Work work work
 
 Please see <<sec_work>>.
 
-==== Step 4B.3. Push your branch to 'origin'
+==== Step 5B.3. Push your branch to 'origin'
 
 When done, push your branch in your local repository to your GitHub work account (i.e., push to origin).
 
@@ -400,7 +597,7 @@ Continuing with the example, you would execute:
 % git push -u origin <fix/branch>
 ....
 
-=== Step 5. Issue a pull request
+=== Step 6. Issue a pull request
 
 Go to your GitHub work account.  Click on the green "Compare & pull request" button next to the branch that you want merged back into NASA-LIS/LISF.
 
@@ -480,7 +677,7 @@ This branch has conflicts that must be resolved
 Reviewers, *don't*.  Contact the developer to fix the conflicts.
 
 
-=== Step 6. Clean up
+=== Step 7. Clean up
 
 WARNING: Wait until your pull request has been accepted and merged before you run these steps.  If you clean up before your pull request has been merged, then you may lose work.
 
@@ -513,9 +710,9 @@ After the pull request is merged back into the NASA-LIS/LISF repository, you sho
 
 This section will outline the steps to follow when two developers need to work together to implement a feature or bug fix.
 
-Say that both Alice and Bob are working together to incorporate Noah 6 into LISF.  Both have already performed <<sec_step1>>, <<sec_step2>>, and <<sec_step3>> to set up their GitHub account forks and local clones of LISF.
+Say that both Alice and Bob are working together to incorporate Noah 6 into LISF.  Both have already performed <<sec_step1>>, <<sec_step2>>, <<sec_step3>>, and <<sec_step4>> to set up their GitHub account forks and local clones of LISF.
 
-Alice will initiate the work.  See <<sec_step4a>>.
+Alice will initiate the work.  See <<sec_step5a>>.
 
 NOTE: The `git remote add` commands below are one-time operations, meaning you add a remote repository into your working repository only one time.
 
@@ -740,7 +937,7 @@ Again, the specific command will depend on which private repository you need to 
 
 === Step 4. Carry out your work
 
-Now you have a repository (for the restricted-access component) within a repository (for LISF).  To carry out your work for the restricted-access component, follow the instructions in <<sec_step4a>> and/or <<sec_step4b>>.
+Now you have a repository (for the restricted-access component) within a repository (for LISF).  To carry out your work for the restricted-access component, follow the instructions in <<sec_step5a>> and/or <<sec_step5b>>.
 
 Yes, you may two sets of commits and two sets of pull requests for your work.
 
