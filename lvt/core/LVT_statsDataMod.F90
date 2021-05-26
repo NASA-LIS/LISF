@@ -331,7 +331,9 @@ module LVT_statsDataMod
      integer, allocatable :: tavg_count_model_value_ts(:,:,:)
      real,    allocatable :: model_value_asc(:,:,:)
      integer, allocatable :: count_model_value_asc(:,:,:)     
+     real,    allocatable :: sum_model_value_climo(:,:,:,:) ! EMK
      real,    allocatable :: model_value_climo(:,:,:,:)
+     real,    allocatable :: sum_obs_value_climo(:,:,:,:) ! EMK
      real,    allocatable :: obs_value_climo(:,:,:,:)
      integer, allocatable :: count_obs_value_climo(:,:,:,:)
      integer, allocatable :: count_model_value_climo(:,:,:,:)

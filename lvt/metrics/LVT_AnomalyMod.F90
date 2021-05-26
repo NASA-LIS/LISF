@@ -77,8 +77,14 @@ contains
 
        if(metric%selectOpt.eq.1) then 
 
+          allocate(stats%anomaly(m)%sum_model_value_climo(LVT_rc%ngrid, &
+               selectNlevs(1),&
+               LVT_rc%anomalyTlength, LVT_rc%strat_nlevels)) ! EMK
           allocate(stats%anomaly(m)%model_value_climo(LVT_rc%ngrid, selectNlevs(1),&
                LVT_rc%anomalyTlength, LVT_rc%strat_nlevels))
+          allocate(stats%anomaly(m)%sum_obs_value_climo(LVT_rc%ngrid, &
+               selectNlevs(1),&
+               LVT_rc%anomalyTlength, LVT_rc%strat_nlevels)) ! EMK
           allocate(stats%anomaly(m)%obs_value_climo(LVT_rc%ngrid, selectNlevs(1),&
                LVT_rc%anomalyTlength, LVT_rc%strat_nlevels))
 
@@ -87,10 +93,12 @@ contains
           allocate(stats%anomaly(m)%count_obs_value_climo(LVT_rc%ngrid, selectNlevs(1),&
                LVT_rc%anomalyTlength, LVT_rc%strat_nlevels))
 
-          stats%anomaly(m)%model_value_climo = 0 
-          stats%anomaly(m)%obs_value_climo = 0 
-          stats%anomaly(m)%count_model_value_climo = 0 
-          stats%anomaly(m)%count_obs_value_climo = 0 
+          stats%anomaly(m)%sum_model_value_climo = 0 ! EMK
+          stats%anomaly(m)%model_value_climo = 0
+          stats%anomaly(m)%sum_obs_value_climo = 0 ! EMK
+          stats%anomaly(m)%obs_value_climo = 0
+          stats%anomaly(m)%count_model_value_climo = 0
+          stats%anomaly(m)%count_obs_value_climo = 0
 
           allocate(stats%anomaly(m)%model_value_total(LVT_rc%ngrid, selectNlevs(1), &
                LVT_rc%strat_nlevels))
@@ -315,15 +323,15 @@ contains
 
                 if(trim(obs%units).eq.trim(model%units)) then 
                    if(model%count(t,m,m_k).ne.0) then 
-                      stats%anomaly(m)%model_value_climo(t,k,tind,1) = &
-                           stats%anomaly(m)%model_value_climo(t,k,tind,1) + &
+                      stats%anomaly(m)%sum_model_value_climo(t,k,tind,1) = &
+                         stats%anomaly(m)%sum_model_value_climo(t,k,tind,1) + &
                            model%value(t,m,m_k)
                       stats%anomaly(m)%count_model_value_climo(t,k,tind,1) = &
                            stats%anomaly(m)%count_model_value_climo(t,k,tind,1) + 1
                    endif
                    if(obs%count(t,m,o_k).ne.0) then  
-                      stats%anomaly(m)%obs_value_climo(t,k,tind,1) = &
-                           stats%anomaly(m)%obs_value_climo(t,k,tind,1) + &
+                      stats%anomaly(m)%sum_obs_value_climo(t,k,tind,1) = &
+                           stats%anomaly(m)%sum_obs_value_climo(t,k,tind,1) + &
                            obs%value(t,m,o_k)
                       stats%anomaly(m)%count_obs_value_climo(t,k,tind,1) = &
                            stats%anomaly(m)%count_obs_value_climo(t,k,tind,1) + 1
@@ -332,15 +340,15 @@ contains
                       if(LVT_stats%strat_var(t,m,k).gt.&
                            LVT_rc%strat_var_threshold) then 
                          if(model%count(t,m,m_k).ne.0.0) then 
-                            stats%anomaly(m)%model_value_climo(t,k,tind,2) = &
-                                 stats%anomaly(m)%model_value_climo(t,k,tind,2) + &
+                            stats%anomaly(m)%sum_model_value_climo(t,k,tind,2) = &
+                                 stats%anomaly(m)%sum_model_value_climo(t,k,tind,2) + &
                                  model%value(t,m,m_k)
                             stats%anomaly(m)%count_model_value_climo(t,k,tind,2) = &
                                  stats%anomaly(m)%count_model_value_climo(t,k,tind,2) + 1
                          endif
                          if(obs%count(t,m,o_k).ne.0) then  
-                            stats%anomaly(m)%obs_value_climo(t,k,tind,2) = &
-                                 stats%anomaly(m)%obs_value_climo(t,k,tind,2) + &
+                            stats%anomaly(m)%sum_obs_value_climo(t,k,tind,2) = &
+                                 stats%anomaly(m)%sum_obs_value_climo(t,k,tind,2) + &
                                  obs%value(t,m,o_k)
                             stats%anomaly(m)%count_obs_value_climo(t,k,tind,2) = &
                                  stats%anomaly(m)%count_obs_value_climo(t,k,tind,2) + 1
@@ -348,15 +356,15 @@ contains
                       elseif(LVT_stats%strat_var(t,m,k).le.&
                            LVT_rc%strat_var_threshold) then 
                          if(model%count(t,m,m_k).ne.0.0) then 
-                            stats%anomaly(m)%model_value_climo(t,k,tind,3) = &
-                                 stats%anomaly(m)%model_value_climo(t,k,tind,3) + &
+                            stats%anomaly(m)%sum_model_value_climo(t,k,tind,3) = &
+                                 stats%anomaly(m)%sum_model_value_climo(t,k,tind,3) + &
                                  model%value(t,m,m_k)
                             stats%anomaly(m)%count_model_value_climo(t,k,tind,3) = &
                                  stats%anomaly(m)%count_model_value_climo(t,k,tind,3) + 1
                          endif
                          if(obs%count(t,m,o_k).ne.0) then  
-                            stats%anomaly(m)%obs_value_climo(t,k,tind,3) = &
-                                 stats%anomaly(m)%obs_value_climo(t,k,tind,3) + &
+                            stats%anomaly(m)%sum_obs_value_climo(t,k,tind,3) = &
+                                 stats%anomaly(m)%sum_obs_value_climo(t,k,tind,3) + &
                                  obs%value(t,m,o_k)
                             stats%anomaly(m)%count_obs_value_climo(t,k,tind,3) = &
                                  stats%anomaly(m)%count_obs_value_climo(t,k,tind,3) + 1
@@ -771,12 +779,12 @@ contains
                       do l=1, LVT_rc%strat_nlevels
                          if(stats%anomaly(m)%count_model_value_climo(t,k,i,l).ne.0) then 
                             stats%anomaly(m)%model_value_climo(t,k,i,l) = &
-                                 stats%anomaly(m)%model_value_climo(t,k,i,l) /&
+                                 stats%anomaly(m)%sum_model_value_climo(t,k,i,l) /&
                                  stats%anomaly(m)%count_model_value_climo(t,k,i,l)
                          endif
                          if(stats%anomaly(m)%count_obs_value_climo(t,k,i,l).ne.0) then  
                             stats%anomaly(m)%obs_value_climo(t,k,i,l) = &
-                                 stats%anomaly(m)%obs_value_climo(t,k,i,l)/&
+                                 stats%anomaly(m)%sum_obs_value_climo(t,k,i,l)/&
                                  stats%anomaly(m)%count_obs_value_climo(t,k,i,l)
                          endif
                       enddo
@@ -1535,7 +1543,7 @@ contains
 ! 
 !EOP
 
-    integer                :: i,k,l,m
+    integer                :: i,k,l,m,t
     type(LVT_metadataEntry), pointer :: model
     type(LVT_metadataEntry), pointer :: obs
     type(LVT_statsEntry)   , pointer :: stats
@@ -1573,7 +1581,7 @@ contains
              enddo
           enddo
        endif
-       
+
        model => model%next
        obs => obs%next
        stats => stats%next
@@ -1603,11 +1611,13 @@ contains
 ! !DESCRIPTION: 
 ! 
 !EOP
-    integer              :: k,l,m
+    integer              :: k,l,m,t
     type(LVT_metaDataEntry), pointer :: model
     type(LVT_metaDataEntry), pointer :: obs
     type(LVT_statsEntry),    pointer :: stats
-
+    logical :: done ! EMK TEST
+    integer :: i ! EMK TEST
+    
     call LVT_getDataStream1Ptr(model)
     call LVT_getDataStream2Ptr(obs)
     call LVT_getstatsEntryPtr(stats)
@@ -1662,6 +1672,58 @@ contains
              enddo
           endif
        endif
+
+       ! EMK Write climo data
+       done = .false. ! EMK TEST
+       if (LVT_metrics%anomaly%selectOpt .eq. 1) then
+          if (stats%selectOpt .eq. 1 .and. &
+               model%selectNlevs .ge. 1) then
+             do m = 1, LVT_rc%nensem
+                do k = 1, model%selectNlevs
+                   do t = 1, LVT_rc%anomalyTlength
+                      do l = 1, LVT_rc%strat_nlevels
+                         call LVT_writevar_restart(ftn, &
+                              stats%anomaly(m)%sum_model_value_climo(:,k,t,l))
+                         call LVT_writevar_restart(ftn, &
+                             stats%anomaly(m)%count_model_value_climo(:,k,t,l))
+
+                         ! EMK TEST
+                         do i = 1, LVT_rc%ngrid
+                            !if (done) exit
+                            if (stats%anomaly(m)%count_model_value_climo(i,k,t,l) .gt. 0) then
+                               write(LVT_logunit,*) &
+                                    'EMK: m,i,k,t,l, sum_climo, count_climo: ', &
+                                    m, i, k, t, l, &
+                                    stats%anomaly(m)%sum_model_value_climo(i,k,t,l), &
+                                    stats%anomaly(m)%count_model_value_climo(i,k,t,l)
+                               !done = .true.
+                               exit
+                            end if
+                         end do
+
+                      end do
+                   end do
+                end do
+
+                if (LVT_rc%obssource(2) .ne. "none") then
+                   if (obs%selectNlevs .ge. 1) then
+                      do k = 1, obs%selectNlevs
+                         do t = 1, LVT_rc%anomalyTlength
+                            do l = 1, LVT_rc%strat_nlevels
+                               call LVT_writevar_restart(ftn, &
+                                 stats%anomaly(m)%sum_obs_value_climo(:,k,t,l))
+                               call LVT_writevar_restart(ftn, &
+                               stats%anomaly(m)%count_obs_value_climo(:,k,t,l))
+                            end do
+                         end do
+                      end do
+                   end if
+                end if
+             end do
+          end if
+       end if
+       ! EMK END
+
        model => model%next
        obs   => obs%next
        stats => stats%next
@@ -1690,11 +1752,13 @@ contains
 ! 
 !EOP
 
-    integer              :: k,l,m,index
+    integer              :: k,l,m,index,t
     type(LVT_metaDataEntry), pointer :: model
     type(LVT_metaDataEntry), pointer :: obs
     type(LVT_statsEntry),    pointer :: stats
-
+    logical :: done ! EMK TEST
+    integer :: i ! EMK TEST
+    
     call LVT_getDataStream1Ptr(model)
     call LVT_getDataStream2Ptr(obs)
     call LVT_getstatsEntryPtr(stats)
@@ -1749,6 +1813,58 @@ contains
              enddo
           endif
        endif
+
+       ! EMK Read climo data
+       done = .false. ! EMK TEST
+       if (LVT_metrics%anomaly%selectOpt .eq. 1) then
+          if (stats%selectOpt .eq. 1 .and. &
+               model%selectNlevs .ge. 1) then
+             do m = 1, LVT_rc%nensem
+                do k = 1, model%selectNlevs
+                   do t = 1, LVT_rc%anomalyTlength
+                      do l = 1, LVT_rc%strat_nlevels
+                         call LVT_readvar_restart(ftn, &
+                              stats%anomaly(m)%sum_model_value_climo(:,k,t,l))
+                         call LVT_readvar_restart(ftn, &
+                             stats%anomaly(m)%count_model_value_climo(:,k,t,l))
+
+                         ! EMK TEST
+                         do i = 1, LVT_rc%ngrid
+                            !if (done) exit
+                            if (stats%anomaly(m)%count_model_value_climo(i,k,t,l) .gt. 0) then
+                               write(LVT_logunit,*) &
+                              'EMK: m,i,k,t,l, sum_climo, count_climo: ', &
+                              m,i, k, t, l, &
+                              stats%anomaly(m)%sum_model_value_climo(i,k,t,l), &
+                              stats%anomaly(m)%count_model_value_climo(i,k,t,l)
+                               !done = .true.
+                               exit
+                            end if
+                         end do
+
+                      end do
+                   end do
+                end do
+
+                if (LVT_rc%obssource(2) .ne. "none") then
+                   if (obs%selectNlevs .ge. 1) then
+                      do k = 1, obs%selectNlevs
+                         do t = 1, LVT_rc%anomalyTlength
+                            do l = 1, LVT_rc%strat_nlevels
+                               call LVT_readvar_restart(ftn, &
+                                 stats%anomaly(m)%sum_obs_value_climo(:,k,t,l))
+                               call LVT_readvar_restart(ftn, &
+                              stats%anomaly(m)%count_obs_value_climo(:,k,t,l))
+                            end do
+                         end do
+                      end do
+                   end if
+                end if
+             end do
+          end if
+       end if
+       ! EMK END
+
        model => model%next
        obs   => obs%next
        stats => stats%next
