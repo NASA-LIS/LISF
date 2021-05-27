@@ -1264,6 +1264,16 @@ module LVT_statsDataMod
      integer, allocatable :: vid_sc_total(:,:,:)
      integer, allocatable :: vid_adc_total(:,:,:)
 
+     ! EMK For anomaly climatology
+     integer, allocatable :: vid_total_climo(:,:)
+     integer, allocatable :: vid_count_total_climo(:,:)
+     integer, allocatable :: vid_ts_climo(:,:)
+     integer, allocatable :: vid_count_ts_climo(:,:)
+     integer, allocatable :: vid_sc_total_climo(:,:,:)
+     integer, allocatable :: vid_count_sc_total_climo(:,:,:)
+     integer, allocatable :: vid_adc_total_climo(:,:,:)
+     integer, allocatable :: vid_count_adc_total_climo(:,:,:)
+     
      type(LVT_statsEntry), pointer :: next
 
   end type LVT_statsEntry
