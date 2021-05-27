@@ -288,9 +288,6 @@ contains
     if(trim(LVT_rc%lvt_out_format).eq."netcdf") then 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
 
-       write(LVT_logunit,*)'EMK: entryno = ', entryno
-       flush(LVT_logunit)
-       
        if(entryno.eq.1) then 
           if(allocated(LVT_histData%xlat%value)) then 
              deallocate(LVT_histData%xlat%value)
@@ -572,9 +569,6 @@ contains
 
        endif
 
-       write(LVT_logunit,*)'EMK: lvt_wopt = ', trim(LVT_rc%lvt_wopt)
-       flush(LVT_logunit)
-       
        if(LVT_rc%lvt_wopt.eq."1d tilespace") then
           if(vlevels.gt.1) then 
              call LVT_verify(nf90_def_dim(ftn,trim(short_name)//'_profiles',&
@@ -602,23 +596,10 @@ contains
 
        elseif(LVT_rc%lvt_wopt.eq."2d gridspace") then 
 
-          write(LVT_logunit,*)'EMK: vlevels = ', vlevels
-          write(LVT_logunit,*)'EMK: nMetricLevs = ', nMetricLevs
-          flush(LVT_logunit)
-          
           ! The following are the 3-d fields
           if(vlevels.gt.1) then 
-             write(LVT_logunit,*)'EMK: Defining dimension ', &
-                  trim(short_name)//'_profiles'
-             flush(LVT_logunit)
-
              call LVT_verify(nf90_def_dim(ftn,trim(short_name)//'_profiles',&
                   vlevels, dimID(4)))
-
-             write(LVT_logunit,*)'EMK: After defining dimension ', &
-                  trim(short_name)//'_profiles'
-             flush(LVT_logunit)
-
           endif
           if(vlevels.eq.1) then 
              if(nMetricLevs.eq.1) then              
@@ -632,14 +613,8 @@ contains
                 dimID_t(1) = dimID(1)
                 dimID_t(2) = dimID(2)
                 dimID_t(3) = dimID(5)
-
-                write(LVT_logunit,*)'EMK: Calling nf90_def_var...'
-                flush(LVT_logunit)
                 call LVT_verify(nf90_def_var(ftn,trim(short_name),nf90_float,&
                      dimids = dimID_t(1:3), varID=varId))
-                write(LVT_logunit,*)'EMK: Back from nf90_def_var...'
-                flush(LVT_logunit)
-
 #if(defined USE_NETCDF4) 
                 call LVT_verify(nf90_def_var_deflate(ftn,varID,&
                      shuffle,deflate,deflate_level))
@@ -650,19 +625,9 @@ contains
                 dimID_t(1) = dimID(1)
                 dimID_t(2) = dimID(2)
                 dimID_t(3) = dimID(4)
-                
-                write(LVT_logunit,*)'EMK: Defining variable ', &
-                  trim(short_name)
-                flush(LVT_logunit)
-
                 call LVT_verify(nf90_def_var(ftn,trim(short_name),nf90_float,&
                      dimids = dimID_t(1:3), varID=varId),&
                      'nf90_def_var failed in LVT_historyMod')
-
-                write(LVT_logunit,*)'EMK: After defining variable ', &
-                  trim(short_name)
-                flush(LVT_logunit)
-
 #if(defined USE_NETCDF4) 
                 call LVT_verify(nf90_def_var_deflate(ftn,varID,&
                      shuffle,deflate,deflate_level),&
