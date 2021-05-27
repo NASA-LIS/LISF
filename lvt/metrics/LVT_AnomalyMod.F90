@@ -80,7 +80,8 @@ contains
           allocate(stats%anomaly(m)%sum_model_value_climo(LVT_rc%ngrid, &
                selectNlevs(1),&
                LVT_rc%anomalyTlength, LVT_rc%strat_nlevels)) ! EMK
-          allocate(stats%anomaly(m)%model_value_climo(LVT_rc%ngrid, selectNlevs(1),&
+          allocate(stats%anomaly(m)%model_value_climo(LVT_rc%ngrid, &
+               selectNlevs(1),&
                LVT_rc%anomalyTlength, LVT_rc%strat_nlevels))
           allocate(stats%anomaly(m)%sum_obs_value_climo(LVT_rc%ngrid, &
                selectNlevs(1),&
@@ -1307,105 +1308,168 @@ contains
     real,    allocatable    :: model_value_total(:,:)
     integer, allocatable    :: count_model_value_total(:,:)
     real,    allocatable    :: model_value_ci(:)
+    real,    allocatable    :: model_value_total_climo(:,:) ! EMK
+    integer, allocatable    :: count_model_value_total_climo(:,:) ! EMK
 
     real,    allocatable    :: obs_value_total(:,:)
     integer, allocatable    :: count_obs_value_total(:,:)
     real,    allocatable    :: obs_value_ci(:)
+    real,    allocatable    :: obs_value_total_climo(:,:) ! EMK
+    integer, allocatable    :: count_obs_value_total_climo(:,:) ! EMK
 
     real,    allocatable    :: model_value_ts(:,:)
     integer, allocatable    :: count_model_value_ts(:,:)
+    real,    allocatable    :: model_value_ts_climo(:,:) ! EMK
+    integer, allocatable    :: count_model_value_ts_climo(:,:) ! EMK
 
     real,    allocatable    :: obs_value_ts(:,:)
     integer, allocatable    :: count_obs_value_ts(:,:)
+    real,    allocatable    :: obs_value_ts_climo(:,:) ! EMK
+    integer, allocatable    :: count_obs_value_ts_climo(:,:) ! EMK
 
     real,    allocatable    :: model_value_adc(:,:,:)
     real,    allocatable    :: model_value_asc(:,:,:)
+    real,    allocatable    :: model_value_adc_climo(:,:,:) ! EMK
+    real,    allocatable    :: model_value_asc_climo(:,:,:) ! EMK
 
     real,    allocatable    :: obs_value_adc(:,:,:)
     real,    allocatable    :: obs_value_asc(:,:,:)
+    real,    allocatable    :: obs_value_adc_climo(:,:,:) ! EMK
+    real,    allocatable    :: obs_value_asc_climo(:,:,:) ! EMK
 
     if(pass.eq.LVT_metrics%anomaly%npass) then
        if(final.ne.1) then
-           if(stats%selectOpt.eq.1) then 
+          if(stats%selectOpt.eq.1) then 
               
-              allocate(model_value_ts(LVT_rc%ngrid,LVT_rc%nensem))
-              allocate(count_model_value_ts(LVT_rc%ngrid,LVT_rc%nensem))
+             allocate(model_value_ts(LVT_rc%ngrid,LVT_rc%nensem))
+             allocate(count_model_value_ts(LVT_rc%ngrid,LVT_rc%nensem))
+             allocate(model_value_ts_climo(LVT_rc%ngrid,LVT_rc%nensem))
+             allocate(count_model_value_ts_climo(LVT_rc%ngrid,LVT_rc%nensem))
+             
+             if(LVT_rc%obssource(2).ne."none".and.obs%selectNlevs.ge.1) then 
+                allocate(obs_value_ts(LVT_rc%ngrid,LVT_rc%nensem))
+                allocate(count_obs_value_ts(LVT_rc%ngrid,LVT_rc%nensem))
+                allocate(obs_value_ts_climo(LVT_rc%ngrid,LVT_rc%nensem))
+                allocate(count_obs_value_ts_climo(LVT_rc%ngrid,LVT_rc%nensem))
+             endif
+             
+             do k=1,vlevels
+                do l=1,LVT_rc%strat_nlevels
+                   do m=1,LVT_rc%nensem
+                      model_value_ts(:,m) = &
+                           stats%anomaly(m)%tavg_model_value_ts(:,k,l)
+                      count_model_value_ts(:,m) = & 
+                           stats%anomaly(m)%tavg_count_model_value_ts(:,k,l)
+                      
+                      if(LVT_rc%anomalyTlength.eq.12) then 
+                         tind = LVT_rc%mo
+                      else
+                         tind = 1
+                      endif
+                      model_value_ts_climo(:,m) = &
+                           stats%anomaly(m)%model_value_climo(:,k,tind,1)
+                      count_model_value_ts_climo(:,m) = & 
+                           stats%anomaly(m)%count_model_value_climo(:,k,tind,1)
+                      
+                      if(LVT_rc%obssource(2).ne."none".and.obs%selectNlevs.ge.1) then 
+                         obs_value_ts(:,m) = &
+                              stats%anomaly(m)%tavg_obs_value_ts(:,k,l)
+                         count_obs_value_ts(:,m) = & 
+                              stats%anomaly(m)%tavg_count_obs_value_ts(:,k,l)
+                         obs_value_ts_climo(:,m) = &
+                              stats%anomaly(m)%obs_value_climo(:,k,tind,2)
+                         count_obs_value_ts_climo(:,m) = & 
+                              stats%anomaly(m)%count_obs_value_climo(:,k,tind,2)
+                         
+                      endif
+                   enddo
+                   if(LVT_metrics%anomaly%timeOpt.eq.1) then 
+                      
+                      call LVT_writevar_gridded(LVT_metrics%anomaly%ftn_ts, &
+                           model_value_ts(:,:),&
+                           stats%vid_ts(LVT_ANOMALYid,1),k)
+                      
+                      call LVT_writevar_gridded(LVT_metrics%anomaly%ftn_ts, &
+                           real(count_model_value_ts(:,:)),&
+                           stats%vid_count_ts(LVT_ANOMALYid,1),k)
+                      
+                      call LVT_writevar_gridded(LVT_metrics%anomaly%ftn_ts, &
+                           model_value_ts_climo(:,:),&
+                           stats%vid_ts_climo(LVT_ANOMALYid,1),k)
+                      
+                      call LVT_writevar_gridded(LVT_metrics%anomaly%ftn_ts, &
+                           real(count_model_value_ts_climo(:,:)),&
+                           stats%vid_count_ts_climo(LVT_ANOMALYid,1),k)
+                      
+                   endif
+                   
+                   if(LVT_rc%obssource(2).ne."none".and.obs%selectNlevs.ge.1) then 
+                      call LVT_writevar_gridded(LVT_metrics%anomaly%ftn_ts, &
+                           obs_value_ts(:,:),&
+                           stats%vid_ts(LVT_ANOMALYid,2),k)
+                      call LVT_writevar_gridded(LVT_metrics%anomaly%ftn_ts, &
+                           real(count_obs_value_ts(:,:)),&
+                           stats%vid_count_ts(LVT_ANOMALYid,2),k)
+                      
+                      call LVT_writevar_gridded(LVT_metrics%anomaly%ftn_ts, &
+                           obs_value_ts_climo(:,:),&
+                           stats%vid_ts_climo(LVT_ANOMALYid,2),k)
+                      call LVT_writevar_gridded(LVT_metrics%anomaly%ftn_ts, &
+                           real(count_obs_value_ts_climo(:,:)),&
+                           stats%vid_count_ts_climo(LVT_ANOMALYid,2),k)
 
-              if(LVT_rc%obssource(2).ne."none".and.obs%selectNlevs.ge.1) then 
-                 allocate(obs_value_ts(LVT_rc%ngrid,LVT_rc%nensem))
-                 allocate(count_obs_value_ts(LVT_rc%ngrid,LVT_rc%nensem))
-              endif
-
-              do k=1,vlevels
-                 do l=1,LVT_rc%strat_nlevels
-                    do m=1,LVT_rc%nensem
-                         model_value_ts(:,m) = &
-                              stats%anomaly(m)%tavg_model_value_ts(:,k,l)
-                         count_model_value_ts(:,m) = & 
-                              stats%anomaly(m)%tavg_count_model_value_ts(:,k,l)
-                       if(LVT_rc%obssource(2).ne."none".and.obs%selectNlevs.ge.1) then 
-                          obs_value_ts(:,m) = &
-                               stats%anomaly(m)%tavg_obs_value_ts(:,k,l)
-                          count_obs_value_ts(:,m) = & 
-                               stats%anomaly(m)%tavg_count_obs_value_ts(:,k,l)
-                       endif
-                    enddo
-                    if(LVT_metrics%anomaly%timeOpt.eq.1) then 
-                       
-                       call LVT_writevar_gridded(LVT_metrics%anomaly%ftn_ts, &
-                            model_value_ts(:,:),&
-                            stats%vid_ts(LVT_ANOMALYid,1),k)
-                       
-                       call LVT_writevar_gridded(LVT_metrics%anomaly%ftn_ts, &
-                            real(count_model_value_ts(:,:)),&
-                            stats%vid_count_ts(LVT_ANOMALYid,1),k)
-                    endif
-                    
-                    if(LVT_rc%obssource(2).ne."none".and.obs%selectNlevs.ge.1) then 
-                       call LVT_writevar_gridded(LVT_metrics%anomaly%ftn_ts, &
-                            obs_value_ts(:,:),&
-                            stats%vid_ts(LVT_ANOMALYid,2),k)
-                       call LVT_writevar_gridded(LVT_metrics%anomaly%ftn_ts, &
-                            real(count_obs_value_ts(:,:)),&
-                            stats%vid_count_ts(LVT_ANOMALYid,2),k)
-                    endif
-                 enddo
-              enddo
-
-              deallocate(model_value_ts)
-              deallocate(count_model_value_ts)
-
-              if(LVT_rc%obssource(2).ne."none".and.obs%selectNlevs.ge.1) then 
-                 deallocate(obs_value_ts)
-                 deallocate(count_obs_value_ts)
-              endif
-           endif
+                   endif
+                enddo
+             enddo
+             
+             deallocate(model_value_ts)
+             deallocate(count_model_value_ts)
+             deallocate(model_value_ts_climo)
+             deallocate(count_model_value_ts_climo)
+             
+             if(LVT_rc%obssource(2).ne."none".and.obs%selectNlevs.ge.1) then 
+                deallocate(obs_value_ts)
+                deallocate(count_obs_value_ts)
+                deallocate(obs_value_ts_climo)
+                deallocate(count_obs_value_ts_climo)
+             endif
+          endif
        else
           if(pass.eq.LVT_metrics%anomaly%npass) then
              if(stats%selectOpt.eq.1) then
 
-              allocate(model_value_total(LVT_rc%ngrid,LVT_rc%nensem))
-              allocate(count_model_value_total(LVT_rc%ngrid,LVT_rc%nensem))
-              allocate(model_value_ci(LVT_rc%nensem))
-
-              if(LVT_metrics%anomaly%computeSC.eq.1) then 
-                 allocate(model_value_asc(LVT_rc%ngrid,&
-                      LVT_rc%nensem,&
-                      LVT_rc%nasc))
-                 if(LVT_rc%obssource(2).ne."none".and.&
-                      obs%selectNlevs.ge.1) then 
-                    allocate(obs_value_asc(LVT_rc%ngrid,&
-                         LVT_rc%nensem,&
-                         LVT_rc%nasc))
-                 endif
-              endif
-
-              if(LVT_rc%obssource(2).ne."none".and.obs%selectNlevs.ge.1) then 
-                 allocate(obs_value_total(LVT_rc%ngrid,LVT_rc%nensem))
-                 allocate(count_obs_value_total(LVT_rc%ngrid,LVT_rc%nensem))
-                 allocate(obs_value_ci(LVT_rc%nensem))
-              endif                
-
+                allocate(model_value_total(LVT_rc%ngrid,LVT_rc%nensem))
+                allocate(count_model_value_total(LVT_rc%ngrid,LVT_rc%nensem))
+                allocate(model_value_ci(LVT_rc%nensem))
+                if (LVT_rc%anomalyTlength .ne. 12) then
+                   allocate(model_value_total_climo(LVT_rc%ngrid,LVT_rc%nensem))
+                   allocate(count_model_value_total_climo(LVT_rc%ngrid,LVT_rc%nensem))
+                end if
+                
+                if(LVT_metrics%anomaly%computeSC.eq.1) then 
+                   allocate(model_value_asc(LVT_rc%ngrid,&
+                        LVT_rc%nensem,&
+                        LVT_rc%nasc))
+                   allocate(model_value_asc_climo(LVT_rc%ngrid,&
+                        LVT_rc%nensem,&
+                        LVT_rc%nasc))
+                   if(LVT_rc%obssource(2).ne."none".and.&
+                        obs%selectNlevs.ge.1) then 
+                      allocate(obs_value_asc(LVT_rc%ngrid,&
+                           LVT_rc%nensem,&
+                           LVT_rc%nasc))
+                      allocate(obs_value_asc_climo(LVT_rc%ngrid,&
+                           LVT_rc%nensem,&
+                           LVT_rc%nasc))
+                   endif
+                endif
+                
+                if(LVT_rc%obssource(2).ne."none".and.obs%selectNlevs.ge.1) then 
+                   allocate(obs_value_total(LVT_rc%ngrid,LVT_rc%nensem))
+                   allocate(count_obs_value_total(LVT_rc%ngrid,LVT_rc%nensem))
+                   allocate(obs_value_ci(LVT_rc%nensem))
+                endif
+              
                 do k=1,vlevels
                    do l=1,LVT_rc%strat_nlevels
                       do m=1,LVT_rc%nensem
@@ -1414,14 +1478,22 @@ contains
                          count_model_value_total(:,m) = & 
                               stats%anomaly(m)%count_model_value_total(:,k,l)
                          model_value_ci(m) = stats%anomaly(m)%model_value_ci(k,l)
+                         if (LVT_rc%anomalyTlength .ne. 12) then
+                            model_value_total_climo(:,m) = &
+                                 stats%anomaly(m)%model_value_climo(:,k,1,1)
+                            count_model_value_total_climo(:,m) = &
+                              stats%anomaly(m)%count_model_value_climo(:,k,1,1)
+                         end if
                          
                          if(LVT_metrics%anomaly%computeSC.eq.1) then 
                             do tind = 1,LVT_rc%nasc
                                model_value_asc(:,m,tind) = & 
                                     stats%anomaly(m)%model_value_asc(:,k,tind)
+                               model_value_asc_climo(:,m,tind) = & 
+                                    stats%anomaly(m)%model_value_climo(:,k,tind,1)
                             enddo
                          endif
-
+                         
                          if(LVT_rc%obssource(2).ne."none".and.&
                               obs%selectNlevs.ge.1) then 
                             obs_value_total(:,m) = &
@@ -1429,11 +1501,20 @@ contains
                             count_obs_value_total(:,m) = & 
                                  stats%anomaly(m)%count_obs_value_total(:,k,l)
                             obs_value_ci(m) = stats%anomaly(m)%obs_value_ci(k,l)
+                            if (LVT_rc%anomalyTlength .ne. 12) then
+                               obs_value_total_climo(:,m) = &
+                                    stats%anomaly(m)%obs_value_climo(:,k,1,2)
+                               count_obs_value_total_climo(:,m) = &
+                                stats%anomaly(m)%count_obs_value_climo(:,k,1,2)
+                            end if
 
                             if(LVT_metrics%anomaly%computeSC.eq.1) then 
                                do tind = 1,LVT_rc%nasc
                                   obs_value_asc(:,m,tind) = & 
                                        stats%anomaly(m)%obs_value_asc(:,k,tind)
+                                  obs_value_asc_climo(:,m,tind) = & 
+                                       stats%anomaly(m)%obs_value_climo(:,k,tind,2)
+                                  
                                enddo
                             endif
                             
@@ -1446,7 +1527,17 @@ contains
                          call LVT_writevar_gridded(LVT_metrics%anomaly%ftn_total, &
                               real(count_model_value_total(:,:)),&
                               stats%vid_count_total(LVT_ANOMALYid,1),k)
-
+                         if (LVT_rc%anomalyTlength .ne. 12) then
+                            call LVT_writevar_gridded( &
+                                 LVT_metrics%anomaly%ftn_total, &
+                                 model_value_total_climo(:,:),&
+                                 stats%vid_total_climo(LVT_ANOMALYid,1),k)
+                            call LVT_writevar_gridded( &
+                                 LVT_metrics%anomaly%ftn_total, &
+                                 real(count_model_value_total_climo(:,:)),&
+                                 stats%vid_count_total_climo(LVT_ANOMALYid,1),&
+                                 k)
+                         end if
                          if(LVT_rc%obssource(2).ne."none".and.&
                               obs%selectNlevs.ge.1) then 
                             call LVT_writevar_gridded(LVT_metrics%anomaly%ftn_total, &
@@ -1455,6 +1546,18 @@ contains
                             call LVT_writevar_gridded(LVT_metrics%anomaly%ftn_total, &
                                  real(count_obs_value_total(:,:)),&
                                  stats%vid_count_total(LVT_ANOMALYid,2),k)
+                            
+                            if (LVT_rc%anomalyTlength .ne. 12) then
+                               call LVT_writevar_gridded( &
+                                    LVT_metrics%anomaly%ftn_total, &
+                                    obs_value_total_climo(:,:),&
+                                    stats%vid_total_climo(LVT_ANOMALYid,2),k)
+                               call LVT_writevar_gridded( &
+                                    LVT_metrics%anomaly%ftn_total, &
+                                    real(count_obs_value_total_climo(:,:)),&
+                                    stats%vid_count_total_climo(LVT_ANOMALYid,&
+                                    2),k)
+                            end if
                          endif
                          
                          if(LVT_metrics%anomaly%computeSC.eq.1) then 
@@ -1464,6 +1567,13 @@ contains
                                     model_value_asc(:,:,tind),&
                                     stats%vid_sc_total(tind,LVT_ANOMALYid,1),k)
                             enddo
+                            do tind = 1,LVT_rc%nasc
+                               call LVT_writevar_gridded(&
+                                    LVT_metrics%anomaly%ftn_total,&
+                                    model_value_asc_climo(:,:,tind),&
+                                    stats%vid_sc_total_climo(tind,LVT_ANOMALYid,1),k)
+                            enddo
+
                             if(LVT_rc%obssource(2).ne."none".and.obs%selectNlevs.ge.1) then 
                                do tind = 1,LVT_rc%nasc
                                   call LVT_writevar_gridded(&
@@ -1471,6 +1581,14 @@ contains
                                        obs_value_asc(:,:,tind),&
                                        stats%vid_sc_total(tind,LVT_ANOMALYid,2),k)
                                enddo
+
+                               do tind = 1,LVT_rc%nasc
+                                  call LVT_writevar_gridded(&
+                                       LVT_metrics%anomaly%ftn_total,&
+                                       obs_value_asc_climo(:,:,tind),&
+                                       stats%vid_sc_total_climo(tind,LVT_ANOMALYid,2),k)
+                               enddo
+
                             endif
                          endif
                          call LVT_writeSummaryStats(&
@@ -1500,11 +1618,17 @@ contains
                 deallocate(model_value_total)
                 deallocate(count_model_value_total)
                 deallocate(model_value_ci)
+                if (allocated(model_value_total_climo)) &
+                     deallocate(model_value_total)
+                if (allocated(count_model_value_total_climo)) &
+                     deallocate(count_model_value_total)
 
                 if(LVT_metrics%anomaly%computeSC.eq.1) then 
                    deallocate(model_value_asc)
+                   deallocate(model_value_asc_climo)
                    if(LVT_rc%obssource(2).ne."none".and.obs%selectNlevs.ge.1) then 
                       deallocate(obs_value_asc)
+                      deallocate(obs_value_asc_climo)
                    endif
                 endif
 
@@ -1512,6 +1636,10 @@ contains
                    deallocate(obs_value_total)
                    deallocate(count_obs_value_total)
                    deallocate(obs_value_ci)
+                   if (allocated(obs_value_total_climo)) &
+                        deallocate(obs_value_total_climo)
+                   if (allocated(count_obs_value_total)) &
+                        deallocate(count_obs_value_total)
                 endif
 
              endif
