@@ -1970,9 +1970,6 @@ contains
 
              ! EMK Write anomaly climo
              if (m .eq. LVT_ANOMALYid) then
-                write(LVT_logunit,*)'EMK: Writing header for CLIMO TS...'
-                flush(LVT_logunit)
-                
                 call LVT_writevar_data_header( &
                      LVT_metricsPtr(m)%metricEntryPtr%ftn_ts, &
                      LVT_metricsPtr(m)%metricEntryPtr%ftn_meta_out, &
@@ -1981,10 +1978,7 @@ contains
                      trim(long_name)//" climatology", &
                      units, &
                      stats%vid_ts_climo(m,1), model%selectNlevs, &
-                  LVT_metricsPtr(m)%metricEntryPtr%nLevs, count+1)
-
-                write(LVT_logunit,*)'EMK: Done writing header for CLIMO TS...'
-                flush(LVT_logunit)
+                     LVT_metricsPtr(m)%metricEntryPtr%nLevs, count+1)
 
                 call LVT_writevar_data_header( &
                      LVT_metricsPtr(m)%metricEntryPtr%ftn_ts, &
@@ -1995,7 +1989,7 @@ contains
                      "-", stats%vid_count_ts_climo(m,1), &
                      model%selectNlevs, &
                      LVT_metricsPtr(m)%metricEntryPtr%nLevs, &
-                     count+1)  
+                     count+1)
              end if
           end if
        enddo
