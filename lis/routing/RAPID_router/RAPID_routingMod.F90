@@ -349,7 +349,10 @@ contains
 
        ! checks the size of static data for RAPID
        do n=1, LIS_rc%nnest
-          call RAPID_check_domain_size(n)
+          !call RAPID_check_domain_size(n)
+          RAPID_routing_struc(n)%n_riv_tot=203330
+          RAPID_routing_struc(n)%n_riv_bas=203330
+          RAPID_routing_struc(n)%n_wei_table=419937
        enddo
 
        ! for LIS restart
