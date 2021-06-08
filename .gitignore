@@ -3,15 +3,3 @@
 *.d
 lis/runmodes/nuopc_cpl_mode/VERSION
 lis/runmodes/nuopc_cpl_mode/liblis_nuopc.a
-lis/LIS
-lis/make/Filepath
-lis/make/LIS
-lis/make/LIS_NetCDF_inc.h
-lis/make/LIS_misc.h
-lis/make/LIS_plugins.h
-lis/make/configure.lis
-lis/make/user.cfg
-lis/z_com.sh
-lis/output.*
-lis/slurm*
-
