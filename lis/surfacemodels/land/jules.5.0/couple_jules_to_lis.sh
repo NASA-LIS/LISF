@@ -210,3 +210,7 @@ vim -N -u NONE -i NONE -e -s \
 
 ### Step 5: delete jules.F90
 rm ./src/control/standalone/jules.F90
+
+### Step 6: modify soil_htc_jls_mod.F90 to avoid a truncation error causing LIS-JULES crash  
+sed -i 's/smcl(i,n)\ -\ smclu(i,n)/max(smcl(i,n)\ -\ smclu(i,n),0.0)\ ! Modified\ by\ the\ LIS\ team\ to\ avoid\ truncation\ error/g' \
+  ./src/science/soil/soil_htc_jls_mod.F90
