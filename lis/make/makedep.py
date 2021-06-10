@@ -393,8 +393,7 @@ def process_fortran90_file(fname, prereqs):
                 print_dbg('recursing')
                 prereqs = process_fortran90_file(name, prereqs)
         f.close()
-    finally:
-        return prereqs
+    return prereqs
 
 
 def process_fortran77_file(fname, prereqs):
@@ -423,8 +422,7 @@ def process_fortran77_file(fname, prereqs):
                 prereqs = add_prerequisite(prereqs, name)
                 prereqs = process_fortran77_file(name, prereqs)
         f.close()
-    finally:
-        return prereqs
+    return prereqs
 
 
 def process_c_file(fname, prereqs):
@@ -448,8 +446,7 @@ def process_c_file(fname, prereqs):
             if name:
                 prereqs = add_prerequisite(prereqs, name)
         f.close()
-    finally:
-        return prereqs
+    return prereqs
 
 
 def write_prerequisites(depfile, base_filename, target, prereqs):

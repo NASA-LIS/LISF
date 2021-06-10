@@ -213,7 +213,7 @@ AGRMET SSMI data directory:                SSMI            # SSMI_LE, NONE, or S
 AGRMET SSMI imax:                          1024            # For 16th mesh polar stereographic
 AGRMET SSMI jmax:                          1024            # For 16th mesh polar stereographic
 
-# Do not use GEOPRECIP rainfall data -- use IMERG instead
+# Do not use GEOPRECIP rainfall data -- use IMERG instead.
 AGRMET use GEOPRECIP estimate:             0               # 0 = Do not use
 AGRMET GEOPRECIP data directory:           GEO             # GEO_LE, NONE, or GEO
 AGRMET GEOPRECIP imax:                     1024            # For 16th mesh polar stereographic
@@ -221,7 +221,7 @@ AGRMET GEOPRECIP jmax:                     1024            # For 16th mesh polar
 AGRMET GEO_PRECIP maximum temperature threshold:  278
 AGRMET GEO_PRECIP minimum temperature threshold:  273
 
-# Do not use CMORPH rainfall data -- use IMERG instead
+# Do not use CMORPH rainfall data -- use IMERG instead.
 AGRMET use CMORPH data:                    0               # 0 = Do not use
 AGRMET CMORPH data directory:              CMORPH          # Always CMORPH
 AGRMET CMORPH imax:                        4948
