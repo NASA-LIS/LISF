@@ -173,6 +173,7 @@ endif::devonly[]
 |"`NLDAS1`" |NLDAS1 analysis fields
 |"`NLDAS2`" |NLDAS2 analysis fields
 |"`PRINCETON`" |Global Princeton long-term forcing records
+|"`WRFoutv2`" |NCAR-WRF 4km output
 |"`RFE2(daily)`" |CPC Daily Rainfall estimator fields
 |"`RFE2(gdas)`" |CPC RFE2 rainfall adjusted with GDAS/CMAP precipitation
 |"`CHIRPS2`" |UCSB CHIRPS v2.0 precipitation dataset
@@ -246,7 +247,7 @@ Met spatial transform methods:     bilinear
 |"`lapse-rate`" |Use lapse rate correction for forcing
 |===
 
-Current meteorological forcing datasets supported for applying this lapse-rate adjustment to the temperature, humidity, pressure and downward longwave fields, include: NLDAS1, NLDAS2, NAM242, GDAS, PRINCETON, and ECMWF.  Future forcing dataset options will include: GEOS, GLDAS, GFS, ECMWF_reanalysis, and possible others.
+Current meteorological forcing datasets supported for applying this lapse-rate adjustment to the temperature, humidity, pressure and downward longwave fields, include: NLDAS1, NLDAS2, NAM242, GDAS, PRINCETON, ECMWF, MERRA2 and the new WRFoutv2.  Future forcing dataset options will include: GEOS, GLDAS, GFS, ECMWF_reanalysis, and possible others.
 
 ECMWF and GDAS forcing types include several terrain height maps and not just one overall, either due to change in versions or gridcell size, respective.
 
@@ -3042,6 +3043,17 @@ ERA5 forcing terrain height file: ../ERA5/era5_elev.nc
 ....
 MERRA2 geopotential terrain height file: ./MERRA2_100/MERRA2_101.const_2d_asm_Nx.00000000.nc4
 ....
+
+
+==== WRF-4km Forcing based parameter inputs
+
+`WRFoutv2 terrain height map:` specifies the WRF-4km terrain height file.
+
+.Example _ldt.config_ entry
+....
+WRFoutv2 terrain height map:      ./conus_wrf/RALconus4km_wrf_constants.nc
+....
+
 
 ==== TRMM 3B42RTV7 precipitation
 

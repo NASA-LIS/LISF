@@ -113,6 +113,7 @@ contains
     use gdas3d_forcingMod
     use geos5fcst_forcingMod
 !    use gdasLSWG_forcingMod
+    use WRFoutv2_forcingMod
 
     use TRMM3B42RTV7_forcingMod
     use TRMM3B42V6_forcingMod
@@ -435,6 +436,9 @@ contains
     call registertimeinterpmetforc(trim(LDT_ERA5Id)//char(0),timeinterp_ERA5)
     call registerresetmetforc(trim(LDT_ERA5Id)//char(0),reset_ERA5)
     call registerfinalmetforc(trim(LDT_ERA5Id)//char(0),finalize_ERA5)
+
+! - WRFv2 Analysis Forcing:
+    call registerinitmetforc(trim(LDT_wrfoutv2Id)//char(0),init_WRFoutv2)
 
 ! - GSWP2 Forcing:
     call registerinitmetforc(trim(LDT_gswp2Id)//char(0),init_GSWP2)
