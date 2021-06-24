@@ -278,8 +278,8 @@ contains
 
 
     ! HKB check 
-    ftn = LIS_getNextUnitNumber()
-    open(ftn,file="tileirrtype.txt",status='unknown',form='formatted')
+    !ftn = LIS_getNextUnitNumber()
+    !open(ftn,file="tileirrtype.txt",status='unknown',form='formatted')
 
     do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
@@ -318,11 +318,11 @@ contains
          call LIS_endrun
        endif
      ! HKB check 
-       write(ftn,fmt='(i8,2f10.4,f3.0)') &
-       t,LIS_domain(n)%grid(gid)%lon,LIS_domain(n)%grid(gid)%lat,irrigType(t)
+     !  write(ftn,fmt='(i8,2f10.4,f3.0)') &
+     !  t,LIS_domain(n)%grid(gid)%lon,LIS_domain(n)%grid(gid)%lat,irrigType(t)
 
     enddo
-    call LIS_releaseUnitNumber(ftn)
+    !call LIS_releaseUnitNumber(ftn)  !HKB
     deallocate(irrigAmt)
     
   end subroutine alltypes_irrigation_updates
@@ -635,6 +635,7 @@ contains
 
 !HKB new routine for reading in grid level irrigType field and mapping to 
 !crop tiles using A) Matt's algorithm, B) dominant, or C) single type
+!Added reading in county/country input fields 
 ! 
 
     use LIS_fileIOMod
@@ -648,12 +649,20 @@ contains
     integer              :: t,col,row,j
     integer              :: nid,ios,status,itypeId
     integer              :: nirrigtypes, irrigdimid
+    integer              :: countyId, countryId
     logical              :: file_exists    
     real,  allocatable   :: l_itype(:,:,:)
     real,  allocatable   :: glb_itype(:,:,:)
+    real,  allocatable   :: l_country(:,:)
+    real,  allocatable   :: glb_country(:,:)
+    real,  allocatable   :: l_county(:,:)
+    real,  allocatable   :: glb_county(:,:)
     real,  allocatable   :: temp(:)
+    real,  allocatable   :: PREFTYPE(:,:,:)
     integer              :: iindex
     real                 :: tempval
+    integer              :: vegt
+    integer              :: ss,ccc
     
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
@@ -684,6 +693,23 @@ contains
        
        ios = nf90_get_var(nid, itypeId, glb_itype)
        call LIS_verify(ios,'nf90_get_var failed for in alltypes_irrigationMod')
+!-- read in country and county fields
+       allocate(glb_country(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+       allocate(glb_county(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+       allocate(l_country(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+       allocate(l_county(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+
+       ios = nf90_inq_varid(nid,'COUNTRY',countryId)
+       call LIS_verify(ios,'nf90_inq_varid failed for COUNTRY')
+       
+       ios = nf90_get_var(nid, countryId, glb_country)
+       call LIS_verify(ios,'nf90_get_var failed for in COUNTRY')
+
+       ios = nf90_inq_varid(nid,'COUNTY',countyId)
+       call LIS_verify(ios,'nf90_inq_varid failed for COUNTY')
+       
+       ios = nf90_get_var(nid, countyId, glb_county)
+       call LIS_verify(ios,'nf90_get_var failed for in COUNTY')
 
        ios = nf90_close(nid)
        call LIS_verify(ios,'nf90_close failed in alltypes_irrigationMod')
@@ -697,9 +723,31 @@ contains
           LIS_nss_halo_ind(n,LIS_localPet+1):&
           LIS_nse_halo_ind(n,LIS_localPet+1),:)
 
+       if (irrigtypetocrop .eq. "distribute") then
+        print*,'here in distribute'
+        allocate(PREFTYPE(LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%nsurfacetypes))
+        l_county(:,:) = glb_county(&
+            LIS_ews_halo_ind(n,LIS_localPet+1):&         
+            LIS_ewe_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1):&
+            LIS_nse_halo_ind(n,LIS_localPet+1))
+        l_country(:,:) = glb_country(&
+            LIS_ews_halo_ind(n,LIS_localPet+1):&         
+            LIS_ewe_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1):&
+            LIS_nse_halo_ind(n,LIS_localPet+1))
+         ss = maxval(l_county)/1000
+         ccc = maxval(l_county)-ss*1000
+         print*,'county',maxval(l_county),ss,ccc
+
+        !call get_US_irrigType(l_county,l_itype, PREFTYPE)
+        ! ==> Implement Matt's global country algorithm
+       endif
+
        do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
           col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
           row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+          vegt = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%vegt
           select case (irrigtypetocrop)
            case("single")
              ! Simple case: single irrigation type (0 or 1)
@@ -727,7 +775,30 @@ contains
                  itype(t) = 0         ! no irrigation
               endif
            case("distribute")
-             ! HKB ====> add Matt's routine here
+              ! only US has distribution
+              if ( l_country(col,row) .eq. 243 ) then ! US
+                 itype(t) = PREFTYPE(col,row,vegt)
+                 if ( itype(t).lt.0 .and. itype(t).ne.LIS_rc%udef ) then
+                   print*,'invalid entry',PREFTYPE(col,row,vegt),col,row,vegt
+                 endif
+              else  
+              ! other countries, use dominant for now...
+              ! ==> Implement Matt's global country algorithm
+                 temp = l_itype(col,row,:)
+                 if ( maxval(temp).gt.0 ) then
+                    iindex = 0
+                    tempval = 0.0
+                    do j=1,nirrigtypes
+                       if ( temp(j) > tempval ) then
+                         tempval = temp(j)
+                         iindex = j
+                       end if
+                    end do
+                    itype(t) = iindex * 1.0
+                 else
+                    itype(t) = 0         ! no irrigation
+                 endif
+              endif 
            case default
               write(LIS_logunit,*) "[ERR] Irrigation type is not supported for ", &
                 trim(irrigtypetocrop)
@@ -739,6 +810,11 @@ contains
        deallocate(l_itype)
        deallocate(glb_itype)
        deallocate(temp)
+       deallocate(l_country)
+       deallocate(glb_country)
+       deallocate(l_county)
+       deallocate(glb_county)
+       if (allocated(PREFTYPE)) deallocate(PREFTYPE)
     else
        write(LIS_logunit,*) "[ERR] Irrigation type map: ",&
              LIS_rc%paramfile(n),"[ERR] does not exist."
