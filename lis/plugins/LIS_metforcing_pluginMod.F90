@@ -320,6 +320,10 @@ subroutine LIS_metforcing_plugin
    use WRFout_forcingMod
 #endif
 
+#if ( defined MF_WRFOUTV2 )
+   use WRFoutv2_forcingMod
+#endif
+
 #if ( defined MF_GDAS_T1534 )
    use gdasT1534_forcingMod
 #endif
@@ -705,6 +709,13 @@ subroutine LIS_metforcing_plugin
    external timeinterp_WRFout
    external reset_WRFout
    external finalize_WRFout
+#endif
+
+#if ( defined MF_WRFOUTV2 )
+   external get_WRFoutv2
+   external timeinterp_WRFoutv2
+   external reset_WRFoutv2
+   external finalize_WRFoutv2
 #endif
 
 #if ( defined MF_GDAS_T1534 )
@@ -1301,6 +1312,16 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_WRFout)
    call registerfinalmetforc(trim(LIS_WRFoutId)//char(0),finalize_WRFout)
    call registerresetmetforc(trim(LIS_WRFoutId)//char(0),reset_WRFout)
+#endif
+
+#if ( defined MF_WRFOUTV2 )
+! - WRFout-4KM HiRes forcing
+   call registerinitmetforc(trim(LIS_WRFoutv2Id)//char(0),init_WRFoutv2)
+   call registerretrievemetforc(trim(LIS_WRFoutv2Id)//char(0),get_WRFoutv2)
+   call registertimeinterpmetforc(trim(LIS_WRFoutv2Id)//char(0), &
+                                  timeinterp_WRFoutv2)
+   call registerfinalmetforc(trim(LIS_WRFoutv2Id)//char(0),finalize_WRFoutv2)
+   call registerresetmetforc(trim(LIS_WRFoutv2Id)//char(0),reset_WRFoutv2)
 #endif
 
 #if ( defined MF_GDAS_T1534 )
