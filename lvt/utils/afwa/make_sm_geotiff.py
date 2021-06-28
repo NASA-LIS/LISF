@@ -16,6 +16,7 @@
 # REVISION HISTORY:
 # 25 June 2021: Eric Kemp (SSAI), first version, based on code provided by
 #               Sujay Kumar (NASA GSFC).
+# 28 June 2021: Eric Kemp (SSAI), add support for each soil layer.
 #
 #------------------------------------------------------------------------------
 """
@@ -29,13 +30,13 @@ from osgeo import gdal, osr
 
 def _usage():
     """Print command line usage."""
-    print("[INFO] Usage: %s ldtfile lvtfile anomaly_gt climo_gt"
+    print("[INFO] Usage: %s ldtfile lvtfile anomaly_gt_prefix climo_gt_prefix"
           % (sys.argv[0]))
     print("[INFO]   where:")
-    print("[INFO]    ldtfile is the LDT parameter file with full lat/lon data")
-    print("[INFO]    lvtfile is the LVT 'TS' soil moisture anomaly file")
-    print("[INFO]    anomaly_gt is the output anomaly GeoTIFF file")
-    print("[INFO]    climo_gt is the output climatology GeoTIFF file")
+    print("[INFO]    ldtfile: LDT parameter file with full lat/lon data")
+    print("[INFO]    lvtfile: LVT 'TS' soil moisture anomaly file")
+    print("[INFO]    anomaly_gt_prefix: prefix for new anomaly GeoTIFF file")
+    print("[INFO]    climo_gt_prefix: prefix for new climatology GeoTIFF file")
 
 def _read_cmd_args():
     """Read command line arguments."""
@@ -61,10 +62,10 @@ def _read_cmd_args():
     ncid_lvt.close()
     # pylint: enable=no-member
 
-    _outfile_anomaly = sys.argv[3]
-    _outfile_climo = sys.argv[4]
+    _outfile_anomaly_prefix = sys.argv[3]
+    _outfile_climo_prefix = sys.argv[4]
 
-    return _ldtfile, _lvtfile, _outfile_anomaly, _outfile_climo
+    return _ldtfile, _lvtfile, _outfile_anomaly_prefix, _outfile_climo_prefix
 
 def _make_geotransform(lon, lat, nxx, nyy):
     """Set affine transformation from image coordinate space to georeferenced
@@ -88,11 +89,7 @@ def _make_geotransform(lon, lat, nxx, nyy):
     return _geotransform
 
 def _create_output_raster(outfile, nxx, nyy, _geotransform, var1):
-    """Create the output raster file (the GeoTIFF), including map projection
-    and interpolated values rescaled to 0 to 255"""
-    #_output_raster = gdal.GetDriverByName('GTiff').Create(outfile,
-    #                                                     nxx, nyy, 1,
-    #                                                     gdal.GDT_Byte)
+    """Create the output raster file (the GeoTIFF), including map projection"""
     _output_raster = gdal.GetDriverByName('GTiff').Create(outfile,
                                                           nxx, nyy, 1,
                                                           gdal.GDT_Float32)
@@ -109,7 +106,8 @@ def _create_output_raster(outfile, nxx, nyy, _geotransform, var1):
 if __name__ == "__main__":
 
     # Get the file names for this invocation.
-    ldtfile, lvtfile, outfile_anomaly, outfile_climo = _read_cmd_args()
+    ldtfile, lvtfile, outfile_anomaly_prefix, outfile_climo_prefix = \
+        _read_cmd_args()
 
     # Fetch data from LVT output file
     # NOTE:  Pylint complains about netCDF4 not having Dataset as a
@@ -121,26 +119,21 @@ if __name__ == "__main__":
     longitudes = ncid.variables["lon"][:,:]
     latitudes = ncid.variables["lat"][:,:]
     ncid.close()
-    ncid = nc4.Dataset(lvtfile, 'r', format='NETCDF4')
-    sm_anomalies = ncid.variables["SoilMoist"][0,:,:]
-    nrows, ncols = sm_anomalies.shape
-    sm_climo = ncid.variables["SoilMoist_climo"][0,:,:]
-    # pylint: enable=no-member
 
-    # Write soil moisture anomalies to GeoTIFF
-    sm1 = sm_anomalies[::-1, :]
-    geotransform = _make_geotransform(longitudes, latitudes, ncols, nrows)
-    output_raster = _create_output_raster(outfile_anomaly,
-                                          ncols, nrows, geotransform,
-                                          sm1)
-    output_raster.FlushCache() # Write to disk
-    del output_raster
+    for i in range(0, 4): # Loop across four LSM layers
+        ncid = nc4.Dataset(lvtfile, 'r', format='NETCDF4')
+        sm_anomalies = ncid.variables["SoilMoist"][i,:,:]
+        nrows, ncols = sm_anomalies.shape
+        # pylint: enable=no-member
 
-    # Write soil moisture climatology to GeoTIFF
-    sm1 = sm_climo[::-1, :]
-    geotransform = _make_geotransform(longitudes, latitudes, ncols, nrows)
-    output_raster = _create_output_raster(outfile_climo,
-                                          ncols, nrows, geotransform,
-                                          sm1)
-    output_raster.FlushCache() # Write to disk
-    del output_raster
+        # Write soil moisture anomalies to GeoTIFF
+        sm1 = sm_anomalies[::-1, :]
+        geotransform = _make_geotransform(longitudes, latitudes, ncols, nrows)
+        outfile_anomaly = "%s.layer%d.tif" %(outfile_anomaly_prefix,
+                                             i)
+        output_raster = _create_output_raster(outfile_anomaly,
+                                              ncols, nrows, geotransform,
+                                              sm1)
+        output_raster.FlushCache() # Write to disk
+        del output_raster
+
