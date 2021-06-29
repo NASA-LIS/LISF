@@ -17,6 +17,8 @@
 # 25 June 2021: Eric Kemp (SSAI), first version, based on code provided by
 #               Sujay Kumar (NASA GSFC).
 # 28 June 2021: Eric Kemp (SSAI), add support for each soil layer.
+# 29 June 2021: Eric Kemp (SSAI), added processing for climatologies for all
+#               months.  Also tweaked pylint checking for netCDF4 module.
 #
 #------------------------------------------------------------------------------
 """
@@ -25,47 +27,54 @@
 import sys
 
 # Third party modules
-import netCDF4 as nc4
+# NOTE: pylint cannot see the Dataset class in netCDF4 since the latter is
+# not written in Python.  We therefore disable a check for this line to
+# avoid a known false alarm.
+# pylint: disable=no-name-in-module
+from netCDF4 import Dataset as nc4_dataset
+# pylint: enable=no-name-in-module
 from osgeo import gdal, osr
 
 def _usage():
     """Print command line usage."""
-    print("[INFO] Usage: %s ldtfile lvtfile anomaly_gt_prefix climo_gt_prefix"
-          % (sys.argv[0]))
-    print("[INFO]   where:")
-    print("[INFO]    ldtfile: LDT parameter file with full lat/lon data")
-    print("[INFO]    lvtfile: LVT 'TS' soil moisture anomaly file")
-    print("[INFO]    anomaly_gt_prefix: prefix for new anomaly GeoTIFF file")
-    print("[INFO]    climo_gt_prefix: prefix for new climatology GeoTIFF file")
+    txt = "[INFO] Usage: %s ldtfile tsfile finalfile" %(sys.argv[0])
+    txt += " anomaly_gt_prefix climo_gt_prefix"
+    print(txt)
+    print("[INFO]  where:")
+    print("[INFO]   ldtfile: LDT parameter file with full lat/lon data")
+    print("[INFO]   tsfile: LVT 'TS' soil moisture anomaly file")
+    print("[INFO]   finalfile: LVT 'FINAL' soil moisture anomaly file")
+    print("[INFO]   anomaly_gt_prefix: prefix for new anomaly GeoTIFF files")
+    print("[INFO]   climo_gt_prefix: prefix for new climatology GeoTIFF files")
 
 def _read_cmd_args():
     """Read command line arguments."""
     # Check if argument count is correct
-    if len(sys.argv) != 5:
+    if len(sys.argv) != 6:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
 
     # Check if LDT parameter file can be opened.
-    # NOTE:  Pylint complains about netCDF4 not having Dataset as a
-    # member.  But this is false -- Dataset is a class, and we use
-    # the constructor below.  Since this appears to be a bug in pylint, we
-    # disable the no-member check in this section.
-    # pylint: disable=no-member
     _ldtfile = sys.argv[1]
-    ncid_ldt = nc4.Dataset(_ldtfile, mode='r', format='NETCDF4_CLASSIC')
+    ncid_ldt = nc4_dataset(_ldtfile, mode='r', format='NETCDF4_CLASSIC')
     ncid_ldt.close()
 
-    # Check of LVT anomaly file can be opened
-    _lvtfile = sys.argv[2]
-    ncid_lvt = nc4.Dataset(_lvtfile, mode='r', format='NETCDF4_CLASSIC')
+    # Check of LVT TS anomaly file can be opened
+    _tsfile = sys.argv[2]
+    ncid_lvt = nc4_dataset(_tsfile, mode='r', format='NETCDF4_CLASSIC')
     ncid_lvt.close()
-    # pylint: enable=no-member
 
-    _outfile_anomaly_prefix = sys.argv[3]
-    _outfile_climo_prefix = sys.argv[4]
+    # Check of LVT FINAL anomaly file can be opened
+    _finalfile = sys.argv[3]
+    ncid_lvt = nc4_dataset(_finalfile, mode='r', format='NETCDF4_CLASSIC')
+    ncid_lvt.close()
 
-    return _ldtfile, _lvtfile, _outfile_anomaly_prefix, _outfile_climo_prefix
+    _outfile_anomaly_prefix = sys.argv[4]
+    _outfile_climo_prefix = sys.argv[5]
+
+    return _ldtfile, _tsfile, _finalfile, \
+        _outfile_anomaly_prefix, _outfile_climo_prefix
 
 def _make_geotransform(lon, lat, nxx, nyy):
     """Set affine transformation from image coordinate space to georeferenced
@@ -85,7 +94,7 @@ def _make_geotransform(lon, lat, nxx, nyy):
     # Fourth variable is column rotation, set to zero
     # Sixth variable is n-s pixel resolution (negative for north-up image)
     _geotransform = (xmin, xres, 0, ymax, 0, -1*yres)
-    print(_geotransform)
+    #print(_geotransform)
     return _geotransform
 
 def _create_output_raster(outfile, nxx, nyy, _geotransform, var1):
@@ -102,38 +111,61 @@ def _create_output_raster(outfile, nxx, nyy, _geotransform, var1):
     _output_raster.GetRasterBand(1).WriteArray(var1)
     return _output_raster
 
+_MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+           "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+
 # Main driver
 if __name__ == "__main__":
 
     # Get the file names for this invocation.
-    ldtfile, lvtfile, outfile_anomaly_prefix, outfile_climo_prefix = \
+    ldtfile, tsfile, finalfile, anomaly_gt_prefix, climo_gt_prefix = \
         _read_cmd_args()
 
-    # Fetch data from LVT output file
-    # NOTE:  Pylint complains about netCDF4 not having Dataset as a
-    # member.  But this is false -- Dataset is a class, and we use
-    # the constructor below.  Since this appears to be a bug in pylint, we
-    # disable the no-member check in this function.
-    # pylint: disable=no-member
-    ncid = nc4.Dataset(ldtfile, 'r', format='NETCDF4')
+    # First, fetch latitude/longitudes.  This is pulled from the LDT parameter
+    # file, since LVT output has data voids over water.
+    ncid = nc4_dataset(ldtfile, 'r', format='NETCDF4')
     longitudes = ncid.variables["lon"][:,:]
     latitudes = ncid.variables["lat"][:,:]
     ncid.close()
 
+    # Next, fetch the soil moisture anomalies from the LVT 'TS' file.
+    ncid = nc4_dataset(tsfile, 'r', format='NETCDF4')
     for i in range(0, 4): # Loop across four LSM layers
-        ncid = nc4.Dataset(lvtfile, 'r', format='NETCDF4')
         sm_anomalies = ncid.variables["SoilMoist"][i,:,:]
         nrows, ncols = sm_anomalies.shape
-        # pylint: enable=no-member
 
         # Write soil moisture anomalies to GeoTIFF
         sm1 = sm_anomalies[::-1, :]
         geotransform = _make_geotransform(longitudes, latitudes, ncols, nrows)
-        outfile_anomaly = "%s.layer%d.tif" %(outfile_anomaly_prefix,
+        outfile_anomaly = "%s.layer%d.tif" %(anomaly_gt_prefix,
                                              i)
         output_raster = _create_output_raster(outfile_anomaly,
                                               ncols, nrows, geotransform,
                                               sm1)
         output_raster.FlushCache() # Write to disk
         del output_raster
+    ncid.close()
 
+    # Next, fetch the monthly soil moisture climatologies from the LVT 'FINAL'
+    # file.
+    ncid = nc4_dataset(finalfile, 'r', format='NETCDF4')
+    for imonth in range(0, 12):
+        month = _MONTHS[imonth]
+        climo_name = "SoilMoist_%s_climo" %(month)
+        for i in range(0, 4): # Loop across four LSM layers
+            sm_climo = ncid.variables[climo_name][i,:,:]
+            nrows, ncols = sm_climo.shape
+
+            # Write soil moisture climatology to GeoTIFF
+            sm1 = sm_climo[::-1, :]
+            geotransform = _make_geotransform(longitudes, latitudes,
+                                              ncols, nrows)
+            outfile_climo = "%s.%s.layer%d.tif" %(climo_gt_prefix,
+                                                  month,
+                                                  i)
+            output_raster = _create_output_raster(outfile_climo,
+                                                  ncols, nrows, geotransform,
+                                                  sm1)
+            output_raster.FlushCache() # Write to disk
+            del output_raster
+    ncid.close()
