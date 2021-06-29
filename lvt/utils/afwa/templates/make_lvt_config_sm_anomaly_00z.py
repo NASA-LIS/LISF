@@ -3,7 +3,7 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: make_lvt_config_sm_anomaly.py
+# SCRIPT: make_lvt_config_sm_anomaly_00Z.py
 #
 # PURPOSE: Customizes LVT config file to update 00Z soil moisture climatology,
 # and output the climatology for the current month, plus anomalies.
