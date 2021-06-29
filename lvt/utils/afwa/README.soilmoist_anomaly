@@ -31,6 +31,9 @@ generate two netCDF files:
 Anomaly_TS.yyyymmdd0000.d01.nc
 LVT_Anomaly_FINAL.yyyymmdd0000.d01.nc
 
+A binary restart file LVT.yyyymmdd0000.rst will also be produced, and should
+be saved for use by LVT when processing the following day's anomalies.
+
 * run_lvt.sm_anomaly.discover.sh
 
 This batch script (implemented in Bash) runs LVT on a single core on Discover,
