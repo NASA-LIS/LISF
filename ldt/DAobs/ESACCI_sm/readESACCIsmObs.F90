@@ -60,7 +60,7 @@ subroutine readESACCIsmObs(n)
   if(file_exists) then
      
      write(LDT_logunit,*) '[INFO] Reading ..',trim(fname)
-     call read_ESACCI_data(n, fname,smobs)
+     call read_ESACCI_data(n, fname, ESACCIsmobs(n)%version, smobs) ! NT: include version in reading
      write(LDT_logunit,*) '[INFO] Finished reading ',trim(fname)
 
      do r=1,LDT_rc%lnr(n)
@@ -84,7 +84,7 @@ end subroutine readESACCIsmObs
 ! \label(read_ESACCI_data)
 !
 ! !INTERFACE:
-subroutine read_ESACCI_data(n, fname, smobs_ip)
+subroutine read_ESACCI_data(n, fname, version, smobs_ip)
 ! 
 ! !USES:   
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -102,7 +102,7 @@ subroutine read_ESACCI_data(n, fname, smobs_ip)
   integer                       :: n 
   character (len=*)             :: fname
   real                          :: smobs_ip(LDT_rc%lnc(n)*LDT_rc%lnr(n))
-
+  real	                        :: version
 
 ! !OUTPUT PARAMETERS:
 !
@@ -127,6 +127,7 @@ subroutine read_ESACCI_data(n, fname, smobs_ip)
 ! 
 !EOP
   integer           :: sm(ESACCIsmobs(n)%esaccinc,ESACCIsmobs(n)%esaccinr)
+  real              :: sm1(ESACCIsmobs(n)%esaccinc,ESACCIsmobs(n)%esaccinr)
   integer           :: flag(ESACCIsmobs(n)%esaccinc,ESACCIsmobs(n)%esaccinr)
 
   real              :: sm_combined(ESACCIsmobs(n)%esaccinc,ESACCIsmobs(n)%esaccinr)
@@ -151,9 +152,13 @@ subroutine read_ESACCI_data(n, fname, smobs_ip)
   call LDT_verify(ios, 'Error nf90_inq_varid: flag')
   
   !values
-  ios = nf90_get_var(nid, smid, sm)
+  if(version .lt. 3) then
+      ios = nf90_get_var(nid, smid, sm)
+  else
+      ios = nf90_get_var(nid, smid, sm1)
+  endif
   call LDT_verify(ios, 'Error nf90_get_var: sm')
-  
+ 
   ios = nf90_get_var(nid, flagid,flag)
   call LDT_verify(ios, 'Error nf90_get_var: flag')
   
@@ -167,11 +172,18 @@ subroutine read_ESACCI_data(n, fname, smobs_ip)
 ! dense vegetation (flag=2) and no convergence in the ESACCI algorithm 
 ! (flag =3) and undefined values are masked out. 
 !------------------------------------------------------------------------
-        
-        if(flag(c,r).ne.0.or.sm(c,r).lt.0) then 
-           sm_combined(c,ESACCIsmobs(n)%esaccinr-r+1) = LDT_rc%udef
+        if(version .lt. 3) then
+            if(flag(c,r).ne.0.or.sm(c,r).lt.0) then 
+               sm_combined(c,ESACCIsmobs(n)%esaccinr-r+1) = LDT_rc%udef
+            else
+              sm_combined(c,ESACCIsmobs(n)%esaccinr-r+1) = sm(c,r)*0.0001
+            endif
         else
-           sm_combined(c,ESACCIsmobs(n)%esaccinr-r+1) = sm(c,r)*0.0001
+            if(flag(c,r).ne.0.or.sm1(c,r).lt.0) then ! NT: checking sm and sm1 separately
+               sm_combined(c,ESACCIsmobs(n)%esaccinr-r+1) = LDT_rc%udef
+            else
+               sm_combined(c,ESACCIsmobs(n)%esaccinr-r+1) = sm1(c,r)
+            endif
         endif
      enddo
   enddo
@@ -236,11 +248,19 @@ subroutine create_ESACCIsm_filename(ndir, version, yr, mo,da, filename)
 
   character (len=4) :: fyr
   character (len=2) :: fmo,fda
+  character (len=3) :: cversion3
+  character (len=4) :: cversion4
   
   write(unit=fyr, fmt='(i4.4)') yr
   write(unit=fmo, fmt='(i2.2)') mo
   write(unit=fda, fmt='(i2.2)') da
- 
+  if (version .lt. 10.0) then
+    write(unit=cversion3, fmt='(f3.1)') version
+  else
+    ! For future version, version number > 10, e.g., 10.2
+    write(unit=cversion4, fmt='(f4.1)') version
+  endif
+  
   if(version.eq.1) then 
      filename = trim(ndir)//'/'//trim(fyr)//'/ESACCI-L3S_SOILMOISTURE-SSMV-MERGED-' &
           //trim(fyr)//trim(fmo)//trim(fda)//'000000-fv00.1.nc'
@@ -250,5 +270,14 @@ subroutine create_ESACCIsm_filename(ndir, version, yr, mo,da, filename)
   elseif(version.eq.2.2) then 
      filename = trim(ndir)//'/'//trim(fyr)//'/ESACCI-SOILMOISTURE-L3S-SSMV-COMBINED-' &
           //trim(fyr)//trim(fmo)//trim(fda)//'000000-fv02.2.nc'
+  else
+     ! NT: for versions after 2.2
+     if (version .lt. 10.0) then
+         filename = trim(ndir)//'/'//trim(fyr)//'/ESACCI-SOILMOISTURE-L3S-SSMV-COMBINED-' & 
+              //trim(fyr)//trim(fmo)//trim(fda)//'000000-fv0'//cversion3//'.nc'
+     else
+         filename = trim(ndir)//'/'//trim(fyr)//'/ESACCI-SOILMOISTURE-L3S-SSMV-COMBINED-' & 
+              //trim(fyr)//trim(fmo)//trim(fda)//'000000-fv'//cversion4//'.nc'
+     endif
   endif
 end subroutine create_ESACCIsm_filename
