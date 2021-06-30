@@ -1743,8 +1743,6 @@ contains
     type(LVT_metaDataEntry), pointer :: model
     type(LVT_metaDataEntry), pointer :: obs
     type(LVT_statsEntry),    pointer :: stats
-    logical :: done ! EMK TEST
-    integer :: i ! EMK TEST
     
     call LVT_getDataStream1Ptr(model)
     call LVT_getDataStream2Ptr(obs)
@@ -1802,7 +1800,6 @@ contains
        endif
 
        ! EMK Write climo data
-       done = .false. ! EMK TEST
        if (LVT_metrics%anomaly%selectOpt .eq. 1) then
           if (stats%selectOpt .eq. 1 .and. &
                model%selectNlevs .ge. 1) then
@@ -1814,21 +1811,6 @@ contains
                               stats%anomaly(m)%sum_model_value_climo(:,k,t,l))
                          call LVT_writevar_restart(ftn, &
                              stats%anomaly(m)%count_model_value_climo(:,k,t,l))
-
-                         ! EMK TEST
-                         do i = 1, LVT_rc%ngrid
-                            !if (done) exit
-                            if (stats%anomaly(m)%count_model_value_climo(i,k,t,l) .gt. 0) then
-                               write(LVT_logunit,*) &
-                                    'EMK: m,i,k,t,l, sum_climo, count_climo: ', &
-                                    m, i, k, t, l, &
-                                    stats%anomaly(m)%sum_model_value_climo(i,k,t,l), &
-                                    stats%anomaly(m)%count_model_value_climo(i,k,t,l)
-                               !done = .true.
-                               exit
-                            end if
-                         end do
-
                       end do
                    end do
                 end do
@@ -1884,8 +1866,6 @@ contains
     type(LVT_metaDataEntry), pointer :: model
     type(LVT_metaDataEntry), pointer :: obs
     type(LVT_statsEntry),    pointer :: stats
-    logical :: done ! EMK TEST
-    integer :: i ! EMK TEST
     
     call LVT_getDataStream1Ptr(model)
     call LVT_getDataStream2Ptr(obs)
@@ -1914,7 +1894,7 @@ contains
                       enddo
                    enddo
                 endif
-                
+
                 if(LVT_rc%obssource(2).ne."none") then 
                    if(obs%selectNlevs.ge.1) then 
                       do k=1,obs%vlevels
@@ -1925,7 +1905,7 @@ contains
                                  stats%anomaly(m)%count_obs_value_total(:,k,l))
                          enddo
                       enddo
-                      
+
                       if(LVT_metrics%anomaly%computeSC.eq.1) then 
                          do k=1,obs%vlevels
                             do l=1,LVT_rc%nasc
@@ -1943,7 +1923,6 @@ contains
        endif
 
        ! EMK Read climo data
-       done = .false. ! EMK TEST
        if (LVT_metrics%anomaly%selectOpt .eq. 1) then
           if (stats%selectOpt .eq. 1 .and. &
                model%selectNlevs .ge. 1) then
@@ -1955,21 +1934,6 @@ contains
                               stats%anomaly(m)%sum_model_value_climo(:,k,t,l))
                          call LVT_readvar_restart(ftn, &
                              stats%anomaly(m)%count_model_value_climo(:,k,t,l))
-
-                         ! EMK TEST
-                         do i = 1, LVT_rc%ngrid
-                            !if (done) exit
-                            if (stats%anomaly(m)%count_model_value_climo(i,k,t,l) .gt. 0) then
-                               write(LVT_logunit,*) &
-                              'EMK: m,i,k,t,l, sum_climo, count_climo: ', &
-                              m,i, k, t, l, &
-                              stats%anomaly(m)%sum_model_value_climo(i,k,t,l), &
-                              stats%anomaly(m)%count_model_value_climo(i,k,t,l)
-                               !done = .true.
-                               exit
-                            end if
-                         end do
-
                       end do
                    end do
                 end do
