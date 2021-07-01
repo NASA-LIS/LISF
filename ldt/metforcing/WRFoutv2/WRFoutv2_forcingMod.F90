@@ -108,7 +108,7 @@ contains
   use LDT_coreMod,    only : LDT_rc, LDT_domain
   use LDT_timeMgrMod, only : LDT_update_timestep, LDT_calendar
   use LDT_logMod,     only : LDT_logunit, LDT_endrun, LDT_verify
-  use map_utils   ! KRA
+  use map_utils   
 
    implicit none
 ! !ARGUMENTS:  
@@ -148,12 +148,10 @@ contains
    type(ESMF_Time)  :: DatastartTime
    type(ESMF_Time)  :: LDTstartTime
 
-! KRA
    type(proj_info)   :: proj_temp        
    real              :: lat_str,lon_str  
    integer           :: c,r               
    real, allocatable :: xlat(:,:),xlon(:,:)  
-! KRA
     
     allocate(WRFoutv2_struc(LDT_rc%nnest))
     write(LDT_logunit,*)"[INFO] Initializing WRFoutv2 forcing grid ... "
@@ -275,11 +273,6 @@ contains
           enddo
        enddo
 
-!   Starting lat/lon ...
-!     call ij_to_latlon(proj_temp,float(LDT_ews_halo_ind(n,LDT_localPet+1)),&
-!          float(LDT_nss_halo_ind(n,LDT_localPet+1)),lat_str,lon_str)
-!     print *, lat_str, lon_str, gridDesci(4), gridDesci(5)
-! KRA
 
      ! Setting up weights for Interpolation
        select case( LDT_rc%met_gridtransform(findex) )

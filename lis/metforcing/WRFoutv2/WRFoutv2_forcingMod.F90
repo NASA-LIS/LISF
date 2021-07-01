@@ -152,10 +152,10 @@ contains
    type(ESMF_Time)  :: LISstartTime
 
 ! KRA
-   type(proj_info)   :: proj_temp        ! KRA
-   real              :: lat_str,lon_str  ! KRA
-   integer           :: c,r              ! KRA 
-   real, allocatable :: xlat(:,:),xlon(:,:)   ! KRA
+   type(proj_info)   :: proj_temp        
+   real              :: lat_str,lon_str  
+   integer           :: c,r              
+   real, allocatable :: xlat(:,:),xlon(:,:)   
 ! KRA
     
     allocate(WRFoutv2_struc(LIS_rc%nnest))
@@ -191,6 +191,8 @@ contains
     WRFoutv2_struc(:)%nr = 1015
 
     do n=1,LIS_rc%nnest
+
+       WRFoutv2_struc(n)%nest_id = 1
 
        ! WRF output timestep: 1 hour  == 3600 sec (60 min * 60 sec)
        WRFoutv2_struc(n)%ts = 60*60
@@ -264,8 +266,8 @@ contains
               WRFoutv2_struc(n)%gridDesci(10), WRFoutv2_struc(n)%gridDesci(7),&
               WRFoutv2_struc(n)%nc, WRFoutv2_struc(n)%nr, proj_temp)
 
-       allocate( xlat(WRFoutv2_struc(1)%nc,WRFoutv2_struc(1)%nr) ) ! KRA
-       allocate( xlon(WRFoutv2_struc(1)%nc,WRFoutv2_struc(1)%nr) ) ! KRA
+       allocate( xlat(WRFoutv2_struc(1)%nc,WRFoutv2_struc(1)%nr) ) !
+       allocate( xlon(WRFoutv2_struc(1)%nc,WRFoutv2_struc(1)%nr) ) 
 
        do r=1,WRFoutv2_struc(1)%nr
           do c=1,WRFoutv2_struc(1)%nc
@@ -354,15 +356,6 @@ contains
        endif
 
     enddo
-
-    !tmp     <--> LIS_forc%metdata1(1,:)
-    !q2      <--> LIS_forc%metdata1(2,:)
-    !swd     <--> LIS_forc%metdata1(3,:)
-    !lwd     <--> LIS_forc%metdata1(4,:)
-    !uwind   <--> LIS_forc%metdata1(5,:)
-    !vwind   <--> LIS_forc%metdata1(6,:)
-    !psurf   <--> LIS_forc%metdata1(7,:)
-    !pcp     <--> LIS_forc%metdata1(8,:)
 
   end subroutine init_WRFoutv2
 

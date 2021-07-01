@@ -43,12 +43,13 @@ subroutine read_WRFoutv2( order, n, findex, yr, mon, da, hr, ferror )
   integer, intent(inout) :: ferror        ! set to zero if there's an error
 !
 ! !DESCRIPTION:
-!  For the given time, reads the parameters from 1 degree
-!  WRF out data, transforms into 9 LIS forcing 
+!  For the given time, reads the parameters from 4-km
+!  WRF CONUS domain data, transforms into 8 LIS forcing 
 !  parameters and interpolates to the LIS domain.
 !
-!  WRF out variables used to force LIS are:
-!  mean values starting at timestep, available every 1-hour \newline
+!  WRF variables used to force LIS are:
+!  instanteous values starting at each timestep, available every 1-hour, \newline
+!  except precipitation is accumulation over the previous 1-hour \newline
 !
 !  WRFOUT FORCING VARIABLES: \newline
 !  1. T2          Air Temperature [K] \newline
@@ -58,7 +59,7 @@ subroutine read_WRFoutv2( order, n, findex, yr, mon, da, hr, ferror )
 !  5. U10         10m U-dir wind vector [m s-1] \newline
 !  6. V10         10m V-dir wind vector [m s-1] \newline
 !  7. PSFC        Surface pressure [Pa] \newline
-!  8. PREC_ACC_NC Precipitation [mm] \newline
+!  8. PREC_ACC_NC Accumulated Precipitation [mm] \newline
 !
 !  \begin{description}
 !  \item[order]
@@ -249,11 +250,6 @@ subroutine read_WRFoutv2( order, n, findex, yr, mon, da, hr, ferror )
                        count=(/WRFoutv2_struc(n)%nc,WRFoutv2_struc(n)%nr/))
        endif
 
-!  Note: datain --> datain(y,x) when read in
-!       print *, trim(WRFoutv2_fv(v))//" ... datain(5,9): ",datain(5,9)   ! t=4 ==> T2=295.045
-!       print *, trim(WRFoutv2_fv(v))//" ... datain(1,2): ",datain(1,2)    ! t=1 ==> T2=295.2789
-!       print *, trim(WRFoutv2_fv(v))//" ... datain(1,2): ",datain(1,2)    ! t=2 ==> T2=295.283 
-
        ! Close netCDF file.
        status=nf90_close(ncid)
 
@@ -332,7 +328,6 @@ subroutine read_WRFoutv2( order, n, findex, yr, mon, da, hr, ferror )
            do i=1,WRFoutv2_struc(n)%nc
               c = c + 1
               f(c) = temp2WRFoutv2(i,j,v)
-!              if(v.eq.1 .and. f(c).ne.-9999.0) write(LIS_logunit,*) c,f(c)
            enddo
         enddo
 
@@ -379,7 +374,6 @@ subroutine read_WRFoutv2( order, n, findex, yr, mon, da, hr, ferror )
     
         !== Convert data to original 3D array & a 2D array to 
         !== Fill in of missing points due to geography difference  
-!        tg = -9999.0
         tg = 0.0 
         c = 0
         do j = 1, LIS_rc%lnr(n)

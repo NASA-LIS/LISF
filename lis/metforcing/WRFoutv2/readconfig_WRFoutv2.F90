@@ -34,21 +34,14 @@ subroutine readconfig_WRFoutv2()
 !EOP
 
   integer :: n,rc
+
+  write(unit=LIS_logunit,fmt=*)'[INFO] Using WRF output v2 forcing'
   
   call ESMF_ConfigFindLabel(LIS_config,"WRF output v2 forcing directory:",rc=rc)
   call LIS_verify(rc, 'WRF output v2 forcing directory: not defined')
   do n=1,LIS_rc%nnest    
      call ESMF_ConfigGetAttribute(LIS_config,WRFoutv2_struc(n)%WRFoutv2dir,rc=rc)
   enddo
-
-!  call ESMF_ConfigFindLabel(LIS_config,"WRF nest id:",rc=rc)
-  do n=1,LIS_rc%nnest    
-     WRFoutv2_struc(n)%nest_id = 1
-!     call ESMF_ConfigGetAttribute(LIS_config,WRFoutv2_struc(n)%nest_id,rc=rc)
-  enddo
-
-
-  write(unit=LIS_logunit,fmt=*)'[INFO] Using WRF output v2 forcing'
 
   do n=1,LIS_rc%nnest
      write(unit=LIS_logunit,fmt=*) '[INFO] WRF output v2 forcing directory :',WRFoutv2_struc(n)%WRFoutv2dir
