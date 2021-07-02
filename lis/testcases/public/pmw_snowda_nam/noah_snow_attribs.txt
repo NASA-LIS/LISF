@@ -1,7 +1,0 @@
-# number of state variables
-2
-#varmin  varmax	 
-SWE       
-0.0   100.0
-Snowdepth 
-0.0   100.0

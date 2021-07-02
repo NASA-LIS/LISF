@@ -81,8 +81,8 @@ module load mpi/impi/20.0.0.166
 module use -a /discover/swdev/gmao_SIteam/modulefiles-SLES12
 module load mpi/impi-prov/20.0.0.166
 
-#module load tview/2019.0.4
-#module load git/2.24.0
+module load tview/2019.0.4
+module load git/2.24.0
 
 
 set   def_lis_jpeg        /discover/nobackup/projects/lis/libs/jpeg/8d_sles12.3

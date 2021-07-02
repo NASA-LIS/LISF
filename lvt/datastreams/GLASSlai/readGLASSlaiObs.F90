@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !BOP
 ! 
@@ -91,7 +97,7 @@ subroutine read_GLASS_LAI_data(source, fname, laiobs_ip)
   use GLASSlaiobsMod
 
   implicit none
-#if (defined USE_HDF4) 
+#if (defined USE_HDFEOS2)
 #include "hdf.f90"
 #endif
 !
@@ -118,7 +124,7 @@ subroutine read_GLASS_LAI_data(source, fname, laiobs_ip)
 !
 !EOP
 
-#if (defined USE_HDF4)
+#if (defined USE_HDFEOS2)
   integer                 :: k
   real*8                  :: cornerlat(2), cornerlon(2)
   integer,  parameter     :: nc=7200, nr=3600

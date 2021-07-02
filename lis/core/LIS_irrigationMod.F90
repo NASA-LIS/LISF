@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -244,14 +246,16 @@ contains
           if(LIS_rc%wopt.ne."none") then 
              if(LIS_masterproc) then 
                 call LIS_create_output_directory('IRRIGATION')
-                call LIS_create_output_filename(n,outfile,&
-                     model_name ="IRRIGATION")
-                if(LIS_irrig_struc(n)%stats_file_open) then 
+                if (LIS_irrig_struc(n)%stats_file_open) then
                    call LIS_create_stats_filename(n,statsfile,"IRRIGATION")
-                   LIS_irrig_struc(n)%stats_file_open = .false. 
-                   open_stats = .true. 
+                   LIS_irrig_struc(n)%stats_file_open = .false.
+                   open_stats = .true.
                 endif
              endif
+
+             call LIS_create_output_filename(n,outfile,&
+                  model_name ="IRRIGATION")
+
              call LIS_writeModelOutput(n,outfile,statsfile,              &
                   open_stats,outInterval=LIS_irrig_struc(n)%outInterval, &
                   nsoillayers=1, lyrthk = (/1.0/),                       &

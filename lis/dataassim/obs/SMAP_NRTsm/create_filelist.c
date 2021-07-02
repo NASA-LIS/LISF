@@ -1,7 +1,9 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// Copyright (c) 2015 United States Government as represented by the
+// Copyright (c) 2020 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration.
 // All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -66,10 +68,7 @@ int FTN(create_filelist) (const char *regexp,
 	   So write the filenames to an output file. */
 	outfile = fopen(filelist_name,"w");
 	for (i = 0; i < globbuf.gl_pathc; i++) {
-	    fprintf(outfile,"%s", globbuf.gl_pathv[i]);
-	    if (i < (globbuf.gl_pathc-1)) {
-		fprintf(outfile,"\n");
-	    }
+	    fprintf(outfile,"%s\n", globbuf.gl_pathv[i]);
 	}
 	fclose(outfile);
     } else {

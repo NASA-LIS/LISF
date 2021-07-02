@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 subroutine LDT_run_ANNproc
 
@@ -21,7 +27,7 @@ subroutine LDT_run_ANNproc
            call LDT_readANNoutputData(n)
            call LDT_tavgANNdata(n)
            call LDT_outputANN(n)
-           call LDT_flush(LDT_logunit)
+           flush(LDT_logunit)
         enddo
      enddo
   enddo

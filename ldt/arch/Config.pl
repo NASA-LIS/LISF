@@ -1,9 +1,11 @@
 #!/usr/bin/perl
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-# NASA Goddard Space Flight Center Land Data Toolkit (LDT) v7.2
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.3
 #
-# Copyright (c) 2015 United States Government as represented by the
+# Copyright (c) 2020 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -780,6 +782,13 @@ if($use_hdf4 == 1) {
 }
 else{
    printf misc_file "%s\n","#undef USE_HDF4 ";
+}
+
+if($use_hdfeos == 1) {
+   printf misc_file "%s\n","#define USE_HDFEOS2 ";
+}
+else{
+   printf misc_file "%s\n","#undef USE_HDFEOS2 ";
 }
 
 if($use_hdf5 == 1) {

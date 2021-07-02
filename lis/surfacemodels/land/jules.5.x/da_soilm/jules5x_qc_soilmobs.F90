@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -19,7 +21,7 @@ subroutine jules5x_qc_soilmobs(n,k,OBS_State)
 ! !USES:
   use ESMF
   use LIS_coreMod
-  use LIS_logMod,  only : LIS_verify
+  use LIS_logMod,  only : LIS_verify, LIS_logunit, LIS_endrun
   use LIS_constantsMod, only : LIS_CONST_TKFRZ
   use LIS_DAobservationsMod
   use jules5x_lsmMod
@@ -171,7 +173,7 @@ sneqv = 0
       !! IF(SNOWH.GT.0.)  THEN
       !!   BDSNO    = SNEQV / SNOWH ! SNOWH[mm], SNEQV[mm]
       !!   FMELT    = (BDSNO/100.)**M
-      !!   FSNO     = TANH( SNOWH /(2.5* Z0 * FMELT)) 
+      !!   FSNO     = TANH( SNOWH /(2.5* Z0 * FMELT))
       !! ENDIF
       !if (jules5x_struc(n)%jules5x(t)%snowdepth(pft).GT.0.) then ! m
       !   BDSNO(t)    = sneqv(t) / jules5x_struc(n)%jules5x(t)%snowdepth(pft) * 100 !kg/m2(=mm)/(m*100) 
@@ -196,14 +198,14 @@ sneqv = 0
 
 
       !MN:fveg is used for 12-month green vegetation fraction (i.e., noah33_struc(n)%noah(:)%shdfac)  
-      !print*,'l_aggregate', l_aggregate       
+      !print*,'l_aggregate', l_aggregate
       if(.NOT. l_aggregate) then   
-         print*,'Please set the l_aggregate to .true. in the jules_surface.nml ' 
-         stop         
+         write(LIS_logunit,*)'Please set the l_aggregate to .true. in the jules_surface.nml ' 
+         call LIS_endrun()
       else
        do l=1,5 !Broadleaf trees, Needleleaf trees, C3 (temperate) grass, C4 (tropical) grass, Shrubs
          fveg(t) = fveg(t) + jules5x_struc(n)%jules5x(t)%surft_frac(l)   
-         !print*,'t, l',t, l,jules5x_struc(n)%jules5x(t)%surft_frac(l),fveg(t)         
+         !print*,'t, l',t, l,jules5x_struc(n)%jules5x(t)%surft_frac(l),fveg(t)
        enddo 
       endif          
       !print*,'t, l',t, l,jules5x_struc(n)%jules5x(t)%surft_frac(l),fveg(t)  
@@ -218,7 +220,7 @@ sneqv = 0
 !         !fveg(t) = fveg(t) + jules5x_struc(n)%jules5x(t)%frac(l)  
 !         !print*,'frac', jules5x_struc(n)%jules5x(t)%frac(l) 
 !         fveg(t) = fveg(t) + jules5x_struc(n)%jules5x(t)%surft_frac(l)   
-!         print*,'t, l',t, l,jules5x_struc(n)%jules5x(t)%surft_frac(l),fveg(t)   
+!         print*,'t, l',t, l,jules5x_struc(n)%jules5x(t)%surft_frac(l),fveg(t)
 !       enddo         
 #endif 
 

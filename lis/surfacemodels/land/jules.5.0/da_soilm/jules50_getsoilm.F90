@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -77,18 +79,6 @@ subroutine jules50_getsoilm(n, LSM_State)
      soilm3(t) = jules50_struc(n)%jules50(t)%smcl_soilt(3)
      soilm4(t) = jules50_struc(n)%jules50(t)%smcl_soilt(4)
   enddo
-
-
-
-	     
-!!           if (LIS_rc%mo.eq. 6 .and. LIS_rc%da.eq.3) then
-!           timenow = float(LIS_rc%hr)*3600 + 60*LIS_rc%mn + LIS_rc%ss
-!           if (timenow.eq.43200) then
-!             print*,' get soilm1  ',soilm1((1376-1)*20+1 : 1376*20)
-!           endif
-
-
-
 
 end subroutine jules50_getsoilm
 

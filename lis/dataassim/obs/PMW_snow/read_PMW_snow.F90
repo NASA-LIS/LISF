@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -401,7 +403,7 @@ subroutine read_PMWSnow_HDFEOS(n,name)
   use PMW_snow_Mod, only : PMW_snow_struc
   implicit none
 
-#if (defined USE_HDF4) 
+#if (defined USE_HDFEOS2)
 #include "hdf.f90"
 #endif
 ! !ARGUMENTS:   
@@ -416,7 +418,7 @@ subroutine read_PMWSnow_HDFEOS(n,name)
   real                 :: sb_qc(PMW_snow_struc(n)%mo)
   real                 :: snowobs(PMW_snow_struc(n)%mo)
 
-#if (defined USE_HDF4)
+#if (defined USE_HDFEOS2)
   !declare the hdf-eos library functions 
   integer              :: gdopen,gdattach,gdrdfld
   integer              :: gddetach,gdclose

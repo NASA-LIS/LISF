@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -61,6 +63,10 @@ module LISWRFexport_module
      real, allocatable :: relsmc2(:,:)
      real, allocatable :: relsmc3(:,:)
      real, allocatable :: relsmc4(:,:)
+#ifdef WRF_HYDRO
+     real, allocatable :: infxsrt(:,:)
+     real, allocatable :: soldrain(:,:)
+#endif
 
      real, allocatable :: avgsurft_t(:)
      real, allocatable :: qh_t(:)
@@ -101,6 +107,10 @@ module LISWRFexport_module
      real, allocatable :: relsmc2_t(:)
      real, allocatable :: relsmc3_t(:)
      real, allocatable :: relsmc4_t(:)
+#ifdef WRF_HYDRO
+     real, allocatable :: infxsrt_t(:)
+     real, allocatable :: soldrain_t(:)
+#endif
   end type liswrfexport
 
 end module LISWRFexport_module

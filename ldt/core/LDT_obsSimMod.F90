@@ -49,6 +49,8 @@ module LDT_obsSimMod
      character*50              :: OSSEmaskSource
      integer                   :: nVars
      character*50, allocatable :: varNames(:)
+     real,         allocatable :: varmins(:)
+     real,         allocatable :: varmaxs(:)
      character*50              :: ttransform
      character*50              :: masktype
      character*50              :: maskdir
@@ -108,6 +110,8 @@ contains
     call LDT_verify(rc,'Observation simulator number of simulated variables: not specified')
 
     allocate(LDT_obsSim_struc%varNames(LDT_obsSim_struc%nVars))
+    allocate(LDT_obsSim_struc%varmins(LDT_obsSim_struc%nVars))
+    allocate(LDT_obsSim_struc%varmaxs(LDT_obsSim_struc%nVars))
 
     call ESMF_ConfigFindLabel(LDT_config,&
          label="Observation simulator simulated variables:", &
@@ -117,6 +121,27 @@ contains
             LDT_obsSim_struc%varNames(i),rc=rc)
        call LDT_verify(rc,'Observation simulator simulated variables: not defined')
     enddo
+
+    call ESMF_ConfigFindLabel(LDT_config,&
+         label="Observation simulator simulated variable minimum values:", &
+         rc=rc)
+    
+    do i=1,LDT_obsSim_struc%nVars
+       call ESMF_ConfigGetAttribute(LDT_config,&
+            LDT_obsSim_struc%varmins(i),rc=rc)
+       call LDT_verify(rc,'Observation simulator simulated variable minimum values: not defined')
+    enddo
+
+    call ESMF_ConfigFindLabel(LDT_config,&
+         label="Observation simulator simulated variable maximum values:", &
+         rc=rc)
+
+    do i=1,LDT_obsSim_struc%nVars
+       call ESMF_ConfigGetAttribute(LDT_config,&
+            LDT_obsSim_struc%varMaxs(i),rc=rc)
+       call LDT_verify(rc,'Observation simulator simulated variable maximum values: not defined')
+    enddo
+    
 
     call ESMF_ConfigGetAttribute(LDT_config,LDT_obsSim_struc%ttransform,&
          label="Observation simulator type of temporal transform:", &
@@ -294,8 +319,8 @@ contains
 
 !BOP
 ! 
-! !ROUTINE: LDT_applyObsSimErrorModel
-! \label{LDT_applyObsSimErrorModel}
+! !ROUTINE: LDT_applyObsSimMask
+! \label{LDT_applyObsSimMask}
 ! 
 ! !INTERFACE: 
   subroutine LDT_applyObsSimMask(n)
@@ -330,7 +355,7 @@ contains
 
        elseif(LDT_obsSim_struc%masktype.eq."time-varying") then 
           
-          call readOSSEmasksource(trim(LDT_obsSim_struc%natRunSource)//char(0),&
+          call readOSSEmasksource(trim(LDT_obsSim_struc%OSSEmasksource)//char(0),&
                n)
 
           do r=1,LDT_rc%lnr(n)
@@ -384,12 +409,10 @@ contains
                       tmp_val = rand(1)*LDT_obsSim_struc%errStdev
                       !TBD: need a more formal check on the physical limits
 !                      print*, c,r,tmp_val,rand(1)
-                      if (LDT_obsSim_struc%value(c,r,k).gt.0.and.&
-                           LDT_obsSim_struc%value(c,r,k) + tmp_val.gt.0) then 
-                         if(c.eq.3.and.r.eq.8) then 
-                            print*, LDT_obsSim_struc%value(c,r,k), &
-                                 LDT_obsSim_struc%value(c,r,k)+tmp_val
-                         endif
+                      if (LDT_obsSim_struc%value(c,r,k).gt.&
+                           LDT_obsSim_struc%varmins(k).and.&
+                           LDT_obsSim_struc%value(c,r,k) + tmp_val.gt.&
+                            LDT_obsSim_struc%varmins(k)) then 
                          LDT_obsSim_struc%value(c,r,k) = & 
                               LDT_obsSim_struc%value(c,r,k) + tmp_val
                       endif
@@ -408,8 +431,9 @@ contains
                    if(LDT_obsSim_struc%value(c,r,k).ne.-9999.0) then 
                       call nr_gasdev(LDT_obsSim_struc%seed, rand)
                       tmp_val = rand(1)*LDT_obsSim_struc%errStdev
-                      !TBD: need a more formal check on the physical limits
-                      if (LDT_obsSim_struc%value(c,r,k)*tmp_val.gt.0) then 
+
+                      if (LDT_obsSim_struc%value(c,r,k)*tmp_val.gt.&
+                           LDT_obsSim_struc%varmins(k)) then 
                          LDT_obsSim_struc%value(c,r,k) = & 
                               LDT_obsSim_struc%value(c,r,k)*tmp_val
                       endif
@@ -504,7 +528,7 @@ contains
        call LDT_verify(nf90_put_var(ftn,varid(k),&
             LDT_obsSim_struc%value(:,:,k)),&
             'nf90_put_var failed for '//trim(LDT_obsSim_struc%varNames(k)))
-       print*, 'writing ',LDT_obsSim_struc%value(3,8,k)
+
     enddo
 
     call LDT_verify(nf90_close(ftn),&

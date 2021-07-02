@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -283,8 +285,12 @@ subroutine timeinterp_gefs(n,findex)
         do k=1,mfactor
            tid = (t-1)*LIS_rc%nensem(n)+(m-1)*mfactor+k
            index1 = LIS_domain(n)%tile(tid)%index 
-           if(gefs_struc(n)%metdata2(8,m,index1).ne.LIS_rc%udef) then 
-              pcp(tid)=gefs_struc(n)%metdata2(8,m,index1)/(3600*6)
+           if(gefs_struc(n)%metdata2(8,m,index1).ne.LIS_rc%udef) then
+              if( gefs_struc(n)%gefs_fcsttype .eq. "Reforecast2" ) then
+                 pcp(tid)=gefs_struc(n)%metdata2(8,m,index1)/(3600*6)
+              else
+                 pcp(tid)=gefs_struc(n)%metdata2(8,m,index1)/(3600*3)
+              endif
               ! Eventually account for the 3-hour accum fields
               !  which alternate with the 6-hour up to hour 69 
               !  (need to subtract off the alternating 3-hour from

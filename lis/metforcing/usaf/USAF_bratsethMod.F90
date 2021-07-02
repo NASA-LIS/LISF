@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 ! MODULE: USAF_bratsethMod
@@ -598,7 +604,7 @@ contains
 
       ! Imports
       use AGRMET_forcingMod, only : agrmet_struc
-      use LIS_logMod, only: LIS_logunit, LIS_flush, LIS_endrun
+      use LIS_logMod, only: LIS_logunit, LIS_endrun
 
       ! Defaults
       implicit none
@@ -652,7 +658,7 @@ contains
          write(LIS_logunit,*)'[ERR] Invalid imax dimension for SSM/I!'
          write(LIS_logunit,*)'Received ', imax
          write(LIS_logunit,*)'Only support 512, 1024, or 1400'
-         call LIS_flush(LIS_logunit)
+         flush(LIS_logunit)
          call LIS_endrun()
       end if
 
@@ -719,7 +725,7 @@ contains
 
          write(LIS_logunit,*)'[ERR] Lat/lon SSM/I data not supported yet!'
          write(LIS_logunit,*)'Modify USAF_addSSMIObsData and recompile!'
-         call LIS_flush(LIS_logunit)
+         flush(LIS_logunit)
          call LIS_endrun()
 
       end if ! Lat/Lon case
@@ -742,7 +748,7 @@ contains
       use AGRMET_forcingMod, only: agrmet_struc
       use LIS_coreMod, only: LIS_rc, LIS_masterproc
       use LIS_logMod, only: LIS_abort, LIS_endrun, LIS_getNextUnitNumber, &
-           LIS_releaseUnitNumber, LIS_logunit, LIS_flush, LIS_alert
+           LIS_releaseUnitNumber, LIS_logunit, LIS_alert
       use LIS_mpiMod
       use LIS_timeMgrMod, only: LIS_julhr_date
 
@@ -849,7 +855,7 @@ contains
             write(LIS_logunit,*) &
                  '[ERR] No NWP background precipitation found for ',yyyymmddhh
             write(LIS_logunit,*) ' ABORTING!'
-            call LIS_flush(LIS_logunit)
+            flush(LIS_logunit)
             message(:) = ''
             message(1) = '[ERR] Program:  LIS'
             message(2) = '  Routine:  USAF_getBackNWP.'
@@ -1067,7 +1073,7 @@ contains
       use AGRMET_forcingMod, only : agrmet_struc
       use LIS_coreMod, only     : LIS_masterproc
       use LIS_fileIOMod, only: LIS_putget
-      use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_alert, LIS_flush
+      use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_alert
       use LIS_timeMgrMod, only : LIS_julhr_date
 
       ! Defaults
@@ -1190,7 +1196,7 @@ contains
                     '[ERR] Invalid imax dimension for GEO_PRECIP!'
                write(LIS_logunit,*)'Received ',imax
                write(LIS_logunit,*)'Only support 512, 1024, or 4096!'
-               call LIS_flush(LIS_logunit)
+               flush(LIS_logunit)
                call LIS_endrun()
             end if
 
@@ -1396,7 +1402,7 @@ contains
                        '[ERR] Lat/lon GEO_PRECIP data not supported yet!'
                   write(LIS_logunit,*)&
                        'Modify USAF_addGeoPrecipObsData and recompile!'
-                  call LIS_flush(LIS_logunit)
+                  flush(LIS_logunit)
                   call LIS_endrun()
 
                end if
@@ -1773,7 +1779,7 @@ contains
 
       ! Imports
       use LIS_coreMod, only: LIS_localPet, LIS_rc
-      use LIS_logMod, only : LIS_logunit, LIS_endrun, LIS_flush, LIS_endrun
+      use LIS_logMod, only : LIS_logunit, LIS_endrun, LIS_endrun
       use LIS_mpiMod
 
       ! Defaults
@@ -1889,7 +1895,7 @@ contains
                                 '[ERR]: job, network, oErrScaleLength: ', &
                                 job, trim(this%net(job)), &
                                 this%oErrScaleLength(job)
-                           call LIS_flush(LIS_logunit)
+                           flush(LIS_logunit)
                         end if
 
                         num = num + &
@@ -1978,7 +1984,7 @@ contains
       ! Imports
       use AGRMET_forcingMod, only: agrmet_struc
       use LIS_coreMod, only : LIS_localPet, LIS_rc
-      use LIS_logMod, only : LIS_logunit, LIS_endrun, LIS_flush
+      use LIS_logMod, only : LIS_logunit, LIS_endrun
       use LIS_mpiMod
       use USAF_OBAMod, only: OBA, createOBA, assignOBA
 
@@ -2341,7 +2347,7 @@ contains
               ' iterations!'
 	   write(LIS_logunit,*) &
 	      '[WARN] Will stop iterating'
-           call LIS_flush(LIS_logunit)
+           flush(LIS_logunit)
 	   exit
 	end if
       end do ! Iterate until convergence
@@ -3105,7 +3111,7 @@ contains
       write(LIS_logunit,*) &
            '[ERR] check_grib_file requires GRIB-API or ECCODES library'
       write(LIS_logunit,*) '[ERR] please recompile LIS'
-      call LIS_flush(LIS_logunit)
+      flush(LIS_logunit)
       message(:) = ''
       message(1) = '[ERR] Program:  LIS'
       message(2) = '  Routine: check_grib_file.'
@@ -6206,7 +6212,7 @@ contains
 
       ! Imports
       use AGRMET_forcingMod, only : agrmet_struc
-      use LIS_logMod, only: LIS_endrun, LIS_flush, LIS_logunit
+      use LIS_logMod, only: LIS_endrun, LIS_logunit
 
       ! Defaults
       implicit none
@@ -6275,7 +6281,7 @@ contains
               'Source is ',trim(src)
          write(LIS_logunit, *) &
               'ABORTING....'
-         call LIS_flush(LIS_logunit)
+         flush(LIS_logunit)
          call LIS_endrun()
       end if
 !      TRACE_EXIT("bratseth_setPrcpStats")
@@ -6290,7 +6296,7 @@ contains
 
       ! Imports
       use AGRMET_forcingMod, only : agrmet_struc
-      use LIS_logMod, only: LIS_endrun, LIS_flush, LIS_logunit
+      use LIS_logMod, only: LIS_endrun, LIS_logunit
 
       ! Defaults
       implicit none
@@ -6363,7 +6369,7 @@ contains
               'Source is ',trim(src)
          write(LIS_logunit, *) &
               'ABORTING....'
-         call LIS_flush(LIS_logunit)
+         flush(LIS_logunit)
          call LIS_endrun()
       end if
       TRACE_EXIT("bratseth_setScrnStats")

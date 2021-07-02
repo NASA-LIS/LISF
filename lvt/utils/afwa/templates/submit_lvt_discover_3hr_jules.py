@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
 
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.3
+#
+# Copyright (c) 2020 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 import os
 import subprocess
 import sys
@@ -22,8 +32,17 @@ vars = ['RelSMC_inst', 'SmLiqFrac_inst',
         'SnowDepth_inst', 'Snowcover_inst',
         'Tair_f_inst', 'Tair_f_max',
         'Tair_f_tavg',
-        'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
+        'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg',
+         "ActSnowNL_inst", "GrndSnow_inst",
+         "LayerSnowDensity_inst", "LayerSnowDepth_inst",
+         "LayerSnowGrain_inst", "SnowDensity_inst",
+         "SnowGrain_inst", "SnowIce_inst",
+         "SnowLiq_inst", "SnowTProf_inst",
+         "SurftSnow_inst"]
 
+# EMK GALWEM TESTING
+vars = ["AvgSurfT_inst", "PS41Snow_inst",
+        "SoilMoist_inst","SoilTemp_inst"]
 
 if not os.path.exists("LVT"):
     print("ERROR, LVT executable does not exist!")
@@ -38,7 +57,7 @@ for var in vars:
 #SBATCH --account s1189
 #SBATCH --output %s.3hr.slurm.out
 #Adjust node, core, and hardware constraints here
-#SBATCH --ntasks=1 --constraint=hasw
+#SBATCH --ntasks=1 --constraint="sky|hasw"
 
 if [ ! -z $SLURM_SUBMIT_DIR ] ; then
     cd $SLURM_SUBMIT_DIR || exit 1
@@ -46,7 +65,7 @@ fi
 
 module purge
 module use --append ~/privatemodules
-module load lisf_7_intel_19_1_0_166
+module load lisf_7_intel_19_1_3_304
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1

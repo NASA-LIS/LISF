@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -6006,7 +6008,7 @@ contains
                 elseif(form==2) then
                    write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
                 endif
-                call lis_flush(ftn_stats)
+                flush(ftn_stats)
              endif
           endif
           deallocate(gtmp1)
@@ -6084,7 +6086,7 @@ contains
                 elseif(form==2) then
                    write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
                 endif
-                call lis_flush(ftn_stats)
+                flush(ftn_stats)
              endif
           endif
           deallocate(gtmp)
@@ -6166,7 +6168,7 @@ contains
                    elseif(form==2) then
                       write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
                    endif
-                   call lis_flush(ftn_stats)
+                   flush(ftn_stats)
                 endif
              endif
              deallocate(gtmp)
@@ -6268,7 +6270,7 @@ contains
                    elseif(form==2) then
                       write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
                    endif
-                   call lis_flush(ftn_stats)
+                   flush(ftn_stats)
                 endif
              endif
              deallocate(gtmp_ens)
@@ -6418,7 +6420,7 @@ contains
                 elseif(form==2) then
                    write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
                 endif
-                call lis_flush(ftn_stats)
+                flush(ftn_stats)
              endif
           endif
           deallocate(gtmp)
@@ -6500,7 +6502,7 @@ contains
                    elseif(form==2) then
                       write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
                    endif
-                   call lis_flush(ftn_stats)
+                   flush(ftn_stats)
                 endif
              endif
              deallocate(gtmp)
@@ -6602,7 +6604,7 @@ contains
                    elseif(form==2) then
                       write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
                    endif
-                   call lis_flush(ftn_stats)
+                   flush(ftn_stats)
                 endif
              endif
              deallocate(gtmp_ens)
@@ -8350,7 +8352,7 @@ subroutine write_stats(var, size, mvar, ftn_stats, form)
       elseif ( form == 2 ) then 
          write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
       endif
-      call lis_flush(ftn_stats)
+      flush(ftn_stats)
    endif
 
 998 FORMAT(1X,A18,4E14.3)

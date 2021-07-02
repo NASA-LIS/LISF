@@ -1,7 +1,9 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+// NASA Goddard Space Flight Center
+// Land Information System Framework (LISF)
+// Version 7.3
 //
-// Copyright (c) 2015 United States Government as represented by the
+// Copyright (c) 2020 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration.
 // All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -17,6 +19,7 @@
 //  
 // !REVISION HISTORY: 
 //  Feb 2006  Sujay Kumar Adopted in LIS
+//  May 2018  Dan Rosen Added decomposition algorithm.
 //EOP
 
 #include <stdio.h>
@@ -77,6 +80,133 @@ void FTN(lis_mpdecomp) ( int *i_p , int *j_p , int *ids_p, int *ide_p , int *jds
   else {
     Py = ( a / ( (jdim / npy) + 1 ) ) + (b-a-jds) / ( ( b - a ) / ( npy - rem ) ) +
                                         (j-b-jds) / ( ( jdim / npy ) + 1 )  ;
+  }
+
+  *Px_p = Px ;
+  *Py_p = Py ;
+  *P_p = Px + Py * npx ;
+}
+
+void FTN(lis_mpdecomp_2) ( int *i_p , int *j_p , int *ids_p, int *ide_p , int *jds_p, int *jde_p , int *npx_p , int *npy_p , int *Px_p, int *Py_p, int *P_p )
+{
+  int i , j , ids, ide, jds, jde, npx, npy ;  /* inputs */
+  int P, Px, Py ;                             /* output */
+  int idim, jdim ;                            /* total dims */
+  int pdims, pdima, pdimr, pdime ;            /* procs dims */
+  int pcnts, pcnta, pcntr, pcnte ;            /* procs cnts */
+  int a, b , c, d ;                           /* break pnts */
+
+  i = *i_p ;
+  j = *j_p ;
+  npx = *npx_p ;
+  npy = *npy_p ;
+  ids = *ids_p ; ide = *ide_p ;
+  jds = *jds_p ; jde = *jde_p ;
+  idim = ide - ids + 1 ;
+  jdim = jde - jds + 1 ;
+
+  i = i >= ids ? i : ids ; i = i <= ide ? i : ide ;
+  npx = npx <= 0 ? 1 : npx ;
+
+  if ( ( npx == 0 ) || ( idim == 0 ) ) {
+    pdims = 0 ; pcnts = 0 ; // start processor dim = 0
+    pdima = 0 ; pcnta = 0 ; // average processor dim = 0
+    pdimr = 0 ; pcntr = 0 ; // remainder processor dim = 0
+    pdime = 0 ; pcnte = 0 ; // end processor dim = 0
+  }
+  else if ( ( npx == 1 ) || ( idim == 1 ) ) {
+    pdims = idim ; pcnts = 1 ;
+    pdima = 0 ;    pcnta = 0 ;
+    pdimr = 0 ;    pcntr = 0 ;
+    pdime = 1 ;    pcnte = 0 ;
+  }
+  else {
+    pcnts = 1 ; pcnte = 1 ;
+    pdima = ( idim - 2 ) / npx ;
+    pdims = 1 + pdima ;
+    pdime = 1 + pdima ;
+    pdimr = 1 + pdima ;
+    pcntr = ( idim - 2 ) % npx ;
+    if ( pcntr >= 1 ) {
+      pdime = pdime + 1 ;
+      pcntr = pcntr - 1 ;
+    }
+    if ( pdima > 0 ) {
+      pcnta = npx - pcntr - 2 ;
+    }
+    else {
+      pcnta = 0 ;
+    }
+  }
+
+  a = ids + ( pdims * pcnts ) - 1 ;
+  b = a + ( pdima * pcnta ) ;
+  c = b + ( pdimr * pcntr ) ;
+  d = c + ( pdime * pcnte ) ;
+
+  if ( i <= a ) {
+    Px = 1 ;
+  }
+  else if ( i <= b ) {
+    Px = 1 + ( ( i - a - 1 + pdima ) / pdima );
+  }
+  else if ( i <= c ) {
+    Px = 1 + ( ( b - a - 1 + pdima ) / pdima )  + ( ( i - b - 1 + pdimr ) / pdimr ) ;
+  }
+  else {
+    Px = 1 + ( ( b - a - 1 + pdima ) / pdima )  + ( ( c - b - 1 + pdimr ) / pdimr ) + ( ( i - c - 1 + pdime ) / pdime ) ;
+  }
+
+  j = j >= jds ? j : jds ; j = j <= jde ? j : jde ;
+  npy = npy <= 0 ? 1 : npy ;
+
+  if ( ( npy == 0 ) || ( jdim == 0 ) ) {
+    pdims = 0 ; pcnts = 0 ; // start processor dim = 0
+    pdima = 0 ; pcnta = 0 ; // average processor dim = 0
+    pdimr = 0 ; pcntr = 0 ; // remainder processor dim = 0
+    pdime = 0 ; pcnte = 0 ; // end processor dim = 0
+  }
+  else if ( ( npy == 1 ) || ( jdim == 1 ) ) {
+    pdims = jdim ; pcnts = 1 ;
+    pdima = 0 ;    pcnta = 0 ;
+    pdimr = 0 ;    pcntr = 0 ;
+    pdime = 0 ;    pcnte = 0 ;
+  }
+  else {
+    pcnts = 1 ; pcnte = 1 ;
+    pdima = ( jdim - 2 ) / npy ;
+    pdims = 1 + pdima ;
+    pdime = 1 + pdima ;
+    pdimr = 1 + pdima ;
+    pcntr = ( jdim - 2 ) % npy ;
+    if ( pcntr >= 1 ) {
+      pdime = pdime + 1 ;
+      pcntr = pcntr - 1 ;
+    }
+    if ( pdima > 0 ) {
+      pcnta = npy - pcntr - 2 ;
+    }
+    else {
+      pcnta = 0 ;
+    }
+  }
+
+  a = jds + ( pdims * pcnts ) - 1 ;
+  b = a + ( pdima * pcnta ) ;
+  c = b + ( pdimr * pcntr ) ;
+  d = c + ( pdime * pcnte ) ;
+
+  if ( j <= a ) {
+    Py = 1 ;
+  }
+  else if ( j <= b ) {
+    Py = 1 + ( ( j - a - 1 + pdima ) / pdima ) ;
+  }
+  else if ( j <= c ) {
+    Py = 1 + ( ( b - a - 1 + pdima ) / pdima )  + ( ( j - b - 1 + pdimr ) / pdimr ) ;
+  }
+  else {
+    Py = 1 + ( ( b - a - 1 + pdima ) / pdima )  + ( ( c - b - 1 + pdimr ) / pdimr ) + ( ( j - c - 1 + pdime ) / pdime ) ;
   }
 
   *Px_p = Px ;

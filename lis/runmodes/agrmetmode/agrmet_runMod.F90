@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -113,7 +115,7 @@ contains
     use LIS_DAobservationsMod, only : LIS_readDAobservations, &
                                       LIS_perturb_DAobservations
     use LIS_dataAssimMod,      only : LIS_dataassim_run, LIS_dataassim_output
-    use LIS_logMod,            only : LIS_flush, LIS_logunit
+    use LIS_logMod,            only : LIS_logunit
 !
 ! !DESCRIPTION:
 ! 
@@ -175,7 +177,7 @@ contains
           endif
        enddo
        call LIS_ticktime 
-       call LIS_flush(LIS_logunit)
+       flush(LIS_logunit)
     enddo
   end subroutine lis_run_agrmet
 

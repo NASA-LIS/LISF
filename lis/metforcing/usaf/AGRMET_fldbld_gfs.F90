@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
 !BOP
@@ -1775,7 +1781,7 @@ integer function set_plevel(editionNumber,pds9,level)
 
    ! Imports
    use LIS_coreMod, only: LIS_masterproc
-   use LIS_logmod, only: LIS_logunit,LIS_flush,LIS_abort, &
+   use LIS_logmod, only: LIS_logunit,LIS_abort, &
       LIS_alert,LIS_endrun
    use LIS_mpiMod
 
@@ -1801,7 +1807,7 @@ integer function set_plevel(editionNumber,pds9,level)
         '[ERR] Unknown GRIB edition ',editionNumber
       write(LIS_logunit,*) &
         'ABORTING...'
-      call LIS_flush(LIS_logunit)
+      flush(LIS_logunit)
       messages(:) = ''
       messages(1) = '[ERR] Program: LIS'
       messages(2) = '  Routine: set_plevel'

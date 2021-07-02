@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,7 +26,7 @@ subroutine liswrfinit_coupled(nx,ny,wrf_mpi_comm_compute_tasks)
   use LIS_dataAssimMod,    only : LIS_dataassim_init
   use LIS_paramsMod,        only : LIS_param_init
   use LISWRFGridCompMod,    only : LISWRF_alloc_states
-  use LIS_logMod,           only : LIS_logunit, LIS_flush
+  use LIS_logMod,           only : LIS_logunit
 
   use LIS_tbotAdjustMod,    only : LIS_createTmnUpdate
   use LIS_irrigationMod,    only : LIS_irrigation_init ! EMK
@@ -73,7 +75,7 @@ subroutine liswrfinit_coupled(nx,ny,wrf_mpi_comm_compute_tasks)
        call LISWRF_alloc_states
        call LIS_core_init
 
-       call LIS_flush(LIS_logunit)
+       flush(LIS_logunit)
        LIS_initialized = .true.
 
     endif

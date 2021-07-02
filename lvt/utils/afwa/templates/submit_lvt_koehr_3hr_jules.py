@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
 
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.3
+#
+# Copyright (c) 2020 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 import os
 import subprocess
 import sys
@@ -22,10 +32,26 @@ vars = ['RelSMC_inst', 'SmLiqFrac_inst',
         'SnowDepth_inst', 'Snowcover_inst',
         'Tair_f_inst', 'Tair_f_max',
         'Tair_f_tavg',
-        'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
+        'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg',
+        "ActSnowNL_inst", "GrndSnow_inst",
+         "LayerSnowDensity_inst", "LayerSnowDepth_inst",
+         "LayerSnowGrain_inst", "SnowDensity_inst",
+         "SnowGrain_inst", "SnowIce_inst",
+         "SnowLiq_inst", "SnowTProf_inst",
+         "SurftSnow_inst"]
+
+# # EMK GALWEM TESTING
+# vars = ["SoilMoist_inst", "SoilTemp_inst",
+#         "AvgSurfT_inst",
+#         'SnowDepth_inst', 'SWE_inst',
+#         "ActSnowNL_inst", "GrndSnow_inst",
+#         "LayerSnowDensity_inst", "LayerSnowDepth_inst",
+#         "LayerSnowGrain_inst", "SnowDensity_inst",
+#         "SnowGrain_inst", "SnowIce_inst",
+#         "SnowLiq_inst", "SnowTProf_inst",
+#         "SurftSnow_inst"]
 
 # Handle command line
-
 def usage():
     print("Usage:  %s chargecode queue" % (sys.argv[0]))
     print("  where chargecode is PBS project_code")

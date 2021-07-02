@@ -1,11 +1,17 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
 subroutine LVT_init_USAFSIpost()
 
    ! Imports
-   use LVT_logmod, only: LVT_logunit, LVT_endrun, LVT_flush
+   use LVT_logmod, only: LVT_logunit, LVT_endrun
 
    ! Defaults
    implicit none
@@ -14,7 +20,7 @@ subroutine LVT_init_USAFSIpost()
    call read_usafsipost_settings()
 
    ! Other initialize steps
-   call LVT_flush(LVT_logunit)
+   flush(LVT_logunit)
 
 contains
 

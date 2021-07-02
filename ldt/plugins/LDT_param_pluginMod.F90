@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module LDT_param_pluginMod
 !BOP
@@ -17,7 +23,8 @@ module LDT_param_pluginMod
 !  11 Dec 2003:  Sujay Kumar  - Initial Specification
 !  11 Feb 2013:  KR Arsenault - Updated to accommodate new parameter types and options
 !  01 Mar 2020:  Yeosang Yoon - Added MERIT DEM
-!
+!  29 Jun 2020:  Mahdi Navari - Glacier fraction added 
+!  
 !EOP
 
   use LDT_pluginIndices
@@ -69,6 +76,7 @@ contains
     use Mosaic_parmsMod
     use RUC_parmsMod
     use JULES50_parmsMod
+    use Crocus_parmsMod    
 
   ! Noah 2.7.1 LSM:
     call registerlsmparamprocinit(trim(LDT_noah271Id)//char(0),&
@@ -230,6 +238,14 @@ contains
          JULES50Parms_writeHeader)
     call registerlsmparamprocwritedata(trim(LDT_jules50Id)//char(0),&
          JULES50Parms_writeData)
+
+ !Crocus 8.1 :
+    call registerlsmparamprocinit(trim(LDT_Crocus81Id)//char(0),&
+        CrocusParms_init)
+    call registerlsmparamprocwriteheader(trim(LDT_Crocus81Id)//char(0),&
+         CrocusParms_writeHeader)
+    call registerlsmparamprocwritedata(trim(LDT_Crocus81Id)//char(0),&
+         CrocusParms_writeData)
 
   end subroutine LDT_LSMparam_plugin
 
@@ -1270,9 +1286,18 @@ contains
   subroutine LDT_glacier_plugin
 !EOP
     external read_GLIMS_glaciermask
+    external read_GLIMS_glacierfraction
+
+
+!   In the LDT code, the above calls are typically invoked in the
+!   following manner.
+!   \begin{verbatim}
+!    call readglacierfrac(ldt%domain,ldtglacierfracsrc)
 
     call registerreadglaciermask(trim(LDT_GLIMSId)//char(0),&
          read_GLIMS_glaciermask)
+    call registerreadglacierfrac(trim(LDT_GLIMSId)//char(0),&
+         read_GLIMS_glacierfraction)
 
   end subroutine LDT_glacier_plugin
 

@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module LDT_DAobs_pluginMod
 !BOP
@@ -59,9 +65,11 @@ contains
     use ANSASNWDsnow_obsMod,       only : ANSASNWDsnow_obsInit
     use GCOMW_AMSR2L3snd_obsMod,   only : GCOMW_AMSR2L3snd_obsInit
     use NASASMAPsm_obsMod,         only : NASASMAPsm_obsinit
+    use SMOSNRTNNL2sm_obsMod,      only : SMOSNRTNNL2sm_obsinit   !kyh20210105
     use NASASMAPvod_obsMod,        only : NASASMAPvod_obsinit
     use GLASSlai_obsMod,           only : GLASSlai_obsinit
     use LPRMvod_obsMod,            only : LPRMvod_obsinit
+    use MCD15A2Hlai_obsMod,        only : MCD15A2Hlai_obsinit
 
     external readLISlsmSMObs
     external readsyntheticsmobs
@@ -83,9 +91,11 @@ contains
     external readANSASNWDsnowObs
     external readGCOMW_AMSR2L3sndObs
     external readNASASMAPsmObs
+    external readSMOSNRTNNL2smObs      !kyh20210105
     external readNASASMAPvodObs
     external readGLASSlaiObs
     external readLPRMvodObs
+    external readMCD15A2HlaiObs
 
     call registerdaobssetup(trim(LDT_LISlsmSMobsId)//char(0), LISlsmSM_obsInit)
     call registerdaobsread(trim(LDT_LISlsmSMobsId)//char(0), readLISlsmSMObs)
@@ -185,6 +195,13 @@ contains
     call registerdaobsread(trim(LDT_NASASMAPsmobsId)//char(0),&
          readNASASMAPsmObs)
 
+    !--------kyh20210105
+    call registerdaobssetup(trim(LDT_SMOSNRTNNsmobsId)//char(0),&
+         SMOSNRTNNL2sm_obsinit)
+    call registerdaobsread(trim(LDT_SMOSNRTNNsmobsId)//char(0),&
+         readSMOSNRTNNL2smObs)
+    !--------kyh20210105
+
     call registerdaobssetup(trim(LDT_NASASMAPvodobsId)//char(0),&
          NASASMAPvod_obsinit)
     call registerdaobsread(trim(LDT_NASASMAPvodobsId)//char(0),&
@@ -200,6 +217,11 @@ contains
          LPRMvod_obsinit)
     call registerdaobsread(trim(LDT_LPRMvodobsId)//char(0),&
          readLPRMvodObs)
+
+    call registerdaobssetup(trim(LDT_MCD15A2HlaiobsId)//char(0),&
+         MCD15A2Hlai_obsinit)
+    call registerdaobsread(trim(LDT_MCD15A2HlaiobsId)//char(0),&
+         readMCD15A2HlaiObs)
 
   end subroutine LDT_DAobs_plugin
 end module LDT_DAobs_pluginMod

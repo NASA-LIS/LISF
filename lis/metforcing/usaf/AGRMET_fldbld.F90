@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
 !BOP
@@ -18,7 +24,7 @@ subroutine AGRMET_fldbld(n,order,julhr)
 ! !USES: 
   use AGRMET_forcingMod, only : agrmet_struc
   use LIS_coreMod,       only : LIS_masterproc
-  use LIS_logMod,        only : LIS_logunit, LIS_endrun, LIS_abort, LIS_flush,&
+  use LIS_logMod,        only : LIS_logunit, LIS_endrun, LIS_abort,&
        LIS_alert
   use LIS_timeMgrMod,    only : LIS_julhr_date
 
@@ -99,7 +105,7 @@ subroutine AGRMET_fldbld(n,order,julhr)
                 '[ERR] No GFS background found for ',yyyymmddhh
         end if
         write(LIS_logunit,*) ' ABORTING!'
-        call LIS_flush(LIS_logunit)
+        flush(LIS_logunit)
         message(:) = ''
         message(1) = '[ERR] Program:  LIS'
         message(2) = '  Routine:  AGRMET_fldbld.'

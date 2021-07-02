@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -61,9 +63,9 @@ subroutine read_GRACEobs(n,k, OBS_State, OBS_Pert_State)
   integer             :: gid(LIS_rc%obs_ngrid(k))
   integer             :: assimflag(LIS_rc%obs_ngrid(k))
 
-  character*100       :: GRACEobsdir
+  character*200       :: GRACEobsdir ! Natt, change 100 to 200
   logical             :: file_exists
-  character*100       :: name
+  character*200       :: name ! Natt, change 100 to 200
 
   integer             :: col,row
   logical             :: data_upd
@@ -248,6 +250,10 @@ subroutine read_GRACEobs(n,k, OBS_State, OBS_Pert_State)
                  call LIS_verify(status)
               endif
            endif
+        else
+            ! Natt: Let's print it out when LIS cannot find the file
+            write(LIS_logunit,*)  '[WARNING] GRACE data not found ',trim(name)
+            
         endif
      endif
   end if
