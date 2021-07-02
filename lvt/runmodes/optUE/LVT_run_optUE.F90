@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !ROUTINE: LVT_run_optUE
@@ -34,7 +40,7 @@ subroutine LVT_run_optUE
   do i=1,LVT_optuectl%maxIter
      call LVT_readoptUEData(i)
      call LVT_computeoptUEStats(i)
-     call LVT_flush(LVT_logunit)
+     flush(LVT_logunit)
   enddo
 end subroutine LVT_run_optUE
   

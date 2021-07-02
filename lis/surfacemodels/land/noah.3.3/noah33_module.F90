@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -239,6 +241,11 @@ module noah33_module
      real :: sigma_sm  !used for optimization/uncertainty analysis
 
      real,allocatable :: relsmc(:)  !used to export relsmc to WRF
+#ifdef WRF_HYDRO
+     real :: sfhead1rt
+     real :: infxs1rt
+     real :: soldrain1rt
+#endif
   end type noah33dec
 
 end module noah33_module

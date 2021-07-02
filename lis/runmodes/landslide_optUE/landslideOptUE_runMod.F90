@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -101,7 +103,7 @@ contains
     use LIS_coreMod,         only : LIS_rc
     use LIS_optUEMod, only : LIS_isOptStopCriterionTrue,&
          LIS_runOptUE
-    use LIS_logMod,          only : LIS_logunit, LIS_flush
+    use LIS_logMod,          only : LIS_logunit
 !
 ! !DESCRIPTION:
 ! 

@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -46,12 +48,8 @@ subroutine jules50_getsmpred(n, k,obs_pred)
 !  \item[obs\_pred] model's estimate of observations \newline
 !  \end{description}
 !EOP
-  real                   :: obs_tmp
-  integer                :: i,t,m,gid,kk
-  real                   :: inputs_tp(6), sm_out
-  character*50           :: units_tp(6)
+  integer                :: t
   real                   :: smc1(LIS_rc%npatch(n,LIS_rc%lsm_index))
-  real                   :: tmp1(LIS_rc%nensem(n)),tmp2(LIS_rc%nensem(n)),tmp3(LIS_rc%nensem(n))
 
   do t=1, LIS_rc%npatch(n,LIS_rc%lsm_index)
 ! apply the unit conversion.
@@ -73,36 +71,6 @@ subroutine jules50_getsmpred(n, k,obs_pred)
        LIS_rc%lsm_index, &
        smc1,&
        obs_pred)
-
-
-
-
-#if 0 
-  tmp1 = LIS_rc%udef
-  tmp2 = LIS_rc%udef
-  tmp3 = LIS_rc%udef
-   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)/LIS_rc%nensem(n)
-    if (i.eq.1376)then
-        do m=1,LIS_rc%nensem(n)
-           t = (i-1)*LIS_rc%nensem(n)+m
-                      tmp1(m) = jules50_struc(n)%jules50(t)%smcl_soilt(1)
-	              tmp2(m) = smc1(t)
-                      tmp3(m) = obs_pred(i,m)
-
-	enddo
-	             ! tmp3 = obs_pred(i)
-     endif
-   enddo
-   print*, 'jules_predicted obs, obs_pred obs sapce, obs_pred meas. space', &
-			sum(tmp1)/LIS_rc%nensem(n), &
-			sum(tmp2)/LIS_rc%nensem(n), &
-			sum(tmp3)/LIS_rc%nensem(n)!, &
-                        ! LIS_sfmodel_struc(n)%lyrthk(1)
-   print*, 'obs_pred meas. space', &
-			tmp3
-#endif
-
-
 
 end subroutine jules50_getsmpred
 

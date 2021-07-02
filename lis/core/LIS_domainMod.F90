@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -73,6 +75,8 @@ module LIS_domainMod
   public :: LIS_domain_setup        !setup domain related structures
   public :: LIS_quilt_domain         !generate quilted domains
   public :: LIS_domain_finalize      !cleanup allocated structures
+  public :: decompose_nx_ny          !decomposes domain based on proc layout
+  public :: decompose_npes           !decomposes domain based on proc elements
 !EOP
 
 contains
@@ -148,7 +152,8 @@ contains
        deallocate(LIS_LMLC(n)%surfacetype)
        if(LIS_rc%usetexturemap(n).ne."none") then 
           deallocate(LIS_soils(n)%texture)
-       elseif(LIS_rc%usesoilfractionmap(n).ne."none") then 
+       endif
+       if(LIS_rc%usesoilfractionmap(n).ne."none") then 
           deallocate(LIS_soils(n)%sand)
           deallocate(LIS_soils(n)%clay)
           deallocate(LIS_soils(n)%silt)
@@ -889,6 +894,11 @@ end subroutine LIS_quilt_b_domain
        else
           soilf_selected = .false.
        endif
+       
+       if(soilt_selected.and.soilf_selected) then 
+          soilt_selected = .true. 
+          soilf_selected = .false. 
+       endif
 
        if(LIS_rc%useelevationmap(n).ne."none") then 
           elev_selected = .true. 
@@ -1024,7 +1034,7 @@ end subroutine LIS_quilt_b_domain
                    '[ERR] No dominant surface model type found!'
               write(LIS_logunit,*) &
                    'c,r,fgrd: ',c,r,fgrd(c,r,:)
-              call LIS_flush(LIS_logunit)
+              flush(LIS_logunit)
               call LIS_endrun()
            end if
 
@@ -1066,7 +1076,7 @@ end subroutine LIS_quilt_b_domain
                 "  Thus, surface tiles set to '0' for gridpoint:"
               write(LIS_logunit,*) &
                    'c,r,fgrd: ',c,r,fgrd(c,r,:)
-              call LIS_flush(LIS_logunit)
+              flush(LIS_logunit)
               call LIS_endrun()
            end if
 
@@ -2844,6 +2854,30 @@ subroutine decompose_nx_ny(nc, nr, ips, ipe, jps, jpe)
    integer :: Px, Py, P
    integer :: i, j
 
+#ifdef MPDECOMP2
+    mytask_x = mod( LIS_localPet , LIS_rc%npesx ) + 1
+    mytask_y = ( LIS_localPet / LIS_rc%npesx ) + 1
+
+    j = 1
+    ips = -1
+    do i=1, nc
+      call LIS_mpDecomp_2(i,j,1,nc,1,nr,LIS_rc%npesx, LIS_rc%npesy,Px,Py,P)
+      if(Px.eq. mytask_x) then
+        ipe = i
+        if(ips.eq.-1) ips = i
+      endif
+    enddo
+
+    i = 1
+    jps = -1
+    do j=1, nr
+      call LIS_mpDecomp_2(i,j,1,nc,1,nr,LIS_rc%npesx,LIS_rc%npesy,Px,Py,P)
+      if(Py.eq.mytask_y) then
+        jpe = j
+        if(jps.eq.-1) jps = j
+      endif
+    enddo
+#else
    mytask_x = mod(LIS_localPet, LIS_rc%npesx)
    mytask_y = LIS_localPet / LIS_rc%npesx
 
@@ -2871,6 +2905,7 @@ subroutine decompose_nx_ny(nc, nr, ips, ipe, jps, jpe)
          endif
       endif
    enddo
+#endif
 end subroutine decompose_nx_ny
 
 

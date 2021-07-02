@@ -22,7 +22,7 @@ subroutine LDT_run_obsSim
            call LDT_applyObsSimMask(n)
            call LDT_applyObsSimErrorModel(n)
            call LDT_writeObsSim(n)
-           call LDT_flush(LDT_logunit)
+
         enddo
      enddo
   enddo

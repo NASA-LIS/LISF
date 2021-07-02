@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -161,7 +163,7 @@ contains
       use HDF5
 #endif
       use LIS_coreMod, only: LIS_masterproc
-      use LIS_logMod, only:  LIS_logunit, LIS_abort, LIS_flush, LIS_endrun, &
+      use LIS_logMod, only:  LIS_logunit, LIS_abort, LIS_endrun, &
            LIS_alert
       use LIS_mpiMod
 
@@ -200,7 +202,7 @@ contains
               '[ERR] update30minImergHHPrecip Invalid time level ',itime
          write(LIS_logunit,*) 'Must be in range from 1 to ',this%ntimes
          write(LIS_logunit,*)'Must be in range from 1 to ',this%ntimes
-         call LIS_flush(LIS_logunit)
+         flush(LIS_logunit)
          message(:) = ''
          message(1) = '[ERR] Program:  LIS'
          message(2) = '  Routine: update30minImergHHPrecip.'
@@ -355,7 +357,7 @@ contains
       write(LIS_logunit,*) &
            'Recompile with HDF5 and try again!'
       write(LIS_logunit,*)'ABORTING'
-      call LIS_flush(LIS_logunit)
+      flush(LIS_logunit)
       message(:) = ''
       message(1) = '[ERR] Program: LIS'
       message(2) = '  Routine update30minImergHHPrecip.'
@@ -987,7 +989,7 @@ contains
       ! Imports
       use ESMF
       use LIS_coreMod, only: LIS_masterproc
-      use LIS_logMod, only:  LIS_logunit, LIS_abort, LIS_flush, LIS_endrun, &
+      use LIS_logMod, only:  LIS_logunit, LIS_abort, LIS_endrun, &
            LIS_alert
 #if (defined SPMD)
       use LIS_mpiMod, only: LIS_MPI_COMM
@@ -1099,7 +1101,7 @@ contains
               '[ERR] Valid options are 3B-HHR, 3B-HHR-E, 3B-HHR-L'
          write(LIS_logunit,*) &
               '[ERR] Found ',trim(product)
-         call LIS_flush(LIS_logunit)
+         flush(LIS_logunit)
          message(:) = ''
          message(1) = '[ERR] Program:  LIS'
          message(2) = '  Routine: create_imerg_HH_filename.'

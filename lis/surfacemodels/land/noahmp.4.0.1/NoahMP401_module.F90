@@ -1,6 +1,13 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.0     
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 module NoahMP401_module
 !BOP
 !
@@ -499,6 +506,12 @@ module NoahMP401_module
         real :: rhmin
 
         type(noahmp_parameters) :: param
+
+        ! For WRF-HYDRO
+	real               :: sfcheadrt
+	real               :: infxs1rt
+	real               :: soldrain1rt
+ 
     end type noahmp401dec
 
 end module NoahMP401_module

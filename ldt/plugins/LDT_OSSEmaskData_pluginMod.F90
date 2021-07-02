@@ -41,14 +41,28 @@ contains
     use LDT_pluginIndices
 !EOP
     use LISoutOSSEmask_Mod,         only : LISoutOSSEmask_init
+    use AMSR2OSSEmask_Mod,          only : AMSR2OSSEmask_init
+    use TSMMOSSEmask_Mod,          only : TSMMOSSEmask_init
 
     external readLISoutOSSEmask
+    external readAMSR2OSSEmask
+    external readTSMMOSSEmask
 
     call registerossemasksourcesetup(trim(LDT_LISoutOSSEmaskDataId)//char(0), &
          LISoutOSSEmask_init)
     call registerreadOssemaskSource(trim(LDT_LISoutOSSEmaskDataId)//char(0), &
          readLISoutOSSEmask)
 
+    call registerossemasksourcesetup(trim(LDT_AMSR2OSSEmaskDataId)//char(0), &
+         AMSR2OSSEmask_init)
+    call registerreadOssemaskSource(trim(LDT_AMSR2OSSEmaskDataId)//char(0), &
+         readAMSR2OSSEmask)
+
+    call registerossemasksourcesetup(trim(LDT_TSMMOSSEmaskDataId)//char(0), &
+         TSMMOSSEmask_init)
+    call registerreadOssemaskSource(trim(LDT_TSMMOSSEmaskDataId)//char(0), &
+         readTSMMOSSEmask)
+    
   end subroutine LDT_OSSEmaskData_plugin
 
 end module LDT_OSSEmaskData_pluginMod

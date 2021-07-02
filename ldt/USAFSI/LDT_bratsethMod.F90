@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 ! MODULE: LDT_bratsethMod
@@ -307,7 +313,7 @@ contains
    subroutine LDT_bratseth_calc_inv_data_dens(this, silent)
 
       ! Imports
-      use LDT_logMod, only: LDT_logunit, LDT_flush
+      use LDT_logMod, only: LDT_logunit
 
       ! Defaults
       implicit none
@@ -486,7 +492,7 @@ contains
    subroutine LDT_bratseth_calc_ob_anas(this, converg_thresh, silent)
 
       ! Imports
-      use LDT_logMod, only: LDT_logunit, LDT_flush
+      use LDT_logMod, only: LDT_logunit
 
       ! Defaults
       implicit none
@@ -664,7 +670,7 @@ contains
                  this%npasses, ' iterations!'
             write(LDT_logunit,*) &
                  '[WARN] Will stop iterating'
-            call LDT_flush(LDT_logunit)
+            flush(LDT_logunit)
             exit
          end if
 

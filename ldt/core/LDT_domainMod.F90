@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) v7.1 
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module LDT_domainMod
 !BOP
@@ -1354,7 +1360,7 @@ end subroutine LDT_timeInit
                    '[ERR] No dominant surface model type found!'
               write(LDT_logunit,*) &
                    'c,r,fgrd: ',c,r,fgrd(c,r,:)
-              call LDT_flush(LDT_logunit)
+              flush(LDT_logunit)
               call LDT_endrun()
            end if
 
@@ -1389,7 +1395,7 @@ end subroutine LDT_timeInit
                    '[ERR] No surface tiles remain!'
               write(LDT_logunit,*) &
                    'c,r,fgrd: ',c,r,fgrd(c,r,:)
-              call LDT_flush(LDT_logunit)
+              flush(LDT_logunit)
               call LDT_endrun()
            end if
 

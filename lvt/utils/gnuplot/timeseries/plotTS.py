@@ -1,7 +1,19 @@
 #!/usr/bin/env python3
 
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.3
+#
+# Copyright (c) 2020 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 # currently assumes eps files - need to modify for ESMPy to read config
 # options
+
+import sys
 
 print("Generating the gnuplot script for time series plots ...")
 
@@ -81,7 +93,7 @@ elif out_img_format.strip() == "eps":
     cline = 'set terminal postscript enhanced eps color "Times-Roman" 24\n'
     outfile.writelines(cline)
 else:
-    exit
+    sys.exit(-1)
 
 # 'set output "'//trim(stnname(i))//'_'//&
 #                      trim(varname(j))//'_ts.eps"'

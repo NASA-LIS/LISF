@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -300,7 +306,7 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
       call grib_open_file(ftn,trim(fname),'r',iret)
       if(iret.ne.0) then
          write(LDT_logunit,*) 'Could not open file: ',trim(fname)
-         call LDT_flush(LDT_logunit)
+         flush(LDT_logunit)
          call LDT_endrun()
       endif
       call grib_multi_support_on

@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
 !BOP
@@ -20,7 +26,7 @@
 subroutine AGRMET_fldbld_galwem(n,order,julhr,rc)
 ! !USES: 
   use LIS_coreMod,       only : LIS_rc
-  use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_verify, LIS_flush
+  use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_verify
   use LIS_timeMgrMod,    only : LIS_julhr_date
   use AGRMET_forcingMod, only : agrmet_struc
 
@@ -410,8 +416,7 @@ subroutine AGRMET_fldbld_read_galwem(n, fg_filename, ifguess, jfguess,     &
                                      agr_pres_sfc,rc)
 ! !USES:
   use LIS_coreMod, only : LIS_rc
-  use LIS_logMod,  only : LIS_logunit, LIS_abort, LIS_alert, LIS_verify, &
-       LIS_flush
+  use LIS_logMod,  only : LIS_logunit, LIS_abort, LIS_alert, LIS_verify
 
 #if (defined USE_GRIBAPI)
   use grib_api
@@ -701,7 +706,7 @@ subroutine AGRMET_fldbld_read_galwem(n, fg_filename, ifguess, jfguess,     &
      case default ! Internal error, we shouldn't be here
         write(LIS_logunit,*)'[WARN] Unknown grib_message ',grib_msg
         write(LIS_logunit,*)'Aborting...'
-        call LIS_flush(LIS_logunit)
+        flush(LIS_logunit)
         write(cstat,'(i9)',iostat=istat1) ierr
         message(1) = 'Program: LIS'
         message(2) = '  Subroutine:  AGRMET_fldbld_read_galwem.'

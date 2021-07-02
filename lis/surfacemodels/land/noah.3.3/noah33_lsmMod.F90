@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -216,6 +218,16 @@ contains
           noah33_struc(n)%noah(i)%shdfac = 0 
           noah33_struc(n)%noah(i)%alb = 0 
           noah33_struc(n)%noah(i)%z0 = 0 
+
+          noah33_struc(n)%noah(i)%stc = LIS_rc%udef
+          noah33_struc(n)%noah(i)%smc = LIS_rc%udef
+          noah33_struc(n)%noah(i)%sh2o = LIS_rc%udef
+          noah33_struc(n)%noah(i)%relsmc = LIS_rc%udef
+#if WRF_HYDRO
+          noah33_struc(n)%noah(i)%sfhead1rt = 0
+          noah33_struc(n)%noah(i)%infxs1rt = 0
+          noah33_struc(n)%noah(i)%soldrain1rt = 0
+#endif
           
        enddo
 

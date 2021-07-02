@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 ! MODULE: USAFSI_galwemMod
@@ -67,7 +73,7 @@ contains
     integer :: dataTime
     integer :: ifguess
     integer :: jfguess
-    integer :: found_inq
+    logical :: found_inq
     integer :: k
     integer :: prod_def_tmpl_num
     integer :: param_disc_val

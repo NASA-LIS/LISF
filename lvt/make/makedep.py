@@ -1,4 +1,15 @@
 #!/usr/bin/env python
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.3
+#
+# Copyright (c) 2020 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 from __future__ import print_function
 import sys
 import os
@@ -382,8 +393,7 @@ def process_fortran90_file(fname, prereqs):
                 print_dbg('recursing')
                 prereqs = process_fortran90_file(name, prereqs)
         f.close()
-    finally:
-        return prereqs
+    return prereqs
 
 
 def process_fortran77_file(fname, prereqs):
@@ -412,8 +422,7 @@ def process_fortran77_file(fname, prereqs):
                 prereqs = add_prerequisite(prereqs, name)
                 prereqs = process_fortran77_file(name, prereqs)
         f.close()
-    finally:
-        return prereqs
+    return prereqs
 
 
 def process_c_file(fname, prereqs):
@@ -437,8 +446,7 @@ def process_c_file(fname, prereqs):
             if name:
                 prereqs = add_prerequisite(prereqs, name)
         f.close()
-    finally:
-        return prereqs
+    return prereqs
 
 
 def write_prerequisites(depfile, base_filename, target, prereqs):

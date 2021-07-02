@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -50,6 +52,12 @@ subroutine noah33_setwrfexport(n)
        noah33_struc(n)%noah%z0)
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%q1_t,&
        noah33_struc(n)%noah%q1)
+#ifdef WRF_HYDRO
+  call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%infxsrt_t,&
+       noah33_struc(n)%noah%infxs1rt)
+  call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%soldrain_t,&
+       noah33_struc(n)%noah%soldrain1rt)
+#endif
 
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      temp(i) = noah33_struc(n)%noah(i)%smc(1)

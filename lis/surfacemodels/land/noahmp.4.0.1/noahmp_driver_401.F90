@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -9,7 +11,6 @@
 ! Oct 15 2018 Zhuo Wang modifed for implementing Noah-MP 4.0.1 
 
 #undef LIS_NoahMP_TEST 
-#undef WRF_HYDRO  
 ! !INTERFACE
 subroutine noahmp_driver_401(n, ttile, itimestep, &  
      latitude, longitude,                                        &
@@ -47,9 +48,10 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
      bgap    , wgap    , tgb     , tgv     , chv     , chb     , & ! out Noah MP only
      shg     , shc     , shb     , evg     , evb     , ghv     , & ! out Noah MP only
      ghb     , irg     , irc     , irb     , tr      , evc     , & ! out Noah MP only
-     chleaf  , chuc    , chv2    , chb2    , relsmc, &
-     parameters) ! out Noah MP only
-  
+     chleaf  , chuc    , chv2    , chb2    , relsmc,             &
+     parameters ,                                                & ! out Noah MP only
+     sfcheadrt , INFXSRT, soldrain)                                ! For WRF-Hydro
+
   use module_sf_noahmpdrv_401, only: noahmplsm_401
   use module_sf_noahmplsm_401
   use LIS_coreMod, only    : LIS_rc
@@ -296,7 +298,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   real    :: soldn
   real    :: lwdn
   real    :: sfcprs(2)            ! multiple layer is required 
-  real    :: sfcheadrt            ! For WRF-Hydro
+  real, dimension(1,1) :: sfcheadrt,INFXSRT,soldrain ! For WRF-Hydro
   real    :: dz8w3d(2) 
   real, allocatable, dimension(:) :: zsoil
   real, allocatable, dimension(:) :: zsnso
@@ -473,7 +475,9 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
    ! Fraction of grid determining seaice (from WRF and HRLDAS)
    xice_thres = 0.5
 
+#ifndef WRF_HYDRO
    sfcheadrt = 0.0
+#endif
 ! SR = frozen precip fraction.  For offline, it is set to zero.
 ! If running coupled to WRF, then SR is set by the WRF model.
    if (snf_opt.ne.4) then
@@ -872,6 +876,11 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
 
   rainf = prcp * (1.0 - fpice)/dt  ! added by Shugong for LIS output 
   snowf = prcp * fpice/dt          ! added by Shugong for LIS output 
+
+#ifndef WRF_HYDRO
+  INFXSRT  = 0.0
+  soldrain = 0.0
+#endif
 
   deallocate(zsoil)
   deallocate(zsnso)

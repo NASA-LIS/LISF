@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module LDT_pluginIndices
 !BOP
@@ -98,6 +104,8 @@ module LDT_pluginIndices
         = "GCOMW AMSR2 L3 snow depth"
    character*50, public,  parameter :: LDT_NASASMAPsmobsId            &
         = "NASA SMAP soil moisture"
+   character*50, public,  parameter :: LDT_SMOSNRTNNsmobsId            &
+        = "SMOS NRT NN soil moisture"                                        !kyh20210105
    character*50, public,  parameter :: LDT_NASASMAPvodobsId            &
         = "NASA SMAP vegetation optical depth"
    character*50, public,  parameter :: LDT_GLASSlaiobsId            &
@@ -105,6 +113,8 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_LPRMvodobsId            &
         = "LPRM vegetation optical depth"
 
+   character*50, public,  parameter :: LDT_MCD15A2HlaiobsId            &
+        = "MCD15A2H LAI"
 !-------------------------------------------------------------------------
 ! Meteorological forcings
 !-------------------------------------------------------------------------
@@ -192,6 +202,11 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_gldbv1Id   = "GLDBv1"
    character*50, public,  parameter :: LDT_gldbv2Id   = "GLDBv2"
    character*50, public,  parameter :: LDT_glwdId     = "GLWD"
+
+!-------------------------------------------------------------------------
+! Snow models and data
+!-------------------------------------------------------------------------
+   character*50, public,  parameter :: LDT_Crocus81Id    = "Crocus8.1"  ! this is SURFEX version comes from surf_version.F90
 
 !-------------------------------------------------------------------------
 ! Landcover sources
@@ -382,6 +397,11 @@ module LDT_pluginIndices
 !  obs simulator OSSE mask
 !-------------------------------------------------------------------------
    character*50, public,  parameter :: LDT_LISoutOSSEmaskDataId = "LIS output"
+   character*50, public,  parameter :: LDT_AMSR2OSSEmaskDataId = "AMSR2"
+   character*50, public,  parameter :: LDT_MODISOSSEmaskDataId = "MODIS"
+   character*50, public,  parameter :: LDT_SentinelOSSEmaskDataId = "Sentinel1A"
+   character*50, public,  parameter :: LDT_TSMMOSSEmaskDataId = "TSMM"
+   
 
 !EOC
  end module LDT_pluginIndices

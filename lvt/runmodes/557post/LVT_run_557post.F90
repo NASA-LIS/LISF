@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !ROUTINE: LVT_run_557post
@@ -46,7 +52,7 @@ subroutine LVT_run_557post
         call LVT_tavgDataStreams
         call LVT_writeDataStreams
         call LVT_resetDataStreams
-        call LVT_flush(LVT_logunit)
+        flush(LVT_logunit)
      enddo
   enddo
   write(LVT_logunit,*) '[INFO] Finished LVT analysis'

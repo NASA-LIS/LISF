@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -19,7 +21,7 @@ subroutine lis_gce_run()
   use LIS_DAobservationsMod, only : LIS_readDAobservations, &
        LIS_perturb_DAobservations
   use LIS_dataAssimMod,    only : LIS_dataassim_run, LIS_dataassim_output
-  use LIS_logMod,          only : lis_flush, LIS_logunit, LIS_verify
+  use LIS_logMod,          only : LIS_logunit, LIS_verify
   use lisgceGridCompMod,   only : lisgce_import, lisgce_export
 
   implicit none
@@ -123,7 +125,7 @@ subroutine lis_gce_run()
   call LIS_surfaceModel_run(n)
   call LIS_surfaceModel_output(n)  
   call LIS_surfaceModel_writerestart(n)
-  call LIS_flush(LIS_logunit)
+  flush(LIS_logunit)
 
   call LIS_surfaceModel_setexport(n)
   

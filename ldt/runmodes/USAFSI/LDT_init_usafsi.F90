@@ -1,11 +1,17 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 subroutine LDT_init_USAFSI()
 
    ! Imports
    use LDT_domainMod, only: LDT_setDomainSpecs
-   use LDT_logMod, only: LDT_logunit, LDT_flush
+   use LDT_logMod, only: LDT_logunit
    use LDT_paramProcMod, only: LDT_paramProcConfig
    use LDT_usafsiMod, only: LDT_usafsiInit
 
@@ -19,6 +25,6 @@ subroutine LDT_init_USAFSI()
    call LDT_setDomainSpecs()
    call LDT_paramProcConfig()
    call LDT_usafsiInit()
-   call LDT_flush(LDT_logunit)
+   flush(LDT_logunit)
 
 end subroutine LDT_init_USAFSI

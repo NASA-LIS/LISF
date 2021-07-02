@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,7 +20,7 @@ subroutine liswrffinalize_coupled()
   use LIS_timeMgrMod,        only : LIS_timemgr_set
   use LIS_surfaceModelMod,   only : LIS_surfaceModel_output,         &
                                     LIS_surfaceModel_writerestart
-  use LIS_logMod,            only : LIS_verify, LIS_flush, LIS_logunit
+  use LIS_logMod,            only : LIS_verify, LIS_logunit
   use LIS_irrigationMod,     only : LIS_irrigation_output ! EMK
 !EOP
  
@@ -51,6 +53,6 @@ subroutine liswrffinalize_coupled()
 
   write(unit=LIS_logunit,fmt=*) 'LIS cycle completed'
 
- call LIS_flush(LIS_logunit)
+ flush(LIS_logunit)
 
 end subroutine liswrffinalize_coupled

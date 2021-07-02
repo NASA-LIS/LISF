@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -97,7 +99,12 @@ CONTAINS
                        csoil, salp, kdt, cfactr, zbot, refkdt, ptu,frzx,& 
                        sndens,  &  !added for use in SCF DA, yliu
 ! Save soil surface temperature for output - D. Mocko
-                       LVCOEF,TSOIL)
+                       LVCOEF,TSOIL                                     &
+#ifdef WRF_HYDRO
+                       ,SFHEAD1RT                                       &    !I
+                       ,INFXS1RT,ETPND1                                 &    !P
+#endif
+                       )
 ! ----------------------------------------------------------------------
 ! SUBROUTINE SFLX - UNIFIED NOAHLSM VERSION 1.0 JULY 2007
 ! ----------------------------------------------------------------------
@@ -316,6 +323,9 @@ CONTAINS
       LOGICAL, INTENT(IN) :: RDLAI2D
       LOGICAL, INTENT(IN) :: USEMONALB
 
+#ifdef WRF_HYDRO
+      REAL, INTENT(INOUT):: SFHEAD1RT,INFXS1RT,ETPND1
+#endif
       REAL, INTENT(IN)   :: SHDMIN,SHDMAX,DT,DQSDT2,LWDN,PRCP,PRCPRAIN,     &
                             Q2,Q2SAT,SFCPRS,SFCSPD,SFCTMP, SNOALB,          &
                             SOLDN,SOLNET,TBOT,TH2,ZLVL,                            &
@@ -849,7 +859,11 @@ CONTAINS
                             DKSAT,DWSAT,TBOT,ZBOT,RUNOFF1,RUNOFF2,       &
                             RUNOFF3,EDIR,EC,ET,ETT,NROOT,ICE,RTDIS,      &
                             QUARTZ,FXEXP,CSOIL,                          &
-                            BETA,DRIP,DEW,FLX1,FLX3,VEGTYP,ISURBAN)
+                            BETA,DRIP,DEW,FLX1,FLX3,VEGTYP,ISURBAN       &
+#ifdef WRF_HYDRO
+                            ,SFHEAD1RT,INFXS1RT,ETPND1                   &
+#endif
+                            )
             ETA_KINEMATIC = ETA
             TSOIL = T1
          ELSE
@@ -865,7 +879,11 @@ CONTAINS
                          BETA,DRIP,DEW,FLX1,FLX2,FLX3,ESNOW,ETNS,EMISSI, &
                          RIBB,SOLDN,                                     &
                          ISURBAN,                                        &
-                         VEGTYP,TSOIL)
+                         VEGTYP,TSOIL                                    &
+#ifdef WRF_HYDRO
+                         ,SFHEAD1RT,INFXS1RT,ETPND1                      &
+#endif
+                         )
             ETA_KINEMATIC =  ESNOW + ETNS
          END IF
 
@@ -895,6 +913,9 @@ CONTAINS
       ET(K) = ET(K) * LVH2O
       ENDDO
       ETT = ETT * LVH2O
+#ifdef WRF_HYDRO
+      ETPND1=ETPND1 * LVH2O
+#endif
       ESNOW = ESNOW * LSUBS
       ETP = ETP*((1.-SNCOVR)*LVH2O + SNCOVR*LSUBS)
       IF (ETP .GT. 0.) THEN
@@ -1317,7 +1338,11 @@ CONTAINS
                          SMCMAX,BEXP,PC,SMCWLT,DKSAT,DWSAT,             &
                          SMCREF,SHDFAC,CMCMAX,                          &
                          SMCDRY,CFACTR,                                 &
-                         EDIR,EC,ET,ETT,SFCTMP,Q2,NROOT,RTDIS,FXEXP)
+                         EDIR,EC,ET,ETT,SFCTMP,Q2,NROOT,RTDIS,FXEXP     &
+#ifdef WRF_HYDRO
+                         ,SFHEAD1RT,ETPND1                              &
+#endif
+)
 
 ! ----------------------------------------------------------------------
 ! SUBROUTINE EVAPO
@@ -1338,6 +1363,9 @@ CONTAINS
       REAL                  :: CMC2MS
       REAL,DIMENSION(1:NSOIL), INTENT(IN) :: RTDIS, SMC, SH2O, ZSOIL
       REAL,DIMENSION(1:NSOIL), INTENT(OUT) :: ET
+#ifdef WRF_HYDRO
+      REAL,   INTENT(INOUT) :: SFHEAD1RT,ETPND1
+#endif
 
 ! ----------------------------------------------------------------------
 ! EXECUTABLE CODE BEGINS HERE IF THE POTENTIAL EVAPOTRANSPIRATION IS
@@ -1357,8 +1385,21 @@ CONTAINS
 ! ----------------------------------------------------------------------
       IF (ETP1 > 0.0) THEN
          IF (SHDFAC <  1.) THEN
+#ifdef WRF_HYDRO
+!            CALL DEVAP_hydro (EDIR,ETP1,SMC (1),ZSOIL (1),SHDFAC,SMCMAX,      &
+!                        BEXP,DKSAT,DWSAT,SMCDRY,SMCREF,SMCWLT,FXEXP,    &
+!                         SFHEAD1RT,ETPND1,DT)
+!DJG Reduce ETP1 by EDIR & ETPND1...
+!                ETP1=ETP1-EDIR-ETPND1
+
+! following is the temparay setting ...
+             CALL DEVAP (EDIR,ETP1,SMC (1),ZSOIL (1),SHDFAC,SMCMAX,      &
+                         BEXP,DKSAT,DWSAT,SMCDRY,SMCREF,SMCWLT,FXEXP)
+!            ETP1=ETP1-EDIR
+#else
             CALL DEVAP (EDIR,ETP1,SMC (1),ZSOIL (1),SHDFAC,SMCMAX,      &
                          BEXP,DKSAT,DWSAT,SMCDRY,SMCREF,SMCWLT,FXEXP)
+#endif
          END IF
 ! ----------------------------------------------------------------------
 ! INITIALIZE PLANT TOTAL TRANSPIRATION, RETRIEVE PLANT TRANSPIRATION,
@@ -2038,7 +2079,12 @@ CONTAINS
                          DKSAT,DWSAT,TBOT,ZBOT,RUNOFF1,RUNOFF2,         &
                          RUNOFF3,EDIR,EC,ET,ETT,NROOT,ICE,RTDIS,        &
                          QUARTZ,FXEXP,CSOIL,                            &
-                         BETA,DRIP,DEW,FLX1,FLX3,VEGTYP,ISURBAN)
+                         BETA,DRIP,DEW,FLX1,FLX3,VEGTYP,ISURBAN         &
+#ifdef WRF_HYDRO
+!DJG NDHMS/WRF-Hydro edit...
+                         ,SFHEAD1RT,INFXS1RT,ETPND1                     &
+#endif
+                         )
 
 ! ----------------------------------------------------------------------
 ! SUBROUTINE NOPAC
@@ -2061,6 +2107,11 @@ CONTAINS
       REAL, INTENT(INOUT)  :: CMC,BETA,T1
       REAL, INTENT(OUT)    :: DEW,DRIP,EC,EDIR,ETA,ETT,FLX1,FLX3,       &
                               RUNOFF1,RUNOFF2,RUNOFF3,SSOIL
+#ifdef WRF_HYDRO
+!DJG NDHMS/WRF-Hydro edit...
+      REAL, INTENT(INOUT)  :: SFHEAD1RT,INFXS1RT,ETPND1
+#endif
+
       REAL, DIMENSION(1:NSOIL),INTENT(IN)     :: RTDIS,ZSOIL
       REAL, DIMENSION(1:NSOIL),INTENT(OUT)    :: ET
       REAL, DIMENSION(1:NSOIL), INTENT(INOUT) :: SMC,SH2O,STC
@@ -2089,20 +2140,33 @@ CONTAINS
       ETT = 0.
       ETT1 = 0.
 
+#ifdef WRF_HYDRO
+!DJG NDHMS/WRF-Hydro edit...
+      ETPND1 = 0.
+#endif
+
       IF (ETP > 0.0) THEN
          CALL EVAPO (ETA1,SMC,NSOIL,CMC,ETP1,DT,ZSOIL,                  &
                       SH2O,                                             &
                       SMCMAX,BEXP,PC,SMCWLT,DKSAT,DWSAT,                &
                       SMCREF,SHDFAC,CMCMAX,                             &
                       SMCDRY,CFACTR,                                    &
-                       EDIR1,EC1,ET1,ETT1,SFCTMP,Q2,NROOT,RTDIS,FXEXP)
+                       EDIR1,EC1,ET1,ETT1,SFCTMP,Q2,NROOT,RTDIS,FXEXP   &
+#ifdef WRF_HYDRO
+                      ,SFHEAD1RT,ETPND1                                 &
+#endif
+                      )
          CALL SMFLX (SMC,NSOIL,CMC,DT,PRCP1,ZSOIL,                      &
                       SH2O,SLOPE,KDT,FRZFACT,                           &
                       SMCMAX,BEXP,SMCWLT,DKSAT,DWSAT,                   &
                       SHDFAC,CMCMAX,                                    &
                       RUNOFF1,RUNOFF2,RUNOFF3,                          &
                       EDIR1,EC1,ET1,                                    &
-                      DRIP)
+                      DRIP                                              &
+#ifdef WRF_HYDRO
+                      ,SFHEAD1RT,INFXS1RT                               &
+#endif
+                      )
 
 ! ----------------------------------------------------------------------
 ! CONVERT MODELED EVAPOTRANSPIRATION FROM  M S-1  TO  KG M-2 S-1.
@@ -2128,7 +2192,11 @@ CONTAINS
                       SHDFAC,CMCMAX,                                    &
                       RUNOFF1,RUNOFF2,RUNOFF3,                          &
                       EDIR1,EC1,ET1,                                    &
-                      DRIP)
+                      DRIP                                              &
+#ifdef WRF_HYDRO
+                      ,SFHEAD1RT,INFXS1RT                               &
+#endif
+                      )
 
 ! ----------------------------------------------------------------------
 ! CONVERT MODELED EVAPOTRANSPIRATION FROM 'M S-1' TO 'KG M-2 S-1'.
@@ -2661,7 +2729,11 @@ CONTAINS
      &                   SHDFAC,CMCMAX,                                 &
      &                   RUNOFF1,RUNOFF2,RUNOFF3,                       &
      &                   EDIR,EC,ET,                                    &
-     &                   DRIP)
+     &                   DRIP                                           &
+#ifdef WRF_HYDRO
+     &                   ,SFHEAD1RT,INFXS1RT                            &
+#endif
+     &                   )
 
 ! ----------------------------------------------------------------------
 ! SUBROUTINE SMFLX
@@ -2688,6 +2760,9 @@ CONTAINS
       REAL                  :: DUMMY, EXCESS,FRZFACT,PCPDRP,RHSCT,TRHSCT
       REAL :: FAC2
       REAL :: FLIMIT
+#ifdef WRF_HYDRO
+      REAL,    INTENT(INOUT)                 :: SFHEAD1RT,INFXS1RT
+#endif
 
 ! ----------------------------------------------------------------------
 ! EXECUTABLE CODE BEGINS HERE.
@@ -2755,28 +2830,56 @@ CONTAINS
 ! INC&UDED IN SSTEP SUBR.  FROZEN GROUND CORRECTION FACTOR, FRZFACT
 ! ADDED.  ALL WATER BALANCE CALCULATIONS USING UNFROZEN WATER
 ! ----------------------------------------------------------------------
+#ifdef WRF_HYDRO
+!DJG NDHMS/WRF-Hydro edit... Add previous ponded water to new precip drip...
+    PCPDRP = PCPDRP + SFHEAD1RT/1000./DT   ! convert SFHEAD1RT to (m/s)
+#endif
       IF ( ( (PCPDRP * DT) > (0.0001*1000.0* (- ZSOIL (1))* SMCMAX) )   &
            .OR. (FAC2 > FLIMIT) ) THEN
          CALL SRT (RHSTT,EDIR,ET,SH2O,SH2O,NSOIL,PCPDRP,ZSOIL,          &
                     DWSAT,DKSAT,SMCMAX,BEXP,RUNOFF1,                    &
-                    RUNOFF2,DT,SMCWLT,SLOPE,KDT,FRZFACT,SICE,AI,BI,CI)
+                    RUNOFF2,DT,SMCWLT,SLOPE,KDT,FRZFACT,SICE,AI,BI,CI   &
+#ifdef WRF_HYDRO
+                    ,SFHEAD1RT,INFXS1RT                                 &
+#endif
+                    )
          CALL SSTEP (SH2OFG,SH2O,DUMMY,RHSTT,RHSCT,DT,NSOIL,SMCMAX,     &
-                        CMCMAX,RUNOFF3,ZSOIL,SMC,SICE,AI,BI,CI)
+                        CMCMAX,RUNOFF3,ZSOIL,SMC,SICE,AI,BI,CI          &
+#ifdef WRF_HYDRO
+                        ,INFXS1RT                                       &
+#endif
+                        )
          DO K = 1,NSOIL
             SH2OA (K) = (SH2O (K) + SH2OFG (K)) * 0.5
          END DO
          CALL SRT (RHSTT,EDIR,ET,SH2O,SH2OA,NSOIL,PCPDRP,ZSOIL,         &
                     DWSAT,DKSAT,SMCMAX,BEXP,RUNOFF1,                    &
-                    RUNOFF2,DT,SMCWLT,SLOPE,KDT,FRZFACT,SICE,AI,BI,CI)
+                    RUNOFF2,DT,SMCWLT,SLOPE,KDT,FRZFACT,SICE,AI,BI,CI   &
+#ifdef WRF_HYDRO
+                    ,SFHEAD1RT,INFXS1RT                                 &
+#endif
+                    )
          CALL SSTEP (SH2O,SH2O,CMC,RHSTT,RHSCT,DT,NSOIL,SMCMAX,         &
-                        CMCMAX,RUNOFF3,ZSOIL,SMC,SICE,AI,BI,CI)
+                        CMCMAX,RUNOFF3,ZSOIL,SMC,SICE,AI,BI,CI          &
+#ifdef WRF_HYDRO
+                        ,INFXS1RT                                       &
+#endif
+                        )
 
       ELSE
          CALL SRT (RHSTT,EDIR,ET,SH2O,SH2O,NSOIL,PCPDRP,ZSOIL,          &
                     DWSAT,DKSAT,SMCMAX,BEXP,RUNOFF1,                    &
-                      RUNOFF2,DT,SMCWLT,SLOPE,KDT,FRZFACT,SICE,AI,BI,CI)
+                    RUNOFF2,DT,SMCWLT,SLOPE,KDT,FRZFACT,SICE,AI,BI,CI   &
+#ifdef WRF_HYDRO
+                    ,SFHEAD1RT,INFXS1RT                                 &
+#endif
+                    )
          CALL SSTEP (SH2O,SH2O,CMC,RHSTT,RHSCT,DT,NSOIL,SMCMAX,         &
-                        CMCMAX,RUNOFF3,ZSOIL,SMC,SICE,AI,BI,CI)
+                     CMCMAX,RUNOFF3,ZSOIL,SMC,SICE,AI,BI,CI             &
+#ifdef WRF_HYDRO
+                     ,INFXS1RT                                          &
+#endif
+                     )
 !      RUNOF = RUNOFF
 
       END IF
@@ -2926,8 +3029,11 @@ CONTAINS
                           BETA,DRIP,DEW,FLX1,FLX2,FLX3,ESNOW,ETNS,EMISSI,&
                           RIBB,SOLDN,                                   &
                           ISURBAN,                                      &
-
-                          VEGTYP,YY)
+                          VEGTYP,YY                                     &
+#ifdef WRF_HYDRO
+                          ,SFHEAD1RT,INFXS1RT,ETPND1                    &
+#endif
+                          )
 
 ! ----------------------------------------------------------------------
 ! SUBROUTINE SNOPAC
@@ -2946,6 +3052,10 @@ CONTAINS
 !
       INTEGER               :: IT16
       LOGICAL, INTENT(IN)   :: SNOWNG
+#ifdef WRF_HYDRO
+!DJG NDHMS/WRF-Hydro edit...
+       REAL, INTENT(INOUT)    ::  SFHEAD1RT,INFXS1RT,ETPND1
+#endif
       REAL, INTENT(IN)      :: BEXP,CFACTR, CMCMAX,CSOIL,DF1,DKSAT,     &
                                DT,DWSAT, EPSCA,FDOWN,F1,FXEXP,          &
                                FRZFACT,KDT,PC, PRCP,PSISAT,Q2,QUARTZ,   &
@@ -3009,6 +3119,12 @@ CONTAINS
       END DO
       ETT = 0.
       ETT1 = 0.
+
+#ifdef WRF_HYDRO
+!DJG NDHMS/WRF-Hydro edit...
+      ETPND1 = 0.
+#endif
+
       ETNS = 0.
       ETNS1 = 0.
       ESNOW = 0.
@@ -3049,7 +3165,11 @@ CONTAINS
                             SMCREF,SHDFAC,CMCMAX,                       &
                             SMCDRY,CFACTR,                              &
                             EDIR1,EC1,ET1,ETT1,SFCTMP,Q2,NROOT,RTDIS,   &
-                            FXEXP)
+                            FXEXP                                       &
+#ifdef WRF_HYDRO
+                            ,SFHEAD1RT,ETPND1                           &
+#endif
+                            )
 ! ----------------------------------------------------------------------------
                EDIR1 = EDIR1* (1. - SNCOVR)
                EC1 = EC1* (1. - SNCOVR)
@@ -3067,6 +3187,11 @@ CONTAINS
                END DO
                ETT = ETT1*1000.
                ETNS = ETNS1*1000.
+
+#ifdef WRF_HYDRO
+!DJG NDHMS/WRF-Hydro edit...
+               ETPND1 = ETPND1*1000.
+#endif
 ! ----------------------------------------------------------------------
 
 !   end IF (SNCOVR .lt. 1.)
@@ -3243,7 +3368,11 @@ CONTAINS
                       SHDFAC,CMCMAX,                                    &
                       RUNOFF1,RUNOFF2,RUNOFF3,                          &
                       EDIR1,EC1,ET1,                                    &
-                      DRIP)
+                      DRIP                                              &
+#ifdef WRF_HYDRO
+                      ,SFHEAD1RT,INFXS1RT                               &
+#endif
+                      )
 ! ----------------------------------------------------------------------
 ! BEFORE CALL SHFLX IN THIS SNOWPACK CASE, SET ZZ1 AND YY ARGUMENTS TO
 ! SPECIAL VALUES THAT ENSURE THAT GROUND HEAT FLUX CALCULATED IN SHFLX
@@ -3526,7 +3655,11 @@ CONTAINS
 
       SUBROUTINE SRT (RHSTT,EDIR,ET,SH2O,SH2OA,NSOIL,PCPDRP,            &
                        ZSOIL,DWSAT,DKSAT,SMCMAX,BEXP,RUNOFF1,           &
-                       RUNOFF2,DT,SMCWLT,SLOPE,KDT,FRZX,SICE,AI,BI,CI)
+                       RUNOFF2,DT,SMCWLT,SLOPE,KDT,FRZX,SICE,AI,BI,CI   &
+#ifdef WRF_HYDRO
+                      ,SFHEAD1RT,INFXS1RT                              &
+#endif
+                      )
 
 ! ----------------------------------------------------------------------
 ! SUBROUTINE SRT
@@ -3538,6 +3671,11 @@ CONTAINS
       IMPLICIT NONE
       INTEGER, INTENT(IN)       :: NSOIL
       INTEGER                   :: IALP1, IOHINF, J, JJ,  K, KS
+#ifdef WRF_HYDRO
+!DJG NDHMS/WRF-Hydro edit... Variables used in OV routing infiltration calcs
+       REAL, INTENT(INOUT)     :: SFHEAD1RT, INFXS1RT
+       REAL                    :: SFCWATR,chcksm
+#endif
       REAL, INTENT(IN)          :: BEXP, DKSAT, DT, DWSAT, EDIR, FRZX,  &
                                    KDT, PCPDRP, SLOPE, SMCMAX, SMCWLT
       REAL, INTENT(OUT)         :: RUNOFF1, RUNOFF2
@@ -3581,15 +3719,31 @@ CONTAINS
 ! DETERMINE RAINFALL INFILTRATION RATE AND RUNOFF
 ! ----------------------------------------------------------------------
       END DO
+#ifdef WRF_HYDRO
+!DJG NDHMS/WRF-Hydro edit...
+!DJG Use previously merged Precip and Sfchead for infil. cap. calc.
+      SFCWATR = PCPDRP
+      PDDUM = SFCWATR
+!DJG original   PDDUM = PCPDRP
+      RUNOFF1 = 0.0
+      INFXS1RT = 0.0
+#else
       PDDUM = PCPDRP
       RUNOFF1 = 0.0
+#endif
 
 ! ----------------------------------------------------------------------
 ! MODIFIED BY Q. DUAN, 5/16/94
 ! ----------------------------------------------------------------------
 !        IF (IOHINF == 1) THEN
 
+#ifdef WRF_HYDRO
+!DJG NDHMS/WRF-Hydro edit...
+!DJG IF (PCPDRP /=  0.0) THEN
+      IF (SFCWATR /=  0.0) THEN
+#else
       IF (PCPDRP /=  0.0) THEN
+#endif
          DT1 = DT /86400.
          SMCAV = SMCMAX - SMCWLT
 
@@ -3621,7 +3775,13 @@ CONTAINS
          END DO
          VAL = (1. - EXP ( - KDT * DT1))
          DDT = DD * VAL
+#ifdef WRF_HYDRO
+!DJG NDHMS/WRF-Hydro edit...
+!DJG        PX = PCPDRP * DT
+         PX = SFCWATR * DT
+#else
          PX = PCPDRP * DT
+#endif
          IF (PX <  0.0) PX = 0.0
 
 ! ----------------------------------------------------------------------
@@ -3658,8 +3818,19 @@ CONTAINS
          INFMAX = MAX (INFMAX,WCND)
 
          INFMAX = MIN (INFMAX,PX/DT)
+#ifdef WRF_HYDRO
+!DJG NDHMS/WRF-Hydro edit...
+!DJG       IF (PCPDRP >  INFMAX) THEN
+         IF (SFCWATR > INFMAX) THEN
+!DJG          RUNOFF1 = PCPDRP - INFMAX
+          RUNOFF1 = SFCWATR - INFMAX
+#else
          IF (PCPDRP >  INFMAX) THEN
             RUNOFF1 = PCPDRP - INFMAX
+#endif
+#ifdef WRF_HYDRO
+            INFXS1RT = RUNOFF1*DT*1000.
+#endif
             PDDUM = INFMAX
          END IF
 ! ----------------------------------------------------------------------
@@ -3778,7 +3949,11 @@ CONTAINS
 
       SUBROUTINE SSTEP (SH2OOUT,SH2OIN,CMC,RHSTT,RHSCT,DT,              &
                         NSOIL,SMCMAX,CMCMAX,RUNOFF3,ZSOIL,SMC,SICE,     &
-                        AI,BI,CI)
+                        AI,BI,CI                                        &
+#ifdef WRF_HYDRO
+                        ,INFXS1RT                                       &
+#endif
+                        )
 
 ! ----------------------------------------------------------------------
 ! SUBROUTINE SSTEP
@@ -3790,6 +3965,11 @@ CONTAINS
       INTEGER, INTENT(IN)       :: NSOIL
       INTEGER                   :: I, K, KK11
 
+#ifdef WRF_HYDRO
+!DJG NDHMS/WRF-Hydro edit...
+      REAL, INTENT(INOUT)       :: INFXS1RT
+      REAL                      :: AVAIL
+#endif
       REAL, INTENT(IN)          :: CMCMAX, DT, SMCMAX
       REAL, INTENT(OUT)         :: RUNOFF3
       REAL, INTENT(INOUT)       :: CMC
@@ -3851,6 +4031,43 @@ CONTAINS
          SMC (K) = MAX ( MIN (STOT,SMCMAX),0.02 )
          SH2OOUT (K) = MAX ( (SMC (K) - SICE (K)),0.0)
       END DO
+
+#ifdef WRF_HYDRO
+!DJG NDHMS/WRF-Hydro edit...
+!DJG Modifications to redstribute WPLUS/RUNOFF3 (soil moisture closure error) to soil profile
+!DJG beginning at bottom layer (NSOIL)
+         IF (WPLUS > 0.) THEN
+           DO K=NSOIL,2,-1
+
+               IF (K .eq. 2) THEN     !Assign soil depths
+                 DDZ = -ZSOIL(1)
+               ELSE
+                 DDZ = ZSOIL(K-2)-ZSOIL(K-1)
+               END IF
+
+               AVAIL = (SMCMAX - SMC(K-1)) * DDZ    !Det. Avail. Stor.
+
+!               print *, "ZZZZZ", K,DDZ,AVAIL,WPLUS,SMC(K),SMC(K-1),SMCMAX
+
+               IF (WPLUS <= AVAIL) THEN
+                 SMC(K-1) = SMC(K-1) + WPLUS/DDZ
+                 WPLUS = 0.
+               ELSE
+                 SMC(K-1) = SMCMAX
+                 WPLUS = WPLUS - AVAIL
+                 IF (K-1 .eq. 1) THEN
+                   INFXS1RT = INFXS1RT + WPLUS*1000
+                   WPLUS = 0.
+                 END IF
+               END IF
+
+!             SMC (K) = MAX ( MIN (STOT,SMCMAX),0.02 )
+             SH2OOUT (K) = MAX ( (SMC (K) - SICE (K)),0.0)
+
+           END DO
+         END IF
+!DJG NDHMS/WRF-Hydro edit...End of modification
+#endif
 
 ! ----------------------------------------------------------------------
 ! UPDATE CANOPY WATER CONTENT/INTERCEPTION (CMC).  CONVERT RHSCT TO

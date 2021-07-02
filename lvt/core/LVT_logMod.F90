@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !BOP
 ! 
@@ -45,7 +51,6 @@ module LVT_logMod
                         ! to the diagnostic log
   public :: LVT_abort  ! generates a standard abort message
   public :: LVT_alert  ! generates a standard alert message
-  public :: LVT_flush ! flushes any unwrittend writes to the log
   public :: LVT_getNextUnitNumber   !get the next available unit number
   public :: LVT_releaseUnitNumber   !release the unit number!
   public :: LVT_endrun
@@ -379,47 +384,7 @@ contains
 8000 format (a)   
       
   end subroutine LVT_alert
-!BOP
-! 
-! !ROUTINE: LVT_flush
-! \label{LVT_flush}
-!
-! !INTERFACE:
-  subroutine LVT_flush(unit)
-! 
-! !USES:   
-    implicit none
-!
-! !INPUT PARAMETERS: 
-! 
-! !OUTPUT PARAMETERS:
-!
-! !DESCRIPTION: 
-!   This routine is a generic interface to the system flush routine.
-!
-!   The arguments are: 
-!   \begin{description}
-!   \item [unit]
-!     unit to be flushed out 
-!   \end{description}
-! 
-! !FILES USED:
-!
-! !REVISION HISTORY: 
-!  16 Nov 2004    James Geiger Initial Specification
-! 
-!EOP
-!BOP
-    integer :: unit
-!EOP
-
-#if ( defined AIX )
-    call flush_(unit)
-#else
-    call flush(unit)
-#endif   
-  end subroutine LVT_flush
-  
+ 
 !BOP
 ! 
 ! !ROUTINE: check_error

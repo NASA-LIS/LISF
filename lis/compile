@@ -1,18 +1,20 @@
-#!/bin/sh 
+#!/bin/sh
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-# NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.3
 #
-# Copyright (c) 2015 United States Government as represented by the
+# Copyright (c) 2020 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
-while getopts ":hdj:" opt
+while getopts ":hdunj:" opt
 do
    case $opt in
       h)
-         echo "Usage: ./compile.sh [-h] [-d] [-j jobs]"
+         echo "Usage: ./compile.sh [-h] [-d] [-u] [-n] [-j jobs]"
          echo ""
          echo "   -h"
          echo "     Prints this help and exits."
@@ -24,6 +26,13 @@ do
          echo "   -d"
          echo "     Generate all dependencies up front."
          echo "     (Recommended for Cray systems.)"
+         echo ""
+         echo "   -u"
+         echo "     Compiles utilities for tuning Air Force Bratseth scheme."
+         echo ""
+         echo "   -n"
+         echo "     Do not compile LIS (use with the -u flag)."
+         echo ""
          exit 0
          ;;
       j)
@@ -31,6 +40,12 @@ do
          ;;
       d)
          all_deps_first="YES"
+         ;;
+      u)
+         compile_autotune="YES"
+         ;;
+      n)
+         skip_lis="YES"
          ;;
      \?)
         echo "Invalid option: -$OPTARG" >&2
@@ -46,43 +61,81 @@ do
 done
 
 dashes="-------------------------------------------------------------------"
-
 echo $dashes
-echo "Compiling LIS"
-echo ""
 
-if cd ./make
-then
-   echo "[INFO] Compiling LIS source code"
-   echo ""
-   if [ "$all_deps_first" = "YES" ]; then
-      echo "[INFO] Generating all dependencies up front"
-      make realclean && make depend
-   fi
-   make -f Makefile $njobs
-   if [ $? -eq 0 ]; then
-      if ! cp LIS ..
-      then
-         echo ""
-         echo "[ERR] Cannot copy LIS executable"
-         echo $dashes
-         exit 1
-      else
-         echo ""
-         echo "[INFO] Compile finished"
-         echo $dashes
-      fi
-   else
-      echo ""
-      echo "[ERR] Compile failed"
-      echo $dashes
-      exit 1
-   fi
-else
-   echo ""
-   echo "[ERR] Cannot enter make directory"
-   echo $dashes
-   exit 1
+# Sanity check
+if [ "$skip_lis" = "YES" ] ; then
+    if [ "$compile_autotune" != "YES" ] ; then
+        echo "[ERR] Using -n without -u"
+        echo "Nothing will be compiled!"
+        echo $dashes
+        exit 1
+    fi
+fi
+
+# Build LIS
+if [ "$skip_lis" != "YES" ]; then
+    echo "Compiling LIS"
+    echo ""
+    if cd ./make
+    then
+        echo "[INFO] Compiling LIS source code"
+        echo ""
+        if [ "$all_deps_first" = "YES" ]; then
+            echo "[INFO] Generating all dependencies up front"
+            make realclean && make depend
+        fi
+        make -f Makefile $njobs
+        if [ $? -eq 0 ]; then
+            if ! cp LIS ..
+            then
+                echo ""
+                echo "[ERR] Cannot copy LIS executable"
+                echo $dashes
+                exit 1
+            else
+                echo ""
+                echo "[INFO] Compile finished"
+                echo $dashes
+                cd ..
+            fi
+        else
+            echo ""
+            echo "[ERR] Compile failed"
+            echo $dashes
+            exit 1
+        fi
+    else
+        echo ""
+        echo "[ERR] Cannot enter make directory"
+        echo $dashes
+        exit 1
+    fi
+fi
+
+# Compile standalone Fortran utilities for tuning Air Force Bratseth scheme.
+if [ "$compile_autotune" = "YES" ]; then
+    echo "Compiling Air Force Bratseth tuning utilities"
+    if cd utils/afwa/retune_bratseth/src
+    then
+        echo ""
+        make -f Makefile
+        if [ $? -eq 0 ]; then
+            echo ""
+            echo "[INFO] Compile finished"
+            echo $dashes
+        else
+            echo ""
+            echo "[ERR] Compile failed"
+            echo $dashes
+            exit 1
+        fi
+    else
+        echo ""
+        echo "[ERR] Cannot enter utils/afwa/retune_bratseth/src directory"
+        echo $dashes
+        exit 1
+    fi
 fi
 
 exit 0

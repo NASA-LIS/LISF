@@ -1,5 +1,0 @@
-#nfields
-1
-#error rate   varmin   varmax
-GRACE Terrestrial Water Storage
-       20.0    100.0   3000.0

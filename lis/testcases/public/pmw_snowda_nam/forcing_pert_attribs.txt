@@ -1,9 +1,0 @@
-#ptype   std    std_max   zeromean  tcorr  xcorr ycorr ccorr 
-Incident Shortwave Radiation Level 001
-1       0.20     2.5	1	  86400  0     0     1.0  -0.3 -0.5  0.3
-Incident Longwave Radiation Level 001
-0       30.0     2.5	1	  86400  0     0    -0.3   1.0  0.5  0.6
-Rainfall Rate Level 001
-1       0.50     2.5	1	  86400  0     0    -0.5   0.5  1.0  -0.1
-Near Surface Air Temperature Level 001
-0       0.5      2.5    1         86400  0     0     0.3   0.6  -0.1  1.0
