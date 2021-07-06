@@ -82,7 +82,7 @@ subroutine readAMSR2OSSEmask(n)
      do r=1,AMSR2OSSEmaskData%nr
         do c=1, AMSR2OSSEmaskData%nc
            mask1d(c+(r-1)*AMSR2OSSEmaskData%nc) = &
-                mask(AMSR2OSSEmaskData%nr-r+1,c,tindex)
+                mask(r,c,tindex)
         enddo
      enddo
 

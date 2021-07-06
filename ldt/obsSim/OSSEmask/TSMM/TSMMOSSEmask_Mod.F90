@@ -122,9 +122,9 @@ contains
     elseif(datares.eq.25) then
        TSMMOSSEmaskData%nc = 1440
        TSMMOSSEmaskData%nr = 720
-       run_dd(1) = 89.75
+       run_dd(1) = -89.75
        run_dd(2) = -180.0
-       run_dd(3) = -90
+       run_dd(3) = 90
        run_dd(4) = 179.75
        run_dd(5) = 0.25
        run_dd(6) = 0.25

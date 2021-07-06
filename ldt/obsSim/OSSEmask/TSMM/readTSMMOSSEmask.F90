@@ -64,7 +64,7 @@ subroutine readTSMMOSSEmask(n)
      call LDT_verify(nf90_inq_varid(ftn, "BinaryViewMask", maskid),&
           'nf90_inq_varid failed in readTSMMOSSEmask')
 
-     lat_off = nint((90-TSMMOSSEmaskData%gridDesci(4))/0.01)+1
+     lat_off = nint((TSMMOSSEmaskData%gridDesci(4)+90)/0.01)+1
      lon_off = nint((TSMMOSSEmaskData%gridDesci(5)+180)/0.01)+1
      
      call LDT_verify(nf90_get_var(ftn,maskid,mask,&
@@ -87,16 +87,11 @@ subroutine readTSMMOSSEmask(n)
      
      do r=1,TSMMOSSEmaskData%nr
         do c=1, TSMMOSSEmaskData%nc
-           mask1d(c+(r-1)*TSMMOSSEmaskData%nc) = mask(r,c,3)
+           mask1d(c+(r-1)*TSMMOSSEmaskData%nc) = mask(r,c,tindex)
         enddo
      enddo
 
      call convertTSMMOSSEmaskToLDTgrid(n,mask1d(:),mask_2d(:,:))
-
-     open(100,file='test.bin',form='unformatted')
-     write(100) mask_2d
-     close(100)
-     stop
      
 #endif
   else
