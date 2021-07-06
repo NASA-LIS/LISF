@@ -105,9 +105,9 @@ contains
     elseif(datares.eq.25) then
        AMSR2OSSEmaskData%nc = 1440
        AMSR2OSSEmaskData%nr = 720
-       run_dd(1) = 89.75
+       run_dd(1) = -90.0
        run_dd(2) = -180.0
-       run_dd(3) = -90
+       run_dd(3) = 89.75
        run_dd(4) = 179.75
        run_dd(5) = 0.25
        run_dd(6) = 0.25
