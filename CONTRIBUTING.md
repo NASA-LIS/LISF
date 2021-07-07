@@ -47,3 +47,6 @@ Please see https://chris.beams.io/posts/git-commit/ for guidance on writing a go
 
 **NOTE:** Be sure to end your commit message with a line as "Resolves: #????" - where ???? is the "Issue" number associated with this Pull Request.  This line
 will automatically close the "Issue" once the code is merged into the repository.
+
+If you are contributing a new feature, we will need a testcase so we can reproduce the result before the pull request is merged.  Please read the
+[How to create a testcase](https://github.com/NASA-LIS/LISF/blob/master/docs/howto_create_lis_testcases/howto_create_lis_testcases.adoc) document.
