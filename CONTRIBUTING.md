@@ -10,10 +10,12 @@ Welcome to the LISF repository!  We are glad you are reading this.  Thanks for t
 * [Working with GitHub](https://github.com/NASA-LIS/LISF/blob/master/docs/working_with_github/working_with_github.adoc) for LISF
 * [How to create a testcase](https://github.com/NASA-LIS/LISF/blob/master/docs/howto_create_lis_testcases/howto_create_lis_testcases.adoc) for LISF
 
+## How to:
+
 ### I am having a problem running LDT/LIS/LVT and would like to ask a question
 First, please see the Users' Guides listed in the Resources above to ensure that your config files and other settings are correct.
 
-Next, please check all log files and error messages in the output of your run.  These messages typically inform the user what should be fixed.
+Next, please check **all** log files and error messages in the output of your run.  These messages typically inform the user what should be fixed.
 
 If you are still having a problem with your run, please first go to the ["Discussions"](https://github.com/NASA-LIS/LISF/discussions) tab.  On that page,
 "Search" in the box in the upper left for previous Discussions, which may already have an answer to your question.
@@ -49,3 +51,9 @@ Please see https://chris.beams.io/posts/git-commit/ for guidance on writing a go
 
 If you are contributing a new feature, we will need a testcase so we can reproduce the result before the pull request is merged.  Please read the
 [How to create a testcase](https://github.com/NASA-LIS/LISF/blob/master/docs/howto_create_lis_testcases/howto_create_lis_testcases.adoc) document.
+
+Also, if you are adding/modifying config entries, please be sure to update the ".adoc" files of the appropriate Users' Guide(s) listed in the Resources above.
+
+## License
+By contributing to the LISF repository, unless you explicitly state otherwise, you agree that your contributions will be licensed under the
+[LISF License](https://github.com/NASA-LIS/LISF/blob/master/LICENSE.txt), which is under Apache License 2.0.
