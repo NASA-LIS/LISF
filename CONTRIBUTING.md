@@ -1,5 +1,5 @@
 # How to contribute
-We are glad you are reading this.  Thanks for taking the time to contribute!
+Welcome to the LISF repository!  We are glad you are reading this.  Thanks for taking the time to contribute!
 
 ## Resources
 * LIS website: https://lis.gsfc.nasa.gov/
@@ -27,7 +27,7 @@ The LIS team will answer your questions on the "Discussion" page, and help to fi
 
 ### After consultation with the LIS team, it has been determined there is an issue that should be fixed
 Only after the LIS team has commented on your "Discussion", if both you and the LIS team agree that there is indeed an "Issue" in the code, please go to the
-["Issues"](https://github.com/NASA-LIS/LISF/issues) tab and open a "New Issue".
+["Issues"](https://github.com/NASA-LIS/LISF/issues) tab and open a "New Issue" using the relevant template. If you plan to contribute a fix yourself, assign yourself to the "Issue."
 
 ### I would like to contribute either a new feature or a bug fix to the LISF repository
 Great!  We welcome contributions (new features, enhancements, bug fixes, etc.).
@@ -38,15 +38,14 @@ on how to submit a "Pull Request" for review by the LIS team before it is merged
 Generally, the branch for the Pull Request is determined by the below table.  However, the LIS team will help determine the appropriate branch for the
 Pull Request within the conversation about the "Issue".  If you are not sure which branch to use, please ask on the "Issue" conversation.
 
-| Branch | Description |
-| ------ | ------------- |
-| master | New features/enhancements **and** bug fixes for code that is _not_ in the latest release |
-| support | Bug fixes for code that _is_ in the latest release |
+| Branch  | Description                                                                              |
+| ------- | ---------------------------------------------------------------------------------------- |
+| master  | New features/enhancements **and** bug fixes for code that is _not_ in the latest release |
+| support | Bug fixes for code that _is_ in the latest release                                       |
 
 Please see https://chris.beams.io/posts/git-commit/ for guidance on writing a good commit message.
 
-**NOTE:** Be sure to end your commit message with a line as "Resolves: #????" - where ???? is the "Issue" number associated with this Pull Request.  This line
-will automatically close the "Issue" once the code is merged into the repository.
+**NOTE:** [Please link the relevant "Issue" to your Pull Request](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) so that it is automatically closed once the code is merged into the repository.
 
 If you are contributing a new feature, we will need a testcase so we can reproduce the result before the pull request is merged.  Please read the
 [How to create a testcase](https://github.com/NASA-LIS/LISF/blob/master/docs/howto_create_lis_testcases/howto_create_lis_testcases.adoc) document.
