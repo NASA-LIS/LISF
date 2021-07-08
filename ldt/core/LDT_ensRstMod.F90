@@ -25,6 +25,7 @@ module LDT_ensRstMod
   use ESMF
   use LDT_coreMod
   use LDT_logMod
+  use LDT_ran2_gasdev
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
   use netcdf
 #endif
@@ -64,6 +65,17 @@ module LDT_ensRstMod
            label="Ensemble restart generation mode:",&
            rc=status)
       call LDT_verify(status,'Ensemble restart generation mode: not defined')
+      
+
+      call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%ensrstsampling,&
+           label="Ensemble restart generation sampling strategy:",&
+           rc=status)
+      if(status.ne.0) then 
+         write(LDT_logunit,*)'[ERR] Ensemble restart generation sampling strategy: not defined'
+         write(LDT_logunit,*)"[ERR] options are ..'none' and 'random sampling'"
+
+         call LDT_endrun()
+      endif
       
       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%inputrst,&
            label="Input restart filename:",&
@@ -164,14 +176,17 @@ module LDT_ensRstMod
       character*6           :: beg_time
       character*50          :: tIncr
       integer               :: k,i,t,m
+      integer               :: t1,t2,m1
       integer               :: numvars
       logical               :: file_exists
-      
+      integer               :: seed(NRANDSEED)
+      real                  :: rand
       !ag (1Nov2017)
       real   ,     allocatable  :: var1d(:)
 ! __________________________________________________
 
       n = 1
+      seed = -1000
       
       write(LDT_logunit,*) " Generating restart file: ",trim(LDT_rc%outputrst)
 
@@ -240,7 +255,7 @@ module LDT_ensRstMod
          endif
          
          call writeglobalheader(ftn2, model_name, nDims, dims, &
-              LDT_rc%nens_out, dimID2)
+              LDT_rc%nens_in,LDT_rc%nens_out, dimID2)
          
          call LDT_verify(nf90_enddef(ftn2))
          
@@ -317,28 +332,42 @@ module LDT_ensRstMod
 !----------------------------------------------------------------------------
                if(nvardims.gt.1) then
                   allocate(var(dims(1),dims(nvarDimIDs(2))))
-                  allocate(var_new(dims(1)*LDT_rc%nens_out, dims(nvarDimIDs(2))))
+                  allocate(var_new(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in, &
+                       dims(nvarDimIDs(2))))
                else
                   allocate(var(dims(1),1))
-                  allocate(var_new(dims(1)*LDT_rc%nens_out,1))
+                  allocate(var_new(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in,1))
                endif
                
                call LDT_verify(nf90_get_var(ftn,k,var),&
                     'nf90_get_var failed in LDT_ensRstMod')
-               
-               do t=1,dims(1)
-                  do m=1,LDT_rc%nens_out
-                     var_new((t-1)*LDT_rc%nens_out+m,:) = var(t,:)
+
+               if(LDT_rc%ensrstsampling.eq."none") then 
+                  do t=1,dims(1)
+                     do m=1,LDT_rc%nens_out
+                        var_new((t-1)*LDT_rc%nens_out+m,:) = var(t,:)
+                     enddo
                   enddo
-               enddo
+               elseif(LDT_rc%ensrstsampling.eq."random sampling") then
+                  do i=1,dims(1)/LDT_rc%nens_in
+                     do m=1,LDT_rc%nens_out
+                        !randomly select an ensemble member
+                        call nr_ran2(seed, rand)
+                        m1 = 1+nint(rand*(LDT_rc%nens_in-1))
+                        t1 = (i-1)*LDT_rc%nens_in+m1
+                        t2 = (i-1)*LDT_rc%nens_out+m
+                        var_new(t2,:) = var(t1,:)
+                     enddo
+                  enddo                  
+               endif
                if(nvardims.gt.1) then 
                   call LDT_verify(nf90_put_var(ftn2,k,var_new,(/1,1/),&
-                       (/dims(1)*LDT_rc%nens_out,dims(nvarDimIDs(2))/)),&
+                       (/dims(1)*LDT_rc%nens_out/LDT_rc%nens_in,dims(nvarDimIDs(2))/)),&
                        'nf90_put_var failed in LDT_ensRstMod for '//& 
                        trim(varName))
                else
                   call LDT_verify(nf90_put_var(ftn2,k,var_new,(/1,1/),&
-                       (/dims(1)*LDT_rc%nens_out,1/)),&
+                       (/dims(1)*LDT_rc%nens_out/LDT_rc%nens_in,1/)),&
                        'nf90_put_var failed in LDT_ensRstMod for '//&
                        trim(varName))
                endif
@@ -455,7 +484,7 @@ module LDT_ensRstMod
 
          model_name = "HYMAP2"
          call writeglobalheader(ftn2, model_name, nDims, dims, &
-              LDT_rc%nens_out, dimID2)
+              LDT_rc%nens_in,LDT_rc%nens_out, dimID2)
 
          call LDT_verify(nf90_enddef(ftn2))
          
@@ -498,10 +527,11 @@ module LDT_ensRstMod
             
             if(nvardims.gt.1) then
                allocate(var(dims(1),dims(nvarDimIDs(2))))
-               allocate(var_new(dims(1)*LDT_rc%nens_out, dims(nvarDimIDs(2))))
+               allocate(var_new(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in,&
+                    dims(nvarDimIDs(2))))
             else
                allocate(var(dims(1),1))
-               allocate(var_new(dims(1)*LDT_rc%nens_out,1))
+               allocate(var_new(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in,1))
             endif
             
             call LDT_verify(nf90_get_var(ftn,k,var),&
@@ -514,12 +544,13 @@ module LDT_ensRstMod
             enddo
             if(nvardims.gt.1) then
                call LDT_verify(nf90_put_var(ftn2,k,var_new,(/1,1/),&
-                    (/dims(1)*LDT_rc%nens_out,dims(nvarDimIDs(2))/)),&
+                    (/dims(1)*LDT_rc%nens_out/LDT_rc%nens_in,&
+                    dims(nvarDimIDs(2))/)),&
                     'nf90_put_var failed in LDT_ensRstMod for '//&
                     trim(varName))
             else
                call LDT_verify(nf90_put_var(ftn2,k,var_new,(/1,1/),&
-                    (/dims(1)*LDT_rc%nens_out,1/)),&
+                    (/dims(1)*LDT_rc%nens_out/LDT_rc%nens_in,1/)),&
                     'nf90_put_var failed in LDT_ensRstMod for '//&
                     trim(varName))
             endif
@@ -727,7 +758,7 @@ module LDT_ensRstMod
          endif
          
          call writeglobalheader(ftn2,model_name, nDims, dims, &
-              LDT_rc%nens_in, dimID2)
+              LDT_rc%nens_in,LDT_rc%nens_in, dimID2)
          
          call LDT_verify(nf90_enddef(ftn2))
 
@@ -1010,12 +1041,13 @@ module LDT_ensRstMod
 
 
     subroutine writeglobalheader(ftn,model_name, &
-         ndims, dims, nens, dimID)
+         ndims, dims, nens_in,nens_out, dimID)
 
       integer           :: n 
       integer           :: ftn
       character(len=*)  :: model_name
-      integer           :: nens
+      integer           :: nens_in
+      integer           :: nens_out
       integer           :: ndims
       integer           :: dims(ndims)
       integer           :: dimID(ndims)
@@ -1032,11 +1064,11 @@ module LDT_ensRstMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)       
       call date_and_time(date,time,zone,values)
       if(LDT_rc%ensrstmode.eq."upscale") then 
-         call LDT_verify(nf90_def_dim(ftn,'ntiles',dims(1)*nens,&
+         call LDT_verify(nf90_def_dim(ftn,'ntiles',dims(1)*nens_out/nens_in,&
               dimID(1)),&
               'nf90_def_dim failed for ntiles in LDT_ensRstMod')
       elseif(LDT_rc%ensrstmode.eq."downscale") then 
-         call LDT_verify(nf90_def_dim(ftn,'ntiles',dims(1)/nens,&
+         call LDT_verify(nf90_def_dim(ftn,'ntiles',dims(1)/nens_out/nens_in,&
               dimID(1)),&
               'nf90_def_dim failed for ntiles in LDT_ensRstMod')
       endif
