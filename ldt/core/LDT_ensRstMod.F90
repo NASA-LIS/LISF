@@ -183,6 +183,7 @@ module LDT_ensRstMod
       real                  :: rand
       !ag (1Nov2017)
       real   ,     allocatable  :: var1d(:)
+      integer,     allocatable  :: var_map(:)
 ! __________________________________________________
 
       n = 1
@@ -318,6 +319,20 @@ module LDT_ensRstMod
             deallocate( n_dimids )
          enddo
 
+         if(LDT_rc%ensrstsampling.eq."random sampling") then
+            allocate(var_map(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in))
+            do i=1,dims(1)/LDT_rc%nens_in
+               do m=1,LDT_rc%nens_out
+                  !randomly select an ensemble member
+                  call nr_ran2(seed, rand)
+                  m1 = 1+nint(rand*(LDT_rc%nens_in-1))
+                  t1 = (i-1)*LDT_rc%nens_in+m1
+                  t2 = (i-1)*LDT_rc%nens_out+m
+                  var_map(t2) = t1
+               enddo
+            enddo
+         endif
+         
          do k=1,nVars
             call LDT_verify(nf90_inquire_variable(ftn,k,ndims=nvardims),&
                  'nf90_inquire_variable failed in LDT_ensRstMod')
@@ -351,11 +366,8 @@ module LDT_ensRstMod
                elseif(LDT_rc%ensrstsampling.eq."random sampling") then
                   do i=1,dims(1)/LDT_rc%nens_in
                      do m=1,LDT_rc%nens_out
-                        !randomly select an ensemble member
-                        call nr_ran2(seed, rand)
-                        m1 = 1+nint(rand*(LDT_rc%nens_in-1))
-                        t1 = (i-1)*LDT_rc%nens_in+m1
                         t2 = (i-1)*LDT_rc%nens_out+m
+                        t1 = var_map(t2)
                         var_new(t2,:) = var(t1,:)
                      enddo
                   enddo                  
@@ -382,7 +394,9 @@ module LDT_ensRstMod
          deallocate(dimID2)
          deallocate(dims)
          deallocate(dimName)
-         
+         if(LDT_rc%ensrstsampling.eq."random sampling") then
+            deallocate(var_map)
+         endif
          call LDT_verify(nf90_close(ftn))
          call LDT_verify(nf90_close(ftn2))
 #endif
