@@ -323,12 +323,17 @@ module LDT_ensRstMod
             allocate(var_map(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in))
             do i=1,dims(1)/LDT_rc%nens_in
                do m=1,LDT_rc%nens_out
-                  !randomly select an ensemble member
-                  call nr_ran2(seed, rand)
-                  m1 = 1+nint(rand*(LDT_rc%nens_in-1))
-                  t1 = (i-1)*LDT_rc%nens_in+m1
                   t2 = (i-1)*LDT_rc%nens_out+m
-                  var_map(t2) = t1
+                  if(m.gt.LDT_rc%nens_in) then 
+                     !randomly select an ensemble member
+                     call nr_ran2(seed, rand)
+                     m1 = 1+nint(rand*(LDT_rc%nens_in-1))
+                     t1 = (i-1)*LDT_rc%nens_in+m1
+                     var_map(t2) = t1
+                  else
+                     t1 = (i-1)*LDT_rc%nens_in+m
+                     var_map(t2) = t1
+                  endif
                enddo
             enddo
          endif
