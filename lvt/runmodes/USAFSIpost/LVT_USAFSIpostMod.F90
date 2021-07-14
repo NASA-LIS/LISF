@@ -14,6 +14,7 @@
 ! 13 May 2019  Eric Kemp  Initial version
 ! 13 Dec 2019  Eric Kemp  Changed to USAFSI.
 ! 09 Oct 2020  Eric Kemp  Added legacy SNODEP files.
+! 14 Jul 2021  Eric Kemp  Fixed bug in creating GRIB output directory.
 !
 ! DESCRIPTION:
 ! Source code for reading USAFSI netCDF file, writing back out in GRIB,
@@ -396,7 +397,22 @@ contains
       integer :: ftn, rc, status2
       character(len=255) :: msg
       real, allocatable :: go(:)
+      logical :: found
       integer :: c, r
+
+      integer, external :: LVT_create_subdirs
+
+      ! Make sure output directory exists
+      inquire(file=trim(LVT_rc%output_dir), &
+           exist=found)
+      if (.not. found) then
+         rc = LVT_create_subdirs(len_trim(LVT_rc%output_dir), &
+              trim(LVT_rc%output_dir))
+         if (rc .ne. 0) then
+            write(LVT_logunit,*)'[WARN] Cannot create directory ', &
+                 trim(LVT_rc%output_dir)
+         end if
+      end if
 
       ! Set the USAFSI grid description
       call set_griddesci(this, griddesci)
@@ -445,7 +461,7 @@ contains
       end do ! r
       call write_grib2(ftn, griddesci, this%nc, this%nr, go, &
            dspln=10, cat=2, num=0, typegenproc=12, fcsttime=0)
-   
+
       ! Handle icemask
       do r = 1, this%nr
          do c = 1, this%nc
@@ -455,7 +471,7 @@ contains
       ! FIXME:  Find parameter number for ice mask
       call write_grib2(ftn, griddesci, this%nc, this%nr, go, &
            dspln=10, cat=2, num=192, typegenproc=12, fcsttime=0)
-      
+
       ! Handle iceage
       do r = 1, this%nr
          do c = 1, this%nc
@@ -509,10 +525,10 @@ contains
       real, allocatable :: w11_bin(:)
       real, allocatable :: w12_bin(:)
       real, allocatable :: w21_bin(:)
-      real, allocatable :: w22_bin(:)      
+      real, allocatable :: w22_bin(:)
       integer, allocatable :: n11_neighbor(:)
       real, allocatable :: rlat_neighbor(:)
-      real, allocatable :: rlon_neighbor(:)      
+      real, allocatable :: rlon_neighbor(:)
       logical*1, allocatable :: li(:), lo(:), lo_bin(:), lo_neighbor(:)
       real, allocatable :: gi(:), go(:), go_bin(:), go_neighbor(:)
       real, allocatable :: go2d(:,:)
@@ -528,6 +544,21 @@ contains
       integer :: grid_definition
       logical :: write_fullgrib_file
       logical :: write_snodep_file
+      logical :: found
+
+      integer, external :: LVT_create_subdirs
+
+      ! Make sure output directory exists
+      inquire(file=trim(LVT_rc%output_dir), &
+           exist=found)
+      if (.not. found) then
+         rc = LVT_create_subdirs(len_trim(LVT_rc%output_dir), &
+              trim(LVT_rc%output_dir))
+         if (rc .ne. 0) then
+            write(LVT_logunit,*)'[WARN] Cannot create directory ', &
+                 trim(LVT_rc%output_dir)
+         end if
+      end if
 
       ! Sanity check the gridID.
       call check_gridID(gridID)
@@ -540,9 +571,9 @@ contains
 
       ! Set the output grid description
       if (trim(gridID) .eq. trim(GLOBAL_LL0P25)) then
-         call set_griddesco_global_ll0p25(this, griddesco)         
+         call set_griddesco_global_ll0p25(this, griddesco)
       else if (trim(gridID) .eq. trim(NH_PS16)) then
-         call set_griddesco_nh_ps16(this, griddesco)         
+         call set_griddesco_nh_ps16(this, griddesco)
       else if (trim(gridID) .eq. trim(SH_PS16)) then
          call set_griddesco_sh_ps16(this, griddesco)
       end if
@@ -597,7 +628,7 @@ contains
          allocate(w11_bin(nc_out*nr_out))
          allocate(w12_bin(nc_out*nr_out))
          allocate(w21_bin(nc_out*nr_out))
-         allocate(w22_bin(nc_out*nr_out))         
+         allocate(w22_bin(nc_out*nr_out))
          call bilinear_interp_input_usaf(griddesci, griddesco, &
               (nc_out*nr_out), &
               rlat_bin, rlon_bin, &
@@ -688,7 +719,7 @@ contains
                   gi(c + (r-1)*this%nc) = LVT_rc%udef
                else
                   li(c + (r-1)*this%nc) = .true.
-                  gi(c + (r-1)*this%nc) = this%snoanl(c,r)               
+                  gi(c + (r-1)*this%nc) = this%snoanl(c,r)
                end if
             end do ! c
          end do ! r
@@ -1161,7 +1192,7 @@ contains
       ! Imports
       use LVT_coreMod, only: LVT_rc
 
-      ! Defaults                                                              
+      ! Defaults
       implicit none
 
       ! Arguments
@@ -1180,7 +1211,7 @@ contains
            // yyyymmddhh(9:10)//'00_DF.GR2'
 
    end subroutine build_filename_g2
-   
+
    ! Build the grib1 filename
    subroutine build_filename_g1(gridID, output_dir, yyyymmddhh, filename)
 
@@ -1218,7 +1249,7 @@ contains
            trim(area) // '_PA.SNODEP_DD.' // &
            trim(yyyymmdd) // '_DT.' // &
            trim(hh) // '00_DF.GR1'
-           
+
    end subroutine build_filename_g1
 
    ! Build the grib1 filename just for snodep
@@ -1320,7 +1351,7 @@ contains
       griddesco(38) =  179.875000
       griddesco(39) = 0.250000
       griddesco(40) = 0.250000
-      
+
    end subroutine set_griddesco_global_ll0p25
 
    ! Internal subroutine for setting griddesco for Northern Hemisphere 16th
@@ -1343,7 +1374,7 @@ contains
       xmesh = 23.813 ! Per 557WW GRIB1 manual
       xpnmcaf = 513
       ypnmcaf = 513
-      orient = 100.0 
+      orient = 100.0
 
       ! We need to use the USAF code to calculate the lat/lon.  However,
       ! the Air Force grid specifies the origin in the upper-left corner,
@@ -1395,7 +1426,7 @@ contains
       xmesh = 23.813 ! Per 557WW GRIB1 manual
       xpnmcaf = 513
       ypnmcaf = 513
-      orient = 100. 
+      orient = 100.
 
       ! We need to use the USAF code to calculate the lat/lon.  However,
       ! the Air Force grid specifies the origin in the upper-left corner,
@@ -1417,7 +1448,7 @@ contains
       griddesco(10) = -60.0
       griddesco(11) = orient
       griddesco(20) = 64
-      
+
       ! Stash away the upper-left lat/lon for later use
       call pstoll(2, 1, float(1), float(1), 16, alat, alon)
       griddesco(30) = alat
@@ -1429,7 +1460,7 @@ contains
    subroutine write_grib2(ftn, griddesco, &
         nc_out, nr_out, go, dspln, cat, num, typegenproc, fcsttime)
 
-      ! Imports      
+      ! Imports
       use grib_api
       use LVT_coreMod, only: LVT_rc
       use LVT_gribWrapperMod, only: LVT_grib_set
@@ -1566,7 +1597,7 @@ contains
               abs(1000*griddesco(9)))
          if (griddesco(4) < 0) then
             call LVT_grib_set(igrib, 'projectionCentreFlag', 0)
-         else            
+         else
             call LVT_grib_set(igrib, 'projectionCentreFlag', 1)
          end if
          call LVT_grib_set(igrib, 'scanningMode', 0)
@@ -1590,7 +1621,7 @@ contains
       ! Octet 15-17 is skipped
       ! Octet 18...Use hours
       call LVT_grib_set(igrib, 'indicatorOfUnitOfTimeRange', 1)
-      ! Octets 19-22 
+      ! Octets 19-22
       call LVT_grib_set(igrib, 'forecastTime', fcsttime)
       ! Octets 23-34...Ground or water surface
       call LVT_grib_set(igrib, 'typeOfFirstFixedSurface', 1)
@@ -1630,7 +1661,7 @@ contains
         nc_out, nr_out, go, param, decimal_scale_factor, &
         bits_per_value, grid_definition)
 
-      ! Imports      
+      ! Imports
       use grib_api
       use LVT_coreMod, only: LVT_rc
       use LVT_gribWrapperMod, only: LVT_grib_set
@@ -1656,7 +1687,7 @@ contains
       character(len=4) :: cyyyy
       character(len=2) :: cmm, cdd, chh
       integer :: iyyyy, imm, idd, ihh, iyear, iyoc, ic
-      
+
 #if (defined USE_ECCODES)
       call grib_new_from_samples(igrib, "GRIB1", rc)
       if (rc .ne. GRIB_SUCCESS) then
@@ -1786,7 +1817,7 @@ contains
               abs(1000*griddesco(9)))
          if (griddesco(4) < 0) then
             call LVT_grib_set(igrib, 'projectionCentreFlag', 0)
-         else            
+         else
             call LVT_grib_set(igrib, 'projectionCentreFlag', 128)
          end if
          call LVT_grib_set(igrib, 'scanningMode', 0)
@@ -1819,7 +1850,7 @@ contains
          write(LVT_logunit,*)'[ERR] LVT will stop'
          call LVT_endrun()
       end if
-            
+
    end subroutine write_grib1
 
    ! Internal subroutine for writing global lat/lon output in netCDF.
@@ -1830,7 +1861,7 @@ contains
       use LVT_coreMod, only: LVT_rc
       use LVT_logMod, only: LVT_logunit, LVT_verify, LVT_endrun
       use netcdf
-      
+
       ! Defaults
       implicit none
 
@@ -1886,7 +1917,7 @@ contains
          swlon = gridDesco(5)
          nelat = gridDesco(7)
          nelon = gridDesco(8)
-         
+
          call LVT_verify(nf90_put_att(ncid,nf90_global,&
               "MAP_PROJECTION", "EQUIDISTANT CYLINDRICAL"), &
               '[ERR] nf90_put_att failed')
@@ -1908,7 +1939,7 @@ contains
          call LVT_verify(nf90_put_att(ncid,nf90_global, &
               "DY",dlat), &
               '[ERR] nf90_put_att failed')
-         
+
       case default
          write(LVT_logunit,*) &
               '[ERR] Only latlon map projection supported!'
@@ -1919,7 +1950,7 @@ contains
       call LVT_verify(nf90_put_att(ncid,nf90_global, &
            "INC_WATER_PTS","true"), &
            '[ERR] nf90_put_att failed')
-      
+
       ! Construct the longitudes
       ! FIXME:  Add support for other map projections
       call LVT_verify(nf90_def_var(ncid,"lon",nf90_float,dim_ids(1), &
@@ -1953,7 +1984,7 @@ contains
       call LVT_verify(nf90_put_att(ncid,lat_varid, &
            "standard_name","latitude"),&
            '[ERR] nf90_put_att failed')
-      
+
       ! Define the time array.  The valid time will be written as an
       ! attribute.
       call LVT_verify(nf90_def_var(ncid,'time',nf90_double,&
@@ -1970,9 +2001,9 @@ contains
            "units",trim(time_units)),&
            '[ERR] nf90_put_att failed')
       call LVT_verify(nf90_put_att(ncid,time_varid, &
-           "long_name","time"),&             
+           "long_name","time"),&
            '[ERR] nf90_put_att failed')
-      
+
       ! Define the snow depth analysis
       call LVT_verify(nf90_def_var(ncid,"snoanl",nf90_float, &
            dimids=dim_ids, &
@@ -2010,7 +2041,7 @@ contains
       ! Miscellaneous header information
       call LVT_verify(nf90_put_att(ncid,nf90_global,"Conventions", &
            "CF-1.7"), &
-           '[ERR] nf90_put_att failed')         
+           '[ERR] nf90_put_att failed')
 
       ! We are ready to write the actual data.  This requires taking NETCDF
       ! out of define mode.
@@ -2071,7 +2102,7 @@ contains
       use LVT_coreMod, only: LVT_rc
       use LVT_logMod, only: LVT_logunit, LVT_verify, LVT_endrun
       use netcdf
-      
+
       ! Defaults
       implicit none
 
@@ -2190,7 +2221,7 @@ contains
       ! Miscellaneous header information
       call LVT_verify(nf90_put_att(ncid,nf90_global,"Conventions", &
            "CF-1.7"), &
-           '[ERR] nf90_put_att failed')         
+           '[ERR] nf90_put_att failed')
 
       ! We are ready to write the actual data.  This requires taking NETCDF
       ! out of define mode.
@@ -2252,7 +2283,7 @@ contains
    ! mesh polar stereographic grids.
    subroutine bilinear_interp_input_usaf(gridDesci, gridDesco, npts, &
         rlat, rlon, n11, n12, n21, n22, w11, w12, w21, w22, afwa_grid)
-      
+
       ! Defaults
       implicit none
 
@@ -2298,7 +2329,7 @@ contains
             i1=xi
             i2=i1+1
             j1=yi
-            j2=j1+1 
+            j2=j1+1
             xf=xi-i1
             yf=yi-j1
             n11(n)=get_fieldpos(i1, j1, gridDesci)
@@ -2323,7 +2354,7 @@ contains
             n22(n)=0
          endif
       enddo
-            
+
    end subroutine bilinear_interp_input_usaf
 
    ! Internal subroutine to set up weights for neighbor interpolation.
@@ -2334,7 +2365,7 @@ contains
 
       ! Defaults
       implicit none
-      
+
       ! Arguments
       real, intent(in) :: griddesci(50)
       real, intent(in) :: griddesco(50)
@@ -2346,7 +2377,7 @@ contains
 
       ! Local variables
       integer             :: n
-      integer             :: mo, nv 
+      integer             :: mo, nv
       real                :: xpts(npts), ypts(npts)
       integer             :: i1, j1
       real                :: xi, yi
@@ -2374,7 +2405,7 @@ contains
             n112(n) = 0
          endif
       enddo
-      
+
    end subroutine neighbor_interp_input_usaf
 
    ! Internal function for setting GRIB1 grid definition
