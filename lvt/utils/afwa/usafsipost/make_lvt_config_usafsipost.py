@@ -86,7 +86,7 @@ if __name__ == "__main__":
         newlines.append(NEWLINE)
 
     # Create the new, customized lvt.config file
-    NEWFILE = "lvt.config"
+    NEWFILE = "lvt.config.usafsipost"
     f = open(NEWFILE, "w")
     for line in newlines:
         f.write(line)
