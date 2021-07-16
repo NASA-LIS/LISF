@@ -2,7 +2,7 @@
 !Subroutine - rapid_Vlat
 !*******************************************************************************
 subroutine rapid_Vlat(nc,nr,runsf,runsb)
-
+!subroutine rapid_Vlat(nc,nr,lsmfile)
 !PURPOSE
 !This coupler allows to convert runoff information from a land surface model
 !to a volume of water entering RAPID river reaches.
@@ -13,121 +13,56 @@ subroutine rapid_Vlat(nc,nr,runsf,runsb)
 use petscvec
 use netcdf
 
-!use rapid_var, only :                                                            &
-!                   rank,ierr,IS_nc_status,IS_nc_id_fil_Vlat,IS_nc_id_var_Vlat,   &
-!                   IS_nc_id_var_time,IS_nc_id_var_time_bnds,IS_nc_id_var_crs,    &
-!                   IS_nc_id_var_lon,IS_nc_id_var_lat,IS_nc_id_var_Vlat_err,      &
-!                   IS_riv_tot,IS_riv_bas,IS_time,JS_time,ZS_TauR,                &
-!                   YV_title,YV_institution,YV_comment,                           &
-!                   YV_time_units,ZS_crs_sma,ZS_crs_iflat,                        &
-!                   ZV_riv_tot_lon,ZV_riv_tot_lat,IV_time,IM_time_bnds,           &
-!                   ZV_riv_tot_bQlat,ZV_riv_tot_vQlat,ZV_riv_tot_caQlat,ZS_dtUQ,  &
-!                   ZV_riv_tot_cdownQlat,IS_radius,                               &
-!                   IV_nc_start,IV_nc_count,                                      &
-!                   IV_riv_loc1,IV_riv_index,ZV_read_riv_tot,ZV_Vlat,             &
-!                   Runoff_path,Weight_table_file            
-
 use rapid_var, only :                                              &
                    rank,ierr,IS_time,JS_time,IS_riv_bas,           &
                    ZS_TauR,ZS_crs_sma,ZS_crs_iflat,                &
                    IV_time,IM_time_bnds,IV_riv_loc1,IV_riv_index,  &
                    ZV_read_riv_tot,ZV_Vlat,                        &
-                   weight_table_file,n_weight_table
+                   weight_table_file,n_weight_table,               &
+                   rivid,npt,idx_i,idx_j,area_sqm,lat,lon
 
 implicit none
 
 !*******************************************************************************
 !Declaration of variables
 !*******************************************************************************
-! Arguments
-!character(len=200), intent(in) :: runoff_nc_file
-!character(len=256) :: m3_nc_file
-
-! Weight table file
-integer, dimension(:),   allocatable :: rivid                   ! ID of the each river reach
-integer, dimension(:),   allocatable :: npt                     !
-integer, dimension(:),   allocatable :: idx_i,idx_j             ! i,j index of the grid cell where the contributing catchment centroid
-real,    dimension(:),   allocatable :: area_sqm                ! area of its contributing catchment in m2
-real,    dimension(:),   allocatable :: lat, lon                ! lat, lon of LSM
-
-!character(len=256)                   :: weight_table_file
-character(len=200)                   :: buf
-integer                              :: n
-integer                              :: ncid, var_runsf, var_runsb ! variables for netcdf
+PetscInt                               :: ncid, var_runsf, var_runsb ! variables for netcdf
 
 ! Runoff data are in kg/m2 accumulated over a time step
-integer, intent(in)                  :: nc, nr
-real                                 :: runsf(nc,nr)   ! surface runoff
-real                                 :: runsb(nc,nr)   ! subsurface runoff
+PetscInt, intent(in)                   :: nc, nr
+real                                   :: runsf(nc,nr)   ! surface runoff
+real                                   :: runsb(nc,nr)   ! subsurface runoff
+!PetscScalar,dimension(:,:),allocatable :: runsf                   ! surface runoff
+!PetscScalar,dimension(:,:),allocatable :: runsb                   ! subsurface runoff
 
-integer                              :: nreach_new
-integer                              :: col, row                !
-real                                 :: conversion_factor=0.001 !convert from kg/m^2 (i.e. mm) to m
+PetscInt                               :: nreach_new
+PetscInt                               :: col, row                !
+PetscScalar                            :: conversion_factor=0.001 !convert from kg/m^2 (i.e. mm) to m
 
-integer, dimension(:),   allocatable :: rivid_new
-real,    dimension(:),   allocatable :: m3_riv                  ! inflow data to RAPID river reaches are in m3 accumulated over a time step
-real                                 :: m3_riv_np
+PetscInt,    dimension(:), allocatable :: rivid_new
+PetscScalar, dimension(:), allocatable :: m3_riv                  ! inflow data to RAPID river reaches are in m3 accumulated over a time step
+PetscScalar                            :: m3_riv_np
 
-integer            :: eof, status
-integer            :: i,j,k
-!integer            :: dim_rivid, dim_time, dimids(2)            ! variables for netcdf
-!integer            :: var_m3_riv, var_rivid                     ! variables for netcdf
+PetscInt            :: eof, status
+PetscInt            :: i,j,k
+
+! temp
+!character(len=200), intent(in)       :: lsmfile
 
 !*******************************************************************************
-! Reads weight_table file
-!*******************************************************************************
-! check number of reach in wieght table file
-!open(45,file=weight_table_file,status='old',action='read')
-!read(45,'(A)',iostat=eof) buf  ! read header in weight table
-!nreach=1;
-!do
-!     read(45,*,iostat=eof) buf
-!     if (eof/=0) exit
-!
-!     nreach=nreach+1
-!end do
-!nreach=nreach-1 ! adjust size
-!close(45)
 
-! allocate sizes
-allocate(rivid(n_weight_table))
-allocate(area_sqm(n_weight_table))
-allocate(idx_i(n_weight_table))
-allocate(idx_j(n_weight_table))
-allocate(npt(n_weight_table))
-allocate(lat(n_weight_table))
-allocate(lon(n_weight_table))
-
-! read weight table file
-open(45,file=weight_table_file,status='old',action='read')
-read(45,'(A)',iostat=eof) buf  ! read header in weight table
-
-n=1
-do
-     read(45,*,iostat=eof) rivid(n),area_sqm(n),                  &
-                           idx_i(n),idx_j(n),npt(n),lon(n),lat(n)
-     if (eof/=0) exit
-     n=n+1
-end do
-n=n-1
-close(45)
-
-#if 0
 !-------------------------------------------------------------------------------
 !Read runoff file
 !-------------------------------------------------------------------------------
-! initialization
-nlon=192
-nlat=372
+#if 0
+allocate(runsf(nc,nr))
+allocate(runsb(nc,nr))
 
-allocate(runsf(nlon,nlat))
-allocate(runsb(nlon,nlat))
-
-runsf(1:nlon,1:nlat)=0
-runsb(1:nlon,1:nlat)=0
+runsf(1:nc,1:nr)=0
+runsb(1:nc,1:nr)=0
 
 ! open the file. NF90_NOWRITE tells netCDF we want read-only access to the file
-status=nf90_open(trim(runoff_nc_file), NF90_NOWRITE, ncid)
+status=nf90_open(trim(lsmfile), NF90_NOWRITE, ncid)
 
 ! get the varid of the data variable, based on its name
 status=nf90_inq_varid(ncid,'Qs_inst', var_runsf)

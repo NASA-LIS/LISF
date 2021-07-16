@@ -31,7 +31,7 @@ subroutine RAPID_model_main (bQinit,bQfinal,bV,bhum,bfor,     &
                              kfile,xfile,                     &
                              nmlfile,qfile,                   &
                              nc,nr,runsf,runsb,initCheck,     &
-                             rst_Qout,startMode,dt,routingInterval)
+                             rst_Qout,startMode,dt,routingInterval,lsmfile)
 !Purpose:
 !Allows to route water through a river network, and to estimate optimal 
 !parameters using the inverse method 
@@ -118,6 +118,9 @@ character*20,  intent(in)     :: startMode
 real,          intent(in)     :: dt                  ! internal time step (in seconds) 
 real,          intent(in)     :: routingInterval     ! routing time step (in seconds)
 logical                       :: alarmCheck
+
+!temp
+character*200, intent(in)     :: lsmfile
  
 !*******************************************************************************
 !Initialize
@@ -244,6 +247,9 @@ do JS_RpM=1,IS_RpM
 !call rapid_read_Vlat_file                    ! Yeosang Yoon, not use this subroutine within LIS
 call rapid_Vlat(nc,nr,runsf,runsb)            ! Yeosang Yoon, read LSM runoff and transfer to boundary inflows
 
+! temp
+!call rapid_Vlat(nc,nr,lsmfile)
+
 call VecCopy(ZV_Vlat,ZV_Qlat,ierr)            !Qlat=Vlat
 call VecScale(ZV_Qlat,1/ZS_TauR,ierr)         !Qlat=Qlat/TauR
 
@@ -304,13 +310,21 @@ ZS_time3=ZS_time3+ZS_time2-ZS_time1
 call VecCopy(ZV_QoutR,ZV_QoutinitR,ierr)
 call VecCopy(ZV_VR,ZV_VinitR,ierr)
 
+!- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !Yeosang Yoon, for LIS restart file
-call VecScatterBegin(vecscat,ZV_QoutR,ZV_SeqZero,                              &
-                     INSERT_VALUES,SCATTER_FORWARD,ierr)
-call VecScatterEnd(vecscat,ZV_QoutR,ZV_SeqZero,                                &
-                     INSERT_VALUES,SCATTER_FORWARD,ierr)
-call VecGetArrayF90(ZV_SeqZero,ZV_pointer,ierr)
-rst_Qout=ZV_pointer
+!- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!alarmCheck = LIS_isAlarmRinging(LIS_rc,"RAPID router restart alarm")
+!if(alarmCheck.or.(LIS_rc%endtime ==1)) then
+   call VecScatterBegin(vecscat,ZV_QoutR,ZV_SeqZero,                              &
+                        INSERT_VALUES,SCATTER_FORWARD,ierr)
+   call VecScatterEnd(vecscat,ZV_QoutR,ZV_SeqZero,                                &
+                        INSERT_VALUES,SCATTER_FORWARD,ierr)
+   if(rank==0) then
+      call VecGetArrayF90(ZV_SeqZero,ZV_pointer,ierr)
+      rst_Qout=ZV_pointer
+      call VecRestoreArrayF90(ZV_SeqZero,ZV_pointer,ierr)
+   endif
+!endif
 
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !write outputs

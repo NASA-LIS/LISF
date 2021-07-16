@@ -56,22 +56,19 @@ subroutine noah39_getrunoffs_rapid(n)
   runoff1_t = -9999.0
   runoff2_t = -9999.0
 
-  if(LIS_masterproc) then 
-     call ESMF_StateGet(LIS_runoff_state(n),"Surface Runoff",&
-          sfrunoff_field,rc=status)
-     call LIS_verify(status,'ESMF_StateGet failed for Surface Runoff')
+  call ESMF_StateGet(LIS_runoff_state(n),"Surface Runoff",&
+       sfrunoff_field,rc=status)
+  call LIS_verify(status,'ESMF_StateGet failed for Surface Runoff')
      
-     call ESMF_StateGet(LIS_runoff_state(n),"Subsurface Runoff",&
-          baseflow_field,rc=status)
-     call LIS_verify(status,'ESMF_StateGet failed for Subsurface Runoff')
+  call ESMF_StateGet(LIS_runoff_state(n),"Subsurface Runoff",&
+       baseflow_field,rc=status)
+  call LIS_verify(status,'ESMF_StateGet failed for Subsurface Runoff')
 
-     call ESMF_FieldGet(sfrunoff_field,localDE=0,farrayPtr=sfrunoff,rc=status)
-     call LIS_verify(status,'ESMF_FieldGet failed for Surface Runoff')
+  call ESMF_FieldGet(sfrunoff_field,localDE=0,farrayPtr=sfrunoff,rc=status)
+  call LIS_verify(status,'ESMF_FieldGet failed for Surface Runoff')
      
-     call ESMF_FieldGet(baseflow_field,localDE=0,farrayPtr=baseflow,rc=status)
-     call LIS_verify(status,'ESMF_FieldGet failed for Subsurface Runoff')
-
-  endif
+  call ESMF_FieldGet(baseflow_field,localDE=0,farrayPtr=baseflow,rc=status)
+  call LIS_verify(status,'ESMF_FieldGet failed for Subsurface Runoff')
 
   do t=1, LIS_rc%npatch(n,LIS_rc%lsm_index)  !units?
      runoff1(t) = noah39_struc(n)%noah(t)%runoff1*LIS_CONST_RHOFW
@@ -81,19 +78,8 @@ subroutine noah39_getrunoffs_rapid(n)
   call LIS_patch2tile(n,1,runoff1_t, runoff1)
   call LIS_patch2tile(n,1,runoff2_t, runoff2)
 
-!gather the model tiles before assigning to the global data structure. 
-  call LIS_gather_tiled_vector_withhalo_output(n, gvar1, runoff1_t)
-  call LIS_gather_tiled_vector_withhalo_output(n, gvar2, runoff2_t)
-
-  if(LIS_masterproc) then
-
-     sfrunoff = gvar1
-     baseflow = gvar2
-
-     deallocate(gvar1)
-     deallocate(gvar2)
-
-  endif
+  sfrunoff = runoff1_t
+  baseflow = runoff2_t
 
   deallocate(runoff1)
   deallocate(runoff2)
