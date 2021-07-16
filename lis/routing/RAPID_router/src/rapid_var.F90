@@ -8,6 +8,8 @@ module rapid_var
 !Author: 
 !Cedric H. David, 2008-2020.
 
+! !REVISION HISTORY:
+! 08 Jul 2021: Yeosang Yoon: Add variables for weight table
 
 !*******************************************************************************
 !Fortran includes, modules, and implicity
@@ -320,6 +322,14 @@ PetscScalar, allocatable, dimension(:) :: ZV_k_dam,ZV_p_dam
 PetscScalar, allocatable, dimension(:) :: ZV_S_dam,ZV_Smax_dam,ZV_Smin_dam
 !Fortran vectors where dam storage is saved, will be allocated to IS_dam_tot
 
+!*******************************************************************************
+!Declaration of variables - weight table (Yeosang Yoon; 08 Jul 2021)
+!*******************************************************************************
+PetscInt,    dimension(:), allocatable :: rivid         ! ID of the each river reach
+PetscInt,    dimension(:), allocatable :: npt           !
+PetscInt,    dimension(:), allocatable :: idx_i,idx_j   ! i,j index of the grid cell where the contributing catchment centroid
+PetscScalar, dimension(:), allocatable :: area_sqm      ! area of its contributing catchment in m2
+PetscScalar, dimension(:), allocatable :: lat, lon      ! lat, lon of LSM
 
 !*******************************************************************************
 !Declaration of variables - Network matrix variables and routing variables

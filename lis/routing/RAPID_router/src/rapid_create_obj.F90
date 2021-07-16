@@ -37,12 +37,14 @@ use rapid_var, only :                                                          &
                    ZM_Pb,ZM_L,ZV_Qbmean,ZV_dQeb,ZV_QoutinitR_save,ksp2
 implicit none
 
+logical :: flag
 
 !*******************************************************************************
 !Initialize PETSc and TAO, and create all the objects
 !*******************************************************************************
 
 !Initialize PETSc --------------------------------------------------------------
+
 call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
 !Determine number associated with each processor -------------------------------
@@ -209,8 +211,6 @@ call VecScatterCreateToZero(ZV_k,vecscat,ZV_SeqZero,ierr)
 !TAO specific-------------------------------------------------------------------
 call TaoCreate(PETSC_COMM_WORLD,tao,ierr)
 call TaoSetType(tao,'nm',ierr)
-CHKERRQ(ierr)
-
 call TaoSetTolerances(tao,                                                     &
                       PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,&
                       ierr)

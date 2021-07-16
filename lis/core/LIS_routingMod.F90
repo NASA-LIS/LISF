@@ -104,6 +104,34 @@ module LIS_routingMod
     integer, allocatable :: gtmp(:,:)
     integer, allocatable :: gtmp1(:)
 
+    call ESMF_ConfigGetAttribute(LIS_config, LIS_rc%routingmodel, &
+         label="Routing model:",default="none", rc=rc)
+
+    if(LIS_rc%routingmodel.ne."none") then
+
+       allocate(LIS_runoff_state(LIS_rc%nnest))
+
+       do n=1, LIS_rc%nnest
+
+          write(unit=temp,fmt='(i2.2)') n
+          read(unit=temp,fmt='(2a1)') nestid
+
+          LIS_runoff_state(n) = ESMF_StateCreate(name="LIS Runoff State"//&
+               nestid(1)//nestid(2), rc=status)
+          call LIS_verify(status, "ESMF_StateCreate failed in LIS_routing_init")
+
+       enddo
+
+       if(LIS_rc%lsm.eq."none") then
+          call ESMF_ConfigGetAttribute(LIS_config, LIS_rc%runoffdatasource, &
+               label="External runoff data source:", rc=rc)
+          call LIS_verify(rc,"External runoff data source: not defined")
+       endif
+      
+       call routinginit(trim(LIS_rc%routingmodel)//char(0))
+    endif
+
+#if 0
     if(LIS_rc%routingmodel.ne."none") then 
 
        allocate(LIS_routing(LIS_rc%nnest))
@@ -257,6 +285,7 @@ module LIS_routingMod
 
     end if
 
+#endif
   end subroutine LIS_routing_init
 
 

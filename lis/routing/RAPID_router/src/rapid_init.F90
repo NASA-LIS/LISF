@@ -31,6 +31,7 @@ subroutine rapid_init
 
 ! !REVISION HISTORY:
 ! 07 May 2021: Yeosang Yoon: Update log message
+! 07 Jul 2021: Yeosang Yoon: Add memory allocation for weight table
 
 !*******************************************************************************
 !Fortran includes, modules, and implicity
@@ -79,7 +80,8 @@ use rapid_var, only :                                                          &
                    ZV_riv_tot_lon,ZV_riv_tot_lat,IV_time,IM_time_bnds,         &
                    ierr,ksp,rank,IS_one,ZS_one,                                &
                    IS_radius,ZV_riv_tot_cdownQlat,                             &
-                   IV_nbrows,IV_lastrow
+                   IV_nbrows,IV_lastrow,                                       &
+                   n_weight_table,rivid,npt,idx_i,idx_j,area_sqm,lat,lon
 
 use LIS_logMod
 
@@ -215,6 +217,15 @@ allocate(ZV_riv_tot_cdownQlat(IS_riv_tot,IS_radius))
 allocate(IV_nbrows(IS_riv_bas))
 allocate(IV_lastrow(IS_riv_bas))
 !Used in rapid_mus_mat and rapid_runoff2streamflow_mat for data assimilation
+
+! weight table (Yeosang Yoon; 08 Jul 2021)
+allocate(rivid(n_weight_table))
+allocate(area_sqm(n_weight_table))
+allocate(idx_i(n_weight_table))
+allocate(idx_j(n_weight_table))
+allocate(npt(n_weight_table))
+allocate(lat(n_weight_table))
+allocate(lon(n_weight_table))
 
 !-------------------------------------------------------------------------------
 !Make sure some Fortran arrays are initialized to zero

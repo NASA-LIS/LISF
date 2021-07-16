@@ -55,6 +55,7 @@ subroutine rapid_arrays
 
 ! !REVISION HISTORY:
 ! 07 May 2021: Yeosang Yoon: Update log message
+! 08 Jul 2021: Yeosang Yoon: Add reader for weight table
 
 !*******************************************************************************
 !Fortran includes, modules, and implicity
@@ -105,7 +106,9 @@ use rapid_var, only :                                                          &
                    IS_obs_use,JS_obs_use,                                      &
                    IS_obs_bas,JS_obs_bas,                                      &
                    IV_obs_index,IV_obs_loc1,                                   &
-                   temp_char,rank,ierr,IS_one,ZS_val
+                   temp_char,rank,ierr,IS_one,ZS_val,                          &
+                   weight_table_file,n_weight_table,                           &
+                   rivid,npt,idx_i,idx_j,area_sqm,lat,lon
 
 use LIS_logMod
 
@@ -115,7 +118,8 @@ implicit none
 !*******************************************************************************
 !Intent (in/out), and local variables 
 !*******************************************************************************
-
+integer               :: i
+character(len=200)    :: buf
 
 !*******************************************************************************
 !Relationship between entire domain and study basin 
@@ -136,6 +140,18 @@ do JS_riv_bas=1,IS_riv_bas
      read(11,*) IV_riv_bas_id(JS_riv_bas)
 end do
 close(11)
+
+!-------------------------------------------------------------------------------
+! Reads weight_table file (Yeosang Yoon)
+!-------------------------------------------------------------------------------
+open(45,file=weight_table_file,status='old',action='read')
+read(45,'(A)') buf  ! read header in weight table
+
+do i=1,n_weight_table
+   read(45,*) rivid(i),area_sqm(i),                  &
+              idx_i(i),idx_j(i),npt(i),lon(i),lat(i)
+end do
+close(45)
 
 !-------------------------------------------------------------------------------
 !Populate hashtable-like matrices 
