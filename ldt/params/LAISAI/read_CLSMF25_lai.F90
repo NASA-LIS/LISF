@@ -16,9 +16,11 @@
 !  25 Jul 2005: Sujay Kumar; Initial Specification
 !  20 Feb 2006: Sujay Kumar; Modified to support nesting
 !  12 Feb 2013: KR Arsenault; Modified for Catchment LSM LAI
+!  19 Jul 2021: Eric Kemp; Removed third argument (not used)
 !
 ! !INTERFACE:
-subroutine read_CLSMF25_lai(n, array, maskarray)
+!subroutine read_CLSMF25_lai(n, array, maskarray)
+subroutine read_CLSMF25_lai(n, array)
 
 ! !USES:
   use ESMF
@@ -33,7 +35,7 @@ subroutine read_CLSMF25_lai(n, array, maskarray)
 ! !ARGUMENTS: 
   integer, intent(in)    :: n
   real,    intent(inout) :: array(LDT_rc%lnc(n),LDT_rc%lnr(n),12)
-  real, optional, intent(inout) :: maskarray(LDT_rc%lnc(n),LDT_rc%lnr(n))
+  !real, optional, intent(inout) :: maskarray(LDT_rc%lnc(n),LDT_rc%lnr(n))
 
 ! !DESCRIPTION:
 !  This subroutine retrieves the leaf area index (LAI) climatology for the 

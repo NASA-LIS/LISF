@@ -29,7 +29,8 @@
   use LDT_paramTileInputMod, only: param_1dbin_areacalc, &
                                    param_index_fgrdcalc
   
-  use FLAKE_parmsMod
+  ! EMK TEST
+  !use FLAKE_parmsMod
 
 !EOP      
   implicit none

@@ -15,9 +15,10 @@
 ! !REVISION HISTORY:
 !  25 Jul 2005: Sujay Kumar;  Initial Specification
 !  12 Feb 2013: K. Arsenault; Modified for use with SACHTET greenness parameter
+!  19 Jul 2021: Eric Kemp; Disabled maskarray argument
 !
 ! !INTERFACE:
- subroutine read_SACHTET356_gfrac(n, array, maskarray)
+ subroutine read_SACHTET356_gfrac(n, array)
 
 ! !USES:
   use ESMF
@@ -29,15 +30,17 @@
 
   implicit none
 
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n    ! nest index
   real,    intent(inout) :: array(LDT_rc%lnc(n),LDT_rc%lnr(n))
-  real, optional, intent(inout) :: maskarray(LDT_rc%lnc(n),LDT_rc%lnr(n))
+  !EMK...Disabled maskarray argument.  This isn't used, and is not properly
+  !handled by the "upstream" calling code.  We can restore this in the future.
+  !real, optional, intent(inout) :: maskarray(LDT_rc%lnc(n),LDT_rc%lnr(n))
 
 ! !DESCRIPTION:
-!  This subroutine retrieves the greenness fraction climatology for the 
+!  This subroutine retrieves the greenness fraction climatology for the
 !  specified month and returns the values in the latlon projection
-!  
+!
 !  The arguments are:
 !  \begin{description}
 !  \item[n]
@@ -48,9 +51,9 @@
 !   optional input field of reading in the mask array
 !  \end{description}
 !
-!EOP      
+!EOP
   integer :: ftn
-  integer :: c,r
+  integer :: c, r
   real    :: xfactor
   logical :: file_exists
 ! _________________________________________________
@@ -58,21 +61,24 @@
   array = LDT_rc%udef
 
   inquire(file=trim(LDT_gfrac_struc(n)%gfracFile), exist=file_exists)
-  if(.not.file_exists) then 
-     write(LDT_logunit,*) "[ERR] Greenness map ",trim(LDT_gfrac_struc(n)%gfracFile)," not found."
+  if (.not. file_exists) then
+     write(LDT_logunit,*) "[ERR] Greenness map ", &
+          trim(LDT_gfrac_struc(n)%gfracFile), " not found."
      write(LDT_logunit,*) "Program stopping ..."
      call LDT_endrun
   endif
   select case ( LDT_gfrac_struc(n)%gfrac_gridtransform )
-    case( "none" )
-     write(LDT_logunit,*) "[INFO] Reading SAC-HTET greenness file: ",&
-           trim(LDT_gfrac_struc(n)%gfracFile)
-    case default
-      write(LDT_logunit,*) "[ERR] The spatial transform option selected for SAC-HTET "
-      write(LDT_logunit,*) "  greenness file is not recognized nor recommended."
-      write(LDT_logunit,*) "  Please select for now:  none "
-      write(LDT_logunit,*) "Program stopping ..."
-      call LDT_endrun
+  case( "none" )
+     write(LDT_logunit,*) "[INFO] Reading SAC-HTET greenness file: ", &
+          trim(LDT_gfrac_struc(n)%gfracFile)
+  case default
+     write(LDT_logunit,*) &
+          "[ERR] The spatial transform option selected for SAC-HTET "
+     write(LDT_logunit,*) &
+          "  greenness file is not recognized nor recommended."
+     write(LDT_logunit,*) "  Please select for now:  none "
+     write(LDT_logunit,*) "Program stopping ..."
+     call LDT_endrun
   end select
 
   call LDT_transform_xmrgparam( n, LDT_rc%lnc(n), LDT_rc%lnr(n),     &
