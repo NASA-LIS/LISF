@@ -348,6 +348,11 @@ MODULE MODULE_SF_NOAHMPLSM_401
      REAL :: MXSNALB
      REAL :: MNSNALB
 
+     REAL :: T_ulimit
+     REAL :: T_llimit
+     REAL :: T_mlimit
+     real :: snowf_scalef
+
   END TYPE noahmp_parameters
 
 contains
@@ -949,12 +954,12 @@ contains
 ! Jordan (1991)
 
      IF(OPT_SNF == 1) THEN
-       IF(SFCTMP > TFRZ+2.5)THEN
+        IF(SFCTMP > TFRZ+parameters%t_ulimit) then 
            FPICE = 0.
        ELSE
-         IF(SFCTMP <= TFRZ+0.5)THEN
+          IF(SFCTMP <=TFRZ+parameters%t_llimit) then 
            FPICE = 1.0
-         ELSE IF(SFCTMP <= TFRZ+2.)THEN
+           ELSE IF (SFCTMP <=TFRZ+parameters%t_mlimit) then 
            FPICE = 1.-(-54.632 + 0.2*SFCTMP)
          ELSE
            FPICE = 0.6
@@ -996,8 +1001,9 @@ contains
      ENDIF
 
      RAIN   = PRCP * (1.-FPICE)
-     SNOW   = PRCP * FPICE
+     SNOW   = PRCP * FPICE * parameters%snowf_scalef
 
+     PRCP = RAIN + SNOW
 
   END SUBROUTINE ATM
 
