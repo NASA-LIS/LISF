@@ -18,9 +18,9 @@
 //  LAI/SAI data
 //
 //EOP
-#include<stdio.h>
-#include<stdlib.h>
-#include<stdarg.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "ftn_drv.h"
@@ -34,6 +34,7 @@ struct laisetnode* laiset_table = NULL;
 
 struct lainode {
     char *name;
+    //EMK Removed third argument, since not used by any Fortran routine.
     //void (*func)(int*, float*, float*);
     void (*func)(int*, float*);
     struct lainode* next;
@@ -192,6 +193,7 @@ void FTN(registerreadlai)(char *j, void (*func) (int*, float*), int len)
 // \label{readlai}
 //
 // !INTERFACE:
+//EMK...Removed unnecessary arguments.
 //void FTN(readlai)(char *j, int *n,float *array,float *marray,int len)
 void FTN(readlai)(char *j, int *n, float *array)
 
@@ -227,6 +229,7 @@ void FTN(readlai)(char *j, int *n, float *array)
             printf("****************Error****************************\n");
         }
     }
+    //EMK...Third argument not used by any Fortran routine.
     //current->func(n,array,marray);
     current->func(n, array);
 }
