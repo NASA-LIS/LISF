@@ -91,7 +91,7 @@ end subroutine readSMOPSsmObs
 ! \label(read_SMOPS_data)
 !
 ! !INTERFACE:
-subroutine read_SMOPS_data(n, fname, smobs_ip) 
+subroutine read_SMOPS_data(n, fname, smobs_ip)
 !
 ! !USES:
 #if (defined USE_GRIBAPI)
@@ -112,7 +112,7 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
 !
 ! !ARGUMENTS:
 !
-   integer                       :: n 
+   integer                       :: n
    character (len=*)             :: fname
    real                          :: smobs_ip(LDT_rc%lnc(n)*LDT_rc%lnr(n))
    integer                       :: search_rad
@@ -152,10 +152,11 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
    integer        :: param_SMOS, param_SMOS_qa
    integer        :: param_AMSR2, param_AMSR2_qa
    integer        :: param_SMAP, param_SMAP_qa
-    integer*1,parameter :: err_threshold = 5 ! in percent
-   !EMK...gfortran indicates that ISO Fortran does not include binary
-   !integer constants as parameters, but does support them in
-   !DATA statements. So we update the code here.
+   integer*1, parameter :: err_threshold = 5 ! in percent
+   ! EMK 21 Jul 2021...ISO Fortran restricts use of binary integer constants
+   ! to DATA statements and as a principal argument to an intrinsic function.
+   ! And gfortran 10 and 11 rejects their use in parameters.
+   ! So we replace with arrays here.
    ! integer*1,parameter :: AMSR2_accept = b'00000001'
    ! integer*2,parameter :: SMOS_accept1 = b'0000000000000000'
    ! integer*2,parameter :: SMOS_accept2 = b'0000000000000001'
@@ -216,6 +217,11 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
 
    integer        :: ix, jx,c_s, c_e, r_s, r_e
 
+   ! EMK 21 Jul 2021...ISO Fortran restricts use of binary integer constants
+   ! to DATA statements and as a principal argument to an intrinsic function.
+   ! And gfortran 10 and 11 rejects their use in parameters.
+   ! So we replace with arrays here.
+   ! Old code for reference
    !integer*1,parameter :: AMSR2_accept = b'00000001'
    !integer*2,parameter :: SMOS_accept1 = b'0000000000000000'
    !integer*2,parameter :: SMOS_accept2 = b'0000000000000001'
