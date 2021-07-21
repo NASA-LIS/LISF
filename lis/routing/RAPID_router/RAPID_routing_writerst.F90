@@ -7,15 +7,23 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
+#include "LIS_misc.h"
+#include "LIS_NetCDF_inc.h"
 
 !BOP
 ! !ROUTINE: RAPID_routing_writerst
 ! \label{RAPID_routing_writerst}
 !
 ! !REVISION HISTORY:
-! 18 Mar 2021: Yeosang Yoon;  Initial implementation
+! 13 Jul 2021: Yeosang Yoon;  Initial implementation
 
 subroutine RAPID_routing_writerst(n)
+
+!
+! !DESCRIPTION:
+!  This routine writes restart files for RAPID. The restart files
+!  are in NetCDF format.
+!
 
   use ESMF
   use LIS_coreMod
@@ -23,6 +31,9 @@ subroutine RAPID_routing_writerst(n)
   use LIS_fileIOMod
   use LIS_timeMgrMod
   use RAPID_routingMod
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+  use netcdf
+#endif
 
   implicit none
   
@@ -32,26 +43,89 @@ subroutine RAPID_routing_writerst(n)
   integer               :: ftn
   integer               :: status
   logical               :: alarmCheck
+  integer               :: dimid_time, dimid_riv_bas, dim_Qout(2)
+  integer               :: varid_Qout
 
-!TODO: add netcdf
+  integer, dimension(8) :: values
+  character(len=8)      :: date
+  character(len=10)     :: time
+  character(len=5)      :: zone
 
-  if(LIS_masterproc) then
-     alarmCheck = LIS_isAlarmRinging(LIS_rc,&
-          "RAPID router restart alarm")
-     if(alarmCheck.or.(LIS_rc%endtime ==1)) then 
-        ftn = LIS_getNextUnitNumber()
+  alarmCheck = LIS_isAlarmRinging(LIS_rc,&
+      "RAPID router restart alarm")
+  if(alarmCheck.or.(LIS_rc%endtime ==1)) then
+     if(LIS_masterproc) then
         call LIS_create_output_directory('ROUTING')
         call LIS_create_restart_filename(n,filename,&
-             'ROUTING','RAPID_router',&
-             wformat="binary")
-        write(LIS_logunit,*) '[INFO] Writing routing restart ',trim(filename)
+             'ROUTING','RAPID_router',wformat="netcdf")
+        write(LIS_logunit,*) '[INFO] Writing RAPID routing restart ',trim(filename)
 
-        open(ftn,file=trim(filename), form='unformatted')
-
-        write(ftn) RAPID_routing_struc(n)%rst_Qout
-
-        call LIS_releaseUnitNumber(ftn)
+#if (defined USE_NETCDF4)
+        status = nf90_create(path=filename, cmode=nf90_netcdf4, ncid = ftn)
+        call LIS_verify(status,"Error in nf90_open in RAPID_routing_writerst")
+#endif
+#if (defined USE_NETCDF3)
+        status = nf90_create(Path = filename, cmode = nf90_clobber, ncid = ftn)
+        call LIS_verify(status, "Error in nf90_open in RAPID_routing_writerst")
+#endif
+        ! Define the dimensions.
+        status = nf90_def_dim(ftn,'time',1,dimid_time)
+        call LIS_verify(status, "Error in nf90_def_dim in RAPID_routing_writerst")
+        status = nf90_def_dim(ftn,'rivid',RAPID_routing_struc(n)%n_riv_bas,dimid_riv_bas)
+        call LIS_verify(status, "Error in nf90_def_dim in RAPID_routing_writerst")
         
+        dim_Qout = (/dimid_riv_bas, dimid_time/)
+        ! Define variables
+        status = nf90_def_var(ftn,"Qout",NF90_REAL,dim_Qout,varid_Qout) 
+        call LIS_verify(status, "Error in nf90_def_var in RAPID_routing_writerst")
+ 
+        ! Define variable attributes
+        call LIS_verify(nf90_put_att(ftn,varid_Qout,'long_name','average river water discharge ' &
+                        // 'downstream of each river reach'), 'nf90_put_att failed for long_name')
+        call LIS_verify(nf90_put_att(ftn,varid_Qout,'unit','m3 s-1'), &
+                        'nf90_put_att failed for unit')
+        call LIS_verify(nf90_put_att(ftn,varid_Qout,'coordinates','lon lat'), &
+                        'nf90_put_att failed for coordinates')
+        call LIS_verify(nf90_put_att(ftn,varid_Qout,'grid_mapping','crs'), &
+                        'nf90_put_att failed for grid_mapping')
+        call LIS_verify(nf90_put_att(ftn,varid_Qout,'cell_methods','time: mean'), &
+                        'nf90_put_att failed for cell_methods')
+
+        ! Define global attributes
+        call date_and_time(date,time,zone,values)
+        call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"missing_value",LIS_rc%udef), &
+             'nf90_put_att failed for missing_value')
+        call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"title","LIS RAPID model restart"), &
+             'nf90_put_att failed for title')
+        call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"institution",trim(LIS_rc%institution)), &
+             'nf90_put_att failed for institution')
+        call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"source",'RAPID'), &
+             'nf90_put_att failed for source')
+        call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"history", &
+             "created on date: "//date(1:4)//"-"//date(5:6)//"-"//&
+             date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10)), &
+             'nf90_put_att failed for history')
+        call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"references", &
+             "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"), &
+             'nf90_put_att failed for references')
+        call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"conventions", &
+             "CF-1.6"),'nf90_put_att failed for conventions') !CF version 1.6
+        call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"comment", &
+             "website: http://lis.gsfc.nasa.gov/"),&
+             'nf90_put_att failed for comment')
+
+        ! End define mode. 
+        call LIS_verify(nf90_enddef(ftn),'Error in ncf90_enddef in RAPID_routing_writerst')
+
+        !Write data
+        status = nf90_put_var(ftn,varid_Qout,RAPID_routing_struc(n)%rst_Qout,&
+                 (/1,1/), (/RAPID_routing_struc(n)%n_riv_bas,1/))
+        call LIS_verify(status,'Error in nf90_put_var in RAPID_routing_writerst')
+
+        ! Close the file.
+        call LIS_verify(nf90_close(ftn), "Error in nf90_close in RAPID_routing_writerst")
      endif
   endif
+
 end subroutine RAPID_routing_writerst
+

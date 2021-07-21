@@ -22,7 +22,7 @@
 !*******************************************************************************
 ! Subroutine- RAPID_model_main (rapid_main)
 !*******************************************************************************
-subroutine RAPID_model_main (bQinit,bQfinal,bV,bhum,bfor,     &
+subroutine RAPID_model_main (n,bQinit,bQfinal,bV,bhum,bfor,   &
                              bdam,binfluence,buq,             &
                              run_opt,routing_opt,phi_opt,     &
                              connectfile,max_reach,n_riv_tot, &
@@ -31,7 +31,8 @@ subroutine RAPID_model_main (bQinit,bQfinal,bV,bhum,bfor,     &
                              kfile,xfile,                     &
                              nmlfile,qfile,                   &
                              nc,nr,runsf,runsb,initCheck,     &
-                             rst_Qout,startMode,dt,routingInterval,lsmfile)
+                             dt,routingInterval)
+
 !Purpose:
 !Allows to route water through a river network, and to estimate optimal 
 !parameters using the inverse method 
@@ -40,9 +41,7 @@ subroutine RAPID_model_main (bQinit,bQfinal,bV,bhum,bfor,     &
 
 !Fortran includes, modules, and implicity
 #include <petsc/finclude/petsctao.h>
-#include <petsc/finclude/petscvec.h>
 use petsctao
-use petscvec
 use rapid_var, only :                                                          &    !Yeosang Yoon
                    namelist_file,                                              &
                    Vlat_file,Qfor_file,Qhum_file,                              &
@@ -74,6 +73,7 @@ use rapid_var, only :                                                          &
 use LIS_coreMod, only: LIS_rc
 use LIS_logMod
 use LIS_timeMgrMod
+use RAPID_routingMod, only : RAPID_routing_struc
 
 implicit none
 external rapid_phiroutine
@@ -81,6 +81,7 @@ external rapid_phiroutine
 
 !Yeosang Yoon
 !Arguments
+integer,       intent(in)     :: n
 logical,       intent(in)     :: bQinit       ! initial flow
 logical,       intent(in)     :: bQfinal      ! write final flow
 logical,       intent(in)     :: bV           ! compute volume
@@ -112,15 +113,10 @@ real,          intent(in)     :: runsf(nc,nr)        ! surface runoff
 real,          intent(in)     :: runsb(nc,nr)        ! subsurface runoff
 
 logical,       intent(inout)  :: initCheck
-real,          intent(inout)  :: rst_Qout(n_riv_tot) ! instantaneous flow for LIS restart file
-PetscScalar,   allocatable    :: Qinit(:)
-character*20,  intent(in)     :: startMode
 real,          intent(in)     :: dt                  ! internal time step (in seconds) 
 real,          intent(in)     :: routingInterval     ! routing time step (in seconds)
 logical                       :: alarmCheck
-
-!temp
-character*200, intent(in)     :: lsmfile
+PetscScalar,   allocatable    :: Qinit(:)
  
 !*******************************************************************************
 !Initialize
@@ -162,17 +158,22 @@ if (initCheck .eq. .true.) then
    call rapid_init
 
    initCheck = .false.
-   
-   ! for LIS restart; TODO: IS_riv_tot? IS_riv_bas 
-   if(startmode.eq."restart") then 
-      allocate(Qinit(IS_riv_tot))
-      Qinit=rst_Qout
-      call VecSetValues(ZV_QoutinitR,IS_riv_bas,IV_riv_loc1,                         &
-                        Qinit(IV_riv_index),INSERT_VALUES,ierr) 
+
+   ! for RAPID restart
+   if(RAPID_routing_struc(n)%startmode.eq."restart") then
+      if (rank==0) then
+          allocate(Qinit(IS_riv_bas))
+          Qinit=RAPID_routing_struc(n)%rst_Qout
+          
+          call VecSetValues(ZV_QoutinitR,IS_riv_bas,IV_riv_loc1, &
+                            Qinit(IV_riv_index),INSERT_VALUES,ierr)
+          deallocate(Qinit)
+      endif
       call VecAssemblyBegin(ZV_QoutinitR,ierr)
       call VecAssemblyEnd(ZV_QoutinitR,ierr)
    endif
 endif
+
 Qout_file=trim(qfile)   ! LIS-RAPID output filename
 alarmCheck = LIS_isAlarmRinging(LIS_rc,"RAPID router output alarm")
 
@@ -247,9 +248,6 @@ do JS_RpM=1,IS_RpM
 !call rapid_read_Vlat_file                    ! Yeosang Yoon, not use this subroutine within LIS
 call rapid_Vlat(nc,nr,runsf,runsb)            ! Yeosang Yoon, read LSM runoff and transfer to boundary inflows
 
-! temp
-!call rapid_Vlat(nc,nr,lsmfile)
-
 call VecCopy(ZV_Vlat,ZV_Qlat,ierr)            !Qlat=Vlat
 call VecScale(ZV_Qlat,1/ZS_TauR,ierr)         !Qlat=Qlat/TauR
 
@@ -311,22 +309,6 @@ call VecCopy(ZV_QoutR,ZV_QoutinitR,ierr)
 call VecCopy(ZV_VR,ZV_VinitR,ierr)
 
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!Yeosang Yoon, for LIS restart file
-!- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!alarmCheck = LIS_isAlarmRinging(LIS_rc,"RAPID router restart alarm")
-!if(alarmCheck.or.(LIS_rc%endtime ==1)) then
-   call VecScatterBegin(vecscat,ZV_QoutR,ZV_SeqZero,                              &
-                        INSERT_VALUES,SCATTER_FORWARD,ierr)
-   call VecScatterEnd(vecscat,ZV_QoutR,ZV_SeqZero,                                &
-                        INSERT_VALUES,SCATTER_FORWARD,ierr)
-   if(rank==0) then
-      call VecGetArrayF90(ZV_SeqZero,ZV_pointer,ierr)
-      rst_Qout=ZV_pointer
-      call VecRestoreArrayF90(ZV_SeqZero,ZV_pointer,ierr)
-   endif
-!endif
-
-!- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !write outputs
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if(alarmCheck) then
@@ -338,9 +320,22 @@ if(alarmCheck) then
 endif
 
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!Yeosang Yoon, for RAPID restart file
+!- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+call VecScatterBegin(vecscat,ZV_QoutR,ZV_SeqZero,                              &
+                     INSERT_VALUES,SCATTER_FORWARD,ierr)
+call VecScatterEnd(vecscat,ZV_QoutR,ZV_SeqZero,                                &
+                     INSERT_VALUES,SCATTER_FORWARD,ierr)
+if(rank==0) then
+   call VecGetArrayF90(ZV_SeqZero,ZV_pointer,ierr)
+   RAPID_routing_struc(n)%rst_Qout=ZV_pointer
+   call VecRestoreArrayF90(ZV_SeqZero,ZV_pointer,ierr)
+endif
+
+!- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !Update netCDF location
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if (rank==0) IV_nc_start(2)=IV_nc_start(2)+1
+!if (rank==0) IV_nc_start(2)=IV_nc_start(2)+1
 !do not comment out if writing directly from the routing subroutine
 
 

@@ -8,7 +8,7 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
-#include <petsc/finclude/petsc.h>
+
 module RAPID_routingMod
 !BOP
 ! 
@@ -27,7 +27,7 @@ module RAPID_routingMod
 ! 
 ! !USES: 
   use ESMF
-  
+ 
   implicit none
   
   PRIVATE
@@ -44,18 +44,7 @@ module RAPID_routingMod
   type, public :: RAPID_routing_dec
      
      real             :: dt
- ! === Undefined Values ==================================
      integer          :: imis                   !! real undefined value
-! === River sequence ====================================
-     integer, allocatable :: seqx(:)       !1D sequence horizontal
-     integer, allocatable :: seqy(:)       !1D sequence vertical
-     integer, allocatable :: seqx_glb(:)
-     integer, allocatable :: seqy_glb(:)
-     !integer              :: nseqriv       !length of 1D sequnece for river
-     integer              :: nseqall       !length of 1D sequnece for river and mouth
-     integer, allocatable :: sindex(:,:)     !2-D sequence index
- ! === Outputs ==========================================
-     real,     allocatable :: rst_Qout(:)      ! instantaneous flow for LIS restart file
 
      character*100    :: rstfile
      integer          :: numout
@@ -63,7 +52,7 @@ module RAPID_routingMod
      real             :: outInterval 
      real             :: rstInterval
      real             :: routingInterval
-     character*20     :: startMode
+     character*20     :: startmode
 
      logical          :: bQinit       ! initial flow
      logical          :: bQfinal      ! write final flow
@@ -90,7 +79,8 @@ module RAPID_routingMod
      integer          :: n_riv_bas    ! number of river basins  
      integer          :: n_wei_table  ! number of reach in weight table file
   
-     logical          :: initCheck    ! for rapid_init   
+     logical          :: initCheck    ! for rapid_init
+     real,allocatable :: rst_Qout(:)  ! instantaneous flow for LIS restart file   
   end type RAPID_routing_dec
 
   type(RAPID_routing_dec), allocatable :: RAPID_routing_struc(:)
@@ -108,8 +98,6 @@ contains
     use LIS_timeMgrMod
     use LIS_logMod
     use LIS_routingMod    
-    use LIS_mpiMod
-    use petsc
         
     integer              :: n 
     integer              :: ftn 
@@ -327,14 +315,11 @@ contains
     ! checks the size of static data for RAPID
     do n=1, LIS_rc%nnest
        call RAPID_check_domain_size(n)
-       !RAPID_routing_struc(n)%n_riv_tot=203330
-       !RAPID_routing_struc(n)%n_riv_bas=203330
-       !RAPID_routing_struc(n)%n_wei_table=419937
     enddo
 
-    ! for LIS restart
+    ! for RAPID restart
     do n=1, LIS_rc%nnest
-       allocate(RAPID_routing_struc(n)%rst_Qout(RAPID_routing_struc(n)%n_riv_tot))
+       allocate(RAPID_routing_struc(n)%rst_Qout(RAPID_routing_struc(n)%n_riv_bas))
        RAPID_routing_struc(n)%rst_Qout=0
     enddo
      

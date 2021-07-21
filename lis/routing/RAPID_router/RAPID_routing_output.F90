@@ -39,76 +39,7 @@ subroutine RAPID_routing_output(n)
   logical               :: open_stats
   logical               :: alarmCheck
 
-#if 0
-  alarmCheck = .false. 
-  if ( LIS_rc%time >= LIS_histData(n)%time ) then
-!------------------------------------------------------------------
-! Number of variables to be outputted from Noah LSM 
-!------------------------------------------------------------------
-  if ( LIS_rc%wsingle .ne. 1 ) then 
-!------------------------------------------------------------------
-! Writes bundled output
-!------------------------------------------------------------------
-     if(trim(LIS_rc%wopt).ne."none") then
-        if(LIS_rc%output_at_specifictime.eq.1) then 
-           if(LIS_histData(n)%month.eq.-1) then 
-              mo = LIS_rc%mo
-           else
-              mo = LIS_histData(n)%month
-           endif
-           if(LIS_histData(n)%day.eq.-1) then 
-              da = LIS_rc%da
-           else
-              da = LIS_histData(n)%day
-           endif
+! use rapid_write_Qout_file.F90
 
-           if(LIS_rc%mo.eq.mo.and.&
-                LIS_rc%da.eq.da.and.&
-                LIS_rc%hr.eq.LIS_histData(n)%hour.and.&
-                LIS_rc%mn.eq.LIS_histData(n)%min.and.&
-                LIS_rc%ss.eq.LIS_histData(n)%sec) then 
-              alarmCheck = .true. 
-           endif
-        else
-           alarmCheck = LIS_isAlarmRinging(LIS_rc,&
-                "RAPID router output alarm")
-        endif
-        if(alarmCheck) then 
-
-           open_stats = .false.
-           if(LIS_masterproc) then 
-              RAPID_routing_struc(n)%numout=RAPID_routing_struc(n)%numout+1    
-              call LIS_create_output_directory('ROUTING')
-
-!-----------------------------------------------------------------------
-! Open statistical output file
-!-----------------------------------------------------------------------
-              if(RAPID_routing_struc(n)%fileopen.eq.0)then
-                 call LIS_create_stats_filename(n, name,'RAPID_routerstats')
-                 RAPID_routing_struc(n)%fileopen=1
-                 open_stats = .true.
-              endif
-           endif
-
-           call LIS_create_output_filename(n, filename, &
-                model_name='ROUTING', &
-                writeint=RAPID_routing_struc(n)%outInterval)
-
-!-----------------------------------------------------------------------
-! Write Output 
-!-----------------------------------------------------------------------
-           ! Grib expects soil layers to be in cm.
-           ! lyrthk = (/100.0,300.0,600.0,1000.0/) mm.
-
-           call LIS_writeModelOutput(n,filename, name, open_stats,  &
-                outInterval=RAPID_routing_struc(n)%outInterval,     &
-                nsoillayers = 1,lyrthk = (/1.0/), nsoillayers2 = 1, &
-                group=2)
-                         
-        endif
-     endif
-  endif
-endif
-#endif
 
 end subroutine RAPID_routing_output

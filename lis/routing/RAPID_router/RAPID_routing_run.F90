@@ -58,8 +58,6 @@ subroutine RAPID_routing_run(n)
   real,   allocatable   :: gtmp2(:)
   integer               :: count1 ,c,r,ntiles,t,gid,stid,tid,l
 
-  !temp
-  character*200         :: lsm_filename
 ! _______________________________________________
 
   alarmCheck = LIS_isAlarmRinging(LIS_rc, "RAPID router model alarm")
@@ -154,12 +152,8 @@ subroutine RAPID_routing_run(n)
      call LIS_create_output_filename(n,qout_filename,model_name='ROUTING', &
              writeint=RAPID_routing_struc(n)%outInterval)
 
-     ! output file name (LSM)
-     call LIS_create_output_filename(n,lsm_filename,model_name='SURFACEMODEL', &
-             writeint=RAPID_routing_struc(n)%outInterval)
-
      ! run RAPID
-     call RAPID_model_main (RAPID_routing_struc(n)%bQinit,RAPID_routing_struc(n)%bQfinal,RAPID_routing_struc(n)%bV,               &
+     call RAPID_model_main (n,RAPID_routing_struc(n)%bQinit,RAPID_routing_struc(n)%bQfinal,RAPID_routing_struc(n)%bV,             &
                             RAPID_routing_struc(n)%bhum,RAPID_routing_struc(n)%bfor,RAPID_routing_struc(n)%bdam,                  &
                             RAPID_routing_struc(n)%binfluence,RAPID_routing_struc(n)%buq,                                         &
                             RAPID_routing_struc(n)%run_opt,RAPID_routing_struc(n)%routing_opt,RAPID_routing_struc(n)%phi_opt,     &
@@ -169,8 +163,7 @@ subroutine RAPID_routing_run(n)
                             RAPID_routing_struc(n)%kfile,RAPID_routing_struc(n)%xfile,                                            &
                             RAPID_routing_struc(n)%nmlfile,qout_filename,                                                         &
                             LIS_rc%gnc(n),LIS_rc%gnr(n),surface_runoff,baseflow,RAPID_routing_struc(n)%initCheck,                 &
-                            RAPID_routing_struc(n)%rst_Qout,RAPID_routing_struc(n)%startMode,                                     &
-                            RAPID_routing_struc(n)%dt,RAPID_routing_struc(n)%routingInterval,lsm_filename)
+                            RAPID_routing_struc(n)%dt,RAPID_routing_struc(n)%routingInterval)
 
      deallocate(surface_runoff)
      deallocate(baseflow)
