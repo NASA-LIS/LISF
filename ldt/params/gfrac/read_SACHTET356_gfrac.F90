@@ -15,10 +15,10 @@
 ! !REVISION HISTORY:
 !  25 Jul 2005: Sujay Kumar;  Initial Specification
 !  12 Feb 2013: K. Arsenault; Modified for use with SACHTET greenness parameter
-!  19 Jul 2021: Eric Kemp; Disabled maskarray argument
+!  21 Jul 2021: Eric Kemp; Disabled maskarray argument (not used)
 !
 ! !INTERFACE:
- subroutine read_SACHTET356_gfrac(n, array)
+subroutine read_SACHTET356_gfrac(n, array)
 
 ! !USES:
   use ESMF
@@ -64,7 +64,7 @@
   if (.not. file_exists) then
      write(LDT_logunit,*) "[ERR] Greenness map ", &
           trim(LDT_gfrac_struc(n)%gfracFile), " not found."
-     write(LDT_logunit,*) "Program stopping ..."
+     write(LDT_logunit,*) "[ERR] Program stopping ..."
      call LDT_endrun
   endif
   select case ( LDT_gfrac_struc(n)%gfrac_gridtransform )
@@ -76,14 +76,13 @@
           "[ERR] The spatial transform option selected for SAC-HTET "
      write(LDT_logunit,*) &
           "  greenness file is not recognized nor recommended."
-     write(LDT_logunit,*) "  Please select for now:  none "
-     write(LDT_logunit,*) "Program stopping ..."
+     write(LDT_logunit,*) "[ERR] Please select for now:  none "
+     write(LDT_logunit,*) "[ERR] Program stopping ..."
      call LDT_endrun
   end select
 
   call LDT_transform_xmrgparam( n, LDT_rc%lnc(n), LDT_rc%lnr(n),     &
            LDT_rc%gridDesc(n,:), LDT_gfrac_struc(n)%gfracfile, &
            LDT_rc%udef, array )
-
 
 end subroutine read_SACHTET356_gfrac
