@@ -234,7 +234,6 @@ contains
    character*100, allocatable   :: gfracdir(:)
    character*140, allocatable   :: gfracfile(:)
    character*20,  allocatable   :: gfracInterval(:)
-   real, allocatable :: tmpvalue(:,:)
 ! _____________________________________________________________
 
    gfrac_select = .false. 
@@ -464,10 +463,6 @@ contains
 
          !- Read multi-file monthly clim greenness fraction: 
             else
-               ! EMK TEST
-               allocate(tmpvalue(LDT_rc%lnc(n),LDT_rc%lnr(n)))
-               tmpvalue = LDT_gfrac_struc(n)%gfrac%value(:,:,k)
-
                do k = 1, LDT_gfrac_struc(n)%gfrac%vlevels
 
                   if( trim(LDT_gfrac_struc(n)%gfrac%source) == "SACHTET.3.5.6" ) then
@@ -490,7 +485,6 @@ contains
                       n, &
                       LDT_gfrac_struc(n)%gfrac%value(:,:,k) &
                       )
-                  deallocate(tmpvalue) ! EMK TEST
                   write(LDT_logunit,*) "Done reading "//trim(gfracfile(n))
 
                enddo
