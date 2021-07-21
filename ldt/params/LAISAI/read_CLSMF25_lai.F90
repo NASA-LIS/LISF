@@ -32,26 +32,26 @@ subroutine read_CLSMF25_lai(n, array)
 
   implicit none
 
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   real,    intent(inout) :: array(LDT_rc%lnc(n),LDT_rc%lnr(n),12)
   !real, optional, intent(inout) :: maskarray(LDT_rc%lnc(n),LDT_rc%lnr(n))
 
 ! !DESCRIPTION:
-!  This subroutine retrieves the leaf area index (LAI) climatology for the 
-!  specified month and returns the values for Catchment F2.5 LSM. 
-!  
+!  This subroutine retrieves the leaf area index (LAI) climatology for the
+!  specified month and returns the values for Catchment F2.5 LSM.
+!
 !  The arguments are:
 !  \begin{description}
 !  \item[n]
 !   time index (month or quarter)
 !  \item[array]
-!   output field with the retrieved LAI 
+!   output field with the retrieved LAI
 !  \end{description}
 !
-!EOP      
+!EOP
   integer :: ftn
-  integer :: c,r,k
+  integer :: c, r, k
   integer :: month
   integer :: glpnr, glpnc, gr, gc
   real    :: param_grid(20)
@@ -70,22 +70,23 @@ subroutine read_CLSMF25_lai(n, array)
    glpnc = nint((param_grid(8)-param_grid(5))/param_grid(9)) + 1
 
    inquire(file=trim(LDT_laisai_struc(n)%laifile), exist=file_exists)
-   if(.not.file_exists) then 
-      write(LDT_logunit,*) "LAI map ",trim(LDT_laisai_struc(n)%laifile)," not found"
-      write(LDT_logunit,*) "Program stopping ..."
+   if (.not. file_exists) then
+      write(LDT_logunit,*) "[ERR] LAI map ", &
+           trim(LDT_laisai_struc(n)%laifile)," not found"
+      write(LDT_logunit,*) "[ERR] Program stopping ..."
       call LDT_endrun
    endif
-   
+
    ftn = LDT_getNextUnitNumber()
    open(ftn, file=trim(LDT_laisai_struc(n)%laifile), &
         form="unformatted",status='old' )
-   
+
    !- Read LAI from global file:
    allocate( tmparray(glpnc,glpnr,12) )
    tmparray = LDT_rc%udef
-   
+
    do month = 1, 12
-      read( ftn ) ( tmpreal(k), k=1,LDT_rc%nmaskpts(n) )
+      read( ftn ) ( tmpreal(k), k=1, LDT_rc%nmaskpts(n) )
 
       k = 0
 ! - For future subsetted domains:
@@ -95,8 +96,8 @@ subroutine read_CLSMF25_lai(n, array)
 ! - For now - complete domains:
       do r = 1, glpnr
          do c = 1, glpnc
-            if( LDT_rc%global_mask(c,r) > 0. ) then
-               
+            if ( LDT_rc%global_mask(c,r) > 0. ) then
+
               k = k + 1
               if( tmpreal(k) < 0 ) then
                  tmparray(c,r,month) = LDT_rc%udef
@@ -104,7 +105,7 @@ subroutine read_CLSMF25_lai(n, array)
                  tmparray(c,r,month) = tmpreal(k)
               endif
            endif
-           if( tmparray(c,r,month) < 0.01 ) tmparray(c,r,month) = 0.01
+           if ( tmparray(c,r,month) < 0.01 ) tmparray(c,r,month) = 0.01
 
          end do
       enddo
@@ -112,8 +113,8 @@ subroutine read_CLSMF25_lai(n, array)
    !- Subset domain:
       do r = 1, LDT_rc%lnr(n)
          do c = 1, LDT_rc%lnc(n)
-            call ij_to_latlon(LDT_domain(n)%ldtproj,float(c),float(r),&
-                              rlat(c,r),rlon(c,r))
+            call ij_to_latlon(LDT_domain(n)%ldtproj, float(c), float(r),&
+                              rlat(c,r), rlon(c,r))
             gr = nint((rlat(c,r)-param_grid(4))/param_grid(10))+1
             gc = nint((rlon(c,r)-param_grid(5))/param_grid(9))+1
             array(c,r,month) = tmparray(gc,gr,month)
