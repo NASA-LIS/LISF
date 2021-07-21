@@ -18,9 +18,9 @@
 //  greenness fraction data
 //
 //EOP
-#include<stdio.h>
-#include<stdlib.h>
-#include<stdarg.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "ftn_drv.h"
@@ -81,8 +81,8 @@ void FTN(registersetgfracattribs)(char *j, void (*func)(), int len)
     // create node
 
     len1 = len + 1; // ensure that there is space for terminating null
-    pnode=(struct gfracsetnode*) malloc(sizeof(struct gfracsetnode));
-    pnode->name = (char*) calloc(len1,sizeof(char));
+    pnode = (struct gfracsetnode*) malloc(sizeof(struct gfracsetnode));
+    pnode->name = (char*) calloc(len1, sizeof(char));
     strncpy(pnode->name, j, len);
     pnode->func = func;
     pnode->next = NULL;
@@ -227,6 +227,7 @@ void FTN(readgfrac)(char *j, int *n, float *array)
             printf("****************Error****************************\n");
         }
     }
+    //EMK Removed third argument, which isn't used by Fortran routines.
     //current->func(n,array,marray);
     current->func(n, array);
 }
