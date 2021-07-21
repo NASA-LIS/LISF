@@ -2,7 +2,6 @@
 !Subroutine - rapid_Vlat
 !*******************************************************************************
 subroutine rapid_Vlat(nc,nr,runsf,runsb)
-!subroutine rapid_Vlat(nc,nr,lsmfile)
 !PURPOSE
 !This coupler allows to convert runoff information from a land surface model
 !to a volume of water entering RAPID river reaches.
@@ -23,17 +22,15 @@ use rapid_var, only :                                              &
 
 implicit none
 
-!*******************************************************************************
+!-------------------------------------------------------------------------------
 !Declaration of variables
-!*******************************************************************************
+!-------------------------------------------------------------------------------
 PetscInt                               :: ncid, var_runsf, var_runsb ! variables for netcdf
 
 ! Runoff data are in kg/m2 accumulated over a time step
 PetscInt, intent(in)                   :: nc, nr
 real                                   :: runsf(nc,nr)   ! surface runoff
 real                                   :: runsb(nc,nr)   ! subsurface runoff
-!PetscScalar,dimension(:,:),allocatable :: runsf                   ! surface runoff
-!PetscScalar,dimension(:,:),allocatable :: runsb                   ! subsurface runoff
 
 PetscInt                               :: nreach_new
 PetscInt                               :: col, row                !
@@ -46,33 +43,7 @@ PetscScalar                            :: m3_riv_np
 PetscInt            :: eof, status
 PetscInt            :: i,j,k
 
-! temp
-!character(len=200), intent(in)       :: lsmfile
-
-!*******************************************************************************
-
 !-------------------------------------------------------------------------------
-!Read runoff file
-!-------------------------------------------------------------------------------
-#if 0
-allocate(runsf(nc,nr))
-allocate(runsb(nc,nr))
-
-runsf(1:nc,1:nr)=0
-runsb(1:nc,1:nr)=0
-
-! open the file. NF90_NOWRITE tells netCDF we want read-only access to the file
-status=nf90_open(trim(lsmfile), NF90_NOWRITE, ncid)
-
-! get the varid of the data variable, based on its name
-status=nf90_inq_varid(ncid,'Qs_inst', var_runsf)
-status=nf90_inq_varid(ncid,'Qsb_inst', var_runsb)
-! read the data.
-status=nf90_get_var(ncid, var_runsf, runsf)
-status=nf90_get_var(ncid, var_runsb, runsb)
-! close the file, freeing all resources.
-status=nf90_close(ncid)
-#endif
 
 !-------------------------------------------------------------------------------
 ! Obtain a new subset of data & Calculate water inflows
