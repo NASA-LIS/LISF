@@ -409,8 +409,10 @@ contains
          rc = LVT_create_subdirs(len_trim(LVT_rc%output_dir), &
               trim(LVT_rc%output_dir))
          if (rc .ne. 0) then
-            write(LVT_logunit,*)'[WARN] Cannot create directory ', &
+            write(LVT_logunit,*)'[ERR] Cannot create directory ', &
                  trim(LVT_rc%output_dir)
+            write(LVT_logunit,*)'[ERR] Program will stop'
+            call LVT_endrun()
          end if
       end if
 
@@ -555,8 +557,10 @@ contains
          rc = LVT_create_subdirs(len_trim(LVT_rc%output_dir), &
               trim(LVT_rc%output_dir))
          if (rc .ne. 0) then
-            write(LVT_logunit,*)'[WARN] Cannot create directory ', &
+            write(LVT_logunit,*)'[ERR] Cannot create directory ', &
                  trim(LVT_rc%output_dir)
+            write(LVT_logunit,*)'[ERR] Program will stop'
+            call LVT_endrun()
          end if
       end if
 
