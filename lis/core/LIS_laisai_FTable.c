@@ -10,59 +10,51 @@
 //BOP
 //
 // !MODULE: LIS_laisai_FTable
-//  
+//
 // !DESCRIPTION:
-//  Function table registries for storing the interface 
-//  implementations for managing different sources of 
+//  Function table registries for storing the interface
+//  implementations for managing different sources of
 //  LAI and SAI data
 //EOP
-#include<stdio.h>
-#include<stdlib.h>
-#include<stdarg.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include<string.h>
 
 #include "ftn_drv.h"
-struct laisetnode
-{ 
-  char *name;
-  void (*func)(int*);
+struct laisetnode {
+    char *name;
+    void (*func)(int*);
+    struct laisetnode* next;
+};
+struct laisetnode* laiset_table = NULL;
 
-  struct laisetnode* next;
-} ;
-struct laisetnode* laiset_table = NULL; 
+struct saisetnode {
+    char *name;
+    void (*func)(int*);
+    struct saisetnode* next;
+};
+struct saisetnode* saiset_table = NULL;
 
-struct saisetnode
-{ 
-  char *name;
-  void (*func)(int*);
+struct laireadnode {
+    char *name;
+    void (*func)(int*, float*, float*, float*, float*);
+    struct laireadnode* next;
+};
+struct laireadnode* lairead_table = NULL;
 
-  struct saisetnode* next;
-} ;
-struct saisetnode* saiset_table = NULL; 
-
-struct laireadnode
-{ 
-  char *name;
-  void (*func)(int*,void*, void*, float*, float*);
-
-  struct laireadnode* next;
-} ;
-struct laireadnode* lairead_table = NULL; 
-
-struct saireadnode
-{ 
-  char *name;
-  void (*func)(int*,void*,float*);
-
-  struct saireadnode* next;
-} ;
-struct saireadnode* sairead_table = NULL; 
+struct saireadnode {
+    char *name;
+    void (*func)(int*, void*, float*);
+    struct saireadnode* next;
+};
+struct saireadnode* sairead_table = NULL;
 //BOP
 // !ROUTINE: registerlaisetup
 // \label{registerlaisetup}
 //
 // !INTERFACE:
-void FTN(registerlaisetup)(char *j,void (*func)(int*), int len)
+void FTN(registerlaisetup)(char *j, void (*func)(int*), int len)
 // !DESCRIPTION:
 // Makes an entry in the registry for the routine to
 // setup lai data reading routines
@@ -76,29 +68,27 @@ void FTN(registerlaisetup)(char *j,void (*func)(int*), int len)
 //  \end{description}
 //EOP
 {
-  int len1;
-  struct laisetnode* current;
-  struct laisetnode* pnode; 
-  // create node
-  
-  len1 = len + 1; // ensure that there is space for terminating null
-  pnode=(struct laisetnode*) malloc(sizeof(struct laisetnode));
-  pnode->name=(char*) calloc(len1,sizeof(char));
-  strncpy(pnode->name,j,len);
-  pnode->func = func;
-  pnode->next = NULL; 
+    int len1;
+    struct laisetnode* current;
+    struct laisetnode* pnode;
+    // create node
 
-  if(laiset_table == NULL){
-    laiset_table = pnode;
-  }
-  else{
-    current = laiset_table; 
-    while(current->next!=NULL){
-      current = current->next;
+    len1 = len + 1; // ensure that there is space for terminating null
+    pnode = (struct laisetnode*) malloc(sizeof(struct laisetnode));
+    pnode->name = (char*) calloc(len1,sizeof(char));
+    strncpy(pnode->name, j, len);
+    pnode->func = func;
+    pnode->next = NULL;
+
+    if (laiset_table == NULL) {
+        laiset_table = pnode;
+    } else {
+        current = laiset_table;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = pnode;
     }
-    current->next = pnode; 
-  }
-
 }
 
 //BOP
@@ -121,19 +111,19 @@ void FTN(laisetup)(char *j, int *n, int len)
 //  \end{description}
 //EOP
 {
-  struct laisetnode* current;
-  
-  current = laiset_table;
-  while(strcmp(current->name,j)!=0){
-    current = current->next;
-    if(current==NULL) {
-      printf("****************Error****************************\n"); 
-      printf("laisetup routine for  %s is not defined\n",j); 
-      printf("program will seg fault.....\n"); 
-      printf("****************Error****************************\n"); 
+    struct laisetnode* current;
+
+    current = laiset_table;
+    while (strcmp(current->name, j) != 0) {
+        current = current->next;
+        if(current == NULL) {
+            printf("****************Error****************************\n");
+            printf("laisetup routine for  %s is not defined\n",j);
+            printf("program will seg fault.....\n");
+            printf("****************Error****************************\n");
+        }
     }
-  }
-  current->func(n); 
+    current->func(n);
 }
 
 //BOP
@@ -141,7 +131,7 @@ void FTN(laisetup)(char *j, int *n, int len)
 // \label{registersaisetup}
 //
 // !INTERFACE:
-void FTN(registersaisetup)(char *j,void (*func)(int*), int len)
+void FTN(registersaisetup)(char *j, void (*func)(int*), int len)
 // !DESCRIPTION:
 // Makes an entry in the registry for the routine to
 // setup sai data reading routines
@@ -155,29 +145,27 @@ void FTN(registersaisetup)(char *j,void (*func)(int*), int len)
 //  \end{description}
 //EOP
 {
-  int len1;
-  struct saisetnode* current;
-  struct saisetnode* pnode; 
-  // create node
-  
-  len1 = len + 1; // ensure that there is space for terminating null
-  pnode=(struct saisetnode*) malloc(sizeof(struct saisetnode));
-  pnode->name=(char*) calloc(len1,sizeof(char));
-  strncpy(pnode->name,j,len);
-  pnode->func = func;
-  pnode->next = NULL; 
+    int len1;
+    struct saisetnode* current;
+    struct saisetnode* pnode;
+    // create node
 
-  if(saiset_table == NULL){
-    saiset_table = pnode;
-  }
-  else{
-    current = saiset_table; 
-    while(current->next!=NULL){
-      current = current->next;
+    len1 = len + 1; // ensure that there is space for terminating null
+    pnode = (struct saisetnode*) malloc(sizeof(struct saisetnode));
+    pnode->name = (char*) calloc(len1,sizeof(char));
+    strncpy(pnode->name, j, len);
+    pnode->func = func;
+    pnode->next = NULL;
+
+    if (saiset_table == NULL) {
+        saiset_table = pnode;
+    } else {
+        current = saiset_table;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = pnode;
     }
-    current->next = pnode; 
-  }
-
 }
 
 //BOP
@@ -200,19 +188,19 @@ void FTN(saisetup)(char *j, int *n, int len)
 //  \end{description}
 //EOP
 {
-  struct saisetnode* current;
-  
-  current = saiset_table;
-  while(strcmp(current->name,j)!=0){
-    current = current->next;
-    if(current==NULL) {
-      printf("****************Error****************************\n"); 
-      printf("saisetup routine for  %s is not defined\n",j); 
-      printf("program will seg fault.....\n"); 
-      printf("****************Error****************************\n"); 
+    struct saisetnode* current;
+
+    current = saiset_table;
+    while (strcmp(current->name, j) != 0) {
+        current = current->next;
+        if (current == NULL) {
+            printf("****************Error****************************\n");
+            printf("saisetup routine for  %s is not defined\n",j);
+            printf("program will seg fault.....\n");
+            printf("****************Error****************************\n");
+        }
     }
-  }
-  current->func(n); 
+    current->func(n);
 }
 
 
@@ -221,43 +209,43 @@ void FTN(saisetup)(char *j, int *n, int len)
 // \label{registerreadlai}
 //
 // !INTERFACE:
-void FTN(registerreadlai)(char *j, void (*func)(int*, void*, void*, float*, float*),int len)
-//  
-// !DESCRIPTION: 
-//  Creates an entry in the registry for the routines to 
+void FTN(registerreadlai)(char *j,
+                          void (*func)(int*, float*, float*, float*, float*),
+                          int len)
+//
+// !DESCRIPTION:
+//  Creates an entry in the registry for the routines to
 //  read LAI data
-// 
-//  The arguments are: 
+//
+//  The arguments are:
 //  \begin{description}
 //   \item[j]
 //    index of the LAI source
 //   \end{description}
 //
 //EOP
-{ 
-  int len1;
-  struct laireadnode* current;
-  struct laireadnode* pnode; 
-  // create node
-  
-  len1 = len + 1; // ensure that there is space for terminating null
-  pnode=(struct laireadnode*) malloc(sizeof(struct laireadnode));
-  pnode->name=(char*) calloc(len1,sizeof(char));
-  strncpy(pnode->name,j,len);
-  pnode->func = func;
-  pnode->next = NULL; 
+{
+    int len1;
+    struct laireadnode* current;
+    struct laireadnode* pnode;
+    // create node
 
-  if(lairead_table == NULL){
-    lairead_table = pnode;
-  }
-  else{
-    current = lairead_table; 
-    while(current->next!=NULL){
-      current = current->next;
+    len1 = len + 1; // ensure that there is space for terminating null
+    pnode = (struct laireadnode*) malloc(sizeof(struct laireadnode));
+    pnode->name = (char*) calloc(len1, sizeof(char));
+    strncpy(pnode->name, j, len);
+    pnode->func = func;
+    pnode->next = NULL;
+
+    if (lairead_table == NULL) {
+        lairead_table = pnode;
+    } else {
+        current = lairead_table;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = pnode;
     }
-    current->next = pnode; 
-  }
-
 }
 
 //BOP
@@ -265,12 +253,13 @@ void FTN(registerreadlai)(char *j, void (*func)(int*, void*, void*, float*, floa
 // \label{readlai}
 //
 // !INTERFACE:
-void FTN(readlai)(char *j, int *n, void *time1, void *time2, float *array1, float *array2, int len)
-//  
-// !DESCRIPTION: 
-// Invokes the routine from the registry to read LAI data. 
-// 
-//  The arguments are: 
+void FTN(readlai)(char *j, int *n, float *wt1, float *wt2,
+                  float *array1, float *array2)
+//
+// !DESCRIPTION:
+// Invokes the routine from the registry to read LAI data.
+//
+//  The arguments are:
 //  \begin{description}
 //   \item[n]
 //    index of the nest
@@ -284,73 +273,71 @@ void FTN(readlai)(char *j, int *n, void *time1, void *time2, float *array1, floa
 //   time of found file
 //   \end{description}
 //EOP
-{ 
-  struct laireadnode* current;
-  
-  current = lairead_table;
-  while(strcmp(current->name,j)!=0){
-    current = current->next;
-    if(current==NULL) {
-      printf("****************Error****************************\n"); 
-      printf("readlai routine for  %s is not defined\n",j); 
-      printf("program will seg fault.....\n"); 
-      printf("****************Error****************************\n"); 
+{
+    struct laireadnode* current;
+
+    current = lairead_table;
+    while (strcmp(current->name, j) != 0) {
+        current = current->next;
+        if (current == NULL) {
+            printf("****************Error****************************\n");
+            printf("readlai routine for  %s is not defined\n",j);
+            printf("program will seg fault.....\n");
+            printf("****************Error****************************\n");
+        }
     }
-  }
-  current->func(n,time1,time2,array1,array2);
+    current->func(n, wt1, wt2, array1, array2);
 }
 //BOP
 // !ROUTINE: registerreadsai
 // \label{registerreadsai}
-//  
+//
 // !INTERFACE:
 void FTN(registerreadsai)(char *j, void (*func)(int*, void*, float*), int len)
-// !DESCRIPTION: 
-//  Creates an entry in the registry for the routines to 
+// !DESCRIPTION:
+//  Creates an entry in the registry for the routines to
 //  read SAI data
 //
-//  The arguments are: 
+//  The arguments are:
 //  \begin{description}
 //   \item[j]
 //    index of the SAI source
 //   \end{description}
 //EOP
-{ 
-  int len1;
-  struct saireadnode* current;
-  struct saireadnode* pnode; 
-  // create node
-  
-  len1 = len + 1; // ensure that there is space for terminating null
-  pnode=(struct saireadnode*) malloc(sizeof(struct saireadnode));
-  pnode->name=(char*) calloc(len1,sizeof(char));
-  strncpy(pnode->name,j,len);
-  pnode->func = func;
-  pnode->next = NULL; 
+{
+    int len1;
+    struct saireadnode* current;
+    struct saireadnode* pnode;
+    // create node
 
-  if(sairead_table == NULL){
-    sairead_table = pnode;
-  }
-  else{
-    current = sairead_table; 
-    while(current->next!=NULL){
-      current = current->next;
+    len1 = len + 1; // ensure that there is space for terminating null
+    pnode = (struct saireadnode*) malloc(sizeof(struct saireadnode));
+    pnode->name = (char*) calloc(len1, sizeof(char));
+    strncpy(pnode->name, j, len);
+    pnode->func = func;
+    pnode->next = NULL;
+
+    if (sairead_table == NULL){
+        sairead_table = pnode;
+    } else {
+        current = sairead_table;
+        while (current->next != NULL ){
+            current = current->next;
+        }
+        current->next = pnode;
     }
-    current->next = pnode; 
-  }
-
 }
 //BOP
 // !ROUTINE: readsai
 // \label{readsai}
-//  
+//
 // !INTERFACE:
 void FTN(readsai)(char *j, int *n, void *time, float* array, int len)
 //
-// !DESCRIPTION: 
-// Invokes the routine from the registry to read SAI data. 
+// !DESCRIPTION:
+// Invokes the routine from the registry to read SAI data.
 //
-//  The arguments are: 
+//  The arguments are:
 //  \begin{description}
 //   \item[n]
 //    index of nest
@@ -360,53 +347,22 @@ void FTN(readsai)(char *j, int *n, void *time, float* array, int len)
 //    time
 //  \item[array]
 //  pointer to the SAI data
-//   \end{description} 
+//   \end{description}
 //EOP
-{ 
-  struct saireadnode* current;
-  
-  current = sairead_table;
-  while(strcmp(current->name,j)!=0){
-    current = current->next;
-    if(current==NULL) {
-      printf("****************Error****************************\n"); 
-      printf("readsai routing for %s is not defined\n",j); 
-      printf("program will seg fault.....\n"); 
-      printf("****************Error****************************\n"); 
+{
+    struct saireadnode* current;
+
+    current = sairead_table;
+    while (strcmp(current->name, j) != 0) {
+        current = current->next;
+        if (current == NULL) {
+            printf("****************Error****************************\n");
+            printf("readsai routing for %s is not defined\n",j);
+            printf("program will seg fault.....\n");
+            printf("****************Error****************************\n");
+        }
     }
-  }
-  current->func(n,time,array); 
+  current->func(n, time, array);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
