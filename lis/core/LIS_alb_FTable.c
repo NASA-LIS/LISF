@@ -33,7 +33,7 @@ struct albsetnode* albset_table = NULL;
 
 struct albreadnode {
     char *name;
-    void (*func)(int*, void*, void*, float*, float*);
+    void (*func)(int*, float*, float*, float*, float*);
     struct albreadnode* next;
 };
 struct albreadnode* albread_table = NULL;
@@ -43,7 +43,9 @@ struct albreadnode* albread_table = NULL;
 // \label{registeralbedosetup}
 //
 // !INTERFACE:
-void FTN(registeralbedosetup)(char *j, void (*func)(int*), int len)
+void FTN(registeralbedosetup)(char *j,
+                           void (*func)(int*, float*, float*, float*, float*),
+                           int len)
 // !DESCRIPTION:
 // Makes an entry in the registry for the routine to
 // setup albedo data reading routines
