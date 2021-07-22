@@ -44,7 +44,7 @@ struct albreadnode* albread_table = NULL;
 //
 // !INTERFACE:
 void FTN(registeralbedosetup)(char *j,
-                           void (*func)(int*, float*, float*, float*, float*),
+                           void (*func)(int*),
                            int len)
 // !DESCRIPTION:
 // Makes an entry in the registry for the routine to
@@ -125,8 +125,8 @@ void FTN(albedosetup)(char *j, int *n)
 //
 // !INTERFACE:
 void FTN(registerreadalbedo)(char *j,
-                             void (*func)(int*, void*, void*, float*, float*),
-                             int len)
+                            void (*func)(int*, float*, float*, float*, float*),
+                            int len)
 // !DESCRIPTION:
 // Creates an entry in the registry for the routine to
 // read albedo climatology data
