@@ -13,7 +13,7 @@
 !  \label{readconfig_WRF_AKdom}
 !
 ! !REVISION HISTORY:
-!  21 Jun 2021: K.R. Arsenault; Updated for different WRF output files
+!  21 Jun 2021: K.R. Arsenault; Updated for different WRF AK files
 !
 ! !INTERFACE:    
 subroutine readconfig_WRF_AKdom()
@@ -43,7 +43,6 @@ subroutine readconfig_WRF_AKdom()
   do n=1,LIS_rc%nnest    
      WRFAK_struc(n)%nest_id = 1
   enddo
-
 
   write(unit=LIS_logunit,fmt=*)'[INFO] Using WRF AK forcing'
 

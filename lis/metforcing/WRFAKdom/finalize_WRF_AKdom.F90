@@ -21,7 +21,7 @@ subroutine finalize_WRF_AKdom(findex)
   use WRF_AKdom_forcingMod, only : WRFAK_struc
 !
 ! !DESCRIPTION:
-!  Routine to cleanup WRF AK forcing related memory allocations.   
+!  Routine to cleanup WRF Alaska (AK) forcing related memory allocations.   
 !
 !  The arguments are: 
 !  \begin{description}
@@ -31,8 +31,9 @@ subroutine finalize_WRF_AKdom(findex)
 !EOP
   implicit none
   
-  integer   :: n
   integer   :: findex
+
+  integer   :: n
   
   deallocate(WRFAK_struc)
 

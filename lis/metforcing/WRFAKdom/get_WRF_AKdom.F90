@@ -57,13 +57,13 @@ subroutine get_WRF_AKdom(n,findex)
 !
 !EOP
   integer, parameter :: ndays = 10  ! # days to look back for forcing data
-  integer :: try, ferror
-  integer :: c,f,order
-  integer :: yr1,mo1,da1,hr1,mn1,ss1,doy1
-  integer :: yr2,mo2,da2,hr2,mn2,ss2,doy2
-  real*8  :: time1,time2,dumbtime1,dumbtime2
-  real    :: gmt1,gmt2,ts1,ts2
-  integer :: movetime      ! 1=move time 2 data into time 1
+  integer  :: try, ferror
+  integer  :: c,f,order
+  integer  :: yr1,mo1,da1,hr1,mn1,ss1,doy1
+  integer  :: yr2,mo2,da2,hr2,mn2,ss2,doy2
+  real*8   :: time1,time2,dumbtime1,dumbtime2
+  real     :: gmt1,gmt2,ts1,ts2
+  integer  :: movetime      ! 1=move time 2 data into time 1
   !===
 
   WRFAK_struc(n)%findtime1=0

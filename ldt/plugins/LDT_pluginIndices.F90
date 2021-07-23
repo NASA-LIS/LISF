@@ -140,6 +140,7 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_narrId         = "NARR"
    character*50, public,  parameter :: LDT_nam242Id       = "NAM242"
    character*50, public,  parameter :: LDT_wrfoutv2Id     = "WRFoutv2"
+   character*50, public,  parameter :: LDT_WRFakId        = "WRF AK"
    character*50, public,  parameter :: LDT_cmapId         = "CMAP"
 !   character*50, public,  parameter :: LDT_TRMM3B42RTId   = "TRMM 3B42RT"
    character*50, public,  parameter :: LDT_TRMM3B42V6Id   = "TRMM 3B42V6"

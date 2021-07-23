@@ -1,6 +1,6 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
-! Land Information System Framework (LDTF)
+! Land Information System Framework (LISF)
 ! Version 7.3
 !
 ! Copyright (c) 2020 United States Government as represented by the
