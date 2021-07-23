@@ -75,7 +75,7 @@ void FTN(registerlaisetup)(char *j, void (*func)(int*), int len)
 
     len1 = len + 1; // ensure that there is space for terminating null
     pnode = (struct laisetnode*) malloc(sizeof(struct laisetnode));
-    pnode->name = (char*) calloc(len1,sizeof(char));
+    pnode->name = (char*) calloc(len1, sizeof(char));
     strncpy(pnode->name, j, len);
     pnode->func = func;
     pnode->next = NULL;
@@ -152,7 +152,7 @@ void FTN(registersaisetup)(char *j, void (*func)(int*), int len)
 
     len1 = len + 1; // ensure that there is space for terminating null
     pnode = (struct saisetnode*) malloc(sizeof(struct saisetnode));
-    pnode->name = (char*) calloc(len1,sizeof(char));
+    pnode->name = (char*) calloc(len1, sizeof(char));
     strncpy(pnode->name, j, len);
     pnode->func = func;
     pnode->next = NULL;
