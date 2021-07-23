@@ -47,7 +47,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_gfscplId    = "GFS coupling"
    character*50, public,  parameter :: LIS_paramEstimRunId = "parameter estimation"
    character*50, public,  parameter :: LIS_smootherDAId    = "ensemble smoother"
-   character*50, public,  parameter :: LIS_forecastrunId      = "forecast"
+   character*50, public,  parameter :: LIS_forecastrunId   = "forecast"
 !-------------------------------------------------------------------------
 ! Domains
 !-------------------------------------------------------------------------
@@ -109,7 +109,7 @@ module LIS_pluginIndices
 !-------------------------------------------------------------------------
 ! Open water models
 !-------------------------------------------------------------------------
-   character*50, public,  parameter :: LIS_templateOpenWaterId    = "template open water"
+   character*50, public,  parameter :: LIS_templateOpenWaterId  = "template open water"
 
 !-------------------------------------------------------------------------
 ! Met forcings 
