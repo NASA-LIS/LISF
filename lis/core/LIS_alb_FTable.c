@@ -44,8 +44,8 @@ struct albreadnode* albread_table = NULL;
 //
 // !INTERFACE:
 void FTN(registeralbedosetup)(char *j,
-                           void (*func)(int*),
-                           int len)
+                              void (*func)(int*),
+                              int len)
 // !DESCRIPTION:
 // Makes an entry in the registry for the routine to
 // setup albedo data reading routines
