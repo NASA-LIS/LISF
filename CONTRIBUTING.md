@@ -1,6 +1,6 @@
 # Contribution Guidelines
 
-Welcome to the LISF repository! We are glad you are reading this. Thanks for taking the time to contribute!
+Welcome to the LISF repository! Thanks for taking the time to contribute! Please read this entire document *before* contributing.
 
 ## Table of Contents
 
@@ -35,7 +35,9 @@ If you plan to contribute a fix yourself, please [assign yourself to the Issue](
 
 ## Pull Requests
 
-We welcome contributions to LISF (e.g., new features, enhancements, bug fixes)! Before beginning to work on your contribution, please review our [Working with GitHub](https://github.com/NASA-LIS/LISF/blob/master/docs/working_with_github/working_with_github.adoc) document for more information about our GitHub practices and a step-by-step guide to submitting a Pull Request.
+We welcome Pull Requests to LISF that add new features, enhance existing capabilities, and fix bugs! **BUT**, we ask that you first open an Issue (and, before that, a Discussion) so that we are aware of your intentions and have an opportunity to provide our feedback.
+
+Before beginning to work on your contribution, please review our [Working with GitHub](https://github.com/NASA-LIS/LISF/blob/master/docs/working_with_github/working_with_github.adoc) document for more information about our GitHub practices and a step-by-step guide to submitting a Pull Request.
 
 **NOTE:** Please [link the relevant Issue to your Pull Request](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) so that it is automatically closed once the code is merged into the repository.
 
