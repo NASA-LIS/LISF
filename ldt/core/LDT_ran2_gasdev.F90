@@ -31,6 +31,8 @@
 
 module LDT_ran2_gasdev
   
+  use LDT_logMod
+
   implicit none
   
   private
@@ -149,9 +151,9 @@ contains
        end do
        iy=iv(1)
     else
-       write (*,*) 'init_randseed(): initialize by calling with rseed(1)<0'
-       write (*,*) 'STOPPING.'
-       stop       
+       write (LDT_logunit, *) 'init_randseed(): initialize by calling with rseed(1)<0'
+       write (LDT_logunit,*) 'STOPPING.'
+       call LDT_endrun()
     end if
     
     rseed(1)           = idum
