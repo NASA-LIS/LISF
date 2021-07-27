@@ -3228,6 +3228,22 @@ LIS restart source:   "LSM"
 Ensemble restart generation mode:   "upscale"
 ....
 
+`Ensemble restart generation sampling strategy:` specifies the sampling strategy
+for ensemble restart generation. Options are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none | Do not apply random sampling strategy
+|random sampling | Use random sampling strategy
+|===
+
+.Example _ldt.config_ entry
+....
+Ensemble restart generation sampling strategy:   "random sampling"
+....
+
 `Input restart filename:` specifies the name of the input restart file.
 
 .Example _ldt.config_ entry
