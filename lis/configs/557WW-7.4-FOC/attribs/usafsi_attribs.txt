@@ -1,5 +1,5 @@
 #nfields
 1  
 #varmin  varmax 
-SNODEP obs                            
+USAFSI obs                            
 0.	  10000.0
