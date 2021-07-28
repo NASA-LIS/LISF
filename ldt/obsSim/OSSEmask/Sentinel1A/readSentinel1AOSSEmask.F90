@@ -74,7 +74,7 @@ subroutine readSentinel1AOSSEmask(n)
 
      !subset data to the current day
      !index 1 in the data (october 1) is doy 274. The data repeats
-     !every 16 days.
+     !every 12 days.
      !ignoring leap years for now
 
      if(LDT_rc%doy.ge.274) then

@@ -12,7 +12,7 @@ module Sentinel1AOSSEmask_Mod
 !  for OSSEs
 !
 ! !REVISION HISTORY:
-!  02 Jul 2021    Sujay Kumar  Initial Specification
+!  14 Jul 2021    Rhae Sung Kim  Initial Specification
 !
 
   PRIVATE
@@ -118,6 +118,12 @@ contains
     elseif(datares.eq.5) then
        Sentinel1AOSSEmaskData%nc = 7200
        Sentinel1AOSSEmaskData%nr = 3600
+       run_dd(1) = -90.0
+       run_dd(2) = -180.0
+       run_dd(3) = 89.95
+       run_dd(4) = 179.95
+       run_dd(5) = 0.05
+       run_dd(6) = 0.05
        Sentinel1AOSSEmaskData%datares = 0.05
     elseif(datares.eq.25) then
        Sentinel1AOSSEmaskData%nc = 1440

@@ -95,12 +95,34 @@ contains
     endif
     
     if(datares.eq.1) then
-       AMSR2OSSEmaskData%nc = 36000
-       AMSR2OSSEmaskData%nr = 18000
+
+       cornerlat1 = max(-90.0,nint((LDT_rc%gridDesc(n,4)+90.0)/0.01)*0.01-&
+            90.0-5.0*0.01)
+       cornerlon1 = max(-180.0,nint((LDT_rc%gridDesc(n,5)+180.0)/0.01)*0.01-&
+            180.0-5.0*0.01)
+       cornerlat2 = min(89.99,nint((LDT_rc%gridDesc(n,7)+90.0)/0.01)*0.01-&
+            90.0+5.0*0.01)
+       cornerlon2 = min(179.99,nint((LDT_rc%gridDesc(n,8)+180.0)/0.01)*0.01-&
+            179.99+5.0*0.01)
+       run_dd(1) = cornerlat1
+       run_dd(2) = cornerlon1
+       run_dd(3) = cornerlat2
+       run_dd(4) = cornerlon2
+       run_dd(5) = 0.01
+       run_dd(6) = 0.01
+
+       AMSR2OSSEmaskData%nc = nint((cornerlon2-cornerlon1)/0.01)+1
+       AMSR2OSSEmaskData%nr = nint((cornerlat2-cornerlat1)/0.01)+1
        AMSR2OSSEmaskData%datares = 0.01
     elseif(datares.eq.5) then
        AMSR2OSSEmaskData%nc = 7200
        AMSR2OSSEmaskData%nr = 3600
+       run_dd(1) = -90.0
+       run_dd(2) = -180.0
+       run_dd(3) = 89.95
+       run_dd(4) = 179.95
+       run_dd(5) = 0.05
+       run_dd(6) = 0.05
        AMSR2OSSEmaskData%datares = 0.05
     elseif(datares.eq.25) then
        AMSR2OSSEmaskData%nc = 1440
