@@ -118,6 +118,12 @@ contains
     elseif(datares.eq.5) then
        TSMMOSSEmaskData%nc = 7200
        TSMMOSSEmaskData%nr = 3600
+       run_dd(1) = -90.0
+       run_dd(2) = -180.0
+       run_dd(3) = 89.95
+       run_dd(4) = 179.95
+       run_dd(5) = 0.05
+       run_dd(6) = 0.05
        TSMMOSSEmaskData%datares = 0.05
     elseif(datares.eq.25) then
        TSMMOSSEmaskData%nc = 1440
