@@ -65,10 +65,7 @@ If you are adding or modifying config entries, please update the appropriate con
 ## Resources
 
 * [LIS Website](https://lis.gsfc.nasa.gov/)
-* [How to Read LISF Documentation](https://github.com/NASA-LIS/LISF/tree/master/docs)
-* [LDT Users' Guide](https://github.com/NASA-LIS/LISF/blob/master/docs/LDT_users_guide/LDT_usersguide.adoc)
-* [LIS Users' Guide](https://github.com/NASA-LIS/LISF/blob/master/docs/LIS_users_guide/LIS_usersguide.adoc)
-* [LVT Users' Guide](https://github.com/NASA-LIS/LISF/blob/master/docs/LVT_users_guide/LVT_usersguide.adoc)
+* [LISF Documentation](https://github.com/NASA-LIS/LISF/tree/master/docs)
 * [Working with GitHub](https://github.com/NASA-LIS/LISF/blob/master/docs/working_with_github/working_with_github.adoc)
 * [How to Create a Testcase](https://github.com/NASA-LIS/LISF/blob/master/docs/howto_create_lis_testcases/howto_create_lis_testcases.adoc)
 
