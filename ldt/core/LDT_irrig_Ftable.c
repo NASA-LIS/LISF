@@ -63,13 +63,15 @@ void FTN(registerreadirrigtype)(char *j, void (*func)(int*, float*, int*), int l
 //  \end{description}
   //EOP
 { 
+  int len1;
   struct irrigtypenode* current;
   struct irrigtypenode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct irrigtypenode*) malloc(sizeof(struct irrigtypenode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
@@ -147,13 +149,15 @@ void FTN(registerreadirrigfrac)(char *j, void (*func)(int*, float*), int len)
   //EOP
 { 
 
+  int len1;
   struct irrigfracnode* current;
   struct irrigfracnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct irrigfracnode*) malloc(sizeof(struct irrigfracnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 

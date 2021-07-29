@@ -8,6 +8,14 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
+! Macros for tracing - Requires ESMF 7_1_0+
+#ifdef ESMF_TRACE
+#define TRACE_ENTER(region) call ESMF_TraceRegionEnter(region)
+#define TRACE_EXIT(region) call ESMF_TraceRegionExit(region)
+#else
+#define TRACE_ENTER(region)
+#define TRACE_EXIT(region)
+#endif
 module LIS_DAobservationsMod
 
 !BOP
@@ -31,6 +39,7 @@ module LIS_DAobservationsMod
 !
   use ESMF
   use LIS_coreMod
+  use LIS_domainMod, only : decompose_nx_ny, decompose_npes
   use LIS_logMod
   use LIS_mpiMod
   use map_utils
@@ -179,6 +188,7 @@ contains
     logical                  :: name_found
     character*20             :: alglist(10)
 
+    TRACE_ENTER("daobs_init")
     if(LIS_rc%ndas.gt.0) then 
 
        allocate(LIS_OBS_State(LIS_rc%nnest, LIS_rc%ndas))
@@ -286,6 +296,7 @@ contains
           endif
        enddo
     endif
+    TRACE_EXIT("daobs_init")
   end subroutine LIS_initDAobservations
 
 !BOP
@@ -587,10 +598,7 @@ contains
                 LIS_obs_domain(n,k)%gridtype = "none"
              endif
 
-             call LIS_quilt_obs_domain(n, k, map_proj, gnc, gnr,&
-                  lat(1,1), lon(1,1), lat(gnc,gnr), lon(gnc,gnr),&
-                  LIS_obs_domain(n,k)%dx, LIS_obs_domain(n,k)%dy,&
-                  LIS_obs_domain(n,k)%gridtype)
+             call LIS_quilt_obs_domain(n, k, gnc, gnr)
 
              allocate(locallat(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)))
              allocate(locallon(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)))
@@ -690,6 +698,8 @@ contains
                      LIS_rc%obs_lnr(k),LIS_obs_domain(n,k)%lisproj)
                 
              elseif(map_proj.eq."LAMBERT CONFORMAL") then      
+
+                LIS_rc%lis_obs_map_proj(k) = "lambert"
                 
                 ios = nf90_get_att(ftn, NF90_GLOBAL, 'TRUELAT1',&
                      LIS_obs_domain(n,k)%truelat1)
@@ -729,6 +739,8 @@ contains
                      LIS_obs_domain(n,k)%lisproj)
                 
              elseif(map_proj.eq."MERCATOR") then              
+
+                LIS_rc%lis_obs_map_proj(k) = "mercator"
                 
                 ios = nf90_get_att(ftn, NF90_GLOBAL, 'TRUELAT1',&
                      LIS_obs_domain(n,k)%truelat1)
@@ -763,6 +775,8 @@ contains
                      LIS_obs_domain(n,k)%lisproj)
              
              elseif(map_proj.eq."POLAR STEREOGRAPHIC") then              
+
+                LIS_rc%lis_obs_map_proj(k) = "polar"
                 
                 ios = nf90_get_att(ftn, NF90_GLOBAL, 'TRUELAT1',&
                      LIS_obs_domain(n,k)%truelat1)
@@ -800,6 +814,9 @@ contains
                      LIS_obs_domain(n,k)%lisproj)
                 
              elseif(map_proj.eq."EASE V2") then 
+
+                LIS_rc%lis_obs_map_proj(k) = "ease_v2"
+
                 LIS_rc%obs_gridDesc(k,1) = 9
                 LIS_rc%obs_gridDesc(k,2) = LIS_rc%obs_lnc(k)
                 LIS_rc%obs_gridDesc(k,3) = LIS_rc%obs_lnr(k)
@@ -838,6 +855,8 @@ contains
                      LIS_obs_domain(n,k)%lisproj)
 
              elseif(map_proj.eq."GAUSSIAN") then 
+
+                LIS_rc%lis_obs_map_proj(k) = "gaussian"
                 
                 ios = nf90_get_att(ftn, NF90_GLOBAL, 'NUMBER OF LAT CIRCLES',&
                      LIS_obs_domain(n,k)%nlatcircles)
@@ -867,6 +886,8 @@ contains
                 
              elseif(map_proj.eq."HRAP") then 
                 
+                LIS_rc%lis_obs_map_proj(k) = "hrap"
+
                 LIS_rc%obs_gridDesc(k,1) = 8
                 LIS_rc%obs_gridDesc(k,2) = LIS_rc%obs_lnc(k)
                 LIS_rc%obs_gridDesc(k,3) = LIS_rc%obs_lnr(k)
@@ -893,6 +914,8 @@ contains
                 
              elseif(map_proj.eq."UTM") then 
                 
+                LIS_rc%lis_obs_map_proj(k) = "utm"
+
                 LIS_rc%obs_gridDesc(k,1) = 7
                 LIS_rc%obs_gridDesc(k,2) = LIS_rc%obs_lnc(k)
                 LIS_rc%obs_gridDesc(k,3) = LIS_rc%obs_lnr(k)
@@ -1203,24 +1226,15 @@ contains
 ! !ROUTINE: LIS_quilt_obs_domain
 ! \label{LIS_quilt_obs_domain}
 ! 
-! !INTERFACE: 
-  subroutine LIS_quilt_obs_domain(n,k, map_proj, nc, nr, &
-       minlat, minlon, maxLat, maxLon, dx, dy,gridtype)
+! !INTERFACE:
+  subroutine LIS_quilt_obs_domain(n,k, nc, nr)
 ! !USES:     
-    use easeV2_utils
+
 ! !ARGUMENTS: 
     integer,          intent(in)  :: n
     integer,          intent(in)  :: k
-    character(len=*), intent(in)  :: map_proj
     integer,          intent(in)  :: nc
     integer,          intent(in)  :: nr
-    real,             intent(in)  :: minLat
-    real,             intent(in)  :: minLon
-    real,             intent(in)  :: maxLat
-    real,             intent(in)  :: maxLon
-    real,             intent(in)  :: dx
-    real,             intent(in)  :: dy
-    character(len=*), intent(in)  :: gridtype
 ! 
 ! !DESCRIPTION: 
 ! This routine generates the quilted domain extents and sizes based on the 
@@ -1229,215 +1243,91 @@ contains
 ! 
 !EOP
 
-    integer              :: ips, ipe, jps, jpe
-    integer              :: Px, Py, P
-    integer              :: mytask_x, mytask_y
-    integer              :: i, j,ierr
-    integer              :: deltas
-    integer              :: ews_halo_ind
-    integer              :: ewe_halo_ind
-    integer              :: nss_halo_ind
-    integer              :: nse_halo_ind
-    integer              :: ews_ind
-    integer              :: ewe_ind
-    integer              :: nss_ind
-    integer              :: nse_ind
-    real                 :: cornerlat1, cornerlat2
-    real                 :: cornerlon1, cornerlon2
+   integer :: ips, ipe, jps, jpe
+   integer :: i, j,ierr
+   integer :: deltas
+   integer :: ews_halo_ind
+   integer :: ewe_halo_ind
+   integer :: nss_halo_ind
+   integer :: nse_halo_ind
+   integer :: ews_ind
+   integer :: ewe_ind
+   integer :: nss_ind
+   integer :: nse_ind
 
-    real                 :: c1,r1, c2, r2
-    real                 :: c_min, r_min
-    integer              :: x, y
+   if ( LIS_rc%decompose_by_processes ) then
+      call decompose_npes(n, nc, nr, ips, ipe, jps, jpe)
+   else
+      call decompose_nx_ny(nc, nr, ips, ipe, jps, jpe)
+   endif
 
-    if(map_proj.eq."EQUIDISTANT CYLINDRICAL") then 
-!       cornerlat1 = LIS_rc%gridDesc(n,4) 
-!       cornerlon1 = LIS_rc%gridDesc(n,5) 
-!       cornerlat2 = LIS_rc%gridDesc(n,7) 
-!       cornerlon2 = LIS_rc%gridDesc(n,8) 
+   ews_halo_ind = max(ips-LIS_rc%halox, 1)
+   ewe_halo_ind = min(ipe+LIS_rc%halox, nc)
+   nss_halo_ind = max(jps-LIS_rc%haloy, 1)
+   nse_halo_ind = min(jpe+LIS_rc%haloy, nr)
 
-       cornerlat1 = LIS_rc%minLat(n)
-       cornerlon1 = LIS_rc%minLon(n)
-       cornerlat2 = LIS_rc%maxLat(n)
-       cornerlon2 = LIS_rc%maxLon(n)
-       
-       cornerlat1 = max(floor((cornerlat1 - minLat)/dy)*dy + minLat,minLat)
-       cornerlat2 = min(ceiling((cornerlat2 - minLat)/dy)*dy + minLat,maxLat)
+   ews_ind = ips
+   ewe_ind = min(ipe, nc)
+   nss_ind = jps
+   nse_ind = min(jpe, nr)
 
-       cornerlon1 = max(floor((cornerlon1 - minLon)/dx)*dx + minLon,minLon)
-       cornerlon2 = min(ceiling((cornerlon2 - minLon)/dx)*dx + minLon,maxLon)
+   LIS_rc%obs_lnc(k) = ewe_halo_ind - ews_halo_ind + 1
+   LIS_rc%obs_lnr(k) = nse_halo_ind - nss_halo_ind + 1
 
-       ews_halo_ind = nint((cornerlon1 - minLon)/dx)+1
-       ewe_halo_ind = nint((cornerlon2 - minLon)/dx)+1
+   LIS_rc%obs_lnc_red(k)= ewe_ind - ews_ind + 1
+   LIS_rc%obs_lnr_red(k)= nse_ind - nss_ind + 1
 
-       nss_halo_ind = nint((cornerlat1 - minLat)/dy)+1
-       nse_halo_ind = nint((cornerlat2 - minLat)/dy)+1
+   write(unit=LIS_logunit,fmt=*)'[INFO] local obs domain',':(', &
+                                LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k),')'
+   write(unit=LIS_logunit,fmt=*)'[INFO] local obs domain without halo',':(', &
+                                LIS_rc%obs_lnc_red(k),LIS_rc%obs_lnr_red(k),')'
+   write(unit=LIS_logunit,fmt=*)'[INFO] running obs domain',':(',nc,nr,')'
 
-! For now, no obs halos supported
-       ews_ind = ews_halo_ind
-       ewe_ind = ewe_halo_ind
-       nse_ind = nse_halo_ind
-       nss_ind = nss_halo_ind
-
-    elseif(map_proj.eq."EASE V2") then 
-       
-       cornerlat1 = LIS_rc%minLat(n)
-       cornerlon1 = LIS_rc%minLon(n)
-       cornerlat2 = LIS_rc%maxLat(n)
-       cornerlon2 = LIS_rc%maxLon(n)
-
-       cornerlat1 = min(cornerlat1,minLat)
-       cornerlat2 = max(cornerlat2,maxLat)
-
-       cornerlon1 = min(cornerlon1,minLon)
-       cornerlon2 = max(cornerlon2,maxLon)
-
-       call easeV2_convert(trim(gridtype),cornerlat1,cornerlon1,c1,r1)
-       x = floor(c1)
-       y = ceiling(r1)
-
-       call easeV2_inverse (trim(gridtype), float(x), float(y), &
-            cornerlat1, cornerlon1)
-
-       call easeV2_convert(trim(gridtype),cornerlat2,cornerlon2,c2,r2)
-       x = ceiling(c2)
-       y = floor(r2)
-
-       call easeV2_inverse (trim(gridtype), float(x), float(y), &
-            cornerlat2, cornerlon2)
-
-       cornerlat1 = max(cornerlat1, minLat)
-       cornerlat2 = min(cornerlat2, maxLat)
-      
-       cornerlon1 = max(cornerlon1,minlon)
-       cornerlon2 = min(cornerlon2,maxlon)
-
-       call easeV2_convert(trim(gridtype),cornerlat1,cornerlon1,c1,r1)
-       call easeV2_convert(trim(gridtype),cornerlat2,cornerlon2,c2,r2)
-
-       call easeV2_convert(trim(gridtype),minLat,minLon,c_min,r_min)
-
-       ews_halo_ind = c1-c_min+1
-       ewe_halo_ind = c2-c_min+1
-
-       nss_halo_ind = r_min-r1+1
-       nse_halo_ind = r_min-r2+1
-       
-! For now, no obs halos supported
-       ews_ind = ews_halo_ind
-       ewe_ind = ewe_halo_ind
-       nse_ind = nse_halo_ind
-       nss_ind = nss_halo_ind
-
-    endif
-
-!     mytask_x = mod( LIS_localPet , LIS_rc%npesx)
-!     mytask_y = LIS_localPet / LIS_rc%npesx
-
-!     j = 1
-!     ips = -1
-!     do i=1, nc+1
-!        call LIS_mpDecomp(i,j,1,nc+1,1,nr+1,LIS_rc%npesx, LIS_rc%npesy,Px,Py,P)
-!        
-!        if(Px.eq. mytask_x) then 
-!           ipe = i 
-!           if(ips.eq.-1) ips = i 
-!        endif
-!     enddo
-     
-!     i = 1
-!     jps = -1
-!     do j=1, nr+1
-!        call LIS_mpDecomp(i,j,1,nc+1,1,nr+1,LIS_rc%npesx,LIS_rc%npesy, &
-!             Px, Py, P)
-!        if(Py.eq.mytask_y) then 
-!           jpe = j
-!           if(jps.eq.-1) jps = j 
-!        endif
-!     enddo
-
-!     ews_halo_ind = max(ips-LIS_rc%obs_halox(k), 1)
-!     ewe_halo_ind = min(ipe+LIS_rc%obs_halox(k), nc)
-!     nss_halo_ind = max(jps-LIS_rc%obs_haloy(k), 1)
-!     nse_halo_ind = min(jpe+LIS_rc%obs_haloy(k), nr)
-
-!     ews_ind = ips
-!     ewe_ind = min(ipe, nc)
-!     nss_ind = jps
-!     nse_ind = min(jpe, nr)
-
-     LIS_rc%obs_lnc(k) = ewe_halo_ind-&
-          ews_halo_ind+1
-     LIS_rc%obs_lnr(k) = nse_halo_ind-&
-          nss_halo_ind+1
-
-     LIS_rc%obs_lnc_red(k)= ewe_ind-&
-          ews_ind+1
-     LIS_rc%obs_lnr_red(k)= nse_ind-&
-          nss_ind+1
-
-     write(LIS_logunit,*)'[INFO] local obs domain',':(',&
-          LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k),')'
-     write(LIS_logunit,*)'[INFO] local obs domain without halo',':(',&
-          LIS_rc%obs_lnc_red(k),LIS_rc%obs_lnr_red(k),')'
-     write(LIS_logunit,*)'[INFO] running obs domain',':(',nc,nr,')'
-
-     deltas = LIS_rc%obs_lnc_red(k)*LIS_rc%obs_lnr_red(k)
+   deltas = LIS_rc%obs_lnc_red(k)*LIS_rc%obs_lnr_red(k)
 
 #if (defined SPMD)
+   call MPI_ALLGATHER(deltas,1,MPI_INTEGER,LIS_obs_deltas(k,:),1,MPI_INTEGER,   &
+                      LIS_mpi_comm,ierr)
+   call MPI_ALLGATHER(ews_ind,1,MPI_INTEGER,LIS_ews_obs_ind(k,:),1,MPI_INTEGER, &
+                      LIS_mpi_comm,ierr)
+   call MPI_ALLGATHER(nss_ind,1,MPI_INTEGER,LIS_nss_obs_ind(k,:),1,MPI_INTEGER, &
+                      LIS_mpi_comm,ierr)
+   call MPI_ALLGATHER(ewe_ind,1,MPI_INTEGER,LIS_ewe_obs_ind(k,:),1,MPI_INTEGER, &
+                      LIS_mpi_comm,ierr)
+   call MPI_ALLGATHER(nse_ind,1,MPI_INTEGER,LIS_nse_obs_ind(k,:),1,MPI_INTEGER, &
+                      LIS_mpi_comm,ierr)
 
-     call MPI_ALLGATHER(deltas,1,MPI_INTEGER,LIS_obs_deltas(k,:),&
-          1,MPI_INTEGER,LIS_mpi_comm,ierr)
-
-     call MPI_ALLGATHER(ews_ind,1,MPI_INTEGER,&
-          LIS_ews_obs_ind(k,:),1,MPI_INTEGER,&
-          LIS_mpi_comm,ierr)
-     call MPI_ALLGATHER(nss_ind,1,MPI_INTEGER,&
-          LIS_nss_obs_ind(k,:),1,MPI_INTEGER,&
-          LIS_mpi_comm,ierr)
-     call MPI_ALLGATHER(ewe_ind,1,MPI_INTEGER,&
-          LIS_ewe_obs_ind(k,:),1,MPI_INTEGER,&
-          LIS_mpi_comm,ierr)
-     call MPI_ALLGATHER(nse_ind,1,MPI_INTEGER,&
-          LIS_nse_obs_ind(k,:),1,MPI_INTEGER,&
-          LIS_mpi_comm,ierr)
-
-     call MPI_ALLGATHER(ews_halo_ind,1,MPI_INTEGER,&
-          LIS_ews_obs_halo_ind(k,:),1,MPI_INTEGER,&
-          LIS_mpi_comm,ierr)
-     call MPI_ALLGATHER(nss_halo_ind,1,MPI_INTEGER,&
-          LIS_nss_obs_halo_ind(k,:),1,MPI_INTEGER,&
-          LIS_mpi_comm,ierr)
-     call MPI_ALLGATHER(ewe_halo_ind,1,MPI_INTEGER,&
-          LIS_ewe_obs_halo_ind(k,:),1,MPI_INTEGER,&
-          LIS_mpi_comm,ierr)
-     call MPI_ALLGATHER(nse_halo_ind,1,MPI_INTEGER,&
-          LIS_nse_obs_halo_ind(k,:),1,MPI_INTEGER,&
-          LIS_mpi_comm,ierr)
+   call MPI_ALLGATHER(ews_halo_ind,1,MPI_INTEGER,LIS_ews_obs_halo_ind(k,:),1, &
+                      MPI_INTEGER,LIS_mpi_comm,ierr)
+   call MPI_ALLGATHER(nss_halo_ind,1,MPI_INTEGER,LIS_nss_obs_halo_ind(k,:),1, &
+                      MPI_INTEGER,LIS_mpi_comm,ierr)
+   call MPI_ALLGATHER(ewe_halo_ind,1,MPI_INTEGER,LIS_ewe_obs_halo_ind(k,:),1, &
+                      MPI_INTEGER,LIS_mpi_comm,ierr)
+   call MPI_ALLGATHER(nse_halo_ind,1,MPI_INTEGER,LIS_nse_obs_halo_ind(k,:),1, &
+                      MPI_INTEGER,LIS_mpi_comm,ierr)
 #else
-     LIS_ews_obs_ind(k,:) = ews_ind
-     LIS_nss_obs_ind(k,:) = nss_ind
-     LIS_ewe_obs_ind(k,:) = ewe_ind
-     LIS_nse_obs_ind(k,:) = nse_ind
+   LIS_obs_deltas(k,:)  = deltas
+   LIS_ews_obs_ind(k,:) = ews_ind
+   LIS_nss_obs_ind(k,:) = nss_ind
+   LIS_ewe_obs_ind(k,:) = ewe_ind
+   LIS_nse_obs_ind(k,:) = nse_ind
 
-     LIS_ews_obs_halo_ind(k,:) = ews_halo_ind
-     LIS_nss_obs_halo_ind(k,:) = nss_halo_ind
-     LIS_ewe_obs_halo_ind(k,:) = ewe_halo_ind
-     LIS_nse_obs_halo_ind(k,:) = nse_halo_ind
-
+   LIS_ews_obs_halo_ind(k,:) = ews_halo_ind
+   LIS_nss_obs_halo_ind(k,:) = nss_halo_ind
+   LIS_ewe_obs_halo_ind(k,:) = ewe_halo_ind
+   LIS_nse_obs_halo_ind(k,:) = nse_halo_ind
 #endif   
-     if(LIS_masterproc) then 
-        LIS_obs_offsets(k,0) = 0 
-        do i=1,LIS_npes-1
-           LIS_obs_offsets(k,i) = LIS_obs_offsets(k,i-1)+LIS_obs_deltas(k,i-1)
-        enddo
-     end if
+   if(LIS_masterproc) then
+      LIS_obs_offsets(k,0) = 0
+      do i=1,LIS_npes-1
+         LIS_obs_offsets(k,i) = LIS_obs_offsets(k,i-1)+LIS_obs_deltas(k,i-1)
+      enddo
+   end if
 #if (defined SPMD)
-     call MPI_BCAST(LIS_obs_offsets(k,:), LIS_npes, &
-          MPI_INTEGER,0, LIS_mpi_comm, ierr)
+   call MPI_BCAST(LIS_obs_offsets(k,:), LIS_npes, MPI_INTEGER,0, LIS_mpi_comm, ierr)
 #endif
 
    end subroutine LIS_quilt_obs_domain
-
 
 !BOP
 ! 
@@ -1466,10 +1356,12 @@ contains
 !EOP
     integer          :: k 
 
+    TRACE_ENTER("daobs_read")
     do k=1,LIS_rc%ndas
        call readDAObs(trim(LIS_rc%daset(k))//char(0), n, k, &
             LIS_OBS_State(n,k), LIS_OBS_Pert_State(n,k))
     enddo
+    TRACE_EXIT("daobs_read")
 
   end subroutine LIS_readDAobservations
 
@@ -1509,6 +1401,7 @@ contains
     type(ESMF_Field), allocatable :: obs_field(:)
     real,             pointer     :: obs_temp(:,:)
 
+    TRACE_ENTER("daobs_perturb")
     do k=1,LIS_rc%ndas
        if(LIS_rc%perturb_obs(k).ne."none") then 
           curr_time = float(LIS_rc%hr)*3600+60*float(LIS_rc%mn)+float(LIS_rc%ss)
@@ -1567,6 +1460,7 @@ contains
        endif
 
     enddo
+    TRACE_EXIT("daobs_perturb")
     
   end subroutine LIS_perturb_DAobservations
 
@@ -1619,6 +1513,7 @@ contains
     real                         :: obs_gvar(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
     integer                      :: iret
 
+    TRACE_ENTER("daobs_patch2obs")
     lis_gvar  = 0.0
     nlis_gvar = 0
 
@@ -1671,6 +1566,7 @@ contains
           endif
        enddo
     enddo
+    TRACE_EXIT("daobs_patch2obs")
 
   end subroutine LIS_convertPatchSpaceToObsSpace
 
@@ -1725,6 +1621,7 @@ contains
     integer                      :: iret
 
     ovar = LIS_rc%udef
+    TRACE_ENTER("daobs_patch2obsEns")
     do m=1,LIS_rc%nensem(n)
        lis_gvar  = 0.0
        nlis_gvar = 0
@@ -1781,6 +1678,7 @@ contains
        enddo
     enddo
  
+    TRACE_EXIT("daobs_patch2obsEns")
   end subroutine LIS_convertPatchSpaceToObsEnsSpace
 
 !BOP
@@ -1825,6 +1723,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
    integer :: ierr
    integer :: gdeltas
 
+   TRACE_ENTER("daobs_oneD2twoD")
    if ( LIS_masterproc ) then 
       allocate(gtmp1d(LIS_rc%obs_glbngrid(k)))
       allocate(gtmp(LIS_rc%obs_gnc(k), LIS_rc%obs_gnr(k)))
@@ -1860,6 +1759,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
       enddo
    endif
    deallocate(gtmp1d)
+   TRACE_EXIT("daobs_oneD2twoD")
   
  end subroutine LIS_gather_1dgrid_to_2dgrid_obs
 
@@ -1906,6 +1806,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
    integer :: gid
    integer :: ierr
 
+   TRACE_ENTER("daobs_gblTwo2locTwo")
    allocate(gtmp1d(LIS_rc%obs_gnc(k)*LIS_rc%obs_gnr(k)))
    gtmp1d = LIS_rc%udef
 
@@ -1935,6 +1836,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
           LIS_nss_obs_halo_ind(k,LIS_localPet+1): &
           LIS_nse_obs_halo_ind(k,LIS_localPet+1))
    deallocate(gtmp2d)
+   TRACE_EXIT("daobs_gblTwo2locTwo")
 
  end subroutine LIS_scatter_global_to_local_grid_obs
 
@@ -1968,6 +1870,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
 !  \end{description}
 !EOP
 
+    TRACE_ENTER("daobs_getDomRes")
     if ( LIS_rc%obs_gridDesc(k,1) .eq. 0 ) then
        dx = LIS_rc%obs_gridDesc(k,9)
        dy = LIS_rc%obs_gridDesc(k,10)
@@ -1991,6 +1894,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
        call LIS_endrun()
 
     endif
+    TRACE_EXIT("daobs_getDomRes")
   end subroutine LIS_getObsDomainResolutions
 
 !BOP
@@ -2031,6 +1935,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
     integer       :: c,r,t,count1, ierr
     integer       :: gdeltas
     
+    TRACE_ENTER("daobs_writeGridObs")
     if(LIS_masterproc) then 
        allocate(gtmp(LIS_rc%obs_gnc(k),LIS_rc%obs_gnr(k)))
        allocate(gtmp1(LIS_rc%obs_glbngrid(k)))
@@ -2069,6 +1974,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
        deallocate(gtmp)
     endif
     deallocate(gtmp1)
+    TRACE_EXIT("daobs_writeGridObs")
     
   end subroutine LIS_writevar_gridded_obs
 
@@ -2114,6 +2020,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
     integer :: odeltas
     integer :: i,c,r,l,t,count1
 
+    TRACE_ENTER("daobs_writeInnov")
     if(LIS_masterproc) then 
        allocate(gtmp(LIS_rc%obs_glbngrid(k)*LIS_rc%nobtypes(k)))
        allocate(gtmp1(LIS_rc%obs_gnc(k),LIS_rc%obs_gnr(k)))
@@ -2155,6 +2062,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
        deallocate(gtmp1)
     endif
     deallocate(gtmp)
+    TRACE_EXIT("daobs_writeInnov")
   end subroutine LIS_writevar_innov
 
 !BOP
@@ -2192,6 +2100,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
     integer             :: gid, tid, ntiles, stid
     integer             :: lmask
 
+    TRACE_ENTER("daobs_gblOne2lclOne")
     do t=1, LIS_rc%obs_ngrid(k)
        c = LIS_obs_domain(n,k)%col(t) + LIS_ews_obs_halo_ind(k,LIS_localPet+1)-1
        r = LIS_obs_domain(n,k)%row(t) + LIS_nss_obs_halo_ind(k,LIS_localPet+1)-1
@@ -2217,6 +2126,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
        enddo
     enddo
 #endif   
+    TRACE_EXIT("daobs_gblOne2lclOne")
 
   end subroutine LIS_convertObsVarToLocalSpace
 
@@ -2259,6 +2169,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
 
     integer                 :: c,r
 
+    TRACE_ENTER("daobs_checkObs")
     validObsFlag = 0 
     obs_2d       = LIS_rc%udef
 
@@ -2272,6 +2183,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
           end if
        end do
     end do
+    TRACE_EXIT("daobs_checkObs")
 
   end subroutine LIS_checkForValidObs
 

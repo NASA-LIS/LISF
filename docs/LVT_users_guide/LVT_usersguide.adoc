@@ -1,6 +1,6 @@
 = Land surface Verification Toolkit (LVT): LVT {lisfrevision} Users' Guide
-:revnumber: 1.6
-:revdate: 21 Dec 2020
+:revnumber: 1.8
+:revdate: 31 Mar 2021
 :doctype: book
 :sectnums:
 :toc:
@@ -16,7 +16,7 @@
 :githuburl: https://github.com
 :apachelicense: https://www.apache.org/licenses/LICENSE-2.0
 :lispublicrelease: Initial version - for LDT
-:lvttarball: LISF_public_release_7.3.0.tar.gz
+:lvttarball: LISF_public_release_7.3.1.tar.gz
 :emdash: —
 :endash: –
 :vertellipsis: ⋮
