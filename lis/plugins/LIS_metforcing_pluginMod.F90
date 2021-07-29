@@ -116,24 +116,12 @@ subroutine LIS_metforcing_plugin
    use gdas_forcingMod
 #endif
 
-#if ( defined MF_GEOS )
-   use geos_forcingMod
-#endif
-
 #if ( defined MF_ECMWF )
    use ecmwf_forcingMod
 #endif
 
-#if ( defined MF_ECMWF_REANALYSIS )
-   use ecmwfreanal_forcingMod
-#endif
-
 #if ( defined MF_PRINCETON )
    use princeton_forcingMod
-#endif
-
-#if ( defined MF_RHONE_AGG )
-   use rhoneAGG_forcingMod
 #endif
 
 #if ( defined MF_GLDAS )
@@ -142,10 +130,6 @@ subroutine LIS_metforcing_plugin
 
 #if ( defined MF_GFS )
    use gfs_forcingMod
-#endif
-
-#if ( defined MF_MERRA_LAND )
-   use merraland_forcingMod
 #endif
 
 #if ( defined MF_MERRA2 )
@@ -168,16 +152,8 @@ subroutine LIS_metforcing_plugin
    use AGRMET_forcingMod
 #endif
 
-#if ( defined MF_AGRMET_RADIATION_LATLON )
-   use agrrad_forcingMod
-#endif
-
 #if ( defined MF_AGRMET_RADIATION_POLAR_STEREOGRAPHIC )
    use agrradps_forcingMod
-#endif
-
-#if ( defined MF_GDAS_3D )
-   use gdas3d_forcingMod
 #endif
 
 #if ( defined MF_GEOS5_FORECAST )
@@ -186,10 +162,6 @@ subroutine LIS_metforcing_plugin
 
 #if ( defined MF_GEFS_FORECAST )
    use gefs_forcingMod
-#endif
-
-#if ( defined MF_GDAS_LSWG )
-   use gdasLSWG_forcingMod
 #endif
 
 #if ( defined MF_TRMM_3B42RT )
@@ -228,20 +200,12 @@ subroutine LIS_metforcing_plugin
    use cmap_forcingMod
 #endif
 
-#if ( defined MF_NLDAS1 )
-   use nldas1_forcingMod
-#endif
-
 #if ( defined MF_NLDAS2 )
    use nldas2_forcingMod
 #endif
 
 #if ( defined MF_NARR )
    use narr_forcingMod
-#endif
-
-#if ( defined MF_RDHM_3_5_6 )
-   use rdhm356_forcingMod 
 #endif
 
 #if ( defined MF_NAM242 )
@@ -272,18 +236,6 @@ subroutine LIS_metforcing_plugin
    use scan_forcingMod
 #endif
 
-#if ( defined MF_CEOP )
-   use ceop_forcingMod
-#endif
-
-#if ( defined MF_ARMS )
-   use arms_forcingMod
-#endif
-
-#if ( defined MF_ALMIPII )
-   use ALMIPII_forcingMod
-#endif
-
 #if ( defined MF_BONDVILLE )
    use Bondville_forcingMod
 #endif
@@ -292,32 +244,24 @@ subroutine LIS_metforcing_plugin
    use Loobos_forcingMod
 #endif
 
-#if ( defined MF_FASST_TEST )
-   use FASSTsingle_forcingMod
-#endif
-
 #if ( defined MF_SNOTEL )
    use snotel_forcingMod
-#endif
-
-#if ( defined MF_COOP )
-   use coop_forcingMod
 #endif
 
 #if ( defined MF_PALS_STATION_FORCING )
    use PALSmetdata_forcingMod
 #endif
 
-#if ( defined MF_PILDAS )
-   use pildas_forcingMod
-#endif
-
-#if ( defined MF_CAPA )
-   use capa_forcingMod
-#endif
-
 #if ( defined MF_WRFOUT )
    use WRFout_forcingMod
+#endif
+
+#if ( defined MF_WRFOUTV2 )
+   use WRFoutv2_forcingMod
+#endif
+
+#if ( defined MF_WRF_AK )
+   use WRF_AKdom_forcingMod
 #endif
 
 #if ( defined MF_GDAS_T1534 )
@@ -383,12 +327,6 @@ subroutine LIS_metforcing_plugin
    external finalize_gdas
 #endif
 
-#if ( defined MF_GEOS )
-   external get_geos
-   external timeinterp_geos
-   external finalize_geos
-#endif
-
 #if ( defined MF_ECMWF )
    external get_ecmwf
    external timeinterp_ecmwf
@@ -396,24 +334,11 @@ subroutine LIS_metforcing_plugin
    external reset_ecmwf
 #endif
 
-#if ( defined MF_ECMWF_REANALYSIS )
-   external get_ecmwfreanal
-   external timeinterp_ecmwfreanal
-   external finalize_ecmwfreanal
-   external reset_ecmwfreanal
-#endif
-
 #if ( defined MF_PRINCETON )
    external get_princeton
    external timeinterp_princeton
    external finalize_princeton
    external reset_princeton
-#endif
-
-#if ( defined MF_RHONE_AGG )
-   external get_rhoneAGG
-   external timeinterp_rhoneAGG
-   external finalize_rhoneAGG
 #endif
 
 #if ( defined MF_GLDAS )
@@ -426,13 +351,6 @@ subroutine LIS_metforcing_plugin
    external get_gfs
    external timeinterp_gfs
    external finalize_gfs
-#endif
-
-#if ( defined MF_MERRA_LAND )
-   external get_merraland
-   external timeinterp_merraland
-   external finalize_merraland
-   external reset_merraland
 #endif
 
 #if ( defined MF_MERRA2 )
@@ -468,22 +386,10 @@ subroutine LIS_metforcing_plugin
    external finalize_agrmet
 #endif
 
-#if ( defined MF_AGRMET_RADIATION_LATLON )
-   external get_agrrad
-   external timeinterp_agrrad
-   external finalize_agrrad
-#endif
-
 #if ( defined MF_AGRMET_RADIATION_POLAR_STEREOGRAPHIC )
    external get_agrradps
    external timeinterp_agrradps
    external finalize_agrradps
-#endif
-
-#if ( defined MF_GDAS_3D )
-   external get_gdas3d
-   external timeinterp_gdas3d
-   external finalize_gdas3d
 #endif
 
 #if ( defined MF_GEOS5_FORECAST )
@@ -498,12 +404,6 @@ subroutine LIS_metforcing_plugin
    external timeinterp_gefs
    external finalize_gefs
    external reset_gefs
-#endif
-
-#if ( defined MF_GDAS_LSWG )
-   external get_gdasLSWG
-   external timeinterp_gdasLSWG
-   external finalize_gdasLSWG
 #endif
 
 #if ( defined MF_TRMM_3B42RT )
@@ -540,6 +440,7 @@ subroutine LIS_metforcing_plugin
    external get_imerg
    external timeinterp_imerg
    external finalize_imerg
+   external reset_imerg
 #endif
 
 #if ( defined MF_CPC_STAGEII )
@@ -561,13 +462,6 @@ subroutine LIS_metforcing_plugin
    external finalize_cmap
 #endif
 
-#if ( defined MF_NLDAS1 )
-   external get_nldas1
-   external timeinterp_nldas1
-   external finalize_nldas1
-   external reset_nldas1
-#endif
-
 #if ( defined MF_NLDAS2 )
    external get_nldas2
    external timeinterp_nldas2
@@ -579,12 +473,6 @@ subroutine LIS_metforcing_plugin
    external get_narr
    external timeinterp_narr
    external finalize_narr
-#endif
-
-#if ( defined MF_RDHM_3_5_6 )
-   external get_rdhm356 
-   external timeinterp_rdhm356
-   external finalize_rdhm356
 #endif
 
 #if ( defined MF_NAM242 )
@@ -631,25 +519,6 @@ subroutine LIS_metforcing_plugin
    external finalize_scan
 #endif
 
-#if ( defined MF_CEOP )
-   external get_ceop
-   external timeinterp_ceop
-   external finalize_ceop
-#endif
-
-#if ( defined MF_ARMS )
-   external get_arms
-   external timeinterp_arms
-   external finalize_arms
-   external reset_arms
-#endif
-
-#if ( defined MF_ALMIPII )
-   external get_ALMIPII
-   external timeinterp_ALMIPII
-   external finalize_ALMIPII
-#endif
-
 #if ( defined MF_BONDVILLE )
    external get_Bondville
    external timeinterp_Bondville
@@ -662,22 +531,10 @@ subroutine LIS_metforcing_plugin
    external finalize_Loobos
 #endif
 
-#if ( defined MF_FASST_TEST )
-   external get_FASSTsingle
-   external timeinterp_FASSTsingle
-   external finalize_FASSTsingle
-#endif
-
 #if ( defined MF_SNOTEL )
    external get_snotel
    external timeinterp_snotel
    external finalize_snotel
-#endif
-
-#if ( defined MF_COOP )
-   external get_coop
-   external timeinterp_coop
-   external finalize_coop
 #endif
 
 #if ( defined MF_PALS_STATION_FORCING )
@@ -687,23 +544,25 @@ subroutine LIS_metforcing_plugin
    external reset_PALSmetdata
 #endif
 
-#if ( defined MF_PILDAS )
-   external get_pildas
-   external timeinterp_pildas
-   external finalize_pildas
-#endif
-
-#if ( defined MF_CAPA )
-   external get_capa
-   external timeinterp_capa
-   external finalize_capa
-#endif
-
 #if ( defined MF_WRFOUT )
    external get_WRFout
    external timeinterp_WRFout
    external reset_WRFout
    external finalize_WRFout
+#endif
+
+#if ( defined MF_WRFOUTV2 )
+   external get_WRFoutv2
+   external timeinterp_WRFoutv2
+   external reset_WRFoutv2
+   external finalize_WRFoutv2
+#endif
+
+#if ( defined MF_WRF_AK )
+   external get_WRF_AKdom
+   external timeinterp_WRF_AKdom
+   external reset_WRF_AKdom
+   external finalize_WRF_AKdom
 #endif
 
 #if ( defined MF_GDAS_T1534 )
@@ -815,14 +674,6 @@ subroutine LIS_metforcing_plugin
    call registerfinalmetforc(trim(LIS_gdasId)//char(0),finalize_gdas)
 #endif
 
-#if ( defined MF_GEOS )
-! - GEOS Forcing:
-   call registerinitmetforc(trim(LIS_geosId)//char(0),init_GEOS)
-   call registerretrievemetforc(trim(LIS_geosId)//char(0),get_geos)
-   call registertimeinterpmetforc(trim(LIS_geosId)//char(0),timeinterp_geos)
-   call registerfinalmetforc(trim(LIS_geosId)//char(0),finalize_geos)
-#endif
-
 #if ( defined MF_ECMWF )
 ! - ECMWF Forcing:
    call registerinitmetforc(trim(LIS_ecmwfId)//char(0),init_ECMWF)
@@ -830,17 +681,6 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_ecmwfId)//char(0),timeinterp_ecmwf)
    call registerfinalmetforc(trim(LIS_ecmwfId)//char(0),finalize_ecmwf)
    call registerresetmetforc(trim(LIS_ecmwfId)//char(0),reset_ecmwf)
-#endif
-
-#if ( defined MF_ECMWF_REANALYSIS )
-! - ECMWF Reanalysis:
-   call registerinitmetforc(trim(LIS_ecmwfreanalId)//char(0),init_ECMWFREANAL)
-   call registerretrievemetforc(trim(LIS_ecmwfreanalId)//char(0), &
-                                get_ecmwfreanal)
-   call registertimeinterpmetforc(trim(LIS_ecmwfreanalId)//char(0), &
-                                  timeinterp_ecmwfreanal)
-   call registerfinalmetforc(trim(LIS_ecmwfreanalId)//char(0), &
-                             finalize_ecmwfreanal)
 #endif
 
 #if ( defined MF_PRINCETON )
@@ -851,15 +691,6 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_princeton)
    call registerfinalmetforc(trim(LIS_princetonId)//char(0),finalize_princeton)
    call registerresetmetforc(trim(LIS_princetonId)//char(0),reset_princeton)
-#endif
-
-#if ( defined MF_RHONE_AGG )
-! - RHONE Forcing:
-   call registerinitmetforc(trim(LIS_rhoneAGGId)//char(0),init_RHONEAGG)
-   call registerretrievemetforc(trim(LIS_rhoneAGGId)//char(0),get_rhoneAGG)
-   call registertimeinterpmetforc(trim(LIS_rhoneAGGId)//char(0), &
-                                  timeinterp_rhoneAGG)
-   call registerfinalmetforc(trim(LIS_rhoneAGGId)//char(0),finalize_rhoneAGG)
 #endif
 
 #if ( defined MF_GLDAS )
@@ -877,16 +708,6 @@ subroutine LIS_metforcing_plugin
    call registerretrievemetforc(trim(LIS_gfsId)//char(0),get_gfs)
    call registertimeinterpmetforc(trim(LIS_gfsId)//char(0),timeinterp_gfs)
    call registerfinalmetforc(trim(LIS_gfsId)//char(0),finalize_gfs)
-#endif
-
-#if ( defined MF_MERRA_LAND )
-! - MERRA-Land Reanalysis Forcing:
-   call registerinitmetforc(trim(LIS_merralandId)//char(0),init_MERRALAND)
-   call registerretrievemetforc(trim(LIS_merralandId)//char(0),get_merraland)
-   call registertimeinterpmetforc(trim(LIS_merralandId)//char(0), &
-                                  timeinterp_merraland)
-   call registerresetmetforc(trim(LIS_merralandId)//char(0),reset_merraland)
-   call registerfinalmetforc(trim(LIS_merralandId)//char(0),finalize_merraland)
 #endif
 
 #if ( defined MF_MERRA2 )
@@ -937,15 +758,6 @@ subroutine LIS_metforcing_plugin
    call registerfinalmetforc(trim(LIS_agrmetId)//char(0),finalize_agrmet)
 #endif
 
-#if ( defined MF_AGRMET_RADIATION_LATLON )
-! - AGRMET Radiation:
-   call registerinitmetforc(trim(LIS_agrradId)//char(0),init_AGRRAD)
-   call registerretrievemetforc(trim(LIS_agrradId)//char(0),get_agrrad)
-   call registertimeinterpmetforc(trim(LIS_agrradId)//char(0), &
-                                  timeinterp_agrrad)
-   call registerfinalmetforc(trim(LIS_agrradId)//char(0),finalize_agrrad)
-#endif
-
 #if ( defined MF_AGRMET_RADIATION_POLAR_STEREOGRAPHIC )
 ! - AGRMET Polar Stereographic Radiation:
    call registerinitmetforc(trim(LIS_agrradpsId)//char(0),init_AGRRADPS)
@@ -953,15 +765,6 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_agrradpsId)//char(0), &
                                   timeinterp_agrradps)
    call registerfinalmetforc(trim(LIS_agrradpsId)//char(0),finalize_agrradps)
-#endif
-
-#if ( defined MF_GDAS_3D )
-! - GDAS profile data for CRTM 
-   call registerinitmetforc(trim(LIS_gdas3dId)//char(0),init_GDAS3D)
-   call registerretrievemetforc(trim(LIS_gdas3dId)//char(0),get_gdas3d)
-   call registertimeinterpmetforc(trim(LIS_gdas3dId)//char(0), &
-                                  timeinterp_gdas3d)
-   call registerfinalmetforc(trim(LIS_gdas3dId)//char(0),finalize_gdas3d)
 #endif
 
 #if ( defined MF_GEOS5_FORECAST )
@@ -982,15 +785,6 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_gefs)
    call registerfinalmetforc(trim(LIS_gefsId)//char(0),finalize_gefs)
    call registerresetmetforc(trim(LIS_gefsId)//char(0),reset_gefs)
-#endif
-
-#if ( defined MF_GDAS_LSWG )
-! - GDAS LSWG profiles
-   call registerinitmetforc(trim(LIS_gdasLSWGId)//char(0),init_gdasLSWG)
-   call registerretrievemetforc(trim(LIS_gdasLSWGId)//char(0),get_gdasLSWG)
-   call registertimeinterpmetforc(trim(LIS_gdasLSWGId)//char(0), &
-                                  timeinterp_gdasLSWG)
-   call registerfinalmetforc(trim(LIS_gdasLSWGId)//char(0),finalize_gdasLSWG)
 #endif
 
 #if ( defined MF_TRMM_3B42RT )
@@ -1050,6 +844,7 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_imergId)//char(0), &
                                   timeinterp_imerg)
    call registerfinalmetforc(trim(LIS_imergId)//char(0),finalize_imerg)
+   call registerresetmetforc(trim(LIS_imergId)//char(0),reset_imerg)
 #endif
 
 #if ( defined MF_CPC_STAGEII )
@@ -1080,16 +875,6 @@ subroutine LIS_metforcing_plugin
    call registerfinalmetforc(trim(LIS_cmapId)//char(0),finalize_cmap)
 #endif
 
-#if ( defined MF_NLDAS1 )
-! - NLDAS1 Forcing:
-   call registerinitmetforc(trim(LIS_nldas1Id)//char(0),init_NLDAS1)
-   call registerretrievemetforc(trim(LIS_nldas1Id)//char(0),get_nldas1)
-   call registertimeinterpmetforc(trim(LIS_nldas1Id)//char(0), &
-                                  timeinterp_nldas1)
-   call registerfinalmetforc(trim(LIS_nldas1Id)//char(0),finalize_nldas1)
-   call registerresetmetforc(trim(LIS_nldas1Id)//char(0),reset_nldas1)
-#endif
-
 #if ( defined MF_NLDAS2 )
 ! - NLDAS2 Forcing:
    call registerinitmetforc(trim(LIS_nldas2Id)//char(0),init_NLDAS2)
@@ -1107,15 +892,6 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_narrId)//char(0), &
                                   timeinterp_narr)
    call registerfinalmetforc(trim(LIS_narrId)//char(0),finalize_narr)
-#endif
-
-#if ( defined MF_RDHM_3_5_6 )
-! - RDHM 356 HRAP, added by Shugong Wang
-   call registerinitmetforc(trim(LIS_rdhm356Id)//char(0),init_rdhm356)
-   call registerretrievemetforc(trim(LIS_rdhm356Id)//char(0),get_rdhm356)
-   call registertimeinterpmetforc(trim(LIS_rdhm356Id)//char(0), &
-                                  timeinterp_rdhm356)
-   call registerfinalmetforc(trim(LIS_rdhm356Id)//char(0),finalize_rdhm356)
 #endif
 
 #if ( defined MF_NAM242 )
@@ -1185,34 +961,6 @@ subroutine LIS_metforcing_plugin
    call registerfinalmetforc(trim(LIS_scanId)//char(0),finalize_scan)
 #endif
 
-#if ( defined MF_CEOP )
-! - CEOP
-   call registerinitmetforc(trim(LIS_ceopId)//char(0),init_CEOP)
-   call registerretrievemetforc(trim(LIS_ceopId)//char(0),get_ceop)
-   call registertimeinterpmetforc(trim(LIS_ceopId)//char(0), &
-                                  timeinterp_ceop)
-   call registerfinalmetforc(trim(LIS_ceopId)//char(0),finalize_ceop)
-#endif
-
-#if ( defined MF_ARMS )
-! - ARMS station data
-   call registerinitmetforc(trim(LIS_armsId)//char(0),init_ARMS)
-   call registerretrievemetforc(trim(LIS_armsId)//char(0),get_arms)
-   call registertimeinterpmetforc(trim(LIS_armsId)//char(0), &
-                                  timeinterp_arms)
-   call registerfinalmetforc(trim(LIS_armsId)//char(0),finalize_arms)
-   call registerresetmetforc(trim(LIS_armsId)//char(0),reset_arms)
-#endif
-
-#if ( defined MF_ALMIPII )
-! - ALMIPII
-   call registerinitmetforc(trim(LIS_ALMIPIIId)//char(0),init_ALMIPII)
-   call registerretrievemetforc(trim(LIS_ALMIPIIId)//char(0),get_ALMIPII)
-   call registertimeinterpmetforc(trim(LIS_ALMIPIIId)//char(0), &
-                                  timeinterp_ALMIPII)
-   call registerfinalmetforc(trim(LIS_ALMIPIIId)//char(0),finalize_ALMIPII)
-#endif
-
 #if ( defined MF_BONDVILLE )
 ! - Noah3.1 Bondville test case
    call registerinitmetforc(trim(LIS_BondvilleId)//char(0),init_Bondville)
@@ -1231,17 +979,6 @@ subroutine LIS_metforcing_plugin
    call registerfinalmetforc(trim(LIS_LoobosId)//char(0),finalize_Loobos)
 #endif
 
-#if ( defined MF_FASST_TEST )
-! - FASST single point test case
-   call registerinitmetforc(trim(LIS_FASSTsingleId)//char(0),init_FASSTsingle)
-   call registerretrievemetforc(trim(LIS_FASSTsingleId)//char(0), &
-                                get_FASSTsingle)
-   call registertimeinterpmetforc(trim(LIS_FASSTsingleId)//char(0), &
-                                  timeinterp_FASSTsingle)
-   call registerfinalmetforc(trim(LIS_FASSTsingleId)//char(0), &
-                             finalize_FASSTsingle)
-#endif
-
 #if ( defined MF_SNOTEL )
 ! - SNOTEL Precipitation Forcing (added by Yuqiong Liu):
    call registerinitmetforc(trim(LIS_snotelId)//char(0),init_SNOTEL)
@@ -1249,15 +986,6 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_snotelId)//char(0), &
                                   timeinterp_snotel)
    call registerfinalmetforc(trim(LIS_snotelId)//char(0),finalize_snotel)
-#endif
-
-#if ( defined MF_COOP )
-! - COOP Precipitation Forcing (added by Yuqiong Liu):
-   call registerinitmetforc(trim(LIS_coopId)//char(0),init_COOP)
-   call registerretrievemetforc(trim(LIS_coopId)//char(0),get_coop)
-   call registertimeinterpmetforc(trim(LIS_coopId)//char(0), &
-                                  timeinterp_coop)
-   call registerfinalmetforc(trim(LIS_coopId)//char(0),finalize_coop)
 #endif
 
 #if ( defined MF_PALS_STATION_FORCING )
@@ -1273,24 +1001,6 @@ subroutine LIS_metforcing_plugin
                              reset_PALSmetdata)
 #endif
 
-#if ( defined MF_PILDAS )
-! - PILDAS station data
-   call registerinitmetforc(trim(LIS_pildasmetforcId)//char(0),init_pildas)
-   call registerretrievemetforc(trim(LIS_pildasmetforcId)//char(0),get_pildas)
-   call registertimeinterpmetforc(trim(LIS_pildasmetforcId)//char(0), &
-                                  timeinterp_pildas)
-   call registerfinalmetforc(trim(LIS_pildasmetforcId)//char(0),finalize_pildas)
-#endif
-
-#if ( defined MF_CAPA )
-! - CAPA precipitation
-   call registerinitmetforc(trim(LIS_capaId)//char(0),init_capa)
-   call registerretrievemetforc(trim(LIS_capaId)//char(0),get_capa)
-   call registertimeinterpmetforc(trim(LIS_capaId)//char(0), &
-                                  timeinterp_capa)
-   call registerfinalmetforc(trim(LIS_capaId)//char(0),finalize_capa)
-#endif
-
 #if ( defined MF_WRFOUT )
 ! - WRFout forcing
    call registerinitmetforc(trim(LIS_WRFoutId)//char(0),init_WRFout)
@@ -1299,6 +1009,26 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_WRFout)
    call registerfinalmetforc(trim(LIS_WRFoutId)//char(0),finalize_WRFout)
    call registerresetmetforc(trim(LIS_WRFoutId)//char(0),reset_WRFout)
+#endif
+
+#if ( defined MF_WRFOUTV2 )
+! - WRFout-4KM HiRes forcing
+   call registerinitmetforc(trim(LIS_WRFoutv2Id)//char(0),init_WRFoutv2)
+   call registerretrievemetforc(trim(LIS_WRFoutv2Id)//char(0),get_WRFoutv2)
+   call registertimeinterpmetforc(trim(LIS_WRFoutv2Id)//char(0), &
+                                  timeinterp_WRFoutv2)
+   call registerfinalmetforc(trim(LIS_WRFoutv2Id)//char(0),finalize_WRFoutv2)
+   call registerresetmetforc(trim(LIS_WRFoutv2Id)//char(0),reset_WRFoutv2)
+#endif
+
+#if ( defined MF_WRF_AK )
+! - WRFout-4KM Alaska-domain forcing
+   call registerinitmetforc(trim(LIS_WRFakId)//char(0),init_WRF_AKdom)
+   call registerretrievemetforc(trim(LIS_WRFakId)//char(0),get_WRF_AKdom)
+   call registertimeinterpmetforc(trim(LIS_WRFakId)//char(0), &
+                                  timeinterp_WRF_AKdom)
+   call registerfinalmetforc(trim(LIS_WRFakId)//char(0),finalize_WRF_AKdom)
+   call registerresetmetforc(trim(LIS_WRFakId)//char(0),reset_WRF_AKdom)
 #endif
 
 #if ( defined MF_GDAS_T1534 )

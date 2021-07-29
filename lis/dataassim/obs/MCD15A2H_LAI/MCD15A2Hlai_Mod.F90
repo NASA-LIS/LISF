@@ -310,11 +310,17 @@ contains
     
     do n=1,LIS_rc%nnest
 
-       cornerlat1 = max(-59.9978927, nint((LIS_rc%obs_gridDesc(k,4)+59.9978927)/0.00416667)*0.00416667-59.9978927-50*0.00416667)
-       cornerlon1 = max(-179.9979167, nint((LIS_rc%obs_gridDesc(k,5)+179.9979167)/0.00416667)*0.00416667-179.9979167-50*0.00416667)
-       cornerlat2 = min(89.9979167, nint((LIS_rc%obs_gridDesc(k,7)+59.9978927)/0.00416667)*0.00416667-59.9978927+50*0.00416667)
-       cornerlon2 = min(179.9979167, nint((LIS_rc%obs_gridDesc(k,8)+179.9979167)/0.00416667)*0.00416667-179.9979167+50*0.00416667)
-
+       if(LIS_rc%lis_obs_map_proj(k).eq."latlon") then
+          cornerlat1 = max(-59.9978927, nint((LIS_rc%obs_gridDesc(k,4)+59.9978927)/0.00416667)*0.00416667-59.9978927-50*0.00416667)
+          cornerlon1 = max(-179.9979167, nint((LIS_rc%obs_gridDesc(k,5)+179.9979167)/0.00416667)*0.00416667-179.9979167-50*0.00416667)
+          cornerlat2 = min(89.9979167, nint((LIS_rc%obs_gridDesc(k,7)+59.9978927)/0.00416667)*0.00416667-59.9978927+50*0.00416667)
+          cornerlon2 = min(179.9979167, nint((LIS_rc%obs_gridDesc(k,8)+179.9979167)/0.00416667)*0.00416667-179.9979167+50*0.00416667)
+       elseif(LIS_rc%lis_obs_map_proj(k).eq."lambert") then
+          cornerlat1 = max(-59.9978927, nint((LIS_rc%minLat(n)+59.9978927)/0.00416667)*0.00416667-59.9978927-50*0.00416667)
+          cornerlon1 = max(-179.9979167, nint((LIS_rc%minLon(n)+179.9979167)/0.00416667)*0.00416667-179.9979167-50*0.00416667)
+          cornerlat2 = min(89.9979167, nint((LIS_rc%maxLat(n)+59.9978927)/0.00416667)*0.00416667-59.9978927+50*0.00416667)
+          cornerlon2 = min(179.9979167, nint((LIS_rc%maxLon(n)+179.9979167)/0.00416667)*0.00416667-179.9979167+50*0.00416667)
+       endif
 
        MCD15A2Hlai_struc(n)%nc = nint((cornerlon2-cornerlon1)/0.00416667)+1
        MCD15A2Hlai_struc(n)%nr = nint((cornerlat2-cornerlat1)/0.00416667)+1

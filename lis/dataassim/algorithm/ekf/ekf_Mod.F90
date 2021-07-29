@@ -422,8 +422,7 @@ contains
                LIS_surface(n, LIS_rc%lsm_index)%tile(tileid)%col,&
                LIS_surface(n, LIS_rc%lsm_index)%tile(tileid)%row)
 
-          call LIS_mapTileSpaceToObsSpace(n, k, LIS_rc%lsm_index, &
-               tileid, st_id, en_id)
+          call LIS_lsm_DAmapTileSpaceToObsSpace(n, k, tileid, st_id, en_id)
 !          call getSelectedObsNumber(trim(LIS_rc%daset(k))//char(0),n,&
 !               LIS_surface(n,LIS_rc%lsm_index)%tile(tileid)%index,st_id,en_id)
 
@@ -557,7 +556,7 @@ contains
              stincrdata(t) = state_incr(v,t)
 !TBD: SVK
 #if 0 
-             call LIS_mapTileSpaceToObsSpace(n, k, LIS_rc%lsm_index, t, st_id, en_id)
+             call LIS_lsm_DAmapTileSpaceToObsSpace(n, k, t, st_id, en_id)
                          
              gid = st_id
 

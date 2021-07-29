@@ -1,0 +1,184 @@
+ ! FERRET v6.96 Script
+ ! >ferret -gif -script ferret_LIS_HIST_Noah.3.3_output.jnl [LIS_HIST input file] [LIS Coordinates]
+ ! Author: Daniel Rosen
+ ! Organization: NESII/CIRES/NOAA
+ ! Email: daniel.rosen@noaa.gov
+ ! Date: 2017-01-27
+
+CANCEL MODE LOGO
+
+SAY *** Generating Noah.3.3 SHADE plots ***
+SAY 
+
+! Load dataset 1 and compute output file label
+USE $1
+DEFINE SYMBOL dname `"$1"`
+DEFINE SYMBOL fnlen `STRLEN("($dname)")`
+DEFINE SYMBOL ext `STRRINDEX("($dname)",".nc")`
+DEFINE SYMBOL prefix `STRRINDEX("($dname)","LIS_HIST_")`
+DEFINE SYMBOL fname `SUBSTRING("($dname)",10,($fnlen)-12)`
+DEFINE SYMBOL flist "'($fname)'"
+
+LET flabels = { ($flist) }
+
+! Print datasets
+SHOW DATA/BRIEF
+
+! Define single level forcing variables
+LET fnames = {   \
+"Psurf_f_tavg",  \
+"Tair_f_tavg",   \
+"EWind_f_inst",  \
+"LWdown_f_tavg", \
+"NWind_f_inst",  \
+"Rainf_f_inst",  \
+"SWdown_f_tavg", \
+"Qair_f_tavg"    \
+}
+
+! Define single level forcing variable titles
+LET ftitles = {       \
+"Air Pressure",       \
+"Air Temperature",    \
+"Eastward Wind",      \
+"Longwave Flux",      \
+"Northward Wind",     \
+"Precipitation Flux", \
+"Shortwave Flux",     \
+"Specific Humidity"   \
+}
+
+! Define single level forcing variable scales
+LET fminvals  = {  65000, 260,-30, 200,-30, 0.0000,   0, 0.000 }
+LET fmaxvals  = { 105000, 320, 30, 500, 30, 0.0050, 600, 0.030 }
+LET fstepvals = {   1000,   1,  2,  10,  2, 0.0001,  10, 0.001 }
+LET fminoutlr = {  60000, 250,-80, 100,-80, 0.0000,   0, 0.000 }
+LET fmaxoutlr = { 110000, 350, 80, 600, 80, 0.0500, 999, 0.030 }
+
+! Load Coordinates
+USE $2
+SET VARIABLE/BAD=-9999/TITLE="Longitude" lon[d=2]
+SET VARIABLE/BAD=-9999/TITLE="Latitude" lat[d=2]
+
+SHOW DATA/BRIEF
+
+! Create SHADE plots for single level forcing variables
+SAY
+SAY *** Plotting single level forcing variables ***
+REPEAT/RANGE=1:`fnames,return=isize`/NAME=vctr ( \
+DEFINE SYMBOL vindex `vctr`; \
+DEFINE SYMBOL vtitle `ftitles[i=($vindex)]`  ; \
+DEFINE SYMBOL vname  `fnames[i=($vindex)]`   ; \
+DEFINE SYMBOL vmin   `fminvals[i=($vindex)]` ; \
+DEFINE SYMBOL vmax   `fmaxvals[i=($vindex)]` ; \
+DEFINE SYMBOL vstep  `fstepvals[i=($vindex)]`; \
+DEFINE SYMBOL vmnol  `fminoutlr[i=($vindex)]`; \
+DEFINE SYMBOL vmxol  `fmaxoutlr[i=($vindex)]`; \
+DEFINE SYMBOL label  `flabels[x=1]`; \
+SET VARIABLE/BAD=-9999/TITLE="($vtitle)" ($vname)[d=1]; \
+SAY ($vtitle) (outliers,min,max,outliers)=\
+(($vmnol),($vmin),($vmax),($vmxol)); \
+SHADE/LEVELS="(($vmnol))(($vmin),($vmax),($vstep))(($vmxol))"/\
+KEY=CONTINUOUS/TITLE="LIS ($vtitle)" \
+($vname)[d=1], lon[d=2], lat[d=2]; \
+FRAME/FILE=plot_($label)_forcing_($vname).gif \
+)
+
+! Define single level output variables
+LET onames = {    \
+"Qs_acc",         \
+"Qsb_acc"         \
+}
+
+! Define single level output variable titles
+LET otitles = {               \
+"Surface Runoff",             \
+"Subsurface Runoff"           \
+}
+
+! Define single level output variable scales
+LET ominvals  = { 0.000000, 0.000000 }
+LET omaxvals  = { 0.000100, 0.000100 }
+LET ostepvals = { 0.000002, 0.000002 }
+LET ominoutlr = { 0.000000, 0.000000 }
+LET omaxoutlr = { 0.010000, 0.001000 }
+
+! Create SHADE plots for single level output variables
+SAY
+SAY *** Plotting single level output variables ***
+REPEAT/RANGE=1:`onames,return=isize`/NAME=vctr ( \
+DEFINE SYMBOL vindex `vctr`; \
+DEFINE SYMBOL vtitle `otitles[i=($vindex)]`  ; \
+DEFINE SYMBOL vname  `onames[i=($vindex)]`   ; \
+DEFINE SYMBOL vmin   `ominvals[i=($vindex)]` ; \
+DEFINE SYMBOL vmax   `omaxvals[i=($vindex)]` ; \
+DEFINE SYMBOL vstep  `ostepvals[i=($vindex)]`; \
+DEFINE SYMBOL vmnol  `ominoutlr[i=($vindex)]`; \
+DEFINE SYMBOL vmxol  `omaxoutlr[i=($vindex)]`; \ 
+DEFINE SYMBOL label  `flabels[x=1]`;   \
+SET VARIABLE/BAD=-9999/TITLE="($vtitle)" ($vname)[d=1]; \
+SAY ($vtitle) (outliers,min,max,outliers)=\
+(($vmnol),($vmin),($vmax),($vmxol)); \
+SHADE/LEVELS="(($vmnol))(($vmin),($vmax),($vstep))(($vmxol))"/\
+KEY=CONTINUOUS/TITLE="LIS ($vtitle)" \
+($vname)[d=1], lon[d=2], lat[d=2]; \
+FRAME/FILE=plot_($label)_output_($vname).gif \
+)
+
+! Define multi level output variables
+LET onamesml = {  \
+"SmLiqFrac_tavg", \
+"SoilMoist_tavg", \
+"SoilTemp_tavg"   \
+}
+
+! Define multi level output variable titles
+LET otitlesml = {                   \
+"Liquid Fraction of Soil Moisture", \
+"Soil Moisture",                    \
+"Soil Temperature"                  \
+}
+
+! Define multi level output variable scales
+LET ominvalsml  = { 0.000, 0.000, 260 }
+LET omaxvalsml  = { 0.420, 0.420, 320 }
+LET ostepvalsml = { 0.007, 0.007,   1 }
+LET ominoutlrml = { 0.000, 0.000, 250 }
+LET omaxoutlrml = { 1.000, 1.000, 350 }
+
+! Create SHADE plots for multi-level output variables
+SAY
+SAY *** Plotting multi level output variables ***
+
+REPEAT/RANGE=1:`onamesml,return=isize`/NAME=vctr ( \
+DEFINE SYMBOL vindex `vctr`; \
+DEFINE SYMBOL vtitle `otitlesml[i=($vindex)]`; \
+DEFINE SYMBOL vname  `onamesml[i=($vindex)]`; \
+SET VARIABLE/BAD=-9999/TITLE="($vtitle)" ($vname)[d=1]; \
+REPEAT/K=1:`($vname)[d=1],return=ksize` ( \
+DEFINE SYMBOL lname `k`; \
+DEFINE SYMBOL vindex `vctr`; \
+DEFINE SYMBOL vtitle `otitlesml[i=($vindex)]`  ; \
+DEFINE SYMBOL vname  `onamesml[i=($vindex)]`   ; \
+DEFINE SYMBOL vmin   `ominvalsml[i=($vindex)]` ; \
+DEFINE SYMBOL vmax   `omaxvalsml[i=($vindex)]` ; \
+DEFINE SYMBOL vstep  `ostepvalsml[i=($vindex)]`; \
+DEFINE SYMBOL vmnol  `ominoutlrml[i=($vindex)]`; \
+DEFINE SYMBOL vmxol  `omaxoutlrml[i=($vindex)]`; \
+DEFINE SYMBOL label  `flabels[x=1]`;     \
+SAY ($vtitle) K=($lname) (outliers,min,max,outliers)=\
+(($vmnol),($vmin),($vmax),($vmxol)); \
+SHADE/K=`k`/LEVELS="(($vmnol))(($vmin),($vmax),($vstep))(($vmxol))"/\
+KEY=CONTINUOUS/TITLE="LIS ($vtitle) Level ($lname)" \
+($vname)[d=1], lon[d=2], lat[d=2]; \
+FRAME/FILE=plot_($label)_output_($vname)_Lv($lname).gif \
+))
+
+! Create compressed tar archive of all .gif files
+SAY
+SAY *** Creating plots.tar.gz archive ***
+SPAWN tar -czf plots.tar.gz *.gif
+
+SAY
+
+exit
