@@ -12,12 +12,12 @@
 !  \label{reset_WRF_AKdom}
 !
 ! !REVISION HISTORY: 
-!  21 Jun 2021: K.R. Arsenault; Updated for different WRF output files
+!  21 Jun 2021: K.R. Arsenault; Updated for different WRF AK files
 ! 
 ! !INTERFACE:
 subroutine reset_WRF_AKdom()
 ! !USES:
-  use LIS_coreMod,         only : LIS_rc
+  use LIS_coreMod,          only : LIS_rc
   use WRF_AKdom_forcingMod, only : WRFAK_struc
 !
 ! !DESCRIPTION:
