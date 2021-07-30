@@ -14,7 +14,7 @@
 ! !REVISION HISTORY:
 !
 !  22 Sep 2016: James Geiger; Initial Specification
-!  21 Jun 2021: K.R. Arsenault; Updated for different WRF output files
+!  21 Jun 2021: K.R. Arsenault; Updated for different WRF AK files
 !
 ! !INTERFACE:
 subroutine read_WRFAK_elev(n,findex)
@@ -62,7 +62,7 @@ subroutine read_WRFAK_elev(n,findex)
 
      write(LIS_logunit,*) '[INFO] Reading the WRF-AK elevation map ...'
      
-     call LIS_read_param(n,"ELEV_WRFAK",go)
+     call LIS_read_param(n,"ELEV_WRF AK",go)
 
      do r=1,LIS_rc%lnr(n)
         do c=1,LIS_rc%lnc(n)

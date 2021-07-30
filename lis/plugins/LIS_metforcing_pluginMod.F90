@@ -1022,7 +1022,7 @@ subroutine LIS_metforcing_plugin
 #endif
 
 #if ( defined MF_WRF_AK )
-! - WRFout-4KM Alaska-domain forcing
+! - WRFout-4KM Alaska (AK) domain forcing
    call registerinitmetforc(trim(LIS_WRFakId)//char(0),init_WRF_AKdom)
    call registerretrievemetforc(trim(LIS_WRFakId)//char(0),get_WRF_AKdom)
    call registertimeinterpmetforc(trim(LIS_WRFakId)//char(0), &
