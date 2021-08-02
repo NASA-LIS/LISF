@@ -348,6 +348,8 @@ endif::devonly[]
 |"`PET USGS`"                  | USGS PET 1.0 deg
 |"`NAM242`"                    | NAM 242 AWIPS Grid \-- Over Alaska
 |"`WRFout`"                    | WRF output
+|"`WRFoutv2`"                  | NCAR-WRF 4km output forcing
+|"`WRF AK`"                    | NCAR-WRF Alaska domain forcing 
 |"`RDHM.3.5.6`"                | RDHM 3.5.6 (SAC-HTET and SNOW-17)
 |"`LDT-generated`"             | LDT-generated forcing files
 |"`CLIM-Standard`"             | Forcing climatologies (LDT-generated)
@@ -6209,6 +6211,31 @@ WRF output data files.
 WRF output forcing directory: ./input/wrfout/
 WRF nest id:                          1
 ....
+
+
+[[sssec_supp_wrfoutv2,WRFoutv2]]
+==== NAM242
+
+`WRF output v2 forcing directory:` specifies the location of the
+"`NCAR-WRF 4km metforcing output`" forcing files
+
+.Example _lis.config_ entry
+....
+WRF output v2 forcing directory: ./input/MET_FORCING/conus_wrf
+....
+
+
+[[sssec_supp_wrfakdom,WRFAKdom]]
+==== NAM242
+
+`WRF AK forcing directory:` specifies the location of the
+"`NCAR-WRF Alaska domain 4km metforcing output`" files
+
+.Example _lis.config_ entry
+....
+WRF AK forcing directory: ./input/MET_FORCING/AK_wrf
+....
+
 
 
 [[sssec_geos5forecast,GEOS5 forecast]]
