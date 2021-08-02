@@ -78,6 +78,8 @@ contains
     real                    :: datares
     real                    :: run_dd(6)
     real                    :: gridDesci(20)
+    real                    :: cornerlat1, cornerlat2
+    real                    :: cornerlon1, cornerlon2
 
     n = 1
 
