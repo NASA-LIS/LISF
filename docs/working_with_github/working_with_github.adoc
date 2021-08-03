@@ -1,7 +1,7 @@
 = Working with GitHub
 :author: James Geiger
-:revnumber: 13
-:revdate: 2 Aug 2021
+:revnumber: 14
+:revdate: 3 Aug 2021
 :sectnums:
 
 :github: https://github.com/
@@ -73,7 +73,8 @@ When registering, use your *NASA* email address.  For your username, please try 
 
 The LISF core team came up with the following workflow for developing LISF in git:
 
-image::lis_workflow_crop.png[align=center,pdfwidth=75%,scaledwidth=75%]
+//image::lis_workflow_crop.png[align=center,pdfwidth=75%,scaledwidth=75%]
+image::LISFLOW.png[align=center,pdfwidth=75%,scaledwidth=75%]
 
 
 == Working with GitHub
