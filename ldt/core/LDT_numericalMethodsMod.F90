@@ -24,7 +24,6 @@ module LDT_numericalMethodsMod
 
   public :: LDT_quicksort_1arr
   public :: LDT_rand_func
-  public :: LDT_gasdev
 
 !EOP
   contains
@@ -196,104 +195,5 @@ module LDT_numericalMethodsMod
 #endif
 
  end subroutine LDT_rand_func
-
-! Other subroutines ...
-
-!BOP
-! 
-! !ROUTINE: LDT_gasdev
-! \label{LDT_gasdev}
-! 
-! !DESCRIPTION:
-! 
-! Returns a normally distributed deviate with zero mean and unit
-! variance, using ran2(idum) as the source of uniform deviates. 
-! This routine is adapted from the Numerical Recipies for Fortran 
-!
-! !REVISION HISTORY: 
-!  27 Feb 2005: Sujay Kumar : Specification in LIS.
-!
-! !INTERFACE:
-    FUNCTION LDT_gasdev(idum)
-!EOP
-      INTEGER idum
-      REAL LDT_gasdev
-      INTEGER iset
-      REAL fac,gset,rsq,v1,v2
-      SAVE iset,gset
-      DATA iset/0/
-      if (idum.lt.0) iset=0
-      if (iset.eq.0) then
-1        v1=2.*ran2(idum)-1.
-         v2=2.*ran2(idum)-1.
-         rsq=v1**2+v2**2
-         if(rsq.ge.1..or.rsq.eq.0.)goto 1
-         fac=sqrt(-2.*log(rsq)/rsq)
-         gset=v1*fac
-         LDT_gasdev=v2*fac
-         iset=1
-      else
-         LDT_gasdev=gset
-         iset=0
-      endif
-      return
-    END FUNCTION LDT_gasdev
-
-
-!BOP
-! 
-! !ROUTINE: ran2
-! \label{ran2}
-!
-! !DESCRIPTION: 
-! Long period (>2!1e18) random number generator of L'Ecuyer with
-! Bays-Durham shuffle and added safeguards. Returns a uniform
-! random deviate between 0.0 and 1.0 (exclusive of the endpoint
-! values). Call with ``idum'' a negative integer to initialize;
-! thereafter, do not alter ``idum'' between successive deviates
-! in a sequence. RNMX should approximate the largest floating 
-! value that is less than 1. This function is adapted from 
-! Numerical Recipies for Fortran. 
-! 
-! !REVISION HISTORY: 
-!  27 Feb 2005: Sujay Kumar : Specification in LIS.
-!
-! !INTERFACE:
-    FUNCTION ran2(idum)
-!EOP
-
-      INTEGER idum,IM1,IM2,IMM1,IA1,IA2,IQ1,IQ2,IR1,IR2,NTAB,NDIV
-      REAL ran2,AM,EPS,RNMX
-      PARAMETER (IM1=2147483563,IM2=2147483399,AM=1./IM1,IMM1=IM1-1, &
-           IA1=40014,IA2=40692,IQ1=53668,IQ2=52774,IR1=12211,IR2=3791, &
-           NTAB=32,NDIV=1+IMM1/NTAB,EPS=1.2e-7,RNMX=1.-EPS)
-      INTEGER idum2,j,k,iv(NTAB),iy
-      SAVE iv,iy,idum2
-      DATA idum2/123456789/, iv/NTAB*0/, iy/0/
-      if (idum.le.0) then
-         idum=max(-idum,1)
-         idum2=idum
-         do j=NTAB+8,1,-1
-            k=idum/IQ1
-            idum=IA1*(idum-k*IQ1)-k*IR1
-            if (idum.lt.0) idum=idum+IM1
-            if (j.le.NTAB) iv(j)=idum
-         end do
-         iy=iv(1)
-      endif
-      k=idum/IQ1
-      idum=IA1*(idum-k*IQ1)-k*IR1
-      if (idum.lt.0) idum=idum+IM1
-      k=idum2/IQ2
-      idum2=IA2*(idum2-k*IQ2)-k*IR2
-      if (idum2.lt.0) idum2=idum2+IM2
-      j=1+iy/NDIV
-      iy=iv(j)-idum2
-      iv(j)=idum
-      if(iy.lt.1)iy=iy+IMM1
-      ran2=min(AM*iy,RNMX)
-      return
-    END function ran2
-   
 
 end module LDT_numericalMethodsMod
