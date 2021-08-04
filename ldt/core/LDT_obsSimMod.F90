@@ -1,6 +1,21 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+
+! NASA Goddard Space Flight Center
+
+! Land Information System Framework (LISF)
+
+! Version 7.3
+
+!
+
+! Copyright (c) 2020 United States Government as represented by the
+
+! Administrator of the National Aeronautics and Space Administration.
+
+! All Rights Reserved.
+
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 #include "LDT_misc.h"
 module LDT_obsSimMod
 !BOP
@@ -397,9 +412,6 @@ contains
 
     if(LDT_obsSim_struc%errDist.eq."gaussian") then 
        if(LDT_obsSim_struc%errModelType.eq."additive") then 
-!          open(100,file='test.bin',form ='unformatted')
-!          write(100) LDT_obsSim_struc%value
-
 
           do r=1,LDT_rc%lnr(n)
              do c=1,LDT_rc%lnc(n)
@@ -407,8 +419,6 @@ contains
                    if(LDT_obsSim_struc%value(c,r,k).ne.-9999.0) then 
                       call nr_gasdev(LDT_obsSim_struc%seed, rand)
                       tmp_val = rand(1)*LDT_obsSim_struc%errStdev
-                      !TBD: need a more formal check on the physical limits
-!                      print*, c,r,tmp_val,rand(1)
                       if (LDT_obsSim_struc%value(c,r,k).gt.&
                            LDT_obsSim_struc%varmins(k).and.&
                            LDT_obsSim_struc%value(c,r,k) + tmp_val.gt.&
@@ -420,9 +430,6 @@ contains
                 enddo
              enddo
           enddo
-!          write(100) LDT_obsSim_struc%value
-!          close(100)
-!          stop
 
        elseif(LDT_obsSim_struc%errModelType.eq."multiplicative") then 
           do r=1,LDT_rc%lnr(n)
@@ -477,6 +484,9 @@ contains
     integer                 :: varid(LDT_obsSim_struc%nVars)
     real                    :: lat(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: lon(LDT_rc%lnc(n),LDT_rc%lnr(n))
+    integer                 :: rc
+    integer, external       :: LDT_create_subdirs
+
 
     write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
          LDT_rc%yr, LDT_rc%mo, &
@@ -487,7 +497,12 @@ contains
     write(unit=cdate, fmt='(i4.4, i2.2)') LDT_rc%yr, LDT_rc%mo
     dname = trim(dname)//trim(cdate)//'/'
     
-    call system('mkdir -p '//trim(dname))
+!    call system('mkdir -p '//trim(dname))
+    rc = LDT_create_subdirs(len_trim(dname), trim(dname))
+    if (rc .ne. 0) then
+      write(LDT_logunit,*)'[ERR] Cannot create directory ', trim(dname)
+      call LDT_endrun()
+    end if
     filename = trim(dname)//'SimObs_'//trim(cdate1)//'.nc'
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
