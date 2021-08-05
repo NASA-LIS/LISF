@@ -4611,7 +4611,7 @@ AMSR2 OSSE mask data resolution (km): 25
 .Example _ldt.config_ entry
 ....
 MODIS OSSE mask directory:           ../Masks/MODIS/
-MODIS OSSE mask data resolution (km): 25
+MODIS OSSE mask data resolution (km): 1
 ....
 
 `Sentinel1A OSSE mask directory:` specifies a directory containing the Sentinel1A OSSE mask.
@@ -4621,7 +4621,7 @@ MODIS OSSE mask data resolution (km): 25
 .Example _ldt.config_ entry
 ....
 Sentinel1A OSSE mask directory:           ../Masks/Sentinel1A/
-Sentinel1A OSSE mask data resolution (km): 25
+Sentinel1A OSSE mask data resolution (km): 1
 ....
 
 `TSSM OSSE mask directory:` specifies a directory containing the TSSM OSSE mask.
@@ -4631,5 +4631,5 @@ Sentinel1A OSSE mask data resolution (km): 25
 .Example _ldt.config_ entry
 ....
 TSSM OSSE mask directory:           ../Masks/TSSM/
-TSSM OSSE mask data resolution (km): 25
+TSSM OSSE mask data resolution (km): 1
 ....
