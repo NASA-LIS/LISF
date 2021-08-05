@@ -61,9 +61,7 @@ subroutine readLISoutOSSEmask(n)
        fname, &
        LISoutOSSEmaskData%odir,&
        LISoutOSSEmaskData%wstyle, &
-       LISoutOSSEmaskData%wopt,&
-       LISoutOSSEmaskData%run_dd, &       
-       LISoutOSSEmaskData%map_proj)
+       LISoutOSSEmaskData%wopt)
 
 ! read, subset and interpolate the data
   
@@ -213,8 +211,7 @@ end subroutine readLISoutOSSEmask
 !
 ! !INTERFACE:
 subroutine create_lisout_ossemask_filename(n, &
-     form, fname, odir, wstyle, wopt, &
-     run_dd, map_proj)
+     form, fname, odir, wstyle, wopt)
 ! !USES:
    use LDT_coreMod,  only : LDT_rc
    use LDT_logMod
@@ -227,8 +224,6 @@ subroutine create_lisout_ossemask_filename(n, &
    character(len=*)             :: odir
    character(len=*)             :: wstyle
    character(len=*)             :: wopt
-   real, dimension(8), optional :: run_dd
-   character(len=*),   optional :: map_proj
 ! 
 ! !DESCRIPTION:  
 !  Create the file name for the output data files. It creates both the GSWP

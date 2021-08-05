@@ -57,9 +57,7 @@ subroutine readLISoutNatureRun(n)
        fname, &
        LISoutNatureRunData%odir,&
        LISoutNatureRunData%wstyle, &
-       LISoutNatureRunData%wopt,&
-       LISoutNatureRunData%run_dd, &       
-       LISoutNatureRunData%map_proj)
+       LISoutNatureRunData%wopt)
 
 ! read, subset and interpolate the data
   
@@ -134,8 +132,7 @@ end subroutine readLISoutNatureRun
 !
 ! !INTERFACE:
 subroutine create_lisout_naturerun_filename(n, &
-     mclass,form, fname, odir, wstyle, wopt, &
-     run_dd, map_proj)
+     mclass,form, fname, odir, wstyle, wopt)
 ! !USES:
    use LDT_coreMod,  only : LDT_rc
    use LDT_logMod
@@ -149,8 +146,6 @@ subroutine create_lisout_naturerun_filename(n, &
    character(len=*)             :: odir
    character(len=*)             :: wstyle
    character(len=*)             :: wopt
-   real, dimension(8), optional :: run_dd
-   character(len=*),   optional :: map_proj
 ! 
 ! !DESCRIPTION:  
 !  Create the file name for the output data files. It creates both the GSWP
