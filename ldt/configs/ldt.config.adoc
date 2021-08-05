@@ -4502,66 +4502,80 @@ Glacier fraction resolution (dy):   0.01
 ....
 
 === Observation Simulator
-This simulator can handle the use of external orbital masks to be applied to the observations created for OSSEs. Currently, AMSR2, TSMM, Sentinel-1A, and MODIS are available instrumental options.
+This simulator can handle the use of external orbital masks to be applied to the observations created for OSSEs. Currently, AMSR2, TSMM, Sentinel-1A, and MODIS are available instrument options.
 
-(Note: This feature is still under development)
+#(Note: This feature is still under development)#
 
-.Description
-Configuration options
+`Observation simulator nature run source:` specifies a nature run source. Currently, only the `LIS output` option is supported.
 
-'Observation simulator nature run source:' specifies a nature run source.
-'Observation simulator OSSE mask source:' specifies an OSSE mask source.
-'Observation simulator type of temporal transform:' specifies a type of temporal transform.
-                                                    available options: 'instantanuous', 'time-averaged'.
-'Observation simulator masking model type:' specifies a masking model type.
-                                            available options: 'constant','time-varying'.
-'Observation simulator mask data directory:' specifies a mask data directory.
-'Observation simulator number of simulated variables:' specifies a number of simulated variables.
-'Observation simulator simulated variables:' specifies the simulated variables.
-'Observation simulator simulated variable minimum values:' specifies minimum values of simulated variables.
-'Observation simulator simulated variable maximum values:' specifies maximum values of simulated variables.
-'Observation simulator error model type:' specifies an error model type.
-                                          available options: 'additive','multiplicative'.
-'Observation simulator error distribution type:' specifies a type of error model.
-                                          available option: 'gaussian'
-'Observation simulator error standard deviation:' specifies an error standard deviation.
+`Observation simulator OSSE mask source:` specifies an OSSE mask source. Acceptable values are `AMSR2`, `MODIS`, `Sentinel1A`, and `TSMM`.
 
-.Decription
-Initializing the structures required for the handling of a land surface model output (from a LIS simulation) as
-observations.
+`Observation simulator type of temporal transform:` specifies a type of temporal transform. Acceptable values are `instantaneous` and `time-averaged`.
 
-'LIS Nature run output model class:' specifies a model class. 
-'LIS Nature run output model name:' specifies the name of the model.
-'LIS Nature run output directory:' specifies a directory of NR output.
-'LIS Nature run output format:' specifies a format of NR output.
-'LIS Nature run output methodology:' specifies a methodology of NR output.
-'LIS Nature run output naming style:' specifies a naming style of NR output.
-'LIS Nature run output nest index:' specifies a nested index of NR output.
-'LIS Nature run output map projection:' specifies a map projection of NR output.
-'LIS Nature run domain lower left lat:' specifies a run domain lower left latitude.
-'LIS Nature run domain upper right lat:' specifies a run domain upper right latitude.
-'LIS Nature run domain lower left lon:' specifies a run domain lower left longitude.
-'LIS Nature run domain resolution (dy):' specifies a run domain upper right longitude.
+`Observation simulator masking model type:` specifies a masking model type. Acceptable values are `constant` and `time-varying`.
 
-'AMSR2 OSSE mask directory:' specifies a directory containing the AMSR2 OSSE mask.
-'AMSR2 OSSE mask data resolution (km):' specifies a resolution of OSSE mask.
+`Observation simulator mask data directory:` specifies a mask data directory.
+
+`Observation simulator number of simulated variables:` specifies a number of simulated variables.
+
+`Observation simulator simulated variables:` specifies the names of the simulated variables (found in LIS output).
+
+`Observation simulator simulated variable minimum values:` specifies minimum values of simulated variables.
+
+`Observation simulator simulated variable maximum values:` specifies maximum values of simulated variables.
+
+`Observation simulator error model type:` specifies an error model type. Acceptable values are `additive` and `multiplicative`.
+
+`Observation simulator error distribution type:` specifies a type of error model. Currently, only the `gaussian` option is supported.
+
+`Observation simulator error standard deviation:` specifies an error standard deviation.
+
+.Example _ldt.config_ entry
+....
+Observation simulator nature run source: LIS output
+Observation simulator OSSE mask source:  AMSR2
+Observation simulator type of temporal transform: instantaneous
+Observation simulator masking model type: time-varying
+Observation simulator mask data directory: DOMAINMASK.nc
+Observation simulator number of simulated variables: 2
+Observation simulator simulated variables: SWE_tavg SWE_inst
+Observation simulator simulated variable minimum values: 0.0 0.0
+Observation simulator simulated variable maximum values: 10000.0 10000.0
+Observation simulator error model type:    additive additive
+Observation simulator error distribution type:  gaussian gaussian
+Observation simulator error standard deviation: 5.0 5.0
+....
+
+==== LIS Nature Run
+Options for initializing the structures required for the handling of a land surface model output (from a LIS simulation) as observations.
+
+`LIS Nature run output model class:` specifies a model class. 
+
+`LIS Nature run output model name:` specifies the name of the model.
+
+`LIS Nature run output directory:` specifies a directory of NR output.
+
+`LIS Nature run output format:` specifies a format of NR output.
+
+`LIS Nature run output methodology:` specifies a methodology of NR output.
+
+`LIS Nature run output naming style:` specifies a naming style of NR output.
+
+`LIS Nature run output nest index:` specifies a nested index of NR output.
+
+`LIS Nature run output map projection:` specifies a map projection of NR output.
+
+`LIS Nature run domain lower left lat:` specifies a run domain lower left latitude.
+
+`LIS Nature run domain upper right lat:` specifies a run domain upper right latitude.
+
+`LIS Nature run domain lower left lon:` specifies a run domain lower left longitude.
+
+`LIS Nature run domain resolution (dy):` specifies a run domain upper right longitude.
 
 
 .Example _ldt.config_ entry
-
-Observation simulator nature run source: 'LIS output'
-Observation simulator OSSE mask source:  'AMSR2'
-Observation simulator type of temporal transform: 'instantaneous'
-Observation simulator masking model type: 'time-varying'
-Observation simulator mask data directory: DOMAINMASK.nc
-Observation simulator number of simulated variables: 2
-Observation simulator simulated variables: 'SWE_tavg' 'SWE_inst'
-Observation simulator simulated variable minimum values: 0.0 0.0
-Observation simulator simulated variable maximum values: 10000.0 10000.0
-Observation simulator error model type:    'additive' 'additive'
-Observation simulator error distribution type:  'gaussian' 'gaussian'
-Observation simulator error standard deviation: 5.0 5.0
-
+....
 LIS Nature run output model class:       "SURFACEMODEL"
 LIS Nature run output model name:        "Noah-MP.3.6"
 LIS Nature run output directory:         ../Run_NR/OUTPUT_multiyearcal
@@ -4569,13 +4583,53 @@ LIS Nature run output format:            "netcdf"
 LIS Nature run output methodology:       "2d gridspace"
 LIS Nature run output naming style:      "3 level hierarchy"
 LIS Nature run output nest index:        1
-LIS Nature run output map projection:   "latlon"
+LIS Nature run output map projection:    "latlon"
 LIS Nature run domain lower left lat:    37.525
 LIS Nature run domain upper right lat:   40.715
-LIS Nature run domain lower left lon:   -108.565
-LIS Nature run domain upper right lon:  -105.025
+LIS Nature run domain lower left lon:    -108.565
+LIS Nature run domain upper right lon:   -105.025
 LIS Nature run domain resolution (dx):   0.01
 LIS Nature run domain resolution (dy):   0.01
+....
 
+==== OSSE Masks
+
+`AMSR2 OSSE mask directory:` specifies a directory containing the AMSR2 OSSE mask.
+
+`AMSR2 OSSE mask data resolution (km):` specifies a resolution of AMSR2 OSSE mask.
+
+.Example _ldt.config_ entry
+....
 AMSR2 OSSE mask directory:           ../Masks/AMSR2/
 AMSR2 OSSE mask data resolution (km): 25
+....
+
+`MODIS OSSE mask directory:` specifies a directory containing the MODIS OSSE mask.
+
+`MODIS OSSE mask data resolution (km):` specifies a resolution of MODIS OSSE mask.
+
+.Example _ldt.config_ entry
+....
+MODIS OSSE mask directory:           ../Masks/MODIS/
+MODIS OSSE mask data resolution (km): 25
+....
+
+`Sentinel1A OSSE mask directory:` specifies a directory containing the Sentinel1A OSSE mask.
+
+`Sentinel1A OSSE mask data resolution (km):` specifies a resolution of Sentinel1A OSSE mask.
+
+.Example _ldt.config_ entry
+....
+Sentinel1A OSSE mask directory:           ../Masks/Sentinel1A/
+Sentinel1A OSSE mask data resolution (km): 25
+....
+
+`TSSM OSSE mask directory:` specifies a directory containing the TSSM OSSE mask.
+
+`TSSM OSSE mask data resolution (km):` specifies a resolution of TSSM OSSE mask.
+
+.Example _ldt.config_ entry
+....
+TSSM OSSE mask directory:           ../Masks/TSSM/
+TSSM OSSE mask data resolution (km): 25
+....
