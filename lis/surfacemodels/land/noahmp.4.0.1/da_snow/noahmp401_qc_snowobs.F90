@@ -88,6 +88,20 @@ subroutine noahmp401_qc_snowobs(n,k,OBS_State)
   call LIS_convertPatchSpaceToObsSpace(n,k,&
        LIS_rc%lsm_index,vegt,vegt_obs)
 
+  do t=1,LIS_rc%obs_ngrid(k)
+     if(snowobs(t).ne.LIS_rc%udef) then
+        if(fveg_obs(t).gt.0.7) then
+           snowobs(t) = LIS_rc%udef
+        elseif(vegt_obs(t).le.4) then !forest types
+           snowobs(t) = LIS_rc%udef
+!assume that snow will not form at 5 deg. celcius or higher ground temp. 
+       elseif(tv_obs(t).ge.278.15) then
+           snowobs(t) = LIS_rc%udef
+       elseif(stc1_obs(t).ge.278.15) then
+           snowobs(t) = LIS_rc%udef
+        endif
+     endif
+  enddo
 
 end subroutine noahmp401_qc_snowobs
 
