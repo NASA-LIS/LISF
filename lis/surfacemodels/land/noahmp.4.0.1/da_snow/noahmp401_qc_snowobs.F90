@@ -65,8 +65,6 @@ subroutine noahmp401_qc_snowobs(n,k,OBS_State)
   real                     :: stc1_obs(LIS_rc%obs_ngrid(k))
   real                     :: vegt_obs(LIS_rc%obs_ngrid(k))
 
-  print *, 'Reading /da_snow/noahmp401_qc_snowobs'
-
   call ESMF_StateGet(OBS_State,"Observation01",obs_snow_field,rc=status)
   call LIS_verify(status,&
        "ESMF_StateGet failed in noahmp401_qc_snowobs")
