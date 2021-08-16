@@ -84,8 +84,12 @@ contains
     external LDT_init_OPTUEparamproc
     external LDT_run_OPTUEparamproc
 
+    external LDT_init_obsSim
+    external LDT_run_obsSim
+
     external LDT_init_LISHydropreproc
     external LDT_run_LISHydropreproc
+
 
   ! Parameter Preprocessing:
     call registerldtinit(trim(LDT_LSMparamprocId)//char(0), &
@@ -158,12 +162,18 @@ contains
     call registerldtrun(trim(LDT_OPTUEparamprocId)//char(0), &
          LDT_run_OPTUEparamproc)
 
+    ! obs simulator
+    call registerldtinit(trim(LDT_obsSimprocId)//char(0), &
+         LDT_init_obsSim)
+    call registerldtrun(trim(LDT_obsSimprocId)//char(0), &
+         LDT_run_obsSim)
 
   ! LISHydro Preprocessing for WRFHydro:
     call registerldtinit(trim(LDT_LISHydropreprocId)//char(0), &
          LDT_init_LISHydropreproc)
     call registerldtrun(trim(LDT_LISHydropreprocId)//char(0), &
          LDT_run_LISHydropreproc)
+
 
   end subroutine LDT_runmode_plugin
 

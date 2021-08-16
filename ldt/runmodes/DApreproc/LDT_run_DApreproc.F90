@@ -31,7 +31,7 @@ subroutine LDT_run_DApreproc
            call LDT_tavgDAobsData(n)
            call LDT_diagnoseDAobsMetrics(n,i)
            call LDT_computeDAobsMetrics(n,i)
-           call LDT_flush(LDT_logunit)
+           flush(LDT_logunit)
         enddo
      enddo
   enddo

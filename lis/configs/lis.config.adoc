@@ -348,6 +348,8 @@ endif::devonly[]
 |"`PET USGS`"                  | USGS PET 1.0 deg
 |"`NAM242`"                    | NAM 242 AWIPS Grid \-- Over Alaska
 |"`WRFout`"                    | WRF output
+|"`WRFoutv2`"                  | NCAR-WRF 4km output forcing
+|"`WRF AK`"                    | NCAR-WRF Alaska domain forcing 
 |"`RDHM.3.5.6`"                | RDHM 3.5.6 (SAC-HTET and SNOW-17)
 |"`LDT-generated`"             | LDT-generated forcing files
 |"`CLIM-Standard`"             | Forcing climatologies (LDT-generated)
@@ -608,7 +610,7 @@ Acceptable values are:
 |.false. | Disable writing of the statistics file
 |====
 
-Defaults to `.true.`.
+Defaults to `.false.`.
 
 .Example _lis.config_ entry
 ....
@@ -1163,6 +1165,7 @@ Acceptable values are:
 |"`USAFSI`"                     | USAF Snow and Ice Analysis
 |"`SMAP(NASA) vegetation optical depth`"  | NASA L-band vegetation optical depth 
 |"`MCD15A2H LAI`"               | MODIS MCD15A2H v006 LAI product
+|"`SMOS NRT NN soil moisture`"  | SMOS Level 2 Soil Moisture Near Real Time Neural Network
 |====
 
 .Example _lis.config_ entry
@@ -3115,6 +3118,50 @@ SMOS(NESDIS) soil moisture use scaled standard deviation model:
 SMOS(NESDIS) model CDF file:
 SMOS(NESDIS) observation CDF file:
 SMOS(NESDIS) soil moisture number of bins in the CDF:
+....
+
+
+[[sssec_smosnrtnnsmda,SMOS NRT NN soil moisture assimilation]]
+==== SMOS NRT NN soil moisture assimilation
+
+`SMOS NRT NN soil moisture data directory:` specifies the SMOS NRT NN soil
+moisture data directory
+
+`SMOS NRT NN soil moisture use scaled standard deviation model:` specifies
+whether the observation error standard deviation is to be scaled using model
+and observation standard deviation.
+
+`SMOS NRT NN model CDF file:` specifies the name of the model CDF file
+(observations will be scaled into this climatology).
+
+`SMOS NRT NN observation CDF file:` specifies the name of the observation
+CDF file.
+
+`SMOS NRT NN soil moisture number of bins in the CDF:` specifies the number of
+bins in the CDF.
+
+`SMOS NRT NN CDF read option:` specifies whether to read all months of
+or to read month by month from a monthly CDF file.
+
+Acceptable values are:
+
+|====
+|Value    | Description
+
+|0 | Read all months
+|1 | Read month by month
+|====
+
+NOTE: Select 0 for yearly CDF data
+
+.Example _lis.config_ entry
+....
+SMOS NRT NN soil moisture data directory: ./SMOS_NRT_NN
+SMOS NRT NN soil moisture use scaled standard deviation model: 0
+SMOS NRT NN model CDF file:               ../DA_proc_LSM/LDTOUT/noah39_cdf.nc
+SMOS NRT NN observation CDF file:         ../DA_proc_SMOS/LDTOUT/SMOS_cdf.nc
+SMOS NRT NN soil moisture number of bins in the CDF:           100
+SMOS NRT NN CDF read option:       1
 ....
 
 
@@ -6166,6 +6213,31 @@ WRF nest id:                          1
 ....
 
 
+[[sssec_supp_wrfoutv2,WRFoutv2]]
+==== NAM242
+
+`WRF output v2 forcing directory:` specifies the location of the
+"`NCAR-WRF 4km metforcing output`" forcing files
+
+.Example _lis.config_ entry
+....
+WRF output v2 forcing directory: ./input/MET_FORCING/conus_wrf
+....
+
+
+[[sssec_supp_wrfakdom,WRFAKdom]]
+==== NAM242
+
+`WRF AK forcing directory:` specifies the location of the
+"`NCAR-WRF Alaska domain 4km metforcing output`" files
+
+.Example _lis.config_ entry
+....
+WRF AK forcing directory: ./input/MET_FORCING/AK_wrf
+....
+
+
+
 [[sssec_geos5forecast,GEOS5 forecast]]
 ==== GEOS5 Forecast
 
@@ -6190,7 +6262,6 @@ of the GEFS forecast forcing files.
 
 `GEFS forecast type:` specifies the GEFS forecast
 product type, which can either be Reforecast2 or Operational.
-Currently, only the Reforecast2 product is supported.
 
 `GEFS forecast run mode:` specifies the run mode related
 to the GEFS dataset, which can either be forecast or analysis
@@ -9992,7 +10063,7 @@ Acceptable values are:
 
 |kinematic          | use kinematic method
 |diffusive          | use diffusive method
-|"`local intertia`" | use local intertia method
+|"`local inertia`"  | use local inertia method
 |hybrid             | use hybrid method (requires a river flow map from LDT)
 |====
 
@@ -10121,6 +10192,18 @@ of how to specify a time interval.
 `HYMAP2 routing model restart file:` specifies the HyMAP2 router
 active restart file.
 
+`HYMAP2 enable 2-way coupling:` specifies whether to enable 2-way coupling.
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use
+|====
+
+`HYMAP2 2-way coupling flooded fraction threshold:` specifies the flooded fraction
+threshold used in the 2-way coupling mode.
+
 .Example _lis.config_ entry
 ....
 HYMAP2 routing model time step: "30mn"
@@ -10142,6 +10225,8 @@ HYMAP2 routing model dwi flag: 0
 HYMAP2 routing model start mode: "coldstart"
 HYMAP2 routing model restart interval: "1mo"
 HYMAP2 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP2_router_197901030000.d01.nc
+HYMAP2 enable 2-way coupling: 0
+HYMAP2 2-way coupling flooded fraction threshold: 2.0
 ....
 
 

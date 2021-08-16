@@ -6008,7 +6008,7 @@ contains
                 elseif(form==2) then
                    write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
                 endif
-                call lis_flush(ftn_stats)
+                flush(ftn_stats)
              endif
           endif
           deallocate(gtmp1)
@@ -6086,7 +6086,7 @@ contains
                 elseif(form==2) then
                    write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
                 endif
-                call lis_flush(ftn_stats)
+                flush(ftn_stats)
              endif
           endif
           deallocate(gtmp)
@@ -6168,7 +6168,7 @@ contains
                    elseif(form==2) then
                       write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
                    endif
-                   call lis_flush(ftn_stats)
+                   flush(ftn_stats)
                 endif
              endif
              deallocate(gtmp)
@@ -6270,7 +6270,7 @@ contains
                    elseif(form==2) then
                       write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
                    endif
-                   call lis_flush(ftn_stats)
+                   flush(ftn_stats)
                 endif
              endif
              deallocate(gtmp_ens)
@@ -6420,7 +6420,7 @@ contains
                 elseif(form==2) then
                    write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
                 endif
-                call lis_flush(ftn_stats)
+                flush(ftn_stats)
              endif
           endif
           deallocate(gtmp)
@@ -6502,7 +6502,7 @@ contains
                    elseif(form==2) then
                       write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
                    endif
-                   call lis_flush(ftn_stats)
+                   flush(ftn_stats)
                 endif
              endif
              deallocate(gtmp)
@@ -6604,7 +6604,7 @@ contains
                    elseif(form==2) then
                       write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
                    endif
-                   call lis_flush(ftn_stats)
+                   flush(ftn_stats)
                 endif
              endif
              deallocate(gtmp_ens)
@@ -8352,7 +8352,7 @@ subroutine write_stats(var, size, mvar, ftn_stats, form)
       elseif ( form == 2 ) then 
          write(ftn_stats,998) mvar,vmean,vstdev,vmin,vmax
       endif
-      call lis_flush(ftn_stats)
+      flush(ftn_stats)
    endif
 
 998 FORMAT(1X,A18,4E14.3)

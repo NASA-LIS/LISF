@@ -102,7 +102,7 @@ subroutine read_MCD15A2Hlai(n, k, OBS_State, OBS_Pert_State)
         do while(.not.file_exists.and.count.lt.8) 
            call create_MCD15A2Hlai_filename(laiobsdir, &
                 MCD15A2Hlai_struc(n)%version, cyr, cdoy, fname1,climofile1)
-          
+
            inquire(file=fname1,exist=file_exists)          
            if(file_exists) then 
               exit; 
@@ -325,6 +325,7 @@ subroutine read_MCD15A2H_LAI_data(n, k, fname, climofile, laiobs_ip)
 !  The arguments are: 
 !  \begin{description}
 !  \item[n]            index of the nest
+!  \item[k]            number of observation state
 !  \item[k]            number of observation state
 !  \item[fname]        name of the MCD15A2H LAI file
 !  \item[climofile]    Generated MCD152AH LAI climatology file
@@ -576,8 +577,9 @@ subroutine create_MCD15A2Hlai_filename(ndir, version, yr, doy, filename, climofi
      filename = trim(ndir)//'/'//trim(fyr)//'/MCD15A2H.006_LAI_'//&
           trim(fyr)//trim(fdoy)//'.nc4'
   endif
+
   climofile = trim(ndir)//'/MCD15A2H.006_LAI_YYYY'//&
-       trim(fdoy)//'.nc4'  
+       trim(fdoy)//'.nc4'
 
 end subroutine create_MCD15A2Hlai_filename
 

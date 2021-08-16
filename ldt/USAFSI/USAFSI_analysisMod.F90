@@ -15,6 +15,7 @@
 ! 09 May 2019  Eric Kemp  Renamed LDTSI
 ! 13 Dec 2019  Eric Kemp  Renamed USAFSI
 ! 02 Nov 2020  Eric Kemp  Removed blacklist code at request of 557WW.
+! 22 Jan 2021  Yeosang Yoon Add subroutine for new 0.1 deg snow climatology
 !
 ! DESCRIPTION:
 ! Source code for Air Force snow depth analysis.
@@ -43,7 +44,8 @@ module USAFSI_analysisMod
    public :: run_snow_analysis_glacier ! EMK
    public :: run_seaice_analysis_ssmis ! EMK
    public :: run_seaice_analysis_gofs  ! EMK
-
+   public :: getclimo                  ! Yeosang Yoon
+ 
    ! Internal constant
    real, parameter :: FILL = -1
 
@@ -1352,6 +1354,7 @@ contains
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  28 Jan 21  Updated messages.....................Yeosang Yoon/NASA GSFC/SAIC
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -1540,7 +1543,7 @@ contains
 
             else
 
-               message(msgline) = 'NO SSMIS EDRS READ FOR ' // date10 //   &
+               message(msgline) = 'NO PMW READ FOR ' // date10 //   &
                     ' ' // chemicap(hemi)
                msgline = msgline + 1
 
@@ -1548,7 +1551,7 @@ contains
 
          else file_check
 
-            message(msgline) = 'NO SSMIS EDR FILE FOR ' // date10 //      &
+            message(msgline) = 'NO PMW FILE FOR ' // date10 //      &
                  ' ' // chemicap(hemi)
             msgline = msgline + 1
 
@@ -1614,7 +1617,7 @@ contains
 
       else
 
-         message(msgline) = '[WARN] no ice and snow edr data received'
+         message(msgline) = '[WARN] no ice and snow data received'
          msgline = msgline + 1
 
       end if
@@ -1635,7 +1638,7 @@ contains
       ! ERROR-HANDLING SECTION.
 5000  continue
       if (isopen) close (lunsrc(hemi))
-      message(1) = '[ERR] ERROR ' // access_type // ' SSMIS FILE'
+      message(1) = '[ERR] ERROR ' // access_type // ' PMW FILE'
       message(2) = '[ERR] ' // trim ( file_path )
       write (msgval, '(i4)') istat
       message(3) = '[ERR] ISTAT = ' // msgval
@@ -1645,10 +1648,10 @@ contains
       ! FORMAT STATEMENTS
 6000  format (/, '[INFO] ', A, ': READING ', A)
 6200  format (A10, I3, I6, I7, 2(I5), 2(I6))
-6400  format (/, '[INFO] ', A, ': EDRS READ FOR ', A2, 1X,  A10,            &
+6400  format (/, '[INFO] ', A, ': READ FOR ', A2, 1X,  A10,            &
            ' SATELLITE F', I2, ': ICE = ', I6, '  SNOW = ', I6)
 6600  format (/, 1X, 55('-'),                                           &
-           /, '[INFO] ', A6, ': TOTAL EDRS READ FOR ', A2, ' = ', I7,    &
+           /, '[INFO] ', A6, ': TOTAL READ FOR ', A2, ' = ', I7,    &
            /, 1X, 55('-'))
 
    end subroutine getsmi
@@ -3528,5 +3531,46 @@ contains
       return
 
    end subroutine summer
+
+  ! Yeosang Yoon: new 10-km snow climatology
+   subroutine getclimo (month, static)
+
+      ! Imports
+      use LDT_logMod, only: LDT_verify
+      use USAFSI_arraysMod, only: USAFSI_arrays
+      use netcdf
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      integer,       intent(in)   :: month            ! MONTH OF YEAR (1-12)
+      character*100, intent(in)   :: static           ! STATIC FILE DIRECTORY PATH
+
+      ! Local variables
+      character*4                 :: cmonth  (12)     ! MONTH OF YEAR
+      character*100               :: file_path        ! FULLY-QUALIFIED FILE NAME
+
+      data cmonth        / '_jan', '_feb', '_mar', '_apr', '_may', '_jun', &
+          '_jul', '_aug', '_sep', '_oct', '_nov', '_dec' /
+
+      integer          :: ncid, varid
+
+      ! RETRIEVE THE CLIMATOLOGY FOR THE MONTH.
+      ! THE CLIMO FILE CONTAINS AN ARRAY FOR EACH OF THE 12 MONTHS.
+      ! EACH MONTH IS STORED CONSECUTIVELY STARTING WITH JANUARY.
+      file_path = trim(static) //'/snoclimo_10km/'// 'snoclimo_0p10deg' &
+           //cmonth(month) // '.nc'
+
+      call LDT_verify(nf90_open(path=file_path, mode=nf90_nowrite, ncid=ncid), &
+            '[ERR] Error in nf90_open for '//trim(file_path))
+      call LDT_verify(nf90_inq_varid(ncid=ncid, name="snoclimo", varid=varid), &
+            '[ERR] Error in nf90_inq_varid for snow climatology')
+      call LDT_verify(nf90_get_var(ncid=ncid, varid=varid, values=USAFSI_arrays%climo), &
+            '[ERR] Error in nf90_get_var for snow climatology')
+      call LDT_verify(nf90_close(ncid), &
+            '[ERR] Error in nf90_close for '//trim(file_path))
+
+   end subroutine getclimo
 
 end module USAFSI_analysisMod

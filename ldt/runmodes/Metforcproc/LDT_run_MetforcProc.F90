@@ -27,7 +27,7 @@ subroutine LDT_run_MetforcProc
             call LDT_output_met_forcing(n)
 !        endif
       enddo
-      call LDT_flush(LDT_logunit)
+      flush(LDT_logunit)
    enddo
 
 

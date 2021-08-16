@@ -53,13 +53,15 @@ void FTN(registerreadforcelev)(char *j,void (*func)(int*,int*,float*,float*),int
 //  \end{description}
 //EOP
 { 
+  int len1;
   struct forcelevnode* current;
   struct forcelevnode* pnode; 
   // create node
   
+  len1 = len + 1; // ensure that there is space for terminating null
   pnode=(struct forcelevnode*) malloc(sizeof(struct forcelevnode));
-  pnode->name=(char*) malloc(len*sizeof(char));
-  strcpy(pnode->name,j);
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
   pnode->func = func;
   pnode->next = NULL; 
 
