@@ -7,6 +7,9 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+#include "LIS_misc.h"
+
 ! Macros for tracing - Requires ESMF 7_1_0+
 #ifdef ESMF_TRACE
 #define TRACE_ENTER(region) call ESMF_TraceRegionEnter(region)
@@ -35,6 +38,7 @@
 ! 20Oct2017: Eric Kemp, switched to Bratseth scheme
 ! 04Jan2018: Eric Kemp, disable 6-hr cycle unless 12-hr is not run.
 ! 05Sep2018: Eric Kemp, code clean-up and addition of IMERG.
+! 07Jan2020: Eric Kemp, added creation of precip_OBA directory.
 !
 ! !INTERFACE:    
 subroutine readagrmetpcpforcing(n,findex, order)
@@ -223,8 +227,10 @@ subroutine readagrmetpcpforcing(n,findex, order)
    real                :: gridDesc(6)
    integer             :: ierr
    integer             :: icount
-   
+
    ! EMK NEW
+   integer, external :: LIS_create_subdirs
+   integer :: rc
    real, allocatable :: back4(:,:,:)
    integer :: nobs_good
    type(USAF_obsData) :: precip_6hr_gage_tmp, precip_6hr_gage
@@ -260,6 +266,7 @@ subroutine readagrmetpcpforcing(n,findex, order)
    character(len=10) :: type
    character(len=10) :: yyyymmddhh
    character(len=50) :: pathOBA
+   logical :: found_inq
    character(len=120) :: obaFilename
    type(OBA) :: precipOBA ! EMK
    character(len=6) :: pcp_src(4)
@@ -282,7 +289,22 @@ subroutine readagrmetpcpforcing(n,findex, order)
    data varrad /0, -2, -4, -6/
    
    pathOBA = "./precip_OBA" ! EMK 
-  
+
+   ! See if subdirectory exists
+   if (agrmet_struc(n)%oba_switch .eq. 1 .or. &
+        agrmet_struc(n)%oba_switch .eq. 2) then
+      if (LIS_masterproc) then
+         inquire(file=trim(pathOBA), exist=found_inq)
+         if (.not. found_inq) then
+            rc = lis_create_subdirs(len_trim(pathOBA), trim(pathOBA))
+            if (rc .ne. 0) then
+               write(LIS_logunit, *) &
+                    '[WARN] Cannot create directory ', trim(pathOBA)
+            end if
+         end if
+      end if
+   end if
+
    ! YDT 9/26/07 save merged precip in analysis dir, instead of forcing dir
    !  to avoid overwriting the forcing archive. 
    !  pathpcp = trim(agrmet_struc(n)%agrmetdir)

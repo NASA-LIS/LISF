@@ -288,6 +288,7 @@ contains
                 NOAHMP401_struc(n)%noahmp401(t)%qair = 0.0
                 NOAHMP401_struc(n)%noahmp401(t)%wind_e = 0.0
                 NOAHMP401_struc(n)%noahmp401(t)%wind_n = 0.0
+                NOAHMP401_struc(n)%noahmp401(t)%sfcheadrt = 0.0
             enddo ! end of tile (t) loop
 
             !------------------------------------------------------------------------

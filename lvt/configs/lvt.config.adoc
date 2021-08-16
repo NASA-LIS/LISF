@@ -137,6 +137,7 @@ LVT output methodology:                 "2d gridspace"
 | "`GIMMS NDVI`"                    | GIMMS NDVI data
 | "`GIMMS AVHRR NDVI`"              | GIMMS AVHRR NDVI data
 | "`GIMMS MODIS NDVI`"              | GIMMS MODIS NDVI data
+| "`GLASS albedo`"		    | GLASS MODIS and AVHRR albedo data
 | "`GLDAS2`"                        | NASA Global Land Data Assimilation System version 2 data
 | "`MERRA2`"                        | MERRA version 2 data
 | "`ERA interim land`"              | ERA Interim Land data
@@ -157,6 +158,7 @@ LVT output methodology:                 "2d gridspace"
 | "`SMAP L3 Tb`"                    | SMAP L3 brightness temperature
 | "`OzFlux`"                        | OzFlux ground measurements
 | "`JASMIN soil moisture`"          | JASMIN soil moisture analysis
+| "`FluxSAT GPP`"                   | FluxSat GPP data
 |===
 
 .Example _lvt.config_ entry
@@ -1084,7 +1086,9 @@ AGRMET data area of data:             GLOBAL
 
 `ALEXI data directory:` specifies the location of the ALEXI ET data.
 
-`ALEXI data resolution (in km):` specifies the resolution of the ALEXI ET data in km. Acceptable values are 4 or 10.
+`ALEXI data domain extent:` specifies the domain extent of the ALEXI data. Acceptable values are `"CONUS"` and `"GLOBAL"`.
+
+`ALEXI data resolution (in km):` specifies the resolution of the ALEXI ET data in km. Acceptable values are 4 or 10 (for `"CONUS"`) or 5 (for `"GLOBAL"`).
 
 .Example _lvt.config_ entry
 ....
@@ -1094,7 +1098,7 @@ ALEXI data resolution (in km):  4
 
 ==== Ameriflux station observations
 
-`Ameriflux observation directory:` specifies the location of the Ameriflux datasets.Under this directory, the Ameriflux data is expected to be organized by the station names and then under each station name directory, the Level3 Ameriflux files are expected to be staged.
+`Ameriflux observation directory:` specifies the location of the Ameriflux datasets. Under this directory, the Ameriflux data is expected to be organized by the station names and then under each station name directory, the Level3 Ameriflux files are expected to be staged.
 
 `Ameriflux data level:` specifies the level of Ameriflux data (Note that only level 3 data is currently supported)
 
@@ -1686,6 +1690,18 @@ GIMMS AVHRR NDVI data directory:                   ./GIMMS-3g/
 GIMMS MODIS NDVI data directory:                   ./GIMMS_MODIS_NDVI
 ....
 
+==== GLASS MODIS/AVHRR albedo data
+
+`GLASS ALBEDO data directory:` specifies the location of the GLASS albedo data.
+
+`GLASS ALBEDO data source:` specifies the name of the GLASS albedo data. Acceptable GLASS albedo names are MODIS or AVHRR.
+
+.Example _lvt.config_ entry
+....
+GLASS ALBEDO data directory:                   ./GLASS/Albedo/AVHRR/V4/HDF
+GLASS ALBEDO data source:                       AVHRR
+....
+
 ==== GLDAS version 2 data
 
 `GLDAS2 data directory:` specifies the location of the GLDAS2 data.
@@ -2255,6 +2271,15 @@ OzFlux station list file:     ../OzFlux/stnlist.dat
 .Example _lvt.config_ entry
 ....
 JASMIN soil moisture data directory: ../JASMIN
+....
+
+==== FluxSat GPP
+
+`FluxSat data directory:` specifies the location of the FluxSat GPP data directory.
+
+.Example _lvt.config_ entry
+....
+FluxSat data directory: ./FluxSat
 ....
 
 [[ssec-optue]]

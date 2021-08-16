@@ -20,7 +20,7 @@ subroutine liswrffinalize_coupled()
   use LIS_timeMgrMod,        only : LIS_timemgr_set
   use LIS_surfaceModelMod,   only : LIS_surfaceModel_output,         &
                                     LIS_surfaceModel_writerestart
-  use LIS_logMod,            only : LIS_verify, LIS_flush, LIS_logunit
+  use LIS_logMod,            only : LIS_verify, LIS_logunit
   use LIS_irrigationMod,     only : LIS_irrigation_output ! EMK
 !EOP
  
@@ -53,6 +53,6 @@ subroutine liswrffinalize_coupled()
 
   write(unit=LIS_logunit,fmt=*) 'LIS cycle completed'
 
- call LIS_flush(LIS_logunit)
+ flush(LIS_logunit)
 
 end subroutine liswrffinalize_coupled

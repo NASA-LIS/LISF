@@ -1,0 +1,13 @@
+In SURFEX modi_... are generated during the compilation of the code. 
+Here we converted subroutines to "modi_" module manually.
+
+For example, subroutine SURFACE_RI.F90
+converted to a module 
+using this structure 
+
+MODULE MODI_SURFACE_RI
+CONTAINS
+  SUBROUTINE MODI_SURFACE_RI_SUB(args)
+  ...
+  END SUBROUTINE MODI_SURFACE_RI_SUB
+END MODULE MODI_SURFACE_RI

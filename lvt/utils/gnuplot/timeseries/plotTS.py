@@ -13,6 +13,8 @@
 # currently assumes eps files - need to modify for ESMPy to read config
 # options
 
+import sys
+
 print("Generating the gnuplot script for time series plots ...")
 
 infile = open('ts.config', 'r')
@@ -91,7 +93,7 @@ elif out_img_format.strip() == "eps":
     cline = 'set terminal postscript enhanced eps color "Times-Roman" 24\n'
     outfile.writelines(cline)
 else:
-    exit
+    sys.exit(-1)
 
 # 'set output "'//trim(stnname(i))//'_'//&
 #                      trim(varname(j))//'_ts.eps"'

@@ -54,7 +54,7 @@ subroutine LVT_run_DataComp
         call LVT_diagnoseStats(i)
         call LVT_computeStats(i)
         call LVT_resetDataStreams
-        call LVT_flush(LVT_logunit)
+        flush(LVT_logunit)
      enddo
   enddo
   write(LVT_logunit,*) '[INFO] Finished LVT analysis'

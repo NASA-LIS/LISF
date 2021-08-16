@@ -214,6 +214,9 @@ subroutine NoahMP36_main(n)
     real                 :: tmp_chb2               ! sensible heat exchange coefficient over bare-ground [-]
     real                 :: tmp_fpice              ! snow fraction in precipitation [-]
     real                 :: tmp_sfcheadrt          ! extra output for WRF-HYDRO [m]
+    ! Code added by Chandana Gangodagamage on 02/25/2019
+    real                 :: tmp_infxs1rt           ! variable for LISHydro coupling [mm]
+    real                 :: tmp_soldrain1rt        ! variable for LISHydro coupling [mm]
     
     ! SY: Begin for enabling OPTUE
     ! SY: Begin corresponding to REDPRM
@@ -534,6 +537,9 @@ subroutine NoahMP36_main(n)
             tmp_zlvl        = NOAHMP36_struc(n)%noahmp36(t)%zlvl
             tmp_albd      = NOAHMP36_struc(n)%noahmp36(t)%albd
             tmp_albi      = NOAHMP36_struc(n)%noahmp36(t)%albi
+            !Added by Chandana Gangodagamage
+            tmp_infxs1rt    = NOAHMP36_struc(n)%noahmp36(t)%infxs1rt
+            tmp_soldrain1rt = NOAHMP36_struc(n)%noahmp36(t)%soldrain1rt
 
             ! SY: Begin for enabling OPTUE: get calibratable parameters
             ! SY: Begin corresponding to REDPRM
@@ -601,6 +607,9 @@ subroutine NoahMP36_main(n)
             tmp_WDPOOL      = NOAHMP36_struc(n)%noahmp36(t)%WDPOOL
             tmp_WRRAT       = NOAHMP36_struc(n)%noahmp36(t)%WRRAT
             tmp_MRP         = NOAHMP36_struc(n)%noahmp36(t)%MRP
+#ifdef WRF_HYDRO
+            tmp_sfcheadrt   = NoahMP36_struc(n)%noahmp36(t)%sfcheadrt
+#endif
             ! SY: End corresponding to read_mp_veg_parameters
             ! SY: End for enabling OPTUE: get calibratable parameters
             call noahmp_driver_36(LIS_localPet, t,tmp_landuse_tbl_name  , & ! in    - Noah model landuse parameter table [-]
@@ -824,7 +833,12 @@ subroutine NoahMP36_main(n)
                                   
                                   tmp_sfcheadrt         )   ! out   - extra output for WRF-HYDRO [m]
             
-           ! save state variables from local variables to global variables
+            !Added by Chandana Gangodagamage
+            !obtain infiltration excess and soil drain from model physics 
+            tmp_infxs1rt = tmp_runsrf * tmp_dt      ! units in [mm]
+            tmp_soldrain1rt = tmp_runsub * tmp_dt   ! units in [mm]
+            
+            ! save state variables from local variables to global variables
             NOAHMP36_struc(n)%noahmp36(t)%albold      = tmp_albold
             NOAHMP36_struc(n)%noahmp36(t)%sneqvo      = tmp_sneqvo
             NOAHMP36_struc(n)%noahmp36(t)%sstc(:)     = tmp_sstc(:)
@@ -925,6 +939,9 @@ subroutine NoahMP36_main(n)
             NOAHMP36_struc(n)%noahmp36(t)%sfcheadrt    = tmp_sfcheadrt
             NOAHMP36_struc(n)%noahmp36(t)%albd       = tmp_albd
             NOAHMP36_struc(n)%noahmp36(t)%albi       = tmp_albi  
+            !Added by Chandana Gangodagamage
+            NOAHMP36_struc(n)%noahmp36(t)%infxs1rt     = tmp_infxs1rt
+            NOAHMP36_struc(n)%noahmp36(t)%soldrain1rt  = tmp_soldrain1rt
 
             ![ 1] output variable: soil_temp (unit=K). ***  soil layer temperature
             soil_temp(1:NOAHMP36_struc(n)%nsoil) = NOAHMP36_struc(n)%noahmp36(t)%sstc(NOAHMP36_struc(n)%nsnow+1 : NOAHMP36_struc(n)%nsoil+NOAHMP36_struc(n)%nsnow)

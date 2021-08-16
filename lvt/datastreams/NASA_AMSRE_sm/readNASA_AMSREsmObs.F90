@@ -99,7 +99,7 @@ subroutine read_AMSREsm(source, name)
   use LVT_logmod,          only : LVT_logunit
   use NASA_AMSREsm_obsMod, only : NASA_AMSREsmobs
   implicit none
-#if (defined USE_HDF4) 
+#if (defined USE_HDFEOS2)
 #include "hdf.f90"
 #endif
 !
@@ -121,7 +121,7 @@ subroutine read_AMSREsm(source, name)
 !EOP
   real                 :: sb_rqc(NASA_AMSREsmobs(source)%mo)
 
-#if (defined USE_HDF4)
+#if (defined USE_HDFEOS2)
   !declare the hdf-eos library functions 
   integer              :: gdopen,gdattach,gddefboxreg,gdrdfld
   integer              :: gdgetpix,gdextreg,gddetach,gdclose
