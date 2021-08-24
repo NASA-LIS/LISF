@@ -23,6 +23,7 @@ module HYMAP_parmsMod
 !   2 Dec 2015: Augusto Getirana: Included drainage area and basin maps
 !   1 Nov 2017: Augusto Getirana: Included flow type maps, baseflow and surface runoff dwi maps
 !   9 Jun 2020: Yeosang Yoon: Support flexible grid setting (dx~=dy)
+!  24 Aug 2021: Hiroko Beaudoing: Fix boundary for global domain
 !
   use ESMF
   use LDT_coreMod
@@ -760,25 +761,39 @@ contains
     where(i2nextx>0)i2nextx=i2nextx-idx
     where(i2nexty>0)i2nexty=i2nexty-idy
 
-    i2nexty(1,:)=imis
-    i2nexty(nx,:)=imis
-    i2nexty(:,1)=imis
-    i2nexty(:,ny)=imis
+!Hiroko: do not insert boundary if global domain
+!        this fix only works on single processor run
+    if ( idx.eq.0 .and. idy.eq.0 ) then
+     print*,'HYMAP parameter global'
+     where(i2nextx<1.and.i2nextx/=imis.and.i2mask>0)
+        i2nextx=ibound
+        i2nexty=ibound
+     endwhere
+     where(i2nextx>nx.and.i2mask>0)
+        i2nextx=ibound
+        i2nexty=ibound
+     endwhere
+    else    ! local domain, insert boundary
+     i2nexty(1,:)=imis
+     i2nexty(nx,:)=imis
+     i2nexty(:,1)=imis
+     i2nexty(:,ny)=imis
     
-    i2nextx(1,:)=imis
-    i2nextx(nx,:)=imis
-    i2nextx(:,1)=imis
-    i2nextx(:,ny)=imis
-
-    where(i2nextx<=1.and.i2nextx/=imis.and.i2mask>0)
-       i2nextx=ibound
-       i2nexty=ibound
-    endwhere
+     i2nextx(1,:)=imis
+     i2nextx(nx,:)=imis
+     i2nextx(:,1)=imis
+     i2nextx(:,ny)=imis
+ 
+     where(i2nextx<=1.and.i2nextx/=imis.and.i2mask>0)
+        i2nextx=ibound
+        i2nexty=ibound
+     endwhere
     
-    where(i2nextx>=nx.and.i2mask>0)
-       i2nextx=ibound
-       i2nexty=ibound
-    endwhere
+     where(i2nextx>=nx.and.i2mask>0)
+        i2nextx=ibound
+        i2nexty=ibound
+     endwhere
+    endif    ! global
     
     where(i2nexty<=1.and.i2nexty/=imis.and.i2mask>0)
        i2nextx=ibound
