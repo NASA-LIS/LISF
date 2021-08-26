@@ -124,7 +124,6 @@ contains
 ! !INTERFACE:
   subroutine CMEM3_initialize()
 ! !USES:
-    use ESMF
     use LIS_coreMod,    only : LIS_rc, LIS_config
     use LIS_logMod,     only : LIS_logunit, LIS_verify, LIS_getNextUnitNumber, &
                                LIS_releaseUnitNumber
