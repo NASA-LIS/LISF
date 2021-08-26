@@ -593,7 +593,7 @@ contains
                    call system('mv temp '//trim(filename))
 
                    open(metric%ftn_ts_loc(i,m),file=(filename),&
-                        ACCESS = 'APPEND',form='formatted')
+                        position = 'APPEND',form='formatted')
                 endif
              enddo
           end do
@@ -658,7 +658,7 @@ contains
                 call system('mv temp '//trim(filename))
 
                 open(metric%ftn_ts_loc(i,1),file=(filename),&
-                     ACCESS = 'APPEND',form='formatted')
+                     position = 'APPEND',form='formatted')
              end if
           enddo
        end if
