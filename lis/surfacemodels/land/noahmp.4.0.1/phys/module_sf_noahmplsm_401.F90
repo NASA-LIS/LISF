@@ -1449,10 +1449,10 @@ ENDIF   ! CROPTYPE == 0
            print *,'CANICE = ',CANICE
            print *,'SNEQV = ',SNEQV
            print *,'WA = ',WA
-           print *,'SMC(1) = ',SMC(1) * DZSNSO(1) * -1000.
-           print *,'SMC(2) = ',SMC(2) * DZSNSO(2) * -1000.
-           print *,'SMC(3) = ',SMC(3) * DZSNSO(3) * -1000.
-           print *,'SMC(4) = ',SMC(4) * DZSNSO(4) * -1000.
+           print *,'SMC(1) = ',SMC(1) * DZSNSO(1) * (-1000.)
+           print *,'SMC(2) = ',SMC(2) * DZSNSO(2) * (-1000.)
+           print *,'SMC(3) = ',SMC(3) * DZSNSO(3) * (-1000.)
+           print *,'SMC(4) = ',SMC(4) * DZSNSO(4) * (-1000.)
 !           print *,'DZSNSO(1) = ',DZSNSO(1)
 !           print *,'DZSNSO(2) = ',DZSNSO(2)
 !           print *,'DZSNSO(3) = ',DZSNSO(3)
