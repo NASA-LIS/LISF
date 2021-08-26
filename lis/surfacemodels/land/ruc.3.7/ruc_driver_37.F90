@@ -400,7 +400,7 @@ subroutine ruc_driver_37(                                                  &
 
   !!!  
   ! ktime = 1  
-  write(nowdate, "(i0.4,i0.2,i0.2,i0.2,i0.2)"), year, month, day, hour, minute ! yyyymmddhhmm
+  write(nowdate, "(i0.4,i0.2,i0.2,i0.2,i0.2)") year, month, day, hour, minute ! yyyymmddhhmm
 
   !
   ! update ffrozp for each time step, depending on the air temperature in the forcing data.
