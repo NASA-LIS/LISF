@@ -21,7 +21,6 @@ module LVT_statsMod
   use netcdf
 #endif
   use grib_api
-  use ESMF
   use LVT_coreMod
   use LVT_timeMgrMod
   use LVT_histDataMod
@@ -483,6 +482,8 @@ contains
   subroutine initMetricFiles(metric)
 ! 
 ! !USES:   
+    use ESMF
+
     implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -901,6 +902,7 @@ contains
   subroutine LVT_computeStats(pass)
 ! 
 ! !USES:   
+    use ESMF
     use LVT_timeMgrMod,      only : LVT_calendar
     use LVT_DataStreamsMod  
 
@@ -1193,6 +1195,8 @@ contains
        varname, ci)
 ! 
 ! !USES:   
+   use ESMF
+
    implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -1678,6 +1682,7 @@ contains
   subroutine createTSfiles(pass, metric)
 ! 
 ! !USES:   
+    use ESMF
     use LVT_timeMgrMod,  only : LVT_tick
 
 !
