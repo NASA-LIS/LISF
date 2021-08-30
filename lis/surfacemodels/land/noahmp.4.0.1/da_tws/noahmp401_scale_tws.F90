@@ -63,7 +63,8 @@ subroutine noahmp401_scale_tws(n, LSM_State)
   real, pointer          :: swe(:)
   real, pointer          :: snod(:)
 
-  
+
+#if 0
   ! Natt
   ! Scale TWS states to mm (Note, GWS is already in mm)
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
@@ -100,6 +101,6 @@ subroutine noahmp401_scale_tws(n, LSM_State)
      swe(t)    = swe(t) * 1000.0  ! m -> mm
      snod(t)   = snod(t) * 1000.0 ! m -> mm
   enddo
-  
+#endif  
   
 end subroutine noahmp401_scale_tws
