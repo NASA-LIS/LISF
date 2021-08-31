@@ -546,6 +546,25 @@ module LDT_ensRstMod
                  vmin,vmax)
             deallocate(n_dimids)
          enddo
+
+         if(LDT_rc%ensrstsampling.eq."random sampling") then
+           allocate(var_map(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in))
+            do i=1,dims(1)/LDT_rc%nens_in
+               do m=1,LDT_rc%nens_out
+                  t2 = (i-1)*LDT_rc%nens_out+m
+                  if(m.gt.LDT_rc%nens_in) then
+                     !randomly select an ensemble member
+                     call nr_ran2(seed, rand)
+                     m1 = 1+nint(rand*(LDT_rc%nens_in-1))
+                     t1 = (i-1)*LDT_rc%nens_in+m1
+                     var_map(t2) = t1
+                  else
+                     t1 = (i-1)*LDT_rc%nens_in+m
+                     var_map(t2) = t1
+                  endif
+               enddo
+            enddo            
+         endif
          
          do k=1,nVars
             call LDT_verify(nf90_inquire_variable(ftn,k,ndims=nvardims),&
@@ -566,12 +585,23 @@ module LDT_ensRstMod
             
             call LDT_verify(nf90_get_var(ftn,k,var),&
                  'nf90_get_var failed in LDT_ensRstMod')
-            
-            do t=1,dims(1)
-               do m=1,LDT_rc%nens_out
-                  var_new((t-1)*LDT_rc%nens_out+m,:) = var(t,:)
+
+            if(LDT_rc%ensrstsampling.eq."none") then 
+               do t=1,dims(1)
+                  do m=1,LDT_rc%nens_out
+                     var_new((t-1)*LDT_rc%nens_out+m,:) = var(t,:)
+                  enddo
                enddo
-            enddo
+            elseif(LDT_rc%ensrstsampling.eq."random sampling") then 
+               do i=1,dims(1)/LDT_rc%nens_in
+                  do m=1,LDT_rc%nens_out
+                     t2 = (i-1)*LDT_rc%nens_out+m
+                     t1 = var_map(t2)
+                     var_new(t2,:) = var(t1,:)
+                  enddo
+               enddo
+            endif
+            
             if(nvardims.gt.1) then
                call LDT_verify(nf90_put_var(ftn2,k,var_new,(/1,1/),&
                     (/dims(1)*LDT_rc%nens_out/LDT_rc%nens_in,&
@@ -1064,75 +1094,196 @@ module LDT_ensRstMod
          ! HYMAP Router:
       elseif(LDT_rc%routingmodel .eq. "HYMAP2") then
 
-         write(LDT_logunit,*)"[INFO] Downscaling ensemble restart for routing model: "&
-              //trim(LDT_rc%routingmodel)
-
-         ! Open input binary file:
-         ftn = LDT_getNextUnitNumber()
-
-         ! Check if input restart file is present:
-         inquire( file=trim(LDT_rc%inputrst), exist=file_exists )
-         if( file_exists ) then
-            write(LDT_logunit,*) "[INFO] Opening HYMAP input restart file, "
-            write(LDT_logunit,*)  trim(LDT_rc%inputrst)
-            open(ftn,file=LDT_rc%inputrst,status='old',&
-                 form='unformatted',iostat=ios)
-            !open(ftn,file=LDT_rc%inputrst,status='old',&
-            !     form='unformatted',access='sequential',iostat=ios)
-         else
-            write(LDT_logunit,*) "[ERR] HYMAP input binary restart file, "
-            write(LDT_logunit,*)  trim(LDT_rc%inputrst)
-            write(LDT_logunit,*) " is missing. Stopping run ..."
-            call LDT_endrun
-         endif
-
-         ! If output ensemble restart file exists, provide warning ...
-         inquire( file=trim(LDT_rc%outputrst), exist=file_exists )
-         if(file_exists) then
-            write(LDT_logunit,*) "[WARN] HYMAP binary restart file, "
-            write(LDT_logunit,*)  trim(LDT_rc%outputrst)
-            write(LDT_logunit,*) "  already exists! Overwriting the file ..."
-            !               call LDT_endrun
-         endif
-
-         ! Create output binary file:
+         write(LDT_logunit,*)"[INFO] Downscaling ensemble restart for: "&
+              //trim(LDT_rc%rstsource)
+         
+#if (defined USE_NETCDF3 || defined USE_NETCDF4) 
+         
+         call LDT_verify(nf90_open(path=LDT_rc%inputrst,& 
+              mode=nf90_NOWRITE,ncid=ftn),'failed to open '//trim(LDT_rc%inputrst))
+         
          write(LDT_logunit,*) " Generating restart file: ",trim(LDT_rc%outputrst)
-         ftn2 = LDT_getNextUnitNumber()
-         !open(ftn2,file=LDT_rc%outputrst,status='new',&
-         !     form='unformatted',access='sequential',iostat=ios)
-         open(ftn2,file=LDT_rc%outputrst,status='new',&
-              form='unformatted',iostat=ios)
+#if (defined USE_NETCDF4)
+         call LDT_verify(nf90_create(path=LDT_rc%outputrst,cmode=nf90_netcdf4,&
+              ncid = ftn2),&
+              'creating netcdf file failed in LDT_ensRstMod')
+#endif
+#if (defined USE_NETCDF3)
+         call LDT_verify(nf90_create(path=LDT_rc%outputrst,cmode=nf90_clobber,&
+              ncid = ftn2),&
+              'creating netcdf file failed in LDT_ensRstMod')
+#endif
+         
+         call LDT_verify(nf90_inquire(ftn,nDims,nVars,nGlobalAtts,unlimdimId),&
+              'nf90_inquire failed in LDT_ensRstMod')
+         
+         
+         allocate(dimID(nDims))
+         allocate(dimID2(nDims))
+         allocate(dims(nDims))
+         allocate(dimName(nDims))
+         
+         call LDT_verify(nf90_inq_dimId(ftn,"ntiles",dimId(1)),&
+              'nf90_inq_dimId failed for ntiles in LDT_ensRstMod')
+         call LDT_verify(nf90_inquire_dimension(ftn,dimId(1),len=dims(1)),&
+              'nf90_inquire_dimension failed in LDT_ensRstMod')
+                  
+         do k= 2, nDims-1
+            if (k-1 .lt. 10) then
+               write(unit=fd,fmt='(I1)') k-1
+            else
+               write(unit=fd,fmt='(I2)') k-1
+            end if
+            dimName(k) = 'dim'//trim(fd)
+            call LDT_verify(nf90_inq_dimId(ftn,dimName(k),dimId(k)),&
+                 'nf90_inq_dimId failed for '//dimName(k)//' in LDT_ensRstMod')
+            call LDT_verify(nf90_inquire_dimension(ftn,dimID(k),len=dims(k)),&
+                 'nf90_inquire failed in LDT_ensRstMod')
+         enddo
+         
+         ! Does this need to be expanded?
+         model_name = "HYMAP2"
 
-         numvars = 8
+         call writeglobalheader(ftn2, model_name, nDims, dims, &
+              LDT_rc%nens_in,LDT_rc%nens_out, dimID2)
+         
+         call LDT_verify(nf90_enddef(ftn2))
+         
+         do k=1,nVars
+            
+            call LDT_verify(nf90_inquire_variable(ftn,k,varName,ndims=nvardims),&
+                 'nf90_inquire_variable failed in LDT_ensRstMod')
+            
+            allocate(n_dimids(nvardims))
+            call LDT_verify(nf90_inquire_variable(ftn,k,varName,dimids=n_dimids),&
+                 'nf90_inquire_variable failed in LDT_ensRstMod')
 
-         ! Loop over, read and average each HYMAP variable ensemble: 
-         do i=1,numvars
+            call LDT_verify(nf90_get_att(ftn,k,"units",units),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            call LDT_verify(nf90_get_att(ftn,k,"standard_name",standard_name),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            call LDT_verify(nf90_get_att(ftn,k,"scale_factor",scale_factor),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            call LDT_verify(nf90_get_att(ftn,k,"add_offset",offset),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            call LDT_verify(nf90_get_att(ftn,k,"vmin",vmin),&
+                 'nf90_get_att failed in LDT_ensRstMod')
+            call LDT_verify(nf90_get_att(ftn,k,"vmax",vmax),&
+                 'nf90_get_att failed in LDT_ensRstMod')
 
-            allocate(var1d(LDT_rc%routing_grid_count))
-            allocate(var(LDT_rc%routing_grid_count,LDT_rc%nens_in))
+            call writeheader_restart(ftn2,nvardims,&
+                 n_dimIds,&
+                 k,&
+                 standard_name,units,&
+                 scale_factor, offset,&
+                 vmin,vmax)
 
-            read(ftn) var
-
-            var1d = 0.0
-            do nr = 1, LDT_rc%routing_grid_count
-               if( count( mask = var(nr,:) .ne. LDT_rc%udef ) == 0 ) then
-                  var1d(nr) = LDT_rc%udef
-               else 
-                  var1d(nr) = sum(var(nr,:), mask = var(nr,:) .ne. LDT_rc%udef) &
-                       / count( mask = var(nr,:) .ne. LDT_rc%udef )
-               endif
-            enddo
-
-            write(ftn2) var1d
-
-            deallocate(var1d)
-            deallocate(var)
-
+            deallocate( n_dimids )
          enddo
 
-         call LDT_releaseUnitNumber(ftn)
-         call LDT_releaseUnitNumber(ftn2)
+  
+         if(LDT_rc%ensrstsampling.eq."random sampling") then
+            allocate(var_map(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in))
+            var_map = -1
+            do i=1,dims(1)/LDT_rc%nens_in
+               
+               st = (i-1)*LDT_rc%nens_out+1
+               en = (i-1)*LDT_rc%nens_out+LDT_rc%nens_out
+               
+               do m=1,LDT_rc%nens_out
+                  t2 = (i-1)*LDT_rc%nens_out+m
+                  cycl_check = .true. 
+                  
+                  do while(cycl_check) 
+                     !randomly select an ensemble member                  
+                     call nr_ran2(seed, rand)
+                     m1 = 1+nint(rand*(LDT_rc%nens_in-1))
+                     t1 = (i-1)*LDT_rc%nens_in+m1
+                     
+                     dupl_check =.false. 
+                     do p=st,en
+                        if(t1.eq.var_map(p)) then
+                           dupl_check = .true.
+                        endif
+                     enddo
+                     if(dupl_check) then
+                        cycl_check = .true.
+                     else
+                        cycl_check = .false.
+                     endif
+                  enddo
+                  
+                  var_map(t2) = t1
+               enddo
+            enddo
+         endif
+         
+         
+         do k=1,nVars
+            call LDT_verify(nf90_inquire_variable(ftn,k,ndims=nvardims),&
+                 'nf90_inquire_variable failed in LDT_ensRstMod')
+            allocate(nvardimIDs(nvardims))
+            call LDT_verify(nf90_inquire_variable(ftn,k,varName,&
+                 dimIDs=nvardimIDs),&
+                 'nf90_inquire_variable failed in LDT_ensRstMod')
+            
+!----------------------------------------------------------------------------
+! Assume that restart files do not have variables with more than 2 dimensions. 
+!----------------------------------------------------------------------------
+            if(nvardims.gt.1) then
+               allocate(var(dims(1),dims(nvarDimIDs(2))))
+               allocate(var_new(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in, &
+                    dims(nvarDimIDs(2))))
+            else
+               allocate(var(dims(1),1))
+               allocate(var_new(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in,1))
+            endif
+            
+            call LDT_verify(nf90_get_var(ftn,k,var),&
+                 'nf90_get_var failed in LDT_ensRstMod')
+            
+            if(LDT_rc%ensrstsampling.eq."none") then
+               do t=1,dims(1)/LDT_rc%nens_in
+                  var_new(t,:) = 0.0
+                  do m=1,LDT_rc%nens_in
+                     var_new(t,:) = var_new(t,:) + var((t-1)*LDT_rc%nens_in+m,:)
+                  enddo
+                  var_new(t,:) = var_new(t,:)/LDT_rc%nens_in
+               enddo
+            elseif(LDT_rc%ensrstsampling.eq."random sampling") then
+               do i=1,dims(1)/LDT_rc%nens_in
+                  do m=1,LDT_rc%nens_out
+                     t2 = (i-1)*LDT_rc%nens_out+m
+                     t1 = var_map(t2)
+                     var_new(t2,:) = var(t1,:)
+                  enddo
+               enddo
+            endif
+            
+            if(nvardims.gt.1) then 
+               call LDT_verify(nf90_put_var(ftn2,k,var_new,(/1,1/),&
+                    (/dims(1)*LDT_rc%nens_out/LDT_rc%nens_in,&
+                    dims(nvarDimIDs(2))/)),&
+                    'nf90_put_var failed in LDT_ensRstMod for '//& 
+                    trim(varName))
+            else
+               
+               call LDT_verify(nf90_put_var(ftn2,k,var_new,(/1,1/),&
+                    (/dims(1)*LDT_rc%nens_out/LDT_rc%nens_in,1/)),&
+                    'nf90_put_var failed in LDT_ensRstMod for '//&
+                    trim(varName))
+            endif
+            
+            deallocate(var)
+            deallocate(var_new)
+            deallocate(nvardimIDs)
+         enddo
 
+         if(LDT_rc%ensrstsampling.eq."random sampling") then
+            deallocate(var_map)
+         endif
+
+#endif
       endif
 
       ! OTHER downscaled ensemble restart sources/methods are currently
