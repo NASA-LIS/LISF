@@ -259,7 +259,7 @@ elsif($use_gribapi == 2) {
    if(defined($ENV{LVT_ECCODES})){
       $sys_gribapi_path = $ENV{LVT_ECCODES};
       $inc = "/include/";
-      if ($sys_arch == "cray_cray") {
+      if ($sys_arch eq "cray_cray") {
          $lib = "/lib64/";
       }
       else {
