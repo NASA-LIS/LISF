@@ -380,7 +380,7 @@ elsif($use_gribapi == 2) {
    if(defined($ENV{LIS_ECCODES})){
       $sys_gribapi_path = $ENV{LIS_ECCODES};
       $inc = "/include/";
-      if ($sys_arch == "cray_cray") {
+      if ($sys_arch eq "cray_cray") {
          $lib = "/lib64/";
       }
       else {
@@ -827,7 +827,7 @@ if($par_lev == 1) {
    if (index($sys_fc, "-mt_mpi") != -1) {
       $ldflags = $ldflags." -lmpi_mt";
    }
-   elsif ($cray_modifications == 1 || $sys_arch == "cray_cray") {
+   elsif ($cray_modifications == 1 || $sys_arch eq "cray_cray") {
       $ldflags = $ldflags." -lmpich";
    }
    else{
