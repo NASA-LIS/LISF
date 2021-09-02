@@ -48,6 +48,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
      bgap    , wgap    , tgb     , tgv     , chv     , chb     , & ! out Noah MP only
      shg     , shc     , shb     , evg     , evb     , ghv     , & ! out Noah MP only
      ghb     , irg     , irc     , irb     , tr      , evc     , & ! out Noah MP only
+     fgev_pet, fcev_pet, fctr_pet,                               & ! PET 
      chleaf  , chuc    , chv2    , chb2    , relsmc,             &
      parameters ,                                                & ! out Noah MP only
      sfcheadrt , INFXSRT, soldrain)                                ! For WRF-Hydro
@@ -244,6 +245,9 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   real, intent(out) :: irb                    ! bare net longwave rad. [w/m2] [+ to atm]
   real, intent(out) :: tr                     ! transpiration [w/m2]  [+ to atm]
   real, intent(out) :: evc                    ! canopy evaporation heat [w/m2]  [+ to atm]
+  real, intent(out) :: fgev_pet
+  real, intent(out) :: fcev_pet
+  real, intent(out) :: fctr_pet
   real, intent(out) :: chleaf                 ! leaf exchange coefficient
   real, intent(out) :: chuc                   ! under canopy exchange coefficient 
   real, intent(out) :: chv2                   ! veg 2m exchange coefficient
@@ -444,6 +448,9 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   real, dimension(1,1) :: irbout
   real, dimension(1,1) :: trout
   real, dimension(1,1) :: evcout
+  real, dimension(1,1) :: fgev_petout
+  real, dimension(1,1) :: fcev_petout
+  real, dimension(1,1) :: fctr_petout
   real, dimension(1,1) :: chleafout
   real, dimension(1,1) :: chucout
   real, dimension(1,1) :: chv2out
@@ -698,6 +705,9 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   irbout(1,1)   = irb
   trout(1,1)    = tr
   evcout(1,1)   = evc
+  fgev_petout(1,1) = fgev_pet
+  fcev_petout(1,1) = fcev_pet
+  fctr_petout(1,1) = fctr_pet
   chleafout(1,1) = chleaf
   chucout(1,1)  = chuc
   chv2out(1,1)  = chv2
@@ -750,6 +760,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
        bgapout , wgapout , tgvout  , tgbout  , chvout  , chbout  , & ! out Noah MP only
        shgout  , shcout  , shbout  , evgout  , evbout  , ghvout  , & ! out Noah MP only
        ghbout  , irgout  , ircout  , irbout  , trout   , evcout  , & ! out Noah MP only
+       fgev_petout, fcev_petout, fctr_petout,                      & ! PET 
        chleafout  , chucout , chv2out , chb2out , rsout , fpice  , & ! out Noah MP only
        parameters, &
 #ifdef WRF_HYDRO
@@ -876,6 +887,9 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
 
   rainf = prcp * (1.0 - fpice)/dt  ! added by Shugong for LIS output 
   snowf = prcp * fpice/dt          ! added by Shugong for LIS output 
+  fgev_pet = fgev_petout(1,1)      ! 08/30/2021 Shugong 
+  fcev_pet = fcev_petout(1,1)
+  fctr_pet = fctr_petout(1,1)
 
 #ifndef WRF_HYDRO
   INFXSRT  = 0.0
