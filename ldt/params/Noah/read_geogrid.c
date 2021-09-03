@@ -12,10 +12,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 /* 
 #define BIG_ENDIAN    0
 #define LITTLE_ENDIAN 1
 */
+
 int read_geogrid_(
       char * fname,            /* The name of the file to read from */
       int * len,               /* The length of the filename */
@@ -71,7 +73,7 @@ int read_geogrid_(
       A, B, C, D give the offsets of the LSB through MSB (i.e., for 
       word ABCD, A=MSB, D=LSB) in the array from the beginning of a word 
    */
-   if (*endian == BIG_ENDIAN) {
+   if (*endian == 0) {
       A2 = 0; B2 = 1;
       A3 = 0; B3 = 1; C3 = 2;
       A4 = 0; B4 = 1; C4 = 2; D4 = 3;
