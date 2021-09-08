@@ -824,8 +824,7 @@ else{
 #printf misc_file "%s\n","#undef SPMD";
 printf misc_file "%s\n","#define BILHEADER_FILE_READ_METHOD_1_";
 printf misc_file "%s\n","#define BILREAD_ASSUME_BIG_ENDIAN_";
-printf misc_file "%s\n","#define VERIFY_(A)   IF(A/=0)THEN;PRINT *,'ERROR AT LINE ', __LINE__;STOP;ENDIF";
-printf misc_file "%s\n","#define ASSERT_(A)   if(.not.A)then;print *,'Error:',__FILE__,__LINE__;stop;endif";
+
 close(misc_file);
 
 open(netcdf_file,">LDT_NetCDF_inc.h");
