@@ -3382,17 +3382,21 @@ LIS output timestep:          1da
 |===
 |Value |Description
 
-|"`LIS LSM soil moisture`" |soil moisture output from a LIS run
-|"`Synthetic soil moisture`" |synethtic soil moisture observations created from a LIS run
-|"`AMSR-E(LPRM) soil moisture`" |Land Parameter Retrieval Model (LPRM) retrievals of AMSR-E soil moisture
-|"`AMSR-E(NASA) soil moisture`" |NASA AMSR-E soil moisture
-|"`ESA CCI soil moisture`" |Essential Climate Variable (ECV) soil moisture retrievals
-|"`WindSat soil moisture`" |WindSat retrievals of soil moisture
-|"`SMOPS soil moisture`" |NESDIS Soil Moisture Operational Processing System (SMOPS) based soil moisture retrievals
-|"`ASCAT TUW soil moisture`" |ASCAT soil moisture retrievals from TU Wein
-|"`GRACE TWS`" |Terrestrial water storage observations from GRACE
-|"`Simulated GRACE`" |Simulated water storage observations from GRACE
-|"`MCD15A2H LAI`" | MODIS MCD15A2H v006 LAI product
+|"`LIS LSM soil moisture`" |Soil moisture output from a LIS run.  Note that the units of the LIS soil moisture must be "`m3/m3`".
+|"`Synthetic soil moisture`" |Synthetic soil moisture observations created from a LIS run (units in "`m3/m3`")
+|"`AMSR-E(LPRM) soil moisture`" |Land Parameter Retrieval Model (LPRM) retrievals of AMSR-E soil moisture (units in "`m3/m3`")
+|"`AMSR-E(NASA) soil moisture`" |NASA AMSR-E soil moisture (units in "`m3/m3`")
+|"`ESA CCI soil moisture`" |Essential Climate Variable (ECV) soil moisture retrievals (units in "`m3/m3`")
+|"`WindSat soil moisture`" |WindSat retrievals of soil moisture (units in "`m3/m3`")
+|"`SMOPS soil moisture`" |NESDIS Soil Moisture Operational Processing System (SMOPS) based soil moisture retrievals (units in "`m3/m3`")
+|"`ASCAT TUW soil moisture`" |ASCAT soil moisture retrievals from TU Wein (units in "`m3/m3`")
+|"`GRACE TWS`" |Terrestrial water storage observations from GRACE (units in "`mm`")
+|"`GRACE QL TWS`" |Terrestrial water storage observations from GRACE (units in "`mm`")
+|"`Simulated GRACE`" |Simulated water storage observations from GRACE (units in "`mm`")
+|"`MCD15A2H LAI`" |MODIS MCD15A2H v006 LAI product (units in "`-`")
+|"`GLASS LAI`" |GLASS LAI product (units in "`-`")
+|"`LPRM vegetation optical depth`" |Land Parameter Retrieval Model (LPRM) vegetation optical depth observations (units in "`-`")
+|"`NASA SMAP vegetation optical depth`" |NASA SMAP vegetation optical depth observations (units in "`-`")
 |"`SMOS NRT NN soil moisture`" | SMOS Level 2 Soil Moisture Near Real Time Neural Network
 |===
 
