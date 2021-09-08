@@ -21,7 +21,7 @@
 #include "LDT_misc.h"
 module  MMF_groundwater
   
-  use LDT_logMod,  only : LDT_logunit
+  use LDT_logMod,  only : LDT_logunit, LDT_endrun
   use LDT_coreMod
   use map_utils,   only : ij_to_latlon
   use LDT_gridmappingMod
@@ -161,8 +161,7 @@ contains
        
     case default  
        write(LDT_logunit,*) '[ERROR] Unknown MMF data field : ', trim (varname)
-       VERIFY_(1) 
-       
+       call LDT_endrun
     end select
 
     ! Reading GEOGRID data
@@ -194,8 +193,8 @@ contains
 
           if (rc == 1 .or. status == 1) then
              write(LDT_logunit,*) '[ERROR] reading GEOGRID file : ',trim(geogridFile)
-             VERIFY_(1) 
-          end if
+             call LDT_endrun
+           end if
              
           where(tarray == missing)
              tarray = LDT_rc%udef
