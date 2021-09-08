@@ -131,6 +131,7 @@ Acceptable values are:
 |LSM     | land surface model
 |Lake    | lake model
 |Glacier | glacier model
+|Openwater | open water surface type
 |====
 
 .Example _lis.config_ entry
