@@ -348,6 +348,7 @@ contains
 
     inquire(file=LIS_rc%paramfile(n), exist=file_exists)
     if(file_exists) then
+      if(LIS_rc%irrigation_GWabstraction.ne.0) then
 
        allocate(l_gwratio(LIS_rc%lnc(n),LIS_rc%lnr(n)))
 
@@ -381,6 +382,7 @@ contains
        enddo
 
        deallocate(l_gwratio)
+     endif 
     else
        write(LIS_logunit,*) "[ERR] Groundwater irrigation ratio map: ",&
              LIS_rc%paramfile(n),"[ERR] does not exist."
