@@ -737,6 +737,8 @@ contains
     ! at HSL/GSFC/NASA
     ! ================================================   
     
+    use LDT_logmod, only : LDT_logunit
+
     implicit none       
   
     integer, intent(in)    :: nx                  ! number of grids in horizontal
@@ -764,7 +766,7 @@ contains
 !Hiroko: do not insert boundary if global domain
 !        this fix only works on single processor run
     if ( idx.eq.0 .and. idy.eq.0 ) then
-     print*,'HYMAP parameter global'
+     write(LDT_logunit,*) '[INFO] HYMAP parameter global'
      where(i2nextx<1.and.i2nextx/=imis.and.i2mask>0)
         i2nextx=ibound
         i2nexty=ibound
