@@ -195,7 +195,7 @@ void FTN(registerreadlai)(char *j, void (*func) (int*, float*), int len)
 // !INTERFACE:
 //EMK...Removed unnecessary arguments.
 //void FTN(readlai)(char *j, int *n,float *array,float *marray,int len)
-void FTN(readlai)(char *j, int *n, float *array)
+void FTN(readlai)(char *j, int *n, float *array, int len)
 
 //
 // !DESCRIPTION:
@@ -281,7 +281,7 @@ void FTN(registerreadsai)(char *j, void (*func)(int*, float*), int len)
 // \label{readsai}
 //
 // !INTERFACE:
-void FTN(readsai)(char *j, int *n, float *array)
+void FTN(readsai)(char *j, int *n, float *array, int len)
 //
 // !DESCRIPTION:
 // Invokes the routine from the registry to
@@ -364,7 +364,7 @@ void FTN(registerreadlaimin)(char *j, void (*func)(int*, float*), int len)
 // \label{readlaimin}
 //
 // !INTERFACE:
-void FTN(readlaimin)(char *j, int *n, float *array)
+void FTN(readlaimin)(char *j, int *n, float *array, int len)
 //
 // !DESCRIPTION:
 // Invokes the routine from the registry to
@@ -446,7 +446,7 @@ void FTN(registerreadlaimax)(char *j, void (*func)(int*, float*), int len)
 // \label{readlaimax}
 //
 // !INTERFACE:
-void FTN(readlaimax)(char *j, int *n, float *array)
+void FTN(readlaimax)(char *j, int *n, float *array, int len)
 //
 // !DESCRIPTION:
 // Invokes the routine from the registry to

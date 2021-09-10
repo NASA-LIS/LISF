@@ -192,7 +192,7 @@ void FTN(registerreadgfrac)(char *j, void (*func)(int*, float*), int len)
 //EMK Removed extra arguments.
 //void FTN(readgfrac)(char *j, int *n,float *array,float *marray,int len)
 
-void FTN(readgfrac)(char *j, int *n, float *array)
+void FTN(readgfrac)(char *j, int *n, float *array, int len)
 //
 // !DESCRIPTION:
 // Invokes the routine from the registry to
