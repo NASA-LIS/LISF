@@ -55,7 +55,7 @@ subroutine read_HYMAP_drain_area(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%drainareafile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] Drainage area map, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP drainage area map, ',&
            trim(HYMAP_struc(n)%drainareafile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
