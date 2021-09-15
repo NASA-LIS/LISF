@@ -57,9 +57,6 @@ contains
     integer, intent (in)                 :: nest
     character(*), intent (in)            :: project
     real                                 :: IN_xres, IN_yres
-    integer :: c,r,gr,gc, glpnc, glpnr
-    real    :: rlon(LDT_rc%lnc(nest),LDT_rc%lnr(nest)),rlat(LDT_rc%lnc(nest),LDT_rc%lnr(nest)) 
-    real    :: param_grid(20)
       
     IN_xres    = 360./REAL(NX_MMF)
     IN_yres    = 180./REAL(NY_MMF)
@@ -75,23 +72,6 @@ contains
     MBR%param_gridDesc(10) = IN_xres     
     MBR%param_gridDesc(20) = 64
     
-    param_grid(:) = LDT_rc%mask_gridDesc(nest,:)
-    glpnr = nint((param_grid(7)-param_grid(4))/param_grid(10)) + 1
-    glpnc = nint((param_grid(8)-param_grid(5))/param_grid(9)) + 1
-    allocate (MBR%local_mask (LDT_rc%lnc(nest),LDT_rc%lnr(nest)))
-    
-    MBR%local_mask = LDT_rc%udef
-    
-    do r = 1, LDT_rc%lnr(nest)
-       do c = 1, LDT_rc%lnc(nest)
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,float(c),float(r),&
-               rlat(c,r),rlon(c,r))
-          gr = nint((rlat(c,r)-param_grid(4))/param_grid(10)) + 1
-          gc = nint((rlon(c,r)-param_grid(5))/param_grid( 9)) + 1
-          if(LDT_rc%global_mask(gc,gr) > 0. ) MBR%local_mask(c,r) = 1
-       end do
-    end do
-    
     ! ------------------------------------------------------------
     !    PREPARE SUBSETTED PARAMETER GRID FOR READING IN BCS DATA
     ! ------------------------------------------------------------
@@ -103,7 +83,7 @@ contains
     call LDT_RunDomainPts( nest, project, MBR%param_gridDesc(:),        &
          MBR%glpnc, MBR%glpnr, MBR%subpnc, MBR%subpnr, MBR%subparam_gridDesc, &
          MBR%lat_line, MBR%lon_line)
-
+ 
   END SUBROUTINE mmf_init
   
   ! ----------------------------------------------------------------
@@ -243,7 +223,6 @@ contains
       real, allocatable, dimension (:)      :: go2     ! Output lis 1d grid
       logical*1, allocatable, dimension (:) :: lo2  ! Output logical mask (to match go)
       
-      !mi = INT(dble(MBR%NX)*dble(MBR%NY), 8)
       mi = MBR%subpnc*MBR%subpnr
       mo = LDT_rc%lnc(nest)*LDT_rc%lnr(nest)
       
