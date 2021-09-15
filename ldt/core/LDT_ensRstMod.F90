@@ -478,6 +478,7 @@ module LDT_ensRstMod
             deallocate(var)
             deallocate(var3d)
 
+         ! HYMAP2 Router
          elseif(LDT_rc%routingmodel .eq. "HYMAP2") then 
 
             write(LDT_logunit,*)"[INFO] 'Inflating' ensemble restart for routing model: "&
@@ -505,7 +506,6 @@ module LDT_ensRstMod
          allocate(dimID(nDims))
          allocate(dimID2(nDims))
          allocate(dims(nDims))
-         allocate(dimName(nDims))
 
          call LDT_verify(nf90_inq_dimId(ftn,"ntiles",dimId(1)),&
               'nf90_inq_dimId failed for ntiles in LDT_ensRstMod')
@@ -622,12 +622,17 @@ module LDT_ensRstMod
          deallocate(dimID)
          deallocate(dimID2)
          deallocate(dims)
-         deallocate(dimName)
+
+         if(LDT_rc%ensrstsampling.eq."random sampling") then
+           deallocate(var_map)
+         endif
          
          call LDT_verify(nf90_close(ftn))
          call LDT_verify(nf90_close(ftn2))
 
 #endif
+
+! The following code below is support for past HYMAP binary restart files
 #if 0 
          write(LDT_logunit,*)"[INFO] 'Inflating' ensemble restart for routing model: "&
               //trim(LDT_rc%routingmodel)
@@ -685,9 +690,9 @@ module LDT_ensRstMod
          
          deallocate(var)
          deallocate(var1d)
-         
-            !stop
+! End of HYMAP restart binary file set of code
 #endif
+
       else
          write(LDT_logunit,*) '[ERR] Ensemble restart for '//trim(LDT_rc%routingmodel)
          write(LDT_logunit,*) '   is not currently supported.'
@@ -1073,11 +1078,6 @@ module LDT_ensRstMod
                      var_new(nc,nr) = sum(var3d(nc,nr,:), mask = var3d(nc,nr,:) .ne. LDT_rc%udef) &
                           / count( mask = var3d(nc,nr,:) .ne. LDT_rc%udef )
                   endif
-                  !                     if(nc==10 .and. nr==10) then
-                  !                       print *, sum(var3d(nc,nr,:), mask = var3d(nc,nr,:) .ne. LDT_rc%udef), &
-                  !                                count( mask = var3d(nc,nr,:) .ne. LDT_rc%udef ), &
-                  !                                var_new(nc,nr)
-                  !                     endif
                enddo
             enddo
 
@@ -1091,7 +1091,7 @@ module LDT_ensRstMod
          call LDT_releaseUnitNumber(ftn)
          call LDT_releaseUnitNumber(ftn2)
 
-         ! HYMAP Router:
+      ! HYMAP2 Router:
       elseif(LDT_rc%routingmodel .eq. "HYMAP2") then
 
          write(LDT_logunit,*)"[INFO] Downscaling ensemble restart for: "&
@@ -1278,6 +1278,10 @@ module LDT_ensRstMod
             deallocate(var_new)
             deallocate(nvardimIDs)
          enddo
+         deallocate(dimID)
+         deallocate(dimID2)
+         deallocate(dims)
+         deallocate(dimName)
 
          if(LDT_rc%ensrstsampling.eq."random sampling") then
             deallocate(var_map)
