@@ -54,7 +54,7 @@ subroutine read_HYMAP_fld_z(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%fldzfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] Fldz map, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP floodplain roughness map, ',&
            trim(HYMAP_struc(n)%fldzfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun

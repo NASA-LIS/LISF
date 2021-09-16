@@ -61,7 +61,7 @@ subroutine read_HYMAP_fld_height(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%fldheightfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] Fldheight map, ',trim(HYMAP_struc(n)%fldheightfile),&
+     write(LDT_logunit,*) '[ERR] HYMAP floodplain height map, ',trim(HYMAP_struc(n)%fldheightfile),&
                           ', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
