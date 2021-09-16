@@ -163,8 +163,9 @@ module LDT_ensRstMod
       integer               :: nVars
       integer               :: nGlobalAtts
       integer               :: unlimdimID
-      integer,     allocatable  :: dimID(:),dimID2(:)
-      character*50, allocatable :: dimName(:)
+      integer               :: dimID
+      integer,     allocatable  :: dimID2(:)
+      character*50          :: dimName
       character*50          :: varName
       integer,     allocatable  :: dims(:)
       integer,     allocatable  :: n_dimids(:)
@@ -223,14 +224,12 @@ module LDT_ensRstMod
          call LDT_verify(nf90_inquire(ftn,nDims,nVars,nGlobalAtts,unlimdimId),&
               'nf90_inquire failed in LDT_ensRstMod')
          
-         allocate(dimID(nDims))
          allocate(dimID2(nDims))
          allocate(dims(nDims))
-         allocate(dimName(nDims))
          
-         call LDT_verify(nf90_inq_dimId(ftn,"ntiles",dimId(1)),&
+         call LDT_verify(nf90_inq_dimId(ftn,"ntiles",dimId),&
               'nf90_inq_dimId failed for ntiles in LDT_ensRstMod')
-         call LDT_verify(nf90_inquire_dimension(ftn,dimId(1),len=dims(1)),&
+         call LDT_verify(nf90_inquire_dimension(ftn,dimId,len=dims(1)),&
               'nf90_inquire_dimension failed in LDT_ensRstMod')
          
          if(dims(1).ne.LDT_rc%npatch(n,1)) then 
@@ -246,10 +245,10 @@ module LDT_ensRstMod
             else
                write(unit=fd,fmt='(I2)') k-1
             end if
-            dimName(k) = 'dim'//trim(fd)
-            call LDT_verify(nf90_inq_dimId(ftn,dimName(k),dimId(k)),&
-                 'nf90_inq_dimId failed for '//dimName(k)//' in LDT_ensRstMod')
-            call LDT_verify(nf90_inquire_dimension(ftn,dimID(k),len=dims(k)),&
+            dimName = 'dim'//trim(fd)
+            call LDT_verify(nf90_inq_dimId(ftn,dimName,dimId),&
+                 'nf90_inq_dimId failed for '//dimName//' in LDT_ensRstMod')
+            call LDT_verify(nf90_inquire_dimension(ftn,dimID,len=dims(k)),&
                  'nf90_inquire failed in LDT_ensRstMod')
          enddo
          
@@ -406,10 +405,8 @@ module LDT_ensRstMod
             deallocate(nvardimIDs)
          enddo
          
-         deallocate(dimID)
          deallocate(dimID2)
          deallocate(dims)
-         deallocate(dimName)
          if(LDT_rc%ensrstsampling.eq."random sampling") then
             deallocate(var_map)
          endif
@@ -503,13 +500,12 @@ module LDT_ensRstMod
          call LDT_verify(nf90_inquire(ftn,nDims,nVars,nGlobalAtts,unlimdimId),&
               'nf90_inquire failed in LDT_ensRstMod')
          
-         allocate(dimID(nDims))
          allocate(dimID2(nDims))
          allocate(dims(nDims))
 
-         call LDT_verify(nf90_inq_dimId(ftn,"ntiles",dimId(1)),&
+         call LDT_verify(nf90_inq_dimId(ftn,"ntiles",dimId),&
               'nf90_inq_dimId failed for ntiles in LDT_ensRstMod')
-         call LDT_verify(nf90_inquire_dimension(ftn,dimId(1),len=dims(1)),&
+         call LDT_verify(nf90_inquire_dimension(ftn,dimId,len=dims(1)),&
               'nf90_inquire_dimension failed in LDT_ensRstMod')
 
          model_name = "HYMAP2"
@@ -619,7 +615,6 @@ module LDT_ensRstMod
             deallocate(var_new)
             deallocate(nvardimIDs)
          enddo     
-         deallocate(dimID)
          deallocate(dimID2)
          deallocate(dims)
 
@@ -732,8 +727,9 @@ module LDT_ensRstMod
    integer               :: nVars, numvars
    integer               :: nGlobalAtts
    integer               :: unlimdimID
-   integer,     allocatable  :: dimID(:),dimID2(:)
-   character*50, allocatable :: dimName(:)
+   integer               :: dimID
+   integer,     allocatable  :: dimID2(:)
+   character*50          :: dimName
    character*50          :: varName
    integer,     allocatable  :: dims(:)
    integer,     allocatable  :: n_dimids(:)
@@ -799,14 +795,12 @@ module LDT_ensRstMod
            'nf90_inquire failed in LDT_ensRstMod')
 
 
-      allocate(dimID(nDims))
       allocate(dimID2(nDims))
       allocate(dims(nDims))
-      allocate(dimName(nDims))
 
-      call LDT_verify(nf90_inq_dimId(ftn,"ntiles",dimId(1)),&
+      call LDT_verify(nf90_inq_dimId(ftn,"ntiles",dimId),&
            'nf90_inq_dimId failed for ntiles in LDT_ensRstMod')
-      call LDT_verify(nf90_inquire_dimension(ftn,dimId(1),len=dims(1)),&
+      call LDT_verify(nf90_inquire_dimension(ftn,dimId,len=dims(1)),&
            'nf90_inquire_dimension failed in LDT_ensRstMod')
 
       if(dims(1).ne.LDT_rc%npatch(n,1)) then 
@@ -822,10 +816,10 @@ module LDT_ensRstMod
          else
             write(unit=fd,fmt='(I2)') k-1
          end if
-         dimName(k) = 'dim'//trim(fd)
-         call LDT_verify(nf90_inq_dimId(ftn,dimName(k),dimId(k)),&
-              'nf90_inq_dimId failed for '//dimName(k)//' in LDT_ensRstMod')
-         call LDT_verify(nf90_inquire_dimension(ftn,dimID(k),len=dims(k)),&
+         dimName = 'dim'//trim(fd)
+         call LDT_verify(nf90_inq_dimId(ftn,dimName,dimId),&
+              'nf90_inq_dimId failed for '//dimName//' in LDT_ensRstMod')
+         call LDT_verify(nf90_inquire_dimension(ftn,dimID,len=dims(k)),&
               'nf90_inquire failed in LDT_ensRstMod')
       enddo
 
@@ -1009,6 +1003,9 @@ module LDT_ensRstMod
          deallocate(nvardimIDs)
       enddo
 
+      deallocate(dimID2)
+      deallocate(dims)
+
       if(LDT_rc%ensrstsampling.eq."random sampling") then
          deallocate(var_map)
       endif
@@ -1118,14 +1115,12 @@ module LDT_ensRstMod
               'nf90_inquire failed in LDT_ensRstMod')
          
          
-         allocate(dimID(nDims))
          allocate(dimID2(nDims))
          allocate(dims(nDims))
-         allocate(dimName(nDims))
          
-         call LDT_verify(nf90_inq_dimId(ftn,"ntiles",dimId(1)),&
+         call LDT_verify(nf90_inq_dimId(ftn,"ntiles",dimId),&
               'nf90_inq_dimId failed for ntiles in LDT_ensRstMod')
-         call LDT_verify(nf90_inquire_dimension(ftn,dimId(1),len=dims(1)),&
+         call LDT_verify(nf90_inquire_dimension(ftn,dimId,len=dims(1)),&
               'nf90_inquire_dimension failed in LDT_ensRstMod')
                   
          do k= 2, nDims-1
@@ -1134,10 +1129,10 @@ module LDT_ensRstMod
             else
                write(unit=fd,fmt='(I2)') k-1
             end if
-            dimName(k) = 'dim'//trim(fd)
-            call LDT_verify(nf90_inq_dimId(ftn,dimName(k),dimId(k)),&
-                 'nf90_inq_dimId failed for '//dimName(k)//' in LDT_ensRstMod')
-            call LDT_verify(nf90_inquire_dimension(ftn,dimID(k),len=dims(k)),&
+            dimName = 'dim'//trim(fd)
+            call LDT_verify(nf90_inq_dimId(ftn,dimName,dimId),&
+                 'nf90_inq_dimId failed for '//dimName//' in LDT_ensRstMod')
+            call LDT_verify(nf90_inquire_dimension(ftn,dimID,len=dims(k)),&
                  'nf90_inquire failed in LDT_ensRstMod')
          enddo
          
@@ -1278,10 +1273,8 @@ module LDT_ensRstMod
             deallocate(var_new)
             deallocate(nvardimIDs)
          enddo
-         deallocate(dimID)
          deallocate(dimID2)
          deallocate(dims)
-         deallocate(dimName)
 
          if(LDT_rc%ensrstsampling.eq."random sampling") then
             deallocate(var_map)
