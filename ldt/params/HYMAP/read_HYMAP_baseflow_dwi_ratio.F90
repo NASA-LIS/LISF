@@ -55,7 +55,7 @@ subroutine read_HYMAP_baseflow_dwi_ratio(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%baseflowdwiratiofile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] baseflow DWI ratio map, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP baseflow dwi ratio map, ',&
           trim(HYMAP_struc(n)%baseflowdwiratiofile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
