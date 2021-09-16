@@ -23,7 +23,6 @@ module  MMF_groundwater
   
   use LDT_logMod,  only : LDT_logunit, LDT_endrun
   use LDT_coreMod
-  use map_utils,   only : ij_to_latlon
   use LDT_gridmappingMod
   use LDT_paramMaskCheckMod
   
@@ -41,6 +40,7 @@ module  MMF_groundwater
 
      procedure, public :: mi => mmf_init
      procedure, public :: mr => mmf_data_reader
+     procedure, public :: cell_area
      
   end type MMF_BCsReader
   
@@ -282,6 +282,59 @@ contains
 
   ! ----------------------------------------------------------------
 
+  SUBROUTINE cell_area (MBR, nest, area)
+    
+    use map_utils,        only : ij_to_latlon
+    use LDT_constantsMod, ONLY : radius => LDT_CONST_REARTH, pi => LDT_CONST_PI
+    
+    implicit none
+
+    class (MMF_BCsReader), intent(inout)    :: MBR    
+    integer, intent (in)                    :: nest
+    real, dimension (:,:,:), intent (inout) :: area
+    integer                                 :: i,j, s
+    real, parameter                         :: nstrips = 100.
+    real                                    :: lat_ll, lat_ur , lat_ul, lat_lr
+    real                                    :: lon_ll, lon_ur , lon_ul, lon_lr
+    real                                    :: c, r, d2r, dx, dyl, dyu, w_edge, e_edge, lat1, lat2
+
+    d2r     = PI/180.
+    area    = 0.
+    
+    do j = 1, LDT_rc%lnr(nest)
+       do i = 1, LDT_rc%lnc(nest)
+           
+          r = float (j)
+          c = float (i)
+          
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r-0.5, lat_ll, lon_ll) ! SW corner
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r+0.5, lat_ul, lon_ul) ! NW corner          
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r+0.5, lat_ur, lon_ur) ! NE corner         
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r-0.5, lat_lr, lon_lr) ! SE corner
+
+          w_edge = (lon_ll + lon_ul) / 2.
+          e_edge = (lon_ur + lon_lr) / 2.
+          
+          dyl= (lat_lr - lat_ll) / nstrips
+          dyu= (lat_ur - lat_ul) / nstrips
+          dx = (e_edge - w_edge) / nstrips
+
+          do s = 1, nstrips
+             
+             lat1 = lat_ll + (s-1)*dyl + dyl/2.
+             lat2 = lat_ul + (s-1)*dyu + dyu/2.
+             area (i,j,1) = area (i,j,1) +  (sin(d2r* lat2) - sin(d2r*lat1))*radius*radius*dx*d2r/1000./1000. ! [km2]
+             
+          end do
+                    
+       end do
+    end do
+    
+  END SUBROUTINE cell_area
+
+  ! ----------------------------------------------------------------
+
+  
 end module MMF_groundwater
 
   

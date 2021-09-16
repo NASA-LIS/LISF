@@ -81,6 +81,7 @@ module Noah_parmsMod
      type(LDT_paramEntry) :: rechclim
      type(LDT_paramEntry) :: riverbed
      type(LDT_paramEntry) :: eqwtd
+     type(LDT_paramEntry) :: areaxy
      
   end type noah_type_dec
 
@@ -167,7 +168,9 @@ contains
       call set_param_attribs(Noah_struc(n)%eqwtd,"MMF_EQWTD",&
             units="m", &
             full_name="equilibrium water table depth")
-      
+      call set_param_attribs(Noah_struc(n)%areaxy,"AREAXY",&
+            units="km^2", &
+            full_name="area of the grid cell")      
       endif
    enddo
 
@@ -512,6 +515,7 @@ contains
          allocate (Noah_struc(n)%rechclim%value (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%rechclim%num_bins))
          allocate (Noah_struc(n)%riverbed%value (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%riverbed%num_bins))
          allocate (Noah_struc(n)%eqwtd%value    (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%eqwtd%num_bins   ))
+         allocate (Noah_struc(n)%areaxy%value   (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%eqwtd%num_bins   ))
          
          call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_transform, label='MMF spatial transform:', rc=rc)
          call LDT_verify(rc,"MMF spatial transform method is not defined in the config file.")
@@ -524,6 +528,10 @@ contains
          call MBR%mr (n, 'R', trim(Noah_struc(n)%mmf_rechclim_dir), Noah_struc(n)%rechclim%value,MMF_fillopts)
          call MBR%mr (n, 'E', trim(Noah_struc(n)%mmf_riverbed_dir), Noah_struc(n)%riverbed%value,MMF_fillopts)
          call MBR%mr (n, 'W', trim(Noah_struc(n)%mmf_eqwtd_dir   ), Noah_struc(n)%eqwtd%value,   MMF_fillopts)
+
+         ! write areaXY
+
+         call MBR%cell_area (n,Noah_struc(n)%areaxy%value)
                  
       end do
       
@@ -555,6 +563,7 @@ contains
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%rechclim )
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%riverbed )
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%eqwtd    )
+    call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%areaxy   )
      
 
   end subroutine NoahParms_writeHeader
@@ -577,6 +586,7 @@ contains
     call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%rechclim )
     call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%riverbed )
     call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%eqwtd    )
+    call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%areaxy   )
     
   end subroutine NoahParms_writeData
 
