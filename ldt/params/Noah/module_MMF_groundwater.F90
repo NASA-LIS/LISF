@@ -21,11 +21,10 @@
 #include "LDT_misc.h"
 module  MMF_groundwater
   
-  use LDT_logMod,  only : LDT_logunit, LDT_endrun
-  use LDT_coreMod
-  use LDT_gridmappingMod
-  use LDT_paramMaskCheckMod
-  
+  use LDT_logMod,         only : LDT_logunit, LDT_endrun
+  use LDT_coreMod,        only : LDT_rc, LDT_domain
+  use LDT_gridmappingMod, only : LDT_RunDomainPts
+   
   implicit none
   private
 
@@ -40,7 +39,12 @@ module  MMF_groundwater
 
      procedure, public :: mi => mmf_init
      procedure, public :: mr => mmf_data_reader
-     procedure, public :: cell_area
+     procedure, public :: cell_area => cell_area_curve
+     
+     procedure, private:: cell_area_line
+     procedure, private:: cell_area_curve
+     procedure, private:: cell_area_girard
+     
      
   end type MMF_BCsReader
   
@@ -88,7 +92,7 @@ contains
   
   ! ----------------------------------------------------------------
   
-  SUBROUTINE mmf_data_reader (MBR, nest, varname, datadir, lisout, MMF_fillopts)
+  SUBROUTINE mmf_data_reader (MBR, nest, varname, datadir, lisout)
     
     implicit none
 
@@ -96,7 +100,6 @@ contains
     character(*), intent (in)               :: varname, datadir
     real, dimension (:,:,:), intent (inout) :: lisout
     integer, intent (in)                    :: nest
-    type(LDT_fillopts)                      :: MMF_fillopts
     
     ! Adapted from Zhuo Wang's
     ! /discover/nobackup/projects/lis_aist17/zwang9/Geogrid/geogrid2netcdf.f90
@@ -190,10 +193,6 @@ contains
     ! regrid garray and construct lisout array on the LIS grid
     
     call regrid_to_lisgrid (nest, garray, lisout)
-
-    ! NOTE : Use MMF_fillopts%filltype and MMF_fillopts%fillradius
-    ! to fill  where lisout values are missing compared
-    ! to land/water mask:
     
     deallocate (tarray, garray)
     
@@ -282,13 +281,13 @@ contains
 
   ! ----------------------------------------------------------------
 
-  SUBROUTINE cell_area (MBR, nest, area)
+  SUBROUTINE cell_area_curve (MBR, nest, area)
     
     use map_utils,        only : ij_to_latlon
     use LDT_constantsMod, ONLY : radius => LDT_CONST_REARTH, pi => LDT_CONST_PI
     
     implicit none
-
+    
     class (MMF_BCsReader), intent(inout)    :: MBR    
     integer, intent (in)                    :: nest
     real, dimension (:,:,:), intent (inout) :: area
@@ -313,7 +312,7 @@ contains
           call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r-0.5, lat_lr, lon_lr) ! SE corner
 
           w_edge = (lon_ll + lon_ul) / 2.
-          e_edge = (lon_ur + lon_lr) / 2.
+          e_edge = (lon_lr + lon_ur) / 2.
           
           dyl= (lat_lr - lat_ll) / nstrips
           dyu= (lat_ur - lat_ul) / nstrips
@@ -330,10 +329,162 @@ contains
        end do
     end do
     
-  END SUBROUTINE cell_area
+  END SUBROUTINE cell_area_curve
 
   ! ----------------------------------------------------------------
 
+  SUBROUTINE cell_area_line (MBR, nest, area)
+    
+    use map_utils,        only : ij_to_latlon
+    use LDT_constantsMod, ONLY : radius => LDT_CONST_REARTH, pi => LDT_CONST_PI
+    
+    implicit none
+    
+    class (MMF_BCsReader), intent(inout)    :: MBR    
+    integer, intent (in)                    :: nest
+    real, dimension (:,:,:), intent (inout) :: area
+    integer                                 :: i,j, s
+    real, parameter                         :: nstrips = 100.
+    real                                    :: lat_ll, lat_ur , lat_ul, lat_lr
+    real                                    :: lon_ll, lon_ur , lon_ul, lon_lr
+    real                                    :: c, r, d2r, dx, dw, w_edge, e_edge, lat1, lat2
+
+    d2r     = PI/180.
+    area    = 0.
+    
+    do j = 1, LDT_rc%lnr(nest)
+       do i = 1, LDT_rc%lnc(nest)
+           
+          r = float (j)
+          c = float (i)
+          
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r-0.5, lat_ll, lon_ll) ! SW corner
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r+0.5, lat_ul, lon_ul) ! NW corner          
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r+0.5, lat_ur, lon_ur) ! NE corner         
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r-0.5, lat_lr, lon_lr) ! SE corner
+
+          w_edge = (lon_ll + lon_ul) / 2.
+          e_edge = (lon_lr + lon_ur) / 2.
+          
+          dx = (e_edge - w_edge) / nstrips
+          dw = 1./nstrips
+          do s = 1, nstrips
+             call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5 + dw/2. + (s-1)*dw, r-0.5, lat1, lon_ll)
+             call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5 + dw/2. + (s-1)*dw, r+0.5, lat2, lon_ll)
+             area (i,j,1) = area (i,j,1) +  (sin(d2r* lat2) - sin(d2r*lat1))*radius*radius*dx*d2r/1000./1000. ! [km2]
+             
+          end do
+                    
+       end do
+    end do
+    
+  END SUBROUTINE cell_area_line
+
+  ! ----------------------------------------------------------------
+
+  SUBROUTINE cell_area_girard (MBR, nest, area)
+    
+    use map_utils,        only : ij_to_latlon
+    use LDT_constantsMod, ONLY : radius => LDT_CONST_REARTH, pi => LDT_CONST_PI
+    
+    implicit none
+
+    class (MMF_BCsReader), intent(inout)    :: MBR    
+    integer, intent (in)                    :: nest
+    real, dimension (:,:,:), intent (inout) :: area
+    integer                                 :: i,j
+    real                                    :: lat_ll, lat_ur , lat_ul, lat_lr, c, r
+    real                                    :: lon_ll, lon_ur , lon_ul, lon_lr
+    real                                    :: ab, bc, cd, da, ac, bd  ! side lengths
+    real                                    :: DAB, ABC, BCD, CDA
+    
+    area    = 0.
+    
+    do j = 1, LDT_rc%lnr(nest)
+       do i = 1, LDT_rc%lnc(nest)
+           
+          r = float (j)
+          c = float (i)
+          
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r-0.5, lat_ll, lon_ll) ! SW corner (A)
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r+0.5, lat_ul, lon_ul) ! NW corner (B)         
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r+0.5, lat_ur, lon_ur) ! NE corner (C)        
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r-0.5, lat_lr, lon_lr) ! SE corner (D)
+
+          ! side lengths
+          ab = haversine(d2r(lat_ll), d2r(lon_ll), d2r(lat_ul), d2r(lon_ul))
+          bc = haversine(d2r(lat_ul), d2r(lon_ul), d2r(lat_ur), d2r(lon_ur))
+          cd = haversine(d2r(lat_ur), d2r(lon_ur), d2r(lat_lr), d2r(lon_lr))
+          da = haversine(d2r(lat_ll), d2r(lon_ll), d2r(lat_lr), d2r(lon_lr))
+          ac = haversine(d2r(lat_ll), d2r(lon_ll), d2r(lat_ur), d2r(lon_ur))
+          bd = haversine(d2r(lat_ul), d2r(lon_ul), d2r(lat_lr), d2r(lon_lr))
+          
+          ! area = ABC area + ACD area
+          !      = radius * radius * (^DAB + ^ABC + ^BCD + ^CDA - 2 * pi)
+
+          DAB = angle (bd, da, ab)
+          ABC = angle (ac, ab, bc)
+          BCD = angle (bd, bc, cd)
+          CDA = angle (ac, cd, da)
+
+          area (i,j,1) = radius * radius * &
+               (DAB + ABC + BCD + CDA - 2. * pi)/1000./1000. ! [km2]
+                    
+       end do
+    end do
+
+  contains
+
+    ! *****************************************************************************
+    
+    real function haversine(deglat1,deglon1,deglat2,deglon2)
+      ! great circle distance 
+      real,intent(in) :: deglat1,deglon1,deglat2,deglon2
+      real            :: a,c, dlat,dlon,lat1,lat2
+        
+      dlat = deglat2-deglat1
+      dlon = deglon2-deglon1
+      lat1 = deglat1
+      lat2 = deglat2     
+      a = (sin(dlat/2))**2 + cos(lat1)*cos(lat2)*(sin(dlon/2))**2
+      if(a>=0. .and. a<=1.) then
+         c = 2*atan2(sqrt(a),sqrt(1-a))
+         haversine = radius*c ! [m]
+      else
+         haversine = 1.e20
+      endif
+    end function haversine
+
+    ! *****************************************************************************
+    
+    function angle (c, a, b) result(ACB)
+         
+      ! degrees to radians
+      real,intent(in) :: c, a, b
+      real :: ACB, r
+
+      r = radius
+   
+      ACB = acos ((cos(c/r) - cos(a/r) * cos(b/r)) / sin(a/r) / sin (b/r))
+      print *, c/1000.,a/1000.,b/1000., ACB*180./pi
+   
+    end function angle
+
+    ! *****************************************************************************
+    
+    function d2r (degree) result(rad)
+         
+      ! degrees to radians
+      real,intent(in) :: degree
+      real :: rad
+   
+      rad = degree*PI/180.
+   
+    end function d2r
+      
+  END SUBROUTINE cell_area_girard
+
+  ! ----------------------------------------------------------------
   
 end module MMF_groundwater
 
