@@ -39,7 +39,7 @@ module  MMF_groundwater
 
      procedure, public :: mi => mmf_init
      procedure, public :: mr => mmf_data_reader
-     procedure, public :: cell_area => cell_area_curve
+     procedure, public :: cell_area => cell_area_girard
      
      procedure, private:: cell_area_line
      procedure, private:: cell_area_curve
@@ -395,11 +395,10 @@ contains
     integer                                 :: i,j
     real                                    :: lat_ll, lat_ur , lat_ul, lat_lr, c, r
     real                                    :: lon_ll, lon_ur , lon_ul, lon_lr
-    real                                    :: ab, bc, cd, da, ac, bd  ! side lengths
-    real                                    :: DAB, ABC, BCD, CDA
+    real                                    :: ab, bc, cd, da, ac  ! side lengths
     
     area    = 0.
-    
+
     do j = 1, LDT_rc%lnr(nest)
        do i = 1, LDT_rc%lnc(nest)
            
@@ -417,18 +416,11 @@ contains
           cd = haversine(d2r(lat_ur), d2r(lon_ur), d2r(lat_lr), d2r(lon_lr))
           da = haversine(d2r(lat_ll), d2r(lon_ll), d2r(lat_lr), d2r(lon_lr))
           ac = haversine(d2r(lat_ll), d2r(lon_ll), d2r(lat_ur), d2r(lon_ur))
-          bd = haversine(d2r(lat_ul), d2r(lon_ul), d2r(lat_lr), d2r(lon_lr))
-          
+           
           ! area = ABC area + ACD area
-          !      = radius * radius * (^DAB + ^ABC + ^BCD + ^CDA - 2 * pi)
-
-          DAB = angle (bd, da, ab)
-          ABC = angle (ac, ab, bc)
-          BCD = angle (bd, bc, cd)
-          CDA = angle (ac, cd, da)
 
           area (i,j,1) = radius * radius * &
-               (DAB + ABC + BCD + CDA - 2. * pi)/1000./1000. ! [km2]
+               (triangle_area (ac, ab, bc) + triangle_area(ac, cd, da))/1000./1000. ! [km2]
                     
        end do
     end do
@@ -449,26 +441,29 @@ contains
       a = (sin(dlat/2))**2 + cos(lat1)*cos(lat2)*(sin(dlon/2))**2
       if(a>=0. .and. a<=1.) then
          c = 2*atan2(sqrt(a),sqrt(1-a))
-         haversine = radius*c ! [m]
+         haversine = c ! [per unit radius]
       else
          haversine = 1.e20
       endif
     end function haversine
 
+
     ! *****************************************************************************
     
-    function angle (c, a, b) result(ACB)
+    function triangle_area (c, a, b) result(ABC_area)
          
       ! degrees to radians
       real,intent(in) :: c, a, b
-      real :: ACB, r
+      real :: ACB, ABC_area
 
-      r = radius
-   
-      ACB = acos ((cos(c/r) - cos(a/r) * cos(b/r)) / sin(a/r) / sin (b/r))
-      print *, c/1000.,a/1000.,b/1000., ACB*180./pi
-   
-    end function angle
+      ! The spherical law of cosines per unit radius
+      ACB =  acos ((cos(c) - cos(a) * cos(b)) / sin(a) / sin (b))
+
+      ! Area = spherical excess per unit radius
+      ABC_area = ABS(2.* atan( tan(a/2.)*tan(b/2.)*sin(ACB) / &
+           (1. + tan(a/2.)*tan(b/2.)*cos(ACB))))
+
+    end function triangle_area
 
     ! *****************************************************************************
     
