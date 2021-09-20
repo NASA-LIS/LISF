@@ -787,7 +787,7 @@ Directory containing routing models
 Directory containing coupling routines to the following radiative transfer models
 
 ifdef::devonly[]
-** _CRTM_ footnote:disclaimer[]
+** _CRTM_ footnote:disclaimer[{lispublicna}]
 +
 Routines to handle coupling to the JCSDA Community Radiative Transfer Model
 
