@@ -169,7 +169,7 @@ void FTN(registerreademissivity)(char *j,
 // !INTERFACE:
 //EMK Fixed argument list
 void FTN(reademissivity)(char *j, int *n, float *wt1, float *wt2,
-                         float *array1, float *array2)
+                         float *array1, float *array2, int len)
 //
 // !DESCRIPTION:
 // Invokes the routine from the registry to
