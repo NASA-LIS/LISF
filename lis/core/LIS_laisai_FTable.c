@@ -254,7 +254,7 @@ void FTN(registerreadlai)(char *j,
 //
 // !INTERFACE:
 void FTN(readlai)(char *j, int *n, float *wt1, float *wt2,
-                  float *array1, float *array2)
+                  float *array1, float *array2, int len)
 //
 // !DESCRIPTION:
 // Invokes the routine from the registry to read LAI data.

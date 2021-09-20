@@ -87,8 +87,7 @@ void FTN(registeralbedosetup)(char *j,
 // \label{albedosetup}
 //
 // !INTERFACE:
-//EMK Removed unused argument.
-void FTN(albedosetup)(char *j, int *n)
+void FTN(albedosetup)(char *j, int *n, int len)
 //
 // !DESCRIPTION:
 // Invokes the routine from the registry to
@@ -166,11 +165,11 @@ void FTN(registerreadalbedo)(char *j,
 // \label{readalbedo}
 //
 // !INTERFACE:
-//EMK: Removed unused argment len.  Changed time1 and time2 arguments
+//EMK: Changed time1 and time2 arguments
 //to floats with relative weights, consistant with underlying
 //read_ALMIPIIalbedo Fortran routine.
 void FTN(readalbedo)(char *j, int *n, float *wt1, float *wt2,
-                     float *array1, float *array2)
+                     float *array1, float *array2, int len)
 //
 // !DESCRIPTION:
 // Invokes the routines from the registry for
