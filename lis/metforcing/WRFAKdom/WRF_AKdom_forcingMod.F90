@@ -35,6 +35,20 @@ module WRF_AKdom_forcingMod
 !  \item[findtime1, findtime2]
 !    boolean flags to indicate which time is to be read for 
 !    temporal interpolation.
+!  \item[mi]
+!    Number of points in the input grid
+!  \item[n111,n121,n211,n221]
+!    Arrays containing the neighbor information of the input grid 
+!    for each grid point in LIS, for bilinear interpolation. 
+!  \item[w111,w121,w211,w221]
+!    Arrays containing the weights of the input grid 
+!    for each grid point in LIS, for bilinear interpolation.
+!  \item[n112,n122,n212,n222]
+!    Arrays containing the neighbor information of the input grid 
+!    for each grid point in LIS, for conservative interpolation. 
+!  \item[w112,w122,w212,w222]
+!    Arrays containing the weights of the input grid 
+!    for each grid point in LIS, for conservative interpolation.
 !  \end{description}
 
 ! !USES: 
@@ -151,12 +165,10 @@ contains
    type(ESMF_Time)  :: DatastartTime
    type(ESMF_Time)  :: LISstartTime
 
-! KRA
    type(proj_info)   :: proj_temp        
    real              :: lat_str,lon_str  
    integer           :: c,r              
    real, allocatable :: xlat(:,:),xlon(:,:) 
-! KRA
     
     allocate(WRFAK_struc(LIS_rc%nnest))
 
@@ -236,26 +248,23 @@ contains
        WRFAK_struc(n)%metdata1 = 0
        WRFAK_struc(n)%metdata2 = 0
 
-      ! Polar Stereographic projection
+      ! See below link for more information on polar stereographic grids:
+      !  https://apps.ecmwf.int/codes/grib/format/grib2/templates/3/20
+
+       WRFAK_struc(n)%gridDesci = 0
        WRFAK_struc(n)%gridDesci(1) = 5          ! Polar-stereographic
        WRFAK_struc(n)%gridDesci(2) = WRFAK_struc(n)%nc
        WRFAK_struc(n)%gridDesci(3) = WRFAK_struc(n)%nr
        WRFAK_struc(n)%gridDesci(4) = 51.5418    ! latitude of origin -- LL Lat
        WRFAK_struc(n)%gridDesci(5) = -168.175   ! longitude of origin -- LL Lon
-       WRFAK_struc(n)%gridDesci(6) = 8          ! Set for polar-stereo in core/LIS_domainMod.F90 (line 2658)
+       WRFAK_struc(n)%gridDesci(6) = 0          ! ** Matches NAM242 AK grid entry
        WRFAK_struc(n)%gridDesci(7) = -150.0     ! Orientation (LoV)
-!       WRFAK_struc(n)%gridDesci(7) = 210.0     ! Orientation (LoV) -- Set in 0-360 deg long orientation
-       WRFAK_struc(n)%gridDesci(8) = 4.         ! grid spacing in km
-       WRFAK_struc(n)%gridDesci(9) = 4.         ! grid spacing in km
+       WRFAK_struc(n)%gridDesci(8) = 4.0        ! grid spacing in km
+       WRFAK_struc(n)%gridDesci(9) = 4.0        ! grid spacing in km
        WRFAK_struc(n)%gridDesci(10) = 64.0      ! true lat1
        WRFAK_struc(n)%gridDesci(11) = -150.0    ! standard long
-!       WRFAK_struc(n)%gridDesci(11) = 210.0    ! standard long -- ! Set in 0-360 deg long orientation
-       WRFAK_struc(n)%gridDesci(13) = 1
-       WRFAK_struc(n)%gridDesci(20) = 64
-!       WRFAK_struc(n)%gridDesci(20) = 0.0
-!       WRFAK_struc(n)%gridDesci(20) = 128  ..... global?
-! See below link for more information on polar stereographic grids:
-!  https://apps.ecmwf.int/codes/grib/format/grib2/templates/3/20
+       WRFAK_struc(n)%gridDesci(13) = 0         ! regional domain
+       WRFAK_struc(n)%gridDesci(20) = 0         ! ** Matches NAM242 AK grid entry
 
        ! CEN_LAT = 64.f 
        ! CEN_LON = -150.f 
@@ -265,28 +274,6 @@ contains
        ! STAND_LON = -150.f 
        ! POLE_LAT = 90.f 
        ! POLE_LON = 0.f 
-
-!       subroutine map_set(proj_code,lat1,lon1,dx,stdlon,truelat1,truelat2, &
-!                          idim,jdim,proj)
-
-      ! CHECK FULL DOMAIN LAT/LONG:
-       call map_set( PROJ_PS,&
-                  WRFAK_struc(n)%gridDesci(4), WRFAK_struc(n)%gridDesci(5),&
-                  WRFAK_struc(n)%gridDesci(8)*1000.0, &
-                  WRFAK_struc(n)%gridDesci(11), WRFAK_struc(n)%gridDesci(10),&
-                  WRFAK_struc(n)%gridDesci(10), & 
-                  WRFAK_struc(n)%nc, WRFAK_struc(n)%nr, proj_temp )
-
-       allocate( xlat(WRFAK_struc(1)%nc,WRFAK_struc(1)%nr) ) ! KRA
-       allocate( xlon(WRFAK_struc(1)%nc,WRFAK_struc(1)%nr) ) ! KRA
-
-       do r=1,WRFAK_struc(1)%nr
-          do c=1,WRFAK_struc(1)%nc
-             call ij_to_latlon(proj_temp,&
-                        real(c), real(r),&
-                        xlat(c,r), xlon(c,r))
-          enddo
-       enddo
 
        WRFAK_struc(n)%mi = WRFAK_struc(n)%nc*WRFAK_struc(n)%nr
 
