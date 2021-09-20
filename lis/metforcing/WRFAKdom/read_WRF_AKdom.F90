@@ -92,24 +92,15 @@ subroutine read_WRF_AKdom( order, n, findex, yr, mon, da, hr, ferror )
   integer, parameter :: NF = 8   ! # of S forcing variables
 
   character(11), dimension(NF), parameter :: WRFAK_fv = (/  &
-       'T2         ',  &
-       'Q2         ',  & 
-       'SWDOWN     ',  &
-       'GLW        ',  &
-       'U10        ',  &
-       'V10        ',  &
-       'PSFC       ',  &
-       'PREC_ACC_NC'   /)
+       'T2         ',  &    ! metdata(1) == tmp
+       'Q2         ',  &    ! metdata(2) == q2
+       'SWDOWN     ',  &    ! metdata(3) == swd
+       'GLW        ',  &    ! metdata(4) == lwd
+       'U10        ',  &    ! metdata(5) == uwind
+       'V10        ',  &    ! metdata(6) == vwind
+       'PSFC       ',  &    ! metdata(7) == psurf
+       'PREC_ACC_NC'   /)   ! metdata(8) == pcp
 !       'RAINNC     '   /)
-
-    !tmp     <--> LIS_forc%metdata1(1,:)
-    !q2      <--> LIS_forc%metdata1(2,:)
-    !swd     <--> LIS_forc%metdata1(3,:)
-    !lwd     <--> LIS_forc%metdata1(4,:)
-    !uwind   <--> LIS_forc%metdata1(5,:)
-    !vwind   <--> LIS_forc%metdata1(6,:)
-    !psurf   <--> LIS_forc%metdata1(7,:)
-    !pcp     <--> LIS_forc%metdata1(8,:)
 
   character(120) :: infile
 
@@ -186,10 +177,8 @@ subroutine read_WRF_AKdom( order, n, findex, yr, mon, da, hr, ferror )
    timestep = hr + 1
 
    if(LIS_masterproc) then
-      write(LIS_logunit,*)'[INFO] Order, yr, mo, da, hr ::', &
+      write(LIS_logunit,*)'[INFO] File,yr,mo,da,hr ::', &
             order, yr, mon, da, timestep
-!      write(*,*)'[INFO] Order, yr, mo, da, hr ::', &
-!            order, yr, mon, da, timestep
    endif
 
 !=== Open WRF-AK forcing files ===
@@ -212,7 +201,6 @@ subroutine read_WRF_AKdom( order, n, findex, yr, mon, da, hr, ferror )
      endif
 
      ! File name for data wrf_d01_year-mo-da.nc
-!     infile=trim(WRFAK_struc(n)%WRFAKdir)//"/"//cyr//&
      infile=trim(WRFAK_struc(n)%WRFAKdir)//"/hourly_"//cyr//&
            '/wrf2d_d01_'//cyr//'-'//cmo//'-'//cda//'.nc4'
 
@@ -301,6 +289,12 @@ subroutine read_WRF_AKdom( order, n, findex, yr, mon, da, hr, ferror )
               if (datain(i,j) < 0.0) then
                 datain(i,j) = 0.0
               endif
+              ! Temporary implementation due to how hourly precip
+              !  amounts were calculated <part-kluge>KRA
+              if( mon == 1 .and. da == 1 .and. timestep == 1 ) then
+                datain(i,j) = 0.0
+              endif
+              ! <part-kluge>KRA
               temp2WRFAK(i,j,8) = datain(i,j)
            end select
          enddo

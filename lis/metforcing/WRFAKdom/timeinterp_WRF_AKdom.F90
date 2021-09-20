@@ -14,7 +14,7 @@
 !  \label{timeinterp_WRF_AKdom}
 ! 
 ! !REVISION HISTORY: 
-! 21 Jun 2021; K.R. Arsenault, Updated for different WRF output files
+! 21 Jun 2021; K.R. Arsenault, Updated for different WRF AK files
 ! 
 ! !INTERFACE:
 subroutine timeinterp_WRF_AKdom(n, findex)

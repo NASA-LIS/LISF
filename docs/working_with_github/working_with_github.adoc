@@ -1,7 +1,7 @@
 = Working with GitHub
 :author: James Geiger
-:revnumber: 12
-:revdate: 20 May 2021
+:revnumber: 14
+:revdate: 3 Aug 2021
 :sectnums:
 
 :github: https://github.com/
@@ -38,15 +38,15 @@ For example,
 
 In the commands that follow, user-provided information is marked up with '<' and '>'.  Treat this like a fill-in-the-blank.  In the command `git add <file>`, you are expected to provide the name of the file that you are trying to add; e.g. `git add core/LIS_historyMod.F90`.
 
-=== NASA-LIS/LISF test URL
+=== NASA-LIS/LISF test repository
 
 //The correct URL for the NASA-LIS/LISF repository will be https://github.com/NASA-LIS/LISF.
 
 //To facilitate hands-on participation (e.g., copy/paste), the URL will be replaced with https://github.com/NASA-LIS/lisf-test.
 
-Lab members, feel free to use https://github.com/NASA-LIS/lisf-test as a testbed to try out using git and GitHub for your LISF development.
+Lab members, feel free to use github:NASA-LIS/lisf-test (URL: https://github.com/NASA-LIS/lisf-test) as a testbed to try out using git and GitHub for your LISF development.
 
-Just replace https://github.com/NASA-LIS/LISF, https://github.com/NASA-LIS/LISF.git, and LISF.git with https://github.com/NASA-LIS/lisf-test, https://github.com/NASA-LIS/lisf-test.git, and lisf-test.git, respectively.
+Just replace github:NASA-LIS/LISF, github:NASA-LIS/LISF.git, and LISF.git with github:NASA-LIS/lisf-test, github.com:NASA-LIS/lisf-test.git, and lisf-test.git, respectively.
 
 
 == First steps
@@ -73,7 +73,8 @@ When registering, use your *NASA* email address.  For your username, please try 
 
 The LISF core team came up with the following workflow for developing LISF in git:
 
-image::lis_workflow_crop.png[align=center,pdfwidth=75%,scaledwidth=75%]
+//image::lis_workflow_crop.png[align=center,pdfwidth=75%,scaledwidth=75%]
+image::LISFLOW.png[align=center,pdfwidth=75%,scaledwidth=75%]
 
 
 == Working with GitHub
@@ -334,7 +335,7 @@ On your local machine run:
 
 [subs="attributes+,-callouts"]
 ....
-% git clone https://github.com/<your-user-name>/{lisf_git} <dir>
+% git clone github:<your-user-name>/{lisf_git} <dir>
 ....
 
 Your local clone refers to your GitHub work account as 'origin'.
@@ -345,7 +346,7 @@ I would run:
 
 [subs="attributes+,-callouts"]
 ....
-% git clone https://github.com/jvgeiger/{lisf_git}
+% git clone github:jvgeiger/{lisf_git}
 ....
 ====
 
@@ -356,7 +357,7 @@ You will routinely pull commits from the NASA-LIS/LISF repository (pull from ups
 
 [subs="attributes+,-callouts"]
 ....
-% git remote add upstream {nasalis}{lisf_git}
+% git remote add upstream {nasalis_ssh}{lisf_git}
 ....
 
 Now your local clone refers to the official NASA-LIS/LISF repository as 'upstream'.
@@ -470,9 +471,9 @@ Continuing with the example, you would execute:
 [subs="attributes+,-callouts"]
 ....
 # Fork NASA-LIS/LISF — this is a one-time step
-% git clone https://github.com/<your-user-name>/{lisf_git} <dir>
+% git clone github:<your-user-name>/{lisf_git} <dir>
 % cd <dir>
-% git remote add upstream {nasalis}{lisf_git}
+% git remote add upstream {nasalis_ssh}{lisf_git}
 % git checkout master
 % git pull upstream master
 % git push origin master
@@ -567,9 +568,9 @@ Continuing with the example, you would execute:
 [subs="attributes+,-callouts"]
 ....
 # Fork NASA-LIS/LISF — this is a one-time step
-% git clone https://github.com/<your-user-name>/{lisf_git} <dir>
+% git clone github:<your-user-name>/{lisf_git} <dir>
 % cd <dir>
-% git remote add upstream {nasalis}{lisf_git}
+% git remote add upstream {nasalis_ssh}{lisf_git}
 % git checkout master
 % git pull upstream master
 % git push origin master
@@ -584,9 +585,9 @@ Continuing with the example, you would execute:
 [subs="attributes+,-callouts"]
 ....
 # Fork NASA-LIS/LISF — this is a one-time step
-% git clone https://github.com/<your-user-name>/{lisf_git} <dir>
+% git clone github:<your-user-name>/{lisf_git} <dir>
 % cd <dir>
-% git remote add upstream {nasalis}{lisf_git}
+% git remote add upstream {nasalis_ssh}{lisf_git}
 % git checkout master
 % git pull upstream master
 % git push origin master
@@ -735,7 +736,7 @@ Alice has now made her working branch available for Bob to see.
 .Bob performs:
 [subs="attributes+,-callouts"]
 ....
-% git remote add alice https://github.com/alice/{lisf_git}
+% git remote add alice github:alice/{lisf_git}
 % git fetch alice <feature/noah6>
 % git checkout -b <feature/noah6> alice/<feature/noah6>
 # Carry out his work: edit, `git add`, `git commit`, etc.
@@ -750,7 +751,7 @@ anchor:sec_alice_gets_bobs[Alice gets Bob's updates]
 .Alice performs:
 [subs="attributes+,-callouts"]
 ....
-% git remote add bob https://github.com/bob/{lisf_git}
+% git remote add bob github:bob/{lisf_git}
 % git fetch bob <feature/noah6>
 % git checkout <feature/noah6>
 % git merge bob/<feature/noah6>
@@ -794,8 +795,8 @@ In a one clone per project approach, you will clone from your GitHub account onc
 
 [subs="attributes+,-callouts"]
 ....
-% git clone https://github.com/<your-user-name>/{lisf_git} NLDAS
-% git clone https://github.com/<your-user-name>/{lisf_git} FAME
+% git clone github:<your-user-name>/{lisf_git} NLDAS
+% git clone github:<your-user-name>/{lisf_git} FAME
 ....
 
 Now let's say that for the NLDAS project you are 1) updating the NLDAS reader to support the new 5km domain and 2) incorporating VIC 8.  And for the FAME project, you are 1) adding the z-score metric to LVT and 2) adding the new XYZ soil moisture observation reader to LIS.  Then you would have:
@@ -843,10 +844,10 @@ In this approach, you will clone from your GitHub account for each concern (feat
 
 [subs="attributes+,-callouts"]
 ....
-% git clone https://github.com/<your-user-name>/{lisf_git} NLDAS-5km-domain/SRC
-% git clone https://github.com/<your-user-name>/{lisf_git} NLDAS-vic-8/SRC
-% git clone https://github.com/<your-user-name>/{lisf_git} FAME-z-score/SRC
-% git clone https://github.com/<your-user-name>/{lisf_git} FAME-xyz-sm-obs/SRC
+% git clone github:<your-user-name>/{lisf_git} NLDAS-5km-domain/SRC
+% git clone github:<your-user-name>/{lisf_git} NLDAS-vic-8/SRC
+% git clone github:<your-user-name>/{lisf_git} FAME-z-score/SRC
+% git clone github:<your-user-name>/{lisf_git} FAME-xyz-sm-obs/SRC
 ....
 
 In each of these clones, you would have:
@@ -889,7 +890,7 @@ One problem with this approach is that it is messier in the sense that you now h
 % cd NLDAS-5km-domain
 % mkdir TESTING
 # populate TESTING with 5km input and output data
-% git clone https://github.com/<your-user-name>/{lisf_git} SRC
+% git clone github:<your-user-name>/{lisf_git} SRC
 # work in SRC
 # test in TESTING
 ....
@@ -919,7 +920,7 @@ In your local working repository, go into the RESTRICTED sub-directory and clone
 
 ....
 % cd RESTRICTED
-% git clone https://github.com/<your-user-name>/<private-repo> <dir>
+% git clone github:<your-user-name>/<private-repo> <dir>
 ....
 
 The specific command will, of course, depend on which restricted-accesss component you need to work with.
@@ -930,7 +931,7 @@ The specific command will, of course, depend on which restricted-accesss compone
 Go into your RESTRICTED/<private-repo-dir> sub-directory, and run:
 
 ....
-% git remote add upstream https://github.com/NASA-LIS/<private-repo>
+% git remote add upstream github:NASA-LIS/<private-repo>
 ....
 
 Again, the specific command will depend on which private repository you need to work with.
