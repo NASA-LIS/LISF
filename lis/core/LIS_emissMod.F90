@@ -23,13 +23,13 @@ module LIS_emissMod
 !
 ! !DESCRIPTION:
 !  The code in this file implements routines to read emissivity
-!  data. 
+!  data.
 !  \subsubsection{Overview}
-!  This routines in this module provides routines to read the 
-!  emissivity climatology data and allows the users to 
-!  specify the frequency of climatology (in months). 
-!  The climatological data is temporally interpolated  
-!  between months to the current simulation date. 
+!  This routines in this module provides routines to read the
+!  emissivity climatology data and allows the users to
+!  specify the frequency of climatology (in months).
+!  The climatological data is temporally interpolated
+!  between months to the current simulation date.
 !
 ! !REVISION HISTORY:
 !
@@ -41,7 +41,7 @@ module LIS_emissMod
   use LIS_timeMgrMod
   use LIS_histDataMod
   use LIS_fileIOMod
-  
+
   implicit none
 
   PRIVATE
@@ -58,7 +58,7 @@ module LIS_emissMod
 !------------------------------------------------------------------------------
 ! !PUBLIC TYPES:
 !------------------------------------------------------------------------------
-  public :: LIS_emiss !data structure containing emiss fraction data. 
+  public :: LIS_emiss !data structure containing emiss fraction data.
 
 !EOP
   type, public :: emiss_type_dec
@@ -83,10 +83,10 @@ module LIS_emissMod
 contains
 
 !BOP
-! 
+!
 ! !ROUTINE: LIS_emiss_setup
 ! \label{LIS_emiss_setup}
-! 
+!
 ! !INTERFACE:
   subroutine LIS_emiss_setup
 ! !USES:
@@ -95,19 +95,19 @@ contains
 #endif
 ! !DESCRIPTION:
 !
-! Allocates memory for data structures for reading 
-! the emiss fraction datasets 
-! 
-!  The routines invoked are: 
+! Allocates memory for data structures for reading
+! the emiss fraction datasets
+!
+!  The routines invoked are:
 !  \begin{description}
 !   \item[emissivitysetup](\ref{emissivitysetup}) \newline
-!    calls the registry to invoke the emiss setup methods. 
+!    calls the registry to invoke the emiss setup methods.
 !  \end{description}
 !
 !EOP
     implicit none
     integer   :: n
-    integer   :: ndoms 
+    integer   :: ndoms
     integer   :: rc,ios,nid
     integer :: i
     real :: wt1, wt2
@@ -117,18 +117,18 @@ contains
     logical :: file_exists
 
     TRACE_ENTER("emiss_setup")
-    ndoms = 0 
+    ndoms = 0
     do n=1,LIS_rc%nnest
-       if(LIS_rc%useemissmap(n).ne."none") then 
+       if(LIS_rc%useemissmap(n).ne."none") then
           ndoms = ndoms+1
        endif
     enddo
-    
-    if(ndoms.gt.0) then 
+
+    if(ndoms.gt.0) then
        allocate(LIS_emiss(LIS_rc%nnest))
-       
+
        do n=1,LIS_rc%nnest
-          LIS_emiss(n)%firstInstance = .true. 
+          LIS_emiss(n)%firstInstance = .true.
        enddo
 
        do n=1,LIS_rc%nnest
@@ -139,21 +139,21 @@ contains
           LIS_emiss(n)%emissp2 = 0.0
           LIS_emiss(n)%emiss = 0.0
 
-          if(LIS_rc%useemissmap(n).eq."LDT") then 
+          if(LIS_rc%useemissmap(n).eq."LDT") then
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
-             
+
              inquire(file=LIS_rc%paramfile(n), exist=file_exists)
-             if(file_exists) then 
-                
+             if(file_exists) then
+
                 ios = nf90_open(path=trim(LIS_rc%paramfile(n)),&
                      mode=NF90_NOWRITE,ncid=nid)
                 call LIS_verify(ios,'Error in nf90_open in read_emissclimo')
-                
-                ios = nf90_get_att(nid, NF90_GLOBAL, 'EMISSIVITY_DATA_INTERVAL', &
+
+                ios = nf90_get_att(nid, NF90_GLOBAL, &
+                     'EMISSIVITY_DATA_INTERVAL', &
                      LIS_emiss(n)%emissIntervalType)
-                call LIS_verify(ios,'Error in nf90_get_att in read_emissclimo')       
-                
+                call LIS_verify(ios,'Error in nf90_get_att in read_emissclimo')
                 ios = nf90_close(nid)
                 call LIS_verify(ios,'Error in nf90_close in read_emissclimo')
              else
@@ -162,80 +162,81 @@ contains
                 call LIS_endrun
              endif
 #endif
-             if(LIS_emiss(n)%emissIntervalType.eq."monthly") then 
+             if(LIS_emiss(n)%emissIntervalType.eq."monthly") then
                 LIS_emiss(n)%emissInterval = 2592000
              endif
 
 !The intervaltype and interval is set in the plugin, now
-!register the alarm.          
+!register the alarm.
              call LIS_registerAlarm("LIS emissivity read alarm",LIS_rc%ts, &
                   LIS_emiss(n)%emissInterval,&
-                  intervalType=LIS_emiss(n)%emissIntervalType) 
-             
+                  intervalType=LIS_emiss(n)%emissIntervalType)
+
              call LIS_computeTemporalWeights(LIS_rc,&
                   LIS_emiss(n)%emissIntervalType, &
                   t1,t2,wt1,wt2)
-             
+
              allocate(value1(LIS_rc%ntiles(n)))
              allocate(value2(LIS_rc%ntiles(n)))
-             
+
              value1 = LIS_rc%udef
              value2 = LIS_rc%udef
-             
+
              call read_emissclimo(n,t1,value1)
              call read_emissclimo(n,t2,value2)
-             
+
              do i=1,LIS_rc%ntiles(n)
                 LIS_emiss(n)%emissp1(i) = value1(i)
                 LIS_emiss(n)%emissp2(i) = value2(i)
              enddo
-             
+
           else
-             call emissivitysetup(trim(LIS_rc%useemissmap(n))//char(0),n) 
+             call emissivitysetup(trim(LIS_rc%useemissmap(n))//char(0),n)
              call reademissivity(trim(LIS_rc%useemissmap(n))//char(0),&
                n,wt1,wt2,LIS_emiss(n)%emissp1,LIS_emiss(n)%emissp2)
           endif
 
-          do i=1,LIS_rc%ntiles(n)  
+          do i=1,LIS_rc%ntiles(n)
              LIS_emiss(n)%emiss(i) = (wt1*LIS_emiss(n)%emissp1(i))+&
                   (wt2*LIS_emiss(n)%emissp2(i))
           enddo
        enddo
     endif
     TRACE_EXIT("emiss_setup")
-    
+
   end subroutine LIS_emiss_setup
 
 !BOP
-! 
+!
 ! !ROUTINE: LIS_read_emiss
 ! \label{LIS_read_emiss}
-! 
+!
 ! !INTERFACE:
   subroutine LIS_read_emiss(n)
-! !USES:    
+! !USES:
 
     implicit none
-! !ARGUMENTS:    
+! !ARGUMENTS:
     integer, intent(in) :: n
-! 
+!
 ! !DESCRIPTION:
 !
 !  Reads the emiss fraction climalotogy and temporally interpolates
-!  it to the current day. 
-! 
-!  The arguments are: 
+!  it to the current day.
+!
+!  The arguments are:
 !  \begin{description}
 !   \item [n]
 !     index of the domain or nest.
 !  \end{description}
 !
-!  The routines invoked are: 
+!  The routines invoked are:
 !  \begin{description}
-!   \item[LIS\_computeTemporalWeights](\ref{LIS_computeTemporalWeights}) \newline
+!   \item[LIS\_computeTemporalWeights](\ref{LIS_computeTemporalWeights})
+!     \newline
 !    computes the interpolation weights
 !   \item[reademissivity](\ref{reademissivity}) \newline
-!    invokes the generic method in the registry to read the 
+!    invokes the generic method in the registry to read the
 !    emiss climatology data
 !  \end{description}
 !
@@ -249,23 +250,23 @@ contains
     real, allocatable   :: value2(:) ! temporary value holder for t2
 
     TRACE_ENTER("emiss_read")
-    if(LIS_rc%useemissmap(n).ne."none") then 
-       if(LIS_rc%useemissmap(n).eq."LDT") then 
+    if(LIS_rc%useemissmap(n).ne."none") then
+       if(LIS_rc%useemissmap(n).eq."LDT") then
           emissAlarmCheck = LIS_isAlarmRinging(LIS_rc,&
-               "LIS emissivity read alarm",&           
+               "LIS emissivity read alarm",&
                LIS_emiss(n)%emissIntervalType)
 
           call LIS_computeTemporalWeights(LIS_rc,&
                LIS_emiss(n)%emissIntervalType, &
                t1,t2,wt1,wt2)
 
-          if(emissAlarmCheck) then   
+          if(emissAlarmCheck) then
              allocate(value1(LIS_rc%ntiles(n)))
              allocate(value2(LIS_rc%ntiles(n)))
-       
+
              call read_emissclimo(n,t1,value1)
              call read_emissclimo(n,t2,value2)
-             
+
              do i=1,LIS_rc%ntiles(n)
                 LIS_emiss(n)%emissp1(i) = value1(i)
                 LIS_emiss(n)%emissp2(i) = value2(i)
@@ -273,7 +274,7 @@ contains
           endif
        else
           call reademissivity(trim(LIS_rc%useemissmap(n))//char(0),&
-               n,wt1,wt2,LIS_emiss(n)%emissp1,LIS_emiss(n)%emissp2)
+               n, wt1, wt2, LIS_emiss(n)%emissp1, LIS_emiss(n)%emissp2)
        endif
 
        do i=1,LIS_rc%ntiles(n)
@@ -283,17 +284,17 @@ contains
     endif
     TRACE_EXIT("emiss_read")
   end subroutine LIS_read_emiss
-  
+
 !BOP
-! 
+!
 ! !ROUTINE: LIS_emiss_finalize
 ! \label{LIS_emiss_finalize}
-! 
+!
 ! !INTERFACE:
   subroutine LIS_emiss_finalize
 ! !USES:
 
-! 
+!
 ! !DESCRIPTION:
 !
 ! Deallocates objects created in this module
@@ -302,13 +303,13 @@ contains
     implicit none
     integer :: n
     integer :: ndoms
-    
-    ndoms = 0 
+
+    ndoms = 0
     do n=1,LIS_rc%nnest
        if(LIS_rc%useemissmap(n).ne."none") ndoms = ndoms+1
     enddo
-    
-    if(ndoms.gt.0) then 
+
+    if(ndoms.gt.0) then
        do n=1,LIS_rc%nnest
           deallocate(LIS_emiss(n)%emiss)
           deallocate(LIS_emiss(n)%emissp1)
@@ -319,30 +320,30 @@ contains
   end subroutine LIS_emiss_finalize
 
 !BOP
-! 
+!
 ! !ROUTINE: LIS_diagnoseemiss
 ! \label{LIS_diagnoseemiss}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine LIS_diagnoseemiss(n)
-! !USES: 
+! !USES:
 
 ! !ARGUMENTS:
     implicit none
-    integer, intent(in)   :: n 
+    integer, intent(in)   :: n
 
-! !DESCRIPTION: 
-!  This routine maps the emiss data to the LIS history writer. 
-! 
-!  The arguments are: 
+! !DESCRIPTION:
+!  This routine maps the emiss data to the LIS history writer.
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \end{description}
-! 
-!  The routines called are: 
+!
+!  The routines called are:
 !  \begin{description}
 !  \item[LIS\_diagnoseOutputVar](\ref{LIS_diagnoseSurfaceOutputVar}) \newline
-!    generic routine to map a single variable to the LIS 
+!    generic routine to map a single variable to the LIS
 !    history writer
 !  \end{description}
 !EOP
@@ -351,15 +352,16 @@ contains
 
     TRACE_ENTER("emiss_diag")
     allocate(temp(LIS_rc%ntiles(n)))
-    if(LIS_rc%useemissmap(n).ne."none") then 
+    if(LIS_rc%useemissmap(n).ne."none") then
        temp = LIS_rc%udef
        do t=1,LIS_rc%ntiles(n)
-          if(LIS_domain(n)%tile(t)%index.ne.-1) then 
+          if(LIS_domain(n)%tile(t)%index.ne.-1) then
              temp(t) = LIS_emiss(n)%emiss(t)
           endif
           call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_EMISSFORC,vlevel=1,&
-                                           value=temp(t),unit="-",direction="-")
-       enddo       
+               value=temp(t),unit="-", &
+               direction="-")
+       enddo
     endif
     deallocate(temp)
     TRACE_EXIT("emiss_diag")
@@ -367,29 +369,29 @@ contains
   end subroutine LIS_diagnoseemiss
 
 !BOP
-! 
+!
 ! !ROUTINE: LIS_emiss_reset
 ! \label{LIS_emiss_reset}
-! 
+!
 ! !INTERFACE:
   subroutine LIS_emiss_reset
 ! !USES:
 
 ! !DESCRIPTION:
 !
-! Resets the data structures for reading 
-! the emiss fraction datasets 
-! 
-!  The routines invoked are: 
+! Resets the data structures for reading
+! the emiss fraction datasets
+!
+!  The routines invoked are:
 !  \begin{description}
 !   \item[emissivitysetup](\ref{emissivitysetup}) \newline
-!    calls the registry to invoke the emiss data reading methods. 
+!    calls the registry to invoke the emiss data reading methods.
 !  \end{description}
 !
 !EOP
     implicit none
     integer   :: n
-    integer   :: ndoms 
+    integer   :: ndoms
     integer   :: rc
     integer :: i
     real :: wt1, wt2
@@ -398,14 +400,14 @@ contains
     integer       :: t1, t2
 
     TRACE_ENTER("emiss_reset")
-    ndoms = 0 
+    ndoms = 0
     do n=1,LIS_rc%nnest
-       if(LIS_rc%useemissmap(n).ne."none") then 
+       if(LIS_rc%useemissmap(n).ne."none") then
           ndoms = ndoms+1
        endif
     enddo
-    
-    if(ndoms.gt.0) then 
+
+    if(ndoms.gt.0) then
 
        do n=1,LIS_rc%nnest
 
@@ -413,12 +415,12 @@ contains
           LIS_emiss(n)%emissp2 = 0.0
           LIS_emiss(n)%emiss = 0.0
 
-          if(LIS_rc%useemissmap(n).ne."LDT") then 
+          if(LIS_rc%useemissmap(n).ne."LDT") then
              call emissivitysetup(trim(LIS_rc%useemissmap(n))//char(0),n)
           else
 !             LIS_emiss(n)%emissIntervalType = "monthly"
           endif
-                   
+
           !Read the data for the first time
           call LIS_computeTemporalWeights(LIS_rc,&
                LIS_emiss(n)%emissIntervalType, &
@@ -426,17 +428,20 @@ contains
 
           allocate(value1(LIS_rc%ntiles(n)))
           allocate(value2(LIS_rc%ntiles(n)))
-          
-          if(LIS_rc%useemissmap(n).eq."LDT") then 
+
+          if(LIS_rc%useemissmap(n).eq."LDT") then
              call read_emissclimo(n,t1,value1)
              call read_emissclimo(n,t2,value2)
           else
-             call reademissivity(trim(LIS_rc%useemissmap(n))//char(0),&
-                  n,t1,value1)
-             call reademissivity(trim(LIS_rc%useemissmap(n))//char(0),&
-                  n,t2,value2)
+             ! EMK Fixed calls
+             !call reademissivity(trim(LIS_rc%useemissmap(n))//char(0),&
+             !     n,t1,value1)
+             !call reademissivity(trim(LIS_rc%useemissmap(n))//char(0),&
+             !     n,t2,value2)
+             call reademissivity(trim(LIS_rc%useemissmap(n))//char(0), &
+                  n, wt1, wt2, value1, value2)
           endif
-          
+
           do i=1,LIS_rc%ntiles(n)
              LIS_emiss(n)%emissp1(i) = value1(i)
              LIS_emiss(n)%emissp2(i) = value2(i)
@@ -468,22 +473,22 @@ contains
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
 #endif
-    
+
     implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
     integer, intent(in)         :: n
     integer, intent(in)         :: time
-    real, intent(inout)         :: array(LIS_rc%ntiles(n))    
+    real, intent(inout)         :: array(LIS_rc%ntiles(n))
 ! !DESCRIPTION:
 !  This subroutine reads the emiss data climatology
-!  
+!
 !  The arguments are:
 !  \begin{description}
 !   \item[n]
 !    index of n
 !   \end{description}
 !
-!EOP      
+!EOP
 
     integer :: ios1
     integer :: ios,nid,emissid,ncId, nrId,mid
@@ -492,50 +497,53 @@ contains
     real, allocatable :: emiss(:,:,:)
     real, allocatable :: localemiss(:,:)
     logical :: file_exists
-    
+
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
-    mo = time 
+    mo = time
     allocate(localemiss(LIS_rc%lnc(n),LIS_rc%lnr(n)))
 
     inquire(file=LIS_rc%paramfile(n), exist=file_exists)
-    if(file_exists) then 
+    if(file_exists) then
 
        write(LIS_logunit,*)'Reading emissivity map for month ', mo
        ios = nf90_open(path=LIS_rc%paramfile(n),&
             mode=NF90_NOWRITE,ncid=nid)
        call LIS_verify(ios,'Error in nf90_open in read_emissclimo')
-       
+
        ios = nf90_inq_dimid(nid,"east_west",ncId)
        call LIS_verify(ios,'Error in nf90_inq_dimid in read_emissclimo')
-       
+
        ios = nf90_inq_dimid(nid,"north_south",nrId)
        call LIS_verify(ios,'Error in nf90_inq_dimid in read_emissclimo')
 
        ios = nf90_inq_dimid(nid,"month",mId)
        call LIS_verify(ios,'Error in nf90_inq_dimid in read_emissclimo')
-       
+
        ios = nf90_inquire_dimension(nid,ncId, len=nc)
-       call LIS_verify(ios,'Error in nf90_inquire_dimension in read_emissclimo')
-       
+       call LIS_verify(ios, &
+            'Error in nf90_inquire_dimension in read_emissclimo')
+
        ios = nf90_inquire_dimension(nid,nrId, len=nr)
-       call LIS_verify(ios,'Error in nf90_inquire_dimension in read_emissclimo')
+       call LIS_verify(ios, &
+            'Error in nf90_inquire_dimension in read_emissclimo')
 
        ios = nf90_inquire_dimension(nid,mId, len=months)
-       call LIS_verify(ios,'Error in nf90_inquire_dimension in read_emissclimo')
-              
+       call LIS_verify(ios, &
+            'Error in nf90_inquire_dimension in read_emissclimo')
+
        allocate(emiss(LIS_rc%gnc(n),LIS_rc%gnr(n),months))
 
        ios = nf90_inq_varid(nid,'EMISS',emissid)
        call LIS_verify(ios,'EMISS field not found in the LIS param file')
-       
+
        ios = nf90_get_var(nid,emissid,emiss)
        call LIS_verify(ios,'Error in nf90_get_var in read_emissclimo')
-       
+
        ios = nf90_close(nid)
        call LIS_verify(ios,'Error in nf90_close in read_emissclimo')
-       
+
        localemiss(:,:) = &
-            emiss(LIS_ews_halo_ind(n,LIS_localPet+1):&         
+            emiss(LIS_ews_halo_ind(n,LIS_localPet+1):&
             LIS_ewe_halo_ind(n,LIS_localPet+1), &
             LIS_nss_halo_ind(n,LIS_localPet+1): &
             LIS_nse_halo_ind(n,LIS_localPet+1),mo)
@@ -547,7 +555,8 @@ contains
                LIS_domain(n)%tile(t)%row)
        enddo
     else
-       write(LIS_logunit,*) 'emiss map: ',LIS_rc%paramfile(n), ' does not exist'
+       write(LIS_logunit,*) 'emiss map: ',LIS_rc%paramfile(n), &
+            ' does not exist'
        write(LIS_logunit,*) 'program stopping ...'
        call LIS_endrun
     endif
