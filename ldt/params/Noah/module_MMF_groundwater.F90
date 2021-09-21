@@ -394,7 +394,7 @@ contains
     real, dimension (:,:,:), intent (inout) :: area
     integer                                 :: i,j
     real                                    :: lat_ll, lat_ur , lat_ul, lat_lr, c, r
-    real                                    :: lon_ll, lon_ur , lon_ul, lon_lr
+    real                                    :: lon_ll, lon_ur , lon_ul, lon_lr, lat, lon
     real                                    :: ab, bc, cd, da, ac  ! side lengths
     
     area    = 0.
@@ -404,24 +404,36 @@ contains
            
           r = float (j)
           c = float (i)
+             
+          if(trim(LDT_rc%lis_map_proj(nest)) == 'latlon') then
+             
+             call ij_to_latlon(LDT_domain(nest)%ldtproj,c , r, lat, lon) ! center
+             area (i,j,1) = radius * radius * &
+                  (sin(d2r(lat + 0.5*LDT_rc%gridDesc(nest,10))) - &
+                  sin(d2r(lat - 0.5*LDT_rc%gridDesc(nest,10))))*  &
+                  (d2r(LDT_rc%gridDesc(nest,9)))/1000./1000.    ! [km2]
+             
+          else
+
+             
+             call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r-0.5, lat_ll, lon_ll) ! SW corner (A)
+             call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r+0.5, lat_ul, lon_ul) ! NW corner (B)         
+             call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r+0.5, lat_ur, lon_ur) ! NE corner (C)        
+             call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r-0.5, lat_lr, lon_lr) ! SE corner (D)
+             
+             ! side lengths
+             ab = haversine(d2r(lat_ll), d2r(lon_ll), d2r(lat_ul), d2r(lon_ul))
+             bc = haversine(d2r(lat_ul), d2r(lon_ul), d2r(lat_ur), d2r(lon_ur))
+             cd = haversine(d2r(lat_ur), d2r(lon_ur), d2r(lat_lr), d2r(lon_lr))
+             da = haversine(d2r(lat_ll), d2r(lon_ll), d2r(lat_lr), d2r(lon_lr))
+             ac = haversine(d2r(lat_ll), d2r(lon_ll), d2r(lat_ur), d2r(lon_ur))
+             
+             ! area = ABC area + ACD area
+             
+             area (i,j,1) = radius * radius * &
+                  (triangle_area (ac, ab, bc) + triangle_area(ac, cd, da))/1000./1000. ! [km2]
+          endif
           
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r-0.5, lat_ll, lon_ll) ! SW corner (A)
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r+0.5, lat_ul, lon_ul) ! NW corner (B)         
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r+0.5, lat_ur, lon_ur) ! NE corner (C)        
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r-0.5, lat_lr, lon_lr) ! SE corner (D)
-
-          ! side lengths
-          ab = haversine(d2r(lat_ll), d2r(lon_ll), d2r(lat_ul), d2r(lon_ul))
-          bc = haversine(d2r(lat_ul), d2r(lon_ul), d2r(lat_ur), d2r(lon_ur))
-          cd = haversine(d2r(lat_ur), d2r(lon_ur), d2r(lat_lr), d2r(lon_lr))
-          da = haversine(d2r(lat_ll), d2r(lon_ll), d2r(lat_lr), d2r(lon_lr))
-          ac = haversine(d2r(lat_ll), d2r(lon_ll), d2r(lat_ur), d2r(lon_ur))
-           
-          ! area = ABC area + ACD area
-
-          area (i,j,1) = radius * radius * &
-               (triangle_area (ac, ab, bc) + triangle_area(ac, cd, da))/1000./1000. ! [km2]
-                    
        end do
     end do
 
