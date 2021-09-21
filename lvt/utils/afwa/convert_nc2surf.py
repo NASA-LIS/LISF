@@ -44,6 +44,8 @@
 #               upgraded to MULE 2020.01.1.
 # 04 Dec 2020:  Eric Kemp (SSAI): Fixed offset for starting lat/lon.
 # 25 Jan 2021:  Eric Kemp (SSAI): Fixed calculation of bzy and bzx.
+# 05 Feb 2021 : Eric Kemp (SSAI): Switched to multi-layer snow physics for
+#               PS41.
 #
 #------------------------------------------------------------------------------
 """
@@ -62,7 +64,8 @@ import mule
 
 #------------------------------------------------------------------------------
 # Version of UM model.  Used below when assigning metadata to SURF files.
-_MODEL_VERSION = 1006
+#_MODEL_VERSION = 1006
+_MODEL_VERSION = 1009
 
 #------------------------------------------------------------------------------
 # SURF Variable codes, based on STASHmaster_A file used with GALWEM.
@@ -101,6 +104,8 @@ _VARIDS = {
         "LBVC": 129,     # Value at surface
         "LBPLEV": 0,     # STASH pseudo dimension
     },
+
+    # EMK...Revised snow for PS41
     # Snow amount over land aft tstp (1 level)...From LVT
     "SWE_inst:LVT": {
         "LBFC":      93,  # PPF
@@ -109,14 +114,103 @@ _VARIDS = {
         "LBVC": 129,     # Value at surface
         "LBPLEV": 1,     # STASH pseudo dimension
     },
-    # Snow depth on ground on tiles (1 level)...From LVT
-    "SnowDepth_inst:LVT": {
-        "LBFC": 0,        # PPF
-        "ITEM_CODE": 376,  # Item
+    # Snow grain size on tiles (1 level)...From LVT
+    "SnowGrain_inst:LVT": {
+        "LBFC": 0,        # From SURF
+        "ITEM_CODE": 231, # Item
         "LBTYP": 0,       # CFFF
         "LBVC": 129,      # Value at surface
         "LBPLEV": 1,      # STASH pseudo dimension
     },
+    # Snow amount on tiles (1 level)...From LVT
+    "SurftSnow_inst:LVT": {
+        "LBFC": 0,        # From SURF
+        "ITEM_CODE": 240, # Item
+        "LBTYP": 0,       # CFFF
+        "LBVC": 129,      # Value at surface
+        "LBPLEV": 1,      # STASH pseudo dimension
+    },
+    # Snow beneath canopy (1 level)...From LVT
+    "GrndSnow_inst:LVT": {
+        "LBFC": 0,        # From SURF
+        "ITEM_CODE": 242, # Item
+        "LBTYP": 0,       # CFFF
+        "LBVC": 129,      # Value at surface
+        "LBPLEV": 1       # STASH pseudo dimension
+    },
+    # Snow depth on ground on tiles (1 level)...From LVT
+    "SnowDepth_inst:LVT": {
+        "LBFC": 0,        # PPF
+        "ITEM_CODE": 376, # Item
+        "LBTYP": 0,       # CFFF
+        "LBVC": 129,      # Value at surface
+        "LBPLEV": 1,      # STASH pseudo dimension
+    },
+    # Snowpack bulk density (1 level)...From LVT
+    "SnowDensity_inst:LVT": {
+        "LBFC": 0,        # PPF
+        "ITEM_CODE": 377, # Item
+        "LBTYP": 0,       # CFFF
+        "LBVC": 129,      # Value at surface
+        "LBPLEV": 1       # STASH pseudo dimension
+    },
+    # Number of snow layers on tiles (1 level)...From LVT
+    "ActSnowNL_inst:LVT": {
+        "LBFC": 0,         # PPF
+        "ITEM_CODE" : 380, # Item
+        "LBTYP": 0,        # CFFF
+        "LBVC": 129,       # Value at surface
+        "LBPLEV": 1,       # STASH pseudo dimension
+    },
+    # Snow layer thicknesses on tiles (3 levels)...From LVT
+    "LayerSnowDepth_inst:LVT": {
+        "LBFC": 0,        # PPF
+        "ITEM_CODE": 381, # Item
+        "LBTYP": 0,       # CFFF
+        "LBVC": 129,      # LBVC
+        "LBPLEV": 1000,   # 1000 will be added to layer number
+    },
+    # Snow lyr ice mass on tiles (3 levels)...From LVT
+    "SnowIce_inst:LVT": {
+        "LBFC": 0,        # PPF
+        "ITEM_CODE": 382, # Item
+        "LBTYP": 0,       # CFFF
+        "LBVC": 129,      # LBVC
+        "LBPLEV": 1000,   # 1000 will be added to layer number
+    },
+    # Snow lyr liquid mass on tiles (3 levels)...From LVT
+    "SnowLiq_inst:LVT": {
+        "LBFC": 0,        # PPF
+        "ITEM_CODE": 383, # Item
+        "LBTYP": 0,       # CFFF
+        "LBVC": 129,      # LBVC
+        "LBPLEV": 1000,   # 1000 will be added to layer number
+    },
+    # Snow layer temperature on tiles (3 levels)...From LVT
+    "SnowTProf_inst:LVT": {
+        "LBFC": 0,        # PPF
+        "ITEM_CODE": 384, # Item
+        "LBTYP": 0,       # CFFF
+        "LBVC": 129,      # LBVC
+        "LBPLEV": 1000,   # 1000 will be added to layer number
+    },
+    # Snow layer density on tiles (3 levels)...From LVT
+    "LayerSnowDensity_inst:LVT": {
+        "LBFC": 0,        # PPF
+        "ITEM_CODE": 385, # Item
+        "LBTYP": 0,       # CFFF
+        "LBVC": 129,      # LBVC
+        "LBPLEV": 1000,   # 1000 will be added to layer number
+    },
+    # Snow layer grain size on tiles (3 levels)...From LVT
+    "LayerSnowGrain_inst:LVT": {
+        "LBFC": 0,        # PPF
+        "ITEM_CODE": 386, # Item
+        "LBTYP": 0,       # CFFF
+        "LBVC": 129,      # LBVC
+        "LBPLEV": 1000,   # 1000 will be added to layer number
+    },
+
     # Soil moisture content in a layer (4 levels)...From LVT
     "SoilMoist_inst:LVT": {
         "LBFC": 122,      # PPF
@@ -164,8 +258,20 @@ _NLEVS = {
     "water_temp" : 1,
     "aice" : 1,
     "hi" : 1,
-    "SWE_inst" : 1,
+    # EMK Revised snow vars for PS41.
+    "SWE_inst": 1,
+    "SnowGrain_inst" : 1,
+    "SurftSnow_inst" : 1,
+    "GrndSnow_inst" : 1,
     "SnowDepth_inst" : 1,
+    "SnowDensity_inst" : 1,
+    "ActSnowNL_inst" : 1,
+    "LayerSnowDepth_inst" : 3,
+    "SnowIce_inst" : 3,
+    "SnowLiq_inst" : 3,
+    "SnowTProf_inst" : 3,
+    "LayerSnowDensity_inst" : 3,
+    "LayerSnowGrain_inst" : 3,
     "SoilMoist_inst" : 4,
     "SoilTemp_inst" : 4,
     "AvgSurfT_inst" : 1,
@@ -351,7 +457,8 @@ class Nc2Surf:
             'integer_constants': {
                 'num_times':   1,
                 'num_levels':   1,
-                'num_field_types':  2,  # Two variables in snow file
+                #'num_field_types':  2,  # For zero-layer snow
+                'num_field_types': 13, # For PS41 multi-layer snow
             },
             'real_constants': {
                 'north_pole_lat':   90.0,
@@ -428,7 +535,7 @@ class Nc2Surf:
         self.template["real_constants"]["start_lon"] = self.grid["start_lon"]
 
     #--------------------------------------------------------------------------
-    def _set_field_lb(self, num_fields, key, field):
+    def _set_field_lb(self, num_fields, key, ilev, field):
         """Set the "lb" attributes in the Field object"""
         field.lbyr = self.time["year"]
         field.lbmon = self.time["month"]
@@ -476,12 +583,16 @@ class Nc2Surf:
         field.lbuser3 = 0  # No rim or halo sizes
         field.lbuser4 = _VARIDS[key]["ITEM_CODE"]
         #field.lbuser5 = 0
-        field.lbuser5 = _VARIDS[key]["LBPLEV"]  # "STASH Psuedo dimension"
+        # Special logic for multi-layer snow
+        if _VARIDS[key]["LBPLEV"] == 1000:
+            field.lbuser5 = ilev + _VARIDS[key]["LBPLEV"] + 1
+        else:
+            field.lbuser5 = _VARIDS[key]["LBPLEV"]  # "STASH Psuedo dimension"
         field.lbuser6 = 0  # Free space for users...Let MULE handle this
         field.lbuser7 = 1  # Atmosphere
 
     #--------------------------------------------------------------------------
-    def _add_field(self, key, ilev, var2d_provider, surf):
+    def _add_field(self, key, ilev, var2d_provider, surface_flag, surf):
         """
         Internal method to create and attach Field object to SURF object.
         Refer to Unified Model Documentation Paper F03 for meaning of metadata.
@@ -496,11 +607,13 @@ class Nc2Surf:
         field = mule.Field3.empty()
 
         # Populate the field records starting with "lb"
-        self._set_field_lb(num_fields, key, field)
+        self._set_field_lb(num_fields, key, ilev, field)
 
         # Populate remaining records
         field.bdatum = 0  # Datum value constant subtracted from field
-        if nlev == 1:
+        # Updated logic to specify surface levels, due to multi-layer
+        # snow physics from PS41.
+        if surface_flag:
             field.blev = 0  # Surface AGL
         else:
             field.blev = self.grid["soil_layer_thicknesses"][ilev]
@@ -539,7 +652,7 @@ class Nc2Surf:
         ldc = mule.ff.FF_LevelDependentConstants.empty(4) # 4 soil layers
 
         # NOTE:  Pylint complains that the FF_LevelDependentConstants instance
-        # has no soil_thickness member.  But this demonstrably false.  Since
+        # has no soil_thickness member.  But this is demonstrably false.  Since
         # this is a bug, we disable the no-member check here.
         # pylint: disable=no-member
         ldc.soil_thickness[:] = self.grid["soil_layer_thicknesses"][:]
@@ -604,17 +717,22 @@ class Nc2Surf:
         return var, fill_value
 
     #--------------------------------------------------------------------------
-    def _create_var2d(self, var, ilev, fill_value):
+    def _create_var2d(self, var, ilev, surface_flag, fill_value):
         """Creates a 2d numpy array from the requested variable."""
 
         # In 2D case, work with the whole array.
         if var.ndim == 2:
             var2d = var[:, :]
-            self.lblev = 9999  # Indicates surface level
         # In 3D case, pull out the current vertical level as a 2D array
         else:
             var2d = var[ilev, :, :]
-            self.lblev = ilev+1  # Use 1-based indexing
+
+        # Revised logic for identifying surface level.  This as added for
+        # multi-layer snow physics in PS41.
+        if surface_flag:
+            self.lblev = 9999  # Indicates surface level
+        else:
+            self.lblev = ilev + 1  # Use 1-based indexing
 
         # MULE doesn't like masked arrays, so pull the raw
         # data out in this case.
@@ -697,11 +815,18 @@ class Nc2Surf:
             nlev = _NLEVS[varid]
             for ilev in range(0, nlev):
 
-                var2d = self._create_var2d(var, ilev, fill_value)
+                # Added logic to specify if a field is at the surface.
+                # This logic was added with the multi-layer snow physics
+                # of PS41.
+                surface_flag = True
+                if varid == "SoilMoist_inst" or \
+                   varid == "SoilTemp_inst":
+                    surface_flag = False
+                var2d = self._create_var2d(var, ilev, surface_flag, fill_value)
 
                 # EMK...For SoilMoist, make sure no less than 0.1*wilting point
                 # Wilting point is in m3/m3.  Then convert from m3/m3 to
-                # kg m_2.
+                # kg m-2.
                 if varid == "SoilMoist_inst":
                     var2d = self._handle_soilmoist_var2d(ilev, var2d,
                                                          var_wilt0p1)
@@ -718,7 +843,7 @@ class Nc2Surf:
                 print("[INFO] Processing %s, ilev: %s" % (key, ilev))
 
                 surf = self._add_field(key, ilev,
-                                       var2d_provider, surf)
+                                       var2d_provider, surface_flag, surf)
 
         # All fields have been added to the SURF object.  Write to file.
         surf.to_file(surffile)
@@ -821,7 +946,21 @@ if __name__ == "__main__":
 
     # Generate glu_snow SURF file
     FILE_TYPE = "_glu_snow"
-    VARFIELDS = ["SWE_inst:LVT", "SnowDepth_inst:LVT"]
+    # EMK...Upgrade to PS41 multi-layer snow
+    VARFIELDS = ["SWE_inst:LVT",
+                 "SnowGrain_inst:LVT",
+                 "SurftSnow_inst:LVT",
+                 "GrndSnow_inst:LVT",
+                 "SnowDepth_inst:LVT",
+                 "SnowDensity_inst:LVT",
+                 "ActSnowNL_inst:LVT",
+                 "LayerSnowDepth_inst:LVT",
+                 "SnowIce_inst:LVT",
+                 "SnowLiq_inst:LVT",
+                 "SnowTProf_inst:LVT",
+                 "LayerSnowDensity_inst:LVT",
+                 "LayerSnowGrain_inst:LVT"]
+
     SURFFILE = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
         % (VALIDDT.year,
            VALIDDT.month,

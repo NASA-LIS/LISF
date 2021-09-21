@@ -138,6 +138,7 @@ module LIS_histDataMod
   public :: LIS_MOC_SLIQFRAC
   public :: LIS_MOC_LAYERSNOWDEPTH
   public :: LIS_MOC_LAYERSNOWDENSITY
+  public :: LIS_MOC_LAYERSNOWGRAIN
   public :: LIS_MOC_LWUP
   public :: LIS_MOC_GPP
   public :: LIS_MOC_NPP
@@ -453,6 +454,10 @@ module LIS_histDataMod
   PUBLIC :: LIS_MOC_JULES_FSAT
   PUBLIC :: LIS_MOC_JULES_FWETL 
   public :: LIS_MOC_JULES_ESOIL     
+  ! For JULES 5.0 PS41
+  public :: LIS_MOC_SNOW_SOOT
+  public :: LIS_MOC_GRND_SNOW
+  public :: LIS_MOC_SURFT_SNOW
   
 ! Crocus snow model 
   public ::   LIS_MOC_SNOWLIQPROF
@@ -478,6 +483,9 @@ module LIS_histDataMod
   public ::   LIS_MOC_SNOWSURFACEQ
   !public ::   LIS_MOC_SNOWWIND_DIR
 
+  integer :: LIS_MOC_SNOW_SOOT = -9999
+  integer :: LIS_MOC_GRND_SNOW = -9999
+  integer :: LIS_MOC_SURFT_SNOW = -9999
   integer :: LIS_MOC_JULES_STHZW = -9999
   integer :: LIS_MOC_JULES_STHU = -9999
   integer :: LIS_MOC_JULES_STHU_MIN = -9999
@@ -586,6 +594,7 @@ module LIS_histDataMod
   integer :: LIS_MOC_SNOWTHRESH = -9999
   integer :: LIS_MOC_LAYERSNOWDEPTH = -9999
   integer :: LIS_MOC_LAYERSNOWDENSITY = -9999
+  integer :: LIS_MOC_LAYERSNOWGRAIN = -9999
 
    ! ALMA VARIABLES TO BE COMPARED WITH REMOTE SENSED DATA
    integer :: LIS_MOC_LWUP       = -9999
@@ -1140,6 +1149,17 @@ contains
 ! read the meta data attributes for each variable
 !-------------------------------------------------------------------------
   !!! JULES
+    call ESMF_ConfigFindLabel(modelSpecConfig,"SnowSoot:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "SnowSoot",&
+         "snow_soot_content",&
+         "snow soot content",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOW_SOOT,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"kg/kg"/),1,(/"-"/),1,112,0,&
+            model_patch=.true.)
+    endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"sthu:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -1785,15 +1805,14 @@ contains
     call ESMF_ConfigFindLabel(modelSpecConfig,"SnowDensity:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SnowDensity",&
-         "snow_density_for_each_layer",&
-         "snow density for each layer",rc)
+         "snowpack_bulk_density",&
+         "snowpack bulk density",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWDENSITY,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"kg/m3"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-   
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"LayerSnowDensity:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -1806,12 +1825,12 @@ contains
             n,1,ntiles,(/"kg/m3"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
- 
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"SnowGrain:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SnowGrain",&
-         "snow_grain_size_for_each_layer",&
-         "snow grain size for each layer",rc)
+         "snow_grain_size",&
+         "snow grain size",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWGRAIN,&
             LIS_histData(n)%head_lsm_list,&
@@ -1819,6 +1838,18 @@ contains
             model_patch=.true.)
     endif
 
+    call ESMF_ConfigFindLabel(modelSpecConfig,"LayerSnowGrain:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "LayerSnowGrain",&
+         "layer_snow_grain_size_for_each_layer",&
+         "snow grain size for each layer",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_LAYERSNOWGRAIN,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"micron"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    
     call ESMF_ConfigFindLabel(modelSpecConfig,"SnowDepth:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SnowDepth",&
@@ -1830,6 +1861,30 @@ contains
             n,3,ntiles,(/"m ", "cm", "mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
        ! cm is added for VIC, Shugong Wang 02/20/2012
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"GrndSnow:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "GrndSnow",&
+         "snow_on_grond_beneath_canopy",&
+         "snow on ground (beneath canopy)",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_GRND_SNOW,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"SurftSnow:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "SurftSnow",&
+         "snow_amount_on_tile",&
+         "snow amount on tile",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SURFT_SNOW,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
     endif
     
     ! added by Shugong Wang 05/02/2018 for JULES 
