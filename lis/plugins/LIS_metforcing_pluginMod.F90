@@ -256,6 +256,14 @@ subroutine LIS_metforcing_plugin
    use WRFout_forcingMod
 #endif
 
+#if ( defined MF_WRFOUTV2 )
+   use WRFoutv2_forcingMod
+#endif
+
+#if ( defined MF_WRF_AK )
+   use WRF_AKdom_forcingMod
+#endif
+
 #if ( defined MF_GDAS_T1534 )
    use gdasT1534_forcingMod
 #endif
@@ -541,6 +549,20 @@ subroutine LIS_metforcing_plugin
    external timeinterp_WRFout
    external reset_WRFout
    external finalize_WRFout
+#endif
+
+#if ( defined MF_WRFOUTV2 )
+   external get_WRFoutv2
+   external timeinterp_WRFoutv2
+   external reset_WRFoutv2
+   external finalize_WRFoutv2
+#endif
+
+#if ( defined MF_WRF_AK )
+   external get_WRF_AKdom
+   external timeinterp_WRF_AKdom
+   external reset_WRF_AKdom
+   external finalize_WRF_AKdom
 #endif
 
 #if ( defined MF_GDAS_T1534 )
@@ -987,6 +1009,26 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_WRFout)
    call registerfinalmetforc(trim(LIS_WRFoutId)//char(0),finalize_WRFout)
    call registerresetmetforc(trim(LIS_WRFoutId)//char(0),reset_WRFout)
+#endif
+
+#if ( defined MF_WRFOUTV2 )
+! - WRFout-4KM HiRes forcing
+   call registerinitmetforc(trim(LIS_WRFoutv2Id)//char(0),init_WRFoutv2)
+   call registerretrievemetforc(trim(LIS_WRFoutv2Id)//char(0),get_WRFoutv2)
+   call registertimeinterpmetforc(trim(LIS_WRFoutv2Id)//char(0), &
+                                  timeinterp_WRFoutv2)
+   call registerfinalmetforc(trim(LIS_WRFoutv2Id)//char(0),finalize_WRFoutv2)
+   call registerresetmetforc(trim(LIS_WRFoutv2Id)//char(0),reset_WRFoutv2)
+#endif
+
+#if ( defined MF_WRF_AK )
+! - WRFout-4KM Alaska (AK) domain forcing
+   call registerinitmetforc(trim(LIS_WRFakId)//char(0),init_WRF_AKdom)
+   call registerretrievemetforc(trim(LIS_WRFakId)//char(0),get_WRF_AKdom)
+   call registertimeinterpmetforc(trim(LIS_WRFakId)//char(0), &
+                                  timeinterp_WRF_AKdom)
+   call registerfinalmetforc(trim(LIS_WRFakId)//char(0),finalize_WRF_AKdom)
+   call registerresetmetforc(trim(LIS_WRFakId)//char(0),reset_WRF_AKdom)
 #endif
 
 #if ( defined MF_GDAS_T1534 )

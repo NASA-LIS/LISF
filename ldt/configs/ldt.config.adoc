@@ -173,6 +173,8 @@ endif::devonly[]
 |"`NLDAS1`" |NLDAS1 analysis fields
 |"`NLDAS2`" |NLDAS2 analysis fields
 |"`PRINCETON`" |Global Princeton long-term forcing records
+|"`WRFoutv2`" |NCAR-WRF 4km forcing
+|"`WRF AK`" |NCAR-WRF 4km Alaska domain forcing
 |"`RFE2(daily)`" |CPC Daily Rainfall estimator fields
 |"`RFE2(gdas)`" |CPC RFE2 rainfall adjusted with GDAS/CMAP precipitation
 |"`CHIRPS2`" |UCSB CHIRPS v2.0 precipitation dataset
@@ -246,7 +248,7 @@ Met spatial transform methods:     bilinear
 |"`lapse-rate`" |Use lapse rate correction for forcing
 |===
 
-Current meteorological forcing datasets supported for applying this lapse-rate adjustment to the temperature, humidity, pressure and downward longwave fields, include: NLDAS1, NLDAS2, NAM242, GDAS, PRINCETON, and ECMWF.  Future forcing dataset options will include: GEOS, GLDAS, GFS, ECMWF_reanalysis, and possible others.
+Current meteorological forcing datasets supported for applying this lapse-rate adjustment to the temperature, humidity, pressure and downward longwave fields, include: NLDAS1, NLDAS2, NAM242, GDAS, PRINCETON, ECMWF, MERRA2 and the new WRFoutv2 and WRF AK forcing datasets.  Future forcing dataset options will include: GEOS, GLDAS, GFS, ECMWF_reanalysis, and possible others.
 
 ECMWF and GDAS forcing types include several terrain height maps and not just one overall, either due to change in versions or gridcell size, respective.
 
@@ -3043,6 +3045,28 @@ ERA5 forcing terrain height file: ../ERA5/era5_elev.nc
 MERRA2 geopotential terrain height file: ./MERRA2_100/MERRA2_101.const_2d_asm_Nx.00000000.nc4
 ....
 
+
+==== WRF-4km Forcing based parameter inputs
+
+`WRFoutv2 terrain height map:` specifies the WRF-4km terrain height file.
+
+.Example _ldt.config_ entry
+....
+WRFoutv2 terrain height map:      ./conus_wrf/RALconus4km_wrf_constants.nc
+....
+
+
+==== WRF-4km Alaska (AK) Forcing based parameter inputs
+
+`WRF AK terrain height map:` specifies the WRF-4km Alaska domain terrain height file.
+
+.Example _ldt.config_ entry
+....
+WRF AK terrain height map:     ./AK_wrf/geo_em.d01.nc
+....
+
+
+
 ==== TRMM 3B42RTV7 precipitation
 
 If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
@@ -3228,6 +3252,22 @@ LIS restart source:   "LSM"
 Ensemble restart generation mode:   "upscale"
 ....
 
+`Ensemble restart generation sampling strategy:` specifies the sampling strategy
+for ensemble restart generation. Options are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none | Do not apply random sampling strategy
+|random sampling | Use random sampling strategy
+|===
+
+.Example _ldt.config_ entry
+....
+Ensemble restart generation sampling strategy:   "random sampling"
+....
+
 `Input restart filename:` specifies the name of the input restart file.
 
 .Example _ldt.config_ entry
@@ -3342,17 +3382,21 @@ LIS output timestep:          1da
 |===
 |Value |Description
 
-|"`LIS LSM soil moisture`" |soil moisture output from a LIS run
-|"`Synthetic soil moisture`" |synethtic soil moisture observations created from a LIS run
-|"`AMSR-E(LPRM) soil moisture`" |Land Parameter Retrieval Model (LPRM) retrievals of AMSR-E soil moisture
-|"`AMSR-E(NASA) soil moisture`" |NASA AMSR-E soil moisture
-|"`ESA CCI soil moisture`" |Essential Climate Variable (ECV) soil moisture retrievals
-|"`WindSat soil moisture`" |WindSat retrievals of soil moisture
-|"`SMOPS soil moisture`" |NESDIS Soil Moisture Operational Processing System (SMOPS) based soil moisture retrievals
-|"`ASCAT TUW soil moisture`" |ASCAT soil moisture retrievals from TU Wein
-|"`GRACE TWS`" |Terrestrial water storage observations from GRACE
-|"`Simulated GRACE`" |Simulated water storage observations from GRACE
-|"`MCD15A2H LAI`" | MODIS MCD15A2H v006 LAI product
+|"`LIS LSM soil moisture`" |Soil moisture output from a LIS run.  Note that the units of the LIS soil moisture must be "`m3/m3`".
+|"`Synthetic soil moisture`" |Synthetic soil moisture observations created from a LIS run (units in "`m3/m3`")
+|"`AMSR-E(LPRM) soil moisture`" |Land Parameter Retrieval Model (LPRM) retrievals of AMSR-E soil moisture (units in "`m3/m3`")
+|"`AMSR-E(NASA) soil moisture`" |NASA AMSR-E soil moisture (units in "`m3/m3`")
+|"`ESA CCI soil moisture`" |Essential Climate Variable (ECV) soil moisture retrievals (units in "`m3/m3`")
+|"`WindSat soil moisture`" |WindSat retrievals of soil moisture (units in "`m3/m3`")
+|"`SMOPS soil moisture`" |NESDIS Soil Moisture Operational Processing System (SMOPS) based soil moisture retrievals (units in "`m3/m3`")
+|"`ASCAT TUW soil moisture`" |ASCAT soil moisture retrievals from TU Wein (units in "`m3/m3`")
+|"`GRACE TWS`" |Terrestrial water storage observations from GRACE (units in "`mm`")
+|"`GRACE QL TWS`" |Terrestrial water storage observations from GRACE (units in "`mm`")
+|"`Simulated GRACE`" |Simulated water storage observations from GRACE (units in "`mm`")
+|"`MCD15A2H LAI`" |MODIS MCD15A2H v006 LAI product (units in "`-`")
+|"`GLASS LAI`" |GLASS LAI product (units in "`-`")
+|"`LPRM vegetation optical depth`" |Land Parameter Retrieval Model (LPRM) vegetation optical depth observations (units in "`-`")
+|"`NASA SMAP vegetation optical depth`" |NASA SMAP vegetation optical depth observations (units in "`-`")
 |"`SMOS NRT NN soil moisture`" | SMOS Level 2 Soil Moisture Near Real Time Neural Network
 |===
 
@@ -4461,3 +4505,135 @@ Glacier fraction resolution (dx):   0.01
 Glacier fraction resolution (dy):   0.01
 ....
 
+=== Observation Simulator
+This simulator can handle the use of external orbital masks to be applied to the observations created for OSSEs. Currently, AMSR2, TSMM, Sentinel-1A, and MODIS are available instrument options.
+
+#(Note: This feature is still under development)#
+
+`Observation simulator nature run source:` specifies a nature run source. Currently, only the `LIS output` option is supported.
+
+`Observation simulator OSSE mask source:` specifies an OSSE mask source. Acceptable values are `AMSR2`, `MODIS`, `Sentinel1A`, and `TSMM`.
+
+`Observation simulator type of temporal transform:` specifies a type of temporal transform. Acceptable values are `instantaneous` and `time-averaged`.
+
+`Observation simulator masking model type:` specifies a masking model type. Acceptable values are `constant` and `time-varying`.
+
+`Observation simulator mask data directory:` specifies a mask data directory.
+
+`Observation simulator number of simulated variables:` specifies a number of simulated variables.
+
+`Observation simulator simulated variables:` specifies the names of the simulated variables (found in LIS output).
+
+`Observation simulator simulated variable minimum values:` specifies minimum values of simulated variables.
+
+`Observation simulator simulated variable maximum values:` specifies maximum values of simulated variables.
+
+`Observation simulator error model type:` specifies an error model type. Acceptable values are `additive` and `multiplicative`.
+
+`Observation simulator error distribution type:` specifies a type of error model. Currently, only the `gaussian` option is supported.
+
+`Observation simulator error standard deviation:` specifies an error standard deviation.
+
+.Example _ldt.config_ entry
+....
+Observation simulator nature run source: LIS output
+Observation simulator OSSE mask source:  AMSR2
+Observation simulator type of temporal transform: instantaneous
+Observation simulator masking model type: time-varying
+Observation simulator mask data directory: DOMAINMASK.nc
+Observation simulator number of simulated variables: 2
+Observation simulator simulated variables: SWE_tavg SWE_inst
+Observation simulator simulated variable minimum values: 0.0 0.0
+Observation simulator simulated variable maximum values: 10000.0 10000.0
+Observation simulator error model type:    additive additive
+Observation simulator error distribution type:  gaussian gaussian
+Observation simulator error standard deviation: 5.0 5.0
+....
+
+==== LIS Nature Run
+Options for initializing the structures required for the handling of a land surface model output (from a LIS simulation) as observations.
+
+`LIS Nature run output model class:` specifies a model class. 
+
+`LIS Nature run output model name:` specifies the name of the model.
+
+`LIS Nature run output directory:` specifies a directory of NR output.
+
+`LIS Nature run output format:` specifies a format of NR output.
+
+`LIS Nature run output methodology:` specifies a methodology of NR output.
+
+`LIS Nature run output naming style:` specifies a naming style of NR output.
+
+`LIS Nature run output nest index:` specifies a nested index of NR output.
+
+`LIS Nature run output map projection:` specifies a map projection of NR output.
+
+`LIS Nature run domain lower left lat:` specifies a run domain lower left latitude.
+
+`LIS Nature run domain upper right lat:` specifies a run domain upper right latitude.
+
+`LIS Nature run domain lower left lon:` specifies a run domain lower left longitude.
+
+`LIS Nature run domain resolution (dy):` specifies a run domain upper right longitude.
+
+
+.Example _ldt.config_ entry
+....
+LIS Nature run output model class:       "SURFACEMODEL"
+LIS Nature run output model name:        "Noah-MP.3.6"
+LIS Nature run output directory:         ../Run_NR/OUTPUT_multiyearcal
+LIS Nature run output format:            "netcdf"
+LIS Nature run output methodology:       "2d gridspace"
+LIS Nature run output naming style:      "3 level hierarchy"
+LIS Nature run output nest index:        1
+LIS Nature run output map projection:    "latlon"
+LIS Nature run domain lower left lat:    37.525
+LIS Nature run domain upper right lat:   40.715
+LIS Nature run domain lower left lon:    -108.565
+LIS Nature run domain upper right lon:   -105.025
+LIS Nature run domain resolution (dx):   0.01
+LIS Nature run domain resolution (dy):   0.01
+....
+
+==== OSSE Masks
+
+`AMSR2 OSSE mask directory:` specifies a directory containing the AMSR2 OSSE mask.
+
+`AMSR2 OSSE mask data resolution (km):` specifies a resolution of AMSR2 OSSE mask.
+
+.Example _ldt.config_ entry
+....
+AMSR2 OSSE mask directory:           ../Masks/AMSR2/
+AMSR2 OSSE mask data resolution (km): 25
+....
+
+`MODIS OSSE mask directory:` specifies a directory containing the MODIS OSSE mask.
+
+`MODIS OSSE mask data resolution (km):` specifies a resolution of MODIS OSSE mask.
+
+.Example _ldt.config_ entry
+....
+MODIS OSSE mask directory:           ../Masks/MODIS/
+MODIS OSSE mask data resolution (km): 1
+....
+
+`Sentinel1A OSSE mask directory:` specifies a directory containing the Sentinel1A OSSE mask.
+
+`Sentinel1A OSSE mask data resolution (km):` specifies a resolution of Sentinel1A OSSE mask.
+
+.Example _ldt.config_ entry
+....
+Sentinel1A OSSE mask directory:           ../Masks/Sentinel1A/
+Sentinel1A OSSE mask data resolution (km): 1
+....
+
+`TSSM OSSE mask directory:` specifies a directory containing the TSSM OSSE mask.
+
+`TSSM OSSE mask data resolution (km):` specifies a resolution of TSSM OSSE mask.
+
+.Example _ldt.config_ entry
+....
+TSSM OSSE mask directory:           ../Masks/TSSM/
+TSSM OSSE mask data resolution (km): 1
+....

@@ -196,6 +196,4 @@ module LDT_numericalMethodsMod
 
  end subroutine LDT_rand_func
 
-! Other subroutines ...
-
 end module LDT_numericalMethodsMod

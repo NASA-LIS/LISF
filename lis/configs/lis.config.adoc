@@ -131,6 +131,7 @@ Acceptable values are:
 |LSM     | land surface model
 |Lake    | lake model
 |Glacier | glacier model
+|Openwater | open water surface type
 |====
 
 .Example _lis.config_ entry
@@ -296,20 +297,16 @@ Acceptable values for the sources are:
 
 |"`none`"                      | None
 |"`GDAS`"                      | GDAS
-|"`GEOS`"                      | GEOS
 |"`GEOS5 forecast`"            | GEOS5 Forecast
 |"`GEFS forecast`"             | GEFS Forecast
 |"`ECMWF`"                     | ECMWF
 |"`GSWP1`"                     | GSWP1
 |"`GSWP2`"                     | GSWP2
-|"`ECMWF reanalysis`"          | ECMWF Reanalysis
 |"`AGRMET`"                    | AGRMET
 |"`PRINCETON`"                 | Princeton
-|"`NLDAS1`"                    | NLDAS1
 |"`NLDAS2`"                    | NLDAS2
 |"`GLDAS`"                     | GLDAS
 |"`GFS`"                       | GFS
-|"`MERRA-Land`"                | MERRA-Land
 |"`MERRA2`"                    | MERRA2
 |"`CMAP`"                      | CMAP
 |"`TRMM 3B42RT`"               | TRMM 3B42RT
@@ -324,31 +321,24 @@ Acceptable values for the sources are:
 |"`RFE2(daily)`"               | Daily rainfall estimator
 |"`RFE2(GDAS bias-corrected)`" | RFE2 data bias corrected to GDAS
 |"`CHIRPS2`"                   | UCSB CHIRPS v2.0 precipitation dataset
-|"`ALMIPII`"                   | ALMIPII
-|"`CEOP`"                      | CEOP
 |"`SCAN`"                      | SCAN
-|"`ARMS`"                      | ARMS
-|"`GDAS(LSWG)`"                | GDAS data for LSWG project
 ifdef::devonly[]
 |"`D2PCPOKL`"                  | D2PCPOKL
 endif::devonly[]
-|"`GDAS(3d)`"                  | GDAS 3d data
 |"`AGRMET radiation`"          | AGRMET radiation
 |"`Bondville`"                 | Bondville site data
 ifdef::devonly[]
-|"`FASST test`"                | test data for FASST LSM
 |"`TRIGRS test`"               | test data for TRIGRS model
 endif::devonly[]
 |"`SNOTEL`"                    | SNOTEL data
-|"`COOP`"                      | COOP data
-|"`Rhone AGG`"                 | Rhone AGG forcing data
 |"`VIC processed forcing`"     | VIC processed forcing
 |"`PALS station forcing`"      | PALS station forcing
-|"`PILDAS`"                    | PILDAS
 |"`PET USGS`"                  | USGS PET 1.0 deg
 |"`NAM242`"                    | NAM 242 AWIPS Grid \-- Over Alaska
 |"`WRFout`"                    | WRF output
-|"`RDHM.3.5.6`"                | RDHM 3.5.6 (SAC-HTET and SNOW-17)
+|"`WRFoutv2`"                  | NCAR-WRF 4km output
+|"`WRFoutv2`"                  | NCAR-WRF 4km output forcing
+|"`WRF AK`"                    | NCAR-WRF Alaska domain forcing 
 |"`LDT-generated`"             | LDT-generated forcing files
 |"`CLIM-Standard`"             | Forcing climatologies (LDT-generated)
 |"`GenEnsFcst`"                | Generic ensemble forecast
@@ -4837,18 +4827,6 @@ GDAS forcing directory:            ./input/FORCING/GDAS/
 ....
 
 
-[[sssec_forcings_geos,GEOS]]
-==== GEOS
-
-`GEOS forcing directory:` specifies the location of the GEOS
-forcing files.
-
-.Example _lis.config_ entry
-....
-GEOS forcing directory:            ./input/FORCING/GEOS/BEST_LK/
-....
-
-
 [[sssec_forcings_ecmwf,ECMWF]]
 ==== ECMWF
 
@@ -4858,32 +4836,6 @@ forcing files.
 .Example _lis.config_ entry
 ....
 ECMWF forcing directory:       ./input/FORCING/ECMWF/
-....
-
-
-[[sssec_forcings_ecmwf_reanalysis,ECMWF Reanalysis]]
-==== ECMWF Reanalysis
-
-`ECMWF Reanalysis forcing directory:` specifies the location of
-the ECMWF Reanalysis forcing files.
-
-`ECMWF Reanalysis maskfile:` specifies the file containing
-the ECMWF Reanalysis land/sea mask.
-
-`ECMWF Reanalysis domain x-dimension size:` specifies the
-number of columns of the ECMWF Reanalysis domain.
-
-`ECMWF Reanalysis domain y-dimension size:` specifies the
-number of rows of the ECMWF Reanalysis domain.
-
-//`ECMWF Reanalysis elevation map:` specifies the ECMWF Reanalysis elevation map.
-
-.Example _lis.config_ entry
-....
-ECMWF Reanalysis forcing directory:   ./input/FORCING/ECMWF-REANALYSIS/
-ECMWF Reanalysis maskfile:            ./input/FORCING/ECMWF-REANALYSIS/ecmwf_land_sea.05
-ECMWF Reanalysis domain x-dimension size:     720
-ECMWF Reanalysis domain y-dimension size:     360
 ....
 
 
@@ -5442,30 +5394,6 @@ PRINCETON forcing version:      2.2
 ....
 
 
-[[sssec_forcings_rhone,Rhone AGG]]
-==== Rhone AGG
-
-`Rhone AGG forcing directory:` specifies the location of the
-Rhone AGG forcing files.
-
-`Rhone AGG domain x-dimension size:` specifies the number of
-columns of the native domain parameters of the Rhone AGG forcing data.
-The map projection is specified in the driver modules defined for
-the Rhone AGG routines.
-
-`Rhone AGG domain y-dimension size:` specifies the number of
-rows of the native domain parameters of the Rhone AGG forcing data.
-The map projection is specified in the driver modules defined for
-the Rhone AGG routines.
-
-.Example _lis.config_ entry
-....
-Rhone AGG forcing directory:       ./input/FORCING/RHONE
-Rhone AGG domain x-dimension size: 5
-Rhone AGG domain y-dimension size: 6
-....
-
-
 [[sssec_forcings_gswp2,GSWP2]]
 ==== GSWP2
 
@@ -5549,30 +5477,6 @@ GFS forcing directory:            ./input/FORCING/GFS/
 GFS domain x-dimension size:      512
 GFS domain y-dimension size:      256
 GFS number of forcing variables:  10
-....
-
-
-[[sssec_forcings_MERRALand,MERRA-Land]]
-==== MERRA-Land
-
-`MERRA-Land forcing directory:` specifies the location of
-the MERRA-Land forcing files.
-
-`MERRA-Land use lowest model level forcing:` specifies whether
-to use the lowest model level forcing.
-Acceptable values are:
-
-|====
-|Value | Description
-
-|0     | Do not use the lowest model level forcing.
-|1     | Use the lowest model level forcing.
-|====
-
-.Example _lis.config_ entry
-....
-MERRA-Land forcing directory:
-MERRA-Land use lowest model level forcing:
 ....
 
 
@@ -5664,18 +5568,6 @@ GSWP1 forcing directory:       ./input/FORCING/GSWP1
 === Supplemental forcings
 
 
-[[sssec_supp_agrrad,AGRMET radiation (latlon)]]
-==== AGRMET radiation (latlon)
-
-`AGRRAD forcing directory:` specifies the directory containing
-AGRMET radiation data.
-
-.Example _lis.config_ entry
-....
-AGRRAD forcing directory:             ./input/FORCING/AGRRAD
-....
-
-
 [[sssec_supp_agrradps,AGRMET radiation (polar stereographic)]]
 ==== AGRMET radiation (polar stereographic)
 
@@ -5688,18 +5580,6 @@ AGRRADPS forcing directory:             ./input/FORCING/AGRRADPS
 ....
 
 
-[[sssec_supp_capa,CaPA]]
-==== CaPA
-
-`CAPA forcing directory:` specifies the directory containing
-CAPA precipitation data.
-
-.Example _lis.config_ entry
-....
-CAPA forcing directory:             ./input/FORCING/CAPA
-....
-
-
 [[sssec_supp_cmap,CMAP precipitation]]
 ==== CMAP precipitation
 
@@ -5709,28 +5589,6 @@ CMAP forcing files.
 .Example _lis.config_ entry
 ....
 CMAP forcing directory:             ./input/FORCING/CMAP
-....
-
-
-[[sssec_supp_ceop,CEOP station data]]
-==== CEOP station data
-
-CEOP station forcing {emdash} during EOP1
-
-`CEOP location index:` specifies the location of the
-CEOP station.
-
-`CEOP forcing directory:` specifies the location of the
-CEOP forcing files.
-
-`CEOP metadata file:` specifies the file containing
-CEOP metadata.
-
-.Example _lis.config_ entry
-....
-CEOP location index:           3 #SGP location
-CEOP forcing directory:        ./input/FORCING/CEOP/sgp.cfr
-CEOP metadata file:            ./input/FORCING/CEOP/sgp.mdata
 ....
 
 
@@ -5747,85 +5605,6 @@ SCAN metadata.
 ....
 SCAN forcing directory:   ./input/FORCING/SCAN
 SCAN metadata file:       ./input/FORCING/SCAN/msu_scan.mdata
-....
-
-
-[[sssec_forcings_nldas1,NLDAS1]]
-==== NLDAS1
-
-`NLDAS1 forcing directory:` specifies the location of the
-NLDAS-1 forcing files.
-
-`NLDAS1 data center source:` specifies the center that produced
-the NLDAS1 files. (This is specified to distinguish the filenames.)
-Acceptable values are:
-
-|====
-|Value | Description
-
-|"`GES-DISC`" | NASA GES-DISC
-|"`NCEP`"     | NCEP
-|====
-
-`NLDAS1 precipitation field:` specifies the field to be used
-for the precipitation.  "`NLDAS1`" will use the standard gauge-
-based precipitation data from NLDAS-1.  "`EDAS`" will use the
-EDAS model precipitation data instead.  "`STAGEII`" will use the
-unbias-corrected STAGE II radar estimated precipitation, and use
-the EDAS model precipitation for times/locations when the data
-from STAGE II is unavailable.
-
-`NLDAS1 shortwave radiation field:` specifies the field to be
-used for the downward shortwave radiation at the surface.  "`NLDAS1`"
-will use GOES SW radiation when/where it is available, and use the
-EDAS SW radiation otherwise.  "`EDAS`" will simply use EDAS radiation
-at all times and locations.
-
-`NLDAS1 apply CONUS mask:` specifies whether to apply the
-CONUS mask.
-Acceptable values are:
-
-|====
-|Value | Description
-
-|0     | Do not apply CONUS mask
-|1     | Apply CONUS mask
-|====
-
-`NLDAS1 CONUS mask file:` specifies the NLDAS1 CONUS mask file.
-
-`NLDAS1 mask lower left lat:` specifies the lower left latitude
-of the NLDAS1 mask domain. (cylindrical latitude/longitude projection)
-
-`NLDAS1 mask lower left lon:` specifies the lower left longitude
-of the NLDAS1 mask domain. (cylindrical latitude/longitude projection)
-
-`NLDAS1 mask upper right lat:` specifies the upper right latitude
-of the NLDAS1 mask domain. (cylindrical latitude/longitude projection)
-
-`NLDAS1 mask upper right lon:` specifies the upper right longitude
-of the NLDAS1 mask domain. (cylindrical latitude/longitude projection)
-
-`NLDAS1 mask resolution (dx):` specifies the resolution of the
-NLDAS1 mask domain along the east-west direction.
-
-`NLDAS1 mask resolution (dy):` specifies the resolution of the
-NLDAS1 mask domain along the north-south direction.
-
-.Example _lis.config_ entry
-....
-NLDAS1 forcing directory:               ./input/FORCING/NLDAS1
-NLDAS1 data center source:              "GES-DISC"
-NLDAS1 precipitation field:             NLDAS1
-NLDAS1 shortwave radiation field:       NLDAS1
-NLDAS1 apply CONUS mask:                0
-NLDAS1 CONUS mask file:
-NLDAS1 mask lower left lat:            25.0625
-NLDAS1 mask lower left lon:           -124.9375
-NLDAS1 mask upper right lat:           52.9375
-NLDAS1 mask upper right lon:          -67.0625
-NLDAS1 mask resolution (dx):            0.125
-NLDAS1 mask resolution (dy):            0.125
 ....
 
 
@@ -6048,53 +5827,6 @@ NARR domain z-dimension size:      30
 ....
 
 
-[[sssec_supp_gdas3d,GDAS3D]]
-==== GDAS3D
-
-`GDAS3D forcing directory:` specifies the location of the
-GDAS3D forcing files.
-
-`GDAS3D domain x-dimension size:` specifies the number of
-columns of the native domain parameters of the GDAS3D forcing data.
-
-`GDAS3D domain y-dimension size:` specifies the number of
-rows of the native domain parameters of the GDAS3D forcing data.
-
-`GDAS3D domain y-dimension size:` specifies the number of
-rows of the native domain parameters of the GDAS3D forcing data.
-
-`GDAS3D domain z-dimension size:` specifies the number of
-atmospheric profiles in the GDAS3D forcing data.
-
-.Example _lis.config_ entry
-....
-GDAS3D forcing directory:            ./input/FORCING/GDAS3D/
-GDAS3D domain x-dimension size:      768
-GDAS3D domain y-dimension size:      386
-GDAS3D domain z-dimension size:      64
-....
-
-
-[[sssec_supp_arms,ARMS]]
-==== ARMS
-
-`ARMS forcing file:` specifies the location of the
-ARMS station met forcing file.
-
-`ARMS precip forcing file:` specifies the location of the
-ARMS precip station forcing file.
-
-`ARMS station metadata file:` specifies the location of the
-ARMS station metadata file.
-
-.Example _lis.config_ entry
-....
-ARMS forcing file:        ../WG_domain/1990_forc.txt
-ARMS precip forcing file: ../WG_domain/WGbrk_19900723-19900815.out
-ARMS station metadata file: ../WG_domain/WGbrk_stnlocs_1990.dat
-....
-
-
 [[sssec_supp_rfe2daily,RFE2Daily]]
 ==== RFE2Daily
 
@@ -6130,22 +5862,6 @@ of CHIRPS v2.0 forcing dataset.  Two options include 0.05 or 0.25 (deg).
 ....
 CHIRPS2.0 forcing directory:   ./CHIRPSv2/daily_p05/chirps-v2.0
 CHIRPS2.0 forcing resolution:     0.05
-....
-
-
-[[sssec_supp_almipii,ALMIPII]]
-==== ALMIPII
-
-`ALMIPII forcing directory:` specifies the location of the
-ALMIPII forcing files.
-
-`ALMIPII filename prefix:` specifies the prefix for the filenames
-of the ALMIPII forcing data.  The prefix is based on the site name.
-
-.Example _lis.config_ entry
-....
-ALMIPII forcing directory:
-ALMIPII filename prefix:
 ....
 
 
@@ -6209,6 +5925,31 @@ WRF output data files.
 WRF output forcing directory: ./input/wrfout/
 WRF nest id:                          1
 ....
+
+
+[[sssec_supp_wrfoutv2,WRFoutv2]]
+==== NAM242
+
+`WRF output v2 forcing directory:` specifies the location of the
+"`NCAR-WRF 4km metforcing output`" forcing files
+
+.Example _lis.config_ entry
+....
+WRF output v2 forcing directory: ./input/MET_FORCING/conus_wrf
+....
+
+
+[[sssec_supp_wrfakdom,WRFAKdom]]
+==== NAM242
+
+`WRF AK forcing directory:` specifies the location of the
+"`NCAR-WRF Alaska domain 4km metforcing output`" files
+
+.Example _lis.config_ entry
+....
+WRF AK forcing directory: ./input/MET_FORCING/AK_wrf
+....
+
 
 
 [[sssec_geos5forecast,GEOS5 forecast]]
@@ -6279,46 +6020,6 @@ Generic ensemble forecast number of ensemble members:  11
 ....
 
 
-[[sssec_gdaslswg,GDAS for LSWG]]
-==== GDAS for LSWG
-
-`GDASLSWG forcing file:` specifies the location of the
-GDASLSWG forcing file.
-
-`GDASLSWG domain lower left lat:` specifies the lower left
-latitude of the GDASLSWG domain.
-(cylindrical latitude/longitude projection)
-
-`GDASLSWG domain lower left lon:` specifies the lower left
-longitude of the GDASLSWG domain.
-(cylindrical latitude/longitude projection)
-
-`GDASLSWG domain upper right lat:` specifies the upper right
-latitude of the GDASLSWG domain.
-(cylindrical latitude/longitude projection)
-
-`GDASLSWG domain upper right lon:` specifies the upper right
-longitude of the GDASLSWG domain.
-(cylindrical latitude/longitude projection)
-
-`GDASLSWG domain resolution (dx):` specifies the resolution of the
-of the GDASLSWG domain along the east-west direction.
-
-`GDASLSWG domain resolution (dy):` specifies the resolution of the
-of the GDASLSWG domain along the north-south direction.
-
-.Example _lis.config_ entry
-....
-GDASLSWG forcing file:
-GDASLSWG domain lower left lat:
-GDASLSWG domain lower left lon:
-GDASLSWG domain upper right lat:
-GDASLSWG domain upper right lon:
-GDASLSWG domain resolution (dx):
-GDASLSWG domain resolution (dy):
-....
-
-
 [[sssec_bondville,Bondville]]
 ==== Bondville
 
@@ -6344,21 +6045,6 @@ Bondville Noah-MP-4.0.1 forcing:     1
 ....
 
 
-ifdef::devonly[]
-
-[[sssec_fasstforc,FASST]]
-==== FASST
-
-`FASST forcing file:` specifies the location of the
-FASST forcing file.
-
-.Example _lis.config_ entry
-....
-FASST forcing file:
-....
-endif::devonly[]
-
-
 [[sssec_snotel,SNOTEL]]
 ==== SNOTEL
 
@@ -6376,26 +6062,6 @@ coordinates file.
 SNOTEL forcing directory:
 SNOTEL metadata file:
 SNOTEL coord file:
-....
-
-
-[[sssec_coop,COOP]]
-==== COOP
-
-`COOP forcing directory:` specifies the location of the COOP
-forcing files.
-
-`COOP metadata file:` specifies the location of the COOP
-metadata file.
-
-`COOP coord file:` specifies the location of the COOP
-coordinate file.
-
-.Example _lis.config_ entry
-....
-COOP forcing directory:
-COOP metadata file:
-COOP coord file:
 ....
 
 
@@ -6494,89 +6160,6 @@ PALS met forcing data start day:
 PALS met forcing data start hour:
 PALS met forcing data start minute:
 PALS met forcing data start second:
-....
-
-
-[[sssec_PILDAS,PILDAS]]
-==== PILDAS
-
-`PILDAS forcing directory:` specifies the location of the
-PILDAS forcing files.
-
-`PILDAS forcing version:` specifies the version of the
-PILDAS forcing data.
-
-`PILDAS forcing use lowest model level fields:` specifies
-whether to use the lowest model level fields.
-Acceptable values are:
-
-|====
-|Value | Description
-
-| 0    | Do not use lowest level
-| 1    | Use lowest level
-|====
-
-.Example _lis.config_ entry
-....
-PILDAS forcing directory:
-PILDAS forcing version:
-PILDAS forcing use lowest model level fields:
-....
-
-
-[[sssec_rdhm356forcing,RDHM356]]
-==== RDHM356
-
-`RDHM precipitation forcing directory:` specifies the location
-of the RDHM precipitation forcing files.
-
-`RDHM temperature forcing directory:` specifies the location
-of the RDHM temperature forcing files.
-
-`RDHM precipitation scale factor:` specifies the RDHM
-precipitation scale factor, which is used to scale the integer
-type XMRG data into real number representing precipitation amount.
-
-`RDHM precipitation interval:` specifies the frequency of
-the precipitation forcing data, in seconds.
-
-`RDHM temperature interval:` specifies the frequency of the
-temperature forcing data, in seconds.
-
-`RDHM run window lower left hrap y:` lower left HRAP Y coordinate of run domain
-
-`RDHM run window lower left hrap x:` lower left HRAP X coordinate of run domain
-
-`RDHM run window upper right hrap y:` upper right HRAP Y coordinate of run domain
-
-`RDHM run window upper right hrap x:` upper right HRAP X coordinate of run domain
-
-`RDHM run window hrap resolution:` spatial resolution (in HRAP unit) of run domain
-
-`RDHM temperature undefined value:` specifies the undefined
-value for the temperature forcing data.
-
-`RDHM precipitation undefined value:` specifies the
-undefined value for the precipitation forcing data.
-
-`RDHM constant wind speed:` Constant wind speed (m/s) for entire run domain
-
-.Example _lis.config_ entry
-....
-RDHM precipitation forcing directory:  ../testcase/precip
-RDHM temperature forcing directory:    ../testcase/tair
-RDHM precipitation scale factor:       1.0
-RDHM precipitation interval:           3600
-RDHM temperature interval:             3600
-RDHM run window lower left hrap y:    48
-RDHM run window lower left hrap x:    17
-RDHM run window upper right hrap y:   821
-RDHM run window upper right hrap x:   1059
-RDHM run window hrap resolution:      1.0
-RDHM temperature undefined value:      -1.0
-RDHM precipitation undefined value:    -1.0
-RDHM constant wind speed:              4.0
 ....
 
 
