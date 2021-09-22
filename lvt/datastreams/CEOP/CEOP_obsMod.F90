@@ -80,7 +80,6 @@ contains
 !EOP
   subroutine CEOP_obsInit(i)
 
-    use ESMF
     use LVT_coreMod,    only : LVT_rc, LVT_config
     use LVT_histDataMod
     use LVT_timeMgrMod

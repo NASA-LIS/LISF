@@ -72,7 +72,6 @@ contains
 ! !INTERFACE:  
   subroutine LIS_optUE_init
 ! !USES: 
-    use ESMF
     use LIS_coreMod,  only : LIS_rc, LIS_config, LIS_vecTile
     use LIS_logMod,   only : LIS_verify, LIS_logunit
     
@@ -147,7 +146,6 @@ contains
 ! !INTERFACE:  
   subroutine LIS_objectiveFunc_init
 ! !USES: 
-    use ESMF
     use LIS_coreMod,  only : LIS_rc
     
 ! 
@@ -176,7 +174,6 @@ contains
 ! !INTERFACE:  
   subroutine LIS_optUEAlg_init
 ! !USES: 
-    use ESMF
     use LIS_coreMod,  only : LIS_rc
     
 ! 
@@ -294,7 +291,6 @@ contains
 ! !INTERFACE:  
   subroutine LIS_optUEAlg_reset
 ! !USES: 
-    use ESMF
     use LIS_logMod
     
 ! 

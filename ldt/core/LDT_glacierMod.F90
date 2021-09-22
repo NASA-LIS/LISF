@@ -101,7 +101,6 @@ module LDT_glacierMod
   subroutine LDT_glacier_init()
 
 ! !USES:
-    use ESMF
     use LDT_coreMod,   only : LDT_rc, LDT_config
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
     use LDT_paramOptCheckMod, only: LDT_gridOptChecks!,&

@@ -80,7 +80,6 @@ contains
 ! !DESCRIPTION: 
 ! 
 ! !USES:
-    use ESMF
     use LIS_logMod,       only : LIS_verify
     use LIS_fileIOMod,    only : LIS_create_stats_filename
     use LIS_timeMgrMod,   only : LIS_registerAlarm, LIS_parseTimeString
