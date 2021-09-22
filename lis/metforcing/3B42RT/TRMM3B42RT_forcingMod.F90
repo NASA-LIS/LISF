@@ -135,7 +135,6 @@ contains
                             LIS_getNextUnitNumber, &
                             LIS_releaseUnitNumber, LIS_verify 
     use LIS_FORC_AttributesMod
-    use ESMF
 
     implicit none
 

@@ -740,7 +740,7 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
                      SMOPSsmobs(source)%smopsnc)
                   if (sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc) .GT. 0.1 .and. &
                      sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc) .LT. 1) then
-                     write(101,'(I5, 2x, I5, 2x, I8, 2x, G0, 2x)'), &
+                     write(101,'(I5, 2x, I5, 2x, I8, 2x, G0, 2x)')  &
                         c, r, c+(r-1)*SMOPSsmobs(source)%smopsnc,      &
                         sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc)
                   endif
@@ -764,7 +764,7 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
                   sm_amsr2_qa_t(c+(r-1)*SMOPSsmobs(source)%smopsnc) = &
                      int(sm_amsr2_qa(c+((SMOPSsmobs(source)%smopsnr-r+1)-1)*&
                      SMOPSsmobs(source)%smopsnc))
-                  !write(102,'(I5, 2x,I5, 2x, I8, 2x, f11.8,2x)'), &
+                  !write(102,'(I5, 2x,I5, 2x, I8, 2x, f11.8,2x)')  &
                   !      c, r ,c+(r-1)*SMOPSsmobs(source)%smopsnc,      &
                   !      sm_amsr2_qa_t(c+(r-1)*SMOPSsmobs(source)%smopsnc)
                enddo
@@ -1105,7 +1105,7 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
 
                if (sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc) .GT. 0.1 .and. &
                   sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc) .LT. 1) then
-                  write(103,'(I5, 2x, I5, 2x, I8, 2x, F10.4, 2x)'), &
+                  write(103,'(I5, 2x, I5, 2x, I8, 2x, F10.4, 2x)')  &
                      c, r ,c+(r-1)*SMOPSsmobs(source)%smopsnc,   &
                      sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc)
                endif

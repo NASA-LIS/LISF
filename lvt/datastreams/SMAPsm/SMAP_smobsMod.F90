@@ -82,7 +82,6 @@ contains
   subroutine SMAP_smobsinit(i)
 ! 
 ! !USES: 
-    use ESMF
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_timeMgrMod

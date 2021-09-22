@@ -207,7 +207,7 @@
        !Second pass to compute average MPDI if conditions met
        mpdi_sum=0.0
        mpdi_ave=LIS_rc%udef
-       if(and(nobs_sum.ge.15,platform_sum.ge.2)) then
+       if( (nobs_sum.ge.15) .and. (platform_sum.ge.2) ) then
           do i=1,3  !platform F13, 14, 15
              if (mpdi(i).ne.LIS_rc%udef) then
                 mpdi_sum=mpdi_sum+real(nobs(i))*mpdi(i)

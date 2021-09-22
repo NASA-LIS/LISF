@@ -53,7 +53,6 @@ contains
 ! !INTERFACE:   
   subroutine LDT_DAmetricsInit
 ! !USES: 
-    use ESMF
     use map_utils
     use LDT_coreMod,       only : LDT_rc, LDT_domain
     use LDT_timeMgrMod,    only : LDT_clock, LDT_calendar, LDT_seconds2time

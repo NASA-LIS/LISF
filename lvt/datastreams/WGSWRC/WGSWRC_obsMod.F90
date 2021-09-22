@@ -65,7 +65,6 @@ contains
   subroutine WGSWRC_obsInit(i)
 ! 
 ! !USES:   
-    use ESMF
     use LVT_coreMod
     use LVT_obsDataMod
     use LVT_logMod

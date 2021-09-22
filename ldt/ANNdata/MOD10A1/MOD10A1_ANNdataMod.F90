@@ -53,7 +53,6 @@ contains
 ! !INTERFACE: 
   subroutine MOD10A1_ANNdatainit()
 ! !USES: 
-    use ESMF
     use LDT_coreMod
     use LDT_timeMgrMod
     use LDT_logMod
