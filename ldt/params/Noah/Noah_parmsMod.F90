@@ -34,7 +34,7 @@ module Noah_parmsMod
   use LDT_paramDataMod
   use LDT_logMod
   use LDT_paramMaskCheckMod
-  use MMF_groundwater, ONLY : MMF_BCsReader
+  use MMF_groundwater, ONLY : MMF_BCsReader, cell_area
 
   implicit none
 
@@ -129,10 +129,8 @@ contains
    real, allocatable  :: force_elev(:,:)
    character*50       :: tbot_proj
    character*50       :: slopetype_proj
-   type(LDT_fillopts) :: FDEPTH_fillopts, RECHCLIM_fillopts
-   type(LDT_fillopts) :: RIVERBED_fillopts, EQWTD_fillopts, HGTM_fillopts
    character*50       :: MMF_proj
-   type(MMF_BCsReader):: MBR
+   type(MMF_BCsReader):: MBR_FDEPTH, MBR_RECH, MBR_RIVERBED, MBR_WTD, MBR_HGT
 
 ! _____________________________________________________________________
 
@@ -511,25 +509,25 @@ contains
 
       call ESMF_ConfigGetAttribute(LDT_config, MMF_proj, label='MMF map projection:', rc=rc) ; call LDT_verify(rc,"MMF map projection not defined.")
       
-      call ESMF_ConfigGetAttribute(LDT_config, FDEPTH_fillopts%filltype,  label='FDEPTH fill option:', rc=rc); call LDT_verify(rc,"FDEPTH fill option not defined.")         
-      call ESMF_ConfigGetAttribute(LDT_config, FDEPTH_fillopts%fillradius,label='FDEPTH fill radius:', rc=rc); call LDT_verify(rc,"FDEPTH fill radius not defined.")  
-      call ESMF_ConfigGetAttribute(LDT_config, FDEPTH_fillopts%fillvalue, label='FDEPTH fill value:' , rc=rc); call LDT_verify(rc,"FDEPTH fill value not defined." )  
+      call ESMF_ConfigGetAttribute(LDT_config, MBR_FDEPTH%gap_fill%filltype,  label='FDEPTH fill option:', rc=rc); call LDT_verify(rc,"FDEPTH fill option not defined.")         
+      call ESMF_ConfigGetAttribute(LDT_config, MBR_FDEPTH%gap_fill%fillradius,label='FDEPTH fill radius:', rc=rc); call LDT_verify(rc,"FDEPTH fill radius not defined.")  
+      call ESMF_ConfigGetAttribute(LDT_config, MBR_FDEPTH%gap_fill%fillvalue, label='FDEPTH fill value:' , rc=rc); call LDT_verify(rc,"FDEPTH fill value not defined." )  
 
-      call ESMF_ConfigGetAttribute(LDT_config, RECHCLIM_fillopts%filltype,  label='RECHCLIM fill option:',rc=rc); call LDT_verify(rc,"RECHCLIM fill option not defined.")       
-      call ESMF_ConfigGetAttribute(LDT_config, RECHCLIM_fillopts%fillradius,label='RECHCLIM fill radius:',rc=rc); call LDT_verify(rc,"RECHCLIM fill radius not defined.") 
-      call ESMF_ConfigGetAttribute(LDT_config, RECHCLIM_fillopts%fillvalue, label='RECHCLIM fill value:' ,rc=rc); call LDT_verify(rc,"RECHCLIM fill value not defined." )  
+      call ESMF_ConfigGetAttribute(LDT_config, MBR_RECH%gap_fill%filltype,  label='RECHCLIM fill option:',rc=rc); call LDT_verify(rc,"RECHCLIM fill option not defined.")       
+      call ESMF_ConfigGetAttribute(LDT_config, MBR_RECH%gap_fill%fillradius,label='RECHCLIM fill radius:',rc=rc); call LDT_verify(rc,"RECHCLIM fill radius not defined.") 
+      call ESMF_ConfigGetAttribute(LDT_config, MBR_RECH%gap_fill%fillvalue, label='RECHCLIM fill value:' ,rc=rc); call LDT_verify(rc,"RECHCLIM fill value not defined." )  
 
-      call ESMF_ConfigGetAttribute(LDT_config, RIVERBED_fillopts%filltype,  label='RIVERBED fill option:',rc=rc); call LDT_verify(rc,"RIVERBED fill option not defined.")       
-      call ESMF_ConfigGetAttribute(LDT_config, RIVERBED_fillopts%fillradius,label='RIVERBED fill radius:',rc=rc); call LDT_verify(rc,"RIVERBED fill radius not defined.")  
-      call ESMF_ConfigGetAttribute(LDT_config, RIVERBED_fillopts%fillvalue, label='RIVERBED fill value:' ,rc=rc); call LDT_verify(rc,"RIVERBED fill value not defined." )  
+      call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%filltype,  label='RIVERBED fill option:',rc=rc); call LDT_verify(rc,"RIVERBED fill option not defined.")     
+      call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%fillradius,label='RIVERBED fill radius:',rc=rc); call LDT_verify(rc,"RIVERBED fill radius not defined.")  
+      call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%fillvalue, label='RIVERBED fill value:' ,rc=rc); call LDT_verify(rc,"RIVERBED fill value not defined." )  
 
-      call ESMF_ConfigGetAttribute(LDT_config, EQWTD_fillopts%filltype,  label='EQWTD fill option:',rc=rc); call LDT_verify(rc,"EQWTD fill option not defined.")               
-      call ESMF_ConfigGetAttribute(LDT_config, EQWTD_fillopts%fillradius,label='EQWTD fill radius:',rc=rc); call LDT_verify(rc,"EQWTD fill radius not defined.")  
-      call ESMF_ConfigGetAttribute(LDT_config, EQWTD_fillopts%fillvalue, label='EQWTD fill value:' ,rc=rc); call LDT_verify(rc,"EQWTD fill value not defined." )  
+      call ESMF_ConfigGetAttribute(LDT_config, MBR_WTD%gap_fill%filltype,  label='EQWTD fill option:',rc=rc); call LDT_verify(rc,"EQWTD fill option not defined.")               
+      call ESMF_ConfigGetAttribute(LDT_config, MBR_WTD%gap_fill%fillradius,label='EQWTD fill radius:',rc=rc); call LDT_verify(rc,"EQWTD fill radius not defined.")  
+      call ESMF_ConfigGetAttribute(LDT_config, MBR_WTD%gap_fill%fillvalue, label='EQWTD fill value:' ,rc=rc); call LDT_verify(rc,"EQWTD fill value not defined." )  
 
-      call ESMF_ConfigGetAttribute(LDT_config, HGTM_fillopts%filltype,  label='HGT_M fill option:',rc=rc); call LDT_verify(rc,"HGT_M fill option not defined.")               
-      call ESMF_ConfigGetAttribute(LDT_config, HGTM_fillopts%fillradius,label='HGT_M fill radius:',rc=rc); call LDT_verify(rc,"HGT_M fill radius not defined.")  
-      call ESMF_ConfigGetAttribute(LDT_config, HGTM_fillopts%fillvalue, label='HGT_M fill value:' ,rc=rc); call LDT_verify(rc,"HGT_M fill value not defined." )
+      call ESMF_ConfigGetAttribute(LDT_config, MBR_HGT%gap_fill%filltype,  label='HGT_M fill option:',rc=rc); call LDT_verify(rc,"HGT_M fill option not defined.")               
+      call ESMF_ConfigGetAttribute(LDT_config, MBR_HGT%gap_fill%fillradius,label='HGT_M fill radius:',rc=rc); call LDT_verify(rc,"HGT_M fill radius not defined.")  
+      call ESMF_ConfigGetAttribute(LDT_config, MBR_HGT%gap_fill%fillvalue, label='HGT_M fill value:' ,rc=rc); call LDT_verify(rc,"HGT_M fill value not defined." )
       
       do n = 1,LDT_rc%nnest
          
@@ -543,58 +541,25 @@ contains
          call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_transform, label='MMF spatial transform:', rc=rc)
          call LDT_verify(rc,"MMF spatial transform method is not defined in the config file.")
         
-         ! Read in MMF parameters
+         ! Read in index files in GEOGRID directories and create mapping
  
-         call MBR%mi (n, MMF_proj)
+         call MBR_FDEPTH%mi     (n, MMF_proj, Noah_struc(n)%mmf_fdepth_dir)
+         call MBR_RECH%mi       (n, MMF_proj, Noah_struc(n)%mmf_rechclim_dir, MBR_FDEPTH%MMF_mapping)
+         call MBR_RIVERBED%mi   (n, MMF_proj, Noah_struc(n)%mmf_riverbed_dir, MBR_FDEPTH%MMF_mapping)
+         call MBR_WTD%mi        (n, MMF_proj, Noah_struc(n)%mmf_eqwtd_dir   , MBR_FDEPTH%MMF_mapping)
+         call MBR_HGT%mi        (n, MMF_proj, Noah_struc(n)%mmf_hgtm_dir    , MBR_FDEPTH%MMF_mapping)
 
-         call MBR%mr (n, 'T', trim(Noah_struc(n)%mmf_fdepth_dir  ), Noah_struc(n)%fdepth%value  )
-         call LDT_contIndivParam_Fill( n, LDT_rc%lnc(n), LDT_rc%lnr(n),  &
-                 Noah_struc(n)%mmf_transform,                            &
-                 Noah_struc(n)%fdepth%num_bins,                          &
-                 Noah_struc(n)%fdepth%value, LDT_rc%udef,                &
-                 LDT_LSMparam_struc(n)%landmask2%value,                  &
-                 FDEPTH_fillopts%filltype, FDEPTH_fillopts%fillvalue,    &
-                 FDEPTH_fillopts%fillradius )
+         ! Read in variables fields
          
-         call MBR%mr (n, 'R', trim(Noah_struc(n)%mmf_rechclim_dir), Noah_struc(n)%rechclim%value)
-         call LDT_contIndivParam_Fill( n, LDT_rc%lnc(n), LDT_rc%lnr(n),  &
-                 Noah_struc(n)%mmf_transform,                            &
-                 Noah_struc(n)%rechclim%num_bins,                        &
-                 Noah_struc(n)%rechclim%value, LDT_rc%udef,              &
-                 LDT_LSMparam_struc(n)%landmask2%value,                  &
-                 RECHCLIM_fillopts%filltype, RECHCLIM_fillopts%fillvalue,&
-                 RECHCLIM_fillopts%fillradius )
-         
-         call MBR%mr (n, 'E', trim(Noah_struc(n)%mmf_riverbed_dir), Noah_struc(n)%riverbed%value)
-         call LDT_contIndivParam_Fill( n, LDT_rc%lnc(n), LDT_rc%lnr(n),  &
-                 Noah_struc(n)%mmf_transform,                            &
-                 Noah_struc(n)%riverbed%num_bins,                        &
-                 Noah_struc(n)%riverbed%value, LDT_rc%udef,              &
-                 LDT_LSMparam_struc(n)%landmask2%value,                  &
-                 RIVERBED_fillopts%filltype, RIVERBED_fillopts%fillvalue,&
-                 RIVERBED_fillopts%fillradius )
-         
-         call MBR%mr (n, 'W', trim(Noah_struc(n)%mmf_eqwtd_dir   ), Noah_struc(n)%eqwtd%value   )
-         call LDT_contIndivParam_Fill( n, LDT_rc%lnc(n), LDT_rc%lnr(n),  &
-                 Noah_struc(n)%mmf_transform,                            &
-                 Noah_struc(n)%eqwtd%num_bins,                           &
-                 Noah_struc(n)%eqwtd%value, LDT_rc%udef,                 &
-                 LDT_LSMparam_struc(n)%landmask2%value,                  &
-                 EQWTD_fillopts%filltype, EQWTD_fillopts%fillvalue,      &
-                 EQWTD_fillopts%fillradius )
-
-         call MBR%mr (n, 'H', trim(Noah_struc(n)%mmf_hgtm_dir   ), Noah_struc(n)%hgtm%value   )
-         call LDT_contIndivParam_Fill( n, LDT_rc%lnc(n), LDT_rc%lnr(n),  &
-                 Noah_struc(n)%mmf_transform,                            &
-                 Noah_struc(n)%hgtm%num_bins,                            &
-                 Noah_struc(n)%hgtm%value, LDT_rc%udef,                  &
-                 LDT_LSMparam_struc(n)%landmask2%value,                  &
-                 HGTM_fillopts%filltype, HGTM_fillopts%fillvalue,        &
-                 HGTM_fillopts%fillradius )
-         
+         call MBR_FDEPTH%mr   (n, trim(Noah_struc(n)%mmf_fdepth_dir  ), Noah_struc(n)%fdepth%value  , Noah_struc(n)%mmf_transform)
+         call MBR_RECH%mr     (n, trim(Noah_struc(n)%mmf_rechclim_dir), Noah_struc(n)%rechclim%value, Noah_struc(n)%mmf_transform)
+         call MBR_RIVERBED%mr (n, trim(Noah_struc(n)%mmf_riverbed_dir), Noah_struc(n)%riverbed%value, Noah_struc(n)%mmf_transform)
+         call MBR_WTD%mr      (n, trim(Noah_struc(n)%mmf_eqwtd_dir   ), Noah_struc(n)%eqwtd%value   , Noah_struc(n)%mmf_transform)
+         call MBR_HGT%mr      (n, trim(Noah_struc(n)%mmf_hgtm_dir    ), Noah_struc(n)%hgtm%value    , Noah_struc(n)%mmf_transform)
+                  
          ! write areaXY
 
-         call MBR%cell_area (n,Noah_struc(n)%areaxy%value)
+         call cell_area (n,Noah_struc(n)%areaxy%value)
                  
       end do
       

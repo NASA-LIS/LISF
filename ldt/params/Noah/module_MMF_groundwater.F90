@@ -20,192 +20,247 @@
 
 #include "LDT_misc.h"
 module  MMF_groundwater
-  
-  use LDT_logMod,         only : LDT_logunit, LDT_endrun
-  use LDT_coreMod,        only : LDT_rc, LDT_domain
-  use LDT_gridmappingMod, only : LDT_RunDomainPts
-   
+
+  use ESMF
+  use LDT_logMod,           only : LDT_logunit, LDT_endrun, LDT_verify
+  use LDT_coreMod,          only : LDT_rc, LDT_domain
+  use LDT_gridmappingMod,   only : LDT_RunDomainPts
+  use LDT_paramMaskCheckMod,only : LDT_fillopts, LDT_contIndivParam_Fill
+  use LDT_paramDataMod,     only : LDT_LSMparam_struc
   implicit none
+
   private
 
-  type, public :: MMF_BCsReader
-   
-     real, dimension(20)                 :: param_gridDesc, subparam_gridDesc
-     integer                             :: glpnc, glpnr, subpnc, subpnr   
-     integer,allocatable,dimension (:,:) :: lat_line, lon_line, local_mask
+  integer,parameter :: NX_MMF=43200, NY_MMF = 21600
+ 
+  type :: geogrid
+
+     ! defaults    
+     real   :: sf       = 1.
+     real   :: undef    = -9999.
+     logical:: DE       = .true.
+     integer:: wordsize = 2
+     integer:: tile_x   = 1200
+     integer:: tile_y   = 1200
+     integer:: tile_z   = 1
+     integer:: tile_bdr = 0
+     integer:: endian   = 0
+     integer:: iSigned  = 1
      
+  end type geogrid
+  
+  type, public :: MMF_mapping
+     
+     real, dimension(20)              :: param_gridDesc, subparam_gridDesc
+     integer                          :: glpnc, glpnr, subpnc, subpnr   
+     integer, pointer, dimension (:,:):: lat_line, lon_line
+ 
+  end type MMF_mapping
+ 
+
+  type, public, extends (MMF_mapping)  ::  MMF_BCsReader
+
+     type(LDT_fillopts), public        :: gap_fill
+     type(geogrid),      public        :: gp
      
    contains
-
+     
      procedure, public :: mi => mmf_init
      procedure, public :: mr => mmf_data_reader
-     procedure, public :: cell_area => cell_area_girard
-     
-     procedure, private:: cell_area_line
-     procedure, private:: cell_area_curve
-     procedure, private:: cell_area_girard
-     
      
   end type MMF_BCsReader
-  
-  integer,parameter                    :: NY_MMF = 21600
-  integer,parameter                    :: NX_MMF = 43200
 
-contains 
+  public :: cell_area
   
-  SUBROUTINE mmf_init (MBR, nest, project)
+  interface cell_area
+     module procedure cell_area_girard
+  end interface cell_area
+  
+contains
+  
+  SUBROUTINE mmf_init (MBR, nest, project, DATADIR, map)
     
     implicit none
     
     class (MMF_BCsReader), intent(inout) :: MBR
+    type(MMF_mapping),intent(in),optional:: map
     integer, intent (in)                 :: nest
     character(*), intent (in)            :: project
+    CHARACTER(*), INTENT(IN)             :: DATADIR
     real                                 :: IN_xres, IN_yres
-      
-    IN_xres    = 360./REAL(NX_MMF)
-    IN_yres    = 180./REAL(NY_MMF)
-    MBR%param_gridDesc(1)  = 0.          ! Latlon
-    MBR%param_gridDesc(2)  = real(NX_MMF)
-    MBR%param_gridDesc(3)  = real(NY_MMF)
-    MBR%param_gridDesc(4)  = -90.0  + (IN_yres/2) ! LL lat 
-    MBR%param_gridDesc(5)  = -180.0 + (IN_xres/2) ! LL lon 
-    MBR%param_gridDesc(6)  = 128
-    MBR%param_gridDesc(7)  =  90.0 - (IN_yres/2)  ! UR lat
-    MBR%param_gridDesc(8)  = 180.0 - (IN_xres/2)  ! UR lon
-    MBR%param_gridDesc(9)  = IN_yres     
-    MBR%param_gridDesc(10) = IN_xres     
-    MBR%param_gridDesc(20) = 64
+    real                                 :: dx, dy, known_lon
+    type(geogrid)                        :: GG
+    type(ESMF_Config)                    :: GCF
+    integer                              :: RC
+    character*3                          :: signed
+    integer, save, allocatable, target, dimension (:,:):: tlat_line, tlon_line
     
-    ! ------------------------------------------------------------
-    !    PREPARE SUBSETTED PARAMETER GRID FOR READING IN BCS DATA
-    ! ------------------------------------------------------------
+    ! Reads index file for from the GEOGRID data directory for GEOGRID tile information and data conversion 
     
-    !- Map Parameter Grid Info to LIS Target Grid/Projection Info --
-    
-    MBR%subparam_gridDesc = 0.
+    GCF = ESMF_ConfigCreate(RC=RC)                                  ; call LDT_verify(rc,"mmf_init: create failed."    ) 
+    CALL ESMF_ConfigLoadFile     (GCF,trim(DATADIR)//'index',rc=rc) ; call LDT_verify(rc,"mmf_init: load index failed.") 
+    CALL ESMF_ConfigGetAttribute (GCF, label='dx:'           , VALUE=dx           , RC=RC ); call LDT_verify(rc,"mmf_init: dx not defined.") 
+    CALL ESMF_ConfigGetAttribute (GCF, label='dy:'           , VALUE=dy           , RC=RC ); call LDT_verify(rc,"mmf_init: dy not defined.") 
+    CALL ESMF_ConfigGetAttribute (GCF, label='scale_factor:' , VALUE=MBR%gp%sf       ,DEFAULT=GG%sf       , RC=RC )
+    CALL ESMF_ConfigGetAttribute (GCF, label='missing_value:', VALUE=MBR%gp%undef    ,DEFAULT=GG%undef    , RC=RC )
+    CALL ESMF_ConfigGetAttribute (GCF, label='wordsize:'     , VALUE=MBR%gp%wordsize ,DEFAULT=GG%wordsize , RC=RC )
+    CALL ESMF_ConfigGetAttribute (GCF, label='tile_x:'       , VALUE=MBR%gp%tile_x   ,DEFAULT=GG%tile_x   , RC=RC )
+    CALL ESMF_ConfigGetAttribute (GCF, label='tile_y:'       , VALUE=MBR%gp%tile_y   ,DEFAULT=GG%tile_y   , RC=RC )
+    CALL ESMF_ConfigGetAttribute (GCF, label='tile_z:'       , VALUE=MBR%gp%tile_z   ,DEFAULT=GG%tile_z   , RC=RC )
+    CALL ESMF_ConfigGetAttribute (GCF, label='tile_bdr:'     , VALUE=MBR%gp%tile_bdr ,DEFAULT=GG%tile_bdr , RC=RC )
+    CALL ESMF_ConfigGetAttribute (GCF, label='signed:'       , VALUE=signed       ,DEFAULT= 'yes'      , RC=RC )
+    CALL ESMF_ConfigGetAttribute (GCF, label='known_lon:'    , VALUE=known_lon    ,DEFAULT= -180.      , RC=RC )
+    CALL ESMF_ConfigDestroy      (GCF, RC=RC)
 
-    call LDT_RunDomainPts( nest, project, MBR%param_gridDesc(:),        &
-         MBR%glpnc, MBR%glpnr, MBR%subpnc, MBR%subpnr, MBR%subparam_gridDesc, &
-         MBR%lat_line, MBR%lon_line)
- 
+    if(trim(signed) == 'yes') then
+       MBR%gp%isigned = 1
+    else
+       MBR%gp%isigned = 0
+    endif
+
+    ! the western edge
+    if(known_lon < -179.) then
+       MBR%gp%DE = .true.
+    else
+       MBR%gp%DE = .false.
+    endif
+    
+    ! Verify NX_MMF, MY_MMF match with dx, dy
+    if ((NINT (360./dx) /= NX_MMF) .OR. (NINT (180./dy) /= NY_MMF)) then
+       write(LDT_logunit,*) "[ERR] MMF_INIT: DX, DY are NOT consistent with NX_MMF and NY_MMF"
+       write(LDT_logunit,*) dx, dy, nx_mmf, ny_mmf
+       write(LDT_logunit,*) "  Programming stopping ..."
+       call LDT_endrun
+    endif
+    
+    if(.not. present (map)) then
+
+       ! NOTE: Since source data array dimensions are the same for all MMF parameters,
+       !       we run this block once with the first parameter and copy mapping arrays to other parameters.
+       
+       ! ------------------------------------------------------------
+       !    PREPARE SUBSETTED PARAMETER GRID FOR READING IN BCS DATA
+       ! ------------------------------------------------------------    
+       !- Map Parameter Grid Info to LIS Target Grid/Projection Info --
+       
+       IN_xres    = 360./REAL(NX_MMF)
+       IN_yres    = 180./REAL(NY_MMF)
+       MBR%param_gridDesc(1)  = 0.          ! Latlon
+       MBR%param_gridDesc(2)  = real(NX_MMF)
+       MBR%param_gridDesc(3)  = real(NY_MMF)
+       MBR%param_gridDesc(4)  = -90.0  + (IN_yres/2) ! LL lat 
+       MBR%param_gridDesc(5)  = -180.0 + (IN_xres/2) ! LL lon 
+       MBR%param_gridDesc(6)  = 128
+       MBR%param_gridDesc(7)  =  90.0 - (IN_yres/2)  ! UR lat
+       MBR%param_gridDesc(8)  = 180.0 - (IN_xres/2)  ! UR lon
+       MBR%param_gridDesc(9)  = IN_yres     
+       MBR%param_gridDesc(10) = IN_xres     
+       MBR%param_gridDesc(20) = 64
+           
+       MBR%subparam_gridDesc = 0.
+
+       if(allocated (tlat_line)) deallocate (tlat_line)
+       if(allocated (tlon_line)) deallocate (tlon_line)
+       
+       call LDT_RunDomainPts( nest, project, MBR%param_gridDesc(:),        &
+            MBR%glpnc, MBR%glpnr, MBR%subpnc, MBR%subpnr, MBR%subparam_gridDesc, &
+            tlat_line, tlon_line)
+       MBR%lat_line => tlat_line
+       MBR%lon_line => tlon_line
+    else
+       
+       MBR%param_gridDesc   = map%param_gridDesc
+       MBR%glpnc            = map%glpnc     
+       MBR%glpnr            = map%glpnr
+       MBR%subpnc           = map%subpnc
+       MBR%subpnr           = map%subpnr
+       MBR%subparam_gridDesc= map%subparam_gridDesc
+       MBR%lat_line => map%lat_line
+       MBR%lon_line => map%lon_line
+              
+    endif
+    
   END SUBROUTINE mmf_init
   
   ! ----------------------------------------------------------------
   
-  SUBROUTINE mmf_data_reader (MBR, nest, varname, datadir, lisout)
+  SUBROUTINE mmf_data_reader (MBR, nest, datadir, lisout, mmf_transform)
     
     implicit none
 
     class (MMF_BCsReader), intent(inout)    :: MBR
-    character(*), intent (in)               :: varname, datadir
+    character(*), intent (in)               :: datadir, mmf_transform
     real, dimension (:,:,:), intent (inout) :: lisout
-    integer, intent (in)                    :: nest
-    
-    ! Adapted from Zhuo Wang's
-    ! /discover/nobackup/projects/lis_aist17/zwang9/Geogrid/geogrid2netcdf.f90
-    
-    integer, parameter :: iSigned = 1
-    integer, parameter :: endian = 0
-    integer, parameter :: wordsize = 2
-    integer, parameter :: missing = -9999
-    integer, parameter :: ntsteps =1
-    integer, parameter :: nlat_tile = 1200
-    integer, parameter :: nlon_tile = 1200
+    integer, intent (in)                    :: nest    
     character(len=1024):: geogridFile
     character(len=80)  :: tileName
     integer            :: num_tile_lon,num_tile_lat
-    integer            :: rc,status,tx,ty,txs,txe,tys,tye, bdr
-    integer            :: nlat_tile_bdr, nlon_tile_bdr
+    integer            :: rc,status,tx,ty,txs,txe,tys,tye
+    integer            :: nlat_tile_bdr, nlon_tile_bdr, nbins
     real,allocatable   :: tarray(:,:,:), garray(:,:,:)
-    real               :: SF
-    
+      
     ! c function from Michael G. Duda, NCAR/MMM
     integer,  external :: read_geogrid
+    ! Adapted from Zhuo Wang's
+    ! /discover/nobackup/projects/lis_aist17/zwang9/Geogrid/geogrid2netcdf.f90
 
-    ! set scale factor
-
-    SF = 1.
-    bdr = 0
-    select case (trim(varname))
-
-    case ('T')
-       ! transmissivity
-       SF = 0.01
-       
-    case ('R')
-       ! recharge
-       SF = 0.03
-       
-    case ('E')
-       ! river bed elevation
-       SF = 0.3
-       
-    case ('W')
-       ! water table depth
-       SF = -0.03
-
-    case ('H')
-       ! HGT_M
-       SF = 1.
-       bdr= 3
-   
-    case default  
-       write(LDT_logunit,*) '[ERROR] Unknown MMF data field : ', trim (varname)
-       call LDT_endrun
-    end select
 
     ! Reading GEOGRID data
     ! --------------------
-    
-    num_tile_lon = NX_MMF / nlon_tile
-    num_tile_lat = NY_MMF / nlat_tile
 
-    nlon_tile_bdr = nlon_tile + 2*bdr
-    nlat_tile_bdr = nlat_tile + 2*bdr
+    num_tile_lon = NX_MMF / MBR%gp%tile_x
+    num_tile_lat = NY_MMF / MBR%gp%tile_y
+
+    nlon_tile_bdr = MBR%gp%tile_x + 2*MBR%gp%tile_bdr
+    nlat_tile_bdr = MBR%gp%tile_y + 2*MBR%gp%tile_bdr
     
-    allocate(tarray(nlon_tile_bdr,nlat_tile_bdr,ntsteps))
-    allocate(garray(NX_MMF, NY_MMF, ntsteps))
+    allocate(tarray(nlon_tile_bdr,nlat_tile_bdr,MBR%gp%tile_z))
+    allocate(garray(NX_MMF, NY_MMF, MBR%gp%tile_z))
+
     garray = LDT_rc%udef  ! global array (43200,21600) is constructed by assebling 36x18 # of tarrays (1200,1200) 
 
     TILE_COLS: do tx = 1, num_tile_lon
        
-       txs = 1 + (tx-1)*nlon_tile
-       txe = tx * nlon_tile
+       txs = 1 + (tx-1)*MBR%gp%tile_x
+       txe = tx * MBR%gp%tile_x
 
        TILE_ROWS: do ty = 1, num_tile_lat
           
-          tarray = missing ! GEOGRID tile array 1200,1200
-          tys = 1 + (ty-1)*nlat_tile
-          tye = ty * nlat_tile
+          tarray = MBR%gp%undef 
+          tys = 1 + (ty-1)*MBR%gp%tile_y
+          tye = ty * MBR%gp%tile_y
 
-          if(trim(varname) == 'H') then
+          if(MBR%gp%DE) then
+             ! The western edge is on the dateline
+             write(tileName, fmt='(4(a1,i5.5))') '/',txs, '-', txe, '.', tys, '-', tye
+
+          else
              ! Elevation data x-axis start from the Greenwich line
              if(txe <= 21600) then
                 write(tileName, fmt='(4(a1,i5.5))') '/',txs+21600, '-', txe+21600, '.', tys, '-', tye
              else
                 write(tileName, fmt='(4(a1,i5.5))') '/',txs-21600, '-', txe-21600, '.', tys, '-', tye
              endif
-          else
-             write(tileName, fmt='(4(a1,i5.5))') '/',txs, '-', txe, '.', tys, '-', tye
+             
           endif
           
           geogridFile = trim(datadir)//trim(tileName)
           
           rc = read_geogrid(trim(geogridFile),len(trim(geogridFile)),tarray, &
-               nlon_tile,nlat_tile,ntsteps,isigned,endian,1.,wordsize,status)
+               MBR%gp%tile_x,MBR%gp%tile_y,MBR%gp%tile_z,MBR%gp%isigned,MBR%gp%endian,1.,MBR%gp%wordsize,status)
 
           if (rc == 1 .or. status == 1) then
              write(LDT_logunit,*) '[ERROR] reading GEOGRID file : ',trim(geogridFile)
              call LDT_endrun
            end if
              
-          where(tarray == missing)
+          where(tarray == MBR%gp%undef)
              tarray = LDT_rc%udef
           elsewhere
-             tarray = SF * tarray
+             tarray = MBR%gp%SF * tarray
           end where
           
-          garray(txs:txe,tys:tye,1) = tarray (1 + bdr : bdr + nlon_tile, 1 + bdr: bdr + nlat_tile,1)
+          garray(txs:txe,tys:tye,1) = tarray (1 + MBR%gp%tile_bdr : MBR%gp%tile_bdr + MBR%gp%tile_x, 1 + MBR%gp%tile_bdr: MBR%gp%tile_bdr + MBR%gp%tile_y,1)
           
        end do TILE_ROWS
     end do TILE_COLS
@@ -213,7 +268,19 @@ contains
     ! regrid garray and construct lisout array on the LIS grid
     
     call regrid_to_lisgrid (nest, garray, lisout)
-    
+
+    ! fill gaps
+
+    nbins = size (lisout, 3)
+
+    call LDT_contIndivParam_Fill( nest, LDT_rc%lnc(nest), LDT_rc%lnr(nest),  &
+         mmf_transform,                                    &
+         nbins,                                            &
+         lisout,  LDT_rc%udef,                             &
+         LDT_LSMparam_struc(nest)%landmask2%value,         &
+         MBR%gap_fill%filltype, MBR%gap_fill%fillvalue,    &
+         MBR%gap_fill%fillradius )
+             
     deallocate (tarray, garray)
     
   contains
@@ -301,14 +368,13 @@ contains
 
   ! ----------------------------------------------------------------
 
-  SUBROUTINE cell_area_line (MBR, nest, area)
+  SUBROUTINE cell_area_line (nest, area)
     
     use map_utils,        only : ij_to_latlon
     use LDT_constantsMod, ONLY : radius => LDT_CONST_REARTH, pi => LDT_CONST_PI
     
     implicit none
     
-    class (MMF_BCsReader), intent(inout)    :: MBR    
     integer, intent (in)                    :: nest
     real, dimension (:,:,:), intent (inout) :: area
     integer                                 :: i,j, s
@@ -353,14 +419,13 @@ contains
 
   ! ----------------------------------------------------------------
 
-  SUBROUTINE cell_area_curve (MBR, nest, area)
+  SUBROUTINE cell_area_curve (nest, area)
     
     use map_utils,        only : ij_to_latlon
     use LDT_constantsMod, ONLY : radius => LDT_CONST_REARTH, pi => LDT_CONST_PI
     
     implicit none
     
-    class (MMF_BCsReader), intent(inout)    :: MBR    
     integer, intent (in)                    :: nest
     real, dimension (:,:,:), intent (inout) :: area
     integer                                 :: i,j, s
@@ -402,14 +467,13 @@ contains
 
   ! ----------------------------------------------------------------
 
-  SUBROUTINE cell_area_girard (MBR, nest, area)
+  SUBROUTINE cell_area_girard (nest, area)
     
     use map_utils,        only : ij_to_latlon
     use LDT_constantsMod, ONLY : radius => LDT_CONST_REARTH, pi => LDT_CONST_PI
     
     implicit none
 
-    class (MMF_BCsReader), intent(inout)    :: MBR    
     integer, intent (in)                    :: nest
     real, dimension (:,:,:), intent (inout) :: area
     integer                                 :: i,j
