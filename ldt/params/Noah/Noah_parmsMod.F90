@@ -69,6 +69,7 @@ module Noah_parmsMod
      character*140  :: mmf_rechclim_dir
      character*140  :: mmf_riverbed_dir
      character*140  :: mmf_eqwtd_dir
+     character*140  :: mmf_hgtm_dir
      character*50   :: mmf_transform
       
      real           :: pblh_value
@@ -82,6 +83,7 @@ module Noah_parmsMod
      type(LDT_paramEntry) :: riverbed
      type(LDT_paramEntry) :: eqwtd
      type(LDT_paramEntry) :: areaxy
+     type(LDT_paramEntry) :: hgtm
      
   end type noah_type_dec
 
@@ -128,7 +130,7 @@ contains
    character*50       :: tbot_proj
    character*50       :: slopetype_proj
    type(LDT_fillopts) :: FDEPTH_fillopts, RECHCLIM_fillopts
-   type(LDT_fillopts) :: RIVERBED_fillopts, EQWTD_fillopts
+   type(LDT_fillopts) :: RIVERBED_fillopts, EQWTD_fillopts, HGTM_fillopts
    character*50       :: MMF_proj
    type(MMF_BCsReader):: MBR
 
@@ -171,7 +173,10 @@ contains
             full_name="equilibrium water table depth")
       call set_param_attribs(Noah_struc(n)%areaxy,"AREAXY",&
             units="km^2", &
-            full_name="area of the grid cell")      
+            full_name="area of the grid cell")
+      call set_param_attribs(Noah_struc(n)%hgtm,"MMF_HGTM",&
+            units="m MSL", &
+            full_name="GMTED2010 30-arc-second topography height")      
       endif
    enddo
 
@@ -498,6 +503,7 @@ contains
       call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_rechclim_dir, label='MMF climatological recharge dir:',       RC=RC)
       call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_riverbed_dir, label='MMF riverbed elevation dir:',            RC=RC)
       call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_eqwtd_dir   , label='MMF equilibrium water table depth dir:', RC=RC)
+      call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_hgtm_dir    , label='MMF HGT_M dir:',                         RC=RC)
       
    end do
 
@@ -521,6 +527,9 @@ contains
       call ESMF_ConfigGetAttribute(LDT_config, EQWTD_fillopts%fillradius,label='EQWTD fill radius:',rc=rc); call LDT_verify(rc,"EQWTD fill radius not defined.")  
       call ESMF_ConfigGetAttribute(LDT_config, EQWTD_fillopts%fillvalue, label='EQWTD fill value:' ,rc=rc); call LDT_verify(rc,"EQWTD fill value not defined." )  
 
+      call ESMF_ConfigGetAttribute(LDT_config, HGTM_fillopts%filltype,  label='HGT_M fill option:',rc=rc); call LDT_verify(rc,"HGT_M fill option not defined.")               
+      call ESMF_ConfigGetAttribute(LDT_config, HGTM_fillopts%fillradius,label='HGT_M fill radius:',rc=rc); call LDT_verify(rc,"HGT_M fill radius not defined.")  
+      call ESMF_ConfigGetAttribute(LDT_config, HGTM_fillopts%fillvalue, label='HGT_M fill value:' ,rc=rc); call LDT_verify(rc,"HGT_M fill value not defined." )
       
       do n = 1,LDT_rc%nnest
          
@@ -529,6 +538,7 @@ contains
          allocate (Noah_struc(n)%riverbed%value (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%riverbed%num_bins))
          allocate (Noah_struc(n)%eqwtd%value    (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%eqwtd%num_bins   ))
          allocate (Noah_struc(n)%areaxy%value   (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%eqwtd%num_bins   ))
+         allocate (Noah_struc(n)%hgtm%value     (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%hgtm%num_bins    ))
          
          call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_transform, label='MMF spatial transform:', rc=rc)
          call LDT_verify(rc,"MMF spatial transform method is not defined in the config file.")
@@ -572,6 +582,15 @@ contains
                  LDT_LSMparam_struc(n)%landmask2%value,                  &
                  EQWTD_fillopts%filltype, EQWTD_fillopts%fillvalue,      &
                  EQWTD_fillopts%fillradius )
+
+         call MBR%mr (n, 'H', trim(Noah_struc(n)%mmf_hgtm_dir   ), Noah_struc(n)%hgtm%value   )
+         call LDT_contIndivParam_Fill( n, LDT_rc%lnc(n), LDT_rc%lnr(n),  &
+                 Noah_struc(n)%mmf_transform,                            &
+                 Noah_struc(n)%hgtm%num_bins,                            &
+                 Noah_struc(n)%hgtm%value, LDT_rc%udef,                  &
+                 LDT_LSMparam_struc(n)%landmask2%value,                  &
+                 HGTM_fillopts%filltype, HGTM_fillopts%fillvalue,        &
+                 HGTM_fillopts%fillradius )
          
          ! write areaXY
 
@@ -608,7 +627,7 @@ contains
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%riverbed )
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%eqwtd    )
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%areaxy   )
-     
+    call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%hgtm     )     
 
   end subroutine NoahParms_writeHeader
 
@@ -631,6 +650,7 @@ contains
     call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%riverbed )
     call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%eqwtd    )
     call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%areaxy   )
+    call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%hgtm     )    
     
   end subroutine NoahParms_writeData
 

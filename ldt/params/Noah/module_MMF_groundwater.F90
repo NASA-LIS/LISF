@@ -114,7 +114,8 @@ contains
     character(len=1024):: geogridFile
     character(len=80)  :: tileName
     integer            :: num_tile_lon,num_tile_lat
-    integer            :: rc,status,tx,ty,txs,txe,tys,tye    
+    integer            :: rc,status,tx,ty,txs,txe,tys,tye, bdr
+    integer            :: nlat_tile_bdr, nlon_tile_bdr
     real,allocatable   :: tarray(:,:,:), garray(:,:,:)
     real               :: SF
     
@@ -124,6 +125,7 @@ contains
     ! set scale factor
 
     SF = 1.
+    bdr = 0
     select case (trim(varname))
 
     case ('T')
@@ -141,7 +143,12 @@ contains
     case ('W')
        ! water table depth
        SF = -0.03
-       
+
+    case ('H')
+       ! HGT_M
+       SF = 1.
+       bdr= 3
+   
     case default  
        write(LDT_logunit,*) '[ERROR] Unknown MMF data field : ', trim (varname)
        call LDT_endrun
@@ -153,7 +160,10 @@ contains
     num_tile_lon = NX_MMF / nlon_tile
     num_tile_lat = NY_MMF / nlat_tile
 
-    allocate(tarray(nlon_tile,nlat_tile,ntsteps))
+    nlon_tile_bdr = nlon_tile + 2*bdr
+    nlat_tile_bdr = nlat_tile + 2*bdr
+    
+    allocate(tarray(nlon_tile_bdr,nlat_tile_bdr,ntsteps))
     allocate(garray(NX_MMF, NY_MMF, ntsteps))
     garray = LDT_rc%udef  ! global array (43200,21600) is constructed by assebling 36x18 # of tarrays (1200,1200) 
 
@@ -168,7 +178,17 @@ contains
           tys = 1 + (ty-1)*nlat_tile
           tye = ty * nlat_tile
 
-          write(tileName, fmt='(4(a1,i5.5))') '/',txs, '-', txe, '.', tys, '-', tye
+          if(trim(varname) == 'H') then
+             ! Elevation data x-axis start from the Greenwich line
+             if(txe <= 21600) then
+                write(tileName, fmt='(4(a1,i5.5))') '/',txs+21600, '-', txe+21600, '.', tys, '-', tye
+             else
+                write(tileName, fmt='(4(a1,i5.5))') '/',txs-21600, '-', txe-21600, '.', tys, '-', tye
+             endif
+          else
+             write(tileName, fmt='(4(a1,i5.5))') '/',txs, '-', txe, '.', tys, '-', tye
+          endif
+          
           geogridFile = trim(datadir)//trim(tileName)
           
           rc = read_geogrid(trim(geogridFile),len(trim(geogridFile)),tarray, &
@@ -185,7 +205,7 @@ contains
              tarray = SF * tarray
           end where
           
-          garray(txs:txe,tys:tye,1) = tarray (1:nlon_tile, 1:nlat_tile,1)
+          garray(txs:txe,tys:tye,1) = tarray (1 + bdr : bdr + nlon_tile, 1 + bdr: bdr + nlat_tile,1)
           
        end do TILE_ROWS
     end do TILE_COLS
@@ -281,7 +301,7 @@ contains
 
   ! ----------------------------------------------------------------
 
-  SUBROUTINE cell_area_curve (MBR, nest, area)
+  SUBROUTINE cell_area_line (MBR, nest, area)
     
     use map_utils,        only : ij_to_latlon
     use LDT_constantsMod, ONLY : radius => LDT_CONST_REARTH, pi => LDT_CONST_PI
@@ -329,11 +349,11 @@ contains
        end do
     end do
     
-  END SUBROUTINE cell_area_curve
+  END SUBROUTINE cell_area_line
 
   ! ----------------------------------------------------------------
 
-  SUBROUTINE cell_area_line (MBR, nest, area)
+  SUBROUTINE cell_area_curve (MBR, nest, area)
     
     use map_utils,        only : ij_to_latlon
     use LDT_constantsMod, ONLY : radius => LDT_CONST_REARTH, pi => LDT_CONST_PI
@@ -378,7 +398,7 @@ contains
        end do
     end do
     
-  END SUBROUTINE cell_area_line
+  END SUBROUTINE cell_area_curve
 
   ! ----------------------------------------------------------------
 
