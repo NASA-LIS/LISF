@@ -121,13 +121,13 @@
 #latex: 
 #latex: END_DESCRIPTION
 #name                                total in-time writeTS extractTS threshold ASC ADC 
-Mean:                                  1   1    1   0   -9999.0  -9999.0 1  0  #Mean
+Mean:                                  1   1    0   1   -9999.0  -9999.0 0  0  #Mean
 Min:                                   0   0    0   0   -9999.0  -9999.0 0  0  #Minimum
 MinTime:                               0   0    0   0   -9999.0  -9999.0 0  0  #MinTime
 Max:                                   0   0    0   0   -9999.0  -9999.0 0  0  #Maximum
 MaxTime:                               0   0    0   0   -9999.0  -9999.0 0  0  #MaxTime
 Sum:                                   0   0    0   0   -9999.0  -9999.0 0  0  #Sum
-Anomaly:                               1   1    1   0   -9999.0  -9999.0 1  0  #Anomaly
+Anomaly:                               0   0    0   0   -9999.0  -9999.0 0  0  #Anomaly
 Standard deviation:                    0   0    0   0   -9999.0  -9999.0 0  0  #Std
 RMSE:                                  0   0    0   0   -9999.0  -9999.0 0  0  #RMSE
 Bias:                                  0   0    0   0   -9999.0  -9999.0 0  0  #Bias
