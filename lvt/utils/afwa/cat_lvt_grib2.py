@@ -246,7 +246,7 @@ def get_gr2_mean_files(validdt, lsm, period):
     # Collect input files
     for invocation in invocation_list:
         # FIXME -- Let user configure output directory prefix
-        path = "STATS.%s.%shr" % (invocation, period)
+        path = "OUTPUT/STATS.%s.%shr" % (invocation, period)
 
         # FIXME -- Let user configure file name
         path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
@@ -267,7 +267,7 @@ def get_gr2_mean_files(validdt, lsm, period):
 
     # Get output files
     # FIXME -- Let user configure output directory prefix
-    path = "STATS_merged_%shr" % (period)
+    path = "OUTPUT/STATS_merged_%shr" % (period)
     if not os.path.exists(path):
         os.mkdir(path)
 
@@ -301,7 +301,7 @@ def get_gr2_ssdev_files(validdt, lsm, period):
     # Collect input files
     for invocation in invocation_list:
         # FIXME -- Let user configure output directory prefix
-        path = "STATS.%s.%shr" % (invocation, period)
+        path = "OUTPUT/STATS.%s.%shr" % (invocation, period)
         # FIXME -- Let user configure file name
         path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
         if period == 24:
@@ -321,7 +321,7 @@ def get_gr2_ssdev_files(validdt, lsm, period):
 
     # Get output file
     # FIXME -- Let user configure output directory prefix
-    path = "STATS_merged_%shr" % (period)
+    path = "OUTPUT/STATS_merged_%shr" % (period)
     if not os.path.exists(path):
         os.mkdir(path)
 
@@ -355,7 +355,7 @@ def get_gr2_latest_files(validdt, lsm):
     # Collect input files
     for invocation in invocation_list:
         # FIXME -- Let user configure output directory prefix
-        path = "STATS.%s.3hr" % (invocation)  # Always use 3hr processing
+        path = "OUTPUT/STATS.%s.3hr" % (invocation)  # Always use 3hr processing
 
         # FIXME -- Let user configure file name
         path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
