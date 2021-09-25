@@ -14,13 +14,13 @@ import datetime
 import os
 import sys
 
-template = "template/lvt.config.template.noah39"
+template = "templates/lvt.config.template.noah39"
 
-startdt = datetime.datetime(2007, 12, 1, 0)
-enddt = datetime.datetime(2007, 12, 2, 0)
+startdt = datetime.datetime(2021, 4, 13, 0)
+enddt = datetime.datetime(2021, 4, 13, 12)
 
-output = "netcdf"
-#output = "grib2"
+output = "grib2" # For 557 operations
+#output = "netcdf" # For testing
 
 # Most variables are processed independently, and are listed below.
 var_attributes = {
@@ -142,10 +142,7 @@ for var in vars:
         if "LVT output format:" in line:
             line = "LVT output format: %s\n" % (output)
         elif "Process HYCOM data:" in line:
-            if firstVar:
-                line = "Process HYCOM data: 1\n"
-            else:
-                line = "Process HYCOM data: 0\n"
+            line = "Process HYCOM data: 0\n"
         elif "Apply noise reduction filter:" in line:
             if var in smooth_vars:
                 line = "Apply noise reduction filter: 1\n"
@@ -184,11 +181,13 @@ for var in vars:
             line = "Metrics output directory: OUTPUT/STATS.%s.3hr\n" % (var)
         elif "LIS output attributes file:" in line:
             line = "LIS output attributes file:"
-            line += " ./tables/MODEL_OUTPUT_LIST.TBL.lvt_557post.%s.3hr\n" % (var)
+            line += " ./templates/MODEL_OUTPUT_LIST.TBL.lvt_557post.%s.3hr\n" % (var)
 
         newlines.append(line)
 
     firstVar = False
+    if not os.path.exists("configs"):
+        os.mkdir("configs")
     newfile = "configs/lvt.config.%s.3hr" % (var)
     print("Writing %s" % (newfile))
     f = open(newfile, "w")

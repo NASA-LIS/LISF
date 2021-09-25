@@ -14,12 +14,12 @@ import datetime
 import os
 import sys
 
-template = "template/lvt.config.template.jules50"
+template = "templates/lvt.config.template.jules50"
 
-startdt = datetime.datetime(2018, 12, 2,  9)
-enddt = datetime.datetime(2018, 12, 31,  12)
+startdt = datetime.datetime(2021, 4, 13,  9)
+enddt = datetime.datetime(2021, 4, 13,  12)
 
-output = "netcdf"
+output = "netcdf" # For 557 Ops (Fields file)
 #output = "grib2"
 
 # Most variables are processed independently, and are listed below.
@@ -238,12 +238,14 @@ for var in vars:
             line = "Metrics output directory: OUTPUT/STATS.%s.3hr\n" % (var)
         elif "LIS output attributes file:" in line:
             line = "LIS output attributes file:"
-            line += " ./tables/MODEL_OUTPUT_LIST.TBL.lvt_557post.%s.3hr\n" \
+            line += " ./templates/MODEL_OUTPUT_LIST.TBL.lvt_557post.%s.3hr\n" \
                 % (var)
 
         newlines.append(line)
 
     firstVar = False
+    if not os.path.exists("configs"):
+        os.mkdir("configs")
     newfile = "configs/lvt.config.%s.3hr" % (var)
     print("Writing %s" % (newfile))
     f = open(newfile, "w")
