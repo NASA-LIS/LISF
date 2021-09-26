@@ -30,7 +30,7 @@ Spatial interpolation method (met forcing):   bilinear
 Temporal interpolation method (met forcing):  linear
 
 #Runtime options
-Forcing variables list file:            ./forcing_variables.txt
+Forcing variables list file:            input/forcing_variables.txt
 Output methodology:                     "2d gridspace"
 Output model restart files:             1
 Output data format:                     grib1
@@ -111,7 +111,7 @@ Observation perturbation algorithm: none
 
 #------------------------DOMAIN SPECIFICATION--------------------------
 #The following options list the choice of parameter maps to be used
-LIS domain and parameter data file:     ./lis_input.global.noah39.nc
+LIS domain and parameter data file:     ./input/lis_input.global.noah39.nc
 Landmask data source:                   LDT
 Landcover data source:                  LDT
 Soil texture data source:               LDT
@@ -147,7 +147,7 @@ AGRMET forcing domain resolution (dx):        0.1406250
 AGRMET forcing domain resolution (dy):        0.0937500
 
 # Input settings
-AGRMET forcing directory: ./USAF_FORCING # Change as appropriate
+AGRMET forcing directory: ./input/USAF_FORCING # Change as appropriate
 AGRMET retrospective root filename:        "/PS.AFWA_SC.U_DI.C_DC.ANLYS_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA.03-HR-SUM_DD."
 
 # Output settings
@@ -198,7 +198,7 @@ AGRMET CMORPH dy:                             0.072756669
 #IMERG settings
 AGRMET use IMERG data:                     1   # 1 = Enabled
 AGRMET IMERG temperature threshold:        278
-AGRMET IMERG data directory:               ./IMERG
+AGRMET IMERG data directory:               ./input/IMERG
 AGRMET IMERG product:                      3B-HHR-E  # Early Run
 AGRMET IMERG version:                      V06B      # V06B released in 2019
 AGRMET IMERG Probability Liquid Precip Threshold: 100
@@ -290,21 +290,21 @@ AGRMET snow distribution shape parameter:  2.6
 
 # Legacy AGRMET settings.  Eventually these will be removed,
 # but for now keep these settings.
-AGRMET latlon mask file:                   legacy/global_0p25/mask_25KM.1gd4r
-AGRMET mask file:                          legacy/all_16/point_switches
-AGRMET terrain file:                       legacy/pst_16/terrain
+AGRMET latlon mask file:            input/legacy/global_0p25/mask_25KM.1gd4r
+AGRMET mask file:                   input/legacy/all_16/point_switches
+AGRMET terrain file:                input/legacy/pst_16/terrain
 # EMK...8th polar files are missing, but are not read anyway.
 # Just leave these settings here.
-AGRMET 8th polar mask file:                legacy/all_8/point_switches
-AGRMET 8th polar terrain file:             legacy/pst_8/terrain
-AGRMET 16th polar mask file:               legacy/all_16/point_switches
-AGRMET 16th polar terrain file:            legacy/pst_16/terrain
-AGRMET 64th polar mask file:               legacy/pst_16/point_switches
-AGRMET 64th polar terrain file:            legacy/pst_16/terrain
+AGRMET 8th polar mask file:         input/legacy/all_8/point_switches
+AGRMET 8th polar terrain file:      input/legacy/pst_8/terrain
+AGRMET 16th polar mask file:        input/legacy/all_16/point_switches
+AGRMET 16th polar terrain file:     input/legacy/pst_16/terrain
+AGRMET 64th polar mask file:        input/legacy/pst_16/point_switches
+AGRMET 64th polar terrain file:     input/legacy/pst_16/terrain
 AGRMET native imax:                        1024            # 16th polar stereographic
 AGRMET native jmax:                        1024            # 16th polar stereographic
-AGRMET sfcalc cntm file:                   legacy/global_0p25/spread_radii.1gd4r
-AGRMET precip climatology:                 legacy/global_0p25/
+AGRMET sfcalc cntm file:            input/legacy/global_0p25/spread_radii.1gd4r
+AGRMET precip climatology:          input/legacy/global_0p25/
 AGRMET use present/past weather estimate:  0               # 0 = do not use BOGUS data
 AGRMET use CDFSII-based estimate:          0               # 0 = do not use CDFSII estimates
 AGRMET CDFSII time interval:               6
@@ -322,11 +322,11 @@ AGRMET overcast percentage:                          0.30
 #-----------------------LAND SURFACE MODELS--------------------------
 Noah.3.9 model timestep:                  15mn
 Noah.3.9 restart output interval:         6hr
-Noah.3.9 restart file:     ./restarts/LIS_RST_NOAH39_202108010000.d01.nc
+Noah.3.9 restart file:     ./input/restarts/LIS_RST_NOAH39_202108010000.d01.nc
 Noah.3.9 restart file format:             netcdf
-Noah.3.9 vegetation parameter table:      ./noah39_parms/VEGPARM.TBL
-Noah.3.9 soil parameter table:            ./noah39_parms/SOILPARM.TBL
-Noah.3.9 general parameter table:         ./noah39_parms/GENPARM.TBL
+Noah.3.9 vegetation parameter table:      ./input/noah39_parms/VEGPARM.TBL
+Noah.3.9 soil parameter table:            ./input/noah39_parms/SOILPARM.TBL
+Noah.3.9 general parameter table:         ./input/noah39_parms/GENPARM.TBL
 Noah.3.9 use PTF for mapping soil properties: 0
 Noah.3.9 soils scheme:                    2
 Noah.3.9 number of soil layers:           4
@@ -369,5 +369,5 @@ Output start hour:
 Output start minutes:
 Output start seconds:
 
-Model output attributes file:   ./tables/MODEL_OUTPUT_LIST.TBL.noah39.bratseth
+Model output attributes file:   ./input/tables/MODEL_OUTPUT_LIST.TBL.noah39.bratseth
 
