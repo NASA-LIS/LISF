@@ -1,6 +1,6 @@
 #!/bin/sh
 #SBATCH --job-name=s2sglb
-#SBATCH --time=0:30:00
+#SBATCH --time=1:00:00
 #SBATCH --account s1189
 #SBATCH --output s2sglb.slurm.out
 #SBATCH --ntasks=560
@@ -9,18 +9,18 @@
 ##SBATCH --qos=debug
 #------------------------------------------------------------------------------
 #
-# SCRIPT: run_lis_global_s2s_forcing.sh
+# SCRIPT: run_lis_global_usaf_forcing.sh
 #
 # DESCRIPTION: Batch script for running LIS in AGRMET Ops mode to generate
-# global atmospheric forcing for LIS S2S runs. LIS is run for a single day
+# USAF global atmospheric forcing for LIS S2S runs. LIS is run for a single day
 # starting at 00Z.
 #
-# USAGE: sbatch run_lis_global_s2s_forcing.sh $YYYYMMDD
+# USAGE: sbatch run_lis_usaf_s2s_forcing.sh $YYYYMMDD
 #         where $YYYYMMDD is the start date of the LIS run.
 #
 # REVISION HISTORY:
 # 22 Sep 2021: Eric Kemp (SSAI), first version.
-#
+# 26 Sep 2021: Eric Kemp (SSAI), renamed to clarify forcing.
 #------------------------------------------------------------------------------
 
 ulimit -s unlimited
