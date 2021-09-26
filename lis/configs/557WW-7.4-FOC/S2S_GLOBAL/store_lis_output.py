@@ -54,8 +54,7 @@ def _read_cmd_args():
 
     grib_dir = sys.argv[3]
     if not os.path.exists(grib_dir):
-        print("[ERR] %s does not exist!" %(grib_dir))
-        sys.exit(1)
+        os.makedirs(grib_dir)
 
     # Get start date of recent LIS run
     yyyymmdd = sys.argv[4]
