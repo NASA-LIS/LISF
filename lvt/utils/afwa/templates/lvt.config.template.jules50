@@ -7,7 +7,7 @@ Analysis data sources:            "LIS output" "none"
 Number of ensembles in the LVT analysis: 12
 
 Process HYCOM data:          0
-HYCOM data directory:        HYCOM
+HYCOM data directory:        input/HYCOM
 Apply noise reduction filter: 1
 Smoothing filter type:        "gaussian filter"
 
@@ -28,7 +28,7 @@ Ending minute: 00
 Ending second: 00
 LVT clock timestep: "3hr"
 Undefined value:                          -9999
-LVT diagnostic file:                      lvtlog
+LVT diagnostic file:                      logs/lvtlog
 
 
 #LIS domain
@@ -39,7 +39,7 @@ Run domain upper right lon:           179.9296875
 Run domain resolution (dx):             0.140625
 Run domain resolution (dy):             0.093750
 
-Input domain and mask data file:   lis_input.global.jules50.nc
+Input domain and mask data file:   input/lis_input.global.jules50.nc
 Spatial transform method for generating the LVT analysis domain: "neighbor"
 
 #model soil moisture vs obs soil moisture
@@ -55,13 +55,13 @@ Apply external mask:                            0
 External mask directory:                        none
 Compute information theory metrics:             0
 Compute ensemble metrics:                       0
-Metrics attributes file:                        tables/METRICS.TBL
+Metrics attributes file:                        templates/METRICS.TBL
 Observation count threshold:                    0
 Metrics computation frequency: "3hr"
 Spatial averaging mode:                          "pixel-by-pixel"
 Metrics output directory:                         STATS.e_balance
 Metrics output frequency: "3hr"
-Time series location file:                      tables/TS_LOCATIONS.TXT
+Time series location file:                      templates/TS_LOCATIONS.TXT
 Variable-based stratification:                   0
 Compute LSM diagnostics:                         0
 Confidence interval (%):                         95
@@ -85,14 +85,14 @@ LIS output analysis data class:               "LSM"
 LIS output number of surface model types:      2
 LIS output surface model types:               "LSM" "Openwater"
 LIS output model name:              "JULES.5.0"
-LIS output domain and parameter file:  lis_input.global.jules50.nc
+LIS output domain and parameter file:  input/lis_input.global.jules50.nc
 
-LIS output directory:                OUTPUT
+LIS output directory:                input/lis_output
 LIS output naming style:            "WMO convention"
 
 LIS output methodology:            "1d tilespace"
 LIS output format:                  netcdf
-LIS output attributes file:       ./MODEL_OUTPUT_LIST.TBL.afwa.e_balance
+LIS output attributes file:    ./templates/MODEL_OUTPUT_LIST.TBL.afwa.e_balance
 LIS output maximum number of surface type tiles per grid:     1
 LIS output minimum cutoff percentage (surface type tiles):    0.05
 LIS output maximum number of soil texture tiles per grid:     1
