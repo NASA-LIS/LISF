@@ -32,10 +32,11 @@ module  MMF_groundwater
   private
 
   integer,parameter :: NX_MMF=43200, NY_MMF = 21600
- 
+
+  ! defaults parameters for GEOGRID tiles based on the FDEPTH data set
+  ! ------------------------------------------------------------------
   type :: geogrid
 
-     ! defaults    
      real   :: sf       = 1.
      real   :: undef    = -9999.
      logical:: DE       = .true.
@@ -48,19 +49,23 @@ module  MMF_groundwater
      integer:: iSigned  = 1
      
   end type geogrid
-  
+
+  ! MMF grid to LIS grid mapping
+  ! ----------------------------
   type, public :: MMF_mapping
-     
+   
      real, dimension(20)              :: param_gridDesc, subparam_gridDesc
      integer                          :: glpnc, glpnr, subpnc, subpnr   
      integer, pointer, dimension (:,:):: lat_line, lon_line
  
   end type MMF_mapping
- 
 
+  ! MMF data reader Fortran object
+  ! ------------------------------
   type, public, extends (MMF_mapping)  ::  MMF_BCsReader
 
      type(LDT_fillopts), public        :: gap_fill
+     type(LDT_fillopts), public        :: neighbor
      type(geogrid),      public        :: gp
      
    contains
@@ -70,12 +75,10 @@ module  MMF_groundwater
      
   end type MMF_BCsReader
 
+  ! Grid cell area
+  ! --------------
   public :: cell_area
-  
-  interface cell_area
-     module procedure cell_area_girard
-  end interface cell_area
-  
+    
 contains
   
   SUBROUTINE mmf_init (MBR, nest, project, DATADIR, map)
@@ -124,6 +127,10 @@ contains
     else
        MBR%gp%DE = .false.
     endif
+
+    ! For WPS's two-step gap filling, first we attempt fill using averaged value from the immedeate neighborhood. 
+    MBR%neighbor%filltype  = 'average'
+    MBR%neighbor%fillvalue = LDT_rc%udef
     
     ! Verify NX_MMF, MY_MMF match with dx, dy
     if ((NINT (360./dx) /= NX_MMF) .OR. (NINT (180./dy) /= NY_MMF)) then
@@ -273,14 +280,29 @@ contains
 
     nbins = size (lisout, 3)
 
-    call LDT_contIndivParam_Fill( nest, LDT_rc%lnc(nest), LDT_rc%lnr(nest),  &
+    ! WPS's STEP1 : average from the nerighborhood
+    ! --------------------------------------------
+    call LDT_contIndivParam_Fill( nest, LDT_rc%lnc(nest), LDT_rc%lnr(nest),   &
          mmf_transform,                                    &
          nbins,                                            &
          lisout,  LDT_rc%udef,                             &
          LDT_LSMparam_struc(nest)%landmask2%value,         &
-         MBR%gap_fill%filltype, MBR%gap_fill%fillvalue,    &
-         MBR%gap_fill%fillradius )
-             
+         MBR%neighbor%filltype, MBR%neighbor%fillvalue,    &
+         MBR%neighbor%fillradius )
+    
+    
+    ! WPS's STEP2 : Search and fill 
+    ! -----------------------------
+    
+    if (trim (MBR%gap_fill%filltype) /= 'none') then
+       call LDT_contIndivParam_Fill( nest, LDT_rc%lnc(nest), LDT_rc%lnr(nest),  &
+            mmf_transform,                                    &
+            nbins,                                            &
+            lisout,  LDT_rc%udef,                             &
+            LDT_LSMparam_struc(nest)%landmask2%value,         &
+            MBR%gap_fill%filltype, MBR%gap_fill%fillvalue,    &
+            MBR%gap_fill%fillradius )
+    endif
     deallocate (tarray, garray)
     
   contains
@@ -368,107 +390,8 @@ contains
 
   ! ----------------------------------------------------------------
 
-  SUBROUTINE cell_area_line (nest, area)
-    
-    use map_utils,        only : ij_to_latlon
-    use LDT_constantsMod, ONLY : radius => LDT_CONST_REARTH, pi => LDT_CONST_PI
-    
-    implicit none
-    
-    integer, intent (in)                    :: nest
-    real, dimension (:,:,:), intent (inout) :: area
-    integer                                 :: i,j, s
-    real, parameter                         :: nstrips = 100.
-    real                                    :: lat_ll, lat_ur , lat_ul, lat_lr
-    real                                    :: lon_ll, lon_ur , lon_ul, lon_lr
-    real                                    :: c, r, d2r, dx, dyl, dyu, w_edge, e_edge, lat1, lat2
+  SUBROUTINE cell_area (nest, area)
 
-    d2r     = PI/180.
-    area    = 0.
-    
-    do j = 1, LDT_rc%lnr(nest)
-       do i = 1, LDT_rc%lnc(nest)
-           
-          r = float (j)
-          c = float (i)
-          
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r-0.5, lat_ll, lon_ll) ! SW corner
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r+0.5, lat_ul, lon_ul) ! NW corner          
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r+0.5, lat_ur, lon_ur) ! NE corner         
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r-0.5, lat_lr, lon_lr) ! SE corner
-
-          w_edge = (lon_ll + lon_ul) / 2.
-          e_edge = (lon_lr + lon_ur) / 2.
-          
-          dyl= (lat_lr - lat_ll) / nstrips
-          dyu= (lat_ur - lat_ul) / nstrips
-          dx = (e_edge - w_edge) / nstrips
-
-          do s = 1, nstrips
-             
-             lat1 = lat_ll + (s-1)*dyl + dyl/2.
-             lat2 = lat_ul + (s-1)*dyu + dyu/2.
-             area (i,j,1) = area (i,j,1) +  (sin(d2r* lat2) - sin(d2r*lat1))*radius*radius*dx*d2r/1000./1000. ! [km2]
-             
-          end do
-                    
-       end do
-    end do
-    
-  END SUBROUTINE cell_area_line
-
-  ! ----------------------------------------------------------------
-
-  SUBROUTINE cell_area_curve (nest, area)
-    
-    use map_utils,        only : ij_to_latlon
-    use LDT_constantsMod, ONLY : radius => LDT_CONST_REARTH, pi => LDT_CONST_PI
-    
-    implicit none
-    
-    integer, intent (in)                    :: nest
-    real, dimension (:,:,:), intent (inout) :: area
-    integer                                 :: i,j, s
-    real, parameter                         :: nstrips = 100.
-    real                                    :: lat_ll, lat_ur , lat_ul, lat_lr
-    real                                    :: lon_ll, lon_ur , lon_ul, lon_lr
-    real                                    :: c, r, d2r, dx, dw, w_edge, e_edge, lat1, lat2
-
-    d2r     = PI/180.
-    area    = 0.
-    
-    do j = 1, LDT_rc%lnr(nest)
-       do i = 1, LDT_rc%lnc(nest)
-           
-          r = float (j)
-          c = float (i)
-          
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r-0.5, lat_ll, lon_ll) ! SW corner
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r+0.5, lat_ul, lon_ul) ! NW corner          
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r+0.5, lat_ur, lon_ur) ! NE corner         
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r-0.5, lat_lr, lon_lr) ! SE corner
-
-          w_edge = (lon_ll + lon_ul) / 2.
-          e_edge = (lon_lr + lon_ur) / 2.
-          
-          dx = (e_edge - w_edge) / nstrips
-          dw = 1./nstrips
-          do s = 1, nstrips
-             call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5 + dw/2. + (s-1)*dw, r-0.5, lat1, lon_ll)
-             call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5 + dw/2. + (s-1)*dw, r+0.5, lat2, lon_ll)
-             area (i,j,1) = area (i,j,1) +  (sin(d2r* lat2) - sin(d2r*lat1))*radius*radius*dx*d2r/1000./1000. ! [km2]
-             
-          end do
-                    
-       end do
-    end do
-    
-  END SUBROUTINE cell_area_curve
-
-  ! ----------------------------------------------------------------
-
-  SUBROUTINE cell_area_girard (nest, area)
-    
     use map_utils,        only : ij_to_latlon
     use LDT_constantsMod, ONLY : radius => LDT_CONST_REARTH, pi => LDT_CONST_PI
     
@@ -478,9 +401,8 @@ contains
     real, dimension (:,:,:), intent (inout) :: area
     integer                                 :: i,j
     real                                    :: lat_ll, lat_ur , lat_ul, lat_lr, c, r
-    real                                    :: lon_ll, lon_ur , lon_ul, lon_lr, lat, lon
-    real                                    :: ab, bc, cd, da, ac  ! side lengths
-    
+    real                                    :: lon_ll, lon_ur , lon_ul, lon_lr
+
     area    = 0.
 
     do j = 1, LDT_rc%lnr(nest)
@@ -488,95 +410,110 @@ contains
            
           r = float (j)
           c = float (i)
-             
-          if(trim(LDT_rc%lis_map_proj(nest)) == 'latlon') then
-             
-             call ij_to_latlon(LDT_domain(nest)%ldtproj,c , r, lat, lon) ! center
-             area (i,j,1) = radius * radius * &
-                  (sin(d2r(lat + 0.5*LDT_rc%gridDesc(nest,10))) - &
-                  sin(d2r(lat - 0.5*LDT_rc%gridDesc(nest,10))))*  &
-                  (d2r(LDT_rc%gridDesc(nest,9)))/1000./1000.    ! [km2]
-             
-          else
 
-             
-             call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r-0.5, lat_ll, lon_ll) ! SW corner (A)
-             call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r+0.5, lat_ul, lon_ul) ! NW corner (B)         
-             call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r+0.5, lat_ur, lon_ur) ! NE corner (C)        
-             call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r-0.5, lat_lr, lon_lr) ! SE corner (D)
-             
-             ! side lengths
-             ab = haversine(d2r(lat_ll), d2r(lon_ll), d2r(lat_ul), d2r(lon_ul))
-             bc = haversine(d2r(lat_ul), d2r(lon_ul), d2r(lat_ur), d2r(lon_ur))
-             cd = haversine(d2r(lat_ur), d2r(lon_ur), d2r(lat_lr), d2r(lon_lr))
-             da = haversine(d2r(lat_ll), d2r(lon_ll), d2r(lat_lr), d2r(lon_lr))
-             ac = haversine(d2r(lat_ll), d2r(lon_ll), d2r(lat_ur), d2r(lon_ur))
-             
-             ! area = ABC area + ACD area
-             
-             area (i,j,1) = radius * radius * &
-                  (triangle_area (ac, ab, bc) + triangle_area(ac, cd, da))/1000./1000. ! [km2]
-          endif
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r-0.5, lat_ll, lon_ll) ! SW corner (A)
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r+0.5, lat_ul, lon_ul) ! NW corner (B)         
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r+0.5, lat_ur, lon_ur) ! NE corner (C)        
+          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r-0.5, lat_lr, lon_lr) ! SE corner (D)
+          area (i,j,1) = 4.*pi*radius*radius* areaint((/lat_ll, lat_ul, lat_ur, lat_lr/), (/lon_ll, lon_ul, lon_ur, lon_lr/))/1000./1000.
           
        end do
     end do
-
+    
   contains
 
-    ! *****************************************************************************
+    ! ----------------------------------------------------------------
     
-    real function haversine(deglat1,deglon1,deglat2,deglon2)
-      ! great circle distance 
-      real,intent(in) :: deglat1,deglon1,deglat2,deglon2
-      real            :: a,c, dlat,dlon,lat1,lat2
-        
-      dlat = deglat2-deglat1
-      dlon = deglon2-deglon1
-      lat1 = deglat1
-      lat2 = deglat2     
-      a = (sin(dlat/2))**2 + cos(lat1)*cos(lat2)*(sin(dlon/2))**2
-      if(a>=0. .and. a<=1.) then
-         c = 2*atan2(sqrt(a),sqrt(1-a))
-         haversine = c ! [per unit radius]
-      else
-         haversine = 1.e20
-      endif
-    end function haversine
-
-
-    ! *****************************************************************************
-    
-    function triangle_area (c, a, b) result(ABC_area)
+    real FUNCTION areaint (lat, lon)
+      
+      
+      ! simplified from Matlab's areaint.m to compute area of a single polygon
+      ! AREAINT Surface area of polygon on sphere 
+      !   A = AREAINT(LAT,LON) calculates the spherical surface area of the
+      !   polygon specified by the input vectors LAT, LON.  LAT and LON are in
+      !   degrees.  The calculation uses a line integral approach.  The output,
+      !   A, is the surface area fraction covered by the polygon on a unit
+      !   sphere.
+      
+      implicit none
+      real, intent(in), dimension(:)    :: lat, lon
+      real, allocatable , dimension (:) :: latc, lonc, colat, az, integrands 
+      real                              :: lat0,lon0,dlat,dlon,a,deltas,daz,colat2
+      integer                           :: n, i
+      
+      n = size (lat) + 1
+      allocate (latc (1:n))
+      allocate (lonc (1:n))
+      allocate (colat(1:n))
+      allocate (az   (1:n))
+      
+      latc(1:n-1) = lat
+      lonc(1:n-1) = lon
+      latc(n)     = lat(1)
+      lonc(n)     = lon(1)
+      lat0 = 0.
+      lon0 = 0.
+      
+      ! greatcircle distance, and greatcircle azimuth wrt 0.,0 (Matlab's distance.m)
+      ! ----------------------------------------------------------------------------
+      
+      do i = 1,n
+       
+         latc(i) = d2r(latc(i))
+         lonc(i) = d2r(lonc(i))
+         dlat     = latc(i) - lat0
+         dlon     = lonc(i) - lon0
          
-      ! degrees to radians
-      real,intent(in) :: c, a, b
-      real :: ACB, ABC_area
+         ! haversine
+         a        = (sin(dlat/2.))**2 + cos(lat0)*cos(latc(i))*(sin(dlon/2.))**2
+         if(a < 0.) a =0.
+         if(a > 1.) a =1.
+         
+         colat(i) = 2.*atan2(sqrt(a),sqrt(1.-a))         
+         az(i)    = atan2(cos(latc(i)) * sin(lonc(i)-lon0),  &
+              cos(lat0) * sin(latc(i)) - sin(lat0) * cos(latc(i))* cos(lonc(i)-lon0))
+         ! wrap az to the range 0-2pi
+         az(i)    = az(i) - 2.*pi*floor(az(i)/2./pi)
+         
+      end do
+      
+      n = n -1
+      allocate (integrands (1:n))
+      
+      do i = 1, n
+         
+         ! Calculate step sizes
+         daz = az(i+1) - az(i)
+         ! wrap to -pi <= daz <=pi
+         daz = daz - 2.*pi*floor((daz+pi)/2./pi) 
+         
+         ! Determine average surface distance for each step
+         deltas = (colat (i+1) - colat (i))/2.
+         colat2 = colat(i) + deltas
+         
+         ! Integral over azimuth is 1-cos(colatitudes)
+         integrands (i) = (1. - cos(colat2)) * daz
+      end do
+      
+      areaint = abs (sum (integrands))/4./pi
+      areaint = MIN (areaint, 1. - areaint)
+      deallocate (integrands, latc, lonc, colat, az)
+      
+    end FUNCTION areaint
 
-      ! The spherical law of cosines per unit radius
-      ACB =  acos ((cos(c) - cos(a) * cos(b)) / sin(a) / sin (b))
-
-      ! Area = spherical excess per unit radius
-      ABC_area = ABS(2.* atan( tan(a/2.)*tan(b/2.)*sin(ACB) / &
-           (1. + tan(a/2.)*tan(b/2.)*cos(ACB))))
-
-    end function triangle_area
-
-    ! *****************************************************************************
+    ! ----------------------------------------------------------------
     
     function d2r (degree) result(rad)
-         
+      
       ! degrees to radians
       real,intent(in) :: degree
       real :: rad
-   
-      rad = degree*PI/180.
-   
-    end function d2r
       
-  END SUBROUTINE cell_area_girard
-
-  ! ----------------------------------------------------------------
-  
+      rad = degree*PI/180.
+      
+    end function d2r
+  end SUBROUTINE cell_area
+   
 end module MMF_groundwater
 
   
