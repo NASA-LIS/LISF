@@ -47,9 +47,9 @@ NWPVARS=(gage rh2m spd10m t2m)
 SATVARS=(cmorph geoprecip imerg ssmi)
 
 # Paths on local system
-SCRIPTDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/afwa/retune_bratseth/scripts
-CFGDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/afwa/retune_bratseth/cfgs
-BINDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/afwa/retune_bratseth/src
+SCRIPTDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/usaf/retune_bratseth/scripts
+CFGDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/usaf/retune_bratseth/cfgs
+BINDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/usaf/retune_bratseth/src
 
 # Get the command line arguments to specify the training period.
 if [ -z "$1" ] ; then
