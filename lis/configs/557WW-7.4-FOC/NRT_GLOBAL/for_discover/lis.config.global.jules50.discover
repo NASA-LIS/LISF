@@ -128,9 +128,9 @@ SMOPS ASCAT use realtime data:                                  1
 SMOPS ASCAT soil moisture use scaled standard deviation model:  0
 SMOPS ASCAT CDF read option:                                    1
 
-SMAP(NASA) soil moisture data directory:              ./input/RS_DATA/SMAP/SPL3SMP.006
+SMAP(NASA) soil moisture data directory:              ./input/RS_DATA/SMAP/SPL3SMP.007
 SMAP(NASA) soil moisture data designation:            SPL3SMP
-SMAP(NASA) soil moisture Composite Release ID:        R16
+SMAP(NASA) soil moisture Composite Release ID:        R17
 SMAP(NASA) model CDF file:                            ./cdf/jules50_cdf_200obs.nc
 SMAP(NASA) observation CDF file:                      ./cdf/SMAP_cdf_10km_30obs.nc
 SMAP(NASA) soil moisture number of bins in the CDF:             100
@@ -323,8 +323,8 @@ AGRMET GFS SPD10M station observation error variance:                2.48
 
 # Radiation settings.  Uses WWMCA cloud data.  Use WWMCA_LE from
 # 20071101 to 2012032700, use NONE from 2012032700 to 2012040912,
-# use WWMCA beginning 2012040912.
-AGRMET cloud data directory:               WWMCA           # WWMCA_LE, NONE, or WWMCA
+# use WWMCA beginning 2012040912.  Use WWMCA_GRIB for operations.
+AGRMET cloud data directory:               WWMCA           # WWMCA_LE, NONE, WWMCA, or WWMCA_GRIB
 # Use WWMCA GRIB1 files beginning 12Z 4 Jul 2020
 AGRMET WWMCA GRIB1 read option:            1
 AGRMET snow distribution shape parameter:  2.6
