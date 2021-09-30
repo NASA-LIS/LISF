@@ -107,7 +107,7 @@ In your home directory on your local system, create a file named .gitconfig cont
 === Step 1. Set up SSH Access to GitHub
 anchor:sec_step1[Step 1. Set up SSH access to GitHub ]
 
-On link:https://github.blog/2020-12-15-token-authentication-requirements-for-git-operations/[August 13, 2021] GitHub will be disabling password authentication in favor of more secure alternatives: SSH keys and Personal Access Tokens. *All users* must transition to one of these options to continue to connect to GitHub using `git` (i.e., to clone, push, and pull). We recommend using link:https://www.ssh.com/ssh/protocol/#how-does-the-ssh-protocol-work[SSH keys] and describe how to set up and use them with `git` below.
+On link:https://github.blog/2020-12-15-token-authentication-requirements-for-git-operations/[August 13, 2021] GitHub disabled password authentication in favor of more secure alternatives: SSH keys and Personal Access Tokens. *All users* must use one of these options to continue to connect to GitHub using `git` (i.e., to clone, push, and pull). We recommend using link:https://www.ssh.com/ssh/protocol/#how-does-the-ssh-protocol-work[SSH keys] and describe how to set up and use them with `git` below.
 
 IMPORTANT: This process must be completed on each computer you use to interact with GitHub via the command-line (personal computer, Discover, etc.).
 
