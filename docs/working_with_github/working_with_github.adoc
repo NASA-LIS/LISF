@@ -5,7 +5,7 @@
 :sectnums:
 
 :github: https://github.com/
-:github_training: https://www.youtube.com/channel/UCP7RrmoueENv9TZts3HXXtw
+:github_training: https://www.youtube.com/githubguides
 :github_hellowold: https://guides.github.com/activities/hello-world/
 :nasalis: https://github.com/NASA-LIS/
 :nasalis_test: https://github.com/NASA-LIS/lisf-test
@@ -53,15 +53,15 @@ Just replace `{nasalis_ssh}{lisf_git}` and `{lisf_git}` with `{nasalis_ssh}{lisf
 
 === RTFM — Review the fine material
 
-GitHub ({github}) has produced a simple "Hello World" guide at {github_hellowold}.
+link:{github:}[GitHub] has produced a simple "Hello World" guide at {github_hellowold}.
 
-GitHub has produced a series of tutorials to introduce you to git and GitHub.  Please take some time to watch them at {github_training}.  There are 12 videos each approximately 5 minutes long.
+GitHub has produced a series of tutorials to introduce you to git and GitHub at {github_training} (see the _Get Up and Running_ playlist).  Please take some time to watch them.
 
 The rest of this document assumes that you have some working knowledge of git by reading/watching the above material.
 
 === Register for an account on GitHub
 
-Lab members, go to GitHub ({github}) and register for an account.
+Lab members, go to link:{github}[GitHub] and register for an account.
 
 When registering, use your *NASA* email address.  For your username, please try to use your NASA AUID/discover username.  If that is not possible, then use your best judgment to pick a suitable username.
 
