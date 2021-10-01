@@ -65,6 +65,7 @@ contains
     use ANSASNWDsnow_obsMod,       only : ANSASNWDsnow_obsInit
     use GCOMW_AMSR2L3snd_obsMod,   only : GCOMW_AMSR2L3snd_obsInit
     use NASASMAPsm_obsMod,         only : NASASMAPsm_obsinit
+    use SMOSNRTNNL2sm_obsMod,      only : SMOSNRTNNL2sm_obsinit   !kyh20210105
     use NASASMAPvod_obsMod,        only : NASASMAPvod_obsinit
     use GLASSlai_obsMod,           only : GLASSlai_obsinit
     use LPRMvod_obsMod,            only : LPRMvod_obsinit
@@ -90,6 +91,7 @@ contains
     external readANSASNWDsnowObs
     external readGCOMW_AMSR2L3sndObs
     external readNASASMAPsmObs
+    external readSMOSNRTNNL2smObs      !kyh20210105
     external readNASASMAPvodObs
     external readGLASSlaiObs
     external readLPRMvodObs
@@ -192,6 +194,13 @@ contains
          NASASMAPsm_obsinit)
     call registerdaobsread(trim(LDT_NASASMAPsmobsId)//char(0),&
          readNASASMAPsmObs)
+
+    !--------kyh20210105
+    call registerdaobssetup(trim(LDT_SMOSNRTNNsmobsId)//char(0),&
+         SMOSNRTNNL2sm_obsinit)
+    call registerdaobsread(trim(LDT_SMOSNRTNNsmobsId)//char(0),&
+         readSMOSNRTNNL2smObs)
+    !--------kyh20210105
 
     call registerdaobssetup(trim(LDT_NASASMAPvodobsId)//char(0),&
          NASASMAPvod_obsinit)

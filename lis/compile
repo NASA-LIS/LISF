@@ -64,7 +64,7 @@ dashes="-------------------------------------------------------------------"
 echo $dashes
 
 # Sanity check
-if [ "$skip_lis" == "YES" ] ; then
+if [ "$skip_lis" = "YES" ] ; then
     if [ "$compile_autotune" != "YES" ] ; then
         echo "[ERR] Using -n without -u"
         echo "Nothing will be compiled!"

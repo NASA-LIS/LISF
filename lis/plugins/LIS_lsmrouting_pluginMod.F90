@@ -272,7 +272,6 @@ subroutine LIS_lsmrouting_plugin
    call registerlsmroutinggetsws(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_HYMAP2routerId)//char(0), &
         noahmp401_getsws_hymap2)
-
 #endif
 
 #if ( defined SM_RUC_3_7 )

@@ -138,9 +138,6 @@ subroutine read_gefs_operational(n, m, findex, order, filename, ferror)
         
            tair=varfield
 
-           call grib_release(igrib,rc)
-           call LIS_verify(rc,'error in grib_release in read_gefs_operational')
-
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
                  if(LIS_domain(n)%gindex(c,r).ne.-1) then 
@@ -171,9 +168,7 @@ subroutine read_gefs_operational(n, m, findex, order, filename, ferror)
            call interp_gefs(n, findex, gefs_grib_data, pcp_flag, varfield )
         
            relhum = varfield
-
-           call grib_release(igrib,rc)
-           call LIS_verify(rc,'error in grib_release in read_gefs_operational')           
+          
 
         elseif(shortName.eq."dswrf") then !shortwave radiation
            gefs_grib_data = LIS_rc%udef
@@ -187,9 +182,7 @@ subroutine read_gefs_operational(n, m, findex, order, filename, ferror)
            
            ! Spatially interp GEFS forcing field to LIS domain:
            call interp_gefs(n, findex, gefs_grib_data, pcp_flag, varfield )
-         
-           call grib_release(igrib,rc)
-           call LIS_verify(rc,'error in grib_release in read_gefs_operational')           
+                   
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
                  if(LIS_domain(n)%gindex(c,r).ne.-1) then 
@@ -218,8 +211,7 @@ subroutine read_gefs_operational(n, m, findex, order, filename, ferror)
            ! Spatially interp GEFS forcing field to LIS domain:
            call interp_gefs(n, findex, gefs_grib_data, pcp_flag, varfield )
         
-           call grib_release(igrib,rc)
-           call LIS_verify(rc,'error in grib_release in read_gefs_operational')           
+          
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
                  if(LIS_domain(n)%gindex(c,r).ne.-1) then 
@@ -248,9 +240,7 @@ subroutine read_gefs_operational(n, m, findex, order, filename, ferror)
            
            ! Spatially interp GEFS forcing field to LIS domain:
            call interp_gefs(n, findex, gefs_grib_data, pcp_flag, varfield )
-        
-           call grib_release(igrib,rc)
-           call LIS_verify(rc,'error in grib_release in read_gefs_operational')           
+                  
 
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
@@ -280,9 +270,7 @@ subroutine read_gefs_operational(n, m, findex, order, filename, ferror)
            
            ! Spatially interp GEFS forcing field to LIS domain:
            call interp_gefs(n, findex, gefs_grib_data, pcp_flag, varfield )
-        
-           call grib_release(igrib,rc)
-           call LIS_verify(rc,'error in grib_release in read_gefs_operational')           
+                  
           
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
@@ -314,8 +302,7 @@ subroutine read_gefs_operational(n, m, findex, order, filename, ferror)
         
            sp = varfield
 
-           call grib_release(igrib,rc)
-           call LIS_verify(rc,'error in grib_release in read_gefs_operational')           
+          
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
                  if(LIS_domain(n)%gindex(c,r).ne.-1) then 
@@ -345,9 +332,7 @@ subroutine read_gefs_operational(n, m, findex, order, filename, ferror)
            pcp_flag = .true.
            ! Spatially interp GEFS forcing field to LIS domain:
            call interp_gefs(n, findex, gefs_grib_data, pcp_flag, varfield )
-        
-           call grib_release(igrib,rc)
-           call LIS_verify(rc,'error in grib_release in read_gefs_operational')           
+                  
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
                  if(LIS_domain(n)%gindex(c,r).ne.-1) then 
@@ -365,6 +350,8 @@ subroutine read_gefs_operational(n, m, findex, order, filename, ferror)
            enddo
 
         endif
+        call grib_release(igrib,rc)
+        call LIS_verify(rc,'error in grib_release in read_gefs_operational') 
      enddo
 
 !  convert relative humidity to specific humidity using Bolton (1980)
@@ -425,5 +412,5 @@ subroutine read_gefs_operational(n, m, findex, order, filename, ferror)
   endif
 
 #endif
-
+  deallocate( gefs_grib_data)
 end subroutine read_gefs_operational
