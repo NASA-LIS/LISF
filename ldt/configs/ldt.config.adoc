@@ -156,7 +156,6 @@ endif::devonly[]
 |"`CPC CMORPH`" |CMORPH precipitation fields
 |"`ECMWF`" |ECMWF near-realtime analysis
 |"`GDAS`" |GDAS near-realtime analysis
-|"`GEOS`" |NASA-GEOS (v3-5) forcing analysis
 |"`GEOS5 forecast`" |GEOS v5 forecast fields
 |"`GFS`" |NCEP-GFS forecast fields
 |"`GLDAS`" |Coarse-scale GLDAS-1 forcing
@@ -242,7 +241,7 @@ Met spatial transform methods:     bilinear
 |"`lapse-rate`" |Use lapse rate correction for forcing
 |===
 
-Current meteorological forcing datasets supported for applying this lapse-rate adjustment to the temperature, humidity, pressure and downward longwave fields, include: NLDAS2, NAM242, GDAS, PRINCETON, ECMWF, MERRA2, and the new WRFoutv2 and WRF AK forcing datasets.  Future forcing dataset options will include: GEOS, GLDAS, GFS, and possible others.
+Current meteorological forcing datasets supported for applying this lapse-rate adjustment to the temperature, humidity, pressure and downward longwave fields, include: NLDAS2, NAM242, GDAS, PRINCETON, ECMWF, MERRA2, and the new WRFoutv2 and WRF AK forcing datasets.  Future forcing dataset options will include: GLDAS, GFS, and possible others.
 
 ECMWF and GDAS forcing types include several terrain height maps and not just one overall, either due to change in versions or gridcell size, respective.
 
