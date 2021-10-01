@@ -506,6 +506,12 @@ module NoahMP401_module
         real :: rhmin
 
         type(noahmp_parameters) :: param
+
+        ! For WRF-HYDRO
+	real               :: sfcheadrt
+	real               :: infxs1rt
+	real               :: soldrain1rt
+ 
     end type noahmp401dec
 
 end module NoahMP401_module
