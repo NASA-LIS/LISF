@@ -24,20 +24,16 @@
 | PPTEnsFcst                             | On
 | GDAS                                   | On
 | GDAS T1534                             | On
-| GEOS                                   | On
 | GEOS5 forecast                         | On
 | GEFS forecast                          | On
 | ECMWF                                  | On
 | GSWP1                                  | On
 | GSWP2                                  | On
-| ECMWF reanalysis                       | On
 | AGRMET                                 | Off
 | PRINCETON                              | On
-| NLDAS1                                 | On
 | NLDAS2                                 | On
 | GLDAS                                  | On
 | GFS                                    | On
-| MERRA-Land                             | On
 | MERRA2                                 | On
 | ERA5                                   | On
 | CMAP                                   | On
@@ -51,28 +47,16 @@
 | CPC STAGEII                            | On
 | CPC STAGEIV                            | On
 | NARR                                   | On
-| ALMIPII forcing                        | On
 | RFE2(daily)                            | On
-| CEOP                                   | On
 | SCAN                                   | On
-| ARMS                                   | On
-| GDAS(LSWG)                             | On
-| MET RDHM.3.5.6                         | On
-| GDAS(3d)                               | On
 | AGRMET radiation (polar stereographic) | On
-| AGRMET radiation (latlon)              | On
 | Bondville                              | On
-| FASST test                             | On
 | TRIGRS test                            | Off
 | SNOTEL                                 | On
-| COOP                                   | On
-| Rhone AGG                              | On
 | RFE2(GDAS bias-corrected)              | On
 | VIC processed forcing                  | Off
 | PALS station forcing                   | On
-| PILDAS                                 | On
 | PET USGS                               | On
-| CaPA                                   | On
 | NAM242                                 | On
 | WRFout                                 | On
 | AWAP                                   | On

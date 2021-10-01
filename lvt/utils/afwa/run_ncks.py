@@ -45,6 +45,9 @@
 # 25 Sep 2020:  Eric Kemp (SSAI), tweaked comments for Python version. Also
 #               added path for NCKS on Koehr.
 # 14 Oct 2020:  Eric Kemp (SSAI), updated NCKS path on Discover.
+# 05 Feb 2021:  Eric Kemp (SSAI), added JULES multi-layer snow variables.
+# 23 Mar 2021:  Eric Kemp (SSAI), revised JULES multi-layer snow variables
+#               for PS41 physics.
 #
 #------------------------------------------------------------------------------
 
@@ -152,11 +155,27 @@ _LVT_JULES_INVOCATIONS_3HR = ['Albedo_tavg',
                               'SoilTemp_inst', 'SoilTemp_tavg',
                               'Tair_f_inst', 'Tair_f_max',
                               'Tair_f_tavg',
-                              'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
+                              'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg',
+                              'ActSnowNL_inst', 'GrndSnow_inst',
+                              'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
+                              'LayerSnowGrain_inst', 'SnowDensity_inst',
+                              'SnowGrain_inst', 'SnowIce_inst',
+                              'SnowLiq_inst',
+                              'SnowTProf_inst', 'SurftSnow_inst']
 
 # EMK for RECON
-#_LVT_JULES_INVOCATIONS_3HR = ["SWE_inst", "SnowDepth_inst", "SoilMoist_inst",
-#        "SoilTemp_inst", "AvgSurfT_inst"]
+_LVT_JULES_INVOCATIONS_3HR = ["AvgSurfT_inst",
+                              "SoilMoist_inst","SoilTemp_inst",
+                              "PS41Snow_inst"]
+
+# JULES PS41 snow variables are in a unique netCDF file.
+_LVT_JULES_PS41_SNOW_3HR = ["SnowDepth_inst", "SWE_inst",
+                            'ActSnowNL_inst', 'GrndSnow_inst',
+                            'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
+                            'LayerSnowGrain_inst', 'SnowDensity_inst',
+                            'SnowGrain_inst', 'SnowIce_inst',
+                            'SnowLiq_inst',
+                            'SnowTProf_inst', 'SurftSnow_inst']
 
 _LVT_JULES_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
                                'RHMin_inst',
@@ -359,7 +378,7 @@ def get_nc_mean_files(validdt, lsm, period):
 
     # Collect input files
     for invocation in invocation_list:
-        # FIXME -- Let user configure output directory prefix
+
         path = "STATS.%s.%shr" % (invocation, period)
 
         # FIXME -- Let user configure file name
@@ -509,7 +528,13 @@ def merge_nc_files(lsm, ncks, period, nc_infiles,
 
     invocations = _INVOCATIONS[key][1:]
     for invocation in invocations:
-        variables = _LIS_VARIABLES[key][invocation]
+
+        # Special handing of JULES PS41 snow variables
+        if invocation == "PS41Snow_inst":
+            variables = _LVT_JULES_PS41_SNOW_3HR[:]
+        else:
+            variables = _LIS_VARIABLES[key][invocation]
+
         for variable in variables:
             cmd = "%s -A -v %s %s %s" \
                 % (ncks, variable, nc_infiles[invocation], nc_outfile)

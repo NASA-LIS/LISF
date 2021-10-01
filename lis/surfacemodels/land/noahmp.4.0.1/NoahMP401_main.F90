@@ -224,6 +224,7 @@ subroutine NoahMP401_main(n)
     real                 :: tmp_irb                ! bare net LW radiation [+ to atm] [W/m2]
     real                 :: tmp_tr                 ! transpiration [ to atm] [W/m2]
     real                 :: tmp_evc                ! canopy evaporation heat [to atm] [W/m2]
+    real                 :: tmp_fgev_pet, tmp_fcev_pet,tmp_fctr_pet
     real                 :: tmp_chleaf             ! leaf exchange coefficient [-]
     real                 :: tmp_chuc               ! under canopy exchange coefficient [-]
     real                 :: tmp_chv2               ! veg 2m exchange coefficient [-]
@@ -238,10 +239,14 @@ subroutine NoahMP401_main(n)
     real                 :: TWS_out                ! terrestrial water storage [mm]
     ! Code added by David Mocko 04/25/2019
     real                 :: startsm, startswe, startint, startgw, endsm
+    real                 :: tmp_sfcheadrt          ! extra input  for WRF-HYDRO [m]
+    real                 :: tmp_infxs1rt           ! extra output for WRF-HYDRO [m]
+    real                 :: tmp_soldrain1rt        ! extra output for WRF-HYDRO [m]
 
     ! EMK for 557WW
     real :: tmp_q2sat, tmp_es
     character*3 :: fnest
+    REAL, PARAMETER:: LVH2O = 2.501000E+6 ! Latent heat for evapo for water  
 
     allocate( tmp_sldpth( NOAHMP401_struc(n)%nsoil ) )
     allocate( tmp_shdfac_monthly( 12 ) )
@@ -294,10 +299,18 @@ subroutine NoahMP401_main(n)
             tmp_lwdown     = NOAHMP401_struc(n)%noahmp401(t)%lwdown / NOAHMP401_struc(n)%forc_count
 
             ! prcp: total precipitation (rainfall+snowfall)
-            ! Both NoahMP-3.6.1 and NoahMP-4.0.1 requires total precipitation as forcing input.
-            ! In LIS/NoahMP-3.6.1, the input forcing is total precipitation [mm], but in
-            ! LIS/NoahMP-4.0.1, the forcing data provides precipitation rate [mm/s] !!!
-            tmp_prcp       = dt * (NOAHMP401_struc(n)%noahmp401(t)%prcp   / NOAHMP401_struc(n)%forc_count)
+            ! Both Noah-MP-3.6 and Noah-MP-4.0.1 require total precipitation as forcing input.
+            ! In Noah-MP-3.6, the forcing is required to be precipitation rate [kg m-2 sec-1].
+            ! In Noah-MP-4.0.1, the forcing is required to be precipitation amount [kg m-2].
+
+            ! T. Lahmers: Correct total precip for cases when model time step > forcing timestep. 
+            ! Edit suggested by D. Mocko and K. Arsenault
+            if (NOAHMP401_struc(n)%ts > LIS_rc%ts) then
+                tmp_dt         = NOAHMP401_struc(n)%ts
+                tmp_prcp       = tmp_dt * (NOAHMP401_struc(n)%noahmp401(t)%prcp   / NOAHMP401_struc(n)%forc_count)
+            else
+                tmp_prcp       = dt * (NOAHMP401_struc(n)%noahmp401(t)%prcp   / NOAHMP401_struc(n)%forc_count)
+            endif
 
             ! check validity of tair
             if(tmp_tair .eq. LIS_rc%udef) then
@@ -485,6 +498,7 @@ subroutine NoahMP401_main(n)
             tmp_grain           = NOAHMP401_struc(n)%noahmp401(t)%grain
             tmp_gdd             = NOAHMP401_struc(n)%noahmp401(t)%gdd
             tmp_pgs             = NOAHMP401_struc(n)%noahmp401(t)%pgs
+            tmp_sfcheadrt       = NoahMP401_struc(n)%noahmp401(t)%sfcheadrt
 
 ! Calculate water storages at start of timestep
             startsm = 0.0
@@ -497,7 +511,6 @@ subroutine NoahMP401_main(n)
             startgw  = tmp_wa
 
             ! call model physics
-
             call noahmp_driver_401(n                     , & ! in    - nest id [-]
                                    tmp_ttile             , & ! in    - tile id [-]
                                    tmp_itimestep         , & ! in    - timestep number [-]
@@ -659,12 +672,16 @@ subroutine NoahMP401_main(n)
                                    tmp_irb               , & ! out   - bare net LW radiation [+ to atm] [W/m2]
                                    tmp_tr                , & ! out   - transpiration [ to atm] [W/m2]
                                    tmp_evc               , & ! out   - canopy evaporation heat [to atm] [W/m2]
+                                   tmp_fgev_pet, tmp_fcev_pet, tmp_fctr_pet, & !PET code from Sujay 
                                    tmp_chleaf            , & ! out   - leaf exchange coefficient [-]
                                    tmp_chuc              , & ! out   - under canopy exchange coefficient [-]
                                    tmp_chv2              , & ! out   - veg 2m exchange coefficient [-]
                                    tmp_chb2              , & ! out   - bare 2m exchange coefficient [-]
                                    tmp_relsmc            , &
-                                   NOAHMP401_struc(n)%noahmp401(t)%param)   ! out   - relative soil moisture [-]
+                                   NOAHMP401_struc(n)%noahmp401(t)%param, & ! out   - relative soil moisture [-]
+                                   tmp_sfcheadrt         , & 
+                                   tmp_infxs1rt          , &
+                                   tmp_soldrain1rt    ) ! out   - extra output for WRF-HYDRO [m]
 
             ! save state variables from local variables to global variables
             NOAHMP401_struc(n)%noahmp401(t)%sfcrunoff       = tmp_sfcrunoff
@@ -776,6 +793,8 @@ subroutine NoahMP401_main(n)
             NOAHMP401_struc(n)%noahmp401(t)%chuc      = tmp_chuc
             NOAHMP401_struc(n)%noahmp401(t)%chv2      = tmp_chv2
             NOAHMP401_struc(n)%noahmp401(t)%chb2      = tmp_chb2
+            NOAHMP401_struc(n)%noahmp401(t)%infxs1rt  = tmp_infxs1rt
+            NOAHMP401_struc(n)%noahmp401(t)%soldrain1rt  = tmp_soldrain1rt
 
             ! EMK Update RHMin for 557WW
             if (tmp_tair .lt. &
@@ -1185,6 +1204,13 @@ subroutine NoahMP401_main(n)
             ![ 88] output variable: evap (unit=kg/m2/s). ***  total evapotranspiration
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_EVAP, value = NOAHMP401_struc(n)%noahmp401(t)%qfx, &
                                               vlevel=1, unit="kg m-2 s-1", direction="UP", surface_type = LIS_rc%lsm_index)
+            !PET
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_POTEVAP, &
+                 value=(tmp_fgev_pet+tmp_fcev_pet+tmp_fctr_pet), vlevel=1,unit="W m-2",&
+                  direction="UP",surface_type=LIS_rc%lsm_index)
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_POTEVAP, &
+                 value=(tmp_fgev_pet+tmp_fcev_pet+tmp_fctr_pet)/LVH2O, vlevel=1,unit="kg m-2 s-1",&
+                  direction="UP",surface_type=LIS_rc%lsm_index)
 
             ![ 89] output variable: rainf (unit=kg/m2). ***  precipitation rate
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RAINF, value = NOAHMP401_struc(n)%noahmp401(t)%rainf, &

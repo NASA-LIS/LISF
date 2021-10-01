@@ -58,7 +58,7 @@ proc ModulesHelp { } {
     puts stderr "\tThe following modules are loaded:"
     puts stderr "\t\tcomp/gcc/9.2.0"
     puts stderr "\t\tcomp/intel/19.1.3.304"
-    puts stderr "\t\tmpi/impi/20.0.0.166"
+    puts stderr "\t\tmpi/impi/19.1.3.304"
     puts stderr "\t\ttview/2019.0.4"
     puts stderr "\t\tgit/2.24.0"
     puts stderr ""
@@ -77,7 +77,7 @@ set modmode     [module-info mode]
 
 module load comp/gcc/9.2.0
 module load comp/intel/19.1.3.304
-module load mpi/impi/20.0.0.166
+module load mpi/impi/19.1.3.304
 
 module load tview/2019.0.4
 module load git/2.24.0
@@ -91,8 +91,8 @@ set   def_lis_netcdf      /discover/nobackup/projects/lis/libs/netcdf/4.5.0_inte
 set   def_lis_hdf4        /discover/nobackup/projects/lis/libs/hdf4/4.2.13_intel-19.1.0.166_sles12.3
 set   def_lis_hdfeos      /discover/nobackup/projects/lis/libs/hdfeos2/2.19v1.00_intel-19.1.0.166_sles12.3
 set   def_lis_hdf5        /discover/nobackup/projects/lis/libs/hdf5/1.10.1_intel-19.1.0.166_sles12.3
-set   def_lis_modesmf     /discover/nobackup/projects/lis/libs/esmf/7.1.0r_intel-19.1.0.166_impi-20.0.0.166_sles12.3/mod/modO/Linux.intel.64.intelmpi.default
-set   def_lis_libesmf     /discover/nobackup/projects/lis/libs/esmf/7.1.0r_intel-19.1.0.166_impi-20.0.0.166_sles12.3/lib/libO/Linux.intel.64.intelmpi.default
+set   def_lis_modesmf     /discover/nobackup/projects/lis/libs/sles-12.3/esmf/8.0.1_intel-19.1.3.304_impi-19.1.3.304/mod/modO/Linux.intel.64.intelmpi.default
+set   def_lis_libesmf     /discover/nobackup/projects/lis/libs/sles-12.3/esmf/8.0.1_intel-19.1.3.304_impi-19.1.3.304/lib/libO/Linux.intel.64.intelmpi.default
 set   def_lis_minpack     /discover/nobackup/projects/lis/libs/minpack/intel_11_1_038
 set   def_lis_crtm        /discover/nobackup/projects/lis/libs/JCSDA_CRTM/REL-2.0.2.Surface-rev_intel_18_0_3_222
 set   def_lis_crtm_prof   /discover/nobackup/projects/lis/libs/CRTM_Profile_Utility/intel_18_0_3_222
@@ -105,7 +105,7 @@ set   def_ldt_libgeotiff  /discover/nobackup/projects/lis/libs/geotiff/1.4.3_int
 setenv   DEV_ENV         LISF_7_INTEL_19_1_3_304 
 setenv   LIS_ARCH        linux_ifc
 setenv   LIS_SPMD        parallel
-setenv   LIS_FC          mpif90
+setenv   LIS_FC          mpiifort
 setenv   LIS_CC          mpicc
 setenv   LIS_JPEG        $def_lis_jpeg
 setenv   LIS_OPENJPEG    $def_lis_openjpeg
@@ -124,7 +124,7 @@ setenv   LIS_LAPACK      $def_lis_lapack
 
 
 setenv   LDT_ARCH        linux_ifc
-setenv   LDT_FC          mpif90
+setenv   LDT_FC          mpiifort
 setenv   LDT_CC          mpicc
 setenv   LDT_JPEG        $def_lis_jpeg
 setenv   LDT_OPENJPEG    $def_lis_openjpeg
@@ -141,7 +141,7 @@ setenv   LDT_LIBGEOTIFF  $def_ldt_libgeotiff
 
 
 setenv   LVT_ARCH        linux_ifc
-setenv   LVT_FC          mpif90
+setenv   LVT_FC          mpiifort
 setenv   LVT_CC          mpicc
 setenv   LVT_JPEG        $def_lis_jpeg
 setenv   LVT_OPENJPEG    $def_lis_openjpeg

@@ -331,7 +331,7 @@ contains
 
   !- Double check subsetted and global parameter number of rows and columns:
      if( subparam_nc > glpnc .or. subparam_nr > glpnr ) then
-       write(LIS_logunit,*) "ERR MSG: The number of *subsetted* row or column points"
+       write(LIS_logunit,*) "[ERR]: The number of *subsetted* row or column points"
        write(LIS_logunit,*) "          EXCEEDS the total *global* row or column points "
        write(LIS_logunit,*) "          for the input parameter file, respectively."
        write(LIS_logunit,*) " "
