@@ -155,22 +155,16 @@ endif::devonly[]
 |"`CMAP`" |CMAP precipitation fields
 |"`CPC CMORPH`" |CMORPH precipitation fields
 |"`ECMWF`" |ECMWF near-realtime analysis
-|"`ECMWF reanalysis`" |ECMWF reanalysis(II), based on Berg et al.(2003)
 |"`GDAS`" |GDAS near-realtime analysis
-ifdef::devonly[]
-|"`GDAS(3d)`" |GDAS full-atmosphere fields
-endif::devonly[]
 |"`GEOS`" |NASA-GEOS (v3-5) forcing analysis
 |"`GEOS5 forecast`" |GEOS v5 forecast fields
 |"`GFS`" |NCEP-GFS forecast fields
 |"`GLDAS`" |Coarse-scale GLDAS-1 forcing
 |"`GSWP1`" |GSWP1 forcing
 |"`GSWP2`" |GSWP2 forcing
-|"`MERRALand`" |NASA`'s MERRA-Land reanalysis
 |"`MERRA2`" |NASA`'s GMAO MERRA2 reanalysis
 |"`NAM242`" |NCEP-NAM 242 resolution (Alaska)
 |"`NARR`" |North American Regional Reanalysis
-|"`NLDAS1`" |NLDAS1 analysis fields
 |"`NLDAS2`" |NLDAS2 analysis fields
 |"`PRINCETON`" |Global Princeton long-term forcing records
 |"`WRFoutv2`" |NCAR-WRF 4km forcing
@@ -248,7 +242,7 @@ Met spatial transform methods:     bilinear
 |"`lapse-rate`" |Use lapse rate correction for forcing
 |===
 
-Current meteorological forcing datasets supported for applying this lapse-rate adjustment to the temperature, humidity, pressure and downward longwave fields, include: NLDAS1, NLDAS2, NAM242, GDAS, PRINCETON, ECMWF, MERRA2 and the new WRFoutv2 and WRF AK forcing datasets.  Future forcing dataset options will include: GEOS, GLDAS, GFS, ECMWF_reanalysis, and possible others.
+Current meteorological forcing datasets supported for applying this lapse-rate adjustment to the temperature, humidity, pressure and downward longwave fields, include: NLDAS2, NAM242, GDAS, PRINCETON, ECMWF, MERRA2, and the new WRFoutv2 and WRF AK forcing datasets.  Future forcing dataset options will include: GEOS, GLDAS, GFS, and possible others.
 
 ECMWF and GDAS forcing types include several terrain height maps and not just one overall, either due to change in versions or gridcell size, respective.
 
@@ -2893,19 +2887,6 @@ NLDAS2 elevation difference map: ../NARR_elev-diff.1gd4r
 NARR terrain height map:         ../NARR_elevation.1gd4r
 ....
 
-==== NLDAS-1 Forcing based parameter inputs
-
-`NLDAS1 elevation difference map:` specifies the NLDAS-1 elevation difference file used to remove built-in elevation correction.
-
-`EDAS terrain height map:` specifies the terrain height map for the NLDAS-1 base forcing of the Eta Data Assimilation System (EDAS).
-
-If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
-
-.Example _ldt.config_ entry
-....
-NLDAS1 elevation difference map: ../NLDAS1/EDAS_elev-diff.1gd4r
-EDAS terrain height map:         ../NLDAS1/EDAS_elevation.1gd4r
-....
 
 ==== PRINCETON Forcing based parameter inputs
 
@@ -2999,25 +2980,6 @@ ECMWF IFS36R1 elevation map:  ./ECMWF/ecmwf.2010012606.012606.elev_1_4
 ECMWF IFS37R2 elevation map:  ./ECMWF/ecmwf.2011051806.051806.elev_1_4
 ....
 
-==== ECMWF Reanalysis Forcing based parameter inputs
-
-`ECMWF Reanalysis forcing directory:` specifies the location of the ECMWF Reanalysis forcing data files.
-
-`ECMWF Reanalysis maskfile:` specifies the ECMWF Reanalysis mask file.
-
-`ECMWF Reanalysis elevation map:` specifies the ECMWF Reanalysis elevation file.
-
-`ECMWF Reanalysis elevation spatial transform:` specifies the terrain height map spatial grid transform option (e.g., average).
-
-If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
-
-.Example _ldt.config_ entry
-....
-ECMWF Reanalysis forcing directory:
-ECMWF Reanalysis elevation map: ./metforcing_parms/ECMWFRean/elev_ECMWF-reanalysis.1gd4r
-ECMWF Reanalysis elevation spatial transform:   "average"
-ECMWF Reanalysis maskfile:
-....
 
 ==== ERA5 Reanalysis Forcing based parameter inputs
 
@@ -3087,15 +3049,7 @@ If the run mode option selected is "`Metforce processing`" or "`Metforce tempora
 
 If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
 
-==== MERRA-Land forcing
-
-If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
-
 ==== MERRA2 forcing
-
-If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
-
-==== RDHM356 forcing
 
 If the run mode option selected is "`Metforce processing`" or "`Metforce temporal downscaling`", please see the latest LIS Users`' Guide.
 

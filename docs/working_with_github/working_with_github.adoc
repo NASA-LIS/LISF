@@ -5,14 +5,14 @@
 :sectnums:
 
 :github: https://github.com/
-:github_training: https://www.youtube.com/channel/UCP7RrmoueENv9TZts3HXXtw
+:github_training: https://www.youtube.com/githubguides
 :github_hellowold: https://guides.github.com/activities/hello-world/
 :nasalis: https://github.com/NASA-LIS/
+:nasalis_test: https://github.com/NASA-LIS/lisf-test
 :nasalis_ssh: github:NASA-LIS/
 :lisf: LISF
 :lisf_git: LISF.git
-//:lisf: lisf-test
-//:lisf_git: lisf-test.git
+:lisf_test_git: lisf-test.git
 
 
 == General notes
@@ -44,24 +44,24 @@ In the commands that follow, user-provided information is marked up with '<' and
 
 //To facilitate hands-on participation (e.g., copy/paste), the URL will be replaced with https://github.com/NASA-LIS/lisf-test.
 
-Lab members, feel free to use github:NASA-LIS/lisf-test (URL: https://github.com/NASA-LIS/lisf-test) as a testbed to try out using git and GitHub for your LISF development.
+Lab members, feel free to use `{nasalis_ssh}{lisf_test_git}` (URL: {nasalis_test}) as a testbed to try out using git and GitHub for your LISF development.
 
-Just replace github:NASA-LIS/LISF, github:NASA-LIS/LISF.git, and LISF.git with github:NASA-LIS/lisf-test, github.com:NASA-LIS/lisf-test.git, and lisf-test.git, respectively.
+Just replace `{nasalis_ssh}{lisf_git}` and `{lisf_git}` with `{nasalis_ssh}{lisf_test_git}` and `{lisf_test_git}`, respectively.
 
 
 == First steps
 
 === RTFM — Review the fine material
 
-GitHub ({github}) has produced a simple "Hello World" guide at {github_hellowold}.
+link:{github:}[GitHub] has produced a simple "Hello World" guide at {github_hellowold}.
 
-GitHub has produced a series of tutorials to introduce you to git and GitHub.  Please take some time to watch them at {github_training}.  There are 12 videos each approximately 5 minutes long.
+GitHub has produced a series of tutorials to introduce you to git and GitHub at {github_training} (see the _Get Up and Running_ playlist).  Please take some time to watch them.
 
 The rest of this document assumes that you have some working knowledge of git by reading/watching the above material.
 
 === Register for an account on GitHub
 
-Lab members, go to GitHub ({github}) and register for an account.
+Lab members, go to link:{github}[GitHub] and register for an account.
 
 When registering, use your *NASA* email address.  For your username, please try to use your NASA AUID/discover username.  If that is not possible, then use your best judgment to pick a suitable username.
 
@@ -107,7 +107,7 @@ In your home directory on your local system, create a file named .gitconfig cont
 === Step 1. Set up SSH Access to GitHub
 anchor:sec_step1[Step 1. Set up SSH access to GitHub ]
 
-On link:https://github.blog/2020-12-15-token-authentication-requirements-for-git-operations/[August 13, 2021] GitHub will be disabling password authentication in favor of more secure alternatives: SSH keys and Personal Access Tokens. *All users* must transition to one of these options to continue to connect to GitHub using `git` (i.e., to clone, push, and pull). We recommend using link:https://www.ssh.com/ssh/protocol/#how-does-the-ssh-protocol-work[SSH keys] and describe how to set up and use them with `git` below.
+On link:https://github.blog/2020-12-15-token-authentication-requirements-for-git-operations/[August 13, 2021] GitHub disabled password authentication in favor of more secure alternatives: SSH keys and Personal Access Tokens. *All users* must use one of these options to continue to connect to GitHub using `git` (i.e., to clone, push, and pull). We recommend using link:https://www.ssh.com/ssh/protocol/#how-does-the-ssh-protocol-work[SSH keys] and describe how to set up and use them with `git` below.
 
 IMPORTANT: This process must be completed on each computer you use to interact with GitHub via the command-line (personal computer, Discover, etc.).
 
@@ -214,7 +214,7 @@ GitHub should respond with:
 +
 [subs="attributes+,-callouts"]
 ....
-> Hi username! You've successfully authenticated, but GitHub does not provide shell access.
+> Hi <your-user-name>! You've successfully authenticated, but GitHub does not provide shell access.
 ....
 
 If successful, your SSH key is ready for use with GitHub. Remember to repeat the steps above on any other machines you use to connect to GitHub.
@@ -252,12 +252,13 @@ Before the change to SSH, GitHub allowed the use of HTTPS URLs when cloning or a
 % git clone {nasalis}{lisf_git}
 ....
 
-Now you will have to use SSH URLs which take the form `git@github.com:username/repository` by default. However, the additions made to your _~/.ssh/config_ file above allow you to simplify this to `github:username/repository`. For example:
+Now you will have to use SSH URLs which take the form `git@github.com:user/repository.git` by default. However, the additions made to your _~/.ssh/config_ file above allow you to simplify this to `github:user/repository.git`. For example:
 
 [subs="attributes+,-callouts"]
 ....
-# Cloning a repository
-% git clone {nasalis_ssh}{lisf_git}
+# Cloning your LISF repository
+% git clone github:<your-user-name>/{lisf_git}
+
 ...
 # Adding a remote repository
 % git remote add upstream {nasalis_ssh}{lisf_git}
@@ -274,8 +275,8 @@ Any existing local repositories must be updated to use SSH URLs before August 13
 [subs="attributes+,-callouts"]
 ....
 % git remote -v
-> origin	{github}username/{lisf_git} (fetch)
-> origin	{github}username/{lisf_git} (push)
+> origin	{github}<your-user-name>/{lisf_git} (fetch)
+> origin	{github}<your-user-name>/{lisf_git} (push)
 > upstream	{nasalis}{lisf_git} (fetch)
 > upstream	{nasalis}{lisf_git} (push)
 ....
@@ -285,7 +286,7 @@ Any existing local repositories must be updated to use SSH URLs before August 13
 +
 [subs="attributes+,-callouts"]
 ....
-% git remote set-url origin github:username/{lisf_git}
+% git remote set-url origin github:<your-user-name>/{lisf_git}
 % git remote set-url upstream {nasalis_ssh}{lisf_git}
 ....
 
@@ -294,8 +295,8 @@ Any existing local repositories must be updated to use SSH URLs before August 13
 [subs="attributes+,-callouts"]
 ....
 % git remote -v
-> origin	github:username/{lisf_git} (fetch)
-> origin	github:username/{lisf_git} (push)
+> origin	github:<your-user-name>/{lisf_git} (fetch)
+> origin	github:<your-user-name>/{lisf_git} (push)
 > upstream	{nasalis_ssh}{lisf_git} (fetch)
 > upstream	{nasalis_ssh}{lisf_git} (push)
 ....
