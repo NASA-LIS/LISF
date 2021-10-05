@@ -10,6 +10,10 @@ To request help from the LIS development team, please visit the Discussions tab 
 
 NOTE: Posting a question requires a GitHub account. Register at https://github.com/signup.
 
+=== Bug Reports
+
+Please review our link:https://github.com/NASA-LIS/LISF/blob/master/CONTRIBUTING.md[Contribution Guidelines] to learn how to report a bug or error.
+
 When reporting a bug or an error running LIS, please provide a description of the problem, including any error messages printed to the screen.  Attach a copy of the _lislog.0000_ file.  Also attach a copy of any relevant supporting files such as: +
 
 For LIS:
