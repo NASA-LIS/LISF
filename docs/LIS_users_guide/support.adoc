@@ -39,6 +39,6 @@ For LVT:
 ====
 Please note that the LIS development team does not receive funding to provide community support.  Your questions and issues are important to us, but we can address them only when time permits.
 
-Due to U.S. federal law, we are not allowed to respond to anyone from a designated country.  (See http://oiir.hq.nasa.gov/nasaecp/.) By policy, we will not respond to messages from either non-institutional or non-organizational email addresses; e.g., we will not respond to email messages from gmail.
+Due to U.S. federal law, we are not allowed to respond to anyone from a designated country (see https://www.nasa.gov/oiir/export-control). By policy, we will not respond to messages from either non-institutional or non-organizational email addresses; e.g., we will not respond to email messages from gmail.
 ====
 
