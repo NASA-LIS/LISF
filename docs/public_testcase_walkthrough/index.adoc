@@ -25,12 +25,13 @@
 
 // begin document
 
-include::intro.adoc[]
+toc::[]
 
 // page break (for PDF)
 <<<
 
-toc::[]
+include::intro.adoc[]
+
 
 // page break (for PDF)
 <<<
