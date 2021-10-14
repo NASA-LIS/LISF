@@ -73,7 +73,7 @@ Landcover spatial transform:       tile
 ...
 ----
 <1> The name of the NetCDF-formatted parameter file to be generated which will be used by LIS
-<2> The LSM to run (e.g., https://ral.ucar.edu/solutions/products/noah-multiparameterization-land-surface-model-noah-mp-lsm[Noah.3.6])
+<2> The LSM to run (e.g., https://ral.ucar.edu/solutions/products/unified-noah-lsm[Noah.3.6])
 <3> The name of the diagnostic log file
 <4> The directory where LDT output will be placed
 <5> The grid projection, domain extents, and spatial resolution to be used by LIS (and LVT)
