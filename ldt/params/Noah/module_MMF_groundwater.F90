@@ -14,7 +14,7 @@
 !
 ! !REVISION HISTORY:
 !  27 Aug 2021: Sarith Mahanama
-!     with inputs from David Mocko, Zhuo Wang ; Initial Specification
+!     with inputs from David Mocko, Shugong Wang, Timothy Lahmers, Kristi Arsenault, and Zhuo Wang ; Initial Specification
 !
 ! !INTERFACE:
 
@@ -23,7 +23,7 @@ module  MMF_groundwater
 
   use ESMF
   use LDT_logMod,           only : LDT_logunit, LDT_endrun, LDT_verify
-  use LDT_coreMod,          only : LDT_rc, LDT_domain
+  use LDT_coreMod,          only : LDT_rc, LDT_domain, LDT_config
   use LDT_gridmappingMod,   only : LDT_RunDomainPts
   use LDT_paramMaskCheckMod,only : LDT_fillopts, LDT_contIndivParam_Fill
   use LDT_paramDataMod,     only : LDT_LSMparam_struc
@@ -397,12 +397,18 @@ contains
     
     implicit none
 
+ !   interface grid_cell_area
+ !      module procedure area_latlon
+ !      module procedure areaint
+ !      module procedure area_wps
+ !   end interface grid_cell_area
+ 
     integer, intent (in)                    :: nest
     real, dimension (:,:,:), intent (inout) :: area
     integer                                 :: i,j
     real                                    :: lat_ll, lat_ur , lat_ul, lat_lr, c, r
     real                                    :: lon_ll, lon_ur , lon_ul, lon_lr
-
+   
     area    = 0.
 
     do j = 1, LDT_rc%lnr(nest)
@@ -411,17 +417,62 @@ contains
           r = float (j)
           c = float (i)
 
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r-0.5, lat_ll, lon_ll) ! SW corner (A)
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r+0.5, lat_ul, lon_ul) ! NW corner (B)         
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r+0.5, lat_ur, lon_ur) ! NE corner (C)        
-          call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r-0.5, lat_lr, lon_lr) ! SE corner (D)
-          area (i,j,1) = 4.*pi*radius*radius* areaint((/lat_ll, lat_ul, lat_ur, lat_lr/), (/lon_ll, lon_ul, lon_ur, lon_lr/))/1000./1000.
-          
+          select case (LDT_domain(nest)%ldtproj%code)
+          case (0)
+             ! lat/lon
+             call ij_to_latlon(LDT_domain(nest)%ldtproj,c, r, lat_ll, lon_ll)
+             area (i,j,1) = area_latlon (nest, lat_ll)
+             
+          case (3)
+             ! Lambert conical follows WPS
+             area (i,j,1) = area_wps ()
+             
+          case DEFAULT
+             ! Area of a polygon areaint.m from Matlab
+             call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r-0.5, lat_ll, lon_ll) ! SW corner (A)
+             call ij_to_latlon(LDT_domain(nest)%ldtproj,c-0.5, r+0.5, lat_ul, lon_ul) ! NW corner (B)         
+             call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r+0.5, lat_ur, lon_ur) ! NE corner (C)        
+             call ij_to_latlon(LDT_domain(nest)%ldtproj,c+0.5, r-0.5, lat_lr, lon_lr) ! SE corner (D)
+             area (i,j,1) = areaint((/lat_ll, lat_ul, lat_ur, lat_lr/), (/lon_ll, lon_ul, lon_ur, lon_lr/))
+             
+          END select
        end do
     end do
     
   contains
 
+    ! ----------------------------------------------------------------
+
+    real function area_latlon (nest, lat)
+
+      implicit none
+
+      real, intent (in)    :: lat
+      integer, intent (in) :: nest
+      
+      area_latlon = radius * radius * &
+                 (sin(d2r(lat + 0.5*LDT_rc%gridDesc(nest,10))) - &
+                  sin(d2r(lat - 0.5*LDT_rc%gridDesc(nest,10))))* &
+                  d2r(LDT_rc%gridDesc(nest,9))/1000./1000.    ! [km2]
+      
+    end function area_latlon
+
+    ! ----------------------------------------------------------------
+
+    real function area_wps ()
+
+      implicit none
+      integer           :: rc
+      real              :: DXY, MSFTX, MSFTY
+
+      MSFTY = 1.
+      MSFTX = 1.
+
+      call ESMF_ConfigGetAttribute(LDT_config, DXY,label='Run domain resolution:', rc=rc); call LDT_verify(rc,"Run domain resolution of the Lambert grid is not defined.")
+      area_wps = DXY*DXY/MSFTX/MSFTY
+      
+    end function area_wps
+    
     ! ----------------------------------------------------------------
     
     real FUNCTION areaint (lat, lon)
@@ -496,7 +547,8 @@ contains
       end do
       
       areaint = abs (sum (integrands))/4./pi
-      areaint = MIN (areaint, 1. - areaint)
+      areaint = 4.*pi*radius*radius * MIN (areaint, 1. - areaint) /1000./1000.
+      
       deallocate (integrands, latc, lonc, colat, az)
       
     end FUNCTION areaint
@@ -512,6 +564,7 @@ contains
       rad = degree*PI/180.
       
     end function d2r
+
   end SUBROUTINE cell_area
    
 end module MMF_groundwater
