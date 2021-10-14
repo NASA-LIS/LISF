@@ -19,10 +19,7 @@ def Sel_var (SEL_CIM_DATA, VAR_NAME, MODEL):
                         VAR_SEL_CLIM_DATA = SEL_CIM_DATA.SoilMoist_tavg.isel(soil_layer=0)*0.05+SEL_CIM_DATA.SoilMoist_tavg.isel(soil_layer=1)*0.15+SEL_CIM_DATA.SoilMoist_tavg.isel(soil_layer=2)*0.3+SEL_CIM_DATA.SoilMoist_tavg.isel(soil_layer=3)*0.5
 
 	if VAR_NAME == 'Surface-SM':
-		if (MODEL=='CLSM'):
-			VAR_SEL_CLIM_DATA = SEL_CIM_DATA.SoilMoist_tavg.isel(soil_layer=0) # for clsm the total soil moisture is in the third layer
-		else:
-			VAR_SEL_CLIM_DATA = SEL_CIM_DATA.SoilMoist_tavg.isel(soil_layer=0) ## Summing soil moisture from all layers
+		VAR_SEL_CLIM_DATA = SEL_CIM_DATA.SoilMoist_tavg.isel(soil_layer=0)
 
 	elif VAR_NAME == 'Total-Runoff':
 		VAR_SEL_CLIM_DATA = SEL_CIM_DATA.Qs_tavg+SEL_CIM_DATA.Qsb_tavg ## Adding total surface runoff with sub-surface runoff
