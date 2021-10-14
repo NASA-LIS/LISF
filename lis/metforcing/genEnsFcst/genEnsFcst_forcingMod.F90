@@ -57,6 +57,7 @@ module genEnsFcst_forcingMod
      logical        :: reset_flag       ! Reset parameters flag
      logical        :: zterp_flags      !(:) Allocatable later?
 
+     character(20)  :: fcst_type        ! Forecast type name
      integer        :: max_ens_members  ! Max number of forecast ensemble members
 
      real, allocatable :: metdata1(:,:,:)  ! Metforcing data from file/bookend 1
@@ -112,7 +113,7 @@ contains
   character(40)  :: varname
   character(100) :: zterpflag_string
 
-  character(20) :: fcst_type
+!  character(20) :: fcst_type
 
   integer :: tdel, tintv_validhr, hindex, tindex
   integer, dimension(12) :: mon_numdays
@@ -150,12 +151,13 @@ contains
    call readcrd_genEnsFcst()
 
    write(LIS_logunit,*) "[INFO] -- Obtain ensemble forecast dataset parameters -- "
+   write(LIS_logunit,*) "[INFO] -- Base forecast dataset name: ", genensfcst_struc%fcst_type
+ !
+ !  genensfcst_struc%fcst_type = "GEOS5"
 
    ! Locate starting genEnsFcst file: 
    fullfilename = "none"
- ! MODIFY LATER ...
-   fcst_type = "GEOS5"
-   call get_genEnsFcst_filename( fcst_type, LIS_rc%syr, LIS_rc%smo, &
+   call get_genEnsFcst_filename( genensfcst_struc%fcst_type, LIS_rc%syr, LIS_rc%smo, &
               1, LIS_rc%syr, LIS_rc%smo, &
               genensfcst_struc%directory, fullfilename  )
 
@@ -164,9 +166,9 @@ contains
       write(LIS_logunit,*) "[INFO] Parameters from forcing genEnsFcst file: ", &
             trim(fullfilename)
    else
-      write(LIS_logunit,*) "[WARN] Missing ensemble forecast file: ", &
+      write(LIS_logunit,*) "[ERR] Missing ensemble forecast file: ", &
             trim(fullfilename)
-      write(LIS_logunit,*) "[WARN] LIS endrun being called."
+      write(LIS_logunit,*) "[ERR] LIS endrun being called."
       call LIS_endrun()
    endif
 

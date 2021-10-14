@@ -68,25 +68,26 @@
   select case( fcsttype )
   
     case( "GEOS5" )
-  ! If forecast dataset of origin is:  GEOS-5 ...
+     ! If forecast dataset of origin is:  GEOS-5 ...
   
-     !- convert 2-digit month to 3-char month:
-     ! LIS function somewhere to do that or do  somewhere here??
+     !- LIS function to convert 2-digit month to 3-char month:
      ! 
-!      call mon3char( fmo, fmo3 )
       call LIS_mon3char( fmo, fmo3 )
-
-     ! What to do about the ensemble number ??  Call this routine
-     !  for every individual member??  Or loop over and generate 
-     !  a number of files to be passed back to main routine??
 
       filename = trim(directory)//"/"//fyr//"/"//fmo3//"01/ens"//&
           trim(fensnum)//"/GEOS5."//lyr//lmo//".nc4"
-!          trim(fensnum)//"/GEOS5.all_forc_"//lyr//lmo//".nc4"
-!            /6-hourly/1982/may01/ens1/GEOS5.all_forc_198205.nc4
 
      ! ** Will need to update later to accomodate additional start
      !     dates, like Feb 05 or Oct 03. "01" default for now.
+
+    case( "CFSv2" )
+     ! Climate Forecast System, version 2 (CFSv2)
+
+     !- LIS function to convert 2-digit month to 3-char month:
+      call LIS_mon3char( fmo, fmo3 )
+
+      filename = trim(directory)//"/"//fyr//"/"//fmo3//"01/ens"//&
+          trim(fensnum)//"/"//trim(fcsttype)//"."//lyr//lmo//".nc4"
 
     case default
       write(*,*) " No other forecast datasets supported at this time "
@@ -95,43 +96,3 @@
 
  end subroutine get_genEnsFcst_filename
 
-
-#if 0
- subroutine mon3char( mo2digchar, mo3char )
-
-    implicit none
-    character*2, intent(in)  :: mo2digchar
-    character*3, intent(out) :: mo3char
-
-    select case( mo2digchar )
-     case( "01" )
-       mo3char = "jan"
-     case( "02" )
-       mo3char = "feb"
-     case( "03" )
-       mo3char = "mar"
-     case( "04" )
-       mo3char = "apr"
-     case( "05" )
-       mo3char = "may"
-     case( "06" )
-       mo3char = "jun"
-     case( "07" )
-       mo3char = "jul"
-     case( "08" )
-       mo3char = "aug"
-     case( "09" )
-       mo3char = "sep"
-     case( "10" )
-       mo3char = "oct"
-     case( "11" )
-       mo3char = "nov"
-     case( "12" )
-       mo3char = "dec"
-     case default
-       write(*,*) " Don't recognize this 2-digit month ... stopping. "
-       stop
-    end select
-
-  end subroutine mon3char
-#endif

@@ -73,7 +73,7 @@ subroutine get_pptEnsFcst(n, findex)
   integer  :: hr_int1, hr_int2
 
   integer  :: ensnum
-  character(20) :: fcst_type
+!  character(20) :: fcst_type
 
   integer  :: nid, ncId, nrId, ntimesId
   integer  :: tdel, hindex, tindex
@@ -122,11 +122,12 @@ subroutine get_pptEnsFcst(n, findex)
       fullfilename = "none"
 
     ! Assemble the forecast filename:
-      fcst_type = "GEOS5"
+!      fcst_type = "GEOS5"
 
       do m = 1, pptensfcst_struc%max_ens_members
          ensnum = m
-         call get_pptEnsFcst_filename( fcst_type, LIS_rc%syr, LIS_rc%smo, &
+         call get_pptEnsFcst_filename( pptensfcst_struc%fcst_type,&
+               LIS_rc%syr, LIS_rc%smo, &
                ensnum, LIS_rc%yr, LIS_rc%mo, &
                pptensfcst_struc%directory, fullfilename  )
 
@@ -144,9 +145,6 @@ subroutine get_pptEnsFcst(n, findex)
         pptensfcst_struc%findtime1 = 0
         retrieve_file = .false.
 
-!        print *, " Getting Ensemble Forecast file: ",&
-!                trim(fullfilename)
-
         ! Read in PPTEnsFcst Forcing File:
         !  Also, spatially reproject/reinterpolate pptEnsFcst file.
         call pptEnsFcst_Variables_read( findex, fullfilename, &
@@ -160,9 +158,6 @@ subroutine get_pptEnsFcst(n, findex)
                 gindex = LIS_domain(n)%gindex(c,r)
  
                 if( forcopts%read_airtmp ) then
-!                  if( c==10 .and. r==10 ) then
-!                     print *, c,r,tindex,ensfcstppt_struc(n)%airtmp(c,r)
-!                  endif
                   pptensfcst_struc%metdata2(forcopts%index_airtmp,m,gindex) = &
                      ensfcstppt_struc(n)%airtmp(c,r)
                 endif

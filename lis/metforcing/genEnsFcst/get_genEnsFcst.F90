@@ -73,7 +73,7 @@ subroutine get_genEnsFcst(n, findex)
   integer  :: hr_int1, hr_int2
 
   integer  :: ensnum
-  character(20) :: fcst_type
+!  character(20) :: fcst_type
 
   integer  :: nid, ncId, nrId, ntimesId
   integer  :: tdel, hindex, tindex
@@ -122,11 +122,11 @@ subroutine get_genEnsFcst(n, findex)
       fullfilename = "none"
 
     ! Assemble the forecast filename:
-      fcst_type = "GEOS5"
+!      fcst_type = "GEOS5"
 
       do m = 1, genensfcst_struc%max_ens_members
          ensnum = m
-         call get_genEnsFcst_filename( fcst_type, LIS_rc%syr, LIS_rc%smo, &
+         call get_genEnsFcst_filename( genensfcst_struc%fcst_type, LIS_rc%syr, LIS_rc%smo, &
                ensnum, LIS_rc%yr, LIS_rc%mo, &
                genensfcst_struc%directory, fullfilename  )
 
