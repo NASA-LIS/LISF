@@ -1,6 +1,6 @@
 = LIS Public Testcase Walkthrough
-:revnumber: 0.3
-:revdate: October 12, 2021
+:revnumber: 0.4
+:revdate: October 14, 2021
 :revremark: Migrated to NASA-LIS/LISF repo
 :imagesdir: ./images
 :title-page:
