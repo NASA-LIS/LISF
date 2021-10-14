@@ -54,7 +54,7 @@ def CALC_BCSD(OBS_CLIM_ALL, FCST_CLIM_ALL, LEAD_FINAL, TARGET_FCST_VAL_ARR, TARG
                         #BIAS_CORRECTED_VALUE = lookup(TARGET_FCST_QUANT, OBS_QUANT_TS.values, OBS_CLIM_TS.values, len(OBS_CLIM_TS.values), BC_VAR, 'DATA', obs_mean, obs_sd, obs_skew, TINY);
 							
                         if (BC_VAR=='PRCP') and (BIAS_CORRECTED_VALUE<0): ## This is just a hack to check we are not getting negative value of precipitation
-                                print (TARGET_FCST_VAL, TARGET_FCST_QUANT, fcst_yr, LEAD_NUM, ens_num, lat_num, lon_num)
+                                print (TARGET_FCST_VAL, TARGET_FCST_QUANT, fcst_yr, LEAD_NUM, ens_num)
 							
 				## Now storing the bias corrected anomaly 
                         CORRECT_FCST_COARSE[fcst_yr, LEAD_NUM, ens_num] = BIAS_CORRECTED_VALUE
