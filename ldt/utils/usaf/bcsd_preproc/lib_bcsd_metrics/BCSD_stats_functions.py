@@ -217,7 +217,7 @@ def get_F_from_data_EVI(mean, sd, x, TINY):
     
     if(F>=1.0) or (F<=0.0):
         print ("Error in get_F_from_data_EVI")
-        print ("Bad quantile: data={:0.2f} mean={0.2f} sd={0.2f} quant={0.2f}".format(x,mean,sd,F));
+        print ("Bad quantile: data={:0.2f} mean={:0.2f} sd={:0.2f} quant={:0.2f}".format(x,mean,sd,F));
         sys.exit(1);
     else:
         return F;
@@ -226,7 +226,7 @@ def get_data_from_F_EVI(mean, sd, F, TINY):
     #Gumbel (EV Type I distribution) for maxima
     if(F>=1.0) or (F<=0.0):
         print ("Error in get_data_from_F_EVI")
-        print ("Bad quantile: mean={0.2f} sd={0.2f} quant={0.2f}".format(mean,sd,F))
+        print ("Bad quantile: mean={:0.2f} sd={:0.2f} quant={:0.2f}".format(mean,sd,F))
         sys.exit(0);
     b = 3.14159/(sd*sqrt(6))
     a = mean-0.5772/b

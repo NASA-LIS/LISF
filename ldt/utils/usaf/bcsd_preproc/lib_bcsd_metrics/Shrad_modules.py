@@ -79,7 +79,6 @@ def plotmap(var, lats, lons, lat_min, lat_max, lat_int, lon_min, lon_max, lon_in
     if plottype == 'mesh':
         cs=m.pcolormesh(xi, yi, var, vmax=cbmax, vmin=cbmin, cmap=cmap)
     elif plottype == 'contour':
-        cmap = cmap
         cmap.set_under(col_under)
         cmap.set_over(col_higher)
         norm = mpl.pyplot.cm.colors.Normalize(vmax=cbmax, vmin=cbmin, clip=False)
