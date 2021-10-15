@@ -26,6 +26,10 @@ AsciiDoc easily converts to HTML; there are even Firefox and Chrome plugins that
 * https://raw.githubusercontent.com/NASA-LIS/LISF/master/docs/LIS_users_guide/LIS_usersguide.adoc[LIS Users' Guide]
 * https://raw.githubusercontent.com/NASA-LIS/LISF/master/docs/LVT_users_guide/LVT_usersguide.adoc[LVT Users' Guide]
 
+.Additional Guides:
+* https://raw.githubusercontent.com/NASA-LIS/LISF/master/docs/working_with_github/working_with_github.adoc[Working with GitHub]
+* https://raw.githubusercontent.com/NASA-LIS/LISF/master/docs/public_testcase_walkthrough/public_testcase_walkthrough.adoc[Public Testcase Walkthrough]
+
 If you have the LISF source code on your personal computer you can also view the rendered documentation by dragging the desired document (e.g., `LISF/docs/LIS_users_guide/LIS_usersguide.adoc`) to an open browser window.
 
 
