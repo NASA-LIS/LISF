@@ -259,7 +259,6 @@ subroutine NoahMP401_setup()
            CROPTYPE = 0 
            CALL TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,&
                 NoahMP401_struc(n)%noahmp401(t)%param)
-           NoahMP401_struc(n)%noahmp401(t)%param%snowf_scalef= 1.0
 
         enddo
    
@@ -600,4 +599,5 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
     parameters%t_ulimit = 2.5
     parameters%t_mlimit = 2.0
     parameters%t_llimit = 0.5
+    parameters%snowf_scalef = 1.0    
  END SUBROUTINE TRANSFER_MP_PARAMETERS
