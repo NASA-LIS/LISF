@@ -12,19 +12,9 @@ This document provides a brief overview of the LISF documentation; in particular
 The LISF documentation is written using AsciiDoc.  Like LaTeX, AsciiDoc is text-based markup, thus it plays nicely with version control systems.  Like LaTeX, AsciiDoc may be processed into other formats like HTML or PDF.  Unlike LaTeX, the AsciiDoc syntax is simple, making the source files both easier to write and easier to read.
 
 
-== How to write
-
-The LISF documentation uses the http://asciidoctor.org/[Asciidoctor] implementation of the http://asciidoc.org/[AsciiDoc] light weight markup language.  Please consult https://docs.asciidoctor.org/asciidoc/latest/[the AsciiDoc online documentation] for more information.
-
-
 == How to read
 
 I will describe three ways to read the LISF documentation.
-
-
-=== Pager/Editor
-
-Since AsciiDoc is plain text, you may read the LISF documentation using a pager like `more` or `less` or using an editor like `vim` or `emacs`.  Since the signal to noise ratio is high for AsciiDoc, this method of reading works very well, especially when working on an HPC system where you may not have many fancy tools installed.
 
 
 === Web Browser
@@ -38,9 +28,20 @@ AsciiDoc easily converts to HTML; there are even Firefox and Chrome plugins that
 
 If you have the LISF source code on your personal computer you can also view the rendered documentation by dragging the desired document (e.g., `LISF/docs/LIS_users_guide/LIS_usersguide.adoc`) to an open browser window.
 
+
+=== Pager/Editor
+
+Since AsciiDoc is plain text, you may read the LISF documentation using a pager like `more` or `less` or using an editor like `vim` or `emacs`.  Since the signal to noise ratio is high for AsciiDoc, this method of reading works very well, especially when working on an HPC system where you may not have many fancy tools installed.
+
+
 === asciidoctor toolset
 
 You can process the AsciiDoc source yourself, using the asciidoctor toolset.  With this toolset, you can generate an HTML or PDF version of the documentation.  If you are masochistic, then you can even generate a DocBook version.  And, then using various DocBook tools, you can render whatever you want.  It is beyond the scope of this README to describe how to install asciidoctor and its dependencies.  Please see the asciidoctor website and consult your sysadmin.  This method is *not* recommended for the general LISF user.  The <<Pager/Editor>> and <<Web Browser>> methods are better choices.  Also note that a PDF version of the documentation will be available on the https://lis.gsfc.nasa.gov/[LIS web-site].  This method is recommended only for documentation writers (LISF developers).
+
+
+== How to write
+
+The LISF documentation uses the http://asciidoctor.org/[Asciidoctor] implementation of the http://asciidoc.org/[AsciiDoc] light weight markup language.  Please consult https://docs.asciidoctor.org/asciidoc/latest/[the AsciiDoc online documentation] for more information.
 
 
 == Tips
