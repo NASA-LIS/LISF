@@ -64,7 +64,6 @@ contains
 ! !INTERFACE: 
   subroutine GCOMW_AMSR2L3sm_obsinit()
 ! !USES: 
-    use ESMF
     use LDT_coreMod
     use LDT_DAobsDataMod, only : LDT_DAobsData, LDT_initializeDAobsEntry
     use LDT_timeMgrMod, only : LDT_clock, LDT_calendar

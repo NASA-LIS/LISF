@@ -83,7 +83,6 @@ contains
   subroutine SURFRAD_obsinit(i)
 ! 
 ! !USES: 
-    use ESMF
     use LVT_coreMod
     use LVT_logMod
     use LVT_timeMgrMod
