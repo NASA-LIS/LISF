@@ -531,10 +531,10 @@ contains
        
        !determine if ascending/descending & if to test for clouds
        apply_mask=.false.
-       if (or(hr.eq.CNRS_em_obs_struc(n)%mask_hr_a_lower,hr.eq.CNRS_em_obs_struc(n)%mask_hr_a_upper)) then
+       if ( (hr.eq.CNRS_em_obs_struc(n)%mask_hr_a_lower) .or. (hr.eq.CNRS_em_obs_struc(n)%mask_hr_a_upper) ) then
           ipass=CNRS_em_obs_struc(n)%index_ascend
           apply_mask=.true.
-       elseif (or(hr.eq.CNRS_em_obs_struc(n)%mask_hr_d_lower,hr.eq.CNRS_em_obs_struc(n)%mask_hr_d_upper)) then
+       elseif ( (hr.eq.CNRS_em_obs_struc(n)%mask_hr_d_lower) .or. (hr.eq.CNRS_em_obs_struc(n)%mask_hr_d_upper) ) then
           ipass=CNRS_em_obs_struc(n)%index_descend
           apply_mask=.true.
        end if

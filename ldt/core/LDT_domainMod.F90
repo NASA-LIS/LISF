@@ -79,7 +79,7 @@ contains
   subroutine LDT_domainInit()
 
 ! !USES:
-   use ESMF
+   !NONE
 !
 ! !DESCRIPTION: 
 !

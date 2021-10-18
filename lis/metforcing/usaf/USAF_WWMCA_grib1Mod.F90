@@ -46,7 +46,7 @@ module USAF_WWMCA_grib1Mod
      procedure :: return_binary_fields
   end type wwmca_grib1_t
 
-  type(wwmca_grib1_t), public, protected :: wwmca_grib1
+  type(wwmca_grib1_t), public :: wwmca_grib1
 
   public :: USAF_wwmca_grib1_filename
 
