@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<!--- 
+ Written by Shahryar Ahmad
+ Contact: shahryarkhalique.ahmad@nasa.gov
+-->
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Earth Information System | Freshwater </title>
+		<link rel="icon" href="images/nasalogo.png">
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="description" content="" />
+		<meta name="keywords" content="" />
+		<!--[if lte IE 8]><script src="js/html5shiv.js"></script><![endif]-->
+		<script src="js/jquery.min.js"></script>
+		<script src="js/skel.min.js"></script>
+		<script src="js/skel-layers.min.js"></script>
+	  <!-- Custom fonts for the header -->
+	  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+	  <link href='https://fonts.googleapis.com/css?family=Kaushan+Script' rel='stylesheet' type='text/css'>
+	  <link href='https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+	  <link href='https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700' rel='stylesheet' type='text/css'>
+
+		<!-- For sidebar -->
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://malihu.github.io/custom-scrollbar/jquery.mCustomScrollbar.min.css">
+		<link rel="stylesheet" href="css/qgis2web.css">
+
+		<link rel="stylesheet" href="css/sidebar-main.css">
+		<link rel="stylesheet" href="css/sidebar-themes.css">
+
+		<link rel="stylesheet" href="css/w3.css">
+
+      <!--Import Google Icon Font-->
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+      <!--Import materialize.css-->
+      <!-- <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/> -->
+
+      <!--Let browser know website is optimized for mobile-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+
+		<script src="js/init.js"></script>
+		<style>
+			body::-webkit-scrollbar {
+				display: none; /* for Chrome, Safari, and Opera */
+			}
+		</style>
+		<noscript>
+			<link rel="stylesheet" href="css/skel.css" />
+			<link rel="stylesheet" href="css/style.css" />
+			<link rel="stylesheet" href="css/style-xlarge.css" />
+		</noscript>
+		
+		<script>
+			function getParamValue(paramName) {
+				var url = window.location.search.substring(1); //get rid of "?" in querystring
+				var qArray = url.split('&'); //get key-value pairs
+				for (var i = 0; i < qArray.length; i++) {
+					var pArr = qArray[i].split('='); //split key and value
+					if (pArr[0] == paramName)
+						return pArr[1]; //return value
+				}
+			}
+
+		</script>
+
+
+	</head>
+	<body>
+
+		<!-- Header -->
+		<div class=floating-menu>
+
+		<header id="header" style="    background-image: linear-gradient(to right, #000 , #000);">	
+
+<!-- 
+			<button type="button" id="toggle-sidebar" style="z-index:-1; left: -4px;" class="btn btn-dark">
+				<i class="fas fa-angle-right"></i>
+			</button>
+ -->
+			<img style="vertical-align:middle; position:absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);" src="images/BW_Meatball-white.png" height="60" width="75">
+ 
+   			<!-- Navigation -->
+			  <nav class="navbar navbar-expand-lg  fixed-top" id="mainNav">
+				<!--     <div class="container"> -->
+				 <a href="http://eis.mysmce.com/"><img style="vertical-align:middle;position:absolute;top: 0;margin-top:20px;margin-left: 15px;" src="images/eis_logo.png" height="50" width=""></a>
+
+				<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+				  Menu
+				  <i class="fas fa-bars"></i>
+				</button>
+				  <div class="collapse navbar-collapse" id="navbarResponsive" >
+					<ul class="navbar-nav text-uppercase ml-auto" id='global-sidenav'>
+						<li class="nav-item">
+						<a class="nav-link js-scroll-trigger eis" href="https://eis.mysmce.com/about.html">About EIS &nbsp; &nbsp; | </a>
+					  </li> 
+					  <li class="nav-item">
+						<a class="nav-link js-scroll-trigger eis active" href="http://fwis.eis-hydro.mysmce.com/index.html" style="color:#6289e4;">Freshwater</a>
+					  </li>
+								  <li class="nav-item">
+						<a class="nav-link js-scroll-trigger" href="http://eis-sealevel.mysmce.com/">Sea Level Change</a>
+					  </li>
+					  <li class="nav-item">
+						<a class="nav-link js-scroll-trigger" href="http://eis-fire.mysmce.com/">Fire</a>
+					  </li>
+
+					</ul>
+				  </div>
+				<!--     </div>   -->
+			</nav>
+		</header>
+
+		</div>
+
+		<button type="button" id="toggle-sidebar" class="btn btn-dark">
+			<i class="fas fa-angle-left"></i>
+		</button>
+
+		<div class="page-wrapper legacy-theme sidebar-bg  toggled border-radius-on">
+			
+			<!-- SIDEBAR -->
+
+			<nav id="sidebar" class="sidebar-wrapper">
+				<div class="sidebar-content">
+
+					<div id='tab-switch'> 
+<!-- 
+						<button type="button" class="btn btn-outline-primary  btn-sm">Home</button>
+						<button type="button" class="btn btn-primary btn-lg">Studies</button>
+						<button type="button" class="btn btn-outline-primary  btn-sm">Explorer</button>
+ -->
+					</div>
+					
+					
+					<!-- sidebar-menu  -->
+                <div class=" sidebar-item sidebar-menu" style="margin-top: 37px;">
+
+						<ul>
+
+						<div class="sidebar-item sidebar-brand  top-label">
+							<a href="#" style="color:#fff;">Case Studies / Notebooks</a>
+						</div>
+
+							<div class="card" id="button-gw">
+							  <img src="images/gwpumping.jpeg" class="card-img-top" >
+							  <div class="card-body">
+								<h5 class="card-title">Depleting the Ogallala Aquifer</h5>
+<!-- 
+								<button  class="btn btn-outline-warning btn-sm" 
+									onclick="window.open('https://daskhub.eis-hydro.mysmce.com/user/svkumar/lab/tree/efs/vis-portal-repos/irrigation/notebooks/Irrigation_Case_Study.ipynb','_blank')">
+									<i class="fab fa-python"></i> Jupyter Notebook 
+								</button>
+	
+ -->
+							  </div>
+							</div>
+
+							<!-- notebook popup -->
+							<div class="card"  id="card-jup" >
+								<button   class="btn btn-outline-warning  btn-sm" data-toggle="modal" data-target="#gwModalCenter" style="margin: 10px 0 10px 45px; width:152px;">
+								  <i class="fab fa-python"></i> Jupyter Notebook
+								</button>
+							</div>
+							<div class="modal fade" id="gwModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+							  <div class="modal-dialog modal-dialog-centered" role="document">
+								<div class="modal-content" style="background-color:#041927f0 ">
+								  <div class="modal-header" style=" color:#fff;">
+									<img src="images/jupyter.png" width="39">										
+									<h5 class="modal-title" id="exampleModalLongTitle">&nbsp; Jupyter Notebook Access</h5> 
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #fff;">
+									  <span aria-hidden="true">&times;</span>
+									</button>
+								  </div>
+								  <div class="modal-body" style=" color:#fff;">
+								  	<button  class="btn btn-outline-warning btn-sm" 
+										onclick="window.open('https://git.mysmce.com/eis-freshwater/irrigation/-/blob/master/notebooks/Irrigation_Case_Study.ipynb','_blank')">
+										<i class="fab fa-python"></i> Go to Notebook on Gitlab
+									</button>
+									<br><br>
+									<p style="color:#8dc1da;">Access to interactive version of notebook requires a Daskhub account.  To request an account, please contact SMCE Management Team.</b></p>
+										<button  class="btn btn-outline-light btn-sm" onclick="window.open('https://www.nccs.nasa.gov/systems/SMCE-contact','_blank')">
+											 Contact SMCE Team
+										</button>
+								  </div>
+								  <div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								  </div>
+								</div>
+							  </div>
+							</div>
+							
+							<!-- end popup -->
+
+	
+	
+	
+							<div class="card" id="button-floods">
+							  <img src="images/flood.jpeg" class="card-img-top" >
+							  <div class="card-body">
+								<h5 class="card-title">Extreme Floods in the Midwest</h5>
+<!-- 
+								<button  class="btn btn-outline-warning btn-sm" 
+									onclick="window.open('https://daskhub.eis-hydro.mysmce.com/user/svkumar/lab/tree/efs/vis-portal-repos/midwest-floods-2019/notebooks/Midwest_Flood_2019.ipynb','_blank')">
+									<i class="fab fa-python"></i> Jupyter Notebook 
+								</button>
+ -->
+							  </div>
+							</div>
+							<!-- notebook popup -->
+							<div class="card"  id="card-jup" >
+								<button   class="btn btn-outline-warning  btn-sm" data-toggle="modal" data-target="#floodModalCenter" style="margin: 10px 0 10px 45px; width:152px;">
+								  <i class="fab fa-python"></i> Jupyter Notebook
+								</button>
+							</div>
+							<div class="modal fade" id="floodModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+							  <div class="modal-dialog modal-dialog-centered" role="document">
+								<div class="modal-content" style="background-color:#041927f0 ">
+								  <div class="modal-header" style=" color:#fff;">
+									<img src="images/jupyter.png" width="39">										
+									<h5 class="modal-title" id="exampleModalLongTitle">&nbsp; Jupyter Notebook Access</h5> 
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #fff;">
+									  <span aria-hidden="true">&times;</span>
+									</button>
+								  </div>
+								  <div class="modal-body" style=" color:#fff;">
+								  	<button  class="btn btn-outline-warning btn-sm" 
+										onclick="window.open('https://git.mysmce.com/eis-freshwater/midwest-floods-2019/-/blob/master/notebooks/Midwest_Flood_2019.ipynb','_blank')">
+										<i class="fab fa-python"></i> Go to Notebook on Gitlab
+									</button>
+									<br><br>
+									<p style="color:#8dc1da;">Access to interactive version of notebook requires a Daskhub account.  To request an account, please contact SMCE Management Team.</b></p>
+										<button  class="btn btn-outline-light btn-sm" onclick="window.open('https://www.nccs.nasa.gov/systems/SMCE-contact','_blank')">
+											 Contact SMCE Team
+										</button>
+								  </div>
+								  <div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								  </div>
+								</div>
+							  </div>
+							</div>
+							
+							<!-- end popup -->
+
+
+							<div class="card" id="button-droughts">
+							  <img src="images/drought.jpeg" class="card-img-top" >
+							  <div class="card-body">
+								<h5 class="card-title">Drought on the Great Plains</h5>
+<!-- 
+								<button  class="btn btn-outline-warning btn-sm" 
+									onclick="window.open('https://daskhub.eis-hydro.mysmce.com/user/svkumar/lab/tree/efs/vis-portal-repos/drought/notebooks/Drought-Case-Study.ipynb','_blank')">
+									<i class="fab fa-python"></i> Jupyter Notebook 
+								</button>
+ -->
+							  </div>
+							</div>
+							<!-- notebook popup -->
+							<div class="card"  id="card-jup" >
+								<button   class="btn btn-outline-warning  btn-sm" data-toggle="modal" data-target="#droughtModalCenter" style="margin: 10px 0 10px 45px; width:152px;">
+								  <i class="fab fa-python"></i> Jupyter Notebook
+								</button>
+							</div>
+							<div class="modal fade" id="droughtModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+							  <div class="modal-dialog modal-dialog-centered" role="document">
+								<div class="modal-content" style="background-color:#041927f0 ">
+								  <div class="modal-header" style=" color:#fff;">
+									<img src="images/jupyter.png" width="39">										
+									<h5 class="modal-title" id="exampleModalLongTitle">&nbsp; Jupyter Notebook Access</h5> 
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #fff;">
+									  <span aria-hidden="true">&times;</span>
+									</button>
+								  </div>
+								  <div class="modal-body" style=" color:#fff;">
+								  	<button  class="btn btn-outline-warning btn-sm" 
+										onclick="window.open('https://git.mysmce.com/eis-freshwater/drought/-/blob/master/notebooks/Drought-Case-Study.ipynb','_blank')">
+										<i class="fab fa-python"></i> Go to Notebook on Gitlab
+									</button>
+									<br><br>
+									<p style="color:#8dc1da;">Access to interactive version of notebook requires a Daskhub account.  To request an account, please contact SMCE Management Team.</b></p>
+										<button  class="btn btn-outline-light btn-sm" onclick="window.open('https://www.nccs.nasa.gov/systems/SMCE-contact','_blank')">
+											 Contact SMCE Team
+										</button>
+								  </div>
+								  <div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								  </div>
+								</div>
+							  </div>
+							</div>
+							
+							<!-- end popup -->
+
+							<div class="card" id="button-sealevel">
+							  <img src="images/slr_wide.png" class="card-img-top" >
+							  <div class="card-body">
+								<h5 class="card-title">Human Impacts on the Delta</h5>
+<!-- 
+								<button  class="btn btn-outline-warning btn-sm" 
+									onclick="window.open('https://daskhub.eis-hydro.mysmce.com/user/svkumar/lab/workspaces/auto-d/tree/efs/mississippi-river-delta/notebooks/Delta_Storyboard.ipynb','_blank')"
+									<i class="fab fa-python"></i> Jupyter Notebook 
+								</button>
+ -->
+							  </div>
+							</div>
+							<!-- notebook popup -->
+							<div class="card"  id="card-jup" >
+								<button   class="btn btn-outline-warning  btn-sm" data-toggle="modal" data-target="#slrModalCenter" style="margin: 10px 0 10px 45px; width:152px;">
+								  <i class="fab fa-python"></i> Jupyter Notebook
+								</button>
+							</div>
+							<div class="modal fade" id="slrModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+							  <div class="modal-dialog modal-dialog-centered" role="document">
+								<div class="modal-content" style="background-color:#041927f0 ">
+								  <div class="modal-header" style=" color:#fff;">
+									<img src="images/jupyter.png" width="39">										
+									<h5 class="modal-title" id="exampleModalLongTitle">&nbsp; Jupyter Notebook Access</h5> 
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #fff;">
+									  <span aria-hidden="true">&times;</span>
+									</button>
+								  </div>
+								  <div class="modal-body" style=" color:#fff;">
+								  	<button  class="btn btn-outline-warning btn-sm" 
+										onclick="window.open('https://git.mysmce.com/eis-freshwater/mississippi-river-delta/-/blob/master/notebooks/Human_Impacts_on_the_Delta.ipynb','_blank')">
+										<i class="fab fa-python"></i> Go to Notebook on Gitlab
+									</button>
+									<br><br>
+									<p style="color:#8dc1da;">Access to interactive version of notebook requires a Daskhub account.  To request an account, please contact SMCE Management Team.</b></p>
+										<button  class="btn btn-outline-light btn-sm" onclick="window.open('https://www.nccs.nasa.gov/systems/SMCE-contact','_blank')">
+											 Contact SMCE Team
+										</button>
+								  </div>
+								  <div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								  </div>
+								</div>
+							  </div>
+							</div>
+							
+							<!-- end popup -->
+							
+							<div class="card" id="button-ls">
+							  <img src="images/ls.png" class="card-img-top" >
+							  <div class="card-body">
+								<h5 class="card-title">Landslides in Kentucky</h5>
+<!-- 
+								<button  class="btn btn-outline-warning btn-sm" 
+									onclick="window.open('#','_blank')">
+									<i class="fab fa-python"></i> Jupyter Notebook 
+								</button>
+ -->
+							  </div>
+							</div>
+							<!-- notebook popup -->
+							<div class="card"  id="card-jup" >
+								<button   class="btn btn-outline-warning  btn-sm" data-toggle="modal" data-target="#lsModalCenter" style="margin: 10px 0 10px 45px; width:152px;">
+								  <i class="fab fa-python"></i> Jupyter Notebook
+								</button>
+							</div>
+							<div class="modal fade" id="lsModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+							  <div class="modal-dialog modal-dialog-centered" role="document">
+								<div class="modal-content" style="background-color:#041927f0 ">
+								  <div class="modal-header" style=" color:#fff;">
+									<img src="images/jupyter.png" width="39">										
+									<h5 class="modal-title" id="exampleModalLongTitle">&nbsp; Jupyter Notebook Access</h5> 
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #fff;">
+									  <span aria-hidden="true">&times;</span>
+									</button>
+								  </div>
+								  <div class="modal-body" style=" color:#fff;">
+								  	<button  class="btn btn-outline-warning btn-sm" 
+										onclick="window.open('https://git.mysmce.com/eis-freshwater/landslides/-/blob/master/brendan/Landslide-Case-Study.ipynb','_blank')">
+										<i class="fab fa-python"></i> Go to Notebook on Gitlab
+									</button>
+									<br><br>
+									<p style="color:#8dc1da;">Access to interactive version of notebook requires a Daskhub account.  To request an account, please contact SMCE Management Team.</b></p>
+										<button  class="btn btn-outline-light btn-sm" onclick="window.open('https://www.nccs.nasa.gov/systems/SMCE-contact','_blank')">
+											 Contact SMCE Team
+										</button>
+								  </div>
+								  <div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								  </div>
+								</div>
+							  </div>
+							</div>
+							
+							<!-- end popup -->
+							
+							
+							<div class="card" id="button-wq">
+							  <img src="images/wq.png" class="card-img-top" >
+							  <div class="card-body">
+								<h5 class="card-title">Mississippi River Water Quality</h5>
+							  </div>
+							</div>
+
+
+						</ul>
+ 
+					</div>
+					<!-- sidebar-menu  -->
+				</div>
+
+
+				<!-- sidebar-footer  -->
+				<div class="sidebar-footer">
+					<div class="dropdown">
+
+						<a href="index.html"  >
+							<i class="fa fa-home"></i>
+							<span> Home </span>
+						</a>
+					</div>
+					<div class="dropdown">
+						<a href="explorer.html"  aria-haspopup="true" aria-expanded="false">
+							<i class="fa fa-globe"></i>
+							<span  >Explorer</span>
+						</a>
+
+					</div>
+<!-- 
+ 
+					<div>
+						<a href="storymap.html">
+							<i class="fa fa-refresh" aria-hidden="true"></i>
+							<span  >Reset</span>
+						</a>
+					</div>
+ 
+ -->
+				</div>
+			</nav>
+
+
+
+
+
+			<!-- Map content on main page -->
+			<!-- <main class="page-content pt-2"> -->
+			<div id="iframeHolder">
+				<span id="placeholder_iframe"> <i class="fas fa-tv"></i> Select a Case Study</span>
+			</div>
+
+			<!-- </main> -->
+
+
+
+
+
+		</div>
+<!-- 
+		<footer   style='position: relative;  margin-top: 0vh;'>
+			<iframe src="./eis-footer/index.html" style="padding-left: 0px; height:75vh;" width="100%"   frameborder="0"></iframe>
+		</footer>
+ -->
+
+
+
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"></script>
+		<script type="text/javascript">
+		
+		 var storyid = getParamValue("story");
+		 
+		 
+ 		 var url_flood = '<iframe src="https://storymaps.arcgis.com/stories/1e6adcec934c419993499e2126af0843" id="storymap-ifr" width="100%" height="90%"  frameborder="0" allowfullscreen allow="geolocation"></iframe>'
+ 		 var url_drought = '<iframe src="https://storymaps.arcgis.com/stories/2132cc6d5c024b5a84bebaa10eb2f2cb" id="storymap-ifr" width="100%" height="90%"  frameborder="0" allowfullscreen allow="geolocation"></iframe>'
+ 		 var url_sealevel = '<iframe src="https://storymaps.arcgis.com/stories/03fbc92b9d0e4368a797b71b23e159ce" id="storymap-ifr" width="100%" height="90%"  frameborder="0" allowfullscreen allow="geolocation"></iframe>'
+ 		 var url_gw = '<iframe src="https://storymaps.arcgis.com/stories/b41a8b3f8f054d24a7198e7cb621a4d8" id="storymap-ifr" width="100%" height="90%"  frameborder="0" allowfullscreen allow="geolocation"></iframe>'
+ 		 var url_ls = '<iframe src="https://storymaps.arcgis.com/stories/b1c7fbfc66fd4ac39e6d06c3052e8f99" id="storymap-ifr" width="100%" height="90%"  frameborder="0" allowfullscreen allow="geolocation"></iframe>'
+		 var url_wq = '<iframe src="https://storymaps.arcgis.com/stories/c0d0ea9961bd4161ba674d4e42953f4b" id="storymap-ifr" width="100%" height="90%"  frameborder="0" allowfullscreen allow="geolocation"></iframe>'
+		
+		if (storyid == 'flood'){
+			$('#placeholder_iframe').html(url_flood);
+		} else if (storyid == 'drought'){
+			$('#placeholder_iframe').html(url_drought);
+		} else if (storyid == 'sealevel'){
+			$('#placeholder_iframe').html(url_sealevel);
+		}else if (storyid == 'gw'){
+			$('#placeholder_iframe').html(url_gw);
+		}else if (storyid == 'ls'){
+			$('#placeholder_iframe').html(url_ls);
+		}else if (storyid == 'wq'){
+			$('#placeholder_iframe').html(url_wq);
+		}else  {
+			console.log('Select a case study')
+// 			$('#placeholder_iframe').html('<iframe src="https://arcg.is/0CCDm11" id="storymap-ifr" width="100%" height="100%"  frameborder="0" allowfullscreen allow="geolocation"></iframe>');
+		}
+
+		$(function(){
+		
+
+
+			$('#button-home').click(function(){
+		    
+// 		    	$('#button-floods').css({'color': '#fff', 'background-color': '#000'});  
+		        if(!$('#iframe').length) {
+		                $('#iframeHolder').html('<iframe src="https://arcg.is/0CCDm11" id="storymap-ifr" width="100%" height="90%"  frameborder="0" allowfullscreen allow="geolocation"></iframe>');
+		        }
+		    });
+		    
+		    
+		    
+		    $('#button-floods').click(function(){
+		    
+// 		    	$('#button-floods').css({'color': '#fff', 'background-color': '#000'});  
+		        if(!$('#iframe').length) {
+		                $('#iframeHolder').html('<iframe src="https://storymaps.arcgis.com/stories/1e6adcec934c419993499e2126af0843" id="storymap-ifr" width="100%" height="90%"  frameborder="1" allowfullscreen allow="geolocation"></iframe>');
+		        }
+		    });
+
+			$('#button-droughts').click(function(){
+		        if(!$('#iframe').length) {
+		                $('#iframeHolder').html('<iframe src="https://storymaps.arcgis.com/stories/bc08996a6daa43839975088b03b463b4" id="storymap-ifr" width="100%" height="90%"  frameborder="0" allowfullscreen allow="geolocation"></iframe>');
+		        }
+		    });
+
+
+			$('#button-sealevel').click(function(){
+		        if(!$('#iframe').length) {
+		                $('#iframeHolder').html('<iframe src="https://storymaps.arcgis.com/stories/03fbc92b9d0e4368a797b71b23e159ce" id="storymap-ifr" width="100%" height="90%"  frameborder="0" allowfullscreen allow="geolocation"></iframe>');
+		        }
+		    });
+		
+			$('#button-gw').click(function(){
+		        if(!$('#iframe').length) {
+		                $('#iframeHolder').html('<iframe src="https://storymaps.arcgis.com/stories/b41a8b3f8f054d24a7198e7cb621a4d8" id="storymap-ifr" width="100%" height="90%"  frameborder="0" allowfullscreen allow="geolocation"></iframe>');
+		        }
+		    });
+ 
+ 			$('#button-ls').click(function(){
+		        if(!$('#iframe').length) {
+		                $('#iframeHolder').html('<iframe src="https://storymaps.arcgis.com/stories/b1c7fbfc66fd4ac39e6d06c3052e8f99" id="storymap-ifr" width="100%" height="90%"  frameborder="0" allowfullscreen allow="geolocation"></iframe>');
+		        }
+		    });
+		    
+		    $('#button-wq').click(function(){
+		        if(!$('#iframe').length) {
+		                $('#iframeHolder').html('<iframe src="https://storymaps.arcgis.com/stories/c0d0ea9961bd4161ba674d4e42953f4b" id="storymap-ifr" width="100%" height="90%"  frameborder="0" allowfullscreen allow="geolocation"></iframe>');
+		        }
+		    });
+		    
+		});
+ 
+
+		</script>
+
+
+		<script type="text/javascript">
+		$(document).ready(function () {
+			
+		  //toggle sidebar
+		  
+			
+		  $('#toggle-sidebar').click(function () {
+			$('#storymap-ifr').css('padding-left', function(i,val){
+				   return parseInt(val,10) == 0 ? 280 : 0;
+			})
+			
+			$('#toggle-sidebar').css('left', function(i,val){
+				   return parseInt(val,10) == 15 ? 277 : 15;
+			})
+			
+			$(this).html($(this).html() === '<i class="fas fa-bars"></i> MENU' ? '<i class="fas fa-angle-left"></i>' : '<i class="fas fa-bars"></i> MENU');
+
+			
+		  });
+		  
+		 
+
+		});
+
+		</script>
+
+
+
+ 
+
+		<!--JavaScript at end of body for optimized loading-->
+    	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous">
+	    </script>
+	    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous">
+	    </script>
+	    <script src="https://malihu.github.io/custom-scrollbar/jquery.mCustomScrollbar.concat.min.js"></script>
+	    <script src="js/sidebar-main.js"></script>
+
+
+	</body>
+</html>
