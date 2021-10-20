@@ -33,7 +33,7 @@ subroutine NoahMP401_setupobspred_UAsnowobs(OBSPred)
 !EOP
   integer                :: n
   type(ESMF_ArraySpec)   :: realarrspec
-  type(ESMF_Field)       :: snowField
+  type(ESMF_Field)       :: snodField,sweField
   integer                :: status
 
   n = 1
@@ -41,12 +41,21 @@ subroutine NoahMP401_setupobspred_UAsnowobs(OBSPred)
        rc=status)
   call LIS_verify(status)
 
-  snowField = ESMF_FieldCreate(arrayspec=realarrspec, &
+  snodField = ESMF_FieldCreate(arrayspec=realarrspec, &
        grid=LIS_vecPatch(n,LIS_rc%lsm_index), &
-       name="UA_snow", rc=status)
+       name="UA_SNOD", rc=status)
   call LIS_verify(status)
-  
-  call ESMF_StateAdd(OBSPred,(/snowField/),rc=status)
+
+
+  sweField = ESMF_FieldCreate(arrayspec=realarrspec, &
+       grid=LIS_vecPatch(n,LIS_rc%lsm_index), &
+       name="UA_SWE", rc=status)
+  call LIS_verify(status)
+
+  call ESMF_StateAdd(OBSPred,(/snodField/),rc=status)
+  call LIS_verify(status)
+
+  call ESMF_StateAdd(OBSPred,(/sweField/),rc=status)
   call LIS_verify(status)
 
 end subroutine NoahMP401_setupobspred_UAsnowobs
