@@ -49,6 +49,8 @@ PetscInt            :: i,j,k
 ! Obtain a new subset of data & Calculate water inflows
 !-------------------------------------------------------------------------------
 ! initialization
+
+if (rank==0) then
 j=1
 k=1
 allocate(m3_riv(IS_riv_bas))
@@ -78,24 +80,28 @@ do i=1,n_weight_table
         end do
         rivid_new(k)=rivid(i)
         k=k+1
+        
      else
         col=idx_i(i)+1
         row=idx_j(i)+1
 
         !Set negative values to zero including fill values (i.e., -9999)
-        if (runsf(col,row)<0) runsf(col,col)=0
-        if (runsb(col,row)<0) runsb(col,col)=0
+        if (runsf(col,row)<0) runsf(col,row)=0
+        if (runsb(col,row)<0) runsb(col,row)=0
 
         m3_riv(k)=(runsf(col,row)                       &
                   +runsb(col,row))*ZS_TauR              & !kg m-2 s-1 -> kg m-2
                   *area_sqm(i)*conversion_factor          !kg m-2 (mm) -> m
 
-        rivid_new(k)=rivid(k)
+        rivid_new(k)=rivid(i)
         k=k+1
+
      end if
 end do
 
 nreach_new=k-1
+
+end if
 
 !*******************************************************************************
 ! open Vlat_file (from rapid_open_Vlat_file.F90)
@@ -193,6 +199,7 @@ end if
 !     end if
 !end if
 
+if (rank==0) then
 !Check temporal consistency if metadata present
 if (IV_time(1)/=-9999) then
      do JS_time=1,IS_time-1
@@ -221,6 +228,7 @@ if (IM_time_bnds(1,1)/=-9999) then
      end do
 end if
 
+end if
 !*******************************************************************************
 ! Read Vlat_file (from rapid_read_Vlat_file.F90)
 !*******************************************************************************

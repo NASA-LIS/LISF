@@ -107,7 +107,7 @@ module LIS_routingMod
     call ESMF_ConfigGetAttribute(LIS_config, LIS_rc%routingmodel, &
          label="Routing model:",default="none", rc=rc)
 
-    if(LIS_rc%routingmodel.ne."none") then
+    if(LIS_rc%routingmodel.eq."RAPID router") then
 
        allocate(LIS_runoff_state(LIS_rc%nnest))
 
@@ -129,10 +129,9 @@ module LIS_routingMod
        endif
       
        call routinginit(trim(LIS_rc%routingmodel)//char(0))
-    endif
-
-#if 0
-    if(LIS_rc%routingmodel.ne."none") then 
+    else if((LIS_rc%routingmodel.eq."HYMAP router") .or. &
+            (LIS_rc%routingmodel.eq."HYMAP2 router") .or. &
+            (LIS_rc%routingmodel.eq."NLDAS router")) then
 
        allocate(LIS_routing(LIS_rc%nnest))
 
@@ -274,7 +273,7 @@ module LIS_routingMod
           enddo
 
        end do
-    else
+    else if (LIS_rc%routingmodel.eq."none") then
 
        allocate(LIS_rc%Routing_DAinst_valid(LIS_rc%ndas))
 
@@ -285,7 +284,6 @@ module LIS_routingMod
 
     end if
 
-#endif
   end subroutine LIS_routing_init
 
 
