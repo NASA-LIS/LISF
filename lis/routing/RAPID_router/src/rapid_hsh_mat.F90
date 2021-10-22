@@ -198,9 +198,14 @@ end do
 !Assemble matrices
 !-------------------------------------------------------------------------------
 call MatAssemblyBegin(ZM_hsh_tot,MAT_FINAL_ASSEMBLY,ierr)
+print *, 'MatAssemblyBegin(ZM_hsh_tot,MAT_FINAL_ASSEMBLY,ierr)'
 call MatAssemblyEnd(ZM_hsh_tot,MAT_FINAL_ASSEMBLY,ierr)
+print *, 'MatAssemblyEnd(ZM_hsh_tot,MAT_FINAL_ASSEMBLY,ierr)'
 call MatAssemblyBegin(ZM_hsh_bas,MAT_FINAL_ASSEMBLY,ierr)
+print *, 'MatAssemblyBegin(ZM_hsh_bas,MAT_FINAL_ASSEMBLY,ierr)'
 call MatAssemblyEnd(ZM_hsh_bas,MAT_FINAL_ASSEMBLY,ierr)
+print *, 'MatAssemblyEnd(ZM_hsh_bas,MAT_FINAL_ASSEMBLY,ierr)'
+
 !sparse matrices need be assembled once their elements have been filled
 !call PetscPrintf(PETSC_COMM_WORLD,'Hashtable-like matrices created'//char(10), &
 !                 ierr)

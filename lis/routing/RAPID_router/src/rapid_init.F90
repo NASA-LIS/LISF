@@ -422,7 +422,6 @@ call VecSet(ZV_QoutRabsmin,ZS_one*999999999,ierr)
 call VecSet(ZV_QoutRabsmax,ZS_one*0        ,ierr)
 end if
 
-
 !*******************************************************************************
 !Initialization procedure for OPTION 1
 !*******************************************************************************
