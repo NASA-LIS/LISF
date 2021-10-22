@@ -1,0 +1,13 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!\section{NoahMP4.0.1 PLUMBER2 forcing}
+!This section describes the implementation of the
+!PLUMBER2 test case data.
+!EOP

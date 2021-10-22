@@ -33,7 +33,13 @@ module LIS_pluginIndices
 !
 !EOP
   PRIVATE
-   
+ 
+!CRF/MCB 20210921-------------------------------------------------------------
+!        Add PLUMBER2 met forcing capability
+character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
+!------------------------------------------------------------------------
+
+  
 !BOC
 !-------------------------------------------------------------------------
 ! Run modes
