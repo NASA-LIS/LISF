@@ -1,0 +1,36 @@
+#!/bin/bash
+#SBATCH --job-name=CFSv2_process
+#
+## Jobs are submitted via the QoS now:
+#SBATCH --time=12:00:00
+#
+## Enter NCCS Project ID below:
+#SBATCH --account=s1189
+#
+## Enter user email below:
+#SBATCH --mail-user=ryan.a.zamora@nasa.gov
+##SBATCH --mail-type=END
+#SBATCH --output=log_files/TASK1_CFSv2_process-%j.out
+#SBATCH --error=log_files/TASK1_CFSv2_process-%j.err
+
+# Passing in user-specified arguments:
+SYR=${1}
+EYR=${2}
+iMon=${3}
+SRCDIR=${4}
+OUTDIR=${5}
+FORCEDIR=${6}
+GRID_DESCRIPTION=${7}
+ic1="${8}"
+ic2="${9}"
+ic3="${10}"
+
+source /usr/share/modules/init/bash
+module load cdo/1.9.9rc2
+module load nco
+
+cd $SRCDIR
+ulimit -s unlimited
+
+sh $SRCDIR/process_forecast_data.scr $SYR $EYR $iMon $SRCDIR $OUTDIR $FORCEDIR $GRID_DESCRIPTION $ic1 $ic2 $ic3
+

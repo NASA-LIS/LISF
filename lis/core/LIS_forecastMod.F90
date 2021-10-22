@@ -69,7 +69,6 @@ contains
 ! !INTERFACE:
   subroutine LIS_forecast_init()
 ! !USES:
-    use ESMF
     use LIS_coreMod
 ! 
 ! !DESCRIPTION:

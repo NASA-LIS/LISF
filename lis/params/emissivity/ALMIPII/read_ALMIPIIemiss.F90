@@ -31,7 +31,7 @@ subroutine read_ALMIPIIemiss(n, wt1,wt2,array1,array2)
 #endif
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
 
   integer, intent(in) :: n
   real                :: wt1
@@ -40,9 +40,9 @@ subroutine read_ALMIPIIemiss(n, wt1,wt2,array1,array2)
   real, intent(inout) :: array2(LIS_rc%ntiles(n))
 
 ! !DESCRIPTION:
-!  This subroutine retrieves the greenness fraction climatology for the 
+!  This subroutine retrieves the greenness fraction climatology for the
 !  specified month and returns the values in the latlon projection
-!  
+!
 !  The arguments are:
 !  \begin{description}
 !  \item[n]
@@ -53,7 +53,7 @@ subroutine read_ALMIPIIemiss(n, wt1,wt2,array1,array2)
 !   output field with the retrieved greenness fraction
 !  \end{description}
 !
-!EOP      
+!EOP
   character*100               :: filename
   character*100               :: temp
   logical                     :: file_exists
@@ -74,8 +74,8 @@ subroutine read_ALMIPIIemiss(n, wt1,wt2,array1,array2)
   allocate(emiss_t(LIS_rc%gnc(n),LIS_rc%gnr(n)))
   allocate(localemiss(LIS_rc%lnc(n),LIS_rc%lnr(n)))
 
-  if(LIS_emiss(n)%firstInstance) then 
-     emissAlarmCheck = .true. 
+  if(LIS_emiss(n)%firstInstance) then
+     emissAlarmCheck = .true.
   else
      emissAlarmCheck = LIS_isAlarmRinging(LIS_rc,&
           "LIS emiss read alarm",&
@@ -85,108 +85,108 @@ subroutine read_ALMIPIIemiss(n, wt1,wt2,array1,array2)
   call LIS_computeTemporalWeights(LIS_rc,LIS_emiss(n)%emissIntervalType, &
        t1,t2,wt1,wt2)
 
-  if(emissAlarmCheck) then 
+  if(emissAlarmCheck) then
      if(LIS_emiss(n)%firstInstance) &
-          LIS_emiss(n)%firstInstance = .false. 
-     
+          LIS_emiss(n)%firstInstance = .false.
+
      array1 = LIS_rc%udef
      array2 = LIS_rc%udef
 
-#if (defined USE_NETCDF3 || defined USE_NETCDF4) 
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
      write(unit=temp,fmt='(I4)') LIS_rc%yr
      read(unit=temp,fmt='(4a1)') (fyr(i),i=1,4)
-     
+
      filename = trim(LIS_emiss(n)%emissfile)//&
           "/ALMIP2_ECOCLIMAP2_"//trim(fyr(3))//trim(fyr(4))&
           //'.nc'
-     
+
      inquire(file=trim(filename), exist=file_exists)
-     if(.not.file_exists) then 
+     if(.not.file_exists) then
         write(LIS_logunit,*) 'emissivity map ',trim(filename),' not found'
         write(LIS_logunit,*) 'Program stopping ...'
         call LIS_endrun
      endif
-     
+
      write(LIS_logunit,*) 'opening EMISS file ',trim(filename)
 
      call LIS_verify(nf90_open(path=trim(filename),mode=NF90_NOWRITE,&
           ncid=ftn), 'nf90_open failed in read_ALMIPIIemiss')
-     
+
      call LIS_verify(nf90_inq_varid(ftn,'emis',emissId),&
           'nf90_inq_varid failed in read_ALMIPIIemiss')
      call LIS_verify(nf90_get_var(ftn,emissId,emiss,&
           start=(/1,1,t1/),&
           count=(/LIS_rc%gnc(n),LIS_rc%gnr(n),1/)),&
           'nf90_get_var failed in read_ALMIPIIemiss')
-     
+
      do r=1,LIS_rc%gnr(n)
         do c=1,LIS_rc%gnc(n)
 !           emiss_t(c,r) = emiss(c,LIS_rc%gnr(n)-r+1)
            emiss_t(c,r) = emiss(c,r)
         enddo
      enddo
-     
+
      localemiss(:,:) = &
-          emiss_t(LIS_ews_halo_ind(n,LIS_localPet+1):&         
+          emiss_t(LIS_ews_halo_ind(n,LIS_localPet+1):&
           LIS_ewe_halo_ind(n,LIS_localPet+1), &
           LIS_nss_halo_ind(n,LIS_localPet+1): &
           LIS_nse_halo_ind(n,LIS_localPet+1))
-     
+
      do t=1,LIS_rc%ntiles(n)
         c = LIS_domain(n)%tile(t)%col
         r = LIS_domain(n)%tile(t)%row
         array1(t) = localemiss(c,r)
      enddo
-     
+
      call LIS_verify(nf90_close(ftn),'nf90_close failed in read_ALMIPIIemiss')
 
      write(unit=temp,fmt='(I4)') LIS_rc%yr
      read(unit=temp,fmt='(4a1)') (fyr(i),i=1,4)
-     
+
      filename = trim(LIS_emiss(n)%emissfile)//&
           "/ALMIP2_ECOCLIMAP2_"//trim(fyr(3))//trim(fyr(4))&
           //'.nc'
-     
+
      inquire(file=trim(filename), exist=file_exists)
-     if(.not.file_exists) then 
+     if(.not.file_exists) then
         write(LIS_logunit,*) 'emissivity map ',trim(filename),' not found'
         write(LIS_logunit,*) 'Program stopping ...'
         call LIS_endrun
      endif
-     
+
      write(LIS_logunit,*) 'opening EMISS file ',trim(filename)
 
      call LIS_verify(nf90_open(path=trim(filename),mode=NF90_NOWRITE,&
           ncid=ftn), 'nf90_open failed in read_ALMIPIIemiss')
-     
+
      call LIS_verify(nf90_inq_varid(ftn,'emis',emissId),&
           'nf90_inq_varid failed in read_ALMIPIIemiss')
      call LIS_verify(nf90_get_var(ftn,emissId,emiss,&
           start=(/1,1,t2/),&
           count=(/LIS_rc%gnc(n),LIS_rc%gnr(n),1/)),&
           'nf90_get_var failed in read_ALMIPIIemiss')
-     
+
      do r=1,LIS_rc%gnr(n)
         do c=1,LIS_rc%gnc(n)
 !           emiss_t(c,r) = emiss(c,LIS_rc%gnr(n)-r+1)
            emiss_t(c,r) = emiss(c,r)
         enddo
      enddo
-     
+
      localemiss(:,:) = &
-          emiss_t(LIS_ews_halo_ind(n,LIS_localPet+1):&         
+          emiss_t(LIS_ews_halo_ind(n,LIS_localPet+1): &
           LIS_ewe_halo_ind(n,LIS_localPet+1), &
           LIS_nss_halo_ind(n,LIS_localPet+1): &
           LIS_nse_halo_ind(n,LIS_localPet+1))
-     
+
      do t=1,LIS_rc%ntiles(n)
         c = LIS_domain(n)%tile(t)%col
         r = LIS_domain(n)%tile(t)%row
         array2(t) = localemiss(c,r)
      enddo
-     
+
      call LIS_verify(nf90_close(ftn),'nf90_close failed in read_ALMIPIIemiss')
-  
+
 #endif
   endif
 

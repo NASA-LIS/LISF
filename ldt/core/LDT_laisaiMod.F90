@@ -406,9 +406,11 @@ contains
                 LDT_laisai_struc(n)%laifile = trim(laidir(n))
                 write(LDT_logunit,*) "Reading single-file, monthly climatologies for: "&
                      //trim(LDT_laisai_struc(n)%laifile)
+                !call readlai( trim(LDT_laisai_struc(n)%lai%source)//char(0),&
+                !     n, LDT_laisai_struc(n)%lai%value, &
+                !     LDT_LSMparam_struc(n)%landmask%value )
                 call readlai( trim(LDT_laisai_struc(n)%lai%source)//char(0),&
-                     n, LDT_laisai_struc(n)%lai%value, &
-                     LDT_LSMparam_struc(n)%landmask%value )
+                     n, LDT_laisai_struc(n)%lai%value)
                 write(LDT_logunit,*) "Done reading file - "//&
                      trim(LDT_laisai_struc(n)%laifile)
                 

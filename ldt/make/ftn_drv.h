@@ -12,6 +12,8 @@
 #define FTN(func) func##_
 #elif IFC
 #define FTN(func) func##_
+#elif CRAYFTN
+#define FTN(func) func##_
 #else
 #define FTN(func) func
 #endif
