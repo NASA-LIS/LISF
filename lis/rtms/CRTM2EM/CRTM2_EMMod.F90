@@ -103,7 +103,6 @@ contains
   subroutine CRTM2_EMonly_initialize()
 ! !USES:
 !    use CRTM_Module
-    use ESMF
     use LIS_coreMod,    only : LIS_rc, LIS_config
     use LIS_logMod,     only : LIS_logunit, LIS_verify, LIS_getNextUnitNumber, &
                                LIS_releaseUnitNumber

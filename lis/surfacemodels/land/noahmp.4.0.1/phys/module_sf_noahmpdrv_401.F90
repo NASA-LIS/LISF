@@ -1,3 +1,4 @@
+! PET from Sujay has been added by Shugong 08/31/2021
 MODULE module_sf_noahmpdrv_401
 !-------------------------------
 #if ( WRF_CHEM == 1 )
@@ -43,6 +44,7 @@ CONTAINS
 		BGAPXY,   WGAPXY,    TGVXY,     TGBXY,    CHVXY,     CHBXY, & ! OUT Noah MP only
 		 SHGXY,    SHCXY,    SHBXY,     EVGXY,    EVBXY,     GHVXY, & ! OUT Noah MP only
 		 GHBXY,    IRGXY,    IRCXY,     IRBXY,     TRXY,     EVCXY, & ! OUT Noah MP only
+                 FGEV_PETXY, FCEV_PETXY, FCTR_PETXY,                & ! PET code from Sujay 
               CHLEAFXY,   CHUCXY,   CHV2XY,    CHB2XY, RS, FPICE,           & ! OUT Noah MP only
               parameters, &
 !                 BEXP_3D,SMCDRY_3D,SMCWLT_3D,SMCREF_3D,SMCMAX_3D,          & ! placeholders to activate 3D soil
@@ -266,6 +268,9 @@ CONTAINS
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  IRBXY     ! bare net longwave rad. [w/m2] [+ to atm]
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  TRXY      ! transpiration [w/m2]  [+ to atm]
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  EVCXY     ! canopy evaporation heat [w/m2]  [+ to atm]
+    REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  FGEV_PETXY
+    REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  FCEV_PETXY
+    REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  FCTR_PETXY
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  CHLEAFXY  ! leaf exchange coefficient 
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  CHUCXY    ! under canopy exchange coefficient 
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  CHV2XY    ! veg 2m exchange coefficient 
@@ -406,6 +411,9 @@ CONTAINS
     REAL                                :: GHB          ! bare ground heat flux [w/m2] [+ to soil]
     REAL                                :: TR           ! transpiration [w/m2]  [+ to atm]
     REAL                                :: EVC          ! canopy evaporation heat [w/m2]  [+ to atm]
+    REAL                                :: FGEV_PET
+    REAL                                :: FCEV_PET
+    REAL                                :: FCTR_PET
     REAL                                :: CHLEAF       ! leaf exchange coefficient 
     REAL                                :: CHUC         ! under canopy exchange coefficient 
     REAL                                :: CHV2         ! veg 2m exchange coefficient 
@@ -842,6 +850,9 @@ CONTAINS
          GHB    = SSOIL
          TR     = LIS_undef_value 
          EVC    = LIS_undef_value 
+         FGEV_PET = LIS_undef_value
+         FCEV_PET = LIS_undef_value
+         FCTR_PET = LIS_undef_value
          CHLEAF = LIS_undef_value 
          CHUC   = LIS_undef_value 
          CHV2   = LIS_undef_value 
@@ -885,6 +896,7 @@ CONTAINS
             BGAP    , WGAP    , CHV     , CHB     , EMISSI  ,           & ! OUT : 
             SHG     , SHC     , SHB     , EVG     , EVB     , GHV     , & ! OUT :
 	    GHB     , IRG     , IRC     , IRB     , TR      , EVC     , & ! OUT :
+            FGEV_PET, FCEV_PET, FCTR_PET,                          & 
 	    CHLEAF  , CHUC    , CHV2    , CHB2    , FPICE   , PAHV    , & 
             PAHG    , PAHB    , PAH     , LAISUN  , LAISHA  , RB        &
 #ifdef WRF_HYDRO
@@ -1023,6 +1035,9 @@ CONTAINS
              GHBXY    (I,J)                = GHB
              TRXY     (I,J)                = TR
              EVCXY    (I,J)                = EVC
+             FGEV_PETXY(I,J)               = FGEV_PET
+             FCEV_PETXY(I,J)               = FCEV_PET
+             FCTR_PETXY(I,J)               = FCTR_PET
              CHLEAFXY (I,J)                = CHLEAF
              CHUCXY   (I,J)                = CHUC
              CHV2XY   (I,J)                = CHV2

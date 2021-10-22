@@ -1,0 +1,13 @@
+== Introduction
+
+The {url-lis-website}[Land Information System framework (LISF)] public testcases described in this document are provided for users to learn how to run and test the LISF code. The testcases include a full end-to-end suite of Land Data Toolkit (LDT), Land Information System (LIS), and Land Verification Toolkit (LVT) cases that demonstrate how to generate model parameter and assimilation-based input files using LDT, run the Noah land surface model (LSM) for a sample "open-loop" (or baseline) experiment and a data assimilation (DA) experiment using LIS, and compare output from the sample experiments using LVT. While these testcases were created to demonstrate the use of LISF, the files provided _could_ be expanded to support research-related model runs.
+
+=== The Testcase Event: Snow Blankets the Southern Great Plains
+
+In late April of 2017, link:https://www.weather.gov/gid/apr302017snow[a major snow storm event] occurred across the Southern Great Plains (SGP) and Rocky Mountains, an area spanning Colorado, Texas, Oklahoma, and southern Kansas. This storm event will be the focus of these testcases.
+
+[.float-group]
+--
+.(link:https://twitter.com/SteveBowenWx/status/858876054789910528/photo/1[Image source], link:https://www.nohrsc.noaa.gov/snowfall_v2/index.html?season=2016-2017&date=2018071912&version=0[Data source])
+image::intro_storm_radar.jpeg[align="center"]
+--

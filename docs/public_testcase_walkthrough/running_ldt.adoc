@@ -1,0 +1,20 @@
+You're now ready to run LDT:
+
+. Copy your compiled *_LDT_* executable into `$WORKING_DIR/{ldt-run-dir}`
+. Run the *_LDT_* executable using the provided `{ldt-config-filename}` file:
+
+[source,shell,subs=attributes]
+----
+% ./LDT {ldt-config-filename}
+----
+
+The run should take a few minutes to complete. If the run aborts, troubleshoot the issue by reviewing any errors printed to the terminal and by viewing the contents of `ldtlog.0000`. If no errors print to the terminal, verify that the run completed successfully by checking for the following confirmation at the end of the `ldtlog.0000`:
+
+[source,shell]
+----
+% tail ldtlog.0000
+...
+ --------------------------------
+  Finished LDT run
+ --------------------------------
+----

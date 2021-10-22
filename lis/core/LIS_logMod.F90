@@ -340,7 +340,7 @@ contains
 
   
     if ( ierr /= 0 ) then       
-       write(LIS_logunit,*),'[ERR] ',msg,' Stopping.'
+       write(LIS_logunit,*) '[ERR] ',msg,' Stopping.'
        call LIS_endrun
     endif
 

@@ -5856,7 +5856,7 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, short_name, &
 !EOP
 
 ! !USES:
-   use ESMF 
+   !NONE
 
    implicit none
 
