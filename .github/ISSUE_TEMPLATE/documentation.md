@@ -2,7 +2,7 @@
 name: Documentation
 about: Missing information? Broken formatting? Help us improve the docs!
 title: ''
-labels: documentation
+labels: Documentation
 assignees: ''
 
 ---

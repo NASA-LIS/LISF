@@ -142,7 +142,6 @@ contains
                             LIS_releaseUnitNumber, LIS_verify 
     use LIS_FORC_AttributesMod
     use LIS_forecastMod
-    use ESMF
 
     implicit none
 

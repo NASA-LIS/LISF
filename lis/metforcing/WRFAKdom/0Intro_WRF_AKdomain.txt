@@ -1,0 +1,19 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!\section{WRF AK}
+!The WRF AK (Alaska) domain forcing data produced at NCAR by E. Gutmann, K. Ikeda, and 
+!C. Liu (ref.: https://link.springer.com/article/10.1007/s00382-016-3327-9).
+!These WRF-generated files are referred to by the domain, which is the state of Alaska,
+!and are post-processed into daily files.
+!The dataset is on polar stereographic grid at 4km resolution, encompassing most
+!of the Alaska peninsula, and available at 1-hour intervals.
+!EOP

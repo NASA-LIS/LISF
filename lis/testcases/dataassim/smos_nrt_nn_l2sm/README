@@ -1,0 +1,30 @@
+SMOS NRT NN L2 Soilmoisture Reader Testcase
+
+This case demonstrates the SMOS NRT NN L2 soilmoisture reader.
+
+It uses:
+  (a) The AGRMET foring
+  (b) retrospective running mode
+  (c) The Noah version 3.9 land surface model
+  (d) Rotated GALWEM 10-km domain - CONUS
+  (e) A time period from 2016-01-31T23:45:00 to 2016-07-31T23:45:00
+
+This directory contains:
+  (a) This README file
+  (b) The "lis.config" file used for this testcase
+  (c) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+      to select the output variables
+  (d) An "output.ctl" file used to display the output in GrADS from
+      the LIS run
+
+Note that the "lis.config" file should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+To run this testcase:
+  (a) Run the LIS executable using the "lis.config" file with the
+      testcase input data
+  (b) View the binary output using the testcase GrADS files
+
+
+

@@ -322,8 +322,8 @@ subroutine jules50_setsoilm(n, LSM_State)
               jules50_struc(n)%jules50(t)%smcl_soilt(1) = soilm1(t) ![kg/m2]
 
               if(soilm1(t).lt.0) then 
-                 print*, 'setsoilm1 ',t,soilm1(t)
-                 stop
+                 write(LIS_logunit, *) 'setsoilm1 ',t,soilm1(t)
+                 call LIS_endrun
               endif
 	      ! I think the following sentence is redundant. 
 	      !Because both “update_flag_new” and “update_flag_tile” are TRUE 
@@ -339,8 +339,8 @@ subroutine jules50_setsoilm(n, LSM_State)
               jules50_struc(n)%jules50(t)%smcl_soilt(2) = soilm2(t)
 
               if(soilm2(t).lt.0) then 
-                 print*, 'setsoilm2 ',t,soilm2(t)
-                   stop
+                 write(LIS_logunit, *) 'setsoilm2 ',t,soilm2(t)
+                 call LIS_endrun
               endif
 
               !endif
@@ -355,8 +355,8 @@ subroutine jules50_setsoilm(n, LSM_State)
               jules50_struc(n)%jules50(t)%smcl_soilt(3) = soilm3(t)
 
               if(soilm3(t).lt.0) then 
-                 print*, 'setsoilm3 ',t,soilm3(t)
-                   stop
+                 write(LIS_logunit, *) 'setsoilm3 ',t,soilm3(t)
+                 call LIS_endrun
               endif
 
               !endif
@@ -372,8 +372,8 @@ subroutine jules50_setsoilm(n, LSM_State)
               jules50_struc(n)%jules50(t)%smcl_soilt(4) = soilm4(t)
 
               if(soilm4(t).lt.0) then 
-                 print*, 'setsoilm4 ',t,soilm4(t)
-                  stop
+                 write(LIS_logunit, *) 'setsoilm4 ',t,soilm4(t)
+                 call LIS_endrun
               endif
               !endif
            else 
@@ -702,10 +702,6 @@ subroutine jules50_setsoilm(n, LSM_State)
                           jules50_struc(n)%jules50(t)%p_s_sthf(j) = 0.1*MIN_THRESHOLD(j)*frac_sthf(j) / sat_p(j) ! [m3/m3]/[m3/m3] --> [-]
                           jules50_struc(n)%jules50(t)%smcl_soilt(j) = 0.1*MIN_THRESHOLD(j) / (1/dzsoil(j)*1/1000)   ! [m3w/m3s] / ([1/m1s][m3w/kg]) --> kg/m2s
                        endif
-                    !print*, i, m
-                    !print*, '2smc',t, jules50_struc(n)%jules50(t)%smcl_soilt(:)
-                    !print*, '2p_s_sthu ',t,jules50_struc(n)%jules50(t)%p_s_sthu(:)
-                    !print*, '2max ',t,MAX_THRESHOLD !jules50_struc(n)%jules50(t)%smcmax
                     enddo
 !                 call LIS_endrun()
                  enddo
