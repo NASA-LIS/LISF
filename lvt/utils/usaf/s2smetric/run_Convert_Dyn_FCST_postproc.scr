@@ -1,16 +1,20 @@
-#!/bin/sh
+#!/bin/sh -x
 #SBATCH --job-name=JOB-CALC_Dyn_PCTL
 #
 ## Jobs are submitted via the QoS now:
 ##SBATCH --partition=debug   # Don't have to specify partition anymore – better to allow QoS software determine on needs and CPU resources available at run-time
-#SBATCH --ntasks=2
-#SBATCH --time=07:00:00
+#SBATCH --ntasks=1
+#SBATCH --ntasks-per-node=1
+##SBATCH --time=07:00:00
+#SBATCH --time=02:00:00
+
 #
 ## Enter NCCS Project ID below:
 #SBATCH --account=s1189
-#SBATCH --partition=packable
-#SBATCH --qos=s1189_pk
-#
+##SBATCH --partition=packable
+##SBATCH --qos=s1189_pk
+#SBATCH --constraint="sky|hasw|cas"
+
 ## Enter user email below:
 #SBATCH --mail-user=
 #SBATCH --mail-type=END
@@ -32,12 +36,17 @@ CEYR=${9}
 
 
 
-cd /discover/nobackup/projects/fame/FORECASTS/GEOS5/BCSD_Test/AF_test/Postprocessing/lib_bcsd_metrics/
+#cd /discover/nobackup/projects/fame/FORECASTS/GEOS5/BCSD_Test/AF_test/Postprocessing/lib_bcsd_metrics/
+cd /discover/nobackup/projects/lis_aist17/emkemp/AFWA/lis74_s2s_patches/LISF/lvt/utils/usaf/s2smetric/lib_bcsd_metrics/
+
 ulimit -s unlimited
 
+#source /usr/share/modules/init/sh
+#module load python/GEOSpyD/Ana2019.10_py3.7
 source /usr/share/modules/init/sh
-module load python/GEOSpyD/Ana2019.10_py3.7
+module use --append /home/emkemp/privatemodules
+module load lisf_7_intel_19_1_3_304_s2s
 
 echo $SCRIPT
 
- python $SCRIPT $FCST_INIT_MON $HYD_MODEL $LEAD $DOMAIN $TARGET_YEAR $MODEL ${CSYR} ${CEYR}
+python3 $SCRIPT $FCST_INIT_MON $HYD_MODEL $LEAD $DOMAIN $TARGET_YEAR $MODEL ${CSYR} ${CEYR}
