@@ -118,9 +118,10 @@ def _loop_daily(scriptdir, ldtfile, topdatadir, startdate, model_forcing):
             cmd += "/LIS_HIST_%4.4d%2.2d%2.2d0000.d01.nc" %(curdate.year,
                                                             curdate.month,
                                                             curdate.day)
-        cmd += " ./cf_%s_%4.4d%2.2d" %(model_forcing.upper(),
-                                       startdate.year,
-                                       startdate.month)
+        cmd += " %s/cf_%s_%4.4d%2.2d" %(topdatadir,
+                                         model_forcing.upper(),
+                                         startdate.year,
+                                         startdate.month)
         cmd += " %4.4d%2.2d%2.2d00" %(curdate.year,
                                       curdate.month,
                                       curdate.day)
@@ -151,9 +152,10 @@ def _proc_month(scriptdir, topdatadir, startdate, model_forcing):
                                     month=(startdate.month + 1),
                                     day=1)
     cmd = "%s/monthly_s2spost_nc.py" %(scriptdir)
-    workdir = "./cf_%s_%4.4d%2.2d" %(model_forcing.upper(),
-                                     startdate.year,
-                                     startdate.month)
+    workdir = "%s/cf_%s_%4.4d%2.2d" %(topdatadir,
+                                      model_forcing.upper(),
+                                      startdate.year,
+                                      startdate.month)
     cmd += " %s" %(workdir)
     cmd += " %s" %(workdir)
     cmd += " %4.4d%2.2d%2.2d" %(firstdate.year,
@@ -170,21 +172,21 @@ def _proc_month(scriptdir, topdatadir, startdate, model_forcing):
         print("[ERR] Problem creating monthly file!")
         sys.exit(1)
 
-def _create_done_file(startdate, model_forcing):
+def _create_done_file(topdatadir, startdate, model_forcing):
     """Create a 'done' file indicating batch job has finished."""
-    path = "./cf_%s_%4.4d%2.2d/done" %(model_forcing.upper(),
-                                       startdate.year,
-                                       startdate.month)
+    path = "%s/cf_%s_%4.4d%2.2d/done" %(topdatadir,
+                                        model_forcing.upper(),
+                                        startdate.year,
+                                        startdate.month)
     fobj = open(path, "w")
     fobj.close()
 
 def _driver():
     """Main driver"""
-
     scriptdir, ldtfile, topdatadir, startdate, model_forcing = _read_cmd_args()
     _loop_daily(scriptdir, ldtfile, topdatadir, startdate, model_forcing)
     _proc_month(scriptdir, topdatadir, startdate, model_forcing)
-    _create_done_file(startdate, model_forcing)
+    _create_done_file(topdatadir, startdate, model_forcing)
 
 # Invoke driver
 if __name__ == "__main__":
