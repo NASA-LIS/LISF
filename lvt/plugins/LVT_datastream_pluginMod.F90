@@ -176,7 +176,8 @@ contains
     use JASMINsm_obsMod,        only : JASMINsm_obsInit
     use ERA5obsMod,             only : ERA5obsinit
     use FluxSat_obsMod,         only : FluxSat_obsInit
-
+    use GEOSlandMod,            only : GEOSlandInit
+    
     external readtemplateObs
     external readLISoutput
     external readLIS6output
@@ -282,6 +283,7 @@ contains
     external readJASMINsmobs
     external readERA5obs
     external readFluxSatobs
+    external readGEOSland
 
     call registerobsread(trim(LVT_LVTbenchmarkobsId)//char(0),&
          readLVTbenchmarkOUTobs)
@@ -709,6 +711,11 @@ contains
          FluxSat_obsinit)
     call registerobsread(trim(LVT_FluxSatobsId)//char(0),&
          readFluxSatobs)
+
+    call registerobssetup(trim(LVT_GEOSlandId)//char(0), &
+         GEOSlandinit)
+    call registerobsread(trim(LVT_GEOSlandId)//char(0),&
+         readGEOSland)
 
   end subroutine LVT_datastream_plugin
 end module LVT_datastream_pluginMod
