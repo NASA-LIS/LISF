@@ -141,7 +141,7 @@ subroutine read_GCOMW_AMSR2L3SND(n, k, OBS_State, OBS_Pert_State)
            enddo
         enddo
         if(GCOMW_AMSR2L3SND_struc(n)%usr_input_mask.eq.1) then 
-        
+           
            do r=1,LIS_rc%obs_lnr(k)
               do c=1,LIS_rc%obs_lnc(k)
                  grid_index = LIS_obs_domain(n,k)%gindex(c,r)
@@ -153,11 +153,7 @@ subroutine read_GCOMW_AMSR2L3SND(n, k, OBS_State, OBS_Pert_State)
               enddo
            enddo
         endif
-
-        open(100,file='test.bin',form='unformatted')
-        write(100) GCOMW_AMSR2L3SND_struc(n)%sndobs
-        close(100)
-
+        
      else
         sndobs_A = LIS_rc%udef
         sndobs_D = LIS_rc%udef             
@@ -185,7 +181,7 @@ subroutine read_GCOMW_AMSR2L3SND(n, k, OBS_State, OBS_Pert_State)
                  
                  if(sndobs_A(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0) then        
                     GCOMW_AMSR2L3SND_struc(n)%sndobs(c,r) = &
-                         sndobs_A(c+(r-1)*LIS_rc%obs_lnc(k))                 
+                         sndobs_A(c+(r-1)*LIS_rc%obs_lnc(k))/100.0                 
                     lon = LIS_obs_domain(n,k)%lon(c+(r-1)*LIS_rc%obs_lnc(k))
                     lhour = 13.5 
                     call LIS_localtime2gmt (gmt,lon,lhour,zone)
@@ -194,7 +190,7 @@ subroutine read_GCOMW_AMSR2L3SND(n, k, OBS_State, OBS_Pert_State)
                  
                  if(sndobs_D(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0) then          
                     GCOMW_AMSR2L3SND_struc(n)%sndobs(c,r) = &
-                         sndobs_D(c+(r-1)*LIS_rc%obs_lnc(k))
+                         sndobs_D(c+(r-1)*LIS_rc%obs_lnc(k))/100.0
                     
                     lon = LIS_obs_domain(n,k)%lon(c+(r-1)*LIS_rc%obs_lnc(k))
                     lhour = 1.5
@@ -204,7 +200,7 @@ subroutine read_GCOMW_AMSR2L3SND(n, k, OBS_State, OBS_Pert_State)
               endif
            enddo
         enddo
-
+        
         do r=1,LIS_rc%obs_lnr(k)
            do c=1,LIS_rc%obs_lnc(k)
               grid_index = LIS_obs_domain(n,k)%gindex(c,r)
@@ -226,110 +222,108 @@ subroutine read_GCOMW_AMSR2L3SND(n, k, OBS_State, OBS_Pert_State)
         call create_IMS_filename_AMSR2(imsfile,&
              GCOMW_AMSR2L3SND_struc(n)%IMSdir,&
              LIS_rc%yr,LIS_rc%doy)  
-           inquire(file=imsfile,exist=file_exists)
+        inquire(file=imsfile,exist=file_exists)
+        
+        if(file_exists) then 
            
-           if(file_exists) then 
-              
-              ftn = LIS_getNextUnitNumber()
-              
-              write(LIS_logunit,*) '[INFO] Reading ',trim(imsfile)
-              open(ftn,file=trim(imsfile),form='unformatted')
-              read(ftn) IMSdata
-              close(ftn)
-              
-              call LIS_releaseUnitNumber(ftn)
-              
-              ims_li  = .false.
-              do c=1,IMSnc*IMSnr
-                 if(IMSdata(c).ge.0) then 
-                    ims_li(c) = .true. 
-                 endif
-              enddo
-              
+           ftn = LIS_getNextUnitNumber()
+           
+           write(LIS_logunit,*) '[INFO] Reading ',trim(imsfile)
+           open(ftn,file=trim(imsfile),form='unformatted')
+           read(ftn) IMSdata
+           close(ftn)
+           
+           call LIS_releaseUnitNumber(ftn)
+           
+           ims_li  = .false.
+           do c=1,IMSnc*IMSnr
+              if(IMSdata(c).ge.0) then 
+                 ims_li(c) = .true. 
+              endif
+           enddo
+           
 !-------------------------------------------------------------------------
 ! Interpolate the IMS data to the observations grid. It is assumed that
 ! IMS data is at a coarser resolution than the AMSR2 observation space. 
 !------------------------------------------------------------------------- 
 
-              call bilinear_interp(LIS_rc%obs_gridDesc(k,:),&
-                   ims_li, IMSdata, lo, IMSdata_ip,&
-                   GCOMW_AMSR2L3SND_struc(n)%ims_mi,&
-                   LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k),&
-                   GCOMW_AMSR2L3SND_struc(n)%ims_rlat, &
-                   GCOMW_AMSR2L3SND_struc(n)%ims_rlon, &
-                   GCOMW_AMSR2L3SND_struc(n)%ims_w11, &
-                   GCOMW_AMSR2L3SND_struc(n)%ims_w12, &
-                   GCOMW_AMSR2L3SND_struc(n)%ims_w21, &
-                   GCOMW_AMSR2L3SND_struc(n)%ims_w22, &
-                   GCOMW_AMSR2L3SND_struc(n)%ims_n11, &
-                   GCOMW_AMSR2L3SND_struc(n)%ims_n12, &
-                   GCOMW_AMSR2L3SND_struc(n)%ims_n21, &
-                   GCOMW_AMSR2L3SND_struc(n)%ims_n22, &
-                   LIS_rc%udef, ios)
-
-              do r=1,LIS_rc%obs_lnr(k)
-                 do c=1,LIS_rc%obs_lnc(k)
-                    if(IMSdata_ip(c+LIS_rc%obs_lnc(k)*(r-1)).lt.0.0) then 
-                       GCOMW_AMSR2L3SND_struc(n)%sndobs(&
-                            c,r) = LIS_rc%udef
-                    elseif(IMSdata_ip(c+LIS_rc%obs_lnc(k)*(r-1)).eq.0.0) then 
-                       GCOMW_AMSR2L3SND_struc(n)%sndobs(&
-                            c,r) = 0.0
-                    endif
-                    if(IMSdata_ip(c+LIS_rc%obs_lnc(k)*(r-1)).gt.0.0.and.&
-                         GCOMW_AMSR2L3SND_struc(n)%sndobs(&
-                         c,r).eq.0) then 
-                       GCOMW_AMSR2L3SND_struc(n)%sndobs(&
-                            c,r) = 0.0
-                    endif
-                    if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
-                       GCOMW_AMSR2L3SND_struc(n)%IMSdata_obs(&
-                            LIS_obs_domain(n,k)%gindex(c,r)) = & 
-                            IMSdata_ip(c+LIS_rc%obs_lnc(k)*(r-1))
-                    endif
-
-                 enddo
+           call bilinear_interp(LIS_rc%obs_gridDesc(k,:),&
+                ims_li, IMSdata, lo, IMSdata_ip,&
+                GCOMW_AMSR2L3SND_struc(n)%ims_mi,&
+                LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k),&
+                GCOMW_AMSR2L3SND_struc(n)%ims_rlat, &
+                GCOMW_AMSR2L3SND_struc(n)%ims_rlon, &
+                GCOMW_AMSR2L3SND_struc(n)%ims_w11, &
+                GCOMW_AMSR2L3SND_struc(n)%ims_w12, &
+                GCOMW_AMSR2L3SND_struc(n)%ims_w21, &
+                GCOMW_AMSR2L3SND_struc(n)%ims_w22, &
+                GCOMW_AMSR2L3SND_struc(n)%ims_n11, &
+                GCOMW_AMSR2L3SND_struc(n)%ims_n12, &
+                GCOMW_AMSR2L3SND_struc(n)%ims_n21, &
+                GCOMW_AMSR2L3SND_struc(n)%ims_n22, &
+                LIS_rc%udef, ios)
+           
+           do r=1,LIS_rc%obs_lnr(k)
+              do c=1,LIS_rc%obs_lnc(k)
+                 if(IMSdata_ip(c+LIS_rc%obs_lnc(k)*(r-1)).lt.0.0) then 
+                    GCOMW_AMSR2L3SND_struc(n)%sndobs(&
+                         c,r) = LIS_rc%udef
+                 elseif(IMSdata_ip(c+LIS_rc%obs_lnc(k)*(r-1)).eq.0.0) then 
+                    GCOMW_AMSR2L3SND_struc(n)%sndobs(&
+                         c,r) = 0.0
+                 endif
+                 if(IMSdata_ip(c+LIS_rc%obs_lnc(k)*(r-1)).gt.0.0.and.&
+                      GCOMW_AMSR2L3SND_struc(n)%sndobs(&
+                      c,r).eq.0) then 
+                    GCOMW_AMSR2L3SND_struc(n)%sndobs(&
+                         c,r) = 0.0
+                 endif
+                 if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
+                    GCOMW_AMSR2L3SND_struc(n)%IMSdata_obs(&
+                         LIS_obs_domain(n,k)%gindex(c,r)) = & 
+                         IMSdata_ip(c+LIS_rc%obs_lnc(k)*(r-1))
+                 endif
+                 
               enddo
-
-           endif
+           enddo
+           
         endif
+     endif
 
 !-------------------------------------------------------------------------
 ! Process MODIS data if it exists
 !------------------------------------------------------------------------- 
-        if(GCOMW_AMSR2L3SND_struc(n)%useMODIS.eq.1) then 
+     if(GCOMW_AMSR2L3SND_struc(n)%useMODIS.eq.1) then 
+        call get_MOD10C1_filename_AMSR2(MODISfile,&
+             GCOMW_AMSR2L3SND_struc(n)%MODISdir)
+        
+        inquire(file=MODISfile,exist=file_exists) 
+        if(file_exists) then 
+           write(LIS_logunit,*) '[INFO] Reading ',trim(MODISfile)
+           call getMOD10data_AMSR2(n,k,MODISfile,MODISdata_ip)
            
-           call get_MOD10C1_filename_AMSR2(MODISfile,&
-                GCOMW_AMSR2L3SND_struc(n)%MODISdir)
-           
-           inquire(file=MODISfile,exist=file_exists) 
-           if(file_exists) then 
-              write(LIS_logunit,*) '[INFO] Reading ',trim(MODISfile)
-              call getMOD10data_AMSR2(n,k,MODISfile,MODISdata_ip)
-
-              do r=1,LIS_rc%obs_lnr(k)
-                 do c=1,LIS_rc%obs_lnc(k)
-                    if(MODISdata_ip(c+LIS_rc%obs_lnc(k)*(r-1)).lt.0.0) then 
-                       GCOMW_AMSR2L3SND_struc(n)%sndobs(c,r) = &
-                            LIS_rc%udef
-                    elseif(MODISdata_ip(c+LIS_rc%obs_lnc(k)*(r-1)).eq.0.0) then 
-                       GCOMW_AMSR2L3SND_struc(n)%sndobs(c,r) = &
-                            0.0
-                    endif
-
-                    if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
-                       GCOMW_AMSR2L3SND_struc(n)%MODISdata_obs(&
-                            LIS_obs_domain(n,k)%gindex(c,r)) = & 
-                            MODISdata_ip(c+LIS_rc%obs_lnc(k)*(r-1))
-                    endif
-
-                 enddo
+           do r=1,LIS_rc%obs_lnr(k)
+              do c=1,LIS_rc%obs_lnc(k)
+                 if(MODISdata_ip(c+LIS_rc%obs_lnc(k)*(r-1)).lt.0.0) then 
+                    GCOMW_AMSR2L3SND_struc(n)%sndobs(c,r) = &
+                         LIS_rc%udef
+                 elseif(MODISdata_ip(c+LIS_rc%obs_lnc(k)*(r-1)).eq.0.0) then 
+                    GCOMW_AMSR2L3SND_struc(n)%sndobs(c,r) = &
+                         0.0
+                 endif
+                 
+                 if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
+                    GCOMW_AMSR2L3SND_struc(n)%MODISdata_obs(&
+                         LIS_obs_domain(n,k)%gindex(c,r)) = & 
+                         MODISdata_ip(c+LIS_rc%obs_lnc(k)*(r-1))
+                 endif
+                 
               enddo
-           endif
-           
+           enddo
         endif
+        
+     endif
 
-     
   endif
   
 
@@ -573,12 +567,20 @@ subroutine read_AMSR2snd_data(n, k, fname,sndobs_ip)
 !--------------------------------------------------------------------------
 ! Interpolate to the observation grid
 !-------------------------------------------------------------------------- 
-  call neighbor_interp(LIS_rc%obs_gridDesc(k,:),snd_data_b,snd_data,&
+  call bilinear_interp(LIS_rc%obs_gridDesc(k,:),snd_data_b,snd_data,&
        sndobs_b_ip,sndobs_ip,&
        GCOMW_AMSR2L3SND_struc(n)%amsr2nc*GCOMW_AMSR2L3SND_struc(n)%amsr2nr,&
        LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k),&
        GCOMW_AMSR2L3SND_struc(n)%rlat,GCOMW_AMSR2L3SND_struc(n)%rlon, &
-       GCOMW_AMSR2L3SND_struc(n)%n11,LIS_rc%udef,ios)
+       GCOMW_AMSR2L3SND_struc(n)%w11,&
+       GCOMW_AMSR2L3SND_struc(n)%w12,&
+       GCOMW_AMSR2L3SND_struc(n)%w21,&
+       GCOMW_AMSR2L3SND_struc(n)%w22,&
+       GCOMW_AMSR2L3SND_struc(n)%n11,&
+       GCOMW_AMSR2L3SND_struc(n)%n12,&
+       GCOMW_AMSR2L3SND_struc(n)%n21,&
+       GCOMW_AMSR2L3SND_struc(n)%n22,&
+       LIS_rc%udef,ios)
 
 #endif
   
@@ -695,12 +697,20 @@ subroutine read_AMSR2snd_bc_data(n, k, fname,sndobs_ip)
 !--------------------------------------------------------------------------
 ! Interpolate to the observation grid
 !-------------------------------------------------------------------------- 
-  call neighbor_interp(LIS_rc%obs_gridDesc(k,:),snd_data_b,snd_data,&
+  call bilinear_interp(LIS_rc%obs_gridDesc(k,:),snd_data_b,snd_data,&
        sndobs_b_ip,sndobs_ip,&
        GCOMW_AMSR2L3SND_struc(n)%amsr2nc*GCOMW_AMSR2L3SND_struc(n)%amsr2nr,&
        LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k),&
        GCOMW_AMSR2L3SND_struc(n)%rlat,GCOMW_AMSR2L3SND_struc(n)%rlon, &
-       GCOMW_AMSR2L3SND_struc(n)%n11,LIS_rc%udef,ios)
+       GCOMW_AMSR2L3SND_struc(n)%n11,&
+       GCOMW_AMSR2L3SND_struc(n)%n12,&
+       GCOMW_AMSR2L3SND_struc(n)%n21,&
+       GCOMW_AMSR2L3SND_struc(n)%n22,&
+       GCOMW_AMSR2L3SND_struc(n)%w11,&
+       GCOMW_AMSR2L3SND_struc(n)%w12,&
+       GCOMW_AMSR2L3SND_struc(n)%w21,&
+       GCOMW_AMSR2L3SND_struc(n)%w22,&
+       LIS_rc%udef,ios)
 
 #endif
   
@@ -916,7 +926,8 @@ subroutine getMOD10data_AMSR2(n,k,name,tmp_obsl)
   !Grid and field names
   grid_name ="MOD_CMG_Snow_5km"
   ps_name   ="Day_CMG_Snow_Cover"
-  ci_name   ="Day_CMG_Confidence_Index"
+  ci_name   ="Day_CMG_Clear_Index"  ! MLW collection 6
+  ! ci_name   ="Day_CMG_Confidence_Index" ! MLW collection 5
   pc_name   ="Day_CMG_Cloud_Obscured"
   qa_name   ="Snow_Spatial_QA"
   
@@ -1088,9 +1099,26 @@ subroutine calculate_mod10sca_AMSR2(n, k, dim1, dim2, ps,ci,pc,go)
         endif
      enddo
   enddo
-  call upscaleByAveraging(GCOMW_AMSR2L3SND_struc(n)%mod_mi,&
-       LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k),LIS_rc%udef, &
-       GCOMW_AMSR2L3SND_struc(n)%mod_n11,li, sca1, lo,go)
+  
+  call bilinear_interp(LIS_rc%obs_gridDesc(k,:),li,sca1,&
+       lo,go,&
+       GCOMW_AMSR2L3SND_struc(n)%mod_mi,&
+       LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k),&
+       GCOMW_AMSR2L3SND_struc(n)%mod_rlat,&
+       GCOMW_AMSR2L3SND_struc(n)%mod_rlon, &
+       GCOMW_AMSR2L3SND_struc(n)%mod_w11,&
+       GCOMW_AMSR2L3SND_struc(n)%mod_w12,&
+       GCOMW_AMSR2L3SND_struc(n)%mod_w21,&
+       GCOMW_AMSR2L3SND_struc(n)%mod_w22,&
+       GCOMW_AMSR2L3SND_struc(n)%mod_n11,&
+       GCOMW_AMSR2L3SND_struc(n)%mod_n12,&
+       GCOMW_AMSR2L3SND_struc(n)%mod_n21,&
+       GCOMW_AMSR2L3SND_struc(n)%mod_n22,&
+       LIS_rc%udef,iret)
+
+!  call upscaleByAveraging(GCOMW_AMSR2L3SND_struc(n)%mod_mi,&
+!       LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k),LIS_rc%udef, &
+!       GCOMW_AMSR2L3SND_struc(n)%mod_n11,li, sca1, lo,go)
   deallocate(sca1)
   deallocate(li)
   
@@ -1148,7 +1176,7 @@ subroutine get_MOD10C1_filename_AMSR2(name, ndir)
   write(unit=fdoy, fmt='(i3.3)') doy
 
   name = trim(ndir)//'/'//trim(fyr)//'/'//'MOD10C1.A'&
-            //trim(fyr)//trim(fdoy)//'.005.hdf'
+            //trim(fyr)//trim(fdoy)//'.006.hdf' ! MLW read MOD10C1 collection 6
 end subroutine get_MOD10C1_filename_AMSR2
 
 
