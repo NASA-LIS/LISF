@@ -18,6 +18,7 @@
 from datetime import datetime
 import glob
 import os
+import subprocess
 import sys
 
 # Third-party modules
@@ -95,9 +96,10 @@ for var_name in ['RootZone-SM', 'Surface-SM', 'Streamflow']:
                                              smon.month, \
                                              NMME_MODEL.upper(), \
                                              smon.month, emon.month)
-        print(f"[INFO] reading forecast climatology {INFILE}")
+        #print(f"[INFO] reading forecast climatology {INFILE}")
         infile1 = glob.glob(INFILE)
-        print(f"[INFO] reading forecast climatology {infile1}")
+        #print(f"[INFO] reading forecast climatology {infile1}")
+        print("[INFO] Reading forecast climatology")
 
         # First reading all available years for the given
         # forecast initialization month
@@ -189,3 +191,10 @@ for var_name in ['RootZone-SM', 'Surface-SM', 'Streamflow']:
     anom_xr.coords['ens'] = (('ens'), np.arange(0, ens_count, dtype=int))
     print(f"[INFO] Writing {OUTFILE}")
     anom_xr.to_netcdf(OUTFILE)
+
+# Create file tag indicating completion
+filename = f"{outdir}/sanom.{hyd_model}.{NMME_MODEL}.done"
+cmd = f"touch {filename}"
+if subprocess.call(cmd, shell=True) != 0:
+    print(f"[ERR] Cannot create {filename}")
+    sys.exit(1)
