@@ -18,6 +18,7 @@ import datetime
 import os
 import subprocess
 import sys
+import time
 
 # Local constants
 _CSYR = 2008
@@ -38,7 +39,12 @@ _DOMAIN = "AFRICOM"
 
 _BATCH_SCRIPT = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
 _BATCH_SCRIPT += "/lis74_s2s_patches/LISF/lvt/utils/usaf/s2smetric"
-_BATCH_SCRIPT += "/run_Convert_Dyn_FCST_postproc.scr"
+#_BATCH_SCRIPT += "/run_Convert_Dyn_FCST_postproc.scr"
+_BATCH_SCRIPT += "/run_generate_metrics.sh"
+
+_PYLIBDIR = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
+_PYLIBDIR += "/lis74_s2s_patches/LISF/lvt/utils/usaf/s2smetric"
+_PYLIBDIR += "/lib_bcsd_metrics"
 
 # Local methods
 def _usage():
@@ -76,6 +82,7 @@ def _submit_metric_batch_jobs(currentdate, model):
         cmd += " %s" %(model)
         cmd += " %4.4d" %(_CSYR)
         cmd += " %4.4d" %(_CEYR)
+        cmd += " %s" %(_PYLIBDIR)
         print(cmd)
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
@@ -92,6 +99,7 @@ def _driver():
     os.chdir(_RUNDIR)
     for model in _NMME_MODELS:
         _submit_metric_batch_jobs(currentdate, model)
+        time.sleep(1) # Don't overwhelm SLURM.
 
 if __name__ == "__main__":
     _driver()
