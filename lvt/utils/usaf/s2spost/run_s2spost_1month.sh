@@ -1,6 +1,6 @@
 #!/bin/sh
 #SBATCH --job-name=s2scf
-#SBATCH --time=0:30:00
+#SBATCH --time=0:45:00
 #SBATCH --account s1189
 ##SBATCH --output global.slurm.out
 #SBATCH --ntasks=1
@@ -43,7 +43,7 @@ module use --append /home/emkemp/privatemodules
 module load lisf_7_intel_19_1_3_304
 
 # Local paths
-SCRIPTDIR=/discover/nobackup/projects/lis_aist17/emkemp/AFWA/lis74_s2s_cf/LISF/lvt/utils/afwa/s2spost
+SCRIPTDIR=/discover/nobackup/projects/lis_aist17/emkemp/AFWA/lis74_s2s_patches/LISF/lvt/utils/usaf/s2spost
 
 # Get the command line arguments.
 if [ -z "$1" ] ; then
