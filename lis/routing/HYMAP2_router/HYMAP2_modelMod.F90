@@ -1,15 +1,15 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center
-! Land Information System Framework (LISF)
-! Version 7.3
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.1
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2015 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 ! !REVISION HISTORY: 
 ! 19 Jan 2016: Augusto Getirana, Inclusion of the local inertia formulation 
 !                                and adaptive time step. 
+!  2 Mar 2020: Augusto Getirana, Fixed river/floodplain storage
+! 27 Apr 2020: Augusto Getirana,  Added support for urban drainage
 !
 module HYMAP2_modelMod
   
@@ -28,8 +28,8 @@ module HYMAP2_modelMod
   public :: HYMAP2_date2frac
   public :: HYMAP2_calc_evap_fld  
   public :: HYMAP2_get_elevation_profile
-  public :: HYMAP2_get_volume_profile 
-
+  public :: HYMAP2_get_volume_profile   
+  
 contains
   ! ================================================
   ! ================================================  
@@ -116,7 +116,6 @@ contains
       basfsto=vbflw
     endif
     runoff=qrun+qbas
-
     
   end subroutine HYMAP2_linear_reservoir_lis
   ! ================================================
@@ -176,118 +175,9 @@ contains
     
   end subroutine HYMAP2_calc_runoff
   ! ================================================
+  !ag (2Mar2020)
   ! ================================================
   subroutine HYMAP2_calc_fldstg(nz,grarea,rivlen,rivwth,            &
-                         rivstomax,fldstomax,fldgrd,         &
-                         rivsto,fldsto,rivdph,flddph,flddph1,&
-                         fldelv1,fldwth,fldfrc,fldare,       &
-                         rivelv,nxtdst,rivare)
-    ! ================================================
-    ! to   calculate river and floodplain staging
-    ! by   Augusto Getirana after Dai YAMAZAKI
-    ! on   27 Oct 2010
-    ! at   LEGOS/CNES, Toulouse, France
-    ! Adapted for single grid cell computation in 19 Feb 2016
-    ! ================================================
-    implicit none
-
-    integer, intent(in)    :: nz           !number of stages in the sub-grid discretization
-    real,    intent(in)    :: grarea       !area of the grid [m2]
-    real,    intent(in)    :: rivlen       !channel length [m]
-    real,    intent(in)    :: rivwth       !river width [m]
-    real,    intent(in)    :: rivstomax
-    real,    intent(in)    :: fldstomax(nz) !maximum floodplain storage [m3]
-    real,    intent(in)    :: fldgrd(nz)    !floodplain gradient [-]
-    !integer, intent(in)    :: nextx               !point downstream horizontal
-    !integer, intent(in)    :: nexty               !point downstream vertical
-    !integer, intent(in)    :: nseqriv               !length of 1D sequnece for river
-    real,    intent(in)    :: rivelv              !river bed elevation [m]
-    real,    intent(in)    :: nxtdst              !distance to next grid [m]
-    real,    intent(in)    :: rivare              !river surface area [m2]
-    real,    intent(inout) :: rivsto       !river storage [m3]
-    real,    intent(inout) :: fldsto       !flood plain storage [m3]
-    real,    intent(inout) :: rivdph       !river depth [m]
-    real,    intent(inout) :: flddph       !floodplain depth [m]
-    real,    intent(inout) :: flddph1      !mean floodplain depth [m]
-    real,    intent(inout) :: fldelv1      !mean floodplain elevation [m]
-    real,    intent(inout) :: fldwth       !floodplain width [m]
-    !real,    intent(inout) :: rivinf       !total inflow to the grid [m3/s]
-    real,    intent(out)   :: fldfrc       !area fraction
-    real,    intent(out)   :: fldare
-    integer                :: i
-    real                   :: rstoall
-    real                   :: rstonow
-    real                   :: rwthnow
-    real                   :: rstopre
-    real                   :: rwthpre
-    real                   :: rdphpre
-    real                   :: rwthinc
-    real                   :: rvel
-    ! ================================================
-    rstoall=rivsto+fldsto
-    !ag (24Feb2020)
-    if(rstoall>rivstomax.and.grarea>rivare)then
-      i=1
-      rstopre=rivstomax
-      !ag (20Feb2020)
-      rwthpre=rivare/rivlen
-      !rwthpre=0.
-      rdphpre=0.
-      !ag (20Feb2020)
-      !rwthinc=grarea/rivlen*0.10
-      rwthinc=(grarea-rivare)/rivlen/nz
-      do while(rstoall>fldstomax(i))
-        rstopre=fldstomax(i)
-        rwthpre=rwthpre+rwthinc
-        rdphpre=rdphpre+fldgrd(i)*rwthinc
-        i=i+1
-        if(i>nz)then
-          rstonow=rstoall-rstopre
-          rwthnow=0.
-          flddph=rdphpre+rstonow/rwthpre/rivlen
-          goto 1000
-        endif
-      enddo
-      rstonow=rstoall-rstopre
-      rwthnow=-rwthpre+(rwthpre**2.+2.*rstonow/rivlen/fldgrd(i))**0.5
-      flddph=rdphpre+fldgrd(i)*rwthnow
-1000  continue
-      !ag (24Feb2020)
-      rivsto=rivstomax+rivare*flddph
-      rivdph=rivsto/rivlen/rivwth
-      fldsto=max(rstoall-rivsto,0.)
-      !ag (20Feb2020)
-      fldfrc=((-rivwth+rwthpre+rwthnow)/(rwthinc*nz))+rivare/grarea
-      fldfrc=max(fldfrc,0.)
-      fldfrc=min(fldfrc,1.)
-      fldare=grarea*fldfrc
-      fldwth=fldare/rivlen
-      if(fldwth>0)then
-        flddph1=fldsto/fldwth/rivlen
-      else
-        flddph1=0.
-      endif
-    else
-      rivsto=rstoall
-      rivdph=max(0.,rstoall/rivare)
-      fldsto=0.
-      flddph=0.
-      if(rstoall>0.)then
-        fldfrc=rivare/grarea
-      else
-        fldfrc=0.
-      endif
-      fldare=fldfrc*grarea
-      fldwth=0.
-      flddph1=0.
-     endif
-     !ag - 18 June 2014
-     fldelv1=rivelv+rivdph-flddph1
-       
-  end subroutine HYMAP2_calc_fldstg
-  ! ================================================
-  ! ================================================
-  subroutine HYMAP2_calc_fldstg_1(nz,grarea,rivlen,rivwth,            &
                          rivstomax,fldstomax,fldhgt,&
                          rivsto,fldsto,rivdph,flddph,flddph1,&
                          fldelv1,fldwth,fldfrc,fldare,       &
@@ -300,7 +190,7 @@ contains
     ! at   GSFC/NASA, Greenbelt, USA
     ! ================================================
     implicit none
-
+  
     integer, intent(in)    :: nz           !number of stages in the sub-grid discretization
     real,    intent(in)    :: grarea       !area of the grid [m2]
     real,    intent(in)    :: rivlen       !channel length [m]
@@ -309,6 +199,7 @@ contains
     real,    intent(in)    :: fldstomax(nz)!maximum floodplain storage [m3]
     real,    intent(in)    :: fldhgt(nz)
     real,    intent(in)    :: rivelv       !river bed elevation [m]
+    
     real,    intent(in)    :: rivare       !river surface area [m2]
     real,    intent(inout) :: rivsto       !river storage [m3]
     real,    intent(inout) :: fldsto       !flood plain storage [m3]
@@ -324,6 +215,7 @@ contains
     real*8                 :: h1,h2,v1,v2
     ! ================================================
     rstoall=rivsto+fldsto
+    
     if(rstoall>rivstomax.and.grarea>rivare)then
       i=1
       !do while(rstoall>fldstomax(i).and.i<nz)
@@ -342,14 +234,19 @@ contains
         h1=0.;v1=rivstomax
         h2=fldhgt(1);v2=fldstomax(1)
       else
-        write(LIS_logunit,*) '[ERR] Please check [HYMAP2_calc_fldstg] '
+        print*,'[ERR] Please check [HYMAP2_calc_fldstg] '
         call LIS_endrun()
       endif        
       flddph=h1+(h2-h1)*(rstoall-v1)/(v2-v1)
       fldfrc=min(max((rivare/grarea)+real(i-1)/real(nz)+(1./real(nz))*(rstoall-v1)/(v2-v1),0.),1.)
 1 continue   
       rivsto=rivstomax+rivlen*rivwth*flddph
-      rivdph=rivsto/rivlen/rivwth
+      !ag(27Apr2020) for cases where there's no river (e.g., urban areas)
+      if(rivwth>0.and.rivlen>0)then
+        rivdph=rivsto/rivlen/rivwth
+      else
+        rivdph=0
+      endif
       fldsto=max(rstoall-rivsto,0.)
       fldare=grarea*fldfrc
       fldwth=fldare/rivlen
@@ -360,7 +257,7 @@ contains
       fldsto=0.
       flddph=0.
       if(rstoall>0.)then
-        fldfrc=rivare/grarea
+        fldfrc=min(max(rivare/grarea,0.),1.)
       else
         fldfrc=0.
       endif
@@ -370,7 +267,7 @@ contains
     endif
     fldelv1=rivelv+rivdph-flddph1
     
-  end subroutine HYMAP2_calc_fldstg_1
+  end subroutine HYMAP2_calc_fldstg
   ! ================================================
   ! ================================================  
   subroutine HYMAP2_calc_rivout_kine(outlet,dt,rivelv,rivelv_down,nxtdst,&
@@ -390,7 +287,6 @@ contains
     real,    intent(in)  :: dt          !time step length [sec]
     real,    intent(in)  :: rivelv      !river bed elevation [m]
     real,    intent(in)  :: rivelv_down !downstream river bed elevation [m]
-    !real,    intent(in)  :: elevtn      !surface elevation [m]
     real,    intent(in)  :: nxtdst      !distance to next grif [m]
     real,    intent(in)  :: rivwth      !river width [m]
     real,    intent(in)  :: rivsto      !floodplain storage [m3]
@@ -412,7 +308,6 @@ contains
       rarea=rivwth*rivdph
       rivout=rarea*rvel
       rivout=min(rivout,rivsto/dt)
-      !rivinf=rivinf+rivout
     elseif(outlet==1)then
       rslope=slpmin
       rarea=rivwth*rivdph
@@ -421,7 +316,7 @@ contains
       rivout=rarea*rvel
       rivout=min(rivout,rivsto/dt)
     else
-     write(LIS_logunit,*)"[ERR] Wrong outlet id"
+     write(LIS_logunit,*)"[ERR] Wrong outlet id",outlet
      call LIS_endrun()
     endif
 
@@ -482,40 +377,42 @@ contains
       dflw_imp=sqrt(dflw*dflw_pre)
       if(dflw_imp<=0.)dflw_imp=dflw
         
-      if(dflw_imp>1.e-5.and.darea>1.e-5)then
+      !if(dflw_imp>1.e-5.and.darea>1.e-5)then
+      if(dflw_imp>0..and.darea>0.)then
         dout_pre=rivout_pre/rivwth
         rivout=rivwth*(dout_pre+grv*dt*dflw_imp*dslope)/&
              (1.+grv*dt*manval**2.*abs(dout_pre)*dflw_imp**(-7./3))
         if(rivout>=0.)then
           rivout=min(rivout,rivsto/dt)
-          !stoout=stoout+rivout*dt
         else
           rivout=-min(abs(rivout),rivsto_down/dt)
-          !stoout_down=stoout_down-rivout*dt
         endif
         rivvel=rivout/darea
       else
         rivout=0.
         rivvel=0.
       endif
-      !rivinf_down=rivinf_down+rivout
       rivout_pre=rivout
       rivdph_pre=rivdph
       
     elseif(outlet==1)then
       !ag (20Feb2020)
-      dslope=max(0.,(sfcelv-elevtn)/nxtdst)
-      dflw=rivdph
+      !dslope=max(0.,(sfcelv-elevtn)/nxtdst)
+      dslope=(sfcelv-sfcelv_down)/nxtdst
+      !ag(7Apr2021)
+      dflw=max(sfcelv,sfcelv_down)-rivelv
+      !dflw=rivdph
       darea=rivwth*dflw
-      dflw_pre=rivdph_pre
+      dflw_pre=max(sfcelv_pre,sfcelv_pre_down)-rivelv
+      !dflw_pre=rivdph_pre
       dflw_imp=sqrt(dflw*dflw_pre)
       if(dflw_imp<=0.)dflw_imp=dflw
-      if(dflw_imp>1.e-5.and.darea>1.e-1)then
+      !if(dflw_imp>1.e-5.and.darea>1.e-5)then
+      if(dflw_imp>0..and.darea>0.)then
         dout_pre=rivout_pre/rivwth
         rivout=rivwth*(dout_pre+grv*dt*dflw_imp*dslope)/(1.+grv*dt*manval**2.*abs(dout_pre)*dflw_imp**(-7./3))
         if(rivout>=0.)then 
           rivout=min(rivout,rivsto/dt)
-          !stoout=stoout+rivout*dt
         else
           rivout=-min(abs(rivout),rivsto_down/dt)
         endif
@@ -559,7 +456,7 @@ contains
   end subroutine HYMAP2_no_floodplain_flow
   ! ================================================
   ! ================================================      
-  subroutine HYMAP2_calc_stonxt(outlet,dt,rivout,fldout,rivsto,fldsto,rivsto_down,fldsto_down)
+  subroutine HYMAP2_calc_stonxt(dt,rivout,fldout,rivinf,fldinf,rivsto,fldsto)
     ! ================================================
     ! to   Calculate the storage in the next time step in FTCS diff. eq.
     ! by   Augusto GETIRANA after Dai YAMAZAKI
@@ -569,22 +466,18 @@ contains
     ! Adapted for single grid cell computation in 25 Feb 2016
     ! ================================================
     implicit none
-    integer, intent(in)  :: outlet          !outlet flag: 0 - river; 1 - ocean
     real,    intent(in)  ::  dt          !time step length [sec]
-    real,    intent(in)  ::  rivout      !outflow from the river reservoir         [m3/s]
-    real,    intent(in)  ::  fldout      !outflow from the floodplain reservoir    [m3/s]
+    real,    intent(in)  ::  rivout      ! river outflow          [m3/s]
+    real,    intent(in)  ::  fldout      ! floodplain outflow    [m3/s]
+    real,    intent(in)  ::  rivinf      !river inflow         [m3/s]
+    real,    intent(in)  ::  fldinf      !floodplain inflow    [m3/s]
     real,    intent(out) ::  rivsto      !river storage of current time step       [m3]
     real,    intent(out) ::  fldsto      !flood plain storage                      [m3]
-    real,    intent(out) ::  rivsto_down !river storage of current time step       [m3]
-    real,    intent(out) ::  fldsto_down !flood plain storage                      [m3]
     ! ================================================
-    rivsto=rivsto-rivout*dt
-    fldsto=fldsto-fldout*dt
-    if(outlet/=1)then
-      rivsto_down=rivsto_down+rivout*dt
-      fldsto_down=fldsto_down+fldout*dt
-    endif 
-    
+
+    rivsto=max(0.,rivsto+(rivinf-rivout)*dt)
+    fldsto=max(0.,fldsto+(fldinf-fldout)*dt)
+
   end subroutine HYMAP2_calc_stonxt  
   ! ================================================
   ! ================================================      
@@ -664,93 +557,8 @@ contains
       evpout=(devapriv+devapfld)*1000./grarea/dt
 
   end subroutine HYMAP2_calc_evap_fld 
-
   !=============================================
-#if 0 
-  subroutine HYMAP2_get_volume_profile(nz,elevtn,fldhgt,fldstomax,grarea,rivstomax,rivelv,rivlen,rivwth,elv,vol)    
-    implicit none
-   
-    integer, intent(in)  :: nz
-    integer,    intent(in)  :: elevtn,fldhgt(nz),elv,rivelv !elevation/height are converted to integers [mm]
-    real*8,    intent(in)  :: fldstomax(nz),grarea,rivstomax,rivlen,rivwth
-    real*8,    intent(out) :: vol
-    integer :: i
-    real*8    :: h1,h2,v1,v2
-    real*8    :: dph(nz)
-    real*8    :: dphtmp
-    real*8 :: vol1,dh1,dh2,dv,dh
-    
-    dph(:)=elevtn+fldhgt(:)   
-    if(elv>elevtn.and.grarea>rivlen*rivwth)then
-      i=1
-      do while(elv>dph(i))
-        i=i+1
-        if(i>nz)then
-          vol=fldstomax(nz)+(elv-dph(nz))*grarea
-          goto 1
-        endif
-      enddo
-      if(i>1)then
-        h1=dph(i-1);v1=fldstomax(i-1)
-        h2=dph(i);v2=fldstomax(i)
-      elseif(i==1)then
-        h1=elevtn;v1=rivstomax
-        h2=dph(1);v2=fldstomax(1)
-      else
-        call LIS_endrun()
-      endif
-      vol=v1+(v2-v1)*(elv-h1)/(h2-h1)
-    else
-      vol=max(0.,real(elv-rivelv))*rivlen*rivwth
-    endif
-1   continue
-
-  end subroutine HYMAP2_get_volume_profile 
-  !=============================================
-    !=============================================  
-  subroutine HYMAP2_get_elevation_profile(nz,elevtn,fldhgt,fldstomax,grarea,rivstomax,rivelv,rivlen,rivwth,elv,vol)
-   
-    implicit none
-   
-    integer, intent(in)  :: nz
-    integer, intent(in)  :: elevtn,rivelv,fldhgt(nz)
-    real,    intent(in)  :: fldstomax(nz),grarea,rivstomax,rivlen,rivwth
-    real*8,    intent(in)  :: vol
-    integer, intent(out) :: elv
-    integer              :: i
-    real*8               :: h1,h2,v1,v2
-    real*8               :: dph(nz)
-    real*8               :: dphtmp
-    
-    dph(:)=elevtn+fldhgt(:)
-    
-    if(vol>rivstomax.and.grarea>rivlen*rivwth)then
-      i=1
-      do while(vol>fldstomax(i))
-        i=i+1
-        if(i>nz)then
-          elv=dph(nz)+(vol-fldstomax(nz))/(grarea-rivlen*rivwth)
-          goto 1
-        endif
-      enddo
-      if(i>1)then
-        h1=dph(i-1);v1=fldstomax(i-1)
-        h2=dph(i);v2=fldstomax(i)
-      elseif(i==1)then
-        h1=elevtn;v1=rivstomax
-        h2=dph(1);v2=fldstomax(1)
-      else
-         call LIS_endrun()
-      endif
-      elv=h1+(h2-h1)*(vol-v1)/(v2-v1)
-   
-    else
-      elv=rivelv+(vol/rivlen/rivwth)*1000
-    endif
-1   continue
-  end subroutine HYMAP2_get_elevation_profile
-#endif
-
+  !=============================================  
   subroutine HYMAP2_get_volume_profile(nz,elevtn,fldhgt,fldstomax,grarea,rivstomax,rivelv,rivlen,rivwth,elv,vol)    
     use LIS_logMod
     implicit none
@@ -792,7 +600,7 @@ contains
 
   end subroutine HYMAP2_get_volume_profile 
   !=============================================
-    !=============================================  
+  !=============================================  
   subroutine HYMAP2_get_elevation_profile(nz,elevtn,fldhgt,fldstomax,grarea,rivstomax,rivelv,rivlen,rivwth,elv,vol)
 
     use LIS_logMod
@@ -835,4 +643,5 @@ contains
     endif
 1   continue
   end subroutine HYMAP2_get_elevation_profile
+  
 end module HYMAP2_modelMod

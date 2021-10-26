@@ -239,9 +239,15 @@ subroutine NoahMP401_main(n)
     real                 :: TWS_out                ! terrestrial water storage [mm]
     ! Code added by David Mocko 04/25/2019
     real                 :: startsm, startswe, startint, startgw, endsm
+   
     real                 :: tmp_sfcheadrt          ! extra input  for WRF-HYDRO [m]
     real                 :: tmp_infxs1rt           ! extra output for WRF-HYDRO [m]
     real                 :: tmp_soldrain1rt        ! extra output for WRF-HYDRO [m]
+
+        !ag (05Jan2021)
+    real                 :: tmp_rivsto
+    real                 :: tmp_fldsto
+    real                 :: tmp_fldfrc
 
     ! EMK for 557WW
     real :: tmp_q2sat, tmp_es
@@ -312,6 +318,14 @@ subroutine NoahMP401_main(n)
                 tmp_prcp       = dt * (NOAHMP401_struc(n)%noahmp401(t)%prcp   / NOAHMP401_struc(n)%forc_count)
             endif
 
+            !ag(05Jan2021)
+            ! rivsto/fldsto: River storage and flood storage
+            ! NOAHMP401_struc(n)%noahmp401(t)%rivsto and NOAHMP401_struc(n)%noahmp401(t)%fldsto
+            ! are updated in noahmp401_getsws_hymap2.F90
+            tmp_rivsto = NOAHMP401_struc(n)%noahmp401(t)%rivsto
+            tmp_fldsto = NOAHMP401_struc(n)%noahmp401(t)%fldsto
+            tmp_fldfrc = NOAHMP401_struc(n)%noahmp401(t)%fldfrc
+
             ! check validity of tair
             if(tmp_tair .eq. LIS_rc%udef) then
                 write(LIS_logunit, *) "undefined value found for forcing variable tair in NoahMP401"
@@ -357,6 +371,27 @@ subroutine NoahMP401_main(n)
             ! check validity of prcp
             if(tmp_prcp .eq. LIS_rc%udef) then
                 write(LIS_logunit, *) "undefined value found for forcing variable prcp in NoahMP401"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+            !
+
+            !ag (05Jan2021)
+            ! check validity of rivsto
+            if(tmp_rivsto .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable rivsto in NoahMP36"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+            ! check validity of fldsto
+            if(tmp_fldsto .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable fldsto in NoahMP36"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+            ! check validity of fldfrc
+            if(tmp_fldfrc .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable fldfrc in NoahMP36"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
@@ -678,6 +713,10 @@ subroutine NoahMP401_main(n)
                                    tmp_chv2              , & ! out   - veg 2m exchange coefficient [-]
                                    tmp_chb2              , & ! out   - bare 2m exchange coefficient [-]
                                    tmp_relsmc            , &
+                                    !ag (12Sep2019)
+                                   tmp_rivsto            , & ! in   - river storage [m/s] 
+                                   tmp_fldsto            , & ! in   - flood storage [m/s]
+                                   tmp_fldfrc            , & ! in   - flooded fraction [-]
                                    NOAHMP401_struc(n)%noahmp401(t)%param, & ! out   - relative soil moisture [-]
                                    tmp_sfcheadrt         , & 
                                    tmp_infxs1rt          , &
