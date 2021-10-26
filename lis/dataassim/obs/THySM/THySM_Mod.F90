@@ -466,10 +466,6 @@ contains
              do t=1,LIS_rc%obs_ngrid(k)
                 if(THySM_struc(n)%obs_sigma(t,jj).gt.0) then 
 
-                   print*, ssdev(t), THySM_struc(n)%model_sigma(t,jj),&
-                        THySM_struc(n)%obs_sigma(t,jj)
-
-
                    ssdev(t) = ssdev(t)*THySM_struc(n)%model_sigma(t,jj)/&
                         THySM_struc(n)%obs_sigma(t,jj)
                    !                c = LIS_domain(n)%grid(t)%col
