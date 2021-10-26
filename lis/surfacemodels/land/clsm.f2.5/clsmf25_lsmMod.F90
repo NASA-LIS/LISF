@@ -1,9 +1,7 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center
-! Land Information System Framework (LISF)
-! Version 7.3
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2015 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -59,6 +57,9 @@ module clsmf25_lsmMod
      type(cat_param_type), allocatable  :: cat_param(:)
      type(met_force_type), allocatable  :: met_force(:)
      type(cat_progn_type), allocatable  :: cat_progn(:)
+     !ag(01Jan2021)
+     type(cat_route_type), allocatable  :: cat_route(:)
+
      type(cat_diagn_type), allocatable  :: cat_diagn(:)
      type(cat_output_type), allocatable :: cat_output(:)
      type(modis_alb_type), allocatable  :: modis_alb_param(:,:)
@@ -102,6 +103,8 @@ contains
        allocate(clsmf25_struc(n)%cat_output(LIS_rc%npatch(n,LIS_rc%lsm_index)))
        allocate(clsmf25_struc(n)%good_forcing_mask(LIS_rc%npatch(n,LIS_rc%lsm_index)))
        allocate(clsmf25_struc(n)%modis_alb_param(LIS_rc%npatch(n,LIS_rc%lsm_index),12))
+       !ag(01Jan2021)
+       allocate(clsmf25_struc(n)%cat_route(LIS_rc%npatch(n,LIS_rc%lsm_index)))
 
        clsmf25_struc(n)%numout = 0 
        clsmf25_struc(n)%forc_count = 0 
@@ -120,6 +123,13 @@ contains
           clsmf25_struc(n)%met_force(i)%swnet = 0 
           clsmf25_struc(n)%met_force(i)%pardr = 0 
           clsmf25_struc(n)%met_force(i)%pardf = 0 
+       enddo
+
+       !ag(01Jan2021)
+       do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+          clsmf25_struc(n)%cat_route(i)%rivsto = 0
+          clsmf25_struc(n)%cat_route(i)%fldsto = 0
+          clsmf25_struc(n)%cat_route(i)%fldfrc = 0
        enddo
 
        clsmf25_struc(n)%cat_diagn%totlwc_prev = 0 
