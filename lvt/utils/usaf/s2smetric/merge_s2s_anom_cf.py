@@ -141,7 +141,7 @@ def _create_merged_metric_filename(output_dir, startdate, enddate,
     name += "/PS.557WW"
     name += "_SC.U"
     name += "_DI.C"
-    name += "_GP.LIS-S2S-%s-ANOM" %(model_forcing)
+    name += "_GP.LIS-S2S-%s-ANOM" %(model_forcing.upper())
     name += "_GR.C0P25DEG"
     name += "_AR.AFRICA"
     name += "_PA.LIS-S2S-ANOM"
@@ -172,12 +172,12 @@ def _merge_files(input_dir, model_forcing, startdate, mergefile):
 
     # Rename ANOM array
     cmd = "%s/ncrename -O" %(_NCO_DIR)
-    cmd += " -v ANOM,%s_%s" %(first_var.replace("-","_"), first_metric)
+    cmd += " -v anom,%s_%s" %(first_var.replace("-","_"), first_metric)
     cmd += " %s" %(mergefile)
     _run_cmd(cmd, "[ERR] Problem with ncrename!")
 
-    # Loop through remaining var metric files, copy *only* the ANOM variable,
-    # and then rename the ANOM variable.
+    # Loop through remaining var metric files, copy *only* the anom variable,
+    # and then rename the anom variable.
     for var in _VAR_LIST:
         for metric in _METRIC_LIST:
 
@@ -192,12 +192,12 @@ def _merge_files(input_dir, model_forcing, startdate, mergefile):
                 sys.exit(1)
 
             cmd = "%s/ncks -A -C" %(_NCO_DIR)
-            cmd += " -v ANOM"
+            cmd += " -v anom"
             cmd += " %s -6 %s" %(metricfile, mergefile)
             _run_cmd(cmd, "[ERR] Problem with ncks!")
 
             cmd = "%s/ncrename -O" %(_NCO_DIR)
-            cmd += " -v ANOM,%s_%s" %(var.replace("-","_"), metric)
+            cmd += " -v anom,%s_%s" %(var.replace("-","_"), metric)
             cmd += " %s" %(mergefile)
             _run_cmd(cmd, "[ERR] Problem with ncrename!")
 

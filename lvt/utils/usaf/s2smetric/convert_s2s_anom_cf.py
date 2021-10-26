@@ -177,10 +177,10 @@ def _update_lead_attrs(output_filename):
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
 def _update_anom_attrs(output_filename, metric_long_name, metric_units):
-    """Update attributes of ANOM variable."""
+    """Update attributes of anom variable."""
     cmd = "%s/ncatted" %(_NCO_DIR)
-    cmd += " -a long_name,ANOM,c,c,'%s'" %(metric_long_name)
-    cmd += " -a units,ANOM,c,c,'%s'" %(metric_units)
+    cmd += " -a long_name,anom,c,c,'%s'" %(metric_long_name)
+    cmd += " -a units,anom,c,c,'%s'" %(metric_units)
     cmd += " %s" %(output_filename)
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
