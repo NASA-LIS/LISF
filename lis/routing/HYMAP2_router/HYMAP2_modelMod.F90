@@ -234,7 +234,7 @@ contains
         h1=0.;v1=rivstomax
         h2=fldhgt(1);v2=fldstomax(1)
       else
-        print*,'[ERR] Please check [HYMAP2_calc_fldstg] '
+        write(LIS_logunit,*)"[ERR] Please check [HYMAP2_calc_fldstg] "
         call LIS_endrun()
       endif        
       flddph=h1+(h2-h1)*(rstoall-v1)/(v2-v1)
