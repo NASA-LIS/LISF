@@ -36,8 +36,8 @@ import numpy as np
 from osgeo import gdal, osr
 
 # Private constants
-_NMME_MODELS = ["CCM4", "CCSM4", "CFSv2", "GEOSv2", "GFDL", "GNEMO"]
-#_NMME_MODELS = ["GEOSv2"]
+#_NMME_MODELS = ["CCM4", "CCSM4", "CFSv2", "GEOSv2", "GFDL", "GNEMO"]
+_NMME_MODELS = ["GEOSv2"]
 
 _METRICS = ["RootZone_SM_ANOM", "RootZone_SM_SANOM",
             "Streamflow_ANOM",  "Streamflow_SANOM",
@@ -59,21 +59,19 @@ class _MetricGeoTiff:
         """Searches for S2S metric files for each NMME model."""
         for nmme in _NMME_MODELS:
             #subdir = "%s/%s" %(self.topdir, nmme)
-            subdir = "%s" %(self.topdir)
+            subdir = f"{self.topdir}"
             if not os.path.exists(subdir):
-                txt = "[WARN] Cannot find directory %s for NMME S2S metrics!" \
-                    %(subdir)
+                txt = \
+                    f"[WARN] Cannot find directory {subdir} for S2S metrics!"
                 print(txt)
                 continue
-            regex = "%s/PS.*GP.LIS-S2S-%s-ANOM*DF.NC" %(subdir,
-                                                        nmme.upper())
+            regex = f"{subdir}/PS.*GP.LIS-S2S-{nmme.upper()}-ANOM*DF.NC"
             files = glob.glob(regex)
             if len(files) == 0:
-                print("[WARN] Cannot find metric file in %s" %(subdir))
+                print(f"[WARN] Cannot find metric file in {subdir}")
                 continue
             if len(files) > 1:
-                print("[WARN] Too many metric files in %s, skipping..." \
-                      %(subdir))
+                print(f"[WARN] Too many metric files in {subdir}, skipping...")
                 continue
             self.nmme_metric_files[nmme] = files[0]
 
@@ -172,21 +170,19 @@ class _MetricGeoTiff:
         enddate = self.median_data[nmme]["enddates_by_month"][imonth]
         filename_elements = self.filename_elements[nmme]
         filename = f"{self.topdir}"
-        filename += "/PS.%s" %(filename_elements["PS"])
-        filename += "_SC.%s" %(filename_elements["SC"])
-        filename += "_DI.%s" %(filename_elements["DI"])
-        filename += "_GP.%s" %(filename_elements["GP"])
-        filename += "_GR.%s" %(filename_elements["GR"])
-        filename += "_AR.%s" %(filename_elements["AR"])
-        filename += "_PA.LIS-S2S-%s-ENS-MEDIAN" \
-            %(metric.replace("_","-").upper())
-        filename += "_DP.%4.4d%2.2d%2.2d-%4.4d%2.2d%2.2d" %(startdate.year,
-                                                            startdate.month,
-                                                            startdate.day,
-                                                            enddate.year,
-                                                            enddate.month,
-                                                            enddate.day)
-        filename += "_TP.%s" %(filename_elements["TP"])
+        filename += f"/PS.{filename_elements['PS']}"
+        filename += f"_SC.{filename_elements['SC']}"
+        filename += f"_DI.{filename_elements['DI']}"
+        filename += f"_GP.{filename_elements['GP']}"
+        filename += f"_GR.{filename_elements['GR']}"
+        filename += f"_AR.{filename_elements['AR']}"
+        filename += \
+            f"_PA.LIS-S2S-{metric.replace('_','-').upper()}-ENS-MEDIAN"
+        filename += \
+            f"_DP.{startdate.year:4d}{startdate.month:2d}{startdate.day:2d}"
+        filename += \
+            f"-{enddate.year:4d}{enddate.month:2d}{enddate.day:2d}"
+        filename += f"_TP.{filename_elements['TP']}"
         filename += "_DF.TIF"
         return filename
 
@@ -240,7 +236,7 @@ class _MetricGeoTiff:
 # Private module methods
 def _usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: %s topdir metric" %(sys.argv[0])
+    txt = f"[INFO] Usage: {sys.argv[0]} topdir metric"
     print(txt)
     print("[INFO] where:")
     print("[INFO] topdir: top directory with all S2S metrics netCDF files.")
@@ -254,11 +250,11 @@ def _read_cmd_args():
         sys.exit(1)
     topdir = sys.argv[1]
     if not os.path.exists(topdir):
-        print("[ERR] %s does not exist!" %(topdir))
+        print(f"[ERR] {topdir} does not exist!")
         sys.exit(1)
     metric = sys.argv[2]
     if metric not in _METRICS:
-        print("[ERR] Unknown metric %s requested!" %(metric))
+        print(f"[ERR] Unknown metric {metric} requested!")
         sys.exit(1)
     return topdir, metric
 
@@ -276,8 +272,7 @@ def _get_first_startdate(filename_elements, metricfile):
     try:
         yyyymmdd = filename_elements["DP"].split("_")[0]
     except KeyError:
-        print("[ERR] Cannot resolve data period from file name %s" \
-              %(metricfile))
+        print(f"[ERR] Cannot resolve data period from file name {metricfile}")
         sys.exit(1)
     return datetime.datetime(year=int(yyyymmdd[0:4]),
                              month=int(yyyymmdd[4:6]),
@@ -318,10 +313,10 @@ def _driver():
             mgt.get_startdates_by_month(nmme)
         median_values = mgt.get_median_values(nmme)
         for imonth in range(0, num_months):
-            metadata["forecast_month"] = "%s" %(imonth + 1)
-            metadata["valid_year_and_month"] = "%4.4d-%2.2d" \
-                %(startdates_by_month[imonth].year,
-                  startdates_by_month[imonth].month)
+            metadata["forecast_month"] = f"{imonth + 1}"
+            metadata["valid_year_and_month"] = \
+                f"{startdates_by_month[imonth].year:4d}" + \
+                f"-{startdates_by_month[imonth].month:2d}"
             var2d = median_values[imonth, ::-1, :] # Flip y-axis
             geotiff_filename = \
                 mgt.make_geotiff_filename(metric, nmme, imonth)

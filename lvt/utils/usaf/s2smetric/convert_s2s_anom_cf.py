@@ -45,7 +45,7 @@ _UNITS_ANOM = {
 def _usage():
     """Print command line usage."""
     txt = \
-        "[INFO] Usage: %s anom_file output_dir" %(sys.argv[0])
+        f"[INFO] Usage: {sys.argv[0]} anom_file output_dir"
     print(txt)
     print("[INFO]  where:")
     print("[INFO]  anom_file: Name of netCDF file with anom or sanom metric")
@@ -55,10 +55,9 @@ def _check_nco_binaries():
     """Check to see if necessary NCO binaries are available."""
     nco_bins = ["ncatted"]
     for nco_bin in nco_bins:
-        path = "%s/%s" %(_NCO_DIR, nco_bin)
+        path = f"{_NCO_DIR}/{nco_bin}"
         if not os.path.exists(path):
-            print("[ERR] Cannot find %s for converting LIS netCDF4 data!" \
-                  %(path))
+            print(f"[ERR] Cannot find {path} for converting LIS netCDF4 data!")
             print("[ERR] Make sure NCO package is installed on the system!")
             print("[ERR] And update _NCO_DIR in this script if necessary!")
             sys.exit(1)
@@ -83,7 +82,7 @@ def _read_cmd_args():
     # Check if netCDF file exists
     anom_filename = sys.argv[1]
     if not os.path.exists(anom_filename):
-        print("[ERR] %s does not exist!" %(anom_filename))
+        print(f"[ERR] {anom_filename} does not exist!")
         sys.exit(1)
 
     # Create output directory if it doesn't exist.
@@ -132,56 +131,56 @@ def _get_metric_units(anom_filename):
 def _get_output_filename(anom_filename, output_dir):
     """Construct path to output file."""
     basename = os.path.basename(anom_filename)
-    output_filename = "%s/%s" %(output_dir, basename)
+    output_filename = f"{output_dir}/{basename}"
     return output_filename
 
 def _update_global_attrs(output_filename):
     """Update global attributes of output filename."""
-    cmd = "%s/ncatted" %(_NCO_DIR)
+    cmd = f"{_NCO_DIR}/ncatted"
     cmd += " -a Conventions,global,c,c,'CF-1.8'"
-    cmd += " %s" %(output_filename)
+    cmd += f" {output_filename}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
 def _update_latitude_attrs(output_filename):
     """Update attributes of latitude."""
-    cmd = "%s/ncatted" %(_NCO_DIR)
+    cmd = f"{_NCO_DIR}/ncatted"
     cmd += " -a long_name,latitude,c,c,'latitude'"
     cmd += " -a standard_name,latitude,c,c,'latitude'"
     cmd += " -a units,latitude,c,c,'degree_north'"
-    cmd += " %s" %(output_filename)
+    cmd += f" {output_filename}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
 def _update_longitude_attrs(output_filename):
     """Update attributes of longitude."""
-    cmd = "%s/ncatted" %(_NCO_DIR)
+    cmd = f"{_NCO_DIR}/ncatted"
     cmd += " -a long_name,longitude,c,c,'longitude'"
     cmd += " -a standard_name,longitude,c,c,'longitude'"
     cmd += " -a units,longitude,c,c,'degree_east'"
-    cmd += " %s" %(output_filename)
+    cmd += f" {output_filename}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
 def _update_ens_attrs(output_filename):
     """Update attributes of ens."""
-    cmd = "%s/ncatted" %(_NCO_DIR)
+    cmd = f"{_NCO_DIR}/ncatted"
     cmd += " -a long_name,ens,c,c,'Ensemble members'"
     cmd += " -a units,ens,c,c,'1'"
-    cmd += " %s" %(output_filename)
+    cmd += f" {output_filename}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
 def _update_lead_attrs(output_filename):
     """Update attributes of lead."""
-    cmd = "%s/ncatted" %(_NCO_DIR)
+    cmd = f"{_NCO_DIR}/ncatted"
     cmd += " -a long_name,lead,c,c,'Forecast month'"
     cmd += " -a units,lead,c,c,'months'"
-    cmd += " %s" %(output_filename)
+    cmd += f" {output_filename}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
 def _update_anom_attrs(output_filename, metric_long_name, metric_units):
     """Update attributes of anom variable."""
-    cmd = "%s/ncatted" %(_NCO_DIR)
-    cmd += " -a long_name,anom,c,c,'%s'" %(metric_long_name)
-    cmd += " -a units,anom,c,c,'%s'" %(metric_units)
-    cmd += " %s" %(output_filename)
+    cmd = f"{_NCO_DIR}/ncatted"
+    cmd += f" -a long_name,anom,c,c,'{metric_long_name}'"
+    cmd += f" -a units,anom,c,c,'{metric_units}'"
+    cmd += f" {output_filename}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
 def _driver():
