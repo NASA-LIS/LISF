@@ -28,8 +28,8 @@ _CEYR = 2020
 _RUNDIR = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
 _RUNDIR += "/lis74_s2s_patches/LISF/lvt/utils/usaf/s2smetric"
 
-#_NMME_MODELS = ["CCM4", "CCSM4", "CFSv2", "GEOSv2", "GFDL", "GNEMO"]
-_NMME_MODELS = ["GEOSv2"] # For testing
+_NMME_MODELS = ["CCM4", "CCSM4", "CFSv2", "GEOSv2", "GFDL", "GNEMO"]
+#_NMME_MODELS = ["GEOSv2"] # For testing
 
 _LSM_MODEL = "NOAHMP"
 

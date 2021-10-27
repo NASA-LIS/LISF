@@ -2,8 +2,7 @@
 #SBATCH --job-name=s2s_metrics
 #SBATCH --ntasks=2
 #SBATCH --ntasks-per-node=2
-##SBATCH --time=07:00:00
-#SBATCH --time=02:00:00
+#SBATCH --time=03:00:00
 #SBATCH --account=s1189
 #SBATCH --constraint="sky|hasw|cas"
 #SBATCH --mail-user=
