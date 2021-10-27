@@ -36,8 +36,8 @@ import numpy as np
 from osgeo import gdal, osr
 
 # Private constants
-#_NMME_MODELS = ["CCM4", "CCSM4", "CFSv2", "GEOSv2", "GFDL", "GNEMO"]
-_NMME_MODELS = ["GEOSv2"]
+_NMME_MODELS = ["CCM4", "CCSM4", "CFSv2", "GEOSv2", "GFDL", "GNEMO"]
+#_NMME_MODELS = ["GEOSv2"]
 
 _METRICS = ["RootZone_SM_ANOM", "RootZone_SM_SANOM",
             "Streamflow_ANOM",  "Streamflow_SANOM",
