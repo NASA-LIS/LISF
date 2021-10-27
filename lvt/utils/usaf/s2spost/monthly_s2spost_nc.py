@@ -16,6 +16,7 @@
 # 16 Sep 2021: Eric Kemp (SSAI), first version.
 # 17 Sep 2021: Eric Kemp (SSAI), renamed script, tweaked variable list and
 #   attributes; added ID for model forcing for LIS to filenames.
+# 27 Oct 2021: Eric Kemp/SSAI, addressed pylint string format complaints.
 #------------------------------------------------------------------------------
 """
 
@@ -72,8 +73,8 @@ _CONST_LIST = ["lat", "lon", "ensemble", "soil_layer",
 
 def _usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: %s input_dir output_dir start_yyyymmdd end_yyyymmdd"
-    txt += " model_forcing"
+    txt = f"[INFO] Usage: {sys.argv[0]} input_dir output_dir"
+    txt += " start_yyyymmdd end_yyyymmdd model_forcing"
     print(txt)
     print("[INFO] where:")
     print("[INFO]  input_dir: directory with daily S2S files in CF convention")
@@ -109,7 +110,7 @@ def _read_cmd_args():
     # Check if input directory exists.
     input_dir = sys.argv[1]
     if not os.path.exists(input_dir):
-        print("[ERR] Directory %s does not exist!")
+        print(f"[ERR] Directory {input_dir} does not exist!")
         sys.exit(1)
 
     # Create output directory if it doesn't exist.
@@ -136,20 +137,20 @@ def _check_filename_size(name):
     requirement."""
     if len(os.path.basename(name)) > 128:
         print("[ERR] Output file name is too long!")
-        print("[ERR] %s exceeds 128 characters!" %(os.path.basename(name)))
+        print(f"[ERR] {os.path.basename(name)} exceeds 128 characters!")
         sys.exit(1)
 
 def _create_daily_s2s_filename(input_dir, curdate, model_forcing):
     """Create path to daily S2S netCDF file."""
-    name = "%s" %(input_dir)
+    name = f"{input_dir}"
     name += "/PS.557WW"
     name += "_SC.U"
     name += "_DI.C"
-    name += "_GP.LIS-S2S-%s" %(model_forcing)
+    name += f"_GP.LIS-S2S-{model_forcing}"
     name += "_GR.C0P25DEG"
     name += "_AR.AFRICA"
     name += "_PA.LIS-S2S"
-    name += "_DD.%4.4d%2.2d%2.2d" %(curdate.year, curdate.month, curdate.day)
+    name += f"_DD.{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}"
     name += "_DT.0000"
     name += "_DF.NC"
     _check_filename_size(name)
@@ -158,17 +159,16 @@ def _create_daily_s2s_filename(input_dir, curdate, model_forcing):
 def _create_monthly_s2s_filename(output_dir, startdate, enddate,
                                  model_forcing):
     """Create path to monthly S2S netCDF file."""
-    name = "%s" %(output_dir)
+    name = f"{output_dir}"
     name += "/PS.557WW"
     name += "_SC.U"
     name += "_DI.C"
-    name += "_GP.LIS-S2S-%s" %(model_forcing)
+    name += f"_GP.LIS-S2S-{model_forcing}"
     name += "_GR.C0P25DEG"
     name += "_AR.AFRICA"
     name += "_PA.LIS-S2S"
-    name += "_DP.%4.4d%2.2d%2.2d-%4.4d%2.2d%2.2d" \
-        %(startdate.year, startdate.month, startdate.day,
-          enddate.year, enddate.month, enddate.day)
+    name += f"_DP.{startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
+    name += f"-{enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
     name += "_TP.0000-0000"
     name += "_DF.NC"
     _check_filename_size(name)
@@ -189,7 +189,7 @@ def _create_firstguess_monthly_file(infile, outfile):
     file will be replaced later in the script."""
 
     if not os.path.exists(infile):
-        print("[ERR] %s does not exist!" %(infile))
+        print(f"[ERR] {infile} does not exist!")
         sys.exit(1)
     ncid_in = nc4_dataset(infile, 'r', format='NETCDF4_CLASSIC')
 
@@ -242,7 +242,7 @@ def _read_second_daily_file(infile):
     and tavg are valid for the prior 24-hr period."""
 
     if not os.path.exists(infile):
-        print("[ERR] %s does not exist!" %(infile))
+        print(f"[ERR] {infile} does not exist!")
         sys.exit(1)
     ncid_in = nc4_dataset(infile, 'r', format='NETCDF4_CLASSIC')
 
@@ -278,7 +278,7 @@ def _read_next_daily_file(infile, accs, tavgs):
     appropriate dictionaries."""
 
     if not os.path.exists(infile):
-        print("[ERR] %s does not exist!" %(infile))
+        print(f"[ERR] {infile} does not exist!")
         sys.exit(1)
     ncid_in = nc4_dataset(infile, 'r', format='NETCDF4_CLASSIC')
 
@@ -325,7 +325,7 @@ def _finalize_tavgs(tavgs):
 def _update_monthly_s2s_values(outfile, accs, tavgs):
     """Update the values in the monthly S2S file."""
     if not os.path.exists(outfile):
-        print("[ERR] %s does not exist!" %(outfile))
+        print(f"[ERR] {outfile} does not exist!")
         sys.exit(1)
     ncid = nc4_dataset(outfile, 'a', format='NETCDF4_CLASSIC')
     for dictionary in [accs, tavgs]:
@@ -344,11 +344,11 @@ def _add_time_data(infile, outfile, startdate, enddate):
     requires pulling more data from the last daily file."""
 
     if not os.path.exists(infile):
-        print("[ERR] %s does not exist!" %(infile))
+        print(f"[ERR] {infile} does not exist!")
         sys.exit(1)
     ncid_in = nc4_dataset(infile, 'r', format='NETCDF4_CLASSIC')
     if not os.path.exists(outfile):
-        print("[ERR] %s does not exist!" %(outfile))
+        print(f"[ERR] {outfile} does not exist!")
         sys.exit(1)
     ncid_out = nc4_dataset(outfile, 'a', format='NETCDF4_CLASSIC')
 
@@ -385,7 +385,7 @@ def _update_cell_methods(outfile):
     """Update cell_method attributes for select variables."""
 
     if not os.path.exists(outfile):
-        print("[ERR] %s does not exist!" %(outfile))
+        print(f"[ERR] {outfile} does not exist!")
         sys.exit(1)
     ncid = nc4_dataset(outfile, 'a', format='NETCDF4_CLASSIC')
 
@@ -433,10 +433,10 @@ def _update_cell_methods(outfile):
 def _cleanup_global_attrs(outfile):
     """Clean-up global attributes."""
     if not os.path.exists(outfile):
-        print("[ERR] %s does not exist!" %(outfile))
+        print(f"[ERR] {outfile} does not exist!")
         sys.exit(1)
     ncid = nc4_dataset(outfile, 'a', format='NETCDF4_CLASSIC')
-    ncid.history = "created on date: %s" %(time.ctime())
+    ncid.history = f"created on date: {time.ctime()}"
     del ncid.NCO
     del ncid.history_of_appended_files
 
@@ -454,7 +454,7 @@ def _driver():
         infile = _create_daily_s2s_filename(input_dir, curdate, model_forcing)
         #print("[INFO] Reading %s" %(infile))
         if curdate == startdate:
-            tmp_outfile = "%s/tmp_monthly.nc" %(output_dir)
+            tmp_outfile = f"{output_dir}/tmp_monthly.nc"
             _create_firstguess_monthly_file(infile, tmp_outfile)
         elif curdate == seconddate:
             accs, tavgs = _read_second_daily_file(infile)
