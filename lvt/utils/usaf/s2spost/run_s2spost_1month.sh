@@ -2,12 +2,9 @@
 #SBATCH --job-name=s2scf
 #SBATCH --time=0:45:00
 #SBATCH --account s1189
-##SBATCH --output global.slurm.out
 #SBATCH --ntasks=1
-#SBATCH --constraint="sky|hasw"
-#SBATCH --mail-user=eric.kemp@nasa.gov
-#SBATCH --mail-type=ALL
-##SBATCH --qos=debug
+#SBATCH --ntasks-per-node=1
+#SBATCH --constraint="sky|hasw|cas"
 #------------------------------------------------------------------------------
 #
 # SCRIPT: run_s2spost_1month.sh
@@ -40,7 +37,7 @@ fi
 module purge
 unset LD_LIBRARY_PATH
 module use --append /home/emkemp/privatemodules
-module load lisf_7_intel_19_1_3_304
+module load lisf_7_intel_19_1_3_304_s2s
 
 # Local paths
 SCRIPTDIR=/discover/nobackup/projects/lis_aist17/emkemp/AFWA/lis74_s2s_patches/LISF/lvt/utils/usaf/s2spost

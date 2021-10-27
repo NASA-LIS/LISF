@@ -9,19 +9,24 @@
 #
 # REVISION HISTORY:
 # 23 Sep 2021: Eric Kemp (SSAI), first version.
+# 27 Oct 2021: Eric Kemp/SSAI, address pylint string objections.
 #
 #------------------------------------------------------------------------------
 """
 
+# Standard modules
 import datetime
 import os
+import pathlib
 import subprocess
 import sys
 
+# Local functions
 def _usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: %s ldt_file topdatadir YYYYMM model_forcing" \
-        %(sys.argv[0])
+    argv0 = sys.argv[0]
+    txt = f"[INFO] Usage: {argv0}"
+    txt += " ldt_file topdatadir YYYYMM model_forcing"
     print(txt)
     print("[INFO]  where:")
     print("[INFO]   ldt_file is path to LDT parameter file")
@@ -44,13 +49,13 @@ def _read_cmd_args():
     # Get path to LDT parameter file
     ldtfile = sys.argv[1]
     if not os.path.exists(ldtfile):
-        print("[ERR] LDT paramter file %s does not exist!" %(ldtfile))
+        print(f"[ERR] LDT paramter file {ldtfile} does not exist!")
         sys.exit(1)
 
     # Get top directory of LIS data
     topdatadir = sys.argv[2]
     if not os.path.exists(topdatadir):
-        print("[ERR] LIS data directory %s does not exist!" %(topdatadir))
+        print(f"[ERR] LIS data directory {topdatadir} does not exist!")
         sys.exit(1)
 
     # Get valid year and month
@@ -74,14 +79,13 @@ def _read_cmd_args():
 def _is_lis_output_missing(topdatadir, curdate, model_forcing):
     """Checks for missing LIS output files."""
     for model in ["SURFACEMODEL", "ROUTING"]:
-        filename = "%s/%s/%s/%4.4d%2.2d" %(topdatadir,
-                                           model_forcing,
-                                           model,
-                                           curdate.year,
-                                           curdate.month)
-        filename += "/LIS_HIST_%4.4d%2.2d%2.2d0000.d01.nc" %(curdate.year,
-                                                             curdate.month,
-                                                             curdate.day)
+        filename = f"{topdatadir}"
+        filename += f"/{model_forcing}"
+        filename += f"/{model}"
+        filename += f"/{curdate.year:04d}{curdate.month:02d}"
+        filename += "/LIS_HIST_"
+        filename += f"{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}"
+        filename += "0000.d01.nc"
         if not os.path.exists(filename):
             return True
     return False
@@ -107,25 +111,20 @@ def _loop_daily(scriptdir, ldtfile, topdatadir, startdate, model_forcing):
 
     curdate = firstdate
     while curdate <= enddate:
-        cmd = "%s/daily_s2spost_nc.py" %(scriptdir)
-        cmd += " %s" %(ldtfile)
+        cmd = f"{scriptdir}/daily_s2spost_nc.py {ldtfile}"
         for model in ["SURFACEMODEL", "ROUTING"]:
-            cmd += " %s/%s/%s/%4.4d%2.2d" %(topdatadir,
-                                            model_forcing,
-                                            model,
-                                            curdate.year,
-                                            curdate.month)
-            cmd += "/LIS_HIST_%4.4d%2.2d%2.2d0000.d01.nc" %(curdate.year,
-                                                            curdate.month,
-                                                            curdate.day)
-        cmd += " %s/cf_%s_%4.4d%2.2d" %(topdatadir,
-                                         model_forcing.upper(),
-                                         startdate.year,
-                                         startdate.month)
-        cmd += " %4.4d%2.2d%2.2d00" %(curdate.year,
-                                      curdate.month,
-                                      curdate.day)
-        cmd += " %s" %(model_forcing.upper())
+            cmd += f" {topdatadir}/{model_forcing}/{model}/"
+            cmd += f"{curdate.year:04d}{curdate.month:02d}"
+            cmd += "/LIS_HIST_"
+            cmd += f"{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}"
+            cmd += "0000.d01.nc"
+
+        cmd += f" {topdatadir}/cf_{model_forcing.upper()}_"
+        cmd += f"{startdate.year:04d}{startdate.month:02d}"
+
+        cmd += f" {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}00"
+
+        cmd += f" {model_forcing.upper()}"
 
         print(cmd)
         returncode = subprocess.call(cmd, shell=True)
@@ -151,20 +150,15 @@ def _proc_month(scriptdir, topdatadir, startdate, model_forcing):
         enddate = datetime.datetime(year=startdate.year,
                                     month=(startdate.month + 1),
                                     day=1)
-    cmd = "%s/monthly_s2spost_nc.py" %(scriptdir)
-    workdir = "%s/cf_%s_%4.4d%2.2d" %(topdatadir,
-                                      model_forcing.upper(),
-                                      startdate.year,
-                                      startdate.month)
-    cmd += " %s" %(workdir)
-    cmd += " %s" %(workdir)
-    cmd += " %4.4d%2.2d%2.2d" %(firstdate.year,
-                                firstdate.month,
-                                firstdate.day)
-    cmd += " %4.4d%2.2d%2.2d" %(enddate.year,
-                                enddate.month,
-                                enddate.day)
-    cmd += " %s" %(model_forcing.upper())
+    cmd = f"{scriptdir}/monthly_s2spost_nc.py"
+    workdir =  f"{topdatadir}/cf_{model_forcing.upper()}_"
+    workdir += f"{startdate.year:04d}{startdate.month:02d}"
+
+    cmd += f" {workdir}"
+    cmd += f" {workdir}" # Use same directory
+    cmd += f" {firstdate.year:04d}{firstdate.month:02d}{firstdate.day:02d}"
+    cmd += f" {enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
+    cmd += f" {model_forcing.upper()}"
 
     print(cmd)
     returncode = subprocess.call(cmd, shell=True)
@@ -174,12 +168,9 @@ def _proc_month(scriptdir, topdatadir, startdate, model_forcing):
 
 def _create_done_file(topdatadir, startdate, model_forcing):
     """Create a 'done' file indicating batch job has finished."""
-    path = "%s/cf_%s_%4.4d%2.2d/done" %(topdatadir,
-                                        model_forcing.upper(),
-                                        startdate.year,
-                                        startdate.month)
-    fobj = open(path, "w")
-    fobj.close()
+    path = f"{topdatadir}/cf_{model_forcing.upper()}_"
+    path += f"{startdate.year:04d}{startdate.month:02d}/done"
+    pathlib.Path(path).touch()
 
 def _driver():
     """Main driver"""
