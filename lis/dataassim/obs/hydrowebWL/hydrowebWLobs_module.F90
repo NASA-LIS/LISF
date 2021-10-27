@@ -313,7 +313,6 @@ contains
           call LIS_getCDFattributes(k,modelcdffile(n),&
                hydroweb_wl_struc(n)%nt,ngrid)
                     
-          print*, LIS_rc%obs_ngrid(k)
           allocate(hydroweb_wl_struc(n)%model_mu(LIS_rc%obs_ngrid(k),&
                hydroweb_wl_struc(n)%nt))
           allocate(hydroweb_wl_struc(n)%model_sigma(LIS_rc%obs_ngrid(k),&
