@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.1
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -234,7 +236,7 @@ contains
         h1=0.;v1=rivstomax
         h2=fldhgt(1);v2=fldstomax(1)
       else
-        print*,'[ERR] Please check [HYMAP2_calc_fldstg] '
+        write(LIS_logunit,*)"[ERR] Please check [HYMAP2_calc_fldstg] "
         call LIS_endrun()
       endif        
       flddph=h1+(h2-h1)*(rstoall-v1)/(v2-v1)
