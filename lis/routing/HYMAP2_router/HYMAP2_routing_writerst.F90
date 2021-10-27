@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.1
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -722,15 +724,15 @@ subroutine HYMAP2_dump_restart(n, ftn)
     else
        allocate(gtmp1(1,LIS_rc%nensem(n)))
     endif
-#if (defined SPMD)    
     do m=1,LIS_rc%nensem(n)  
+#if (defined SPMD)    
        call MPI_GATHERV(var(:,m),LIS_rc%nroutinggrid(n),&
             MPI_REAL,gtmp1(:,m),&
             LIS_routing_gdeltas(n,:),&
             LIS_routing_goffsets(n,:),&
             MPI_REAL,0,LIS_mpi_comm,ierr)
-#else 
-       gtmp1(:,m) = var(:)
+#else
+       gtmp1(:,m) = var(:,m)
 #endif
     enddo
     if(LIS_masterproc) then
