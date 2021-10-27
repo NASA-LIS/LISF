@@ -2562,8 +2562,8 @@ contains
 10    continue
       close(1)
     else
-      write(LIS_logunit,*) 'time series file '//trim(yfile)
-      write(LIS_logunit,*) 'failed in read_time_series in HYMAP2_routing_init'
+      write(LIS_logunit,*) '[ERR] time series file '//trim(yfile)
+      write(LIS_logunit,*) '[ERR] failed in read_time_series in HYMAP2_routing_init'
       call LIS_endrun()
     endif  
 
