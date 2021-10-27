@@ -30,7 +30,7 @@ subroutine noah36_getsws_hymap2(n)
 !   This routine defines the surface water storage variables in NoahMP
 !   to be updated based on feedback from HYMAP2
 !  
-  !EOP
+!EOP
   type(ESMF_Field)       :: rivsto_field
   type(ESMF_Field)       :: fldsto_field
   type(ESMF_Field)       :: fldfrc_field
