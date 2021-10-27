@@ -2549,18 +2549,19 @@ contains
     real*8,       intent(inout) :: ztalt(itmax)
     real,         intent(inout) :: zhalt(itmax)
     logical                     :: file_exists
-    integer :: it
+    integer :: it, ftn
   
     inquire(file=yfile,exist=file_exists)
     
     if(file_exists)then 
-      open(1,file=trim(yfile),status='old')
+      ftn = LIS_getNextUnitNumber()
+      open(ftn,file=trim(yfile),status='old')
       do it=1,itmax
-        read(1,*,end=10)ztalt(it),zhalt(it)
+        read(ftn,*,end=10)ztalt(it),zhalt(it)
         write(LIS_logunit,*)ztalt(it),zhalt(it)
       enddo
 10    continue
-      close(1)
+      call LIS_releaseUnitNumber(ftn)
     else
       write(LIS_logunit,*) '[ERR] time series file '//trim(yfile)
       write(LIS_logunit,*) '[ERR] failed in read_time_series in HYMAP2_routing_init'
