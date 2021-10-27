@@ -28,8 +28,8 @@ _CEYR = 2020
 _RUNDIR = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
 _RUNDIR += "/lis74_s2s_patches/LISF/lvt/utils/usaf/s2smetric"
 
-_NMME_MODELS = ["CCM4", "CCSM4", "CFSv2", "GEOSv2", "GFDL", "GNEMO"]
-#_NMME_MODELS = ["GEOSv2"] # For testing
+#_NMME_MODELS = ["CCM4", "CCSM4", "CFSv2", "GEOSv2", "GFDL", "GNEMO"]
+_NMME_MODELS = ["GEOSv2"] # For testing
 
 _LSM_MODEL = "NOAHMP"
 
@@ -58,7 +58,8 @@ _METRICS = ["RootZone_SM_ANOM", "RootZone_SM_SANOM",
 # Local methods
 def _usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: %s" %(sys.argv[0])
+    argv = sys.argv[0]
+    txt = f"[INFO] Usage: {argv}"
     print(txt)
 
 def _read_cmd_args():
@@ -71,8 +72,9 @@ def _read_cmd_args():
 def _handle_dates():
     """Collect and return data information."""
     currentdate = datetime.date.today()
-    print("[INFO] Current year / month: %4.4d / %2.2d" \
-          %(currentdate.year, currentdate.month))
+    year = currentdate.year
+    month = currentdate.month
+    print(f"[INFO] Current year / month: {year:04d} / {month:02d}")
     return currentdate
 
 def _submit_metric_batch_jobs(currentdate, model):
@@ -81,17 +83,17 @@ def _submit_metric_batch_jobs(currentdate, model):
     for py_script in ["convert_dyn_fcst_to_anom.py",
                       "convert_dyn_fcst_to_sanom.py"]:
         cmd = "sbatch"
-        cmd += " %s" %(_BATCH_SCRIPT)
-        cmd += " %s" %(py_script)
-        cmd += " %2.2d" %(currentdate.month)
-        cmd += " %s" %(_LSM_MODEL)
-        cmd += " %d" %(_LEAD)
-        cmd += " %s" %(_DOMAIN)
-        cmd += " %4.4d" %(currentdate.year)
-        cmd += " %s" %(model)
-        cmd += " %4.4d" %(_CSYR)
-        cmd += " %4.4d" %(_CEYR)
-        cmd += " %s" %(_PYLIBDIR)
+        cmd += f" {_BATCH_SCRIPT}"
+        cmd += f" {py_script}"
+        cmd += f" {currentdate.month:02d}"
+        cmd += f" {_LSM_MODEL}"
+        cmd += f" {_LEAD}"
+        cmd += f" {_DOMAIN}"
+        cmd += f" {currentdate.year:04d}"
+        cmd += f" {model}"
+        cmd += f" {_CSYR:04d}"
+        cmd += f" {_CEYR:04d}"
+        cmd += f" {_PYLIBDIR}"
         print(cmd)
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
@@ -100,13 +102,17 @@ def _submit_metric_batch_jobs(currentdate, model):
 
 def _run_convert_s2s_anom_cf(currentdate):
     """Automate convert_s2s_anom_cf.py for each NMME run."""
-    cfoutdir = f"{_BASEOUTDIR}/metrics_cf/AFRICOM/{_LSM_MODEL}"
+    cfoutdir = f"{_BASEOUTDIR}/metrics_cf/{_DOMAIN}/{_LSM_MODEL}"
     if not os.path.exists(cfoutdir):
         os.makedirs(cfoutdir)
+    year = currentdate.year
+    month = currentdate.month
     for nmme_model in _NMME_MODELS:
         for anom_type in ("anom", "sanom"):
             touchfile = f"{_BASEOUTDIR}/DYN_"
-            touchfile += "%s/AFRICOM/%s" %(anom_type.upper(), _LSM_MODEL)
+            touchfile += f"{anom_type.upper()}"
+            touchfile += f"/{_DOMAIN}"
+            touchfile += f"/{_LSM_MODEL}"
             touchfile += f"/{anom_type}.{_LSM_MODEL}.{nmme_model}.done"
             while not os.path.exists(touchfile):
                 print(f"[INFO] Waiting for {touchfile}... " + time.asctime() )
@@ -114,9 +120,8 @@ def _run_convert_s2s_anom_cf(currentdate):
             for metric_var in _METRIC_VARS:
                 metricfile = os.path.dirname(touchfile)
                 metricfile += f"/{nmme_model}_{metric_var}"
-                metricfile += f"_%s_init_monthly_" %(anom_type.upper())
-                metricfile += "%2.2d_%4.4d.nc" %(currentdate.month,
-                                                 currentdate.year)
+                metricfile += f"_{anom_type.upper()}_init_monthly_"
+                metricfile += f"{month:02d}_{year:04d}.nc"
                 cmd = f"{_RUNDIR}/convert_s2s_anom_cf.py"
                 cmd += f" {metricfile} {cfoutdir}"
                 print(cmd)
@@ -140,7 +145,7 @@ def _calc_enddate(startdate):
 
 def _run_merge_s2s_anom_cf(currentdate):
     """Automate merge_s2s_anom_cf.py"""
-    input_dir = f"{_BASEOUTDIR}/metrics_cf/AFRICOM/{_LSM_MODEL}"
+    input_dir = f"{_BASEOUTDIR}/metrics_cf/{_DOMAIN}/{_LSM_MODEL}"
     output_dir = input_dir
     startdate = datetime.date(year=currentdate.year,
                               month=currentdate.month,
@@ -149,12 +154,8 @@ def _run_merge_s2s_anom_cf(currentdate):
     for nmme_model in _NMME_MODELS:
         cmd =  f"{_RUNDIR}/merge_s2s_anom_cf.py"
         cmd += f" {input_dir} {output_dir}"
-        cmd += " %4.4d%2.2d%2.2d" %(startdate.year,
-                                    startdate.month,
-                                    startdate.day)
-        cmd += " %4.4d%2.2d%2.2d" %(enddate.year,
-                                    enddate.month,
-                                    enddate.day)
+        cmd += f" {startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
+        cmd += f" {enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
         cmd += f" {nmme_model}"
         print(cmd)
         if subprocess.call(cmd, shell=True) != 0:
@@ -163,10 +164,10 @@ def _run_merge_s2s_anom_cf(currentdate):
 
 def _run_make_s2s_median_metric_geotiff():
     """Automate make_s2s_median_metric_geotiff.py"""
-    input_dir = f"{_BASEOUTDIR}/metrics_cf/AFRICOM/{_LSM_MODEL}"
+    input_dir = f"{_BASEOUTDIR}/metrics_cf/{_DOMAIN}/{_LSM_MODEL}"
     for metric in _METRICS:
-        cmd = "%s/make_s2s_median_metric_geotiff.py" \
-            %(os.path.dirname(_BATCH_SCRIPT))
+        cmd = f"{os.path.dirname(_BATCH_SCRIPT)}"
+        cmd += "/make_s2s_median_metric_geotiff.py"
         cmd += f" {input_dir} {metric}"
         print(cmd)
         if subprocess.call(cmd, shell=True) != 0:
@@ -178,7 +179,7 @@ def _driver():
     _read_cmd_args()
     currentdate = _handle_dates()
     if not os.path.exists(_RUNDIR):
-        print("[ERR] %s does not exist!" %(_RUNDIR))
+        print(f"[ERR] {_RUNDIR} does not exist!")
         sys.exit(1)
     os.chdir(_RUNDIR)
     for model in _NMME_MODELS:
