@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.1
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -2549,21 +2551,22 @@ contains
     real*8,       intent(inout) :: ztalt(itmax)
     real,         intent(inout) :: zhalt(itmax)
     logical                     :: file_exists
-    integer :: it
+    integer :: it, ftn
   
     inquire(file=yfile,exist=file_exists)
     
     if(file_exists)then 
-      open(1,file=trim(yfile),status='old')
+      ftn = LIS_getNextUnitNumber()
+      open(ftn,file=trim(yfile),status='old')
       do it=1,itmax
-        read(1,*,end=10)ztalt(it),zhalt(it)
+        read(ftn,*,end=10)ztalt(it),zhalt(it)
         write(LIS_logunit,*)ztalt(it),zhalt(it)
       enddo
 10    continue
-      close(1)
+      call LIS_releaseUnitNumber(ftn)
     else
-      write(LIS_logunit,*) 'time series file '//trim(yfile)
-      write(LIS_logunit,*) 'failed in read_time_series in HYMAP2_routing_init'
+      write(LIS_logunit,*) '[ERR] time series file '//trim(yfile)
+      write(LIS_logunit,*) '[ERR] failed in read_time_series in HYMAP2_routing_init'
       call LIS_endrun()
     endif  
 
