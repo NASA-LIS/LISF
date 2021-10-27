@@ -46,6 +46,26 @@ This document consists of 12 sections, described as follows:
 === What's New
 //\attention{See _RELEASE_NOTES_ found in the _source.tar.gz_ file for more details.  (See Section <<sec_obtain-src>>.)}
 
+//==== LIS 7.4
+//
+//. Removes the following metforcing datasets
+//* AGRMET radiation (latlon)
+//* AMMA land surface model intercomparision project phase 2 (ALMIPII)
+//* Walnut Gulch meteorological station data (ARMS)
+//* Canadian Precipitation analysis (CaPA)
+//* CEOP
+//* COOP
+//* ECMWF reanalysis
+//* Single-point FASST product (FASSTsingle)
+//* GDAS(3d)
+//* GDAS profile data from the PMM land surface working group (GDAS(LSWG))
+//* GEOS
+//* GMAO Modern Era Retrospective-Analysis for Research and Applications data (MERRA-Land)
+//* North American Land Data Assimilation System forcing product (NLDAS1)
+//* PILDAS
+//* NOAA OHD RDHM 3.5.6 forcing data (RDHM 3.5.6)
+//* Rhone AGG
+
 ==== LIS 7.3
 
 . Includes new runmodes

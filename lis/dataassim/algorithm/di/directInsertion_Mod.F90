@@ -126,7 +126,6 @@ contains
 ! !INTERFACE:
   subroutine di_update(n,k)
 ! !USES: 
-    use ESMF
     use LIS_coreMod, only         : LIS_rc
 ! !ARGUMENTS: 
     integer, intent(in)    :: n

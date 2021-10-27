@@ -57,7 +57,6 @@ contains
 ! !INTERFACE: 
   subroutine SYN_LBAND_TB_setup(k, OBS_State, OBS_Pert_State)
 ! !USES: 
-    use ESMF
     use LIS_coreMod, only : LIS_rc, LIS_config, LIS_vecGrid, LIS_ensOnGrid
     use LIS_timeMgrMod, only : LIS_clock, LIS_calendar, LIS_registerAlarm
     use LIS_perturbMod

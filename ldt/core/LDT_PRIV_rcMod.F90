@@ -390,6 +390,7 @@ module LDT_PRIV_rcMod
      integer, allocatable   :: gridchange(:)
      character*100          :: rstsource
      character*50           :: ensrstmode
+     character*50           :: ensrstsampling
      character*140          :: inputrst
      character*140          :: outputrst
      integer                :: nens_in

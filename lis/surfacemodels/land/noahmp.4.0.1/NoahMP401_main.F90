@@ -224,6 +224,7 @@ subroutine NoahMP401_main(n)
     real                 :: tmp_irb                ! bare net LW radiation [+ to atm] [W/m2]
     real                 :: tmp_tr                 ! transpiration [ to atm] [W/m2]
     real                 :: tmp_evc                ! canopy evaporation heat [to atm] [W/m2]
+    real                 :: tmp_fgev_pet, tmp_fcev_pet,tmp_fctr_pet
     real                 :: tmp_chleaf             ! leaf exchange coefficient [-]
     real                 :: tmp_chuc               ! under canopy exchange coefficient [-]
     real                 :: tmp_chv2               ! veg 2m exchange coefficient [-]
@@ -245,6 +246,7 @@ subroutine NoahMP401_main(n)
     ! EMK for 557WW
     real :: tmp_q2sat, tmp_es
     character*3 :: fnest
+    REAL, PARAMETER:: LVH2O = 2.501000E+6 ! Latent heat for evapo for water  
 
     allocate( tmp_sldpth( NOAHMP401_struc(n)%nsoil ) )
     allocate( tmp_shdfac_monthly( 12 ) )
@@ -297,10 +299,18 @@ subroutine NoahMP401_main(n)
             tmp_lwdown     = NOAHMP401_struc(n)%noahmp401(t)%lwdown / NOAHMP401_struc(n)%forc_count
 
             ! prcp: total precipitation (rainfall+snowfall)
-            ! Both NoahMP-3.6.1 and NoahMP-4.0.1 requires total precipitation as forcing input.
-            ! In LIS/NoahMP-3.6.1, the input forcing is total precipitation [mm], but in
-            ! LIS/NoahMP-4.0.1, the forcing data provides precipitation rate [mm/s] !!!
-            tmp_prcp       = dt * (NOAHMP401_struc(n)%noahmp401(t)%prcp   / NOAHMP401_struc(n)%forc_count)
+            ! Both Noah-MP-3.6 and Noah-MP-4.0.1 require total precipitation as forcing input.
+            ! In Noah-MP-3.6, the forcing is required to be precipitation rate [kg m-2 sec-1].
+            ! In Noah-MP-4.0.1, the forcing is required to be precipitation amount [kg m-2].
+
+            ! T. Lahmers: Correct total precip for cases when model time step > forcing timestep. 
+            ! Edit suggested by D. Mocko and K. Arsenault
+            if (NOAHMP401_struc(n)%ts > LIS_rc%ts) then
+                tmp_dt         = NOAHMP401_struc(n)%ts
+                tmp_prcp       = tmp_dt * (NOAHMP401_struc(n)%noahmp401(t)%prcp   / NOAHMP401_struc(n)%forc_count)
+            else
+                tmp_prcp       = dt * (NOAHMP401_struc(n)%noahmp401(t)%prcp   / NOAHMP401_struc(n)%forc_count)
+            endif
 
             ! check validity of tair
             if(tmp_tair .eq. LIS_rc%udef) then
@@ -662,6 +672,7 @@ subroutine NoahMP401_main(n)
                                    tmp_irb               , & ! out   - bare net LW radiation [+ to atm] [W/m2]
                                    tmp_tr                , & ! out   - transpiration [ to atm] [W/m2]
                                    tmp_evc               , & ! out   - canopy evaporation heat [to atm] [W/m2]
+                                   tmp_fgev_pet, tmp_fcev_pet, tmp_fctr_pet, & !PET code from Sujay 
                                    tmp_chleaf            , & ! out   - leaf exchange coefficient [-]
                                    tmp_chuc              , & ! out   - under canopy exchange coefficient [-]
                                    tmp_chv2              , & ! out   - veg 2m exchange coefficient [-]
@@ -1193,6 +1204,13 @@ subroutine NoahMP401_main(n)
             ![ 88] output variable: evap (unit=kg/m2/s). ***  total evapotranspiration
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_EVAP, value = NOAHMP401_struc(n)%noahmp401(t)%qfx, &
                                               vlevel=1, unit="kg m-2 s-1", direction="UP", surface_type = LIS_rc%lsm_index)
+            !PET
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_POTEVAP, &
+                 value=(tmp_fgev_pet+tmp_fcev_pet+tmp_fctr_pet), vlevel=1,unit="W m-2",&
+                  direction="UP",surface_type=LIS_rc%lsm_index)
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_POTEVAP, &
+                 value=(tmp_fgev_pet+tmp_fcev_pet+tmp_fctr_pet)/LVH2O, vlevel=1,unit="kg m-2 s-1",&
+                  direction="UP",surface_type=LIS_rc%lsm_index)
 
             ![ 89] output variable: rainf (unit=kg/m2). ***  precipitation rate
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RAINF, value = NOAHMP401_struc(n)%noahmp401(t)%rainf, &

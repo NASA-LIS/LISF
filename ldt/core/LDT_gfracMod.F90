@@ -234,7 +234,6 @@ contains
    character*100, allocatable   :: gfracdir(:)
    character*140, allocatable   :: gfracfile(:)
    character*20,  allocatable   :: gfracInterval(:)
-
 ! _____________________________________________________________
 
    gfrac_select = .false. 
@@ -450,9 +449,16 @@ contains
 
                write(LDT_logunit,*) "Reading single-file, monthly climatologies for: "&
                     //trim(gfracfile(n))
+               !call readgfrac( trim(LDT_gfrac_struc(n)%gfrac%source)//char(0),&
+               !n, LDT_gfrac_struc(n)%gfrac%value, &
+               !     LDT_LSMparam_struc(n)%landmask%value )
+               !EMK...Removed extra argument, as it is not currently used
+               !and causes compilation problems with GFORTRAN 10 and 11 due
+               !to inconsistent argument list with readgfrac call further
+               !below.
                call readgfrac( trim(LDT_gfrac_struc(n)%gfrac%source)//char(0),&
-                    n, LDT_gfrac_struc(n)%gfrac%value, &
-                    LDT_LSMparam_struc(n)%landmask%value )
+                    n, LDT_gfrac_struc(n)%gfrac%value)
+
                write(LDT_logunit,*) "Done reading file - "//trim(gfracfile(n))
 
          !- Read multi-file monthly clim greenness fraction: 
@@ -474,8 +480,11 @@ contains
                   LDT_gfrac_struc(n)%gfracfile = gfracfile(n)
 
                   write(LDT_logunit,*) "Reading "//trim(gfracfile(n))
-                  call readgfrac( trim(LDT_gfrac_struc(n)%gfrac%source)//char(0),&
-                       n, LDT_gfrac_struc(n)%gfrac%value(:,:,k) )
+                  call readgfrac( &
+                      trim(LDT_gfrac_struc(n)%gfrac%source)//char(0), &
+                      n, &
+                      LDT_gfrac_struc(n)%gfrac%value(:,:,k) &
+                      )
                   write(LDT_logunit,*) "Done reading "//trim(gfracfile(n))
 
                enddo

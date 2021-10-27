@@ -487,6 +487,9 @@ CONTAINS
       CASE(PROJ_LC)
         CALL llij_lc(lat,lon,proj,i,j)
 
+      CASE(PROJ_GAUSS)
+        CALL llij_gauss(lat,lon,proj,i,j)
+
       CASE(PROJ_EASEV2)
         CALL llij_easev2(lat,lon,proj,i,j)
 
@@ -640,8 +643,10 @@ CONTAINS
 
     RETURN
   END SUBROUTINE ijll_gauss
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
- SUBROUTINE llij_gauss(lat, lon, proj, i, j)
+
+  SUBROUTINE llij_gauss(lat, lon, proj, i, j)
 
     ! Compute the i/j location of a lat/lon on a GAUSSIAN grid.
     IMPLICIT NONE
@@ -650,6 +655,7 @@ CONTAINS
     TYPE(proj_info), INTENT(IN)  :: proj
     REAL, INTENT(OUT)            :: i
     REAL, INTENT(OUT)            :: j
+
     real                         :: lon360,deltalon,slon360
     integer                      :: k
 
@@ -681,7 +687,9 @@ CONTAINS
 
     RETURN
   END SUBROUTINE llij_gauss
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   SUBROUTINE set_ps(proj)
     ! Initializes a polar-stereographic map projection from the partially
     ! filled proj structure. This routine computes the radius to the

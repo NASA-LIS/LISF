@@ -419,6 +419,17 @@ module LVT_LISoutputHandlerMod
    integer :: LVT_LIS_MOC_RTM_COUNT(3)
    integer :: LVT_LIS_MOC_IRRIG_COUNT(3)
 
+   ! New variables for JULES 5.0 for PS41 (multi-layer snow)
+   integer :: LVT_LIS_MOC_SURFT_SNOW(3)       = -9999
+   integer :: LVT_LIS_MOC_GRND_SNOW(3)        = -9999
+   integer :: LVT_LIS_MOC_SOOT(3)             = -9999
+   integer :: LVT_LIS_MOC_SNOWGRAIN(3)        = -9999
+   integer :: LVT_LIS_MOC_SNOWDENSITY(3)      = -9999
+   integer :: LVT_LIS_MOC_SNOW_NLAYER(3)      = -9999
+   integer :: LVT_LIS_MOC_LAYERSNOWDEPTH(3)   = -9999
+   integer :: LVT_LIS_MOC_SNOWLIQ(3)          = -9999
+   integer :: LVT_LIS_MOC_LAYERSNOWDENSITY(3) = -9999
+   integer :: LVT_LIS_MOC_LAYERSNOWGRAIN(3)   = -9999
 
 #if 0
    ! SPECIAL CASE INDICES
@@ -1127,20 +1138,26 @@ contains
                "liquid_water_content_of_surface_snow",&
                "snow water equivalent","F",rc)
           if(rc.eq.1) then 
-             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_SWE(kk),&
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_SWE(kk),&
                   LVT_LISoutput(kk)%head_lsm_list,2,nsize,nensem,&
                   (/"kg/m2","m    "/),1,(/"-"/),&
-                  valid_min=(/0.0,0.0/),valid_max=(/2000.0,2.0/),gribSFC=1,gribLvl=1)    
+                  valid_min=(/0.0,0.0/),valid_max=(/10000.0,10.0/), &
+                  gribSFC=1,gribLvl=1)
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig,"SnowDepth:",rc=rc)
-          call get_moc_attributes(modelSpecConfig, LVT_LISoutput(kk)%head_lsm_list,&
+          call get_moc_attributes(modelSpecConfig, &
+               LVT_LISoutput(kk)%head_lsm_list,&
                "SnowDepth","snow_depth","snow depth","F",rc)
           if(rc.eq.1) then 
-             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_SNOWDEPTH(kk),&
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_SNOWDEPTH(kk),&
                   LVT_LISoutput(kk)%head_lsm_list,&
                   3,nsize,nensem,(/"m ","cm","mm"/),1,(/"-"/),&
-                  valid_min=(/0.0/),valid_max=(/10.0/),gribSFC=1,gribLvl=1)
+                  valid_min=(/0.0, 0.0, 0.0/), &
+                  valid_max=(/100.0, 10000.0, 100000.0/), &
+                  gribSFC=1,gribLvl=1)
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig,"SnowIce:",rc=rc)
@@ -1152,7 +1169,8 @@ contains
              call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_SNOWICE(kk),&
                   LVT_LISoutput(kk)%head_lsm_list,2,nsize,nensem,&
                   (/"kg/m2","mm   "/),1,(/"-"/),&
-                  valid_min=(/0.0,0.0/),valid_max=(/2000.0,2.0/),gribSFC=1,gribLvl=1)    
+                  valid_min=(/0.0,0.0/),valid_max=(/20000.0, 20000.0/), &
+                  gribSFC=1,gribLvl=1)
           endif
 
 
@@ -1474,7 +1492,8 @@ contains
              call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk),LVT_LIS_MOC_SNOWTPROF(kk),&
                   LVT_LISoutput(kk)%head_lsm_list,&
                   1,nsize,nensem,(/"K"/),1,(/"-"/),&
-                  valid_min=(/0.0/),valid_max=(/1.0/),gribSFC=grib_snowlvl,gribLvl=0)
+                  valid_min=(/100.0/),valid_max=(/273.15/),&
+                  gribSFC=grib_snowlvl,gribLvl=0)
           endif
 
           call ESMF_ConfigFindLabel(modelSpecConfig,"SLiqFrac:",rc=rc)
@@ -3621,6 +3640,164 @@ contains
                   valid_min=(/-9999.0/),valid_max=(/-9999.0/),gribSFC=1,gribLvl=1)
           endif
 
+          !EMK...Added JULES variables for PS41 (multi-layer snow physics)
+          call ESMF_ConfigFindLabel(modelSpecConfig, "SurftSnow:", rc=rc)
+          call get_moc_attributes(modelSpecConfig, &
+               LVT_LISoutput(kk)%head_lsm_list, &
+               "SurftSnow",&
+               "snow_amount_on_tile",&
+               "snow amount on tile", "F", rc)
+          if (rc .eq. 1) then
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_SURFT_SNOW(kk), &
+                  LVT_LISoutput(kk)%head_lsm_list, &
+                  1, &
+                  nsize,nensem,(/"kg/m2"/),1,(/"-"/),valid_min=(/0.0/), &
+                  valid_max=(/10000.0/),gribSFC=1,gribLvl=1)
+          endif
+
+          call ESMF_ConfigFindLabel(modelSpecConfig, "GrndSnow:", rc=rc)
+          call get_moc_attributes(modelSpecConfig, &
+               LVT_LISoutput(kk)%head_lsm_list, &
+               "GrndSnow",&
+               "snow_on_ground_beneath_canopy",&
+               "snow on ground (beneath canopy)", "F", rc)
+          if (rc .eq. 1) then
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_GRND_SNOW(kk), &
+                  LVT_LISoutput(kk)%head_lsm_list, &
+                  1, &
+                  nsize,nensem,(/"kg m-2"/),1,(/"-"/),valid_min=(/0.0/), &
+                  valid_max=(/1000.0/),gribSFC=1,gribLvl=1)
+          endif
+
+          call ESMF_ConfigFindLabel(modelSpecConfig, "SnowSoot:", rc=rc)
+          call get_moc_attributes(modelSpecConfig, &
+               LVT_LISoutput(kk)%head_lsm_list, &
+               "SnowSoot",&
+               "snow_soot_content",&
+               "snow soot content", "F", rc)
+          if (rc .eq. 1) then
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_SOOT(kk), &
+                  LVT_LISoutput(kk)%head_lsm_list, &
+                  1, &
+                  nsize,nensem,(/"kg kg-1"/),1,(/"-"/),valid_min=(/0.0/), &
+                  valid_max=(/1200.0/),gribSFC=1,gribLvl=1)
+          endif
+
+          call ESMF_ConfigFindLabel(modelSpecConfig, "SnowGrain:", rc=rc)
+          call get_moc_attributes(modelSpecConfig, &
+               LVT_LISoutput(kk)%head_lsm_list, &
+               "SnowGrain",&
+               "snow_grain_size",&
+               "snow grain size", "F", rc)
+          if (rc .eq. 1) then
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_SNOWGRAIN(kk), &
+                  LVT_LISoutput(kk)%head_lsm_list, &
+                  1, &
+                  nsize,nensem,(/"micron"/),1,(/"-"/),valid_min=(/50.0/), &
+                  valid_max=(/2000.0/),gribSFC=1,gribLvl=1)
+          endif
+
+          call ESMF_ConfigFindLabel(modelSpecConfig, "SnowDensity:", rc=rc)
+          call get_moc_attributes(modelSpecConfig, &
+               LVT_LISoutput(kk)%head_lsm_list, &
+               "SnowDensity",&
+               "bulk_snow_density",&
+               "bulk snow density", "F", rc)
+          if (rc .eq. 1) then
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_SNOWDENSITY(kk), &
+                  LVT_LISoutput(kk)%head_lsm_list, &
+                  1, &
+                  nsize,nensem,(/"kg m-3"/),1,(/"-"/),valid_min=(/100.0/), &
+                  valid_max=(/1000.0/),gribSFC=1,gribLvl=1)
+          endif
+
+          call ESMF_ConfigFindLabel(modelSpecConfig, "ActSnowNL:", rc=rc)
+          call get_moc_attributes(modelSpecConfig, &
+               LVT_LISoutput(kk)%head_lsm_list, &
+               "ActSnowNL",&
+               "actual_number_of_snow_layers",&
+               "actual number of snow layers", "F", rc)
+          if (rc .eq. 1) then
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_SNOW_NLAYER(kk), &
+                  LVT_LISoutput(kk)%head_lsm_list, &
+                  1, &
+                  nsize,nensem,(/"-"/),1,(/"-"/),valid_min=(/0./), &
+                  valid_max=(/3./),gribSFC=1,gribLvl=1)
+          endif
+
+          call ESMF_ConfigFindLabel(modelSpecConfig, "LayerSnowDepth:", rc=rc)
+          call get_moc_attributes(modelSpecConfig, &
+               LVT_LISoutput(kk)%head_lsm_list, &
+               "LayerSnowDepth",&
+               "snow_depth_for_each_layer",&
+               "snow_depth_for_each_layer", "F", rc)
+          if (rc .eq. 1) then
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_LAYERSNOWDEPTH(kk), &
+                  LVT_LISoutput(kk)%head_lsm_list, &
+                  3, &
+                  nsize,nensem,(/"m ", "cm", "mm"/),1,(/"-"/), &
+                  valid_min=(/0., 0., 0./), &
+                  valid_max=(/100., 10000., 100000./),gribSFC=114,gribLvl=1)
+          endif
+
+          call ESMF_ConfigFindLabel(modelSpecConfig, "SnowLiq:", rc=rc)
+          call get_moc_attributes(modelSpecConfig, &
+               LVT_LISoutput(kk)%head_lsm_list, &
+               "SnowLiq",&
+               "snow-layer_liquid_water",&
+               "snow-layer liquid water", "F", rc)
+          if (rc .eq. 1) then
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_SNOWLIQ(kk), &
+                  LVT_LISoutput(kk)%head_lsm_list, &
+                  2, &
+                  nsize,nensem,(/"kg/m2", "mm   "/),1,(/"-"/), &
+                  valid_min=(/0., 0./), &
+                  valid_max=(/20000.0, 20000.0/),gribSFC=114,gribLvl=1)
+          endif
+
+          call ESMF_ConfigFindLabel(modelSpecConfig, "LayerSnowDensity:", &
+               rc=rc)
+          call get_moc_attributes(modelSpecConfig, &
+               LVT_LISoutput(kk)%head_lsm_list, &
+               "LayerSnowDensity",&
+               "snow_density_for_each_layer",&
+               "snow density for each layer", "F", rc)
+          if (rc .eq. 1) then
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_LAYERSNOWDENSITY(kk), &
+                  LVT_LISoutput(kk)%head_lsm_list, &
+                  1, &
+                  nsize,nensem,(/"kg m-3"/),1,(/"-"/), &
+                  valid_min=(/0./), &
+                  valid_max=(/1000.0/),gribSFC=114,gribLvl=1)
+          endif
+
+          call ESMF_ConfigFindLabel(modelSpecConfig, "LayerSnowGrain:", &
+               rc=rc)
+          call get_moc_attributes(modelSpecConfig, &
+               LVT_LISoutput(kk)%head_lsm_list, &
+               "LayerSnowGrain",&
+               "layer_snow_grain_size_for_each_layer",&
+               "snow grain size for each layer", "F", rc)
+          if (rc .eq. 1) then
+             call register_dataEntry(LVT_LIS_MOC_LSM_COUNT(kk), &
+                  LVT_LIS_MOC_LAYERSNOWGRAIN(kk), &
+                  LVT_LISoutput(kk)%head_lsm_list, &
+                  1, &
+                  nsize,nensem,(/"micron"/),1,(/"-"/), &
+                  valid_min=(/50./), &
+                  valid_max=(/2000.0/),gribSFC=114,gribLvl=1)
+          endif
+          !EMK END
+
           !EMK...Correct name of minimum Tair variable.
           call ESMF_ConfigFindLabel(modelSpecConfig,"Tair_f_min:",rc=rc)
           call get_moc_attributes(modelSpecConfig,LVT_LISoutput(kk)%head_lsm_list,&
@@ -4588,9 +4765,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                    swe_calc%value(gid,m,1) = &
                         swe%value(gid,m,1)
                    swe_calc%count(gid,m,1) = swe%count(gid,m,1)
-!                   if(swe_calc%value(gid,m,1).gt.2000) then 
-!                      swe_calc%value(gid,m,1) = 2000.0
-!                   endif
+                   !if(swe_calc%value(gid,m,1).gt.2000) then 
+                   !   swe_calc%value(gid,m,1) = 2000.0
+                   !endif
                 enddo
              enddo
           endif
@@ -10553,6 +10730,16 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
        elseif(lvtdataEntry%units.eq."W/m2".and.&
               lisdataEntry%units.eq."kg/m2s") then 
           scale_f = LVT_CONST_LATVAP
+       !EMK HACKS
+       elseif(lvtdataEntry%units.eq."kg/m2".and.&
+            lisdataEntry%units.eq."kg m-2") then
+          scale_f = 1.0
+       elseif(lvtdataEntry%units.eq."kg/m3".and.&
+            lisdataEntry%units.eq."kg m-3") then
+          scale_f = 1.0
+       elseif(lvtdataEntry%units.eq."microns".and.&
+            lisdataEntry%units.eq."micron") then
+          scale_f = 1.0
        else
           write(LVT_logunit,*) '[ERR] The units of the '
           write(LVT_logunit,*) '[ERR] LIS output and the analysis'

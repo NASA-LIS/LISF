@@ -55,7 +55,7 @@ subroutine read_HYMAP_runoff_dwi_ratio(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%runoffdwiratiofile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] runoff DWI ratio map, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP runoff dwi ratio map, ',&
            trim(HYMAP_struc(n)%runoffdwiratiofile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
