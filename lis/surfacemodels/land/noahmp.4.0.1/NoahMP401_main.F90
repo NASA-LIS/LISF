@@ -328,49 +328,49 @@ subroutine NoahMP401_main(n)
 
             ! check validity of tair
             if(tmp_tair .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable tair in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable tair in NoahMP401"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of psurf
             if(tmp_psurf .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable psurf in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable psurf in NoahMP401"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of wind_e
             if(tmp_wind_e .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable wind_e in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable wind_e in NoahMP401"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of wind_n
             if(tmp_wind_n .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable wind_n in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable wind_n in NoahMP401"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of qair
             if(tmp_qair .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable qair in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable qair in NoahMP401"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of swdown
             if(tmp_swdown .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable swdown in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable swdown in NoahMP401"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of lwdown
             if(tmp_lwdown .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable lwdown in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable lwdown in NoahMP401"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of prcp
             if(tmp_prcp .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable prcp in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable prcp in NoahMP401"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
@@ -379,19 +379,19 @@ subroutine NoahMP401_main(n)
             !ag (05Jan2021)
             ! check validity of rivsto
             if(tmp_rivsto .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable rivsto in NoahMP36"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable rivsto in NoahMP36"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of fldsto
             if(tmp_fldsto .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable fldsto in NoahMP36"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable fldsto in NoahMP36"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of fldfrc
             if(tmp_fldfrc .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable fldfrc in NoahMP36"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable fldfrc in NoahMP36"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
