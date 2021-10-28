@@ -15,6 +15,9 @@
 #
 # REVISION HISTORY:
 # * 18 Oct 2021: Eric Kemp/SSAI, first version.
+# * 28 Oct 2021: Eric Kemp/SSAI, fixed pylint string complaints.  Changed logic
+#   to calculate single median across entire ensemble collection, per metric
+#   per month.
 #
 #------------------------------------------------------------------------------
 """
@@ -76,57 +79,89 @@ class _MetricGeoTiff:
             self.nmme_metric_files[nmme] = files[0]
 
     def save_filename_elements(self):
-        """Save elements from filenames."""
-        keys = self.nmme_metric_files.keys()
-        for nmme in keys:
-            metric_file = self.nmme_metric_files[nmme]
-            metric_file = os.path.basename(metric_file)
-            filename_elements = {}
-            element_list = metric_file.split("_")
-            for element in element_list:
-                key = element.split(".")[0]
-                value = element.split(".")[1]
-                filename_elements[key] = value
-            self.filename_elements[nmme] = filename_elements
+        """Save elements from first NMME filename."""
+        nmme = next(iter(self.nmme_metric_files))
+        metric_file = self.nmme_metric_files[nmme]
+        metric_file = os.path.basename(metric_file)
+        filename_elements = {}
+        element_list = metric_file.split("_")
+        for element in element_list:
+            key = element.split(".")[0]
+            value = element.split(".")[1]
+            filename_elements[key] = value
+        self.filename_elements = filename_elements
 
     def calc_medians(self):
         """Calculate medians of the metrics."""
+
         self.median_data = {}
         metric = self.metric
+        total_ens_size = 0
+        lead = 0
+        latitude = 0
+        longitude = 0
+
+        # We need to first count the total number of ensembles.
         for nmme in _NMME_MODELS:
-            if not nmme in self.nmme_metric_files:
+            if nmme not in self.nmme_metric_files:
                 continue
             metric_file = self.nmme_metric_files[nmme]
-            self.median_data[nmme] = {}
             rootgrp = nc4_dataset(metric_file, 'r',
                                   format="NETCDF4_CLASSIC")
-            self.median_data[nmme]["num_months"] = \
-                rootgrp.dimensions["lead"].size
-            self.median_data[nmme]["latitudes"] = \
-                rootgrp.variables["latitude"][:]
-            self.median_data[nmme]["longitudes"] = \
-                rootgrp.variables["longitude"][:]
-            var = rootgrp.variables[metric][:,:,:,:].data
-            self.median_data[nmme]["units"] = \
-                rootgrp.variables[metric].units
-            self.median_data[nmme]["long_name"] = \
-                rootgrp.variables[metric].long_name
-            rootgrp.close()
-            self.median_data[nmme]["median"] = \
-                np.median(var, axis=0)
-            self.set_startdates_enddates_by_month(nmme)
+            total_ens_size += rootgrp.dimensions["ens"].size
+            lead = rootgrp.dimensions["lead"].size
+            latitude = rootgrp.dimensions["latitude"].size
+            longitude = rootgrp.dimensions["longitude"].size
 
-    def set_startdates_enddates_by_month(self, nmme):
+        # Find dimensions for a single month
+        dims = (total_ens_size, latitude, longitude)
+
+        # Now loop through each month, load a NMME contribution into the
+        # total var array, and calculate the median.
+        self.median_data["median"] = []
+        for itime in range(0, lead):
+            var = np.zeros(dims)
+            iens = 0
+            start_end_set = False
+            for nmme in _NMME_MODELS:
+                if nmme not in self.nmme_metric_files:
+                    continue
+                metric_file = self.nmme_metric_files[nmme]
+                rootgrp = nc4_dataset(metric_file, 'r',
+                                      format="NETCDF4_CLASSIC")
+                ens = rootgrp.dimensions["ens"].size
+                var[iens:(iens+ens),:,:] = \
+                    rootgrp.variables[metric][:,itime,:,:].data
+                iens += ens
+                if not start_end_set:
+                    self.median_data["num_months"] = \
+                        rootgrp.dimensions["lead"].size
+                    self.median_data["latitudes"] = \
+                        rootgrp.variables["latitude"][:]
+                    self.median_data["longitudes"] = \
+                        rootgrp.variables["longitude"][:]
+                    self.median_data["units"] = \
+                        rootgrp.variables[metric].units
+                    self.median_data["long_name"] = \
+                        rootgrp.variables[metric].long_name
+                    self.set_startdates_enddates_by_month()
+                    start_end_set = True
+                rootgrp.close()
+
+            # Calculate the median for the current month
+            self.median_data["median"].append(np.median(var, axis=0))
+            del var
+
+    def set_startdates_enddates_by_month(self):
         """Set the startdates and enddates by month."""
         startdates_by_month = []
         enddates_by_month = []
-        num_months = self.get_num_of_months(nmme)
-        filename_elements = self.get_filename_elements(nmme)
-        metricfile = self.nmme_metric_files[nmme]
+        num_months = self.get_num_of_months()
+        filename_elements = self.get_filename_elements()
         for imonth in range(0, num_months):
             if imonth == 0:
                 first_startdate = \
-                    _get_first_startdate(filename_elements, metricfile)
+                    _get_first_startdate(filename_elements)
                 startdates_by_month.append(first_startdate)
                 newdate2 = _set_newdate(first_startdate)
                 enddates_by_month.append(newdate2)
@@ -135,21 +170,21 @@ class _MetricGeoTiff:
                 newdate2 = _set_newdate(enddates_by_month[imonth-1])
                 startdates_by_month.append(newdate1)
                 enddates_by_month.append(newdate2)
-        self.median_data[nmme]["startdates_by_month"] = \
+        self.median_data["startdates_by_month"] = \
             startdates_by_month
-        self.median_data[nmme]["enddates_by_month"] = \
+        self.median_data["enddates_by_month"] = \
             enddates_by_month
 
-    def get_geotransform(self, nmme):
+    def get_geotransform(self):
         """Set affine transformation from image coordinate space to
         georeferenced space. See
         https://gdal.org/tutorials/geotransforms_tut.html"""
-        xmin = self.median_data[nmme]["longitudes"].min()
-        xmax = self.median_data[nmme]["longitudes"].max()
-        ymin = self.median_data[nmme]["latitudes"].min()
-        ymax = self.median_data[nmme]["latitudes"].max()
-        nxx = self.median_data[nmme]["longitudes"].size
-        nyy = self.median_data[nmme]["latitudes"].size
+        xmin = self.median_data["longitudes"].min()
+        xmax = self.median_data["longitudes"].max()
+        ymin = self.median_data["latitudes"].min()
+        ymax = self.median_data["latitudes"].max()
+        nxx = self.median_data["longitudes"].size
+        nyy = self.median_data["latitudes"].size
         xres = (xmax - xmin) / float(nxx-1)
         yres = (ymax - ymin) / float(nyy-1)
         xmin_corner = xmin - 0.5*xres
@@ -163,17 +198,17 @@ class _MetricGeoTiff:
         #return (xmin, xres, 0, ymax, 0, -1*yres)
         return (xmin_corner, xres, 0, ymax_corner, 0, -1*yres)
 
-    def make_geotiff_filename(self, metric, nmme, imonth):
+    def make_geotiff_filename(self, metric, imonth):
         """Make name of new geotiff file."""
         startdate = \
-            self.median_data[nmme]["startdates_by_month"][imonth]
-        enddate = self.median_data[nmme]["enddates_by_month"][imonth]
-        filename_elements = self.filename_elements[nmme]
+            self.median_data["startdates_by_month"][imonth]
+        enddate = self.median_data["enddates_by_month"][imonth]
+        filename_elements = self.filename_elements
         filename = f"{self.topdir}"
         filename += f"/PS.{filename_elements['PS']}"
         filename += f"_SC.{filename_elements['SC']}"
         filename += f"_DI.{filename_elements['DI']}"
-        filename += f"_GP.{filename_elements['GP']}"
+        filename += "_GP.LIS-S2S-ANOM"
         filename += f"_GR.{filename_elements['GR']}"
         filename += f"_AR.{filename_elements['AR']}"
         filename += \
@@ -186,12 +221,12 @@ class _MetricGeoTiff:
         filename += "_DF.TIF"
         return filename
 
-    def create_output_raster(self, nmme, outfile):
+    def create_output_raster(self, outfile):
         """Create the output raster file (the GeoTIFF), including map
         projection"""
-        nxx = self.median_data[nmme]["longitudes"].size
-        nyy = self.median_data[nmme]["latitudes"].size
-        geotransform = self.get_geotransform(nmme)
+        nxx = self.median_data["longitudes"].size
+        nyy = self.median_data["latitudes"].size
+        geotransform = self.get_geotransform()
         options = ["COMPRESS=NONE"]
         output_raster = gdal.GetDriverByName('GTiff').Create(outfile,
                                                              nxx, nyy,
@@ -204,34 +239,29 @@ class _MetricGeoTiff:
         output_raster.SetProjection(srs.ExportToWkt())
         return output_raster
 
-    def get_num_of_months(self, nmme):
-        """Get the number of months for a given metric and NMME model."""
-        return self.median_data[nmme]["num_months"]
+    def get_num_of_months(self):
+        """Get the number of months for a given metric."""
+        return self.median_data["num_months"]
 
-    def get_units(self, nmme):
-        """Get the units for a given metric and NMME model."""
-        return self.median_data[nmme]["units"]
+    def get_units(self):
+        """Get the units for a given metric."""
+        return self.median_data["units"]
 
-    def get_long_name(self, nmme):
-        """Get the long_name for a given metric and NMME model."""
-        return self.median_data[nmme]["long_name"]
+    def get_long_name(self):
+        """Get the long_name for a given metric."""
+        return self.median_data["long_name"]
 
-    def get_generating_process(self, nmme):
-        """Get the generating process for a given metric and NMME model."""
-        return self.filename_elements[nmme]["GP"]
+    def get_startdates_by_month(self):
+        """Get the startdates for each month for a given metric."""
+        return self.median_data["startdates_by_month"]
 
-    def get_startdates_by_month(self, nmme):
-        """Get the startdates for each month for a given metric and NMME
-        model."""
-        return self.median_data[nmme]["startdates_by_month"]
+    def get_median_values(self):
+        """Get the metric values for a given metric."""
+        return self.median_data["median"]
 
-    def get_median_values(self, nmme):
-        """Get the metric values for a given metric and NMME model."""
-        return self.median_data[nmme]["median"]
-
-    def get_filename_elements(self, nmme):
-        """Get the filename elements for a given metric and NMME model."""
-        return self.filename_elements[nmme]
+    def get_filename_elements(self):
+        """Get the filename elements for a given metric."""
+        return self.filename_elements
 
 # Private module methods
 def _usage():
@@ -267,12 +297,12 @@ def _find_nmme_in_filename(filename):
             return upper
     return None
 
-def _get_first_startdate(filename_elements, metricfile):
+def _get_first_startdate(filename_elements):
     """Get start date from name of metric file"""
     try:
         yyyymmdd = filename_elements["DP"].split("_")[0]
     except KeyError:
-        print(f"[ERR] Cannot resolve data period from file name {metricfile}")
+        print("[ERR] Cannot resolve data period from NMME files!")
         sys.exit(1)
     return datetime.datetime(year=int(yyyymmdd[0:4]),
                              month=int(yyyymmdd[4:6]),
@@ -298,36 +328,31 @@ def _driver():
     mgt.save_filename_elements()
     mgt.calc_medians()
     metadata = {}
-    # Write single GeoTIFF file for each month for each NMME model.
+
+    # Write single GeoTIFF file for each month.
     # Only one metric is processed.
-    for nmme in _NMME_MODELS:
-        if nmme not in mgt.nmme_metric_files:
-            continue
-        num_months = mgt.get_num_of_months(nmme)
-        metadata["varname"] = metric
-        metadata["units"] = mgt.get_units(nmme)
-        metadata["long_name"] = mgt.get_long_name(nmme)
-        metadata["generating_process"] = \
-            mgt.get_generating_process(nmme)
-        startdates_by_month = \
-            mgt.get_startdates_by_month(nmme)
-        median_values = mgt.get_median_values(nmme)
-        for imonth in range(0, num_months):
-            metadata["forecast_month"] = f"{imonth + 1}"
-            metadata["valid_year_and_month"] = \
-                f"{startdates_by_month[imonth].year:4d}" + \
-                f"-{startdates_by_month[imonth].month:2d}"
-            var2d = median_values[imonth, ::-1, :] # Flip y-axis
-            geotiff_filename = \
-                mgt.make_geotiff_filename(metric, nmme, imonth)
-            output_raster = mgt.create_output_raster(nmme,
-                                                     geotiff_filename)
-            output_raster.SetMetadata(metadata)
-            output_raster.GetRasterBand(1).SetNoDataValue(-9999)
-            output_raster.GetRasterBand(1).WriteArray(var2d)
-            output_raster.GetRasterBand(1).SetMetadata(metadata)
-            output_raster.FlushCache() # Write to disk
-            del output_raster
+    num_months = mgt.get_num_of_months()
+    metadata["varname"] = metric
+    metadata["units"] = mgt.get_units()
+    metadata["long_name"] = mgt.get_long_name()
+    metadata["generating_process"] = "LIS-S2S-ANOM"
+    startdates_by_month = mgt.get_startdates_by_month()
+    median_values = mgt.get_median_values()
+    for imonth in range(0, num_months):
+        metadata["forecast_month"] = f"{imonth + 1}"
+        metadata["valid_year_and_month"] = \
+            f"{startdates_by_month[imonth].year:04d}" + \
+            f"-{startdates_by_month[imonth].month:02d}"
+        var2d = median_values[imonth][::-1, :] # Flip y-axis
+        geotiff_filename = \
+            mgt.make_geotiff_filename(metric, imonth)
+        output_raster = mgt.create_output_raster(geotiff_filename)
+        output_raster.SetMetadata(metadata)
+        output_raster.GetRasterBand(1).SetNoDataValue(-9999)
+        output_raster.GetRasterBand(1).WriteArray(var2d)
+        output_raster.GetRasterBand(1).SetMetadata(metadata)
+        output_raster.FlushCache() # Write to disk
+        del output_raster
 
 # Invoke driver
 if __name__ == "__main__":
