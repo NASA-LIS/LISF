@@ -163,8 +163,8 @@ def _consolidate_files(topdatadir, startdate, model_forcing):
     for _ in range(0, _TOTAL_MONTHS):
         subdir = f"{topdatadir}/cf_{model_forcing.upper()}"
         subdir += f"_{curdate.year:04d}{curdate.month:02d}"
-        print(f"[INFO] Copying {subdir} files to {newdir}" %(subdir, newdir))
-        files = glob.glob(f"{subdir}/*.NC" %(subdir))
+        print(f"[INFO] Copying {subdir} files to {newdir}")
+        files = glob.glob(f"{subdir}/*.NC")
         for filename in files:
             shutil.copy(filename, newdir)
         #shutil.rmtree(subdir)
