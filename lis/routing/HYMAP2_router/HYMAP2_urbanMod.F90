@@ -88,25 +88,28 @@ contains
     implicit none
     character(*), intent(in)    :: drfile
     real, intent(out) :: drwth,drhgt,drden,drvel,drblk,drrad,drlgh,drman,drslp
-     logical                     :: file_exists
+    logical                     :: file_exists
+    integer                     :: ftn
 
     inquire(file=drfile,exist=file_exists)
    
-    if(file_exists)then 
-      open(1,file=trim(drfile),status='old')
-      read(1,*)
-      read(1,*)drwth
-      read(1,*)drhgt
-      read(1,*)drden
-      read(1,*)drvel
-      read(1,*)
-      read(1,*)
-      read(1,*)drblk
-      read(1,*)drrad
-      read(1,*)drlgh
-      read(1,*)drman
-      read(1,*)drslp
-      close(1)
+    if(file_exists)then
+      ftn = LIS_getNextUnitNumber()
+      open(ftn,file=trim(drfile),status='old')
+      read(ftn,*)
+      read(ftn,*)drwth
+      read(ftn,*)drhgt
+      read(ftn,*)drden
+      read(ftn,*)drvel
+      read(ftn,*)
+      read(ftn,*)
+      read(ftn,*)drblk
+      read(ftn,*)drrad
+      read(ftn,*)drlgh
+      read(ftn,*)drman
+      read(ftn,*)drslp
+      close(ftn)
+      call LIS_releaseUnitNumber(ftn)
     else
       write(LIS_logunit,*) 'urban drainage paramater file '//trim(drfile)
       write(LIS_logunit,*) 'does not exist'
