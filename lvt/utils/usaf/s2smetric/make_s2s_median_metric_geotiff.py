@@ -179,9 +179,9 @@ class _MetricGeoTiff:
         filename += \
             f"_PA.LIS-S2S-{metric.replace('_','-').upper()}-ENS-MEDIAN"
         filename += \
-            f"_DP.{startdate.year:4d}{startdate.month:2d}{startdate.day:2d}"
+            f"_DP.{startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
         filename += \
-            f"-{enddate.year:4d}{enddate.month:2d}{enddate.day:2d}"
+            f"-{enddate.year:4d}{enddate.month:02d}{enddate.day:02d}"
         filename += f"_TP.{filename_elements['TP']}"
         filename += "_DF.TIF"
         return filename
