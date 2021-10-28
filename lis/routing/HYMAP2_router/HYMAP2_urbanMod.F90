@@ -111,8 +111,8 @@ contains
       close(ftn)
       call LIS_releaseUnitNumber(ftn)
     else
-      write(LIS_logunit,*) 'urban drainage paramater file '//trim(drfile)
-      write(LIS_logunit,*) 'does not exist'
+      write(LIS_logunit,*) '[ERR] urban drainage paramater file '//trim(drfile)
+      write(LIS_logunit,*) '[ERR] does not exist'
       call LIS_endrun()
     endif 
   end subroutine HYMAP2_get_urban_parameters

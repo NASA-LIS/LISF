@@ -226,7 +226,7 @@ subroutine HYMAP2_model_core(n,it,mis,nseqall,nz,time,dt,  &
        call HYMAP2_no_reservoir_lis(dt,mis,runoff1(ic),basflw1(ic),&
             roffsto(ic),basfsto(ic),runoff(ic))      
     else
-       write(LIS_logunit,*)"HYMAP2 routing model linear reservoir flag: unknown value"
+       write(LIS_logunit,*)"[ERR] HYMAP2 routing model linear reservoir flag: unknown value"
        call LIS_endrun()
     endif
   enddo
@@ -380,7 +380,7 @@ subroutine HYMAP2_model_core(n,it,mis,nseqall,nz,time,dt,  &
         call HYMAP2_no_floodplain_flow(fldelv1(ic),flddph1(ic),&
              fldout(ic),fldvel(ic),sfcelv0(ic),fldout_pre(ic),flddph_pre(ic))
       else
-        write(LIS_logunit,*)"HYMAP2 floodplain dynamics: unknown value"
+        write(LIS_logunit,*)"[ERR] HYMAP2 floodplain dynamics: unknown value"
         call LIS_endrun()
       endif    
     !ag (27Apr2020)
@@ -421,7 +421,7 @@ subroutine HYMAP2_model_core(n,it,mis,nseqall,nz,time,dt,  &
            nxtdst(ic),fldwth(ic),sfcelv(ic),rivlen(ic),fldman(ic),slpmin,&
            fldsto(ic),flddph1(ic),fldout(ic),fldvel(ic))
     else
-      write(LIS_logunit,*)"HYMAP2 routing method: unknown value",ic,flowmap(ic)
+      write(LIS_logunit,*)"[ERR] HYMAP2 routing method: unknown value",ic,flowmap(ic)
       call LIS_endrun()
     endif
   enddo
