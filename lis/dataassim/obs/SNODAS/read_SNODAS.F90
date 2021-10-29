@@ -49,7 +49,6 @@ subroutine read_SNODAS(n, k, OBS_State, OBS_Pert_State)
 !
 !EOP
   integer                :: ftn,status
-  integer                :: grid_index
   character*100          :: sndobsdir
   character*100          :: fname
   logical                :: alarmCheck
@@ -68,16 +67,8 @@ subroutine read_SNODAS(n, k, OBS_State, OBS_Pert_State)
   integer*2, allocatable :: var(:,:)
   real, allocatable      :: snd1d(:)
   real                   :: snd_current(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k))
-  real                   :: dt
-  real                   :: lon
-  real                   :: lhour
-  real                   :: gmt
-  integer                :: zone
   integer                :: fnd
-  real                   :: sndvalue
-  real, allocatable      :: ssdev(:)
   logical                :: file_exists
-  integer                :: ios
     
   call ESMF_AttributeGet(OBS_State,"Data Directory",&
        sndobsdir, rc=status)
