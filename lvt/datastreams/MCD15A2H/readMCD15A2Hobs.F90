@@ -51,14 +51,14 @@ subroutine readMCD15A2Hobs(source)
   real, allocatable            :: lai1(:,:), lai_flagged(:,:),lai_in(:)
   integer, allocatable         :: flag(:,:)
   real                         :: lai(LVT_rc%lnc, LVT_rc%lnr)
-  integer                      :: ftn, c,r,r1,c1
-  integer                      :: ier,laiid, flagid
-  real                         :: lat1, lon1
+  integer                      :: ftn, c, r
+  integer                      :: laiid, flagid
   logical                      :: alarmcheck
   real                         :: timenow
 
   lai = -9999.0
-  timenow = float(LVT_rc%dhr(source))*3600 + 60*LVT_rc%dmn(source) + LVT_rc%dss(source)
+  timenow = float(LVT_rc%dhr(source))*3600 + 60*LVT_rc%dmn(source) + &
+     LVT_rc%dss(source)
   alarmcheck = (mod(timenow, 86400.0).eq.0)
   if(mcd15a2hobs(source)%startflag.or.alarmCheck) then 
      
@@ -78,37 +78,34 @@ subroutine readMCD15A2Hobs(source)
         allocate(flag(mcd15a2hobs(source)%nc,mcd15a2hobs(source)%nr))
         allocate(lai_flagged(mcd15a2hobs(source)%nc,mcd15a2hobs(source)%nr))
 
-        ier = nf90_open(path=trim(filename),mode=NF90_NOWRITE, &
-             ncid=ftn)
+        call LVT_verify(nf90_open(path=trim(filename),mode=NF90_NOWRITE, &
+           ncid=ftn), 'Error in nf90_open')
         
-        if(ier.eq.0) then 
-           call LVT_verify(nf90_inq_varid(ftn,'Lai_500m',laiid),&
-                'nf90_inq_varid failed for Lai_500m')
+        call LVT_verify(nf90_inq_varid(ftn,'Lai_500m',laiid),&
+           'nf90_inq_varid failed for Lai_500m')
 
-           call LVT_verify(nf90_inq_varid(ftn,'FparLai_QC',flagid),&
-                'nf90_inq_varid failed for FparLai_Qc')
+        call LVT_verify(nf90_inq_varid(ftn,'FparLai_QC',flagid),&
+           'nf90_inq_varid failed for FparLai_Qc')
 
-           cornerlat(1)=MCD15A2Hobs(source)%gridDesci(4)
-           cornerlon(1)=MCD15A2Hobs(source)%gridDesci(5)
-           cornerlat(2)=MCD15A2Hobs(source)%gridDesci(7)
-           cornerlon(2)=MCD15A2Hobs(source)%gridDesci(8)
+        cornerlat(1)=MCD15A2Hobs(source)%gridDesci(4)
+        cornerlon(1)=MCD15A2Hobs(source)%gridDesci(5)
+        cornerlat(2)=MCD15A2Hobs(source)%gridDesci(7)
+        cornerlon(2)=MCD15A2Hobs(source)%gridDesci(8)
   
-           lat_off = nint((cornerlat(1)+89.99979167)/0.00416667)+1
-           lon_off = nint((cornerlon(1)+179.9979167)/0.00416667)+1
+        lat_off = nint((cornerlat(1)+89.99979167)/0.00416667)+1
+        lon_off = nint((cornerlon(1)+179.9979167)/0.00416667)+1
            
-           call LVT_verify(nf90_get_var(ftn,laiid,lai1, &
-                start=(/lon_off, lat_off/),&
-                count=(/mcd15a2hobs(source)%nc, mcd15a2hobs(source)%nr/)),&
-                'Error in nf90_get_var: Lai_500m')
+        call LVT_verify(nf90_get_var(ftn,laiid,lai1, &
+           start=(/lon_off, lat_off/),&
+           count=(/mcd15a2hobs(source)%nc, mcd15a2hobs(source)%nr/)),&
+           'Error in nf90_get_var: Lai_500m')
            
-           call LVT_verify(nf90_get_var(ftn, flagid, flag, &
-                start=(/lon_off,lat_off/), &
-                count=(/mcd15a2hobs(source)%nc, mcd15a2hobs(source)%nr/)),&
-                'Error in nf90_get_var: flag')
+        call LVT_verify(nf90_get_var(ftn, flagid, flag, &
+           start=(/lon_off,lat_off/), &
+           count=(/mcd15a2hobs(source)%nc, mcd15a2hobs(source)%nr/)),&
+           'Error in nf90_get_var: flag')
                 
-        endif
-        call LVT_verify(nf90_close(ftn),&
-             'Error in nf90_close')
+        call LVT_verify(nf90_close(ftn), 'Error in nf90_close')
 #endif        
         do r=1,mcd15a2hobs(source)%nr
            do c=1,mcd15a2hobs(source)%nc
