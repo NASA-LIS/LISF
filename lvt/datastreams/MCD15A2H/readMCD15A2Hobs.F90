@@ -11,11 +11,9 @@
 subroutine readMCD15A2Hobs(source)
 ! 
 ! !USES:   
-  use LVT_coreMod,    only : LVT_rc, LVT_domain
+  use LVT_coreMod,    only : LVT_rc
   use LVT_logMod
-  use LVT_timeMgrMod, only : LVT_tick
   use LVT_histDataMod
-  use map_utils
   use MCD15A2H_obsMod, only : mcd15a2hobs
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
