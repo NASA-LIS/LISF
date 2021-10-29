@@ -99,7 +99,6 @@ contains
     type(ESMF_ArraySpec)   ::  pertArrSpec
     character*100          ::  snodasobsdir
     character*100          ::  temp
-    real,  allocatable         ::  obsstd(:)
     character*1            ::  vid(2)
     character*40, allocatable  ::  vname(:)
     real        , allocatable  ::  varmin(:)
@@ -108,10 +107,6 @@ contains
     real, pointer          ::  obs_temp(:,:)
     real                   :: gridDesci(50)
     real, allocatable          :: ssdev(:)
-    integer                :: jj
-    real                   :: cornerlat1, cornerlat2
-    real                   :: cornerlon1, cornerlon2  
-    real, allocatable      :: obsmask(:,:)
 
 
     allocate(SNODAS_struc(LIS_rc%nnest))
