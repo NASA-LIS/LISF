@@ -451,9 +451,9 @@ contains
       integer, intent (in) :: nest
       
       area_latlon = radius * radius * &
-                 (sin(d2r(lat + 0.5*LDT_rc%gridDesc(nest,10))) - &
-                  sin(d2r(lat - 0.5*LDT_rc%gridDesc(nest,10))))* &
-                  d2r(LDT_rc%gridDesc(nest,9))/1000./1000.    ! [km2]
+                 (sin(d2r(lat + 0.5*LDT_rc%gridDesc(nest,9)))  - &
+                  sin(d2r(lat - 0.5*LDT_rc%gridDesc(nest,9))))*  &
+                  d2r(LDT_rc%gridDesc(nest,10))/1000./1000.    ! [km2]
       
     end function area_latlon
 
