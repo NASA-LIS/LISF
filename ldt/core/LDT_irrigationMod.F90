@@ -260,7 +260,7 @@ contains
           call ESMF_ConfigGetAttribute(LDT_config,&
                LDT_irrig_struc(n)%irriggwratio_gridtransform,&
                rc=rc)
-          call LDT_verify(rc,'Groundwater irrigation ratio spatial tranform: option not specified in the config file')
+          call LDT_verify(rc,'Groundwater irrigation ratio spatial transform: option not specified in the config file')
        enddo
      ! Set units and full names:
        do n=1,LDT_rc%nnest
