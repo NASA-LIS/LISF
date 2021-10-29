@@ -2206,7 +2206,7 @@ of MODIS (MOD10C1) data.
 .Example _lis.config_ entry
 ....
 ANSA snow depth data directory:                  ./ANSASNWD
-ANSA snow depth lower left lat:                  -89.875
+ANSA snow depth lower left lat:                  -89.975
 ANSA snow depth lower left lon:                  -179.975
 ANSA snow depth upper right lat:                  89.975
 ANSA snow depth upper right lon:                 179.975
