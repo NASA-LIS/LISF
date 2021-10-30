@@ -28,11 +28,13 @@
 #   dimensions; added ID of model forcing for LIS to filenames.
 # 23 Sep 2021: Eric Kemp (SSAI), added SmLiqFrac_inst.
 # 27 Oct 2021: Eric Kemp/SSAI, addressed pylint string objections.
+# 29 Oct 2021: Eric Kemp/SSAI, added config file.
 #
 #------------------------------------------------------------------------------
 """
 
 # Standard modules
+import configparser
 import datetime
 import os
 import subprocess
@@ -41,7 +43,7 @@ import sys
 # Path to NCO binaries.  Hardwired here due to Air Force security requirements.
 # This is intended as an internal constant, hence the name is prefixed with
 # "_".
-_NCO_DIR = "/usr/local/other/nco/5.0.1/bin" # On Discover
+#_NCO_DIR = "/usr/local/other/nco/5.0.1/bin" # On Discover
 
 # NOTE: This script is supposed to be entirely self-contained, and not to be
 # used as an imported module.  So all the function names are prefixed with "_"
@@ -50,36 +52,17 @@ _NCO_DIR = "/usr/local/other/nco/5.0.1/bin" # On Discover
 def _usage():
     """Print command line usage."""
     txt = \
-        f"[INFO] Usage: {sys.argv[0]} ldt_file noahmp_file hymap2_file"
+        f"[INFO] Usage: {sys.argv[0]} configfile noahmp_file hymap2_file"
     txt += " output_dir YYYYMMDDHH model_forcing"
     print(txt)
     print("[INFO]  where:")
-    print("[INFO]  ldt_file: LDT netCDF param file (for landmask)")
+    print("[INFO]  configfile: Path to s2spost config file")
     print("[INFO]  noahmp_file: LIS-Noah netCDF file (2d ensemble gridspace)")
     txt = "[INFO]  hymap2_file: LIS-HYMAP2 netCDF file (2d ensemble gridspace)"
     print(txt)
     print("[INFO]  output_dir: Directory to write merged output")
     print("[INFO]  YYYYMMDDHH is valid year,month,day,hour of data (in UTC)")
     print("[INFO]  model_forcing: ID for atmospheric forcing for LIS")
-
-def _check_nco_binaries():
-    """Check to see if necessary NCO binaries are available."""
-    nco_bins = ["ncap2", "ncatted", "ncks", "ncpdq", "ncrename"]
-    for nco_bin in nco_bins:
-        path = f"{_NCO_DIR}/{nco_bin}"
-        if not os.path.exists(path):
-            print(f"[ERR] Cannot find {path} for converting LIS netCDF4 data!")
-            print("[ERR] Make sure NCO package is installed on the system!")
-            print("[ERR] And update _NCO_DIR in this script if necessary!")
-            sys.exit(1)
-
-def _run_cmd(cmd, error_msg):
-    """Handle running shell command and checking error."""
-    #print(cmd)
-    returncode = subprocess.call(cmd, shell=True)
-    if returncode != 0:
-        print(error_msg)
-        sys.exit(1)
 
 def _read_cmd_args():
     """Read command line arguments."""
@@ -91,14 +74,16 @@ def _read_cmd_args():
         sys.exit(1)
 
     # Check if input files exist.
-    ldt_file = sys.argv[1]
-    if not os.path.exists(ldt_file):
-        print(f"[ERR] {ldt_file} does not exist!")
+    configfile = sys.argv[1]
+    if not os.path.exists(configfile):
+        print(f"[ERR] {configfile} does not exist!")
         sys.exit(1)
+
     noahmp_file = sys.argv[2]
     if not os.path.exists(noahmp_file):
         print(f"[ERR] {noahmp_file} does not exist!")
         sys.exit(1)
+
     hymap2_file = sys.argv[3]
     if not os.path.exists(hymap2_file):
         print(f"[ERR] {hymap2_file} does not exist!")
@@ -129,7 +114,33 @@ def _read_cmd_args():
     # Get ID of model forcing
     model_forcing = sys.argv[6]
 
-    return ldt_file, noahmp_file, hymap2_file, output_dir, curdt, model_forcing
+    return configfile, noahmp_file, hymap2_file, output_dir, curdt, \
+        model_forcing
+
+def _read_config(configfile):
+    """Read from s2spost config file."""
+    config = configparser.ConfigParser()
+    config.read(configfile)
+    return config
+
+def _check_nco_binaries(ncodir):
+    """Check to see if necessary NCO binaries are available."""
+    nco_bins = ["ncap2", "ncatted", "ncks", "ncpdq", "ncrename"]
+    for nco_bin in nco_bins:
+        path = f"{ncodir}/{nco_bin}"
+        if not os.path.exists(path):
+            print(f"[ERR] Cannot find {path} for converting LIS netCDF4 data!")
+            print("[ERR] Make sure NCO package is installed on the system!")
+            print("[ERR] And update nco_dir in config file if necessary!")
+            sys.exit(1)
+
+def _run_cmd(cmd, error_msg):
+    """Handle running shell command and checking error."""
+    #print(cmd)
+    returncode = subprocess.call(cmd, shell=True)
+    if returncode != 0:
+        print(error_msg)
+        sys.exit(1)
 
 def _create_final_filename(output_dir, curdt, model_forcing):
     """Create final filename, following 557 convention."""
@@ -150,45 +161,45 @@ def _create_final_filename(output_dir, curdt, model_forcing):
         sys.exit(1)
     return name
 
-def _merge_files(ldt_file, noahmp_file, hymap2_file, merge_file):
+def _merge_files(ncodir, ldtfile, noahmp_file, hymap2_file, merge_file):
     """Copy LDT, NoahMP and HYMAP2 fields into same file."""
 
     # Copy NoahMP fields.
-    cmd = f"{_NCO_DIR}/ncks {noahmp_file} -6 {merge_file}"
+    cmd = f"{ncodir}/ncks {noahmp_file} -6 {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncks!")
 
     # Exclude coordinate variables from HYMAP2 file, since these are already
     # copied from NoahMP.  Also exclude unnecessary HYMAP2 storage fields.
-    cmd = f"{_NCO_DIR}/ncks -A -C"
+    cmd = f"{ncodir}/ncks -A -C"
     cmd += " -x -v lat,lon,time,ensemble,RunoffStor_tavg,BaseflowStor_tavg"
     cmd += f" {hymap2_file} -6 {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncks!")
 
     # Only copy the LANDMASK field from the LDT parameter file.  This version
     # actually discriminates land and water.
-    cmd = f"{_NCO_DIR}/ncks -A -C -v LANDMASK {ldt_file} -6 {merge_file}"
+    cmd = f"{ncodir}/ncks -A -C -v LANDMASK {ldtfile} -6 {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncks!")
 
-def _add_time_attrs(merge_file):
+def _add_time_attrs(ncodir, merge_file):
     """Add calendar, axis, and bounds attributes to time."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    cmd = f"{ncodir}/ncatted"
     cmd += " -a calendar,time,c,c,'standard'"
     cmd += " -a axis,time,c,c,'T'"
     cmd += " -a bounds,time,c,c,'time_bnds'"
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _add_time_bnds(merge_file):
+def _add_time_bnds(ncodir, merge_file):
     """Add a time_bnds variable and appropriate dimension."""
-    cmd = f"{_NCO_DIR}/ncap2"
+    cmd = f"{ncodir}/ncap2"
     cmd +=""" -s 'defdim("nv",2)'"""
     cmd += " -s 'time_bnds[$time,$nv]={-1440f, 0f}'"
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncap2!")
 
-def _add_soil_layer_data(merge_file):
+def _add_soil_layer_data(ncodir, merge_file):
     """Add a soil_layer dimension and variable, plus soil layer thickness."""
-    cmd = f"{_NCO_DIR}/ncap2"
+    cmd = f"{ncodir}/ncap2"
     cmd +=""" -s 'defdim("soil_layer",$RelSMC_profiles.size)'"""
     cmd += " -s 'soil_layer[$soil_layer]={1,2,3,4}'"
     cmd += """ -s 'soil_layer@long_name="soil layer level"'"""
@@ -200,33 +211,33 @@ def _add_soil_layer_data(merge_file):
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncap2!")
 
-def _rename_lat_lon_dims(merge_file):
+def _rename_lat_lon_dims(ncodir, merge_file):
     """Rename the spatial dimensions to match CF convention."""
-    cmd = f"{_NCO_DIR}/ncrename -O"
+    cmd = f"{ncodir}/ncrename -O"
     cmd += " -d east_west,lon"
     cmd += " -d north_south,lat"
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncrename!")
 
-def _rename_lat_lon_fields(merge_file):
+def _rename_lat_lon_fields(ncodir, merge_file):
     """Rename lat, lon fields, so we can later create 1d lat, lon arrays."""
-    cmd = f"{_NCO_DIR}/ncrename -O"
+    cmd = f"{ncodir}/ncrename -O"
     cmd += " -v lon,old_lon"
     cmd += " -v lat,old_lat"
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncrename!")
 
-def _add_axis_lat_lon(merge_file):
+def _add_axis_lat_lon(ncodir, merge_file):
     """Add axis attributes to to old_lat and old_lon."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    cmd = f"{ncodir}/ncatted"
     cmd += " -a axis,old_lat,c,c,'Y'"
     cmd += " -a axis,old_lon,c,c,'X'"
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _create_1d_lat_lon_fields(merge_file):
+def _create_1d_lat_lon_fields(ncodir, merge_file):
     """Create 1d lat and lon coordinate arrays."""
-    cmd = f"{_NCO_DIR}/ncap2 -v"
+    cmd = f"{ncodir}/ncap2 -v"
     cmd += " -s 'lon=old_lon(1,:)'"
     cmd += " -s 'lat=old_lat(:,1)'"
     cmd += f" {merge_file}"
@@ -301,17 +312,17 @@ def _add_cell_methods_2(cmd):
     cmd += " -a cell_methods,Wind_f_tavg,c,c,'time: mean'"
     return cmd
 
-def _add_cell_methods(merge_file):
+def _add_cell_methods(ncodir, merge_file):
     """Add the cell_methods attribute to select variables."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    cmd = f"{ncodir}/ncatted"
     cmd = _add_cell_methods_1(cmd)
     cmd = _add_cell_methods_2(cmd)
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _modify_standard_names(merge_file):
+def _modify_standard_names(ncodir, merge_file):
     """Modify standard_name attributes for certain variables."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    cmd = f"{ncodir}/ncatted"
     cmd += " -a standard_name,AvgSurfT_inst,m,c,'surface_temperature'"
     cmd += " -a standard_name,AvgSurfT_tavg,m,c,'surface_temperature'"
     cmd += " -a standard_name,CanopInt_inst,m,c,'canopy_water_amount'"
@@ -330,9 +341,9 @@ def _modify_standard_names(merge_file):
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _remove_standard_names(merge_file):
+def _remove_standard_names(ncodir, merge_file):
     """Remove standard_name attributes for non-standard variables."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    cmd = f"{ncodir}/ncatted"
 #    cmd += " -a standard_name,BaseflowStor_tavg,d,,"
     cmd += " -a standard_name,RelSMC_inst,d,,"
     cmd += " -a standard_name,FloodedArea_tavg,d,,"
@@ -357,9 +368,9 @@ def _remove_standard_names(merge_file):
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _modify_units(merge_file):
+def _modify_units(ncodir, merge_file):
     """Modify units for certain dimensionless variables."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    cmd = f"{ncodir}/ncatted"
     cmd += " -a units,ensemble,m,c,'1'"
     cmd += " -a units,FloodedFrac_tavg,m,c,'1'"
     cmd += " -a units,Greenness_inst,m,c,'1'"
@@ -374,9 +385,9 @@ def _modify_units(merge_file):
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _modify_soilmoist_long_name(merge_file):
+def _modify_soilmoist_long_name(ncodir, merge_file):
     """Modify long_name of SoilMoist fields to emphasize volumetric units."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    cmd = f"{ncodir}/ncatted"
     cmd += " -a long_name,SoilMoist_inst,m,c,"
     cmd +=    "'volumetric soil moisture content'"
     cmd += " -a long_name,SoilMoist_tavg,m,c,"
@@ -384,9 +395,9 @@ def _modify_soilmoist_long_name(merge_file):
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _update_landmask_attrs(merge_file):
+def _update_landmask_attrs(ncodir, merge_file):
     """Add metadata defining the landmask."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    cmd = f"{ncodir}/ncatted"
     cmd += " -a flag_values,LANDMASK,c,f,"
     cmd +=      "'0, 1'"
     cmd += " -a flag_meanings,LANDMASK,c,c,"
@@ -394,9 +405,9 @@ def _update_landmask_attrs(merge_file):
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _update_soiltype_attrs(merge_file):
+def _update_soiltype_attrs(ncodir, merge_file):
     """Add and correct metadata defining the soil types."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    cmd = f"{ncodir}/ncatted"
     cmd += " -a flag_values,Soiltype_inst,c,f,"
     cmd +=      "'1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16'"
     cmd += " -a flag_meanings,Soiltype_inst,c,c,"
@@ -409,9 +420,9 @@ def _update_soiltype_attrs(merge_file):
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _update_landcover_attrs(merge_file):
+def _update_landcover_attrs(ncodir, merge_file):
     """Add metadata defining the land cover categories."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    cmd = f"{ncodir}/ncatted"
     cmd += " -a flag_values,Landcover_inst,c,f,"
     cmd +=      "'1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,"
     cmd +=      "12, 13, 14, 15, 16, 17, 18, 19, 20, 21'"
@@ -429,9 +440,9 @@ def _update_landcover_attrs(merge_file):
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _update_global_attrs(merge_file):
+def _update_global_attrs(ncodir, merge_file):
     """Update global attributes."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    cmd = f"{ncodir}/ncatted"
     cmd += " -a Conventions,global,c,c,'CF-1.8'"
     cmd += " -a conventions,global,d,,"
     cmd += " -a missing_value,global,d,,"
@@ -441,10 +452,10 @@ def _update_global_attrs(merge_file):
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _rename_soil_moist_temp_fields(merge_file):
+def _rename_soil_moist_temp_fields(ncodir, merge_file):
     """Rename the soil moisture and temperature variables so we can create
        new copies with common vertical dimension."""
-    cmd = f"{_NCO_DIR}/ncrename -O"
+    cmd = f"{ncodir}/ncrename -O"
     cmd += " -v RelSMC_inst,old_RelSMC_inst"
     cmd += " -v SmLiqFrac_inst,old_SmLiqFrac_inst"
     cmd += " -v SoilMoist_inst,old_SoilMoist_inst"
@@ -454,9 +465,9 @@ def _rename_soil_moist_temp_fields(merge_file):
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncrename!")
 
-def _create_new_soil_moist_temp_fields(merge_file):
+def _create_new_soil_moist_temp_fields(ncodir, merge_file):
     """Create new copies of soil fields with new vertical coordinate."""
-    cmd = f"{_NCO_DIR}/ncap2 -v"
+    cmd = f"{ncodir}/ncap2 -v"
     cmd += " -s 'RelSMC_inst[$soil_layer,$ensemble,$lat,$lon]="
     cmd += "old_RelSMC_inst(:,:,:,:)'"
     cmd += " -s 'SmLiqFrac_inst[$soil_layer,$ensemble,$lat,$lon]="
@@ -472,19 +483,19 @@ def _create_new_soil_moist_temp_fields(merge_file):
     cmd += f" {merge_file}"
     _run_cmd(cmd, "[ERR] Problem with ncap2!")
 
-def _reverse_soil_layer_ensemble_dims(merge_file):
+def _reverse_soil_layer_ensemble_dims(ncodir, merge_file):
     """Reverse the order of the soil_layer and ensemble dimensions."""
     tmp_file = f"{merge_file}.new"
-    cmd = f"{_NCO_DIR}/ncpdq"
+    cmd = f"{ncodir}/ncpdq"
     cmd += " -a ensemble,soil_layer"
     cmd += f" {merge_file} {tmp_file}"
     _run_cmd(cmd, "[ERR] Problem with ncpdq!")
     os.rename(tmp_file, merge_file)
 
-def _copy_to_final_file(merge_file, final_file):
+def _copy_to_final_file(ncodir, merge_file, final_file):
     """Copy data to new netCDF4 file, excluding "old" variables.  This should
     also screen out unneeded dimensions."""
-    cmd = f"{_NCO_DIR}/ncks"
+    cmd = f"{ncodir}/ncks"
     cmd += " -x -v old_RelSMC_inst,old_SmLiqFrac_inst,"
     cmd += "old_SoilMoist_inst,old_SoilMoist_tavg,"
     cmd += "old_SoilTemp_inst,old_SoilTemp_tavg,old_lat,old_lon"
@@ -493,50 +504,54 @@ def _copy_to_final_file(merge_file, final_file):
 
 def _driver():
     """Main driver."""
-    # Make sure we can find the required NCO binaries.
-    _check_nco_binaries()
 
     # Get the file and directory names
-    ldt_file, noahmp_file, hymap2_file, output_dir, curdt, model_forcing \
+    configfile, noahmp_file, hymap2_file, output_dir, curdt, model_forcing \
         = _read_cmd_args()
     merge_file = f"{output_dir}/merge_tmp.nc"
     final_file = _create_final_filename(output_dir, curdt, model_forcing)
+    config = _read_config(configfile)
+    ncodir = config["s2spost"]["nco_dir"]
+    ldtfile = config["s2spost"]["ldt_file"]
+
+    # Make sure we can find the required NCO binaries.
+    _check_nco_binaries(ncodir)
 
     # Merge the LDT, NoahMP, and HYMAP2 fields into the same file.
-    _merge_files(ldt_file, noahmp_file, hymap2_file, merge_file)
+    _merge_files(ncodir, ldtfile, noahmp_file, hymap2_file, merge_file)
 
     # Incremental updates to the coordinate variables, including adding
     # soil_layer as a new vertical coordinate, and renaming dimensions.
-    _add_time_attrs(merge_file)
-    _add_time_bnds(merge_file)
-    _add_soil_layer_data(merge_file)
-    _rename_lat_lon_dims(merge_file)
-    _rename_lat_lon_fields(merge_file)
-    _add_axis_lat_lon(merge_file)
-    _create_1d_lat_lon_fields(merge_file)
+    _add_time_attrs(ncodir, merge_file)
+    _add_time_bnds(ncodir, merge_file)
+    _add_soil_layer_data(ncodir, merge_file)
+    _rename_lat_lon_dims(ncodir, merge_file)
+    _rename_lat_lon_fields(ncodir, merge_file)
+    _add_axis_lat_lon(ncodir, merge_file)
+    _create_1d_lat_lon_fields(ncodir, merge_file)
 
     # Additional updates to metadata.
-    _add_cell_methods(merge_file)
-    _modify_standard_names(merge_file)
-    _remove_standard_names(merge_file)
-    _modify_units(merge_file)
-    _modify_soilmoist_long_name(merge_file)
-    _update_landmask_attrs(merge_file)
-    _update_soiltype_attrs(merge_file)
-    _update_landcover_attrs(merge_file)
-    _update_global_attrs(merge_file)
+    _add_cell_methods(ncodir, merge_file)
+    _modify_standard_names(ncodir, merge_file)
+    _remove_standard_names(ncodir, merge_file)
+    _modify_units(ncodir, merge_file)
+    _modify_soilmoist_long_name(ncodir, merge_file)
+    _update_landmask_attrs(ncodir, merge_file)
+    _update_soiltype_attrs(ncodir, merge_file)
+    _update_landcover_attrs(ncodir, merge_file)
+    _update_global_attrs(ncodir, merge_file)
 
     # Create new soil moisture and temperature variables with a common
     # vertical coordinate.  This is a two-step process.
-    _rename_soil_moist_temp_fields(merge_file)
-    _create_new_soil_moist_temp_fields(merge_file)
+    _rename_soil_moist_temp_fields(ncodir, merge_file)
+    _create_new_soil_moist_temp_fields(ncodir, merge_file)
 
     # Reverse order of soil_layer and ensemble dimensions, as recommended by
     # CF convention.
-    _reverse_soil_layer_ensemble_dims(merge_file)
+    _reverse_soil_layer_ensemble_dims(ncodir, merge_file)
 
     # Copy most data to final file, filtering out redundant older fields.
-    _copy_to_final_file(merge_file, final_file)
+    _copy_to_final_file(ncodir, merge_file, final_file)
 
     # Delete temporary merge file.
     os.unlink(merge_file)

@@ -10,11 +10,13 @@
 # REVISION HISTORY:
 # 24 Sep 2021: Eric Kemp (SSAI), first version.
 # 27 Oct 2021: Eric Kemp/SSAI, address pylint string objections.
+# 29 Oct 2021: Eric Kemp/SSAI, add config file.
 #
 #------------------------------------------------------------------------------
 """
 
 # Standard modules
+import configparser
 import datetime
 import glob
 import os
@@ -23,17 +25,16 @@ import shutil
 import sys
 import time
 
-_TOTAL_MONTHS = 9
+#_TOTAL_MONTHS = 9
 
 def _usage():
     """Print command line usage."""
     txt = \
-        f"[INFO] Usage: {sys.argv[0]} ldt_file topdatadir startYYYYMM"
-    txt += " model_forcing"
-    txt += " [--collect_output]"
+        f"[INFO] Usage: {sys.argv[0]} configfile topdatadir startYYYYMM"
+    txt += " model_forcing [--collect_output]"
     print(txt)
     print("[INFO]  where:")
-    print("[INFO]   ldt_file is path to LDT parameter file")
+    print("[INFO]   configfile is path to s2spost config file")
     print("[INFO]   topdatadir is top-level directory with LIS data")
     print("[INFO]   startYYYYMM is year-month of start of LIS forecast")
     print("[INFO]   model_forcing is ID for atmospheric forcing for LIS")
@@ -50,13 +51,10 @@ def _read_cmd_args():
         _usage()
         sys.exit(1)
 
-    # Assume all scripts are bundled together in the dirname of this script.
-    scriptdir = os.path.dirname(sys.argv[0])
-
-    # Get path to LDT parameter file
-    ldtfile = sys.argv[1]
-    if not os.path.exists(ldtfile):
-        print(f"[ERR] LDT parameter file {ldtfile} does not exist!")
+    # Get path to config file
+    configfile = sys.argv[1]
+    if not os.path.exists(configfile):
+        print(f"[ERR] Config file {configfile} does not exist!")
         sys.exit(1)
 
     # Get top directory of LIS data
@@ -91,8 +89,13 @@ def _read_cmd_args():
             _usage()
             sys.exit(1)
 
-    return scriptdir, ldtfile, topdatadir, startdate, model_forcing, \
-        collect_output
+    return configfile, topdatadir, startdate, model_forcing, collect_output
+
+def _read_config(configfile):
+    """Read from s2spost config file."""
+    config = configparser.ConfigParser()
+    config.read(configfile)
+    return config
 
 def _advance_date_by_month(curdate):
     """Calculate new date one month in advance."""
@@ -106,20 +109,22 @@ def _advance_date_by_month(curdate):
                                 day=1)
     return newdate
 
-def _submit_batch_jobs(scriptdir, ldtfile, topdatadir, startdate,
-                       model_forcing):
+def _submit_batch_jobs(config, configfile, topdatadir,
+                       startdate, model_forcing):
     """Submit batch jobs for processing LIS forecast."""
 
-    # Loop over all months
+    total_months = int(config["s2spost"]["total_months"])
+    scriptdir = config["s2spost"]["script_dir"]
+
+    # One batch job per month
     curdate = startdate
-    for _ in range(0, _TOTAL_MONTHS):
+    for _ in range(0, total_months):
         txt = "[INFO] Submitting batch job for"
         txt += f" cf_{model_forcing}_{curdate.year:04d}{curdate.month:04d}"
         print(txt)
-        cmd = f"sbatch {scriptdir}/run_s2spost_1month.sh {ldtfile}"
-        cmd += f" {topdatadir}"
+        cmd = f"sbatch {scriptdir}/run_s2spost_1month.sh"
+        cmd += f" {configfile} {scriptdir} {topdatadir}"
         cmd += f" {curdate.year:04d}{curdate.month:02d} {model_forcing}"
-        #print(cmd)
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
             print("[ERR] Problem running run_s2spost_1month.sh")
@@ -129,58 +134,64 @@ def _submit_batch_jobs(scriptdir, ldtfile, topdatadir, startdate,
         newdate = _advance_date_by_month(curdate)
         curdate = newdate
 
-def _check_batch_job_completion(topdatadir, startdate, model_forcing):
+def _check_batch_job_completion(config, topdatadir, startdate,
+                                model_forcing):
     """Check for markers indicating batch jobs are completed."""
 
     print("[INFO] Checking for completion of batch jobs...")
 
+    total_months = int(config["s2spost"]["total_months"])
+
     # Loop over all months
     curdate = startdate
-    for _ in range(0, _TOTAL_MONTHS):
+    for _ in range(0, total_months):
 
-        subdir = f"{topdatadir}/cf_{model_forcing.upper()}"
+        subdir = f"{topdatadir}/cf_{model_forcing}"
         subdir += f"_{curdate.year:04d}{curdate.month:02d}"
         print(f"[INFO] Waiting for {subdir}")
         while True:
             if os.path.exists(f"{subdir}/done"):
-                txt = f"[INFO] {model_forcing.upper()}"
+                txt = f"[INFO] {model_forcing}"
                 txt += f"_{curdate.year:04d}{curdate.month:02d}"
                 print(txt)
                 break
         newdate = _advance_date_by_month(curdate)
         curdate = newdate
 
-def _consolidate_files(topdatadir, startdate, model_forcing):
+def _consolidate_files(config, topdatadir, startdate, model_forcing):
     """Move CF files into common directory for single model forcing."""
 
-    newdir = f"{topdatadir}/cf_{model_forcing.upper()}"
+    total_months = int(config["s2spost"]["total_months"])
+
+    newdir = f"{topdatadir}/cf_{model_forcing}"
     newdir += f"_{startdate.year:04d}{startdate.month:02d}_all"
     if not os.path.exists(newdir):
         os.makedirs(newdir)
 
     # Loop over all months
     curdate = startdate
-    for _ in range(0, _TOTAL_MONTHS):
-        subdir = f"{topdatadir}/cf_{model_forcing.upper()}"
+    for _ in range(0, total_months):
+        subdir = f"{topdatadir}/cf_{model_forcing}"
         subdir += f"_{curdate.year:04d}{curdate.month:02d}"
         print(f"[INFO] Copying {subdir} files to {newdir}")
         files = glob.glob(f"{subdir}/*.NC")
         for filename in files:
             shutil.copy(filename, newdir)
-        #shutil.rmtree(subdir)
 
         newdate = _advance_date_by_month(curdate)
         curdate = newdate
 
 def _driver():
     """Main driver."""
-    scriptdir, ldtfile, topdatadir, startdate, model_forcing, \
-        collect_output = _read_cmd_args()
-    _submit_batch_jobs(scriptdir, ldtfile, topdatadir, startdate,
-                       model_forcing)
-    _check_batch_job_completion(topdatadir, startdate, model_forcing)
+    configfile, topdatadir, startdate, model_forcing, collect_output \
+        = _read_cmd_args()
+    config = _read_config(configfile)
+    _submit_batch_jobs(config, configfile, topdatadir,
+                       startdate, model_forcing)
+    _check_batch_job_completion(config, topdatadir, startdate,
+                                model_forcing)
     if collect_output:
-        _consolidate_files(topdatadir, startdate, model_forcing)
+        _consolidate_files(config, topdatadir, startdate, model_forcing)
 
 # Invoke driver
 if __name__ == "__main__":

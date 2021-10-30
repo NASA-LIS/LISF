@@ -10,11 +10,13 @@
 # REVISION HISTORY:
 # 23 Sep 2021: Eric Kemp (SSAI), first version.
 # 27 Oct 2021: Eric Kemp/SSAI, address pylint string objections.
+# 29 Oct 2021: Eric Kemp/SSAI, add config file.
 #
 #------------------------------------------------------------------------------
 """
 
 # Standard modules
+import configparser
 import datetime
 import os
 import pathlib
@@ -24,12 +26,11 @@ import sys
 # Local functions
 def _usage():
     """Print command line usage."""
-    argv0 = sys.argv[0]
-    txt = f"[INFO] Usage: {argv0}"
-    txt += " ldt_file topdatadir YYYYMM model_forcing"
+    txt = f"[INFO] Usage: {sys.argv[0]}"
+    txt += " configfile topdatadir YYYYMM model_forcing"
     print(txt)
     print("[INFO]  where:")
-    print("[INFO]   ldt_file is path to LDT parameter file")
+    print("[INFO]   configfile is path to LDT parameter file")
     print("[INFO]   topdatadir is top-level directory for LIS data")
     print("[INFO]   YYYYMM is month to process")
     print("[INFO]   model_forcing is ID for atmospheric forcing for LIS")
@@ -43,13 +44,10 @@ def _read_cmd_args():
         _usage()
         sys.exit(1)
 
-    # Assume all scripts are bundled together in the dirname of this script.
-    scriptdir = os.path.dirname(sys.argv[0])
-
-    # Get path to LDT parameter file
-    ldtfile = sys.argv[1]
-    if not os.path.exists(ldtfile):
-        print(f"[ERR] LDT paramter file {ldtfile} does not exist!")
+    # Get path to config file
+    configfile = sys.argv[1]
+    if not os.path.exists(configfile):
+        print(f"[ERR] Config file {configfile} does not exist!")
         sys.exit(1)
 
     # Get top directory of LIS data
@@ -74,7 +72,13 @@ def _read_cmd_args():
     # Get model forcing ID
     model_forcing = sys.argv[4]
 
-    return scriptdir, ldtfile, topdatadir, startdate, model_forcing
+    return configfile, topdatadir, startdate, model_forcing
+
+def _read_config(configfile):
+    """Read from s2spost config file."""
+    config = configparser.ConfigParser()
+    config.read(configfile)
+    return config
 
 def _is_lis_output_missing(topdatadir, curdate, model_forcing):
     """Checks for missing LIS output files."""
@@ -90,10 +94,12 @@ def _is_lis_output_missing(topdatadir, curdate, model_forcing):
             return True
     return False
 
-def _loop_daily(scriptdir, ldtfile, topdatadir, startdate, model_forcing):
+def _loop_daily(config, configfile, topdatadir, startdate, model_forcing):
     """Automate daily processing for given month."""
 
     delta = datetime.timedelta(days=1)
+
+    scriptdir = config["s2spost"]["script_dir"]
 
     # The very first day may be missing. Gracefully handle this
     firstdate = startdate
@@ -111,7 +117,7 @@ def _loop_daily(scriptdir, ldtfile, topdatadir, startdate, model_forcing):
 
     curdate = firstdate
     while curdate <= enddate:
-        cmd = f"{scriptdir}/daily_s2spost_nc.py {ldtfile}"
+        cmd = f"{scriptdir}/daily_s2spost_nc.py {configfile}"
         for model in ["SURFACEMODEL", "ROUTING"]:
             cmd += f" {topdatadir}/{model_forcing}/{model}/"
             cmd += f"{curdate.year:04d}{curdate.month:02d}"
@@ -119,12 +125,12 @@ def _loop_daily(scriptdir, ldtfile, topdatadir, startdate, model_forcing):
             cmd += f"{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}"
             cmd += "0000.d01.nc"
 
-        cmd += f" {topdatadir}/cf_{model_forcing.upper()}_"
+        cmd += f" {topdatadir}/cf_{model_forcing}_"
         cmd += f"{startdate.year:04d}{startdate.month:02d}"
 
         cmd += f" {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}00"
 
-        cmd += f" {model_forcing.upper()}"
+        cmd += f" {model_forcing}"
 
         print(cmd)
         returncode = subprocess.call(cmd, shell=True)
@@ -134,8 +140,10 @@ def _loop_daily(scriptdir, ldtfile, topdatadir, startdate, model_forcing):
 
         curdate += delta
 
-def _proc_month(scriptdir, topdatadir, startdate, model_forcing):
+def _proc_month(config, configfile, topdatadir, startdate, model_forcing):
     """Create the monthly CF file."""
+
+    scriptdir = config["s2spost"]["script_dir"]
 
     # The very first day may be missing.  Gracefully handle this.
     firstdate = startdate
@@ -150,15 +158,15 @@ def _proc_month(scriptdir, topdatadir, startdate, model_forcing):
         enddate = datetime.datetime(year=startdate.year,
                                     month=(startdate.month + 1),
                                     day=1)
-    cmd = f"{scriptdir}/monthly_s2spost_nc.py"
-    workdir =  f"{topdatadir}/cf_{model_forcing.upper()}_"
+    cmd = f"{scriptdir}/monthly_s2spost_nc.py {configfile} "
+    workdir =  f"{topdatadir}/cf_{model_forcing}_"
     workdir += f"{startdate.year:04d}{startdate.month:02d}"
 
     cmd += f" {workdir}"
     cmd += f" {workdir}" # Use same directory
     cmd += f" {firstdate.year:04d}{firstdate.month:02d}{firstdate.day:02d}"
     cmd += f" {enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
-    cmd += f" {model_forcing.upper()}"
+    cmd += f" {model_forcing}"
 
     print(cmd)
     returncode = subprocess.call(cmd, shell=True)
@@ -168,15 +176,16 @@ def _proc_month(scriptdir, topdatadir, startdate, model_forcing):
 
 def _create_done_file(topdatadir, startdate, model_forcing):
     """Create a 'done' file indicating batch job has finished."""
-    path = f"{topdatadir}/cf_{model_forcing.upper()}_"
+    path = f"{topdatadir}/cf_{model_forcing}_"
     path += f"{startdate.year:04d}{startdate.month:02d}/done"
     pathlib.Path(path).touch()
 
 def _driver():
     """Main driver"""
-    scriptdir, ldtfile, topdatadir, startdate, model_forcing = _read_cmd_args()
-    _loop_daily(scriptdir, ldtfile, topdatadir, startdate, model_forcing)
-    _proc_month(scriptdir, topdatadir, startdate, model_forcing)
+    configfile, topdatadir, startdate, model_forcing = _read_cmd_args()
+    config = _read_config(configfile)
+    _loop_daily(config, configfile, topdatadir, startdate, model_forcing)
+    _proc_month(config, configfile, topdatadir, startdate, model_forcing)
     _create_done_file(topdatadir, startdate, model_forcing)
 
 # Invoke driver
