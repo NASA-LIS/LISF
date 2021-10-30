@@ -20,11 +20,13 @@
 #
 # REVISION HISTORY:
 # 26 Sep 2021: Eric Kemp (SSAI), first version.
+# 30 Oct 2021: Eric Kemp/SSAI, now uses s2smetric config file.
 #
 #------------------------------------------------------------------------------
 """
 
 # Standard modules
+import configparser
 import os
 import shutil
 import subprocess
@@ -33,7 +35,7 @@ import sys
 # Path to NCO binaries.  Hardwired here due to Air Force security requirements.
 # This is intended as an internal constant, hence the name is prefixed with
 # "_".
-_NCO_DIR = "/usr/local/other/nco/5.0.1/bin" # On Discover
+#_NCO_DIR = "/usr/local/other/nco/5.0.1/bin" # On Discover
 
 # Units for variable anomalies.  Standardized anomalies will be dimensionless.
 _UNITS_ANOM = {
@@ -45,36 +47,19 @@ _UNITS_ANOM = {
 def _usage():
     """Print command line usage."""
     txt = \
-        f"[INFO] Usage: {sys.argv[0]} anom_file output_dir"
+        f"[INFO] Usage: {sys.argv[0]} anom_file output_dir configfile"
     print(txt)
     print("[INFO]  where:")
     print("[INFO]  anom_file: Name of netCDF file with anom or sanom metric")
     print("[INFO]  output_dir: Directory to write CF-convention file")
+    print("[INFO]  configfile: Path to s2smetric config file")
 
-def _check_nco_binaries():
-    """Check to see if necessary NCO binaries are available."""
-    nco_bins = ["ncatted"]
-    for nco_bin in nco_bins:
-        path = f"{_NCO_DIR}/{nco_bin}"
-        if not os.path.exists(path):
-            print(f"[ERR] Cannot find {path} for converting LIS netCDF4 data!")
-            print("[ERR] Make sure NCO package is installed on the system!")
-            print("[ERR] And update _NCO_DIR in this script if necessary!")
-            sys.exit(1)
-
-def _run_cmd(cmd, error_msg):
-    """Handle running shell command and checking error."""
-    #print(cmd)
-    returncode = subprocess.call(cmd, shell=True)
-    if returncode != 0:
-        print(error_msg)
-        sys.exit(1)
 
 def _read_cmd_args():
     """Read command line arguments."""
 
     # Check if argument count is correct.
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
@@ -90,7 +75,34 @@ def _read_cmd_args():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    return anom_filename, output_dir
+    # Get config file
+    configfile = sys.argv[3]
+    if not os.path.exists(configfile):
+        print(f"[ERR] Cannot find config file {configfile}!")
+        sys.exit(1)
+
+    return anom_filename, output_dir, configfile
+
+def _check_nco_binaries(config):
+    """Check to see if necessary NCO binaries are available."""
+    ncodir = config["s2smetric"]["ncodir"]
+    nco_bins = ["ncatted"]
+    for nco_bin in nco_bins:
+        path = f"{ncodir}/{nco_bin}"
+        if not os.path.exists(path):
+            print(f"[ERR] Cannot find {path} for converting LIS netCDF4 data!")
+            print("[ERR] Make sure NCO package is installed on the system!")
+            print("[ERR] And update ncodir in s2smetric config if necessary!")
+            sys.exit(1)
+
+def _run_cmd(cmd, error_msg):
+    """Handle running shell command and checking error."""
+    #print(cmd)
+    returncode = subprocess.call(cmd, shell=True)
+    if returncode != 0:
+        print(error_msg)
+        sys.exit(1)
+
 
 def _copy_anom_file(anom_filename, output_dir):
     """Copy anom file to output directory."""
@@ -134,50 +146,57 @@ def _get_output_filename(anom_filename, output_dir):
     output_filename = f"{output_dir}/{basename}"
     return output_filename
 
-def _update_global_attrs(output_filename):
+def _update_global_attrs(config, output_filename):
     """Update global attributes of output filename."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    ncodir = config["s2smetric"]["ncodir"]
+    cmd = f"{ncodir}/ncatted"
     cmd += " -a Conventions,global,c,c,'CF-1.8'"
     cmd += f" {output_filename}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _update_latitude_attrs(output_filename):
+def _update_latitude_attrs(config, output_filename):
     """Update attributes of latitude."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    ncodir = config["s2smetric"]["ncodir"]
+    cmd = f"{ncodir}/ncatted"
     cmd += " -a long_name,latitude,c,c,'latitude'"
     cmd += " -a standard_name,latitude,c,c,'latitude'"
     cmd += " -a units,latitude,c,c,'degree_north'"
     cmd += f" {output_filename}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _update_longitude_attrs(output_filename):
+def _update_longitude_attrs(config, output_filename):
     """Update attributes of longitude."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    ncodir = config["s2smetric"]["ncodir"]
+    cmd = f"{ncodir}/ncatted"
     cmd += " -a long_name,longitude,c,c,'longitude'"
     cmd += " -a standard_name,longitude,c,c,'longitude'"
     cmd += " -a units,longitude,c,c,'degree_east'"
     cmd += f" {output_filename}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _update_ens_attrs(output_filename):
+def _update_ens_attrs(config, output_filename):
     """Update attributes of ens."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    ncodir = config["s2smetric"]["ncodir"]
+    cmd = f"{ncodir}/ncatted"
     cmd += " -a long_name,ens,c,c,'Ensemble members'"
     cmd += " -a units,ens,c,c,'1'"
     cmd += f" {output_filename}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _update_lead_attrs(output_filename):
+def _update_lead_attrs(config, output_filename):
     """Update attributes of lead."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    ncodir = config["s2smetric"]["ncodir"]
+    cmd = f"{ncodir}/ncatted"
     cmd += " -a long_name,lead,c,c,'Forecast month'"
     cmd += " -a units,lead,c,c,'months'"
     cmd += f" {output_filename}"
     _run_cmd(cmd, "[ERR] Problem with ncatted!")
 
-def _update_anom_attrs(output_filename, metric_long_name, metric_units):
+def _update_anom_attrs(config, output_filename, metric_long_name,
+                       metric_units):
     """Update attributes of anom variable."""
-    cmd = f"{_NCO_DIR}/ncatted"
+    ncodir = config["s2smetric"]["ncodir"]
+    cmd = f"{ncodir}/ncatted"
     cmd += f" -a long_name,anom,c,c,'{metric_long_name}'"
     cmd += f" -a units,anom,c,c,'{metric_units}'"
     cmd += f" {output_filename}"
@@ -186,11 +205,13 @@ def _update_anom_attrs(output_filename, metric_long_name, metric_units):
 def _driver():
     """Main driver."""
 
-    # Make sure we can find the required NCO binaries.
-    _check_nco_binaries()
-
     # Read command line
-    anom_filename, output_dir = _read_cmd_args()
+    anom_filename, output_dir, configfile = _read_cmd_args()
+    config = configparser.ConfigParser()
+    config.read(configfile)
+
+    # Make sure we can find the required NCO binaries.
+    _check_nco_binaries(config)
 
     # Copy the file to the output directory, so we can edit without affecting
     # the original.
@@ -202,12 +223,12 @@ def _driver():
 
     # Edit the attributes
     output_filename = _get_output_filename(anom_filename, output_dir)
-    _update_global_attrs(output_filename)
-    _update_latitude_attrs(output_filename)
-    _update_longitude_attrs(output_filename)
-    _update_ens_attrs(output_filename)
-    _update_lead_attrs(output_filename)
-    _update_anom_attrs(output_filename, metric_long_name, metric_units)
+    _update_global_attrs(config, output_filename)
+    _update_latitude_attrs(config, output_filename)
+    _update_longitude_attrs(config, output_filename)
+    _update_ens_attrs(config, output_filename)
+    _update_lead_attrs(config, output_filename)
+    _update_anom_attrs(config, output_filename, metric_long_name, metric_units)
 
 # Invoke the main driver
 if __name__ == "__main__":

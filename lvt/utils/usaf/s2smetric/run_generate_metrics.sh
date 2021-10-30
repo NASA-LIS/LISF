@@ -18,24 +18,20 @@
 #
 # REVISION HISTORY:
 # 25 Oct 2021: Eric Kemp/SSAI, first version.
+# 30 Oct 2021: Eric Kemp/SSAI, revised to leverage s2smetric config file.
 #
 #------------------------------------------------------------------------------
 
 # Read command line arguments.
 SCRIPT=${1}
 FCST_INIT_MON=${2}
-HYD_MODEL=${3}
-LEAD=${4}
-DOMAIN=${5}
-TARGET_YEAR=${6}
-MODEL=${7}
-CSYR=${8}
-CEYR=${9}
-PYDIR=${10}
+TARGET_YEAR=${3}
+MODEL=${4}
+CONFIGFILE=${5}
+PYDIR=${6}
 
 # Change to directory with Python script.  FIXME: Add script directory
 # as an argument.
-#cd /discover/nobackup/projects/lis_aist17/emkemp/AFWA/lis74_s2s_patches/LISF/lvt/utils/usaf/s2smetric/lib_bcsd_metrics/
 cd $PYDIR || (echo "[ERR] Cannot change to directory $PYDIR" && exit 1)
 
 # Set up environment
@@ -45,6 +41,6 @@ module use --append /home/emkemp/privatemodules
 module load lisf_7_intel_19_1_3_304_s2s
 
 # Execute Python script
-python3 $SCRIPT $FCST_INIT_MON $HYD_MODEL $LEAD $DOMAIN $TARGET_YEAR $MODEL ${CSYR} ${CEYR}
+python3 $SCRIPT $FCST_INIT_MON $TARGET_YEAR $MODEL $CONFIGFILE
 
 
