@@ -9,11 +9,13 @@
 #
 # REVISION HISTORY:
 # 22 Oct 2021: Eric Kemp/SSAI, first version
+# 29 Oct 2021: Eric Kemp/SSAI, add config file
 #
 #------------------------------------------------------------------------------
 """
 
 # Standard modules
+import configparser
 import datetime
 import os
 import subprocess
@@ -21,53 +23,66 @@ import sys
 import time
 
 # Local constants
-_CSYR = 2008
-_CEYR = 2020
+#_CSYR = 2008
+#_CEYR = 2020
 
 # Temporary.  FIXME Put in common location for all scripts
-_RUNDIR = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
-_RUNDIR += "/lis74_s2s_patches/LISF/lvt/utils/usaf/s2smetric"
+#_RUNDIR = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
+#_RUNDIR += "/lis74_s2s_patches/LISF/lvt/utils/usaf/s2smetric"
 
 #_NMME_MODELS = ["CCM4", "CCSM4", "CFSv2", "GEOSv2", "GFDL", "GNEMO"]
-_NMME_MODELS = ["GEOSv2"] # For testing
+#_NMME_MODELS = ["GEOSv2"] # For testing
 
-_LSM_MODEL = "NOAHMP"
+#_LSM_MODEL = "NOAHMP"
 
-_LEAD = 9 # 9 month forecasts
+#_LEAD = 9 # 9 month forecasts
 
-_DOMAIN = "AFRICOM"
+#_DOMAIN = "AFRICOM"
 
-_BATCH_SCRIPT = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
-_BATCH_SCRIPT += "/lis74_s2s_patches/LISF/lvt/utils/usaf/s2smetric"
+#_BATCH_SCRIPT = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
+#_BATCH_SCRIPT += "/lis74_s2s_patches/LISF/lvt/utils/usaf/s2smetric"
 #_BATCH_SCRIPT += "/run_Convert_Dyn_FCST_postproc.scr"
-_BATCH_SCRIPT += "/run_generate_metrics.sh"
+#_BATCH_SCRIPT += "/run_generate_metrics.sh"
 
-_PYLIBDIR = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
-_PYLIBDIR += "/lis74_s2s_patches/LISF/lvt/utils/usaf/s2smetric"
-_PYLIBDIR += "/lib_bcsd_metrics"
+#_PYLIBDIR = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
+#_PYLIBDIR += "/lis74_s2s_patches/LISF/lvt/utils/usaf/s2smetric"
+#_PYLIBDIR += "/lib_bcsd_metrics"
 
-_BASEOUTDIR = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
-_BASEOUTDIR += "/lis74_s2s_patches/work/POST/forecasts"
+#_BASEOUTDIR = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
+#_BASEOUTDIR += "/lis74_s2s_patches/work/POST/forecasts"
 
-_METRIC_VARS = ["RootZone-SM", "Streamflow", "Surface-SM"]
+#_METRIC_VARS = ["RootZone-SM", "Streamflow", "Surface-SM"]
 
-_METRICS = ["RootZone_SM_ANOM", "RootZone_SM_SANOM",
-            "Streamflow_ANOM",  "Streamflow_SANOM",
-            "Surface_SM_ANOM",  "Surface_SM_SANOM"]
+#_METRICS = ["RootZone_SM_ANOM", "RootZone_SM_SANOM",
+#            "Streamflow_ANOM",  "Streamflow_SANOM",
+#            "Surface_SM_ANOM",  "Surface_SM_SANOM"]
 
 # Local methods
 def _usage():
     """Print command line usage."""
-    argv = sys.argv[0]
-    txt = f"[INFO] Usage: {argv}"
-    print(txt)
+    print(f"[INFO] Usage: {sys.argv[0]} configfile")
+    print("[INFO]  where:")
+    print("[INFO]    configfile: path to s2smetric config file")
 
 def _read_cmd_args():
     """Read command line arguments."""
-    if len(sys.argv) != 1:
+    if len(sys.argv) != 2:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
+
+    configfile = sys.argv[1]
+    if not os.path.exists(configfile):
+        print(f"[ERR] Config file {configfile} does not exist!")
+        sys.exit(1)
+
+    return configfile
+
+def _read_config(configfile):
+    """Read s2smetric config file."""
+    config = configparser.ConfigParser()
+    config.read(configfile)
+    return config
 
 def _handle_dates():
     """Collect and return data information."""
@@ -77,64 +92,70 @@ def _handle_dates():
     print(f"[INFO] Current year / month: {year:04d} / {month:02d}")
     return currentdate
 
-def _submit_metric_batch_jobs(currentdate, model):
-    """Submit batch jobs for calculationg metrics."""
+def _submit_metric_batch_jobs(config, currentdate, nmme_model, configfile):
+    """Submit batch jobs for calculating metrics."""
 
+    batch_script = config["s2smetric"]["batch_script"]
+    pylibdir = config["s2smetric"]["pylibdir"]
     for py_script in ["convert_dyn_fcst_to_anom.py",
                       "convert_dyn_fcst_to_sanom.py"]:
         cmd = "sbatch"
-        cmd += f" {_BATCH_SCRIPT}"
+        cmd += f" {batch_script}"
         cmd += f" {py_script}"
         cmd += f" {currentdate.month:02d}"
-        cmd += f" {_LSM_MODEL}"
-        cmd += f" {_LEAD}"
-        cmd += f" {_DOMAIN}"
         cmd += f" {currentdate.year:04d}"
-        cmd += f" {model}"
-        cmd += f" {_CSYR:04d}"
-        cmd += f" {_CEYR:04d}"
-        cmd += f" {_PYLIBDIR}"
+        cmd += f" {nmme_model}"
+        cmd += f" {configfile}"
+        cmd += f" {pylibdir}"
         print(cmd)
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
             print("[ERR] Problem submitting anomaly batch script!")
             sys.exit(1)
+        time.sleep(1) # Don't overwhelm SLURM
 
-def _run_convert_s2s_anom_cf(currentdate):
+def _run_convert_s2s_anom_cf(config, currentdate, configfile):
     """Automate convert_s2s_anom_cf.py for each NMME run."""
-    cfoutdir = f"{_BASEOUTDIR}/metrics_cf/{_DOMAIN}/{_LSM_MODEL}"
+    cfoutdir = \
+        f"{config['s2smetric']['baseoutdir']}" + \
+        f"/metrics_cf/{config['s2smetric']['domain']}" + \
+        f"/{config['s2smetric']['lsm_model']}"
     if not os.path.exists(cfoutdir):
         os.makedirs(cfoutdir)
     year = currentdate.year
     month = currentdate.month
-    for nmme_model in _NMME_MODELS:
+    nmme_models = config["s2smetric"]["nmme_models"].split()
+    metric_vars = config["s2smetric"]["metric_vars"].split()
+    for nmme_model in nmme_models:
         for anom_type in ("anom", "sanom"):
-            touchfile = f"{_BASEOUTDIR}/DYN_"
+            touchfile = f"{config['s2smetric']['baseoutdir']}/DYN_"
             touchfile += f"{anom_type.upper()}"
-            touchfile += f"/{_DOMAIN}"
-            touchfile += f"/{_LSM_MODEL}"
-            touchfile += f"/{anom_type}.{_LSM_MODEL}.{nmme_model}.done"
+            touchfile += f"/{config['s2smetric']['domain']}"
+            touchfile += f"/{config['s2smetric']['lsm_model']}"
+            touchfile += f"/{anom_type}.{config['s2smetric']['lsm_model']}"
+            touchfile += f".{nmme_model}.done"
             while not os.path.exists(touchfile):
                 print(f"[INFO] Waiting for {touchfile}... " + time.asctime() )
                 time.sleep(30)
-            for metric_var in _METRIC_VARS:
+            for metric_var in metric_vars:
                 metricfile = os.path.dirname(touchfile)
                 metricfile += f"/{nmme_model}_{metric_var}"
                 metricfile += f"_{anom_type.upper()}_init_monthly_"
                 metricfile += f"{month:02d}_{year:04d}.nc"
-                cmd = f"{_RUNDIR}/convert_s2s_anom_cf.py"
-                cmd += f" {metricfile} {cfoutdir}"
+                cmd = f"{config['s2smetric']['rundir']}/convert_s2s_anom_cf.py"
+                cmd += f" {metricfile} {cfoutdir} {configfile}"
                 print(cmd)
                 if subprocess.call(cmd, shell=True) != 0:
                     print("[ERR] Problem running convert_s2s_anom_cf.py!")
                     sys.exit(1)
 
-def _calc_enddate(startdate):
+def _calc_enddate(config, startdate):
     """Calculates end date based on number of forecast months"""
     count = 0
     year = startdate.year
     month = startdate.month
-    while count < _LEAD:
+    lead = int(config["s2smetric"]["lead"])
+    while count < lead:
         count += 1
         month += 1
         if month > 12:
@@ -143,32 +164,42 @@ def _calc_enddate(startdate):
     enddate = datetime.date(year=year, month=month, day=1)
     return enddate
 
-def _run_merge_s2s_anom_cf(currentdate):
+def _run_merge_s2s_anom_cf(config, currentdate, configfile):
     """Automate merge_s2s_anom_cf.py"""
-    input_dir = f"{_BASEOUTDIR}/metrics_cf/{_DOMAIN}/{_LSM_MODEL}"
+    baseoutdir = config["s2smetric"]["baseoutdir"]
+    domain = config["s2smetric"]["domain"]
+    lsm_model = config["s2smetric"]["lsm_model"]
+    input_dir = f"{baseoutdir}/metrics_cf/{domain}/{lsm_model}"
     output_dir = input_dir
     startdate = datetime.date(year=currentdate.year,
                               month=currentdate.month,
                               day=1)
-    enddate = _calc_enddate(startdate)
-    for nmme_model in _NMME_MODELS:
-        cmd =  f"{_RUNDIR}/merge_s2s_anom_cf.py"
+    enddate = _calc_enddate(config, startdate)
+    nmme_models = config["s2smetric"]["nmme_models"].split()
+    rundir = config["s2smetric"]["rundir"]
+    for nmme_model in nmme_models:
+        cmd =  f"{rundir}/merge_s2s_anom_cf.py"
         cmd += f" {input_dir} {output_dir}"
         cmd += f" {startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
         cmd += f" {enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
-        cmd += f" {nmme_model}"
+        cmd += f" {nmme_model} {configfile}"
         print(cmd)
         if subprocess.call(cmd, shell=True) != 0:
             print("[ERR] Problem calling merge_s2s_anom_cf.py!")
             sys.exit(1)
 
-def _run_make_s2s_median_metric_geotiff():
+def _run_make_s2s_median_metric_geotiff(config, configfile):
     """Automate make_s2s_median_metric_geotiff.py"""
-    input_dir = f"{_BASEOUTDIR}/metrics_cf/{_DOMAIN}/{_LSM_MODEL}"
-    for metric in _METRICS:
-        cmd = f"{os.path.dirname(_BATCH_SCRIPT)}"
+    baseoutdir = config["s2smetric"]["baseoutdir"]
+    domain = config["s2smetric"]["domain"]
+    lsm_model = config["s2smetric"]["lsm_model"]
+    input_dir = f"{baseoutdir}/metrics_cf/{domain}/{lsm_model}"
+    metrics = config["s2smetric"]["metrics"].split()
+    batch_script = config["s2smetric"]["batch_script"]
+    for metric in metrics:
+        cmd = f"{os.path.dirname(batch_script)}"
         cmd += "/make_s2s_median_metric_geotiff.py"
-        cmd += f" {input_dir} {metric}"
+        cmd += f" {input_dir} {metric} {configfile}"
         print(cmd)
         if subprocess.call(cmd, shell=True) != 0:
             print("[ERR] Problem running make_s2s_median_metric_geotiff.py")
@@ -176,18 +207,20 @@ def _run_make_s2s_median_metric_geotiff():
 
 def _driver():
     """Main driver"""
-    _read_cmd_args()
+    configfile = _read_cmd_args()
+    config = _read_config(configfile)
     currentdate = _handle_dates()
-    if not os.path.exists(_RUNDIR):
-        print(f"[ERR] {_RUNDIR} does not exist!")
+    rundir = config["s2smetric"]["rundir"]
+    if not os.path.exists(rundir):
+        print(f"[ERR] {rundir} does not exist!")
         sys.exit(1)
-    os.chdir(_RUNDIR)
-    for model in _NMME_MODELS:
-        _submit_metric_batch_jobs(currentdate, model)
-        time.sleep(1) # Don't overwhelm SLURM.
-    _run_convert_s2s_anom_cf(currentdate)
-    _run_merge_s2s_anom_cf(currentdate)
-    _run_make_s2s_median_metric_geotiff()
+    os.chdir(rundir)
+    nmme_models = config["s2smetric"]["nmme_models"].split()
+    for model in nmme_models:
+        _submit_metric_batch_jobs(config, currentdate, model, configfile)
+    _run_convert_s2s_anom_cf(config, currentdate, configfile)
+    _run_merge_s2s_anom_cf(config, currentdate, configfile)
+    _run_make_s2s_median_metric_geotiff(config, configfile)
 
 if __name__ == "__main__":
     _driver()

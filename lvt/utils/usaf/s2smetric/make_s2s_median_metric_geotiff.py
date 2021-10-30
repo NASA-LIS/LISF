@@ -18,11 +18,13 @@
 # * 28 Oct 2021: Eric Kemp/SSAI, fixed pylint string complaints.  Changed logic
 #   to calculate single median across entire ensemble collection, per metric
 #   per month.
+# * 30 Oct 2021: Eric Kemp/SSAI, added support for s2smetric config.
 #
 #------------------------------------------------------------------------------
 """
 
 # Standard modules
+import configparser
 import datetime
 import glob
 import os
@@ -40,27 +42,29 @@ from osgeo import gdal, osr
 
 # Private constants
 #_NMME_MODELS = ["CCM4", "CCSM4", "CFSv2", "GEOSv2", "GFDL", "GNEMO"]
-_NMME_MODELS = ["GEOSv2"]
+##_NMME_MODELS = ["GEOSv2"]
 
-_METRICS = ["RootZone_SM_ANOM", "RootZone_SM_SANOM",
-            "Streamflow_ANOM",  "Streamflow_SANOM",
-            "Surface_SM_ANOM",  "Surface_SM_SANOM"]
+#_METRICS = ["RootZone_SM_ANOM", "RootZone_SM_SANOM",
+#            "Streamflow_ANOM",  "Streamflow_SANOM",
+#            "Surface_SM_ANOM",  "Surface_SM_SANOM"]
 
 # Private class
 class _MetricGeoTiff:
     """Class for building GeoTIFF files from medians of S2S metrics."""
 
-    def __init__(self, topdir, metric):
+    def __init__(self, topdir, metric, config):
         """Constructor"""
         self.topdir = topdir
         self.metric = metric
+        self.config = config
         self.nmme_metric_files = {}
         self.filename_elements = {}
         self.median_data = {}
 
     def save_nmme_metric_filenames(self):
         """Searches for S2S metric files for each NMME model."""
-        for nmme in _NMME_MODELS:
+        nmme_models = self.config["s2smetric"]["nmme_models"].split()
+        for nmme in nmme_models:
             #subdir = "%s/%s" %(self.topdir, nmme)
             subdir = f"{self.topdir}"
             if not os.path.exists(subdir):
@@ -95,14 +99,14 @@ class _MetricGeoTiff:
         """Calculate medians of the metrics."""
 
         self.median_data = {}
-        metric = self.metric
         total_ens_size = 0
         lead = 0
         latitude = 0
         longitude = 0
 
         # We need to first count the total number of ensembles.
-        for nmme in _NMME_MODELS:
+        nmme_models = self.config["s2smetric"]["nmme_models"].split()
+        for nmme in nmme_models:
             if nmme not in self.nmme_metric_files:
                 continue
             metric_file = self.nmme_metric_files[nmme]
@@ -123,7 +127,7 @@ class _MetricGeoTiff:
             var = np.zeros(dims)
             iens = 0
             start_end_set = False
-            for nmme in _NMME_MODELS:
+            for nmme in nmme_models:
                 if nmme not in self.nmme_metric_files:
                     continue
                 metric_file = self.nmme_metric_files[nmme]
@@ -131,7 +135,7 @@ class _MetricGeoTiff:
                                       format="NETCDF4_CLASSIC")
                 ens = rootgrp.dimensions["ens"].size
                 var[iens:(iens+ens),:,:] = \
-                    rootgrp.variables[metric][:,itime,:,:].data
+                    rootgrp.variables[self.metric][:,itime,:,:].data
                 iens += ens
                 if not start_end_set:
                     self.median_data["num_months"] = \
@@ -141,9 +145,9 @@ class _MetricGeoTiff:
                     self.median_data["longitudes"] = \
                         rootgrp.variables["longitude"][:]
                     self.median_data["units"] = \
-                        rootgrp.variables[metric].units
+                        rootgrp.variables[self.metric].units
                     self.median_data["long_name"] = \
-                        rootgrp.variables[metric].long_name
+                        rootgrp.variables[self.metric].long_name
                     self.set_startdates_enddates_by_month()
                     start_end_set = True
                 rootgrp.close()
@@ -266,15 +270,16 @@ class _MetricGeoTiff:
 # Private module methods
 def _usage():
     """Print command line usage."""
-    txt = f"[INFO] Usage: {sys.argv[0]} topdir metric"
+    txt = f"[INFO] Usage: {sys.argv[0]} topdir metric configfile"
     print(txt)
     print("[INFO] where:")
     print("[INFO] topdir: top directory with all S2S metrics netCDF files.")
     print("[INFO] metric: name of metric to process.")
+    print("[INFO] configfile: path to s2smetric config file.")
 
 def _read_cmd_args():
     """Read command line arguments."""
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
@@ -283,15 +288,17 @@ def _read_cmd_args():
         print(f"[ERR] {topdir} does not exist!")
         sys.exit(1)
     metric = sys.argv[2]
-    if metric not in _METRICS:
-        print(f"[ERR] Unknown metric {metric} requested!")
+    configfile = sys.argv[3]
+    if not os.path.exists(configfile):
+        print(f"[ERR] Config file {configfile} not found!")
         sys.exit(1)
-    return topdir, metric
+    return topdir, metric, configfile
 
-def _find_nmme_in_filename(filename):
+def _find_nmme_in_filename(config, filename):
     """Find and return NMME model in filename."""
     basename = os.path.basename(filename)
-    for nmme_model in _NMME_MODELS:
+    nmme_models = config["s2smetric"]["nmme_models"].split()
+    for nmme_model in nmme_models:
         upper = nmme_model.upper()
         if upper in basename:
             return upper
@@ -322,8 +329,10 @@ def _set_newdate(date):
 
 def _driver():
     """Main driver."""
-    topdir, metric = _read_cmd_args()
-    mgt = _MetricGeoTiff(topdir, metric)
+    topdir, metric, configfile = _read_cmd_args()
+    config = configparser.ConfigParser()
+    config.read(configfile)
+    mgt = _MetricGeoTiff(topdir, metric, config)
     mgt.save_nmme_metric_filenames()
     mgt.save_filename_elements()
     mgt.calc_medians()
