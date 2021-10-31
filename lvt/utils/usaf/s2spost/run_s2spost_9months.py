@@ -25,8 +25,6 @@ import shutil
 import sys
 import time
 
-#_TOTAL_MONTHS = 9
-
 def _usage():
     """Print command line usage."""
     txt = \
