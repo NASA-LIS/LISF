@@ -31,20 +31,6 @@ import xarray as xr
 # Local modules
 from metricslib import sel_var
 
-# Local constants. FIXME: Collect into common file for whole system
-
-## hardwired output directories where output anomaly data goes to
-#_BASEDIR = '/discover/nobackup/projects/lis_aist17/emkemp/AFWA'
-#_BASEDIR += '/lis74_s2s_patches/work/POST/forecasts/DYN_ANOM'
-
-## Hardwired directory addresses
-#_FAME_MODEL_RUN = '/discover/nobackup/projects/lis_aist17/karsenau'
-#_FAME_MODEL_RUN += '/E2ES_Test/29-Oct-2021/s2spost/forecasts'
-#_HINDCASTS = '/discover/nobackup/projects/lis_aist17/karsenau'
-#_HINDCASTS += '/E2ES_Test/29-Oct-2021/s2smetric/hindcasts'
-
-#_FORECASTS = '/discover/nobackup/projects/lis_aist17/karsenau'
-#_FORECASTS += '/E2ES_Test/29-Oct-2021/s2spost/forecasts'
 
 # Start reading from command line.
 fcst_init_mon = int(sys.argv[1])
@@ -52,11 +38,9 @@ target_year = int(sys.argv[2])
 nmme_model = sys.argv[3]
 configfile = sys.argv[4]
 
-print(f"nmme_model: {nmme_model}")
-
+# Config file settings
 config = configparser.ConfigParser()
 config.read(configfile)
-
 hyd_model = config["s2smetric"]["lsm_model"]
 lead_num = int(config["s2smetric"]["lead"])
 domain_name = config["s2smetric"]["domain"]
@@ -67,13 +51,6 @@ metric_vars = config["s2smetric"]["metric_vars"].split()
 hindcasts = config["s2smetric"]["hindcasts"]
 forecasts = config["s2smetric"]["forecasts"]
 
-#hyd_model = sys.argv[2]
-#lead_num = int(sys.argv[3])
-#DOMAIN_NAME = str(sys.argv[4])
-#NMME_MODEL = str(sys.argv[6])
-#csyr = int(sys.argv[7])
-#ceyr = int(sys.argv[8])
-
 FCST_INIT_DAY = 1
 outdir = basedir + '/' + domain_name + '/' + hyd_model
 if not os.path.exists(outdir):
@@ -82,10 +59,6 @@ if not os.path.exists(outdir):
 OUTFILE_TEMPLATE = '{}/{}_{}_ANOM_init_monthly_{:02d}_{:04d}.nc'
 # name of variable, forecast initial month and forecast year is in the file
 # name
-
-
-# Climatology years
-#clim_syr, clim_eyr = csyr, ceyr
 
 TARGET_INFILE_TEMPLATE1 = \
     '{}/{}/{:02d}/cf_{}_????{:02d}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.AFRICA_'
@@ -99,7 +72,6 @@ CLIM_INFILE_TEMPLATE2 = 'PA.LIS-S2S_DP.*{:02d}??-*{:02d}??_TP.0000-0000_DF.NC'
 CLIM_INFILE_TEMPLATE = CLIM_INFILE_TEMPLATE1 + CLIM_INFILE_TEMPLATE2
 ## String in this format allows the select all the files for the given month
 
-#for var_name in ['RootZone-SM', 'Surface-SM', 'Streamflow']:
 for var_name in metric_vars:
     for lead in range(lead_num):
         print('[INFO] Reading output from Hindcast runs')
@@ -117,10 +89,10 @@ for var_name in metric_vars:
                                              smon.month, \
                                              nmme_model.upper(), \
                                              smon.month, emon.month)
-        print(f"[INFO] reading forecast climatology {INFILE}")
+        #print(f"[INFO] reading forecast climatology {INFILE}")
         infile1 = glob.glob(INFILE)
-        print(f"[INFO] reading forecast climatology {infile1}")
-        #print("[INFO] Reading forecast climatology")
+        #print(f"[INFO] reading forecast climatology {infile1}")
+        print("[INFO] Reading forecast climatology")
 
         # First reading all available years for the given
         # forecast initialization month
