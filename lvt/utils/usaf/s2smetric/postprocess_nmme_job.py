@@ -22,41 +22,6 @@ import subprocess
 import sys
 import time
 
-# Local constants
-#_CSYR = 2008
-#_CEYR = 2020
-
-# Temporary.  FIXME Put in common location for all scripts
-#_RUNDIR = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
-#_RUNDIR += "/lis74_s2s_patches/LISF/lvt/utils/usaf/s2smetric"
-
-#_NMME_MODELS = ["CCM4", "CCSM4", "CFSv2", "GEOSv2", "GFDL", "GNEMO"]
-#_NMME_MODELS = ["GEOSv2"] # For testing
-
-#_LSM_MODEL = "NOAHMP"
-
-#_LEAD = 9 # 9 month forecasts
-
-#_DOMAIN = "AFRICOM"
-
-#_BATCH_SCRIPT = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
-#_BATCH_SCRIPT += "/lis74_s2s_patches/LISF/lvt/utils/usaf/s2smetric"
-#_BATCH_SCRIPT += "/run_Convert_Dyn_FCST_postproc.scr"
-#_BATCH_SCRIPT += "/run_generate_metrics.sh"
-
-#_PYLIBDIR = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
-#_PYLIBDIR += "/lis74_s2s_patches/LISF/lvt/utils/usaf/s2smetric"
-#_PYLIBDIR += "/lib_bcsd_metrics"
-
-#_BASEOUTDIR = "/discover/nobackup/projects/lis_aist17/emkemp/AFWA"
-#_BASEOUTDIR += "/lis74_s2s_patches/work/POST/forecasts"
-
-#_METRIC_VARS = ["RootZone-SM", "Streamflow", "Surface-SM"]
-
-#_METRICS = ["RootZone_SM_ANOM", "RootZone_SM_SANOM",
-#            "Streamflow_ANOM",  "Streamflow_SANOM",
-#            "Surface_SM_ANOM",  "Surface_SM_SANOM"]
-
 # Local methods
 def _usage():
     """Print command line usage."""
