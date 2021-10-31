@@ -27,11 +27,7 @@ import os
 import subprocess
 import sys
 
-# Path to NCO binaries.
-#_NCO_DIR = "/usr/local/other/nco/5.0.1/bin" # On Discover
-
-# Lists of variables and metrics to process
-#_VAR_LIST = ["RootZone-SM", "Streamflow", "Surface-SM"]
+# Local constants
 _METRIC_LIST = ["ANOM", "SANOM"]
 
 def _usage():
