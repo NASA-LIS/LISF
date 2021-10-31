@@ -32,16 +32,22 @@ import shutil
 import subprocess
 import sys
 
-# Path to NCO binaries.  Hardwired here due to Air Force security requirements.
-# This is intended as an internal constant, hence the name is prefixed with
-# "_".
-#_NCO_DIR = "/usr/local/other/nco/5.0.1/bin" # On Discover
-
+# Local constants
 # Units for variable anomalies.  Standardized anomalies will be dimensionless.
 _UNITS_ANOM = {
     "RootZone-SM" : "m3 m-3",
     "Streamflow" : "m3 s-1",
     "Surface-SM" : "m3 m-3",
+}
+_LONG_NAMES_SANOM = {
+    "RootZone-SM" : "Root zone soil moisture standardized anomaly",
+    "Streamflow" : "Streamflow standardized anomaly",
+    "Surface-SM" : "Surface soil moisture standardized anomaly",
+}
+_LONG_NAMES_ANOM = {
+    "RootZone-SM" : "Root zone soil moisture anomaly",
+    "Streamflow" : "Streamflow anomaly",
+    "Surface-SM" : "Surface soil moisture anomaly",
 }
 
 def _usage():
@@ -53,7 +59,6 @@ def _usage():
     print("[INFO]  anom_file: Name of netCDF file with anom or sanom metric")
     print("[INFO]  output_dir: Directory to write CF-convention file")
     print("[INFO]  configfile: Path to s2smetric config file")
-
 
 def _read_cmd_args():
     """Read command line arguments."""
@@ -103,30 +108,19 @@ def _run_cmd(cmd, error_msg):
         print(error_msg)
         sys.exit(1)
 
-
 def _copy_anom_file(anom_filename, output_dir):
     """Copy anom file to output directory."""
     shutil.copy(anom_filename, output_dir)
 
 def _get_metric_long_name(anom_filename):
     """Get long_name of anomaly variable."""
-    long_names_sanom = {
-        "RootZone-SM" : "Root zone soil moisture standardized anomaly",
-        "Streamflow" : "Streamflow standardized anomaly",
-        "Surface-SM" : "Surface soil moisture standardized anomaly",
-    }
-    long_names_anom = {
-        "RootZone-SM" : "Root zone soil moisture anomaly",
-        "Streamflow" : "Streamflow anomaly",
-        "Surface-SM" : "Surface soil moisture anomaly",
-    }
     basename = os.path.basename(anom_filename)
     varname = basename.split("_")[1]
     metric = basename.split("_")[2]
     if metric == "SANOM":
-        long_name = long_names_sanom[varname]
+        long_name = _LONG_NAMES_SANOM[varname]
     else:
-        long_name = long_names_anom[varname]
+        long_name = _LONG_NAMES_ANOM[varname]
     return long_name
 
 def _get_metric_units(anom_filename):
