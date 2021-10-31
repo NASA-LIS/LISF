@@ -40,14 +40,6 @@ from netCDF4 import Dataset as nc4_dataset
 import numpy as np
 from osgeo import gdal, osr
 
-# Private constants
-#_NMME_MODELS = ["CCM4", "CCSM4", "CFSv2", "GEOSv2", "GFDL", "GNEMO"]
-##_NMME_MODELS = ["GEOSv2"]
-
-#_METRICS = ["RootZone_SM_ANOM", "RootZone_SM_SANOM",
-#            "Streamflow_ANOM",  "Streamflow_SANOM",
-#            "Surface_SM_ANOM",  "Surface_SM_SANOM"]
-
 # Private class
 class _MetricGeoTiff:
     """Class for building GeoTIFF files from medians of S2S metrics."""
