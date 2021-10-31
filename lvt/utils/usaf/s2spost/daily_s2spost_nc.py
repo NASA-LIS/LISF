@@ -40,15 +40,7 @@ import os
 import subprocess
 import sys
 
-# Path to NCO binaries.  Hardwired here due to Air Force security requirements.
-# This is intended as an internal constant, hence the name is prefixed with
-# "_".
-#_NCO_DIR = "/usr/local/other/nco/5.0.1/bin" # On Discover
-
-# NOTE: This script is supposed to be entirely self-contained, and not to be
-# used as an imported module.  So all the function names are prefixed with "_"
-# to indicate "for internal use."
-
+# Private methods.
 def _usage():
     """Print command line usage."""
     txt = \
