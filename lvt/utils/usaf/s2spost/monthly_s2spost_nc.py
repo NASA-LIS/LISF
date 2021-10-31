@@ -36,43 +36,7 @@ import time
 from netCDF4 import Dataset as nc4_dataset
 # pylint: enable=no-name-in-module
 
-# Lists of variables to process.  These are intended as internal constants,
-# hence the names are prefixed with "_".
-
-#_VAR_ACC_LIST = ["Qs_acc", "Qsb_acc", "TotalPrecip_acc"]
-
-#_VAR_TAVG_LAND_LIST = ["Qle_tavg", "Qh_tavg", "Qg_tavg", "Evap_tavg",
-#                        "AvgSurfT_tavg", "Albedo_tavg",
-#                        "SoilMoist_tavg", "SoilTemp_tavg",
-#                        "Streamflow_tavg", "FloodedFrac_tavg", "SurfElev_tavg",
-#                        "SWS_tavg", "RiverStor_tavg", "RiverDepth_tavg",
-#                        "RiverFlowVelocity_tavg", "FloodStor_tavg",
-#                        "FloodedArea_tavg"]
-
-# _VAR_TAVG_F_LIST = ["Wind_f_tavg", "Tair_f_tavg",
-#                     "Qair_f_tavg", "Psurf_f_tavg",
-#                     "SWdown_f_tavg", "LWdown_f_tavg"]
-
-
-# _VAR_TAVG_TWSGWS_LIST = ["TWS_inst", "GWS_inst"]
-
-# _VAR_TAIR_MAX_LIST = ["Tair_f_max"]
-# _VAR_TAIR_MIN_LIST = ["Tair_f_min"]
-
-# _VAR_INST_LIST = ["AvgSurfT_inst", "SWE_inst", "SnowDepth_inst",
-#                   "SoilMoist_inst", "SoilTemp_inst",
-#                   "SmLiqFrac_inst",
-#                   "CanopInt_inst",
-#                   "Snowcover_inst", "Wind_f_inst", "Tair_f_inst",
-#                   "Qair_f_inst", "Psurf_f_inst",
-#                   "SWdown_f_inst", "LWdown_f_inst",
-#                   "Greenness_inst", "RelSMC_inst"]
-
-# _CONST_LIST = ["lat", "lon", "ensemble", "soil_layer",
-#                "soil_layer_thickness",
-#                "Landmask_inst", "LANDMASK", "Landcover_inst",
-#                "Soiltype_inst", "Elevation_inst"]
-
+# Private methods.
 def _usage():
     """Print command line usage."""
     txt = f"[INFO] Usage: {sys.argv[0]} configfile input_dir output_dir"
@@ -232,9 +196,6 @@ def _create_firstguess_monthly_file(varlists, infile, outfile):
     _copy_dims_gattrs(ncid_in, ncid_out)
 
     # Copy the fields.
-    #varnames = _CONST_LIST + _VAR_INST_LIST + _VAR_ACC_LIST + \
-    #    _VAR_TAVG_LAND_LIST + _VAR_TAVG_F_LIST + _VAR_TAVG_TWSGWS_LIST + \
-    #    _VAR_TAIR_MAX_LIST + _VAR_TAIR_MIN_LIST
     varnames = []
     for listname in ["const_list", "var_inst_list", "var_acc_list",
                      "var_tavg_land_list", "var_tavg_f_list",
@@ -290,8 +251,6 @@ def _read_second_daily_file(varlists, infile):
     tavgs["counter"] = 1
 
     # Copy the values of the fields we will average or accumulate
-    #varnames = _VAR_TAVG_LAND_LIST + _VAR_TAVG_F_LIST + \
-    #    _VAR_TAVG_TWSGWS_LIST + _VAR_TAIR_MAX_LIST + _VAR_TAIR_MIN_LIST
     varnames = []
     for listname in ["var_tavg_land_list", "var_tavg_f_list",
                      "var_tavg_twsgws_list", "var_tair_max_list",
@@ -329,8 +288,6 @@ def _read_next_daily_file(varlists, infile, accs, tavgs):
     tavgs["counter"] += 1
 
     # Add the values of the fields we will average or accumulate
-    #varnames = _VAR_TAVG_LAND_LIST + _VAR_TAVG_F_LIST + \
-    #    _VAR_TAVG_TWSGWS_LIST + _VAR_TAIR_MAX_LIST + _VAR_TAIR_MIN_LIST
     varnames = []
     for listname in ["var_tavg_land_list", "var_tavg_f_list",
                      "var_tavg_twsgws_list", "var_tair_max_list",
@@ -439,8 +396,6 @@ def _update_cell_methods(varlists, outfile):
     ncid = nc4_dataset(outfile, 'a', format='NETCDF4_CLASSIC')
 
     # Elaborate on monthly calculations of most variables
-    #varnames = _VAR_ACC_LIST + _VAR_TAVG_LAND_LIST + _VAR_TAVG_F_LIST + \
-    #    _VAR_TAVG_TWSGWS_LIST + _VAR_TAIR_MAX_LIST + _VAR_TAIR_MIN_LIST
     varnames = []
     for listname in ["var_acc_list", "var_tavg_land_list", "var_tavg_f_list",
                      "var_tavg_twsgws_list", "var_tair_max_list",
