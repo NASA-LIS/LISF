@@ -336,7 +336,7 @@ contains
        if( LDT_irrig_struc(n)%irriggwratio%selectOpt == 1 ) then
           write(LDT_logunit,*) "Reading groundwater irrigation ratio: "//&
                trim(LDT_irrig_struc(n)%irriggwratiofile)
-          write(LDT_logunit,*) "test source: "//&
+          write(LDT_logunit,*) "Groundwater irrigation ratio data source: "//&
                trim(LDT_irrig_struc(n)%irriggwratio%source)
           call readirriggwratio( trim(LDT_irrig_struc(n)%irriggwratio%source)//char(0),&
                 n, LDT_irrig_struc(n)%irriggwratio%value,   &
