@@ -82,7 +82,7 @@
 
    inquire(file=trim(LDT_irrig_struc(n)%irriggwratiofile), exist=file_exists)
    if(.not.file_exists) then
-      write(LDT_logunit,*) "groundwater irrigation ratio map ",trim(LDT_irrig_struc(n)%irriggwratiofile)," not found."
+      write(LDT_logunit,*) "[ERR] Groundwater irrigation ratio map ",trim(LDT_irrig_struc(n)%irriggwratiofile)," not found."
       write(LDT_logunit,*) "Program stopping ..."
       call LDT_endrun
    endif

@@ -262,7 +262,7 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
                 
      ltime = real(lhr)+real(LIS_rc%mn)/60.0+real(LIS_rc%ss)/3600.0
     
-     if(DVEG == 2 .OR. DVEG == 5 .OR. DVEG == 6 .AND. LIS_rc%irrigation_dveg == 1) then
+     if((DVEG == 2 .OR. DVEG == 5 .OR. DVEG == 6) .AND. LIS_rc%irrigation_dveg == 1) then
         shdfac = shdfac_avg
 
      else

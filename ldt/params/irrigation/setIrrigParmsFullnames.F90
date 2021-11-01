@@ -77,8 +77,8 @@ subroutine setIrrigParmsFullnames(n,datatype,source)
       end select
 
     case default
-      print *, "[ERR] Irrig data type not recognized: ",trim(source)
-      print *, " Program stopping ..."
+      write(LDT_logunit,*) "[ERR] Irrig data type not recognized: ",trim(source)
+      write(LDT_logunit,*) " Program stopping ..."
       stop
    end select
 

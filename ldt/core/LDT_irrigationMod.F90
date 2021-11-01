@@ -260,7 +260,7 @@ contains
           call ESMF_ConfigGetAttribute(LDT_config,&
                LDT_irrig_struc(n)%irriggwratio_gridtransform,&
                rc=rc)
-          call LDT_verify(rc,'Groundwater irrigation ratio spatial tranform: option not specified in the config file')
+          call LDT_verify(rc,'Groundwater irrigation ratio spatial transform: option not specified in the config file')
        enddo
      ! Set units and full names:
        do n=1,LDT_rc%nnest
@@ -336,7 +336,7 @@ contains
        if( LDT_irrig_struc(n)%irriggwratio%selectOpt == 1 ) then
           write(LDT_logunit,*) "Reading groundwater irrigation ratio: "//&
                trim(LDT_irrig_struc(n)%irriggwratiofile)
-          write(LDT_logunit,*) "test source: "//&
+          write(LDT_logunit,*) "Groundwater irrigation ratio data source: "//&
                trim(LDT_irrig_struc(n)%irriggwratio%source)
           call readirriggwratio( trim(LDT_irrig_struc(n)%irriggwratio%source)//char(0),&
                 n, LDT_irrig_struc(n)%irriggwratio%value,   &
