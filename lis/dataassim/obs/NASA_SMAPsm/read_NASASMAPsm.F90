@@ -70,7 +70,7 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    character*100          :: smobsdir
    character*100          :: fname
    logical                :: alarmCheck, file_exists
-   integer                :: t, c, r, i, j, p, jj
+   integer                :: t, c, r, jj
    real,          pointer :: obsl(:)
    type(ESMF_Field)       :: smfield, pertField
    integer                :: gid(LIS_rc%obs_ngrid(k))
@@ -91,10 +91,6 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    integer                :: zone
    integer                :: fnd
    real, allocatable      :: ssdev(:)
-   integer                :: lis_julss
-   real                   :: smvalue
-   real                   :: model_delta(LIS_rc%obs_ngrid(k))
-   real                   :: obs_delta(LIS_rc%obs_ngrid(k))
    character*4            :: yyyy
    character*8            :: yyyymmdd
    character*2            :: mm, dd, hh
@@ -104,13 +100,8 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    real*8                 :: timenow, time1,time2,time3
    integer                :: doy
    character*200          :: list_files
-   character*100          :: temp1
-   character*1            :: fproc(4)
-   character(len=4)       :: istring
-   character*100          :: smap_filename(10)
    integer                :: mn_ind
    integer                :: ftn, ierr
-   character(len=200)     :: cmd
    integer                :: rc
    character(len=3)       :: CRID
    integer, external      :: create_filelist ! C function
@@ -164,8 +155,6 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
          NASASMAPsm_struc(n)%smobs = LIS_rc%udef
          NASASMAPsm_struc(n)%smtime = -1.0
  
-         write(temp1,fmt='(i4.4)') LIS_localPet
-         read(temp1,fmt='(4a1)') fproc
          write(yyyymmdd,'(i4.4,2i2.2)') LIS_rc%yr, LIS_rc%mo, LIS_rc%da
          write(yyyy,'(i4.4)') LIS_rc%yr
          write(mm,'(i2.2)') LIS_rc%mo
@@ -173,34 +162,34 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
          write(hh,'(i2.2)') LIS_rc%hr
 
          if(LIS_masterproc) then
-            list_files = "ls "//trim((smobsdir))//&
-                 "/"//trim(yyyy)//"."//trim(mm)//"."//dd//&
-                 "/SMAP_L2_*"//trim(yyyymmdd)//"T"//trim(hh)&
-                 //"*.h5 > SMAP_filelist_sm.dat"
-
-            call system(trim(list_files))
-            do i=0,LIS_npes-1
-               write(istring,'(I4.4)') i
-               cmd = 'cp SMAP_filelist_sm.dat SMAP_filelist.sm.'//istring//".dat"
-               call system(trim(cmd))
-            end do ! i
+            list_files = trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'//&
+                         trim(dd)//'/SMAP_L2_*' &
+                         //trim(yyyy)//trim(mm)//trim(dd)//'T'//trim(hh)//'*.h5'
+            write(LIS_logunit,*) &
+                  '[INFO] Searching for ',trim(list_files)
+            rc = create_filelist(trim(list_files)//char(0), &
+                 "SMAP_filelist.sm.dat"//char(0))
+            if (rc .ne. 0) then
+               write(LIS_logunit,*) &
+                    '[WARN] Problem encountered when searching for SMAP files'
+               write(LIS_logunit,*) &
+                    'Was searching for ',trim(list_files)
+               write(LIS_logunit,*) &
+                    'LIS will continue...'
+            endif
          end if
 #if (defined SPMD)
          call mpi_barrier(lis_mpi_comm,ierr)
 #endif
 
-         i = 1
          ftn = LIS_getNextUnitNumber()
-         open(ftn,file="./SMAP_filelist.sm."//&
-              fproc(1)//fproc(2)//fproc(3)//fproc(4)//".dat",&
-              status='old',iostat=ierr)
+         open(ftn,file="./SMAP_filelist.sm.dat",status='old',iostat=ierr)
 
          do while(ierr.eq.0)
             read(ftn,'(a)',iostat=ierr) fname
             if(ierr.ne.0) then
                exit
             endif
-            mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))
 
             mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))+11
             read(fname(mn_ind:mn_ind+1),'(i2.2)') mn
@@ -208,14 +197,10 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
             call LIS_tick(timenow,doy,gmt,LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
                  LIS_rc%hr, mn, ss, 0.0)
 
-            smap_filename(i) = fname
+            write(LIS_logunit,*) '[INFO] reading ',trim(fname)
 
-            write(LIS_logunit,*) '[INFO] reading ',trim(smap_filename(i))
-
-            call read_SMAPL2sm_data(n,k,smap_filename(i),&
+            call read_SMAPL2sm_data(n,k,fname,&
                  NASASMAPsm_struc(n)%smobs,timenow)
-
-            i = i+1
          enddo
          call LIS_releaseUnitNumber(ftn)
 
