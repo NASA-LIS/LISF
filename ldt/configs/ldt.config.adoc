@@ -1328,6 +1328,30 @@ Irrigation fraction resolution (dx):       0.2500
 Irrigation fraction resolution (dy):       0.2500
 ....
 
+`Groundwater irrigation ratio map:` specifies the location of a groundwater irrigation fraction map file. This file contains the ratio (gridcell-based) that partitions the simulated irrigation water amount into groundwater source.
+
+.Example ldt.config entry
+....
+Groundwater irrigation ratio map: ./params/irrigGWratio2000.asc
+....
+
+`Groundwater irrigation ratio spatial transform:` indicates which spatial transform (i.e., upscale or downscale) type is to be applied to groundwater irrigation ratio maps. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data is on same grid as LIS output domain
+|average |Upscale by averaging values for each gridcell
+|neighbor |Upscale or downscale using nearest neighbor values
+|bilinear |Reinterpolate by using bilinear interpolation
+|===
+
+.Example ldt.config entry
+....
+Groundwater irrigation ratio spatial transform: bilinear
+....
+
 
 [[ssec-soilspecparams]]
 === Soil Parameters
