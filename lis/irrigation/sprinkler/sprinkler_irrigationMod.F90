@@ -386,7 +386,7 @@ contains
     else
        write(LIS_logunit,*) "[ERR] Groundwater irrigation ratio map: ",&
              LIS_rc%paramfile(n),"[ERR] does not exist."
-       write(LIS_logunit,*) "[ERR] Program stopping ..."
+       write(LIS_logunit,*) "Program stopping ..."
        call LIS_endrun
     endif
 #endif
