@@ -1270,7 +1270,7 @@ Irrigation type spatial transform:    mode
 
 |MODIS_OG |Irrigation area fraction map by Ozdogan and Gutman (2008)
 |GRIPC |Irrigation area fraction map by Salmon (2013)
-!UserDerived |User derived irrigation fraction map
+|UserDerived |User derived irrigation fraction map
 |===
 
 .Example _ldt.config_ entry
