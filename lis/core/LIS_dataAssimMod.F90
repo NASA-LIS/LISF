@@ -815,8 +815,7 @@ contains
 ! \end{description}
 !EOP
 
-    integer             :: t,i,kk
-    integer             :: binval
+    integer             :: t,kk
     integer             :: col,row
     real                :: obs_tmp
 
