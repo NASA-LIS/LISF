@@ -23,6 +23,8 @@
 #
 # REVISION HISTORY:
 # 23 Sep 2021: Eric Kemp (SSAI), first version.
+# 03 Nov 2021: Eric Kemp/SSAI, revised for new miniconda3 environment on
+#   Discover, and to use s2spost config file.
 #
 #------------------------------------------------------------------------------
 

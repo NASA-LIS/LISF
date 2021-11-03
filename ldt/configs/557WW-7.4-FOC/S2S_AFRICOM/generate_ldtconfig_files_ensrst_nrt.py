@@ -126,7 +126,7 @@ def _customize_ldt_config(ldtconfig_lsm_target, lsm_rstdir, currentdate,
     mask_parmlogfile = f"{nmme_model}/MaskParamFill.log" %(nmme_model)
 
     # Now edit the target ldt.config with these customized settings
-    with open(ldtconfig_lsm_target, "rt", encoding='utf-8') as file_obj:
+    with open(ldtconfig_lsm_target, "rt", encoding='ascii') as file_obj:
         data = file_obj.read()
     data = data.replace("LDTINPUTFILE", _LDT_INPUT_FILE)
     data = data.replace("LDTRSTGENOPT", ldt_rstgen)
@@ -136,7 +136,7 @@ def _customize_ldt_config(ldtconfig_lsm_target, lsm_rstdir, currentdate,
     data = data.replace("LSMLDTLOGFILE", f"./{lsm_logfile}")
     data = data.replace("PARAMLOGFILE", f"./{mask_parmlogfile}")
     data = data.replace("MODELDIR", f"./{nmme_model}/")
-    with open(ldtconfig_lsm_target, "wt", encoding="utf-8") as file_obj:
+    with open(ldtconfig_lsm_target, "wt", encoding="ascii") as file_obj:
         file_obj.write(data)
 
 def _driver():

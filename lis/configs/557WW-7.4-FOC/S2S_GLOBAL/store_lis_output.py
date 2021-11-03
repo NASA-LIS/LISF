@@ -12,6 +12,7 @@
 #
 # REVISION HISTORY:
 # 21 Sep 2021: Eric Kemp (SSAI), first version.
+# 02 Nov 2021: Eric Kemp/SSAI, tweaks to appease pylint.
 #------------------------------------------------------------------------------
 """
 
@@ -23,8 +24,9 @@ import sys
 
 def _usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: %s tmp_output_dir restart_dir grib_dir YYYYMMDD" \
-        %(sys.argv[0])
+    txt = \
+        f"[INFO] Usage: {sys.argv[0]} tmp_output_dir restart_dir grib_dir" + \
+        " YYYYMMDD"
     print(txt)
     print("[INFO] where: ")
     print("[INFO]  tmp_output_dir: Path to output files from recent LIS run.")
@@ -44,12 +46,12 @@ def _read_cmd_args():
     # Check if paths exist.
     tmp_output_dir = sys.argv[1]
     if not os.path.exists(tmp_output_dir):
-        print("[ERR] %s does not exist!" %(tmp_output_dir))
+        print(f"[ERR] {tmp_output_dir} does not exist!")
         sys.exit(1)
 
     restart_dir = sys.argv[2]
     if not os.path.exists(restart_dir):
-        print("[ERR] %s does not exist!" %(restart_dir))
+        print(f"[ERR] {restart_dir} does not exist!")
         sys.exit(1)
 
     grib_dir = sys.argv[3]
@@ -76,15 +78,16 @@ def _copy_restart_file(tmp_output_dir, restart_dir, startdate):
     """Copy last restart file to more permanent storage."""
     enddate = startdate + datetime.timedelta(days=1)
 
-    restart_file = "%s/LIS_RST_NOAH39_%4.4d%2.2d%2.2d0000.d01.nc" \
-        %(tmp_output_dir, enddate.year, enddate.month, enddate.day)
+    restart_file = f"{tmp_output_dir}/LIS_RST_NOAH39_" + \
+        f"{enddate.year:04d}{enddate.month:02d}{enddate.day:02d}" + \
+        "0000.d01.nc"
     if not os.path.exists(restart_file):
-        print("[ERR] Restart file %s does not exist!" %(restart_file))
+        print(f"[ERR] Restart file {restart_file} does not exist!")
         sys.exit(1)
 
     newfile = shutil.copy(restart_file, restart_dir)
     if not os.path.exists(newfile):
-        print("[ERR] Problem copying %s to %s" %(restart_file, restart_dir))
+        print(f"[ERR] Problem copying {restart_file} to {restart_dir}")
         sys.exit(1)
 
 def _copy_grib_files(tmp_output_dir, grib_dir, startdate):
@@ -104,21 +107,19 @@ def _copy_grib_files(tmp_output_dir, grib_dir, startdate):
 
     curdt = startdt
     while curdt <= enddt:
-        grib_file = "%s/" %(tmp_output_dir)
+        grib_file = f"{tmp_output_dir}/"
         grib_file += "PS.AFWA_SC.U_DI.C_DC.ANLYS_GP.LIS_GR.C0P09DEG"
         grib_file += "_AR.GLOBAL_PA.03-HR-SUM"
-        grib_file += "_DD.%4.4d%2.2d%2.2d" %(curdt.year,
-                                             curdt.month,
-                                             curdt.day)
-        grib_file += "_DT.%2.2d00" %(curdt.hour)
+        grib_file += f"_DD.{curdt.year:04d}{curdt.month:02d}{curdt.day:02d}"
+        grib_file += f"_DT.{curdt.hour:02d}00"
         grib_file += "_DF.GR1"
         if not os.path.exists(grib_file):
-            print("[ERR] %s does not exist!" %(grib_file))
+            print(f"[ERR] {grib_file} does not exist!")
             sys.exit(1)
 
         newfile = shutil.copy(grib_file, grib_dir)
         if not os.path.exists(newfile):
-            print("[ERR] Problem copying %s to %s" %(grib_file, grib_dir))
+            print(f"[ERR] Problem copying {grib_file} to {grib_dir}")
             sys.exit(1)
 
         curdt += delta
