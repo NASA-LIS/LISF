@@ -69,10 +69,10 @@ resolution_x, resolution_y, time_increment):
     rootgrp.zenith_interp = "true,false,"
     rootgrp.MAP_PROJECTION = "EQUIDISTANT CYLINDRICAL"
     rootgrp.conventions = "CF-1.6"
-    rootgrp.south_west_corner_lat = float(south_west_corner_lat)
-    rootgrp.south_west_corner_lon = float(south_west_corner_lon)
-    rootgrp.north_east_corner_lat = float(north_east_corner_lat)
-    rootgrp.north_east_corner_lon = float(north_east_corner_lon)
+    rootgrp.SOUTH_WEST_CORNER_LAT = float(south_west_corner_lat)
+    rootgrp.SOUTH_WEST_CORNER_LON = float(south_west_corner_lon)
+    rootgrp.NORTH_EAST_CORNER_LAT = float(north_east_corner_lat)
+    rootgrp.NORTH_EAST_CORNER_LON = float(north_east_corner_lon)
     rootgrp.DX = resolution_x
     rootgrp.DY = resolution_y
     rootgrp.history = 'Created ' + time.ctime(time.time())
