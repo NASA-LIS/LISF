@@ -119,7 +119,7 @@ module HYMAP2_routingMod
 ! === Linear reservoir components ================
   real,    allocatable :: rnfsto(:,:)    !runoff   reservoir storage [m3]
   real,    allocatable :: bsfsto(:,:)    !baseflow reservoir storage [m3]
-  character*100        :: rstfile
+  character*255        :: rstfile
   integer              :: numout
   integer              :: fileopen
   real                 :: outInterval 
