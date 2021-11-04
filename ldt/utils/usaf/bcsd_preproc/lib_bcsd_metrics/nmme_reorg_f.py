@@ -51,6 +51,9 @@ def write_3d_netcdf(infile, var, varname, description, source, \
 CMDARGS = str(sys.argv)
 CMN = int(sys.argv[1])  ##
 CYR = int(sys.argv[2]) ##
+NMME_DOWNLOAD_DIR = str(sys.argv[3])
+NMME_OUTPUT_DIR = str(sys.argv[4])
+SUPPLEMENTARY_DIR = str(sys.argv[5])
 
 MODEL = ['NCEP-CFSv2', 'NASA-GEOSS2S', 'CanCM4i', 'GEM-NEMO', \
          'COLA-RSMAS-CCSM4', 'GFDL-SPEAR']
@@ -76,28 +79,21 @@ for i in range(0, 12):
         LEADS1[i, j] = k
         LDYR[i, j] = ky
 
-DIRA = '/discover/nobackup/projects/usaf_lis/razamora/GHI_S2S/'
-DIRB = 'AFRICOM/data/forecasts/NMME/raw/download/'
-DIR = DIRA + DIRB
 INFILE_TEMP = '{}/{}/prec.{}.mon_{}.{:04d}.nc'
-
-DIRB = 'AFRICOM/data/forecasts/NMME/raw/Monthly/'
-DIR1 = DIRA + DIRB
-
 OUTDIR_TEMPLATE = '{}/{}/{:04d}/ens{}/'
 OUTFILE_TEMPLATE = '{}/{}.nmme.monthly.{:04d}{:02d}.nc'
-if not os.path.exists(DIR1):
-    os.makedirs(DIR1)
+if not os.path.exists(NMME_OUTPUT_DIR):
+    os.makedirs(NMME_OUTPUT_DIR)
 
 ## Read in example fine spatial resolution file for lat and lon over AFRICOM
-GEA = 'AFRICOM/scripts/code_library/supplementary_files/ex_raw_fcst_download.nc'
-GE = DIRA + GEA
+EX_FCST_FILENAME = '/ex_raw_fcst_download.nc'
+GE = SUPPLEMENTARY_DIR + EX_FCST_FILENAME
 LONS = read_nc_files(GE, 'lon')
 LATS = read_nc_files(GE, 'lat')
 
 ## Read in example coarse spatial resolution file for lat and lon over Globe
-GEB = 'AFRICOM/scripts/code_library/supplementary_files/ex_raw_nmme_download.nc'
-GE1 = DIRA + GEB
+EX_NMME_FILENAME = '/ex_raw_nmme_download.nc'
+GE1 = SUPPLEMENTARY_DIR + EX_NMME_FILENAME
 LONI = read_nc_files(GE1, 'X')
 LATI = read_nc_files(GE1, 'Y')
 LON1 = LONI.copy()
@@ -116,32 +112,32 @@ XPRECI = np.empty([1, 320, 320])
 
 for i,m in enumerate(MODEL):
     if MODEL[i] == 'NCEP-CFSv2':
-        INFILE = INFILE_TEMP.format(DIR, MODEL[i], MODEL[i], MON[MM], CYR)
+        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL[i], MODEL[i], MON[MM], CYR)
         print('Reading:', INFILE)
         x = read_nc_files(INFILE, 'prec')
         XPREC[0, 0:10, 0:24, :, :] = x[0, 0:10, 0:24, :, :]
     if MODEL[i] == 'NASA-GEOSS2S':
-        INFILE = INFILE_TEMP.format(DIR, MODEL[i], MODEL[i], MON[MM], CYR)
+        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL[i], MODEL[i], MON[MM], CYR)
         print('Reading:', INFILE)
         XPREC[0, 0:9, 24:34, :, :] = read_nc_files(INFILE, 'prec')
     if MODEL[i] == 'CanCM4i':
-        INFILE = INFILE_TEMP.format(DIR, MODEL[i], MODEL[i], MON[MM], CYR)
+        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL[i], MODEL[i], MON[MM], CYR)
         print('Reading:', INFILE)
         x = read_nc_files(INFILE, 'prec')
         x1 = np.moveaxis(x, 1, 2)
         XPREC[0, 0:12, 34:44, :, :] = x1
     if MODEL[i] == 'GEM-NEMO':
-        INFILE = INFILE_TEMP.format(DIR, MODEL[i], MODEL[i], MON[MM], CYR)
+        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL[i], MODEL[i], MON[MM], CYR)
         print('Reading:', INFILE)
         x = read_nc_files(INFILE, 'prec')
         x1 = np.moveaxis(x, 1, 2)
         XPREC[0, 0:12, 44:54, :, :] = x1
     if MODEL[i] == 'COLA-RSMAS-CCSM4':
-        INFILE = INFILE_TEMP.format(DIR, MODEL[i], MODEL[i], MON[MM], CYR)
+        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL[i], MODEL[i], MON[MM], CYR)
         print('Reading:', INFILE)
         XPREC[0, 0:12, 54:64, :, :] = read_nc_files(INFILE, 'prec')
     if MODEL[i] == 'GFDL-SPEAR':
-        INFILE = INFILE_TEMP.format(DIR, MODEL[i], MODEL[i], MON[MM], CYR)
+        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL[i], MODEL[i], MON[MM], CYR)
         print('Reading:', INFILE)
         XPREC[0, 0:12, 64:94, :, :] = read_nc_files(INFILE, 'prec')
 
@@ -166,7 +162,7 @@ for m in range(0, 94):
         jy = YR+LDYR[MM, l]
         l1 = LEADS1[MM, l]
         print('Year:', jy, ',leads:', l1)
-        OUTDIR = OUTDIR_TEMPLATE.format(DIR1, MONTH[MM], YR, m+1)
+        OUTDIR = OUTDIR_TEMPLATE.format(NMME_OUTPUT_DIR, MONTH[MM], YR, m+1)
         OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, MONTH[MM], jy, l1)
         if not os.path.exists(OUTDIR):
             os.makedirs(OUTDIR)

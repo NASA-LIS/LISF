@@ -36,16 +36,16 @@ resolution_x, resolution_y, time_increment):
     """write netcdf"""
     rootgrp = nc.Dataset(outfile, 'w', format='NETCDF4_CLASSIC')
     time = rootgrp.createDimension('time', None)
-    longitude = rootgrp.createDimension('lon', len(lons))
-    latitude = rootgrp.createDimension('lat', len(lats))
+    longitude = rootgrp.createDimension('longitude', len(lons))
+    latitude = rootgrp.createDimension('latitude', len(lats))
 
-    longitudes = rootgrp.createVariable('lon', 'f4', ('lon',))
-    latitudes = rootgrp.createVariable('lat', 'f4', ('lat',))
+    longitudes = rootgrp.createVariable('longitude', 'f4', ('longitude',))
+    latitudes = rootgrp.createVariable('latitude', 'f4', ('latitude',))
     times = rootgrp.createVariable('time', 'f4', ('time', ))
 
     # two dimensions unlimited.
-    varname = rootgrp.createVariable(varname, 'f4', ('time', 'lat', \
-    'lon',), fill_value=-9999, zlib=True, \
+    varname = rootgrp.createVariable(varname, 'f4', ('time', 'latitude', \
+    'longitude',), fill_value=-9999, zlib=True, \
     least_significant_digit=sig_digit)
     import time
     rootgrp.missing_value = -9999
@@ -53,10 +53,10 @@ resolution_x, resolution_y, time_increment):
     rootgrp.zenith_interp = "true,false,"
     rootgrp.MAP_PROJECTION = "EQUIDISTANT CYLINDRICAL"
     rootgrp.conventions = "CF-1.6"
-    rootgrp.south_west_corner_lat = float(south_west_corner_lat)
-    rootgrp.south_west_corner_lon = float(south_west_corner_lon)
-    rootgrp.north_east_corner_lat = float(north_east_corner_lat)
-    rootgrp.north_east_corner_lon = float(north_east_corner_lon)
+    rootgrp.SOUTH_WEST_CORNER_LAT = float(south_west_corner_lat)
+    rootgrp.SOUTH_WEST_CORNER_LON = float(south_west_corner_lon)
+    rootgrp.NORTH_EAST_CORNER_LAT = float(north_east_corner_lat)
+    rootgrp.NORTH_EAST_CORNER_LON = float(north_east_corner_lon)
     rootgrp.DX = resolution_x
     rootgrp.DY = resolution_y
     rootgrp.history = 'Created ' + time.ctime(time.time())
@@ -174,13 +174,15 @@ for MON in [INIT_FCST_MON]:
                 MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens1, MONTH_NAME, \
                 FCST_YEAR, FCST_MONTH)
             print("Reading raw monthly forecast {}".format(MONTHLY_INFILE))
-            MONTHLY_INPUT_RAW_DATA = read_nc_files(MONTHLY_INFILE, FCST_VAR)[0,]
+            # TODO I changed this to instead be calculated from the raw input a few lines down
+            #MONTHLY_INPUT_RAW_DATA = read_nc_files(MONTHLY_INFILE, FCST_VAR)[0,]
             # Sub-Daily raw data
             SUBDAILY_INFILE = SUBDAILY_INFILE_TEMPLATE.format(\
             SUBDAILY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
             FCST_YEAR, FCST_MONTH)
             print("Reading raw sub-daily forecast {}".format(SUBDAILY_INFILE))
             INPUT_RAW_DATA = read_nc_files(SUBDAILY_INFILE, FCST_VAR)
+            MONTHLY_INPUT_RAW_DATA = np.mean(INPUT_RAW_DATA, axis=0)
             print("MONTHLY_BC_DATA: {}".format(MON_BC_DATA.shape))
             print("MONTHLY_INPUT_RAW_DATA: {}".format(\
             MONTHLY_INPUT_RAW_DATA.shape))
