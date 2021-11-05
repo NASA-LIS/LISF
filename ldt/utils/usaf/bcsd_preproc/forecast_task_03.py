@@ -14,84 +14,98 @@
 """
 
 # Standard modules
+import configparser
 import os
 import subprocess
 import sys
 
-# Local constants.  FIXME:  Put in single location for whole system
-
-# Path of the main project directory:
-_PROJDIR = '/discover/nobackup/projects/usaf_lis/razamora/GHI_S2S/AFRICOM'
-
-# Path of the directory where all the download codes are kept:
-_SRCDIR = "{}/scripts/code_library".format(_PROJDIR)
-#
-# Path for where raw and bias corrected forecast files are located:
-#
-_FORCEDIR="{}/data/forecast/NMME".format(_PROJDIR)
-NMME_DOWNLOAD_DIR="{}/raw/download".format(_FORCEDIR)
-NMME_OUTPUT_DIR="{}/raw/Monthly".format(_FORCEDIR)
-SUPPLEMENTARY_DIR="{}/supplementary_files".format(_SRCDIR)
-
 # Local methods
 def _usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: {} currentmon1 currentyear".format(sys.argv[0])
+    txt = f"[INFO] Usage: {(sys.argv[0])} MONTH_NUM CURRENT_YEAR CONFIG_FILE"
     print(txt)
     print("[INFO] where")
-    print("[INFO] currentmon1: Current integer month")
-    print("[INFO] currentyear: Current year")
+    print("[INFO] MONTH_NUM: Current integer month")
+    print("[INFO] CURRENT_YEAR: Current year")
+    print("[INFO] CONFIG_FILE: Config file that sets up environment")
 
 def _read_cmd_args():
     """Read command line arguments."""
 
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
 
     try:
-        currentmon1 = int(sys.argv[1])
+        MONTH_NUM = int(sys.argv[1])
     except ValueError:
-        print("[ERR] Invalid argument for currentmon1!  Received {}" \
-            .format(sys.argv[1]))
+        print(f"[ERR] Invalid argument for MONTH_NUM! Received {(sys.argv[1])}")
         _usage()
         sys.exit(1)
-    if currentmon1 < 0:
-        print("[ERR] Invalid argument for currentmon1!  Received {}" \
-              .format(sys.argv[1]))
+    if MONTH_NUM < 0:
+        print(f"[ERR] Invalid argument for MONTH_NUM! Received {(sys.argv[1])}")
         _usage()
         sys.exit(1)
 
     try:
-        currentyear = int(sys.argv[2])
+        CURRENT_YEAR = int(sys.argv[2])
     except ValueError:
-        print("[ERR] Invalid argument for currentyear!  Received %s" \
-              %(sys.argv[2]))
+        print(f"[ERR] Invalid argument for CURRENT_YEAR! Received {(sys.argv[2])}")
         _usage()
         sys.exit(1)
-    if currentyear < 0:
-        print("[ERR] Invalid argument for currentyear!  Received %s" \
-              %(sys.argv[2]))
+    if CURRENT_YEAR < 0:
+        print(f"[ERR] Invalid argument for CURRENT_YEAR! Received {(sys.argv[2])}")
         _usage()
         sys.exit(1)
 
-    return currentmon1, currentyear
+    # CONFIG_FILE
+    CONFIG_FILE = sys.argv[3]
+    if not os.path.exists(CONFIG_FILE):
+        print(f"[ERR] {CONFIG_FILE} does not exist!")
+        sys.exit(1)
+
+    return MONTH_NUM, CURRENT_YEAR, CONFIG_FILE
+
+def read_config(CONFIG_FILE):
+    """Read from bcsd_preproc config file."""
+    config = configparser.ConfigParser()
+    config.read(CONFIG_FILE)
+    return config
 
 def _driver():
     """Main driver."""
-    currentmon1, currentyear = _read_cmd_args()
+    MONTH_NUM, CURRENT_YEAR, CONFIG_FILE = _read_cmd_args()
+
+    # Setup local directories
+    config = read_config(CONFIG_FILE)
+
+    # Path of the main project directory
+    PROJDIR = config["bcsd_preproc"]["projdir"]
+
+    # Path of the directory where all the BC codes are kept
+    SRCDIR = config["bcsd_preproc"]["srcdir"]
+
+    # Path of the directory where supplementary files are kept
+    SUPPLEMENTARY_DIR = config["bcsd_preproc"]["supplementary_dir"]
+
+    # Path for where raw and bias corrected forecast files are located:
+    NMME_DOWNLOAD_DIR = config["bcsd_preproc"]["nmme_download_dir"]
+    FORCEDIR = f"{PROJDIR}/data/forecast/NMME"
+    NMME_OUTPUT_DIR=f"{FORCEDIR}/raw/Monthly"
+
     cmd = "python"
-    cmd += " {srcdir}/nmme_reorg_f.py".format(srcdir=_SRCDIR)
-    cmd += " {currentmon1}".format(currentmon1=currentmon1)
-    cmd += " {currentyear}".format(currentyear=currentyear)
-    cmd += " {NMME_DOWNLOAD_DIR}".format(NMME_DOWNLOAD_DIR=NMME_DOWNLOAD_DIR)
-    cmd += " {NMME_OUTPUT_DIR}".format(NMME_OUTPUT_DIR=NMME_OUTPUT_DIR)
-    cmd += " {SUPPLEMENTARY_DIR}".format(SUPPLEMENTARY_DIR=SUPPLEMENTARY_DIR)
+    cmd += f" {SRCDIR}/nmme_reorg_f.py"
+    cmd += f" {MONTH_NUM}"
+    cmd += f" {CURRENT_YEAR}"
+    cmd += f" {NMME_DOWNLOAD_DIR}"
+    cmd += f" {NMME_OUTPUT_DIR}"
+    cmd += f" {SUPPLEMENTARY_DIR}"
     returncode = subprocess.call(cmd, shell=True)
     if returncode != 0:
-        print("[ERR] Problem calling python script: {}".format(cmd))
+        print(f"[ERR] Problem calling python script: {cmd}.")
         sys.exit(1)
 
 if __name__ == "__main__":
     _driver()
+

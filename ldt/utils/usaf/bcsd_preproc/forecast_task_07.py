@@ -17,20 +17,10 @@
 # Standard modules
 #
 
+import configparser
 import os
 import subprocess
 import sys
-
-#
-# Local constants.  FIXME:  Put in single location for whole system
-#
-
-# Path of the main project directory
-PROJDIR='/discover/nobackup/projects/usaf_lis/razamora/GHI_S2S/AFRICOM'
-
-# Number of precip ensembles needed
-RANGE_ENS_FCST=list(range(1, 13)) + list(range(1,13)) + list(range(1,7))
-RANGE_ENS_NMME=range(1,31)
 
 #
 # Local methods
@@ -38,61 +28,82 @@ RANGE_ENS_NMME=range(1,31)
 
 def _usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: {} CURRENTYEAR MON".format(sys.argv[0])
+    txt = f"[INFO] Usage: {(sys.argv[0])} current_year month_abbr CONFIG_FILE"
     print(txt)
     print("[INFO] where")
-    print("[INFO] CURRENTYEAR: Current year")
-    print("[INFO] MONTH_ABBR: Current month")
+    print("[INFO] current_year: Current year")
+    print("[INFO] month_abbr: Current month")
+    print("[INFO] CONFIG_FILE: Config file that sets up environment")
 
 def _read_cmd_args():
     """Read command line arguments."""
 
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
 
-    # CURRENT_YEAR
+    # current_year
     try:
-        CURRENT_YEAR = int(sys.argv[1])
+        current_year = int(sys.argv[1])
     except ValueError:
-        print("[ERR] Invalid argument for CURRENT_YEAR!  Received {}" \
-            .format(sys.argv[1]))
+        print(f"[ERR] Invalid argument for current_year!  Received {(sys.argv[1])}")
         _usage()
         sys.exit(1)
-    if CURRENT_YEAR < 0:
-        print("[ERR] Invalid argument for CURRENT_YEAR!  Received {}" \
-              .format(sys.argv[1]))
+    if current_year < 0:
+        print(f"[ERR] Invalid argument for current_year!  Received {(sys.argv[1])}")
         _usage()
         sys.exit(1)
 
-    # MONTH_ABBR
-    MONTH_ABBR = str(sys.argv[2])
+    # month_abbr
+    month_abbr = str(sys.argv[2])
 
-    return CURRENT_YEAR, MONTH_ABBR
+    # CONFIG_FILE
+    CONFIG_FILE = sys.argv[3]
+    if not os.path.exists(CONFIG_FILE):
+        print(f"[ERR] {CONFIG_FILE} does not exist!")
+        sys.exit(1)
+
+    return current_year, month_abbr, CONFIG_FILE
+
+def read_config(CONFIG_FILE):
+    """Read from bcsd_preproc config file."""
+    config = configparser.ConfigParser()
+    config.read(CONFIG_FILE)
+    return config
 
 def _driver():
     """Main driver."""
-    CURRENT_YEAR, MONTH_ABBR = _read_cmd_args()
-    FCST_DATE = "{month_abbr}01".format(month_abbr=MONTH_ABBR)
+    current_year, month_abbr, CONFIG_FILE = _read_cmd_args()
+
+    # Setup local directories
+    config = read_config(CONFIG_FILE)
+
+    # Path of the main project directory
+    PROJDIR = config["bcsd_preproc"]["projdir"]
+
+	# Number of precip ensembles needed
+    RANGE_ENS_FCST=list(range(1, 13)) + list(range(1,13)) + list(range(1,7))
+    RANGE_ENS_NMME=range(1,31)
+
+    fcst_date = f"{month_abbr}01"
 
     # Path for where forecast files are located:
-    INDIR="{}/data/forecast/CFSv2_25km/raw/6-Hourly/{}/{}" \
-        .format(PROJDIR, FCST_DATE, CURRENT_YEAR)
+    indir=f"{PROJDIR}/data/forecast/CFSv2_25km/raw/6-Hourly/{fcst_date}/{current_year}"
 
     # Path for where the linked precip files should be placed:
-    OUTDIR="{}/data/forecast/NMME/linked_cfsv2_precip_files/{}/{}" \
-        .format(PROJDIR, FCST_DATE, CURRENT_YEAR)
+    outdir=f"{PROJDIR}/data/forecast/NMME/linked_cfsv2_precip_files/{fcst_date}/{current_year}"
 
-    if not os.path.exists(OUTDIR):
-        os.makedirs(OUTDIR)
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
 
-    for iens in range(len(RANGE_ENS_FCST)):
-        SRC_FILE="{}/ens{}".format(INDIR, RANGE_ENS_FCST[iens])
-        DST_FILE="{}/ens{}".format(OUTDIR, RANGE_ENS_NMME[iens])
+#    for iens in range(len(RANGE_ENS_FCST)):
+    for iens, ens_value in enumerate(RANGE_ENS_FCST):
+        src_file=f"{indir}/ens{RANGE_ENS_FCST[iens]}"
+        dst_file=f"{outdir}/ens{RANGE_ENS_NMME[iens]}"
 
-        cmd = "ln -sfn {src_file} {dst_file}" \
-            .format(src_file=SRC_FILE, dst_file=DST_FILE)
+        cmd = f"ln -sfn {src_file} {dst_file}"
+        print(cmd)
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
             print("[ERR] Problem calling creating symbolic links!")
@@ -105,3 +116,4 @@ def _driver():
 #
 if __name__ == "__main__":
     _driver()
+
