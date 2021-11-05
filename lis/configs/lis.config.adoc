@@ -1165,6 +1165,7 @@ Acceptable values are:
 |"`MCD15A2H LAI`"               | MODIS MCD15A2H v006 LAI product
 |"`SMOS NRT NN soil moisture`"  | SMOS Level 2 Soil Moisture Near Real Time Neural Network
 |"`THySM`"                      | Thermal Hydraulic disaggregation of Soil Moisture
+|"`SNODAS`"                     | SNODAS snow depth
 |====
 
 .Example _lis.config_ entry
@@ -3183,6 +3184,17 @@ THySM use scaled standard deviation model:     0
 THySM model CDF file:                          LSMSM.nc
 THySM observation CDF file:                    THySM.nc
 THySM soil moisture number of bins in the CDF: 100
+....
+
+[[sssec_snodasda,SNODAS snow depth assimilation]]
+==== SNODAS snow depth assimilation
+
+`SNODAS data directory:` specifies the directory for the
+SNODAS data.
+
+.Example _lis.config_ entry
+....
+SNODAS snow depth data directory:                  ./FORCING/SNODAS
 ....
 
 [[ssec_rtms,Radiative Transfer/Forward Models]]
