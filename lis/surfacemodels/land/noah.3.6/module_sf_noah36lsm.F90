@@ -102,7 +102,10 @@ CONTAINS
 ! Save soil surface temperature for output - D. Mocko
                        LVCOEF,TSOIL,                                    &
                        SFHEAD1RT,                                       &    !I
-                       INFXS1RT,ETPND1,RESSNOWFIX)                           !P,P,C
+                       INFXS1RT,ETPND1,RESSNOWFIX,                      &    !P,P,C
+                       !ag (04Jan2021) 2-way coupling variables from routing scheme
+                       rivsto  , fldsto, fldfrc)                             !I
+
 ! ----------------------------------------------------------------------
 ! SUBROUTINE SFLX - UNIFIED NOAHLSM VERSION 1.0 JULY 2007
 ! ----------------------------------------------------------------------
@@ -374,6 +377,10 @@ CONTAINS
       REAL :: Z0MIN,     Z0MAX
 #endif
 
+      !ag (04Jan2021) 2-way coupling variables from routing scheme
+      REAL                        , INTENT(IN)    :: rivsto  !river storage [m/s]
+      REAL                        , INTENT(IN)    :: fldsto  !flood storage [m/s]
+      REAL                        , INTENT(IN)    :: fldfrc  !flooded fraction flag (zero or 1)
 ! ----------------------------------------------------------------------
 ! DECLARATIONS - PARAMETERS
 ! ----------------------------------------------------------------------
@@ -793,7 +800,9 @@ CONTAINS
                             RUNOFF3,EDIR,EC,ET,ETT,NROOT,RTDIS,          &
                             QUARTZ,FXEXP,CSOIL,                          &
                             BETA,DRIP,DEW,FLX1,FLX3,VEGTYP,ISURBAN,      &
-                            SFHEAD1RT,INFXS1RT,ETPND1)
+                            SFHEAD1RT,INFXS1RT,ETPND1,                   &
+                           !ag (05Jan2021) 2-way coupling variables from routing scheme
+                           rivsto,fldsto,fldfrc)
             ETA_KINEMATIC = ETA
             TSOIL = T1
          ELSE
@@ -811,7 +820,9 @@ CONTAINS
                          ISURBAN,                                        &
                          VEGTYP,TSOIL,                                   &
                          ETPN,FLX4,UA_PHYS,                              &
-                         SFHEAD1RT,INFXS1RT,ETPND1)
+                         SFHEAD1RT,INFXS1RT,ETPND1,                      &
+                         !ag (05Jan2021) 2-way coupling variables from routing scheme
+                         rivsto,fldsto,fldfrc)
             ETA_KINEMATIC =  ESNOW + ETNS
          END IF
 
@@ -1923,7 +1934,9 @@ CONTAINS
                          QUARTZ,FXEXP,CSOIL,                            &
                          BETA,DRIP,DEW,FLX1,FLX3,VEGTYP,ISURBAN,        &
 !DJG NDHMS/WRF-Hydro edit...
-                         SFHEAD1RT,INFXS1RT,ETPND1)
+                         SFHEAD1RT,INFXS1RT,ETPND1,&
+                         !ag (05Jan2021) 2-way coupling variables from routing scheme
+                         rivsto,fldsto,fldfrc)
 
 ! ----------------------------------------------------------------------
 ! SUBROUTINE NOPAC
@@ -1956,6 +1969,10 @@ CONTAINS
       REAL                 :: EC1,EDIR1,ETT1,DF1,ETA1,ETP1,PRCP1,YY,    &
                               YYNUM,ZZ1
 
+      !ag (05Jan2021) 2-way coupling variables from routing scheme
+      REAL                        , INTENT(IN)    :: rivsto  !river storage [m/s]
+      REAL                        , INTENT(IN)    :: fldsto  !flood storage [m/s]
+      REAL                        , INTENT(IN)    :: fldfrc  !flooded fraction flag (zero or 1)
 ! ----------------------------------------------------------------------
 ! EXECUTABLE CODE BEGINS HERE:
 ! CONVERT ETP AND PRCP FROM KG M-2 S-1 TO M S-1 AND INITIALIZE DEW.
@@ -1994,7 +2011,9 @@ CONTAINS
                       SHDFAC,CMCMAX,                                    &
                       RUNOFF1,RUNOFF2,RUNOFF3,                          &
                       EDIR1,EC1,ET1,                                    &
-                      DRIP,SFHEAD1RT,INFXS1RT)
+                      DRIP,SFHEAD1RT,INFXS1RT,&
+                      !ag (05Jan2021) 2-way coupling variables from routing scheme
+                      rivsto,fldsto,fldfrc)
 
 ! ----------------------------------------------------------------------
 ! CONVERT MODELED EVAPOTRANSPIRATION FROM  M S-1  TO  KG M-2 S-1.
@@ -2020,7 +2039,9 @@ CONTAINS
                       SHDFAC,CMCMAX,                                    &
                       RUNOFF1,RUNOFF2,RUNOFF3,                          &
                       EDIR1,EC1,ET1,                                    &
-                      DRIP,SFHEAD1RT,INFXS1RT)
+                      DRIP,SFHEAD1RT,INFXS1RT,&
+                      !ag (05Jan2021) 2-way coupling variables from routing scheme
+                      rivsto,fldsto,fldfrc)
 
 ! ----------------------------------------------------------------------
 ! CONVERT MODELED EVAPOTRANSPIRATION FROM 'M S-1' TO 'KG M-2 S-1'.
@@ -2571,7 +2592,9 @@ CONTAINS
      &                   SHDFAC,CMCMAX,                                 &
      &                   RUNOFF1,RUNOFF2,RUNOFF3,                       &
      &                   EDIR,EC,ET,                                    &
-     &                   DRIP,SFHEAD1RT,INFXS1RT)
+     &                   DRIP,SFHEAD1RT,INFXS1RT,                       &
+                         !ag (05Jan2021) 2-way coupling variables from routing scheme
+                         rivsto,fldsto,fldfrc)
 
 ! ----------------------------------------------------------------------
 ! SUBROUTINE SMFLX
@@ -2600,6 +2623,11 @@ CONTAINS
       REAL :: FLIMIT
 
       REAL,    INTENT(INOUT)                 :: SFHEAD1RT,INFXS1RT
+
+      !ag (05Jan2021) 2-way coupling variables from routing scheme
+      REAL                        , INTENT(IN)    :: rivsto  !river storage [m/s]
+      REAL                        , INTENT(IN)    :: fldsto  !flood storage [m/s]
+      REAL                        , INTENT(IN)    :: fldfrc  !flooded fraction flag (zero or 1)
 
 ! ----------------------------------------------------------------------
 ! EXECUTABLE CODE BEGINS HERE.
@@ -2673,6 +2701,12 @@ CONTAINS
     PCPDRP = PCPDRP + SFHEAD1RT/1000./DT   ! convert SFHEAD1RT to (m/s)
 #endif
 
+    !ag(05Jan2021)
+    !if flooded fraction flag is 1, i.e., if flooded fraction is above threshold, add river and flood storages to precip drip PCPDRP
+    if(fldfrc==1)then
+      PCPDRP = PCPDRP + (rivsto + fldsto) !surface water storage units are in m/s (See HYMAP2_routing_run.F90 and noahmp36_getsws_hymap2.F90)
+    endif
+
       IF ( ( (PCPDRP * DT) > (0.0001*1000.0* (- ZSOIL (1))* SMCMAX) )   &
            .OR. (FAC2 > FLIMIT) ) THEN
          CALL SRT (RHSTT,EDIR,ET,SH2O,SH2O,NSOIL,PCPDRP,ZSOIL,          &
@@ -2699,6 +2733,12 @@ CONTAINS
          CALL SSTEP (SH2O,SH2O,CMC,RHSTT,RHSCT,DT,NSOIL,SMCMAX,         &
                      CMCMAX,RUNOFF3,ZSOIL,SMC,SICE,AI,BI,CI,INFXS1RT)
 !      RUNOF = RUNOFF
+
+    !ag(05Jan2021)
+    !if flooded fraction flag is 0, i.e., if flooded fraction is below threshold, add river and flood storages to RUNSRF after vertical water balance
+    if(fldfrc==0)then
+      RUNOFF1 = RUNOFF1 + (rivsto + fldsto) !surface water storage units are in m/s (See HYMAP2_routing_run.F90 and noahmp36_getsws_hymap2.F90)
+    endif
 
       END IF
 
@@ -2914,7 +2954,9 @@ CONTAINS
                           ISURBAN,                                      &
                           VEGTYP,YY,                                    &
                           ETPN,FLX4,UA_PHYS,                            &
-                          SFHEAD1RT,INFXS1RT,ETPND1)
+                          SFHEAD1RT,INFXS1RT,ETPND1,                    &
+                         !ag (05Jan2021) 2-way coupling variables from routing scheme
+                         rivsto,fldsto,fldfrc)
 
 ! ----------------------------------------------------------------------
 ! SUBROUTINE SNOPAC
@@ -2970,6 +3012,11 @@ CONTAINS
       REAL, INTENT(INOUT)   :: FLX4     ! UA: energy removed by canopy
       REAL, INTENT(IN)      :: ETPN     ! UA: adjusted pot. evap. [mm/s]
       REAL                  :: ETP1N    ! UA: adjusted pot. evap. [m/s]
+
+      !ag (05Jan2021) 2-way coupling variables from routing scheme
+      REAL                        , INTENT(IN)    :: rivsto  !river storage [m/s]
+      REAL                        , INTENT(IN)    :: fldsto  !flood storage [m/s]
+      REAL                        , INTENT(IN)    :: fldfrc  !flooded fraction flag (zero or 1)
 
 ! ----------------------------------------------------------------------
 ! EXECUTABLE CODE BEGINS HERE:
@@ -3235,7 +3282,9 @@ CONTAINS
                    SHDFAC,CMCMAX,                                    &
                    RUNOFF1,RUNOFF2,RUNOFF3,                          &
                    EDIR1,EC1,ET1,                                    &
-                   DRIP,SFHEAD1RT,INFXS1RT)
+                   DRIP,SFHEAD1RT,INFXS1RT,                          &
+                   !ag (05Jan2021) 2-way coupling variables from routing scheme
+                   rivsto,fldsto,fldfrc)
 ! ----------------------------------------------------------------------
 ! BEFORE CALL SHFLX IN THIS SNOWPACK CASE, SET ZZ1 AND YY ARGUMENTS TO
 ! SPECIAL VALUES THAT ENSURE THAT GROUND HEAT FLUX CALCULATED IN SHFLX
