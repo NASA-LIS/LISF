@@ -483,6 +483,24 @@ module LIS_histDataMod
   public ::   LIS_MOC_SNOWSURFACEQ
   !public ::   LIS_MOC_SNOWWIND_DIR
 
+  ! MMF SW
+  !public :: LIS_MOC_SMCWTD 
+  public :: LIS_MOC_QRF
+  public :: LIS_MOC_QRFS
+  public :: LIS_MOC_QSPRING
+  public :: LIS_MOC_QSPRINGS
+  public :: LIS_MOC_QSLAT
+  public :: LIS_MOC_RECH
+  public :: LIS_MOC_DEEPRECH
+  !integer :: LIS_MOC_SMCWTD =  -9999
+  integer :: LIS_MOC_QRF = -9999
+  integer :: LIS_MOC_QRFS = -9999
+  integer :: LIS_MOC_DEEPRECH = -9999
+  integer :: LIS_MOC_QSPRING = -9999
+  integer :: LIS_MOC_QSPRINGS = -9999
+  integer :: LIS_MOC_QSLAT = -9999
+  integer :: LIS_MOC_RECH = -9999
+
   integer :: LIS_MOC_SNOW_SOOT = -9999
   integer :: LIS_MOC_GRND_SNOW = -9999
   integer :: LIS_MOC_SURFT_SNOW = -9999
@@ -1148,6 +1166,115 @@ contains
 !-------------------------------------------------------------------------
 ! read the meta data attributes for each variable
 !-------------------------------------------------------------------------
+  !!! MMF scheme 
+    !call ESMF_ConfigFindLabel(modelSpecConfig,"SmcWtd:",rc=rc)
+    !call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+    !     "SmcWtd",&
+    !     "soil_moisture_between_bottom_of_the_soil_and_the_water_table",&
+    !     "soil moisture between bottom of the soil and the water table",rc)
+    !if ( rc == 1 ) then
+    !   call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SMCWTD,&
+    !        LIS_histData(n)%head_lsm_list,&
+    !        n,1,ntiles,(/"m3/m3"/),1,(/"-"/),1,112,0,&
+    !        model_patch=.true.)
+    !endif
+    
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Qrf:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Qrf",&
+         "groundwater_river_water_flux",&
+         "groundwater river water flux",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_QRF,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,112,0,&
+            model_patch=.true.)
+    endif
+    
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Qrfs:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Qrfs",&
+         "cumulated_groundwater_river_water_flux",&
+         "cumulated groundwater river water flux",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_QRFS,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,112,0,&
+            model_patch=.true.)
+    endif
+    
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Qspring:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Qspring",&
+         "water_springing_at_the_surface_from_groundwater_convergence_in_the_column",&
+         "water springing at the surface from groundwater convergence in the column",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_QSPRING,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,112,0,&
+            model_patch=.true.)
+    endif
+    
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Qsprings:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Qsprings",&
+         "accumulated_water_springing_at_the_surface_from_groundwater_convergence_in_the_column",&
+         "accumulated water springing at the surface from groundwater convergence in the column",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_QSPRINGS,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,112,0,&
+            model_patch=.true.)
+    endif
+    
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Qslat:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Qslat",&
+         "accumulated_lateral_flow", &
+         "accumulated lateral flow",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_QSLAT,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,112,0,&
+            model_patch=.true.)
+    endif
+    
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Rech:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Rech",&
+         "accumulated_recharge", &
+         "accumulated recharge",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_RECH,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,112,0,&
+            model_patch=.true.)
+    endif
+    
+    call ESMF_ConfigFindLabel(modelSpecConfig,"DeepRech:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Rech",&
+         "accumulated_recharge_when_deep", &
+         "accumulated recharge when deep",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_DEEPRECH,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,112,0,&
+            model_patch=.true.)
+    endif
+    
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Qrfs:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Qrfs",&
+         "accumulated_groundwater_river_water_flux",&
+         "accumulated groundwater river water flux",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_QRFS,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,112,0,&
+            model_patch=.true.)
+    endif
+
   !!! JULES
     call ESMF_ConfigFindLabel(modelSpecConfig,"SnowSoot:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &

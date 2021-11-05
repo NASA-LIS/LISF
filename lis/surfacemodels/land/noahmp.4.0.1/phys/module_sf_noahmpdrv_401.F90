@@ -1687,7 +1687,7 @@ SUBROUTINE PEDOTRANSFER_SR2006(nsoil,sand,clay,orgm,parameters)
              else
                    waxy       (I,J) = 0.
                    wtxy       (I,J) = 0.
-                   areaxy     (I,J) = (DX * DY) / ( MSFTX(I,J) * MSFTY(I,J) )
+                   !areaxy     (I,J) = (DX * DY) / ( MSFTX(I,J) * MSFTY(I,J) )! SW, we calculate areaxy outside
              endif
 
            IF(IVGTYP(I,J) == ISBARREN_TABLE .OR. IVGTYP(I,J) == ISICE_TABLE .OR. &
@@ -2007,10 +2007,12 @@ SUBROUTINE PEDOTRANSFER_SR2006(nsoil,sand,clay,orgm,parameters)
           ZSOIL(NS)       = ZSOIL(NS-1) - DZS(NS)
        END DO
 
+        ! SW,kludge solution to solve boundary divide by zero
+       !itf=min0(ite,ide-1)
+       !jtf=min0(jte,jde-1)
 
-       itf=min0(ite,ide-1)
-       jtf=min0(jte,jde-1)
-
+       itf=min0(ite,ide) ! SW
+       jtf=min0(jte,jde) ! SW 
 
     WHERE(IVGTYP.NE.ISWATER_TABLE.AND.IVGTYP.NE.ISICE_TABLE)
          LANDMASK=1

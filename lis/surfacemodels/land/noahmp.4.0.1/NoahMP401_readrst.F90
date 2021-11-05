@@ -434,6 +434,15 @@ subroutine NoahMP401_readrst()
                     NOAHMP401_struc(n)%noahmp401(t)%gecros_state(l) = tmptilen(t)
                 enddo
             enddo
+            !SW for MMF 
+            if(NOAHMP401_struc(n)%run_opt==5) then
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%qslat, &
+                                         varname="QSLAT", wformat=wformat)
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%qrfs, &
+                                         varname="QRFS", wformat=wformat)
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%qsprings, &
+                                         varname="QSPRINGS", wformat=wformat)
+            endif
         
             ! close restart file
             if(wformat .eq. "binary") then

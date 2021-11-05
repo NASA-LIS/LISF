@@ -61,8 +61,8 @@ subroutine NoahMP401_setup()
     implicit none
     integer           :: mtype
     integer           :: t, k, n
-    integer           :: col, row
-    real, allocatable :: placeholder(:,:)
+    integer           :: col, row, ridx, cidx
+    real, allocatable :: placeholder(:,:), tmp
     integer       :: soilcolor, vegtyp, soiltyp(4), slopetyp, croptype    
     mtype = LIS_rc%lsm_index
     
@@ -227,6 +227,173 @@ subroutine NoahMP401_setup()
                     NOAHMP401_struc(n)%noahmp401(t)%soilcomp(k) = placeholder(col, row)
                 enddo 
             enddo 
+        endif
+        
+        ! MMF scheme support, SW, 09142021 
+        if(NOAHMP401_struc(n)%run_opt .eq. 5) then
+            ! read: fdepth
+            write(LIS_logunit,*) "[INFO] Noah-MP.4.0.1 reading parameter FDEPTH from ", &
+                 trim(LIS_rc%paramfile(n))
+            call LIS_read_param(n, "MMF_FDEPTH", placeholder)
+            !! Note: the tile based data structure introduce missing values to MMF parameters where landmask=0
+            do t = 1, LIS_rc%npatch(n, mtype)
+                col = LIS_surface(n, mtype)%tile(t)%col
+                row = LIS_surface(n, mtype)%tile(t)%row
+                NOAHMP401_struc(n)%noahmp401(t)%fdepth = placeholder(col, row)
+            enddo 
+            !!! the 2-D array should solve the missing values of MMF parameters where landmask=0
+            do ridx = NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
+                do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
+                    row = ridx - NOAHMP401_struc(n)%row_min + 1
+                    col = cidx - NOAHMP401_struc(n)%col_min + 1
+                    NOAHMP401_struc(n)%fdepth(ridx, cidx) = placeholder(col, row) 
+                enddo
+            enddo
+
+            ! read: area
+            write(LIS_logunit,*) "[INFO] Noah-MP.4.0.1 reading parameter AREA from ", &
+                 trim(LIS_rc%paramfile(n))
+            call LIS_read_param(n, "AREAXY", placeholder)
+            do t = 1, LIS_rc%npatch(n, mtype)
+                col = LIS_surface(n, mtype)%tile(t)%col
+                row = LIS_surface(n, mtype)%tile(t)%row
+                NOAHMP401_struc(n)%noahmp401(t)%area = placeholder(col, row)*1E6 ! m2
+            enddo 
+            ! 2-D array  
+            do ridx = NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
+                do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
+                    row = ridx - NOAHMP401_struc(n)%row_min + 1
+                    col = cidx - NOAHMP401_struc(n)%col_min + 1
+                    NOAHMP401_struc(n)%area(ridx, cidx) = placeholder(col, row)*1E6 ! m2
+                enddo
+            enddo
+            ! read: topo 
+            write(LIS_logunit,*) "[INFO] Noah-MP.4.0.1 reading parameter TOPO/ELEVATION from ", &
+                 trim(LIS_rc%paramfile(n))
+            call LIS_read_param(n, "MMF_HGTM", placeholder)
+            do t = 1, LIS_rc%npatch(n, mtype)
+                col = LIS_surface(n, mtype)%tile(t)%col
+                row = LIS_surface(n, mtype)%tile(t)%row
+                NOAHMP401_struc(n)%noahmp401(t)%topo = placeholder(col, row)
+            enddo 
+            ! 2-D array  
+            do ridx = NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
+                do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
+                    row = ridx - NOAHMP401_struc(n)%row_min + 1
+                    col = cidx - NOAHMP401_struc(n)%col_min + 1
+                    NOAHMP401_struc(n)%topo(ridx, cidx) = placeholder(col, row) 
+                enddo
+            enddo
+            ! read: eqwtd
+            write(LIS_logunit,*) "[INFO] Noah-MP.4.0.1 reading parameter EQWTD from ", &
+                 trim(LIS_rc%paramfile(n))
+            call LIS_read_param(n, "MMF_EQWTD", placeholder)
+            do t = 1, LIS_rc%npatch(n, mtype)
+                col = LIS_surface(n, mtype)%tile(t)%col
+                row = LIS_surface(n, mtype)%tile(t)%row
+                NOAHMP401_struc(n)%noahmp401(t)%eqwtd = placeholder(col, row)
+            enddo 
+            ! 2-D array  
+            do ridx = NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
+                do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
+                    row = ridx - NOAHMP401_struc(n)%row_min + 1
+                    col = cidx - NOAHMP401_struc(n)%col_min + 1
+                    NOAHMP401_struc(n)%eqwtd(ridx, cidx) = placeholder(col, row) 
+                enddo
+            enddo
+            ! read: RECHCLIM
+            write(LIS_logunit,*) "[INFO] Noah-MP.4.0.1 reading parameter RECHCLIM from ", &
+                 trim(LIS_rc%paramfile(n))
+            call LIS_read_param(n, "MMF_RECHCLIM", placeholder)
+            do t = 1, LIS_rc%npatch(n, mtype)
+                col = LIS_surface(n, mtype)%tile(t)%col
+                row = LIS_surface(n, mtype)%tile(t)%row
+                NOAHMP401_struc(n)%noahmp401(t)%rechclim = placeholder(col, row)
+            enddo 
+            ! 2-D array  
+            do ridx = NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
+                do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
+                    row = ridx - NOAHMP401_struc(n)%row_min + 1
+                    col = cidx - NOAHMP401_struc(n)%col_min + 1
+                    NOAHMP401_struc(n)%rechclim(ridx, cidx) = placeholder(col, row) 
+                enddo
+            enddo
+            ! read: riverbed 
+            write(LIS_logunit,*) "[INFO] Noah-MP.4.0.1 reading parameter RIVERBED from ", &
+                 trim(LIS_rc%paramfile(n))
+            call LIS_read_param(n, "MMF_RIVERBED", placeholder)
+            do t = 1, LIS_rc%npatch(n, mtype)
+                col = LIS_surface(n, mtype)%tile(t)%col
+                row = LIS_surface(n, mtype)%tile(t)%row
+                NOAHMP401_struc(n)%noahmp401(t)%riverbed = placeholder(col, row)
+            enddo 
+            ! 2-D array  
+            do ridx = NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
+                do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
+                    row = ridx - NOAHMP401_struc(n)%row_min + 1
+                    col = cidx - NOAHMP401_struc(n)%col_min + 1
+                    NOAHMP401_struc(n)%riverbed(ridx, cidx) = placeholder(col, row) 
+                enddo
+            enddo
+            
+            
+            write(LIS_logunit,*) "[INFO] Noah-MP.4.0.1 reading parameter TEXTURE from ", &
+                 trim(LIS_rc%paramfile(n))
+            do k = 1, 16 ! 16 is hardcoded temporarily 
+                call NOAHMP401_read_MULTILEVEL_param(n, "TEXTURE", k, placeholder)
+                ! 2-D array  
+                do ridx = NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
+                    do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
+                        row = ridx - NOAHMP401_struc(n)%row_min + 1
+                        col = cidx - NOAHMP401_struc(n)%col_min + 1
+                        NOAHMP401_struc(n)%soil3d(ridx, cidx, k) = placeholder(col, row) 
+                    enddo
+                enddo
+            enddo 
+            
+            ! determine soil type
+            NOAHMP401_struc(n)%soil2d(:,:) = 1
+            do ridx = NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
+                do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
+                   
+                   do k=2, 16
+                        if(NOAHMP401_struc(n)%soil3d(ridx, cidx, k) >  NOAHMP401_struc(n)%soil3d(ridx, cidx, NOAHMP401_struc(n)%soil2d(ridx,cidx))) then 
+                            NOAHMP401_struc(n)%soil2d(ridx,cidx) = k
+                        endif
+                    enddo 
+                enddo
+            enddo
+            
+            write(LIS_logunit,*) "[INFO] Noah-MP.4.0.1 reading parameter LANDCOVER from ", &
+                 trim(LIS_rc%paramfile(n))
+            do k = 1, 20 ! 20 is hardcoded temporarily 
+                call NOAHMP401_read_MULTILEVEL_param(n, "LANDCOVER", k, placeholder)
+                ! 2-D array  
+                do ridx = NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
+                    do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
+                        row = ridx - NOAHMP401_struc(n)%row_min + 1
+                        col = cidx - NOAHMP401_struc(n)%col_min + 1
+                        NOAHMP401_struc(n)%vege3d(ridx, cidx, k) = placeholder(col, row) 
+                    enddo
+                enddo
+            enddo    
+            ! determine vegetype 
+            NOAHMP401_struc(n)%vege2d(:,:) = 1 ! Crrently, we have 20 layer of land cover for LIS. However, there could be a 21 layer in HRLDAS. vegetation is set to 17 for such case
+            do ridx = NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
+                do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
+                    
+                    do k=2, 20
+                        if(NOAHMP401_struc(n)%vege3d(ridx, cidx, k) >  NOAHMP401_struc(n)%vege3d(ridx, cidx, NOAHMP401_struc(n)%vege2d(ridx,cidx))) then 
+                            NOAHMP401_struc(n)%vege2d(ridx,cidx) = k
+                        endif
+                    enddo 
+
+                    ! if the total fraction from layer 1 to layer 20 is no more than 0.5, this means there is the fraction of the 21st layer is >= 0.5, set the landcover type to be 17 as HRLDAS
+                    if(.not. sum(NOAHMP401_struc(n)%vege3d(ridx, cidx, :))>0.5) then
+                        NOAHMP401_struc(n)%vege2d(ridx,cidx) = 17
+                    endif 
+                enddo
+            enddo
         endif
         deallocate(placeholder)
 

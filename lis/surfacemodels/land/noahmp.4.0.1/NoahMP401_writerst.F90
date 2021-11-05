@@ -259,6 +259,12 @@ subroutine NoahMP401_dump_restart(n, ftn, wformat)
     integer :: tauss_ID
     integer :: smoiseq_ID
     integer :: smcwtd_ID
+    integer :: wtd_ID
+    integer :: qslat_ID
+    integer :: qrfs_ID
+    integer :: qsprings_ID
+    integer :: qrf_ID
+    integer :: qspring_ID
     integer :: deeprech_ID
     integer :: rech_ID
     integer :: grain_ID
@@ -783,4 +789,25 @@ subroutine NoahMP401_dump_restart(n, ftn, wformat)
         call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
                                   varid=gecros_state_ID, dim=l, wformat=wformat)
     enddo
+
+    !SW for MMF 
+    if(NOAHMP401_struc(n)%run_opt==5) then
+        call LIS_writeHeader_restart(ftn, n, dimID, qslat_ID, "QSLAT", &
+                                     "soil moisture content in the layer to the water table when deep", &
+                                     "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%qslat, &
+                                     varid=qslat_ID, dim=1, wformat=wformat)
+
+        call LIS_writeHeader_restart(ftn, n, dimID, qrfs_ID, "QRFS", &
+                                     "soil moisture content in the layer to the water table when deep", &
+                                     "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%qrfs, &
+                                     varid=qrfs_ID, dim=1, wformat=wformat)
+
+        call LIS_writeHeader_restart(ftn, n, dimID, qsprings_ID, "QSPRINGS", &
+                                     "soil moisture content in the layer to the water table when deep", &
+                                     "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%qsprings, &
+                                     varid=qsprings_ID, dim=1, wformat=wformat)
+    endif
 end subroutine NoahMP401_dump_restart
