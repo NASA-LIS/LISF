@@ -4,7 +4,7 @@
 #SBATCH --ntasks=28
 #SBATCH --account s1189
 #SBATCH --output lisdarun.slurm.out
-#SBATCH --mail-user=kristi.r.arsenault@nasa.gov
+#SBATCH --mail-user=
 #SBATCH --mail-type=ALL
 #------------------------------------------------------------------------------
 #
