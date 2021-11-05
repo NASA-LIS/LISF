@@ -14,77 +14,71 @@
 """
 
 # Standard modules
+import configparser
 import os
 import subprocess
 import sys
 
-# Local constants.  FIXME:  Put in single location for whole system
-
-# Path of the main project directory
-_PROJDIR = '/discover/nobackup/projects/usaf_lis/razamora/GHI_S2S/AFRICOM'
-
-# Path of the directory where all the download codes are kept:
-_SRCDIR = "%s/scripts/code_library" %(_PROJDIR)
-
-# Path of the directory to where the patch files for missing data are kept:
-_PATCHDIR = "%s/data/CFSv2_25km/patch_files" %(_PROJDIR)
-
-# Paths for the daily forecast data (input and output paths):
-_FORCEDIR = '/discover/nobackup/projects/lis/MET_FORCING/CFSv2'
-_OUTDIR = "%s/data/forecast/CFSv2_25km/raw" %(_PROJDIR)
-_GRIDDESC = "%s/supplementary_files/CFSv2_25km_AFRICOM_grid_description.txt" \
-    %(_SRCDIR)
-
-# Log file output directory
-_LOGDIR = "%s/scripts/log_files" %(_PROJDIR)
-
 # Local methods
 def _usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: %s fcst_syr fcst_eyr month_abbr" %(sys.argv[0])
+    txt = f"[INFO] Usage: {(sys.argv[0])} fcst_syr fcst_eyr month_abbr "\
+        "CONFIG_FILE"
     print(txt)
     print("[INFO] where")
     print("[INFO] fcst_syr: Start year of forecast")
     print("[INFO] fcst_eyr: End year of forecast")
     print("[INFO] month_abbr: Abbreviated month to start forecast")
+    print("[INFO] CONFIG_FILE: Config file that sets up environment")
 
 def _read_cmd_args():
     """Read command line arguments."""
 
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 5:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
 
+    # fcst_syr
     try:
         fcst_syr = int(sys.argv[1])
     except ValueError:
-        print("[ERR] Invalid argument for fcst_syr!  Received %s" \
-              %(sys.argv[1]))
+        print(f"[ERR] Invalid argument for fcst_syr! Received {(sys.argv[1])}")
         _usage()
         sys.exit(1)
     if fcst_syr < 0:
-        print("[ERR] Invalid argument for fcst_syr!  Received %s" \
-              %(sys.argv[1]))
+        print(f"[ERR] Invalid argument for fcst_syr! Received {(sys.argv[1])}")
         _usage()
         sys.exit(1)
 
+    # fcst_eyr
     try:
         fcst_eyr = int(sys.argv[2])
     except ValueError:
-        print("[ERR] Invalid argument for fcst_eyr!  Received %s" \
-              %(sys.argv[2]))
+        print(f"[ERR] Invalid argument for fcst_eyr! Received {(sys.argv[2])}")
         _usage()
         sys.exit(1)
     if fcst_eyr < 0:
-        print("[ERR] Invalid argument for fcst_eyr!  Received %s" \
-              %(sys.argv[2]))
+        print(f"[ERR] Invalid argument for fcst_eyr! Received {(sys.argv[2])}")
         _usage()
         sys.exit(1)
 
+    # month_abbr
     month_abbr = sys.argv[3]
 
-    return fcst_syr, fcst_eyr, month_abbr
+    # CONFIG_FILE
+    CONFIG_FILE = sys.argv[4]
+    if not os.path.exists(CONFIG_FILE):
+        print(f"[ERR] {CONFIG_FILE} does not exist!")
+        sys.exit(1)
+
+    return fcst_syr, fcst_eyr, month_abbr, CONFIG_FILE
+
+def read_config(CONFIG_FILE):
+    """Read from bcsd_preproc config file."""
+    config = configparser.ConfigParser()
+    config.read(CONFIG_FILE)
+    return config
 
 def calc_ic_dates(icmon):
     """Generates forecast initialization dates based on the initialization
@@ -109,39 +103,64 @@ def calc_ic_dates(icmon):
     try:
         ic_dates = ic_dates_all[icmon]
     except KeyError:
-        print("[ERR] Unknown initialization month %s" %(icmon))
+        print(f"[ERR] Unknown initialization month {icmon}")
         sys.exit(1)
     return ic_dates
 
 def _driver():
     """Main driver."""
+    fcst_syr, fcst_eyr, month_abbr, CONFIG_FILE = _read_cmd_args()
+
+    # Setup local directories
+    config = read_config(CONFIG_FILE)
+
+    # Path of the main project directory
+    _PROJDIR = config["bcsd_preproc"]["projdir"]
+
+    # Path of the directory where all the BC codes are kept
+    _SRCDIR = config["bcsd_preproc"]["srcdir"]
+
+    # Path of the directory where patch files for missing data are kept
+    _PATCHDIR = config["bcsd_preproc"]["patchdir"]
+
+    # Path of the directory where supplementary files are kept
+    _SUPPLEMENTARY_DIR = config["bcsd_preproc"]["supplementary_dir"]
+
+    # Log file output directory
+    _LOGDIR = config["bcsd_preproc"]["logdir"]
+
+    # Paths for the daily forecast data (input and output paths)
+    _FORCEDIR = config["bcsd_preproc"]["fcst_download_dir"]
+    _OUTDIR = f"{_PROJDIR}/data/forecast/CFSv2_25km/raw"
+    _GRIDDESC = f"{_SUPPLEMENTARY_DIR}/CFSv2_25km_AFRICOM_grid_description.txt"
+
     if not os.path.exists(_LOGDIR):
         os.makedirs(_LOGDIR)
-    fcst_syr, fcst_eyr, month_abbr = _read_cmd_args()
-    imon = "%s01" %(month_abbr)
+
+#    imon = "%s01" %(month_abbr)
+    imon = f"{month_abbr}01"
     ic_dates = calc_ic_dates(imon)
 
     # Process 3-hrly CFSv2 forecasts and output in monthly and 6-hrly formats
     print("[INFO] Processing CFSv2 3-hrly forecast variables")
     for year in range(fcst_syr, (fcst_eyr + 1)):
         cmd = "sbatch"
-        cmd += " {srcdir}/run_process_forecast_data.scr".format(srcdir=_SRCDIR)
-        cmd += " {year}".format(year=year)
-        cmd += " {year}".format(year=year)
-        cmd += " {imon}".format(imon=imon)
-        cmd += " {srcdir}".format(srcdir=_SRCDIR)
-        cmd += " {outdir}".format(outdir=_OUTDIR)
-        cmd += " {forcedir}".format(forcedir=_FORCEDIR)
-        cmd += " {griddesc}".format(griddesc=_GRIDDESC)
-        cmd += " {patchdir}".format(patchdir=_PATCHDIR)
+        cmd += f" {_SRCDIR}/run_process_forecast_data.scr"
+        cmd += f" {year:04d}"
+        cmd += f" {year:04d}"
+        cmd += f" {imon}"
+        cmd += f" {_SRCDIR}"
+        cmd += f" {_OUTDIR}"
+        cmd += f" {_FORCEDIR}"
+        cmd += f" {_GRIDDESC}"
+        cmd += f" {_PATCHDIR}"
         for ic_date in ic_dates:
-            cmd += " %s" %(ic_date)
+            cmd += f" {ic_date}"
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
             print("[ERR] Problem calling sbatch!")
             sys.exit(1)
-    print("[INFO] Jobs submitted to process CFSv2 forecast files for %s" \
-          %(imon))
+    print(f"[INFO] Jobs submitted to process CFSv2 forecast files for {imon}")
 
 if __name__ == "__main__":
     _driver()
