@@ -17,35 +17,10 @@
 # Standard modules
 #
 
+import configparser
 import os
 import subprocess
 import sys
-
-#
-# Local constants.  FIXME:  Put in single location for whole system
-#
-
-# Path of the main project directory
-PROJDIR='/discover/nobackup/projects/usaf_lis/razamora/GHI_S2S/AFRICOM'
-
-# Path of the directory where all the BC codes are kept:
-SRCDIR="{}/scripts/code_library".format(PROJDIR)
-
-# Path for where observational files are located:
-FORCEDIR="{}/data/forecast".format(PROJDIR)
-OBS_CLIM_INDIR="{}/USAF-LIS7.3rc8_25km/raw/Climatology".format(FORCEDIR)
-
-# Mask file
-MASK_FILE="{}/supplementary_files/Mask_nafpa.nc".format(SRCDIR)
-
-#  Log file output directory
-LOGDIR="{}/scripts/log_files".format(PROJDIR)
-
-#  Calculate bias correction for different variables separately:
-OBS_VAR="Rainf_f_tavg"
-FCST_VAR="PRECTOT"
-UNIT="kg/m^2/s"
-VAR_TYPE="PRCP"
 
 #
 # Local methods
@@ -53,8 +28,8 @@ VAR_TYPE="PRCP"
 
 def _usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: {} FCST_SYR FCST_EYR CLIM_SYR CLIM_EYR month_abbr"\
-          "iMonNo lat1 lat2 lon1 lon2 NMME_MODEL lead_months".format(sys.argv[0])
+    txt = "[INFO] Usage: {(sys.argv[0])} FCST_SYR FCST_EYR CLIM_SYR CLIM_EYR month_abbr"\
+          "iMonNo lat1 lat2 lon1 lon2 NMME_MODEL lead_months CONFIG_FILE"
     print(txt)
     print("[INFO] where")
     print("[INFO] FCST_SYR: Start year of forecast")
@@ -69,248 +44,269 @@ def _usage():
     print("[INFO] lon2: Maximum longitudinal extent")
     print("[INFO] NMME_MODEL: NMME model name")
     print("[INFO] lead_months: Number of lead months")
+    print("[INFO] CONFIG_FILE: Config file that sets up environment")
 
 def _read_cmd_args():
     """Read command line arguments."""
 
-    if len(sys.argv) != 13:
+    if len(sys.argv) != 14:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
 
     # FCST_SYR
     try:
-        FCST_SYR = int(sys.argv[1])
+        fcst_syr = int(sys.argv[1])
     except ValueError:
-        print("[ERR] Invalid argument for FCST_SYR!  Received {}" \
-            .format(sys.argv[1]))
+        print(f"[ERR] Invalid argument for FCST_SYR! Received {(sys.argv[1])}")
         _usage()
         sys.exit(1)
-    if FCST_SYR < 0:
-        print("[ERR] Invalid argument for FCST_SYR!  Received {}" \
-              .format(sys.argv[1]))
+    if fcst_syr < 0:
+        print(f"[ERR] Invalid argument for FCST_SYR! Received {(sys.argv[1])}")
         _usage()
         sys.exit(1)
 
     # FCST_EYR
     try:
-        FCST_EYR = int(sys.argv[2])
+        fcst_eyr = int(sys.argv[2])
     except ValueError:
-        print("[ERR] Invalid argument for FCST_EYR!  Received {}" \
-              .format(sys.argv[2]))
+        print(f"[ERR] Invalid argument for FCST_EYR! Received {(sys.argv[2])}")
         _usage()
         sys.exit(1)
-    if FCST_EYR < 0:
-        print("[ERR] Invalid argument for FCST_EYR!  Received {}" \
-              .format(sys.argv[2]))
+    if fcst_eyr < 0:
+        print(f"[ERR] Invalid argument for FCST_EYR! Received {(sys.argv[2])}")
         _usage()
         sys.exit(1)
 
     # CLIM_SYR
     try:
-        CLIM_SYR = int(sys.argv[3])
+        clim_syr = int(sys.argv[3])
     except ValueError:
-        print("[ERR] Invalid argument for CLIM_SYR!  Received {}" \
-            .format(sys.argv[3]))
+        print(f"[ERR] Invalid argument for CLIM_SYR! Received {(sys.argv[3])}")
         _usage()
         sys.exit(1)
-    if CLIM_SYR < 0:
-        print("[ERR] Invalid argument for CLIM_SYR!  Received {}" \
-              .format(sys.argv[3]))
+    if clim_syr < 0:
+        print(f"[ERR] Invalid argument for CLIM_SYR! Received {(sys.argv[3])}")
         _usage()
         sys.exit(1)
 
     # CLIM_EYR
     try:
-        CLIM_EYR = int(sys.argv[4])
+        clim_eyr = int(sys.argv[4])
     except ValueError:
-        print("[ERR] Invalid argument for CLIM_EYR!  Received {}" \
-              .format(sys.argv[4]))
+        print(f"[ERR] Invalid argument for CLIM_EYR! Received {(sys.argv[4])}")
         _usage()
         sys.exit(1)
-    if CLIM_EYR < 0:
-        print("[ERR] Invalid argument for CLIM_EYR!  Received {}" \
-              .format(sys.argv[4]))
+    if clim_eyr < 0:
+        print(f"[ERR] Invalid argument for CLIM_EYR! Received {(sys.argv[4])}")
         _usage()
         sys.exit(1)
 
     # MONTH_ABBR
-    MONTH_ABBR = str(sys.argv[5])
+    month_abbr = str(sys.argv[5])
 
     # MONTH_NUM
     try:
-        MONTH_NUM = int(sys.argv[6])
+        month_num = int(sys.argv[6])
     except ValueError:
-        print("[ERR] Invalid argument for MONTH_NUM!  Received {}" \
-              .format(sys.argv[6]))
+        print(f"[ERR] Invalid argument for MONTH_NUM! Received {(sys.argv[6])}")
         _usage()
         sys.exit(1)
-    if MONTH_NUM < 1:
-        print("[ERR] Invalid argument for MONTH_NUM!  Received {}" \
-              .format(sys.argv[6]))
+    if month_num < 1:
+        print(f"[ERR] Invalid argument for MONTH_NUM! Received {(sys.argv[6])}")
         _usage()
         sys.exit(1)
-    if MONTH_NUM > 12:
-        print("[ERR] Invalid argument for MONTH_NUM!  Received {}" \
-              .format(sys.argv[6]))
+    if month_num > 12:
+        print(f"[ERR] Invalid argument for MONTH_NUM! Received {(sys.argv[6])}")
         _usage()
         sys.exit(1)
 
     # LAT1
     try:
-        LAT1 = int(sys.argv[7])
+        lat1 = int(sys.argv[7])
     except ValueError:
-        print("[ERR] Invalid argument for LAT1!  Received {}" \
-              .format(sys.argv[7]))
+        print(f"[ERR] Invalid argument for LAT1! Received {(sys.argv[7])}")
         _usage()
         sys.exit(1)
 
     # LAT2
     try:
-        LAT2 = int(sys.argv[8])
+        lat2 = int(sys.argv[8])
     except ValueError:
-        print("[ERR] Invalid argument for LAT2!  Received {}" \
-              .format(sys.argv[8]))
+        print(f"[ERR] Invalid argument for LAT2! Received {(sys.argv[8])}")
         _usage()
         sys.exit(1)
 
     # LON1
     try:
-        LON1 = int(sys.argv[9])
+        lon1 = int(sys.argv[9])
     except ValueError:
-        print("[ERR] Invalid argument for LON1!  Received {}" \
-              .format(sys.argv[9]))
+        print(f"[ERR] Invalid argument for LON1! Received {(sys.argv[9])}")
         _usage()
         sys.exit(1)
 
     # LON2
     try:
-        LON2 = int(sys.argv[10])
+        lon2 = int(sys.argv[10])
     except ValueError:
-        print("[ERR] Invalid argument for LON2!  Received {}" \
-              .format(sys.argv[10]))
+        print(f"[ERR] Invalid argument for LON2! Received {(sys.argv[10])}")
         _usage()
         sys.exit(1)
 
     # MONTH_ABBR
-    NMME_MODEL = str(sys.argv[11])
+    nmme_model = str(sys.argv[11])
 
     # LEAD_MONTHS
     try:
-        LEAD_MONTHS = int(sys.argv[12])
+        lead_months = int(sys.argv[12])
     except ValueError:
-        print("[ERR] Invalid argument for LEAD_MONTHS!  Received {}" \
-              .format(sys.argv[12]))
+        print(f"[ERR] Invalid argument for LEAD_MONTHS! Received {(sys.argv[12])}")
         _usage()
         sys.exit(1)
-    if LEAD_MONTHS < 0:
-        print("[ERR] Invalid argument for LEAD_MONTHS!  Received {}" \
-              .format(sys.argv[12]))
+    if lead_months < 0:
+        print(f"[ERR] Invalid argument for LEAD_MONTHS! Received {(sys.argv[12])}")
         _usage()
         sys.exit(1)
 
-    return FCST_SYR, FCST_EYR, CLIM_SYR, CLIM_EYR, MONTH_ABBR, MONTH_NUM, \
-    LAT1, LAT2, LON1, LON2, NMME_MODEL, LEAD_MONTHS
+    # CONFIG_FILE
+    CONFIG_FILE = sys.argv[13]
+    if not os.path.exists(CONFIG_FILE):
+        print(f"[ERR] {CONFIG_FILE} does not exist!")
+        sys.exit(1)
 
-def _gather_ensemble_info(NMME_MODEL):
+    return fcst_syr, fcst_eyr, clim_syr, clim_eyr, month_abbr, month_num,\
+    lat1, lat2, lon1, lon2, nmme_model, lead_months, CONFIG_FILE
+
+def read_config(CONFIG_FILE):
+    """Read from bcsd_preproc config file."""
+    config = configparser.ConfigParser()
+    config.read(CONFIG_FILE)
+    return config
+
+def _gather_ensemble_info(nmme_model):
     """Gathers ensemble information based on NMME model."""
 
     # Number of ensembles in the forecast (ENS_NUMF)
     # Number of ensembles in the climatology (ENS_NUMC)
     # Ensemble start index (ENS_START)
     # Ensemble end index (ENS_END)
-    if NMME_MODEL == "CFSv2":
-        ENS_NUMF=24
-        ENS_NUMC=12
-        ENS_START=1
-        ENS_END=24
-    elif NMME_MODEL == "GEOSv2":
-        ENS_NUMF=10
-        ENS_NUMC=4
-        ENS_START=25
-        ENS_END=34
-    elif NMME_MODEL == "CCM4":
-        ENS_NUMF=10
-        ENS_NUMC=10
-        ENS_START=35
-        ENS_END=44
-    elif NMME_MODEL == "GNEMO":
-        ENS_NUMF=10
-        ENS_NUMC=10
-        ENS_START=45
-        ENS_END=54
-    elif NMME_MODEL == "CCSM4":
-        ENS_NUMF=10
-        ENS_NUMC=10
-        ENS_START=55
-        ENS_END=64
-    elif NMME_MODEL == "GFDL":
-        ENS_NUMF=30
-        ENS_NUMC=15
-        ENS_START=65
-        ENS_END=94
+    if nmme_model == "CFSv2":
+        ens_numf=24
+        ens_numc=12
+        ens_start=1
+        ens_end=24
+    elif nmme_model == "GEOSv2":
+        ens_numf=10
+        ens_numc=4
+        ens_start=25
+        ens_end=34
+    elif nmme_model == "CCM4":
+        ens_numf=10
+        ens_numc=10
+        ens_start=35
+        ens_end=44
+    elif nmme_model == "GNEMO":
+        ens_numf=10
+        ens_numc=10
+        ens_start=45
+        ens_end=54
+    elif nmme_model == "CCSM4":
+        ens_numf=10
+        ens_numc=10
+        ens_start=55
+        ens_end=64
+    elif nmme_model == "GFDL":
+        ens_numf=30
+        ens_numc=15
+        ens_start=65
+        ens_end=94
     else:
-        print("[ERR] Invalid argument for NMME_MODEL!  Received {}" \
-            .format(NMME_MODEL))
+        print(f"[ERR] Invalid argument for NMME_MODEL! Received {(nmme_model)}")
         sys.exit(1)
 
-    return ENS_NUMF, ENS_NUMC, ENS_START, ENS_END
+    return ens_numf, ens_numc, ens_start, ens_end
 
 def _driver():
     """Main driver."""
-    FCST_SYR, FCST_EYR, CLIM_SYR, CLIM_EYR, MONTH_ABBR, MONTH_NUM, \
-        LAT1, LAT2, LON1, LON2, NMME_MODEL, LEAD_MONTHS = _read_cmd_args()
+    fcst_syr, fcst_eyr, clim_syr, clim_eyr, month_abbr, month_num, lat1, lat2,\
+        lon1, lon2, nmme_model, lead_months, CONFIG_FILE = _read_cmd_args()
+
+	# Setup local directories
+    config = read_config(CONFIG_FILE)
+
+    # Path of the main project directory
+    PROJDIR = config["bcsd_preproc"]["projdir"]
+
+	# Path of the directory where all the BC codes are kept
+    SRCDIR = config["bcsd_preproc"]["srcdir"]
+
+    # Log file output directory
+    LOGDIR = config["bcsd_preproc"]["logdir"]
+
+    # Path of the directory where supplementary files are kept
+    SUPPLEMENTARY_DIR = config["bcsd_preproc"]["supplementary_dir"]
+
+	# Path for where observational files are located:
+    FORCEDIR=f"{PROJDIR}/data/forecast"
+    obs_clim_indir=f"{FORCEDIR}/USAF-LIS7.3rc8_25km/raw/Climatology"
+
+	# Mask file
+    MASK_FILE=f"{SUPPLEMENTARY_DIR}/Mask_nafpa.nc"
+
+	#  Calculate bias correction for different variables separately:
+    OBS_VAR="Rainf_f_tavg"
+    FCST_VAR="PRECTOT"
+    UNIT="kg/m^2/s"
+    VAR_TYPE="PRCP"
 
     # Path for where nmme forecast files are located:
-    FCST_CLIM_INDIR="{forcedir}/NMME/raw/Climatology/{month_abbr}01".format(forcedir=FORCEDIR, month_abbr=MONTH_ABBR)
-    FCST_INDIR="{forcedir}/NMME/raw/Monthly/{month_abbr}01".format(forcedir=FORCEDIR, month_abbr=MONTH_ABBR)
+    fcst_clim_indir=f"{FORCEDIR}/NMME/raw/Climatology/{month_abbr}01"
+    fcst_indir=f"{FORCEDIR}/NMME/raw/Monthly/{month_abbr}01"
 
     # Path for where output BC forecast file are located:
-    OUTDIR="{forcedir}/NMME/bcsd/Monthly/{month_abbr}01".format(forcedir=FORCEDIR, month_abbr=MONTH_ABBR)
-    if not os.path.exists(OUTDIR):
-        os.makedirs(OUTDIR)
+    outdir=f"{FORCEDIR}/NMME/bcsd/Monthly/{month_abbr}01"
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
 
-    print("[INFO] Processing forecast bias correction of NMME-{} precip" \
-        .format(NMME_MODEL))
+    print(f"[INFO] Processing forecast bias correction of NMME-{nmme_model} precip")
 
-    ENS_NUMF, ENS_NUMC, ENS_START, ENS_END = _gather_ensemble_info(NMME_MODEL)
+    ens_numf, ens_numc, ens_start, ens_end = _gather_ensemble_info(nmme_model)
 
-    for YEAR in range(FCST_SYR, (FCST_EYR + 1)):
+    for year in range(fcst_syr, (fcst_eyr + 1)):
         cmd = "sbatch"
-        cmd += " {srcdir}/run_NMME_BCSD_calctest.scr".format(srcdir=SRCDIR)
-        cmd += " {srcdir}".format(srcdir=SRCDIR)
-        cmd += " {obs_var}".format(obs_var=OBS_VAR)
-        cmd += " {fcst_var}".format(fcst_var=FCST_VAR)
-        cmd += " {month_num}".format(month_num=MONTH_NUM)
-        cmd += " {var_type}".format(var_type=VAR_TYPE)
-        cmd += " {unit}".format(unit=UNIT)
-        cmd += " {lat1}".format(lat1=LAT1)
-        cmd += " {lat2}".format(lat2=LAT2)
-        cmd += " {lon1}".format(lon1=LON1)
-        cmd += " {lon2}".format(lon2=LON2)
-        cmd += " {ens_numc}".format(ens_numc=ENS_NUMC)
-        cmd += " {ens_numf}".format(ens_numf=ENS_NUMF)
-        cmd += " {nmme_model}".format(nmme_model=NMME_MODEL)
-        cmd += " {lead_months}".format(lead_months=LEAD_MONTHS)
-        cmd += " {fcst_syr}".format(fcst_syr=YEAR)
-        cmd += " {fcst_eyr}".format(fcst_eyr=YEAR)
-        cmd += " {clim_syr}".format(clim_syr=CLIM_SYR)
-        cmd += " {clim_eyr}".format(clim_eyr=CLIM_EYR)
-        cmd += " {mask_file}".format(mask_file=MASK_FILE)
-        cmd += " {fcst_clim_indir}".format(fcst_clim_indir=FCST_CLIM_INDIR)
-        cmd += " {obs_clim_indir}".format(obs_clim_indir=OBS_CLIM_INDIR)
-        cmd += " {fcst_indir}".format(fcst_indir=FCST_INDIR)
-        cmd += " {outdir}".format(outdir=OUTDIR)
-        cmd += " {logdir}".format(logdir=LOGDIR)
-        cmd += " {ens_start}".format(ens_start=ENS_START)
-        cmd += " {ens_end}".format(ens_end=ENS_END)
+        cmd += f" {SRCDIR}/run_NMME_BCSD_calctest.scr"
+        cmd += f" {SRCDIR}"
+        cmd += f" {OBS_VAR}"
+        cmd += f" {FCST_VAR}"
+        cmd += f" {month_num}"
+        cmd += f" {VAR_TYPE}"
+        cmd += f" {UNIT}"
+        cmd += f" {lat1}"
+        cmd += f" {lat2}"
+        cmd += f" {lon1}"
+        cmd += f" {lon2}"
+        cmd += f" {ens_numc}"
+        cmd += f" {ens_numf}"
+        cmd += f" {nmme_model}"
+        cmd += f" {lead_months}"
+        cmd += f" {year}"
+        cmd += f" {year}"
+        cmd += f" {clim_syr}"
+        cmd += f" {clim_eyr}"
+        cmd += f" {MASK_FILE}"
+        cmd += f" {fcst_clim_indir}"
+        cmd += f" {obs_clim_indir}"
+        cmd += f" {fcst_indir}"
+        cmd += f" {outdir}"
+        cmd += f" {LOGDIR}"
+        cmd += f" {ens_start}"
+        cmd += f" {ens_end}"
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
             print("[ERR] Problem calling sbatch!")
             sys.exit(1)
 
-    print("[INFO] Completed processing NMME bias correction for: {}"\
-        .format(MONTH_ABBR))
+    print(f"[INFO] Completed processing NMME bias correction for: {(month_abbr)}")
 
 #
 # Main Method

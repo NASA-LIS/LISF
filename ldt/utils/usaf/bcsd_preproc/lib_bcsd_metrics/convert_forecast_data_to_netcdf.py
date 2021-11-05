@@ -54,7 +54,7 @@ def _read_cmd_args():
         f"{args['fcst_timestring']}." + \
         f"{args['file_sfx']}"
     args['subdaily_file'] = \
-        f"{args['indir']}" + \
+        f"{args['indir']}/" + \
         f"{args['comparison_name']}"
     return args
 

@@ -120,13 +120,13 @@ def driver():
     #
 
     # Task 4: Monthly "BC" step applied to CFSv2
-    # cmd_task_04 = f"python forecast_task_04.py {SYR} {EYR} {CLIM_SYR} {CLIM_EYR} {MONTH_ABBR} {MONTH_NUM} {LAT1} {LAT2} {LON1} {LON2} {LEAD_MONTHS} {ENS_NUM} {CONFIG_FILE}"
-    # run_cmd(cmd_task_04, "[ERR] Problem running forecast_task_04.py")
+    #cmd_task_04 = f"python forecast_task_04.py {SYR} {EYR} {CLIM_SYR} {CLIM_EYR} {MONTH_ABBR} {MONTH_NUM} {LAT1} {LAT2} {LON1} {LON2} {LEAD_MONTHS} {ENS_NUM} {CONFIG_FILE}"
+    #run_cmd(cmd_task_04, "[ERR] Problem running forecast_task_04.py")
 
     # Task 5: Monthly "BC" step applied to NMME
-    # for mod in NMME_MODELS:
-    #   cmd_task_05 = f"python forecast_task_05.py {SYR} {EYR} {CLIM_SYR} {CLIM_EYR} {MONTH_ABBR} {MONTH_NUM} {LAT1} {LAT2} {LON1} {LON2} {mod} {LEAD_MONTHS} {CONFIG_FILE}"
-    #   run_cmd(cmd_task_05, "[ERR] Problem running forecast_task_05.py")
+    #for mod in NMME_MODELS:
+    #    cmd_task_05 = f"python forecast_task_05.py {SYR} {EYR} {CLIM_SYR} {CLIM_EYR} {MONTH_ABBR} {MONTH_NUM} {LAT1} {LAT2} {LON1} {LON2} {mod} {LEAD_MONTHS} {CONFIG_FILE}"
+    #    run_cmd(cmd_task_05, "[ERR] Problem running forecast_task_05.py")
 
     ##-----PART C: TEMPORAL DISAGGREGATION-----##
     #
@@ -135,19 +135,19 @@ def driver():
     #
 
     # Task 6: CFSv2 Temporal Disaggregation
-    # cmd_task_06 = f"python forecast_task_06.py {SYR} {EYR} {MONTH_ABBR} {MONTH_NUM} {LAT1} {LAT2} {LON1} {LON2} {FCST_DATA_TYPE} {LEAD_MONTHS} {ENS_NUM} {CONFIG_FILE}"
-    # run_cmd(cmd_task_06, "[ERR] Problem running forecast_task_06.py")
+    #cmd_task_06 = f"python forecast_task_06.py {SYR} {EYR} {MONTH_ABBR} {MONTH_NUM} {LAT1} {LAT2} {LON1} {LON2} {FCST_DATA_TYPE} {LEAD_MONTHS} {ENS_NUM} {CONFIG_FILE}"
+    #run_cmd(cmd_task_06, "[ERR] Problem running forecast_task_06.py")
 
     #
     # Task 7: Generate symbolic links to sub-daily CFSv2 BC forecasts for NMME
     # temporal disaggregation due to an uneven number of ensembles
-    cmd_task_07 = f"python forecast_task_07.py {CURRENT_YEAR} {MONTH_ABBR} {CONFIG_FILE}"
-    run_cmd(cmd_task_07, "[ERR] Problem running forecast_task_07.py")
+    #cmd_task_07 = f"python forecast_task_07.py {CURRENT_YEAR} {MONTH_ABBR} {CONFIG_FILE}"
+    #run_cmd(cmd_task_07, "[ERR] Problem running forecast_task_07.py")
 
     #
     # Task 8: NMME Temporal Disaggregation
-    # for mod in NMME_MODELS:
-    #    cmd_task_08 = f"python forecast_task_08.py {SYR} {EYR} {MONTH_ABBR} {MONTH_NUM} {LAT1} {LAT2} {LON1} {LON2} {NMME_DATA_TYPE} {mod} {LEAD_MONTHS} {CONFIG_FILE}"
+    #for mod in NMME_MODELS:
+    #    cmd_task_08 = f"python forecast_task_08.py {SYR} {EYR} {MONTH_ABBR} {MONTH_NUM} {LAT1} {LAT2} {LON1} {LON2} {mod} {LEAD_MONTHS} {CONFIG_FILE}"
     #    run_cmd(cmd_task_08, "[ERR] Problem running forecast_task_08.py")
 
     ##-----PART D: LIS PREPARATION-----##
