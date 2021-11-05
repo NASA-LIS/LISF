@@ -69,7 +69,8 @@ def _set_input_file_info(input_fcst_year, input_fcst_month, input_fcst_var):
     cutoff_oper_yyyymm = 202012
     current_yyyymm = (100 * input_fcst_year) + input_fcst_month
 
-    # Up to apr1 2011 - Refor_HPS (dlwsfc, dswsfc, q2m, wnd10m), Refor_FL (prate, pressfc, tmp2m)
+    # Up to apr1 2011 - Refor_HPS (dlwsfc, dswsfc, q2m, wnd10m), Refor_FL
+    # (prate, pressfc, tmp2m)
     if current_yyyymm <= cutoff_refor_yyyymm:
         if input_fcst_var in ["dlwsfc", "dswsfc", "q2m", "wnd10m"]:
             subdir = "Refor_HPS"
@@ -77,10 +78,12 @@ def _set_input_file_info(input_fcst_year, input_fcst_month, input_fcst_var):
             subdir = "Refor_FL"
         file_pfx = input_fcst_var
         file_sfx = "time.grb2"
+    #From may01 2011 to jan01 2021 - Oper_TS (all fields)
     elif current_yyyymm <= cutoff_oper_yyyymm:
         subdir = "Oper_TS"
         file_pfx = f"{input_fcst_var}.01"
         file_sfx = "daily.grb2"
+    # From feb01 2021 - OperRT_TS (all fields)
     elif current_yyyymm > cutoff_oper_yyyymm:
         subdir = "OperRT_TS"
         file_pfx = f"{input_fcst_var}.01"
@@ -103,9 +106,11 @@ def _migrate_to_monthly_files(outdirs, temp_name, wanted_months,
     subprocess.run(cmd, shell=True, check=True)
 
     # Subset data to only include the 9 forecast months
-    cmd = f"cdo --no_history selmon,{wanted_months}"
-    cmd += f" {outdir_6hourly}/junk2_{temp_name}"
-    cmd += f" {outdir_6hourly}/junk3_{temp_name}"
+    cmd = "cdo --no_history selmon"
+    for month in wanted_months:
+        cmd += f",{month}"
+    cmd += f" {outdir_6hourly}/junk2_{temp_name}" + \
+        f" {outdir_6hourly}/junk3_{temp_name}"
     print(cmd)
     subprocess.run(cmd, shell=True, check=True)
 
@@ -189,13 +194,12 @@ def _driver():
         else:
             fcst_init["year"] = year
 
-        temp_name = f"cfsv2.{fcst_init['year']}{fcst_init['monthday']}.nc"
-
         for ens_num in range(1, (len(args['all_ensmembers']) + 1)):
-            fcst_init['monthday'] = args['all_ensmembers'][ens_num - 1]
-            fcst_init['date'] = f"{fcst_init['year']}{fcst_init['monthday']}"
-            fcst_init['month'] = f"{fcst_init['monthday'][0:3]}"
-            fcst_init['day'] = f"{fcst_init['monthday'][3:5]}"
+            monthday = args['all_ensmembers'][ens_num - 1]
+            temp_name = f"cfsv2.{fcst_init['year']}{monthday}.nc"
+            fcst_init['date'] = f"{fcst_init['year']}{monthday}"
+            fcst_init['month'] = f"{monthday[0:2]}"
+            fcst_init['day'] = f"{monthday[2:4]}"
             fcst_init['hour'] = args['all_ensmembers'][ens_num - 1]
             fcst_init['timestring'] = f"{fcst_init['date']}{fcst_init['hour']}"
             wanted_months = []
@@ -231,7 +235,7 @@ def _driver():
                 cmd = f"{args['srcdir']}/convert_forecast_data_to_netcdf.py"
                 cmd += f" {args['indir']} {file_pfx} {fcst_init['timestring']}"
                 cmd += f" {file_sfx} {outdirs['outdir_6hourly']}"
-                cmd += " {temp_name} {varname}"
+                cmd += f" {temp_name} {varname}"
                 print(cmd)
                 subprocess.run(cmd, shell=True, check=True)
 
