@@ -17,7 +17,6 @@
 # Standard modules
 #
 
-import os
 import subprocess
 import sys
 from datetime import date
@@ -156,21 +155,19 @@ def driver():
     #
 
     # Task 9: Combine the CFSv2 forcing fields into final format for LIS to read
-    # cmd_task_09 = f"python forecast_task_09.py {SYR} {EYR} {MONTH_ABBR} {MONTH_NUM} {LAT1} {LAT2} {LON1} {LON2} {FCST_DATA_TYPE} {LEAD_MONTHS} {ENS_NUM} {CONFIG_FILE}"
-    # run_cmd(cmd_task_09, "[ERR] Problem running forecast_task_09.py")
+    #cmd_task_09 = f"python forecast_task_09.py {SYR} {EYR} {MONTH_ABBR} {MONTH_NUM} {LAT1} {LAT2} {LON1} {LON2} {FCST_DATA_TYPE} {LEAD_MONTHS} {ENS_NUM} {CONFIG_FILE}"
+    #run_cmd(cmd_task_09, "[ERR] Problem running forecast_task_09.py")
 
     # Task 10: Combine the NMME forcing fields into final format for LIS to read
     # and symbolically link to the reusable CFSv2 met forcings
-    # for YEAR in range(FCST_SYR, (FCST_EYR + 1)):
-    #   for mod in NMME_MODELS:
-    #       cmd_task_10 = f"python forecast_task_10.py {MONTH_ABBR} {MONTH_NUM} {YEAR} {mod} {CONFIG_FILE}"
-    #       run_cmd(cmd_task_10, "[ERR] Problem running forecast_task_10.py")
+    #for mod in NMME_MODELS:
+    #    cmd_task_10 = f"python forecast_task_10.py {MONTH_ABBR} {MONTH_NUM} {CURRENT_YEAR} {mod} {CONFIG_FILE}"
+    #    run_cmd(cmd_task_10, "[ERR] Problem running forecast_task_10.py")
 
 
     # Task 11: Copy 9th forecast lead file as 10th forecast lead for LIS runs
-    # for YEAR in range(FCST_SYR, (FCST_EYR + 1)):
-    #   cmd_task_11 = f"python forecast_task_11.py {MONTH_ABBR} {MONTH_NUM} {YEAR} {LEAD_MONTHS} {CONFIG_FILE}"
-    #   run_cmd(cmd_task_11, "[ERR] Problem running forecast_task_11.py")
+    #cmd_task_11 = f"python forecast_task_11.py {MONTH_ABBR} {MONTH_NUM} {CURRENT_YEAR} {LEAD_MONTHS} {CONFIG_FILE}"
+    #run_cmd(cmd_task_11, "[ERR] Problem running forecast_task_11.py")
 
 
     # Task 12: Temporary task to introduce an all-zero variable V10M due to the
@@ -182,10 +179,9 @@ def driver():
     ##--------------Check Final Preprocessed Files and Folders----------------##
     # A final processing check is available to the user to check that the number
     # of files and file size generated within this workflow meet expectations
-    # for YEAR in range(FCST_SYR, (FCST_EYR + 1)):
-    #   for mod in NMME_MODELS:
-    #       cmd_task_check = f"python check_preprocess_forecast_files.py {MONTH_ABBR} {YEAR} {mod} {LEAD_MONTHS} {CONFIG_FILE}"
-    #       run_cmd(cmd_task_check, "[ERR] Problem running check_preprocess_forecast_files.py")
+    #for mod in NMME_MODELS:
+    #    cmd_task_check = f"python check_preprocess_forecast_files.py {MONTH_ABBR} {CURRENT_YEAR} {mod} {LEAD_MONTHS} {CONFIG_FILE}"
+    #    run_cmd(cmd_task_check, "[ERR] Problem running check_preprocess_forecast_files.py")
 
     ##-------------- Completed Preprocessing -----------------##
 
