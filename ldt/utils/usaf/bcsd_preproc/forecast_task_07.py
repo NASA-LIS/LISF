@@ -28,12 +28,12 @@ import sys
 
 def _usage():
     """Print command line usage."""
-    txt = f"[INFO] Usage: {(sys.argv[0])} current_year month_abbr CONFIG_FILE"
+    txt = f"[INFO] Usage: {(sys.argv[0])} current_year month_abbr config_file"
     print(txt)
     print("[INFO] where")
     print("[INFO] current_year: Current year")
     print("[INFO] month_abbr: Current month")
-    print("[INFO] CONFIG_FILE: Config file that sets up environment")
+    print("[INFO] config_file: Config file that sets up environment")
 
 def _read_cmd_args():
     """Read command line arguments."""
@@ -58,49 +58,48 @@ def _read_cmd_args():
     # month_abbr
     month_abbr = str(sys.argv[2])
 
-    # CONFIG_FILE
-    CONFIG_FILE = sys.argv[3]
-    if not os.path.exists(CONFIG_FILE):
-        print(f"[ERR] {CONFIG_FILE} does not exist!")
+    # config_file
+    config_file = sys.argv[3]
+    if not os.path.exists(config_file):
+        print(f"[ERR] {config_file} does not exist!")
         sys.exit(1)
 
-    return current_year, month_abbr, CONFIG_FILE
+    return current_year, month_abbr, config_file
 
-def read_config(CONFIG_FILE):
+def read_config(config_file):
     """Read from bcsd_preproc config file."""
     config = configparser.ConfigParser()
-    config.read(CONFIG_FILE)
+    config.read(config_file)
     return config
 
 def _driver():
     """Main driver."""
-    current_year, month_abbr, CONFIG_FILE = _read_cmd_args()
+    current_year, month_abbr, config_file = _read_cmd_args()
 
     # Setup local directories
-    config = read_config(CONFIG_FILE)
+    config = read_config(config_file)
 
     # Path of the main project directory
-    PROJDIR = config["bcsd_preproc"]["projdir"]
+    projdir = config["bcsd_preproc"]["projdir"]
 
 	# Number of precip ensembles needed
-    RANGE_ENS_FCST=list(range(1, 13)) + list(range(1,13)) + list(range(1,7))
-    RANGE_ENS_NMME=range(1,31)
+    range_ens_fcst=list(range(1, 13)) + list(range(1,13)) + list(range(1,7))
+    range_ens_nmme=range(1,31)
 
     fcst_date = f"{month_abbr}01"
 
     # Path for where forecast files are located:
-    indir=f"{PROJDIR}/data/forecast/CFSv2_25km/raw/6-Hourly/{fcst_date}/{current_year}"
+    indir=f"{projdir}/data/forecast/CFSv2_25km/raw/6-Hourly/{fcst_date}/{current_year}"
 
     # Path for where the linked precip files should be placed:
-    outdir=f"{PROJDIR}/data/forecast/NMME/linked_cfsv2_precip_files/{fcst_date}/{current_year}"
+    outdir=f"{projdir}/data/forecast/NMME/linked_cfsv2_precip_files/{fcst_date}/{current_year}"
 
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-#    for iens in range(len(RANGE_ENS_FCST)):
-    for iens, ens_value in enumerate(RANGE_ENS_FCST):
-        src_file=f"{indir}/ens{RANGE_ENS_FCST[iens]}"
-        dst_file=f"{outdir}/ens{RANGE_ENS_NMME[iens]}"
+    for iens, ens_value in enumerate(range_ens_fcst):
+        src_file=f"{indir}/ens{ens_value}"
+        dst_file=f"{outdir}/ens{range_ens_nmme[iens]}"
 
         cmd = f"ln -sfn {src_file} {dst_file}"
         print(cmd)
@@ -116,4 +115,3 @@ def _driver():
 #
 if __name__ == "__main__":
     _driver()
-
