@@ -11,21 +11,17 @@
 """
 
 from __future__ import division
-#import pandas as pdimport calendar
 import os.path as op
 import sys
-import time
-from datetime import datetime, timedelta
+from datetime import datetime
 import calendar
+from time import ctime as t_ctime
+from time import time as t_time
 from dateutil.relativedelta import relativedelta
 import numpy as np
-#from scipy.stats import percentileofscore
-#from scipy.stats import scoreatpercentile, pearsonr
-#from math import *
-#import time
-#from BCSD_stats_functions import *
 # pylint: disable=no-name-in-module
-import netCDF4 as nc
+from netCDF4 import Dataset as nc4_dataset
+from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 from Shrad_modules import read_nc_files, MAKEDIR
 
@@ -34,7 +30,7 @@ var_standard_name, lons, lats, sdate, dates, sig_digit, north_east_corner_lat, \
 north_east_corner_lon, south_west_corner_lat, south_west_corner_lon, \
 resolution_x, resolution_y, time_increment):
     """write netcdf"""
-    rootgrp = nc.Dataset(outfile, 'w', format='NETCDF4_CLASSIC')
+    rootgrp = nc4_dataset(outfile, 'w', format='NETCDF4_CLASSIC')
     time = rootgrp.createDimension('time', None)
     longitude = rootgrp.createDimension('longitude', len(lons))
     latitude = rootgrp.createDimension('latitude', len(lats))
@@ -47,7 +43,6 @@ resolution_x, resolution_y, time_increment):
     varname = rootgrp.createVariable(varname, 'f4', ('time', 'latitude', \
     'longitude',), fill_value=-9999, zlib=True, \
     least_significant_digit=sig_digit)
-    import time
     rootgrp.missing_value = -9999
     rootgrp.description = description
     rootgrp.zenith_interp = "true,false,"
@@ -59,7 +54,7 @@ resolution_x, resolution_y, time_increment):
     rootgrp.NORTH_EAST_CORNER_LON = float(north_east_corner_lon)
     rootgrp.DX = resolution_x
     rootgrp.DY = resolution_y
-    rootgrp.history = 'Created ' + time.ctime(time.time())
+    rootgrp.history = 'Created ' + t_ctime(t_time())
     rootgrp.source = source
     latitudes.units = 'degrees_north'
     longitudes.units = 'degrees_east'
@@ -74,7 +69,7 @@ resolution_x, resolution_y, time_increment):
     latitudes[:] = lats
     longitudes[:] = lons
     varname[:, :, :] = var
-    times[:] = nc.date2num(dates, units=times.units, calendar=times.calendar)
+    times[:] = nc4_date2num(dates, units=times.units, calendar=times.calendar)
     rootgrp.close()
 
 ## Usage: <Name of variable in observed climatology> <Name of variable in
@@ -99,7 +94,7 @@ LEAD_FINAL = int(sys.argv[13])
 MONTH_NAME_TEMPLATE = '{}01'
 MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON])
 
-print("*** LEAD FINAL: {}".format(LEAD_FINAL))
+print(f"*** LEAD FINAL: {LEAD_FINAL}")
 BC_FCST_SYR, BC_FCST_EYR = int(sys.argv[14]), int(sys.argv[15])
 if FCST_VAR == 'PRECTOT':
     MASK_FILE = str(sys.argv[16])
@@ -107,7 +102,7 @@ else:
     MASK_FILE = str(sys.argv[17])
 
 MASK = read_nc_files(MASK_FILE, 'mask')
-print("MASK: {}".format(MASK.shape))
+print(f"MASK: {MASK.shape}")
 
 MONTHLY_BC_FCST_DIR = str(sys.argv[18])
 MONTHLY_RAW_FCST_DIR = str(sys.argv[19])
@@ -130,12 +125,12 @@ for MON in [INIT_FCST_MON]:
     ## This provides abbrevated version of the name of a month: (e.g. for
     ## January (i.e. Month number = 1) it will return "Jan"). The abbrevated
     ## name is used in the forecasts file name
-    print("Forecast Initialization month is {}".format(MONTH_NAME))
+    print(f"Forecast Initialization month is {MONTH_NAME}")
     ### First read bias corrected monthly forecast data
     BC_INFILE = MONTHLY_BC_INFILE_TEMPLATE.format(MONTHLY_BC_FCST_DIR,\
     FCST_VAR, MODEL_NAME, MONTH_NAME, BC_FCST_SYR, BC_FCST_EYR)
 
-    print("Reading bias corrected monthly forecasts {}".format(BC_INFILE))
+    print(f"Reading bias corrected monthly forecasts {BC_INFILE}")
     LATS = read_nc_files(BC_INFILE, 'latitude')
     LONS = read_nc_files(BC_INFILE, 'longitude')
     MON_BC_DATA = read_nc_files(BC_INFILE, FCST_VAR)
@@ -147,7 +142,7 @@ for MON in [INIT_FCST_MON]:
             pass
         else:
             MAKEDIR(OUTDIR)
-        print("OUTDIR is {}".format(OUTDIR))
+        print(f"OUTDIR is {OUTDIR}")
         for LEAD_NUM in range(0, LEAD_FINAL): ## Loop from lead =0 to Final Lead
             FCST_DATE = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1, 6) + \
             relativedelta(months=LEAD_NUM)
@@ -173,24 +168,19 @@ for MON in [INIT_FCST_MON]:
                 MONTHLY_INFILE = MONTHLY_NMME_INFILE_TEMPLATE.format(\
                 MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens1, MONTH_NAME, \
                 FCST_YEAR, FCST_MONTH)
-            print("Reading raw monthly forecast {}".format(MONTHLY_INFILE))
-            # TODO I changed this to instead be calculated from the raw input a few lines down
-            #MONTHLY_INPUT_RAW_DATA = read_nc_files(MONTHLY_INFILE, FCST_VAR)[0,]
+            print(f"Reading raw monthly forecast {MONTHLY_INFILE}")
             # Sub-Daily raw data
             SUBDAILY_INFILE = SUBDAILY_INFILE_TEMPLATE.format(\
             SUBDAILY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
             FCST_YEAR, FCST_MONTH)
-            print("Reading raw sub-daily forecast {}".format(SUBDAILY_INFILE))
+            print(f"Reading raw sub-daily forecast {SUBDAILY_INFILE}")
             INPUT_RAW_DATA = read_nc_files(SUBDAILY_INFILE, FCST_VAR)
             MONTHLY_INPUT_RAW_DATA = np.mean(INPUT_RAW_DATA, axis=0)
-            print("MONTHLY_BC_DATA: {}".format(MON_BC_DATA.shape))
-            print("MONTHLY_INPUT_RAW_DATA: {}".format(\
-            MONTHLY_INPUT_RAW_DATA.shape))
-            print("INPUT_RAW_DATA: {}".format(INPUT_RAW_DATA.shape))
-            print("OUTPUT_BC_DATA: {}".format(OUTPUT_BC_DATA.shape))
-            #for lat_num, LATS in  enumerate(LATS):
+            print(f"MONTHLY_BC_DATA: {MON_BC_DATA.shape}")
+            print(f"MONTHLY_INPUT_RAW_DATA: {MONTHLY_INPUT_RAW_DATA.shape}")
+            print(f"INPUT_RAW_DATA: {INPUT_RAW_DATA.shape}")
+            print(f"OUTPUT_BC_DATA: {OUTPUT_BC_DATA.shape}")
             for lat_num, lat_value in  enumerate(LATS):
-                #for lon_num in LONS in enumerate(LONS):
                 for lon_num, lon_value in enumerate(LONS):
                     ## Only work with grid cells that are within the given mask
                     if ((LAT1 <= LATS[lat_num]) and (LATS[lat_num] <= LAT2) \
@@ -220,7 +210,7 @@ for MON in [INIT_FCST_MON]:
                             CORRECTION_FACTOR
             ### Finish correcting values for all timesteps in the given
             ### month and ensemble member
-            print("Now writing {}".format(OUTFILE))
+            print("Now writing {OUTFILE}")
             OUTPUT_BC_DATA = np.ma.masked_array(OUTPUT_BC_DATA, \
             mask=OUTPUT_BC_DATA == -999)
             date = [FCST_DATE+relativedelta(hours=n*6) for n in \
