@@ -7,21 +7,23 @@
 # In[28]:
 """
 from __future__ import division
-from datetime import datetime, timedelta
+from datetime import datetime
 import os
 import sys
-import time
+from time import ctime as t_ctime
+from time import time as t_time
 import numpy as np
 from mpl_toolkits import basemap
 # pylint: disable=no-name-in-module
-import netCDF4 as nc
+from netCDF4 import Dataset as nc4_dataset
+from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 from Shrad_modules import read_nc_files
 
 def write_3d_netcdf(infile, var, varname, description, source, \
                     var_units, lons, lats, sdate):
     """write netcdf files"""
-    rootgrp = nc.Dataset(infile, 'w', format='NETCDF4')
+    rootgrp = nc4_dataset(infile, 'w', format='NETCDF4')
     longitude = rootgrp.createDimension('lon', len(lons))
     latitude = rootgrp.createDimension('lat', len(lats))
     time = rootgrp.createDimension('time', None)
@@ -32,9 +34,9 @@ def write_3d_netcdf(infile, var, varname, description, source, \
     varname = rootgrp.createVariable(varname, 'f4', \
                                      ('time', 'lat', 'lon'), \
                                      fill_value=-9999., zlib=True)
-    import time
+    #import time
     rootgrp.description = description
-    rootgrp.history = 'Created ' + time.ctime(time.time())
+    rootgrp.history = 'Created ' + t_ctime(t_time())
     rootgrp.source = source
     latitudes.units = 'degrees_north'
     longitudes.units = 'degrees_east'
@@ -45,7 +47,7 @@ def write_3d_netcdf(infile, var, varname, description, source, \
     latitudes[:] = lats
     longitudes[:] = lons
     varname[:, :, :] = var
-    times[:] = nc.date2num(sdate, units=times.units, calendar=times.calendar)
+    times[:] = nc4_date2num(sdate, units=times.units, calendar=times.calendar)
     rootgrp.close()
 
 CMDARGS = str(sys.argv)
@@ -72,12 +74,12 @@ LDYR = np.zeros((12, 12), dtype=int)
 for i in range(0, 12):
     for j in range(0, 12):
         k = MONTHN[i]+j
-        ky = 0
+        KY = 0
         if k >= 13:
             k = k-12
-            ky = 1
+            KY = 1
         LEADS1[i, j] = k
-        LDYR[i, j] = ky
+        LDYR[i, j] = KY
 
 INFILE_TEMP = '{}/{}/prec.{}.mon_{}.{:04d}.nc'
 OUTDIR_TEMPLATE = '{}/{}/{:04d}/ens{}/'
@@ -174,4 +176,4 @@ for m in range(0, 94):
         SDATE = datetime(YR, MM+1, 1)
         write_3d_netcdf(OUTFILE, XPRECI, 'PRECTOT', 'Downscaled to 0.25deg', \
         'Raw NMME at 1deg', 'kg m-2 s-1', LONS, LATS, SDATE)
-        print('Writing {}'.format(OUTFILE))
+        print(f"Writing {OUTFILE}")

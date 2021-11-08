@@ -2,11 +2,10 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: forecast_task_12.py
+# SCRIPT: check_preprocess_forecast_files.py
 #
-# PURPOSE: Prepares an all zero V10M variable for LIS preparation due to the
-# USAF-LIS observational forcing only including average windspeed. Based on
-# FORECAST_TASK_12.sh.
+# PURPOSE: Check the final file size and count of output. Based on
+# Check_Preprocess_Finalfiles.F.sh.
 #
 # REVISION HISTORY:
 # 24 Oct 2021: Ryan Zamora, first version
@@ -18,19 +17,10 @@
 # Standard modules
 #
 
+import configparser
 import os
 import subprocess
 import sys
-
-#
-# Local constants.  FIXME:  Put in single location for whole system
-#
-
-# Path of the main project directory
-PROJDIR="/discover/nobackup/projects/usaf_lis/razamora/GHI_S2S/AFRICOM"
-
-# Path for where forecast files are located:
-FORCEDIR="{}/data/forecast/NMME/final/6-Hourly".format(PROJDIR)
 
 #
 # Local methods
@@ -38,107 +28,120 @@ FORCEDIR="{}/data/forecast/NMME/final/6-Hourly".format(PROJDIR)
 
 def usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: {} MONTH_ABBR CURRENT_YEAR NMME_MODEL LEAD_MONTHS"\
-        .format(sys.argv[0])
+    txt =f"[INFO] Usage: {(sys.argv[0])} month_abbr current_year nmme_model lead_months config_file"
     print(txt)
     print("[INFO] where")
-    print("[INFO] MONTH_ABBR: Abbreviation of the initialization month")
-    print("[INFO] CURRENT_YEAR: Current year of forecast")
-    print("[INFO] NMME_MODEL: NMME model name")
-    print("[INFO] LEAD_MONTHS: Number of lead months")
+    print("[INFO] month_abbr: Abbreviation of the initialization month")
+    print("[INFO] current_year: Current year of forecast")
+    print("[INFO] nmme_model: NMME model name")
+    print("[INFO] lead_months: Number of lead months")
 
 def read_cmd_args():
     """Read command line arguments."""
 
-    if len(sys.argv) != 5:
+    if len(sys.argv) != 6:
         print("[ERR] Invalid number of command line arguments!")
         usage()
         sys.exit(1)
 
-    # MONTH_ABBR
-    MONTH_ABBR = str(sys.argv[1])
+    # month_abbr
+    month_abbr = str(sys.argv[1])
 
-    # CURRENT_YEAR
+    # current_year
     try:
-        CURRENT_YEAR = int(sys.argv[2])
+        current_year = int(sys.argv[2])
     except ValueError:
-        print("[ERR] Invalid argument for CURRENT_YEAR!  Received {}" \
-            .format(sys.argv[2]))
+        print(f"[ERR] Invalid argument for current_year! Received {(sys.argv[2])}")
         usage()
         sys.exit(1)
-    if CURRENT_YEAR < 0:
-        print("[ERR] Invalid argument for CURRENT_YEAR!  Received {}" \
-              .format(sys.argv[2]))
+    if current_year < 0:
+        print(f"[ERR] Invalid argument for current_year! Received {(sys.argv[2])}")
         usage()
         sys.exit(1)
 
-    # NMME_MODEL
-    NMME_MODEL = str(sys.argv[3])
+    # nmme_model
+    nmme_model = str(sys.argv[3])
 
-    # LEAD_MONTHS
+    # lead_months
     try:
-        LEAD_MONTHS = int(sys.argv[4])
+        lead_months = int(sys.argv[4])
     except ValueError:
-        print("[ERR] Invalid argument for LEAD_MONTHS!  Received {}" \
-              .format(sys.argv[4]))
+        print(f"[ERR] Invalid argument for lead_months! Received {(sys.argv[4])}")
         usage()
         sys.exit(1)
-    if LEAD_MONTHS < 0:
-        print("[ERR] Invalid argument for LEAD_MONTHS!  Received {}" \
-              .format(sys.argv[4]))
+    if lead_months < 0:
+        print(f"[ERR] Invalid argument for lead_months! Received {(sys.argv[4])}")
         usage()
         sys.exit(1)
 
-    return MONTH_ABBR, CURRENT_YEAR, NMME_MODEL, LEAD_MONTHS
+    # config_file
+    config_file = sys.argv[5]
+    if not os.path.exists(config_file):
+        print(f"[ERR] {config_file} does not exist!")
+        sys.exit(1)
 
-def gather_ensemble_info(NMME_MODEL):
+    return month_abbr, current_year, nmme_model, lead_months, config_file
+
+def read_config(config_file):
+    """Read from bcsd_preproc config file."""
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    return config
+
+def gather_ensemble_info(nmme_model):
     """Gathers ensemble information based on NMME model."""
 
-    # Number of ensembles in the forecast (ENS_NUM)
-    if NMME_MODEL == "CFSv2":
-        ENS_NUM=24
-    elif NMME_MODEL == "GEOSv2":
-        ENS_NUM=10
-    elif NMME_MODEL == "CCM4":
-        ENS_NUM=10
-    elif NMME_MODEL == "GNEMO":
-        ENS_NUM=10
-    elif NMME_MODEL == "CCSM4":
-        ENS_NUM=10
-    elif NMME_MODEL == "GFDL":
-        ENS_NUM=30
+    # Number of ensembles in the forecast (ens_num)
+    if nmme_model == "CFSv2":
+        ens_num=24
+    elif nmme_model == "GEOSv2":
+        ens_num=10
+    elif nmme_model == "CCM4":
+        ens_num=10
+    elif nmme_model == "GNEMO":
+        ens_num=10
+    elif nmme_model == "CCSM4":
+        ens_num=10
+    elif nmme_model == "GFDL":
+        ens_num=30
     else:
-        print("[ERR] Invalid argument for NMME_MODEL!  Received {}" \
-            .format(NMME_MODEL))
+        print(f"[ERR] Invalid argument for nmme_model!  Received {nmme_model}")
         sys.exit(1)
 
-    return ENS_NUM
+    return ens_num
 
 def driver():
     """Main driver."""
+    month_abbr, current_year, nmme_model, lead_months, config_file = read_cmd_args()
 
-    MONTH_ABBR, CURRENT_YEAR, NMME_MODEL, LEAD_MONTHS = read_cmd_args()
+    # Setup local directories
+    config = read_config(config_file)
 
-    ENS_NUM = gather_ensemble_info(NMME_MODEL)
+    # Path of the main project directory
+    projdir = config["bcsd_preproc"]["projdir"]
 
-    FILE_COUNT=2*(LEAD_MONTHS + 1)*ENS_NUM
-    FILE_SIZE=26*ENS_NUM
+    # Path for where forecast files are located:
+    forcedir=f"{projdir}/data/forecast/NMME/final/6-Hourly"
 
-    FINAL_DIR="{}/{}/{}/{}01"\
-        .format(FORCEDIR, NMME_MODEL, CURRENT_YEAR, MONTH_ABBR)
+    ens_num = gather_ensemble_info(nmme_model)
 
-    print("{}: {} {}".format(NMME_MODEL, MONTH_ABBR, CURRENT_YEAR))
-    print("Expected file count is: {}".format(FILE_COUNT))
+    file_count=2*(lead_months + 1)*ens_num
+    file_size=26*ens_num
+
+    final_dir=f"{forcedir}/{nmme_model}/{current_year}/{month_abbr}01"
+
+    print(f"{nmme_model}: {month_abbr} {current_year}")
+    print(f"Expected file count is: {file_count}")
     print("Actual file count is:")
-    cmd = "ls {}/ens*/* | wc -l".format(FINAL_DIR)
+    cmd = f"ls {final_dir}/ens*/* | wc -l"
     returncode = subprocess.call(cmd, shell=True)
     if returncode != 0:
         print("[ERR] Problem calling file count subroutine!")
         sys.exit(1)
 
-    print("Expected directory size is approximately: {} MB".format(FILE_SIZE))
+    print(f"Expected directory size is approximately: {file_size} MB")
     print("Actual directory size is:")
-    cmd = "du -sm {} | cut -f1".format(FINAL_DIR)
+    cmd = f"du -sm {final_dir} | cut -f1"
     returncode = subprocess.call(cmd, shell=True)
     if returncode != 0:
         print("[ERR] Problem calling file size subroutine!")

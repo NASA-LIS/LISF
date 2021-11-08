@@ -17,25 +17,12 @@
 # Standard modules
 #
 
+import configparser
 import os
 import subprocess
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
-
-#
-# Local constants.  FIXME:  Put in single location for whole system
-#
-
-# Path of the main project directory
-PROJDIR="/discover/nobackup/projects/usaf_lis/razamora/GHI_S2S/AFRICOM"
-
-# Path of the final nmme directory
-NMME_DATA_DIR="{projdir}/data/forecast/NMME/final/6-Hourly"\
-    .format(projdir=PROJDIR)
-
-# Array of all NMME models
-NMME_MODELS=["CFSv2", "GEOSv2", "CCSM4", "CCM4", "GNEMO", "GFDL"]
 
 #
 # Local methods
@@ -43,126 +30,143 @@ NMME_MODELS=["CFSv2", "GEOSv2", "CCSM4", "CCM4", "GNEMO", "GFDL"]
 
 def usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: {} MONTH_ABBR MONTH_NUM CURRENT_YEAR"\
-        .format(sys.argv[0])
+    txt = f"[INFO] Usage: {(sys.argv[0])} month_abbr month_num current_year "\
+    "lead_months config_file"
     print(txt)
     print("[INFO] where")
-    print("[INFO] MONTH_ABBR: Abbreviation of the initialization month")
-    print("[INFO] MONTH_NUM: Integer number of the initialization month")
-    print("[INFO] CURRENT_YEAR: Current year of forecast")
-    print("[INFO] LEAD_MONTHS: Number of lead months")
+    print("[INFO] month_abbr: Abbreviation of the initialization month")
+    print("[INFO] month_num: Integer number of the initialization month")
+    print("[INFO] current_year: Current year of forecast")
+    print("[INFO] lead_months: Number of lead months")
+    print("[INFO] config_file: Config file that sets up environment")
 
 def read_cmd_args():
     """Read command line arguments."""
 
-    if len(sys.argv) != 5:
+    if len(sys.argv) != 6:
         print("[ERR] Invalid number of command line arguments!")
         usage()
         sys.exit(1)
 
-    # MONTH_ABBR
-    MONTH_ABBR = str(sys.argv[1])
+    # month_abbr
+    month_abbr = str(sys.argv[1])
 
-    # MONTH_NUM
+    # month_num
     try:
-        MONTH_NUM = int(sys.argv[2])
+        month_num = int(sys.argv[2])
     except ValueError:
-        print("[ERR] Invalid argument for MONTH_NUM!  Received {}" \
-              .format(sys.argv[2]))
+        print(f"[ERR] Invalid argument for month_num! Received {(sys.argv[2])}")
         usage()
         sys.exit(1)
-    if MONTH_NUM < 1:
-        print("[ERR] Invalid argument for MONTH_NUM!  Received {}" \
-              .format(sys.argv[2]))
+    if month_num < 1:
+        print(f"[ERR] Invalid argument for month_num! Received {(sys.argv[2])}")
         usage()
         sys.exit(1)
-    if MONTH_NUM > 12:
-        print("[ERR] Invalid argument for MONTH_NUM!  Received {}" \
-              .format(sys.argv[2]))
+    if month_num > 12:
+        print(f"[ERR] Invalid argument for month_num! Received {(sys.argv[2])}")
         usage()
         sys.exit(1)
 
-    # CURRENT_YEAR
+    # current_year
     try:
-        CURRENT_YEAR = int(sys.argv[3])
+        current_year = int(sys.argv[3])
     except ValueError:
-        print("[ERR] Invalid argument for CURRENT_YEAR!  Received {}" \
-            .format(sys.argv[3]))
+        print(f"[ERR] Invalid argument for current_year! Received {(sys.argv[3])}")
         usage()
         sys.exit(1)
-    if CURRENT_YEAR < 0:
-        print("[ERR] Invalid argument for CURRENT_YEAR!  Received {}" \
-              .format(sys.argv[3]))
+    if current_year < 0:
+        print(f"[ERR] Invalid argument for current_year! Received {(sys.argv[3])}")
         usage()
         sys.exit(1)
 
-    # LEAD_MONTHS
+    # lead_months
     try:
-        LEAD_MONTHS = int(sys.argv[4])
+        lead_months = int(sys.argv[4])
     except ValueError:
-        print("[ERR] Invalid argument for LEAD_MONTHS!  Received {}" \
-              .format(sys.argv[4]))
+        print(f"[ERR] Invalid argument for lead_months! Received {(sys.argv[4])}")
         usage()
         sys.exit(1)
-    if LEAD_MONTHS < 0:
-        print("[ERR] Invalid argument for LEAD_MONTHS!  Received {}" \
-              .format(sys.argv[4]))
+    if lead_months < 0:
+        print(f"[ERR] Invalid argument for lead_months! Received {(sys.argv[4])}")
         usage()
         sys.exit(1)
 
-    return MONTH_ABBR, MONTH_NUM, CURRENT_YEAR, LEAD_MONTHS
+    # config_file
+    config_file = sys.argv[5]
+    if not os.path.exists(config_file):
+        print(f"[ERR] {config_file} does not exist!")
+        sys.exit(1)
 
-def gather_ensemble_info(NMME_MODEL):
+    return month_abbr, month_num, current_year, lead_months, config_file
+
+def read_config(config_file):
+    """Read from bcsd_preproc config file."""
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    return config
+
+def gather_ensemble_info(nmme_model):
     """Gathers ensemble information based on NMME model."""
 
-    # Number of ensembles in the forecast (ENS_NUM)
-    if NMME_MODEL == "CFSv2":
-        ENS_NUM=24
-    elif NMME_MODEL == "GEOSv2":
-        ENS_NUM=10
-    elif NMME_MODEL == "CCM4":
-        ENS_NUM=10
-    elif NMME_MODEL == "GNEMO":
-        ENS_NUM=10
-    elif NMME_MODEL == "CCSM4":
-        ENS_NUM=10
-    elif NMME_MODEL == "GFDL":
-        ENS_NUM=30
+    # Number of ensembles in the forecast (ens_num)
+    if nmme_model == "CFSv2":
+        ens_num=24
+    elif nmme_model == "GEOSv2":
+        ens_num=10
+    elif nmme_model == "CCM4":
+        ens_num=10
+    elif nmme_model == "GNEMO":
+        ens_num=10
+    elif nmme_model == "CCSM4":
+        ens_num=10
+    elif nmme_model == "GFDL":
+        ens_num=30
     else:
-        print("[ERR] Invalid argument for NMME_MODEL!  Received {}" \
-            .format(NMME_MODEL))
+        print(f"[ERR] Invalid argument for nmme_model!  Received {nmme_model}")
         sys.exit(1)
 
-    return ENS_NUM
+    return ens_num
 
-def gather_date_info(CURRENT_YEAR, MONTH_NUM, LEAD_MONTHS):
+def gather_date_info(current_year, month_num, lead_months):
     """Gathers monthly date information based on fcst and lead months."""
 
-    INIT_DATETIME = datetime(CURRENT_YEAR, MONTH_NUM, 1)
-    SRC_DATETIME = INIT_DATETIME + relativedelta(months=(LEAD_MONTHS-1))
-    DST_DATETIME = INIT_DATETIME + relativedelta(months=(LEAD_MONTHS))
+    init_datetime = datetime(current_year, month_num, 1)
+    src_datetime = init_datetime + relativedelta(months=(lead_months-1))
+    dst_datetime = init_datetime + relativedelta(months=(lead_months))
 
-    SRC_DATE = SRC_DATETIME.strftime("%Y%m")
-    DST_DATE = DST_DATETIME.strftime("%Y%m")
+    src_date = src_datetime.strftime("%Y%m")
+    dst_date = dst_datetime.strftime("%Y%m")
 
-    return SRC_DATE, DST_DATE
+    return src_date, dst_date
 
 def driver():
     """Main driver."""
-    MONTH_ABBR, MONTH_NUM, CURRENT_YEAR, LEAD_MONTHS = read_cmd_args()
+    month_abbr, month_num, current_year, lead_months, \
+        config_file = read_cmd_args()
 
-    SRC_DATE, DST_DATE = gather_date_info(CURRENT_YEAR, MONTH_NUM, LEAD_MONTHS)
+    # Setup local directories
+    config = read_config(config_file)
 
-    for NMME_MODEL in NMME_MODELS:
-        ENS_NUM = gather_ensemble_info(NMME_MODEL)
+    # Path of the main project directory
+    projdir = config["bcsd_preproc"]["projdir"]
 
-        for MEMBER in range(1,ENS_NUM+1):
-            DIR="{}/{}/{}/{}01/ens{}".format(NMME_DATA_DIR, NMME_MODEL, \
-                CURRENT_YEAR, MONTH_ABBR, MEMBER)
+    # Path of the final nmme directory
+    nmme_data_dir=f"{projdir}/data/forecast/NMME/final/6-Hourly"
+
+    # Array of all NMME models
+    nmme_models=["CFSv2", "GEOSv2", "CCSM4", "CCM4", "GNEMO", "GFDL"]
+    src_date, dst_date = gather_date_info(current_year, month_num, lead_months)
+
+    for nmme_model in nmme_models:
+        ens_num = gather_ensemble_info(nmme_model)
+
+        for member in range(1,ens_num+1):
+            outdir=f"{nmme_data_dir}/{nmme_model}/{current_year}/{month_abbr}01/ens{member}"
 
             cmd = "cp"
-            cmd += " {}/PRECTOT.{}.nc4".format(DIR, SRC_DATE)
-            cmd += " {}/PRECTOT.{}.nc4".format(DIR, DST_DATE)
+            cmd += f" {outdir}/PRECTOT.{src_date}.nc4"
+            cmd += f" {outdir}/PRECTOT.{dst_date}.nc4"
+            print(cmd)
             returncode = subprocess.call(cmd, shell=True)
             if returncode != 0:
                 print("[ERR] Problem calling copy subroutine!")
@@ -173,5 +177,3 @@ def driver():
 #
 if __name__ == "__main__":
     driver()
-
-
