@@ -1006,6 +1006,8 @@ subroutine NoahMP401_main(n)
             ! get state and output 
             do row = min_row, max_row
                 do col = min_col, max_col
+                    NOAHMP401_struc(n)%eqwtd(row, col) = eqwtd(col,row)
+
                     t = NOAHMP401_struc(n)%rct_idx(row,col) ! rct_idx is row major, Shugong Wang 
                     if (t .eq. LIS_rc%udef)  cycle 
                     noahmp401_struc(n)%noahmp401(t)%smc(:)      = smois(col, :, row)
