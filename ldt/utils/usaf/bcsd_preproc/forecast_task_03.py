@@ -22,12 +22,12 @@ import sys
 # Local methods
 def _usage():
     """Print command line usage."""
-    txt = f"[INFO] Usage: {(sys.argv[0])} MONTH_NUM CURRENT_YEAR CONFIG_FILE"
+    txt = f"[INFO] Usage: {(sys.argv[0])} month_num current_year config_file"
     print(txt)
     print("[INFO] where")
-    print("[INFO] MONTH_NUM: Current integer month")
-    print("[INFO] CURRENT_YEAR: Current year")
-    print("[INFO] CONFIG_FILE: Config file that sets up environment")
+    print("[INFO] month_num: Current integer month")
+    print("[INFO] current_year: Current year")
+    print("[INFO] config_file: Config file that sets up environment")
 
 def _read_cmd_args():
     """Read command line arguments."""
@@ -38,69 +38,69 @@ def _read_cmd_args():
         sys.exit(1)
 
     try:
-        MONTH_NUM = int(sys.argv[1])
+        month_num = int(sys.argv[1])
     except ValueError:
-        print(f"[ERR] Invalid argument for MONTH_NUM! Received {(sys.argv[1])}")
+        print(f"[ERR] Invalid argument for month_num! Received {(sys.argv[1])}")
         _usage()
         sys.exit(1)
-    if MONTH_NUM < 0:
-        print(f"[ERR] Invalid argument for MONTH_NUM! Received {(sys.argv[1])}")
+    if month_num < 0:
+        print(f"[ERR] Invalid argument for month_num! Received {(sys.argv[1])}")
         _usage()
         sys.exit(1)
 
     try:
-        CURRENT_YEAR = int(sys.argv[2])
+        current_year = int(sys.argv[2])
     except ValueError:
-        print(f"[ERR] Invalid argument for CURRENT_YEAR! Received {(sys.argv[2])}")
+        print(f"[ERR] Invalid argument for current_year! Received {(sys.argv[2])}")
         _usage()
         sys.exit(1)
-    if CURRENT_YEAR < 0:
-        print(f"[ERR] Invalid argument for CURRENT_YEAR! Received {(sys.argv[2])}")
+    if current_year < 0:
+        print(f"[ERR] Invalid argument for current_year! Received {(sys.argv[2])}")
         _usage()
         sys.exit(1)
 
-    # CONFIG_FILE
-    CONFIG_FILE = sys.argv[3]
-    if not os.path.exists(CONFIG_FILE):
-        print(f"[ERR] {CONFIG_FILE} does not exist!")
+    # config_file
+    config_file = sys.argv[3]
+    if not os.path.exists(config_file):
+        print(f"[ERR] {config_file} does not exist!")
         sys.exit(1)
 
-    return MONTH_NUM, CURRENT_YEAR, CONFIG_FILE
+    return month_num, current_year, config_file
 
-def read_config(CONFIG_FILE):
+def read_config(config_file):
     """Read from bcsd_preproc config file."""
     config = configparser.ConfigParser()
-    config.read(CONFIG_FILE)
+    config.read(config_file)
     return config
 
 def _driver():
     """Main driver."""
-    MONTH_NUM, CURRENT_YEAR, CONFIG_FILE = _read_cmd_args()
+    month_num, current_year, config_file = _read_cmd_args()
 
     # Setup local directories
-    config = read_config(CONFIG_FILE)
+    config = read_config(config_file)
 
     # Path of the main project directory
-    PROJDIR = config["bcsd_preproc"]["projdir"]
+    projdir = config["bcsd_preproc"]["projdir"]
 
     # Path of the directory where all the BC codes are kept
-    SRCDIR = config["bcsd_preproc"]["srcdir"]
+    srcdir = config["bcsd_preproc"]["srcdir"]
 
     # Path of the directory where supplementary files are kept
-    SUPPLEMENTARY_DIR = config["bcsd_preproc"]["supplementary_dir"]
+    supplementary_dir = config["bcsd_preproc"]["supplementary_dir"]
 
     # Path for where raw and bias corrected forecast files are located:
-    NMME_DOWNLOAD_DIR = config["bcsd_preproc"]["nmme_download_dir"]
-    FORCEDIR = f"{PROJDIR}/data/forecast/NMME"
-    NMME_OUTPUT_DIR=f"{FORCEDIR}/raw/Monthly"
+    nmme_download_dir = config["bcsd_preproc"]["nmme_download_dir"]
+    forcedir = f"{projdir}/data/forecast/NMME"
+    nmme_output_dir=f"{forcedir}/raw/Monthly"
 
     cmd = "python"
-    cmd += f" {SRCDIR}/nmme_reorg_f.py"
-    cmd += f" {MONTH_NUM}"
-    cmd += f" {CURRENT_YEAR}"
-    cmd += f" {NMME_DOWNLOAD_DIR}"
-    cmd += f" {NMME_OUTPUT_DIR}"
-    cmd += f" {SUPPLEMENTARY_DIR}"
+    cmd += f" {srcdir}/nmme_reorg_f.py"
+    cmd += f" {month_num}"
+    cmd += f" {current_year}"
+    cmd += f" {nmme_download_dir}"
+    cmd += f" {nmme_output_dir}"
+    cmd += f" {supplementary_dir}"
     returncode = subprocess.call(cmd, shell=True)
     if returncode != 0:
         print(f"[ERR] Problem calling python script: {cmd}.")
@@ -108,4 +108,3 @@ def _driver():
 
 if __name__ == "__main__":
     _driver()
-

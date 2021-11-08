@@ -23,13 +23,13 @@ import sys
 def _usage():
     """Print command line usage."""
     txt = f"[INFO] Usage: {(sys.argv[0])} fcst_syr fcst_eyr month_abbr "\
-        "CONFIG_FILE"
+        "config_file"
     print(txt)
     print("[INFO] where")
     print("[INFO] fcst_syr: Start year of forecast")
     print("[INFO] fcst_eyr: End year of forecast")
     print("[INFO] month_abbr: Abbreviated month to start forecast")
-    print("[INFO] CONFIG_FILE: Config file that sets up environment")
+    print("[INFO] config_file: Config file that sets up environment")
 
 def _read_cmd_args():
     """Read command line arguments."""
@@ -66,18 +66,18 @@ def _read_cmd_args():
     # month_abbr
     month_abbr = sys.argv[3]
 
-    # CONFIG_FILE
-    CONFIG_FILE = sys.argv[4]
-    if not os.path.exists(CONFIG_FILE):
-        print(f"[ERR] {CONFIG_FILE} does not exist!")
+    # config_file
+    config_file = sys.argv[4]
+    if not os.path.exists(config_file):
+        print(f"[ERR] {config_file} does not exist!")
         sys.exit(1)
 
-    return fcst_syr, fcst_eyr, month_abbr, CONFIG_FILE
+    return fcst_syr, fcst_eyr, month_abbr, config_file
 
-def read_config(CONFIG_FILE):
+def read_config(config_file):
     """Read from bcsd_preproc config file."""
     config = configparser.ConfigParser()
-    config.read(CONFIG_FILE)
+    config.read(config_file)
     return config
 
 def calc_ic_dates(icmon):
@@ -109,35 +109,34 @@ def calc_ic_dates(icmon):
 
 def _driver():
     """Main driver."""
-    fcst_syr, fcst_eyr, month_abbr, CONFIG_FILE = _read_cmd_args()
+    fcst_syr, fcst_eyr, month_abbr, config_file = _read_cmd_args()
 
     # Setup local directories
-    config = read_config(CONFIG_FILE)
+    config = read_config(config_file)
 
     # Path of the main project directory
-    _PROJDIR = config["bcsd_preproc"]["projdir"]
+    projdir = config["bcsd_preproc"]["projdir"]
 
     # Path of the directory where all the BC codes are kept
-    _SRCDIR = config["bcsd_preproc"]["srcdir"]
+    srcdir = config["bcsd_preproc"]["srcdir"]
 
     # Path of the directory where patch files for missing data are kept
-    _PATCHDIR = config["bcsd_preproc"]["patchdir"]
+    patchdir = config["bcsd_preproc"]["patchdir"]
 
     # Path of the directory where supplementary files are kept
-    _SUPPLEMENTARY_DIR = config["bcsd_preproc"]["supplementary_dir"]
+    supplementary_dir = config["bcsd_preproc"]["supplementary_dir"]
 
     # Log file output directory
-    _LOGDIR = config["bcsd_preproc"]["logdir"]
+    logdir = config["bcsd_preproc"]["logdir"]
 
     # Paths for the daily forecast data (input and output paths)
-    _FORCEDIR = config["bcsd_preproc"]["fcst_download_dir"]
-    _OUTDIR = f"{_PROJDIR}/data/forecast/CFSv2_25km/raw"
-    _GRIDDESC = f"{_SUPPLEMENTARY_DIR}/CFSv2_25km_AFRICOM_grid_description.txt"
+    forcedir = config["bcsd_preproc"]["fcst_download_dir"]
+    outdir = f"{projdir}/data/forecast/CFSv2_25km/raw"
+    griddesc = f"{supplementary_dir}/CFSv2_25km_AFRICOM_grid_description.txt"
 
-    if not os.path.exists(_LOGDIR):
-        os.makedirs(_LOGDIR)
+    if not os.path.exists(logdir):
+        os.makedirs(logdir)
 
-#    imon = "%s01" %(month_abbr)
     imon = f"{month_abbr}01"
     ic_dates = calc_ic_dates(imon)
 
@@ -145,15 +144,15 @@ def _driver():
     print("[INFO] Processing CFSv2 3-hrly forecast variables")
     for year in range(fcst_syr, (fcst_eyr + 1)):
         cmd = "sbatch"
-        cmd += f" {_SRCDIR}/run_process_forecast_data.scr"
+        cmd += f" {srcdir}/run_process_forecast_data.scr"
         cmd += f" {year:04d}"
         cmd += f" {year:04d}"
         cmd += f" {imon}"
-        cmd += f" {_SRCDIR}"
-        cmd += f" {_OUTDIR}"
-        cmd += f" {_FORCEDIR}"
-        cmd += f" {_GRIDDESC}"
-        cmd += f" {_PATCHDIR}"
+        cmd += f" {srcdir}"
+        cmd += f" {outdir}"
+        cmd += f" {forcedir}"
+        cmd += f" {griddesc}"
+        cmd += f" {patchdir}"
         for ic_date in ic_dates:
             cmd += f" {ic_date}"
         returncode = subprocess.call(cmd, shell=True)
