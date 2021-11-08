@@ -138,17 +138,17 @@ def _customize_lisconfig(lisconfig_target, config, dates, \
     rst_monname = dates['start'].strftime("%b")
     lis_rstdir = f"./input/LDT_ICs/{nmme_model}"
     lis_rstfile = \
-        f"{lis_rstdir}/LIS_RST_{config['lisda']['lsmname']}_{rst_date}" + \
+        f"{lis_rstdir}/LIS_RST_{config['lisda']['lsmname'].upper()}_{rst_date}" + \
         f"2345.ICS_{rst_monname}{dates['start'].year:04d}." + \
         f"ens{_NUM_ENSMEMBERS[nmme_model]}.nc"
     data = data.replace("LISRSTFILE", f"{lis_rstfile}")
 
     hymap_rstdir = f"./input/LDT_ICs/{nmme_model}"
     hymap_rstfile = \
-            f"{hymap_rstdir}/LIS_RST_{config['lisda']['routingname']}" + \
-            f"_router_{rst_date}2345.{rst_monname}" + \
+            f"{hymap_rstdir}/LIS_RST_{config['lisda']['routingname'].upper()}" + \
+            f"_router_{rst_date}2345.ICS_{rst_monname}" + \
             f"{dates['start'].year:04d}." + \
-            f"ens{_NUM_ENSMEMBERS[nmme_model]}.nc"
+            f"ens1.nc"
     data = data.replace("HYMAPRSTFILE", f"{hymap_rstfile}")
 
     data = data.replace("FCSTDIR", f"{fcstdir}")
