@@ -28,13 +28,13 @@ def _usage():
     """Print command line usage."""
     txt = \
         f"[INFO] Usage: {sys.argv[0]} syr eyr fcst_init_monthday srcdir outdir"
-    txt += " forcedir grid_description ic1 ic2 ic3"
+    txt += " forcedir grid_description patchdir ic1 ic2 ic3"
     print(txt)
 
 def _read_cmd_args():
     """Read command line arguments."""
 
-    if len(sys.argv) != 11:
+    if len(sys.argv) != 12:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
@@ -47,9 +47,10 @@ def _read_cmd_args():
         "outdir" : sys.argv[5],
         "forcedir" : sys.argv[6],
         "grid_description" : sys.argv[7],
-        "ic1" : sys.argv[8],
-        "ic2" : sys.argv[9],
-        "ic3" : sys.argv[10],
+        "patchdir" : sys.argv[8],
+        "ic1" : sys.argv[9],
+        "ic2" : sys.argv[10],
+        "ic3" : sys.argv[11],
     }
     ic1 = args['ic1']
     ic2 = args['ic2']
@@ -66,7 +67,7 @@ def _read_cmd_args():
 def _set_input_file_info(input_fcst_year, input_fcst_month, input_fcst_var):
     """Set input file information"""
     cutoff_refor_yyyymm = 201103
-    cutoff_oper_yyyymm = 202012
+    cutoff_oper_yyyymm = 202112
     current_yyyymm = (100 * input_fcst_year) + input_fcst_month
 
     # Up to apr1 2011 - Refor_HPS (dlwsfc, dswsfc, q2m, wnd10m), Refor_FL
@@ -94,9 +95,12 @@ def _migrate_to_monthly_files(outdirs, temp_name, wanted_months,
                               fcst_init, args):
     """Migrate variables into monthly netCDF files"""
 
-    outdir_6hourly = outdirs["output_6hourly"]
-    outdir_monthly = outdirs["output_monthly"]
+    outdir_6hourly = outdirs["outdir_6hourly"]
+    outdir_monthly = outdirs["outdir_monthly"]
     final_name_pfx = f"{fcst_init['monthday']}.cfsv2."
+    reftime = \
+         f"{fcst_init['year']}-{fcst_init['month']}-{fcst_init['day']}"
+    reftime += f",{fcst_init['hour']}:00:00,1hour"
 
     # Merge all variables into a single file
     cmd = "cdo --no_history merge "
@@ -115,10 +119,10 @@ def _migrate_to_monthly_files(outdirs, temp_name, wanted_months,
     subprocess.run(cmd, shell=True, check=True)
 
     # Convert all variable names and set missing value to -9999.f
-    cmd = "cdo -no_history -setmissval,-9999. " + \
-        " -chname,DSWRF_surface,SLRSF,DLWRF_surface,LWS," + \
+    cmd = "cdo --no_history -setmissval,-9999. " + \
+        "-chname,DSWRF_surface,SLRSF,DLWRF_surface,LWS," + \
         "PRATE_surface,PRECTOT,PRES_surface,PS," + \
-        "SPFH_2maboveground,Q2M,TMP_2maboveground,T2M" + \
+        "SPFH_2maboveground,Q2M,TMP_2maboveground,T2M," + \
         "UGRD_10maboveground,U10M,VGRD_10maboveground,V10M" + \
         f" {outdir_6hourly}/junk3_{temp_name}" + \
         f" {outdir_6hourly}/junk4_{temp_name}"
@@ -143,8 +147,8 @@ def _migrate_to_monthly_files(outdirs, temp_name, wanted_months,
     subprocess.run(cmd, shell=True, check=True)
 
     cmd = "cdo --no_history "
-    cmd += f"-remapbil,${args['grid_description']} "
-    cmd += f"-setreftime,${args['reftime']} "
+    cmd += f"-remapbil,{args['grid_description']} "
+    cmd += f"-setreftime,{reftime} "
     cmd += f"{outdir_6hourly}/junk6_{temp_name} "
     cmd += f"{outdir_6hourly}/junk7_{temp_name}"
     print(cmd)
@@ -166,7 +170,7 @@ def _migrate_to_monthly_files(outdirs, temp_name, wanted_months,
     subprocess.run(cmd, shell=True, check=True)
 
     # Cleanup intermediate files
-    files = glob.glob(f"{outdir_6hourly}/junk*{final_name_pfx}")
+    files = glob.glob(f"{outdir_6hourly}/junk*{temp_name}")
     for tmpfile in files:
         os.unlink(tmpfile)
 
@@ -195,11 +199,11 @@ def _driver():
             fcst_init["year"] = year
 
         for ens_num in range(1, (len(args['all_ensmembers']) + 1)):
-            monthday = args['all_ensmembers'][ens_num - 1]
+            monthday = args['all_monthdays'][ens_num - 1]
             temp_name = f"cfsv2.{fcst_init['year']}{monthday}.nc"
             fcst_init['date'] = f"{fcst_init['year']}{monthday}"
-            fcst_init['month'] = f"{monthday[0:2]}"
-            fcst_init['day'] = f"{monthday[2:4]}"
+            fcst_init['month'] = int(monthday[0:2])
+            fcst_init['day'] = int(monthday[2:4])
             fcst_init['hour'] = args['all_ensmembers'][ens_num - 1]
             fcst_init['timestring'] = f"{fcst_init['date']}{fcst_init['hour']}"
             wanted_months = []
@@ -208,6 +212,7 @@ def _driver():
             for i in range(1, int(fcst_init['month'])):
                 wanted_months.append(i)
             wanted_months = wanted_months[0:9]
+
             _print_reftime(fcst_init, ens_num)
 
             outdirs['outdir_6hourly'] = \
@@ -228,14 +233,14 @@ def _driver():
                     _set_input_file_info(fcst_init['year'],
                                          fcst_init['month'],
                                          varname)
-                indir = f"{args['forcedir']}{subdir}"
-                indir += f"{fcst_init['year']}{fcst_init['date']}"
+                indir = f"{args['forcedir']}/{subdir}/"
+                indir += f"{fcst_init['year']}/{fcst_init['date']}"
 
                 # Convert GRIB file to netCDF and handle missing/corrupted data
                 cmd = f"{args['srcdir']}/convert_forecast_data_to_netcdf.py"
-                cmd += f" {args['indir']} {file_pfx} {fcst_init['timestring']}"
+                cmd += f" {indir} {file_pfx} {fcst_init['timestring']}"
                 cmd += f" {file_sfx} {outdirs['outdir_6hourly']}"
-                cmd += f" {temp_name} {varname}"
+                cmd += f" {temp_name} {varname} {args['patchdir']}"
                 print(cmd)
                 subprocess.run(cmd, shell=True, check=True)
 

@@ -17,32 +17,12 @@
 # Standard modules
 #
 
+import configparser
 import os
 import subprocess
 import sys
-from datetime import datetime, timedelta
-#import calendar
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
-#
-# Local constants.  FIXME:  Put in single location for whole system
-#
-
-# Path of the main project directory
-PROJDIR='/discover/nobackup/projects/usaf_lis/razamora/GHI_S2S/AFRICOM'
-
-# Path of the directory where all the BC codes are kept:
-SRCDIR="{}/scripts/code_library".format(PROJDIR)
-
-#  Log file output directory
-LOGDIR="{}/scripts/log_files".format(PROJDIR)
-
-# Path for the final 6-hourly forcing dataets:
-FORCEDIR_FCST="{}/data/forecast/CFSv2_25km".format(PROJDIR)
-FORCEDIR_NMME="{}/data/forecast/NMME".format(PROJDIR)
-
-# Base model prefixes for forecast files
-BASEMODNAME_SRC="CFSv2"
-BASEMODNAME_DST="GEOS5"
 
 #
 # Local methods
@@ -50,123 +30,115 @@ BASEMODNAME_DST="GEOS5"
 
 def usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: {} MONTH_ABBR MONTH_NUM CURRENT_YEAR NMME_MODEL"\
-        .format(sys.argv[0])
+    txt = "[INFO] Usage: {(sys.argv[0])} MONTH_ABBR MONTH_NUM CURRENT_YEAR NMME_MODEL CONFIG_FILE"
     print(txt)
     print("[INFO] where")
     print("[INFO] MONTH_ABBR: Abbreviation of the initialization month")
     print("[INFO] MONTH_NUM: Integer number of the initialization month")
     print("[INFO] CURRENT_YEAR: Current year of forecast")
     print("[INFO] NMME_MODEL: NMME model name")
+    print("[INFO] CONFIG_FILE: Config file that sets up environment")
 
 def read_cmd_args():
     """Read command line arguments."""
 
-    if len(sys.argv) != 5:
+    if len(sys.argv) != 6:
         print("[ERR] Invalid number of command line arguments!")
         usage()
         sys.exit(1)
 
     # MONTH_ABBR
-    MONTH_ABBR = str(sys.argv[1])
+    month_abbr = str(sys.argv[1])
 
     # MONTH_NUM
     try:
-        MONTH_NUM = int(sys.argv[2])
+        month_num = int(sys.argv[2])
     except ValueError:
-        print("[ERR] Invalid argument for MONTH_NUM!  Received {}" \
-              .format(sys.argv[2]))
+        print(f"[ERR] Invalid argument for MONTH_NUM! Received {(sys.argv[2])}")
         usage()
         sys.exit(1)
-    if MONTH_NUM < 1:
-        print("[ERR] Invalid argument for MONTH_NUM!  Received {}" \
-              .format(sys.argv[2]))
+    if month_num < 1:
+        print(f"[ERR] Invalid argument for MONTH_NUM! Received {(sys.argv[2])}")
         usage()
         sys.exit(1)
-    if MONTH_NUM > 12:
-        print("[ERR] Invalid argument for MONTH_NUM!  Received {}" \
-              .format(sys.argv[2]))
+    if month_num > 12:
+        print(f"[ERR] Invalid argument for MONTH_NUM! Received {(sys.argv[2])}")
         usage()
         sys.exit(1)
 
     # CURRENT_YEAR
     try:
-        CURRENT_YEAR = int(sys.argv[3])
+        current_year = int(sys.argv[3])
     except ValueError:
-        print("[ERR] Invalid argument for CURRENT_YEAR!  Received {}" \
-            .format(sys.argv[3]))
+        print(f"[ERR] Invalid argument for CURRENT_YEAR! Received {(sys.argv[3])}")
         usage()
         sys.exit(1)
-    if CURRENT_YEAR < 0:
-        print("[ERR] Invalid argument for CURRENT_YEAR!  Received {}" \
-              .format(sys.argv[3]))
+    if current_year < 0:
+        print(f"[ERR] Invalid argument for CURRENT_YEAR! Received {(sys.argv[3])}")
         usage()
         sys.exit(1)
 
     # NMME_MODEL
-    NMME_MODEL = str(sys.argv[4])
+    nmme_model = str(sys.argv[4])
 
-    return MONTH_ABBR, MONTH_NUM, CURRENT_YEAR, NMME_MODEL
+    # CONFIG_FILE
+    config_file = sys.argv[5]
+    if not os.path.exists(config_file):
+        print(f"[ERR] {config_file} does not exist!")
+        sys.exit(1)
 
-def gather_ensemble_info(NMME_MODEL):
+    return month_abbr, month_num, current_year, nmme_model, config_file
+
+def read_config(config_file):
+    """Read from bcsd_preproc config file."""
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    return config
+
+def gather_ensemble_info(nmme_model):
     """Gathers ensemble information based on NMME model."""
 
     # Number of ensembles in the forecast (ENS_NUM)
     # Ensemble start index (ENS_START)
     # Ensemble end index (ENS_END)
-    if NMME_MODEL == "CFSv2":
-        ENS_NUM=24
-        ENS_START=1
-        ENS_END=24
-        ENS_RANGE=list(range(1, 13)) + list(range(1,13))
-    elif NMME_MODEL == "GEOSv2":
-        ENS_NUM=10
-        ENS_START=25
-        ENS_END=34
-        ENS_RANGE=range(1, 11)
-    elif NMME_MODEL == "CCM4":
-        ENS_NUM=10
-        ENS_START=35
-        ENS_END=44
-        ENS_RANGE=range(1, 11)
-    elif NMME_MODEL == "GNEMO":
-        ENS_NUM=10
-        ENS_START=45
-        ENS_END=54
-        ENS_RANGE=range(1, 11)
-    elif NMME_MODEL == "CCSM4":
-        ENS_NUM=10
-        ENS_START=55
-        ENS_END=64
-        ENS_RANGE=range(1, 11)
-    elif NMME_MODEL == "GFDL":
-        ENS_NUM=30
-        ENS_START=65
-        ENS_END=94
-        ENS_RANGE=list(range(1, 13)) + list(range(1,13)) + list(range(1,7))
+    if nmme_model == "CFSv2":
+        ens_num=24
+        ens_range=list(range(1, 13)) + list(range(1,13))
+    elif nmme_model == "GEOSv2":
+        ens_num=10
+        ens_range=range(1, 11)
+    elif nmme_model == "CCM4":
+        ens_num=10
+        ens_range=range(1, 11)
+    elif nmme_model == "GNEMO":
+        ens_num=10
+        ens_range=range(1, 11)
+    elif nmme_model == "CCSM4":
+        ens_num=10
+        ens_range=range(1, 11)
+    elif nmme_model == "GFDL":
+        ens_num=30
+        ens_range=list(range(1, 13)) + list(range(1,13)) + list(range(1,7))
     else:
-        print("[ERR] Invalid argument for NMME_MODEL!  Received {}" \
-            .format(NMME_MODEL))
+        print(f"[ERR] Invalid argument for NMME_MODEL! Received {nmme_model}")
         sys.exit(1)
 
-    return ENS_NUM, ENS_START, ENS_END, ENS_RANGE
+    return ens_num, ens_range
 
-def copy_subdaily_precipitation(YEAR, MONTH_ABBR, ENS_NUM, INDIR_NMME, OUTDIR):
+def copy_subdaily_precipitation(year, month_abbr, ens_num, indir_nmme, outdir):
     """Copies the BC 6-Hourly precipition files to the final directory."""
 
-    for iens in range(1, (ENS_NUM + 1)):
-        print("[INFO] Copying precipitation files for: {}, ens {}/{}"\
-            .format(YEAR, iens, ENS_NUM))
+    for iens in range(1, (ens_num + 1)):
+        print(f"[INFO] Copying precipitation files for: {year}, ens {iens}/{ens_num}")
 
-        INDIR_COMPLETE="{}/{}/ens{}".format(INDIR_NMME, YEAR, iens)
+        indir_complete=f"{indir_nmme}/{year}/ens{iens}"
 
-        OUTDIR_COMPLETE="{}/{}/{}01/ens{}"\
-            .format(OUTDIR, YEAR, MONTH_ABBR, iens)
+        outdir_complete=f"{outdir}/{year}/{month_abbr}01/ens{iens}"
 
-        if not os.path.exists(OUTDIR_COMPLETE):
-            os.makedirs(OUTDIR_COMPLETE)
+        if not os.path.exists(outdir_complete):
+            os.makedirs(outdir_complete)
 
-        cmd = "cp {}/PRECTOT* {}/".format(INDIR_COMPLETE, OUTDIR_COMPLETE)
+        cmd = f"cp {indir_complete}/PRECTOT* {outdir_complete}/"
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
             print("[ERR] Problem calling copy subroutine!")
@@ -174,10 +146,25 @@ def copy_subdaily_precipitation(YEAR, MONTH_ABBR, ENS_NUM, INDIR_NMME, OUTDIR):
 
 def driver():
     """Main driver."""
-    MONTH_ABBR, MONTH_NUM, CURRENT_YEAR, NMME_MODEL = read_cmd_args()
+    month_abbr, month_num, current_year, nmme_model, config_file = \
+    	read_cmd_args()
 
-    init_datetime = datetime(CURRENT_YEAR, MONTH_NUM, 1)
-    SRC_YYYYMM = [(init_datetime + relativedelta(months=0)).strftime("%Y%m"),
+    # Setup local directories
+    config = read_config(config_file)
+
+    # Path of the main project directory
+    projdir = config["bcsd_preproc"]["projdir"]
+
+    # Path for the final 6-hourly forcing dataets:
+    forcedir_fcst = f"{projdir}/data/forecast/CFSv2_25km"
+    forcedir_nmme = f"{projdir}/data/forecast/NMME"
+
+    # Base model prefixes for forecast files
+    basemodname_src="CFSv2"
+    basemodname_dst="CFSv2"
+
+    init_datetime = datetime(current_year, month_num, 1)
+    src_yyyymm = [(init_datetime + relativedelta(months=0)).strftime("%Y%m"),
                   (init_datetime + relativedelta(months=1)).strftime("%Y%m"),
                   (init_datetime + relativedelta(months=2)).strftime("%Y%m"),
                   (init_datetime + relativedelta(months=3)).strftime("%Y%m"),
@@ -188,7 +175,7 @@ def driver():
                   (init_datetime + relativedelta(months=8)).strftime("%Y%m"),
                   (init_datetime + relativedelta(months=8)).strftime("%Y%m")]
 
-    DST_YYYYMM = [(init_datetime + relativedelta(months=0)).strftime("%Y%m"),
+    dst_yyyymm = [(init_datetime + relativedelta(months=0)).strftime("%Y%m"),
               (init_datetime + relativedelta(months=1)).strftime("%Y%m"),
               (init_datetime + relativedelta(months=2)).strftime("%Y%m"),
               (init_datetime + relativedelta(months=3)).strftime("%Y%m"),
@@ -199,36 +186,32 @@ def driver():
               (init_datetime + relativedelta(months=8)).strftime("%Y%m"),
               (init_datetime + relativedelta(months=9)).strftime("%Y%m")]
 
-    ENS_NUM, ENS_START, ENS_END, ENS_RANGE = gather_ensemble_info(NMME_MODEL)
+    ens_num, ens_range = gather_ensemble_info(nmme_model)
 
-    INDIR_NMME="{}/bcsd/6-Hourly/{}01/{}"\
-        .format(FORCEDIR_NMME, MONTH_ABBR, NMME_MODEL)
-    OUTDIR="{}/final/6-Hourly/{}".format(FORCEDIR_NMME, NMME_MODEL)
+    indir_nmme=f"{forcedir_nmme}/bcsd/6-Hourly/{month_abbr}01/{nmme_model}"
+    outdir=f"{forcedir_nmme}/final/6-Hourly/{nmme_model}"
 
     # Copy the precipitation files
-    print("[INFO] NMME MODEL: {}".format(NMME_MODEL))
-    copy_subdaily_precipitation(CURRENT_YEAR, MONTH_ABBR, ENS_NUM, INDIR_NMME,\
-         OUTDIR)
+    print(f"[INFO] NMME MODEL: {nmme_model}")
+    copy_subdaily_precipitation(current_year, month_abbr, ens_num, indir_nmme,\
+         outdir)
 
     # Symbolically link the non-precip data
     print("[INFO] Creating symbolic links for non-precip data")
-    for iens in range(len(ENS_RANGE)):
-        ENS_NMME=iens + 1
-        ENS_FCST=ENS_RANGE[iens]
+#    for iens in range(len(ens_range)):
+    for iens,ens_value in enumerate(ens_range):
+        ens_nmme=iens + 1
+        ens_fcst=ens_value
 
-        SRC_DIR="{}/final/6-Hourly/{}/{}01/ens{}"\
-            .format(FORCEDIR_FCST, CURRENT_YEAR, MONTH_ABBR, ENS_FCST)
-        DST_DIR="{}/{}/{}01/ens{}"\
-            .format(OUTDIR, CURRENT_YEAR, MONTH_ABBR, ENS_NMME)
+        src_dir=f"{forcedir_fcst}/final/6-Hourly/{current_year}/{month_abbr}01/ens{ens_fcst}"
+        dst_dir=f"{outdir}/{current_year}/{month_abbr}01/ens{ens_nmme}"
 
-        for ilead in range(len(SRC_YYYYMM)):
-            SRC_FILE="{}/{}.{}.nc4"\
-                .format(SRC_DIR, BASEMODNAME_SRC, SRC_YYYYMM[ilead])
-            DST_FILE="{}/{}.{}.nc4"\
-                .format(DST_DIR, BASEMODNAME_DST, DST_YYYYMM[ilead])
+#        for ilead in range(len(src_yyyymm)):
+        for ilead,src_lead in enumerate(src_yyyymm):
+            src_file=f"{src_dir}/{basemodname_src}.{src_lead}.nc4"
+            dst_file=f"{dst_dir}/{basemodname_dst}.{dst_yyyymm[ilead]}.nc4"
 
-            cmd = "ln -sfn {src_file} {dst_file}"\
-                .format(src_file=SRC_FILE, dst_file=DST_FILE)
+            cmd = f"ln -sfn {src_file} {dst_file}"
             returncode = subprocess.call(cmd, shell=True)
             if returncode != 0:
                 print("[ERR] Problem calling creating symbolic links!")

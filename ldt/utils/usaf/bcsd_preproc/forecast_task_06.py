@@ -17,36 +17,10 @@
 #
 # Standard modules
 #
-
+import configparser
 import os
 import subprocess
 import sys
-
-#
-# Local constants.  FIXME:  Put in single location for whole system
-#
-
-# Path of the main project directory
-PROJDIR='/discover/nobackup/projects/usaf_lis/razamora/GHI_S2S/AFRICOM'
-
-# Path of the directory where all the BC codes are kept:
-SRCDIR="{}/scripts/code_library".format(PROJDIR)
-
-#  Log file output directory
-LOGDIR="{}/scripts/log_files".format(PROJDIR)
-
-# Path for where forecast files are located:
-FORCEDIR="{}/data/forecast/CFSv2_25km".format(PROJDIR)
-
-# Mask file
-MASK_FILE_PRECIP="{}/supplementary_files/Mask_nafpa.nc".format(SRCDIR)
-MASK_FILE_NONPRECIP="{}/supplementary_files/Mask_nafpa.nc".format(SRCDIR)
-
-
-#  Calculate bias correction for different variables separately:
-OBS_VAR_LIST=["LWGAB", "SWGDN", "PS", "QV2M", "T2M", "U10M"]
-FCST_VAR_LIST=["LWS", "SLRSF", "PS", "Q2M", "T2M", "WIND10M"]
-UNIT_LIST=["W/m^2", "W/m^2", "Pa", "kg/kg", "K", "m/s"]
 
 #
 # Local methods
@@ -54,215 +28,232 @@ UNIT_LIST=["W/m^2", "W/m^2", "Pa", "kg/kg", "K", "m/s"]
 
 def _usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: {} FCST_SYR FCST_EYR MONTH_ABBR MONTH_NUM LAT1 LAT2 LON1"\
-        "LON2 MODEL_NAME LEAD_MONTHS ENS_NUM".format(sys.argv[0])
+    txt = f"[INFO] Usage: {(sys.argv[0])} fcst_syr fcst_eyr month_abbr "\
+    "month_num lat1 lat2 lon1 lon2 model_name lead_months ens_num config_file"
     print(txt)
     print("[INFO] where")
-    print("[INFO] FCST_SYR: Start year of forecast")
-    print("[INFO] FCST_EYR: End year of forecast")
-    print("[INFO] MONTH_ABBR: Abbreviation of the initialization month")
-    print("[INFO] MONTH_NUM: Integer number of the initialization month")
-    print("[INFO] LAT1: Minimum latitudinal extent")
-    print("[INFO] LAT2: Maximum latitudinal extent")
-    print("[INFO] LON1: Minimum longitudinal extent")
-    print("[INFO] LON2: Maximum longitudinal extent")
-    print("[INFO] MODEL_NAME: Model name (should be CFSv2)")
-    print("[INFO] LEAD_MONTHS: Number of lead months")
-    print("[INFO] ENS_NUM: Integer number of ensembles")
+    print("[INFO] fcst_syr: Start year of forecast")
+    print("[INFO] fcst_eyr: End year of forecast")
+    print("[INFO] month_abbr: Abbreviation of the initialization month")
+    print("[INFO] month_num: Integer number of the initialization month")
+    print("[INFO] lat1: Minimum latitudinal extent")
+    print("[INFO] lat2: Maximum latitudinal extent")
+    print("[INFO] lon1: Minimum longitudinal extent")
+    print("[INFO] lon2: Maximum longitudinal extent")
+    print("[INFO] model_name: Model name (should be CFSv2)")
+    print("[INFO] lead_months: Number of lead months")
+    print("[INFO] ens_num: Integer number of ensembles")
+    print("[INFO] config_file: Config file that sets up environment")
+
+def read_config(config_file):
+    """Read from bcsd_preproc config file."""
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    return config
 
 def _read_cmd_args():
     """Read command line arguments."""
 
-    if len(sys.argv) != 12:
+    if len(sys.argv) != 13:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
 
-    # FCST_SYR
+    # fcst_syr
     try:
-        FCST_SYR = int(sys.argv[1])
+        fcst_syr = int(sys.argv[1])
     except ValueError:
-        print("[ERR] Invalid argument for FCST_SYR!  Received {}" \
-            .format(sys.argv[1]))
+        print(f"[ERR] Invalid argument for fcst_syr! Received {(sys.argv[1])}")
         _usage()
         sys.exit(1)
-    if FCST_SYR < 0:
-        print("[ERR] Invalid argument for FCST_SYR!  Received {}" \
-              .format(sys.argv[1]))
+    if fcst_syr < 0:
+        print(f"[ERR] Invalid argument for fcst_syr! Received {(sys.argv[1])}")
         _usage()
         sys.exit(1)
 
-    # FCST_EYR
+    # fcst_eyr
     try:
-        FCST_EYR = int(sys.argv[2])
+        fcst_eyr = int(sys.argv[2])
     except ValueError:
-        print("[ERR] Invalid argument for FCST_EYR!  Received {}" \
-              .format(sys.argv[2]))
+        print(f"[ERR] Invalid argument for fcst_eyr!  Received {(sys.argv[2])}")
         _usage()
         sys.exit(1)
-    if FCST_EYR < 0:
-        print("[ERR] Invalid argument for FCST_EYR!  Received {}" \
-              .format(sys.argv[2]))
+    if fcst_eyr < 0:
+        print(f"[ERR] Invalid argument for fcst_eyr!  Received {(sys.argv[2])}")
         _usage()
         sys.exit(1)
 
-    # MONTH_ABBR
-    MONTH_ABBR = str(sys.argv[3])
+    # month_abbr
+    month_abbr = str(sys.argv[3])
 
-    # MONTH_NUM
+    # month_num
     try:
-        MONTH_NUM = int(sys.argv[4])
+        month_num = int(sys.argv[4])
     except ValueError:
-        print("[ERR] Invalid argument for MONTH_NUM!  Received {}" \
-              .format(sys.argv[4]))
+        print(f"[ERR] Invalid argument for month_num! Received {(sys.argv[4])}")
         _usage()
         sys.exit(1)
-    if MONTH_NUM < 1:
-        print("[ERR] Invalid argument for MONTH_NUM!  Received {}" \
-              .format(sys.argv[4]))
+    if month_num < 1:
+        print(f"[ERR] Invalid argument for month_num! Received {(sys.argv[4])}")
         _usage()
         sys.exit(1)
-    if MONTH_NUM > 12:
-        print("[ERR] Invalid argument for MONTH_NUM!  Received {}" \
-              .format(sys.argv[4]))
+    if month_num > 12:
+        print(f"[ERR] Invalid argument for month_num! Received {(sys.argv[4])}")
         _usage()
         sys.exit(1)
 
-    # LAT1
+    # lat1
     try:
-        LAT1 = int(sys.argv[5])
+        lat1 = int(sys.argv[5])
     except ValueError:
-        print("[ERR] Invalid argument for LAT1!  Received {}" \
-              .format(sys.argv[5]))
+        print(f"[ERR] Invalid argument for lat1! Received {(sys.argv[5])}")
         _usage()
         sys.exit(1)
 
-    # LAT2
+    # lat2
     try:
-        LAT2 = int(sys.argv[6])
+        lat2 = int(sys.argv[6])
     except ValueError:
-        print("[ERR] Invalid argument for LAT2!  Received {}" \
-              .format(sys.argv[6]))
+        print(f"[ERR] Invalid argument for lat2! Received {(sys.argv[6])}")
         _usage()
         sys.exit(1)
 
-    # LON1
+    # lon1
     try:
-        LON1 = int(sys.argv[7])
+        lon1 = int(sys.argv[7])
     except ValueError:
-        print("[ERR] Invalid argument for LON1!  Received {}" \
-              .format(sys.argv[7]))
+        print(f"[ERR] Invalid argument for lon1! Received {(sys.argv[7])}")
         _usage()
         sys.exit(1)
 
-    # LON2
+    # lon2
     try:
-        LON2 = int(sys.argv[8])
+        lon2 = int(sys.argv[8])
     except ValueError:
-        print("[ERR] Invalid argument for LON2!  Received {}" \
-              .format(sys.argv[8]))
+        print(f"[ERR] Invalid argument for lon2! Received {(sys.argv[8])}")
         _usage()
         sys.exit(1)
 
-    # MODEL_NAME
-    MODEL_NAME = str(sys.argv[9])
+    # model_name
+    model_name = str(sys.argv[9])
 
-    # LEAD_MONTHS
+    # lead_months
     try:
-        LEAD_MONTHS = int(sys.argv[10])
+        lead_months = int(sys.argv[10])
     except ValueError:
-        print("[ERR] Invalid argument for LEAD_MONTHS!  Received {}" \
-              .format(sys.argv[10]))
+        print(f"[ERR] Invalid argument for lead_months! Received {(sys.argv[10])}")
         _usage()
         sys.exit(1)
-    if LEAD_MONTHS < 0:
-        print("[ERR] Invalid argument for LEAD_MONTHS!  Received {}" \
-              .format(sys.argv[10]))
+    if lead_months < 0:
+        print(f"[ERR] Invalid argument for lead_months! Received {(sys.argv[10])}")
         _usage()
         sys.exit(1)
 
-    # ENS_NUM
+    # ens_num
     try:
-        ENS_NUM = int(sys.argv[11])
+        ens_num = int(sys.argv[11])
     except ValueError:
-        print("[ERR] Invalid argument for ENS_NUM!  Received {}" \
-              .format(sys.argv[11]))
+        print(f"[ERR] Invalid argument for ens_num! Received {(sys.argv[11])}")
         _usage()
         sys.exit(1)
-    if ENS_NUM < 0:
-        print("[ERR] Invalid argument for ENS_NUM!  Received {}" \
-              .format(sys.argv[11]))
+    if ens_num < 0:
+        print(f"[ERR] Invalid argument for ens_num! Received {(sys.argv[11])}")
         _usage()
         sys.exit(1)
 
-    return FCST_SYR, FCST_EYR, MONTH_ABBR, MONTH_NUM, LAT1, LAT2, LON1, LON2, \
-    MODEL_NAME, LEAD_MONTHS, ENS_NUM
+    # config_file
+    config_file = sys.argv[12]
+    if not os.path.exists(config_file):
+        print(f"[ERR] {config_file} does not exist!")
+        sys.exit(1)
+
+    return fcst_syr, fcst_eyr, month_abbr, month_num, lat1, lat2, lon1, lon2, \
+    model_name, lead_months, ens_num, config_file
 
 def _driver():
     """Main driver."""
-    FCST_SYR, FCST_EYR, MONTH_ABBR, MONTH_NUM, LAT1, LAT2, LON1, LON2, \
-    MODEL_NAME, LEAD_MONTHS, ENS_NUM = _read_cmd_args()
+    fcst_syr, fcst_eyr, month_abbr, month_num, lat1, lat2, lon1, lon2, \
+    model_name, lead_months, ens_num, config_file = _read_cmd_args()
+
+    # Setup local directories
+    config = read_config(config_file)
+
+    # Path of the main project directory
+    projdir = config["bcsd_preproc"]["projdir"]
+
+    # Path of the directory where all the BC codes are kept
+    srcdir = config["bcsd_preproc"]["srcdir"]
+
+    # Log file output directory
+    logdir = config["bcsd_preproc"]["logdir"]
+
+    # Path of the directory where supplementary files are kept
+    supplementary_dir = config["bcsd_preproc"]["supplementary_dir"]
+
+    # Path for where forecast files are located:
+    forcedir=f"{projdir}/data/forecast/CFSv2_25km"
+
+    # Mask file
+    mask_file_precip=f"{supplementary_dir}/Mask_nafpa.nc"
+    mask_file_nonprecip=f"{supplementary_dir}/Mask_nafpa.nc"
+
+    #  Calculate bias correction for different variables separately:
+    obs_var_list=["LWGAB", "SWGDN", "PS", "QV2M", "T2M", "U10M"]
+    fcst_var_list=["LWS", "SLRSF", "PS", "Q2M", "T2M", "WIND10M"]
+    unit_list=["W/m^2", "W/m^2", "Pa", "kg/kg", "K", "m/s"]
 
     # Path for where forecast and bias corrected files are located:
-    SUBDAILY_RAW_FCST_DIR="{forcedir}/raw/6-Hourly/{month_abbr}01" \
-        .format(forcedir=FORCEDIR, month_abbr=MONTH_ABBR)
-    MONTHLY_RAW_FCST_DIR="{forcedir}/raw/Monthly/{month_abbr}01" \
-        .format(forcedir=FORCEDIR, month_abbr=MONTH_ABBR)
-    MONTHLY_BC_FCST_DIR="{forcedir}/bcsd/Monthly/{month_abbr}01" \
-        .format(forcedir=FORCEDIR, month_abbr=MONTH_ABBR)
+    subdaily_raw_fcst_dir=f"{forcedir}/raw/6-Hourly/{month_abbr}01"
+    monthly_raw_fcst_dir=f"{forcedir}/raw/Monthly/{month_abbr}01"
+    monthly_bc_fcst_dir=f"{forcedir}/bcsd/Monthly/{month_abbr}01"
 
-    OUTDIR="{forcedir}/bcsd/6-Hourly/{month_abbr}01" \
-        .format(forcedir=FORCEDIR, month_abbr=MONTH_ABBR)
+    outdir=f"{forcedir}/bcsd/6-Hourly/{month_abbr}01"
 
-    if not os.path.exists(OUTDIR):
-        os.makedirs(OUTDIR)
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
 
     print("[INFO] Processing temporal disaggregation of CFSv2 variables")
-    for YEAR in range(FCST_SYR, (FCST_EYR + 1)):
-        for VAR_NUM in range(len(OBS_VAR_LIST)):
-            if VAR_NUM == 1:
-                VAR_TYPE="PRCP"
+    for year in range(fcst_syr, (fcst_eyr + 1)):
+        for var_num, var_value in enumerate(obs_var_list):
+            if var_num == 1:
+                var_type="PRCP"
             else:
-                VAR_TYPE="TEMP"
+                var_type="TEMP"
 
-            OBS_VAR=OBS_VAR_LIST[VAR_NUM]
-            FCST_VAR=FCST_VAR_LIST[VAR_NUM]
-            UNIT=UNIT_LIST[VAR_NUM]
+            obs_var=var_value
+            fcst_var=fcst_var_list[var_num]
+            unit=unit_list[var_num]
 
             cmd = "sbatch"
-            cmd += " {srcdir}/run_Temporal_disagg.scr".format(srcdir=SRCDIR)
-            cmd += " {srcdir}".format(srcdir=SRCDIR)
-            cmd += " {obs_var}".format(obs_var=OBS_VAR)
-            cmd += " {fcst_var}".format(fcst_var=FCST_VAR)
-            cmd += " {month_num}".format(month_num=MONTH_NUM)
-            cmd += " {var_type}".format(var_type=VAR_TYPE)
-            cmd += " {unit}".format(unit=UNIT)
-            cmd += " {lat1}".format(lat1=LAT1)
-            cmd += " {lat2}".format(lat2=LAT2)
-            cmd += " {lon1}".format(lon1=LON1)
-            cmd += " {lon2}".format(lon2=LON2)
-            cmd += " {model_name}".format(model_name=MODEL_NAME)
-            cmd += " {ens_num}".format(ens_num=ENS_NUM)
-            cmd += " {lead_months}".format(lead_months=LEAD_MONTHS)
-            cmd += " {year}".format(year=YEAR)
-            cmd += " {year}".format(year=YEAR)
-            cmd += " {mask_file_p}".format(mask_file_p=MASK_FILE_PRECIP)
-            cmd += " {mask_file_np}".format(mask_file_np=MASK_FILE_NONPRECIP)
-            cmd += " {monthly_bc_fcst_dir}"\
-                .format(monthly_bc_fcst_dir=MONTHLY_BC_FCST_DIR)
-            cmd += " {monthly_raw_fcst_dir}"\
-                .format(monthly_raw_fcst_dir=MONTHLY_RAW_FCST_DIR)
-            cmd += " {subdaily_raw_fcst_dir}"\
-                .format(subdaily_raw_fcst_dir=SUBDAILY_RAW_FCST_DIR)
-            cmd += " {outdir}".format(outdir=OUTDIR)
-            cmd += " {logdir}".format(logdir=LOGDIR)
+            cmd += f" {srcdir}/run_Temporal_disagg.scr"
+            cmd += f" {srcdir}"
+            cmd += f" {obs_var}"
+            cmd += f" {fcst_var}"
+            cmd += f" {month_num}"
+            cmd += f" {var_type}"
+            cmd += f" {unit}"
+            cmd += f" {lat1}"
+            cmd += f" {lat2}"
+            cmd += f" {lon1}"
+            cmd += f" {lon2}"
+            cmd += f" {model_name}"
+            cmd += f" {ens_num}"
+            cmd += f" {lead_months}"
+            cmd += f" {year}"
+            cmd += f" {year}"
+            cmd += f" {mask_file_precip}"
+            cmd += f" {mask_file_nonprecip}"
+            cmd += f" {monthly_bc_fcst_dir}"
+            cmd += f" {monthly_raw_fcst_dir}"
+            cmd += f" {subdaily_raw_fcst_dir}"
+            cmd += f" {outdir}"
+            cmd += f" {logdir}"
             returncode = subprocess.call(cmd, shell=True)
             if returncode != 0:
                 print("[ERR] Problem calling sbatch!")
                 sys.exit(1)
 
-    print("[INFO] Completed CFSv2 temporal disaggregation for: {}"\
-        .format(MONTH_ABBR))
+    print(f"[INFO] Completed CFSv2 temporal disaggregation for: {(month_abbr)}")
 
 #
 # Main Method
