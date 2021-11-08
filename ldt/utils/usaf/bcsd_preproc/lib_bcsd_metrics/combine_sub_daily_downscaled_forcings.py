@@ -11,20 +11,17 @@
 """
 
 from __future__ import division
-#import pandas as pdimport calendar
 import os.path as op
 import sys
 from datetime import datetime
 import calendar
+from time import ctime as t_ctime
+from time import time as t_time
 from dateutil.relativedelta import relativedelta
 import numpy as np
-#from scipy.stats import percentileofscore
-#from scipy.stats import scoreatpercentile, pearsonr
-#from math import *
-#import time
-#from BCSD_stats_functions import *
 # pylint: disable=no-name-in-module
-import netCDF4 as nc
+from netCDF4 import Dataset as nc4_dataset
+from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 from Shrad_modules import read_nc_files, MAKEDIR
 
@@ -34,7 +31,7 @@ var_standard_name, lons, lats, sdate, dates, sig_digit, north_east_corner_lat, \
 north_east_corner_lon, south_west_corner_lat, south_west_corner_lon, \
 resolution_x, resolution_y, time_increment):
     """write netcdf"""
-    rootgrp = nc.Dataset(outfile, 'w', format='NETCDF4_CLASSIC')
+    rootgrp = nc4_dataset(outfile, 'w', format='NETCDF4_CLASSIC')
     time = rootgrp.createDimension('time', None)
     longitude = rootgrp.createDimension('longitude', len(lons))
     latitude = rootgrp.createDimension('latitude', len(lats))
@@ -50,7 +47,6 @@ resolution_x, resolution_y, time_increment):
     varname2 = rootgrp.createVariable(varname[1], 'f4', ('time', \
     'latitude', 'longitude',), fill_value=-9999, zlib=True, \
     least_significant_digit=sig_digit)
-    import time
     varname3 = rootgrp.createVariable(varname[2], 'f4', ('time', \
     'latitude', 'longitude',), fill_value=-9999, zlib=True, \
     least_significant_digit=sig_digit)
@@ -63,7 +59,6 @@ resolution_x, resolution_y, time_increment):
     varname6 = rootgrp.createVariable(varname[5], 'f4', ('time', \
     'latitude', 'longitude',), fill_value=-9999, zlib=True, \
     least_significant_digit=sig_digit)
-    import time
     rootgrp.missing_value = -9999
     rootgrp.description = description
     rootgrp.zenith_interp = "true,false,"
@@ -75,7 +70,8 @@ resolution_x, resolution_y, time_increment):
     rootgrp.NORTH_EAST_CORNER_LON = float(north_east_corner_lon)
     rootgrp.DX = resolution_x
     rootgrp.DY = resolution_y
-    rootgrp.history = 'Created ' + time.ctime(time.time())
+    #rootgrp.history = 'Created ' + time.ctime(time.time())
+    rootgrp.history = 'Created ' + t_ctime(t_time())
     rootgrp.source = source
     latitudes.units = 'degrees_north'
     longitudes.units = 'degrees_east'
@@ -109,7 +105,7 @@ resolution_x, resolution_y, time_increment):
     varname4[:, :, :] = var[3, ]
     varname5[:, :, :] = var[4, ]
     varname6[:, :, :] = var[5, ]
-    times[:] = nc.date2num(dates, units=times.units, calendar=times.calendar)
+    times[:] = nc4_date2num(dates, units=times.units, calendar=times.calendar)
     rootgrp.close()
 
 ## Usage: <Name of variable in observed climatology> <Name of variable in
@@ -148,7 +144,7 @@ for MON in [INIT_FCST_MON]:
     ## This provides abbrevated version of the name of a month: (e.g. for
     ## January (i.e. Month number = 1) it will return "Jan"). The abbrevated
     ## name is used in the forecasts file name
-    print("Forecast Initialization month is {}".format(MONTH_NAME))
+    print(f"Forecast Initialization month is {MONTH_NAME}")
     ## Shape of the above dataset time, Lead, Ens, latitude, longitude
     for ens in range(ENS_NUM):
         INDIR = INDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
@@ -159,7 +155,7 @@ for MON in [INIT_FCST_MON]:
             pass
         else:
             MAKEDIR(OUTDIR)
-        print("OUTDIR is {}".format(OUTDIR))
+        print(f"OUTDIR is {OUTDIR}")
         for LEAD_NUM in range(0, LEAD_FINAL):
             ## Loop from lead =0 to Final Lead
             FCST_DATE = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1) + \
@@ -179,7 +175,7 @@ for MON in [INIT_FCST_MON]:
 
             ### Finished reading all files now writing combined output
             OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, FCST_YEAR, FCST_MONTH)
-            print("Now writing {}".format(OUTFILE))
+            print(f"Now writing {OUTFILE}")
             SDATE = datetime(FCST_YEAR, FCST_MONTH, 1, 6)
             NUM_DAYS = TEMP.shape[0]
             DATES = [SDATE+relativedelta(hours=n*6) for n in range(NUM_DAYS)]
