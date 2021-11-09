@@ -6,7 +6,7 @@
 #Adjust node, core, and hardware constraints here
 #SBATCH --ntasks=4 --mem-per-cpu=4G --constraint=hasw
 #Substitute your e-mail here
-#SBATCH --mail-user=eric.kemp@nasa.gov
+#SBATCH --mail-user=
 #SBATCH --mail-type=ALL
 #Set quality of service, if needed.
 #SBATCH --qos=debug

@@ -11,7 +11,7 @@
 ##SBATCH --qos=s1189_pk
 #
 ## Enter user email below:
-#SBATCH --mail-user=ryan.a.zamora@nasa.gov
+#SBATCH --mail-user=user@email.com
 #SBATCH --mail-type=END
 #SBATCH --output=PART2_BCSD_calc-%j.out
 #SBATCH --error=PART2_BCSD_calc-%j.err

@@ -74,7 +74,7 @@ OUTDIR = str(sys.argv[19])
 if not os.path.exists(OUTDIR):
     os.makedirs(OUTDIR)
 
-print("Ensemble number is {}".format(ENS_NUM))
+print(f"Ensemble number is {ENS_NUM}")
 NUM_YRS = (CLIM_EYR-CLIM_SYR)+1
 TINY = ((1/(NUM_YRS))/ENS_NUM)/2   # Adjust quantile, if it is out of bounds
              #          This value represents 1/NYRS/NENS/2, so about
@@ -150,12 +150,12 @@ def monthly_calculations(mon):
     ## This provides abbrevated version of the name of a month:
     ## (e.g. for January (i.e. Month number = 1) it will return "Jan").
     ##The abbrevated name is used in the forecasts file name
-    print("Forecast Initialization month is {}".format(month_name))
+    print(f"Forecast Initialization month is {month_name}")
     #First read forecast climatology for the given variable and forecast
     #initialzation month
     fcst_clim_infile = FCST_CLIM_FILE_TEMPLATE.format(FCST_INDIR,\
                                                       month_name, FCST_VAR)
-    print("Reading forecast climatology {}".format(fcst_clim_infile))
+    print(f"Reading forecast climatology {fcst_clim_infile}")
     fcst_clim_array = xr.open_dataset(fcst_clim_infile)
     #First read raw forecasts
     fcst_coarse = np.empty(((TARGET_FCST_EYR-TARGET_FCST_SYR)+1,
@@ -204,7 +204,7 @@ def monthly_calculations(mon):
                           mask=correct_fcst_coarse == -999)
     outfile = OUTFILE_TEMPLATE.format(OUTDIR, FCST_VAR, month_name, \
               TARGET_FCST_SYR, TARGET_FCST_EYR)
-    print("Now writing {}".format(outfile))
+    print(f"Now writing {outfile}")
     sdate = datetime(TARGET_FCST_SYR, mon, 1)
     dates = [sdate+relativedelta(years=n) for n in range(correct_fcst_coarse.shape[0])]
     write_4d_netcdf(outfile, correct_fcst_coarse, FCST_VAR, 'CFSv2', \
