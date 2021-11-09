@@ -117,7 +117,7 @@ ENSS = int(sys.argv[23])
 ENSF = int(sys.argv[24])
 
 
-print("Ensemble number is {}".format(ENS_NUMF))
+print(f"Ensemble number is {ENS_NUMF}")
 NUM_YRS = (CLIM_EYR-CLIM_SYR)+1
 TINY = ((1/(NUM_YRS))/ENS_NUMF)/2
 # Adjust quantile, if it is out of bounds
@@ -133,7 +133,7 @@ TINY = ((1/(NUM_YRS))/ENS_NUMF)/2
 
 # First read observed climatology for the given variable
 OBS_CLIM_FILE = OBS_CLIM_FILE_TEMPLATE.format(OBS_CLIM_INDIR, OBS_VAR)
-print("Reading observed climatology {}".format(OBS_CLIM_FILE))
+print(f"Reading observed climatology {OBS_CLIM_FILE}")
 OBS_CLIM_ARRAY = xr.open_dataset(OBS_CLIM_FILE)
 
 # Then for forecast files:
@@ -142,12 +142,12 @@ for MON in [INIT_FCST_MON]:
     ## This provides abbrevated version of the name of a month:
     ## (e.g. for January (i.e. Month number = 1) it will return "Jan").
     ## The abbrevated name is used in the forecasts file name
-    print("Forecast Initialization month is {}".format(MONTH_NAME))
+    print(f"Forecast Initialization month is {MONTH_NAME}")
     #First read forecast climatology for the given variable and forecast
     #initialzation month
     FCST_CLIM_INFILE = FCST_CLIM_FILE_TEMPLATE.format(FCST_CLIM_INDIR, \
     MODEL_NAME, FCST_VAR)
-    print("Reading forecast climatology {}".format(FCST_CLIM_INFILE))
+    print(f"Reading forecast climatology {FCST_CLIM_INFILE}")
     FCST_CLIM_ARRAY = xr.open_dataset(FCST_CLIM_INFILE)
     #First read raw forecasts
     FCST_COARSE = np.empty(((TARGET_FCST_EYR-TARGET_FCST_SYR)+1, \
@@ -204,7 +204,7 @@ for MON in [INIT_FCST_MON]:
     mask=CORRECT_FCST_COARSE == -999)
     OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, FCST_VAR, MODEL_NAME, \
     MONTH_NAME, TARGET_FCST_SYR, TARGET_FCST_EYR)
-    print("Now writing {}".format(OUTFILE))
+    print(f"Now writing {OUTFILE}")
     SDATE = datetime(TARGET_FCST_SYR, MON, 1)
     dates = [SDATE+relativedelta(years=n) for n in range(CORRECT_FCST_COARSE.shape[0])]
     write_4d_netcdf(OUTFILE, CORRECT_FCST_COARSE, FCST_VAR, MODEL_NAME, \
