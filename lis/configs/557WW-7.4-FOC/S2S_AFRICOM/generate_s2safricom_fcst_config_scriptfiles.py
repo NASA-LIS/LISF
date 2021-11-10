@@ -2,11 +2,11 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: generate_s2safricom_da_config_scriptfiles_fcst.py
+# SCRIPT: generate_s2safricom_fcst_config_scriptfiles.py
 #
 # PURPOSE: Generates both lis.config files and SLURM-based run job script
-# files. Based on earlier shell scripts developed/modified by Amy McNally,
-# Jossy Jacob, Kristi Arsenault, and Ryan Zamora.
+# files for the LIS forecast run. Based on earlier shell scripts 
+# developed/modified by Amy McNally, Jossy Jacob, Kristi Arsenault, and Ryan Zamora.
 #
 # REVISION HISTORY:
 # 3 Nov 2021: Eric Kemp/SSAI, first version.

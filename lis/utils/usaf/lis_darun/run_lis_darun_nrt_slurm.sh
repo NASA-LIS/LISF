@@ -4,7 +4,6 @@
 #SBATCH --ntasks=28
 #SBATCH --account s1189
 #SBATCH --output lisdarun.slurm.out
-#SBATCH --mail-user=
 #SBATCH --mail-type=ALL
 #------------------------------------------------------------------------------
 #
