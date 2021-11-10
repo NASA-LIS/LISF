@@ -8,7 +8,6 @@
 #SBATCH --account=s1189
 #
 ## Enter user email below:
-#SBATCH --mail-user=user@email.com
 ##SBATCH --mail-type=END
 #SBATCH --output=log_files/TASK1_CFSv2_process-%j.out
 #SBATCH --error=log_files/TASK1_CFSv2_process-%j.err
