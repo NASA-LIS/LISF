@@ -10,7 +10,6 @@
 ##SBATCH --qos=s1189_pk
 #
 ## Enter user email below:
-#SBATCH --mail-user=user@email.com
 #SBATCH --mail-type=END
 #SBATCH --output=PART3_Comb-%j.out
 #SBATCH --error=PART3_Comb-%j.err
