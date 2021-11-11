@@ -66,7 +66,7 @@ NMME_MODELS=["CFSv2", "GEOSv2", "CCSM4", "CCM4", "GNEMO", "GFDL"]
 
 # Config file that sets up directories
 CONFIG_FILE="/discover/nobackup/projects/usaf_lis/razamora/GHI_S2S/AFRICOM/"\
-    "scripts/code_library/supplementary_files/bcsd_preproc.config"
+    "scripts/code_library/supplementary_files/bcsd_preproc.cfg"
 
 def run_cmd(cmd, error_msg):
     """Handle running shell command and checking error."""
