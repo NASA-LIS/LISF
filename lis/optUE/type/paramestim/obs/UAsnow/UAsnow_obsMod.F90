@@ -111,7 +111,7 @@ contains
 
     call ESMF_ArraySpecSet(realarrspec,rank=1,typekind=ESMF_TYPEKIND_R4,&
          rc=status)
-    call LIS_verify(status)
+    call LIS_verify(status, 'Error in ESMF_ArraySpecSet')
     
     call ESMF_ConfigFindLabel(LIS_config,"UA snow data directory:",&
          rc=status)
@@ -123,11 +123,11 @@ contains
 
        call ESMF_AttributeSet(Obs_State(n),"Data Directory",&
             obsdir, rc=status)
-       call LIS_verify(status)
+       call LIS_verify(status, 'Error in ESMF_AttributeSet: Data Directory')
 
        call ESMF_AttributeSet(Obs_State(n),"Data Update Status",&
             .false., rc=status)
-       call LIS_verify(status)
+       call LIS_verify(status, 'Error in ESMF_AttributeSet: Data Update Status')
     enddo
 
     do n=1,LIS_rc%nnest
@@ -182,22 +182,22 @@ contains
        obsField1 = ESMF_FieldCreate(arrayspec=realarrspec, &
             grid=LIS_vecGrid(n), &
             name="UA_SWE", rc=status)
-       call LIS_verify(status)
+       call LIS_verify(status, 'Error in ESMF_FieldCreate: UA_SWE ')
 
        obsField2 = ESMF_FieldCreate(arrayspec=realarrspec, &
             grid=LIS_vecGrid(n), &
             name="UA_SNOD", rc=status)
-       call LIS_verify(status)       
+       call LIS_verify(status, 'Error in ESMF_FieldCreate: UA_SNOD')
 
        call ESMF_StateAdd(Obs_State(n),(/obsField1/),rc=status)
-       call LIS_verify(status)
+       call LIS_verify(status, 'Error in ESMF_StateAdd: obsField1')
 
        call ESMF_StateAdd(Obs_State(n),(/obsField2/),rc=status)
-       call LIS_verify(status)
+       call LIS_verify(status, 'Error in ESMF_StateAdd: obsField2')
 
        call ESMF_TimeIntervalSet(UAsnow_obs_struc(n)%timestep, &
             s=86400,rc=status)
-       call LIS_verify(status, 'Error in ESMF_TimeIntervalSet (UA snowobs)')
+       call LIS_verify(status, 'Error in ESMF_TimeIntervalSet: UAsnow_obs_struc(n)%timestep')
     enddo
 
     write(LIS_logunit,*) '[INFO] created the States to hold the UA snow data'

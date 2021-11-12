@@ -73,10 +73,10 @@ subroutine read_UAsnowobs(Obj_Space)
 
   call ESMF_AttributeGet(Obj_Space,"Data Directory",&
        obsdir, rc=status)
-  call LIS_verify(status)
+  call LIS_verify(status, 'Error in ESMF_AttributeGet: Data Directory')
   call ESMF_AttributeGet(Obj_Space,"Data Update Status",&
        data_update, rc=status)
-  call LIS_verify(status)
+  call LIS_verify(status, 'Error in ESMF_AttributeGet: Data Update Status')
 
   allocate(snwd_out(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
   allocate(swe_out(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
@@ -224,17 +224,17 @@ subroutine read_UAsnowobs(Obj_Space)
   endif
   call ESMF_StateGet(Obj_Space,"UA_SNOD",snodField,&
        rc=status)
-  call LIS_verify(status)
+  call LIS_verify(status, 'Error in ESMF_StateGet: UA_SNOD')
 
   call ESMF_FieldGet(snodField,localDE=0,farrayPtr=snod,rc=status)
-  call LIS_verify(status)
+  call LIS_verify(status, 'Error in ESMF_FieldGet: snodField')
 
   call ESMF_StateGet(Obj_Space,"UA_SWE",sweField,&
        rc=status)
-  call LIS_verify(status)
+  call LIS_verify(status, 'Error in ESMF_StateGet: UA_SWE')
 
   call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
-  call LIS_verify(status)
+  call LIS_verify(status, 'Error in ESMF_FieldGet: sweField')
 
   snod = LIS_rc%udef
   swe = LIS_rc%udef
@@ -261,7 +261,7 @@ subroutine read_UAsnowobs(Obj_Space)
 
   call ESMF_AttributeSet(Obj_Space,"Data Update Status",&
        .true., rc=status)
-  call LIS_verify(status)
+  call LIS_verify(status, 'Error in ESMF_AttributeSet: Data Update Status')
 
 end subroutine read_UAsnowobs
 
