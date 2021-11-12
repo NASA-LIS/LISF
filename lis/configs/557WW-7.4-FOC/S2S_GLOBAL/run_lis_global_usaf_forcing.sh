@@ -4,7 +4,6 @@
 #SBATCH --account s1189
 #SBATCH --output s2sglb.slurm.out
 #SBATCH --ntasks=560
-#SBATCH --mail-user=eric.kemp@nasa.gov
 #SBATCH --mail-type=ALL
 ##SBATCH --qos=debug
 #------------------------------------------------------------------------------
