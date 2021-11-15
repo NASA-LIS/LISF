@@ -211,7 +211,7 @@ def _driver():
                 wanted_months.append(i)
             for i in range(1, int(fcst_init['month'])):
                 wanted_months.append(i)
-            wanted_months = wanted_months[0:9]
+            wanted_months = wanted_months[1:10]
 
             _print_reftime(fcst_init, ens_num)
 
