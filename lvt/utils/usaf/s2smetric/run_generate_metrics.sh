@@ -5,7 +5,6 @@
 #SBATCH --time=03:00:00
 #SBATCH --account=s1189
 #SBATCH --constraint="sky|hasw|cas"
-#SBATCH --mail-user=
 #SBATCH --mail-type=END
 #SBATCH --output=s2s_metrics-%j.out
 #SBATCH --error=s2s_metrics-%j.err
