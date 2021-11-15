@@ -17,25 +17,34 @@ Note: Initial conditions (ICs) is interchangeable with "restart file".
 
 Here is the script:
 
-  generate_ldtconfig_files_ensrst_nrt.sh
+  generate_ldtconfig_files_ensrst_nrt.py
 
 and the steps to run it and process the IC files include:
 
- 1. Need the following directory:  ./template_files
+ 1. Set your working and input directory paths in the
+    given Python-based config file:
+
+     ldt_ics.cfg
+
+    You are setting the working directory and any
+    other paths to where your input restart files are found,
+    for NoahMP401 and HYMAP2.
+
+ 2. Need the following directory:  ./template_files
     and the TEMPLATE-based config file within it:
 
      template_files/ldt.config_noahmp401_nmme_TEMPLATE
 
- 2. Inside the script, set your working directory and any 
-    other paths to where your input restart files are found,
-    for NoahMP401 and HYMAP2. 
-
  3. Copy your LDT executable to the local directory where you
     will run this script.
 
- 4. Run the script as:
+ 4. Run the python script as:
 
-    sh generate_ldtconfig_files_ensrst_nrt.sh
+  ./generate_ldtconfig_files_ensrst_nrt.py
+
+   or
+
+   python generate_ldtconfig_files_ensrst_nrt.py
 
  5. The following config and output restart directories/files 
     are generated using the LDT executable, along with 

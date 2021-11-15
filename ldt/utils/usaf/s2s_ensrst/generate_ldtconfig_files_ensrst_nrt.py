@@ -15,11 +15,13 @@
 # REVISION HISTORY:
 # * 14 Oct 2021: Eric Kemp/SSAI, first version.
 # * 01 Nov 2021: Eric Kemp/SSAI, addressed pylint format complaints.
+# * 15 Nov 2021: K. Arsenault/SAIC, made minor fixes and added config entries.
 #
 #------------------------------------------------------------------------------
 """
 
 # Standard modules
+import configparser
 import datetime
 import os
 import shutil
@@ -55,21 +57,23 @@ _NMME_SCALINGS = {
     "GFDL" : "upscale",
 }
 
-# NOTE: Make a master file with all of these paths! FIXME
-_WORK_DIR = \
-    "/discover/nobackup/projects/lis_aist17/karsenau/GHI_S2S/AFRICOM/LDT_ICs"
-_INPUT_DIR = "../SPINUP/Run-E/retro_2densgrid_hymap1mem/"
-
-_WORK_DIR = \
-    "/discover/nobackup/projects/lis_aist17/emkemp/AFWA/lis74_s2s_patches/work"
-
-_INPUT_DIR = "./SPINUP/Run-E/retro_2densgrid_hymap1mem/"
+# Main path entries are located in the following python config file:
+_PYCONFIGFILE = "./ldt_ics.cfg"
+#
+# Other local input files
 _LDT_INPUT_FILE = \
     f"./input/lis_input.s2s_africom.{_LSM_NAME}_{_ROUTING_NAME}.25km.nc"
+
 _CONFIGS_OUTPUT_DIR = "./ldt.config_files"
 _TEMPLATE_DIR = "./template_files"
 _LDTCONFIG_LSM_TEMPLATE = \
     f"{_TEMPLATE_DIR}/ldt.config_{_LSM_NAME}_nmme_TEMPLATE"
+
+def _read_config(pyconfigfile):
+    """Read from LIS DA run config file."""
+    config = configparser.ConfigParser()
+    config.read(pyconfigfile)
+    return config
 
 def _recursive_chmod(path, mode):
     """Recursively runs chmod"""
@@ -123,7 +127,8 @@ def _customize_ldt_config(ldtconfig_lsm_target, lsm_rstdir, currentdate,
     lsm_logfile = \
         f"{nmme_model}/ldtlog_{_LSM_NAME}_{rst_monname}{prevdate.year:04d}"
 
-    mask_parmlogfile = f"{nmme_model}/MaskParamFill.log" %(nmme_model)
+    # mask_parmlogfile = f"{nmme_model}/MaskParamFill.log" %(nmme_model)
+    mask_parmlogfile = f"{nmme_model}/MaskParamFill.log"
 
     # Now edit the target ldt.config with these customized settings
     with open(ldtconfig_lsm_target, "rt", encoding='ascii') as file_obj:
@@ -142,8 +147,19 @@ def _customize_ldt_config(ldtconfig_lsm_target, lsm_rstdir, currentdate,
 def _driver():
     """Main driver"""
 
-    print(f"[INFO] Working directory is: {_WORK_DIR}")
-    os.chdir(_WORK_DIR)
+    # Check if python script config file exists.
+    pyconfigfile = _PYCONFIGFILE
+    if not os.path.exists(pyconfigfile):
+        print(f"[ERR] {pyconfigfile} does not exist!")
+        sys.exit(1)
+
+    config = _read_config(pyconfigfile)
+
+    # print(f"[INFO] Working directory is: {_WORK_DIR}")
+    # os.chdir(_WORK_DIR)
+    workdir = config["ldtics"]["workdir"]
+    print(f"[INFO] Working directory is: {workdir}")
+    os.chdir(workdir)
 
     if not os.path.exists(_LDT_EXEC):
         print(f"[ERR] {_LDT_EXEC} does not exist!")
@@ -154,9 +170,11 @@ def _driver():
 
     currentdate, prevdate = _handle_dates()
 
-    lsm_rstdir = f"{_INPUT_DIR}/SURFACEMODEL/" + \
+    # Form input restart directory and filenames together
+    inputdir = config["ldtics"]["inputdir"]
+    lsm_rstdir = f"{inputdir}/SURFACEMODEL/" + \
         f"{prevdate.year:04d}{prevdate.month:02d}"
-    hymap_rstdir = f"{_INPUT_DIR}/ROUTING/" + \
+    hymap_rstdir = f"{inputdir}/ROUTING/" + \
         f"{prevdate.year:04d}{prevdate.month:02d}"
 
     for nmme_model in _NMME_MODELS:
