@@ -16,10 +16,13 @@
 # 16 Sep 2021: Eric Kemp (SSAI), first version.
 # 17 Sep 2021: Eric Kemp (SSAI), renamed script, tweaked variable list and
 #   attributes; added ID for model forcing for LIS to filenames.
+# 27 Oct 2021: Eric Kemp/SSAI, addressed pylint string format complaints.
+# 29 Oct 2021: Eric Kemp/SSAI, added config file.
 #------------------------------------------------------------------------------
 """
 
 # Standard modules
+import configparser
 import datetime
 import os
 import sys
@@ -33,54 +36,83 @@ import time
 from netCDF4 import Dataset as nc4_dataset
 # pylint: enable=no-name-in-module
 
-# Lists of variables to process.  These are intended as internal constants,
-# hence the names are prefixed with "_".
-
-_VAR_ACC_LIST = ["Qs_acc", "Qsb_acc", "TotalPrecip_acc"]
-
-_VAR_TAVG_LAND_LIST = ["Qle_tavg", "Qh_tavg", "Qg_tavg", "Evap_tavg",
-                       "AvgSurfT_tavg", "Albedo_tavg",
-                       "SoilMoist_tavg", "SoilTemp_tavg",
-                       "Streamflow_tavg", "FloodedFrac_tavg", "SurfElev_tavg",
-                       "SWS_tavg", "RiverStor_tavg", "RiverDepth_tavg",
-                       "RiverFlowVelocity_tavg", "FloodStor_tavg",
-                       "FloodedArea_tavg"]
-
-_VAR_TAVG_F_LIST = ["Wind_f_tavg", "Tair_f_tavg",
-                    "Qair_f_tavg", "Psurf_f_tavg",
-                    "SWdown_f_tavg", "LWdown_f_tavg"]
-
-
-_VAR_TAVG_TWSGWS_LIST = ["TWS_inst", "GWS_inst"]
-
-_VAR_TAIR_MAX_LIST = ["Tair_f_max"]
-_VAR_TAIR_MIN_LIST = ["Tair_f_min"]
-
-_VAR_INST_LIST = ["AvgSurfT_inst", "SWE_inst", "SnowDepth_inst",
-                  "SoilMoist_inst", "SoilTemp_inst",
-                  "SmLiqFrac_inst",
-                  "CanopInt_inst",
-                  "Snowcover_inst", "Wind_f_inst", "Tair_f_inst",
-                  "Qair_f_inst", "Psurf_f_inst",
-                  "SWdown_f_inst", "LWdown_f_inst",
-                  "Greenness_inst", "RelSMC_inst"]
-
-_CONST_LIST = ["lat", "lon", "ensemble", "soil_layer",
-               "soil_layer_thickness",
-               "Landmask_inst", "LANDMASK", "Landcover_inst",
-               "Soiltype_inst", "Elevation_inst"]
-
+# Private methods.
 def _usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: %s input_dir output_dir start_yyyymmdd end_yyyymmdd"
-    txt += " model_forcing"
+    txt = f"[INFO] Usage: {sys.argv[0]} configfile input_dir output_dir"
+    txt += " start_yyyymmdd end_yyyymmdd model_forcing"
     print(txt)
     print("[INFO] where:")
+    print("[INFO]  configfile: path to s2spost config file")
     print("[INFO]  input_dir: directory with daily S2S files in CF convention")
     print("[INFO]  output_dir: directory for output file")
     print("[INFO]  start_yyyymmdd: Starting date/time of daily files")
     print("[INFO]  end_yyyymmdd: Ending date/time of daily files")
     print("[INFO]  model_forcing: ID for atmospheric forcing for LIS")
+
+def _read_cmd_args():
+    """Read command line arguments."""
+
+    # Check if argument count is correct.
+    if len(sys.argv) != 7:
+        print("[ERR] Invalid number of command line arguments!")
+        _usage()
+        sys.exit(1)
+
+    # Check if config file exists.
+    configfile = sys.argv[1]
+    if not os.path.exists(configfile):
+        print(f"[ERR] Directory {configfile} does not exist!")
+        sys.exit(1)
+
+    # Check if input directory exists.
+    input_dir = sys.argv[2]
+    if not os.path.exists(input_dir):
+        print(f"[ERR] Directory {input_dir} does not exist!")
+        sys.exit(1)
+
+    # Create output directory if it doesn't exist.
+    output_dir = sys.argv[3]
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # Get valid starting and ending dates of data.
+    start_yyyymmdd = sys.argv[4]
+    startdate = _proc_date(start_yyyymmdd)
+    end_yyyymmdd = sys.argv[5]
+    enddate = _proc_date(end_yyyymmdd)
+    if startdate > enddate:
+        print("[ERR] Start date is after end date!")
+        sys.exit(1)
+
+    # Get ID for model forcing for LIS
+    model_forcing = sys.argv[6]
+
+    return configfile, input_dir, output_dir, startdate, enddate, model_forcing
+
+def _read_config(configfile):
+    """Read from s2spost config file."""
+    config = configparser.ConfigParser()
+    config.read(configfile)
+    return config
+
+def _make_varlists(config):
+    """Build lists of variables."""
+    varlists = {}
+    varlists["var_acc_list"] = config["s2spost"]["var_acc_list"].split()
+    varlists["var_tavg_land_list"] = \
+        config["s2spost"]["var_tavg_land_list"].split()
+    varlists["var_tavg_f_list"] = \
+        config["s2spost"]["var_tavg_f_list"].split()
+    varlists["var_tavg_twsgws_list"] = \
+        config["s2spost"]["var_tavg_twsgws_list"].split()
+    varlists["var_tair_max_list"] = \
+        config["s2spost"]["var_tair_max_list"].split()
+    varlists["var_tair_min_list"] = \
+        config["s2spost"]["var_tair_min_list"].split()
+    varlists["var_inst_list"] = config["s2spost"]["var_inst_list"].split()
+    varlists["const_list"] = config["s2spost"]["const_list"].split()
+    return varlists
 
 def _proc_date(yyyymmdd):
     """Convert YYYYMMDD string to Python date object."""
@@ -97,59 +129,25 @@ def _proc_date(yyyymmdd):
         sys.exit(1)
     return dateobj
 
-def _read_cmd_args():
-    """Read command line arguments."""
-
-    # Check if argument count is correct.
-    if len(sys.argv) != 6:
-        print("[ERR] Invalid number of command line arguments!")
-        _usage()
-        sys.exit(1)
-
-    # Check if input directory exists.
-    input_dir = sys.argv[1]
-    if not os.path.exists(input_dir):
-        print("[ERR] Directory %s does not exist!")
-        sys.exit(1)
-
-    # Create output directory if it doesn't exist.
-    output_dir = sys.argv[2]
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    # Get valid starting and ending dates of data.
-    start_yyyymmdd = sys.argv[3]
-    startdate = _proc_date(start_yyyymmdd)
-    end_yyyymmdd = sys.argv[4]
-    enddate = _proc_date(end_yyyymmdd)
-    if startdate > enddate:
-        print("[ERR] Start date is after end date!")
-        sys.exit(1)
-
-    # Get ID for model forcing for LIS
-    model_forcing = sys.argv[5]
-
-    return input_dir, output_dir, startdate, enddate, model_forcing
-
 def _check_filename_size(name):
     """Make sure filename does not exceed 128 characters, per Air Force
     requirement."""
     if len(os.path.basename(name)) > 128:
         print("[ERR] Output file name is too long!")
-        print("[ERR] %s exceeds 128 characters!" %(os.path.basename(name)))
+        print(f"[ERR] {os.path.basename(name)} exceeds 128 characters!")
         sys.exit(1)
 
 def _create_daily_s2s_filename(input_dir, curdate, model_forcing):
     """Create path to daily S2S netCDF file."""
-    name = "%s" %(input_dir)
+    name = f"{input_dir}"
     name += "/PS.557WW"
     name += "_SC.U"
     name += "_DI.C"
-    name += "_GP.LIS-S2S-%s" %(model_forcing)
+    name += f"_GP.LIS-S2S-{model_forcing}"
     name += "_GR.C0P25DEG"
     name += "_AR.AFRICA"
     name += "_PA.LIS-S2S"
-    name += "_DD.%4.4d%2.2d%2.2d" %(curdate.year, curdate.month, curdate.day)
+    name += f"_DD.{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}"
     name += "_DT.0000"
     name += "_DF.NC"
     _check_filename_size(name)
@@ -158,17 +156,16 @@ def _create_daily_s2s_filename(input_dir, curdate, model_forcing):
 def _create_monthly_s2s_filename(output_dir, startdate, enddate,
                                  model_forcing):
     """Create path to monthly S2S netCDF file."""
-    name = "%s" %(output_dir)
+    name = f"{output_dir}"
     name += "/PS.557WW"
     name += "_SC.U"
     name += "_DI.C"
-    name += "_GP.LIS-S2S-%s" %(model_forcing)
+    name += f"_GP.LIS-S2S-{model_forcing}"
     name += "_GR.C0P25DEG"
     name += "_AR.AFRICA"
     name += "_PA.LIS-S2S"
-    name += "_DP.%4.4d%2.2d%2.2d-%4.4d%2.2d%2.2d" \
-        %(startdate.year, startdate.month, startdate.day,
-          enddate.year, enddate.month, enddate.day)
+    name += f"_DP.{startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
+    name += f"-{enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
     name += "_TP.0000-0000"
     name += "_DF.NC"
     _check_filename_size(name)
@@ -182,14 +179,14 @@ def _copy_dims_gattrs(ncid_in, ncid_out):
     for gattrname in ncid_in.__dict__:
         ncid_out.setncattr(gattrname, ncid_in.__dict__[gattrname])
 
-def _create_firstguess_monthly_file(infile, outfile):
+def _create_firstguess_monthly_file(varlists, infile, outfile):
     """Read daily S2S file, and most fields copy to monthly S2S file.
     This allows us to cleanly copy dimensions and all attributes.  The
     numerical values of the arrays in the monthly S2S
     file will be replaced later in the script."""
 
     if not os.path.exists(infile):
-        print("[ERR] %s does not exist!" %(infile))
+        print(f"[ERR] {infile} does not exist!")
         sys.exit(1)
     ncid_in = nc4_dataset(infile, 'r', format='NETCDF4_CLASSIC')
 
@@ -199,9 +196,12 @@ def _create_firstguess_monthly_file(infile, outfile):
     _copy_dims_gattrs(ncid_in, ncid_out)
 
     # Copy the fields.
-    varnames = _CONST_LIST + _VAR_INST_LIST + _VAR_ACC_LIST + \
-        _VAR_TAVG_LAND_LIST + _VAR_TAVG_F_LIST + _VAR_TAVG_TWSGWS_LIST + \
-        _VAR_TAIR_MAX_LIST + _VAR_TAIR_MIN_LIST
+    varnames = []
+    for listname in ["const_list", "var_inst_list", "var_acc_list",
+                     "var_tavg_land_list", "var_tavg_f_list",
+                     "var_tavg_twsgws_list", "var_tair_max_list",
+                     "var_tair_min_list"]:
+        varnames += varlists[listname]
     for varname in varnames:
         var_in = ncid_in.variables[varname]
         if "missing_value" in var_in.__dict__:
@@ -236,13 +236,13 @@ def _create_firstguess_monthly_file(infile, outfile):
     ncid_out.close()
     ncid_in.close()
 
-def _read_second_daily_file(infile):
+def _read_second_daily_file(varlists, infile):
     """Read the second daily S2S file and copy the acc and tavg fields in
     appropriate dictionaries. We use the second file to start, since acc
     and tavg are valid for the prior 24-hr period."""
 
     if not os.path.exists(infile):
-        print("[ERR] %s does not exist!" %(infile))
+        print(f"[ERR] {infile} does not exist!")
         sys.exit(1)
     ncid_in = nc4_dataset(infile, 'r', format='NETCDF4_CLASSIC')
 
@@ -251,8 +251,11 @@ def _read_second_daily_file(infile):
     tavgs["counter"] = 1
 
     # Copy the values of the fields we will average or accumulate
-    varnames = _VAR_TAVG_LAND_LIST + _VAR_TAVG_F_LIST + \
-        _VAR_TAVG_TWSGWS_LIST + _VAR_TAIR_MAX_LIST + _VAR_TAIR_MIN_LIST
+    varnames = []
+    for listname in ["var_tavg_land_list", "var_tavg_f_list",
+                     "var_tavg_twsgws_list", "var_tair_max_list",
+                     "var_tair_min_list"]:
+        varnames += varlists[listname]
     for varname in varnames:
         var_in = ncid_in.variables[varname]
         if len(var_in.shape) == 4:
@@ -261,7 +264,7 @@ def _read_second_daily_file(infile):
             tavgs[varname] = var_in[:,:,:]
         elif len(var_in.shape) == 2:
             tavgs[varname] = var_in[:,:]
-    for varname in _VAR_ACC_LIST:
+    for varname in varlists["var_acc_list"]:
         var_in = ncid_in.variables[varname]
         if len(var_in.shape) == 4:
             accs[varname] = var_in[:,:,:,:]
@@ -273,20 +276,23 @@ def _read_second_daily_file(infile):
     ncid_in.close()
     return accs, tavgs
 
-def _read_next_daily_file(infile, accs, tavgs):
+def _read_next_daily_file(varlists, infile, accs, tavgs):
     """Read next daily S2S file and copy the required variable values to
     appropriate dictionaries."""
 
     if not os.path.exists(infile):
-        print("[ERR] %s does not exist!" %(infile))
+        print(f"[ERR] {infile} does not exist!")
         sys.exit(1)
     ncid_in = nc4_dataset(infile, 'r', format='NETCDF4_CLASSIC')
 
     tavgs["counter"] += 1
 
     # Add the values of the fields we will average or accumulate
-    varnames = _VAR_TAVG_LAND_LIST + _VAR_TAVG_F_LIST + \
-        _VAR_TAVG_TWSGWS_LIST + _VAR_TAIR_MAX_LIST + _VAR_TAIR_MIN_LIST
+    varnames = []
+    for listname in ["var_tavg_land_list", "var_tavg_f_list",
+                     "var_tavg_twsgws_list", "var_tair_max_list",
+                     "var_tair_min_list"]:
+        varnames += varlists[listname]
     for varname in varnames:
         var_in = ncid_in.variables[varname]
         if len(var_in.shape) == 4:
@@ -295,7 +301,7 @@ def _read_next_daily_file(infile, accs, tavgs):
             tavgs[varname][:,:,:] += var_in[:,:,:]
         elif len(var_in.shape) == 2:
             tavgs[varname][:,:] += var_in[:,:]
-    for varname in _VAR_ACC_LIST:
+    for varname in varlists["var_acc_list"]:
         var_in = ncid_in.variables[varname]
         if len(var_in.shape) == 4:
             accs[varname][:,:,:,:] = var_in[:,:,:,:]
@@ -325,7 +331,7 @@ def _finalize_tavgs(tavgs):
 def _update_monthly_s2s_values(outfile, accs, tavgs):
     """Update the values in the monthly S2S file."""
     if not os.path.exists(outfile):
-        print("[ERR] %s does not exist!" %(outfile))
+        print(f"[ERR] {outfile} does not exist!")
         sys.exit(1)
     ncid = nc4_dataset(outfile, 'a', format='NETCDF4_CLASSIC')
     for dictionary in [accs, tavgs]:
@@ -344,11 +350,11 @@ def _add_time_data(infile, outfile, startdate, enddate):
     requires pulling more data from the last daily file."""
 
     if not os.path.exists(infile):
-        print("[ERR] %s does not exist!" %(infile))
+        print(f"[ERR] {infile} does not exist!")
         sys.exit(1)
     ncid_in = nc4_dataset(infile, 'r', format='NETCDF4_CLASSIC')
     if not os.path.exists(outfile):
-        print("[ERR] %s does not exist!" %(outfile))
+        print(f"[ERR] {outfile} does not exist!")
         sys.exit(1)
     ncid_out = nc4_dataset(outfile, 'a', format='NETCDF4_CLASSIC')
 
@@ -381,50 +387,52 @@ def _add_time_data(infile, outfile, startdate, enddate):
     ncid_in.close()
     ncid_out.close()
 
-def _update_cell_methods(outfile):
+def _update_cell_methods(varlists, outfile):
     """Update cell_method attributes for select variables."""
 
     if not os.path.exists(outfile):
-        print("[ERR] %s does not exist!" %(outfile))
+        print(f"[ERR] {outfile} does not exist!")
         sys.exit(1)
     ncid = nc4_dataset(outfile, 'a', format='NETCDF4_CLASSIC')
 
     # Elaborate on monthly calculations of most variables
-    varnames = _VAR_ACC_LIST + _VAR_TAVG_LAND_LIST + _VAR_TAVG_F_LIST + \
-        _VAR_TAVG_TWSGWS_LIST + _VAR_TAIR_MAX_LIST + _VAR_TAIR_MIN_LIST
-
+    varnames = []
+    for listname in ["var_acc_list", "var_tavg_land_list", "var_tavg_f_list",
+                     "var_tavg_twsgws_list", "var_tair_max_list",
+                     "var_tair_min_list"]:
+        varnames += varlists[listname]
     for varname in varnames:
 
         var = ncid.variables[varname]
 
         # Special handling for TWS_inst and GWS_inst -- we want the monthly
         # means.
-        if varname in _VAR_TAVG_TWSGWS_LIST:
+        if varname in varlists["var_tavg_twsgws_list"]:
             var.cell_methods = \
                 "time: mean (interval: 1 day) area: point where land"
 
         # Special handling for Tair_f_max and Tair_f_min:  We want the monthly
         # averages of the daily maxs and mins
-        elif varname in _VAR_TAIR_MAX_LIST:
+        elif varname in varlists["var_tair_max_list"]:
             var.cell_methods = \
                 "time: mean (interval: 1 day comment: daily maxima)"
-        elif varname in _VAR_TAIR_MIN_LIST:
+        elif varname in varlists["var_tair_min_list"]:
             var.cell_methods = \
                 "time: mean (interval: 1 day comment: daily minima)"
 
         # Clarify monthly mean of daily means over land
-        elif varname in _VAR_TAVG_LAND_LIST:
+        elif varname in varlists["var_tavg_land_list"]:
             var.cell_methods = \
                 "time: mean (interval: 1 day comment: daily means)" + \
                 " area: point where land"
 
         # Clarify monthly mean of daily means everywhere
-        elif varname in _VAR_TAVG_F_LIST:
+        elif varname in varlists["var_tavg_f_list"]:
             var.cell_methods = \
                 "time: mean (interval: 1 day comment: daily means)"
 
         # Clarify monthly accumulations
-        elif varname in _VAR_ACC_LIST:
+        elif varname in varlists["var_acc_list"]:
             var.cell_methods = \
                 "time: sum (interval: 1 day comment: daily sums)"
 
@@ -433,10 +441,10 @@ def _update_cell_methods(outfile):
 def _cleanup_global_attrs(outfile):
     """Clean-up global attributes."""
     if not os.path.exists(outfile):
-        print("[ERR] %s does not exist!" %(outfile))
+        print(f"[ERR] {outfile} does not exist!")
         sys.exit(1)
     ncid = nc4_dataset(outfile, 'a', format='NETCDF4_CLASSIC')
-    ncid.history = "created on date: %s" %(time.ctime())
+    ncid.history = f"created on date: {time.ctime()}"
     del ncid.NCO
     del ncid.history_of_appended_files
 
@@ -444,23 +452,25 @@ def _driver():
     """Main driver."""
 
     # Get the directories and dates
-    input_dir, output_dir, startdate, enddate, model_forcing = _read_cmd_args()
+    configfile, input_dir, output_dir, startdate, enddate, model_forcing \
+        = _read_cmd_args()
+    config = _read_config(configfile)
+    varlists = _make_varlists(config)
 
     # Loop through dates
     curdate = startdate
     seconddate = startdate + datetime.timedelta(days=1)
-    delta = datetime.timedelta(days=1)
     while curdate <= enddate:
         infile = _create_daily_s2s_filename(input_dir, curdate, model_forcing)
         #print("[INFO] Reading %s" %(infile))
         if curdate == startdate:
-            tmp_outfile = "%s/tmp_monthly.nc" %(output_dir)
-            _create_firstguess_monthly_file(infile, tmp_outfile)
+            tmp_outfile = f"{output_dir}/tmp_monthly.nc"
+            _create_firstguess_monthly_file(varlists, infile, tmp_outfile)
         elif curdate == seconddate:
-            accs, tavgs = _read_second_daily_file(infile)
+            accs, tavgs = _read_second_daily_file(varlists, infile)
         else:
-            accs, tavgs = _read_next_daily_file(infile, accs, tavgs)
-        curdate += delta
+            accs, tavgs = _read_next_daily_file(varlists, infile, accs, tavgs)
+        curdate += datetime.timedelta(days=1)
 
     # Finalize averages (dividing by number of days).  Then write
     # tavgs and accs to file
@@ -472,7 +482,7 @@ def _driver():
     # Clean up a few details.
     infile = _create_daily_s2s_filename(input_dir, enddate, model_forcing)
     _add_time_data(infile, tmp_outfile, startdate, enddate)
-    _update_cell_methods(tmp_outfile)
+    _update_cell_methods(varlists, tmp_outfile)
     _cleanup_global_attrs(tmp_outfile)
 
     # Rename the output file
