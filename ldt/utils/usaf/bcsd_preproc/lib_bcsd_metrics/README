@@ -1,6 +1,6 @@
 Bias Correction and Preprocessing Workflow Function Library
 ==============================================================================
-The scripts in this directory contain the 'lower-level' run scripts and python scripts called by the 'top-level' scripts in the parent directory. These scripts prepare and process operational S2S forecast data for LIS over the AFRICOM domain. These scripts are not intended to be run individually outside of the preprocessing framework (e.g. Main_forecast.sh). These scripts can be divided into 3 categories: 
+The scripts in this directory contain the 'lower-level' run scripts and python scripts called by the 'top-level' scripts in the parent directory. These scripts prepare and process operational S2S forecast data for LIS over the AFRICOM domain. These scripts are not intended to be run individually outside of the preprocessing framework (e.g. main_forecast.py). These scripts can be divided into 3 categories: 
 
     (1) batch scripts
     (2) python scripts
@@ -16,7 +16,7 @@ These scripts involve submiting jobs on a high performance computing cluster (pr
     * run_Combining.scr - Batch script that runs the python script: combine_sub_daily_downscaled_forcings.py
     * run_NMME_BCSD_calctest.scr  - Batch script that runs the python script: bias_correction_nmme_modulefast.py
     * run_NMME_Temporal_disagg.scr - Batch script that runs the python script: temporal_disaggregation_nmme_6hourly_module.py
-    * run_process_forecast_data.scr - Batch script that runs the bash script: process_forecast_data.scr
+    * run_process_forecast_data.scr - Batch script that runs the python script: process_forecast_data.py
     * run_Temporal_disagg.scr - Batch script that runs the python script: temporal_disaggregation_6hourly_module.py
 
 ==============================================================================
