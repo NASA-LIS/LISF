@@ -4,11 +4,11 @@ The main script is named:
 
     * main_forecast.py
 
-and is used to manually call each individual task (prefixed with 'FORECAST_TASK_') to prepare CFSv2 (non-precip) and NMME (precip) forecast data as input for running hydrological forecasts in LIS using Noah-MP-4.0.1 & HyMAP2. This pre-processing workflow is divided into 4 parts and are described below.
+and is used to manually call each individual task (prefixed with 'forecast_task_') to prepare CFSv2 (non-precip) and NMME (precip) forecast data as input for running hydrological forecasts in LIS using Noah-MP-4.0.1 & HyMAP2. This pre-processing workflow is divided into 4 parts and are described below.
 ==============================================================================
 
 PART A: DOWNLOAD, RESCALE, AND ORGANIZE
-This section involves downloading the correct forecasts, rescaling them to a unified 25 KM spatial grid, and organizing them in a format for the proceeding tasks
+This section involves downloading the correct forecasts, rescaling them to a unified 25 KM spatial grid, and organizing them in a format for the proceeding tasks. Includes these scripts:
 
     * forecast_task_01.py: Generate 6-hourly files - "SD" part; CFSv2 1Deg--> 25KM, and USAF 10KM --> 25KM; netcdf
     * forecast_task_02.py: Download NMME Data
@@ -33,7 +33,7 @@ This section involves temporally disaggregating the monthly bias corrected forec
 ==============================================================================
 
 PART D: LIS PREPARATION
-This section involves preparing the sub-daily bias corrected forecasts for LIS
+This section involves preparing the sub-daily bias corrected forecasts for LIS. Includes these scripts:
 
     * forecast_task_09.py: Combine the CFSv2 forcing fields into final format for LIS to read
     * forecast_task_10.py: Combine the NMME forcing fields into final format for LIS to read and symbolically link to the reusable CFSv2 met forcings
@@ -42,7 +42,6 @@ This section involves preparing the sub-daily bias corrected forecasts for LIS
 ==============================================================================
 
 PROCESSING CHECK
-A final processing check is available to the user to check that the number of files and file size generated within this workflow meet expectations
-
-    * check_preprocess_forecast_files.py: 
+This section involves checking that the data processed correctly. Includes this script:
+    * check_preprocess_forecast_files.py: A final processing check is available to the user to check that the number of files and file size generated within this workflow meet expectations
 
