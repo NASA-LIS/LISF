@@ -6274,7 +6274,7 @@ of the user-generated ensemble forecast forcing files.
 ensemble members desired for the user-generated ensemble forecast dataset.
 
 `Name of base forecast model:` specifies the base forecast model used in
-the generated ensemble-based forecast forcing files being read in.  
+the generated ensemble-based forecast forcing files being read in.
 Default setting is GEOS5, but options include GEOS5 and CFSv2.
 
 .Example _lis.config_ entry
