@@ -18,6 +18,7 @@
 ! 19 Jan 2016: Augusto Getirana;  Inclusion of four Local Inertia variables
 ! 10 Mar 2019: Sujay Kumar;       Added support for NetCDF and parallel 
 !                                 processing. 
+! 27 Apr 2020: Augusto Getirana;  Added support for urban drainage
 !  
 ! !INTERFACE: 
 subroutine HYMAP2_routing_readrst
@@ -111,8 +112,9 @@ subroutine HYMAP2_routing_readrst
            call HYMAP2_readvar_restart(ftn,n,&
                 HYMAP2_routing_struc(n)%bsfsto,&
                 "BSFSTO")
-           
-           if(HYMAP2_routing_struc(n)%flowtype==3)then
+           !ag(13Jan2021)
+           !write out variables below if flowtype is not kinematic wave
+           if(HYMAP2_routing_struc(n)%flowtype/=1)then
               call HYMAP2_readvar_restart(ftn,n,&
                    HYMAP2_routing_struc(n)%rivout_pre,&
                    "RIVOUT_PRE")
@@ -125,6 +127,16 @@ subroutine HYMAP2_routing_readrst
               call HYMAP2_readvar_restart(ftn,n,&
                    HYMAP2_routing_struc(n)%flddph_pre,&
                    "FLDDPH_PRE")
+           endif
+           !ag (27Apr2020)
+           !urban drainage storage  
+           if(HYMAP2_routing_struc(n)%flowtype==4)then
+              call HYMAP2_readvar_restart(ftn,n,&
+                   HYMAP2_routing_struc(n)%drsto,&
+                   "DRSTO")
+              call HYMAP2_readvar_restart(ftn,n,&
+                   HYMAP2_routing_struc(n)%drout,&
+                   "DROUT")
            endif
         else
            call HYMAP2_readvar_restart_ens(ftn,n,&
@@ -139,8 +151,9 @@ subroutine HYMAP2_routing_readrst
            call HYMAP2_readvar_restart_ens(ftn,n,&
                 HYMAP2_routing_struc(n)%bsfsto,&
                 "BSFSTO")
-           
-           if(HYMAP2_routing_struc(n)%flowtype==3)then
+           !ag(13Jan2021)
+           !write out variables below if flowtype is not kinematic wave
+           if(HYMAP2_routing_struc(n)%flowtype/=1)then
               call HYMAP2_readvar_restart_ens(ftn,n,&
                    HYMAP2_routing_struc(n)%rivout_pre,&
                    "RIVOUT_PRE")
@@ -154,7 +167,16 @@ subroutine HYMAP2_routing_readrst
                    HYMAP2_routing_struc(n)%flddph_pre,&
                    "FLDDPH_PRE")
            endif
-
+           !ag (27Apr2020)
+           !urban drainage storage  
+           if(HYMAP2_routing_struc(n)%flowtype==4)then
+              call HYMAP2_readvar_restart_ens(ftn,n,&
+                   HYMAP2_routing_struc(n)%drsto,&
+                   "DRSTO")
+              call HYMAP2_readvar_restart_ens(ftn,n,&
+                   HYMAP2_routing_struc(n)%drout,&
+                   "DROUT")
+           endif
         endif
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -163,7 +185,7 @@ subroutine HYMAP2_routing_readrst
 #endif
      endif
   enddo
-
+!stop
 end subroutine HYMAP2_routing_readrst
 
 !BOP

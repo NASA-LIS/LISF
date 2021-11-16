@@ -224,6 +224,11 @@ contains
           noah36_struc(n)%noah(i)%shdfac = 0
           noah36_struc(n)%noah(i)%alb = 0
           noah36_struc(n)%noah(i)%z0 = 0
+                
+          !ag(05Jan2021)
+          noah36_struc(n)%noah(i)%rivsto = 0.0
+          noah36_struc(n)%noah(i)%fldfrc = 0.0
+          noah36_struc(n)%noah(i)%fldfrc = 0.0
        enddo
 
 !------------------------------------------------------------------------

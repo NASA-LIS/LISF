@@ -286,6 +286,10 @@ character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
         "ASO SWE"
    character*50, public,  parameter :: LIS_synwlId             = &
         "Synthetic water level"
+   character*50, public,  parameter :: LIS_THySMId             = &
+           "THySM"
+   character*50, public,  parameter :: LIS_hydrowebwlId        = &
+        "Hydroweb water level"
 
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms

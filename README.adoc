@@ -8,18 +8,52 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
+:url-lis-website: https://lis.gsfc.nasa.gov
+:url-hsl-website: https://earth.gsfc.nasa.gov/hydro
+
+// HTML passthrough to float LIS logo to the right
+++++
+<img src="docs/public_testcase_walkthrough/images/lisf_logo.png" align="right" width="200px">
+++++
 
 == Overview
 
-Please visit our website: https://lis.gsfc.nasa.gov.
+The link:{url-lis-website}[Land Information System (LIS)] is a software framework for high performance terrestrial hydrology modeling and data assimilation developed with the goal of integrating satellite and ground-based observational data products and advanced modeling techniques to produce optimal fields of land surface states and fluxes.
 
+Development of LIS is led by the link:{url-hsl-website}[Hydrological Sciences Laboratory] at NASA's Goddard Space Flight Center.
+
+The software suite consists of three modeling components:
+
+. *Land surface Data Toolkit (LDT)*, a formal environment that handles the data-related requirements of LIS including land surface parameter processing, geospatial transformations, consistency checks, data assimilation preprocessing, and forcing bias correction,
+. *Land Information System (LIS)*, the modeling system that encapsulates physical models, data assimilation algorithms, optimization and uncertainty estimation algorithms, and high performance computing support, and
+. *Land surface Verification Toolkit (LVT)*, a formal model verification and benchmarking environment that can be used for enabling rapid prototyping and evaluation of model simulations by comparing against a comprehensive suite of in-situ, remote sensing, and model and reanalysis data products.
+
+Please visit our website for more information: {url-lis-website}
+
+== Documentation
+
+Navigate into the link:https://github.com/NASA-LIS/LISF/tree/master/docs[`docs/`] subdirectory of this repository to view our documentation. See the `docs/README` file for instructions.
+
+== Support
+
+Visit our link:https://github.com/NASA-LIS/LISF/discussions[Discussions] forum on GitHub.
+
+_Please note that the LIS team is small and provides support as time allows. As such, we ask for your patience when requesting assistance._
+
+== Contributing
+
+We welcome feedback and contributions from the LISF user community. Please review our link:https://github.com/NASA-LIS/LISF/blob/master/CONTRIBUTING.md[Contribution Guidelines] before opening an issue or pull request.
 
 == License
 
 The Land Information System Framework (LISF) is released under the terms and conditions of the Apache License, Version 2.0.  See https://www.apache.org/licenses/LICENSE-2.0.
 
-Please see the LICENSES sub-directories, under ldt, lis, and lvt, for the licenses of the third-party components within LISF. 
+Please see the LICENSES subdirectories under `ldt/`, `lis/`, and `lvt/` for the licenses of the third-party components within LISF.
 
-//== Contributions
-//
-//Add instructions for contributing to LISF.
+== Citation
+
+Please use the following citations to cite or refer to the LIS software:
+
+Kumar, S.V., C.D. Peters-Lidard, Y. Tian, P.R. Houser, J. Geiger, S. Olden, L. Lighty, J.L. Eastman, B. Doty, P. Dirmeyer, J. Adams, K. Mitchell, E. F. Wood, and J. Sheffield, 2006: Land Information System - An interoperable framework for high resolution land surface modeling. _Environ. Modeling & Software_, 21, 1402-1415, link:https://doi.org/10.1016/j.envsoft.2005.07.004[doi:10.1016/j.envsoft.2005.07.004]
+
+Peters-Lidard, C.D., P.R. Houser, Y. Tian, S.V. Kumar, J. Geiger, S. Olden, L. Lighty, B. Doty, P. Dirmeyer, J. Adams, K. Mitchell, E.F. Wood, and J. Sheffield, 2007: High-performance Earth system modeling with NASA/GSFC's Land Information System. Innovations in Systems and Software Engineering, 3(3), 157-165, link:https://doi.org/10.1007/s11334-007-0028-x[doi:10.1007/s11334-007-0028-x]
