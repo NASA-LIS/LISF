@@ -27,6 +27,7 @@ AsciiDoc easily converts to HTML; there are even Firefox and Chrome plugins that
 * https://raw.githubusercontent.com/NASA-LIS/LISF/master/docs/LVT_users_guide/LVT_usersguide.adoc[LVT Users' Guide]
 
 .Additional Guides:
+* https://raw.githubusercontent.com/NASA-LIS/LISF/master/docs/discover_quick_start/discover_quick_start.adoc[Quick Start Guide for NCCS Discover Users]
 * https://raw.githubusercontent.com/NASA-LIS/LISF/master/docs/working_with_github/working_with_github.adoc[Working with GitHub]
 * https://raw.githubusercontent.com/NASA-LIS/LISF/master/docs/public_testcase_walkthrough/public_testcase_walkthrough.adoc[Public Testcase Walkthrough]
 
