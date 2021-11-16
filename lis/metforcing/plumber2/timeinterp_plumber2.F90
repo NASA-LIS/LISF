@@ -134,9 +134,9 @@ subroutine timeinterp_plumber2(n,findex)
 ! call ESMF_FieldGet(laiField,localDE=0,farrayPtr=lai,rc=status)
 ! call LIS_verify(status)
 
-!  write(LIS_logunit,*) 'Ptime1: ',plumber2_struc(n)%plumber2time1
-!  write(LIS_logunit,*) 'Ptime2: ',plumber2_struc(n)%plumber2time2
-!  write(LIS_logunit,*) 'realtime: ',LIS_rc%time
+  write(LIS_logunit,*) 'Ptime1: ',plumber2_struc(n)%plumber2time1
+  write(LIS_logunit,*) 'Ptime2: ',plumber2_struc(n)%plumber2time2
+  write(LIS_logunit,*) 'realtime: ',LIS_rc%time
   wt1 = (plumber2_struc(n)%plumber2time2-LIS_rc%time) /        &
         (plumber2_struc(n)%plumber2time2-                      &
          plumber2_struc(n)%plumber2time1)
@@ -203,7 +203,9 @@ subroutine timeinterp_plumber2(n,findex)
           (plumber2_struc(n)%metdata2(5,t).ne.plumber2_struc(n)%undef)) then
         swdown(t) = wt1 * plumber2_struc(n)%metdata1(5,index1) +                    &
              wt2 * plumber2_struc(n)%metdata2(5,index1)
-        !            write(LIS_logunit,*) plumber2_struc(n)%metdata1(5,index1),plumber2_struc(n)%metdata2(5,index1)
+        write(LIS_logunit,*) '[DEBUG]...'
+        write(LIS_logunit,*) '[DEBUG] wt1: ',wt1,' wt2: ',wt2
+        write(LIS_logunit,*) '[DEBUG] : ',plumber2_struc(n)%metdata1(5,index1),plumber2_struc(n)%metdata2(5,index1)
      endif
      
      !! -- lwdown (6)
