@@ -49,9 +49,10 @@ subroutine get_plumber2(n,findex)
 !  \end{description}
 !EOP
 
-  integer :: doy1, yr1, mo1, da1, hr1, mn1, ss1, ts1
-  integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2, ts2
+  integer :: doy1, yr1, mo1, da1, hr1, mn1, ss1
+  integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2
   integer :: ferror
+  real :: ts1, ts2
   real :: gmt1,gmt2
   real*8 :: timenow,time1,time2
   integer :: movetime       ! if 1=move time 2 data into time 1
@@ -65,98 +66,118 @@ subroutine get_plumber2(n,findex)
   plumber2_struc(n)%findtime2=0
   movetime = 0
 
-  yr1 = LIS_rc%yr           !current time
+
+  if(LIS_get_nstep(LIS_rc,n) == 1 .or. LIS_rc%rstflag(n) == 1 .or. &
+     plumber2_struc(n)%reset_flag) then
+
+     plumber2_struc(n)%findtime1 = 1
+     plumber2_struc(n)%findtime2 = 1
+
+     LIS_rc%rstflag(n) = 0
+     plumber2_struc(n)%reset_flag = .false.
+
+     yr1 = LIS_rc%yr
+     mo1 = LIS_rc%mo
+     da1 = LIS_rc%da
+     hr1 = LIS_rc%hr
+     mn1 = LIS_rc%mn
+     ss1 = 0
+     ts1 = plumber2_struc(n)%ts
+
+     call LIS_tick(plumber2_struc(n)%ringtime,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
+     write(LIS_logunit,*) '[DIAGM] plumber2_struc ringtime: ',&
+            plumber2_struc(n)%ringtime
+  endif
+
+  ! Current time:
+  yr1 = LIS_rc%yr
   mo1 = LIS_rc%mo
   da1 = LIS_rc%da
   hr1 = LIS_rc%hr
   mn1 = LIS_rc%mn
   ss1 = 0
-  ts1 = 0
 
-  !      write(LIS_logunit,*) [DIAG] yr1,mo1,da1,hr1,mn1,ss1
-  call LIS_tick(timenow,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,real(ts1))
+  call LIS_tick(timenow,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,0.0)
 
-  yr1 = LIS_rc%yr
-  mo1 = LIS_rc%mo
-  da1 = LIS_rc%da
-  hr1 = LIS_rc%hr
+  write(LIS_logunit,*) '[DIAGM] timenow: ',timenow
+  
+  !! If current time >= time for when to move bookend, move bookend 2 to
+  !! bookend 1
 
-!!!! MCB Note. 'mn1' here most likely needs to be something like:
-!!!! mn1 = plumber2_struc(n)%ts / 60 since PLUMBER2 data could be
-!!!!  30min or 1hr data
-  mn1 = plumber2_struc(n)%ts / 60
-  ss1 = 0
-  ts1 = 0
-  call LIS_tick(time1,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,real(ts1))
-
-  yr2 = LIS_rc%yr           !next hour
-  mo2 = LIS_rc%mo
-  da2 = LIS_rc%da
-  hr2 = LIS_rc%hr
-  mn2 = LIS_rc%mn
-  ss2 = 0
-
-!!!! MCB Note. 'ts2' here most likely needs to be something like:
-!!!! ts2 = 60 * (plumber2_struc(n)%ts / 60)
-  ts2 = 60 * (plumber2_struc(n)%ts / 60)
-  call LIS_tick(time2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,real(ts2))
-
-  plumber2_struc(n)%findtime1 = 0
-  plumber2_struc(n)%findtime2 = 0
-  write(LIS_logunit,*) '[DIAG] PLUMBER2 get_plumber2:'
-  write(LIS_logunit,*) '[DIAG] timenow: ',timenow
-  write(LIS_logunit,*) '[DIAG] time1: ',time1
-  write(LIS_logunit,*) '[DIAG] time2: ',time2
-
-  if ((timenow.ge.plumber2_struc(n)%starttime).and.              &
-       (.not.plumber2_struc(n)%startRead)) then
-     plumber2_struc(n)%findtime1 = 1
+   if(timenow >= plumber2_struc(n)%ringtime) then
      plumber2_struc(n)%findtime2 = 1
-     plumber2_struc(n)%startRead = .true.
-     movetime = 0
-  endif
-
-  if (plumber2_struc(n)%startRead) then
-     if (timenow.ge.plumber2_struc(n)%plumber2time2) then
-        movetime = 1
-        plumber2_struc(n)%findtime2 = 1
+     if(plumber2_struc(n)%findtime1 == 0) then
+       movetime = 1
      endif
 
-     !Time to open file and start reading.
-     !keep on reading until the obstime is reached.
-     if (plumber2_struc(n)%findtime1.eq.1) then
+     !! reset ringtime to next PLUMBER2 ts increment
+     yr1 = LIS_rc%yr
+     mo1 = LIS_rc%mo
+     da1 = LIS_rc%da
+     hr1 = LIS_rc%hr
+     mn1 = LIS_rc%mn
+     ss1 = 0
+     ts1 = plumber2_struc(n)%ts
+
+     call LIS_tick(plumber2_struc(n)%ringtime,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
+   endif
+
+   if(plumber2_struc(n)%findtime1 == 1) then
+     !! determine PLUMBER2 forcing 1 time, ONLY first time step
+     yr1 = LIS_rc%yr
+     mo1 = LIS_rc%mo
+     da1 = LIS_rc%da
+     hr1 = LIS_rc%hr
+     mn1 = LIS_rc%mn
+     ss1 = 0
+     ts1 = 0
+     call LIS_tick(time1,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
+   endif
+
+   if(plumber2_struc(n)%findtime2 == 1) then
+     !! determine PLUMBER2 forcing 2 time, first time step AND each time
+     !! ringtime is exceeded
+     yr2 = LIS_rc%yr
+     mo2 = LIS_rc%mo
+     da2 = LIS_rc%da
+     hr2 = LIS_rc%hr
+     mn2 = LIS_rc%mn
+     ss2 = 0
+     ts2 = plumber2_struc(n)%ts   !! 'ts' seconds ahead
+     call LIS_tick(time2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
+   endif
+
+   !Time to read...
+   if (plumber2_struc(n)%findtime1.eq.1) then
         write(LIS_logunit,*) '[INFO] Reading PLUMBER2 time1 data...'
+        write(LIS_logunit,*) '[INFO] time1: ',time1
+        write(LIS_logunit,*) '[INFO] plumber2_struc%ts: ',plumber2_struc(n)%ts
         order = 1
-        !!call read_plumber2(n,222,findex,order,1)
-        !! MCB Note: New PLUMBER2 reader based on PUMET's reader
+        plumber2_struc(n)%read_index = plumber2_struc(n)%read_index + 1
         call read_plumber2(n, order, findex, &
                 plumber2_struc(n)%plumber2file, &
                 plumber2_struc(n)%metdata1, ferror)
         plumber2_struc(n)%plumber2time1 = time1
-     endif
-     if (movetime.eq.1) then 
-        plumber2_struc(n)%plumber2time1 =                      &
-             plumber2_struc(n)%plumber2time2
+   endif
 
-!       MCB Note: LIS_rc%met_nf(findex) is set in plumber2_forcingMod.F90 'init_plumber2'
-!       It's used here so that the number of PLUMBER2 met variables used is not hardcoded
-        do f = 1,LIS_rc%met_nf(findex)
-           do t = 1,LIS_rc%ngrid(n)
-              plumber2_struc(n)%metdata1(f,t) = plumber2_struc(n)%metdata2(f,t)
-           enddo
-        enddo
-     endif
+   if (movetime.eq.1) then 
+      plumber2_struc(n)%metdata1 = plumber2_struc(n)%metdata2
+      plumber2_struc(n)%metdata2 = LIS_rc%udef
 
-     if (plumber2_struc(n)%findtime2.eq.1) then
-        write(LIS_logunit,*) '[INFO] Reading PLUMBER2 time2 data...'
-        order = 2
-        !! call read_plumber2(n,222,findex,order,2)
-        !! MCB Note: New PLUMBER2 reader based on PUMET's reader
-        call read_plumber2(n, order, findex, &
-                plumber2_struc(n)%plumber2file, &
-                plumber2_struc(n)%metdata2, ferror)
-        plumber2_struc(n)%plumber2time2 = time2
-     endif
+      plumber2_struc(n)%plumber2time1 = &
+            plumber2_struc(n)%plumber2time2
+   endif
+
+   if (plumber2_struc(n)%findtime2.eq.1) then
+      write(LIS_logunit,*) '[INFO] Reading PLUMBER2 time2 data...'
+      write(LIS_logunit,*) '[INFO] time2: ',time2
+      write(LIS_logunit,*) '[INFO] plumber2_struc%ts: ',plumber2_struc(n)%ts
+      order = 2
+      plumber2_struc(n)%read_index = plumber2_struc(n)%read_index + 1
+      call read_plumber2(n, order, findex, &
+              plumber2_struc(n)%plumber2file, &
+              plumber2_struc(n)%metdata2, ferror)
+      plumber2_struc(n)%plumber2time2 = time2
   endif
 
 end subroutine get_plumber2

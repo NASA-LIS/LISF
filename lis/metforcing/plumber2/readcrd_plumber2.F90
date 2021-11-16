@@ -59,7 +59,6 @@
          plumber2_struc(n)%plumber2time2 = 3000.0
          plumber2_struc(n)%plumber2time1 = 0.0
 
-         plumber2_struc(n)%startRead = .false.
       enddo
 
 end subroutine readcrd_plumber2

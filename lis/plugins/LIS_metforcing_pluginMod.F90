@@ -533,6 +533,7 @@ subroutine LIS_metforcing_plugin
    external get_plumber2
    external timeinterp_plumber2
    external finalize_plumber2
+   external reset_plumber2
 #endif
 
 
@@ -976,6 +977,7 @@ subroutine LIS_metforcing_plugin
    call registerinitmetforc(trim(LIS_plumber2Id)//char(0),init_plumber2)
    call registerretrievemetforc(trim(LIS_plumber2Id)//char(0),get_plumber2)
    call registertimeinterpmetforc(trim(LIS_plumber2Id)//char(0),timeinterp_plumber2)
+   call registerresetmetforc(trim(LIS_plumber2Id)//char(0),reset_plumber2)
    call registerfinalmetforc(trim(LIS_plumber2Id)//char(0),finalize_plumber2)
 #endif
 

@@ -80,6 +80,7 @@ subroutine read_plumber2(n,order,findex,&
 !  The routines invoked are: 
 !EOP
   
+  integer   :: rIndex
   integer   :: ftn
   integer   :: tairId, qairId, windId, psurfId
   integer   :: precId, swdId, lwdId
@@ -93,6 +94,8 @@ subroutine read_plumber2(n,order,findex,&
 
   ferror = 0 
 
+  rIndex = plumber2_struc(n)%read_index
+
   inquire(file=filename,exist=file_exists) 
   if(file_exists) then 
      write(LIS_logunit,*)'[INFO] Reading PLUMBER2 file (bookend,', order,' ... ',trim(filename)
@@ -103,7 +106,8 @@ subroutine read_plumber2(n,order,findex,&
 
      call LIS_verify(nf90_inq_varid(ftn,'LWdown',lwdId), &
           'nf90_inq_varid failed for LWdown in read_plumber2')
-     call LIS_verify(nf90_get_var(ftn,lwdId,lwdData), &
+     call LIS_verify(nf90_get_var(ftn,lwdId,lwdData, &
+           start=(/1,1,rIndex/)), &
           'nf90_get_var failed for LWdown in read_plumber2')
      call LIS_verify(nf90_get_att(ftn, lwdId,'_FillValue', FVal), &
           'nf90_get_att failed for LWdown:_FillValue in read_plumber2') 
@@ -112,7 +116,8 @@ subroutine read_plumber2(n,order,findex,&
 
      call LIS_verify(nf90_inq_varid(ftn,'Precip',precId), &
           'nf90_inq_varid failed for precipitation flux in read_plumber2')
-     call LIS_verify(nf90_get_var(ftn,precId,precData), &
+     call LIS_verify(nf90_get_var(ftn,precId,precData, &
+           start=(/1,1,rIndex/)), &
           'nf90_get_var failed for precipitation flux in read_plumber2')
      call LIS_verify(nf90_get_att(ftn, precId,'_FillValue', FVal), &
           'nf90_get_att failed for Precip:_FillValue in read_plumber2') 
@@ -121,7 +126,8 @@ subroutine read_plumber2(n,order,findex,&
 
      call LIS_verify(nf90_inq_varid(ftn,'Psurf',psurfId), &
           'nf90_inq_varid failed for SURFACE PRESSURE (psurf) in read_plumber2')
-     call LIS_verify(nf90_get_var(ftn,psurfId, psurfData), &
+     call LIS_verify(nf90_get_var(ftn,psurfId, psurfData, &
+          start=(/1,1,rIndex/)), &
           'nf90_get_var failed for SURFACE PRESSURE (psurf) in read_plumber2') 
      call LIS_verify(nf90_get_att(ftn, psurfId,'_FillValue', FVal), &
           'nf90_get_att failed for psurf:_FillValue in read_plumber2') 
@@ -130,7 +136,8 @@ subroutine read_plumber2(n,order,findex,&
 
      call LIS_verify(nf90_inq_varid(ftn,'Qair',qairId), &
           'nf90_inq_varid failed for Sp. Humidity (spfh) in read_plumber2')
-     call LIS_verify(nf90_get_var(ftn,qairId, qairData), &
+     call LIS_verify(nf90_get_var(ftn,qairId, qairData, &
+          start=(/1,1,rIndex/)), &
           'nf90_get_var failed for Sp. Humidity (spfh) in read_plumber2')
      call LIS_verify(nf90_get_att(ftn, qairId,'_FillValue', FVal), &
           'nf90_get_att failed for spfh:_FillValue in read_plumber2') 
@@ -139,7 +146,8 @@ subroutine read_plumber2(n,order,findex,&
 
      call LIS_verify(nf90_inq_varid(ftn,'SWdown',swdId), &
           'nf90_inq_varid failed for SWdown in read_plumber2')
-     call LIS_verify(nf90_get_var(ftn,swdId,swdData), &
+     call LIS_verify(nf90_get_var(ftn,swdId,swdData, &
+          start=(/1,1,rIndex/)), &
           'nf90_get_var failed for SWdown in read_plumber2')
      call LIS_verify(nf90_get_att(ftn,swdId,'_FillValue', FVal), &
           'nf90_get_att failed for SWdown:_FillValue in read_plumber2') 
@@ -148,16 +156,20 @@ subroutine read_plumber2(n,order,findex,&
 
      call LIS_verify(nf90_inq_varid(ftn,'Tair',tairId), &
           'nf90_inq_varid failed for surface air temp (Tair) in read_plumber2')
-     call LIS_verify(nf90_get_var(ftn,tairId, tairData), &
-          'nf90_get_var failed for surface air temperature (Tair) in read_plumber2')
+     call LIS_verify(nf90_get_var(ftn,tairId,tairData, &
+        start=(/1,1,rIndex/)), &
+       'nf90_get_var failed for surface air temperature (Tair) in read_plumber2')
      call LIS_verify(nf90_get_att(ftn,tairId,'_FillValue', FVal), &
           'nf90_get_att failed for Tair:_FillValue in read_plumber2') 
+
+     write(LIS_logunit,*) '[DEBUG] plumber2 tair: ',tairData
 
 !    --------------------------READ wind-----------------------------------------------
 
      call LIS_verify(nf90_inq_varid(ftn,'Wind',windId), &
           'nf90_inq_varid failed for scalar wind in read_plumber2')
-     call LIS_verify(nf90_get_var(ftn,windId,windData), &
+     call LIS_verify(nf90_get_var(ftn,windId,windData, &
+          start=(/1,1,rIndex/)), &
           'nf90_get_var failed for scalar wind in read_plumber2')
      call LIS_verify(nf90_get_att(ftn,windId,'_FillValue', FVal), &
           'nf90_get_att failed for Wind:_FillValue in read_plumber2') 
