@@ -62,14 +62,14 @@ In the examples that follow, the `%` symbol at the beginning of the line represe
 ----
 Host discover
     #LogLevel Quiet
-    User <userid>
+    User userid
     ProxyCommand ssh {nccs-hostname} direct %h
     ForwardX11 yes
     ForwardX11Trusted yes
     Protocol 2
 ----
 +
-Where `<userid>` is your NASA AUID. This configuration file makes it easier to connect to Discover.
+Where `userid` should be replaced with your NASA AUID. This configuration file makes it easier to connect to Discover.
 +
 TIP: Forgot your AUID? Visit link:https://nams.nasa.gov[NAMS] and select _Your Identity_ from the Identities dropdown menu.
 
@@ -318,7 +318,7 @@ Here is an example of a batch script that can be submitted to the `slurm` schedu
 #SBATCH --ntasks=1
 #SBATCH --qos=debug
 #SBATCH --time=01:00:00
-#SBATCH --account=<ACCOUNT>
+#SBATCH --account=ACCOUNT
 
 echo $DEV_ENV
 cd $SLURM_SUBMIT_DIR
@@ -328,7 +328,7 @@ ulimit -s unlimited
 ./compile -j 28
 ----
 +
-Where `<ACCOUNT>` is a group ID linked to your Discover account (enter the command `groups <userid>` to view a list of the groups linked to your user).
+Where `ACCOUNT` should be replaced with a group ID linked to your Discover account (enter the command `groups <userid>` to view a list of the groups linked to your user).
 +
 Place this in a text file (e.g., `lis-compile.job`) in the `lis/`, `ldt/`, or `lvt/` directory (depending on which component you are compiling) and submit the job to the queue with `sbatch lis-compile.job`. Check on the status of the job with `squeue -u <userid>`.
 
