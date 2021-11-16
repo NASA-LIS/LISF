@@ -388,6 +388,8 @@ contains
                    FGEV_PET, FCEV_PET, FCTR_PET,                       & ! PET code from Sujay 
 		   CHLEAF  , CHUC    , CHV2    , CHB2    , FPICE   , PAHV    , &
                    PAHG    , PAHB    , PAH     , LAISUN  , LAISHA  , RB        & ! OUT
+                   !ag (05Jan2021)
+                   ,rivsto  , fldsto, fldfrc             &
 #ifdef WRF_HYDRO
                    ,SFCHEADRT                                                  & ! IN/OUT :
 #endif
@@ -650,6 +652,10 @@ contains
   LOGICAL                             :: crop_active ! flag to run crop model
   
   REAL :: FB
+  !ag (05Jan2021)
+  REAL                        , INTENT(IN)    :: rivsto  !river storage [m -1]
+  REAL                        , INTENT(IN)    :: fldsto  !flood storage [m -1]
+  REAL                        , INTENT(IN)    :: fldfrc  !flooded fraction flag (zero or 1)
 
   ! INTENT (OUT) variables need to be assigned a value.
   ! These normally get assigned values only if DVEG == 2.
@@ -783,6 +789,8 @@ contains
                  CMC    ,ECAN   ,ETRAN  ,FWET   ,RUNSRF ,RUNSUB , & !out
                  QIN    ,QDIS   ,PONDING1       ,PONDING2,&
                  QSNBOT,SUBSNOW                     &
+                 !ag (05Jan2021)
+                 ,rivsto,fldsto,fldfrc                            &
 #ifdef WRF_HYDRO
                         ,sfcheadrt                     &
 #endif
@@ -6324,6 +6332,8 @@ ENDIF   ! CROPTYPE == 0
                     CMC    ,ECAN   ,ETRAN  ,FWET   ,RUNSRF ,RUNSUB , & !out
                     QIN    ,QDIS   ,PONDING1       ,PONDING2,        &
                     QSNBOT,SUBSNOW                                   &
+                    !ag (05Jan2021)
+                    ,rivsto,fldsto,fldfrc                            &                    
 #ifdef WRF_HYDRO
                         ,sfcheadrt                     &
 #endif
@@ -6429,6 +6439,12 @@ ENDIF   ! CROPTYPE == 0
 
   REAL, PARAMETER ::  WSLMAX = 5000.      !maximum lake water storage (mm)
 
+  !ag (05Jan2021)
+  REAL                             , INTENT(IN)   :: rivsto
+  REAL                             , INTENT(IN)   :: fldsto
+  REAL                             , INTENT(IN)   :: fldfrc
+
+
 #ifdef WRF_HYDRO
   REAL                           , INTENT(INOUT)    :: sfcheadrt
 #endif
@@ -6505,6 +6521,11 @@ ENDIF   ! CROPTYPE == 0
        QINSUR = QINSUR+sfcheadrt/DT*0.001  !sfcheadrt units (m)
 #endif
 
+       !ag (05Jan2021)
+    !if flooded fraction flag is 1, i.e., if flooded fraction is above threshold, add river and flood storages to QINSUR
+    if(fldfrc==1)then
+      QINSUR = QINSUR + (rivsto + fldsto) !surface water storage units are in m/s (See HYMAP2_routing_run.F90 and noahmp36_getsws_hymap2.F90)
+    endif
 ! lake/soil water balances
 
     IF (IST == 2) THEN                                        ! lake
@@ -6548,6 +6569,12 @@ ENDIF   ! CROPTYPE == 0
 
     RUNSUB       = RUNSUB + SNOFLOW         !mm/s
 
+    !ag (05Jan2021)
+    !if flooded fraction flag is 0, i.e., if flooded fraction is below threshold, add river and flood storages to RUNSRF after vertical water balance
+    if(fldfrc==0)then
+      RUNSRF = RUNSRF + (rivsto + fldsto)*1000. !surface water storage units are in m/s (See HYMAP2_routing_run.F90 and noahmp36_getsws_hymap2.F90)
+    endif
+    
   END SUBROUTINE WATER
 
 !== begin canwater =================================================================================

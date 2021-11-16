@@ -41,4 +41,3 @@ subroutine HYMAP2_write_WL(ftn,n, Routing_State)
 !EOP
 
 end subroutine HYMAP2_write_WL
-
