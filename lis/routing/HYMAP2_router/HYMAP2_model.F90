@@ -12,6 +12,8 @@
 !                                and adaptive time step. 
 ! 13 Apr 2016: Augusto Getirana, Inclusion of option for hybrid runs with a 
 !                                river flow map. 
+! 27 Apr 2020: Augusto Getirana,  Added support for urban drainage
+!  3 Jun 2020: Augusto Getirana,  Added support for 2-way coupling
 !
 #include "LIS_misc.h"
 subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
@@ -30,8 +32,11 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
      fldout,fldsto,flddph,fldvel,fldfrc,     &
      fldare,sfcelv,roffsto,basfsto,          &
      rnfdwi,bsfdwi,surfws,                   &
-     dtaout                                  )                   
-                   
+     dtaout,&
+     !ag (27Apr2020)
+     !urban drainage variables/parameters
+     flowtype,drvel,drtotwth,drrad,drman,drslp,drtotlgh,drnoutlet,drstomax,drout,drsto)
+      
   use HYMAP2_modelMod
   use HYMAP2_routingMod
   use LIS_mpiMod
@@ -154,24 +159,70 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
   real*8                 :: dt1
   integer                :: status
 
+  !ag(03Jun2020)
+  real*8                 :: stommps
+!  real*8                 :: stime                !starting time
+
+  !ag (27Apr2020)
+  !urban drainage variables/parameters
+  integer, intent(in)  :: flowtype     !urban drainage flag: 0 - do not compute ; or 1 - compute urban drainage
+  real,    intent(in)  :: drvel
+  real,    intent(in)  :: drtotwth(nseqall) 
+  real,    intent(in)  :: drrad
+  real,    intent(in)  :: drman
+  real,    intent(in)  :: drslp
+  real,    intent(in)  :: drtotlgh(nseqall)   
+  real,    intent(in)  :: drnoutlet(nseqall)   
+  real,    intent(in)  :: drstomax(nseqall)    !maximum urban drainage water storage capacity [m3]
+!  integer,    intent(in)  :: droutlet(nseqall)    !urban drainage outlet id [-]: 0 - network; 1 outlet
+  real,    intent(inout)    :: drsto(nseqall)   !urban drainage water storage [m3]
+  real,    intent(inout)    :: drout(nseqall)   !urban drainage outflow [m3/s]
+
 #if 0 
   call system_clock(counti,count_rate)
 #endif
 
+  !ag(03Jun2020)
+  if(HYMAP2_routing_struc(n)%enable2waycpl==1)then
+    do ic=1,nseqall
+      stommps=((rivsto(ic)+fldsto(ic))/grarea(ic))*1d3/dt !convert from m3 to mm/s
+      if(runoff0(ic)/=mis.and.basflw0(ic)/=mis.and.grarea(ic)/=mis)then
+        if(LIS_rc%tscount(n) ==1)then
+          runoff0(ic)=0. !stommps 
+          basflw0(ic)=0.
+        else
+          runoff0(ic)=(runoff0(ic)+basflw0(ic))-stommps
+          basflw0(ic)=0. 
+        endif 
+      else
+        runoff0(ic)=0. !stommps 
+        basflw0(ic)=0.
+      endif
+    enddo
+  endif
 ! ================================================
   !ag 3 Apr 2014 
   !define sub time step
 ! ================================================
-!  !ag 12 Dec 2016: get minimum dta values (dtaout)
+  !ag 12 Dec 2016: get minimum dta values (dtaout)
+  !ag(11Jan2021) Fix for first time step in restart mode
+  if(maxval(rivdph)<=0.)rivdph=rivdph_pre
+
   if(steptype==1)then
     dta=dt
     nt(:)=1
   elseif(steptype==2)then
     do ic=1,nseqall
-      call HYMAP2_dynstp(dt,nxtdst(ic),rivdph(ic),grv,cadp,dta(ic),nt(ic))
-      if(dta(ic)>dt)then
+      !if flowtype is hybrid or urban, and flowmap is kinematic or urban-kinematic, skip adaptive time step
+      if((flowtype==0.or.flowtype==4).and.(flowmap(ic)==1.or.flowmap(ic)==5))then
         dta(ic)=dt
         nt(ic)=1
+      else
+        call HYMAP2_dynstp(dt,nxtdst(ic),rivdph(ic),grv,cadp,dta(ic),nt(ic))
+        if(dta(ic)>dt)then
+          dta(ic)=dt
+          nt(ic)=1
+        endif
       endif
     enddo
   endif
@@ -212,12 +263,11 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
 
   do it=1,maxi
     !call HYMAP2_date2frac(yr,mo,da,hr,mn,ss,real(dta(i)*(it-1)-dt),time)
-
     dt1=real(mindt*it-dt)
 
     time=dble(yr*10000+mo*100+da) +&
          (dble(hr)+(dble(mn)+(dble(ss)+dt1)/60.)/60.)/24.
-
+         
     call HYMAP2_model_core(n,it,mis,nseqall,nz,time,&
          mindt,flowmap,linres,evapflag, &
          resopflag,floodflag,dwiflag,                               &
@@ -231,8 +281,11 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
          runoff0,basflw0,evpdif,rnfdwi_ratio,bsfdwi_ratio,      &
          rivsto,rivdph,rivvel0,rivout0,evpout0,&
          fldout0,fldsto,flddph,fldvel0,fldfrc,     &
-         fldare,sfcelv,roffsto,basfsto,rnfdwi,bsfdwi,surfws)
-        
+         fldare,sfcelv,roffsto,basfsto,rnfdwi,bsfdwi,surfws,&
+         !ag (27Apr2020)
+         !urban drainage variables/parameters
+         flowtype,drvel,drtotwth,drrad,drman,drslp,drtotlgh,drnoutlet,drstomax,drout,drsto)
+
     do ic=1,nseqall 
       rivout0(ic)=rivout0(ic)+fldout0(ic)
       rivout(ic)=rivout(ic)+rivout0(ic)/real(maxi)
@@ -246,9 +299,7 @@ subroutine HYMAP2_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
 #if 0 
   call system_clock(countf)
   HYMAP2_routing_struc(n)%dt_proc=HYMAP2_routing_struc(n)%dt_proc+real(countf-counti)/real(count_rate)
-#endif
   tmp=minval(dtaout)
-  !write(unit=HYMAP2_logunit,fmt='(8i5,10f15.4)')n,yr,mo,da,hr,mn,ss,nt(i),dta(i),sum(HYMAP2_routing_struc(:)%dt_proc),minval(dtaout,dtaout>tmp),maxval(dtaout),real(count(dtaout==minval(dtaout)))
-!  write(unit=LIS_logunit,fmt='(a,i5,f10.2,f10.4,3f10.2)')'[INFO] HYMAP2_log: ',nt(i),dta(i),sum(HYMAP2_routing_struc(:)%dt_proc),minval(dtaout,dtaout>tmp),maxval(dtaout),real(count(dtaout==minval(dtaout)))
+#endif
 
 end subroutine HYMAP2_model

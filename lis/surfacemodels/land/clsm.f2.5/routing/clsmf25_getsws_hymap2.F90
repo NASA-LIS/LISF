@@ -30,7 +30,13 @@ subroutine clsmf25_getsws_hymap2(n)
 !   This routine defines the surface water storage variables in the LSM
 !   to be updated based on feedback from HYMAP2
 !  
-!EOP
+  !EOP
+  type(ESMF_Field)       :: rivsto_field
+  type(ESMF_Field)       :: fldsto_field
+  type(ESMF_Field)       :: fldfrc_field
+  real, pointer          :: rivstotmp(:)
+  real, pointer          :: fldstotmp(:)
+  real, pointer          :: fldfrctmp(:)
   integer                :: t
   integer                :: c,r
   integer                :: status
@@ -39,11 +45,33 @@ subroutine clsmf25_getsws_hymap2(n)
   call ESMF_AttributeGet(LIS_runoff_state(n),"2 way coupling",&
        enable2waycpl, rc=status)
   call LIS_verify(status)
-  
+
   if(enable2waycpl==1) then
-     write(LIS_logunit,*) '[ERR] Two-way coupling between CLSM and HYMAP2'
-     write(LIS_logunit,*) '[ERR] is not currently supported'
-     call LIS_endrun()
+     ! River Storage
+     call ESMF_StateGet(LIS_runoff_state(n),"River Storage",rivsto_field,rc=status)
+     call LIS_verify(status,'ESMF_StateGet failed for River Storage')
+
+     call ESMF_FieldGet(rivsto_field,localDE=0,farrayPtr=rivstotmp,rc=status)
+     call LIS_verify(status,'ESMF_FieldGet failed for River Storage')
+     where(rivstotmp/=LIS_rc%udef) &
+          clsmf25_struc(n)%cat_route(:)%rivsto=rivstotmp/clsmf25_struc(n)%ts
+
+     ! Flood Storage
+     call ESMF_StateGet(LIS_runoff_state(n),"Flood Storage",fldsto_field,rc=status)
+     call LIS_verify(status,'ESMF_StateGet failed for Flood Storage')
+
+     call ESMF_FieldGet(fldsto_field,localDE=0,farrayPtr=fldstotmp,rc=status)
+     call LIS_verify(status,'ESMF_FieldGet failed for Flood Storage')
+     where(fldstotmp/=LIS_rc%udef)&
+          clsmf25_struc(n)%cat_route(:)%fldsto=fldstotmp/clsmf25_struc(n)%ts
+
+     ! Flooded Fraction Flag
+     call ESMF_StateGet(LIS_runoff_state(n),"Flooded Fraction",fldfrc_field,rc=status)
+     call LIS_verify(status,'ESMF_StateGet failed for Flooded Fraction')
+
+     call ESMF_FieldGet(fldfrc_field,localDE=0,farrayPtr=fldfrctmp,rc=status)
+     call LIS_verify(status,'ESMF_FieldGet failed for Flooded Fraction')
+     clsmf25_struc(n)%cat_route(:)%fldfrc=fldfrctmp
   endif
 
 end subroutine clsmf25_getsws_hymap2
