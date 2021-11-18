@@ -831,6 +831,32 @@ if($use_mkllapack == 1) {
    }
 }
 
+print "Use PETSc? (1-yes, 0-no, default=0): ";
+$use_petsc=<stdin>;
+chomp($use_petsc);
+if($use_petsc eq ""){
+   $use_petsc=0;
+}
+
+if($use_petsc == 1) {
+   if(defined($ENV{LIS_PETSc})){
+      $sys_petsc_path = $ENV{LIS_PETSc};
+      $inc1 = "/linux-gnu-intel/include/";
+      $inc2 = "/include/";
+      $lib = "/linux-gnu-intel/lib/";
+      $inc_petsc1=$sys_petsc_path.$inc1;
+      $inc_petsc2=$sys_petsc_path.$inc2;
+      $lib_petsc=$sys_petsc_path.$lib;
+   }
+   else {
+      print "--------------ERROR---------------------\n";
+      print "Please specify the PETSc path using\n";
+      print "the LIS_PETsc variable.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+}
 
 if(defined($ENV{LIS_JPEG})){
    $libjpeg = "-L".$ENV{LIS_JPEG}."/lib"." -ljpeg";
@@ -1016,6 +1042,11 @@ if($use_mkllapack == 1){
    $ldflags = $ldflags." -L\$(LIB_LAPACK) -lmkl_rt";
 }
 
+if($use_petsc == 1){
+   $fflags = $fflags." -I\$(INC_PETSc1) -I\$(INC_PETSc2)";
+   $ldflags = $ldflags." -L\$(LIB_PETSc) -Wl,-rpath,\$(LIB_PETSc) -lpetsc -lm";
+}
+
 if($use_esmf_trace == 1){
    $fflags77 = $fflags77." -DESMF_TRACE";
    $fflags = $fflags." -DESMF_TRACE";
@@ -1102,6 +1133,9 @@ printf conf_file "%s%s\n","LIB_PROF_UTIL   = $lib_crtm_prof";
 printf conf_file "%s%s\n","INC_CMEM        = $inc_cmem";
 printf conf_file "%s%s\n","LIB_CMEM        = $lib_cmem";
 printf conf_file "%s%s\n","LIB_LAPACK      = $lib_lapack";
+printf conf_file "%s%s\n","INC_PETSc1      = $inc_petsc1";
+printf conf_file "%s%s\n","INC_PETSc2      = $inc_petsc2";
+printf conf_file "%s%s\n","LIB_PETSc       = $lib_petsc";
 printf conf_file "%s%s\n","CFLAGS          = $cflags";
 printf conf_file "%s%s\n","FFLAGS77        = $fflags77";
 printf conf_file "%s%s\n","FFLAGS          = $fflags";
@@ -1196,6 +1230,12 @@ else{
    printf misc_file "%s\n","#undef MKL_LAPACK ";
 }
 
+if($use_petsc == 1) {
+   printf misc_file "%s\n","#define PETSc ";
+}
+else{
+   printf misc_file "%s\n","#undef PETSc ";
+}
 
 printf misc_file "%s\n","#undef INC_WATER_PTS";
 printf misc_file "%s\n","#undef COUPLED";
