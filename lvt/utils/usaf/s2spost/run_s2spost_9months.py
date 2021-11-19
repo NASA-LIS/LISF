@@ -11,6 +11,7 @@
 # 24 Sep 2021: Eric Kemp (SSAI), first version.
 # 27 Oct 2021: Eric Kemp/SSAI, address pylint string objections.
 # 29 Oct 2021: Eric Kemp/SSAI, add config file.
+# 19 Nov 2021: Eric Kemp/SSAI, fixed typo reported by Kristi Arsenault.
 #
 #------------------------------------------------------------------------------
 """
@@ -118,7 +119,7 @@ def _submit_batch_jobs(config, configfile, topdatadir,
     curdate = startdate
     for _ in range(0, total_months):
         txt = "[INFO] Submitting batch job for"
-        txt += f" cf_{model_forcing}_{curdate.year:04d}{curdate.month:04d}"
+        txt += f" cf_{model_forcing}_{curdate.year:04d}{curdate.month:02d}"
         print(txt)
         cmd = f"sbatch {scriptdir}/run_s2spost_1month.sh"
         cmd += f" {configfile} {scriptdir} {topdatadir}"
