@@ -113,7 +113,15 @@ def _customize_lis_config(lis_config_template, restart_dir, startdate):
     }
 
     newlines = [] # List of lines for new file
-    with open(lis_config_template, "r", encoding="ascii").readlines() as lines:
+    #with open(lis_config_template, "r", encoding="ascii").readlines() as lines:
+        # for line in lines:
+        #     for key, value in linedict.items():
+        #         if key in line:
+        #             line = value
+        #     newlines.append(line)
+
+    with open(lis_config_template, "r", encoding="ascii") as fobj:
+        lines = fobj.readlines()
         for line in lines:
             for key, value in linedict.items():
                 if key in line:
