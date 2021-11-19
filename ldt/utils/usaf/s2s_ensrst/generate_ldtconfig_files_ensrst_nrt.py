@@ -16,6 +16,8 @@
 # * 14 Oct 2021: Eric Kemp/SSAI, first version.
 # * 01 Nov 2021: Eric Kemp/SSAI, addressed pylint format complaints.
 # * 15 Nov 2021: K. Arsenault/SAIC, made minor fixes and added config entries.
+# * 19 Nov 2021: Eric Kemp/SSAI, fixed typos reported by K. Arsenault and
+#                R. Zamora.
 #
 #------------------------------------------------------------------------------
 """
@@ -44,7 +46,7 @@ _ENSEMBLE_SIZES = {
     "GNEMO" : 10,
     "GEOSv2" : 10,
     "CFSv2" : 24,
-    "GFDL" : 30,
+    "GFDL" : 15,
 }
 
 # Options for scaling to 0.25 deg
@@ -123,7 +125,7 @@ def _customize_ldt_config(ldtconfig_lsm_target, lsm_rstdir, currentdate,
     rst_monname = currentdate.strftime("%b")
 
     output_fname = f"{nmme_model}/LIS_RST_NOAHMP401_{rst_date}2345.ICS_" + \
-        f"{prevdate.year:04d}.ens{num_ensmems:d}.nc"
+        f"{rst_monname}{prevdate.year:04d}.ens{num_ensmems:d}.nc"
     lsm_logfile = \
         f"{nmme_model}/ldtlog_{_LSM_NAME}_{rst_monname}{prevdate.year:04d}"
 
