@@ -22,6 +22,7 @@ subroutine read_geos5fcst(n, m, findex, order, name, ferror)
   use LIS_logMod,           only : LIS_logunit, LIS_verify, LIS_warning
   use LIS_metforcingMod,    only : LIS_forc
   use geos5fcst_forcingMod, only : geos5fcst_struc
+  use LIS_constantsMod,     only : LIS_CONST_PATH_LEN
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
@@ -31,7 +32,7 @@ subroutine read_geos5fcst(n, m, findex, order, name, ferror)
   integer, intent(in)       :: n
   integer, intent(in)       :: m
   integer, intent(in)       :: order
-  character*100, intent(in) :: name
+  character(len=LIS_CONST_PATH_LEN), intent(in) :: name
   integer, intent(out)      :: ferror
 !
 ! !DESCRIPTION:

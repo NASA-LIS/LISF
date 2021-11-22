@@ -32,6 +32,7 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
   use LIS_metforcingMod,    only : LIS_forc
   use LIS_timeMgrMod,       only : LIS_tick
   use LIS_logMod,           only : LIS_logunit, LIS_endrun
+  use LIS_constantsMod,     only : LIS_CONST_PATH_LEN
   use princeton_forcingMod, only : princeton_struc
   use LIS_forecastMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -118,7 +119,7 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
   integer, dimension(N_PF), parameter :: fnum = (/ &
        31, 33, 34, 35, 36, 37, 38 /) 
 
-  character*100 :: infile
+  character(len=LIS_CONST_PATH_LEN) :: infile
 
 ! netcdf variables
   integer :: ncid, varid, status

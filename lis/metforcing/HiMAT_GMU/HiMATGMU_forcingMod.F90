@@ -49,6 +49,7 @@ module HiMATGMU_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -68,7 +69,7 @@ module HiMATGMU_forcingMod
      real               :: ts
      integer            :: ncol                 ! Number of cols
      integer            :: nrow                 ! Number of rows
-     character*40       :: HiMATGMUdir              ! STAGE IV Directory
+     character(len=LIS_CONST_PATH_LEN) :: HiMATGMUdir ! STAGE IV Directory
      real*8             :: HiMATGMUtime             ! Nearest hourly instance of incoming file
      integer            :: mi                   ! Number of points in the input grid
 

@@ -26,6 +26,7 @@ subroutine get_TRMM3B42RT(n,findex)
   use LIS_logMod, only            : LIS_logunit, LIS_endrun
   use TRMM3B42RT_forcingMod, only : TRMM3B42RT_struc
   use LIS_metforcingMod,  only    : LIS_forc ! SY
+  use LIS_constantsMod,      only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -64,7 +65,7 @@ subroutine get_TRMM3B42RT(n,findex)
   integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2, ts2    ! SY: Time parameters for TRMM data time nearest to start of model time step
   integer :: doy3, yr3, mo3, da3, hr3, mn3, ss3, ts3    ! SY: Time parameters for TRMM data time nearest to end of model time step
   real    :: gmt1, gmt2, gmt3
-  character*120 :: name                    ! Filename variables for precip data sources
+  character(len=LIS_CONST_PATH_LEN) :: name                    ! Filename variables for precip data sources
   real*8  :: LIS_timeAtTStepStart_add90min 
   real*8  :: LIS_timeAtTStepEnd_add90min   
   integer :: order
@@ -179,7 +180,7 @@ subroutine get_TRMM3B42RT(n,findex)
                           TRMM3B42RT_struc(n)%TRMM3B42RTmo_TStepStart, &
                           TRMM3B42RT_struc(n)%TRMM3B42RTda_TStepStart, &
                           TRMM3B42RT_struc(n)%TRMM3B42RThr_TStepStart )
-     write(LIS_logunit, *)'Getting new TRMM 3B42RT satellite precip data:', name
+     write(LIS_logunit, *)'Getting new TRMM 3B42RT satellite precip data:', trim(name)
      order = 1
      call read_TRMM3B42RT(n, name, findex, order, ferror_TRMM3B42RT)
    elseif (.NOT. ((TRMM3B42RT_struc(n)%TRMM3B42RTyr_TStepStart .EQ. &
@@ -220,7 +221,7 @@ subroutine get_TRMM3B42RT(n,findex)
                           TRMM3B42RT_struc(n)%TRMM3B42RTmo_TStepEnd, &
                           TRMM3B42RT_struc(n)%TRMM3B42RTda_TStepEnd, &
                           TRMM3B42RT_struc(n)%TRMM3B42RThr_TStepEnd )
-     write(LIS_logunit, *)'Getting new TRMM 3B42RT satellite precip data:', name
+     write(LIS_logunit, *)'Getting new TRMM 3B42RT satellite precip data:', trim(name)
      order = 2
      call read_TRMM3B42RT(n, name, findex, order, ferror_TRMM3B42RT)
    endif
@@ -289,7 +290,6 @@ subroutine TRMM3B42RTfile( name, TRMM3B42RTdir, yr, mo, da, hr)
 !
 !EOP
 
-  character*120 temp
   integer :: i, c
   integer :: uyr, umo, uda, uhr, umn, uss, ts1, udoy
   real    :: ugmt

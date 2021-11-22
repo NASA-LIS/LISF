@@ -52,6 +52,8 @@ module stg4_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -71,7 +73,7 @@ module stg4_forcingMod
      real               :: ts
      integer            :: ncol                 ! Number of cols
      integer            :: nrow                 ! Number of rows
-     character*40       :: stg4dir              ! STAGE IV Directory
+     character(len=LIS_CONST_PATH_LEN) :: stg4dir ! STAGE IV Directory
      real*8             :: stg4time             ! Nearest hourly instance of incoming file
      real*8             :: griduptime1          ! Designated time of STAGEIV grid change
      logical            :: gridchange1          ! Flag for when grid change occurs

@@ -23,6 +23,7 @@ subroutine get_AWAP(n, findex)
   use LIS_timeMgrMod, only  : LIS_tick, LIS_get_nstep
   use LIS_logMod,      only : LIS_logunit, LIS_endrun
   use AWAP_forcingMod, only : AWAP_struc
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -62,7 +63,7 @@ subroutine get_AWAP(n, findex)
     real*8  :: timenext
     real*8  :: AWAP_file_time1       ! End boundary time for STAGEIV file
     real*8  :: AWAP_file_time2       ! End boundary time for STAGEIV file
-    character(80) :: file_name       ! Filename variables for precip data sources
+    character(len=LIS_CONST_PATH_LEN) :: file_name ! Filename variables for precip data sources
 
     integer :: doy1, yr1, mo1, da1, hr1, mn1, ss1
     integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2
@@ -114,7 +115,7 @@ subroutine get_AWAP(n, findex)
       if ( LIS_rc%time > AWAP_struc(n)%AWAPtime ) then
       ! Determine and return filename of AWAP file 
         call AWAPfile( file_name, AWAP_struc(n)%AWAPdir, yr2, doy2)
-        write(LIS_logunit,*) '[INFO] Getting new AWAP precip data:: ', file_name
+        write(LIS_logunit,*) '[INFO] Getting new AWAP precip data:: ', trim(file_name)
       ! Open, read, and reinterpolate AWAP field to LIS-defined grid
         call read_AWAP ( n, file_name, findex, order, ferror_AWAP )
       ! Assign latest AWAP file time to stored AWAP time variable
@@ -126,7 +127,7 @@ subroutine get_AWAP(n, findex)
 
      ! Determine and return filename of AWAP file 
        call AWAPfile( file_name, AWAP_struc(n)%AWAPdir, yr1, doy1 )
-       write(LIS_logunit,*) '[INFO] Getting new AWAP precip data:: ', file_name
+       write(LIS_logunit,*) '[INFO] Getting new AWAP precip data:: ', trim(file_name)
      ! Open, read, and reinterpolate AWAP field to LIS-defined grid
        call read_AWAP ( n, file_name, findex, order, ferror_AWAP )
      ! Assign latest AWAP file time to stored AWAP time variable

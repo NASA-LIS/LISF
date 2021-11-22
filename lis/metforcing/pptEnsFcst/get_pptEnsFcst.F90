@@ -24,6 +24,7 @@ subroutine get_pptEnsFcst(n, findex)
   use LIS_logMod,       only : LIS_logunit, LIS_verify, LIS_endrun
   use LIS_timeMgrMod,   only : LIS_tick, LIS_get_nstep
   use LIS_metforcingMod,only : LIS_forc
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use pptEnsFcst_forcingMod,  only : pptensfcst_struc
   use pptEnsFcst_VariablesMod
 
@@ -58,7 +59,7 @@ subroutine get_pptEnsFcst(n, findex)
   integer        :: c, r, f, m
   integer        :: metforc_hrts
   integer        :: metforc_mnts
-  character(140) :: fullfilename
+  character(len=LIS_CONST_PATH_LEN) :: fullfilename
   logical        :: file_exists
 
 ! Date/time parameters for file get/read:
