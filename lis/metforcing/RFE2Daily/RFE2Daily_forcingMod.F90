@@ -65,6 +65,7 @@ module RFE2Daily_forcingMod
 !
 ! !USES:
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -83,7 +84,7 @@ module RFE2Daily_forcingMod
 
   type, public :: RFE2Daily_type_dec
      real                    :: ts
-     character*40            :: RFE2DailyDir
+     character(len=LIS_CONST_PATH_LEN) :: RFE2DailyDir
      real*8                  :: RFE2DailyEndTime
      type(ESMF_Time)         :: startTime
      real*8                  :: st_real

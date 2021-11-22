@@ -22,6 +22,7 @@ subroutine get_stg2(n, findex)
   use LIS_coreMod, only : LIS_rc, LIS_domain
   use LIS_timeMgrMod, only : LIS_tick, LIS_get_nstep
   use LIS_logMod, only : LIS_logunit, LIS_endrun
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use stg2_forcingMod, only : stg2_struc
 
   implicit none
@@ -69,7 +70,7 @@ subroutine get_stg2(n, findex)
 !    integer :: endtime_stg2         ! 1=get a new file 
     real*8  :: stg2_file_time1      ! Current LIS Time and end boundary time for STAGEII file
     real*8  :: stg2_file_time2      ! Current LIS Time and end boundary time for STAGEII file
-    character(80) :: file_name      ! Filename variables for precip data sources
+    character(len=LIS_CONST_PATH_LEN) :: file_name ! Filename variables for precip data sources
 
     integer :: doy1, yr1, mo1, da1, hr1, mn1, ss1
     integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2
@@ -160,7 +161,7 @@ subroutine get_stg2(n, findex)
       if ( LIS_rc%time > stg2_struc(n)%stg2time ) then
      ! Determine and return filename of STAGE II file 
        call stg2file( file_name, stg2_struc(n)%stg2dir, yr2, mo2, da2, hr2 )
-       write(LIS_logunit,*) 'Getting new STAGE2 precip data:: ', file_name
+       write(LIS_logunit,*) 'Getting new STAGE2 precip data:: ', trim(file_name)
      ! Open, read, and reinterpolate STAGE II field to LIS-defined grid
        call read_stg2 ( n, file_name, findex, order, ferror_stg2 )
      ! Assign latest STAGE II file time to stored STAGE II time variable
@@ -172,7 +173,7 @@ subroutine get_stg2(n, findex)
      
      ! Determine and return filename of STAGE II file 
        call stg2file( file_name, stg2_struc(n)%stg2dir, yr1, mo1, da1, hr1 )
-       write(LIS_logunit,*) 'Getting new STAGE2 precip data:: ', file_name
+       write(LIS_logunit,*) 'Getting new STAGE2 precip data:: ', trim(file_name)
      ! Open, read, and reinterpolate STAGE II field to LIS-defined grid
        call read_stg2 ( n, file_name, findex, order, ferror_stg2 )
      ! Assign latest STAGE II file time to stored STAGE II time variable

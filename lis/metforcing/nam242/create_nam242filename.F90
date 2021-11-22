@@ -64,8 +64,10 @@ subroutine create_nam242filename(option, name00, name03, name06, &
   integer :: uyr0, umo0, uda0, uhr0, umn0, uss0
   integer :: remainder
   character(len=2) :: initcode0, initcode1, fcstcode0, fcstcode1, fcstcode2
-  character*1 :: fbase(80), fdir(13), ftime(10), fsubs(26)
-  character(LEN=100) :: temp1,temp2
+  character(len=8) :: fdir
+  character(len=26) :: fsubs
+  character(len=5),  parameter :: fsubs_prefix = 'fh.00'
+  character(len=19), parameter :: fsubs_suffix = '_tl.press_gr.awp242'
   real*8      :: time1,dumbtime
   integer     :: doy1,doy
   real        :: gmt1,gmt
@@ -224,67 +226,28 @@ subroutine create_nam242filename(option, name00, name03, name06, &
   fcstcode2 = '06'
   
   !name00
-  write(UNIT=temp1, fmt='(a40)') namdir  
-  read(UNIT=temp1, fmt='(80a1)') (fbase(i), i=1,80)
 
-  write(UNIT=temp1, fmt='(a1, i4, i2, i2, a1, a2, a1)') '/', uyr, umo, uda, '/', initcode0, '/'
-  read(UNIT=temp1, fmt='(13a1)') fdir
-  do i = 1, 13
-     if ( fdir(i) == ' ' ) fdir(i) = '0'
-  end do
+  write(UNIT=fdir, fmt='(i4, i2.2, i2.2)') uyr, umo, uda
 
-  write(UNIT=temp1, fmt='(a5, a2, a19)') 'fh.00', fcstcode0, '_tl.press_gr.awp242'
-  read (UNIT=temp1, fmt='(80a1)') (fsubs(i), i=1,26)
+  write(UNIT=fsubs, fmt='(a5, a2, a19)') fsubs_prefix, fcstcode0, fsubs_suffix
 
-  c = 0
-  do i = 1, 80
-     if ( (fbase(i) == ' ') .and. (c == 0) ) c = i-1
-  end do
-
-  write(UNIT=temp1, fmt='(80a1)') (fbase(i), i=1,c), (fdir(i), i=1,13), (fsubs(i), i=1,26)
-  read(UNIT=temp1, fmt='(a80)') name00
+  name00 = trim(namdir) // '/' // fdir // '/' // initcode0 // '/' // fsubs
 
   !name03
-  write(UNIT=temp1, fmt='(a40)') namdir  
-  read(UNIT=temp1, fmt='(80a1)') (fbase(i), i=1,80)
 
-  write(UNIT=temp1, fmt='(a1, i4, i2, i2, a1, a2, a1)') '/', uyr0, umo0, uda0, '/', initcode1, '/'
-  read(UNIT=temp1, fmt='(13a1)') fdir
-  do i = 1, 13
-     if ( fdir(i) == ' ' ) fdir(i) = '0'
-  end do
+  write(UNIT=fdir, fmt='(i4, i2.2, i2.2)') uyr0, umo0, uda0
 
-  write(UNIT=temp1, fmt='(a5, a2, a19)') 'fh.00', fcstcode1, '_tl.press_gr.awp242'
-  read (UNIT=temp1, fmt='(80a1)') (fsubs(i), i=1,26)
+  write(UNIT=fsubs, fmt='(a5, a2, a19)') fsubs_prefix, fcstcode1, fsubs_suffix
 
-  c = 0
-  do i = 1, 80
-     if ( (fbase(i) == ' ') .and. (c == 0) ) c = i-1
-  end do
-
-  write(UNIT=temp1, fmt='(80a1)') (fbase(i), i=1,c), (fdir(i), i=1,13), (fsubs(i), i=1,26)
-  read(UNIT=temp1, fmt='(a80)') name03
+  name03 = trim(namdir) // '/' // fdir // '/' // initcode1 // '/' // fsubs
 
   !name06
-  write(UNIT=temp2, fmt='(a40)') namdir  
-  read(UNIT=temp2, fmt='(80a1)') (fbase(i), i=1,80)
 
-  write(UNIT=temp2, fmt='(a1, i4, i2, i2, a1, a2, a1)') '/', uyr0, umo0, uda0, '/', initcode1, '/'
-  read(UNIT=temp2, fmt='(13a1)') fdir
-  do i = 1, 13
-     if ( fdir(i) == ' ' ) fdir(i) = '0'
-  end do
+  write(UNIT=fdir, fmt='(i4, i2.2, i2.2)') uyr0, umo0, uda0
 
-  write(UNIT=temp2, fmt='(a5, a2, a19)') 'fh.00', fcstcode2, '_tl.press_gr.awp242'
-  read (UNIT=temp2, fmt='(80a1)') (fsubs(i), i=1,26)
+  write(UNIT=fsubs, fmt='(a5, a2, a19)') fsubs_prefix, fcstcode2, fsubs_suffix
 
-  c = 0
-  do i = 1, 80
-     if ( (fbase(i) == ' ') .and. (c == 0) ) c = i-1
-  end do
-
-  write(UNIT=temp2, fmt='(80a1)') (fbase(i), i=1,c), (fdir(i), i=1,13), (fsubs(i), i=1,26)
-  read(UNIT=temp2, fmt='(a80)') name06
+  name06 = trim(namdir) // '/' // fdir // '/' // initcode1 // '/' // fsubs
 
   return
 

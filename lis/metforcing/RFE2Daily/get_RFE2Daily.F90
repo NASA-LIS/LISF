@@ -24,6 +24,7 @@ subroutine get_RFE2Daily(n, findex)
   use LIS_timeMgrMod,        only : LIS_calendar, LIS_get_nstep, &
                                     LIS_tick, LIS_date2time, LIS_time2date
   use LIS_logMod,            only : LIS_logunit, LIS_endrun, LIS_verify
+  use LIS_constantsMod,      only : LIS_CONST_PATH_LEN
   use RFE2Daily_forcingMod,  only : RFE2Daily_struc
 
   implicit none
@@ -91,7 +92,7 @@ subroutine get_RFE2Daily(n, findex)
   real    :: gmtNow, gmt1, gmt2
 
   integer :: ferror_RFE2Daily ! Error flags for precip data sources
-  character*80 :: filename    ! Filename variables for precip data sources
+  character(len=LIS_CONST_PATH_LEN) :: filename    ! Filename variables for precip data sources
   integer      :: order
   integer      :: kk          ! Forecast index
 

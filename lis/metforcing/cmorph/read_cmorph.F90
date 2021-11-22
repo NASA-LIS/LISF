@@ -26,6 +26,7 @@ subroutine read_cmorph (n, kk, name_cmorph, findex, order, ferror_cmorph, iflg )
                           LIS_releaseUnitNumber
   use LIS_metforcingMod, only : LIS_forc
   use cmorph_forcingMod, only : cmorph_struc
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS:   
@@ -75,7 +76,7 @@ subroutine read_cmorph (n, kk, name_cmorph, findex, order, ferror_cmorph, iflg )
   real     :: realprecip(xd,yd)
   real     :: testout(xd,yd)
   real, allocatable :: precip_regrid(:,:)    ! Interpolated precip array
-  character(len=99) :: fname, zname          ! Filename variables
+  character(len=LIS_CONST_PATH_LEN) :: fname, zname          ! Filename variables
   logical           :: file_exists
   integer           :: ftn
 
@@ -231,7 +232,7 @@ subroutine read_cmorph (n, kk, name_cmorph, findex, order, ferror_cmorph, iflg )
 
   integer :: xd, yd, iflg
   character*1 ::  precip(xd,yd)
-  character*99 :: zname
+  character(len=*) :: zname
   character*1, allocatable :: buff(:, :, :)
   integer :: readzipf, dlen, rdlen 
   

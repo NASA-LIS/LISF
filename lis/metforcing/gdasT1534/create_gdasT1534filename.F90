@@ -41,20 +41,10 @@ subroutine create_gdasT1534filename(name, gdasdir, yr, mo, da, hr)
   real    :: gmt
   real*8  :: dumbtime
   character(len=2) :: initcode, fcstcode
-  character*1 :: fbase(80), fdir(15), ftime(10), fsubs(22)
-  character(LEN=100) :: temp
+  character(len=13) :: fdir
+  character(len=22) :: fsubs
 !=== End Variable Definition ===============
 
-!=== formats for filename segments
-!BOC
-92 format (80a1)
-93 format (a80)
-94 format (i4, i2, i2, a2)
-95 format (10a1)
-96 format (a40)
-97 format (a16, a2, a3)
-98 format (a1, i4, i2, a1)
-99 format (8a1)
 !-----------------------------------------------------------------
 !  Make variables for the time used to create the file
 !  We don't want these variables being passed out
@@ -83,29 +73,10 @@ subroutine create_gdasT1534filename(name, gdasdir, yr, mo, da, hr)
   write(initcode,'(i2.2)') ghh
   write(fcstcode,'(i2.2)') gff
 
-  write(UNIT=temp, fmt='(a40)') gdasdir  
-  read(UNIT=temp, fmt='(80a1)') (fbase(i), i=1,80)
-  c = 0
-  do i = 1, 80
-     if ( fbase(i) .NE. ' ' ) c = c + 1
-  end do
+  write(UNIT=fdir, fmt='(a5, i4, i2.2, i2.2)') 'gdas.', uyr, umo, uda
 
-  write(UNIT=temp, fmt='(a6, i4, i2, i2, a1)') '/gdas.',uyr,umo,uda,'/'
-  read(UNIT=temp, fmt='(15a1)') fdir
-  do i = 1, 15
-     if ( fdir(i) == ' ' ) fdir(i) = '0'
-  end do
+  fsubs = 'gdas1.t' // initcode // 'z.sfluxgrbf' // fcstcode
 
-  write(UNIT=temp, fmt='(a7,a2,a11,a2)') &
-        'gdas1.t',initcode,'z.sfluxgrbf',fcstcode
-
-  read(UNIT=temp, fmt='(22a1)') fsubs
-
-  write(UNIT=temp, fmt='(80a1)') &
-        (fbase(i),i=1,c), (fdir(i),i=1,15), (fsubs(i),i=1,22)
-
-  read(UNIT=temp, fmt='(a80)') name
+  name = trim(gdasdir) // '/' // fdir // '/' // fsubs
 
 end subroutine create_gdasT1534filename
-
-

@@ -67,7 +67,6 @@ subroutine read_gdasT1534( order, n, findex, &
 !EOP
 !==== Local Variables=======================
   
-  character(len=80) :: fname
   integer :: iv, c,r,t
   integer :: ferror1, ferror2, ferror3
   integer :: ngdasT1534
@@ -93,8 +92,7 @@ subroutine read_gdasT1534( order, n, findex, &
 !--------------------------------------------------------------------------
 ! Set up to open file and retrieve specified field 
 !--------------------------------------------------------------------------
-  fname = name
-  call retrieve_gdasT1534_variables(n, findex, fname,glbdata, ferror)
+  call retrieve_gdasT1534_variables(n, findex, name,glbdata, ferror)
 
 !--------------------------------------------------------------------------
 ! Place the interpolated data into the LIS arrays

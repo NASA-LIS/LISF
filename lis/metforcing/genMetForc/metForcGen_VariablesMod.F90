@@ -315,7 +315,7 @@ contains
 !   integer, intent(in) :: n               ! Nest index
    integer, intent(in) :: kk              ! Forecast index
    integer, intent(in) :: findex          ! Forcing index
-   character(140), intent(in) :: filename ! Forcing filename path
+   character(len=*), intent(in) :: filename ! Forcing filename path
    integer, intent(in) :: inc, inr        ! Input forcing cols, rows
 !
 ! !DESCRIPTION: 
