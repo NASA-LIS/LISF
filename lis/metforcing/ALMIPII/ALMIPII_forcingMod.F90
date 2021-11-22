@@ -16,6 +16,7 @@ module ALMIPII_forcingMod
 !
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
   
@@ -37,7 +38,7 @@ module ALMIPII_forcingMod
   type, public ::  ALMIPII_type_dec 
      real               :: ts
      integer            :: nc, nr
-     character*100      :: dir   !ALMIPII Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: dir   !ALMIPII Forcing Directory
      character*100      :: filename_prefix   !ALMIPII filename prefix
      integer            :: mi
      integer            :: ncid

@@ -23,6 +23,7 @@ subroutine get_gdasLSWG(n, findex, metdata1, metdata2)
   use LIS_metforcingMod, only : LIS_forc
   use LIS_timeMgrMod,     only : LIS_calendar, LIS_get_nstep, LIS_tick
   use LIS_logMod,         only : LIS_logunit, LIS_endrun, LIS_verify
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use gdasLSWG_forcingMod,  only : gdasLSWG_struc
 
   implicit none
@@ -47,7 +48,7 @@ subroutine get_gdasLSWG(n, findex, metdata1, metdata2)
   real                :: gmt1, gmt2,ts1,ts2
   integer             :: status
   integer             :: nstep
-  character*100       :: narrfile
+  character(len=LIS_CONST_PATH_LEN) :: narrfile
 
   gdasLSWG_struc(n)%findtime1 = 0 
   gdasLSWG_struc(n)%findtime2 = 0 

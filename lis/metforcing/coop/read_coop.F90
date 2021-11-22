@@ -22,6 +22,7 @@ subroutine read_coop(n,ftn,findex,order)
   use LIS_logMod, only         : LIS_logunit, LIS_endrun
   use LIS_coreMod, only        : LIS_rc,LIS_domain
   use LIS_metforcingMod,  only : LIS_forc
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use coop_forcingMod,    only : coop_struc
   use map_utils,    only : latlon_to_ij
 
@@ -66,7 +67,7 @@ subroutine read_coop(n,ftn,findex,order)
 !  real :: varfield(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   real :: varfield1(LIS_rc%lnc(n),LIS_rc%lnr(n))
   integer :: npcp(LIS_rc%lnc(n),LIS_rc%lnr(n))
-  character*80 :: coop_filename
+  character(len=LIS_CONST_PATH_LEN) :: coop_filename
 !  character(len=500) :: line
   integer :: yr,mo
   logical :: file_exists, readflag
@@ -99,7 +100,7 @@ subroutine read_coop(n,ftn,findex,order)
 
      inquire(file=coop_filename,exist=file_exists)
      if(file_exists) then 
-        write(LIS_logunit,*) 'Reading COOP file ',coop_filename
+        write(LIS_logunit,*) 'Reading COOP file ',trim(coop_filename)
         open(ftn,file=coop_filename,form='formatted',status='old')
         read(ftn,*)
         read(ftn,*) ! skip the two header line

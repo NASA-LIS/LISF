@@ -41,7 +41,7 @@ subroutine readcrd_capa()
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*)'Using CAPA forcing'
-     write(LIS_logunit,*) 'CAPA forcing directory :',capa_struc(n)%CAPADIR
+     write(LIS_logunit,*) 'CAPA forcing directory :',trim(capa_struc(n)%CAPADIR)
 !------------------------------------------------------------------------
 ! Setting global observed precip times to zero to ensure 
 ! data is read in during first time step

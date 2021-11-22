@@ -50,8 +50,8 @@ subroutine readcrd_ceop()
   enddo
   do n=1, LIS_rc%nnest
      write(LIS_logunit,*)'Using CEOP forcing'
-     write(LIS_logunit,*) 'CEOP forcing directory :',ceop_struc(n)%ceopdir
-     write(LIS_logunit,*) 'CEOP metadata file : ',ceop_struc(n)%metadata
+     write(LIS_logunit,*) 'CEOP forcing directory :',trim(ceop_struc(n)%ceopdir)
+     write(LIS_logunit,*) 'CEOP metadata file : ',trim(ceop_struc(n)%metadata)
      ceop_struc(n)%ceoptime2  = 3000.0
      ceop_struc(n)%ceoptime1  = 0.0
      ceop_struc(n)%startRead = .false.

@@ -29,6 +29,7 @@ subroutine get_geos(n, findex)
   use LIS_coreMod,        only  : LIS_rc, LIS_domain
   use LIS_timeMgrMod,     only  : LIS_get_nstep, LIS_tick
   use LIS_logMod,         only  : LIS_logunit, LIS_endrun
+  use LIS_constantsMod,   only  : LIS_CONST_PATH_LEN
   use geos_forcingMod,    only  : geos_struc
 
   implicit none
@@ -72,7 +73,7 @@ subroutine get_geos(n, findex)
   integer :: yr2,mo2,da2,hr2,mn2,ss2,doy2
   real*8  :: time1,time2,dumbtime1,dumbtime2
   real*8  :: timenow
-  character*80 :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
   character*40 :: elevfile, fpart1, fpart2
   real :: gmt1,gmt2,ts1,ts2
   integer :: movetime      ! 1=move time 2 data into time 1
@@ -317,7 +318,8 @@ end subroutine get_geos
 !
 ! !INTERFACE:
 subroutine geosfile(name,geosdir,yr,mo,da,hr,ncold)
-  
+ 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
 ! !ARGUMENTS: 
   character(len=*), intent(in)  :: geosdir
@@ -348,10 +350,10 @@ subroutine geosfile(name,geosdir,yr,mo,da,hr,ncold)
 !EOP
   integer uyr,umo,uda,uhr,i,c,ii,jj
   character(len=2) :: initcode
-  character*1 fbase(80),fsubs(80)
-  character*1 ftime(10),fdir(8)
+  character(len=6)  :: fdir
+  character(len=8)  :: fsubs
+  character(len=10) :: ftime
   
-  character(LEN=100) :: temp
   ii = ncold
   jj = 181
 
@@ -386,46 +388,21 @@ subroutine geosfile(name,geosdir,yr,mo,da,hr,ncold)
   elseif(uhr<24)then
      initcode = '21'
   endif
-  
-  write(UNIT=temp,FMT='(A40)') geosdir 
-  read(UNIT=temp,FMT='(80A1)') (fbase(i),i=1,80)
-  
-  write(UNIT=temp,FMT='(a1,i4,i2,a1)') '/',uyr,umo,'/'
-  read(UNIT=temp,FMT='(8A1)') fdir
-  do i=1,8
-     if(fdir(i).eq.(' ')) fdir(i)='0'
-  enddo
-  
-  write(UNIT=temp,FMT='(i4,i2,i2,a2)') uyr,umo,uda,initcode
-  read(UNIT=temp,FMT='(10A1)') ftime
-  do i=1,10
-     if(ftime(i).eq.(' ')) ftime(i)='0'
-  enddo
-  
+
+  write(UNIT=fdir,FMT='(i4,i2.2)') uyr, umo
+
+  write(UNIT=ftime,FMT='(i4,i2.2,i2.2,a2)') uyr, umo, uda, initcode
+
   if(ncold==360) then 
-     write(UNIT=temp,FMT='(A8)') '.GEOS323'
-     read(UNIT=temp,FMT='(80A1)') (fsubs(i),i=1,8)
+     fsubs = '.GEOS323'
   elseif(ncold==288) then 
-     write(UNIT=temp,FMT='(A6)') '.GEOS4'
-     read(UNIT=temp,FMT='(80A1)') (fsubs(i),i=1,6)
+     fsubs = '.GEOS4'
   else if(ncold==540) then 
-     write(UNIT=temp,FMT='(A6)') '.GEOS5'
-     read(UNIT=temp,FMT='(80A1)') (fsubs(i),i=1,6)
+     fsubs = '.GEOS5'
   endif
-  c=0
-  do i=1,80
-     if(fbase(i).eq.(' ').and.c.eq.0) c=i-1 
-  enddo
+
+  name = trim(geosdir) // '/' // fdir // '/' // ftime // trim(fsubs)
   
-  if (ncold==360) then       
-     write(UNIT=temp,FMT='(80a1)') (fbase(i),i=1,c),(fdir(i),i=1,8), &
-          (ftime(i),i=1,10),(fsubs(i),i=1,8)
-  else !covers both GEOS4 and GEOS5
-     write(UNIT=temp,FMT='(80a1)') (fbase(i),i=1,c),(fdir(i),i=1,8), &
-          (ftime(i),i=1,10),(fsubs(i),i=1,6)
-  endif
-  
-  read(UNIT=temp, FMT='(a80)') name
   return
 
 end subroutine geosfile

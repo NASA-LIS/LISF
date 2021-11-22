@@ -26,6 +26,7 @@ subroutine read_ecmwfreanal(order, n, findex, yr, mon, da, hr, ferror)
   use LIS_coreMod,        only : LIS_rc,LIS_domain, LIS_localPet, LIS_masterproc
   use LIS_metforcingMod, only : LIS_forc
   use LIS_logMod,         only : LIS_logunit, LIS_endrun
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use ecmwfreanal_forcingMod, only : ecmwfreanal_struc
 
 
@@ -115,7 +116,7 @@ subroutine read_ecmwfreanal(order, n, findex, yr, mon, da, hr, ferror)
   integer, dimension(N_EF), parameter :: fnum = (/ &
        31, 33, 34, 35, 36, 37, 38, 39 /) 
 
-  character*200 :: infile
+  character(len=LIS_CONST_PATH_LEN) :: infile
 
   real :: tempecmwf(ecmwfreanal_struc(n)%ncold,ecmwfreanal_struc(n)%nrold,N_EF)
   real :: temp2ecmwf(ecmwfreanal_struc(n)%ncold,ecmwfreanal_struc(n)%nrold,NF)

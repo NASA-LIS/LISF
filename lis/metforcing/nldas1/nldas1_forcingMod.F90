@@ -85,6 +85,7 @@ module nldas1_forcingMod
 !                            Changed flag from "1"/"2" to "NCEP"/"GES-DISC".
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -103,9 +104,9 @@ module nldas1_forcingMod
      real         :: ts
      integer      :: ncold, nrold    ! AWIPS 212 dimensions
      character*50 :: nldas1_filesrc
-     character*80 :: nldas1dir       ! NLDAS-1 Forcing Directory
-     character*80 :: ediff_file      ! Original Elevdiff File
-     character*80 :: elevfile
+     character(len=LIS_CONST_PATH_LEN) :: nldas1dir       ! NLDAS-1 Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: ediff_file      ! Original Elevdiff File
+     character(len=LIS_CONST_PATH_LEN) :: elevfile
      character*40 :: prec_field,swdn_field
      real*8       :: nldas1time1,nldas1time2
 

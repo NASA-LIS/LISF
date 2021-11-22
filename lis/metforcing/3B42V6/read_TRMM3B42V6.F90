@@ -38,7 +38,7 @@ subroutine read_TRMM3B42V6 (n, fname, findex, order, ferror_TRMM3B42V6)
   implicit none
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  character(len=80)   :: fname
+  character(len=*)   :: fname
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_TRMM3B42V6

@@ -61,7 +61,7 @@ subroutine readcrd_pildas()
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) 'Using PILDAS forcing'
      write(LIS_logunit,*) 'PILDAS forcing directory: ',&
-          pildas_struc(n)%PILDASDIR
+          trim(pildas_struc(n)%PILDASDIR)
 
      pildas_struc(n)%nc = 70
      pildas_struc(n)%nr = 50

@@ -155,7 +155,7 @@ subroutine readcrd_nldas1()
   write(unit=LIS_logunit,fmt=*)'Using NLDAS-1 forcing'
 
   do n=1,LIS_rc%nnest
-     write(unit=LIS_logunit,fmt=*) 'NLDAS-1 forcing directory :',nldas1_struc(n)%nldas1dir
+     write(unit=LIS_logunit,fmt=*) 'NLDAS-1 forcing directory :',trim(nldas1_struc(n)%nldas1dir)
 
      nldas1_struc(n)%nldas1time1 = 3000.0
      nldas1_struc(n)%nldas1time2 = 0.0

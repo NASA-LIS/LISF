@@ -22,6 +22,7 @@ subroutine read_agrrad(n,findex,order,yr,mo,da,hr)
   use LIS_coreMod,        only : LIS_rc,LIS_domain
   use LIS_logMod,         only : LIS_logunit, LIS_endrun
   use LIS_timeMgrMod,     only : LIS_tick
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use LIS_metforcingMod,  only : LIS_forc
   use agrrad_forcingMod,  only : agrrad_struc
 
@@ -67,7 +68,7 @@ subroutine read_agrrad(n,findex,order,yr,mo,da,hr)
 !EOP
 
   integer,   parameter     :: nc = 720, nr=361
-  character*100            :: agrradfile
+  character(len=LIS_CONST_PATH_LEN) :: agrradfile
   real                     :: var(nc,nr)
   real                     :: swd(nc*nr)
   logical*1                :: lb(nc*nr)
@@ -370,7 +371,7 @@ subroutine retrieve_agrrad_variables(fname, error, vindex, var)
   implicit none
   integer, parameter             :: nc=720, nr=361
 ! !ARGUMENTS:
-  character(len=100), intent(in) :: fname
+  character(len=*), intent(in) :: fname
   integer, intent(out)           :: error
   integer, intent(in)            :: vindex
   real, intent(out)              :: var(nc,nr)

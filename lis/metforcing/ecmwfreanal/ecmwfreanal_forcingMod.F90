@@ -64,6 +64,8 @@ module ecmwfreanal_forcingMod
 !  Geophysical Research, 108, 4490, DOI: 10.1029/2002JD003334. \newline
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
   
   PRIVATE
@@ -84,9 +86,8 @@ module ecmwfreanal_forcingMod
      integer                :: ncold, nrold   !AWIPS 212 dimensions
      real*8                 :: fmodeltime1,fmodeltime2
      integer                :: remask1d(720*360)
-     character*100          :: ecmwfreanaldir
-     character*100           :: emaskfile !1/2deg ECMWFREANAL Land-Sea Mask File
-     character*100          :: elevfile
+     character(len=LIS_CONST_PATH_LEN) :: ecmwfreanaldir, elevfile
+     character(len=LIS_CONST_PATH_LEN) :: emaskfile !1/2deg ECMWFREANAL Land-Sea Mask File
      integer                :: mi
      integer, allocatable   :: n111(:)
      integer, allocatable   :: n121(:)

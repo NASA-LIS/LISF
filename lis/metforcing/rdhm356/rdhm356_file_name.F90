@@ -42,8 +42,7 @@ subroutine rdhm356_temper_file( name, rdhm356_temper_dir, yr, mo, da, hr)
 ! !ARGUMENTS: 
   integer :: yr, mo, da, hr
 
-  character(len=*) :: name
-  character(40) :: rdhm356_temper_dir
+  character(len=*) :: name, rdhm356_temper_dir
   character(4) :: cyear
   character(2) :: cmon, cday, chour
 
@@ -95,8 +94,7 @@ subroutine rdhm356_precip_file( name, rdhm356_precip_dir, yr, mo, da, hr)
 ! !ARGUMENTS: 
   integer :: yr, mo, da, hr
 
-  character(len=*) :: name
-  character(40) :: rdhm356_precip_dir
+  character(len=*) :: name, rdhm356_precip_dir
   character(4) :: cyear
   character(2) :: cmon, cday, chour
 

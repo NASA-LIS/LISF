@@ -52,7 +52,7 @@ subroutine readcrd_merraland()
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) 'Using MERRA-Land forcing'
      write(LIS_logunit,*) 'MERRA-Land forcing directory: ',&
-          merraland_struc(n)%MERRALANDDIR
+          trim(merraland_struc(n)%MERRALANDDIR)
 
      merraland_struc(n)%ncold = 540
      merraland_struc(n)%nrold = 361

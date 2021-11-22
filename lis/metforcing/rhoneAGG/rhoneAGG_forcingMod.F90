@@ -17,6 +17,8 @@
 !EOP
 module rhoneAGG_forcingMod
 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -33,7 +35,7 @@ module rhoneAGG_forcingMod
 
   type, public :: rhoneAGG_type_struc
      real           :: ts
-     character*50   :: rhoneAGGdir
+     character(len=LIS_CONST_PATH_LEN) :: rhoneAGGdir
      integer        :: mi
      integer        :: ncold
      integer        :: nrold

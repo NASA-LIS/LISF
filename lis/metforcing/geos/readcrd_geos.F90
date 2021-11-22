@@ -40,7 +40,7 @@ subroutine readcrd_geos()
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) 'Using GEOS forcing'
-     write(LIS_logunit,*) 'GEOS forcing directory :',geos_struc(n)%GEOSDIR
+     write(LIS_logunit,*) 'GEOS forcing directory :',trim(geos_struc(n)%GEOSDIR)
      geos_struc(n)%geostime1 = 3000.0
      geos_struc(n)%geostime2 = 0.0
 

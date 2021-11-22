@@ -15,6 +15,7 @@ module gdas3d_forcingMod
 !  
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   
   PRIVATE
@@ -32,7 +33,7 @@ module gdas3d_forcingMod
   type, public :: gdas3d_type_dec
      real             :: ts
      real*8           :: gdastime1,gdastime2
-     character*100    :: gdasdir
+     character(len=LIS_CONST_PATH_LEN) :: gdasdir
      integer          :: nc,nr
      integer          :: nlayer
 

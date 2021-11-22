@@ -32,7 +32,7 @@ subroutine read_capa(n, findex, fname, ferror_capa)
 ! !ARGUMENTS:
   integer, intent(in) :: n
   integer, intent(in) :: findex
-  character(len=80)   :: fname          
+  character(len=*)   :: fname
   integer             :: ferror_capa
 !
 ! !DESCRIPTION:

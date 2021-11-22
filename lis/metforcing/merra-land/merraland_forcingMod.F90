@@ -58,6 +58,8 @@ module merraland_forcingMod
 !  \end{description}
 !
 ! !USES:
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -75,7 +77,7 @@ module merraland_forcingMod
   type, public ::  merraland_type_dec
      real    :: ts
      integer :: ncold, nrold
-     character*40 :: merralanddir   !MERRA-Land Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: merralanddir   !MERRA-Land Forcing Directory
      real*8  :: merralandtime1,merralandtime2
 
      integer :: mi

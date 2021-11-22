@@ -21,6 +21,7 @@ subroutine get_gdas3d(n, findex)
   use LIS_coreMod,        only : LIS_rc
   use LIS_timeMgrMod,     only : LIS_get_nstep, LIS_tick
   use LIS_logMod,         only : LIS_logunit
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use gdas3d_forcingMod,  only : gdas3d_struc
 
   implicit none
@@ -39,7 +40,7 @@ subroutine get_gdas3d(n, findex)
   integer             :: doy1, doy2
   real                :: gmt1, gmt2,ts1,ts2
   integer             :: nstep
-  character*100       :: sanlfile
+  character(len=LIS_CONST_PATH_LEN) :: sanlfile
 
   gdas3d_struc(n)%findtime1 = 0 
   gdas3d_struc(n)%findtime2 = 0 

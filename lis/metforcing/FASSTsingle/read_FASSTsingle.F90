@@ -22,6 +22,7 @@ subroutine read_FASSTsingle(n,ftn,findex,metdata,itime)
   use LIS_logMod, only            : LIS_logunit,LIS_endrun
   use LIS_coreMod, only           : LIS_rc,LIS_domain
   use LIS_timeMgrMod, only        : LIS_date2time,LIS_doy2date
+  use LIS_constantsMod, only      : LIS_CONST_PATH_LEN
   use FASSTsingle_forcingMod, only : FASSTsingle_struc
 
   implicit none
@@ -75,7 +76,7 @@ subroutine read_FASSTsingle(n,ftn,findex,metdata,itime)
   integer :: lisdoy,fasstdoy
   integer :: fasstyr,fasstmon,fasstday,fassthr,fasstmin,fasstsec
   logical :: file_exists
-  character*80       :: FASSTsingle_filename
+  character(len=LIS_CONST_PATH_LEN) :: FASSTsingle_filename
   character(len=500) :: line
 
   !      write(LIS_logunit,*) 'starting read_FASSTsingle'

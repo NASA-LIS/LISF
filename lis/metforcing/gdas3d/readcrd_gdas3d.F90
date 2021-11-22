@@ -60,7 +60,7 @@ subroutine readcrd_gdas3d()
   do n=1,LIS_rc%nnest
 
      write(LIS_logunit,*) 'Using GDAS3D forcing'
-     write(LIS_logunit,*) 'GDAS3D forcing directory :',gdas3d_struc(n)%GDASDIR
+     write(LIS_logunit,*) 'GDAS3D forcing directory :',trim(gdas3d_struc(n)%GDASDIR)
      gdas3d_struc(n)%GDASTIME1  = 3000.0
      gdas3d_struc(n)%GDASTIME2  = 0.0
   enddo

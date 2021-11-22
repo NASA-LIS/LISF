@@ -27,6 +27,7 @@ subroutine get_ALMIPII(n, findex)
   use LIS_timeMgrMod,     only : LIS_calendar
   use LIS_metforcingMod,  only : LIS_forc
   use LIS_logMod,         only : LIS_logunit, LIS_endrun, LIS_verify
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use ALMIPII_forcingMod,   only : ALMIPII_struc
 
   implicit none
@@ -40,7 +41,7 @@ subroutine get_ALMIPII(n, findex)
 !EOP
 
   character*4           :: fyr
-  character*100         :: ALMIPIIfile
+  character(len=LIS_CONST_PATH_LEN) :: ALMIPIIfile
   integer               :: lonid, latid
   integer               :: tair_id, qair_id, swd_id, lwd_id, u_id,v_id
   integer               :: psurf_id, rainf_id, snowf_id

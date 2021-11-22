@@ -35,7 +35,7 @@ subroutine read_petusgs (n, kk, findex, pet_filename, ferror_petusgs )
   integer, intent(in) :: n 
   integer, intent(in) :: kk
   integer, intent(in) :: findex
-  character(99), intent(in) :: pet_filename  
+  character(len=*), intent(in) :: pet_filename  
   integer,intent(out) :: ferror_petusgs
 !
 ! !DESCRIPTION:
@@ -182,10 +182,10 @@ subroutine read_petusgs (n, kk, findex, pet_filename, ferror_petusgs )
          enddo
       enddo
     
-      write(LIS_logunit,*) "Obtained USGS PET data:: ", pet_filename
+      write(LIS_logunit,*) "Obtained USGS PET data:: ", trim(pet_filename)
 
    elseif( ferror_petusgs == 0 ) then
-      write(LIS_logunit,*) "Missing USGS PET data ", pet_filename
+      write(LIS_logunit,*) "Missing USGS PET data ", trim(pet_filename)
 
    endif
 

@@ -52,6 +52,8 @@ module rdhm356_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
   
   PRIVATE
@@ -71,7 +73,7 @@ module rdhm356_forcingMod
      real               :: ts
      integer            :: ncol                 ! Number of cols
      integer            :: nrow                 ! Number of rows
-     character*40       :: rdhm356dir           ! dmip II Directory
+     character(len=LIS_CONST_PATH_LEN) :: rdhm356dir ! dmip II Directory
      real*8             :: scale 
      real*8             :: rdhm356time1         ! Time of first incoming file
      real*8             :: rdhm356time2         ! Time of second incoming file

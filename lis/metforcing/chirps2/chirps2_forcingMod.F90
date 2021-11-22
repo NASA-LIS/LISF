@@ -48,6 +48,7 @@ module chirps2_forcingMod
 
 ! !USES:
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
   PRIVATE
@@ -69,7 +70,7 @@ module chirps2_forcingMod
      integer            :: nc
      integer            :: nr
      integer            :: mi
-     character*80       :: directory  
+     character(len=LIS_CONST_PATH_LEN) :: directory  
      real*8             :: chirpstime1, chirpstime2
      logical            :: reset_flag
      integer            :: start_nc, start_nr

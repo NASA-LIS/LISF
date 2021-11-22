@@ -21,6 +21,7 @@ subroutine get_capa(n, findex)
   use LIS_coreMod,     only : LIS_rc
   use LIS_timeMgrMod,  only : LIS_tick, LIS_get_nstep
   use LIS_logMod,      only : LIS_logunit
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use capa_forcingMod, only : capa_struc
 
   implicit none
@@ -62,7 +63,7 @@ subroutine get_capa(n, findex)
   real    :: ts1, ts5
   real*8  :: ctime,ftime_capa
   real    :: gmt1,gmt5       
-  character*80 :: name 
+  character(len=LIS_CONST_PATH_LEN) :: name
 
 !------------------------------------------------------------------------
 ! Determine required observed precip data times 
@@ -106,7 +107,7 @@ subroutine get_capa(n, findex)
    if ( endtime_capa == 1 ) then  !get new time2 data
         ferror_capa = 0
         call capafile( name, capa_struc(n)%capadir, yr5, mo5, da5, hr5 )
-        write(LIS_logunit,*) 'Getting new CAPA CPC precip data',name
+        write(LIS_logunit,*) 'Getting new CAPA CPC precip data',trim(name)
         call read_capa( n, findex, name, ferror_capa, hr5 )
         capa_struc(n)%capatime = ftime_capa
    endif  !need new time2

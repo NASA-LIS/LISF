@@ -25,6 +25,8 @@ module ceop_forcingMod
 ! !REVISION HISTORY: 
 ! 08Dec2004: Sujay Kumar; Initial Specification
 ! 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -40,8 +42,7 @@ module ceop_forcingMod
 
   type, public :: ceop_type_dec
      real          :: ts
-     character*40  :: ceopdir 
-     character*40  :: metadata 
+     character(len=LIS_CONST_PATH_LEN) :: ceopdir, metadata 
      real          :: undef
      real*8        :: starttime,ceoptime1,ceoptime2
      integer       :: findtime1,findtime2,nstns

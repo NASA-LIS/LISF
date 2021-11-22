@@ -24,6 +24,7 @@ subroutine get_pildas(n,findex)
   use LIS_timeMgrMod
   use LIS_logMod
   use LIS_metforcingMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use pildas_forcingMod
 
   implicit none
@@ -63,7 +64,7 @@ subroutine get_pildas(n,findex)
   real*8  :: dtime1, dtime2
   integer :: yr1,mo1,da1,hr1,mn1,ss1,doy1
   integer :: yr2,mo2,da2,hr2,mn2,ss2,doy2
-  character*80 :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
   real :: gmt1,gmt2,ts1,ts2
   integer:: movetime     ! 1=move time 2 data into time 1  
 
@@ -172,7 +173,7 @@ subroutine get_pildas(n,findex)
              pildas_struc(n)%version,&
              yr1,mo1,da1,hr1,mn1)
         
-        write(unit=LIS_logunit,fmt=*)'getting file1.. ',name
+        write(unit=LIS_logunit,fmt=*)'getting file1.. ',trim(name)
         order = 1
         call read_pildas(n,findex,order,name,ferror)
         if(ferror.ge.1) then
@@ -201,7 +202,7 @@ subroutine get_pildas(n,findex)
              pildas_struc(n)%version,&
              yr2,mo2,da2,hr2,mn2)
         
-        write(unit=LIS_logunit,fmt=*)'getting file2.. ',name
+        write(unit=LIS_logunit,fmt=*)'getting file2.. ',trim(name)
         order = 2
         call read_pildas(n,findex,order,name,ferror)
         if(ferror.ge.1) then

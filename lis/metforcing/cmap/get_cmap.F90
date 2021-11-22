@@ -27,6 +27,7 @@ subroutine get_cmap(n,findex)
   use LIS_timeMgrMod,  only : LIS_tick, LIS_get_nstep
   use LIS_logMod,      only : LIS_logunit, LIS_endrun
   use cmap_forcingMod, only : cmap_struc
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -76,7 +77,7 @@ subroutine get_cmap(n,findex)
   integer :: order
   real    :: gmt1,gmt5,ts1,ts5   ! GMT times for current LDAS time and end boundary times for precip data sources
   real    :: gridDesci(50)
-  character*80 :: filename ! Filename variables for precip data sources
+  character(len=LIS_CONST_PATH_LEN) :: filename ! Filename variables for precip data sources
 !=== End Variable Definition =======================
 
 !------------------------------------------------------------------------
@@ -291,12 +292,10 @@ end subroutine get_cmap
 !
 ! !INTERFACE:
 subroutine cmapfile( filename, cmapdir, yr, mo, da, hr)
-
   implicit none
 ! !ARGUMENTS: 
   character(len=*)   :: filename
   character(len=*)   :: cmapdir
-  character(len=100) :: temp
   integer            :: yr, mo, da, hr
 ! !DESCRIPTION:
 !   This subroutine puts together CMAP file name for 
@@ -320,9 +319,11 @@ subroutine cmapfile( filename, cmapdir, yr, mo, da, hr)
 !
 !EOP
 
-  integer :: i, c
   integer :: uyr, umo, uda, uhr, umn, uss, ts1
-  character*1 :: fbase(80), fdir(8), ftime(10), fsubs(10), fsubs2(4)
+  character(len=6)  :: fdir
+  character(len=10) :: ftime
+  character(len=10), parameter :: fprefix = 'cmap_gdas_'
+  character(len=4),  parameter :: fext = '.grb'
 
 !=== End Variable Definition ===============
 
@@ -340,42 +341,10 @@ subroutine cmapfile( filename, cmapdir, yr, mo, da, hr)
 
   filename = ''
 
-  write(UNIT=temp, fmt='(a40)') cmapdir
-  read(UNIT=temp, fmt='(80a1)') (fbase(i), i=1,80)
+  write(UNIT=fdir,  fmt='(i4, i2.2)')  uyr, umo
+  write(UNIT=ftime, fmt='(i4, i2.2, i2.2, i2.2)') uyr, umo, uda, uhr
 
-  write(UNIT=temp, fmt='(a1, i4, i2, a1)') '/', uyr, umo, '/'
-  read(UNIT=temp, fmt='(8a1)') fdir
-  do i = 1, 8
-     if ( fdir(i) == ' ' ) fdir(i) = '0'
-  end do
-
-  write(UNIT=temp, fmt='(a10)') 'cmap_gdas_'
-  read (UNIT=temp, fmt='(10a1)') (fsubs(i), i=1,10)
-
-  write(UNIT=temp, fmt='(i4, i2, i2, i2)') uyr, umo, uda, uhr
-  read(UNIT=temp, fmt='(10a1)') ftime
-  do i = 1, 10
-     if ( ftime(i) == ' ' ) ftime(i) = '0'
-  end do
-
-  write(UNIT=temp, fmt='(i4, i2, i2, i2)') uyr, umo, uda, uhr
-  read(UNIT=temp, fmt='(10a1)') ftime
-  do i = 1, 10
-     if ( ftime(i) == ' ' ) ftime(i) = '0'
-  end do
-
-  write(UNIT=temp, fmt='(a4)') '.grb'
-  read (UNIT=temp, fmt='(4a1)') (fsubs2(i), i=1,4)
-  c = 0
-  do i = 1, 80
-     if ( (fbase(i) == ' ') .and. (c == 0) ) c = i-1
-  end do
-
-  write(UNIT=temp, fmt='(80a1)') (fbase(i), i=1,c), (fdir(i), i=1,8),  &
-                       (fsubs(i), i=1,10),(ftime(i), i=1,10), &
-                       (fsubs2(i), i=1,4)
-
-  read(UNIT=temp, fmt='(a80)') filename
+  filename = trim(cmapdir) // '/' // fdir // '/' // fprefix // ftime // fext
 
   return
 end subroutine cmapfile

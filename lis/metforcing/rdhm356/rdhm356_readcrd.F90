@@ -57,7 +57,7 @@ subroutine readcrd_rdhm356()
        call ESMF_ConfigGetAttribute(LIS_config, &
                                     rdhm356_struc_precip(n)%rdhm356dir,rc=rc)
        write(LIS_logunit,*) 'RDHM precipitation forcing directory :', &
-                             rdhm356_struc_precip(n)%rdhm356dir
+                             trim(rdhm356_struc_precip(n)%rdhm356dir)
 
     !- Setting observed precip times to zero to ensure data is read in
     !   at first time step
@@ -70,7 +70,7 @@ subroutine readcrd_rdhm356()
        call ESMF_ConfigGetAttribute(LIS_config, &
                                     rdhm356_struc_temper(n)%rdhm356dir,rc=rc)
        write(LIS_logunit,*) 'RDHM temperature forcing directory :', &
-                            rdhm356_struc_temper(n)%rdhm356dir
+                            trim(rdhm356_struc_temper(n)%rdhm356dir)
 
     !- Setting observed precip times to zero to ensure data is read in
     !   at first time step

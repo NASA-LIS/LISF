@@ -18,6 +18,7 @@ module gdasLSWG_forcingMod
 !
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
   
@@ -37,7 +38,7 @@ module gdasLSWG_forcingMod
 
      real                     :: ts
      real*8                   :: time1, time2
-     character*100            :: gdasLSWGfile
+     character(len=LIS_CONST_PATH_LEN) :: gdasLSWGfile
      integer                  :: mi
      logical                  :: startRead
      real, allocatable        :: rlat3(:)

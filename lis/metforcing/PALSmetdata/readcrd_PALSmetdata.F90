@@ -101,7 +101,7 @@ subroutine readcrd_PALSmetdata()
 
   do n=1,LIS_rc%nnest
      write(unit=LIS_logunit,fmt=*) 'PALS met forcing directory :',&
-          PALSmetdata_struc(n)%PALSmetdatadir
+          trim(PALSmetdata_struc(n)%PALSmetdatadir)
 
      PALSmetdata_struc(n)%fcsttime1 = 3000.0
      PALSmetdata_struc(n)%fcsttime2 = 0.0

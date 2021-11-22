@@ -57,6 +57,8 @@ module geos_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -75,7 +77,7 @@ module geos_forcingMod
      real    :: ts
      integer :: ncold, nrold   !AWIPS 212 dimensions
      integer :: nmif
-     character*40 :: geosdir   !GEOS Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: geosdir   !GEOS Forcing Directory
      real*8  :: geostime1,geostime2
      real*8  :: griduptime1, griduptime2
      logical :: gridchange1, gridchange2

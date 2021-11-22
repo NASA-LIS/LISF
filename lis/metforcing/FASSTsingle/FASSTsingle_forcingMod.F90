@@ -26,6 +26,7 @@ module FASSTsingle_forcingMod
 ! 13 Apr 2007: Bailing Li, Initial Specification
 ! 05 Oct 2010: David Mocko, Updated for FASST single-point test case
 ! 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -40,7 +41,7 @@ module FASSTsingle_forcingMod
 !EOP
 
   type, public         :: FASSTsingle_type_dec
-     character*40         :: FASSTsinglefile
+     character(len=LIS_CONST_PATH_LEN) :: FASSTsinglefile
      real                 :: undef
      real*8               :: starttime,FASSTsingletime1,FASSTsingletime2
      integer              :: findtime1,findtime2,nstns

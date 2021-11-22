@@ -48,7 +48,7 @@ subroutine readcrd_rhoneAGG()
    
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*)'Using Rhone AGG forcing'
-     write(LIS_logunit,*)'Rhone AGG forcing directory: ',rhoneAGG_struc(n)%RHONEAGGDIR
+     write(LIS_logunit,*)'Rhone AGG forcing directory: ',trim(rhoneAGG_struc(n)%RHONEAGGDIR)
      rhoneAGG_struc(n)%nmif = 9
      rhoneAGG_struc(n)%rhoneAGGtime1 = 3000.0
      rhoneAGG_struc(n)%rhoneAGGtime2 = 0.0

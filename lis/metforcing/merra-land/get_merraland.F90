@@ -29,6 +29,7 @@ subroutine get_merraland(n,findex)
   use LIS_timeMgrMod
   use LIS_logMod
   use LIS_metforcingMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use merraland_forcingMod
 
   implicit none
@@ -166,7 +167,7 @@ subroutine get_merraland(n,findex)
   integer           :: c,r
   integer           :: order
   integer           :: ferror
-  character*100     :: slvname, flxname, radname, mldname, lndname
+  character(len=LIS_CONST_PATH_LEN) :: slvname, flxname, radname, mldname, lndname
   integer           :: yr1, mo1, da1, hr1, mn1, ss1, doy1
   integer           :: yr2, mo2, da2, hr2, mn2, ss2, doy2
   real*8            :: time1, time2, timenow

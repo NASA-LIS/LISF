@@ -25,6 +25,7 @@ module coop_forcingMod
 ! !REVISION HISTORY: 
 ! 13Jul2011: Yuqiong Liu:  Initial Specification
 ! 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -40,9 +41,7 @@ module coop_forcingMod
 
   type, public ::  coop_type_dec
      real           :: ts
-     character*100  :: coopdir 
-     character*100  :: metadata 
-     character*100  :: coorddata 
+     character(len=LIS_CONST_PATH_LEN) :: coopdir, metadata, coorddata 
      real          :: undef
      real*8        :: starttime,cooptime1,cooptime2
      integer       :: findtime1,findtime2,nstns

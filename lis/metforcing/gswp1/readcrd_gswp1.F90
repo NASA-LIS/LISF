@@ -40,7 +40,7 @@ subroutine readcrd_gswp1()
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*)'Using GSWP1 forcing'
-     write(LIS_logunit,*)'GSWP1 forcing directory: ',gswp1_struc(n)%GSWP1DIR
+     write(LIS_logunit,*)'GSWP1 forcing directory: ',trim(gswp1_struc(n)%GSWP1DIR)
   enddo
 
 end subroutine readcrd_gswp1

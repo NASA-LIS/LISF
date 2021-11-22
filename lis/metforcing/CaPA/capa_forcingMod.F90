@@ -43,6 +43,8 @@ module capa_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
   
   PRIVATE
@@ -62,7 +64,7 @@ module capa_forcingMod
      real             :: ts
      integer          :: ncold
      integer          :: nrold
-     character*40     :: capadir
+     character(len=LIS_CONST_PATH_LEN) :: capadir
      real*8           :: capatime
      integer          :: mi
      integer, allocatable :: n112(:,:)

@@ -51,7 +51,7 @@ subroutine readcrd_arms()
 
   do n=1, LIS_rc%nnest
      write(LIS_logunit,*)'Using ARMS forcing'
-     write(LIS_logunit,*) 'ARMS forcing directory :',arms_struc(n)%armsfile
+     write(LIS_logunit,*) 'ARMS forcing directory :',trim(arms_struc(n)%armsfile)
      arms_struc(n)%startRead = .true.
 
      arms_struc(n)%armstime1 = 3000.0

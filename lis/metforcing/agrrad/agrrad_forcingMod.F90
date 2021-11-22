@@ -53,6 +53,7 @@ module agrrad_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -72,7 +73,7 @@ module agrrad_forcingMod
      real*8           :: agrtime1,agrtime2
      real*8           :: changetime1,changetime2
      integer          :: findtime1,findtime2
-     character*40     :: agrdir
+     character(len=LIS_CONST_PATH_LEN) :: agrdir
      integer, allocatable :: n111(:)
      integer, allocatable :: n121(:)
      integer, allocatable :: n211(:)

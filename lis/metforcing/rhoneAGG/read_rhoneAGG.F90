@@ -50,7 +50,7 @@ subroutine readrhoneAGG(n, order,findex, name,tscount,ferror)
   implicit none
   integer,      intent(in) :: n
   integer,      intent(in) :: findex
-  character*80, intent(in) :: name
+  character(len=*), intent(in) :: name
   integer, intent(in)      :: order, tscount
   integer, intent(out)     :: ferror
   integer :: mo

@@ -27,6 +27,7 @@ module arms_forcingMod
 ! 28 Jun 2009: Sujay Kumar: Reengineered for LIS version 6
 ! 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
   PRIVATE
@@ -43,9 +44,7 @@ module arms_forcingMod
 
   type, public :: arms_type_dec
      real          :: ts 
-     character*40  :: armsfile
-     character*40  :: armspcpfile
-     character*40  :: mdatafile
+     character(len=LIS_CONST_PATH_LEN) :: armsfile,  armspcpfile, mdatafile
      real          :: undef
      real*8        :: starttime,armstime1,armstime2
      logical       :: startRead

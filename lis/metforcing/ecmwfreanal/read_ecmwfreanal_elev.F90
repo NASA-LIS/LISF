@@ -57,7 +57,7 @@ subroutine read_ecmwfreanal_elev(n,findex)
   allocate(LIS_forc(n,findex)%modelelev(LIS_rc%ngrid(n)))
   
   write(LIS_logunit,*) 'Reading the ECMWF Reanalysis elevation ',&
-       ecmwfreanal_struc(n)%elevfile
+       trim(ecmwfreanal_struc(n)%elevfile)
 !  ftn = LIS_getNextUnitNumber()
 !  open(ftn,file=ecmwfreanal_struc(n)%elevfile,form='unformatted',&
 !       access='direct',recl=4)

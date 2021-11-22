@@ -55,6 +55,8 @@ module pildas_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -74,7 +76,7 @@ module pildas_forcingMod
      integer :: nc, nr
      integer :: version
      integer :: uselml
-     character*40 :: pildasdir
+     character(len=LIS_CONST_PATH_LEN) :: pildasdir
      real*8 :: pildastime1,pildastime2
      real   :: gmt1, gmt2
 

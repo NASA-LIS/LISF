@@ -59,7 +59,7 @@ subroutine read_nldas1(n, findex, order, name, ferror)
   integer, intent(in)      :: n
   integer, intent(in)      :: findex
   integer, intent(in)      :: order
-  character*80, intent(in) :: name
+  character(len=*), intent(in) :: name
   integer, intent(out)     :: ferror
 !
 ! !DESCRIPTION:

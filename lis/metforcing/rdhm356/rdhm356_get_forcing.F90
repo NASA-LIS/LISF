@@ -23,6 +23,7 @@ subroutine get_rdhm356(n,findex)
   use LIS_coreMod, only : LIS_rc
   use LIS_timeMgrMod, only : LIS_tick, LIS_get_nstep
   use LIS_logMod, only : LIS_logunit
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use rdhm356_forcingMod, only : rdhm356_struc_precip, &
                                  rdhm356_struc_temper
 
@@ -70,7 +71,7 @@ subroutine get_rdhm356(n,findex)
 
     real*8  :: timenow, timenowback, rdhm356_file_time1, rdhm356_file_time2      ! Current LIS Time end boundary time and file1 file2 times for dmipII file
     real*8 :: rdhm356_file_time3
-    character(128) :: file_name               ! Filename variables for precip data sources
+    character(len=LIS_CONST_PATH_LEN) :: file_name               ! Filename variables for precip data sources
     integer :: order
 
     integer :: doy1, yr1, mo1, da1, hr1, mn1, ss1
