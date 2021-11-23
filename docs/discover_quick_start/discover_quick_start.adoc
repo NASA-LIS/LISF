@@ -188,6 +188,13 @@ IMPORTANT: LISF modulefiles are periodically updated as the development environm
 ----
 +
 In future, this file will be sourced automatically when you connect to Discover.
+
+. Whenever you wish compile, run, or debug LISF, you must load the LISF modulefile.
++
+[source,bash,subs="attributes"]
+----
+% module load {intel-modulefile}
+----
 +
 [NOTE]
 ====
