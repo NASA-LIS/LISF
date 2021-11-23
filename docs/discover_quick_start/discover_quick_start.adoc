@@ -196,11 +196,9 @@ In future, this file will be sourced automatically when you connect to Discover.
 % module load {intel-modulefile}
 ----
 +
-[NOTE]
+[IMPORTANT]
 ====
-The LISF modulefile loads two additional modules available on Discover: `git` and TotalView (a GUI debugger). To view the complete list of available modules, run `module avail`. See link:https://www.nccs.nasa.gov/nccs-users/instructional/using-discover/miscellaneous/using-modules[this page] for more information about `module` usage on Discover.
-
-*Take care when loading additional modules as you may inadvertently introduce undetected incompatibilities between tools and libraries.* This can result in unexpected behavior when running the LISF components. For example, you may end up loading three different NetCDF libraries. And one day LIS runs, but the next day LIS cannot read its own restart file. See our link:https://github.com/NASA-LIS/LISF/blob/master/docs/creating_a_custom_modulefile/creating-a-custom-modulefile.adoc[Creating a Custom modulefile Guide] for further guidance on using `module` as part of your LISF workflow.
+*Avoid loading additional modules alongside the LISF modulefile as you may inadvertently introduce undetected incompatibilities between tools and libraries.* This can result in unexpected behavior when running the LISF components. For example, you may end up loading three different NetCDF libraries. And one day LIS runs, but the next day LIS cannot read its own restart file. See our link:https://github.com/NASA-LIS/LISF/blob/master/docs/creating_a_custom_modulefile/creating-a-custom-modulefile.adoc[Creating a Custom modulefile Guide] for further guidance on using `module` as part of your LISF workflow.
 ====
 
 Your LISF environment on Discover is now ready to use!
