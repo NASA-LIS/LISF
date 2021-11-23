@@ -148,8 +148,6 @@ if [ -n "$PS1" ]; then
 fi
 
 module use --append $HOME/{modulefile-dir}
-module load {intel-modulefile}
-# load additional modules here
 
 ulimit -s unlimited
 
