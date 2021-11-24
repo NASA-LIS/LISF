@@ -219,8 +219,11 @@ contains
        write(LIS_logunit,*) '[INFO] doy      : ',doy
        write(LIS_logunit,*) '[INFO] gmt      : ',gmt
 
-       if((mod(pYear,4).eq.0.and.mod(pYear,100).ne.0) &     !correct for leap year
-         .or.(mod(pYear,400).eq.0))then             !correct for y2k
+       ! 20211123 CRF, MCB
+       ! Use what was entered as a start year in the LIS config file to
+       ! determine the fractional time delta
+       if((mod(LIS_rc%yr,4).eq.0.and.mod(LIS_rc%yr,100).ne.0) &     !correct for leap year
+         .or.(mod(LIS_rc%yr,400).eq.0))then             !correct for y2k
          yrdays=366
        else
          yrdays=365
