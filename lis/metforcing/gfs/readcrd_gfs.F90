@@ -83,7 +83,7 @@ subroutine readcrd_gfs()
      call ESMF_ConfigGetAttribute(LIS_config,gfs_struc(n)%nmif,rc=rc)
 
      write(LIS_logunit,*) 'Using GFS forcing'
-     write(LIS_logunit,*) 'GFS forcing directory :',gfs_struc(n)%GFSDIR
+     write(LIS_logunit,*) 'GFS forcing directory :',trim(gfs_struc(n)%GFSDIR)
      gfs_struc(n)%GFSTIME1  = 3000.0
      gfs_struc(n)%GFSTIME2  = 0.0
   enddo

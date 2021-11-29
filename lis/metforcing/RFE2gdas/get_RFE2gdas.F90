@@ -24,6 +24,7 @@ subroutine get_RFE2gdas(n, findex)
   use LIS_coreMod,         only : LIS_rc
   use LIS_timeMgrMod,      only : LIS_calendar, LIS_get_nstep, LIS_tick
   use LIS_logMod,          only : LIS_logunit, LIS_endrun, LIS_verify
+  use LIS_constantsMod,    only : LIS_CONST_PATH_LEN
   use RFE2gdas_forcingMod, only : RFE2gdas_struc
 
   implicit none
@@ -77,7 +78,7 @@ subroutine get_RFE2gdas(n, findex)
   real*8  :: ctime,EndTime_RFE2gdas       ! Current LDAS time and end boundary time for precip data source
   real    :: gmtNow,gmt1,gmt2             ! GMT times for current LDAS time and begin and end boundary times for precip data sources
   integer :: ferror_RFE2gdas              ! Error flags for precip data sources
-  character*140:: filename                ! Filename variables for precip data sources
+  character(len=LIS_CONST_PATH_LEN):: filename                ! Filename variables for precip data sources
   integer      :: order,kk
 
 !=== End Variable Definition =======================
