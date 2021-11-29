@@ -33,13 +33,7 @@ module LIS_pluginIndices
 !
 !EOP
   PRIVATE
- 
-!CRF/MCB 20210921-------------------------------------------------------------
-!        Add PLUMBER2 met forcing capability
-character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
-!------------------------------------------------------------------------
-
-  
+   
 !BOC
 !-------------------------------------------------------------------------
 ! Run modes
@@ -176,6 +170,7 @@ character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
    character*50, public,  parameter :: LIS_AWRALforcId       = "AWRAL processed forcing"
    character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
    character*50, public,  parameter :: LIS_era5Id            = "ERA5"
+   character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------
