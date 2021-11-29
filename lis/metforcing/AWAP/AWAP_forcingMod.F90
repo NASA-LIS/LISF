@@ -51,6 +51,8 @@ module AWAP_forcingMod
 ! 30 Jan 2017: Sujay Kumar, Initial version
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -70,7 +72,7 @@ module AWAP_forcingMod
      real               :: ts
      integer            :: ncol                 ! Number of cols
      integer            :: nrow                 ! Number of rows
-     character*40       :: AWAPdir              ! STAGE IV Directory
+     character(len=LIS_CONST_PATH_LEN) :: AWAPdir ! STAGE IV Directory
      real*8             :: AWAPtime             ! Nearest hourly instance of incoming file
      integer            :: mi                   ! Number of points in the input grid
      logical            :: interp_flag

@@ -54,6 +54,7 @@ module vic_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -69,7 +70,7 @@ module vic_forcingMod
 !EOP
 
   type, public :: vicforcing_type_dec
-     character*100 :: vicdir
+     character(len=LIS_CONST_PATH_LEN) :: vicdir
      integer       :: forcingInterval
      integer       :: NC
      integer       :: NR

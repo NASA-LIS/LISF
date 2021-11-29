@@ -25,6 +25,8 @@ module Loobos_forcingMod
 ! !REVISION HISTORY: 
 ! 05 Oct 2010: David Mocko, Updated for Loobos test case
 ! 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -40,7 +42,7 @@ module Loobos_forcingMod
 
   type, public         :: Loobos_type_dec
      real                 :: ts
-     character*80         :: Loobosfile
+     character(len=LIS_CONST_PATH_LEN) :: Loobosfile
      real                 :: undef
      real*8               :: starttime,Loobostime1,Loobostime2
      integer              :: findtime1,findtime2,nstns

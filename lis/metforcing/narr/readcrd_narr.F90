@@ -66,7 +66,7 @@ subroutine readcrd_narr()
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) 'Using NARR forcing'
-     write(LIS_logunit,*) 'NARR forcing directory :',narr_struc(n)%NARRDIR
+     write(LIS_logunit,*) 'NARR forcing directory :',trim(narr_struc(n)%NARRDIR)
      narr_struc(n)%NARRTIME1  = 3000.0
      narr_struc(n)%NARRTIME2  = 0.0
   enddo

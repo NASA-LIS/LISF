@@ -89,6 +89,7 @@ module gdas_forcingMod
 !  \end{description}
 !
 ! !USES:
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -108,7 +109,7 @@ module gdas_forcingMod
      real          :: ts
      integer       :: ncold, nrold   !AWIPS 212 dimensions
      integer       :: nmif
-     character*100 :: gdasdir   !GDAS Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: gdasdir   !GDAS Forcing Directory
      character*50  :: met_interp
 
      real*8        :: gdastime1, gdastime2

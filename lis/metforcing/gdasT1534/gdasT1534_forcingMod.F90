@@ -52,6 +52,7 @@ module gdasT1534_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
   
@@ -71,7 +72,7 @@ module gdasT1534_forcingMod
      real          :: ts
      integer       :: ncold, nrold   !AWIPS 212 dimensions
      integer       :: nmif
-     character*100 :: gdasT1534dir   !GDAST1534 Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: gdasT1534dir !GDAST1534 Forcing Directory
      real*8        :: gdasT1534time1,gdasT1534time2
      integer       :: mi
      integer       :: findtime1, findtime2

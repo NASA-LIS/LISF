@@ -32,6 +32,7 @@ subroutine get_PALSmetdata(n,findex)
   use LIS_metforcingMod,  only : LIS_forc
   use LIS_logMod
   use PALSmetdata_forcingMod,  only : PALSmetdata_struc
+  use LIS_constantsMod,        only : LIS_CONST_PATH_LEN
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
   use netcdf
 #endif
@@ -69,7 +70,7 @@ subroutine get_PALSmetdata(n,findex)
 !  \end{description}
 !
 !EOP
-  character*100                 :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
   logical                       :: file_exists
   integer                       :: ftn
   integer                       :: t

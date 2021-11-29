@@ -42,7 +42,7 @@ subroutine readcrd_AWRAL()
        call ESMF_ConfigGetAttribute(LIS_config, AWRAL_struc(n)%AWRALdir,rc=rc)
 
        write(LIS_logunit,*) '[INFO] Using AWRAL forcing'
-       write(LIS_logunit,*) '[INFO] AWRAL forcing directory :', AWRAL_struc(n)%AWRALDIR
+       write(LIS_logunit,*) '[INFO] AWRAL forcing directory :', trim(AWRAL_struc(n)%AWRALDIR)
 
     !- Setting observed forcing times to zero to ensure data is read in
     !   at first time step

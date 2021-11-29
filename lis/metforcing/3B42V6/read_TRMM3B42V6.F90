@@ -38,7 +38,7 @@ subroutine read_TRMM3B42V6 (n, fname, findex, order, ferror_TRMM3B42V6)
   implicit none
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  character(len=80)   :: fname
+  character(len=*)   :: fname
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_TRMM3B42V6
@@ -165,9 +165,9 @@ subroutine read_TRMM3B42V6 (n, fname, findex, order, ferror_TRMM3B42V6)
 ! write (97,*) TRMM3B42V6_struc(n)%metdata1(1,:)
 
      ferror_TRMM3B42V6 = 1
-     write(LIS_logunit,*) "Obtained 3B42 V6 precipitation data ", fname
+     write(LIS_logunit,*) "Obtained 3B42 V6 precipitation data ", trim(fname)
   else
-     write(LIS_logunit,*) "Missing 3B42 V6 precipitation data ", fname
+     write(LIS_logunit,*) "Missing 3B42 V6 precipitation data ", trim(fname)
      ferror_TRMM3B42V6 = 0
   endif
   call LIS_releaseUnitNumber(ftn)

@@ -28,8 +28,8 @@
    integer,       intent(in)  :: fcstmo          ! Forecast month - Need to convert to "3-letter month"
    integer,       intent(in)  :: ensnum          ! Forecast ensemble number
    integer,       intent(in)  :: yr, mo          ! Lead-time year, month
-   character*100, intent(in)  :: directory       ! Dataset Directory
-   character*140, intent(out) :: filename        
+   character(len=*), intent(in)  :: directory       ! Dataset Directory
+   character(len=*), intent(out) :: filename        
 !
 ! !DESCRIPTION:
 !   This subroutine puts together ensemble forecast 

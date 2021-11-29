@@ -27,12 +27,13 @@ subroutine read_TRMM3B42RTV7 (n, kk, filename_TRMM3B42RT, findex, &
                                LIS_releaseUnitNumber
  use LIS_metforcingMod, only : LIS_forc
  use TRMM3B42RTV7_forcingMod, only : TRMM3B42RTV7_struc
+ use LIS_constantsMod,        only : LIS_CONST_PATH_LEN
  
   implicit none
 ! !ARGUMENTS:
   integer, intent(in) :: n
   integer, intent(in) :: kk     ! Forecast ensemble member
-  character(len=120)  :: filename_TRMM3B42RT
+  character(len=*)  :: filename_TRMM3B42RT
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_TRMM3B42RT
@@ -69,8 +70,8 @@ subroutine read_TRMM3B42RTV7 (n, kk, filename_TRMM3B42RT, findex, &
   real    :: tmp(TRMM3B42RTV7_struc(n)%nc, TRMM3B42RTV7_struc(n)%nr)   
   real, allocatable  :: precip_regrid(:,:)   ! Interpolated precipitation array
  
-  character(len=120) :: filename             ! Filename variables
-  character*200      :: dirfile 
+  character(len=LIS_CONST_PATH_LEN) :: filename             ! Filename variables
+  character(len=LIS_CONST_PATH_LEN) :: dirfile 
   integer            :: ftn
   logical            :: file_exists
  
@@ -179,7 +180,7 @@ subroutine read_TRMM3B42RTV7 (n, kk, filename_TRMM3B42RT, findex, &
   use LIS_coreMod, only : LIS_rc
 
    implicit none
-   character*200, intent(in) :: dirfile
+   character(len=*), intent(in) :: dirfile
    integer,       intent(in) :: xd, yd 
    real,       intent(inout) :: precip(xd,yd)
 
@@ -227,7 +228,7 @@ subroutine read_TRMM3B42RTV7 (n, kk, filename_TRMM3B42RT, findex, &
 
   use LIS_coreMod, only : LIS_rc
 
-  character*200, intent(in) :: zipfile
+  character(len=*), intent(in) :: zipfile
   integer, intent(in) :: xd, yd
   real, intent(inout) :: output(xd, yd)
 
@@ -282,7 +283,7 @@ end subroutine read_3B42RTV7_gzip
   use LIS_logMod, only : LIS_logunit, LIS_getNextUnitNumber, &
                          LIS_releaseUnitNumber
 
-  character*200, intent(in) :: dirfile
+  character(len=*), intent(in) :: dirfile
   integer, intent(in)       :: xd,yd
   real,    intent(inout)    :: precip(xd,yd)
 
