@@ -139,6 +139,13 @@ contains
     endif
 
     allocate(plumber2_struc(LIS_rc%nnest))
+
+    ! allocate station ID array before reading config entries
+    do n=1, LIS_rc%nnest
+       plumber2_struc(n)%nstns = 1
+       allocate(plumber2_struc(n)%stnid(plumber2_struc(n)%nstns))
+    enddo
+
     call readcrd_plumber2()
 
     !! MCB 20211101 
@@ -317,11 +324,9 @@ contains
           plumber2_struc(n)%metdata2 = 0
 
           plumber2_struc(n)%undef = -9999.0
-          plumber2_struc(n)%nstns = 1
 
           plumber2_struc(n)%read_index = 0
 
-          allocate(plumber2_struc(n)%stnid(plumber2_struc(n)%nstns))
           allocate(plumber2_struc(n)%stnlat(plumber2_struc(n)%nstns))
           allocate(plumber2_struc(n)%stnlon(plumber2_struc(n)%nstns))
 
