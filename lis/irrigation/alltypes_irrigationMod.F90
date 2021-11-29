@@ -22,13 +22,14 @@ module alltypes_irrigationMod
 !               type map and calendar information as well as a routine for 
 !               mapping croptypes to specific irrigation type (developped by 
 !               Matt). Updated IrrigScale determination.
+!  29 Oct 2021: Sarith Mahanama; Added mapping croptypes to irrigation types.
 !
 ! !USES: 
   use ESMF
   use LIS_coreMod
   use LIS_logMod
   use LIS_irrigationMod
-
+  
   implicit none
 
   PRIVATE
@@ -86,7 +87,7 @@ contains
             label="Irrigation type to crop mapping method:",rc=rc)
        call LIS_verify(rc,&
             'Irrigation type to crop mapping method: option not specified in the config file')
-       call get_irrigType(n, irrigtypetocrop, irrigType)
+       call get_irrigType(n, irrigtypetocrop, nlctypes, irrigType)
 
 !HKB ! Read plant/harvest dates if opted:
        if ( LIS_irrig_struc(n)%cropcalendar .ne. "none" ) then
@@ -278,8 +279,8 @@ contains
 
 
     ! HKB check 
-    !ftn = LIS_getNextUnitNumber()
-    !open(ftn,file="tileirrtype.txt",status='unknown',form='formatted')
+    ftn = LIS_getNextUnitNumber()
+    open(ftn,file="tileirrtype2.txt",status='unknown',form='formatted')
 
     do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
@@ -318,11 +319,11 @@ contains
          call LIS_endrun
        endif
      ! HKB check 
-     !  write(ftn,fmt='(i8,2f10.4,f3.0)') &
-     !  t,LIS_domain(n)%grid(gid)%lon,LIS_domain(n)%grid(gid)%lat,irrigType(t)
+       write(ftn,fmt='(i8,2f10.4,f3.0)') &
+       t,LIS_domain(n)%grid(gid)%lon,LIS_domain(n)%grid(gid)%lat,irrigType(t)
 
     enddo
-    !call LIS_releaseUnitNumber(ftn)  !HKB
+    call LIS_releaseUnitNumber(ftn)  !HKB
     deallocate(irrigAmt)
     
   end subroutine alltypes_irrigation_updates
@@ -591,7 +592,7 @@ contains
        ios = nf90_close(nid)
        call LIS_verify(ios,'nf90_close failed in alltypes_irrigationMod')
        
-       do j=1,cropseasons
+       CROPSEASON : do j=1,cropseasons
            l_frac_p(:,:,:) = glb_frac_p(&
                LIS_ews_halo_ind(n,LIS_localPet+1):&         
                LIS_ewe_halo_ind(n,LIS_localPet+1),&
@@ -603,7 +604,7 @@ contains
                LIS_nss_halo_ind(n,LIS_localPet+1):&
                LIS_nse_halo_ind(n,LIS_localPet+1),:,j)
 
-           do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+           CROPTILE : do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
               col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
               row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
               vegt = LIS_domain(n)%tile(t)%vegt  !veg index (eg 1-46)
@@ -615,8 +616,8 @@ contains
                 LIS_irrig_struc(n)%plantDay(t,j) = LIS_rc%udef
                 LIS_irrig_struc(n)%harvestDay(t,j) = LIS_rc%udef
               endif
-           enddo  ! t=crop tile
-       enddo  ! j=cropseason
+           enddo CROPTILE
+        enddo CROPSEASON
 
        deallocate(l_frac_p)
        deallocate(glb_frac_p)
@@ -631,7 +632,7 @@ contains
 #endif
   end subroutine read_cropcalendar
 
-  subroutine get_irrigType(n,irrigtypetocrop,itype)
+  subroutine get_irrigType(n,irrigtypetocrop,nlctypes,itype)
 
 !HKB new routine for reading in grid level irrigType field and mapping to 
 !crop tiles using A) Matt's algorithm, B) dominant, or C) single type
@@ -639,19 +640,25 @@ contains
 ! 
 
     use LIS_fileIOMod
+    use LIS_constantsMod,  ONLY : radius => LIS_CONST_REARTH, pi => LIS_CONST_PI
+    use getCropIrrigTypes, ONLY : MattA => matt_algorithm
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
 #endif
     integer,  intent(in) :: n 
     character*50,intent(in) :: irrigtypetocrop
-    real                 :: itype(LIS_rc%npatch(n,LIS_rc%lsm_index))
+    integer, intent(in)  :: nlctypes ! non-crop land cover types
+    real,intent(inout)   :: itype(LIS_rc%npatch(n,LIS_rc%lsm_index))
 
     integer              :: t,col,row,j
     integer              :: nid,ios,status,itypeId
     integer              :: nirrigtypes, irrigdimid
+    integer              :: nsfctypes,   sfcdimid, lcoverid
     integer              :: countyId, countryId
-    logical              :: file_exists    
-    real,  allocatable   :: l_itype(:,:,:)
+    logical              :: file_exists
+    real,  allocatable   :: l_croptype (:,:,:),s_croptype (:,:,:) 
+    real,  allocatable   :: g_croptype (:,:,:),t_croptype (:,:,:)
+    real,  allocatable   :: l_itype(:,:,:),    s_itype    (:,:,:)
     real,  allocatable   :: glb_itype(:,:,:)
     real,  allocatable   :: l_country(:,:)
     real,  allocatable   :: glb_country(:,:)
@@ -659,10 +666,12 @@ contains
     real,  allocatable   :: glb_county(:,:)
     real,  allocatable   :: temp(:)
     real,  allocatable   :: PREFTYPE(:,:,:)
+    real,  allocatable   :: cell_area (:,:)
     integer              :: iindex
     real                 :: tempval
     integer              :: vegt
     integer              :: ss,ccc
+    type(MattA)          :: MA_global, MA_USA
     
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
@@ -685,6 +694,7 @@ contains
        call LIS_verify(ios,'nf90_inquire_dimension failed for IRRIGTYPE')
 
        allocate(l_itype(LIS_rc%lnc(n),LIS_rc%lnr(n),nirrigtypes))
+       allocate(s_itype(LIS_rc%lnc(n),LIS_rc%lnr(n),nirrigtypes))
        allocate(glb_itype(LIS_rc%gnc(n),LIS_rc%gnr(n),nirrigtypes))
        allocate(temp(nirrigtypes))
 
@@ -693,7 +703,24 @@ contains
        
        ios = nf90_get_var(nid, itypeId, glb_itype)
        call LIS_verify(ios,'nf90_get_var failed for in alltypes_irrigationMod')
-!-- read in country and county fields
+
+       !-- real in LANDCOVER fractions to populate CROPTYPES (lnc,lnc,numbercrops)
+       ios = nf90_inq_dimid(nid, "sfctypes", sfcdimid)
+       call LIS_verify(ios,'nf90_inq_dimid failed for LANDCOVER, NEED new lis_input')
+       ios = nf90_inquire_dimension(nid, sfcdimid, len = nsfctypes)
+       call LIS_verify(ios,'nf90_inquire_dimension failed for LANDCOVER')
+
+       allocate(l_croptype (LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%numbercrops))
+       allocate(s_croptype (LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%numbercrops))
+       allocate(g_croptype (LIS_rc%gnc(n),LIS_rc%gnr(n),nsfctypes))
+       allocate(t_croptype (LIS_rc%lnc(n),LIS_rc%lnr(n),nsfctypes))
+       ios = nf90_inq_varid(nid,'LANDCOVER',lcoverId)
+       call LIS_verify(ios,'nf90_inq_varid failed for LANDCOVER')
+
+       ios = nf90_get_var(nid, lcoverId, g_croptype)
+       call LIS_verify(ios,'nf90_get_var failed for in alltypes_irrigationMod')
+       
+       !-- read in country and county fields       
        allocate(glb_country(LIS_rc%gnc(n),LIS_rc%gnr(n)))
        allocate(glb_county(LIS_rc%gnc(n),LIS_rc%gnr(n)))
        allocate(l_country(LIS_rc%lnc(n),LIS_rc%lnr(n)))
@@ -713,6 +740,15 @@ contains
 
        ios = nf90_close(nid)
        call LIS_verify(ios,'nf90_close failed in alltypes_irrigationMod')
+
+       ! Grid to tile mapping CROPTYPES fractions
+       t_croptype (:,:,:) = g_croptype (&
+          LIS_ews_halo_ind(n,LIS_localPet+1):&         
+          LIS_ewe_halo_ind(n,LIS_localPet+1),&
+          LIS_nss_halo_ind(n,LIS_localPet+1):&
+          LIS_nse_halo_ind(n,LIS_localPet+1),:)
+       l_croptype = t_croptype (:,:, nsfctypes - LIS_rc%numbercrops + 1: nsfctypes)
+       s_croptype = l_croptype
        
        ! Grid to tile mapping index 1=Sprinkler, 2=Drip, 3=Floodg
        ! Note irrigType values are non-missing regardless of croptype or
@@ -722,10 +758,12 @@ contains
           LIS_ewe_halo_ind(n,LIS_localPet+1),&
           LIS_nss_halo_ind(n,LIS_localPet+1):&
           LIS_nse_halo_ind(n,LIS_localPet+1),:)
-
+       s_itype = l_itype
+       
        if (irrigtypetocrop .eq. "distribute") then
-        print*,'here in distribute'
+ 
         allocate(PREFTYPE(LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%nsurfacetypes))
+        PREFTYPE = -1
         l_county(:,:) = glb_county(&
             LIS_ews_halo_ind(n,LIS_localPet+1):&         
             LIS_ewe_halo_ind(n,LIS_localPet+1),&
@@ -738,16 +776,54 @@ contains
             LIS_nse_halo_ind(n,LIS_localPet+1))
          ss = maxval(l_county)/1000
          ccc = maxval(l_county)-ss*1000
-         print*,'county',maxval(l_county),ss,ccc
+         
+         allocate (cell_area (LIS_rc%lnc(n),LIS_rc%lnr(n)))
+         call get_area (n,cell_area)
 
-        !call get_US_irrigType(l_county,l_itype, PREFTYPE)
-        ! ==> Implement Matt's global country algorithm
+         call MA_global%init_thres (ncrops=LIS_rc%numbercrops,nitypes=nirrigtypes, global = .true.)
+         ! process by country irrigtypes and populate PREFTYPE
+         call MA_global%git(LIS_rc%gnc(n),LIS_rc%gnr(n), cell_area,l_country,l_croptype, l_itype, PREFTYPE)
+         ! if ITYPE_MIN_FRAC/CTYPE_AREA_TOL parameters differ between country and US county
+         !    implementation
+         call MA_USA%init_thres (ncrops=LIS_rc%numbercrops,nitypes=nirrigtypes)
+
+         ! again with an optional argument. 
+         ! rerun with usa option and update PREFTYPE using irrigation fraction vy county
+         !     in the US and overwrite PREFTYPE over the US.
+         ! initaialize l_croptype, l_itype and PREFTYPE in COUNTY grid cells again
+         do t = 1, LIS_rc%nsurfacetypes
+            
+            where (l_county > 0.)
+               PREFTYPE (:,:,t) = -1.               
+            endwhere
+            if(t <= LIS_rc%numbercrops) then
+               where (l_county > 0.)
+                  l_croptype (:,:,t) = s_croptype (:,:,t)
+               endwhere
+            endif
+            if (t <= nirrigtypes) then
+               where (l_county > 0.)
+                  l_itype (:,:,t) = s_itype (:,:,t)
+               endwhere
+            endif
+         end do
+         
+         call MA_USA%git(LIS_rc%gnc(n),LIS_rc%gnr(n),cell_area, l_county, l_croptype, l_itype, PREFTYPE, usa = .true.)
+         !do t = 21, 46
+         !   do j=1, LIS_rc%lnr(n)
+         !      write(800, '(1440i3)') NINT(preftype(:,j,t))
+         !   end do
+         !end do
+         deallocate (cell_area)
+         !stop
        endif
 
-       do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+       TILE_LOOP: do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+          
           col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
           row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
-          vegt = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%vegt
+          vegt= LIS_surface(n,LIS_rc%lsm_index)%tile(t)%vegt
+
           select case (irrigtypetocrop)
            case("single")
              ! Simple case: single irrigation type (0 or 1)
@@ -775,45 +851,28 @@ contains
                  itype(t) = 0         ! no irrigation
               endif
            case("distribute")
-              ! only US has distribution
-              if ( l_country(col,row) .eq. 243 ) then ! US
-                 itype(t) = PREFTYPE(col,row,vegt)
-                 if ( itype(t).lt.0 .and. itype(t).ne.LIS_rc%udef ) then
-                   print*,'invalid entry',PREFTYPE(col,row,vegt),col,row,vegt
-                 endif
-              else  
-              ! other countries, use dominant for now...
-              ! ==> Implement Matt's global country algorithm
-                 temp = l_itype(col,row,:)
-                 if ( maxval(temp).gt.0 ) then
-                    iindex = 0
-                    tempval = 0.0
-                    do j=1,nirrigtypes
-                       if ( temp(j) > tempval ) then
-                         tempval = temp(j)
-                         iindex = j
-                       end if
-                    end do
-                    itype(t) = iindex * 1.0
-                 else
-                    itype(t) = 0         ! no irrigation
-                 endif
-              endif 
+
+              itype(t) = PREFTYPE(col,row,vegt)
+              if ( itype(t).lt.0 .and. itype(t).ne.LIS_rc%udef .and. vegt.gt.nlctypes) then
+                 print*,'invalid entry',PREFTYPE(col,row,vegt),col,row,vegt
+              endif
+
            case default
               write(LIS_logunit,*) "[ERR] Irrigation type is not supported for ", &
                 trim(irrigtypetocrop)
               call LIS_endrun()
           end select
-       enddo   ! t
 
+       enddo TILE_LOOP
 
-       deallocate(l_itype)
+       deallocate(l_itype, s_itype)
        deallocate(glb_itype)
        deallocate(temp)
        deallocate(l_country)
        deallocate(glb_country)
        deallocate(l_county)
        deallocate(glb_county)
+       deallocate(l_croptype, t_croptype, g_croptype, s_croptype)
        if (allocated(PREFTYPE)) deallocate(PREFTYPE)
     else
        write(LIS_logunit,*) "[ERR] Irrigation type map: ",&
@@ -1025,6 +1084,179 @@ contains
        deallocate(grasspix)
        deallocate(restpix)
 
-  end subroutine compute_irrigScale
+     end subroutine compute_irrigScale
+     
+! ----------------------------------------------------------------
 
+  SUBROUTINE get_area (nest, area)
+
+    use map_utils,        only : ij_to_latlon
+    use LIS_constantsMod, ONLY : radius => LIS_CONST_REARTH, pi => LIS_CONST_PI
+    
+    implicit none
+
+    integer, intent (in)                    :: nest
+    real, dimension (:,:),   intent (inout) :: area
+    integer                                 :: i,j
+    real                                    :: lat_ll, lat_ur , lat_ul, lat_lr, c, r
+    real                                    :: lon_ll, lon_ur , lon_ul, lon_lr
+
+    area    = 0.
+
+    do j = 1, LIS_rc%lnr(nest)
+       do i = 1, LIS_rc%lnc(nest)
+           
+          r = float (j)
+          c = float (i)
+
+          select case (LIS_domain(nest)%lisproj%code)
+          case (0)
+             ! lat/lon
+             call ij_to_latlon(LIS_domain(nest)%lisproj,c, r, lat_ll, lon_ll)
+             area (i,j) = area_latlon (nest, lat_ll)
+             
+          case (3)
+             ! Lambert conical follows WPS
+             area (i,j) = area_wps (nest)
+             
+          case DEFAULT
+             ! Area of a polygon areaint.m from Matlab
+             call ij_to_latlon(LIS_domain(nest)%lisproj,c-0.5, r-0.5, lat_ll, lon_ll) ! SW corner (A)
+             call ij_to_latlon(LIS_domain(nest)%lisproj,c-0.5, r+0.5, lat_ul, lon_ul) ! NW corner (B)         
+             call ij_to_latlon(LIS_domain(nest)%lisproj,c+0.5, r+0.5, lat_ur, lon_ur) ! NE corner (C)        
+             call ij_to_latlon(LIS_domain(nest)%lisproj,c+0.5, r-0.5, lat_lr, lon_lr) ! SE corner (D)
+             area (i,j) = areaint((/lat_ll, lat_ul, lat_ur, lat_lr/), (/lon_ll, lon_ul, lon_ur, lon_lr/))
+             
+          END select
+                    
+       end do
+    end do
+    
+  contains
+    
+    ! ----------------------------------------------------------------
+
+    real function area_latlon (nest, lat)
+
+      implicit none
+
+      real, intent (in)    :: lat
+      integer, intent (in) :: nest
+      
+      area_latlon = radius * radius * &
+                 (sin(d2r(lat + 0.5*LIS_rc%gridDesc(nest,9))) - &
+                  sin(d2r(lat - 0.5*LIS_rc%gridDesc(nest,9))))* &
+                  d2r(LIS_rc%gridDesc(nest,10))/1000./1000.    ! [km2]
+      
+    end function area_latlon
+
+    ! ----------------------------------------------------------------
+
+    real function area_wps (nest)
+
+      implicit none
+      integer , intent (in) :: nest
+      integer           :: rc
+      real              :: DX, DY,  MSFTX, MSFTY
+
+      MSFTY = 1.
+      MSFTX = 1.
+
+      DX = LIS_rc%gridDesc(nest,8)
+      DY = LIS_rc%gridDesc(nest,9)
+      area_wps = DX*DY/MSFTX/MSFTY
+      
+    end function area_wps
+    
+    ! ----------------------------------------------------------------
+    
+    real FUNCTION areaint (lat, lon)
+            
+      ! simplified from Matlab's areaint.m to compute area of a single polygon
+      ! AREAINT Surface area of polygon on sphere 
+      !   A = AREAINT(LAT,LON) calculates the spherical surface area of the
+      !   polygon specified by the input vectors LAT, LON.  LAT and LON are in
+      !   degrees.  The calculation uses a line integral approach.  The output,
+      !   A, is the surface area fraction covered by the polygon on a unit
+      !   sphere.
+      
+      implicit none
+      real, intent(in), dimension(:)    :: lat, lon
+      real, allocatable , dimension (:) :: latc, lonc, colat, az, integrands 
+      real                              :: lat0,lon0,dlat,dlon,a,deltas,daz,colat2
+      integer                           :: n, i
+      
+      n = size (lat) + 1
+      allocate (latc (1:n))
+      allocate (lonc (1:n))
+      allocate (colat(1:n))
+      allocate (az   (1:n))
+      
+      latc(1:n-1) = lat
+      lonc(1:n-1) = lon
+      latc(n)     = lat(1)
+      lonc(n)     = lon(1)
+      lat0 = 0.
+      lon0 = 0.
+      
+      ! greatcircle distance, and greatcircle azimuth wrt 0.,0 (Matlab's distance.m)
+      ! ----------------------------------------------------------------------------
+      
+      do i = 1,n
+       
+         latc(i) = d2r(latc(i))
+         lonc(i) = d2r(lonc(i))
+         dlat     = latc(i) - lat0
+         dlon     = lonc(i) - lon0
+         
+         ! haversine
+         a        = (sin(dlat/2.))**2 + cos(lat0)*cos(latc(i))*(sin(dlon/2.))**2
+         if(a < 0.) a =0.
+         if(a > 1.) a =1.
+         
+         colat(i) = 2.*atan2(sqrt(a),sqrt(1.-a))         
+         az(i)    = atan2(cos(latc(i)) * sin(lonc(i)-lon0),  &
+              cos(lat0) * sin(latc(i)) - sin(lat0) * cos(latc(i))* cos(lonc(i)-lon0))
+         ! wrap az to the range 0-2pi
+         az(i)    = az(i) - 2.*pi*floor(az(i)/2./pi)
+         
+      end do
+      
+      n = n -1
+      allocate (integrands (1:n))
+      
+      do i = 1, n
+         
+         ! Calculate step sizes
+         daz = az(i+1) - az(i)
+         ! wrap to -pi <= daz <=pi
+         daz = daz - 2.*pi*floor((daz+pi)/2./pi) 
+         
+         ! Determine average surface distance for each step
+         deltas = (colat (i+1) - colat (i))/2.
+         colat2 = colat(i) + deltas
+         
+         ! Integral over azimuth is 1-cos(colatitudes)
+         integrands (i) = (1. - cos(colat2)) * daz
+      end do
+      
+      areaint = abs (sum (integrands))/4./pi
+      areaint = MIN (areaint, 1. - areaint)
+      deallocate (integrands, latc, lonc, colat, az)
+      
+    end FUNCTION areaint
+
+    ! ----------------------------------------------------------------
+    
+    function d2r (degree) result(rad)
+      
+      ! degrees to radians
+      real,intent(in) :: degree
+      real :: rad
+      
+      rad = degree*PI/180.
+      
+    end function d2r
+  end SUBROUTINE get_area
+   
 end module alltypes_irrigationMod
