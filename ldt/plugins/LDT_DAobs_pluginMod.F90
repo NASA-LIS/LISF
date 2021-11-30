@@ -71,7 +71,8 @@ contains
     use LPRMvod_obsMod,            only : LPRMvod_obsinit
     use MCD15A2Hlai_obsMod,        only : MCD15A2Hlai_obsinit
     use THySM_obsMod,              only : THySM_obsinit
-    
+    use LISlsmPrecip_obsMod,       only : LISlsmPrecip_obsInit 
+
     external readLISlsmSMObs
     external readsyntheticsmobs
     external readNASA_AMSREsmObs
@@ -98,9 +99,13 @@ contains
     external readLPRMvodObs
     external readMCD15A2HlaiObs
     external readTHySMobs
+    external readLISlsmPrecipObs
 
     call registerdaobssetup(trim(LDT_LISlsmSMobsId)//char(0), LISlsmSM_obsInit)
     call registerdaobsread(trim(LDT_LISlsmSMobsId)//char(0), readLISlsmSMObs)
+
+    call registerdaobssetup(trim(LDT_LISlsmPrecipobsId)//char(0), LISlsmPrecip_obsInit)
+    call registerdaobsread(trim(LDT_LISlsmPrecipobsId)//char(0), readLISlsmPrecipObs)
 
     call registerdaobssetup(trim(LDT_syntheticSMobsId)//char(0), &
          syntheticSM_obsinit)

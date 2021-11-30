@@ -117,6 +117,9 @@ module LDT_pluginIndices
 
    character*50, public,  parameter :: LDT_MCD15A2HlaiobsId            &
         = "MCD15A2H LAI"
+   character*50, public,  parameter :: LDT_LISlsmPrecipobsId          &
+        = "LIS LSM total precipitation"
+
 !-------------------------------------------------------------------------
 ! Meteorological forcings
 !-------------------------------------------------------------------------
