@@ -96,6 +96,9 @@ contains
          LDT_DAobsData(n)%vod_obs,LDT_DAmetrics%vod)
     call registerMetricsEntry(LDT_DA_MOC_LAI,nsize,&
          LDT_DAobsData(n)%lai_obs,LDT_DAmetrics%lai)
+    call registerMetricsEntry(LDT_DA_MOC_TOTALPRECIP,nsize,&
+         LDT_DAobsData(n)%totalprecip_obs,LDT_DAmetrics%totalprecip)
+
 !------------------------------------------------------------------------
 ! the generation of the obsgrid only doesn't require a pass through the
 ! data

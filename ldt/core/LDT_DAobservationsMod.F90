@@ -69,6 +69,7 @@ contains
        call default_init_obsEntry(LDT_DAobsData(i)%tws_obs, "TWS")
        call default_init_obsEntry(LDT_DAobsData(i)%vod_obs, "VOD")
        call default_init_obsEntry(LDT_DAobsData(i)%lai_obs, "LAI")
+       call default_init_obsEntry(LDT_DAobsData(i)%totalprecip_obs, "TotalPrecip")
     enddo
 
     call daobservationsetup(trim(LDT_rc%obs_src)//char(0))
