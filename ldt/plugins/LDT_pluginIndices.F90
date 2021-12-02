@@ -104,6 +104,8 @@ module LDT_pluginIndices
         = "GCOMW AMSR2 L3 snow depth"
    character*50, public,  parameter :: LDT_NASASMAPsmobsId            &
         = "NASA SMAP soil moisture"
+   character*50, public,  parameter :: LDT_THySMobsId            &
+        = "THySM soil moisture"
    character*50, public,  parameter :: LDT_SMOSNRTNNsmobsId            &
         = "SMOS NRT NN soil moisture"                                        !kyh20210105
    character*50, public,  parameter :: LDT_NASASMAPvodobsId            &
@@ -125,17 +127,13 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_gdasId         = "GDAS"
    character*50, public,  parameter :: LDT_geos5fcstId    = "GEOS5 forecast"
    character*50, public,  parameter :: LDT_ecmwfId        = "ECMWF"
-   character*50, public,  parameter :: LDT_ecmwfreanalId  = "ECMWF reanalysis"
    character*50, public,  parameter :: LDT_princetonId    = "PRINCETON"
-   character*50, public,  parameter :: LDT_merralandId    = "MERRA-Land"
    character*50, public,  parameter :: LDT_merra2Id       = "MERRA2"
    character*50, public,  parameter :: LDT_era5Id         = "ERA5"
    character*50, public,  parameter :: LDT_gswp1Id        = "GSWP1"
    character*50, public,  parameter :: LDT_gswp2Id        = "GSWP2"
-   character*50, public,  parameter :: LDT_nldas1Id       = "NLDAS1"
    character*50, public,  parameter :: LDT_nldas2Id       = "NLDAS2"
    character*50, public,  parameter :: LDT_gldasId        = "GLDAS"
-   character*50, public,  parameter :: LDT_gdas3dId       = "GDAS(3d)"
    character*50, public,  parameter :: LDT_gdasLSWGId     = "GDAS(LSWG)"
    character*50, public,  parameter :: LDT_gfsId          = "GFS"
    character*50, public,  parameter :: LDT_narrId         = "NARR"

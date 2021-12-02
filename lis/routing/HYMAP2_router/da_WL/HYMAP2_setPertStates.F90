@@ -76,4 +76,3 @@ subroutine HYMAP2_setPertStates(n,Nstate,pert_State,progpert)
      enddo
   enddo
 end subroutine HYMAP2_setPertStates
-

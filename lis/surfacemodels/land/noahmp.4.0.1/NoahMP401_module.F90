@@ -454,6 +454,12 @@ module NoahMP401_module
         real               :: gdd
         integer            :: pgs
         real, pointer      :: gecros_state(:)
+        !ag (05Jan2021)
+        ! 2-way coupling parameters
+        real               :: rivsto
+        real               :: fldsto
+        real               :: fldfrc
+
         !-------------------------------------------------------
         ! output
         !-------------------------------------------------------

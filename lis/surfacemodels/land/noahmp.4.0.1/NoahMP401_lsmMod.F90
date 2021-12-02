@@ -313,6 +313,11 @@ contains
                 NOAHMP401_struc(n)%noahmp401(t)%wind_e = 0.0
                 NOAHMP401_struc(n)%noahmp401(t)%wind_n = 0.0
                 NOAHMP401_struc(n)%noahmp401(t)%sfcheadrt = 0.0
+
+                !ag(05Jan2021)
+                NOAHMP401_struc(n)%noahmp401(t)%rivsto = 0.0
+                NOAHMP401_struc(n)%noahmp401(t)%fldsto = 0.0
+                NOAHMP401_struc(n)%noahmp401(t)%fldfrc = 0.0
             enddo ! end of tile (t) loop
 
             !------------------------------------------------------------------------

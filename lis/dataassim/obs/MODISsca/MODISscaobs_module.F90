@@ -71,7 +71,6 @@ contains
 ! !INTERFACE: 
   subroutine MODISscaobs_setup(k, OBS_State, OBS_Pert_State)
 ! !USES: 
-    use ESMF
     use LIS_coreMod
     use LIS_logMod,  only : LIS_logunit, LIS_verify
     use LIS_perturbMod

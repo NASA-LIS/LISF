@@ -57,7 +57,6 @@ contains
   subroutine template_obsinit(i)
 ! 
 ! !USES:   
-    use ESMF
     use LVT_coreMod, only : LVT_rc, LVT_config
     use LVT_logMod,  only : LVT_verify
 
