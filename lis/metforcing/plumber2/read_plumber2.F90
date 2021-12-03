@@ -164,8 +164,6 @@ subroutine read_plumber2(n,order,findex,&
      call LIS_verify(nf90_get_att(ftn,tairId,'_FillValue', FVal), &
           'nf90_get_att failed for Tair:_FillValue in read_plumber2') 
 
-     write(LIS_logunit,*) '[DEBUG] plumber2 tair: ',tairData
-
 !    --------------------------READ wind-----------------------------------------------
 
      call LIS_verify(nf90_inq_varid(ftn,'Wind',windId), &

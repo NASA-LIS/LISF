@@ -181,7 +181,6 @@ subroutine timeinterp_plumber2(n,findex)
           (plumber2_struc(n)%metdata2(2,t).ne.plumber2_struc(n)%undef)) then
         psurf(t) = wt1 * plumber2_struc(n)%metdata1(2,index1) +                      &
              wt2 * plumber2_struc(n)%metdata2(2,index1)
-        !            write(LIS_logunit,*) plumber2_struc(n)%metdata1(2,index1),plumber2_struc(n)%metdata2(2,index1)
      endif
 
      !! -- qair (3)
@@ -189,7 +188,6 @@ subroutine timeinterp_plumber2(n,findex)
           (plumber2_struc(n)%metdata2(3,t).ne.plumber2_struc(n)%undef)) then
         qair(t) = wt1 * plumber2_struc(n)%metdata1(3,index1) +                      &
              wt2 * plumber2_struc(n)%metdata2(3,index1)
-        !            write(LIS_logunit,*) plumber2_struc(n)%metdata1(3,index1),plumber2_struc(n)%metdata2(3,index1)
      endif
 
      !! -- tair (4)
@@ -197,7 +195,6 @@ subroutine timeinterp_plumber2(n,findex)
           (plumber2_struc(n)%metdata2(4,t).ne.plumber2_struc(n)%undef)) then
         tair(t) = wt1 * plumber2_struc(n)%metdata1(4,index1) +                    &
              wt2 * plumber2_struc(n)%metdata2(4,index1)
-        !            write(LIS_logunit,*) plumber2_struc(n)%metdata1(4,index1),plumber2_struc(n)%metdata2(4,index1)
      endif
 
      !! -- swdown (5)
@@ -205,9 +202,6 @@ subroutine timeinterp_plumber2(n,findex)
           (plumber2_struc(n)%metdata2(5,t).ne.plumber2_struc(n)%undef)) then
         swdown(t) = wt1 * plumber2_struc(n)%metdata1(5,index1) +                    &
              wt2 * plumber2_struc(n)%metdata2(5,index1)
-        write(LIS_logunit,*) '[DEBUG]...'
-        write(LIS_logunit,*) '[DEBUG] wt1: ',wt1,' wt2: ',wt2
-        write(LIS_logunit,*) '[DEBUG] : ',plumber2_struc(n)%metdata1(5,index1),plumber2_struc(n)%metdata2(5,index1)
      endif
      
      !! -- lwdown (6)
@@ -215,7 +209,6 @@ subroutine timeinterp_plumber2(n,findex)
           (plumber2_struc(n)%metdata2(6,t).ne.plumber2_struc(n)%undef)) then
         lwdown(t) = wt1 * plumber2_struc(n)%metdata1(6,index1) +                     &
              wt2 * plumber2_struc(n)%metdata2(6,index1)
-        !            write(LIS_logunit,*) plumber2_struc(n)%metdata1(6,index1),plumber2_struc(n)%metdata2(6,index1)
      endif
 
      !! -- wind u (7)
@@ -223,7 +216,6 @@ subroutine timeinterp_plumber2(n,findex)
           (plumber2_struc(n)%metdata2(7,t).ne.plumber2_struc(n)%undef)) then
         uwind(t) = wt1 * plumber2_struc(n)%metdata1(7,index1) +                     &
              wt2 * plumber2_struc(n)%metdata2(7,index1)
-        !            write(LIS_logunit,*) plumber2_struc(n)%metdata1(7,index1),plumber2_struc(n)%metdata2(7,index1)
      endif
 
      !! -- wind v (8)
@@ -231,7 +223,6 @@ subroutine timeinterp_plumber2(n,findex)
           (plumber2_struc(n)%metdata2(8,t).ne.plumber2_struc(n)%undef)) then
         vwind(t) = wt1 * plumber2_struc(n)%metdata1(8,index1) +                     &
              wt2 * plumber2_struc(n)%metdata2(8,index1)
-        !            write(LIS_logunit,*) plumber2_struc(n)%metdata1(8,index1),plumber2_struc(n)%metdata2(8,index1)
      endif
 
      !! -- lai (9)
