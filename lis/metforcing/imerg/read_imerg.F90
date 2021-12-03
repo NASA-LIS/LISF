@@ -24,6 +24,7 @@ subroutine read_imerg (n, kk, name_imerg, findex, order, ferror_imerg )
                          LIS_releaseUnitNumber
   use LIS_metforcingMod,only : LIS_forc
   use imerg_forcingMod, only : imerg_struc
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS:   
@@ -70,7 +71,7 @@ subroutine read_imerg (n, kk, name_imerg, findex, order, ferror_imerg )
   real :: realprecip(xd,yd)
   real :: testout(xd,yd)
   real, allocatable :: precip_regrid(:,:)                      ! Interpolated precip array
-  character(len=99) :: fname, zname                  ! Filename variables
+  character(len=LIS_CONST_PATH_LEN) :: fname ! Filename variables
   logical           :: file_exists
   integer           :: ftn
   integer           :: ireaderr
@@ -90,16 +91,16 @@ subroutine read_imerg (n, kk, name_imerg, findex, order, ferror_imerg )
  inquire(file=fname, EXIST=file_exists)
  if (file_exists) then
    if(LIS_masterproc) write(LIS_logunit,*) &
-        "[INFO] Reading HDF5 IMERG precipitation data from ", fname
+        "[INFO] Reading HDF5 IMERG precipitation data from ", trim(fname)
    call read_imerghdf(fname, xd, yd, realprecip, ireaderr)
    if (ireaderr .ne. 0) then
      if(LIS_masterproc) write(LIS_logunit,*) &
-        "[WARN] Error reading IMERG file ",fname
+        "[WARN] Error reading IMERG file ",trim(fname)
      ferror_imerg = 0
    endif
  else
    if(LIS_masterproc) write(LIS_logunit,*) &
-      "[WARN] Missing IMERG precipitation data:: ",fname
+      "[WARN] Missing IMERG precipitation data:: ",trim(fname)
    ferror_imerg = 0
  endif
 
@@ -143,7 +144,7 @@ subroutine read_imerghdf(filename, xsize, ysize, precipout, istatus)
   implicit none
 
 ! ARGUMENTS
-  character(len=99)    :: filename
+  character(len=*)    :: filename
   integer, intent(in)  :: xsize, ysize
 
   character(len=40) :: dsetname='/Grid/precipitationCal'

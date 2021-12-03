@@ -25,6 +25,7 @@ module snotel_forcingMod
 ! !REVISION HISTORY: 
 ! 08Jun2010: Yuqiong Liu:  Initial Specification
 ! 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -40,7 +41,7 @@ module snotel_forcingMod
 
   type, public ::  snotel_type_dec
      real           :: ts
-     character*100  :: snoteldir 
+     character(len=LIS_CONST_PATH_LEN) :: snoteldir 
      character*100  :: metadata 
      character*100  :: coorddata 
      real          :: undef

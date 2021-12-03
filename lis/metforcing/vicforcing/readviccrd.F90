@@ -87,7 +87,7 @@ subroutine readviccrd()
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) 'Using VIC formatted forcing'
-     write(LIS_logunit,*) 'VIC forcing directory :',vicforcing_struc(n)%vicdir
+     write(LIS_logunit,*) 'VIC forcing directory :',trim(vicforcing_struc(n)%vicdir)
   enddo
 
 end subroutine readviccrd

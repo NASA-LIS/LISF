@@ -19,6 +19,7 @@
 !  within LIS. 
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -36,7 +37,7 @@
   type, public ::  gefs_type_dec
 
     integer            :: max_ens_members
-    character*100      :: gefs_dir
+    character(len=LIS_CONST_PATH_LEN) :: gefs_dir
     character*20       :: gefs_fcsttype
     character*20       :: gefs_runmode
     character*20       :: gefs_proj

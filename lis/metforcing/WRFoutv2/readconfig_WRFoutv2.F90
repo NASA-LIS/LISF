@@ -44,7 +44,7 @@ subroutine readconfig_WRFoutv2()
   enddo
 
   do n=1,LIS_rc%nnest
-     write(unit=LIS_logunit,fmt=*) '[INFO] WRF output v2 forcing directory :',WRFoutv2_struc(n)%WRFoutv2dir
+     write(unit=LIS_logunit,fmt=*) '[INFO] WRF output v2 forcing directory :',trim(WRFoutv2_struc(n)%WRFoutv2dir)
 
      WRFoutv2_struc(n)%WRFouttime1 = 3000.0
      WRFoutv2_struc(n)%WRFouttime2 = 0.0

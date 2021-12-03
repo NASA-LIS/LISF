@@ -32,8 +32,8 @@
    integer, intent(in)        :: n 
    integer, intent(in)        :: kk
    integer, intent(in)        :: findex
-   character*100, intent(out) :: filename
-   character*40, intent(in)   :: nldas2dir
+   character(len=*), intent(out) :: filename
+   character(len=*), intent(in)   :: nldas2dir
    integer, intent(in)        :: yr,mo,da,hr
 
 ! !DESCRIPTION:
@@ -58,68 +58,34 @@
 !
 !EOP
 
-   integer                  :: i, c
-   character*1              :: fbase(40),fsubs(17)
-   character*1              :: ftime(10),fdir(15)
-   character*100            :: temp
+   character(len=13) :: fdir
+   character(len=17), parameter :: fsubs = '.nldasforce-a.grb'
+   character(len=10) :: ftime
 
    !=== end variable definition =============================================
 
    !=== put together filename
 
-  if(LIS_rc%forecastMode.eq.0) then !hindcast run
+   if(LIS_rc%forecastMode.eq.0) then !hindcast run
 
-     write(UNIT=temp,fmt='(a1,i4,a1,i4,i2,i2,a1)')'/',yr,'/',yr,mo,da,'/'
-     read(UNIT=temp,fmt='(15a1)') fdir
-     do i=1,15
-        if(fdir(i).eq.(' ')) fdir(i) = '0'
-     enddo
-     write(UNIT=temp,fmt='(i4,i2,i2,i2)') yr,mo,da,hr
-     read(UNIT=temp,fmt='(10a1)')ftime
-     do i=1,10
-        if(ftime(i).eq.(' ')) ftime(i) = '0'
-     enddo
-     write(UNIT=temp,fmt='(a17)')'.nldasforce-a.grb'
-     read(UNIT=temp,fmt='(17a1)') fsubs
-     write(UNIT=temp,fmt='(a40)') nldas2dir                       
-     read(UNIT=temp,fmt='(40a1)') fbase
-     c=0
-     do i=1,40
-        if(fbase(i).eq.(' ').and.c.eq.0)c=i-1
-     enddo
-     write(UNIT=temp,fmt='(100a1)')(fbase(i),i=1,c), (fdir(i),i=1,15), & 
-          (ftime(i),i=1,10),(fsubs(i),i=1,17 ) 
-     read(UNIT=temp,fmt='(a100)') filename
+      write(UNIT=fdir,fmt='(i4,a1,i4,i2.2,i2.2)') yr, '/', yr, mo, da
+
+      write(UNIT=ftime,fmt='(i4,i2.2,i2.2,i2.2)') yr, mo, da, hr
 
    else !forecast mode
      !sample yr, mo, da
 
-     call LIS_sample_forecastDate(n, kk, findex, yr, mo, da)
-
-     write(UNIT=temp,fmt='(a1,i4,a1,i4,i2,i2,a1)')'/',yr,'/',yr,mo,da,'/'
-     read(UNIT=temp,fmt='(15a1)') fdir
-     do i=1,15
-        if(fdir(i).eq.(' ')) fdir(i) = '0'
-     enddo
-     write(UNIT=temp,fmt='(i4,i2,i2,i2)') yr,mo,da,hr
-     read(UNIT=temp,fmt='(10a1)')ftime
-     do i=1,10
-        if(ftime(i).eq.(' ')) ftime(i) = '0'
-     enddo
-     write(UNIT=temp,fmt='(a17)')'.nldasforce-a.grb'
-     read(UNIT=temp,fmt='(17a1)') fsubs
-     write(UNIT=temp,fmt='(a40)') nldas2dir
-     read(UNIT=temp,fmt='(40a1)') fbase
-     c=0
-     do i=1,40
-        if(fbase(i).eq.(' ').and.c.eq.0)c=i-1
-     enddo
-     write(UNIT=temp,fmt='(100a1)')(fbase(i),i=1,c), (fdir(i),i=1,15), &
-          (ftime(i),i=1,10),(fsubs(i),i=1,17 )
-     read(UNIT=temp,fmt='(a100)') filename
-
-  endif
- end subroutine ncep_nldas2filea
+      call LIS_sample_forecastDate(n, kk, findex, yr, mo, da)
+      
+      write(UNIT=fdir,fmt='(i4,a1,i4,i2.2,i2.2)') yr, '/', yr, mo, da
+      
+      write(UNIT=ftime,fmt='(i4,i2.2,i2.2,i2.2)') yr, mo, da, hr
+      
+   endif
+   
+   filename = trim(nldas2dir) // '/' // fdir // '/' // ftime // fsubs
+  
+end subroutine ncep_nldas2filea
 
 
 !BOP
@@ -147,8 +113,8 @@
    integer, intent(in)        :: n
    integer, intent(in)        :: kk
    integer, intent(in)        :: findex
-   character*100, intent(out) :: filename
-   character*40, intent(in)   :: nldas2dir
+   character(len=*), intent(out) :: filename
+   character(len=*), intent(in)   :: nldas2dir
    integer, intent(in)        :: yr,mo,da,hr
 !
 ! !DESCRIPTION:
@@ -173,67 +139,32 @@
 !
 !EOP
 
-   integer                  :: i, c
-   character*1              :: fbase(40),fsubs(17)
-   character*1              :: ftime(10),fdir(15)
-   character*100            :: temp
+   character(len=13) :: fdir
+   character(len=17), parameter :: fsubs = '.nldasforce-b.grb'
+   character(len=10) :: ftime
 
    !=== end variable definition =============================================
 
    !=== put together filename
 
-  if(LIS_rc%forecastMode.eq.0) then !hindcast run
+   if(LIS_rc%forecastMode.eq.0) then !hindcast run
 
-     write(UNIT=temp,fmt='(a1,i4,a1,i4,i2,i2,a1)')'/',yr,'/',yr,mo,da,'/'
-     read(UNIT=temp,fmt='(15a1)') fdir
-     do i=1,15
-        if(fdir(i).eq.(' ')) fdir(i) = '0'
-     enddo
-     write(UNIT=temp,fmt='(i4,i2,i2,i2)') yr,mo,da,hr
-     read(UNIT=temp,fmt='(10a1)')ftime
-     do i=1,10
-        if(ftime(i).eq.(' ')) ftime(i) = '0'
-     enddo
-     write(UNIT=temp,fmt='(a17)')'.nldasforce-b.grb'
-     read(UNIT=temp,fmt='(17a1)') fsubs
-     write(UNIT=temp,fmt='(a40)') nldas2dir                       
-     read(UNIT=temp,fmt='(40a1)') fbase
-     c=0
-     do i=1,40
-        if(fbase(i).eq.(' ').and.c.eq.0)c=i-1
-     enddo
-     write(UNIT=temp,fmt='(100a1)')(fbase(i),i=1,c), (fdir(i),i=1,15), & 
-          (ftime(i),i=1,10),(fsubs(i),i=1,17 ) 
-     read(UNIT=temp,fmt='(a100)') filename
-
+      write(UNIT=fdir,fmt='(i4,a1,i4,i2.2,i2.2)') yr, '/', yr, mo, da
+      
+      write(UNIT=ftime,fmt='(i4,i2.2,i2.2,i2.2)') yr, mo, da, hr
+      
    else !forecast mode
      !sample yr, mo, da
 
-     call LIS_sample_forecastDate(n, kk, findex, yr, mo, da)
+      call LIS_sample_forecastDate(n, kk, findex, yr, mo, da)
 
-    write(UNIT=temp,fmt='(a1,i4,a1,i4,i2,i2,a1)')'/',yr,'/',yr,mo,da,'/'
-     read(UNIT=temp,fmt='(15a1)') fdir
-     do i=1,15
-        if(fdir(i).eq.(' ')) fdir(i) = '0'
-     enddo
-     write(UNIT=temp,fmt='(i4,i2,i2,i2)') yr,mo,da,hr
-     read(UNIT=temp,fmt='(10a1)')ftime
-     do i=1,10
-        if(ftime(i).eq.(' ')) ftime(i) = '0'
-     enddo
-     write(UNIT=temp,fmt='(a17)')'.nldasforce-b.grb'
-     read(UNIT=temp,fmt='(17a1)') fsubs
-     write(UNIT=temp,fmt='(a40)') nldas2dir
-     read(UNIT=temp,fmt='(40a1)') fbase
-     c=0
-     do i=1,40
-        if(fbase(i).eq.(' ').and.c.eq.0)c=i-1
-     enddo
-     write(UNIT=temp,fmt='(100a1)')(fbase(i),i=1,c), (fdir(i),i=1,15), &
-          (ftime(i),i=1,10),(fsubs(i),i=1,17 )
-     read(UNIT=temp,fmt='(a100)') filename
+      write(UNIT=fdir,fmt='(i4,a1,i4,i2.2,i2.2)') yr, '/', yr, mo, da
+     
+      write(UNIT=ftime,fmt='(i4,i2.2,i2.2,i2.2)') yr, mo, da, hr
 
-  endif
+   endif
 
- end subroutine ncep_nldas2fileb
+   filename = trim(nldas2dir) // '/' // fdir // '/' // ftime // fsubs
+   
+end subroutine ncep_nldas2fileb
 
