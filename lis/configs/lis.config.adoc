@@ -346,6 +346,7 @@ endif::devonly[]
 |"`GDAS T1534`"                | NCEP-specific GDAS T1534 forcing data
 |"`ERA5`"                      | ERA5 reanalysis meteorology
 |"`AWRAL processed forcing`"   | AWRA-L processed forcing
+|"`PLUMBER2`"                  | PLUMBER2 forcing
 |====
 
 .Example _lis.config_ entry
@@ -6263,6 +6264,22 @@ MRMS mask directory: ./input/MASKS/
 AWRAL forcing directory:               ./INPUT/AWRAL.FORCING
 AWRAL domain x-dimension size:         841
 AWRAL domain y-dimension size:         681
+....
+
+[[sssec_plumber2forcing,PLUMBER2]]
+==== PLUMBER2
+
+`PLUMBER2 forcing file:` specifies the location of the PLUMBER2 forcing file.
+
+`PLUMBER2 Station ID:` specifies the station ID of the PLUMBER2 forcing file.
+
+`PLUMBER2 Time Delta:` specifies the PLUMBER2 site-specific forcing time step (in seconds).
+
+.Example _lis.config_ entry
+....
+PLUMBER2 forcing file: ./input/PLUMBER2/AU-Cow_2010-2015_OzFlux_Met.nc          
+PLUMBER2 Station ID: AU-Cow                                                      
+PLUMBER2 Time Delta: 1800  
 ....
 
 [[ssec_lsm,Land surface models]]
