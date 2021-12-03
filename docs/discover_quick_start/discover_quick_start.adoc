@@ -1,7 +1,7 @@
 = LISF on NCCS Discover: Quick Start Guide
 Brendan McAndrew
-:revnumber: 0.1
-:revdate: 2021-11-11
+:revnumber: 0.2
+:revdate: 2021-12-03
 :toc: macro
 :toclevels: 1
 :source-highlighter: highlightjs
@@ -18,7 +18,7 @@ Brendan McAndrew
 :public-support-branch: support/lisf-public-7.3
 // module attributes
 :modulefile-dir: privatemodules
-:intel-modulefile: lisf_7_intel_19_1_3_304
+:intel-modulefile: lisf_7_intel_2021.4.0
 
 [.normal]
 This document exists to help new LIS team members and collaborators get up and running on NASA's link:https://www.nccs.nasa.gov/systems/discover[Discover] high-performance computing system. For general information about using Discover, review the link:https://www.nccs.nasa.gov/nccs-users/[user information pages] and link:https://www.nccs.nasa.gov/nccs-users/instructional/instructional-videos[instructional videos] available on NCCS' website. For more detailed information on LISF, see our link:{url-lisf-docs}[official documentation].
