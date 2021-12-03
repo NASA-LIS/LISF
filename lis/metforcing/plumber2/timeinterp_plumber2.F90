@@ -136,9 +136,9 @@ subroutine timeinterp_plumber2(n,findex)
 ! call ESMF_FieldGet(laiField,localDE=0,farrayPtr=lai,rc=status)
 ! call LIS_verify(status)
 
-  write(LIS_logunit,*) 'Ptime1: ',plumber2_struc(n)%plumber2time1
-  write(LIS_logunit,*) 'Ptime2: ',plumber2_struc(n)%plumber2time2
-  write(LIS_logunit,*) 'realtime: ',LIS_rc%time
+  !write(LIS_logunit,*) 'Ptime1: ',plumber2_struc(n)%plumber2time1
+  !write(LIS_logunit,*) 'Ptime2: ',plumber2_struc(n)%plumber2time2
+  !write(LIS_logunit,*) 'realtime: ',LIS_rc%time
   wt1 = (plumber2_struc(n)%plumber2time2-LIS_rc%time) /        &
         (plumber2_struc(n)%plumber2time2-                      &
          plumber2_struc(n)%plumber2time1)
