@@ -87,8 +87,8 @@ subroutine get_plumber2(n,findex)
      ts1 = plumber2_struc(n)%ts
 
      call LIS_tick(plumber2_struc(n)%ringtime,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
-     write(LIS_logunit,*) '[DIAGM] plumber2_struc ringtime: ',&
-            plumber2_struc(n)%ringtime
+     !write(LIS_logunit,*) '[DIAGM] plumber2_struc ringtime: ',&
+     !       plumber2_struc(n)%ringtime
   endif
 
   ! Current time:
@@ -101,7 +101,7 @@ subroutine get_plumber2(n,findex)
 
   call LIS_tick(timenow,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,0.0)
 
-  write(LIS_logunit,*) '[DIAGM] timenow: ',timenow
+  !write(LIS_logunit,*) '[DIAGM] timenow: ',timenow
   
   !! If current time >= time for when to move bookend, move bookend 2 to
   !! bookend 1
