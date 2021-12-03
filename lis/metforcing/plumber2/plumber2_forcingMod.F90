@@ -26,6 +26,8 @@ module plumber2_forcingMod
 ! !REVISION HISTORY: 
 ! 15 Sep 2021: Mark Beauharnois, Derived from Bondville and GSWP2 readers
 ! 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -42,7 +44,7 @@ module plumber2_forcingMod
   type, public :: plumber2_type_dec
 
      real                     :: ts
-     character*256            :: plumber2file
+     character(len=LIS_CONST_PATH_LEN) :: plumber2file
      real                     :: undef
      real*8                   :: starttime,plumber2time1,plumber2time2
      integer                  :: sYear, sMon, sDay, sHour, sMin, sSec
