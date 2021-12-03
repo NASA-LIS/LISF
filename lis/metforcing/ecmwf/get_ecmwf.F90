@@ -23,6 +23,7 @@ subroutine get_ecmwf(n,findex)
   use LIS_logMod,         only : LIS_logunit
   use LIS_timeMgrMod,     only : LIS_get_nstep, LIS_tick
   use ecmwf_forcingMod,   only : ecmwf_struc
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -62,7 +63,7 @@ subroutine get_ecmwf(n,findex)
   integer :: yr1,mo1,da1,hr1,mn1,ss1,doy1
   integer :: yr2,mo2,da2,hr2,mn2,ss2,doy2
   real*8  :: time1,time2,dumbtime1,dumbtime2
-  character*200 :: avgfilename1, instfilename, avgfilename2
+  character(len=LIS_CONST_PATH_LEN) :: avgfilename1, instfilename, avgfilename2
   real    :: gmt1,gmt2,ts1,ts2
   integer :: movetime      ! 1=move time 2 data into time 1
   integer :: nforce  ! # forcing variables
@@ -259,6 +260,7 @@ subroutine create_ecmwf_filename(dir,avgfilename1, avgfilename2, instfilename,&
      yr,mo,da,hr)
 ! !USES: 
   use LIS_timeMgrMod, only : LIS_tick
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -279,7 +281,8 @@ subroutine create_ecmwf_filename(dir,avgfilename1, avgfilename2, instfilename,&
   real*8 :: itime
   real :: igmt
   integer :: iyr,imo,ida,ihr,imn,iss,ts,idoy
-  character(200) :: filename, file1, file2
+  character(len=LIS_CONST_PATH_LEN) :: filename
+  character(200)                    :: file1, file2
 
 
   !instantaneous files 

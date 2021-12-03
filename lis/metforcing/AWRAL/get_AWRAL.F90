@@ -62,7 +62,6 @@ subroutine get_AWRAL(n, findex)
     real*8  :: timenext
     real*8  :: AWRAL_file_timep       ! End boundary time for STAGEIV file
     real*8  :: AWRAL_file_timec       ! End boundary time for STAGEIV file
-    character(80) :: file_name       ! Filename variables for precip data sources
 
     integer :: doyp, yrp, mop, dap, hrp, mnp, ssp
     integer :: doyc, yrc, moc, dac, hrc, mnc, ssc

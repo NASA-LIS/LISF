@@ -25,6 +25,7 @@ subroutine read_agrradps(n,m,order,yr,mo,da,hr)
   use LIS_logMod,          only : LIS_logunit, LIS_verify
   use LIS_FORC_AttributesMod 
   use LIS_metforcingMod,  only : LIS_FORC_Base_State
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -63,8 +64,7 @@ subroutine read_agrradps(n,m,order,yr,mo,da,hr)
 !  \end{description}
 !EOP
 
-  character*100            :: agrradpsfileNH
-  character*100            :: agrradpsfileSH
+  character(len=LIS_CONST_PATH_LEN) :: agrradpsfileNH,  agrradpsfileSH
   logical                  :: exists1,exists2,exists3,exists4
   integer                  :: c,r
   integer                  :: t

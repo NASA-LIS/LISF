@@ -43,7 +43,7 @@ subroutine readcrd_stg2()
        call ESMF_ConfigGetAttribute(LIS_config, stg2_struc(n)%stg2dir,rc=rc)
 
        write(LIS_logunit,*) 'Using STAGEII forcing'
-       write(LIS_logunit,*) 'STAGEII forcing directory :', stg2_struc(n)%STG2DIR
+       write(LIS_logunit,*) 'STAGEII forcing directory :', trim(stg2_struc(n)%STG2DIR)
 
     !- Setting observed precip times to zero to ensure data is read in
     !   at first time step

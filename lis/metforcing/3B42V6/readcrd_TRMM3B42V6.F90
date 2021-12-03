@@ -43,7 +43,7 @@ subroutine readcrd_TRMM3B42V6()
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*)'Using TRMM 3B42V6 forcing'
-     write(LIS_logunit,*) 'TRMM 3B42V6 forcing directory :',TRMM3B42V6_struc(n)%TRMM3B42V6DIR
+     write(LIS_logunit,*) 'TRMM 3B42V6 forcing directory :',trim(TRMM3B42V6_struc(n)%TRMM3B42V6DIR)
 !------------------------------------------------------------------------
 ! Setting global observed precip times to zero to ensure
 ! data is read in during first time step
