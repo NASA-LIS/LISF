@@ -1084,9 +1084,9 @@ AGRMET data area of data:             GLOBAL
 
 `ALEXI data directory:` specifies the location of the ALEXI ET data.
 
-`ALEXI data domain extent:` specifies the domain extent of the ALEXI data. Acceptable values are `"CONUS"` and `"GLOBAL"`.
+`ALEXI data domain extent:` specifies the domain extent of the ALEXI data. Acceptable values are "`CONUS`" and "`GLOBAL`".
 
-`ALEXI data resolution (in km):` specifies the resolution of the ALEXI ET data in km. Acceptable values are 4 or 10 (for `"CONUS"`) or 5 (for `"GLOBAL"`).
+`ALEXI data resolution (in km):` specifies the resolution of the ALEXI ET data in km. Acceptable values are 4 or 10 (for "`CONUS`") or 5 (for "`GLOBAL`").
 
 .Example _lvt.config_ entry
 ....
