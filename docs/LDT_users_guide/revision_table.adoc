@@ -2,6 +2,7 @@
 |====
 | Revision | Summary of Changes             | Date
 
+| 1.16     | LISF Public 7.3.2 release      | Dec 06, 2021
 | 1.13     | LISF Public 7.3.1 release      | Mar 31, 2021
 | 1.10     | LISF Public 7.3.0 release      | Dec 21, 2020
 | 1.9      | LDT 557WW 7.3.0 release        | Aug 24, 2020
