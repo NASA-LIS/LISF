@@ -170,6 +170,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_AWRALforcId       = "AWRAL processed forcing"
    character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
    character*50, public,  parameter :: LIS_era5Id            = "ERA5"
+   character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------

@@ -240,6 +240,10 @@ subroutine LIS_metforcing_plugin
    use Bondville_forcingMod
 #endif
 
+#if ( defined MF_PLUMBER2)
+   use plumber2_forcingMod
+#endif
+
 #if ( defined MF_LOOBOS )
    use Loobos_forcingMod
 #endif
@@ -524,6 +528,14 @@ subroutine LIS_metforcing_plugin
    external timeinterp_Bondville
    external finalize_Bondville
 #endif
+
+#if ( defined MF_PLUMBER2)
+   external get_plumber2
+   external timeinterp_plumber2
+   external finalize_plumber2
+   external reset_plumber2
+#endif
+
 
 #if ( defined MF_LOOBOS )
    external get_Loobos
@@ -960,6 +972,15 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_scan)
    call registerfinalmetforc(trim(LIS_scanId)//char(0),finalize_scan)
 #endif
+
+#if (defined MF_PLUMBER2)
+   call registerinitmetforc(trim(LIS_plumber2Id)//char(0),init_plumber2)
+   call registerretrievemetforc(trim(LIS_plumber2Id)//char(0),get_plumber2)
+   call registertimeinterpmetforc(trim(LIS_plumber2Id)//char(0),timeinterp_plumber2)
+   call registerresetmetforc(trim(LIS_plumber2Id)//char(0),reset_plumber2)
+   call registerfinalmetforc(trim(LIS_plumber2Id)//char(0),finalize_plumber2)
+#endif
+
 
 #if ( defined MF_BONDVILLE )
 ! - Noah3.1 Bondville test case
