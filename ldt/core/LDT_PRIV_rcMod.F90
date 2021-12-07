@@ -359,6 +359,16 @@ module LDT_PRIV_rcMod
      real                   :: group_cdfs_max
      integer                :: group_cdfs_nbins
 
+     integer                :: strat_cdfs
+     character*50           :: strat_src
+     character*50           :: strat_file
+     !character*50           :: strat_cdfs_attrib_file
+     integer                :: strat_cdfs_nbins
+     real                   :: strat_cdfs_min
+     real                   :: strat_cdfs_max
+     integer, allocatable   :: stratification_data(:)
+
+
      integer                :: sp_sampl_cdfs
      integer                :: sp_sample_cdf_rad
 

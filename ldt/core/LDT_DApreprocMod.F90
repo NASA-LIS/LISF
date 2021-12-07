@@ -59,7 +59,7 @@ contains
     character*50         :: preprocMethod
     real                 :: delta
     real, allocatable    :: cdf_strat_data(:,:)
-
+    real, allocatable    :: stratification_data(:,:)
     n = 1
     call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%obs_src,&
          label="DA observation source:",rc=rc)
@@ -165,6 +165,59 @@ contains
           call LDT_releaseUnitNumber(ftn)
           write(LDT_logunit,*) '[INFO] Finished reading ',&
                trim(LDT_rc%group_cdfs_strat_file)
+       endif
+
+!This part reads the dynamic range of precipitation and generates
+!  stratification input data based on total precipitation.
+
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%strat_cdfs,&
+            label="Stratify CDFs by external data:",default=0, rc=rc)
+       call LDT_verify(rc,"Stratify CDFs by external data: not defined")
+       if(LDT_rc%strat_cdfs.gt.0) then
+          call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%strat_src,&
+               label="Stratification data source:", rc=rc)
+          call LDT_verify(rc,"Stratification data source: not defined")
+
+          call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%strat_cdfs_nbins,&
+               label="Number of bins to use for stratification:",rc=rc)
+          call LDT_verify(rc,"Number of bins to use for stratification: not defined")
+
+          call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%strat_file,&
+               label="External stratification file:",rc=rc)
+          call LDT_verify(rc,"External stratification file: not defined")
+          
+          !if(LDT_rc%strat_cdfs.gt.0) then
+          allocate(LDT_rc%stratification_data(LDT_rc%ngrid(n)))
+          allocate(stratification_data(LDT_rc%ngrid(n),2))
+
+          call read_Drange(LDT_rc%ngrid(n), LDT_rc%strat_file, "TotalPrecip", stratification_data) !LDT_rc%strat_cdfs_nbins, LDT_rc%ngrid(n), &
+                   
+          LDT_rc%strat_cdfs_min = minval(stratification_data(:,1)) ! min value over the entire domain  
+          LDT_rc%strat_cdfs_max = maxval(stratification_data(:,2)) ! max value over the entire domain 
+          delta = (LDT_rc%strat_cdfs_max-LDT_rc%strat_cdfs_min)/&
+               LDT_rc%strat_cdfs_nbins               
+          print*, 'min,man,delta', LDT_rc%strat_cdfs_min, LDT_rc%strat_cdfs_max, delta
+          do r=1,LDT_rc%lnr(n)
+             do c=1,LDT_rc%lnc(n)
+                if(LDT_domain(n)%gindex(c,r).ne.-1) then
+                   LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r)) = &
+                        nint((stratification_data(LDT_domain(n)%gindex(c,r),2) - LDT_rc%strat_cdfs_min)/&
+                        delta)+1
+                endif
+             enddo
+          enddo
+
+          !if(LDT_rc%strat_cdfs.gt.0) then
+          !   call ESMF_ConfigGetAttribute(LDT_config,&
+          !        LDT_rc%strat_cdfs_attrib_file,&
+          !        label="CDF Stratification attributes file:",rc=rc)
+          !   call LDT_verify(rc,'CDF Stratification attributes file: not defined')
+
+          !   ftn = LDT_getNextUnitNumber()
+          !   open(ftn,file=LDT_rc%strat_cdfs_attrib_file, status='old')
+          !   read(ftn,*)
+          !   read(ftn,*) LDT_rc%strat_cdfs_nbins
+          !   call LDT_releaseUnitNumber(ftn)
        endif
     endif
     

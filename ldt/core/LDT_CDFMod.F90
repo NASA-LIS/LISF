@@ -221,7 +221,7 @@ contains
 
     if(LDT_rc%endtime.eq.1) then 
        if(obs%selectOpt.eq.1.and.metrics%selectOpt.eq.1) then 
-          if(LDT_rc%group_cdfs.eq.0) then 
+          if(LDT_rc%group_cdfs.eq.0 .and. LDT_rc%strat_cdfs.eq.0) then 
              do t=1,LDT_rc%ngrid(n)
                 do j=1,LDT_rc%cdf_ntimes
                    do k=1,obs%vlevels
@@ -237,7 +237,7 @@ contains
                    enddo
                 enddo
              enddo
-          elseif(LDT_rc%group_cdfs.eq.1) then 
+          elseif(LDT_rc%group_cdfs.eq.1 .and. LDT_rc%strat_cdfs.eq.0) then 
 
              allocate(strat_bincounts(LDT_rc%group_cdfs_nbins, &
                   LDT_rc%cdf_ntimes, &
@@ -295,6 +295,91 @@ contains
 !                endif
              enddo
              
+             deallocate(strat_bincounts)
+             deallocate(strat_cdf)
+
+!MN: Startification based on total precipitation 
+!    min and max of total precipitation for each pixel are stored in LDT_rc%stratification_data
+
+          elseif(LDT_rc%group_cdfs.eq.0 .and. LDT_rc%strat_cdfs.eq.1 ) then
+
+             !allocate(cdf_strat_precip_data(LDT_rc%lnc(n),LDT_rc%lnr(n)))
+             !allocate(LDT_rc%cdf_strat_precip_data(LDT_rc%ngrid(n)))
+
+             !LDT_rc%strat_cdfs_min = 0 ! MINVAL(LDT_DAobsDataPtr(n,LDT_rc%DA_MOC_index_number)%dataEntryPtr) 
+             !metrics_precip = LDT_DAmetricsPtr(LDT_rc%DA_MOC_index_number)%dataEntryPtr
+             !LDT_rc%strat_cdfs_max = MAXVAL(metrics_precip%maxval) ! metrics%maxval(t,j,k) --> (grid,cdf_ntimes(1,12), obs%vlevels)
+             !cdf_strat_precip_data = MAXVAL(metrics_precip%maxval,1)
+            !delta = (LDT_rc%strat_cdfs_max-LDT_rc%strat_cdfs_min)/&
+            !         LDT_rc%strat_cdfs_nbins
+
+            !do r=1,LDT_rc%lnr(n)
+            !   do c=1,LDT_rc%lnc(n)
+            !      if(LDT_domain(n)%gindex(c,r).ne.-1) then
+
+            !         LDT_rc%cdf_strat_precip_data(LDT_domain(n)%gindex(c,r)) = &
+            !              nint((cdf_strat_precip_data(LDT_domain(n)%gindex(c,r),1) - LDT_rc%strat_cdfs_min)/&
+            !              delta)+1
+            !      endif
+            !   enddo
+            !enddo
+
+             allocate(strat_bincounts(LDT_rc%strat_cdfs_nbins, &
+                  LDT_rc%cdf_ntimes, &
+                  obs%vlevels,&
+                  LDT_rc%cdf_nbins))
+             allocate(strat_cdf(LDT_rc%strat_cdfs_nbins, &
+                  LDT_rc%cdf_ntimes, &
+                  obs%vlevels,&
+                  LDT_rc%cdf_nbins))
+
+             strat_bincounts = 0
+             strat_cdf = 0
+
+             do t=1,LDT_rc%ngrid(n)
+                do j=1,LDT_rc%cdf_ntimes
+                   do k=1,obs%vlevels
+                      do i=1,LDT_rc%cdf_nbins
+                         sindex = LDT_rc%stratification_data(t)
+                         strat_bincounts(sindex,j,k,i) = &
+                              strat_bincounts(sindex,j,k,i) + &
+                              metrics%cdf_bincounts(t,j,k,i)
+
+                      enddo
+                   enddo
+                enddo
+             enddo
+
+             do t=1,LDT_rc%strat_cdfs_nbins
+                do j=1,LDT_rc%cdf_ntimes
+                   do k=1,obs%vlevels
+                      if(sum(strat_bincounts(t,j,k,:)).ne.0) then
+                         strat_cdf(t,j,k,1) = &
+                              strat_bincounts(t,j,k,1)/&  ! strat_cdf(t,j,k,1)/&
+                              float(sum(strat_bincounts(t,j,k,:)))
+                         do i=2,LDT_rc%cdf_nbins
+                            strat_cdf(t,j,k,i) = strat_cdf(t,j,k,i-1) + &
+                                 strat_bincounts(t,j,k,i)/&
+                                 float(sum(strat_bincounts(t,j,k,:)))
+                         enddo
+                      endif
+                   enddo
+                enddo
+             enddo
+
+             do t=1,LDT_rc%ngrid(n)
+!                if(datamask(t).gt.0) then 
+                do j=1,LDT_rc%cdf_ntimes
+                   do k=1,obs%vlevels
+                      do i=1,LDT_rc%cdf_nbins
+                         sindex = LDT_rc%stratification_data(t)
+                         metrics%cdf(t,j,k,i) = strat_cdf(sindex,j,k,i)
+                      enddo
+                   enddo
+                enddo
+!                endif
+             enddo
+
              deallocate(strat_bincounts)
              deallocate(strat_cdf)
 
