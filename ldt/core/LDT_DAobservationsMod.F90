@@ -18,6 +18,7 @@ module LDT_DAobservationsMod
 !
 ! !REVISION HISTORY: 
 !  02 Oct 2008    Sujay Kumar  Initial Specification
+!  2 Dec 2021:   Mahdi Navari; modified to compute CDF for precipitation
 ! 
 ! !USES:       
 

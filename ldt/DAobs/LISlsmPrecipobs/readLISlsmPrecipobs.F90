@@ -14,6 +14,8 @@
 ! \label{readLISlsmPrecipobs}
 !
 ! !INTERFACE: 
+! !REVISION HISTORY: 
+! 2Dec2021: Mahdi Navari ; Initial Specification (based on readLISlsmSM)
 subroutine readLISlsmPrecipobs(n)
 ! !USES:
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
