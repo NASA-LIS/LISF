@@ -16,6 +16,7 @@ module LDT_DApreprocMod
 ! 
 ! !REVISION HISTORY: 
 !  24 Nov 2008    Sujay Kumar  Initial Specification
+!  2 Dec 2021:   Mahdi Navari; modified to stratify CDF based on precipitation
 ! 
   use ESMF
 

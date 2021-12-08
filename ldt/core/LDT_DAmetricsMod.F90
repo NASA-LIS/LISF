@@ -18,6 +18,7 @@ module LDT_DAmetricsMod
 !
 ! !REVISION HISTORY:
 !  02 Oct 2008: Sujay Kumar; Initial version
+!  2 Dec 2021:   Mahdi Navari; modified to compute CDF for precipitation
 !
   use ESMF
   use LDT_DAmetricsDataMod

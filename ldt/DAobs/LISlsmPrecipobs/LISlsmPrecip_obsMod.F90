@@ -20,7 +20,7 @@ module LISlsmPrecip_obsMod
 !  (CDF) for use in DA
 ! 
 ! !REVISION HISTORY: 
-!  16 Nov 2021    Mahdi Navari  Initial Specification
+!  16 Nov 2021    Mahdi Navari  Initial Specification (based on LISlsmSM_obsMod)
 !
 
   PRIVATE

@@ -17,6 +17,7 @@ module LDT_CDFMod
 !
 !  !REVISION HISTORY: 
 !  2 Oct 2008    Sujay Kumar  Initial Specification
+!  2 Dec 2021:   Mahdi Navari; modified to stratify CDF based on precipitation
 !
 !EOP
   use LDT_DAobsDataMod
@@ -302,27 +303,6 @@ contains
 !    min and max of total precipitation for each pixel are stored in LDT_rc%stratification_data
 
           elseif(LDT_rc%group_cdfs.eq.0 .and. LDT_rc%strat_cdfs.eq.1 ) then
-
-             !allocate(cdf_strat_precip_data(LDT_rc%lnc(n),LDT_rc%lnr(n)))
-             !allocate(LDT_rc%cdf_strat_precip_data(LDT_rc%ngrid(n)))
-
-             !LDT_rc%strat_cdfs_min = 0 ! MINVAL(LDT_DAobsDataPtr(n,LDT_rc%DA_MOC_index_number)%dataEntryPtr) 
-             !metrics_precip = LDT_DAmetricsPtr(LDT_rc%DA_MOC_index_number)%dataEntryPtr
-             !LDT_rc%strat_cdfs_max = MAXVAL(metrics_precip%maxval) ! metrics%maxval(t,j,k) --> (grid,cdf_ntimes(1,12), obs%vlevels)
-             !cdf_strat_precip_data = MAXVAL(metrics_precip%maxval,1)
-            !delta = (LDT_rc%strat_cdfs_max-LDT_rc%strat_cdfs_min)/&
-            !         LDT_rc%strat_cdfs_nbins
-
-            !do r=1,LDT_rc%lnr(n)
-            !   do c=1,LDT_rc%lnc(n)
-            !      if(LDT_domain(n)%gindex(c,r).ne.-1) then
-
-            !         LDT_rc%cdf_strat_precip_data(LDT_domain(n)%gindex(c,r)) = &
-            !              nint((cdf_strat_precip_data(LDT_domain(n)%gindex(c,r),1) - LDT_rc%strat_cdfs_min)/&
-            !              delta)+1
-            !      endif
-            !   enddo
-            !enddo
 
              allocate(strat_bincounts(LDT_rc%strat_cdfs_nbins, &
                   LDT_rc%cdf_ntimes, &
