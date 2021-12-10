@@ -54,7 +54,7 @@ subroutine read_COAMPSout(n, findex, order, fname, ferror)
 !  \end{description}
 !EOP
   integer                 :: c,r,gindex
-  integer                 :: ftn
+  integer                 :: ftn, ios
   logical                 :: file_exists, rainc_exists
   integer                 :: t2Id, q2Id, swdownId, glwId
   integer                 :: u10Id, v10Id, psfcId, rainncId
@@ -95,15 +95,25 @@ subroutine read_COAMPSout(n, findex, order, fname, ferror)
      call LIS_verify(nf90_get_att(ftn,q2Id,"add_offset",q2offset),&
           'nf90_get_att failed for nf90_get_att')
 
-     call LIS_verify(nf90_inq_varid(ftn,'sw_rad_down',swdownId),&
-          'nf90_inq_varid failed for sw_rad_down in read_COAMPSout')
+     !call LIS_verify(nf90_inq_varid(ftn,'sw_rad_down',swdownId),&
+     !     'nf90_inq_varid failed for sw_rad_down in read_COAMPSout')
+     ios = nf90_inq_varid(ftn,'sw_rad_down',swdownId)
+     if ( ios /= 0) then
+         ios = nf90_inq_varid(ftn,'sw_flux_dn',swdownId)
+     endif
+     call LIS_verify(ios,'nf90_inq_varid failed for sw_rad_down or sw_flux_dn in read_COAMPSout') 
      call LIS_verify(nf90_get_att(ftn,swdownId,"scale_factor",swdscal),&
           'nf90_get_att failed for nf90_get_att')
      call LIS_verify(nf90_get_att(ftn,swdownId,"add_offset",swdoffset),&
           'nf90_get_att failed for nf90_get_att')
 
-     call LIS_verify(nf90_inq_varid(ftn,'lw_rad_down',glwId),&
-          'nf90_inq_varid failed for lw_rad_down in read_COAMPSout')
+     !call LIS_verify(nf90_inq_varid(ftn,'lw_rad_down',glwId),&
+     !     'nf90_inq_varid failed for lw_rad_down in read_COAMPSout')
+     ios = nf90_inq_varid(ftn,'lw_rad_down',glwId)
+     if ( ios /= 0) then
+         ios = nf90_inq_varid(ftn,'lw_flux_dn',glwId)
+     endif
+     call LIS_verify(ios,'nf90_inq_varid failed for lw_rad_down or lw_flux_dn in read_COAMPSout')
      call LIS_verify(nf90_get_att(ftn,glwId,"scale_factor",glwscal),&
           'nf90_get_att failed for nf90_get_att')
      call LIS_verify(nf90_get_att(ftn,glwId,"add_offset",glwoffset),&
