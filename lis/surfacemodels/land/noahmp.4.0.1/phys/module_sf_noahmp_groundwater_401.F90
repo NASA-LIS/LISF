@@ -151,6 +151,7 @@ CALL LATERALFLOW(ISLTYP,WTD,QLAT,FDEPTH,TOPO,LANDMASK,DELTAT,AREA       &
 !assume all liquid if the wtd is deep
                 DDZ = ZSOIL(NSOIL)-WTD(I,J)
                 SMCWTDMID = 0.5 * (SMCWTD(I,J) + SMCMAX )
+                PSI = PSISAT * ( SMCMAX / SMCWTD(I,J) ) ** BEXP
                 WCNDDEEP = DKSAT * ( SMCWTDMID / SMCMAX ) ** (2.0*BEXP + 3.0)
                 WFLUXDEEP =  - DELTAT * WCNDDEEP * ( (PSISAT-PSI) / DDZ - 1.)
 !update deep soil moisture
