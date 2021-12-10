@@ -52,7 +52,7 @@ subroutine readcrd_era5()
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) '[INFO] Using ERA5 forcing'
      write(LIS_logunit,*) '[INFO] ERA5 forcing directory: ',&
-          era5_struc(n)%era5DIR
+          trim(era5_struc(n)%era5DIR)
 
      era5_struc(n)%era5time1 = 3000.0
      era5_struc(n)%era5time2 = 0.0

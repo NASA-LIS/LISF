@@ -55,7 +55,7 @@ subroutine read_HYMAP_flow_type(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%flowtypefile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] Flow type map, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP river flow type map, ',&
            trim(HYMAP_struc(n)%flowtypefile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun

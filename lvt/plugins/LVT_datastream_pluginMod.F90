@@ -176,6 +176,8 @@ contains
     use JASMINsm_obsMod,        only : JASMINsm_obsInit
     use ERA5obsMod,             only : ERA5obsinit
     use FluxSat_obsMod,         only : FluxSat_obsInit
+    use THySM_obsMod,           only : THySM_obsinit
+    use UASMAP_obsMod,           only : UASMAP_obsinit
 
     external readtemplateObs
     external readLISoutput
@@ -282,6 +284,8 @@ contains
     external readJASMINsmobs
     external readERA5obs
     external readFluxSatobs
+    external readTHySMobs
+    external readUASMAPobs
 
     call registerobsread(trim(LVT_LVTbenchmarkobsId)//char(0),&
          readLVTbenchmarkOUTobs)
@@ -709,6 +713,17 @@ contains
          FluxSat_obsinit)
     call registerobsread(trim(LVT_FluxSatobsId)//char(0),&
          readFluxSatobs)
+
+    call registerobssetup(trim(LVT_THySMobsId)//char(0), &
+         THySM_obsinit)
+    call registerobsread(trim(LVT_THySMobsId)//char(0),&
+         readTHySMobs)
+
+    call registerobssetup(trim(LVT_UASMAPobsId)//char(0), &
+         UASMAP_obsinit)
+    call registerobsread(trim(LVT_UASMAPobsId)//char(0),&
+         readUASMAPobs)
+    
 
   end subroutine LVT_datastream_plugin
 end module LVT_datastream_pluginMod

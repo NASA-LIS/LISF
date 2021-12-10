@@ -22,6 +22,7 @@ subroutine read_snotel(n,ftn,findex,order)
   use LIS_logMod, only         : LIS_logunit, LIS_endrun
   use LIS_coreMod, only        : LIS_rc,LIS_domain
   use LIS_metforcingMod, only : LIS_forc
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
   use snotel_forcingMod,    only : snotel_struc
   use map_utils,    only : latlon_to_ij
 
@@ -64,7 +65,7 @@ subroutine read_snotel(n,ftn,findex,order)
 !  real :: varfield(npts)
   real :: varfield1(LIS_rc%lnc(n),LIS_rc%lnr(n))
   integer :: npcp(LIS_rc%lnc(n),LIS_rc%lnr(n))
-  character*80 :: snotel_filename
+  character(len=LIS_CONST_PATH_LEN) :: snotel_filename
   character(len=500) :: line
   integer :: yr,num,dum,hr,mo,da,mint,sec
   logical :: file_exists, readflag

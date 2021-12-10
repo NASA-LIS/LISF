@@ -158,9 +158,13 @@ subroutine vic411_f2t(n)
                 vic411_struc(n)%vic(t)%min_Tfactor ) < &
               vic411_struc(n)%MAX_SNOW_TEMP .and.      &
               rainf_temp(tid) > 0 ) then
-            call vic411_add_atmosdata(t, k, VAR, 1) ! TRUE
+            ! EMK...Last argument should be real
+            !call vic411_add_atmosdata(t, k, VAR, 1) ! TRUE
+            call vic411_add_atmosdata(t, k, VAR, 1.) ! TRUE
          else
-            call vic411_add_atmosdata(t, k, VAR, 0) ! FALSE
+            ! EMK...Last argument should be real
+            !call vic411_add_atmosdata(t, k, VAR, 0) ! FALSE
+            call vic411_add_atmosdata(t, k, VAR, 0.) ! FALSE
          endif
       enddo
    endif

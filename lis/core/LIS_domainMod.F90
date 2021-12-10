@@ -87,7 +87,7 @@ contains
 ! !INTERFACE: 
   subroutine LIS_domain_init
 ! !USES:
-    use ESMF
+    !NONE
 !
 ! !DESCRIPTION: 
 !  This routine invokes the registry that defines the domain implementations, 

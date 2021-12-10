@@ -31,6 +31,8 @@ module gldas_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
   
   PRIVATE
@@ -48,7 +50,7 @@ module gldas_forcingMod
   type, public :: gldas_type_dec
      real         :: ts
      integer      :: ncold, nrold   !AWIPS 212 dimensions
-     character*40 :: gldasdir       !GLDAS Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: gldasdir       !GLDAS Forcing Directory
      real*8       :: gldastime1,gldastime2
      integer      :: mi
 

@@ -59,7 +59,6 @@ contains
 ! !INTERFACE:
   subroutine NoahMP401_setup_pedecvars(DEC_State, Feas_State)
 ! !USES:
-    use ESMF
     use LIS_coreMod
     use LIS_logMod
     use NoahMP401_lsmMod,     only : NoahMP401_struc

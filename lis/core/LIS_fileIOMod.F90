@@ -2851,7 +2851,6 @@ subroutine LIS_create_gain_filename(n, fname, mname)
 ! !INTERFACE: 
  subroutine LIS_readDomainConfigSpecs(segment_name, domain_info)
 ! !USES: 
-   use ESMF
    use LIS_coreMod,  only : LIS_rc, LIS_config
    use LIS_logMod,   only : LIS_verify
 ! !ARGUMENTS: 
