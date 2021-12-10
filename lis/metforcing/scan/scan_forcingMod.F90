@@ -25,6 +25,7 @@ module scan_forcingMod
 ! !REVISION HISTORY: 
 ! 13Apr2007: Bailing Li:  Initial Specification
 ! 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -40,7 +41,7 @@ module scan_forcingMod
 
   type, public ::  scan_type_dec
      real          :: ts
-     character*40  :: scandir 
+     character(len=LIS_CONST_PATH_LEN) :: scandir 
      character*40  :: metadata 
      real          :: undef
      real*8        :: starttime,scantime1,scantime2

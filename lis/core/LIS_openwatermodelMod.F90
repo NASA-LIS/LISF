@@ -61,7 +61,6 @@ contains
 ! !INTERFACE:
   subroutine LIS_openwatermodel_init()
 ! !USES:
-    use ESMF
     use LIS_surfaceModelDataMod
     use LIS_coreMod, only : LIS_rc, LIS_config, LIS_vecTile
     use LIS_openwatermodel_pluginMod,    only : LIS_openwatermodel_plugin

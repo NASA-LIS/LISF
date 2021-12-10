@@ -27,6 +27,7 @@ subroutine get_TRMM3B42RTV7(n,findex)
                                     LIS_isAlarmRinging 
   use LIS_logMod, only            : LIS_logunit, LIS_endrun
   use TRMM3B42RTV7_forcingMod, only : TRMM3B42RTV7_struc
+  use LIS_constantsMod,        only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -69,7 +70,7 @@ subroutine get_TRMM3B42RTV7(n,findex)
   integer :: doy3, yr3, mo3, da3, hr3, mn3, ss3, ts3    
   real    :: gmt1, gmt2, gmt3             
 
-  character*120 :: filename                ! Filename variables for precip data sources
+  character(len=LIS_CONST_PATH_LEN) :: filename                ! Filename variables for precip data sources
   real*8  :: LIS_timeAtTStepStart_add90min ! SY
   real*8  :: LIS_timeAtTStepEnd_add90min   ! SY
   logical :: alarmCheck  

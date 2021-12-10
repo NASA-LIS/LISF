@@ -65,7 +65,7 @@ subroutine readcrd_princeton()
   enddo
 
   do n=1,LIS_rc%nnest
-     write(LIS_logunit,*)'[INFO] PRINCETON forcing directory :',princeton_struc(n)%princetonDIR
+     write(LIS_logunit,*)'[INFO] PRINCETON forcing directory :',trim(princeton_struc(n)%princetonDIR)
      write(LIS_logunit,*)'[INFO] PRINCETON forcing version   :',princeton_struc(n)%version
      princeton_struc(n)%princetontime1 = 3000.0
      princeton_struc(n)%princetontime2 = 0.0

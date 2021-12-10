@@ -23,7 +23,8 @@ subroutine read_Bondville(n,ftn,findex,order,itime)
   use LIS_coreMod, only           : LIS_rc,LIS_domain
   use LIS_metforcingMod,     only : LIS_forc
   use LIS_timeMgrMod, only        : LIS_date2time,LIS_tick
-  use Bondville_forcingMod, only : Bondville_struc
+  use Bondville_forcingMod,  only : Bondville_struc
+  use LIS_constantsMod,      only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS:
@@ -75,7 +76,7 @@ subroutine read_Bondville(n,ftn,findex,order,itime)
   integer :: bonyr,bonmon,bonday,bonhr,bonmin,bonsec
   real    :: bontick
   logical :: file_exists
-  character*80       :: Bondville_filename
+  character(len=LIS_CONST_PATH_LEN) :: Bondville_filename
   character(len=500) :: line
 
   ! write(LIS_logunit,*) 'starting read_Bondville'

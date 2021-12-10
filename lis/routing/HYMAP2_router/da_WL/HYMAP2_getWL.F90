@@ -93,13 +93,13 @@ subroutine HYMAP2_getWL(n, Routing_State)
         t = (i-1)*LIS_rc%nensem(n)+m
         elevtn=dble(HYMAP2_routing_struc(n)%elevtn(i))
         fldhgt=dble(HYMAP2_routing_struc(n)%fldhgt(i,:))
-        fldstomax = dble(HYMAP2_routing_struc(n)%fldstomax(i,:))
+        fldstomax = dble(HYMAP2_routing_struc(n)%fldstomax(i,:,m))
         rivelv=dble(HYMAP2_routing_struc(n)%rivelv(i))
         grarea = dble(HYMAP2_routing_struc(n)%grarea(i))
-        rivstomax = dble(HYMAP2_routing_struc(n)%rivstomax(i))
+        rivstomax = dble(HYMAP2_routing_struc(n)%rivstomax(i,m))
         rivelv=dble(HYMAP2_routing_struc(n)%rivelv(i))
         rivlen = dble(HYMAP2_routing_struc(n)%rivlen(i))
-        rivwth = dble(HYMAP2_routing_struc(n)%rivwth(i))
+        rivwth = dble(HYMAP2_routing_struc(n)%rivwth(i,m))
         vol = dble(HYMAP2_routing_struc(n)%rivsto(i,m)+&
              HYMAP2_routing_struc(n)%fldsto(i,m))
 
@@ -121,4 +121,3 @@ subroutine HYMAP2_getWL(n, Routing_State)
   enddo
 
 end subroutine HYMAP2_getWL
-

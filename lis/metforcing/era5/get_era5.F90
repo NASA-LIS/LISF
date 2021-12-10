@@ -24,6 +24,7 @@ subroutine get_era5(n, findex)
   use LIS_logMod
   use LIS_metforcingMod
   use era5_forcingMod
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -63,7 +64,7 @@ subroutine get_era5(n, findex)
 !EOP
   integer           :: order
   integer           :: ferror
-  character*100     :: fname
+  character(len=LIS_CONST_PATH_LEN) :: fname
   integer           :: c, r,kk,f,try
   integer           :: yr1, mo1, da1, hr1, mn1, ss1, doy1
   integer           :: yr2, mo2, da2, hr2, mn2, ss2, doy2
@@ -270,7 +271,6 @@ subroutine era5files(n, kk, findex, era5dir, yr, mo, da, fname)
   character*4  :: cyear
   character*2  :: cmonth
   character*8  :: cdate
-  character*20 :: dir
   integer      :: hr, mn, ss
   real*8       :: time
   integer      :: doy

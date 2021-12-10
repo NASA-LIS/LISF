@@ -55,6 +55,7 @@ module TRMM3B42RT_forcingMod
 
 ! !USES:
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
   PRIVATE
@@ -74,7 +75,7 @@ module TRMM3B42RT_forcingMod
      real                     :: ts
      integer                  :: ncold
      integer                  :: nrold  
-     character*40             :: TRMM3B42RTdir  
+     character(len=LIS_CONST_PATH_LEN) :: TRMM3B42RTdir
      !real*8                   :: TRMM3B42RTtime ! SY
      real*8                   :: TRMM3B42RTtime_TStepStart ! SY
      integer                  :: TRMM3B42RTyr_TStepStart ! SY
@@ -135,7 +136,6 @@ contains
                             LIS_getNextUnitNumber, &
                             LIS_releaseUnitNumber, LIS_verify 
     use LIS_FORC_AttributesMod
-    use ESMF
 
     implicit none
 

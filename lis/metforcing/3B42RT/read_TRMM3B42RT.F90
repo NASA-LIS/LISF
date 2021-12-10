@@ -26,11 +26,12 @@ subroutine read_TRMM3B42RT (n, name_TRMM3B42RT, findex, order, ferror_TRMM3B42RT
                                    LIS_releaseUnitNumber
  use LIS_metforcingMod, only     : LIS_forc
  use TRMM3B42RT_forcingMod, only : TRMM3B42RT_struc
+ use LIS_constantsMod,      only : LIS_CONST_PATH_LEN
  
   implicit none
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  character(len=120)  :: name_TRMM3B42RT
+  character(len=*)    :: name_TRMM3B42RT
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_TRMM3B42RT
@@ -67,8 +68,8 @@ subroutine read_TRMM3B42RT (n, name_TRMM3B42RT, findex, order, ferror_TRMM3B42RT
 
  real :: precip(xd,yd), tmp(xd, yd)   
  real, allocatable :: precip_regrid(:,:)        ! Interpolated precipitation array
- character(len=120) :: fname                ! Filename variables
- character*200 :: dfile 
+ character(len=LIS_CONST_PATH_LEN) :: fname                ! Filename variables
+ character(len=LIS_CONST_PATH_LEN) :: dfile 
  integer             ::  ftn
  logical :: file_exists
 
@@ -182,7 +183,7 @@ subroutine rd3B42RT1gd4r(dfile, precip, xd, yd)
 
  integer :: i,j,xd,yd, ftn
  real :: precip(xd,yd)
- character*200 :: dfile 
+ character(len=*) :: dfile 
 
  ftn = LIS_getNextUnitNumber()
  open(unit=ftn,file=dfile, status='old', &
@@ -202,7 +203,7 @@ subroutine rd3B42RTbin(dfile, precip, xd, yd)
  integer, parameter :: nc=1440, nr=480
  integer :: i,j,xd,yd, ftn
  real :: precip(xd,yd), output(nc, nr)
- character*200 :: dfile
+ character(len=*) :: dfile
  integer*2 :: rr(nc, nr)
 
  ftn = LIS_getNextUnitNumber()
@@ -239,7 +240,7 @@ subroutine rd3B42RTgz(zipfile, output, xd, yd)
         integer, parameter :: nc=1440, nr=480
         integer :: xd, yd
         real output(xd, yd)
-        character*200 zipfile
+        character(len=*) zipfile
         integer*2 input(nc, nr), itmp(nc, nr+1), rtmp(nc)  ! tmp includes header
         character*1 array(nc*(nr+1)*2), ct    ! buffer space
         equivalence (itmp, array)

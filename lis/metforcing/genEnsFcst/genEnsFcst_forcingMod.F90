@@ -25,6 +25,8 @@ module genEnsFcst_forcingMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
+  
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 !
   implicit none
 
@@ -50,7 +52,7 @@ module genEnsFcst_forcingMod
      real*8         :: findtime1, metforc_time1   ! File 1 flag and time (LIS)
      real*8         :: findtime2, metforc_time2   ! File 2 flag and time (LIS)
 
-     character(120) :: directory        ! Directory path of where files reside
+     character(len=LIS_CONST_PATH_LEN) :: directory        ! Directory path of where files reside
      character(50)  :: proj_name        ! Projection name
      integer        :: proj_index       ! Projection type index
  
@@ -98,7 +100,7 @@ contains
   integer  :: varid
   real     :: gridDesci(50)
   logical  :: file_exists
-  character(140) :: fullfilename
+  character(len=LIS_CONST_PATH_LEN) :: fullfilename
 
   integer  :: da, hr, mn, ss
   character*50 :: timeInc

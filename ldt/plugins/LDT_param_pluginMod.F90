@@ -1221,16 +1221,15 @@ contains
 !EOP
 
     external read_gdas_elev
-    external read_nldas1_elev
     external read_nldas2_elev
     external read_nam242_elev
     external read_princeton_elev
     external read_ecmwf_elev
-    external read_ecmwfreanal_elev
     external read_merra2_elev
     external read_era5_elev
+    external read_wrfoutv2_elev
+    external read_wrfak_elev
 !    external read_geos5_elev
-!    external read_merraland_elev
 
 ! !USES:
 ! - Read forcing parameter: Elevation/terrain height
@@ -1240,9 +1239,6 @@ contains
          read_gdas_elev)
 
 !- CONUS-only forcings:
-    call registerreadforcelev(trim(LDT_nldas1Id)//char(0),&
-         read_nldas1_elev)
-
     call registerreadforcelev(trim(LDT_nldas2Id)//char(0),&
          read_nldas2_elev)
 
@@ -1258,10 +1254,6 @@ contains
     call registerreadforcelev(trim(LDT_ecmwfId)//char(0),&
          read_ecmwf_elev)
 
-!- ECMWF-Reanalysis forcing:
-    call registerreadforcelev(trim(LDT_ecmwfreanalId)//char(0),&
-         read_ecmwfreanal_elev)
-
 !- MERRA2 forcing:
     call registerreadforcelev(trim(LDT_merra2Id)//char(0),&
          read_merra2_elev)
@@ -1269,6 +1261,14 @@ contains
 !- ERA5 forcing:
     call registerreadforcelev(trim(LDT_era5Id)//char(0),&
          read_era5_elev)
+
+!- WRFoutv2 forcing:
+    call registerreadforcelev(trim(LDT_wrfoutv2Id)//char(0),&
+         read_WRFoutv2_elev)
+
+!- WRF-Alaska forcing:
+    call registerreadforcelev(trim(LDT_WRFakId)//char(0),&
+         read_WRFAK_elev)
 
 !- GEOS5 forcing:
 !    call registerreadforcelev(trim(LDT_geos5Id)//char(0),&

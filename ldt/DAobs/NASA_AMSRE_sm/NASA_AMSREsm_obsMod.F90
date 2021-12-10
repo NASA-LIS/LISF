@@ -60,7 +60,6 @@ contains
 ! !INTERFACE: 
   subroutine NASA_AMSREsm_obsinit()
 ! !USES: 
-    use ESMF
     use LDT_coreMod,    only : LDT_rc, LDT_config
     use LDT_DAobsDataMod, only : LDT_DAobsData, LDT_initializeDAobsEntry
     use LDT_timeMgrMod, only : LDT_clock, LDT_calendar

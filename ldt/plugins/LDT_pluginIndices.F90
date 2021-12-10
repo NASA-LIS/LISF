@@ -45,6 +45,7 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_StatDscaleMetforcprocId = "Statistical downscaling of met forcing"
    character*50, public,  parameter :: LDT_usafsiId = "USAFSI analysis"
    character*50, public,  parameter :: LDT_OPTUEparamprocId   = "OPTUE parameter processing"
+   character*50, public,  parameter :: LDT_obsSimprocId   = "Observation simulator"
    character*50, public,  parameter :: LDT_LISHydropreprocId  = "LISHydro preprocessing for WRFHydro"
 
 !-------------------------------------------------------------------------
@@ -103,6 +104,8 @@ module LDT_pluginIndices
         = "GCOMW AMSR2 L3 snow depth"
    character*50, public,  parameter :: LDT_NASASMAPsmobsId            &
         = "NASA SMAP soil moisture"
+   character*50, public,  parameter :: LDT_THySMobsId            &
+        = "THySM soil moisture"
    character*50, public,  parameter :: LDT_SMOSNRTNNsmobsId            &
         = "SMOS NRT NN soil moisture"                                        !kyh20210105
    character*50, public,  parameter :: LDT_NASASMAPvodobsId            &
@@ -124,21 +127,19 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_gdasId         = "GDAS"
    character*50, public,  parameter :: LDT_geos5fcstId    = "GEOS5 forecast"
    character*50, public,  parameter :: LDT_ecmwfId        = "ECMWF"
-   character*50, public,  parameter :: LDT_ecmwfreanalId  = "ECMWF reanalysis"
    character*50, public,  parameter :: LDT_princetonId    = "PRINCETON"
-   character*50, public,  parameter :: LDT_merralandId    = "MERRA-Land"
    character*50, public,  parameter :: LDT_merra2Id       = "MERRA2"
    character*50, public,  parameter :: LDT_era5Id         = "ERA5"
    character*50, public,  parameter :: LDT_gswp1Id        = "GSWP1"
    character*50, public,  parameter :: LDT_gswp2Id        = "GSWP2"
-   character*50, public,  parameter :: LDT_nldas1Id       = "NLDAS1"
    character*50, public,  parameter :: LDT_nldas2Id       = "NLDAS2"
    character*50, public,  parameter :: LDT_gldasId        = "GLDAS"
-   character*50, public,  parameter :: LDT_gdas3dId       = "GDAS(3d)"
    character*50, public,  parameter :: LDT_gdasLSWGId     = "GDAS(LSWG)"
    character*50, public,  parameter :: LDT_gfsId          = "GFS"
    character*50, public,  parameter :: LDT_narrId         = "NARR"
    character*50, public,  parameter :: LDT_nam242Id       = "NAM242"
+   character*50, public,  parameter :: LDT_wrfoutv2Id     = "WRFoutv2"
+   character*50, public,  parameter :: LDT_WRFakId        = "WRF AK"
    character*50, public,  parameter :: LDT_cmapId         = "CMAP"
 !   character*50, public,  parameter :: LDT_TRMM3B42RTId   = "TRMM 3B42RT"
    character*50, public,  parameter :: LDT_TRMM3B42V6Id   = "TRMM 3B42V6"
@@ -386,6 +387,21 @@ module LDT_pluginIndices
 !-------------------------------------------------------------------------
    character*50, public,  parameter :: LDT_forcingClimoId  = "Climatology"
    character*50, public,  parameter :: LDT_bayesianMergeId = "Bayesian merging"
+
+!-------------------------------------------------------------------------
+!  obs simulator nature run source
+!-------------------------------------------------------------------------
+   character*50, public,  parameter :: LDT_LISoutNatureRunDataId = "LIS output"
+
+!-------------------------------------------------------------------------
+!  obs simulator OSSE mask
+!-------------------------------------------------------------------------
+   character*50, public,  parameter :: LDT_LISoutOSSEmaskDataId = "LIS output"
+   character*50, public,  parameter :: LDT_AMSR2OSSEmaskDataId = "AMSR2"
+   character*50, public,  parameter :: LDT_MODISOSSEmaskDataId = "MODIS"
+   character*50, public,  parameter :: LDT_Sentinel1AOSSEmaskDataId = "Sentinel1A"
+   character*50, public,  parameter :: LDT_TSMMOSSEmaskDataId = "TSMM"
+   
 
 !EOC
  end module LDT_pluginIndices

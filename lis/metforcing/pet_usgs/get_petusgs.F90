@@ -27,6 +27,7 @@ subroutine get_petusgs(n, findex)
   use LIS_timeMgrMod, only : LIS_tick, LIS_get_nstep
   use LIS_logMod,     only : LIS_logunit
   use petusgs_forcingMod, only : petusgs_struc
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -67,7 +68,7 @@ subroutine get_petusgs(n, findex)
   real    :: gmt1, gmt2
   integer :: kk                          ! Forecast index
 
-  character(99) :: filename              ! Filename variables for PET data sources
+  character(len=LIS_CONST_PATH_LEN) :: filename              ! Filename variables for PET data sources
 
 !=== End Variable Definition =======================
 

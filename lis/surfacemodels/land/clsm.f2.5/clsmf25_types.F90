@@ -39,7 +39,10 @@ module clsmf25_types
   public :: N_cat_progn
   public :: cat_progn_type, cat_diagn_type, cat_param_type, cat_force_type,&
        cat_output_type
-  
+
+  !ag(01Jan2021)
+  public :: cat_route_type 
+ 
   public :: assignment (=), operator (/), operator (+)
   
   ! -------------------------------------------------------------------------
@@ -339,6 +342,17 @@ module clsmf25_types
   end type cat_output_type
   
   ! ----------------------------------------------------------------
+  !ag(01Jan2021)
+  ! Catchment model 2-way coupling variables
+
+  type :: cat_route_type
+     !surface water storage units are in m/s (See HYMAP2_routing_run.F90 and noahmp36_getsws_hymap2.F90) 
+     real :: rivsto    ! river water storage [m/s]
+     real :: fldsto    ! floodplain water storage [m/s]
+     real :: fldfrc    ! grid flooded fraction [-]
+  end type cat_route_type
+
+  ! ---------------------------------------------------------
   
   interface assignment (=)
      module procedure scalar2cat_diagn

@@ -23,6 +23,7 @@ subroutine get_HiMATGMU(n, findex)
   use LIS_timeMgrMod, only  : LIS_tick, LIS_get_nstep
   use LIS_logMod,      only : LIS_logunit, LIS_endrun
   use HiMATGMU_forcingMod, only : HiMATGMU_struc
+  use LIS_constantsMod,    only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -71,7 +72,7 @@ subroutine get_HiMATGMU(n, findex)
 
     real*8  :: HiMATGMU_file_time1  
     real*8  :: HiMATGMU_file_time2  
-    character(80) :: file_name      
+    character(len=LIS_CONST_PATH_LEN) :: file_name      
 
     integer :: doy1, yr1, mo1, da1, hr1, mn1, ss1
     integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2
@@ -115,7 +116,7 @@ subroutine get_HiMATGMU(n, findex)
       if ( LIS_rc%time > HiMATGMU_struc(n)%HiMATGMUtime ) then
 
         call HiMATGMUfile( file_name, HiMATGMU_struc(n)%HiMATGMUdir, yr2, mo2, da2, hr2 )
-        write(LIS_logunit,*) '[INFO] Getting new HiMAT GMU precip data: ', file_name
+        write(LIS_logunit,*) '[INFO] Getting new HiMAT GMU precip data: ', trim(file_name)
         call read_HiMATGMU ( n, file_name, findex, order, ferror_HiMATGMU )
         HiMATGMU_struc(n)%HiMATGMUtime = HiMATGMU_file_time2
       endif
@@ -123,7 +124,7 @@ subroutine get_HiMATGMU(n, findex)
     elseif( LIS_rc%ts == HiMATGMU_struc(n)%ts ) then
 
        call HiMATGMUfile( file_name, HiMATGMU_struc(n)%HiMATGMUdir, yr1, mo1, da1, hr1 )
-       write(LIS_logunit,*) '[INFO] Getting new HiMAT GMU precip data: ', file_name
+       write(LIS_logunit,*) '[INFO] Getting new HiMAT GMU precip data: ', trim(file_name)
        call read_HiMATGMU ( n, file_name, findex, order, ferror_HiMATGMU )
        HiMATGMU_struc(n)%HiMATGMUtime = HiMATGMU_file_time1
 

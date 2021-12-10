@@ -286,10 +286,10 @@ contains
     do l = 1, nlayer
       n_empty = 0
       do n = 1, nensem
-        if (sice0(l)+sliq0(0) > 0.0) then
+        if (sice0(l)+sliq0(l) > 0.0) then
            r0(l) = r0(l) + &
                 (en_sice(n,l) + en_sliq(n,l)) * &
-                en_rgrainl(n,l) / (sice0(l) + sliq0(0))
+                en_rgrainl(n,l) / (sice0(l) + sliq0(l))
         else
           n_empty = n_empty + 1
         endif

@@ -47,7 +47,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_gfscplId    = "GFS coupling"
    character*50, public,  parameter :: LIS_paramEstimRunId = "parameter estimation"
    character*50, public,  parameter :: LIS_smootherDAId    = "ensemble smoother"
-   character*50, public,  parameter :: LIS_forecastrunId      = "forecast"
+   character*50, public,  parameter :: LIS_forecastrunId   = "forecast"
 !-------------------------------------------------------------------------
 ! Domains
 !-------------------------------------------------------------------------
@@ -109,7 +109,7 @@ module LIS_pluginIndices
 !-------------------------------------------------------------------------
 ! Open water models
 !-------------------------------------------------------------------------
-   character*50, public,  parameter :: LIS_templateOpenWaterId    = "template open water"
+   character*50, public,  parameter :: LIS_templateOpenWaterId  = "template open water"
 
 !-------------------------------------------------------------------------
 ! Met forcings 
@@ -164,11 +164,14 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_nam242Id          = "NAM242"
    character*50, public,  parameter :: LIS_WRFoutId          = "WRFout"
    character*50, public,  parameter :: LIS_COAMPSoutId       = "COAMPSout"
+   character*50, public,  parameter :: LIS_WRFoutv2Id        = "WRFoutv2"
+   character*50, public,  parameter :: LIS_WRFakId           = "WRF AK"
    character*50, public,  parameter :: LIS_AWAPforcId        = "AWAP"
    character*50, public,  parameter :: LIS_HiMATGMUforcId    = "HiMAT GMU"
-   character*50, public,  parameter :: LIS_AWRALforcId    = "AWRAL processed forcing"
+   character*50, public,  parameter :: LIS_AWRALforcId       = "AWRAL processed forcing"
    character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
    character*50, public,  parameter :: LIS_era5Id            = "ERA5"
+   character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------
@@ -279,6 +282,10 @@ module LIS_pluginIndices
         "ASO SWE"
    character*50, public,  parameter :: LIS_synwlId             = &
         "Synthetic water level"
+   character*50, public,  parameter :: LIS_THySMId             = &
+           "THySM"
+   character*50, public,  parameter :: LIS_hydrowebwlId        = &
+        "Hydroweb water level"
 
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms

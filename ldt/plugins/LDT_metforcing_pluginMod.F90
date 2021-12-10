@@ -95,12 +95,10 @@ contains
 !    use metForcTemplate_forcingMod
     use gdas_forcingMod
     use ecmwf_forcingMod
-    use ecmwfreanal_forcingMod
     use princeton_forcingMod
 !    use rhoneAGG_forcingMod
     use gldas_forcingMod
     use gfs_forcingMod
-    use merraland_forcingMod
     use merra2_forcingMod
     use era5_forcingMod
     use gswp1_forcingMod
@@ -110,9 +108,10 @@ contains
 #endif
     use agrradps_forcingMod
 !    use agrrad_forcingMod
-    use gdas3d_forcingMod
     use geos5fcst_forcingMod
 !    use gdasLSWG_forcingMod
+    use WRFoutv2_forcingMod
+    use WRF_AKdom_forcingMod
 
     use TRMM3B42RTV7_forcingMod
     use TRMM3B42V6_forcingMod
@@ -121,11 +120,9 @@ contains
     use stg2_forcingMod
     use stg4_forcingMod
     use cmap_forcingMod
-    use nldas1_forcingMod
     use nldas2_forcingMod
     use narr_forcingMod
     use nam242_forcingMod
-    use rdhm356_forcingMod 
 !    use vic_forcingMod
     use RFE2Daily_forcingMod
     use RFE2gdas_forcingMod
@@ -160,10 +157,6 @@ contains
     external reset_ecmwf
     external finalize_ecmwf
 
-    external get_ecmwfreanal
-    external timeinterp_ecmwfreanal
-    external finalize_ecmwfreanal
-
     external get_agrmet
     external timeinterp_agrmet
     external reset_agrmet
@@ -193,11 +186,6 @@ contains
     external get_gfs
     external timeinterp_gfs
     external finalize_gfs
-
-    external get_merraland
-    external timeinterp_merraland
-    external finalize_merraland
-    external reset_merraland
 
     external get_merra2
     external timeinterp_merra2
@@ -247,19 +235,10 @@ contains
     external finalize_stg4
     external reset_stg4
 
-    external get_nldas1
-    external timeinterp_nldas1
-    external finalize_nldas1
-    external reset_nldas1
-
     external get_nldas2
     external timeinterp_nldas2
     external finalize_nldas2
     external reset_nldas2
-
-    external get_rdhm356 
-    external timeinterp_rdhm356
-    external finalize_rdhm356
 
 !    external getvicforcing
 !    external time_interp_vicforcing
@@ -269,10 +248,6 @@ contains
     external timeinterp_geos5fcst
     external finalize_geos5fcst
     external reset_geos5fcst
-
-    external get_gdas3d
-    external timeinterp_gdas3d
-    external finalize_gdas3d
 
 !    external get_gdasLSWG
 !    external timeinterp_gdasLSWG
@@ -383,12 +358,6 @@ contains
     call registerresetmetforc(trim(LDT_ecmwfId)//char(0),reset_ecmwf)
     call registerfinalmetforc(trim(LDT_ecmwfId)//char(0),finalize_ecmwf)
 
-! - ECMWF Reanalysis:
-    call registerinitmetforc(trim(LDT_ecmwfreanalId)//char(0),init_ECMWFREANAL)
-    call registerretrievemetforc(trim(LDT_ecmwfreanalId)//char(0),get_ecmwfreanal)
-    call registertimeinterpmetforc(trim(LDT_ecmwfreanalId)//char(0),timeinterp_ecmwfreanal)
-    call registerfinalmetforc(trim(LDT_ecmwfreanalId)//char(0),finalize_ecmwfreanal)
-
 ! - PRINCETON Reanalysis Forcing:
     call registerinitmetforc(trim(LDT_princetonId)//char(0),init_PRINCETON)
     call registerretrievemetforc(trim(LDT_princetonId)//char(0),get_princeton)
@@ -415,13 +384,6 @@ contains
 !    call registertimeinterpmetforc(trim(LDT_gfsId)//char(0),timeinterp_gfs)
 !    call registerfinalmetforc(trim(LDT_gfsId)//char(0),finalize_gfs)
 
-! - MERRA-Land Reanalysis Forcing:
-    call registerinitmetforc(trim(LDT_merralandId)//char(0),init_MERRALAND)
-    call registerretrievemetforc(trim(LDT_merralandId)//char(0),get_merraland)
-    call registertimeinterpmetforc(trim(LDT_merralandId)//char(0),timeinterp_merraland)
-    call registerresetmetforc(trim(LDT_merralandId)//char(0),reset_merraland)
-    call registerfinalmetforc(trim(LDT_merralandId)//char(0),finalize_merraland)
-
 ! - MERRA-2 Reanalysis Forcing:
     call registerinitmetforc(trim(LDT_merra2Id)//char(0),init_MERRA2)
     call registerretrievemetforc(trim(LDT_merra2Id)//char(0),get_merra2)
@@ -435,6 +397,12 @@ contains
     call registertimeinterpmetforc(trim(LDT_ERA5Id)//char(0),timeinterp_ERA5)
     call registerresetmetforc(trim(LDT_ERA5Id)//char(0),reset_ERA5)
     call registerfinalmetforc(trim(LDT_ERA5Id)//char(0),finalize_ERA5)
+
+! - WRFv2 Analysis Forcing:
+    call registerinitmetforc(trim(LDT_wrfoutv2Id)//char(0),init_WRFoutv2)
+
+! - WRF Alaska Forcing:
+    call registerinitmetforc(trim(LDT_wrfakId)//char(0),init_WRF_AKdom)
 
 ! - GSWP2 Forcing:
     call registerinitmetforc(trim(LDT_gswp2Id)//char(0),init_GSWP2)
@@ -469,13 +437,6 @@ contains
     call registertimeinterpmetforc(trim(LDT_agrradId)//char(0),timeinterp_agrrad)
     call registerfinalmetforc(trim(LDT_agrradId)//char(0),finalize_agrrad)
 #endif
-
-! - NLDAS1 Forcing:
-    call registerinitmetforc(trim(LDT_nldas1Id)//char(0),init_NLDAS1)
-    call registerretrievemetforc(trim(LDT_nldas1Id)//char(0),get_nldas1)
-    call registertimeinterpmetforc(trim(LDT_nldas1Id)//char(0),timeinterp_nldas1)
-    call registerfinalmetforc(trim(LDT_nldas1Id)//char(0),finalize_nldas1)
-    call registerresetmetforc(trim(LDT_nldas1Id)//char(0),reset_nldas1)
 
 ! - NLDAS2 Forcing:
     call registerinitmetforc(trim(LDT_nldas2Id)//char(0),init_NLDAS2)
@@ -566,17 +527,6 @@ contains
     call registerfinalmetforc(trim(LDT_USGSPETforcId)//char(0),finalize_petusgs)
 #endif
 
-! - RDHM 356 HRAP, added by Shugong Wang
-    call registerinitmetforc(trim(LDT_rdhm356Id)//char(0),init_rdhm356)
-    call registerretrievemetforc(trim(LDT_rdhm356Id)//char(0),get_rdhm356)
-    call registertimeinterpmetforc(trim(LDT_rdhm356Id)//char(0),timeinterp_rdhm356)
-    call registerfinalmetforc(trim(LDT_rdhm356Id)//char(0),finalize_rdhm356)
-
-! - GDAS profile data for CRTM 
-    call registerinitmetforc(trim(LDT_gdas3dId)//char(0),init_GDAS3D)
-!    call registerretrievemetforc(trim(LDT_gdas3dId)//char(0),get_gdas3d)
-!    call registertimeinterpmetforc(trim(LDT_gdas3dId)//char(0),timeinterp_gdas3d)
-!    call registerfinalmetforc(trim(LDT_gdas3dId)//char(0),finalize_gdas3d)
 ! - NARR profile data for CRTM 
     call registerinitmetforc(trim(LDT_narrId)//char(0),init_NARR)
 !    call registerretrievemetforc(trim(LDT_narrId)//char(0),get_narr)

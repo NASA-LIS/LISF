@@ -41,9 +41,6 @@ program plotScatter
 ! 
 !EOP
 
-
-  use ESMF
-
   implicit none
   
   type(ESMF_Config)      :: ts_config

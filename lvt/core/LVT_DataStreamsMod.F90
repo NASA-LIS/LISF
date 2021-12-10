@@ -3341,8 +3341,6 @@ contains
 !
 !EOP
 
-    use ESMF
-
     integer                       :: ftn
     real                          :: gtmp(LVT_rc%lnc*LVT_rc%lnr)
     integer, intent(in)           :: gribid
