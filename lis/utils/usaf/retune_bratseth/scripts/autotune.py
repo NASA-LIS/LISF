@@ -8,6 +8,7 @@ OBA (Observation, Background, Analaysis) files.
 REVISION HISTORY:
 03 Nov 2020:  Eric Kemp.  Initial specification.
 16 Dec 2020:  Eric Kemp.  Now calls create_blacklist via function call.
+13 Dec 2021:  Eric Kemp.  Added checks for missing satellite data.
 """
 
 import configparser
@@ -272,49 +273,57 @@ class AutomateTuning:
             line += " %s\n" %(self.sigma2o["gage"])
             lines.append(line)
 
-        if self.Lo["geoprecip"] > 0:
-            line = \
-        "AGRMET GALWEM Precip GEOPRECIP observation error scale length (m):"
-            line += " %s\n" %(self.Lo["geoprecip"])
-            lines.append(line)
+        if "geoprecip" in self.Lo:
+            if self.Lo["geoprecip"] > 0:
+                line = \
+                    "AGRMET GALWEM Precip GEOPRECIP observation error scale length (m):"
+                line += " %s\n" %(self.Lo["geoprecip"])
+                lines.append(line)
 
-        if self.sigma2o["geoprecip"] > 0:
-            line = "AGRMET GALWEM Precip GEOPRECIP observation error variance:"
-            line += " %s\n" %(self.sigma2o["geoprecip"])
-            lines.append(line)
+        if "geoprecip" in self.sigma2o:
+            if self.sigma2o["geoprecip"] > 0:
+                line = "AGRMET GALWEM Precip GEOPRECIP observation error variance:"
+                line += " %s\n" %(self.sigma2o["geoprecip"])
+                lines.append(line)
 
-        if self.Lo["ssmi"] > 0:
-            line = \
-                "AGRMET GALWEM Precip SSMI observation error scale length (m):"
-            line += " %s\n" %(self.Lo["ssmi"])
-            lines.append(line)
+        if "ssmi" in self.Lo:
+            if self.Lo["ssmi"] > 0:
+                line = \
+                    "AGRMET GALWEM Precip SSMI observation error scale length (m):"
+                line += " %s\n" %(self.Lo["ssmi"])
+                lines.append(line)
 
-        if self.sigma2o["ssmi"] > 0:
-            line = "AGRMET GALWEM Precip SSMI observation error variance:"
-            line += " %s\n" %(self.sigma2o["ssmi"])
-            lines.append(line)
+        if "ssmi" in self.sigma2o:
+            if self.sigma2o["ssmi"] > 0:
+                line = "AGRMET GALWEM Precip SSMI observation error variance:"
+                line += " %s\n" %(self.sigma2o["ssmi"])
+                lines.append(line)
 
-        if self.Lo["cmorph"] > 0:
-            line = \
-            "AGRMET GALWEM Precip CMORPH observation error scale length (m):"
-            line += " %s\n" %(self.Lo["cmorph"])
-            lines.append(line)
+        if "cmorph" in self.Lo:
+            if self.Lo["cmorph"] > 0:
+                line = \
+                    "AGRMET GALWEM Precip CMORPH observation error scale length (m):"
+                line += " %s\n" %(self.Lo["cmorph"])
+                lines.append(line)
 
-        if self.sigma2o["cmorph"] > 0:
-            line = "AGRMET GALWEM Precip CMORPH observation error variance:"
-            line += " %s\n" %(self.sigma2o["cmorph"])
-            lines.append(line)
+        if "cmorph" in self.sigma2o:
+            if self.sigma2o["cmorph"] > 0:
+                line = "AGRMET GALWEM Precip CMORPH observation error variance:"
+                line += " %s\n" %(self.sigma2o["cmorph"])
+                lines.append(line)
 
-        if self.Lo["imerg"] > 0:
-            line = \
-                "AGRMET GALWEM Precip IMERG observation error scale length (m)"
-            line += " %s\n" %(self.Lo["imerg"])
-            lines.append(line)
+        if "imerg" in self.Lo:
+            if self.Lo["imerg"] > 0:
+                line = \
+                    "AGRMET GALWEM Precip IMERG observation error scale length (m)"
+                line += " %s\n" %(self.Lo["imerg"])
+                lines.append(line)
 
-        if self.sigma2o["imerg"] > 0:
-            line = "AGRMET GALWEM Precip IMERG observation error variance:"
-            line += " %s\n" %(self.sigma2o["imerg"])
-            lines.append(line)
+        if "imerg" in self.sigma2o:
+            if self.sigma2o["imerg"] > 0:
+                line = "AGRMET GALWEM Precip IMERG observation error variance:"
+                line += " %s\n" %(self.sigma2o["imerg"])
+                lines.append(line)
 
         if self.Lb["t2m"] > 0:
             line = "AGRMET GALWEM T2M background error scale length (m):"
