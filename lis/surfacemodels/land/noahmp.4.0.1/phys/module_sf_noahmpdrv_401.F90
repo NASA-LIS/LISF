@@ -56,7 +56,7 @@ CONTAINS
 #endif
                ids,ide,  jds,jde,  kds,kde,                    &
                ims,ime,  jms,jme,  kms,kme,                    &
-               its,ite,  jts,jte,  kts,kte,                    &
+               its,ite,  jts,jte,  kts,kte, PRINTDEBUG,                    &
                MP_RAINC, MP_RAINNC, MP_SHCV, MP_SNOW, MP_GRAUP, MP_HAIL     )
 !----------------------------------------------------------------
     USE MODULE_SF_NOAHMPLSM_401
@@ -74,6 +74,7 @@ CONTAINS
 
 ! Added LIS undefined value as an input - David Mocko
     REAL,    INTENT(IN   ) ::  LIS_undef_value
+    INTEGER,                                         INTENT(IN   ) ::  PRINTDEBUG ! TML: Debugging Flag
     INTEGER,                                         INTENT(IN   ) ::  ITIMESTEP ! timestep number
     INTEGER,                                         INTENT(IN   ) ::  YR        ! 4-digit year
     REAL,                                            INTENT(IN   ) ::  JULIAN    ! Julian day
@@ -783,6 +784,35 @@ CONTAINS
        IF(VEGTYP == 27) FVEG = 0.0
        IF(VEGTYP == 27) PLAI = 0.0
 
+       if (PRINTDEBUG .eq. 1) then
+       print*, 'START VARIABLES: '
+       print*, 'XLAT = ', XLAT(I,J)
+       print*, 'XLONG = ',XLONG(I,J)
+       print*, 'DEEPRECH = ',DEEPRECH
+       print*, 'RECH = ',RECH
+       print*, 'FVEG = ',FVEG
+       print*, 'T_ML = ',T_ML
+       print*, 'Q_ML = ',Q_ML
+       print*, 'U_ML = ',U_ML
+       print*, 'V_ML = ',V_ML
+       print*, 'SWDN = ',SWDN
+       print*, 'LWDN = ',LWDN
+       print*, 'P_ML = ',P_ML
+       print*, 'PSFC = ',PSFC
+       print*, 'PRCP = ',PRCP
+       print*, 'SMCWTD = ',SMCWTD
+       print*, 'ZWT = ',ZWT
+       print*, 'SMC-1 = ',SMC(1)
+       print*, 'SMC-2 = ',SMC(2)
+       print*, 'SMC-3 = ',SMC(3)
+       print*, 'SMC-4 = ',SMC(4)
+       print*, 'STC-1 = ',STC(1)
+       print*, 'STC-2 = ',STC(2)
+       print*, 'STC-3 = ',STC(3)
+       print*, 'STC-4 = ',STC(4)
+       endif
+
+
        IF ( VEGTYP == ISICE_TABLE ) THEN
          ICE = -1                           ! Land-ice point
          CALL NOAHMP_OPTIONS_GLACIER(IOPT_ALB  ,IOPT_SNF  ,IOPT_TBOT, IOPT_STC, IOPT_GLA , IOPT_SNDPTH)
@@ -929,6 +959,33 @@ CONTAINS
             INFXSRT(i,j) = RUNSF*dt        !mm , surface runoff
 #endif
 
+       if (PRINTDEBUG .eq. 1) then
+       print*, 'END VARIABLES: '
+       print*, 'XLAT = ', XLAT(I,J)
+       print*, 'XLONG = ',XLONG(I,J)
+       print*, 'DEEPRECH = ',DEEPRECH
+       print*, 'RECH = ',RECH
+       print*, 'FVEG = ',FVEG
+       print*, 'T_ML = ',T_ML
+       print*, 'Q_ML = ',Q_ML
+       print*, 'U_ML = ',U_ML
+       print*, 'V_ML = ',V_ML
+       print*, 'SWDN = ',SWDN
+       print*, 'LWDN = ',LWDN
+       print*, 'P_ML = ',P_ML
+       print*, 'PSFC = ',PSFC
+       print*, 'PRCP = ',PRCP
+       print*, 'SMCWTD = ',SMCWTD
+       print*, 'ZWT = ',ZWT
+       print*, 'SMC-1 = ',SMC(1)
+       print*, 'SMC-2 = ',SMC(2)
+       print*, 'SMC-3 = ',SMC(3)
+       print*, 'SMC-4 = ',SMC(4)
+       print*, 'STC-1 = ',STC(1)
+       print*, 'STC-2 = ',STC(2)
+       print*, 'STC-3 = ',STC(3)
+       print*, 'STC-4 = ',STC(4)
+       endif
 
 ! INPUT/OUTPUT
 

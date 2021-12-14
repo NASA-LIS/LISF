@@ -231,7 +231,7 @@ module NoahMP401_lsmMod
         integer, pointer      :: soil2d(:,:)     !SW, for MMF 
         real, pointer      :: vege3d(:,:,:)   !SW, for MMF
         integer, pointer      :: vege2d(:,:)   !SW, for MMF 
-        integer,allocatable:: rct_idx(:,:) ! row, col, tile 
+        integer,allocatable:: rct_idx(:,:) ! col, row, tile 
         type(NoahMP401dec), pointer :: noahmp401(:)
     end type NoahMP401_type_dec
 
@@ -381,63 +381,63 @@ contains
                     NOAHMP401_struc(n)%col_max = max(NOAHMP401_struc(n)%col_max, LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col) 
                 enddo 
 
-                allocate(NOAHMP401_struc(n)%rct_idx(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
+                allocate(NOAHMP401_struc(n)%rct_idx(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
                 
                 NOAHMP401_struc(n)%rct_idx(:,:) = LIS_rc%udef 
                 do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                    NOAHMP401_struc(n)%rct_idx(LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row, &
-                                               LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col) = t
+                    NOAHMP401_struc(n)%rct_idx(LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col, &
+                                               LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row) = t
                 enddo
 
-                ! allocate 2D data structure for MMF Oct 20 2021 SW, all row major, be aware 
-                allocate(NOAHMP401_struc(n)%smoiseq(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                ! allocate 2D data structure for MMF 10 DEC 2021; Now all col x row TML
+                allocate(NOAHMP401_struc(n)%smoiseq(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
                                                     NOAHMP401_struc(n)%nsoil))
 
-                allocate(NOAHMP401_struc(n)%smcwtd(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%deeprech(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%rech(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%wtd(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%qslat(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%qrfs(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%qsprings(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%fdepth(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%area(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%topo(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%eqwtd(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%riverbed(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%rivercond(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%qrf(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%qspring(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%rechclim(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
+                allocate(NOAHMP401_struc(n)%smcwtd(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%deeprech(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%rech(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%wtd(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%qslat(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%qrfs(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%qsprings(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%fdepth(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%area(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%topo(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%eqwtd(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%riverbed(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%rivercond(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%qrf(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%qspring(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%rechclim(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
 
-                allocate(NOAHMP401_struc(n)%soil3d(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                allocate(NOAHMP401_struc(n)%soil3d(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
                                                     16)) ! 16 is the number of soil categories, hardcoded temporarily 
-                allocate(NOAHMP401_struc(n)%soil2d(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
-                allocate(NOAHMP401_struc(n)%vege3d(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                allocate(NOAHMP401_struc(n)%soil2d(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%vege3d(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
                                                     20)) ! 20 is the number of surfacetype categories, hardcoded temporarily 
-                allocate(NOAHMP401_struc(n)%vege2d(NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max))
+                allocate(NOAHMP401_struc(n)%vege2d(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
             endif
         enddo
     end subroutine NoahMP401_ini

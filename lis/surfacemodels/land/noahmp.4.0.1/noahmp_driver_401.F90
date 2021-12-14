@@ -53,7 +53,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
      !ag (12Sep2019)
      rivsto, fldsto, fldfrc,&
      parameters ,                                                & ! out Noah MP only
-     sfcheadrt , INFXSRT, soldrain)                                ! For WRF-Hydro
+     sfcheadrt , INFXSRT, soldrain, printdebug)                                ! For WRF-Hydro
 
   use module_sf_noahmpdrv_401, only: noahmplsm_401
   use module_sf_noahmplsm_401
@@ -74,6 +74,8 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   integer, intent(in) :: minute               ! minute of the current time step [-]
   real,    intent(in) :: dt                   ! timestep [s] 
   
+  integer, intent(in) :: printdebug           !TML: Debuggging flag
+
   ! Revised by Zhuo Wang and Shugong Wang
   real,    intent(in) :: dz8w                 ! thickness of atmo layers [m]
   
@@ -787,7 +789,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
 #endif
        ids,ide,  jds,jde,  kds,kde,                                &
        ims,ime,  jms,jme,  kms,kme,                                &
-       its,ite,  jts,jte,  kts,kte)
+       its,ite,  jts,jte,  kts,kte, printdebug) ! TML: Added debugging term.
   
   ! Added by Zhuo Wang and Shugong on 10/30/2018
   tsk = tskinout(1,1)

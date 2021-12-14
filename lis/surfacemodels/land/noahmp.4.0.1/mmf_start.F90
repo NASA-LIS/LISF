@@ -37,17 +37,17 @@ subroutine mmf_start(n)
     
     do row=NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
         do col=NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
-            t = NOAHMP401_struc(n)%rct_idx(row,col)  ! rct_idx is row by col, i.e. row major, Shugong Wang
+            t = NOAHMP401_struc(n)%rct_idx(col,row)  ! rct_idx is col x row TML
             if(t .ne. LIS_rc%udef) then
                 isltyp(col,row) = NOAHMP401_struc(n)%noahmp401(t)%soiltype
                 ivgtyp(col,row) = NOAHMP401_struc(n)%noahmp401(t)%vegetype
             else
-                isltyp(col,row) = NOAHMP401_struc(n)%soil2d(row,col) ! soil2d is row major, row by col, Shugong Wang
-                ivgtyp(col,row) = NOAHMP401_struc(n)%vege2d(row,col) ! vege2d is row major, row by col, Shugong Wang
+                isltyp(col,row) = NOAHMP401_struc(n)%soil2d(col,row) ! soil2d is col x row TML
+                ivgtyp(col,row) = NOAHMP401_struc(n)%vege2d(col,row) ! vege2d is col x row TML
             endif
-            smois(row,:,col) = NOAHMP401_struc(n)%init_smc(:)
-            sh2o(row,:,col) = NOAHMP401_struc(n)%init_smc(:)
-            smoiseq(row,:,col) = 0.0
+            smois(col,:,row) = NOAHMP401_struc(n)%init_smc(:)
+            sh2o(col,:,row) = NOAHMP401_struc(n)%init_smc(:)
+            smoiseq(col,:,row) = 0.0
         enddo
     enddo
     !!! 2-D, MMF, SW
@@ -55,13 +55,13 @@ subroutine mmf_start(n)
         do col=NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
             ridx = row - NOAHMP401_struc(n)%row_min + 1
             cidx = col - NOAHMP401_struc(n)%col_min + 1
-            fdepth(col,row)    = NOAHMP401_struc(n)%fdepth(ridx, cidx)
-            topo(col,row)      = NOAHMP401_struc(n)%topo(ridx, cidx)
-            area(col,row)      = NOAHMP401_struc(n)%area(ridx, cidx)
-            riverbed(col,row)  = NOAHMP401_struc(n)%riverbed(ridx, cidx)
-            eqwtd(col,row)     = NOAHMP401_struc(n)%eqwtd(ridx, cidx)
-            rivercond(col,row) = NOAHMP401_struc(n)%rivercond(ridx, cidx)
-            rechclim(col,row)  = NOAHMP401_struc(n)%rechclim(ridx, cidx)
+            fdepth(col,row)    = NOAHMP401_struc(n)%fdepth(cidx, ridx)
+            topo(col,row)      = NOAHMP401_struc(n)%topo(cidx, ridx)
+            area(col,row)      = NOAHMP401_struc(n)%area(cidx, ridx)
+            riverbed(col,row)  = NOAHMP401_struc(n)%riverbed(cidx, ridx)
+            eqwtd(col,row)     = NOAHMP401_struc(n)%eqwtd(cidx, ridx)
+            rivercond(col,row) = NOAHMP401_struc(n)%rivercond(cidx, ridx)
+            rechclim(col,row)  = NOAHMP401_struc(n)%rechclim(cidx, ridx)
             pexp(col,row)      = 1.0
         enddo
     enddo
@@ -73,30 +73,30 @@ subroutine mmf_start(n)
                             smois,sh2o, smoiseq, smcwtdxy, deeprechxy, rechxy ,  &
                             qslatxy, qrfsxy, qspringsxy,                  &
                             rechclim  ,                                   &
-                            NOAHMP401_struc(n)%row_min, & !ids,
-                            NOAHMP401_struc(n)%row_max, & !ide, +1 for test
-                            NOAHMP401_struc(n)%col_min, & !jds,
-                            NOAHMP401_struc(n)%col_max, & !jde, 
+                            NOAHMP401_struc(n)%col_min, & !ids,
+                            NOAHMP401_struc(n)%col_max, & !ide, +1 for test
+                            NOAHMP401_struc(n)%row_min, & !jds,
+                            NOAHMP401_struc(n)%row_max, & !jde, 
                             1, 1,                       & !kds,kde,
-                            NOAHMP401_struc(n)%row_min, & !ims,
-                            NOAHMP401_struc(n)%row_max, & !ime, 
-                            NOAHMP401_struc(n)%col_min, & !jms,
-                            NOAHMP401_struc(n)%col_max, & !jme, 
+                            NOAHMP401_struc(n)%col_min, & !ims,
+                            NOAHMP401_struc(n)%col_max, & !ime, 
+                            NOAHMP401_struc(n)%row_min, & !jms,
+                            NOAHMP401_struc(n)%row_max, & !jme, 
                             1, 1,                       & !kms,kme,
-                            NOAHMP401_struc(n)%row_min, & !ips,
-                            NOAHMP401_struc(n)%row_max, & !ipe, 
-                            NOAHMP401_struc(n)%col_min, & !jps,
-                            NOAHMP401_struc(n)%col_max, & !jpe, 
+                            NOAHMP401_struc(n)%col_min, & !ips,
+                            NOAHMP401_struc(n)%col_max, & !ipe, 
+                            NOAHMP401_struc(n)%row_min, & !jps,
+                            NOAHMP401_struc(n)%row_max, & !jpe, 
                             1,1,                        & !kps,kpe,
-                            NOAHMP401_struc(n)%row_min, & !its,
-                            NOAHMP401_struc(n)%row_max, & !ite, 
-                            NOAHMP401_struc(n)%col_min, & !jts,
-                            NOAHMP401_struc(n)%col_max, & !jte, 
+                            NOAHMP401_struc(n)%col_min, & !its,
+                            NOAHMP401_struc(n)%col_max, & !ite, 
+                            NOAHMP401_struc(n)%row_min, & !jts,
+                            NOAHMP401_struc(n)%row_max, & !jte, 
                             1,1)                          !kts,kte
 
     do row=NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
         do col=NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
-            t = NOAHMP401_struc(n)%rct_idx(row,col)
+            t = NOAHMP401_struc(n)%rct_idx(col,row)
             NOAHMP401_struc(n)%noahmp401(t)%wtd       = wtd(col,row) 
             NOAHMP401_struc(n)%noahmp401(t)%zwt       = wtd(col,row)  !!!! zwt should be the same as wtd 
             NOAHMP401_struc(n)%noahmp401(t)%rivercond = rivercond(col,row) 
@@ -113,9 +113,9 @@ subroutine mmf_start(n)
             NOAHMP401_struc(n)%noahmp401(t)%qslat     = qslatxy(col,row) 
             NOAHMP401_struc(n)%noahmp401(t)%qrfs      = qrfsxy(col,row) 
             NOAHMP401_struc(n)%noahmp401(t)%qsprings  = qspringsxy(col,row) 
-            NOAHMP401_struc(n)%rivercond(row, col)    = rivercond(col,row) !!! make a copy to the 2D paramter data structure 
-            NOAHMP401_struc(n)%riverbed(row, col)     = riverbed(col,row)  !!! make a copy to the 2D paramter data structure 
-            NOAHMP401_struc(n)%eqwtd(row, col)        = eqwtd(col,row)     !!! make a copy 
+            NOAHMP401_struc(n)%rivercond(col, row)    = rivercond(col,row) !!! make a copy to the 2D paramter data structure 
+            NOAHMP401_struc(n)%riverbed(col, row)     = riverbed(col,row)  !!! make a copy to the 2D paramter data structure 
+            NOAHMP401_struc(n)%eqwtd(col, row)        = eqwtd(col,row)     !!! make a copy 
         enddo
     enddo 
     deallocate(isltyp)

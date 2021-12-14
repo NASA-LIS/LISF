@@ -245,6 +245,9 @@ subroutine NoahMP401_main(n)
     real                 :: tmp_infxs1rt           ! extra output for WRF-HYDRO [m]
     real                 :: tmp_soldrain1rt        ! extra output for WRF-HYDRO [m]
 
+    ! TML: Debugging term to print model variables if set to 1.
+    integer                 :: tmp_printdebug              ! print model output if true
+
         !ag (05Jan2021)
     real                 :: tmp_rivsto
     real                 :: tmp_fldsto
@@ -329,6 +332,14 @@ subroutine NoahMP401_main(n)
             col = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col
             lat = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lat
             lon = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lon
+
+            ! TML print statement for model debugging.
+            tmp_printdebug = 0
+            if (row .eq. 12) then
+                if (col .eq. 18) then
+                    tmp_printdebug = 1
+                endif
+            endif
 
             ! retrieve forcing data from NOAHMP401_struc(n)%noahmp401(t) and assign to local variables
             ! tair: air temperature
@@ -770,7 +781,8 @@ subroutine NoahMP401_main(n)
                                    NOAHMP401_struc(n)%noahmp401(t)%param, & ! out   - relative soil moisture [-]
                                    tmp_sfcheadrt         , & 
                                    tmp_infxs1rt          , &
-                                   tmp_soldrain1rt    ) ! out   - extra output for WRF-HYDRO [m]
+                                   tmp_soldrain1rt    , &  !) ! out   - extra output for WRF-HYDRO [m]
+                                   tmp_printdebug               ) ! TML: Added debug print statement
 
             ! save state variables from local variables to global variables
             NOAHMP401_struc(n)%noahmp401(t)%sfcrunoff       = tmp_sfcrunoff
@@ -921,18 +933,22 @@ subroutine NoahMP401_main(n)
             !    max_col = max(max_col, col) 
             !enddo 
             
-            ims = min_row 
-            ime = max_row
-            jms = min_col
-            jme = max_col 
-            ids = min_row 
-            ide = max_row
-            jds = min_col
-            jde = max_col
-            its = min_row 
-            ite = max_row
-            jts = min_col
-            jte = max_col 
+            print *, 'max row'
+            print *, max_row 
+            print *, 'max col'
+            print *, max_col
+            ims = min_col 
+            ime = max_col
+            jms = min_row
+            jme = max_row 
+            ids = min_col 
+            ide = max_col
+            jds = min_row
+            jde = max_row
+            its = min_col 
+            ite = max_col
+            jts = min_row
+            jte = max_row 
 
             kds = 1 
             kde = 1 
@@ -985,11 +1001,11 @@ subroutine NoahMP401_main(n)
             
             do row = min_row, max_row
                 do col = min_col, max_col
-                    t = NOAHMP401_struc(n)%rct_idx(row,col) ! rct_idx is row major 
+                    t = NOAHMP401_struc(n)%rct_idx(col,row) ! rct_idx is col x row TML 
                     if(t .eq. LIS_rc%udef) then ! undefined for land, but maybe still valid for MMF 
                         xland(col,row)     = 2 ! 2 is used for the undefined grid cells in the HRLDAS test case 
-                        isltyp(col,row)    = NOAHMP401_struc(n)%soil2d(row,col)  ! required by MMF, soil2d is row major  
-                        ivgtyp(col,row)    = NOAHMP401_struc(n)%vege2d(row,col)  ! vege2d is row major, Shugong Wang 
+                        isltyp(col,row)    = NOAHMP401_struc(n)%soil2d(col,row)  ! required by MMF, soil2d is col x row TML  
+                        ivgtyp(col,row)    = NOAHMP401_struc(n)%vege2d(col,row)  ! vege2d is col x row TML 
                     else
                         ! soil type 
                         isltyp(col,row)    = NOAHMP401_struc(n)%noahmp401(t)%soiltype 
@@ -1021,13 +1037,13 @@ subroutine NoahMP401_main(n)
                     ! MMF parameters may be needed for undefined grid cells 
                     ridx = row - NOAHMP401_struc(n)%row_min + 1
                     cidx = col - NOAHMP401_struc(n)%col_min + 1
-                    fdepth(col,row)    = NOAHMP401_struc(n)%fdepth(ridx, cidx)    !! row major for these variables 
-                    topo(col,row)      = NOAHMP401_struc(n)%topo(ridx, cidx)
-                    area(col,row)      = NOAHMP401_struc(n)%area(ridx, cidx)
-                    riverbed(col,row)  = NOAHMP401_struc(n)%riverbed(ridx, cidx)
-                    eqwtd(col,row)     = NOAHMP401_struc(n)%eqwtd(ridx, cidx)
-                    rivercond(col,row) = NOAHMP401_struc(n)%rivercond(ridx, cidx)
-                    rechclim(col,row)  = NOAHMP401_struc(n)%rechclim(ridx, cidx)
+                    fdepth(col,row)    = NOAHMP401_struc(n)%fdepth(cidx, ridx)    !! all variables col x row TML 
+                    topo(col,row)      = NOAHMP401_struc(n)%topo(cidx, ridx)
+                    area(col,row)      = NOAHMP401_struc(n)%area(cidx, ridx)
+                    riverbed(col,row)  = NOAHMP401_struc(n)%riverbed(cidx, ridx)
+                    eqwtd(col,row)     = NOAHMP401_struc(n)%eqwtd(cidx, ridx)
+                    rivercond(col,row) = NOAHMP401_struc(n)%rivercond(cidx, ridx)
+                    rechclim(col,row)  = NOAHMP401_struc(n)%rechclim(cidx, ridx)
                     pexp(col,row)      = 1.0
                 enddo ! col loop
             enddo ! row loop
@@ -1048,9 +1064,9 @@ subroutine NoahMP401_main(n)
             ! get state and output 
             do row = min_row, max_row
                 do col = min_col, max_col
-                    NOAHMP401_struc(n)%eqwtd(row, col) = eqwtd(col,row)
+                    NOAHMP401_struc(n)%eqwtd(col, row) = eqwtd(col,row)
 
-                    t = NOAHMP401_struc(n)%rct_idx(row,col) ! rct_idx is row major, Shugong Wang 
+                    t = NOAHMP401_struc(n)%rct_idx(col,row) ! rct_idx is row major, Shugong Wang 
                     if (t .eq. LIS_rc%udef)  cycle 
                     noahmp401_struc(n)%noahmp401(t)%smc(:)      = smois(col, :, row)
                     noahmp401_struc(n)%noahmp401(t)%sh2o(:)     = sh2oxy(col, :, row)

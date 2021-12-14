@@ -246,7 +246,7 @@ subroutine NoahMP401_setup()
                 do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
                     row = ridx - NOAHMP401_struc(n)%row_min + 1
                     col = cidx - NOAHMP401_struc(n)%col_min + 1
-                    NOAHMP401_struc(n)%fdepth(ridx, cidx) = placeholder(col, row) 
+                    NOAHMP401_struc(n)%fdepth(cidx, ridx) = placeholder(col, row) 
                 enddo
             enddo
 
@@ -264,7 +264,7 @@ subroutine NoahMP401_setup()
                 do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
                     row = ridx - NOAHMP401_struc(n)%row_min + 1
                     col = cidx - NOAHMP401_struc(n)%col_min + 1
-                    NOAHMP401_struc(n)%area(ridx, cidx) = placeholder(col, row)*1E6 ! m2
+                    NOAHMP401_struc(n)%area(cidx, ridx) = placeholder(col, row)*1E6 ! m2
                 enddo
             enddo
             ! read: topo 
@@ -281,7 +281,7 @@ subroutine NoahMP401_setup()
                 do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
                     row = ridx - NOAHMP401_struc(n)%row_min + 1
                     col = cidx - NOAHMP401_struc(n)%col_min + 1
-                    NOAHMP401_struc(n)%topo(ridx, cidx) = placeholder(col, row) 
+                    NOAHMP401_struc(n)%topo(cidx, ridx) = placeholder(col, row) 
                 enddo
             enddo
             ! read: eqwtd
@@ -298,7 +298,7 @@ subroutine NoahMP401_setup()
                 do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
                     row = ridx - NOAHMP401_struc(n)%row_min + 1
                     col = cidx - NOAHMP401_struc(n)%col_min + 1
-                    NOAHMP401_struc(n)%eqwtd(ridx, cidx) = placeholder(col, row) 
+                    NOAHMP401_struc(n)%eqwtd(cidx, ridx) = placeholder(col, row) 
                 enddo
             enddo
             ! read: RECHCLIM
@@ -315,7 +315,7 @@ subroutine NoahMP401_setup()
                 do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
                     row = ridx - NOAHMP401_struc(n)%row_min + 1
                     col = cidx - NOAHMP401_struc(n)%col_min + 1
-                    NOAHMP401_struc(n)%rechclim(ridx, cidx) = placeholder(col, row) 
+                    NOAHMP401_struc(n)%rechclim(cidx, ridx) = placeholder(col, row) 
                 enddo
             enddo
             ! read: riverbed 
@@ -332,7 +332,7 @@ subroutine NoahMP401_setup()
                 do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
                     row = ridx - NOAHMP401_struc(n)%row_min + 1
                     col = cidx - NOAHMP401_struc(n)%col_min + 1
-                    NOAHMP401_struc(n)%riverbed(ridx, cidx) = placeholder(col, row) 
+                    NOAHMP401_struc(n)%riverbed(cidx, ridx) = placeholder(col, row) 
                 enddo
             enddo
             
@@ -346,7 +346,7 @@ subroutine NoahMP401_setup()
                     do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
                         row = ridx - NOAHMP401_struc(n)%row_min + 1
                         col = cidx - NOAHMP401_struc(n)%col_min + 1
-                        NOAHMP401_struc(n)%soil3d(ridx, cidx, k) = placeholder(col, row) 
+                        NOAHMP401_struc(n)%soil3d(cidx, ridx, k) = placeholder(col, row) 
                     enddo
                 enddo
             enddo 
@@ -357,8 +357,8 @@ subroutine NoahMP401_setup()
                 do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
                    
                    do k=2, 16
-                        if(NOAHMP401_struc(n)%soil3d(ridx, cidx, k) >  NOAHMP401_struc(n)%soil3d(ridx, cidx, NOAHMP401_struc(n)%soil2d(ridx,cidx))) then 
-                            NOAHMP401_struc(n)%soil2d(ridx,cidx) = k
+                        if(NOAHMP401_struc(n)%soil3d(cidx, ridx, k) >  NOAHMP401_struc(n)%soil3d(cidx, ridx, NOAHMP401_struc(n)%soil2d(cidx,ridx))) then 
+                            NOAHMP401_struc(n)%soil2d(cidx,ridx) = k
                         endif
                     enddo 
                 enddo
@@ -373,7 +373,7 @@ subroutine NoahMP401_setup()
                     do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
                         row = ridx - NOAHMP401_struc(n)%row_min + 1
                         col = cidx - NOAHMP401_struc(n)%col_min + 1
-                        NOAHMP401_struc(n)%vege3d(ridx, cidx, k) = placeholder(col, row) 
+                        NOAHMP401_struc(n)%vege3d(cidx, ridx, k) = placeholder(col, row) 
                     enddo
                 enddo
             enddo    
@@ -383,14 +383,14 @@ subroutine NoahMP401_setup()
                 do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
                     
                     do k=2, 20
-                        if(NOAHMP401_struc(n)%vege3d(ridx, cidx, k) >  NOAHMP401_struc(n)%vege3d(ridx, cidx, NOAHMP401_struc(n)%vege2d(ridx,cidx))) then 
-                            NOAHMP401_struc(n)%vege2d(ridx,cidx) = k
+                        if(NOAHMP401_struc(n)%vege3d(cidx, ridx, k) >  NOAHMP401_struc(n)%vege3d(cidx, ridx, NOAHMP401_struc(n)%vege2d(cidx,ridx))) then 
+                            NOAHMP401_struc(n)%vege2d(cidx,ridx) = k
                         endif
                     enddo 
 
                     ! if the total fraction from layer 1 to layer 20 is no more than 0.5, this means there is the fraction of the 21st layer is >= 0.5, set the landcover type to be 17 as HRLDAS
-                    if(.not. sum(NOAHMP401_struc(n)%vege3d(ridx, cidx, :))>0.5) then
-                        NOAHMP401_struc(n)%vege2d(ridx,cidx) = 17
+                    if(.not. sum(NOAHMP401_struc(n)%vege3d(cidx, ridx, :))>0.5) then
+                        NOAHMP401_struc(n)%vege2d(cidx,ridx) = 17
                     endif 
                 enddo
             enddo
