@@ -116,7 +116,7 @@ fi
 # Compile standalone Fortran utilities for tuning Air Force Bratseth scheme.
 if [ "$compile_autotune" = "YES" ]; then
     echo "Compiling Air Force Bratseth tuning utilities"
-    if cd utils/afwa/retune_bratseth/src
+    if cd utils/usaf/retune_bratseth/src # EMK Fix path
     then
         echo ""
         make -f Makefile
