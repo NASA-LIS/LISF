@@ -346,48 +346,51 @@ contains
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
-    inquire(file=LIS_rc%paramfile(n), exist=file_exists)
-    if(file_exists) then
-      if(LIS_rc%irrigation_GWabstraction.ne.0) then
+    if ( LIS_rc%irrigation_GWabstraction .ne. 0 .and. &
+         LIS_rc%irrigation_SourcePartition .ne. 0 ) then
+       inquire(file=LIS_rc%paramfile(n), exist=file_exists)
+       if(file_exists) then
 
-       allocate(l_gwratio(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+          allocate(l_gwratio(LIS_rc%lnc(n),LIS_rc%lnr(n)))
 
-       ios = nf90_open(path=LIS_rc%paramfile(n),&
-            mode=NF90_NOWRITE,ncid=nid)
-       call LIS_verify(ios,'Error in nf90_open in the lis input netcdf file')
+          ios = nf90_open(path=LIS_rc%paramfile(n),&
+             mode=NF90_NOWRITE,ncid=nid)
+          call LIS_verify(ios,'Error in nf90_open in the lis input netcdf file')
 
-       write(LIS_logunit,*) "[INFO] Reading in the groundwater irrigation ratio field ... "
+          write(LIS_logunit,*) "[INFO] Reading in the groundwater irrigation ratio field ... "
 
-       allocate(glb_gwratio(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+          allocate(glb_gwratio(LIS_rc%gnc(n),LIS_rc%gnr(n)))
 
-       ios = nf90_inq_varid(nid,'irriggwratio',gwratioId)
-       call LIS_verify(ios,'nf90_inq_varid failed for irriggwratio')
+          ios = nf90_inq_varid(nid,'irriggwratio',gwratioId)
+          call LIS_verify(ios,'nf90_inq_varid failed for irriggwratio')
 
-       ios = nf90_get_var(nid,gwratioId, glb_gwratio)
-       call LIS_verify(ios,'nf90_get_var failed for in sprinkler_irrigationMod')
+          ios = nf90_get_var(nid,gwratioId, glb_gwratio)
+          call LIS_verify(ios,'nf90_get_var failed for in sprinkler_irrigationMod')
 
-       ios = nf90_close(nid)
-       call LIS_verify(ios,'nf90_close failed in sprinkler_irrigationMod')
-       l_gwratio(:,:) = glb_gwratio(&
-            LIS_ews_halo_ind(n,LIS_localPet+1):&
-            LIS_ewe_halo_ind(n,LIS_localPet+1),&
-            LIS_nss_halo_ind(n,LIS_localPet+1):&
-            LIS_nse_halo_ind(n,LIS_localPet+1))
-       deallocate(glb_gwratio)
+          ios = nf90_close(nid)
+          call LIS_verify(ios,'nf90_close failed in sprinkler_irrigationMod')
+          l_gwratio(:,:) = glb_gwratio(&
+             LIS_ews_halo_ind(n,LIS_localPet+1):&
+             LIS_ewe_halo_ind(n,LIS_localPet+1),&
+             LIS_nss_halo_ind(n,LIS_localPet+1):&
+             LIS_nse_halo_ind(n,LIS_localPet+1))
+          deallocate(glb_gwratio)
 
-       do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-          col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
-          row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
-          gwratio(t) = l_gwratio(col,row)
-       enddo
+          do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+             col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
+             row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+             gwratio(t) = l_gwratio(col,row)
+          enddo
 
-       deallocate(l_gwratio)
-     endif 
-    else
-       write(LIS_logunit,*) "[ERR] Groundwater irrigation ratio map: ",&
+          deallocate(l_gwratio)
+       else
+          write(LIS_logunit,*) "[ERR] Groundwater irrigation ratio map: ",&
              LIS_rc%paramfile(n),"[ERR] does not exist."
-       write(LIS_logunit,*) "Program stopping ..."
-       call LIS_endrun
+          write(LIS_logunit,*) "Program stopping ..."
+          call LIS_endrun
+       endif
+    else
+       gwratio = LIS_rc%udef
     endif
 #endif
   end subroutine read_irriggwratio
