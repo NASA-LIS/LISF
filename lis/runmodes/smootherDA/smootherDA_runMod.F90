@@ -143,25 +143,19 @@ contains
                 call LIS_setDynparams(n)
                 call LIS_get_met_forcing(n)
                 call LIS_perturb_forcing(n)
-                if(LIS_rc%DAincrMode(n).eq.1) then
-                   call LIS_irrigation_run(n)
-                endif
+                call LIS_irrigation_run(n)
                 call LIS_surfaceModel_f2t(n)  
                 call LIS_surfaceModel_run(n)
                 call LIS_surfaceModel_diagnoseVarsForDA(n)
                 call LIS_surfaceModel_perturb_states(n)
-                if(LIS_rc%DAincrMode(n).eq.1) then
-                  call LIS_readDAobservations(n)
-                  call LIS_perturb_DAobservations(n)   
-                end if
+                call LIS_readDAobservations(n)
+                call LIS_perturb_DAobservations(n)
                 call LIS_perturb_writerestart(n)
                 call LIS_dataassim_run(n)
                 call LIS_dataassim_output(n)
                 call LIS_surfaceModel_output(n)  
-                call LIS_surfaceModel_writerestart(n)                
-                if(LIS_rc%DAincrMode(n).eq.1) then
-                   call LIS_irrigation_output(n)
-                endif
+                call LIS_surfaceModel_writerestart(n)
+                call LIS_irrigation_output(n)
                 call LIS_routing_run(n)
                 call LIS_routing_writeoutput(n)
                 call LIS_routing_writerestart(n)

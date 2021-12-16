@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<!--- 
+ Written by Shahryar Ahmad
+ Contact: shahryarkhalique.ahmad@nasa.gov
+-->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Freshwater Earth Information System</title>
+    <link rel="icon" href="images/nasalogo.png">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+    <!--[if lte IE 8]><script src="js/html5shiv.js"></script><![endif]-->
+    <!-- <script src="js/jquery.min.js"></script> -->
+    <script src="js/skel.min.js"></script>
+    <script src="js/skel-layers.min.js"></script>
+	  <!-- Custom fonts for the header -->
+	  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+	  <link href='https://fonts.googleapis.com/css?family=Kaushan+Script' rel='stylesheet' type='text/css'>
+	  <link href='https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+	  <link href='https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700' rel='stylesheet' type='text/css'>
+
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <!-- <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/> -->
+
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+
+
+
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="css/leaflet.css">
+    <link rel="stylesheet" href="css/qgis2web.css">
+    <link rel="stylesheet" href="css/fontawesome-all.min.css">
+    <link rel="stylesheet" href="css/leaflet-search.css">
+    <!-- <link rel="stylesheet" href="css/styledLayerControl.css" /> -->
+
+    <!-- For sidebar -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://malihu.github.io/custom-scrollbar/jquery.mCustomScrollbar.min.css">
+
+    <link rel="stylesheet" href="css/sidebar-main.css">
+    <link rel="stylesheet" href="css/sidebar-themes.css">
+
+	<link rel="stylesheet" href="css/Leaflet.Coordinates-0.1.3.css"/>
+	
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    
+    
+    <script>
+        // Date slider
+
+        $(function() {
+            $("#slider-date").slider({
+                range: false,
+                min: new Date('2019-01-02').getTime() / 1000,
+                max: new Date('2019-06-01').getTime() / 1000,
+                step: 86400,
+                animate: 1000,
+                value: new Date('2019-01-02').getTime() / 1000, //, new Date('2013.02.01').getTime() / 1000 ],
+                slide: function(event, ui) {
+                    $("#amount").val((new Date(ui.value * 1000).toDateString())); // + " - " + (new Date(ui.values[ 1 ] *1000)).toDateString() );
+                    dateval = new Date(ui.value * 1000).toISOString().split('T')[0].replace(/-/g, "")
+                    console.log(dateval);
+
+                    if (map.hasLayer(olayer)) {
+                        /// Call LS layer function
+                        addLS(dateval, 1);
+                    }
+
+
+                    for (var id in L.GIBS_LAYERS) {
+                        if (map.hasLayer(gibsLayers[id])) {
+                            /// Call GIBS layer function
+                            addGIBS(dateval);
+                        }
+                    }
+                },
+                // This will trigger when the value is programmatically changed
+                // change: function(event, ui) {
+                //     dateval = new Date(ui.values[ 0 ] *1000).toISOString().split('T')[0].replace(/-/g,"")
+                //     console.log(dateval);
+                //     addLS(dateval,1);
+                //       // $( "#display-value" ).text(ui.value);
+                //   }
+            });
+
+            $("#amount").val((new Date($("#slider-date").slider("values", 0) * 1000).toDateString())); // +
+            //" - " + (new Date($( "#slider-date" ).slider( "values", 1 )*1000)).toDateString());
+
+            // control
+
+            //var value = 0;
+            var rangeSlider = $('#slider-date').slider({
+                animate: true
+            });
+            var uiSlider = $('.ui-slider');
+            var maxSteps = 60;
+
+            $(document).on('click', '#minus', function() {
+                //$('#slider').slider({});
+                value = rangeSlider.slider('value') - 86400;
+                rangeSlider.slider('value', value);
+                console.log('-');
+                console.log('rs',rangeSlider.slider, rangeSlider.slider('value'));
+
+                $("#amount").val((new Date(value * 1000).toDateString())); // + " - " + (new Date(ui.values[ 1 ] *1000)).toDateString() );
+                dateval = new Date(value * 1000).toISOString().split('T')[0].replace(/-/g, "")
+                console.log('dateval', dateval);
+
+                if (map.hasLayer(olayer)) {
+                    /// Call LS layer function
+                    addLS(dateval, 1);
+                }
+
+
+                for (var id in L.GIBS_LAYERS) {
+                    if (map.hasLayer(gibsLayers[id])) {
+                        /// Call GIBS layer function
+                        addGIBS(dateval);
+                    }
+                }
+
+            });
+            $(document).on('click', '#plus', function() {
+                value = rangeSlider.slider('value') + 86400;
+
+                rangeSlider.slider('value', value);
+                console.log('+');
+                console.log(value);
+
+                $("#amount").val((new Date(value * 1000).toDateString())); // + " - " + (new Date(ui.values[ 1 ] *1000)).toDateString() );
+                dateval = new Date(value * 1000).toISOString().split('T')[0].replace(/-/g, "")
+                console.log(dateval);
+
+                if (map.hasLayer(olayer)) {
+                    /// Call LS layer function
+                    addLS(dateval, 1);
+                }
+
+
+
+                for (var id in L.GIBS_LAYERS) {
+                    if (map.hasLayer(gibsLayers[id])) {
+                        /// Call GIBS layer function
+                        addGIBS(dateval);
+                    }
+                }
+
+
+            });
+
+            var playBtn = document.getElementById("play")
+
+            $(document).on('click', '.play', function() {
+
+                var currentValue = rangeSlider.slider('value');
+
+                function fantomClick() {
+                    timer = setTimeout(function() {
+                        $('#plus').trigger('click');
+                        timer = setTimeout(arguments.callee, 1000)
+                    }, 1000);
+                }
+
+                function stopCustomClick() {
+                    clearTimeout(timer);
+                }
+
+                if (playBtn.innerHTML == '<i class="fas fa-play"></i>'){
+                    playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    fantomClick();
+                }
+
+                else if (playBtn.innerHTML == '<i class="fas fa-pause"></i>'){
+                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    console.log('stopping animation');
+                    stopCustomClick();
+                }
+
+
+                // if ( $(this).hasClass('stopped') || !$(this).hasClass('active') ) {
+                //
+                //     $(this).removeClass('stopped');
+                //     $(this).addClass('active');
+                //
+                //     //if ( !$(this).hasClass('stopped') ) {
+                //     fantomClick();
+                //     //}
+                //
+                //     for ( i=currentValue; i < maxSteps; i++ ) {
+                //         if (i == maxSteps) {
+                //             console.log('should be stoped');
+                //         }
+                //     }
+                // }
+                //
+                // else if ( $(this).hasClass('active') ) {
+                //     $(this).removeClass('active');
+                //     $(this).addClass('stopped');
+                //     console.log('position is ' + currentValue);
+                //     stopCustomClick();
+                // }
+            });
+
+
+
+
+        });
+    </script>
+
+    <script src="js/init.js"></script>
+    <style>
+
+    </style>
+    <noscript>
+        <link rel="stylesheet" href="css/skel.css" />
+        <link rel="stylesheet" href="css/style.css" />
+        <link rel="stylesheet" href="css/style-xlarge.css" />
+    </noscript>
+</head>
+
+<body>
+
+
+    <div class="page-wrapper legacy-theme sidebar-bg  toggled border-radius-on">
+
+        <!-- Header -->
+        <div class=floating-menu>
+		<header id="header" style="    background-image: linear-gradient(to right, #000 , #000);">	
+
+<!-- 
+			<button type="button" id="toggle-sidebar" style="z-index:-1; left: -4px;" class="btn btn-dark">
+				<i class="fas fa-angle-right"></i>
+			</button>
+ -->
+			<img style="vertical-align:middle; position:absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);" src="images/BW_Meatball-white.png" height="60" width="75">
+ 
+   			<!-- Navigation -->
+			  <nav class="navbar navbar-expand-lg  fixed-top" id="mainNav">
+				<!--     <div class="container"> -->
+				 <a href="http://eis.mysmce.com/"><img style="vertical-align:middle;position:absolute;top: 0;margin-top:20px;margin-left: 15px;" src="images/eis_logo.png" height="50" width=""></a>
+
+				<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+				  Menu
+				  <i class="fas fa-bars"></i>
+				</button>
+				  <div class="collapse navbar-collapse" id="navbarResponsive" >
+					<ul class="navbar-nav text-uppercase ml-auto" id='global-sidenav'>
+						<li class="nav-item">
+						<a class="nav-link js-scroll-trigger eis" href="https://eis.mysmce.com/about.html">About EIS &nbsp; &nbsp; | </a>
+					  </li> 
+					  <li class="nav-item">
+						<a class="nav-link js-scroll-trigger eis active" href="http://fwis.eis-hydro.mysmce.com/index.html" style="color:#6289e4;">Freshwater</a>
+					  </li>
+								  <li class="nav-item">
+						<a class="nav-link js-scroll-trigger" href="http://eis-sealevel.mysmce.com/">Sea Level Change</a>
+					  </li>
+					  <li class="nav-item">
+						<a class="nav-link js-scroll-trigger" href="http://eis-fire.mysmce.com/">Fire</a>
+					  </li>
+
+					</ul>
+				  </div>
+				<!--     </div>   -->
+			</nav>
+		</header>
+ 
+		</div>
+
+
+        <!-- SIDEBAR -->
+        <nav id="sidebar" class="sidebar-wrapper " >
+
+            <div class="sidebar-content">
+ 
+
+                 <!-- sidebar-menu  -->
+
+
+                <div class=" sidebar-item sidebar-menu" style="margin-top: 37px;">
+                    <span id="outlayercontrol">
+                        <!-- <select id='custom-select'>
+                            <option>Sherlock Holmes</option>
+                            <option>The Great Gatsby</option>
+                            <option>V for Vendetta</option>
+                            <option>The Wolf of Wallstreet</option>
+                            <option>Quantum of Solace</option>
+                        </select> -->
+                    </span>
+                    <ul>
+						<div class="sidebar-item sidebar-brand  top-label">
+							<a href="#" style="color:#fff;">Explorer</a>
+						</div>
+
+                        <!-- sidebar-brand  -->
+                        <div class="sidebar-item sidebar-brand">
+                            <a href="#">NASA Models</a>
+                        </div>
+
+						<!-- ########################## Containerized LIS ########################## -->
+						<li class="sidebar-dropdown">
+                            <a href="#">
+                               <i class="fas fa-cloud"></i>
+                                <span class="menu-text">LIS in the Cloud</span>
+<!--                                 <span class="badge badge-pill badge-danger">Run containerized Land Information System (LIS) model on cloud</span> -->
+                            </a>
+
+							 <div class="sidebar-submenu">
+       							<button     type="button" class="btn btn-outline-warning btn-sm"   style="margin: 15px 0 15px 41px; " onclick="window.open('storymap.html','_blank')"><i class="fab fa-python"></i>&nbsp;&nbsp;Containerized LIS
+       							</button>
+       						</div>
+       					</li>
+
+						<!-- ########################## LIS Outputs ########################## -->
+                        <li class="sidebar-dropdown">
+                            <a href="#">
+                                <i class="fas fa-server"></i>
+                                <span class="menu-text">Existing LIS Outputs</span>
+                                <!-- <span class="badge badge-pill badge-danger">3</span> -->
+                            </a>
+                            
+                            <div class="sidebar-submenu">
+                                <span>
+                                    <select class='custom-select select-raster' id='ls_model' onchange="update_ls_options()">
+											<option value="default"  disabled >- LIS Run -</option>
+                                            <option value="DA" selected>Data Assimilation</option>
+                                            <option value="OL" >Open Loop</option>
+                                        </optgroup>
+                                    </select>
+                                </span>
+                                <span class="badge badge-pill badge-secondary">?
+                                    <span class="tooltiptext" id="tooltiptext_ls_model">
+                                        Select from Data Assimilation (DA) or Open Loop (control simulation without DA)
+                                    </span>
+                                </span>
+                                
+                                
+                                <span>
+                                    <select class='custom-select select-raster' id='ls_da_variable' onchange="update_ls_options()">
+											<option value="default" disabled >- DA Variable -</option>
+											<option value="LAIsmooth" selected>LAI-THySM-AMSR2 DA</option>											
+											<option value="LAIsmooth">MODIS LAI DA</option>
+											<option value="SNODAS">SNODAS DA</option>
+											<option value="THYSM">THySM DA</option>
+                                    </select>
+                                </span>
+                                <span class="badge badge-pill badge-secondary">?
+                                    <span class="tooltiptext " id="tooltiptext_ls_da_variable">
+                                        Select a variable used to perform DA 
+                                    </span>
+                                </span>
+                                
+                                
+                                
+                                <span>
+                                    <select class='custom-select select-raster' id='ls_variable' onchange="setCompareButton()">
+											<option value="default"  disabled>- Output Variable -</option>
+                                            <option value="streamflow" selected>Streamflow</option>
+                                            <option value="SoilMoist_tavg" >Soil Moisture</option>
+                                            <option value="TotalPrecip_tavg">Precipitation</option>
+                                            <option value="LAI_tavg">Leaf Area Index</option>
+                                            <option value="SWE_tavg">Snow Water Equivalent</option>
+                                            <option value="altimeter">Altimeter Heights</option>
+                                    </select>
+                                </span>
+                                <span class="badge badge-pill badge-secondary">?
+                                    <span class="tooltiptext " id="tooltiptext_ls_variable">
+                                        Select a LIS model output for visualization
+                                    </span>
+                                </span>
+
+
+<!-- 
+
+                                <span>
+                                    <select class='custom-select select-raster' id='ls_resolution'>
+											<option value="default"  disabled >- Resolution -</option>
+                                            <option value="10km" selected>10 km</option>
+                                            <option value="1km" disabled>1 km</option>
+                                        </optgroup>
+                                    </select>
+                                </span>
+
+                                
+                                <span class="badge badge-pill badge-secondary">?
+                                    <span class="tooltiptext " id="tooltiptext_ls_resolution">
+                                        Select LIS output resolution 
+                                    </span>
+                                </span>
+ -->
+                                 <span>
+                                    <button type="button" class="btn btn-outline-warning btn-sm"  style="margin: 0 0 7px 65px; width:150px;"  onclick="addLS('20190101',0)"><b>+ </b>Add to Map</button>
+                                    <button type="button" class="btn btn-outline-light btn-sm" id="button-addComparisonAll" disabled style="margin: 5px 0 19px 65px; width:150px;" onclick="addComparisonALL('LIS','20190101')"><b>+ </b>Add to Compare</button>
+                                    <!-- <a href="#" class="button-showlayer">Add Layer</a> -->
+                                </span>
+                            </div>
+                        </li>
+                        
+                        
+                        
+                        <!-- ########################## Remote Sensing ########################## -->
+                        
+                       <!-- 
+ 
+                        <li class="sidebar-dropdown">
+                            <a href="#">
+                                <i class="fa fa-satellite"></i>
+                                <span class="menu-text">Remote Sensing</span>
+                                <!~~ <span class="badge badge-pill badge-warning">New</span> ~~>
+                            </a>
+                            <div class="sidebar-submenu">
+                                <span>
+                                    <select class='custom-select select-raster' id='rs_raster'>
+                                        <optgroup label="Precipitation">
+                                            <option>GPM IMERG</option>
+                                        </optgroup>
+                                        <optgroup label="Soil Moisture">
+                                            <option>SMAP</option>
+                                            <option>CYGNSS</option>
+                                        </optgroup>
+                                        <optgroup label="Terrestrial Water Storage">
+                                            <option>GRACE</option>
+                                            <option>GRACE-FO</option>
+                                        </optgroup>
+                                        <optgroup label="Snow Depth">
+                                            <option>AMSR2</option>
+                                            <option>GAMMA</option>
+                                        </optgroup>
+                                        <optgroup label="Snow Cover">
+                                            <option>MODIS</option>
+                                        </optgroup>
+                                        <optgroup label="Evapotranspiration">
+                                            <option>ECOSTRESS</option>
+                                            <option>OpenET</option>
+                                            <option>Landsat</option>
+                                            <option>MODIS/VIIRS ALEXI</option>
+                                        </optgroup>
+                                        <optgroup label="Vegetation">
+                                            <option>MODIS LAI</option>
+                                            <option>SMAP VOD</option>
+                                            <option>GEDI</option>
+                                        </optgroup>
+                                        <optgroup label="Water Level">
+                                            <option>Jason</option>
+                                            <option>ICESAT-2</option>
+                                            <option>DeltaX</option>
+                                        </optgroup>
+                                        <optgroup label="Water Extent">
+                                            <option>MODIS</option>
+                                            <option>Landsat</option>
+                                            <option>Sentinel</option>
+                                        </optgroup>
+                                        <optgroup label="Landslides">
+                                            <option>...</option>
+                                        </optgroup>
+                                    </select>
+                                </span>
+                                <span class="badge badge-pill badge-secondary">?
+                                    <span class="tooltiptext" id="tooltiptext">
+                                        <b>GPM IMERG Product:</b><br><br>Global Precipitation Measurement (GPM) is an international satellite mission to provide next-generation observations of rain and snow worldwide every three hours. The Integrated
+                                        Multi-satellitE Retrievals for GPM (IMERG) is the unified algorithm that provides rainfall estimates combining data from all passive-microwave instruments in the GPM Constellation.
+                                    </span>
+                                </span>
+
+
+                                <span>
+                                    <select class='custom-select select-raster' id='rs_resolution'>
+                                        <optgroup label="Resolution">
+                                            <option>1 km</option>
+                                            <option>5 km</option>
+                                            <option>10 km</option>
+                                        </optgroup>
+                                    </select>
+                                </span>
+
+                                <div id='date-selector'>
+                                    <label for="rasterdate" id='date-label'>Date:</label>
+                                    <input type="date" id="rasterdate" name="rasterdate" />
+                                </div>
+
+                                <span>
+                                    <button class="button button-showlayer" onclick="addRS()"><b>+ </b>Add Layer</button>
+                                    <!~~ <a href="#" class="button-showlayer">Add Layer</a> ~~>
+                                </span>
+                            </div>
+                        </li>
+                        
+                        
+ -->
+					
+
+					<!-- 
+	########################## ML ##########################                        <li class="sidebar-dropdown">
+                            <a href="#">
+                                <i class="fa fa-database"></i>
+                                <span class="menu-text">Machine Learning</span>
+                            </a>
+                            <div class="sidebar-submenu">
+                                <span>
+                                    <select class='custom-select select-raster' id=''>
+                                        <optgroup label="Water Extent">
+                                            <option>Fusion (Sentinel1-Landsat)</option>
+                                            <option>ML (Sentinel1-MODIS)</option>
+                                        </optgroup>
+                                    </select>
+                                </span>
+                                <span class="badge badge-pill badge-secondary">?
+                                    <span class="tooltiptext">
+                                        Learn more
+                                    </span>
+                                </span>
+
+                                <span>
+                                    <select class='custom-select select-raster' id=''>
+                                        <optgroup label="Resolution">
+                                            <option>10 m</option>
+                                            <option>30 m</option>
+                                        </optgroup>
+                                    </select>
+                                </span>
+
+
+                                <div id='date-selector'>
+                                    <label for="rasterdate" id='date-label'>Date:</label>
+                                    <input type="date" id="rasterdate" name="rasterdate" />
+                                </div>
+
+                                <span>
+                                    <button class="button button-showlayer"><b>+ </b>Add Layer</button>
+                                    <a href="#" class="button-showlayer">Add Layer</a>                                </span>
+                            </div>
+                        </li>
+
+						
+						########################## Reanalysis ##########################  
+                        <li class="sidebar-dropdown">
+                            <a href="#">
+                                <i class="fa fa-globe"></i>
+                                <span class="menu-text">Reanalysis/Forecasts</span>
+                            </a>
+                            <div class="sidebar-submenu">
+                                <span>
+                                    <select class='custom-select select-raster' id=''>
+                                        <option>MERRA2</option>
+                                        <option>GEOS5</option>
+                                    </select>
+                                </span>
+                                <span class="badge badge-pill badge-secondary">?
+                                    <span class="tooltiptext">
+                                        Learn more
+                                    </span>
+                                </span>
+
+
+                                <span>
+                                    <select class='custom-select select-raster' id=''>
+                                        <optgroup label="Resolution">
+                                            <option>10 km</option>
+                                            <option>25 km</option>
+                                            <option>50 km</option>
+                                        </optgroup>
+                                    </select>
+                                </span>
+
+
+                                <div id='date-selector'>
+                                    <label for="rasterdate" id='date-label'>Date:</label>
+                                    <input type="date" id="rasterdate" name="rasterdate" />
+                                </div>
+
+                                <span>
+                                    <button class="button button-showlayer"><b>+ </b>Add Layer</button>
+                                    <a href="#" class="button-showlayer">Add Layer</a>                                </span>
+                            </div>
+                        </li>
+ -->
+
+						<!-- ########################## GIBS ########################## -->
+						
+						
+						
+						 <!-- sidebar-brand  -->
+                        <div class="sidebar-item sidebar-brand">
+                            <a href="#">NASA GIBS</a>
+                        </div>
+					
+						<!-- Button trigger modal -->
+						<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#exampleModalCenter" style="margin: 0 0 19px 63px; width:152px;">
+						  Explore GIBS Layers
+						</button>
+						<span class="badge badge-pill badge-secondary">?
+							<span class="tooltiptext">
+								<b>Global Imagery Browse Services (GIBS)</b><br><br>The GIBS imagery archive includes a large number of imagery products representing visualized science data from the NASA Earth Observing System Data and Information System (EOSDIS). Each imagery product is generated at the native resolution of the source data to provide "full resolution" visualizations of a science parameter.
+								  <a href="https://wiki.earthdata.nasa.gov/display/GIBS/GIBS+Available+Imagery+Products" target="_blank">See all products</a>
+							</span>
+						</span>
+
+
+						<!-- Modal -->
+						<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+						  <div class="modal-dialog modal-dialog-centered" role="document">
+							<div class="modal-content" style="background-color:#1d1d1dbf ">
+							  <div class="modal-header" style=" color:#fff;">
+								<img src="images/gibs.png" width="27">
+								<h5 class="modal-title" id="exampleModalLongTitle">&nbsp; &nbsp; GIBS Explorer</h5> 
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #fff;">
+								  <span aria-hidden="true">&times;</span>
+								</button>
+							  </div>
+							  <div class="modal-body" style=" color:#fff;">
+	
+								<span>
+									<h5>Select Layer</h5>
+									<select class='custom-select  ' id='gibs_raster' >
+										<optgroup label="Soil Moisture">
+											<option value="SMAP_L4_Analyzed_Root_Zone_Soil_Moisture">SMAP_L4_Analyzed_Surface_Soil_Moisture</option>
+											<option value="SMAP_L4_Analyzed_Surface_Soil_Moisture">SMAP_L4_Analyzed_Surface_Soil_Moisture</option>
+											<option value="SMAP_L4_Uncertainty_Analyzed_Root_Zone_Soil_Moisture">SMAP_L4_Uncertainty_Analyzed_Root_Zone_Soil_Moisture</option>
+											<option value="SMAP_L4_Uncertainty_Analyzed_Surface_Soil_Moisture">SMAP_L4_Uncertainty_Analyzed_Surface_Soil_Moisture</option>
+										</optgroup>
+										<optgroup label="Precipitation">
+											<option value="AMSR2_Surface_Precipitation_Rate_Day">AMSR2 Surface ppt rate (Day)</option>
+											<option value="AMSR2_Surface_Precipitation_Rate_Night">AMSR2 Surface ppt rate (Night)</option>
+											<option value="AIRS_Precipitation_Day">Aqua/AIRS precipitation (Day)</option>
+											<option value="AIRS_Precipitation_Night">Aqua/AIRS precipitation (Night)</option>
+											<option value="GMI_Rain_Rate_Asc">GMI_Rain_Rate_Asc</option>
+											<option value="GMI_Rain_Rate_Dsc">GMI_Rain_Rate_Dsc</option>
+											
+										</optgroup>
+
+										<optgroup label="Corrected Reflectance">
+											<option value="MODIS_Terra_CorrectedReflectance_TrueColor">MODIS Terra (True Color)</option>
+											<option value="MODIS_Aqua_CorrectedReflectance_TrueColor">MODIS Aqua (True Color)</option>
+											<option value="MODIS_Terra_CorrectedReflectance_Bands721">MODIS Terra (Bands 7-2-1)</option>
+											<option value="MODIS_Aqua_CorrectedReflectance_Bands721">AMSR-U2 NPD (Night, 25km)</option>
+										</optgroup>
+										<optgroup label="Surface Temperature">
+											<option value="MODIS_Terra_Land_Surface_Temp_Day">MODIS Terra LST (Day)</option>
+											<option value="MODIS_Terra_Land_Surface_Temp_Night">MODIS Terra LST (Night)</option>
+											<option value="MODIS_Aqua_Land_Surface_Temp_Day">MODIS Aqua LST (Day)</option>
+											<option value="MODIS_Aqua_Land_Surface_Temp_Night">MODIS Aqua LST (Night)</option>
+										</optgroup>
+										<optgroup label="Snow">
+											<option value="SMAP_L4_Snow_Mass">SMAP_L4_Snow_Mass</option>
+											<option value="GMI_Snow_Rate_Asc">GMI_Snow_Rate_Asc</option>
+											<option value="GMI_Snow_Rate_Dsc">GMI_Snow_Rate_Dsc</option>
+										</optgroup>
+										<optgroup label="Wind Speed">
+											<option value="AMSR2_Wind_Speed_Day">AMSR2_Wind_Speed_Day</option>
+											<option value="AMSR2_Wind_Speed_Night">AMSR2_Wind_Speed_Night</option>
+										</optgroup>
+										<optgroup label="Night Lights">
+											<option value="VIIRS_CityLights_2012">VIIRS_CityLights_2012</option>
+										</optgroup>
+
+									</select>
+								</span>
+									
+									
+	 
+							  </div>
+							  <div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-success" onclick="addGIBS('20190101')">Add to Map</button>
+							  </div>
+							</div>
+						  </div>
+						</div>
+
+
+                       <!-- 
+ <li class="sidebar-dropdown">
+                            <a href="#">
+                                <i class="fa fa-globe"></i>
+                                <span class="menu-text">NASA GIBS</span>
+                            </a>
+                            <div class="sidebar-submenu">
+                                <span>
+                                    <img src="images/gibs.png" width="27">
+                                    <select class='custom-select select-raster' id='gibs_raster' >
+                                        <optgroup label="Precipitation">
+                                            <option value="AMSR2_Surface_Precipitation_Rate_Day">AMSR2 Surface ppt rate (Day)</option>
+                                            <option value="AMSR2_Surface_Precipitation_Rate_Night">AMSR2 Surface ppt rate (Night)</option>
+                                            <option value="AIRS_Precipitation_Day">Aqua/AIRS precipitation (Day)</option>
+                                            <option value="AIRS_Precipitation_Night">Aqua/AIRS precipitation (Night)</option>
+                                        </optgroup>
+                                        <optgroup label="Soil Moisture">
+                                            <option value="SMAP_L3_Passive_Enhanced_Day_Soil_Moisture">SMAP L3 Passive (Day, 9km)</option>
+                                            <option value="SMAP_L3_Passive_Enhanced_Night_Soil_Moisture">SMAP L3 Passive (Night, 9km)</option>
+                                            <option value="AMSRU2_Soil_Moisture_NPD_Day">AMSR-U2 NPD (Day, 25km)</option>
+                                            <option value="AMSRU2_Soil_Moisture_NPD_Night">AMSR-U2 NPD (Night, 25km)</option>
+                                        </optgroup>
+                                        <optgroup label="Corrected Reflectance">
+                                            <option value="MODIS_Terra_CorrectedReflectance_TrueColor">MODIS Terra (True Color)</option>
+                                            <option value="MODIS_Aqua_CorrectedReflectance_TrueColor">MODIS Aqua (True Color)</option>
+                                            <option value="MODIS_Terra_CorrectedReflectance_Bands721">MODIS Terra (Bands 7-2-1)</option>
+                                            <option value="MODIS_Aqua_CorrectedReflectance_Bands721">AMSR-U2 NPD (Night, 25km)</option>
+                                        </optgroup>
+                                        <optgroup label="Surface Temperature">
+                                            <option value="MODIS_Terra_Land_Surface_Temp_Day">MODIS Terra LST (Day)</option>
+                                            <option value="MODIS_Terra_Land_Surface_Temp_Night">MODIS Terra LST (Night)</option>
+                                            <option value="MODIS_Aqua_Land_Surface_Temp_Day">MODIS Aqua LST (Day)</option>
+                                            <option value="MODIS_Aqua_Land_Surface_Temp_Night">MODIS Aqua LST (Night)</option>
+                                        </optgroup>
+                                        <optgroup label="Snow Water Equivalent">
+                                            <option value="AMSR2_Snow_Water_Equivalent">AMSR2 SWE</option>
+                                        </optgroup>
+
+                                    </select>
+                                </span>
+                                <span class="badge badge-pill badge-secondary">?
+                                    <span class="tooltiptext">
+                                        <b>Global Imagery Browse Services (GIBS)</b><br><br>The GIBS imagery archive includes a large number of imagery products representing visualized science data from the NASA Earth Observing System Data and Information System (EOSDIS). Each imagery product is generated at the native resolution of the source data to provide "full resolution" visualizations of a science parameter.
+                                          <a href="https://wiki.earthdata.nasa.gov/display/GIBS/GIBS+Available+Imagery+Products" target="_blank">See all products</a>
+                                    </span>
+                                </span>
+
+							   <!~~ SHOW DIALOG BOX OPTIONS ~~>
+<!~~ 								<button class = "button-showlayer" id="b1">Open Dialog Box</button> ~~>
+<!~~ 								<div id=msg></div> ~~>
+
+								<div id="my_dialog" title="GIBS Explorer">
+										<span>
+											<img src="images/gibs.png" width="27">
+											<select class='custom-select select-raster' id='gibs_raster' >
+												<optgroup label="Precipitation">
+													<option value="AMSR2_Surface_Precipitation_Rate_Day">AMSR2 Surface ppt rate (Day)</option>
+													<option value="AMSR2_Surface_Precipitation_Rate_Night">AMSR2 Surface ppt rate (Night)</option>
+													<option value="AIRS_Precipitation_Day">Aqua/AIRS precipitation (Day)</option>
+													<option value="AIRS_Precipitation_Night">Aqua/AIRS precipitation (Night)</option>
+												</optgroup>
+												<optgroup label="Soil Moisture">
+													<option value="SMAP_L3_Passive_Enhanced_Day_Soil_Moisture">SMAP L3 Passive (Day, 9km)</option>
+													<option value="SMAP_L3_Passive_Enhanced_Night_Soil_Moisture">SMAP L3 Passive (Night, 9km)</option>
+													<option value="AMSRU2_Soil_Moisture_NPD_Day">AMSR-U2 NPD (Day, 25km)</option>
+													<option value="AMSRU2_Soil_Moisture_NPD_Night">AMSR-U2 NPD (Night, 25km)</option>
+												</optgroup>
+												<optgroup label="Corrected Reflectance">
+													<option value="MODIS_Terra_CorrectedReflectance_TrueColor">MODIS Terra (True Color)</option>
+													<option value="MODIS_Aqua_CorrectedReflectance_TrueColor">MODIS Aqua (True Color)</option>
+													<option value="MODIS_Terra_CorrectedReflectance_Bands721">MODIS Terra (Bands 7-2-1)</option>
+													<option value="MODIS_Aqua_CorrectedReflectance_Bands721">AMSR-U2 NPD (Night, 25km)</option>
+												</optgroup>
+												<optgroup label="Surface Temperature">
+													<option value="MODIS_Terra_Land_Surface_Temp_Day">MODIS Terra LST (Day)</option>
+													<option value="MODIS_Terra_Land_Surface_Temp_Night">MODIS Terra LST (Night)</option>
+													<option value="MODIS_Aqua_Land_Surface_Temp_Day">MODIS Aqua LST (Day)</option>
+													<option value="MODIS_Aqua_Land_Surface_Temp_Night">MODIS Aqua LST (Night)</option>
+												</optgroup>
+												<optgroup label="Snow Water Equivalent">
+													<option value="AMSR2_Snow_Water_Equivalent">AMSR2 SWE</option>
+												</optgroup>
+
+											</select>
+										</span>
+                                    
+								</div>
+							
+							
+							    <!~~ SHOW BUTTON ~~>
+                                <span>
+                                    <button class="button button-showlayer" onclick="addGIBS('20190101')"><b>+ </b>Add to Map</button>
+<!~~ 
+                                    <button class="button button-addtocompare" onclick="addComparisonALL('GIBS','20190101')"><b>+ </b>Add to Compare</button>
+ ~~>
+                                    <!~~ <a href="#" class="button-showlayer">Add Layer</a> ~~>
+                                </span>
+                            </div>
+                            
+
+                        </li>
+ -->
+
+
+
+
+						<!-- sidebar-brand  -->
+                        <div class="sidebar-item sidebar-brand">
+                            <a href="#">COMPARE RASTERS</a>
+                        </div>
+
+                        <li class="sidebar-dropdown">
+<!-- 
+                            <a href="#">
+                                <i class="fa fa-images"></i>
+                                <span class="menu-text">Layer 1</span>
+                                <!~~ <span class="badge badge-pill badge-primary">Beta</span> ~~>
+                            </a>
+                            <div class="sidebar-submenu">
+                            
+ -->
+ 
+
+								<div style="display: inline;" align="center">
+      								<div style="float: left; background:none; padding-left: 15px;">
+      									<button id="compbutton_left" class="button compare-button" value = 'nolayer' onclick=""><b>+ </b>LAYER 1</button>
+      								</div>
+      								<div style="float: right; background:none; padding-right: 15px;">
+      									<button id="compbutton_right" class="button compare-button" value = 'nolayer' onclick=""><b>+ </b>LAYER 2</button>
+      								</div>
+      							</div>
+      								
+      							<button type="button" class="btn btn-primary btn-sm" onclick="javascript:addComparisonTOMAP();" style="margin: 0 0 19px 63px; width:152px;"><i class="far fa-images"></i>&nbsp;&nbsp;Compare</button>
+      							
+<!-- 
+      							<div style="display: inline;" align="center">
+      								<div style="float: left; background:none; padding-left: 25px;">
+      									<button class="button button-showlayer" onclick="javascript:addComparisonTOMAP();"><i class="far fa-images"></i>&nbsp;&nbsp;Compare</button>
+      								</div>
+      								<div style="float: right; background:none; padding-right: 25px;">
+      									<button class="button compare-button" onclick="javascript:removeComparison();">Reset</button>
+      								</div>
+      							</div>
+ -->
+      							
+      							
+                        </li>
+
+
+
+
+                        <!-- sidebar-brand  -->
+<!-- 
+                        <div class="sidebar-item sidebar-brand">
+                            <a href="#">CASE STUDIES</a>
+                        </div>
+       							<button class="button button-showlayer" onclick="window.open('storymap.html','_blank')"><i class="far fa-images"></i>&nbsp;&nbsp;Explore Stories
+       							</button>
+ -->
+
+
+
+                    </ul>
+                </div>
+                <!-- sidebar-menu  -->
+            </div>
+
+
+			<!-- sidebar-footer  -->
+			<div class="sidebar-footer">
+				<div class="dropdown">
+
+					<a href="index.html"  >
+						<i class="fa fa-home"></i>
+						<span> Home </span>
+					</a>
+				</div>
+				<div class="dropdown">
+					<a href="storymap.html"  aria-haspopup="true" aria-expanded="false">
+						<i class="fas fa-water"></i>
+						<span  >Case Studies</span>
+					</a>
+
+				</div>
+
+				<div>
+					<a href="explorer.html">
+						<i class="fa fa-refresh" aria-hidden="true"></i>
+						<span  >Reset</span>
+					</a>
+				</div>
+
+			</div>
+        </nav>
+
+
+
+
+        <!-- Map content on main page -->
+        <!-- <main class="page-content pt-2"> -->
+        <div id="map-container">
+            <!-- For Charts -->
+            <div id="chart-container">
+                <!-- <iframe src="http://depts.washington.edu/saswe/columbia/temperature_reservoir.html?grandid=60&name=Bumping%20Lake" width="730" height="420" frameborder="0" scrolling="0" overflow="hidden">
+                </iframe>
+                 -->
+            </div>
+
+
+
+			<!-- Opacity slider -->
+			 <div id="slider-opacity-container">
+				<input id="slide" type="range" min="0" max="1" step="0.01" value="1" oninput="updateOpacity(this.value)">
+				<i class="far fa-eye fa-lg" id= "eyeicon" style="color:white;opacity:0.9"></i>				
+			</div>
+				
+				
+            <!-- Date slider -->
+            <div id="slider-date-container">
+                <!-- <span id="amount"></span> -->
+                <input type="text" id="amount" disabled size="100" />
+                <div class="slider-date" id="slider-date"></div>
+                <div id="controls">
+                    <button class="controls play" id="play" title="Play Animation"><i class="fas fa-play"></i></button>
+                    <!-- <button class="controls pause" id="pause"><i class="fas fa-pause"></i></button> -->
+                    <button id="minus" class="controls minus" title="Step forward a day"><i class="fas fa-backward"></i></button>
+                    <button id="plus" class="controls plus" title="Step backward a day"><i class="fas fa-forward"></i></button>
+
+                </div>
+                
+                
+                
+
+            </div>
+
+
+            <!-- Main map -->
+            <div id="map">
+            </div>
+
+
+        </div>
+        <!-- </main> -->
+
+
+
+    </div>
+    <!-- page-wrapper -->
+
+
+    <script src="js/qgis2web_expressions.js"></script>
+    <script src="js/leaflet.js"></script>
+    <script src="js/multi-style-layer.js"></script>
+    <script src="js/leaflet.rotatedMarker.js"></script>
+    <script src="js/leaflet.pattern.js"></script>
+    <!-- <script src="js/leaflet-hash.js"></script> -->
+    <script src="js/Autolinker.min.js"></script>
+    <script src="js/rbush.min.js"></script>
+    <script src="js/labelgun.min.js"></script>
+    <script src="js/labels.js"></script>
+    <script src="js/leaflet-search.js"></script>
+    <script src="data/MissRiverBasin0.js"></script>
+	<script src="data/rivers_mrb_0.js"></script>
+    <!-- <script src="js/styledLayerControl.js"></script> -->
+    <script src="https://unpkg.com/esri-leaflet@2.1.1/dist/esri-leaflet.js"></script>
+    <script src="js/L.Control.HtmlLegend.js"></script>
+    <!-- for raster vis -->
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://npmcdn.com/geotiff@0.3.6/dist/geotiff.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
+    <script src="js/leaflet.canvaslayer.field.js"></script>
+   <script src="js/leaflet-side-by-side_overlays.js"></script>
+<!--     <script src="js/leaflet-side-by-side.js"></script> -->
+
+	<script type="text/javascript" src="js/Leaflet.Coordinates-0.1.3.min.js"></script>
+
+    <!-- GIBS layers -->
+    <script src="js/GIBSLayer.js"></script>
+    <script src="js/GIBSMetadata.js"></script>
+
+    <script>
+        // Initializations
+        var highlightLayer;
+        var olayer = L.imageOverlay();
+		var leftLayer = L.imageOverlay();
+		var rightLayer = L.imageOverlay();
+		var comptool = L.control.sideBySide({}, {});
+		var gibsLayer1;
+		var gibsLayer2;
+		
+		var imageBounds = [
+					[28.935, -113.925],
+					[49.735, -77.845]
+				];
+		
+		
+        var gibsLayers = {};
+        for (var id in L.GIBS_LAYERS) {
+            gibsLayers[id] = new L.GIBSLayer(id, {
+                date: new Date("2019-01-01"),
+                transparent: true
+            });
+        }
+
+		var comptool = L.control.sideBySide({},{});
+
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString') {
+                highlightLayer.setStyle({
+                    color: '#ffff00',
+                });
+            } else {
+                highlightLayer.setStyle({
+                    fillColor: '#ffff00',
+                    fillOpacity: 1
+                });
+            }
+
+            // highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl: false
+        }).fitBounds([
+            [26.4186734618, -114.481892907],
+            [47.9971685679, -69.8194993952]
+        ]);
+        map.setZoom(5);
+
+		L.control.coordinates({
+			position:"bottomright",
+			decimals:2,
+			decimalSeperator:".",
+			labelTemplateLat:"Lat: {y}",
+			labelTemplateLng:"Lon: {x}"
+		}).addTo(map);
+
+        // var hash = new L.Hash(map);
+        // map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({
+            truncate: {
+                length: 30,
+                location: 'smart'
+            }
+        });
+        var bounds_group = new L.featureGroup([]);
+
+        function setBounds() {}
+
+
+        function style_MissRiverBasin0_0() {
+            return {
+                pane: 'pane_MissRiverBasin0',
+                opacity: 1,
+                color: 'rgba(36,151,227,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 4.0,
+                fillOpacity: 0,
+            }
+        }
+        map.createPane('pane_MissRiverBasin0');
+        map.getPane('pane_MissRiverBasin0').style.zIndex = 400;
+        map.getPane('pane_MissRiverBasin0').style['mix-blend-mode'] = 'normal';
+        var layer_MissRiverBasin0 = new L.geoJson(json_MissRiverBasin0, {
+            attribution: '<a href=""></a>',
+            pane: 'pane_MissRiverBasin0',
+            style: style_MissRiverBasin0_0,
+        });
+
+        bounds_group.addLayer(layer_MissRiverBasin0);
+        map.addLayer(layer_MissRiverBasin0);
+        setBounds();
+
+
+		function style_rivers_mrb_0_0() {
+            return {
+                pane: 'pane_rivers_mrb_0',
+                opacity: 1,
+                color: '#3561e2f5',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: false,
+            }
+        }
+        map.createPane('pane_rivers_mrb_0');
+        map.getPane('pane_rivers_mrb_0').style.zIndex = 400;
+        map.getPane('pane_rivers_mrb_0').style['mix-blend-mode'] = 'normal';
+        var layer_rivers_mrb_0 = new L.geoJson(json_rivers_mrb_0, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_rivers_mrb_0',
+            layerName: 'layer_rivers_mrb_0',
+            pane: 'pane_rivers_mrb_0',
+            style: style_rivers_mrb_0_0,
+        });
+        bounds_group.addLayer(layer_rivers_mrb_0);
+        map.addLayer(layer_rivers_mrb_0);
+        setBounds();
+        
+        
+
+        // Base Layers  //////////////////////////
+        var basemapDark = L.esri.basemapLayer('DarkGray');
+        basemapDark.addTo(map);
+
+        var basemapTopo = L.esri.basemapLayer('Topographic');
+
+        var basemapTerrain = L.esri.basemapLayer('Terrain');
+
+
+        var basemapStreet = L.esri.basemapLayer('Streets');
+        var basemap2 = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
+            maxZoom: 13
+        });
+
+
+        var Stamen_Terrain = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}', {
+            attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            subdomains: 'abcd',
+            minZoom: 0,
+            maxZoom: 18,
+            ext: 'png'
+        });
+
+        var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        });
+
+        var Esri_NatGeoWorldMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC',
+            maxZoom: 16
+        });
+        var Thunderforest_Landscape = L.tileLayer('https://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=33cde94253dc46b0a4945dd1b82ec5c6', {
+            attribution: '&copy; <a href="http://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            apikey: '<your apikey>',
+            maxZoom: 22
+        });
+
+
+
+        var baseLayers = {
+            "Dark": basemapDark,
+            "Satellite": Esri_WorldImagery,
+            "Terrain": basemapTerrain,
+            "Topographic": basemapTopo
+        };
+
+
+        // L.control.layers({}, {
+        //     '<img src="legend/MissRiverBasin0.png" id="leg" width="13"/> Mississippi Basin': layer_MissRiverBasin0,
+        // }, {
+        //     position: 'topright',
+        //     collapsed: false
+        // }).addTo(map);
+
+
+        setBounds();
+
+        L.control.layers(baseLayers, {
+            '<img src="legend/MissRiverBasin0.png" id="leg" width="13"/> Mississippi Basin': layer_MissRiverBasin0,
+            '<img src="legend/MissRiverBasin0.png" id="leg" width="13"/> Rivers': layer_rivers_mrb_0
+        }, {
+            position: "topright"
+        }).addTo(map);
+
+
+
+        var scale = L.control.scale({
+            position: 'bottomright'
+        }).addTo(map);
+        L.control.zoom({
+            position: 'bottomright',
+            minZoom: 3,
+            maxZoom: 21
+        }).addTo(map);
+
+
+        // Initialize legend for RS data
+        var controlRS = L.control.layers({}, {}, {
+            position: "topleft",
+            collapsed: false
+        });
+        // controlRS.addTo(map);
+
+        var legend = L.control({
+            position: 'topleft'
+        });
+
+
+
+
+        ///////////////////////////////////// ADDITIONAL FUNCTIONALITIES ///////////////////////
+
+
+        // Add/remove compare dataset option
+        // function fireRS(checkboxElem) {
+        //     console.log('fired');
+        //     if (checkboxElem.checked) {
+        //         addRS();
+        //
+        //     } else {
+        //         removeRS();
+        //     }
+        // }
+
+  		
+  		
+  		
+  		// I. LIS vis //////////////////////////////////////
+		
+		function update_ls_options() {
+			var ls_model = document.getElementById("ls_model");
+            var ls_da_variable = document.getElementById("ls_da_variable")
+            var ls_variable = document.getElementById("ls_variable")
+//             var ls_resolution = document.getElementById("ls_resolution")
+
+            var ls_model_value = ls_model.options[ls_model.selectedIndex].value
+            var ls_da_variable_value = ls_da_variable.options[ls_da_variable.selectedIndex].value
+            var ls_variable_value = ls_variable.options[ls_variable.selectedIndex].value
+            var ls_resolution_value = '10km' //ls_resolution.options[ls_resolution.selectedIndex].value
+            
+            if (ls_model_value == 'OL') { 	
+            	ls_da_variable.value='default';
+            	ls_da_variable.disabled = true;
+            
+            	var op = ls_variable.getElementsByTagName("option");
+				for (var i = 0; i < op.length; i++) {
+				  if (op[i].value == "default") {
+					op[i].disabled = true;
+				  } else {
+					op[i].disabled = false;
+				  }
+				}
+            } 
+            
+            else if (ls_model_value == 'DA') { 	
+            	ls_da_variable.disabled = false;
+            	
+            	if (ls_da_variable_value == 'THYSM') { 	
+					var op = ls_variable.getElementsByTagName("option");
+					for (var i = 0; i < op.length; i++) {
+					  if (op[i].value == "SoilMoist_tavg") {
+						op[i].disabled = false;
+						op[i].selected = true;
+					  } else {
+						op[i].disabled = true;
+					  }
+					}
+
+				} else {
+					var op = ls_variable.getElementsByTagName("option");
+					for (var i = 0; i < op.length; i++) {
+					  if (op[i].value == "default") {
+						op[i].disabled = true;
+					  } else {
+						op[i].disabled = false;
+					  }
+					}
+				}
+            	
+            	
+            }
+            
+		}
+		
+		
+		
+		// Add chart for streamflow ///////////////////////////////////////////////
+		var LeafIcon = L.Icon.extend({
+			options: {
+				iconSize: [9, 9]
+			}
+		});
+
+		var greenIcon = new LeafIcon({iconUrl: 'images/dot.png'})
+
+		var LeafIcon = L.Icon.extend({
+			options: {
+				iconSize: [13, 13]
+			}
+		});
+
+		var mainIcon = new LeafIcon({iconUrl: 'images/station_green.png'})
+
+		var markers = [
+						L.marker([45.60135,	-96.87202],{icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=05290000" frameborder="0"></iframe>',{maxWidth:"auto"}),
+
+						L.marker([43.693883,	-101.932652], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=06446500" frameborder="0"></iframe>',{maxWidth:"auto"}),
+
+						L.marker([46.914992,	-100.813742], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=06342450" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([41.023579,	-106.824766], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=06623800" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([39.985006,	-100.560148], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=06846500" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([42.836091,	-92.2574], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=05420680" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([39.520464,	-91.34275], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=05508805" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([39.812545,	-86.953899], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=03340800" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([36.991378,	-91.013511], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=07067000" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([35.880082,	-94.486606], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=07196900" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([35.054257,	-89.54119], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=07030500" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([30.996023,	-92.673755], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=08013000" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([32.017778,	-90.876944], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=07290650" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([36.426207,	-82.95183], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=03491000" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([39.008803,	-90.977536], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=05514500" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+			
+						// main river
+						L.marker([45.545,	-94.145], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=05270700" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						//L.marker([30.445,	-91.195], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=07374000" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([37.905,	-89.835], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=07020500" frameborder="0"></iframe>',{maxWidth:"auto"}),
+						
+						L.marker([38.625,	-90.185	], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=07010000" frameborder="0"></iframe>',{maxWidth:"auto"})
+			
+					]
+
+		var streamflowMarkers = L.featureGroup();
+		for (var i = 0; i < markers.length; i++) {
+			var currentMarker = markers[i];
+			currentMarker.addTo(streamflowMarkers);
+		}
+		
+		
+		// function to add streamflow markers
+		function addChartPoint(){
+			if (map.hasLayer(streamflowMarkers)) {
+				map.removeLayer(streamflowMarkers);
+			}
+            else {
+            	streamflowMarkers.addTo(map);
+			}	
+			
+			if (map.hasLayer(layer_rivers_mrb_0)) {
+				map.removeLayer(layer_rivers_mrb_0);
+			}
+            else {
+            	layer_rivers_mrb_0.addTo(map);
+			}		
+
+		}			
+			
+			
+		
+		// Add chart for altimeter ///////////////////////////////////////////////
+		var LeafIcon = L.Icon.extend({
+			options: {
+				iconSize: [13, 13]
+			}
+		});
+
+		var mainIcon = new LeafIcon({iconUrl: 'images/station_red.png'})
+
+		var markers = [			
+						// main river
+						L.marker([30.87,	-91.53], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_altimeter.html?stnid=8502" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([35.75,	-89.86], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_altimeter.html?stnid=8504" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([43.91,	-91.35], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_altimeter.html?stnid=8513" frameborder="0"></iframe>',{maxWidth:"auto"}),
+						
+						L.marker([30.75, -91.59	], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_altimeter.html?stnid=8501" frameborder="0"></iframe>',{maxWidth:"auto"})
+			
+					]
+
+		var altimMarkers = L.featureGroup();
+		for (var i = 0; i < markers.length; i++) {
+			var currentMarker = markers[i];
+			currentMarker.addTo(altimMarkers);
+		}
+		
+		
+		// function to add streamflow markers
+		function addAltimPoint(){
+			if (map.hasLayer(altimMarkers)) {
+				map.removeLayer(altimMarkers);
+			}
+            else {
+            	altimMarkers.addTo(map);
+			}	
+			
+			if (map.hasLayer(layer_rivers_mrb_0)) {
+				map.removeLayer(layer_rivers_mrb_0);
+			}
+            else {
+            	layer_rivers_mrb_0.addTo(map);
+			}		
+			
+
+			var slider_opacity = document.getElementById("slider-opacity-container");
+			slider_opacity.style.display = "none";
+			
+				
+		}
+		
+		
+		
+        function addLS(dateval, fromSlider) {
+                	
+        	// remove compare tool
+        	map.removeControl(comptool)
+			map.removeLayer(leftLayer)
+			map.removeLayer(rightLayer)
+			
+            /// fade out exiting layer
+            $(olayer._image).fadeOut(300, function() {
+            });
+
+			//reset compare tool
+// 			document.querySelector('#compbutton_left').innerHTML = '+ Layer 1' ;
+// 			document.getElementById("compbutton_left").style.background='#20242d';
+// 			document.querySelector('#compbutton_right').innerHTML = '+ Layer 2' ;
+// 			document.getElementById("compbutton_right").style.background='#20242d';
+
+
+            var slider_container = document.getElementById("slider-date-container");
+            slider_container.style.display = "block";
+
+
+            var ls_model = document.getElementById("ls_model");
+            var ls_da_variable = document.getElementById("ls_da_variable")
+            var ls_variable = document.getElementById("ls_variable")
+//             var ls_resolution = document.getElementById("ls_resolution")
+
+            var ls_model_value = ls_model.options[ls_model.selectedIndex].value
+            var ls_da_variable_value = ls_da_variable.options[ls_da_variable.selectedIndex].value
+            var ls_variable_value = ls_variable.options[ls_variable.selectedIndex].value
+            var ls_resolution_value = "10km" //ls_resolution.options[ls_resolution.selectedIndex].value
+
+            console.log('LIS selected date: ' + dateval);
+			
+			if (ls_variable_value == 'streamflow') {
+				addChartPoint();
+				
+				// Legend////////
+				legend.onAdd = function(map) {
+					var div = L.DomUtil.create('div', 'info legend');
+					div.innerHTML += '<img src="images/legend_streamflow.png" width="210" /><br>';
+					return div;
+				};
+				legend.addTo(map);
+				var slider_opacity = document.getElementById("slider-opacity-container");
+				slider_opacity.style.display = "none";
+				
+				
+			} else if (ls_variable_value == 'altimeter') {
+            	addAltimPoint();
+            	// Legend////////
+				legend.onAdd = function(map) {
+					var div = L.DomUtil.create('div', 'info legend');
+					div.innerHTML += '<img src="images/legend_altim.png" width="155" /><br>';
+					return div;
+				};
+				legend.addTo(map);
+            } else {	
+				if (ls_model_value == 'DA') { 					
+					// s3://fwis.eis-hydro.mysmce.com/Datasets/LAIsmooth_DA_10km/SoilMoist_tavg/
+					var imageUrl = './Datasets/'+ ls_da_variable_value + '_'+ ls_model_value +'_'+ ls_resolution_value + '/'+ ls_variable_value +'/' + ls_variable_value +'_' + dateval + '0000.png'
+				} else if (ls_model_value == 'OL') { 					
+					// s3://fwis.eis-hydro.mysmce.com/Datasets/OL_10km/SoilMoist_tavg/
+					var imageUrl = './Datasets/'+ ls_model_value +'_'+ ls_resolution_value + '/'+ ls_variable_value +'/' + ls_variable_value +'_' + dateval + '0000.png'
+				}	
+				
+				console.log('Data URL: ' + imageUrl);
+			
+				imageBounds = [
+					[28.935, -113.925],
+					[49.735, -77.845]
+				]; // [[ymin, xmin][ymax, xmax]]
+
+
+				olayer = L.imageOverlay(imageUrl, imageBounds)
+
+				olayer.addTo(map);
+				olayer.bringToFront()
+
+ 
+				// Legend////////
+				legend.onAdd = function(map) {
+					var div = L.DomUtil.create('div', 'info legend');
+					div.innerHTML += '<img src="images/'+ ls_variable_value + '_legend.png" width="300" /><br>';
+					return div;
+				};
+				legend.addTo(map);
+				var slider_opacity = document.getElementById("slider-opacity-container");
+				slider_opacity.style.display = "block";
+			}
+            
+        }
+        
+        
+        
+        
+
+        // II. RS vis //////////////////////////////////////
+        // map.removeControl(legendRS);
+
+        function addRS() {
+                	
+        	// remove compare tool
+        	map.removeControl(comptool)
+			map.removeLayer(leftLayer)
+			map.removeLayer(rightLayer)
+			
+            controlRS.addTo(map);
+
+            var rs_raster = document.getElementById("rs_raster");
+            var rs_resolution = document.getElementById("rs_resolution")
+
+            var rs_raster_text = rs_raster.options[rs_raster.selectedIndex].text
+            console.log('Selected RS data: ' + rs_raster_text);
+
+
+
+            if (rs_raster_text == 'ECOSTRESS') {
+                document.getElementById("tooltiptext").innerHTML = "Info about ECOSTRESS";
+
+                // var imageUrl = './Datasets/test/eco2.png'
+                // imageBounds = [[32.5043572, -109.4463811], [37.7457668,-103.7475784]]; // [[ymin, xmin][ymax, xmax]]
+                var imageUrl = './Datasets/test/et_20180805.png'
+                imageBounds = [
+                    [31.0741952, -95.6387760],
+                    [36.0086183, -89.5704962]
+                ]; // [[ymin, xmin][ymax, xmax]]
+
+                var olayer = L.imageOverlay(imageUrl, imageBounds)
+                olayer.addTo(map);
+                olayer.bringToFront()
+
+                controlRS.addOverlay(olayer, 'ECO3ETPTJPL')
+
+                // Legend////////
+                legend.onAdd = function(map) {
+
+                    var div = L.DomUtil.create('div', 'info legend');
+                    div.innerHTML += '<img src="images/ET_legend.png" width="300" /><br>';
+                    return div;
+                };
+
+                legend.addTo(map);
+
+            } else if (rs_raster_text == 'GPM IMERG') {
+                document.getElementById("tooltiptext").innerHTML =
+                    "<b>GPM IMERG Product:</b><br><br>Global Precipitation Measurement (GPM) is an international satellite mission to provide next-generation observations of rain and snow worldwide every three hours. The Integrated Multi-satellitE Retrievals for GPM (IMERG) is the unified algorithm that provides rainfall estimates combining data from all passive-microwave instruments in the GPM Constellation.";
+                imageBounds = [
+                    [29.4000000, -113.6500000],
+                    [49.0500000, -83.9000000]
+                ];
+                var imageUrl = './Datasets/test/CHIRPS_DAILY_precipitation_color.png'
+
+                var player = L.imageOverlay(imageUrl, imageBounds)
+                player.addTo(map);
+                player.bringToFront()
+
+                controlRS.addOverlay(player, 'GPM IMERG')
+
+                // Legend////////
+                legend.onAdd = function(map) {
+
+                    var div = L.DomUtil.create('div', 'info legend');
+                    div.innerHTML += '<img src="images/Precip_legend.png" width="300" /><br>';
+                    return div;
+                };
+
+                legend.addTo(map);
+
+
+                // d3.request("./Datasets/test/CHIRPS_DAILY_precipitation.tiff").responseType('arraybuffer').get(
+                //     function (error, tiffData) {
+                //         // Geopotential height (BAND 0)
+                //         let geo = L.ScalarField.fromGeoTIFF(tiffData.response, bandIndex = 0);
+                //         let color_range = geo.range
+                //         let layerPrecip = L.canvasLayer.scalarField(geo, {
+                //             color: chroma.scale('RdPu').domain(color_range),
+                //             opacity: 0.9
+                //         })
+                //         layerPrecip.on('click', function (e) {
+                //             if (e.value !== null) {
+                //                 let v = e.value.toFixed(0);
+                //                 let html = (`<span class="popupText">Precipitation ${v} mm</span>`);
+                //                 let popup = L.popup()
+                //                     .setLatLng(e.latlng)
+                //                     .setContent(html)
+                //                     .openOn(map);
+                //             }
+                //         });
+                //
+                //         // map.fitBounds(layerPrecip.getBounds());
+                //         layerPrecip.addTo(map);
+                //         controlRS.addOverlay(layerPrecip,'GPM IMERG')
+                //     }
+                // );
+
+            }
+        }
+
+ 
+
+        // GIBS layers Adding
+        var gibsLayers = {};
+        for (var id in L.GIBS_LAYERS) {
+            gibsLayers[id] = new L.GIBSLayer(id, {
+                date: new Date("2019-01-01"),
+                transparent: true
+            });
+        }
+
+        function addGIBS(dateval) {
+        	
+        	// remove compare tool
+//         	map.removeControl(comptool)
+// 			map.removeLayer(leftLayer)
+// 			map.removeLayer(rightLayer)
+// 			
+			
+            for (var id in L.GIBS_LAYERS) {
+                if (map.hasLayer(gibsLayers[id])) {
+                    id_added = id
+                    map.removeLayer(gibsLayers[id]);
+                }
+            }
+
+            var slider_container = document.getElementById("slider-date-container");
+
+            slider_container.style.display = "block";
+
+            var gibs_raster = document.getElementById("gibs_raster");
+
+            var gibs_raster_val = gibs_raster.options[gibs_raster.selectedIndex].value
+            console.log('Selected GIBS data: ' + gibs_raster_val);
+
+
+            // var dateval = $('#slider-date').slider("option", "value");
+            console.log('in gibs ' + dateval);
+            var year = dateval.substring(0, 4);
+            var month = dateval.substring(4, 6);
+            var day = dateval.substring(6, 8);
+
+            dateval_gibs = year + '-' + month + '-' + day;
+            startDate = new Date(dateval_gibs);
+
+            for (var id in L.GIBS_LAYERS) {
+                gibsLayers[id] = new L.GIBSLayer(id, {
+                    date: startDate, //new Date(dateOrig),
+                    transparent: true
+                });
+            }
+
+            // var now = new Date();
+            // var oneDay = 1000 * 60 * 60 * 24, // milliseconds in one day
+            //     startTimestamp = now.getTime() - oneDay + now.getTimezoneOffset() * 60 * 1000,
+            //     startDate = new Date(startTimestamp); //previous day
+
+            // var dateOrig = document.getElementById('seldate').value;
+
+            // gibsLayers['Reference_Features'].addTo(map);
+            // gibsLayers['Reference_Features'].bringToFront();
+            gibsLayers[gibs_raster_val].addTo(map);
+
+
+            overlayGibs = [{
+                groupName: "Borders",
+                expanded: true,
+                layers: {
+                    "Country/State Borders": gibsLayers['Reference_Features']
+                }
+            }];
+
+
+            // L.control.layers(null,gibsLayers, {collapsed: true}).addTo(map);
+            // var gibscontrol = L.control.layers(baseMapsGibs, overlayGibs, {
+            //     collapsed: false
+            // }); //.addTo(map);
+            // map.addControl(gibscontrol);
+
+        }
+        
+        
+        
+        // Raster Comparison Tool
+		function addCompareLayer1(dateval, fromSlider) {
+            /// fade out exiting layer
+           //  $(olayer._image).fadeOut(300, function() {
+//             });
+
+            var slider_container = document.getElementById("slider-date-container");
+
+            slider_container.style.display = "block";
+
+
+            var ls_model = document.getElementById("ls_model");
+            var ls_da_variable = document.getElementById("ls_da_variable")
+            var ls_variable = document.getElementById("ls_variable")
+//             var ls_resolution = document.getElementById("ls_resolution")
+
+            var ls_model_value = ls_model.options[ls_model.selectedIndex].value
+            var ls_da_variable_value = ls_da_variable.options[ls_da_variable.selectedIndex].value
+            var ls_variable_value = ls_variable.options[ls_variable.selectedIndex].value
+            var ls_resolution_value = '10km' //ls_resolution.options[ls_resolution.selectedIndex].value
+
+            console.log('LIS selected date: ' + dateval);
+			
+			
+            if (ls_model_value == 'DA') { 					
+				// s3://fwis.eis-hydro.mysmce.com/Datasets/LAIsmooth_DA_10km/SoilMoist_tavg/
+				var imageUrl = './Datasets/'+ ls_da_variable_value + '_'+ ls_model_value +'_'+ ls_resolution_value + '/'+ ls_variable_value +'/' + ls_variable_value +'_' + dateval + '0000.png'
+			} else if (ls_model_value == 'OL') { 					
+				// s3://fwis.eis-hydro.mysmce.com/Datasets/OL_10km/SoilMoist_tavg/
+				var imageUrl = './Datasets/'+ ls_model_value +'_'+ ls_resolution_value + '/'+ ls_variable_value +'/' + ls_variable_value +'_' + dateval + '0000.png'
+			}	
+				
+			console.log('Data URL 1: ' + imageUrl);
+			
+			imageBounds = [
+				[28.935, -113.925],
+				[49.735, -77.845]
+			]; // [[ymin, xmin][ymax, xmax]]
+
+
+			complayer1 = imageUrl // L.imageOverlay(imageUrl, imageBounds)
+
+
+			document.querySelector('#compbutton_left').innerHTML = '&#10003;  ' + ls_variable_value.split("_")[0];
+			document.getElementById("compbutton_left").style.background='#0482d6';
+  
+// 			// Legend////////
+			legend.onAdd = function(map) {
+				var div = L.DomUtil.create('div', 'info legend');
+				div.innerHTML += '<img src="images/'+ ls_variable_value + '_legend.png" width="300" /><br>';
+				return div;
+			};
+			legend.addTo(map);
+            
+        }
+        
+		function addCompareLayer2(dateval, fromSlider) {
+            /// fade out exiting layer
+            // $(olayer._image).fadeOut(300, function() {
+//             });
+
+            var slider_container = document.getElementById("slider-date-container");
+
+            slider_container.style.display = "block";
+
+
+            var ls_model = document.getElementById("ls_model");
+            var ls_da_variable = document.getElementById("ls_da_variable")
+            var ls_variable = document.getElementById("ls_variable")
+//             var ls_resolution = document.getElementById("ls_resolution")
+
+            var ls_model_value = ls_model.options[ls_model.selectedIndex].value
+            var ls_da_variable_value = ls_da_variable.options[ls_da_variable.selectedIndex].value
+            var ls_variable_value = ls_variable.options[ls_variable.selectedIndex].value
+            var ls_resolution_value = '10km' //ls_resolution.options[ls_resolution.selectedIndex].value
+
+            console.log('LIS selected date: ' + dateval);
+			
+			
+            if (ls_model_value == 'DA') { 					
+				// s3://fwis.eis-hydro.mysmce.com/Datasets/LAIsmooth_DA_10km/SoilMoist_tavg/
+				var imageUrl = './Datasets/'+ ls_da_variable_value + '_'+ ls_model_value +'_'+ ls_resolution_value + '/'+ ls_variable_value +'/' + ls_variable_value +'_' + dateval + '0000.png'
+			} else if (ls_model_value == 'OL') { 					
+				// s3://fwis.eis-hydro.mysmce.com/Datasets/OL_10km/SoilMoist_tavg/
+				var imageUrl = './Datasets/'+ ls_model_value +'_'+ ls_resolution_value + '/'+ ls_variable_value +'/' + ls_variable_value +'_' + dateval + '0000.png'
+			}	
+				
+			console.log('Data 2 URL: ' + imageUrl);
+			
+			imageBounds = [
+				[28.935, -113.925],
+				[49.735, -77.845]
+			]; // [[ymin, xmin][ymax, xmax]]
+
+
+			complayer2 = imageUrl // L.imageOverlay(imageUrl, imageBounds)
+
+			document.querySelector('#compbutton_right').innerHTML = '&#10003;  ' + ls_variable_value.split("_")[0];
+			document.getElementById("compbutton_right").style.background='#0482d6';
+
+// 			// Legend////////
+			legend.onAdd = function(map) {
+				var div = L.DomUtil.create('div', 'info legend');
+				div.innerHTML += '<img src="images/'+ ls_variable_value + '_legend.png" width="300" /><br>';
+				return div;
+			};
+			legend.addTo(map);
+            
+        }
+                
+
+        function addComparison() {
+        
+        	var slider_container = document.getElementById("slider-date-container");
+
+            slider_container.style.display = "none";
+
+
+//         	map.removeControl(comptool)
+       		map.createPane('left');
+			map.createPane('right');
+
+            leftLayer = L.imageOverlay(complayer1, imageBounds,{pane: 'left'}).addTo(map);
+            rightLayer = L.imageOverlay(complayer2, imageBounds,{pane: 'right'}).addTo(map);
+
+			comptool = L.control.sideBySide(leftLayer, rightLayer);
+			comptool.addTo(map);
+
+        }
+        
+        
+       function setCompareButton(){
+			var ls_variable = document.getElementById("ls_variable")
+
+			var ls_variable_value = ls_da_variable.options[ls_da_variable.selectedIndex].value
+			
+			if (ls_variable_value == 'streamflow' || ls_variable_value == 'altimeter') { 	
+				document.getElementById("button-addComparisonAll").disabled = true;
+			}
+			else {
+				document.getElementById("button-addComparisonAll").disabled = false;
+
+			}	
+				
+       }
+        
+        function addComparisonALL(compareSource, dateval) {
+			map.removeControl(comptool)
+			comptool.remove()
+			
+			$(leftLayer._image).fadeOut(300, function() {
+				});
+            $(rightLayer._image).fadeOut(300, function() {
+				});
+			map.removeLayer(leftLayer)
+			map.removeLayer(rightLayer)
+			
+			
+        	if (document.getElementById("compbutton_left").value == 'nolayer') {
+        		toCompare = 'left'
+        	} else if (document.getElementById("compbutton_right").value == 'nolayer') {
+        		toCompare = 'right'
+        	}  
+        	
+        	console.log(toCompare)
+        	var slider_container = document.getElementById("slider-date-container");
+            slider_container.style.display = "block";
+            var slider_opacity = document.getElementById("slider-opacity-container");
+            slider_opacity.style.display = "block";
+
+			if (compareSource == 'LIS') {
+				var ls_model = document.getElementById("ls_model");
+				var ls_da_variable = document.getElementById("ls_da_variable")
+				var ls_variable = document.getElementById("ls_variable")
+// 				var ls_resolution = document.getElementById("ls_resolution")
+
+				var ls_model_value = ls_model.options[ls_model.selectedIndex].value
+				var ls_da_variable_value = ls_da_variable.options[ls_da_variable.selectedIndex].value
+				var ls_variable_value = ls_variable.options[ls_variable.selectedIndex].value
+				var ls_resolution_value = '10km' //ls_resolution.options[ls_resolution.selectedIndex].value
+
+				console.log('LIS selected date: ' + dateval);
+			
+			
+				if (ls_model_value == 'DA') { 					
+					// s3://fwis.eis-hydro.mysmce.com/Datasets/LAIsmooth_DA_10km/SoilMoist_tavg/
+					var imageUrl = './Datasets/'+ ls_da_variable_value + '_'+ ls_model_value +'_'+ ls_resolution_value + '/'+ ls_variable_value +'/' + ls_variable_value +'_' + dateval + '0000.png'
+				} else if (ls_model_value == 'OL') { 					
+					// s3://fwis.eis-hydro.mysmce.com/Datasets/OL_10km/SoilMoist_tavg/
+					var imageUrl = './Datasets/'+ ls_model_value +'_'+ ls_resolution_value + '/'+ ls_variable_value +'/' + ls_variable_value +'_' + dateval + '0000.png'
+				}	
+				
+				console.log('LIS Data URL: ' + imageUrl);
+			
+				 // [[ymin, xmin][ymax, xmax]]
+
+
+				compareLayer =  imageUrl  // './Datasets/LAI_tavg_201901010000.png' //
+		
+				// if (toCompare =='left') {	
+// 					leftLayer = L.imageOverlay(compareLayer, imageBounds,{pane: toCompare}).addTo(map);
+// 				} else if (toCompare =='right') {	
+// 					rightLayer = L.imageOverlay(compareLayer, imageBounds,{pane: toCompare}).addTo(map);
+// 				}
+// 								
+				document.getElementById("compbutton_"+toCompare).innerHTML = '&#10003;  ' + ls_variable.options[ls_variable.selectedIndex].text.split("_")[0].substring(0,8);
+				document.getElementById("compbutton_"+toCompare).value = compareLayer;
+				document.getElementById("compbutton_"+toCompare).style.background=  '#0482d6';
+			}
+			
+		
+			
+        }
+        
+        
+         function addComparisonTOMAP() {
+			map.removeControl(comptool)
+			comptool.remove()
+			        	
+            for (var id in L.GIBS_LAYERS) {
+                if (map.hasLayer(gibsLayers[id])) {
+                    id_added = id
+                    map.removeLayer(gibsLayers[id]);
+                }
+            }
+        
+        	
+            
+//            	map.removeLayer(leftLayer)
+// 			map.removeLayer(rightLayer)
+      		
+      		
+        	var slider_container = document.getElementById("slider-date-container");
+
+            slider_container.style.display = "none";
+
+
+       		
+
+			console.log('in tomap '+document.getElementById("compbutton_left").value)
+			console.log('in tomap '+document.getElementById("compbutton_right").value)
+			
+			var valueLeft  = document.getElementById("compbutton_left").value
+			var valueRight = document.getElementById("compbutton_right").value
+			
+			
+			
+			map.createPane('left');
+			map.createPane('right');
+
+			console.log('left is: '+ valueLeft)  	
+			
+			leftLayer = L.imageOverlay(valueLeft, imageBounds,{pane: 'left'}).addTo(map);   // left is LIS
+
+
+			console.log('right is: '+ valueRight)  	
+		
+			rightLayer = L.imageOverlay(valueRight, imageBounds,{pane: 'right'}).addTo(map);   // right is LIS
+
+
+///
+// 			var complayer1 =    './Datasets/LAI_tavg_201901010000.png' //
+// 			var complayer2 =    './Datasets/SoilMoist_tavg_202001010000.png' //
+// 
+// 
+//             var leftLayer = L.imageOverlay(complayer1, imageBounds,{pane: 'left'}).addTo(map);
+//             var rightLayer = L.imageOverlay(complayer2, imageBounds,{pane: 'right'}).addTo(map);
+////
+
+            comptool = L.control.sideBySide(leftLayer, rightLayer)
+            comptool.addTo(map);
+            
+//             setLeftLayers
+            document.getElementById("compbutton_left").value = "nolayer";  //reset left layer
+            document.getElementById("compbutton_left").innerHTML = '+ Layer 1' ;  //reset left layer
+            document.getElementById("compbutton_left").style.background='#20242d';//   '#0482d6';
+            document.getElementById("compbutton_right").value = "nolayer";  //reset right layer
+            document.getElementById("compbutton_right").innerHTML = '+ Layer 2' ;  //reset left layer
+            document.getElementById("compbutton_right").style.background='#20242d';//'#0482d6';
+        }
+        
+        
+        
+        
+        
+        function removeComparison() {
+        	
+            for (var id in L.GIBS_LAYERS) {
+                if (map.hasLayer(gibsLayers[id])) {
+                    id_added = id
+                    map.removeLayer(gibsLayers[id]);
+                }
+            }
+                
+        	console.log('removing'+comptool)
+        	map.removeControl(comptool)
+        	
+        	 if (map.hasLayer(leftLayer)) {
+        	console.log(leftLayer+'..llll..')
+        	}
+        	 if (map.hasLayer(rightLayer)) {
+        	console.log(rightLayer+'..rrrr..')
+        	}
+        	map.removeLayer(leftLayer)
+			map.removeLayer(rightLayer)
+
+
+			map.eachLayer(function (layer) {
+				map.removeLayer(layer);
+			});
+			basemapDark.addTo(map)
+        }
+        
+        
+ //         jQuery dialog box
+                             
+// 		<button id="b1">Open Dialog Box</button>
+// 		<div id=msg></div>
+// 
+// 		<div id="my_dialog" title="Select GIBS Layer">
+// 			<form id=f1>
+// 		  		<p>First Name<input type=text id=t1 name=t1><br>
+// 			   Second Name<input type=text id=t2 name=t2>
+// 			</form></p>
+// 		</div>
+
+		
+		$(document).ready(function() {
+			var pos = { my: "center center", at: "center" };
+			/////////
+			$(function() {
+				$( "#my_dialog" ).dialog({
+			autoOpen: false,
+			position:pos,
+			 buttons: {
+				 "Close ": function() {
+					$( this ).dialog( "close" );
+				  },
+				 "Submit ": function(){
+					 $('#msg').html($("#f1").serialize());
+					 $( this ).dialog( "close" );
+				 }
+			   }
+					});
+			});
+			/////////
+			$("#b1").click(function(){
+				$( "#my_dialog" ).dialog( "open" );
+			})
+
+		
+		})
+
+		// Opaioty contorl
+
+		function updateOpacity(value) {
+			var eye = document.getElementById("eyeicon")
+			eye.style.opacity = value				
+
+			leftLayer.setStyle({
+				  opacity: value
+				})
+	  
+			rightLayer.setStyle({
+				  opacity: value
+				})
+	  
+			olayer.setStyle({
+				  opacity: value
+				})
+		}
+		
+		
+		// Add chart for streamflow ///////////////////////////////////////////////
+		var LeafIcon = L.Icon.extend({
+			options: {
+				iconSize: [9, 9]
+			}
+		});
+
+		var greenIcon = new LeafIcon({iconUrl: 'images/dot.png'})
+
+		var LeafIcon = L.Icon.extend({
+			options: {
+				iconSize: [13, 13]
+			}
+		});
+
+		var mainIcon = new LeafIcon({iconUrl: 'images/station_green.png'})
+
+		var markers = [
+						L.marker([45.60135,	-96.87202],{icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=05290000" frameborder="0"></iframe>',{maxWidth:"auto"}),
+
+						L.marker([43.693883,	-101.932652], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=06446500" frameborder="0"></iframe>',{maxWidth:"auto"}),
+
+						L.marker([46.914992,	-100.813742], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=06342450" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([41.023579,	-106.824766], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=06623800" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([39.985006,	-100.560148], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=06846500" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([42.836091,	-92.2574], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=05420680" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([39.520464,	-91.34275], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=05508805" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([39.812545,	-86.953899], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=03340800" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([36.991378,	-91.013511], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=07067000" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([35.880082,	-94.486606], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=07196900" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([35.054257,	-89.54119], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=07030500" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([30.996023,	-92.673755], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=08013000" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([32.017778,	-90.876944], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=07290650" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([36.426207,	-82.95183], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=03491000" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([39.008803,	-90.977536], {icon: greenIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=05514500" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+			
+						// main river
+						L.marker([45.545,	-94.145], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=05270700" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						//L.marker([30.445,	-91.195], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=07374000" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([37.905,	-89.835], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=07020500" frameborder="0"></iframe>',{maxWidth:"auto"}),
+						
+						L.marker([38.625,	-90.185	], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_streamflow.html?stnid=07010000" frameborder="0"></iframe>',{maxWidth:"auto"})
+			
+					]
+
+		var streamflowMarkers = L.featureGroup();
+		for (var i = 0; i < markers.length; i++) {
+			var currentMarker = markers[i];
+			currentMarker.addTo(streamflowMarkers);
+		}
+		
+		
+		// function to add streamflow markers
+		function addChartPoint(){
+		    var slider_container = document.getElementById("slider-date-container");
+            slider_container.style.display = "none";
+
+			if (map.hasLayer(altimMarkers)) {
+				map.removeLayer(altimMarkers);
+			}
+            
+            if (map.hasLayer(streamflowMarkers)) {
+				console.log('')
+			} else {
+            	streamflowMarkers.addTo(map);
+			}	
+			
+		}			
+			
+			
+		
+		// Add chart for altimeter ///////////////////////////////////////////////
+		var LeafIcon = L.Icon.extend({
+			options: {
+				iconSize: [13, 13]
+			}
+		});
+
+		var mainIcon = new LeafIcon({iconUrl: 'images/station_red.png'})
+
+		var markers = [			
+						// main river
+						L.marker([30.87,	-91.53], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_altimeter.html?stnid=8502" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([35.75,	-89.86], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_altimeter.html?stnid=8504" frameborder="0"></iframe>',{maxWidth:"auto"}),
+			
+						L.marker([43.91,	-91.35], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_altimeter.html?stnid=8513" frameborder="0"></iframe>',{maxWidth:"auto"}),
+						
+						L.marker([30.75, -91.59	], {icon: mainIcon}).bindPopup('<iframe  width="730" height="400"  src="timeseries_altimeter.html?stnid=8501" frameborder="0"></iframe>',{maxWidth:"auto"})
+			
+					]
+
+		var altimMarkers = L.featureGroup();
+		for (var i = 0; i < markers.length; i++) {
+			var currentMarker = markers[i];
+			currentMarker.addTo(altimMarkers);
+		}
+		
+		
+		// function to add streamflow markers
+		function addAltimPoint(){
+		    var slider_container = document.getElementById("slider-date-container");
+            slider_container.style.display = "none";
+
+			if (map.hasLayer(streamflowMarkers)) {
+				map.removeLayer(streamflowMarkers);
+			}
+            
+            if (map.hasLayer(altimMarkers)) {
+				console.log('')
+			} else {
+            	altimMarkers.addTo(map);
+			}	
+			
+			 
+			
+		}
+ 
+    </script>
+
+    <!--JavaScript at end of body for optimized loading-->
+    <!-- for sidebar -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous">
+    </script>
+    <script src="https://malihu.github.io/custom-scrollbar/jquery.mCustomScrollbar.concat.min.js"></script>
+    <script src="js/sidebar-main.js"></script>
+
+
+</body>
+
+</html>
