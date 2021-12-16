@@ -363,7 +363,7 @@ subroutine AGRMET_sfcalc(n)
      step = 1        
      do julhr= julend-5,julend
 
-        all AGRMET_julhr_date10(julhr, yyyymmddhh) ! EMK
+        call AGRMET_julhr_date10(julhr, yyyymmddhh) ! EMK
         write(LIS_logunit,*)' '
         write(LIS_logunit,*)'---------------------------- '
         !write(LIS_logunit,*)'- PROCESSING-SFC JULHR ', julhr

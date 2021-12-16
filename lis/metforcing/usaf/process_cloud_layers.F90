@@ -122,7 +122,8 @@ subroutine process_cloud_layers(cod_layered, base_layered, &
             ! point has invalid time; skip.
             ! EMK Replace julhr output with YYYYMMDDHH
             call AGRMET_julhr_date10 ( julhr, date10_julhr )
-            call AGRMET_julhr_date10 ( cloud_times(i,j), date10_cloud_times )
+            call AGRMET_julhr_date10 ( int(cloud_times(i,j)), &
+                 date10_cloud_time )
             write(LIS_logunit,*) '[WARN] cloud_time is not valid'
             write(LIS_logunit,*) '       i,j', i,j
             !write(LIS_logunit,*) '       julhr', julhr
