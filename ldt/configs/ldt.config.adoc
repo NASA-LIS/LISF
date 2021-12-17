@@ -2623,7 +2623,7 @@ SACHTET Cosby soil parameter table:  ./rdhm_parms/cosby_eq_newzperc.txt
 
 `SACHTET LZFSM map:` specifies the lower zone supplemental free water (fast) maximum storage [mm]
 
-`SACHTET LZPK map:` specifies the lower zone primary free water depletion rate [daystem:[^{-1}]]
+`SACHTET LZPK map:` specifies the lower zone primary free water depletion rate [day stem:[^{-1}]]
 
 `SACHTET LZSK map:` specifies the lower zone supplemental free water depletion rate [day stem:[^{-1}]]
 

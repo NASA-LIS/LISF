@@ -341,7 +341,8 @@ endif::devonly[]
 |"`WRF AK`"                    | NCAR-WRF Alaska domain forcing 
 |"`LDT-generated`"             | LDT-generated forcing files
 |"`CLIM-Standard`"             | Forcing climatologies (LDT-generated)
-|"`GenEnsFcst`"                | Generic ensemble forecast
+|"`GenEnsFcst`"                | Generic ensemble forecast reader
+|"`PPTEnsFcst`"                | Precipitation-only ensemble forecast reader
 |"`AWAP`"                      | AWAP precipitation data
 |"`GDAS T1534`"                | NCEP-specific GDAS T1534 forcing data
 |"`ERA5`"                      | ERA5 reanalysis meteorology
@@ -6048,10 +6049,36 @@ of the user-generated ensemble forecast forcing files.
 `Generic ensemble forecast number of ensemble members:` specifies the number of
 ensemble members desired for the user-generated ensemble forecast dataset.
 
+`Name of base forecast model:` specifies the base forecast model used in
+the generated ensemble-based forecast forcing files being read in.
+Default setting is GEOS5, but options include GEOS5 and CFSv2.
+
 .Example _lis.config_ entry
 ....
 Generic ensemble forecast directory:     ./GEOS5_BiasCorrected/
 Generic ensemble forecast number of ensemble members:  11
+Name of base forecast model:              GEOS5
+....
+
+
+[[sssec_pptensfcst,PPTEnsFcst]]
+==== Precipitation-only Ensemble Forecast Reader
+
+`Precipitation ensemble forecast directory:` specifies the location
+of the user-generated ensemble precipitation forecast forcing files.
+
+`Precipitation ensemble forecast number of ensemble members:` specifies the number of
+ensemble members desired for the user-generated precipitation ensemble forecast dataset.
+
+`Name of base forecast model:` specifies the base forecast model used in
+the generated ensemble-based forecast forcing files being read in.
+Default setting is GEOS5, but options include GEOS5 and CFSv2.
+
+.Example _lis.config_ entry
+....
+Precipitation ensemble forecast directory:     ./GEOS5_BiasCorrected/
+Precipitation ensemble forecast number of ensemble members:  11
+Name of base forecast model:              GEOS5
 ....
 
 
