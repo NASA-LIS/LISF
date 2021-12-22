@@ -80,6 +80,18 @@
 !  US census boundary data was downloaded from
 !  https://www2.census.gov/geo/tiger/GENZ2015/shp/cb_2015_us_county_20m.zip
 !
+!  Global irrigation type data of AQUASTAT was supplemented with various
+!  sources for individual country compiled by Matt Rodell.
+!  USDA's county level data was obtained from www.nass.usda.gov.  
+!
+!  USDA conducted the Census of Agriculture in 2017, followed by Irrigation and !  Water Management Survey (IWMS) conducted in 2018. These information serve as
+!  basis for the algorithm assigning irrigation type per crop.  Specifically,
+!  we used Table 36: state data for Pressure (sprinkler+drip) vs Gravity
+!  flood) method for selected crops, and Table 38: percentage of methods
+!  within Pressure vs Gravity for selected crops above at US level.
+!  Tables were downloaded from https://www.nass.usda.gov/Publications/AgCensus/2017/Online_Resources/Farm_and_Ranch_Irrigation_Survey/index.php.
+!
+!
 !  The arguments are:
 !  \begin{description}
 !  \item[n]
@@ -156,10 +168,11 @@
 !- Open report files to be processed::
 !!! irrigtypefile in ldt.config point to the directory where files
 !!! are found---file names are Hard Coded here!!!
-   glbfile = trim(LDT_irrig_struc(n)%irrigtypefile)//'Global_IMethod.data'
+!!! Latest update: change Global_IMethod.data -> Global_IMethod.txt
+   glbfile = trim(LDT_irrig_struc(n)%irrigtypefile)//'Global_IMethod.txt'
    usfile = trim(LDT_irrig_struc(n)%irrigtypefile)//'US_IMethod.2015'
    polfile = trim(LDT_irrig_struc(n)%irrigtypefile)//'GADM_Country_and_USStates_codes_1km.nc4'
-   countyfile = 'cb_2015_us_county_30arcsec.nc4'   !hard-coded for now
+   countyfile = trim(LDT_irrig_struc(n)%irrigtypefile)//'cb_2015_us_county_30arcsec.nc4'   
 
    ftn = LDT_getNextUnitNumber()
    open (ftn, file=trim(glbfile), form = 'formatted', status = 'old')
