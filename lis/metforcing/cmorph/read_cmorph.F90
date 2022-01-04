@@ -125,7 +125,7 @@ subroutine read_cmorph (n, kk, name_cmorph, findex, order, ferror_cmorph, iflg )
        read (ftn,rec=iflg) precip, timestamp, staid
        call LIS_releaseUnitNumber(ftn)
      else ! either file does not exist 
-       if(LIS_masterproc) write(LIS_logunit,*) "[WARN] Missing CMORPH precipitation data ",fname
+       if(LIS_masterproc) write(LIS_logunit,*) "[WARN] Missing CMORPH precipitation data ",trim(fname)
        ferror_cmorph = 0
      endif
    endif ! J.Case added  for .gz support (2/10/2015)
