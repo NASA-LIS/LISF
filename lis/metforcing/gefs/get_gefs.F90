@@ -428,7 +428,7 @@ subroutine get_gefs(n,findex)
                  gefs_struc(n)%fcst_hour,m)
          endif
          
-         write(LIS_logunit,*)'[INFO] getting file2.. ',filename
+         write(LIS_logunit,*)'[INFO] getting file2.. ',trim(filename)
          order = 2
          call read_gefs_operational(n,m,findex,order,filename,ferror)
 
