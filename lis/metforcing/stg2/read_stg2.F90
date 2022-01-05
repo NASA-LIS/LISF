@@ -85,7 +85,7 @@ subroutine read_stg2( n, fname, findex, order, ferror_stg2 )
 !-- Check initially if file exists:
   inquire (file=fname, exist=file_exists ) ! Check if file exists
   if (.not. file_exists)  then 
-     write(LIS_logunit,*)"** Missing STAGE IV precipitation file: ", fname
+     write(LIS_logunit,*)"** Missing STAGE IV precipitation file: ", trim(fname)
      ferror_stg2 = 1
      return
   endif

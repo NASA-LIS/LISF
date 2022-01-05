@@ -75,7 +75,7 @@ subroutine read_scan(n,ftn,findex,order)
      write(scan_filename,'(i4,a,i4,i2.2,a)')scan_struc(n)%stnid(i),'_',&
           LIS_rc%yr,LIS_rc%mo,'.txt'
      scan_filename = trim(scan_struc(n)%scandir)//'/'//trim(scan_filename)
-     write(LIS_logunit,*) 'Reading SCAN file ',scan_filename
+     write(LIS_logunit,*) 'Reading SCAN file ',trim(scan_filename)
      inquire(file=scan_filename,exist=file_exists)
      if(file_exists) then 
         open(ftn,file=scan_filename,form='formatted',status='old')
