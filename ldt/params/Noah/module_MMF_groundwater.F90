@@ -280,29 +280,28 @@ contains
 
     nbins = size (lisout, 3)
 
-    ! WPS's STEP1 : average from the nerighborhood
-    ! --------------------------------------------
+    !Average from the nerighborhood
+    ! -----------------------------
     call LDT_contIndivParam_Fill( nest, LDT_rc%lnc(nest), LDT_rc%lnr(nest),   &
          mmf_transform,                                    &
          nbins,                                            &
-         lisout,  LDT_rc%udef,                             &
+         lisout, LDT_rc%udef,                              &
          LDT_LSMparam_struc(nest)%landmask2%value,         &
          MBR%neighbor%filltype, MBR%neighbor%fillvalue,    &
          MBR%neighbor%fillradius )
     
     
-    ! WPS's STEP2 : Search and fill 
-    ! -----------------------------
-    
-    if (trim (MBR%gap_fill%filltype) /= 'none') then
-       call LDT_contIndivParam_Fill( nest, LDT_rc%lnc(nest), LDT_rc%lnr(nest),  &
-            mmf_transform,                                    &
-            nbins,                                            &
-            lisout,  LDT_rc%udef,                             &
-            LDT_LSMparam_struc(nest)%landmask2%value,         &
-            MBR%gap_fill%filltype, MBR%gap_fill%fillvalue,    &
-            MBR%gap_fill%fillradius )
-    endif
+    ! Search and fill -also fill lakes
+    ! --------------------------------
+       
+    call LDT_contIndivParam_Fill( nest, LDT_rc%lnc(nest), LDT_rc%lnr(nest),  &
+         mmf_transform,                                    &
+         nbins,                                            &
+         lisout,  MBR%gap_fill%watervalue,                 &
+         LDT_LSMparam_struc(nest)%landmask2%value,         &
+         MBR%gap_fill%filltype, MBR%gap_fill%fillvalue,    &
+         MBR%gap_fill%fillradius )
+        
     deallocate (tarray, garray)
     
   contains
