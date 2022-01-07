@@ -579,7 +579,7 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
 
            ! EMK...Replace julhr with YYYYMMDD
            !write(cjulhr,'(i6)',iostat=istat1) julhr
-           write(date10,'(i4, i2, i2, i2)', iostat=istat1) yr, mo, da, hr
+           write(date10,'(i4, i2.2, i2.2, i2.2)', iostat=istat1) yr, mo, da, hr
            write(LIS_logunit,*)' '
            write(LIS_logunit,*)'- ROUTINE GETSFC: ERROR RETRIEVING SFC OBS FOR'
            write(LIS_logunit,*)'- THE '//norsou(hemi)//' HEMISPHERE.'
@@ -603,7 +603,7 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
      else
         ! EMK...Replace julhr with YYYYMMDD
         !write(cjulhr,'(i6)',iostat=istat1) julhr
-        write(date10,'(i4, i2, i2, i2)', iostat=istat1) yr, mo, da, hr
+        write(date10,'(i4, i2.2, i2.2, i2.2)', iostat=istat1) yr, mo, da, hr
         write(LIS_logunit,*)' '
         write(LIS_logunit,*)'- ROUTINE AGRMET_GETSFC: ERROR RETRIEVING SFC OBS FOR'
         write(LIS_logunit,*)'- THE '//norsou(hemi)//' HEMISPHERE.'
