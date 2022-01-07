@@ -125,12 +125,12 @@ subroutine process_cloud_layers(cod_layered, base_layered, &
             call AGRMET_julhr_date10 ( int(cloud_times(i,j)), &
                  date10_cloud_time )
             write(LIS_logunit,*) '[WARN] cloud_time is not valid'
-            write(LIS_logunit,*) '       i,j', i,j
+            write(LIS_logunit,*) '       i,j ', i,j
             !write(LIS_logunit,*) '       julhr', julhr
-            write(LIS_logunit,*) '       LIS YYYYMMDDHH', date10_julhr
+            write(LIS_logunit,*) '       LIS YYYYMMDDHH ', date10_julhr
             !write(LIS_logunit,*) '       timeLastUpdate', cloud_times(i,j)
-            write(LIS_logunit,*) '       timeLastUpdate', date10_cloud_time
-            write(LIS_logunit,*) '       diff', julhr-cloud_times(i,j)
+            write(LIS_logunit,*) '       timeLastUpdate ', date10_cloud_time
+            write(LIS_logunit,*) '       diff ', julhr-cloud_times(i,j)
          endif
       enddo
    enddo
