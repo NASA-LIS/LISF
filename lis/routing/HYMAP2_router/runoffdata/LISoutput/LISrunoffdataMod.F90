@@ -89,9 +89,9 @@ contains
     !ag - 17Mar2016
     do n=1, LIS_rc%nnest
       LISrunoffdata_struc(n)%previous_filename='none'
-      allocate(LISrunoffdata_struc(n)%qs(LIS_rc%gnc(n),LIS_rc%gnr(n)))
-      allocate(LISrunoffdata_struc(n)%qsb(LIS_rc%gnc(n),LIS_rc%gnr(n)))
-      allocate(LISrunoffdata_struc(n)%evap(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+      allocate(LISrunoffdata_struc(n)%qs(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+      allocate(LISrunoffdata_struc(n)%qsb(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+      allocate(LISrunoffdata_struc(n)%evap(LIS_rc%lnc(n),LIS_rc%lnr(n)))
       LISrunoffdata_struc(n)%qs=LIS_rc%udef
       LISrunoffdata_struc(n)%qsb=LIS_rc%udef
       LISrunoffdata_struc(n)%evap=LIS_rc%udef
