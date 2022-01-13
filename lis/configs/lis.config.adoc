@@ -973,17 +973,17 @@ offline routing.
 Acceptable values are:
 
 |====
-|Value                            | Description
+|Value                                                             | Description
 
-|"`LIS runoff output`"            | Use LIS outputs
-|"`GLDAS1 runoff data`"           | Use the GLDAS1 outputs
-|"`GLDAS2 runoff data`"           | Use the GLDAS2 outputs
-|"`NLDAS2 runoff data`"           | Use the NLDAS2 outputs
-|"`MERRA2 runoff data`"           | Use the MERR2 outputs
-|"`ERA interim land runoff data`" | Use ERA-Interim-Land outputs
-|"`GWB MIP runoff data`"          | Use the Global Water Budget (GWB) model intercomparison project outputs
+|"`LIS runoff output`"                                             | Use LIS outputs
+|[.line-through]#"`GLDAS1 runoff data`"# [red]#Disabled#           | [.line-through]#Use the GLDAS1 outputs#
+|[.line-through]#"`GLDAS2 runoff data`"# [red]#Disabled#           | [.line-through]#Use the GLDAS2 outputs#
+|[.line-through]#"`NLDAS2 runoff data`"# [red]#Disabled#           | [.line-through]#Use the NLDAS2 outputs#
+|[.line-through]#"`MERRA2 runoff data`"# [red]#Disabled#           | [.line-through]#Use the MERR2 outputs#
+|[.line-through]#"`ERA interim land runoff data`"# [red]#Disabled# | [.line-through]#Use ERA-Interim-Land outputs#
+|[.line-through]#"`GWB MIP runoff data`"# [red]#Disabled#          | [.line-through]#Use the Global Water Budget (GWB) model intercomparison project outputs#
 |====
-
+// See pull request #966 for context about the disabled external runoff data sources listed above.
 
 `Number of application models:` specifies the number
 of application models to run.

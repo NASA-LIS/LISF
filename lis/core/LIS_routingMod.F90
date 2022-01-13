@@ -290,17 +290,21 @@ module LIS_routingMod
 !EOP
     integer, intent(in) :: n
 
-    if(LIS_rc%routingmodel.ne."none") then 
-       call lsmroutinggetrunoff(trim(LIS_rc%lsm)//"+"//&
-            trim(LIS_rc%routingmodel)//char(0),n)
+    if(LIS_rc%routingmodel.ne."none") then
+       if(LIS_rc%lsm.ne."none") then 
+          call lsmroutinggetrunoff(trim(LIS_rc%lsm)//"+"//&
+               trim(LIS_rc%routingmodel)//char(0),n)
+       endif
        if(LIS_rc%glaciermodel.ne."none") then
           call glacierroutinggetrunoff(trim(LIS_rc%glaciermodel)//"+"//&
                trim(LIS_rc%routingmodel)//char(0),n)
        endif
 
        call routingrun(trim(LIS_rc%routingmodel)//char(0),n)
-       call lsmroutinggetsws(trim(LIS_rc%lsm)//"+"//&
-            trim(LIS_rc%routingmodel)//char(0),n)
+       if(LIS_rc%lsm.ne."none") then 
+          call lsmroutinggetsws(trim(LIS_rc%lsm)//"+"//&
+               trim(LIS_rc%routingmodel)//char(0),n)
+       endif
     endif
 
   end subroutine LIS_routing_run
