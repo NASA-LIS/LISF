@@ -105,7 +105,7 @@
 | Component name | Default state
 
 | NLDAS router   | On
-| HYMAP router   | On
+| HYMAP router   | Off
 | HYMAP2 router  | On
 |====
 
