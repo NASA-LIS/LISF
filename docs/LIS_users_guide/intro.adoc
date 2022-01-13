@@ -65,6 +65,13 @@ This document consists of 12 sections, described as follows:
 //* PILDAS
 //* NOAA OHD RDHM 3.5.6 forcing data (RDHM 3.5.6)
 //* Rhone AGG
+//. Disables the following external runoff data sources
+//* GLDAS1 runoff data
+//* GLDAS2 runoff data
+//* NLDAS2 runoff data
+//* MERRA2 runoff data
+//* ERA interim land runoff data
+//* GWB MIP runoff data
 
 ==== LIS 7.3
 
