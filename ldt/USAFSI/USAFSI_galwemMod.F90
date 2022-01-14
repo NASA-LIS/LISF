@@ -141,8 +141,6 @@ contains
        endif
 
        ! Start searching through the messages
-       write(LDT_logunit,*)'[INFO] Reading ', trim(gribfilename)
-
        do k = 1, nvars
 
           call grib_new_from_file(ftn, igrib, ierr)
