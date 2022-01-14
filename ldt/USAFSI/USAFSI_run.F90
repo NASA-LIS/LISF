@@ -590,6 +590,7 @@ contains
     end if
 
     ! Open the file
+    write(ldt_logunit,*)'[INFO] Opening ', trim(filename)
     call LDT_verify(nf90_open(path=trim(filename), &
          mode=nf90_nowrite, ncid=ncid), &
          '[ERR] Cannot open '//trim(filename))

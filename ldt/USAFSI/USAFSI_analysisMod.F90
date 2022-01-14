@@ -375,7 +375,7 @@ contains
          inquire (file=file_path, exist=isfile)
 
          if (isfile) then
-
+            write(ldt_logunit,*)'[INFO] Reading ', trim(file_path)
             write (ldt_logunit, 6000) routine_name, iofunc, file_path
             call putget_real (infrac_0p05deg, 'r', file_path, &
                  program_name,       &
@@ -521,7 +521,7 @@ contains
 
       ! Imports
       use LDT_coreMod, only: LDT_domain, LDT_rc
-      use LDT_logMod, only: LDT_endrun
+      use LDT_logMod, only: LDT_endrun, ldt_logunit
       use map_utils
       use USAFSI_arraysMod, only: USAFSI_arrays
       use USAFSI_paramsMod
@@ -580,6 +580,7 @@ contains
       ! EACH MONTH IS STORED CONSECUTIVELY STARTING WITH JANUARY.
       FILE_PATH = TRIM(STATIC) // 'snoclimo' // MESHNAME //             &
            CMONTH(MONTH) // FILE_EXT
+      write(ldt_logunit,*)'[INFO] Reading ', trim(file_path)
       CALL PUTGET_REAL (CLIMO_0p25deg, 'r', FILE_PATH, PROGRAM_NAME,    &
            ROUTINE_NAME, IGRID, JGRID)
 
@@ -635,6 +636,7 @@ contains
 
       ! RETRIEVE SNOW MASK DATA.
       file_path = trim(static) // 'snow_mask' // meshname // file_ext
+      write(ldt_logunit,*)'[INFO] Reading ', trim(file_path)
       call putget_int1 (snow_poss_0p25deg, 'r', file_path, program_name,     &
            routine_name, igrid, jgrid)
 
@@ -1216,6 +1218,7 @@ contains
          if (isfile) then
 
             sfctmp_found = .true.
+            write(ldt_logunit,*)'[INFO] Reading ', trim(file_stmp)
             write (ldt_logunit, 6000) routine_name, iofunc, file_stmp
             call putget_real (sfctmp_lis_0p25deg, 'r', file_stmp, &
                  program_name,   &
@@ -2270,6 +2273,7 @@ contains
          inquire (file=file_binary, exist=isfile)
          if (isfile) then
             found =.true.
+            write(ldt_logunit,*)'[INFO] Reading ', trim(file_binary)
             write (ldt_logunit, 6000) routine_name, iofunc, trim (file_binary)
             call putget_real ( sst_0p25deg, 'r', file_binary, program_name,  &
                  routine_name, sst_igrid, sst_jgrid )
@@ -3590,7 +3594,7 @@ contains
    subroutine getclimo (month, static)
 
       ! Imports
-      use LDT_logMod, only: LDT_verify
+      use LDT_logMod, only: LDT_verify, ldt_logunit
       use USAFSI_arraysMod, only: USAFSI_arrays
       use netcdf
 
@@ -3616,6 +3620,7 @@ contains
       file_path = trim(static) //'/snoclimo_10km/'// 'snoclimo_0p10deg' &
            //cmonth(month) // '.nc'
 
+      write(ldt_logunit,*)'[INFO] Reading ', trim(file_path)
       call LDT_verify(nf90_open(path=file_path, mode=nf90_nowrite, ncid=ncid), &
             '[ERR] Error in nf90_open for '//trim(file_path))
       call LDT_verify(nf90_inq_varid(ncid=ncid, name="snoclimo", varid=varid), &
@@ -3671,6 +3676,8 @@ contains
         write(ldt_logunit,*) '[WARN] Failed to open - ', trim(file_grib)
         return
      end if
+
+     write(ldt_logunit,*)'[INFO] Reading ', trim(file_grib)
 
      call grib_count_in_file(ftn, nvars, ierr)
      if (ierr .ne. 0) then

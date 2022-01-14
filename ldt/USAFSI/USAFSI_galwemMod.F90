@@ -131,6 +131,7 @@ contains
        end if
 
        ! Count number of messages
+       write(ldt_logunit,*)'[INFO] Reading ', trim(gribfilename)
        call grib_count_in_file(ftn, nvars, ierr)
        if ( ierr .ne. 0 ) then
           write(LDT_logunit,*) '[WARN] in grib_count_in_file ' // &
