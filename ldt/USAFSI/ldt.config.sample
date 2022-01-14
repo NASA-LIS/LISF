@@ -34,6 +34,7 @@ USAFSI AMSR2 data directory:                          ./AMSR2_retrievals/
 USAFSI SSMIS data directory:                          ./SSMIS_retrievals/
 USAFSI SST data directory:                            ./USAFSIIN/sfctmps/
 USAFSI surface temperature data directory:            ./USAFSIIN/sfctmps/
+USAFSI FNMOC SST GRIB1 data directory:                ./USAFSIIN/sst/
 USAFSI static data directory:                         ./USAFSIIN/static/
 USAFSI unmodified data directory:                     ./USAFSIIN/unmodified/
 USAFSI VIIRS data directory:                          ./USAFSIIN/viirs

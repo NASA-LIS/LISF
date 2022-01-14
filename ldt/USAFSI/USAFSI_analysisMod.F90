@@ -16,6 +16,7 @@
 ! 13 Dec 2019  Eric Kemp  Renamed USAFSI
 ! 02 Nov 2020  Eric Kemp  Removed blacklist code at request of 557WW.
 ! 22 Jan 2021  Yeosang Yoon Add subroutine for new 0.1 deg snow climatology
+! 13 Jan 2022  Eric Kemp Added support for GRIB1 FNMOC SST file.
 !
 ! DESCRIPTION:
 ! Source code for Air Force snow depth analysis.
@@ -2142,7 +2143,7 @@ contains
 
    end subroutine getsno_nc
 
-   subroutine getsst (date10, stmpdir)
+   subroutine getsst (date10, stmpdir, sstdir)
 
       !*******************************************************************************
       !*******************************************************************************
@@ -2181,6 +2182,7 @@ contains
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  13 Jan 21  Added FNMOC GRIB1 file...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -2199,6 +2201,7 @@ contains
       ! Arguments
       character*10,  intent(in)   :: date10           ! SNODEP DATE-TIME GROUP
       character*100, intent(in)   :: stmpdir          ! SFC TEMPERATURE DIRECTORY PATH
+      character*100, intent(in)   :: sstdir
 
       ! Local constants
       integer, parameter          :: sst_size = sst_igrid * sst_jgrid  ! SST ARRAY SIZE
@@ -2223,7 +2226,9 @@ contains
       integer :: gindex,c,r
       real :: rlat,rlon,ri,rj
       integer :: nc,nr
-
+      character*100 :: file_grib
+      integer :: grstat
+      
       data routine_name           / 'GETSST      '/
 
       ! FIND THE DATE/TIME GROUP OF THE PREVIOUS CYCLE.
@@ -2268,6 +2273,53 @@ contains
             write (ldt_logunit, 6000) routine_name, iofunc, trim (file_binary)
             call putget_real ( sst_0p25deg, 'r', file_binary, program_name,  &
                  routine_name, sst_igrid, sst_jgrid )
+         else
+            !EMK 20220113...Reinstated GRIB1 support
+            file_grib = trim(sstdir) &
+                 // 'US058GOCN-GR1mdl.0043_0200_00000A0LT' &
+                 // date10_sst &
+                 // '_0160_000000-000000sea_temp.gr1'
+            inquire(file=file_grib, exist=isfile)
+            if (.not. isfile) then
+               file_grib = trim(sstdir) &
+                    // 'navyssts.' &
+                    // date10_sst &
+                    // '0000.gr1'
+               inquire(file=file_grib, exist=isfile)
+            end if
+            if (isfile) then
+               !TODO...Add call to subroutine for reading SST GRIB1
+               call read_grib1_sst(file_grib, sst_igrid, sst_jgrid, &
+                    sst_0p25deg, grstat)
+               if (grstat .eq. 0) then
+                  found = .true.
+                  file_binary = trim(stmpdir) &
+                       // 'navyssts.' &
+                       // meshname &
+                       // '.' &
+                       // date10_sst &
+                       // '.dat'
+                  inquire(file=file_binary, exist=isfile)
+                  if (.not. isfile) then
+                     iofunc = '[INFO] WRITING'
+                     write(ldt_logunit, 6000) routine_name, iofunc, &
+                          trim(file_binary)
+                     call putget_real(sst_0p25deg, 'w', file_binary, &
+                          program_name, routine_name, sst_igrid, sst_jgrid)
+                  end if
+               else
+                  message(1) = '[ERR] ERROR READING FILE'
+                  message(2) = '[ERR] PATH = ' // file_grib
+                  call error_message(program_name, routine_name, message)
+                  write(ldt_logunit, 6400) routine_name, iofunc, file_grib, &
+                       grstat
+               end if
+            else
+               message(1) = '[ERR] ERROR OPENING FILE'
+               message(2) = '[ERR] PATH = ' // file_grib
+               call error_message(program_name, routine_name, message)
+               write(ldt_logunit, 6400) routine_name, iofunc, file_grib, grstat
+            end if
          end if
          julsst = julsst - 24
       end do cycle_loop
@@ -2364,6 +2416,7 @@ contains
 6000  format (/, '[INFO] ', A6, ': ', A7, 1X, A)
 !6200  format (/, '[INFO] ', A6, ': CURRENT SEA SURFACE TEMPERATURE DTG = ', &
 !           A10)
+6400  format (/, '[WARN] ', A6, ': ERROR ', A7, 1X, A, /, 3X, 'STATUS = ', I6)
 6600  format (/, '[WARN] ', A6, ': SEA SURFACE TEMPERATURE DATA NOT FOUND')
 
    end subroutine getsst
@@ -2455,6 +2508,7 @@ contains
       call LDT_endrun()
       
 #else
+      external :: ztif_frac_slice ! EMK 20220113
 
       data routine_name  / 'GETVIIRS    ' /
 
@@ -2538,7 +2592,7 @@ contains
             ! Read the VIIRS data at native resolution one slice at a time.
             ! For each slice, geolocate onto the LDT grid and identify
             ! as snow or bare.
-            do j_viirs = 1, jgrid_viirs               
+            do j_viirs = 1, jgrid_viirs
 
                ierr = 0
                call ztif_frac_slice(mapbuf_slice, &
@@ -3573,4 +3627,239 @@ contains
 
    end subroutine getclimo
 
+   ! New routine to read FNMOC SST field from GRIB1 file, using ECCODES
+   subroutine read_grib1_sst(file_grib, sst_igrid, sst_jgrid, &
+        sst_0p25deg, grstat)
+
+     ! Imports
+#if (defined USE_GRIBAPI)
+     use grib_api
+#endif
+     use LDT_logMod, only: LDT_logunit
+
+     ! Defaults
+     implicit none
+
+     ! Arguments
+     character(len=*), intent(in) :: file_grib
+     integer, intent(in) :: sst_igrid
+     integer, intent(in) :: sst_jgrid
+     real, intent(inout) :: sst_0p25deg(sst_igrid, sst_jgrid)
+     integer, intent(out) :: grstat
+
+     ! Locals
+     integer :: ftn
+     integer :: igrib
+     integer :: ierr
+     integer :: nvars
+     integer :: iedition
+     integer :: igriddef
+     integer :: icenter
+     integer :: iparameter
+     integer :: ileveltype
+     integer :: ilevel
+     character(len=100) :: gtype
+     integer :: Ni, Nj
+     real, allocatable :: dum1d(:)
+     integer :: i, j, k
+
+     grstat = 1
+
+#if (defined USE_GRIBAPI)
+     call grib_open_file(ftn, trim(file_grib), 'r', ierr)
+     if (ierr .ne. 0) then
+        write(ldt_logunit,*) '[WARN] Failed to open - ', trim(file_grib)
+        return
+     end if
+
+     call grib_count_in_file(ftn, nvars, ierr)
+     if (ierr .ne. 0) then
+        write(ldt_logunit,*) &
+             '[WARN] error in grib_count_in_file for ', trim(file_grib)
+        call grib_close_file(ftn)
+        return
+     end if
+
+     ! Loop through the fields until we find SST
+     do k = 1, nvars
+        call grib_new_from_file(ftn, igrib, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) '[WARN] failed to read ' // trim(file_grib)
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+
+        call grib_get(igrib, 'editionNumber', iedition, ierr)
+        if ( ierr .ne. 0 ) then
+           write(ldt_logunit,*) &
+                '[WARN] error in grib_get: editionNumber in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (iedition .ne. 1) then
+           write(ldt_logunit,*) &
+                '[WARN] No GRIB1 record found in read_grib1_sst!'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'centre', icenter, ierr)
+        if ( ierr .ne. 0 ) then
+           write(ldt_logunit,*) &
+                '[WARN] error in grib_get: centre in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (icenter .ne. 58) then
+           write(ldt_logunit,*)'[WARN] No FNMOC message in read_grib1_sst!'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'gridDefinition', igriddef, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) &
+                '[WARN] error in grib_get: gridDefinition in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (igriddef .ne. 200) then
+           write(ldt_logunit,*)'[WARN] Wrong SST grid in read_grib1_sst!'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'gridType', gtype, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) '[WARN] error in grid_get: gridtype in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (gtype .ne. "regular_ll") then
+           write(ldt_logunit,*) &
+                '[WARN] GRIB data not on regular lat-lon grid!'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'indicatorOfParameter', iparameter, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) &
+                '[WARN] error in grib_get: indicatorOfParameter in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (iparameter .ne. 80) then
+           write(ldt_logunit,*)'[WARN] Wrong GRIB parameter in read_grib1_sst!'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'indicatorOfTypeOfLevel', ileveltype, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) &
+                '[WARN] error in grib_get: indicatorOfTypeOfLevel in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (ileveltype .ne. 160) then
+           write(ldt_logunit,*) &
+                '[WARN] Wrong GRIB level type in read_grib1_sst!'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'level', ilevel, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) &
+                '[WARN] error in grib_get: level in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (ilevel .ne. 0) then
+           write(ldt_logunit,*)'[WARN] Wrong GRIB level in read_grib1_sst!'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'Ni', Ni, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) '[WARN] error in grid_get:Ni in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (Ni .ne. sst_igrid) then
+           write(ldt_logunit,*) '[WARN] Wrong GRIB Ni dimension in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'Nj', Nj, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) '[WARN] error in grid_get:Nj in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (Nj .ne. sst_jgrid) then
+           write(ldt_logunit,*) '[WARN] Wrong GRIB Nj dimension in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        ! We found the SST
+        allocate(dum1d(Ni*Nj))
+        call grib_get(igrib, 'values', dum1d)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) &
+                '[WARN] error in grib_get: values in ' //&
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        end if
+
+        ! At this stage, we have the values of the field.
+        call grib_release(igrib, ierr)
+        call grib_close_file(ftn)
+        do j = 1, Nj
+           do i = 1, Ni
+              sst_0p25deg(i,j) = dum1d(i + (j-1)*Ni)
+           end do
+        end do
+        grstat = 0
+        deallocate(dum1d)
+        exit ! Get out of loop
+
+     end do ! k
+
+     if (grstat .ne. 0) then
+        write(ldt_logunit,*) &
+             '[WARN] No SST read in by ' //&
+             'read_grib1_sst'
+        call grib_close_file(ftn)
+     end if
+#endif
+
+   end subroutine read_grib1_sst
 end module USAFSI_analysisMod
