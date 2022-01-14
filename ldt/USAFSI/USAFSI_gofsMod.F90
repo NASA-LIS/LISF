@@ -259,7 +259,7 @@ contains
 
       ! Imports
       use LDT_coreMod, only: LDT_rc, LDT_domain
-      use LDT_logMod, only: LDT_verify
+      use LDT_logMod, only: LDT_verify, ldt_logunit
       use netcdf
 
       ! Defaults
@@ -309,6 +309,8 @@ contains
            ncid=ncid), &
            "[ERR] Error in nf90_open for " // trim(filename))
 
+      write(ldt_logunit,*)'[INFO] Reading ', trim(filename)
+      
       ! Get the varid for water_temp
       call LDT_verify(nf90_inq_varid(ncid, "water_temp", water_temp_varid), &
            "[ERR] Error in nf90_inq_varid for water_temp")
@@ -579,6 +581,7 @@ contains
            mode=nf90_nowrite, &
            ncid=ncid), &
            "[ERR] Error in nf90_open for " // trim(filename))
+      write(ldt_logunit,*)'[INFO] Reading ', trim(filename)
 
       ! Get the varid for aice
       call LDT_verify(nf90_inq_varid(ncid, "aice", aice_varid), &
