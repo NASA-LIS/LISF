@@ -80,7 +80,7 @@ subroutine read_gfs_elev(n, findex, change)
         call LIS_endrun
      endif
 
-     write(LIS_logunit,*) 'Reading the GFS elevation ',gfs_struc(n)%elevfile
+     write(LIS_logunit,*) 'Reading the GFS elevation ',trim(gfs_struc(n)%elevfile)
      
      ftn = LIS_getNextUnitNumber()
      open(ftn,file=trim(gfs_struc(n)%elevfile),&

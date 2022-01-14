@@ -56,6 +56,8 @@
 !EOP
 module gswp1_forcingMod
 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN 
+
   implicit none
 
   PRIVATE 
@@ -74,7 +76,7 @@ module gswp1_forcingMod
      integer       :: mi 
      integer       :: ncold
      integer       :: nrold
-     character*100 :: gswp1dir
+     character(len=LIS_CONST_PATH_LEN) :: gswp1dir
      real*8        :: gswp1time1
      real*8        :: gswp1time2
 

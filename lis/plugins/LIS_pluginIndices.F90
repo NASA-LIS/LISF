@@ -171,6 +171,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_AWRALforcId       = "AWRAL processed forcing"
    character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
    character*50, public,  parameter :: LIS_era5Id            = "ERA5"
+   character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------
@@ -255,6 +256,8 @@ module LIS_pluginIndices
         "GCOMW AMSR2 L3 soil moisture"
    character*50, public,  parameter :: LIS_GCOMW_AMSR2L3sndobsId = &
         "GCOMW AMSR2 L3 snow depth"
+   character*50, public,  parameter :: LIS_SNODASobsId = &
+        "SNODAS"
    character*50, public,  parameter :: LIS_SMOSL2smobsId         = &
         "SMOS L2 soil moisture"
    character*50, public,  parameter :: LIS_pildassmobsId         = &
@@ -283,6 +286,8 @@ module LIS_pluginIndices
         "Synthetic water level"
    character*50, public,  parameter :: LIS_THySMId             = &
            "THySM"
+   character*50, public,  parameter :: LIS_hydrowebwlId        = &
+        "Hydroweb water level"
 
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms

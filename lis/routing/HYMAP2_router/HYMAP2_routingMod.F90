@@ -34,6 +34,8 @@ module HYMAP2_routingMod
 !                                adaptive time step and reservoir operation. 
 ! 13 Apr 2016: Augusto Getirana, Inclusion of option for hybrid runs with a 
 !                                river flow map. 
+!  7 Sep 2019: Augusto Getirana,  Added support for 2-way coupling
+! 27 Apr 2020: Augusto Getirana,  Added support for urban drainage
 ! 
 ! !USES: 
   use ESMF
@@ -67,7 +69,7 @@ module HYMAP2_routingMod
   integer, allocatable :: seqy(:)       !1D sequence vertical
   integer, allocatable :: seqx_glb(:)
   integer, allocatable :: seqy_glb(:)
-  !integer              :: nseqriv       !length of 1D sequnece for river
+
   integer              :: nseqall       !length of 1D sequnece for river and mouth  
 ! === Map ===============================================
   integer, allocatable :: sindex(:,:)     !2-D sequence index
@@ -80,21 +82,21 @@ module HYMAP2_routingMod
   real,    allocatable :: elevtn(:)      !river bed elevation [m]
   real,    allocatable :: nxtdst(:)      !distance to the next grid [m]
   real,    allocatable :: grarea(:)      !area of the grid [m^2] 
-  real,    allocatable :: fldgrd(:,:)    !floodplain gradient [-]
+  real,    allocatable :: fldgrd(:,:,:)    !floodplain gradient [-]
   real,    allocatable :: fldman(:)      !maning coefficient for floodplains [-]
   real,    allocatable :: fldhgt(:,:)    !floodplain height [m]
   real,    allocatable :: trnoff(:)      !runoff   concentration time parameter [day]
   real,    allocatable :: tbsflw(:)      !baseflow concentration time parameter [day]
   real,    allocatable :: cntime(:)      !concentration time [s]
-  real,    allocatable :: fldstomax(:,:) !maximum floodplain storage [m3]
-  real,    allocatable :: rivman(:)      !maning coefficient for rivers [-]
+  real,    allocatable :: fldstomax(:,:,:) !maximum floodplain storage [m3]
+  real,    allocatable :: rivman(:,:)      !maning coefficient for rivers [-]
   real,    allocatable :: rivelv(:)      !elevation of river bed [m]
-  real,    allocatable :: rivstomax(:)   !maximum river storage [m3]
+  real,    allocatable :: rivstomax(:,:)   !maximum river storage [m3]
   real,    allocatable :: rivlen(:)      !river length [m] 
-  real,    allocatable :: rivwth(:)      !river width [m]
-  real,    allocatable :: rivhgt(:)        !river heihgt [m]
+  real,    allocatable :: rivwth(:,:)      !river width [m]
+  real,    allocatable :: rivhgt(:,:)        !river heihgt [m]
   real                 :: rslpmin          !minimum slope [-]
-  real,    allocatable :: rivare(:)        !river surface area [m2]
+  real,    allocatable :: rivare(:,:)        !river surface area [m2]
   real,    allocatable :: runoff0(:)       !input runoff [mm.dt-1]
   real,    allocatable :: basflw0(:)       !input baseflow [mm.dt-1]
   real,    allocatable :: flowmap(:)       !river flow type map [-]
@@ -119,7 +121,7 @@ module HYMAP2_routingMod
 ! === Linear reservoir components ================
   real,    allocatable :: rnfsto(:,:)    !runoff   reservoir storage [m3]
   real,    allocatable :: bsfsto(:,:)    !baseflow reservoir storage [m3]
-  character*100        :: rstfile
+  character*255        :: rstfile
   integer              :: numout
   integer              :: fileopen
   real                 :: outInterval 
@@ -168,12 +170,11 @@ module HYMAP2_routingMod
   integer              :: ntresop       !time series length (number of time steps in the input files)
   integer              :: resopflag
   integer              :: resoptype
-  character*50         :: resopdir
-  character*50         :: resopheader
+  character*100         :: resopdir
+  character*100         :: resopheader
   !ag (29Jun2016)
   integer              :: floodflag
   character*100        :: HYMAP_dfile      
-  type(ESMF_Grid)      :: vecPatch
 
 ! === 2-way coupling variables/parameters ===
   real,   allocatable  :: rivstotmp(:,:)     !River Storage [m3]
@@ -181,6 +182,51 @@ module HYMAP2_routingMod
   real,   allocatable  :: fldfrctmp(:,:)     !Flooded Fraction [m3]
   integer                   :: enable2waycpl
   real                        :: fldfrc2waycpl
+
+!ag(27Apr2020)
+! === urban drainage and flood modeling ===
+  real,   allocatable  :: drsto(:,:)      !urban drainage network water storage [m3]
+  real,   allocatable  :: drout(:,:)      !urban drainage network outflow [m3/s]
+  real,   allocatable  :: drstomax(:)     !urban drainage network water storage capacity [m3]
+  real,   allocatable  :: droutlet(:)     !outlet flag: 0 - drainage network; 1 - river
+  real,   allocatable  :: droutlet_glb(:)     !global outlet flag: 0 - drainage network; 1 - river
+  real,   allocatable  :: drtotwth(:)     !sum of gutter width within HyMAP grid cell [m]
+  real,   allocatable  :: drnoutlet(:)    ! average number of drainage outlets within a grid cell [-]
+  real,   allocatable  :: drtotlgh(:)     ! total urban drainage network length within a grid cell [m]
+  character*50         :: drfile          !urban drainage parametere file name
+  !gutter parameters
+  real                        :: drwth     ! gutter width [m]
+  real                        :: drhgt      ! gutter height [m]
+  real                        :: drden     ! gutter density [units/m2]
+  real                        :: drvel      ! gutter water intake velocity [m/s]
+  !drainage network parameters
+  real                        :: drblk     ! street block length [m]
+  real                        :: drrad     ! underground squared pipe width [m]
+  real                        :: drlgh     ! drainage length density [m/m2]
+  real                        :: drman   ! Roughness coefficient for ciment pipes [-]
+  real                        :: drslp      ! drainage system slope [m/m]
+
+!ag(8Aug2020)
+! === direct streamflow insertion variables/parameters ===
+  integer, allocatable :: insertloc(:)
+  real*8,  allocatable :: tinsert(:,:)
+  real,    allocatable :: insertdis(:,:)
+  integer              :: ninsert        !number of gauges
+  integer              :: ntinsert       !time series length (number of time steps in the input files)
+  integer              :: insertflag
+  character*100         :: insertdir
+  character*100         :: insertheader
+
+!ag(30Mar2021)
+! === ocean tides variables/parameters ===
+  integer, allocatable  :: tidesloc(:)
+  real*8,  allocatable  :: ttides(:,:)
+  real,    allocatable  :: tides(:,:)
+  integer               :: ntides        !number of outlets
+  integer               :: nttides       !time series length (number of time steps in the input files)
+  integer               :: tidesflag
+  character*100         :: tidesdir
+  character*100         :: tidesheader
 
   end type HYMAP2_routing_dec
 
@@ -204,6 +250,8 @@ contains
     use HYMAP2_initMod
     use LIS_perturbMod
     use LIS_mpiMod
+   !ag(27Apr2020)
+    use HYMAP2_urbanMod
     
     integer              :: n 
     integer              :: ftn 
@@ -228,7 +276,9 @@ contains
     character*20         :: steptype 
     !ag (31Jan2016)
     character*20         :: resoptype
-    
+    !ag (8Aaug2020)
+    character*20         :: inserttype
+        
     !ag (19Feb2016)
     real,    allocatable :: tmp_real(:,:),tmp_real_nz(:,:,:)
     integer, allocatable :: nextx(:,:),nexty(:,:),mask(:,:),maskg(:,:)
@@ -248,6 +298,7 @@ contains
     character*20 :: evapflag0
     !character*20 :: pevap_comp_method
     integer       :: ic, c,r,ic_down
+    integer       :: m
     integer       :: gdeltas
 
     !ag (12Sep2019)
@@ -259,6 +310,7 @@ contains
     real, pointer        :: fldfrctmp(:)
 
     type(ESMF_DistGrid)  :: patchDG
+    type(ESMF_DistGrid)  :: gridDG
     integer, allocatable :: deblklist(:,:,:)
     integer              :: stid,enid
     character*1   :: caseid(3)
@@ -301,9 +353,9 @@ contains
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP2 enable 2-way coupling:",rc=status)
     do n=1, LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,HYMAP2_routing_struc(n)%enable2waycpl,rc=status)
-       call LIS_verify(status,&
-            "HYMAP2 enable 2-way coupling: not defined")
+       HYMAP2_routing_struc(n)%enable2waycpl=0
+       call ESMF_ConfigGetAttribute(LIS_config,HYMAP2_routing_struc(n)%enable2waycpl,&
+            default=0, rc=status)
 
        if (HYMAP2_routing_struc(n)%enable2waycpl==1) then
          write(LIS_logunit,*) '[INFO] HYMAP2 2-way coupling: activated'
@@ -363,9 +415,12 @@ contains
           HYMAP2_routing_struc(n)%flowtype = 3
        elseif(flowtype.eq."hybrid") then 
           HYMAP2_routing_struc(n)%flowtype = 0
+        !ag(27Apr2020)
+       elseif(flowtype.eq."urban") then 
+          HYMAP2_routing_struc(n)%flowtype = 4
        else
          write(LIS_logunit,*)"[ERR] HYMAP2 routing method: unknown value ",trim(flowtype)
-         stop
+         call LIS_endrun()
        endif
     enddo
     
@@ -383,7 +438,7 @@ contains
           HYMAP2_routing_struc(n)%steptype = 2
        else
          write(LIS_logunit,*)"[ERR] HYMAP2 routing model time step method: unknown value"
-         stop          
+         call LIS_endrun()
        endif
     enddo
 
@@ -432,7 +487,7 @@ contains
           HYMAP2_routing_struc(n)%evapflag = 1
        else
          write(LIS_logunit,*)"[ERR] HYMAP2 routing model evaporation option: ",trim(evapflag0)
-         stop
+         call LIS_endrun()
        endif
     enddo 
 
@@ -444,15 +499,92 @@ contains
        call LIS_verify(status,&
             "HYMAP2 routing model dwi flag: not defined")    
     enddo
-     
+
+    !ag (8Aug2020)
+    call ESMF_ConfigFindLabel(LIS_config,&
+         "HYMAP2 discharge direct insertion:",rc=status)
+    do n=1, LIS_rc%nnest
+      HYMAP2_routing_struc(n)%insertflag=0
+      call ESMF_ConfigGetAttribute(LIS_config,&
+           HYMAP2_routing_struc(n)%insertflag,rc=status)
+      !call LIS_verify(status,&
+      !     "HYMAP2 discharge direct insertion: not defined")
+
+      if(HYMAP2_routing_struc(n)%insertflag==1)then
+        call ESMF_ConfigFindLabel(LIS_config,&
+             "HYMAP2 number of gauges:",rc=status)
+        call ESMF_ConfigGetAttribute(LIS_config,&
+             HYMAP2_routing_struc(n)%ninsert,rc=status)
+        call LIS_verify(status,&
+             "HYMAP2 number of gauges: not defined")
+
+        call ESMF_ConfigFindLabel(LIS_config,&
+             "HYMAP2 discharge direct insertion time series length:",rc=status)
+        call ESMF_ConfigGetAttribute(LIS_config,&
+             HYMAP2_routing_struc(n)%ntinsert,rc=status)
+        call LIS_verify(status,&
+             "HYMAP2 discharge direct insertion time series length: not defined")
+
+        call ESMF_ConfigFindLabel(LIS_config,&
+             "HYMAP2 discharge direct insertion input directory:",rc=status)
+        call ESMF_ConfigGetAttribute(LIS_config,&
+             HYMAP2_routing_struc(n)%insertdir,rc=status)
+        call LIS_verify(status,&
+             "HYMAP2 discharge direct insertion input directory: not defined")
+
+        call ESMF_ConfigFindLabel(LIS_config,&
+           "HYMAP2 discharge direct insertion header filename:",rc=status)
+        call ESMF_ConfigGetAttribute(LIS_config,&
+             HYMAP2_routing_struc(n)%insertheader,rc=status)
+        call LIS_verify(status,&
+             "HYMAP2 discharge direct insertion header filename: not defined")
+      endif
+    enddo
+
+    !ag (30Mar2021)
+    call ESMF_ConfigFindLabel(LIS_config,&
+         "HYMAP2 ocean tides:",rc=status)
+    do n=1, LIS_rc%nnest
+      HYMAP2_routing_struc(n)%tidesflag=0
+      call ESMF_ConfigGetAttribute(LIS_config,&
+           HYMAP2_routing_struc(n)%tidesflag,rc=status)
+      if(HYMAP2_routing_struc(n)%tidesflag==1)then
+        call ESMF_ConfigFindLabel(LIS_config,&
+             "HYMAP2 ocean tides number of outlets:",rc=status)
+        call ESMF_ConfigGetAttribute(LIS_config,&
+             HYMAP2_routing_struc(n)%ntides,rc=status)
+        call LIS_verify(status,&
+             "HYMAP2 ocean tides number of outlets: not defined")
+
+        call ESMF_ConfigFindLabel(LIS_config,&
+             "HYMAP2 ocean tides time series length:",rc=status)
+        call ESMF_ConfigGetAttribute(LIS_config,&
+             HYMAP2_routing_struc(n)%nttides,rc=status)
+        call LIS_verify(status,&
+             "HYMAP2 ocean tides time series length: not defined")
+
+        call ESMF_ConfigFindLabel(LIS_config,&
+             "HYMAP2 ocean tides input directory:",rc=status)
+        call ESMF_ConfigGetAttribute(LIS_config,&
+             HYMAP2_routing_struc(n)%tidesdir,rc=status)
+        call LIS_verify(status,&
+             "HYMAP2 ocean tides input directory: not defined")
+
+        call ESMF_ConfigFindLabel(LIS_config,&
+           "HYMAP2 ocean tides header filename:",rc=status)
+        call ESMF_ConfigGetAttribute(LIS_config,&
+             HYMAP2_routing_struc(n)%tidesheader,rc=status)
+        call LIS_verify(status,&
+             "HYMAP2 ocean tides header filename: not defined")
+      endif
+    enddo
+ 
     !ag (4Feb2016)
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP2 reservoir operation option:",rc=status)
     do n=1, LIS_rc%nnest
       call ESMF_ConfigGetAttribute(LIS_config,&
-           HYMAP2_routing_struc(n)%resopflag,rc=status)
-      call LIS_verify(status,&
-           "HYMAP2 reservoir operation option: not defined")
+           HYMAP2_routing_struc(n)%resopflag,default=0,rc=status)
 
       if(HYMAP2_routing_struc(n)%resopflag==1)then
         call ESMF_ConfigFindLabel(LIS_config,&
@@ -463,11 +595,11 @@ contains
              "HYMAP2 number of reservoirs: not defined")
 
         call ESMF_ConfigFindLabel(LIS_config,&
-             "HYMAP2 reservoir operation input time series size:",rc=status)
+             "HYMAP2 reservoir operation input time series length:",rc=status)
         call ESMF_ConfigGetAttribute(LIS_config,&
              HYMAP2_routing_struc(n)%ntresop,rc=status)
         call LIS_verify(status,&
-             "HYMAP2 reservoir operation input time series size: not defined")
+             "HYMAP2 reservoir operation input time series length: not defined")
 
         call ESMF_ConfigFindLabel(LIS_config,&
              "HYMAP2 reservoir operation input directory:",rc=status)
@@ -493,9 +625,8 @@ contains
           HYMAP2_routing_struc(n)%resoptype = 1
         elseif(resoptype.eq."streamflow") then 
           HYMAP2_routing_struc(n)%resoptype = 2
-        else
-          write(LIS_logunit,*)"[ERR] HYMAP2 routing model time step method: unknown value"
-          stop          
+          write(LIS_logunit,*)"[ERR] HYMAP2 reservoir operation input data type: unknown value"
+          call LIS_endrun()
         endif
       endif
     enddo
@@ -525,16 +656,16 @@ contains
        
        allocate(basin(LIS_rc%lnc(n),LIS_rc%lnr(n)))
        ctitle = 'HYMAP_basin'
-       call HYMAP2_read_param_real_2d(ctitle,n,basin)	  
+       call HYMAP2_read_param_real_2d(ctitle,n,basin)  
        
        allocate(mask(LIS_rc%lnc(n),LIS_rc%lnr(n)))
        ctitle = 'HYMAP_basin_mask'
-       call HYMAP2_read_param_int_2d(ctitle,n,mask)	  
+       call HYMAP2_read_param_int_2d(ctitle,n,mask)  
 
        allocate(maskg(LIS_rc%gnc(n),LIS_rc%gnr(n)))
        ctitle = 'HYMAP_basin_mask'
-       call HYMAP2_read_param_int_2d_global(ctitle,n,maskg)	  
-      
+       call HYMAP2_read_param_int_2d_global(ctitle,n,maskg)  
+
        !Assign the mask to the routing data structure
        LIS_routing(n)%dommask = mask
        LIS_routing(n)%nextx = HYMAP2_routing_struc(n)%nextx
@@ -594,23 +725,43 @@ contains
        allocate(HYMAP2_routing_struc(n)%elevtn(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%nxtdst(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%grarea(HYMAP2_routing_struc(n)%nseqall))
-       allocate(HYMAP2_routing_struc(n)%fldgrd(HYMAP2_routing_struc(n)%nseqall,&
-            HYMAP2_routing_struc(n)%nz))
        allocate(HYMAP2_routing_struc(n)%fldman(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%fldhgt(HYMAP2_routing_struc(n)%nseqall,&
             HYMAP2_routing_struc(n)%nz))
        allocate(HYMAP2_routing_struc(n)%cntime(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%trnoff(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%tbsflw(HYMAP2_routing_struc(n)%nseqall))
-       allocate(HYMAP2_routing_struc(n)%fldstomax(HYMAP2_routing_struc(n)%nseqall,&
-            HYMAP2_routing_struc(n)%nz))
-       allocate(HYMAP2_routing_struc(n)%rivman(HYMAP2_routing_struc(n)%nseqall))
+       if(HYMAP2_routing_struc(n)%useens.eq.0) then 
+          allocate(HYMAP2_routing_struc(n)%rivman(HYMAP2_routing_struc(n)%nseqall,1))
+          allocate(HYMAP2_routing_struc(n)%rivwth(HYMAP2_routing_struc(n)%nseqall,1))
+          allocate(HYMAP2_routing_struc(n)%rivhgt(HYMAP2_routing_struc(n)%nseqall,1))
+          allocate(HYMAP2_routing_struc(n)%rivstomax(HYMAP2_routing_struc(n)%nseqall,1))
+          allocate(HYMAP2_routing_struc(n)%rivare(HYMAP2_routing_struc(n)%nseqall,1))
+          allocate(HYMAP2_routing_struc(n)%fldstomax(HYMAP2_routing_struc(n)%nseqall,&
+               HYMAP2_routing_struc(n)%nz,1))
+          allocate(HYMAP2_routing_struc(n)%fldgrd(HYMAP2_routing_struc(n)%nseqall,&
+               HYMAP2_routing_struc(n)%nz,1))
+
+       else
+          allocate(HYMAP2_routing_struc(n)%rivman(HYMAP2_routing_struc(n)%nseqall,&
+               LIS_rc%nensem(n)))
+          allocate(HYMAP2_routing_struc(n)%rivwth(HYMAP2_routing_struc(n)%nseqall,&
+               LIS_rc%nensem(n)))
+          allocate(HYMAP2_routing_struc(n)%rivhgt(HYMAP2_routing_struc(n)%nseqall,&
+               LIS_rc%nensem(n)))
+          allocate(HYMAP2_routing_struc(n)%rivstomax(HYMAP2_routing_struc(n)%nseqall,&
+               LIS_rc%nensem(n)))
+          allocate(HYMAP2_routing_struc(n)%rivare(HYMAP2_routing_struc(n)%nseqall,&
+               LIS_rc%nensem(n)))
+          allocate(HYMAP2_routing_struc(n)%fldstomax(HYMAP2_routing_struc(n)%nseqall,&
+               HYMAP2_routing_struc(n)%nz,&
+               LIS_rc%nensem(n)))
+          allocate(HYMAP2_routing_struc(n)%fldgrd(HYMAP2_routing_struc(n)%nseqall,&
+               HYMAP2_routing_struc(n)%nz,LIS_rc%nensem(n)))
+       endif
+          
        allocate(HYMAP2_routing_struc(n)%rivelv(HYMAP2_routing_struc(n)%nseqall))
-       allocate(HYMAP2_routing_struc(n)%rivstomax(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%rivlen(HYMAP2_routing_struc(n)%nseqall))
-       allocate(HYMAP2_routing_struc(n)%rivwth(HYMAP2_routing_struc(n)%nseqall))
-       allocate(HYMAP2_routing_struc(n)%rivhgt(HYMAP2_routing_struc(n)%nseqall))
-       allocate(HYMAP2_routing_struc(n)%rivare(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%runoff0(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%basflw0(HYMAP2_routing_struc(n)%nseqall))
        allocate(HYMAP2_routing_struc(n)%flowmap(HYMAP2_routing_struc(n)%nseqall))
@@ -624,6 +775,30 @@ contains
           allocate(HYMAP2_routing_struc(n)%resopalt(HYMAP2_routing_struc(n)%nresop,HYMAP2_routing_struc(n)%ntresop))
        endif
        
+       !ag(27Apr2020)
+!        if(HYMAP2_routing_struc(n)%flowtype ==4)then
+          allocate(HYMAP2_routing_struc(n)%drstomax(HYMAP2_routing_struc(n)%nseqall))
+          allocate(HYMAP2_routing_struc(n)%droutlet(HYMAP2_routing_struc(n)%nseqall))
+          allocate(HYMAP2_routing_struc(n)%droutlet_glb(LIS_rc%glbnroutinggrid(n)))
+          allocate(HYMAP2_routing_struc(n)%drtotwth(HYMAP2_routing_struc(n)%nseqall))
+          allocate(HYMAP2_routing_struc(n)%drnoutlet(HYMAP2_routing_struc(n)%nseqall))
+          allocate(HYMAP2_routing_struc(n)%drtotlgh(HYMAP2_routing_struc(n)%nseqall))
+!        endif
+       
+       !ag(8Aug2020)
+       if(HYMAP2_routing_struc(n)%insertflag==1)then
+          allocate(HYMAP2_routing_struc(n)%insertloc(HYMAP2_routing_struc(n)%ninsert))
+          allocate(HYMAP2_routing_struc(n)%tinsert(HYMAP2_routing_struc(n)%ninsert,HYMAP2_routing_struc(n)%ntinsert))
+          allocate(HYMAP2_routing_struc(n)%insertdis(HYMAP2_routing_struc(n)%ninsert,HYMAP2_routing_struc(n)%ntinsert))
+       endif
+
+       !ag(30Mar2021)
+       if(HYMAP2_routing_struc(n)%tidesflag==1)then
+          allocate(HYMAP2_routing_struc(n)%tidesloc(HYMAP2_routing_struc(n)%ntides))
+          allocate(HYMAP2_routing_struc(n)%ttides(HYMAP2_routing_struc(n)%ntides,HYMAP2_routing_struc(n)%nttides))
+          allocate(HYMAP2_routing_struc(n)%tides(HYMAP2_routing_struc(n)%ntides,HYMAP2_routing_struc(n)%nttides))
+       endif
+
        if(HYMAP2_routing_struc(n)%useens.eq.0) then 
           allocate(HYMAP2_routing_struc(n)%rivsto(HYMAP2_routing_struc(n)%nseqall,&
                1))
@@ -685,6 +860,11 @@ contains
                1))
           allocate(HYMAP2_routing_struc(n)%fldfrctmp(HYMAP2_routing_struc(n)%nseqall,&
                1))
+          !ag(27Apr2020)
+!          if(HYMAP2_routing_struc(n)%flowtype ==4)then
+             allocate(HYMAP2_routing_struc(n)%drsto(HYMAP2_routing_struc(n)%nseqall,1))
+             allocate(HYMAP2_routing_struc(n)%drout(HYMAP2_routing_struc(n)%nseqall,1))
+!          endif
        else
           allocate(HYMAP2_routing_struc(n)%rivsto(HYMAP2_routing_struc(n)%nseqall,&
                LIS_rc%nensem(n)))
@@ -749,6 +929,11 @@ contains
                LIS_rc%nensem(n)))
           allocate(HYMAP2_routing_struc(n)%fldfrctmp(HYMAP2_routing_struc(n)%nseqall,&
                LIS_rc%nensem(n)))
+          !ag(27Apr2020)
+!          if(HYMAP2_routing_struc(n)%flowtype ==4)then
+             allocate(HYMAP2_routing_struc(n)%drsto(HYMAP2_routing_struc(n)%nseqall,LIS_rc%nensem(n)))
+             allocate(HYMAP2_routing_struc(n)%drout(HYMAP2_routing_struc(n)%nseqall,LIS_rc%nensem(n)))
+!          endif
        endif
 
        HYMAP2_routing_struc(n)%seqx=0.0
@@ -823,14 +1008,27 @@ contains
        HYMAP2_routing_struc(n)%ewat=0.0
        HYMAP2_routing_struc(n)%edif=0.0
        
-    enddo
-    
-    do n=1,LIS_rc%nnest
-       allocate(tmp_real(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-       allocate(tmp_real_nz(LIS_rc%lnc(n),LIS_rc%lnr(n),&
-            HYMAP2_routing_struc(n)%nz))
-    enddo
+       !ag(27Apr2020)
+!       if(HYMAP2_routing_struc(n)%flowtype ==4)then
+         HYMAP2_routing_struc(n)%drsto=0.0
+         HYMAP2_routing_struc(n)%drout=0.0
+!       endif
 
+       !ag(8Aug2020)
+       if(HYMAP2_routing_struc(n)%insertflag==1)then
+          HYMAP2_routing_struc(n)%insertloc=real(HYMAP2_routing_struc(n)%imis)
+          HYMAP2_routing_struc(n)%tinsert=dble(HYMAP2_routing_struc(n)%imis)
+          HYMAP2_routing_struc(n)%insertdis=real(HYMAP2_routing_struc(n)%imis)
+       endif
+
+       !ag(7Apr2021)
+       if(HYMAP2_routing_struc(n)%tidesflag==1)then
+         HYMAP2_routing_struc(n)%ttides=real(HYMAP2_routing_struc(n)%imis)
+         HYMAP2_routing_struc(n)%tides=real(HYMAP2_routing_struc(n)%imis)
+       endif
+    enddo
+   
+ 
     write(LIS_logunit,*) '[INFO] Get HYMAP2 cell vector sequence'
     do n=1, LIS_rc%nnest
        call HYMAP2_get_sindex(LIS_rc%gnc(n),&
@@ -891,20 +1089,35 @@ contains
     enddo
 #endif
 
+    do n=1,LIS_rc%nnest
+       allocate(tmp_real(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+       allocate(tmp_real_nz(LIS_rc%lnc(n),LIS_rc%lnr(n),&
+            HYMAP2_routing_struc(n)%nz))
+
     ctitle = 'HYMAP_river_width'
-    do n=1, LIS_rc%nnest
+!    do n=1, LIS_rc%nnest
        call HYMAP2_read_param_real_2d(ctitle,n,tmp_real)
-       call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
-            1,HYMAP2_routing_struc(n)%nseqall,&
-            HYMAP2_routing_struc(n)%imis,&
-            HYMAP2_routing_struc(n)%seqx,&
-            HYMAP2_routing_struc(n)%seqy,&
-            tmp_real,HYMAP2_routing_struc(n)%rivwth)
-    enddo
-    
+       if(HYMAP2_routing_struc(n)%useens.eq.0) then 
+          call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
+               1,HYMAP2_routing_struc(n)%nseqall,&
+               HYMAP2_routing_struc(n)%imis,&
+               HYMAP2_routing_struc(n)%seqx,&
+               HYMAP2_routing_struc(n)%seqy,&
+               tmp_real,HYMAP2_routing_struc(n)%rivwth(:,1))
+       else
+          do m=1,LIS_rc%nensem(n)
+             call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
+                  1,HYMAP2_routing_struc(n)%nseqall,&
+                  HYMAP2_routing_struc(n)%imis,&
+                  HYMAP2_routing_struc(n)%seqx,&
+                  HYMAP2_routing_struc(n)%seqy,&
+                  tmp_real,HYMAP2_routing_struc(n)%rivwth(:,m))             
+          enddo
+       endif
+!    enddo
 
     ctitle = 'HYMAP_river_length'
-    do n=1, LIS_rc%nnest
+!    do n=1, LIS_rc%nnest
        call HYMAP2_read_param_real_2d(ctitle,n,tmp_real)
        call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
             1,HYMAP2_routing_struc(n)%nseqall,&
@@ -912,32 +1125,54 @@ contains
             HYMAP2_routing_struc(n)%seqx,&
             HYMAP2_routing_struc(n)%seqy,&
             tmp_real,HYMAP2_routing_struc(n)%rivlen)
-    enddo
+!    enddo
     
     ctitle = 'HYMAP_river_height'
-    do n=1, LIS_rc%nnest
+!    do n=1, LIS_rc%nnest
        call HYMAP2_read_param_real_2d(ctitle,n,tmp_real)
-       call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
-            1,HYMAP2_routing_struc(n)%nseqall,&
-            HYMAP2_routing_struc(n)%imis,&
-            HYMAP2_routing_struc(n)%seqx,&
-            HYMAP2_routing_struc(n)%seqy,&
-            tmp_real,HYMAP2_routing_struc(n)%rivhgt)  
-    enddo
+       if(HYMAP2_routing_struc(n)%useens.eq.0) then 
+          call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
+               1,HYMAP2_routing_struc(n)%nseqall,&
+               HYMAP2_routing_struc(n)%imis,&
+               HYMAP2_routing_struc(n)%seqx,&
+               HYMAP2_routing_struc(n)%seqy,&
+               tmp_real,HYMAP2_routing_struc(n)%rivhgt(:,1))  
+       else
+          do m=1,LIS_rc%nensem(n)
+             call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
+                  1,HYMAP2_routing_struc(n)%nseqall,&
+                  HYMAP2_routing_struc(n)%imis,&
+                  HYMAP2_routing_struc(n)%seqx,&
+                  HYMAP2_routing_struc(n)%seqy,&
+                  tmp_real,HYMAP2_routing_struc(n)%rivhgt(:,m))  
+          enddo
+       endif
+!    enddo
     
     ctitle = 'HYMAP_river_roughness'
-    do n=1, LIS_rc%nnest
+!    do n=1, LIS_rc%nnest
        call HYMAP2_read_param_real_2d(ctitle,n,tmp_real)
-       call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
-            1,HYMAP2_routing_struc(n)%nseqall,&
-            HYMAP2_routing_struc(n)%imis,&
-            HYMAP2_routing_struc(n)%seqx,&
-            HYMAP2_routing_struc(n)%seqy,&
-            tmp_real,HYMAP2_routing_struc(n)%rivman)  
-    enddo
+       if(HYMAP2_routing_struc(n)%useens.eq.0) then 
+          call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
+               1,HYMAP2_routing_struc(n)%nseqall,&
+               HYMAP2_routing_struc(n)%imis,&
+               HYMAP2_routing_struc(n)%seqx,&
+               HYMAP2_routing_struc(n)%seqy,&
+               tmp_real,HYMAP2_routing_struc(n)%rivman(:,1))
+       else
+          do m=1,LIS_rc%nensem(n)
+             call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
+                  1,HYMAP2_routing_struc(n)%nseqall,&
+                  HYMAP2_routing_struc(n)%imis,&
+                  HYMAP2_routing_struc(n)%seqx,&
+                  HYMAP2_routing_struc(n)%seqy,&
+                  tmp_real,HYMAP2_routing_struc(n)%rivman(:,m))
+          enddo
+       endif
+!    enddo
     
     ctitle = 'HYMAP_floodplain_height'
-    do n=1, LIS_rc%nnest
+!    do n=1, LIS_rc%nnest
        call HYMAP2_read_param_real(ctitle,n, HYMAP2_routing_struc(n)%nz,&
             tmp_real_nz)
        call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
@@ -947,10 +1182,10 @@ contains
             HYMAP2_routing_struc(n)%seqx,&
             HYMAP2_routing_struc(n)%seqy,&
             tmp_real_nz,HYMAP2_routing_struc(n)%fldhgt)
-    enddo
+!    enddo
 
     ctitle = 'HYMAP_floodplain_roughness'
-    do n=1, LIS_rc%nnest
+!    do n=1, LIS_rc%nnest
        call HYMAP2_read_param_real_2d(ctitle,n,tmp_real)
        call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
             1,HYMAP2_routing_struc(n)%nseqall,&
@@ -958,10 +1193,10 @@ contains
             HYMAP2_routing_struc(n)%seqx,&
             HYMAP2_routing_struc(n)%seqy,&
             tmp_real,HYMAP2_routing_struc(n)%fldman)
-    enddo
+!    enddo
 
     ctitle = 'HYMAP_grid_elevation'
-    do n=1, LIS_rc%nnest
+!    do n=1, LIS_rc%nnest
        call HYMAP2_read_param_real_2d(ctitle,n,tmp_real)
        where(tmp_real<0)tmp_real=0
        call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
@@ -970,10 +1205,10 @@ contains
             HYMAP2_routing_struc(n)%seqx,&
             HYMAP2_routing_struc(n)%seqy,&
             tmp_real,HYMAP2_routing_struc(n)%elevtn)
-    enddo
+!    enddo
 
     ctitle = 'HYMAP_grid_distance'
-    do n=1, LIS_rc%nnest
+!    do n=1, LIS_rc%nnest
        call HYMAP2_read_param_real_2d(ctitle,n,tmp_real)
        call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
             1,HYMAP2_routing_struc(n)%nseqall,&
@@ -982,10 +1217,10 @@ contains
             HYMAP2_routing_struc(n)%seqy,&
             tmp_real,HYMAP2_routing_struc(n)%nxtdst)
 
-    enddo
+!    enddo
 
     ctitle = 'HYMAP_grid_area'
-    do n=1, LIS_rc%nnest
+!    do n=1, LIS_rc%nnest
        call HYMAP2_read_param_real_2d(ctitle,n,tmp_real)
        call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
             1,HYMAP2_routing_struc(n)%nseqall,&
@@ -993,10 +1228,10 @@ contains
             HYMAP2_routing_struc(n)%seqx,&
             HYMAP2_routing_struc(n)%seqy,&
             tmp_real,HYMAP2_routing_struc(n)%grarea)
-    enddo
+!    enddo
 
     ctitle = 'HYMAP_runoff_time_delay'
-    do n=1, LIS_rc%nnest
+!    do n=1, LIS_rc%nnest
        call HYMAP2_read_param_real_2d(ctitle,n,tmp_real)
        call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
             1,HYMAP2_routing_struc(n)%nseqall,&
@@ -1005,22 +1240,22 @@ contains
             HYMAP2_routing_struc(n)%seqy,&
             tmp_real,HYMAP2_routing_struc(n)%cntime)
        where(HYMAP2_routing_struc(n)%cntime==0)HYMAP2_routing_struc(n)%cntime=minval(HYMAP2_routing_struc(n)%cntime,HYMAP2_routing_struc(n)%cntime>0)
-    enddo
+!    enddo
 
 
     ctitle = 'HYMAP_runoff_time_delay_multiplier'
-    do n=1, LIS_rc%nnest
+!    do n=1, LIS_rc%nnest
        call HYMAP2_read_param_real_2d(ctitle,n,tmp_real)
        call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
             1,HYMAP2_routing_struc(n)%nseqall,&
             HYMAP2_routing_struc(n)%imis,&
             HYMAP2_routing_struc(n)%seqx,&
             HYMAP2_routing_struc(n)%seqy,&
-            tmp_real,HYMAP2_routing_struc(n)%trnoff)	  
-    enddo
+            tmp_real,HYMAP2_routing_struc(n)%trnoff)
+!    enddo
 
     ctitle = 'HYMAP_baseflow_time_delay'
-    do n=1, LIS_rc%nnest
+!    do n=1, LIS_rc%nnest
        call HYMAP2_read_param_real_2d(ctitle,n,tmp_real)
        call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
             1,HYMAP2_routing_struc(n)%nseqall,&
@@ -1032,11 +1267,11 @@ contains
        where(HYMAP2_routing_struc(n)%tbsflw<HYMAP2_routing_struc(n)%cntime/86400..and.&
             HYMAP2_routing_struc(n)%cntime>0)&
             HYMAP2_routing_struc(n)%tbsflw=HYMAP2_routing_struc(n)%cntime/86400.
-    enddo
+!    enddo
 
     !ag (23Nov2016)
     ctitle = 'HYMAP_runoff_dwi_ratio'
-    do n=1, LIS_rc%nnest
+!    do n=1, LIS_rc%nnest
        if(HYMAP2_routing_struc(n)%dwiflag==1)then
           call HYMAP2_read_param_real_2d(ctitle,n,tmp_real)
           call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
@@ -1044,14 +1279,15 @@ contains
                HYMAP2_routing_struc(n)%imis,&
                HYMAP2_routing_struc(n)%seqx,&
                HYMAP2_routing_struc(n)%seqy,&
-               tmp_real,HYMAP2_routing_struc(n)%rnfdwi_ratio)	  
+               tmp_real,HYMAP2_routing_struc(n)%rnfdwi_ratio)
        else
           HYMAP2_routing_struc(n)%rnfdwi_ratio=0.
        endif
-    enddo
+!    enddo
+
     !ag (23Nov2016)
     ctitle = 'HYMAP_baseflow_dwi_ratio'
-    do n=1, LIS_rc%nnest
+!    do n=1, LIS_rc%nnest
        if(HYMAP2_routing_struc(n)%dwiflag==1)then
           call HYMAP2_read_param_real_2d(ctitle,n,tmp_real)
           call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
@@ -1059,87 +1295,189 @@ contains
                HYMAP2_routing_struc(n)%imis,&
                HYMAP2_routing_struc(n)%seqx,&
                HYMAP2_routing_struc(n)%seqy,&
-               tmp_real,HYMAP2_routing_struc(n)%bsfdwi_ratio)	  
+               tmp_real,HYMAP2_routing_struc(n)%bsfdwi_ratio)
        else
           HYMAP2_routing_struc(n)%bsfdwi_ratio=0.
        endif
-    enddo
+!    enddo
 
     !ag (13Apr2016)
     ctitle = 'HYMAP_river_flow_type'
-    do n=1, LIS_rc%nnest
-       if(HYMAP2_routing_struc(n)%flowtype==0)then
+!    do n=1, LIS_rc%nnest
+       !ag(27Apr2020)
+       !if(HYMAP2_routing_struc(n)%flowtype==0)then
+       if(HYMAP2_routing_struc(n)%flowtype==0.or.HYMAP2_routing_struc(n)%flowtype==4)then
           call HYMAP2_read_param_real_2d(ctitle,n,tmp_real)
           call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
                1,HYMAP2_routing_struc(n)%nseqall,&
                HYMAP2_routing_struc(n)%imis,&
                HYMAP2_routing_struc(n)%seqx,&
                HYMAP2_routing_struc(n)%seqy,&
-               tmp_real,HYMAP2_routing_struc(n)%flowmap)	  
+               tmp_real,HYMAP2_routing_struc(n)%flowmap) 
        else
           HYMAP2_routing_struc(n)%flowmap=HYMAP2_routing_struc(n)%flowtype
        endif
+!    enddo
 
+    !ag (7Dec2020)
+    ctitle = 'HYMAP_urban_drainage_outlet'
+!    do n=1, LIS_rc%nnest
+       if(HYMAP2_routing_struc(n)%flowtype==4)then
+          call HYMAP2_read_param_real_2d(ctitle,n,tmp_real)
+          call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
+               1,HYMAP2_routing_struc(n)%nseqall,&
+               HYMAP2_routing_struc(n)%imis,&
+               HYMAP2_routing_struc(n)%seqx,&
+               HYMAP2_routing_struc(n)%seqy,&
+               tmp_real,HYMAP2_routing_struc(n)%droutlet)
+       else
+          HYMAP2_routing_struc(n)%droutlet=HYMAP2_routing_struc(n)%imis
+       endif
+
+#if (defined SPMD)
+       call MPI_ALLGATHERV(HYMAP2_routing_struc(n)%droutlet,&
+            LIS_rc%nroutinggrid(n),MPI_INTEGER,&
+            HYMAP2_routing_struc(n)%droutlet_glb,&
+            LIS_routing_gdeltas(n,:),&
+            LIS_routing_goffsets(n,:),&
+            MPI_INTEGER,&
+            LIS_mpi_comm,status)
+#endif
+
+      deallocate(tmp_real)
+      deallocate(tmp_real_nz)
     enddo
+
 
     !ag (20Sep2016) Correction for cases where parameter maps don't match
     do n=1, LIS_rc%nnest
-       do i=1,HYMAP2_routing_struc(n)%nseqall
-          if(HYMAP2_routing_struc(n)%rivwth(i)==HYMAP2_routing_struc(n)%imis.or.&
-               HYMAP2_routing_struc(n)%rivlen(i)==HYMAP2_routing_struc(n)%imis.or.&
-               HYMAP2_routing_struc(n)%rivhgt(i)==HYMAP2_routing_struc(n)%imis.or.&
-               HYMAP2_routing_struc(n)%rivman(i)==HYMAP2_routing_struc(n)%imis.or.&
-               HYMAP2_routing_struc(n)%fldhgt(i,1)==HYMAP2_routing_struc(n)%imis.or.&
-               HYMAP2_routing_struc(n)%elevtn(i)==HYMAP2_routing_struc(n)%imis.or.&
-               HYMAP2_routing_struc(n)%nxtdst(i)==HYMAP2_routing_struc(n)%imis.or.&
-               HYMAP2_routing_struc(n)%grarea(i)==HYMAP2_routing_struc(n)%imis.or.&
-               HYMAP2_routing_struc(n)%cntime(i)==HYMAP2_routing_struc(n)%imis.or.&
-               HYMAP2_routing_struc(n)%trnoff(i)==HYMAP2_routing_struc(n)%imis.or.&
-               HYMAP2_routing_struc(n)%tbsflw(i)==HYMAP2_routing_struc(n)%imis.or.&
-               HYMAP2_routing_struc(n)%flowmap(i)==HYMAP2_routing_struc(n)%imis)then
-
-             HYMAP2_routing_struc(n)%rivwth(i)=HYMAP2_routing_struc(n)%imis
-             HYMAP2_routing_struc(n)%rivlen(i)=HYMAP2_routing_struc(n)%imis
-             HYMAP2_routing_struc(n)%rivhgt(i)=HYMAP2_routing_struc(n)%imis
-             HYMAP2_routing_struc(n)%rivman(i)=HYMAP2_routing_struc(n)%imis
-             HYMAP2_routing_struc(n)%fldhgt(i,:)=HYMAP2_routing_struc(n)%imis
-             HYMAP2_routing_struc(n)%elevtn(i)=HYMAP2_routing_struc(n)%imis
-             HYMAP2_routing_struc(n)%nxtdst(i)=HYMAP2_routing_struc(n)%imis
-             HYMAP2_routing_struc(n)%grarea(i)=HYMAP2_routing_struc(n)%imis
-             HYMAP2_routing_struc(n)%cntime(i)=HYMAP2_routing_struc(n)%imis
-             HYMAP2_routing_struc(n)%trnoff(i)=HYMAP2_routing_struc(n)%imis
-             HYMAP2_routing_struc(n)%tbsflw(i)=HYMAP2_routing_struc(n)%imis
-             HYMAP2_routing_struc(n)%flowmap(i)=HYMAP2_routing_struc(n)%imis
-             HYMAP2_routing_struc(n)%outlet(i)=HYMAP2_routing_struc(n)%imis
-          endif
-       enddo
+       if(HYMAP2_routing_struc(n)%useens.eq.0) then 
+          do i=1,HYMAP2_routing_struc(n)%nseqall
+             if(HYMAP2_routing_struc(n)%rivwth(i,1)==HYMAP2_routing_struc(n)%imis.or.&
+                  HYMAP2_routing_struc(n)%rivlen(i)==HYMAP2_routing_struc(n)%imis.or.&
+                  HYMAP2_routing_struc(n)%rivhgt(i,1)==HYMAP2_routing_struc(n)%imis.or.&
+                  HYMAP2_routing_struc(n)%rivman(i,1)==HYMAP2_routing_struc(n)%imis.or.&
+                  HYMAP2_routing_struc(n)%fldhgt(i,1)==HYMAP2_routing_struc(n)%imis.or.&
+                  HYMAP2_routing_struc(n)%elevtn(i)==HYMAP2_routing_struc(n)%imis.or.&
+                  HYMAP2_routing_struc(n)%nxtdst(i)==HYMAP2_routing_struc(n)%imis.or.&
+                  HYMAP2_routing_struc(n)%grarea(i)==HYMAP2_routing_struc(n)%imis.or.&
+                  HYMAP2_routing_struc(n)%cntime(i)==HYMAP2_routing_struc(n)%imis.or.&
+                  HYMAP2_routing_struc(n)%trnoff(i)==HYMAP2_routing_struc(n)%imis.or.&
+                  HYMAP2_routing_struc(n)%tbsflw(i)==HYMAP2_routing_struc(n)%imis.or.&
+                  HYMAP2_routing_struc(n)%flowmap(i)==HYMAP2_routing_struc(n)%imis)then
+                
+                HYMAP2_routing_struc(n)%rivwth(i,1)=HYMAP2_routing_struc(n)%imis
+                HYMAP2_routing_struc(n)%rivlen(i)=HYMAP2_routing_struc(n)%imis
+                HYMAP2_routing_struc(n)%rivhgt(i,1)=HYMAP2_routing_struc(n)%imis
+                HYMAP2_routing_struc(n)%rivman(i,1)=HYMAP2_routing_struc(n)%imis
+                HYMAP2_routing_struc(n)%fldhgt(i,:)=HYMAP2_routing_struc(n)%imis
+                HYMAP2_routing_struc(n)%elevtn(i)=HYMAP2_routing_struc(n)%imis
+                HYMAP2_routing_struc(n)%nxtdst(i)=HYMAP2_routing_struc(n)%imis
+                HYMAP2_routing_struc(n)%grarea(i)=HYMAP2_routing_struc(n)%imis
+                HYMAP2_routing_struc(n)%cntime(i)=HYMAP2_routing_struc(n)%imis
+                HYMAP2_routing_struc(n)%trnoff(i)=HYMAP2_routing_struc(n)%imis
+                HYMAP2_routing_struc(n)%tbsflw(i)=HYMAP2_routing_struc(n)%imis
+                HYMAP2_routing_struc(n)%flowmap(i)=HYMAP2_routing_struc(n)%imis
+                HYMAP2_routing_struc(n)%outlet(i)=HYMAP2_routing_struc(n)%imis
+             endif
+          enddo
+       else
+          do i=1,HYMAP2_routing_struc(n)%nseqall
+             do m=1,LIS_rc%nensem(n)
+                if(HYMAP2_routing_struc(n)%rivwth(i,m)==HYMAP2_routing_struc(n)%imis.or.&
+                     HYMAP2_routing_struc(n)%rivlen(i)==HYMAP2_routing_struc(n)%imis.or.&
+                     HYMAP2_routing_struc(n)%rivhgt(i,m)==HYMAP2_routing_struc(n)%imis.or.&
+                     HYMAP2_routing_struc(n)%rivman(i,m)==HYMAP2_routing_struc(n)%imis.or.&
+                     HYMAP2_routing_struc(n)%fldhgt(i,1)==HYMAP2_routing_struc(n)%imis.or.&
+                     HYMAP2_routing_struc(n)%elevtn(i)==HYMAP2_routing_struc(n)%imis.or.&
+                     HYMAP2_routing_struc(n)%nxtdst(i)==HYMAP2_routing_struc(n)%imis.or.&
+                     HYMAP2_routing_struc(n)%grarea(i)==HYMAP2_routing_struc(n)%imis.or.&
+                     HYMAP2_routing_struc(n)%cntime(i)==HYMAP2_routing_struc(n)%imis.or.&
+                     HYMAP2_routing_struc(n)%trnoff(i)==HYMAP2_routing_struc(n)%imis.or.&
+                     HYMAP2_routing_struc(n)%tbsflw(i)==HYMAP2_routing_struc(n)%imis.or.&
+                     HYMAP2_routing_struc(n)%flowmap(i)==HYMAP2_routing_struc(n)%imis)then
+                   
+                   HYMAP2_routing_struc(n)%rivwth(i,m)=HYMAP2_routing_struc(n)%imis
+                   HYMAP2_routing_struc(n)%rivlen(i)=HYMAP2_routing_struc(n)%imis
+                   HYMAP2_routing_struc(n)%rivhgt(i,m)=HYMAP2_routing_struc(n)%imis
+                   HYMAP2_routing_struc(n)%rivman(i,m)=HYMAP2_routing_struc(n)%imis
+                   HYMAP2_routing_struc(n)%fldhgt(i,:)=HYMAP2_routing_struc(n)%imis
+                   HYMAP2_routing_struc(n)%elevtn(i)=HYMAP2_routing_struc(n)%imis
+                   HYMAP2_routing_struc(n)%nxtdst(i)=HYMAP2_routing_struc(n)%imis
+                   HYMAP2_routing_struc(n)%grarea(i)=HYMAP2_routing_struc(n)%imis
+                   HYMAP2_routing_struc(n)%cntime(i)=HYMAP2_routing_struc(n)%imis
+                   HYMAP2_routing_struc(n)%trnoff(i)=HYMAP2_routing_struc(n)%imis
+                   HYMAP2_routing_struc(n)%tbsflw(i)=HYMAP2_routing_struc(n)%imis
+                   HYMAP2_routing_struc(n)%flowmap(i)=HYMAP2_routing_struc(n)%imis
+                   HYMAP2_routing_struc(n)%outlet(i)=HYMAP2_routing_struc(n)%imis
+                endif
+             enddo
+          enddo
+       endif
     enddo
 
 
     write(LIS_logunit,*) '[INFO] Processing data before running HYMAP'
     do n=1, LIS_rc%nnest
        write(LIS_logunit,*)'[INFO] Calculate maximum river storage'
-       HYMAP2_routing_struc(n)%rivstomax = HYMAP2_routing_struc(n)%rivlen* &
-            HYMAP2_routing_struc(n)%rivwth * HYMAP2_routing_struc(n)%rivhgt
 
-       write(LIS_logunit,*)'[INFO] Calculate river bed elevation'
-       HYMAP2_routing_struc(n)%rivelv = HYMAP2_routing_struc(n)%elevtn -&
-            HYMAP2_routing_struc(n)%rivhgt
-       write(LIS_logunit,*)'[INFO] Calculate river surface area'
-       where(HYMAP2_routing_struc(n)%rivwth>0)HYMAP2_routing_struc(n)%rivare =&
-            min(HYMAP2_routing_struc(n)%grarea, HYMAP2_routing_struc(n)%rivlen *&
-            HYMAP2_routing_struc(n)%rivwth)
-       write(LIS_logunit,*)'[INFO] Setting floodplain staging'
-       call HYMAP2_set_fldstg(HYMAP2_routing_struc(n)%nz,&
-            HYMAP2_routing_struc(n)%nseqall,&
-            HYMAP2_routing_struc(n)%fldhgt,&
-            HYMAP2_routing_struc(n)%grarea,&
-            HYMAP2_routing_struc(n)%rivlen,&
-            HYMAP2_routing_struc(n)%rivwth,&
-            HYMAP2_routing_struc(n)%rivstomax,&
-            HYMAP2_routing_struc(n)%fldstomax,&
-            HYMAP2_routing_struc(n)%fldgrd,&
-            HYMAP2_routing_struc(n)%rivare)		   
+       if(HYMAP2_routing_struc(n)%useens.eq.0) then 
+          do i=1,HYMAP2_routing_struc(n)%nseqall
+             HYMAP2_routing_struc(n)%rivstomax(i,1) = HYMAP2_routing_struc(n)%rivlen(i)* &
+                  HYMAP2_routing_struc(n)%rivwth(i,1) * HYMAP2_routing_struc(n)%rivhgt(i,1)
+          
+!             write(LIS_logunit,*)'[INFO] Calculate river bed elevation'
+             HYMAP2_routing_struc(n)%rivelv(i) = HYMAP2_routing_struc(n)%elevtn(i) -&
+                  HYMAP2_routing_struc(n)%rivhgt(i,1)
+!             write(LIS_logunit,*)'[INFO] Calculate river surface area'
+             if(HYMAP2_routing_struc(n)%rivwth(i,1)>0) then 
+                HYMAP2_routing_struc(n)%rivare(i,1) =&
+                     min(HYMAP2_routing_struc(n)%grarea(i), &
+                     HYMAP2_routing_struc(n)%rivlen(i) *&
+                     HYMAP2_routing_struc(n)%rivwth(i,1))
+!                write(LIS_logunit,*)'[INFO] Setting floodplain staging'
+             endif
+          enddo
+          call HYMAP2_set_fldstg(HYMAP2_routing_struc(n)%nz,&
+               HYMAP2_routing_struc(n)%nseqall,&
+               HYMAP2_routing_struc(n)%fldhgt,&
+               HYMAP2_routing_struc(n)%grarea,&
+               HYMAP2_routing_struc(n)%rivlen,&
+               HYMAP2_routing_struc(n)%rivwth(:,1),&
+               HYMAP2_routing_struc(n)%rivstomax(:,1),&
+               HYMAP2_routing_struc(n)%fldstomax(:,:,1),&
+               HYMAP2_routing_struc(n)%fldgrd(:,:,1),&
+               HYMAP2_routing_struc(n)%rivare(:,1))
+       else
+          do i=1,HYMAP2_routing_struc(n)%nseqall
+             do m=1,LIS_rc%nensem(n)
+                HYMAP2_routing_struc(n)%rivstomax(i,m) = HYMAP2_routing_struc(n)%rivlen(i)* &
+                     HYMAP2_routing_struc(n)%rivwth(i,m) * HYMAP2_routing_struc(n)%rivhgt(i,m)
+                
+                HYMAP2_routing_struc(n)%rivelv(i) = HYMAP2_routing_struc(n)%elevtn(i) -&
+                     HYMAP2_routing_struc(n)%rivhgt(i,m)
+                if(HYMAP2_routing_struc(n)%rivwth(i,m)>0) then 
+                   HYMAP2_routing_struc(n)%rivare(i,m) =&
+                        min(HYMAP2_routing_struc(n)%grarea(i), &
+                        HYMAP2_routing_struc(n)%rivlen(i) *&
+                        HYMAP2_routing_struc(n)%rivwth(i,m))
+                endif
+             enddo
+          enddo
+
+          do m=1,LIS_rc%nensem(n)
+             call HYMAP2_set_fldstg(HYMAP2_routing_struc(n)%nz,&
+                  HYMAP2_routing_struc(n)%nseqall,&
+                  HYMAP2_routing_struc(n)%fldhgt,&
+                  HYMAP2_routing_struc(n)%grarea,&
+                  HYMAP2_routing_struc(n)%rivlen,&
+                  HYMAP2_routing_struc(n)%rivwth(:,m),&
+                  HYMAP2_routing_struc(n)%rivstomax(:,m),&
+                  HYMAP2_routing_struc(n)%fldstomax(:,:,m),&
+                  HYMAP2_routing_struc(n)%fldgrd(:,:,m),&
+                  HYMAP2_routing_struc(n)%rivare(:,m))
+          enddo
+       endif
     enddo
 
     !ag (4Feb2016) - read reservoir operation data
@@ -1156,6 +1494,72 @@ contains
                HYMAP2_routing_struc(n)%resopalt)
           where(HYMAP2_routing_struc(n)%resopoutmin==real(HYMAP2_routing_struc(n)%imis).or.HYMAP2_routing_struc(n)%resopoutmin<0.)&
                HYMAP2_routing_struc(n)%resopoutmin=0.
+       endif
+    enddo
+
+    !ag(27Apr2020) - read urban flood data
+    do n=1, LIS_rc%nnest
+      if(HYMAP2_routing_struc(n)%flowtype==4)then
+        write(LIS_logunit,*)'[INFO] Setting urban drainage parameters'
+        call ESMF_ConfigFindLabel(LIS_config,&
+             "HYMAP2 urban drainage parameter file:",rc=status)
+        call ESMF_ConfigGetAttribute(LIS_config,&
+             HYMAP2_routing_struc(n)%drfile,rc=status)
+        call LIS_verify(status,&
+             "HYMAP2 urban drainage parameter file: not defined")
+
+        call HYMAP2_get_urban_parameters(HYMAP2_routing_struc(n)%drfile,&
+                 HYMAP2_routing_struc(n)%drwth,&
+                 HYMAP2_routing_struc(n)%drhgt,&
+                 HYMAP2_routing_struc(n)%drden,&
+                 HYMAP2_routing_struc(n)%drvel,&
+                 HYMAP2_routing_struc(n)%drblk,&
+                 HYMAP2_routing_struc(n)%drrad,&
+                 HYMAP2_routing_struc(n)%drlgh,&
+                 HYMAP2_routing_struc(n)%drman,&
+                 HYMAP2_routing_struc(n)%drslp)
+                 
+        call HYMAP2_gen_urban_drain_maps(HYMAP2_routing_struc(n)%nseqall,&
+                  HYMAP2_routing_struc(n)%drrad,&
+                  HYMAP2_routing_struc(n)%drlgh,&
+                  HYMAP2_routing_struc(n)%drden,&
+                  HYMAP2_routing_struc(n)%drwth,&
+                  HYMAP2_routing_struc(n)%drblk,&
+                  HYMAP2_routing_struc(n)%grarea,&
+                  HYMAP2_routing_struc(n)%next,&
+                  HYMAP2_routing_struc(n)%flowmap,&
+                  HYMAP2_routing_struc(n)%drstomax,&
+                  HYMAP2_routing_struc(n)%drtotwth,&
+                  HYMAP2_routing_struc(n)%drnoutlet,&
+                  HYMAP2_routing_struc(n)%drtotlgh)  
+      endif
+    enddo
+
+    !ag(8Aug2020) - read discharge data for direct insertion
+    do n=1, LIS_rc%nnest
+!TBD: SVK - block below needs update for parallelism
+       if(HYMAP2_routing_struc(n)%insertflag==1)then
+          call HYMAP2_get_discharge_data(HYMAP2_routing_struc(n)%insertdir,&
+               HYMAP2_routing_struc(n)%insertheader,&
+               LIS_rc%gnc(n),LIS_rc%gnr(n),HYMAP2_routing_struc(n)%sindex,&
+               HYMAP2_routing_struc(n)%ninsert,HYMAP2_routing_struc(n)%ntinsert,&
+               HYMAP2_routing_struc(n)%insertloc,&
+               HYMAP2_routing_struc(n)%tinsert,&
+               HYMAP2_routing_struc(n)%insertdis)
+       endif
+    enddo
+
+    !ag(30Mar2021) - read ocean tides data
+    do n=1, LIS_rc%nnest
+!TBD: SVK - block below needs update for parallelism
+       if(HYMAP2_routing_struc(n)%tidesflag==1)then
+          call HYMAP2_get_discharge_data(HYMAP2_routing_struc(n)%tidesdir,&
+               HYMAP2_routing_struc(n)%tidesheader,&
+               LIS_rc%gnc(n),LIS_rc%gnr(n),HYMAP2_routing_struc(n)%sindex,&
+               HYMAP2_routing_struc(n)%ntides,HYMAP2_routing_struc(n)%nttides,&
+               HYMAP2_routing_struc(n)%tidesloc,&
+               HYMAP2_routing_struc(n)%ttides,&
+               HYMAP2_routing_struc(n)%tides)
        endif
     enddo
 
@@ -1370,9 +1774,29 @@ contains
             deBlockList=deblklist,rc=status)
        call LIS_verify(status)
        
-       HYMAP2_routing_struc(n)%vecPatch = &
+       LIS_vecRoutingTile(n) = &
             ESMF_GridCreate(name="HYMAP2 Patch Space",&
             coordTypeKind=ESMF_TYPEKIND_R4, distGrid = patchDG,&
+            gridEdgeLWidth=(/0/), gridEdgeUWidth=(/0/),rc=status)
+       call LIS_verify(status,'ESMF_GridCreate failed in HYMAP2_routing_init')
+
+
+       do i=0,LIS_npes-1
+          stid = LIS_routing_goffsets(n,i)+1
+          enid = stid + LIS_routing_gdeltas(n,i)-1
+          
+          deblklist(:,1,i+1) = (/stid/)
+          deblklist(:,2,i+1) = (/enid/)
+       enddo
+
+       gridDG = ESMF_DistGridCreate(minIndex=(/1/),&
+            maxIndex=(/LIS_rc%glbnroutinggrid(n)/),&
+            deBlockList=deblklist,rc=status)
+       call LIS_verify(status)
+       
+       LIS_vecRoutingGrid(n) = &
+            ESMF_GridCreate(name="HYMAP2 Tile Space",&
+            coordTypeKind=ESMF_TYPEKIND_R4, distGrid = gridDG,&
             gridEdgeLWidth=(/0/), gridEdgeUWidth=(/0/),rc=status)
        call LIS_verify(status,'ESMF_GridCreate failed in HYMAP2_routing_init')
        deallocate(deblklist)
@@ -1440,13 +1864,13 @@ contains
                 write(LIS_logunit,*) '[INFO] ',vname(i),stmin(i),stmax(i)
 
                 varField = ESMF_FieldCreate(&
-                     grid=HYMAP2_routing_struc(n)%vecPatch,&
+                     grid=LIS_vecRoutingTile(n),&
                      arrayspec=arrspec1,name=trim(vname(i)), rc=status)
                 call LIS_verify(status, &
                      "ESMF_FieldCreate failed in LIS_routing_init")
 
                 varIncrField = ESMF_FieldCreate(&
-                     grid=HYMAP2_routing_struc(n)%vecPatch,&
+                     grid=LIS_vecRoutingTile(n),&
                      arrayspec=arrspec1,name=trim(vname(i)), rc=status)
                 call LIS_verify(status,&
                      "ESMF_FieldCreate failed in LIS_routing_init")
@@ -1531,7 +1955,7 @@ contains
 
                 do i=1,LIS_rc%nstvars(k)
                    pertField = ESMF_FieldCreate(&
-                        grid=HYMAP2_routing_struc(n)%vecPatch,&
+                        grid=LIS_vecRoutingTile(n),&
                         arrayspec=arrspec2,name=trim(routing_pert%vname(i)),&
                         rc=status)
 
@@ -1981,9 +2405,61 @@ contains
     enddo
     do res=1,nresop
       yfile=trim(resopdir)//trim(resopname(res))//'.txt'
-      call HYMAP2_read_resop_alt(ntresop,trim(yfile),tresop(res,:),resop(res,:))
+      call HYMAP2_read_time_series(ntresop,trim(yfile),tresop(res,:),resop(res,:))
     enddo
   end subroutine HYMAP2_get_data_resop_alt
+  !=============================================
+  !=============================================
+  subroutine HYMAP2_get_discharge_data(insertdir,insertheader,nx,ny,sindex,ninsert,ntinsert,insertloc,tinsert,insertdis)
+
+    implicit none
+    character(*), intent(in)  :: insertdir,insertheader
+    integer,      intent(in)  :: nx,ny
+    integer,      intent(in)  :: sindex(nx,ny)
+    integer,      intent(in)  :: ninsert,ntinsert
+    integer,      intent(out) :: insertloc(ninsert)
+    real*8,       intent(out) :: tinsert(ninsert,ntinsert)
+    real,         intent(out) :: insertdis(ninsert,ntinsert)
+    integer                   :: ins
+    integer                   :: xinsert(ninsert),yinsert(ninsert)
+    character(50)            :: insertname(ninsert)
+    character(500)            :: yfile
+
+    call HYMAP2_read_header(trim(insertheader),ninsert,insertname,xinsert,yinsert)
+    do ins=1,ninsert
+      insertloc(ins)=sindex(xinsert(ins),yinsert(ins))
+    enddo
+    do ins=1,ninsert
+      yfile=trim(insertdir)//trim(insertname(ins))//'.txt'
+      call HYMAP2_read_time_series(ntinsert,trim(yfile),tinsert(ins,:),insertdis(ins,:))
+    enddo
+  end subroutine HYMAP2_get_discharge_data
+  !=============================================
+  !=============================================
+!  subroutine HYMAP2_get_tides_data(tidesdir,tidesheader,nx,ny,sindex,ntides,nttides,tidesloc,ttides,tides)
+  
+!    implicit none
+!    character(*), intent(in)  :: tidesdir,tidesheader
+!    integer,      intent(in)  :: nx,ny
+!    integer,      intent(in)  :: sindex(nx,ny)
+!    integer,      intent(in)  :: ntides,nttides
+!    integer,      intent(out) :: tidesloc(ntides)
+!    real*8,       intent(out) :: ttides(ntides,nttides)
+!    real,         intent(out) :: tides(ntides,nttides)
+!    integer                   :: ins
+!    integer                   :: xtides(ntides),ytides(ntides)
+!    character(50)            :: itidesname(ntides)
+!    character(500)            :: yfile
+    
+!    call HYMAP2_read_header(trim(insertheader),ninsert,insertname,xinsert,yinsert)
+!    do ins=1,ninsert
+!      insertloc(ins)=sindex(xinsert(ins),yinsert(ins))
+!    enddo
+!    do ins=1,ninsert
+!      yfile=trim(insertdir)//trim(insertname(ins))//'.txt'
+!      call HYMAP2_read_time_series(ntinsert,trim(yfile),tinsert(ins,:),insertdis(ins,:))
+!    enddo
+!  end subroutine HYMAP2_get_tides_data
   !=============================================
   !=============================================  
   subroutine HYMAP2_read_header_resop(yheader,inst,yqname,ix,iy,outmin)
@@ -2065,7 +2541,7 @@ contains
   end subroutine HYMAP2_read_header
   !=============================================
   !=============================================  
-  subroutine HYMAP2_read_resop_alt(itmax,yfile,ztalt,zhalt)
+  subroutine HYMAP2_read_time_series(itmax,yfile,ztalt,zhalt)
   
     use LIS_logMod
     implicit none
@@ -2075,25 +2551,78 @@ contains
     real*8,       intent(inout) :: ztalt(itmax)
     real,         intent(inout) :: zhalt(itmax)
     logical                     :: file_exists
-    integer :: it
+    integer :: it, ftn
   
     inquire(file=yfile,exist=file_exists)
     
     if(file_exists)then 
-      open(1,file=trim(yfile),status='old')
+      ftn = LIS_getNextUnitNumber()
+      open(ftn,file=trim(yfile),status='old')
       do it=1,itmax
-        read(1,*,end=10)ztalt(it),zhalt(it)
+        read(ftn,*,end=10)ztalt(it),zhalt(it)
         write(LIS_logunit,*)ztalt(it),zhalt(it)
       enddo
 10    continue
-      close(1)
+      call LIS_releaseUnitNumber(ftn)
     else
-      write(LIS_logunit,*) 'reservoir data time series file '//trim(yfile)
-      write(LIS_logunit,*) 'failed in read_resop_alt in HYMAP2_routing_init'
+      write(LIS_logunit,*) '[ERR] time series file '//trim(yfile)
+      write(LIS_logunit,*) '[ERR] failed in read_time_series in HYMAP2_routing_init'
       call LIS_endrun()
     endif  
 
-  end subroutine HYMAP2_read_resop_alt
-  !=============================================
-  !=============================================  
+  end subroutine HYMAP2_read_time_series
+  !============================================= 
+!ag(27Apr2020)
+! ================================================
+!BOP
+!
+! !ROUTINE: HYMAP2_gather_tiles
+! \label{HYMAP2_gather_tiles}
+! 
+! !INTERFACE:
+subroutine HYMAP2_gather_tiles_int(n,var,var_glb)
+! !USES:
+  use LIS_coreMod
+  use LIS_routingMod
+  use LIS_mpiMod
+!
+! !DESCRIPTION: 
+!  This subroutine gathers an individual variable
+!  across different processors into a global array
+!EOP
+
+  implicit none
+
+  integer        :: n 
+  integer           :: var(LIS_rc%nroutinggrid(n))
+  integer           :: var_glb(LIS_rc%glbnroutinggrid(n))
+
+  integer           :: tmpvar(LIS_rc%glbnroutinggrid(n))
+  integer        :: i,l,ix,iy,ix1,iy1
+  integer        :: status
+
+#if (defined SPMD)
+  call MPI_ALLGATHERV(var,&
+       LIS_rc%nroutinggrid(n),&
+       MPI_REAL,tmpvar,&
+       LIS_routing_gdeltas(n,:),&
+       LIS_routing_goffsets(n,:),&
+       MPI_REAL,LIS_mpi_comm,status)
+#endif
+  !rearrange them to be in correct order.
+  do l=1,LIS_npes
+     do i=1,LIS_routing_gdeltas(n,l-1)
+        ix = HYMAP2_routing_struc(n)%seqx_glb(i+&
+             LIS_routing_goffsets(n,l-1))
+        iy = HYMAP2_routing_struc(n)%seqy_glb(i+&
+             LIS_routing_goffsets(n,l-1))
+        ix1 = ix + LIS_ews_halo_ind(n,l) - 1
+        iy1 = iy + LIS_nss_halo_ind(n,l)-1
+        var_glb(HYMAP2_routing_struc(n)%sindex(ix1,iy1)) = &
+             tmpvar(i+LIS_routing_goffsets(n,l-1))
+     enddo
+  enddo
+
+end subroutine HYMAP2_gather_tiles_int
+! ================================================ 
 end module HYMAP2_routingMod

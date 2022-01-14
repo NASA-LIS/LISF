@@ -286,6 +286,14 @@ subroutine LIS_DAobs_plugin
     use THySM_Mod,    only : THySM_setup
 #endif
 
+#if ( defined DA_OBS_SNODAS )
+   use SNODAS_Mod,    only : SNODAS_setup
+#endif
+
+#if ( defined DA_OBS_HYDROWEBWL )
+   use hydrowebWLobs_module,   only : hydrowebwlobs_setup
+#endif
+    
 #if ( defined DA_OBS_SYNTHETICSM )
     external read_syntheticsmobs, write_syntheticsmobs
 #endif
@@ -388,6 +396,11 @@ subroutine LIS_DAobs_plugin
    external read_GCOMW_AMSR2L3SND,  write_GCOMW_AMSR2L3sndobs
 #endif
 
+#if ( defined DA_OBS_HYDROWEBWL )
+    external read_hydrowebWLobs, write_hydrowebWLobs
+#endif
+
+    
 #if 0 
    external read_WindSatsm, write_WindSatsmobs
    external read_WindSatCsm, write_WindSatCsmobs
@@ -451,6 +464,11 @@ subroutine LIS_DAobs_plugin
 #if ( defined DA_OBS_ASO_SWE)
     external read_ASO_SWE, write_ASO_SWEobs
 #endif
+
+#if ( defined DA_OBS_SNODAS )
+   external read_SNODAS,  write_SNODAS
+#endif
+    
 
     LIS_DAobsFuncEntry%head_daobsfunc_list => null()
     
@@ -875,6 +893,26 @@ subroutine LIS_DAobs_plugin
    call registerwritedaobs(trim(LIS_THySMid)//char(0),&
         write_THySM)
 #endif
+
+#if ( defined DA_OBS_SNODAS )
+!MLW: SNODAS snow depth
+   call registerdaobsclass(trim(LIS_SNODASobsId),"LSM")
+   call registerdaobssetup(trim(LIS_SNODASobsId)//char(0), &
+        SNODAS_setup)
+   call registerreaddaobs(trim(LIS_SNODASobsId)//char(0),  &
+        read_SNODAS)
+   call registerwritedaobs(trim(LIS_SNODASobsId)//char(0), &
+        write_SNODAS)
+#endif
+
+#if ( defined DA_OBS_HYDROWEBWL )
+!synthetic noah soil moisture    
+   call registerdaobsclass(trim(LIS_hydrowebwlId),"Routing")
+   call registerdaobssetup(trim(LIS_hydrowebwlId)//char(0),hydrowebwlobs_setup)
+   call registerreaddaobs(trim(LIS_hydrowebwlId)//char(0),read_hydrowebwlobs)
+   call registerwritedaobs(trim(LIS_hydrowebwlId)//char(0),write_hydrowebwlobs)
+#endif
+   
 #endif
  end subroutine LIS_DAobs_plugin
 

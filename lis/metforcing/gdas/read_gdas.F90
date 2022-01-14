@@ -42,6 +42,7 @@ subroutine read_gdas( order, n, findex, &
   use gdas_forcingMod,    only : gdas_struc
   use LIS_logMod,         only : LIS_logunit, LIS_endrun
   use LIS_surfaceModelDataMod
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS:
@@ -89,7 +90,7 @@ subroutine read_gdas( order, n, findex, &
 !EOP
 !==== Local Variables=======================
   
-  character(len=80) :: fname
+  character(len=LIS_CONST_PATH_LEN) :: fname
   integer :: iv, c,r,t
   integer :: ferror1, ferror2, ferror3
   integer :: nforce

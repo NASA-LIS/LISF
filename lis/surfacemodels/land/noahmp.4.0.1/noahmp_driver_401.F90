@@ -50,6 +50,8 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
      ghb     , irg     , irc     , irb     , tr      , evc     , & ! out Noah MP only
      fgev_pet, fcev_pet, fctr_pet,                               & ! PET 
      chleaf  , chuc    , chv2    , chb2    , relsmc,             &
+     !ag (12Sep2019)
+     rivsto, fldsto, fldfrc,&
      parameters ,                                                & ! out Noah MP only
      sfcheadrt , INFXSRT, soldrain)                                ! For WRF-Hydro
 
@@ -253,6 +255,11 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   real, intent(out) :: chv2                   ! veg 2m exchange coefficient
   real, intent(out) :: chb2                   ! bare 2m exchange coefficient
   real, intent(out) :: relsmc(nsoil)          ! relative soil moisture [-]
+  !ag (05Jan2021)
+  real,   intent(in)  :: rivsto               ! river storage [m s-1]
+  real,   intent(in)  :: fldsto               ! flood storage [m s-1]
+  real,   intent(in)  :: fldfrc               ! flooded fraction [-]
+
 
   type(noahmp_parameters) :: parameters
 
@@ -457,6 +464,11 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   real, dimension(1,1) :: chb2out
   real, dimension(1,nsoil,1) :: relsmcout
   real, dimension(1,1) :: rsout
+    !ag(05Jan2021)
+  real, dimension(1,1) :: rivstoin
+  real, dimension(1,1) :: fldstoin
+  real, dimension(1,1) :: fldfrcin
+
 
    ids = 1
    ide = 1
@@ -717,11 +729,17 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
 
 ! Code from module_NoahMP_hrldas_driver.F.  Initial guess only.
   if ((trim(LIS_rc%startcode).eq."coldstart").and.(itimestep.eq.1)) then
-      eahinout(1,1) = sfcprs(1) * (q2(1)/(0.622+q2(1)))
-      tahinout(1,1) = sfctmp(1)
-      cminout(1,1)  = 0.1
-      chinout(1,1)  = 0.1
+     eahinout(1,1) = sfcprs(1) * (q2(1)/(0.622+q2(1)))
+     tahinout(1,1) = sfctmp(1)
+     cminout(1,1)  = 0.1
+     chinout(1,1)  = 0.1
   endif
+  
+     !ag(05Jan2021)
+  rivstoin(1,1)=rivsto
+  fldstoin(1,1)=fldsto
+  fldfrcin(1,1)=fldfrc
+
 
   call noahmplsm_401  (LIS_rc%udef,  & ! in : LIS undefined value (David Mocko)
        itimestep,yearlen , julian  , coszin    , latin   , lonin  , & ! in : time/space-related
@@ -763,6 +781,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
        fgev_petout, fcev_petout, fctr_petout,                      & ! PET 
        chleafout  , chucout , chv2out , chb2out , rsout , fpice  , & ! out Noah MP only
        parameters, &
+       rivstoin,fldstoin,fldfrcin,                                 &
 #ifdef WRF_HYDRO
        sfcheadrt, INFXSRT, soldrain,                               &
 #endif

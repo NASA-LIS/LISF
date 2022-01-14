@@ -26,6 +26,7 @@ subroutine get_TRMM3B42V7(n, findex)
                                     LIS_isAlarmRinging ! SY
   use LIS_logMod, only            : LIS_logunit, LIS_endrun
   use TRMM3B42V7_forcingMod, only : TRMM3B42V7_struc
+  use LIS_constantsMod,      only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS:
@@ -63,7 +64,7 @@ subroutine get_TRMM3B42V7(n, findex)
   integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2, ts2   ! SY: Time parameters for TRMM data time nearest to start of model time step
   integer :: doy3, yr3, mo3, da3, hr3, mn3, ss3, ts3   ! SY: Time parameters for TRMM data time nearest to end of model time step
   real    :: gmt1, gmt2, gmt3       
-  character(len=80) :: filename     ! Filename variables for precip data sources
+  character(len=LIS_CONST_PATH_LEN) :: filename     ! Filename variables for precip data sources
   real*8  :: LIS_timeAtTStepStart_add90min ! SY
   real*8  :: LIS_timeAtTStepEnd_add90min   ! SY
   logical :: alarmCheck 
@@ -271,20 +272,19 @@ subroutine TRMM3B42V7file( filename, n, kk, findex, yr, mo, da, hr)
   use LIS_coreMod
   use LIS_forecastMod
   use TRMM3B42V7_forcingMod, only : TRMM3B42V7_struc
-
+  use LIS_constantsMod,      only : LIS_CONST_PATH_LEN
 !EOP
   implicit none
 
   integer, intent(in) :: n
   integer, intent(in) :: kk        ! Forecast member
   integer, intent(in) :: findex
-  character(80)       :: filename
+  character(len=*)       :: filename
   integer             :: yr, mo, da, hr
 
 !==== Local Variables=======================
 
-   character(80)  :: TRMM3B42V7dir
-   character(160) :: temp
+   character(len=LIS_CONST_PATH_LEN)  :: TRMM3B42V7dir, temp
    integer :: i, j
    integer :: uyr, umo, uda, uhr, umn, uss
    integer :: original
@@ -304,19 +304,14 @@ subroutine TRMM3B42V7file( filename, n, kk, findex, yr, mo, da, hr)
 
      original = 2
      if (original .eq. 1) then     !  1. original: /abc/3B42.980131.12.6.precipitation
-       write(temp, '(a, a, I4, I2.2, a, 3I2.2, a, I2, a)') TRMM3B42V7dir, '/', yr, mo, '/3B42.', uyr, umo, uda, '.', &
+       write(temp, '(a, a, I4, I2.2, a, 3I2.2, a, I2, a)') trim(TRMM3B42V7dir), '/', yr, mo, '/3B42.', uyr, umo, uda, '.', &
             uhr,  '.6.precipitation'
      else                          !  2. renamed: TRMM3B42V7.2005110809
-       write(temp, '(a, a, I4, I2.2, a, I4, 3I2.2)') TRMM3B42V7dir, '/', yr, mo, '/3B42V7.', yr, umo, uda, uhr
+       write(temp, '(a, a, I4, I2.2, a, I4, 3I2.2)') trim(TRMM3B42V7dir), '/', yr, mo, '/3B42V7.', yr, umo, uda, uhr
      end if
+     
      ! strip off the spaces
-     j = 1
-     Do i=1, len(temp)
-       if( temp(i:i) .ne. ' ' ) then
-         filename(j:j)=temp(i:i)
-         j=j+1
-       end if
-     End Do
+     filename = trim(temp)
 
    else !forecast mode
 
@@ -330,19 +325,14 @@ subroutine TRMM3B42V7file( filename, n, kk, findex, yr, mo, da, hr)
      uss = 0
      original = 2
      if (original .eq. 1) then     !  1. original: /abc/3B42.980131.12.6.precipitation
-       write(temp, '(a, a, I4, I2.2, a, 3I2.2, a, I2, a)') TRMM3B42V7dir, '/', yr, mo, '/3B42.', uyr, umo, uda, '.', &
+       write(temp, '(a, a, I4, I2.2, a, 3I2.2, a, I2, a)') trim(TRMM3B42V7dir), '/', yr, mo, '/3B42.', uyr, umo, uda, '.', &
             uhr,  '.6.precipitation'
      else                          !  2. renamed: TRMM3B42V7.2005110809
-       write(temp, '(a, a, I4, I2.2, a, I4, 3I2.2)') TRMM3B42V7dir, '/', yr, mo, '/3B42V7.', yr, umo, uda, uhr
+       write(temp, '(a, a, I4, I2.2, a, I4, 3I2.2)') trim(TRMM3B42V7dir), '/', yr, mo, '/3B42V7.', yr, umo, uda, uhr
      end if
+
      ! strip off the spaces
-     j = 1
-     Do i=1, len(temp)
-       if( temp(i:i) .ne. ' ' ) then
-         filename(j:j)=temp(i:i)
-         j=j+1
-       end if
-     End Do
+     filename = trim(temp)
 
    endif   ! End forecast mode
 

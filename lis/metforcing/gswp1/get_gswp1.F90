@@ -22,7 +22,7 @@ subroutine get_gswp1(n, findex)
   use LIS_timeMgrMod,      only : LIS_get_nstep, LIS_tick
   use LIS_logMod,          only : LIS_logunit, LIS_endrun
   use gswp1_forcingMod,    only : gswp1_struc
-
+  use LIS_constantsMod,    only : LIS_CONST_PATH_LEN
   implicit none
 ! !ARGUMENTS: 
   integer, intent(in)  :: n 
@@ -60,7 +60,7 @@ subroutine get_gswp1(n, findex)
   integer :: yr2,mo2,da2,hr2,mn2,ss2,doy2
   real*8 :: time1,time2,dumbtime1,dumbtime2
   real*8 :: timenow
-  character*80 :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
   real :: gmt1,gmt2,ts1,ts2
   integer :: movetime       ! 1=move time 2 data into time 1
   integer :: nforce         ! GSWP-1 forcing file time, # forcing variables
@@ -222,9 +222,8 @@ subroutine gswp1file(name,gswp1dir,yr,mo,da,hr,ncold)
 !EOP
   integer uyr,umo,uda,uhr,i,c,ii,jj
   character(len=2) :: initcode
-  character*1 fbase(80),fsubs(80)
-  character*1 ftime(10),fdir(8)
-  character(LEN=100) :: temp
+  character(len=6) :: fdir, fsubs
+  character(len=10) :: ftime
   character*2 hrstr(24)
   data hrstr /'01','02','03','04','05','06','07','08','09','10',   &
        '11','12','13','14','15','16','17','18','19','20',   &
@@ -247,43 +246,15 @@ subroutine gswp1file(name,gswp1dir,yr,mo,da,hr,ncold)
 !  with the next day.  So check for that first
 !-----------------------------------------------------------------------
   initcode = hrstr(uhr)
+
+  write(UNIT=fdir, FMT='(i4, i2.2)') uyr, umo
+
+  write(UNIT=ftime, FMT='(i4, i2.2, i2.2, a2)') uyr, umo, uda, initcode
+
+  fsubs = '.GSWP1'
+
+  name = trim(gswp1dir) // '/' // fdir // '/' // ftime // fsubs
   
-  write(UNIT=temp,FMT='(A40)') gswp1dir
-  read(UNIT=temp,FMT='(80A1)') (fbase(i),i=1,80)
-  
-  write(UNIT=temp,FMT='(a1,i4,i2,a1)') '/',uyr,umo,'/'
-  read(UNIT=temp,FMT='(8A1)') fdir
-  do i=1,8
-     if (fdir(i).eq.(' ')) fdir(i)='0'
-  enddo
-  
-  write(UNIT=temp,FMT='(i4,i2,i2,a2)') uyr,umo,uda,initcode
-  read(UNIT=temp,FMT='(10A1)') ftime
-  do i=1,10
-     if (ftime(i).eq.(' ')) ftime(i)='0'
-  enddo
-  
-  if (ncold.eq.360) then
-     write(UNIT=temp,FMT='(A6)') '.GSWP1'
-     read(UNIT=temp,FMT='(80A1)') (fsubs(i),i=1,6)
-  else
-     write(UNIT=temp,FMT='(A6)') '.GSWP1'
-     read(UNIT=temp,FMT='(80A1)') (fsubs(i),i=1,6)
-  endif
-  c=0
-  do i=1,80
-     if ((fbase(i).eq.(' ')).and.(c.eq.0)) c=i-1
-  enddo
-  
-  if (ncold.eq.360) then
-     write(UNIT=temp,FMT='(80a1)')(fbase(i),i=1,c),(fdir(i),i=1,8),&
-          (ftime(i),i=1,10),(fsubs(i),i=1,6)
-  else
-     write(UNIT=temp,FMT='(80a1)')(fbase(i),i=1,c),(fdir(i),i=1,8),&
-          (ftime(i),i=1,10),(fsubs(i),i=1,6)
-  endif
-  
-  read(UNIT=temp,FMT='(a80)') name
   return
 
 end subroutine gswp1file

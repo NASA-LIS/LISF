@@ -159,6 +159,7 @@ contains
        write(LIS_logunit,*) "[INFO]and irrigation withdrawn from GW:  ",&
                              LIS_rc%irrigation_GWabstraction
 
+<<<<<<< HEAD
      ! HKB--added irrigation type specific configurations 
      ! Set trigger check start time [local hour] and duration in lis.config
        call ESMF_ConfigFindLabel(LIS_config,"Irrigation Sprinkler start time:",&
@@ -291,6 +292,26 @@ contains
         endif
        enddo
          
+=======
+!------Wanshu----irrigation scheduling based on DVEG On--------
+     LIS_rc%irrigation_dveg  = 0 ! Default is no
+     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%irrigation_dveg,&
+            label="Irrigation scheduling based on dynamic vegetation:",default=0,rc=rc)
+       call LIS_verify(rc,"Irrigation scheduling based on dynamic vegetation: not defined")
+       write(LIS_logunit,*) "[INFO] Irrigation scheduling based on dynamic vegetation:  ",&
+                             LIS_rc%irrigation_dveg
+!------------------------------------------------------
+
+!------Wanshu---GW abstraction based on irrigation groundwater ratio data--------
+     LIS_rc%irrigation_SourcePartition  = 0 ! Default is no
+     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%irrigation_SourcePartition,&
+            label="Irrigation source water partition:",default=0,rc=rc)
+       call LIS_verify(rc,"Irrigation source water partition: not defined")
+       write(LIS_logunit,*) "[INFO] Irrigation source water partition:  ",&
+                             LIS_rc%irrigation_SourcePartition
+!------------------------------------------------------
+
+>>>>>>> master
      ! Register irrigation output interval:
        do n=1,LIS_rc%nnest
           call LIS_parseTimeString(time,LIS_irrig_struc(n)%outInterval)
