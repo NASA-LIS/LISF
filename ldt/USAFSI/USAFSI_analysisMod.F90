@@ -2216,7 +2216,8 @@ contains
       character*10                :: date10_sst       ! SST DATE-TIME GROUP
       character*100               :: file_binary      ! FULLY-QUALIFIED BINARY NAME
       character*7                 :: iofunc           ! ACTION TO BE PERFORMED
-      character*90                :: message (msglns) ! ERROR MESSAGE
+      !character*90                :: message (msglns) ! ERROR MESSAGE
+      character*255                :: message (msglns) ! ERROR MESSAGE
       character*12                :: routine_name     ! NAME OF THIS SUBROUTINE
       integer                     :: runcycle         ! CYCLE TIME
       integer                     :: hrdiff           ! DIFFERENCE BETWEEN HOURS
@@ -2234,7 +2235,7 @@ contains
       integer :: nc,nr
       character*100 :: file_grib
       integer :: grstat
-      
+
       data routine_name           / 'GETSST      '/
 
       ! FIND THE DATE/TIME GROUP OF THE PREVIOUS CYCLE.
@@ -2262,6 +2263,7 @@ contains
       sst_0p25deg     = -1.0
 
       tries = 1
+      limit = 7 ! EMK Check previous 7 days
 
       ! LOOK FOR DEGRIBBED SST BINARY.  IF NOT FOUND LOOK IN DIFFERENT
       ! DIRECTORY FOR GR1 FILE, DEGRIB, READ, AND WRITE OUT BINARY AFTER
@@ -2288,19 +2290,7 @@ contains
                  // date10_sst &
                  // '_0160_000000-000000sea_temp.gr1'
             inquire(file=file_grib, exist=isfile)
-            if (.not. isfile) then
-               write(ldt_logunit,*)'[WARN] Cannot find ', trim(file_grib)
-               file_grib = trim(sstdir) &
-                    // 'navyssts.' &
-                    // date10_sst &
-                    // '0000.gr1'
-               inquire(file=file_grib, exist=isfile)
-               if (.not. isfile) then
-                  write(ldt_logunit,*)'[WARN] Cannot find ', trim(file_grib)
-               end if
-            end if
             if (isfile) then
-               !TODO...Add call to subroutine for reading SST GRIB1
                call read_grib1_sst(file_grib, sst_igrid, sst_jgrid, &
                     sst_0p25deg, grstat)
                if (grstat .eq. 0) then
