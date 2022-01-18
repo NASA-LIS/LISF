@@ -362,11 +362,11 @@ module LIS_PRIV_rcMod
 !  \item[pertstateInterval]
 !  State perturbation frequency (in seconds)
 !  \item[pertrestart]
-!  ??
+!  Perturbation restart mode option (coldstart, restart)
 !  \item[pertrestartInterval]
-!  ??
+!  Temporal output interval at which the perturbation restart file is written
 !  \item[pertrestartfile]
-!  ??
+!  The file path for perturbation restart file used in DA runs
 !  \item[nt]
 !  Number of vegetation classes in the landcover dataset
 !  \item[bareclass]
@@ -767,7 +767,7 @@ module LIS_PRIV_rcMod
      real, allocatable          :: pertstateInterval(:)
      character*50           :: pertrestart
      real                   :: pertrestartInterval
-     character*100, allocatable :: pertrestartfile(:)
+     character*255, allocatable :: pertrestartfile(:)
      integer                :: pert_bias_corr
 
      integer                :: nsurfacetypes
@@ -933,7 +933,7 @@ module LIS_PRIV_rcMod
      character*20           :: distribution_class
      character*20           :: data_category
      character*20           :: area_of_data
-     character*100          :: lis_config_file='lis.config'
+     character*255          :: lis_config_file='lis.config'
      character*100          :: institution = 'NASA GSFC'
 !RTM related variables
      character*50           :: rtm

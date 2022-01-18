@@ -341,7 +341,8 @@ endif::devonly[]
 |"`WRF AK`"                    | NCAR-WRF Alaska domain forcing 
 |"`LDT-generated`"             | LDT-generated forcing files
 |"`CLIM-Standard`"             | Forcing climatologies (LDT-generated)
-|"`GenEnsFcst`"                | Generic ensemble forecast
+|"`GenEnsFcst`"                | Generic ensemble forecast reader
+|"`PPTEnsFcst`"                | Precipitation-only ensemble forecast reader
 |"`AWAP`"                      | AWAP precipitation data
 |"`GDAS T1534`"                | NCEP-specific GDAS T1534 forcing data
 |"`ERA5`"                      | ERA5 reanalysis meteorology
@@ -972,17 +973,17 @@ offline routing.
 Acceptable values are:
 
 |====
-|Value                            | Description
+|Value                                                             | Description
 
-|"`LIS runoff output`"            | Use LIS outputs
-|"`GLDAS1 runoff data`"           | Use the GLDAS1 outputs
-|"`GLDAS2 runoff data`"           | Use the GLDAS2 outputs
-|"`NLDAS2 runoff data`"           | Use the NLDAS2 outputs
-|"`MERRA2 runoff data`"           | Use the MERR2 outputs
-|"`ERA interim land runoff data`" | Use ERA-Interim-Land outputs
-|"`GWB MIP runoff data`"          | Use the Global Water Budget (GWB) model intercomparison project outputs
+|"`LIS runoff output`"                                             | Use LIS outputs
+|[.line-through]#"`GLDAS1 runoff data`"# [red]#Disabled#           | [.line-through]#Use the GLDAS1 outputs#
+|[.line-through]#"`GLDAS2 runoff data`"# [red]#Disabled#           | [.line-through]#Use the GLDAS2 outputs#
+|[.line-through]#"`NLDAS2 runoff data`"# [red]#Disabled#           | [.line-through]#Use the NLDAS2 outputs#
+|[.line-through]#"`MERRA2 runoff data`"# [red]#Disabled#           | [.line-through]#Use the MERR2 outputs#
+|[.line-through]#"`ERA interim land runoff data`"# [red]#Disabled# | [.line-through]#Use ERA-Interim-Land outputs#
+|[.line-through]#"`GWB MIP runoff data`"# [red]#Disabled#          | [.line-through]#Use the Global Water Budget (GWB) model intercomparison project outputs#
 |====
-
+// See pull request #966 for context about the disabled external runoff data sources listed above.
 
 `Number of application models:` specifies the number
 of application models to run.
@@ -6048,10 +6049,36 @@ of the user-generated ensemble forecast forcing files.
 `Generic ensemble forecast number of ensemble members:` specifies the number of
 ensemble members desired for the user-generated ensemble forecast dataset.
 
+`Name of base forecast model:` specifies the base forecast model used in
+the generated ensemble-based forecast forcing files being read in.
+Default setting is GEOS5, but options include GEOS5 and CFSv2.
+
 .Example _lis.config_ entry
 ....
 Generic ensemble forecast directory:     ./GEOS5_BiasCorrected/
 Generic ensemble forecast number of ensemble members:  11
+Name of base forecast model:              GEOS5
+....
+
+
+[[sssec_pptensfcst,PPTEnsFcst]]
+==== Precipitation-only Ensemble Forecast Reader
+
+`Precipitation ensemble forecast directory:` specifies the location
+of the user-generated ensemble precipitation forecast forcing files.
+
+`Precipitation ensemble forecast number of ensemble members:` specifies the number of
+ensemble members desired for the user-generated precipitation ensemble forecast dataset.
+
+`Name of base forecast model:` specifies the base forecast model used in
+the generated ensemble-based forecast forcing files being read in.
+Default setting is GEOS5, but options include GEOS5 and CFSv2.
+
+.Example _lis.config_ entry
+....
+Precipitation ensemble forecast directory:     ./GEOS5_BiasCorrected/
+Precipitation ensemble forecast number of ensemble members:  11
+Name of base forecast model:              GEOS5
 ....
 
 
