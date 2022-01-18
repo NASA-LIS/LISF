@@ -2298,7 +2298,7 @@ contains
                if (grstat .eq. 0) then
                   found = .true.
                   file_binary = trim(stmpdir) &
-                       // 'navyssts.' &
+                       // 'navyssts' &
                        // meshname &
                        // '.' &
                        // date10_sst &
