@@ -6,7 +6,6 @@
 #Adjust node, core, and hardware constraints here
 #SBATCH --ntasks=4 --mem-per-cpu=4G --constraint=hasw
 #Substitute your e-mail here
-#SBATCH --mail-user=eric.kemp@nasa.gov
 #SBATCH --mail-type=ALL
 #Set quality of service, if needed.
 #SBATCH --qos=debug
@@ -25,6 +24,8 @@
 #
 # REVISION HISTORY:
 # 17 Dec 2020:  Eric Kemp.  Initial specification.
+# 13 Dec 2021:  Eric Kemp.  Updated module, and removed obsolete satellite
+#   data feeds.
 #
 #------------------------------------------------------------------------------
 
@@ -40,16 +41,16 @@ fi
 module purge
 unset LD_LIBRARY_PATH
 module use --append /home/emkemp/privatemodules
-module load lisf_7_intel_19_1_3_304_traceback-work-around
+module load lisf_7_intel_2021.4.0_s2s
 
 # Define the variables to be processed
 NWPVARS=(gage rh2m spd10m t2m)
-SATVARS=(cmorph geoprecip imerg ssmi)
+SATVARS=(imerg)
 
 # Paths on local system
-SCRIPTDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/usaf/retune_bratseth/scripts
-CFGDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/usaf/retune_bratseth/cfgs
-BINDIR=/discover/nobackup/emkemp/AFWA/autoretune/LISF/lis/utils/usaf/retune_bratseth/src
+SCRIPTDIR=/discover/nobackup/projects/lis_aist17/emkemp/AFWA/lis74_bratseth_retuning_for_ops/build/LISF/lis/utils/usaf/retune_bratseth/scripts
+CFGDIR=/discover/nobackup/projects/lis_aist17/emkemp/AFWA/lis74_bratseth_retuning_for_ops/build/LISF/lis/utils/usaf/retune_bratseth/cfgs
+BINDIR=/discover/nobackup/projects/lis_aist17/emkemp/AFWA/lis74_bratseth_retuning_for_ops/build/LISF/lis/utils/usaf/retune_bratseth/src
 
 # Get the command line arguments to specify the training period.
 if [ -z "$1" ] ; then

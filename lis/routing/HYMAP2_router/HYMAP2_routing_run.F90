@@ -136,65 +136,6 @@ subroutine HYMAP2_routing_run(n)
   alarmCheck = LIS_isAlarmRinging(LIS_rc, "HYMAP2 router model alarm")
   if(alarmCheck) then
 
-#if 0     
-     if(HYMAP2_routing_struc(n)%useens.eq.0) then 
-        do i=1,HYMAP2_routing_struc(n)%nseqall
-           HYMAP2_routing_struc(n)%rivstomax(i,1) = HYMAP2_routing_struc(n)%rivlen(i)* &
-                HYMAP2_routing_struc(n)%rivwth(i,1) * HYMAP2_routing_struc(n)%rivhgt(i,1)
-           
-           HYMAP2_routing_struc(n)%rivelv(i) = HYMAP2_routing_struc(n)%elevtn(i) -&
-                HYMAP2_routing_struc(n)%rivhgt(i,1)
-
-           if(HYMAP2_routing_struc(n)%rivwth(i,1)>0) then 
-              HYMAP2_routing_struc(n)%rivare(i,1) =&
-                   min(HYMAP2_routing_struc(n)%grarea(i), &
-                   HYMAP2_routing_struc(n)%rivlen(i) *&
-                   HYMAP2_routing_struc(n)%rivwth(i,1))
-
-           endif
-        enddo
-        call HYMAP2_set_fldstg(HYMAP2_routing_struc(n)%nz,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%fldhgt,&
-             HYMAP2_routing_struc(n)%grarea,&
-             HYMAP2_routing_struc(n)%rivlen,&
-             HYMAP2_routing_struc(n)%rivwth(:,1),&
-             HYMAP2_routing_struc(n)%rivstomax(:,1),&
-             HYMAP2_routing_struc(n)%fldstomax(:,:,1),&
-             HYMAP2_routing_struc(n)%fldgrd(:,:,1),&
-             HYMAP2_routing_struc(n)%rivare(:,1))		   
-     else
-        do i=1,HYMAP2_routing_struc(n)%nseqall
-           do m=1,LIS_rc%nensem(n)
-              HYMAP2_routing_struc(n)%rivstomax(i,m) = HYMAP2_routing_struc(n)%rivlen(i)* &
-                   HYMAP2_routing_struc(n)%rivwth(i,m) * HYMAP2_routing_struc(n)%rivhgt(i,m)
-              
-              HYMAP2_routing_struc(n)%rivelv(i) = HYMAP2_routing_struc(n)%elevtn(i) -&
-                   HYMAP2_routing_struc(n)%rivhgt(i,m)
-              if(HYMAP2_routing_struc(n)%rivwth(i,m)>0) then 
-                 HYMAP2_routing_struc(n)%rivare(i,m) =&
-                      min(HYMAP2_routing_struc(n)%grarea(i), &
-                      HYMAP2_routing_struc(n)%rivlen(i) *&
-                      HYMAP2_routing_struc(n)%rivwth(i,m))
-              endif
-           enddo
-        enddo
-
-        do m=1,LIS_rc%nensem(n)
-           call HYMAP2_set_fldstg(HYMAP2_routing_struc(n)%nz,&
-                HYMAP2_routing_struc(n)%nseqall,&
-                HYMAP2_routing_struc(n)%fldhgt,&
-                HYMAP2_routing_struc(n)%grarea,&
-                HYMAP2_routing_struc(n)%rivlen,&
-                HYMAP2_routing_struc(n)%rivwth(:,m),&
-                HYMAP2_routing_struc(n)%rivstomax(:,m),&
-                HYMAP2_routing_struc(n)%fldstomax(:,:,m),&
-                HYMAP2_routing_struc(n)%fldgrd(:,:,m),&
-                HYMAP2_routing_struc(n)%rivare(:,m))
-        enddo
-     endif
-#endif
-
      allocate(rivsto_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
      allocate(rivdph_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
      allocate(rivvel_lvec(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)))
@@ -566,41 +507,59 @@ subroutine HYMAP2_routing_run(n)
 
      else !single member run
 
-        tmpr=0.
-        tmpb=0.
-        
-        !import surface runoff and baseflow
-        call ESMF_StateGet(LIS_runoff_state(n),"Surface Runoff",sf_runoff_field,&
-             rc=status)
-        call LIS_verify(status, "ESMF_StateGet failed for Surface Runoff")
-        
-        call ESMF_StateGet(LIS_runoff_state(n),"Subsurface Runoff",&
-             baseflow_field, rc=status)
-        call LIS_verify(status, "ESMF_StateGet failed for Subsurface Runoff")
-        
-        call ESMF_FieldGet(sf_runoff_field,localDE=0,farrayPtr=surface_runoff_t,&
-             rc=status)
-        call LIS_verify(status, "ESMF_FieldGet failed for Surface Runoff")
-        
-        call ESMF_FieldGet(baseflow_field,localDE=0,farrayPtr=baseflow_t,&
-             rc=status)
-        call LIS_verify(status, "ESMF_FieldGet failed for Subsurface Runoff")
+        if(LIS_rc%lsm.ne."none") then 
+           tmpr=0.
+           tmpb=0.
+           
+           !import surface runoff and baseflow
+           call ESMF_StateGet(LIS_runoff_state(n),"Surface Runoff",sf_runoff_field,&
+                rc=status)
+           call LIS_verify(status, "ESMF_StateGet failed for Surface Runoff")
+           
+           call ESMF_StateGet(LIS_runoff_state(n),"Subsurface Runoff",&
+                baseflow_field, rc=status)
+           call LIS_verify(status, "ESMF_StateGet failed for Subsurface Runoff")
+           
+           call ESMF_FieldGet(sf_runoff_field,localDE=0,farrayPtr=surface_runoff_t,&
+                rc=status)
+           call LIS_verify(status, "ESMF_FieldGet failed for Surface Runoff")
+           
+           call ESMF_FieldGet(baseflow_field,localDE=0,farrayPtr=baseflow_t,&
+                rc=status)
+           call LIS_verify(status, "ESMF_FieldGet failed for Subsurface Runoff")
      
-        !temporary solution  
-        call LIS_tile2grid(n,tmpr,surface_runoff_t)
-        call LIS_tile2grid(n,tmpb,baseflow_t)
+           !temporary solution  
+           call LIS_tile2grid(n,tmpr,surface_runoff_t)
+           call LIS_tile2grid(n,tmpb,baseflow_t)
+           
+           call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
+                HYMAP2_routing_struc(n)%nseqall,&
+                HYMAP2_routing_struc(n)%imis,&
+                HYMAP2_routing_struc(n)%seqx,&
+                HYMAP2_routing_struc(n)%seqy,tmpr,surface_runoff)
+           call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
+                HYMAP2_routing_struc(n)%nseqall,&
+                HYMAP2_routing_struc(n)%imis,&
+                HYMAP2_routing_struc(n)%seqx,&
+                HYMAP2_routing_struc(n)%seqy,tmpb,baseflow)
+        else
+
+           call readrunoffdata(trim(LIS_rc%runoffdatasource)//char(0),&
+                n,tmpr,tmpb)
+
+           call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
+                HYMAP2_routing_struc(n)%nseqall,&
+                HYMAP2_routing_struc(n)%imis,&
+                HYMAP2_routing_struc(n)%seqx,&
+                HYMAP2_routing_struc(n)%seqy,tmpr,surface_runoff)
+           call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
+                HYMAP2_routing_struc(n)%nseqall,&
+                HYMAP2_routing_struc(n)%imis,&
+                HYMAP2_routing_struc(n)%seqx,&
+                HYMAP2_routing_struc(n)%seqy,tmpb,baseflow)           
+           
+        endif
         
-        call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,&
-             HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmpr,surface_runoff)
-        call HYMAP2_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
-             HYMAP2_routing_struc(n)%nseqall,&
-             HYMAP2_routing_struc(n)%imis,&
-             HYMAP2_routing_struc(n)%seqx,&
-             HYMAP2_routing_struc(n)%seqy,tmpb,baseflow)
- 
         call HYMAP2_model(n,real(HYMAP2_routing_struc(n)%imis),&
              LIS_rc%lnc(n),&
              LIS_rc%lnr(n),&
