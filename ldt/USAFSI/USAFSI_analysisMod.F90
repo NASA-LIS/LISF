@@ -2079,13 +2079,13 @@ contains
 
       ! Find the date/time group of the previous cycle
       found = .false.
-      found_12z = .false. 
+      found_12z = .false.
       limit = 20
       tries = 1
-      
+
       call date10_julhr(date10, julhr, program_name, routine_name)
       julhr_beg = julhr
-      
+
       ! Grab prior analysis
       do while ((.not. found) .and. (tries .le. limit))
          julhr_beg = julhr_beg - 6
@@ -2096,8 +2096,8 @@ contains
          else
             write (ldt_logunit,6200) trim (routine_name), date10_prev
             tries = tries + 1
-         end if         
-      end do 
+         end if
+      end do
 
       ! If 12Z cycle, retrieve last 12Z snow and ice age
       read (date10(9:10), '(i2)', err=4200) runcycle
@@ -2125,6 +2125,9 @@ contains
               '[WARN] Cannot find prior USAFSI analysis'
          ierr = 2
       else if (.not. found_12z) then
+      !EMK The above else if looks wrong, but using the below, commented-out
+      !else if changes the answer.  For now, use the above.
+      !else if (.not. found_12z .and. runcycle .eq. 12) then
          write(LDT_logunit,*) &
               '[WARN] Cannot find prior 12Z USAFSI analysis'
          ierr = 1
