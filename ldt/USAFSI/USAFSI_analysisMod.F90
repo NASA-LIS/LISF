@@ -2278,6 +2278,7 @@ contains
             call putget_real ( sst_0p25deg, 'r', file_binary, program_name,  &
                  routine_name, sst_igrid, sst_jgrid )
          else
+            write(ldt_logunit,*)'[WARN] Cannot find ', trim(file_binary)
             !EMK 20220113...Reinstated GRIB1 support
             file_grib = trim(sstdir) &
                  // 'US058GOCN-GR1mdl.0043_0200_00000A0LT' &
@@ -2285,11 +2286,15 @@ contains
                  // '_0160_000000-000000sea_temp.gr1'
             inquire(file=file_grib, exist=isfile)
             if (.not. isfile) then
+               write(ldt_logunit,*)'[WARN] Cannot find ', trim(file_grib)
                file_grib = trim(sstdir) &
                     // 'navyssts.' &
                     // date10_sst &
                     // '0000.gr1'
                inquire(file=file_grib, exist=isfile)
+               if (.not. isfile) then
+                  write(ldt_logunit,*)'[WARN] Cannot find ', trim(file_grib)
+               end if
             end if
             if (isfile) then
                !TODO...Add call to subroutine for reading SST GRIB1
