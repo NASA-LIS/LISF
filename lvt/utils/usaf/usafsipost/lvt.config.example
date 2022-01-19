@@ -14,8 +14,8 @@ USAFSI output GRIB1 NH 16th mesh polar stereographic: .true.
 USAFSI output GRIB1 SH 16th mesh polar stereographic: .true.
 USAFSI output GRIB1 SNODEP NH 16th mesh polar stereographic: .true.
 USAFSI output GRIB1 SNODEP SH 16th mesh polar stereographic: .true.
-USAFSI input netcdf directory: ./USAFSI/
-USAFSI input netcdf prefix: USAFSI_
+USAFSI input netcdf directory: ./netcdf
+USAFSI input netcdf file prefix: USAFSI_
 USAFSI output grib directory: ./grib
 
 # The remaining settings are required for input by LVT, but not used by the
@@ -40,7 +40,7 @@ External mask directory: none
 External data-based stratification: 0
 Variable-based stratification: 0
 Observation count threshold: 0
-Input domain and mask data file: lis_input.10km_noah_juleslandmask.cap.nc
+Input domain and mask data file: ../LDTOUT/lis_input.global.noah39.nc
 
 Ending year:  2018
 Ending month:   12

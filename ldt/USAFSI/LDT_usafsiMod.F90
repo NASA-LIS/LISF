@@ -32,6 +32,7 @@ module LDT_usafsiMod
      character*100 :: gmi    !kyh20201118
      character*100 :: amsr2  !kyh20201217
      character*100 :: stmpdir
+     character*100 :: sstdir ! EMK 20220113
      character*100 :: static
      character*100 :: unmod
      character*100 :: viirsdir
@@ -181,6 +182,13 @@ contains
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%stmpdir, rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    ! EMK 20220113
+    cfg_entry = "USAFSI FNMOC SST GRIB1 data directory:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%sstdir, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get static
@@ -603,6 +611,7 @@ contains
   subroutine LDT_usafsiRun(n)
     implicit none
     integer, intent(in) :: n
+    external :: USAFSI_run
     call USAFSI_run(n)
   end subroutine LDT_usafsiRun
 end module LDT_usafsiMod
