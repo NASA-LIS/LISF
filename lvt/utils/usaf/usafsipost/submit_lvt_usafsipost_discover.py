@@ -12,6 +12,7 @@
 #
 # REVISION HISTORY:
 # 15 Jul 2021: Eric Kemp (SSAI), first version.
+# 19 Jan 2022: Eric Kemp (SSAI), Discover updates.
 #
 #------------------------------------------------------------------------------
 """
@@ -50,7 +51,7 @@ if __name__ == "__main__":
     f = open(SCRIPTNAME, "w")
     line = """#!/bin/sh
 #SBATCH --account %s
-#SBATCH --constraint="sky|hasw"
+#SBATCH --constraint="hasw|sky|cas"
 #SBATCH --job-name=usafsipost
 #SBATCH --ntasks=1
 #SBATCH --output usafsipost.slurm.out
@@ -64,7 +65,7 @@ fi
 # NOTE: This privatemodule can be found in LISF/env/discover
 module purge
 module use --append ~/privatemodules
-module load lisf_7_intel_19_1_3_304
+module load lisf_7_intel_2021.4.0_s2s
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1
