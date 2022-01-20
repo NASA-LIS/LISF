@@ -18,6 +18,7 @@
 # * 15 Nov 2021: K. Arsenault/SAIC, made minor fixes and added config entries.
 # * 19 Nov 2021: Eric Kemp/SSAI, fixed typos reported by K. Arsenault and
 #                R. Zamora.
+# * 18 Jan 2022: K. Arsenault/SAIC, fixed prev to current year in naming convention
 #
 #------------------------------------------------------------------------------
 """
@@ -37,13 +38,13 @@ _ROUTING_NAME = "hymap2"
 _INPUT_NUMFCSTMONS = 9
 
 # NMME model names
-_NMME_MODELS = ["CCM4", "CCSM4", "CFSv2", "GEOSv2", "GFDL", "GNEMO"]
+_NMME_MODELS = ["CCM4", "CCSM4", "CFSv2", "GEOSv2", "GFDL", "GNEMO5"]
 
 # Ensemble members per NMME model
 _ENSEMBLE_SIZES = {
     "CCM4" : 10,
     "CCSM4" : 10,
-    "GNEMO" : 10,
+    "GNEMO5" : 10,
     "GEOSv2" : 10,
     "CFSv2" : 24,
     "GFDL" : 15,
@@ -53,7 +54,7 @@ _ENSEMBLE_SIZES = {
 _NMME_SCALINGS = {
     "CCM4" : "downscale",
     "CCSM4" : "downscale",
-    "GNEMO" : "downscale",
+    "GNEMO5" : "downscale",
     "GEOSv2" : "downscale",
     "CFSv2" : "upscale",
     "GFDL" : "upscale",
@@ -125,11 +126,10 @@ def _customize_ldt_config(ldtconfig_lsm_target, lsm_rstdir, currentdate,
     rst_monname = currentdate.strftime("%b")
 
     output_fname = f"{nmme_model}/LIS_RST_NOAHMP401_{rst_date}2345.ICS_" + \
-        f"{rst_monname}{prevdate.year:04d}.ens{num_ensmems:d}.nc"
+        f"{rst_monname}{currentdate.year:04d}.ens{num_ensmems:d}.nc"
     lsm_logfile = \
-        f"{nmme_model}/ldtlog_{_LSM_NAME}_{rst_monname}{prevdate.year:04d}"
+        f"{nmme_model}/ldtlog_{_LSM_NAME}_{rst_monname}{currentdate.year:04d}"
 
-    # mask_parmlogfile = f"{nmme_model}/MaskParamFill.log" %(nmme_model)
     mask_parmlogfile = f"{nmme_model}/MaskParamFill.log"
 
     # Now edit the target ldt.config with these customized settings
@@ -199,7 +199,7 @@ def _driver():
                               nmme_model)
 
         # Run LDT
-        cmd = f"{_LDT_EXEC} {ldtconfig_lsm_target}"
+        cmd = f"mpirun -np 1 {_LDT_EXEC} {ldtconfig_lsm_target}"
         print(f"[INFO] {cmd}")
         subprocess.run(cmd, shell=True, check=True)
 
@@ -212,7 +212,7 @@ def _driver():
             f"{hymap_rstdir}/LIS_RST_HYMAP2_router_{rst_date}2345.d01.nc"
         hymap_outrstfile = \
             f"./{nmme_model}/LIS_RST_HYMAP2_router_{rst_date}2345.ICS_" + \
-            f"{rst_monname}{prevdate.year:04d}.ens1.nc"
+            f"{rst_monname}{currentdate.year:04d}.ens1.nc"
         shutil.copy(hymap_inrstfile, hymap_outrstfile)
 
         # Recursively update permissions in work subdirectory
