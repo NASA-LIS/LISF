@@ -299,8 +299,8 @@ contains
              deallocate(strat_bincounts)
              deallocate(strat_cdf)
 
-!MN: Startification based on total precipitation 
-!    min and max of total precipitation for each pixel are stored in LDT_rc%stratification_data
+!MN: Startification based on monthly precipitation climatology 
+!    monthly total precipitation climatology for each pixel are stored in LDT_rc%stratification_data
 
           elseif(LDT_rc%group_cdfs.eq.0 .and. LDT_rc%strat_cdfs.eq.1 ) then
 
@@ -320,7 +320,7 @@ contains
                 do j=1,LDT_rc%cdf_ntimes
                    do k=1,obs%vlevels
                       do i=1,LDT_rc%cdf_nbins
-                         sindex = LDT_rc%stratification_data(t)
+                         sindex = LDT_rc%stratification_data(t,j)
                          strat_bincounts(sindex,j,k,i) = &
                               strat_bincounts(sindex,j,k,i) + &
                               metrics%cdf_bincounts(t,j,k,i)
@@ -352,7 +352,7 @@ contains
                 do j=1,LDT_rc%cdf_ntimes
                    do k=1,obs%vlevels
                       do i=1,LDT_rc%cdf_nbins
-                         sindex = LDT_rc%stratification_data(t)
+                         sindex = LDT_rc%stratification_data(t,j)
                          metrics%cdf(t,j,k,i) = strat_cdf(sindex,j,k,i)
                       enddo
                    enddo
@@ -381,7 +381,7 @@ contains
                 do j=1,LDT_rc%cdf_ntimes
                    do k=1,obs%vlevels
                       do i=1,LDT_rc%cdf_nbins
-                         sindex0  = LDT_rc%stratification_data(t)
+                         sindex0  = LDT_rc%stratification_data(t,j)
                          sindex1 = LDT_rc%cdf_strat_data(t)
                          sindex = sindex0 + (sindex1 - 1)*LDT_rc%strat_cdfs_nbins
                          strat_bincounts(sindex,j,k,i) = &
@@ -415,7 +415,7 @@ contains
                 do j=1,LDT_rc%cdf_ntimes
                    do k=1,obs%vlevels
                       do i=1,LDT_rc%cdf_nbins
-                         sindex0  = LDT_rc%stratification_data(t)
+                         sindex0  = LDT_rc%stratification_data(t,j)
                          sindex1 = LDT_rc%cdf_strat_data(t)
                          sindex = sindex0 + (sindex1 - 1)*LDT_rc%strat_cdfs_nbins
                          metrics%cdf(t,j,k,i) = strat_cdf(sindex,j,k,i)
