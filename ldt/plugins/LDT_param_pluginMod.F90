@@ -938,12 +938,9 @@ contains
 
     external read_GRIPC_irrigtype
     external read_GRIPC_irrigfrac
-<<<<<<< HEAD
     external read_GIA_irrigfrac
     external read_AQUASTAT_irrigtype
 
-=======
->>>>>>> master
     external read_UserDerived_irrigfrac
 
     external read_USGSNative_irriggwratio

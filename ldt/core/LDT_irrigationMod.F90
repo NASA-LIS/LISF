@@ -296,7 +296,7 @@ contains
             end select  
          enddo
        end if  !irrigtype%source == "GRIPC"
-    end if
+    end if  !irrigtype_select
   ! Irrigation fraction ldt.config entries:
     if( irrigfrac_select ) then
 
@@ -319,7 +319,6 @@ contains
           call setIrrigParmsFullnames( n, "irrigfrac", &
                   LDT_irrig_struc(n)%irrigfrac%source )
        enddo
-<<<<<<< HEAD
        ! Option to select irrigation type, if GRIPC selected: 
        if( LDT_irrig_struc(1)%irrigfrac%source == "GRIPC" )then
          call ESMF_ConfigFindLabel(LDT_config,"Irrigation fraction type option:",rc=rc)
@@ -342,7 +341,6 @@ contains
             end select  
          enddo
        end if
-=======
 
 ! Groundwater irrigation ratio ldt.config entries:
     if( irriggwratio_select ) then
@@ -395,7 +393,7 @@ contains
           endif
         endif
        enddo
-    end if
+    end if ! irrigfrac_select
 
 !-- Read Irrigation maps:
     do n = 1,LDT_rc%nnest
@@ -520,7 +518,6 @@ contains
             LDT_irrig_struc(n)%irrigfrac)
     endif
          
-<<<<<<< HEAD
     if( LDT_irrig_struc(n)%county%selectOpt.gt.0 ) then
        call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
             LDT_irrig_struc(n)%county)
@@ -529,6 +526,8 @@ contains
     if( LDT_irrig_struc(n)%country%selectOpt.gt.0 ) then
        call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
             LDT_irrig_struc(n)%country)
+    endif
+
     if( LDT_irrig_struc(n)%irriggwratio%selectOpt.gt.0 ) then
        call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
             LDT_irrig_struc(n)%irriggwratio)
@@ -556,6 +555,7 @@ contains
 
     if( LDT_irrig_struc(n)%country%selectOpt.gt.0 ) then
        call LDT_writeNETCDFdata(n,ftn,LDT_irrig_struc(n)%country)
+    endif
 
     if( LDT_irrig_struc(n)%irriggwratio%selectOpt.gt.0 ) then
        call LDT_writeNETCDFdata(n,ftn,LDT_irrig_struc(n)%irriggwratio)
