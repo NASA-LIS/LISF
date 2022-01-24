@@ -366,7 +366,7 @@ module LDT_PRIV_rcMod
      integer                :: strat_cdfs_nbins
      real                   :: strat_cdfs_min
      real                   :: strat_cdfs_max
-     integer, allocatable   :: stratification_data(:)
+     integer, allocatable   :: stratification_data(:,:)
 
 
      integer                :: sp_sampl_cdfs

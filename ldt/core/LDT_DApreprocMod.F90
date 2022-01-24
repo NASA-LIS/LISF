@@ -54,13 +54,13 @@ contains
     character*20         :: tres
     integer              :: rc
     integer              :: n
-    integer              :: c,r
+    integer              :: c,r,j
     integer              :: ios1
     integer              :: ftn
     character*50         :: preprocMethod
     real                 :: delta
     real, allocatable    :: cdf_strat_data(:,:)
-    real, allocatable    :: stratification_data(:,:)
+    real, allocatable    :: stratification_data(:,:,:)
     n = 1
     call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%obs_src,&
          label="DA observation source:",rc=rc)
@@ -156,9 +156,15 @@ contains
              do c=1,LDT_rc%lnc(n)
                 if(LDT_domain(n)%gindex(c,r).ne.-1) then 
                    
-                   LDT_rc%cdf_strat_data(LDT_domain(n)%gindex(c,r)) = & 
+                    LDT_rc%cdf_strat_data(LDT_domain(n)%gindex(c,r)) = & 
                         nint((cdf_strat_data(c,r) - LDT_rc%group_cdfs_min)/&
                         delta)+1
+                    if (LDT_rc%cdf_strat_data(LDT_domain(n)%gindex(c,r)) .gt. LDT_rc%group_cdfs_nbins) then
+                        write(LDT_logunit,*) '[INFO] Group bins is larger then Max Group bins',&
+                              LDT_rc%cdf_strat_data(LDT_domain(n)%gindex(c,r)), 'vs.', LDT_rc%group_cdfs_nbins ,&
+                              'Value adjusted the Max Group bins'
+                        LDT_rc%cdf_strat_data(LDT_domain(n)%gindex(c,r)) = LDT_rc%group_cdfs_nbins
+                    endif 
                 endif
              enddo
           enddo
@@ -168,8 +174,8 @@ contains
                trim(LDT_rc%group_cdfs_strat_file)
        endif
 
-!This part reads the dynamic range of precipitation and generates
-!  stratification input data based on total precipitation.
+!This part reads the monthly total precipitation climatology and generates
+!  stratification input data LDT_rc%stratification_data(LDT_rc%ngrid(n),LDT_rc%cdf_ntimes).
 
        call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%strat_cdfs,&
             label="Stratify CDFs by external data:",default=0, rc=rc)
@@ -186,7 +192,38 @@ contains
           call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%strat_file,&
                label="External stratification file:",rc=rc)
           call LDT_verify(rc,"External stratification file: not defined")
-          
+
+          allocate(LDT_rc%stratification_data(LDT_rc%ngrid(n),LDT_rc%cdf_ntimes))
+          allocate(stratification_data(LDT_rc%lnc(n),LDT_rc%lnr(n),LDT_rc%cdf_ntimes))
+
+          call read_Precip_climo (LDT_rc%lnc(n), LDT_rc%lnr(n), LDT_rc%strat_file, stratification_data) !
+
+          do j=1,LDT_rc%cdf_ntimes
+          LDT_rc%strat_cdfs_min = 0. !minval returns -9999.  minval(stratification_data(:,:,j)) ! min value over the entire domain  
+          LDT_rc%strat_cdfs_max = maxval(stratification_data(:,:,j)) ! max value over the entire domain 
+          delta = (LDT_rc%strat_cdfs_max-LDT_rc%strat_cdfs_min)/&
+               LDT_rc%strat_cdfs_nbins               
+          print*, 'month,min,man,delta', j,LDT_rc%strat_cdfs_min, LDT_rc%strat_cdfs_max, delta
+
+             do r=1,LDT_rc%lnr(n)
+                do c=1,LDT_rc%lnc(n)
+                   if(LDT_domain(n)%gindex(c,r).ne.-1) then
+                      LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) = &
+                           nint((stratification_data(c,r,j) - LDT_rc%strat_cdfs_min)/&
+                           delta)+1
+                      if (LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) .gt. LDT_rc%strat_cdfs_nbins) then
+                          write(LDT_logunit,*) '[INFO] Startification bins is larger then Max Startification bins',&
+                                LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) , 'vs.', LDT_rc%strat_cdfs_nbins,& 
+                               'Value adjusted the Max Startification bins'
+                          LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) = LDT_rc%strat_cdfs_nbins      
+                      endif
+                   endif
+                enddo
+             enddo
+          enddo
+
+
+#IF 0           
           !if(LDT_rc%strat_cdfs.gt.0) then
           allocate(LDT_rc%stratification_data(LDT_rc%ngrid(n)))
           allocate(stratification_data(LDT_rc%ngrid(n),2))
@@ -219,9 +256,13 @@ contains
           !   read(ftn,*)
           !   read(ftn,*) LDT_rc%strat_cdfs_nbins
           !   call LDT_releaseUnitNumber(ftn)
+#ENDIF
        endif
     endif
-    
+
+ 
+
+   
     if(LDT_rc%comp_obsgrid.eq.1) then 
        LDT_rc%pass = 0
     else
