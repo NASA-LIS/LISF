@@ -24,7 +24,7 @@
 ! !INTERFACE:
 subroutine NoahMP401_readrst()
 ! !USES:
-    use LIS_coreMod, only    : LIS_rc, LIS_masterproc
+    use LIS_coreMod, only    : LIS_rc, LIS_masterproc, LIS_surface
     use LIS_historyMod, only : LIS_readvar_restart
     use LIS_logMod, only     : LIS_logunit, LIS_endrun, &
                                LIS_getNextUnitNumber,   &
@@ -109,6 +109,7 @@ subroutine NoahMP401_readrst()
     implicit none
  
     integer           :: t, l
+    integer           :: row, col, ridx, cidx
     integer           :: nc, nr, npatch
     integer           :: n
     integer           :: ftn
@@ -442,6 +443,25 @@ subroutine NoahMP401_readrst()
                                          varname="QRFS", wformat=wformat)
                 call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%qsprings, &
                                          varname="QSPRINGS", wformat=wformat)
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%wtd, &
+                                         varname="WTD", wformat=wformat)
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%eqwtd, &
+                                         varname="EQWTD", wformat=wformat)
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%rivercond, &
+                                         varname="RIVERCOND", wformat=wformat)
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%riverbed, &
+                                         varname="RIVERBED", wformat=wformat)
+                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                    col = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col
+                    row = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row
+                    cidx = col - NOAHMP401_struc(n)%col_min + 1
+                    ridx = row - NOAHMP401_struc(n)%row_min + 1
+
+                    NOAHMP401_struc(n)%eqwtd(cidx, ridx) = NOAHMP401_struc(n)%noahmp401(t)%eqwtd
+                    NOAHMP401_struc(n)%riverbed(cidx, ridx) = NOAHMP401_struc(n)%noahmp401(t)%riverbed
+                    NOAHMP401_struc(n)%rivercond(cidx, ridx) = NOAHMP401_struc(n)%noahmp401(t)%rivercond
+                enddo
+
             endif
         
             ! close restart file

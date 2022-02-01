@@ -789,7 +789,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
 #endif
        ids,ide,  jds,jde,  kds,kde,                                &
        ims,ime,  jms,jme,  kms,kme,                                &
-       its,ite,  jts,jte,  kts,kte, printdebug) ! TML: Added debugging term.
+       its,ite,  jts,jte,  kts,kte, printdebug, loctime) ! TML: Added debugging term.
   
   ! Added by Zhuo Wang and Shugong on 10/30/2018
   tsk = tskinout(1,1)

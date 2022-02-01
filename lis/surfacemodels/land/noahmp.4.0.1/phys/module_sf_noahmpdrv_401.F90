@@ -56,7 +56,7 @@ CONTAINS
 #endif
                ids,ide,  jds,jde,  kds,kde,                    &
                ims,ime,  jms,jme,  kms,kme,                    &
-               its,ite,  jts,jte,  kts,kte, PRINTDEBUG,                    &
+               its,ite,  jts,jte,  kts,kte, PRINTDEBUG, loctime,            &
                MP_RAINC, MP_RAINNC, MP_SHCV, MP_SNOW, MP_GRAUP, MP_HAIL     )
 !----------------------------------------------------------------
     USE MODULE_SF_NOAHMPLSM_401
@@ -75,6 +75,7 @@ CONTAINS
 ! Added LIS undefined value as an input - David Mocko
     REAL,    INTENT(IN   ) ::  LIS_undef_value
     INTEGER,                                         INTENT(IN   ) ::  PRINTDEBUG ! TML: Debugging Flag
+    real*8,  INTENT(IN   )  :: loctime
     INTEGER,                                         INTENT(IN   ) ::  ITIMESTEP ! timestep number
     INTEGER,                                         INTENT(IN   ) ::  YR        ! 4-digit year
     REAL,                                            INTENT(IN   ) ::  JULIAN    ! Julian day
@@ -786,11 +787,9 @@ CONTAINS
 
        if (PRINTDEBUG .eq. 1) then
        print*, 'START VARIABLES: '
+       print*, 'TIME= ',loctime
        print*, 'XLAT = ', XLAT(I,J)
        print*, 'XLONG = ',XLONG(I,J)
-       print*, 'DEEPRECH = ',DEEPRECH
-       print*, 'RECH = ',RECH
-       print*, 'FVEG = ',FVEG
        print*, 'T_ML = ',T_ML
        print*, 'Q_ML = ',Q_ML
        print*, 'U_ML = ',U_ML
@@ -800,6 +799,12 @@ CONTAINS
        print*, 'P_ML = ',P_ML
        print*, 'PSFC = ',PSFC
        print*, 'PRCP = ',PRCP
+       print*, 'TBOT =',TBOT
+       print*, 'FOLN =',FOLN
+       print*, 'FICEOLD =',FICEOLD
+       print*, 'Z_ML =',Z_ML
+       print*, 'ALBOLD =',ALBOLD
+       print*, 'SNEQVO =',SNEQVO
        print*, 'SMCWTD = ',SMCWTD
        print*, 'ZWT = ',ZWT
        print*, 'SMC-1 = ',SMC(1)
@@ -810,6 +815,122 @@ CONTAINS
        print*, 'STC-2 = ',STC(2)
        print*, 'STC-3 = ',STC(3)
        print*, 'STC-4 = ',STC(4)
+       print*, 'SMH2O-1 =',SMH2O(1)
+       print*, 'SMH2O-2 =',SMH2O(2)
+       print*, 'SMH2O-3 =',SMH2O(3)
+       print*, 'SMH2O-4 =',SMH2O(4)
+       print*, 'TAH =',TAH
+       print*, 'EAH =',EAH
+       print*, 'FWET =',FWET
+       print*, 'CANLIQ =',CANLIQ
+       print*, 'CANICE =',CANICE
+       print*, 'TV =',TV
+       print*, 'TG =',TG
+       print*, 'QSFC1D =',QSFC1D
+       print*, 'QSNOW =',QSNOW
+       print*, 'ISNOW =',ISNOW
+       print*, 'ZSNSO =',ZSNSO
+       print*, 'SNDPTH =',SNDPTH
+       print*, 'SWE =',SWE
+       print*, 'SNICE =',SNICE
+       print*, 'SNLIQ =',SNLIQ
+       print*, 'ZWT =',ZWT
+       print*, 'WA =',WA
+       print*, 'WT =',WT
+       print*, 'WSLAKE =',WSLAKE
+       print*, 'LFMASS =',LFMASS
+       print*, 'RTMASS =',RTMASS
+       print*, 'STMASS =',STMASS
+       print*, 'WOOD =',WOOD
+       print*, 'STBLCP =',STBLCP
+       print*, 'FASTCP =',FASTCP
+       print*, 'PLAI =',PLAI
+       print*, 'PSAI =',PSAI
+       print*, 'CM =',CM
+       print*, 'CH =',CH
+       print*, 'TAUSS =',TAUSS
+       print*, 'GRAIN =',GRAIN
+       print*, 'GDD =',GDD
+       print*, 'PGS =',PGS
+       print*, 'SMCWTD =',SMCWTD
+       print*, 'DEEPRECH = ',DEEPRECH
+       print*, 'RECH = ',RECH
+       print*, 'GECROS1D = ',GECROS1D
+       print*, 'Z0WRF =',Z0WRF
+       print*, 'FSA =',FSA
+       print*, 'FSR =',FSR
+       print*, 'FIRA =',FIRA
+       print*, 'FSH =',FSH
+       print*, 'SSOIL =',SSOIL
+       print*, 'FCEV =',FCEV
+       print*, 'FGEV =',FGEV
+       print*, 'FCTR =',FCTR
+       print*, 'ECAN =',ECAN
+       print*, 'ETRAN =',ETRAN
+       print*, 'ESOIL =',ESOIL
+       print*, 'TRAD =',TRAD
+       print*, 'SUBSNOW =',SUBSNOW
+       print*, 'RELSMC =',RELSMC
+       print*, 'TGB =',TGB
+       print*, 'TGV =',TGV
+       print*, 'T2MV =',T2MV
+       print*, 'T2MB =',T2MB
+       print*, 'Q2MV =',Q2MV
+       print*, 'Q2MB =',Q2MB
+       print*, 'RUNSF =',RUNSF
+       print*, 'RUNSB =',RUNSB
+       print*, 'APAR =',APAR
+       print*, 'PSN =',PSN
+       print*, 'SAV =',SAV
+       print*, 'SAG =',SAG
+       print*, 'FSNO =',FSNO
+       print*, 'NEE =',NEE
+       print*, 'GPP =',GPP
+       print*, 'NPP =',NPP
+       print*, 'FVEGMP =',FVEGMP
+       print*, 'SALB =',SALB
+       print*, 'QSNBOT =',QSNBOT
+       print*, 'PONDING =',PONDING
+       print*, 'PONDING1 =',PONDING1
+       print*, 'PONDING2 =',PONDING2
+       print*, 'RSSUN =',RSSUN
+       print*, 'RSSHA =',RSSHA
+       print*, 'BGAP =',BGAP
+       print*, 'WGAP =',WGAP
+       print*, 'CHV =',CHV
+       print*, 'CHB =',CHB
+       print*, 'EMISSI =',EMISSI
+       print*, 'SHG =',SHG
+       print*, 'SHC =',SHC
+       print*, 'SHB =',SHB
+       print*, 'EVG =',EVG
+       print*, 'EVB =',EVB
+       print*, 'GHV =',GHV
+       print*, 'GHB =',GHB
+       print*, 'IRG =',IRG
+       print*, 'IRC =',IRC
+       print*, 'IRB =',IRB
+       print*, 'TR =',TR
+       print*, 'EVC =',EVC
+       print*, 'FGEV_PET =',FGEV_PET
+       print*, 'FCEV_PET =',FCEV_PET
+       print*, 'FCTR_PET =',FCTR_PET
+       print*, 'CHLEAF =',CHLEAF
+       print*, 'CHUC =',CHUC
+       print*, 'CHV2 =',CHV2
+       print*, 'CHB2 =',CHB2
+       print*, 'FPICE =',FPICE
+       print*, 'PAHV =',PAHV
+       print*, 'PAHG =',PAHG
+       print*, 'PAHB =',PAHB
+       print*, 'PAH =',PAH
+       print*, 'LAISUN =',LAISUN
+       print*, 'LAISHA =',LAISHA
+       print*, 'RB =',RB
+       print*, 'RIVSTO =',rivsto
+       print*, 'FLDSTO =',fldsto
+       print*, 'FLDFRC =',fldfrc
+       !print*, 'SFCHEADRT(i,j) =',sfcheadrt(i,j)
        endif
 
 
@@ -961,11 +1082,9 @@ CONTAINS
 
        if (PRINTDEBUG .eq. 1) then
        print*, 'END VARIABLES: '
+       print*, 'TIME= ',loctime
        print*, 'XLAT = ', XLAT(I,J)
        print*, 'XLONG = ',XLONG(I,J)
-       print*, 'DEEPRECH = ',DEEPRECH
-       print*, 'RECH = ',RECH
-       print*, 'FVEG = ',FVEG
        print*, 'T_ML = ',T_ML
        print*, 'Q_ML = ',Q_ML
        print*, 'U_ML = ',U_ML
@@ -975,6 +1094,12 @@ CONTAINS
        print*, 'P_ML = ',P_ML
        print*, 'PSFC = ',PSFC
        print*, 'PRCP = ',PRCP
+       print*, 'TBOT =',TBOT
+       print*, 'FOLN =',FOLN
+       print*, 'FICEOLD =',FICEOLD
+       print*, 'Z_ML =',Z_ML
+       print*, 'ALBOLD =',ALBOLD
+       print*, 'SNEQVO =',SNEQVO
        print*, 'SMCWTD = ',SMCWTD
        print*, 'ZWT = ',ZWT
        print*, 'SMC-1 = ',SMC(1)
@@ -985,6 +1110,122 @@ CONTAINS
        print*, 'STC-2 = ',STC(2)
        print*, 'STC-3 = ',STC(3)
        print*, 'STC-4 = ',STC(4)
+       print*, 'SMH2O-1 =',SMH2O(1)
+       print*, 'SMH2O-2 =',SMH2O(2)
+       print*, 'SMH2O-3 =',SMH2O(3)
+       print*, 'SMH2O-4 =',SMH2O(4)
+       print*, 'TAH =',TAH
+       print*, 'EAH =',EAH
+       print*, 'FWET =',FWET
+       print*, 'CANLIQ =',CANLIQ
+       print*, 'CANICE =',CANICE
+       print*, 'TV =',TV
+       print*, 'TG =',TG
+       print*, 'QSFC1D =',QSFC1D
+       print*, 'QSNOW =',QSNOW
+       print*, 'ISNOW =',ISNOW
+       print*, 'ZSNSO =',ZSNSO
+       print*, 'SNDPTH =',SNDPTH
+       print*, 'SWE =',SWE
+       print*, 'SNICE =',SNICE
+       print*, 'SNLIQ =',SNLIQ
+       print*, 'ZWT =',ZWT
+       print*, 'WA =',WA
+       print*, 'WT =',WT
+       print*, 'WSLAKE =',WSLAKE
+       print*, 'LFMASS =',LFMASS
+       print*, 'RTMASS =',RTMASS
+       print*, 'STMASS =',STMASS
+       print*, 'WOOD =',WOOD
+       print*, 'STBLCP =',STBLCP
+       print*, 'FASTCP =',FASTCP
+       print*, 'PLAI =',PLAI
+       print*, 'PSAI =',PSAI
+       print*, 'CM =',CM
+       print*, 'CH =',CH
+       print*, 'TAUSS =',TAUSS
+       print*, 'GRAIN =',GRAIN
+       print*, 'GDD =',GDD
+       print*, 'PGS =',PGS
+       print*, 'SMCWTD =',SMCWTD
+       print*, 'DEEPRECH = ',DEEPRECH
+       print*, 'RECH = ',RECH
+       print*, 'GECROS1D = ',GECROS1D
+       print*, 'Z0WRF =',Z0WRF
+       print*, 'FSA =',FSA
+       print*, 'FSR =',FSR
+       print*, 'FIRA =',FIRA
+       print*, 'FSH =',FSH
+       print*, 'SSOIL =',SSOIL
+       print*, 'FCEV =',FCEV
+       print*, 'FGEV =',FGEV
+       print*, 'FCTR =',FCTR
+       print*, 'ECAN =',ECAN
+       print*, 'ETRAN =',ETRAN
+       print*, 'ESOIL =',ESOIL
+       print*, 'TRAD =',TRAD
+       print*, 'SUBSNOW =',SUBSNOW
+       print*, 'RELSMC =',RELSMC
+       print*, 'TGB =',TGB
+       print*, 'TGV =',TGV
+       print*, 'T2MV =',T2MV
+       print*, 'T2MB =',T2MB
+       print*, 'Q2MV =',Q2MV
+       print*, 'Q2MB =',Q2MB
+       print*, 'RUNSF =',RUNSF
+       print*, 'RUNSB =',RUNSB
+       print*, 'APAR =',APAR
+       print*, 'PSN =',PSN
+       print*, 'SAV =',SAV
+       print*, 'SAG =',SAG
+       print*, 'FSNO =',FSNO
+       print*, 'NEE =',NEE
+       print*, 'GPP =',GPP
+       print*, 'NPP =',NPP
+       print*, 'FVEGMP =',FVEGMP
+       print*, 'SALB =',SALB
+       print*, 'QSNBOT =',QSNBOT
+       print*, 'PONDING =',PONDING
+       print*, 'PONDING1 =',PONDING1
+       print*, 'PONDING2 =',PONDING2
+       print*, 'RSSUN =',RSSUN
+       print*, 'RSSHA =',RSSHA
+       print*, 'BGAP =',BGAP
+       print*, 'WGAP =',WGAP
+       print*, 'CHV =',CHV
+       print*, 'CHB =',CHB
+       print*, 'EMISSI =',EMISSI
+       print*, 'SHG =',SHG
+       print*, 'SHC =',SHC
+       print*, 'SHB =',SHB
+       print*, 'EVG =',EVG
+       print*, 'EVB =',EVB
+       print*, 'GHV =',GHV
+       print*, 'GHB =',GHB
+       print*, 'IRG =',IRG
+       print*, 'IRC =',IRC
+       print*, 'IRB =',IRB
+       print*, 'TR =',TR
+       print*, 'EVC =',EVC
+       print*, 'FGEV_PET =',FGEV_PET
+       print*, 'FCEV_PET =',FCEV_PET
+       print*, 'FCTR_PET =',FCTR_PET
+       print*, 'CHLEAF =',CHLEAF
+       print*, 'CHUC =',CHUC
+       print*, 'CHV2 =',CHV2
+       print*, 'CHB2 =',CHB2
+       print*, 'FPICE =',FPICE
+       print*, 'PAHV =',PAHV
+       print*, 'PAHG =',PAHG
+       print*, 'PAHB =',PAHB
+       print*, 'PAH =',PAH
+       print*, 'LAISUN =',LAISUN
+       print*, 'LAISHA =',LAISHA
+       print*, 'RB =',RB
+       print*, 'RIVSTO =',rivsto
+       print*, 'FLDSTO =',fldsto
+       print*, 'FLDFRC =',fldfrc
+       !print*, 'SFCHEADRT(i,j) =',sfcheadrt(i,j)       
        endif
 
 ! INPUT/OUTPUT
@@ -2116,6 +2357,25 @@ SUBROUTINE PEDOTRANSFER_SR2006(nsoil,sand,clay,orgm,parameters)
 
     NCOUNT=0
 
+     !DO J=jts,jtf
+     !   DO I=its,itf
+     !     IF(WTD(I,J).EQ.-37.11)THEN
+     !        print*, 'WTD = ',WTD(I,J)
+     !        print*, 'I = ',I
+     !        print*, 'J = ',J
+     !     ENDIF
+     !   ENDDO
+     !ENDDO
+
+    !print*, 'GROUNDWATER_INIT Initial Values'
+    !print*, 'WTD = ',WTD(18,12)
+    !print*, 'ISLTYP = ',ISLTYP(18,12)
+    !print*, 'SMC-1 = ',smois(18,1,12)
+    !print*, 'SMC-2 = ',smois(18,2,12)
+    !print*, 'SMC-3 = ',smois(18,3,12)
+    !print*, 'SMC-4 = ',smois(18,4,12)
+
+
  DO NITER=1,500
 
 !Calculate lateral flow
@@ -2143,6 +2403,14 @@ ENDIF
  ENDDO
 
 EQWTD=WTD
+
+    !print*, 'GROUNDWATER_INIT Lateral Flow (1)'
+    !print*, 'WTD = ',WTD(18,12)
+    !print*, 'ISLTYP = ',ISLTYP(18,12)
+    !print*, 'SMC-1 = ',smois(18,1,12)
+    !print*, 'SMC-2 = ',smois(18,2,12)
+    !print*, 'SMC-3 = ',smois(18,3,12)
+    !print*, 'SMC-4 = ',smois(18,4,12)
 
 !after adjusting, where qlat > 1cm/year now wtd is at the surface.
 !it may still happen that qlat + rech > 0 and eqwtd-rbed <0. There the wtd can
@@ -2211,6 +2479,14 @@ EQWTD=WTD
           ENDIF
        ENDDO
     ENDDO
+
+    !print*, 'GROUNDWATER_INIT Lateral Flow (2)'
+    !print*, 'WTD = ',WTD(18,12)
+    !print*, 'ISLTYP = ',ISLTYP(18,12)
+    !print*, 'SMC-1 = ',smois(18,1,12)
+    !print*, 'SMC-2 = ',smois(18,2,12)
+    !print*, 'SMC-3 = ',smois(18,3,12)
+    !print*, 'SMC-4 = ',smois(18,4,12)
 
 !now compute eq. soil moisture, change soil moisture to be compatible with the water table and compute deep soil moisture
 
@@ -2304,7 +2580,13 @@ EQWTD=WTD
           ENDDO
        ENDDO
 
-
+    !print*, 'GROUNDWATER_INIT Soil Update'
+    !print*, 'WTD = ',WTD(18,12)
+    !print*, 'ISLTYP = ',ISLTYP(18,12)
+    !print*, 'SMC-1 = ',smois(18,1,12)
+    !print*, 'SMC-2 = ',smois(18,2,12)
+    !print*, 'SMC-3 = ',smois(18,3,12)
+    !print*, 'SMC-4 = ',smois(18,4,12)
 
 
     END  SUBROUTINE GROUNDWATER_INIT

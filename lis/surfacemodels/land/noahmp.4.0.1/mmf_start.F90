@@ -66,6 +66,15 @@ subroutine mmf_start(n)
         enddo
     enddo
 
+    !print*, 'mmf_start INIT VARIABLES: '
+    !print*, 'SMC-1 = ',smois(18,1,12)
+    !print*, 'SMC-2 = ',smois(18,2,12)
+    !print*, 'SMC-3 = ',smois(18,3,12)
+    !print*, 'SMC-4 = ',smois(18,4,12)
+    !print*, 'SMCWTD = ',smcwtdxy(18,12)
+    !print*, 'EQWTD = ',eqwtd(18,12)
+    !print*, 'WTD = ',wtd(18,12)
+
     call  groundwater_init (noahmp401_struc(n)%nsoil,  & !nsoil ,
                             noahmp401_struc(n)%sldpth, & !dzs, 
                             isltyp, ivgtyp, wtddt ,    &
@@ -93,6 +102,15 @@ subroutine mmf_start(n)
                             NOAHMP401_struc(n)%row_min, & !jts,
                             NOAHMP401_struc(n)%row_max, & !jte, 
                             1,1)                          !kts,kte
+
+    !print*, 'mmf_start GROUNDWATER VARIABLES: '
+    !print*, 'SMC-1 = ',smois(18,1,12)
+    !print*, 'SMC-2 = ',smois(18,2,12)
+    !print*, 'SMC-3 = ',smois(18,3,12)
+    !print*, 'SMC-4 = ',smois(18,4,12)
+    !print*, 'SMCWTD = ',smcwtdxy(18,12)
+    !print*, 'EQWTD = ',eqwtd(18,12)
+    !print*, 'WTD = ',wtd(18,12)
 
     do row=NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
         do col=NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
