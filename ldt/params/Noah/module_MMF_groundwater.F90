@@ -254,7 +254,7 @@ contains
           geogridFile = trim(datadir)//trim(tileName)
           
           rc = read_geogrid(trim(geogridFile),len(trim(geogridFile)),tarray, &
-               MBR%gp%tile_x,MBR%gp%tile_y,MBR%gp%tile_z,MBR%gp%isigned,MBR%gp%endian,1.,MBR%gp%wordsize,status)
+               nlon_tile_bdr,nlat_tile_bdr,MBR%gp%tile_z,MBR%gp%isigned,MBR%gp%endian,1.,MBR%gp%wordsize,status)
 
           if (rc == 1 .or. status == 1) then
              write(LDT_logunit,*) '[ERROR] reading GEOGRID file : ',trim(geogridFile)
