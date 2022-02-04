@@ -23,28 +23,32 @@ module getCropIrrigTypes
      INTEGER              :: N_IRRIGTYPES = 3
      REAL, allocatable    :: CROP_IRRIGTYPE (:,:,:)
      INTEGER, pointer     :: COUNTRY_CROP_IRRAVAIL (:)
-     
-  end type itype_params
+     integer, allocatable :: crop_rank(:,:)
 
+  end type itype_params
+     
   type, public, extends (itype_params) :: matt_algorithm
 
    contains
      
      procedure, public  :: init_thres
      procedure, public  :: git => get_irrig_type
-     
      procedure, private :: fpt => find_preferred_type
      procedure, private :: dti => dissolve_tiny_itypes
      procedure, private :: lct => least_common_type     
      procedure, private :: hcr => highest_crop_rank
      procedure, private :: ait => assign_irrig_type
-
+     procedure, private :: fpt_two => find_preferred_types_fortwo
+     
   end type matt_algorithm
 
   ! ---------------------------------------------------------  
 
 contains
+
   
+  ! ---------------------------------------------------------    
+
   SUBROUTINE init_thres (ma, ncrops, nitypes, global)
 
     use LIS_fileIOMod  
@@ -62,7 +66,9 @@ contains
     logical, intent (in), optional        :: global
     character*300                         :: crop_irrig_file
     integer                               :: ios, nid, vid, n_country, g_ncrops, g_nitypes
-
+    allocate (ma%crop_rank(1:ncrops, 1:nitypes))
+    call init_crop_rank(ma%crop_rank)
+    
     if (present (global)) then
        call ESMF_ConfigGetAttribute(LIS_config, LABEL = 'ITYPE_MIN_FRAC_GLOBAL:', VALUE = ma%ITYPE_MIN_FRAC, DEFAULT = ip%ITYPE_MIN_FRAC, rc = rc)
        call ESMF_ConfigGetAttribute(LIS_config, LABEL = 'CTYPE_AREA_TOL_GLOBAL:', VALUE = ma%CTYPE_AREA_TOL, DEFAULT = ip%CTYPE_AREA_TOL, rc = rc)
@@ -102,6 +108,18 @@ contains
 #endif           
 
     endif
+
+  contains
+    SUBROUTINE init_crop_rank  (crop_rank)
+
+    integer,dimension(:,:),  intent(inout) :: crop_rank
+    
+     ! From Matt's Excel sheet
+    crop_rank (:,1) = (/ 7, 5,26,11,12,13, 6,15,16, 2, 4,17, 3,22,10, 1, 8,25,21,19,14,24,23,20,18, 9/)
+    crop_rank (:,2) = (/17,18,26,23,21,22,16,24, 9,13,15,10,14, 4,20,25,11, 7, 3, 1,12, 6, 5, 2,19, 8/)
+    crop_rank (:,3) = (/12,14, 1, 8, 9, 7,13, 5, 4,26,24, 3,25,18,10,23,11,15,19,21, 6,16,17,20, 2,22/)
+    
+  end subroutine init_crop_rank
     
   END SUBROUTINE init_thres
 
@@ -435,7 +453,16 @@ contains
                  CNTY_IRRIGFRAC (j,:) = AIRRIGFRAC * SUM (CNTY_CROPTYPE (j,:))*CNTY_CELLAREA(j) ! change  km^2
                  CNTY_CROPTYPE  (j,:) = CNTY_CROPTYPE (j,:)*CNTY_CELLAREA(j)                    ! change  km^2
               end do
-
+              
+              if(isusa) then
+                 NT = count (AIRRIGFRAC > 0)
+                 ! A special case for single-tile counties with only 2 reported irrigtation types at 50-50 split
+                 if ((NT_CNTY==1).AND.(NT == 2).AND.(SUM(AIRRIGFRAC)/2. == MAXVAL (AIRRIGFRAC))) THEN
+                    call this%fpt_two (CNTY_CROPTYPE(1,:), CNTY_IRRIGFRAC(1,:), CNTY_IRRIGTYPE(1,:))
+                    AIRRIGFRAC = 0.
+                 endif
+              endif
+              
               NT = count (AIRRIGFRAC > 0)
               do j = 1, NT
 
@@ -567,16 +594,12 @@ END SUBROUTINE get_irrig_type
     logical, optional, intent (in)        :: first
     integer, optional, dimension(:), target, intent(in) :: IRRAVAIL
     real,    dimension (NT_CNTY    , this%N_CROPTYPES),      target :: CROPTYPE_TMP, PREFTYPE_TMP
-    integer, dimension (26, 3), target    :: crop_rank
-    integer, dimension(:), pointer        :: cr_lct
+    integer, allocatable                  :: cr_lct (:)
     real, save                            :: original_area
-    integer    :: hcr, hcr_nxt
-
-    ! From Matt's Excel sheet
-    DATA crop_rank (:,1) / 7, 5,26,11,12,13, 6,15,16, 2, 4,17, 3,22,10, 1, 8,25,21,19,14,24,23,20,18, 9/
-    DATA crop_rank (:,2) /17,18,26,23,21,22,16,24, 9,13,15,10,14, 4,20,25,11, 7, 3, 1,12, 6, 5, 2,19, 8/
-    DATA crop_rank (:,3) /12,14, 1, 8, 9, 7,13, 5, 4,26,24, 3,25,18,10,23,11,15,19,21, 6,16,17,20, 2,22/
-
+    integer    :: hcr, hcr_nxt, i
+    logical                               :: look_nearest
+    real, dimension (:), allocatable      :: tile_size
+    
     if (present (first)) then
        original_area = total_itype_area
     else
@@ -585,19 +608,47 @@ END SUBROUTINE get_irrig_type
     
     !5.	Use the data in the attached spreadsheet to determine the crop
     !   with the highest Crop Rank (CROP_RANK) corresponding to that irrigation.
-
-    cr_lct => crop_rank (:,this_lct)
+    allocate (cr_lct (this%N_CROPTYPES))
+    cr_lct = this%crop_rank (:,this_lct)
     if(present (IRRAVAIL)) then
        this%COUNTRY_CROP_IRRAVAIL => IRRAVAIL
     endif
     hcr = this%hcr (cr_lct,CROPTYPE)    ! highest crop rank for this_lct
     
-    if(hcr > 0) then 
-    !6. Does the area of the largest tile of that crop type in the county exceed the area of that irrigation type in the county by
+    if(hcr > 0) then
+
+       if(.not.present (IRRAVAIL)) then
+          if(present (first)) then
+             if((NT_CNTY > 1).AND.(NT_CNTY < 5)) then
+                if(count(CROPTYPE > 0.)/NT_CNTY == 1) then                
+                   ! A single crop type is grown in the entire county. Instead the processing in the ascending order of tile area, select the county 
+                   ! whose irrigaated crop area is closest to the area of this_lct.
+                   allocate (tile_size (1: NT_CNTY))
+                   tile_size = ABS(CROPTYPE(:,hcr) - total_itype_area)
+                   PREFTYPE (minloc (tile_size,1),hcr) = this_lct
+                   total_itype_area = total_itype_area - CROPTYPE (minloc (tile_size,1),hcr)
+                   CROPTYPE (minloc (tile_size,1),hcr) = 0.
+                   deallocate (tile_size)
+                   return
+                endif
+             endif
+          endif
+       endif
+       
+       !6. Does the area of the largest tile of that crop type in the county exceed the area of that irrigation type in the county by
     !   more than 2% (CTYPE_AREA_TOL) of the county area?
        call this%ait(this_lct, total_itype_area, CROPTYPE(:,hcr), PREFTYPE(:,hcr))
     else
        RETURN
+    endif
+    
+    if(.not.present (IRRAVAIL)) then
+       if(present (first)) then
+          if(total_itype_area == original_area) then
+             call this%ait(this_lct, total_itype_area, CROPTYPE(:,hcr), PREFTYPE(:,hcr), second_attempt = .true.)
+             return
+          endif
+       endif
     endif
     
     !   If that target cannot be achieved with the tile of this crop type, then go to
@@ -621,12 +672,69 @@ END SUBROUTINE get_irrig_type
     else
        RETURN
     endif
-
+    deallocate (cr_lct)
+    
   END SUBROUTINE find_preferred_type
+
+  ! -------------------------------------------------------------------------------------
+  
+  SUBROUTINE find_preferred_types_fortwo (this, CROPTYPE, IRRIGFRAC, PREFTYPE)
+
+    implicit none
+
+    class(matt_algorithm),  intent(inout) :: this
+    real,    dimension(:),intent(inout)   :: PREFTYPE
+    real,    dimension(:),intent(inout)   :: CROPTYPE, IRRIGFRAC
+
+    integer                               :: n,i, this_itype, sel_itype, this_rank
+    real, dimension (:), allocatable      :: tile_size
+    integer, dimension (:), allocatable   :: tile_index
+    real                                  :: tile_area, ifrac(3)
+        
+    n = size (CROPTYPE)
+    allocate (tile_size (1:n))
+    allocate (tile_index(1:n))
+    
+    call LIS_indexArrayReal (n, CROPTYPE, tile_index)
+    call LIS_reverse (tile_index)
+    tile_size = CROPTYPE (tile_index)
+    
+    ifrac = IRRIGFRAC(:)/SUM(IRRIGFRAC)
+    tile_area = SUM(IRRIGFRAC)
+    
+    do i = 1,n
+       if(tile_size(i) > 0.) then
+          ! assign the irrigation types from the largest crop fractions
+          sel_itype = 0
+          this_rank = 100
+          do this_itype = 1,3
+             if(IRRIGFRAC(this_itype) > 0) then
+                if(this%crop_rank(tile_index(i),this_itype) < this_rank) then
+                   sel_itype = this_itype
+                   this_rank = this%crop_rank(tile_index(i),this_itype)
+                endif
+             endif
+          end do
+
+          if(sel_itype > 0) then
+             PREFTYPE (tile_index(i)) = sel_itype           
+          else
+             PREFTYPE (tile_index(i)) = 1
+          endif
+
+          IRRIGFRAC (NINT(PREFTYPE (tile_index(i)))) = IRRIGFRAC (NINT(PREFTYPE (tile_index(i)))) - CROPTYPE (tile_index(i))
+          CROPTYPE (tile_index(i)) = 0.
+          if(IRRIGFRAC (NINT(PREFTYPE (tile_index(i)))) < 0.) IRRIGFRAC (NINT(PREFTYPE (tile_index(i)))) = 0.
+          
+       endif
+       
+    end do
+  
+  END SUBROUTINE find_preferred_types_fortwo
 
   ! ---------------------------------------------------------  
 
-  SUBROUTINE assign_irrig_type (this, this_lct, total_itype_area,CROPTYPE, PREFTYPE)
+  SUBROUTINE assign_irrig_type (this, this_lct, total_itype_area,CROPTYPE, PREFTYPE, second_attempt)
     ! (6) ... If no, then assign that irrigation type to the tile and, if not within
     !      CTYPE_AREA_TOL % (county area) of the irrigation type area target, repeat with the
     !     next largest tile of that type.  If yes, then go to the second largest tile of that
@@ -642,12 +750,27 @@ END SUBROUTINE get_irrig_type
     integer                             :: n, i
     real, dimension (:), allocatable    :: tile_size
     integer, dimension (:), allocatable :: tile_index
+    logical, intent (in), optional      :: second_attempt
     
     n = size (CROPTYPE)
     allocate (tile_size (1:n))
     allocate (tile_index(1:n))
 
     call LIS_indexArrayReal (n, CROPTYPE, tile_index)
+    if(present (second_attempt)) then
+       tile_size = CROPTYPE (tile_index)
+       do i = 1,n
+          if(tile_size(i) > 0.) then
+             if((tile_size(i) - total_itype_area)/total_itype_area <= 0.3) then
+             PREFTYPE (tile_index(i)) = this_lct
+             CROPTYPE (tile_index(i)) = 0.
+             total_itype_area = 0. !total_itype_area - tile_size(i)
+             return
+          endif
+          endif
+       end do
+       return
+    endif    
     call LIS_reverse (tile_index)
     tile_size = CROPTYPE (tile_index)
 
