@@ -405,7 +405,7 @@ contains
                 case ( "CHELSAV21" )
                    LDT_climate_struc(n)%climpptfile = &
                         trim(LDT_climate_struc(n)%climpptdir)
-                   write(LDT_climate_struc(n)%climpptimonth,'(I)') mon2d(k)
+                   read(mon2d(k),'(I)') LDT_climate_struc(n)%climpptimonth
                 case default
                    write(LDT_logunit,*) &
                         "[ERR] PPT Climatology Source Not Recognized"
