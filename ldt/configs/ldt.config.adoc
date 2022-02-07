@@ -2835,6 +2835,8 @@ Climatology parameter maps
 
 |PRISM |PRISM US-only climate downscaled fields. For more info, see: http://www.prism.oregonstate.edu/
 |WORLDCLIM |Global climate layers downscaled. For more info, see: http://www.worldclim.org/
+|CHELSAV21 |Global climate layers downscaled. For more info, see: http://chelsa-climate.org/
+
 |===
 
 `PPT climatology maps:` specifies the source of the climatology based precipitation files. The climatology precipitation data files can have the following naming conventions, depending on the data source:
@@ -2848,6 +2850,12 @@ WORLDCLIM: <directory>/<file header>.<tag>.1gd4r
 
 * The file header can be prec_
 * The tag should represent the month (such as 1, 2,..., 12).
+
+CHELSAV21: <directory>/<file header>_<imonth>_<iyear>_V.2.1.tif
+
+* The file header is CHELSA_pr
+* The imonth represents the month (01, 02, ..., 12)
+* The iyear represents the year (1979, 1980, ..., 2019).
 
 `PPT climatology interval:` specifies the frequency of the precipitation climatology in months. Current option is: "`monthly`"
 

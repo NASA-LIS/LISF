@@ -35,7 +35,7 @@ module LDT_CHELSAV21_climpptMod
   !   https://doi.org/10.16904/envidat.228.v2.1.
   !
   ! REVISION HISTORY:
-  ! 04 Feb 2022: Eric Kemp/SSAI: First version.
+  ! 07 Feb 2022: Eric Kemp/SSAI: First version.
 
   ! Defaults
   implicit none
@@ -53,7 +53,7 @@ module LDT_CHELSAV21_climpptMod
      integer :: nrows_out
      integer :: ncols_out
      real :: gridDesc_out(20)
-     real, allocatable :: pcp_out_12mon(:,:,:)
+     real, allocatable :: pcp_out(:,:)
      integer :: count
      real :: missing_value_native
    contains
@@ -63,13 +63,46 @@ module LDT_CHELSAV21_climpptMod
      procedure :: process => LDT_CHELSAV21_climppt_process
   end type LDT_CHELSAV21_climppt_t
 
+  ! Public reader that uses the object under the hood
+  public :: LDT_read_CHELSAV21_climppt
+
 contains
 
-  subroutine LDT_CHELSAV21_climppt_new(this, topdir_native, nest)
-
-    ! Constructor method
+  ! Public reader
+  subroutine LDT_read_CHELSAV21_climppt(nest, ncols_out, nrows_out, &
+       gridDesc_out, pcp_out)
 
     ! Imports
+    use LDT_coreMod, only: LDT_rc
+    use LDT_logMod, only: ldt_logunit, LDT_endrun
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    integer, intent(in) :: nest
+    integer, intent(in) :: ncols_out
+    integer, intent(in) :: nrows_out
+    real, intent(in) :: gridDesc_out(20)
+    real, allocatable, intent(out) :: pcp_out(ncols_out, nrows_out)
+
+    ! Locals
+    class(LDT_CHELSAV21_climppt_t) :: chelsav21
+    integer :: imonth
+
+    call chelsav21%new(nest, ncols_out, nrows_out, gridDesc_out)
+    imonth = LDT_climate_struc(nest)%climpptimonth
+    call chelsav21%process(nest, imonth, ncols_out, nrows_out, pcp_out)
+    call chelsav21%delete()
+
+  end subroutine LDT_read_CHELSAV21_climppt
+
+  ! Constructor method
+  subroutine LDT_CHELSAV21_climppt_new(this, nest, ncols_out, nrows_out, &
+       gridDesc_out)
+
+    ! Imports
+    use LDT_climateParmsMod, only: LDT_climate_struc
     use LDT_coreMod, only: LDT_rc
 
     ! Defaults
@@ -77,10 +110,12 @@ contains
 
     ! Arguments
     class(LDT_CHELSAV21_climppt_t), intent(inout) :: this
-    character(500), intent(in) :: topdir_native
     integer, intent(in) :: nest
+    integer, intent(in) :: ncols_out
+    integer, intent(in) :: nrows_out
+    real, intent(in) :: gridDesc_out(20)
 
-    this%topdir_native = topdir_native
+    this%topdir_native = trim(LDT_climate_struc(nest)%climpptdir)
 
     ! Set up CHELSA grid.  Note:  The native grid has origin in the upper-left.
     ! The reader will flip to a more conventional grid before the
@@ -111,14 +146,14 @@ contains
     this%gridDesc_native(39) =    0.008333333300000 ! Delta longitude
     this%gridDesc_native(40) =    0.008333333300000 ! Delta latitude
     allocate(this%pcp_native(this%ncols_native, this%nrows_native))
-    this%pcp_native(:,:) = 0
+    this%pcp_native = 0
 
     ! Set up LDT grid
-    this%nrows_out = LDT_rc%lnr(nest)
-    this%ncols_out = LDT_rc%lnc(nest)
-    this%gridDesc_out = LDT_rc%gridDesc_out(:,nest)
-    allocate(this%pcp_out(this%ncols_out, this%nrows_out, 12))
-    this%pcp_out(:,:,:) = 0
+    this%ncols_out = ncols_out
+    this%nrows_out = nrows_out
+    this%gridDesc_out = gridDesc_out
+    allocate(this%pcp_out(this%ncols_out, this%nrows_out))
+    this%pcp_out = 0
 
     ! Other initializations.  These will change as data are read, interpolated,
     ! and averaged.
@@ -127,9 +162,8 @@ contains
 
   end subroutine LDT_CHELSAV21_climppt_new
 
+  ! Destructor method
   subroutine LDT_CHELSAV21_climppt_delete(this)
-
-    ! Destructor method
 
     ! Defaults
     implicit none
@@ -141,28 +175,21 @@ contains
     this%topdir_native = 'NULL'
     this%nlat_native = 0
     this%nlon_native = 0
-    this%gridDesc_native(:) = 0
+    this%gridDesc_native = 0
     deallocate(this%pcp_native)
     this%nrows_out = 0
     this%ncols_out = 0
-    this%gridDesc_out(:) = 0
+    this%gridDesc_out = 0
     deallocate(pcp_out_12mon)
     this%count = 0
     this%missing_value_native = 0
   end subroutine LDT_CHELSAV21_climppt_delete
 
-  subroutine LDT_CHELSAV21_climppt_process(this, nest)
-    implicit none
-    class(LDT_CHELSAV21_climppt_t), intent(inout) :: this
-    integer, intent(in) :: nest
-    integer :: imonth
-    do imonth = 1, 12
-       call this%process_month(imonth, nest)
-    end do
-  end subroutine LDT_CHELSAV21_climppt_process
-  
 #if (defined USE_GDAL)
-  subroutine LDT_CHELSAV21_climppt_process_month(this, imonth, nest)
+
+  ! Handle processing of one month of CHELSAV21 precipitation data
+  subroutine LDT_CHELSAV21_climppt_process(this, nest, imonth, &
+       ncols_out, nrows_out, pcp_out)
 
     ! Imports
     use LDT_coreMod, only: LDT_rc
@@ -176,8 +203,11 @@ contains
 
     ! Arguments
     class(LDT_CHELSAV21_climppt_t), intent(inout) :: this
-    integer, intent(in) :: imonth
     integer, intent(in) :: nest
+    integer, intent(in) :: imonth
+    integer, intent(in) :: ncols_out
+    integer, intent(in) :: nrows_out
+    real, intent(out) :: pcp_out(ncols_out, nrows_out)
 
     ! Locals
     type(gdaldriverh) :: driver
@@ -268,7 +298,7 @@ contains
 
        ! Interpolate to LDT grid
        mi = this%ncols_native * this%nrows_native
-       mo = LDT_rc%lnr(nest) * LDT_rc%lnc(nest)
+       mo = this%ncols_out * this%nrows_out
        select case (LDT_climate_struc(nest)%clim_gridtransform)
        case ("average")
           if (ipass .eq. 1) then
@@ -303,10 +333,9 @@ contains
              do i = 1, this%ncols_out
                 ij = i + (j-1)*this%ncols_out
                 if (go1(ij) < 0.) then
-                   this%pcp_out_12(i,j,imonth) = LDT_rc%udef
+                   this%pcp_out(i,j) = LDT_rc%udef
                 else
-                   this%pcp_out_12(i,j,imonth) = &
-                        this%pcp_out_12(i,j,imonth) + go1(ij)
+                   this%pcp_out(i,j) = this%pcp_out(i,j) + go1(ij)
                 end if
              end do
           end do
@@ -331,21 +360,33 @@ contains
     ! Calculate average value
     do j = 1, this%nrows_out
        do i = 1, this%ncols_out
-          if (this%pcp_out_12(i,j,imonth) .ne. LDT_rc%udef) then
-             this%pcp_out_12(i,j,imonth) = &
-                  this%pcp_out_12(i,j,imonth) / real(ipass)
+          if (this%pcp_out(i,j) .ne. LDT_rc%udef) then
+             this%pcp_out(i,j) = &
+                  this%pcp_out(i,j) / real(ipass)
           end if
+       end do
+    end do
+
+    do j = 1, this%nrows_out
+       do i = 1, this%ncols_out
+          pcp_out(i,j) = this%pcp_out(i,j)
        end do
     end do
   end subroutine LDT_CHELSAV21_climppt_process_month
 
 #else
-  subroutine LDT_CHELSAV21_climppt_process_month(this, imonth, nest)
+
+  ! Dummy subroutine if not compiled with GDAL
+  subroutine LDT_CHELSAV21_climppt_process(this, nest, imonth, &
+       ncols_out, nrows_out, pcp_out)
     use LDT_logMod, only: ldt_logunit, LDT_endrun
     implicit none
     class(LDT_CHELSAV21_climppt_t), intent(inout) :: this
-    integer, intent(in) :: imonth
     integer, intent(in) :: nest
+    integer, intent(in) :: imonth
+    integer, intent(in) :: ncols_out
+    integer, intent(in) :: nrows_out
+    real, intent(out) :: pcp_out(ncols_out,nrows_out)
     write(ldt_logunit,*)'[ERR] LDT was compiled without GDAL support'
     write(ldt_logunit,*)'[ERR] Cannot process CHELSA21 GeoTIFF files!'
     write(ldt_logunit,*)'[ERR] Recompile LDT with GDAL support and try again.'
@@ -363,4 +404,5 @@ contains
     write(filename,'(A,A,I2.2,A,I4.4,A)') &
          this%topdir_native, '/CHELSA_pr_', imonth, '_', iyear, '_V.2.1.tif'
   end subroutine create_filename
+
 end module LDT_CHELSAV21_climpptMod

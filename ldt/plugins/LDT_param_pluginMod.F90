@@ -23,9 +23,9 @@ module LDT_param_pluginMod
 !  11 Dec 2003:  Sujay Kumar  - Initial Specification
 !  11 Feb 2013:  KR Arsenault - Updated to accommodate new parameter types and options
 !  01 Mar 2020:  Yeosang Yoon - Added MERIT DEM
-!  29 Jun 2020:  Mahdi Navari - Glacier fraction added 
+!  29 Jun 2020:  Mahdi Navari - Glacier fraction added
 !  12 Apr 2021:  Wanshu Nie   - groundwater irrigation ratio added
-!  
+!  07 Feb 2022:  Eric Kemp/SSAI - Added CHELSAV21 precipitation
 !EOP
 
   use LDT_pluginIndices
@@ -1179,6 +1179,7 @@ contains
 ! !INTERFACE:
   subroutine LDT_climate_plugin
 !EOP
+    use LDT_CHELSAV21_climpptMod, only: LDT_read_CHELSAV21_climppt
     external read_PRISM_climppt
     external read_WorldClim_climppt
     external read_NLDAS_climppt
@@ -1190,6 +1191,9 @@ contains
 
     call registerreadclimppt(trim(LDT_worldclimpptId)//char(0),&
          read_WorldClim_climppt)
+
+    call registerreadclimppt(trim(LDT_chelsav21pptId)//char(0),&
+         LDT_read_CHELSAV21_climppt)
 
 !- Temperature downscaling:
 

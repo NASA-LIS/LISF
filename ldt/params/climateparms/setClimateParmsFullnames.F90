@@ -15,9 +15,9 @@
 !
 ! !REVISION HISTORY:
 !  19 Sep 2014: K. Arsenault; Initial Specification
-!
+!  07 Feb 2022: Eric Kemp/SSAI: Added CHELSAV21 precipitation.
 ! !INTERFACE:
-subroutine setClimateParmsFullnames(n,datatype,source)
+subroutine setClimateParmsFullnames(n, datatype, source)
 
 ! !USES:
   use LDT_climateParmsMod
@@ -25,11 +25,12 @@ subroutine setClimateParmsFullnames(n,datatype,source)
   use LDT_paramDataMod
 
   implicit none
-  integer,         intent(in) :: n
-  character(len=*),intent(in) :: datatype
-  character(len=*),intent(in) :: source
 
-! !ARGUMENTS: 
+  integer,          intent(in) :: n
+  character(len=*), intent(in) :: datatype
+  character(len=*), intent(in) :: source
+
+! !ARGUMENTS:
 
 ! !DESCRIPTION:
 !
@@ -42,39 +43,43 @@ subroutine setClimateParmsFullnames(n,datatype,source)
 !   \item[source]
 !     Climate dataset source
 !   \end{description}
-!EOP      
+!EOP
 !
 
-   select case( datatype )
+  select case( datatype )
 
-    case( "climppt" )
-      select case( source )
-        case( "PRISM" )
-          LDT_climate_struc(n)%climppt%standard_name =&
-              "PRISM PPT climatology fields"
-        case( "WORLDCLIM" )
-          LDT_climate_struc(n)%climppt%standard_name =&
-              "WorldCLIM PPT climatology fields"
-      end select
+  case( "climppt" )
+     select case( source )
+     case( "PRISM" )
+        LDT_climate_struc(n)%climppt%standard_name =&
+             "PRISM PPT climatology fields"
+     case( "WORLDCLIM" )
+        LDT_climate_struc(n)%climppt%standard_name =&
+             "WorldCLIM PPT climatology fields"
+     case ( "CHELSAV21" )
+        LDT_climate_struc(n)%climppt%standard_name =&
+             "CHELSAV21 PPT climatology fields"
+     end select
 
-    case( "mintemp" )
-      select case( source )
-        case( "PRISM" )
-          LDT_climate_struc(n)%climtmin%standard_name =&
-              "PRISM minimum Temp climatology fields"
-      end select
+  case( "mintemp" )
+     select case( source )
+     case( "PRISM" )
+        LDT_climate_struc(n)%climtmin%standard_name =&
+             "PRISM minimum Temp climatology fields"
+     end select
 
-    case( "maxtemp" )
-      select case( source )
-        case( "PRISM" )
-          LDT_climate_struc(n)%climtmax%standard_name =&
-              "PRISM maximum Temp climatology fields"
-      end select
+  case( "maxtemp" )
+     select case( source )
+     case( "PRISM" )
+        LDT_climate_struc(n)%climtmax%standard_name =&
+             "PRISM maximum Temp climatology fields"
+     end select
 
-    case default
-      print *, "[ERR] Climate data type not recognized: ",trim(source)
-      print *, " Program stopping ..."
-      stop
-   end select
+  case default
+     write(ldt_logunit,*)'[ERR] Climate data type not recognized: ', &
+          trim(source)
+     write(ldt_logunit,*)'[ERR] Program stopping ...'
+     call LDT_endrun()
+  end select
 
 end subroutine setClimateParmsFullnames

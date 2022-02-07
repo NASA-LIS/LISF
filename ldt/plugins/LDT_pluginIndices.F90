@@ -25,6 +25,7 @@ module LDT_pluginIndices
 !  23 Oct 2008: Sujay Kumar  -- Initial Specification
 !  17 Jul 2012: KR Arsenault -- Updated entries with capitalization rules
 !  01 Mar 2020: Yeosang Yoon -- Added MERIT DEM
+!  07 Feb 2022: Eric Kemp/SSAI -- Added CHELSAV21 precipitation.
 !
 !EOP
   PRIVATE
@@ -342,6 +343,8 @@ module LDT_pluginIndices
 !- PPT:
    character*50, public,  parameter :: LDT_prismpptId     = "PRISM"
    character*50, public,  parameter :: LDT_worldclimpptId = "WORLDCLIM"
+   character*50, public,  parameter :: LDT_chelsav21pptId = "CHELSAV21"
+
 !- TMIN:
    character*50, public,  parameter :: LDT_prismtminId     = "PRISM"
    character*50, public,  parameter :: LDT_worldclimtminId = "WORLDCLIM"

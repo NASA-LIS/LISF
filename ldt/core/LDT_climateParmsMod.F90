@@ -13,20 +13,21 @@ module LDT_climateParmsMod
 ! !MODULE: LDT_climateParmsMod
 !
 ! !DESCRIPTION:
-!  The code in this file implements routines to read forcing 
-!   climatology data (e.g., can be used for forcing downscaling, etc.). 
+!  The code in this file implements routines to read forcing
+!   climatology data (e.g., can be used for forcing downscaling, etc.).
 !
 !  \subsubsection{Overview}
-!  The routines in this module provide capabilities to read the 
-!  climatology data and allows the users to 
-!  specify the frequency of climatology (in months). 
-!  The climatological data is temporally interpolated  
-!  between months to the current simulation date. 
+!  The routines in this module provide capabilities to read the
+!  climatology data and allows the users to
+!  specify the frequency of climatology (in months).
+!  The climatological data is temporally interpolated
+!  between months to the current simulation date.
 !
 ! !REVISION HISTORY:
 !
 !  08 Aug 2005: Sujay Kumar; Initial implementation
 !  08 Oct 2012: Kristi Arsenault; Expanded for forcing climatology datasets
+!  07 Feb 2022: Eric Kemp/SSAI; Add CHELSAV21 precipitation climatology
 !
   use ESMF
   use LDT_coreMod
@@ -73,6 +74,8 @@ module LDT_climateParmsMod
      character*140 :: climtminfile
      character*140 :: climelevfile
 
+     integer :: climpptimonth
+
      ! Climate parameters
      type(LDT_paramEntry) :: climppt     ! Precipitation climatology (LIS-domain)
      type(LDT_paramEntry) :: climppt2     ! Precipitation climatology (LIS-domain)
@@ -87,11 +90,11 @@ module LDT_climateParmsMod
 contains
 
   subroutine LDT_climate_readParamSpecs
-    
+
     character*100   :: source
     integer         :: rc,output_ratio
     integer         :: n
-    
+
     allocate(LDT_climate_struc(LDT_rc%nnest))
     output_ratio = 0
     call ESMF_ConfigFindLabel(LDT_config,"PPT climatology data source 2:",rc=rc)
@@ -138,10 +141,10 @@ contains
   end subroutine LDT_climate_readParamSpecs
 
 !BOP
-! 
+!
 ! !ROUTINE: LDT_climateparms_init
 ! \label{LDT_climateparms_init}
-! 
+!
 ! !INTERFACE:
   subroutine LDT_climateparms_init
 
@@ -153,13 +156,13 @@ contains
 
 ! !DESCRIPTION:
 !
-! Allocates memory for data structures for reading 
-! forcing climatology datasets. 
-! 
-!  The routines invoked are: 
+! Allocates memory for data structures for reading
+! forcing climatology datasets.
+!
+!  The routines invoked are:
 !  \begin{description}
 !   \item[climpptsetup](\ref{climpptsetup}) \newline
-!    calls the registry to invoke the climppt setup methods. 
+!    calls the registry to invoke the climppt setup methods.
 !  \end{description}
 !
 !EOP
@@ -179,283 +182,321 @@ contains
 ! __________________________________________________________________
 
 
-   climppt_select = .false.
-   do n = 1, LDT_rc%nnest
-      if( LDT_climate_struc(n)%climppt%selectOpt == 1 ) then
-        climppt_select = .true.
-      endif
-   enddo
-   ! Climate Tmin and Tmax sources not supported at this time.
-   ! - Initializing sources to 0 for now.
-   climtmin_select = .false.
-   LDT_climate_struc%climtmin%selectOpt = 0
-   climtmax_select = .false.
-   LDT_climate_struc%climtmax%selectOpt = 0
+    climppt_select = .false.
+    do n = 1, LDT_rc%nnest
+       if (LDT_climate_struc(n)%climppt%selectOpt == 1 ) then
+          climppt_select = .true.
+       endif
+    enddo
 
-   if( climppt_select ) then
-     write(LDT_logunit,*)" - - - - - - - - Climate Downscaling Parameters - - - - - - - - -"
-   endif
+    ! Climate Tmin and Tmax sources not supported at this time.
+    ! - Initializing sources to 0 for now.
+    climtmin_select = .false.
+    LDT_climate_struc%climtmin%selectOpt = 0
+    climtmax_select = .false.
+    LDT_climate_struc%climtmax%selectOpt = 0
 
- !- Read in config file entries:
-    if( climppt_select ) then
-      call ESMF_ConfigFindLabel(LDT_config,"PPT climatology maps:",rc=rc)
-      do n=1,LDT_rc%nnest
-         call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%climpptdir,rc=rc)
-         call LDT_verify(rc,'PPT climatology maps: not specified')
-      enddo
-
-      call ESMF_ConfigFindLabel(LDT_config,"NLDAS PPT climatology maps:",rc=rc)
-      do n=1,LDT_rc%nnest
-        if (LDT_climate_struc(n)%output_climppt_ratio >0) then
-         call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%climpptdir2,rc=rc)
-         call LDT_verify(rc,'NLDAS PPT climatology maps: not specified')
-
-         call ESMF_ConfigFindLabel(LDT_config,"Climate params spatial transform 2:",rc=rc)
-         call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%clim_gridtransform2,&
-              rc=rc)
-         call LDT_verify(rc,&
-              'Climate params spatial transform 2: option not specified in the config file')
-        end if
-      enddo
-
-      LDT_rc%monthlyData = .false.
-      call ESMF_ConfigFindLabel(LDT_config,"PPT climatology interval:",rc=rc)
-      do n=1,LDT_rc%nnest
-         call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%climpptInterval,rc=rc)
-         call LDT_verify(rc,'PPT climatology interval: not specified')
-         if( LDT_climate_struc(n)%climpptInterval == "monthly" ) then
-            LDT_rc%monthlyData(n) = .true.
-            LDT_climate_struc(n)%climppt%num_times = 12
-         else
-            write(LDT_logunit,*) "[ERR] NO OTHER TIME INTERVAL, OTHER THAN 'monthly'"
-            write(LDT_logunit,*) "   CURRENTLY EXISTS AS THIS TIME FOR CLIM PPT."
-            write(LDT_logunit,*) " Program stopping ..."
-            call LDT_endrun
-         endif
-      enddo
-    ! Set units and full names:
-      do n=1,LDT_rc%nnest
-         LDT_climate_struc(n)%climppt%units="mm"
-         call setClimateParmsFullnames( n, "climppt", &
-                 LDT_climate_struc(n)%climppt%source )
-      enddo
+    if ( climppt_select ) then
+       write(LDT_logunit,*)" - - - - - - - - Climate Downscaling Parameters - - - - - - - - -"
     endif
 
-    if( LDT_climate_struc(1)%climtmin%selectOpt == 1 ) then
-      call ESMF_ConfigFindLabel(LDT_config,"TMIN climatology maps:",rc=rc)
-      do n=1,LDT_rc%nnest
-         call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%climtmindir,rc=rc)
-         call LDT_verify(rc,'TMIN climatology maps: not specified')
-      enddo
-    endif
-    if( LDT_climate_struc(1)%climtmax%selectOpt == 1 ) then
-      call ESMF_ConfigFindLabel(LDT_config,"TMAX climatology maps:",rc=rc)
-      do n=1,LDT_rc%nnest
-         call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%climtmaxdir,rc=rc)
-         call LDT_verify(rc,'TMAX climatology maps: not specified')
-      enddo
-    end if
-
+    !- Read in config file entries:
     if( climppt_select ) then
-      call ESMF_ConfigFindLabel(LDT_config,"Climate params spatial transform:",rc=rc)
-      do n=1,LDT_rc%nnest
-         call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%clim_gridtransform,&
-              rc=rc)
-         call LDT_verify(rc,&
-              'Climate params spatial transform: option not specified in the config file')
-      enddo
-    end if
+       call ESMF_ConfigFindLabel(LDT_config, "PPT climatology maps:", rc=rc)
+       do n=1, LDT_rc%nnest
+          call ESMF_ConfigGetAttribute(LDT_config, &
+               LDT_climate_struc(n)%climpptdir, rc=rc)
+          call LDT_verify(rc, 'PPT climatology maps: not specified')
+       enddo
 
+       call ESMF_ConfigFindLabel(LDT_config, &
+            "NLDAS PPT climatology maps:", rc=rc)
+       do n = 1, LDT_rc%nnest
+          if (LDT_climate_struc(n)%output_climppt_ratio > 0) then
+             call ESMF_ConfigGetAttribute(LDT_config, &
+                  LDT_climate_struc(n)%climpptdir2, rc=rc)
+             call LDT_verify(rc,'NLDAS PPT climatology maps: not specified')
 
-!- Allocate fields for both LIS running and forcing domains:
-   do n = 1, LDT_rc%nnest
-
-   !- Precipitation (PPT) Climatology:
-      if( LDT_climate_struc(n)%climppt%selectOpt > 0 ) then 
-       !- LIS run domain:
-          LDT_climate_struc(n)%climppt%vlevels = LDT_climate_struc(n)%climppt%num_times
-
-          allocate(LDT_climate_struc(n)%climppt%value(&
-               LDT_rc%lnc(n),LDT_rc%lnr(n),&
-               LDT_climate_struc(n)%climppt%vlevels))
-
-       !- Forcing domain:
-          if( LDT_rc%nmetforc > 0 ) then
-            do m = 1, LDT_rc%nmetforc_parms
-               LDT_force_struc(n,m)%climppt%num_times = LDT_climate_struc(n)%climppt%num_times
-               LDT_force_struc(n,m)%climppt%vlevels   = LDT_climate_struc(n)%climppt%num_times
-          
-               allocate(LDT_force_struc(n,m)%climppt%value(&
-                   LDT_rc%met_nc(m), LDT_rc%met_nr(m), &
-                   LDT_force_struc(n,m)%climppt%vlevels))       
-            end do
+             call ESMF_ConfigFindLabel(LDT_config, &
+                  "Climate params spatial transform 2:", rc=rc)
+             call ESMF_ConfigGetAttribute(LDT_config, &
+                  LDT_climate_struc(n)%clim_gridtransform2, &
+                  rc=rc)
+             call LDT_verify(rc, &
+                  'Climate params spatial transform 2: option not specified in the config file')
           end if
-          if ( LDT_climate_struc(n)%output_climppt_ratio>0)then
-          allocate(LDT_climate_struc(n)%climppt2%value(&
-               LDT_rc%lnc(n),LDT_rc%lnr(n),&
+       enddo
+
+       LDT_rc%monthlyData = .false.
+       call ESMF_ConfigFindLabel(LDT_config, "PPT climatology interval:", &
+            rc=rc)
+       do n = 1, LDT_rc%nnest
+          call ESMF_ConfigGetAttribute(LDT_config, &
+               LDT_climate_struc(n)%climpptInterval, rc=rc)
+          call LDT_verify(rc, 'PPT climatology interval: not specified')
+          if( LDT_climate_struc(n)%climpptInterval == "monthly" ) then
+             LDT_rc%monthlyData(n) = .true.
+             LDT_climate_struc(n)%climppt%num_times = 12
+          else
+             write(LDT_logunit,*) &
+                  "[ERR] NO OTHER TIME INTERVAL, OTHER THAN 'monthly'"
+             write(LDT_logunit,*) &
+                  "   CURRENTLY EXISTS AS THIS TIME FOR CLIM PPT."
+             write(LDT_logunit,*) " Program stopping ..."
+             call LDT_endrun
+          endif
+       enddo
+       ! Set units and full names:
+       do n = 1, LDT_rc%nnest
+          LDT_climate_struc(n)%climppt%units = "mm"
+          call setClimateParmsFullnames( n, "climppt", &
+               LDT_climate_struc(n)%climppt%source )
+       enddo
+    endif
+
+    if ( LDT_climate_struc(1)%climtmin%selectOpt == 1 ) then
+       call ESMF_ConfigFindLabel(LDT_config, "TMIN climatology maps:", rc=rc)
+       do n = 1, LDT_rc%nnest
+          call ESMF_ConfigGetAttribute(LDT_config, &
+               LDT_climate_struc(n)%climtmindir, rc=rc)
+          call LDT_verify(rc, 'TMIN climatology maps: not specified')
+       enddo
+    endif
+    if ( LDT_climate_struc(1)%climtmax%selectOpt == 1 ) then
+       call ESMF_ConfigFindLabel(LDT_config, "TMAX climatology maps:", rc=rc)
+       do n = 1, LDT_rc%nnest
+          call ESMF_ConfigGetAttribute(LDT_config, &
+               LDT_climate_struc(n)%climtmaxdir, rc=rc)
+          call LDT_verify(rc, 'TMAX climatology maps: not specified')
+       enddo
+    end if
+
+    if ( climppt_select ) then
+       call ESMF_ConfigFindLabel(LDT_config, &
+            "Climate params spatial transform:", rc=rc)
+       do n = 1, LDT_rc%nnest
+          call ESMF_ConfigGetAttribute(LDT_config, &
+               LDT_climate_struc(n)%clim_gridtransform, &
+               rc=rc)
+          call LDT_verify(rc, &
+               'Climate params spatial transform: option not specified in the config file')
+       enddo
+    end if
+
+
+    !- Allocate fields for both LIS running and forcing domains:
+    do n = 1, LDT_rc%nnest
+
+       !- Precipitation (PPT) Climatology:
+       if ( LDT_climate_struc(n)%climppt%selectOpt > 0 ) then
+          !- LIS run domain:
+          LDT_climate_struc(n)%climppt%vlevels = &
+               LDT_climate_struc(n)%climppt%num_times
+
+          allocate(LDT_climate_struc(n)%climppt%value( &
+               LDT_rc%lnc(n), LDT_rc%lnr(n), &
                LDT_climate_struc(n)%climppt%vlevels))
+
+          !- Forcing domain:
+          if ( LDT_rc%nmetforc > 0 ) then
+             do m = 1, LDT_rc%nmetforc_parms
+                LDT_force_struc(n,m)%climppt%num_times = &
+                     LDT_climate_struc(n)%climppt%num_times
+                LDT_force_struc(n,m)%climppt%vlevels = &
+                     LDT_climate_struc(n)%climppt%num_times
+
+                allocate(LDT_force_struc(n,m)%climppt%value( &
+                     LDT_rc%met_nc(m), LDT_rc%met_nr(m), &
+                     LDT_force_struc(n,m)%climppt%vlevels))
+             end do
+          end if
+          if ( LDT_climate_struc(n)%output_climppt_ratio > 0) then
+             allocate(LDT_climate_struc(n)%climppt2%value( &
+                  LDT_rc%lnc(n), LDT_rc%lnr(n), &
+                  LDT_climate_struc(n)%climppt%vlevels))
           end if
        endif
 
 #if 0
-    !- Max. Temperature Climatology:
-       if( LDT_climate_struc(n)%climtmax%selectOpt > 0 ) then 
-       !- LIS run domain:
-          LDT_climate_struc(n)%climtmax%vlevels = LDT_climate_struc(n)%climtmax%num_times
-          LDT_climate_struc(n)%climtmax%num_times = LDT_climate_struc(n)%climtmax%num_times
-          allocate(LDT_climate_struc(n)%climtmax%value(&
-               LDT_rc%lnc(n),LDT_rc%lnr(n),&
+       !- Max. Temperature Climatology:
+       if ( LDT_climate_struc(n)%climtmax%selectOpt > 0 ) then
+          !- LIS run domain:
+          LDT_climate_struc(n)%climtmax%vlevels = &
+               LDT_climate_struc(n)%climtmax%num_times
+          LDT_climate_struc(n)%climtmax%num_times = &
+               LDT_climate_struc(n)%climtmax%num_times
+          allocate(LDT_climate_struc(n)%climtmax%value( &
+               LDT_rc%lnc(n), LDT_rc%lnr(n), &
                LDT_climate_struc(n)%climtmax%vlevels))
 
-       !- Forcing domain:
-          if( LDT_rc%nmetforc > 0 ) then
+          !- Forcing domain:
+          if ( LDT_rc%nmetforc > 0 ) then
             do m = 1, LDT_rc%nmetforc_parms
-               LDT_force_struc(n,m)%climtmax%num_times = LDT_climate_struc(n)%climtmax%num_times
-               LDT_force_struc(n,m)%climtmax%vlevels = LDT_climate_struc(n)%climtmax%num_times
-               allocate(LDT_force_struc(n,m)%climtmax%value(&
-                   LDT_rc%met_nc(m), LDT_rc%met_nr(m),&
-                   LDT_force_struc(n,m)%climtmax%vlevels))       
+               LDT_force_struc(n,m)%climtmax%num_times = &
+                    LDT_climate_struc(n)%climtmax%num_times
+               LDT_force_struc(n,m)%climtmax%vlevels = &
+                    LDT_climate_struc(n)%climtmax%num_times
+               allocate(LDT_force_struc(n,m)%climtmax%value( &
+                   LDT_rc%met_nc(m), LDT_rc%met_nr(m), &
+                   LDT_force_struc(n,m)%climtmax%vlevels))
             end do
-          end if
-       endif
+         end if
+      endif
 #endif
 
 #if 0
-    !- Min. Temperature Climatology:
-       if( LDT_climate_struc(n)%climtmin%selectOpt > 0 ) then 
-       !- LIS run domain:
-          LDT_climate_struc(n)%climtmin%vlevels = LDT_climate_struc(n)%climtmin%num_times
-          LDT_climate_struc(n)%climtmin%num_times = LDT_climate_struc(n)%climtmin%num_times
-          allocate(LDT_climate_struc(n)%climtmin%value(&
-               LDT_rc%lnc(n),LDT_rc%lnr(n),&
+      !- Min. Temperature Climatology:
+      if ( LDT_climate_struc(n)%climtmin%selectOpt > 0 ) then
+         !- LIS run domain:
+         LDT_climate_struc(n)%climtmin%vlevels = &
+              LDT_climate_struc(n)%climtmin%num_times
+         LDT_climate_struc(n)%climtmin%num_times = &
+              LDT_climate_struc(n)%climtmin%num_times
+         allocate(LDT_climate_struc(n)%climtmin%value( &
+               LDT_rc%lnc(n), LDT_rc%lnr(n), &
                LDT_climate_struc(n)%climtmin%vlevels))
 
-       !- Forcing domain:
-          if( LDT_rc%nmetforc > 0 ) then
-            do m = 1, LDT_rc%nmetforc_parms
-               LDT_force_struc(n,m)%climtmin%num_times = LDT_climate_struc(n)%climtmin%num_times
-               LDT_force_struc(n,m)%climtmin%vlevels   = LDT_climate_struc(n)%climtmin%num_times
-               allocate(LDT_force_struc(n,m)%climtmin%value(&
+         !- Forcing domain:
+          if ( LDT_rc%nmetforc > 0 ) then
+             do m = 1, LDT_rc%nmetforc_parms
+                LDT_force_struc(n,m)%climtmin%num_times = &
+                     LDT_climate_struc(n)%climtmin%num_times
+                LDT_force_struc(n,m)%climtmin%vlevels = &
+                     LDT_climate_struc(n)%climtmin%num_times
+                allocate(LDT_force_struc(n,m)%climtmin%value( &
                    LDT_rc%met_nc(m), LDT_rc%met_nr(m), &
-                   LDT_force_struc(n,m)%climtmin%vlevels))       
-            end do
+                   LDT_force_struc(n,m)%climtmin%vlevels))
+             end do
           end if
        endif  ! End tmin check
 #endif
 
     enddo  ! end nest loop
 
- !- Read in data fields:
-    do n=1,LDT_rc%nnest
+    !- Read in data fields:
+    do n = 1, LDT_rc%nnest
 
-    !- PPT Climatology files:
-       if( climppt_select ) then 
+       !- PPT Climatology files:
+       if( climppt_select ) then
 
-!          call LDT_gridOptChecks( n, "Climate PPT", &
-!               LDT_climate_struc(n)%clim_gridtransform, &
-!               LDT_climate_struc(n)%clim_proj, &
-!               clim_gridDesc(n,9) )
+          !          call LDT_gridOptChecks( n, "Climate PPT", &
+          !               LDT_climate_struc(n)%clim_gridtransform, &
+          !               LDT_climate_struc(n)%clim_proj, &
+          !               clim_gridDesc(n,9) )
 
           call LDT_climateOptChecks( "Climate PPT", &
                LDT_climate_struc(n)%clim_gridtransform )
-          
-       !- Monthly (interval) files:
-          if( LDT_climate_struc(n)%climpptInterval == "monthly" ) then  
+
+          !- Monthly (interval) files:
+          if ( LDT_climate_struc(n)%climpptInterval == "monthly" ) then
              do k = 1, LDT_climate_struc(n)%climppt%vlevels  ! months
                 select case( trim(LDT_climate_struc(n)%climppt%source) )
-                  case( "PRISM" ) 
-                    LDT_climate_struc(n)%climpptfile = &
+                case( "PRISM" )
+                   LDT_climate_struc(n)%climpptfile = &
                         trim(LDT_climate_struc(n)%climpptdir)//'.'//&
                         trim(months(k))//'.txt'
-                  case( "WORLDCLIM" ) 
-                    LDT_climate_struc(n)%climpptfile = &
+                case( "WORLDCLIM" )
+                   LDT_climate_struc(n)%climpptfile = &
                         trim(LDT_climate_struc(n)%climpptdir)//&
                         trim(mon2d(k))
-                  case default
-                    write(LDT_logunit,*) "[ERR] PPT Climatology Source Not Recognized"
-                    write(LDT_logunit,*) trim(LDT_climate_struc(n)%climppt%source)
+                case ( "CHELSAV21" )
+                   LDT_climate_struc(n)%climpptfile = &
+                        trim(LDT_climate_struc(n)%climpptdir)
+                   write(LDT_climate_struc(n)%climpptimonth,'(I)') mon2d(k)
+                case default
+                   write(LDT_logunit,*) &
+                        "[ERR] PPT Climatology Source Not Recognized"
+                   write(LDT_logunit,*) &
+                        trim(LDT_climate_struc(n)%climppt%source)
                     write(LDT_logunit,*) " Program stopping ..."
-                    call LDT_endrun    
-                end select
-               if (LDT_climate_struc(n)%output_climppt_ratio>0) & 
-                    LDT_climate_struc(n)%climpptfile2 = &
-                        trim(LDT_climate_struc(n)%climpptdir2)//'.'//&
-                        trim(months(k))//'.txt'
+                    call LDT_endrun
+                 end select
+                 if (LDT_climate_struc(n)%output_climppt_ratio > 0) &
+                      LDT_climate_struc(n)%climpptfile2 = &
+                      trim(LDT_climate_struc(n)%climpptdir2)//'.'//&
+                      trim(months(k))//'.txt'
 
-             !- Read monthly climatology files:
-                write(LDT_logunit,*) "Reading "//trim(LDT_climate_struc(n)%climpptfile)
+                 !- Read monthly climatology files:
+                 write(LDT_logunit,*) &
+                      "Reading "//trim(LDT_climate_struc(n)%climpptfile)
 
-             !- For LIS Run domain:
-                call readclimppt( trim(LDT_climate_struc(n)%climppt%source)//char(0),&
-                     n, LDT_rc%lnc(n), LDT_rc%lnr(n), LDT_rc%gridDesc(n,:), &
-                     LDT_climate_struc(n)%climppt%value(:,:,k) )
+                 !- For LIS Run domain:
+                 call readclimppt( &
+                      trim(LDT_climate_struc(n)%climppt%source)//char(0), &
+                      n, LDT_rc%lnc(n), LDT_rc%lnr(n), LDT_rc%gridDesc(n,:), &
+                      LDT_climate_struc(n)%climppt%value(:,:,k) )
 
-                  !if the second climatology file exists, calculuate the ratios of the two
-                   if (LDT_climate_struc(n)%output_climppt_ratio>0) then
+                 !if the second climatology file exists, calculuate the ratios of the two
+                 if (LDT_climate_struc(n)%output_climppt_ratio > 0) then
 
-                       !- Read NLDAS PPT climatology for LIS Run domain:
-                      write(LDT_logunit,*) "Reading "//trim(LDT_climate_struc(n)%climpptfile2)
-                      call read_NLDAS_climppt(n, LDT_rc%lnc(n), LDT_rc%lnr(n), LDT_rc%gridDesc(n,:), &
-                           LDT_climate_struc(n)%climppt2%value(:,:,k))
-                      !calculate the ratio
-                        do ir =1,LDT_rc%lnr(n) 
-                           do ic=1,LDT_rc%lnc(n)
-                             if (LDT_climate_struc(n)%climppt%value(ic,ir,k).ne.LDT_rc%udef .and. &
-                                     LDT_climate_struc(n)%climppt2%value(ic,ir,k).ne.LDT_rc%udef) then
-                                LDT_climate_struc(n)%climppt%value(ic,ir,k) = LDT_climate_struc(n)%climppt%value(ic,ir,k)/ &
-                                                    LDT_climate_struc(n)%climppt2%value(ic,ir,k)
-                             else
-                                LDT_climate_struc(n)%climppt%value(ic,ir,k)=1.0
-                             end if
-                           end do
-                        end do
-                   end if
+                    !- Read NLDAS PPT climatology for LIS Run domain:
+                    write(LDT_logunit,*) &
+                         "Reading "//trim(LDT_climate_struc(n)%climpptfile2)
+                    call read_NLDAS_climppt(n, LDT_rc%lnc(n), LDT_rc%lnr(n), &
+                         LDT_rc%gridDesc(n,:), &
+                         LDT_climate_struc(n)%climppt2%value(:,:,k))
+                    !calculate the ratio
+                    do ir = 1, LDT_rc%lnr(n)
+                       do ic = 1, LDT_rc%lnc(n)
+                          if (LDT_climate_struc(n)%climppt%value(ic,ir,k).ne.LDT_rc%udef .and. &
+                               LDT_climate_struc(n)%climppt2%value(ic,ir,k).ne.LDT_rc%udef) then
+                             LDT_climate_struc(n)%climppt%value(ic,ir,k) = LDT_climate_struc(n)%climppt%value(ic,ir,k)/ &
+                                  LDT_climate_struc(n)%climppt2%value(ic,ir,k)
+                          else
+                             LDT_climate_struc(n)%climppt%value(ic,ir,k)=1.0
+                          end if
+                       end do
+                    end do
+                 end if
 
-             !- For Forcing domains:
-                if( LDT_rc%nmetforc > 0 ) then
-                  do m = 1, LDT_rc%nmetforc_parms
+                 !- For Forcing domains:
+                if ( LDT_rc%nmetforc > 0 ) then
+                   do m = 1, LDT_rc%nmetforc_parms
 
-                  !- Transfer common parameter attribute entries:
-                  !  from LIS-run domain to MET-run domains.
-                  ! ( input_parmattribs -> output_parmattribs ) 
-                     call populate_param_attribs( &
-!                          "PPTCLIM_"//trim(LDT_rc%metforc_parms(m)),   &
-                          "PPTCLIM_"//trim(LDT_rc%metforc_parmsrc(m)),   &
+                      !- Transfer common parameter attribute entries:
+                      !  from LIS-run domain to MET-run domains.
+                      ! ( input_parmattribs -> output_parmattribs )
+                      call populate_param_attribs( &
+                           "PPTCLIM_"//trim(LDT_rc%metforc_parmsrc(m)),   &
                            LDT_climate_struc(n)%climppt%standard_name//&
-!                               " for "//trim(LDT_rc%metforc_parms(m)), "mm", &
-                               " for "//trim(LDT_rc%metforc_parmsrc(m)), "mm", &
+                           " for "//trim(LDT_rc%metforc_parmsrc(m)), "mm", &
                            LDT_climate_struc(n)%climppt,               &
                            LDT_force_struc(n,m)%climppt )
 
 
-                     write(LDT_logunit,*) "Processing "//trim(LDT_climate_struc(n)%climpptfile)
-                     write(LDT_logunit,*) " for metforcing grid: "//trim(LDT_rc%metforc_parms(m))
+                      write(LDT_logunit,*) &
+                           "Processing "//trim(LDT_climate_struc(n)%climpptfile)
+                      write(LDT_logunit,*) &
+                           " for metforcing grid: "//trim(LDT_rc%metforc_parms(m))
 
-                     call readclimppt( trim(LDT_climate_struc(n)%climppt%source)//char(0),&
-                          n, LDT_rc%met_nc(m), LDT_rc%met_nr(m), LDT_rc%met_gridDesc(m,:), &
-                          LDT_force_struc(n,m)%climppt%value(:,:,k) )
-                  end do
+                      call readclimppt( &
+                           trim(LDT_climate_struc(n)%climppt%source)//char(0),&
+                           n, LDT_rc%met_nc(m), LDT_rc%met_nr(m), &
+                           LDT_rc%met_gridDesc(m,:), &
+                           LDT_force_struc(n,m)%climppt%value(:,:,k) )
+                   end do
                 end if
-                write(LDT_logunit,*) "Done reading "//trim(LDT_climate_struc(n)%climpptfile)
+                write(LDT_logunit,*) &
+                     "Done reading "//trim(LDT_climate_struc(n)%climpptfile)
              enddo
-             
+
           endif  ! End monthly check
        endif     ! End ClimPPT check
 
-    !- Min Temperature Climatology Files:
-!       if( LDT_climate_struc(n)%climtmin%selectOpt == 1 ) then 
-!       endif
-    !- Max Temperature Climatology Files:
-!       if( LDT_climate_struc(n)%climtmax%selectOpt == 1 ) then 
-!       endif
+       !- Min Temperature Climatology Files:
+       !       if( LDT_climate_struc(n)%climtmin%selectOpt == 1 ) then
+       !       endif
+       !- Max Temperature Climatology Files:
+       !       if( LDT_climate_struc(n)%climtmax%selectOpt == 1 ) then
+       !       endif
 
     enddo
 
   end subroutine LDT_climateparms_init
 
-  subroutine LDT_climateparms_writeHeader(n,ftn,dimID,met_dimID,monthID)
+  subroutine LDT_climateparms_writeHeader(n, ftn, dimID, met_dimID, monthID)
 
-    integer     :: n 
+    integer     :: n
     integer     :: ftn
     integer     :: dimID(3)
     integer     :: met_dimID(LDT_rc%nmetforc_parms,3)
@@ -465,59 +506,62 @@ contains
     integer     :: t_dimID(3)
 
 ! - Climatological PPT Fields:
-    if( LDT_climate_struc(n)%climppt%selectOpt.gt.0 ) then 
+    if ( LDT_climate_struc(n)%climppt%selectOpt .gt. 0 ) then
 
-       if( LDT_climate_struc(n)%climpptInterval.eq."monthly" ) then  ! monthly
-          t_dimID(3) = monthID       
+       if ( LDT_climate_struc(n)%climpptInterval .eq. "monthly" ) then  ! monthly
+          t_dimID(3) = monthID
        endif
+
     !- LIS run domain:
        t_dimID(1) = dimID(1)
        t_dimID(2) = dimID(2)
-       call LDT_writeNETCDFdataHeader(n,ftn,t_dimID,&
+       call LDT_writeNETCDFdataHeader(n, ftn, t_dimID,&
             LDT_climate_struc(n)%climppt)
 
     !- Forcing domain:
-       if( LDT_rc%nmetforc > 0 .and. LDT_climate_struc(n)%output_climppt_ratio==0) then
+       if ( LDT_rc%nmetforc > 0 .and. &
+            LDT_climate_struc(n)%output_climppt_ratio == 0 ) then
          do m = 1, LDT_rc%nmetforc_parms
             t_dimID(1) = met_dimID(m,1)
             t_dimID(2) = met_dimID(m,2)
-            call LDT_writeNETCDFdataHeader(n,ftn,t_dimID,&
+            call LDT_writeNETCDFdataHeader(n, ftn, t_dimID, &
                  LDT_force_struc(n,m)%climppt)
          end do
        end if
     endif
 
-! - Climatological TMIN Fields:
-!          call LDT_writeNETCDFdataHeader(n,ftn,t_dimID,&
-!               LDT_climate_struc(n)%climtmin)
+    ! - Climatological TMIN Fields:
+    !          call LDT_writeNETCDFdataHeader(n, ftn, t_dimID,&
+    !               LDT_climate_struc(n)%climtmin)
 
 
-!          call LDT_writeNETCDFdataHeader(n,ftn,t_dimID,&
-!               LDT_climate_struc(n)%climtmax)
+    !          call LDT_writeNETCDFdataHeader(n, ftn, t_dimID,&
+    !               LDT_climate_struc(n)%climtmax)
 
 
   end subroutine LDT_climateparms_writeHeader
 
-  subroutine LDT_climateparms_writeData(n,ftn)
+  subroutine LDT_climateparms_writeData(n, ftn)
 
-    integer  :: n 
+    integer  :: n
     integer  :: ftn
     integer  :: m
 
-    if( LDT_climate_struc(n)%climppt%selectOpt.gt.0 ) then 
+    if( LDT_climate_struc(n)%climppt%selectOpt.gt.0 ) then
        call LDT_writeNETCDFdata(n, ftn, LDT_climate_struc(n)%climppt)
 
-    !- Forcing domain:
-       if( LDT_rc%nmetforc > 0 .and. LDT_climate_struc(n)%output_climppt_ratio==0 ) then
+       !- Forcing domain:
+       if ( LDT_rc%nmetforc > 0 .and. &
+            LDT_climate_struc(n)%output_climppt_ratio == 0 ) then
           do m = 1, LDT_rc%nmetforc_parms
-            call LDT_writeNETCDFdata( n, ftn, LDT_force_struc(n,m)%climppt, &
-                 LDT_rc%met_nc(m), LDT_rc%met_nr(m) )
-         end do
+             call LDT_writeNETCDFdata(n, ftn, LDT_force_struc(n,m)%climppt, &
+                  LDT_rc%met_nc(m), LDT_rc%met_nr(m) )
+          end do
        end if
     endif
 
-!       call LDT_writeNETCDFdata(n,ftn,LDT_force_struc(n,m)%climtmin)
-!       call LDT_writeNETCDFdata(n,ftn,LDT_force_struc(n,m)%climtmax)
+    !       call LDT_writeNETCDFdata(n,ftn,LDT_force_struc(n,m)%climtmin)
+    !       call LDT_writeNETCDFdata(n,ftn,LDT_force_struc(n,m)%climtmax)
 
   end subroutine LDT_climateparms_writeData
 
