@@ -73,8 +73,7 @@ contains
        gridDesc_out, pcp_out)
 
     ! Imports
-    use LDT_coreMod, only: LDT_rc
-    use LDT_logMod, only: ldt_logunit, LDT_endrun
+    use LDT_climateParmsMod, only: LDT_climate_struc
 
     ! Defaults
     implicit none
@@ -84,10 +83,10 @@ contains
     integer, intent(in) :: ncols_out
     integer, intent(in) :: nrows_out
     real, intent(in) :: gridDesc_out(20)
-    real, allocatable, intent(out) :: pcp_out(ncols_out, nrows_out)
+    real, intent(out) :: pcp_out(ncols_out, nrows_out)
 
     ! Locals
-    class(LDT_CHELSAV21_climppt_t) :: chelsav21
+    type(LDT_CHELSAV21_climppt_t) :: chelsav21
     integer :: imonth
 
     call chelsav21%new(nest, ncols_out, nrows_out, gridDesc_out)
@@ -103,7 +102,6 @@ contains
 
     ! Imports
     use LDT_climateParmsMod, only: LDT_climate_struc
-    use LDT_coreMod, only: LDT_rc
 
     ! Defaults
     implicit none
@@ -135,17 +133,7 @@ contains
     this%gridDesc_native(10) =   0.008333333300000 ! Delta latitude
     this%gridDesc_native(11) =   64 ! Not used
     this%gridDesc_native(20) =  255 ! Indicates E-W ordering of data
-    this%gridDesc_native(30) =    0 ! Lat/lon projection
-    this%gridDesc_native(32) = this%nlon_native ! Number of columns
-    this%gridDesc_native(33) = this%nlon_native ! Number of columns
-    this%gridDesc_native(34) =  -89.99597222215 ! Lower-left latitude
-    this%gridDesc_native(35) = -179.99597222215 ! Lower-left longitude
-    this%gridDesc_native(36) =  128             ! Not used
-    this%gridDesc_native(37) =   83.99569444445001  ! Upper-right latitude
-    this%gridDesc_native(38) =  179.99569444444998  ! Upper-right longitude
-    this%gridDesc_native(39) =    0.008333333300000 ! Delta longitude
-    this%gridDesc_native(40) =    0.008333333300000 ! Delta latitude
-    allocate(this%pcp_native(this%ncols_native, this%nrows_native))
+    allocate(this%pcp_native(this%nlon_native, this%nlat_native))
     this%pcp_native = 0
 
     ! Set up LDT grid
@@ -180,7 +168,7 @@ contains
     this%nrows_out = 0
     this%ncols_out = 0
     this%gridDesc_out = 0
-    deallocate(pcp_out_12mon)
+    deallocate(this%pcp_out)
     this%count = 0
     this%missing_value_native = 0
   end subroutine LDT_CHELSAV21_climppt_delete
@@ -192,6 +180,7 @@ contains
        ncols_out, nrows_out, pcp_out)
 
     ! Imports
+    use LDT_climateParmsMod, only: LDT_climate_struc
     use LDT_coreMod, only: LDT_rc
     use LDT_logMod, only: LDT_logunit, LDT_endrun
     use, intrinsic :: iso_c_binding
@@ -217,14 +206,18 @@ contains
     integer(kind=c_int) :: ierr, xsize, ysize
     logical :: found_inq
     real :: dres, nodata
-    integer, allocatable :: row_strip(:)
+    integer, allocatable :: row_strip(:,:)
     integer, allocatable :: n11(:)
     real, allocatable :: gi1(:)
     logical*1, allocatable :: li1(:)
     real, allocatable :: go1(:)
     logical*1, allocatable :: lo1(:)
+    character(500) :: filename
     integer :: mi, mo
+    integer :: pb_success
     integer :: i, j, ij, iyear, ipass
+
+    external :: upscaleByAveraging_input, upscaleByAveraging
 
     ! Loop through each year for the selected month.  Note: The last year
     ! varies for different months, so this needs to be accounted for.
@@ -263,13 +256,13 @@ contains
           write(ldt_logunit,*)'[ERR] Stopping...'
           call LDT_endrun()
        end if
-       nodata = gdalgetrasternodatavalue(ds, 0)
+       nodata = gdalgetrasternodatavalue(band, pb_success)
        write(ldt_logunit,*)'[INFO] Missing data flag is ', nodata
 
        ! Read each row of the TIFF band, convert to kg m^-2,
        ! and flip the y-axis
-       allocate(row_strip(this%ncols_native))
-       do j = 1, this%nrows_native
+       allocate(row_strip(this%nlon_native,1))
+       do j = 1, this%nlat_native
           ierr = gdalrasterio_f(band, GF_READ, 0, j-1, row_strip)
           if (ierr .ne. 0) then
              write(ldt_logunit,*)'[ERR] Failed to read data from ', &
@@ -277,14 +270,14 @@ contains
              write(ldt_logunit,*)'[ERR] Stopping...'
              call LDT_endrun()
           end if
-          do i = 1, this%ncols_native
-             if (row_strip(i) == nodata) then
-                this%pcp_native(i,this%nrows_native - j + 1) = LDT_rc%udef
+          do i = 1, this%nlat_native
+             if (row_strip(i,1) == nodata) then
+                this%pcp_native(i,this%nlat_native - j + 1) = LDT_rc%udef
              else
-                this%pcp_native(i,this%nrows_native - j + 1) = &
-                     real(row_strip(i)) * 0.01 ! Convert to kg m^-2
+                this%pcp_native(i,this%nlat_native - j + 1) = &
+                     real(row_strip(i,1)) * 0.01 ! Convert to kg m^-2
              end if
-          end if
+          end do
        end do
        deallocate(row_strip)
        call gdalclose(ds)
@@ -297,7 +290,7 @@ contains
        end do
 
        ! Interpolate to LDT grid
-       mi = this%ncols_native * this%nrows_native
+       mi = this%nlon_native * this%nlat_native
        mo = this%ncols_out * this%nrows_out
        select case (LDT_climate_struc(nest)%clim_gridtransform)
        case ("average")
@@ -316,11 +309,11 @@ contains
           li1 = .false.
           go1 = 0
           lo1 = .false.
-          do j = 1, this%nrows_native
-             do i = 1, this%cols_native
-                ij = i + (j-1)*this%ncols_native
+          do j = 1, this%nlat_native
+             do i = 1, this%nlon_native
+                ij = i + (j-1)*this%nlon_native
                 gi1(ij) = this%pcp_native(i,j)
-                if (g1(ij) .ne. LDT_rc%udef) then
+                if (gi1(ij) .ne. LDT_rc%udef) then
                    li1(ij) = .true.
                 end if
              end do
@@ -372,7 +365,7 @@ contains
           pcp_out(i,j) = this%pcp_out(i,j)
        end do
     end do
-  end subroutine LDT_CHELSAV21_climppt_process_month
+  end subroutine LDT_CHELSAV21_climppt_process
 
 #else
 
@@ -392,7 +385,7 @@ contains
     write(ldt_logunit,*)'[ERR] Recompile LDT with GDAL support and try again.'
     write(ldt_logunit,*)'[ERR] Stopping...'
     call LDT_endrun()
-  end subroutine LDT_CHELSAV21_climppt_process_month
+  end subroutine LDT_CHELSAV21_climppt_process
 #endif
 
   subroutine create_filename(this, imonth, iyear, filename)

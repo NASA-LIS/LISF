@@ -174,11 +174,14 @@ contains
                  'sep','oct','nov','dec'/
     data mon2d /'1','2','3','4','5','6','7','8','9','10','11','12'/
 
-    type(LDT_fillopts) :: climppt
     logical            :: climppt_select
     logical            :: climtmin_select
     logical            :: climtmax_select
 
+    external :: setClimateParmsFullnames
+    external :: readclimppt
+    external :: read_nldas_climppt
+    
 ! __________________________________________________________________
 
 

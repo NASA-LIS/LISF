@@ -77,7 +77,11 @@ contains
     use Mosaic_parmsMod
     use RUC_parmsMod
     use JULES50_parmsMod
-    use Crocus_parmsMod    
+    use Crocus_parmsMod
+
+    external :: registerlsmparamprocinit
+    external :: registerlsmparamprocwriteheader
+    external :: registerlsmparamprocwritedata
 
   ! Noah 2.7.1 LSM:
     call registerlsmparamprocinit(trim(LDT_noah271Id)//char(0),&
@@ -262,6 +266,10 @@ contains
 
     use HYMAP_parmsMod   ! Set for both HYMAP 1 and 2
 
+    external :: registerroutingparamprocinit
+    external :: registerroutingparamprocwriteheader
+    external :: registerroutingparamprocwritedata
+
     ! HYMAP - version 1
     call registerroutingparamprocinit(trim(LDT_HYMAPId)//char(0),&
          HYMAPParms_init)
@@ -290,6 +298,10 @@ contains
   subroutine LDT_lakeparam_plugin
 !EOP
     use FLAKE_parmsMod
+
+    external :: registerlakeparamprocinit
+    external :: registerlakeparamprocwriteheader
+    external :: registerlakeparamprocwritedata
 
     call registerlakeparamprocinit(trim(LDT_flakeId)//char(0),&
          FLAKEparms_init)
@@ -394,6 +406,12 @@ contains
 
     external read_ALMIPII_droot
 !    external read_UMDCROPMAP_rootdepth
+
+    external :: registerreadlc
+    external :: registerreadregmask
+    external :: registerreadcroptype
+    external :: registerreadrootdepth
+
 ! _______________________________________
 
 ! - Landcover sources:
@@ -547,6 +565,11 @@ contains
     external read_MERIT1K_slope
     external read_MERIT1K_aspect
 
+    external :: registerreadelev
+    external :: registerreadslope
+    external :: registerreadaspect
+    external :: registerreadcurv
+
  !- GTOPO30:
     call registerreadelev(trim(LDT_gtopoLISId)//char(0),read_GTOPO30_elev)
     call registerreadelev(trim(LDT_gtopoGFSId)//char(0),read_GTOPO30_GFS_elev)
@@ -693,6 +716,15 @@ contains
     external set_ISRIC_texture_attribs
     external read_ISRIC_texture
     external read_ISRIC_soilfractions
+
+    external :: registerreadsoilfrac
+    external :: registerreadsoiltexture
+    external :: registerreadcolor
+    external :: registerreadporosity
+    external :: registersettextureattribs
+    external :: registersethsgattribs
+    external :: registerreadhsg
+    external :: registerreadsoildepth
 
 !== FAO (global; original LIS-processed):
     call registerreadsoilfrac(trim(LDT_faoSoilId)//char(0),read_FAO_soilfractions)
@@ -859,6 +891,12 @@ contains
     external read_CLSMF25_laimax,read_CLSMF25_laimin
     external read_CONSTANT_lai, read_CONSTANT_sai
 
+    external :: registersetlaiattribs
+    external :: registerreadlai
+    external :: registerreadlaimax
+    external :: registerreadlaimin
+    external :: registerreadsai
+    
   ! AVHRR:
     call registersetlaiattribs(trim(LDT_avhrrlaiId)//char(0),&
          set_AVHRR_lai_attribs)
@@ -940,6 +978,10 @@ contains
 
     external read_USGSNative_irriggwratio
 
+    external :: registerreadirrigfrac
+    external :: registerreadirrigtype
+    external :: registerreadirriggwratio
+
     call registerreadirrigfrac(trim(LDT_modOGirrigId)//char(0),&
          read_OzdoganGutman_irrigfrac)
 
@@ -1013,6 +1055,10 @@ contains
     external read_CLSMF25_gfracmax,read_CLSMF25_gfracmin
     external read_SACHTET356_gfrac
     external read_CONSTANT_gfrac, read_CONSTANT_gfracmax, read_CONSTANT_gfracmin
+
+    external :: registerreadgfrac
+    external :: registerreadshdmax
+    external :: registerreadshdmin
 
 ! !USES:
  !- Noah LSM:
@@ -1114,6 +1160,9 @@ contains
     external read_CONSTANT_albedo
     external read_CONSTANT_mxsnoalb
 
+    external :: registerreadalbedo
+    external :: registerreadmxsnoalb
+    
  !- Monthly albedo climatologies:
     call registerreadalbedo(trim(LDT_albedoClimLISId)//char(0),&
          read_Briegleb_albedo)
@@ -1184,6 +1233,8 @@ contains
     external read_WorldClim_climppt
     external read_NLDAS_climppt
 
+    external :: registerreadclimppt
+    
 ! !USES:
 !- Precipitation downscaling:
     call registerreadclimppt(trim(LDT_prismpptId)//char(0),&
@@ -1239,6 +1290,8 @@ contains
     external read_wrfak_elev
 !    external read_geos5_elev
 
+    external :: registerreadforcelev
+    
 ! !USES:
 ! - Read forcing parameter: Elevation/terrain height
 
@@ -1296,6 +1349,8 @@ contains
     external read_GLIMS_glaciermask
     external read_GLIMS_glacierfraction
 
+    external :: registerreadglaciermask
+    external :: registerreadglacierfrac
 
 !   In the LDT code, the above calls are typically invoked in the
 !   following manner.
