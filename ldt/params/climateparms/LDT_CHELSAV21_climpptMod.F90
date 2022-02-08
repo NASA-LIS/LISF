@@ -220,7 +220,7 @@ contains
     external :: upscaleByAveraging_input, upscaleByAveraging
 
     ! Loop through each year for the selected month.  Note: The last year
-    ! varies for different months, so this needs to be accounted for.
+    ! varies for different months, and this is accounted for below.
     ipass = 0
     do iyear = 1979, 2019 ! Years in climatology
        call create_filename(this, imonth, iyear, filename)
@@ -270,7 +270,7 @@ contains
              write(ldt_logunit,*)'[ERR] Stopping...'
              call LDT_endrun()
           end if
-          do i = 1, this%nlat_native
+          do i = 1, this%nlon_native
              if (row_strip(i,1) == nodata) then
                 this%pcp_native(i,this%nlat_native - j + 1) = LDT_rc%udef
              else
