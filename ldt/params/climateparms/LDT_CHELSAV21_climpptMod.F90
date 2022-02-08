@@ -223,7 +223,7 @@ contains
     ! varies for different months, so this needs to be accounted for.
     ipass = 0
     do iyear = 1979, 2019 ! Years in climatology
-       call create_filename(this, iyear, imonth, filename)
+       call create_filename(this, imonth, iyear, filename)
        inquire(file=trim(filename), exist=found_inq)
        if (.not. found_inq) then
           if (iyear .gt. 2018 .and. imonth .gt. 6) exit
@@ -395,7 +395,8 @@ contains
     integer, intent(in) :: iyear
     character(500), intent(out) :: filename
     write(filename,'(A,A,I2.2,A,I4.4,A)') &
-         this%topdir_native, '/CHELSA_pr_', imonth, '_', iyear, '_V.2.1.tif'
+         trim(this%topdir_native), &
+         '/CHELSA_pr_', imonth, '_', iyear, '_V.2.1.tif'
   end subroutine create_filename
 
 end module LDT_CHELSAV21_climpptMod
