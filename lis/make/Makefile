@@ -158,6 +158,8 @@ version.F90:
 ifeq ($(LIS_ARCH),cray_cray)
 model_interface_mod.o: model_interface_mod.F90
 	$(FC) $(FFLAGS) -O0 $(HEADER_DIRS) $<
+soil_htc_jls_mod.o: soil_htc_jls_mod.F90
+	$(FC) $(FFLAGS) -O0 $(HEADER_DIRS) $<
 endif
 
 .PHONY: help
