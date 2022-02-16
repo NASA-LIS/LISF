@@ -168,8 +168,9 @@ subroutine get_COAMPSout(n, findex)
         if(ferror.ge.1) COAMPSout_struc(n)%COAMPSouttime1=time1
         call LIS_tick(time1,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
         if(try.gt.11)then
-           write(*,*)'error: COAMPSout data gap exceeds 10 days on file 1'
-           stop
+           write(LIS_logunit,*)'[ERR] COAMPSout data gap exceeds 10 days on file 1'
+           write(LIS_logunit,*)'[ERR] Program stopping'
+           call LIS_endrun()
         endif
      enddo
 !=== end of data search
@@ -198,8 +199,9 @@ subroutine get_COAMPSout(n, findex)
         endif
         call LIS_tick(time2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
         if(try.gt.11)then
-           write(*,*)'error: COAMPSout data gap exceeds 10 days on file 2'
-           stop
+           write(LIS_logunit,*)'[ERR] COAMPSout data gap exceeds 10 days on file 2'
+           write(LIS_logunit,*)'[ERR] Program stopping...'
+           call LIS_endrun()
         endif
      enddo
      !=== end of data search
