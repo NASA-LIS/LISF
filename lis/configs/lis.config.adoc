@@ -5739,7 +5739,7 @@ the COAMPS forcing files.
 `COAMPS nest id:` specifies the nest id
 COAMPS forcing usually provides forcing for 2 nests. The first nest
 is 15km resolution and the second nest is a smaller sub-domain with 
-a resolution of 5km.
+a resolution of 5km. Acceptable values are:
 
 |====
 |Value | Description
