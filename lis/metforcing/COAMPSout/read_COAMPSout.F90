@@ -37,7 +37,7 @@ subroutine read_COAMPSout(n, findex, order, fname, ferror)
 !
 ! !DESCRIPTION:
 !  For the given time, reads parameters from
-!  WRF output files, transforms into 9 LIS forcing 
+!  COAMPS output files, transforms into 9 LIS forcing 
 !  parameters and interpolates to the LIS domain.
 !
 !  The arguments are: 
@@ -50,7 +50,7 @@ subroutine read_COAMPSout(n, findex, order, fname, ferror)
 !    flag indicating which data to be read (order=1, read for the previous 
 !    1hr bookend, order=2, read for the next 1hr bookend)
 !  \item[fname]
-!    name of the WRF output file
+!    name of the COAMPS output file
 !  \item[ferror]
 !    flag to indicate success of the call (=1 indicates success)
 !  \end{description}
