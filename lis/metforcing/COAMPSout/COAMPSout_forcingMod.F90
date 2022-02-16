@@ -13,15 +13,15 @@ module COAMPSout_forcingMod
 ! 
 ! !DESCRIPTION: 
 !  This module contains variables and data structures that are used
-!  for the implementation of the forcing data extracted from WRF output
-!  files.  Here WRF output files are consider input data.
+!  for the implementation of the forcing data extracted from COAMPS output
+!  files.  Here COAMPS output files are consider input data.
 !
 !  The implementation in LIS has the derived data type {\tt COAMPSout\_struc} that
 !  includes the variables that specify the runtime options.
 !  They are described below: 
 !  \begin{description}
 !  \item[nest\_id]
-!    Value of the WRF nest
+!    Value of the COAMPS nest
 !  \item[COAMPSoutdir]
 !    Directory containing the input data
 !  \item[ts]
@@ -105,7 +105,7 @@ contains
 !  The routines invoked are: 
 !  \begin{description}
 !   \item[readcrd\_COAMPSout](\ref{readcrd_COAMPSout}) \newline
-!     reads the runtime options specified for WRF output data
+!     reads the runtime options specified for COAMPS output data
 !  \end{description}
 !EOP
     
