@@ -68,17 +68,12 @@
 
   select case( fcsttype )
   
-    case( "GEOS5" )
-  ! If forecast dataset of origin is:  GEOS-5 ...
+    case( "GEOS5", "CFSv2" )
+  ! If forecast dataset of origin is:  GEOS-5, or CFSv2 ...
   
-     !- convert 2-digit month to 3-char month:
-     ! LIS function somewhere to do that or do  somewhere here??
+     !- LIS function to convert 2-digit month to 3-char month:
      ! 
       call LIS_mon3char( fmo, fmo3 )
-
-     ! What to do about the ensemble number ??  Call this routine
-     !  for every individual member??  Or loop over and generate 
-     !  a number of files to be passed back to main routine??
 
       filename = trim(directory)//"/"//fyr//"/"//fmo3//"01/ens"//&
           trim(fensnum)//"/PRECTOT."//lyr//lmo//".nc4"
