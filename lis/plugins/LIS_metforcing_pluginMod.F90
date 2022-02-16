@@ -262,6 +262,8 @@ subroutine LIS_metforcing_plugin
 
 #if ( defined MF_COAMPSOUT )
    use COAMPSout_forcingMod
+#endif
+
 #if ( defined MF_WRFOUTV2 )
    use WRFoutv2_forcingMod
 #endif
@@ -570,6 +572,8 @@ subroutine LIS_metforcing_plugin
    external timeinterp_COAMPSout
    external reset_COAMPSout
    external finalize_COAMPSout
+#endif
+
 #if ( defined MF_WRFOUTV2 )
    external get_WRFoutv2
    external timeinterp_WRFoutv2
@@ -1047,6 +1051,8 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_COAMPSout)
    call registerfinalmetforc(trim(LIS_COAMPSoutId)//char(0),finalize_COAMPSout)
    call registerresetmetforc(trim(LIS_COAMPSoutId)//char(0),reset_COAMPSout)
+#endif
+
 #if ( defined MF_WRFOUTV2 )
 ! - WRFout-4KM HiRes forcing
    call registerinitmetforc(trim(LIS_WRFoutv2Id)//char(0),init_WRFoutv2)
