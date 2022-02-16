@@ -256,6 +256,8 @@ module LIS_pluginIndices
         "GCOMW AMSR2 L3 soil moisture"
    character*50, public,  parameter :: LIS_GCOMW_AMSR2L3sndobsId = &
         "GCOMW AMSR2 L3 snow depth"
+   character*50, public,  parameter :: LIS_SNODASobsId = &
+        "SNODAS"
    character*50, public,  parameter :: LIS_SMOSL2smobsId         = &
         "SMOS L2 soil moisture"
    character*50, public,  parameter :: LIS_pildassmobsId         = &

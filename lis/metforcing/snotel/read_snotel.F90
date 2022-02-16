@@ -89,7 +89,7 @@ subroutine read_snotel(n,ftn,findex,order)
 
      inquire(file=snotel_filename,exist=file_exists)
      if(file_exists) then 
-        write(LIS_logunit,*) 'Reading SNOTEL file ',snotel_filename
+        write(LIS_logunit,*) 'Reading SNOTEL file ',trim(snotel_filename)
         open(ftn,file=snotel_filename,form='formatted',status='old')
         read(ftn,*) ! skip the header line
 

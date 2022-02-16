@@ -392,6 +392,30 @@ contains
              enddo
           endif
 
+          if(vname.eq."T_ULIMIT") then 
+             do t=1,NT 
+                vardata(t) = NoahMP401_struc(n)%noahmp401(t)%param%t_ulimit
+             enddo
+          endif
+
+          if(vname.eq."T_LLIMIT") then 
+             do t=1,NT 
+                vardata(t) = NoahMP401_struc(n)%noahmp401(t)%param%t_llimit
+             enddo
+          endif
+
+          if(vname.eq."T_MLIMIT") then 
+             do t=1,NT 
+                vardata(t) = NoahMP401_struc(n)%noahmp401(t)%param%t_mlimit
+             enddo
+          endif
+          
+          if(vname.eq."SNOWF_SCALEF") then 
+             do t=1,NT 
+                vardata(t) = NoahMP401_struc(n)%noahmp401(t)%param%snowf_scalef
+             enddo
+          endif
+
           if(vname.eq."RHOL1")  then 
              do t=1,NT 
                 vardata(t) = NoahMP401_struc(n)%noahmp401(t)%param%RHOL(1)

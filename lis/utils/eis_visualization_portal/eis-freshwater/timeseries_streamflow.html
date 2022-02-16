@@ -1,0 +1,451 @@
+
+<html>
+
+
+<head>
+		<link rel="stylesheet" href="css/skel.css" />
+		<link rel="stylesheet" href="css/style.css" />
+		<link rel="stylesheet" href="css/style-xlarge.css" />
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-155979083-3"></script>
+		<script>
+		  window.dataLayer = window.dataLayer || [];
+		  function gtag(){dataLayer.push(arguments);}
+		  gtag('js', new Date());
+
+		  gtag('config', 'UA-155979083-3');
+		</script>
+
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<!-- <script src="https://code.highcharts.com/highcharts.js"></script>-->
+ <script src="https://code.highcharts.com/highcharts-more.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+
+<script>
+    function getParamValue(paramName) {
+        var url = window.location.search.substring(1); //get rid of "?" in querystring
+        var qArray = url.split('&'); //get key-value pairs
+        for (var i = 0; i < qArray.length; i++) {
+            var pArr = qArray[i].split('='); //split key and value
+            if (pArr[0] == paramName)
+                return pArr[1]; //return value
+        }
+    }
+
+</script>
+
+
+<script type="text/javascript">
+ var stnid = getParamValue("stnid");
+ var damname = decodeURI(getParamValue("name"));
+
+ var unit = 'cumecs';
+
+
+ if (stnid == '05270700'){
+ 	var title = 'Mississippi River At St. Cloud'
+	var minor  = 846		
+	var moderate = 1044
+	var major = 1256
+	
+	
+} else if (stnid == '07374000'){
+	var title='Mississippi River At Louisiana'
+	var minor  = 5496		
+	var moderate = 8068
+	var major = 11555
+} else if (stnid == '07020500'){
+	var title='Mississippi River At Chester'
+	var minor  = 11929
+	var moderate = 16657
+	var major = 20799
+} else if (stnid == '07010000'){
+	var title='Mississippi River At St. Louis'
+	var minor  = 14320	
+	var moderate = 17626
+	var major = 21588
+} else {
+	var title = 'Streamflow'
+}
+
+
+
+// Daily streamflow /////////////////
+function retrieve_usgs()
+{
+	dataset = '';
+	loc='usgs'
+	// AJAX in the data file
+    $.ajax({
+        type: "GET",
+        url: "./Datasets/Streamflow/USGS/"+stnid+".txt",
+		async: false,
+        dataType: "text",
+        success: function(data)
+		{
+		  dataset=String(data);
+		}
+        });
+		return dataset;
+}
+
+function retrieve_lisda()
+{
+	dataset = '';
+	loc='lisda'
+	// AJAX in the data file
+    $.ajax({
+        type: "GET",
+        url: "./Datasets/Streamflow/LISDA/streamflow_"+stnid+".txt",
+		async: false,
+        dataType: "text",
+        success: function(data)
+		{
+		  dataset=String(data);
+		}
+        });
+		return dataset;
+}
+
+function retrieve_lisol()
+{
+	dataset = '';
+	loc='lisol'
+	// AJAX in the data file
+    $.ajax({
+        type: "GET",
+        url: "./Datasets/Streamflow/LISOL/streamflow_"+stnid+".txt",
+		async: false,
+        dataType: "text",
+        success: function(data)
+		{
+		  dataset=String(data);
+		}
+        });
+		return dataset;
+}
+
+
+function load()
+{
+ 
+	var usgs_current = [],
+	lisol_current = [],
+	lisda_current = [];
+
+	var d = new Date()
+	current_year = d.getFullYear()
+	
+	var convfactor = 86400000;
+	var numyearsback = 5;
+	last_year_date = d - 365*numyearsback*convfactor;
+
+
+
+	//// current flow ///////////////
+	usgs_current = []
+	usgsflow = retrieve_usgs();
+	lines = usgsflow.split('\n');
+	for (i = 0; i < lines.length-1; i++) {    // ignore header in current files
+		var items = lines[i].split(' ');
+		var dt = new Date(items[0].substring(0,4),items[0].substring(4,6)-1,items[0].substring(6,8)).getTime()
+		var fl = lines[i].split(' ')[lines[i].split(' ').length - 1]
+		usgs_current.push([dt, +fl]);
+	}
+	console.log(usgs_current)
+	
+	lisdaflow = retrieve_lisda();
+	lines = lisdaflow.split('\n');
+	for (i = 0; i < lines.length-1; i++) {
+		var items = lines[i].split(' ');
+		var items_filt = items.filter(function (el) {  return el != "";});
+		if (items_filt[0]=='#'){
+			continue;
+		}
+		else {	
+			lisda_current.push([new Date(items_filt[0]).getTime(), +items_filt[1]]);
+		}
+	}
+
+	lisol_current=[]
+	lisolflow = retrieve_lisol();
+	lines = lisolflow.split('\n');
+	for (i = 0; i < lines.length-1; i++) {
+		var items = lines[i].split(' ');
+		var items_filt = items.filter(function (el) {  return el != "";});
+		if (items_filt[0]=='#'){
+			continue;
+		}
+		else {	
+			lisol_current.push([new Date(items_filt[0]).getTime(), +items_filt[1]]);
+		}
+	}
+
+	Highcharts.setOptions({
+	   global: {
+		  useUTC: false
+	   }
+	});
+
+	var chart = Highcharts.chart('container', {
+	chart: {
+			zoomType: 'xy',
+			panning: true,
+			panKey: 'shift',
+			backgroundColor: 'rgba(0,0,0,0)',
+			plotBackgroundColor:'rgba(0,0,0,0)',
+			plotBorderColor: "#ccccccce",
+			events: {
+				load: function () {
+				  xmin = last_year_date;//(res_current[res_current.length-10][0]);
+				  xmax = lisda_current[lisda_current.length-1][0];
+				  console.log(xmin,xmax);
+				  this.xAxis[0].setExtremes(xmin, xmax)
+				}
+			}
+		},
+	title: {
+	  text: title,
+	  style: {
+         color: '#e4e4e4',
+         fill: '#e4e4e4'
+      }
+	},
+	subtitle: {
+	  text: "Station Number: "+ stnid
+	},
+	xAxis: {
+	  type: 'datetime',
+	  labels: {
+        style: {
+         color: '#d0cdcd',
+         fill: '#d0cdcd'
+      	}
+      },
+	},
+	yAxis: {
+	  title: {
+		text:  unit
+	  },
+	  gridLineColor: 'rgba(0,0,0,0)',
+	  labels: {
+        format: '{value:.f}',
+        style: {
+         color: '#e4e4e4',
+         fill: '#e4e4e4'
+      	}
+	  },
+	  minTickInterval: 0.01,
+	  plotLines: [{
+                value: minor,
+                color: 'yellow',
+                dashStyle: 'solid',
+                width: 1,
+                label: {
+                    text: 'Minor Flood: ' + minor + ' cumecs',
+                    style: {
+					 color: '#e4e4e4',
+					 fill: '#e4e4e4'
+					}
+                }
+            }, 
+            // {
+//                 value: moderate,
+//                 color: 'red',
+//                 dashStyle: 'shortdash',
+//                 width: 2,
+//                 label: {
+//                     text: 'Moderate Flood: ' + moderate + ' cumecs',
+//                     style: {
+// 					 color: '#e4e4e4',
+// 					 fill: '#e4e4e4'
+// 					}
+// 
+//                 }
+//             }, 
+            {
+                value: major,
+                color: 'red',
+                dashStyle: 'solid',
+                width: 1,
+                label: {
+                    text: 'Major Flood: ' + major + ' cumecs',
+                    style: {
+					 color: '#e4e4e4',
+					 fill: '#e4e4e4'
+					}
+
+                }
+            }]
+            
+      //       
+// 	  plotBands: [{
+// 		color: 'yellow', // Color value
+// 		from: minor, // Start of the plot band
+// 		to: moderate, // End of the plot band
+// 		label: { 
+// 			text: 'Minor', // Content of the label. 
+// 			align: 'left', // Positioning of the label. 
+// 			style: {
+// 			 color: '#000',
+// 			 fill: '#000'
+// 			}
+// 		  }
+// 	  },
+// 	  {
+// 		color: 'orange', // Color value
+// 		from: moderate, // Start of the plot band
+// 		to: major, // End of the plot band
+// 		label: { 
+// 			text: 'Moderate', // Content of the label. 
+// 			align: 'left', // Positioning of the label. 
+// 			style: {
+// 			 color: '#e4e4e4',
+// 			 fill: '#e4e4e4'
+// 			}
+// 		  }
+// 	  },
+// 	  {
+// 		color: 'red', // Color value
+// 		from: major, // Start of the plot band
+// // 		to: moderate, // End of the plot band
+// 		label: { 
+// 			text: 'Major', // Content of the label. 
+// 			align: 'left', // Positioning of the label. 
+// 			style: {
+// 			 color: '#e4e4e4',
+// 			 fill: '#e4e4e4'
+// 			}
+// 		  }
+// 	  }
+// 	  ]
+	},
+	tooltip: {
+	  crosshairs: true,
+	  shared: true,
+	  valueSuffix: " " + unit,
+	  valueDecimals: 1
+	},
+	navigator: {
+            enabled: true,
+			style: {
+			 color: '#d0cdcd',
+			 fill: '#d0cdcd'
+			}
+    },
+	plotOptions: {
+        series: {
+            events: {
+                legendItemClick: function () {
+				  var sname = this.name;
+				  var s1 = chart.series[0].visible ? 'visible' : 'hidden';
+				  var s2 = chart.series[1].visible ? 'visible' : 'hidden';
+				  var s3 = chart.series[2].visible ? 'visible' : 'hidden';
+				  
+				  xmin = last_year_date;//(res_current[res_current.length-10][0]);
+				  xmax = lisda_current[lisda_current.length-1][0];
+				  chart.xAxis[0].setExtremes(xmin, xmax);
+
+					
+                }
+            }
+        }
+    },
+	legend: {
+		itemStyle: {
+                 fontSize:'15',
+                 font: '12pt Trebuchet MS, Verdana, sans-serif',
+                 color: '#e4e4e4'
+    	}
+    },
+	series: [
+	{
+	  name: 'USGS',
+	  data: usgs_current,
+	  type: 'spline',
+	  color:'#15acec',
+	  zIndex: 1,
+	  marker: {
+		enabled: false
+	  }
+	},
+	
+	{
+	  name: 'With DA',
+	  data: lisda_current,
+	  type: 'spline',
+	  color:'#cf171a',
+	  zIndex: 3,
+	  marker: {
+		enabled: false
+	  }
+	},
+	
+	{
+	  name: 'Without DA',
+	  data: lisol_current,
+	  type: 'spline',
+	  color:'#cc8e2c',
+	  zIndex: 2,
+// 	  dashStyle: 'shortdash',
+	  marker: {
+		enabled: false
+	  }
+	}
+	]
+	});
+
+}
+</script>
+<style>
+.selector {
+	position: absolute;
+	right: 20px;
+	top: 368px;
+}
+.errormessage {
+	position: absolute;
+	width:200px;
+	left:50%;
+	margin-left:-100px;
+	top: 60px;
+    color: red;
+    padding: 20px;
+    font-size: 20px;
+    border: 2px;
+    cursor: pointer;
+}
+.selectyear {
+    background-color: #444244;
+    color: white;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px;
+    cursor: pointer;
+}
+
+</style>
+</head>
+<body onload="load()">
+<!-- 
+	<div class="row">
+		<div class="12u 12u$(3)">
+			<ul class="actions fit">
+				
+				<li><a href="" class="button fit" id = "temp_link">Temperature</a></li>
+				<li><a href="" class="button alt fit" id = "ssc_link">Suspended Sediment Concentration</a></li>
+			</ul>
+		</div>
+	</div>
+ -->
+	<div id="container" style="    
+	width: 100%;
+    height: 400px;
+    margin: 0px auto;
+    background: rgb(40 46 55);
+    overflow: hidden;"></div>
+</body>
+

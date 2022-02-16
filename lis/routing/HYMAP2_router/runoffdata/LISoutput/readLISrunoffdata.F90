@@ -31,9 +31,9 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
   implicit none
 
   integer,          intent(in) :: n
-  real                         :: surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
-  real                         :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
-  real                         :: total_evapotranspiration(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  real                         :: surface_runoff(LIS_rc%lnc(n),LIS_rc%lnr(n))
+  real                         :: baseflow(LIS_rc%lnc(n),LIS_rc%lnr(n))
+  real                         :: total_evapotranspiration(LIS_rc%lnc(n),LIS_rc%lnr(n))
 
   !caveats 
   ! 1) assumes the LIS outputs are the same output interval as that of
@@ -77,8 +77,8 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
     if(file_exists) then 
       write(LIS_logunit,*) 'Reading '//trim(filename)
       !ag - 17Mar2016
-      !allocate(qs(LIS_rc%gnc(n),LIS_rc%gnr(n)))
-      !allocate(qsb(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+      !allocate(qs(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+      !allocate(qsb(LIS_rc%lnc(n),LIS_rc%lnr(n)))
      
       ios = nf90_open(path=filename,&
            mode=NF90_NOWRITE,ncid=nid)
@@ -94,57 +94,23 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
       call LIS_verify(ios,'failed to read Evap_tavg field in readLISrunoffdata')
      
       if(LIS_rc%wopt.eq."2d gridspace") then 
-        ios = nf90_get_var(nid,qsid,LISrunoffdata_struc(n)%qs)
+         ios = nf90_get_var(nid,qsid,LISrunoffdata_struc(n)%qs, &
+              start=(/LIS_ews_halo_ind(n,LIS_localPet+1),LIS_nss_halo_ind(n,LIS_localPet+1)/),&
+              count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
         call LIS_verify(ios, 'failed to read Qs_tavg field in readLISrunoffdata')
         
-        ios = nf90_get_var(nid,qsbid,LISrunoffdata_struc(n)%qsb)
+        ios = nf90_get_var(nid,qsbid,LISrunoffdata_struc(n)%qsb,&
+             start=(/LIS_ews_halo_ind(n,LIS_localPet+1),LIS_nss_halo_ind(n,LIS_localPet+1)/),&
+             count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
         call LIS_verify(ios, 'failed to read Qsb_tavg field in readLISrunoffdata')
 
-        ios = nf90_get_var(nid,evapid,LISrunoffdata_struc(n)%evap)
+        ios = nf90_get_var(nid,evapid,LISrunoffdata_struc(n)%evap,&
+             start=(/LIS_ews_halo_ind(n,LIS_localPet+1),LIS_nss_halo_ind(n,LIS_localPet+1)/),&
+             count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
         call LIS_verify(ios, 'failed to read Evap_tavg field in readLISrunoffdata')
-      elseif(LIS_rc%wopt.eq."1d tilespace") then 
-        
-        allocate(qs_t(LIS_rc%glbntiles(n)))
-        allocate(qsb_t(LIS_rc%glbntiles(n)))
-        allocate(evap_t(LIS_rc%glbntiles(n)))
-        allocate(nqs(LIS_rc%gnc(n),LIS_rc%gnr(n)))
-        
-        ios = nf90_get_var(nid,qsid,qs_t)
-        call LIS_verify(ios, 'failed to read Qs_tavg field in readLISrunoffdata')
-        
-        ios = nf90_get_var(nid,qsbid,qsb_t)
-        call LIS_verify(ios, 'failed to read Qsb_tavg field in readLISrunoffdata')
-
-        ios = nf90_get_var(nid,evapid,evap_t)
-        call LIS_verify(ios, 'failed to read Evap_tavg field in readLISrunoffdata')
-        
-        do t=1,LIS_rc%glbntiles(n)
-          c = LIS_domain(n)%tile(t)%col
-          r = LIS_domain(n)%tile(t)%row
-           
-          LISrunoffdata_struc(n)%qs(c,r) = LISrunoffdata_struc(n)%qs(c,r) + qs_t(t)
-          LISrunoffdata_struc(n)%qsb(c,r) = LISrunoffdata_struc(n)%qsb(c,r) + qsb_t(t)
-          LISrunoffdata_struc(n)%evap(c,r) = LISrunoffdata_struc(n)%evap(c,r) + evap_t(t)
-          nqs(c,r) = nqs(c,r) + 1
-        enddo
-        
-        do r=1,LIS_rc%gnr(n)
-          do c=1,LIS_rc%gnc(n)
-            if(nqs(c,r).gt.0) then 
-              LISrunoffdata_struc(n)%qs(c,r) = LISrunoffdata_struc(n)%qs(c,r)/nqs(c,r)
-              LISrunoffdata_struc(n)%qsb(c,r) = LISrunoffdata_struc(n)%qsb(c,r)/nqs(c,r)
-              LISrunoffdata_struc(n)%evap(c,r) = LISrunoffdata_struc(n)%evap(c,r)/nqs(c,r)
-            else
-              LISrunoffdata_struc(n)%qs(c,r) = LIS_rc%udef
-              LISrunoffdata_struc(n)%qsb(c,r) = LIS_rc%udef
-              LISrunoffdata_struc(n)%evap(c,r) = LIS_rc%udef
-            endif
-          enddo
-        enddo
-        deallocate(qs_t)
-        deallocate(qsb_t)
-        deallocate(evap_t)
-        deallocate(nqs)
+      else
+         write(LIS_logunit,*) "Stand-alone HYMAP is only supported for '2d gridspace' outputs currently"
+         call LIS_endrun()
       endif
 
       call LIS_verify(nf90_close(nid))
