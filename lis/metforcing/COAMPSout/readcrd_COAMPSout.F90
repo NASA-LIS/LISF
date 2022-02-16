@@ -50,7 +50,7 @@ subroutine readcrd_COAMPSout()
   write(unit=LIS_logunit,fmt=*)'[INFO] Using COAMPS output forcing'
 
   do n=1,LIS_rc%nnest
-     write(unit=LIS_logunit,fmt=*) '[INFO] COAMPS output forcing directory :',COAMPSout_struc(n)%COAMPSoutdir
+     write(unit=LIS_logunit,fmt=*) '[INFO] COAMPS output forcing directory :',trim(COAMPSout_struc(n)%COAMPSoutdir)
 
      COAMPSout_struc(n)%COAMPSouttime1 = 3000.0
      COAMPSout_struc(n)%COAMPSouttime2 = 0.0
