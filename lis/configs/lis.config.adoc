@@ -5730,6 +5730,30 @@ NLDAS2 use model based precip:          0
 NLDAS2 use model based pressure:        0
 ....
 
+[[sssec_forcings_COAMPS,COAMPS]]
+==== COAMPS
+
+`COAMPS output forcing directory:` specifies the location of
+the COAMPS forcing files.
+
+`COAMPS nest id:` specifies the nest id
+COAMPS forcing usually provides forcing for 2 nests. The first nest
+is 15km resolution and the second nest is a smaller sub-domain with 
+a resolution of 5km.
+
+|====
+|Value | Description
+
+|0     | do not use
+|1     | use
+|====
+
+.Example _lis.config_ entry
+....
+COAMPS output forcing directory:      ./input/FORCING/COAMPS   
+COAMPS nest id: 1
+....
+
 
 [[sssec_supp_3b42rt,TRMM 3B42RT precipitation]]
 ==== TRMM 3B42RT precipitation
