@@ -20,6 +20,7 @@ subroutine get_COAMPSout(n, findex)
   use LIS_metforcingMod, only : LIS_forc
   use LIS_timeMgrMod,    only : LIS_tick
   use LIS_logMod,        only : LIS_logunit, LIS_endrun
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
   use COAMPSout_forcingMod, only : COAMPSout_struc
 
   implicit none
@@ -55,7 +56,7 @@ subroutine get_COAMPSout(n, findex)
   integer      :: yr2,mo2,da2,hr2,mn2,ss2,doy2
   real         :: ts1, ts2
   integer      :: fcsthr
-  character*80 :: fname
+  character(len=LIS_CONST_PATH_LEN) :: fname
   real         :: gmt1,gmt2
   integer      :: movetime     ! 1=move time 2 data into time 1
 
@@ -159,7 +160,7 @@ subroutine get_COAMPSout(n, findex)
         call COAMPSoutfile(fname,COAMPSout_struc(n)%COAMPSoutdir,&
              COAMPSout_struc(n)%nest_id, fcsthr, yr1,mo1,da1,hr1,mn1,ss1)
 
-        write(unit=LIS_logunit,fmt=*)'[INFO] getting file1.. ',fname
+        write(unit=LIS_logunit,fmt=*)'[INFO] getting file1.. ',trim(fname)
         call read_COAMPSout(n,findex,1,fname,ferror)
 
         if(ferror.ge.1) COAMPSout_struc(n)%COAMPSouttime1=time1
@@ -187,7 +188,7 @@ subroutine get_COAMPSout(n, findex)
         call COAMPSoutfile(fname,COAMPSout_struc(n)%COAMPSoutdir,&
              COAMPSout_struc(n)%nest_id, fcsthr, yr2,mo2,da2,hr2,mn2,ss2)
 
-        write(unit=LIS_logunit,fmt=*)'[INFO] getting file2.. ',fname
+        write(unit=LIS_logunit,fmt=*)'[INFO] getting file2.. ',trim(fname)
         call read_COAMPSout(n,findex,2,fname,ferror)
 
         if(ferror.ge.1) then
@@ -217,8 +218,8 @@ end subroutine get_COAMPSout
 
    implicit none
 ! !ARGUMENTS: 
-   character*80, intent(out) :: filename
-   character*40, intent(in)  :: coampsdir
+   character(len=*), intent(out) :: filename
+   character(len=*), intent(in)  :: coampsdir
    integer, intent(in)       :: nest
    integer, intent(in)       :: fcsthr
    integer, intent(in)       :: yr,mo,da,hr,mn,ss

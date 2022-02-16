@@ -36,6 +36,8 @@ module COAMPSout_forcingMod
 !  \end{description}
 
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -52,7 +54,7 @@ module COAMPSout_forcingMod
 
   type, public    :: COAMPSout_type_dec
      integer      :: nest_id
-     character*80 :: COAMPSoutdir
+     character(len=LIS_CONST_PATH_LEN) :: COAMPSoutdir
      real         :: ts
      real*8       :: COAMPSouttime1,COAMPSouttime2
      integer      :: findtime1,findtime2
