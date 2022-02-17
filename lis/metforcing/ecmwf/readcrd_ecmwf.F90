@@ -73,7 +73,7 @@ subroutine readcrd_ecmwf()
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*)'Using ECMWF forcing'
-     write(LIS_logunit,*) 'ECMWF forcing directory :',ecmwf_struc(n)%ecmwfDIR
+     write(LIS_logunit,*) 'ECMWF forcing directory :',trim(ecmwf_struc(n)%ecmwfDIR)
 #if 0
      write(LIS_logunit,*) 'ECMWF IFS23R4 elevation map :',ecmwf_struc(n)%elevfileifs23r4
      write(LIS_logunit,*) 'ECMWF IFS25R1 elevation map :',ecmwf_struc(n)%elevfileifs25r1

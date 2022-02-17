@@ -49,8 +49,7 @@ subroutine mrms_gribfile( name, mrms_grib_dir, yr, mo, da, hr)
 ! !ARGUMENTS: 
   integer :: yr, mo, da, hr
 
-  character(150) :: name
-  character(40) :: mrms_grib_dir
+  character(len=*) :: name, mrms_grib_dir
   character(4) :: cyear
   character(2) :: cmon, cday, chour
 

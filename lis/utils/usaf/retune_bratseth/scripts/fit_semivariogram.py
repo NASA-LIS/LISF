@@ -10,6 +10,7 @@ REVISION HISTORY:
 26 Oct 2020: Eric Kemp. Initial Specification.
 03 Nov 2020: Eric Kemp. Removed plotting.  Fitted parameters are now saved
                to file.
+13 Dec 2021: Eric Kemp. Changed first guess for covariance settings.
 """
 
 # Standard library
@@ -56,8 +57,8 @@ distvector, variovector, samplesize = \
 
 # Fit function
 # Comparing gages to background field.  Three parameters must be fit.
-sigma2_gage_guess = np.amin(variovector)
-sigma2_back_guess = np.amax(variovector) - sigma2_gage_guess
+sigma2_gage_guess = (np.amin(variovector) + np.amax(variovector)) / 2.
+sigma2_back_guess = sigma2_gage_guess
 L_back_guess = distvector[2]
 fit_func = semivar.fit_func_dict[function_type]
 sigma2_gage_min = 0.1*sigma2_gage_guess

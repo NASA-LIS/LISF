@@ -24,6 +24,7 @@ subroutine read_Loobos(n,ftn,findex,order,itime)
   use LIS_metforcingMod,     only : LIS_forc
   use LIS_timeMgrMod, only        : LIS_date2time,LIS_tick
   use Loobos_forcingMod, only : Loobos_struc
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS:
@@ -77,7 +78,7 @@ subroutine read_Loobos(n,ftn,findex,order,itime)
   integer :: loobos_yr,loobos_mon,loobos_day,loobos_hr,loobos_min,loobos_sec
   real    :: loobos_tick
   logical :: file_exists
-  character*80       :: Loobos_filename
+  character(len=LIS_CONST_PATH_LEN) :: Loobos_filename
   character(len=500) :: line
 
   !      write(LIS_logunit,*) 'starting read_Loobos'

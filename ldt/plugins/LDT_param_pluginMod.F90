@@ -24,6 +24,7 @@ module LDT_param_pluginMod
 !  11 Feb 2013:  KR Arsenault - Updated to accommodate new parameter types and options
 !  01 Mar 2020:  Yeosang Yoon - Added MERIT DEM
 !  29 Jun 2020:  Mahdi Navari - Glacier fraction added 
+!  12 Apr 2021:  Wanshu Nie   - groundwater irrigation ratio added
 !  
 !EOP
 
@@ -935,8 +936,9 @@ contains
 
     external read_GRIPC_irrigtype
     external read_GRIPC_irrigfrac
-
     external read_UserDerived_irrigfrac
+
+    external read_USGSNative_irriggwratio
 
     call registerreadirrigfrac(trim(LDT_modOGirrigId)//char(0),&
          read_OzdoganGutman_irrigfrac)
@@ -946,6 +948,8 @@ contains
 
     ! Added user-derived irrigation fraction input option:
     call registerreadirrigfrac(trim(LDT_userinputirrigId)//char(0),read_UserDerived_irrigfrac)
+    ! Added irrigation groundwater ratio input option
+    call registerreadirriggwratio(trim(LDT_irriggwratioId)//char(0),read_USGSNative_irriggwratio)
 
   end subroutine LDT_irrigation_plugin
 

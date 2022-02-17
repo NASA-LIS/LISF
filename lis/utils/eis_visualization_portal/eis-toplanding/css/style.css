@@ -1,0 +1,312 @@
+
+.sd-selection:before {
+  height: 200px;
+  width: 100%;
+  margin-top: 5px;
+  content: "";
+  filter: blur(5px);
+  -webkit-filter: blur(5px);
+  z-index: 0
+}
+.disciplines {
+  margin: 0;
+  position: relative;
+  text-align: center;
+   padding-left: inherit;
+}
+.disciplines li {
+  display: inline-block;
+  margin: 0 2em;
+  opacity: .5;
+  width: 9em;
+  vertical-align: top;
+  font-size: .8em;
+  -webkit-transition: opacity .2s ease-in-out;
+  -moz-transition: opacity .2s ease-in-out;
+  transition: opacity .2s ease-in-out
+}
+.disciplines li a {
+  color: #fff;
+  text-decoration: none
+}
+.disciplines li:hover {
+  opacity: 1;
+  text-shadow: 0 0 20px rgba(255, 255, 255, .5)
+}
+.disciplines li .title {
+  line-height: 1.4em
+}
+.disciplines .eui-icon {
+  font-size: 5em;
+  line-height: 1.3em
+}
+.disciplines h4 {
+  text-transform: uppercase;
+  margin: 0;
+  font-weight: 400;
+  font-size: 1em;
+  color: #fff
+}
+
+
+
+.earthdata .wrap {
+  max-width: 85%;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1200px
+}
+.earthdata .wrap:after {
+  content: "";
+  display: table;
+  clear: both
+}
+
+.access-data {
+  color: #fff;
+  border-top: 8px solid #1a5981;
+  padding-bottom: 1em;
+  text-align: center
+}
+.access-data .access-header {
+  white-space: nowrap
+}
+.access-data {
+  font-size: 11pt;
+  color: #ffffff;
+      padding-bottom: 6em;
+}
+.access-data .policy a {
+  color: #ffffffcc
+}
+.access-data a {
+  color: #fff;
+  text-decoration: underline
+}
+.access-data .box {
+  display: inline-block;
+  width: 45%;
+  vertical-align: top;
+    padding-bottom: 30px;
+}
+.access-data .box h3 {
+  margin: 15px 0 20px 0
+}
+.access-data .box p {
+  margin: 0 0 25px 0;
+  font-size: .9em
+}
+.access-data .box-buttons {
+  width: 100%
+}
+.access-data .box-buttons a {
+  text-decoration: none;
+  margin-left: 10px
+}
+a.feedback-link, a.feedback-link:visited {
+  position: fixed;
+  top: 50%;
+  left: -30px;
+  z-index: 10001;
+  background-color: rgba(32, 206, 111, .8);
+  padding: .75em .75em 1em .75em;
+  color: #fff;
+  box-shadow: 0 0 5px rgba(50, 50, 50, .25);
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  -webkit-transition: all .2s ease-in-out;
+  -moz-transition: all .2s ease-in-out;
+  transition: all .2s ease-in-out;
+  transform: rotate(90deg);
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg)
+}
+a.feedback-link:hover, a.feedback-link:visited:hover {
+  background-color: #1ec168;
+  left: -26px;
+  -webkit-transition: all 255ms ease-in-out;
+  -moz-transition: all 255ms ease-in-out;
+  transition: all 255ms ease-in-out
+}
+.page {
+  background-size: 100%
+}
+.page .search {
+  margin: 0
+}
+.page section {
+  clear: both
+}
+.page {
+  background: 0 0
+}
+.search-section {
+  background-image: -webkit-linear-gradient(left, rgba(0, 0, 0, .9) 0, transparent 50%), url(../img/search-background.jpg);
+  height: 60px
+}
+.search-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1200px;
+  padding: 0 1em
+}
+.search {
+  padding-top: .5em;
+  float: right
+}
+.search button.eui-search-home {
+  border: 1px solid #20ce6f;
+  color: #fff
+}
+a:link.ext:after, a:visited.ext:after {
+  display: inline;
+  opacity: .6
+}
+body {
+  position: relative
+}
+#earthdata-tour {
+  display: none
+}
+.earthdata-tour {
+  display: none
+}
+.tour-wrap {
+  margin-left: 30%
+}
+@media (min-width:450px) and (max-width:767px) {
+  .tour-wrap {
+    margin-left: 10%
+  }
+}
+@media only screen and (max-width:450px) {
+  .tour-wrap {
+    margin-left: 0
+  }
+}
+@media screen and (min-width:2000px) {
+  body[class*=science-discipline] {
+    background-size: 100%
+  }
+}
+@media screen and (max-width:1200px) {
+  body:before {
+    content: "fluid";
+    display: none
+  }
+  .wrap {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 2em
+  }
+  .wrap:after {
+    content: "";
+    display: table;
+    clear: both
+  }
+  .search-content.wrap {
+    padding: 0
+  }
+  .disciplines li {
+    margin: 0 1em
+  }
+  .disciplines h4 {
+    font-size: .8em
+  }
+  .disciplines .eui-icon {
+    font-size: 4em
+  }
+}
+@media screen and (max-width:1024px) {
+  .access-data .box-buttons {
+    margin-top: 5px
+  }
+  .access-data .box-buttons a {
+    display: block;
+    width: 26em;
+    text-align: center;
+    margin: 0 auto
+  }
+}
+@media screen and (max-width:800px) {
+  body:before {
+    content: "desktop-min";
+    display: none
+  }
+  .sd-selection:before {
+    height: 220px
+  }
+  .disciplines li {
+    margin: 0 .7em;
+    width: 6em
+  }
+  .disciplines h4 {
+    font-size: .7em
+  }
+  .disciplines .eui-icon {
+    font-size: 3em
+  }
+  .earthdata .wrap {
+    padding-left: 5px;
+    padding-top: 5px
+  }
+}
+@media screen and (max-width:650px) {
+  body:before {
+    content: "navigation-min";
+    display: none
+  }
+  body > .wrap {
+    padding: 0
+  }
+  .disciplines li {
+    width: 40%;
+    font-size: 1em
+  }
+  .search-section .search-wrap .search {
+    float: none
+  }
+  .access-data .box {
+    display: block;
+    width: inherit;
+    text-align: center
+  }
+  .access-data .box-buttons {
+    margin-top: 30px
+  }
+  .access-data .box-buttons a {
+    width: 20em
+  }
+}
+@media screen and (max-width:500px) {
+  body:before {
+    content: "mobile";
+    display: none
+  }
+  .wrap {
+    padding: 0 1.2em
+  }
+  .bg > .wrap, body > .wrap {
+    padding: 0
+  }
+  .feedback-link {
+    display: none
+  }
+  .access-data .box {
+    display: block;
+    width: inherit;
+    text-align: center
+  }
+  .sd-selection:before {
+    background-position: center 330px;
+    height: 346px
+  }
+}
+.rss-icon:before {
+  content: "\f09e";
+  font-family: FontAwesome;
+  padding-right: .2em
+}

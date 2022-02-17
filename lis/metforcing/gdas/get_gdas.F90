@@ -35,6 +35,7 @@ subroutine get_gdas(n, findex)
   use LIS_timeMgrMod,     only : LIS_tick, LIS_get_nstep
   use LIS_logMod,         only : LIS_logunit, LIS_endrun
   use gdas_forcingMod,    only : gdas_struc
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -92,7 +93,7 @@ subroutine get_gdas(n, findex)
   real*8  :: timenow, time1, time2
   real*8  :: dumbtime1, dumbtime2
   real    :: gmt1, gmt2
-  character(len=80) :: name00, name03, name06
+  character(len=LIS_CONST_PATH_LEN) :: name00, name03, name06
   logical :: file_exists1, file_exists2, file_exists3
   real :: gridDesci(50)
   integer :: nstep

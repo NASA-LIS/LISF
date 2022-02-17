@@ -292,7 +292,7 @@ $(CAP_MK): $(CAP_LIB) $(CAP_MODS)
 # Install Library, Modules, and Makefile Fragment
 # -----------------------------------------------------------------------------
 
-$(INSTPATH)/%:
+$(INSTPATH)/%: %
 	@echo $(HR)
 	@echo "Installing $(notdir $@)"
 	@echo
