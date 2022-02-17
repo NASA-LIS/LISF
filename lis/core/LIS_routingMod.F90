@@ -328,7 +328,7 @@ module LIS_routingMod
        endif
 
        call routingrun(trim(LIS_rc%routingmodel)//char(0),n)
-       if(LIS_rc%lsm.ne."none") then 
+       if(LIS_rc%lsm.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then 
           call lsmroutinggetsws(trim(LIS_rc%lsm)//"+"//&
                trim(LIS_rc%routingmodel)//char(0),n)
        endif
