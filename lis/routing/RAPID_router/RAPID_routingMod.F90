@@ -79,8 +79,14 @@ module RAPID_routingMod
      integer          :: n_riv_bas    ! number of river basins  
      integer          :: n_wei_table  ! number of reach in weight table file
   
-     logical          :: initCheck    ! for rapid_init
-     real,allocatable :: rst_Qout(:)  ! instantaneous flow for LIS restart file   
+     logical             :: initCheck    ! for rapid_init
+
+     integer,allocatable :: riv_bas_id(:) ! for rapid output
+     real,allocatable    :: riv_tot_lon(:)
+     real,allocatable    :: riv_tot_lat(:)
+
+
+     real,allocatable    :: Qout(:)  ! instantaneous flow 
   end type RAPID_routing_dec
 
   type(RAPID_routing_dec), allocatable :: RAPID_routing_struc(:)
@@ -116,6 +122,8 @@ contains
 !TODO: change setting   
     do n=1, LIS_rc%nnest
        RAPID_routing_struc(n)%imis     = -9999 !! undefined integer value
+       RAPID_routing_struc(n)%numout   = 0
+       RAPID_routing_struc(n)%fileopen = 0
     enddo
     
     call ESMF_ConfigFindLabel(LIS_config,&
@@ -317,10 +325,21 @@ contains
        call RAPID_check_domain_size(n)
     enddo
 
+    ! for RAPID output
+    do n=1, LIS_rc%nnest
+       allocate(RAPID_routing_struc(n)%riv_bas_id(RAPID_routing_struc(n)%n_riv_bas))
+       RAPID_routing_struc(n)%riv_bas_id=-9999
+
+       allocate(RAPID_routing_struc(n)%riv_tot_lon(RAPID_routing_struc(n)%n_riv_bas))
+       RAPID_routing_struc(n)%riv_tot_lon=-9999
+       allocate(RAPID_routing_struc(n)%riv_tot_lat(RAPID_routing_struc(n)%n_riv_bas))
+       RAPID_routing_struc(n)%riv_tot_lat=-9999
+    enddo
+
     ! for RAPID restart
     do n=1, LIS_rc%nnest
-       allocate(RAPID_routing_struc(n)%rst_Qout(RAPID_routing_struc(n)%n_riv_bas))
-       RAPID_routing_struc(n)%rst_Qout=0
+       allocate(RAPID_routing_struc(n)%Qout(RAPID_routing_struc(n)%n_riv_bas))
+       RAPID_routing_struc(n)%Qout=0
     enddo
      
     do n=1, LIS_rc%nnest

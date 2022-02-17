@@ -56,7 +56,8 @@ use rapid_var, only :                                                          &
                    ZV_VR,ZV_VinitR,ZV_VbarR,                                   &
                    ierr,rank,stage,temp_char,temp_char2,                       &
                    ZS_one,                                                     &
-                   IS_riv_tot,IS_riv_bas,IS_for_bas,IS_dam_bas,IS_hum_bas,     &
+                   IS_riv_tot,IS_riv_bas,IS_for_bas,IV_riv_bas_id,             &
+                   IS_dam_bas,IS_hum_bas,                                      &
                    ZS_time1,ZS_time2,ZS_time3,ZS_time4,                        &
                    IV_nc_start,IV_nc_count,IV_nc_count2,                       &
                    BS_opt_Qinit,BS_opt_Qfinal,BS_opt_V,BS_opt_hum,             &
@@ -68,7 +69,8 @@ use rapid_var, only :                                                          &
                    ZV_QoutinitR_save,                                          &
                    rapid_connect_file,IS_max_up,weight_table_file,             &
                    n_weight_table,riv_bas_id_file,k_file,x_file,               &
-                   vecscat,ZV_SeqZero,ZV_pointer,IV_riv_loc1,IV_riv_index        
+                   vecscat,ZV_SeqZero,ZV_pointer,IV_riv_loc1,IV_riv_index,     &
+                   ZV_riv_tot_lat,ZV_riv_tot_lon       
 
 use LIS_coreMod, only: LIS_rc
 use LIS_logMod
@@ -157,13 +159,18 @@ if (initCheck .eq. .true.) then
    
    call rapid_init
 
+   ! for RAPID output
+   if (rank==0) then 
+       RAPID_routing_struc(n)%riv_bas_id=IV_riv_bas_id
+   endif
+
    initCheck = .false.
 
    ! for RAPID restart
    if(RAPID_routing_struc(n)%startmode.eq."restart") then
       if (rank==0) then
           allocate(Qinit(IS_riv_bas))
-          Qinit=RAPID_routing_struc(n)%rst_Qout
+          Qinit=RAPID_routing_struc(n)%Qout
           
           call VecSetValues(ZV_QoutinitR,IS_riv_bas,IV_riv_loc1, &
                             Qinit(IV_riv_index),INSERT_VALUES,ierr)
@@ -174,8 +181,8 @@ if (initCheck .eq. .true.) then
    endif
 endif
 
-Qout_file=trim(qfile)   ! LIS-RAPID output filename
-alarmCheck = LIS_isAlarmRinging(LIS_rc,"RAPID router output alarm")
+!Qout_file=trim(qfile)   ! LIS-RAPID output filename
+!alarmCheck = LIS_isAlarmRinging(LIS_rc,"RAPID router output alarm")
 
 !*******************************************************************************
 !OPTION 1 - use to calculate flows and volumes and generate output data
@@ -191,21 +198,21 @@ if (IS_opt_run==1) then
 !-------------------------------------------------------------------------------
 !Quantify uncertainty
 !-------------------------------------------------------------------------------
-if (BS_opt_uq) call rapid_uq
+!if (BS_opt_uq) call rapid_uq
 
 !-------------------------------------------------------------------------------
-!Create and open Qout file; Yeosang Yoon; only generate output when alarm is rining
+!Create and open Qout file; Yeosang Yoon; not use
 !-------------------------------------------------------------------------------
-if(alarmCheck) call rapid_create_Qout_file(Qout_file)
-if(alarmCheck) call rapid_open_Qout_file(Qout_file)
+!if(alarmCheck) call rapid_create_Qout_file(Qout_file)
+!if(alarmCheck) call rapid_open_Qout_file(Qout_file)
 
 !-------------------------------------------------------------------------------
 !Create and open V_file
 !-------------------------------------------------------------------------------
-if(alarmCheck) then
-   if (BS_opt_V) call rapid_create_V_file(V_file)
-   if (BS_opt_V) call rapid_open_V_file(V_file)
-endif
+!if(alarmCheck) then
+if (BS_opt_V) call rapid_create_V_file(V_file)
+if (BS_opt_V) call rapid_open_V_file(V_file)
+!!endif
 
 !-------------------------------------------------------------------------------
 !Open remaining files
@@ -311,24 +318,27 @@ call VecCopy(ZV_VR,ZV_VinitR,ierr)
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !write outputs
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if(alarmCheck) then
-   write(LIS_logunit,*) '[INFO] Writing routing model output to:'
-   write(LIS_logunit,*) trim(Qout_file)
-
-   call rapid_write_Qout_file
-   if (BS_opt_V) call rapid_write_V_file
-endif
+!if(alarmCheck) then
+!   write(LIS_logunit,*) '[INFO] Writing routing model output to:'
+!   write(LIS_logunit,*) trim(Qout_file)
+!
+!   call rapid_write_Qout_file
+if (BS_opt_V) call rapid_write_V_file
+!endif
 
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!Yeosang Yoon, for RAPID restart file
+!Yeosang Yoon, for RAPID output/restart file
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 call VecScatterBegin(vecscat,ZV_QoutR,ZV_SeqZero,                              &
                      INSERT_VALUES,SCATTER_FORWARD,ierr)
 call VecScatterEnd(vecscat,ZV_QoutR,ZV_SeqZero,                                &
                      INSERT_VALUES,SCATTER_FORWARD,ierr)
 if(rank==0) then
+   RAPID_routing_struc(n)%riv_tot_lat=ZV_riv_tot_lat
+   RAPID_routing_struc(n)%riv_tot_lon=ZV_riv_tot_lon 
+
    call VecGetArrayF90(ZV_SeqZero,ZV_pointer,ierr)
-   RAPID_routing_struc(n)%rst_Qout=ZV_pointer
+   RAPID_routing_struc(n)%Qout=ZV_pointer
    call VecRestoreArrayF90(ZV_SeqZero,ZV_pointer,ierr)
 endif
 
