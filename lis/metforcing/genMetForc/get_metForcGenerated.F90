@@ -24,6 +24,7 @@ subroutine get_metForcGenerated(n, findex)
   use LIS_timeMgrMod,   only : LIS_tick, LIS_get_nstep
   use metForcGenerated_forcingMod, only : metForcGen_struc
   use metForcGen_VariablesMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -56,7 +57,7 @@ subroutine get_metForcGenerated(n, findex)
   integer        :: kk      ! Forecast index
   integer        :: metforc_hrts
   integer        :: metforc_mnts
-  character(140) :: fullfilename
+  character(len=LIS_CONST_PATH_LEN) :: fullfilename
   logical        :: file_exists
 
 ! Date/time parameters for file get/read:

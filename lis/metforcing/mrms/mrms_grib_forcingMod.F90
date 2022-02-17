@@ -58,6 +58,8 @@ module mrms_grib_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -77,11 +79,11 @@ module mrms_grib_forcingMod
      real               :: ts
      integer            :: ncol                 ! Number of cols
      integer            :: nrow                 ! Number of rows
-     character*80       :: mrms_grib_dir        ! MRMS Directory
+     character(len=LIS_CONST_PATH_LEN) :: mrms_grib_dir ! MRMS Directory
      real*8             :: mrms_grib_time       ! Nearest hourly instance of incoming file
      integer            :: mrms_mask_opt        ! Flag for whether or not to use mask 1=Yes
      real*8             :: mrms_mask_thresh     ! Threshold for masking MRMS data
-     character*150      :: mrms_mask_dir        ! Directory of MRMS masks
+     character(len=LIS_CONST_PATH_LEN) :: mrms_mask_dir        ! Directory of MRMS masks
      integer            :: mi                   ! Number of points in the input grid
 
 ! == Arrays for Bilinear Interpolation option (=1)

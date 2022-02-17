@@ -8,7 +8,6 @@
 #SBATCH --account=s1189
 #
 ## Enter user email below:
-#SBATCH --mail-user=ryan.a.zamora@nasa.gov
 ##SBATCH --mail-type=END
 #SBATCH --output=log_files/TASK1_CFSv2_process-%j.out
 #SBATCH --error=log_files/TASK1_CFSv2_process-%j.err
@@ -21,9 +20,10 @@ SRCDIR=${4}
 OUTDIR=${5}
 FORCEDIR=${6}
 GRID_DESCRIPTION=${7}
-ic1="${8}"
-ic2="${9}"
-ic3="${10}"
+PATCHDIR=${8}
+ic1="${9}"
+ic2="${10}"
+ic3="${11}"
 
 source /usr/share/modules/init/bash
 module load cdo/1.9.9rc2
@@ -32,5 +32,5 @@ module load nco
 cd $SRCDIR
 ulimit -s unlimited
 
-sh $SRCDIR/process_forecast_data.scr $SYR $EYR $iMon $SRCDIR $OUTDIR $FORCEDIR $GRID_DESCRIPTION $ic1 $ic2 $ic3
+python $SRCDIR/process_forecast_data.py $SYR $EYR $iMon $SRCDIR $OUTDIR $FORCEDIR $GRID_DESCRIPTION $PATCHDIR $ic1 $ic2 $ic3
 

@@ -14,6 +14,7 @@ module narr_forcingMod
 ! !DESCRIPTION: 
 !  
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   
   PRIVATE
@@ -32,7 +33,7 @@ module narr_forcingMod
      
      real             :: ts
      real*8           :: narrtime1,narrtime2
-     character*100    :: narrdir
+     character(len=LIS_CONST_PATH_LEN)    :: narrdir
      integer          :: nc,nr
      integer          :: nlevels
 

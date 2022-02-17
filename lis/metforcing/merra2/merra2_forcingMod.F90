@@ -58,6 +58,7 @@ module merra2_forcingMod
 !  \end{description}
 !
 ! !USES:
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -75,7 +76,7 @@ module merra2_forcingMod
   type, public ::  merra2_type_dec
      real         :: ts
      integer      :: ncold, nrold
-     character*40 :: merra2dir   !MERRA2 Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: merra2dir   !MERRA2 Forcing Directory
      real*8       :: merra2time1,merra2time2
      logical      :: reset_flag
 
@@ -113,7 +114,7 @@ module merra2_forcingMod
      integer                 :: usepcpsampling
      integer                 :: pcpscal_cmo
      integer                 :: use2mwind
-     character*100           :: scaleffile
+     character(len=LIS_CONST_PATH_LEN) :: scaleffile
      integer                 :: nbins
      real, allocatable       :: refxrange(:,:,:,:)
      real, allocatable       :: refcdf(:,:,:,:)

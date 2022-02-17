@@ -26,6 +26,7 @@ subroutine get_gefs(n,findex)
   use LIS_metforcingMod,    only : LIS_forc
   use LIS_logMod
   use gefs_forcingMod,      only : gefs_struc
+  use LIS_constantsMod,     only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -72,7 +73,7 @@ subroutine get_gefs(n,findex)
   integer       :: hour_cycle
   integer       :: init_yr,init_mo,init_da
   integer       :: hour_cycle1
-  character*140 :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
 
 !  character(10), dimension(LIS_rc%met_nf(findex)), parameter :: gefs_vars = (/ &
   character(10), dimension(8), parameter :: gefs_vars = (/ &
@@ -200,7 +201,7 @@ subroutine get_gefs(n,findex)
                  gefs_struc(n)%gefs_proj, gefs_vars(v),&
                  yr1,mo1,da1,m)
           endif
-          write(LIS_logunit,*)'[INFO] Getting GEFS file ... ',filename
+          write(LIS_logunit,*)'[INFO] Getting GEFS file ... ',trim(filename)
 
           ! Read in file contents:
           if( LIS_rc%tscount(n) == 1 ) then  ! Read in first two book-ends
@@ -346,7 +347,7 @@ subroutine get_gefs(n,findex)
             
          endif
          
-         write(LIS_logunit,*)'[INFO] getting file1.. ',filename
+         write(LIS_logunit,*)'[INFO] getting file1.. ',trim(filename)
          order = 1
          call read_gefs_operational(n,m,findex,order,filename,ferror)
          if(ferror.ge.1) then 
@@ -427,7 +428,7 @@ subroutine get_gefs(n,findex)
                  gefs_struc(n)%fcst_hour,m)
          endif
          
-         write(LIS_logunit,*)'[INFO] getting file2.. ',filename
+         write(LIS_logunit,*)'[INFO] getting file2.. ',trim(filename)
          order = 2
          call read_gefs_operational(n,m,findex,order,filename,ferror)
 

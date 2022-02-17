@@ -26,6 +26,8 @@ module Bondville_forcingMod
 ! 05 Oct 2010: David Mocko, Updated for Bondville test case
 ! 26 Oct 2018: David Mocko, Updated for Noah-MP-4.0.1 HRLDAS test case
 ! 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -41,7 +43,7 @@ module Bondville_forcingMod
 
   type, public         :: Bondville_type_dec
      real                 :: ts
-     character*80         :: Bondvillefile
+     character(len=LIS_CONST_PATH_LEN) :: Bondvillefile
      integer              :: mp
      real                 :: undef
      real*8               :: starttime,Bondvilletime1,Bondvilletime2

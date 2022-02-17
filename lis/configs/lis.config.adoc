@@ -341,11 +341,13 @@ endif::devonly[]
 |"`WRF AK`"                    | NCAR-WRF Alaska domain forcing 
 |"`LDT-generated`"             | LDT-generated forcing files
 |"`CLIM-Standard`"             | Forcing climatologies (LDT-generated)
-|"`GenEnsFcst`"                | Generic ensemble forecast
+|"`GenEnsFcst`"                | Generic ensemble forecast reader
+|"`PPTEnsFcst`"                | Precipitation-only ensemble forecast reader
 |"`AWAP`"                      | AWAP precipitation data
 |"`GDAS T1534`"                | NCEP-specific GDAS T1534 forcing data
 |"`ERA5`"                      | ERA5 reanalysis meteorology
 |"`AWRAL processed forcing`"   | AWRA-L processed forcing
+|"`PLUMBER2`"                  | PLUMBER2 forcing
 |====
 
 .Example _lis.config_ entry
@@ -971,17 +973,17 @@ offline routing.
 Acceptable values are:
 
 |====
-|Value                            | Description
+|Value                                                             | Description
 
-|"`LIS runoff output`"            | Use LIS outputs
-|"`GLDAS1 runoff data`"           | Use the GLDAS1 outputs
-|"`GLDAS2 runoff data`"           | Use the GLDAS2 outputs
-|"`NLDAS2 runoff data`"           | Use the NLDAS2 outputs
-|"`MERRA2 runoff data`"           | Use the MERR2 outputs
-|"`ERA interim land runoff data`" | Use ERA-Interim-Land outputs
-|"`GWB MIP runoff data`"          | Use the Global Water Budget (GWB) model intercomparison project outputs
+|"`LIS runoff output`"                                             | Use LIS outputs
+|[.line-through]#"`GLDAS1 runoff data`"# [red]#Disabled#           | [.line-through]#Use the GLDAS1 outputs#
+|[.line-through]#"`GLDAS2 runoff data`"# [red]#Disabled#           | [.line-through]#Use the GLDAS2 outputs#
+|[.line-through]#"`NLDAS2 runoff data`"# [red]#Disabled#           | [.line-through]#Use the NLDAS2 outputs#
+|[.line-through]#"`MERRA2 runoff data`"# [red]#Disabled#           | [.line-through]#Use the MERR2 outputs#
+|[.line-through]#"`ERA interim land runoff data`"# [red]#Disabled# | [.line-through]#Use ERA-Interim-Land outputs#
+|[.line-through]#"`GWB MIP runoff data`"# [red]#Disabled#          | [.line-through]#Use the Global Water Budget (GWB) model intercomparison project outputs#
 |====
-
+// See pull request #966 for context about the disabled external runoff data sources listed above.
 
 `Number of application models:` specifies the number
 of application models to run.
@@ -1154,6 +1156,8 @@ Acceptable values are:
 |"`SMAP(NASA) vegetation optical depth`"  | NASA L-band vegetation optical depth 
 |"`MCD15A2H LAI`"               | MODIS MCD15A2H v006 LAI product
 |"`SMOS NRT NN soil moisture`"  | SMOS Level 2 Soil Moisture Near Real Time Neural Network
+|"`THySM`"                      | Thermal Hydraulic disaggregation of Soil Moisture
+|"`SNODAS`"                     | SNODAS snow depth
 |====
 
 .Example _lis.config_ entry
@@ -2195,12 +2199,12 @@ of MODIS (MOD10C1) data.
 .Example _lis.config_ entry
 ....
 ANSA snow depth data directory:                  ./ANSASNWD
-ANSA snow depth lower left lat:                  -89.875
-ANSA snow depth lower left lon:                  -179.875
-ANSA snow depth upper right lat:                  89.875
-ANSA snow depth upper right lon:                 179.875
-ANSA snow depth resolution (dx):                  0.25
-ANSA snow depth resolution (dy):                  0.25
+ANSA snow depth lower left lat:                  -89.975
+ANSA snow depth lower left lon:                  -179.975
+ANSA snow depth upper right lat:                  89.975
+ANSA snow depth upper right lon:                 179.975
+ANSA snow depth resolution (dx):                  0.05
+ANSA snow depth resolution (dy):                  0.05
 ANSA snow depth use IMS data for snow detection:
 ANSA snow depth IMS data directory:
 ANSA snow depth use MODIS (MOD10C1) data for snow detection:
@@ -3152,6 +3156,38 @@ SMOS NRT NN soil moisture number of bins in the CDF:           100
 SMOS NRT NN CDF read option:       1
 ....
 
+[[sssec_thysmda,THySM soil moisture assimilation]]
+==== THySM soil moisture assimilation
+
+`THySM data directory:` specifies the THySM data directory.
+
+`THySM use scaled standard deviation model:` specifies whether the observation error standard deviation is to be scaled using model and observation standard deviation.
+
+`THySM model CDF file:` specifies the name of the model CDF file (observations will be scaled into this climatology).
+
+`THySM observation CDF file:` specifies the name of the observation CDF file.
+
+`THySM soil moisture number of bins in the CDF:` specifies the number of bins in the CDF.
+
+.Example _lis.config_ entry
+....
+THySM data directory:                          ../THySM/
+THySM use scaled standard deviation model:     0
+THySM model CDF file:                          LSMSM.nc
+THySM observation CDF file:                    THySM.nc
+THySM soil moisture number of bins in the CDF: 100
+....
+
+[[sssec_snodasda,SNODAS snow depth assimilation]]
+==== SNODAS snow depth assimilation
+
+`SNODAS data directory:` specifies the directory for the
+SNODAS data.
+
+.Example _lis.config_ entry
+....
+SNODAS snow depth data directory:                  ./FORCING/SNODAS
+....
 
 [[ssec_rtms,Radiative Transfer/Forward Models]]
 === Radiative Transfer/Forward Models
@@ -5694,6 +5730,30 @@ NLDAS2 use model based precip:          0
 NLDAS2 use model based pressure:        0
 ....
 
+[[sssec_forcings_COAMPS,COAMPS]]
+==== COAMPS
+
+`COAMPS output forcing directory:` specifies the location of
+the COAMPS forcing files.
+
+`COAMPS nest id:` specifies the nest id
+COAMPS forcing usually provides forcing for 2 nests. The first nest
+is 15km resolution and the second nest is a smaller sub-domain with 
+a resolution of 5km. Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | do not use
+|1     | use
+|====
+
+.Example _lis.config_ entry
+....
+COAMPS output forcing directory:      ./input/FORCING/COAMPS   
+COAMPS nest id: 1
+....
+
 
 [[sssec_supp_3b42rt,TRMM 3B42RT precipitation]]
 ==== TRMM 3B42RT precipitation
@@ -6013,10 +6073,36 @@ of the user-generated ensemble forecast forcing files.
 `Generic ensemble forecast number of ensemble members:` specifies the number of
 ensemble members desired for the user-generated ensemble forecast dataset.
 
+`Name of base forecast model:` specifies the base forecast model used in
+the generated ensemble-based forecast forcing files being read in.
+Default setting is GEOS5, but options include GEOS5 and CFSv2.
+
 .Example _lis.config_ entry
 ....
 Generic ensemble forecast directory:     ./GEOS5_BiasCorrected/
 Generic ensemble forecast number of ensemble members:  11
+Name of base forecast model:              GEOS5
+....
+
+
+[[sssec_pptensfcst,PPTEnsFcst]]
+==== Precipitation-only Ensemble Forecast Reader
+
+`Precipitation ensemble forecast directory:` specifies the location
+of the user-generated ensemble precipitation forecast forcing files.
+
+`Precipitation ensemble forecast number of ensemble members:` specifies the number of
+ensemble members desired for the user-generated precipitation ensemble forecast dataset.
+
+`Name of base forecast model:` specifies the base forecast model used in
+the generated ensemble-based forecast forcing files being read in.
+Default setting is GEOS5, but options include GEOS5 and CFSv2.
+
+.Example _lis.config_ entry
+....
+Precipitation ensemble forecast directory:     ./GEOS5_BiasCorrected/
+Precipitation ensemble forecast number of ensemble members:  11
+Name of base forecast model:              GEOS5
 ....
 
 
@@ -6263,6 +6349,22 @@ MRMS mask directory: ./input/MASKS/
 AWRAL forcing directory:               ./INPUT/AWRAL.FORCING
 AWRAL domain x-dimension size:         841
 AWRAL domain y-dimension size:         681
+....
+
+[[sssec_plumber2forcing,PLUMBER2]]
+==== PLUMBER2
+
+`PLUMBER2 forcing file:` specifies the location of the PLUMBER2 forcing file.
+
+`PLUMBER2 Station ID:` specifies the station ID of the PLUMBER2 forcing file.
+
+`PLUMBER2 Time Delta:` specifies the PLUMBER2 site-specific forcing time step (in seconds).
+
+.Example _lis.config_ entry
+....
+PLUMBER2 forcing file: ./input/PLUMBER2/AU-Cow_2010-2015_OzFlux_Met.nc          
+PLUMBER2 Station ID: AU-Cow                                                      
+PLUMBER2 Time Delta: 1800  
 ....
 
 [[ssec_lsm,Land surface models]]
@@ -9440,7 +9542,7 @@ of how to specify a time interval.
 `Irrigation threshold:` defines the irrigation trigger
 threshold for the flood and sprinkler irrigation schemes.
 
-`Irrigation max soil layer depth:` specifies the maximum soil layer depth. [red]#specifies what?#
+`Irrigation max soil layer depth:` specifies the maximum soil layer depth.  Defaults to 1 layer.
 
 `Sprinkler irrigation max root depth file:` specifies the
 location of the max root depth file for sprinkler irrigation.
@@ -9469,19 +9571,56 @@ code, the irrigation threhold contains the term
 instead of a static value of 0.4. By using this equation, the user may adjust the cut-off 
 percentage as a function of GVF range (shdmax-shdmin).
 
-`Groundwater abstraction for irrigation:` specifies whether
-to withdraw water used for irrigation from the groundwater
-in Noah-MP
-1=Yes 0=No (default=0)
+`Irrigation scheduling based on dynamic vegetation:` specifies whether to schedule irrigation based on GVF simulated by the DVEG module in Noah-MP. This option works together with `Noah-MP.4.0.1 dynamic vegetation option` = 2.
+Acceptable values are:
+
+|====
+|Value         | Description
+
+|0 | No
+|1 | Yes
+|====
+
+Defaults to 0.
+
+`Groundwater abstraction for irrigation:` specifies whether to withdraw water used for irrigation from the groundwater in Noah-MP.
+Acceptable values are:
+
+|====
+|Value         | Description
+
+|0 | No
+|1 | Yes
+|====
+
+Defaults to 0.
+
+`Irrigation source water partition:` specifies whether to withdraw water used for irrigation from groundwater based on the groundwater irrigation ratio dataset. This option works only when the irrigation groundwater ratio is set up in the `LIS domain and parameter data file`. Now only supports the CONUS domain.
+Acceptable values are:
+
+|====
+|Value         | Description
+
+|0 | No
+|1 | Yes
+|====
+
+Defaults to 0.
 
 .Example _lis.config_ entry
 ....
 Irrigation scheme:            "none"
 Irrigation output interval:   "1da"
 Irrigation threshold:          0.50
+Irrigation max soil layer depth: 1
 Sprinkler irrigation max root depth file:
 Flood irrigation max root depth file:
 Drip irrigation max root depth file:
+Irrigation GVF parameter 1: 0.40
+Irrigation GVF parameter 2: 0.00
+Irrigation scheduling based on dynamic vegetation: 0
+Groundwater abstraction for irrigation: 0
+Irrigation source water partition: 0
 ....
 
 

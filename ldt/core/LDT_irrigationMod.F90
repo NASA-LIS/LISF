@@ -24,6 +24,7 @@ module LDT_irrigationMod
 !
 !  08 Aug 2005: Sujay Kumar; Initial implementation
 !  10 Nov 2012: Kristi Arsenault: Modified for irrigation datasets.
+!  12 Apr 2021: Wanshu Nie: Added support for reading in groundwater irrigation ratio  
 !
   use ESMF
   use LDT_coreMod
@@ -53,15 +54,17 @@ module LDT_irrigationMod
 
      character*140    :: irrigtypefile
      character*140    :: irrigfracfile
+     character*140    :: irriggwratiofile
      real, allocatable :: irrig_gridDesc(:)
      character*50     :: irrig_proj
 
      character*50     :: irrigtype_gridtransform
      character*50     :: irrigfrac_gridtransform
-
+     character*50     :: irriggwratio_gridtransform
      ! Irrigation parameters
      type(LDT_paramEntry) :: irrigtype   ! Type of irrigation
      type(LDT_paramEntry) :: irrigfrac   ! Irrigation gridcell fraction
+     type(LDT_paramEntry) :: irriggwratio
 
   end type irrig_type_dec
 
@@ -96,6 +99,16 @@ contains
             "IRRIGFRAC",source)
        if( LDT_rc%assimcropinfo(n) .and. rc /= 0 ) then
          call LDT_warning(rc,"WARNING: Irrigation fraction data source: not defined")
+       endif
+    enddo
+
+    call ESMF_ConfigFindLabel(LDT_config,"Groundwater irrigation ratio data source:",rc=rc)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
+       call LDT_set_param_attribs(rc,LDT_irrig_struc(n)%irriggwratio,&
+            "irriggwratio",source)
+       if( LDT_rc%assimcropinfo(n) .and. rc /= 0 ) then
+         call LDT_warning(rc,"WARNING: groundwater irrigation ratio data source: not defined")
        endif
     enddo
 
@@ -134,14 +147,17 @@ contains
     integer  :: rc
     type(LDT_fillopts)  :: irrigtype
     type(LDT_fillopts)  :: irrigfrac
+    type(LDT_fillopts)  :: irriggwratio
 
     logical  :: irrigfrac_select
     logical  :: irrigtype_select
+    logical  :: irriggwratio_select
 
 ! _____________________________________________________________
 
    irrigfrac_select = .false.
    irrigtype_select = .false.
+   irriggwratio_select = .false.
    do n = 1, LDT_rc%nnest
       if( LDT_irrig_struc(n)%irrigtype%selectOpt.gt.0 ) then
         irrigtype_select = .true.
@@ -149,9 +165,12 @@ contains
       if( LDT_irrig_struc(n)%irrigfrac%selectOpt.gt.0 ) then
         irrigfrac_select = .true.
       endif
+      if( LDT_irrig_struc(n)%irriggwratio%selectOpt.gt.0 ) then
+        irriggwratio_select = .true.
+      endif
    enddo
 
-   if( irrigfrac_select .or. irrigtype_select ) then
+   if( irrigfrac_select .or. irrigtype_select .or. irriggwratio_select) then
      write(LDT_logunit,*)" - - - - - - - - - - Irrigation Parameters - - - - - - - - - - - - -"
    endif
 
@@ -171,6 +190,15 @@ contains
          allocate(LDT_irrig_struc(n)%irrigfrac%value(&
               LDT_rc%lnc(n),LDT_rc%lnr(n),&
               LDT_irrig_struc(n)%irrigfrac%vlevels))
+      endif
+
+      if( irriggwratio_select ) then
+
+         call set_irriggwratio_attribs( n, LDT_irrig_struc(n)%irriggwratio%source )
+         LDT_irrig_struc(n)%irriggwratio%vlevels = LDT_irrig_struc(n)%irriggwratio%num_bins
+         allocate(LDT_irrig_struc(n)%irriggwratio%value(&
+              LDT_rc%lnc(n),LDT_rc%lnr(n),&
+              LDT_irrig_struc(n)%irriggwratio%vlevels))
       endif
    enddo
 
@@ -218,6 +246,30 @@ contains
           call setIrrigParmsFullnames( n, "irrigfrac", &
                   LDT_irrig_struc(n)%irrigfrac%source )
        enddo
+
+! Groundwater irrigation ratio ldt.config entries:
+    if( irriggwratio_select ) then
+       call ESMF_ConfigFindLabel(LDT_config,"Groundwater irrigation ratio map:",rc=rc)
+       do n=1,LDT_rc%nnest
+          call ESMF_ConfigGetAttribute(LDT_config,&
+               LDT_irrig_struc(n)%irriggwratiofile,rc=rc)
+          call LDT_verify(rc,'Groundwater irrigation ratio map: not specified')
+       enddo
+       call ESMF_ConfigFindLabel(LDT_config,"Groundwater irrigation ratio spatial transform:",rc=rc)
+       do n=1,LDT_rc%nnest
+          call ESMF_ConfigGetAttribute(LDT_config,&
+               LDT_irrig_struc(n)%irriggwratio_gridtransform,&
+               rc=rc)
+          call LDT_verify(rc,'Groundwater irrigation ratio spatial transform: option not specified in the config file')
+       enddo
+     ! Set units and full names:
+       do n=1,LDT_rc%nnest
+          LDT_irrig_struc(n)%irriggwratio%units="-"
+          call setIrrigParmsFullnames( n, "irriggwratio", &
+                  LDT_irrig_struc(n)%irriggwratio%source )
+       enddo
+
+    end if
 
        ! Read in lat/lon extents and res for sources that are binary:
        LDT_irrig_struc(:)%irrig_proj = "none"
@@ -280,6 +332,17 @@ contains
 !                LDT_irrig_struc(n)%landmask2%value, fill_option, fill_value, fill_rad )
        end if
 
+    !- Groundwater irrigation ratio:
+       if( LDT_irrig_struc(n)%irriggwratio%selectOpt == 1 ) then
+          write(LDT_logunit,*) "Reading groundwater irrigation ratio: "//&
+               trim(LDT_irrig_struc(n)%irriggwratiofile)
+          write(LDT_logunit,*) "Groundwater irrigation ratio data source: "//&
+               trim(LDT_irrig_struc(n)%irriggwratio%source)
+          call readirriggwratio( trim(LDT_irrig_struc(n)%irriggwratio%source)//char(0),&
+                n, LDT_irrig_struc(n)%irriggwratio%value,   &
+                LDT_irrig_struc(n)%irriggwratio%num_bins )
+       endif
+
     enddo
 
   end subroutine LDT_irrigation_init
@@ -312,6 +375,11 @@ contains
             LDT_irrig_struc(n)%irrigfrac)
     endif
          
+    if( LDT_irrig_struc(n)%irriggwratio%selectOpt.gt.0 ) then
+       call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+            LDT_irrig_struc(n)%irriggwratio)
+    endif
+
 #endif
   end subroutine LDT_irrigation_writeHeader
 
@@ -326,6 +394,10 @@ contains
 
     if( LDT_irrig_struc(n)%irrigfrac%selectOpt.gt.0 ) then
        call LDT_writeNETCDFdata(n,ftn,LDT_irrig_struc(n)%irrigfrac)
+    endif
+
+    if( LDT_irrig_struc(n)%irriggwratio%selectOpt.gt.0 ) then
+       call LDT_writeNETCDFdata(n,ftn,LDT_irrig_struc(n)%irriggwratio)
     endif
 
   end subroutine LDT_irrigation_writeData

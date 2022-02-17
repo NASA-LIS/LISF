@@ -55,6 +55,7 @@ module gswp2_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   
   PRIVATE
@@ -73,16 +74,16 @@ module gswp2_forcingMod
      real     :: ts
      integer  :: ncold, nrold, vector_len   !AWIPS 212 dimensions
      real*8   :: gswp2time1,gswp2time2
-     character*100 :: mfile
-     character*100 :: tair
-     character*100 :: qair
-     character*100 :: psurf
-     character*100 :: wind
-     character*100 :: rainf
-     character*100 :: snowf
-     character*100 :: swdown
-     character*100 :: lwdown
-     character*100 :: rainf_c
+     character(len=LIS_CONST_PATH_LEN) :: mfile
+     character(len=LIS_CONST_PATH_LEN) :: tair
+     character(len=LIS_CONST_PATH_LEN) :: qair
+     character(len=LIS_CONST_PATH_LEN) :: psurf
+     character(len=LIS_CONST_PATH_LEN) :: wind
+     character(len=LIS_CONST_PATH_LEN) :: rainf
+     character(len=LIS_CONST_PATH_LEN) :: snowf
+     character(len=LIS_CONST_PATH_LEN) :: swdown
+     character(len=LIS_CONST_PATH_LEN) :: lwdown
+     character(len=LIS_CONST_PATH_LEN) :: rainf_c
 
      integer, allocatable   :: gindex(:,:)
 

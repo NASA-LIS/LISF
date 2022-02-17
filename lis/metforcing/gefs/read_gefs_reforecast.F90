@@ -34,7 +34,7 @@ subroutine read_gefs_reforecast(n, m, findex, order, filename, varname, ferror)
   integer, intent(in)       :: n
   integer, intent(in)       :: m
   integer, intent(in)       :: order
-  character*140, intent(in) :: filename
+  character(len=*), intent(in) :: filename
   character*10, intent(in)  :: varname
   integer, intent(out)      :: ferror
 !
@@ -213,7 +213,6 @@ subroutine read_gefs_reforecast(n, m, findex, order, filename, varname, ferror)
         endif
       enddo
     endif
-#endif
 
 ! _______________________________________________________
 
@@ -378,6 +377,7 @@ subroutine read_gefs_reforecast(n, m, findex, order, filename, varname, ferror)
        '[ERR] Could not find file: ',trim(filename)
      ferror = 0
   endif
+#endif
 
 end subroutine read_gefs_reforecast
 

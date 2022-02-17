@@ -15,28 +15,26 @@
 #
 # REVISION HISTORY:
 # 27 Sep 2021: Eric Kemp (SSAI), first version.
+# 30 Oct 2021: Eric Kemp/SSAI, added support for s2smetric config file.
 #
 #------------------------------------------------------------------------------
 """
 
 # Standard modules
+import configparser
 import datetime
 import os
 import subprocess
 import sys
 
-# Path to NCO binaries.
-_NCO_DIR = "/usr/local/other/nco/5.0.1/bin" # On Discover
-
-# Lists of variables and metrics to process
-_VAR_LIST = ["RootZone-SM", "Streamflow", "Surface-SM"]
+# Local constants
 _METRIC_LIST = ["ANOM", "SANOM"]
 
 def _usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: %s input_dir output_dir" %(sys.argv[0])
+    txt = f"[INFO] Usage: {sys.argv[0]} input_dir output_dir"
     txt += " start_yyyymmdd end_yyyymmdd"
-    txt += " model_forcing"
+    txt += " model_forcing configfile"
     print(txt)
     print("[INFO] where:")
     print("[INFO] input_dir: directory with S2S metric files in CF convention")
@@ -44,17 +42,57 @@ def _usage():
     print("[INFO] start_yyyymmdd: Starting date/time of metrics files")
     print("[INFO] end_yyyymmdd: Starting date/time of metrics files")
     print("[INFO] model_forcing; ID for atmospheric forcing for LIS")
+    print("[INFO] configfile: Path to s2smetric config file")
 
-def _check_nco_binaries():
+def _read_cmd_args():
+    """Read command line arguments."""
+
+    # Check if argument count is correct.
+    if len(sys.argv) != 7:
+        print("[ERR] Invalid number of command line arguments!")
+        _usage()
+        sys.exit(1)
+
+    # Check if input directory exists.
+    input_dir = sys.argv[1]
+    if not os.path.exists(input_dir):
+        print(f"[ERR] Directory {input_dir} does not exist!")
+        sys.exit(1)
+
+    # Create output directory if it doesn't exist.
+    output_dir = sys.argv[2]
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # Get valid starting and ending dates of data.
+    start_yyyymmdd = sys.argv[3]
+    startdate = _proc_date(start_yyyymmdd)
+    end_yyyymmdd = sys.argv[4]
+    enddate = _proc_date(end_yyyymmdd)
+    if startdate > enddate:
+        print("[ERR] Start date is after end date!")
+        sys.exit(1)
+
+    # Get ID for model forcing for LIS
+    model_forcing = sys.argv[5]
+
+    configfile = sys.argv[6]
+    if not os.path.exists(configfile):
+        print(f"[ERR] Cannot file config file {configfile}!")
+        sys.exit(1)
+
+    return input_dir, output_dir, startdate, enddate, model_forcing, configfile
+
+def _check_nco_binaries(config):
     """Check to see if necessary NCO binaries are available."""
+    ncodir = config["s2smetric"]["ncodir"]
     nco_bins = ["ncks", "ncrename"]
     for nco_bin in nco_bins:
-        path = "%s/%s" %(_NCO_DIR, nco_bin)
+        path = f"{ncodir}/{nco_bin}"
         if not os.path.exists(path):
-            print("[ERR] Cannot find %s for converting LIS netCDF4 data!" \
-                  %(path))
+            print(f"[ERR] Cannot find {path} for converting LIS netCDF4 data!")
             print("[ERR] Make sure NCO package is installed on the system!")
-            print("[ERR] And update _NCO_DIR in this script if necessary!")
+            print("[ERR] And update ncodir in s2smetric config if necessary!")
             sys.exit(1)
 
 def _run_cmd(cmd, error_msg):
@@ -80,143 +118,114 @@ def _proc_date(yyyymmdd):
         sys.exit(1)
     return dateobj
 
-def _read_cmd_args():
-    """Read command line arguments."""
-
-    # Check if argument count is correct.
-    if len(sys.argv) != 6:
-        print("[ERR] Invalid number of command line arguments!")
-        _usage()
-        sys.exit(1)
-
-    # Check if input directory exists.
-    input_dir = sys.argv[1]
-    if not os.path.exists(input_dir):
-        print("[ERR] Directory %s does not exist!")
-        sys.exit(1)
-
-    # Create output directory if it doesn't exist.
-    output_dir = sys.argv[2]
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    # Get valid starting and ending dates of data.
-    start_yyyymmdd = sys.argv[3]
-    startdate = _proc_date(start_yyyymmdd)
-    end_yyyymmdd = sys.argv[4]
-    enddate = _proc_date(end_yyyymmdd)
-    if startdate > enddate:
-        print("[ERR] Start date is after end date!")
-        sys.exit(1)
-
-    # Get ID for model forcing for LIS
-    model_forcing = sys.argv[5]
-
-    return input_dir, output_dir, startdate, enddate, model_forcing
-
 def _check_filename_size(name):
     """Make sure filename does not exceed 128 characters, per Air Force
     requirement."""
     if len(os.path.basename(name)) > 128:
         print("[ERR] Output file name is too long!")
-        print("[ERR] %s exceeds 128 characters!" %(os.path.basename(name)))
+        print(f"[ERR] {os.path.basename(name)} exceeds 128 characters!")
         sys.exit(1)
 
 def _create_var_metric_filename(input_dir, model_forcing, var, metric,
                                 startdate):
     """Create path to S2S metric file."""
-    name = "%s/" %(input_dir)
-    name += "%s_" %(model_forcing)
-    name += "%s_" %(var)
-    name += "%s_" %(metric)
-    name += "init_monthly_%2.2d_%4.4d" %(startdate.month,
-                                         startdate.year)
+    name = f"{input_dir}/"
+    name += f"{model_forcing}_"
+    name += f"{var}_"
+    name += f"{metric}_"
+    name += f"init_monthly_{startdate.month:02d}_{startdate.year:04d}"
     name += ".nc"
     return name
 
 def _create_merged_metric_filename(output_dir, startdate, enddate,
                                    model_forcing):
     """Create path to merged S2S metric netCDF file."""
-    name = "%s" %(output_dir)
+    name = f"{output_dir}"
     name += "/PS.557WW"
     name += "_SC.U"
     name += "_DI.C"
-    name += "_GP.LIS-S2S-%s-ANOM" %(model_forcing)
+    name += f"_GP.LIS-S2S-{model_forcing.upper()}-ANOM"
     name += "_GR.C0P25DEG"
     name += "_AR.AFRICA"
     name += "_PA.LIS-S2S-ANOM"
-    name += "_DP.%4.4d%2.2d%2.2d-%4.4d%2.2d%2.2d" \
-        %(startdate.year, startdate.month, startdate.day,
-          enddate.year, enddate.month, enddate.day)
+    name += f"_DP.{startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
+    name += f"-{enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
     name += "_TP.0000-0000"
     name += "_DF.NC"
     _check_filename_size(name)
     return name
 
-def _merge_files(input_dir, model_forcing, startdate, mergefile):
+def _merge_files(config, input_dir, model_forcing, startdate, mergefile):
     """Merge individual variable metrics into single file."""
 
     # Copy first variable/metric file
-    first_var = _VAR_LIST[0]
+    var_list = config["s2smetric"]["metric_vars"].split()
+    first_var = var_list[0]
     first_metric = _METRIC_LIST[0]
     metricfile =  _create_var_metric_filename(input_dir, model_forcing,
                                               first_var, first_metric,
                                               startdate)
     if not os.path.exists(metricfile):
-        print("[ERR] %s does not exist!" %(metricfile))
+        print(f"[ERR] {metricfile} does not exist!")
         sys.exit(1)
 
-    cmd = "%s/ncks" %(_NCO_DIR)
-    cmd += " %s -6 %s" %(metricfile, mergefile)
+    ncodir = config["s2smetric"]["ncodir"]
+    cmd = f"{ncodir}/ncks"
+    cmd += f" {metricfile} -6 {mergefile}"
     _run_cmd(cmd, "[ERR] Problem with ncks!")
 
     # Rename ANOM array
-    cmd = "%s/ncrename -O" %(_NCO_DIR)
-    cmd += " -v ANOM,%s_%s" %(first_var.replace("-","_"), first_metric)
-    cmd += " %s" %(mergefile)
+    cmd = f"{ncodir}/ncrename -O"
+    cmd += f" -v anom,{first_var.replace('-','_')}_{first_metric}"
+    cmd += f" {mergefile}"
     _run_cmd(cmd, "[ERR] Problem with ncrename!")
 
-    # Loop through remaining var metric files, copy *only* the ANOM variable,
-    # and then rename the ANOM variable.
-    for var in _VAR_LIST:
+    # Loop through remaining var metric files, copy *only* the anom variable,
+    # and then rename the anom variable.
+    for var in var_list:
         for metric in _METRIC_LIST:
 
             if (var, metric) == (first_var, first_metric):
                 continue
 
-            metricfile =  _create_var_metric_filename(input_dir, model_forcing,
-                                                      var, metric,
-                                                      startdate)
+            metricfile = _create_var_metric_filename(input_dir, model_forcing,
+                                                     var, metric,
+                                                     startdate)
             if not os.path.exists(metricfile):
-                print("[ERR] %s does not exist!" %(metricfile))
+                print(f"[ERR] {metricfile} does not exist!")
                 sys.exit(1)
 
-            cmd = "%s/ncks -A -C" %(_NCO_DIR)
-            cmd += " -v ANOM"
-            cmd += " %s -6 %s" %(metricfile, mergefile)
+            cmd = f"{ncodir}/ncks -A -C"
+            cmd += " -v anom"
+            cmd += f" {metricfile} -6 {mergefile}"
             _run_cmd(cmd, "[ERR] Problem with ncks!")
 
-            cmd = "%s/ncrename -O" %(_NCO_DIR)
-            cmd += " -v ANOM,%s_%s" %(var.replace("-","_"), metric)
-            cmd += " %s" %(mergefile)
+            cmd = f"{ncodir}/ncrename -O"
+            cmd += f" -v anom,{var.replace('-','_')}_{metric}"
+            cmd += f" {mergefile}"
             _run_cmd(cmd, "[ERR] Problem with ncrename!")
 
-def _copy_to_final_file(mergefile, final_file):
+def _copy_to_final_file(config, mergefile, final_file):
     """Copy to new file, with netCDF4 compression."""
-    cmd = "%s/ncks" %(_NCO_DIR)
-    cmd += " %s -7 -L 1 %s" %(mergefile, final_file)
+    ncodir = config["s2smetric"]["ncodir"]
+    cmd = f"{ncodir}/ncks"
+    cmd += f" {mergefile} -7 -L 1 {final_file}"
     _run_cmd(cmd, "[ERR] Problem with ncks!")
 
 def _driver():
     """Main driver"""
-    _check_nco_binaries()
-    input_dir, output_dir, startdate, enddate, model_forcing = _read_cmd_args()
+    input_dir, output_dir, startdate, enddate, model_forcing, configfile \
+        = _read_cmd_args()
+    config = configparser.ConfigParser()
+    config.read(configfile)
+    _check_nco_binaries(config)
     output_filename = _create_merged_metric_filename(output_dir,
                                                      startdate, enddate,
                                                      model_forcing)
-    tmp_output_filename = "%s/tmp.nc" %(output_dir)
-    _merge_files(input_dir, model_forcing, startdate, tmp_output_filename)
-    _copy_to_final_file(tmp_output_filename, output_filename)
+    tmp_output_filename = f"{output_dir}/tmp.nc"
+    _merge_files(config, input_dir, model_forcing, startdate, \
+                 tmp_output_filename)
+    _copy_to_final_file(config, tmp_output_filename, output_filename)
     os.unlink(tmp_output_filename)
 
 # Invoke driver

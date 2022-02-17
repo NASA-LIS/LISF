@@ -23,6 +23,8 @@ module metForcGenerated_forcingMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
+  
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 !
   implicit none
 
@@ -45,7 +47,7 @@ module metForcGenerated_forcingMod
      real*8         :: metforc_time1
      real*8         :: metforc_time2
 
-     character(100) :: directory
+     character(len=LIS_CONST_PATH_LEN) :: directory
      character(50)  :: proj_name
      integer        :: proj_index
  
@@ -92,7 +94,7 @@ contains
     integer  :: varid
     real     :: gridDesci(50)
     logical  :: file_exists
-    character(140) :: fullfilename
+    character(len=LIS_CONST_PATH_LEN) :: fullfilename
 
     integer  :: seconds, da, hr, mn, ss, icount
     character*50 :: timeInc

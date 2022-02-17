@@ -240,6 +240,10 @@ subroutine LIS_metforcing_plugin
    use Bondville_forcingMod
 #endif
 
+#if ( defined MF_PLUMBER2)
+   use plumber2_forcingMod
+#endif
+
 #if ( defined MF_LOOBOS )
    use Loobos_forcingMod
 #endif
@@ -254,6 +258,10 @@ subroutine LIS_metforcing_plugin
 
 #if ( defined MF_WRFOUT )
    use WRFout_forcingMod
+#endif
+
+#if ( defined MF_COAMPSOUT )
+   use COAMPSout_forcingMod
 #endif
 
 #if ( defined MF_WRFOUTV2 )
@@ -525,6 +533,14 @@ subroutine LIS_metforcing_plugin
    external finalize_Bondville
 #endif
 
+#if ( defined MF_PLUMBER2)
+   external get_plumber2
+   external timeinterp_plumber2
+   external finalize_plumber2
+   external reset_plumber2
+#endif
+
+
 #if ( defined MF_LOOBOS )
    external get_Loobos
    external timeinterp_Loobos
@@ -549,6 +565,13 @@ subroutine LIS_metforcing_plugin
    external timeinterp_WRFout
    external reset_WRFout
    external finalize_WRFout
+#endif
+
+#if ( defined MF_COAMPSOUT )
+   external get_COAMPSout
+   external timeinterp_COAMPSout
+   external reset_COAMPSout
+   external finalize_COAMPSout
 #endif
 
 #if ( defined MF_WRFOUTV2 )
@@ -961,6 +984,15 @@ subroutine LIS_metforcing_plugin
    call registerfinalmetforc(trim(LIS_scanId)//char(0),finalize_scan)
 #endif
 
+#if (defined MF_PLUMBER2)
+   call registerinitmetforc(trim(LIS_plumber2Id)//char(0),init_plumber2)
+   call registerretrievemetforc(trim(LIS_plumber2Id)//char(0),get_plumber2)
+   call registertimeinterpmetforc(trim(LIS_plumber2Id)//char(0),timeinterp_plumber2)
+   call registerresetmetforc(trim(LIS_plumber2Id)//char(0),reset_plumber2)
+   call registerfinalmetforc(trim(LIS_plumber2Id)//char(0),finalize_plumber2)
+#endif
+
+
 #if ( defined MF_BONDVILLE )
 ! - Noah3.1 Bondville test case
    call registerinitmetforc(trim(LIS_BondvilleId)//char(0),init_Bondville)
@@ -1009,6 +1041,16 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_WRFout)
    call registerfinalmetforc(trim(LIS_WRFoutId)//char(0),finalize_WRFout)
    call registerresetmetforc(trim(LIS_WRFoutId)//char(0),reset_WRFout)
+#endif
+
+#if ( defined MF_COAMPSOUT )
+! - COAMPSout forcing
+   call registerinitmetforc(trim(LIS_COAMPSoutId)//char(0),init_COAMPSout)
+   call registerretrievemetforc(trim(LIS_COAMPSoutId)//char(0),get_COAMPSout)
+   call registertimeinterpmetforc(trim(LIS_COAMPSoutId)//char(0), &
+                                  timeinterp_COAMPSout)
+   call registerfinalmetforc(trim(LIS_COAMPSoutId)//char(0),finalize_COAMPSout)
+   call registerresetmetforc(trim(LIS_COAMPSoutId)//char(0),reset_COAMPSout)
 #endif
 
 #if ( defined MF_WRFOUTV2 )

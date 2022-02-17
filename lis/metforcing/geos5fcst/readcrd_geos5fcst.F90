@@ -51,7 +51,7 @@ subroutine readcrd_geos5fcst()
 
   do n=1,LIS_rc%nnest
      write(unit=LIS_logunit,fmt=*) '[INFO] GEOS5 forecast forcing directory :',&
-          geos5fcst_struc(n)%geos5fcstdir
+          trim(geos5fcst_struc(n)%geos5fcstdir)
 
      geos5fcst_struc(n)%fcsttime1 = 3000.0
      geos5fcst_struc(n)%fcsttime2 = 0.0

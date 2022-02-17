@@ -27,6 +27,7 @@ subroutine read_WRFoutv2( order, n, findex, yr, mon, da, hr, ferror )
   use LIS_metforcingMod,    only : LIS_forc
   use LIS_timeMgrMod,       only : LIS_tick
   use LIS_logMod,           only : LIS_logunit, LIS_endrun
+  use LIS_constantsMod,     only : LIS_CONST_PATH_LEN
   use WRFoutv2_forcingMod,  only : WRFoutv2_struc
   use LIS_forecastMod
   use LIS_mpiMod
@@ -106,7 +107,7 @@ subroutine read_WRFoutv2( order, n, findex, yr, mon, da, hr, ferror )
        'PSFC       ',  &
        'PREC_ACC_NC'   /)
 
-  character(120) :: infile
+  character(len=LIS_CONST_PATH_LEN) :: infile
 
 ! netcdf variables
   integer :: ncid, varid, status
@@ -212,15 +213,15 @@ subroutine read_WRFoutv2( order, n, findex, yr, mon, da, hr, ferror )
               '/wrf_annual_CTRL_'//trim(WRFoutv2_fv(v))//'_'//cyr//'.nc'
 
        ! Open netCDF file.
-       status = nf90_open(infile, nf90_NoWrite, ncid)
+       status = nf90_open(trim(infile), nf90_NoWrite, ncid)
        if(status/=0) then
          if(LIS_masterproc) then 
-            write(LIS_logunit,*)'[ERR] Problem opening file: ',infile,status
+            write(LIS_logunit,*)'[ERR] Problem opening file: ',trim(infile),status
             call LIS_endrun
          endif
        else
          if(LIS_masterproc) then
-           write(LIS_logunit,*)'[INFO] Opened file: ',infile
+           write(LIS_logunit,*)'[INFO] Opened file: ',trim(infile)
          endif
        end if
 

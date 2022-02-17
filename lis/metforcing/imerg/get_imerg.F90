@@ -24,6 +24,7 @@ subroutine get_imerg(n, findex)
   use LIS_timeMgrMod, only : LIS_tick, LIS_get_nstep
   use imerg_forcingMod, only :imerg_struc
   use LIS_logMod, only : LIS_logunit, LIS_endrun
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -63,7 +64,7 @@ subroutine get_imerg(n, findex)
   real*8  :: ctime,ftime_imerg       ! Current LIS time and end boundary times for precip data sources 
   integer :: order
   real    :: gmt1,gmt4,ts1,ts4
-  character(len=99) :: filename ! Filename variables for precip data sources
+  character(len=LIS_CONST_PATH_LEN) :: filename ! Filename variables for precip data sources
 
 !=== End Variable Definition =======================
 
@@ -160,11 +161,10 @@ subroutine imergfile(n, kk, findex, imergdir, &
 !  \end{description}
 !
 !EOP
-  character(len=120) :: temp
   integer :: i, c
   integer :: uyr, umo, uda, uhr, umn, umnadd, umnday, uss !, ts1
 
-  character*100 :: fbase, ftimedir, fstem, fext
+  character*100 :: fstem, fext
   character*4   :: cyr, cmnday, imVer
   character*2   :: cmo, cda, chr, cmn, cmnadd 
 
