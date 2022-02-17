@@ -21,11 +21,12 @@ module LIS_constantsMod
 !
 !EOP
 !BOC
+   use ESMF, only : ESMF_MAXPATHLEN
    public
 !----------------------------------------------------------------------------
 ! software constants
 !----------------------------------------------------------------------------
-   integer,parameter :: LIS_CONST_PATH_LEN  = 500    ! max path length (in char)
+   integer,parameter :: LIS_CONST_PATH_LEN  = ESMF_MAXPATHLEN ! max path length (in char)
 
 !----------------------------------------------------------------------------
 ! physical constants (all data public)
