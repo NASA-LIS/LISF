@@ -54,7 +54,7 @@ subroutine RAPID_routing_readrst
 
            ! Read the data.
            call LIS_verify(nf90_get_var(ftn,varid_Qout,&
-                RAPID_routing_struc(n)%rst_Qout,(/1,1/),(/RAPID_routing_struc(n)%n_riv_bas,1/)),&
+                RAPID_routing_struc(n)%Qout,(/1,1/),(/RAPID_routing_struc(n)%n_riv_bas,1/)),&
                 'Error in nf90_get_var in RAPID_routing_readrst')
 
            ! Close the file

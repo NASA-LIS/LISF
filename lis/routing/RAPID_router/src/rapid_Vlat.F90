@@ -18,7 +18,8 @@ use rapid_var, only :                                              &
                    IV_time,IM_time_bnds,IV_riv_loc1,IV_riv_index,  &
                    ZV_read_riv_tot,ZV_Vlat,                        &
                    weight_table_file,n_weight_table,               &
-                   rivid,npt,idx_i,idx_j,area_sqm,lat,lon
+                   rivid,npt,idx_i,idx_j,area_sqm,lat,lon,         &
+                   ZV_riv_tot_lat,ZV_riv_tot_lon
 
 implicit none
 
@@ -77,6 +78,10 @@ do i=1,n_weight_table
                      *area_sqm(i+j-1)*conversion_factor       !kg m-2 (mm) -> m
            m3_riv(k)=m3_riv(k)+m3_riv_np
 
+           ! for lat/lon
+           ZV_riv_tot_lat(k)=lat(i+j-1)
+           ZV_riv_tot_lon(k)=lon(i+j-1)
+
         end do
 !        rivid_new(k)=rivid(i)
         k=k+1
@@ -92,6 +97,10 @@ do i=1,n_weight_table
         m3_riv(k)=(runsf(col,row)                       &
                   +runsb(col,row))*ZS_TauR              & !kg m-2 s-1 -> kg m-2
                   *area_sqm(i)*conversion_factor          !kg m-2 (mm) -> m
+
+        ! for lat/lon
+        ZV_riv_tot_lat(k)=lat(i)
+        ZV_riv_tot_lon(k)=lon(i)
 
  !       rivid_new(k)=rivid(i)
         k=k+1

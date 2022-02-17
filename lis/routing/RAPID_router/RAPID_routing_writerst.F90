@@ -45,11 +45,16 @@ subroutine RAPID_routing_writerst(n)
   logical               :: alarmCheck
   integer               :: dimid_time, dimid_riv_bas, dim_Qout(2)
   integer               :: varid_Qout
+  integer               :: shuffle, deflate, deflate_level
 
   integer, dimension(8) :: values
   character(len=8)      :: date
   character(len=10)     :: time
   character(len=5)      :: zone
+
+  shuffle = NETCDF_shuffle
+  deflate = NETCDF_deflate
+  deflate_level =NETCDF_deflate_level
 
   alarmCheck = LIS_isAlarmRinging(LIS_rc,&
       "RAPID router restart alarm")
@@ -78,7 +83,11 @@ subroutine RAPID_routing_writerst(n)
         ! Define variables
         status = nf90_def_var(ftn,"Qout",NF90_REAL,dim_Qout,varid_Qout) 
         call LIS_verify(status, "Error in nf90_def_var in RAPID_routing_writerst")
- 
+
+        !Define compression parameters
+        call LIS_verify(nf90_def_var_deflate(ftn,varid_Qout,shuffle, deflate, deflate_level), &
+                        'Error in nf90_def_var_deflate in RAPID_routing_writerst')
+
         ! Define variable attributes
         call LIS_verify(nf90_put_att(ftn,varid_Qout,'long_name','average river water discharge ' &
                         // 'downstream of each river reach'), 'nf90_put_att failed for long_name')
@@ -118,7 +127,7 @@ subroutine RAPID_routing_writerst(n)
         call LIS_verify(nf90_enddef(ftn),'Error in ncf90_enddef in RAPID_routing_writerst')
 
         !Write data
-        status = nf90_put_var(ftn,varid_Qout,RAPID_routing_struc(n)%rst_Qout,&
+        status = nf90_put_var(ftn,varid_Qout,RAPID_routing_struc(n)%Qout,&
                  (/1,1/), (/RAPID_routing_struc(n)%n_riv_bas,1/))
         call LIS_verify(status,'Error in nf90_put_var in RAPID_routing_writerst')
 
