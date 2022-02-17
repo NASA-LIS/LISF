@@ -214,7 +214,7 @@ contains
                       if (LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) .gt. LDT_rc%strat_cdfs_nbins) then
                           write(LDT_logunit,*) '[INFO] Startification bins is larger then Max Startification bins',&
                                 LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) , 'vs.', LDT_rc%strat_cdfs_nbins,& 
-                               'Value adjusted the Max Startification bins'
+                               'Value adjusted to the Max Startification bins'
                           LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) = LDT_rc%strat_cdfs_nbins      
                       endif
                    endif
