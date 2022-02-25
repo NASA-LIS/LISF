@@ -199,14 +199,6 @@ subroutine timeinterp_gddp(n,findex)
      do m=1,mfactor
         t = m + (k-1)*mfactor
         index1 = LIS_domain(n)%tile(t)%index
-
-!        if((gddp_struc(n)%metdata1(m,3,index1).ne.LIS_rc%udef).and.&
-!             (gddp_struc(n)%metdata2(m,3,index1).ne.LIS_rc%udef)) then 
-!           swd(t) =gddp_struc(n)%metdata1(m,3,index1)*wt1+ & 
-!                gddp_struc(n)%metdata2(m,3,index1)*wt2
-!        endif
-        
-
         zdoy=LIS_rc%doy
         
            ! compute and apply zenith angle weights
