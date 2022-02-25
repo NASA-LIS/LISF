@@ -204,8 +204,9 @@ subroutine get_gddp(n, findex)
         if(ferror.ge.1) gddp_struc(n)%gddptime1=time1
         call LIS_tick(dtime1,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
         if(try.gt.11)then
-           write(*,*)'error: GDDP data gap exceeds 10 days on file 1'
-           stop
+           write(LIS_logunit,*)'[ERR] GDDP data gap exceeds 10 days on file 1'
+           write(LIS_logunit,*)'[ERR] Program stopping...'
+           call LIS_endrun()
         endif
      enddo
 !=== end of data search
@@ -241,8 +242,9 @@ subroutine get_gddp(n, findex)
         endif
         call LIS_tick(dtime2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
         if(try.gt.11)then
-           write(*,*)'error: GDDP data gap exceeds 10 days on file 2'
-           stop
+           write(LIS_logunit,*)'[ERR] GDDP data gap exceeds 10 days on file 2'
+           write(LIS_logunit,*)'[ERR] Program stopping...'
+           call LIS_endrun()
         endif
      enddo
      !=== end of data search

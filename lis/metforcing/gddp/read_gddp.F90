@@ -456,7 +456,8 @@ subroutine read_gddp(n, findex, order, year, doy, &
                        if(.not.found) rad = rad+1
                     enddo
                  elseif(huss_inp(c,r).lt.0) then
-                    print*, 'negative huss ',huss_inp(c,r)
+                    write(LIS_logunit,*)'[ERR] negative huss ',huss_inp(c,r)
+                    write(LIS_logunit,*)'[ERR] Program stopping...'
                     call LIS_endrun()
                  endif
               enddo
@@ -925,7 +926,8 @@ subroutine interp_gddp(n,vid, findex, pcp_flag, &
            
         endif
         if(.not.found) then
-           print*, 'unable to fill', LIS_localPet, vid,  c,r,output_2d(c,r),found
+           write(LIS_logunit,*)'[ERR] unable to fill', LIS_localPet, vid,  c,r,output_2d(c,r),found
+           write(LIS_logunit,*)'[ERR] Program stopping...'
            call LIS_endrun()
         endif
      enddo
