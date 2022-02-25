@@ -280,7 +280,6 @@ contains
   integer :: ios1
   integer :: ios,nid,mxsnalid,ncId, nrId
   integer :: nc,nr,t
-!  real    :: mxsnal(LIS_rc%gnc(n),LIS_rc%gnr(n))
   real    :: tmpalb(LIS_rc%lnc(n), LIS_rc%lnr(n))
   logical :: file_exists
 
@@ -319,11 +318,6 @@ contains
      ios = nf90_close(nid)
      call LIS_verify(ios,'Error in nf90_close in read_mxsnalb')
 
-!     tmpalb(:,:) = &
-!          mxsnal(LIS_ews_halo_ind(n,LIS_localPet+1):&
-!          LIS_ewe_halo_ind(n,LIS_localPet+1), &
-!          LIS_nss_halo_ind(n,LIS_localPet+1): &
-!          LIS_nse_halo_ind(n,LIS_localPet+1))
   else
      write(LIS_logunit,*) '[INFO] max snow albedo map: ', &
           LIS_rc%paramfile(n), ' does not exist'
@@ -738,8 +732,6 @@ contains
        call LIS_verify(ios,&
             'Error in nf90_inquire_dimension in read_albedoclimo')
 
-!       allocate(albedo(LIS_rc%gnc(n),LIS_rc%gnr(n),months))
-
        ios = nf90_inq_varid(nid,'ALBEDO',albedoid)
        call LIS_verify(ios,'ALBEDO field not found in the LIS param file')
 
@@ -752,13 +744,6 @@ contains
        ios = nf90_close(nid)
        call LIS_verify(ios,'Error in nf90_close in read_albedoclimo')
 
-!       array(:,:) = &
-!            albedo(LIS_ews_halo_ind(n,LIS_localPet+1):&
-!            LIS_ewe_halo_ind(n,LIS_localPet+1), &
-!            LIS_nss_halo_ind(n,LIS_localPet+1): &
-!            LIS_nse_halo_ind(n,LIS_localPet+1),q)
-!
-!       deallocate(albedo)
     else
        write(LIS_logunit,*) '[ERR] albedo map: ',LIS_rc%paramfile(n), &
             ' does not exist'
