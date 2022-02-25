@@ -819,10 +819,6 @@ subroutine interp_gddp(n,vid, findex, pcp_flag, &
      enddo
   enddo
   
-!  open(100,file='test_inp.bin',form='unformatted')
-!  write(100) input_data_1d
-!  close(100)
-        
 !-----------------------------------------------------------------------
 ! Initialize output bitmap. 
 !-----------------------------------------------------------------------
@@ -883,13 +879,6 @@ subroutine interp_gddp(n,vid, findex, pcp_flag, &
      enddo
   enddo
 
-!  print*, 'here'
-!  open(100,file='test.bin',form='unformatted')
-!  write(100) output_data
-!  write(100) output_2d
-!  close(100)
-!  stop
-   
   do r=1,nr
      do c=1,nc
         found = .true. 
@@ -897,9 +886,6 @@ subroutine interp_gddp(n,vid, findex, pcp_flag, &
            rad = 1
            found = .false.
 
-!           if(LIS_localPet.eq.996.and.c.eq.88.and.r.eq.13) then
-!              print*, 'mismatch found ',LIS_localPet, vid, rad, c,r, output_2d(c,r)
-!           endif
            do while(.not.found)
               c1 = max(1,c-rad)
               c2 = min(nc,c+rad)
@@ -917,9 +903,6 @@ subroutine interp_gddp(n,vid, findex, pcp_flag, &
                  enddo
                  if(found) exit
               enddo
-!              if(LIS_localPet.eq.996.and.c.eq.88.and.r.eq.13) then
-!                 print*, 'up ',LIS_localPet, rad,output_2d(c,r),found
-!              endif
               if(.not.found) rad = rad +1
               if(rad.gt.maxrad) exit
            enddo
