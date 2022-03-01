@@ -348,7 +348,6 @@ endif::devonly[]
 |"`ERA5`"                      | ERA5 reanalysis meteorology
 |"`AWRAL processed forcing`"   | AWRA-L processed forcing
 |"`PLUMBER2`"                  | PLUMBER2 forcing
-|"`GDDP`"                      | NEX GDDP forcing
 |====
 
 .Example _lis.config_ entry
@@ -6366,25 +6365,6 @@ AWRAL domain y-dimension size:         681
 PLUMBER2 forcing file: ./input/PLUMBER2/AU-Cow_2010-2015_OzFlux_Met.nc          
 PLUMBER2 Station ID: AU-Cow                                                      
 PLUMBER2 Time Delta: 1800  
-....
-
-[[sssec_gddpforcing,GDDP]]
-==== GDDP
-
-`GDDP forcing file:` specifies the location of the GDDP metforcing data.
-
-`GDDP forcing scenario:` specifies the GDDP forcing scenario. Currently only `historical` is supported.
-
-`GDDP reference daily climatology directory:` specifies the location of the GDDP reference daily climatology data.
-
-`GDDP reference hourly climatology directory:` specifies the location of the GDDP reference hourly climatology data.
-
-.Example _lis.config_ entry
-....
-GDDP forcing directory:                      ./input/MET_FORCING/NEX-GDDP-CMIP6/
-GDDP forcing scenario:                       historical
-GDDP reference daily climatology directory:  ./input/MET_FORCING/M2CLIMO/DAILY/
-GDDP reference hourly climatology directory: ./input/MET_FORCING/M2CLIMO/HOURLY/
 ....
 
 [[ssec_lsm,Land surface models]]
