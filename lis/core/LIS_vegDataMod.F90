@@ -647,17 +647,24 @@ contains
        call LIS_verify(ios, &
             'Error in nf90_inquire_dimension in read_gfracclimo')
 
+       allocate(gfrac(LIS_rc%gnc(n),LIS_rc%gnr(n),months))
+
        ios = nf90_inq_varid(nid,'GREENNESS',gfracid)
        call LIS_verify(ios,'GREENNESS field not found in the LIS param file')
 
-       ios = nf90_get_var(nid,gfracid,localgfrac,&
-             start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
-             LIS_nss_halo_ind(n,LIS_localPet+1),mo/),&
-             count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),1/))
+       ios = nf90_get_var(nid,gfracid,gfrac)
        call LIS_verify(ios,'Error in nf90_get_var in read_gfracclimo')
 
        ios = nf90_close(nid)
        call LIS_verify(ios,'Error in nf90_close in read_gfracclimo')
+
+       localgfrac(:,:) = &
+            gfrac(LIS_ews_halo_ind(n,LIS_localPet+1):&
+            LIS_ewe_halo_ind(n,LIS_localPet+1), &
+            LIS_nss_halo_ind(n,LIS_localPet+1): &
+            LIS_nse_halo_ind(n,LIS_localPet+1),mo)
+
+       deallocate(gfrac)
 
        do t=1,LIS_rc%ntiles(n)
           array(t) = localgfrac(LIS_domain(n)%tile(t)%col,&
@@ -703,6 +710,7 @@ contains
   integer :: ios1
   integer :: ios,nid,shdminid,ncId, nrId
   integer :: nc,nr,c,r
+  real    :: shdmin(LIS_rc%gnc(n),LIS_rc%gnr(n))
   logical :: file_exists
 
   TRACE_ENTER("green_readmin")
@@ -732,14 +740,17 @@ contains
      ios = nf90_inq_varid(nid,'SHDMIN',shdminid)
      call LIS_verify(ios,'SHDMIN field not found in the LIS param file')
 
-     ios = nf90_get_var(nid,shdminid,array,&
-          start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
-          LIS_nss_halo_ind(n,LIS_localPet+1)/),&
-          count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
+     ios = nf90_get_var(nid,shdminid,shdmin)
      call LIS_verify(ios,'Error in nf90_get_var in LIS_read_shdmin')
 
      ios = nf90_close(nid)
      call LIS_verify(ios,'Error in nf90_close in LIS_read_shdmin')
+
+     array(:,:) = &
+          shdmin(LIS_ews_halo_ind(n,LIS_localPet+1):&
+          LIS_ewe_halo_ind(n,LIS_localPet+1), &
+          LIS_nss_halo_ind(n,LIS_localPet+1): &
+          LIS_nse_halo_ind(n,LIS_localPet+1))
 
   else
      write(LIS_logunit,*) '[ERR] SHDMIN map: ',&
@@ -784,6 +795,7 @@ contains
   integer :: ios1
   integer :: ios,nid,shdmaxid,ncId, nrId
   integer :: nc,nr,c,r
+  real    :: shdmax(LIS_rc%gnc(n),LIS_rc%gnr(n))
   logical :: file_exists
 
   TRACE_ENTER("green_readmax")
@@ -813,14 +825,17 @@ contains
      ios = nf90_inq_varid(nid,'SHDMAX',shdmaxid)
      call LIS_verify(ios,'SHDMAX field not found in the LIS param file')
 
-     ios = nf90_get_var(nid,shdmaxid,array,&
-          start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
-          LIS_nss_halo_ind(n,LIS_localPet+1)/),&
-          count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
+     ios = nf90_get_var(nid,shdmaxid,shdmax)
      call LIS_verify(ios,'Error in nf90_get_var in LIS_read_shdmax')
 
      ios = nf90_close(nid)
      call LIS_verify(ios,'Error in nf90_close in LIS_read_shdmax')
+
+     array(:,:) = &
+          shdmax(LIS_ews_halo_ind(n,LIS_localPet+1):&
+          LIS_ewe_halo_ind(n,LIS_localPet+1), &
+          LIS_nss_halo_ind(n,LIS_localPet+1): &
+          LIS_nse_halo_ind(n,LIS_localPet+1))
 
   else
      write(LIS_logunit,*) '[ERR] SHDMAX map: ',&
@@ -865,6 +880,7 @@ contains
   integer :: ios1
   integer :: ios,nid,laiminid,ncId, nrId
   integer :: nc,nr,c,r
+  real    :: laimin(LIS_rc%gnc(n),LIS_rc%gnr(n))
   logical :: file_exists
 
   TRACE_ENTER("lai_readmin")
@@ -894,14 +910,17 @@ contains
      ios = nf90_inq_varid(nid,'LAIMIN',laiminid)
      call LIS_verify(ios,'LAIMIN field not found in the LIS param file')
 
-     ios = nf90_get_var(nid,laiminid,array,&
-          start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
-          LIS_nss_halo_ind(n,LIS_localPet+1)/),&
-          count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
+     ios = nf90_get_var(nid,laiminid,laimin)
      call LIS_verify(ios,'Error in nf90_get_var in LIS_read_laimin')
 
      ios = nf90_close(nid)
      call LIS_verify(ios,'Error in nf90_close in LIS_read_laimin')
+
+     array(:,:) = &
+          laimin(LIS_ews_halo_ind(n,LIS_localPet+1):&
+          LIS_ewe_halo_ind(n,LIS_localPet+1), &
+          LIS_nss_halo_ind(n,LIS_localPet+1): &
+          LIS_nse_halo_ind(n,LIS_localPet+1))
 
   else
      write(LIS_logunit,*) '[ERR] LAIMIN map: ',&
@@ -946,6 +965,7 @@ contains
   integer :: ios1
   integer :: ios,nid,laimaxid,ncId, nrId
   integer :: nc,nr,c,r
+  real    :: laimax(LIS_rc%gnc(n),LIS_rc%gnr(n))
   logical :: file_exists
 
   TRACE_ENTER("lai_readmax")
@@ -975,14 +995,17 @@ contains
      ios = nf90_inq_varid(nid,'LAIMAX',laimaxid)
      call LIS_verify(ios,'LAIMAX field not found in the LIS param file')
 
-     ios = nf90_get_var(nid,laimaxid,array,&
-          start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
-          LIS_nss_halo_ind(n,LIS_localPet+1)/),&
-          count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))          
+     ios = nf90_get_var(nid,laimaxid,laimax)
      call LIS_verify(ios,'Error in nf90_get_var in LIS_read_laimax')
 
      ios = nf90_close(nid)
      call LIS_verify(ios,'Error in nf90_close in LIS_read_laimax')
+
+     array(:,:) = &
+          laimax(LIS_ews_halo_ind(n,LIS_localPet+1):&
+          LIS_ewe_halo_ind(n,LIS_localPet+1), &
+          LIS_nss_halo_ind(n,LIS_localPet+1): &
+          LIS_nse_halo_ind(n,LIS_localPet+1))
 
   else
      write(LIS_logunit,*) '[ERR] LAIMAX map: ',&
@@ -1456,17 +1479,24 @@ contains
        call LIS_verify(ios, &
             'Error in nf90_inquire_dimension in read_roughnessclimo')
 
+       allocate(roughness(LIS_rc%gnc(n),LIS_rc%gnr(n),months))
+
        ios = nf90_inq_varid(nid,'ROUGHNESS',roughnessid)
        call LIS_verify(ios,'ROUGHNESS field not found in the LIS param file')
 
-       ios = nf90_get_var(nid,roughnessid,localroughness,&
-            start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
-            LIS_nss_halo_ind(n,LIS_localPet+1),mo/),&
-            count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),1/))
+       ios = nf90_get_var(nid,roughnessid,roughness)
        call LIS_verify(ios,'Error in nf90_get_var in read_roughnessclimo')
 
        ios = nf90_close(nid)
        call LIS_verify(ios,'Error in nf90_close in read_roughnessclimo')
+
+       localroughness(:,:) = &
+            roughness(LIS_ews_halo_ind(n,LIS_localPet+1):&
+            LIS_ewe_halo_ind(n,LIS_localPet+1), &
+            LIS_nss_halo_ind(n,LIS_localPet+1): &
+            LIS_nse_halo_ind(n,LIS_localPet+1),mo)
+
+       deallocate(roughness)
 
        do t=1,LIS_rc%ntiles(n)
           array(t) = localroughness(LIS_domain(n)%tile(t)%col,&
@@ -2729,17 +2759,24 @@ contains
        ios = nf90_inquire_dimension(nid,mId, len=months)
        call LIS_verify(ios,'Error in nf90_inquire_dimension in read_laiclimo')
 
+       allocate(lai(LIS_rc%gnc(n),LIS_rc%gnr(n),months))
+
        ios = nf90_inq_varid(nid,'LAI',laiid)
        call LIS_verify(ios,'LAI field not found in the LIS param file')
 
-       ios = nf90_get_var(nid,laiid,locallai,&
-            start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
-            LIS_nss_halo_ind(n,LIS_localPet+1),mo/),&
-            count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),1/))
+       ios = nf90_get_var(nid,laiid,lai)
        call LIS_verify(ios,'Error in nf90_get_var in read_laiclimo')
 
        ios = nf90_close(nid)
        call LIS_verify(ios,'Error in nf90_close in read_laiclimo')
+
+       locallai(:,:) = &
+            lai(LIS_ews_halo_ind(n,LIS_localPet+1):&
+            LIS_ewe_halo_ind(n,LIS_localPet+1), &
+            LIS_nss_halo_ind(n,LIS_localPet+1): &
+            LIS_nse_halo_ind(n,LIS_localPet+1),mo)
+
+       deallocate(lai)
 
        do t=1,LIS_rc%ntiles(n)
           array(t) = locallai(LIS_domain(n)%tile(t)%col,&
@@ -2828,17 +2865,24 @@ contains
        ios = nf90_inquire_dimension(nid,mId, len=months)
        call LIS_verify(ios,'Error in nf90_inquire_dimension in read_saiclimo')
 
+       allocate(sai(LIS_rc%gnc(n),LIS_rc%gnr(n),months))
+
        ios = nf90_inq_varid(nid,'SAI',saiid)
        call LIS_verify(ios,'SAI field not found in the LIS param file')
 
-       ios = nf90_get_var(nid,saiid,localsai,&
-            start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
-            LIS_nss_halo_ind(n,LIS_localPet+1),mo/),&
-            count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),1/))
+       ios = nf90_get_var(nid,saiid,sai)
        call LIS_verify(ios,'Error in nf90_get_var in read_saiclimo')
 
        ios = nf90_close(nid)
        call LIS_verify(ios,'Error in nf90_close in read_saiclimo')
+
+       localsai(:,:) = &
+            sai(LIS_ews_halo_ind(n,LIS_localPet+1):&
+            LIS_ewe_halo_ind(n,LIS_localPet+1), &
+            LIS_nss_halo_ind(n,LIS_localPet+1): &
+            LIS_nse_halo_ind(n,LIS_localPet+1),mo)
+
+       deallocate(sai)
 
        do t=1,LIS_rc%ntiles(n)
           array(t) = localsai(LIS_domain(n)%tile(t)%col,&
