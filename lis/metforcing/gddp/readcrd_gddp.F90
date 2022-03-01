@@ -43,6 +43,13 @@ subroutine readcrd_gddp()
   do n=1,LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config,gddp_struc(n)%scenario,rc=rc)
      call LIS_verify(rc,"GDDP forcing scenario: is not defined")
+     if (trim(gddp_struc(n)%scenario).ne."historical") then
+        write(LIS_logunit,*) "[ERR] This GDDP forcing scenario is not supported: ",&
+                            trim(gddp_struc(n)%scenario)
+        write(LIS_logunit,*) "[ERR] ... Please select: 'historical'"
+        write(LIS_logunit,*) "[ERR] Program stopping ..."
+        call LIS_endrun()
+     endif
   enddo
   
   call ESMF_ConfigFindLabel(LIS_config,"GDDP reference daily climatology directory:",rc=rc)
