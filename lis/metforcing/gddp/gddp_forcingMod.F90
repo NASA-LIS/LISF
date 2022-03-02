@@ -73,7 +73,8 @@ module gddp_forcingMod
      
      integer                :: findtime1, findtime2
      real, allocatable      :: metdata1(:,:,:) 
-     real, allocatable      :: metdata2(:,:,:) 
+     real, allocatable      :: metdata2(:,:,:)
+     real, allocatable      :: metdata(:,:,:) 
 
      integer                :: nmodels   
 
@@ -156,10 +157,14 @@ contains
        allocate(gddp_struc(n)%metdata2(gddp_struc(n)%nmodels,&
             LIS_rc%met_nf(findex),&
             LIS_rc%ngrid(n)))
+       allocate(gddp_struc(n)%metdata(gddp_struc(n)%nmodels,&
+            LIS_rc%met_nf(findex),&
+            LIS_rc%ngrid(n)))
 
        gddp_struc(n)%metdata1 = 0
        gddp_struc(n)%metdata2 = 0
-
+       gddp_struc(n)%metdata = 0
+       
        gddp_struc(n)%day_check1 = -1
        gddp_struc(n)%day_check2 = -1
        
