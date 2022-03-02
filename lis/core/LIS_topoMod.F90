@@ -240,38 +240,27 @@ contains
        allocate(LIS_topo(n)%elevfgrd(LIS_rc%lnc(n),LIS_rc%lnr(n), &
             LIS_rc%nelevbands))
        
-       allocate(elev(LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nelevbands))
-       
        ios = nf90_inq_varid(nid,'ELEVATION',elevid)
        call LIS_verify(ios,'ELEVATION field not found in the LIS param file')
        
-       ios = nf90_get_var(nid,elevid,elev)
+       ios = nf90_get_var(nid,elevid,LIS_topo(n)%elevation,&
+            start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1),1/),&
+            count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%nelevbands/))
        call LIS_verify(ios,'Error in nf90_get_var in read_elevation')
        
-       LIS_topo(n)%elevation(:,:,:) = elev(&
-            LIS_ews_halo_ind(n,LIS_localPet+1):&         
-            LIS_ewe_halo_ind(n,LIS_localPet+1), &
-            LIS_nss_halo_ind(n,LIS_localPet+1): &
-            LIS_nse_halo_ind(n,LIS_localPet+1),:)
-       deallocate(elev)
-
-       allocate(elevfgrd(LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nelevbands))
-
        ios = nf90_inq_varid(nid,'ELEVFGRD',elevfgrdid)
        call LIS_verify(ios,'ELEVFGRD field not found in the LIS param file')
        
-       ios = nf90_get_var(nid,elevfgrdid,elevfgrd)
+       ios = nf90_get_var(nid,elevfgrdid,LIS_topo(n)%elevfgrd,&
+            start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1),1/),&
+            count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%nelevbands/))
        call LIS_verify(ios,'Error in nf90_get_var in read_elevation')
        
        ios = nf90_close(nid)
        call LIS_verify(ios,'Error in nf90_close in read_elevation')
        
-       LIS_topo(n)%elevfgrd(:,:,:) = elevfgrd(&
-            LIS_ews_halo_ind(n,LIS_localPet+1):&         
-            LIS_ewe_halo_ind(n,LIS_localPet+1), &
-            LIS_nss_halo_ind(n,LIS_localPet+1): &
-            LIS_nse_halo_ind(n,LIS_localPet+1),:)
-       deallocate(elevfgrd)
     else
        write(LIS_logunit,*) '[ERR] elevation map: ',LIS_rc%paramfile(n), &
             ' does not exist'
@@ -365,39 +354,27 @@ contains
        allocate(LIS_topo(n)%slopefgrd(LIS_rc%lnc(n),LIS_rc%lnr(n), &
             LIS_rc%nslopebands))
        
-       allocate(slope(LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nslopebands))
-       
        ios = nf90_inq_varid(nid,'SLOPE',slopeid)
        call LIS_verify(ios,'SLOPE field not found in the LIS param file')
        
-       ios = nf90_get_var(nid,slopeid,slope)
+       ios = nf90_get_var(nid,slopeid,LIS_topo(n)%slope,&
+            start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1),1/),&
+            count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%nslopebands/))
        call LIS_verify(ios,'Error in nf90_get_var in read_slope')
       
-       LIS_topo(n)%slope(:,:,:) = slope(&
-            LIS_ews_halo_ind(n,LIS_localPet+1):&         
-            LIS_ewe_halo_ind(n,LIS_localPet+1), &
-            LIS_nss_halo_ind(n,LIS_localPet+1): &
-            LIS_nse_halo_ind(n,LIS_localPet+1),:)
-       deallocate(slope)
-
-       allocate(slopefgrd(LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nslopebands))
-
        ios = nf90_inq_varid(nid,'SLOPEFGRD',slopefgrdid)
        call LIS_verify(ios,'SLOPEFGRD field not found in the LIS param file')
        
-       ios = nf90_get_var(nid,slopefgrdid,slopefgrd)
+       ios = nf90_get_var(nid,slopefgrdid,LIS_topo(n)%slopefgrd,&
+            start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1),1/),&
+            count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%nslopebands/))
        call LIS_verify(ios,'Error in nf90_get_var in read_slope')
        
        ios = nf90_close(nid)
        call LIS_verify(ios,'Error in nf90_close in read_slope')
        
-       LIS_topo(n)%slopefgrd(:,:,:) = slopefgrd(&
-            LIS_ews_halo_ind(n,LIS_localPet+1):&         
-            LIS_ewe_halo_ind(n,LIS_localPet+1), &
-            LIS_nss_halo_ind(n,LIS_localPet+1): &
-            LIS_nse_halo_ind(n,LIS_localPet+1),:)
-       deallocate(slopefgrd)
-
     else
        write(LIS_logunit,*) '[ERR] slope map: ',LIS_rc%paramfile(n), &
             ' does not exist'
@@ -492,40 +469,27 @@ contains
        allocate(LIS_topo(n)%aspectfgrd(LIS_rc%lnc(n),LIS_rc%lnr(n), &
             LIS_rc%naspectbands))
 
-       allocate(aspect(LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%naspectbands))
-              
        ios = nf90_inq_varid(nid,'ASPECT',aspectid)
        call LIS_verify(ios,'ASPECT field not found in the LIS param file')
        
-       ios = nf90_get_var(nid,aspectid,aspect)
+       ios = nf90_get_var(nid,aspectid,LIS_topo(n)%aspect,&
+            start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1),1/),&
+            count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%naspectbands/))
        call LIS_verify(ios,'Error in nf90_get_var in read_aspect')
        
-       LIS_topo(n)%aspect(:,:,:) = aspect(&
-            LIS_ews_halo_ind(n,LIS_localPet+1):&         
-            LIS_ewe_halo_ind(n,LIS_localPet+1), &
-            LIS_nss_halo_ind(n,LIS_localPet+1): &
-            LIS_nse_halo_ind(n,LIS_localPet+1),:)
-       deallocate(aspect)
-       
-       allocate(aspectfgrd(LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%naspectbands))
-
        ios = nf90_inq_varid(nid,'ASPECTFGRD',aspectfgrdid)
        call LIS_verify(ios,'ASPECTFGRD field not found in the LIS param file')
        
-       ios = nf90_get_var(nid,aspectfgrdid,aspectfgrd)
+       ios = nf90_get_var(nid,aspectfgrdid,LIS_topo(n)%aspectfgrd,&
+            start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1),1/),&
+            count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%naspectbands/))
        call LIS_verify(ios,'Error in nf90_get_var in read_aspect')
        
        ios = nf90_close(nid)
        call LIS_verify(ios,'Error in nf90_close in read_aspect')
        
-       LIS_topo(n)%aspectfgrd(:,:,:) = aspectfgrd(&
-            LIS_ews_halo_ind(n,LIS_localPet+1):&         
-            LIS_ewe_halo_ind(n,LIS_localPet+1), &
-            LIS_nss_halo_ind(n,LIS_localPet+1): &
-            LIS_nse_halo_ind(n,LIS_localPet+1),:)
-       deallocate(aspectfgrd)
-
-
     else
        write(LIS_logunit,*) '[ERR] aspect map: ',LIS_rc%paramfile(n), &
             ' does not exist'
