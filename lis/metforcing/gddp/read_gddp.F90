@@ -24,6 +24,7 @@ subroutine read_gddp(n, findex, order, year, doy, &
 ! !USES:
   use LIS_coreMod
   use LIS_logMod
+  use LIS_constantsMod
   use LIS_metforcingMod
   use gddp_forcingMod
   
@@ -105,6 +106,7 @@ subroutine read_gddp(n, findex, order, year, doy, &
   
   real                      :: varfield(LIS_rc%lnc(n),LIS_rc%lnr(n))
 
+  real                      :: tmpval
   ferror = 1
   iv = 0
 
@@ -392,8 +394,7 @@ subroutine read_gddp(n, findex, order, year, doy, &
                 start=(/1,1,doy_upd/),count=(/inpnc,inpnr,1/)),&
                 'Error in nf90_get_var:rsds')
            call LIS_verify(nf90_close(ftn))
-           
-           
+                      
            call LIS_verify(nf90_open(path=names(m,4),mode=nf90_nowrite,ncid=ftn),&
                 'Error in opening file '//trim(names(m,4)))
            call LIS_verify(nf90_inq_varid(ftn,'rlds',rldsid),&
@@ -431,38 +432,112 @@ subroutine read_gddp(n, findex, order, year, doy, &
                 start=(/1,1,doy_upd/),count=(/inpnc,inpnr,1/)),&
                 'Error in nf90_get_var:hurs')             
            call LIS_verify(nf90_close(ftn))
-           
+
+           !checking for unphysical specific humidity values
            do r=1,inpnr
               do c=1,inpnc
-                 if(huss_inp(c,r).le.0) then
-                    rad = 1
-                    found = .false.
-                    do while(.not.found)
-                       c1 = max(1,c-rad)
-                       c2 = min(inpnc,c+rad)
-                       r1 = max(1,r-rad)
-                       r2 = min(inpnr,r+rad)
-                       
-                       do j=r1,r2
-                          do i=c1,c2
-                             if(huss_inp(i,j).ne.0) then
-                                huss_inp(c,r) = huss_inp(i,j)
-                                found = .true.
-                                exit
-                             endif
+                 if(huss_inp(c,r).ne.1e+20) then 
+                    if(huss_inp(c,r).le.0.) then
+                       rad = 1
+                       found = .false.
+                       do while(.not.found)
+                          c1 = max(1,c-rad)
+                          c2 = min(inpnc,c+rad)
+                          r1 = max(1,r-rad)
+                          r2 = min(inpnr,r+rad)
+                          
+                          do j=r1,r2
+                             do i=c1,c2
+                                if(huss_inp(i,j).ne.0) then
+                                   huss_inp(c,r) = huss_inp(i,j)
+                                   found = .true.
+                                   exit
+                                endif
+                             enddo
+                             if(found) exit
                           enddo
-                          if(found) exit
+                          if(.not.found) rad = rad+1
                        enddo
-                       if(.not.found) rad = rad+1
-                    enddo
-                 elseif(huss_inp(c,r).lt.0) then
-                    write(LIS_logunit,*)'[ERR] negative huss ',huss_inp(c,r)
-                    write(LIS_logunit,*)'[ERR] Program stopping...'
-                    call LIS_endrun()
+                    elseif(huss_inp(c,r).lt.0) then
+                       write(LIS_logunit,*)'[ERR] Found unphysical Qair values that'
+                       write(LIS_logunit,*)'[ERR] could not be fixed with neighbor search'
+                       call LIS_endrun()
+                    endif
                  endif
               enddo
            enddo
-           
+
+           !check for unphysical lwdown values
+           do r=1,inpnr
+              do c=1,inpnc
+                 if(rlds_inp(c,r).ne.1e+20) then 
+                    if(rlds_inp(c,r).lt.0) then 
+                       rad = 1
+                       found = .false.
+                       do while(.not.found)
+                          c1 = max(1,c-rad)
+                          c2 = min(inpnc,c+rad)
+                          r1 = max(1,r-rad)
+                          r2 = min(inpnr,r+rad)
+                          
+                          do j=r1,r2
+                             do i=c1,c2
+                                if(rlds_inp(i,j).ne.1e+20.and.&
+                                     rlds_inp(i,j).ge.0) then
+                                   rlds_inp(c,r) = rlds_inp(i,j)
+                                   found = .true.
+                                   exit
+                                endif
+                             enddo
+                             if(found) exit
+                          enddo
+                          if(.not.found) rad = rad+1
+                       enddo
+                    elseif(rlds_inp(c,r).lt.0) then 
+                       write(LIS_logunit,*)'[ERR] Found unphysical LWdown values that'
+                       write(LIS_logunit,*)'[ERR] could not be fixed with neighbor search'
+                       call LIS_endrun()
+                    endif
+                 endif
+              enddo
+           enddo
+           !check for unphysical SWdown values
+           do r=1,inpnr
+              do c=1,inpnc
+                 if(rsds_inp(c,r).ne.1e+20) then 
+                    if(rsds_inp(c,r).gt.LIS_CONST_SOLAR.or.&
+                         rsds_inp(c,r).lt.0) then 
+                       rad = 1
+                       found = .false.
+                       do while(.not.found)
+                          c1 = max(1,c-rad)
+                          c2 = min(inpnc,c+rad)
+                          r1 = max(1,r-rad)
+                          r2 = min(inpnr,r+rad)
+                          
+                          do j=r1,r2
+                             do i=c1,c2
+                                if(rsds_inp(i,j).le.LIS_CONST_SOLAR.and.&
+                                     rsds_inp(i,j).ne.1e+20.and.&
+                                     rsds_inp(i,j).ge.0) then
+                                   rsds_inp(c,r) = rsds_inp(i,j)
+                                   found = .true.
+                                   exit
+                                endif
+                             enddo
+                             if(found) exit
+                          enddo
+                          if(.not.found) rad = rad+1
+                       enddo
+                    elseif(rsds_inp(c,r).gt.LIS_CONST_SOLAR) then
+                       write(LIS_logunit,*)'[ERR] Found unphysical SWdown values that'
+                       write(LIS_logunit,*)'[ERR] could not be fixed with neighbor search'
+                       call LIS_endrun()
+                    endif
+                 endif
+              enddo
+           enddo
+
            do r=1,inpnr
               do c=1,inpnc
                  if(tas_inp(c,r).ne.1e+20) then
@@ -480,7 +555,7 @@ subroutine read_gddp(n, findex, order, year, doy, &
 
            do r=1,inpnr
               do c=1,inpnc
-                 if(psurf_inp(c,r).le.60000) then !approaching infeasible range
+                 if(psurf_inp(c,r).gt.200000.or.psurf_inp(c,r).lt.1000) then 
                     rad = 1
                     found = .false.
                     do while(.not.found)
@@ -491,7 +566,8 @@ subroutine read_gddp(n, findex, order, year, doy, &
                        
                        do j=r1,r2
                           do i=c1,c2
-                             if(psurf_inp(i,j).gt.60000.and.&
+                             if(psurf_inp(i,j).lt.200000.and.&
+                                  psurf_inp(i,j).gt.1000.and.&
                                   psurf_inp(i,j).ne.1e+20) then
                                 psurf_inp(c,r) = psurf_inp(i,j)
                                 tas_inp(c,r) = tas_inp(i,j)
@@ -522,17 +598,9 @@ subroutine read_gddp(n, findex, order, year, doy, &
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
                  if(LIS_domain(n)%gindex(c,r).ne.-1) then 
-                    if(order.eq.1) then 
-                       gddp_struc(n)%metdata1(m,1,&
-                            LIS_domain(n)%gindex(c,r)) &
-                            = varfield(c,r)*tair_climo1(c,r)/&
-                            gddp_struc(n)%tair_climo(c,r)
-                    elseif(order.eq.2) then 
-                       gddp_struc(n)%metdata2(m,1,&
-                            LIS_domain(n)%gindex(c,r))&
-                            = varfield(c,r)*tair_climo1(c,r)/&
-                            gddp_struc(n)%tair_climo(c,r)
-                    endif
+                    gddp_struc(n)%metdata(m,1,&
+                         LIS_domain(n)%gindex(c,r)) &
+                         = varfield(c,r)
                  endif
               end do
            enddo
@@ -547,17 +615,9 @@ subroutine read_gddp(n, findex, order, year, doy, &
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
                  if(LIS_domain(n)%gindex(c,r).ne.-1) then 
-                    if(order.eq.1) then 
-                       gddp_struc(n)%metdata1(m,2,&
-                            LIS_domain(n)%gindex(c,r)) &
-                            = varfield(c,r)*qair_climo1(c,r)/&
-                            gddp_struc(n)%qair_climo(c,r)
-                    elseif(order.eq.2) then 
-                       gddp_struc(n)%metdata2(m,2,&
-                            LIS_domain(n)%gindex(c,r))&
-                            = varfield(c,r)*qair_climo1(c,r)/&
-                            gddp_struc(n)%qair_climo(c,r)
-                    endif
+                    gddp_struc(n)%metdata(m,2,&
+                         LIS_domain(n)%gindex(c,r)) &
+                         = varfield(c,r)
                  endif
               end do
            enddo
@@ -573,30 +633,9 @@ subroutine read_gddp(n, findex, order, year, doy, &
               do c=1,LIS_rc%lnc(n)
                  if(LIS_domain(n)%gindex(c,r).ne.-1) then
                     if(varfield(c,r).lt.0) varfield(c,r) = 0.0
-                    if(order.eq.1) then
-                       if(gddp_struc(n)%swdown_climo(c,r).ne.0) then 
-                          gddp_struc(n)%metdata1(m,3,&
-                               LIS_domain(n)%gindex(c,r)) &
-                               = varfield(c,r)*swdown_climo1(c,r)/&
-                               gddp_struc(n)%swdown_climo(c,r)
-                       else
-                          gddp_struc(n)%metdata1(m,3,&
-                               LIS_domain(n)%gindex(c,r)) &
-                               = varfield(c,r)
-                       endif
-                       
-                    elseif(order.eq.2) then
-                       if(gddp_struc(n)%swdown_climo(c,r).ne.0) then 
-                          gddp_struc(n)%metdata2(m,3,&
-                               LIS_domain(n)%gindex(c,r))&
-                               = varfield(c,r)*swdown_climo1(c,r)/&
-                               gddp_struc(n)%swdown_climo(c,r)
-                       else
-                          gddp_struc(n)%metdata2(m,3,&
-                               LIS_domain(n)%gindex(c,r))&
-                               = varfield(c,r)
-                       endif
-                    endif
+                    gddp_struc(n)%metdata(m,3,&
+                         LIS_domain(n)%gindex(c,r)) &
+                         = varfield(c,r)                          
                  endif
               end do
            enddo
@@ -610,17 +649,9 @@ subroutine read_gddp(n, findex, order, year, doy, &
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
                  if(LIS_domain(n)%gindex(c,r).ne.-1) then 
-                    if(order.eq.1) then 
-                       gddp_struc(n)%metdata1(m,4,&
-                            LIS_domain(n)%gindex(c,r)) &
-                            = varfield(c,r)*lwdown_climo1(c,r)/&
-                            gddp_struc(n)%lwdown_climo(c,r)
-                    elseif(order.eq.2) then 
-                       gddp_struc(n)%metdata2(m,4,&
-                            LIS_domain(n)%gindex(c,r))&
-                            = varfield(c,r)*lwdown_climo1(c,r)/&
-                            gddp_struc(n)%lwdown_climo(c,r)
-                    endif
+                    gddp_struc(n)%metdata(m,4,&
+                         LIS_domain(n)%gindex(c,r)) &
+                         = varfield(c,r)
                  endif
               end do
            enddo
@@ -634,17 +665,9 @@ subroutine read_gddp(n, findex, order, year, doy, &
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
                  if(LIS_domain(n)%gindex(c,r).ne.-1) then 
-                    if(order.eq.1) then 
-                       gddp_struc(n)%metdata1(m,5,&
-                            LIS_domain(n)%gindex(c,r)) &
-                            = varfield(c,r)*wind_climo1(c,r)/&
-                            gddp_struc(n)%wind_climo(c,r)
-                    elseif(order.eq.2) then 
-                       gddp_struc(n)%metdata2(m,5,&
-                            LIS_domain(n)%gindex(c,r))&
-                            = varfield(c,r)*wind_climo1(c,r)/&
-                            gddp_struc(n)%wind_climo(c,r)
-                    endif
+                    gddp_struc(n)%metdata(m,5,&
+                         LIS_domain(n)%gindex(c,r)) &
+                         = varfield(c,r)
                  endif
               end do
            enddo
@@ -658,17 +681,9 @@ subroutine read_gddp(n, findex, order, year, doy, &
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
                  if(LIS_domain(n)%gindex(c,r).ne.-1) then 
-                    if(order.eq.1) then 
-                       gddp_struc(n)%metdata1(m,6,&
-                            LIS_domain(n)%gindex(c,r)) &
-                            = varfield(c,r)*psurf_climo1(c,r)/&
-                            gddp_struc(n)%psurf_climo(c,r)
-                    elseif(order.eq.2) then 
-                       gddp_struc(n)%metdata2(m,6,&
-                            LIS_domain(n)%gindex(c,r))&
-                            = varfield(c,r)*psurf_climo1(c,r)/&
-                            gddp_struc(n)%psurf_climo(c,r)
-                    endif
+                    gddp_struc(n)%metdata(m,6,&
+                         LIS_domain(n)%gindex(c,r)) &
+                         = varfield(c,r)
                  endif
               end do
            enddo
@@ -681,18 +696,10 @@ subroutine read_gddp(n, findex, order, year, doy, &
            
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
-                 if(LIS_domain(n)%gindex(c,r).ne.-1) then 
-                    if(order.eq.1) then 
-                       gddp_struc(n)%metdata1(m,7,&
-                            LIS_domain(n)%gindex(c,r)) &
-                            = varfield(c,r)*prcp_climo1(c,r)/&
-                            gddp_struc(n)%prcp_climo(c,r)
-                    elseif(order.eq.2) then 
-                       gddp_struc(n)%metdata2(m,7,&
-                            LIS_domain(n)%gindex(c,r))&
-                            = varfield(c,r)*prcp_climo1(c,r)/&
-                            gddp_struc(n)%prcp_climo(c,r)
-                    endif
+                 if(LIS_domain(n)%gindex(c,r).ne.-1) then
+                    gddp_struc(n)%metdata(m,7,&
+                         LIS_domain(n)%gindex(c,r)) &
+                         = varfield(c,r)
                  endif
               end do
            enddo
@@ -707,6 +714,136 @@ subroutine read_gddp(n, findex, order, year, doy, &
         end if
      enddo
   endif
+
+  !disaggregate to hourly
+  do m=1,gddp_struc(n)%nmodels 
+     do r=1,LIS_rc%lnr(n)
+        do c=1,LIS_rc%lnc(n)
+           if(LIS_domain(n)%gindex(c,r).ne.-1) then 
+              if(order.eq.1) then 
+                 gddp_struc(n)%metdata1(m,1,&
+                      LIS_domain(n)%gindex(c,r)) &
+                      = gddp_struc(n)%metdata(m,1,&
+                      LIS_domain(n)%gindex(c,r))*&
+                      tair_climo1(c,r)/&
+                      gddp_struc(n)%tair_climo(c,r)
+
+                 gddp_struc(n)%metdata1(m,2,&
+                      LIS_domain(n)%gindex(c,r)) &
+                      = gddp_struc(n)%metdata(m,2,&
+                      LIS_domain(n)%gindex(c,r))*&
+                      qair_climo1(c,r)/&
+                      gddp_struc(n)%qair_climo(c,r)
+
+                 if(gddp_struc(n)%swdown_climo(c,r).ne.0) then 
+                    gddp_struc(n)%metdata1(m,3,&
+                         LIS_domain(n)%gindex(c,r)) &
+                         = gddp_struc(n)%metdata(m,3,&
+                         LIS_domain(n)%gindex(c,r))*&
+                         swdown_climo1(c,r)/&
+                         gddp_struc(n)%swdown_climo(c,r)                 
+                 else
+                    
+                    gddp_struc(n)%metdata1(m,3,&
+                         LIS_domain(n)%gindex(c,r)) = 0
+                    
+                 endif
+                 gddp_struc(n)%metdata1(m,4,&
+                      LIS_domain(n)%gindex(c,r)) &
+                      = gddp_struc(n)%metdata(m,4,&
+                      LIS_domain(n)%gindex(c,r))*&
+                      lwdown_climo1(c,r)/&
+                      gddp_struc(n)%lwdown_climo(c,r)
+                 
+                 gddp_struc(n)%metdata1(m,5,&
+                      LIS_domain(n)%gindex(c,r)) &
+                      = gddp_struc(n)%metdata(m,5,&
+                      LIS_domain(n)%gindex(c,r))*&
+                      wind_climo1(c,r)/&
+                      gddp_struc(n)%wind_climo(c,r)                 
+
+                 gddp_struc(n)%metdata1(m,6,&
+                      LIS_domain(n)%gindex(c,r)) &
+                      =gddp_struc(n)%metdata(m,6,&
+                      LIS_domain(n)%gindex(c,r))*&
+                      psurf_climo1(c,r)/&
+                      gddp_struc(n)%psurf_climo(c,r)
+
+                 gddp_struc(n)%metdata1(m,7,&
+                      LIS_domain(n)%gindex(c,r)) &
+                      = gddp_struc(n)%metdata(m,7,&
+                      LIS_domain(n)%gindex(c,r)) *&
+                      prcp_climo1(c,r)/&
+                      gddp_struc(n)%prcp_climo(c,r)
+                 
+                 
+              elseif(order.eq.2) then 
+                 gddp_struc(n)%metdata2(m,1,&
+                      LIS_domain(n)%gindex(c,r))&
+                      = gddp_struc(n)%metdata(m,1,&
+                      LIS_domain(n)%gindex(c,r))*&
+                      tair_climo1(c,r)/&
+                      gddp_struc(n)%tair_climo(c,r)
+
+                 gddp_struc(n)%metdata2(m,2,&
+                      LIS_domain(n)%gindex(c,r))&
+                      = gddp_struc(n)%metdata(m,2,&
+                      LIS_domain(n)%gindex(c,r))*&
+                      qair_climo1(c,r)/&
+                      gddp_struc(n)%qair_climo(c,r)
+                                  
+                 if(gddp_struc(n)%swdown_climo(c,r).ne.0) then 
+                    tmpval = &                          
+                         gddp_struc(n)%metdata(m,3,&
+                         LIS_domain(n)%gindex(c,r))*&
+                         swdown_climo1(c,r)/&
+                         gddp_struc(n)%swdown_climo(c,r)
+
+                    gddp_struc(n)%metdata2(m,3,&
+                         LIS_domain(n)%gindex(c,r)) = tmpval
+                 else
+                    gddp_struc(n)%metdata2(m,3,&
+                         LIS_domain(n)%gindex(c,r)) = 0
+                 endif
+                 gddp_struc(n)%metdata2(m,4,&
+                      LIS_domain(n)%gindex(c,r)) &
+                      = gddp_struc(n)%metdata(m,4,&
+                      LIS_domain(n)%gindex(c,r))*&
+                      lwdown_climo1(c,r)/&
+                      gddp_struc(n)%lwdown_climo(c,r)
+
+                 gddp_struc(n)%metdata2(m,5,&
+                      LIS_domain(n)%gindex(c,r)) &
+                      = gddp_struc(n)%metdata(m,5,&
+                      LIS_domain(n)%gindex(c,r))*&
+                      wind_climo1(c,r)/&
+                      gddp_struc(n)%wind_climo(c,r)
+
+                 gddp_struc(n)%metdata2(m,6,&
+                      LIS_domain(n)%gindex(c,r)) &
+                      =gddp_struc(n)%metdata(m,6,&
+                      LIS_domain(n)%gindex(c,r))*&
+                      psurf_climo1(c,r)/&
+                      gddp_struc(n)%psurf_climo(c,r)
+
+                 if(gddp_struc(n)%prcp_climo(c,r).ne.0) then 
+                    gddp_struc(n)%metdata2(m,7,&
+                         LIS_domain(n)%gindex(c,r)) &
+                         = gddp_struc(n)%metdata(m,7,&
+                         LIS_domain(n)%gindex(c,r)) *&
+                         prcp_climo1(c,r)/&
+                         gddp_struc(n)%prcp_climo(c,r)
+                 else
+                    gddp_struc(n)%metdata2(m,7,&
+                         LIS_domain(n)%gindex(c,r)) = 0.0
+                 endif
+                 
+              endif
+           endif
+        end do
+     enddo
+  enddo
+    
 #endif
 
 end subroutine read_gddp
@@ -903,14 +1040,16 @@ subroutine interp_gddp(n,vid, findex, pcp_flag, &
                  enddo
                  if(found) exit
               enddo
+
               if(.not.found) rad = rad +1
               if(rad.gt.maxrad) exit
            enddo
            
         endif
         if(.not.found) then
-           write(LIS_logunit,*)'[ERR] unable to fill', LIS_localPet, vid,  c,r,output_2d(c,r),found
-           write(LIS_logunit,*)'[ERR] Program stopping...'
+           write(LIS_logunit,*) '[ERR]: unable to fill in GDDP:', LIS_localPet, vid,  c,r,output_2d(c,r),found
+           write(LIS_logunit,*) '[ERR]: ',c+LIS_ews_halo_ind(n,LIS_localPet+1),&
+                r+LIS_nss_halo_ind(n,LIS_localPet+1)
            call LIS_endrun()
         endif
      enddo

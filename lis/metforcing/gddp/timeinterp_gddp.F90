@@ -199,6 +199,8 @@ subroutine timeinterp_gddp(n,findex)
      do m=1,mfactor
         t = m + (k-1)*mfactor
         index1 = LIS_domain(n)%tile(t)%index
+
+
         zdoy=LIS_rc%doy
         
            ! compute and apply zenith angle weights
@@ -220,17 +222,8 @@ subroutine timeinterp_gddp(n,findex)
                    gddp_struc(n)%metdata2(m,3,index1)*swt2
            endif
         endif
-
-        if (swd(t).gt.LIS_CONST_SOLAR) then
-           write(unit=LIS_logunit,fmt=*)'[WARN] sw radiation too high!!'
-           write(unit=LIS_logunit,fmt=*)'[WARN] it is', LIS_localPet, t, swd(t)
-           write(unit=LIS_logunit,fmt=*)'[WARN] data1=',gddp_struc(n)%metdata1(m,3,index1)
-           write(unit=LIS_logunit,fmt=*)'[WARN] data2=',gddp_struc(n)%metdata2(m,3,index1)
-           write(unit=LIS_logunit,fmt=*)'[WARN] wts=',wt1,wt2
-           write(unit=LIS_logunit,fmt=*)'[WARN] zw1=',zw1,'zw2=',zw2
-           write(unit=LIS_logunit,fmt=*)'[WARN] swt1=',swt1,'swt2=',swt2
-           !call LIS_endrun()
-        elseif(swd(t).lt.0.0) then
+        
+        if(swd(t).lt.0.0) then
            write(unit=LIS_logunit,fmt=*)'[ERR] sw radiation is unphysical'
            write(unit=LIS_logunit,fmt=*)'[ERR] it is', LIS_localPet, t, swd(t)
            write(unit=LIS_logunit,fmt=*)'[ERR] data1=',gddp_struc(n)%metdata1(m,3,index1)
@@ -350,7 +343,6 @@ subroutine timeinterp_gddp(n,findex)
         
      enddo
   enddo
-
   
 end subroutine timeinterp_gddp
  
