@@ -3177,7 +3177,6 @@ subroutine LIS_create_gain_filename(n, fname, mname)
   integer :: ios1
   integer :: ios,nid,paramid,ncId, nrId
   integer :: nc,nr,c,r
-  real    :: param(LIS_rc%gnc(n),LIS_rc%gnr(n))
   logical :: file_exists
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -3203,17 +3202,14 @@ subroutine LIS_create_gain_filename(n, fname, mname)
      ios = nf90_inq_varid(nid,trim(pname),paramid)
      call LIS_verify(ios,trim(pname)//' field not found in the LIS param file')
 
-     ios = nf90_get_var(nid,paramid,param)
+     ios = nf90_get_var(nid,paramid,array,&
+          start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+          LIS_nss_halo_ind(n,LIS_localPet+1)/),&
+          count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))            
      call LIS_verify(ios,'Error in nf90_get_var in readparam_real_2d')
      
      ios = nf90_close(nid)
      call LIS_verify(ios,'Error in nf90_close in readparam_real_2d')
-
-     array(:,:) = &
-          param(LIS_ews_halo_ind(n,LIS_localPet+1):&         
-          LIS_ewe_halo_ind(n,LIS_localPet+1), &
-          LIS_nss_halo_ind(n,LIS_localPet+1): &
-          LIS_nse_halo_ind(n,LIS_localPet+1))
 
   else
      write(LIS_logunit,*) '[ERR] '//trim(pname)//' map: ',&
@@ -3270,7 +3266,6 @@ end subroutine readparam_real_2d
   integer :: ios1
   integer :: ios,nid,paramid,ncId, nrId
   integer :: nc,nr,c,r
-  real    :: param(LIS_rc%gnc(n),LIS_rc%gnr(n))
   logical :: file_exists
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -3297,17 +3292,15 @@ end subroutine readparam_real_2d
      if(ios.ne.0) then 
         rc = 1
      else
-        ios = nf90_get_var(nid,paramid,param)
+        ios = nf90_get_var(nid,paramid,array,&
+             start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+             LIS_nss_halo_ind(n,LIS_localPet+1)/),&
+             count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
         call LIS_verify(ios,'Error in nf90_get_var in readparam_real_2d')
         
         ios = nf90_close(nid)
         call LIS_verify(ios,'Error in nf90_close in readparam_real_2d')
         
-        array(:,:) = &
-             param(LIS_ews_halo_ind(n,LIS_localPet+1):&         
-             LIS_ewe_halo_ind(n,LIS_localPet+1), &
-             LIS_nss_halo_ind(n,LIS_localPet+1): &
-             LIS_nse_halo_ind(n,LIS_localPet+1))
         rc = 0 
      endif
   else
@@ -3569,17 +3562,20 @@ end subroutine readgparam_real_2d_rc
      ios = nf90_inq_varid(nid,trim(pname),paramid)
      call LIS_verify(ios,trim(pname)//' field not found in the LIS param file')
 
-     ios = nf90_get_var(nid,paramid,param)
+     ios = nf90_get_var(nid,paramid,array,&
+          start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+          LIS_nss_halo_ind(n,LIS_localPet+1)/),&
+          count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))          
      call LIS_verify(ios,'Error in nf90_get_var in readparam_int_2d')
      
      ios = nf90_close(nid)
      call LIS_verify(ios,'Error in nf90_close in readparam_int_2d')
 
-     array(:,:) = &
-          nint(param(LIS_ews_halo_ind(n,LIS_localPet+1):&         
-          LIS_ewe_halo_ind(n,LIS_localPet+1), &
-          LIS_nss_halo_ind(n,LIS_localPet+1): &
-          LIS_nse_halo_ind(n,LIS_localPet+1)))
+!     array(:,:) = &
+!          nint(param(LIS_ews_halo_ind(n,LIS_localPet+1):&         
+!          LIS_ewe_halo_ind(n,LIS_localPet+1), &
+!          LIS_nss_halo_ind(n,LIS_localPet+1): &
+!          LIS_nse_halo_ind(n,LIS_localPet+1)))
 
   else
      write(LIS_logunit,*) '[ERR] '//trim(pname)//' map: ',&
