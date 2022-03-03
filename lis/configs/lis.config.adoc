@@ -349,6 +349,7 @@ endif::devonly[]
 |"`AWRAL processed forcing`"   | AWRA-L processed forcing
 |"`PLUMBER2`"                  | PLUMBER2 forcing
 |"`GDDP`"                      | NEX GDDP forcing
+|"`COAMPSout`"                 | COAMPS output forcing
 |====
 
 .Example _lis.config_ entry
