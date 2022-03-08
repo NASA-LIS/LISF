@@ -78,6 +78,15 @@ subroutine readcrd_gefs()
   else
      do n=1,LIS_rc%nnest
         call ESMF_ConfigGetAttribute(LIS_config,gefs_struc(n)%gefs_res,rc=rc)
+        
+        if(gefs_struc(n)%gefs_res.ne.0.50 .and. gefs_struc(n)%gefs_res.ne.0.25) then
+           write(LIS_logunit,*) '[ERR] GEFS forecast grid resolution: not equal to 0.50'
+           write(LIS_logunit,*) '[ERR] or 0.25. The GEFS reader currently only supports'
+           write(LIS_logunit,*) '[ERR] these two data resolutions.'
+           write(LIS_logunit,*) '[ERR] Please change data source and config option.'
+           write(LIS_logunit,*) '[ERR] Stopping...'
+           call LIS_endrun()
+        endif
      enddo
   endif
 
