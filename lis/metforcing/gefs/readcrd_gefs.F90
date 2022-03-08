@@ -67,6 +67,20 @@ subroutine readcrd_gefs()
      call ESMF_ConfigGetAttribute(LIS_config,gefs_struc(n)%gefs_proj,rc=rc)
   enddo
 
+  call ESMF_ConfigFindLabel(LIS_config,"GEFS forecast grid resolution:",rc=rc)
+  !call LIS_verify(rc, 'GEFS forecast grid resolution: not defined ')
+  if(rc.ne.0) then
+     write(LIS_logunit,*) '[WARN] GEFS forecast grid resolution: not defined '
+     write(LIS_logunit,*) '[WARN] GEFS forecast grid resolution set to 0.50 as default. '
+     do n=1,LIS_rc%nnest
+        gefs_struc(n)%gefs_res = 0.50
+     enddo
+  else
+     do n=1,LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config,gefs_struc(n)%gefs_res,rc=rc)
+     enddo
+  endif
+
   call ESMF_ConfigFindLabel(LIS_config,"GEFS forecast number of ensemble members:",rc=rc)
   call LIS_verify(rc, 'GEFS forecast number of ensemble members: not defined')
   do n=1,LIS_rc%nnest
