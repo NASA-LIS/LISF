@@ -191,14 +191,14 @@ subroutine get_gefs(n,findex)
           if( gefs_struc(n)%gefs_runmode == "forecast" ) then
 
             call get_reforecast_filename(filename,gefs_struc(n)%gefs_dir, &
-                 gefs_struc(n)%gefs_proj, gefs_vars(v),&
+                 gefs_struc(n)%gefs_proj, gefs_struc(n)%gefs_res, gefs_vars(v),&
                  gefs_struc(n)%init_yr, gefs_struc(n)%init_mo, &
                  gefs_struc(n)%init_da, m)
 
           elseif( gefs_struc(n)%gefs_runmode == "analysis" ) then
 
             call get_reforecast_filename(filename,gefs_struc(n)%gefs_dir, &
-                 gefs_struc(n)%gefs_proj, gefs_vars(v),&
+                 gefs_struc(n)%gefs_proj, gefs_struc(n)%gefs_res, gefs_vars(v),&
                  yr1,mo1,da1,m)
           endif
           write(LIS_logunit,*)'[INFO] Getting GEFS file ... ',trim(filename)
@@ -335,13 +335,13 @@ subroutine get_gefs(n,findex)
             endif
           
             call get_operational_filename(filename,gefs_struc(n)%gefs_dir,&
-                 init_yr, init_mo, &
+                 gefs_struc(n)%gefs_res, init_yr, init_mo, &
                  init_da, hour_cycle1, &
                  fcst_hour,m)           
             
          else
             call get_operational_filename(filename,gefs_struc(n)%gefs_dir,&
-                 gefs_struc(n)%init_yr, gefs_struc(n)%init_mo, &
+                 gefs_struc(n)%gefs_res, gefs_struc(n)%init_yr, gefs_struc(n)%init_mo, &
                  gefs_struc(n)%init_da, hour_cycle, &
                  gefs_struc(n)%fcst_hour,m)
             
@@ -417,13 +417,13 @@ subroutine get_gefs(n,findex)
             endif
           
             call get_operational_filename(filename,gefs_struc(n)%gefs_dir,&
-                 init_yr, init_mo, &
+                 gefs_struc(n)%gefs_res, init_yr, init_mo, &
                  init_da, hour_cycle1, &
                  fcst_hour,m)           
             
          else
             call get_operational_filename(filename,gefs_struc(n)%gefs_dir,&
-                 gefs_struc(n)%init_yr, gefs_struc(n)%init_mo, &
+                 gefs_struc(n)%gefs_res, gefs_struc(n)%init_yr, gefs_struc(n)%init_mo, &
                  gefs_struc(n)%init_da, hour_cycle, &
                  gefs_struc(n)%fcst_hour,m)
          endif
@@ -447,7 +447,7 @@ end subroutine get_gefs
 ! \label{get_reforecast_filename}
 !
 ! !INTERFACE:
-subroutine get_reforecast_filename(filename,gefsdir,gefsproj,&
+subroutine get_reforecast_filename(filename,gefsdir,gefsproj,gefsres,&
                                    var,yr,mo,da,ens_id)
 
   implicit none
@@ -456,6 +456,7 @@ subroutine get_reforecast_filename(filename,gefsdir,gefsproj,&
   character(len=*), intent(in)  :: gefsdir
   character(len=*), intent(in)  :: gefsproj
   character(len=*), intent(in)  :: var
+  real, intent(in)              :: gefsres
   integer, intent(in)           :: yr,mo,da
   integer                       :: ens_id
 !  Include additional flag when adding the 8-16 lead day forecast files 
@@ -487,11 +488,13 @@ subroutine get_reforecast_filename(filename,gefsdir,gefsproj,&
 !
 !EOP
   character*3 :: month
+  character*6 :: ftime0
   character*6 :: ftime1
   character*8 :: ftime2
   character*3 :: fens
   integer     :: ens2
 
+  write(unit=ftime0, fmt='(i4.4)') yr
   write(unit=ftime1, fmt='(i4.4,i2.2)') yr,mo
   write(unit=ftime2, fmt='(i4.4,i2.2,i2.2)') yr,mo,da
 
@@ -503,9 +506,13 @@ subroutine get_reforecast_filename(filename,gefsdir,gefsproj,&
     write(unit=fens, fmt='(a1,i2.2)') "p",ens2
   endif
 
-  filename = trim(gefsdir)//'/'//trim(gefsproj)//'/'//trim(ftime1)//&
-       "/"//trim(var)//'_'//ftime2//'00_'//fens//'.grib2'
-
+  if( gefsres .eq. 0.25 ) then
+    filename = trim(gefsdir)//'/'//ftime0//'/'//ftime2//&
+       "00/"//trim(var)//'_'//ftime2//'00_'//fens//'.grib2'
+  else
+    filename = trim(gefsdir)//'/'//trim(gefsproj)//'/'//trim(ftime1)//&
+         "/"//trim(var)//'_'//ftime2//'00_'//fens//'.grib2'
+  endif
 
 ! ** Include 2nd GEFS Reforecast2 file here to extend to 16-day forecast
 !  Need to include a conditional block to switch between the two
@@ -524,13 +531,14 @@ end subroutine get_reforecast_filename
 ! \label{get_operational_filename}
 !
 ! !INTERFACE:
-subroutine get_operational_filename(filename,gefsdir,&
+subroutine get_operational_filename(filename,gefsdir,gefsres,&
      yr,mo,da,hour_cycle,fcsthour,ens_id)
   
   implicit none
 ! !ARGUMENTS: 
   character(len=*), intent(out) :: filename
   character(len=*), intent(in)  :: gefsdir
+  real,    intent(in)           :: gefsres
   integer, intent(in)           :: yr,mo,da,hour_cycle
   integer, intent(in)           :: fcsthour
   integer, intent(in)           :: ens_id
@@ -581,8 +589,12 @@ subroutine get_operational_filename(filename,gefsdir,&
     write(unit=fens, fmt='(a1,i2.2)') "p",ens2
   endif
 
-  filename = trim(gefsdir)//'/'//trim(ftime)//'/'//trim(fhr)//'/'//&
-       'ge'//fens//'.t'//trim(fhr)//'z.pgrb2a.0p50.f'//fhour
-
+  if( gefsres .eq. 0.25) then
+    filename = trim(gefsdir)//'/'//trim(ftime)//'/'//trim(fhr)//'/'//&
+         'ge'//fens//'.t'//trim(fhr)//'z.pgrb2s.0p25.f'//fhour
+  else
+    filename = trim(gefsdir)//'/'//trim(ftime)//'/'//trim(fhr)//'/'//&
+         'ge'//fens//'.t'//trim(fhr)//'z.pgrb2a.0p50.f'//fhour
+  endif
 end subroutine get_operational_filename
 
