@@ -511,6 +511,8 @@ subroutine NoahMP401_main(n)
 ! fill in the LAI or SAI values from MPTABLE.
                if (tmp_lai.eq.LIS_rc%udef) then
                   tmp_lai          = NOAHMP401_struc(n)%noahmp401(t)%lai
+               endif
+               if (tmp_sai.eq.LIS_rc%udef) then
                   tmp_sai          = NOAHMP401_struc(n)%noahmp401(t)%sai
                endif
             else
