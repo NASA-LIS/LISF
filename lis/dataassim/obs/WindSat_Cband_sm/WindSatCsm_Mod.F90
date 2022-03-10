@@ -21,6 +21,7 @@
 module WindSatCsm_Mod
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 !EOP
   implicit none
   
@@ -98,7 +99,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  synsmobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  synsmobsdir
     character*100          ::  temp
     integer                ::  yr,mo,da,hr,mn,ss
     real                   ::  smvalue
@@ -111,8 +112,8 @@ contains
     real, pointer          :: obs_temp(:,:)
     real                   :: gridDesci(LIS_rc%nnest,50)
     real, allocatable          :: xrange(:), cdf(:)
-    character*100          :: modelcdffile(LIS_rc%nnest)
-    character*100          :: obscdffile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) :: modelcdffile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) :: obscdffile(LIS_rc%nnest)
     integer                :: count,dummy, ios, obstime
 
     allocate(WindSatCsm_struc(LIS_rc%nnest))

@@ -21,11 +21,12 @@ module GA_varctl
 !  04 Feb 2008; Sujay Kumar; Initial Specification
 !
 !EOP
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   PRIVATE
 
   type, public ::  gactl
-     character*100    :: rfile
+     character(len=LIS_CONST_PATH_LEN) :: rfile
      character*100,  allocatable     :: vname(:)
      character*20     :: restart
      integer          :: ngens

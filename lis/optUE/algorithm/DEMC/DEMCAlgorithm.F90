@@ -29,6 +29,7 @@ module DEMCAlgorithm
   use ESMF
   use DEMC_varctl
   use LIS_coreMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_optUEMod
   use LIS_logMod
 
@@ -757,7 +758,7 @@ module DEMCAlgorithm
     integer             :: n 
     integer             :: i,m,t
     integer             :: status
-    character*100       :: filen
+    character(len=LIS_CONST_PATH_LEN) :: filen
     character (len=4)   :: fgen
     character*100       :: vnames(demc_ctl%nparam)
     real, allocatable       :: vardata(:)

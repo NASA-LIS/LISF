@@ -25,6 +25,7 @@ subroutine write_pildassmobs(n, k, OBS_State)
   use LIS_fileIOMod
   use LIS_historyMod
   use LIS_DAobservationsMod
+  use LIS_constantsMod, only :  LIS_CONST_PATH_LEN
   use pildassmobs_module
   
   implicit none
@@ -45,7 +46,7 @@ subroutine write_pildassmobs(n, k, OBS_State)
   logical                  :: data_update
   real, pointer            :: smobs(:)
   real                     :: smobs_unsc(LIS_rc%obs_ngrid(k))
-  character*100            :: obsname
+  character(len=LIS_CONST_PATH_LEN) :: obsname
   integer                  :: ftn
   integer                  :: status
 

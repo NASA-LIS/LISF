@@ -19,6 +19,7 @@ module GeneticAlgorithm
 !  04 Feb 2008; Sujay Kumar; Initial Specification
 !
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use GA_varctl
 
   implicit none
@@ -951,7 +952,7 @@ module GeneticAlgorithm
     integer             :: n 
     integer             :: i,m,t
     integer             :: status
-    character*100       :: filen
+    character(len=LIS_CONST_PATH_LEN) :: filen
     character (len=4)   :: fgen
     character*100       :: vnames(ga_ctl%nparam)
     type(ESMF_Field)    :: varField(ga_ctl%nparam)
@@ -1076,7 +1077,7 @@ module GeneticAlgorithm
 ! 
 !EOP
     integer             :: n 
-    character*100       :: filen
+    character(len=LIS_CONST_PATH_LEN) :: filen
     character (len=4)   :: fgen
     real, allocatable       :: fitness(:)
     real, allocatable       :: avgfitness(:)

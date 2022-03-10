@@ -21,6 +21,7 @@ module LISrunoffdataMod
 ! 
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   
   implicit none
   
@@ -38,10 +39,10 @@ module LISrunoffdataMod
   type, public :: LISrunoffdatadec
      
      real                :: outInterval 
-     character*50        :: odir
+     character(len=LIS_CONST_PATH_LEN) :: odir
  
      !ag - 17Mar2016
-     character*100       :: previous_filename
+     character(len=LIS_CONST_PATH_LEN) :: previous_filename
      real, allocatable   :: qs(:,:),qsb(:,:),evap(:,:)
      
   end type LISrunoffdatadec

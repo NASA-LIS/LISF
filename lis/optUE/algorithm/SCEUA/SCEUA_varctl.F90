@@ -20,6 +20,7 @@ module SCEUA_varctl
 ! !REVISION HISTORY:
 !  09 Jun 2009; Soni Yatheendradas; Initial Specification
 !
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   IMPLICIT NONE
   PRIVATE
 
@@ -27,9 +28,9 @@ module SCEUA_varctl
 ! !PUBLIC TYPES:
 !-----------------------------------------------------------------------------
   type, public ::  sceuactl
-     character*100    :: decspaceAttribsFile ! Decision Space Attributes File
+     character(len=LIS_CONST_PATH_LEN) :: decspaceAttribsFile ! Decision Space Attributes File
      integer          :: restart ! SCEUA start mode
-     character*100    :: rfile ! SCEUA restart file
+     character(len=LIS_CONST_PATH_LEN) :: rfile ! SCEUA restart file
      INTEGER          :: MaxNFuncEvals ! Maximum Number of Func. Evals. before Optimization Terminates
      INTEGER          :: NShufflesForMinChange ! Number of Shuffles to Terminate Optimization if Criterion Change less than Minimum
      REAL             :: MinChangeInNShuffles ! Minimum Fractional Criterion Change in Specified Shuffles to Continue Optimization

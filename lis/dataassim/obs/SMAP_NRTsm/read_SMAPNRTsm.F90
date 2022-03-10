@@ -29,6 +29,7 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
   use LIS_DAobservationsMod
   use map_utils
   use LIS_pluginIndices
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use SMAPNRTsm_Mod, only : SMAPNRTsm_struc
 
   implicit none
@@ -58,8 +59,7 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
   real,  parameter       :: MAX_SM_VALUE=0.45, MIN_SM_VALUE=0.0001
   integer                :: status
   integer                :: grid_index
-  character*100          :: smobsdir
-  character*100          :: fname
+  character(len=LIS_CONST_PATH_LEN) :: smobsdir, fname
   logical                :: alarmCheck, file_exists
   integer                :: t,c,r,i,j,p,jj
   real,          pointer :: obsl(:)
@@ -95,11 +95,11 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
   integer                :: orbid(10),runid(10)
   real                   :: gmt
   real*8                 :: timenow, time1,time2,time3
-  character*200          :: list_files
+  character(len=LIS_CONST_PATH_LEN) :: list_files
   character*100          :: temp1
   character*1            :: fproc(4)
   integer                :: ftn,ierr
-  character*100          :: smap_filename(10),tstring(10)
+  character(len=LIS_CONST_PATH_LEN) :: smap_filename(10),tstring(10)
   character(len=4) :: istring
   character(len=200) :: cmd
   integer :: rc

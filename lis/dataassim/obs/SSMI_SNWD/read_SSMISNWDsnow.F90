@@ -26,6 +26,7 @@ subroutine read_SSMISNWDsnow(n, k, OBS_State,OBS_Pert_State)
   use LIS_DAobservationsMod
   use LIS_pluginIndices, only : LIS_SSMISNWDsnowobsId
   use SSMISNWDsnow_Mod, only : SSMISNWDsnow_struc
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -61,7 +62,7 @@ subroutine read_SSMISNWDsnow(n, k, OBS_State,OBS_Pert_State)
   logical                       :: dataflag(LIS_npes)
   logical                       :: dataflag_local
   integer                       :: c,r, p, t
-  character*100                 :: obsdir, ssmi_filename, imsfile, MODISfile
+  character(len=LIS_CONST_PATH_LEN) :: obsdir, ssmi_filename, imsfile, MODISfile
   real, allocatable             :: snwd_field(:,:)
   real                          :: tsnow(SSMISNWDsnow_struc(n)%nc*SSMISNWDsnow_struc(n)%nr)
   logical*1                     :: li(SSMISNWDsnow_struc(n)%nc*SSMISNWDsnow_struc(n)%nr)
@@ -109,7 +110,7 @@ subroutine read_SSMISNWDsnow(n, k, OBS_State,OBS_Pert_State)
      inquire(file=ssmi_filename,exist=file_exists)
      if(file_exists) then 
 
-        write(LIS_logunit,*)  '[INFO] Reading SSMI SNWD data ',ssmi_filename
+        write(LIS_logunit,*)  '[INFO] Reading SSMI SNWD data ',trim(ssmi_filename)
         
         allocate(snwd_field(SSMISNWDsnow_struc(n)%nc, &
              SSMISNWDsnow_struc(n)%nr))
@@ -392,7 +393,7 @@ subroutine SSMIsnow_filename3(name, ndir, yr, mo,da)
   
   implicit none
 ! !ARGUMENTS: 
-  character*80      :: name
+  character(len=*)  :: name
   integer           :: yr, mo, da
   character (len=*) :: ndir
 ! 
@@ -432,7 +433,7 @@ subroutine create_IMS_filename_SSMI(name, ndir, yr, doy)
   
   implicit none
 ! !ARGUMENTS: 
-  character*80      :: name
+  character(len=*)  :: name
   integer           :: yr, doy
   character (len=*) :: ndir
 ! 

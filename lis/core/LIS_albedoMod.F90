@@ -47,6 +47,7 @@ module LIS_albedoMod
   use LIS_fileIOMod
   use LIS_timeMgrMod
   use LIS_histDataMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -68,7 +69,7 @@ module LIS_albedoMod
 !EOP
 
   type, public :: alb_type_dec
-     character*100 :: albfile
+     character(len=LIS_CONST_PATH_LEN) :: albfile
      logical       :: firstInstance
      real, allocatable :: albsf1(:)
      real, allocatable :: albsf2(:)

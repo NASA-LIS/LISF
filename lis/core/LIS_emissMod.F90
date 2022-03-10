@@ -41,6 +41,7 @@ module LIS_emissMod
   use LIS_timeMgrMod
   use LIS_histDataMod
   use LIS_fileIOMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -62,7 +63,7 @@ module LIS_emissMod
 
 !EOP
   type, public :: emiss_type_dec
-     character*100 :: emissfile
+     character(len=LIS_CONST_PATH_LEN) :: emissfile
      character*50  :: emissIntervalType
      real          :: emissInterval
      logical       :: firstInstance

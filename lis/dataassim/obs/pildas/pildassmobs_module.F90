@@ -24,6 +24,7 @@ module pildassmobs_module
 ! !USES: 
   use ESMF
   use map_utils
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
 
   implicit none
@@ -117,7 +118,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  pildassmobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  pildassmobsdir
     character*100          ::  temp
     real,  allocatable         ::  obsstd(:)
     character*1            ::  vid(2)
@@ -129,8 +130,8 @@ contains
     real, pointer          ::  obs_temp(:,:)
     real, allocatable          :: xrange(:), cdf(:)
     real                   :: gridDesci(50)
-    character*100          :: modelcdffile(LIS_rc%nnest)
-    character*100          :: obscdffile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) :: modelcdffile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) :: obscdffile(LIS_rc%nnest)
     real, allocatable          ::  ssdev(:)
 
     allocate(pildas_sm_struc(LIS_rc%nnest))
