@@ -9,11 +9,12 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 ! MODULE: USAFSI_gofsMod
-! 
+!
 ! REVISION HISTORY:
 ! 01 Apr 2019  Eric Kemp  First version.
 ! 09 May 2019  Eric Kemp  Rename to LDTSI
 ! 13 Dec 2019  Eric Kemp  Rename to USAFSI
+! 10 Mar 2022  Eric Kemp  Added array initialization.
 !
 ! DESCRIPTION:
 ! Source code for reading US Navy GOFS data.
@@ -659,6 +660,7 @@ contains
       ! Just copy the non-missing values to the output array.  This should
       ! prevent overwriting of data outside of the GOFS polar region.
       allocate(icecon(nc,nr))
+      icecon = 0.0 ! EMK 20220310, initialize memory
       do r = 1, nr
          do c = 1, nc
             ! Skip land points
