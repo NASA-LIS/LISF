@@ -25,6 +25,7 @@ subroutine clsmf25_readrst
   use LIS_fileIOMod
   use LIS_timeMgrMod
   use LIS_historyMod, only : LIS_readvar_restart
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use clsmf25_constants
   use clsmf25_lsmMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -50,7 +51,7 @@ subroutine clsmf25_readrst
   integer :: nc,nr,ntiles
   real, allocatable :: temp(:)
   logical           :: file_exists
-  character*100     :: filen
+  character(len=LIS_CONST_PATH_LEN) :: filen
   character*20      :: wformat
   integer           :: yr,mo,da,hr,mn,ss,doy
   real*8            :: time

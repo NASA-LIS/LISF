@@ -50,6 +50,7 @@ module clm2_lsmMod
 !
 ! !USES:
   use clm2type
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
   
@@ -65,9 +66,9 @@ module clm2_lsmMod
 !EOP
 
   type, public :: clm_type_dec
-     character*100 :: clm_rfile 
-     character*100 :: clm_vfile 
-     character*100 :: clm_chtfile 
+     character(len=LIS_CONST_PATH_LEN) :: clm_rfile 
+     character(len=LIS_CONST_PATH_LEN) :: clm_vfile 
+     character(len=LIS_CONST_PATH_LEN) :: clm_chtfile 
      integer      :: count
      integer      :: clmopen
      integer      :: numout

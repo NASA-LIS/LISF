@@ -17,13 +17,14 @@ subroutine HYMAP_routing_writerst(n)
   use LIS_logMod
   use LIS_fileIOMod
   use LIS_timeMgrMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use HYMAP_routingMod
 
   implicit none
   
   integer, intent(in)   :: n 
   
-  character*100         :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   integer               :: ftn
   integer               :: status
   logical               :: alarmCheck

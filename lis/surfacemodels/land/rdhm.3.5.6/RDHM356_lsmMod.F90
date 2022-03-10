@@ -200,6 +200,7 @@ module RDHM356_lsmMod
 !
 ! !USES:
     use RDHM356_module
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
     implicit none
 
@@ -214,9 +215,9 @@ module RDHM356_lsmMod
     public :: RDHM356_struc
 !EOP
     type, public :: RDHM356_type_dec
-        character*256      :: rfile
+        character(len=LIS_CONST_PATH_LEN) :: rfile
         character*256      :: rformat
-        character*256      :: tmxmn_dir
+        character(len=LIS_CONST_PATH_LEN) :: tmxmn_dir
         !-------------------------------------------------------------------------
         ! Parameter file names
         !-------------------------------------------------------------------------

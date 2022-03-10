@@ -25,6 +25,7 @@ subroutine read_UAsnowobs(Obj_Space)
   use LIS_fileIOMod
   use UAsnow_obsMod
   use map_utils
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)  
   use netcdf
@@ -48,7 +49,7 @@ subroutine read_UAsnowobs(Obj_Space)
   type(ESMF_Field)         :: snodField
   real,    pointer         :: swe(:)
   type(ESMF_Field)         :: sweField
-  character*100            :: obsdir
+  character(len=LIS_CONST_PATH_LEN) :: obsdir
   integer                  :: status
   integer                  :: nid,sweid,snwdid
   integer                  :: c,r,k,nt,iret
@@ -58,7 +59,7 @@ subroutine read_UAsnowobs(Obj_Space)
   logical                  :: alarmCheck
   logical                  :: file_exists
   logical                  :: data_update
-  character*100            :: fname
+  character(len=LIS_CONST_PATH_LEN) :: fname
   real                     :: dt
   real                     :: timenow
   real, allocatable        :: snwd_out(:)

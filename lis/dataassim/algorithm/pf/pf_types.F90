@@ -20,6 +20,7 @@
 !EOP 
 module pf_types  
   
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   save
   
@@ -61,9 +62,9 @@ module pf_types
      logical          :: scale     ! scale yes/no?
      logical          :: getinnov  ! compute innovations? (.T. if assim==.T.)
      real             :: nodata    ! no-data-value
-     character(200)   :: path      ! path to measurements file 
+     character(len=LIS_CONST_PATH_LEN) :: path      ! path to measurements file 
      character(80)    :: name      ! name identifier for measurements 
-     character(200)   :: scalepath ! path to file with scaling parameters
+     character(len=LIS_CONST_PATH_LEN) :: scalepath ! path to file with scaling parameters
      character(80)    :: scalename ! filename for scaling parameters
      real             :: std       ! default obs error std
 

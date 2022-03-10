@@ -27,6 +27,7 @@ subroutine read_GCOMW_AMSR2L3SND(n, k, OBS_State, OBS_Pert_State)
   use map_utils
   use LIS_pluginIndices
   use LIS_DAobservationsMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use GCOMW_AMSR2L3SND_Mod, only : GCOMW_AMSR2L3SND_struc
 
   implicit none
@@ -54,8 +55,8 @@ subroutine read_GCOMW_AMSR2L3SND(n, k, OBS_State, OBS_Pert_State)
   integer,         parameter    :: IMSnc = 1500,IMSnr = 375
   integer                :: ftn,status
   integer                :: grid_index
-  character*100          :: sndobsdir
-  character*100          :: fname_A, fname_D,imsfile, MODISfile,fname
+  character(len=LIS_CONST_PATH_LEN) :: sndobsdir
+  character(len=LIS_CONST_PATH_LEN) :: fname_A, fname_D,imsfile, MODISfile,fname
   logical                :: alarmCheck
   integer                :: t,c,r,i,j,p,jj
   real,          pointer :: obsl(:)
@@ -845,9 +846,8 @@ subroutine create_IMS_filename_AMSR2(name, ndir, yr, doy)
   
   implicit none
 ! !ARGUMENTS: 
-  character*80      :: name
+  character(len=*) :: name, ndir
   integer           :: yr, doy
-  character (len=*) :: ndir
 ! 
 ! !DESCRIPTION: 
 !  This subroutine creates a timestamped IMS filename
@@ -897,7 +897,7 @@ subroutine getMOD10data_AMSR2(n,k,name,tmp_obsl)
   
   integer              :: n 
   integer              :: k
-  character*80         :: name
+  character(len=*) :: name
   real                 :: tmp_obsl(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
 
 #if (defined USE_HDFEOS2)

@@ -24,6 +24,7 @@ subroutine write_syntheticsfobs(n, OBS_State)
        LIS_releaseUnitNumber
   use LIS_fileIOMod,  only : LIS_create_output_directory
   use LIS_historyMod, only : LIS_writevar_gridded
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use syntheticsfobs_module
   
   implicit none
@@ -43,7 +44,7 @@ subroutine write_syntheticsfobs(n, OBS_State)
   logical                  :: data_update
   real, pointer            :: sfobs(:)
   real                     :: sfobs_unsc(LIS_rc%ngrid(n))
-  character*100            :: obsname
+  character(len=LIS_CONST_PATH_LEN) :: obsname
   integer                  :: ftn
   integer                  :: status
 

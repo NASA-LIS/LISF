@@ -40,6 +40,7 @@ module HYMAP2_routingMod
 ! !USES: 
   use ESMF
   use LIS_topoMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   
   implicit none
   
@@ -121,7 +122,7 @@ module HYMAP2_routingMod
 ! === Linear reservoir components ================
   real,    allocatable :: rnfsto(:,:)    !runoff   reservoir storage [m3]
   real,    allocatable :: bsfsto(:,:)    !baseflow reservoir storage [m3]
-  character*255        :: rstfile
+  character(len=LIS_CONST_PATH_LEN) :: rstfile
   integer              :: numout
   integer              :: fileopen
   real                 :: outInterval 
@@ -144,7 +145,7 @@ module HYMAP2_routingMod
      !ag (11Sep2015)
   integer              :: steptype     !time step type flag
 
-  character*50         :: LISdir     !if LIS output is being read
+  character(len=LIS_CONST_PATH_LEN) :: LISdir     !if LIS output is being read
      
 ! === Local inertia variables =====================
   real,    allocatable  :: rivout_pre(:,:)
@@ -170,11 +171,11 @@ module HYMAP2_routingMod
   integer              :: ntresop       !time series length (number of time steps in the input files)
   integer              :: resopflag
   integer              :: resoptype
-  character*100         :: resopdir
+  character(len=LIS_CONST_PATH_LEN) :: resopdir
   character*100         :: resopheader
   !ag (29Jun2016)
   integer              :: floodflag
-  character*100        :: HYMAP_dfile      
+  character(len=LIS_CONST_PATH_LEN) :: HYMAP_dfile      
 
 ! === 2-way coupling variables/parameters ===
   real,   allocatable  :: rivstotmp(:,:)     !River Storage [m3]
@@ -193,7 +194,7 @@ module HYMAP2_routingMod
   real,   allocatable  :: drtotwth(:)     !sum of gutter width within HyMAP grid cell [m]
   real,   allocatable  :: drnoutlet(:)    ! average number of drainage outlets within a grid cell [-]
   real,   allocatable  :: drtotlgh(:)     ! total urban drainage network length within a grid cell [m]
-  character*50         :: drfile          !urban drainage parametere file name
+  character(len=LIS_CONST_PATH_LEN) :: drfile          !urban drainage parametere file name
   !gutter parameters
   real                        :: drwth     ! gutter width [m]
   real                        :: drhgt      ! gutter height [m]
@@ -214,7 +215,7 @@ module HYMAP2_routingMod
   integer              :: ninsert        !number of gauges
   integer              :: ntinsert       !time series length (number of time steps in the input files)
   integer              :: insertflag
-  character*100         :: insertdir
+  character(len=LIS_CONST_PATH_LEN) :: insertdir
   character*100         :: insertheader
 
 !ag(30Mar2021)
@@ -225,7 +226,7 @@ module HYMAP2_routingMod
   integer               :: ntides        !number of outlets
   integer               :: nttides       !time series length (number of time steps in the input files)
   integer               :: tidesflag
-  character*100         :: tidesdir
+  character(len=LIS_CONST_PATH_LEN) :: tidesdir
   character*100         :: tidesheader
 
   end type HYMAP2_routing_dec
@@ -290,8 +291,8 @@ contains
     character*1    :: fproc(4)
     integer        :: ios
     integer        :: final_dirpos
-    character(100) :: diag_fname
-    character(100) :: diag_dir
+    character(len=LIS_CONST_PATH_LEN) :: diag_fname
+    character(len=LIS_CONST_PATH_LEN) :: diag_dir
     integer, external  :: LIS_create_subdirs
 
     !ag (03Apr2017)
@@ -2397,7 +2398,7 @@ contains
     integer                   :: res
     integer                   :: xresop(nresop),yresop(nresop)
     character(50)            :: resopname(nresop)
-    character(500)            :: yfile
+    character(len=LIS_CONST_PATH_LEN) :: yfile
     
     call HYMAP2_read_header_resop(trim(resopheader),nresop,resopname,xresop,yresop,resopoutmin)
     do res=1,nresop
@@ -2423,7 +2424,7 @@ contains
     integer                   :: ins
     integer                   :: xinsert(ninsert),yinsert(ninsert)
     character(50)            :: insertname(ninsert)
-    character(500)            :: yfile
+    character(len=LIS_CONST_PATH_LEN) :: yfile
 
     call HYMAP2_read_header(trim(insertheader),ninsert,insertname,xinsert,yinsert)
     do ins=1,ninsert

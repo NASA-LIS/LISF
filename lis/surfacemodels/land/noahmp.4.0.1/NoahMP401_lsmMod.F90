@@ -125,6 +125,7 @@ module NoahMP401_lsmMod
 !
 ! !USES:
     use NoahMP401_module
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
     implicit none
 
@@ -139,7 +140,7 @@ module NoahMP401_lsmMod
     public :: NoahMP401_struc
 !EOP
     type, public :: NoahMP401_type_dec
-        character*256      :: rfile
+        character(len=LIS_CONST_PATH_LEN) :: rfile
         character*256      :: rformat
         !-------------------------------------------------------------------------
         ! Parameter file names

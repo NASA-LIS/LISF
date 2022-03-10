@@ -20,6 +20,7 @@
 module FLUXNETdata_module
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 !EOP
   implicit none
   PRIVATE
@@ -35,7 +36,7 @@ module FLUXNETdata_module
 
   type, public ::  FLUXNETdata_data_dec
 
-     character*100           :: odir
+     character(len=LIS_CONST_PATH_LEN) :: odir
      integer                 :: nc,nr
      integer, allocatable        :: n11(:)
      real,    allocatable        :: qle(:,:)
@@ -84,7 +85,7 @@ contains
     type(ESMF_ArraySpec)      ::  realarrspec
     type(ESMF_Field),allocatable  ::  obsField(:)
     real                      ::  gridDesci(50)
-    character*100             ::  objspaceAttribFile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) ::  objspaceAttribFile(LIS_rc%nnest)
 
     allocate(FLUXNETdata_struc(LIS_rc%nnest))
 

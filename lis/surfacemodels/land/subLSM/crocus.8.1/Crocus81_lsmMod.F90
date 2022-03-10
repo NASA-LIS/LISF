@@ -84,6 +84,7 @@ module Crocus81_lsmMod
 
 ! !USES:
   use Crocus81_module
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   
   implicit none
   
@@ -98,7 +99,7 @@ module Crocus81_lsmMod
   public :: Crocus81_struc
   !EOP
   type, public :: Crocus81_type_dec
-     character*256      :: rfile
+     character(len=LIS_CONST_PATH_LEN) :: rfile
      character*256      :: rformat
      !-------------------------------------------------------------------------
      ! Parameter file names

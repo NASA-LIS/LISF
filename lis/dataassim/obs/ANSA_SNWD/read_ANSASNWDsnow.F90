@@ -28,6 +28,7 @@ subroutine read_ANSASNWDsnow(n,k, OBS_State,OBS_Pert_State)
   use LIS_timeMgrMod
   use LIS_logMod
   use LIS_DAobservationsMod
+  use LIS_constantsMod, only  : LIS_CONST_PATH_LEN
   use LIS_pluginIndices, only : LIS_ANSASNWDsnowobsId
   use ANSASNWDsnow_Mod, only : ANSASNWDsnow_struc
 
@@ -73,7 +74,7 @@ subroutine read_ANSASNWDsnow(n,k, OBS_State,OBS_Pert_State)
   real                          :: gmt
   real                          :: dt
   integer                       :: grid_index
-  character*100                 :: obsdir, ansa_filename, imsfile,MODISfile
+  character(len=LIS_CONST_PATH_LEN) :: obsdir, ansa_filename, imsfile,MODISfile
   integer(hid_t)                :: file_id, snwd_field_id,snwd_flag_field_id
   integer(hsize_t), allocatable :: dims(:)
   integer(hid_t)                :: dataspace
@@ -559,9 +560,8 @@ subroutine create_IMS_filename(name, ndir, yr, doy)
   
   implicit none
 ! !ARGUMENTS: 
-  character*80      :: name
+  character(len=*)  :: name, ndir
   integer           :: yr, doy
-  character (len=*) :: ndir
 ! 
 ! !DESCRIPTION: 
 !  This subroutine creates a timestamped IMS filename

@@ -34,6 +34,7 @@ subroutine hyssib_writerst(n)
   use LIS_logMod
   use lis_fileIOMod, only : LIS_create_output_directory, &
                               LIS_create_restart_filename
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use hyssib_lsmMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -59,7 +60,7 @@ subroutine hyssib_writerst(n)
 ! \end{description}
 !EOP
 
-  character*100 :: filen
+  character(len=LIS_CONST_PATH_LEN) :: filen
   logical       :: alarmCheck
   integer       :: status
   integer       :: ftn

@@ -41,6 +41,7 @@ subroutine noah36_writerst(n)
        LIS_releaseUnitNumber, LIS_verify
   use LIS_fileIOMod, only : LIS_create_output_directory, &
                               LIS_create_restart_filename
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use noah36_lsmMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -65,7 +66,7 @@ subroutine noah36_writerst(n)
 ! \end{description}
 !EOP
 !  real :: curr_time
-  character*100 :: filen
+  character(len=LIS_CONST_PATH_LEN) :: filen
   logical       :: alarmCheck
   integer       :: ftn
   integer       :: status
@@ -110,7 +111,7 @@ subroutine noah36_writerst(n)
            call LIS_verify(status,'Error in nf90_close in noah36_writerst')
 #endif
         endif
-        write(LIS_logunit,*) '[INFO] Noah-3.6 archive restart written: ',filen
+        write(LIS_logunit,*) '[INFO] Noah-3.6 archive restart written: ',trim(filen)
      endif
   end if
 end subroutine noah36_writerst
