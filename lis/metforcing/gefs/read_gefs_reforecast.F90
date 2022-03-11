@@ -84,6 +84,7 @@ subroutine read_gefs_reforecast(n, m, findex, order, filename, varname, ferror)
   real, allocatable  :: gefs_grib_data(:)              ! Read-in data
   real        :: varfield(LIS_rc%lnc(n),LIS_rc%lnr(n)) ! Interp field
   logical     :: pcp_flag                              ! Precip flag for spatial interp
+  !character*50  :: shortName                           ! variable for wind data
 
 ! ______________________________________________________________________________
 
