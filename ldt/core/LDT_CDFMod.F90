@@ -18,6 +18,7 @@ module LDT_CDFMod
 !  !REVISION HISTORY: 
 !  2 Oct 2008    Sujay Kumar  Initial Specification
 !  2 Dec 2021:   Mahdi Navari; modified to stratify CDF based on precipitation
+!                              and save the stratified CDF  
 !
 !EOP
   use LDT_DAobsDataMod
@@ -295,7 +296,8 @@ contains
                 enddo
 !                endif
              enddo
-             
+             ! MN: save stratified CDF 
+             metrics%strat_cdf = strat_cdf
              deallocate(strat_bincounts)
              deallocate(strat_cdf)
 
@@ -359,7 +361,8 @@ contains
                 enddo
 !                endif
              enddo
-
+             ! MN: save stratified CDF 
+             metrics%strat_cdf = strat_cdf
              deallocate(strat_bincounts)
              deallocate(strat_cdf)
 
@@ -425,6 +428,8 @@ contains
 !                endif
              enddo
 
+             ! MN: save stratified CDF 
+             metrics%strat_cdf = strat_cdf
              deallocate(strat_bincounts)
              deallocate(strat_cdf)
 

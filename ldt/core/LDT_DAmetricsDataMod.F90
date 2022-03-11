@@ -18,6 +18,7 @@ module LDT_DAmetricsDataMod
 ! 
 ! !REVISION HISTORY:
 !  02 Oct 2008: Sujay Kumar; Initial version
+!  28 Feb 2022: Mahdi navari modified to save stratified CDFs
 !
 ! !USES:  
   use ESMF
@@ -36,6 +37,9 @@ module LDT_DAmetricsDataMod
      real,    allocatable :: delta(:,:,:)
      real,    allocatable :: xrange(:,:,:,:)
      real,    allocatable :: cdf(:,:,:,:)
+     real,    allocatable :: strat_xrange(:,:,:,:)
+     real,    allocatable :: strat_cdf(:,:,:,:)
+
 
      real,    allocatable :: sx_mu(:,:,:)
      real,    allocatable :: mu(:,:,:)
