@@ -17,7 +17,7 @@ module LDT_DrangeMod
 !
 !  !REVISION HISTORY: 
 !  2 Oct 2008    Sujay Kumar  Initial Specification
-!  16 Feb 2022   Mahdi Navari; modified to stratify CDF based on precipitation
+!  16 Feb 2022   Mahdi Navari; modified to save stratify CDF
 !
 !EOP
   use LDT_DAobsDataMod
@@ -338,7 +338,7 @@ contains
                    enddo
                 enddo
              enddo
-
+             metrics%strat_xrange = strat_xrange
              deallocate(strat_drange_total)
              deallocate(strat_maxval)
              deallocate(strat_minval)
@@ -439,6 +439,7 @@ contains
                    enddo
                 enddo
              enddo
+             metrics%strat_xrange = strat_xrange
              deallocate(strat_drange_total)
              deallocate(strat_maxval)
              deallocate(strat_minval)
@@ -540,6 +541,7 @@ contains
                    enddo
                 enddo
              enddo
+             metrics%strat_xrange = strat_xrange
              deallocate(strat_drange_total)
              deallocate(strat_maxval)
              deallocate(strat_minval)

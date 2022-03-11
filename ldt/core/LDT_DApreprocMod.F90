@@ -16,7 +16,7 @@ module LDT_DApreprocMod
 ! 
 ! !REVISION HISTORY: 
 !  24 Nov 2008    Sujay Kumar  Initial Specification
-!  2 Dec 2021:   Mahdi Navari; modified to stratify CDF based on precipitation
+!  2 Dec 2021:   Mahdi Navari; modified to save stratify CDF
 ! 
   use ESMF
 
@@ -180,6 +180,11 @@ contains
        call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%strat_cdfs,&
             label="Stratify CDFs by external data:",default=0, rc=rc)
        call LDT_verify(rc,"Stratify CDFs by external data: not defined")
+
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%write_strat_cdfs,&
+            label="Write stratified geolocation independent CDFs:",default=0, rc=rc)
+       call LDT_verify(rc,"Write stratify geolocation independent CDFs:: not defined")
+
        if(LDT_rc%strat_cdfs.gt.0) then
           call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%strat_src,&
                label="Stratification data source:", rc=rc)
