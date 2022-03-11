@@ -348,6 +348,8 @@ endif::devonly[]
 |"`ERA5`"                      | ERA5 reanalysis meteorology
 |"`AWRAL processed forcing`"   | AWRA-L processed forcing
 |"`PLUMBER2`"                  | PLUMBER2 forcing
+|"`GDDP`"                      | NEX GDDP forcing
+|"`COAMPSout`"                 | COAMPS output forcing
 |====
 
 .Example _lis.config_ entry
@@ -6080,6 +6082,9 @@ or mean sea level (msl) can be selected (which is not supported yet).
 of GEFS ensemble members being read in. Reforecast2 currently
 supports up to a 11 members.
 
+`GEFS forecast grid resolution:` specifies the grid resolution of the GEFS
+forecast data. The current resolutions supported are 0.50 and 0.25.
+
 .Example _lis.config_ entry
 ....
 GEFS forecast directory:        ./MET_FORCING/GEFS/Reforecast/
@@ -6088,6 +6093,7 @@ GEFS forecast run mode:          forecast         # forecast | analysis
 GEFS forecast grid projection:   latlon           # latlon | gaussian
 GEFS pressure level field:       surface          # surface | msl
 GEFS forecast number of ensemble members:  11
+GEFS forecast grid resolution:   0.25
 ....
 
 
@@ -6392,6 +6398,25 @@ AWRAL domain y-dimension size:         681
 PLUMBER2 forcing file: ./input/PLUMBER2/AU-Cow_2010-2015_OzFlux_Met.nc          
 PLUMBER2 Station ID: AU-Cow                                                      
 PLUMBER2 Time Delta: 1800  
+....
+
+[[sssec_gddpforcing,GDDP]]
+==== GDDP
+
+`GDDP forcing file:` specifies the location of the GDDP metforcing data.
+
+`GDDP forcing scenario:` specifies the GDDP forcing scenario. Currently only `historical` is supported.
+
+`GDDP reference daily climatology directory:` specifies the location of the GDDP reference daily climatology data.
+
+`GDDP reference hourly climatology directory:` specifies the location of the GDDP reference hourly climatology data.
+
+.Example _lis.config_ entry
+....
+GDDP forcing directory:                      ./input/MET_FORCING/NEX-GDDP-CMIP6/
+GDDP forcing scenario:                       historical
+GDDP reference daily climatology directory:  ./input/MET_FORCING/M2CLIMO/DAILY/
+GDDP reference hourly climatology directory: ./input/MET_FORCING/M2CLIMO/HOURLY/
 ....
 
 [[ssec_lsm,Land surface models]]
