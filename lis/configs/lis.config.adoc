@@ -7777,18 +7777,56 @@ in the LIS implementation are indicated with [NS].  Acceptable values are:
 |====
 |Value | Note | Description
  
-| 1    |      | off (use table LAI; use FVEG = SHDFAC from input)
-| 2    |      | on  (dynamic vegetation; must use Ball-Berry canopy option)
-| 3    |      | off (use table LAI; calculate FVEG)
-| 4    |  **  | off (use table LAI; use maximum vegetation fraction)
-| 5    |  **  | on  (use maximum vegetation fraction)
-| 6    |      | on  (use FVEG = SHDFAC from input)
-| 7    |      | off (use input LAI; use FVEG = SHDFAC from input)
-| 8    |      | off (use input LAI; calculate FVEG)
-| 9    |      | off (use input LAI; use maximum vegetation fraction)
+| 1    |      | off (use table LAI/SAI; use input GVF)
+| 2    |      | on  (dynamic vegetation; GVF is a function of LAI/SAI)
+| 3    |      | off (use table LAI/SAI; GVF is a function of LAI/SAI)
+| 4    |  **  | off (use table LAI/SAI; GVF is the maximum value)
+| 5    |  **  | on  (dynamic vegetation; GVF is the maximum value)
+| 6    |      | on  (dynamic vegetation; use input GVF)
+| 7    |      | off (use input LAI/SAI; use input GVF)
+| 8    |      | off (use input LAI/SAI; GVF is a function of LAI/SAI)
+| 9    |      | off (use input LAI/SAI; GVF is the maximum value)
 |10    |  NS  | crop model on (use maximum vegetation fraction)
 |====
- 
+
+When using options 1 through 6, users should set `LAI data source:` to
+"`none`".  For options 1, 3, or 4, the LAI value will be read from the
+`Noah-MP.4.0.1 MP parameter table:` file (typically, "`MPTABLE.TBL`")
+based on the vegetation class of the tile and the current month.  For
+options 2, 5, or 6, the LAI is a prognostic variable as a function of
+the LeafMass calculated from the dynamic vegetation scheme.  When using
+options 7 through 9, users should set `LAI data source:` to "`LDT`",
+after running LDT to include an LAI dataset as one of the parameters
+in the `LIS domain and parameter data file:`.
+
+When using options 1 through 6, users should set `SAI data source:` to
+"`none`".  For options 1, 3, or 4, the SAI value will be read from the
+`Noah-MP.4.0.1 MP parameter table:` file (typically, "`MPTABLE.TBL`")
+based on the vegetation class of the tile and the current month.  For
+options 2, 5, or 6, the SAI is a prognostic variable as a function of
+the StemMass calculated from the dynamic vegetation scheme.  When using
+options 7 through 9, users can set `SAI data source:` to "`LDT`", after
+running LDT to include an SAI dataset as one of the parameters in the
+`LIS domain and parameter data file:`.  Alternatively, for these options
+(7, 8, or 9), users can choose to not use an input SAI dataset by setting
+`SAI data source:` to "`none`", in which case the SAI value will be set
+from the `Noah-MP.4.0.1 MP parameter table:` file.
+
+When using options 1, 4, 5, 6, 7, or 9, users should set `Greenness data
+source:` to "`LDT`", after running LDT to include a greenness dataset as
+one of the parameters in the `LIS domain and parameter data file:`.  The
+greenness parameter variable name can be referred to as GVF (greenness
+vegetation fraction), FVEG, or SHDFAC in the Noah-MP.4.0.1 physics code.
+When using options 1, 6, or 7, the greenness value is set to the monthly
+climatology value for each tile (unless "`CONSTANT`" was chosen when LDT
+was run for the `Greenness data source:`).  When using options 4, 5, or 9,
+the greenness value for each tile is set to the maximum value of all months
+from the monthly climatology at that tile.  When using options 2, 3, or 8,
+the greenness is a function of LAI and SAI at each tile for each timestep.
+
+Note that when using dynamic vegetation option 2, 5, or 6, the Ball-Berry
+canopy stomatal resistance option must be selected for the following config.
+
 `Noah-MP.4.0.1 canopy stomatal resistance option:` specifies the canopy
 stomatal resistance option for Noah-MP-4.0.1 LSM.  Options generally
 recommended for use by the model developers are indicated with [**].
