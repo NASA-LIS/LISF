@@ -43,6 +43,8 @@ contains
       ! Imports
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
       use USAFSI_utilMod
+      use USAFSI_paramsMod
+      use map_utils
 
       ! Defaults
       implicit none
@@ -67,6 +69,7 @@ contains
       real                                         :: icoord, jcoord
       INTEGER, PARAMETER                           :: POSE    = 0   ! LONGITUDE ORIENTATION FLAG; 0 = POSITIVE WEST
       real :: rlat, rlon ! EMK
+      type(proj_info) :: snodep_0p25deg_proj
 
       call search_files (date10, ssmis_in)
       open(unit=90, file='./ssmis_filelist.txt', form='formatted', &
@@ -143,6 +146,17 @@ contains
            '[INFO] Writing SSMIS data to ', trim(filename)
       open(unit=20, file=filename,status='unknown', action='write')
 
+      call map_set(proj_code=proj_latlon, &
+           lat1=-89.875, &
+           lon1=-179.875, &
+           dx=0.25, &
+           stdlon=0.25, &
+           truelat1=0.25, &
+           truelat2=0., &
+           idim=igrid,&
+           jdim=jgrid, &
+           proj=snodep_0p25deg_proj)
+
       do i=1,size(lat)
 
          if (snowdepth(i) < 0) then      ! remove unrealistic values
@@ -156,7 +170,8 @@ contains
                hemi=1
                rlat = real(lat(i))
                rlon = real(lon(i))
-               call LLTOPS (POSE, rlat, rlon, 16, hemi, icoord, jcoord)
+               !call LLTOPS (POSE, rlat, rlon, 16, hemi, icoord, jcoord)
+               call latlon_to_ij(snodep_0p25deg_proj,rlat,rlon,icoord,jcoord)
                write(10, '(A10, I3, I6, I7, 2I5, 2I6)') date10_arr(i), &
                     satid(i), nint(real(lat(i))*100), nint(real(lon(i))*100), &
                     nint(icoord), nint(jcoord), nint(ct(i)), &
@@ -166,7 +181,8 @@ contains
                hemi=2
                rlat = real(lat(i))
                rlon = real(lon(i))
-               call LLTOPS (POSE, rlat, rlon, 16, hemi, icoord, jcoord)
+               !call LLTOPS (POSE, rlat, rlon, 16, hemi, icoord, jcoord)
+               call latlon_to_ij(snodep_0p25deg_proj,rlat,rlon,icoord,jcoord)
                write(20, '(A10, I3, I6, I7, 2I5, 2I6)') date10_arr(i), &
                     satid(i), nint(real(lat(i))*100), nint(real(lon(i))*100), &
                     nint(icoord), nint(jcoord), nint(ct(i)), &
