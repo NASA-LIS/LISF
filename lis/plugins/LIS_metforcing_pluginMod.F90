@@ -260,6 +260,10 @@ subroutine LIS_metforcing_plugin
    use WRFout_forcingMod
 #endif
 
+#if ( defined MF_COAMPSOUT )
+   use COAMPSout_forcingMod
+#endif
+
 #if ( defined MF_WRFOUTV2 )
    use WRFoutv2_forcingMod
 #endif
@@ -287,6 +291,10 @@ subroutine LIS_metforcing_plugin
 #if ( defined MF_MRMS )
    use mrms_grib_forcingMod
 #endif
+
+#if ( defined MF_GDDP )
+   use gddp_forcingMod
+#endif   
 
 #if ( defined MF_MET_TEMPLATE )
    external get_metForcTemplate
@@ -563,6 +571,13 @@ subroutine LIS_metforcing_plugin
    external finalize_WRFout
 #endif
 
+#if ( defined MF_COAMPSOUT )
+   external get_COAMPSout
+   external timeinterp_COAMPSout
+   external reset_COAMPSout
+   external finalize_COAMPSout
+#endif
+
 #if ( defined MF_WRFOUTV2 )
    external get_WRFoutv2
    external timeinterp_WRFoutv2
@@ -612,6 +627,13 @@ subroutine LIS_metforcing_plugin
    external reset_mrms_grib
 #endif
 
+#if ( defined MF_GDDP )
+   external get_gddp
+   external timeinterp_gddp
+   external finalize_gddp
+   external reset_gddp
+#endif
+   
 #if ( defined MF_MET_TEMPLATE )
 ! - Meteorological Forcing Template:
    call registerinitmetforc(trim(LIS_metForcTemplateId)//char(0), &
@@ -1032,6 +1054,16 @@ subroutine LIS_metforcing_plugin
    call registerresetmetforc(trim(LIS_WRFoutId)//char(0),reset_WRFout)
 #endif
 
+#if ( defined MF_COAMPSOUT )
+! - COAMPSout forcing
+   call registerinitmetforc(trim(LIS_COAMPSoutId)//char(0),init_COAMPSout)
+   call registerretrievemetforc(trim(LIS_COAMPSoutId)//char(0),get_COAMPSout)
+   call registertimeinterpmetforc(trim(LIS_COAMPSoutId)//char(0), &
+                                  timeinterp_COAMPSout)
+   call registerfinalmetforc(trim(LIS_COAMPSoutId)//char(0),finalize_COAMPSout)
+   call registerresetmetforc(trim(LIS_COAMPSoutId)//char(0),reset_COAMPSout)
+#endif
+
 #if ( defined MF_WRFOUTV2 )
 ! - WRFout-4KM HiRes forcing
    call registerinitmetforc(trim(LIS_WRFoutv2Id)//char(0),init_WRFoutv2)
@@ -1097,6 +1129,14 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_mrms_grib)
    call registerfinalmetforc(trim(LIS_mrmsId)//char(0),finalize_mrms_grib)
    call registerresetmetforc(trim(LIS_mrmsId)//char(0),reset_mrms_grib)
+#endif
+#if ( defined MF_GDDP)
+   call registerinitmetforc(trim(LIS_gddpId)//char(0),init_gddp)
+   call registerretrievemetforc(trim(LIS_gddpId)//char(0),get_gddp)
+   call registertimeinterpmetforc(trim(LIS_gddpId)//char(0), &
+                                  timeinterp_gddp)
+   call registerfinalmetforc(trim(LIS_gddpId)//char(0),finalize_gddp)
+   call registerresetmetforc(trim(LIS_gddpId)//char(0),reset_gddp)
 #endif
 end subroutine LIS_metforcing_plugin
 
