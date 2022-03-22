@@ -613,6 +613,7 @@ module LIS_PRIV_rcMod
 !  14 Oct 2003; Sujay Kumar; Removed LSM specific variables. 
 !  19 Jan 2007; Chuck Alonge; Added Flag to output parameters
 !  17 Jan 2011: David Mocko, added max/min greenness & slope type
+!   4 Feb 2022: Sarith Mahanama; Removed irrigation specific variables
 !
 !EOP
   implicit none
@@ -945,17 +946,9 @@ module LIS_PRIV_rcMod
      character*50           :: runoffdatasource
 
      character*50           :: irrigation_type
-     real                   :: irrigation_thresh !BZ
-     integer                :: irrigation_mxsoildpth
 
      integer                :: forecastMode
      logical                :: zterp_correction
-
-     real                   :: irrigation_GVFparam1   !WN
-     real                   :: irrigation_GVFparam2   !WN
-     integer                :: irrigation_dveg        !WN
-     integer                :: irrigation_SourcePartition  !WN
-     integer                :: irrigation_GWabstraction !JE 
 
      logical, allocatable       :: LSM_DAinst_valid(:)
      logical, allocatable       :: Routing_DAinst_valid(:)
