@@ -112,6 +112,7 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
 !--------------wanshu-----add temp check-------
   real                 :: sfctemp, tempcheck
 
+#if 0
   call ESMF_StateGet(irrigState, "Irrigation rate",irrigRateField,rc=rc)
   call LIS_verify(rc,'ESMF_StateGet failed for Irrigation rate')    
   call ESMF_FieldGet(irrigRateField, localDE=0,farrayPtr=irrigRate,rc=rc)
@@ -460,4 +461,5 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
        end if
 
     enddo
+#endif
   end subroutine noahmp36_getirrigationstates

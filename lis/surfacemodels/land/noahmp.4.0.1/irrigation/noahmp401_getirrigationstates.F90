@@ -119,6 +119,7 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
   real                 :: shdfac_avg
   real                 :: smc_avg(nsoil)
 
+#if 0
   call ESMF_StateGet(irrigState, "Irrigation rate",irrigRateField,rc=rc)
   call LIS_verify(rc,'ESMF_StateGet failed for Irrigation rate')    
   call ESMF_FieldGet(irrigRateField, localDE=0,farrayPtr=irrigRate,rc=rc)
@@ -511,5 +512,5 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
 
     end do
   end do
-
+#endif
   end subroutine noahmp401_getirrigationstates

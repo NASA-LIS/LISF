@@ -93,6 +93,7 @@ subroutine RUC37_getirrigationstates(n,irrigState)
 
 ! _______________________________________________________
 
+#if 0
   call ESMF_StateGet(irrigState, "Irrigation rate",irrigRateField,rc=rc)
   call LIS_verify(rc,'ESMF_StateGet failed for Irrigation rate')    
   call ESMF_FieldGet(irrigRateField, localDE=0,farrayPtr=irrigRate,rc=rc)
@@ -425,4 +426,5 @@ subroutine RUC37_getirrigationstates(n,irrigState)
           end if
        end if
     enddo
+#endif
   end subroutine RUC37_getirrigationstates

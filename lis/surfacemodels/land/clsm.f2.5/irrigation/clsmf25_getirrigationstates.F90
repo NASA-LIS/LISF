@@ -22,6 +22,8 @@ subroutine clsmf25_getirrigationstates(n,irrigState)
   use LIS_logMod
   use clsmf25_lsmMod
   use LIS_vegDataMod
+  use LIS_irrigationMod
+  use IRRIGATION_MODULE
 
 ! !DESCRIPTION:        
 !
@@ -95,6 +97,7 @@ subroutine clsmf25_getirrigationstates(n,irrigState)
   real                 :: laithresh,ltime
   real,      allocatable   :: laimax(:,:),laimin(:,:)
   
+#if 0
   if(clsmf25_struc(n)%modelStart) then 
      clsmf25_struc(n)%modelStart = .false. 
 
@@ -383,4 +386,5 @@ subroutine clsmf25_getirrigationstates(n,irrigState)
         end if
      end if
   enddo
+#endif
 end subroutine clsmf25_getirrigationstates
