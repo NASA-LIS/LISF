@@ -10140,10 +10140,14 @@ where LIS outputs are located.
 `LIS runoff output interval:` specifies 
 LIS output time step
 
+`LIS runoff output domain file:` specifies location of the LIS runoff output
+domain file.
+
 .Example _lis.config_ entry
 ....
 LIS runoff output directory: ./LIS_OUTPUT/
 LIS runoff output interval: "1da"
+LIS runoff output domain file: ./LIS_OUTPUT/lis_input_010_hybrid.nc
 ....
 
 
