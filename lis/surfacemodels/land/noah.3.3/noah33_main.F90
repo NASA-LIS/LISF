@@ -22,6 +22,8 @@
 !                            U,V forcing height to same level as T,q
 !   9 Sep 2011: David Mocko, changes for Noah3.3 in LIS6.1
 !  14 Jan 2014: David Mocko, reconfirmed Noah3.3 in LIS7.0
+!  22 Feb 2022: Hiroko Beaudoing, remove irrigation amount from prcp when
+!                                 using sprinkler
 !
 ! !INTERFACE:
 subroutine noah33_main(n)
@@ -32,7 +34,7 @@ subroutine noah33_main(n)
   use LIS_albedoMod,     only : LIS_alb
   use LIS_constantsMod,  only : LIS_CONST_RHOFW, LIS_CONST_TKFRZ, &
                                 LIS_CONST_LATVAP
-  use LIS_logMod,        only : LIS_logunit, LIS_endrun
+  use LIS_logMod,        only : LIS_logunit, LIS_endrun, LIS_verify
   use LIS_histDataMod
   use LIS_FORC_AttributesMod 
 !  use module_sf_noah33lsm, only : SFLX, DQSDT, SFCDIF_OFF, CALHUM, SNFRAC
@@ -41,6 +43,8 @@ subroutine noah33_main(n)
   use module_sf_noah33lsm_glacial, only : SFLX_glacial
   use noah33_lsmMod
   use LIS_tbotAdjustMod, only: LIS_tbotTimeUtil,LIS_updateTbot
+  use ESMF
+  use LIS_irrigationMod, only: LIS_irrig_state
 
   implicit none
 ! !ARGUMENTS: 
@@ -205,6 +209,12 @@ subroutine noah33_main(n)
 ! integrated relative soil moisture (i.e. the old "MSTAVTOT" from v2.7.1).
   real :: tempval, soiltm, soiltw, soilt
 ! J.Case -- end mod (9/11/2014)
+! HKB: added below (2/22/2022)
+!  type(ESMF_State)                        :: irrigState
+  type(ESMF_Field)                        :: irrigRateField,irrigTypeField
+  real,    pointer                        :: irrigRate(:)
+  real,    pointer                        :: irrigType(:)
+  integer                                 :: status
 
   write(fnest,'(i3.3)') n
   alarmCheck = LIS_isAlarmRinging(LIS_rc,"Noah33 model alarm "//trim(fnest))
@@ -215,6 +225,24 @@ subroutine noah33_main(n)
      do i=1,LIS_rc%nmetforc
         if (trim(LIS_rc%metforc(i)).eq."Bondville") Bondvillecheck = .true.
      enddo
+     ! HKB -- need to get irrigation states and subtract from precip
+     if (LIS_rc%irrigation_type .eq. "Sprinkler" .or. &
+         LIS_rc%irrigation_type .eq. "Concurrent" ) then
+!      call ESMF_StateGet(irrigState, "Irrigation rate",irrigRateField,rc=status)
+      call ESMF_StateGet(LIS_irrig_state(n), "Irrigation rate", &
+           irrigRateField,rc=status)
+      call LIS_verify(status,'noah33_main: ESMF_StateGet failed for irrigRate')
+      call ESMF_FieldGet(irrigRateField, localDE=0,farrayPtr=irrigRate,rc=status)
+      call LIS_verify(status,'noah33_main: ESMF_FieldGet failed for irrigRate')
+!      call ESMF_StateGet(irrigState, "Irrigation type",irrigTypeField,rc=status)
+      call ESMF_StateGet(LIS_irrig_state(n), "Irrigation type", &
+           irrigTypeField,rc=status)
+      call LIS_verify(status,'noah33_main: ESMF_StateGet failed for irrigType')
+      call ESMF_FieldGet(irrigTypeField, localDE=0,farrayPtr=irrigType,rc=status)
+      call LIS_verify(status,'noah33_main: ESMF_FieldGet failed for irrigType')
+     endif   ! irrigation
+     ! end HKB -- need to get irrigation states
+
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(ffrozp,dt,zlvl,zlvl_wind,sfctmp,q2,sfcprs,prcp,uwind,vwind,cpcp,soldn,q2sat,lwdn,sfcspd,esat,nsoil,sldpth,ice,isurban,solnet,local,solardirect,prcprain,cosz,th2,th2v,t1v,t2v,dqsdt2,slope,shdfac,shdmin,shdmax,tbot,evp,eta,eta_kinematic,shtflx,fdown,ec,edir,et,smav,ett,esnow,drip,dew,beta,etp,gflx,flx1,flx2,flx3,snomlt,sncovr,runoff3,rc,pc,rcs,rct,rcq,rcsoil,soilw,soilm,tsoil,snoalb,soilrz,soilrzmax,rdlai2d,usemonalb,ribb,ptu,ustar,soiltyp,llanduse,lsoil,frzk,frzfact,t2diag,q2diag,rho,i,k,soilhtc,soilmtc,startht,startsm,startswe,startint,sfctsno,e2sat,q2sati,ch,cm,row,col,WRSI_TimeStep,WR_TimeStep,AET_TimeStep)
 
 !$OMP DO
@@ -1037,6 +1065,14 @@ subroutine noah33_main(n)
            call LIS_diagnoseSurfaceOutputVar(n, t,LIS_MOC_EF,value=1.0,          &
                 vlevel=1,unit="-",direction="-",surface_type=LIS_rc%lsm_index)
         endif
+
+        ! Sprinkler Irrigation added water needs to be removed - HKB
+        if (LIS_rc%irrigation_type .eq. "Sprinkler" .or. &
+            LIS_rc%irrigation_type .eq. "Concurrent" ) then
+            if ( irrigType(t) .eq. 1 ) then  ! Sprinkler
+              prcp = prcp - irrigRate(t)
+            endif
+        endif   ! irrigation
 
         ! Noah3.3 uses this value instead of 273.16 - D. Mocko
         if (sfctmp .lt. T0) then
