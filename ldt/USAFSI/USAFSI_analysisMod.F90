@@ -1570,6 +1570,10 @@ contains
          ! grid
          allocate(ssmis_icecon_0p25deg(igrid,jgrid))
          allocate(ssmis_depth_0p25deg(igrid,jgrid))
+
+         ssmis_icecon_0p25deg = -1
+         ssmis_depth_0p25deg = -1
+
          do j = 1, jgrid
             do i = 1, igrid
                if (icecount_0p25deg (i, j) > 0) then
