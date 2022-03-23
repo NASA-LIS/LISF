@@ -494,6 +494,7 @@ module LIS_histDataMod
   public :: LIS_MOC_QSPRINGS
   public :: LIS_MOC_QSLAT
   public :: LIS_MOC_RECH
+  public :: LIS_MOC_WTD
   public :: LIS_MOC_DEEPRECH
   !integer :: LIS_MOC_SMCWTD =  -9999
   integer :: LIS_MOC_QRF = -9999
@@ -503,7 +504,7 @@ module LIS_histDataMod
   integer :: LIS_MOC_QSPRINGS = -9999
   integer :: LIS_MOC_QSLAT = -9999
   integer :: LIS_MOC_RECH = -9999
-
+  integer :: LIS_MOC_WTD = -9999
   integer :: LIS_MOC_SNOW_SOOT = -9999
   integer :: LIS_MOC_GRND_SNOW = -9999
   integer :: LIS_MOC_SURFT_SNOW = -9999
@@ -1261,7 +1262,7 @@ contains
     
     call ESMF_ConfigFindLabel(modelSpecConfig,"DeepRech:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "Rech",&
+         "DeepRech",&
          "accumulated_recharge_when_deep", &
          "accumulated recharge when deep",rc)
     if ( rc == 1 ) then
@@ -1271,15 +1272,15 @@ contains
             model_patch=.true.)
     endif
     
-    call ESMF_ConfigFindLabel(modelSpecConfig,"Qrfs:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Wtd:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "Qrfs",&
+         "Wtd",&
          "accumulated_groundwater_river_water_flux",&
          "accumulated groundwater river water flux",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_QRFS,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_WTD,&
             LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"mm"/),1,(/"-"/),1,112,0,&
+            n,1,ntiles,(/"m"/),1,(/"-"/),1,112,0,&
             model_patch=.true.)
     endif
 

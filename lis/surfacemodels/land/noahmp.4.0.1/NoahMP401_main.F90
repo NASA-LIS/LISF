@@ -338,7 +338,7 @@ subroutine NoahMP401_main(n)
             if (row .eq. 12) then
                 if (col .eq. 25) then
                     tmp_printdebug = 1
-                    print *, "PRINTED DEBUG VARIABLES ON"
+                    !print *, "PRINTED DEBUG VARIABLES ON"
                 endif
             endif
 
@@ -1618,9 +1618,6 @@ subroutine NoahMP401_main(n)
                              NOAHMP401_struc(n)%noahmp401(t)%canice)
             endif
             
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QSLAT, value = NOAHMP401_struc(n)%noahmp401(t)%qslat, &
-                  vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
-            
             do i = 1,NOAHMP401_struc(n)%nsoil
                TWS_out = TWS_out +                                     &
                       (NOAHMP401_struc(n)%noahmp401(t)%smc(i)  *       &
@@ -1638,6 +1635,26 @@ subroutine NoahMP401_main(n)
             !call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QA, value = tmp_pah, &
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QA, value = NOAHMP401_struc(n)%noahmp401(t)%pah, &
                   vlevel=1, unit="W m-2",direction="DN",surface_type=LIS_rc%lsm_index)
+
+            ![ 97] Qslat - Accumulated Lateral Flow (for MMF Groundwater) - (unit=mm) 
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QSLAT, value = NOAHMP401_struc(n)%noahmp401(t)%qslat, &
+                  vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
+
+            ![ 98] Qsprings - Accumulated Seeping Water (for MMF Groundwater) - (unit=mm) 
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QSPRINGS, value = NOAHMP401_struc(n)%noahmp401(t)%qsprings, &
+                  vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
+
+            ![ 99] Qrfs - Accumulated Flux From Groundwater to Rivers (for MMF Groundwater) - (unit=mm) 
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QRFS, value = NOAHMP401_struc(n)%noahmp401(t)%qrfs, &
+                  vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
+
+            ![ 100] Wtd - Water Table Depth (for MMF Groundwater) - (unit=m) 
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_WTD, value = NOAHMP401_struc(n)%noahmp401(t)%wtd, &
+                  vlevel=1, unit="m", direction="-", surface_type = LIS_rc%lsm_index)
+
+            ![ 101] Rech - Accumulated Recharge (for MMF Groundwater) - (unit=mm) 
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RECH, value = NOAHMP401_struc(n)%noahmp401(t)%rech, &
+                  vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
 
 ! Added water balance change terms - David Mocko
             endsm = 0.0
