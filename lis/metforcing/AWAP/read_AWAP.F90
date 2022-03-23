@@ -32,7 +32,7 @@ subroutine read_AWAP( n, fname,findex,order, ferror_AWAP )
   implicit none
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  character(len=80)   :: fname          
+  character(len=*)   :: fname          
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_AWAP

@@ -29,6 +29,7 @@ subroutine read_mrms_grib( n, fname, findex, order, yr, mo, da, ferror_mrms_grib
   use LIS_logMod,         only : LIS_logunit, LIS_verify
   use LIS_metforcingMod,  only : LIS_forc
   use mrms_grib_forcingMod,    only : mrms_grib_struc
+  use LIS_constantsMod,        only : LIS_CONST_PATH_LEN
 
 #if (defined USE_GRIBAPI)
   use grib_api
@@ -37,8 +38,8 @@ subroutine read_mrms_grib( n, fname, findex, order, yr, mo, da, ferror_mrms_grib
   implicit none
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  character(len=120)   :: fname
-  character(len=200)  :: maskname          
+  character(len=*)   :: fname
+  character(len=LIS_CONST_PATH_LEN)  :: maskname          
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_mrms_grib
@@ -98,7 +99,7 @@ subroutine read_mrms_grib( n, fname, findex, order, yr, mo, da, ferror_mrms_grib
 !-- Check initially if file exists:
   inquire (file=fname, exist=file_exists ) ! Check if file exists
   if (.not. file_exists)  then 
-     if (LIS_masterproc) write(LIS_logunit,*) "** Missing MRMS precipitation file: ", fname
+     if (LIS_masterproc) write(LIS_logunit,*) "** Missing MRMS precipitation file: ", trim(fname)
      ferror_mrms_grib = 1
      return
   endif
@@ -136,7 +137,7 @@ subroutine read_mrms_grib( n, fname, findex, order, yr, mo, da, ferror_mrms_grib
     if ( mo >= 10) write ( cmon, '(i2)' ) mo
 
     maskname = trim(mrms_grib_struc(n)%mrms_mask_dir)//'AvgRQI_'//cmon//'_conus_sm.grib2'
-    write(LIS_logunit,*) 'Using mask ',maskname
+    write(LIS_logunit,*) 'Using mask ',trim(maskname)
     !write(LIS_logunit,*) 'With cutoff theshold ',maskthresh
 
     call grib_open_file(ftn2,trim(maskname),'r',iret)

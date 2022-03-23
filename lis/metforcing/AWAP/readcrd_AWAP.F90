@@ -42,7 +42,7 @@ subroutine readcrd_AWAP()
        call ESMF_ConfigGetAttribute(LIS_config, AWAP_struc(n)%AWAPdir,rc=rc)
 
        write(LIS_logunit,*) '[INFO] Using AWAP forcing'
-       write(LIS_logunit,*) '[INFO] AWAP forcing directory :', AWAP_struc(n)%AWAPDIR
+       write(LIS_logunit,*) '[INFO] AWAP forcing directory :', trim(AWAP_struc(n)%AWAPDIR)
 
     !- Setting observed precip times to zero to ensure data is read in
     !   at first time step

@@ -54,7 +54,7 @@ subroutine read_HYMAP_grid_dist(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%griddistfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] Griddist map, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP grid distance map:, ',&
            trim(HYMAP_struc(n)%griddistfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun

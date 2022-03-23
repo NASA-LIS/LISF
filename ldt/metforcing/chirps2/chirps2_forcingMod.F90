@@ -120,7 +120,6 @@ contains
                             LDT_getNextUnitNumber, &
                             LDT_releaseUnitNumber, LDT_verify 
     use LDT_gridmappingMod
-    use ESMF
 
     implicit none
 

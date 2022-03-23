@@ -53,7 +53,7 @@ subroutine read_HYMAP_refq(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%refqfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] Refq map, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP reference discharge map, ',&
            trim(HYMAP_struc(n)%refqfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun

@@ -103,6 +103,7 @@ module noah36_module
 !   7 Nov 2010: David Mocko, changes for Noah3.2 in LIS6.1
 !   9 Sep 2011: David Mocko, changes for Noah3.3 in LIS6.1
 !  30 Oct 2014: David Mocko, added Noah-3.6 into LIS-7
+!  05 Jan 2021: Augusto Getirana, 2-way coupling implementation
 ! 
 !EOP
   implicit none
@@ -242,6 +243,12 @@ module noah36_module
      real :: sigma_sm  !used for optimization/uncertainty analysis
 
      real,allocatable :: relsmc(:)  !used to export relsmc to WRF
+
+     !ag(05Jan2021) 2-way coupling variables
+     real :: rivsto
+     real :: fldsto
+     real :: fldfrc
+     
   end type noah36dec
 
 end module noah36_module

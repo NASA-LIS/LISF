@@ -1,0 +1,30 @@
+.gmaps-label {
+	position: absolute;
+	border: 0;
+	white-space: nowrap;
+	font-family: Arial, sans-serif;
+	color: white;
+	font-size: 17px;
+	text-shadow:
+		-1px -1px 0.5px rgba(0,0,0,0.5),
+		1px -1px 0.5px rgba(0,0,0,0.5),
+		-1px 1px 0.5px rgba(0,0,0,0.5),
+		1px 1px 0.5px rgba(0,0,0,0.5);
+}
+
+.gmaps-label.small {
+	font-size: 14px;
+}
+
+.gmaps-label.big {
+	font-size: 22px;
+}
+
+.gmaps-label.huge {
+	font-size: 30px;
+	text-shadow:
+		-1.5px -1.5px 0.5px rgba(0,0,0,0.5),
+		1.5px -1.5px 0.5px rgba(0,0,0,0.5),
+		-1.5px 1.5px 0.5px rgba(0,0,0,0.5),
+		1.5px 1.5px 0.5px rgba(0,0,0,0.5);
+}

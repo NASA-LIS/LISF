@@ -48,7 +48,10 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
      bgap    , wgap    , tgb     , tgv     , chv     , chb     , & ! out Noah MP only
      shg     , shc     , shb     , evg     , evb     , ghv     , & ! out Noah MP only
      ghb     , irg     , irc     , irb     , tr      , evc     , & ! out Noah MP only
+     fgev_pet, fcev_pet, fctr_pet,                               & ! PET 
      chleaf  , chuc    , chv2    , chb2    , relsmc,             &
+     !ag (12Sep2019)
+     rivsto, fldsto, fldfrc,&
      parameters ,                                                & ! out Noah MP only
      sfcheadrt , INFXSRT, soldrain)                                ! For WRF-Hydro
 
@@ -244,11 +247,19 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   real, intent(out) :: irb                    ! bare net longwave rad. [w/m2] [+ to atm]
   real, intent(out) :: tr                     ! transpiration [w/m2]  [+ to atm]
   real, intent(out) :: evc                    ! canopy evaporation heat [w/m2]  [+ to atm]
+  real, intent(out) :: fgev_pet
+  real, intent(out) :: fcev_pet
+  real, intent(out) :: fctr_pet
   real, intent(out) :: chleaf                 ! leaf exchange coefficient
   real, intent(out) :: chuc                   ! under canopy exchange coefficient 
   real, intent(out) :: chv2                   ! veg 2m exchange coefficient
   real, intent(out) :: chb2                   ! bare 2m exchange coefficient
   real, intent(out) :: relsmc(nsoil)          ! relative soil moisture [-]
+  !ag (05Jan2021)
+  real,   intent(in)  :: rivsto               ! river storage [m s-1]
+  real,   intent(in)  :: fldsto               ! flood storage [m s-1]
+  real,   intent(in)  :: fldfrc               ! flooded fraction [-]
+
 
   type(noahmp_parameters) :: parameters
 
@@ -444,12 +455,20 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   real, dimension(1,1) :: irbout
   real, dimension(1,1) :: trout
   real, dimension(1,1) :: evcout
+  real, dimension(1,1) :: fgev_petout
+  real, dimension(1,1) :: fcev_petout
+  real, dimension(1,1) :: fctr_petout
   real, dimension(1,1) :: chleafout
   real, dimension(1,1) :: chucout
   real, dimension(1,1) :: chv2out
   real, dimension(1,1) :: chb2out
   real, dimension(1,nsoil,1) :: relsmcout
   real, dimension(1,1) :: rsout
+    !ag(05Jan2021)
+  real, dimension(1,1) :: rivstoin
+  real, dimension(1,1) :: fldstoin
+  real, dimension(1,1) :: fldfrcin
+
 
    ids = 1
    ide = 1
@@ -549,11 +568,12 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   call calc_declin_401(nowdate(1:4)//"-"//nowdate(5:6)//"-"//nowdate(7:8)//"_"//nowdate(9:10)//":"//nowdate(11:12)//":00", &
       latitude, longitude, cosz, yearlen, julian)
 
-  if ( dveg_opt == 1 ) then
-    ! with dveg_opt==1, shdfac is fed directly to fveg
+  if ((dveg_opt.eq.1).or.(dveg_opt.eq.6).or.(dveg_opt.eq.7)) then
+    ! with dveg_opt==1/6/7, shdfac is fed directly to fveg
     vegfra = month_d_401(shdfac_monthly, nowdate)
   else
-    ! with dveg_opt==2, fveg is computed from lai and sai, and shdfac is unused
+    ! with dveg_opt==2/3/8, fveg is computed from lai and sai, and shdfac is unused
+    ! with dveg_opt==4/5/9, fveg is set to the maximum shdfac, and shdfac is unused
     vegfra = -1.E36   ! To match with HRLDAS initialization
   endif
   vegmax = maxval(shdfac_monthly)
@@ -698,6 +718,9 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   irbout(1,1)   = irb
   trout(1,1)    = tr
   evcout(1,1)   = evc
+  fgev_petout(1,1) = fgev_pet
+  fcev_petout(1,1) = fcev_pet
+  fctr_petout(1,1) = fctr_pet
   chleafout(1,1) = chleaf
   chucout(1,1)  = chuc
   chv2out(1,1)  = chv2
@@ -707,11 +730,17 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
 
 ! Code from module_NoahMP_hrldas_driver.F.  Initial guess only.
   if ((trim(LIS_rc%startcode).eq."coldstart").and.(itimestep.eq.1)) then
-      eahinout(1,1) = sfcprs(1) * (q2(1)/(0.622+q2(1)))
-      tahinout(1,1) = sfctmp(1)
-      cminout(1,1)  = 0.1
-      chinout(1,1)  = 0.1
+     eahinout(1,1) = sfcprs(1) * (q2(1)/(0.622+q2(1)))
+     tahinout(1,1) = sfctmp(1)
+     cminout(1,1)  = 0.1
+     chinout(1,1)  = 0.1
   endif
+  
+     !ag(05Jan2021)
+  rivstoin(1,1)=rivsto
+  fldstoin(1,1)=fldsto
+  fldfrcin(1,1)=fldfrc
+
 
   call noahmplsm_401  (LIS_rc%udef,  & ! in : LIS undefined value (David Mocko)
        itimestep,yearlen , julian  , coszin    , latin   , lonin  , & ! in : time/space-related
@@ -750,8 +779,10 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
        bgapout , wgapout , tgvout  , tgbout  , chvout  , chbout  , & ! out Noah MP only
        shgout  , shcout  , shbout  , evgout  , evbout  , ghvout  , & ! out Noah MP only
        ghbout  , irgout  , ircout  , irbout  , trout   , evcout  , & ! out Noah MP only
+       fgev_petout, fcev_petout, fctr_petout,                      & ! PET 
        chleafout  , chucout , chv2out , chb2out , rsout , fpice  , & ! out Noah MP only
        parameters, &
+       rivstoin,fldstoin,fldfrcin,                                 &
 #ifdef WRF_HYDRO
        sfcheadrt, INFXSRT, soldrain,                               &
 #endif
@@ -876,6 +907,9 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
 
   rainf = prcp * (1.0 - fpice)/dt  ! added by Shugong for LIS output 
   snowf = prcp * fpice/dt          ! added by Shugong for LIS output 
+  fgev_pet = fgev_petout(1,1)      ! 08/30/2021 Shugong 
+  fcev_pet = fcev_petout(1,1)
+  fctr_pet = fctr_petout(1,1)
 
 #ifndef WRF_HYDRO
   INFXSRT  = 0.0

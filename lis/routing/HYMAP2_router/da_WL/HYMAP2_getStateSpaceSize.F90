@@ -41,4 +41,3 @@ subroutine HYMAP2_getStateSpaceSize(n, size)
    size = HYMAP2_routing_struc(n)%nseqall*LIS_rc%nensem(n)
 
 end subroutine HYMAP2_getStateSpaceSize
-

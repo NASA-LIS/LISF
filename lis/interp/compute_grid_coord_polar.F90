@@ -37,8 +37,8 @@ subroutine compute_grid_coord_polar(gridDesc,npts,fill,xpts,ypts,&
 ! !DESCRIPTION:
 !  This subroutine computes the grid coordinates of 
 !  the specified domain for a polar stereographic projection.
-!  This routine is based on the grid
-!  decoding routines in the NCEP interoplation package. 
+!  This routine is based on the grid decoding
+!   routines in the NCEP interpolation package. 
 !  
 !  \begin{description}
 !    \item[gridDesc]
@@ -88,7 +88,8 @@ subroutine compute_grid_coord_polar(gridDesc,npts,fill,xpts,ypts,&
              nint(gridDesc(2)),nint(gridDesc(3)),proj)
         do i=1,npts
            call latlon_to_ij(proj,rlat(i),rlon(i),xpts(i),ypts(i))
-     enddo
+        enddo
+
      elseif(gridDesc(13).eq.1) then 
         im=gridDesc(2)
         jm=gridDesc(3)
@@ -97,6 +98,7 @@ subroutine compute_grid_coord_polar(gridDesc,npts,fill,xpts,ypts,&
         orient=gridDesc(7)
         dx=gridDesc(8)
         dy=gridDesc(9)
+
         if(gridDesc(10).eq.0) then 
            h = 1.0
         else
@@ -112,10 +114,12 @@ subroutine compute_grid_coord_polar(gridDesc,npts,fill,xpts,ypts,&
         do n=1,npts
            if(abs(rlon(n)).le.360.and.abs(rlat(n)).le.90.and.&
                 h*rlat(n).ne.-90) then
+
               call latlonTopolar(rlat(n),rlon(n),dx,orient,xr,yr)
               
               xpts(n) = xr+(xmax-1)/2+1
               ypts(n) = yr+(ymax-1)/2+1
+
               if(xpts(n).ge.xmin.and.xpts(n).le.xmax.and. &
                    ypts(n).ge.ymin.and.ypts(n).le.ymax) then
                  nret=nret+1

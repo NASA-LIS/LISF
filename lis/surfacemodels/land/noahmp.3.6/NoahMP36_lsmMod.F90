@@ -321,6 +321,10 @@ contains
                 NOAHMP36_struc(n)%noahmp36(t)%albd = -9999.0
                 NOAHMP36_struc(n)%noahmp36(t)%albi = -9999.0
                 NOAHMP36_struc(n)%noahmp36(t)%alb_upd_flag = .false.
+                !ag(05Jan2021)
+                NOAHMP36_struc(n)%noahmp36(t)%rivsto = 0.0
+                NOAHMP36_struc(n)%noahmp36(t)%fldsto = 0.0
+                NOAHMP36_struc(n)%noahmp36(t)%fldfrc = 0.0
             enddo ! end of tile (t) loop
 !------------------------------------------------------------------------
 ! Model timestep Alarm

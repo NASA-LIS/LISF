@@ -311,16 +311,20 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
    integer        :: param_AMSR2, param_AMSR2_qa
    integer        :: param_SMAP, param_SMAP_qa
    integer*1,parameter :: err_threshold = 5 ! in percent
-   integer*1,parameter :: AMSR2_accept = b'00000001'
-   integer*2,parameter :: SMOS_accept1 = b'0000000000000000'
-   integer*2,parameter :: SMOS_accept2 = b'0000000000000001'
-   integer*2,parameter :: SMOS_accept3 = b'0000000000001000'
-   integer*2,parameter :: SMOS_accept4 = b'0000000000001001'
-   integer*2,parameter :: SMOS_accept5 = b'0000000010000000'
-   integer*2,parameter :: SMOS_accept6 = b'0000000010000001'
-   integer*2,parameter :: SMOS_accept7 = b'0000000010001000'
-   integer*2,parameter :: SMOS_accept8 = b'0000000010001001'
-
+   ! EMK...ISO Fortran does not allow binary integer constants in PARAMETERS,
+   ! but does allow them in DATA statements.  So we edit the code below
+   ! accordingly to pacify gfortran 10+.
+   ! integer*1,parameter :: AMSR2_accept = b'00000001'
+   ! integer*2,parameter :: SMOS_accept1 = b'0000000000000000'
+   ! integer*2,parameter :: SMOS_accept2 = b'0000000000000001'
+   ! integer*2,parameter :: SMOS_accept3 = b'0000000000001000'
+   ! integer*2,parameter :: SMOS_accept4 = b'0000000000001001'
+   ! integer*2,parameter :: SMOS_accept5 = b'0000000010000000'
+   ! integer*2,parameter :: SMOS_accept6 = b'0000000010000001'
+   ! integer*2,parameter :: SMOS_accept7 = b'0000000010001000'
+   ! integer*2,parameter :: SMOS_accept8 = b'0000000010001001'
+   integer*1 :: AMSR2_accept(1)
+   integer*2 :: SMOS_accept(8)
 
 !  INTEGER*2, PARAMETER :: FF = 255
 !  real,    parameter  :: err_threshold = 5 ! in percent
@@ -417,6 +421,29 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
    logical        :: smDataNotAvailable
 
    integer        :: ix, jx,c_s, c_e, r_s, r_e
+
+   ! EMK...ISO Fortran does not allow binary integer constants in PARAMETERS,
+   ! but does allow them in DATA statements.  So we use DATA statements below
+   ! to pacify gfortran 10+
+   !integer*1,parameter :: AMSR2_accept = b'00000001'
+   !integer*2,parameter :: SMOS_accept1 = b'0000000000000000'
+   !integer*2,parameter :: SMOS_accept2 = b'0000000000000001'
+   !integer*2,parameter :: SMOS_accept3 = b'0000000000001000'
+   !integer*2,parameter :: SMOS_accept4 = b'0000000000001001'
+   !integer*2,parameter :: SMOS_accept5 = b'0000000010000000'
+   !integer*2,parameter :: SMOS_accept6 = b'0000000010000001'
+   !integer*2,parameter :: SMOS_accept7 = b'0000000010001000'
+   !integer*2,parameter :: SMOS_accept8 = b'0000000010001001'
+   data AMSR2_accept /b'00000001'/
+   data SMOS_accept /b'0000000000000000', &
+        b'0000000000000001', &
+        b'0000000000001000', &
+        b'0000000000001001', &
+        b'0000000010000000', &
+        b'0000000010000001', &
+        b'0000000010001000', &
+        b'0000000010001001' /
+
 
 #if (defined USE_GRIBAPI)
    smDataNotAvailable = .false.
@@ -740,7 +767,7 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
                      SMOPSsmobs(source)%smopsnc)
                   if (sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc) .GT. 0.1 .and. &
                      sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc) .LT. 1) then
-                     write(101,'(I5, 2x, I5, 2x, I8, 2x, G0, 2x)'), &
+                     write(101,'(I5, 2x, I5, 2x, I8, 2x, G0, 2x)')  &
                         c, r, c+(r-1)*SMOPSsmobs(source)%smopsnc,      &
                         sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc)
                   endif
@@ -764,7 +791,7 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
                   sm_amsr2_qa_t(c+(r-1)*SMOPSsmobs(source)%smopsnc) = &
                      int(sm_amsr2_qa(c+((SMOPSsmobs(source)%smopsnr-r+1)-1)*&
                      SMOPSsmobs(source)%smopsnc))
-                  !write(102,'(I5, 2x,I5, 2x, I8, 2x, f11.8,2x)'), &
+                  !write(102,'(I5, 2x,I5, 2x, I8, 2x, f11.8,2x)')  &
                   !      c, r ,c+(r-1)*SMOPSsmobs(source)%smopsnc,      &
                   !      sm_amsr2_qa_t(c+(r-1)*SMOPSsmobs(source)%smopsnc)
                enddo
@@ -1006,14 +1033,14 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
         do c=1, SMOPSsmobs(source)%smopsnc
            qavalue = sm_smos_qa_t(c+(r-1)*SMOPSsmobs(source)%smopsnc)
            if ( qavalue .ne. 9999 ) then
-              if ( qavalue == SMOS_accept1 .or. &
-                  qavalue == SMOS_accept2 .or. &
-                  qavalue == SMOS_accept3 .or. &
-                  qavalue == SMOS_accept4 .or. &
-                  qavalue == SMOS_accept5 .or. &
-                  qavalue == SMOS_accept6 .or. &
-                  qavalue == SMOS_accept7 .or. &
-                  qavalue == SMOS_accept8 ) then
+              if ( qavalue == SMOS_accept(1) .or. &
+                  qavalue == SMOS_accept(2) .or. &
+                  qavalue == SMOS_accept(3) .or. &
+                  qavalue == SMOS_accept(4) .or. &
+                  qavalue == SMOS_accept(5) .or. &
+                  qavalue == SMOS_accept(6) .or. &
+                  qavalue == SMOS_accept(7) .or. &
+                  qavalue == SMOS_accept(8) ) then
                   sm_data_b(c+(r-1)*SMOPSsmobs(source)%smopsnc) = .true.
               else
                  sm_data_b(c+(r-1)*SMOPSsmobs(source)%smopsnc) = .false.
@@ -1092,7 +1119,7 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
                qavalue = sm_amsr2_qa_t(c+(r-1)*SMOPSsmobs(source)%smopsnc)
                if ( qavalue .ne. 9999 ) then
                   qaflags = get_byte1(qavalue)
-                  if (qaflags == AMSR2_accept ) then
+                  if (qaflags == AMSR2_accept(1) ) then
                      sm_data_b(c+(r-1)*SMOPSsmobs(source)%smopsnc) = .true.
                   else
                      sm_data_b(c+(r-1)*SMOPSsmobs(source)%smopsnc) = .false.
@@ -1105,7 +1132,7 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
 
                if (sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc) .GT. 0.1 .and. &
                   sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc) .LT. 1) then
-                  write(103,'(I5, 2x, I5, 2x, I8, 2x, F10.4, 2x)'), &
+                  write(103,'(I5, 2x, I5, 2x, I8, 2x, F10.4, 2x)')  &
                      c, r ,c+(r-1)*SMOPSsmobs(source)%smopsnc,   &
                      sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc)
                endif

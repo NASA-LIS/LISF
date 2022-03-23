@@ -58,7 +58,7 @@ subroutine read_nldas2b(n, kk, findex, order, name,ferror)
   integer, intent(in)       :: kk      ! Forecast member index
   integer, intent(in)       :: findex  ! Forcing index
   integer, intent(in)       :: order
-  character*100, intent(in) :: name
+  character(len=*), intent(in) :: name
   integer, intent(out)      :: ferror
 !
 ! !DESCRIPTION:

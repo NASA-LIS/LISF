@@ -585,7 +585,7 @@ cvk convert precip into kg/(m**2 sec)
        pxvs=pxv/dtsec
 
        call penman_ohd(tak,sfcprs,ch,t2v,th2,pxvs,fdown,t24,ssoil,q2,
-     +              q2sat,etp,rch,epsca,rr,snowng,frzgra,dqsdt2,flx2) 
+     +              q2sat,etp,rch,epsca,rr,snowng,frzgra,dqsdt2,flx2)
        etp=etp*dtsec
 c         write(*,'(a,i5,5f10.5)') 'ch',iter,ch,sfcspd,etp,pc,rc
        if(etp .le. 0.0) then
@@ -643,8 +643,9 @@ c                       if other values, use them as adjustment factors
 cvk  5/10 wind effect correction to PET
         ediff=abs(sfcref-sfcspd)
         if(sfcref .gt. 0.0 .and. ediff .gt. 0.01) then
-         call sfcdif(ztmp,z0,thzv,thav,sfcref,czil,cmref,chref)
-         call penman_ohd(tak,sfcprs,chref,t2v,th2,pxvs,fdown,t24,ssoil,q2,
+          call sfcdif(ztmp,z0,thzv,thav,sfcref,czil,cmref,chref)
+       !EMK Fix indentation to prevent truncation 
+       call penman_ohd(tak,sfcprs,chref,t2v,th2,pxvs,fdown,t24,ssoil,q2,
      +              q2sat,etpref,rch,epsca,rr,snowng,frzgra,dqsdt2,flx2)
          etpref=etpref*dtsec
          if(etpref .le. 0.0) then

@@ -101,7 +101,6 @@ contains
 ! !INTERFACE:
   subroutine cable_lsm_ini()
 ! !USES:
-    use ESMF
     use LIS_coreMod,        only : LIS_rc
     use LIS_surfaceModelDataMod, only : LIS_sfmodel_struc
     use LIS_timeMgrMod

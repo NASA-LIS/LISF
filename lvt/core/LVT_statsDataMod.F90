@@ -331,7 +331,9 @@ module LVT_statsDataMod
      integer, allocatable :: tavg_count_model_value_ts(:,:,:)
      real,    allocatable :: model_value_asc(:,:,:)
      integer, allocatable :: count_model_value_asc(:,:,:)     
+     real,    allocatable :: sum_model_value_climo(:,:,:,:) ! EMK
      real,    allocatable :: model_value_climo(:,:,:,:)
+     real,    allocatable :: sum_obs_value_climo(:,:,:,:) ! EMK
      real,    allocatable :: obs_value_climo(:,:,:,:)
      integer, allocatable :: count_obs_value_climo(:,:,:,:)
      integer, allocatable :: count_model_value_climo(:,:,:,:)
@@ -1262,6 +1264,16 @@ module LVT_statsDataMod
      integer, allocatable :: vid_sc_total(:,:,:)
      integer, allocatable :: vid_adc_total(:,:,:)
 
+     ! EMK For anomaly climatology
+     integer, allocatable :: vid_total_climo(:,:)
+     integer, allocatable :: vid_count_total_climo(:,:)
+     integer, allocatable :: vid_ts_climo(:,:)
+     integer, allocatable :: vid_count_ts_climo(:,:)
+     integer, allocatable :: vid_sc_total_climo(:,:,:)
+     integer, allocatable :: vid_count_sc_total_climo(:,:,:)
+     integer, allocatable :: vid_adc_total_climo(:,:,:)
+     integer, allocatable :: vid_count_adc_total_climo(:,:,:)
+     
      type(LVT_statsEntry), pointer :: next
 
   end type LVT_statsEntry

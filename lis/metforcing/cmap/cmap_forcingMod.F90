@@ -62,6 +62,7 @@ module cmap_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
   
@@ -82,7 +83,7 @@ module cmap_forcingMod
      real                   :: ts
      integer                :: ncold
      integer                :: nrold  
-     character*40           :: cmapdir  
+     character(len=LIS_CONST_PATH_LEN) :: cmapdir  
      character*50           :: met_interp
      real*8                 :: cmaptime
      real*8                 :: griduptime1

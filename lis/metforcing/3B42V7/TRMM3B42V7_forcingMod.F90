@@ -55,6 +55,7 @@ module TRMM3B42V7_forcingMod
 !  \end{description}
 !
 ! !USES:
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
     implicit none
     PRIVATE
 !-----------------------------------------------------------------------------
@@ -72,7 +73,7 @@ module TRMM3B42V7_forcingMod
      real                     :: ts 
      integer                  :: ncold
      integer                  :: nrold
-     character*40             :: TRMM3B42V7dir
+     character(len=LIS_CONST_PATH_LEN) :: TRMM3B42V7dir
      real*8                   :: TRMM3B42V7time_TStepStart ! SY
      integer                  :: TRMM3B42V7yr_TStepStart ! SY
      integer                  :: TRMM3B42V7mo_TStepStart ! SY

@@ -41,7 +41,7 @@ subroutine readcrd_nam242()
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) 'Using NAM242 forcing'
-     write(LIS_logunit,*) 'NAM242 forcing directory :',nam242_struc(n)%NAMDIR
+     write(LIS_logunit,*) 'NAM242 forcing directory :',trim(nam242_struc(n)%NAMDIR)
      nam242_struc(n)%namtime1  = 3000.0
      nam242_struc(n)%namtime2  = 0.0
   enddo

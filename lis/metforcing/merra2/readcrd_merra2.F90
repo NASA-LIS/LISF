@@ -120,7 +120,7 @@ subroutine readcrd_merra2()
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) '[INFO] Using MERRA2 forcing'
      write(LIS_logunit,*) '[INFO] MERRA2 forcing directory: ',&
-          merra2_struc(n)%merra2DIR
+          trim(merra2_struc(n)%merra2DIR)
 
      merra2_struc(n)%merra2time1 = 3000.0
      merra2_struc(n)%merra2time2 = 0.0

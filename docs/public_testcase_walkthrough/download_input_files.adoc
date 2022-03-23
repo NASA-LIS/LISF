@@ -1,0 +1,12 @@
+== Download Input and Target Files
+
+CAUTION: The tar file for this step is approximately *{input-filesize-compressed}* compressed and *{input-filesize-unpacked}* unpacked. Ensure that you have enough storage available before downloading testcase files.
+
+The tar files used in this walkthrough are available on the {url-lis-testcases-page}[LIS Testcase website]. From within your `$WORKING_DIR`, download and unpack the compressed tar file containing the inputs and target outputs for {step-label}:
+
+[#download-step1]
+[source,shell,subs="attributes"]
+----
+% curl -O {url-lis-testcases-data}{download-filename}
+% tar -xzf {download-filename} -C .
+----

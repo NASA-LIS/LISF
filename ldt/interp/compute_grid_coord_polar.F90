@@ -88,7 +88,8 @@ subroutine compute_grid_coord_polar(gridDesc,npts,fill,xpts,ypts,&
              nint(gridDesc(2)),nint(gridDesc(3)),proj)
         do i=1,npts
            call latlon_to_ij(proj,rlat(i),rlon(i),xpts(i),ypts(i))
-     enddo
+        enddo
+
      elseif(gridDesc(13).eq.1) then 
         im=gridDesc(2)
         jm=gridDesc(3)

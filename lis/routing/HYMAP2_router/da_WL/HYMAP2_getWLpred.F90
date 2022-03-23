@@ -171,5 +171,3 @@ end subroutine HYMAP2_getWLpred
     enddo
  
   end subroutine HYMAP2_convertPatchSpaceToObsEnsSpace
-
-

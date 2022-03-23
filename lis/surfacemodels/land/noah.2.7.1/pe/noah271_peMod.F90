@@ -58,7 +58,6 @@ contains
 ! !INTERFACE:
   subroutine noah271_setup_pedecvars(DEC_State, Feas_State)
 ! !USES:
-    use ESMF
     use LIS_coreMod,       only : LIS_rc, LIS_config,LIS_vecTile
     use LIS_logMod,        only : LIS_logunit, LIS_verify
     use noah271_lsmMod,    only : noah271_struc

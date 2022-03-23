@@ -435,10 +435,6 @@ Routines for handling the TRMM 3B42V6 precipitation product
 +
 Routines for handling the TRMM 3B42V7 precipitation product
 
-** _ALMIPII_
-+
-Routines for handling the AMMA land surface model intercomparision project phase 2
-
 ** _AWAP_
 +
 Routines for handling the AWAP precipitation product
@@ -450,16 +446,6 @@ Australian Water Resource Assessment Landscape (AWRA-L) metforcing data
 ** _Bondville_
 +
 Routines for handling the Bondville forcing products
-
-** _CaPA_
-+
-Canadian Precipitation analysis
-
-ifdef::devonly[]
-** _FASSTsingle_ footnote:disclaimer[{lispublicna}]
-+
-Routines for handling the single-point FASST product
-endif::devonly[]
 
 ** _HiMAT_GMU_
 +
@@ -473,10 +459,6 @@ downscaled MERRA2 precipitation data over the High Mountain Asia domain from GMU
 +
 Routines for handling the PALS station data
 
-** _PILDAS_
-+
-Routines for handling the PILDAS metforcing data
-
 ** _RFE2Daily_
 +
 Routines for handling the RFE2 precipitation product from FEWSNET (diurnally non-disaggregated)
@@ -489,21 +471,9 @@ Routines for handling the RFE2 precipitation product from FEWSNET bias corrected
 +
 Routines for handling WRF output as forcing input
 
-** _agrrad_
-+
-Routines for handling the AGRMET radiation product
-
 ** _agrradps_
 +
 Routines for handling the AGRMET radiation product (polar stereographic prjection)
-
-** _arms_
-+
-Routines for handling the Walnut Gulch meteorological station data
-
-** _ceop_
-+
-Routines for handling the CEOP meteorological station data
 
 ** _chirps2_
 +
@@ -521,17 +491,9 @@ Routines for handling the CMAP precipitation product
 +
 Routines for handling the CMORPH precipitation product
 
-** _coop_
-+
-Routines for handling the COOP precipitation product
-
 ** _ecmwf_
 +
 ECMWF meteorological forcing data
-
-** _ecmwfreanal_
-+
-ECMWF reanalysis meteorological forcing data based on <<berg_etal_jgr_2003>>.
 
 ** _era5_
 +
@@ -540,14 +502,6 @@ ECMWF reanalysis meteorological forcing data based on <<berg_etal_jgr_2003>>.
 ** _gdas_
 +
 NCEP GDAS meteorological forcing data
-
-** _gdas3d_
-+
-Routines for handling the GDAS 3d (including the atmospheric profile) data
-
-** _gdasLSWG_
-+
-GDAS profile data from the PMM land surface working group
 
 ** _gdasT1534_
 +
@@ -564,10 +518,6 @@ Routines for handling user-derived ensemble forecast data
 ** _genMetForc_
 +
 LDT-generated meteorological forcing data
-
-** _geos_
-+
-NASA GEOS meteorological forcing data
 
 ** _geos5fcst_
 +
@@ -593,10 +543,6 @@ Global Soil Wetness Project-2 meteorological forcing data
 +
 Routines for handling the GPM L3 precipitation product
 
-** _merra-land_
-+
-GMAO Modern Era Retrospective-Analysis for Research and Applications data
-
 ** _merra2_
 +
 GMAO Modern Era Retrospective-Analysis for Research and Applications data
@@ -608,10 +554,6 @@ Routines for handling the North American Mesoscale Forecast System (NAM) 242 AWI
 ** _narr_
 +
 Routines for handling the North American Regional Reanalysis (3d) data
-
-** _nldas1_
-+
-Routines for handling the North American Land Data Assimilation System forcing product
 
 ** _nldas2_
 +
@@ -628,14 +570,6 @@ Routines for handling daily potential evapotranspiration data from the USGS FAO-
 ** _princeton_
 +
 Renalaysis product from Princeton University (<<sheffield_etal_2006>>)
-
-** _rdhm356_
-+
-Routines for handling NOAA OHD RDHM 3.5.6 forcing data
-
-** _rhoneAGG_
-+
-Rhone-AGG meteorological forcing data
 
 ** _scan_
 +
@@ -853,7 +787,7 @@ Directory containing routing models
 Directory containing coupling routines to the following radiative transfer models
 
 ifdef::devonly[]
-** _CRTM_ footnote:disclaimer[]
+** _CRTM_ footnote:disclaimer[{lispublicna}]
 +
 Routines to handle coupling to the JCSDA Community Radiative Transfer Model
 

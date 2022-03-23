@@ -51,6 +51,8 @@ module AWRAL_forcingMod
 ! 30 Jan 2017: Sujay Kumar, Initial version
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -71,7 +73,7 @@ module AWRAL_forcingMod
      integer            :: ncol                 ! Number of cols
      integer            :: nrow                 ! Number of rows
      real 		:: gridDesci(50)
-     character*100      :: AWRALdir              ! STAGE IV Directory
+     character(len=LIS_CONST_PATH_LEN) :: AWRALdir ! STAGE IV Directory
      real*8             :: AWRALtime             ! Nearest daily instance of incoming file
      integer            :: mi                   ! Number of points in the input grid
      logical            :: interp_flag

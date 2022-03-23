@@ -51,7 +51,7 @@ subroutine readcrd_RFE2Daily()
      call ESMF_ConfigGetAttribute(LIS_config,RFE2Daily_struc(n)%RFE2DailyDir,rc=rc)
      call LIS_verify(rc,"LISconfig: RFE2Daily forcing dir value not correct/given")
      write(LIS_logunit,*) 'For nest ', n, ', RFE2Daily forcing directory: ', &
-                             RFE2Daily_struc(n)%RFE2DailyDir
+                             trim(RFE2Daily_struc(n)%RFE2DailyDir)
   enddo
   write(LIS_logunit,*) 'Using RFE2Daily forcing'
 

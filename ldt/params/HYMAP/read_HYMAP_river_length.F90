@@ -55,7 +55,7 @@ subroutine read_HYMAP_river_length(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%riverlengthfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] River length map, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP river length map, ',&
            trim(HYMAP_struc(n)%riverlengthfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun

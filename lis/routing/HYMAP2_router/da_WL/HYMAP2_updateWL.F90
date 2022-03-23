@@ -47,6 +47,8 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
   type(ESMF_Field)       :: sfcelevIncrField
   real, pointer          :: sfcelev(:)
   real, pointer          :: sfcelevIncr(:)
+  real, allocatable      :: sfcelevIncr_tmp(:)
+  integer, allocatable   :: nsfcelevIncr_tmp(:)
   integer                :: t,i,i1,m
   integer                :: ix,iy
   integer                :: c,r,c1,c2,r1,r2,t1
@@ -71,13 +73,23 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
   call LIS_verify(status,&
        "ESMF_FieldGet: Surface elevation failed in HYMAP2_updateWL")
 
+  allocate(sfcelevIncr_tmp(HYMAP2_routing_struc(n)%nseqall*LIS_rc%nensem(n)))
+  allocate(nsfcelevIncr_tmp(HYMAP2_routing_struc(n)%nseqall*LIS_rc%nensem(n)))
+  sfcelevIncr_tmp = 0.0
+  nsfcelevIncr_tmp = 0
+
   do i=1,HYMAP2_routing_struc(n)%nseqall
      do m=1,LIS_rc%nensem(n)
         t = (i-1)*LIS_rc%nensem(n)+m
         if (HYMAP2_daWL_struc(n)%useLocalUpd.eq.1) then 
-           if(sfcelevIncr(t).gt.0) then 
+           if(abs(sfcelevIncr(t)).gt.0) then 
               localweight = -9999.0
-              call HYMAP2_map_l2g_index(n,i,siteid)
+
+              ix = HYMAP2_routing_struc(n)%seqx(i)
+              iy = HYMAP2_routing_struc(n)%seqy(i)
+              
+!              call HYMAP2_map_l2g_index(n,i,siteid)
+              siteid = HYMAP2_dawl_struc(n)%sites(ix,iy)
               localweight(:,:) = &
                    HYMAP2_daWL_struc(n)%localWeight(&
                    LIS_ews_halo_ind(n,LIS_localPet+1):&
@@ -85,9 +97,6 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
                    LIS_nss_halo_ind(n,LIS_localPet+1):&
                    LIS_nse_halo_ind(n,LIS_localPet+1), &
                    siteid)
-              
-              ix = HYMAP2_routing_struc(n)%seqx(i)
-              iy = HYMAP2_routing_struc(n)%seqy(i)
               
               c1=max(1,ix-HYMAP2_daWL_struc(n)%localupdDX)
               c2=min(LIS_rc%lnc(n),ix+HYMAP2_daWL_struc(n)%localupdDX)
@@ -103,19 +112,22 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
                  enddo
               enddo
               
-              
+
               do r=r1,r2
                  do c=c1,c2
                     i1 = LIS_routing(n)%gindex(c,r)
                     if(i1.gt.0) then 
                        t1 = (i1-1)*LIS_rc%nensem(n)+m
+
                        if(sfcelev(t1).ne.-9999.0.and.&
                             localweight(c,r).ne.-9999.0.and.&
                             localweight(ix,iy).ne.-9999.0) then 
                           weight = exp(-localweight(c,r)**2/&
                                (2*maxdistance**2))
-                          sfcelev(t1) = sfcelev(t1) + &
-                               sfcelevIncr(t)*weight
+                          sfcelevIncr_tmp(t1) = sfcelevIncr(t)*weight
+                          nsfcelevIncr_tmp(t1) = nsfcelevIncr_tmp(t1) + 1
+!                          sfcelev(t1) = sfcelev(t1) + &
+!                               sfcelevIncr(t)*weight
                        endif
                     endif
                  enddo
@@ -123,9 +135,25 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
 
            endif
         else
-           sfcelev(t) = sfcelev(t) + sfcelevIncr(t)
+           sfcelevIncr_tmp(t) = sfcelevIncr(t)
+           nsfcelevIncr_tmp(t) = nsfcelevIncr_tmp(t) + 1
+!           sfcelev(t) = sfcelev(t) + sfcelevIncr(t)
         endif
      enddo
   enddo
-end subroutine HYMAP2_updateWL
 
+  do i=1,HYMAP2_routing_struc(n)%nseqall
+     do m=1,LIS_rc%nensem(n)
+        t = (i-1)*LIS_rc%nensem(n)+m
+        if(nsfcelevIncr_tmp(t).gt.0) then 
+          sfcelev(t) = sfcelev(t)+sfcelevIncr_tmp(t)/&
+               nsfcelevIncr_tmp(t)
+
+       endif
+    enddo
+ enddo
+ 
+ deallocate(sfcelevIncr_tmp)
+ deallocate(nsfcelevIncr_tmp)
+
+end subroutine HYMAP2_updateWL

@@ -81,6 +81,7 @@ subroutine noahmp401_descale_tws(n, LSM_State, LSM_Incr_State)
   integer                :: SOILTYP           ! soil type index [-]
   real                   :: MAX_THRESHOLD , MIN_THRESHOLD
 
+#if 0 
   ! Natt
   ! Descale TWS states
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
@@ -173,5 +174,6 @@ subroutine noahmp401_descale_tws(n, LSM_State, LSM_Incr_State)
      snodincr(t)   = snodincr(t) / 1000.0 ! mm -> m
 
   enddo
-
+#endif
+  
 end subroutine noahmp401_descale_tws

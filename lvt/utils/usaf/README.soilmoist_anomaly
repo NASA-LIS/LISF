@@ -1,0 +1,57 @@
+Scripts for use in generating soil moisture anomaly data in GeoTIFF format.
+Eric Kemp, SSAI and NASA GSFC
+29 June 2021
+
+* make_lvt_config_sm_anomaly_00Z.py
+
+This is a Python script in the templates/ subdirectory to customize a
+lvt.config file for soil moisture anomaly. The script will expect three
+pieces of information on the command line:
+
+  restart_dir: Directory with the LVT restart file for soil moisture
+  template: Name of lvt.config template file to update.
+  yyyymmdd: Date to generate anomaly (time is assumed to be 00Z).
+
+Run ./make_lvt_config_sm_anomaly_00Z.py to see the usage statement.
+
+The available template files (in templates/) are:
+
+lvt.config.template_sm_anomaly_noah39
+lvt.config.template_sm_anomaly_noahmp401
+lvt.config.template_sm_anomaly_jules50
+
+The script will read in the designated template and update the start and end
+date/time information, the input restart file, and other relevant settings.
+The resulting lvt.config file will be customized to read 3-hrly LIS ensemble
+data in 1-d tile space, from either Noah.3.9, NoahMP.4.0.1, or JULES.5.0,
+depending on which template is used.  LVT will process the 00Z data valid
+at yyyymmdd, update the monthly climatologies from the restart file, and
+generate two netCDF files:
+
+Anomaly_TS.yyyymmdd0000.d01.nc
+LVT_Anomaly_FINAL.yyyymmdd0000.d01.nc
+
+A binary restart file LVT.yyyymmdd0000.rst will also be produced, and should
+be saved for use by LVT when processing the following day's anomalies.
+
+* run_lvt.sm_anomaly.discover.sh
+
+This batch script (implemented in Bash) runs LVT on a single core on Discover,
+using a lvt.config file customized by ./make_lvt_config_sm_anomaly_00Z.py.
+It is included as a prototype for building similar batch scripts for other
+computing environments.
+
+* make_sm_geotiff.py
+
+This Python script will read in the Anomaly_TS.yyyymmdd0000.d01.nc and
+LVT_Anomaly_FINAL.yyyymmdd0000.d01.nc produced above, along with a LDT
+parameter file that includes latitude/longitude information.  The script
+will create GeoTIFF files containing either:
+
+- A single layer soil moisture anomaly, valid at 00Z yyyymmdd, or
+- A single layer soil moisture mean for a given month (JAN through DEC).
+
+Altogether 52 GeoTIFF files will be created, since there are four soil layers
+and twelve months of climatology plus the current anomaly.  The prefixes
+for the GeoTIFF files are passed to the script at the command line.  Type
+./make_sm_geotiff.py to invoke the command line usage statement.

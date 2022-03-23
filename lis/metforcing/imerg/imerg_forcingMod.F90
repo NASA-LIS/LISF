@@ -50,6 +50,8 @@ module imerg_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -66,7 +68,7 @@ module imerg_forcingMod
   type, public :: imerg_type_dec
      real    :: ts
      integer :: ncold, nrold     ! IMERG dimensions
-     character*100 :: imergdir   ! IMERG Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: imergdir   ! IMERG Forcing Directory
      character*5 :: imergver     ! IMERG version (V06B set as default)
      character*5 :: imergprd     ! IMERG product (early, late, final)
      real*8  :: imergtime

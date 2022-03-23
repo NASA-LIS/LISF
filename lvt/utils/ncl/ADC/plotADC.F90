@@ -42,9 +42,6 @@ program plotADC
 ! 
 !EOP
 
-
-  use ESMF
-
   implicit none
 
   type(ESMF_Config)      :: ts_config

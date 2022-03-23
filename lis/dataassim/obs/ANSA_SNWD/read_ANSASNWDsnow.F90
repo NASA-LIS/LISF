@@ -641,7 +641,8 @@ subroutine getMOD10data(n,k,name,tmp_obsl)
   !Grid and field names
   grid_name ="MOD_CMG_Snow_5km"
   ps_name   ="Day_CMG_Snow_Cover"
-  ci_name   ="Day_CMG_Confidence_Index"
+  ci_name   ="Day_CMG_Clear_Index"   ! MLW collection 6
+  ! ci_name   ="Day_CMG_Confidence_Index"  ! MLW collection 5
   pc_name   ="Day_CMG_Cloud_Obscured"
   qa_name   ="Snow_Spatial_QA"
   
@@ -869,6 +870,6 @@ subroutine get_MOD10C1_filename(name, ndir)
   write(unit=fdoy, fmt='(i3.3)') doy
 
   name = trim(ndir)//'/'//trim(fyr)//'/'//'MOD10C1.A'&
-            //trim(fyr)//trim(fdoy)//'.005.hdf'
+            //trim(fyr)//trim(fdoy)//'.006.hdf' !MLW read collection 6
 end subroutine get_MOD10C1_filename
 

@@ -83,6 +83,7 @@ subroutine readinput_latlon(nest)
         nDupl = nDupl + 1
      endif
   enddo
+  nDupl = min(nest,nDupl)
 
   call ESMF_ConfigFindLabel(LDT_config,"LL run domain lower left lat:",rc=rc)
   do n=1,nDupl

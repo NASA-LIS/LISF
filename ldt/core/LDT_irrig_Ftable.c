@@ -44,6 +44,14 @@ struct irrigfracnode
 
 struct irrigfracnode* irrigfrac_table = NULL; 
 
+struct irriggwrationode
+{
+  char *name;
+  void (*func)(int*, float*);
+
+  struct irriggwrationode* next;
+} ;
+struct irriggwrationode* irriggwratio_table = NULL;
 
 //BOP
 // !ROUTINE: registerreadirrigtype
@@ -212,3 +220,81 @@ void FTN(readirrigfrac)(char *j, int *n, float *array, int len)
   current->func(n,array); 
 }
 
+//BOP
+// !ROUTINE: registerreadirrigGWratio
+// \label{registerreadirrigGWratio}
+// 
+// !INTERFACE:
+void FTN(registerreadirriggwratio)(char *j,void (*func)(int*,float*),int len)
+// !DESCRIPTION: 
+// Makes an entry in the registry for the routine to 
+// read groundwater irrigation ratio data
+//
+// The arguments are: 
+// \begin{description}
+// \item[i]
+//  index of the domain
+//  \item[j]
+//  index of the groundwater irrigation ratio data source
+//  \end{description}
+//EOP
+{
+  struct irriggwrationode* current;
+  struct irriggwrationode* pnode;
+  // create node
+
+  pnode=(struct irriggwrationode*) malloc(sizeof(struct irriggwrationode));
+  pnode->name=(char*) malloc(len*sizeof(char));
+  strcpy(pnode->name,j);
+  pnode->func = func;
+  pnode->next = NULL;
+
+  if(irriggwratio_table == NULL){
+    irriggwratio_table = pnode;
+  }
+  else{
+    current = irriggwratio_table;
+    while(current->next!=NULL){
+      current = current->next;
+    }
+    current->next = pnode;
+  }
+}
+
+//BOP
+// !ROUTINE: readirrigGWratio
+// \label{readirrigGWratio}
+//
+// !INTERFACE:
+void FTN(readirriggwratio)(char *j, int *n,float *array,int len)
+//  
+// !DESCRIPTION:
+// Invokes the routine from the registry to 
+// reading groundwater irrigation ratio data 
+// 
+// The arguments are: 
+// \begin{description}
+//  \item[n]
+//   index of the nest
+//  \item[j]
+//  index of the groundwater irrigation ratio data source
+//  \item[array]
+//  pointer to the groundwater irrigation data
+//  \end{description}
+//EOP
+{
+  struct irriggwrationode* current;
+
+  current = irriggwratio_table;
+  while(strcmp(current->name,j)!=0){
+    current = current->next;
+    if(current==NULL) {
+      printf("****************Error****************************\n");
+      printf("irrigGWratio reading routine for source %s is not defined\n",j);
+      printf("Please refer to configs/ldt.config_master or LDT User's Guide for options.\n");
+      printf("program will seg fault.....\n");
+      printf("****************Error****************************\n");
+    }
+  }
+  current->func(n,array);
+}

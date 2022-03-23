@@ -884,8 +884,8 @@ contains
   LOGICAL                             :: FROZEN_CANOPY ! used to define latent heat pathway
   
   !ag (12Sep2019)
-  REAL                        , INTENT(IN)    :: rivsto  !river storage
-  REAL                        , INTENT(IN)    :: fldsto  !flood storage
+  REAL                        , INTENT(IN)    :: rivsto  !river storage [m -1]
+  REAL                        , INTENT(IN)    :: fldsto  !flood storage [m -1]
   REAL                        , INTENT(IN)    :: fldfrc  !flooded fraction flag (zero or 1)
 
   ! INTENT (OUT) variables need to be assigned a value.  These normally get assigned values

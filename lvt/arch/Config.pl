@@ -37,8 +37,9 @@ else{
    exit 1;
 }
 
-$sys_fc = $ENV{LVT_FC};
+
 if(defined($ENV{LVT_FC})){
+   $sys_fc = $ENV{LVT_FC};
 }
 else{
    print "--------------ERROR---------------------\n";
@@ -131,11 +132,29 @@ if($opt_lev == -3) {
 	print "Using '-g'\n";
 	$sys_opt = "-g ";
     }
+    elsif($sys_arch eq "cray_cray") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+	$sys_opt = "-g ";
+	$sys_c_opt = "-g ";
+    }
 }
 
 if($opt_lev == -2) {
-   $sys_opt = "-g -check bounds,format,output_conversion,pointers,stack,uninit -fp-stack-check -ftrapuv ";
-   $sys_c_opt = "-g ";
+   if($sys_arch eq "linux_ifc") {
+      $sys_opt = "-g -check bounds,format,output_conversion,pointers,stack,uninit -fp-stack-check -ftrapuv ";
+      $sys_c_opt = "-g ";
+   }
+   elsif($sys_arch eq "linux_gfortran") {
+      $sys_opt = "-g -Wall -fbounds-check ";
+      $sys_c_opt = "-g ";
+   }
+   elsif($sys_arch eq "cray_cray") {
+	   print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+      print "Using '-g'\n";
+      $sys_opt = "-g ";
+      $sys_c_opt = "-g ";
+   }
 }
 if($opt_lev == -1) {
    $sys_opt = "-g -O0";
@@ -240,7 +259,12 @@ elsif($use_gribapi == 2) {
    if(defined($ENV{LVT_ECCODES})){
       $sys_gribapi_path = $ENV{LVT_ECCODES};
       $inc = "/include/";
-      $lib = "/lib/";
+      if ($sys_arch eq "cray_cray") {
+         $lib = "/lib64/";
+      }
+      else {
+         $lib = "/lib/";
+      }
       $inc_gribapi=$sys_gribapi_path.$inc;
       $lib_gribapi=$sys_gribapi_path.$lib;
    }
@@ -530,6 +554,21 @@ elsif($sys_arch eq "AIX") {
    $fflags77= "-c ".$sys_opt."-c -g -qkeepparm -qsuffix=f=f:cpp=F90 -q64 -WF,-DAIX, ".$sys_par." -I\$(MOD_ESMF) ";
    $fflags ="-c ".$sys_opt."-c -g -qkeepparm -qsuffix=f=f:cpp=F90 -q64 -WF,-DAIX, ".$sys_par." -I\$(MOD_ESMF) ";
    $ldflags= "-q64 -bmap:map -bloadmap:lm -lmass  -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt";
+}
+elsif($sys_arch eq "cray_cray") {
+   if($use_endian == 1) {
+      $fflags77= "-c ".$sys_opt." ".$sys_par." -DCRAYFTN -I\$(MOD_ESMF) ";
+      $fflags =" -c ".$sys_opt."-ef -Ktrap=fp  ".$sys_par."-DCRAYFTN -I\$(MOD_ESMF) ";
+      $ldflags= " -hdynamic -L\$(LIB_ESMF) -lesmf -lstdc++ -lrt";
+   }
+   else {
+      $fflags77= "-c ".$sys_opt." ".$sys_par." -DCRAYFTN -I\$(MOD_ESMF) ";
+      $fflags =" -c ".$sys_opt."-ef -Ktrap=fp  ".$sys_par."-DCRAYFTN -I\$(MOD_ESMF) ";
+      $ldflags= " -hbyteswapio -hdynamic -L\$(LIB_ESMF) -lesmf -lstdc++ -lrt";
+   }
+
+   $cflags = "-c ".$sys_c_opt." -DCRAYFTN";
+
 }
 
 

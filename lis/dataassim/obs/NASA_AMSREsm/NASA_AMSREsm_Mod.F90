@@ -72,7 +72,6 @@ contains
 ! !INTERFACE: 
   subroutine NASA_AMSREsm_setup(k, OBS_State, OBS_Pert_State)
 ! !USES: 
-    use ESMF
     use LIS_coreMod
     use LIS_timeMgrMod, only : LIS_clock, LIS_calendar, LIS_registerAlarm
     use LIS_historyMod, only : LIS_readvar_gridded

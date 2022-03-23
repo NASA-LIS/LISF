@@ -32,7 +32,7 @@ subroutine read_TRMM3B42V7 (n, kk, fname, findex, order, ferror_TRMM3B42V7)
 ! !ARGUMENTS:
   integer, intent(in) :: n
   integer, intent(in) :: kk
-  character(len=80)   :: fname
+  character(len=*)   :: fname
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_TRMM3B42V7

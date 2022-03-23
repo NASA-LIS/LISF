@@ -22,6 +22,7 @@ subroutine get_stg4(n, findex)
   use LIS_coreMod, only     : LIS_rc, LIS_domain
   use LIS_timeMgrMod, only  : LIS_tick, LIS_get_nstep
   use LIS_logMod,      only : LIS_logunit, LIS_endrun
+  use LIS_constantsMod,only : LIS_CONST_PATH_LEN
   use stg4_forcingMod, only : stg4_struc
 
   implicit none
@@ -71,7 +72,7 @@ subroutine get_stg4(n, findex)
 
     real*8  :: stg4_file_time1       ! End boundary time for STAGEIV file
     real*8  :: stg4_file_time2       ! End boundary time for STAGEIV file
-    character(80) :: file_name       ! Filename variables for precip data sources
+    character(len=LIS_CONST_PATH_LEN) :: file_name       ! Filename variables for precip data sources
 
     integer :: doy1, yr1, mo1, da1, hr1, mn1, ss1
     integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2
@@ -158,7 +159,7 @@ subroutine get_stg4(n, findex)
 
       ! Determine and return filename of STAGE IV file 
         call stg4file( file_name, stg4_struc(n)%stg4dir, yr2, mo2, da2, hr2 )
-        write(LIS_logunit,*) 'Getting new STAGE4 precip data:: ', file_name
+        write(LIS_logunit,*) 'Getting new STAGE4 precip data:: ', trim(file_name)
       ! Open, read, and reinterpolate STAGE IV field to LIS-defined grid
         call read_stg4 ( n, file_name, findex, order, ferror_stg4 )
       ! Assign latest STAGE IV file time to stored STAGE IV time variable
@@ -170,7 +171,7 @@ subroutine get_stg4(n, findex)
 
      ! Determine and return filename of STAGE IV file 
        call stg4file( file_name, stg4_struc(n)%stg4dir, yr1, mo1, da1, hr1 )
-       write(LIS_logunit,*) 'Getting new STAGE4 precip data:: ', file_name
+       write(LIS_logunit,*) 'Getting new STAGE4 precip data:: ', trim(file_name)
      ! Open, read, and reinterpolate STAGE IV field to LIS-defined grid
        call read_stg4 ( n, file_name, findex, order, ferror_stg4 )
      ! Assign latest STAGE IV file time to stored STAGE IV time variable

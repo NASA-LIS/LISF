@@ -339,7 +339,6 @@ contains
 ! !INTERFACE: 
   subroutine LIS_updatePEObjectiveFunc(n)
 ! !USES: 
-    use ESMF
     use LIS_coreMod,   only : LIS_rc
     use LIS_logMod,    only : LIS_verify
     use LIS_optUEMod,  only : LIS_objectiveFunc

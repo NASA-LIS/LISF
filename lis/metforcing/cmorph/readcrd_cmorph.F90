@@ -47,7 +47,7 @@ subroutine readcrd_cmorph()
      call ESMF_ConfigGetAttribute(LIS_config,cmorph_struc(n)%nrold,rc=rc)
      
      write(LIS_logunit,*)'Using CMORPH forcing'
-     write(LIS_logunit,*) 'CMORPH forcing directory :',cmorph_struc(n)%CMORPHDIR
+     write(LIS_logunit,*) 'CMORPH forcing directory :',trim(cmorph_struc(n)%CMORPHDIR)
 !------------------------------------------------------------------------
 ! Setting global observed precip times to zero to ensure 
 ! data is read in during first time step
