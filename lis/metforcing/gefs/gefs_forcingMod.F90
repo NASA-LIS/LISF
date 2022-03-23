@@ -216,8 +216,8 @@ contains
               gefs_struc(n)%gridDesc(7) = -90.0   ! original GEFS
               gefs_struc(n)%gridDesc(8) = lonEnd
 !              gefs_struc(n)%gridDesc(8) = 359.00  ! original GEFS
-              gefs_struc(n)%gridDesc(9) =  1.0
-              gefs_struc(n)%gridDesc(10) = 1.0
+              gefs_struc(n)%gridDesc(9) =  gefs_struc(n)%gefs_res
+              gefs_struc(n)%gridDesc(10) = gefs_struc(n)%gefs_res
               gefs_struc(n)%gridDesc(20) = 64  ! -180 to 180?
 !              gefs_struc(n)%gridDesc(20) = 0   ! for 0 to 360?
 
@@ -271,8 +271,8 @@ contains
                 gefs_struc(n)%gridDesc(7) = -90.0   ! original GEFS
                 gefs_struc(n)%gridDesc(8) = lonEnd
 !              gefs_struc(n)%gridDesc(8) = 359.00  ! original GEFS
-                gefs_struc(n)%gridDesc(9) =  0.5
-                gefs_struc(n)%gridDesc(10) = 0.5
+                gefs_struc(n)%gridDesc(9) =  gefs_struc(n)%gefs_res
+                gefs_struc(n)%gridDesc(10) = gefs_struc(n)%gefs_res
                 gefs_struc(n)%gridDesc(20) = 64  ! -180 to 180?
 !              gefs_struc(n)%gridDesc(20) = 0   ! for 0 to 360?
 
