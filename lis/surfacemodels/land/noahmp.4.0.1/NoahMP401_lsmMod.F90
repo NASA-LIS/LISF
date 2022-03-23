@@ -266,7 +266,7 @@ contains
 !  \end{description}
 !EOP
         implicit none        
-        integer  :: n, t     
+        integer  :: n, t, num_t, col, row     
         integer  :: status   
         character*3 :: fnest ! EMK for RHMin
         ! allocate memory for nest 
@@ -389,6 +389,23 @@ contains
                     NOAHMP401_struc(n)%rct_idx(LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col, &
                                                LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row) = t
                 enddo
+
+                !num_t = (NOAHMP401_struc(n)%row_max - NOAHMP401_struc(n)%row_min + 1) * &
+                !        (NOAHMP401_struc(n)%col_max - NOAHMP401_struc(n)%col_min + 1) 
+                !col = NOAHMP401_struc(n)%col_min
+                !row = NOAHMP401_struc(n)%row_min
+                !do t = 1, num_t
+                !    NOAHMP401_struc(n)%rct_idx(col,row) = 1;
+                !    col = col + 1;
+                !    if (col .gt. NOAHMP401_struc(n)%col_max) then
+                !        col = NOAHMP401_struc(n)%col_min
+                !        row = row + 1;
+                !        if (col .gt. NOAHMP401_struc(n)%col_max + 1) then
+                !            print *, "WARNING: rct_idx array exceeds declared size"
+                !        end if
+                !    end if    
+                !enddo                 
+                !print*, t
 
                 ! allocate 2D data structure for MMF 10 DEC 2021; Now all col x row TML
                 allocate(NOAHMP401_struc(n)%smoiseq(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &

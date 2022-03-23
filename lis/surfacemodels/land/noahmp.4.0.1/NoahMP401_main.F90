@@ -338,6 +338,7 @@ subroutine NoahMP401_main(n)
             if (row .eq. 12) then
                 if (col .eq. 25) then
                     tmp_printdebug = 1
+                    print *, "PRINTED DEBUG VARIABLES ON"
                 endif
             endif
 
@@ -933,10 +934,10 @@ subroutine NoahMP401_main(n)
             !    max_col = max(max_col, col) 
             !enddo 
             
-            print *, 'max row'
-            print *, max_row 
-            print *, 'max col'
-            print *, max_col
+            !print *, 'max row'
+            !print *, max_row 
+            !print *, 'max col'
+            !print *, max_col
             ims = min_col 
             ime = max_col
             jms = min_row
@@ -1050,33 +1051,33 @@ subroutine NoahMP401_main(n)
             
             wtddt = LIS_rc%ts/60.0 ! time step in minutes? 
 
-            print*, 'WTABLE_mmf_noahmp Initial Values'
-            print*, 'FDEPTH = ',fdepth(25,12)
-            print*, 'AREA = ',area(25,12)
-            print*, 'TOPO = ',topo(25,12)
+            !print*, 'WTABLE_mmf_noahmp Initial Values'
+            !print*, 'FDEPTH = ',fdepth(25,12)
+            !print*, 'AREA = ',area(25,12)
+            !print*, 'TOPO = ',topo(25,12)
             !print*, 'ISURBAN = ',isurban(25,12)
-            print*, 'IVGTYP = ',ivgtyp(25,12)
-            print*, 'RIVERCOND = ',rivercond(25,12)
-            print*, 'RIVERBED = ',riverbed(25,12)
-            print*, 'EQWTD = ',eqwtd(25,12)
-            print*, 'PEXP = ',pexp(25,12)
-            print*, 'SMC-1 = ',smois(25,1,12)
-            print*, 'SMC-2 = ',smois(25,2,12)
-            print*, 'SMC-3 = ',smois(25,3,12)
-            print*, 'SMC-4 = ',smois(25,4,12)
-            print*, 'SH2O-1 = ',sh2oxy(25,1,12)
-            print*, 'SH2O-2 = ',sh2oxy(25,2,12)
-            print*, 'SH2O-3 = ',sh2oxy(25,3,12)
-            print*, 'SH2O-4 = ',sh2oxy(25,4,12)
-            print*, 'SMCWTD = ',smcwtd(25,12)
-            print*, 'WTD = ',wtd(25,12)
-            print*, 'QRF = ',qrf(25,12)
-            print*, 'DEEPRECH = ',deeprech(25,12)
-            print*, 'QSPRING = ',qspring(25,12)
-            print*, 'QSLAT = ',qslat(25,12)
-            print*, 'QRFS = ',qrfs(25,12)
-            print*, 'QSPRINGS = ',qsprings(25,12)
-            print*, 'RECH = ',rech(25,12)
+            !print*, 'IVGTYP = ',ivgtyp(25,12)
+            !print*, 'RIVERCOND = ',rivercond(25,12)
+            !print*, 'RIVERBED = ',riverbed(25,12)
+            !print*, 'EQWTD = ',eqwtd(25,12)
+            !print*, 'PEXP = ',pexp(25,12)
+            !print*, 'SMC-1 = ',smois(25,1,12)
+            !print*, 'SMC-2 = ',smois(25,2,12)
+            !print*, 'SMC-3 = ',smois(25,3,12)
+            !print*, 'SMC-4 = ',smois(25,4,12)
+            !print*, 'SH2O-1 = ',sh2oxy(25,1,12)
+            !print*, 'SH2O-2 = ',sh2oxy(25,2,12)
+            !print*, 'SH2O-3 = ',sh2oxy(25,3,12)
+            !print*, 'SH2O-4 = ',sh2oxy(25,4,12)
+            !print*, 'SMCWTD = ',smcwtd(25,12)
+            !print*, 'WTD = ',wtd(25,12)
+            !print*, 'QRF = ',qrf(25,12)
+            !print*, 'DEEPRECH = ',deeprech(25,12)
+            !print*, 'QSPRING = ',qspring(25,12)
+            !print*, 'QSLAT = ',qslat(25,12)
+            !print*, 'QRFS = ',qrfs(25,12)
+            !print*, 'QSPRINGS = ',qsprings(25,12)
+            !print*, 'RECH = ',rech(25,12)
 
             !!! call MMF physics 
             call  WTABLE_mmf_noahmp (nsoil     ,xland    ,xice    ,xice_threshold  ,isice ,& !in
@@ -1089,33 +1090,33 @@ subroutine NoahMP401_main(n)
                                      ims,ime, jms,jme, kms,kme,                    &
                                      its,ite, jts,jte, kts,kte                     )
 
-            print*, 'WTABLE_mmf_noahmp Final Values'
-            print*, 'FDEPTH = ',fdepth(25,12)
-            print*, 'AREA = ',area(25,12)
-            print*, 'TOPO = ',topo(25,12)
+            !print*, 'WTABLE_mmf_noahmp Final Values'
+            !print*, 'FDEPTH = ',fdepth(25,12)
+            !print*, 'AREA = ',area(25,12)
+            !print*, 'TOPO = ',topo(25,12)
             !print*, 'ISURBAN = ',isurban(25,12)
-            print*, 'IVGTYP = ',ivgtyp(25,12)
-            print*, 'RIVERCOND = ',rivercond(25,12)
-            print*, 'RIVERBED = ',riverbed(25,12)
-            print*, 'EQWTD = ',eqwtd(25,12)
-            print*, 'PEXP = ',pexp(25,12)
-            print*, 'SMC-1 = ',smois(25,1,12)
-            print*, 'SMC-2 = ',smois(25,2,12)
-            print*, 'SMC-3 = ',smois(25,3,12)
-            print*, 'SMC-4 = ',smois(25,4,12)
-            print*, 'SH2O-1 = ',sh2oxy(25,1,12)
-            print*, 'SH2O-2 = ',sh2oxy(25,2,12)
-            print*, 'SH2O-3 = ',sh2oxy(25,3,12)
-            print*, 'SH2O-4 = ',sh2oxy(25,4,12)
-            print*, 'SMCWTD = ',smcwtd(25,12)
-            print*, 'WTD = ',wtd(25,12)
-            print*, 'QRF = ',qrf(25,12)
-            print*, 'DEEPRECH = ',deeprech(25,12)
-            print*, 'QSPRING = ',qspring(25,12)
-            print*, 'QSLAT = ',qslat(25,12)
-            print*, 'QRFS = ',qrfs(25,12)
-            print*, 'QSPRINGS = ',qsprings(25,12)
-            print*, 'RECH = ',rech(25,12)
+            !print*, 'IVGTYP = ',ivgtyp(25,12)
+            !print*, 'RIVERCOND = ',rivercond(25,12)
+            !print*, 'RIVERBED = ',riverbed(25,12)
+            !print*, 'EQWTD = ',eqwtd(25,12)
+            !print*, 'PEXP = ',pexp(25,12)
+            !print*, 'SMC-1 = ',smois(25,1,12)
+            !print*, 'SMC-2 = ',smois(25,2,12)
+            !print*, 'SMC-3 = ',smois(25,3,12)
+            !print*, 'SMC-4 = ',smois(25,4,12)
+            !print*, 'SH2O-1 = ',sh2oxy(25,1,12)
+            !print*, 'SH2O-2 = ',sh2oxy(25,2,12)
+            !print*, 'SH2O-3 = ',sh2oxy(25,3,12)
+            !print*, 'SH2O-4 = ',sh2oxy(25,4,12)
+            !print*, 'SMCWTD = ',smcwtd(25,12)
+            !print*, 'WTD = ',wtd(25,12)
+            !print*, 'QRF = ',qrf(25,12)
+            !print*, 'DEEPRECH = ',deeprech(25,12)
+            !print*, 'QSPRING = ',qspring(25,12)
+            !print*, 'QSLAT = ',qslat(25,12)
+            !print*, 'QRFS = ',qrfs(25,12)
+            !print*, 'QSPRINGS = ',qsprings(25,12)
+            !print*, 'RECH = ',rech(25,12)
 
             ! get state and output 
             do row = min_row, max_row

@@ -335,6 +335,7 @@ subroutine NoahMP401_setup()
                     NOAHMP401_struc(n)%riverbed(cidx, ridx) = placeholder(col, row) 
                 enddo
             enddo
+            print*, 'LOADED RIVERBED = ',NOAHMP401_struc(n)%riverbed(25,12)
             
             
             write(LIS_logunit,*) "[INFO] Noah-MP.4.0.1 reading parameter TEXTURE from ", &

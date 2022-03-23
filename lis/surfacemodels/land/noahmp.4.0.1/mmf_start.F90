@@ -115,22 +115,29 @@ subroutine mmf_start(n)
     do row=NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
         do col=NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
             t = NOAHMP401_struc(n)%rct_idx(col,row)
-            NOAHMP401_struc(n)%noahmp401(t)%wtd       = wtd(col,row) 
-            NOAHMP401_struc(n)%noahmp401(t)%zwt       = wtd(col,row)  !!!! zwt should be the same as wtd 
-            NOAHMP401_struc(n)%noahmp401(t)%rivercond = rivercond(col,row) 
-            NOAHMP401_struc(n)%noahmp401(t)%smc(:)    = smois(col,:,row) ! smois
-            NOAHMP401_struc(n)%noahmp401(t)%sh2o(:)   = sh2o(col,:,row)
-            NOAHMP401_struc(n)%noahmp401(t)%smoiseq(:)= smoiseq(col,:,row) 
-            if(isltyp(col,row) .eq. 14) then
-                NOAHMP401_struc(n)%noahmp401(t)%smcwtd = 1.0
-            else
-                NOAHMP401_struc(n)%noahmp401(t)%smcwtd = smcwtdxy(col,row)
-            endif
-            NOAHMP401_struc(n)%noahmp401(t)%deeprech  = deeprechxy(col,row)
-            NOAHMP401_struc(n)%noahmp401(t)%rech      = rechxy(col,row)
-            NOAHMP401_struc(n)%noahmp401(t)%qslat     = qslatxy(col,row) 
-            NOAHMP401_struc(n)%noahmp401(t)%qrfs      = qrfsxy(col,row) 
-            NOAHMP401_struc(n)%noahmp401(t)%qsprings  = qspringsxy(col,row) 
+            !print*, col
+            !print*, row
+            !print*, wtd(col,row)
+            !print*, t
+            ! Added if statement to deal with no-data values. TML
+            if(t .ne. LIS_rc%udef) then
+                NOAHMP401_struc(n)%noahmp401(t)%wtd       = wtd(col,row) 
+                NOAHMP401_struc(n)%noahmp401(t)%zwt       = wtd(col,row)  !!!! zwt should be the same as wtd 
+                NOAHMP401_struc(n)%noahmp401(t)%rivercond = rivercond(col,row) 
+                NOAHMP401_struc(n)%noahmp401(t)%smc(:)    = smois(col,:,row) ! smois
+                NOAHMP401_struc(n)%noahmp401(t)%sh2o(:)   = sh2o(col,:,row)
+                NOAHMP401_struc(n)%noahmp401(t)%smoiseq(:)= smoiseq(col,:,row) 
+                if(isltyp(col,row) .eq. 14) then
+                    NOAHMP401_struc(n)%noahmp401(t)%smcwtd = 1.0
+                else
+                    NOAHMP401_struc(n)%noahmp401(t)%smcwtd = smcwtdxy(col,row)
+                endif
+                NOAHMP401_struc(n)%noahmp401(t)%deeprech  = deeprechxy(col,row)
+                NOAHMP401_struc(n)%noahmp401(t)%rech      = rechxy(col,row)
+                NOAHMP401_struc(n)%noahmp401(t)%qslat     = qslatxy(col,row) 
+                NOAHMP401_struc(n)%noahmp401(t)%qrfs      = qrfsxy(col,row) 
+                NOAHMP401_struc(n)%noahmp401(t)%qsprings  = qspringsxy(col,row)
+            endif 
             NOAHMP401_struc(n)%rivercond(col, row)    = rivercond(col,row) !!! make a copy to the 2D paramter data structure 
             NOAHMP401_struc(n)%riverbed(col, row)     = riverbed(col,row)  !!! make a copy to the 2D paramter data structure 
             NOAHMP401_struc(n)%eqwtd(col, row)        = eqwtd(col,row)     !!! make a copy 
