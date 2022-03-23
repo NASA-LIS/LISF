@@ -78,7 +78,6 @@ contains
 ! 
 ! !USES: 
 #if 0 
-    use ESMF
     use LVT_coreMod, only : LVT_rc, LVT_config
     use LVT_RTMobsDataMod, only : LVT_RTMobsData, LVT_initializeRTMObsEntry
     use LVT_RTMhistDataMod, only : LVT_RTMhistData

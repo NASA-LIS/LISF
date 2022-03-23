@@ -59,6 +59,7 @@ module princeton_forcingMod
 !  modeling, J. Climate, 19 (13), 3088-3111 \newline
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   
   PRIVATE
@@ -77,7 +78,7 @@ module princeton_forcingMod
   type, public :: princeton_type_dec
      real                   :: ts
      integer                :: ncold, nrold   
-     character*100          :: princetondir
+     character(len=LIS_CONST_PATH_LEN) :: princetondir
      character*100          :: elevfile
      character*100          :: version
      integer                :: mi

@@ -23,6 +23,7 @@
 !   05/15/19: Yeosang Yoon; code added for snow DA to work
 !   10/29/19: David Mocko; Added RELSMC to output, and an option
 !                          for different units for Qs/Qsb/Albedo
+!   03/09/22: David Mocko: Fixed "input LAI" for dynamic vegetation options 7/8/9
 !
 ! !INTERFACE:
 subroutine NoahMP401_main(n)
@@ -31,6 +32,7 @@ subroutine NoahMP401_main(n)
     use LIS_histDataMod
     use LIS_timeMgrMod, only : LIS_isAlarmRinging
     use LIS_constantsMod,  only : LIS_CONST_RHOFW   !New
+    use LIS_vegDataMod,    only : LIS_lai, LIS_sai
     use LIS_logMod, only     : LIS_logunit, LIS_endrun
     use LIS_FORC_AttributesMod
     use NoahMP401_lsmMod
@@ -43,7 +45,7 @@ subroutine NoahMP401_main(n)
     real                 :: dt
     real                 :: lat, lon
     real                 :: tempval
-    integer              :: row, col
+    integer              :: row, col, tid
     integer              :: year, month, day, hour, minute, second
     logical              :: alarmCheck
 
@@ -224,6 +226,7 @@ subroutine NoahMP401_main(n)
     real                 :: tmp_irb                ! bare net LW radiation [+ to atm] [W/m2]
     real                 :: tmp_tr                 ! transpiration [ to atm] [W/m2]
     real                 :: tmp_evc                ! canopy evaporation heat [to atm] [W/m2]
+    real                 :: tmp_fgev_pet, tmp_fcev_pet,tmp_fctr_pet
     real                 :: tmp_chleaf             ! leaf exchange coefficient [-]
     real                 :: tmp_chuc               ! under canopy exchange coefficient [-]
     real                 :: tmp_chv2               ! veg 2m exchange coefficient [-]
@@ -238,13 +241,20 @@ subroutine NoahMP401_main(n)
     real                 :: TWS_out                ! terrestrial water storage [mm]
     ! Code added by David Mocko 04/25/2019
     real                 :: startsm, startswe, startint, startgw, endsm
+   
     real                 :: tmp_sfcheadrt          ! extra input  for WRF-HYDRO [m]
     real                 :: tmp_infxs1rt           ! extra output for WRF-HYDRO [m]
     real                 :: tmp_soldrain1rt        ! extra output for WRF-HYDRO [m]
 
+        !ag (05Jan2021)
+    real                 :: tmp_rivsto
+    real                 :: tmp_fldsto
+    real                 :: tmp_fldfrc
+
     ! EMK for 557WW
     real :: tmp_q2sat, tmp_es
     character*3 :: fnest
+    REAL, PARAMETER:: LVH2O = 2.501000E+6 ! Latent heat for evapo for water  
 
     allocate( tmp_sldpth( NOAHMP401_struc(n)%nsoil ) )
     allocate( tmp_shdfac_monthly( 12 ) )
@@ -310,51 +320,80 @@ subroutine NoahMP401_main(n)
                 tmp_prcp       = dt * (NOAHMP401_struc(n)%noahmp401(t)%prcp   / NOAHMP401_struc(n)%forc_count)
             endif
 
+            !ag(05Jan2021)
+            ! rivsto/fldsto: River storage and flood storage
+            ! NOAHMP401_struc(n)%noahmp401(t)%rivsto and NOAHMP401_struc(n)%noahmp401(t)%fldsto
+            ! are updated in noahmp401_getsws_hymap2.F90
+            tmp_rivsto = NOAHMP401_struc(n)%noahmp401(t)%rivsto
+            tmp_fldsto = NOAHMP401_struc(n)%noahmp401(t)%fldsto
+            tmp_fldfrc = NOAHMP401_struc(n)%noahmp401(t)%fldfrc
+
             ! check validity of tair
             if(tmp_tair .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable tair in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable tair in NoahMP401"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of psurf
             if(tmp_psurf .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable psurf in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable psurf in NoahMP401"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of wind_e
             if(tmp_wind_e .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable wind_e in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable wind_e in NoahMP401"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of wind_n
             if(tmp_wind_n .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable wind_n in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable wind_n in NoahMP401"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of qair
             if(tmp_qair .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable qair in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable qair in NoahMP401"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of swdown
             if(tmp_swdown .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable swdown in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable swdown in NoahMP401"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of lwdown
             if(tmp_lwdown .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable lwdown in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable lwdown in NoahMP401"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
             ! check validity of prcp
             if(tmp_prcp .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable prcp in NoahMP401"
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable prcp in NoahMP401"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+            !
+
+            !ag (05Jan2021)
+            ! check validity of rivsto
+            if(tmp_rivsto .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable rivsto in NoahMP36"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+            ! check validity of fldsto
+            if(tmp_fldsto .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable fldsto in NoahMP36"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+            ! check validity of fldfrc
+            if(tmp_fldfrc .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "[ERR] undefined value found for forcing variable fldfrc in NoahMP36"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
@@ -486,8 +525,40 @@ subroutine NoahMP401_main(n)
             tmp_wood            = NOAHMP401_struc(n)%noahmp401(t)%wood
             tmp_stblcp          = NOAHMP401_struc(n)%noahmp401(t)%stblcp
             tmp_fastcp          = NOAHMP401_struc(n)%noahmp401(t)%fastcp
-            tmp_lai             = NOAHMP401_struc(n)%noahmp401(t)%lai
-            tmp_sai             = NOAHMP401_struc(n)%noahmp401(t)%sai
+! DMM - If dynamic vegetation option DVEG = 7, 8, or 9 for "input LAI",
+! then send LAI/SAI from input to the Noah-MP-4.0.1 physics.  If any
+! tile has an undefined LAI/SAI value, instead use the value from the
+! MPTABLE file for that vegetation class and for the month.
+            if ((tmp_dveg_opt.ge.7).and.(tmp_dveg_opt.le.9)) then
+               tid = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%tile_id
+! If "LAI data source:" is set to "none" for these three Noah-MP-4.0.1
+! input LAI vegetation options, stop the run.
+               if (LIS_rc%useLAImap(n).ne."none") then
+                  tmp_lai          = LIS_lai(n)%tlai(tid)
+               else
+                  write(LIS_logunit,*)                                 &
+                       '[ERR] Attempting to use input LAI, however'
+                  write(LIS_logunit,*)                                 &
+                       '[ERR] "LAI data source:" is set to "none".'
+                  call LIS_endrun()
+               endif
+! If "SAI data source:" is set to "none" for these three Noah-MP-4.0.1
+! input LAI vegetation options, fill in the SAI values from MPTABLE.
+               if (LIS_rc%useSAImap(n).ne."none") then
+                  tmp_sai          = LIS_sai(n)%tsai(tid)
+               endif
+! If any LAI or SAI values are undefined at a tile,
+! fill in the LAI or SAI values from MPTABLE.
+               if (tmp_lai.eq.LIS_rc%udef) then
+                  tmp_lai          = NOAHMP401_struc(n)%noahmp401(t)%lai
+               endif
+               if (tmp_sai.eq.LIS_rc%udef) then
+                  tmp_sai          = NOAHMP401_struc(n)%noahmp401(t)%sai
+               endif
+            else
+               tmp_lai          = NOAHMP401_struc(n)%noahmp401(t)%lai
+               tmp_sai          = NOAHMP401_struc(n)%noahmp401(t)%sai
+            endif
             tmp_tauss           = NOAHMP401_struc(n)%noahmp401(t)%tauss
             tmp_smoiseq(:)      = NOAHMP401_struc(n)%noahmp401(t)%smoiseq(:)
             tmp_smcwtd          = NOAHMP401_struc(n)%noahmp401(t)%smcwtd
@@ -670,11 +741,16 @@ subroutine NoahMP401_main(n)
                                    tmp_irb               , & ! out   - bare net LW radiation [+ to atm] [W/m2]
                                    tmp_tr                , & ! out   - transpiration [ to atm] [W/m2]
                                    tmp_evc               , & ! out   - canopy evaporation heat [to atm] [W/m2]
+                                   tmp_fgev_pet, tmp_fcev_pet, tmp_fctr_pet, & !PET code from Sujay 
                                    tmp_chleaf            , & ! out   - leaf exchange coefficient [-]
                                    tmp_chuc              , & ! out   - under canopy exchange coefficient [-]
                                    tmp_chv2              , & ! out   - veg 2m exchange coefficient [-]
                                    tmp_chb2              , & ! out   - bare 2m exchange coefficient [-]
                                    tmp_relsmc            , &
+                                    !ag (12Sep2019)
+                                   tmp_rivsto            , & ! in   - river storage [m/s] 
+                                   tmp_fldsto            , & ! in   - flood storage [m/s]
+                                   tmp_fldfrc            , & ! in   - flooded fraction [-]
                                    NOAHMP401_struc(n)%noahmp401(t)%param, & ! out   - relative soil moisture [-]
                                    tmp_sfcheadrt         , & 
                                    tmp_infxs1rt          , &
@@ -1201,6 +1277,13 @@ subroutine NoahMP401_main(n)
             ![ 88] output variable: evap (unit=kg/m2/s). ***  total evapotranspiration
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_EVAP, value = NOAHMP401_struc(n)%noahmp401(t)%qfx, &
                                               vlevel=1, unit="kg m-2 s-1", direction="UP", surface_type = LIS_rc%lsm_index)
+            !PET
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_POTEVAP, &
+                 value=(tmp_fgev_pet+tmp_fcev_pet+tmp_fctr_pet), vlevel=1,unit="W m-2",&
+                  direction="UP",surface_type=LIS_rc%lsm_index)
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_POTEVAP, &
+                 value=(tmp_fgev_pet+tmp_fcev_pet+tmp_fctr_pet)/LVH2O, vlevel=1,unit="kg m-2 s-1",&
+                  direction="UP",surface_type=LIS_rc%lsm_index)
 
             ![ 89] output variable: rainf (unit=kg/m2). ***  precipitation rate
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RAINF, value = NOAHMP401_struc(n)%noahmp401(t)%rainf, &

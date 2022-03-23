@@ -1,0 +1,354 @@
+= LISF on NCCS Discover: Quick Start Guide
+Brendan McAndrew
+:revnumber: 0.2
+:revdate: 2021-12-03
+:toc: macro
+:toclevels: 1
+:source-highlighter: highlightjs
+// url attributes
+:url-lis-website: https://lis.gsfc.nasa.gov
+:url-lis-testcases-page: {url-lis-website}/tests/lis
+:url-lis-testcases-data: https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/
+:url-lisf-docs: https://github.com/NASA-LIS/LISF/tree/master/docs
+:url-lisf-github: https://github.com/NASA-LIS/LISF
+:ssh-lisf-github: git@github.com:NASA-LIS/LISF.git
+// discover attributes
+:nccs-hostname: login.nccs.nasa.gov
+// git attributes
+:public-support-branch: support/lisf-public-7.3
+// module attributes
+:modulefile-dir: privatemodules
+:intel-modulefile: lisf_7_intel_2021.4.0
+
+[.normal]
+This document exists to help new LIS team members and collaborators get up and running on NASA's link:https://www.nccs.nasa.gov/systems/discover[Discover] high-performance computing system. For general information about using Discover, review the link:https://www.nccs.nasa.gov/nccs-users/[user information pages] and link:https://www.nccs.nasa.gov/nccs-users/instructional/instructional-videos[instructional videos] available on NCCS' website. For more detailed information on LISF, see our link:{url-lisf-docs}[official documentation].
+
+IMPORTANT: You will need an NCCS account with permission to access Discover to complete this guide. If you don't have an NCCS account, complete the link:https://www.nccs.nasa.gov/nccs-users/instructional/account-set-up[account set up process] before continuing.
+
+toc::[]
+
+== Accessing Discover
+
+=== Required Software
+
+You will need an application called a link:https://en.wikipedia.org/wiki/Terminal_emulator[terminal] to access Discover:
+
+* **Mac:** _Terminal_ (located in Applications > Utilities) or link:https://iterm2.com/[_iTerm2_]
+* **Windows:** link:https://www.putty.org/[_PuTTY_] or link:https://mobaxterm.mobatek.net/download.html[_MobaXterm_]
+
+TIP: Need a refresher on terminal/shell basics? link:http://swcarpentry.github.io/shell-novice/[Try this!]
+
+Mac users can skip ahead to the <<Connecting to Discover>> section.
+
+==== Windows Terminal Setup
+
+. Open PuTTY or MobaXTerm.
+
+. If using PuTTY, a configuration window should open automatically. If using MobaXTerm, create a new session by selecting _Session > New Session_ from the menubar.
+
+. In either the PuTTY configuration window or MobaXTerm session editor, enter the `{nccs-hostname}` in the input field labeled _Host Name_ or _Remote Host_. Optionally, specify your login username in the _Connection > Data_ pane in PuTTY or _Specify username_ field in MobaXTerm.
+
+. Give your session a name and save it for future use.
+
+=== Connecting to Discover
+
+Now that you have an account and the required software you are ready to connect to Discover.
+
+In the examples that follow, the `%` symbol at the beginning of the line represents the prompt in your terminal. You do not type that when entering any of the example commands. Text following a `>` represents example output that should be returned after running a given command.
+
+. Open your terminal application and use a text editor to add the following to your `~/.ssh/config` file:
++
+[source,text,subs="attributes"]
+----
+Host discover
+    #LogLevel Quiet
+    User userid
+    ProxyCommand ssh {nccs-hostname} direct %h
+    ForwardX11 yes
+    ForwardX11Trusted yes
+    Protocol 2
+----
++
+Where `userid` should be replaced with your NASA AUID. This configuration file makes it easier to connect to Discover.
++
+TIP: Forgot your AUID? Visit link:https://nams.nasa.gov[NAMS] and select _Your Identity_ from the Identities dropdown menu.
+
+. Connect, or "SSH", to Discover.
+
+** *On Mac or Linux*, enter the following command in the terminal:
++
+[source,bash]
+----
+% ssh discover
+----
++
+The information added to `~/.ssh/config` will be used when this command is executed.
+
+** *On Windows*, open the session created in the <<Windows Terminal Setup>> step.
+
+. At the `PASSCODE:` prompt, enter your 8-digit RSA key. If using the RSA app for mobile devices, the key is displayed after entering your PIN. If you are using a "hard token" (e.g., key-fob), enter your PIN + 8-digit RSA key at the prompt.
+
+[TIP]
+====
+It is possible to use the 6-digit PIN associated with your PIV badge in place of your RSA key. Follow the instructions under _PIV SSH Instructions_ on link:https://www.nccs.nasa.gov/nccs-users/instructional/logging-in/bastion-host[this page] to set up PIV SSH.
+====
+
+. If a `Host:` prompt appears, enter `discover`.
+
+. At the `Password:` prompt, enter your NCCS LDAP password.
+
+If the connection is successful, a welcome message will be printed to the terminal and a new prompt will appear:
+
+[source,bash]
+----
+<userid>@discoverXY:~>
+----
+
+You are now connected to a _login node_ on Discover!
+
+[IMPORTANT]
+====
+*Login nodes* are shared among Discover users and are link:https://wiki.uiowa.edu/display/hpcdocs/Login+Node+Usage#:~:text=The%20login%20nodes%20are%20limited,your%20jobs%20should%20run%20on.["intended for basic tasks such as uploading data, managing files, compiling software, editing scripts, and checking on or managing your jobs."] Computationally intensive processes and programs _should not_ be run on login nodes because it may affect other users sharing your node. Processes that require significant resources should be run on a _compute node._
+
+*Compute nodes* can be accessed interactively, similar to working on a login node, or "batch jobs" can be submitted to run scripts on compute nodes in the background using the `slurm` scheduler. To learn more about using the job scheduler, visit the NCCS instructional page for link:https://www.nccs.nasa.gov/nccs-users/instructional/using-slurm[using `slurm`].
+====
+
+If you encounter any issues connecting to Discover, NCCS also provides link:https://www.nccs.nasa.gov/nccs-users/instructional/logging-in/bastion-host[these instructions] for connecting to their systems.
+
+TIP: New to high-performance computing? link:https://hpc-carpentry.github.io/hpc-intro/[Try this tutorial!]
+
+== Setting up your environment on Discover
+
+In this section, you will set up your environment on Discover to compile and run the LISF components: LDT, LIS, and LVT.
+
+. On login, you are placed in your `$HOME` directory. To ensure you are in the right location, change directories to `$HOME` before proceeding:
++
+[source,bash]
+----
+% cd $HOME
+----
+
+. We suggest starting with a clean environment. First, move your existing `.profile` and, assuming you are using `bash`, `.bashrc` files to a backup directory for safekeeping.
++
+[source,bash]
+----
+% mkdir profile_backup
+% mv .profile .bashrc profile_backup/
+----
++
+If your `.bashrc` file does not run any `module load` commands or set any critical environment variables like `$PATH` or `$LD_LIBRARY_PATH` then you should be safe leaving your `.bashrc` file alone.
+
+. Use a text editor (e.g., `vim`) to create a new `.profile` file in your `$HOME` directory and copy-paste the following text into it:
++
+[source,bash,subs="attributes"]
+----
+# This file is read each time a login shell is started.
+if [ -n "$PS1" ]; then
+    echo "" ; echo "sourcing clean .profile" ; echo ""
+fi
+
+module use --append $HOME/{modulefile-dir}
+
+ulimit -s unlimited
+
+if [ -n "$PS1" ]; then
+    echo ""
+    echo "sourced clean .profile"
+    echo "--------------------"
+    echo ""
+fi
+----
++
+This file will be executed every time you log onto Discover.
+
+. LISF has many software dependencies and expects certain environment variables to point to them. Discover uses the link:https://www.nccs.nasa.gov/nccs-users/instructional/using-discover/miscellaneous/using-modules[modules] package to make commonly used software available to all users. The LIS team has created custom modulefiles to load an environment suitable for compiling and running LIS, LDT, and LVT. These modulefiles are available in link:{url-lisf-github}/tree/master/env/discover[the `env/discover` directory of our GitHub repository]. In this step we will download the current Intel LISF modulefile for Discover (a modulefile for a GNU-based environment is also available).
++
+First, make a directory called `{modulefile-dir}/` in your `$HOME` directory to store the modulefiles. Then change directories into it:
++
+[source,bash,subs="attributes"]
+----
+% mkdir {modulefile-dir}
+% cd {modulefile-dir}
+----
++
+Use `curl` to download the latest LISF modulefile:
++
+[source,bash,subs="attributes"]
+----
+% curl -O https://raw.githubusercontent.com/NASA-LIS/LISF/master/env/discover/{intel-modulefile}
+----
++
+IMPORTANT: LISF modulefiles are periodically updated as the development environment evolves so the filename used above may not be up to date. Check link:https://github.com/NASA-LIS/LISF/tree/master/env/discover[here] to find the latest version.
+
+. Source your new `.profile` file to load the clean environment for the current session:
++
+[source,bash]
+----
+% source $HOME/.profile
+----
++
+In future, this file will be sourced automatically when you connect to Discover.
+
+. Whenever you wish compile, run, or debug LISF, you must load the LISF modulefile.
++
+[source,bash,subs="attributes"]
+----
+% module load {intel-modulefile}
+----
++
+[IMPORTANT]
+====
+*Avoid loading additional modules alongside the LISF modulefile as you may inadvertently introduce undetected incompatibilities between tools and libraries.* This can result in unexpected behavior when running the LISF components. For example, you may end up loading three different NetCDF libraries. And one day LIS runs, but the next day LIS cannot read its own restart file. See our link:https://github.com/NASA-LIS/LISF/blob/master/docs/creating_a_custom_modulefile/creating-a-custom-modulefile.adoc[Creating a Custom modulefile Guide] for further guidance on using `module` as part of your LISF workflow.
+====
+
+Your LISF environment on Discover is now ready to use!
+
+[IMPORTANT]
+====
+The storage quota for your `$HOME` directory is quite small (~1GB) so we suggest working in your `$NOBACKUP` directory which has a default storage quota of 5GB. This directory is located at `/discover/nobackup/<userid>`, but you can simply use `cd $NOBACKUP` to change into it. You may also be allowed to work in a directory created for your project that has significantly higher storage quota.
+
+You can check the storage quota in your `$HOME` and `$NOBACKUP` directories with the `showquota` command:
+
+[source,bash]
+----
+% showquota -h
+
+# the -h flag will show values in "human-friendly" format (i.e., MB and GB rather than KB)
+----
+
+The output will also show information for any additional disks (e.g., project disks) associated with your userid.
+====
+
+== Cloning the LISF Source Code
+
+Complete sections 1-4 in our link:{url-lisf-docs}/working_with_github/working_with_github.adoc[Working with GitHub] guide.
+
+[TIP]
+====
+New to `git` and GitHub? Need a refresher?
+
+* link:https://swcarpentry.github.io/git-novice/[Version Control with `git`]
+* link:https://help.github.com/en/github[GitHub Guide (Text)]
+* link:https://www.youtube.com/channel/UCP7RrmoueENv9TZts3HXXtw[GitHub Guide (Videos)]
+====
+
+== Compiling LISF Components
+
+This section will provide a brief overview of the process to compile the LIS executable from the source code. A more detailed explanation can be found in the link:{url-lisf-docs}[LIS User's Guide]. The same process is followed for LDT and LVT.
+
+IMPORTANT: The steps below assume you have already cloned the LISF repository to Discover.
+
+. Change directories into the `LISF/` directory and "checkout" the `{public-support-branch}` branch:
++
+[source,bash,subs="attributes"]
+----
+% cd LISF
+% git checkout {public-support-branch}
+----
+
+. Change directories into the `lis/` subdirectory and run the configure script:
++
+[source,bash]
+----
+% cd LISF/lis
+% ./configure
+----
++
+A series of prompts will appear asking you to select your compile configuration options. To use the default setting, simply press _Enter_ at each prompt. To select a non-default setting, enter the appropriate option based on the prompt (i.e., _1_ to enable or _0_ to disable) and press _Enter_. For this exercise, the default settings will suffice. Again, more detailed information about these settings may be found in the link:{url-lisf-docs}[LISF documentation].
++
+[source,bash]
+----
+Choose the following configure options:
+Parallelism (0-serial, 1-dmpar, default=1):
+Optimization level (-3=strict checks with warnings, -2=strict checks, -1=debug, 0,1,2,3, default=2):
+Assume little/big_endian data format (1-little, 2-big, default=2):
+Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=2):
+Enable AFWA-specific grib configuration settings? (1-yes, 0-no, default=0):
+Use NETCDF? (1-yes, 0-no, default=1):
+NETCDF version (3 or 4, default=4):
+NETCDF use shuffle filter? (1-yes, 0-no, default = 1):
+NETCDF use deflate filter? (1-yes, 0-no, default = 1):
+NETCDF use deflate level? (1 to 9-yes, 0-no, default = 9):
+Use HDF4? (1-yes, 0-no, default=1):
+Use HDF5? (1-yes, 0-no, default=1):
+Use HDFEOS? (1-yes, 0-no, default=1):
+Use MINPACK? (1-yes, 0-no, default=0):
+Use LIS-CRTM? (1-yes, 0-no, default=0):
+Use LIS-CMEM? (1-yes, 0-no, default=0):
+Use LIS-LAPACK? (1-yes, 0-no, default=0):
+----
+
+. Compile LIS:
++
+[source,bash]
+----
+% ./compile
+----
++
+After entering this command you should see a lot of text scrolling by as LIS is compiled. This process may take 15-20 minutes and, barring any errors, will result in an executable file named `LIS`. If you encounter an error, check the link:{url-lisf-docs}[LISF documentation], our link:{url-lisf-github}/discussions[GitHub Discussions forum], or ask a team member for assistance.
++
+Once you are comfortable with this process, you can speed up compilation by using additional threads. It is recommended that you do this on a compute node using an interactive session or by submitting a batch job. See the link:https://www.nccs.nasa.gov/nccs-users/instructional/using-slurm[NCCS' guidance on Slurm] for more information.
++
+Here is an example command for requesting an interactive session on a compute node:
++
+[source,bash]
+----
+% salloc --ntasks=1 --qos=debug
+
+# It may take several minutes to provision the requested resources...
+----
++
+[NOTE]
+====
+Setting `--qos=debug` requests a session with debug **Q**uality **o**f **S**ervice. This typically results in a shorter wait time, but sessions are limited to 1 hour. More information on QoS options is available link:https://www.nccs.nasa.gov/nccs-users/instructional/using-slurm/qos[here].
+====
++
+When you are connected to an interactive session you are placed in your `$HOME` directory with a clean environment. Before compiling you must source your `.profile` again and change directories into `LISF/lis`.
++
+[source,bash]
+----
+% source ~/.profile
+% cd $NOBACKUP/lis-test/LISF/lis
+% ./compile -j 28
+----
++
+Note the use of the `-j` flag to specify the number of threads to use while compiling.
++
+Here is an example of a batch script that can be submitted to the `slurm` scheduler:
++
+[source,bash,subs="attributes"]
+----
+#!/bin/bash
+#SBATCH --job-name=lis-compile
+#SBATCH --ntasks=1
+#SBATCH --qos=debug
+#SBATCH --time=01:00:00
+#SBATCH --account=ACCOUNT
+
+echo $DEV_ENV
+cd $SLURM_SUBMIT_DIR
+
+ulimit -s unlimited
+
+./compile -j 28
+----
++
+Where `ACCOUNT` should be replaced with a group ID linked to your Discover account (enter the command `groups <userid>` to view a list of the groups linked to your user).
++
+Place this in a text file (e.g., `lis-compile.job`) in the `lis/`, `ldt/`, or `lvt/` directory (depending on which component you are compiling) and submit the job to the queue with `sbatch lis-compile.job`. Check on the status of the job with `squeue -u <userid>`.
+
+. If compilation completes successfully, a file named `LIS` will be present in the `lis/` directory:
++
+[source,bash]
+----
+% ls LIS
+> LIS
+----
++
+You have now compiled LIS with the default configuration settings. To build LDT and LVT, change directories into `LISF/ldt` and `LISF/lvt` and follow the same steps as above.
+
+== LISF Public Testcases
+
+You are now ready to work through the LISF Public Testcases. These testcases will verify that your working environment is set up properly and you have successfully compiled each of the LISF components by walking you through an end-to-end "experiment" that uses LDT, LIS, and LVT.
+
+Follow the _Public Testcase Walkthrough_ guide available in our link:{url-lisf-docs}[official documentation].

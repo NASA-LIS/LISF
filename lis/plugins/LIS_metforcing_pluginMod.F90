@@ -240,6 +240,10 @@ subroutine LIS_metforcing_plugin
    use Bondville_forcingMod
 #endif
 
+#if ( defined MF_PLUMBER2)
+   use plumber2_forcingMod
+#endif
+
 #if ( defined MF_LOOBOS )
    use Loobos_forcingMod
 #endif
@@ -254,6 +258,18 @@ subroutine LIS_metforcing_plugin
 
 #if ( defined MF_WRFOUT )
    use WRFout_forcingMod
+#endif
+
+#if ( defined MF_COAMPSOUT )
+   use COAMPSout_forcingMod
+#endif
+
+#if ( defined MF_WRFOUTV2 )
+   use WRFoutv2_forcingMod
+#endif
+
+#if ( defined MF_WRF_AK )
+   use WRF_AKdom_forcingMod
 #endif
 
 #if ( defined MF_GDAS_T1534 )
@@ -275,6 +291,10 @@ subroutine LIS_metforcing_plugin
 #if ( defined MF_MRMS )
    use mrms_grib_forcingMod
 #endif
+
+#if ( defined MF_GDDP )
+   use gddp_forcingMod
+#endif   
 
 #if ( defined MF_MET_TEMPLATE )
    external get_metForcTemplate
@@ -517,6 +537,14 @@ subroutine LIS_metforcing_plugin
    external finalize_Bondville
 #endif
 
+#if ( defined MF_PLUMBER2)
+   external get_plumber2
+   external timeinterp_plumber2
+   external finalize_plumber2
+   external reset_plumber2
+#endif
+
+
 #if ( defined MF_LOOBOS )
    external get_Loobos
    external timeinterp_Loobos
@@ -541,6 +569,27 @@ subroutine LIS_metforcing_plugin
    external timeinterp_WRFout
    external reset_WRFout
    external finalize_WRFout
+#endif
+
+#if ( defined MF_COAMPSOUT )
+   external get_COAMPSout
+   external timeinterp_COAMPSout
+   external reset_COAMPSout
+   external finalize_COAMPSout
+#endif
+
+#if ( defined MF_WRFOUTV2 )
+   external get_WRFoutv2
+   external timeinterp_WRFoutv2
+   external reset_WRFoutv2
+   external finalize_WRFoutv2
+#endif
+
+#if ( defined MF_WRF_AK )
+   external get_WRF_AKdom
+   external timeinterp_WRF_AKdom
+   external reset_WRF_AKdom
+   external finalize_WRF_AKdom
 #endif
 
 #if ( defined MF_GDAS_T1534 )
@@ -578,6 +627,13 @@ subroutine LIS_metforcing_plugin
    external reset_mrms_grib
 #endif
 
+#if ( defined MF_GDDP )
+   external get_gddp
+   external timeinterp_gddp
+   external finalize_gddp
+   external reset_gddp
+#endif
+   
 #if ( defined MF_MET_TEMPLATE )
 ! - Meteorological Forcing Template:
    call registerinitmetforc(trim(LIS_metForcTemplateId)//char(0), &
@@ -939,6 +995,15 @@ subroutine LIS_metforcing_plugin
    call registerfinalmetforc(trim(LIS_scanId)//char(0),finalize_scan)
 #endif
 
+#if (defined MF_PLUMBER2)
+   call registerinitmetforc(trim(LIS_plumber2Id)//char(0),init_plumber2)
+   call registerretrievemetforc(trim(LIS_plumber2Id)//char(0),get_plumber2)
+   call registertimeinterpmetforc(trim(LIS_plumber2Id)//char(0),timeinterp_plumber2)
+   call registerresetmetforc(trim(LIS_plumber2Id)//char(0),reset_plumber2)
+   call registerfinalmetforc(trim(LIS_plumber2Id)//char(0),finalize_plumber2)
+#endif
+
+
 #if ( defined MF_BONDVILLE )
 ! - Noah3.1 Bondville test case
    call registerinitmetforc(trim(LIS_BondvilleId)//char(0),init_Bondville)
@@ -989,6 +1054,36 @@ subroutine LIS_metforcing_plugin
    call registerresetmetforc(trim(LIS_WRFoutId)//char(0),reset_WRFout)
 #endif
 
+#if ( defined MF_COAMPSOUT )
+! - COAMPSout forcing
+   call registerinitmetforc(trim(LIS_COAMPSoutId)//char(0),init_COAMPSout)
+   call registerretrievemetforc(trim(LIS_COAMPSoutId)//char(0),get_COAMPSout)
+   call registertimeinterpmetforc(trim(LIS_COAMPSoutId)//char(0), &
+                                  timeinterp_COAMPSout)
+   call registerfinalmetforc(trim(LIS_COAMPSoutId)//char(0),finalize_COAMPSout)
+   call registerresetmetforc(trim(LIS_COAMPSoutId)//char(0),reset_COAMPSout)
+#endif
+
+#if ( defined MF_WRFOUTV2 )
+! - WRFout-4KM HiRes forcing
+   call registerinitmetforc(trim(LIS_WRFoutv2Id)//char(0),init_WRFoutv2)
+   call registerretrievemetforc(trim(LIS_WRFoutv2Id)//char(0),get_WRFoutv2)
+   call registertimeinterpmetforc(trim(LIS_WRFoutv2Id)//char(0), &
+                                  timeinterp_WRFoutv2)
+   call registerfinalmetforc(trim(LIS_WRFoutv2Id)//char(0),finalize_WRFoutv2)
+   call registerresetmetforc(trim(LIS_WRFoutv2Id)//char(0),reset_WRFoutv2)
+#endif
+
+#if ( defined MF_WRF_AK )
+! - WRFout-4KM Alaska (AK) domain forcing
+   call registerinitmetforc(trim(LIS_WRFakId)//char(0),init_WRF_AKdom)
+   call registerretrievemetforc(trim(LIS_WRFakId)//char(0),get_WRF_AKdom)
+   call registertimeinterpmetforc(trim(LIS_WRFakId)//char(0), &
+                                  timeinterp_WRF_AKdom)
+   call registerfinalmetforc(trim(LIS_WRFakId)//char(0),finalize_WRF_AKdom)
+   call registerresetmetforc(trim(LIS_WRFakId)//char(0),reset_WRF_AKdom)
+#endif
+
 #if ( defined MF_GDAS_T1534 )
 ! - NCEP Gaussian T1534 forcing
    call registerinitmetforc(trim(LIS_gdasT1534Id)//char(0),init_gdasT1534)
@@ -1034,6 +1129,14 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_mrms_grib)
    call registerfinalmetforc(trim(LIS_mrmsId)//char(0),finalize_mrms_grib)
    call registerresetmetforc(trim(LIS_mrmsId)//char(0),reset_mrms_grib)
+#endif
+#if ( defined MF_GDDP)
+   call registerinitmetforc(trim(LIS_gddpId)//char(0),init_gddp)
+   call registerretrievemetforc(trim(LIS_gddpId)//char(0),get_gddp)
+   call registertimeinterpmetforc(trim(LIS_gddpId)//char(0), &
+                                  timeinterp_gddp)
+   call registerfinalmetforc(trim(LIS_gddpId)//char(0),finalize_gddp)
+   call registerresetmetforc(trim(LIS_gddpId)//char(0),reset_gddp)
 #endif
 end subroutine LIS_metforcing_plugin
 
