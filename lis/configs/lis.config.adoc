@@ -6055,8 +6055,15 @@ or mean sea level (msl) can be selected (which is not supported yet).
 of GEFS ensemble members being read in. Reforecast2 currently
 supports up to a 11 members.
 
-`GEFS forecast grid resolution:` specifies the grid resolution of the GEFS
-forecast data. The current resolutions supported are 0.50 and 0.25.
+`GEFS forecast grid resolution:` specifies the grid resolution in degrees
+of the GEFS forecast data. The current resolutions supported are:
+
+|====
+|GEFS forecast type | Resolutions
+
+|`Reforecast2`      | `0.25` and `1.0`
+|`Operational`      | `0.25` and `0.50`
+|====
 
 .Example _lis.config_ entry
 ....
