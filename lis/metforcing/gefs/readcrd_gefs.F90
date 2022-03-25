@@ -79,11 +79,14 @@ subroutine readcrd_gefs()
      do n=1,LIS_rc%nnest
         call ESMF_ConfigGetAttribute(LIS_config,gefs_struc(n)%gefs_res,rc=rc)
         
-        if(gefs_struc(n)%gefs_res.ne.0.50 .and. gefs_struc(n)%gefs_res.ne.0.25) then
-           write(LIS_logunit,*) '[ERR] GEFS forecast grid resolution: not equal to 0.50'
-           write(LIS_logunit,*) '[ERR] or 0.25. The GEFS reader currently only supports'
-           write(LIS_logunit,*) '[ERR] these two data resolutions.'
-           write(LIS_logunit,*) '[ERR] Please change data source and config option.'
+        if( (gefs_struc(n)%gefs_fcsttype.eq.'Reforecast2' .and. (gefs_struc(n)%gefs_res.ne.0.25 .and. gefs_struc(n)%gefs_res.ne.1.0)) &
+            .or. (gefs_struc(n)%gefs_fcsttype.eq.'Operational' .and. (gefs_struc(n)%gefs_res.ne.0.25 .and. gefs_struc(n)%gefs_res.ne.0.50))) then
+
+           write(LIS_logunit,*) '[ERR] GEFS forecast grid resolution error:'
+           write(LIS_logunit,*) '[ERR] The GEFS reader currently only supports the following:'
+           write(LIS_logunit,*) '[ERR] -- Reforecast2 mode with 1.0 degree or 0.25 degree data.'
+           write(LIS_logunit,*) '[ERR] -- Operational mode with 0.5 degree or 0.25 degree data.'
+           write(LIS_logunit,*) '[ERR] Please change GEFS mode, data source, and/or data resolution.'
            write(LIS_logunit,*) '[ERR] Stopping...'
            call LIS_endrun()
         endif
