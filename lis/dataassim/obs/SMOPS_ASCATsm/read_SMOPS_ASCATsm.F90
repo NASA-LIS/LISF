@@ -13,17 +13,18 @@
 ! \label{read_SMOPS_ASCATsm}
 !
 ! !REVISION HISTORY:
-!  17 Jun 2010: Sujay Kumar; Updated for use with LPRM AMSRE Version 5. 
-!  20 Sep 2012: Sujay Kumar; Updated to the NETCDF version of the data. 
+!  17 Jun 2010: Sujay Kumar; Updated for use with LPRM AMSRE Version 5.
+!  20 Sep 2012: Sujay Kumar; Updated to the NETCDF version of the data.
 !  27 Sep 2017: Mahdi Navari; Updated to read ASCAT from SMOPS V3
 !  15 May 2017: Eric Kemp; LIS current date/time no longer directly passed
 !               to SMOPS filename subroutine to avoid accidently changing
 !               the time.
-!  1  Apr 2019: Yonghwan Kwon: Upated for reading monthy CDF for the current month
-!
-! !INTERFACE: 
+!  01 Apr 2019: Yonghwan Kwon: Upated for reading monthy CDF for the current
+!               month.
+!  25 Mar 2022: Eric Kemp; Modified read_SMOPS_ASCATsm to be fault tolerant.
+! !INTERFACE:
 subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
-! !USES: 
+! !USES:
   use ESMF
   use LIS_mpiMod
   use LIS_coreMod
@@ -36,21 +37,21 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
   use SMOPS_ASCATsm_Mod, only : SMOPS_ASCATsm_struc
 
   implicit none
-! !ARGUMENTS: 
-  integer, intent(in) :: n 
+! !ARGUMENTS:
+  integer, intent(in) :: n
   integer, intent(in) :: k
   type(ESMF_State)    :: OBS_State
   type(ESMF_State)    :: OBS_Pert_State
 !
 ! !DESCRIPTION:
-!  
-!  reads the AMSRE soil moisture observations 
+!
+!  reads the AMSRE soil moisture observations
 !  from NETCDF files and applies the spatial masking for dense
 !  vegetation, rain and RFI. The data is then rescaled
 !  to the land surface model's climatology using rescaling
-!  algorithms. 
-!  
-!  The arguments are: 
+!  algorithms.
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest
 !  \item[OBS\_State] observations state
@@ -88,7 +89,7 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
   real                   :: obs_delta(LIS_rc%obs_ngrid(k))
   integer :: yyyy,mm,dd,hh ! EMK
 
-  
+
   call ESMF_AttributeGet(OBS_State,"Data Directory",&
        smobsdir, rc=status)
   call LIS_verify(status)
@@ -96,16 +97,16 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
        data_update, rc=status)
   call LIS_verify(status)
 
-  data_upd = .false. 
+  data_upd = .false.
   obs_unsc = LIS_rc%udef
 !-------------------------------------------------------------------------
 !   Read both ascending and descending passes at 0Z and then store
-!   the overpass time as 1.30AM for the descending pass and 1.30PM 
-!   for the ascending pass. 
+!   the overpass time as 1.30AM for the descending pass and 1.30PM
+!   for the ascending pass.
 !-------------------------------------------------------------------------
   alarmCheck = LIS_isAlarmRinging(LIS_rc, "SMOPS read alarm")
-  
-  if(alarmCheck.or.SMOPS_ASCATsm_struc(n)%startMode) then 
+
+  if(alarmCheck.or.SMOPS_ASCATsm_struc(n)%startMode) then
      SMOPS_ASCATsm_struc(n)%startMode = .false.
 
      SMOPS_ASCATsm_struc(n)%smobs = LIS_rc%udef
@@ -131,7 +132,7 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
 
      inquire(file=fname,exist=file_exists)
 
-     if(file_exists) then 
+     if(file_exists) then
         write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
         call read_SMOPS_ASCAT_data(n,k,fname,smobs,smtime)
      else
@@ -384,14 +385,14 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
 end subroutine read_SMOPS_ASCATsm
 
 !BOP
-! 
+!
 ! !ROUTINE: read_SMOPS_ASCAT_data
 ! \label{read_SMOPS_ASCAT_data}
 !
 ! !INTERFACE:
 subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
-! 
-! !USES:   
+!
+! !USES:
 #if(defined USE_GRIBAPI)
   use grib_api
 #endif
@@ -402,9 +403,9 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
 
   implicit none
 !
-! !INPUT PARAMETERS: 
-! 
-  integer                       :: n 
+! !INPUT PARAMETERS:
+!
+  integer                       :: n
   integer                       :: k
   character (len=*)             :: fname
   real                          :: smobs_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
@@ -414,11 +415,11 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
 ! !OUTPUT PARAMETERS:
 !
 !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !  This subroutine reads the RTSMOPS grib2 file and applies the data
-!  quality flags to filter the data. The retrievals are rejected when 
+!  quality flags to filter the data. The retrievals are rejected when
 !  the estimated error is above a predefined threshold (the recommeded
-!  value is 5%). 
+!  value is 5%).
 !
 !  Quality flags are defined in:
 !      NOAA NESDIS
@@ -438,7 +439,7 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
 !  bits: 15 | 14 | 13 | 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0
 !                   byte2                    |           byte1
 !
-!  The arguments are: 
+!  The arguments are:
 !  \begin{description}
 !  \item[n]            index of the nest
 !  \item[fname]        name of the RTSMOPS AMSR-E file
@@ -537,54 +538,64 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
   endif
 
 
-  call grib_open_file(ftn,trim(fname), 'r',iret)
-  if(iret.ne.0) then
-     write(LIS_logunit,*) '[ERR] Could not open file: ',trim(fname)
-     call LIS_endrun()
+  call grib_open_file(ftn, trim(fname), 'r', iret)
+  if (iret .ne. 0) then
+     write(LIS_logunit,*) '[WARN] Could not open file: ', trim(fname)
+     return
   endif
   call grib_multi_support_on
 
   do
-     call grib_new_from_file(ftn,igrib,iret)
+     call grib_new_from_file(ftn, igrib, iret)
 
      if ( iret == GRIB_END_OF_FILE ) then
         exit
      endif
 
-     call grib_get(igrib, 'parameterNumber',param_num, iret)
-     call LIS_verify(iret, &
-          'grib_get: parameterNumber failed in readSMOPSsm_struc')
+     call grib_get(igrib, 'parameterNumber', param_num, iret)
+     if (iret .ne. 0) then
+        write(LIS_logunit,*) &
+             '[WARN] Problem reading parameterNumber from ', trim(fname)
+        call grib_release(igrib, iret)
+        call grib_close_file(ftn)
+        return
+     end if
 
      var_found = .false.
-     if(param_num.eq.param_ASCAT_A) then
+     if (param_num .eq. param_ASCAT_A) then
         var_found = .true.
      endif
-
-     if(var_found) then
-        call grib_get(igrib, 'values',sm_ASCAT_A,iret)
-        call LIS_warning(iret,'error in grib_get:values in readRTSMOPSsmObs')
-
-        do r=1,SMOPS_ASCATsm_struc(n)%nr
-           do c=1,SMOPS_ASCATsm_struc(n)%nc
+     if (var_found) then
+        call grib_get(igrib, 'values', sm_ASCAT_A, iret)
+        if (iret .ne. 0) then
+           write(LIS_logunit,*)'[WARN] Problem reading values for ASCAT_A'
+           call grib_release(igrib, iret)
+           call grib_close_file(ftn)
+           return
+        end if
+        do r = 1, SMOPS_ASCATsm_struc(n)%nr
+           do c = 1, SMOPS_ASCATsm_struc(n)%nc
               sm_ASCAT_A_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = &
                    sm_ASCAT_A(c+((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
                    SMOPS_ASCATsm_struc(n)%nc)
            enddo
         enddo
-
      endif
 
      var_found = .false.
-     if(param_num.eq.param_ASCAT_A_qa) then
+     if (param_num .eq. param_ASCAT_A_qa) then
         var_found = .true.
      endif
-
-     if(var_found) then
-        call grib_get(igrib, 'values',sm_ASCAT_A_qa,iret)
-        call LIS_warning(iret,'error in grib_get:values in readRTSMOPSsmObs')
-
-        do r=1,SMOPS_ASCATsm_struc(n)%nr
-           do c=1,SMOPS_ASCATsm_struc(n)%nc
+     if (var_found) then
+        call grib_get(igrib, 'values', sm_ASCAT_A_qa, iret)
+        if (iret .ne. 0) then
+           write(LIS_logunit,*)'[WARN] Problem reading QA values for ASCAT_A'
+           call grib_release(igrib, iret)
+           call grib_close_file(ftn)
+           return
+        end if
+        do r = 1, SMOPS_ASCATsm_struc(n)%nr
+           do c = 1, SMOPS_ASCATsm_struc(n)%nc
               sm_ASCAT_A_qa_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = &
                    INT(sm_ASCAT_A_qa(c+((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
                    SMOPS_ASCATsm_struc(n)%nc))
@@ -593,55 +604,68 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
      endif
 
      var_found = .false.
-     if(param_num.eq.param_ASCAT_A_hr) then
+     if (param_num .eq. param_ASCAT_A_hr) then
         var_found = .true.
      endif
-
-     if(var_found) then
-        call grib_get(igrib, 'values',sm_ASCAT_A_hr,iret)
-        call LIS_warning(iret,'error in grib_get:values in readRTSMOPSsmObs')
+     if (var_found) then
+        call grib_get(igrib, 'values', sm_ASCAT_A_hr, iret)
+        if (iret .ne. 0) then
+           write(LIS_logunit,*)'[WARN] Problem reading hr values for ASCAT_A'
+           call grib_release(igrib, iret)
+           call grib_close_file(ftn)
+           return
+        end if
      endif
 
      var_found = .false.
-     if(param_num.eq.param_ASCAT_A_mn) then
+     if (param_num .eq. param_ASCAT_A_mn) then
         var_found = .true.
      endif
-
-     if(var_found) then
-        call grib_get(igrib, 'values',sm_ASCAT_A_mn,iret)
-        call LIS_warning(iret,'error in grib_get:values in readRTSMOPSsmObs')
+     if (var_found) then
+        call grib_get(igrib, 'values', sm_ASCAT_A_mn, iret)
+        if (iret .ne. 0) then
+           write(LIS_logunit,*)'[WARN] Problem reading mn values for ASCAT_A'
+           call grib_release(igrib, iret)
+           call grib_close_file(ftn)
+           return
+        end if
      endif
 
      var_found = .false.
-     if(param_num.eq.param_ASCAT_B) then
+     if (param_num .eq. param_ASCAT_B) then
         var_found = .true.
      endif
-
-     if(var_found) then
-        call grib_get(igrib, 'values',sm_ASCAT_B,iret)
-        call LIS_warning(iret,'error in grib_get:values in readRTSMOPSsmObs')
-
-        do r=1,SMOPS_ASCATsm_struc(n)%nr
-           do c=1,SMOPS_ASCATsm_struc(n)%nc
+     if (var_found) then
+        call grib_get(igrib, 'values', sm_ASCAT_B, iret)
+        if (iret .ne. 0) then
+           write(LIS_logunit,*)'[WARN] Problem reading values for ASCAT_B'
+           call grib_release(igrib, iret)
+           call grib_close_file(ftn)
+           return
+        end if
+        do r = 1, SMOPS_ASCATsm_struc(n)%nr
+           do c = 1, SMOPS_ASCATsm_struc(n)%nc
               sm_ASCAT_B_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = &
                    sm_ASCAT_B(c+((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
                    SMOPS_ASCATsm_struc(n)%nc)
            enddo
         enddo
-
      endif
 
      var_found = .false.
-     if(param_num.eq.param_ASCAT_B_qa) then
+     if (param_num .eq. param_ASCAT_B_qa) then
         var_found = .true.
      endif
-
-     if(var_found) then
-        call grib_get(igrib, 'values',sm_ASCAT_B_qa,iret)
-        call LIS_warning(iret,'error in grib_get:values in readRTSMOPSsmObs')
-
-        do r=1,SMOPS_ASCATsm_struc(n)%nr
-           do c=1,SMOPS_ASCATsm_struc(n)%nc
+     if (var_found) then
+        call grib_get(igrib, 'values', sm_ASCAT_B_qa, iret)
+        if (iret .ne. 0) then
+           write(LIS_logunit,*)'[WARN] Problem reading QA values for ASCAT_B'
+           call grib_release(igrib, iret)
+           call grib_close_file(ftn)
+           return
+        end if
+        do r = 1, SMOPS_ASCATsm_struc(n)%nr
+           do c = 1, SMOPS_ASCATsm_struc(n)%nc
               sm_ASCAT_B_qa_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = &
                    INT(sm_ASCAT_B_qa(c+((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
                    SMOPS_ASCATsm_struc(n)%nc))
@@ -650,27 +674,39 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
      endif
 
      var_found = .false.
-     if(param_num.eq.param_ASCAT_B_hr) then
+     if (param_num .eq. param_ASCAT_B_hr) then
         var_found = .true.
      endif
-
      if(var_found) then
-        call grib_get(igrib, 'values',sm_ASCAT_B_hr,iret)
-        call LIS_warning(iret,'error in grib_get:values in readRTSMOPSsmObs')
+        call grib_get(igrib, 'values', sm_ASCAT_B_hr, iret)
+        if (iret .ne. 0) then
+           write(LIS_logunit,*)'[WARN] Problem reading hr values for ASCAT_B'
+           call grib_release(igrib, iret)
+           call grib_close_file(ftn)
+           return
+        end if
      endif
 
      var_found = .false.
-     if(param_num.eq.param_ASCAT_B_mn) then
+     if (param_num .eq. param_ASCAT_B_mn) then
         var_found = .true.
      endif
-
-     if(var_found) then
-        call grib_get(igrib, 'values',sm_ASCAT_B_mn,iret)
-        call LIS_warning(iret,'error in grib_get:values in readRTSMOPSsmObs')
+     if (var_found) then
+        call grib_get(igrib, 'values', sm_ASCAT_B_mn, iret)
+        if (iret .ne. 0) then
+           write(LIS_logunit,*)'[WARN] Problem reading mn values for ASCAT_B'
+           call grib_release(igrib, iret)
+           call grib_close_file(ftn)
+           return
+        end if
      endif
 
-     call grib_release(igrib,iret)
-     call LIS_verify(iret, 'error in grib_release in readRTSMOPSsmObs')
+     call grib_release(igrib, iret)
+     if (iret .ne. 0) then
+        write(LIS_logunit,*)'[WARN] Problem releasing from ', trim(fname)
+        call grib_close_file(ftn)
+        return
+     end if
   enddo
 
   call grib_close_file(ftn)
