@@ -71,9 +71,9 @@ subroutine readcrd_gefs()
   !call LIS_verify(rc, 'GEFS forecast grid resolution: not defined ')
   if(rc.ne.0) then
      write(LIS_logunit,*) '[WARN] GEFS forecast grid resolution: not defined '
-     write(LIS_logunit,*) '[WARN] GEFS forecast grid resolution set to 0.50 as default. '
+     write(LIS_logunit,*) '[WARN] GEFS forecast grid resolution set to 0.25 as default. '
      do n=1,LIS_rc%nnest
-        gefs_struc(n)%gefs_res = 0.50
+        gefs_struc(n)%gefs_res = 0.25
      enddo
   else
      do n=1,LIS_rc%nnest
@@ -119,6 +119,8 @@ subroutine readcrd_gefs()
           gefs_struc(n)%max_ens_members
      write(LIS_logunit,*) '[INFO] GEFS pressure level field:  ',&
           gefs_struc(n)%gefs_preslevel
+     write(LIS_logunit,*) '[INFO] GEFS forecast grid resolution:  ',&
+          gefs_struc(n)%gefs_res
 
      gefs_struc(n)%fcsttime1 = 3000.0
      gefs_struc(n)%fcsttime2 = 0.0
