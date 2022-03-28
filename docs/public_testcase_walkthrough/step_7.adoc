@@ -7,7 +7,7 @@
 
 == Overview
 
-In this step you will use the Land Verification Toolkit (LVT) to compare the output generated in the open-loop (Step 2) and data assimilation (Step 6) experiments. Since LVT is a verification and validation software, you will need to plot the output using Python, Matlab, GrADS, etc. LVT offers a range of features and configuration settings so we strongly encourage users to review the link:url-lisf-docs[LVT Users' Guide].
+In this step you will use the Land Verification Toolkit (LVT) to compare the output generated in the open-loop (Step 2) and data assimilation (Step 6) experiments. Since LVT is a verification and validation software, you will need to plot the output using Python, Matlab, GrADS, etc. LVT offers a range of features and configuration settings so we strongly encourage users to review the link:{url-lisf-docs}[LVT Users' Guide].
 
 // TODO: add better description of this step
 

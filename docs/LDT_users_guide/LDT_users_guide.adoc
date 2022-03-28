@@ -35,7 +35,7 @@
 // endif::devonly[]
 
 
-// asciidoctor-pdf -r asciidoctor-mathematical LDT_usersguide.adoc
+// asciidoctor-pdf -r asciidoctor-mathematical LDT_users_guide.adoc
 
 
 include::revision_table.adoc[]

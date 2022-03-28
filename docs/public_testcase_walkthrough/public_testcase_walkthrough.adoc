@@ -8,7 +8,7 @@
 :toc: macro
 :toclevels: 1
 :icons: font
-:source-highlighter: highlightjs        // source code highlighting engine
+:source-highlighter: highlight.js        // source code highlighting engine
 :figure-caption!:                       // disable figure captions
 
 // github commit known to be compatible with this walkthrough
