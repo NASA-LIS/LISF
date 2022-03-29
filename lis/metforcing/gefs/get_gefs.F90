@@ -76,7 +76,7 @@ subroutine get_gefs(n,findex)
   character(len=LIS_CONST_PATH_LEN) :: filename
 
 !  character(10), dimension(LIS_rc%met_nf(findex)), parameter :: gefs_vars = (/ &
-  character(10), dimension(8), parameter :: gefs_vars = (/ &
+  character(10), dimension(8) :: gefs_vars = (/ &
        'tmp_2m    ',    &     ! (1) Inst
        'spfh_2m   ',    &     ! (2) Inst
        'dswrf_sfc ',    &     ! (3) Ave
@@ -118,6 +118,12 @@ subroutine get_gefs(n,findex)
 
   ! Read in required GEFS files:
   if( gefs_struc(n)%gefs_fcsttype .eq. "Reforecast2" ) then
+
+    ! The 0.25deg Reforecast wind files naming convention has changed to the following:
+    if(gefs_struc(n)%gefs_res == 0.25) then
+      gefs_vars(5) = 'ugrd_hgt'
+      gefs_vars(6) = 'vgrd_hgt'
+    endif
 
     ! First timestep of run:
     if( LIS_rc%tscount(n).eq.1 .or. &
@@ -507,7 +513,7 @@ subroutine get_reforecast_filename(filename,gefsdir,gefsproj,gefsres,&
   endif
 
   if( gefsres .eq. 0.25 ) then
-    filename = trim(gefsdir)//'/'//ftime0//'/'//ftime2//&
+    filename = trim(gefsdir)//'/'//trim(ftime0)//'/'//ftime2//&
        "00/"//trim(var)//'_'//ftime2//'00_'//fens//'.grib2'
   else
     filename = trim(gefsdir)//'/'//trim(gefsproj)//'/'//trim(ftime1)//&
