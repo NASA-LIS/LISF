@@ -1794,7 +1794,7 @@ integer function set_plevel(editionNumber,pds9,level)
    integer, intent(in) :: level
 
    ! Locals
-   real :: plevel
+   integer :: plevel
    integer :: ierr
    character(len=100) :: messages(20)
 
