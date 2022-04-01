@@ -8,7 +8,7 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
-#include "LIS_plugins.h"
+
 !BOP
 ! !ROUTINE: read_SMOPS_ASCATsm
 ! \label{read_SMOPS_ASCATsm}
@@ -399,6 +399,7 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
 #endif
   use LIS_coreMod,  only : LIS_rc, LIS_domain, LIS_masterproc
   use LIS_logMod
+  use LIS_pluginIndices, only: LIS_agrmetrunId
   use LIS_timeMgrMod
   use SMOPS_ASCATsm_Mod, only : SMOPS_ASCATsm_struc
 
@@ -491,6 +492,7 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
   integer :: imsg
   character(len=100) :: message(20)
   integer :: alert_number
+  integer :: m
 
 #if(defined USE_GRIBAPI)
   ! When we are reading the 6-hourly datasets, we read the file HR+6
@@ -729,16 +731,20 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
      if (imsg .eq. 0) then
         write(LIS_logunit,*)'[WARN] No GRIB messages found in ', trim(fname)
      end if
-#ifdef MF_AGRMET
-     message(:) = ''
-     message(1) = '[ERR] Program:  LIS'
-     message(2) = '  Routine:  read_SMOPS_ASCATsm_data.'
-     message(3) = '  Problem reading SMOPS_ASCATsm data from ' // trim(fname)
-     alert_number = alert_number + 1
-     if(LIS_masterproc) then
-        call lis_alert('SMOPS_ASCATsm              ', alert_number, message )
-     end if
-#endif
+     do m = 1, LIS_rc%nmetforc
+        if (trim(LIS_rc%metforc(m)) .eq. LIS_agrmetrunId) then
+           message(:) = ''
+           message(1) = '[ERR] Program:  LIS'
+           message(2) = '  Routine:  read_SMOPS_ASCATsm_data.'
+           message(3) = '  Problem reading SMOPS_ASCATsm data from ' &
+                // trim(fname)
+           alert_number = alert_number + 1
+           if(LIS_masterproc) then
+              call lis_alert('SMOPS_ASCATsm              ', alert_number, &
+                   message )
+           end if
+        end if
+     end do
      return
   end if
 
