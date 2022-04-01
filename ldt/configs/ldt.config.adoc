@@ -2395,6 +2395,50 @@ MMF riverbed elevation dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/riverbed
 MMF equilibrium water table depth dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/wtd/
 MMF HGT_M dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/topo_gmted2010_30s/
 ....
+
+Spatial interpolation and gap filling parameters for each MMF variable.
+
+.Example _ldt.config_ entry
+....
+# MMF parameter interpolation follows that of WPS/WPS-4.0.1/geogrid/GEOGRID.TBL.ARW.noahmp
+# WPS first (average_gcell) spatially averages finer resolution data to coarser resolution grid cells
+# which is similar to LDT's "upscaleByAveraging".
+MMF map projection: latlon
+MMF spatial transform: average
+
+# WPS uses a two-step gap procedure to fill gaps: (1) average from the immediate neighborhood (average_4pt), (2) search and fill
+
+# WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing = 100.
+FDEPTH neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
+FDEPTH fill option: neighbor
+FDEPTH fill radius: 1200 # Number of #pixels to search for neighbor
+FDEPTH fill value: 100.
+
+# WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing = -1.
+RECHCLIM neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
+RECHCLIM fill option: neighbor
+RECHCLIM fill radius: 1200 # Number of #pixels to search for neighbor
+RECHCLIM fill value: -1.
+
+# WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
+RIVERBED neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
+RIVERBED fill option: neighbor
+RIVERBED fill radius: 1200 # Number of #pixels to search for neighbor
+RIVERBED fill value: 0.
+
+# WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
+EQWTD neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
+EQWTD fill option: neighbor
+EQWTD fill radius: 1200 # Number of #pixels to search for neighbor
+EQWTD fill value: 0.
+
+# WPS interp_option = gmted2010_30s:average_gcell(4.0)+four_pt+average_4pt ; fill_missing=0.
+HGT_M neighborhood radius: 0 # average neighborhood points for the first of WPS's two-step gap filling procedure
+HGT_M fill option: neighbor
+HGT_M fill radius: 1200 # Number of #pixels to search for neighbor
+HGT_M fill value: 0.
+....
+
 If selecting the Community Land Model (4.5 version), the following config entires are also required.
 
 `CLM45 parameter mode:` specifies whether to "`readin`" the CLM-4.5 parameters from pre-processed files. Currently, only the "`readin`" option is available.
