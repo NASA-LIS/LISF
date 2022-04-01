@@ -68,6 +68,7 @@ module nldas2_forcingMod
 ! 14 Mar 2014: David Mocko: Added CAPE and PET forcing from NLDAS-2
 ! 
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -86,7 +87,7 @@ module nldas2_forcingMod
      real          :: ts
      integer       :: ncold, nrold   ! AWIPS 212 dimensions
      character*50  :: nldas2_filesrc
-     character*80  :: nldas2dir      ! NLDAS-2 Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: nldas2dir ! NLDAS-2 Forcing Directory
      real*8        :: nldas2time1,nldas2time2
      integer       :: model_level_data 
      integer       :: model_level_press 

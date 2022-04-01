@@ -19,6 +19,7 @@
 ! 19 Jan 2016: Augusto Getirana;  Inclusion of four Local Inertia variables
 ! 10 Mar 2019: Sujay Kumar;       Added support for NetCDF and parallel 
 !                                 processing. 
+! 27 Apr 2020: Augusto Getirana;  Added support for urban drainage
 !  
 ! !INTERFACE: 
 subroutine HYMAP2_routing_writerst(n)
@@ -73,7 +74,7 @@ subroutine HYMAP2_routing_writerst(n)
      if (LIS_masterproc) then
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
         status = nf90_close(ftn)
-        call LIS_verify(status, "Error in nf90_close in NoahMP36_writerst")
+        call LIS_verify(status, "Error in nf90_close in HYMAP2_routing_writerst")
 #endif
      endif
      
@@ -128,6 +129,9 @@ subroutine HYMAP2_dump_restart(n, ftn)
     integer :: rivdph_pre_ID
     integer :: fldout_pre_ID
     integer :: flddph_pre_ID
+    !ag (27Apr2020)
+    integer :: drsto_ID
+    integer :: drout_ID
     ! write the header of the restart file
     call HYMAP2_writeGlobalHeader_restart(ftn, n, &
          "HYMAP2", &
@@ -156,11 +160,18 @@ subroutine HYMAP2_dump_restart(n, ftn)
     call HYMAP2_writeHeader_restart(ftn, n, dimID, flddph_pre_ID, "FLDDPH_PRE", &
          "flood depth pre", &
          "-", 1, -99999.0, 99999.0)
-
+!ag (27Apr2020)
+    if(HYMAP2_routing_struc(n)%flowtype==4)then    
+      call HYMAP2_writeHeader_restart(ftn, n, dimID, drsto_ID, "DRSTO", &
+           "urban drainage storage", &
+           "-", 1, -99999.0, 99999.0)
+      call HYMAP2_writeHeader_restart(ftn, n, dimID, drout_ID, "DROUT", &
+           "urban drainage discharge", &
+           "-", 1, -99999.0, 99999.0)
+    endif
     call HYMAP2_closeHeader_restart(ftn)
     
     ! write state variables into restart file
-    ! snow albedo at last time step
     if(HYMAP2_routing_struc(n)%useens.eq.0) then 
        call HYMAP2_writevar_restart(ftn,n, &
             HYMAP2_routing_struc(n)%rivsto, &
@@ -186,6 +197,16 @@ subroutine HYMAP2_dump_restart(n, ftn)
        call HYMAP2_writevar_restart(ftn,n, &
             HYMAP2_routing_struc(n)%flddph_pre, &
             flddph_pre_ID)    
+       !ag (27Apr2020)
+       !urban drainage storage   
+       if(HYMAP2_routing_struc(n)%flowtype==4)then    
+         call HYMAP2_writevar_restart(ftn,n, &
+              HYMAP2_routing_struc(n)%drsto, &
+              drsto_ID)    
+         call HYMAP2_writevar_restart(ftn,n, &
+              HYMAP2_routing_struc(n)%drout, &
+              drout_ID)
+       endif
     else
 
        call HYMAP2_writevar_restart_ens(ftn,n,&
@@ -211,7 +232,17 @@ subroutine HYMAP2_dump_restart(n, ftn)
             fldout_pre_ID)    
        call HYMAP2_writevar_restart_ens(ftn,n, &
             HYMAP2_routing_struc(n)%flddph_pre, &
-            flddph_pre_ID)    
+            flddph_pre_ID)  
+       !ag (27Apr2020)
+       !urban drainage storage       
+       if(HYMAP2_routing_struc(n)%flowtype==4)then    
+         call HYMAP2_writevar_restart_ens(ftn,n, &
+              HYMAP2_routing_struc(n)%drsto, &
+              drsto_ID)    
+         call HYMAP2_writevar_restart_ens(ftn,n, &
+              HYMAP2_routing_struc(n)%drout, &
+              drout_ID)
+       endif  
     endif
 
   end subroutine HYMAP2_dump_restart
@@ -694,7 +725,7 @@ subroutine HYMAP2_dump_restart(n, ftn)
        allocate(gtmp1(1,LIS_rc%nensem(n)))
     endif
     do m=1,LIS_rc%nensem(n)  
-#if (defined SPMD)
+#if (defined SPMD)    
        call MPI_GATHERV(var(:,m),LIS_rc%nroutinggrid(n),&
             MPI_REAL,gtmp1(:,m),&
             LIS_routing_gdeltas(n,:),&

@@ -81,7 +81,6 @@ contains
   subroutine GCOMW_AMSR2L3sm_obsinit(i)
 ! 
 ! !USES: 
-    use ESMF
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_timeMgrMod

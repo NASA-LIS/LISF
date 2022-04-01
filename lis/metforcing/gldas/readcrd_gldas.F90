@@ -40,7 +40,7 @@ subroutine readcrd_gldas()
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) 'Using GLDAS forcing'
-     write(LIS_logunit,*) 'GLDAS forcing directory :',gldas_struc(n)%GLDASDIR
+     write(LIS_logunit,*) 'GLDAS forcing directory :',trim(gldas_struc(n)%GLDASDIR)
      gldas_struc(n)%GLDASTIME1  = 3000.0
      gldas_struc(n)%GLDASTIME2  = 0.0
   enddo

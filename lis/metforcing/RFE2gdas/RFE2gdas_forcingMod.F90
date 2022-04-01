@@ -77,6 +77,7 @@ module RFE2gdas_forcingMod
 !
 ! !USES:
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -95,7 +96,7 @@ module RFE2gdas_forcingMod
 
   type, public :: RFE2gdas_type_dec
 
-     character*80             :: RFE2gdasDir
+     character(len=LIS_CONST_PATH_LEN) :: RFE2gdasDir
      real*8                   :: RFE2gdasEndTime
      type(ESMF_Time)          :: startTime
      real*8                   :: st_real

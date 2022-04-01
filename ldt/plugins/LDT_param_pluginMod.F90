@@ -24,6 +24,7 @@ module LDT_param_pluginMod
 !  11 Feb 2013:  KR Arsenault - Updated to accommodate new parameter types and options
 !  01 Mar 2020:  Yeosang Yoon - Added MERIT DEM
 !  29 Jun 2020:  Mahdi Navari - Glacier fraction added 
+!  12 Apr 2021:  Wanshu Nie   - groundwater irrigation ratio added
 !  
 !EOP
 
@@ -935,8 +936,9 @@ contains
 
     external read_GRIPC_irrigtype
     external read_GRIPC_irrigfrac
-
     external read_UserDerived_irrigfrac
+
+    external read_USGSNative_irriggwratio
 
     call registerreadirrigfrac(trim(LDT_modOGirrigId)//char(0),&
          read_OzdoganGutman_irrigfrac)
@@ -946,6 +948,8 @@ contains
 
     ! Added user-derived irrigation fraction input option:
     call registerreadirrigfrac(trim(LDT_userinputirrigId)//char(0),read_UserDerived_irrigfrac)
+    ! Added irrigation groundwater ratio input option
+    call registerreadirriggwratio(trim(LDT_irriggwratioId)//char(0),read_USGSNative_irriggwratio)
 
   end subroutine LDT_irrigation_plugin
 
@@ -1221,18 +1225,15 @@ contains
 !EOP
 
     external read_gdas_elev
-    external read_nldas1_elev
     external read_nldas2_elev
     external read_nam242_elev
     external read_princeton_elev
     external read_ecmwf_elev
-    external read_ecmwfreanal_elev
     external read_merra2_elev
     external read_era5_elev
     external read_wrfoutv2_elev
     external read_wrfak_elev
 !    external read_geos5_elev
-!    external read_merraland_elev
 
 ! !USES:
 ! - Read forcing parameter: Elevation/terrain height
@@ -1242,9 +1243,6 @@ contains
          read_gdas_elev)
 
 !- CONUS-only forcings:
-    call registerreadforcelev(trim(LDT_nldas1Id)//char(0),&
-         read_nldas1_elev)
-
     call registerreadforcelev(trim(LDT_nldas2Id)//char(0),&
          read_nldas2_elev)
 
@@ -1259,10 +1257,6 @@ contains
 !- ECMWF forcing:
     call registerreadforcelev(trim(LDT_ecmwfId)//char(0),&
          read_ecmwf_elev)
-
-!- ECMWF-Reanalysis forcing:
-    call registerreadforcelev(trim(LDT_ecmwfreanalId)//char(0),&
-         read_ecmwfreanal_elev)
 
 !- MERRA2 forcing:
     call registerreadforcelev(trim(LDT_merra2Id)//char(0),&

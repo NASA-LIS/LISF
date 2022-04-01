@@ -51,7 +51,9 @@ module WRF_AKdom_forcingMod
 !    for each grid point in LIS, for conservative interpolation.
 !  \end{description}
 
-! !USES: 
+! !USES:
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -72,7 +74,7 @@ module WRF_AKdom_forcingMod
      real         :: ts
      integer      :: nc, nr
      integer      :: mi
-     character*80 :: WRFAKdir
+     character(len=LIS_CONST_PATH_LEN) :: WRFAKdir
      real*8       :: WRFouttime1,WRFouttime2
      integer      :: findtime1,findtime2
      integer      :: nIter, st_iterid, en_iterid

@@ -19,6 +19,7 @@ subroutine getvicforcing(n, findex, suppdata1, suppdata2)
   use LIS_coreMod,        only : LIS_rc, LIS_domain
   use LIS_baseforcingMod, only : LIS_forc, LIS_FORC_State
   use LIS_timeMgrMod,     only : LIS_tick
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use vic_forcingMod,     only : vicforcing_struc
 
   implicit none
@@ -53,7 +54,7 @@ subroutine getvicforcing(n, findex, suppdata1, suppdata2)
    real*8  :: time1, time2, timenow
    integer :: fstep
    integer :: ferror
-   character(len=140) :: fname
+   character(len=LIS_CONST_PATH_LEN) :: fname
 
    LIS_rc%findtime1(n) = 0
    LIS_rc%findtime2(n) = 0
@@ -144,8 +145,8 @@ subroutine get_vicforcing_filename(filename, dir, year, month, day, hour)
 ! !USES:
   implicit none
 ! !ARGUMENTS: 
-   character(len=140), intent(out) :: filename
-   character(len=100), intent(in) :: dir
+   character(len=*), intent(out) :: filename
+   character(len=*), intent(in) :: dir
    integer, intent(in) :: year
    integer, intent(in) :: month
    integer, intent(in) :: day

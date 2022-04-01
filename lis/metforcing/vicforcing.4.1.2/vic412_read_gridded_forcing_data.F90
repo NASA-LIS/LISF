@@ -28,7 +28,7 @@ subroutine vic412_read_gridded_forcing_data(n, findex, filename, ferror)
 
    integer, intent(in)            :: n
    integer, intent(in)            :: findex
-   character(len=140), intent(in) :: filename
+   character(len=*), intent(in) :: filename
    integer, intent(out)           :: ferror
 
 ! !DESCRIPTION: 

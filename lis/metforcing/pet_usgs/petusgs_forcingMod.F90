@@ -50,6 +50,7 @@ module petusgs_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -65,7 +66,7 @@ module petusgs_forcingMod
 
   type, public :: petusgs_type_dec
 
-     character*100     :: petdir      ! USGS PET Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: petdir    ! USGS PET Forcing Directory
      character*20      :: pettype     ! USGS PET File type (climatology|current)
      real*8            :: pettime
      real*8            :: griduptime1

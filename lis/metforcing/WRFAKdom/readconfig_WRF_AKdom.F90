@@ -47,7 +47,7 @@ subroutine readconfig_WRF_AKdom()
   write(unit=LIS_logunit,fmt=*)'[INFO] Using WRF AK forcing'
 
   do n=1,LIS_rc%nnest
-     write(unit=LIS_logunit,fmt=*) '[INFO] WRF AK forcing directory :',WRFAK_struc(n)%WRFAKdir
+     write(unit=LIS_logunit,fmt=*) '[INFO] WRF AK forcing directory :',trim(WRFAK_struc(n)%WRFAKdir)
 
      WRFAK_struc(n)%WRFouttime1 = 3000.0
      WRFAK_struc(n)%WRFouttime2 = 0.0

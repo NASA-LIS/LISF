@@ -54,7 +54,7 @@ subroutine read_HYMAP_baseflow_delay(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%baseflowdelayfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] Baseflowdelay map, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP baseflow time delay map, ',&
            trim(HYMAP_struc(n)%baseflowdelayfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun

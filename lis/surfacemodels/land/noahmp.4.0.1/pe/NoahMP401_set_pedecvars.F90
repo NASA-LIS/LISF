@@ -176,9 +176,11 @@ subroutine NoahMP401_checkConstraints(n,DEC_State,mod_flag_NoahMP401)
   integer       :: status1, status2
   real, allocatable :: vardata1(:)
   real, allocatable :: vardata2(:)
+  real, allocatable :: vardata3(:)
 
   allocate(vardata1(LIS_rc%npatch(n,LIS_rc%lsm_index)))
   allocate(vardata2(LIS_rc%npatch(n,LIS_rc%lsm_index)))
+  allocate(vardata3(LIS_rc%npatch(n,LIS_rc%lsm_index)))
 
   vname='SMCMAX'
   call NoahMP401_getvardata(n,DEC_State,vname,vardata1, status1)
@@ -257,8 +259,27 @@ subroutine NoahMP401_checkConstraints(n,DEC_State,mod_flag_NoahMP401)
      endif
   enddo
 
+  !HVT > Z0MVT
+  vname='T_ULIMIT'
+  call NoahMP401_getvardata(n,DEC_State,vname,vardata1, status1)
+  vname='T_MLIMIT'
+  call NoahMP401_getvardata(n,DEC_State,vname,vardata2, status2)
+  vname='T_LLIMIT'
+  call NoahMP401_getvardata(n,DEC_State,vname,vardata3, status2)
+  if(status1.ne.0) vardata1=NoahMP401_struc(n)%noahmp401(:)%param%T_ULIMIT
+  if(status2.ne.0) vardata2=NoahMP401_struc(n)%noahmp401(:)%param%T_MLIMIT
+  if(status2.ne.0) vardata3=NoahMP401_struc(n)%noahmp401(:)%param%T_LLIMIT
+  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     if((vardata3(t).gt.vardata2(t)).or.&
+          (vardata2(t).gt.vardata1(t)).or.&
+          (vardata3(t).gt.vardata1(t))) then 
+        mod_flag_NoahMP401(t) = 1
+     endif
+  enddo
+
   deallocate(vardata1)
   deallocate(vardata2)
+  deallocate(vardata3)
 
 end subroutine NoahMP401_checkConstraints
 
@@ -379,6 +400,14 @@ subroutine NoahMP401_setVars(n,DEC_State,mod_flag_NoahMP401)
                    NoahMP401_struc(n)%noahmp401(t)%param%MXSNALB= vardata(t)
               if(vname.eq."SNDECAYEXP") &
                    NoahMP401_struc(n)%noahmp401(t)%param%SNDECAYEXP = vardata(t)
+              if(vname.eq."T_ULIMIT") &
+                   NoahMP401_struc(n)%noahmp401(t)%param%T_ULIMIT = vardata(t)
+              if(vname.eq."T_MLIMIT") &
+                   NoahMP401_struc(n)%noahmp401(t)%param%T_MLIMIT = vardata(t)
+              if(vname.eq."T_LLIMIT") &
+                   NoahMP401_struc(n)%noahmp401(t)%param%T_LLIMIT = vardata(t)
+              if(vname.eq."SNOWF_SCALEF") &
+                   NoahMP401_struc(n)%noahmp401(t)%param%snowf_scalef = vardata(t)              
               if(vname.eq."RHOL1") &
                    NoahMP401_struc(n)%noahmp401(t)%param%RHOL(1) = vardata(t)
               if(vname.eq."RHOL2") &

@@ -93,7 +93,7 @@ subroutine readcrd_nldas2()
   write(unit=LIS_logunit,fmt=*)'[INFO] Using NLDAS-2 forcing'
 
   do n=1,LIS_rc%nnest
-     write(unit=LIS_logunit,fmt=*) '[INFO] NLDAS-2 forcing directory : ',nldas2_struc(n)%nldas2dir
+     write(unit=LIS_logunit,fmt=*) '[INFO] NLDAS-2 forcing directory : ',trim(nldas2_struc(n)%nldas2dir)
 
      nldas2_struc(n)%ncold = 464
      nldas2_struc(n)%nrold = 224

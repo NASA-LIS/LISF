@@ -1,4 +1,0 @@
-dBOP
-!\section{rdhm356 forcing}
-!This section describes the implementation of the RDHM v.3.5.6 data. 
-!EOP

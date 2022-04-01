@@ -251,7 +251,7 @@ contains
   subroutine LMLC_init()
 
 ! !USES:
-    use ESMF
+    !NONE
 ! 
 ! !DESCRIPTION:
 !
@@ -422,7 +422,7 @@ end subroutine read_maskfile
  subroutine readDomainConfigSpecs(segment_name, param_proj, domain_info)
 
 ! !USES: 
-   use ESMF
+   !NONE
 
 ! !ARGUMENTS: 
    character(len=*),  intent(in)    :: segment_name

@@ -53,7 +53,7 @@ subroutine read_HYMAP_basin_mask(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%basinmaskfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] Basin mask map, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP basin mask map, ',&
            trim(HYMAP_struc(n)%basinmaskfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun

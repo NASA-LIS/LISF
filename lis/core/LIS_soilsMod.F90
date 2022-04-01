@@ -405,22 +405,17 @@ subroutine read_porosity(n)
      ios = nf90_inq_varid(nid,'POROSITY',porosityid)
      call LIS_verify(ios,'POROSITY field not found in the LIS param file')
 
-     allocate(porosity(LIS_rc%gnc(n),LIS_rc%gnr(n),3))
      allocate(LIS_soils(n)%porosity(LIS_rc%lnc(n),LIS_rc%lnr(n),3))
 
-     ios = nf90_get_var(nid,porosityid,porosity)
+     ios = nf90_get_var(nid,porosityid,LIS_soils(n)%porosity,&
+          start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+          LIS_nss_halo_ind(n,LIS_localPet+1),1/),&
+          count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),3/))
      call LIS_verify(ios,'Error in nf90_get_var in read_porosity')
      
      ios = nf90_close(nid)
      call LIS_verify(ios,'Error in nf90_close in read_porosity')
 
-     LIS_soils(n)%porosity(:,:,:) = &
-          porosity(LIS_ews_halo_ind(n,LIS_localPet+1):&         
-          LIS_ewe_halo_ind(n,LIS_localPet+1), &
-          LIS_nss_halo_ind(n,LIS_localPet+1): &
-          LIS_nse_halo_ind(n,LIS_localPet+1),:)
-     
-     deallocate(porosity)
   else
      write(LIS_logunit,*) '[ERR] porosity map: ',LIS_rc%paramfile(n), ' does not exist'
      write(LIS_logunit,*) '[ERR] program stopping ...'
@@ -506,24 +501,18 @@ subroutine read_soiltexture(n)
      allocate(LIS_soils(n)%texture(LIS_rc%lnc(n),LIS_rc%lnr(n), &
           LIS_rc%nsoiltypes))
 
-     allocate(txt(LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nsoiltypes))
-
      ios = nf90_inq_varid(nid,'TEXTURE',txtid)
      call LIS_verify(ios,'TEXTURE field not found in the LIS param file')
 
-     ios = nf90_get_var(nid,txtid,txt)
+     ios = nf90_get_var(nid,txtid,LIS_soils(n)%texture, &
+          start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+          LIS_nss_halo_ind(n,LIS_localPet+1),1/),&
+          count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%nsoiltypes/))
      call LIS_verify(ios,'Error in nf90_get_var in read_soiltexture')
 
      ios = nf90_close(nid)
      call LIS_verify(ios,'Error in nf90_close in read_soiltexture')
 
-     LIS_soils(n)%texture(:,:,:) = txt(&
-          LIS_ews_halo_ind(n,LIS_localPet+1):&         
-          LIS_ewe_halo_ind(n,LIS_localPet+1), &
-          LIS_nss_halo_ind(n,LIS_localPet+1): &
-          LIS_nse_halo_ind(n,LIS_localPet+1),:)
-
-     deallocate(txt)
   else
      write(LIS_logunit,*) '[ERR] soiltexture map: ',LIS_rc%paramfile(n), &
           ' does not exist'
@@ -616,38 +605,23 @@ subroutine read_soilfraction(n)
      allocate(LIS_soils(n)%clay(LIS_rc%lnc(n),LIS_rc%lnr(n), &
           LIS_rc%nsoilfbands))
 
-     allocate(sand(LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nsoilfbands))
-     allocate(clay(LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nsoilfbands))
-
      ios = nf90_inq_varid(nid,'SAND',sandid)
      call LIS_verify(ios,'SAND field not found in the LIS param file')
 
-     ios = nf90_get_var(nid,sandid,sand)
+     ios = nf90_get_var(nid,sandid,LIS_soils(n)%sand,&
+          start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+          LIS_nss_halo_ind(n,LIS_localPet+1),1/),&
+          count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%nsoilfbands/))
      call LIS_verify(ios,'Error in nf90_get_var in read_soilfraction')
-
-     LIS_soils(n)%sand(:,:,:) = sand(&
-          LIS_ews_halo_ind(n,LIS_localPet+1):&         
-          LIS_ewe_halo_ind(n,LIS_localPet+1), &
-          LIS_nss_halo_ind(n,LIS_localPet+1): &
-          LIS_nse_halo_ind(n,LIS_localPet+1),:)
-
-     deallocate(sand)
 
      ios = nf90_inq_varid(nid,'CLAY',clayid)
      call LIS_verify(ios,'CLAY field not found in the LIS param file')
 
-     ios = nf90_get_var(nid,clayid,clay)
+     ios = nf90_get_var(nid,clayid,LIS_soils(n)%clay,&
+          start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+          LIS_nss_halo_ind(n,LIS_localPet+1),1/),&
+          count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%nsoilfbands/))
      call LIS_verify(ios,'Error in nf90_get_var in read_soilfraction')
-
-     LIS_soils(n)%clay(:,:,:) = clay(&
-          LIS_ews_halo_ind(n,LIS_localPet+1):&         
-          LIS_ewe_halo_ind(n,LIS_localPet+1), &
-          LIS_nss_halo_ind(n,LIS_localPet+1): &
-          LIS_nse_halo_ind(n,LIS_localPet+1),:)
-
-     deallocate(clay)
-
-     allocate(soilfgrd(LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nsoilfbands))
 
      allocate(LIS_soils(n)%soilffgrd(LIS_rc%lnc(n),LIS_rc%lnr(n),&
           LIS_rc%nsoilfbands))
@@ -655,16 +629,11 @@ subroutine read_soilfraction(n)
      ios = nf90_inq_varid(nid,'SOILSFGRD',soilfgrdid)
      call LIS_verify(ios,'SOILSFGRD field not found in the LIS param file')
 
-     ios = nf90_get_var(nid,soilfgrdid,soilfgrd)
+     ios = nf90_get_var(nid,soilfgrdid,LIS_soils(n)%soilffgrd,&
+          start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+          LIS_nss_halo_ind(n,LIS_localPet+1),1/),&
+          count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%nsoilfbands/))
      call LIS_verify(ios,'Error in nf90_get_var in read_soilfraction')
-
-     LIS_soils(n)%soilffgrd(:,:,:) = soilfgrd(&
-          LIS_ews_halo_ind(n,LIS_localPet+1):&         
-          LIS_ewe_halo_ind(n,LIS_localPet+1), &
-          LIS_nss_halo_ind(n,LIS_localPet+1): &
-          LIS_nse_halo_ind(n,LIS_localPet+1),:)
-     
-     deallocate(soilfgrd)
 
      ios = nf90_close(nid)
      call LIS_verify(ios,'Error in nf90_close in read_soilfraction')

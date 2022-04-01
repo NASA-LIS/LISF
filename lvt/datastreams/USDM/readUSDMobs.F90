@@ -60,7 +60,8 @@ subroutine readUSDMObs(source)
   logical*1              :: lo(LVT_rc%lnc*LVT_rc%lnr)
   real                   :: varfield(LVT_rc%lnc,LVT_rc%lnr)
   real                   :: gridDesc(6)
-  real                   :: c1,r1,lat,lon, dres
+  integer                :: c1,r1
+  real                   :: lat,lon, dres
   real                   :: udef
   real                   :: cornerlat1, cornerlat2
   real                   :: cornerlon1, cornerlon2

@@ -23,6 +23,7 @@
 !   9 Sep 2011: David Mocko, changes for Noah3.3 in LIS6.1
 !  14 Jan 2014: David Mocko, reconfirmed Noah3.3 in LIS7.0
 !  30 Oct 2014: David Mocko, added Noah-3.6 into LIS-7
+!  05 Jan 2021: Augusto Getirana: 2-way coupling
 !
 ! !INTERFACE:
 subroutine noah36_main(n)
@@ -803,7 +804,11 @@ subroutine noah36_main(n)
                 noah36_struc(n)%noah(t)%frzx,                                      &
                 noah36_struc(n)%noah(t)%sndens, & !added for use in SCF DA, yliu 
                 noah36_struc(n)%noah(t)%lvcoef, tsoil,                           &
-                sfhead1rt, infxs1rt, etpnd1, noah36_struc(n)%snowfix)
+                sfhead1rt, infxs1rt, etpnd1, noah36_struc(n)%snowfix,&
+                !ag (05Jan2021)
+                noah36_struc(n)%noah(t)%rivsto,& ! in   - river storage [m/s] 
+                noah36_struc(n)%noah(t)%fldsto,& ! in   - flood storage [m/s]
+                noah36_struc(n)%noah(t)%fldfrc)  ! in   - flooded fraction [-]
 
            noah36_struc(n)%noah(t)%sca = sncovr ! EMK NUWRF
            noah36_struc(n)%noah(t)%z0_old = noah36_struc(n)%noah(t)%z0

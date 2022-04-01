@@ -136,6 +136,7 @@ contains
 !EOP  
     integer :: n,i
     integer                 :: status
+    character*3         :: fnest
 
     allocate(mos_struc(LIS_rc%nnest))
     call readmoscrd()
@@ -165,11 +166,12 @@ contains
 !------------------------------------------------------------------------
        call LIS_update_timestep(LIS_rc, n, mos_struc(n)%ts)
 
-       call LIS_registerAlarm("Mosaic model alarm",&
+       write(fnest,'(i3.3)') n    
+       call LIS_registerAlarm("Mosaic model alarm "//trim(fnest),&
             mos_struc(n)%ts,&
             mos_struc(n)%ts)
 
-       call LIS_registerAlarm("Mosaic restart alarm",&
+       call LIS_registerAlarm("Mosaic restart alarm "//trim(fnest),&
             mos_struc(n)%ts,&
             mos_struc(n)%rstInterval)
 

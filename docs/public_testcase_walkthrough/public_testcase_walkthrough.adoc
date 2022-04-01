@@ -1,0 +1,55 @@
+= LIS Public Testcase Walkthrough
+:revnumber: 0.4
+:revdate: October 14, 2021
+:revremark: Migrated to NASA-LIS/LISF repo
+:imagesdir: ./images
+:title-page:
+:title-page-background-image: image:lisf_logo.png[fit=none,pdfwidth=50%,position=top]
+:toc: macro
+:toclevels: 1
+:icons: font
+:source-highlighter: highlightjs        // source code highlighting engine
+:figure-caption!:                       // disable figure captions
+
+// github commit known to be compatible with this walkthrough
+:compatible-lisf-branch: support/lisf-public-7.3
+
+// urls
+:url-lis-website: https://lis.gsfc.nasa.gov
+:url-lis-testcases-page: {url-lis-website}/tests/lis
+:url-lis-testcases-data: https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/
+:url-lis-bootcamp: https://bmcandr.github.io/lis-bootcamp
+:url-lisf-docs: https://github.com/NASA-LIS/LISF/tree/master/docs
+:url-lisf-github: https://github.com/NASA-LIS/LISF
+:ssh-lisf-github: git@github.com:NASA-LIS/LISF.git
+
+// begin document
+
+toc::[]
+
+// page break (for PDF)
+<<<
+
+include::intro.adoc[]
+
+
+// page break (for PDF)
+<<<
+
+:leveloffset: +1
+
+include::setup.adoc[]
+
+include::step_1.adoc[]
+
+include::step_2.adoc[]
+
+include::step_3.adoc[]
+
+include::step_4.adoc[]
+
+include::step_5.adoc[]
+
+include::step_6.adoc[]
+
+include::step_7.adoc[]

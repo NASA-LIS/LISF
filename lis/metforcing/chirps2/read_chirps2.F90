@@ -40,7 +40,7 @@ subroutine read_chirps2( n, kk, findex, chirps_filename, year, mon, day, ferror 
   integer, intent(in)    :: mon
   integer, intent(in)    :: day
   integer, intent(inout) :: ferror   ! set to non-zero if there's an error
-  character(120), intent(in) :: chirps_filename
+  character(len=*), intent(in) :: chirps_filename
 
 ! !DESCRIPTION:
 !  For the given time, reads the CHIRPS 2.0 precipitation data, 

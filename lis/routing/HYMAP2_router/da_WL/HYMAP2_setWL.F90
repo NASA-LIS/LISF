@@ -110,12 +110,12 @@ subroutine HYMAP2_setWL(n, Routing_State)
 
         elevtn=dble(HYMAP2_routing_struc(n)%elevtn(i))
         fldhgt=dble(HYMAP2_routing_struc(n)%fldhgt(i,:))
-        fldstomax = dble(HYMAP2_routing_struc(n)%fldstomax(i,:))
+        fldstomax = dble(HYMAP2_routing_struc(n)%fldstomax(i,:,m))
         rivelv=dble(HYMAP2_routing_struc(n)%rivelv(i))
         grarea = dble(HYMAP2_routing_struc(n)%grarea(i))
-        rivstomax = dble(HYMAP2_routing_struc(n)%rivstomax(i))
+        rivstomax = dble(HYMAP2_routing_struc(n)%rivstomax(i,m))
         rivlen = dble(HYMAP2_routing_struc(n)%rivlen(i))
-        rivwth = dble(HYMAP2_routing_struc(n)%rivwth(i))
+        rivwth = dble(HYMAP2_routing_struc(n)%rivwth(i,m))
         elv = dble(HYMAP2_routing_struc(n)%sfcelv(i,m))
 
         call HYMAP2_get_volume_profile(&
@@ -130,6 +130,10 @@ subroutine HYMAP2_setWL(n, Routing_State)
              rivwth,&
              elv,&
              vol) 
+!        if(abs(HYMAP2_routing_struc(n)%rivsto(i,m)-real(vol)).gt.0.10) then 
+!           print*, 'set ',i,m,&
+!                HYMAP2_routing_struc(n)%rivsto(i,m),real(vol)
+!        endif
         HYMAP2_routing_struc(n)%rivsto(i,m) = real(vol)
         HYMAP2_routing_struc(n)%fldsto(i,m) = 0.0
      enddo

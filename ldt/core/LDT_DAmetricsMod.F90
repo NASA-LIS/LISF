@@ -53,7 +53,6 @@ contains
 ! !INTERFACE:   
   subroutine LDT_DAmetricsInit
 ! !USES: 
-    use ESMF
     use map_utils
     use LDT_coreMod,       only : LDT_rc, LDT_domain
     use LDT_timeMgrMod,    only : LDT_clock, LDT_calendar, LDT_seconds2time
@@ -64,6 +63,7 @@ contains
 !  This routine initializes data structures required for various statistics
 !  computations. 
 !EOP
+    integer, external :: LDT_create_subdirs 
     integer               :: nsize
     integer               :: n 
     character*100         :: fname_domain
@@ -107,7 +107,8 @@ contains
        allocate(xlat_b(LDT_rc%gnc_buf(n),LDT_rc%gnr_buf(n)))
        allocate(xlon_b(LDT_rc%gnc_buf(n),LDT_rc%gnr_buf(n)))
         
-       call system('mkdir -p '//(LDT_rc%odir))
+       !       call system('mkdir -p '//(LDT_rc%odir))
+       iret = LDT_create_subdirs(len_trim(LDT_rc%odir),trim(LDT_rc%odir))
        write(LDT_logunit,*) "Writing to LDT output directory: ",&
             trim(LDT_rc%odir)
        
@@ -795,13 +796,12 @@ contains
     deflate_level =NETCDF_deflate_level
 
     call date_and_time(date,time,zone,values)
-
     call LDT_verify(nf90_def_dim(LDT_rc%ftn_cdf,'ngrid',&
-         LDT_rc%glbngrid(n),dimID(1)))
+         LDT_rc%glbngrid(n),dimID(1)),'nf90_def_dim failed for ngrid')
     call LDT_verify(nf90_def_dim(LDT_rc%ftn_cdf,'ntimes',&
-         LDT_rc%cdf_ntimes,dimID(2)))
+         LDT_rc%cdf_ntimes,dimID(2)),'nf90_def_dim failed for ntimes')
     call LDT_verify(nf90_def_dim(LDT_rc%ftn_cdf,'nbins',&
-         LDT_rc%cdf_nbins,dimID(4)))
+         LDT_rc%cdf_nbins,dimID(4)),'nf90_def_dim failed for nbins')
 
     call LDT_verify(nf90_put_att(LDT_rc%ftn_cdf,NF90_GLOBAL,&
          "missing_value", -9999.0))          

@@ -309,6 +309,9 @@ module LIS_histDataMod
   public :: LIS_MOC_EWAT
   public :: LIS_MOC_EDIF
 
+  public :: LIS_MOC_DRSTO
+  public :: LIS_MOC_DROUT
+
   ! RTM
   public :: LIS_MOC_RTM_EMISSIVITY
   public :: LIS_MOC_RTM_TB
@@ -785,6 +788,11 @@ module LIS_histDataMod
    integer :: LIS_MOC_RNFDWI = -9999
    integer :: LIS_MOC_BSFDWI = -9999
    integer :: LIS_MOC_SURFWS = -9999
+
+   !Urban drainage and flood modeling
+   integer :: LIS_MOC_DRSTO = -9999
+   integer :: LIS_MOC_DROUT = -9999
+
 
    integer :: LIS_MOC_EWAT = -9999
    integer :: LIS_MOC_EDIF = -9999
@@ -5518,6 +5526,29 @@ contains
             n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
             model_patch=.true.)
     endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"UrbDrainStor:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "UrbDrainStor",&
+         "Urban_Drainage_Water_Storage",&
+         "Urban Drainage Water Storage",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_DRSTO,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"m3"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"UrbDrainDis:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "UrbDrainDis",&
+         "Urban_Drainage_Discharge",&
+         "Urban Drainage Discharge",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_DROUT,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"m3/s"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
 !   <- end of AWRAL addition -> 
    
     call ESMF_ConfigDestroy(modelSpecConfig,rc=rc)
@@ -5856,7 +5887,7 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, short_name, &
 !EOP
 
 ! !USES:
-   use ESMF 
+   !NONE
 
    implicit none
 

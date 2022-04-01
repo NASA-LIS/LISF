@@ -43,7 +43,7 @@ subroutine readcrd_stg4()
        call ESMF_ConfigGetAttribute(LIS_config, stg4_struc(n)%stg4dir,rc=rc)
 
        write(LIS_logunit,*) 'Using STAGEIV forcing'
-       write(LIS_logunit,*) 'STAGEIV forcing directory :', stg4_struc(n)%STG4DIR
+       write(LIS_logunit,*) 'STAGEIV forcing directory :', trim(stg4_struc(n)%STG4DIR)
 
     !- Setting observed precip times to zero to ensure data is read in
     !   at first time step

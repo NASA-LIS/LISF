@@ -103,7 +103,6 @@ contains
   subroutine geowrsi2_lsm_ini()
 
 ! !USES:
-   use ESMF
    use LIS_surfaceModelDataMod, only : LIS_sfmodel_struc
    use LIS_timeMgrMod
    use LIS_coreMod,  only : LIS_rc

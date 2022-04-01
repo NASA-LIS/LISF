@@ -50,6 +50,13 @@ module GCOMW_AMSR2L3SND_Mod
      integer                :: amsr2nc, amsr2nr
      type(proj_info)        :: amsr2proj
      integer, allocatable       :: n11(:)
+     integer, allocatable       :: n12(:)
+     integer, allocatable       :: n21(:)
+     integer, allocatable       :: n22(:)
+     real, allocatable          :: w11(:)
+     real, allocatable          :: w12(:)
+     real, allocatable          :: w21(:)
+     real, allocatable          :: w22(:)
      real,    allocatable       :: rlat(:)
      real,    allocatable       :: rlon(:)
 
@@ -76,6 +83,15 @@ module GCOMW_AMSR2L3SND_Mod
      integer             :: mod_mi
      real                :: mod_gridDesci(50)
      integer, allocatable    :: mod_n11(:)
+     integer, allocatable    :: mod_n12(:)
+     integer, allocatable    :: mod_n21(:)
+     integer, allocatable    :: mod_n22(:)
+     real, allocatable    :: mod_w11(:)
+     real, allocatable    :: mod_w12(:)
+     real, allocatable    :: mod_w21(:)
+     real, allocatable    :: mod_w22(:)
+     real, allocatable    :: mod_rlat(:)
+     real, allocatable    :: mod_rlon(:)
 
      real, allocatable   :: IMSdata_obs(:)
      real, allocatable   :: MODISdata_obs(:)
@@ -94,7 +110,6 @@ contains
 ! !INTERFACE: 
   subroutine GCOMW_AMSR2L3SND_setup(k, OBS_State, OBS_Pert_State)
 ! !USES: 
-    use ESMF
     use LIS_coreMod
     use LIS_timeMgrMod
     use LIS_historyMod
@@ -400,17 +415,38 @@ contains
        GCOMW_AMSR2L3SND_struc(n)%datares = 0.10
        
        allocate(GCOMW_AMSR2L3SND_struc(n)%n11(&
-            GCOMW_AMSR2L3SND_struc(n)%amsr2nc*GCOMW_AMSR2L3SND_struc(n)%amsr2nr))
+            LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+       allocate(GCOMW_AMSR2L3SND_struc(n)%n12(&
+            LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+       allocate(GCOMW_AMSR2L3SND_struc(n)%n21(&
+            LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+       allocate(GCOMW_AMSR2L3SND_struc(n)%n22(&
+            LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+       allocate(GCOMW_AMSR2L3SND_struc(n)%w11(&
+            LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+       allocate(GCOMW_AMSR2L3SND_struc(n)%w12(&
+            LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+       allocate(GCOMW_AMSR2L3SND_struc(n)%w21(&
+            LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+       allocate(GCOMW_AMSR2L3SND_struc(n)%w22(&
+            LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
        allocate(GCOMW_AMSR2L3SND_struc(n)%rlat(&
-            GCOMW_AMSR2L3SND_struc(n)%amsr2nc*GCOMW_AMSR2L3SND_struc(n)%amsr2nr))
+            LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
        allocate(GCOMW_AMSR2L3SND_struc(n)%rlon(&
-            GCOMW_AMSR2L3SND_struc(n)%amsr2nc*GCOMW_AMSR2L3SND_struc(n)%amsr2nr))
+            LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
           
-       call neighbor_interp_input_withgrid(gridDesci(:), & 
+       call bilinear_interp_input_withgrid(gridDesci(:), & 
             LIS_rc%obs_gridDesc(k,:),&
-            GCOMW_AMSR2L3SND_struc(n)%amsr2nc*GCOMW_AMSR2L3SND_struc(n)%amsr2nr, &
+            LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k),&
             GCOMW_AMSR2L3SND_struc(n)%rlat, GCOMW_AMSR2L3SND_struc(n)%rlon,&
-            GCOMW_AMSR2L3SND_struc(n)%n11)
+            GCOMW_AMSR2L3SND_struc(n)%n11,&
+            GCOMW_AMSR2L3SND_struc(n)%n12,&
+            GCOMW_AMSR2L3SND_struc(n)%n21,&
+            GCOMW_AMSR2L3SND_struc(n)%n22,&
+            GCOMW_AMSR2L3SND_struc(n)%w11,&
+            GCOMW_AMSR2L3SND_struc(n)%w12,&
+            GCOMW_AMSR2L3SND_struc(n)%w21,&
+            GCOMW_AMSR2L3SND_struc(n)%w22)
 
        call LIS_registerAlarm("AMSR2(GCOMW) read alarm",&
             86400.0, 86400.0)
@@ -509,13 +545,47 @@ contains
 !-----------------------------------------------------------------------------
 !   Use upscaling since SSMI data is coarser than MODIS
 !-----------------------------------------------------------------------------
-          allocate(GCOMW_AMSR2L3SND_struc(n)%mod_n11(modis_nc*modis_nr))
-          
-          call upscaleByAveraging_input(&
+          allocate(GCOMW_AMSR2L3SND_struc(n)%mod_rlat(&
+               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GCOMW_AMSR2L3SND_struc(n)%mod_rlon(&
+               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GCOMW_AMSR2L3SND_struc(n)%mod_n11(&
+               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GCOMW_AMSR2L3SND_struc(n)%mod_n12(&
+               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GCOMW_AMSR2L3SND_struc(n)%mod_n21(&
+               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GCOMW_AMSR2L3SND_struc(n)%mod_n22(&
+               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GCOMW_AMSR2L3SND_struc(n)%mod_w11(&
+               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GCOMW_AMSR2L3SND_struc(n)%mod_w12(&
+               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GCOMW_AMSR2L3SND_struc(n)%mod_w21(&
+               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(GCOMW_AMSR2L3SND_struc(n)%mod_w22(&
+               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+
+          call bilinear_interp_input_withgrid(&
                GCOMW_AMSR2L3SND_struc(n)%mod_gridDesci(:),&
-               LIS_rc%obs_gridDesc(k,:),modis_nc*modis_nr, &
-               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k), &
-               GCOMW_AMSR2L3SND_struc(n)%mod_n11)
+               LIS_rc%obs_gridDesc(k,:),&
+               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k),&
+               GCOMW_AMSR2L3SND_struc(n)%mod_rlat, &
+               GCOMW_AMSR2L3SND_struc(n)%mod_rlon,&
+               GCOMW_AMSR2L3SND_struc(n)%mod_n11,&
+               GCOMW_AMSR2L3SND_struc(n)%mod_n12,&
+               GCOMW_AMSR2L3SND_struc(n)%mod_n21,&
+               GCOMW_AMSR2L3SND_struc(n)%mod_n22,&
+               GCOMW_AMSR2L3SND_struc(n)%mod_w11,&
+               GCOMW_AMSR2L3SND_struc(n)%mod_w12,&
+               GCOMW_AMSR2L3SND_struc(n)%mod_w21,&
+               GCOMW_AMSR2L3SND_struc(n)%mod_w22)
+
+!          call upscaleByAveraging_input(&
+!               GCOMW_AMSR2L3SND_struc(n)%mod_gridDesci(:),&
+!               LIS_rc%obs_gridDesc(k,:),modis_nc*modis_nr, &
+!               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k), &
+!               GCOMW_AMSR2L3SND_struc(n)%mod_n11)
        endif
 
        if(GCOMW_AMSR2L3SND_struc(n)%usr_input_mask.eq.1) then 

@@ -55,7 +55,7 @@ subroutine read_HYMAP_flow_dir_y(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%flowdiryfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] Flowdiry map, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP flow direction y map, ',&
           trim(HYMAP_struc(n)%flowdiryfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun

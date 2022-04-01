@@ -91,7 +91,7 @@ end subroutine readSMOPSsmObs
 ! \label(read_SMOPS_data)
 !
 ! !INTERFACE:
-subroutine read_SMOPS_data(n, fname, smobs_ip) 
+subroutine read_SMOPS_data(n, fname, smobs_ip)
 !
 ! !USES:
 #if (defined USE_GRIBAPI)
@@ -112,7 +112,7 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
 !
 ! !ARGUMENTS:
 !
-   integer                       :: n 
+   integer                       :: n
    character (len=*)             :: fname
    real                          :: smobs_ip(LDT_rc%lnc(n)*LDT_rc%lnr(n))
    integer                       :: search_rad
@@ -152,16 +152,22 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
    integer        :: param_SMOS, param_SMOS_qa
    integer        :: param_AMSR2, param_AMSR2_qa
    integer        :: param_SMAP, param_SMAP_qa
-   integer*1,parameter :: err_threshold = 5 ! in percent
-   integer*1,parameter :: AMSR2_accept = b'00000001'
-   integer*2,parameter :: SMOS_accept1 = b'0000000000000000'
-   integer*2,parameter :: SMOS_accept2 = b'0000000000000001'
-   integer*2,parameter :: SMOS_accept3 = b'0000000000001000'
-   integer*2,parameter :: SMOS_accept4 = b'0000000000001001'
-   integer*2,parameter :: SMOS_accept5 = b'0000000010000000'
-   integer*2,parameter :: SMOS_accept6 = b'0000000010000001'
-   integer*2,parameter :: SMOS_accept7 = b'0000000010001000'
-   integer*2,parameter :: SMOS_accept8 = b'0000000010001001'
+   integer*1, parameter :: err_threshold = 5 ! in percent
+   ! EMK 21 Jul 2021...ISO Fortran restricts use of binary integer constants
+   ! to DATA statements and as a principal argument to an intrinsic function.
+   ! And gfortran 10 and 11 rejects their use in parameters.
+   ! So we replace with arrays here.
+   ! integer*1,parameter :: AMSR2_accept = b'00000001'
+   ! integer*2,parameter :: SMOS_accept1 = b'0000000000000000'
+   ! integer*2,parameter :: SMOS_accept2 = b'0000000000000001'
+   ! integer*2,parameter :: SMOS_accept3 = b'0000000000001000'
+   ! integer*2,parameter :: SMOS_accept4 = b'0000000000001001'
+   ! integer*2,parameter :: SMOS_accept5 = b'0000000010000000'
+   ! integer*2,parameter :: SMOS_accept6 = b'0000000010000001'
+   ! integer*2,parameter :: SMOS_accept7 = b'0000000010001000'
+   ! integer*2,parameter :: SMOS_accept8 = b'0000000010001001'
+   integer*1 :: AMSR2_accept(1)
+   integer*2 :: SMOS_accept(8)
    real           :: sm_ASCAT_A(SMOPSsmobs(n)%smopsnc*&
       SMOPSsmobs(n)%smopsnr)
    real           :: sm_ASCAT_A_t(SMOPSsmobs(n)%smopsnc*&
@@ -210,6 +216,30 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
    logical        :: smDataNotAvailable
 
    integer        :: ix, jx,c_s, c_e, r_s, r_e
+
+   ! EMK 21 Jul 2021...ISO Fortran restricts use of binary integer constants
+   ! to DATA statements and as a principal argument to an intrinsic function.
+   ! And gfortran 10 and 11 rejects their use in parameters.
+   ! So we replace with arrays here.
+   ! Old code for reference
+   !integer*1,parameter :: AMSR2_accept = b'00000001'
+   !integer*2,parameter :: SMOS_accept1 = b'0000000000000000'
+   !integer*2,parameter :: SMOS_accept2 = b'0000000000000001'
+   !integer*2,parameter :: SMOS_accept3 = b'0000000000001000'
+   !integer*2,parameter :: SMOS_accept4 = b'0000000000001001'
+   !integer*2,parameter :: SMOS_accept5 = b'0000000010000000'
+   !integer*2,parameter :: SMOS_accept6 = b'0000000010000001'
+   !integer*2,parameter :: SMOS_accept7 = b'0000000010001000'
+   !integer*2,parameter :: SMOS_accept8 = b'0000000010001001'
+   data AMSR2_accept / b'00000001' /
+   data SMOS_accept / b'0000000000000000', &
+        b'0000000000000001', &
+        b'0000000000001000', &
+        b'0000000000001001', &
+        b'0000000010000000', &
+        b'0000000010000001', &
+        b'0000000010001000', &
+        b'0000000010001001' /
 
 #if (defined USE_GRIBAPI)
    smDataNotAvailable = .false.
@@ -460,7 +490,7 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
                      SMOPSsmobs(n)%smopsnc)
                   if (sm_amsr2_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) .GT. 0.1 .and. &
                      sm_amsr2_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) .LT. 1) then
-                     write(101,'(I5, 2x, I5, 2x, I8, 2x, G0, 2x)'), &
+                     write(101,'(I5, 2x, I5, 2x, I8, 2x, G0, 2x)')  &
                         c, r, c+(r-1)*SMOPSsmobs(n)%smopsnc,      &
                         sm_amsr2_t(c+(r-1)*SMOPSsmobs(n)%smopsnc)
                   endif
@@ -484,7 +514,7 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
                   sm_amsr2_qa_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = &
                      int(sm_amsr2_qa(c+((SMOPSsmobs(n)%smopsnr-r+1)-1)*&
                      SMOPSsmobs(n)%smopsnc))
-                  !write(102,'(I5, 2x,I5, 2x, I8, 2x, f11.8,2x)'), &
+                  !write(102,'(I5, 2x,I5, 2x, I8, 2x, f11.8,2x)')  &
                   !      c, r ,c+(r-1)*SMOPSsmobs(n)%smopsnc,      &
                   !      sm_amsr2_qa_t(c+(r-1)*SMOPSsmobs(n)%smopsnc)
                enddo
@@ -702,14 +732,14 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
             do c=1, SMOPSsmobs(n)%smopsnc
                qavalue = sm_smos_qa_t(c+(r-1)*SMOPSsmobs(n)%smopsnc)
                if ( qavalue .ne. 9999 ) then
-                  if ( qavalue == SMOS_accept1 .or. &
-                     qavalue == SMOS_accept2 .or. &
-                     qavalue == SMOS_accept3 .or. &
-                     qavalue == SMOS_accept4 .or. &
-                     qavalue == SMOS_accept5 .or. &
-                     qavalue == SMOS_accept6 .or. &
-                     qavalue == SMOS_accept7 .or. &
-                     qavalue == SMOS_accept8 ) then
+                  if ( qavalue == SMOS_accept(1) .or. &
+                     qavalue == SMOS_accept(2) .or. &
+                     qavalue == SMOS_accept(3) .or. &
+                     qavalue == SMOS_accept(4) .or. &
+                     qavalue == SMOS_accept(5) .or. &
+                     qavalue == SMOS_accept(6) .or. &
+                     qavalue == SMOS_accept(7) .or. &
+                     qavalue == SMOS_accept(8) ) then
                      sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .true.
                   else
                      sm_smos_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = LDT_rc%udef
@@ -788,7 +818,7 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
                qavalue = sm_amsr2_qa_t(c+(r-1)*SMOPSsmobs(n)%smopsnc)
                if ( qavalue .ne. 9999 ) then
                   qaflags = get_byte1(qavalue)
-                  if (qaflags == AMSR2_accept ) then
+                  if (qaflags == AMSR2_accept(1) ) then
                      sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .true.
                   else
                      sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .false.
@@ -801,7 +831,7 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
 
                if (sm_amsr2_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) .GT. 0.1 .and. &
                   sm_amsr2_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) .LT. 1) then
-                  write(103,'(I5, 2x, I5, 2x, I8, 2x, F10.4, 2x)'), &
+                  write(103,'(I5, 2x, I5, 2x, I8, 2x, F10.4, 2x)')  &
                      c, r ,c+(r-1)*SMOPSsmobs(n)%smopsnc,   &
                      sm_amsr2_t(c+(r-1)*SMOPSsmobs(n)%smopsnc)
                endif
@@ -824,7 +854,7 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
             do c=1, LDT_rc%lnc(n)
                if (smobs_ip(c+(r-1)*LDT_rc%lnc(n)) .GT. 0.1 .and. &
                   smobs_ip(c+(r-1)*LDT_rc%lnc(n)) .LT. 1) then
-                  write(104,'(I5, 2x, I5, 2x, I8, 2x, F10.4 ,2x)'), &
+                  write(104,'(I5, 2x, I5, 2x, I8, 2x, F10.4 ,2x)')  &
                      c, r , c+(r-1)*LDT_rc%lnc(n),         &
                      smobs_ip(c+(r-1)*LDT_rc%lnc(n))
                endif

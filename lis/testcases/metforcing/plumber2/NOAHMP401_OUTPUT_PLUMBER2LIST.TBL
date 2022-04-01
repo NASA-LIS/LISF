@@ -1,0 +1,67 @@
+#short_name select? units signconv timeavg? min/max? std? vert.levels grib_id grib_scalefactor longname
+
+#Carbon variables
+NEE:          1  g/m2s   IN  1 0 0 1 256 1        # Net Ecosystem Exchange
+
+#Energy balance components
+Qle:          1  W/m2    UP   1 0 0 1 121 100      # Latent Heat Flux (W/m2)
+Qh:           1  W/m2    UP   1 0 0 1 122 100      # Sensible Heat Flux (W/m2)
+Qg:           1  W/m2    DN   1 0 0 1 155 100      # Ground Heat Flux (W/m2)
+Swnet:        1  W/m2    DN   1 0 0 1 111 100      # Net shortwave radiation (W/m2)
+Lwnet:        1  W/m2    DN   1 0 0 1 112 100      # Net longwave radiation (W/m2)
+Rnet:         0  W/m2    DN   1 0 1 1 256 100      # Total net radiation
+
+#Water balance components
+TotalPrecip:  1  kg/m2   DN   3 0 0 1  61 10000    # Total Precipitation rate (kg/m2s)
+Evap:         1  kg/m2s  UP   1 0 0 1 204 10000    # Total Evapotranspiration (kg/m2s)
+Qs:           1  kg/m2   OUT  3 0 0 1 235 10000    # Surface runoff (kg/m2s)
+Qsb:          1  kg/m2   OUT  3 0 0 1 234 10000    # Subsurface runoff (kg/m2s)
+RechToGW:     1  m       -    1 0 0 1 163 10000    # Recharge from soil to deep GW
+RechFromGW:   1  m       -    1 0 0 1 163 10000    # Recharge from shallow GW to soil
+Qsm:          1  kg/m2s  S2L  1 0 0 1 99  10000    # Snowmelt (kg/m2s)
+RHMin:        1  %       -    0 0 0 1 210 10       # Minimum 2-meter relative humidity (-)
+
+#Surface state variables
+AvgSurfT:     1  K       -    1 0 0 1  11 100      # Average surface temperature (K)
+Albedo:       1  %       -    1 0 0 1  84 1000     # Surface Albedo (-)
+SWE:          1  kg/m2   -    0 0 0 1  65 10000    # Snow Water Equivalent (kg/m2)
+BareSoilT:    1  K       -    1 0 0 1 147 100      # Temperature of bare soil (K)
+SnowTProf:    1  K       -    1 0 0 3 239 100      # Temperature of the snow pack (K)
+SnowT:        0  K       -    1 0 0 1 165 100      # Snow surface temperature (K)
+VegT:         1  K       -    1 0 0 1 146 100      # Vegetation canopy temperature (K)
+RadT:         1  K       -    1 0 0 1 149 100      # Surface radiative temperature (K)
+
+#Subsurface state variables
+SoilMoist:    1  m3/m3   -    1 0 0 4 201 1000     # Average layer soil moisture (kg/m2)
+SoilTemp:     1  K       -    1 0 0 4  85 1000     # Average layer soil temperature (K)
+SmLiqFrac:    1  m3/m3   -    0 0 0 4  10 1000     # Average layer fraction of liquid moisture (-)
+RelSMC:       1  -       -    0 0 0 4 194 1000     # Relative soil moisture
+
+#Evaporation components
+CanopInt:     1  kg/m2   -    0 0 0 1 207 1000     # Total canopy water storage (kg/m2)
+ECanop:       1  kg/m2s UP    1 0 0 1 200 10000    # Interception evaporation (kg/m2s)
+TVeg:         1  kg/m2s UP    1 0 0 1 210 10000    # Vegetation transpiration (kg/m2s)
+ESoil:        1  kg/m2s UP    1 0 0 1 199 10000    # Bare soil evaporation (kg/m2s)
+
+#Other hydrologic variables
+WaterTableD:  1   m     -     0 0 0 1 174 1        # Water table depth (m)
+#TWS:         0   mm    -     0 0 0 1 175 1 # Terrestrial water storage (mm)
+#GWS:         0   mm    -     0 0 0 1 176 1 # Ground water storage (mm)
+
+#Cold season processes
+Snowcover:    1  %       -    0 0 0 1 238 100      # Snow Cover (-) or percentage Snow Coverage
+SnowDepth:    1  m       -    0 0 0 1  66 1000     # Snow Depth (m)
+
+#Forcings
+Wind_f:       1  m/s     -    1 0 0 1 209 10000    # Near surface Wind (m/s)
+Tair_f:       1  K       -    1 1 0 1  11 10000    # Near surface air temperature
+Qair_f:       1  kg/kg   -    1 0 0 1  51 10000000 # Near surface specific humidity
+Psurf_f:      1  Pa      -    1 0 0 1   1 1000     # Surface pressure
+SWdown_f:     1  W/m2    DN   1 0 0 1 145 10000    # Surface incident shortwave radiation
+LWdown_f:     1  W/m2    DN   1 0 0 1 144 100000   # Surface incident longwave radiation
+
+#Parameters
+Landcover:    1  -       -    0 0 0 1 241 1        # Land cover
+Soiltype:     1  -       -    0 0 0 1 205 1        # Soil type
+Greenness:    1  -       -    0 0 0 1 193 1000     # Greenness
+LAI:          1  -       -    0 0 0 1 182 100      # LAI

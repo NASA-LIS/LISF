@@ -22,6 +22,7 @@ subroutine read_ecmwf_elev(n, findex, change)
   use LIS_metforcingMod, only : LIS_forc
   use LIS_fileIOMod,     only : LIS_read_param
   use LIS_logMod,         only : LIS_logunit, LIS_endrun
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use ecmwf_forcingMod,   only : ecmwf_struc
 
   implicit none
@@ -45,10 +46,10 @@ subroutine read_ecmwf_elev(n, findex, change)
   integer :: c,r,line1,line2,nc_dom,line
   integer :: glnc, glnr
   real :: go(LIS_rc%lnc(n),LIS_rc%lnr(n))
-  character(len=45) :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
 
   if ( trim(LIS_rc%met_ecor(findex)) .ne."none" ) then 
-     write(LIS_logunit,*) 'Reading the ECMWF elevation ',filename
+     write(LIS_logunit,*) 'Reading the ECMWF elevation ',trim(filename)
      if ( change == 0 ) then ! period 2001-2002
         call LIS_read_param(n,"ELEV_ECMWF_S23R4",go)
      elseif ( change == 1 ) then ! period 04/2002-02/2006

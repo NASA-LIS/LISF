@@ -52,6 +52,8 @@ module stg2_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -70,7 +72,7 @@ module stg2_forcingMod
      real               :: ts
      integer            :: ncol                 ! Number of cols
      integer            :: nrow                 ! Number of rows
-     character*40       :: stg2dir              ! STAGE II Directory
+     character(len=LIS_CONST_PATH_LEN) :: stg2dir ! STAGE II Directory
      real*8             :: stg2time             ! Nearest hourly instance of incoming file
      real*8             :: griduptime1          ! Designated time of STAGEII grid change
      logical            :: gridchange1          ! Flag for when grid change occurs

@@ -55,7 +55,6 @@ contains
   subroutine WGPBMRobsinit(i)
 ! 
 ! !USES: 
-    use ESMF
     use LVT_coreMod,    only : LVT_rc, LVT_config
     use LVT_histDataMod
     use LVT_timeMgrMod, only : LVT_calendar

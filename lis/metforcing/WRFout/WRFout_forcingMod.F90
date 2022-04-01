@@ -38,6 +38,7 @@ module WRFout_forcingMod
 !  \end{description}
 
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -54,7 +55,7 @@ module WRFout_forcingMod
 
   type, public    :: WRFout_type_dec
      integer      :: nest_id
-     character*80 :: WRFoutdir
+     character(len=LIS_CONST_PATH_LEN) :: WRFoutdir
      real         :: ts
      real*8       :: WRFouttime1,WRFouttime2
      integer      :: findtime1,findtime2

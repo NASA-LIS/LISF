@@ -61,7 +61,6 @@ contains
 ! !INTERFACE:
   subroutine LIS_glaciermodel_init()
 ! !USES:
-    use ESMF
     use LIS_surfaceModelDataMod
     use LIS_coreMod, only : LIS_rc, LIS_config, LIS_vecTile
     use LIS_logMod,       only : LIS_logunit, LIS_verify, & 

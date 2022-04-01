@@ -23,9 +23,7 @@
 module USAF_ImergHHMod
 
    ! Imports
-#ifdef ESMF_TRACE
    use ESMF
-#endif
 
    ! Defaults
    implicit none
@@ -987,7 +985,6 @@ contains
         yr,mo,da,hr,mn,filename)
 
       ! Imports
-      use ESMF
       use LIS_coreMod, only: LIS_masterproc
       use LIS_logMod, only:  LIS_logunit, LIS_abort, LIS_endrun, &
            LIS_alert
@@ -1129,7 +1126,6 @@ contains
 
       ! Modules
       use USAF_bratsethMod, only: USAF_ObsData, USAF_createObsData
-      use ESMF
       use LIS_timeMgrMod, only: LIS_julhr_date, LIS_calendar
 
       ! Defaults

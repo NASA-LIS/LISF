@@ -64,7 +64,6 @@ contains
 ! !INTERFACE: 
   subroutine GLASSlai_obsinit()
 ! !USES: 
-    use ESMF
     use LDT_coreMod
     use LDT_DAobsDataMod
     use LDT_timeMgrMod

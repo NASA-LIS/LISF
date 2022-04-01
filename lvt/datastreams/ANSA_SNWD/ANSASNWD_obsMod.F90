@@ -85,7 +85,6 @@ contains
   subroutine ANSASNWD_obsinit(i)
 ! 
 ! !USES: 
-    use ESMF
     use LVT_coreMod,    only : LVT_rc, LVT_config, LVT_domain
     use LVT_histDataMod
     use LVT_timeMgrMod

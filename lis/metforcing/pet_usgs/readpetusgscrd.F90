@@ -59,7 +59,7 @@ subroutine readpetusgscrd()
   do n=1, LIS_rc%nnest
      
     write(LIS_logunit,*) "Using USGS PET forcing"
-    write(LIS_logunit,*) "USGS PET forcing directory :: ",petusgs_struc(n)%petdir
+    write(LIS_logunit,*) "USGS PET forcing directory :: ",trim(petusgs_struc(n)%petdir)
     write(LIS_logunit,*) "USGS PET forcing file type :: ",petusgs_struc(n)%pettype
     write(LIS_logunit,*) " "
 

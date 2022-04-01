@@ -74,7 +74,6 @@ contains
   subroutine SMOSREX_obsinit(i)
 ! 
 ! !USES: 
-    use ESMF
     use LVT_coreMod
     use LVT_timeMgrMod
     use LVT_histDataMod

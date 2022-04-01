@@ -42,7 +42,7 @@ subroutine readcrd_HiMATGMU()
        call ESMF_ConfigGetAttribute(LIS_config, HiMATGMU_struc(n)%HiMATGMUdir,rc=rc)
 
        write(LIS_logunit,*) '[INFO] Using HiMAT GMU forcing'
-       write(LIS_logunit,*) '[INFO] HiMAT GMU forcing directory :', HiMATGMU_struc(n)%HIMATGMUDIR
+       write(LIS_logunit,*) '[INFO] HiMAT GMU forcing directory :', trim(HiMATGMU_struc(n)%HIMATGMUDIR)
 
     !- Setting observed precip times to zero to ensure data is read in
     !   at first time step

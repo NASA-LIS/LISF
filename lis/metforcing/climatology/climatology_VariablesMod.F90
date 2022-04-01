@@ -302,7 +302,7 @@ contains
 !
 ! !ARGUMENTS: 
    integer, intent(in) :: findex          ! Forcing index
-   character(140), intent(in) :: filename ! Forcing filename path
+   character(len=*), intent(in) :: filename ! Forcing filename path
    integer, intent(in) :: inc, inr        ! Input forcing cols, rows
    integer, intent(in) :: ntimes          ! Input number of daily time pts 
 !

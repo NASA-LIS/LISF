@@ -96,7 +96,7 @@ subroutine noahmp401_gettws(n, LSM_State)
      soilm3(t) = NOAHMP401_struc(n)%noahmp401(t)%smc(3)
      soilm4(t) = NOAHMP401_struc(n)%noahmp401(t)%smc(4)
      gws(t)    = NOAHMP401_struc(n)%noahmp401(t)%wa
-     swe(t) = noahmp401_struc(n)%noahmp401(t)%sneqv/1000.0 ! to m
+     swe(t) = noahmp401_struc(n)%noahmp401(t)%sneqv
      snod(t) = noahmp401_struc(n)%noahmp401(t)%snowh
   enddo
 

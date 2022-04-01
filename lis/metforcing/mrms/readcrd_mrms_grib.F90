@@ -47,7 +47,7 @@ subroutine readcrd_mrms_grib()
     call ESMF_ConfigGetAttribute(LIS_config, mrms_grib_struc(n)%mrms_grib_dir,rc=rc)
 
     write(LIS_logunit,*) 'Using MRMS forcing'
-    write(LIS_logunit,*) 'MRMS forcing directory: ', mrms_grib_struc(n)%MRMS_GRIB_DIR
+    write(LIS_logunit,*) 'MRMS forcing directory: ', trim(mrms_grib_struc(n)%MRMS_GRIB_DIR)
 
     !- Setting observed precip times to zero to ensure data is read in
     !   at first time step

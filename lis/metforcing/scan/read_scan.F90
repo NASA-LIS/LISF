@@ -22,6 +22,7 @@ subroutine read_scan(n,ftn,findex,order)
   use LIS_logMod, only         : LIS_logunit
   use LIS_metforcingMod,  only : LIS_forc
   use LIS_coreMod, only        : LIS_rc,LIS_domain
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use scan_forcingMod,    only : scan_struc
 
   implicit none
@@ -62,7 +63,7 @@ subroutine read_scan(n,ftn,findex,order)
   real :: pcp(scan_struc(n)%nstns),tmppcp,dum
   real :: varfield(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   real :: varfield1(LIS_rc%lnc(n),LIS_rc%lnr(n))
-  character*80 :: scan_filename
+  character(len=LIS_CONST_PATH_LEN) :: scan_filename
   character(len=500) :: line
   integer :: yr,num,hr,mon,day,mint,sec
   logical :: file_exists
@@ -74,7 +75,7 @@ subroutine read_scan(n,ftn,findex,order)
      write(scan_filename,'(i4,a,i4,i2.2,a)')scan_struc(n)%stnid(i),'_',&
           LIS_rc%yr,LIS_rc%mo,'.txt'
      scan_filename = trim(scan_struc(n)%scandir)//'/'//trim(scan_filename)
-     write(LIS_logunit,*) 'Reading SCAN file ',scan_filename
+     write(LIS_logunit,*) 'Reading SCAN file ',trim(scan_filename)
      inquire(file=scan_filename,exist=file_exists)
      if(file_exists) then 
         open(ftn,file=scan_filename,form='formatted',status='old')

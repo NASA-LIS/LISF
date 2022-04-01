@@ -39,7 +39,7 @@ subroutine readcrd_agrradps()
   do n=1,LIS_rc%nnest
     call ESMF_ConfigGetAttribute(LIS_config,agrradps_struc(n)%agrpsdir,rc=rc)
     write(LIS_logunit,*) 'AGRRADPS forcing directory :',&
-                         agrradps_struc(n)%agrpsdir
+                         trim(agrradps_struc(n)%agrpsdir)
   enddo
 
 

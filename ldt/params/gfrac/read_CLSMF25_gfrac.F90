@@ -14,10 +14,12 @@
 !
 ! !REVISION HISTORY:
 !  25 Jul 2005: Sujay Kumar;  Initial Specification
-!  12 Feb 2013: K. Arsenault; Modified for use with CLSM F2.5 greenness parameter
+!  12 Feb 2013: K. Arsenault; Modified for use with CLSM F2.5 greenness
+!               parameter
+!  19 Jul 2021: Eric Kemp: Removed "optional" third argument (not used).
 !
 ! !INTERFACE:
- subroutine read_CLSMF25_gfrac(n, array, maskarray)
+subroutine read_CLSMF25_gfrac(n, array)
 
 ! !USES:
   use ESMF
@@ -29,15 +31,18 @@
 
   implicit none
 
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n    ! nest index
   real,    intent(inout) :: array(LDT_rc%lnc(n),LDT_rc%lnr(n),12)
-  real, optional, intent(inout) :: maskarray(LDT_rc%lnc(n),LDT_rc%lnr(n))
+  !EMK...Disabled maskarray argument, which is not used and is not
+  !properly handled by "upstream" calling code.  This can be restored
+  !in the future.
+  !real, optional, intent(inout) :: maskarray(LDT_rc%lnc(n),LDT_rc%lnr(n))
 
 ! !DESCRIPTION:
-!  This subroutine retrieves the greenness fraction climatology for the 
+!  This subroutine retrieves the greenness fraction climatology for the
 !  specified month and returns the values in the latlon projection
-!  
+!
 !  The arguments are:
 !  \begin{description}
 !  \item[n]
@@ -48,9 +53,9 @@
 !   optional input field of reading in the mask array
 !  \end{description}
 !
-!EOP      
+!EOP
   integer :: ftn
-  integer :: c,r,k
+  integer :: c, r, k
   integer :: month
   integer :: glpnr, glpnc, gr, gc
   real    :: param_grid(20)
@@ -62,29 +67,31 @@
   real, allocatable :: tmparray1(:,:,:)
 ! __________________________________________________________
 
-   array = LDT_rc%udef
+  array = LDT_rc%udef
 
 !- Determine global/complete parameter domain number of points:
-   param_grid(:) = LDT_rc%mask_gridDesc(n,:)
-   glpnr = nint((param_grid(7)-param_grid(4))/param_grid(10)) + 1
-   glpnc = nint((param_grid(8)-param_grid(5))/param_grid(9)) + 1
+  param_grid(:) = LDT_rc%mask_gridDesc(n,:)
+  glpnr = nint((param_grid(7)-param_grid(4))/param_grid(10)) + 1
+  glpnc = nint((param_grid(8)-param_grid(5))/param_grid(9)) + 1
 
   inquire(file=trim(LDT_gfrac_struc(n)%gfracFile), exist=file_exists)
-  if(.not.file_exists) then 
-     write(LDT_logunit,*) "Greenness map ",trim(LDT_gfrac_struc(n)%gfracFile)," not found"
-     write(LDT_logunit,*) "Program stopping ..."
+  if (.not. file_exists) then
+     write(LDT_logunit,*) "[ERR] Greenness map ", &
+          trim(LDT_gfrac_struc(n)%gfracFile)," not found"
+     write(LDT_logunit,*) "[ERR] Program stopping ..."
      call LDT_endrun
   endif
 
   ftn = LDT_getNextUnitNumber()
-  open(ftn, file=trim(LDT_gfrac_struc(n)%gfracFile), form="unformatted", status="old" )
-  
+  open(ftn, file=trim(LDT_gfrac_struc(n)%gfracFile), form="unformatted", &
+       status="old" )
+
 ! Read greenness from global file:
   allocate( tmparray1(glpnc,glpnr,12) )
   tmparray1 = LDT_rc%udef
 
   do month = 1, 12
-     read( ftn ) ( tmpreal(k), k=1,LDT_rc%nmaskpts(n) )
+     read( ftn ) ( tmpreal(k), k=1, LDT_rc%nmaskpts(n) )
 
      k = 0
 ! - For future subsetted domains:
@@ -92,37 +99,37 @@
 !        do c = 1, LDT_rc%lnc(n)
 !           if( maskarray(c,r) > 0 ) then
 ! - For now - complete domains:
-      do r = 1, glpnr
-         do c = 1, glpnc
-            if( LDT_rc%global_mask(c,r) > 0. ) then
+     do r = 1, glpnr
+        do c = 1, glpnc
+           if ( LDT_rc%global_mask(c,r) > 0. ) then
 
               k = k + 1
-              if( tmpreal(k) < 0 ) then
-!                 array(c,r,month) = LDT_rc%udef
+              if ( tmpreal(k) < 0 ) then
+                 !array(c,r,month) = LDT_rc%udef
                  tmparray1(c,r,month) = LDT_rc%udef
               else
-!                 array(c,r,month) = tmpreal(k)
+                 !array(c,r,month) = tmpreal(k)
                  tmparray1(c,r,month) = tmpreal(k)
               endif
-            endif
-!            if( array(c,r,month) < 0.01 ) array(c,r,month) = 0.01 
-            if( tmparray1(c,r,month) < 0.01 ) tmparray1(c,r,month) = 0.01 
-         end do
-      enddo
+           endif
+           !if ( array(c,r,month) < 0.01 ) array(c,r,month) = 0.01
+           if ( tmparray1(c,r,month) < 0.01 ) tmparray1(c,r,month) = 0.01
+        end do
+     enddo
 
    !- Subset domain:
-      do r = 1, LDT_rc%lnr(n)
-         do c = 1, LDT_rc%lnc(n)
-            call ij_to_latlon(LDT_domain(n)%ldtproj,float(c),float(r),&
-                             rlat(c,r),rlon(c,r))
-            gr = nint((rlat(c,r)-param_grid(4))/param_grid(10))+1
-            gc = nint((rlon(c,r)-param_grid(5))/param_grid(9))+1
-            array(c,r,month) = tmparray1(gc,gr,month)
-         end do
-      end do
+     do r = 1, LDT_rc%lnr(n)
+        do c = 1, LDT_rc%lnc(n)
+           call ij_to_latlon(LDT_domain(n)%ldtproj, float(c), float(r), &
+                rlat(c,r), rlon(c,r))
+           gr = nint((rlat(c,r)-param_grid(4))/param_grid(10)) + 1
+           gc = nint((rlon(c,r)-param_grid(5))/param_grid(9)) + 1
+           array(c,r,month) = tmparray1(gc,gr,month)
+        end do
+     end do
 
-   end do  ! End month loop
-   deallocate( tmparray1 )
+  end do  ! End month loop
+  deallocate(tmparray1)
 
   call LDT_releaseUnitNumber(ftn)
 
