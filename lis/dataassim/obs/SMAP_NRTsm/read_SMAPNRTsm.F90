@@ -8,7 +8,6 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
-#include "LIS_plugins.h"
 
 !BOP
 ! !ROUTINE: read_NASASMAPNRTsm
@@ -502,6 +501,7 @@ subroutine read_SMAPNRT_data(n, k, fname, smobs_inp, time)
 
   use LIS_coreMod,  only : LIS_rc, LIS_domain, LIS_masterproc
   use LIS_logMod, only: LIS_logunit, LIS_alert
+  use LIS_pluginIndices, only: LIS_agrmetrunId
   use LIS_timeMgrMod
   use SMAPNRTsm_Mod, only : SMAPNRTsm_struc
 #if (defined USE_HDF5) 
@@ -570,7 +570,8 @@ subroutine read_SMAPNRT_data(n, k, fname, smobs_inp, time)
   integer                        :: status,ios
   character(len=100) :: message(20)
   integer :: alert_number
-
+  integer :: m
+  
   ! EMK 20220324 Added fault tolerance
   file_id = -1
   sm_gr_id = -1
@@ -789,16 +790,18 @@ subroutine read_SMAPNRT_data(n, k, fname, smobs_inp, time)
   if (file_id > -1) call h5fclose_f(file_id, status)
   call h5close_f(status)
 
-#ifdef MF_AGRMET
-  message(:) = ''
-  message(1) = '[ERR] Program:  LIS'
-  message(2) = '  Routine:  read_SMAPNRT_data.'
-  message(3) = '  Problem reading SMAPNRT data from ' // trim(fname)
-  alert_number = alert_number + 1
-  if(LIS_masterproc) then
-     call lis_alert('SMAPNRT              ', alert_number, message )
-  end if
-#endif
+  do m = 1, LIS_rc%nmetforc
+     if (trim(LIS_rc%metforc(m)) .eq. LIS_agrmetrunID) then
+        message(:) = ''
+        message(1) = '[ERR] Program:  LIS'
+        message(2) = '  Routine:  read_SMAPNRT_data.'
+        message(3) = '  Problem reading SMAPNRT data from ' // trim(fname)
+        alert_number = alert_number + 1
+        if(LIS_masterproc) then
+           call lis_alert('SMAPNRT              ', alert_number, message )
+        end if
+     end if
+  end do
 
 #endif
 
