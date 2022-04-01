@@ -2375,6 +2375,7 @@ Bottom temperature resolution (dy):      0.2500
 ....
 Noah-MP PBL Height Value:     900.    # in meters
 ....
+===Miguez-Macho and Fan (MMF) Groundwater Parameters
 
 If selecting the Community Land Model (4.5 version), the following config entires are also required.
 
