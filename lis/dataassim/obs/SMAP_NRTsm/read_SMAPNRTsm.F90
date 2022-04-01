@@ -8,6 +8,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
+#include "LIS_plugins.h"
+
 !BOP
 ! !ROUTINE: read_NASASMAPNRTsm
 ! \label{read_NASASMAPNRTsm}
@@ -498,8 +500,8 @@ subroutine read_SMAPNRT_data(n, k, fname, smobs_inp, time)
 ! 
 ! !USES:   
 
-  use LIS_coreMod,  only : LIS_rc, LIS_domain
-  use LIS_logMod, only: LIS_logunit
+  use LIS_coreMod,  only : LIS_rc, LIS_domain, LIS_masterproc
+  use LIS_logMod, only: LIS_logunit, LIS_alert
   use LIS_timeMgrMod
   use SMAPNRTsm_Mod, only : SMAPNRTsm_struc
 #if (defined USE_HDF5) 
@@ -566,6 +568,8 @@ subroutine read_SMAPNRT_data(n, k, fname, smobs_inp, time)
   real                           :: smobs_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
 
   integer                        :: status,ios
+  character(len=100) :: message(20)
+  integer :: alert_number
 
   ! EMK 20220324 Added fault tolerance
   file_id = -1
@@ -784,6 +788,17 @@ subroutine read_SMAPNRT_data(n, k, fname, smobs_inp, time)
   if (sm_gr_id > -1) call h5gclose_f(sm_gr_id, status)
   if (file_id > -1) call h5fclose_f(file_id, status)
   call h5close_f(status)
+
+#ifdef MF_AGRMET
+  message(:) = ''
+  message(1) = '[ERR] Program:  LIS'
+  message(2) = '  Routine:  read_SMAPNRT_data.'
+  message(3) = '  Problem reading SMAPNRT data from ' // trim(fname)
+  alert_number = alert_number + 1
+  if(LIS_masterproc) then
+     call lis_alert('SMAPNRT              ', alert_number, message )
+  end if
+#endif
 
 #endif
 
