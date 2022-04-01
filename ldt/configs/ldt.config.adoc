@@ -2385,6 +2385,16 @@ NOTE Currently, Noah-MP.4.0.1 is the only model that supports the MMF groundwate
 
 `Process Noah-MP-4.0.1 MMF groundwater parameters: .true.`
 
+Directories where 1km FEDEPTH, RECHARGE, RIVERBED, EQWTD, and GMTED2010 data on GEOGRID tiles are located. 
+
+.Example _ldt.config_ entry
+....
+MMF transmissivity dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/f/
+MMF climatological recharge dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/recharge/
+MMF riverbed elevation dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/riverbed/
+MMF equilibrium water table depth dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/wtd/
+MMF HGT_M dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/topo_gmted2010_30s/
+....
 If selecting the Community Land Model (4.5 version), the following config entires are also required.
 
 `CLM45 parameter mode:` specifies whether to "`readin`" the CLM-4.5 parameters from pre-processed files. Currently, only the "`readin`" option is available.
