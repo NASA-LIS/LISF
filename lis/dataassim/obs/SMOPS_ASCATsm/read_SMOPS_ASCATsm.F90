@@ -8,6 +8,7 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
+#include "LIS_plugins.h"
 !BOP
 ! !ROUTINE: read_SMOPS_ASCATsm
 ! \label{read_SMOPS_ASCATsm}
@@ -396,7 +397,7 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
 #if(defined USE_GRIBAPI)
   use grib_api
 #endif
-  use LIS_coreMod,  only : LIS_rc, LIS_domain
+  use LIS_coreMod,  only : LIS_rc, LIS_domain, LIS_masterproc
   use LIS_logMod
   use LIS_timeMgrMod
   use SMOPS_ASCATsm_Mod, only : SMOPS_ASCATsm_struc
@@ -488,6 +489,8 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
   real            :: upgmt
   real*8          :: file_time
   integer :: imsg
+  character(len=100) :: message(20)
+  integer :: alert_number
 
 #if(defined USE_GRIBAPI)
   ! When we are reading the 6-hourly datasets, we read the file HR+6
@@ -559,7 +562,8 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
              '[WARN] Problem reading parameterNumber from ', trim(fname)
         call grib_release(igrib, iret)
         call grib_close_file(ftn)
-        return
+        imsg = -1
+        exit
      end if
 
      var_found = .false.
@@ -572,7 +576,8 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
            write(LIS_logunit,*)'[WARN] Problem reading values for ASCAT_A'
            call grib_release(igrib, iret)
            call grib_close_file(ftn)
-           return
+           imsg = -1
+           exit
         end if
         do r = 1, SMOPS_ASCATsm_struc(n)%nr
            do c = 1, SMOPS_ASCATsm_struc(n)%nc
@@ -593,7 +598,8 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
            write(LIS_logunit,*)'[WARN] Problem reading QA values for ASCAT_A'
            call grib_release(igrib, iret)
            call grib_close_file(ftn)
-           return
+           imsg = -1
+           exit
         end if
         do r = 1, SMOPS_ASCATsm_struc(n)%nr
            do c = 1, SMOPS_ASCATsm_struc(n)%nc
@@ -614,7 +620,8 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
            write(LIS_logunit,*)'[WARN] Problem reading hr values for ASCAT_A'
            call grib_release(igrib, iret)
            call grib_close_file(ftn)
-           return
+           imsg = -1
+           exit
         end if
      endif
 
@@ -628,7 +635,8 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
            write(LIS_logunit,*)'[WARN] Problem reading mn values for ASCAT_A'
            call grib_release(igrib, iret)
            call grib_close_file(ftn)
-           return
+           imsg = -1
+           exit
         end if
      endif
 
@@ -642,7 +650,8 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
            write(LIS_logunit,*)'[WARN] Problem reading values for ASCAT_B'
            call grib_release(igrib, iret)
            call grib_close_file(ftn)
-           return
+           imsg = -1
+           exit
         end if
         do r = 1, SMOPS_ASCATsm_struc(n)%nr
            do c = 1, SMOPS_ASCATsm_struc(n)%nc
@@ -663,7 +672,8 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
            write(LIS_logunit,*)'[WARN] Problem reading QA values for ASCAT_B'
            call grib_release(igrib, iret)
            call grib_close_file(ftn)
-           return
+           imsg = -1
+           exit
         end if
         do r = 1, SMOPS_ASCATsm_struc(n)%nr
            do c = 1, SMOPS_ASCATsm_struc(n)%nc
@@ -684,7 +694,8 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
            write(LIS_logunit,*)'[WARN] Problem reading hr values for ASCAT_B'
            call grib_release(igrib, iret)
            call grib_close_file(ftn)
-           return
+           imsg = -1
+           exit
         end if
      endif
 
@@ -698,7 +709,8 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
            write(LIS_logunit,*)'[WARN] Problem reading mn values for ASCAT_B'
            call grib_release(igrib, iret)
            call grib_close_file(ftn)
-           return
+           imsg = -1
+           exit
         end if
      endif
 
@@ -706,14 +718,28 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
      if (iret .ne. 0) then
         write(LIS_logunit,*)'[WARN] Problem releasing from ', trim(fname)
         call grib_close_file(ftn)
-        return
+        imsg = -1
+        exit
      end if
   enddo
 
   call grib_close_file(ftn)
 
-  if (imsg .eq. 0) then
-     write(LIS_logunit,*)'[WARN] No GRIB messages found in ', trim(fname)
+  if (imsg .eq. 0 .or. imsg .eq. -1) then
+     if (imsg .eq. 0) then
+        write(LIS_logunit,*)'[WARN] No GRIB messages found in ', trim(fname)
+     end if
+#ifdef MF_AGRMET
+     message(:) = ''
+     message(1) = '[ERR] Program:  LIS'
+     message(2) = '  Routine:  read_SMOPS_ASCATsm_data.'
+     message(3) = '  Problem reading SMOPS_ASCATsm data from ' // trim(fname)
+     alert_number = alert_number + 1
+     if(LIS_masterproc) then
+        call lis_alert('SMOPS_ASCATsm              ', alert_number, message )
+     end if
+#endif
+     return
   end if
 
   ! Table 3.6.1 – SMOPS soil moisture product Quality Assessment (QA) bits.
