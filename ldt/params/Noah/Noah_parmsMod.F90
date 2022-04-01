@@ -131,6 +131,7 @@ contains
    character*50       :: slopetype_proj
    character*50       :: MMF_proj
    type(MMF_BCsReader):: MBR_FDEPTH, MBR_RECH, MBR_RIVERBED, MBR_WTD, MBR_HGT
+   logical            :: run_mmf = .false.
 
 ! _____________________________________________________________________
 
@@ -156,25 +157,30 @@ contains
          call set_param_attribs(Noah_struc(n)%pblh,"NOAHMP36_PBLH",&
                units="m", &
                full_name="Noah-MP LSM planetary boundary height")
-         
-      call set_param_attribs(Noah_struc(n)%fdepth,"MMF_FDEPTH",&
-            units="m", &
-            full_name="transmissivity e-folding depth")
-      call set_param_attribs(Noah_struc(n)%rechclim,"MMF_RECHCLIM",&
-            units="mm", &
-            full_name="climatological recharge")
-      call set_param_attribs(Noah_struc(n)%riverbed,"MMF_RIVERBED",&
-            units="m", &
-            full_name="riverbed elevation")
-      call set_param_attribs(Noah_struc(n)%eqwtd,"MMF_EQWTD",&
-            units="m", &
-            full_name="equilibrium water table depth")
-      call set_param_attribs(Noah_struc(n)%areaxy,"AREAXY",&
-            units="km^2", &
-            full_name="area of the grid cell")
-      call set_param_attribs(Noah_struc(n)%hgtm,"MMF_HGTM",&
-            units="m MSL", &
-            full_name="GMTED2010 30-arc-second topography height")      
+
+         if (LDT_rc%lsm.eq."Noah-MP.4.0.1") then
+            call ESMF_ConfigGetAttribute(LDT_config, run_mmf,label='Process Noah-MP-4.0.1 MMF groundwater parameters:', DEFAULT= .false., rc=rc)
+            if (run_mmf) then
+               call set_param_attribs(Noah_struc(n)%fdepth,"MMF_FDEPTH",&
+                    units="m", &
+                    full_name="transmissivity e-folding depth")
+               call set_param_attribs(Noah_struc(n)%rechclim,"MMF_RECHCLIM",&
+                    units="mm", &
+                    full_name="climatological recharge")
+               call set_param_attribs(Noah_struc(n)%riverbed,"MMF_RIVERBED",&
+                    units="m", &
+                    full_name="riverbed elevation")
+               call set_param_attribs(Noah_struc(n)%eqwtd,"MMF_EQWTD",&
+                    units="m", &
+                    full_name="equilibrium water table depth")
+               call set_param_attribs(Noah_struc(n)%areaxy,"AREAXY",&
+                    units="km^2", &
+                    full_name="area of the grid cell")
+               call set_param_attribs(Noah_struc(n)%hgtm,"MMF_HGTM",&
+                    units="m MSL", &
+                    full_name="GMTED2010 30-arc-second topography height")
+            endif
+         endif
       endif
    enddo
 
@@ -488,108 +494,110 @@ contains
    endif
 
    !== MMF parameters
-   
-   check_data = .false.
-  
-   write(LDT_logunit,*)" - - - - - - - MMF Groundwater Parameters - - - - - - - - - -"
-   
-   do n = 1,LDT_rc%nnest
+   RUN_MMF_SCHME: if (run_mmf) then
       
-      call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_fdepth_dir, label='MMF transmissivity dir:', rc=rc)
-      call LDT_verify(rc,"MMF Groundwater parameter directory not defined")
-      check_data = .true.
-      call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_rechclim_dir, label='MMF climatological recharge dir:',       RC=RC)
-      call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_riverbed_dir, label='MMF riverbed elevation dir:',            RC=RC)
-      call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_eqwtd_dir   , label='MMF equilibrium water table depth dir:', RC=RC)
-      call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_hgtm_dir    , label='MMF HGT_M dir:',                         RC=RC)
+      check_data = .false.
       
-   end do
-
-   if (check_data) then
-
-      call ESMF_ConfigGetAttribute(LDT_config, MMF_proj, label='MMF map projection:', rc=rc) ; call LDT_verify(rc,"MMF map projection not defined.")
-      
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_FDEPTH%neighbor%fillradius,label='FDEPTH neighborhood radius:', rc=rc); call LDT_verify(rc,"FDEPTH neighborhood radius not defined.")    
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_FDEPTH%gap_fill%filltype,  label='FDEPTH fill option:', rc=rc); call LDT_verify(rc,"FDEPTH fill option not defined.")         
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_FDEPTH%gap_fill%fillradius,label='FDEPTH fill radius:', rc=rc); call LDT_verify(rc,"FDEPTH fill radius not defined.")  
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_FDEPTH%gap_fill%fillvalue, label='FDEPTH fill value:' , rc=rc); call LDT_verify(rc,"FDEPTH fill value not defined." )  
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_FDEPTH%gap_fill%watervalue,label='FDEPTH water value:', DEFAULT= 100., rc=rc)
-      call LDT_verify(rc,"FDEPTH water value not defined." )
-      
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_RECH%neighbor%fillradius,label='RECHCLIM neighborhood radius:', rc=rc); call LDT_verify(rc,"RECHCLIM neighborhood radius not defined.")          
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_RECH%gap_fill%filltype,  label='RECHCLIM fill option:',rc=rc); call LDT_verify(rc,"RECHCLIM fill option not defined.")       
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_RECH%gap_fill%fillradius,label='RECHCLIM fill radius:',rc=rc); call LDT_verify(rc,"RECHCLIM fill radius not defined.") 
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_RECH%gap_fill%fillvalue, label='RECHCLIM fill value:' ,rc=rc); call LDT_verify(rc,"RECHCLIM fill value not defined." )
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_RECH%gap_fill%watervalue,label='RECHCLIM water value:',DEFAULT=0., rc=rc)
-      call LDT_verify(rc,"RECHCLIM water value not defined." )
-
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%neighbor%fillradius,label='RIVERBED neighborhood radius:', rc=rc); call LDT_verify(rc,"RIVERBED neighborhood radius not defined.")          
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%filltype,  label='RIVERBED fill option:',rc=rc); call LDT_verify(rc,"RIVERBED fill option not defined.")     
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%fillradius,label='RIVERBED fill radius:',rc=rc); call LDT_verify(rc,"RIVERBED fill radius not defined.")  
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%fillvalue, label='RIVERBED fill value:' ,rc=rc); call LDT_verify(rc,"RIVERBED fill value not defined." )
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%watervalue,label='RIVERBED water value:',DEFAULT=-100., rc=rc)
-      call LDT_verify(rc,"RIVERBED water value not defined." )
-
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_WTD%neighbor%fillradius,label='EQWTD neighborhood radius:', rc=rc); call LDT_verify(rc,"EQWTD neighborhood radius not defined.")    
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_WTD%gap_fill%filltype,  label='EQWTD fill option:',rc=rc); call LDT_verify(rc,"EQWTD fill option not defined.")               
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_WTD%gap_fill%fillradius,label='EQWTD fill radius:',rc=rc); call LDT_verify(rc,"EQWTD fill radius not defined.")  
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_WTD%gap_fill%fillvalue, label='EQWTD fill value:' ,rc=rc); call LDT_verify(rc,"EQWTD fill value not defined." )
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_WTD%gap_fill%watervalue,label='EQWTD water value:',DEFAULT = 0., rc=rc)
-      call LDT_verify(rc,"EQWTD fill value not defined." )
-
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_HGT%neighbor%fillradius,label='HGT_M neighborhood radius:', rc=rc); call LDT_verify(rc,"HGT_M neighborhood radius not defined.")    
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_HGT%gap_fill%filltype,  label='HGT_M fill option:',rc=rc); call LDT_verify(rc,"HGT_M fill option not defined.")               
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_HGT%gap_fill%fillradius,label='HGT_M fill radius:',rc=rc); call LDT_verify(rc,"HGT_M fill radius not defined.")  
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_HGT%gap_fill%fillvalue, label='HGT_M fill value:' ,rc=rc); call LDT_verify(rc,"HGT_M fill value not defined." )
-      call ESMF_ConfigGetAttribute(LDT_config, MBR_HGT%gap_fill%watervalue,label='HGT_M water value:',DEFAULT=-100.,rc=rc)
-      call LDT_verify(rc,"HGT_M fill value not defined." )
+      write(LDT_logunit,*)" - - - - - - - MMF Groundwater Parameters - - - - - - - - - -"
       
       do n = 1,LDT_rc%nnest
          
-         allocate (Noah_struc(n)%fdepth%value   (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%fdepth%num_bins  ))
-         allocate (Noah_struc(n)%rechclim%value (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%rechclim%num_bins))
-         allocate (Noah_struc(n)%riverbed%value (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%riverbed%num_bins))
-         allocate (Noah_struc(n)%eqwtd%value    (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%eqwtd%num_bins   ))
-         allocate (Noah_struc(n)%areaxy%value   (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%eqwtd%num_bins   ))
-         allocate (Noah_struc(n)%hgtm%value     (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%hgtm%num_bins    ))
+         call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_fdepth_dir, label='MMF transmissivity dir:', rc=rc)
+         call LDT_verify(rc,"MMF Groundwater parameter directory not defined")
+         check_data = .true.
+         call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_rechclim_dir, label='MMF climatological recharge dir:',       RC=RC)
+         call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_riverbed_dir, label='MMF riverbed elevation dir:',            RC=RC)
+         call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_eqwtd_dir   , label='MMF equilibrium water table depth dir:', RC=RC)
+         call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_hgtm_dir    , label='MMF HGT_M dir:',                         RC=RC)
          
-         call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_transform, label='MMF spatial transform:', rc=rc)
-         call LDT_verify(rc,"MMF spatial transform method is not defined in the config file.")
-        
-         ! Read in index files in GEOGRID directories and create mapping
- 
-         call MBR_FDEPTH%mi     (n, MMF_proj, Noah_struc(n)%mmf_fdepth_dir)
-         call MBR_RECH%mi       (n, MMF_proj, Noah_struc(n)%mmf_rechclim_dir, MBR_FDEPTH%MMF_mapping)
-         call MBR_RIVERBED%mi   (n, MMF_proj, Noah_struc(n)%mmf_riverbed_dir, MBR_FDEPTH%MMF_mapping)
-         call MBR_WTD%mi        (n, MMF_proj, Noah_struc(n)%mmf_eqwtd_dir   , MBR_FDEPTH%MMF_mapping)
-         call MBR_HGT%mi        (n, MMF_proj, Noah_struc(n)%mmf_hgtm_dir    , MBR_FDEPTH%MMF_mapping)
-
-         ! Read in variables fields
-         
-         call MBR_FDEPTH%mr   (n, trim(Noah_struc(n)%mmf_fdepth_dir  ), Noah_struc(n)%fdepth%value  , Noah_struc(n)%mmf_transform)
-         call MBR_RECH%mr     (n, trim(Noah_struc(n)%mmf_rechclim_dir), Noah_struc(n)%rechclim%value, Noah_struc(n)%mmf_transform)
-         call MBR_RIVERBED%mr (n, trim(Noah_struc(n)%mmf_riverbed_dir), Noah_struc(n)%riverbed%value, Noah_struc(n)%mmf_transform)
-         call MBR_WTD%mr      (n, trim(Noah_struc(n)%mmf_eqwtd_dir   ), Noah_struc(n)%eqwtd%value   , Noah_struc(n)%mmf_transform)
-         call MBR_HGT%mr      (n, trim(Noah_struc(n)%mmf_hgtm_dir    ), Noah_struc(n)%hgtm%value    , Noah_struc(n)%mmf_transform)
-                  
-         ! write areaXY
-
-         call cell_area (n,Noah_struc(n)%areaxy%value)
-                 
       end do
       
-   endif
-
+      if (check_data) then
+         
+         call ESMF_ConfigGetAttribute(LDT_config, MMF_proj, label='MMF map projection:', rc=rc) ; call LDT_verify(rc,"MMF map projection not defined.")
+         
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_FDEPTH%neighbor%fillradius,label='FDEPTH neighborhood radius:', rc=rc); call LDT_verify(rc,"FDEPTH neighborhood radius not defined.")    
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_FDEPTH%gap_fill%filltype,  label='FDEPTH fill option:', rc=rc); call LDT_verify(rc,"FDEPTH fill option not defined.")         
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_FDEPTH%gap_fill%fillradius,label='FDEPTH fill radius:', rc=rc); call LDT_verify(rc,"FDEPTH fill radius not defined.")  
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_FDEPTH%gap_fill%fillvalue, label='FDEPTH fill value:' , rc=rc); call LDT_verify(rc,"FDEPTH fill value not defined." )  
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_FDEPTH%gap_fill%watervalue,label='FDEPTH water value:', DEFAULT= 100., rc=rc)
+         call LDT_verify(rc,"FDEPTH water value not defined." )
+         
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_RECH%neighbor%fillradius,label='RECHCLIM neighborhood radius:', rc=rc); call LDT_verify(rc,"RECHCLIM neighborhood radius not defined.")          
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_RECH%gap_fill%filltype,  label='RECHCLIM fill option:',rc=rc); call LDT_verify(rc,"RECHCLIM fill option not defined.")       
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_RECH%gap_fill%fillradius,label='RECHCLIM fill radius:',rc=rc); call LDT_verify(rc,"RECHCLIM fill radius not defined.") 
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_RECH%gap_fill%fillvalue, label='RECHCLIM fill value:' ,rc=rc); call LDT_verify(rc,"RECHCLIM fill value not defined." )
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_RECH%gap_fill%watervalue,label='RECHCLIM water value:',DEFAULT=0., rc=rc)
+         call LDT_verify(rc,"RECHCLIM water value not defined." )
+         
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%neighbor%fillradius,label='RIVERBED neighborhood radius:', rc=rc); call LDT_verify(rc,"RIVERBED neighborhood radius not defined.")          
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%filltype,  label='RIVERBED fill option:',rc=rc); call LDT_verify(rc,"RIVERBED fill option not defined.")     
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%fillradius,label='RIVERBED fill radius:',rc=rc); call LDT_verify(rc,"RIVERBED fill radius not defined.")  
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%fillvalue, label='RIVERBED fill value:' ,rc=rc); call LDT_verify(rc,"RIVERBED fill value not defined." )
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%watervalue,label='RIVERBED water value:',DEFAULT=-100., rc=rc)
+         call LDT_verify(rc,"RIVERBED water value not defined." )
+         
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_WTD%neighbor%fillradius,label='EQWTD neighborhood radius:', rc=rc); call LDT_verify(rc,"EQWTD neighborhood radius not defined.")    
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_WTD%gap_fill%filltype,  label='EQWTD fill option:',rc=rc); call LDT_verify(rc,"EQWTD fill option not defined.")               
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_WTD%gap_fill%fillradius,label='EQWTD fill radius:',rc=rc); call LDT_verify(rc,"EQWTD fill radius not defined.")  
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_WTD%gap_fill%fillvalue, label='EQWTD fill value:' ,rc=rc); call LDT_verify(rc,"EQWTD fill value not defined." )
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_WTD%gap_fill%watervalue,label='EQWTD water value:',DEFAULT = 0., rc=rc)
+         call LDT_verify(rc,"EQWTD fill value not defined." )
+         
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_HGT%neighbor%fillradius,label='HGT_M neighborhood radius:', rc=rc); call LDT_verify(rc,"HGT_M neighborhood radius not defined.")    
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_HGT%gap_fill%filltype,  label='HGT_M fill option:',rc=rc); call LDT_verify(rc,"HGT_M fill option not defined.")               
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_HGT%gap_fill%fillradius,label='HGT_M fill radius:',rc=rc); call LDT_verify(rc,"HGT_M fill radius not defined.")  
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_HGT%gap_fill%fillvalue, label='HGT_M fill value:' ,rc=rc); call LDT_verify(rc,"HGT_M fill value not defined." )
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_HGT%gap_fill%watervalue,label='HGT_M water value:',DEFAULT=-100.,rc=rc)
+         call LDT_verify(rc,"HGT_M fill value not defined." )
+         
+         do n = 1,LDT_rc%nnest
+            
+            allocate (Noah_struc(n)%fdepth%value   (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%fdepth%num_bins  ))
+            allocate (Noah_struc(n)%rechclim%value (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%rechclim%num_bins))
+            allocate (Noah_struc(n)%riverbed%value (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%riverbed%num_bins))
+            allocate (Noah_struc(n)%eqwtd%value    (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%eqwtd%num_bins   ))
+            allocate (Noah_struc(n)%areaxy%value   (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%eqwtd%num_bins   ))
+            allocate (Noah_struc(n)%hgtm%value     (LDT_rc%lnc(n),LDT_rc%lnr(n),Noah_struc(n)%hgtm%num_bins    ))
+            
+            call ESMF_ConfigGetAttribute(LDT_config, Noah_struc(n)%mmf_transform, label='MMF spatial transform:', rc=rc)
+            call LDT_verify(rc,"MMF spatial transform method is not defined in the config file.")
+            
+            ! Read in index files in GEOGRID directories and create mapping
+            
+            call MBR_FDEPTH%mi     (n, MMF_proj, Noah_struc(n)%mmf_fdepth_dir)
+            call MBR_RECH%mi       (n, MMF_proj, Noah_struc(n)%mmf_rechclim_dir, MBR_FDEPTH%MMF_mapping)
+            call MBR_RIVERBED%mi   (n, MMF_proj, Noah_struc(n)%mmf_riverbed_dir, MBR_FDEPTH%MMF_mapping)
+            call MBR_WTD%mi        (n, MMF_proj, Noah_struc(n)%mmf_eqwtd_dir   , MBR_FDEPTH%MMF_mapping)
+            call MBR_HGT%mi        (n, MMF_proj, Noah_struc(n)%mmf_hgtm_dir    , MBR_FDEPTH%MMF_mapping)
+            
+            ! Read in variables fields
+            
+            call MBR_FDEPTH%mr   (n, trim(Noah_struc(n)%mmf_fdepth_dir  ), Noah_struc(n)%fdepth%value  , Noah_struc(n)%mmf_transform)
+            call MBR_RECH%mr     (n, trim(Noah_struc(n)%mmf_rechclim_dir), Noah_struc(n)%rechclim%value, Noah_struc(n)%mmf_transform)
+            call MBR_RIVERBED%mr (n, trim(Noah_struc(n)%mmf_riverbed_dir), Noah_struc(n)%riverbed%value, Noah_struc(n)%mmf_transform)
+            call MBR_WTD%mr      (n, trim(Noah_struc(n)%mmf_eqwtd_dir   ), Noah_struc(n)%eqwtd%value   , Noah_struc(n)%mmf_transform)
+            call MBR_HGT%mr      (n, trim(Noah_struc(n)%mmf_hgtm_dir    ), Noah_struc(n)%hgtm%value    , Noah_struc(n)%mmf_transform)
+            
+            ! write areaXY
+            
+            call cell_area (n,Noah_struc(n)%areaxy%value)
+            
+         end do       
+      endif
+   endif RUN_MMF_SCHME
+   
  end subroutine NoahParms_init
 
  ! --------------------------------------------------------------------
  
  subroutine NoahParms_writeHeader(n,ftn,dimID)
 
-    integer   :: n 
+    integer   :: n, rc 
     integer   :: ftn
     integer   :: dimID(3)
-
+    logical   :: run_mmf = .false.
+    
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
              Noah_struc(n)%tbot)
     
@@ -601,21 +609,25 @@ contains
        call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
             Noah_struc(n)%pblh)
     endif
-
-    call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%fdepth   ) 
-    call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%rechclim )
-    call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%riverbed )
-    call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%eqwtd    )
-    call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%areaxy   )
-    call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%hgtm     )     
-
+    if (LDT_rc%lsm.eq."Noah-MP.4.0.1") then
+       call ESMF_ConfigGetAttribute(LDT_config, run_mmf,label='Process Noah-MP-4.0.1 MMF groundwater parameters:', DEFAULT= .false., rc=rc)
+       if (run_mmf) then
+          call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%fdepth   ) 
+          call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%rechclim )
+          call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%riverbed )
+          call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%eqwtd    )
+          call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%areaxy   )
+          call LDT_writeNETCDFdataHeader(n,ftn,dimID,Noah_struc(n)%hgtm     )     
+       endif
+    endif
   end subroutine NoahParms_writeHeader
 
   subroutine NoahParms_writeData(n,ftn)
 
-    integer   :: n 
+    integer   :: n, rc 
     integer   :: ftn
-
+    logical   :: run_mmf = .false.
+    
     call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%tbot)
 
     call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%slopetype)
@@ -624,14 +636,17 @@ contains
         (LDT_rc%lsm.eq."Noah-MP.4.0.1")) then
         call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%pblh)
     endif
-
-    call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%fdepth   )
-    call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%rechclim )
-    call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%riverbed )
-    call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%eqwtd    )
-    call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%areaxy   )
-    call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%hgtm     )    
-    
+    if (LDT_rc%lsm.eq."Noah-MP.4.0.1") then
+       call ESMF_ConfigGetAttribute(LDT_config, run_mmf,label='Process Noah-MP-4.0.1 MMF groundwater parameters:', DEFAULT= .false., rc=rc)
+       if (run_mmf) then
+          call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%fdepth   )
+          call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%rechclim )
+          call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%riverbed )
+          call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%eqwtd    )
+          call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%areaxy   )
+          call LDT_writeNETCDFdata(n,ftn,Noah_struc(n)%hgtm     )    
+       endif
+    endif
   end subroutine NoahParms_writeData
 
 
