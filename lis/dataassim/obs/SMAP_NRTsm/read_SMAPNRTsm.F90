@@ -568,9 +568,9 @@ subroutine read_SMAPNRT_data(n, k, fname, smobs_inp, time)
   real                           :: smobs_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
 
   integer                        :: status,ios
-  character(len=100) :: message(20)
+  character(len=512) :: message(20)
   integer :: alert_number
-  integer :: m
+
   
   ! EMK 20220324 Added fault tolerance
   file_id = -1
@@ -790,18 +790,17 @@ subroutine read_SMAPNRT_data(n, k, fname, smobs_inp, time)
   if (file_id > -1) call h5fclose_f(file_id, status)
   call h5close_f(status)
 
-  do m = 1, LIS_rc%nmetforc
-     if (trim(LIS_rc%metforc(m)) .eq. LIS_agrmetrunID) then
-        message(:) = ''
-        message(1) = '[ERR] Program:  LIS'
-        message(2) = '  Routine:  read_SMAPNRT_data.'
-        message(3) = '  Problem reading SMAPNRT data from ' // trim(fname)
-        alert_number = alert_number + 1
-        if(LIS_masterproc) then
-           call lis_alert('SMAPNRT              ', alert_number, message )
-        end if
+  if (trim(LIS_rc%runmode) .eq. LIS_agrmetrunID) then
+     write(LIS_logunit,*)'EMK: HERE'
+     message(:) = ''
+     message(1) = '[ERR] Program:  LIS'
+     message(2) = '  Routine:  read_SMAPNRT_data.'
+     message(3) = '  Problem reading SMAPNRT data from ' // trim(fname)
+     alert_number = alert_number + 1
+     if(LIS_masterproc) then
+        call lis_alert('SMAPNRT              ', alert_number, message )
      end if
-  end do
+  end if
 
 #endif
 
