@@ -487,7 +487,7 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
   integer         :: updoy,yr1,mo1,da1,hr1,mn1,ss1,offset
   real            :: upgmt
   real*8          :: file_time
-
+  integer :: imsg
 
 #if(defined USE_GRIBAPI)
   ! When we are reading the 6-hourly datasets, we read the file HR+6
@@ -537,7 +537,6 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
         'as SMOPS version 3.0'
   endif
 
-
   call grib_open_file(ftn, trim(fname), 'r', iret)
   if (iret .ne. 0) then
      write(LIS_logunit,*) '[WARN] Could not open file: ', trim(fname)
@@ -545,12 +544,14 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
   endif
   call grib_multi_support_on
 
+  imsg = 0
   do
      call grib_new_from_file(ftn, igrib, iret)
 
      if ( iret == GRIB_END_OF_FILE ) then
         exit
      endif
+     imsg = imsg + 1
 
      call grib_get(igrib, 'parameterNumber', param_num, iret)
      if (iret .ne. 0) then
@@ -710,6 +711,10 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
   enddo
 
   call grib_close_file(ftn)
+
+  if (imsg .eq. 0) then
+     write(LIS_logunit,*)'[WARN] No GRIB messages found in ', trim(fname)
+  end if
 
   ! Table 3.6.1 – SMOPS soil moisture product Quality Assessment (QA) bits.
   ! (d) ASCAT Soil Moisture Product QA
