@@ -7,7 +7,7 @@ This section describes the options in the _ldt.config_ file.
 Not all options described here are available in the public version of LDT.
 
 [[ssec-driveropts]]
-=== Overall driver options
+===Overall driver options
 
 `LDT running mode:` specifies the running mode used in LDT. Acceptable values are:
 
@@ -2375,7 +2375,11 @@ Bottom temperature resolution (dy):      0.2500
 ....
 Noah-MP PBL Height Value:     900.    # in meters
 ....
-===Miguez-Macho and Fan (MMF) Groundwater Parameters
+Miguez-Macho and Fan (MMF) Groundwater Parameters
+NOTE: Currently, Noah-MP.4.0.1 is the only model that supports the MMF groundwater scheme.
+`Process Noah-MP-4.0.1 MMF groundwater parameters:` is the switch to turn on processing MMF parameters.
+.Example _ldt.config_ entry
+`Process Noah-MP-4.0.1 MMF groundwater parameters: .true.`
 
 If selecting the Community Land Model (4.5 version), the following config entires are also required.
 
