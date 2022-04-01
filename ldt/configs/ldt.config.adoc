@@ -2409,30 +2409,35 @@ MMF spatial transform: average
 # WPS uses a two-step gap procedure to fill gaps: (1) average from the immediate neighborhood (average_4pt), (2) search and fill
 
 # WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing = 100.
+# FDEPTH: Transmissivity e-folding depth [m]
 FDEPTH neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
 FDEPTH fill option: neighbor
 FDEPTH fill radius: 1200 # Number of #pixels to search for neighbor
 FDEPTH fill value: 100.
 
 # WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing = -1.
+# RECHCLIM: Climatological recharge [mm]
 RECHCLIM neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
 RECHCLIM fill option: neighbor
 RECHCLIM fill radius: 1200 # Number of #pixels to search for neighbor
 RECHCLIM fill value: -1.
 
 # WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
+# RIVERBED Riverbed elevation [m]
 RIVERBED neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
 RIVERBED fill option: neighbor
 RIVERBED fill radius: 1200 # Number of #pixels to search for neighbor
 RIVERBED fill value: 0.
 
 # WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
+# EQWTD: Equilibrium water table depth [m]
 EQWTD neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
 EQWTD fill option: neighbor
 EQWTD fill radius: 1200 # Number of #pixels to search for neighbor
 EQWTD fill value: 0.
 
 # WPS interp_option = gmted2010_30s:average_gcell(4.0)+four_pt+average_4pt ; fill_missing=0.
+HGT_M: GMTED2010 30-arc-second topography height [m from MSL]
 HGT_M neighborhood radius: 0 # average neighborhood points for the first of WPS's two-step gap filling procedure
 HGT_M fill option: neighbor
 HGT_M fill radius: 1200 # Number of #pixels to search for neighbor
