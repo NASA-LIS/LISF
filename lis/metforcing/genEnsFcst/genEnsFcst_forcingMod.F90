@@ -25,6 +25,8 @@ module genEnsFcst_forcingMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
+  
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 !
   implicit none
 
@@ -50,13 +52,14 @@ module genEnsFcst_forcingMod
      real*8         :: findtime1, metforc_time1   ! File 1 flag and time (LIS)
      real*8         :: findtime2, metforc_time2   ! File 2 flag and time (LIS)
 
-     character(120) :: directory        ! Directory path of where files reside
+     character(len=LIS_CONST_PATH_LEN) :: directory        ! Directory path of where files reside
      character(50)  :: proj_name        ! Projection name
      integer        :: proj_index       ! Projection type index
  
      logical        :: reset_flag       ! Reset parameters flag
      logical        :: zterp_flags      !(:) Allocatable later?
 
+     character(20)  :: fcst_type        ! Forecast type name
      integer        :: max_ens_members  ! Max number of forecast ensemble members
 
      real, allocatable :: metdata1(:,:,:)  ! Metforcing data from file/bookend 1
@@ -98,7 +101,7 @@ contains
   integer  :: varid
   real     :: gridDesci(50)
   logical  :: file_exists
-  character(140) :: fullfilename
+  character(len=LIS_CONST_PATH_LEN) :: fullfilename
 
   integer  :: da, hr, mn, ss
   character*50 :: timeInc
@@ -112,8 +115,6 @@ contains
   character(40)  :: varname
   character(100) :: zterpflag_string
 
-  character(20) :: fcst_type
-
   integer :: tdel, tintv_validhr, hindex, tindex
   integer, dimension(12) :: mon_numdays
   data mon_numdays /31,28,31,30,31,30,31,31,30,31,30,31/
@@ -126,9 +127,9 @@ contains
    ! Forecast mode -- NOT Available at this time for this forcing reader:
    if( LIS_rc%forecastMode.eq.1 ) then
       write(LIS_logunit,*)'[ERR] Currently the generic ensemble forecast reader'
-      write(LIS_logunit,*)'[ERR]  is not set up to run in an ESP-type forecast run mode.'
-      write(LIS_logunit,*)'[ERR]  May be added in future releases.'
-      write(LIS_logunit,*)'[ERR]  LIS-ESP forecast run-time ending.'
+      write(LIS_logunit,*)'[ERR] is not set up to run in an ESP-type forecast run mode.'
+      write(LIS_logunit,*)'[ERR] May be added in future releases.'
+      write(LIS_logunit,*)'[ERR] LIS-ESP forecast run-time ending.'
       call LIS_endrun()
    endif
 
@@ -150,23 +151,24 @@ contains
    call readcrd_genEnsFcst()
 
    write(LIS_logunit,*) "[INFO] -- Obtain ensemble forecast dataset parameters -- "
+   write(LIS_logunit,*) "[INFO] -- Base forecast dataset name: ", &
+      genensfcst_struc%fcst_type
 
    ! Locate starting genEnsFcst file: 
    fullfilename = "none"
- ! MODIFY LATER ...
-   fcst_type = "GEOS5"
-   call get_genEnsFcst_filename( fcst_type, LIS_rc%syr, LIS_rc%smo, &
-              1, LIS_rc%syr, LIS_rc%smo, &
-              genensfcst_struc%directory, fullfilename  )
+   call get_genEnsFcst_filename( genensfcst_struc%fcst_type, &
+      LIS_rc%syr, LIS_rc%smo, &
+      1, LIS_rc%syr, LIS_rc%smo, &
+      genensfcst_struc%directory, fullfilename )
 
    inquire( file=trim(fullfilename), exist=file_exists)
    if( file_exists ) then
       write(LIS_logunit,*) "[INFO] Parameters from forcing genEnsFcst file: ", &
             trim(fullfilename)
    else
-      write(LIS_logunit,*) "[WARN] Missing ensemble forecast file: ", &
+      write(LIS_logunit,*) "[ERR] Missing ensemble forecast file: ", &
             trim(fullfilename)
-      write(LIS_logunit,*) "[WARN] LIS endrun being called."
+      write(LIS_logunit,*) "[ERR] LIS endrun being called."
       call LIS_endrun()
    endif
 
@@ -182,10 +184,12 @@ contains
    ! Number of time points in monthly forecast file ("ntimes"):
    genensfcst_struc%ntimes = 0
    ios = nf90_inq_dimid(nid,"time",ntimesId)
-   call LIS_verify(ios,'Error in nf90_inq_dimid(time) in init_genEnsFcst')
+   call LIS_verify(ios, &
+      'Error in nf90_inq_dimid(time) in init_genEnsFcst')
    ios = nf90_inquire_dimension(nid, ntimesId, len=genensfcst_struc%ntimes)
-   call LIS_verify(ios,'Error in nf90_inquire_dimension(time) in init_genEnsFcst')
-   write(LIS_logunit,*) "[INFO] Ensemble forecast month number of timesteps: ", &
+   call LIS_verify(ios, &
+      'Error in nf90_inquire_dimension(time) in init_genEnsFcst')
+   write(LIS_logunit,*) "[INFO] Ensemble forecast month number of timesteps: ",&
         genensfcst_struc%ntimes
 
    ! Determine number of time intervals in a day, starting by month, and
@@ -205,17 +209,20 @@ contains
    genensfcst_struc%nr = 0
    ios = nf90_inq_dimid(nid,"longitude",ncId)
 !   ios = nf90_inq_dimid(nid,"lon",ncId)
-   call LIS_verify(ios,'Error in nf90_inq_dimid(longitude_nc) in init_genEnsFcst')
+   call LIS_verify(ios, &
+      'Error in nf90_inq_dimid(longitude_nc) in init_genEnsFcst')
    ios = nf90_inq_dimid(nid,"latitude",nrId)
 !   ios = nf90_inq_dimid(nid,"lat",nrId)
-   call LIS_verify(ios,'Error in nf90_inq_dimid(latitude_nr) in init_genEnsFcst')
+   call LIS_verify(ios, &
+      'Error in nf90_inq_dimid(latitude_nr) in init_genEnsFcst')
 
    ios = nf90_inquire_dimension(nid, ncId, len=genensfcst_struc%nc)  
    call LIS_verify(ios,'Error in nf90_inquire_dimension(nc) in init_genEnsFcst')
    ios = nf90_inquire_dimension(nid, nrId, len=genensfcst_struc%nr)  
    call LIS_verify(ios,'Error in nf90_inquire_dimension(nr) in init_genEnsFcst')
-   write(LIS_logunit,*) "[INFO] Ensemble forecast dataset Forcing Number of Cols, Rows: ", &
-                        genensfcst_struc%nc, genensfcst_struc%nr
+   write(LIS_logunit,*) &
+      "[INFO] Ensemble forecast dataset Forcing Number of Cols, Rows: ", &
+      genensfcst_struc%nc, genensfcst_struc%nr
 
    ! Obtain the lat and lon fields:
    allocate(lat(genensfcst_struc%nr))
@@ -223,37 +230,45 @@ contains
 
    ios = nf90_inq_varid(nid,'latitude',latId)
 !   ios = nf90_inq_varid(nid,'lat',latId)
-   call LIS_verify(ios,'latitude var field not found in the metforcing genEnsFcst file')
+   call LIS_verify(ios, &
+      'latitude var field not found in the metforcing genEnsFcst file')
    ios = nf90_inq_varid(nid,'longitude',lonId)
 !   ios = nf90_inq_varid(nid,'lon',lonId)
-   call LIS_verify(ios,'longitude var field not found in the metforcing genEnsFcst file')
+   call LIS_verify(ios, &
+      'longitude var field not found in the metforcing genEnsFcst file')
 
    ios = nf90_get_var(nid,latId,lat)
-   call LIS_verify(ios,'Error in nf90_get_var for latitude var in init_genEnsFcst')
+   call LIS_verify(ios, &
+      'Error in nf90_get_var for latitude var in init_genEnsFcst')
    ios = nf90_get_var(nid,lonId,lon)
-   call LIS_verify(ios,'Error in nf90_get_var for longitude var in init_genEnsFcst')
+   call LIS_verify(ios, &
+      'Error in nf90_get_var for longitude var in init_genEnsFcst')
  
    ! Map Projection:
    ios = nf90_get_att(nid, NF90_GLOBAL, &
          'MAP_PROJECTION', genensfcst_struc%proj_name )
-   call LIS_verify(ios,'Error in nf90_get_att for MAP_PROJECTION in init_genEnsFcst')
+   call LIS_verify(ios, &
+      'Error in nf90_get_att for MAP_PROJECTION in init_genEnsFcst')
 
    ! Define projection index and input GridDesc array:
    select case ( genensfcst_struc%proj_name )
 
      case( "EQUIDISTANT CYLINDRICAL" )    
 
-       write(LIS_logunit,*) "[INFO] Ensemble forecast dataset Forcing Projection:  Latlon "
+       write(LIS_logunit,*) &
+          "[INFO] Ensemble forecast dataset Forcing Projection:  Latlon "
        genensfcst_struc%proj_index = 0
        LIS_rc%met_proj(findex) = "latlon"
      
        ! Lower-left (ll) lat and long point:
        ios = nf90_get_att(nid, NF90_GLOBAL, &
             'SOUTH_WEST_CORNER_LAT', lllat )
-       call LIS_verify(ios,'Error in nf90_get_att:SOUTH_WEST_CORNER_LAT in init_genEnsFcst')
+       call LIS_verify(ios, &
+          'Error in nf90_get_att:SOUTH_WEST_CORNER_LAT in init_genEnsFcst')
        ios = nf90_get_att(nid, NF90_GLOBAL, &
             'SOUTH_WEST_CORNER_LON', lllon )
-       call LIS_verify(ios,'Error in nf90_get_att:SOUTH_WEST_CORNER_LON in init_genEnsFcst')
+       call LIS_verify(ios, &
+          'Error in nf90_get_att:SOUTH_WEST_CORNER_LON in init_genEnsFcst')
 
        ! Upper-right (ur) lat / long point:
        urlat = lat(genensfcst_struc%nr)
@@ -299,8 +314,8 @@ contains
 #endif 
 
      case default
-        write(LIS_logunit,*) "[ERR] No other metforcing genEnsFcst projections "
-        write(LIS_logunit,*) "[ERR]  are supported at this time ... only latlon."
+        write(LIS_logunit,*) "[ERR] No other metforcing genEnsFcst projections"
+        write(LIS_logunit,*) "[ERR] are supported at this time ... only latlon."
         write(LIS_logunit,*) "[ERR] End run being called ..." 
         call LIS_endrun
     end select   
@@ -324,10 +339,10 @@ contains
 !   be used later when the metforcing data needs to be reprojected
 !   onto the LIS run domain.
 
-   write(LIS_logunit,*) "[INFO] -- NOTE :: "
-   write(LIS_logunit,*) "[INFO]  Metforcing 'genEnsFcst' reader at this time "
-   write(LIS_logunit,*) "[INFO]  does not support time interpolation. To be "
-   write(LIS_logunit,*) "[INFO]  implemented and released in the near future. "
+   write(LIS_logunit,*) "[INFO] -- NOTE ::"
+   write(LIS_logunit,*) "[INFO] Metforcing 'genEnsFcst' reader at this time"
+   write(LIS_logunit,*) "[INFO] does not support time interpolation. To be"
+   write(LIS_logunit,*) "[INFO] implemented and released in the near future."
 
    LIS_rc%met_nensem(findex) = genensfcst_struc%max_ens_members
 

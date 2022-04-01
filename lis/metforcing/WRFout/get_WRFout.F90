@@ -22,6 +22,7 @@ subroutine get_WRFout(n, findex)
   use LIS_metforcingMod, only : LIS_forc
   use LIS_timeMgrMod,    only : LIS_tick
   use LIS_logMod,        only : LIS_logunit, LIS_endrun
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
   use WRFout_forcingMod, only : WRFout_struc
 
   implicit none
@@ -56,7 +57,7 @@ subroutine get_WRFout(n, findex)
   integer      :: yr1,mo1,da1,hr1,mn1,ss1,doy1
   integer      :: yr2,mo2,da2,hr2,mn2,ss2,doy2
   real         :: ts1, ts2
-  character*80 :: fname
+  character(len=LIS_CONST_PATH_LEN) :: fname
   real         :: gmt1,gmt2
   integer      :: movetime     ! 1=move time 2 data into time 1
 
@@ -159,7 +160,7 @@ subroutine get_WRFout(n, findex)
         call WRFoutfile(fname,WRFout_struc(n)%WRFoutdir,&
              WRFout_struc(n)%nest_id, yr1,mo1,da1,hr1,mn1,ss1)
 
-        write(unit=LIS_logunit,fmt=*)'[INFO] getting file1.. ',fname
+        write(unit=LIS_logunit,fmt=*)'[INFO] getting file1.. ',trim(fname)
         call read_WRFout(n,findex,1,fname,ferror)
 
         if(ferror.ge.1) WRFout_struc(n)%WRFouttime1=time1
@@ -186,7 +187,7 @@ subroutine get_WRFout(n, findex)
         call WRFoutfile(fname,WRFout_struc(n)%WRFoutdir,&
              WRFout_struc(n)%nest_id, yr2,mo2,da2,hr2,mn2,ss2)
 
-        write(unit=LIS_logunit,fmt=*)'[INFO] getting file2.. ',fname
+        write(unit=LIS_logunit,fmt=*)'[INFO] getting file2.. ',trim(fname)
         call read_WRFout(n,findex,2,fname,ferror)
 
         if(ferror.ge.1) then
@@ -215,8 +216,8 @@ end subroutine get_WRFout
 
    implicit none
 ! !ARGUMENTS: 
-   character*80, intent(out) :: filename
-   character*40, intent(in)  :: wrfdir
+   character(len=*), intent(out) :: filename
+   character(len=*), intent(in)  :: wrfdir
    integer, intent(in)       :: nest
    integer, intent(in)       :: yr,mo,da,hr,mn,ss
 

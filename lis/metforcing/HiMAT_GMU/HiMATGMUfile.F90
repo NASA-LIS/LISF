@@ -42,8 +42,8 @@ subroutine HiMATGMUfile( name, HiMATGMUdir, yr, mo, da, hr)
 ! !ARGUMENTS: 
   integer :: yr, mo, da, hr
 
-  character(80) :: name
-  character(40) :: HiMATGMUdir
+  character(len=*) :: name
+  character(len=*) :: HiMATGMUdir
   character(4) :: cyear
   character(2) :: cmon, cday, chour
 

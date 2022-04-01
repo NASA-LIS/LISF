@@ -139,7 +139,7 @@ contains
     real,    allocatable        :: tconst(:)
     real,    allocatable        :: trelax(:)
     character*40, allocatable   :: vname(:)
-    logical*1               :: file_exists
+    logical                 :: file_exists
     integer                 :: m
     real,    allocatable        :: tempvar(:)
 

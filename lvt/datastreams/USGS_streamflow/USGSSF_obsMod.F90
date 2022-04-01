@@ -66,7 +66,6 @@ contains
  subroutine USGSSF_obsinit(i)
 ! 
 ! !USES: 
-    use ESMF
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_logMod

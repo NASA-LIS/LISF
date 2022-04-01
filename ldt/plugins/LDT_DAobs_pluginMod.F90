@@ -70,7 +70,8 @@ contains
     use GLASSlai_obsMod,           only : GLASSlai_obsinit
     use LPRMvod_obsMod,            only : LPRMvod_obsinit
     use MCD15A2Hlai_obsMod,        only : MCD15A2Hlai_obsinit
-
+    use THySM_obsMod,              only : THySM_obsinit
+    
     external readLISlsmSMObs
     external readsyntheticsmobs
     external readNASA_AMSREsmObs
@@ -96,6 +97,7 @@ contains
     external readGLASSlaiObs
     external readLPRMvodObs
     external readMCD15A2HlaiObs
+    external readTHySMobs
 
     call registerdaobssetup(trim(LDT_LISlsmSMobsId)//char(0), LISlsmSM_obsInit)
     call registerdaobsread(trim(LDT_LISlsmSMobsId)//char(0), readLISlsmSMObs)
@@ -223,5 +225,10 @@ contains
     call registerdaobsread(trim(LDT_MCD15A2HlaiobsId)//char(0),&
          readMCD15A2HlaiObs)
 
+    call registerdaobssetup(trim(LDT_THySMobsId)//char(0),&
+         THySM_obsinit)
+    call registerdaobsread(trim(LDT_THySMobsId)//char(0),&
+         readTHySMobs)
+    
   end subroutine LDT_DAobs_plugin
 end module LDT_DAobs_pluginMod

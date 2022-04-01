@@ -63,7 +63,6 @@ contains
 ! !INTERFACE: 
   subroutine GHCN_ANNdatainit()
 ! !USES: 
-    use ESMF
     use LDT_coreMod
     use LDT_timeMgrMod
     use LDT_logMod

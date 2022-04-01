@@ -39,41 +39,53 @@ subroutine write_UAsnowobs(Obj_Space)
 !  \end{description}
 !
 !EOP
-  real,    pointer    :: obsl(:)
-  type(ESMF_Field)    :: snowField
+  real,    pointer    :: snod(:), swe(:)
+  type(ESMF_Field)    :: snodField, sweField
   logical             :: data_update
-  character*100       :: obsname
+  character*100       :: snod_filename, swe_filename 
   integer             :: status
-  integer             :: ftn
+  integer             :: snod_ftn, swe_ftn
   integer             :: n 
 
   n = 1
 
   call ESMF_AttributeGet(Obj_Space,"Data Update Status",&
        data_update, rc=status)
-  call LIS_verify(status)
+  call LIS_verify(status, "Error in ESMF_AttributeGet: Data Update Status (UA Snow)")
 
   if(data_update) then 
      
-     call ESMF_StateGet(Obj_Space,"UA_snow",snowField,&
-          rc=status)
-     call LIS_verify(status)
+     call ESMF_StateGet(Obj_Space,"UA_SNOD", snodField, rc=status)
+     call LIS_verify(status, "Error in ESMF_StateGet: UA_SNOD")
 
-     call ESMF_FieldGet(snowField, localDE=0,farrayPtr=obsl,rc=status)
-     call LIS_verify(status)
+     call ESMF_FieldGet(snodField, localDE=0, farrayPtr=snod, rc=status)
+     call LIS_verify(status, "Error in ESMF_FieldGet: snodField")
+
+     call ESMF_StateGet(Obj_Space, "UA_SWE", sweField, rc=status)
+     call LIS_verify(status, "Error in ESMF_StateGet: UA_SWE")
+
+     call ESMF_FieldGet(sweField, localDE=0, farrayPtr=swe, rc=status)
+     call LIS_verify(status, "Error in ESMF_FieldGet: sweField")
 
      if(LIS_masterproc) then 
-        ftn = LIS_getNextUnitNumber()
-        call UAsnow_obsname('snow',obsname)
+        snod_ftn = LIS_getNextUnitNumber()
+        swe_ftn = LIS_getNextUnitNumber()
 
-        call LIS_create_output_directory('PEOBS') 
-        open(ftn,file=trim(obsname), form='unformatted')
+        call UAsnow_obsname('UA_SNOD', snod_filename)
+        call UAsnow_obsname('UA_SWE', swe_filename)
+
+        call LIS_create_output_directory('PEOBS')
+
+        open(snod_ftn, file=trim(snod_filename), form='unformatted')
+        open(swe_ftn, file=trim(swe_filename), form='unformatted')
      endif
      
-     call LIS_writevar_gridded(ftn, n, obsl)
+     call LIS_writevar_gridded(snod_ftn, n, snod)
+     call LIS_writevar_gridded(swe_ftn, n, swe)
      
      if(LIS_masterproc) then 
-        call LIS_releaseUnitNumber(ftn)
+        call LIS_releaseUnitNumber(snod_ftn)
+        call LIS_releaseUnitNumber(swe_ftn)
      endif
 
   endif

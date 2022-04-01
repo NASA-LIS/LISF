@@ -1,6 +1,0 @@
-!BOP
-!\section{ECMWF Reanalysis}
-!This section describes the implementation of the bias-corrected
-!atmospheric reanalysis data developed by Aaron Berg. The data is
-!global 0.5 degree in latlon projection.
-!EOP

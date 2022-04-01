@@ -97,7 +97,6 @@ contains
 ! !INTERFACE: 
   subroutine GRACEQLtws_obsinit()
 ! !USES: 
-    use ESMF
     use LDT_coreMod
     use LDT_DAobsDataMod
     use LDT_timeMgrMod

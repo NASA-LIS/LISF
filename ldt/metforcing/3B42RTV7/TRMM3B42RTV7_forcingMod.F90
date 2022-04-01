@@ -135,7 +135,6 @@ contains
     use LDT_logMod,  only : LDT_logunit, LDT_endrun, &
                             LDT_getNextUnitNumber, &
                             LDT_releaseUnitNumber, LDT_verify 
-    use ESMF
 
     implicit none
 

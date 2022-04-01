@@ -194,7 +194,7 @@ subroutine noahmp36_setsoilm(n, LSM_State)
   ! MN print 
   if(i.eq.66) then !i=66  ! --> domain's center  1376
   if(LIS_rc%hr.eq.12) then
-     write(2001,'(I4, 2x, 3(I2,x), 2x, 23(L1,2x))'),&
+     write(2001,'(I4, 2x, 3(I2,x), 2x, 23(L1,2x))') &
           i, LIS_rc%mo, LIS_rc%da, LIS_rc%hr,update_flag_tile&
           ((i-1)*LIS_rc%nensem(n)+1:(i)*LIS_rc%nensem(n)),&
           update_flag_ens(i), update_flag_new(i), update_flag(i) 

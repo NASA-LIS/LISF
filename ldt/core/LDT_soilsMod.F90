@@ -274,7 +274,6 @@ module LDT_soilsMod
   subroutine soils_init_LIS()
 
 ! !USES:
-    use ESMF
     use LDT_coreMod,   only : LDT_rc, LDT_config
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
     use LDT_paramOptCheckMod, only: LDT_soilsOptChecks, & 
@@ -968,7 +967,6 @@ module LDT_soilsMod
   subroutine soils_init_LISHydro(flag)
 
 ! !USES:
-    use ESMF
     use LDT_coreMod,   only : LDT_rc, LDT_config
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
     use LDT_paramOptCheckMod, only: LDT_soilsOptChecks, & 

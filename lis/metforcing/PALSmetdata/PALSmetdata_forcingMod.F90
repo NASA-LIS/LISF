@@ -22,6 +22,7 @@ module PALSmetdata_forcingMod
 !
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -40,7 +41,7 @@ module PALSmetdata_forcingMod
   type, public ::  PALSmetdata_type_dec 
 
      real                       :: ts
-     character*80               :: PALSmetdatadir     
+     character(len=LIS_CONST_PATH_LEN) :: PALSmetdatadir     
      character*80               :: stn_name
      real*8                     :: fcsttime1,fcsttime2
      integer                    :: findtime1, findtime2

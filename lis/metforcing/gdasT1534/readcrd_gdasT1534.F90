@@ -42,7 +42,7 @@ subroutine readcrd_gdasT1534()
   do n=1,LIS_rc%nnest
      gdasT1534_struc(n)%nmif = 16 
      write(LIS_logunit,*) 'Using GDAS T1534 forcing'
-     write(LIS_logunit,*) 'GDAS T1534 forcing directory :',gdasT1534_struc(n)%GDAST1534DIR
+     write(LIS_logunit,*) 'GDAS T1534 forcing directory :',trim(gdasT1534_struc(n)%GDAST1534DIR)
      gdasT1534_struc(n)%GDAST1534TIME1  = 3000.0
      gdasT1534_struc(n)%GDAST1534TIME2  = 0.0
   enddo

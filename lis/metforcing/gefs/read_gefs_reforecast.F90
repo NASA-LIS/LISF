@@ -34,7 +34,7 @@ subroutine read_gefs_reforecast(n, m, findex, order, filename, varname, ferror)
   integer, intent(in)       :: n
   integer, intent(in)       :: m
   integer, intent(in)       :: order
-  character*140, intent(in) :: filename
+  character(len=*), intent(in) :: filename
   character*10, intent(in)  :: varname
   integer, intent(out)      :: ferror
 !
@@ -84,6 +84,7 @@ subroutine read_gefs_reforecast(n, m, findex, order, filename, varname, ferror)
   real, allocatable  :: gefs_grib_data(:)              ! Read-in data
   real        :: varfield(LIS_rc%lnc(n),LIS_rc%lnr(n)) ! Interp field
   logical     :: pcp_flag                              ! Precip flag for spatial interp
+  character*50  :: shortName                           ! variable for 0.25 degree wind data
 
 ! ______________________________________________________________________________
 
@@ -162,6 +163,8 @@ subroutine read_gefs_reforecast(n, m, findex, order, filename, varname, ferror)
          call LIS_verify(rc,' grib_get error: stepRange in read_gefs_reforecast')
 !         print *, 'grib records: ', i, igrib, stepRange, gefs_struc(n)%fcst_hour
 
+         call grib_get(igrib,'shortName',shortName,rc)
+         call LIS_verify(rc,'error in grib_get: shortName in read_gefs_reforecast')
          ! Check if local forecast hour exceeds max grib file forecast hour:
          if( gefs_struc(n)%fcst_hour > 192 ) then   
             write(LIS_logunit,*) &
@@ -213,7 +216,6 @@ subroutine read_gefs_reforecast(n, m, findex, order, filename, varname, ferror)
         endif
       enddo
     endif
-#endif
 
 ! _______________________________________________________
 
@@ -295,7 +297,7 @@ subroutine read_gefs_reforecast(n, m, findex, order, filename, varname, ferror)
        enddo
      endif
 
-     if( trim(varname) == "ugrd_10m" ) then
+     if( trim(varname) == "ugrd_10m" .or. shortName.eq."10u") then
        do r=1,LIS_rc%lnr(n)
           do c=1,LIS_rc%lnc(n)
             if(LIS_domain(n)%gindex(c,r).ne.-1) then 
@@ -313,7 +315,7 @@ subroutine read_gefs_reforecast(n, m, findex, order, filename, varname, ferror)
        enddo
      endif
 
-     if( trim(varname) == "vgrd_10m" ) then
+     if( trim(varname) == "vgrd_10m" .or. shortName.eq."10v") then
        do r=1,LIS_rc%lnr(n)
           do c=1,LIS_rc%lnc(n)
             if(LIS_domain(n)%gindex(c,r).ne.-1) then
@@ -378,6 +380,7 @@ subroutine read_gefs_reforecast(n, m, findex, order, filename, varname, ferror)
        '[ERR] Could not find file: ',trim(filename)
      ferror = 0
   endif
+#endif
 
 end subroutine read_gefs_reforecast
 
