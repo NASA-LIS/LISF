@@ -790,7 +790,6 @@ subroutine read_SMAPNRT_data(n, k, fname, smobs_inp, time)
   call h5close_f(status)
 
   if (trim(LIS_rc%runmode) .eq. LIS_agrmetrunID) then
-     write(LIS_logunit,*)'EMK: HERE'
      message(:) = ''
      message(1) = '[ERR] Program:  LIS'
      message(2) = '  Routine:  read_SMAPNRT_data.'
