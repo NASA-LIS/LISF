@@ -84,6 +84,7 @@ contains
       ! Construct the input netCDF filename
       this%input_nc_file = &
            trim(LVT_rc%input_dir) // &
+           '/' // &
            trim(LVT_rc%input_prefix) // &
            trim(LVT_rc%yyyymmddhh) // &
            ".nc"
