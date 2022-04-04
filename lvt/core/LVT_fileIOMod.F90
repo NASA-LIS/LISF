@@ -356,6 +356,18 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
                  out_fname = trim(out_fname)//'.ts4r'
               elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
                  out_fname = trim(out_fname)//'.gs4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'                 
+              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'
+              endif
+           case ( "distributed binary")
+              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
+                 out_fname = trim(out_fname)//'.ts4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'                 
               elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
                  out_fname = trim(out_fname)//'.gs4r'
               endif
@@ -395,9 +407,21 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
                  out_fname = trim(out_fname)//'.ts4r'
               elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
                  out_fname = trim(out_fname)//'.gs4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'                 
               elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
                  out_fname = trim(out_fname)//'.gs4r'
               endif
+           case ( "distributed binary")
+              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
+                 out_fname = trim(out_fname)//'.ts4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'                 
+              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'
+              endif              
            case ( "grib1" )
               out_fname = trim(out_fname)//'.grb'
            case ( "netcdf" )
@@ -430,9 +454,21 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
                  out_fname = trim(out_fname)//'.ts4r'
               elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
                  out_fname = trim(out_fname)//'.gs4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'                 
               elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
                  out_fname = trim(out_fname)//'.gs4r'
               endif
+           case ( "distributed binary")
+              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
+                 out_fname = trim(out_fname)//'.ts4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'                 
+              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'
+              endif                            
            case ( "grib1" )
               out_fname = trim(out_fname)//'.grb'
            case ( "netcdf" )
@@ -731,9 +767,21 @@ subroutine create_output_filename_with_timestamp(&
                  out_fname = trim(out_fname)//'.ts4r'
               elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
                  out_fname = trim(out_fname)//'.gs4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'                 
               elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
                  out_fname = trim(out_fname)//'.gs4r'
               endif
+           case ( "distributed binary")
+              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
+                 out_fname = trim(out_fname)//'.ts4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'                 
+              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'
+              endif                            
            case ( "grib1" )
               out_fname = trim(out_fname)//'.grb'
            case ( "netcdf")
@@ -768,9 +816,21 @@ subroutine create_output_filename_with_timestamp(&
                  out_fname = trim(out_fname)//'.ts4r'
               elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
                  out_fname = trim(out_fname)//'.gs4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'                 
               elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
                  out_fname = trim(out_fname)//'.gs4r'
               endif
+           case ( "distributed binary")
+              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
+                 out_fname = trim(out_fname)//'.ts4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'                 
+              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'
+              endif                            
            case ( "grib1" )
               out_fname = trim(out_fname)//'.grb'
            case ( "netcdf" )
@@ -802,9 +862,21 @@ subroutine create_output_filename_with_timestamp(&
                  out_fname = trim(out_fname)//'.ts4r'
               elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
                  out_fname = trim(out_fname)//'.gs4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'                 
               elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
                  out_fname = trim(out_fname)//'.gs4r'
               endif
+           case ( "distributed binary")
+              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
+                 out_fname = trim(out_fname)//'.ts4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'
+              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'                 
+              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
+                 out_fname = trim(out_fname)//'.gs4r'
+              endif                            
            case ( "grib1" )
               out_fname = trim(out_fname)//'.grb'
            case ( "netcdf" )
