@@ -115,7 +115,8 @@ module LIS_histDataMod
   public :: LIS_MOC_SMFROZFRAC
   public :: LIS_MOC_SOILWET   
   public :: LIS_MOC_MATRICPOTENTIAL
-  public :: LIS_MOC_POTEVAP   
+  public :: LIS_MOC_POTEVAP
+  public :: LIS_MOC_VPD
   public :: LIS_MOC_ECANOP    
   public :: LIS_MOC_TVEG      
   public :: LIS_MOC_ESOIL     
@@ -571,6 +572,7 @@ module LIS_histDataMod
 
    ! ALMA EVAPORATION COMPONENTS
    integer :: LIS_MOC_POTEVAP    = -9999
+   integer :: LIS_MOC_VPD        = -9999   
    integer :: LIS_MOC_ECANOP     = -9999
    integer :: LIS_MOC_TVEG       = -9999
    integer :: LIS_MOC_ESOIL      = -9999
@@ -2073,6 +2075,19 @@ contains
             model_patch=.true.)
     endif
 
+    call ESMF_ConfigFindLabel(modelSpecConfig,"VPD:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "VPD",&
+         "vapor_pressure_deficit",&
+         "vapor pressure deficit",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_VPD,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"Pa"/),&
+            1,(/"-"/),2,1,1,&
+            model_patch=.true.)
+    endif    
+    
     call ESMF_ConfigFindLabel(modelSpecConfig,"ECanop:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "ECanop",&
@@ -6767,7 +6782,7 @@ end subroutine LIS_diagnoseIrrigationOutputVar
      endif
 
      do while ( associated(dataEntry) )
-        if(dataEntry%selectOpt.ne.0) then 
+        if(dataEntry%selectOpt.ne.0) then
            do k=1,dataEntry%vlevels
 !#if (defined SPMD)
 !              call mpi_reduce(sum(dataEntry%count(:,k)),&
