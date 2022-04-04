@@ -491,7 +491,7 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
   real*8          :: file_time
   integer :: imsg
   character(len=512) :: message(20)
-  integer :: alert_number
+  integer, save :: alert_number = 0
 
 #if(defined USE_GRIBAPI)
   ! When we are reading the 6-hourly datasets, we read the file HR+6
