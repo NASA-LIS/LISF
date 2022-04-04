@@ -106,7 +106,6 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
   character(len=4) :: istring
   character(len=200) :: cmd
   integer :: rc
-
   integer, external :: create_filelist ! C function
 
   smap_filename = ""
@@ -569,7 +568,7 @@ subroutine read_SMAPNRT_data(n, k, fname, smobs_inp, time)
 
   integer                        :: status,ios
   character(len=512) :: message(20)
-  integer :: alert_number
+  integer, save :: alert_number = 0
 
   
   ! EMK 20220324 Added fault tolerance
