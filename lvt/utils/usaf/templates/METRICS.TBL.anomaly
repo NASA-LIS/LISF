@@ -1,0 +1,165 @@
+#latex: \comment{
+# This is the METRICS.TBL file.  It contains the 
+# user-configurable options plus documentation for specifying metrics 
+# to be computed through LVT
+#
+# Please add any updates to the LIS code regarding configuration options
+# to this file -- including documentation.
+# Documentation must be placed in between 
+#    #latex: BEGIN_DESCRIPTION
+#    #latex: END_DESCRIPTION
+# markers.
+#
+# All documentation must the marked up with "#latex: " tags.
+#
+# Actual lines of the MODEL_OUTPUT_LIST.TBL file should not be marked up.
+#
+#
+# To include this file in the User's Guide:
+# 1) Checkout the latest copy of this file from the repository.
+# 2) Place it with the source for the User's Guide.
+# 3) Rename it MODEL_OUTPUT_LIST.TBL.tex
+# 4) Edit the MODEL_OUTPUT_LIST.TBL.tex file:
+#    Remove the string "#latex:"
+#    Replace the string "BEGIN_DESCRIPTION" with the string "\end{verbatim}"
+#    Replace the string "END_DESCRIPTION" with the string "\begin{verbatim}"
+#
+# These are the commands (vi) that I use to process this file for the
+# User's Guide.
+#
+# These are the commands (vi) that I use to process this file for the
+# User's Guide.
+#
+#:%s/#latex://
+#:%s/BEGIN_DESCRIPTION/\\end{verbatim}/
+#:%s/END_DESCRIPTION/\\begin{verbatim}/
+#latex: }
+
+#latex: \begin{verbatim}
+#latex:
+#latex: BEGIN_DESCRIPTION
+#latex: \section{Configuration of metrics} \label{sec:metricslisttable}
+#latex: This section defines the specification of various metrics in LVT.
+#latex: This file is specified in a space delimited column format. 
+#latex: Each row consists of the following entries:
+#latex:
+#latex: \var{Name}: Name of the metric
+#latex:
+#latex: \var{Use option}: determines whether to use this metric
+#latex: When enabled, the metric will be computed through the 
+#latex: duration of the evaluation and a final file will be 
+#latex: written out.
+#latex: Acceptable values are: 
+#latex:
+#latex: \begin{tabular}{ll}
+#latex: Value & Description          \\
+#latex:  0 & do not use the metric   \\
+#latex:  1 & use the metric          \\
+#latex: \end{tabular}
+#latex:
+#latex: \var{Time option}: specifies whether to compute the 
+#latex: metric in time, at the specified stats output intervals.
+#latex: Acceptable values are: 
+#latex:
+#latex: \begin{tabular}{ll}
+#latex: Value & Description            \\
+#latex:  0 & do not compute the metric   \\
+#latex:  1 & compute the metric          \\
+#latex: \end{tabular}
+#latex:
+#latex: \var{Temporal output}: 
+#latex: determines whether to write (gridded) metric files at the 
+#latex: specified stats output intervals. The 'Time option'
+#latex: must also be enabled when this option is enabled. 
+#latex: Acceptable values are: 
+#latex:
+#latex: \begin{tabular}{ll}
+#latex: Value & Description            \\
+#latex:  0 & Do no write  \\
+#latex:  1 & write  \\
+#latex: \end{tabular}
+#latex: 
+#latex: \var{Extract time series}: 
+#latex: determines whether to extract (ASCII) time series
+#latex: files for the metric, at each sub-domains specified
+#latex: in the time series location file. 
+#latex: Acceptable values are: 
+#latex:
+#latex: \begin{tabular}{ll}
+#latex: Value & Description            \\
+#latex:  0 & Do no write  \\
+#latex:  1 & write  \\
+#latex: \end{tabular}
+#latex:
+#latex: \var{Threshold}: The threshold value to be used in computing
+#latex: the metric. Note that this is used only for the categorical
+#latex: metrics.
+#latex: 
+#latex: \var{Compute average seasonal cycle}: 
+#latex: determines whether to generate the average seasonal
+#latex: cycle of the metric (for each domain specified in the 
+#latex: time series location file).
+#latex: Acceptable values are: 
+#latex:
+#latex: \begin{tabular}{ll}
+#latex: Value & Description            \\
+#latex:  0 & Do no generate  \\
+#latex:  1 & generate  \\
+#latex: \end{tabular}
+#latex:
+#latex: \var{Compute average diurnal cycle}: 
+#latex: determines whether to generate the average diurnal
+#latex: cycle of the metric (for each domain specified in the 
+#latex: time series location file).
+#latex: Acceptable values are: 
+#latex:
+#latex: \begin{tabular}{ll}
+#latex: Value & Description  \\
+#latex:  0 & Do no generate  \\
+#latex:  1 & generate  \\
+#latex: \end{tabular}
+#latex: 
+#latex: END_DESCRIPTION
+#name                                total in-time writeTS extractTS threshold ASC ADC 
+Mean:                                  0   0    0   0   -9999.0  -9999.0 0  0  #Mean
+Min:                                   0   0    0   0   -9999.0  -9999.0 0  0  #Minimum
+MinTime:                               0   0    0   0   -9999.0  -9999.0 0  0  #MinTime
+Max:                                   0   0    0   0   -9999.0  -9999.0 0  0  #Maximum
+MaxTime:                               0   0    0   0   -9999.0  -9999.0 0  0  #MaxTime
+Sum:                                   0   0    0   0   -9999.0  -9999.0 0  0  #Sum
+Anomaly:                               1   1    1   0   -9999.0  -9999.0 1  0  #Anomaly
+Standard deviation:                    0   0    0   0   -9999.0  -9999.0 0  0  #Std
+RMSE:                                  0   0    0   0   -9999.0  -9999.0 0  0  #RMSE
+Bias:                                  0   0    0   0   -9999.0  -9999.0 0  0  #Bias
+ubRMSE:                                0   0    0   0   -9999.0  -9999.0 0  0  #ubRMSE
+Mean absolute error:                   0   0    0   0   -9999.0  -9999.0 0  0  #MAE
+Anomaly RMSE:                          0   0    0   0   -9999.0  -9999.0 0  0  #ARMSE
+Anomaly correlation:                   0   0    0   0   -9999.0  -9999.0 0  0  #ARMSE
+Raw correlation:                       0   0    0   0   -9999.0  -9999.0 0  0  #RCORR
+Rank correlation:                      0   0    0   0   -9999.0  -9999.0 0  0  #RnkCORR
+Probability of detection (PODy):       0   0    0   0   0.1      0.3     0  0  #PODy
+Probability of detection (PODn):       0   0    0   0   0.1      0.3     0  0  #PODn
+False alarm ratio (FAR):               0   0    0   0   0.1      0.3     0  0  #FAR
+Probability of false detection (POFD): 0   0    0   0   0.1      0.3     0  0  #POFD
+Critical success index (CSI):          0   0    0   0   0.1      0.3     0  0  #CSI
+Accuracy measure (ACC):                0   0    0   0   0.1      0.3     0  0  #ACC
+Frequency bias (FBIAS):                0   0    0   0   0.1      0.3     0  0  #FBIAS
+Equitable threat score (ETS):          0   0    0   0   0.1      0.3     0  0  #ETS
+Area metric:                           0   0    0   0   -9999.0  -9999.0 0  0  #Area
+Nash sutcliffe efficiency:             0   0    0   0   -9999.0  -9999.0 0  0  #NSE 
+Metric entropy:                        0   0    0   0   -9999.0  -9999.0 0  0  #mentropy
+Information gain:                      0   0    0   0   -9999.0  -9999.0 0  0  #igain
+Fluctuation complexity:                0   0    0   0   -9999.0  -9999.0 0  0  #fcomplexity
+Effective complexity:                  0   0    0   0   -9999.0  -9999.0 0  0  #ecomplexity
+Wavelet stat:                          0   0    0   0   -9999.0  -9999.0 0  0  #waveletstat
+Hausdorff norm:                        0   0    0   0   -9999.0  -9999.0 0  0  #Hnorm
+Standard precipitation index:          0   0    0   0   -9999.0  -9999.0 0  0  #SPI
+Standard runoff index:                 0   0    0   0   -9999.0  -9999.0 0  0  #SRI
+Standardized soil water index:         0   0    0   0   -9999.0  -9999.0 0  0  #SSWI
+Standardized ground water index:       0   0    0   0   -9999.0  -9999.0 0  0  #SGWI
+Percentile:                            0   0    0   0   -9999.0  -9999.0 0  0  #Percentile
+River flow variate:                    0   0    0   0   -9999.0  -9999.0 0  0  #RFV
+K-S test:                              0   0    0   0   -9999.0  -9999.0 0  0  #K-S test
+Tendency:                              0   0    0   0   -9999.0  -9999.0 0  0  #Tendency
+Tendency correlation:                  0   0    0   0   -9999.0  -9999.0 0  0  #Tendency correlation
+#latex: \end{verbatim}
