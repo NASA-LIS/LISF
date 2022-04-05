@@ -339,7 +339,7 @@ contains
              call LVT_verify(nf90_put_att(ftn_nc,NF90_GLOBAL,"DY", &
                   LVT_rc%gridDesc(9)))
              
-          elseif(trim(LVT_rc%domain).eq."") then
+          elseif(trim(LVT_rc%domain).eq."polar") then
              call LVT_verify(nf90_put_att(ftn_nc,NF90_GLOBAL,"MAP_PROJECTION", &
                   "POLAR STEREOGRAPHIC"))
              call LVT_verify(nf90_put_att(ftn_nc,NF90_GLOBAL,"SOUTH_WEST_CORNER_LAT", &
