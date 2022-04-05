@@ -562,7 +562,6 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
         write(LIS_logunit,*) &
              '[WARN] Problem reading parameterNumber from ', trim(fname)
         call grib_release(igrib, iret)
-        call grib_close_file(ftn)
         imsg = -1
         exit
      end if
@@ -576,7 +575,6 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
         if (iret .ne. 0) then
            write(LIS_logunit,*)'[WARN] Problem reading values for ASCAT_A'
            call grib_release(igrib, iret)
-           call grib_close_file(ftn)
            imsg = -1
            exit
         end if
@@ -598,7 +596,6 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
         if (iret .ne. 0) then
            write(LIS_logunit,*)'[WARN] Problem reading QA values for ASCAT_A'
            call grib_release(igrib, iret)
-           call grib_close_file(ftn)
            imsg = -1
            exit
         end if
@@ -620,7 +617,6 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
         if (iret .ne. 0) then
            write(LIS_logunit,*)'[WARN] Problem reading hr values for ASCAT_A'
            call grib_release(igrib, iret)
-           call grib_close_file(ftn)
            imsg = -1
            exit
         end if
@@ -635,7 +631,6 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
         if (iret .ne. 0) then
            write(LIS_logunit,*)'[WARN] Problem reading mn values for ASCAT_A'
            call grib_release(igrib, iret)
-           call grib_close_file(ftn)
            imsg = -1
            exit
         end if
@@ -650,7 +645,6 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
         if (iret .ne. 0) then
            write(LIS_logunit,*)'[WARN] Problem reading values for ASCAT_B'
            call grib_release(igrib, iret)
-           call grib_close_file(ftn)
            imsg = -1
            exit
         end if
@@ -672,7 +666,6 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
         if (iret .ne. 0) then
            write(LIS_logunit,*)'[WARN] Problem reading QA values for ASCAT_B'
            call grib_release(igrib, iret)
-           call grib_close_file(ftn)
            imsg = -1
            exit
         end if
@@ -694,7 +687,6 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
         if (iret .ne. 0) then
            write(LIS_logunit,*)'[WARN] Problem reading hr values for ASCAT_B'
            call grib_release(igrib, iret)
-           call grib_close_file(ftn)
            imsg = -1
            exit
         end if
@@ -709,7 +701,6 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
         if (iret .ne. 0) then
            write(LIS_logunit,*)'[WARN] Problem reading mn values for ASCAT_B'
            call grib_release(igrib, iret)
-           call grib_close_file(ftn)
            imsg = -1
            exit
         end if
@@ -718,7 +709,6 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
      call grib_release(igrib, iret)
      if (iret .ne. 0) then
         write(LIS_logunit,*)'[WARN] Problem releasing from ', trim(fname)
-        call grib_close_file(ftn)
         imsg = -1
         exit
      end if
