@@ -18,14 +18,26 @@ if(defined($ENV{LDT_ARCH})){
    # The Cray/Intel environment is almost identical to the Linux/Intel
    # environment.  There are two modifications that must be made to the
    # Linux/Intel configuration settings to make them work on the Cray.
-   # So reset the sys_arch variable to "intel_ifc" and set a flag to 
-   # enable the cray modifications.
+   # So reset the sys_arch variable to "linux_ifc" and set a flag to
+   # enable the Cray modifications.
    if($sys_arch eq "cray_ifc"){
       $sys_arch = "linux_ifc";
       $cray_modifications = 1;
    }
    else{
       $cray_modifications = 0;
+   }
+   # The IBM/GNU environment is almost identical to the Linux/GNU
+   # environment.  There is one modification that must be made to the
+   # Linux/GNU configuration settings to make them work on the IBM Power9.
+   # So reset the sys_arch variable to "linux_gfortran" and set a flag to
+   # enable the IBM modifications.
+   if($sys_arch eq "ibm_gfortran"){
+      $sys_arch = "linux_gfortran";
+      $ibm_modifications = 1;
+   }
+   else{
+      $ibm_modifications = 0;
    }
 }
 else{
@@ -658,17 +670,15 @@ elsif($sys_arch eq "cray_cray") {
 
 }
 
-
-
-#if($par_lev == 1) {
-#   $ldflags = $ldflags." -lmpi";
-#}
 if($par_lev == 1) {
    if (index($sys_fc, "-mt_mpi") != -1) {
       $ldflags = $ldflags." -lmpi_mt";
    }
    elsif ($cray_modifications == 1 || $sys_arch eq "cray_cray") {
       $ldflags = $ldflags." -lmpich";
+   }
+   elsif ($ibm_modifications == 1) {
+      $ldflags = $ldflags." -lmpi_ibm_mpifh";
    }
    else{
       $ldflags = $ldflags." -lmpi";
