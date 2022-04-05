@@ -4605,7 +4605,7 @@ contains
        
     elseif(LIS_rc%wopt.eq."2d gridspace") then !2d gridded output
 
-       gtmp = 0
+       gtmp = LIS_rc%udef
        
        do i=1,LIS_rc%ntiles(n),LIS_rc%nensem(n)
 
@@ -4614,6 +4614,8 @@ contains
           c = LIS_domain(n)%grid(gid)%col
           r = LIS_domain(n)%grid(gid)%row
 
+          gtmp(c,r) = 0.0
+          
           do m=1,LIS_rc%nensem(n)
              t = i+m-1
              if ( var(t) == -9999.0 ) then
@@ -4623,9 +4625,8 @@ contains
                      var(t)*LIS_domain(n)%tile(t)%fgrd*&
                      LIS_domain(n)%tile(t)%pens
              endif
-          enddo
-          
-       enddo             
+          enddo                    
+       enddo       
        
        write(ftn) gtmp
 
