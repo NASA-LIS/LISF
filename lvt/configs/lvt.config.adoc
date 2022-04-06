@@ -361,7 +361,7 @@ This section of the config file specifies the type of analysis to be conducted d
 |===
 | Value | Description
 
-| 0     | Do not apply external mask
+| 0     | Do not apply external mask (default)
 | 1     | Apply external, temporally varying mask
 | 2     | Apply fixed mask
 | 3     | Apply temporal monthly mask
@@ -392,7 +392,7 @@ External mask directory:                "none"
 |===
 | Value | Description
 
-| 0     | Do not compute
+| 0     | Do not compute (default)
 | 1     | compute ensemble metrics
 |===
 
@@ -407,7 +407,7 @@ Compute ensemble metrics:               0
 |===
 | Value | Description
 
-| 0     | Do not compute
+| 0     | Do not compute (default)
 | 1     | compute information theory metrics
 |===
 
@@ -461,7 +461,7 @@ Temporal lag in metrics computations:    0
 |===
 | Value          | Description
 
-| pixel-by-pixel | each pixel is treated separately
+| pixel-by-pixel | each pixel is treated separately (default)
 | region-based   | stats are computed for on a region by region basis
 |===
 
@@ -501,8 +501,8 @@ Metrics output frequency:                  "1da"
 |===
 | Value | Description
 
+| 0     | do not apply temporal smoothing to obs (default)
 | 1     | apply temporal smoothing to obs
-| 0     | do not apply temporal smoothing to obs
 |===
 
 .Example _lvt.config_ entry
@@ -622,7 +622,7 @@ Time series location file:              ./TS_LOCATIONS.TXT
 |===
 | Value | Description
 
-| 0     | Do not stratify
+| 0     | Do not stratify (default)
 | 1     | Stratify errors
 |===
 
@@ -645,7 +645,7 @@ Stratification variable:                SWdown_f
 Stratification threshold:               1.0
 ....
 
-`Confidence interval (%):` Specifies the confidence interval threshold (in percentage) of the computed statistics
+`Confidence interval (%):` Specifies the confidence interval threshold (in percentage) of the computed statistics. The default value is 0.95.
 
 .Example _lvt.config_ entry
 ....
@@ -658,7 +658,7 @@ Confidence interval (%):                95
 |===
 | Value | Description
 
-| 0     | Do not stratify
+| 0     | Do not stratify (default)
 | 1     | Stratify errors
 |===
 
@@ -698,7 +698,7 @@ Stratification attributes file:         ./strat_attribs.txt
 |===
 | Value     | Description
 
-| monthly   | monthly seasonal cycles
+| monthly   | monthly seasonal cycles (default)
 | 3 monthly | 3-monthly seasonal cycles (DJF,MAM,JJA,SON)
 | 6 monthly | 6-monthly seasonal cycles
 | yearly    | yearly seasonal cycles
@@ -709,14 +709,14 @@ Stratification attributes file:         ./strat_attribs.txt
 Seasonal cycle interval type:           "monthly"
 ....
 
-`Seasonal cycle minimum count threshold:` Specifies minimum number of points to be used in computing the average seasonal cycle computations.
+`Seasonal cycle minimum count threshold:` Specifies minimum number of points to be used in computing the average seasonal cycle computations. The default value is 0.
 
 .Example _lvt.config_ entry
 ....
 Seasonal cycle minimum count threshold:           10
 ....
 
-`Average diurnal cycle minimum count threshold:` Specifies minimum number of points to be used in computing the average diurnal cycle computations.
+`Average diurnal cycle minimum count threshold:` Specifies minimum number of points to be used in computing the average diurnal cycle computations. The default value is 0.
 
 .Example _lvt.config_ entry
 ....
@@ -808,7 +808,7 @@ Compute only the climatology for SRI:     0
 Compute only the climatology for SSWI:     0
 ....
 
-`Starting month if a shifted year definition is used in temporal averaging:` The starting month (integer from 1 to 12) if doing a yearly average or outputting the stats in yearly intervals. Setting this value to 10, for example, represents the start of a hydrologic water year.
+`Starting month if a shifted year definition is used in temporal averaging:` The starting month (integer from 1 to 12) if doing a yearly average or outputting the stats in yearly intervals. Setting this value to 10, for example, represents the start of a hydrologic water year. The default value is 1.
 
 .Example _lvt.config_ entry
 ....
