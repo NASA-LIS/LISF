@@ -562,6 +562,7 @@ Acceptable values are:
 |Value      | Description
 
 |"`binary`" | Write output in binary format
+|"`distributed binary`" | Write output in distributed binary format where each processor writes outputs for the respective local domain
 |"`grib1`"  | Write output in GRIB-1 format
 |"`grib2`"  | Write output in GRIB-2 format
 |"`netcdf`" | Write output in netCDF format
