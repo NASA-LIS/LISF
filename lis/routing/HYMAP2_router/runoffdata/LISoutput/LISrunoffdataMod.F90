@@ -8,6 +8,7 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
+
 module LISrunoffdataMod
 !BOP
 ! 
@@ -177,13 +178,16 @@ contains
 
              
              LISrunoffdata_struc(n)%datares = min(dx,dy)
-             
+
              if(LIS_isAtAfinerResolution(n,LISrunoffdata_struc(n)%datares)) then
                 
                 allocate(LISrunoffdata_struc(n)%n11(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
                 call neighbor_interp_input(n,gridDesc,&
                      LISrunoffdata_struc(n)%n11)
              else
+
+                nc = LISrunoffdata_struc(n)%nc
+                nr = LISrunoffdata_struc(n)%nr
                 
                 allocate(LISrunoffdata_struc(n)%n11(nc*nr))
                 call upscaleByAveraging_input(gridDesc,&
