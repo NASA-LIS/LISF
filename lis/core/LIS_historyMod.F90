@@ -407,7 +407,7 @@ contains
        sopen, nsoillayers, outInterval, lyrthk, &
        nsoillayers2, group, model_name, lyrthk2)
 ! !USES:
-
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 ! !ARGUMENTS: 
     integer,   intent(in)   :: n 
     character(len=*),   intent(in)   :: lsmoutfile
@@ -451,10 +451,12 @@ contains
 !   \end{description}
 !EOP
 
-    integer :: ftn, ftn_stats
+    integer :: ftn, ftn_stats, ftnp(LIS_npes)
     integer :: iret
     integer :: group_temp
-    character*100 :: mname_temp
+    character*100 :: mname_temp,temp1
+    character(len=LIS_CONST_PATH_LEN) :: lsmoutfilep
+    character*1    :: fproc(4)
 
     if(.NOT.PRESENT(group)) then 
        group_temp = 1
@@ -507,6 +509,25 @@ contains
        if(LIS_masterproc) then 
           close(ftn)
        endif
+    elseif(LIS_rc%wout.eq."distributed binary") then
+       ftnp(LIS_localPet+1) = LIS_getNextUnitNumber()
+
+       write(temp1,'(i4.4)') LIS_localPet
+       read(temp1,fmt='(4a1)') fproc
+       
+       lsmoutfilep = trim(lsmoutfile)//'.'//fproc(1)//fproc(2)//fproc(3)//fproc(4)
+       open(ftnp(LIS_localPet+1),file=trim(lsmoutfilep),&
+            form='unformatted')
+
+       write(ftnp(LIS_localPet+1)) LIS_ews_ind(n,LIS_localPet+1)
+       write(ftnp(LIS_localPet+1)) LIS_ewe_ind(n,LIS_localPet+1)
+       write(ftnp(LIS_localPet+1)) LIS_nss_ind(n,LIS_localPet+1)
+       write(ftnp(LIS_localPet+1)) LIS_nse_ind(n,LIS_localPet+1)
+       
+       call writeBinaryDistributedOutput(n,group_temp,ftnp(LIS_localPet+1))
+
+       call LIS_releaseUnitNumber(ftnp(LIS_localPet+1))
+       
     elseif(LIS_rc%wout.eq."grib1") then 
 #if(defined USE_GRIBAPI)
        if(LIS_masterproc) then 
@@ -758,6 +779,60 @@ contains
     
   end subroutine writeBinaryOutput
 
+
+!BOP
+! 
+! !ROUTINE: writeBinaryDistributedOutput
+! \label{writeBinaryDistributedOutput}
+! 
+! !INTERFACE: 
+  subroutine writeBinaryDistributedOutput(n, group, ftn)
+!  !USES: 
+
+! !ARGUMENTS: 
+    implicit none
+    integer,   intent(in)   :: n 
+    integer,   intent(in)   :: group
+    integer,   intent(in)   :: ftn
+
+! 
+! !DESCRIPTION: 
+!  This routine writes a binary output file based on the list of selected 
+!  output variables. 
+!  The arguments are: 
+!  \begin{description}
+!    \item[n] index of the nest \newline
+!    \item[group] output group (LSM, routing, RTM) \newline
+!    \item[ftn] file unit for the output file \newline
+!    \item[ftn\_stats] file unit for the output statistics file \newline
+!  \end{description}
+!
+!   The routines invoked are: 
+!   \begin{description}
+!   \item[writeSingleBinaryVar](\ref{writeSingleBinaryVar}) \newline
+!     writes a single variable into a flat binary file. 
+!   \end{description}
+!EOP
+    type(LIS_metadataEntry), pointer :: dataEntry
+
+    if(group.eq.1) then !LSM output
+       dataEntry => LIS_histData(n)%head_lsm_list
+    elseif(group.eq.2) then !ROUTING
+       dataEntry => LIS_histData(n)%head_routing_list
+    elseif(group.eq.3) then !RTM
+       dataEntry => LIS_histData(n)%head_rtm_list
+    elseif(group.eq.4) then !Irrigation
+       dataEntry => LIS_histData(n)%head_irrig_list
+    endif
+
+
+    do while ( associated(dataEntry) )
+       call writeSingleBinaryDistributedVar(ftn,n,dataEntry)
+       dataEntry => dataEntry%next
+    enddo
+    
+  end subroutine writeBinaryDistributedOutput
+  
 !BOP
 !
 ! !ROUTINE: writeSingleBinaryVar
@@ -890,6 +965,109 @@ contains
     endif
   end subroutine writeSingleBinaryVar
 
+!BOP
+!
+! !ROUTINE: writeSingleBinaryDistributedVar
+! \label{writeSingleBinaryDistributedVar}
+! 
+! !INTERFACE:
+  subroutine writeSingleBinaryDistributedVar(ftn, n, dataEntry)
+! !USES: 
+
+    implicit none
+! !ARGUMENTS: 
+    integer :: ftn
+    integer :: n 
+    type(LIS_metadataEntry), pointer :: dataEntry
+! 
+! !DESCRIPTION: 
+!  This routine writes a single variable to a binary file
+!  The arguments are: 
+!  \begin{description}
+!    \item[n] index of the nest
+!    \item[ftn] file unit for the output file
+!    \item[ftn\_stats] file unit for the output statistics file
+!    \item[dataEntry] object containing the specifications for 
+!                     the output variable
+!  \end{description}
+!
+!   The routines invoked are: 
+!   \begin{description}
+!   \item[LIS\_writevar\_bin](\ref{LIS_writevar_bin})
+!     writes a variable into a flat binary file. 
+!   \item[LIS\_endrun](\ref{LIS_endrun})
+!     call to abort program when a fatal error is detected. 
+!   \end{description}
+!EOP
+    integer :: k,i
+
+    real, allocatable    :: var(:), meanv(:), stdv(:)
+    character*100        :: mvar,units
+    integer :: t, m, c
+
+    if(dataEntry%selectOpt.eq.1) then 
+
+       do t=1,LIS_rc%ntiles(n)
+          m = LIS_domain(n)%tile(t)%sftype
+          do k=1,dataEntry%vlevels
+             if(dataEntry%count(t,k).gt.0) then 
+                if(dataEntry%timeAvgOpt.eq.3) then  !do nothing
+                   continue       
+                elseif(dataEntry%timeAvgOpt.eq.2.or.dataEntry%timeAvgOpt.eq.1) then
+                   dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/&
+                        dataEntry%count(t,k)
+                else !do nothing
+                   continue
+                endif
+             else
+                dataEntry%modelOutput(1,t,k) = LIS_rc%udef
+             endif
+          enddo
+       enddo
+
+       
+       if(dataEntry%timeAvgOpt.eq.0) then
+          mvar = trim(dataEntry%short_name)//'_inst'
+       elseif(dataEntry%timeAvgOpt.eq.1) then
+          mvar = trim(dataEntry%short_name)//'_tavg'
+       elseif(dataEntry%timeAvgOpt.eq.3) then
+          mvar = trim(dataEntry%short_name)//'_acc'
+       endif
+       units = dataEntry%units
+       
+       write(ftn) dataEntry%vlevels
+       write(ftn) mvar
+       write(ftn) units
+       
+       do k=1,dataEntry%vlevels
+          ! accumulated values
+          ! time-averaged values and instantaneous values
+          if(dataEntry%timeAvgOpt.eq.2) then 
+             call writevar_dist_bin(ftn,n,&
+                  dataEntry%modelOutput(1,:,k),&
+                  dataEntry%form)
+             call writevar_dist_bin(ftn,n,&
+                  dataEntry%modelOutput(2,:,k),&
+                  dataEntry%form)
+             ! time-averaged or instantaneous values
+          elseif(dataEntry%timeAvgOpt.eq.3) then 
+             call writevar_dist_bin(ftn,n,&
+                  dataEntry%modelOutput(1,:,k),&
+                  dataEntry%form)
+          elseif(dataEntry%timeAvgOpt.eq.0) then 
+             call writevar_dist_bin(ftn,n,&
+                  dataEntry%modelOutput(1,:,k),&
+                  dataEntry%form)             
+          elseif(dataEntry%timeAvgOpt.eq.1) then 
+             call writevar_dist_bin(ftn,n,&
+                  dataEntry%modelOutput(1,:,k),&
+                  dataEntry%form)
+          endif
+          
+       enddo
+    endif
+  end subroutine writeSingleBinaryDistributedVar
+  
 !BOP
 ! !ROUTINE: writeGribOutput
 ! \label{writeGribOutput}
@@ -4367,6 +4545,124 @@ contains
        endif
     endif
   end subroutine writevar_bin_withstats_real
+
+!BOP
+! !ROUTINE: writevar_dist_bin
+! \label{writevar_dist_bin}
+! 
+! !INTERFACE:
+! Private name: call using LIS_writevar_bin
+  subroutine writevar_dist_bin(ftn,n,var,form)
+! !USES: 
+
+    implicit none
+! !ARGUMENTS: 
+    integer, intent(in) :: n
+    integer, intent(in) :: ftn
+    real, intent(in)    :: var(LIS_rc%ntiles(n))
+    integer, intent(in) :: form
+! !DESCRIPTION:
+!  Write a real variable to a binary output file with a number of diagnostic 
+!  statistics (mean, standardar deviation, min/max during the temporal output
+!  interval) written to a text file. 
+!
+!  The arguments are: 
+!  \begin{description}
+!   \item [n]
+!     index of the domain or nest.
+!   \item [ftn]
+!     unit number of the binary output file
+!   \item [ftn\_stats]
+!     unit number of the ASCII text statistics file
+!   \item [var]
+!     variables being written, dimensioned in the tile space
+!   \item[mvar]
+!     short name of the variable being written (will be used in the stats file)
+!   \item[form]
+!     format to be used in the stats file (1-decimal format, 
+!     2-scientific format)
+!  \end{description}
+!
+!  The routines invoked are: 
+!  \begin{description}
+!   \item[LIS\_gather\_tiled\_vector\_output](\ref{LIS_gather_tiled_vector_output})
+!     call to gather the 1d tiled output variables in tile space
+!   \item[LIS\_gather\_gridded\_output](\ref{LIS_gather_gridded_output})
+!     call to gather the 1d tiled output variable into a 2d gridded array
+!   \item[LIS\_gather\_gridded\_vector\_output](\ref{LIS_gather_gridded_vector_output})
+!     call to gather the 1d tiled output variable into a 1d gridded array
+!   \item[write\_stats](\ref{write_stats})
+!     call to compute the diagnostic statistics
+!  \end{description}
+!
+!EOP
+    REAL          :: gtmp(LIS_rc%lnc(n),LIS_rc%lnr(n))
+    integer       :: gid, c,r,i,t,m
+    
+    if(LIS_rc%wopt.eq."1d tilespace") then !tiled output
+       write(LIS_logunit,*) '[ERR] 1d tilespace option is not supported'
+       write(LIS_logunit,*) '[ERR] in the distributed binary mode'
+       call LIS_endrun()
+       
+    elseif(LIS_rc%wopt.eq."2d gridspace") then !2d gridded output
+
+       gtmp = LIS_rc%udef
+       
+       do i=1,LIS_rc%ntiles(n),LIS_rc%nensem(n)
+
+          gid = LIS_domain(n)%tile(i)%index
+
+          c = LIS_domain(n)%grid(gid)%col
+          r = LIS_domain(n)%grid(gid)%row
+
+          gtmp(c,r) = 0.0
+          
+          do m=1,LIS_rc%nensem(n)
+             t = i+m-1
+             if ( var(t) == -9999.0 ) then
+                gtmp(c,r) = -9999.0
+             else
+                gtmp(c,r) = gtmp(c,r)+&
+                     var(t)*LIS_domain(n)%tile(t)%fgrd*&
+                     LIS_domain(n)%tile(t)%pens
+             endif
+          enddo                    
+       enddo       
+       
+       write(ftn) gtmp
+
+    elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then !2d gridded output
+
+       do m=1, LIS_rc%nensem(n)
+
+          gtmp = -9999.0
+          
+          do i=1,LIS_rc%ntiles(n),LIS_rc%nensem(n)
+             
+             gid = LIS_domain(n)%tile(i)%index
+             
+             c = LIS_domain(n)%grid(gid)%col
+             r = LIS_domain(n)%grid(gid)%row
+             
+             t = i+m-1
+             
+             if ( var(t) == -9999.0 ) then
+                gtmp(c,r) = -9999.0
+             else
+                gtmp(c,r) = var(t)
+             endif
+          enddo
+          write(ftn) gtmp
+       enddo             
+       
+    elseif(LIS_rc%wopt.eq."1d gridspace") then !1d gridded output
+
+       write(LIS_logunit,*) '[ERR] 1d gridspace option is not supported'
+       write(LIS_logunit,*) '[ERR] in the distributed binary mode'
+       call LIS_endrun()
+       
+    endif
+  end subroutine writevar_dist_bin
 
 !BOP
 ! !ROUTINE: writevar_bin_real
