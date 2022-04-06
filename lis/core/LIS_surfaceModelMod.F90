@@ -369,8 +369,8 @@ contains
        
           if(alarmCheck) then 
              open_stats = .false.
+             call LIS_create_output_directory('SURFACEMODEL')             
              if(LIS_masterproc) then 
-                call LIS_create_output_directory('SURFACEMODEL')
                 if (LIS_sfmodel_struc(n)%stats_file_open) then
                    call LIS_create_stats_filename(n,statsfile,'SURFACEMODEL')
                    LIS_sfmodel_struc(n)%stats_file_open = .false.
