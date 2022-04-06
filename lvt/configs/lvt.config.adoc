@@ -75,6 +75,7 @@ LVT output format:                      "netcdf"
 | "`1d tilespace`" | LVT output in a 1-D tile domain
 | "`2d gridspace`" | LVT output in a 2-D grid domain
 | "`1d gridspace`" | LVT output in a 1-D grid domain
+| "`2d ensemble gridspace`" | LIS ensemble output in a 2-D grid domain
 |===
 
 .Example _lvt.config_ entry
