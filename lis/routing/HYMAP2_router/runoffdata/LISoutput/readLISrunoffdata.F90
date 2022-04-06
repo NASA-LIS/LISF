@@ -18,7 +18,6 @@
 ! 
 ! !USES: 
 subroutine readLISrunoffdata(n,surface_runoff, baseflow)
-
   use LIS_coreMod
   use LIS_logMod
   use LISrunoffdataMod
@@ -128,6 +127,7 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
             
             ios = nf90_get_var(nid,qsbid,qsb2d)
             call LIS_verify(ios, 'failed to read Qsb_tavg field in readLISrunoffdata')
+
 
             if(LIS_isAtAfinerResolution(n,LISrunoffdata_struc(n)%datares)) then
 
