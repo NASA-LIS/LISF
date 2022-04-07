@@ -109,6 +109,11 @@ contains
 ! !INTERFACE:   
   subroutine LVT_process_LISoutput
 
+!
+!DESCRIPTION:
+! This routine reads the distributed binary LIS outputs and quilts
+! them into a single NetCDF file.
+!
     integer       :: i,l,m,t,c,r
     integer       :: source
     integer       :: ftn(LVT_LISpost%npes),ftn_nc

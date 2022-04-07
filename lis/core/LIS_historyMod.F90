@@ -818,8 +818,8 @@ contains
 
 ! 
 ! !DESCRIPTION: 
-!  This routine writes a binary output file based on the list of selected 
-!  output variables. 
+!  This routine writes a binary distributed
+!  output file based on the list of selected output variables. 
 !  The arguments are: 
 !  \begin{description}
 !    \item[n] index of the nest \newline
@@ -871,8 +871,8 @@ contains
 
 ! 
 ! !DESCRIPTION: 
-!  This routine writes a binary output file based on the list of selected 
-!  output variables. 
+!  This routine writes a binary distributed output file
+!  based on the list of selected routing output variables. 
 !  The arguments are: 
 !  \begin{description}
 !    \item[n] index of the nest \newline
@@ -1046,7 +1046,7 @@ contains
     type(LIS_metadataEntry), pointer :: dataEntry
 ! 
 ! !DESCRIPTION: 
-!  This routine writes a single variable to a binary file
+!  This routine writes a single variable to a distributed binary file
 !  The arguments are: 
 !  \begin{description}
 !    \item[n] index of the nest
@@ -1149,7 +1149,7 @@ contains
     type(LIS_metadataEntry), pointer :: dataEntry
 ! 
 ! !DESCRIPTION: 
-!  This routine writes a single variable to a binary file
+!  This routine writes a single routing variable to a distributed binary file
 !  The arguments are: 
 !  \begin{description}
 !    \item[n] index of the nest
