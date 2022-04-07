@@ -785,7 +785,8 @@ module LIS_PRIV_rcMod
      integer                :: waterclass
      integer                :: wetlandclass
      integer                :: glacierclass
-     integer                :: cropclass
+     integer                :: cropclass       
+     integer                :: ricecrop        ! HKB
      integer                :: laiflag  
      integer                :: saiflag       
      character*100, allocatable :: mfile(:)  

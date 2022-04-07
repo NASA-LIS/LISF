@@ -199,7 +199,7 @@ contains
     ! -------
     ! NEST         : LIS grid nest identifier
     ! TileNo       : Tile ID
-    ! croptype     : 1-26
+    ! croptype     : MIRCA1-26, CROPMAP1-19, etc
     ! LONGITUDE    : Tile longitude
     ! VEG_TRIGGER  : Current vegetation trigger value
     ! VEG_THRESH   : vegetation threshold to turn the trigger on
@@ -305,7 +305,7 @@ contains
 
        curtime = LIS_rc%time   
 
-       PADDY: if(croptype == 3) then
+       PADDY: if(croptype == LIS_rc%ricecrop) then
           ! PADDY--continually add water to keep the surface soil layer at 
           ! saturation, which would maximize soil evaporation and recharge, 
           ! as would be the case with ponded water during the growing season

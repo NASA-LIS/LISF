@@ -533,9 +533,10 @@ contains
     integer                :: t,j,col,row
     integer                :: nid, ios, status, croptypeId, cropdimid
     logical                :: file_exists    
-    real,   allocatable    :: l_croptype(:,:,:)
-    real,   allocatable    :: glb_croptype(:,:,:)
+    real,   allocatable    :: l_croptype(:,:)
+    real,   allocatable    :: glb_croptype(:,:)
     integer                :: ncroptypes
+    integer                :: cropdim
     integer                :: vegt
 ! __________________________________________________________________________
     
@@ -581,6 +582,19 @@ contains
 
     nlctypes = total_vegtypes - LIS_rc%numbercrops ! number of land cover types
 
+  ! Assign Rice for paddy
+    select case ( LIS_rc%cropscheme )
+     case( "CROPMAP" )
+       LIS_rc%ricecrop = 12
+     case( "MIRCA" )
+       LIS_rc%ricecrop = 3
+     case default
+       write(LIS_logunit,*) "[ERR] The cropclass scheme, ",trim(LIS_rc%cropscheme),","
+       write(LIS_logunit,*) "[ERR] is not supported for irrigation. "
+       write(LIS_logunit,*) " Stopping program ... "
+       call LIS_endrun()
+    end select
+
  !- Read the max root depth table file:
     inquire(file=rdfile,exist=file_exists)
     if(file_exists) then 
@@ -597,8 +611,9 @@ contains
     endif
 
  !- Read in crop type map file (specified in LIS parameter input file)
- !- CROPTYPE is now 3D array (croptypes,lat,lon) if old parameter file
- !  with 2D CROPTYPE or no croptypes dimension, need to rerun LDT -HKB
+ !- CROPTYPE is now 3D array (croptypes,lat,lon) 
+ !  Adding backward compatibility for old parameter file
+ !  with 2D CROPTYPE or no croptypes dimension -HKB
     inquire(file=LIS_rc%paramfile(n), exist=file_exists)
     if(file_exists) then 
        ios = nf90_open(path=LIS_rc%paramfile(n),&
@@ -607,52 +622,65 @@ contains
 
        write(LIS_logunit,*) "[INFO] Reading in the crop type field ... "
        
-       ! LIS_rc%numbercrops = ncroptypes dimension normally, unless  
-       ! single or constant croptype is assinged, so get ncroptypes info
+       ! LIS_rc%numbercrops = ncroptypes dimension for multiple crops (new), 
+       ! LIS_rc%numbercrops = 1 for single or constant croptype (old)
        ios = nf90_inq_dimid(nid, "croptypes", cropdimid)
        call LIS_verify(ios,'nf90_inq_dimid failed for CROPTYPE, NEED new lis_input')
        ios = nf90_inquire_dimension(nid, cropdimid, len = ncroptypes)
-       call LIS_verify(ios,'nf90_inquire_dimension failed for CROPTYPE')
+       call LIS_verify(ios,'nf90_inquire_dimension failed for ncroptypes')
 
-       allocate(l_croptype(LIS_rc%lnc(n),LIS_rc%lnr(n),ncroptypes))
-       allocate(glb_croptype(LIS_rc%gnc(n),LIS_rc%gnr(n),ncroptypes))
-       
        ios = nf90_inq_varid(nid,'CROPTYPE',croptypeId)
        call LIS_verify(ios,'nf90_inq_varid failed for CROPTYPE')
-       
-       ios = nf90_get_var(nid, croptypeId, glb_croptype)
-       call LIS_verify(ios,'nf90_get_var failed for CROPTYPE')
+       ios = nf90_inquire_dimension(nid, croptypeId, len = cropdim)
+       call LIS_verify(ios,'nf90_inquire_dimension failed for CROPTYPE')
 
-       ios = nf90_close(nid)
-       call LIS_verify(ios,'nf90_close failed in read_irrigRootdepth')
+       if ( cropdim .eq. 2 ) then   ! 2D
+         allocate(l_croptype(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+         allocate(glb_croptype(LIS_rc%gnc(n),LIS_rc%gnr(n)))
        
-       l_croptype(:,:,:) = glb_croptype(&
-          LIS_ews_halo_ind(n,LIS_localPet+1):&         
-          LIS_ewe_halo_ind(n,LIS_localPet+1), &
-          LIS_nss_halo_ind(n,LIS_localPet+1): &
-          LIS_nse_halo_ind(n,LIS_localPet+1),:)
+         ios = nf90_get_var(nid, croptypeId, glb_croptype)
+         call LIS_verify(ios,'nf90_get_var failed for CROPTYPE')
 
-       do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-          col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
-          row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
-          vegt = LIS_domain(n)%tile(t)%vegt  !veg index 1~total_vegtype(eg 1-46)
-          ! root depth is set to zero for forest, water, bare soil etc, per
-          ! land cover class, so assign all tiles 
-!          if ( vegt .gt. nlctypes ) then     !crops
-!            j = vegt - nlctypes  !crop index nlctypes~total_vegtype(eg 21-46)
-!            if(l_croptype(col,row,j).gt.0) then 
-!             !rootdepth(t) = rootd(nint(l_croptype(col,row))) 
-             rootdepth(t) = rootd(vegt)
-!            else
-!             rootdepth(t) = 0 
-!            endif
-!          else
-!           rootdepth(t) = 0 
-!          endif
-       enddo
+         ios = nf90_close(nid)
+         call LIS_verify(ios,'nf90_close failed in read_irrigRootdepth')
+       
+         l_croptype(:,:) = glb_croptype(&
+            LIS_ews_halo_ind(n,LIS_localPet+1):&         
+            LIS_ewe_halo_ind(n,LIS_localPet+1), &
+            LIS_nss_halo_ind(n,LIS_localPet+1): &
+            LIS_nse_halo_ind(n,LIS_localPet+1))
+         deallocate(glb_croptype)
+
+         do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+            col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
+            row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+
+            if(l_croptype(col,row).gt.0) then
+               rootdepth(t) = rootd(nint(l_croptype(col,row)))
+            else
+               rootdepth(t) = 0
+           endif
+         enddo
+         deallocate(l_croptype)
+
+       elseif ( cropdim .eq. 3 ) then ! 3D
+         do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+           col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
+           row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+           vegt = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%vegt  
+           ! vegt index 1~total_vegtype(eg 1-46)
+           ! root depth is set to zero for forest, water, bare soil etc, per
+           ! land cover class, so assign all tiles 
+           rootdepth(t) = rootd(vegt)
+         enddo
+
+       else
+         write(LIS_logunit,*) "[ERR] The irrigation CROPTYPE parameter ",&
+               LIS_rc%paramfile(n)," invalid dimension."
+         write(LIS_logunit,*) "[ERR] Program stopping ..."
+         call LIS_endrun
+       endif    ! cropdim
        deallocate( rootd )
-       deallocate(glb_croptype)
-       deallocate(l_croptype)
 
     else
        write(LIS_logunit,*) "[ERR] The irrigation croptype map: ",&

@@ -72,6 +72,7 @@ subroutine noah33_getirrigationstates(nest,irrigState)
   real                 :: zdpth(noah33_struc(nest)%nslay)
   real                 :: crootd
   integer              :: lroot,veg_index1,veg_index2, nlctypes
+  integer              :: croptype
   real                 :: gsthresh
   logical              :: irrig_check_frozen_soil
   real                 :: amount
@@ -208,8 +209,10 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                  ! get irrigation rates from the irrigation model
                  ! ----------------------------------------------
            
+                 croptype = vegt - nlctypes
+
                  call IM%update_irrigrate (                                             &
-                      nest,TileNo, vegt - nlctypes, LIS_domain(nest)%grid(gid)%lon,     &
+                      nest,TileNo, croptype, LIS_domain(nest)%grid(gid)%lon,     &
                       noah33_struc(nest)%noah(TileNo)%shdfac,gsthresh,                  &
                       noah33_struc(nest)%noah(TileNo)%smcwlt,                           &
                       noah33_struc(nest)%noah(TileNo)%smcmax,                           &
@@ -226,6 +229,8 @@ subroutine noah33_getirrigationstates(nest,irrigState)
   ! Update land surface model's moisture state
   ! ------------------------------------------
   TILE_LOOP2: do TileNo = 1,LIS_rc%npatch(nest,LIS_rc%lsm_index)
+        vegt = LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%vegt  
+        croptype = vegt - nlctypes
         ! Process only irrigated tiles
         IRRF2: if(IM%irrigFrac(TileNo).gt.0) then
            ! Determine the amount of irrigation to apply if irrigated tile
@@ -248,7 +253,7 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                 endif DRIP
 
                 FLOOD: if ( IM%irrigType(TileNo) == 3 ) then
-                   if ( (vegt - nlctypes) == 3 ) then   ! rice
+                   if ( croptype == LIS_rc%ricecrop ) then   ! rice
                    ! PADDY-- surface layer only
                         noah33_struc(nest)%noah(TileNo)%smc(1) =  &
                              IM%IrrigScale(TileNo)*noah33_struc(nest)%noah(TileNo)%smcmax + &
