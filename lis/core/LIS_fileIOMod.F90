@@ -637,7 +637,7 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
 ! \label{create_output_filename_expected}
 !
 ! !INTERFACE:
-subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
+subroutine create_output_filename_expected(n, fname, wout, flag, model_name, odir,&
      writeint)
 ! !USES:
    use LIS_coreMod
@@ -649,6 +649,7 @@ subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
 ! !ARGUMENTS:
    integer, intent(in) :: n
    character(len=*), intent(out)          :: fname
+   character(len=*), intent(in)           :: wout
    logical         , intent(in)           :: flag 
    character(len=*), intent(in), optional :: model_name ! needed for gswp run
    character(len=*), intent(in), optional :: odir ! needed for gswp run
@@ -849,7 +850,7 @@ subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
       write(unit=cdate, fmt='(a2,i2.2)') '.d',n      
       out_fname = trim(out_fname)//trim(cdate)
       
-      select case ( LIS_rc%wout )
+      select case ( wout )
       case ( "binary" )
          if(LIS_rc%wopt.eq."1d tilespace") then 
             out_fname = trim(out_fname)//'.ts4r'
@@ -897,7 +898,7 @@ subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
       write(unit=cdate, fmt='(a2,i2.2)') '.d',n      
       out_fname = trim(out_fname)//trim(cdate)
       
-      select case ( LIS_rc%wout )
+      select case ( wout )
       case ("binary")
          if(LIS_rc%wopt.eq."1d tilespace") then 
             out_fname = trim(out_fname)//'.ts4r'
@@ -926,7 +927,7 @@ subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
          out_fname = trim(out_fname)//'.gr2'
       case default
          call lis_log_msg('ERR: create_output_filename -- '// &
-              'Unrecognized LIS_rc%wout value')
+              'Unrecognized wout value')
          call LIS_endrun 
       endselect
    elseif(LIS_rc%wstyle.eq."2 level hierarchy") then
@@ -942,7 +943,7 @@ subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
       write(unit=cdate, fmt='(a2,i2.2)') '.d',n      
       out_fname = trim(out_fname)//trim(cdate)
       
-      select case ( LIS_rc%wout )
+      select case ( wout )
       case ("binary")
          if(LIS_rc%wopt.eq."1d tilespace") then 
             out_fname = trim(out_fname)//'.ts4r'
@@ -971,7 +972,7 @@ subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
          out_fname = trim(out_fname)//'.gr2'
       case default
          call lis_log_msg('ERR: create_output_filename -- '// &
-              'Unrecognized LIS_rc%wout value')
+              'Unrecognized wout value')
          call LIS_endrun 
       endselect
    elseif(LIS_rc%wstyle.eq."WMO convention") then 
@@ -1035,7 +1036,7 @@ subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
            trim(fproj)//trim(fres2)//'_AR.'//trim(LIS_rc%area_of_data)//&
            '_PA.'//trim(fint)//'-HR-SUM_DD.'//&
            trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
-      select case (LIS_rc%wout)
+      select case (wout)
       case ("binary")
          if(LIS_rc%wopt.eq."1d tilespace") then 
             out_fname = trim(dname)//'.DAT'
