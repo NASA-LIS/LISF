@@ -196,7 +196,7 @@ contains
        
           if(file_exists) then 
              
-!             write(LVT_logunit,*) '[INFO] Reading LIS output ',trim(fname(i))
+             write(LVT_logunit,*) '[INFO] Reading LIS output ',trim(fname(i))
 
              ftn(i) = LVT_getNextUnitNumber()
              open(ftn(i),file=trim(fname(i)),form='unformatted')
