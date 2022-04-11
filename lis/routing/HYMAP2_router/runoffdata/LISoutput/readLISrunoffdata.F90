@@ -65,7 +65,7 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
   !create LIS filename
 
   call LIS_create_output_filename(n, &
-       filename, check_flag, &
+       filename, "netcdf", check_flag, &
        model_name='SURFACEMODEL', &
        odir=LISrunoffdata_struc(n)%odir,&
        writeint=LISrunoffdata_struc(n)%outInterval)
