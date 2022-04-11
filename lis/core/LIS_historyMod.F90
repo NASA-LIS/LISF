@@ -596,6 +596,7 @@ contains
        sopen, nsoillayers, outInterval, lyrthk, &
        nsoillayers2, group, model_name, lyrthk2)
 ! !USES:
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
 ! !ARGUMENTS: 
     integer,   intent(in)   :: n 
@@ -643,7 +644,8 @@ contains
     integer :: ftn, ftn_stats, ftnp(LIS_npes)
     integer :: iret
     integer :: group_temp
-    character*100 :: mname_temp, temp1, routingoutfilep
+    character*100 :: mname_temp, temp1
+    character(len=LIS_CONST_PATH_LEN) :: routingoutfilep
     character*1   :: fproc(4)
 
     if(.NOT.PRESENT(group)) then 
