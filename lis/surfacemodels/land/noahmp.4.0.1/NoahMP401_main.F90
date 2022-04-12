@@ -1129,6 +1129,8 @@ subroutine NoahMP401_main(n)
                     noahmp401_struc(n)%noahmp401(t)%sh2o(:)     = sh2oxy(col, :, row)
                     noahmp401_struc(n)%noahmp401(t)%smoiseq(:)  = smoiseq(col, :, row)
                     noahmp401_struc(n)%noahmp401(t)%smcwtd      = smcwtd(col,row)
+                    noahmp401_struc(n)%noahmp401(t)%wtd         = wtd(col,row)  !TML added wtd and zwt.
+                    noahmp401_struc(n)%noahmp401(t)%zwt         = wtd(col,row)  !Same variable...
                     noahmp401_struc(n)%noahmp401(t)%deeprech    = deeprech(col,row)
                     noahmp401_struc(n)%noahmp401(t)%rech        = rech(col,row)
                     noahmp401_struc(n)%noahmp401(t)%qslat       = qslat(col,row)
